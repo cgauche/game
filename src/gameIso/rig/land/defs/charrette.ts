@@ -42,20 +42,21 @@ function profile(): string {
  *  panneau avant ajouré, brancards fuyant vers le spectateur (bouts au sol). */
 function front(): string {
   return '<g>'
+    // Deux grandes roues de bout, DERRIÈRE la caisse et débordant de part et d'autre (essieu unique).
+    + `<g transform="translate(-25,-17)">${wheelEdge(34)}</g>`
+    + `<g transform="translate(25,-17)">${wheelEdge(34)}</g>`
+    // Essieu unique traversant jusqu'aux moyeux.
+    + '<path d="M-25 -17 L25 -17" stroke="@fer" stroke-width="3"/>'
     // Brancards vus de bout : deux bras divergents qui plongent au sol devant la charrette.
     + '<path d="M-8 -24 L-12 -2 M8 -24 L12 -2" stroke="@bois" stroke-width="3.4" stroke-linecap="round"/>'
     + '<circle cx="-12" cy="-2" r="2.2" fill="@boisO"/><circle cx="12" cy="-2" r="2.2" fill="@boisO"/>'
-    // Essieu + plateau (chant avant).
-    + '<path d="M-20 -17 L20 -17" stroke="@fer" stroke-width="3"/>'
+    // Plateau (chant avant).
     + '<path d="M-16 -22 L16 -22 L16 -27 L-16 -27 Z" fill="@bois" stroke="@boisO" stroke-width="1.5"/>'
     // Panneau avant en claire-voie, bas (on voit par-dessus : charrette DÉCOUVERTE).
     + '<path d="M-15 -27 L-15 -42 M15 -27 L15 -42" stroke="@bois" stroke-width="3" stroke-linecap="round"/>'
     + claireVoie(-12, 12, -27, -41, 3)
     // Lisses des ridelles latérales en fuite (amorce de perspective).
     + '<path d="M-15 -41 L-19 -39 M15 -41 L19 -39" stroke="@boisO" stroke-width="2.6" stroke-linecap="round"/>'
-    // Deux grandes roues de bout, de part et d'autre.
-    + `<g transform="translate(-21,-17)">${wheelEdge(34)}</g>`
-    + `<g transform="translate(21,-17)">${wheelEdge(34)}</g>`
     + '</g>';
 }
 
@@ -63,8 +64,11 @@ function front(): string {
  *  l'intérieur du plateau affleure au-dessus du hayon bas. */
 function back(): string {
   return '<g>'
-    // Essieu + chant arrière du plateau (tons ombrés côté dos, comme le bélier).
-    + '<path d="M-20 -17 L20 -17" stroke="@fer" stroke-width="3"/>'
+    // Deux grandes roues de bout, DERRIÈRE le hayon et débordant de part et d'autre (même essieu qu'en face).
+    + `<g transform="translate(-25,-17)">${wheelEdge(34)}</g>`
+    + `<g transform="translate(25,-17)">${wheelEdge(34)}</g>`
+    // Essieu unique traversant jusqu'aux moyeux + chant arrière du plateau (tons ombrés côté dos, comme le bélier).
+    + '<path d="M-25 -17 L25 -17" stroke="@fer" stroke-width="3"/>'
     + '<path d="M-16 -22 L16 -22 L16 -27 L-16 -27 Z" fill="@boisO" stroke="@bois" stroke-width="1.5"/>'
     // Fond du plateau visible par-dessus le hayon bas (benne ouverte).
     + '<path d="M-13 -41 L13 -41 L11 -45 L-11 -45 Z" fill="@boisO" stroke="@bois" stroke-width="1" opacity="0.8"/>'
@@ -72,8 +76,6 @@ function back(): string {
     + '<path d="M-15 -27 L-15 -42 M15 -27 L15 -42" stroke="@boisO" stroke-width="3" stroke-linecap="round"/>'
     + claireVoie(-12, 12, -27, -41, 3, '@boisO')
     + '<path d="M-15 -41 L-19 -39 M15 -41 L19 -39" stroke="@bois" stroke-width="2.6" stroke-linecap="round"/>'
-    + `<g transform="translate(-21,-17)">${wheelEdge(34)}</g>`
-    + `<g transform="translate(21,-17)">${wheelEdge(34)}</g>`
     + '</g>';
 }
 

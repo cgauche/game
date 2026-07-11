@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { planById, resolveRender } from '../bodyPlan';
-import { landPlan } from './composeLand';
+import { landPlan, landArtOf } from './composeLand';
+import { MISSING_ART } from '../viewArt';
 
 const svgOf = (view: 'front' | 'profile' | 'back') =>
   landPlan.resolve('chariot', view, landPlan.restPose()).map((b) => b.parts.map((p) => p.svg).join('')).join('');
@@ -11,20 +12,21 @@ describe('Gabarit TERRESTRE — chariot/attelage via le système de plans (réut
     expect(landPlan.id).toBe('terrestre');
   });
 
-  it('silhouette procédurale : roues + caisse + timon ; palette à jetons entièrement résolue', () => {
+  it('art par id (chariot) : roues + caisse ; palette à jetons entièrement résolue', () => {
     const svg = svgOf('profile');
     expect(svg).toContain('<circle'); // roues (wheelFace)
     expect(svg).not.toContain('@'); // aucun jeton @bois/@fer/@bache résiduel
   });
 
-  it('mono-vue déclarée (broadside) : face/dos REPLIENT sur le profil pour un id SANS art dédié (art identique)', () => {
-    // `chariot` a désormais un art 3-vues dédié (vague A4, land/defs/chariot.ts) : ce n'est plus lui
-    // qui illustre le repli. Le repli honnête reste porté par `attelage-generique` (mono-vue par
-    // nature, land/defs/attelage-generique.ts) — c'est LUI qui verrouille pickView/foldView.
-    const genericSvgOf = (view: 'front' | 'profile' | 'back') =>
-      landPlan.resolve('attelage-generique', view, landPlan.restPose()).map((b) => b.parts.map((p) => p.svg).join('')).join('');
-    expect(genericSvgOf('front')).toBe(genericSvgOf('profile'));
-    expect(genericSvgOf('back')).toBe(genericSvgOf('profile'));
+  it('id FUTUR sans art dédié → REPLI VISIBLE (#223) ; face/dos REPLIENT sur le profil (mono-vue)', () => {
+    // Un id inconnu tombe sur la silhouette d'erreur partagée (repli VISIBLE #223), mono-vue →
+    // face/dos replient dessus (pickView/foldView) — jamais un générique silencieux.
+    expect(landArtOf('espece-inconnue-xyz')).toBe(MISSING_ART);
+    const repliSvgOf = (view: 'front' | 'profile' | 'back') =>
+      landPlan.resolve('espece-inconnue-xyz', view, landPlan.restPose()).map((b) => b.parts.map((p) => p.svg).join('')).join('');
+    expect(repliSvgOf('profile')).toContain('#ff2fb0'); // magenta d'alarme
+    expect(repliSvgOf('front')).toBe(repliSvgOf('profile'));
+    expect(repliSvgOf('back')).toBe(repliSvgOf('profile'));
   });
 
   it('chariot (art 3-vues dédié) : face/dos NE REPLIENT PLUS sur le profil', () => {

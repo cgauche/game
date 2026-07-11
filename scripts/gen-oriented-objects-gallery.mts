@@ -6,12 +6,12 @@
  * Tout art orienté passe par le MÊME contrat `ViewArt` (`rig/viewArt`). Sortie : public/oriented-objects.html
  * Lancer : npx tsx scripts/gen-oriented-objects-gallery.mts
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { planById } from '../src/gameIso/rig/bodyPlan';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { project, type View } from '../src/gameIso/rig/facing';
 import { declaredViews, type ViewArt } from '../src/gameIso/rig/viewArt';
-import { shipArt, shipArtOf } from '../src/gameIso/rig/ship/composeShip';
+import { shipArtOf } from '../src/gameIso/rig/ship/composeShip';
 import { SHIP_ARTS } from '../src/gameIso/rig/ship/_registry.generated';
 import { landArtOf } from '../src/gameIso/rig/land/composeLand';
 import { LAND_ARTS } from '../src/gameIso/rig/land/_registry.generated';
@@ -61,57 +61,40 @@ const rotationRow = (render: (view: View, mirror: boolean) => string) =>
 
 type Entry = { name: string; art: ViewArt<never[]>; raw: (v: View) => string | null; render: (view: View, mirror: boolean) => string };
 
-// Couverture de la famille NAVIRE : ids à coque de vehicles.json — ceux SANS def SHIP_ARTS restent
-// sur le repli procédural par gréement (rendus en fin de section, badge « repli procédural »).
-const vehicleRecords = JSON.parse(readFileSync('src/data/vehicles.json', 'utf8')) as { id: string; hull?: { propulsion?: string } }[];
-const shipIds = vehicleRecords.filter((v) => v.hull && v.hull.propulsion !== 'terrestre').map((v) => v.id);
-const drawnShipIds = new Set(SHIP_ARTS.map((a) => a.id));
-const fallbackShipIds = shipIds.filter((id) => !drawnShipIds.has(id));
-
-const shipEntry = (id: string, tag = ''): Entry => ({
-  name: `navire · ${id}${tag}`,
+const shipEntry = (id: string): Entry => ({
+  name: `navire · ${id}`,
   art: shipArtOf(id) as ViewArt<never[]>,
   raw: (v) => (declaredViews(shipArtOf(id)).includes(v) ? bonesToSvg(planById('navire').resolve(id, v, {}, {})) : null),
   render: (view, mirror) => planSvg('navire', id, view, mirror),
 });
 
-// Couverture de la famille TERRESTRE : ids à `hull.propulsion === 'terrestre'` de vehicles.json —
-// ceux SANS def LAND_ARTS retombent sur l'attelage générique (rendus en fin de section, MÊME
-// convention « repli » que la famille navire).
-const landIds = vehicleRecords.filter((v) => v.hull && v.hull.propulsion === 'terrestre').map((v) => v.id);
-const drawnLandIds = new Set(LAND_ARTS.map((a) => a.id));
-const fallbackLandIds = landIds.filter((id) => !drawnLandIds.has(id));
-
-const landEntry = (id: string, tag = ''): Entry => ({
-  name: `terrestre · ${id}${tag}`,
+const landEntry = (id: string): Entry => ({
+  name: `terrestre · ${id}`,
   art: landArtOf(id) as ViewArt<never[]>,
   raw: (v) => (declaredViews(landArtOf(id)).includes(v) ? bonesToSvg(planById('terrestre').resolve(id, v, {}, {})) : null),
   render: (view, mirror) => planSvg('terrestre', id, view, mirror),
 });
 
+// Un objet inerte d'`id` FUTUR sans art dédié → REPLI VISIBLE (#223, `orientedArtOr`) : silhouette
+// d'erreur criarde, jamais un générique silencieux. Une entrée par famille (id sciemment inconnu).
+const missingEntry = (plan: 'navire' | 'terrestre' | 'engin'): Entry => {
+  const id = `__id-inconnu-${plan}__`;
+  return {
+    name: `${plan} · id inconnu → repli visible`,
+    art: (plan === 'navire' ? shipArtOf(id) : plan === 'terrestre' ? landArtOf(id) : enginArtOf(id)) as ViewArt<never[]>,
+    raw: (v) => (v === 'profile' ? bonesToSvg(planById(plan).resolve(id, v, {}, {})) : null),
+    render: (view, mirror) => planSvg(plan, id, view, mirror),
+  };
+};
+
 const entries: { title: string; items: Entry[] }[] = [
   {
-    title: `Navires — coque par ID (SHIP_ARTS, vague A1) ; ${fallbackShipIds.length} id(s) encore sur le repli procédural par gréement`,
-    items: [
-      ...SHIP_ARTS.map((a) => shipEntry(a.id)),
-      ...fallbackShipIds.map((id) => shipEntry(id, ' (repli procédural)')),
-    ],
+    title: 'Navires — coque par ID (SHIP_ARTS)',
+    items: SHIP_ARTS.map((a) => shipEntry(a.id)),
   },
   {
-    title: 'Navires — repli procédural par gréement (hull.rig, sert les ids sans art dédié)',
-    items: (['voile', 'avirons', 'mixte'] as const).map((rig) => ({
-      name: `navire · ${rig}`,
-      art: shipArt(rig) as ViewArt<never[]>,
-      raw: (v) => (declaredViews(shipArt(rig)).includes(v) ? bonesToSvg(planById('navire').resolve(rig, v, {}, {})) : null),
-      render: (view, mirror) => planSvg('navire', rig, view, mirror),
-    })),
-  },
-  {
-    title: `Véhicules terrestres — art par ID (LAND_ARTS) ; ${fallbackLandIds.length} id(s) encore sur l'attelage générique`,
-    items: [
-      ...LAND_ARTS.map((a) => landEntry(a.id)),
-      ...fallbackLandIds.map((id) => landEntry(id, ' (repli)')),
-    ],
+    title: 'Véhicules terrestres — art par ID (LAND_ARTS)',
+    items: LAND_ARTS.map((a) => landEntry(a.id)),
   },
   {
     title: 'Engins de siège — art par id',
@@ -121,6 +104,10 @@ const entries: { title: string; items: Entry[] }[] = [
       raw: (v) => (declaredViews(enginArtOf(a.id)).includes(v) ? bonesToSvg(planById('engin').resolve(a.id, v, {}, {})) : null),
       render: (view, mirror) => planSvg('engin', a.id, view, mirror),
     })),
+  },
+  {
+    title: 'Repli VISIBLE (#223) — id sans art dédié : silhouette d’erreur, jamais un générique silencieux',
+    items: (['navire', 'terrestre', 'engin'] as const).map(missingEntry),
   },
   {
     title: 'Props orientables — catalogue décor (PropViz.views)',

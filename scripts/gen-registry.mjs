@@ -196,9 +196,9 @@ export const REGISTRIES = [
     typeFrom: './artkit',
   },
   {
-    // Arts de COQUE de navire (vague A1, profil broadside) : 1 coque = 1 fichier defs/ —
-    // MÊME pattern que les engins (routé par ID de véhicule, repli procédural par gréement
-    // dans composeShip ; la galerie oriented-objects montre la couverture déclarée).
+    // Arts de COQUE de navire (profil broadside) : 1 coque = 1 fichier defs/ — MÊME pattern que les
+    // engins (routé par ID de véhicule dans composeShip ; un id sans def tombe sur le REPLI VISIBLE #223.
+    // La galerie oriented-objects montre la couverture déclarée).
     dir: 'src/gameIso/rig/ship/defs',
     out: 'src/gameIso/rig/ship/_registry.generated.ts',
     exportName: 'hullArt',
@@ -207,9 +207,8 @@ export const REGISTRIES = [
     typeFrom: './artkit',
   },
   {
-    // Arts de VÉHICULE TERRESTRE (vague A4, silhouette de repli extraite en def) : 1 véhicule = 1
-    // fichier defs/ — MÊME pattern que les engins/coques (routé par ID de véhicule dans composeLand ;
-    // `attelage-generique` sert de FALLBACK tant qu'un id n'a pas son propre art dédié).
+    // Arts de VÉHICULE TERRESTRE : 1 véhicule = 1 fichier defs/ — MÊME pattern que les engins/coques
+    // (routé par ID de véhicule dans composeLand ; un id sans def tombe sur le REPLI VISIBLE #223).
     dir: 'src/gameIso/rig/land/defs',
     out: 'src/gameIso/rig/land/_registry.generated.ts',
     exportName: 'landArt',

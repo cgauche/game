@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { ENGIN_ARTS } from './_registry.generated';
-import { enginPlan } from './composeEngin';
+import { enginPlan, enginArtOf } from './composeEngin';
+import { MISSING_ART } from '../viewArt';
+import { enginArt as canonPetit } from './defs/canon-petit';
 
 /**
  * #210 Lot 1 — le bélier ADE II a son PROPRE art (`defs/belier.ts`), plus un affût de baliste recyclé.
@@ -24,10 +26,18 @@ describe('art de l’engin `belier` (ADE II ch.08 l.258 : tronc suspendu à un p
     ]);
   });
 
-  it("composeEngin('belier') ne retombe PAS sur le fallback `canon-petit` (art distinct, résolu par id)", () => {
+  it("composeEngin('belier') est résolu par id (art distinct de tout repli)", () => {
     const belier = enginPlan.resolve('belier', 'front', {})[0].parts[0].svg;
     const fallback = enginPlan.resolve('espece-inconnue-xyz', 'front', {})[0].parts[0].svg;
     expect(belier).not.toBe(fallback);
+  });
+
+  it('id d’engin INCONNU → REPLI VISIBLE (#223) ; `canon-petit` est un ART RÉEL, plus un fallback', () => {
+    // Tous les `siegeRig` de trappings.json ont leur def : le repli d'un id inconnu est la silhouette
+    // d'erreur partagée, pas un affût silencieux. `canon-petit` est un art dédié à part entière.
+    expect(enginArtOf('espece-inconnue-xyz')).toBe(MISSING_ART);
+    expect(enginArtOf('canon-petit')).toBe(canonPetit);
+    expect(enginArtOf('espece-inconnue-xyz')).not.toBe(canonPetit);
   });
 
   it('les 3 vues du bélier sont non vides et distinctes entre elles', () => {

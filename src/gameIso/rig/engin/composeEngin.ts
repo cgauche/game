@@ -14,20 +14,19 @@ import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette } from '../palette';
 import { groundedBody } from '../staticBody';
-import { pickView } from '../viewArt';
+import { pickView, orientedArtOr, type ViewArt } from '../viewArt';
 import { ENGIN_DEFAULT } from './artkit';
 import { ENGIN_ARTS } from './_registry.generated';
 
-/** Index des arts par id d'espèce (registre `engin/defs/`, 13 defs). Un `siegeRig` de `trappings.json`
- *  sans art propre retomberait sur l'affût à roues générique (`canon-petit`) — plus aucune entrée
- *  n'est dans ce cas depuis l'intégration de la vague d'art (catapulte/trébuchet/mangonneau/onagre/
- *  mortier/pierrier/canon-lourd/canon-à-répétition/batterie-tonnerre-de-feu/canon-à-flammes). */
+/** Index des arts par id d'espèce (registre `engin/defs/`, 13 defs). Les 13 `siegeRig` de `trappings.json`
+ *  ont TOUS leur def dédiée — `canon-petit` est un ART RÉEL (canon de rempart, pointé par la donnée), plus
+ *  un repli. Un id FUTUR sans art tombe sur le REPLI VISIBLE partagé (#223) — MÊME mécanique que
+ *  `SHIP_ARTS`/`LAND_ARTS`. */
 const ART_BY_ID = new Map(ENGIN_ARTS.map((a) => [a.id, a]));
-const FALLBACK = ART_BY_ID.get('canon-petit') ?? ENGIN_ARTS[0];
 
-/** Art orienté d'un type d'engin (repli sur l'affût à roues générique). Exposé pour la galerie QC. */
-export function enginArtOf(species: string): (typeof ENGIN_ARTS)[number] {
-  return ART_BY_ID.get(species) ?? FALLBACK;
+/** Art orienté d'un type d'engin ; repli VISIBLE (#223) si l'id n'a pas d'art dédié. Exposé pour la galerie QC. */
+export function enginArtOf(species: string): ViewArt {
+  return orientedArtOr(ART_BY_ID, species, 'engin');
 }
 
 function art(species: string, view: View): string {

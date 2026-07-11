@@ -45,3 +45,36 @@ export function foldView<A extends unknown[]>(art: ViewArt<A>, want: View): View
 export function pickView<A extends unknown[]>(art: ViewArt<A>, want: View): (...a: A) => string {
   return art[foldView(art, want)]! as (...a: A) => string;
 }
+
+/**
+ * REPLI VISIBLE (#223) — silhouette d'ERREUR ASSUMÉE d'un objet inerte du système de plans (navire /
+ * terrestre / engin de siège) dont l'`id` n'a PAS d'art dédié. Doctrine du patron « mannequin »
+ * (`state/spawn.ts`) : jamais un joli générique silencieux — une caisse d'alarme barrée d'un « ? » que
+ * l'œil repère immédiatement en jeu, doublée d'un `console.warn` en DEV nommant l'`id` fautif (donnée à
+ * corriger). Coords LOCALES : origine = contact sol au centre, l'objet monte en y NÉGATIF (cf.
+ * `groundedBody`). Mono-vue (`profile`) → face/dos REPLIENT dessus. Couleurs LITTÉRALES (magenta d'alarme)
+ * — indépendantes de la palette du record, pour rester criardes quelle que soit la teinte demandée.
+ */
+const MISSING_ART_SVG =
+  '<g fill="none" stroke="#ff2fb0" stroke-width="2.5">'
+  + '<rect x="-22" y="-52" width="44" height="48" fill="#2a0820"/>' // caisse d'erreur
+  + '<path d="M-22 -52 L22 -4 M22 -52 L-22 -4" stroke-width="1.4" opacity="0.55"/>' // hachure croisée
+  + '<path d="M-7 -40 Q-7 -47 0 -47 Q8 -47 8 -40 Q8 -34 0 -31 L0 -26" stroke-linecap="round"/>' // hampe du «?»
+  + '<rect x="-2.4" y="-21" width="4.8" height="4.8" fill="#ff2fb0" stroke="none"/>' // point du «?»
+  + '</g>';
+
+/** Art orienté du REPLI VISIBLE (#223), mono-vue `profile`. Exposé pour la galerie QC et les gardes. */
+export const MISSING_ART: ViewArt = { profile: () => MISSING_ART_SVG };
+
+/**
+ * SOURCE UNIQUE du repli des 3 registres d'objets inertes (navire / terrestre / engin). Résout l'art
+ * orienté d'`id` dans `byId` ; à défaut, la silhouette de REPLI VISIBLE (`MISSING_ART`) + un `console.warn`
+ * en DEV nommant l'`id` fautif (`kind` = famille affichée). PLUS aucun repli « générique silencieux ».
+ */
+export function orientedArtOr<T extends ViewArt>(byId: Map<string, T>, id: string, kind: string): ViewArt {
+  const found = byId.get(id);
+  if (found) return found;
+  // `?.` : viewArt est importé par les scripts tsx (galeries), où `import.meta.env` n'existe pas.
+  if (import.meta.env?.DEV) console.warn(`[${kind}] id « ${id} » sans art dédié — silhouette de repli visible (#223), donnée à corriger.`);
+  return MISSING_ART;
+}

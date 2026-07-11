@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { SHIP_ARTS } from './_registry.generated';
-import { shipPlan, shipArtOf, shipArt } from './composeShip';
-import { declaredViews } from '../viewArt';
+import { shipPlan, shipArtOf } from './composeShip';
+import { declaredViews, MISSING_ART } from '../viewArt';
 import { findVehicleById } from '../../../data';
 
 /**
- * Vague A1 du front art naval — chaque type de navire (`vehicles.json`, `hull` maritime/fluvial)
- * a son PROPRE art de coque (`defs/<id>.ts`), routé par ID via SHIP_ARTS ; le procédural par
- * gréement n'est plus qu'un REPLI pour les ids sans def.
+ * Front art naval — chaque type de navire (`vehicles.json`, `hull` maritime/fluvial) a son PROPRE art de
+ * coque (`defs/<id>.ts`), routé par ID via SHIP_ARTS ; les 20 coques du catalogue sont toutes dessinées.
+ * Un id sans def tombe sur le REPLI VISIBLE (#223) — jamais sur une silhouette générique silencieuse.
  */
 describe('arts de coque par id (SHIP_ARTS, patron ENGIN_ARTS)', () => {
   it('registre auto-chargé : les 20 coques de vehicles.json sont dessinées', () => {
@@ -50,13 +50,12 @@ describe('arts de coque par id (SHIP_ARTS, patron ENGIN_ARTS)', () => {
     expect(new Set(SHIP_ARTS.map((a) => a.profile!())).size).toBe(SHIP_ARTS.length);
   });
 
-  it('routage par id : resolve(id) sert l’art dédié, pas le procédural du gréement', () => {
+  it('routage par id : resolve(id) sert l’art dédié ; id inconnu → REPLI VISIBLE (#223)', () => {
     const svgOf = (sp: string) => shipPlan.resolve(sp, 'profile', {}).map((b) => b.parts.map((p) => p.svg).join('')).join('');
-    // la cogue (voile) ne rend PLUS la silhouette procédurale 'voile'
-    expect(svgOf('cogue')).not.toBe(svgOf('voile'));
+    // deux coques dessinées restent DISTINCTES
     expect(svgOf('cogue')).not.toBe(svgOf('croiseur'));
-    // un id de navire INCONNU du registre retombe sur le procédural de son gréement (donnée)
-    expect(shipArtOf('id-de-navire-inconnu-xyz').profile!()).toBe(shipArt('mixte').profile!());
+    // un id de navire INCONNU du registre tombe sur la silhouette d'erreur partagée (plus de procédural)
+    expect(shipArtOf('id-de-navire-inconnu-xyz')).toBe(MISSING_ART);
     // palette à jetons entièrement résolue après composition (recolorable, aucun @token résiduel)
     expect(svgOf('galion-bretonnien')).not.toContain('@');
   });

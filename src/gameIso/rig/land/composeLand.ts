@@ -7,28 +7,27 @@
  * diligence/charrette ne peut plus retomber par accident sur le gabarit `navire`). L'art de chaque
  * véhicule est 1 fichier `land/defs/<id>.ts` (registre auto-chargé `LAND_ARTS`, MÊME pattern que les
  * engins de siège) ; le TYPE de véhicule (`species`, id de `vehicles.json`) sélectionne l'art PAR ID via
- * `ART_BY_ID` — JAMAIS de name-matcher/regex. Un id sans art dédié retombe sur `attelage-generique`
- * (silhouette de repli, MÊME rôle que `canon-petit` côté engins). Silhouette de BROADSIDE → seule
- * `profile` est déclarée (couverture honnête, visible en galerie QC) ; face/dos REPLIENT dessus via
- * `pickView`/`foldView`.
+ * `ART_BY_ID` — JAMAIS de name-matcher/regex. Un id FUTUR sans art dédié tombe sur le REPLI VISIBLE
+ * partagé (#223, `orientedArtOr`), jamais sur un générique silencieux. Silhouettes de BROADSIDE : la
+ * couverture réelle est DÉCLARÉE (galerie QC) ; face/dos REPLIENT via `pickView`/`foldView`.
  */
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette } from '../palette';
 import { groundedBody } from '../staticBody';
-import { pickView } from '../viewArt';
+import { pickView, orientedArtOr, type ViewArt } from '../viewArt';
 import { LAND_DEFAULT } from './artkit';
 import { LAND_ARTS } from './_registry.generated';
 
-/** Index des arts par id de véhicule (registre `land/defs/`, auto-chargé). Un véhicule terrestre sans
- *  art propre retombe sur l'attelage générique — MÊME mécanique que `ENGIN_ARTS`/`canon-petit`. */
+/** Index des arts par id de véhicule (registre `land/defs/`, auto-chargé). Un id sans art propre tombe
+ *  sur le REPLI VISIBLE (#223) — MÊME mécanique que `ENGIN_ARTS`/`SHIP_ARTS`. */
 const ART_BY_ID = new Map(LAND_ARTS.map((a) => [a.id, a]));
-const FALLBACK = ART_BY_ID.get('attelage-generique') ?? LAND_ARTS[0];
 
-/** Art orienté d'un type de véhicule terrestre (repli sur l'attelage générique). Exposé pour la galerie QC. */
-export function landArtOf(species: string): (typeof LAND_ARTS)[number] {
-  return ART_BY_ID.get(species) ?? FALLBACK;
+/** Art orienté d'un type de véhicule terrestre ; repli VISIBLE (#223) si l'id n'a pas d'art dédié.
+ *  Exposé pour la galerie QC. */
+export function landArtOf(species: string): ViewArt {
+  return orientedArtOr(ART_BY_ID, species, 'terrestre');
 }
 
 function art(species: string, view: View): string {

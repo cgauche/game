@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { planById } from '../bodyPlan';
-import { shipPlan } from './composeShip';
+import { shipPlan, shipArtOf } from './composeShip';
+import { MISSING_ART } from '../viewArt';
 
-const svgOf = (rig: string) =>
-  shipPlan.resolve(rig, 'profile', shipPlan.restPose()).map((b) => b.parts.map((p) => p.svg).join('')).join('');
+const svgOf = (id: string) =>
+  shipPlan.resolve(id, 'profile', shipPlan.restPose()).map((b) => b.parts.map((p) => p.svg).join('')).join('');
 
 describe('Gabarit NAVIRE — rendu via le système de plans (réutilisé, pas dupliqué)', () => {
   it('enregistré dans le registre des plans (auto-découverte plans/defs/)', () => {
@@ -11,25 +12,16 @@ describe('Gabarit NAVIRE — rendu via le système de plans (réutilisé, pas du
     expect(shipPlan.id).toBe('navire');
   });
 
-  it('le gréement (donnée hull.rig) pilote la silhouette : voile vs avirons vs mixte', () => {
-    const voile = svgOf('voile');
-    const avirons = svgOf('avirons');
-    const mixte = svgOf('mixte');
-    // Voile : mât (ligne jusqu'à y=-68) + voile, PAS de rames.
-    expect(voile).toContain('y2="-68"');
-    expect(voile).not.toContain('x1="-24" y1="-5"');
-    // Avirons : rames, PAS de mât.
-    expect(avirons).toContain('x1="-24" y1="-5"');
-    expect(avirons).not.toContain('y2="-68"');
-    // Mixte : les deux.
-    expect(mixte).toContain('y2="-68"');
-    expect(mixte).toContain('x1="-24" y1="-5"');
+  it('la coque est routée PAR ID (art dédié SHIP_ARTS) ; palette à jetons entièrement résolue', () => {
+    const svg = svgOf('cogue');
+    expect(svg.length).toBeGreaterThan(0);
+    expect(svg).not.toContain('@'); // tous les jetons @coque/@voile/@mat substitués par la palette
   });
 
-  it('coque toujours présente ; palette à jetons entièrement résolue (aucun @token résiduel)', () => {
-    const svg = svgOf('voile');
-    expect(svg).toContain('<path d="M-38 -2'); // coque
-    expect(svg).not.toContain('@'); // tous les jetons @corps/@vet1/@cuir substitués par la palette
+  it('id FUTUR sans art dédié → REPLI VISIBLE (#223), jamais un générique silencieux', () => {
+    // Plus de silhouette procédurale par gréement : un id inconnu tombe sur la silhouette d'erreur partagée.
+    expect(shipArtOf('id-de-navire-inconnu-xyz')).toBe(MISSING_ART);
+    expect(svgOf('id-de-navire-inconnu-xyz')).toContain('#ff2fb0'); // magenta d'alarme du repli
   });
 
   it('poses réutilisées : roulis au repos, gîte à la mort (delta sur l’os « coque »)', () => {
@@ -45,7 +37,7 @@ describe('routage : un véhicule à coque → gabarit navire (resolveRender, dat
     const byId = resolveRender(undefined, undefined, 'cogue'); // voile, 25 m
     expect(byId.kind).toBe('plan');
     expect(byId.plan).toBe('navire');
-    expect(byId.species).toBe('cogue'); // id → art de coque dédié (repli gréement dans composeShip)
+    expect(byId.species).toBe('cogue'); // id → art de coque dédié
     expect(byId.scale).toBeGreaterThan(1); // 25 m → > 1
     const byId2 = resolveRender(undefined, undefined, 'langskip'); // mixte
     expect(byId2.plan).toBe('navire');
