@@ -130,6 +130,8 @@ export interface CombatFeature {
   magicResistance2?: boolean;
   /** Harmonisation aethyrique : pas d'Incantation Imparfaite sur un double RÉUSSI de Focalisation. */
   focusNoMiscastOnDouble?: boolean;
+  /** Diction instinctive : pas d'Incantation Imparfaite sur un double RÉUSSI de Langue (Magick). */
+  castNoMiscastOnDouble?: boolean;
   /** Effrayant : le porteur a un Indice de Peur égal à son niveau. */
   causesFear?: boolean;
   // ── Tests hors combat ──────────────────────────────────────────────────────

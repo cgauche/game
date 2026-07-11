@@ -77,6 +77,7 @@ const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     bleedIgnore: z.boolean().optional(),
     magicResistance2: z.boolean().optional(),
     focusNoMiscastOnDouble: z.boolean().optional(),
+    castNoMiscastOnDouble: z.boolean().optional(),
     causesFear: z.boolean().optional(),
     reverseFailed: z.strictObject({ skill: z.string(), spec: z.string().optional(), capDR: z.number().optional() }).optional(),
     bargainBonus: z.boolean().optional(),

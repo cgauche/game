@@ -60,7 +60,7 @@ import { sizeGap } from '../engine/size';
 import { combatDistance, sizeFootprint, footprintN, footprintChebyshev } from './footprint';
 import { isUnbreakable, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
-import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
@@ -72,7 +72,6 @@ import {
   prayerWrathTriggered,
   castBlockedBy,
   prayerSinLock,
-  hasTalent,
   evaluateMissile,
   spellRangeTiles, effectiveSpellRangeTiles,
   durationClockMinutes,
@@ -3689,7 +3688,7 @@ export function applyCast(
           ? tr('cf.overcastFullPower')
           : tr('cf.overcastIrresistible'),
     );
-    if (!hasTalent(caster, 'Diction instinctive')) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
+    if (!hasInstinctiveDiction(caster)) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
     else logLines.push(tr('cf.dictionInstinctive'));
   }
   // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du

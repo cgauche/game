@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { offHandPenalty, attackModesFor } from './dispatch';
+import { offHandPenalty, attackModesFor, hasInstinctiveDiction, hasFocusHarmony } from './dispatch';
 import { slugId } from '../../data/slug';
 import type { Combatant } from '../types';
 
@@ -27,5 +27,16 @@ describe('attackModesFor (registre de capacités)', () => {
   });
   it('sans le talent → vide', () => {
     expect(attackModesFor(mk([]))).toEqual([]);
+  });
+});
+
+describe('hasInstinctiveDiction / hasFocusHarmony (#317 — prévention d\'Imparfaite par CombatFeature)', () => {
+  it('Diction instinctive (LDB p.136) → hasInstinctiveDiction', () => {
+    expect(hasInstinctiveDiction(mk([{ name: 'Diction instinctive', times: 1 }]))).toBe(true);
+    expect(hasInstinctiveDiction(mk([]))).toBe(false);
+  });
+  it('Harmonisation aethyrique (LDB p.138) → hasFocusHarmony', () => {
+    expect(hasFocusHarmony(mk([{ name: 'Harmonisation aethyrique', times: 1 }]))).toBe(true);
+    expect(hasFocusHarmony(mk([]))).toBe(false);
   });
 });

@@ -308,6 +308,11 @@ export function hasFocusHarmony(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.focusNoMiscastOnDouble);
 }
 
+/** Diction instinctive (LDB 10) : pas d'Imparfaite sur un double RÉUSSI de Langue (Magick). */
+export function hasInstinctiveDiction(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.castNoMiscastOnDouble);
+}
+
 /** Effrayant (LDB 10) : Indice de Peur du porteur (niveau), 0 sinon. */
 export function talentFearIndice(c: Combatant): number {
   return levelSum(c, (d) => !!d.causesFear);

@@ -39,7 +39,7 @@ import { campGain, campSpend, startAdvantagePools } from './combat/advantagePool
 import { skillAdvantageCap } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
-import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, hasTalent, spellTargetCount } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount } from '../engine/magic';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts } from '../engine/overcast';
 import { resolveOpposed, extendedTestStep, assistBonus } from '../engine/tests';
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
@@ -47,7 +47,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon, autoStowNewItem } from '../engine/items';
 import { magazineSize, canPushback, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
-import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage } from '../engine/combatFeatures/dispatch';
+import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem } from './consumableFlow';
@@ -2985,7 +2985,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (res.isCritical) {
         caster.focus = { spell: pf.spellId, dr: Math.max(caster.focus.dr, ni) };
         logLines.push(t('cs.focusCrit', { name: caster.name, spell: spell.label }));
-        if (!hasTalent(caster, 'Harmonisation aethyrique')) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: compUsed }));
+        if (!hasFocusHarmony(caster)) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: compUsed }));
         else logLines.push(t('cs.focusHarmonized'));
       }
       logLines.push(caster.focus.dr >= ni ? t('cs.focusEnough', { name: caster.name, spell: spell.label }) : t('cs.focusProgress', { dr: caster.focus.dr, ni }));
