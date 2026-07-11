@@ -17,7 +17,7 @@ import { partyAssisted } from '../engine/skills';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
-import { rollStock, fullStock, availabilitySearchBonus, barterRatio, availabilityAfterHalvings, priceAfterHalvings, type Settlement, type CatalogItem } from '../engine/disponibilite';
+import { rollStock, fullStock, availabilitySearchBonus, barterRatio, availabilityAfterHalvings, priceAfterHalvings, type Settlement, type CatalogItem, type StockLine } from '../engine/disponibilite';
 import type { Availability } from '../engine/types';
 import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney, statusBudgetBrass, type StatusTier } from '../engine/money';
 import { actorStatus } from '../engine/social';
@@ -26,6 +26,9 @@ import { findTrappingById, trappings } from '../data/index';
 import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
+import { registerCascadeApplier, startCascade } from './cascade';
+import { freeCons } from './rollSeam';
+import type { CascadeStep } from './pendings';
 
 import type { Get, Set } from './flowTypes';
 
@@ -113,14 +116,14 @@ function partyAvailabilityBonus(party: Combatant[], gossipDay = false): number {
   return availabilitySearchBonus({ coherentCareer: coherent, gossipDay });
 }
 
-/** Réassort d'un marchand : (re)tire le stock FRAIS d'un archétype à un instant `now`, avec un bonus de
- *  Disponibilité (Carrière cohérente + éventuelle recherche active, LDB 59 l.50). SOURCE UNIQUE du tirage
- *  de stock — partagée par l'ouverture (`openMerchant`) et la recherche active (`searchAvailability`).
- *  Persiste le stock (`merchantStocks`) et journalise les articles trouvés. Retourne le stock tiré. */
-function rollFreshStock(
-  get: Get, set: Set,
-  entityId: string, ent: SceneEntity | undefined, arch: (typeof MERCHANTS)[string], settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean,
-): { id: string; qty: number }[] {
+/** Instantané de stock FRAIS d'un archétype à un instant `now`, avec un bonus de Disponibilité (Carrière
+ *  cohérente + éventuelle recherche active, LDB 59 l.50). PUR (aucun `set`/`log`) — SOURCE UNIQUE de calcul,
+ *  seedée déterministe pour un `(entityId, période, gossipDay)` donné : le siège qui la lance (local inline
+ *  ou MJ via cascade, #273 dernier volet) ne change JAMAIS ces valeurs, seule leur SURFACE varie. */
+function computeFreshStockLines(
+  get: Get,
+  ent: SceneEntity | undefined, arch: (typeof MERCHANTS)[string], entityId: string, settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean,
+): { stock: { id: string; qty: number }[]; tested: StockLine[] } {
   const guild = !!marketRule(ent, 'guild');
   const marketMode = marketRule(ent, 'marketMode') as string;
   const cat: CatalogItem[] = trappings
@@ -138,11 +141,78 @@ function rollFreshStock(
   const lines = marketMode === 'sans-disponibilite' || marketMode === 'simplifie'
     ? fullStock(cat, settlement, makeRNG(seed))
     : rollStock(cat, settlement, makeRNG(seed), arch.curated, dispoBonus);
-  const stock = lines.map((l) => ({ id: l.id, qty: l.qty }));
-  const tested = lines.filter((l) => l.test);
+  return { stock: lines.map((l) => ({ id: l.id, qty: l.qty })), tested: lines.filter((l) => l.test) };
+}
+
+/** Persiste un stock FRAIS DÉJÀ CALCULÉ (`merchantStocks`) — réassort → on peut de nouveau marchander. */
+function persistStock(set: Set, entityId: string, stock: { id: string; qty: number }[], now: number): void {
+  set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock, rolledAt: now, bargainLocked: false } } }));
+}
+
+/** Réassort INLINE (local sans MJ, #273 dernier volet) : calcule + persiste + journalise en UNE fois —
+ *  zéro friction pour le joueur solo/local (comportement inchangé). SOURCE UNIQUE de ce chemin, partagée
+ *  par l'ouverture (`openMerchant`) et la recherche active (`searchAvailability`). Retourne le stock tiré. */
+function rollFreshStock(
+  get: Get, set: Set,
+  entityId: string, ent: SceneEntity | undefined, arch: (typeof MERCHANTS)[string], settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean,
+): { id: string; qty: number }[] {
+  const { stock, tested } = computeFreshStockLines(get, ent, arch, entityId, settlement, now, restockPeriod, gossipDay);
   if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
-  set((s) => ({ merchantStocks: { ...s.merchantStocks, [entityId]: { stock, rolledAt: now, bargainLocked: false } } })); // réassort → on peut de nouveau marchander
+  persistStock(set, entityId, stock, now);
   return stock;
+}
+
+/** Kind d'étape de cascade du réassort marchand (#273 dernier volet) — SOURCE UNIQUE de visibilité MJ du
+ *  tirage de stock (`rollStock`/`fullStock`, RNG SEEDÉ déterministe, `computeFreshStockLines`). Siège MJ
+ *  présent → étape VISIBLE (jamais un tirage silencieux) : « Continuer » l'applique. Recalcule les MÊMES
+ *  lignes depuis les primitives sérialisables du `meta` (le rng seedé n'est jamais transporté lui-même —
+ *  seuls ses PARAMÈTRES le sont, cf. `CascadeStepMeta`) ; ouvre le panneau marchand (`openMerchant`) ou
+ *  rafraîchit son stock si `merchant` porte déjà cette entité (`searchAvailability`), au choix de
+ *  `s.merchant?.entityId === entityId` — un seul applier pour les deux appelants. */
+const MERCHANT_STOCK_KIND = 'merchant-stock';
+registerCascadeApplier(MERCHANT_STOCK_KIND, (get, set, step) => {
+  const meta = step.meta ?? {};
+  const entityId = String(meta.entityId ?? '');
+  const ent = get().scene?.entities.find((e) => e.id === entityId);
+  const arch = MERCHANTS[String(meta.archetype ?? '')];
+  if (!ent?.merchant || !arch) return {};
+  const settlement = String(meta.settlement ?? arch.settlement) as Settlement;
+  const now = Number(meta.now ?? get().gameTime);
+  const restockPeriod = Number(meta.restockPeriod ?? MINUTES_PER_DAY);
+  const gossipDay = !!meta.gossipDay;
+  const { stock, tested } = computeFreshStockLines(get, ent, arch, entityId, settlement, now, restockPeriod, gossipDay);
+  persistStock(set, entityId, stock, now);
+  set((s) => {
+    if (s.merchant?.entityId === entityId) {
+      // Rafraîchi PENDANT une visite en cours (recherche active) — même reset que le chemin inline.
+      return { merchant: { ...s.merchant, stock, cart: [], bargainBuy: null, bargainSell: null, bargainLocked: false } };
+    }
+    const resaleRate = Number(meta.resaleRate ?? arch.resaleRate);
+    const buyMarkup = Number(meta.buyMarkup ?? arch.buyMarkup ?? 1);
+    const persisted = s.merchantStocks[entityId];
+    return { merchant: { entityId, archetype: ent.merchant!.archetype, settlement, resaleRate, buyMarkup, stock, cart: [], bargainLocked: persisted?.bargainLocked ?? false } };
+  });
+  return {
+    consequences: freeCons(tested.map((l) => `${l.label} — d100 ${l.test!.roll}/${l.test!.target} ✔ ×${l.qty}`)),
+  };
+});
+
+/** Ouvre l'étape de cascade VISIBLE-LANÇABLE au siège MJ (#273 dernier volet) — jamais un tirage
+ *  silencieux : le `meta` porte les PARAMÈTRES sérialisables du tirage (le rng seedé reste calculé par
+ *  `computeFreshStockLines`, jamais transporté). Le call-site n'assemble plus rien d'autre. */
+function openStockRevealCascade(
+  get: Get, set: Set,
+  entityId: string, archetype: string, settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean, resaleRate: number, buyMarkup: number,
+): void {
+  const arch = MERCHANTS[archetype];
+  const step: CascadeStep = {
+    id: `${MERCHANT_STOCK_KIND}:${entityId}:${now}`,
+    kind: MERCHANT_STOCK_KIND,
+    label: `Réassort — ${arch?.label ?? archetype}`,
+    interactive: true,
+    meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup },
+  };
+  startCascade(get, set, { title: 'Réassort marchand', purpose: 'test', steps: [step] });
 }
 
 export function openMerchant(get: Get, set: Set, entityId: string): void {
@@ -160,12 +230,18 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
   // FRAIS (nouvelle Disponibilité) que si `restockPeriod` s'est écoulé depuis le dernier tirage.
   // Règles optionnelles « Marché » (LDB 59/60) : Guildes d'Artisans (Atouts/Défauts inversent la
   // Disponibilité) ; système simplifié (pas de Test de Disponibilité) ; cf. `market-guild`/`market-mode`.
-  let stock = prev?.stock;
   if (!prev || now - prev.rolledAt >= restockPeriod) {
-    stock = rollFreshStock(get, set, entityId, ent, arch, settlement, now, restockPeriod, false);
+    // #273 dernier volet — porte : siège MJ présent → tirage VISIBLE-LANÇABLE (jamais silencieux) ;
+    // sinon → inline INCHANGÉ (zéro friction locale).
+    if (get().net.gmSeat != null) {
+      openStockRevealCascade(get, set, entityId, ent.merchant.archetype, settlement, now, restockPeriod, false, resaleRate, buyMarkup);
+      return;
+    }
+    const stock = rollFreshStock(get, set, entityId, ent, arch, settlement, now, restockPeriod, false);
+    set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock, cart: [], bargainLocked: get().merchantStocks[entityId]?.bargainLocked ?? false } });
+    return;
   }
-  const persisted = get().merchantStocks[entityId];
-  set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: stock!, cart: [], bargainLocked: persisted?.bargainLocked ?? false } });
+  set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: prev.stock, cart: [], bargainLocked: prev.bargainLocked ?? false } });
 }
 
 /** Recherche active de Disponibilité (LDB 59 l.50) : « passe une journée entière à effectuer des achats et
@@ -187,13 +263,18 @@ export function searchAvailability(get: Get, set: Set): void {
   const gossipDay = !!res?.success;
   get().advanceTime(MINUTES_PER_DAY); // « journée entière » — l'horloge cascade normalement (#T3)
   const now = get().gameTime;
-  const stock = rollFreshStock(get, set, m.entityId, ent, arch, m.settlement, now, restockPeriod, gossipDay);
-  set((s) => (s.merchant ? { merchant: { ...s.merchant, stock, cart: [], bargainBuy: null, bargainSell: null, bargainLocked: false } } : {}));
   get().log(res == null
     ? 'Personne dans le groupe ne sait glaner un Ragot — une journée passée en vain aux étals.'
     : gossipDay
       ? `${best!.actor.name} — recherche active (Ragot ${res.roll}) : une journée aux marchés porte ses fruits (Disponibilité +10 %, LDB 59 l.50).`
       : `${best!.actor.name} — recherche active (Ragot ${res.roll}) : une journée aux marchés sans glaner de piste utile.`);
+  // #273 dernier volet — même porte que l'ouverture : siège MJ → tirage VISIBLE ; sinon → inline.
+  if (get().net.gmSeat != null) {
+    openStockRevealCascade(get, set, m.entityId, m.archetype, m.settlement, now, restockPeriod, gossipDay, m.resaleRate, m.buyMarkup ?? 1);
+    return;
+  }
+  rollFreshStock(get, set, m.entityId, ent, arch, m.settlement, now, restockPeriod, gossipDay);
+  set((s) => (s.merchant ? { merchant: { ...s.merchant, stock: s.merchantStocks[m.entityId]?.stock ?? s.merchant.stock, cart: [], bargainBuy: null, bargainSell: null, bargainLocked: false } } : {}));
 }
 
 export function closeMerchant(get: Get, set: Set): void {
