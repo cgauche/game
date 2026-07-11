@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects, effectiveSpellOf } from './combatFlow';
-import { makePregens } from '../data/pregens';
+import { pregen, pregenParty, PREGEN } from '../data/pregens';
 import type { Combatant } from '../engine/types';
 
 beforeEach(() => {
@@ -16,7 +16,7 @@ beforeEach(() => {
 
 describe('buySpell', () => {
   it('mémorise contre PX (Magie mineure) ; refuse sans PX suffisants', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const w = pregen(PREGEN.sorcier);
     w.talents.push({ talentId: 'magie-mineure', times: 1 });
     // Prémisse contrôlée (les stats des pré-tirés évoluent avec la création) : BFM 2, et
     // Wilhelmina connaît déjà 2 sorts mineurs (Fléchette, Choc) = ses BFM inclus au Talent.
@@ -34,7 +34,7 @@ describe('buySpell', () => {
   });
 
   it('Bénédictions du culte : 0 PX (incluses au Talent Béni)', () => {
-    const p = makePregens().find((h) => h.name === 'Frère Anselm')!;
+    const p = pregen(PREGEN.pretre);
     p.talents.push({ talentId: 'beni', spec: 'sigmar', times: 1 });
     p.xp = 0;
     useGame.setState({ party: [p] as Combatant[] });
@@ -44,7 +44,7 @@ describe('buySpell', () => {
   });
 
   it('sort de Magie du Chaos : 100 PX ET +1 Point de Corruption', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const w = pregen(PREGEN.sorcier);
     w.talents.push({ talentId: 'magie-du-chaos', spec: 'nurgle', times: 1 });
     w.xp = 200;
     useGame.setState({ party: [w] as Combatant[] });
@@ -58,8 +58,7 @@ describe('buySpell', () => {
 
 describe('Effet learnSpell (trouvaille de campagne)', () => {
   it('apprend SANS PX au héros au Talent éligible', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    const other = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
+    const [w, other] = pregenParty(PREGEN.sorcier, PREGEN.soldat);
     w.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 }); // rend le sort d'Arcane apprenable
     w.xp = 0;
     useGame.setState({ party: [other, w] as Combatant[] });
@@ -78,7 +77,7 @@ describe('lecture au grimoire — NI doublé dans le flux', () => {
   });
 
   it('oocCastSpell(fromGrimoire) refuse sans grimoire porté', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const w = pregen(PREGEN.sorcier);
     useGame.setState({ party: [w] as Combatant[] });
     useGame.getState().oocCastSpell(w.id, 'arme-aethyrique', w.id, true);
     expect(useGame.getState().pendingCast).toBeNull();
@@ -86,7 +85,7 @@ describe('lecture au grimoire — NI doublé dans le flux', () => {
   });
 
   it('avec grimoire porté + Domaine : pendingCast.grimoire posé', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const w = pregen(PREGEN.sorcier);
     w.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 });
     w.spells = (w.spells ?? []).filter((s) => s !== 'arme-aethyrique'); // id de sort (runtime)
     w.items = [...(w.items ?? []), { uid: 'g1', name: 'Grimoire', trappingId: 'grimoire', kind: 'misc', enc: 1, qualities: [] } as never];

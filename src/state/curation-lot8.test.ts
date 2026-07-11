@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyCast } from './combatFlow';
-import { makePregens } from '../data/pregens';
+import { pregen, pregenParty, PREGEN } from '../data/pregens';
 import { spells, findSpell, findSpellById } from '../data';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from './flow';
@@ -65,7 +65,7 @@ describe('couverture de curation', () => {
 
 describe('Armure Aethyrique — PA temporisés', () => {
   it('pose un effet apAll, lu par effectiveArmourAt et la mitigation woundsFromHit', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const w = pregen(PREGEN.sorcier);
     useGame.setState({ party: [w] as Combatant[] });
     const before = effectiveArmourAt(w, 'corps');
     applyCast(useGame.getState, useGame.setState, w, w, findSpell('Armure Aethyrique')!, ok(3), false, false);
@@ -78,8 +78,7 @@ describe('Armure Aethyrique — PA temporisés', () => {
 
 describe('ops de spec sur la branche Projectile (curées seulement)', () => {
   it('Drain : le LANCEUR regagne 1 PB après la touche', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    const cible = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
+    const [w, cible] = pregenParty(PREGEN.sorcier, PREGEN.soldat);
     w.wounds.current = w.wounds.max - 3;
     useGame.setState({ party: [w, cible] as Combatant[] });
     const drain = findSpellById('drain')!; // Magie mineure
@@ -90,8 +89,7 @@ describe('ops de spec sur la branche Projectile (curées seulement)', () => {
   });
 
   it('Éblouissant : Aveuglé immédiat + récurrent porté par un effet actif', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    const cible = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
+    const [w, cible] = pregenParty(PREGEN.sorcier, PREGEN.soldat);
     useGame.setState({ party: [w, cible] as Combatant[] });
     applyCast(useGame.getState, useGame.setState, w, cible, findSpell('Éblouissant')!, ok(2), false, false);
     const after = useGame.getState().party.find((h) => h.id === cible.id)!;
@@ -100,8 +98,7 @@ describe('ops de spec sur la branche Projectile (curées seulement)', () => {
   });
 
   it('Innocence immaculée : retire 1 Point de Corruption (jamais sous 0)', () => {
-    const p = makePregens().find((h) => h.name === 'Frère Anselm')!;
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const [p, w] = pregenParty(PREGEN.pretre, PREGEN.sorcier);
     w.corruption = 2;
     useGame.setState({ party: [p, w] as Combatant[] });
     applyCast(useGame.getState, useGame.setState, p, w, findSpell('Innocence immaculée')!, ok(1), false, false);

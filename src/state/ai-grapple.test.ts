@@ -4,7 +4,7 @@ import { emptyScene } from './scene';
 import { useGame } from './store';
 import { runEnemyAI, aiTurnLog, clearAiTurnLog } from './combatFlow';
 import { spawnEnemy } from './spawn';
-import { makePregens } from '../data/pregens';
+import { pregen, PREGEN } from '../data/pregens';
 import { areGrappling } from '../engine/grapple';
 import { stacks } from '../engine/conditions';
 import { seedBattleRng } from './battleRng';
@@ -87,7 +87,7 @@ describe('IA Empoignade — dispatch (runEnemyAI) : l’Empoigné LUTTE, le tire
     e.kind = 'enemy'; e.movement = 4; e.engagedWith = ['h'];
     e.grapplingWith = ['h'];
     e.conditions = [{ name: 'empetre', value: 1, sourceId: 'h' }];
-    const h = makePregens().find((c) => c.name === 'Wilhelmina Faust')!;
+    const h = pregen(PREGEN.sorcier);
     h.id = 'h'; h.pos = { x: 6, y: 5 }; h.engagedWith = ['e']; h.advantage = 0;
     h.grapplingWith = ['e']; h.wounds = { ...h.wounds, max: 30, current: 30 };
     const battle = {

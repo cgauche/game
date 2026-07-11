@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyCast, overcastTargetCandidates } from './combatFlow';
-import { makePregens } from '../data/pregens';
+import { pregen, pregenParty, PREGEN } from '../data/pregens';
 import { findSpell } from '../data';
 import { applyOps } from '../engine/ops';
 import { addTimedCondition, addCondition, endOfRound, hasCondition } from '../engine/conditions';
@@ -17,8 +17,8 @@ import type { CastResult } from '../engine/magic';
 const okRes = (sl: number): CastResult => ({ cast: true, roll: 21, target: 70, sl, isCritical: false, isFumble: false, log: 'lancé' });
 
 function pair() {
-  const all = makePregens();
-  return { priest: all.find((h) => h.name === 'Frère Anselm')!, ally: all.find((h) => h.name === 'Sigmund Reikhardt')! };
+  const [priest, ally] = pregenParty(PREGEN.pretre, PREGEN.soldat);
+  return { priest, ally };
 }
 
 beforeEach(() => {
@@ -125,7 +125,7 @@ describe('overcastTargetCandidates — cibles supplémentaires proposables (moda
 describe('Surincantation (LDB 47 l.28-31)', () => {
   it('castAllocOvercast respecte le budget (+2 DR par allocation, au-delà du NI)', () => {
     const { priest, ally } = pair();
-    const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const wiz = pregen(PREGEN.sorcier);
     useGame.setState({ party: [wiz, priest, ally] as Combatant[] });
     // Armure Aethyrique : NI 2 ; DR 6 → surplus 4 → budget 2 allocations.
     useGame.setState({ pendingCast: { casterId: wiz.id, targetId: wiz.id, spellId: 'armure-aethyrique', missile: false, focused: false, result: okRes(6) } });
@@ -151,7 +151,7 @@ describe('Surincantation (LDB 47 l.28-31)', () => {
 
   it('durée ×(1+n) et cible supplémentaire appliquées par applyCast', () => {
     const { priest, ally } = pair();
-    const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const wiz = pregen(PREGEN.sorcier);
     useGame.setState({ party: [wiz, priest, ally] as Combatant[] });
     const sort = { ...findSpell('Bénédiction de Bataille')!, type: 'Magie des Arcanes', cn: 0 }; // gabarit +10 CC 6 rounds en SORT
     applyCast(useGame.getState, useGame.setState, wiz, priest, sort, okRes(4), false, false, undefined, {

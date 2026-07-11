@@ -15,7 +15,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { runEnemyAI } from './combatFlow';
 import { spawnEnemy } from './spawn';
-import { makePregens } from '../data/pregens';
+import { pregen, PREGEN } from '../data/pregens';
 import { findSpell } from '../data';
 import { seedBattleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
@@ -30,7 +30,7 @@ describe('ZdE ennemie — télégraphe visuel actorAoe (pose pendant le télégr
 
   /** Une cible héros minimale (sans Dissipation : aucune fenêtre de Contre-sort ne s'ouvre). */
   function target(x: number, y: number, id: string): Combatant {
-    const h = makePregens().find((c) => c.name === 'Wilhelmina Faust')!;
+    const h = pregen(PREGEN.sorcier);
     h.id = id; h.name = id; h.pos = { x, y };
     h.wounds = { ...h.wounds, max: 30, current: 30 };
     h.skills = []; // pas de Langue (Magick) → ne peut pas Dissiper → pas de pendingCounterspell

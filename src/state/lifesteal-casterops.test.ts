@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyCast } from './combatFlow';
-import { makePregens } from '../data/pregens';
+import { pregen, pregenParty, PREGEN } from '../data/pregens';
 import { findSpell } from '../data';
 import { applyOps } from '../engine/ops';
 import type { CastResult, MissileResult } from '../engine/magic';
@@ -21,8 +21,7 @@ beforeEach(() => {
 
 describe('Vol de vie — lifeSteal + casterOps', () => {
   it('le lanceur draine ⌈dégâts/2⌉ Blessures et perd son propre État Exténué', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    const cible = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
+    const [w, cible] = pregenParty(PREGEN.sorcier, PREGEN.soldat);
     w.wounds.current = w.wounds.max - 6;
     w.conditions = [{ name: 'extenue', value: 1 }];
     useGame.setState({ party: [w, cible] as Combatant[] });
@@ -37,8 +36,7 @@ describe('Vol de vie — lifeSteal + casterOps', () => {
 
 describe('Caresse de Laniph — lifeSteal ⌊dégâts/2⌋', () => {
   it('le lanceur récupère la moitié (arrondie au plancher) des Blessures infligées', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    const cible = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
+    const [w, cible] = pregenParty(PREGEN.sorcier, PREGEN.soldat);
     w.wounds.current = w.wounds.max - 4;
     useGame.setState({ party: [w, cible] as Combatant[] });
     const res: CastResult & Partial<MissileResult> = { ...ok(1), hit: true, location: 'corps', damage: 6, woundsLost: 5, defenderDefeated: false };
@@ -50,7 +48,7 @@ describe('Caresse de Laniph — lifeSteal ⌊dégâts/2⌋', () => {
 
 describe('zone de soin (op:heal) — Sang de la Terre', () => {
   it('rend (BFM) Blessures à qui stationne dans la zone, sans dépasser le max', () => {
-    const caster = makePregens().find((h) => h.name === 'Wilhelmina Faust')!; // BFM connu via ses caracs
+    const caster = pregen(PREGEN.sorcier); // BFM connu via ses caracs
     const victim = { ...caster, id: 'v', name: 'V', wounds: { current: 5, max: 30 } } as Combatant;
     const bfm = Math.floor(caster.characteristics['force-mentale'] / 10);
     const log = applyOps(victim, [{ op: 'heal', amount: { bonusOf: 'force-mentale' } }], { caster, label: 'Sang de la Terre' });

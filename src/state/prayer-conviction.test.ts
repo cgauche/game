@@ -4,12 +4,12 @@
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { useGame } from './store';
-import { makePregens } from '../data/pregens';
+import { pregen, PREGEN } from '../data/pregens';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 
 function priest(): Combatant {
-  const p = makePregens().find((h) => h.name === 'Frère Anselm')!;
+  const p = pregen(PREGEN.pretre);
   const sk = p.skills.find((s) => s.skillId === 'priere');
   if (sk) sk.advances = Math.max(sk.advances, 5);
   else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 } as never);

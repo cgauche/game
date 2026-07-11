@@ -8,14 +8,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
-import { makePregens } from '../data/pregens';
+import { pregenParty, PREGEN } from '../data/pregens';
 import type { Combatant } from '../engine/types';
 import type { CastResult } from '../engine/magic';
 
 function priestParty(sin: number) {
-  const all = makePregens();
-  const priest = all.find((h) => h.name === 'Frère Anselm')!;
-  const ally = all.find((h) => h.name === 'Sigmund Reikhardt')!;
+  const [priest, ally] = pregenParty(PREGEN.pretre, PREGEN.soldat);
   const priere = priest.skills.find((s) => s.skillId === 'priere');
   if (priere) priere.advances = Math.max(priere.advances, 5);
   else priest.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 });

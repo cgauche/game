@@ -7,13 +7,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyCast, checkFocusInterruption, openCastCascade } from './combatFlow';
-import { makePregens } from '../data/pregens';
+import { pregen, PREGEN } from '../data/pregens';
 import { findSpell } from '../data';
 import type { Combatant } from '../engine/types';
 import type { CastResult } from '../engine/magic';
 
 function wiz() {
-  const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+  const w = pregen(PREGEN.sorcier);
   const sk = w.skills.find((s) => s.skillId === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
   return w;
@@ -59,8 +59,7 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
   });
 
   it('une PRIÈRE critique ne déclenche pas la mécanique (règle du ch.46, Tests de Langue)', () => {
-    const all = makePregens();
-    const priest = all.find((h) => h.name === 'Frère Anselm')!;
+    const priest = pregen(PREGEN.pretre);
     useGame.setState({ party: [priest] as Combatant[] });
     const ben = findSpell('Bénédiction de Guérison')!;
     applyCast(useGame.getState, useGame.setState, priest, priest, ben, critRes(true, 2), false, false);

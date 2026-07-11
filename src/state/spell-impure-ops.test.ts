@@ -11,7 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
 import { applyCast } from './combatFlow';
-import { makePregens } from '../data/pregens';
+import { pregen, pregenParty, PREGEN } from '../data/pregens';
 import { findSpell, findCreatureById } from '../data';
 import { spellEffectOps } from './flow';
 import { effectiveChar } from '../engine/characteristics';
@@ -53,7 +53,7 @@ describe('effets « lourds » présents dans le Flow éditable (données app-own
 
 describe('résolution au lancement depuis le Flow', () => {
   it('Forme bestiale : la métamorphose (op polymorph) remplace les Caractéristiques du lanceur', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const w = pregen(PREGEN.sorcier);
     useGame.setState({ party: [w] as Combatant[] });
     const ours = findCreatureById('ours')!;
     expect(typeof ours.char.force).toBe('number');
@@ -65,8 +65,7 @@ describe('résolution au lancement depuis le Flow', () => {
   });
 
   it('Vol de vie : l’op lifeSteal (on:caster) draine une fraction des Blessures infligées', () => {
-    const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
-    const cible = makePregens().find((h) => h.name === 'Sigmund Reikhardt')!;
+    const [w, cible] = pregenParty(PREGEN.sorcier, PREGEN.soldat);
     w.wounds.current = w.wounds.max - 5;
     cible.wounds.current = cible.wounds.max; // ≥ 3 PB encaissables
     useGame.setState({ party: [w, cible] as Combatant[] });

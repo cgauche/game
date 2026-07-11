@@ -4,13 +4,12 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { makePregens } from '../data/pregens';
+import { pregen, PREGEN } from '../data/pregens';
 import { carryOverState } from '../engine/persistence';
 import type { Combatant } from '../engine/types';
 
 function priest() {
-  const all = makePregens();
-  const p = all.find((h) => h.name === 'Frère Anselm')!;
+  const p = pregen(PREGEN.pretre);
   const sk = p.skills.find((s) => s.skillId === 'priere');
   if (sk) sk.advances = Math.max(sk.advances, 5);
   else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 });
@@ -33,7 +32,7 @@ describe('gates d\'incantation', () => {
   });
 
   it('blocage de Focalisation → oocFocusSpell refuse', () => {
-    const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const wiz = pregen(PREGEN.sorcier);
     wiz.spells = ['arme-aethyrique'];
     wiz.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 5 } as never);
     wiz.castPenalties = [{ label: 'Vue assombrie', skill: 'focalisation', blocked: true, roundsLeft: 3 }];

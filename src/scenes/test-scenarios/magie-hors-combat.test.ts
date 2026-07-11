@@ -9,8 +9,7 @@ import { knowsCastingSkill, isArcaneSpell, isMagicMissile, castInfo } from '../.
  *  bien les 3 cas (sort d'Arcane focalisable, bénédiction de soin, Projectile magique combat-only). */
 describe('Scénario Magie hors combat', () => {
   const party = scenario.makeParty();
-  const wiz = party.find((h) => h.name.startsWith('Wilhelmina'))!;
-  const priest = party.find((h) => h.name.startsWith('Frère Anselm'))!;
+  const [wiz, priest] = party; // makeParty() = [wiz, priest], ordre fixé (pregenParty)
 
   it('est un scénario d’EXPLORATION (pas d’autoCombat)', () => {
     expect(scenario.autoCombat).toBeUndefined();

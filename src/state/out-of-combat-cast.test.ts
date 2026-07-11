@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { makePregens } from '../data/pregens';
+import { pregen, pregenParty, PREGEN } from '../data/pregens';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -11,9 +11,7 @@ import type { Combatant } from '../engine/types';
  */
 
 function casterParty() {
-  const all = makePregens();
-  const priest = all.find((h) => h.name === 'Frère Anselm')!;
-  const ally = all.find((h) => h.name === 'Sigmund Reikhardt')!;
+  const [priest, ally] = pregenParty(PREGEN.pretre, PREGEN.soldat);
   // Garantit que le Prêtre peut tenter la Prière (Compétence avancée ≥ 1 avance, LDB 09).
   const priere = priest.skills.find((s) => s.skillId === 'priere');
   if (priere) priere.advances = Math.max(priere.advances, 5);
@@ -61,7 +59,7 @@ describe('Incantation hors combat (couture D)', () => {
   });
 
   it('un Projectile magique (« Fléchette ») est refusé hors combat (offensif → combat-only)', () => {
-    const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const wiz = pregen(PREGEN.sorcier);
     useGame.setState({ party: [wiz] });
     useGame.getState().oocCastSpell(wiz.id, 'flechette', wiz.id);
     expect(useGame.getState().pendingCast).toBeNull(); // aucune modale ouverte
@@ -75,7 +73,7 @@ describe('Incantation hors combat (couture D)', () => {
   });
 
   it('Focalisation hors combat (sort d\'Arcane) : oocFocusSpell ouvre la modale ; focusConfirm accumule caster.focus, journalisé, sans combat', () => {
-    const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+    const wiz = pregen(PREGEN.sorcier);
     wiz.spells = ['arme-aethyrique', ...(wiz.spells ?? [])];
     const foc = wiz.skills.find((s) => s.skillId === 'focalisation');
     if (foc) foc.advances = Math.max(foc.advances, 5);

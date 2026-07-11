@@ -15,7 +15,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { spawnEnemy } from './spawn';
-import { makePregens } from '../data/pregens';
+import { pregen, PREGEN } from '../data/pregens';
 import { findSpell } from '../data';
 import type { Combatant } from '../engine/types';
 
@@ -29,7 +29,7 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
 
   /** Un héros LANCEUR (Langue (Magick)) capable de Dissiper, posé en (x,y). */
   function dispeller(x: number, y: number, id: string): Combatant {
-    const h = makePregens().find((c) => c.name === 'Wilhelmina Faust')!;
+    const h = pregen(PREGEN.sorcier);
     h.id = id; h.name = id; h.pos = { x, y };
     h.wounds = { ...h.wounds, max: 99, current: 99 };
     const sk = h.skills.find((s) => s.skillId === 'langue');

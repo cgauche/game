@@ -5,14 +5,14 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { makePregens } from '../data/pregens';
+import { pregen, PREGEN } from '../data/pregens';
 import { spawnEnemy } from './spawn';
 import { zdeDiameterMeters, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { findSpell } from '../data';
 import type { Combatant } from '../engine/types';
 
 function wiz() {
-  const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
+  const w = pregen(PREGEN.sorcier);
   const sk = w.skills.find((s) => s.skillId === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
   w.spells = ['explosion', ...(w.spells ?? [])]; // Explosion : Projectile magique ZdE (LDB 47 l.347)

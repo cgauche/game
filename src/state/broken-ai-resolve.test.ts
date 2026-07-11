@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { chooseEnemyAction } from './ai';
 import { runEnemyAI, aiTurnLog, clearAiTurnLog } from './combatFlow';
 import { spawnEnemy } from './spawn';
-import { makePregens } from '../data/pregens';
+import { pregen, PREGEN } from '../data/pregens';
 import { stacks } from '../engine/conditions';
 import { seedBattleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
@@ -69,7 +69,7 @@ describe('IA Brisé — dispatch : la dépense retire l\'État puis une vraie ac
     e.resolve = 1;
     e.engagedWith = ['h'];
     e.movement = 4;
-    const h = makePregens().find((c) => c.name === 'Wilhelmina Faust')!;
+    const h = pregen(PREGEN.sorcier);
     h.id = 'h'; h.pos = { x: 6, y: 5 }; h.wounds = { ...h.wounds, max: 30, current: 30 }; // adjacent → mêlée après déverrouillage
     const battle = {
       combatants: [e, h], order: ['e', 'h'], baseOrder: ['e', 'h'], turn: 0, round: 1,
