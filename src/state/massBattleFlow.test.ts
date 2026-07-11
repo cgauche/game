@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { pregenParty, PREGEN } from '../data/pregens';
 import { massBattleTrackHit, armyMight, armyStartMight, type MassBattleSpec, type MassBattleState } from './massBattleFlow';
+import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 
 /** Amorce une bataille avec un vrai groupe (pré-tirés) et le RNG seedé. Par défaut ouvre AUSSI un
@@ -556,6 +557,35 @@ describe('Activité SOUTENABLE — Planification (l.81 : « peut aider au Test �
     expect(pa.activityId).toBe('reperage');
     expect(pa.support).toBeUndefined();
     expect(pa.heroId).toBe(a);
+  });
+
+  // #257 — RAW muet (LDB 12 l.188 « aider au Test » / ADE II ch.8 l.81) : le coût d'Activité de
+  // l'assistant est un arbitrage éditable (flag `interlude-assist-costs-activity`, policy.ts).
+  it('assistant GRATUIT par défaut : seul le meneur perd un créneau', () => {
+    resetRule('interlude-assist-costs-activity');
+    start({}, partyWithWarLore());
+    const [a, b] = useGame.getState().party.map((h) => h.id);
+    useGame.getState().setMassBattleHero('planification', [a, b]);
+    useGame.getState().massBattleActivity('planification');
+    const leader = pending()!.heroId; // meneur soutenu = meilleure compétence (pas forcément a)
+    resolveBattleTest({ roll: 10, success: true, sl: 2 });
+    expect(leftOf(a) + leftOf(b)).toBe(5); // un SEUL créneau consommé (3+3 → 5)
+    expect(leftOf(leader)).toBe(2); // le meneur, lui, a bien payé
+  });
+
+  it('flag activé : chaque assistant doté d’un créneau en dépense un', () => {
+    setRule('interlude-assist-costs-activity', true);
+    try {
+      start({}, partyWithWarLore());
+      const [a, b] = useGame.getState().party.map((h) => h.id);
+      useGame.getState().setMassBattleHero('planification', [a, b]);
+      useGame.getState().massBattleActivity('planification');
+      resolveBattleTest({ roll: 10, success: true, sl: 2 });
+      expect(leftOf(a)).toBe(2); // meneur : −1
+      expect(leftOf(b)).toBe(2); // assistant : −1 aussi
+    } finally {
+      resetRule('interlude-assist-costs-activity');
+    }
   });
 });
 

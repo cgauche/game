@@ -29,7 +29,7 @@ import { Coins } from './Coins';
 import { EffectChips } from './EffectChips';
 import { EntityRef } from './EntityChip';
 import { FxChip } from './FxChip';
-import { RuleDivider } from './Ornaments';
+import { RuleDivider, OrnateFrame } from './Ornaments';
 import { GameDate } from './GameDate';
 import { Icon } from './Icon';
 import type { IconId } from './icons';
@@ -150,10 +150,14 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
   const ownerName = (id: string) => net.seatNames[net.ownership[id] ?? 0] ?? 'L’hôte';
   const isGuest = net.mode === 'guest';
   return (
-    <div className="menu interlude-screen">
-      <div className="menu-card interlude-card">
-        <h1 className="title">{t('interlude.title')}</h1>
-        <p className="subtitle">{interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''}</p>
+    <div className="interlude-shell tx-ink">
+      <div className="interlude-column">
+        <OrnateFrame tone="gold" className="interlude-masthead">
+          <h1 className="interlude-title">{t('interlude.title')}</h1>
+          <p className="interlude-subtitle">
+            {interlude.weeks} semaine{interlude.weeks > 1 ? 's' : ''} de répit avant la prochaine aventure
+          </p>
+        </OrnateFrame>
         <SynthBar
           heroes={heroes}
           interlude={interlude}
@@ -162,7 +166,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
           ownsHero={ownsHero}
           ownerName={ownerName}
         />
-        <RuleDivider />
+        <RuleDivider label={phase === 'events' ? 'Les nouvelles de la période' : 'Les Activités du groupe'} />
         {phase === 'events' ? (
           <EventsIntro heroes={heroes} interlude={interlude} onDone={() => setPhase('activities')} />
         ) : (
@@ -196,10 +200,10 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
             {rule('tavern-games') && <TavernGamesEntry />}
             <div className="interlude-close">
               <p className="interlude-warning" title={t('interlude.close.warning.title')}>
-                {t('interlude.close.warning')}
+                <Icon id="resource/gold-purse" size="sm" /> {t('interlude.close.warning')}
               </p>
               {isGuest
-                ? <p className="interlude-warning">{t('interlude.close.guest')}</p>
+                ? <p className="interlude-warning"><Icon id="time/night" size="sm" /> {t('interlude.close.guest')}</p>
                 /* Bataille en attente : la clôture ENGAGE la bataille (interludeEnd → massBattleBegin, C2b) —
                    le bouton de clôture porte alors ce libellé, une SEULE porte de sortie (pas de 2e écran). */
                 : massBattle?.phase === 'prep'
@@ -326,28 +330,35 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
       <p className="interlude-phase-hint">
         {t('interlude.events.hint')}
       </p>
-      <div className="interlude-heroes">
+      <div className="interlude-chronicle">
         {heroes.map((h) => {
           const st = interlude.perHero[h.id];
           const ev = interludeEventFor(st.eventRoll);
           const chips = fxChips(st, h);
           return (
-            <section key={h.id} className="interlude-hero panel">
-              <h3>
-                <CharFrame c={h} variant="identity" size="sm" /> <b className="interlude-name">{h.name}</b>
-                <span className="interlude-left"><Icon id="nav/dice" size="sm" /> {st.eventRoll}</span>
-              </h3>
-              <p className="interlude-event"><strong>{ev.label}.</strong> {ev.text}</p>
-              {chips.length > 0 && (
-                <div className="interlude-fx">
-                  {chips.map((c) => <FxChip key={c.label} icon={c.icon} label={c.label} />)}
-                </div>
-              )}
-            </section>
+            <article key={h.id} className="interlude-chronicle-entry tx-parchment">
+              <div className="interlude-seal" title={`Événement tiré : ${st.eventRoll}`}>
+                <span className="interlude-seal-roll">{st.eventRoll}</span>
+                <span className="interlude-seal-d100">d100</span>
+              </div>
+              <div className="interlude-chronicle-body">
+                <header className="interlude-chronicle-head">
+                  <CharFrame c={h} variant="identity" size="sm" />
+                  <span className="interlude-chronicle-who">{h.name}</span>
+                </header>
+                <h3 className="interlude-chronicle-title">{ev.label}</h3>
+                <p className="interlude-event">{ev.text}</p>
+                {chips.length > 0 && (
+                  <div className="interlude-fx">
+                    {chips.map((c) => <FxChip key={c.label} icon={c.icon} label={c.label} />)}
+                  </div>
+                )}
+              </div>
+            </article>
           );
         })}
       </div>
-      <div className="modal-actions">
+      <div className="interlude-phase-actions">
         <button className="btn btn-primary" onClick={onDone}>{t('interlude.events.next')}</button>
       </div>
     </>
@@ -1008,7 +1019,11 @@ function BattlePrepPane({ hero, def, disabled, entry }: {
       desc={def.desc}
       blocked={blocked}
       prejet={prejet}
-      note={<>1 Activité d'interlude — l'issue porte sur l'armée (ADE II ch.8).{def.assisted ? ' D\'autres PJ peuvent aider au Test.' : ''}</>}
+      note={<>1 Activité d'interlude — l'issue porte sur l'armée (ADE II ch.8).{def.assisted
+        ? rule('interlude-assist-costs-activity')
+          ? ' Les autres PJ peuvent prêter leur Soutien — chacun y dépense un créneau.'
+          : ' Les autres PJ peuvent prêter leur Soutien, gratuitement.'
+        : ''}</>}
       actions={
         <button
           className="btn small btn-primary"

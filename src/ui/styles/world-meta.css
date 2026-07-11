@@ -132,7 +132,7 @@
 .wm-opt-hint { color: var(--muted); }
 .wm-est { font-size: 13px; color: var(--muted); margin: 8px 0; }
 /* Avitaillement au départ (#241) — bloc compact vivres/eau, alerte sans bloquer le départ. */
-.wm-provision { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; margin: 6px 0; padding: 6px 10px; border-radius: 6px; background: color-mix(in srgb, #000 25%, transparent); }
+.wm-provision { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; margin: 6px 0; padding: 6px 10px; border-radius: 6px; background: color-mix(in srgb, var(--shadow-ink) 25%, transparent); }
 .wm-provision-item { display: inline-flex; align-items: center; gap: 5px; }
 .wm-provision-item.short { color: var(--danger-soft); font-weight: 600; }
 /* Rôles de marche (Voyage par Étapes EDOC) : une ligne par héros, nom + grille d'Activités épinglables. */
@@ -218,7 +218,7 @@
 /* ── Éditeur de carte du monde (#T2) — coquille `ScreenShell` (voile+en-tête ⇒ classes worldmap-*),
    `.wme-shell` n'ajoute que le fond opaque (l'éditeur masque tout le jeu, pas un voile translucide). ── */
 .wme-shell {
-  background: var(--bg, #0e1118);
+  background: var(--bg);
   overflow: auto;
 }
 .wme-body {
@@ -270,7 +270,7 @@
 .save-slot-info { font-size: 12px; color: var(--muted); }
 .save-slot-info.empty { opacity: 0.6; }
 .save-slot-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-.save-error { color: #e36c6c; font-size: 13px; margin: 6px 0 0; }
+.save-error { color: var(--danger-bright); font-size: 13px; margin: 6px 0 0; }
 
 /* Écran Options — remap clavier (rangées libellé ↔ touche). */
 .opt-keys { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 10px; }
@@ -278,36 +278,136 @@
 .opt-key-label { color: var(--text); }
 .opt-key-row .btn { min-width: 132px; text-align: center; }
 
-/* ── Entre deux aventures (Jalon 5) ────────────────────────────────────────── */
-.interlude-card { max-width: min(720px, 94vw); border-top: 4px solid var(--gold); }
-.interlude-heroes { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; text-align: left; }
-.interlude-hero.panel { padding: 8px 12px; } /* surface = primitive .panel ; padding resserré ici */
-.interlude-hero h3 { margin: 0 0 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.interlude-hero h3 .interlude-left { margin-left: auto; }
-.interlude-left { font-size: 12px; color: var(--muted); font-weight: normal; }
-.interlude-event { margin: 0; font-size: 13px; }
-.interlude-warning { font-size: 12px; color: var(--muted); margin: 0; cursor: help; }
-.interlude-close {
+/* ══════════ Entre deux aventures — « Le Registre du Répit » (refonte #257) ══════════
+   Étalon = carte du monde validée : texture d'ambiance (tx-ink), masthead orné doré, filets
+   d'or (RuleDivider), chronique sur parchemin pour les Événements, feuilles de route en fer
+   pour les Activités. Densité produit ; responsive 360px (breakpoints canon 900/700/560). */
+.interlude-shell {
+  min-height: 100%;
+  overflow-y: auto;
+  padding: clamp(14px, 3vw, 34px) 16px 44px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
+  justify-content: center;
+}
+.interlude-column { width: 100%; max-width: 860px; display: flex; flex-direction: column; }
+
+/* Masthead cérémonial : cadre orné doré (OrnateFrame) + titre gothique */
+.interlude-masthead {
+  text-align: center;
+  border-radius: 12px;
+  padding: 22px 26px;
+  background:
+    radial-gradient(ellipse at 50% -30%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--panel2), var(--panel));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+}
+.interlude-title {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 6vw, 46px);
+  margin: 0;
+  color: var(--gold2);
+  letter-spacing: 1px;
+  line-height: 1.02;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
+}
+.interlude-subtitle { color: var(--muted); margin: 6px 0 0; font-size: 14px; }
+
+/* Ruban de SYNTHÈSE persistant (sticky, les 3 phases) : médaillons de héros + bourse du groupe.
+   Le scrollport est désormais .interlude-shell. */
+.interlude-synth {
+  display: flex; gap: 8px; align-items: stretch; overflow-x: auto;
+  position: sticky; top: 0; z-index: 3;
+  margin: 12px 0 0; padding: 8px 10px; text-align: left;
+  background: color-mix(in srgb, var(--panel2) 94%, var(--ink) 6%);
+  border: 1px solid var(--border); border-top: 2px solid var(--gold); border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+.interlude-synth-hero {
+  display: flex; gap: 8px; align-items: center; padding: 4px 8px;
+  border: 1px solid transparent; border-radius: 8px; flex: 1 1 0; min-width: 0;
+}
+.interlude-synth-hero.active {
+  border-color: var(--gold);
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 72%), var(--panel);
+}
+.interlude-synth-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 12px; }
+.interlude-synth-name {
+  font-family: var(--font-display); font-weight: 600; letter-spacing: .3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.interlude-synth-rev { white-space: nowrap; }
+/* Sceaux d'Activités restantes (●○) — pastilles dorées lumineuses. */
+.interlude-pips {
+  color: var(--gold2); letter-spacing: 3px; font-size: 12px; white-space: nowrap;
+  text-shadow: 0 0 4px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.interlude-synth-purse {
+  margin-left: auto; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  white-space: nowrap; font-size: 13px; padding: 2px 12px; cursor: help;
+  border-left: 1px solid var(--border);
+}
+.interlude-owner { color: var(--gold2); }
+
+.interlude-phase-hint { font-size: 13px; color: var(--muted); margin: 0 0 4px; text-align: center; }
+.interlude-phase-actions { display: flex; justify-content: center; margin: 16px 0 4px; }
+.interlude-phase-actions .btn { min-width: 220px; }
+
+/* Phase ÉVÉNEMENTS — chronique sur parchemin : sceau de cire (d100) + récit enluminé. */
+.interlude-chronicle { display: flex; flex-direction: column; gap: 14px; margin: 6px 0 4px; }
+.interlude-chronicle-entry {
+  display: flex; gap: 14px; align-items: flex-start; text-align: left;
+  border-radius: 10px; padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--gold) 30%, var(--border));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+.interlude-seal {
+  flex: 0 0 auto; width: 54px; height: 54px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 38% 30%, color-mix(in srgb, var(--blood) 72%, var(--ink)), var(--blood));
+  border: 2px solid color-mix(in srgb, var(--gold) 60%, var(--ink));
+  color: var(--parchment); box-shadow: inset 0 0 7px rgba(0, 0, 0, 0.55);
+}
+.interlude-seal-roll { font-family: var(--font-display); font-size: 22px; line-height: 1; }
+.interlude-seal-d100 { font-size: 9px; letter-spacing: 1px; opacity: .78; text-transform: uppercase; }
+.interlude-chronicle-body { min-width: 0; flex: 1; }
+.interlude-chronicle-head { display: flex; align-items: center; gap: 8px; }
+.interlude-chronicle-who { font-family: var(--font-display); font-weight: 600; color: color-mix(in srgb, var(--ink) 82%, var(--blood)); }
+.interlude-chronicle-title {
+  font-family: var(--font-display); margin: 8px 0 4px; font-size: 20px; letter-spacing: .3px;
+  color: color-mix(in srgb, var(--ink) 76%, var(--blood));
+}
+.interlude-chronicle-entry .interlude-event { color: var(--ink); font-size: 13.5px; line-height: 1.5; margin: 0; }
+.interlude-event { margin: 0; font-size: 13px; }
+
+/* Phase ACTIVITÉS — feuilles de route en fer, filet d'or au fer gauche. */
+.interlude-heroes { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; text-align: left; }
+.interlude-hero.panel {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid color-mix(in srgb, var(--gold) 50%, var(--border));
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+}
+.interlude-hero.panel.active {
+  border-left-color: var(--gold);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 28%, transparent), 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+.interlude-hero h3 { margin: 0 0 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: var(--font-display); }
+.interlude-hero h3 .interlude-left { margin-left: auto; font-family: initial; }
+.interlude-left { font-size: 12px; color: var(--muted); font-weight: normal; }
+.interlude-name { font-size: 16px; }
+.interlude-warning { font-size: 12px; color: var(--muted); margin: 0; cursor: help; display: inline-flex; align-items: center; gap: 6px; }
+.interlude-close {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  margin-top: 18px; padding: 16px 4px 4px; border-top: 1px solid var(--border);
 }
 .interlude-close .btn { margin-left: auto; }
 /* Bandeau d'INFO bataille imminente (non-cliquable) : accent rouge pour signaler l'enjeu, sans être
    une interface à part — la préparation se joue dans les volets d'Activités par-héros. */
-.interlude-battle-banner.panel { padding: 8px 12px; border-left: 4px solid var(--danger, #c0392b); text-align: left; margin: 0 0 10px; }
-.interlude-battle-banner h3 { margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+.interlude-battle-banner.panel { padding: 10px 14px; border-left: 4px solid var(--danger); text-align: left; margin: 0 0 10px; }
+.interlude-battle-banner h3 { margin: 0 0 4px; display: flex; align-items: center; gap: 8px; font-family: var(--font-display); }
 .interlude-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; align-items: center; }
 .interlude-craft-q { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; font-size: 12px; }
-.interlude-screen .menu-card { max-height: 92vh; overflow-y: auto; }
 
-/* Refonte POC→produit (audit 2026-06-11) : phase Événements, volets d'Activité à sélecteurs */
-.interlude-phase-hint { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
 .interlude-fx { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 /* Chips d'États de clôture (EffectChips) posées DANS une phrase du récap → flux inline. */
 .interlude-recap-list .fx-chips { display: inline-flex; vertical-align: middle; }
@@ -320,31 +420,9 @@
 .interlude-blocked { font-size: 12px; color: var(--danger-soft); margin: 0; }
 .interlude-amount input { width: 90px; }
 
-/* Refonte LOT 6 — bandeau de SYNTHÈSE persistant (sticky dans la carte, les 3 phases). */
-.interlude-synth {
-  display: flex; gap: 8px; align-items: stretch; overflow-x: auto;
-  position: sticky; top: 0; /* le scrollport = .menu-card (overflow-y) */
-  z-index: 3; background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
-  padding: 6px 8px; margin: 8px 0 4px; text-align: left;
-}
-.interlude-synth-hero {
-  display: flex; gap: 6px; align-items: center; padding: 2px 6px;
-  border: 1px solid transparent; border-radius: 8px; flex: 1 1 0; min-width: 0;
-}
-.interlude-synth-hero.active { border-color: var(--gold); background: var(--panel); }
-.interlude-synth-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; font-size: 12px; }
-.interlude-synth-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.interlude-synth-rev { white-space: nowrap; }
-.interlude-pips { color: var(--gold2); letter-spacing: 2px; font-size: 11px; white-space: nowrap; }
-.interlude-synth-purse {
-  margin-left: auto; display: flex; align-items: center; gap: 6px;
-  white-space: nowrap; font-size: 13px; padding: 0 6px; cursor: help;
-}
-.interlude-name { font-size: 14px; }
-
-/* Refonte LOT 6 — gabarit UNIQUE des volets : corps DÉFILABLE, pied FIXE (pré-jet + action). */
-.interlude-pane { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 6px; }
-.interlude-pane-head { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+/* Gabarit UNIQUE des volets d'Activité : corps DÉFILABLE, pied FIXE (pré-jet + action). */
+.interlude-pane { margin-top: 8px; padding-top: 10px; border-top: 1px dashed color-mix(in srgb, var(--gold) 35%, var(--border)); display: flex; flex-direction: column; gap: 6px; }
+.interlude-pane-head { display: flex; align-items: center; gap: 6px; font-size: 14px; font-family: var(--font-display); color: var(--gold2); }
 .interlude-pane-body { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 38vh; min-height: 0; }
 /* Description VERBATIM d'une Activité du catalogue (ACE Annexe I) — prose dans le corps défilable. */
 .interlude-pane-desc { font-size: 12px; color: var(--muted); text-align: left; }
@@ -356,12 +434,18 @@
 .interlude-pane-terms { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 220px; text-align: left; }
 .interlude-pane-terms .rm-roll { flex-wrap: wrap; }
 .interlude-pane-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
-/* ≤700px : le bandeau défile horizontalement (vignettes non écrasées), volets pleine largeur. */
+/* ≤700px : le ruban défile horizontalement (vignettes non écrasées), volets pleine largeur. */
 @media (max-width: 700px) {
   .interlude-synth-hero { flex: 0 0 auto; }
   .interlude-synth-purse { flex: 0 0 auto; }
   .interlude-pane-actions { margin-left: 0; width: 100%; }
   .interlude-pane-actions .btn { flex: 1 1 auto; }
+  .interlude-phase-actions .btn { width: 100%; min-width: 0; }
+}
+/* ≤560px : la chronique s'empile (sceau au-dessus du récit). */
+@media (max-width: 560px) {
+  .interlude-chronicle-entry { flex-direction: column; align-items: center; text-align: center; }
+  .interlude-chronicle-head { justify-content: center; }
 }
 .interlude-recap { max-width: min(560px, 94vw); }
 .interlude-recap-list { text-align: left; font-size: 14px; display: flex; flex-direction: column; gap: 8px; margin: 10px 0; padding-left: 18px; }
@@ -374,4 +458,3 @@
 .travel-recap-day { font-weight: 600; color: var(--gold); }
 .travel-recap-days ul { margin: 2px 0 0; padding-left: 16px; color: var(--muted); }
 .travel-recap-foot { font-size: 13px; color: var(--muted); margin: 0 0 4px; }
-.interlude-owner { color: var(--gold2); }

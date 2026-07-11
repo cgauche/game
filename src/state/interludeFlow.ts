@@ -692,7 +692,14 @@ export function confirmActivity(get: Get, set: Set): void {
     }
     set({ pendingActivity: null });
     confirmBattleActivity(get, set, pa);
-    if (pa.battle === 'prep') consumeActivity(get, set, pa.heroId);
+    if (pa.battle === 'prep') {
+      consumeActivity(get, set, pa.heroId);
+      // #257 (flag `interlude-assist-costs-activity`, LDB 23 l.5 / ADE II ch.8 l.65/l.81) : les
+      // assistants d'une Entreprise SOUTENUE dépensent aussi un créneau. `consumeActivity` no-op à 0.
+      if (rule('interlude-assist-costs-activity')) {
+        for (const hid of pa.heroIds ?? []) if (hid !== pa.heroId) consumeActivity(get, set, hid);
+      }
+    }
     return;
   }
   const itl = get().interlude;

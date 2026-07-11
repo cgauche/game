@@ -182,6 +182,44 @@ describe('InterludeScreen — catalogue d’Activités data-driven (ADE2 + ACE A
   });
 });
 
+describe('InterludeScreen — refonte visuelle #257 (coquille dédiée, masthead orné, chronique)', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('coquille dédiée à texture d’ambiance + masthead orné doré (plus de .menu-card partagé)', () => {
+    const seam = buildSeam();
+    const html = renderToStaticMarkup(<InterludeScreen seam={seam} />);
+    expect(html).toContain('interlude-shell'); // coquille propre à l’interlude
+    expect(html).toContain('tx-ink'); // texture d’ambiance chartée
+    expect(html).toContain('ornate-frame'); // OrnateFrame du masthead (identité de cérémonie)
+    expect(html).toContain('interlude-title'); // titre gothique (font-display)
+    expect(html).not.toContain('menu-card'); // découplé de l’écran voisin en refonte
+  });
+
+  it('filet de phase (RuleDivider labellisé) : « nouvelles » en Événements, « Activités » ensuite', () => {
+    const seam = buildSeam();
+    const events = renderToStaticMarkup(<InterludeScreen seam={seam} />);
+    expect(events).toContain('Les nouvelles de la période');
+    const acts = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities' }} />);
+    expect(acts).toContain('Les Activités du groupe');
+  });
+
+  it('phase Événements : chronique sur parchemin + sceau de cire portant le d100', () => {
+    const seam = buildSeam();
+    const html = renderToStaticMarkup(<InterludeScreen seam={seam} />);
+    expect(html).toContain('interlude-chronicle-entry'); // récit enluminé par héros
+    expect(html).toContain('tx-parchment'); // parchemin (récit dark-ink)
+    expect(html).toContain('interlude-seal'); // sceau du d100
+    expect(html).toContain('interlude-chronicle-title'); // titre d’événement en font-display
+  });
+
+  it('zéro emoji dans les affordances de clôture (charte)', () => {
+    const seam = buildSeam(2);
+    const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities' }} />);
+    expect(html).not.toMatch(/💸|⏳/);
+  });
+});
+
 describe("InterludeScreen -- libelles i18n Phase D", () => {
   beforeEach(() => { vi.useFakeTimers(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });

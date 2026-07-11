@@ -415,6 +415,18 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Un personnage elfe perd 1 Activité (interlude ≥ 3 semaines) pour son devoir envers les siens. Désactiver lève cette restriction.',
   },
   {
+    // #257 — LDB 23 l.5 / ADE II ch.8 l.65 bornent le budget par « participer à une Activité » ; le
+    // Soutien (LDB 12 l.188-200) et Planification (ADE II ch.8 l.81 « peut aider au Test ») ne chiffrent
+    // aucun coût d'Activité pour l'assistant. Défaut = false : `confirmActivity` ne décompte que le meneur.
+    id: 'interlude-assist-costs-activity',
+    label: 'Assister une Entreprise coûte un créneau (maison)',
+    ref: 'LDB 12 l.188 / ADE II ch.8 l.81',
+    group: 'Activités',
+    kind: 'flag',
+    default: false,
+    hint: 'RAW muet : aucune règle ne dit si prêter son Soutien à l’Entreprise d’un autre (ex. Planification de bataille) consomme l’une des trois Activités de l’assistant. Désactivé (défaut) : seul le meneur dépense un créneau, les assistants aident gratuitement. Activé : chaque assistant qui a encore un créneau en dépense un.',
+  },
+  {
     id: 'advancement-career-jump',
     label: 'Sauts de Niveau de Carrière (accord du MJ)',
     ref: 'LDB 07 l.140/148',
