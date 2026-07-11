@@ -127,28 +127,9 @@
   margin-bottom: 14px;
 }
 
-/* ── Fiche : onglets Fiche / Avancement ── */
-.sheet-tabs {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
+/* ── Fiche : onglets Fiche / Avancement — primitive `<Tabs variant="pill">` (tabs.css) ── */
+.sheet-tabnav {
   margin-bottom: 12px;
-}
-.sheet-tabs .tab {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  border-radius: 8px 8px 0 0;
-  padding: 6px 14px;
-  cursor: pointer;
-  font-size: 13px;
-}
-.sheet-tabs .tab.on {
-  background: var(--panel2);
-  color: var(--text);
-  border-bottom-color: transparent;
-  font-weight: 600;
 }
 
 /* ── Panneau d'avancement ── */

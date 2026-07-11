@@ -12,6 +12,7 @@ import { Icon } from './Icon';
 import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { moraleTone, crewRoleLabel } from './shipStatus';
 import { ScreenShell } from './ScreenShell';
+import { Tabs } from './Tabs';
 
 /**
  * DOSSIER DE NAVIRE persistant (#227, attendu C.1) — écran plein-champ du `CampaignVessel` (l'INSTANCE
@@ -98,11 +99,17 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
         <span className="char-sub"> — {vd.label}{rig ? ` · ${RIG_LABEL[rig] ?? rig}` : ''}</span>
       </>}
       onClose={onClose}
-      tabs={<>
-        <button type="button" className={`btn small ${tab === 'apercu' ? 'btn-primary' : ''}`} onClick={() => setTab('apercu')}><Icon id="scenario/naval" size="sm" /> Vue d’ensemble</button>
-        <button type="button" className={`btn small ${tab === 'cargaison' ? 'btn-primary' : ''}`} onClick={() => setTab('cargaison')}><Icon id="item/misc" size="sm" /> Cargaison</button>
-        <button type="button" className={`btn small ${tab === 'equipage' ? 'btn-primary' : ''}`} onClick={() => setTab('equipage')}><Icon id="nav/seat-owner" size="sm" /> Équipage</button>
-      </>}
+      tabs={
+        <Tabs
+          tabs={[
+            { key: 'apercu' as const, label: <><Icon id="scenario/naval" size="sm" /> Vue d’ensemble</> },
+            { key: 'cargaison' as const, label: <><Icon id="item/misc" size="sm" /> Cargaison</> },
+            { key: 'equipage' as const, label: <><Icon id="nav/seat-owner" size="sm" /> Équipage</> },
+          ]}
+          active={tab}
+          onChange={setTab}
+        />
+      }
     >
       <div className="port-body">
         {tab === 'apercu' && (

@@ -18,6 +18,7 @@ import { CharFrame } from './CharFrame';
 import { TeamPortrait } from './TeamPortrait';
 import { Icon } from './Icon';
 import { ScreenShell } from './ScreenShell';
+import { Tabs } from './Tabs';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
@@ -319,13 +320,12 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           <p className="empty">— rien en stock —</p>
         ) : (
           <>
-            <div className="merch-subtabs" role="tablist">
-              {cats.map((fam) => (
-                <button key={fam.key} className={`mtab sub ${activeCat === fam.key ? 'active' : ''}`} onClick={() => setBuyCat(fam.key)}>
-                  {fam.label}<span className="tab-count">{byFamily[fam.key].length}</span>
-                </button>
-              ))}
-            </div>
+            <Tabs
+              variant="sub"
+              tabs={cats.map((fam) => ({ key: fam.key, label: fam.label, count: byFamily[fam.key].length }))}
+              active={activeCat}
+              onChange={setBuyCat}
+            />
             {(() => {
               const cols = FAMILY_COLS[activeCat] ?? [];
               const span = cols.length + 4;
@@ -419,13 +419,12 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
             ? <><span className="cart-info"><Icon id="merchant/cart" size="sm" /> {sellCart.length} à vendre · +<Coins money={sellCartTotal} /></span><button className="btn small btn-primary" onClick={() => setSellView('cart')}>Voir le panier →</button></>
             : <span className="cart-info empty"><Icon id="merchant/cart" size="sm" /> Rien à vendre sélectionné</span>}
         </div>
-        <div className="merch-subtabs" role="tablist">
-          {sellHeroes.map((h) => (
-            <button key={h.id} className={`mtab sub ${activeSellId === h.id ? 'active' : ''}`} onClick={() => setSellHero(h.id)} title={h.name}>
-              <TeamPortrait combatant={h} size={24} /><span className="tab-count">{(h.items ?? []).length}</span>
-            </button>
-          ))}
-        </div>
+        <Tabs
+          variant="sub"
+          tabs={sellHeroes.map((h) => ({ key: h.id, label: <span title={h.name}><TeamPortrait combatant={h} size={24} /></span>, count: (h.items ?? []).length }))}
+          active={activeSellId}
+          onChange={setSellHero}
+        />
         {heroItems.map((it) => (
           <div className="merch-row sell" key={it.uid}>
             <span className="merch-name">
@@ -553,12 +552,18 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
       onClose={onClose}
       actions={<span className="purse">Bourse <Coins money={money} /></span>}
     >
-        <div className="merchant-tabs" role="tablist">
-          <button className={`mtab ${tab === 'buy' ? 'active' : ''}`} onClick={() => setTab('buy')}>Acheter{cartCount ? <span className="tab-count">{cartCount}</span> : null}</button>
-          <button className={`mtab ${tab === 'sell' ? 'active' : ''}`} onClick={() => setTab('sell')}>Vendre{sellable.length ? <span className="tab-count">{sellable.length}</span> : null}</button>
-          <button className={`mtab ${tab === 'repair' ? 'active' : ''}`} onClick={() => setTab('repair')}>Réparer{damaged.length ? <span className="tab-count">{damaged.length}</span> : null}</button>
-          {onBarter && <button className={`mtab ${tab === 'barter' ? 'active' : ''}`} onClick={() => setTab('barter')}>Troc</button>}
-        </div>
+        <Tabs
+          className="mp-tabnav"
+          variant="pill"
+          tabs={[
+            { key: 'buy' as const, label: 'Acheter', count: cartCount || undefined },
+            { key: 'sell' as const, label: 'Vendre', count: sellable.length || undefined },
+            { key: 'repair' as const, label: 'Réparer', count: damaged.length || undefined },
+            ...(onBarter ? [{ key: 'barter' as const, label: 'Troc' }] : []),
+          ]}
+          active={tab}
+          onChange={setTab}
+        />
 
         <div className="merchant-body">
           {tab === 'buy' && (dist ? renderDistribution() : buyView === 'cart' ? renderCart() : renderBrowse())}

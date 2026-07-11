@@ -179,6 +179,37 @@
   color: var(--muted);
 }
 
+/* ── Tabs — primitive UNIQUE de navigation par onglets (#314) : `src/ui/Tabs.tsx`.
+   Style de BASE (variante `flat` : fiche/zone) ; les variantes `pill`/`sub`/`dock` sont composées
+   dans `styles/tabs.css`. */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.tabs .tab-btn {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+}
+.tabs .tab-btn:hover { color: var(--text); }
+.tabs .tab-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  font-weight: 600;
+}
+.tabs .tab-btn .count { margin-left: 6px; }
+.tabs .tab-btn.alert .count { background: var(--danger); color: var(--on-accent); }
+
 /* ── MODALE (cadre partagé de TOUTES les modales) ── */
 .modal-overlay {
   position: fixed;

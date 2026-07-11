@@ -16,6 +16,7 @@ import { NotchGauge } from './NotchGauge';
 import { ChoiceButtons } from './OptionChooser';
 import { moraleTone, ShipCrewWages } from './shipStatus';
 import { ScreenShell } from './ScreenShell';
+import { Tabs } from './Tabs';
 
 /** Libellé d'un id de cargaison / marqueur d'Index (`commerce`/`minimum-vital` ne sont pas des cargaisons). */
 const cargoLabel = (id: string): string => id === 'commerce' ? 'Commerce' : id === 'minimum-vital' ? 'Minimum vital' : findCargoById(id)?.label ?? id;
@@ -171,12 +172,17 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
       onClose={close}
     >
       <PortHeader pp={port.port} catalogue={catalogue} />
-      <div className="port-tabs">
-        <button type="button" className={`btn small ${tab === 'coque' ? 'btn-primary' : ''}`} onClick={() => setTab('coque')}><Icon id="travel/repair" size="sm" /> Chantier</button>
-        <button type="button" className={`btn small ${tab === 'cargaison' ? 'btn-primary' : ''}`} onClick={() => setTab('cargaison')}><Icon id="item/misc" size="sm" /> Cargaison</button>
-        <button type="button" className={`btn small ${tab === 'escale' ? 'btn-primary' : ''}`} onClick={() => setTab('escale')}><Icon id="travel/anchor" size="sm" /> Escale{hasEscaleEvent ? ' •' : ''}</button>
-        <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
-      </div>
+      <Tabs
+        className="port-tabnav"
+        tabs={[
+          { key: 'coque' as const, label: <><Icon id="travel/repair" size="sm" /> Chantier</> },
+          { key: 'cargaison' as const, label: <><Icon id="item/misc" size="sm" /> Cargaison</> },
+          { key: 'escale' as const, label: <><Icon id="travel/anchor" size="sm" /> Escale{hasEscaleEvent ? ' •' : ''}</> },
+        ]}
+        active={tab}
+        onChange={setTab}
+        trailing={<span className="port-purse">Bourse : <b><Coins money={money} /></b></span>}
+      />
 
       <div className="port-body">
         {tab === 'coque' ? (

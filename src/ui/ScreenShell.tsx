@@ -8,8 +8,8 @@ import { useModalA11y } from './Modal';
  * Comme `<Modal>`, elle porte l'a11y de dialogue (`role="dialog"`, focus initial + piège Tab, Échap =
  * `onClose`) via `useModalA11y` — plus AUCUN écran ne recode `.worldmap-overlay`/`.worldmap-head`.
  *
- * Onglets : slot `tabs` OPTIONNEL rendu dans la barre `.port-tabs` (le système d'onglets le plus
- * récent) — l'écran fournit ses `<button>`/badges tels quels ; on n'invente PAS un 4e système.
+ * Barre d'outils : slot `tabs` OPTIONNEL rendu dans `.screen-toolbar`, sous l'en-tête — l'écran y
+ * pose la primitive `<Tabs>` (onglets réels) et/ou du contenu libre (badges, bourse…), tel quel.
  * `className` ajoute des classes au voile (ex. `port-overlay`, `ship-dossier`).
  */
 export function ScreenShell({
@@ -28,7 +28,7 @@ export function ScreenShell({
   closeLabel?: ReactNode;
   /** Boutons d'en-tête AVANT la fermeture (rendus à droite, à côté du bouton Fermer). */
   actions?: ReactNode;
-  /** Barre d'onglets OPTIONNELLE (`.port-tabs`) : boutons + badges de l'écran, tels quels. */
+  /** Barre d'outils OPTIONNELLE (`.screen-toolbar`) : `<Tabs>` et/ou badges de l'écran, tels quels. */
   tabs?: ReactNode;
   /** Classes ajoutées au voile plein écran (`port-overlay`, `ship-dossier`…). */
   className?: string;
@@ -45,7 +45,7 @@ export function ScreenShell({
           <button type="button" className="btn small" onClick={onClose}>{closeLabel}</button>
         </div>
       </div>
-      {tabs != null && <div className="port-tabs">{tabs}</div>}
+      {tabs != null && <div className="screen-toolbar">{tabs}</div>}
       {children}
     </div>
   );

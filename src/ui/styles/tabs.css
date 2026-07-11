@@ -1,0 +1,54 @@
+/* ── Tabs — variantes de PRÉSENTATION (#314) ───────────────────────────────────
+   Le markup/comportement et le style de BASE (`.tabs`/`.tab-btn`, variante « flat ») vivent dans la
+   primitive canonique `components.css` (à côté de `.chip`/`.count`) ; ici : les 3 autres variantes
+   composées par `src/ui/Tabs.tsx` — remplacent les 5 systèmes gelés par le cliquet #288 (`.port-tabs`,
+   `.zone-tabs`, `.logic-tabs`, `.merchant-tabs`+`.merch-subtabs`, `.sheet-tabs`). */
+
+/* Variante « pill » (marchand, fiche : onglets en boîtes). */
+.tabs.tabs-pill .tab-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 7px 14px;
+}
+.tabs.tabs-pill .tab-btn.active {
+  background: var(--panel2);
+  color: var(--text);
+  border-bottom-color: transparent;
+}
+.tabs.tabs-pill .tab-btn .count { background: var(--accent); color: var(--on-accent); }
+
+/* Variante « sub » (sous-onglets marchand : pilules compactes). */
+.tabs.tabs-sub {
+  gap: 5px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+}
+.tabs.tabs-sub .tab-btn {
+  border-bottom: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+}
+.tabs.tabs-sub .tab-btn:hover { border-color: var(--accent2); }
+.tabs.tabs-sub .tab-btn.active {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+.tabs.tabs-sub .tab-btn.active .count { background: rgba(0, 0, 0, 0.32); color: var(--on-accent); }
+
+/* Variante « dock » (panneau Logique repliable — `editor.css` compose la mise en page du dock autour). */
+.tabs.tabs-dock {
+  border-bottom: none;
+  gap: 2px;
+  padding: 3px 8px 0;
+}
+@media (max-width: 900px) {
+  .tabs.tabs-dock .tab-btn { padding: 7px 6px; font-size: 12px; }
+}
+
+/* Contrôle HORS tablist rendu après les onglets (ex. replier/déplier le dock). */
+.tabs-trailing { margin-left: auto; }

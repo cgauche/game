@@ -17,7 +17,6 @@
 .pal-item,
 .terrain-swatch,
 button.insp-row,
-.logic-tab,
 .eff-add-item {
   font-family: inherit;
 }
@@ -412,35 +411,7 @@ button.insp-row.active {
   z-index: 5;
   touch-action: none;
 }
-.logic-tabs {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 3px 8px 0;
-}
-.logic-tab {
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--muted);
-  padding: 7px 10px;
-  font-size: 13px;
-  cursor: pointer;
-}
-.logic-tab:hover {
-  color: var(--text);
-}
-.logic-tab.active {
-  color: var(--gold);
-  border-bottom-color: var(--gold);
-}
-.logic-tab.alert .count {
-  background: var(--danger);
-  color: #fff;
-}
-.logic-collapse {
-  margin-left: auto;
-}
+/* Onglets du dock — primitive `<Tabs variant="dock">` (tabs.css). */
 .logic-body {
   flex: 1;
   min-height: 0;
@@ -955,10 +926,6 @@ input.dr {
 @media (max-width: 700px) {
   .editor-scenes select {
     max-width: 110px;
-  }
-  .logic-tab {
-    padding: 7px 6px;
-    font-size: 12px;
   }
 }
 @media (pointer: coarse) {

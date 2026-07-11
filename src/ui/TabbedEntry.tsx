@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { Tabs } from './Tabs';
 
 /** Un onglet d'une fiche d'entité. `content` est rendu paresseusement (seul l'onglet actif s'affiche). */
 export interface EntryTab {
@@ -11,7 +12,7 @@ export interface EntryTab {
  * Présentation PARTAGÉE d'une fiche d'entité « riche » : en-tête (figurine + titre + accroche) puis
  * ONGLETS internes (Profil / Description / …) qui répartissent le contenu — donc tout se voit SANS
  * scroller un long pavé. SOURCE UNIQUE de la page d'espèce du créateur ET de la fiche du Codex
- * (réutilise les classes globales `.main-head`/`.zone-tabs`/`.zone-tab` de `creator.css`).
+ * (réutilise `.main-head` de `creator.css` + la primitive `<Tabs>`).
  *
  * L'onglet actif est mémorisé par (id, nom) : DANS une même fiche on résout par `id` (deux onglets
  * homonymes restent atteignables) ; au changement de fiche (les `tabs` changent), si un onglet du
@@ -57,13 +58,12 @@ export function TabbedEntry({
       </div>
       {band}
       {tabs.length > 1 && (
-        <div className="zone-tabs">
-          {tabs.map((t) => (
-            <button key={t.id} className={`zone-tab ${current?.id === t.id ? 'active' : ''}`} onClick={() => setActive({ id: t.id, label: t.label })}>
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          className="zone-tabnav"
+          tabs={tabs.map((t) => ({ key: t.id, label: t.label }))}
+          active={current?.id ?? null}
+          onChange={(id) => setActive({ id, label: tabs.find((t) => t.id === id)?.label })}
+        />
       )}
       {current?.content}
     </>

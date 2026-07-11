@@ -17,6 +17,7 @@
   --accent2: #a13224;
   --danger: #d6543a; /* alerte (plus vif que l'accent, hover distinct) */
   --danger-soft: #e07a63; /* alerte douce (coral) — texte/bordure d'avertissement léger */
+  --on-accent: #fff; /* texte sur badge/pill teinté (accent, danger…) */
   --ok: #5d8a46; /* succès (vert mousse) */
   --ok-bright: #6fce8e; /* succès clair — texte/icône positif sur fond sombre */
   --parchment: #decb9d; /* surface claire « document » (texte = --ink) */

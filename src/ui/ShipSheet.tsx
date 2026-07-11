@@ -16,6 +16,7 @@ import type { Combatant, NavalTraitRef } from '../engine/types';
 import type { Dir8 } from '../state/dir8';
 import { Icon } from './Icon';
 import { Prose } from './Prose';
+import { Tabs } from './Tabs';
 
 const DIR_LABEL: Record<Dir8, string> = { N: 'Nord', NE: 'Nord-Est', E: 'Est', SE: 'Sud-Est', S: 'Sud', SO: 'Sud-Ouest', O: 'Ouest', NO: 'Nord-Ouest' };
 const RIG_LABEL: Record<string, string> = { avirons: 'Avirons', voile: 'Voile', mixte: 'Mixte (voile et avirons)' };
@@ -240,10 +241,14 @@ export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatant
           </aside>
           <div className="sheet-main">
             {vehicle && (
-              <div className="seg" role="tablist">
-                <button role="tab" aria-selected={tab === 'postes'} className={tab === 'postes' ? 'on' : ''} onClick={() => setTab('postes')}>Postes</button>
-                <button role="tab" aria-selected={tab === 'manoeuvre'} className={tab === 'manoeuvre' ? 'on' : ''} onClick={() => setTab('manoeuvre')}>Manœuvre</button>
-              </div>
+              <Tabs
+                tabs={[
+                  { key: 'postes' as const, label: 'Postes' },
+                  { key: 'manoeuvre' as const, label: 'Manœuvre' },
+                ]}
+                active={tab}
+                onChange={setTab}
+              />
             )}
             {tab === 'postes' || !vehicle ? (
               <StationSheet

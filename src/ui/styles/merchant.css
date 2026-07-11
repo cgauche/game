@@ -1,46 +1,9 @@
-/* ===== Marchand (#2) — écran plein-champ (ScreenShell), onglets, familles, comparaison d'achat ===== */
-/* Onglets */
-.merchant-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 8px 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-.mtab {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid transparent;
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.15s;
-}
-.mtab:hover { color: var(--text); }
-.mtab.active {
-  color: var(--text);
-  background: var(--panel2);
-  border-color: var(--border);
-  font-weight: 600;
-}
-.tab-count {
-  display: inline-block;
-  margin-left: 6px;
-  min-width: 18px;
-  padding: 0 5px;
-  font-size: 11px;
-  line-height: 17px;
-  text-align: center;
-  border-radius: 9px;
-  background: var(--accent);
-  color: #fff;
-}
+/* ===== Marchand (#2) — écran plein-champ (ScreenShell), onglets (primitive `<Tabs>`, tabs.css), familles, comparaison d'achat ===== */
 .merchant-body { padding: 12px 16px 16px; overflow-y: auto; }
 /* Négoce en écran plein-champ (`ScreenShell`) — cohérent avec les écrans Port/Marché : onglets et
  * corps centrés à largeur bornée, corps scrollable dans le voile en colonne. */
 .merchant-overlay .purse { color: var(--gold); font-weight: 600; }
-.merchant-overlay .merchant-tabs { width: min(760px, 96vw); margin: 0 auto; border-bottom: none; }
+.merchant-overlay .mp-tabnav { width: min(760px, 96vw); margin: 0 auto; border-bottom: none; }
 .merchant-overlay .merchant-body {
   width: min(760px, 96vw);
   margin: 0 auto;
@@ -51,12 +14,6 @@
   border-radius: 12px;
 }
 .merch-tab { display: flex; flex-direction: column; }
-/* Sous-onglets : familles d'objets dans l'onglet Acheter */
-.merch-subtabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-.mtab.sub { padding: 5px 12px; font-size: 13px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel2); }
-.mtab.sub:hover { border-color: var(--accent2); }
-.mtab.sub.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
-.mtab.sub.active .tab-count { background: rgba(0, 0, 0, 0.32); }
 /* Liste Acheter = tableau comparatif (colonnes alignées → comparer les articles entre eux) */
 .merch-table { width: 100%; border-collapse: collapse; }
 .merch-table thead th {

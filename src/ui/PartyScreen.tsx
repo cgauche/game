@@ -14,6 +14,7 @@ import { CharacterSheet } from './CharacterSheet';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
 import { OrnateFrame, Fleuron } from './Ornaments';
+import { Tabs } from './Tabs';
 import { t } from '../i18n';
 
 /**
@@ -463,14 +464,16 @@ export function PartyPicker({
 
   return (
     <Modal variant="plain" className="picker-modal" title={title ?? t('picker.title', { n: party.length })} onClose={onClose} backdropClose>
-        <div className="sheet-tabs">
-          <button className={`tab ${tab === 'roster' ? 'on' : ''}`} onClick={() => setTab('roster')}>
-            {t('picker.tab.roster')}
-          </button>
-          <button className={`tab ${tab === 'pregens' ? 'on' : ''}`} onClick={() => setTab('pregens')}>
-            {t('picker.tab.pregens')}
-          </button>
-        </div>
+        <Tabs
+          className="sheet-tabnav"
+          variant="pill"
+          tabs={[
+            { key: 'roster' as const, label: t('picker.tab.roster') },
+            { key: 'pregens' as const, label: t('picker.tab.pregens') },
+          ]}
+          active={tab}
+          onChange={setTab}
+        />
 
         {tab === 'roster' ? (
           <div className="pregen-list">

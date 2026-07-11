@@ -58,6 +58,16 @@
   flex-wrap: wrap;
   justify-content: flex-end;
 }
+/* Barre d'outils optionnelle de ScreenShell (`tabs` prop) — pose la primitive `<Tabs>` et/ou du
+ * contenu libre (badges, bourse…), sous l'en-tête. */
+.screen-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: min(900px, 96vw);
+  margin: 0 auto;
+}
 .worldmap-canvas {
   position: relative; /* ancre les commandes de zoom */
   flex: 1;
@@ -139,11 +149,9 @@
 
 /* ── Écran Port (MDG 15 : chantier naval + commerce maritime) ─────────────────── */
 .port-overlay { overflow-y: auto; }
-.port-tabs {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+/* Onglets propres de PortView (rendus hors slot ScreenShell, entre `PortHeader` et le corps) — même
+ * largeur bornée/centrage que `.screen-toolbar` (primitive `<Tabs>`, tabs.css, en compose le style). */
+.port-tabnav {
   width: min(900px, 96vw);
   margin: 0 auto;
 }

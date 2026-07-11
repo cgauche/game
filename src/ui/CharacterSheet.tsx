@@ -4,6 +4,7 @@ import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
+import { Tabs } from './Tabs';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
 import { CHAR_LABELS, HitLocation, ItemInstance, Combatant } from '../engine/types';
@@ -172,13 +173,13 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
             <FicheBody hero={hero} section="profil" />
           </aside>
           <div className="sheet-main">
-            <nav className="sheet-tabs" role="tablist">
-              {tabs.map((t) => (
-                <button key={t} role="tab" aria-selected={tab === t} className={`tab ${tab === t ? 'on' : ''}`} onClick={() => setTab(t)}>
-                  {TAB_LABELS[t]}
-                </button>
-              ))}
-            </nav>
+            <Tabs
+              className="sheet-tabnav"
+              variant="pill"
+              tabs={tabs.map((t) => ({ key: t, label: TAB_LABELS[t] }))}
+              active={tab}
+              onChange={setTab}
+            />
             <div className="sheet-tabbody">
               {tab === 'avancement' ? (
                 <AdvancementPanel hero={hero} />

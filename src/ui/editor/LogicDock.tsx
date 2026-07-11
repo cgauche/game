@@ -19,6 +19,7 @@ import { WhenEditor, condSummary } from './ConditionEditor';
 import { DialogueDetail } from './DialogueDetail';
 import { ValidationPanel } from './ValidationPanel';
 import { Icon } from '../Icon';
+import { Tabs } from '../Tabs';
 
 export type LogicTab = 'triggers' | 'dialogues' | 'encounters' | 'validation';
 
@@ -102,22 +103,17 @@ export function LogicDock({
         }}
         onPointerUp={() => (dragRef.current = null)}
       />
-      <div className="logic-tabs" role="tablist">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            role="tab"
-            aria-selected={open && tab === t.key}
-            className={`logic-tab${open && tab === t.key ? ' active' : ''}${t.alert ? ' alert' : ''}`}
-            onClick={() => clickTab(t.key)}
-          >
-            {t.label} <span className="count">{t.count}</span>
+      <Tabs
+        variant="dock"
+        tabs={tabs}
+        active={open ? tab : null}
+        onChange={clickTab}
+        trailing={
+          <button className="tabs-trailing btn small" onClick={() => setOpen(!open)} title={open ? 'Replier' : 'Déplier'}>
+            {open ? '▾' : '▴'}
           </button>
-        ))}
-        <button className="logic-collapse btn small" onClick={() => setOpen(!open)} title={open ? 'Replier' : 'Déplier'}>
-          {open ? '▾' : '▴'}
-        </button>
-      </div>
+        }
+      />
 
       {open && (
         <div className="logic-body">
