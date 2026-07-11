@@ -1,7 +1,7 @@
 // Helpers partagés des gardes Atlas RAW (coverage / reconcile / reanchor).
 // Source UNIQUE de : map des livres, résolveur de fichier-chapitre, regex de réfs, dépliage de plage,
 // échappement regex, et normalisation de texte pour le match exact des citations.
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 // ABRÉV → dossier Source (les 14 livres autorisés). Ordre = ordre d'affichage des rapports.
@@ -43,21 +43,54 @@ export function span(line, suffix) {
   return [a, Math.max(a, ...plus)]
 }
 
-// Résout (ABRÉV, NN) → { path, file, dir } du `.md` chapitre, ou null. Lookup par préfixe `NN - `.
+// Résout (ABRÉV, NN[, range]) → { path, file, dir } du `.md` chapitre, ou null. Lookup par préfixe `NN - `.
+// `range` optionnel = { from, to? } route une SOUS-SECTION du chapitre (jamais un second mécanisme) : `from`/
+// `to` sont chacun une ancre — texte de heading Markdown (n'importe quel niveau `#`, markup ignoré) OU
+// `folio:NN` pour un `<span … data-folio="NN">` — bornant un extrait VERBATIM ajouté en `.text` (trim).
+// `to` omis = jusqu'à la fin du fichier. Lève si une ancre est introuvable (fail-fast, jamais un extrait silencieux faux).
 const _chapterCache = new Map()
-export function chapterFile(abbr, nn) {
+export function chapterFile(abbr, nn, range) {
   const key = `${abbr}|${nn}`
-  if (_chapterCache.has(key)) return _chapterCache.get(key)
-  const dir = BOOK_DIR.get(abbr)
-  let res = null
-  if (dir) {
-    const pad = String(Number(nn)).padStart(2, '0')
-    let f
-    try { f = readdirSync(dir).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md')) } catch { f = null }
-    if (f) res = { path: join(dir, f), file: f, dir }
+  let res
+  if (_chapterCache.has(key)) {
+    res = _chapterCache.get(key)
+  } else {
+    const dir = BOOK_DIR.get(abbr)
+    res = null
+    if (dir) {
+      const pad = String(Number(nn)).padStart(2, '0')
+      let f
+      try { f = readdirSync(dir).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md')) } catch { f = null }
+      if (f) res = { path: join(dir, f), file: f, dir }
+    }
+    _chapterCache.set(key, res)
   }
-  _chapterCache.set(key, res)
-  return res
+  if (!res || !range) return res
+  const lines = readFileSync(res.path, 'utf8').split('\n').map((l) => l.replace(/\r$/, ''))
+  const startIdx = findAnchor(lines, range.from)
+  if (startIdx == null) throw new Error(`chapterFile(${abbr} ${nn}) : ancre de départ "${range.from}" introuvable dans ${res.path}`)
+  let endIdx = lines.length
+  if (range.to) {
+    endIdx = findAnchor(lines, range.to)
+    if (endIdx == null) throw new Error(`chapterFile(${abbr} ${nn}) : ancre de fin "${range.to}" introuvable dans ${res.path}`)
+  }
+  return { ...res, text: lines.slice(startIdx, endIdx).join('\n').trim() }
+}
+
+// Trouve la ligne d'une ancre `from`/`to` de `chapterFile` (heading Markdown normalisé, ou `folio:NN`).
+function findAnchor(lines, locator) {
+  const folio = /^folio:(\d+)$/.exec(locator)
+  if (folio) {
+    const re = new RegExp(`data-folio="${folio[1]}"`)
+    const idx = lines.findIndex((l) => re.test(l))
+    return idx < 0 ? null : idx
+  }
+  const target = normalize(locator)
+  const idx = lines.findIndex((l) => {
+    const m = /^#+\s*(.*)$/.exec(l)
+    return m ? normalize(m[1]) === target : false
+  })
+  return idx < 0 ? null : idx
 }
 
 // Normalisation pour le MATCH EXACT des citations : replie tout le cosmétique (espaces, guillemets,

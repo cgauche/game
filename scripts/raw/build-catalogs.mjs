@@ -1,9 +1,11 @@
 // Construit les catalogues de l'Atlas (docs/raw/catalogue-*.md) en CONCATÉNANT verbatim les chapitres
 // de DONNÉES de la SOURCE Marker propre (tables intactes), LDB + suppléments. Chaque chapitre est cité
-// `<ABBR> NN` → crédité au niveau chapitre par coverage.mjs/reconcile.mjs. Re-run après toute ré-extraction.
-// Contrainte : tout bloc `<!-- MDG-INTEGRATION -->` du fichier existant est un correctif MANUEL
-// (compense une perte connue de l'extraction Marker pour un livre non encore couvert par DOMAINS,
-// ex. MDG) — préservé tel quel par extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré.
+// `<ABBR> NN` → crédité au niveau chapitre par coverage.mjs/reconcile.mjs. Un item de `inc` peut être un
+// numéro de chapitre entier, OU `{ ch, from, to?, title }` pour une PLAGE DE SOUS-SECTION (ancres
+// `chapterFile`, cf. `_lib.mjs`) — même mécanisme, pour un chapitre trop large pour son domaine (ex. MDG 2).
+// Contrainte : tout bloc `<!-- X-INTEGRATION -->` du fichier existant reste un correctif MANUEL (perte
+// connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel par
+// extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
 // node scripts/raw/build-catalogs.mjs
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { chapterFile as chapterFileLib } from './_lib.mjs'
@@ -52,7 +54,8 @@ const DOMAINS = [
           ['ZI', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]],
           ['ADE II', [1, 2]], ['EDO', [11]], ['EDOC', [7]], ['T2C', [13]], ['T3', [10, 11]], ['MDG', [16]]] },
   { file: 'catalogue-sorts.md', titre: 'Sorts — listes complètes', rules: 'magie.md',
-    inc: [['LDB', [47, 48, 49, 50, 51]], ['EDO', [11]]] },
+    inc: [['LDB', [47, 48, 49, 50, 51]], ['EDO', [11]],
+          ['MDG', [{ ch: 2, from: 'Magie des mers', to: 'LES ELFES SUR LA MER DES GRIFFES', title: 'Magie des mers' }]]] },
   { file: 'catalogue-divin.md', titre: 'Religion — dieux, bénédictions & miracles', rules: 'religion.md',
     inc: [['LDB', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]], ['Middenheim', [7]], ['Altdorf', [11]], ['MDG', [10, 11]]] },
   { file: 'catalogue-equipement.md', titre: 'Équipement — objets, prix & Encombrement', rules: 'equipement.md',
@@ -64,20 +67,24 @@ const DOMAINS = [
     inc: [['ADE II', [3, 9]], ['T2', [11]], ['T2C', [7, 9, 14]], ['Altdorf', [10, 12]], ['EDOC', [12]]] },
 ]
 
-function chapterFile(abbr, nn) {
-  const c = chapterFileLib(abbr, nn)
+function chapterFile(abbr, nn, range) {
+  const c = chapterFileLib(abbr, nn, range)
   if (!c) return null
-  return { title: c.file.replace(/^\d+ - /, '').replace(/\.md$/, ''), text: readFileSync(c.path, 'utf8').trim() }
+  const title = c.file.replace(/^\d+ - /, '').replace(/\.md$/, '')
+  const text = c.text ?? readFileSync(c.path, 'utf8').trim()
+  return { title, text }
 }
 
 const log = []
 for (const dom of DOMAINS) {
   const parts = [], refs = [], missing = []
-  for (const [abbr, chaps] of dom.inc) for (const nn of chaps) {
-    const c = chapterFile(abbr, nn)
+  for (const [abbr, chaps] of dom.inc) for (const spec of chaps) {
+    const isRange = typeof spec === 'object'
+    const nn = isRange ? spec.ch : spec
+    const c = chapterFile(abbr, nn, isRange ? { from: spec.from, to: spec.to } : undefined)
     if (!c) { missing.push(`${abbr} ${nn}`); continue }
     refs.push(`\`${abbr} ${nn}\``)
-    parts.push(`\n\n## [${abbr} ${nn}] ${c.title}\n\n${c.text}`)
+    parts.push(`\n\n## [${abbr} ${nn}] ${isRange ? spec.title : c.title}\n\n${c.text}`)
   }
   const header = `# Atlas RAW — Catalogue : ${dom.titre}\n\n` +
     `> **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)\n` +

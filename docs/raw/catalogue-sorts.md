@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`magie.md`](magie.md).
 >
-> **Chapitres source :** `LDB 47` · `LDB 48` · `LDB 49` · `LDB 50` · `LDB 51` · `EDO 11`.
+> **Chapitres source :** `LDB 47` · `LDB 48` · `LDB 49` · `LDB 50` · `LDB 51` · `EDO 11` · `MDG 2`.
 
 ---
 
@@ -2136,22 +2136,29 @@ Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années,
 
 <span id="page-148-0" data-folio="149"></span>
 
----
 
-<!-- MDG-INTEGRATION --> magie
-<!-- Bloc MANUEL préservé (#324) : MDG ch.2 est un gazetteer dont « Magie des mers » n'est qu'une
-     sous-section — le générateur ne sait pas (encore) extraire une plage de sous-section. Seule
-     exception restante au tout-généré ; se supprime avec #324. -->
-
-## [MDG 02] Magie des mers
-
-*Pages PDF 12-22*
+## [MDG 2] Magie des mers
 
 # **Magie des mers**
 
-Le collège du baron Henryk (Marienburg) enseigne des Sorts particulièrement bien adaptés à la vie en mer, peu connus en dehors de Marienburg, rattachés au Domaine de la Vie (*Ghyran*) et au Domaine des Cieux (*Azyr*). Les modificateurs des Vents en mer (Bête, Feu, Cieux, Vie) sont détaillés dans [`magie.md`](magie.md#magie-des-mers--modificateurs-des-vents-en-mer).
+Le département des arts magiques maritimes veille à prévenir les apprentis que les Vents de Magie se rassemblent et soufflent de manière étrange sur les mers. Certains Vents sont plus difficiles à contrôler tandis que d'autres déferlent en rafales écrasantes. Le collège du baron Henryk peut aussi enseigner des Sorts particulièrement bien adaptés à la vie en mer et peu connus en dehors de Marienburg.
 
+Les modificateurs suivants s'appliquent aux tentatives de Focalisation et d'Incantation en mer :
+
+**Domaine de la Bête :** *Ghur* coule sous les vagues, où il repose parmi les grandes bêtes de l'abysse. Les sorciers d'Ambre peuvent puiser dans ce pouvoir, mais il n'aime pas être dérangé et pourrait les attaquer en réaction. Pour les Sorts de ce Domaine, les Incantations et Focalisations critiques ainsi que les Maladresses se produisent à la fois sur les doubles et les résultats se terminant par un 0.
+
+**Domaine du Feu :***Aqshy* est difficile à invoquer en mer. Les Tests de Focalisation pour ce Domaine subissent -1 DR. Cependant, si un bateau est en feu, *Aqshy* se précipite vers lui. Focaliser *Aqshy* sur un vaisseau actuellement rongé par les flammes donne +1 DR (en plus des bénéfices normaux des États *En flammes* appliqués au Domaine du Feu). Cela pourrait expliquer pourquoi les sorciers flamboyants ont une horrible réputation parmi les marins.
+
+**Domaine des Cieux :** pendant une tempête, *Azyr* s'abat violemment depuis le ciel et semble presque vouloir être dirigé par la volonté d'un sorcier. Mais quand les mers sont calmes, *Azyr* refuse obstinément d'être appelé et lutte contre toute tentative pour le modeler en Sort. Les Sorts du Domaine des Cieux lancés pendant une Violente tempête bénéficient de +1 DR sur les Tests d'Incantation. Les Sorts lancés en période de Calme plat subissent -1 DR sur les Tests d'Incantation.
+
+**Domaine de la Vie :** *Ghyran* sature les mers, accordant une puissance facile à un sorcier de Jade. Cependant, il fluctue beaucoup et un sorcier peut en perdre le contrôle en un instant. Les DR des Tests de Focalisation sont doublés sur les mers, mais une Focalisation Critique donne une Incantation Imparfaite Majeure au lieu de Mineure. Si vous possédez le Talent *Harmonisation aethyrique*, faites un lancer sur le tableau des Incantations Imparfaites Mineures à la place.
+
+<span id="page-18-0" data-folio="15"></span>
 # **Domaine de la Vie**
+
+Les druides de l'école de jade peuvent sembler ne pas être à leur place à bord d'un bateau, mais leur présence est très
+
+bien accueillie par les capitaines avisés. *Ghyran* souffle sur les mers, ce qui fait d'un sorcier de jade un ajout précieux pour n'importe quel équipage.
 
 ### **Bourbier vivant**
 
@@ -2181,6 +2188,8 @@ Vous rassemblez *Ghyran* depuis la mer et vous emportez de petites quantités d'
 
 Vous tirez sur le *Ghyran* entourant la zone ciblée et vous le faites tourner sur lui-même. L'eau se met à bouillonner et un tourbillon se forme dans la zone ciblée. Les tourbillons sont décrits en page 113. Ce Sort crée une zone de rotation lente, mais des DR peuvent être dépensés pour agrandir le tourbillon en suivant les règles de Surincantation.
 
+### SURINCANTATION DE TOURBILLON
+
 | DR         | Taille du tourbillon |
 |------------|----------------------|
 | 5          | Tourbillon           |
@@ -2190,7 +2199,11 @@ Vous tirez sur le *Ghyran* entourant la zone ciblée et vous le faites tourner s
 
 # **Domaine des Cieux**
 
-### **Bienfait de Bel Shanaar**
+Pour l'équipage d'un navire, les sorciers célestes semblent souvent distants et toujours plongés dans leurs livres, mais
+
+certains en sont venus à aimer la vie en mer. Sur le vaste océan, un astromancien peut communier avec *Azyr* de manières inconnues sur terre. Les sorciers montent souvent dans le nid-de-pie pour méditer sur leur art et suivre les tours et détours du Vent bleu de leurs doigts.
+
+#### **Bienfait de Bel Shanaar**
 
 **NI :** 2
 
@@ -2198,7 +2211,7 @@ Vous tirez sur le *Ghyran* entourant la zone ciblée et vous le faites tourner s
 
 Ce Sort doit être lancé au cours d'un voyage à la destination prédéterminée, et cette destination doit être un lieu connu du lanceur. Vous fermez les yeux et vous focalisez votre Seconde vue sur les cieux, suivant la trajectoire d'*Azyr* tandis qu'il crépite dans le ciel et semble sauter d'étoile en étoile. Pendant un instant, un éclair d'*Azyr* vous relie à votre destination et laisse une image rémanente bleue et scintillante dans votre vision. Pendant toute la durée du Sort, tous les Tests d'Orientation effectués par le sorcier (ou impliquant le sorcier dans le cas des Tests d'équipage) bénéficient de +2 DR.
 
-### **Mer d'huile**
+#### **Mer d'huile**
 
 **NI :** 10 **Portée :** Vous
 
@@ -2206,7 +2219,7 @@ Ce Sort doit être lancé au cours d'un voyage à la destination prédéterminé
 
 Vous hurlez à tous ceux à bord de votre vaisseau de se taire et vous fermez les yeux. Un silence inquiétant enveloppe d'abord le navire, puis la zone qui l'entoure. Les voiles se dégonflent et les vagues se calment. L'effet Calme plat du tableau Effet du vent (voir page 107) s'applique pendant toute la durée du Sort.
 
-### **Solution de tir optimal de Niezlib**
+# **Solution de tir optimal de Niezlib**
 
 **NI :** 6
 
@@ -2216,4 +2229,4 @@ Vous hurlez à tous ceux à bord de votre vaisseau de se taire et vous fermez le
 
 Ce Sort est une variante d'une création du seigneur astromancien Wilfried-Gotthelm Niezlib, qui cherchait à l'utiliser pour prouver ses théories concernant le mouvement des corps célestes. Il s'est ensuite rendu compte que cette magie avait des applications plus concrètes et l'a modifiée pour déterminer le moment exact auquel un bateau doit tirer une bordée. Le lanceur peut calculer le roulis du vaisseau, la distance par rapport à la cible, le poids des boulets de canon et la puissance de chaque tir. Pendant toute la durée du Sort, les Tests effectués pour tirer avec un canon bénéficient de +1 DR.
 
-<!-- /MDG-INTEGRATION -->
+<span id="page-19-0" data-folio="16"></span>
