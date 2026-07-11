@@ -645,6 +645,9 @@ export interface DeviationCtx {
   attackerId?: string;
   attackerKind?: Combatant['kind'];
   weapon?: string;
+  /** Arme RÉELLE de l'attaquant (≠ `weapon`, son libellé d'affichage) — permet au bus d'émettre `onCrit`
+   *  d'un Critique OPPOSÉ / dévié avec les Atouts d'arme du porteur (Taillade → Hémorragique, #316). */
+  weaponObj?: Weapon;
   critTwice?: boolean;
 }
 

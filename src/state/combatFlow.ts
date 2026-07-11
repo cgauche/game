@@ -60,7 +60,7 @@ import { campGain, campSpend, spendableAdvantage, reversalStealOne, roundEndAdva
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
-import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
+import { applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
 import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
@@ -209,7 +209,6 @@ export * from './combatManeuvers';
 // --- Refonte par coutures : registre de hooks de cycle de vie + mise en place (barils, modules FEUILLES) ---
 export * from './combatHooks';
 export * from './combatSetup';
-import { runCombatHooks } from './combatHooks';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
 import { pilotedByHuman, humanControlled, controlsCombatant } from './netOwnership';
 import { resolveRecoverTest } from './combat/recover';
@@ -1182,7 +1181,8 @@ export function finalizeHeroDeath(get: Get, set: SetFn, hero: Combatant, source:
 export function notifySlain(get: Get, set: SetFn, c: Combatant): string[] {
   if (!isOutOfAction(c) || c.slainNotified) return [];
   c.slainNotified = true;
-  const lines = fireTriggers(get, c, 'onSlain', { rng: battleRng(), set });
+  const lines: string[] = [];
+  emitCombatEvent('onSlain', { get, set, battle: get().battle!, self: c, sink: (line) => lines.push(line), triggerCtx: { rng: battleRng() } });
   // Ops IMPURES « à la mort » (Charnier : 3d10 Zombies ; toute zone laissée en mourant) — inertes dans
   // applyOps, résolues ici (grille/initiative) comme au lancement d'un sort d'invocation/zone.
   lines.push(...resolveTriggerImpureOps(get, set, c, 'onSlain'));
@@ -1499,7 +1499,7 @@ export function applyOpposedCritical(
   set: SetFn,
   victim: Combatant,
   roll: number,
-  ctx: { attackerId?: string; weapon?: string },
+  ctx: { attackerId?: string; weapon?: string; weaponObj?: Weapon },
   log: string[],
 ): void {
   const loc = critWoundLocation(battleRng(), victim.bodyShape); // LDB 18 l.53 : Coup Critique → 1d100 frais (pas l'inversion de touche)
@@ -1520,6 +1520,20 @@ export function applyOpposedCritical(
     return;
   }
   applyCritAndFinalize(get, set, victim, loc, true, 0, log, c2, victim.wounds.current);
+  // 7bis (#316) : un Coup Critique OPPOSÉ (LDB 14 l.7) est une Blessure Critique — le bus émet `onCrit`
+  // pour l'attaquant, afin que ses effets de donnée « sur Critique » (Taillade → Hémorragique) s'appliquent
+  // ici aussi. Chemin mutuellement exclusif de la déviation (self → émis au Subir de resolveDeviation).
+  emitOpposedCrit(get, set, attacker, victim, loc, ctx.weaponObj, log);
+}
+
+/** Émet `onCrit` via le bus pour un Critique OPPOSÉ/dévié (7bis, #316) : audience = l'attaquant à l'origine
+ *  du double. `sink` → `log` (mêmes lignes que les autres effets déclenchés). No-op sans attaquant en combat. */
+function emitOpposedCrit(get: Get, set: SetFn, attacker: Combatant | undefined, victim: Combatant, loc: HitLocation, weaponObj: Weapon | undefined, log: string[]): void {
+  if (!attacker) return;
+  emitCombatEvent('onCrit', {
+    get, set, battle: get().battle!, self: attacker, sink: (line) => log.push(line),
+    triggerCtx: { victim, weapon: weaponObj, location: loc, attackType: weaponObj?.type, rng: battleRng() },
+  });
 }
 
 /** Fabrique de cibles d'aire pour le combat COURANT (terre = rayon métrique à l'échelle de la scène ;
@@ -1704,7 +1718,7 @@ export function applyAttackResult(
       // — DISPATCHER UNIQUE générique (data-driven `effects:[{trigger:'onCrit'}]`), comme `onHit`. Plus de
       // boucle bespoke par capacité. (`woundingStrike`/`onCrit` restent dans la branche Subir uniquement.)
       if (res.critical && !lethal)
-        critLog.push(...fireTriggers(get, attacker, 'onCrit', { victim: target, weapon, location: loc, woundsDealt: res.woundsLost, attackType: weapon.type, rng: battleRng(), set }));
+        emitCombatEvent('onCrit', { get, set, battle, self: attacker, sink: (line) => critLog.push(line), triggerCtx: { victim: target, weapon, location: loc, woundsDealt: res.woundsLost, attackType: weapon.type, rng: battleRng() } });
     }
     // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
     // déclenche une Blessure critique mais ne dispense pas de l'État À Terre) ; sauf si déjà KO/mort.
@@ -1728,7 +1742,7 @@ export function applyAttackResult(
     // (a) Attaquant : Critique au jet mais échange PERDU (pas de touche) → le défenseur subit un Critique sec.
     if (ad && ad.success && isDoubleRoll(ad.roll) && !res.hit && !isOutOfAction(target)) {
       critLog.push(tr('cf.critDespiteLoss', { name: attacker.name }));
-      applyOpposedCritical(get, set, target, ad.roll, { attackerId: attacker.id, weapon: weapon?.name }, critLog);
+      applyOpposedCritical(get, set, target, ad.roll, { attackerId: attacker.id, weapon: weapon?.name, weaponObj: weapon }, critLog);
     }
     // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec — UNIQUEMENT en PARADE
     // (« Test de Corps à corps », LDB 13 l.184) ; l'Esquive est un Test d'AGILITÉ → ne génère PAS de Critique.
@@ -1752,7 +1766,7 @@ export function applyAttackResult(
         });
       } else {
         critLog.push(tr('cf.critOnDefense', { name: target.name }));
-        applyOpposedCritical(get, set, attacker, dd.roll, { attackerId: target.id, weapon: res.parryWeapon?.name }, critLog);
+        applyOpposedCritical(get, set, attacker, dd.roll, { attackerId: target.id, weapon: res.parryWeapon?.name, weaponObj: res.parryWeapon }, critLog);
       }
     }
   }
@@ -1791,14 +1805,14 @@ export function applyAttackResult(
   // d'attaque (`weapon.type`) voyage dans le contexte ; un effet peut s'y restreindre (`attackType`).
   // Dispatcher générique (state/triggeredEffects), plus de handler en dur ni de branche par-nom.
   if (res.hit && res.woundsLost) {
-    for (const line of fireTriggers(get, target, 'onWoundLoss', { rng: battleRng(), set, attackType: weapon.type, woundsDealt: res.woundsLost })) critLog.push(line);
+    emitCombatEvent('onWoundLoss', { get, set, battle, self: target, sink: (line) => critLog.push(line), triggerCtx: { rng: battleRng(), attackType: weapon.type, woundsDealt: res.woundsLost } });
     // Chanson de marin (MDG 09 l.38) : « Si le Personnage subit des Dégâts …, sa Chanson de marin prend fin. »
     if (target.singingShanty) critLog.push(...endShanty(get, target));
   }
   // Effet déclenché « à la mise hors de combat d'un adversaire » authoré (Affamé : Test de FM ou
   // festoie — perd Action + Mouvement) — dispatcher générique (state/triggeredEffects).
   if (res.hit && isOutOfAction(target) && !isOutOfAction(attacker)) {
-    for (const line of fireTriggers(get, attacker, 'onKill', { rng: battleRng(), set })) critLog.push(line);
+    emitCombatEvent('onKill', { get, set, battle, self: attacker, sink: (line) => critLog.push(line), triggerCtx: { rng: battleRng() } });
   }
   // Effet « à la mort » du SLAIN lui-même (Démoniaque banni…) — pour TOUT chemin de mort de cette
   // résolution : la CIBLE (touche, Critique létal, 0 PB) ET l'ATTAQUANT (Critique défensif opposé qui le
@@ -1893,14 +1907,14 @@ export function applyAttackResult(
     for (const c of battle.combatants) {
       // Nerveux (effet déclenché onStartled : +3 Brisé) — fired par le dispatcher générique (no-op si absent).
       // Cause 'noise' (bruits forts) → exemption Dressé (Guerre) lue par la Condition Flow `startleCause`.
-      if (!isOutOfAction(c)) for (const line of fireTriggers(get, c, 'onStartled', { set, startleCause: 'noise' })) log.push(ev('condition', line, c.id));
+      if (!isOutOfAction(c)) emitCombatEvent('onStartled', { get, set, battle, self: c, sink: (line) => log.push(ev('condition', line, c.id)), triggerCtx: { startleCause: 'noise' } });
     }
   }
   // Effets DÉCLENCHÉS « à la touche » authorés (donnée éditable) : Traits de l'attaquant (Toile, Venin…),
   // Atouts de l'arme (Assommante, Immobilisante…) et Enchantements actifs — agrégés et appliqués par UN
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
-  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, margin: res.netSL, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng(), set })) log.push(ev('condition', line, target.id));
+  if (res.hit) emitCombatEvent('onHit', { get, set, battle, self: attacker, sink: (line) => log.push(ev('condition', line, target.id)), triggerCtx: { victim: target, weapon, woundsDealt: res.woundsLost, margin: res.netSL, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng() } });
   // Combat de masse (ADE II 08 l.139/145) : une Scène de COMBAT compte les touches des PJ sur l'ennemi
   // (−1/touche) ; no-op hors bataille de masse. Réduction PUIS résolue à la victoire (massBattleResumeCombat).
   if (res.hit) massBattleTrackHit(get, set, attacker, target);
@@ -1922,6 +1936,9 @@ export function applyAttackResult(
   const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, QUALITY_IDS.Salve) && (attacker.chambered ?? 0) > 0;
   // Lignes de journal différées par un hook profond (ex. `onGainCondition` ennemi/auto déclenché plus
   // haut dans cette résolution) → foldées dans le MÊME `log` réécrit, avant que ce `set` ne le clobbere.
+  // Effet déclenché « après résolution de l'attaque » (touche OU raté) — dispatcher générique via le bus.
+  // Point d'émission = fin de résolution d'attaque (LDB 14, Test de combat résolu). Inerte sans donnée.
+  emitCombatEvent('onAttackResolved', { get, set, battle, self: attacker, sink: (line) => log.push(ev('condition', line, target.id)), triggerCtx: { victim: target, weapon, woundsDealt: res.woundsLost, margin: res.netSL, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng() } });
   log.push(...drainPendingLog(get, set));
   set({ battle: { ...battle, acted: !salvoContinues, action: null, log } });
   // Structure de siège tombée à 0 Blessure → BRÈCHE : retrait du Combattant inerte + flag d'arête abattue.
@@ -2816,7 +2833,11 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
   if (!target) return;
   const log: string[] = [];
   if (deviate) deflectCrit(target, dev.location, dev.deflectExtraWounds, log); // −1 PA, Critique ignoré, + Blessures recalculées
-  else applyCritAndFinalize(get, set, target, dev.location, dev.isCoupCritique, dev.overkill, log, dev.ctx, dev.woundsBefore, dev.crit, true); // Subir : Critique pré-tiré
+  else {
+    applyCritAndFinalize(get, set, target, dev.location, dev.isCoupCritique, dev.overkill, log, dev.ctx, dev.woundsBefore, dev.crit, true); // Subir : Critique pré-tiré
+    // 7bis (#316) : Subir un Critique OPPOSÉ dévié = Blessure Critique → le bus émet `onCrit` pour l'attaquant.
+    emitOpposedCrit(get, set, inBattleId(battle, dev.ctx.attackerId), target, dev.location, dev.ctx.weaponObj, log);
+  }
   // 0 PB → À Terre (LDB 18 l.28) ; cible neutralisée → on lève engagement + effets psy (parité avec la mêlée).
   if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, COND.inconscient)) applyZeroWounds(target);
   if (isOutOfAction(target)) {
@@ -3026,6 +3047,10 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   // silencieux héros »). `onFailHard` (Purifier la chair −4 DR → Inconscient) est honoré dans la branche
   // d'échec via la Condition Flow `slThreshold ≤ −4` (cf. `mkTest`).
   if (m.testFlow) runCombatFlow({ mode: 'combat', get, set, target: caster, caster, label: m.name, opsCtx }, m.testFlow);
+  // Effet déclenché « sur une Imparfaite » (LDB 46 : Incantation Imparfaite / Colère des dieux) —
+  // dispatcher générique via le bus. Émis une fois par application réelle (le repli-composant qui
+  // absorbe tout retourne AVANT ici). Inerte sans donnée.
+  emitCombatEvent('onMiscast', { get, set, battle: get().battle!, self: caster, sink: (line) => lines.push(line), triggerCtx: { rng: battleRng() } });
   return lines;
 }
 
@@ -3801,7 +3826,7 @@ export function applyCast(
     // Nerveux (effet déclenché onStartled : magie → +3 Brisé) — dispatcher générique (state/triggeredEffects).
     // Cause 'magic' (présence de magie) → exemption Dressé (Magie) lue par la Condition Flow `startleCause`.
     for (const t of [target, ...extraTargets]) {
-      if (res.cast && !isOutOfAction(t)) for (const line of fireTriggers(get, t, 'onStartled', { set, startleCause: 'magic' })) logLines.push(line);
+      if (res.cast && !isOutOfAction(t)) emitCombatEvent('onStartled', { get, set, battle: get().battle!, self: t, sink: (line) => logLines.push(line), triggerCtx: { startleCause: 'magic' } });
     }
     // Surincantation « Cible » (LDB 47 l.28-31) : le MÊME jet frappe les cibles supplémentaires.
     for (const t2 of extraTargets) {
@@ -4023,6 +4048,10 @@ export function applyCast(
 
   // Le sort focalisé est consommé après le lancement.
   if (focusedNI0) caster.focus = undefined;
+  // Effet déclenché « après incantation résolue » (réussie ou non) — dispatcher générique via le bus.
+  // Point d'émission = incantation résolue (LDB 46, post-runCastFlow). Inerte sans donnée. Hors combat :
+  // battle absent, runCombatHooks('onCastResolved') est un no-op (aucune machinerie abonnée).
+  emitCombatEvent('onCastResolved', { get, set, battle: battle!, self: caster, sink: (line) => logLines.push(line), triggerCtx: { victim: target, rng: battleRng() } });
   finishPlayerAction(get, set, logLines, 'cast'); // sortie commune combat (log+conso Action) / hors combat (journal)
   // Téléportation (Jalon 2.6) : le choix de case suit la clôture du cast (qui remet action: null).
   if (teleportReach && get().battle) {
@@ -4648,9 +4677,10 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
   if (!defender || !attacker) return;
   if (step.chosen !== 'trap') {
     // Coup Critique normal sur la défense (le défenseur place le Critique sur l'attaquant).
-    const parryWeaponName = defender.weapons.find((w) => w.uid === pbt.parryWeaponUid)?.name ?? 'arme';
+    const parryWeaponObj = defender.weapons.find((w) => w.uid === pbt.parryWeaponUid);
+    const parryWeaponName = parryWeaponObj?.name ?? 'arme';
     const lines = [tr('cf.critOnDefense', { name: defender.name })];
-    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: parryWeaponName }, lines);
+    applyOpposedCritical(get, set, attacker, pbt.roll, { attackerId: defender.id, weapon: parryWeaponName, weaponObj: parryWeaponObj }, lines);
     const b = get().battle!;
     set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', defender.id, attacker.id)] } });
     bus.emit(EVT.SCENE_DIRTY);
@@ -4753,7 +4783,10 @@ export function advanceTurn(get: Get, set: SetFn) {
       // (Mâchoires d'acier n'est plus un hook de Round : c'est un effet `onGainCondition` data-driven.)
       // advanceTurn n'orchestre plus que le CADRE (Round, ordre, révélation) ; le CONTENU vit en hooks.
       // (Frénésie : l'Arme libre est un grant de DONNÉE plafonné par freeAttacksThisTurn, remis à zéro au tour.)
-      runCombatHooks('onRoundEnd', { get, set, battle, sink: tickLine });
+      // Unique porte (#316) : le site MÉTIER émet via le bus ; les boucles internes `fireTriggers`
+      // (roundHooks, bus-owned) restent la machinerie du bus. Sans `audience`/`self` → diffusion data
+      // vide ici : STRICTEMENT équivalent à l'ancien `runCombatHooks('onRoundEnd', …)`.
+      emitCombatEvent('onRoundEnd', { get, set, battle, sink: tickLine });
       if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: tr('cf.roundEndTitle', { n: round - 1 }), lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
@@ -5309,7 +5342,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // Frénésie 10 → Rage 20 → tentative de Frénésie IA 30 → psychologie 40. La dépendance d'ordre RAW
   // (Frénésie/Rage AVANT la psychologie — la Frénésie en rend immunisé) est encodée par les `order`.
   // Ces hooks journalisent eux-mêmes (kinds `frenzy`/`fear`) ; `sink` n'est pas utilisé par eux.
-  runCombatHooks('onTurnStart', { get, set, battle: get().battle!, self: enemy, sink: (line, c) => { get().battle!.log.push(ev('detail', line, c?.id)); } });
+  // Unique porte (#316) : émission via le bus. `self: enemy` alimente les hooks (Rage) ; `audience: []`
+  // SUPPRIME la diffusion data ICI (l'`onTurnStart` DATA est diffusé par `fireTurnStartTriggers`, non
+  // dupliqué) → STRICTEMENT équivalent à l'ancien `runCombatHooks('onTurnStart', …)`.
+  emitCombatEvent('onTurnStart', { get, set, battle: get().battle!, self: enemy, audience: [], sink: (line, c) => { get().battle!.log.push(ev('detail', line, c?.id)); } });
   // Stupide (LDB 85 p.341) : sans allié non-Stupide à ses côtés (adjacent), Test d'Intelligence Facile
   // (+40) au début du Round ; sur un échec, elle perd son Mouvement ET son Action. RESTE INLINE (pas un
   // hook) : c'est un CONTRÔLE DE FLUX (`return advanceTurn` saute le tour) — un hook `run(ctx):void` ne
@@ -5666,6 +5702,12 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
               campGain(get, enemy, adv);
               enemy.gainedAdvThisRound = true;
               enemy.chargedThisTurn = true; // Charge → Attaque gratuite de Cornes (LDB 85), résolue par aiCreatureFreeAttacks
+              // Effets `onCharged` NON-attaque-gratuite (donnée : Trait/État/Talent) → dispatcher générique
+              // via le bus. Les Flows `grantFreeAttack` restent inertes ici (voie pure `applyTriggeredEffects`,
+              // cf. ~2554) — pas de double frappe : la Frappe réactive part de `resolveFreeAttacks` ci-dessous.
+              const chargedLines: string[] = [];
+              emitCombatEvent('onCharged', { get, set, battle, self: tgt, sink: (line) => chargedLines.push(line), triggerCtx: { victim: enemy, rng: battleRng() } });
+              if (chargedLines.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(chargedLines, 'condition', tgt.id)] } });
               // Frappe réactive (LDB 10) : la cible CHARGÉE peut riposter HORS séquence (Test d'Init) avant
               // l'attaque du chargeur — talent d'attaque déclenchée en donnée (`grantFreeAttack onCharged`).
               resolveFreeAttacks(get, set, tgt, 'onCharged', enemy);

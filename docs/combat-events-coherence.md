@@ -63,10 +63,31 @@ Traits + Atouts + États, chacun tagué `key`/`cap`) et ne joue que les Flows à
 **Trait/État** de créature qui riposte `onCharged`/`onHit` fonctionne comme un talent, sans chemin
 spécifique.
 
+**FAIT (#316) — le bus est l'UNIQUE porte.** Tous les sites de dispatch DIRECT de production ont migré
+vers `emitCombatEvent` (`onHit`/`onCrit`/`onWoundLoss`/`onSlain`/`onKill`/`onStartled`/`onGainCondition` ;
+`onRoundEnd`/`onTurnStart` au site MÉTIER). Les boucles internes `fireTriggers` par combattant des
+événements de CYCLE (`combat/roundHooks.ts`, `combat/turnHooks.ts`) sont la MACHINERIE DU BUS : elles
+restent des hooks ordonnés (interleave par `order`, y compris le cross-phase `onRoundStart`-depuis-un-hook-
+`onRoundEnd`) et sont whitelistées « bus-owned ». Verrous :
+- **Quarantaine d'import** (`combat-event-port-guard.test.ts`) : `fireTriggers`/`runCombatHooks`
+  importables UNIQUEMENT par `combatEvents.ts`, les deux définisseurs et les modules bus-owned — le
+  dispatch direct est INEXPRIMABLE (fail-closed, preuve par fichier fictif).
+- **Complétude d'émission** (`combat-event-emission-coverage.test.ts`) : chaque `EffectTrigger` du schéma
+  d'authoring (dérivé de `TRIGGER_LABEL`, exhaustif au compilateur) a ≥1 point d'émission — zéro
+  affordance morte.
+
+Triggers CÂBLÉS par #316 (jadis orphelins) : `onAttackResolved` (fin de résolution d'attaque),
+`onCastResolved` (post-`runCastFlow`/`applyCast`), `onMiscast` (`applyMiscast`), `onCharged` (site de
+charge — les effets NON-attaque-gratuite ; les Flows `grantFreeAttack` restent inertes via la voie pure →
+pas de double frappe, la Frappe réactive part de `resolveFreeAttacks`). **7bis** : un Coup Critique OPPOSÉ
+(LDB 14 l.7) / dévié (`applyOpposedCritical`, `resolveDeviation` mode `self`) émet désormais `onCrit` via le
+bus, avec l'arme RÉELLE de l'attaquant (`DeviationCtx.weaponObj`) → les Atouts « sur Critique » (Taillade →
+Hémorragique) s'appliquent aussi sur ces Critiques. `applyOpposedCritical` reste MACHINERIE (ne nomme
+aucune entité, §3) — elle ÉMET l'événement, elle n'est pas convertie en hook (un hook de phase ne porte pas
+le contexte d'attaque riche — roll/arme/attaquant — qu'exige la résolution du Critique opposé).
+
 **Reste à faire pour « un seul bus » complet** : #315 (exécuteur unique — `runPureFlowLines` à
-supprimer + garde de double-exécution) et #316 (le bus n'est pas encore l'unique porte — sites qui
-appellent leur mécanique directement plutôt que via `emitCombatEvent` ; cibles machinerie 7bis
-`onAttackResolved`/`onCastResolved`/`onMiscast`, orphelines).
+supprimer + garde de double-exécution).
 
 ## 4. BUG concret relevé (exemple) — « punching-ball à 0 PB » + intégrité hors-combat
 

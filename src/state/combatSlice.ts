@@ -23,7 +23,7 @@ import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
 import { discreetPrayerDifficulty } from '../engine/prayer';
-import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
+import { setTriggeredTestRouter } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
@@ -201,7 +201,7 @@ function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combata
   const distTiles = ship.pos && target.pos ? chebyshev(ship.pos, target.pos) : 0;
   for (const s of volley.shots) {
     if (s.critical) applyCriticalToTarget(target, 'corps', true, 0, critLines, set, { ctx: { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, get });
-    if (s.wounds > 0) critLines.push(...fireTriggers(get, ship, 'onHit', { victim: target, weapon: s.weapon, woundsDealt: s.wounds, location: 'corps', attackType: 'ranged', rng: battleRng(), set }));
+    if (s.wounds > 0) emitCombatEvent('onHit', { get, set, battle, self: ship, sink: (line) => critLines.push(line), triggerCtx: { victim: target, weapon: s.weapon, woundsDealt: s.wounds, location: 'corps', attackType: 'ranged', rng: battleRng() } });
     const area = resolveWeaponArea(get, set,
       { attacker: ship, primaryTarget: target, weapon: s.weapon, damage: s.damage, location: 'corps', distanceTiles: distTiles },
       areaTargets(battle.combatants, sceneMetresPerTile(get().scene), () => targetCrew), battleRng());

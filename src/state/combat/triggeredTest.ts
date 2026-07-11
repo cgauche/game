@@ -36,7 +36,8 @@ import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings
 import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
-import { fireTriggers, recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
+import { recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
+import { emitCombatEvent } from '../combatEvents';
 import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatOrParty';
 import { campSpend } from './advantagePool';
@@ -519,7 +520,8 @@ export function handleConditionGained(get: Get, set: SetFn, c: Combatant, name: 
   if (notifying.has(c)) return; // réentrance (un onSuccess ajoute un État) → on ne re-fire pas
   notifying.add(c);
   try {
-    const lines = fireTriggers(get, c, 'onGainCondition', { conditionName: name, rng: battleRng(), set });
+    const lines: string[] = [];
+    emitCombatEvent('onGainCondition', { get, set, battle, self: c, sink: (line) => lines.push(line), triggerCtx: { conditionName: name, rng: battleRng() } });
     if (lines.length) set({ pendingLogQueue: [...get().pendingLogQueue, ...lines.map((line) => ({ line, cid: c.id }))] });
   } finally {
     notifying.delete(c);
