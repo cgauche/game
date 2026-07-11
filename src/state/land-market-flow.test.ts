@@ -20,6 +20,18 @@ import type { CargoLot } from '../engine/cargo';
 const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
+/** Draine une cascade influençable (héros piloté-humain → modale, #274) — même patron que les autres
+ *  suites (`cascadeRoll`+`cascadeNext`, ex. `river-voyage-flow.test.ts`). */
+function drainCascade(): void {
+  let g = 0;
+  while (get().pendingCascade && g++ < 50) {
+    const p = get().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+    else get().cascadeNext();
+  }
+}
+
 function skill(c: Combatant, skillId: string, advances: number, spec?: string): void {
   const ex = c.skills.find((s) => s.skillId === skillId && (s.spec ?? null) === (spec ?? null));
   if (ex) ex.advances = Math.max(ex.advances, advances);
@@ -101,6 +113,9 @@ describe('#99 — génération au marché : la rumeur vise un AUTRE Lieu de la c
     launchAtA();
     seedBattleRng(7);
     openLandMarket(get, set);
+    // #274 : le Test de Ragot est désormais surfacé par la porte (`openRoll`, hero-test, héros piloté-
+    // humain → modale) — drainer comme un jet joueur normal.
+    drainCascade();
     const board = get().tradeRumours;
     expect(board.length).toBe(1);
     expect(board[0].placeId).toBe('B'); // AUTRE Lieu à market (jamais le Lieu courant)

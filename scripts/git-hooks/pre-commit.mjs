@@ -12,6 +12,8 @@ import { scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_
 import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
 import { emojisIn } from '../guards/lib/emojiAffordance.mjs';
 import { scanHardcode } from '../guards/lib/hardcode.mjs';
+import { scanRollSeamExclusivity } from '../guards/lib/rollSeamExclusivity.mjs';
+import { rollSeamExcluded } from '../guards/lib/rollSeamWhitelist.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -49,6 +51,10 @@ for (const f of staged) {
   }
   if (/^src\/(ui|state|gameIso)\//.test(rel))
     for (const emoji of emojisIn(text)) offenders.push(`${rel} [emoji d'affordance] ${emoji}`);
+  // #274 — exclusivité du seam de jet : rollTest(/d100(/TestOutcome.seal( hors whitelist (double
+  // détente avec src/state/roll-seam-exclusivity-guard.test.ts, SOURCE UNIQUE de la whitelist).
+  if (!rollSeamExcluded(rel))
+    for (const x of scanRollSeamExclusivity(rel, text)) offenders.push(`${rel}:${x.line} [seam de jet contourné] ${x.detail}`);
 }
 
 // #290 — emoji dans la DONNÉE (`src/scenes/**/*.json` + `src/data/*.json`) : même tolérance zéro que le code.

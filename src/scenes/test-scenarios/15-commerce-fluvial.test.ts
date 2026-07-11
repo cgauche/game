@@ -74,6 +74,7 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
     // ── ACHAT à Grünburg (R 2) ──
     seedBattleRng(7);
     get().openLandMarket();
+    drainCascade(); // #274 : le Test de Ragot est désormais surfacé par la porte (héros piloté-humain → modale)
     const offers = get().landMarket!.offers;
     expect(offers.length).toBeGreaterThan(0);
     const offer = offers[0];
@@ -94,6 +95,7 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
     // ── VENTE à Altdorf (Florissant R 5 → Mise à prix +10 %, l.156) ──
     seedBattleRng(3);
     get().openLandMarket();
+    drainCascade();
     const purseBeforeSell = toBrass(get().money);
     get().landSellCargo(0);
     const earned = toBrass(get().money) - purseBeforeSell;

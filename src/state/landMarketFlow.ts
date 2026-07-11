@@ -17,9 +17,13 @@ import { battleRng } from './battleRng';
 import { placeOfScene } from './worldMap';
 import { dayIndex } from './upkeep';
 import { partyAssisted, partyBest, testValue } from '../engine/skills';
-import { opposedTest, SL_ASTOUNDING, rollTest } from '../engine/tests';
+import { opposedTest, SL_ASTOUNDING, difficultyFromModifier } from '../engine/tests';
+import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { d100 } from '../engine/dice';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
+import { registerCascadeApplier } from './cascade';
+import { openRoll, freeCons } from './rollSeam';
+import { actorIn } from './combatOrParty';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney } from '../engine/money';
 import {
   type LandMarketProfile, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo, landCargoBasePrice,
@@ -99,14 +103,23 @@ export function openLandMarket(get: Get, set: Set): void {
   set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers } });
   // Rumeurs commerciales (T2C ch.11 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, on
   // tire un AUTRE Emplacement puis une rumeur (Tableau des rumeurs) → les biens visés s'y vendent au DOUBLE
-  // du prix de base (l.180). Roulé APRÈS les offres pour ne pas déplacer leur flux RNG. L'« index géographique
-  // du Reikland » (l.180) est ici la liste des Lieux de la carte porteurs d'un `market` (aucun catalogue neuf).
-  const gossip = partyBest(get().party, 'ragot');
-  if (gossip) {
-    const g = rollTest(gossip.value, gossipRule.difficulty, rng, gossipRule.mod);
-    if (g.success) generateTradeRumour(get, set, cur.placeId, rng);
-  }
+  // du prix de base (l.180). L'« index géographique du Reikland » (l.180) est ici la liste des Lieux de la
+  // carte porteurs d'un `market` (aucun catalogue neuf). #274 sweep : ce Test était un `rollTest` inline
+  // silencieux (jamais interrogeable/surfacé au MJ) — migré sur la porte `openRoll`.
+  openRoll(get, set, {
+    side: { partyBest: { skill: 'ragot', assisted: false } },
+    test: { skill: 'ragot', label: 'Ragot — rumeur commerciale' },
+    difficulty: difficultyFromModifier(DIFFICULTY_MODIFIERS[gossipRule.difficulty] + gossipRule.mod),
+    klass: 'hero-test',
+  }, LAND_GOSSIP_KIND, { placeId: cur.placeId });
 }
+
+const LAND_GOSSIP_KIND = 'land-market-gossip';
+registerCascadeApplier(LAND_GOSSIP_KIND, (get, set, step) => {
+  if (!step.result?.success) return {};
+  generateTradeRumour(get, set, String(step.meta?.placeId ?? ''), battleRng());
+  return {};
+});
 
 /** Génère une RUMEUR CROSS-LIEU (T2C ch.11 l.180) : tire un AUTRE Lieu à `market` de la carte, puis une
  *  rumeur (Tableau des rumeurs) désignant les biens qui s'y vendent au double. Ajoutée au board persistant
@@ -143,11 +156,28 @@ export function landEvalWine(get: Get, set: Set, cargoId: string): void {
   const best = partyBest(get().party, 'evaluation');
   if (!best) { log(get, set, ['Personne dans le groupe ne sait évaluer un vin.']); return; }
   const diff = wineEvalDifficulty(testValue(best.actor, 'resistance-a-l-alcool'));
-  const res = rollTest(best.value, diff, battleRng());
-  const rev = wineEvalReveal(offer.basePrice, res.success, res.sl);
-  set({ landMarket: { ...st, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, wineTier: rev.shownLabel, wineEvalOk: res.success } : o) } });
-  log(get, set, [`${best.actor.name} — Évaluation du ${offer.label} (${res.roll}) : qualité jugée « ${rev.shownLabel} »${res.success ? '.' : ' — jugement peu sûr…'}`]);
+  // #274 sweep : `rollTest` inline silencieux — migré sur `openRoll`.
+  openRoll(get, set, {
+    side: { partyBest: { skill: 'evaluation', assisted: false } },
+    test: { skill: 'evaluation', label: `Évaluation — ${offer.label}` },
+    difficulty: diff,
+    klass: 'hero-test',
+  }, LAND_WINE_EVAL_KIND, { cargoId });
 }
+
+const LAND_WINE_EVAL_KIND = 'land-market-wine-eval';
+registerCascadeApplier(LAND_WINE_EVAL_KIND, (get, set, step) => {
+  if (!step.result) return {};
+  const cargoId = String(step.meta?.cargoId ?? '');
+  const st = get().landMarket;
+  const offer = st?.offers.find((o) => o.cargoId === cargoId);
+  if (!st || !offer) return {};
+  const { success, sl, roll } = step.result;
+  const rev = wineEvalReveal(offer.basePrice, success, sl);
+  set({ landMarket: { ...st, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, wineTier: rev.shownLabel, wineEvalOk: success } : o) } });
+  const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
+  return { consequences: freeCons([`${actor?.name ?? 'Le groupe'} — Évaluation du ${offer.label} (${roll}) : qualité jugée « ${rev.shownLabel} »${success ? '.' : ' — jugement peu sûr…'}`]) };
+});
 
 export function closeLandMarket(_get: Get, set: Set): void {
   set({ landMarket: null });

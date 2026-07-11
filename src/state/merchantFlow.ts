@@ -8,8 +8,7 @@ import { Combatant, ItemInstance } from '../engine/types';
 import { recomputeLoadout, itemFromTrappingById, addItemToHero, autoStowNewItem } from '../engine/items';
 import { isRepairable, itemRepairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
-import { SL_ASTOUNDING, rollTest } from '../engine/tests';
-import { battleRng } from './battleRng';
+import { SL_ASTOUNDING } from '../engine/tests';
 import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
 import { rule, type RuleValue } from '../engine/policy';
 import type { SceneEntity } from './scene';
@@ -27,7 +26,8 @@ import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
 import { registerCascadeApplier, startCascade } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, openRoll } from './rollSeam';
+import { actorIn } from './combatOrParty';
 import type { CascadeStep } from './pendings';
 
 import type { Get, Set } from './flowTypes';
@@ -244,6 +244,47 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
   set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: prev.stock, cart: [], bargainLocked: prev.bargainLocked ?? false } });
 }
 
+/** Kind d'étape de cascade du Test de Ragot de recherche active (#274, sweep pré-garde — site consigné
+ *  #275 « Ragot silencieux, hors porte ») : le tirage précédent (`rollTest` inline) ne posait AUCUNE
+ *  question au siège MJ et n'était jamais influençable (Chance/Résilience) — exactement le trou que la
+ *  garde d'exclusivité fait émerger. Migré sur `openRoll` (`klass:'hero-test'`) ; la continuation
+ *  (avance de la journée + décision réassort visible/inline, #273) vit ICI, keyée par `kind`. */
+const MERCHANT_RAGOT_KIND = 'merchant-ragot';
+registerCascadeApplier(MERCHANT_RAGOT_KIND, (get, set, step) => {
+  if (!step.result) return {};
+  const meta = step.meta ?? {};
+  const entityId = String(meta.entityId ?? '');
+  const m = get().merchant;
+  if (!m || m.entityId !== entityId) return {}; // visite fermée entre-temps
+  const gossipDay = step.result.success;
+  const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
+  finalizeSearchAvailability(get, set, entityId, Number(meta.restockPeriod ?? MINUTES_PER_DAY), gossipDay);
+  return {
+    consequences: freeCons([gossipDay
+      ? `${actor?.name ?? 'Le groupe'} — recherche active (Ragot ${step.result.roll}) : une journée aux marchés porte ses fruits (Disponibilité +10 %, LDB 59 l.50).`
+      : `${actor?.name ?? 'Le groupe'} — recherche active (Ragot ${step.result.roll}) : une journée aux marchés sans glaner de piste utile.`]),
+  };
+});
+
+/** Continuation PARTAGÉE (jet réussi/raté OU absence de candidat au Ragot) : avance la journée (« journée
+ *  entière », LDB 59 l.50), puis même porte que l'ouverture (#273) — siège MJ → tirage VISIBLE ; sinon
+ *  → inline. */
+function finalizeSearchAvailability(get: Get, set: Set, entityId: string, restockPeriod: number, gossipDay: boolean): void {
+  get().advanceTime(MINUTES_PER_DAY); // « journée entière » — l'horloge cascade normalement (#T3)
+  const now = get().gameTime;
+  const m = get().merchant;
+  if (!m || m.entityId !== entityId) return;
+  const ent = get().scene?.entities.find((e) => e.id === entityId);
+  const arch = MERCHANTS[m.archetype];
+  if (!arch) return;
+  if (get().net.gmSeat != null) {
+    openStockRevealCascade(get, set, entityId, m.archetype, m.settlement, now, restockPeriod, gossipDay, m.resaleRate, m.buyMarkup ?? 1);
+    return;
+  }
+  rollFreshStock(get, set, entityId, ent, arch, m.settlement, now, restockPeriod, gossipDay);
+  set((s) => (s.merchant ? { merchant: { ...s.merchant, stock: s.merchantStocks[entityId]?.stock ?? s.merchant.stock, cart: [], bargainBuy: null, bargainSell: null, bargainLocked: false } } : {}));
+}
+
 /** Recherche active de Disponibilité (LDB 59 l.50) : « passe une journée entière à effectuer des achats et
  *  des Tests de Ragot ». Le groupe consacre UNE JOURNÉE (avance l'horloge) et jette un Test de Ragot ; sur
  *  un succès, un RÉASSORT FRAIS est tiré avec +10 % (cumulable avec la Carrière cohérente jusqu'au plafond
@@ -259,22 +300,17 @@ export function searchAvailability(get: Get, set: Set): void {
   const restockPeriod = (ent?.merchant?.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY;
   // Test de Ragot du groupe (Soutien LDB 12) — Intermédiaire (+0), le RAW ne chiffre pas la difficulté.
   const best = partyAssisted(get().party, 'ragot', 'sociabilite');
-  const res = best ? rollTest(best.value, 'intermediaire', battleRng()) : null;
-  const gossipDay = !!res?.success;
-  get().advanceTime(MINUTES_PER_DAY); // « journée entière » — l'horloge cascade normalement (#T3)
-  const now = get().gameTime;
-  get().log(res == null
-    ? 'Personne dans le groupe ne sait glaner un Ragot — une journée passée en vain aux étals.'
-    : gossipDay
-      ? `${best!.actor.name} — recherche active (Ragot ${res.roll}) : une journée aux marchés porte ses fruits (Disponibilité +10 %, LDB 59 l.50).`
-      : `${best!.actor.name} — recherche active (Ragot ${res.roll}) : une journée aux marchés sans glaner de piste utile.`);
-  // #273 dernier volet — même porte que l'ouverture : siège MJ → tirage VISIBLE ; sinon → inline.
-  if (get().net.gmSeat != null) {
-    openStockRevealCascade(get, set, m.entityId, m.archetype, m.settlement, now, restockPeriod, gossipDay, m.resaleRate, m.buyMarkup ?? 1);
+  if (!best) {
+    get().log('Personne dans le groupe ne sait glaner un Ragot — une journée passée en vain aux étals.');
+    finalizeSearchAvailability(get, set, m.entityId, restockPeriod, false);
     return;
   }
-  rollFreshStock(get, set, m.entityId, ent, arch, m.settlement, now, restockPeriod, gossipDay);
-  set((s) => (s.merchant ? { merchant: { ...s.merchant, stock: s.merchantStocks[m.entityId]?.stock ?? s.merchant.stock, cart: [], bargainBuy: null, bargainSell: null, bargainLocked: false } } : {}));
+  openRoll(get, set, {
+    side: { partyBest: { skill: 'ragot', char: 'sociabilite' } }, // Soutien LDB 12 — même valeur que `partyAssisted`
+    test: { skill: 'ragot', char: 'sociabilite', label: 'Ragot — recherche active' },
+    difficulty: 'intermediaire',
+    klass: 'hero-test',
+  }, MERCHANT_RAGOT_KIND, { entityId: m.entityId, restockPeriod });
 }
 
 export function closeMerchant(get: Get, set: Set): void {

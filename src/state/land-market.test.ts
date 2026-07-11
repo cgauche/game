@@ -14,6 +14,18 @@ import type { CargoLot } from '../engine/cargo';
  */
 const get = useGame.getState.bind(useGame);
 
+/** Draine une cascade influençable (héros piloté-humain → modale, #274) — même patron que les autres
+ *  suites (`cascadeRoll`+`cascadeNext`). */
+function drainCascade(): void {
+  let g = 0;
+  while (get().pendingCascade && g++ < 50) {
+    const p = get().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+    else get().cascadeNext();
+  }
+}
+
 const landMap: WorldMap = {
   id: 'm', nom: 'Reikland',
   places: [
@@ -114,6 +126,8 @@ describe('#58 — commerce de cargaison terrestre (T2C ch.11)', () => {
     const wine = get().landMarket!.offers.find((o) => o.wine)!;
     expect(wine.wineTier).toBeUndefined(); // qualité incertaine tant que non évaluée
     get().landEvalWine(wine.cargoId);
+    // #274 : le Test d'Évaluation est désormais surfacé par la porte (héros piloté-humain → modale).
+    drainCascade();
     const after = get().landMarket!.offers.find((o) => o.cargoId === wine.cargoId)!;
     expect(WINE_QUALITY.map((w) => w.label)).toContain(after.wineTier); // une qualité (vraie ou fausse) est affichée
     expect(typeof after.wineEvalOk).toBe('boolean');
