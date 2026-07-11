@@ -53,7 +53,7 @@ export function OptionChooser({
         {groupLabel != null && <span className="mini-title">{groupLabel}</span>}
         <div className="seg">
           {shown.map((o) => (
-            <button key={o.key} className={o.selected ? 'on' : ''} disabled={o.disabled} onClick={o.onSelect} title={o.title}>
+            <button key={o.key} className={o.selected ? 'on' : ''} aria-pressed={!!o.selected} disabled={o.disabled} onClick={o.onSelect} title={o.title}>
               {o.content ?? (
                 <>
                   {o.label}

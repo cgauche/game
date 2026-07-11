@@ -179,7 +179,7 @@
   flex: 1 1 180px;
 }
 .coop-error {
-  color: var(--danger);
+  color: var(--danger-soft); /* #305 : var(--danger) sur menu-card (panel/panel2) < 4.5:1 (AA) */
 }
 
 /* Barre de temps des révélations GRAVES (auto-fermeture longue, arbitrage 2026-06-11) :

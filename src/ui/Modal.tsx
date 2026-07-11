@@ -37,14 +37,20 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
   // Focus initial UTILE : une option de choix NON tranchée d'abord (le 1er Entrée la coche, au lieu de
   // taper un bouton de validation inerte) ; sinon le bouton primaire (jet : Lancer/Appliquer) ; sinon le
   // 1er focusable. Évite que le focus atterrisse sur un bouton sans intérêt (« rien ne répond »).
+  // RESTORE : à la fermeture, le focus revient à l'élément qui l'avait AVANT l'ouverture (déclencheur du
+  // bouton/carte) — sinon un joueur clavier perd son point de navigation à chaque modale fermée.
   useEffect(() => {
     const box = boxRef.current;
     if (!box) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const opts = choiceOptions(box);
     const selected = opts.find((b) => b.classList.contains('on') || b.classList.contains('btn-primary'));
     const primary = box.querySelector<HTMLElement>('.modal-actions .btn-primary:not([disabled])');
     const target = (opts.length && !selected ? opts[0] : null) ?? (primary?.getClientRects().length ? primary : null) ?? visibleFocusables(box)[0] ?? null;
     target?.focus();
+    return () => {
+      if (previouslyFocused && document.body.contains(previouslyFocused)) previouslyFocused.focus();
+    };
   }, [boxRef]);
   const closeRef = useRef(onClose);
   closeRef.current = onClose; // Échap suit la visibilité COURANTE du bouton Annuler (pré/post-jet)

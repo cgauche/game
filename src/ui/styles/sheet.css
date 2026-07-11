@@ -83,7 +83,7 @@
   color: var(--gold2);
 }
 .sheet-vitals .stat-chip.enc-over .sc-value {
-  color: var(--danger);
+  color: var(--danger-soft); /* #305 : var(--danger) sur .stat-chip (panel2) < 4.5:1 (AA) */
 }
 .sheet-resources {
   display: grid;

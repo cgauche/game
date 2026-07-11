@@ -301,7 +301,7 @@
   }
 }
 .ok-text {
-  color: var(--ok);
+  color: var(--ok-bright); /* #305 : var(--ok) sur .modal (panel) < 4.5:1 (AA) — variante texte dédiée */
 }
 .warn-text {
   color: var(--gold);
