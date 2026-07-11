@@ -1,7 +1,7 @@
 /**
- * SEAM DE JET UNIQUE (#275, Ronde 0 — substrat) — `docs/plans/2026-07-10-conception-seam-de-jet.md`,
- * Décision 1 (API) + Décision 3 (table de policy). Extension de la fabrique existante
- * (`makeRollFlow`/`FLOWS`, `rollFlowFactory.ts`) + `cascade.ts` (séquenceur) — RIEN de parallèle.
+ * SEAM DE JET UNIQUE (#275) — LA porte déclarative de tout dé du jeu : le call-site DÉCRIT, la porte
+ * décide du surfaçage. Extension de la fabrique existante (`makeRollFlow`/`FLOWS`,
+ * `rollFlowFactory.ts`) + `cascade.ts` (séquenceur) — RIEN de parallèle.
  *
  * `openRoll` DÉCRIT un jet (`RollRequest`) et une CONTINUATION enregistrée par `kind`
  * (`registerCascadeApplier`, `cascade.ts:57`) ; la porte RÉSOUT la policy `klass × contrôleur ×

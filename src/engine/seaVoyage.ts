@@ -20,6 +20,7 @@ import seaEventsJson from '../data/sea-events.json';
 import seaCargoJson from '../data/sea-cargo.json';
 import { findTableEntry } from './tables';
 import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
+import { rollTest, type TestResult } from './tests';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
 // Tronc commun cargaison (partagé avec le commerce terrestre T2C, `landCargo.ts`) — modèle de lot,
@@ -239,6 +240,13 @@ export function rollMerchantSkill(cosmopolite: boolean, rng: RNG = defaultRNG): 
   const dice = Array.from({ length: spec.d10 }, () => d10(rng));
   const tens = dice.filter((d) => d >= 10).length;
   return { value: dice.reduce((a, b) => a + b, 0) + spec.plus, negotiator: cosmopolite ? tens >= 1 : tens >= 2 };
+}
+
+/** Jet du marchand NPC pour un Marchandage opposé (Intermédiaire, RAW) — le héros roule via la porte
+ *  du seam de jet (`state/rollSeam.ts`, `openRoll`), le marchand roule ICI (moteur PUR, reçoit `rng`,
+ *  ne décide jamais du surfaçage — whitelist `src/engine/**` du garde #274). */
+export function rollMerchantOpposition(merchantValue: number, rng: RNG = defaultRNG): TestResult {
+  return rollTest(merchantValue, 'intermediaire', rng);
 }
 
 /** +DR du VENDEUR au Marchandage d'ACHAT (l.339-341) : lot partiel +1 (« il peut se plaindre… »),

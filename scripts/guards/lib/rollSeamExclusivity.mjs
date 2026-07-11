@@ -1,5 +1,5 @@
 // Mécanique de scan du garde-fou « exclusivité du seam de jet » (#274, DERNIER verrou du programme
-// #276 — `docs/plans/2026-07-10-conception-seam-de-jet.md` Décision 2). La porte déclarative
+// #276). La porte déclarative
 // (`openRoll`, `src/state/rollSeam.ts`) + `TestOutcome.seal(...)` (`src/engine/testOutcome.ts`) sont
 // le SEUL chemin scellé pour produire une issue de Test ; un `rollTest(`/`d100(` inline ou un
 // `TestOutcome.seal(` hors whitelist forge un jet SANS passer par la policy de surfaçage (M/V/I,

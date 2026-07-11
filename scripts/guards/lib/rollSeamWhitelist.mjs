@@ -32,7 +32,6 @@ export const ROLL_SEAM_FILE_WHITELIST = new Set([
   'src/state/interludeFlow.ts',
   'src/state/massBattleFlow.ts',
   'src/state/travelPostes.ts',
-  'src/state/portFlow.ts',
   'src/state/landMarketFlow.ts',
 ]);
 

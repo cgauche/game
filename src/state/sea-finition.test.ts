@@ -226,6 +226,22 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
   });
 });
 
+/** Draine la CASCADE de vente au port (`portSellCargo`, dernier reliquat #275/#274 — Ragot → acheteur
+ *  → Marchandage, chacun un `openRoll` séparé enchaîné via `chainStep`/`setTimeout(0)`, patron
+ *  `seaVoyageFlow.ts` `sea-desertion`) : un `tick()` par itération laisse le `setTimeout` d'une étape
+ *  déférée s'exécuter, comme un clic UI l'espacerait. */
+async function drainPortSellCascade(): Promise<void> {
+  for (let i = 0; i < 30; i++) {
+    const p = get().pendingCascade;
+    if (p) {
+      const cur = p.participants[p.cursor];
+      if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+      get().cascadeNext();
+    }
+    await tick();
+  }
+}
+
 describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
   beforeEach(freshState);
 
@@ -237,7 +253,7 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     expect(st.offers.length).toBeGreaterThan(0); // bois (Production) et/ou produits de luxe (Surplus)
   });
 
-  it('portBuyCargo débite la bourse et embarque la cargaison ; portSellCargo la revend', () => {
+  it('portBuyCargo débite la bourse et embarque la cargaison ; portSellCargo la revend (cascade Ragot→acheteur→Marchandage)', async () => {
     seedBattleRng(2);
     get().openPort();
     const offer = get().port!.offers[0];
@@ -251,8 +267,12 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     get().openPort();
     const cargoLen = (get().vessel!.cargo ?? []).length;
     get().portSellCargo(0);
-    // Trouvé un acheteur (port « commerce » : bonnes chances) → lot vendu, ou pas (RNG) mais l'appel ne casse pas.
+    await drainPortSellCascade();
+    // La cascade se termine TOUJOURS (jamais de pendingCascade qui traîne) — vendu, ou refusé (RNG),
+    // jamais cassé.
+    expect(get().pendingCascade).toBeNull();
     expect((get().vessel!.cargo ?? []).length).toBeLessThanOrEqual(cargoLen);
+    expect(get().journal.some((l) => /vendus|intéressé|Ragot/.test(l))).toBe(true);
   });
 
   it('#243 — headroom nominal vs plafond dur de surcharge (Cogue : Contenance 300, dur 450)', () => {

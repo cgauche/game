@@ -9,27 +9,37 @@
  * Marchandage : Test opposé de Marchandage (l.335/385, « décrit en page 291 de WFJDR ») — jet direct
  * du meilleur PJ soutenu (LDB 12) contre le commerçant (`rollMerchantSkill`) ; le vainqueur module le
  * prix de ±10 % (±20 % si Négociateur ou DR net Stupéfiant, l.335). Les +DR de vendeur (`buySellerDR`
- * à l'achat, `sellChance.sellerDR` à la vente) s'ajoutent au DR de LEUR camp. Résolution SYNCHRONE
- * (pas de modale de jet différée) : le prix modulé et son jet sont journalisés — même patron que
- * `portRepairVessel` (lignes rendues).
+ * à l'achat, `sellChance.sellerDR` à la vente) s'ajoutent au DR de LEUR camp.
+ *
+ * VENTE (`portSellCargo`, dernier reliquat #275/#274) : CASCADE (`state/rollSeam.ts` `openRoll` +
+ * `state/cascade.ts`) — Ragot (hero-test), recherche d'acheteur (dé de MONDE, `klass:'subi'`,
+ * `worldSide`), Marchandage opposé (hero-test pour le héros, le marchand roule via
+ * `engine/seaVoyage.rollMerchantOpposition`, moteur pur) sont chacun une étape routée par la policy
+ * M/V/I (`resolveSurface`) — chaque continuation ENCHAÎNE l'étape suivante depuis l'applier de la
+ * précédente (patron `merchantFlow.ts` Ragot→réassort ; défère via `setTimeout` si la cascade est
+ * encore EN COURS de commit, patron `seaVoyageFlow.ts` `sea-desertion`). ACHAT (`portBuyCargo`) et
+ * BRADAGE (`portDumpCargo`) restent SYNCHRONES (`opposedTest` direct) — hors périmètre de ce geste,
+ * aucun `rollTest`/`d100` inline n'y est présent (non capté par le garde #274).
  */
 import { battleRng } from './battleRng';
 import { placeOfScene, placeById } from './worldMap';
 import { partyAssisted } from '../engine/skills';
-import { opposedTest, rollTest, SL_ASTOUNDING } from '../engine/tests';
-import { d100 } from '../engine/dice';
+import { opposedTest, resolveOpposed, SL_ASTOUNDING, type TestResult } from '../engine/tests';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney, priceToMoney } from '../engine/money';
 import { findVehicleById, findCrewRoleById } from '../data';
 import { weeklyCrewWageBrass } from '../engine/crewMorale';
 import {
-  rollCargoAvailability, rollMerchantSkill, buySellerDR, cargoBasePrice, rollRandomCargo,
+  rollCargoAvailability, rollMerchantSkill, rollMerchantOpposition, buySellerDR, cargoBasePrice, rollRandomCargo,
   sellChance, offerPricePct, sellRelation, dumpingPricePct, cargoTotalEnc, findCargoById,
   cargoOverload, overloadMaxEnc,
   type PortProfile, type CargoLot,
 } from '../engine/seaVoyage';
 import { seasonOfMonth } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
+import { registerCascadeApplier } from './cascade';
+import { openRoll, freeCons } from './rollSeam';
+import { actorIn } from './combatOrParty';
 import type { Get, Set } from './flowTypes';
 
 /** Une offre d'achat générée à l'escale (l.319-331) — Enc disponible + prix de base NOTÉ (le Vin fige son 3d10). */
@@ -175,58 +185,23 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   if (over.palierId) log(get, set, [`Cale SURCHARGÉE (${over.ratioPct} % de la Contenance) : ${over.label} — ${over.mMod} M, ${over.manoeuvreDR} DR Manœuvre (MDG 12 l.70-75).`]);
 }
 
-/** VENTE d'un lot de cargaison (l.351-397) : trouver un acheteur (relation du port au bien),
- *  Prix d'offre (% du prix de base par Richesse+Taille+Demande), Marchandage opposé (vendeur PJ +DR).
- *  Retire le lot vendu de la cale, crédite la bourse. */
-export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
+/** Ouvre la cascade différée si la cascade EN COURS n'a pas fini de committer son étape (patron
+ *  `seaVoyageFlow.ts` `sea-desertion`) — sinon exécute directement (chemin inline/immédiat). */
+function chainStep(get: Get, open: () => void): void {
+  if (get().pendingCascade) setTimeout(open, 0);
+  else open();
+}
+
+/** Finalise la vente : gross = Enc × prix de base × Prix d'offre % × (1 + Marchandage %), retire le
+ *  lot (ou la fraction vendue) de la cale, crédite la bourse. SOURCE UNIQUE du dénouement, partagée
+ *  par le chemin SANS marchandeur (prix d'offre pris tel quel) et l'applier `PORT_SELL_BARGAIN_KIND`.
+ *  Renvoie la ligne de journal (vide si l'état a changé entre-temps). */
+function finalizePortSale(get: Get, set: Set, cargoIndex: number, sellEnc: number, offerPct: number, bargainPctVal: number, bargainLine: string): string {
   const st = get().port;
   const vessel = get().vessel;
-  if (!st || !vessel) return;
-  const lot = (vessel.cargo ?? [])[cargoIndex];
-  if (!lot) return;
-  const cargo = findCargoById(lot.cargoId);
-  const rng = battleRng();
-  const milles = vessel.lastVoyageMilles ?? 0;
-  const chance = sellChance(st.port, lot.cargoId, milles);
-  const label = cargo?.label ?? lot.cargoId;
-
-  // 1. Test de Ragot PRÉALABLE éventuel (port qui produit / Surplus, l.366-372).
-  if (chance.gossip) {
-    const best = partyAssisted(get().party, 'ragot');
-    const t = best ? rollTest(best.value, chance.gossip.difficulty, rng) : null;
-    if (!t?.success) {
-      log(get, set, [`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot ${best ? `échoue (${t!.roll}/${t!.target})` : 'ne trouve pas de camelot'} — aucun acheteur trouvé.`]);
-      return;
-    }
-    log(get, set, [`${best!.actor.name} — Ragot : ${t.roll}/${t.target} → un acheteur potentiel est approché.`]);
-  }
-
-  // 2. Trouver un acheteur (d100 ≤ nombre visé, l.362). Échec → proposer la moitié une fois.
-  let sellEnc = lot.enc;
-  let found = d100(rng) <= chance.target;
-  if (!found && chance.gossip == null) {
-    sellEnc = Math.max(1, Math.floor(lot.enc / 2));
-    found = d100(rng) <= chance.target;
-    if (found) log(get, set, [`↔ ${label} : personne pour tout le lot — la moitié (${sellEnc} Enc) trouve preneur.`]);
-  }
-  if (!found) { log(get, set, [`${label} : aucun marchand intéressé à ${st.label} (nombre visé ${chance.target}).`]); return; }
-
-  // 3. Prix d'offre (% du prix de base, l.376-383) puis Marchandage opposé (vendeur PJ +DR, l.387-397).
-  const offerPct = offerPricePct(st.port, lot.cargoId);
-  const best = partyAssisted(get().party, 'marchandage');
-  const merchant = rollMerchantSkill(!!st.port.cosmopolite, rng);
-  let bargainPctVal = 0;
-  let bargainLine = 'Aucun marchandeur — prix d’offre pris tel quel.';
-  if (best) {
-    const opp = opposedTest(best.value, merchant.value, rng, 'intermediaire', 'intermediaire');
-    const sellerSL = opp.attacker.sl + chance.sellerDR; // +DR du vendeur PJ (l.389-397)
-    const buyerSL = opp.defender.sl;
-    const sellerWins = sellerSL > buyerSL || (sellerSL === buyerSL && best.value > merchant.value);
-    const netSL = Math.abs(sellerSL - buyerSL);
-    if (sellerWins) bargainPctVal = bargainPct(hasBargainBonus(best.actor), netSL); // le PJ monte le prix
-    else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(merchant.negotiator, netSL); // l'acheteur le baisse
-    bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}${chance.sellerDR ? `, vendeur ${chance.sellerDR > 0 ? '+' : ''}${chance.sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
-  }
+  const lot = vessel?.cargo?.[cargoIndex];
+  if (!st || !vessel || !lot) return '';
+  const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
   const gross = Math.max(0, Math.round(sellEnc * lot.basePriceGold * (offerPct / 100) * (1 + bargainPctVal / 100)));
   const nextCargo = sellEnc >= lot.enc ? (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex) : (vessel.cargo ?? []).map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l);
   const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
@@ -236,7 +211,151 @@ export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
     vessel: { ...vessel, cargo: nextCargo },
     port: { ...st, freeEnc: Math.max(0, capacity - freed), maxLoadEnc: Math.max(0, overloadMaxEnc(capacity) - freed) },
   });
-  log(get, set, [`${sellEnc} Enc de ${label} vendus (prix d’offre ${offerPct} % du base — ${bargainLine}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
+  return `${sellEnc} Enc de ${label} vendus (prix d’offre ${offerPct} % du base — ${bargainLine}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`;
+}
+
+/** 3. Marchandage opposé (vendeur PJ +DR, l.387-397) — hero-test (`openRoll`) pour le héros ; le
+ *  marchand roule via `rollMerchantOpposition` (moteur pur, appelé par l'applier). Sans marchandeur
+ *  dans le groupe, la vente se conclut au prix d'offre pris tel quel (aucun jet). */
+function openPortSellBargainStep(get: Get, set: Set, cargoIndex: number, sellEnc: number): void {
+  const st = get().port;
+  const vessel = get().vessel;
+  const lot = vessel?.cargo?.[cargoIndex];
+  if (!st || !vessel || !lot) return;
+  const offerPct = offerPricePct(st.port, lot.cargoId);
+  const best = partyAssisted(get().party, 'marchandage');
+  // Toujours tiré (même sans marchandeur) — préserve l'ordre des tirages RNG de l'ancienne résolution
+  // synchrone (déterminisme seedé conservé, la porte du seam ne touche pas le rng).
+  const merchant = rollMerchantSkill(!!st.port.cosmopolite, battleRng());
+  if (!best) {
+    log(get, set, [finalizePortSale(get, set, cargoIndex, sellEnc, offerPct, 0, 'Aucun marchandeur — prix d’offre pris tel quel.')]);
+    return;
+  }
+  const sellerDR = sellChance(st.port, lot.cargoId, vessel.lastVoyageMilles ?? 0).sellerDR;
+  openRoll(get, set, {
+    side: { partyBest: { skill: 'marchandage' } },
+    test: { skill: 'marchandage', label: 'Marchandage — vente' },
+    difficulty: 'intermediaire',
+    klass: 'hero-test',
+  }, PORT_SELL_BARGAIN_KIND, { cargoIndex, sellEnc, offerPct, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
+}
+
+const PORT_SELL_BARGAIN_KIND = 'port-sell-bargain';
+registerCascadeApplier(PORT_SELL_BARGAIN_KIND, (get, set, step) => {
+  if (!step.result) return {};
+  const cargoIndex = Number(step.meta?.cargoIndex ?? -1);
+  const sellEnc = Number(step.meta?.sellEnc ?? 0);
+  const offerPct = Number(step.meta?.offerPct ?? 100);
+  const merchantValue = Number(step.meta?.merchantValue ?? 0);
+  const merchantNegotiator = !!step.meta?.merchantNegotiator;
+  const sellerDR = Number(step.meta?.sellerDR ?? 0);
+  const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
+  const heroTR: TestResult = { roll: step.result.roll, target: step.result.target, success: step.result.success, sl: step.result.sl, isDouble: false };
+  const merchantRoll = rollMerchantOpposition(merchantValue, battleRng());
+  const opp = resolveOpposed(heroTR, merchantRoll);
+  const sellerSL = opp.attacker.sl + sellerDR; // +DR du vendeur PJ (l.389-397)
+  const buyerSL = opp.defender.sl;
+  const sellerWins = sellerSL > buyerSL || (sellerSL === buyerSL && heroTR.target > merchantRoll.target);
+  const netSL = Math.abs(sellerSL - buyerSL);
+  let bargainPctVal = 0;
+  if (sellerWins) bargainPctVal = bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // le PJ monte le prix
+  else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(merchantNegotiator, netSL); // l'acheteur le baisse
+  const bargainLine = `${actor?.name ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur ${sellerDR > 0 ? '+' : ''}${sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
+  return { consequences: freeCons([finalizePortSale(get, set, cargoIndex, sellEnc, offerPct, bargainPctVal, bargainLine)]) };
+});
+
+/** 2. Trouver un acheteur (dé de MONDE, `klass:'subi'`, `worldSide` — l.362) : cible = `chance.target`
+ *  (posé en `meta.baseValue`, difficulté Intermédiaire = modificateur nul, la cible passe telle
+ *  quelle). Échec sur la 1ʳᵉ tentative SANS Ragot préalable → 2ᵉ tentative sur la moitié du lot
+ *  (`attempt:2`) ; le message « la moitié trouve preneur » ne s'affiche QUE si cette 2ᵉ tentative
+ *  réussit (parité stricte avec l'ancienne résolution synchrone). */
+function openPortSellBuyerStep(get: Get, set: Set, cargoIndex: number, sellEnc: number, allowHalfRetry: boolean, attempt: 1 | 2): void {
+  const st = get().port;
+  const vessel = get().vessel;
+  const lot = vessel?.cargo?.[cargoIndex];
+  if (!st || !vessel || !lot) return;
+  const milles = vessel.lastVoyageMilles ?? 0;
+  const chance = sellChance(st.port, lot.cargoId, milles);
+  openRoll(get, set, {
+    side: { worldSide: 'ship', shipId: vessel.vehicleId },
+    test: { label: 'Recherche d’acheteur' },
+    difficulty: 'intermediaire',
+    klass: 'subi',
+  }, PORT_SELL_BUYER_KIND, { cargoIndex, sellEnc, retryHalf: allowHalfRetry, attempt, baseValue: chance.target });
+}
+
+const PORT_SELL_BUYER_KIND = 'port-sell-buyer';
+registerCascadeApplier(PORT_SELL_BUYER_KIND, (get, set, step) => {
+  if (!step.result) return {};
+  const cargoIndex = Number(step.meta?.cargoIndex ?? -1);
+  const sellEnc = Number(step.meta?.sellEnc ?? 0);
+  const retryHalf = !!step.meta?.retryHalf;
+  const attempt = Number(step.meta?.attempt ?? 1);
+  const st = get().port;
+  const vessel = get().vessel;
+  const lot = vessel?.cargo?.[cargoIndex];
+  if (!st || !vessel || !lot) return {};
+  const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
+  if (step.result.success) {
+    chainStep(get, () => openPortSellBargainStep(get, set, cargoIndex, sellEnc));
+    return attempt === 2 ? { consequences: freeCons([`↔ ${label} : personne pour tout le lot — la moitié (${sellEnc} Enc) trouve preneur.`]) } : {};
+  }
+  if (attempt === 1 && retryHalf) {
+    const half = Math.max(1, Math.floor(lot.enc / 2));
+    chainStep(get, () => openPortSellBuyerStep(get, set, cargoIndex, half, false, 2));
+    return {};
+  }
+  return { consequences: freeCons([`${label} : aucun marchand intéressé à ${st.label} (nombre visé ${step.result.target}).`]) };
+});
+
+/** 1. Test de Ragot PRÉALABLE éventuel (port qui produit / Surplus, l.366-372, hero-test). Aucun
+ *  candidat au Ragot → même message qu'avant, aucun jet à ouvrir. */
+const PORT_SELL_GOSSIP_KIND = 'port-sell-gossip';
+registerCascadeApplier(PORT_SELL_GOSSIP_KIND, (get, set, step) => {
+  if (!step.result) return {};
+  const cargoIndex = Number(step.meta?.cargoIndex ?? -1);
+  const st = get().port;
+  const vessel = get().vessel;
+  const lot = vessel?.cargo?.[cargoIndex];
+  if (!st || !vessel || !lot) return {};
+  const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
+  const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
+  if (!step.result.success) {
+    return { consequences: freeCons([`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot (${actor?.name ?? '?'} ${step.result.roll}/${step.result.target}) échoue — aucun acheteur trouvé.`]) };
+  }
+  chainStep(get, () => openPortSellBuyerStep(get, set, cargoIndex, lot.enc, false, 1));
+  return { consequences: freeCons([`${actor?.name ?? 'Le groupe'} — Ragot : ${step.result.roll}/${step.result.target} → un acheteur potentiel est approché.`]) };
+});
+
+/** VENTE d'un lot de cargaison (l.351-397) : trouver un acheteur (relation du port au bien),
+ *  Prix d'offre (% du prix de base par Richesse+Taille+Demande), Marchandage opposé (vendeur PJ +DR).
+ *  Retire le lot vendu de la cale, crédite la bourse. CASCADE (Ragot → acheteur → Marchandage) —
+ *  chaque étape routée par la policy M/V/I (cf. docstring d'en-tête). */
+export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
+  const st = get().port;
+  const vessel = get().vessel;
+  if (!st || !vessel) return;
+  const lot = (vessel.cargo ?? [])[cargoIndex];
+  if (!lot) return;
+  const milles = vessel.lastVoyageMilles ?? 0;
+  const chance = sellChance(st.port, lot.cargoId, milles);
+  const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
+
+  if (chance.gossip) {
+    const best = partyAssisted(get().party, 'ragot');
+    if (!best) {
+      log(get, set, [`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot ne trouve pas de camelot — aucun acheteur trouvé.`]);
+      return;
+    }
+    openRoll(get, set, {
+      side: { partyBest: { skill: 'ragot' } },
+      test: { skill: 'ragot', label: 'Ragot — recherche d’acheteur' },
+      difficulty: chance.gossip.difficulty,
+      klass: 'hero-test',
+    }, PORT_SELL_GOSSIP_KIND, { cargoIndex });
+    return;
+  }
+  openPortSellBuyerStep(get, set, cargoIndex, lot.enc, true, 1);
 }
 
 /** BRADER un lot (l.399) : ¼ du prix de base dans un port « commerce » ou en Demande — sinon refus. */

@@ -6,8 +6,8 @@ import { scanRollSeamExclusivity } from '../../scripts/guards/lib/rollSeamExclus
 import { rollSeamExcluded } from '../../scripts/guards/lib/rollSeamWhitelist.mjs';
 
 /**
- * Garde-fou « exclusivité du seam de jet » (#274, DERNIER verrou du programme #276 — `docs/plans/
- * 2026-07-10-conception-seam-de-jet.md` Décision 2). La porte `openRoll` (`src/state/rollSeam.ts`) +
+ * Garde-fou « exclusivité du seam de jet » (#274, DERNIER verrou du programme #276).
+ * La porte `openRoll` (`src/state/rollSeam.ts`) +
  * `TestOutcome.seal` (`src/engine/testOutcome.ts`) sont le SEUL chemin scellé pour produire une issue
  * de Test — un `rollTest(`/`d100(`/`TestOutcome.seal(` inline hors whitelist forge un jet SANS passer
  * par la policy de surfaçage M/V/I (Décision 3). Double détente avec le hook pre-commit
@@ -32,12 +32,11 @@ import { rollSeamExcluded } from '../../scripts/guards/lib/rollSeamWhitelist.mjs
  *    `pursuitFlow.ts`, `shipwreck.ts`, `shipManeuver.ts`, `restFlow.ts`, `upkeep.ts`,
  *    `corruptionFlow.ts`, `shipCrew.ts`, `interludeFlow.ts`, `massBattleFlow.ts`, `travelPostes.ts` —
  *    dés d'ÉVÉNEMENT/MONDE (encontre %, désertion %, panne %, banque) sans skill/DR, pas des Tests.
- *  - `portFlow.ts` : Marchandage/Ragot « Résolution SYNCHRONE (pas de modale de jet différée) »,
- *    documenté en tête de fichier — famille distincte, PAS migrée par ce geste (gap connu, cf. rendu
- *    #274 : le Test de Ragot y reste silencieux, à traiter en suivi).
- *  - `landMarketFlow.ts` : le Marchandage opposé (`opposedTest`, non capté par ce garde) suit le MÊME
- *    patron synchrone que `portFlow.ts` — seuls `rollTest`/`d100` y restent pour le buyer-found (%) ;
- *    Ragot/Évaluation MIGRÉS sur `openRoll` (#274).
+ *  - `landMarketFlow.ts` : le Marchandage opposé (`opposedTest`, non capté par ce garde) reste
+ *    synchrone (buyer-found % non migré) — seuls `rollTest`/`d100` y restent pour le buyer-found (%) ;
+ *    Ragot/Évaluation MIGRÉS sur `openRoll` (#274). `portFlow.ts` (vente maritime, dernier reliquat
+ *    #275/#274) est désormais ENTIÈREMENT migré (Ragot/acheteur/Marchandage en cascade `openRoll`) —
+ *    plus dans cette whitelist.
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
