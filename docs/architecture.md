@@ -184,6 +184,12 @@ art-ref/                    Illustrations extraites des PDFs + mapping.json (GIT
   bipèdes (carrière + arme + armure + mutations visibles) et créatures non-bipèdes via gabarit corporel
   animé (quadrupède/ailé/serpentin/…). `sprites.ts` ne fournit plus que le décor (props).
   Le sprite monolithique (`creatureSprites.json` + `enemySprite`/`creatureView`) a été retiré (juin 2026).
+- **Objets ORIENTÉS** (navires, engins de siège, véhicules terrestres, props directionnels) : un SEUL
+  contrat de vues `ViewArt` (`src/gameIso/rig/viewArt.ts`, `front?`/`profile?`/`back?`), sélectionné par
+  l'UNIQUE résolveur `project(dir, camRot)` (`rig/facing.ts`) + repli `pickView` ; couverture de vues en
+  galerie QC (`oriented-objects.html`). Les véhicules à coque sont routés par `hull.propulsion`
+  (`bodyPlan.ts`) : mer/fleuve → gabarit `navire`, terrestre → gabarit `terrestre` (plus de repli
+  accidentel d'un attelage vers la coque de navire). Détail : `docs/rendu-pipeline.md` § « Objets orientés ».
 - **Éditeur v2** (juin 2026, interface refaite de 0) : iso WYSIWYG, rail d'outils + contenu
   contextuel (pose directe depuis les catalogues), inspecteur DOCKÉ (plus aucune modale d'édition),
   panneau Logique en bas (triggers/dialogues/rencontres/validation, master-détail, édition live →

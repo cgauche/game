@@ -41,7 +41,6 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/d
 // `stripComments` — peut différer du numéro de ligne brut du fichier si un bloc `/* … */` multi-lignes
 // précède le site).
 const RATCHET_EXCEPTIONS: Record<string, string> = {
-  'gameIso/rig/bodyPlan.ts:84': 'garde DEV : détecte une ref de véhicule qui résout par LABEL au lieu de son id — comparer par id annulerait le diagnostic (jumelle de pickBackend.tsx:161-162).',
   'ui/CharacterSheet.tsx:806': "SlotChoiceRow : options éphémères {label, display, owned} SANS id — `label` EST la valeur de câblage documentée (cf. docstring du composant), pas une FK vers une entité de donnée.",
   'ui/compendium/CompendiumScreen.tsx:70': 'CodexItem (registry.ts) agrège ~20 catégories hétérogènes SANS id unifié — le Codex, navigateur de référence en LECTURE SEULE, sélectionne par label par construction.',
   'ui/compendium/CompendiumScreen.tsx:72': 'idem CompendiumScreen.tsx:70 (CodexItem sans id unifié).',

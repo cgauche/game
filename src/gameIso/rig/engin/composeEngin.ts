@@ -14,17 +14,25 @@ import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette } from '../palette';
 import { groundedBody } from '../staticBody';
+import { pickView } from '../viewArt';
 import { ENGIN_DEFAULT } from './artkit';
 import { ENGIN_ARTS } from './_registry.generated';
 
-/** Index des arts par id d'espèce (registre `engin/defs/`). Les ids sans art propre (canon-moyen/grand,
- *  catapulte, mortier… → `siegeRig:'canon-petit'`) retombent sur l'affût à roues générique. */
+/** Index des arts par id d'espèce (registre `engin/defs/`, 13 defs). Un `siegeRig` de `trappings.json`
+ *  sans art propre retomberait sur l'affût à roues générique (`canon-petit`) — plus aucune entrée
+ *  n'est dans ce cas depuis l'intégration de la vague d'art (catapulte/trébuchet/mangonneau/onagre/
+ *  mortier/pierrier/canon-lourd/canon-à-répétition/batterie-tonnerre-de-feu/canon-à-flammes). */
 const ART_BY_ID = new Map(ENGIN_ARTS.map((a) => [a.id, a]));
 const FALLBACK = ART_BY_ID.get('canon-petit') ?? ENGIN_ARTS[0];
 
+/** Art orienté d'un type d'engin (repli sur l'affût à roues générique). Exposé pour la galerie QC. */
+export function enginArtOf(species: string): (typeof ENGIN_ARTS)[number] {
+  return ART_BY_ID.get(species) ?? FALLBACK;
+}
+
 function art(species: string, view: View): string {
-  const set = ART_BY_ID.get(species) ?? FALLBACK;
-  return view === 'profile' ? set.profile() : view === 'back' ? set.back() : set.front();
+  // Sélection vue + repli PARTAGÉS (`pickView`) — plus de ternaire ad hoc par vue.
+  return pickView(enginArtOf(species), view)();
 }
 
 /** (espèce, vue, pose, couleurs) → un os statique ancré au sol. `pose.recul` = recul (tir) / bascule (mort). */

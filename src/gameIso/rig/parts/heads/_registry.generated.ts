@@ -1,4 +1,4 @@
-// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
+// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
 // Ajouter une entrée = déposer un fichier dans defs/ puis `npm run gen`.
 import type { HeadDef } from './types';
 import { head as e0 } from './defs/Elfe-sylvain-F';

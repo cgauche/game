@@ -1,4 +1,4 @@
-// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
+// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
 // Ajouter une entrée = déposer un fichier dans defs/ puis `npm run gen`.
 import type { BodyPlan } from '../bodyPlan';
 import { plan as e0 } from './defs/amorphous';
@@ -16,6 +16,7 @@ import { plan as e11 } from './defs/serpentine';
 import { plan as e12 } from './defs/spectral';
 import { plan as e13 } from './defs/squig';
 import { plan as e14 } from './defs/swarm';
-import { plan as e15 } from './defs/winged';
+import { plan as e15 } from './defs/terrestre';
+import { plan as e16 } from './defs/winged';
 
-export const PLAN_LIST: BodyPlan[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15];
+export const PLAN_LIST: BodyPlan[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16];

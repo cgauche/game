@@ -1,4 +1,4 @@
-// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
+// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
 // Ajouter une entrée = déposer un fichier dans defs/ puis `npm run gen`.
 import type { BuildingDef } from '../types';
 import { building as e0 } from './defs/chapelle';

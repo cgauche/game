@@ -1,4 +1,4 @@
-// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
+// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
 // Ajouter une entrée = déposer un fichier dans defs/ puis `npm run gen`.
 import type { SchemaDef } from './types';
 import { file as e0_file, schema as e0_schema } from './defs/aa-criticals';

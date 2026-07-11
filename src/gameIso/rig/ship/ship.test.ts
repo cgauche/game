@@ -50,8 +50,8 @@ describe('routage : un véhicule à coque → gabarit navire (resolveRender, dat
     const byId2 = resolveRender(undefined, undefined, 'langskip'); // mixte
     expect(byId2.plan).toBe('navire');
     expect(byId2.species).toBe('mixte');
-    // un transport SANS coque (chariot) n'est pas un navire → résolution normale (bipède par défaut).
-    expect(resolveRender(undefined, undefined, 'chariot').plan).not.toBe('navire');
+    // un véhicule TERRESTRE (diligence) n'est PAS un navire → gabarit terrestre (cf. land.test.ts).
+    expect(resolveRender(undefined, undefined, 'diligence').plan).not.toBe('navire');
   });
 
   it('un LABEL de véhicule (ids stables uniquement, doctrine ids) ne résout PAS le plan navire', async () => {

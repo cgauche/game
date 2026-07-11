@@ -325,7 +325,7 @@ function genOne(r) {
       `export type ${r.idUnion.typeName} =\n  | '${uniq.join(`'\n  | '`)}';\n`;
   }
   const body =
-    `// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +
+    `// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +
     `// Ajouter une entrée = déposer un fichier dans ${importDir === '.' ? r.dir.split('/').pop() : importDir.replace('./', '')}/ puis \`npm run gen\`.\n` +
     `import type { ${r.type} } from '${r.typeFrom}';\n` +
     imports.join('\n') + '\n\n' +

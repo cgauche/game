@@ -13,7 +13,7 @@ import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { PLAN_LIST } from './plans/_registry.generated';
 import { defById, speciesScale } from './creatures';
-import { findCreatureById, findTrappingById, findVehicleById, vehicles } from '../../data';
+import { findCreatureById, findTrappingById, findVehicleById } from '../../data';
 import { isSwarm } from '../../engine/traits/dispatch';
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
@@ -102,15 +102,22 @@ export interface RenderResolution {
   scale: number;
 }
 export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, idOrName: string): RenderResolution {
-  // Véhicule À COQUE (navire) → gabarit `navire`, DATA-DRIVEN : le gréement (`hull.rig`) devient l'« espèce »
-  // qui pilote la silhouette, l'échelle vient de la longueur (`ship.lengthM`). Prioritaire (un nom de
-  // vaisseau ne tombe pas sur la résolution créature).
+  // Véhicule À COQUE → gabarit routé par la PROPULSION (`hull.propulsion`), DATA-DRIVEN. Prioritaire (un
+  // nom de véhicule ne tombe pas sur la résolution créature). Navire (mer/fleuve) : le gréement (`hull.rig`)
+  // pilote la silhouette, l'échelle vient de la longueur (`ship.lengthM`). Terrestre (attelage) : gabarit
+  // `terrestre` — un chariot ne peut PLUS retomber par accident sur la coque de navire.
   const veh = findVehicleById(idOrName);
-  if (veh?.hull) return { kind: 'plan', plan: 'navire', species: veh.hull.rig ?? 'mixte', scale: Math.max(0.7, Math.min(2.4, (veh.ship?.lengthM ?? 20) / 20)) };
-  // Garde DEV : une ref de véhicule irrésoluble par ID mais qui correspondrait par LABEL (jumelle
-  // de pickBackend.tsx:161-162) — les refs de véhicule doivent être des ids stables, pas un libellé.
-  if (import.meta.env.DEV && !veh && vehicles.some((v) => v.hull && v.label === idOrName))
-    console.warn(`[bodyPlan] resolveRender : ref « ${idOrName} » ne résout PAS par id à un véhicule à coque (seul un LABEL correspond) — utilise l'id stable du véhicule.`);
+  if (veh?.hull) {
+    const prop = veh.hull.propulsion;
+    if (prop === 'maritime' || prop === 'fluvial')
+      return { kind: 'plan', plan: 'navire', species: veh.hull.rig ?? 'mixte', scale: Math.max(0.7, Math.min(2.4, (veh.ship?.lengthM ?? 20) / 20)) };
+    if (prop === 'terrestre')
+      return { kind: 'plan', plan: 'terrestre', species: veh.id, scale: 0.9 };
+    // Propulsion inconnue (JSON hors schéma) = erreur de DONNÉE, bruyante en dev — PAS un repli muet vers
+    // la coque (un attelage rendu en bateau était le bug). On tombe dans la résolution générique (bipède,
+    // visiblement faux) plutôt qu'un navire silencieux.
+    if (import.meta.env.DEV) console.error(`[bodyPlan] véhicule « ${idOrName} » : propulsion « ${prop} » sans gabarit de rendu — donnée à corriger.`);
+  }
   const rec = findCreatureById(idOrName);
   // Nuée NON typée (aucune espèce de forme) → forme GÉNÉRIQUE (DEFAULT_FORM de composeSwarm via ''),
   // jamais la 1re forme du registre (speciesNames() alimente le picker d'éditeur, pas ce défaut).

@@ -14,6 +14,7 @@ import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette, StoredPalette } from '../palette';
 import { groundedBody } from '../staticBody';
+import { pickView, type ViewArt } from '../viewArt';
 
 export type ShipRig = 'avirons' | 'voile' | 'mixte';
 
@@ -48,6 +49,13 @@ function buildShip(rig: ShipRig): string {
   return `<g>${oars}${hull()}${sails}</g>`; // rames derrière la coque, voile devant
 }
 
+/** Art ORIENTÉ d'une coque : la silhouette procédurale est une VUE DE BROADSIDE → seule `profile` est
+ *  déclarée (couverture honnête, visible en galerie QC). Face/dos REPLIENT sur le profil (`pickView`)
+ *  jusqu'à ce que les vagues d'art A1-A4 dessinent une proue/poupe dédiées. Exposé pour la galerie QC. */
+export function shipArt(rig: ShipRig): ViewArt {
+  return { profile: () => buildShip(rig) };
+}
+
 // Palette par défaut : jetons NAVIRE propres au plan (bois de coque / toile / mât-rames / pavillon vif).
 const SHIP_DEFAULT: StoredPalette = { coque: '#6b4a2b', voile: '#e8e0cc', mat: '#4a3320', pavillon: '#b03a2e' };
 
@@ -62,10 +70,12 @@ const asRig = (species: string): ShipRig =>
   species === 'voile' || species === 'avirons' || species === 'mixte' ? species : 'mixte';
 
 function resolveShip(species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
-  void view; // une coque se lit pareil sous tous les angles (profil)
+  // La vue demandée est CONSOMMÉE via le contrat d'art orienté PARTAGÉ (`pickView`) — mono-vue aujourd'hui
+  // (broadside → replie sur `profile`), prête à recevoir proue/poupe sans changer d'aiguillage.
   // `pose.coque` = angle de roulis/gîte (deg) ⇒ `tilt` autour de la quille (au sol), via la fondation
   // PARTAGÉE des corps statiques `groundedBody` — la même qui ancre les engins de siège.
-  return groundedBody(buildShip(asRig(species)), SHIP_DEFAULT, colors, { id: 'coque', baseY: KEEL_Y, tilt: pose.coque ?? 0 });
+  const svg = pickView(shipArt(asRig(species)), view)();
+  return groundedBody(svg, SHIP_DEFAULT, colors, { id: 'coque', baseY: KEEL_Y, tilt: pose.coque ?? 0 });
 }
 
 export const shipPlan: BodyPlan = {

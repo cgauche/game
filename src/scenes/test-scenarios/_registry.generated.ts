@@ -1,4 +1,4 @@
-// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
+// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
 // Ajouter une entrée = déposer un fichier dans test-scenarios/ puis `npm run gen`.
 import type { TestScenario } from './_shared';
 import { scenario as e0 } from './13-bataille-de-masse';

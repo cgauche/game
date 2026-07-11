@@ -8,14 +8,14 @@
  * `@fonteO`) sont dérivées automatiquement par `buildTokenMap`.
  */
 import type { StoredPalette } from '../palette';
+import type { ViewArt } from '../viewArt';
 
-/** Def d'ART d'engin = id d'espèce (clé de `appearance.species` / `siegeRig`) + ses trois vues (face /
- *  profil / dos), chacune un fragment SVG en coords locales. 1 def = 1 fichier `engin/defs/<id>.ts`. */
-export interface EnginArtDef {
+/** Def d'ART d'engin = id d'espèce (clé de `appearance.species` / `siegeRig`) + son art ORIENTÉ (contrat
+ *  PARTAGÉ `ViewArt` : face / profil / dos, chacune un fragment SVG en coords locales). 1 def = 1 fichier
+ *  `engin/defs/<id>.ts`. Les trois vues sont déclarées (couverture pleine — les engins sont dessinés sous
+ *  les trois angles) ; le repli/sélection vit dans la machinerie (`composeEngin`, via `pickView`). */
+export interface EnginArtDef extends ViewArt {
   id: string;
-  front(): string;
-  profile(): string;
-  back(): string;
 }
 
 /** Palette par défaut d'un engin (bases CUSTOM, ≠ slots créature). */

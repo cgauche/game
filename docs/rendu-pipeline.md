@@ -111,9 +111,21 @@ byte-identique.
   2 backends via `buildProps`) ou `solidHeightM` (bloc plein, ex. `mur`, dérivé du relief par `buildFloors`).
 - **un prop / décor** : `src/gameIso/catalog/decor/defs/<id>.ts` (SVG boîte 120×150, couleurs via
   `P.<ton>`) puis `npm run gen`. **Symétrique** → un seul dessin `PropViz.render`. **Directionnel**
-  (siège, canapé…) → déclare ses trois vues `PropViz.views` (`front`/`profile`/`back`, MÊME patron que
-  `EnginArtDef`) ; la sélection vue + miroir se fait dans la MACHINERIE (`propSvg`, `catalog/decor/index.ts`)
-  via `project(dir, camRot)`, jamais dans la def (garde `defs-directional-guard.test.ts`).
+  (siège, canapé…) → déclare ses vues `PropViz.views` (`= ViewArt<[params, ctx]>`, `front`/`profile`/`back`) ;
+  la sélection vue + miroir + repli se fait dans la MACHINERIE (`propSvg`, `catalog/decor/index.ts`) via
+  `project(dir, camRot)` puis `pickView`, jamais dans la def (garde `defs-directional-guard.test.ts`).
+
+### Objets ORIENTÉS — un seul contrat de vues (`rig/viewArt.ts`)
+
+Tout art orienté procédural rendu par le système de plans (coque de NAVIRE `rig/ship/composeShip.ts`,
+ENGIN de siège `rig/engin/artkit.ts`, véhicule TERRESTRE `rig/land/composeLand.ts`) ET les props
+directionnels partagent l'UNIQUE contrat `ViewArt` (`front?`/`profile?`/`back?`, une vue peut manquer).
+La sélection vue+miroir vient du SEUL résolveur `project(dir, camRot)` (`rig/facing.ts`) ; le repli d'une
+vue absente sur la plus proche déclarée est `pickView`/`foldView` ; la COUVERTURE réelle (`declaredViews`)
+pilote la galerie QC `oriented-objects.html`. Le PROFIL est dessiné vers la DROITE, le gauche = miroir de
+la machinerie. Le routage d'un véhicule à coque se fait par **`hull.propulsion`** dans `rig/bodyPlan.ts`
+(`resolveRender`) : `maritime`/`fluvial` → gabarit `navire` (silhouette par `hull.rig`) ; `terrestre` →
+gabarit `terrestre` — un attelage ne peut PLUS retomber par accident sur la coque de navire.
 - **un TYPE d'élément** (au-delà de floor/wall/roof/prop/token) : ajouter le variant à `SceneEl`
   (`builders/types.ts`, discriminé par `kind`) + un builder + le rendu dans CHAQUE backend (affine ET
   POV) + sa profondeur de tri propre (chaque backend calcule la sienne, cf. `floorDepth`/`wallDepth`/…).
