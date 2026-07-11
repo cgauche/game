@@ -1,5 +1,6 @@
 import { useGame, SCREENS } from './store';
 import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHull, setVesselHull } from './seaVoyageFlow';
+import { beginShipwreck } from './shipwreck';
 import { placeOfScene, type MapRoute } from './worldMap';
 import { actorIn, inBattleId } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
@@ -77,6 +78,16 @@ import type { Combatant } from '../engine/types';
  *                           d'une route de la carte du monde CLIQUABLE depuis ici → `{x,y}` ÉCRAN à
  *                           cliquer avec un VRAI clic souris (`page.mouse.click`) — remplace le calcul
  *                           manuel via `browser_run_code_unsafe` documenté au piège de route SVG
+ *   __wfrp.setMorale(n)  → pose le Moral d'équipage (`vessel.morale.score`, setup direct — patron
+ *                           `flag()`) pour rendre la désertion à quai observable sans dérouler des
+ *                           semaines de facteurs en espérant la bande basse (#332)
+ *   __wfrp.forceShipwreck() → déclenche `beginShipwreck` DIRECTEMENT (setup assumé, PAS le pipeline de
+ *                           dégâts) — `dealShipDamage(999)` est EFFACÉ par la Réparation de fortune du
+ *                           MÊME jour (la garde de naufrage n'est évaluée qu'à l'ENTRÉE de `runSeaDay`,
+ *                           `seaVoyageFlow.ts` : piège d'ordonnancement, cf. `docs/recette-navigateur.md`)
+ *   __wfrp.gmSeat(bool)  → flip du siège MJ solo (`setGmSeat`) — setup légitime (`scenario()` le reset
+ *                           à chaque lancement) ; la VALIDATION du flux reste la checkbox réelle, ce
+ *                           helper n'économise que la mise en place
  */
 /** Flux « jet différé » pilotable parmi des `pending*` ouverts — convention pending<Flux> ↔
  *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (révélations, pause de Round, victoire)
@@ -703,6 +714,27 @@ export function buildApi() {
       return g().flags;
     },
 
+    /** RECETTE #332 : pose le Moral d'équipage (`vessel.morale.score`, MDG ch.14) — setup DIRECT (même
+     *  patron que `flag()`), pas le pipeline hebdomadaire (`recalcMorale`). Rend la désertion à quai
+     *  (`moraleBand(score).desertionRoll`, bande ≤75) observable sans dérouler des semaines de facteurs
+     *  en espérant tomber sous le seuil. `n` non borné ici (les bandes du catalogue couvrent 0…100+). */
+    setMorale: (n: number) => {
+      const vessel = g().vessel;
+      if (!vessel) return '✗ aucun navire de campagne (state.vessel)';
+      useGame.setState({ vessel: { ...vessel, morale: { ...vessel.morale, score: n } } });
+      return `✓ Moral d'équipage → ${n}`;
+    },
+
+    /** RECETTE #332 : flip du siège MJ SOLO (`setGmSeat`, bac-à-sable local, siège 0) — setup légitime
+     *  (`scenario()` le RESET à chaque lancement : 3 clics réels × N scénarios par recette). `gmSeat()`
+     *  sans argument bascule l'état courant ; `gmSeat(true)`/`gmSeat(false)` force. La VALIDATION du
+     *  flux MJ reste la checkbox RÉELLE de l'UI — ce helper économise la mise en place, pas le test. */
+    gmSeat: (on?: boolean) => {
+      const v = on ?? g().net.gmSeat == null;
+      g().setGmSeat(v ? 0 : null);
+      return v ? '✓ siège MJ posé (siège 0)' : '✓ siège MJ retiré (IA)';
+    },
+
     /** RECETTE : octroie un Talent à un combattant (par id) — ex. Mâchoires d'acier pour tester son trigger. */
     talent: (id: string, talentId: string, times = 1) => {
       const grant = (c: Combatant): Combatant =>
@@ -1022,6 +1054,20 @@ export function buildApi() {
       setVesselHull(() => useGame.getState(), useGame.setState, cur, vessel.wounds.max);
       const after = useGame.getState().vessel?.wounds;
       return after ? `✓ coque (au port) : ${after.current}/${after.max} PB` : '✗ persistance échouée — voir __wfrp.state()';
+    },
+
+    /** RECETTE #332 : déclenche `beginShipwreck` DIRECTEMENT (setup ASSUMÉ — PAS le pipeline de dégâts
+     *  `dealShipDamage`/`damageVesselHull`) — la garde de naufrage n'est évaluée QU'À L'ENTRÉE de
+     *  `runSeaDay` (`seaVoyageFlow.ts` : `plan.vehicle.wounds.current <= 0`) : infliger `dealShipDamage(999)`
+     *  puis rouler le jour se fait EFFACER par la Réparation de fortune du MÊME jour AVANT que la garde ne
+     *  soit re-consultée — piège d'ordonnancement documenté `docs/recette-navigateur.md`. Ce helper appelle
+     *  la MÊME fonction que `runSeaDay`/`checkBattleOver` sur naufrage réel, juste sans la course contre
+     *  la Réparation de fortune. `aboardIds` (optionnel) restreint les héros à bord (défaut : tout le
+     *  groupe vivant, cf. signature `beginShipwreck`). */
+    forceShipwreck: (aboardIds?: string[]) => {
+      if (!g().vessel) return '✗ aucun navire de campagne (state.vessel)';
+      beginShipwreck(() => useGame.getState(), useGame.setState, aboardIds ? { aboardIds } : {});
+      return g().vessel === null ? '✓ naufrage déclenché (coque + cargaison perdues) — voir __wfrp.state()/__wfrp.log()' : '✗ naufrage non déclenché (voir __wfrp.state())';
     },
 
     /** RECETTE #297 : point ON-PATH (milieu du tracé, `getPointAtLength`/`getScreenCTM`) d'une route de

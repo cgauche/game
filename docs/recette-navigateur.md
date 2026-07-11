@@ -87,6 +87,8 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `give(gold=10)` / `xp(amount=100)` | crédite la bourse / +PX au groupe | — |
 | `giveTrapping(heroId, trappingId, qty?)` | donne un objet de CATALOGUE à un héros (défaut : le 1er), par le VRAI pipeline `giveTrapping` du store (`applyEffects` → `itemFromGive` : item bien formé, qualités du catalogue, rangement/Encombrement recalculés) | `trappingId` inconnu → message `✗` ; `qty` fixe la quantité de l'instance (ex. `giveTrapping('hero-1','boulet-et-poudre',6)` charge le coffre d'un canon) — ⚠ munitions ≠ rations (achat au marchand : la munition d'artillerie/à distance est un article SÉPARÉ des vivres, jamais suggéré à la place) |
 | `flags()` / `flag('id', value=true)` | lit/force un drapeau de scénario | — |
+| `setMorale(n)` | pose directement `vessel.morale.score` (setup, MÊME patron que `flag()`) | pas le pipeline hebdomadaire (`recalcMorale`) — sert à rendre la désertion à quai (bande ≤75, `moraleBand(score).desertionRoll`) observable sans dérouler des semaines de facteurs ; `✗` sans `state.vessel` |
+| `gmSeat(bool?)` | flip du siège MJ SOLO (`setGmSeat`, siège 0) — sans argument : BASCULE | setup légitime (`scenario()` RESET le siège à chaque lancement) — la VALIDATION du flux MJ reste la checkbox RÉELLE de l'UI (§ Pièges vécus ci-dessous), ce helper économise seulement la mise en place |
 | `time(minutes=60)` / `rest(days=1)` | avance l'horloge / dort N jours (cascade quotidienne) | ⚠ **NE PILOTE PAS une traversée EN MER** : `rest()` appelle `restFlow.sleepParty` directement, découplé de `travelPlan.sea` (`state/seaVoyageFlow.ts`) — avance l'horloge SANS faire progresser le navire sur sa route (désynchronise `gameTime` du voyage). Pour accélérer une traversée COMMANDÉE, voir « Voyage en mer » ci-dessous |
 | `chantier('reparer'\|'carener'\|upgradeId, units?)` | services du chantier naval au port | hors combat, navire de campagne requis |
 | `massBattle(ally?, enemy?, rounds?)` | lance une bataille de masse de démo | la scène courante doit porter les rencontres attendues |
@@ -118,7 +120,8 @@ elle reprend à la CONFIRMATION de ces étapes/modales, jamais via `time()`/`res
 |---|---|---|
 | `advanceSeaDay(maxIters=400)` | symétrique VOYAGE de `fastForward` : pilote la journée EN COURS (cascade du jour, halte de nuit, Activités hebdo si le palier de 8 jours tombe) jusqu'au JOUR SUIVANT — MÊME machinerie que le joueur (`cascadeResolveAll`/`Finish`, `restSleep`, `seaActivitiesConfirm`), sans les clics | s'arrête sur la cascade `travelDay` FRAÎCHE du jour suivant (déjà ouverte, `cursor:0`, pas encore consommée — le PROCHAIN `advanceSeaDay()`/`roll()`/`skipToArrival()` la joue), jamais un `pendingCascade` à `null` ; `maxIters` = garde-fou scrutations, `✗ borne atteinte…` = soft-lock probable (`auto()`) ; retourne une `Promise` (`await`) |
 | `skipToArrival(maxIters=4000)` | comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (`openPortAt`, `travelPlan` vidé) | s'arrête aussi sur un combat (embuscade/abordage) — `battle` alors ouvert, à jouer/`fastForward` séparément ; `Promise` (`await`) |
-| `dealShipDamage(n=5)` | inflige `n` Dégâts de coque HORS COMBAT — VRAI pipeline (`damageVesselHull` si un voyage est en cours sur le navire de campagne, sinon `setVesselHull` directement au port) | symétrique de `dealDamage` (combat) — voir le piège des DEUX copies de coque ci-dessous |
+| `dealShipDamage(n=5)` | inflige `n` Dégâts de coque HORS COMBAT — VRAI pipeline (`damageVesselHull` si un voyage est en cours sur le navire de campagne, sinon `setVesselHull` directement au port) | symétrique de `dealDamage` (combat) — voir le piège des DEUX copies de coque ci-dessous ; **NE déclenche PAS un naufrage fiable** (voir piège d'ORDONNANCEMENT ci-dessous, `forceShipwreck`) |
+| `forceShipwreck(aboardIds?)` | déclenche `beginShipwreck` DIRECTEMENT (setup ASSUMÉ, PAS le pipeline de dégâts) — coque + cargaison purgées IMMÉDIATEMENT, cascade de survie à la nage (Chance/Pacte/Résilience influençable) ouverte pour les héros à bord | `✗` sans `state.vessel` ; voir piège d'ORDONNANCEMENT ci-dessous |
 | `clickRoute(routeId)` | calcule le point ON-PATH (milieu du tracé, `getPointAtLength`/`getScreenCTM`) d'une route CLIQUABLE depuis ici → `{x,y}` ÉCRAN | ne clique PAS lui-même (le VRAI clic reste `page.mouse.click(x,y)`, Playwright) — remplace le calcul manuel `browser_run_code_unsafe`, voir piège ci-dessous ; `✗` si route inconnue/non cliquable d'ici/tracé absent du DOM |
 
 **Doctrine `advanceSeaDay`/`skipToArrival`** : même doctrine que `fastForward` — SETUP et
@@ -139,6 +142,17 @@ qu'aucun Dégât/jour n'a encore persisté. `dealShipDamage`/`damageVesselHull`/
 écrivent TOUJOURS les deux (une seule écriture par appel) — jamais un accès `.wounds` direct sur
 l'une des deux copies dans une recette.
 
+**Piège d'ORDONNANCEMENT du naufrage** (#332, symétrique du piège des deux copies ci-dessus) : la
+garde de naufrage (MDG ch.13 l.674, coque à 0 → `beginShipwreck`) n'est évaluée QU'À L'ENTRÉE de
+`runSeaDay` (`state/seaVoyageFlow.ts` : `plan.vehicle.wounds.current <= 0`). Poser
+`dealShipDamage(999)` PUIS rouler le jour avec `advanceSeaDay`/`skipToArrival` ne produit PAS
+mécaniquement un naufrage : si la Réparation de fortune (ou tout autre applier du même jour) répare
+la coque AVANT que `runSeaDay` ne soit re-consulté, les dégâts posés sont EFFACÉS sans que la garde
+n'ait eu l'occasion de s'exécuter — la preuve écran #269 est donc mécaniquement impossible avec ce
+seul enchaînement. `forceShipwreck()` bypass ce piège en appelant `beginShipwreck` DIRECTEMENT
+(MÊME fonction que `runSeaDay`/`checkBattleOver` sur un naufrage réel), sans course contre les
+appliers du jour.
+
 ## Pièges vécus (corrections d'expérience)
 
 - **Retour-menu SILENCIEUX en pleine partie = arbre PAS gelé, pas un bug** (vécu 2026-07-11,
@@ -152,6 +166,8 @@ l'une des deux copies dans une recette.
   antérieur (échec « ref not found » sinon).
 - **Activer le siège MJ en SOLO** : menu ☰ en jeu → case « Contrôler aussi les ennemis / le monde
   (MJ) » (`GmSoloToggle`, `src/ui/CoopPanels.tsx`) — observable via `__wfrp` : `net.gmSeat` non nul.
+  `__wfrp.gmSeat(true/false)` pose/retire le siège en SETUP (évite les clics répétés à chaque
+  scénario, `scenario()` le reset) — la VALIDATION du flux reste la checkbox RÉELLE.
 - **Module Vite PÉRIMÉ après un fix** (vécu 2026-07-09, faux « PAS CORRIGÉ » sur un P0) : le
   watcher Vite sous Windows peut RATER une écriture de fichier (agent/git) — le serveur sert alors
   l'ancienne transformation même après un reload complet. Symptôme : la stack console cite des

@@ -344,4 +344,56 @@ describe('__wfrp.advanceSeaDay / skipToArrival / dealShipDamage / clickRoute —
   it('clickRoute() : route invalide → refus explicite (validation AVANT tout accès DOM)', () => {
     expect(buildApi().clickRoute('r-inconnue')).toContain('✗');
   });
+
+  it('setMorale() : pose directement vessel.morale.score (setup, pas le recalc hebdomadaire)', () => {
+    const msg = buildApi().setMorale(20);
+    expect(msg).toContain('✓');
+    expect(useGame.getState().vessel!.morale.score).toBe(20);
+    // Facteurs/lastMoraleWeek inchangés — un setup direct, pas `recalcMorale`.
+    expect(useGame.getState().vessel!.morale.factors).toEqual([]);
+  });
+
+  it('setMorale() sans navire de campagne : refus explicite', () => {
+    useGame.setState({ vessel: null });
+    expect(buildApi().setMorale(20)).toContain('✗');
+  });
+
+  it('forceShipwreck() : déclenche beginShipwreck DIRECTEMENT (vessel purgé), pas le pipeline dealShipDamage', () => {
+    expect(useGame.getState().vessel).toBeTruthy();
+
+    const msg = buildApi().forceShipwreck();
+
+    expect(msg).toContain('✓');
+    expect(useGame.getState().vessel).toBeNull(); // coque + cargaison perdues, IMMÉDIAT (beginShipwreck)
+    expect(useGame.getState().journal.some((j) => String(j).includes('NAUFRAGE'))).toBe(true);
+  });
+
+  it('forceShipwreck() sans navire de campagne : refus explicite', () => {
+    useGame.setState({ vessel: null });
+    expect(buildApi().forceShipwreck()).toContain('✗');
+  });
+});
+
+describe('__wfrp.gmSeat — flip du siège MJ solo (#332)', () => {
+  afterEach(() => {
+    useGame.setState({ net: { ...useGame.getState().net, gmSeat: undefined } });
+  });
+
+  it('gmSeat(true) pose le siège MJ (siège 0) ; gmSeat(false) le retire', () => {
+    expect(useGame.getState().net.gmSeat).toBeUndefined();
+
+    expect(buildApi().gmSeat(true)).toContain('✓');
+    expect(useGame.getState().net.gmSeat).toBe(0);
+
+    expect(buildApi().gmSeat(false)).toContain('✓');
+    expect(useGame.getState().net.gmSeat).toBeUndefined();
+  });
+
+  it('gmSeat() sans argument BASCULE l’état courant', () => {
+    expect(useGame.getState().net.gmSeat).toBeUndefined();
+    buildApi().gmSeat();
+    expect(useGame.getState().net.gmSeat).toBe(0);
+    buildApi().gmSeat();
+    expect(useGame.getState().net.gmSeat).toBeUndefined();
+  });
 });
