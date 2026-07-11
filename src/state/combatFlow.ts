@@ -4593,16 +4593,17 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
     // utilisateur) : cadence-aware (héros manuel → cascade influençable). Si une cascade s'ouvre, on DIFFÈRE
     // la victoire — sa fermeture (`combatEndBoundary`) enchaîne sur `finishCombatEnd`/`finishVictory`.
     // Une cascade de SETUP encore pendante (Surprise, purpose 'combat') ne doit PAS être ÉCRASÉE par la
-    // cascade de fin (`startCascade` écrit inconditionnellement) : on DIFFÈRE sans ouvrir — sa résolution
-    // relance la boucle (`resumeSuspendedAI`), `checkBattleOver` re-détecte la victoire, slot LIBRE, et
-    // OUVRE alors la cascade de fin (#345).
+    // cascade de fin (`startCascade` écrit inconditionnellement) : on DIFFÈRE sans ouvrir. À la clôture de
+    // cette cascade 'combat', `dispatchCascadeDone` (combatSlice) RE-VÉRIFIE `checkBattleOver` — slot LIBRE
+    // → il OUVRE alors la cascade de fin (#345). C'est ce re-check déterministe (PAS `resumeSuspendedAI`, qui
+    // est un no-op pour la Surprise hors-tour) qui porte la continuation, sans dépendre d'un clic joueur.
     if (!get().pendingCascade) openCombatEndCascade(get, set);
     // On DIFFÈRE la victoire tant qu'une cascade est ouverte — la cascade de fin de combat
     // (`combatEndBoundary`, dont la fermeture enchaîne `finishCombatEnd`→`finishVictory`) MAIS aussi
     // toute cascade de SETUP non résolue (Surprise, purpose 'combat') : l'écran de victoire (HORS_MODAL)
-    // ne doit jamais s'empiler sur une modale de cascade (doctrine suspension/reprise, cascade.ts). Une
-    // cascade 'combat' non-boundary se dénoue par `resumeSuspendedAI` (combatSlice), qui relance la boucle
-    // → checkBattleOver re-détecte la victoire, slot libre.
+    // ne doit jamais s'empiler sur une modale de cascade (doctrine suspension/reprise, cascade.ts). La
+    // clôture d'une cascade 'combat' non-boundary passe par `dispatchCascadeDone`, qui re-vérifie
+    // `checkBattleOver` (slot libre) puis reprend l'IA si le combat continue.
     if (get().pendingCascade) return true; // l'écran de victoire suit la cascade
     finishVictory(get, set);
     return true;

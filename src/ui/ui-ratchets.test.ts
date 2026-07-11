@@ -88,17 +88,28 @@ const FILL_LITERAL_BASELINE: Record<string, number> = {
   'editor/EditorCanvas.tsx': 9,
   'editor/Inspector.tsx': 1,
   'editor/WorldMapEditor.tsx': 6,
-  'WorldMapView.tsx': 13,
+  'WorldMapView.tsx': 12,
 };
 
 // ── (ix) Redéfinition de `.panel` hors `components.css` : la primitive canonique (#306) n'a qu'UNE
-//    définition — un module qui la redéclare la rend inerte EN SILENCE (override à spécificité égale, seul
-//    l'ORDRE d'@import décide). C'était le piège de la règle MORTE `base.css` `@media 700px .panel{padding}`
-//    (base.css @import AVANT components.css → jamais appliquée). Le cliquet vérifie donc l'ORDRE : AUCUNE
-//    redéfinition de `.panel` (y compris RESPONSIVE, indentée dans un `@media`) hors `components.css` — la
-//    densité mobile du canon vit DANS components.css, APRÈS la base, pour gagner la cascade. Sélecteurs
-//    descendants (`.panel h3`, `.panel label`) exclus (ils ne remplacent pas la surface).
-const PANEL_REDEFINE_BASELINE: Record<string, number> = {};
+//    définition — un module qui la redéclare la rend inerte EN SILENCE (override, seul l'ORDRE d'@import
+//    décide à spécificité égale ; à spécificité SUPÉRIEURE le composé écrase toujours, @media du canon
+//    compris). C'était le piège de la règle MORTE `base.css` `@media 700px .panel{padding}` (base.css
+//    @import AVANT components.css → jamais appliquée), ET l'angle mort des composés `.interlude-hero.panel`
+//    (0,2,0) que l'ancre `^\s*\.panel` ne voyait pas (le sélecteur ne COMMENCE pas par `.panel`). Le cliquet
+//    couvre donc TOUT `.panel` porté par le MÊME élément : bare en tête de sélecteur (`^\s*\.panel`), OU
+//    composé à une autre classe (`X.panel`, ex. `.interlude-hero.panel`), modificateurs `.mod`/`:pseudo`/
+//    `[attr]` inclus jusqu'à la fin du sélecteur (`\s*[,{]`). EXCLUS : les DESCENDANTS/enfants (`.panel h3`,
+//    `.panel-grid > .panel`) — `.panel` n'y est pas compound sur le même élément, ils scopent sans remplacer
+//    la surface — et la classe distincte `.panel-grid` (`.panel` suivi de `-`). La densité mobile du canon
+//    vit DANS components.css, APRÈS la base, pour gagner la cascade.
+// BASELINE nominative : les 3 spécialisations LÉGITIMES de l'interlude (world-meta.css) — carte d'Activité
+//    à liseré d'or (`.interlude-hero.panel`, densité resserrée assumée), son état actif, et le bandeau de
+//    bataille à liseré rouge (`.interlude-battle-banner.panel`). Densité CONSTANTE voulue (déjà compacte
+//    ≤700px) — plus jamais INVISIBLES au cliquet. Tout NOUVEAU composé `.panel` reste à ZÉRO.
+const PANEL_REDEFINE_BASELINE: Record<string, number> = {
+  'styles/world-meta.css': 3,
+};
 
 describe('#236 — cliquets d’hygiène UI', () => {
   it('(iv) hex hors tokens : aucune hausse par module CSS (base.css exclu)', () => {
@@ -150,9 +161,12 @@ describe('#236 — cliquets d’hygiène UI', () => {
     const counts: Record<string, number> = {};
     for (const f of files) {
       const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-      // `^\s*` capture AUSSI les redéfinitions indentées d'un `@media` (le piège de la règle morte #306) ;
-      // `(?:\.\w+)*\s*\{` n'accepte que `.panel`/`.panel.mod` (les descendants `.panel h3` ont un espace → exclus).
-      const n = (css.match(/^\s*\.panel(?:\.\w+)*\s*\{/gm) || []).length;
+      // `.panel` porté par le MÊME élément : soit en TÊTE de sélecteur (`^\s*\.panel`, capture aussi les
+      // redéfinitions indentées d'un `@media` — le piège #306), soit COMPOSÉ à une autre classe (`X.panel`,
+      // ex. `.interlude-hero.panel` — l'angle mort de l'ancre seule). Les modificateurs du même élément
+      // (`.mod`/`:pseudo`/`[attr]`) sont tolérés jusqu'à la FIN du sélecteur (`\s*[,{]`) ; les descendants
+      // (`.panel h3`, `.panel-grid > .panel`) et la classe distincte `.panel-grid` (suivi de `-`) sont exclus.
+      const n = (css.match(/(?:^\s*|[a-z0-9-])\.panel(?:[.:][\w-]+|\[[^\]]*\])*\s*[,{]/gm) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, PANEL_REDEFINE_BASELINE, '.panel redéfini hors components.css');

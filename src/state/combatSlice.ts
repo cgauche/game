@@ -337,7 +337,15 @@ export function createCombatSlice(get: Get, set: Set) {
     else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
     else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
     else if (done?.maneuverResume) resumeManeuverDefense(get, set, done.maneuverResume); // défense de manœuvre de zone close → reprendre le tour de la créature (attaques gratuites restantes / avance)
-    else if (done?.purpose === 'combat') resumeSuspendedAI(get, set); // séquence de conséquences close → reprendre l'IA
+    else if (done?.purpose === 'combat') {
+      // Clôture d'une cascade de combat (Surprise de SETUP hors-tour, ou séquence de conséquences d'un tour).
+      // Continuation DÉTERMINISTE de la victoire différée (#345) : `checkBattleOver` a pu DIFFÉRER la cascade
+      // de fin de combat tant que ce slot était occupé — on re-vérifie ICI, slot libre, sans dépendre d'un clic
+      // (confirmRoundStart) ni de `resumeSuspendedAI` (no-op pour la Surprise : turn -1, aucun acteur ; no-op
+      // aussi pour un héros manuel actif). Le garde `!pendingCascade` (checkBattleOver) protège la double-ouverture.
+      if (get().battle && checkBattleOver(get, set)) return;
+      resumeSuspendedAI(get, set); // combat non terminé → reprendre l'IA (conséquence d'attaque)
+    }
   };
   return {
     // Peek du planificateur IA exposé au store (convention feuille « tout via get().xxx ») : le hook de
