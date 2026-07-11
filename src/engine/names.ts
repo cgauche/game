@@ -10,25 +10,26 @@
  * élevés » avec suffixe sexué — « –sson » fils de…, « –snev » neveu de…, « –sdottir » fille de…,
  * « –sniz » nièce de… (ex. Ariksson, Grunnasdottir, Skagsnev, Sovrissniz).
  */
-import { names as POOLS, type NamePool } from '../data';
+import { names as POOLS, RACE_KEY_LABEL, type NamePool } from '../data';
+import type { RaceKey } from '../data/schemas/common';
 import type { RNG } from './dice';
 
 /**
- * Pool de la banque ← `species.refChar` (clé de `names.json`, cf. `names-species-keyspaces.test.ts`).
- * `refChar` EST déjà la clé de la banque : simple lookup, aucun mapping par libellé (les variantes
- * régionales partagent le même `refChar` — cf. `species.json`).
+ * Pool de la banque ← `species.refChar` (`RaceKey`, #313) converti en libellé via `RACE_KEY_LABEL`
+ * (clé de `names.json`, cf. `names-species-keyspaces.test.ts` — exception documentée volontaire :
+ * ce dataset reste label-keyé, le SEUL pont id→label autorisé).
  */
-function poolOf(refChar: string): NamePool | null {
-  return POOLS[refChar] ?? null;
+function poolOf(refChar: RaceKey): NamePool | null {
+  return POOLS[RACE_KEY_LABEL[refChar]] ?? null;
 }
 
 const pick = <T>(arr: T[], rng: RNG): T => arr[rng.int(0, arr.length - 1)];
 
 /**
  * « Prénom Nom » aléatoire pour l'espèce et le sexe — null si l'espèce n'a pas de pool.
- * `refChar` = clé de banque portée par `species.refChar` (l'appelant a l'objet species).
+ * `refChar` = `RaceKey` porté par `species.refChar` (l'appelant a l'objet species).
  */
-export function generateName(refChar: string, sex: 'M' | 'F', rng: RNG): string | null {
+export function generateName(refChar: RaceKey, sex: 'M' | 'F', rng: RNG): string | null {
   const pool = poolOf(refChar);
   if (!pool) return null;
   const first = pick(sex === 'F' ? pool.femaleFirstNames : pool.maleFirstNames, rng);

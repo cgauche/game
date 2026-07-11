@@ -7,7 +7,7 @@
  * à l'interface.
  */
 import { z } from 'zod';
-import { sourceRefSchema, charKeySchema, advancementRefSchema } from '../common';
+import { sourceRefSchema, charKeySchema, advancementRefSchema, raceKeySchema, refCareerIdSchema } from '../common';
 
 export const file = 'species.json';
 
@@ -20,8 +20,10 @@ export const schema = z.array(
     family: z.string(),
     /** Variante régionale/sous-espèce — absente pour l'espèce nominale. */
     variant: z.string().optional(),
-    refChar: z.string(),
-    refCareer: z.string(),
+    /** id STABLE — colonne d'espèce des tables Âge/Taille/Yeux/Cheveux (`raceKeySchema`, #313). */
+    refChar: raceKeySchema,
+    /** id STABLE — colonne du Tableau des Classes et Carrières aléatoires (`refCareerIdSchema`, #313). */
+    refCareer: refCareerIdSchema,
     rand: z.number(),
     desc: z.string(),
     movement: z.number(),

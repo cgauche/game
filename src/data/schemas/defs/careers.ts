@@ -6,7 +6,7 @@
  * avec les colonnes d'espèce qui varient selon que la carrière est ouverte aux races additionnelles).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema, refCareerIdSchema } from '../common';
 
 export const file = 'careers.json';
 
@@ -20,9 +20,9 @@ export const schema = z.array(
     labelF: z.string().optional(),
     /** `id` de la Classe (`ClassData.id`). */
     class: z.string(),
-    /** Clé = libellé d'espèce (`SpeciesData.label`, ex. « Humain », « Haut Elfe »…) → borne haute
-     *  d100, ou `null` = carrière indisponible pour cette espèce. */
-    rand: z.record(z.string(), z.number().nullable()),
+    /** Clé = `refCareerIdSchema` (id stable, #313) → borne haute d100 ; clé ABSENTE = carrière
+     *  indisponible pour cette espèce (partiel : toutes les carrières ne portent pas les 11 colonnes). */
+    rand: z.partialRecord(refCareerIdSchema, z.number().nullable()),
     desc: z.string(),
     source: sourceRefSchema,
   }),

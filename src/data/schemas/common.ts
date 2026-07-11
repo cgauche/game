@@ -125,6 +125,26 @@ export const charKeySchema = z.enum([
 export const diceSpecSchema = z.strictObject({ n: z.number(), sides: z.number(), plus: z.number().optional() });
 
 /**
+ * `raceKey` — id STABLE des 7 espèces jouables (LDB + suppléments), patron `defs/characteristics`
+ * (#310). Clé de `species.json.refChar`, `hairs.json`/`eyes.json.color`, `details.json.ageBase`/
+ * `ageRoll`/`heightBase`/`heightRoll` (#313 — ces 4 Record étaient label-keyés). `names.json` en
+ * reste EXCLU par exception documentée (`defs/names.ts`) : le label EST la donnée affichée.
+ */
+export const raceKeySchema = z.enum(['humain', 'halfling', 'nain', 'gnome', 'ogre', 'haut-elfe', 'elfe-sylvain']);
+export type RaceKey = z.infer<typeof raceKeySchema>;
+
+/**
+ * `refCareerId` — `raceKeySchema` + 4 variantes culturelles humaines (Middenheim/Middenland/
+ * Nordland/Norse) du Tableau des Classes et Carrières aléatoires (LDB 05 l.197+). Clé de
+ * `species.json.refCareer` et `careers.json.rand` (#313).
+ */
+export const refCareerIdSchema = z.enum([
+  'humain', 'halfling', 'nain', 'gnome', 'ogre', 'haut-elfe', 'elfe-sylvain',
+  'middenheim', 'middenland', 'nordland', 'norse',
+]);
+export type RefCareerId = z.infer<typeof refCareerIdSchema>;
+
+/**
  * `Ref` (`src/data/index.ts`) — réf structurée par id + spec optionnelle (talent/sort/manœuvre/dieu
  * ciblé). Dupliqué à l'identique dans `careerLevels`/`classes`/`creatures`/`gods`/`species`/`traits`.
  */

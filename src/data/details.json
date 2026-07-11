@@ -1,39 +1,39 @@
 {
   "ageBase": {
-    "Humain": 15,
-    "Halfling": 15,
-    "Nain": 15,
-    "Haut Elfe": 30,
-    "Elfe Sylvain": 30,
-    "Gnome": 20,
-    "Ogre": 15
+    "humain": 15,
+    "halfling": 15,
+    "nain": 15,
+    "haut-elfe": 30,
+    "elfe-sylvain": 30,
+    "gnome": 20,
+    "ogre": 15
   },
   "ageRoll": {
-    "Humain": 1,
-    "Halfling": 5,
-    "Nain": 10,
-    "Haut Elfe": 10,
-    "Elfe Sylvain": 10,
-    "Gnome": 10,
-    "Ogre": 5
+    "humain": 1,
+    "halfling": 5,
+    "nain": 10,
+    "haut-elfe": 10,
+    "elfe-sylvain": 10,
+    "gnome": 10,
+    "ogre": 5
   },
   "heightBase": {
-    "Humain": 145,
-    "Halfling": 90,
-    "Nain": 130,
-    "Haut Elfe": 180,
-    "Elfe Sylvain": 180,
-    "Gnome": 100,
-    "Ogre": 235
+    "humain": 145,
+    "halfling": 90,
+    "nain": 130,
+    "haut-elfe": 180,
+    "elfe-sylvain": 180,
+    "gnome": 100,
+    "ogre": 235
   },
   "heightRoll": {
-    "Humain": 5,
-    "Halfling": 2,
-    "Nain": 3,
-    "Haut Elfe": 2,
-    "Elfe Sylvain": 2,
-    "Gnome": 2.5,
-    "Ogre": 6
+    "humain": 5,
+    "halfling": 2,
+    "nain": 3,
+    "haut-elfe": 2,
+    "elfe-sylvain": 2,
+    "gnome": 2.5,
+    "ogre": 6
   },
   "texts": {
     "nom": {

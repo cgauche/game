@@ -19,6 +19,7 @@ import { findTableEntry } from './tables';
 import { CharKey, CHAR_KEYS, Characteristics } from './types';
 import { Money } from './money';
 import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStarById, talentConcrete } from '../data';
+import type { RaceKey } from '../data/schemas/common';
 import { rule } from './policy';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
@@ -120,11 +121,12 @@ export function rollInitialWealth(status: Status, rng: RNG = defaultRNG): Money 
   return m;
 }
 
-/** Formule « base + N d10 » des tables de détails (details.json), colonne refChar de l'espèce
- *  (repli : colonne Humain). N non entier dans les données (Gnome 2,5) → arrondi au plus près. */
-function rollDetailFormula(base: Record<string, number>, dice: Record<string, number>, sp: SpeciesData, rng: RNG): number {
-  const b = base[sp.refChar] ?? base['Humain'] ?? 0;
-  const n = Math.round(dice[sp.refChar] ?? dice['Humain'] ?? 1);
+/** Formule « base + N d10 » des tables de détails (details.json), colonne `refChar` (id `RaceKey`,
+ *  #313) de l'espèce (repli : colonne humain). N non entier dans les données (Gnome 2,5) → arrondi
+ *  au plus près. */
+function rollDetailFormula(base: Partial<Record<RaceKey, number>>, dice: Partial<Record<RaceKey, number>>, sp: SpeciesData, rng: RNG): number {
+  const b = base[sp.refChar] ?? base.humain ?? 0;
+  const n = Math.round(dice[sp.refChar] ?? dice.humain ?? 1);
   return b + (n > 0 ? roll(n, 10, rng) : 0);
 }
 
@@ -149,11 +151,11 @@ export function rollHair(sp: SpeciesData, rng: RNG = defaultRNG): string {
   return rollDetail(hairsTable, sp, rng);
 }
 
-function rollDetail(table: { rand: number; color: Record<string, string> }[], sp: SpeciesData, rng: RNG): string {
+function rollDetail(table: { rand: number; color: Partial<Record<RaceKey, string>> }[], sp: SpeciesData, rng: RNG): string {
   const r = roll(2, 10, rng);
   const sorted = [...table].sort((a, b) => a.rand - b.rand);
   const entry = sorted.find((e) => r <= e.rand) ?? sorted[sorted.length - 1];
-  return entry.color[sp.refChar] ?? entry.color['Humain'] ?? '';
+  return entry.color[sp.refChar] ?? entry.color.humain ?? '';
 }
 
 /** Signe astral (Tableau des Signes astrologiques, ADE2 ch.03 l.40) → `id` STABLE du signe (≠ libellé —

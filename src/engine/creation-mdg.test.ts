@@ -76,7 +76,7 @@ describe('Classe Côtier — swap Riverains ↔ Côtiers (MDG 09 l.9, table l.21
   it('tables régionales NON étendues par MDG (Nordland…) : swap indisponible, table LDB intacte', () => {
     expect(coastalSwapAvailable(draft('humains-nordland', false))).toBe(false);
     // même cochée, la bascule ne troue pas la table : la colonne Nordland garde ses Riverains
-    const table = poolFor('humains-nordland', true).filter((c) => c.rand?.Nordland != null);
+    const table = poolFor('humains-nordland', true).filter((c) => c.rand?.nordland != null);
     expect(table.some((c) => c.class === 'riverains')).toBe(true);
   });
 });
@@ -84,8 +84,8 @@ describe('Classe Côtier — swap Riverains ↔ Côtiers (MDG 09 l.9, table l.21
 describe('Carrières norses (MDG 07 l.269-303) — colonne Norse + refCareer des origines', () => {
   it('les 3 origines humaines norses tirent sur la colonne Norse ; le nain norse reste sur la table Nain (ch.6 muet)', () => {
     for (const id of ['humains-bjornling-norse', 'humains-sarl-norse', 'humains-skaeling-norse'])
-      expect(sp(id).refCareer, id).toBe('Norse');
-    expect(sp('nains-norse').refCareer).toBe('Nain');
+      expect(sp(id).refCareer, id).toBe('norse');
+    expect(sp('nains-norse').refCareer).toBe('nain');
   });
 
   it('la table Norse n’a pas de portion Riverains : rien à remplacer — le pool du créateur garde les variantes côtières', () => {
@@ -110,8 +110,8 @@ describe('Carrières norses (MDG 07 l.269-303) — colonne Norse + refCareer des
   });
 
   it('la table Norse est contiguë (borne max 100) et route la classe CÔTIERS vers les variantes côtières', () => {
-    const table = careers.filter((c) => c.rand?.Norse != null);
-    const bounds = [...new Set(table.map((c) => c.rand.Norse as number))].sort((a, b) => a - b);
+    const table = careers.filter((c) => c.rand?.norse != null);
+    const bounds = [...new Set(table.map((c) => c.rand.norse as number))].sort((a, b) => a - b);
     expect(bounds[bounds.length - 1]).toBe(100);
     for (const c of table.filter((x) => x.class === 'cotiers'))
       expect(['marin-cotier', 'naufrageur-cotier', 'nautonier-cotier', 'ratisseur-de-plages']).toContain(c.id);

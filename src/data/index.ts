@@ -4,7 +4,7 @@
  * aucune migration ne les régénère.
  */
 import type { EntityAppearance } from '../engine/authoringAppearance';
-import type { SourceRef } from './schemas/common';
+import type { SourceRef, RaceKey, RefCareerId } from './schemas/common';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
 import characteristicsJson from './characteristics.json';
@@ -137,8 +137,12 @@ export interface SpeciesData {
   family: string;
   /** Variante régionale/sous-espèce (« Middenheim », « Norse »…) — absent pour l'espèce nominale. */
   variant?: string;
-  refChar: string;
-  refCareer: string;
+  /** id STABLE (`RaceKey`, #313) — colonne des tables Âge/Taille/Yeux/Cheveux (`ageBase`/`ageRoll`/
+   *  `heightBase`/`heightRoll`/`hairs.color`/`eyes.color`). */
+  refChar: RaceKey;
+  /** id STABLE (`RefCareerId`, #313) — colonne du Tableau des Classes et Carrières aléatoires
+   *  (`CareerData.rand`). */
+  refCareer: RefCareerId;
   rand: number;
   desc: string;
   movement: number;
@@ -177,8 +181,8 @@ export interface CareerData {
   /** `id` de la Classe (`ClassData.id`) — réf d'entité, ≠ libellé. */
   class: string;
   /** Tableau des Classes et Carrières aléatoires (LDB 05 l.197+) : borne haute d100 par colonne
-   *  d'espèce (`SpeciesData.refCareer`). null = carrière INDISPONIBLE pour cette espèce (l.360). */
-  rand: Record<string, number | null>;
+   *  d'espèce (`SpeciesData.refCareer`). Clé ABSENTE = carrière INDISPONIBLE pour cette espèce (l.360). */
+  rand: Partial<Record<RefCareerId, number | null>>;
   desc: string;
   source: SourceRef;
 }
@@ -674,25 +678,26 @@ export interface PsychologyData extends StatusData {
    *  Résistance, ou à une difficulté propre). « Sans Peur (Ennemi) » force Accessible à part (par-combattant). */
   test?: { skill?: string; difficulty?: import('../engine/types').Difficulty };
 }
-/** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, libellé par refChar. */
+/** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, par colonne `RaceKey` (#313). */
 export interface DetailColorData {
   label: string;
   /** Borne haute 2d10 (incluse). */
   rand: number;
-  color: Record<string, string>;
+  color: Partial<Record<RaceKey, string>>;
 }
-/** Texte d'aide (LDB 05 « Détails ») : global + par colonne refChar (HTML léger des données). */
+/** Texte d'aide (LDB 05 « Détails ») : global + par espèce (clé OUVERTE — libellé, saisie libre à
+ *  l'édition Codex, hors périmètre #313 : pas un catalogue fermé). */
 export interface DetailText {
   all: string;
   bySpecies: Record<string, string>;
 }
-/** Formules d'Âge/Taille (LDB 05 l.691-707) : « base + N d10 », par colonne refChar —
+/** Formules d'Âge/Taille (LDB 05 l.691-707) : « base + N d10 », par colonne `RaceKey` (#313) —
  *  + textes d'aide (conventions de noms, espérance de vie, tailles moyennes, Ambitions). */
 export interface DetailsData {
-  ageBase: Record<string, number>;
-  ageRoll: Record<string, number>;
-  heightBase: Record<string, number>;
-  heightRoll: Record<string, number>;
+  ageBase: Partial<Record<RaceKey, number>>;
+  ageRoll: Partial<Record<RaceKey, number>>;
+  heightBase: Partial<Record<RaceKey, number>>;
+  heightRoll: Partial<Record<RaceKey, number>>;
   texts: {
     nom: DetailText;
     age: DetailText;
@@ -1508,6 +1513,13 @@ export interface GodData {
 }
 export const gods = godsJson as GodData[];
 export const names = namesJson as Record<string, NamePool>;
+/** Pont id→libellé pour `names.json` (SEUL espace resté label-keyé — #313, exception documentée
+ *  `schemas/defs/names.ts`) — conversion au SEUL point d'appel (`engine/names.generateName`), jamais
+ *  ré-inventée ailleurs. */
+export const RACE_KEY_LABEL: Record<RaceKey, string> = {
+  humain: 'Humain', halfling: 'Halfling', nain: 'Nain', gnome: 'Gnome', ogre: 'Ogre',
+  'haut-elfe': 'Haut Elfe', 'elfe-sylvain': 'Elfe Sylvain',
+};
 /** Personnages pré-tirés (DÉFINITIONS) — app-owned éditable au Codex ; la FABRIQUE (`createHero`)
  *  vit dans `pregens.ts`, qui consomme CE tableau (même référence → mutation live de l'éditeur). */
 export const pregens = pregensJson as PregenDef[];
@@ -1597,7 +1609,7 @@ export function speciesSingular(label: string | undefined): string {
  * l.197+ : « certaines ont des restrictions liées à la Race », l.360). `ignoreRestrictions`
  * = option « Mais je veux jouer un elfe sylvain Flagellant ! » (l.362, accord du MJ).
  */
-export function careersForSpecies(refCareer: string, ignoreRestrictions = false): CareerData[] {
+export function careersForSpecies(refCareer: RefCareerId, ignoreRestrictions = false): CareerData[] {
   if (ignoreRestrictions) return careers;
   return careers.filter((c) => c.rand?.[refCareer] != null);
 }

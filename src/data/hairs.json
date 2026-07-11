@@ -3,130 +3,130 @@
     "label": "Blond blanc",
     "rand": 2,
     "color": {
-      "Humain": "Blond blanc",
-      "Halfling": "Gris",
-      "Nain": "Blanc",
-      "Haut Elfe": "Argent",
-      "Elfe Sylvain": "Bouleau argenté",
-      "Gnome": "Noir",
-      "Ogre": "Marron"
+      "humain": "Blond blanc",
+      "halfling": "Gris",
+      "nain": "Blanc",
+      "haut-elfe": "Argent",
+      "elfe-sylvain": "Bouleau argenté",
+      "gnome": "Noir",
+      "ogre": "Marron"
     }
   },
   {
     "label": "Blond doré",
     "rand": 3,
     "color": {
-      "Humain": "Blond doré",
-      "Halfling": "Paille",
-      "Nain": "Gris",
-      "Haut Elfe": "Blanc",
-      "Elfe Sylvain": "Blond cendré",
-      "Gnome": "Brun foncé",
-      "Ogre": "Acajou"
+      "humain": "Blond doré",
+      "halfling": "Paille",
+      "nain": "Gris",
+      "haut-elfe": "Blanc",
+      "elfe-sylvain": "Blond cendré",
+      "gnome": "Brun foncé",
+      "ogre": "Acajou"
     }
   },
   {
     "label": "Blond roux",
     "rand": 4,
     "color": {
-      "Humain": "Blond roux",
-      "Halfling": "Roussâtre",
-      "Nain": "Blond pâle",
-      "Haut Elfe": "Blond pâle",
-      "Elfe Sylvain": "Or rose",
-      "Gnome": "Brun",
-      "Ogre": "Blond cendré"
+      "humain": "Blond roux",
+      "halfling": "Roussâtre",
+      "nain": "Blond pâle",
+      "haut-elfe": "Blond pâle",
+      "elfe-sylvain": "Or rose",
+      "gnome": "Brun",
+      "ogre": "Blond cendré"
     }
   },
   {
     "label": "Brun doré",
     "rand": 7,
     "color": {
-      "Humain": "Brun doré",
-      "Halfling": "Miel",
-      "Nain": "Doré",
-      "Haut Elfe": "Blond",
-      "Elfe Sylvain": "Blond miel",
-      "Gnome": "Brun pâle",
-      "Ogre": "Marron clair"
+      "humain": "Brun doré",
+      "halfling": "Miel",
+      "nain": "Doré",
+      "haut-elfe": "Blond",
+      "elfe-sylvain": "Blond miel",
+      "gnome": "Brun pâle",
+      "ogre": "Marron clair"
     }
   },
   {
     "label": "Brun clair",
     "rand": 11,
     "color": {
-      "Humain": "Brun clair",
-      "Halfling": "Châtaigne",
-      "Nain": "Cuivre",
-      "Haut Elfe": "Blond intense",
-      "Elfe Sylvain": "Brun",
-      "Gnome": "Auburn",
-      "Ogre": "Lie de vin"
+      "humain": "Brun clair",
+      "halfling": "Châtaigne",
+      "nain": "Cuivre",
+      "haut-elfe": "Blond intense",
+      "elfe-sylvain": "Brun",
+      "gnome": "Auburn",
+      "ogre": "Lie de vin"
     }
   },
   {
     "label": "Brun foncé",
     "rand": 14,
     "color": {
-      "Humain": "Brun foncé",
-      "Halfling": "Gingembre",
-      "Nain": "Bronze",
-      "Haut Elfe": "Blond cuivré",
-      "Elfe Sylvain": "Brun acajou",
-      "Gnome": "Roux",
-      "Ogre": "Marron foncé"
+      "humain": "Brun foncé",
+      "halfling": "Gingembre",
+      "nain": "Bronze",
+      "haut-elfe": "Blond cuivré",
+      "elfe-sylvain": "Brun acajou",
+      "gnome": "Roux",
+      "ogre": "Marron foncé"
     }
   },
   {
     "label": "Noir",
     "rand": 17,
     "color": {
-      "Humain": "Noir",
-      "Halfling": "Moutarde",
-      "Nain": "Brun",
-      "Haut Elfe": "Blond ambré",
-      "Elfe Sylvain": "Brun foncé",
-      "Gnome": "Blond roux",
-      "Ogre": "Noir"
+      "humain": "Noir",
+      "halfling": "Moutarde",
+      "nain": "Brun",
+      "haut-elfe": "Blond ambré",
+      "elfe-sylvain": "Brun foncé",
+      "gnome": "Blond roux",
+      "ogre": "Noir"
     }
   },
   {
     "label": "Auburn",
     "rand": 18,
     "color": {
-      "Humain": "Auburn",
-      "Halfling": "Amande",
-      "Nain": "Brun foncé",
-      "Haut Elfe": "Auburn",
-      "Elfe Sylvain": "Brun clair",
-      "Gnome": "Bond doré",
-      "Ogre": "Charbon"
+      "humain": "Auburn",
+      "halfling": "Amande",
+      "nain": "Brun foncé",
+      "haut-elfe": "Auburn",
+      "elfe-sylvain": "Brun clair",
+      "gnome": "Bond doré",
+      "ogre": "Charbon"
     }
   },
   {
     "label": "Roux",
     "rand": 19,
     "color": {
-      "Humain": "Roux",
-      "Halfling": "Chocolat",
-      "Nain": "Brun roux",
-      "Haut Elfe": "Roux",
-      "Elfe Sylvain": "Ebène",
-      "Gnome": "Blond platine",
-      "Ogre": "Noir de jais"
+      "humain": "Roux",
+      "halfling": "Chocolat",
+      "nain": "Brun roux",
+      "haut-elfe": "Roux",
+      "elfe-sylvain": "Ebène",
+      "gnome": "Blond platine",
+      "ogre": "Noir de jais"
     }
   },
   {
     "label": "Gris",
     "rand": 20,
     "color": {
-      "Humain": "Gris",
-      "Halfling": "Réglisse",
-      "Nain": "Noir",
-      "Haut Elfe": "Noir",
-      "Elfe Sylvain": "Noir bleuté",
-      "Gnome": "Blanc",
-      "Ogre": "Bleu nuit"
+      "humain": "Gris",
+      "halfling": "Réglisse",
+      "nain": "Noir",
+      "haut-elfe": "Noir",
+      "elfe-sylvain": "Noir bleuté",
+      "gnome": "Blanc",
+      "ogre": "Bleu nuit"
     }
   }
 ]

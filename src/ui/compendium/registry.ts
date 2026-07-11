@@ -12,7 +12,7 @@ import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
-  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
+  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names, RACE_KEY_LABEL,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed, specIdsOf, specLabel,
@@ -22,6 +22,7 @@ import {
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
 // importés directement d'`engine/massBattle`).
+import type { RaceKey } from '../../data/schemas/common';
 import { MOUNT_PROFILES } from '../../engine/mountTravel';
 import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../../engine/travelTables';
 import type { TravelTableEntry } from '../../engine/travelTables';
@@ -350,20 +351,22 @@ export function raceCareerSection(s: (typeof species)[number]): CodexSection | n
 /** Section « Détails » d'une race — âge, taille, yeux & cheveux, noms (tables de création). */
 export function raceDetailSection(s: (typeof species)[number]): CodexSection {
   const ref = s.refChar;
+  // `bySpecies` reste label-keyé (clé OUVERTE, #313 hors périmètre) : pont id→label via `RACE_KEY_LABEL`.
+  const refLabelForText = RACE_KEY_LABEL[ref];
   const txt = details.texts;
   const eyeColors = [...new Set(eyes.map((e) => e.color[ref]).filter(Boolean))];
   const hairColors = [...new Set(hairs.map((e) => e.color[ref]).filter(Boolean))];
   const rows: CodexRow[] = [
     { t: 'sub', label: 'Âge' },
-    { t: 'text', text: `${details.ageBase[ref] ?? details.ageBase['Humain']} + ${Math.round(details.ageRoll[ref] ?? 1)}d10 ans` },
+    { t: 'text', text: `${details.ageBase[ref] ?? details.ageBase.humain} + ${Math.round(details.ageRoll[ref] ?? 1)}d10 ans` },
   ];
-  if (txt.age.bySpecies[ref]) rows.push({ t: 'text', text: txt.age.bySpecies[ref] });
-  rows.push({ t: 'sub', label: 'Taille' }, { t: 'text', text: `${details.heightBase[ref] ?? details.heightBase['Humain']} + ${Math.round(details.heightRoll[ref] ?? 1)}d10 cm` });
-  const tailleTxt = txt.taille.bySpecies[ref] ?? txt.taille.all;
+  if (txt.age.bySpecies[refLabelForText]) rows.push({ t: 'text', text: txt.age.bySpecies[refLabelForText] });
+  rows.push({ t: 'sub', label: 'Taille' }, { t: 'text', text: `${details.heightBase[ref] ?? details.heightBase.humain} + ${Math.round(details.heightRoll[ref] ?? 1)}d10 cm` });
+  const tailleTxt = txt.taille.bySpecies[refLabelForText] ?? txt.taille.all;
   if (tailleTxt) rows.push({ t: 'text', text: tailleTxt });
   if (eyeColors.length) rows.push({ t: 'sub', label: 'Yeux' }, { t: 'text', text: eyeColors.join(', ') });
   if (hairColors.length) rows.push({ t: 'sub', label: 'Cheveux' }, { t: 'text', text: hairColors.join(', ') });
-  const namesTxt = txt.nom.bySpecies[ref] ?? txt.nom.bySpecies['Humain'];
+  const namesTxt = txt.nom.bySpecies[refLabelForText] ?? txt.nom.bySpecies['Humain'];
   if (namesTxt) rows.push({ t: 'sub', label: 'Noms' }, { t: 'text', text: namesTxt });
   return { title: 'Âge, taille & apparence', layout: 'list', rows };
 }
@@ -1094,7 +1097,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       label: 'Détails de création (LDB 05)',
       sections: sections({
         title: 'Formules Âge & Taille (base + Nd10)', layout: 'list',
-        rows: Object.keys(details.ageBase).map((sp) => ({
+        rows: (Object.keys(details.ageBase) as RaceKey[]).map((sp) => ({
           t: 'kv', k: sp,
           v: `Âge ${details.ageBase[sp]}+${Math.round(details.ageRoll[sp] ?? 1)}d10 · Taille ${details.heightBase[sp]}+${Math.round(details.heightRoll[sp] ?? 1)}d10 cm`,
         } as CodexRow)),

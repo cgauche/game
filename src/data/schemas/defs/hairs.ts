@@ -3,6 +3,7 @@
  * `DetailColorData[]` (`src/data/index.ts:655`, partagée avec `eyes.json`).
  */
 import { z } from 'zod';
+import { raceKeySchema } from '../common';
 
 export const file = 'hairs.json';
 
@@ -10,7 +11,8 @@ export const schema = z.array(
   z.strictObject({
     label: z.string(),
     rand: z.number(),
-    color: z.record(z.string(), z.string()),
+    /** Clé = `raceKeySchema` (id stable, #313) — partiel (7 colonnes, pas toutes présentes par entrée). */
+    color: z.partialRecord(raceKeySchema, z.string()),
   }),
 );
 
