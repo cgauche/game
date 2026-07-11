@@ -43,7 +43,7 @@ import { getTestPolicy } from '../engine/testPolicy';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
-import { findSkillById } from '../data';
+import { findSkillById, conditionLabel } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
 
 /** Les 4 classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
@@ -129,6 +129,7 @@ function opConsequenceLine(op: GameOp): string {
   switch (op.op) {
     case 'wounds': return typeof op.amount === 'number' && op.amount > 0 ? t('out.consWounds', { n: op.amount }) : '';
     case 'heal': return typeof op.amount === 'number' && op.amount > 0 ? t('out.consHeal', { n: op.amount }) : '';
+    case 'condition': return typeof op.name === 'string' ? t('out.consCondition', { cond: conditionLabel(op.name) }) : '';
     default: return '';
   }
 }

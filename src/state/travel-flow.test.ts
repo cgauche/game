@@ -51,7 +51,8 @@ function drainCascade(): void {
   while (get().pendingCascade && g++ < 200) {
     const p = get().pendingCascade!;
     const cur = p.participants[p.cursor];
-    if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+    if (cur?.participants && cur.participants.some((part) => !part.result)) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
+    else if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
     else get().cascadeNext();
   }
 }
@@ -73,31 +74,31 @@ afterEach(() => { resetRule('travel-etapes'); resetRule('travel-attraper-froid')
 describe('cascade du JOUR terrestre — les jets d’Étape sont influençables (purpose travelDay)', () => {
   beforeEach(() => setRule('travel-etapes', true));
 
-  it('un héros au poste ouvre une cascade travelDay dont la 1ʳᵉ étape porte un jet influençable', () => {
+  it('les postes AVEC Test = UN pas BATCH (arbitrage user : jets indépendants), une rangée par héros', () => {
     seedBattleRng(1);
     const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 40 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     get().startTravel('r1', 'pied');
     const pc = get().pendingCascade;
     expect(pc?.purpose).toBe('travelDay'); // le jour ne s'auto-résout plus
-    expect(pc!.participants.some((s) => s.kind === 'stagePoste')).toBe(true);
-    const cur = pc!.participants[pc!.cursor];
-    expect(cur.target).not.toBeNull();
-    expect(cur.result ?? null).toBeNull(); // pas encore roulé → influençable
+    const batch = pc!.participants.find((s) => s.kind === 'stagePosteBatch');
+    expect(batch?.participants?.length).toBe(1); // une rangée pour le seul héros posté
+    const part = batch!.participants![0];
+    expect(part.target).toBeGreaterThan(0);
+    expect(part.result ?? null).toBeNull(); // pas encore roulé → influençable par rangée
   });
 
-  it('la Résilience force la réussite d’un jet du jour (mécanisme UNIQUE de cascade)', () => {
+  it('la Résilience force la réussite d’une RANGÉE du batch (mécanisme UNIQUE de cascade)', () => {
     seedBattleRng(5); // seed où l'Approvisionnement échoue (parité : 78/70)
     const h = hero({ id: 'h', travelRole: 'approvisionnement', resilience: 2, items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 40 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     get().startTravel('r1', 'pied');
     const pc = get().pendingCascade!;
     expect(pc.purpose).toBe('travelDay');
-    const cur = pc.participants[pc.cursor];
-    expect(cur.target).not.toBeNull();
-    get().cascadeForceSuccess(cur.id); // Résilience « Je ne faillirai pas ! »
-    const after = get().pendingCascade!.participants[get().pendingCascade!.cursor];
-    expect(after.result?.success).toBe(true);
+    const batch = pc.participants.find((s) => s.kind === 'stagePosteBatch')!;
+    get().cascadeBatchForceSuccess(batch.participants![0].id); // Résilience « Je ne faillirai pas ! » par rangée
+    const after = get().pendingCascade!.participants.find((s) => s.kind === 'stagePosteBatch')!;
+    expect(after.participants![0].result?.success).toBe(true);
   });
 });
 
@@ -134,8 +135,9 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
     const st = get();
     expect((st.party[0].items ?? []).length).toBe(0);
     expect(st.party[0].conditions.some((c) => c.name === 'extenue')).toBe(true);
-    // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
-    expect(st.journal.join('\n')).toContain('Approvisionnement : Exténué.');
+    // La conséquence est DÉRIVÉE de l'op `condition` appliqué (#295, opConsequenceLine) — plus de
+    // chaîne composée « Nom — Activité : Exténué. » : ligne structurée (l'État surfacé sur la rangée).
+    expect(st.journal.join('\n')).toContain('État Exténué subi.');
   });
 
   it('Exposition seed 2 : transi → escalade de froid (3 effets exposition-froid, rang 1)', () => {

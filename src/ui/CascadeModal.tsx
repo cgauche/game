@@ -15,7 +15,6 @@ import { ForceDoorModal } from './ForceDoorModal';
 import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser } from './OptionChooser';
-import { DrBar } from './DrBar';
 import { CriticalBody } from './RevealModal';
 import { JournalLine } from './NarratedLine';
 import { Icon } from './Icon';
@@ -120,17 +119,54 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // aucun cycle d'influence : jet déjà subi). Source unique de la conversion « pile figée → rangées ».
   const witnessRows = (panelRows: PanelRow[]): RollRowData[] =>
     panelRows.map((r, i) => ({ key: i, row: r, rolled: true, interactive: false as const }));
+  // DONNÉE de Test ÉTENDU d'une rangée (arbitrage user 2026-07-11 : la barre est RENDUE par `RollRow`
+  // — site UNIQUE — pas ici ; ceci ne calcule que `{cum, target}`). `done` = DR cumulés AVANT ce jet,
+  // `+ SL` du jet réussi. Générique : mono (`meta`) ou batch (participant), toute la CLASSE des jets étendus.
+  const extendedDrData = (done: number | undefined, target: number | undefined, res: CascadeRoll | null | undefined): { cum: number; target: number } | undefined => {
+    if (target == null) return undefined;
+    const gain = res?.success ? Math.max(0, res.sl) : 0;
+    return { cum: (done ?? 0) + gain, target: Number(target) };
+  };
+  // Note de conséquence d'une rangée-participant (batch) : `part.outcome` porte l'attribution par le
+  // portrait (pas de note agrégée à l'étape) ; ton succès→soin / échec→état.
+  const partNote = (part: { id: string; outcome?: string[]; result?: CascadeRoll | null }): ReactNode => {
+    if (!part.outcome?.length) return undefined;
+    const k: CombatEventKind = part.result ? (part.result.success ? 'heal' : 'condition') : 'info';
+    return <>{part.outcome.map((l, i) => <JournalLine key={i} event={ev(k, l, part.id)} combatants={pool} />)}</>;
+  };
+  // Rangées TÉMOINS d'un pas VALIDÉ (pile persistante) — un pas BATCH est DÉPLIÉ en une rangée par
+  // participant (breakdown + sa note + sa barre de Test étendu PERSISTANTE) ; les autres pas → une rangée.
+  const stepWitnessRows = (s: CascadeStep): RollRowData[] => {
+    if (s.participants) {
+      return s.participants.flatMap((part) => {
+        const a = pool.find((c) => c.id === part.id);
+        if (!a) return [];
+        const res = part.result;
+        const d = res ? { label: part.label ?? a.name, base: part.base, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
+        const extendedDr = extendedDrData(part.extendedDrDone, part.extendedDrTarget, res);
+        return [{ key: part.id, row: { combatant: a, d, note: partNote(part) }, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
+      });
+    }
+    const pr = rowOf(s);
+    if (!pr) return [];
+    const extendedDr = extendedDrData(s.meta?.extendedDrDone as number | undefined, s.meta?.extendedDrTarget as number | undefined, s.result);
+    return [{ key: s.id, row: pr, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
+  };
+
+  // Nombre de JETS DE DÉ réels (arbitrage user 2026-07-11) : un pas BATCH = ses N rangées ; un pas-jet
+  // = 1 ; l'agrégation / la météo / les affichages = 0. Sert au « Bilan · N jets » et à « jet N/M ».
+  const diceOf = (s: CascadeStep) => (s.participants ? s.participants.length : s.target != null || s.jet ? 1 : 0);
+  const totalJets = p.participants.reduce((n, s) => n + diceOf(s), 0);
 
   // BILAN « Tout lancer » : curseur EN FIN — toutes les étapes résolues, chaque conséquence visible.
   // Un seul bouton « Terminer » (ferme + enchaîne la suite). Pas d'influence (jets déjà subis).
   if (p.cursor >= p.participants.length) {
-    const allRows = p.participants.map(rowOf).filter((r): r is PanelRow => r !== null);
     return (
       <RollShell
         title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-        subtitle={<>Bilan · {p.participants.length} jet{p.participants.length > 1 ? 's' : ''}</>}
+        subtitle={<>Bilan · {totalJets} jet{totalJets > 1 ? 's' : ''}</>}
         rolled
-        rows={witnessRows(allRows)}
+        rows={p.participants.flatMap(stepWitnessRows)}
         actions={[{ key: 'finish', label: 'Terminer', onClick: () => finish(), when: 'always' }]}
         embedded={embedded}
       />
@@ -165,8 +201,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   if (cur.jet) return JET_RENDERERS[cur.jet]();
   const interaction = stepInteraction(cur);
   const isLast = p.cursor + 1 >= p.participants.length;
-  // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) — pile persistante (tous types).
-  const doneRows = p.participants.slice(0, p.cursor).map(rowOf).filter((r): r is PanelRow => r !== null);
+  // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) + barre de Test étendu PERSISTANTE
+  // — pile persistante (tous types ; un pas BATCH est déplié en rangées-participants).
+  const doneWitnessRows = p.participants.slice(0, p.cursor).flatMap(stepWitnessRows);
   // Action « Continuer » / « Terminer » (dernière étape) — bouton primaire d'enchaînement, partagé par
   // les étapes AFFICHAGE et CHOIX (conséquences pures, aucun jet à attendre) : `when:'always'`.
   const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'always' };
@@ -183,7 +220,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
           title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
           subtitle={null}
           rolled
-          rows={witnessRows(doneRows)}
+          rows={doneWitnessRows}
           postRollExtra={<CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
           actions={[continueAction]}
           disableEscClose
@@ -196,7 +233,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
         subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
-        rows={witnessRows([...doneRows, { combatant: actorOf(cur), note: noteFor(cur) }])}
+        rows={[...doneWitnessRows, ...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }])]}
         actions={[continueAction]}
         disableEscClose
         embedded={embedded}
@@ -222,7 +259,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
         subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
-        rows={witnessRows(doneRows)}
+        rows={doneWitnessRows}
         postRollExtra={
           <>
             {rev?.kind === 'critical' && <CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
@@ -262,6 +299,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
           ? { combatant: actor, d: { label, base: part.base, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
           : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [] } };
       },
+      // Test ÉTENDU d'une rangée (cartographie de voyage) : DONNÉE seule — `RollRow` rend la barre (site
+      // UNIQUE), visible AVANT et après le jet, persistante (arbitrage user 2026-07-11).
+      extendedDrOf: (part) => extendedDrData(part.extendedDrDone, part.extendedDrTarget, part.result),
     });
     const ready = stepReady(cur);
     // Deux « Tout lancer » (#328) : PAR RANGÉES (lance d'un coup les contributeurs restants de CETTE
@@ -279,7 +319,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         extra={stakeNote ?? undefined}
         rolled={ready}
-        rows={rows}
+        rows={[...doneWitnessRows, ...rows]}
         actions={batchActions}
         disableEscClose
         embedded={embedded}
@@ -312,10 +352,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // d'influence (Chance/+1 DR/Pacte/Résilience/forcedRoll/resist/Détermination) — étape MONDIALE
   // (`worldOwner`, `actor` absent) : cycle d'influence NUL (Chance/Pacte/Résilience/Détermination
   // sont des ressources de HÉROS), seul « Lancer » reste actionnable pour le siège owner.
+  // DONNÉE de Test étendu de CETTE rangée (arbitrage user 2026-07-11 : `RollRow` rend la barre, site
+  // UNIQUE ; plus le bandeau global du shell qui disparaissait au pas suivant — persistée via `stepWitnessRows`).
+  const curExtendedDr = extendedDrData(cur.meta?.extendedDrDone as number | undefined, cur.meta?.extendedDrTarget as number | undefined, res);
   const curRow: RollRowData = {
     actor,
     row: res ? { combatant: actor, d: breakdown(cur, res) } : curPending,
     rolled,
+    ...(curExtendedDr ? { extendedDr: curExtendedDr } : {}),
     onRoll: () => roll(cur.id),
     fortune: actor?.fortune ?? 0,
     freeReroll: freeRerollOf(actor),
@@ -359,17 +403,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   return (
     <RollShell
       title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-      subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
-      /* Test ÉTENDU = barre de DR cumulé (prevDR + DR du jet après coup), SOURCE UNIQUE en `meta`
-         NEUTRE (`extendedDrTarget`/`extendedDrDone`) : Peur de COMBAT (vers l'Indice, `combatFlow.ts`
-         `psychStepFor`) OU cartographie de voyage (Établir des cartes, `travelPostes.ts`, vers
-         `drTarget` = 2 × Étapes — porté par le poste). */
-      extra={<>{stakeNote}{cur.meta?.extendedDrTarget != null
-        ? <DrBar cum={Number(cur.meta.extendedDrDone ?? 0) + (res?.success ? Math.max(0, res.sl) : 0)} target={Number(cur.meta.extendedDrTarget)} />
-        : null}</>}
+      /* « jet N/M » : N = jets de dé jusqu'ici + celui-ci, M = total des jets RÉELS (arbitrage user
+         2026-07-11 — l'agrégation/la météo/les affichages ne comptent pas). */
+      subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{totalJets > 1 ? ` · jet ${p.participants.slice(0, p.cursor).reduce((n, s) => n + diceOf(s), 0) + 1}/${totalJets}` : ''}</>}
+      extra={stakeNote ?? undefined}
       rolled={rolled}
-      /* Rangées : validées FIGÉES (témoins) + courante interactive (pré-jet en attente, post-jet résolue). */
-      rows={[...witnessRows(doneRows), curRow]}
+      /* Rangées : validées FIGÉES (témoins) + courante interactive (pré-jet en attente, post-jet résolue).
+         La barre de Test étendu vit désormais SUR la rangée (`curRow.extra`), pas dans le bandeau global. */
+      rows={[...doneWitnessRows, curRow]}
       actions={jetActions}
       disableEscClose
       embedded={embedded}

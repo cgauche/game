@@ -372,6 +372,16 @@ export const fr = {
   // rangée de jet porte seule le verdict ; garde i18n.test.ts).
   'out.consWounds': '{n} Blessure(s) perdue(s).',
   'out.consHeal': '{n} Blessure(s) récupérée(s).',
+  // État gagné, DÉRIVÉ de l'op `condition` réellement appliqué (opConsequenceLine, comme wounds/heal) —
+  // sans nom d'acteur (le portrait de la rangée porte l'attribution).
+  'out.consCondition': 'État {cond} subi.',
+  // Activité de voyage SANS Test exécutée (EDOC l.131) — le nom est porté en var (la rangée batch/poste
+  // n'a pas toujours d'actorId pour l'attribution).
+  'out.activityDone': '{name} — {activity} (effectué).',
+  // Rencontre d'Étape (EDOC ch.5) : catégorie + libellé + texte VERBATIM, sans id d'icône dans la prose.
+  'out.travelEncounter': '{category} — {label} : {text}',
+  // Météo d'Étape (EDOC ch.5 l.42) : libellé seul — le d100 est un tirage de MONDE, jamais montré au joueur.
+  'out.stageWeather': 'Météo : {weather}.',
   // Passthrough narratif générique (#295 Lot 1) : `text` est COMPOSÉ par l'applier (jamais un gabarit avec
   // {roll}/{target}/{sl} — la ligne de jet visible au-dessus porte déjà le verdict).
   'out.free': '{text}',

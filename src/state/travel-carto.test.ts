@@ -1,14 +1,19 @@
 /**
- * Voyage — poste « Établir des cartes » (EDOC l.161) : Test ÉTENDU inter-Étapes. Gardes de non-régression
- * sur l'affichage du jet quotidien :
- *  - le libellé de la ligne de jet = la Compétence RÉELLEMENT utilisée, LABEL résolu AVEC sa spec
+ * Voyage — poste « Établir des cartes » (EDOC l.161) : Test ÉTENDU inter-Étapes, désormais UNE RANGÉE
+ * du pas BATCH des postes du jour (arbitrage user 2026-07-11). Gardes de non-régression :
+ *  - le libellé de la rangée = la Compétence RÉELLEMENT utilisée, LABEL résolu AVEC sa spec
  *    (« Métier (Cartographe) »), jamais l'id brut (`metier`) ni `def.skills[0]` sans spec ;
- *  - le poste porte le contexte de test étendu (drDone/drTarget) → barre de DR côté cascade.
+ *  - la RANGÉE porte le contexte de test étendu (extendedDrDone/extendedDrTarget) → barre de DR
+ *    ATTACHÉE à SA rangée (rendue par `RollRow`, site unique), persistante après validation.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { useGame } from './store';
 import { buildStageSteps } from './travelPostes';
+import { cascadeAppliers } from './cascade';
 import type { Combatant } from '../engine/types';
+import type { BatchParticipant } from './pendings';
 
 const cartoHero = (): Combatant =>
   ({
@@ -28,17 +33,43 @@ describe('Voyage — poste Cartographie (Établir des cartes, test étendu)', ()
     });
   });
 
-  it('rollLabel = compétence RÉSOLUE avec spec (« Métier (Cartographe) »), jamais l’id', () => {
+  /** La rangée-participant du cartographe dans le pas BATCH des postes. */
+  const cartoPart = (): BatchParticipant => {
     const steps = buildStageSteps(useGame.getState, useGame.setState, 'beau', 'ete');
-    const carto = steps.find((s) => s.meta?.activityId === 'etablir-cartes')!;
-    expect(carto.rollLabel).toBe('Métier (Cartographe)');
+    const batch = steps.find((s) => s.kind === 'stagePosteBatch')!;
+    return batch.participants!.find((p) => p.id === 'h')!;
+  };
+
+  it('label de rangée = compétence RÉSOLUE avec spec (« Métier (Cartographe) »), jamais l’id', () => {
+    expect(cartoPart().label).toBe('Métier (Cartographe)');
   });
 
-  it('porte le contexte de test étendu (drDone/drTarget) pour la barre de DR', () => {
+  it('la RANGÉE porte le contexte de test étendu (extendedDrDone/extendedDrTarget) pour la barre de DR', () => {
+    const part = cartoPart();
+    expect(typeof part.extendedDrTarget).toBe('number');
+    expect(part.extendedDrTarget as number).toBeGreaterThan(0);
+    expect(part.extendedDrDone).toBe(1); // = extendedProgress AVANT ce jet
+  });
+
+  // VERROU (#329, arbitrage user 2026-07-11) : la barre de DR de RANGÉE d'un Test étendu a UN SEUL site
+  // de rendu (la primitive `RollRow`), alimenté par la DONNÉE `extendedDr` — jamais un `<DrBar>` recodé
+  // dans la modale de cascade ou le builder de rangées (ni une branche spécifique voyage).
+  it('la barre de DR de rangée a UN site de rendu unique (RollRow), pas dans CascadeModal/buildParticipantRows', () => {
+    const ui = (f: string) => readFileSync(fileURLToPath(new URL(`../ui/${f}`, import.meta.url)), 'utf8');
+    expect(ui('RollRow.tsx')).toMatch(/extendedDr && <DrBar/); // SITE unique de rendu de la barre de rangée
+    expect(ui('CascadeModal.tsx')).not.toMatch(/DrBar/); // la modale ne pose QUE la donnée, plus le composant
+    expect(ui('buildParticipantRows.tsx')).not.toMatch(/DrBar/);
+  });
+
+  // PERSISTANCE post-validation : l'application du batch ne DÉTRUIT pas la donnée de barre de la rangée
+  // (elle reste sur le participant → rangées témoins/bilan la re-rendent), et pose la conséquence SUR la rangée.
+  it('après application du batch, la rangée cartographie GARDE sa donnée de DR étendu + porte sa conséquence', () => {
     const steps = buildStageSteps(useGame.getState, useGame.setState, 'beau', 'ete');
-    const carto = steps.find((s) => s.meta?.activityId === 'etablir-cartes')!;
-    expect(typeof carto.meta?.extendedDrTarget).toBe('number');
-    expect(carto.meta?.extendedDrTarget as number).toBeGreaterThan(0);
-    expect(carto.meta?.extendedDrDone).toBe(1); // = extendedProgress AVANT ce jet
+    const batch = steps.find((s) => s.kind === 'stagePosteBatch')!;
+    const part = batch.participants!.find((p) => p.id === 'h')!;
+    part.result = { roll: 30, target: part.target, sl: 2, success: true }; // jet réussi (DR 2)
+    cascadeAppliers['stagePosteBatch'].apply(useGame.getState, useGame.setState, batch, undefined, { steps: [batch], index: 0 });
+    expect(part.extendedDrTarget as number).toBeGreaterThan(0); // donnée de barre TOUJOURS présente
+    expect(Array.isArray(part.outcome)).toBe(true); // conséquence rendue sur SA rangée
   });
 });

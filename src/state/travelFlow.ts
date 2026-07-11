@@ -50,6 +50,7 @@ import { stageAssignmentFromRoles, type StagePosting } from '../engine/activitie
 import { buildStageSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
+import { t } from '../i18n';
 import type { CascadeStep } from './pendings';
 import { buildSeaPlan, runSeaDay, startFastVoyage, syncHullWoundsFromVessel } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
@@ -71,6 +72,11 @@ export interface TravelRecapDay {
   /** MER (route COMMANDÉE) : instantané du jour pour l'écran de traversée (rose des vents + jauges +
    *  distance restante) — rendu par `SeaVoyageScreen` à la place du corps de recap terrestre. */
   sea?: import('./seaVoyageFlow').SeaRecapChrome;
+  /** MÉTÉO d'Étape (EDOC ch.5 l.42) = CONTEXTE DU JOUR (arbitrage user 2026-07-11 : « elle doit juste
+   *  s'afficher dans un écart lié à la journée », plus de pas de cascade). `id` = météo affichée
+   *  (en-tête « Journée de route — … — {météo} » + tuile Météo, vague 2) ; `roll` = d100 INTERNE (debug/
+   *  tests ; « y'a que le MJ qui voit le jet de météo » → jamais montré au joueur). */
+  weather?: { id: import('../engine/travelStages').Weather; roll: number };
 }
 
 /** Suite DIFFÉRÉE derrière le récit du voyage (embuscade d'auteur ou « Attaqués ! » de la table
@@ -493,12 +499,16 @@ function buildTravelDayCascade(
   // Repère de journal : le récap du jour (recapDay.lines) = la tranche écrite pendant la cascade.
   const journalMark = get().journal.length;
 
-  // Étape EDOC (l.10) : jet de Météo « au début de chaque étape » (l.42) — ambiance, posée ici (1
-  // tirage), puis les postes + l'agrégation (fourrage/camp/carte/Rencontre) qui insère l'Exposition.
+  // Météo « au début de chaque étape » (l.42) : tirage de MONDE (arbitrage user 2026-07-11 : aucune
+  // interaction, PAS de pas de cascade). Tiré ici (même RNG), porté en CONTEXTE DU JOUR (`recapDay.weather`
+  // — en-tête/tuile de la vague 2 ; d100 INTERNE, jamais montré au joueur) ; le journal en garde une
+  // ligne STRUCTURÉE (libellé météo seul). Puis les postes + l'agrégation (fourrage/camp/carte/Rencontre)
+  // qui insère l'Exposition.
   if (rule('travel-etapes')) {
     const season = currentSeason(get);
     const w = rollStageWeather(battleRng(), season);
-    log(get, set, [`Météo de l'Étape (${w.roll}) : ${WEATHER_LABEL[w.weather]}.`]);
+    recapDay.weather = { id: w.weather, roll: w.roll };
+    log(get, set, [t('out.stageWeather', { weather: WEATHER_LABEL[w.weather] })]);
     steps.push(...buildStageSteps(get, set, w.weather, season));
   }
 

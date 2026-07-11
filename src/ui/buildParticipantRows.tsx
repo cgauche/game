@@ -33,6 +33,9 @@ export interface ParticipantRowBundle<P extends ParticipantRow> {
   interactiveOf?: (part: P, actor: Combatant) => boolean;
   /** Issue courte sous la ligne (DR ×2 essentiel…) — rendue APRÈS le jet seulement. */
   extra?: (part: P, actor: Combatant, res: NonNullable<P['result']>) => ReactNode;
+  /** DONNÉE de Test ÉTENDU d'une rangée (cartographie de voyage…) : la barre est rendue par `RollRow`
+   *  (site UNIQUE), visible avant/après le jet et persistante. Le bundle ne pose que la donnée. */
+  extendedDrOf?: (part: P, actor: Combatant) => { cum: number; target: number } | undefined;
   /** Libellé du bouton « Lancer » de rangée (ex. « Frapper » pour l'enfoncement de porte). */
   rollLabel?: ReactNode;
 }
@@ -66,6 +69,7 @@ export function buildParticipantRows<P extends ParticipantRow>(
     if (!actor) return [];
     const res = part.result;
     const failed = participantFailed(res);
+    const extendedDr = bundle.extendedDrOf?.(part, actor);
     return [{
       key: part.id,
       actor,
@@ -81,6 +85,7 @@ export function buildParticipantRows<P extends ParticipantRow>(
       onDarkPact: () => bundle.onDarkPact(part.id),
       onForce: () => bundle.onForce(part.id),
       forceShow: !!res,
+      ...(extendedDr ? { extendedDr } : {}),
       ...(bundle.extra && res ? { extra: bundle.extra(part, actor, res) } : {}),
     }];
   });

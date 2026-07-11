@@ -71,7 +71,8 @@ function drainCascade(): void {
   while (useGame.getState().pendingCascade && guard++ < 200) {
     const p = useGame.getState().pendingCascade!;
     const cur = p.participants[p.cursor];
-    if (cur && cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+    if (cur?.participants && cur.participants.some((part) => !part.result)) { for (const part of cur.participants) if (!part.result) useGame.getState().cascadeBatchRoll(part.id); }
+    else if (cur && cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
     else useGame.getState().cascadeNext();
   }
 }
@@ -365,19 +366,21 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     expect(st.gameTime - t0).toBe(180);
     expect(st.journal.some((l) => l.includes('Arrivée à Bourg B'))).toBe(true);
     // Aucune trace du sous-système d'Étapes (la règle est éteinte → chemin court-circuité).
-    expect(st.journal.some((l) => l.includes("Météo de l'Étape"))).toBe(false);
+    expect(st.journal.some((l) => l.includes('Météo'))).toBe(false);
     expect(st.journal.some((l) => l.includes('Approvisionnement'))).toBe(false);
     expect(st.journal.some((l) => l.includes("Exposition de fin d'Étape"))).toBe(false);
   });
 
-  it('ON : un jet de Météo est journalisé pour la journée de route', () => {
+  it('ON : la Météo du jour est journalisée (libellé seul — le d100 est un tirage de MONDE, pas montré)', () => {
     setRule('travel-etapes', true);
     setup(map({ km: 12, perilDie: 0 }));
     useGame.getState().startTravel('r1', 'pied');
-    drainCascade(); // cascade travelDay (postes/Météo) → drainer, puis arrivée
+    drainCascade(); // cascade travelDay (postes) → drainer, puis arrivée
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene'); // arrive toujours (l'enrichissement ne bloque pas la route)
-    expect(st.journal.some((l) => l.includes("Météo de l'Étape"))).toBe(true);
+    const weatherLine = st.journal.find((l) => l.includes('Météo'));
+    expect(weatherLine).toBeDefined();
+    expect(weatherLine).not.toMatch(/\(\d+\)/); // aucun d100 dans la prose (« y'a que le MJ qui voit le jet »)
   });
 
   it('ON, sans « Attraper froid » : les POSTES se résolvent, mais aucun Test d’Exposition de fin d’Étape', () => {

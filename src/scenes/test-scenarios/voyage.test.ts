@@ -65,12 +65,15 @@ describe('16-voyage — intégration Voyage par Étapes', () => {
     while (useGame.getState().pendingCascade && guard++ < 200) {
       const p = useGame.getState().pendingCascade!;
       const cur = p.participants[p.cursor];
-      if (cur && cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+      if (cur?.participants && cur.participants.some((part) => !part.result)) { for (const part of cur.participants) if (!part.result) useGame.getState().cascadeBatchRoll(part.id); }
+      else if (cur && cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
       else useGame.getState().cascadeNext();
     }
     const j = useGame.getState().journal;
     expect(j.some((l) => l.includes('Météo'))).toBe(true);
-    expect(j.some((l) => l.includes('Plein air') || l.includes('Aux aguets') || l.includes('Cartographie') || l.includes('Approvisionnement'))).toBe(true);
+    // Postes résolus : leurs conséquences arrivent au journal en lignes STRUCTURÉES (batch #328 + #295) —
+    // Exténué DÉRIVÉ de l'op, carte d'itinéraire (Test étendu cumulé), ou ration fourragée à l'agrégation.
+    expect(j.some((l) => l.includes('Exténué') || l.includes('itinéraire') || l.includes('ration'))).toBe(true);
   });
 });
 

@@ -24,11 +24,12 @@ import type { SkillRef } from '../engine/skills';
 import { refLabel } from '../data';
 import { stageEncounterCategory } from '../engine/travelEncounter';
 import { rollEncounter, type EncounterCategory } from '../engine/travelTables';
-import { applyOps } from '../engine/ops';
-import { addCondition, removeCondition, stacks } from '../engine/conditions';
+import { applyOps, type GameOp } from '../engine/ops';
+import { removeCondition, stacks } from '../engine/conditions';
 import { extendedTestStep } from '../engine/tests';
 import { registerCascadeApplier } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, resultLine, type Consequence } from './rollSeam';
+import { t } from '../i18n';
 import { rule } from '../engine/policy';
 import {
   stageCount, pleinAirModifier, forageWeatherModifier, forageYield, stageExposureDifficulty,
@@ -41,7 +42,7 @@ import { testValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS, type Difficulty, type Combatant } from '../engine/types';
 import { partyWalkSpeed, vehicleTravel, type TravelMode } from '../engine/travel';
 import { partyMounts } from '../engine/mountTravel';
-import type { CascadeStep, CascadeStepMeta } from './pendings';
+import type { CascadeStep, CascadeStepMeta, BatchParticipant } from './pendings';
 import type { Get, Set } from './flowTypes';
 
 const POSTE_ICON: Record<string, string> = {
@@ -49,11 +50,11 @@ const POSTE_ICON: Record<string, string> = {
   'etablir-cartes': 'expedition/cartography', 'pratiquer-competence': 'expedition/practice', recuperer: 'rest/bed', 'monter-camp': 'rest/camp',
 };
 
-/** Présentation d'une catégorie de Rencontre (EDOC ch.5) — icône + libellé + ton du bilan. */
-const ENCOUNTER_PRESENTATION: Record<EncounterCategory, { icon: string; label: string; tone: 'ok' | 'bad' | 'info' }> = {
-  positives: { icon: 'expedition/clover', label: 'Rencontre positive', tone: 'ok' },
-  fortuites: { icon: 'travel/encounter', label: 'Rencontre fortuite', tone: 'info' },
-  dangereuses: { icon: 'ui/warning', label: 'Rencontre dangereuse', tone: 'bad' },
+/** Libellé d'une catégorie de Rencontre (EDOC ch.5). */
+const ENCOUNTER_LABEL: Record<EncounterCategory, string> = {
+  positives: 'Rencontre positive',
+  fortuites: 'Rencontre fortuite',
+  dangereuses: 'Rencontre dangereuse',
 };
 
 /** CONTEXTE TRANSITOIRE de l'Étape en cours (posé par `buildStageSteps`, lu par les appliers, effacé à
@@ -112,28 +113,40 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
   set({ travelPlan: { ...plan, stage } });
 
   const steps: CascadeStep[] = [];
+  // Postes AVEC Test → UN SEUL pas BATCH (une rangée par héros, jets INDÉPENDANTS — arbitrage user
+  // 2026-07-11 : « chacun a son propre jet », pas de séquence « jet 1/5 »). Primitive #328 (`BatchParticipant`,
+  // flux `cascadeBatch`). Postes SANS Test → pas d'affichage à conséquence immédiate.
+  const batchParts: BatchParticipant[] = [];
   for (const hero of party) {
     const posting = plan.postes[hero.id];
     if (!posting) continue;
     const def = activityById(posting.activityId);
     if (!def) continue;
     const spec = travelActivitySpec(hero, def, { skillMod: weatherModOf(def, weather), stages, freeSkill: posting.freeSkill });
-    const meta: CascadeStepMeta = { activityId: def.id };
-    if (posting.freeSkill?.skillId) { meta.freeSkillId = posting.freeSkill.skillId; if (posting.freeSkill.spec) meta.freeSkillSpec = posting.freeSkill.spec; }
-    // Test ÉTENDU inter-Étapes (Établir des cartes, EDOC l.161) : le poste porte sa progression cumulée
-    // (barre de DR côté cascade) — ce N'EST PAS un test simple. drDone = progression AVANT ce jet ;
-    // drTarget = 2 × Étapes (`spec.drTarget`).
-    if (spec.drTarget != null) { meta.extendedDrDone = plan.extendedProgress ?? 0; meta.extendedDrTarget = spec.drTarget; }
     if (spec.target == null) {
-      // Activité SANS Test (Récupérer) : pas d'étape-jet — un pas d'affichage dont l'applier applique l'issue.
+      // Activité SANS Test (Récupérer) : pas de rangée de jet — un pas d'affichage dont l'applier applique l'issue.
+      const meta: CascadeStepMeta = { activityId: def.id };
+      if (posting.freeSkill?.skillId) { meta.freeSkillId = posting.freeSkill.skillId; if (posting.freeSkill.spec) meta.freeSkillSpec = posting.freeSkill.spec; }
       steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass', label: def.label, interactive: true, meta });
     } else {
-      // rollLabel = la Compétence RÉELLEMENT utilisée, LABEL résolu AVEC sa spec (« Métier (Cartographe) »)
-      // via `refLabel` comme tous les flux — plus jamais l'id brut ni `def.skills[0]` (qui perdait la spec).
-      steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass', label: def.label,
-        rollLabel: spec.used ? refLabel('skills', { id: spec.used.skillId, spec: spec.used.spec }) : def.label,
-        base: spec.value, target: spec.target, result: null, interactive: true, meta });
+      // label = Compétence RÉELLEMENT utilisée, résolue AVEC sa spec (« Métier (Cartographe) ») via
+      // `refLabel` ; base/cible déjà influençables. Test ÉTENDU (Établir des cartes, EDOC l.161) : la
+      // rangée porte sa progression cumulée (drDone AVANT ce jet, drTarget = 2 × Étapes) → barre de DR
+      // sur SA rangée, persistante (arbitrage user). L'accumulation réelle vit dans `stageAggregate`.
+      batchParts.push({
+        id: hero.id,
+        label: spec.used ? refLabel('skills', { id: spec.used.skillId, spec: spec.used.spec }) : def.label,
+        interactive: true,
+        base: spec.value,
+        target: spec.target,
+        result: null,
+        ...(spec.drTarget != null ? { extendedDrDone: plan.extendedProgress ?? 0, extendedDrTarget: spec.drTarget } : {}),
+      });
     }
+  }
+  if (batchParts.length) {
+    steps.push({ id: 'stage-postes', kind: 'stagePosteBatch', icon: 'travel/compass', label: 'Postes de l’Étape',
+      participants: batchParts, aggregate: 'summed-dr', interactive: true });
   }
   // Pas d'agrégation de fin d'Étape (fourrage cumulé, camp, cartes, Rencontre) + insertion des Expositions.
   steps.push({ id: 'stage-agg', kind: 'stageAggregate', icon: 'ui/tally', label: 'Bilan de l’Étape', interactive: true,
@@ -143,31 +156,62 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
 
 // ── APPLIERS des étapes de l'Étape (purpose `travelDay`) : conséquence RAW par `kind`, moteur PUR ──
 
-/** UN poste : issue du jet (ops/Exténué/portée Étape) via le jumeau PUR `applyTravelActivityResult`.
- *  Enregistre le résultat dans le contexte d'Étape (l'agrégation `stageAggregate` le relira). */
+/** UN poste RÉSOLU : issue du jet (ops/Exténué/portée Étape) via le jumeau PUR `applyTravelActivityResult`,
+ *  enregistrée dans le contexte d'Étape (l'agrégation `stageAggregate` la relira), et RENDUE en
+ *  `Consequence[]` STRUCTURÉES (#295) — jamais une chaîne composée à la main :
+ *   - Activité SANS Test → `out.activityDone` (nom en var : la rangée batch peut n'avoir pas d'actorId) ;
+ *   - Exténué (EDOC l.133) → op `condition` APPLIQUÉ par `applyOps`, ligne DÉRIVÉE via `opConsequenceLine` ;
+ *   - issues individuelles (Récupérer/Pratiquer/Recueillir infos) → notes narratives.
+ *  Partagé par le pas d'affichage (`stagePoste`, sans Test) et le pas BATCH (`stagePosteBatch`, avec Test). */
+function applyPoste(get: Get, set: Set, hero: Combatant, def: ActivityDef, freeSkill: SkillRef | undefined, roll: { roll: number; target: number; sl: number; success: boolean } | null): Consequence[] {
+  const spec = travelActivitySpec(hero, def, { freeSkill });
+  const r = applyTravelActivityResult({ ...spec, actorId: hero.id }, def, roll);
+  const plan = get().travelPlan;
+  if (plan?.stage) set({ travelPlan: { ...plan, stage: { ...plan.stage, results: [...plan.stage.results, r] } } });
+  const cons: Consequence[] = [];
+  if (r.roll == null) cons.push({ say: 'out.activityDone', vars: { name: hero.name, activity: def.label } });
+  if (r.ops.length) cons.push(...freeCons(applyOps(hero, r.ops)));
+  if (r.extenue) {
+    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC l.133
+    applyOps(hero, [op]);
+    cons.push({ ops: [op] });
+  }
+  // Issues INDIVIDUELLES (Récupérer / Pratiquer / Recueillir infos) : récit (systèmes dédiés câblés ailleurs).
+  if (r.success && r.stageOutcome === 'countsAsRest') cons.push(...freeCons([`${hero.name} prend soin de ne pas se surmener — cette Étape compte comme un repos.`]));
+  else if (r.success && r.stageOutcome === 'rerollToken') cons.push(...freeCons([`${hero.name} s'exerce en chemin — il pourra inverser un futur Test de cette Compétence.`]));
+  else if (r.success && r.stageOutcome === 'gatherInfo') cons.push(...freeCons([`${hero.name} glane des informations en route.`]));
+  return cons;
+}
+
+/** Poste SANS Test (Récupérer) : pas d'affichage — l'issue s'applique d'office (le journal annonce
+ *  seule l'exécution ; aucune rangée de jet). */
 registerCascadeApplier('stagePoste', (get, set, step, hero) => {
   const def = activityById(String(step.meta?.activityId ?? ''));
   if (!def || !hero) return;
-  const spec = travelActivitySpec(hero, def, { freeSkill: freeSkillFromMeta(step.meta) });
-  const r = applyTravelActivityResult({ ...spec, actorId: hero.id }, def, step.result ?? null);
-  // Accumule le résultat pour l'agrégation de fin d'Étape.
-  const plan = get().travelPlan;
-  if (plan?.stage) set({ travelPlan: { ...plan, stage: { ...plan.stage, results: [...plan.stage.results, r] } } });
-
-  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
-  // succès sans effet (rien à ajouter) → aucune conséquence. Activité SANS Test (`r.roll == null`) :
-  // aucune rangée de jet nulle part → le journal annonce seule l'exécution.
-  const j: string[] = [];
-  if (r.roll == null) j.push(`${hero.name} — ${def.label} (effectué).`);
-  else if (r.extenue) j.push(`${hero.name} — ${def.label} : Exténué.`);
-  if (r.ops.length) j.push(...applyOps(hero, r.ops));
-  if (r.extenue) addCondition(hero, 'extenue', 1);
-  // Issues INDIVIDUELLES (Récupérer / Pratiquer / Recueillir infos) : récit (systèmes dédiés câblés ailleurs).
-  if (r.success && r.stageOutcome === 'countsAsRest') j.push(`${hero.name} prend soin de ne pas se surmener — cette Étape compte comme un repos.`);
-  else if (r.success && r.stageOutcome === 'rerollToken') j.push(`${hero.name} s'exerce en chemin — il pourra inverser un futur Test de cette Compétence.`);
-  else if (r.success && r.stageOutcome === 'gatherInfo') j.push(`${hero.name} glane des informations en route.`);
+  const cons = applyPoste(get, set, hero, def, freeSkillFromMeta(step.meta), step.result ?? null);
   set({ party: [...get().party] });
-  return { consequences: freeCons(j) };
+  return { consequences: cons };
+});
+
+/** Postes AVEC Test = UN pas BATCH (arbitrage user 2026-07-11 : jets INDÉPENDANTS, un par héros posté).
+ *  Chaque rangée porte son propre jet influençable (déjà résolu ici) ; sa CONSÉQUENCE est rendue SUR SA
+ *  rangée (`part.outcome`, le portrait porte l'attribution — pas de note agrégée à l'étape). L'agrégat
+ *  `summed-dr` de la primitive est IGNORÉ (ces Tests ne sont pas reliés). */
+registerCascadeApplier('stagePosteBatch', (get, set, step) => {
+  const plan = get().travelPlan;
+  if (!step.participants || !plan?.postes) return;
+  for (const part of step.participants) {
+    const posting = plan.postes[part.id];
+    const hero = get().party.find((h) => h.id === part.id);
+    const def = posting ? activityById(posting.activityId) : undefined;
+    if (!hero || !def || !posting) { part.outcome = []; continue; }
+    const cons = applyPoste(get, set, hero, def, posting.freeSkill, part.result ?? null);
+    const lines = cons.map((c) => resultLine([c])).filter((s) => s.length > 0);
+    part.outcome = lines; // conséquence SUR SA rangée (le portrait attribue)
+    for (const l of lines) get().log(l); // + journal/recap (une ligne par héros, pas d'agrégat)
+  }
+  set({ party: [...get().party] });
+  return { consequences: [] };
 });
 
 /** AGRÉGATION de fin d'Étape (fourrage cumulé, camp, cartes, Rencontre) + INSERTION des jets d'Exposition
@@ -224,8 +268,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
   const category = stageEncounterCategory(results);
   if (category) {
     const enc = rollEncounter(category, d100(battleRng()));
-    const pres = ENCOUNTER_PRESENTATION[category];
-    j.push(`${pres.icon} ${pres.label} — ${enc.label} : ${enc.text}`);
+    j.push(t('out.travelEncounter', { category: ENCOUNTER_LABEL[category], label: enc.label, text: enc.text }));
     if (enc.stageOutcome === 'fullRecovery') {
       for (const h of party.filter((x) => !x.dead)) {
         h.wounds.current = h.wounds.max;

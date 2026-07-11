@@ -6,6 +6,7 @@ import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
 import { ForcedRollPicker } from './ForcedRollPicker';
 import { useRollFrisson } from './useRollFrisson';
+import { DrBar } from './DrBar';
 import { Icon } from './Icon';
 
 /** Libellé par défaut du bouton « Lancer » (rangée seule ET coquille `RollShell` hissée). */
@@ -45,6 +46,7 @@ export function RollRow({
   rollInBar = false,
   winner,
   extra,
+  extendedDr,
 }: RollRowProps) {
   // Frisson du jet (helper partagé avec le bouton « Lancer » hissé dans la barre du RollShell).
   const { rolling, trigger: doRoll } = useRollFrisson(onRoll, { frisson: rollFrisson });
@@ -63,6 +65,10 @@ export function RollRow({
       {/* Accent gagnant/perdant du Test opposé porté PAR la rangée (le panneau est mono → indice 0 = cette ligne :
           `winnerIndex=0` → `rr-win`, `≠0` → `rr-lose`). Le badge « DR net » reste au niveau RollShell (source unique). */}
       <RollPanel rows={[row]} winnerIndex={winner === 'win' ? 0 : winner === 'lose' ? 1 : null} />
+      {/* Progression d'un Test ÉTENDU (LDB 12) — SITE UNIQUE de rendu de la barre de DR de rangée
+          (arbitrage user 2026-07-11) : les émetteurs (cartographie, Peur de combat, périls…) ne posent
+          QUE la donnée `extendedDr` ; elle vit SUR la rangée et persiste (rangées témoins/batch/bilan). */}
+      {extendedDr && <DrBar cum={extendedDr.cum} target={extendedDr.target} />}
       {extra}
       {interactive && !rolled && (
         // `rollInBar` : la coquille (RollShell) rend le « Lancer » ET son spinner dans `.modal-actions`
@@ -147,4 +153,7 @@ export interface RollRowProps {
   winner?: 'win' | 'lose' | null;
   /** Issue courte (« Dissipé ! », « DR net +2 ») affichée sous la ligne. */
   extra?: ReactNode;
+  /** Test ÉTENDU (LDB 12) : progression cumulée (`cum`) vers la cible (`target`) — rendue en `DrBar`
+   *  SUR la rangée (site UNIQUE, arbitrage user 2026-07-11). Les call-sites posent la DONNÉE, jamais le composant. */
+  extendedDr?: { cum: number; target: number };
 }
