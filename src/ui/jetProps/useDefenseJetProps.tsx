@@ -56,7 +56,9 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const socialLabel = sub ? findSkillById(sub.skillId)?.label ?? 'Intimidation' : undefined;
   // Base de la défense sociale (mode 'social') = valeur de Test de la Compétence substituée.
   const socialBase = pd.mode === 'social' ? sub?.value : undefined;
-  // MA ligne pré-remplie : valeur + mods de la défense CHOISIE (recalculés à chaque changement).
+  // MA ligne pré-remplie : valeur + mods de la défense CHOISIE (recalculés à chaque changement). La météo
+  // « Tests physiques » du jour (#341) arrive par le CANAL UNIQUE : `defenseModifiers` lit `defender.envWeather`
+  // et pousse la ligne « Météo » scopée par la carac du mode (Parade→CC, Esquive→Agilité) — zéro câblage ici.
   const myMods = defenseModifiers(defender, pd.mode, 0, pd.mode === 'parade' ? chosenParry : undefined);
   const myBase = defenseValue(defender, pd.mode, chosenParry, socialBase);
   const myLabel = pd.mode === 'social' ? (socialLabel ?? 'Intimidation') : DEFENSE_LABEL[pd.mode];
