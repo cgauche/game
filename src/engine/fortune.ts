@@ -25,3 +25,16 @@ export function restoreFortune(party: Combatant[]): Combatant[] {
     ? { ...h, ...(h.fate != null ? { fortune: h.fate } : {}), resistanceUsed: undefined }
     : h));
 }
+
+/** Mort certaine évitée en brûlant 1 Point de Destin (LDB 17 l.29-39) : Destin −1 et la cible
+ *  survit à 1 Blessure minimum (true) ; sans Destin, elle meurt (`dead`, false). La prose du
+ *  dénouement reste au call-site (contexte : hémorragie, op kill, tick de maladie). */
+export function fateSaveOrDie(c: Combatant): boolean {
+  if ((c.fate ?? 0) > 0) {
+    c.fate = (c.fate ?? 0) - 1;
+    c.wounds.current = Math.max(1, c.wounds.current);
+    return true;
+  }
+  c.dead = true;
+  return false;
+}

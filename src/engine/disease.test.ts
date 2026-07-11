@@ -11,6 +11,7 @@ import {
   diseasePsychTraits,
   rollContraction,
   applyDiseasePersist,
+  symptomOnTick,
 } from './disease';
 import { effectivePsychTraits, isFrenzyCapable } from './psychology';
 import type { GameOp } from './ops';
@@ -171,6 +172,48 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(modOf('sociabilite')).toEqual([-10]);
     expect(modOf('intelligence')).toEqual([]); // Mental non touché
     expect(modOf('force-mentale')).toEqual([]);
+  });
+
+  describe('Toxine (LDB 20 l.211-215) — Test de Résistance quotidien indexé sur la sévérité, mort à l’échec', () => {
+    it('difficulté par défaut Très Facile (+60), onFail = kill', () => {
+      const tick = symptomOnTick({ symptomId: 'toxine' })!;
+      expect(tick.difficulty).toBe('tresFacile');
+      expect(tick.onFail).toEqual([{ op: 'kill' }]);
+    });
+
+    it('« Toxine (Modéré) » → Facile (+40)', () => {
+      const tick = symptomOnTick({ symptomId: 'toxine', severity: 'moderee' })!;
+      expect(tick.difficulty).toBe('facile');
+      expect(tick.onFail).toEqual([{ op: 'kill' }]);
+    });
+
+    it('« Toxine (Grave) » → Accessible (+20)', () => {
+      const tick = symptomOnTick({ symptomId: 'toxine', severity: 'grave' })!;
+      expect(tick.difficulty).toBe('accessible');
+    });
+
+    it('Test raté (chemin non-différé) → la cible MEURT (LDB 20 l.215 : « ou vous mourrez »)', () => {
+      // infection-du-sang porte Toxine sans sévérité indiquée (tresFacile, cible 61 avec resVal 1).
+      const c = sick({ diseases: [contractDisease('infection-du-sang', seq([]), { incubation: 0, duration: 5 })!], fate: 0 });
+      const log = tickDisease(c, MINUTES_PER_DAY, seq([99]), 1); // d100=99 > cible 61 → échec
+      expect(c.dead).toBe(true);
+      expect(log.some((l) => /succombe/.test(l))).toBe(true);
+    });
+
+    it('Test raté MAIS 1 Point de Destin (LDB 17 l.29-39) → sauvé in extremis, pas mort', () => {
+      const c = sick({ diseases: [contractDisease('infection-du-sang', seq([]), { incubation: 0, duration: 5 })!], fate: 1, wounds: { current: 0, max: 10 } });
+      const log = tickDisease(c, MINUTES_PER_DAY, seq([99]), 1); // échec du Test de Résistance
+      expect(c.dead).toBeFalsy();
+      expect(c.fate).toBe(0);
+      expect(log.some((l) => /sauvé/.test(l))).toBe(true);
+    });
+
+    it('Test réussi → aucune conséquence, la maladie continue', () => {
+      const c = sick({ diseases: [contractDisease('infection-du-sang', seq([]), { incubation: 0, duration: 5 })!], fate: 0 });
+      const log = tickDisease(c, MINUTES_PER_DAY, seq([5]), 1); // d100=5 ≤ 61 → réussite
+      expect(c.dead).toBeFalsy();
+      expect(log.some((l) => /succombe|sauvé/.test(l))).toBe(false);
+    });
   });
 
   describe('rollContraction (post-critique +60, Chirurgie +20)', () => {

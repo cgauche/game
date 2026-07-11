@@ -959,7 +959,14 @@ export interface SymptomData {
   source?: SourceRef;
   passive?: import('../engine/ops').GameOp[];
   severePassive?: import('../engine/ops').GameOp[];
-  onTick?: { difficulty: import('../engine/types').Difficulty; onFail: import('../engine/ops').GameOp[] };
+  /** `difficultyBySeverity` : la difficulté du Test de cycle est INDEXÉE sur la sévérité de l'instance
+   *  (Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible) — clé absente pour la sévérité portée
+   *  = `difficulty` de base inchangée. Lu par `symptomOnTick`. */
+  onTick?: {
+    difficulty: import('../engine/types').Difficulty;
+    difficultyBySeverity?: Partial<Record<'moderee' | 'grave', import('../engine/types').Difficulty>>;
+    onFail: import('../engine/ops').GameOp[];
+  };
   capabilities?: SymptomCapabilities;
 }
 /** Domaine de magie (Couleur, LDB 48) : ses ATTRIBUTS éditables au Codex — riders « à la touche »

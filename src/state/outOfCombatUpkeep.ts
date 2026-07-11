@@ -15,6 +15,7 @@
 import { Combatant } from '../engine/types';
 import { RNG } from '../engine/dice';
 import { endOfRound, bleedDeathRoll, tickDeath, hasCondition } from '../engine/conditions';
+import { fateSaveOrDie } from '../engine/fortune';
 import { fireConditionEffects } from './triggeredEffects';
 import { t } from '../i18n';
 
@@ -43,14 +44,7 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
       const bd = bleedDeathRoll(c, rng); // mort par Hémorragique (10 %/pion, double = coagule)
       bd.log.forEach((l) => log.push(l));
       if (bd.died) {
-        if ((c.fate ?? 0) > 0) {
-          c.fate = (c.fate ?? 0) - 1;
-          c.wounds.current = Math.max(1, c.wounds.current);
-          log.push(t('upkeep.fateSaved', { name: c.name }));
-        } else {
-          c.dead = true;
-          log.push(t('upkeep.succumb', { name: c.name }));
-        }
+        log.push(fateSaveOrDie(c) ? t('upkeep.fateSaved', { name: c.name }) : t('upkeep.succumb', { name: c.name }));
         continue;
       }
       tickDeath(c).forEach((l) => log.push(l)); // 0 PB → Inconscient après BE Rounds (LDB 18 l.28)

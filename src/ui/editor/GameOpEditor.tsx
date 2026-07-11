@@ -51,6 +51,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   endPsych: 'Fin d’un état psychologique',
   exposeDisease: 'Exposer à une Maladie (Test post-combat)',
   contractDisease: 'Contracter une Maladie (immédiat)',
+  kill: 'Mort directe (Point de Destin sauve)',
   removeShipPoste: 'Retirer un poste de navire (Canon perdu)',
   teamCommander: 'Diriger l’équipe (score de Projectiles du commandant)', // posé par l'action « Diriger l'équipe » ; hors palette d'auteur (commanderId interne)
   attackKeyword: 'Mot-clé d’attaque (ex. magique)',
@@ -141,6 +142,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   skillDRBonus: 'mechanic/stat-mod', charDRBonus: 'mechanic/stat-mod', offTerrainMod: 'mechanic/stat-mod',
   crewTestMod: 'travel/anchor', incomingAttackMod: 'mechanic/ward', incomingAdvantage: 'flag/focus',
   sbBonus: 'char/f', endPsych: 'mechanic/mind', exposeDisease: 'medical/infection', contractDisease: 'medical/infection',
+  kill: 'journal/damage',
   removeShipPoste: 'travel/anchor', teamCommander: 'action/lead', attackKeyword: 'item/weapon',
   mitigateIncoming: 'mechanic/ward', ignoreStatePenalties: 'ui/done', freeReroll: 'resource/fortune',
   critTwice: 'journal/critical', gainResource: 'resource/fortune', gainAdvantage: 'flag/focus',
@@ -168,7 +170,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
 /** Menu « + op » : TOUTES les op du vocabulaire, groupées par intention d'auteur. Libellé de groupe =
  *  texte SEUL (sert aussi d'`<optgroup label>` natif, qui ne peut afficher que du texte). */
 const OP_GROUPS: [string, GameOp['op'][]][] = [
-  ['Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish']],
+  ['Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish', 'kill']],
   ['États', ['condition', 'removeCondition']],
   ['Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'skillDRBonus', 'charDRBonus', 'crewTestMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
@@ -345,6 +347,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'damageArmour': return { op: 'damageArmour', material: 'cuir' };
     case 'reduceToZero': return { op: 'reduceToZero' };
     case 'banish': return { op: 'banish' };
+    case 'kill': return { op: 'kill' };
     case 'martyr': return { op: 'martyr' };
     case 'giveTrapping': return { op: 'giveTrapping', custom: 'Ration' };
     case 'perRound': return { op: 'perRound', ops: [] };

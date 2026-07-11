@@ -308,12 +308,13 @@ Vous toussez et éternuez régulièrement, **propageant votre maladie**. Tout Pe
 
 ---
 
-### Toxine (`LDB 20 l.211-214`)
+### Toxine (`LDB 20 l.211-215`)
 
 Le RAW est COMPLET (le verbatim intégral vit dans `symptoms.json`, entrée `toxine` : échec du Test quotidien
 = mort ; difficulté indexée sur la sévérité — Très Facile +60, Modéré → Facile +40, Grave → Accessible +20).
-⚠ Écart d'IMPLÉMENTATION : `onTick.onFail` vide (la mort n'est pas appliquée) et difficulté non indexée —
-suivi #338.
+IMPLÉMENTÉ (#338) : `onTick.onFail` porte `{ op: 'kill' }` (Point de Destin sauve, LDB 17 l.29-39, sinon
+`Combatant.dead`) ; `onTick.difficultyBySeverity` indexe la difficulté sur la sévérité de l'instance
+(lu par `symptomOnTick`, `src/engine/disease.ts`).
 
 ---
 

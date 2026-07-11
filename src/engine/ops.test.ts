@@ -342,6 +342,22 @@ describe('applyOps — opérations unitaires', () => {
     expect(c.conditions.some((x) => x.name === 'en-flammes')).toBe(true);
     expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(false);
   });
+
+  describe('kill — mort directe hors Critique (Toxine, LDB 20 l.215)', () => {
+    it('sans Destin : la cible meurt', () => {
+      const c = hero({ fate: 0 });
+      applyOps(c, [{ op: 'kill' }]);
+      expect(c.dead).toBe(true);
+    });
+
+    it('avec Destin (LDB 17 l.29-39 : « éviter une mort certaine ») : 1 Point sacrifié, la cible survit', () => {
+      const c = hero({ fate: 1, wounds: { current: 0, max: 12 } });
+      applyOps(c, [{ op: 'kill' }]);
+      expect(c.dead).toBeFalsy();
+      expect(c.fate).toBe(0);
+      expect(c.wounds.current).toBe(1);
+    });
+  });
 });
 
 describe('applyActiveEffect — non-cumul (LDB l.168)', () => {

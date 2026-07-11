@@ -34,6 +34,11 @@ export const schema = z.array(
     severePassive: z.array(gameOpSchema).optional(),
     onTick: z.strictObject({
       difficulty: difficultySchemaLocal,
+      /** Toxine (LDB 20 l.215) : Modéré→Facile, Grave→Accessible — lu par `symptomOnTick`. */
+      difficultyBySeverity: z.strictObject({
+        moderee: difficultySchemaLocal.optional(),
+        grave: difficultySchemaLocal.optional(),
+      }).optional(),
       onFail: z.array(gameOpSchema),
     }).optional(),
     capabilities: symptomCapabilitiesSchema.optional(),

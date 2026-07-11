@@ -27,6 +27,8 @@ import { rollTest } from './tests';
 import { maladies, diseaseLabel, findSymptomById, symptomLabel, type SymptomCapabilities } from '../data';
 import type { GameOp } from './ops';
 import type { PsychTrait, PsychType } from './psychology';
+import { t } from '../i18n';
+import { fateSaveOrDie } from './fortune';
 
 /** Unité d'un temps de maladie (incubation/durée). La base de calcul/stockage reste la MINUTE (`clock.ts`). */
 export type TimeUnit = 'days' | 'hours' | 'minutes';
@@ -193,9 +195,14 @@ export function diseasePsychTraits(c: Combatant): PsychTrait[] {
   }
   return out;
 }
-/** Test/conséquence de cycle quotidien d'une instance de symptôme (Blessé/Toxine) — donnée. */
+/** Test/conséquence de cycle quotidien d'une instance de symptôme (Blessé/Toxine) — donnée. La
+ *  difficulté est INDEXÉE sur la sévérité PORTÉE PAR L'INSTANCE quand le symptôme le prévoit
+ *  (`difficultyBySeverity` — Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible). */
 export function symptomOnTick(inst: DiseaseSymptom): { difficulty: Difficulty; onFail: GameOp[] } | undefined {
-  return findSymptomById(inst.symptomId)?.onTick;
+  const tick = findSymptomById(inst.symptomId)?.onTick;
+  if (!tick) return undefined;
+  const bySeverity = inst.severity && tick.difficultyBySeverity?.[inst.severity];
+  return bySeverity ? { difficulty: bySeverity, onFail: tick.onFail } : tick;
 }
 /** Un symptôme (par id) porte-t-il la capacité `cap` (lue sur sa donnée) ? */
 function symptomHasCapability(symptomId: string, cap: keyof SymptomCapabilities): boolean {
@@ -372,15 +379,23 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
       // active — symptômes à Test de cycle quotidien (`onTick` : Blessé, Toxine). DONNÉE-DRIVEN : on lit
       // l'onTick du symptôme (difficulté + conséquence GameOp `onFail`). DIFFÉRÉ en cascade influençable
       // (l'`onFail` est appliqué par l'applier d'étape côté state via applyOps) ; sinon roulé ici (chemin
-      // non-différé/tests : on interprète la conséquence `contractDisease`). Cadence RAW « par jour » →
-      // uniquement sur une JOURNÉE PLEINE (une durée sous-journalière s'épuise sans Test « quotidien »).
+      // non-différé — `runDailyUpkeep` sans cascade de nuit + tests unitaires) : on interprète la
+      // conséquence inline (`contractDisease` → contraction directe ; `kill` → `fateSaveOrDie` mutualisé,
+      // seule l'interprétation des ops reste locale — pas d'import d'`applyOps`, contrainte sans-cycle
+      // de l'en-tête du fichier). Cadence RAW « par jour » → uniquement sur une JOURNÉE PLEINE (une
+      // durée sous-journalière s'épuise sans Test « quotidien »).
       if (isFullDay) {
         for (const inst of dz.symptoms) {
           if (symptomSuppressed(c, inst.symptomId)) continue; // symptôme suspendu (Racine de terre) : pas de Test de cycle
           const tick = symptomOnTick(inst);
           if (!tick) continue;
           if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.name)})`, base: rv, difficulty: tick.difficulty, meta: { diseaseName: dz.name, onFail: tick.onFail } });
-          else if (!rollTest(rv, tick.difficulty, rng).success) for (const op of tick.onFail) if (op.op === 'contractDisease') contractOnce(op.disease);
+          else if (!rollTest(rv, tick.difficulty, rng).success) for (const op of tick.onFail) {
+            if (op.op === 'contractDisease') contractOnce(op.disease);
+            else if (op.op === 'kill') {
+              log.push(fateSaveOrDie(c) ? t('op.kill.fateSaved', { name: c.name }) : t('op.kill', { name: c.name }));
+            }
+          }
         }
         // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
         // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.

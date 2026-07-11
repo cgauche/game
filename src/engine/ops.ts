@@ -26,6 +26,7 @@ import { setGrapple } from './grapple'; // op `condition {grapple:true}` → rel
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
 import { cureCriticalWounds, receiveMedicalAid } from './trauma';
+import { fateSaveOrDie } from './fortune';
 import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString, autoStowNewItem } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
 import { suppressPsychTraits, type PsychType } from './psychology';
@@ -482,6 +483,10 @@ export type GameOp =
    *  `exposeDisease` (exposition→test). Utilisé p.ex. par la conséquence `onFail` d'un symptôme « Blessé »
    *  (→ Blessure Purulente) ; applicable par tout effet (artefact maudit…). Inerte si déjà porteur. */
   | { op: 'contractDisease'; disease: string }
+  /** Mort DIRECTE hors Tableau des Critiques (Toxine, LDB 20 l.215 : « ou vous mourrez ») — 1 Point de
+   *  Destin sauve (LDB 17 l.29-39, « circonstances les plus difficiles […] éviter une mort certaine »,
+   *  MÊME patron que la mort par Hémorragie hors combat, `outOfCombatUpkeep.ts`), sinon `target.dead = true`. */
+  | { op: 'kill' }
   /** Guérit `count` (+échelle DR) Blessures critiques de convalescence — jamais une amputation
    *  (Larmes de Shallya, LDB 42). */
   | { op: 'cureCriticalWound'; count?: number; countPerSL?: PerSL }
@@ -1382,6 +1387,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Contraction instantanée (incubation 0) — délègue à la machinerie de maladie (cycle-safe :
         // disease.ts n'importe `ops` qu'en type). Inerte si déjà porteur.
         lines.push(...contractDiseaseOnce(target, o.disease, rng));
+        break;
+      }
+      case 'kill': {
+        lines.push(fateSaveOrDie(target) ? t('op.kill.fateSaved', { name: target.name }) : t('op.kill', { name: target.name }));
         break;
       }
       case 'cureCriticalWound': {

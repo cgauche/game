@@ -283,7 +283,15 @@
     "desc": "Vous êtes gravement malade et sans doute plus très loin des Portes de Morr car un poison mortel se répand dans votre corps. Effectuez un Test de **Résistance Très Facile (+60)** tous les jours (en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie. Si *Toxine* est indiqué (*Modéré*), le Test est **Facile (+40)**. Si elle est indiquée (*Grave*), le Test est **Accessible (+20)**.",
     "onTick": {
       "difficulty": "tresFacile",
-      "onFail": []
+      "difficultyBySeverity": {
+        "moderee": "facile",
+        "grave": "accessible"
+      },
+      "onFail": [
+        {
+          "op": "kill"
+        }
+      ]
     },
     "source": {
       "book": "livre-de-base",
