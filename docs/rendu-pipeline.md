@@ -124,8 +124,12 @@ La sélection vue+miroir vient du SEUL résolveur `project(dir, camRot)` (`rig/f
 vue absente sur la plus proche déclarée est `pickView`/`foldView` ; la COUVERTURE réelle (`declaredViews`)
 pilote la galerie QC `oriented-objects.html`. Le PROFIL est dessiné vers la DROITE, le gauche = miroir de
 la machinerie. Le routage d'un véhicule à coque se fait par **`hull.propulsion`** dans `rig/bodyPlan.ts`
-(`resolveRender`) : `maritime`/`fluvial` → gabarit `navire` (silhouette par `hull.rig`) ; `terrestre` →
-gabarit `terrestre` — un attelage ne peut PLUS retomber par accident sur la coque de navire.
+(`resolveRender`) : `maritime`/`fluvial` → gabarit `navire` avec l'**ID de véhicule** comme espèce ;
+`terrestre` → gabarit `terrestre` — un attelage ne peut PLUS retomber par accident sur la coque de navire.
+Chaque type de navire a son ART DE COQUE dédié (`rig/ship/defs/<id>.ts`, registre `SHIP_ARTS` auto-chargé,
+boîte à outils `rig/ship/artkit.ts` : voiles carrées/latines/jonque, avirons, châteaux, pavois — proue à
+DROITE, quille à y=0) ; un id sans def retombe sur la silhouette procédurale par gréement (`hull.rig`)
+de `composeShip` — couverture déclarée, visible dans la galerie.
 - **un TYPE d'élément** (au-delà de floor/wall/roof/prop/token) : ajouter le variant à `SceneEl`
   (`builders/types.ts`, discriminé par `kind`) + un builder + le rendu dans CHAQUE backend (affine ET
   POV) + sa profondeur de tri propre (chaque backend calcule la sienne, cf. `floorDepth`/`wallDepth`/…).

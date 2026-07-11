@@ -196,6 +196,17 @@ export const REGISTRIES = [
     typeFrom: './artkit',
   },
   {
+    // Arts de COQUE de navire (vague A1, profil broadside) : 1 coque = 1 fichier defs/ —
+    // MÊME pattern que les engins (routé par ID de véhicule, repli procédural par gréement
+    // dans composeShip ; la galerie oriented-objects montre la couverture déclarée).
+    dir: 'src/gameIso/rig/ship/defs',
+    out: 'src/gameIso/rig/ship/_registry.generated.ts',
+    exportName: 'hullArt',
+    arrayName: 'SHIP_ARTS',
+    type: 'ShipArtDef',
+    typeFrom: './artkit',
+  },
+  {
     // Gabarits (carrures réutilisables) : 1 carrure = 1 fichier defs/. Dissout PROPS.
     dir: 'src/gameIso/rig/gabarits/defs',
     out: 'src/gameIso/rig/gabarits/_registry.generated.ts',

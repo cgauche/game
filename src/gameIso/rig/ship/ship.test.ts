@@ -40,16 +40,16 @@ describe('Gabarit NAVIRE — rendu via le système de plans (réutilisé, pas du
 });
 
 describe('routage : un véhicule à coque → gabarit navire (resolveRender, data-driven)', () => {
-  it('résout par ID SEUL vers le plan navire + gréement comme espèce', async () => {
+  it('résout par ID SEUL vers le plan navire + ID comme espèce (route l’art de coque SHIP_ARTS)', async () => {
     const { resolveRender } = await import('../bodyPlan');
     const byId = resolveRender(undefined, undefined, 'cogue'); // voile, 25 m
     expect(byId.kind).toBe('plan');
     expect(byId.plan).toBe('navire');
-    expect(byId.species).toBe('voile'); // gréement → silhouette
+    expect(byId.species).toBe('cogue'); // id → art de coque dédié (repli gréement dans composeShip)
     expect(byId.scale).toBeGreaterThan(1); // 25 m → > 1
     const byId2 = resolveRender(undefined, undefined, 'langskip'); // mixte
     expect(byId2.plan).toBe('navire');
-    expect(byId2.species).toBe('mixte');
+    expect(byId2.species).toBe('langskip');
     // un véhicule TERRESTRE (diligence) n'est PAS un navire → gabarit terrestre (cf. land.test.ts).
     expect(resolveRender(undefined, undefined, 'diligence').plan).not.toBe('navire');
   });

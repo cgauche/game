@@ -6,12 +6,13 @@
  * Tout art orienté passe par le MÊME contrat `ViewArt` (`rig/viewArt`). Sortie : public/oriented-objects.html
  * Lancer : npx tsx scripts/gen-oriented-objects-gallery.mts
  */
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { planById } from '../src/gameIso/rig/bodyPlan';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { project, type View } from '../src/gameIso/rig/facing';
 import { declaredViews, type ViewArt } from '../src/gameIso/rig/viewArt';
-import { shipArt } from '../src/gameIso/rig/ship/composeShip';
+import { shipArt, shipArtOf } from '../src/gameIso/rig/ship/composeShip';
+import { SHIP_ARTS } from '../src/gameIso/rig/ship/_registry.generated';
 import { landArt } from '../src/gameIso/rig/land/composeLand';
 import { enginArtOf } from '../src/gameIso/rig/engin/composeEngin';
 import { ENGIN_ARTS } from '../src/gameIso/rig/engin/_registry.generated';
@@ -59,9 +60,31 @@ const rotationRow = (render: (view: View, mirror: boolean) => string) =>
 
 type Entry = { name: string; art: ViewArt<never[]>; raw: (v: View) => string | null; render: (view: View, mirror: boolean) => string };
 
+// Couverture de la famille NAVIRE : ids à coque de vehicles.json — ceux SANS def SHIP_ARTS restent
+// sur le repli procédural par gréement (rendus en fin de section, badge « repli procédural »).
+const shipIds = (JSON.parse(readFileSync('src/data/vehicles.json', 'utf8')) as { id: string; hull?: { propulsion?: string } }[])
+  .filter((v) => v.hull && v.hull.propulsion !== 'terrestre')
+  .map((v) => v.id);
+const drawnShipIds = new Set(SHIP_ARTS.map((a) => a.id));
+const fallbackShipIds = shipIds.filter((id) => !drawnShipIds.has(id));
+
+const shipEntry = (id: string, tag = ''): Entry => ({
+  name: `navire · ${id}${tag}`,
+  art: shipArtOf(id) as ViewArt<never[]>,
+  raw: (v) => (declaredViews(shipArtOf(id)).includes(v) ? bonesToSvg(planById('navire').resolve(id, v, {}, {})) : null),
+  render: (view, mirror) => planSvg('navire', id, view, mirror),
+});
+
 const entries: { title: string; items: Entry[] }[] = [
   {
-    title: 'Navires — coque par gréement (hull.rig)',
+    title: `Navires — coque par ID (SHIP_ARTS, vague A1) ; ${fallbackShipIds.length} id(s) encore sur le repli procédural par gréement`,
+    items: [
+      ...SHIP_ARTS.map((a) => shipEntry(a.id)),
+      ...fallbackShipIds.map((id) => shipEntry(id, ' (repli procédural)')),
+    ],
+  },
+  {
+    title: 'Navires — repli procédural par gréement (hull.rig, sert les ids sans art dédié)',
     items: (['voile', 'avirons', 'mixte'] as const).map((rig) => ({
       name: `navire · ${rig}`,
       art: shipArt(rig) as ViewArt<never[]>,

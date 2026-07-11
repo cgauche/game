@@ -15,8 +15,16 @@ import type { View } from '../facing';
 import type { Palette, StoredPalette } from '../palette';
 import { groundedBody } from '../staticBody';
 import { pickView, type ViewArt } from '../viewArt';
+import { SHIP_ARTS } from './_registry.generated';
+import type { ShipArtDef } from './artkit';
+import { findVehicleById } from '../../../data';
 
 export type ShipRig = 'avirons' | 'voile' | 'mixte';
+
+// Registre des arts de coque PAR ID de véhicule (vague A1 — `ship/defs/`, auto-chargé). Un id sans
+// def retombe sur la silhouette procédurale par gréement ci-dessous (couverture DÉCLARÉE, visible
+// dans la galerie oriented-objects) — MÊME mécanique que ENGIN_ARTS pour les engins de siège.
+const HULL_ART_BY_ID: Record<string, ShipArtDef> = Object.fromEntries(SHIP_ARTS.map((a) => [a.id, a]));
 
 // Coordonnée locale de la QUILLE (point de contact bas de la coque) : l'art a son origine à la
 // flottaison (y=0), la carène descend jusqu'à ~+11 → `groundedBody` pose CE point sur la ligne de sol
@@ -49,11 +57,18 @@ function buildShip(rig: ShipRig): string {
   return `<g>${oars}${hull()}${sails}</g>`; // rames derrière la coque, voile devant
 }
 
-/** Art ORIENTÉ d'une coque : la silhouette procédurale est une VUE DE BROADSIDE → seule `profile` est
- *  déclarée (couverture honnête, visible en galerie QC). Face/dos REPLIENT sur le profil (`pickView`)
- *  jusqu'à ce que les vagues d'art A1-A4 dessinent une proue/poupe dédiées. Exposé pour la galerie QC. */
+/** Art ORIENTÉ du REPLI PROCÉDURAL : la silhouette par gréement est une VUE DE BROADSIDE → seule
+ *  `profile` est déclarée (couverture honnête, visible en galerie QC). Face/dos REPLIENT sur le
+ *  profil (`pickView`). Exposé pour la galerie QC. */
 export function shipArt(rig: ShipRig): ViewArt {
   return { profile: () => buildShip(rig) };
+}
+
+/** Art ORIENTÉ d'une coque, routé par ID de véhicule : def `SHIP_ARTS` si dessinée (vague A1),
+ *  sinon repli procédural par gréement (un jeton de gréement passé tel quel reste accepté —
+ *  galerie/tests). Exposé pour la galerie QC (couverture déclarée). */
+export function shipArtOf(idOrRig: string): ViewArt {
+  return HULL_ART_BY_ID[idOrRig] ?? shipArt(asRig(idOrRig));
 }
 
 // Palette par défaut : jetons NAVIRE propres au plan (bois de coque / toile / mât-rames / pavillon vif).
@@ -66,16 +81,23 @@ const shipRoll = (phase: number): Record<string, number> => ({ coque: Math.sin(p
 const shipRam = (phase: number): Record<string, number> => ({ coque: Math.sin(Math.min(1, phase) * Math.PI) * 6 });
 const SHIP_DEATH: Record<string, number> = { coque: 22 };
 
+// `species` = ID de véhicule (résolution normale) ou jeton de gréement (galerie/outils). Pour un id
+// sans art dédié, le gréement vient de la DONNÉE (`vehicles.json`, `hull.rig`).
 const asRig = (species: string): ShipRig =>
-  species === 'voile' || species === 'avirons' || species === 'mixte' ? species : 'mixte';
+  species === 'voile' || species === 'avirons' || species === 'mixte'
+    ? species
+    : ((findVehicleById(species)?.hull?.rig as ShipRig | undefined) ?? 'mixte');
 
 function resolveShip(species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
-  // La vue demandée est CONSOMMÉE via le contrat d'art orienté PARTAGÉ (`pickView`) — mono-vue aujourd'hui
-  // (broadside → replie sur `profile`), prête à recevoir proue/poupe sans changer d'aiguillage.
+  // La vue demandée est CONSOMMÉE via le contrat d'art orienté PARTAGÉ (`pickView`) — les defs A1
+  // déclarent `profile` (broadside), proue/poupe se brancheront ici sans changer d'aiguillage.
   // `pose.coque` = angle de roulis/gîte (deg) ⇒ `tilt` autour de la quille (au sol), via la fondation
   // PARTAGÉE des corps statiques `groundedBody` — la même qui ancre les engins de siège.
-  const svg = pickView(shipArt(asRig(species)), view)();
-  return groundedBody(svg, SHIP_DEFAULT, colors, { id: 'coque', baseY: KEEL_Y, tilt: pose.coque ?? 0 });
+  // Les defs sont dessinées quille à y=0 (origine = contact) ; l'art procédural garde son origine
+  // à la flottaison → décalage KEEL_Y.
+  const def = HULL_ART_BY_ID[species];
+  const svg = pickView(def ?? shipArt(asRig(species)), view)();
+  return groundedBody(svg, SHIP_DEFAULT, colors, { id: 'coque', baseY: def ? 0 : KEEL_Y, tilt: pose.coque ?? 0 });
 }
 
 export const shipPlan: BodyPlan = {
