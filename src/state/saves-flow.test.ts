@@ -241,4 +241,14 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(s.travelPlan!.vehicle).toBeTruthy();
     expect(s.vessel).not.toBeNull();
   });
+
+  // #327 lot C — MIGRATIONS[4] (v4→v5) : le convoi abstrait `caravanCargo` est MATÉRIALISÉ sur un porteur
+  // réel (ici la bête de bât du groupe) et la clé disparaît — plus de vrac de groupe hors porteur.
+  it('fixture v4 convoi terrestre : caravanCargo rehébergé sur la bête de bât, clé supprimée', () => {
+    loadFixture('v4-convoi-terrestre.json');
+    const s = useGame.getState();
+    expect((s as unknown as Record<string, unknown>).caravanCargo).toBeUndefined(); // champ retiré du modèle
+    const mule = s.party[0].items!.find((i) => i.uid === 'mule-1')!;
+    expect(mule.cargo).toEqual([{ cargoId: 'vin', enc: 20, basePriceGold: 5 }]); // rehébergé sur ItemInstance.cargo
+  });
 });

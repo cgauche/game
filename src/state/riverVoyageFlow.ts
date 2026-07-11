@@ -34,7 +34,7 @@ import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import { travelSpeed } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById } from '../data';
-import { cargoTotalEnc } from '../engine/cargo';
+import { partyCargoTotalEnc } from './carriers';
 import { partyAssisted } from '../engine/skills';
 import { rollTest, type TestResult } from '../engine/tests';
 import { testValue } from '../engine/skills';
@@ -714,8 +714,9 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
 
 /** S'ÉCHOUER (l.97-99) : le bateau s'arrête, sa coque subit 12 Dégâts ; on le renfloue par un Test de Force
  *  « avec un malus égal au nombre total de Points d'Encombrement du bateau et de sa cargaison » (l.99). Le
- *  malus = Enc PROPRE du bateau (`VehicleData.enc`) + Enc de la CARGAISON du convoi (`caravanCargo`, la cale
- *  fluviale du commerce T2C ch.11), converti en difficulté (chaque 10 Enc ≈ un cran de −10 via
+ *  malus = Enc PROPRE du bateau (`VehicleData.enc`) + Enc de la CARGAISON des porteurs réels du groupe
+ *  (`partyCargoTotalEnc` : bêtes/véhicules/navire, la cale fluviale du commerce T2C ch.11), converti en
+ *  difficulté (chaque 10 Enc ≈ un cran de −10 via
  *  `difficultyFromModifier`) ; degrade sur Intermédiaire si aucun Enc n'est connu (barge LDB `enc` null +
  *  convoi vide). Le RAW ne prévoit AUCUN délestage pour se renflouer (l.97-105 muets) → non modélisé. */
 export function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): void {
@@ -734,7 +735,7 @@ export function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): 
 function echouageDifficulty(get: Get): { difficulty: Difficulty; encTxt: string } {
   const coque = get().travelPlan!.vehicle!;
   const boatEnc = findVehicleById(coque.creatureId ?? '')?.enc ?? 0;
-  const cargoEnc = cargoTotalEnc(get().caravanCargo ?? []);
+  const cargoEnc = partyCargoTotalEnc(get());
   const totalEnc = boatEnc + cargoEnc;
   const difficulty = totalEnc > 0 ? difficultyFromModifier(-totalEnc) : 'intermediaire';
   const encTxt = totalEnc > 0 ? ` (malus −${totalEnc} Enc : ${boatEnc} bateau + ${cargoEnc} cargaison, l.99)` : '';

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
 import { openLandMarket, landSellCargo } from './landMarketFlow';
+import { persistCarriersCargo } from './carriers';
 import { seedBattleRng } from './battleRng';
 import { createHero, skillCharacteristicById } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -38,12 +39,17 @@ function skill(c: Combatant, skillId: string, advances: number, spec?: string): 
   else c.skills.push({ skillId, spec, characteristic: skillCharacteristicById(skillId), advances } as SkillInstance);
 }
 
-/** Un marchand du groupe : Ragot + Marchandage élevés (Fel poussé) pour des Tests fiables sous graine. */
+/** id du porteur de convoi (diligence, chargement 80) qui héberge le vrac du marchand. */
+const CARRIER_ID = 'convoi-1';
+
+/** Un marchand du groupe : Ragot + Marchandage élevés (Fel poussé) pour des Tests fiables sous graine.
+ *  Il possède un chariot de convoi (porteur réel de la cargaison, #327). */
 function trader(): Combatant {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'marchand', name: 'Artur', motivation: 'x', rng: makeRNG(11), id: 't-artur' });
   h.characteristics = { ...h.characteristics, Fel: 60 } as Combatant['characteristics'];
   skill(h, 'ragot', 60);
   skill(h, 'marchandage', 60);
+  h.items = [...(h.items ?? []), { uid: CARRIER_ID, name: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as never];
   return h;
 }
 
@@ -67,7 +73,7 @@ function launchAtA(): void {
   const g = get();
   g.setParty([trader()]);
   g.loadProject([marche('marche-a', 'Grünburg'), marche('marche-b', 'Altdorf')], 'marche-a', tradeMap());
-  set({ money: { gold: 0, silver: 0, brass: 0 }, landMarket: null, tradeRumours: [], caravanCargo: [], journal: [] });
+  set({ money: { gold: 0, silver: 0, brass: 0 }, landMarket: null, tradeRumours: [], journal: [] });
 }
 
 const lot: CargoLot = { cargoId: 'vin', enc: 40, basePriceGold: 10 };
@@ -78,13 +84,13 @@ function sellAtB(board: TradeRumour[]): number {
   launchAtA();
   set({
     landMarket: { placeId: 'B', label: 'Altdorf', market: profile(), offers: [] },
-    caravanCargo: [{ ...lot }],
     tradeRumours: board,
     money: { gold: 0, silver: 0, brass: 0 },
     journal: [],
+    ...persistCarriersCargo(get(), [{ carrierId: CARRIER_ID, cargo: [{ ...lot }] }]),
   });
   seedBattleRng(3);
-  landSellCargo(get, set, 0);
+  landSellCargo(get, set, CARRIER_ID, 0);
   return toBrass(get().money);
 }
 

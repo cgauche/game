@@ -242,11 +242,11 @@ describe('renflouage à l\'échouage (l.99) — l\'Enc de la CARGAISON entre dan
   function strand(cargoEnc: number): string {
     launch();
     const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
-    set({
-      travelPlan: plan,
-      caravanCargo: cargoEnc > 0 ? [{ cargoId: 'vin', enc: cargoEnc, basePriceGold: 10 }] : [],
-      journal: [],
-    });
+    // La cargaison vit sur un porteur RÉEL embarqué (chariot de convoi) — `partyCargoTotalEnc` la lit (#327).
+    const party = get().party.map((h, i) => i === 0
+      ? { ...h, items: [...(h.items ?? []), { uid: 'convoi-1', name: 'Chariot', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false, cargo: cargoEnc > 0 ? [{ cargoId: 'vin', enc: cargoEnc, basePriceGold: 10 }] : [] } as never] }
+      : h);
+    set({ party, travelPlan: plan, journal: [] });
     seedBattleRng(7);
     const lines: string[] = [];
     applyEchouage(get, set, (l) => lines.push(...l));

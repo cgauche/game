@@ -1184,9 +1184,6 @@ export interface GameState extends RollFlowActionsMap {
   portHireCrew: (roleId: string, count?: number) => void;
   /** Débarque `count` PNJ salariés du rôle `roleId` (#228). */
   portDismissCrew: (roleId: string, count?: number) => void;
-  /** Cargaison TERRESTRE/FLUVIALE transportée par le groupe (convoi/chariot — T2C ch.11). Persiste au
-   *  niveau GROUPE (pas de Contenance de coque, à la différence du navire). */
-  caravanCargo: import('../engine/cargo').CargoLot[];
   /** Board de RUMEURS COMMERCIALES persistant (T2C ch.11 l.180) : chaque rumeur désigne un AUTRE Lieu où
    *  des biens se vendent au double. Entendues aux marchés (Ragot Complexe −10), consultées dans l'écran
    *  Marché, appliquées à la vente au Lieu désigné. Persiste au niveau GROUPE (sauvegardé, remis à zéro en
@@ -1198,12 +1195,15 @@ export interface GameState extends RollFlowActionsMap {
   /** Ouvre l'écran Marché si le groupe est à un Lieu de commerce terrestre de la carte (`MapPlace.market`). */
   openLandMarket: () => void;
   closeLandMarket: () => void;
-  /** Achète `enc` d'une cargaison de l'étape (disponibilité 2 temps/Marchandage/lot partiel, T2C l.129-131). */
+  /** Achète `enc` d'une cargaison de l'étape (disponibilité 2 temps/Marchandage/lot partiel, T2C l.129-131) —
+   *  chargée sur le porteur de défaut du groupe dans la limite de sa Contenance (#327). */
   landBuyCargo: (cargoId: string, enc: number) => void;
-  /** Vend un lot du convoi (Demande/Mise à prix/Marchandage, T2C l.133-160). */
-  landSellCargo: (cargoIndex: number) => void;
+  /** Vend un lot d'un porteur (Demande/Mise à prix/Marchandage, T2C l.133-160). */
+  landSellCargo: (carrierId: string, cargoIndex: number) => void;
   /** Brade un lot invendable (½ du prix de base dans un Lieu de Commerce, T2C l.160). */
-  landDumpCargo: (cargoIndex: number) => void;
+  landDumpCargo: (carrierId: string, cargoIndex: number) => void;
+  /** Transfère `enc` d'une cargaison entre deux porteurs CO-LOCALISÉS (bête/véhicule/navire, #327). */
+  moveCargo: (fromId: string, toId: string, cargoId: string, enc: number) => void;
   /** Évalue la qualité secrète d'un lot de Vin proposé (Test d'Évaluation, T2C l.95). */
   landEvalWine: (cargoId: string) => void;
   /** ACTIVITÉS EN MER en attente (semaine de 8 jours, MDG 15 l.266-306) — modale de choix par héros. */
@@ -1295,7 +1295,6 @@ export const useGame = create<GameState>((set, get) => ({
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
   vessel: null,
-  caravanCargo: [],
   tradeRumours: [],
   landMarket: null,
   worldMap: campaignWorldMap,
@@ -2191,8 +2190,9 @@ export const useGame = create<GameState>((set, get) => ({
   openLandMarket: () => landMarketFlow.openLandMarket(get, set),
   closeLandMarket: () => landMarketFlow.closeLandMarket(get, set),
   landBuyCargo: (cargoId, enc) => landMarketFlow.landBuyCargo(get, set, cargoId, enc),
-  landSellCargo: (cargoIndex) => landMarketFlow.landSellCargo(get, set, cargoIndex),
-  landDumpCargo: (cargoIndex) => landMarketFlow.landDumpCargo(get, set, cargoIndex),
+  landSellCargo: (carrierId, cargoIndex) => landMarketFlow.landSellCargo(get, set, carrierId, cargoIndex),
+  landDumpCargo: (carrierId, cargoIndex) => landMarketFlow.landDumpCargo(get, set, carrierId, cargoIndex),
+  moveCargo: (fromId, toId, cargoId, enc) => landMarketFlow.moveCargo(get, set, fromId, toId, cargoId, enc),
   landEvalWine: (cargoId) => landMarketFlow.landEvalWine(get, set, cargoId),
   seaActivitiesConfirm: (picks) => seaActivities.seaActivitiesConfirm(get, set, picks),
   resolveManannPriest: (pay) => seaVoyageFlow.resolveManannPriest(get, set, pay),

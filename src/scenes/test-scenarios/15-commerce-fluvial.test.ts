@@ -3,6 +3,8 @@ import { useGame } from '../../state/store';
 import { testScenarios } from './index';
 import { seedBattleRng } from '../../state/battleRng';
 import { toBrass } from '../../engine/money';
+import { primaryCargoCarrier } from '../../state/carriers';
+import { carrierFreeEnc } from '../../engine/cargo';
 import { REIK_INDEX } from './_reik-index';
 
 /**
@@ -78,30 +80,33 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
     const offers = get().landMarket!.offers;
     expect(offers.length).toBeGreaterThan(0);
     const offer = offers[0];
+    // La Contenance du chariot est un plafond RÉEL (#327) : on charge ce qui TIENT (lot potentiellement partiel).
+    const carrierId = primaryCargoCarrier(get())!.id;
+    const buyEnc = Math.min(carrierFreeEnc(primaryCargoCarrier(get())!), offer.enc);
     const purseBeforeBuy = toBrass(get().money);
-    get().landBuyCargo(offer.cargoId, offer.enc); // LOT PLEIN
+    get().landBuyCargo(offer.cargoId, buyEnc);
     const spent = purseBeforeBuy - toBrass(get().money);
     expect(spent).toBeGreaterThan(0);
-    expect(get().caravanCargo?.length).toBe(1);
-    expect(get().caravanCargo![0].cargoId).toBe(offer.cargoId);
+    expect(primaryCargoCarrier(get())!.cargo.length).toBe(1);
+    expect(primaryCargoCarrier(get())!.cargo[0].cargoId).toBe(offer.cargoId);
     get().closeLandMarket();
 
     // ── DESCENTE du Reik en BARGE (le convoi voyage avec le groupe) ──
     bargeTo('r-grunburg-altdorf', 'quai-altdorf');
     expect(get().travelPlan).toBeNull();
     expect(get().scene?.id).toBe('quai-altdorf'); // arrivé à la capitale
-    expect(get().caravanCargo?.length).toBe(1); // cargaison PERSISTÉE pendant le voyage
+    expect(primaryCargoCarrier(get())!.cargo.length).toBe(1); // cargaison PERSISTÉE pendant le voyage
 
     // ── VENTE à Altdorf (Florissant R 5 → Mise à prix +10 %, l.156) ──
     seedBattleRng(3);
     get().openLandMarket();
     drainCascade();
     const purseBeforeSell = toBrass(get().money);
-    get().landSellCargo(0);
+    get().landSellCargo(carrierId, 0);
     const earned = toBrass(get().money) - purseBeforeSell;
     expect(earned).toBeGreaterThan(0);
     // La cargaison a rapporté PLUS qu'elle n'a coûté à l'achat → profit prouvé (boucle T2C l.11-13).
     expect(earned).toBeGreaterThan(spent);
-    expect(get().caravanCargo?.length ?? 0).toBe(0); // lot vendu en entier
+    expect(primaryCargoCarrier(get())!.cargo.length ?? 0).toBe(0); // lot vendu en entier
   });
 });

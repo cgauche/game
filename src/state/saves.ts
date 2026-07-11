@@ -27,10 +27,13 @@
  *    (`null`), jamais silencieusement corrompus.
  */
 import type { RuleValue } from '../engine/policy';
+import type { CargoLot } from '../engine/cargo';
+import { findVehicleById } from '../data';
+import { mountProfileForTrapping } from '../engine/mountTravel';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 export interface SaveMeta {
   version: number;
@@ -153,7 +156,40 @@ export const MIGRATIONS: MigrationMap = {
     }
     return { ...doc, version: 4, data };
   },
+  // v4 → v5 (#327 lot C) : le convoi terrestre abstrait `caravanCargo` (cargaison de GROUPE, « information,
+  // pas plafond ») est MATÉRIALISÉ sur un porteur RÉEL — `caravanCargo` disparaît. Rehéberge ses lots sur le
+  // premier porteur du groupe : VÉHICULE de convoi (chargement EDOC) s'il existe, sinon BÊTE de bât
+  // (encPortee), sinon la cale du navire de campagne. Aucun porteur matérialisable (groupe sans bête/
+  // véhicule/navire) : le nouveau modèle n'héberge pas de vrac de groupe sans porteur → les lots sont
+  // abandonnés (arbitrage : « il faut un chariot pour hâler du vrac », EDOC ch.4 ; cas hors des saves réelles).
+  4: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    rehomeCaravan(data);
+    return { ...doc, version: 5, data };
+  },
 };
+
+/** Forme minimale d'un héros sérialisé LUE par la migration v4→v5 (porteurs = items à `trappingId`). */
+interface SavedItem { trappingId?: string; cargo?: CargoLot[] }
+interface SavedHero { items?: SavedItem[] }
+
+/** Rehéberge `caravanCargo` (v4) sur un porteur réel puis SUPPRIME la clé — MIGRATIONS[4]. Mute `data`. */
+function rehomeCaravan(data: Record<string, unknown>): void {
+  const caravan = (data.caravanCargo as CargoLot[] | undefined) ?? [];
+  delete data.caravanCargo;
+  if (!caravan.length) return;
+  const party = data.party as SavedHero[] | undefined;
+  const isVehicle = (t: string): boolean => findVehicleById(t)?.chargement != null;
+  const isBeast = (t: string): boolean => !!mountProfileForTrapping(t);
+  const findItem = (pred: (t: string) => boolean): SavedItem | undefined => {
+    for (const h of party ?? []) for (const it of h.items ?? []) if (it.trappingId && pred(it.trappingId)) return it;
+    return undefined;
+  };
+  const target = findItem(isVehicle) ?? findItem(isBeast);
+  if (target) { target.cargo = [...(target.cargo ?? []), ...caravan]; return; }
+  const vessel = data.vessel as { cargo?: CargoLot[] } | null | undefined;
+  if (vessel) vessel.cargo = [...(vessel.cargo ?? []), ...caravan];
+}
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la
  *  primitive générique `migrateDoc`). Un bump de version ne jette donc plus les anciennes saves en

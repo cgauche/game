@@ -10,6 +10,7 @@ import { routeDistanceLabel, TRAVEL_MODE_LABEL } from '../engine/travel';
 import { ALLURE_LABEL, partyMounts } from '../engine/mountTravel';
 import { windForceLabel, precipitationDef, temperatureDef, visibilityDef } from '../engine/seaWeather';
 import { cargoTotalEnc } from '../engine/seaVoyage';
+import { partyItemsCargoEnc, partyLandCapacity } from '../state/carriers';
 import { moraleBand } from '../engine/crewMorale';
 import { seasonOfMonth, WEATHER_LABEL, type Season } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
@@ -118,6 +119,15 @@ const cargoGaugeTone: (enc: number, cap: number) => GaugeTone = (enc, cap) => {
 
 const SEASON_LABEL: Record<Season, string> = { printemps: 'Printemps', ete: 'Été', automne: 'Automne', hiver: 'Hiver' };
 
+/** Tuile CHARGEMENT terre/fleuve (#327) : vrac porté par les bêtes/véhicules du convoi (porteurs RÉELS,
+ *  `partyItemsCargoEnc` / `partyLandCapacity`). Omise si le groupe n'a aucun porteur de charge. */
+function pushCargoTile(tiles: VoyageTile[], party: Combatant[]): void {
+  const cap = partyLandCapacity(party);
+  if (cap <= 0) return;
+  const enc = partyItemsCargoEnc(party);
+  tiles.push({ key: 'cale', icon: 'item/misc', label: 'Chargement', value: `${enc} / ${cap} Enc`, gauge: { value: enc, max: Math.max(cap, 1), tone: cargoGaugeTone } });
+}
+
 /** Glyphe d'état d'une phase de l'agenda (même convention que `ready-chip`, RestBody). */
 const AGENDA_GLYPH: Record<DayAgendaItem['state'], string> = { done: '✓', current: '●', pending: '○' };
 
@@ -192,6 +202,7 @@ export function voyageTiles(
     const hull = plan.vehicle;
     if (hull) tiles.push({ key: 'coque', icon: 'scenario/port', label: 'Coque de la barge', value: `${hull.wounds.current} / ${hull.wounds.max}`, gauge: { value: hull.wounds.current, max: hull.wounds.max, tone: hullTone }, onClick: onDossier });
     if (vessel?.provisions != null) tiles.push({ key: 'provisions', icon: 'item/misc', label: 'Provisions', value: `${vessel.provisions} j-homme` });
+    pushCargoTile(tiles, party); // chargement porté par les bêtes/véhicules embarqués (#327)
     return tiles;
   }
   // TERRE, ou transport PAYANT non JOUÉ (mer/fleuve dérivés du véhicule mais sans état de descente/
@@ -215,6 +226,7 @@ export function voyageTiles(
     const hurt = mounts.filter((m) => m.item.mountInjury).length;
     tiles.push({ key: 'betes', icon: 'travel/mount', label: 'Bêtes', value: `${mounts.length}${hurt ? ` · ${hurt} blessée${hurt > 1 ? 's' : ''}` : ''}` });
   }
+  pushCargoTile(tiles, party); // chargement porté par les bêtes/véhicules du convoi (#327)
   const season = seasonOfMonth(toDate(gameTime).month);
   tiles.push({ key: 'saison', icon: 'rest/cold', label: 'Saison', value: SEASON_LABEL[season] });
   return tiles;

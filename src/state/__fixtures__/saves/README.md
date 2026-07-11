@@ -20,6 +20,12 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   actif (`vessel`/`travelPlan` cohérents, MDG ch.13-15).
 - `v2-post-combat-roster.json` — groupe complet (4) tout juste sorti d'un affrontement (Blessures/PX,
   `battle: null`).
+- `v3-voyage-maritime-en-vol.json` — traversée maritime EN VOL sous l'ancien FSM (`sea.step`), motive
+  `MIGRATIONS[3]` (v3→v4, drop de l'état en vol).
+- `v4-convoi-terrestre.json` — convoi terrestre avec `caravanCargo` peuplé + bête de bât possédée,
+  motive `MIGRATIONS[4]` (v4→v5, matérialisation du convoi sur `ItemInstance.cargo`, #327). Fixture de
+  version PASSÉE, MINIMALE et écrite à la main (comme `v3-en-vol` : on ne peut pas générer une version
+  antérieure depuis le code courant) — le seul cas où le « jamais à la main » cède à la nécessité.
 
 ## Ajouter/régénérer une fixture
 

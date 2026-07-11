@@ -41,7 +41,10 @@ function traders(): Combatant[] {
   skill(berta, 'ragot', 55);
   skill(berta, 'evaluation', 50);
   skill(berta, 'resistance-a-l-alcool', 45);
-  berta.items = [...(berta.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!];
+  // Chariot de convoi (porteur RÉEL de la cargaison, #327) : la contenance devient un plafond réel — le
+  // vrac vit sur `ItemInstance.cargo`, embarqué sur la barge à la descente (Décision 5, EDOC ch.4).
+  const convoi = { uid: 'com-convoi', name: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as never;
+  berta.items = [...(berta.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!, convoi];
   berta.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.5 };
 
   const gunnar = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', name: 'Gunnar le Batelier', motivation: 'Test', rng: makeRNG(1502), id: 'com-gunnar' });
@@ -142,7 +145,7 @@ for (let i = 0; i < RIVER_ORDER.length - 1; i++) {
 // Route DIRECTE Grünburg → Altdorf (le grand axe du Reik) : ~45 km, une journée de barge (M8 × 6 h = 48 km) —
 // permet la boucle d'arbitrage en un seul saut (achat à Grünburg → vente à Altdorf, l.150-156). Cette descente
 // est JOUÉE (T2C ch.5 « Navigation fluviale ») : Test de Navigation par étape, table des vents, et un péril
-// atteignable (débris flottants, l.123-125). Le convoi marchand persiste pendant la descente (caravanCargo).
+// atteignable (débris flottants, l.123-125). Le chariot de convoi (porteur réel) persiste pendant la descente.
 const grunburgAltdorf = bargeRoute(START_ID, SELL_ID, 45, 'r-grunburg-altdorf');
 grunburgAltdorf.river = true;
 grunburgAltdorf.riverPerils = [{ perilId: 'debris', chancePct: 55 }];
@@ -170,7 +173,7 @@ export const scenario: TestScenario = {
     'Commerce de cargaison T2C ch.11 JOUABLE : le Reik peuplé de ses VRAIES localités marchandes (Index ' +
     'géographique l.185-270, indices Taille/Richesse/Produits verbatim), reliées par des routes de BARGE. ' +
     'Boucle du marchand : acheter une cargaison à Grünburg (R 2), descendre le fleuve en barge (le convoi ' +
-    'persiste, caravanCargo), revendre à Altdorf (Florissant R 5, Mise à prix +10 %, l.156) — profit. ' +
+    'persiste sur le chariot de convoi), revendre à Altdorf (Florissant R 5, Mise à prix +10 %, l.156) — profit. ' +
     'Marché à chaque ville, Marchandage/Évaluation du vin/rumeurs (Berta). La descente EXERCE aussi ' +
     'l’exposition hydrique (T2C ch.14) : en approchant d’Altdorf, l’équipage risque une maladie de l’eau.',
   partyNote: 'Berta (Marchande — Marchandage/Ragot/Évaluation) · Gunnar (batelier) · Otto (garde) · Lise (scribe)',

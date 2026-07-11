@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import type { CampaignVessel } from '../state/store';
 import type { Combatant } from '../engine/types';
@@ -8,11 +8,13 @@ import { foulingEffects } from '../engine/seaNavigation';
 import { moraleBand, weeklyCrewWageBrass, findMoraleFactor } from '../engine/crewMorale';
 import { provisioningManifest } from '../engine/provisions';
 import { fromBrass, formatMoney } from '../engine/money';
+import { bulkCarriers, type CarrierStateSlice } from '../state/carriers';
 import { Icon } from './Icon';
 import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { moraleTone, crewRoleLabel } from './shipStatus';
 import { ScreenShell } from './ScreenShell';
 import { Tabs } from './Tabs';
+import { CargoTransferPanel } from './CargoTransferPanel';
 
 /**
  * DOSSIER DE NAVIRE persistant (#227, attendu C.1) — écran plein-champ du `CampaignVessel` (l'INSTANCE
@@ -48,13 +50,20 @@ type DossierTab = 'apercu' | 'cargaison' | 'equipage';
 export function ShipDossier({ onClose, initialTab }: { onClose: () => void; initialTab?: DossierTab }) {
   const vessel = useGame((s) => s.vessel);
   const party = useGame((s) => s.party);
+  const worldMap = useGame((s) => s.worldMap);
+  const scene = useGame((s) => s.scene);
+  const move = useGame((s) => s.moveCargo);
+  const isGuest = useGame((s) => s.net.mode) === 'guest';
+  // Transfert navire ↔ porteur terrestre CO-LOCALISÉ (au port). `bulkCarriers` réunit cale + bêtes/véhicules.
+  const carriers = useMemo(() => bulkCarriers({ party, vessel, worldMap, scene } as CarrierStateSlice), [party, vessel, worldMap, scene]);
   if (!vessel) return null;
-  return <ShipDossierView vessel={vessel} party={party} onClose={onClose} initialTab={initialTab} />;
+  const transfer = <CargoTransferPanel carriers={carriers} onMove={move} labelOf={(id) => findCargoById(id)?.label ?? id} disabled={isGuest} />;
+  return <ShipDossierView vessel={vessel} party={party} onClose={onClose} initialTab={initialTab} transfer={transfer} />;
 }
 
 /** Corps PUR (props) — testable en rendu statique (l'environnement de test est `node`, sans DOM :
  *  les sélecteurs de store ne s'hydratent pas sous `renderToStaticMarkup`, on passe donc les données). */
-export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' }: { vessel: CampaignVessel; party: Combatant[]; onClose: () => void; initialTab?: DossierTab }) {
+export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu', transfer }: { vessel: CampaignVessel; party: Combatant[]; onClose: () => void; initialTab?: DossierTab; transfer?: ReactNode }) {
   const [tab, setTab] = useState<DossierTab>(initialTab);
 
   const vd = findVehicleById(vessel.vehicleId);
@@ -209,6 +218,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
                 </table>
               )}
             </section>
+            {transfer}
           </div>
         )}
 

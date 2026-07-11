@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { Characteristics, Combatant, ItemInstance } from '../engine/types';
 import type { CargoLot } from '../engine/cargo';
 import { carrierUsedEnc } from '../engine/cargo';
-import { partyCarriers, carrierById, CAMPAIGN_VESSEL_CARRIER_ID, CARAVAN_CARRIER_ID, type CarrierStateSlice } from './carriers';
+import { partyCarriers, carrierById, primaryCargoCarrier, bulkCargoRefs, partyCargoTotalEnc, persistCarriersCargo, CAMPAIGN_VESSEL_CARRIER_ID, type CarrierStateSlice } from './carriers';
 
 const chars = (F = 30, E = 30): Characteristics => ({
   'capacite-de-combat': 30, 'capacite-de-tir': 30, force: F, endurance: E, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30,
@@ -21,7 +21,7 @@ const item = (uid: string, over: Partial<ItemInstance> = {}): ItemInstance => ({
 const lot = (cargoId: string, enc: number): CargoLot => ({ cargoId, enc, basePriceGold: 1 });
 
 const slice = (over: Partial<CarrierStateSlice> = {}): CarrierStateSlice => ({
-  party: [], vessel: null, caravanCargo: [], worldMap: null, scene: null, ...over,
+  party: [], vessel: null, worldMap: null, scene: null, ...over,
 } as CarrierStateSlice);
 
 describe('partyCarriers — couture d’état des porteurs (#327 lot B)', () => {
@@ -50,13 +50,6 @@ describe('partyCarriers — couture d’état des porteurs (#327 lot B)', () => 
     expect(mc).toMatchObject({ hull: 'jambes', capacity: 25 });
   });
 
-  it('le convoi terrestre abstrait (caravanCargo) est un porteur NON plafonné, source = caravanCargo', () => {
-    const caravan = [lot('sel', 40)];
-    const cc = carrierById(slice({ caravanCargo: caravan }), CARAVAN_CARRIER_ID)!;
-    expect(cc.capacity).toBe(Infinity);
-    expect(cc.cargo).toBe(caravan);
-  });
-
   it('le navire de campagne : Contenance navale + cale = vessel.cargo (source unique, verrou 1)', () => {
     const cargo = [lot('vin', 50)];
     const vessel = { vehicleId: 'barge', name: 'Le Cormoran', cargo } as CarrierStateSlice['vessel'];
@@ -68,5 +61,35 @@ describe('partyCarriers — couture d’état des porteurs (#327 lot B)', () => 
   it('les héros morts / hors rencontre ne sont pas des porteurs', () => {
     const dead = { ...hero('mort'), dead: true };
     expect(partyCarriers(slice({ party: [dead] })).some((c) => c.id === 'mort')).toBe(false);
+  });
+});
+
+describe('primaryCargoCarrier / bulkCargoRefs / persist (#327 lot C)', () => {
+  it('porteur de défaut : le VÉHICULE prime la bête ; le navire prime tout', () => {
+    const cart = item('v1', { trappingId: 'charrette' }); // chargement 25
+    const mule = item('m1', { trappingId: 'mule' }); // encPortee 14
+    const h = hero('nel', [mule, cart]);
+    expect(primaryCargoCarrier(slice({ party: [h] }))!.id).toBe('v1'); // véhicule > bête
+    const vessel = { vehicleId: 'barge', cargo: [] } as unknown as CarrierStateSlice['vessel'];
+    expect(primaryCargoCarrier(slice({ party: [h], vessel }))!.id).toBe(CAMPAIGN_VESSEL_CARRIER_ID); // navire > tout
+  });
+
+  it('sans bête/véhicule/navire, aucun porteur de défaut (Contenance = plafond réel)', () => {
+    expect(primaryCargoCarrier(slice({ party: [hero('nu')] }))).toBeUndefined();
+  });
+
+  it('bulkCargoRefs liste les lots de tous les porteurs de vrac (hors héros) ; partyCargoTotalEnc les somme', () => {
+    const mule = item('m1', { trappingId: 'mule', cargo: [lot('vin', 6)] });
+    const cart = item('v1', { trappingId: 'charrette', cargo: [lot('sel', 10)] });
+    const s = slice({ party: [hero('nel', [mule, cart])] });
+    const refs = bulkCargoRefs(s);
+    expect(refs.map((r) => r.carrierId).sort()).toEqual(['m1', 'v1']);
+    expect(partyCargoTotalEnc(s)).toBe(16);
+  });
+
+  it('persistCarriersCargo réécrit le cargo sur la source unique (item.cargo)', () => {
+    const mule = item('m1', { trappingId: 'mule', cargo: [lot('vin', 6)] });
+    const patch = persistCarriersCargo(slice({ party: [hero('nel', [mule])] }), [{ carrierId: 'm1', cargo: [lot('vin', 2)] }]);
+    expect(patch.party![0].items![0].cargo).toEqual([lot('vin', 2)]);
   });
 });

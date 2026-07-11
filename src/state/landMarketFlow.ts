@@ -8,8 +8,9 @@
  * POURQUOI un flux PARALLÈLE et non une factorisation de `portFlow` : le tronc commun (modèle de lot, tirage
  * saisonnier, prix de base, retrait) est DÉJÀ mutualisé dans `engine/cargo.ts` et réutilisé ici. Le reste de
  * `portFlow` est couplé au NAVIRE de campagne (`state.vessel`, Contenance de coque, PortProfile, sellChance/
- * offerPricePct/dumpingPricePct maritimes) ; la cargaison terrestre persiste au niveau GROUPE (`caravanCargo`,
- * transport par chariot — pas de Contenance de coque) et lit `MapPlace.market` (LandMarketProfile). Fusionner
+ * offerPricePct/dumpingPricePct maritimes) ; la cargaison terrestre vit sur un porteur RÉEL du groupe
+ * (`ItemInstance.cargo` d'une bête/véhicule, `primaryCargoCarrier`, #327) et lit `MapPlace.market`
+ * (LandMarketProfile). Fusionner
  * les deux imposerait une union `sea|land` et des branches partout → on garde deux flux fins sur le même socle
  * `cargo.ts`. Le Marchandage (Test opposé ±10 %/±20 %) réutilise le MÊME patron que `portFlow`.
  */
@@ -31,7 +32,8 @@ import {
   wineEvalDifficulty, wineEvalReveal, rollTradeRumour, gossipRule,
   type TradeRumour, tradeRumourMult,
 } from '../engine/landCargo';
-import { type CargoLot, cargoTotalEnc } from '../engine/cargo';
+import { type CargoLot, loadCargo, carrierCanLoad, carrierFreeEnc, transferCargo } from '../engine/cargo';
+import { primaryCargoCarrier, carrierById, persistCarriersCargo } from './carriers';
 import { seasonOfMonth } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
 import type { Get, Set } from './flowTypes';
@@ -71,11 +73,6 @@ export function currentMarket(get: Get): { placeId: string; label: string; marke
   const place = map ? placeOfScene(map, get().scene?.id) : undefined;
   if (!place?.market) return null;
   return { placeId: place.id, label: place.label, market: place.market };
-}
-
-/** Enc total transporté par le groupe (chariot/convoi — pas de Contenance de coque : information, pas plafond). */
-export function caravanEnc(get: Get): number {
-  return cargoTotalEnc(get().caravanCargo ?? []);
 }
 
 /** Génère les offres d'ACHAT à l'arrivée (T2C l.22-42) : disponibilité en 2 temps — d'abord une CHANCE de
@@ -183,13 +180,28 @@ export function closeLandMarket(_get: Get, set: Set): void {
   set({ landMarket: null });
 }
 
+/** TRANSFERT de cargaison entre deux porteurs CO-LOCALISÉS (#327, décision 8) — route par `transferCargo`
+ *  du tronc (jamais une 2ᵉ arithmétique) puis RE-PERSISTE les deux porteurs. Refus silencieux journalisé
+ *  si les porteurs ne sont pas au même endroit ou si la cible est pleine (moved = 0). */
+export function moveCargo(get: Get, set: Set, fromId: string, toId: string, cargoId: string, enc: number): void {
+  const from = carrierById(get(), fromId);
+  const to = carrierById(get(), toId);
+  if (!from || !to) return;
+  const res = transferCargo(from, to, cargoId, enc);
+  if (res.moved <= 0) { log(get, set, ['Transfert impossible : porteurs éloignés ou porteur cible plein.']); return; }
+  set(persistCarriersCargo(get(), [{ carrierId: fromId, cargo: res.from.cargo }, { carrierId: toId, cargo: res.to.cargo }]));
+  const label = findLandCargoById(cargoId)?.label ?? cargoId;
+  log(get, set, [`${res.moved} Enc de ${label} transférés de ${from.label} vers ${to.label}.`]);
+}
+
 /** Magnitude d'un Marchandage gagné (LDB 60, cité T2C l.127) : ±10 %, ±20 % si Négociateur ou DR net Stupéfiant. */
 function bargainPct(winnerNegotiator: boolean, netSL: number): number {
   return winnerNegotiator || netSL >= SL_ASTOUNDING ? 20 : 10;
 }
 
 /** ACHAT d'une cargaison (T2C l.129-131) : prix = Enc × prix de base, modulé par le Marchandage opposé et
- *  majoré de +10 % si LOT PARTIEL (l.131). Débité, ajouté au convoi du groupe (`caravanCargo`). */
+ *  majoré de +10 % si LOT PARTIEL (l.131). Débité, CHARGÉ sur le porteur de défaut du groupe (navire /
+ *  véhicule / bête, `primaryCargoCarrier`) dans la limite de sa Contenance (plafond DUR, #327). */
 export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): void {
   const st = get().landMarket;
   if (!st) return;
@@ -200,6 +212,10 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   // Lot minimal (l.131) : « Les marchands ne sont pas du tout intéressés par la vente de cargaisons de moins
   // de 10 Points d'Encombrement et orienteront plutôt les Personnages vers un marché. »
   if (want < minCargoEnc) { log(get, set, [`Les marchands ne cèdent pas de lot de moins de ${minCargoEnc} Points d'Encombrement (T2C ch.11 l.131).`]); return; }
+  // Contenance = plafond RÉEL (#327) : il faut un porteur, et le lot doit tenir dans sa place libre.
+  const carrier = primaryCargoCarrier(get());
+  if (!carrier) { log(get, set, ['Aucune bête de somme ni véhicule pour transporter une cargaison — procurez-vous un chariot ou une monture de bât (EDOC ch.4).']); return; }
+  if (!carrierCanLoad(carrier, want)) { log(get, set, [`${carrier.label} ne peut plus charger que ${carrierFreeEnc(carrier)} Enc (Contenance ${carrier.capacity}) — réduisez le lot ou ajoutez un porteur.`]); return; }
   const rng = battleRng();
   const best = partyAssisted(get().party, 'marchandage');
   const merchant = rollMerchantSkill(rng); // petit marchand : 2d10 + 30 (l.129)
@@ -222,21 +238,24 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   const cost = toMoney({ gold: price });
   if (!canAfford(get().money, cost)) { log(get, set, [`La bourse ne couvre pas ${price} CO de ${offer.label}.`]); return; }
   const lot: CargoLot = { cargoId, enc: want, basePriceGold: offer.basePrice };
+  const { carrier: loaded } = loadCargo(carrier, lot);
   set({
     money: subtract(get().money, cost)!,
-    caravanCargo: [...(get().caravanCargo ?? []), lot],
+    ...persistCarriersCargo(get(), [{ carrierId: carrier.id, cargo: loaded.cargo }]),
     landMarket: { ...st, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - want } : o).filter((o) => o.enc > 0) },
   });
-  log(get, set, [`${want} Enc de ${offer.label} chargés — ${bargainLine}${partial ? ' Lot partiel : +10 % (l.131).' : ''} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
+  log(get, set, [`${want} Enc de ${offer.label} chargés sur ${carrier.label} — ${bargainLine}${partial ? ' Lot partiel : +10 % (l.131).' : ''} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
 }
 
 /** VENTE d'un lot du convoi (T2C l.133-160) : trouver un acheteur (Demande = Taille×10, +30 si Commerce),
  *  Mise à prix (% du prix de base par Richesse), Marchandage opposé. Un échec autorise une 2ᵉ tentative sur
  *  la moitié du lot (l.146). Retire le lot vendu, crédite la bourse. */
-export function landSellCargo(get: Get, set: Set, cargoIndex: number): void {
+export function landSellCargo(get: Get, set: Set, carrierId: string, cargoIndex: number): void {
   const st = get().landMarket;
   if (!st) return;
-  const lots = get().caravanCargo ?? [];
+  const carrier = carrierById(get(), carrierId);
+  if (!carrier) return;
+  const lots = carrier.cargo;
   const lot = lots[cargoIndex];
   if (!lot) return;
   const label = findLandCargoById(lot.cargoId)?.label ?? lot.cargoId;
@@ -274,19 +293,22 @@ export function landSellCargo(get: Get, set: Set, cargoIndex: number): void {
   const rumourMult = tradeRumourMult(get().tradeRumours ?? [], st.placeId, lot.cargoId);
   const rumourHit = rumourMult > 1;
   const gross = Math.max(0, Math.round(sellEnc * lot.basePriceGold * (offerPct / 100) * (1 + bargainPctVal / 100) * rumourMult));
+  const newCargo = sellEnc >= lot.enc ? lots.filter((_, i) => i !== cargoIndex) : lots.map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l);
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
-    caravanCargo: sellEnc >= lot.enc ? lots.filter((_, i) => i !== cargoIndex) : lots.map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l),
+    ...persistCarriersCargo(get(), [{ carrierId, cargo: newCargo }]),
   });
   log(get, set, [`${sellEnc} Enc de ${label} vendus (mise à prix ${offerPct} % du base — ${bargainLine}${rumourHit ? ' Rumeur : demande exceptionnelle, prix doublé (l.180) !' : ''}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }
 
 /** BRADER un lot invendable (l.160) : la MOITIÉ du prix de base, dans un Lieu ayant le Commerce en Produits —
  *  sinon refus. */
-export function landDumpCargo(get: Get, set: Set, cargoIndex: number): void {
+export function landDumpCargo(get: Get, set: Set, carrierId: string, cargoIndex: number): void {
   const st = get().landMarket;
   if (!st) return;
-  const lots = get().caravanCargo ?? [];
+  const carrier = carrierById(get(), carrierId);
+  if (!carrier) return;
+  const lots = carrier.cargo;
   const lot = lots[cargoIndex];
   if (!lot) return;
   const pct = landDumpingPct(st.market);
@@ -295,7 +317,7 @@ export function landDumpCargo(get: Get, set: Set, cargoIndex: number): void {
   const gross = Math.max(0, Math.round(lot.enc * lot.basePriceGold * (pct / 100)));
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
-    caravanCargo: lots.filter((_, i) => i !== cargoIndex),
+    ...persistCarriersCargo(get(), [{ carrierId, cargo: lots.filter((_, i) => i !== cargoIndex) }]),
   });
   log(get, set, [`${lot.enc} Enc de ${label} bradés (${pct} % du prix de base) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }
