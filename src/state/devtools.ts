@@ -170,6 +170,15 @@ function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number): Promise<strin
             const after = useGame.getState().pendingCascade;
             if (after && after.cursor < after.participants.length) {
               const cur = after.participants[after.cursor];
+              // Un CHOIX joueur d'ÉVÉNEMENT (Cogue pirate : fuir/combattre/soumettre — cascade `purpose:test`
+              // ouverte HORS journée) est une décision PRÉSENTÉE : le drive s'arrête PROPREMENT et la signale
+              // (le joueur/recetteur voit les 3 choix), au lieu de trancher en silence son `defaultChoice`
+              // (doctrine « aucun choix silencieux ») — c'est ce qui vidait l'état sous l'écran (400
+              // scrutations orphelines). Les choix INTERNES d'une journée (`travelDay`) gardent leur défaut.
+              if (cur?.options?.length && after.purpose !== 'travelDay') {
+                resolve(`✓ événement présenté — « ${cur.label} » attend une décision (${cur.options.map((o) => o.key).join(' / ')}) : __wfrp.modal()/state().pendingCascade`);
+                return;
+              }
               if (cur?.options?.length) useGame.getState().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
             }
             real(tick, 0); return;
@@ -1120,11 +1129,14 @@ export function buildApi() {
       return `✓ « ${event.label} » forcé au prochain jour — dérouler avec __wfrp.advanceSeaDay()`;
     },
 
-    /** RECETTE #297 : point ON-PATH (milieu du tracé, `getPointAtLength`/`getScreenCTM`) d'une route de
-     *  la carte du monde CLIQUABLE depuis ici (`WorldMapView.tsx` : `pointer-events: stroke` — jamais la
-     *  bbox, jamais le label) → `{x,y}` ÉCRAN à cliquer avec un VRAI clic souris (`page.mouse.click`,
-     *  JAMAIS `dispatchEvent`/`browser_click`) ; remplace le calcul manuel via `browser_run_code_unsafe`
-     *  (piège documenté `docs/recette-navigateur.md` § « Cliquer une ROUTE de la carte du monde »). */
+    /** RECETTE #297 : point ON-PATH d'une route de la carte du monde CLIQUABLE depuis ici
+     *  (`WorldMapView.tsx` : `pointer-events: stroke` — jamais la bbox, jamais le label) → `{x,y}` ÉCRAN
+     *  à cliquer avec un VRAI clic souris (`page.mouse.click`, JAMAIS `dispatchEvent`/`browser_click`).
+     *  Le milieu du tracé tombe PARFOIS derrière un décor transparent qui intercepte le clic (piège
+     *  vécu) : on SONDE `elementFromPoint` au point calculé et, tant que la chaîne d'ancêtres ne porte
+     *  pas `cursor:pointer`, on balaie d'autres fractions de `getPointAtLength` jusqu'à en trouver un
+     *  cliquable (repli du recetteur INTÉGRÉ). Piège documenté `docs/recette-navigateur.md` § « Cliquer
+     *  une ROUTE de la carte du monde ». */
     clickRoute: (routeId: string) => {
       const s = g();
       const map = s.worldMap;
@@ -1141,14 +1153,30 @@ export function buildApi() {
       const paths = Array.from(document.querySelectorAll<SVGPathElement>('svg.wm-map path[stroke-opacity="0"]'));
       const path = paths[idx];
       if (!path) return `✗ tracé SVG introuvable pour « ${routeId} » (carte du monde fermée à l'écran ?)`;
-      const pt = path.getPointAtLength(path.getTotalLength() / 2);
       const ctm = path.getScreenCTM();
       if (!ctm) return '✗ getScreenCTM indisponible (carte hors DOM)';
-      return {
-        x: Math.round(pt.x * ctm.a + pt.y * ctm.c + ctm.e),
-        y: Math.round(pt.x * ctm.b + pt.y * ctm.d + ctm.f),
-        note: 'point ON-PATH (milieu du tracé) — cliquer ces coordonnées ÉCRAN avec un VRAI clic souris (page.mouse.click)',
+      const total = path.getTotalLength();
+      const toScreen = (pt: DOMPoint) => ({ x: Math.round(pt.x * ctm.a + pt.y * ctm.c + ctm.e), y: Math.round(pt.x * ctm.b + pt.y * ctm.d + ctm.f) });
+      // Un point est CLIQUABLE si l'élément sous le curseur (ou un de ses ancêtres) porte `cursor:pointer`
+      // — la route (ou la couche interactive) le déclare ; un décor transparent interposé ne l'a pas.
+      const clickableAt = (x: number, y: number): boolean => {
+        let el: Element | null = document.elementFromPoint(x, y);
+        while (el) {
+          if (getComputedStyle(el).cursor === 'pointer') return true;
+          el = el.parentElement;
+        }
+        return false;
       };
+      // Milieu d'abord (comportement historique), puis fractions balayées de part et d'autre.
+      const fractions = [0.5, 0.45, 0.55, 0.4, 0.6, 0.35, 0.65, 0.3, 0.7, 0.25, 0.75, 0.2, 0.8];
+      for (const f of fractions) {
+        const pt = toScreen(path.getPointAtLength(total * f));
+        if (clickableAt(pt.x, pt.y)) {
+          return { ...pt, note: `point ON-PATH cliquable (fraction ${f} — chaîne d'ancêtres porte cursor:pointer) : cliquer ces coordonnées ÉCRAN avec un VRAI clic souris (page.mouse.click)` };
+        }
+      }
+      const mid = toScreen(path.getPointAtLength(total / 2));
+      return { ...mid, note: 'AUCUNE fraction du tracé ne teste cliquable (elementFromPoint sans cursor:pointer) — la carte est peut-être masquée/hors premier plan ; milieu renvoyé par défaut' };
     },
   };
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { jetStepPresentable } from './CascadeModal';
+import { jetStepPresentable, witnessRowKey } from './CascadeModal';
 import type { CascadeStep } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 
@@ -29,5 +29,34 @@ describe('jetStepPresentable — présentabilité d’une étape-JET de cascade'
   it('…et NON présentable si son acteur est introuvable et l’étape n’est PAS mondiale (aucun repli silencieux)', () => {
     const step = baseStep({ actorId: 'orphan' });
     expect(jetStepPresentable(step, undefined)).toBe(false);
+  });
+});
+
+/**
+ * RÉGRESSION (re-recette maritime) : deux pas BATCH successifs aux MÊMES participants (Tests
+ * d'Orientation PUIS d'Entretien, tenus par Capitaine/Timonier/Navigateur) — les rangées FIGÉES du
+ * premier pas côtoient les rangées du second (courant ou bilan). Keyées par le seul id de participant,
+ * elles collisionnaient (« two children with the same key mar-cap »). `witnessRowKey` scope la clé PAR
+ * ÉTAPE : la duplication de clé (et l'artefact de rendu React qui en découlait) disparaît.
+ */
+describe('witnessRowKey — clés de rangée SCOPÉES par étape (anti-collision batch)', () => {
+  const parts = ['mar-cap', 'mar-timo', 'mar-navi'];
+
+  it('deux pas batch aux mêmes participants → clés TOUTES uniques', () => {
+    const keys = [
+      ...parts.map((p) => witnessRowKey('orientation', p)),
+      ...parts.map((p) => witnessRowKey('entretien', p)),
+    ];
+    expect(new Set(keys).size).toBe(keys.length); // 6 clés distinctes, aucune collision
+  });
+
+  it('la clé porte l’étape ET le participant (pas d’ambiguïté entre pas)', () => {
+    expect(witnessRowKey('orientation', 'mar-cap')).toBe('orientation:mar-cap');
+    expect(witnessRowKey('entretien', 'mar-cap')).toBe('entretien:mar-cap');
+    expect(witnessRowKey('orientation', 'mar-cap')).not.toBe(witnessRowKey('entretien', 'mar-cap'));
+  });
+
+  it('sans participant (pas MONO) : la clé est l’id d’étape nu (inchangé)', () => {
+    expect(witnessRowKey('orientation')).toBe('orientation');
   });
 });

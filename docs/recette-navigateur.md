@@ -122,7 +122,8 @@ elle reprend à la CONFIRMATION de ces étapes/modales, jamais via `time()`/`res
 | `skipToArrival(maxIters=4000)` | comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (`openPortAt`, `travelPlan` vidé) | s'arrête aussi sur un combat (embuscade/abordage) — `battle` alors ouvert, à jouer/`fastForward` séparément ; `Promise` (`await`) |
 | `dealShipDamage(n=5)` | inflige `n` Dégâts de coque HORS COMBAT — VRAI pipeline (`damageVesselHull` si un voyage est en cours sur le navire de campagne, sinon `setVesselHull` directement au port) | symétrique de `dealDamage` (combat) — voir le piège des DEUX copies de coque ci-dessous ; **NE déclenche PAS un naufrage fiable** (voir piège d'ORDONNANCEMENT ci-dessous, `forceShipwreck`) |
 | `forceShipwreck(aboardIds?)` | déclenche `beginShipwreck` DIRECTEMENT (setup ASSUMÉ, PAS le pipeline de dégâts) — coque + cargaison purgées IMMÉDIATEMENT, cascade de survie à la nage (Chance/Pacte/Résilience influençable) ouverte pour les héros à bord | `✗` sans `state.vessel` ; voir piège d'ORDONNANCEMENT ci-dessous |
-| `clickRoute(routeId)` | calcule le point ON-PATH (milieu du tracé, `getPointAtLength`/`getScreenCTM`) d'une route CLIQUABLE depuis ici → `{x,y}` ÉCRAN | ne clique PAS lui-même (le VRAI clic reste `page.mouse.click(x,y)`, Playwright) — remplace le calcul manuel `browser_run_code_unsafe`, voir piège ci-dessous ; `✗` si route inconnue/non cliquable d'ici/tracé absent du DOM |
+| `clickRoute(routeId)` | calcule un point ON-PATH CLIQUABLE d'une route depuis ici → `{x,y}` ÉCRAN. SONDE `elementFromPoint` au milieu du tracé et, si un décor transparent l'intercepte (chaîne d'ancêtres sans `cursor:pointer`), balaie d'autres fractions de `getPointAtLength` jusqu'à un point cliquable (repli INTÉGRÉ) | ne clique PAS lui-même (le VRAI clic reste `page.mouse.click(x,y)`, Playwright) — remplace le calcul manuel `browser_run_code_unsafe`, voir piège ci-dessous ; `note` indique la fraction retenue (ou qu'aucune n'a testé cliquable → milieu par défaut) ; `✗` si route inconnue/non cliquable d'ici/tracé absent du DOM |
+| `forceEncounter(id='navire-hostile')` | force un événement de bord maritime NOMMÉ (`sea-events.json`, id ou kind) au PROCHAIN jour — court-circuite le timer 1d10 + le tirage d100/Manann | à dérouler avec `advanceSeaDay()` : le drive s'ARRÊTE sur la décision présentée (Cogue pirate fuir/combattre/soumettre) sans la trancher — voir doctrine ci-dessous ; `✗` si aucune traversée en cours / événement introuvable |
 
 **Doctrine `advanceSeaDay`/`skipToArrival`** : même doctrine que `fastForward` — SETUP et
 accélération du BRUIT de routine, jamais un raccourci qui saute une décision du joueur. La halte de
@@ -132,6 +133,15 @@ main (vrais boutons) plutôt que via ces helpers. Si le scénario propose un dé
 rapide** (MDG ch.15 l.21-37, `sea.fast` — palier appliqué en un bloc), le choisir AU DÉPART reste la
 vraie accélération native du jeu ; il n'est pas rejouable après coup sur une traversée déjà en cours
 au pas.
+
+**`forceEncounter` + `advanceSeaDay` s'ARRÊTENT à l'événement PRÉSENTÉ** : un événement de bord qui
+ouvre une DÉCISION du joueur (Cogue pirate `navire-hostile` → cascade `purpose:test` fuir/combattre/
+soumettre, `openPirateHail`) n'est PAS de la routine — le drive (`advanceSeaDay`/`skipToArrival`)
+s'arrête PROPREMENT dessus et le signale (`✓ événement présenté — « … » attend une décision …`),
+laissant `pendingCascade` intact pour que le recetteur voie et tranche les 3 choix (jamais un
+`defaultChoice` appliqué en silence, jamais l'état vidé sous l'écran). Les choix INTERNES d'une
+journée (`purpose:travelDay`) gardent, eux, leur défaut de routine. Dérouler alors la branche au clic
+(vrais boutons) ; `advanceSeaDay()` reprend ensuite le voyage.
 
 **Piège des DEUX copies de coque** (#296) : la coque « source de vérité » est `state.vessel.wounds` ;
 `travelPlan.vehicle` n'en est qu'une COPIE DE TRAVAIL utilisée par `applyOps`/le combat pendant la
@@ -205,10 +215,13 @@ appliers du jour.
   calcul ON-PATH en interne (`getPointAtLength`/`getScreenCTM`, MÊME technique que ci-dessous) et
   renvoie `{x,y}` ÉCRAN — appelable via `browser_evaluate` standard (plus besoin de
   `browser_run_code_unsafe`) ; puis un VRAI clic souris (`page.mouse.click(x,y)`) — jamais
-  `browser_click` sur le sélecteur de la route. Repli manuel (si `clickRoute` échoue, ex. carte hors
-  écran) : calculer soi-même un point ON-PATH via `getPointAtLength` du `path` + `getScreenCTM()`
-  (coordonnées écran réelles du trait) — requiert alors `browser_run_code_unsafe` (chargé via
-  ToolSearch, ABSENT du set d'outils de démarrage).
+  `browser_click` sur le sélecteur de la route. `clickRoute` sonde `elementFromPoint` au point
+  calculé et, si un DÉCOR TRANSPARENT interpose (milieu du tracé tombant sur un élément sans
+  `cursor:pointer` dans sa chaîne d'ancêtres), balaie d'autres fractions du tracé jusqu'à un point
+  cliquable — le repli du recetteur est désormais INTÉGRÉ (`note` dit la fraction retenue). Repli
+  manuel ultime (si `clickRoute` échoue, ex. carte hors écran) : calculer soi-même un point ON-PATH
+  via `getPointAtLength` du `path` + `getScreenCTM()` (coordonnées écran réelles du trait) — requiert
+  alors `browser_run_code_unsafe` (chargé via ToolSearch, ABSENT du set d'outils de démarrage).
 
 - **Mode Pousser (bélier/engin de siège) au clavier — séquence exacte** (#199) : cliquer le slot
   « Pousser » de la barre d'action ouvre le mode-CASE (`battle.action === 'push'`) mais laisse ce

@@ -695,6 +695,51 @@ describe('Traversée rapide × embuscade ANCRÉE (#212) : interruption puis repr
   });
 });
 
+describe('Cogue pirate (#327 A5.3) — l’événement navire-hostile PRÉSENTE les 3 choix (couture RÉELLE, re-recette)', () => {
+  beforeEach(freshState);
+
+  /** Force l’événement de bord `navire-hostile` (Langskip / Cogue pirate) au jour courant et déroule la
+   *  résolution RÉELLE du jour (`runSeaDay` → `resolveSeaDayEvent` → `openPirateHail`) — PAS un step
+   *  fabriqué : on vérifie que la COUTURE présente bien la cascade de choix (le lot D ne testait que les
+   *  appliers, sur un step monté à la main → il passait alors que le joueur ne voyait rien). */
+  function forceHail() {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, forcedEventId: 'navire-hostile' } } });
+    runSeaDay(get, set);
+  }
+
+  it('runSeaDay ouvre la cascade de CHOIX (fuir/combattre/soumettre) — AUCUNE auto-résolution silencieuse', () => {
+    forceHail();
+    const p = get().pendingCascade;
+    expect(p).toBeTruthy();
+    const cur = p!.participants[p!.cursor];
+    expect(cur.kind).toBe('sea-pirate-hail');
+    expect(cur.options?.map((o) => o.key)).toEqual(['fuir', 'combattre', 'soumettre']); // les 3 choix présentés
+    // Rien de tranché AVANT le choix : ni fuite (Poursuite), ni pillage — le joueur décide.
+    expect(get().travelPlan!.sea!.crisis).toBeFalsy();
+    expect(get().journal.some((l) => l.includes('prend la fuite'))).toBe(false);
+  });
+
+  it('branche PRÉSENTÉE « fuir » (défaut) → Poursuite (mute la crise, aucune perte silencieuse)', () => {
+    forceHail();
+    const cur = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    get().cascadeChoose(cur.id, 'fuir');
+    get().cascadeNext();
+    expect(get().travelPlan!.sea!.crisis?.kind).toBe('poursuite');
+  });
+
+  it('branche PRÉSENTÉE « soumettre » → pillage (100 %) puis choix du tribut (étape insérée)', () => {
+    set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'vin', enc: 30, basePriceGold: 2 }] } } as never);
+    forceHail();
+    const cur = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    get().cascadeChoose(cur.id, 'soumettre');
+    get().cascadeNext();
+    expect(get().vessel!.cargo!.reduce((n, l) => n + l.enc, 0)).toBe(0); // cale vidée (piratePillagePct 100 %)
+    const p2 = get().pendingCascade;
+    expect(p2?.participants.some((s) => s.kind === 'sea-pirate-tribute')).toBe(true); // choix du tribut offert
+  });
+});
+
 describe('services portuaires (#30)', () => {
   beforeEach(freshState);
 

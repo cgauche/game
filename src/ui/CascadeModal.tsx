@@ -34,6 +34,13 @@ export function jetStepPresentable(step: CascadeStep, actor: Combatant | undefin
   return !!actor || !!step.worldOwner;
 }
 
+/** Clé React d'une rangée-témoin/participant — SCOPÉE PAR ÉTAPE. Deux pas BATCH successifs partagent
+ *  leurs participants (Capitaine/Timonier/Navigateur d'Orientation ET d'Entretien) : keyer par le seul
+ *  id de participant collisionne (pas figé + pas courant côte à côte → « two children with the same
+ *  key »). Site UNIQUE de la clé, partagé par la pile figée et la rangée batch courante. */
+export const witnessRowKey = (stepId: string, participantId?: string): string =>
+  participantId != null ? `${stepId}:${participantId}` : stepId;
+
 /**
  * CASCADE de jets SÉQUENTIELS (nuit / voyage) — c'est LA coquille de jet partagée `RollShell`,
  * paramétrée comme `DefenseModal` : plusieurs RANGÉES de jet avec portraits (`RollShell rows`). Chaque
@@ -146,13 +153,13 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         const res = part.result;
         const d = res ? { label: part.label ?? a.name, base: part.base, mods: part.mods, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
         const extendedDr = extendedDrData(part.extendedDrDone, part.extendedDrTarget, res);
-        return [{ key: part.id, row: { combatant: a, d, note: partNote(part) }, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
+        return [{ key: witnessRowKey(s.id, part.id), row: { combatant: a, d, note: partNote(part) }, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
       });
     }
     const pr = rowOf(s);
     if (!pr) return [];
     const extendedDr = extendedDrData(s.meta?.extendedDrDone as number | undefined, s.meta?.extendedDrTarget as number | undefined, s.result);
-    return [{ key: s.id, row: pr, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
+    return [{ key: witnessRowKey(s.id), row: pr, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
   };
 
   // Nombre de JETS DE DÉ réels (arbitrage user 2026-07-11) : un pas BATCH = ses N rangées ; un pas-jet
@@ -293,6 +300,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // Rangées-participants via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION
     // (label/base/mods déjà résolus à la construction, GÉNÉRIQUES) + son bundle d'actions de flux ; les
     // dérivations d'éligibilité (rerollable/darkPactable/forceShow) vivent dans `buildParticipantRows`.
+    // Clés SCOPÉES PAR ÉTAPE (`witnessRowKey`) : la rangée batch COURANTE côtoie les rangées FIGÉES d'un
+    // pas batch précédent aux MÊMES participants (Orientation puis Entretien) — sans scope, collision de
+    // clé + duplication visuelle. `buildParticipantRows` keye par id nu (correct pour ses 6 autres
+    // appelants MONO-étape) ; ici on re-scope au site qui compose plusieurs pas.
     const rows: RollRowData[] = buildParticipantRows(cur.participants!, pool, {
       onRoll: batchRoll, onReroll: batchReroll, onBonusSL: batchBonusSL, onDarkPact: batchDarkPact, onForce: batchForce,
       row: (part, actor, res) => {
@@ -304,7 +315,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       // Test ÉTENDU d'une rangée (cartographie de voyage) : DONNÉE seule — `RollRow` rend la barre (site
       // UNIQUE), visible AVANT et après le jet, persistante (arbitrage user 2026-07-11).
       extendedDrOf: (part) => extendedDrData(part.extendedDrDone, part.extendedDrTarget, part.result),
-    });
+    }).map((r) => ({ ...r, key: witnessRowKey(cur.id, String(r.key)) }));
     const ready = stepReady(cur);
     // Deux « Tout lancer » (#328) : PAR RANGÉES (lance d'un coup les contributeurs restants de CETTE
     // étape, ≥2 non lancés — mutualisé) et CASCADE (résout d'office tout le reste de la cascade, sans
