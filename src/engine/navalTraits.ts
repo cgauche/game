@@ -109,6 +109,20 @@ export function belierRam(traits: NavalTraitRef[] | undefined): { ic: number; ap
   return { ic: 0, ap: 0 };
 }
 
+/** Modificateur BRUT (points de %) au Test de Navigation POUR DIRIGER le bateau, sommé sur les Traits +
+ *  Améliorations (T2C ch.10 l.66 : Bouteur +20 ; l.137 : Gréement de course −10). Champ de DOMAINE `navTestMod`
+ *  (le +20/−10 vise le Test lui-même, hors vocabulaire combattant `skillDRBonus`). PUR. */
+export function navalNavTestMod(traits: NavalTraitRef[] | undefined): number {
+  return (traits ?? []).reduce((n, ref) => n + (findNavalTrait(ref.id)?.navTestMod ?? 0), 0);
+}
+
+/** Le même modificateur CONVERTI en DR de Test d'équipage de manœuvre (MDG ch.14) : le Test de Navigation pour
+ *  diriger est remplacé par le Test d'équipage dont le total est en DR ; LDB (jets) 10 points = 1 DR → ÷10.
+ *  Consommé UNE FOIS par `shipManeuverParams` (manœuvre tactique) et le Test d'équipage de manœuvre de voyage. PUR. */
+export function navalNavTestDR(traits: NavalTraitRef[] | undefined): number {
+  return Math.trunc(navalNavTestMod(traits) / 10);
+}
+
 /** Ordre croissant du couvert de pont (pire → meilleur pour le défenseur) — parallèle à `coverModifier`
  *  (`state/lineOfSight.ts`) sans dépendance state→engine. */
 const DECK_COVER_ORDER: (DeckCoverClass | 'none')[] = ['none', 'imparfaite', 'moyenne', 'totale'];

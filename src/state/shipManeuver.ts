@@ -18,7 +18,7 @@ import { rollTest, evaluateTest, easeDifficulty, bestForcedRoll } from '../engin
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { testValue, partyBest } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
-import { navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR } from '../engine/navalTraits';
+import { navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestDR } from '../engine/navalTraits';
 import { cargoOverload } from '../engine/seaVoyage';
 import { exposedCrew } from '../engine/shipCritical';
 import { crewRoleValue, crewTalentDR, moraleBand } from '../engine/crewMorale';
@@ -175,7 +175,10 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   return {
     baseM: Math.round(((baseM + navalMoveMod(navalTraits) + place.m + (overload?.mMod ?? 0)) * mult.num) / mult.den),
     manoeuvre: (vd?.manoeuvre ?? 0) + place.man + (overload?.manoeuvreDR ?? 0),
-    extraDR: navalSkillTestDR(navalTraits, skillId) + navalTestTypeDR(navalTraits, 'manoeuvre') + place.navDR,
+    // « Bouteur » (T2C ch.10 l.66) → +20 au Test de Navigation pour diriger ; « Gréement de course » (l.137)
+    // → −10. Converti en DR d'équipage (`navalNavTestDR`, ÷10) — injecté ICI UNE fois (deriveManeuver[FromCrew]),
+    // jamais dans openCrewTestPending, pour ne pas double-compter.
+    extraDR: navalSkillTestDR(navalTraits, skillId) + navalTestTypeDR(navalTraits, 'manoeuvre') + navalNavTestDR(navalTraits) + place.navDR,
     skillId,
   };
 }

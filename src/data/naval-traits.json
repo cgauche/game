@@ -606,6 +606,7 @@
         "mod": -1
       }
     ],
+    "navTestMod": 20,
     "install": {
       "cost": {
         "bands": [
@@ -929,6 +930,7 @@
     "id": "greement-de-course",
     "label": "Gréement de course",
     "kind": "amelioration",
+    "navTestMod": -10,
     "install": {
       "cost": {
         "bands": [

@@ -1351,6 +1351,9 @@ export interface NavalTraitData {
    *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
    *  consommée par `effectiveDeckPostes`/le rendu du Pont. Sous-système navire, hors vocabulaire combattant. */
   deckCover?: import('../engine/types').DeckCoverClass;
+  /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau — Bouteur +20 (T2C ch.10 l.66),
+   *  Gréement de course −10 (l.137). Sous-système manœuvre, converti en DR d'équipage par `navalNavTestDR`. */
+  navTestMod?: number;
   /** #221 : même champ `maison` que `TraumaFiche` (`src/data/schemas/defs/traumas.ts:32`). */
   maison?: string;
 }

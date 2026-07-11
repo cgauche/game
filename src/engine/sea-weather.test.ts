@@ -86,11 +86,27 @@ describe('windEffect / windAdjustedM — EFFET DU VENT (MDG ch.13 l.276-286 ; Cl
   });
 
   it('Clinfoc (ch.12) : vent violent arrière +50 % voiles ; légère brise arrière +10 % au lieu de +0', () => {
-    expect(windEffect('vent-violent', 'arriere', true).pctSail).toBe(50);
-    expect(windEffect('legere-brise', 'arriere', true).pctSail).toBe(10);
-    expect(windEffect('legere-brise', 'arriere', false).pctSail).toBe(0);
+    expect(windEffect('vent-violent', 'arriere', 'clinfoc').pctSail).toBe(50);
+    expect(windEffect('legere-brise', 'arriere', 'clinfoc').pctSail).toBe(10);
+    expect(windEffect('legere-brise', 'arriere').pctSail).toBe(0);
     // La colonne « autres propulsions » reste celle du tableau standard.
-    expect(windEffect('legere-brise', 'arriere', true).pctOther).toBe(0);
+    expect(windEffect('legere-brise', 'arriere', 'clinfoc').pctOther).toBe(0);
+  });
+
+  it('Gréement de course (T2C ch.10 l.137) : +10 % voiles vent arrière/de côté ; vent contraire malus réduit de 5 %', () => {
+    // Vent arrière : std +25 % → +35 % ; vent de côté : std +25 % (avec Virement conservé) → +35 %.
+    expect(windEffect('vent-modere', 'arriere', 'greement').pctSail).toBe(35);
+    const lat = windEffect('vent-modere', 'lateral', 'greement');
+    expect(lat.pctSail).toBe(35);
+    expect(lat.virement).toBe(true); // le Gréement ne supprime pas la contrainte de Virement de bord
+    // Vent contraire : malus réduit de 5 % (std −50 % → −45 %) ; légère brise de face −10 % → −5 %.
+    expect(windEffect('vent-modere', 'face', 'greement').pctSail).toBe(-45);
+    expect(windEffect('legere-brise', 'face', 'greement').pctSail).toBe(-5);
+    // Voiles affalées / Encalminé : le gréement n'aide pas (cellule inchangée).
+    expect(windEffect('vent-violent', 'lateral', 'greement').affaler).toBe(true);
+    expect(windEffect('calme-plat', 'arriere', 'greement').encalmine).toBe(true);
+    // Le % « autres propulsions » n'est pas touché (voiles seulement).
+    expect(windEffect('vent-modere', 'face', 'greement').pctOther).toBe(-10);
   });
 });
 

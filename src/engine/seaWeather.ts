@@ -19,7 +19,10 @@
  *    ancre, dérive à 25 % de la vitesse dans le sens du vent), Virement de bord (l.302-304 : le
  *    bonus n'est acquis que sur un Test de Navigation Intermédiaire (+0) réussi).
  *  - **Clinfoc** (MDG ch.12 l.246-264) : un navire à voiles doté de l'Amélioration utilise le
- *    tableau « EFFET DU VENT (CLINFOC) » à la place — passé par `clinfoc: true`.
+ *    tableau « EFFET DU VENT (CLINFOC) » à la place — passé par `rigging: 'clinfoc'`.
+ *  - **Gréement de course** (T2C ch.10 l.137) : DELTA de % voiles sur le tableau standard (+10 % vent
+ *    arrière/de côté, malus de vent contraire réduit de 5 %) — passé par `rigging: 'greement'` ; inclut
+ *    un clinfoc mais les deux ne se cumulent pas (le Gréement prime).
  *  - Effets des Précipitations (l.187-201), Température (l.203-225 : Tests d'Exposition périodiques
  *    + eau à boire), Visibilité (l.227-243 : −DR aux Tests de Projectiles/Orientation/Perception
  *    basés sur la vue au-delà d'une distance).
@@ -66,6 +69,7 @@ const DATA = seaWeatherJson as unknown as {
   roseDesVents: { min: number; max: number; direction: string }[];
   effetDuVent: Record<string, Record<WindAspect, WindEffectCell>>;
   effetDuVentClinfoc: Record<string, Record<WindAspect, WindEffectCell>>;
+  effetDuVentGreementDelta: Record<WindAspect, number>;
   affaler: { difficulty: Difficulty; failCritLocation: string; driftPctOfSpeed: number };
   encalmine: { currentM: number; towM: number; towManDR: number };
 };
@@ -134,11 +138,21 @@ export function tickWindForce(current: SeaWindForceId, rng: RNG = defaultRNG): S
   return WIND_FORCES[next];
 }
 
-/** Cellule d'EFFET DU VENT pour une force × aspect (l.276-286) ; `clinfoc` → tableau de l'Amélioration
- *  Clinfoc (MDG ch.12 l.256-264 — voiles seulement, les « autres » restent au tableau standard). PUR. */
-export function windEffect(force: SeaWindForceId, aspect: WindAspect, clinfoc = false): WindEffectCell {
+/** Gréement du navire modulant l'EFFET DU VENT : `clinfoc` = tableau ALTERNATIF de l'Amélioration Clinfoc
+ *  (MDG ch.12 l.256-264) ; `greement` = Gréement de course (T2C ch.10 l.137), DELTA sur le tableau STANDARD. */
+export type SailRigging = 'none' | 'clinfoc' | 'greement';
+
+/** Cellule d'EFFET DU VENT pour une force × aspect (l.276-286), selon le `rigging` : `clinfoc` → tableau de
+ *  l'Amélioration Clinfoc (MDG ch.12 l.256-264 — voiles seulement) ; `greement` → Gréement de course
+ *  (T2C ch.10 l.137), qui ajoute un DELTA de % voiles au tableau standard (+10 % vent arrière ou de côté ;
+ *  vent contraire : malus réduit de 5 %) — sans effet quand les voiles ne portent pas (Encalminé/Affaler). PUR. */
+export function windEffect(force: SeaWindForceId, aspect: WindAspect, rigging: SailRigging = 'none'): WindEffectCell {
   const std = DATA.effetDuVent[force][aspect];
-  if (!clinfoc) return std;
+  if (rigging === 'greement') {
+    if (std.encalmine || std.affaler || std.pctSail == null) return std; // voiles affalées → le gréement n'aide pas
+    return { ...std, pctSail: std.pctSail + DATA.effetDuVentGreementDelta[aspect] };
+  }
+  if (rigging !== 'clinfoc') return std;
   const c = DATA.effetDuVentClinfoc[force][aspect];
   // Le tableau Clinfoc ne donne que la colonne voiles — le % « autres propulsions » reste celui du standard.
   return { ...c, ...(c.pctOther == null && std.pctOther != null && !c.affaler && !c.encalmine ? { pctOther: std.pctOther } : {}) };

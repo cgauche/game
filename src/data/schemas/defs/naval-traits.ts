@@ -4,7 +4,7 @@
  * `NavalInstall`/`InstallBand` co-localisées — bandes par PALIER DE LONGUEUR, #277) et du contenu RÉEL
  * (26 entrées : `id`/`label`/`kind`/`desc`
  * toujours présents ; `source` 25/26 (#221 : Proue-idole de Stromfels = `maison`, pas de folio RAW) ;
- * `install` 20/26 ; `ranked` 4/26 ; `passive` 8/26 ; `ram` 1/26 ; `deckCover` 3/26 ; `maison` 1/26).
+ * `install` 20/26 ; `ranked` 4/26 ; `passive` 8/26 ; `ram` 1/26 ; `deckCover` 3/26 ; `navTestMod` 2/26 ; `maison` 1/26).
  */
 import { z } from 'zod';
 import { gameOpSchema, sourceRefSchema } from '../common';
@@ -41,6 +41,9 @@ export const schema = z.array(
     ram: z.strictObject({ ic: z.number(), ap: z.number() }).optional(),
     /** Couvert de pont GRADUÉ (`DeckCoverClass`) : `totale` (Sabord/Murs blindés) ou `moyenne` (Plat-bord). */
     deckCover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
+    /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau (T2C ch.10 l.66 Bouteur +20 ;
+     *  l.137 Gréement de course −10) — sous-système manœuvre hors vocabulaire combattant (`navalNavTestDR`). */
+    navTestMod: z.number().optional(),
     /** #221 : même champ `maison` que `traumas.json` (`src/data/schemas/defs/traumas.ts:32`). */
     maison: z.string().optional(),
   }),

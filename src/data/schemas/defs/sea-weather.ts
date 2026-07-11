@@ -103,6 +103,8 @@ export const schema = z.strictObject({
   ),
   effetDuVent: windEffectTable,
   effetDuVentClinfoc: windEffectTable,
+  /** Gréement de course (T2C ch.10 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
+  effetDuVentGreementDelta: z.record(windAspect, z.number()),
   affaler: z.strictObject({
     difficulty: difficultySchema,
     failCritLocation: z.string(),

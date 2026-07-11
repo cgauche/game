@@ -609,6 +609,11 @@
       }
     }
   },
+  "effetDuVentGreementDelta": {
+    "arriere": 10,
+    "lateral": 10,
+    "face": 5
+  },
   "affaler": {
     "difficulty": "intermediaire",
     "failCritLocation": "greement",

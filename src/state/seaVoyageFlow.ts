@@ -75,7 +75,7 @@ import {
   removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
   type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
-import { navalMoveMod, navalTestTypeDR, shipHasNavalTrait } from '../engine/navalTraits';
+import { navalMoveMod, navalTestTypeDR, navalNavTestDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { seaAutoResolves, voyageDayEntry, type VoyageOrders, type VoyageCadence } from './voyageCadence';
 import { crewRoleValue, moraleBand, crewTalentDR } from '../engine/crewMorale';
@@ -367,7 +367,10 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
   const overloadM = cargoOverload(cargoTotalEnc(vessel?.cargo ?? []), vd?.capacity ?? 0).mMod;
   const baseM = (sail ? vd!.sail!.m : vd?.oars?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace + overloadM;
   const aspect = windAspect(sea.heading, sea.windFrom);
-  const cell = windEffect(sea.weather.vent, aspect, shipHasNavalTrait(traits, 'clinfoc'));
+  // Gréement de course (T2C ch.10 l.137) « inclut un clinfoc … les avantages des deux ne sont pas cumulables »
+  // → il PRIME sur le Clinfoc quand les deux sont présents.
+  const rigging = shipHasNavalTrait(traits, 'greement-de-course') ? 'greement' : shipHasNavalTrait(traits, 'clinfoc') ? 'clinfoc' : 'none';
+  const cell = windEffect(sea.weather.vent, aspect, rigging);
   const m = windAdjustedM(Math.max(0, baseM), cell, sail);
   const label = cell.encalmine && sail ? 'Encalminé' : cell.affaler && sail ? 'Affaler les voiles !' : `vent ${aspect}`;
   return { m, sail, label };
@@ -424,9 +427,12 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`,
   // ex. Proue-idole de Stromfels → Poursuite) — agnostique de la compétence tenue par le représentant.
   const traitDR = navalTestTypeDR(hullTraits(ship), testTypeId);
+  // « Bouteur »/« Gréement de course » modifient le Test de Navigation POUR DIRIGER (T2C ch.10 l.66/137) —
+  // seul le Test d'équipage de manœuvre (steering) le reçoit, converti en DR (`navalNavTestDR`, ÷10).
+  const navDirDR = testTypeId === 'manoeuvre' ? navalNavTestDR(hullTraits(ship)) : 0;
   // Le naval verse ses paramètres de formule DÉJÀ chiffrés en `meta` NEUTRE (bande de Moral + sabotage +
   // traits) — l'agrégat générique (`cascade.aggregateBatchStep`) ne lit QUE `aggregateFlatDR`.
-  const flatDR = moraleBand(shipMoraleScore(get, ship)).crewTestDR + saboteur + traitDR + (opts.extraDR ?? 0);
+  const flatDR = moraleBand(shipMoraleScore(get, ship)).crewTestDR + saboteur + traitDR + navDirDR + (opts.extraDR ?? 0);
   const stake = crewTestStake(testType, kind); // ENJEU surfaçable (#331) : ce que l'échec du Test coûte
   return {
     id: kind, kind, label: testType?.label ?? testTypeId, icon: opts.icon ?? 'travel/anchor',

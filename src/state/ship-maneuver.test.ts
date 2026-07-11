@@ -131,6 +131,32 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(lisse.movement).toBe(plain.movement + 1); // … mais +1 au Mouvement de base
   });
 
+  it('« Bouteur » (Amélioration) → +20 au Test de Navigation pour diriger (T2C ch.10 l.66) : +2 DR à la manœuvre', () => {
+    // Même barreur/seed → même navDR ; Bouteur ajoute +2 DR (÷10 de +20) au DR final, et son moveMod −1 baisse le M.
+    const run = (upgrades?: NavalTraitRef[]) => {
+      seedBattleRng(7);
+      const s = { ...ship(), upgrades } as Combatant; // bateau-de-patrouille (aucun navTestMod de TYPE)
+      useGame.setState({ battle: { combatants: [s, helmsman()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+      return maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    };
+    const plain = run();
+    const bouteur = run([{ id: 'bouteur' }]);
+    expect(bouteur.navDR).toBe(plain.navDR); // même jet du barreur (seed identique)
+    expect(bouteur.dr).toBe(plain.dr + 2); // +20 au Test → +2 DR d'équipage
+  });
+
+  it('« Gréement de course » (Amélioration) → −10 au Test de Navigation (T2C ch.10 l.137) : −1 DR à la manœuvre', () => {
+    const run = (upgrades?: NavalTraitRef[]) => {
+      seedBattleRng(7);
+      const s = { ...ship(), upgrades } as Combatant;
+      useGame.setState({ battle: { combatants: [s, helmsman()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
+      return maneuverShip(() => useGame.getState(), 'ship', 2)!;
+    };
+    const plain = run();
+    const greement = run([{ id: 'greement-de-course' }]);
+    expect(greement.dr).toBe(plain.dr - 1); // −10 au Test → −1 DR d'équipage
+  });
+
   it('succès → vire ET avance ; le barreur (à bord) suit la coque du MÊME delta (formation rigide)', () => {
     seedBattleRng(7);
     const s = ship();

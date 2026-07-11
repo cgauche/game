@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, hullArmourBonus, belierRam, navalDeckCover, effectiveDeckPostes } from './navalTraits';
+import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestMod, navalNavTestDR, hullArmourBonus, belierRam, navalDeckCover, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
 import { installCost } from './shipBuild';
 import navalTraitsData from '../data/naval-traits.json';
@@ -167,6 +167,20 @@ describe('Améliorations T2C ch.10 (Personnalisation) — MÊME canal que MDG, e
     expect(navalMoveMod([{ id: 'bouteur' }])).toBe(-1);
     // combiné à Lissage (+1) : les moveMod se somment sur le canal unique.
     expect(navalMoveMod([{ id: 'bouteur' }, { id: 'lissage' }])).toBe(0);
+  });
+  it('Bouteur → +20 au Test de Navigation pour diriger (T2C ch.10 l.66) ; converti +2 DR d’équipage', () => {
+    expect(navalNavTestMod([{ id: 'bouteur' }])).toBe(20);
+    expect(navalNavTestDR([{ id: 'bouteur' }])).toBe(2); // ÷10 (LDB : 10 pts = 1 DR)
+  });
+  it('Gréement de course → −10 au Test de Navigation (T2C ch.10 l.137) ; converti −1 DR d’équipage', () => {
+    expect(navalNavTestMod([{ id: 'greement-de-course' }])).toBe(-10);
+    expect(navalNavTestDR([{ id: 'greement-de-course' }])).toBe(-1);
+  });
+  it('navTestMod : cumul (Bouteur + Gréement = +10 → +1 DR) ; trait sans navTestMod / absent → 0', () => {
+    expect(navalNavTestMod([{ id: 'bouteur' }, { id: 'greement-de-course' }])).toBe(10);
+    expect(navalNavTestDR([{ id: 'bouteur' }, { id: 'greement-de-course' }])).toBe(1);
+    expect(navalNavTestMod([{ id: 'lissage' }, { id: 'sabord' }])).toBe(0);
+    expect(navalNavTestDR(undefined)).toBe(0);
   });
   it('Murs blindés → deckCover totale (comme Sabord) sur le canal navalDeckCover', () => {
     expect(navalDeckCover([{ id: 'murs-blindes' }])).toBe('totale');
