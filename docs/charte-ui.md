@@ -35,6 +35,82 @@
   dur dans le JSX (cliquet `src/ui/ui-ratchets.test.ts` (viii) — sinon « texte noir sur noir » quand la
   surface change de fond).
 
+## Couche atomique — catalogue
+
+Classes CSS **canoniques** réellement définies dans `src/ui/styles/components.css` / `base.css`
+(+ `.seg` en `sheet.css`, composé par la primitive React `OptionChooser`). Ne couvre que le
+PARTAGÉ (utilisé par ≥2 domaines) — pas les classes propres à un seul écran (`.voyage-*`,
+`.city-hub-*`, `.party-*`, `.char-card*`…). Pour la couche **React** (composants, pas classes),
+voir la table « Primitives partagées » du `CLAUDE.md` racine — les deux se lisent ensemble : une
+primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`/`.modal-actions`).
+
+### Actions
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.btn` | Bouton de base (fond charbon, bordure) | Tout `<button>` porte `.btn` ou `.chip` ou est rendu par une primitive (`ChoiceButtons`…) — un bouton nu hérite le noir UA (`buttontext`), illisible sur fond sombre (vécu #358bis/#373). |
+| `.btn.small` | Variante compacte (padding/police réduits) | Barres d'actions denses, rangées de liste. |
+| `.btn-primary` | Action primaire (dégradé rouge sang) | Une seule par barre d'actions/modale — jamais deux primaires côte à côte. |
+| `.btn-ghost` | Action discrète (transparent, texte atténué) | Annuler/Subir dans `.modal-actions` (ancré à gauche automatiquement) ; pas pour une action engageante. |
+| `.btn-test` | Bouton d'outil de test/QA (bordure pointillée verte) | Réservé aux écrans Atelier/dev — jamais un écran joueur. |
+| `.btn.danger` | Variante destructive (bordure rouge alerte) | Suppression/abandon irréversible ; combiner avec `.btn-primary` si c'est l'action principale de l'écran. |
+| `.btn.btn-resource` | Petit bouton normé de ressource (Chance/Pacte/Résilience/Détermination) | Toujours DANS `.rm-influence` (`InfluenceRow`), jamais isolé. |
+| `.chip` | Badge/pastille compacte (fond `--bg2`, texte atténué) | Alias moderne de `.tag` (historique, encore présent) ; toute nouvelle pastille utilise `.chip`. |
+| `.count` | Pastille numérique (compteur) | À l'intérieur d'un `.chip`/`.tab-btn`, jamais seule dans le flux de texte. |
+| `.entity-chip` (+ `.entity-badge`, `.entity-choice`) | Chip d'ENTITÉ unifié (compétence/talent/sort/objet) avec déclencheur popover CodexRef | Source unique = `EntityChip.tsx` — remplace `.tag`/`.codex-chip` pour toute entité de règle ; ne pas recréer un badge ad hoc pour un nom de sort/talent. |
+| `.tag` (+ `.tag.talent`) | Badge historique (alias de `.chip`) | Ne pas en créer de nouveaux usages — préférer `.chip` ou `.entity-chip` selon le contenu (texte libre vs entité de règle). |
+
+### Conteneurs / surfaces
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.panel` | Surface de base (carte/cadre, fond `--panel`, bordure, radius 12px) | Toute carte de contenu — jamais un `<div>` avec fond/bordure recopiés à la main. |
+| `.panel.sunken` | Variante « creuse » (fond `--bg2`, plus sombre que la surface) | Zone en retrait dans un panel (ex. sous-section). |
+| `.panel.gold` | Variante liseré or (bordure haute épaisse `--gold`) | Marque un panel « mis en avant » (résultat, section clé). |
+| `.panel.flush` | Variante sans padding | Le panel contient déjà un composant qui gère son propre espacement (ex. `MasterDetail`, image pleine largeur). |
+| `.fold` (+ `.fold-title`, `.fold-body`) | Section repliable (`<details>`) | `<details class=fold><summary><span class=fold-title>…</span></summary><div class=fold-body>…</div></details>` — toute section optionnelle/secondaire dépliable. |
+| `.stat-chip` (+ `.sc-label`, `.sc-value`) | Cartouche « label + valeur » (PV, carac, ressource) | Afficher une valeur nommée — jamais un format cryptique (« 4·4 » sans libellé, cf. règle charte ci-dessus). |
+| `.listrow` (+ `.lr-name`) | Rangée de liste : nom (flex:1) + méta + action | Toute liste d'entités cliquables/actionnables (inventaire, roster…) plutôt qu'un `<li>` stylé à la main. |
+| `.wounds-badge` / `.char-value` / `.game-date` / `.fx-chip-label` | Composants de donnée unifiés (LOT 5) — respectivement PB/carac+avancées/date de jeu/étiquette d'effet | Rendus par leurs composants (`WoundsBadge`, `CharValue`, `GameDate`, `FxChip`) — ne pas reformater ces données à la main ailleurs. |
+| `.icon` | Cadrage de l'icône SVG maison | Posée par la primitive `<Icon>` (`src/ui/Icon.tsx`) — cale l'icône sur la ligne de base du texte adjacent ; jamais un `<svg>` brut à côté de texte. |
+| `.charprev` (+ `.charprev-svg`, tailles `.charprev-xs/sm/md/lg`, `.charprev-fill`, ambiances `.charprev-amb-panel/parchment/spotlight`) | Cadre d'aperçu « perso en pied » (`CharacterPreview`) | Toute vignette de personnage EN PIED — les tailles/ambiances sont des modificateurs, jamais un `<img>`/SVG dimensionné à la main. |
+
+### Layouts responsive (règle stricte 4)
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.layout-sidebar` | Grille « colonne latérale (270px) + contenu » | Fiche vivante, inspecteurs — s'empile en 1 colonne ≤900px (breakpoint canon). |
+| `.panel-grid` (+ `.span-2`) | Grille de `.panel` en auto-fit (min 340px) | Tableau de bord de plusieurs panels — 1 colonne ≤700px ; `.span-2` pour un panel pleine largeur. |
+| `.bar` | Barre d'écran (en-tête, fond dégradé, filet or) | En-tête d'écran avec titre + actions — s'enroule ≤700px ; ne PAS la détourner pour une simple rangée sans fond/padding de header (charte : « éviter les espaces vides »). |
+| `.screen` | Colonne plein-écran (flex column, hauteur 100%) | Coquille racine d'un écran plein-champ « historique » (hors `ScreenShell`, cf. table CLAUDE.md). |
+| `.master-detail` (+ `.master-detail-list`, `.master-detail-detail`) | Gabarit maître-détail (liste gauche + détail centre), LAYOUT pur | Composé par `MasterDetail.tsx` (CLAUDE.md) — s'empile ≤700px (`MASTER_DETAIL_STACK_BREAKPOINT_PX`), jamais une 2ᵉ composition liste+détail recodée. |
+| `.seg` (`sheet.css`) | Segmented control (choix exclusif, boutons collés) | Composé par la primitive React `OptionChooser` (variante `seg`) — jamais un groupe de boutons exclusifs recodé à la main. |
+
+### Formulaires
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.field` / `.ed-field` | Champ de formulaire, libellé AU-DESSUS du contrôle | Toute paire libellé+input/select/textarea — `.ed-field` = même primitive côté éditeur. |
+| `.ed-hint` | Texte d'aide en italique sous un champ éditeur | Précision de saisie (contrainte, format attendu), jamais un texte tutoriel joueur (cf. règle « Zéro texte tutoriel »). |
+| `.bg-edit` (+ `.bg-hint`) | Bloc de champs « background » (Motivation/Ambitions) | Primitive `BackgroundFields`, partagée créateur ⇄ fiche — champs en `div.field` (pas `label`) pour un rendu identique sur les deux surfaces. |
+
+### Titres / texte
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.mini-title` | Titre de section en petites capitales dures (11px, `--muted`) | Réflexe par défaut pour titrer une rubrique dans un panel — pas de nouveau style de titre ad hoc. |
+| `.section-label` | Annotation de section alternative (small-caps, plus discrète que `.mini-title`) | Variante ADDITIVE quand `.mini-title`/un `Hn` gothique seraient trop lourds — pas un remplacement systématique. |
+
+### Modales (cadre partagé)
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.modal-overlay` (+ variante `:has(.roll-modal)`) | Voile plein écran (`position:fixed inset:0`) | Cadre UNIQUE de toute modale — jamais un voile recopié à la main ; la variante `:has()` ancre les modales de jet en bas avec un voile plus léger. |
+| `.modal` / `.modal.wide` | Boîte de la modale (surface, largeur plafonnée) | `.wide` (760px) pour un contenu riche (multi-colonnes) ; `.modal` seul (520px) sinon. |
+| `.picker-modal` | Titre `<h3>` d'une modale de sélection | Modale de choix dans une liste (picker) — cohérent avec `.modal`. |
+| `.modal-actions` | Barre d'actions de modale (max 2 boutons : ghost à gauche, primaire à droite) | JAMAIS de 3ᵉ bouton — les dépenses de ressources vivent dans `.rm-influence`, pas ici. |
+| `.rm-influence` | Rangée « influencer le jet » (Chance/Pacte/Résilience/Détermination) | Vide → invisible (`:empty{display:none}`) ; composée par `InfluenceRow` (CLAUDE.md). |
+
 ## Densité et contrôles stylisés
 
 - **Aucun contrôle natif non stylisé.** `<input type=checkbox/radio>` et `<select>` système sont
