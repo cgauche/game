@@ -23,7 +23,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Amibe": {
     "def": "Amibe",
     "plan": "amorphous",
-    "scale": 1,
+    "scale": 1.15,
     "species": "amibe",
   },
   "Amphisbaena": {
@@ -298,8 +298,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "Carnosaure": {
     "def": "Carnosaure",
-    "plan": "quadruped",
-    "scale": 1.2,
+    "plan": "theropode",
+    "scale": 1.35,
     "species": "carnosaure",
   },
   "Chamane Gobelin des Forêts": {
@@ -341,7 +341,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Chauve-souris vampire (Varghulf)": {
     "def": "Varghulf",
     "plan": "winged",
-    "scale": 1.1,
+    "scale": 1.12,
     "species": "varghulf",
   },
   "Chef Contrebandier": {
@@ -455,37 +455,37 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Chien": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.78,
+    "scale": 0.8,
     "species": "chien",
   },
   "Chien de Chasse": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.78,
+    "scale": 0.8,
     "species": "chien",
   },
   "Chien de Compagnie (Chiens)": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.78,
+    "scale": 0.8,
     "species": "chien",
   },
   "Chien de Compagnie (II.A — Animaux Domestiques)": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.78,
+    "scale": 0.8,
     "species": "chien",
   },
   "Chien de Garde": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.78,
+    "scale": 0.8,
     "species": "chien",
   },
   "Chien de Ratier": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.78,
+    "scale": 0.8,
     "species": "chien",
   },
   "Chimère": {
@@ -514,8 +514,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "Cockatrice": {
     "def": "Cockatrice",
-    "plan": "winged",
-    "scale": 0.9,
+    "plan": "theropode",
+    "scale": 1.05,
     "species": "cockatrice",
   },
   "Comte Vampire": {
@@ -784,8 +784,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "Fr’hough Mournbreath": {
     "def": "Fr'hough Mournbreath",
-    "plan": "jabberslythe",
-    "scale": 1.05,
+    "plan": "biped",
+    "scale": 1.35,
     "species": "fr-hough-mournbreath",
   },
   "Furie Exaltée du Chaos": {
@@ -923,7 +923,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Grand Cerf": {
     "def": "Grand Cerf",
     "plan": "quadruped",
-    "scale": 1.1,
+    "scale": 1.12,
     "species": "grand-cerf",
   },
   "Grand Immonde Exalté de Nurgle": {
@@ -971,7 +971,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Grand Sanglier Ombrageux": {
     "def": "Sanglier",
     "plan": "quadruped",
-    "scale": 0.82,
+    "scale": 0.84,
     "species": "sanglier",
   },
   "Grand Shaman Gobelin": {
@@ -1199,7 +1199,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Hyppogriffe": {
     "def": "Hippogriffe",
     "plan": "winged",
-    "scale": 1.08,
+    "scale": 1,
     "species": "hippogriffe",
   },
   "Héraut Exalté de Khorne": {
@@ -1295,7 +1295,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Jetsam - la Gelée Intelligente": {
     "def": "Amibe",
     "plan": "amorphous",
-    "scale": 1,
+    "scale": 1.15,
     "species": "amibe",
   },
   "Jeune Araignée Géante": {
@@ -1439,7 +1439,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Jeune Sanglier": {
     "def": "Sanglier",
     "plan": "quadruped",
-    "scale": 0.82,
+    "scale": 0.84,
     "species": "sanglier",
   },
   "Jeune Skaven": {
@@ -1505,7 +1505,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Kharibde": {
     "def": "Amibe",
     "plan": "amorphous",
-    "scale": 1,
+    "scale": 1.15,
     "species": "amibe",
   },
   "L'Ombre du Fleuve": {
@@ -1523,7 +1523,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Le Déchiqueteur de Cadavres": {
     "def": "Le Déchiqueteur de Cadavres",
     "plan": "quadruped",
-    "scale": 1,
+    "scale": 1.15,
     "species": "le-dechiqueteur-de-cadavres",
   },
   "Le Fantasma": {
@@ -1535,7 +1535,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Le Vieux Dos-de-Pus": {
     "def": "Sanglier",
     "plan": "quadruped",
-    "scale": 0.82,
+    "scale": 0.84,
     "species": "sanglier",
   },
   "Le vieil Otto": {
@@ -1547,7 +1547,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Lion de Guerre de Chrace": {
     "def": "Lion de Guerre de Chrace",
     "plan": "quadruped",
-    "scale": 1,
+    "scale": 1.12,
     "species": "lion-de-guerre-de-chrace",
   },
   "Long Drong Silver": {
@@ -2165,7 +2165,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Razorgor": {
     "def": "Sanglier",
     "plan": "quadruped",
-    "scale": 0.82,
+    "scale": 0.84,
     "species": "sanglier",
   },
   "Rebouteux": {
@@ -2249,19 +2249,19 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Sanglier": {
     "def": "Sanglier",
     "plan": "quadruped",
-    "scale": 0.82,
+    "scale": 0.84,
     "species": "sanglier",
   },
   "Sanglier Adulte": {
     "def": "Sanglier",
     "plan": "quadruped",
-    "scale": 0.82,
+    "scale": 0.84,
     "species": "sanglier",
   },
   "Sanglier Féroce": {
     "def": "Sanglier",
     "plan": "quadruped",
-    "scale": 0.82,
+    "scale": 0.84,
     "species": "sanglier",
   },
   "Sangsue Caméléon": {
@@ -2386,8 +2386,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "Slenderthigh Whiptongue": {
     "def": "Slenderthigh Whiptongue",
-    "plan": "jabberslythe",
-    "scale": 1.05,
+    "plan": "biped",
+    "scale": 1.15,
     "species": "slenderthigh-whiptongue",
   },
   "Snotling": {
@@ -2639,7 +2639,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Vhargulf": {
     "def": "Varghulf",
     "plan": "winged",
-    "scale": 1.1,
+    "scale": 1.12,
     "species": "varghulf",
   },
   "Vieil Ours Mal Léché": {
@@ -2807,7 +2807,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Élémentaire de mer": {
     "def": "Amibe",
     "plan": "amorphous",
-    "scale": 1,
+    "scale": 1.15,
     "species": "amibe",
   },
   "Érudit": {
@@ -2830,7 +2830,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "amibe": {
     "def": "Amibe",
     "plan": "amorphous",
-    "scale": 1,
+    "scale": 1.15,
     "species": "amibe",
   },
   "araignee": {
@@ -2883,8 +2883,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "carnosaure": {
     "def": "Carnosaure",
-    "plan": "quadruped",
-    "scale": 1.2,
+    "plan": "theropode",
+    "scale": 1.35,
     "species": "carnosaure",
   },
   "chamane-brey": {
@@ -2908,7 +2908,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "chien": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.78,
+    "scale": 0.8,
     "species": "chien",
   },
   "chimere": {
@@ -2925,8 +2925,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "cockatrice": {
     "def": "Cockatrice",
-    "plan": "winged",
-    "scale": 0.9,
+    "plan": "theropode",
+    "scale": 1.05,
     "species": "cockatrice",
   },
   "cornu": {
@@ -2997,8 +2997,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "fr-hough-mournbreath": {
     "def": "Fr'hough Mournbreath",
-    "plan": "jabberslythe",
-    "scale": 1.05,
+    "plan": "biped",
+    "scale": 1.35,
     "species": "fr-hough-mournbreath",
   },
   "furie-du-chaos": {
@@ -3046,7 +3046,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "grand-cerf": {
     "def": "Grand Cerf",
     "plan": "quadruped",
-    "scale": 1.1,
+    "scale": 1.12,
     "species": "grand-cerf",
   },
   "griffon": {
@@ -3088,7 +3088,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "hippogriffe": {
     "def": "Hippogriffe",
     "plan": "winged",
-    "scale": 1.08,
+    "scale": 1,
     "species": "hippogriffe",
   },
   "homme-bete": {
@@ -3154,7 +3154,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "le-dechiqueteur-de-cadavres": {
     "def": "Le Déchiqueteur de Cadavres",
     "plan": "quadruped",
-    "scale": 1,
+    "scale": 1.15,
     "species": "le-dechiqueteur-de-cadavres",
   },
   "leviathan": {
@@ -3172,7 +3172,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "lion-de-guerre-de-chrace": {
     "def": "Lion de Guerre de Chrace",
     "plan": "quadruped",
-    "scale": 1,
+    "scale": 1.12,
     "species": "lion-de-guerre-de-chrace",
   },
   "loup": {
@@ -3298,7 +3298,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "sanglier": {
     "def": "Sanglier",
     "plan": "quadruped",
-    "scale": 0.82,
+    "scale": 0.84,
     "species": "sanglier",
   },
   "sangsue": {
@@ -3327,8 +3327,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "slenderthigh-whiptongue": {
     "def": "Slenderthigh Whiptongue",
-    "plan": "jabberslythe",
-    "scale": 1.05,
+    "plan": "biped",
+    "scale": 1.15,
     "species": "slenderthigh-whiptongue",
   },
   "snotling": {
@@ -3394,7 +3394,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "varghulf": {
     "def": "Varghulf",
     "plan": "winged",
-    "scale": 1.1,
+    "scale": 1.12,
     "species": "varghulf",
   },
   "vermine-de-choc": {

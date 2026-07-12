@@ -1,13 +1,20 @@
 import type { CreatureDef } from '../types';
 
-// Cockatrice (ZI) — hybride oiseau-reptile ailé. Gabarit AILÉ (quad + ailes emplumées) : corps
-// svelte de rapace, tête 'aigle', queue 'reptile' écailleuse, pieds 'serre'. Plumage vert-jaune maladif.
+// Cockatrice (ZI) — artwork art-ref/zi/page068_img1.png : dragon BIPÈDE dressé sur ses pattes
+// arrière (buste redressé, petits bras griffus), GRANDES AILES MEMBRANEUSES de chauve-souris
+// déployées, longue queue SERPENTINE effilée, tête et cou de coq/rapace emplumés hirsutes à BEC
+// CROCHU ouvert, œil pâle fixe. Gabarit `theropode` + traits optionnels wings/beak/plumage/
+// serpentTail. Robe vert-jaune maladive, plumage sombre, bec et serres de cuir orange.
 export const creature: CreatureDef = {
   name: 'Cockatrice',
-  plan: 'winged',
-  quad: {
-    sl: 0.9, build: 'draconic', girth: 0.9, bodyLen: 0.95, neckLen: 0.72, neckAngle: -34, legLen: 0.86,
-    head: 'aigle', tail: 'reptile', mane: 'sans', ears: 'pointues', foot: 'serre', wings: 'plumes', wingSpan: 1.0, headScale: 1.0, tailLen: 1.05,
-    stored: { corps: '#8a8a3e', corpsO: '#454618', corpsH: '#c8cc78', cheveux: '#5a5a26', cheveuxO: '#2e2e12', cuir: '#c87a2a' },
+  plan: 'theropode',
+  thero: {
+    sl: 1.05, girth: 0.95, horns: 0, muzzle: 1.0,
+    wings: 1.0, beak: 1.0, plumage: 1.0, serpentTail: true,
+    stored: {
+      corps: '#8a8a3e', corpsO: '#454618', corpsH: '#c8cc78',
+      cheveux: '#3f4520', cheveuxO: '#1f2410', cuir: '#c87a2a',
+      aile: '#9a9c74', aileO: '#4a4c30',
+    },
   },
 };

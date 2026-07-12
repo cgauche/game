@@ -23,9 +23,9 @@ export type QuadPose = Partial<Record<QuadBoneId, number>>;
 
 /** Caractère d'une espèce quadrupède (proportions + parts + couleurs par défaut). */
 export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'feline' | 'draconic' | 'batracien';
-export type QuadHead = 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon' | 'basilic' | 'crapaud' | 'hydre' | 'chimere' | 'felin';
+export type QuadHead = 'cheval' | 'loup' | 'loup-feroce' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon' | 'basilic' | 'crapaud' | 'hydre' | 'chimere' | 'dechiqueteur' | 'felin';
 export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
-export type QuadTail = 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'leonine' | 'dard' | 'sans';
+export type QuadTail = 'crin' | 'touffe' | 'touffe-basse' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'enroulee' | 'leonine' | 'dard' | 'sans';
 /** Crinière le long de l'encolure : crin couché (équin), hirsute (fourrure dressée — loup/
  *  sanglier), sans. */
 export type QuadMane = 'crin' | 'hirsute' | 'sans';
@@ -55,6 +55,11 @@ export interface QuadProps {
    *  les tarses/serres AVANT avec la famille custom `cuirAv`. Absent = robe unie (griffon). */
   foreCoat?: 'plumes';
   headScale?: number; // × sur l'art de tête (défaut 1)
+  /** Tangage ADDITIF de l'os tête en PROFIL (deg, négatif = museau levé). Par défaut l'os tête
+   *  compense neckAngle (rotation monde constante +10) → museau à l'horizontale quel que soit le
+   *  port d'encolure ; un port de tête expressif (brame du grand cerf) le décale. Face/dos
+   *  inchangés (quadSkeletonForView y force l'angle à 0). */
+  headPitch?: number;
   tailLen?: number; // × sur l'art de queue (défaut 1)
   /** Décor PAR-OS propre à la créature (harnais doré du pégase — précédent : épave du crabe,
    *  `CrabProps.deco`) : SVG dans le repère local de l'os, APPOSÉ après l'art du gabarit,
@@ -96,7 +101,7 @@ export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {
     // Encolure penchée en AVANT (tête devant le poitrail, pas au-dessus = « fusionnée »).
     // neckAngle est stocké négatif (héritage) → on le négocie en avant via -neckAngle.
     encolure: { parent: 'tronc', pivot: { x: 28 * bl, y: -12 }, angle: -p.neckAngle, length: 30 * p.neckLen, thickness: 14, z: 6 },
-    tete: { parent: 'encolure', pivot: { x: 0, y: -30 * p.neckLen }, angle: 10 + p.neckAngle, length: 18, thickness: 14, z: 7 },
+    tete: { parent: 'encolure', pivot: { x: 0, y: -30 * p.neckLen }, angle: 10 + p.neckAngle + (p.headPitch ?? 0), length: 18, thickness: 14, z: 7 },
     queue: { parent: 'croupe', pivot: { x: -16, y: -6 }, angle: 42, length: 26, thickness: 6, z: 3 },
     ...leg('hautAvG', 'basAvG', 'piedAvG', 'tronc', 24 * bl + 6, 8, true),
     ...leg('hautArG', 'basArG', 'piedArG', 'croupe', -6 * bl + 6, 8, true, true),

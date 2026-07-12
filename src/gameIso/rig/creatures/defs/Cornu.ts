@@ -1,8 +1,9 @@
 import type { CreatureDef } from '../types';
 
 // Cornu (ZI 80) — artwork p.80 : théropode BIPÈDE dressé sur ses pattes arrière (petits bras
-// avant griffus), longue gueule de prédateur bardée de rangées de dents, grandes cornes
-// recourbées vers l'arrière (son trait identitaire), crête d'épines de la nuque à la queue,
+// avant griffus), longue gueule de prédateur bardée de rangées de dents, crête d'épines
+// OSSEUSES multiples sur le sommet du crâne (les « cornes pointues » de la source — pas une
+// grande corne recourbée unique), épines continuant de la nuque à la queue, œil sombre discret,
 // robe vert-écaille mouchetée à ventre jaune-vert. Gabarit `theropode` dédié.
 export const creature: CreatureDef = {
   name: 'Cornu',

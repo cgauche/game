@@ -1,18 +1,22 @@
 import type { CreatureDef } from '../types';
 
-// Amibe (« diable gluant ») — gabarit amorphe/hulk : créature dénuée de squelette, « sorte de gelée
-// hostile » exsudant un acide digestif, « hautement inflammable » (ZI 44). Palette de gelée acide
-// translucide (jaune-vert luisant) plutôt que la boue brune de la Bête des marais. Sans ce def + son
+// Amibe (« diable gluant ») — gabarit amorphe, forme `gel`, fidèle à l'artwork ZI p.48 : masse
+// GÉLATINEUSE TRANSLUCIDE gris-turquoise dressée (plus haute que large), fine membrane rosâtre,
+// SANS visage — son identité = les proies englouties visibles par transparence (squelette, épée,
+// débris) au-dessus d'un socle de vase sombre où la digestion s'achève. « Sorte de gelée
+// hostile » exsudant un acide digestif, « hautement inflammable » (ZI 44). Sans ce def + son
 // nom-espèce, le record sans `appearance.species` retombait sur le bipède Humain par défaut
-// (resolveRender) → une amibe dessinée en humanoïde tenant un « Fouet pseudopode ». Réutilisé par
-// Jetsam (« très grosse amibe intelligente ») via `appearance.species: "Amibe"`.
+// (resolveRender). Réutilisé par Jetsam (« très grosse amibe intelligente ») via
+// `appearance.species: "Amibe"`.
 export const creature: CreatureDef = {
   name: 'Amibe',
   plan: 'amorphous',
-  // girth 1.1 : masse étalée plus large que haute (la gelée s'affaisse, ≠ tourbe « vaguement
-  // humanoïde »). Gelée acide : corps jaune-vert, contour olive sombre, reflets de mucus vifs.
+  // girth 0.95 : masse dressée, plus haute que large (l'artwork monte en colonne bosselée).
+  // corps = gelée turquoise pâle (posée en fill-opacity par la forme `gel`), corpsO = membrane
+  // rosâtre du contour, corpsH = reflets/bulles, cheveux(+O) = vase sombre du socle et
+  // silhouettes des objets engloutis, cuir = os du squelette digéré.
   hulk: {
-    sl: 1.0, girth: 1.1,
-    stored: { corps: '#94a64e', corpsO: '#3a4416', corpsH: '#d6e07e', cheveux: '#7c8a3a', cheveuxO: '#2a3210', cuir: '#6e7a32' },
+    sl: 1.15, girth: 0.95, form: 'gel',
+    stored: { corps: '#a7d4cd', corpsO: '#c0a5ae', corpsH: '#edf8f3', cheveux: '#4d585c', cheveuxO: '#2b3336', cuir: '#8d968c' },
   },
 };

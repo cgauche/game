@@ -1,23 +1,26 @@
 import type { CreatureDef } from '../types';
 
-// Hippogriffe (artwork LDB p.323) : AVANT-TRAIN D'AIGLE — tête et encolure BLANCHES à bec crochu
-// jaune, poitrail brun-doré moucheté (foreCoat, robe des ailes), serres et tarses JAUNES — sur un
-// ARRIÈRE-TRAIN DE CHEVAL BLANC (robe claire pommelée, sabots sombres, queue de crin blanche) ;
-// grandes ailes de rapace brunes (famille `aile`, comme le pégase).
+// Hippogriffe (artwork LDB p.323, créature EN VOL) : AVANT-TRAIN D'AIGLE — tête et encolure
+// BLANCHES à bec crochu jaune, poitrail brun-roux moucheté (foreCoat, robe des ailes), serres et
+// tarses JAUNE VIF — sur un ARRIÈRE-TRAIN DE CHEVAL BLANC svelte et haut sur pattes (robe blanche
+// pommelée gris-bleu, sabots sombres, queue de crin blanche). Le vol de l'artwork vit dans l'état
+// runtime `spread` (WingState) ; au repos, l'envergure AMPLE (wingSpan, rémiges dépassant la
+// croupe) porte la silhouette spectaculaire de grand rapace. Contraste brun/blanc NET : famille
+// @aile* brun-roux profond vs robe @corps* blanche (patron pégase, artwork LDB p.325).
 export const creature: CreatureDef = {
   name: "Hippogriffe",
   plan: 'winged',
   quad: {
-    sl: 1.08, build: 'equine', girth: 1, bodyLen: 1.02, neckLen: 0.9, neckAngle: -44, legLen: 1.05,
+    sl: 1, build: 'equine', girth: 0.92, bodyLen: 0.96, neckLen: 0.95, neckAngle: -44, legLen: 1.14,
     head: 'aigle', tail: 'crin', ears: 'courtes', foot: 'sabot', frontFoot: 'serre',
-    wings: 'plumes', wingSpan: 1.3, mane: 'hirsute', foreCoat: 'plumes',
+    wings: 'plumes', wingSpan: 1.32, mane: 'hirsute', foreCoat: 'plumes',
     headScale: 1.2, tailLen: 1.2, markings: 'taches',
     stored: {
-      corps: '#ddd7c9', corpsO: '#8d8672', corpsH: '#f5f2e9',
-      cheveux: '#e9e4d7', cheveuxO: '#a7a08c',
-      cuir: '#4b4138',
-      aile: '#8a5a2e', aileO: '#4e3013', aileH: '#c99b58',
-      cuirAv: '#d8a832',
+      corps: '#e9eae2', corpsO: '#848b95', corpsH: '#ffffff', // robe blanche pommelée, ombres gris-bleu
+      cheveux: '#f2efe6', cheveuxO: '#a9a494', // plumes d'encolure + queue de crin blanches
+      cuir: '#4b4138', // sabots postérieurs sombres
+      aile: '#8a5228', aileO: '#43280f', aileH: '#d8a95e', // plumage brun-roux, mouchetures dorées
+      cuirAv: '#e3b32e', // tarses/serres jaune vif
     },
   },
 };

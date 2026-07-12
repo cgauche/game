@@ -2,10 +2,16 @@
  * Gabarit THÉROPODE (grands sauriens prédateurs des Terres du Sud — Cornu, et tout carnosaure
  * bipède) : bête dressée sur deux PATTES ARRIÈRE massives (digitigrades, serres), petits bras
  * avant griffus, longue queue-balancier à crête, cou porté en avant, longue gueule de prédateur
- * hérissée de rangées de dents, cornes recourbées optionnelles (le trait identitaire du Cornu).
+ * hérissée de rangées de dents, crête d'épines OSSEUSES optionnelle sur le sommet du crâne
+ * (les « cornes pointues » du Cornu — pas une grande corne recourbée unique).
  * Anim propre au plan : respiration/balancement de queue au repos, foulée bipède au déplacement,
  * détente du cou + gueule grande ouverte à l'attaque, effondrement en avant à la mort. Réutilise
  * la machinerie (FK générique, palette tokenisée, rendu) — même patron que jabberslythe/squig.
+ *
+ * Traits OPTIONNELS (défaut = éteint, rendu saurien inchangé) pour les hybrides bipèdes type
+ * Cockatrice (art-ref/zi/page068_img1.png) : `wings` = grandes ailes MEMBRANEUSES déployées,
+ * `beak` = tête de coq/rapace à bec crochu (remplace la gueule dentée), `plumage` = cou/échine
+ * emplumés hirsutes, `serpentTail` = queue serpentine effilée (remplace le balancier à crête).
  */
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
@@ -19,17 +25,26 @@ import { sortByZ } from '../composite';
 
 export type TheropodBoneId =
   | 'corps' | 'queue' | 'cou' | 'tete' | 'machoire'
-  | 'brasG' | 'brasD' | 'jambeG' | 'jambeD';
+  | 'brasG' | 'brasD' | 'jambeG' | 'jambeD' | 'aileG' | 'aileD';
 type TBone = FKBone & { z: number };
 export interface TheropodProps {
   sl: number;
   girth: number; // profondeur du torse
-  horns: number; // × longueur des cornes recourbées (0 = crâne nu — carnosaure sans cornes)
+  horns: number; // × hauteur de la crête d'épines osseuses du crâne (0 = crâne nu)
   muzzle: number; // × longueur de la gueule
+  /** × envergure des ailes MEMBRANEUSES déployées (absent/0 = pas d'ailes — saurien pur). */
+  wings?: number;
+  /** × longueur du bec CROCHU de coq/rapace — remplace la gueule dentée (absent/0 = gueule). */
+  beak?: number;
+  /** Plumage hirsute (cou emplumé, échine à plumes au lieu d'épines) — absent/0 = écailles. */
+  plumage?: number;
+  /** Queue SERPENTINE effilée à pointe retroussée au lieu du balancier à crête. */
+  serpentTail?: boolean;
   stored: StoredPalette;
 }
 
 const TEETH = '#efe6cf';
+const EYE = '#6e421c'; // œil sombre et discret (artwork ZI 80 — pas de jaune vif)
 const MAW = '#2a0e0c';
 const TONGUE = '#b03038';
 const CLAW = '#15110c';
@@ -59,6 +74,8 @@ function buildSkeleton(p: TheropodProps): Record<TheropodBoneId, TBone> {
     brasD: { parent: 'corps', pivot: { x: 14, y: 4 }, angle: 0, z: 9 },
     jambeG: { parent: 'corps', pivot: { x: -13, y: 2 }, angle: 4, z: 1 }, // patte lointaine, décalée derrière
     jambeD: { parent: 'corps', pivot: { x: -4, y: 2 }, angle: 0, z: 10 },
+    aileG: { parent: 'corps', pivot: { x: -4, y: -13 }, angle: 0, z: 2 }, // aile lointaine (derrière)
+    aileD: { parent: 'corps', pivot: { x: 2, y: -14 }, angle: 0, z: 4 }, // aile proche, sous le torse
   };
 }
 
@@ -76,6 +93,9 @@ function skeletonForView(sk: Record<TheropodBoneId, TBone>, view: View): Record<
   out.brasG = { ...sk.brasG, pivot: { x: -12, y: 0 }, angle: 0, z: front ? 6 : 2 };
   out.jambeD = { ...sk.jambeD, pivot: { x: 10, y: 2 }, angle: 0, z: 4 };
   out.jambeG = { ...sk.jambeG, pivot: { x: -10, y: 2 }, angle: 0, z: 4 };
+  // ailes déployées en miroir : derrière le corps de face, vers l'œil de dos
+  out.aileD = { ...sk.aileD, pivot: { x: 9, y: -13 }, angle: 0, z: front ? 2 : 8 };
+  out.aileG = { ...sk.aileG, pivot: { x: -9, y: -13 }, angle: 0, z: front ? 2 : 8 };
   return out;
 }
 
@@ -100,11 +120,26 @@ function body(p: TheropodProps, view: View): string {
   const belly = `<path d="M-17 10 Q-2 17.5 12 7.5 Q9 13 -3 14.8 Q-13 14 -17 10 Z" fill="@corpsH" opacity="0.55"/>`;
   const scales = `<path d="M-15 -6 q6 3 12 1 M-9 0 q6 3 12 1 M-2 -8 q5 3 10 1 M3 -2 q5 2.6 9 0.6" stroke="@corpsO" stroke-width="0.55" fill="none" opacity="0.5"/>`;
   const spots = `<circle cx="-7" cy="-8" r="2.1" fill="@corpsO" opacity="0.35"/><circle cx="4" cy="-10" r="1.7" fill="@corpsO" opacity="0.35"/><circle cx="-17" cy="-3" r="1.9" fill="@corpsO" opacity="0.3"/><circle cx="11" cy="-6" r="1.5" fill="@corpsO" opacity="0.3"/>`;
-  const crest = `<path d="M-21 -8.5 l-2.5 -7.5 l6 3.4 M-12 -12.5 l-1.5 -8.5 l6 4 M-3 -16 l0 -8.5 l5.5 4.8 M7 -14 l1.5 -8 l5 5.4" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
+  // échine : épines osseuses (saurien) OU frange de plumes hirsutes (plumage — artwork Cockatrice)
+  const crest = p.plumage
+    ? `<path d="M-22 -7 L-26 -13.5 L-19.5 -10.5 L-21 -17.5 L-14 -12.5 L-14.5 -20.5 L-8 -14.5 L-6.5 -22 L-1 -15.5 L2.5 -21.5 L5.5 -14.5 L11.5 -18 L10.5 -12" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` +
+      `<path d="M3 -12 q3.5 2.6 7 1.2 M7 -8 q3.5 2.6 7 1.2 M1 -6 q3.5 2.6 7 1.2 M5 -2 q3.2 2.4 6.5 1" stroke="@cheveuxO" stroke-width="0.6" fill="none" opacity="0.55"/>` // plumes du poitrail
+    : `<path d="M-21 -8.5 l-2.5 -7.5 l6 3.4 M-12 -12.5 l-1.5 -8.5 l6 4 M-3 -16 l0 -8.5 l5.5 4.8 M7 -14 l1.5 -8 l5 5.4" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
   return `<g>${torso}${belly}${scales}${spots}${crest}</g>`;
 }
 
-function tail(view: View): string {
+function tail(p: TheropodProps, view: View): string {
+  if (p.serpentTail) {
+    if (view === 'front') // pointe sinueuse qui fouette sur le flanc
+      return `<g opacity="0.95"><path d="M0 4 Q12 10 20 6 Q26 3 24 -2 Q22 -4.5 20.5 -2 Q21.5 1 17.5 3 Q10 5.5 2 1 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/></g>`;
+    if (view === 'back') // DOS : la queue serpente vers l'œil en S effilé
+      return `<g><path d="M-3 -2 Q-7 8 -3 16 Q1 23 -2 30 Q-4.5 35 1 38.5 Q4.5 40.5 3.5 36.5 Q1 33 3.5 28 Q6.5 21 2.5 14 Q-0.5 8 1.5 -2 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+        `<path d="M-3.5 6 l5 1 M-3 13 l5 1 M0 20 l4.5 0.5 M-1 27 l4.5 0" stroke="@corpsO" stroke-width="0.5" opacity="0.5"/></g>`;
+    // PROFIL : longue queue SERPENTINE — s'effile en S, pointe fine retroussée (artwork Cockatrice)
+    return `<g><path d="M1 -5.5 C-12 -4 -24 1.5 -31.5 -1.5 C-35.5 -3.5 -36.5 -8.5 -35.5 -13.5 C-38.5 -9 -38.8 -2.5 -33 1.8 C-25 7 -12 5.5 1 4.5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M-8 -3.5 l-0.5 7.5 M-16 -2.5 l-1 7 M-23 -1 l-1.5 5.5 M-29 -2 l-2 4" stroke="@corpsO" stroke-width="0.55" opacity="0.5"/>` + // anneaux d'écailles
+      `<path d="M-6 3 Q-20 4.5 -29 0.5" stroke="@corpsH" stroke-width="0.9" fill="none" opacity="0.5"/></g>`;
+  }
   if (view !== 'profile') {
     if (view === 'front') // pointe qui dépasse sur le flanc
       return `<g opacity="0.95"><path d="M0 5 Q14 9 23 4 Q27 1 23.5 -1 Q16 2 5 1 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/></g>`;
@@ -119,58 +154,109 @@ function tail(view: View): string {
   return `<g>${mass}${spikes}${light}</g>`;
 }
 
-function neck(view: View): string {
+function neck(p: TheropodProps, view: View): string {
   if (view !== 'profile') {
-    return `<g><path d="M-6.5 3 Q-7.5 -8 -5 -16 L5 -16 Q7.5 -8 6.5 3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+    const fringe = p.plumage
+      ? `<path d="M-6 -2 L-11 -5 L-6.5 -7 L-11 -11 L-6 -12 L-9.5 -17 L-4.5 -15.5 M6 -2 L11 -5 L6.5 -7 L11 -11 L6 -12 L9.5 -17 L4.5 -15.5" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.45"/>` // collerette hirsute
+      : '';
+    return `<g>${fringe}<path d="M-6.5 3 Q-7.5 -8 -5 -16 L5 -16 Q7.5 -8 6.5 3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
       (view === 'front' ? `<path d="M-3 -12 Q0 2 3 -12" stroke="@corpsH" stroke-width="1.6" fill="none" opacity="0.5"/>`
         : `<path d="M-0.5 -14 l-1.5 -5 l4 2 M0 -8 l-1.5 -5 l4 2.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`) + `</g>`;
   }
-  // colonne musclée penchée en avant, base évasée noyée dans le torse, gorge claire, épines de nuque
-  return `<g><path d="M-9.5 8 Q-9.8 -7 -4.5 -22 L6 -22 Q9 -8 9.5 8 Q0 12 -9.5 8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
-    `<path d="M4.5 -18 Q6.5 -6 5.5 4" stroke="@corpsH" stroke-width="1.4" fill="none" opacity="0.55"/>` + // gorge
-    `<path d="M-6.5 -2 l-5.5 -3.2 l6.3 -2 M-6 -9.5 l-5 -3.8 l6.3 -1.4 M-5 -16.5 l-4.5 -4.2 l6 -1" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/></g>`;
+  // colonne musclée penchée en avant, base évasée noyée dans le torse, gorge claire
+  const column = `<path d="M-9.5 8 Q-9.8 -7 -4.5 -22 L6 -22 Q9 -8 9.5 8 Q0 12 -9.5 8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+    `<path d="M4.5 -18 Q6.5 -6 5.5 4" stroke="@corpsH" stroke-width="1.4" fill="none" opacity="0.55"/>`; // gorge
+  if (p.plumage) {
+    // cou EMPLUMÉ (artwork Cockatrice) : camail hirsute sur la nuque + écailles de plumes
+    return `<g>${column}` +
+      `<path d="M-7 3 L-13.5 1 L-8 -2 L-14 -6.5 L-8 -8.5 L-13 -13.5 L-7 -13.5 L-11 -19.5 L-5 -17 L-7.5 -22 L-2 -20" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` +
+      `<path d="M-3 -16 q3 2.2 5.5 0.8 M-4 -10 q3.5 2.4 6.5 1 M-4.5 -4 q3.5 2.4 7 1 M-4 2 q3.5 2.2 7 0.8" stroke="@cheveuxO" stroke-width="0.55" fill="none" opacity="0.6"/></g>`;
+  }
+  return `<g>${column}` +
+    `<path d="M-6.5 -2 l-5.5 -3.2 l6.3 -2 M-6 -9.5 l-5 -3.8 l6.3 -1.4 M-5 -16.5 l-4.5 -4.2 l6 -1" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/></g>`; // épines de nuque
+}
+
+const BEAK_EYE = '#e9e6d6'; // œil PÂLE et fixe du regard pétrifiant (artwork Cockatrice)
+
+/** Tête de coq/rapace à BEC CROCHU (mode `beak`) — crête de plumes hérissées, œil pâle, bec ouvert. */
+function beakHead(p: TheropodProps, view: View): string {
+  const crest = `<path d="M-5.5 -10.5 L-9 -16 L-3.8 -13 L-3 -19.5 L0 -13.5 L3 -19.5 L3.8 -13 L9 -16 L5.5 -10.5" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
+  if (view === 'back') {
+    return `<g><path d="M-6.5 -5 Q-6.5 -12 0 -12 Q6.5 -12 6.5 -5 Q6.5 1 4.5 3.5 L-4.5 3.5 Q-6.5 1 -6.5 -5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>${crest}</g>`;
+  }
+  if (view === 'front') {
+    const skull = `<path d="M-7 -6 Q-7 -13 0 -13 Q7 -13 7 -6 Q7 0 4.5 2.5 L-4.5 2.5 Q-7 0 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>`;
+    const eyes = `<ellipse cx="-3.5" cy="-6.5" rx="1.8" ry="2" fill="${BEAK_EYE}"/><circle cx="-3.5" cy="-6.3" r="0.8" fill="#0a0603"/>` +
+      `<ellipse cx="3.5" cy="-6.5" rx="1.8" ry="2" fill="${BEAK_EYE}"/><circle cx="3.5" cy="-6.3" r="0.8" fill="#0a0603"/>` +
+      `<path d="M-5.8 -8.6 Q-3.5 -10 -1.2 -8.4 M1.2 -8.4 Q3.5 -10 5.8 -8.6" stroke="@corpsO" stroke-width="0.9" fill="none"/>`;
+    const beakFB = `<path d="M-3.2 -2.5 L3.2 -2.5 Q3.8 1.5 1.2 4.5 L0 6.8 L-1.2 4.5 Q-3.8 1.5 -3.2 -2.5 Z" fill="@cuir" stroke="#1a140e" stroke-width="0.6"/>` +
+      `<circle cx="-1.2" cy="-1.2" r="0.5" fill="#1a140e" opacity="0.7"/><circle cx="1.2" cy="-1.2" r="0.5" fill="#1a140e" opacity="0.7"/>`;
+    return `<g>${skull}${crest}${eyes}${beakFB}</g>`;
+  }
+  // PROFIL : crâne rond de rapace, grand œil pâle, bec crochu OUVERT à pointe rabattue
+  const t = 8 + 6 * (p.beak ?? 1); // longueur du bec
+  const skull = `<path d="M-8.5 2 Q-10 -7 -3.5 -10.5 Q2.5 -13 7.5 -10 Q11 -8 12 -4.5 Q12.5 -2 11.5 0.5 L-6 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>`;
+  const crestP = `<path d="M-6.5 -7.5 L-11 -13 L-4.5 -11 L-6 -18 L-0.5 -12.5 L1 -19.5 L4 -12.5 L8.5 -17 L7.5 -11 L11.5 -12.5 L8 -8" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
+  const shag = `<path d="M-6 3 L-9.5 8 L-4.5 6 L-5.5 11 L-0.5 7.5" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.45"/>`; // barbe de plumes sous le crâne
+  const beakP = `<path d="M8 -6.5 Q${(8 + 0.4 * t).toFixed(1)} -8 ${(8 + 0.75 * t).toFixed(1)} -5.5 Q${(8 + t).toFixed(1)} -3.5 ${(8 + t + 0.5).toFixed(1)} -0.5 Q${(8 + t + 0.8).toFixed(1)} 2.2 ${(8 + t - 1.5).toFixed(1)} 3.5 Q${(8 + t - 0.5).toFixed(1)} 6.5 ${(8 + t - 3).toFixed(1)} 9 Q${(8 + t - 3.5).toFixed(1)} 5.5 ${(8 + t - 5).toFixed(1)} 3.8 Q${(8 + 0.35 * t).toFixed(1)} 4.6 9.5 3 Q8.2 -1.5 8 -6.5 Z" fill="@cuir" stroke="#1a140e" stroke-width="0.6"/>` +
+    `<circle cx="${(8 + 0.35 * t).toFixed(1)}" cy="-3.6" r="0.7" fill="#1a140e" opacity="0.7"/>`; // narine
+  const brow = `<path d="M-2 -8.6 Q2 -10 5.5 -8" stroke="@corpsO" stroke-width="1.1" fill="none"/>`;
+  const eye = `<ellipse cx="1.5" cy="-5.8" rx="2" ry="2.2" fill="${BEAK_EYE}"/><circle cx="2.2" cy="-5.6" r="0.9" fill="#0a0603"/>`;
+  return `<g>${crestP}${shag}${skull}${beakP}${brow}${eye}</g>`;
+}
+
+/** Bec inférieur ouvert + langue effilée (mode `beak`). */
+function beakJaw(p: TheropodProps, view: View): string {
+  if (view === 'back') return '';
+  if (view === 'front') {
+    return `<g><path d="M-2.6 1 Q0 0.2 2.6 1 Q2 5.4 0 6.6 Q-2 5.4 -2.6 1 Z" fill="@cuir" stroke="#1a140e" stroke-width="0.5"/>` +
+      `<path d="M-0.9 2.4 Q0 2 0.9 2.4 Q0.4 4.6 0 4.8 Q-0.4 4.6 -0.9 2.4 Z" fill="${TONGUE}"/></g>`;
+  }
+  const t = (8 + 6 * (p.beak ?? 1)) * 0.62; // mandibule plus courte que le bec supérieur
+  const bone = `<path d="M2 0 Q${(0.45 * t + 5).toFixed(1)} 1.4 ${(0.8 * t + 5).toFixed(1)} 3.4 Q${(0.9 * t + 5).toFixed(1)} 4.4 ${(0.72 * t + 4).toFixed(1)} 5.4 Q${(0.35 * t + 5).toFixed(1)} 6.8 4.5 5.4 Q1 3.6 2 0 Z" fill="@cuir" stroke="#1a140e" stroke-width="0.6"/>`;
+  const tongue = `<path d="M${(0.4 * t + 5).toFixed(1)} 2.4 Q${(0.75 * t + 5).toFixed(1)} 3.4 ${(0.95 * t + 5).toFixed(1)} 5.8 Q${(t + 5.5).toFixed(1)} 7.6 ${(t + 6.5).toFixed(1)} 9.6" stroke="${TONGUE}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
+  return `<g>${bone}${tongue}</g>`;
 }
 
 function head(p: TheropodProps, view: View): string {
+  if (p.beak) return beakHead(p, view);
   const hl = p.horns;
   if (view === 'back') {
-    const horns = hl > 0
-      ? `<path d="M-4 -8 Q${-9 - 6 * hl} ${-11 - 5 * hl} ${-10 - 9 * hl} ${-4 - 2 * hl} q-0.6 2.6 1.8 1 Q${-4 - 5 * hl} ${-7 - 3 * hl} -1.5 -9.5 Z M4 -8 Q${9 + 6 * hl} ${-11 - 5 * hl} ${10 + 9 * hl} ${-4 - 2 * hl} q0.6 2.6 -1.8 1 Q${4 + 5 * hl} ${-7 - 3 * hl} 1.5 -9.5 Z" fill="@cuir" stroke="@corpsO" stroke-width="0.6"/>`
+    // crête d'épines OSSEUSES multiples sur le sommet du crâne (artwork ZI 80 : pas de grande corne unique)
+    const spikes = hl > 0
+      ? `<path d="M-4.2 -10 l${(-1.6 * hl).toFixed(1)} ${(-4.6 * hl).toFixed(1)} l3.4 1.6 M-0.9 -11.4 l${(-0.2 * hl).toFixed(1)} ${(-5.6 * hl).toFixed(1)} l3 2.2 M2.4 -10.6 l${(1 * hl).toFixed(1)} ${(-4.6 * hl).toFixed(1)} l2.6 2.6" fill="@cuir" stroke="@corpsO" stroke-width="0.5"/>`
       : '';
-    return `<g>${horns}<path d="M-6.5 -5 Q-6.5 -12 0 -12 Q6.5 -12 6.5 -5 Q6.5 1 4.5 3.5 L-4.5 3.5 Q-6.5 1 -6.5 -5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
-      `<path d="M-0.8 -11 l0 -4.5 l3 2.6 M2 -9.5 l1.2 -4 l2.4 3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/></g>`;
+    return `<g><path d="M-6.5 -5 Q-6.5 -12 0 -12 Q6.5 -12 6.5 -5 Q6.5 1 4.5 3.5 L-4.5 3.5 Q-6.5 1 -6.5 -5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>${spikes}</g>`;
   }
   if (view === 'front') {
-    const horns = hl > 0 // croissants : sortent en dehors puis remontent en crochet (pas des oreilles droites)
-      ? `<path d="M-4 -9.5 Q${-11 - 6 * hl} ${-9 - 2 * hl} ${-11 - 7 * hl} ${-17 - 6 * hl} q-0.4 -3.2 2.4 -1.2 Q${-6 - 5 * hl} ${-12 - 3 * hl} -1.5 -11.5 Z M4 -9.5 Q${11 + 6 * hl} ${-9 - 2 * hl} ${11 + 7 * hl} ${-17 - 6 * hl} q0.4 -3.2 -2.4 -1.2 Q${6 + 5 * hl} ${-12 - 3 * hl} 1.5 -11.5 Z" fill="@cuir" stroke="@corpsO" stroke-width="0.6"/>`
-      : '';
     const skull = `<path d="M-7 -6 Q-7 -13 0 -13 Q7 -13 7 -6 Q7 0 4.5 2.5 L-4.5 2.5 Q-7 0 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>`;
-    const crest = `<path d="M-1.2 -12.6 l0 -4.6 l3 2.6 M2.4 -11.8 l1.2 -4.2 l2.6 3.4" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
-    const eyes = `<ellipse cx="-3.5" cy="-6.5" rx="1.9" ry="2.2" fill="#e8c53a"/><ellipse cx="-3.5" cy="-6.3" rx="0.6" ry="1.7" fill="#0a0603"/>` +
-      `<ellipse cx="3.5" cy="-6.5" rx="1.9" ry="2.2" fill="#e8c53a"/><ellipse cx="3.5" cy="-6.3" rx="0.6" ry="1.7" fill="#0a0603"/>` +
+    // crête d'épines osseuses vue de face : éventail serré de pointes sur le sommet du crâne
+    const spikes = hl > 0
+      ? `<path d="M-5 -10.6 l${(-2 * hl).toFixed(1)} ${(-4.4 * hl).toFixed(1)} l3.6 1.4 M-1.6 -12.4 l${(-0.4 * hl).toFixed(1)} ${(-5.6 * hl).toFixed(1)} l3.2 2 M2 -12 l${(0.8 * hl).toFixed(1)} ${(-4.8 * hl).toFixed(1)} l2.8 2.4" fill="@cuir" stroke="@corpsO" stroke-width="0.5"/>`
+      : '';
+    const eyes = `<ellipse cx="-3.5" cy="-6.5" rx="1.6" ry="1.9" fill="${EYE}"/><ellipse cx="-3.5" cy="-6.3" rx="0.55" ry="1.5" fill="#0a0603"/>` +
+      `<ellipse cx="3.5" cy="-6.5" rx="1.6" ry="1.9" fill="${EYE}"/><ellipse cx="3.5" cy="-6.3" rx="0.55" ry="1.5" fill="#0a0603"/>` +
       `<path d="M-5.8 -8.6 Q-3.5 -10 -1.2 -8.4 M1.2 -8.4 Q3.5 -10 5.8 -8.6" stroke="@corpsO" stroke-width="0.9" fill="none"/>`;
     const maw = `<path d="M-5 0.6 Q0 -1 5 0.6 Q5.4 7.6 0 9.5 Q-5.4 7.6 -5 0.6 Z" fill="${MAW}"/>` +
       `<path d="M-4.4 0.8 l0.8 3.2 l1.1 -3 M-1.9 0.2 l0.8 3.4 l1.1 -3.2 M0.6 0.3 l0.8 3.3 l1.1 -3.1 M3 0.9 l0.8 2.9 l1 -2.7" fill="${TEETH}"/>`;
-    return `<g>${horns}${skull}${crest}${eyes}${maw}</g>`;
+    return `<g>${skull}${spikes}${eyes}${maw}</g>`;
   }
-  // PROFIL : longue gueule de prédateur, arcade marquée, corne(s) recourbée(s) vers l'arrière
+  // PROFIL : longue gueule de prédateur, arcade marquée, crête d'épines osseuses sur le crâne
   const mz = muzzleLen(p);
-  const hornFar = hl > 0
-    ? `<path d="M-6 -8.5 Q${-11 - 8 * hl} ${-11 - 8 * hl} ${-9 - 14 * hl} ${-3 - 4 * hl} q0 2.8 2.2 0.8 Q${-4 - 8 * hl} ${-8 - 5 * hl} -3.5 -9.5 Z" fill="@cuir" opacity="0.75" stroke="@corpsO" stroke-width="0.5"/>`
-    : '';
-  const hornNear = hl > 0
-    ? `<path d="M-3 -10 Q${-8 - 9 * hl} ${-13 - 9 * hl} ${-5 - 16 * hl} ${-5 - 5 * hl} q0.4 3 2.4 0.6 Q${-1 - 9 * hl} ${-10 - 6 * hl} 0.5 -10.8 Z" fill="@cuir" stroke="@corpsO" stroke-width="0.6"/>`
-    : '';
   const skull = `<path d="M-9 2 Q-11 -6 -5 -10.5 Q1 -13.5 6 -10.5 Q10 -8.5 ${(mz * 0.55).toFixed(1)} -7 Q${mz} -4.5 ${mz + 1} -1 Q${mz} 1.6 ${mz - 2} 1.6 L-6 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>`;
+  // épines multiples courant de l'arrière du crâne à l'arcade, penchées vers l'arrière (artwork ZI 80)
+  const spikes = hl > 0
+    ? `<path d="M-7.5 -6.5 l${(-3 * hl).toFixed(1)} ${(-4.6 * hl).toFixed(1)} l5 1.6 M-3.8 -9.6 l${(-1.8 * hl).toFixed(1)} ${(-5.6 * hl).toFixed(1)} l4.6 2 M0.4 -11.2 l${(-0.6 * hl).toFixed(1)} ${(-6 * hl).toFixed(1)} l4.2 2.6 M4.4 -10.6 l${(0.6 * hl).toFixed(1)} ${(-5 * hl).toFixed(1)} l3.6 3" fill="@cuir" stroke="@corpsO" stroke-width="0.5"/>`
+    : '';
   const brow = `<path d="M-5 -8.6 Q-0.5 -10.2 3.5 -8.2" stroke="@corpsO" stroke-width="1.1" fill="none"/>`;
-  const eye = `<ellipse cx="-0.5" cy="-6.2" rx="2" ry="2.3" fill="#e8c53a"/><ellipse cx="0" cy="-6" rx="0.65" ry="1.8" fill="#0a0603"/>`;
+  const eye = `<ellipse cx="-0.5" cy="-6.2" rx="1.7" ry="2" fill="${EYE}"/><ellipse cx="0" cy="-6" rx="0.6" ry="1.6" fill="#0a0603"/>`;
   const nostril = `<circle cx="${(mz - 2.5).toFixed(1)}" cy="-2.8" r="0.8" fill="@corpsO"/>`;
-  const crest = `<path d="M-7.5 -7.5 l-3 -5.5 l5.5 1.6" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
   const teeth = teethRow(2, mz - 1.5, 1.4, 4.4, false);
-  return `<g>${hornFar}${skull}${crest}${brow}${eye}${nostril}${teeth}${hornNear}</g>`;
+  return `<g>${skull}${spikes}${brow}${eye}${nostril}${teeth}</g>`;
 }
 
 function jaw(p: TheropodProps, view: View): string {
+  if (p.beak) return beakJaw(p, view);
   if (view === 'back') return '';
   if (view === 'front') {
     return `<g><path d="M-5 0 Q0 -1.2 5 0 Q5.6 6.4 0 8 Q-5.6 6.4 -5 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
@@ -183,6 +269,25 @@ function jaw(p: TheropodProps, view: View): string {
   const tongue = `<path d="M2.5 3 Q${(mz * 0.38).toFixed(1)} 3.6 ${(mz * 0.52).toFixed(1)} 5.2 Q${(mz * 0.32).toFixed(1)} 6.6 3 5.6 Z" fill="${TONGUE}"/>`;
   const teeth = teethRow(1.5, mz * 0.74, 1.6, 3.6, true);
   return `<g>${bone}${tongue}${teeth}</g>`;
+}
+
+/** GRANDE aile MEMBRANEUSE de dragon déployée (mode `wings`) : bras porteur, 4 doigts rayonnants,
+ *  membrane festonnée, griffe au poignet — l'éventail dressé de l'artwork Cockatrice. */
+function wing(p: TheropodProps, far: boolean, view: View): string {
+  const w = (p.wings ?? 0) * (far ? 0.88 : 1); // aile lointaine légèrement réduite (perspective)
+  if (w <= 0) return '';
+  const op = far ? 0.7 : 0.95;
+  const sx = view === 'profile' ? -1 : far ? -1 : 1;
+  const tilt = view === 'profile' ? (far ? 12 : -2) : -10;
+  const mem = p.stored.aile ? '@aile' : '@cheveux'; // famille @aile si la def la fournit
+  const memO = p.stored.aile ? '@aileO' : '@cheveuxO';
+  return `<g opacity="${op}" transform="scale(${(sx * w).toFixed(2)},${w.toFixed(2)}) rotate(${tilt})">` +
+    `<path d="M2 2 C8 -8 15 -22 22 -28 L46 -35 Q42 -25 48 -17 Q38 -12 42 -3 Q31 -1 31 6 Q18 7 2 2 Z" fill="${mem}" stroke="${memO}" stroke-width="0.7"/>` +
+    `<path d="M22 -28 L46 -35 M22 -28 L48 -17 M22 -28 L42 -3 M22 -28 L31 6" stroke="${memO}" stroke-width="0.8" fill="none" opacity="0.8"/>` + // doigts
+    `<path d="M2 2 Q8 -8 12 -15 Q17 -24 22 -28" stroke="@corps" stroke-width="2.8" fill="none" stroke-linecap="round"/>` + // bras porteur
+    `<path d="M2 2 Q8 -8 12 -15 Q17 -24 22 -28" stroke="@corpsO" stroke-width="0.9" fill="none" opacity="0.6"/>` +
+    `<path d="M22 -28 Q21 -31.5 23.5 -33.5 L25.5 -30.5 Z" fill="@cuir" stroke="#1a140e" stroke-width="0.4"/>` + // griffe de poignet
+    `</g>`;
 }
 
 function arm(view: View, far: boolean): string {
@@ -224,26 +329,26 @@ export const THEROPOD_REST: Record<string, number> = {};
 /** Respiration : balancement de queue, dodelinement du cou, gueule qui s'entrouvre. phase ∈ [0,1). */
 export function theroBreathe(phase: number): Record<string, number> {
   const s = Math.sin(phase * Math.PI * 2);
-  return { queue: s * 4, cou: s * 2, tete: -s * 1.5, machoire: (s + 1) * 2, brasD: s * 2, brasG: -s * 2 };
+  return { queue: s * 4, cou: s * 2, tete: -s * 1.5, machoire: (s + 1) * 2, brasD: s * 2, brasG: -s * 2, aileD: -s * 5, aileG: s * 5 };
 }
 /** Foulée bipède : pattes en opposition, torse qui tangue, queue-balancier en contre. phase ∈ [0,1). */
 export function theroStride(phase: number): Record<string, number> {
   const s = Math.sin(phase * Math.PI * 2);
-  return { jambeD: s * 16, jambeG: -s * 16, corps: Math.sin(phase * Math.PI * 4) * 2.5, queue: -s * 6, cou: -s * 2.5, brasD: -s * 5, brasG: s * 5 };
+  return { jambeD: s * 16, jambeG: -s * 16, corps: Math.sin(phase * Math.PI * 4) * 2.5, queue: -s * 6, cou: -s * 2.5, brasD: -s * 5, brasG: s * 5, aileD: -s * 8, aileG: s * 8 };
 }
 /** Bond (trait) : ramassé puis détente, pattes repliées, queue tendue. phase ∈ [0,1). */
 export function theroPounce(phase: number): Record<string, number> {
   const k = (Math.sin(phase * Math.PI * 2) + 1) / 2;
-  return { corps: -4 - 5 * k, jambeD: 20 * k, jambeG: 20 * k, queue: -10 * k, cou: 5 * k };
+  return { corps: -4 - 5 * k, jambeD: 20 * k, jambeG: 20 * k, queue: -10 * k, cou: 5 * k, aileD: -25 * k, aileG: 25 * k };
 }
 /** Morsure : le corps plonge, le cou se détend, la gueule s'ouvre en grand. phase ∈ [0,1]. */
 export function theroBite(phase: number): Record<string, number> {
   const k = Math.sin(Math.min(1, phase) * Math.PI);
-  return { corps: k * 5, cou: k * 15, tete: k * 9, machoire: k * 30, brasD: -k * 10, brasG: -k * 10, queue: -k * 8 };
+  return { corps: k * 5, cou: k * 15, tete: k * 9, machoire: k * 30, brasD: -k * 10, brasG: -k * 10, queue: -k * 8, aileD: -k * 18, aileG: k * 18 };
 }
 /** Mort : effondrement en avant (torse basculé, cou tombé, gueule molle, pattes fauchées). */
 export const THEROPOD_DEATH: Record<string, number> = {
-  corps: 78, cou: 44, tete: 22, machoire: 16, jambeD: 26, jambeG: 12, brasD: 18, brasG: 8, queue: -22,
+  corps: 78, cou: 44, tete: 22, machoire: 16, jambeD: 26, jambeG: 12, brasD: 18, brasG: 8, queue: -22, aileD: 38, aileG: -38,
 };
 
 export function resolveTheropodFromProps(
@@ -256,8 +361,9 @@ export function resolveTheropodFromProps(
   const world = worldTransformsG(sk, pose) as Record<TheropodBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const art: Record<TheropodBoneId, string> = {
-    corps: body(p, view), queue: tail(view), cou: neck(view), tete: head(p, view), machoire: jaw(p, view),
+    corps: body(p, view), queue: tail(p, view), cou: neck(p, view), tete: head(p, view), machoire: jaw(p, view),
     brasG: arm(view, true), brasD: arm(view, false), jambeG: leg(p, view, true), jambeD: leg(p, view, false),
+    aileG: wing(p, true, view), aileD: wing(p, false, view),
   };
   return sortByZ((Object.keys(sk) as TheropodBoneId[])
     .filter((id) => art[id])
@@ -286,7 +392,7 @@ export const theropodPlan: BodyPlan = {
   leapPose: theroPounce,
   attackPose: theroBite,
   deathPose: () => THEROPOD_DEATH,
-  portraitBox: '52 26 60 60', // cadre la tête haute-avant (cou porté en avant + cornes)
+  portraitBox: '52 26 60 60', // cadre la tête haute-avant (cou porté en avant + crête d'épines)
   hasView: () => true,
 };
 

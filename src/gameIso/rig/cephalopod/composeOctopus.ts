@@ -1,7 +1,8 @@
 /**
  * Gabarit CÉPHALOPODE (pieuvre des tourbières — artwork LDB p.325). Masse charnue BASSE et
  * grumeleuse posée au sol (verrues, marbrures @cheveux), petit œil discret noyé dans les replis
- * (iris @cuir), HUIT tentacules EFFILÉS dressés en volutes au-dessus du corps — les bras avant
+ * (iris @cuir), forêt de tentacules FINS et sinueux dressés en volutes étagées bien au-dessus du
+ * corps (la plus haute frôle le haut du cadre 120×150) — les bras avant
  * s'enroulent devant le manteau ou rampent au sol. Anim propre au plan : ondulation des volutes
  * au repos, projection à l'attaque, affaissement à la mort. Réutilise la machinerie (FK, palette
  * tokenisée, rendu).
@@ -56,38 +57,44 @@ function volute(p0: Pt, c1: Pt, c2: Pt, p3: Pt, w: number, curl: Pt): string {
     `<path d="${axis}" fill="none" stroke="@corpsH" stroke-width="0.9" opacity="0.45" stroke-dasharray="0.9 2.4"/>`;
 }
 
-/** Volutes ARRIÈRE (5 bras) : dressées au-dessus du manteau, courbures alternées. */
+/** Volutes ARRIÈRE (6 bras) : forêt de volutes FINES et sinueuses (courbes en S), dressées
+ *  haut au-dessus du manteau — hauteurs étagées, la plus haute frôle le haut du cadre. */
 function tentaclesArriere(view: View): string {
   if (view === 'profile') {
-    // PROFIL : volutes de traîne côté dos (-x) + volutes hautes en crosse, l'avant vit dans `bras`
+    // PROFIL : traîne au sol côté dos (-x) + volutes hautes étagées en S, pointes en crosse
     return `<g>` +
-      volute([-8, -8], [-23, -26], [-23, -52], [-12, -58], 5.4, [-5, -64]) +
-      volute([-4, -10], [-13, -26], [-3, -38], [-11, -48], 4.6, [-17, -52]) +
-      volute([2, -10], [7, -36], [-3, -52], [7, -60], 5.2, [13, -54]) +
-      volute([-14, -2], [-26, -4], [-33, 0], [-38, 3], 4.6, [-41, -2]) +
+      volute([-18, -2], [-34, -4], [-46, -16], [-44, -34], 3.6, [-38, -42]) +
+      volute([-13, -6], [-38, -30], [-8, -60], [-30, -92], 4, [-40, -96]) +
+      volute([-6, -8], [-24, -36], [2, -58], [-14, -84], 3.8, [-22, -92]) +
+      volute([2, -8], [18, -44], [-14, -78], [6, -122], 4, [16, -126]) +
+      volute([8, -6], [28, -24], [6, -56], [24, -86], 3.8, [32, -90]) +
+      volute([14, -4], [36, -14], [44, -44], [32, -70], 3.6, [22, -78]) +
       `</g>`;
   }
   return `<g>` +
-    volute([-17, -8], [-31, -28], [-29, -58], [-18, -63], 5.4, [-11, -70]) +
-    volute([-8, -10], [-17, -30], [-6, -44], [-13, -56], 4.8, [-18, -62]) +
-    volute([2, -12], [7, -36], [-4, -54], [6, -62], 5, [13, -56]) +
-    volute([10, -10], [21, -26], [13, -42], [21, -52], 4.8, [27, -46]) +
-    volute([16, -8], [31, -24], [31, -54], [19, -60], 5.4, [12, -52]) +
+    volute([-18, -6], [-40, -28], [-12, -64], [-30, -96], 4, [-40, -102]) +
+    volute([-10, -8], [-28, -38], [0, -70], [-14, -104], 4, [-22, -112]) +
+    volute([-3, -10], [12, -46], [-16, -80], [0, -122], 4, [8, -128]) +
+    volute([4, -10], [22, -34], [-2, -70], [14, -100], 3.8, [24, -106]) +
+    volute([11, -8], [30, -28], [10, -60], [26, -88], 3.8, [36, -92]) +
+    volute([17, -6], [38, -20], [44, -52], [30, -78], 3.6, [22, -86]) +
     `</g>`;
 }
-/** Bras AVANT (3 bras) : s'enroulent devant le manteau, un bras rampe au sol. */
+/** Bras AVANT (3-4 bras) : s'enroulent devant le manteau, un bras rampe au sol. */
 function tentaclesAvant(view: View): string {
   if (view === 'profile') {
-    // PROFIL directionnel : un bras éclaireur rampe loin devant (+x), un bras se dresse en crosse
+    // PROFIL directionnel : un bras éclaireur rampe loin devant (+x), deux se dressent en crosse
     return `<g>` +
-      volute([12, 0], [24, 2], [34, 1], [42, -2], 5, [45, -7]) +
-      volute([13, -4], [27, -14], [33, -30], [25, -38], 5, [18, -44]) +
+      volute([12, 0], [28, 6], [40, -2], [48, -10], 3.4, [50, -18]) +
+      volute([14, -2], [28, -18], [18, -50], [30, -76], 3.6, [39, -80]) +
+      volute([2, -2], [14, -20], [0, -40], [12, -60], 3.2, [20, -62]) +
       `</g>`;
   }
   return `<g>` +
-    volute([-19, 0], [-28, -14], [-29, -34], [-20, -38], 5, [-13, -44]) +
-    volute([19, 0], [28, -12], [29, -32], [21, -36], 5, [14, -42]) +
-    volute([-13, 1], [-22, 2], [-30, 1], [-36, -2], 4.4, [-38, -7]) +
+    volute([-20, 0], [-30, -16], [-26, -44], [-34, -64], 3.8, [-40, -72]) +
+    volute([20, 0], [30, -14], [24, -44], [32, -66], 3.8, [38, -74]) +
+    volute([-13, 1], [-24, 3], [-34, 0], [-42, -4], 3.4, [-46, -10]) +
+    volute([13, 1], [24, 3], [34, 0], [42, -4], 3.4, [46, -10]) +
     `</g>`;
 }
 

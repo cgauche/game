@@ -62,8 +62,13 @@ describe('résolution espèce/id → plan (resolveSpecies / bodyPlanById)', () =
     expect(planOfSpecies('bete-des-marais')).toBe('amorphous');
   });
   it('bêtes du Chaos (jabberslythes nommés) → jabberslythe — bespoke ANIMÉ, plus de monolithique', () => {
-    for (const id of ['jabberslythe', 'slenderthigh-whiptongue', 'fr-hough-mournbreath']) {
-      expect(planOfSpecies(id), id).toBe('jabberslythe');
+    expect(planOfSpecies('jabberslythe')).toBe('jabberslythe');
+  });
+  it('princes démons humanoïdes (illustration LDB p.338) → biped + parts monstrueuses', () => {
+    // Fr'hough Mournbreath (LDB 336) rebâti en biped+monster (comme Slenderthigh Whiptongue) —
+    // plus de gabarit jabberslythe monolithique pour cette figure humanoïde bipède.
+    for (const id of ['slenderthigh-whiptongue', 'fr-hough-mournbreath']) {
+      expect(planOfSpecies(id), id).toBe('biped');
     }
   });
   it('engins de siège (baliste / canon) → engin (corps statique, pas un bipède)', () => {

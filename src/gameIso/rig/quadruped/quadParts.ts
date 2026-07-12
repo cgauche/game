@@ -156,8 +156,10 @@ function barrel(p: QuadProps): string {
       path = `M${X(30)} -12 Q${X(34)} -4 ${X(33)} 6 Q${X(30)} 17 ${X(20)} 20 Q${X(2)} 24 ${X(-16)} 21 Q${X(-34)} 22 ${X(-42)} 14 Q${X(-48)} 6 ${X(-46)} -4 Q${X(-44)} -14 ${X(-34)} -18 Q${X(-20)} -22 ${X(-6)} -24 Q${X(6)} -28 ${X(16)} -24 Q${X(26)} -20 ${X(30)} -12 Z`;
       hi = `<path d="M${X(-16)} -21 Q${X(2)} -27 ${X(16)} -23 L${X(15)} -18 Q${X(2)} -22 ${X(-15)} -16 Z" fill="@corpsH" opacity="0.55"/>`;
       lo = `<path d="M${X(-42)} 12 Q${X(-8)} 22 ${X(24)} 14 L${X(26)} 8 Q${X(-6)} 18 ${X(-41)} 6 Z" fill="@corpsO" opacity="0.85"/>`;
-      if (p.head === 'ours') // pelage DENSE et HÉRISSÉ + balafres de griffes à l'épaule (artwork LDB p.317)
-        hi += `<path d="M${X(-32)} -16 l-1.4 -4 M${X(-24)} -19 l-1 -4 M${X(-16)} -21 l-0.7 -4 M${X(-8)} -23 l-0.3 -4 M${X(0)} -25 l0.2 -4 M${X(8)} -25 l0.7 -4 M${X(16)} -23 l1 -3.6 M${X(24)} -20 l1.3 -3.4" stroke="@cheveux" stroke-width="1.2" stroke-linecap="round" opacity="0.8"/>` + // poils dressés le long du dos
+      if (p.head === 'ours') // bosse d'épaule saillante + pelage en touffes COUCHÉES (pas de piquants
+        // dressés — ils lisaient « échine à pics ») + balafres de griffes à l'épaule (artwork LDB p.317)
+        hi += `<path d="M${X(-2)} -25 Q${X(6)} -29.5 ${X(14)} -26.5 Q${X(20)} -24 ${X(22)} -20 Q${X(15)} -23.5 ${X(6)} -24 Q${X(0)} -24.5 ${X(-4)} -23 Z" fill="@corpsH" opacity="0.5"/>` + // bosse dorsale d'épaule
+          `<path d="M${X(-30)} -16.5 q-3 0.6 -4.6 2.4 M${X(-22)} -19 q-3 0.4 -4.8 2 M${X(-14)} -20.5 q-3 0.3 -5 1.8 M${X(-6)} -22.5 q-3 0.2 -5 1.6 M${X(2)} -25.5 q-3 0.2 -5.2 1.4 M${X(10)} -25 q-3.2 0 -5.4 1.2 M${X(18)} -23 q-3 -0.2 -5.2 1" stroke="@corpsO" stroke-width="0.9" fill="none" opacity="0.5" stroke-linecap="round"/>` + // touffes couchées le long du dos
           `<path d="M${X(-38)} 6 l-2.2 2.6 M${X(-30)} 12 l-1.8 3 M${X(-20)} 16 l-1.2 3.2 M${X(-8)} 19 l-0.8 3.4 M${X(4)} 20 l-0.4 3.4 M${X(16)} 18 l0.2 3.2" stroke="@corpsO" stroke-width="1" stroke-linecap="round" opacity="0.55"/>` + // franges du ventre
           `<path d="M${X(-14)} -10 q3 5 2.4 11 M${X(-4)} -12 q3 5 2.4 11 M${X(6)} -13 q2.8 5 2.2 10 M${X(15)} -11 q2.6 4.6 2 9" stroke="@corpsO" stroke-width="0.8" fill="none" opacity="0.35"/>` + // mèches de flanc
           `<path d="M${X(2)} -18 l7 9 M${X(7)} -19 l7 9 M${X(13)} -18 l6 8" stroke="#6e3226" stroke-width="1.1" stroke-linecap="round" opacity="0.8"/>`; // balafres de griffes
@@ -168,6 +170,11 @@ function barrel(p: QuadProps): string {
       path = `M${X(30)} 2 Q${X(33)} -8 ${X(31)} -12 Q${X(28)} -17 ${X(22)} -17 Q${X(4)} -16 ${X(-12)} -14 Q${X(-30)} -12 ${X(-40)} -7 Q${X(-45)} -2 ${X(-43)} 3 Q${X(-40)} 6 ${X(-33)} 6 Q${X(-24)} 6 ${X(-18)} 3 Q${X(-8)} 7 ${X(4)} 11 Q${X(16)} 14 ${X(25)} 13 Q${X(31)} 8 ${X(30)} 2 Z`;
       hi = `<path d="M${X(-28)} -13 Q${X(-4)} -16 ${X(18)} -16 L${X(17)} -12 Q${X(-4)} -13 ${X(-27)} -9 Z" fill="@corpsH" opacity="0.5"/>`;
       lo = `<path d="M${X(-33)} 5 Q${X(-22)} 5 ${X(-16)} 2.5 Q${X(-6)} 6 ${X(6)} 10 Q${X(18)} 13 ${X(24)} 11 L${X(22)} 7 Q${X(14)} 9 ${X(4)} 6 Q${X(-8)} 3 ${X(-18)} 0 Q${X(-26)} 1.5 ${X(-32)} 1 Z" fill="@corpsO" opacity="0.7"/>`;
+      if (p.head === 'loup-feroce') // pelage MÊLÉ du loup (artwork LDB p.317) : POITRAIL beige,
+        // bande claire du bas de flanc/ventre au-dessus de l'ombre, mèches sombres du dos
+        hi += `<path d="M${X(24)} -8 Q${X(30)} -4 ${X(30)} 3 Q${X(29)} 9 ${X(25)} 12 Q${X(22)} 9 ${X(22)} 2 Q${X(22)} -4 ${X(24)} -8 Z" fill="@corpsH" opacity="0.45"/>` +
+          `<path d="M${X(-16)} 1 Q${X(-6)} 4.5 ${X(4)} 8 Q${X(12)} 10.3 ${X(19)} 11 L${X(18)} 8.6 Q${X(10)} 7.6 ${X(2)} 5.2 Q${X(-8)} 2 ${X(-15)} -1 Z" fill="@corpsH" opacity="0.35"/>` +
+          `<path d="M${X(-24)} -9.5 q2.6 3.4 2 7.6 M${X(-14)} -11.5 q2.6 3.6 2 8 M${X(-4)} -13 q2.6 3.6 2 8 M${X(6)} -13.8 q2.4 3.4 1.8 7.6 M${X(15)} -14.5 q2.2 3.2 1.6 7" stroke="@corpsO" stroke-width="0.8" fill="none" opacity="0.4"/>`;
       break;
     case 'feline': // poitrail profond + TAILLE creusée + haunches arrière rondes et musclées
       path = `M${X(30)} -15 Q${X(34)} -8 ${X(33)} 0 Q${X(31)} 8 ${X(23)} 10 Q${X(10)} 11 ${X(0)} 8 Q${X(-12)} 5 ${X(-22)} 8 Q${X(-36)} 12 ${X(-43)} 6 Q${X(-48)} -1 ${X(-45)} -9 Q${X(-42)} -16 ${X(-32)} -17 Q${X(-16)} -19 ${X(-2)} -20 Q${X(12)} -23 ${X(23)} -20 Q${X(29)} -18 ${X(30)} -15 Z`;
@@ -245,6 +252,12 @@ function ridgeArt(p: QuadProps): string {
       `M${(x * bl).toFixed(1)} ${y} Q${(x * bl - 2).toFixed(1)} ${y - h * 0.7} ${(x * bl - 3.6).toFixed(1)} ${y - h} Q${(x * bl - 1).toFixed(1)} ${y - h * 0.4} ${(x * bl + 3).toFixed(1)} ${y} Z`;
     return `<g data-ridge="crete-hydre"><path d="${fl(-34, -9, 6)}${fl(-26, -12, 7)}${fl(-18, -14.5, 8)}${fl(-10, -16.5, 8.5)}${fl(-2, -17.5, 8)}${fl(6, -18, 7.5)}${fl(14, -17, 6.5)}" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/></g>`;
   }
+  if (p.head === 'dechiqueteur') { // haie de PIQUANTS noirs garrot→croupe (artwork ZI p.58 :
+    // dos hérissé de longues épines sombres — bien plus proéminentes que les 'epines' génériques)
+    const q = (x: number, y: number, h: number) =>
+      `M${(x * bl).toFixed(1)} ${y} Q${(x * bl - 1.6).toFixed(1)} ${(y - h * 0.7).toFixed(1)} ${(x * bl - 3.2).toFixed(1)} ${y - h} Q${(x * bl - 0.4).toFixed(1)} ${(y - h * 0.3).toFixed(1)} ${(x * bl + 2.4).toFixed(1)} ${y + 0.4} Z`;
+    return `<g data-ridge="piquants"><path d="${q(20, -18, 8)}${q(14, -19.5, 10)}${q(8, -20.5, 11)}${q(2, -21, 11.5)}${q(-4, -20.5, 11)}${q(-10, -19.5, 10)}${q(-16, -18, 9)}${q(-22, -16.5, 8)}${q(-28, -15, 6.5)}" fill="@corpsO" stroke="#14161c" stroke-width="0.45"/></g>`;
+  }
   if (r === 'epines')
     return `<g data-ridge="epines"><path d="M${-20 * bl} -14 l-1 -5 l3 4 M${-8 * bl} -19 l0 -6 l3 5 M${6 * bl} -21 l1 -6 l2 5 M${18 * bl} -18 l1 -5 l2 4" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/></g>`;
   if (r === 'epines-continues') { // rangée SERRÉE d'épines coniques (@cheveux) garrot→croupe sur voile
@@ -299,18 +312,56 @@ function hydraNeck(x1: number, y1: number, cx: number, cy: number, x2: number, y
     // bandes d'écailles en reflet métallique (rang proche seulement)
     (far ? '' : `<path d="${d}" fill="none" stroke="@corpsH" stroke-width="1.4" opacity="0.4" stroke-linecap="round" stroke-dasharray="1.6 2.8"/>`);
 }
+// --- Déchiqueteur de Cadavres : MÊME mécanisme de cluster que l'hydre, mais 5 têtes ROUGE VIF
+// sur cous gris-bleu (artwork ZI p.58 : têtes serpentines écarlates contrastées, dents
+// proéminentes, regard perçant clair, piquants sombres derrière chaque crâne). Repère local :
+// museau vers +x, comme hydraHeadlet. `far` = rang lointain (rouge sombre @cheveuxO).
+function shredderHeadlet(tx: number, ty: number, rot: number, s: number, far = false): string {
+  const c = far ? '@cheveuxO' : '@cheveux';
+  const o = far ? '#2a0c08' : '@cheveuxO';
+  const maw = far ? '#1c0d0b' : '#30110d';
+  return `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${s})">` +
+    `<path d="M-3.6 -2.6 q-2.4 -3.6 -5.6 -4.2 q2.2 2 3 4.2 q-2.8 -1.6 -5 -1.2 q2.4 1.5 3.4 3.1 Z" fill="@corpsO" stroke="#14161c" stroke-width="0.35"/>` + // piquants sombres de nuque
+    `<path d="M0 2.6 Q2.6 7.4 7 9.6 Q10.6 11 11.8 9.4 Q9.4 7.6 7 5.6 Q3.8 3.2 1.2 2.4 Z" fill="${c}" stroke="${o}" stroke-width="0.5"/>` + // mâchoire inférieure décrochée
+    `<path d="M0.8 2.8 Q5.4 4.6 10.6 8.2 Q12.4 4.4 13.2 0.6 Q7.4 2.4 0.8 2.8 Z" fill="${maw}"/>` + // gueule béante
+    `<path d="M-4.6 -2.4 Q-6 1 -2.6 2.6 Q2 3.6 7.6 2.4 Q11.8 1.4 13.8 -0.8 Q14.6 -1.8 13.2 -2.6 Q8 -3.8 3 -3.4 Q-1.6 -3.4 -4.6 -2.4 Z" fill="${c}" stroke="${o}" stroke-width="0.55"/>` + // crâne + long museau
+    `<path d="M4.2 2.9 l0.6 2.5 l1.3 -2.1 M7.4 2.3 l0.6 2.4 l1.2 -2.1 M10.6 1.3 l0.5 2.1 l1 -1.9 M3.9 4.6 l-0.3 -2 M6.6 6.2 l0.4 -2.3 M9.2 7.7 l0.6 -2.1" stroke="#e9e2cd" stroke-width="0.65" fill="none"/>` + // dents PROÉMINENTES
+    `<ellipse cx="1.6" cy="-1" rx="1.25" ry="1.45" fill="#cfd4da"/><ellipse cx="1.6" cy="-1" rx="0.4" ry="1.3" fill="#0a0603"/>` + // œil perçant gris pâle fendu
+    `<path d="M-0.4 -2.4 Q1.8 -3.2 3.8 -2.2" stroke="${o}" stroke-width="0.7" fill="none"/>` +
+    `</g>`;
+}
 // --- Chimère : MÊME mécanisme de cluster que l'hydre, mais 3 têtes DISTINCTES (ZI 66 :
-// « l'une est léonine, une autre est celle d'un grand rapace et la troisième celle d'un dragon »
-// — la tête draconique réutilise hydraHeadlet). Repère local : museau vers +x, comme hydraHeadlet.
-// Tête LÉONINE : crinière hérissée en couronne + gueule ouverte à grands crocs (artwork ZI p.66).
+// « l'une est léonine, une autre est celle d'un grand rapace et la troisième celle d'un dragon »).
+// Repère local : museau vers +x, comme hydraHeadlet.
+// Tête LÉONINE : crinière RAYONNANTE en couronne (le tell félin, cf. face 'felin'), crâne rond,
+// museau COURT à gueule ouverte et crocs de sabre (artwork ZI p.66 : mufle de lion, pas de loup).
 function lionHeadlet(tx: number, ty: number, rot: number, s: number): string {
   return `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${s})">` +
-    `<path d="M-2 -8 l-3.4 -3.6 l0.4 4.2 l-4.4 -2 l1.8 3.8 l-4.6 0.4 l2.8 3.2 l-3.8 2 l3.8 1.8 l-2.4 3.2 l4.2 0 l-1 4 l4 -2.2 l0.8 3.8 l3.2 -3 l2.2 2.6 l1.4 -3.8 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` +
-    `<path d="M-5 -4 Q-7 2 -2 4.5 Q2 6 7 5 Q10.5 4.2 11 1.5 Q7 0.5 3 -0.5 Q-1 -2 -2 -5 Q-3.5 -6.5 -5 -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
-    `<path d="M2 4.4 Q5 8.6 10 8 Q11.6 7 10.6 5.4 Q6.5 6 4 4.4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` + // mâchoire ouverte
-    `<path d="M8.4 4.4 l0.7 3.8 l1.2 -3.3 Z M5.4 4.8 l0.5 2.8 l1.1 -2.4 Z" fill="#e8e0c8" stroke="#8a8060" stroke-width="0.3"/>` + // crocs de sabre
-    `<ellipse cx="10.3" cy="1.9" rx="1" ry="0.9" fill="#1a0f08"/>` + // truffe
-    `<ellipse cx="1.6" cy="-1.2" rx="1.3" ry="1.5" fill="#d8a020"/><circle cx="1.7" cy="-1.2" r="0.55" fill="#0a0603"/></g>`;
+    `<path d="M-1 -11 L-3.6 -8.2 L-7.6 -10 L-7 -6.2 L-11.4 -6.6 L-8.8 -3.4 L-12.6 -1.4 L-8.6 0.6 L-11 4 L-6.8 3.6 L-7.6 7.8 L-3.8 5.6 L-3.4 10 L-0.2 6.6 L2.6 10 L3.6 5.8 L7.6 7.4 L6 3.4 L9.6 2.4 L6.4 -0.2 L9.2 -3.2 L5.2 -3.6 L6.4 -7.6 L2.6 -5.8 L1.8 -9.8 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` + // crinière rayonnante
+    `<circle cx="-1.2" cy="-0.6" r="6.6" fill="@cheveuxO" opacity="0.3"/>` +
+    `<path d="M-4.2 -4.2 Q-6.6 -0.6 -4.6 2.4 Q-2.4 4.8 1.4 4.9 Q5 5 7.4 3.4 Q9.6 2 9.8 0 Q9.9 -1.8 7.6 -3 Q2.2 -5.5 -4.2 -4.2 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` + // crâne rond + museau court
+    `<path d="M4 -1 Q7.4 -1.8 9.5 -0.4 Q9.4 1.8 7.2 3.2 Q4.8 2.4 4 -1 Z" fill="@corpsH" opacity="0.5"/>` + // mufle clair
+    `<path d="M3.2 4.4 Q5.2 8 9 8.6 Q10.8 8.2 10.2 6.6 Q7 6.2 5 4.4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` + // mâchoire tombée
+    `<path d="M4.6 4.6 Q7 5.6 9.6 6.4 Q9.9 4.8 9.8 3.2 Q7 4.2 4.6 4.6 Z" fill="#5c0f0c"/>` + // gueule
+    `<path d="M6 4.4 l0.5 3.2 l1.1 -2.7 Z M8.6 3.4 l0.5 2.6 l1 -2.2 Z" fill="#e8e0c8" stroke="#8a8060" stroke-width="0.3"/>` + // crocs de sabre
+    `<path d="M9.1 1.2 l1.5 0.8 l-1.3 1 Z" fill="#1a0f08"/>` + // truffe
+    `<path d="M-0.6 -3.2 Q1.6 -4 3.8 -2.8" stroke="@corpsO" stroke-width="0.8" fill="none"/>` + // sourcil
+    `<ellipse cx="1.6" cy="-1.4" rx="1.3" ry="1.4" fill="#d8a020"/><circle cx="1.8" cy="-1.4" r="0.55" fill="#0a0603"/></g>`;
+}
+// Tête de DRAGON-crocodile : long museau bas bardé de dents débordantes, cornes balayées en
+// arrière, œil fendu doré — distincte de la gueule de loup d'hydraHeadlet (artwork ZI p.66).
+function dragonHeadlet(tx: number, ty: number, rot: number, s: number): string {
+  return `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${s})">` +
+    `<path d="M-2.6 -3 Q-7.4 -6.4 -10.6 -6 Q-7.4 -4 -5.4 -1.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` + // corne basse
+    `<path d="M-0.6 -3.8 Q-4.6 -8.2 -8 -8.6 Q-5.2 -5.8 -3.2 -2.8 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` + // corne haute
+    `<path d="M1 2.8 Q4.6 5.8 9.6 6.6 Q12.6 6.6 13.2 5.2 Q9.4 4.6 5.6 3.2 Q3 2.4 1 2.8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` + // mâchoire inférieure
+    `<path d="M1.6 2.9 Q7 4.6 12.6 5 Q13.6 3.4 14 1.4 Q7.6 2.6 1.6 2.9 Z" fill="#6e1410"/>` + // gueule entrouverte
+    `<path d="M-4.6 -3 Q-6.4 0.4 -3.6 2.2 Q0.6 3.6 6 3.2 Q11 2.8 14.4 1 Q15.6 0.2 14.6 -1 Q10 -2.6 5 -2.8 Q-0.6 -3.4 -4.6 -3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.55"/>` + // crâne bas + LONG museau
+    `<path d="M4 3 l0.4 1.8 l1 -1.5 M7.2 3.2 l0.4 1.7 l0.9 -1.4 M10 2.8 l0.4 1.6 l0.9 -1.4 M12.4 2.2 l0.3 1.5 l0.8 -1.3 M5.6 4.9 l-0.2 -1.5 M8.6 5.6 l0.2 -1.7" stroke="#e8e0c8" stroke-width="0.45" fill="none"/>` + // dents débordantes
+    `<path d="M-1 -2.6 Q6 -2.4 13 -0.8" stroke="@corpsO" stroke-width="0.7" fill="none" opacity="0.7"/>` + // arête écailleuse du museau
+    `<ellipse cx="13" cy="-0.2" rx="0.5" ry="0.35" fill="#1a0e08"/>` + // naseau
+    `<ellipse cx="0.8" cy="-1" rx="1.2" ry="1.4" fill="#d8b020"/><ellipse cx="0.8" cy="-1" rx="0.4" ry="1.25" fill="#0a0603"/>` + // œil fendu
+    `<path d="M-1.4 -2.6 Q0.8 -3.4 3 -2.4" stroke="@corpsO" stroke-width="0.7" fill="none"/></g>`;
 }
 // Tête de RAPACE : bec crochu jaune + œil féroce sous sourcil saillant + plumes de nuque.
 function raptorHeadlet(tx: number, ty: number, rot: number, s: number): string {
@@ -326,12 +377,27 @@ function neck(p: QuadProps): string {
   if (p.head === 'chimere') { // 3 cous en éventail : dragon (arrière, dressé), lion (centre, dominant), rapace (avant)
     const L = 30 * p.neckLen;
     return `<g>` +
-      hydraNeck(-3, 2, -13, -L * 0.62, -17, -L * 0.98) +
-      hydraNeck(3, 2, 13, -L * 0.48, 20, -L * 0.74) +
-      hydraNeck(0, 2, 3, -L * 0.7, 5, -L * 1.1) +
-      hydraHeadlet(-17, -L * 0.98, -24, 1.0) +
-      raptorHeadlet(20, -L * 0.74, 18, 1.05) +
-      lionHeadlet(5, -L * 1.1, -4, 1.18) + `</g>`;
+      hydraNeck(-3, 2, -14, -L * 0.6, -19, -L * 1.04) +
+      hydraNeck(3, 2, 10, -L * 0.52, 14, -L * 0.88) +
+      hydraNeck(0, 2, 1, -L * 0.72, 1, -L * 1.18) +
+      dragonHeadlet(-19, -L * 1.04, -28, 1.0) +
+      raptorHeadlet(14, -L * 0.88, -6, 0.95) +
+      lionHeadlet(1, -L * 1.18, -8, 1.12) + `</g>`;
+  }
+  if (p.head === 'dechiqueteur') { // 5 cous serpentins étagés (artwork ZI p.58) : 2 têtes au rang
+    // LOINTAIN (rouge sombre) + 3 au rang PROCHE (rouge vif) — entrelacs dressé au-dessus du garrot
+    const L = 30 * p.neckLen;
+    return `<g>` +
+      hydraNeck(-3, 2, -15, -L * 0.55, -20, -L * 0.95, true) +
+      hydraNeck(1, 2, 9, -L * 0.6, 13, -L * 1.05, true) +
+      shredderHeadlet(-20, -L * 0.95, -30, 0.9, true) +
+      shredderHeadlet(13, -L * 1.05, 8, 0.92, true) +
+      hydraNeck(-4, 3, -12, -L * 0.4, -15, -L * 0.62) +
+      hydraNeck(0, 3, 2, -L * 0.55, 4, -L * 0.9) +
+      hydraNeck(4, 3, 13, -L * 0.36, 20, -L * 0.58) +
+      shredderHeadlet(-15, -L * 0.62, -26, 1.02) +
+      shredderHeadlet(4, -L * 0.9, -4, 1.1) +
+      shredderHeadlet(20, -L * 0.58, 24, 1.0) + `</g>`;
   }
   if (p.head === 'hydre') { // 6 cous serpentins étagés (artwork LDB p.323) : rang LOINTAIN sombre
     // derrière (3 têtes hautes) + rang PROCHE devant (3 têtes basses) → entrelacs, pas un éventail plat
@@ -411,7 +477,7 @@ function headgear(p: QuadProps, view: 'front' | 'profile' | 'back'): string {
   return beam(-1, true) + beam(1, true); // ramure symétrique (face/dos)
 }
 function headProfile(p: QuadProps): string {
-  if (p.head === 'hydre' || p.head === 'chimere') return ''; // têtes dessinées dans l'os encolure (cluster)
+  if (p.head === 'hydre' || p.head === 'chimere' || p.head === 'dechiqueteur') return ''; // têtes dessinées dans l'os encolure (cluster)
   const eye = `<g data-eye="D" data-ec="6 2"><ellipse cx="6" cy="2" rx="1.6" ry="1.9" fill="#15100a"/><circle cx="6.4" cy="1.4" r="0.6" fill="#fff" opacity="0.7"/></g>`;
   if (p.head === 'aigle') // tête emplumée + bec crochu jaune + œil féroce + sourcil saillant
     return `<g transform="rotate(5)"><path d="M-7 -6 Q-9 6 -2 10 Q4 13 11 11 Q15 9 14 4 Q9 4 4 2 Q-1 0 -2 -6 Q-3 -9 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
@@ -459,6 +525,28 @@ function headProfile(p: QuadProps): string {
       `<circle cx="7" cy="2" r="0.9" fill="@corpsO"/><circle cx="12" cy="4" r="0.8" fill="@corpsO"/><circle cx="4" cy="5" r="0.7" fill="@corpsO"/></g>`;
   if (p.head === 'cheval')
     return `<g transform="rotate(8)"><path d="M-7 -6 Q-9 6 -3 12 Q4 20 12 22 Q18 22 19 17 Q18 12 12 10 Q4 6 2 -4 Q0 -9 -7 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M12 10 Q18 12 19 17 Q18 20 14 20 Q10 18 11 12 Z" fill="@corpsO"/><ellipse cx="16" cy="17" rx="2" ry="1.5" fill="#1a0f08"/>${earProfile(p, -5, -1)}${earProfile(p, 0, 1)}<path d="M-6 -4 Q-2 -7 1 -3" fill="none" stroke="@cheveux" stroke-width="2" opacity="0.8"/>${eye}</g>`;
+  if (p.head === 'loup-feroce') // tête de LOUP GRONDANT (artwork LDB p.317) : même crâne bombé/museau
+    // cunéiforme que 'loup', mais gueule GRANDE OUVERTE — babines retroussées plissées, rangées de
+    // crocs haut+bas, mâchoire inférieure décrochée, œil ambre froncé. Tête DÉDIÉE au Loup (les
+    // félins qui empruntent 'loup' gardent leur gueule fermée).
+    return `<g transform="rotate(4)">` +
+      // crâne + museau : la LÈVRE SUP s'arrête haut (y≈3.4), retroussée sur les crocs
+      `<path d="M-8 -3 Q-9 -8.5 -2.5 -8 Q1.5 -7.6 3 -3.8 Q5.5 -2.6 9.5 -1.8 Q13.2 -1 14.2 1.2 Q14.4 3.2 12.2 3.6 Q9.6 3.8 7.6 3.3 Q6 3.9 4.6 3.4 L3.4 5.8 Q-0.5 8.8 -4.5 7.4 Q-9.2 5.2 -8 -3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M3 -3.4 Q8.5 -2.4 12.6 0.4" fill="none" stroke="@corpsH" stroke-width="1.5" opacity="0.5"/>` + // chanfrein clair
+      `<path d="M-7 -4 Q-3 -1 -5.5 6" fill="none" stroke="@corpsH" stroke-width="1.6" opacity="0.4"/>` + // bajoue claire
+      `<path d="M5.4 0 q2 -1 4 -0.6 M5 1.8 q2.4 -1 4.8 -0.5" stroke="@corpsO" stroke-width="0.6" fill="none" opacity="0.75"/>` + // plis de rage (babine retroussée)
+      `<ellipse cx="13.4" cy="1.4" rx="1.6" ry="1.3" fill="#120a06"/>` + // truffe
+      // gueule BÉANTE rouge sombre + langue, entre les deux mâchoires
+      `<path d="M4.4 3.6 Q8.5 4 12.4 3.8 Q11 8.6 7.6 10.4 Q4.6 10.4 3.4 7.6 Z" fill="#6e1410"/>` +
+      `<path d="M4.6 7.6 Q7 9.2 9.6 8.4" stroke="#b03a3a" stroke-width="1.2" fill="none" stroke-linecap="round"/>` + // langue
+      // mâchoire inférieure DÉCROCHÉE vers l'avant-bas, soudée à la bajoue
+      `<path d="M-1.6 6.4 Q0.4 11.2 5 12.8 Q9.4 14 11.6 12.4 Q8.6 11.6 6.4 10.2 Q3 8.2 1.6 4.8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      // crocs : rangée SUP pendante (4, canines longues) + rangée INF dressée (3)
+      `<path d="M5.2 3.5 l0.7 2.9 l1.1 -2.6 Z M7.9 3.7 l0.8 3.2 l1.2 -2.9 Z M10.6 3.8 l0.6 2.7 l1 -2.4 Z M12.7 3.6 l0.5 2.2 l0.9 -2 Z" fill="#e8e0c8" stroke="#8a8060" stroke-width="0.3"/>` +
+      `<path d="M4.4 9.6 l0.3 -2.6 l1.3 2.2 Z M6.9 10.9 l0.3 -2.7 l1.4 2.3 Z M9.4 11.7 l0.3 -2.4 l1.3 2.1 Z" fill="#e8e0c8" stroke="#8a8060" stroke-width="0.3"/>` +
+      earProfile(p, -5.5, -1) + earProfile(p, -0.5, 1) +
+      `<path d="M-1.6 -4.6 Q0.8 -5.8 3 -4.2" stroke="@corpsO" stroke-width="1.1" fill="none"/>` + // sourcil froncé
+      `<g data-eye="D" data-ec="0.6 -2.2"><ellipse cx="0.6" cy="-2.2" rx="1.7" ry="1.6" fill="#c47b1e"/><circle cx="0.9" cy="-2.2" r="0.7" fill="#15100a"/><circle cx="1.2" cy="-2.7" r="0.3" fill="#fff" opacity="0.7"/></g></g>`;
   if (p.head === 'loup') // crâne BOMBÉ court + stop marqué + museau effilé MODÉRÉ (≠ « banane »)
     return `<g transform="rotate(4)">` +
       `<path d="M-8 -3 Q-9 -8.5 -2.5 -8 Q1.5 -7.6 3 -3.8 Q5 -1.8 9 -1 Q12.5 -0.2 13.6 2.6 Q14 5 11.6 5.6 Q9 6 6 5.6 L4.2 7.8 Q0 10.6 -4.5 8.4 Q-9.2 5.6 -8 -3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
@@ -487,30 +575,42 @@ function headProfile(p: QuadProps): string {
       `<g data-eye="D" data-ec="3 -3"><ellipse cx="3" cy="-3" rx="1.8" ry="1.9" fill="#d8a020"/><ellipse cx="3.1" cy="-3" rx="0.6" ry="1.7" fill="#0a0603"/></g></g>`;
   if (p.head === 'rat')
     return `<g transform="rotate(16)"><path d="M-6 -4 Q-8 5 -1 8 Q5 11 16 12 Q21 11 21 9 Q18 8 12 7 Q3 5 1 -3 Q0 -7 -6 -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><ellipse cx="20" cy="10" rx="1.5" ry="1.2" fill="#d8a0a0"/><ellipse cx="14" cy="6" rx="1.4" ry="1.7" fill="#1a0808"/><path d="M14 13 q-2 4 -4 2" fill="none" stroke="#e8e0c8" stroke-width="0.9"/>${earProfile(p, -4, -1)}${earProfile(p, 1, 1)}</g>`;
-  if (p.head === 'ours') // tête d'OURS rugissant (artwork LDB p.317) : crâne LARGE et poilu, museau
-    // COURT, gueule GRANDE OUVERTE (mâchoire tombée, gueule rouge, crocs) — fini le long groin fermé
-    // et les oreilles-boutons détachées (intégrées dans la fourrure de crâne).
+  if (p.head === 'ours') // tête d'OURS rugissant (artwork LDB p.317) : FRONT BOMBÉ, museau COURT et
+    // large (truffe ramenée sous l'œil, fini le groin pointu), petites oreilles rondes, bajoues en
+    // lobes de fourrure ARRONDIS (pas de mèches-piquants), gueule béante à 4 canines.
     return `<g transform="rotate(6)">` +
-      `<path d="M-8 -6.5 l-3 -1.6 M-9.8 -3 l-3.2 -0.6 M-10.3 0.6 l-3.2 0.4 M-9.7 4 l-2.9 1.2 M-7.8 7 l-2.3 2" stroke="@cheveux" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/>` + // nuque/joue hérissées
-      `<circle cx="-0.8" cy="-8.8" r="2.3" fill="@corpsO"/>` + // oreille ronde lointaine
-      `<circle cx="-6.4" cy="-7.8" r="3" fill="@corps" stroke="@corpsO" stroke-width="0.5"/><circle cx="-6.4" cy="-7.6" r="1.3" fill="@corpsO"/>` + // oreille ronde proche, plantée dans le crâne
-      `<path d="M-8 -6.6 Q-3.4 -9.8 0.6 -8.2 Q3.6 -7 7 -5.6 Q11.4 -3.8 14.6 -1.6 Q16.6 -0.2 16 1 Q14.6 2.6 10.6 2.8 Q7 3 4.6 3.6 Q1 4.6 -1.6 6.8 Q-4.6 8.8 -8 8.2 Q-11 7.4 -11.2 3.4 Q-11.4 -2.6 -8 -6.6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` + // crâne large + museau court retroussé
-      `<path d="M9.6 -2.6 q2 -0.8 3.8 -0.2 M8.6 -1 q2.4 -1 4.6 -0.2" stroke="@corpsO" stroke-width="0.6" fill="none" opacity="0.7"/>` + // plis de rage sur le mufle
-      `<path d="M0 -7 Q7 -4.6 13 -1.8" stroke="@corpsH" stroke-width="1.5" fill="none" opacity="0.5"/>` + // chanfrein clair
-      `<ellipse cx="15.2" cy="-0.4" rx="1.5" ry="1.3" fill="#120a06"/>` + // truffe
-      `<path d="M4.4 3.4 Q9.4 3 14.6 1.2 Q14.2 5.8 10.4 8.6 Q6.8 10.4 3.6 9.6 Q2.4 6.2 4.4 3.4 Z" fill="#6e120e"/>` + // gueule béante rouge sombre
-      `<path d="M6 3.4 l0.7 3 l1.3 -2.7 Z M12 2.2 l0.8 3 l1.4 -2.8 Z" fill="#e8e0c8" stroke="#8a8060" stroke-width="0.3"/>` + // crocs supérieurs
-      `<path d="M9 3 l0.4 1.6 M10.6 2.7 l0.4 1.5" stroke="#e8e0c8" stroke-width="0.6"/>` + // rangée de dents
-      `<path d="M-1.6 4.6 Q0.4 10.8 6.4 12.8 Q11.6 14 13.4 11.8 Q9.6 11.2 6.8 9.6 Q2.6 7.2 1.2 3.6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` + // mâchoire inférieure tombée, soudée à la bajoue
-      `<path d="M7.6 9.8 l0.3 -2.4 l1.2 2.1 Z M10.6 10.8 l0.3 -2.3 l1.2 2 Z" fill="#e8e0c8" stroke="#8a8060" stroke-width="0.3"/>` + // crocs inférieurs
-      `<path d="M4 11.6 l-0.6 2.2 M6.6 12.8 l-0.3 2.2" stroke="@cheveux" stroke-width="1" stroke-linecap="round" opacity="0.8"/>` + // barbe hirsute sous la mâchoire
-      `<path d="M1.4 -6.6 Q4.2 -7.8 6.8 -6" stroke="@corpsO" stroke-width="1.2" fill="none"/>` + // sourcil froncé
-      `<g data-eye="D" data-ec="4.2 -4.6"><ellipse cx="4.2" cy="-4.6" rx="1.5" ry="1.7" fill="#15100a"/><circle cx="4.6" cy="-5.1" r="0.5" fill="#fff" opacity="0.7"/></g></g>`;
+      `<path d="M-8.4 -4.6 q-3.6 -0.6 -5.2 1.6 q1.9 0.3 3.1 1.3 q-3 0.3 -4.4 2.3 q2.1 0.1 3.3 1.1 q-2.3 0.9 -3.1 2.9 q2.5 -0.3 4 0.7 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` + // bajoue arrière en lobes ronds
+      `<circle cx="0.4" cy="-9.4" r="2.2" fill="@corpsO"/>` + // oreille ronde lointaine
+      `<path d="M-9.6 -3.6 Q-11.6 -7.6 -8.2 -9.6 Q-4.6 -11.4 0.6 -10.6 Q4.8 -10 7.6 -7.6 Q10.8 -5.2 12.8 -2.6 Q14.4 -0.8 13.6 0.4 Q12.4 1.6 9.4 1.7 Q6.4 1.8 4.2 2.5 Q0.6 3.6 -2.6 5.6 Q-6.2 7.6 -9 6.6 Q-11.4 5.4 -11.4 1.4 Q-11.4 -1.4 -9.6 -3.6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` + // front bombé + museau court et large
+      `<circle cx="-5.4" cy="-9" r="2.9" fill="@corps" stroke="@corpsO" stroke-width="0.5"/><circle cx="-5.4" cy="-8.8" r="1.3" fill="@corpsO"/>` + // petite oreille ronde plantée dans le crâne
+      `<path d="M8.6 -2.8 q2 -0.7 3.7 -0.1 M7.8 -1.2 q2.3 -0.9 4.3 -0.2" stroke="@corpsO" stroke-width="0.6" fill="none" opacity="0.7"/>` + // plis de rage sur le mufle
+      `<path d="M-1 -10 Q4 -9.2 7.6 -6.9 Q10.8 -4.6 12.6 -2.2" stroke="@corpsH" stroke-width="1.6" fill="none" opacity="0.5"/>` + // chanfrein clair
+      `<ellipse cx="13" cy="-1" rx="1.6" ry="1.4" fill="#120a06"/>` + // truffe large
+      `<path d="M4.2 2.2 Q8.6 1.8 13.2 0.6 Q12.6 5.2 9.2 8 Q5.8 10 2.8 9 Q1.6 5.4 4.2 2.2 Z" fill="#6e120e"/>` + // gueule béante rouge sombre
+      `<path d="M11.2 1 l0.8 3.2 l1.4 -2.9 Z M5.6 2.3 l0.7 2.8 l1.2 -2.5 Z" fill="#e8e0c8" stroke="#8a8060" stroke-width="0.3"/>` + // 2 canines supérieures
+      `<path d="M8.4 1.9 l0.3 1.4 M9.8 1.6 l0.3 1.3" stroke="#e8e0c8" stroke-width="0.6"/>` + // molaires discrètes
+      `<path d="M-2 4.6 Q-0.2 10.4 5.4 12.4 Q10 13.8 12 11.8 Q8.6 11.2 6.2 9.8 Q2.6 7.6 0.8 3.4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` + // mâchoire inférieure tombée, soudée à la bajoue
+      `<path d="M6.8 10 l0.3 -2.4 l1.3 2 Z M9.8 11 l0.3 -2.3 l1.3 2 Z" fill="#e8e0c8" stroke="#8a8060" stroke-width="0.3"/>` + // 2 canines inférieures
+      `<path d="M3.4 11.4 q-0.7 1.5 -0.3 2.9 M6.2 12.8 q-0.3 1.5 0.3 2.7" stroke="@cheveux" stroke-width="1.1" stroke-linecap="round" opacity="0.8"/>` + // barbe de gorge
+      `<path d="M1.6 -6.8 Q4.2 -8 6.6 -6.2" stroke="@corpsO" stroke-width="1.2" fill="none"/>` + // sourcil froncé
+      `<g data-eye="D" data-ec="3.8 -4.8"><ellipse cx="3.8" cy="-4.8" rx="1.4" ry="1.6" fill="#15100a"/><circle cx="4.2" cy="-5.3" r="0.5" fill="#fff" opacity="0.7"/></g></g>`;
   // sanglier
   return `<g transform="rotate(10)"><path d="M-7 -4 Q-9 6 0 10 Q9 13 15 11 Q19 9 17 5 Q12 4 8 3 Q1 2 0 -4 Q-1 -8 -7 -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><ellipse cx="15" cy="8" rx="3" ry="3.4" fill="@corpsO"/><ellipse cx="15" cy="8" rx="1" ry="1.4" fill="#140a06"/><path d="M12 11 q-2 5 -5 3" fill="none" stroke="#e8e0c8" stroke-width="1.6" stroke-linecap="round"/>${earProfile(p, -5, -1)}${earProfile(p, 0.5, 1)}${eye}</g>`;
 }
 function tail(p: QuadProps): string {
   if (p.tail === 'sans') return ''; // batracien : pas de queue
+  if (p.head === 'chimere') { // LONGUE queue fine dressée en S au-dessus de la croupe, pointe
+    // osseuse (ZI 66 l. « longue queue ») — une queue traînante sortirait du gabarit 120×150
+    // (le corps massif touche déjà le bord arrière) ; même compensation d'os que 'reptile'.
+    const d = 'M0 0 Q-9 -6 -10.5 -20 Q-11.5 -34 -6 -45 Q-2.5 -52 3 -57';
+    return `<g transform="rotate(-42)">` +
+      `<path d="${d}" fill="none" stroke="@corps" stroke-width="4.6" stroke-linecap="round"/>` +
+      `<path d="M-8.5 -30 Q-9 -42 -3.5 -50 Q-0.5 -54 3 -57" fill="none" stroke="@corps" stroke-width="2.4" stroke-linecap="round"/>` +
+      `<path d="${d}" fill="none" stroke="@corpsO" stroke-width="0.9" opacity="0.5"/>` +
+      `<path d="M-12.4 -14 l-2.4 -1.6 l2.2 -1.2 M-13 -26 l-2.4 -0.8 l2 -1.8 M-11 -38 l-2 -2 l2.4 -1.2 M-6.2 -47 l-1.2 -2.6 l2.4 -0.6" stroke="@corpsO" stroke-width="0.8" fill="none" stroke-linecap="round"/>` + // épines du fouet
+      `<path d="M3 -57 l5 -3.6 l-1.8 5.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` + // pointe osseuse
+      `</g>`;
+  }
   if (p.tail === 'reptile') { // longue queue écailleuse qui TRAÎNE derrière au ras du sol — l'os
     // `queue` penche à 42° (queues pendantes) : on compense dans l'art (miroir + rotate -34
     // ⇒ ~8° de chute vers l'arrière). Avant, elle pendait sous le ventre vers l'avant (!).
@@ -520,6 +620,19 @@ function tail(p: QuadProps): string {
       ? `<path d="M4 0 Q2.6 -5 0.8 -6.8 Q3.6 -5.2 6.6 -0.6 Z M12 0.4 Q10.6 -5.4 8.6 -7.2 Q11.6 -5.4 14.6 -0.2 Z M20 0.8 Q18.8 -4.6 16.8 -6.4 Q19.8 -4.8 22.6 0.4 Z M28 1.4 Q27 -3.8 25 -5.4 Q28 -4 30.6 1 Z M36 2.4 Q35.2 -2.4 33.4 -4 Q36.2 -2.6 38.6 2 Z M44 4.6 Q44 -0.8 42.6 -2.8 Q45.4 -0.6 47.2 5 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`
       : '';
     return `<g transform="rotate(-34) scale(-1,1)"><path d="M0 -2 Q16 4 28 2 Q40 0 50 9 Q41 5 30 7 Q16 11 0 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M6 1 l1.5 -3 M14 1 l1.5 -3 M22 0.6 l1.5 -3 M30 1 l1.4 -2.6 M38 2.4 l1.2 -2.4" stroke="@corpsO" stroke-width="1" stroke-linecap="round"/>${crest}</g>`;
+  }
+  if (p.tail === 'enroulee') { // très longue queue qui s'ENROULE autour de la bête (dragon, artwork
+    // LDB p.321) : plonge derrière la croupe puis balaie le sol vers l'AVANT sous le corps, pointe
+    // retroussée devant le poitrail — la 'reptile' qui traîne derrière sortait de la boîte 120×150.
+    // rotate(-42) annule l'angle de l'os `queue` : l'art est authoré en axes MONDE (+x avant, +y sol).
+    return `<g transform="rotate(-42)">` +
+      `<path d="M-2 -8 C-16 8 -18 30 -10 47 C-4 59 14 65 34 65 C54 65 68 61 76 53 L83 43 Q74 47 68 51 C58 57 40 58 26 56 C12 54 2 45 1 34 C0.4 22 4 8 10 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M-9 12 C-14 26 -13 40 -6 49" fill="none" stroke="@corpsO" stroke-width="1.1" opacity="0.5"/>` + // ombre du fouet descendant
+      `<path d="M10 60 C34 63.5 58 61 72 53" fill="none" stroke="@corpsH" stroke-width="1.1" opacity="0.5"/>` + // reflet du dessus de l'anneau
+      `<path d="M-11 20 l1.6 -3 M-12 30 l1.8 -2.8 M-9 40 l2 -2.6 M2 52 l1.8 -2.6 M16 59 l1.4 -2.8 M32 61 l1 -3 M48 60.5 l0.8 -3 M62 57 l0.6 -3" stroke="@corpsO" stroke-width="0.9" stroke-linecap="round"/>` + // anneaux d'écailles
+      `<path d="M-14 14 l-5 -2.8 l4.4 -1.6 Z M-16 28 l-5.4 -0.6 l4.2 -2.6 Z M-12.5 42 l-4.6 2.2 l2.4 -4.4 Z M-4 54 l-3.2 3.8 l0.6 -5 Z M14 63 l-1.6 3.6 l-2.2 -4.4 Z M32 65.5 l-0.6 3.4 l-2.8 -3.8 Z M50 64 l0.2 3.4 l-3.2 -3 Z M66 58.5 l1.4 3 l-3.6 -1.4 Z" fill="@corpsO" stroke="#1a140e" stroke-width="0.35"/>` + // crête d'épines le long du bord externe
+      `<path d="M83 43 L89 36 L81.5 38.5 Z" fill="@corpsO" stroke="#1a140e" stroke-width="0.4"/>` + // pointe en fer de lance retroussée
+      `</g>`;
   }
   if (p.tail === 'leonine') // queue de lion : fouet fin + GROS toupet terminal (tell de l'arrière félin)
     return `<path d="M0 0 Q13 7 17 18 Q19 28 14 33 Q16 24 10 15 Q3 8 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M14 30 Q9 33 10 38 Q13 41 16 38 Q20 40 21 35 Q24 33 21 29 Q19 26 14 30 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
@@ -535,6 +648,15 @@ function tail(p: QuadProps): string {
       `</g>`;
   if (p.tail === 'crin') return `<path d="M0 0 Q10 6 10 18 Q9 30 4 34 Q7 24 3 14 Q1 6 0 4 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
   if (p.tail === 'touffe') return `<path d="M0 0 Q10 6 13 18 Q15 28 9 31 Q12 22 6 14 Q2 7 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M11 16 Q16 24 10 30 Q12 22 8 16 Z" fill="@cheveux"/>`;
+  if (p.tail === 'touffe-basse') // queue de loup (artwork LDB p.317) : TOMBANTE derrière le corps
+    // (pas le crochet dressé de 'touffe'), FOURNIE sur toute la longueur (bords en touffes),
+    // pointe sombre — l'os `queue` penche à 42°, on redresse dans l'art (rotate -30 ⇒ ~12° de
+    // chute vers l'arrière).
+    return `<g transform="rotate(-30)">` +
+      `<path d="M-2.6 0 Q-4.6 7 -4 14 l1.8 -2.4 l-0.4 4.6 Q-2.4 22 -1 27 l1.4 -3 l0.8 4.6 Q3.4 26 5.6 21.4 l-1.8 0.4 l3 -5.2 Q7.6 12 6.4 6.4 Q5 1.4 2.6 -1 Q0 -2 -2.6 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+      `<path d="M-3.2 6 Q-2 14 1.4 20" fill="none" stroke="@corpsH" stroke-width="1.4" opacity="0.45"/>` + // reflet clair du dessus
+      `<path d="M0 24 Q1.2 27.6 3.4 28.6 Q5.6 26.4 6 22.6 l-2.2 1.4 l0.2 -3 Q2 22.6 0 24 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` + // pointe sombre
+      `</g>`;
   if (p.tail === 'nue') return `<path d="M0 0 Q14 6 20 18 Q24 28 22 34" fill="none" stroke="#caa" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>`;
   if (p.tail === 'courte') return `<path d="M0 0 Q6 4 6 9 Q5 12 1 12 Q3 8 0 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>`;
   return `<path d="M0 0 Q6 8 5 18 Q4 22 6 24" fill="none" stroke="@corps" stroke-width="2.2" stroke-linecap="round"/><circle cx="6" cy="24" r="1.6" fill="@cheveux"/>`;
@@ -560,7 +682,13 @@ function headFront(p: QuadProps): string {
   if (p.head === 'chimere') // 3 têtes en éventail : dragon à gauche, lion (crinière) au centre, rapace à droite
     return `<g>` +
       hydraNeck(-4, 8, -9, -4, -12, -13) + hydraNeck(4, 8, 9, -4, 12, -13) + hydraNeck(0, 8, 0, -6, 0, -17) +
-      hydraHeadlet(-12, -13, -125, 0.9) + raptorHeadlet(12, -13, -55, 0.9) + lionHeadlet(0, -17, -90, 1.0) + `</g>`;
+      dragonHeadlet(-12, -13, -125, 0.9) + raptorHeadlet(12, -13, -55, 0.9) + lionHeadlet(0, -17, -90, 1.0) + `</g>`;
+  if (p.head === 'dechiqueteur') // 5 têtes rouges dressées : 2 lointaines hautes + 3 proches basses
+    return `<g>` +
+      hydraNeck(-2, 8, -8, -7, -11, -19, true) + hydraNeck(2, 8, 8, -7, 11, -19, true) +
+      shredderHeadlet(-11, -19, -115, 0.85, true) + shredderHeadlet(11, -19, -65, 0.85, true) +
+      hydraNeck(-4, 8, -8, -2, -11, -9) + hydraNeck(0, 8, 0, -3, 0, -12) + hydraNeck(4, 8, 8, -2, 11, -9) +
+      shredderHeadlet(-11, -9, -120, 0.95) + shredderHeadlet(0, -12, -90, 1.0) + shredderHeadlet(11, -9, -60, 0.95) + `</g>`;
   if (p.head === 'hydre') // 6 têtes dressées au-dessus du corps : rang lointain sombre haut + rang proche bas
     return `<g>` +
       hydraNeck(-3, 8, -10, -6, -14, -18, true) + hydraNeck(0, 8, 0, -9, 0, -21, true) + hydraNeck(3, 8, 10, -6, 14, -18, true) +
@@ -609,6 +737,19 @@ function headFront(p: QuadProps): string {
       `<circle cx="-3" cy="2" r="1" fill="@corpsO"/><circle cx="3" cy="3" r="0.9" fill="@corpsO"/><circle cx="0" cy="-1" r="0.8" fill="@corpsO"/></g>`;
   if (p.head === 'cheval')
     return `<g>${ears}<path d="M-7 -14 Q-9 6 -4 16 Q0 19 4 16 Q9 6 7 -14 Q0 -17 -7 -14 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/><path d="M-2 -15 Q0 -17 2 -15 L1.5 12 Q0 14 -1.5 12 Z" fill="@cheveux" opacity="0.6"/><ellipse cx="0" cy="13" rx="4.2" ry="3.2" fill="@corpsO"/><ellipse cx="-1.6" cy="13" rx="0.9" ry="1.3" fill="#140a06"/><ellipse cx="1.6" cy="13" rx="0.9" ry="1.3" fill="#140a06"/>${eyeF(-5, -2)}${eyeF(5, -2)}</g>`;
+  if (p.head === 'loup-feroce') // face du loup GRONDANT : même crâne/bajoues que 'loup', truffe
+    // remontée et gueule BÉANTE dessous (mâchoire tombée sous le menton + crocs), yeux ambre froncés.
+    return `<g>${ears}<path d="M-9 -13 Q-11 0 -6 8 Q-2 13 0 14 Q2 13 6 8 Q11 0 9 -13 Q0 -16 -9 -13 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
+      `<path d="M-8.6 -2 l-3.6 1.4 l3.2 1.8 l-3 1.6 l3.6 1 M8.6 -2 l3.6 1.4 l-3.2 1.8 l3 1.6 l-3.6 1" stroke="@corps" stroke-width="1.6" fill="none" stroke-linejoin="round"/>` + // bajoues hirsutes
+      `<path d="M-4 -1 Q0 -2.5 4 -1 L2.8 9 Q0 11.5 -2.8 9 Z" fill="@corpsH" opacity="0.45"/>` + // chanfrein clair
+      `<path d="M-3 6.6 q1.4 -0.8 2.8 -0.3 M0.2 6.3 q1.4 -0.5 2.8 0.3" stroke="@corpsO" stroke-width="0.5" fill="none" opacity="0.7"/>` + // plis de babine
+      `<ellipse cx="0" cy="10.6" rx="2.4" ry="1.9" fill="#120a06"/>` + // truffe
+      `<path d="M-3.4 12.4 Q0 11.2 3.4 12.4 Q2.6 17.4 0 18.2 Q-2.6 17.4 -3.4 12.4 Z" fill="#6e1410" stroke="@corpsO" stroke-width="0.4"/>` + // gueule béante
+      `<path d="M-2.5 12.7 l0.6 2.2 l0.9 -2 M0.6 12.5 l0.6 2.2 l0.9 -1.9" stroke="#e8e0c8" stroke-width="0.7" fill="none"/>` + // crocs sup
+      `<path d="M-1.3 17.6 l0.4 -1.8 l0.9 1.6 M1.2 17.5 l0.4 -1.7 l0.8 1.5" stroke="#e8e0c8" stroke-width="0.6" fill="none"/>` + // crocs inf
+      `<path d="M-7.4 -6.4 Q-4.8 -7.8 -2.2 -6.2 M7.4 -6.4 Q4.8 -7.8 2.2 -6.2" stroke="@corpsO" stroke-width="1.1" fill="none"/>` + // sourcils froncés
+      `<g data-eye="G" data-ec="-5 -4"><ellipse cx="-5" cy="-4" rx="1.6" ry="1.5" fill="#c47b1e"/><circle cx="-5" cy="-4" r="0.65" fill="#15100a"/></g>` +
+      `<g data-eye="D" data-ec="5 -4"><ellipse cx="5" cy="-4" rx="1.6" ry="1.5" fill="#c47b1e"/><circle cx="5" cy="-4" r="0.65" fill="#15100a"/></g></g>`;
   if (p.head === 'loup') // bajoues de fourrure + museau CUNÉIFORME long + crocs — raccord avec le
     // profil (le crâne rond sans museau lisait « ours/rat » de face).
     return `<g>${ears}<path d="M-9 -13 Q-11 0 -6 8 Q-2 13 0 14 Q2 13 6 8 Q11 0 9 -13 Q0 -16 -9 -13 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
@@ -638,7 +779,7 @@ function headFront(p: QuadProps): string {
     return `<g>${ears}` +
       `<path d="M-11 -10 Q-13 4 -5 11 Q-2 13.4 0 13.4 Q2 13.4 5 11 Q13 4 11 -10 Q0 -14 -11 -10 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
       `<path d="M-10.6 -2 l-3.4 1 l3 1.8 l-2.9 1.7 l3.4 1.1 M10.6 -2 l3.4 1 l-3 1.8 l2.9 1.7 l-3.4 1.1" stroke="@corps" stroke-width="1.7" fill="none" stroke-linejoin="round"/>` + // bajoues hérissées
-      `<path d="M-5.4 -11.6 l-0.9 -2.6 M-1.8 -12.6 l-0.3 -2.6 M1.8 -12.6 l0.3 -2.6 M5.4 -11.6 l0.9 -2.6" stroke="@cheveux" stroke-width="1" stroke-linecap="round" opacity="0.8"/>` + // houppe de crâne
+      `<path d="M-6.2 -11.6 Q-4.6 -14 -2.4 -13 Q-1 -14.6 1 -14 Q2.6 -14.6 4 -13.2 Q5.4 -13.6 6.2 -11.6" stroke="@cheveux" stroke-width="1.2" fill="none" opacity="0.8" stroke-linecap="round"/>` + // couronne de fourrure arrondie
       `<path d="M-3.2 0 Q0 -1.4 3.2 0 L2.4 6 Q0 7.4 -2.4 6 Z" fill="@corpsH" opacity="0.4"/>` + // chanfrein clair
       `<ellipse cx="0" cy="6.4" rx="2.5" ry="1.8" fill="#120a06"/>` + // truffe
       `<path d="M-4.4 8.2 Q0 9.8 4.4 8.2 Q3.6 13.8 0 14.8 Q-3.6 13.8 -4.4 8.2 Z" fill="#6e120e" stroke="@corpsO" stroke-width="0.5"/>` + // gueule béante
@@ -702,6 +843,16 @@ function napeBack(p: QuadProps): string {
       `<path d="M11 -14.2 l-1.6 -2.2 l0.2 2.2 M12 -14.2 l0.8 -2.6 l0.6 2.4" stroke="@corpsO" stroke-width="0.7" fill="none" stroke-linecap="round"/>` + // plumes du rapace
       `<path d="M0 -19 l-2.6 -3 l0.6 3.2 l-3 -1.6 l1.4 3.2 l-3.2 0.6 l2.4 2.6 l-2.6 1.8 l3.2 1 l-1.2 3 l3.4 -1 l1 3 l2 -2.6 l2.4 2.2 l0.6 -3.2 l3.2 0.6 l-1.8 -3 l3 -1.4 l-3 -1.6 l1.8 -2.8 l-3.4 0 l0.8 -3.2 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` + // couronne de crinière
       `<ellipse cx="0" cy="-15" rx="3.1" ry="3.4" fill="@corps" stroke="@corpsO" stroke-width="0.5"/></g>`;
+  if (p.head === 'dechiqueteur') { // dos des 5 cous : ovales rouge sombre/vif + piquants @corpsO
+    const spikes = (x: number, y: number) =>
+      `<path d="M${x} ${y} l-1.4 -2.6 l0.4 2.4 l-1.8 -1.6 l0.9 2.2" stroke="@corpsO" stroke-width="0.7" fill="none"/>`;
+    return `<g>` +
+      hydraNeck(-2, 6, -8, -9, -11, -20, true) + hydraNeck(2, 6, 8, -9, 11, -20, true) +
+      `<ellipse cx="-11" cy="-20" rx="2.6" ry="3" fill="@cheveuxO"/><ellipse cx="11" cy="-20" rx="2.6" ry="3" fill="@cheveuxO"/>` +
+      hydraNeck(-4, 6, -8, -4, -11, -12) + hydraNeck(0, 6, 0, -6, 0, -14) + hydraNeck(4, 6, 8, -4, 11, -12) +
+      `<ellipse cx="-11" cy="-12" rx="2.8" ry="3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="0" cy="-14" rx="3" ry="3.4" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="11" cy="-12" rx="2.8" ry="3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` +
+      spikes(-11, -14.6) + spikes(0, -16.8) + spikes(11, -14.6) + `</g>`;
+  }
   if (p.head === 'hydre') { // dos des 6 cous + arrière des têtes (ovales, crête @cheveux sur le rang proche)
     const spikes = (x: number, y: number) =>
       `<path d="M${x} ${y} l-1.4 -2.6 l0.4 2.4 l-1.8 -1.6 l0.9 2.2" stroke="@cheveux" stroke-width="0.7" fill="none"/>`;
@@ -780,11 +931,13 @@ function bodyBack(p: QuadProps): string {
 function tailBack(p: QuadProps): string {
   // queue vue de dos : pend au centre, sous la croupe.
   if (p.tail === 'sans') return ''; // batracien : pas de queue
-  if (p.tail === 'reptile') return `<path d="M-2.4 0 Q-3 18 -1 32 Q0 40 0 46 Q0 40 1 32 Q3 18 2.4 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>`;
+  if (p.tail === 'reptile' || p.tail === 'enroulee') return `<path d="M-2.4 0 Q-3 18 -1 32 Q0 40 0 46 Q0 40 1 32 Q3 18 2.4 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>`;
   if (p.tail === 'leonine') return `<path d="M-2 0 Q-2 14 0 22 Q2 14 2 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><circle cx="0" cy="25" r="2.6" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
   if (p.tail === 'dard') return `<path d="M-2.6 0 Q-3.4 12 -1.6 24 Q0 28 1.6 24 Q3.4 12 2.6 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M-2.1 6 l4.2 0 M-2.3 12 l4.6 0 M-1.8 18 l3.6 0" stroke="@corpsO" stroke-width="0.7"/><circle cx="0" cy="27" r="3.2" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M-1 29.6 Q-1.4 35 0 38.4 Q1.4 35 1 29.6 Z" fill="@cuir" stroke="#1a140e" stroke-width="0.4"/>`;
   if (p.tail === 'crin') return `<path d="M-2 0 Q-3 16 -2 30 Q0 33 2 30 Q3 16 2 0 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
   if (p.tail === 'touffe') return `<path d="M-3 0 Q-4 12 -2 24 Q0 28 2 24 Q4 12 3 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M-2 14 Q0 26 2 14 Z" fill="@cheveux"/>`;
+  if (p.tail === 'touffe-basse') // pend au centre, fournie (bords en touffes), pointe sombre
+    return `<path d="M-3.2 0 Q-4.4 10 -3 20 l1.2 -1.8 l0.4 4.4 Q0 25 1.6 22.4 l0.6 -3 l1.2 2 Q4.4 11 3.2 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M-1.4 20 Q0 26.4 1.8 20.6 Q0.4 19 -1.4 20 Z" fill="@cheveux"/>`;
   if (p.tail === 'nue') return `<path d="M0 0 Q-1 16 0 30 Q1 34 1 36" fill="none" stroke="#caa" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>`;
   if (p.tail === 'courte') return `<path d="M-2 0 Q-2 6 0 8 Q2 6 2 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>`;
   return `<path d="M0 0 Q-1 9 0 18 Q1 22 0 24" fill="none" stroke="@corps" stroke-width="2.2" stroke-linecap="round"/><circle cx="0" cy="24" r="1.6" fill="@cheveux"/>`;
@@ -814,6 +967,23 @@ function wingFoldedProfile(p: QuadProps, far: boolean): string {
       `<path d="M2 -2 Q-6 -7 ${-L * 0.45} -6 Q${-L} -3 ${-L - 7} 4 Q${-L * 0.6} 3 ${-L * 0.3} 4 Q-4 5 3 3 Z" fill="${c}" stroke="@aileO" stroke-width="0.7"/>` +
       `<path d="M1 -1 Q${-L * 0.4} -5 ${-L - 5} 3 M0 1 Q${-L * 0.4} -2 ${-L * 0.72} 2" fill="none" stroke="@aileO" stroke-width="1.1" stroke-linecap="round" opacity="0.8"/>` +
       `<path d="M3 -2 l3 -3 l1.4 3.4" fill="${c}" stroke="@aileO" stroke-width="0.6"/>` + // griffe de poignet
+      `</g>`;
+  }
+  // plumes DRESSÉES (wingPose 'dressees' — pégase, artwork LDB p.325) : paire de GRANDES ailes
+  // LEVÉES vers le haut/arrière, lame emplumée large à rémiges digitées au sommet. L'aile
+  // lointaine (far) est plus couchée en arrière que la proche → deux silhouettes distinctes en V.
+  // Même vocabulaire wingPose que la membrane (manticore) ; défaut plumes = couchées ci-dessous.
+  if (p.wingPose === 'dressees') {
+    const rot = far ? -26 : -4;
+    return `<g data-wing="folded" transform="rotate(${rot})" opacity="${far ? 0.92 : 1}">` +
+      // lame LARGE : bord d'attaque (avant) → pointe DIGITÉE au sommet → bord de fuite vers l'épaule
+      `<path d="M4 0 Q0 -6 -3 -14 Q-6 -23 -12 -30 Q-17 -36 -24 -40 l-1 3.6 -3.8 -1 1 3.8 -3.8 -0.2 1.1 3.6 -3.7 0.7 Q-30 -21 -24 -14 Q-17 -5 -10 1 Q-3 6 5 4 Z" fill="${c}" stroke="@aileO" stroke-width="0.7"/>` +
+      // panneau interne clair (volume) + longues rémiges + couvertures festonnées à la base
+      `<path d="M2 -1 Q-2 -8 -5 -16 Q-8 -24 -13 -30 Q-17 -25 -14 -17 Q-10 -7 -4 0 Z" fill="@aileH" opacity="0.28"/>` +
+      `<path d="M-24 -38 Q-17 -26 -10 -9 M-28 -34 Q-21 -23 -13 -6 M-31 -30 Q-24 -20 -16 -4" fill="none" stroke="@aileO" stroke-width="0.8" opacity="0.65"/>` +
+      `<path d="M-4 -6 q-4.6 3 -9.6 2.2 M-9 -13 q-4.6 3 -9.6 2.2 M-1 -1 q-4.6 3 -9.6 2.2" fill="none" stroke="@aileO" stroke-width="0.7" opacity="0.7"/>` +
+      // arête d'attaque claire
+      `<path d="M3 -1 Q-2 -10 -7 -20 Q-13 -31 -22 -38" fill="none" stroke="@aileH" stroke-width="1.1" opacity="0.6"/>` +
       `</g>`;
   }
   // plumes REPLIÉES : vraie aile de rapace couchée — épaule pleine, rangées de COUVERTURES

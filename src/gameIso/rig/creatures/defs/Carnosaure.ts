@@ -1,13 +1,15 @@
 import type { CreatureDef } from '../types';
 
-// Carnosaure (ZI) — grand prédateur saurien. Quadrupède draconique (sans ailes) : encolure portée,
-// tête 'dragon', longue queue 'reptile', pieds 'serre', dorsale épineuse. Robe écailleuse rouge-brun sombre.
+// Carnosaure (ZI 80) — artwork p.80 : grand théropode BIPÈDE (le « grand lézard des Terres du
+// Sud », plus grand que le Cornu) : pattes arrière massives digitigrades, petits bras avant
+// griffus, queue-balancier horizontale à crête, énorme gueule de reptile bardée de rangées de
+// dents, crâne NU (sans cornes — c'est le trait qui le distingue du Cornu), crête d'épines de la
+// nuque à la queue, robe vert forêt mouchetée de sombre à gorge/ventre vert-jaune pâle.
 export const creature: CreatureDef = {
   name: 'Carnosaure',
-  plan: 'quadruped',
-  quad: {
-    sl: 1.2, build: 'draconic', girth: 1.0, bodyLen: 1.16, neckLen: 0.7, neckAngle: -30, legLen: 0.95,
-    head: 'dragon', tail: 'reptile', mane: 'sans', ears: 'courtes', foot: 'serre', ridge: 'epines', headScale: 1.15, tailLen: 1.3,
-    stored: { corps: '#6e4738', corpsO: '#3c241c', corpsH: '#9a6a4e', cheveux: '#4a2c20', cheveuxO: '#281610', cuir: '#7a6240' },
+  plan: 'theropode',
+  thero: {
+    sl: 1.35, girth: 1.12, horns: 0, muzzle: 1.25,
+    stored: { corps: '#4a6338', corpsO: '#20301a', corpsH: '#a8bd74', cheveux: '#324a22', cheveuxO: '#182611', cuir: '#6d7250' },
   },
 };

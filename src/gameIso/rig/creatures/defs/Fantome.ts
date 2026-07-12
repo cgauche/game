@@ -1,14 +1,16 @@
 import type { CreatureDef } from '../types';
 
-// Fantôme — gabarit spectral : tête nue translucide, bouche béante d'âme tourmentée (LDB 82
-// « esprits d'âmes tourmentées… répandent la peur »), voile glacé bleu-blanc quasi immatériel
-// (trait Éthéré, LDB 85). Tête nue + pâleur le distinguent de la Banshee (capuche violacée)
-// et du Spectre de cairn (capuche + crâne verdâtre).
+// Fantôme — gabarit spectral calé sur l'artwork LDB p.330 : crâne DÉCHARNÉ hurlant (orbites
+// creuses, gouffre denté — LDB 82 « esprits d'âmes tourmentées… répandent la peur »), longues
+// mèches vaporeuses pâles flottant autour de la tête, mains squelettiques griffues vert livide
+// au bout des manches, linceul blanc-vert spectral translucide qui se dissout en brume vers le
+// bas (trait Éthéré, LDB 85). Le blanc-vert livide tête nue le distingue de la Banshee
+// (suaire violet, visage féminin) et du Spectre de cairn (capuche sombre + crâne).
 export const creature: CreatureDef = {
   name: 'Fantôme',
   plan: 'spectral',
   spectre: {
-    sl: 0.95, hood: false, face: 'cri',
-    stored: { corps: '#cce2f0', corpsO: '#7fa2b6', corpsH: '#f4fcff', cheveux: '#3a4a54', cheveuxO: '#222e34', cuir: '#9cbccd' },
+    sl: 0.95, hood: false, face: 'crane-cri', cheveux: true, griffes: true,
+    stored: { corps: '#dcefe3', corpsO: '#7c9c8b', corpsH: '#f6fff8', cheveux: '#cfe4d4', cheveuxO: '#98b5a4', cuir: '#6f9070' },
   },
 };

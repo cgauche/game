@@ -13,6 +13,7 @@ import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { BIRD_SPECIES } from '../creatures';
 import { sortByZ } from '../composite';
+import { raptorBodyBack, raptorBodyFront, raptorBodyProfile, raptorHead } from './raptorParts';
 
 export type BirdBoneId = 'corps' | 'tete';
 type BBone = FKBone & { z: number };
@@ -26,6 +27,13 @@ export interface BirdProps {
   theropod?: boolean;
   /** longueur de la queue du théropode (×, défaut 1). */
   tailLen?: number;
+  /** Mode PIGEON VOYAGEUR (réf. art LDB p.318) : message roulé sanglé sur le dos,
+   *  clochette dorée pendue à une patte, gorge irisée vert/violet. */
+  messenger?: boolean;
+  /** Mode RAPACE GÉANT (Grand Aigle, réf. art ZI p.65) : aigle en piqué, ailes déployées
+   *  immenses en V à rémiges digitées, serres tendues en avant, bec crochu massif.
+   *  Dessin dans `raptorParts.ts` ; mêmes 2 os (le dodelinement/coup de bec restent valides). */
+  raptor?: boolean;
 }
 
 function buildSkeleton(): Record<BirdBoneId, BBone> {
@@ -41,6 +49,28 @@ function legs(): string { // 2 pattes fines + doigts (couleur cuir)
     `<path d="M3 9 L4 26 M4 26 l-3 2 M4 26 l-1 4 M4 26 l3 3" stroke="@cuir" stroke-width="1.6" fill="none" stroke-linecap="round"/>` +
     `</g>`;
 }
+// --- PIGEON VOYAGEUR (accessoires, réf. art LDB p.318) ---------------------
+const MSG = { paper: '#d9cda6', paperO: '#8a7a4e', gold: '#c9a23a', goldO: '#7a5c1a' };
+/** Message roulé sanglé sur le dos (profil) : cylindre de parchemin, bout en spirale, sangle dorée. */
+function scrollProfile(): string {
+  return `<g transform="translate(-2,-12.5) rotate(-6)">` +
+    `<rect x="-7.5" y="-3" width="14" height="6" rx="2.4" fill="${MSG.paper}" stroke="${MSG.paperO}" stroke-width="0.6"/>` +
+    `<ellipse cx="-7" cy="0" rx="1.8" ry="3" fill="${MSG.paper}" stroke="${MSG.paperO}" stroke-width="0.6"/>` +
+    `<path d="M-7 -1.6 a1.7 1.7 0 1 1 -1.4 2.4" fill="none" stroke="${MSG.paperO}" stroke-width="0.5"/>` + // spirale du rouleau
+    `<rect x="1.4" y="-3.4" width="2.6" height="6.8" rx="0.8" fill="${MSG.gold}" stroke="${MSG.goldO}" stroke-width="0.5"/>` +
+    `</g>` +
+    `<path d="M1.6 -9.5 Q8 -4 6.5 5.5" stroke="${MSG.goldO}" stroke-width="0.8" fill="none" opacity="0.75"/>`; // sangle sous le poitrail
+}
+/** Clochette dorée pendue (cordelette + cloche + battant). */
+function bell(x: number, y: number): string {
+  return `<g transform="translate(${x},${y})">` +
+    `<path d="M0 -3.6 L0 -1.9" stroke="${MSG.goldO}" stroke-width="0.6"/>` +
+    `<path d="M-2 1.6 Q-2.3 -2.1 0 -2.1 Q2.3 -2.1 2 1.6 L2.9 2.7 L-2.9 2.7 Z" fill="${MSG.gold}" stroke="${MSG.goldO}" stroke-width="0.5"/>` +
+    `<path d="M-1.2 -0.9 Q-1.35 0.4 -1 1.2" stroke="#efe0b0" stroke-width="0.5" fill="none" opacity="0.8"/>` + // reflet
+    `<circle cx="0" cy="3.3" r="0.7" fill="${MSG.goldO}"/>` +
+    `</g>`;
+}
+
 function bodyProfile(p: BirdProps): string {
   const g = p.girth;
   return `<g>${legs()}` +
@@ -53,15 +83,20 @@ function bodyProfile(p: BirdProps): string {
     // aile repliée (sur le flanc) + rémiges
     `<path d="M2 -5 Q-8 -7 -16 0 Q-10 5 -2 4 Q4 2 2 -5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
     `<path d="M-3 -2 Q-9 -2 -14 1 M-3 1 Q-9 1 -13 3" stroke="@corpsO" stroke-width="0.6" fill="none" opacity="0.6"/>` +
+    (p.messenger ? scrollProfile() + bell(5, 17) : '') +
     `</g>`;
 }
 function bodyFront(p: BirdProps): string {
   const g = p.girth;
   return `<g>${legs()}` +
+    // message roulé qui dépasse au-dessus des épaules (occulté en bas par le corps)
+    (p.messenger ? `<rect x="-9" y="-15.5" width="18" height="6" rx="2.6" fill="${MSG.paper}" stroke="${MSG.paperO}" stroke-width="0.6"/>` +
+      `<ellipse cx="-8.6" cy="-12.5" rx="1.6" ry="2.9" fill="${MSG.paper}" stroke="${MSG.paperO}" stroke-width="0.5"/>` : '') +
     `<ellipse cx="0" cy="0" rx="${(12 * g).toFixed(1)}" ry="13" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
     `<ellipse cx="0" cy="1" rx="${(7 * g).toFixed(1)}" ry="9" fill="@corpsH" opacity="0.4"/>` + // poitrail
     `<path d="M${-10 * g} -6 Q${-14 * g} 2 ${-8 * g} 9 Q${-6 * g} 4 ${-7 * g} -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` + // aile G
     `<path d="M${10 * g} -6 Q${14 * g} 2 ${8 * g} 9 Q${6 * g} 4 ${7 * g} -4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` + // aile D
+    (p.messenger ? bell(4, 18) : '') +
     `</g>`;
 }
 function bodyBack(p: BirdProps): string {
@@ -71,15 +106,25 @@ function bodyBack(p: BirdProps): string {
     `<path d="M0 -2 L0 15 M-5 0 L-3 14 M5 0 L3 14" stroke="@corpsO" stroke-width="0.5" opacity="0.5"/>` +
     `<ellipse cx="0" cy="-2" rx="${(12 * g).toFixed(1)}" ry="12" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
     `<path d="M0 -12 L0 6" stroke="@corpsO" stroke-width="0.6" opacity="0.4"/>` +
+    // de dos, le message roulé est pleinement visible en travers du haut du dos
+    (p.messenger ? `<g transform="translate(0,-8)">` +
+      `<rect x="-8.5" y="-3" width="17" height="6" rx="2.6" fill="${MSG.paper}" stroke="${MSG.paperO}" stroke-width="0.6"/>` +
+      `<ellipse cx="8.2" cy="0" rx="1.8" ry="3" fill="${MSG.paper}" stroke="${MSG.paperO}" stroke-width="0.6"/>` +
+      `<path d="M8.2 -1.6 a1.7 1.7 0 1 0 1.4 2.4" fill="none" stroke="${MSG.paperO}" stroke-width="0.5"/>` +
+      `<rect x="-2" y="-3.4" width="2.6" height="6.8" rx="0.8" fill="${MSG.gold}" stroke="${MSG.goldO}" stroke-width="0.5"/>` +
+      `</g>` + bell(-4, 18) : '') +
     `</g>`;
 }
-function head(_p: BirdProps, view: View): string {
-  const irid = `<path d="M-4 6 Q0 9 4 6 Q3 9 0 10 Q-3 9 -4 6 Z" fill="@corpsH" opacity="0.5"/>`; // cou irisé
+function head(p: BirdProps, view: View): string {
+  const irid = `<path d="M-4 6 Q0 9 4 6 Q3 9 0 10 Q-3 9 -4 6 Z" fill="@corpsH" opacity="0.5"/>` +
+    // gorge irisée vert/violet du pigeon voyageur (deux nappes superposées)
+    (p.messenger ? `<path d="M-4.2 4.5 Q0 7.8 4.2 4.5 Q3.2 9 0 10.6 Q-3.2 9 -4.2 4.5 Z" fill="#4e9a6a" opacity="0.7"/>` +
+      `<path d="M-3 7.4 Q0 10 3 7.4 Q2.2 10.8 0 11.8 Q-2.2 10.8 -3 7.4 Z" fill="#7c5a9a" opacity="0.7"/>` : '');
   if (view === 'front')
-    return `<g><circle cx="0" cy="0" r="6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
-      `<path d="M-1.6 4 L1.6 4 L0 8 Z" fill="@cuir"/>` + // bec (face)
+    return `<g><circle cx="0" cy="0" r="6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>${irid}` +
+      `<path d="M-1.6 4 L1.6 4 L0 8 Z" fill="@cuir"/>` + // bec (face, au-dessus de la gorge irisée)
       `<circle cx="-2.6" cy="-1" r="1.3" fill="#1a0e08"/><circle cx="2.6" cy="-1" r="1.3" fill="#1a0e08"/>` +
-      `<circle cx="-2.6" cy="-1" r="2" fill="none" stroke="#c86018" stroke-width="0.5"/><circle cx="2.6" cy="-1" r="2" fill="none" stroke="#c86018" stroke-width="0.5"/>${irid}</g>`;
+      `<circle cx="-2.6" cy="-1" r="2" fill="none" stroke="#c86018" stroke-width="0.5"/><circle cx="2.6" cy="-1" r="2" fill="none" stroke="#c86018" stroke-width="0.5"/></g>`;
   if (view === 'back')
     return `<g><circle cx="0" cy="0" r="6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M0 -5 L0 4" stroke="@corpsO" stroke-width="0.5" opacity="0.4"/></g>`;
   // profil : tête + bec court vers +x + œil cerclé orange
@@ -181,12 +226,21 @@ export function resolveBirdFromProps(
 ): ResolvedBone[] {
   const sk = buildSkeleton();
   if (p.theropod) sk.tete.pivot = { x: 15, y: -9 }; // tête portée EN AVANT (cou horizontal), pas au-dessus
+  if (p.raptor) { // piqué : corps haut (ailes levées au-dessus), tête portée en BAS-AVANT
+    sk.corps.pivot = { x: 56, y: 98 };
+    sk.tete.pivot = view === 'front' ? { x: 0, y: 12 } : view === 'back' ? { x: 0, y: -11 } : { x: 16, y: 9 };
+  }
   const world = worldTransformsG(sk, pose) as Record<BirdBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
-  const body = p.theropod
-    ? (view === 'front' ? theroBodyFront(p) : view === 'back' ? theroBodyBack(p) : theroBodyProfile(p))
-    : (view === 'front' ? bodyFront(p) : view === 'back' ? bodyBack(p) : bodyProfile(p));
-  const art: Record<BirdBoneId, string> = { corps: body, tete: p.theropod ? theroHead(view) : head(p, view) };
+  const body = p.raptor
+    ? (view === 'front' ? raptorBodyFront(p) : view === 'back' ? raptorBodyBack(p) : raptorBodyProfile(p))
+    : p.theropod
+      ? (view === 'front' ? theroBodyFront(p) : view === 'back' ? theroBodyBack(p) : theroBodyProfile(p))
+      : (view === 'front' ? bodyFront(p) : view === 'back' ? bodyBack(p) : bodyProfile(p));
+  const art: Record<BirdBoneId, string> = {
+    corps: body,
+    tete: p.raptor ? raptorHead(view) : p.theropod ? theroHead(view) : head(p, view),
+  };
   return sortByZ((Object.keys(sk) as BirdBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,

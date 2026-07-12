@@ -1,7 +1,7 @@
 import type { CreatureDef } from '../types';
 
-// Pieuvre des tourbières (gabarit céphalopode) — masse charnue basse + 8 tentacules en volutes
-// dressées, petits yeux noyés dans les replis (artwork LDB p.325). 1 fichier.
+// Pieuvre des tourbières (gabarit céphalopode) — masse charnue basse + forêt de tentacules fins
+// et sinueux en volutes dressées, petits yeux noyés dans les replis (artwork LDB p.325). 1 fichier.
 export const creature: CreatureDef = {
   name: 'Pieuvre',
   plan: 'cephalopod',

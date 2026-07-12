@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { CREATURES, defId } from './creatures';
 import { SPECIES_BODY_SHAPE, bodyShapeForSpecies } from '../../engine/bodyForm';
 import type { BodyShape } from '../../engine/types';
+import type { CreatureDef } from './creatures/types';
 
 /**
  * GARDE DE COHÉRENCE couche-de-rendu ↔ couche-de-règles (#187). Deux taxonomies coexistent :
@@ -17,10 +18,14 @@ import type { BodyShape } from '../../engine/types';
  */
 
 /** Projection PLAN de rendu (fin) → FORME de corps de règles (grossier), LDB p.312. */
-function planToBodyShape(plan: string): BodyShape {
-  switch (plan) {
+function planToBodyShape(c: CreatureDef): BodyShape {
+  switch (c.plan) {
     case 'quadruped': return 'quadrupede';
-    case 'theropode': return 'quadrupede'; // bipède de RENDU mais bête à queue/4 localisations de patte — bodyForm déclare le cornu quadrupède
+    // bipède de RENDU + queue/4 localisations de patte (Cornu/Carnosaure) → quadrupède ; MAIS le
+    // trait optionnel `wings` (hybrides type Cockatrice, ZI 65 — grandes ailes MEMBRANEUSES
+    // remplaçant les bras avant) déplace les localisations avant sur les ailes → table oiseau,
+    // même bascule que winged/avian (ailes = bras, p.312).
+    case 'theropode': return c.thero?.wings ? 'oiseau' : 'quadrupede';
     case 'avian':
     case 'winged': return 'oiseau'; // ailes = bras (p.312), tableau humanoïde réétiqueté
     case 'serpentine': return 'serpent';
@@ -34,7 +39,7 @@ describe('cohérence plan de rendu ↔ forme de corps de règles (LDB p.312, #18
     const mismatches: string[] = [];
     for (const c of CREATURES) {
       const id = defId(c);
-      const projected = planToBodyShape(c.plan);
+      const projected = planToBodyShape(c);
       const declared = bodyShapeForSpecies(id);
       if (projected !== declared) mismatches.push(`${id} : plan '${c.plan}' → ${projected}, mais bodyForm déclare ${declared}`);
     }
