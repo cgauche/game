@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Combatant } from '../engine/types';
 import type { Poste } from '../state/poste';
 import { OptionChooser, type RollOption } from './OptionChooser';
+import { CharFrame } from './CharFrame';
 
 /**
  * Décision d'épinglage au clic d'un poste (PUR, testable sans DOM) : re-cliquer le poste ÉPINGLÉ le
@@ -60,6 +61,7 @@ export function PostesRoster({
         return (
           <div className="wm-role-item" key={h.id}>
             <div className="wm-role-row">
+              <CharFrame c={h} variant="identity" size="xs" title={h.name} />
               <span className="wm-role-name">
                 {h.name}
                 {!pinned && current && <span className="wm-opt-hint"> (auto)</span>}
