@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { type CascadeApplier } from './cascade';
 import { spyApplier } from './cascadeTestKit';
 import { setGmSeat } from './netFlow';
-import { openRoll, rollTitle, resultLine, freeCons, type RollRequest, type Consequence } from './rollSeam';
+import { openRoll, rollTitle, composeRollLabel, testSkillLabel, resultLine, freeCons, type RollRequest, type Consequence } from './rollSeam';
 import { modalOwnerOf } from './modalArbiter';
 import { seatOwns } from './netOwnership';
 import type { Combatant } from '../engine/types';
@@ -48,7 +48,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
 
   it('hero-test, héros piloté-humain, cadence MANUELLE → M (modale influençable)', () => {
     useGame.setState({ party: [hero()] });
-    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'endurance', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    const req: RollRequest = { side: { actorId: 'H' }, actionLabel: 'Résistance', test: { skill: 'resistance', char: 'endurance' }, difficulty: 'intermediaire', klass: 'hero-test' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-hero');
     expect(useGame.getState().pendingCascade).toBeTruthy(); // surfacé, pas résolu d'office
     expect(applied).toHaveLength(0);
@@ -57,7 +57,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   it('enemy, côté ennemi/monde SOUS siège MJ, manuel → V (étape visible-lançable MJ)', () => {
     useGame.setState({ party: [enemy()] });
     setGmSeat(useGame.getState, useGame.setState, 0);
-    const req: RollRequest = { side: { actorId: 'E' }, test: { skill: 'perception', char: 'initiative', label: 'Perception' }, difficulty: 'intermediaire', klass: 'enemy' };
+    const req: RollRequest = { side: { actorId: 'E' }, actionLabel: 'Perception', test: { skill: 'perception', char: 'initiative' }, difficulty: 'intermediaire', klass: 'enemy' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-enemy');
     expect(useGame.getState().pendingCascade).toBeTruthy(); // surfacé chez le MJ (V)
     expect(applied).toHaveLength(0);
@@ -65,7 +65,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
 
   it('enemy, SANS siège MJ (IA) → I (inline-PV, résolu d’office)', () => {
     useGame.setState({ party: [enemy()] });
-    const req: RollRequest = { side: { actorId: 'E' }, test: { skill: 'perception', char: 'initiative', label: 'Perception' }, difficulty: 'intermediaire', klass: 'enemy' };
+    const req: RollRequest = { side: { actorId: 'E' }, actionLabel: 'Perception', test: { skill: 'perception', char: 'initiative' }, difficulty: 'intermediaire', klass: 'enemy' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-enemy');
     expect(useGame.getState().pendingCascade).toBeNull();
     expect(applied).toHaveLength(1);
@@ -74,7 +74,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
 
   it('subi, porté par un héros SANS MJ → I (jamais M — « subi » n’est jamais une décision du sujet)', () => {
     useGame.setState({ party: [hero()] });
-    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'endurance', label: 'Scorbut' }, difficulty: 'intermediaire', klass: 'subi' };
+    const req: RollRequest = { side: { actorId: 'H' }, actionLabel: 'Scorbut', test: { skill: 'resistance', char: 'endurance' }, difficulty: 'intermediaire', klass: 'subi' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-subi');
     expect(useGame.getState().pendingCascade).toBeNull();
     expect(applied).toHaveLength(1);
@@ -84,7 +84,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   it('subi, côté SOUS siège MJ → V (read-only : le MJ voit/lance, n’influence pas)', () => {
     useGame.setState({ party: [] });
     setGmSeat(useGame.getState, useGame.setState, 0);
-    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
+    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, actionLabel: 'Désertion', test: {}, difficulty: 'intermediaire', klass: 'subi' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-subi');
     expect(useGame.getState().pendingCascade).toBeTruthy();
     expect(applied).toHaveLength(0);
@@ -93,7 +93,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   it('worldSide sans acteur, en COOP avec gmSeat ≠ hôte → l’étape est OWNÉE par le MJ (delta 1)', () => {
     useGame.setState({ party: [] });
     setGmSeat(useGame.getState, useGame.setState, 1); // gmSeat ≠ hôte (0)
-    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
+    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, actionLabel: 'Désertion', test: {}, difficulty: 'intermediaire', klass: 'subi' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-subi');
     const owner = modalOwnerOf(useGame.getState());
     expect(seatOwns(useGame.getState(), 1, owner ?? undefined)).toBe(true); // le MJ possède l'étape
@@ -105,7 +105,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     useGame.setState({ party: [crew], travelPlan: { routeId: 'r', fromPlaceId: 'a', toPlaceId: 'b', mode: 'sea', hoursPerDay: 8, km: 0, kmDone: 0, interrupted: false, orders: { cadence: 'commande' } } as never });
     const req: RollRequest = {
       side: { participants: [{ id: 'timonier1', essential: true, base: 30, target: 30, result: null }], ownerId: 'nef' },
-      test: { label: 'Progression' }, difficulty: 'intermediaire', klass: 'batch',
+      actionLabel: 'Progression', test: {}, difficulty: 'intermediaire', klass: 'batch',
     };
     // `cascadeAppliers['progression']` est désormais le VRAI applier de mer (#275 Décision 4 cran 2, `seaVoyageFlow.ts`)
     // — il lit `travelPlan.sea`, absent de ce plan SYNTHÉTIQUE ; ce test isole la POLICY de la porte (surface I),
@@ -123,7 +123,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     useGame.setState({ party: [crew] });
     const req: RollRequest = {
       side: { participants: [{ id: 'timonier1', essential: true, base: 30, target: 30, result: null }], ownerId: 'nef' },
-      test: { label: 'Progression' }, difficulty: 'intermediaire', klass: 'batch',
+      actionLabel: 'Progression', test: {}, difficulty: 'intermediaire', klass: 'batch',
     };
     openRoll(useGame.getState, useGame.setState, req, 'seam-batch');
     expect(useGame.getState().pendingCascade).toBeTruthy();
@@ -134,24 +134,54 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     expect(applied).toHaveLength(0); // rien appliqué tant que l'étape n'est pas validée
   });
 
-  it('rollTitle : dérive le titre depuis les ids (acteur/compétence/difficulté) — un seul composeur', () => {
+  it('rollTitle : le NOM DE L\'ACTION seul — jamais recomposé avec acteur/compétence/difficulté (#352)', () => {
     useGame.setState({ party: [hero()] });
-    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'endurance', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
-    expect(rollTitle(useGame.getState, req)).toBe('Héros — Résistance (Résistance Intermédiaire (+0))');
+    const req: RollRequest = { side: { actorId: 'H' }, actionLabel: 'Résistance', test: { skill: 'resistance', char: 'endurance' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    expect(rollTitle(useGame.getState, req)).toBe('Résistance');
   });
 
-  it('rollTitle : côté worldSide (aucun acteur) — pas de préfixe d\'acteur', () => {
+  it('rollTitle : côté worldSide (aucun acteur) — actionLabel nu', () => {
     useGame.setState({ party: [] });
-    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
+    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, actionLabel: 'Désertion', test: {}, difficulty: 'intermediaire', klass: 'subi' };
     expect(rollTitle(useGame.getState, req)).toBe('Désertion');
   });
 
-  it('mono : startCascade pose pending.title = rollTitle(...), pas req.test.label nu', () => {
+  it('mono : startCascade pose pending.title = rollTitle(...) = actionLabel — DISTINCT de step.label composé (#352, régression double-rendu)', () => {
     useGame.setState({ party: [hero()] });
-    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'endurance', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    const req: RollRequest = { side: { actorId: 'H' }, actionLabel: 'Recueillir des informations', test: { skill: 'ragot' }, difficulty: 'intermediaire', klass: 'hero-test' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-hero');
-    expect(useGame.getState().pendingCascade!.title).toBe(rollTitle(useGame.getState, req));
-    expect(useGame.getState().pendingCascade!.title).not.toBe(req.test.label);
+    const p = useGame.getState().pendingCascade!;
+    expect(p.title).toBe('Recueillir des informations');
+    expect(p.title).toBe(rollTitle(useGame.getState, req));
+    const step = p.participants[0];
+    // step.label (sous-titre) porte le détail COMPOSÉ — ne duplique PAS le titre (#352 : la modale
+    // montrait la MÊME ligne « Berta Kaufmann — Recueillir des informations (Ragot Intermédiaire) » deux fois).
+    expect(step.label).not.toBe(p.title);
+    expect(step.label).toBe('Héros — Recueillir des informations (Ragot Intermédiaire (+0))');
+  });
+
+  it('compétence de rangée : DÉRIVÉE du catalogue skills (id→label) — insurchargeable par la spec (#352 extension)', () => {
+    useGame.setState({ party: [hero()] });
+    const req: RollRequest = { side: { actorId: 'H' }, actionLabel: 'Recueillir des informations', test: { skill: 'ragot' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    openRoll(useGame.getState, useGame.setState, req, 'seam-hero');
+    const step = useGame.getState().pendingCascade!.participants[0];
+    // La compétence affichée en position de rangée est « Ragot » (catalogue), JAMAIS l'action
+    // ("Recueillir des informations") — `testSkillLabel` est la SEULE source, dérivée du skillId.
+    expect(step.rollLabel).toBe('Ragot');
+    expect(step.rollLabel).toBe(testSkillLabel(req.test));
+    expect(step.rollLabel).not.toBe(req.actionLabel);
+  });
+
+  it('type : `RollRequest.test` ne porte plus aucun champ texte — impossible d\'y injecter un libellé de compétence (#352 extension)', () => {
+    // @ts-expect-error — `test` n'a QUE des ids (skill/char/spec/sense/menace) : `label` n'existe plus sur ce type.
+    const bad: RollRequest = { side: { actorId: 'H' }, actionLabel: 'x', test: { skill: 'ragot', label: 'Ragot custom' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    void bad;
+  });
+
+  it('composeRollLabel : compose actor/action/skill/difficulté — UN seul composeur, jamais réassemblé au call-site', () => {
+    useGame.setState({ party: [hero()] });
+    const h = useGame.getState().party[0];
+    expect(composeRollLabel(h, 'Rumeur commerciale', { skill: 'ragot' }, 'intermediaire')).toBe('Héros — Rumeur commerciale (Ragot Intermédiaire (+0))');
   });
 });
 

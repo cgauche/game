@@ -39,7 +39,7 @@ import {
 import { seasonOfMonth } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
 import { registerCascadeApplier } from './cascade';
-import { openRoll, freeCons } from './rollSeam';
+import { openPartyTest, openWorldTest, freeCons } from './rollSeam';
 import { actorIn } from './combatOrParty';
 import type { Get, Set } from './flowTypes';
 
@@ -193,11 +193,10 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   }
   // Le vendeur NPC porte ses +DR de vente (lot partiel / Surplus) sur SON DR (l.339-341).
   const sellerDR = buySellerDR(partial, offer.surplus);
-  openRoll(get, set, {
-    side: { partyBest: { skill: 'marchandage' } },
-    test: { skill: 'marchandage', label: 'Marchandage — achat' },
+  openPartyTest(get, set, {
+    skill: 'marchandage',
+    actionLabel: 'Achat',
     difficulty: 'intermediaire',
-    klass: 'hero-test',
   }, PORT_BUY_BARGAIN_KIND, { cargoId, want, basePrice: offer.basePrice, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
 }
 
@@ -272,11 +271,10 @@ function openPortSellBargainStep(get: Get, set: Set, cargoIndex: number, sellEnc
     return;
   }
   const sellerDR = sellChance(st.port, lot.cargoId, vessel.lastVoyageMilles ?? 0).sellerDR;
-  openRoll(get, set, {
-    side: { partyBest: { skill: 'marchandage' } },
-    test: { skill: 'marchandage', label: 'Marchandage — vente' },
+  openPartyTest(get, set, {
+    skill: 'marchandage',
+    actionLabel: 'Vente',
     difficulty: 'intermediaire',
-    klass: 'hero-test',
   }, PORT_SELL_BARGAIN_KIND, { cargoIndex, sellEnc, offerPct, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
 }
 
@@ -316,11 +314,10 @@ function openPortSellBuyerStep(get: Get, set: Set, cargoIndex: number, sellEnc: 
   if (!st || !vessel || !lot) return;
   const milles = vessel.lastVoyageMilles ?? 0;
   const chance = sellChance(st.port, lot.cargoId, milles);
-  openRoll(get, set, {
-    side: { worldSide: 'world', ownerId: vessel.vehicleId },
-    test: { label: 'Recherche d’acheteur' },
+  openWorldTest(get, set, {
+    ownerId: vessel.vehicleId,
+    actionLabel: 'Recherche d’acheteur',
     difficulty: 'intermediaire',
-    klass: 'subi',
   }, PORT_SELL_BUYER_KIND, { cargoIndex, sellEnc, retryHalf: allowHalfRetry, attempt, baseValue: chance.target });
 }
 
@@ -387,11 +384,10 @@ export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
       log(get, set, [`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot ne trouve pas de camelot — aucun acheteur trouvé.`]);
       return;
     }
-    openRoll(get, set, {
-      side: { partyBest: { skill: 'ragot' } },
-      test: { skill: 'ragot', label: 'Ragot — recherche d’acheteur' },
+    openPartyTest(get, set, {
+      skill: 'ragot',
+      actionLabel: 'Recherche d’acheteur',
       difficulty: chance.gossip.difficulty,
-      klass: 'hero-test',
     }, PORT_SELL_GOSSIP_KIND, { cargoIndex });
     return;
   }

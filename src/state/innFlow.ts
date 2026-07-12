@@ -17,7 +17,7 @@ import { activityById } from '../engine/activities';
 import { difficultyFromModifier } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { applyOps, type GameOp } from '../engine/ops';
-import { openRoll, freeCons } from './rollSeam';
+import { openPartyTest, freeCons } from './rollSeam';
 import { registerCascadeApplier } from './cascade';
 import { generateTradeRumour } from './landMarketFlow';
 import { placeOfScene } from './worldMap';
@@ -38,11 +38,10 @@ export function gatherInnInfo(get: Get, set: Set): void {
   const def = activityById(ACTIVITY_ID);
   const skillId = def?.skills?.[0]?.skillId;
   if (!def || !skillId) return;
-  openRoll(get, set, {
-    side: { partyBest: { skill: skillId, assisted: false } },
-    test: { skill: skillId, label: def.label },
+  openPartyTest(get, set, {
+    skill: skillId, assisted: false,
+    actionLabel: def.label,
     difficulty: difficultyFromModifier(DIFFICULTY_MODIFIERS[def.difficulty ?? 'intermediaire']),
-    klass: 'hero-test',
   }, INN_GOSSIP_KIND, {});
 }
 

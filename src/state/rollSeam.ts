@@ -64,11 +64,16 @@ export interface RollRequest {
     | { partyBest: { skill?: string; char?: CharKey; assisted?: boolean } }
     | { worldSide: 'enemy' | 'world'; ownerId?: string }
     | { participants: BatchParticipant[]; ownerId?: string };
-  /** Le TEST déclaré (réf structurée — passe telle quelle à `testValue`). `label` = le NOM DE L'ACTION
-   *  SEUL (« Forcer le rythme », « Prière », « Désertion »…) — jamais un template pré-assemblé avec le
-   *  nom de l'acteur/la compétence/la difficulté : la porte COMPOSE l'affichage complet (`composeRollLabel`)
-   *  depuis les ids (doctrine labels : le call-site déclare, l'affichage se dérive en UN endroit). */
-  test: { skill?: string; char?: CharKey; spec?: string; sense?: PairedSense; menace?: string; label: string };
+  /** Le NOM DE L'ACTION SEUL (« Forcer le rythme », « Prière », « Désertion »…) — CHAMP STRUCTURÉ
+   *  DISTINCT de `test` (fix de classe #352 : l'ancien `test.label` texte-libre pouvait se confondre
+   *  avec la compétence). Rendu UNIQUEMENT en position de TITRE (`rollTitle`) — jamais recomposé avec
+   *  le nom de l'acteur/la compétence/la difficulté au call-site. */
+  actionLabel: string;
+  /** Le TEST déclaré — SEULE source des ids compétence/carac (réf structurée, passe telle quelle à
+   *  `testValue`). AUCUN champ de texte ici : le libellé de compétence affiché est TOUJOURS DÉRIVÉ de
+   *  `skill`/`char` par `testSkillLabel` (catalogue `findSkillById`/`CHAR_LABELS`) — insurchargeable,
+   *  un call-site ne peut plus injecter de texte en position de compétence. */
+  test: { skill?: string; char?: CharKey; spec?: string; sense?: PairedSense; menace?: string };
   difficulty: Difficulty;
   klass: RollClass;
   /** Requis pour un `batch`/multi ; défaut `summed-dr` (Test d'équipage, MDG ch.14). */
@@ -90,26 +95,36 @@ export function effectiveTarget(actor: Combatant | undefined, test: RollRequest[
   return Math.max(policy.targetMin, Math.min(policy.targetMax, value + DIFFICULTY_MODIFIERS[difficulty]));
 }
 
-/** COMPOSE l'affichage complet d'une étape mono depuis les ids déclarés — SOURCE UNIQUE (mandat
+/** Libellé de COMPÉTENCE/carac d'un Test DÉCLARÉ — DÉRIVÉ des ids `skill`/`char` (catalogue
+ *  `findSkillById`/`CHAR_LABELS`) uniquement, jamais d'un texte libre : `RollRequest['test']` ne porte
+ *  plus de champ texte (fix de classe #352), donc AUCUN call-site ne peut se substituer à cette
+ *  dérivation. `undefined` si le Test ne porte ni compétence ni caractéristique (ex. Désertion —
+ *  cible posée par `meta.baseValue`). */
+export function testSkillLabel(test: RollRequest['test']): string | undefined {
+  return test.skill ? (findSkillById(test.skill)?.label ?? test.skill) : test.char ? CHAR_LABELS[test.char] : undefined;
+}
+
+/** COMPOSE l'affichage détaillé d'une étape mono depuis les ids déclarés — SOURCE UNIQUE (mandat
  *  coordinateur) : plus un call-site n'assemble `${actor.name} — ${action} (${skill} ${difficulté})` à
- *  la main. `action` = `req.test.label` (nom seul) ; le détail (compétence/carac + difficulté) est
- *  omis si le Test ne porte ni compétence ni caractéristique (ex. Désertion — cible posée par
- *  `meta.baseValue`, aucun Test de compétence réel à nommer). */
+ *  la main. `action` = `req.actionLabel` (nom seul) ; le détail (compétence/carac + difficulté) est
+ *  omis si le Test ne porte ni compétence ni caractéristique. Position : `step.label` (sous-titre
+ *  d'étape) — JAMAIS le titre de cascade (`rollTitle`, plus court, pas de duplication). */
 export function composeRollLabel(actor: Combatant | undefined, action: string, test: RollRequest['test'], difficulty: Difficulty): string {
-  const skillLabel = test.skill ? (findSkillById(test.skill)?.label ?? test.skill) : test.char ? CHAR_LABELS[test.char] : undefined;
+  const skillLabel = testSkillLabel(test);
   const detail = skillLabel ? `${skillLabel} ${DIFFICULTY_LABELS[difficulty]}` : undefined;
   return `${actor ? `${actor.name} — ` : ''}${action}${detail ? ` (${detail})` : ''}`;
 }
 
 /**
- * TITRE d'un jet — SOURCE UNIQUE (#295 Lot 0, Décision 1a). Promotion de `composeRollLabel` : résout
- * l'acteur depuis les ids DÉCLARÉS (`resolveMonoSide`, même résolution que la construction de l'étape)
- * puis compose. Les appelants (modales/pending) affichent `pending.title`/`step.label` — plus AUCUN ne
- * réassemble `${actor} — ${action} (${skill})` à la main.
+ * TITRE d'un jet — SOURCE UNIQUE (#295 Lot 0, Décision 1a ; réduit au fix de classe #352). C'est
+ * `req.actionLabel` SEUL — jamais recomposé avec acteur/compétence/difficulté : ce détail vit DÉJÀ
+ * dans `step.label` (`buildMonoStep`, via `composeRollLabel`), rendu en SOUS-TITRE par `CascadeModal`.
+ * Un titre composé comme `step.label` produirait un DOUBLE RENDU exact (#352 — bug rapporté : la même
+ * ligne « Héros — Action (Compétence Difficulté) » deux fois dans la modale).
  */
 export function rollTitle(get: Get, req: RollRequest): string {
-  const { actor } = resolveMonoSide(get, req);
-  return composeRollLabel(actor, req.test.label, req.test, req.difficulty);
+  void get;
+  return req.actionLabel;
 }
 
 /**
@@ -230,8 +245,10 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
     // (`modalArbiter.ts`) route son owner au siège MJ via le sentinel `WORLD_STEP_OWNER`
     // (`netOwnership.seatOwns`), à l'hôte sinon (écart 1 documenté en tête de fichier, fermé Ronde 1).
     ...(!actorId && 'worldSide' in req.side ? { worldOwner: true } : {}),
-    label: composeRollLabel(actor, req.test.label, req.test, req.difficulty),
-    rollLabel: req.test.label,
+    label: composeRollLabel(actor, req.actionLabel, req.test, req.difficulty),
+    // Compétence DÉRIVÉE du catalogue (`testSkillLabel`) — jamais `req.actionLabel` sauf repli (Test
+    // SANS compétence/carac déclarée, ex. Désertion : rien à nommer en position de compétence).
+    rollLabel: testSkillLabel(req.test) ?? req.actionLabel,
     base: baseValue ?? (actor ? testValue(actor, req.test.skill, req.test.char, req.test.spec, req.test.sense) : 0),
     target,
     result: null,
@@ -254,7 +271,7 @@ function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: Cascade
   return {
     id: kind,
     kind,
-    label: req.test.label,
+    label: req.actionLabel,
     participants,
     aggregate: req.aggregate ?? 'summed-dr',
     interactive: true,
@@ -284,6 +301,49 @@ export function openRoll(get: Get, set: Set, req: RollRequest, kind: string, met
     return;
   }
   startCascade(get, set, { title: rollTitle(get, req), purpose: 'test', steps: [step] });
+}
+
+/**
+ * FORME STÉRÉOTYPÉE 1/2 (#352 extension) : le meilleur PJ du groupe teste UNE compétence/carac
+ * (`klass:'hero-test'`, side `partyBest`) — 8 call-sites identiques avaient la compétence RÉPÉTÉE
+ * (`side.partyBest.skill` ET `req.test.skill`, divergence exprimable = bug possible). SOURCE UNIQUE :
+ * la compétence se déclare UNE FOIS ; `side`/`test` la reprennent ICI, jamais recopiée au call-site.
+ * Réserve `openRoll` (exporté) aux formes hors ce patron (`enemy`/`batch`/`actorId` — cf. `rollSeam.test.ts`).
+ */
+export function openPartyTest(
+  get: Get, set: Set,
+  spec: { skill: string; char?: CharKey; assisted?: boolean; spec?: string; sense?: PairedSense; menace?: string; actionLabel: string; difficulty: Difficulty },
+  kind: string,
+  meta?: CascadeStepMeta,
+): void {
+  const { skill, char, assisted, spec: specName, sense, menace, actionLabel, difficulty } = spec;
+  openRoll(get, set, {
+    side: { partyBest: { skill, char, assisted } },
+    actionLabel,
+    test: { skill, char, spec: specName, sense, menace },
+    difficulty,
+    klass: 'hero-test',
+  }, kind, meta);
+}
+
+/**
+ * FORME STÉRÉOTYPÉE 2/2 (#352 extension) : Test SUBI par le siège MONDE (`klass:'subi'`, side
+ * `worldSide`) — désertion/recherche d'acheteur : aucune compétence (la cible est posée par
+ * l'appelant via `meta.baseValue`), seul `ownerId` varie. SOURCE UNIQUE, cf. `openPartyTest`.
+ */
+export function openWorldTest(
+  get: Get, set: Set,
+  spec: { ownerId: string; actionLabel: string; difficulty: Difficulty },
+  kind: string,
+  meta?: CascadeStepMeta,
+): void {
+  openRoll(get, set, {
+    side: { worldSide: 'world', ownerId: spec.ownerId },
+    actionLabel: spec.actionLabel,
+    test: {},
+    difficulty: spec.difficulty,
+    klass: 'subi',
+  }, kind, meta);
 }
 
 /** Reconstruit l'issue SCELLÉE (`TestOutcome`) d'une étape déjà résolue — lecture PARTAGÉE pour les

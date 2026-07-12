@@ -23,7 +23,7 @@ import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { d100 } from '../engine/dice';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { registerCascadeApplier } from './cascade';
-import { openRoll, freeCons } from './rollSeam';
+import { openPartyTest, freeCons } from './rollSeam';
 import { actorIn } from './combatOrParty';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney } from '../engine/money';
 import {
@@ -103,11 +103,10 @@ export function openLandMarket(get: Get, set: Set): void {
   // du prix de base (l.180). L'« index géographique du Reikland » (l.180) est ici la liste des Lieux de la
   // carte porteurs d'un `market` (aucun catalogue neuf). #274 sweep : ce Test était un `rollTest` inline
   // silencieux (jamais interrogeable/surfacé au MJ) — migré sur la porte `openRoll`.
-  openRoll(get, set, {
-    side: { partyBest: { skill: 'ragot', assisted: false } },
-    test: { skill: 'ragot', label: 'Ragot — rumeur commerciale' },
+  openPartyTest(get, set, {
+    skill: 'ragot', assisted: false,
+    actionLabel: 'Rumeur commerciale',
     difficulty: difficultyFromModifier(DIFFICULTY_MODIFIERS[gossipRule.difficulty] + gossipRule.mod),
-    klass: 'hero-test',
   }, LAND_GOSSIP_KIND, { placeId: cur.placeId });
 }
 
@@ -156,11 +155,10 @@ export function landEvalWine(get: Get, set: Set, cargoId: string): void {
   if (!best) { log(get, set, ['Personne dans le groupe ne sait évaluer un vin.']); return; }
   const diff = wineEvalDifficulty(testValue(best.actor, 'resistance-a-l-alcool'));
   // #274 sweep : `rollTest` inline silencieux — migré sur `openRoll`.
-  openRoll(get, set, {
-    side: { partyBest: { skill: 'evaluation', assisted: false } },
-    test: { skill: 'evaluation', label: `Évaluation — ${offer.label}` },
+  openPartyTest(get, set, {
+    skill: 'evaluation', assisted: false,
+    actionLabel: `Évaluer ${offer.label}`,
     difficulty: diff,
-    klass: 'hero-test',
   }, LAND_WINE_EVAL_KIND, { cargoId });
 }
 

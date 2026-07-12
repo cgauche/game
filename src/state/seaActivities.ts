@@ -113,7 +113,7 @@ function eligibleSeaActivityPicks(get: Get, picks: Record<string, SeaActivityPic
 
 /** Étape MONO « Cartographie » (l.288-290, `sea-activity-chart`) : Métier (Cartographe), Complexe (−10). */
 function buildSeaChartStep(hero: Combatant, def: ActivityDef, pick: SeaActivityPick): CascadeStep {
-  const test: RollRequest['test'] = { skill: 'metier', spec: 'Cartographe', label: 'Cartographie' };
+  const test: RollRequest['test'] = { skill: 'metier', spec: 'Cartographe' };
   const difficulty = def.difficulty ?? 'complexe';
   return {
     id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actorId: hero.id,
@@ -138,7 +138,7 @@ function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: ActivityD
     return null;
   }
   const difficulty = def.difficulty ?? 'intermediaire';
-  const test: RollRequest['test'] = { skill: spec.used?.skillId, spec: spec.used?.spec, label: def.label };
+  const test: RollRequest['test'] = { skill: spec.used?.skillId, spec: spec.used?.spec };
   return {
     id: `sea-activity-generic-${hero.id}`, kind: 'sea-activity-generic', actorId: hero.id,
     label: composeRollLabel(hero, def.label, test, difficulty), rollLabel: def.label,
@@ -174,7 +174,7 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
   const iSteps: CascadeStep[] = [];
   const surfacedSteps: CascadeStep[] = [];
   for (const step of steps) {
-    const req: RollRequest = { side: { actorId: step.actorId! }, test: { label: step.label ?? step.kind }, difficulty: 'intermediaire', klass: 'hero-test' };
+    const req: RollRequest = { side: { actorId: step.actorId! }, actionLabel: step.label ?? step.kind, test: {}, difficulty: 'intermediaire', klass: 'hero-test' };
     (resolveSurface(get, req, step.kind) === 'I' ? iSteps : surfacedSteps).push(step);
   }
   if (iSteps.length) runCascadeImmediate(get, set, iSteps);
@@ -205,7 +205,7 @@ function openNextOpportunityTrade(get: Get, set: Set): void {
     return;
   }
   set({ money: fromBrass(toBrass(get().money) - invest * PA_PER_CO) });
-  const test: RollRequest['test'] = { skill: OPPORTUNITE.test.skillId, label: 'Commerce d\'opportunité' };
+  const test: RollRequest['test'] = { skill: OPPORTUNITE.test.skillId };
   get().startExtendedTest({
     actorId: hero.id, label: 'Commerce d\'opportunité', skillLabel: 'Marchandage',
     target: effectiveTarget(hero, test, OPPORTUNITE.test.difficulty), targetDR: OPPORTUNITE.test.totalDR,

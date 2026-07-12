@@ -89,7 +89,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openRoll, composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest, type Consequence } from './rollSeam';
+import { openPartyTest, openWorldTest, composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest, type Consequence } from './rollSeam';
 import { registerCascadeApplier, startCascade, runCascadeImmediate } from './cascade';
 
 /** Navire hostile de l'événement en cours (MDG ch.15 « Cogue pirate » / « Langskip skaeling ») — porté
@@ -418,7 +418,7 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
       interactive: true,
       essential: a.roleId === essentialRoleId,
       base,
-      target: effectiveTarget(a.crew, { label: '' }, 'intermediaire', base),
+      target: effectiveTarget(a.crew, {}, 'intermediaire', base),
       bonusSlOnSuccess: role ? crewTalentDR(a.crew, role) : 0,
       result: null,
     };
@@ -1027,7 +1027,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   if (daysAtSea % 30 === 0) {
     const patients = get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.name === 'scorbut'));
     if (patients.length) {
-      const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance', label: 'Scorbut' };
+      const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
       const steps: CascadeStep[] = patients.map((h) => {
         const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
         const diff: Difficulty = soup ? 'facile' : 'intermediaire';
@@ -1038,7 +1038,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
           result: null, interactive: true, meta: { soup },
         };
       });
-      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, test: { label: 'Scorbut' }, difficulty: 'intermediaire', klass: 'subi' };
+      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Scorbut', test: {}, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-scorbut') === 'I') {
         const resolved = runCascadeImmediate(get, set, steps);
         tell(get, set, resolved.flatMap((s) => s.outcome ?? []));
@@ -1118,14 +1118,14 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
     const diff = exhaustionDifficulty(true);
     const patients = get().party.filter((h) => !h.dead);
     if (patients.length) {
-      const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance', label: 'Épuisement' };
+      const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
       const steps: CascadeStep[] = patients.map((h) => ({
         id: `sea-epuisement-${h.id}`, kind: 'sea-epuisement', actorId: h.id,
         label: composeRollLabel(h, 'Épuisement', test, diff), rollLabel: 'Épuisement',
         base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
         result: null, interactive: true,
       }));
-      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, test: { label: 'Épuisement' }, difficulty: 'intermediaire', klass: 'subi' };
+      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Épuisement', test: {}, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-epuisement') === 'I') {
         const resolved = runCascadeImmediate(get, set, steps);
         tell(get, set, resolved.flatMap((s) => s.outcome ?? []));
@@ -1807,10 +1807,10 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
         // (bon/mauvais présage, `tellManann`/`applyShipMoraleDelta`) migre dans l'applier `sea-priere`
         // via `meta` SÉRIALISABLE (coop) — TOUJOURS `return` : surfacé → suspend ; inline → l'applier a
         // déjà tout appliqué (rien à refaire ici).
-        openRoll(get, set, {
-          side: { partyBest: { skill: 'priere' } },
-          test: { skill: 'priere', label: 'Prière' },
-          difficulty: pd, klass: 'hero-test',
+        openPartyTest(get, set, {
+          skill: 'priere',
+          actionLabel: 'Prière',
+          difficulty: pd,
         }, 'sea-priere', { manannD, moraleD });
         return;
       }
@@ -2136,10 +2136,10 @@ export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
   const vessel = get().vessel;
   const threshold = allow && vessel ? moraleBand(vessel.morale.score).desertionRoll : 0;
   if (threshold) {
-    openRoll(get, set, {
-      side: { worldSide: 'world', ownerId: vessel!.vehicleId },
-      test: { label: 'Désertion' },
-      difficulty: 'intermediaire', klass: 'subi',
+    openWorldTest(get, set, {
+      ownerId: vessel!.vehicleId,
+      actionLabel: 'Désertion',
+      difficulty: 'intermediaire',
     }, 'sea-desertion', { baseValue: threshold, toPlaceId: p.to.id });
     if (get().pendingCascade) return; // surfacé (V, MJ voit/lance) — l'applier `sea-desertion` reprend la suite
     return; // inline : l'applier a DÉJÀ enchaîné `resolvePortArrival`/`transitionTo` (cf. ci-dessous)

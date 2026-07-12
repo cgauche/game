@@ -26,7 +26,7 @@ import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
 import { registerCascadeApplier, startCascade } from './cascade';
-import { freeCons, openRoll } from './rollSeam';
+import { freeCons, openPartyTest } from './rollSeam';
 import { actorIn } from './combatOrParty';
 import type { CascadeStep } from './pendings';
 
@@ -315,11 +315,10 @@ export function searchAvailability(get: Get, set: Set): void {
     finalizeSearchAvailability(get, set, m.entityId, restockPeriod, false);
     return;
   }
-  openRoll(get, set, {
-    side: { partyBest: { skill: 'ragot', char: 'sociabilite' } }, // Soutien LDB 12 — même valeur que `partyAssisted`
-    test: { skill: 'ragot', char: 'sociabilite', label: 'Ragot — recherche active' },
+  openPartyTest(get, set, {
+    skill: 'ragot', char: 'sociabilite', // Soutien LDB 12 — même valeur que `partyAssisted`
+    actionLabel: 'Recherche active',
     difficulty: 'intermediaire',
-    klass: 'hero-test',
   }, MERCHANT_RAGOT_KIND, { entityId: m.entityId, restockPeriod });
 }
 
