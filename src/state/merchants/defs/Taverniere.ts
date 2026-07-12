@@ -12,5 +12,6 @@ export const merchantArchetype: MerchantArchetypeDef = {
   settlement: 'village',
   resaleRate: 0.5, // LDB 59 l.54
   bargainSkill: 45,
+  boniment: 'Un coin de table, une pinte qui mousse et de quoi caler l’estomac — installez-vous, la maison ne mord pas.',
   curated: ['ration', 'repas-auberge', 'biere-pinte', 'vin-bouteille', 'nourriture-courses-journee'],
 };

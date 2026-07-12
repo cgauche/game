@@ -126,8 +126,8 @@ const PANEL_REDEFINE_BASELINE: Record<string, number> = {
 //      - ViewControls.tsx / PovControls.tsx : chrome de bouton PARTAGÉ (constante `BTN`) flottant en
 //        overlay HTML par-dessus le canvas iso (jeu + éditeur) — l'exception « boutons de canvas »
 //        nommée par le ticket #373, hors flux document donc hors `.panel`/`.btn` par nature.
-//    TODO(#373) : cliquet (xi) « écran plein-champ sans `.panel` dans son sous-arbre » DIFFÉRÉ —
-//    heuristique à calibrer au triage du programme #371 (fichiers cibles pas encore nominés).
+//    TODO(#373) : cliquet (xi) « écran plein-champ sans `.panel` dans son sous-arbre » — heuristique
+//    et fichiers cibles à définir au triage du programme #371.
 const BARE_BUTTON_EXEMPT_FILES = new Set([
   'OptionChooser.tsx',
   'Tabs.tsx',
@@ -197,7 +197,7 @@ const DOMAIN_CSS_MODULES = [
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
   'styles/combat-modals.css': 141,
-  'styles/combat-ui.css': 122,
+  'styles/combat-ui.css': 112,
   'styles/compendium.css': 55,
   'styles/creator.css': 74,
   'styles/editor.css': 112,

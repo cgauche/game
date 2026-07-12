@@ -121,6 +121,16 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.modal-actions` | Barre d'actions de modale (max 2 boutons : ghost à gauche, primaire à droite) | JAMAIS de 3ᵉ bouton — les dépenses de ressources vivent dans `.rm-influence`, pas ici. |
 | `.rm-influence` | Rangée « influencer le jet » (Chance/Pacte/Résilience/Détermination) | Vide → invisible (`:empty{display:none}`) ; composée par `InfluenceRow` (CLAUDE.md). |
 
+### Bandeau d'interlocuteur / bande d'ambiance
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.dialogue-box` (+ `.dlg-boniment`) | Surface du bandeau (portrait + nom + réplique) | Composée par la primitive `SpeakerBanner` (CLAUDE.md) — `.dialogue-box` seul flotte en overlay bas d'écran (variant `dialogue`) ; `.dlg-boniment` la remet dans le flux normal (variant statique marchand/aubergiste). Jamais recopiée à la main. |
+| `.dlg-head` / `.dlg-portrait` / `.dlg-body` | Structure interne (portrait + colonne texte) | Posées par `SpeakerBanner` — le portrait se replie sur un fleuron `Ornaments` sans entité (boniment). |
+| `.dlg-speaker` / `.dlg-text` | Nom de l'interlocuteur / réplique | Idem, posées par `SpeakerBanner`. |
+| `.dlg-choices` (+ `.dlg-choice`, `.dlg-choice-text`, `.dlg-choice-cost`) | Zone de choix du dialogue arborescent | Variant `dialogue` seulement — le contenu des lignes reste au métier (`DialogueBox`), la primitive ne pose que le conteneur. |
+| `.scene-backdrop` (+ `.scene-backdrop-fallback`) | Bande d'illustration d'ambiance (bord haut d'un panel) | Composée par la primitive `SceneBackdrop` (CLAUDE.md) — sans `backdropId`/id inconnu, repli dégradé + fleuron `Ornaments`, jamais un trou. |
+
 ## Densité et contrôles stylisés
 
 - **Aucun contrôle natif non stylisé.** `<input type=checkbox/radio>` et `<select>` système sont

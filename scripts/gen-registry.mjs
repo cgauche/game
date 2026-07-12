@@ -283,6 +283,15 @@ export const REGISTRIES = [
     idUnion: { typeName: 'IconIdGenerated', field: 'id' },
   },
   {
+    // Bandes d'ambiance (`SceneBackdrop`) : 1 illustration stylisée = 1 fichier defs/.
+    dir: 'src/ui/backdrops/defs',
+    out: 'src/ui/backdrops/_registry.generated.ts',
+    exportName: 'backdrop',
+    arrayName: 'BACKDROP_DEFS',
+    type: 'BackdropDef',
+    typeFrom: './types',
+  },
+  {
     // Sons (assets CC0 Kenney dans public/audio) : 1 son (avec variantes) = 1 fichier defs/.
     dir: 'src/audio/defs',
     out: 'src/audio/_registry.generated.ts',
@@ -318,7 +327,7 @@ function genOne(r) {
     return 0;
   }
   const files = entries
-    .filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts') && !f.endsWith('.ascii.ts') && f !== 'index.ts')
+    .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !/\.test\.tsx?$/.test(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
     .sort();
   // `fields` (option PAR registre) : un module de def exporte PLUSIEURS noms (ex. `file`+`schema`,
   // cf. src/data/schemas/defs/) → une entrée `{ champ1, champ2, … }` par fichier, au lieu du
@@ -329,7 +338,7 @@ function genOne(r) {
     const names = r.fields
       ? r.fields.map((fn) => `${fn} as e${i}_${fn}`).join(', ')
       : `${r.exportName} as e${i}`;
-    return `import { ${names} } from '${importDir}/${f.replace(/\.ts$/, '')}';`;
+    return `import { ${names} } from '${importDir}/${f.replace(/\.tsx?$/, '')}';`;
   });
   const arr = r.fields
     ? files.map((_, i) => `{ ${r.fields.map((fn) => `${fn}: e${i}_${fn}`).join(', ')} }`)

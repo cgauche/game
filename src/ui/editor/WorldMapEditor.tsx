@@ -9,6 +9,8 @@ import { resolvePortRef } from '../../state/worldMap';
 import { EffectList } from './EffectList';
 import { Icon, IconG } from '../Icon';
 import { ICON_DEFS } from '../icons';
+import { BACKDROPS } from '../backdrops';
+import { SceneBackdrop } from '../SceneBackdrop';
 import { MediaSelect, type MediaOption } from '../MediaSelect';
 import { ScreenShell } from '../ScreenShell';
 import { Prose } from '../Prose';
@@ -57,6 +59,31 @@ function IconField({ label, value, onChange }: { label: string; value?: string; 
         onSelect={(k) => onChange(k || undefined)}
         placeholder={value && !known ? `Icône héritée « ${value} » — choisir dans le catalogue` : 'Épingle par défaut'}
       />
+    </label>
+  );
+}
+
+/** Options du picker de bande d'ambiance (#371) : catalogue COMPLET `src/ui/backdrops`, patron IconField. */
+const BACKDROP_OPTIONS: MediaOption[] = [
+  { key: '', media: undefined, label: 'Repli d’ambiance (dégradé)' },
+  ...Object.values(BACKDROPS)
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((d) => ({ key: d.id, label: d.label, sub: d.id })),
+];
+
+/** Picker de fond d'ambiance (`SceneBackdrop`) — même patron que `IconField` (`MediaSelect`). */
+function BackdropField({ label, value, onChange }: { label: string; value?: string; onChange: (v: string | undefined) => void }) {
+  const known = value != null && !!BACKDROPS[value];
+  return (
+    <label className="ed-field">
+      {label}
+      <MediaSelect
+        options={BACKDROP_OPTIONS}
+        value={known ? value : ''}
+        onSelect={(k) => onChange(k || undefined)}
+        placeholder={value && !known ? `Fond hérité « ${value} » — choisir dans le catalogue` : 'Repli d’ambiance (dégradé)'}
+      />
+      <div style={{ marginTop: 6, maxWidth: 260 }}><SceneBackdrop backdropId={known ? value : undefined} /></div>
     </label>
   );
 }
@@ -301,6 +328,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                 <input value={selPlace.label} onChange={(e) => updPlace(selPlace.id, { label: e.target.value })} />
               </label>
               <IconField label="Icône" value={selPlace.icon} onChange={(icon) => updPlace(selPlace.id, { icon })} />
+              <BackdropField label="Fond d'ambiance" value={selPlace.backdrop} onChange={(backdrop) => updPlace(selPlace.id, { backdrop })} />
               <label className="ed-field">Scène liée
                 <select value={selPlace.scene} onChange={(e) => updPlace(selPlace.id, { scene: e.target.value })}>
                   {scenes.map((s) => <option key={s.id} value={s.id}>{s.nom} ({s.id})</option>)}

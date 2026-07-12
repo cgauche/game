@@ -19,6 +19,7 @@ export const merchantArchetype: MerchantArchetypeDef = {
   settlement: 'ville',
   resaleRate: 0.5, // LDB 59 l.54
   bargainSkill: 40,
+  boniment: 'Eau douce, biscuits qui tiennent la traversée, cordages neufs — un navire mal avitaillé, c’est un navire qui coule.',
   curated: [
     'tonneau-d-eau-douce',
     'pieces-detachees-de-navire',

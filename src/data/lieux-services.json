@@ -2,7 +2,9 @@
   {
     "id": "auberge",
     "label": "Auberge",
-    "icon": "rest/bed"
+    "icon": "rest/bed",
+    "hostLine": "Approchez, approchez ! Un lit chaud, un bon repas et pas de questions — c’est tout ce qu’on demande ici.",
+    "backdrop": "taverne-commune"
   },
   {
     "id": "temple",

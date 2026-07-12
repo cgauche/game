@@ -7,4 +7,5 @@ export const merchantArchetype: MerchantArchetypeDef = {
   settlement: 'ville',
   resaleRate: 0.5, // LDB 59 l.54
   bargainSkill: 45,
+  boniment: 'Acier trempé, fil qui ne rend jamais — regardez-moi cette allonge avant de partir vous battre à mains nues.',
 };

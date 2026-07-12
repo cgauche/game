@@ -13,5 +13,6 @@ export const merchantArchetype: MerchantArchetypeDef = {
   settlement: 'ville',
   resaleRate: 0.5, // LDB 59 l.54
   bargainSkill: 40,
+  boniment: 'Approchez, on recoud, on rebouche, on répare — je n’ai encore perdu personne sur ma table, ou presque.',
   curated: ['potion-de-guerison', 'faxtoryll', 'cataplasme-de-guerison', 'potion-de-vitalite', 'oeil-de-verre', 'crochet', 'fausse-jambe'],
 };

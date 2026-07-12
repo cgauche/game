@@ -421,6 +421,129 @@
   }
 }
 
+/* ── BANDEAU D'INTERLOCUTEUR (primitive SpeakerBanner.tsx, #371) — portrait + nom + réplique.
+   `.dialogue-box` = surface + position ; en overlay de dialogue (variant `dialogue`, DialogueBox.tsx) elle
+   flotte en bas de l'écran ; `.dlg-boniment` (variant statique, marchand/aubergiste) la remet dans le
+   flux normal du panel qui la compose. ── */
+.dialogue-box {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(680px, 94%);
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  border-radius: 12px;
+  padding: 16px 18px 14px;
+  box-shadow:
+    0 16px 50px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(201, 162, 39, 0.12);
+}
+.dialogue-box.dlg-boniment {
+  position: static;
+  transform: none;
+  width: 100%;
+  margin: 0 0 10px;
+}
+.dlg-head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.dlg-portrait {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  border: 2px solid var(--gold);
+  background: radial-gradient(circle at 50% 32%, var(--panel2), var(--bg));
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold2);
+}
+.dlg-portrait svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.dlg-body {
+  flex: 1;
+  min-width: 0;
+}
+.dlg-speaker {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  color: var(--gold2);
+  margin-bottom: 4px;
+}
+.dlg-text {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--text);
+}
+.dlg-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+}
+.dlg-choice {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  justify-content: flex-start;
+  gap: 8px;
+  padding-left: 30px;
+  position: relative;
+}
+.dlg-choice::before {
+  content: '▸';
+  position: absolute;
+  left: 12px;
+  color: var(--gold);
+  transition: transform 0.12s;
+}
+.dlg-choice:hover:not(:disabled)::before {
+  transform: translateX(3px);
+}
+.dlg-choice-text {
+  flex: 1;
+}
+.dlg-choice-cost {
+  color: var(--gold2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── BANDE D'AMBIANCE (primitive SceneBackdrop.tsx, #371) — bord haut d'un panel, coins hérités,
+   hauteur bornée. Repli sans `backdropId`/id inconnu : dégradé de tokens + fleuron `Ornaments`. ── */
+.scene-backdrop {
+  width: 100%;
+  height: 96px;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  margin: -1px -1px 10px;
+}
+.scene-backdrop svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.scene-backdrop-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--panel2), var(--bg2));
+  color: var(--gold2);
+}
+
 /* ── ÉCRAN-HUB DE VOYAGE (#333) — VoyageScreen.tsx : ScreenShell + tuiles + chronique + MasterDetail ── */
 .voyage-body { display: flex; flex-direction: column; gap: 12px; padding: 12px; min-width: 0; overflow: auto; }
 .voyage-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.95em; }

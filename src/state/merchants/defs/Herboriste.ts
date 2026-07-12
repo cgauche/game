@@ -7,4 +7,5 @@ export const merchantArchetype: MerchantArchetypeDef = {
   settlement: 'village',
   resaleRate: 0.5, // LDB 59 l.54
   bargainSkill: 40,
+  boniment: 'Racines fraîches, décoctions bien dosées — la forêt donne, il suffit de savoir cueillir.',
 };

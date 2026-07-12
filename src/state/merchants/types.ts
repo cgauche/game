@@ -23,4 +23,7 @@ export interface MerchantArchetypeDef {
   restockDays?: number;
   /** Articles garantis en stock (labels exacts), Disponibilité ignorée. */
   curated?: string[];
+  /** Réplique de boniment (donnée d'auteur, saveur maison — pas de RAW à sourcer) affichée par le
+   *  bandeau d'interlocuteur statique (`SpeakerBanner` variant `boniment`) au-dessus de l'étal. */
+  boniment?: string;
 }

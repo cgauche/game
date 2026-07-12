@@ -9,6 +9,7 @@ import { OptionChooser } from './OptionChooser';
 import { CharFrame } from './CharFrame';
 import { Coins } from './Coins';
 import { Prose } from './Prose';
+import { SceneBackdrop } from './SceneBackdrop';
 
 /**
  * Jeux de taverne (Nuits agitées & dures journées, ch.16) — modale UNIQUE : choisir un jeu, un
@@ -66,6 +67,7 @@ export function TavernGameModal() {
 
   return (
     <Modal title="Jeux de taverne" variant="plain" className="tavern-modal" onClose={close} backdropClose>
+      <SceneBackdrop backdropId="taverne-commune" />
       {result ? (
         <div className="tavern-result panel">
           <p className="tavern-vs">

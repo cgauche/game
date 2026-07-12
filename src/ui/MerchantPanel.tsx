@@ -12,6 +12,8 @@ import type { WeaponDamageSpec, WeaponRangeSpec, AmmoRangeMod } from '../engine/
 import { describeQuality } from '../engine/qualities/describe';
 import { sellGain, barterQuote, sellBuyerAvailability } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
+import type { SceneEntity } from '../state/scene';
+import { MERCHANTS } from '../state/merchants';
 import { Coins } from './Coins';
 import { Prose, mdToText } from './Prose';
 import { CharFrame } from './CharFrame';
@@ -19,6 +21,7 @@ import { TeamPortrait } from './TeamPortrait';
 import { Icon } from './Icon';
 import { ScreenShell } from './ScreenShell';
 import { Tabs } from './Tabs';
+import { SpeakerBanner } from './SpeakerBanner';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
@@ -86,10 +89,16 @@ const TREND_CLASS: Record<string, string> = { up: 'cmp-up', down: 'cmp-down', sa
 const TREND_SYM: Record<string, string> = { up: '▲', down: '▼', same: '' };
 
 /** Présentationnel (props) — testable hors store. `initialTab`/`initialDetails`/`initialBuyView` = état de départ (SSR/test). */
-export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, onSellHalving, onBarter, onSearchAvailability, initialTab, initialDetails, initialBuyView, initialSellView }: {
+export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerName, boniment, onAddToCart, onDecCart, onRemoveCart, onClearCart, onRefuse, onPay, onAssignDist, onConfirmDist, onAddToSellCart, onRemoveSellCart, onClearSellCart, onConfirmSell, onRepair, onBargain, onAppraise, onClose, onSellHalving, onBarter, onSearchAvailability, initialTab, initialDetails, initialBuyView, initialSellView }: {
   merchant: MerchantState;
   party: Combatant[];
   money: Money;
+  /** Entité de scène du marchand (portrait du bandeau) — absente en test hors store. */
+  speakerEnt?: SceneEntity;
+  /** Nom affiché par le bandeau (label de l'entité, sinon libellé d'archétype). */
+  speakerName?: string;
+  /** Réplique de boniment de l'archétype (`MerchantArchetypeDef.boniment`), optionnelle. */
+  boniment?: string;
   onAddToCart: (id: string) => void;
   onDecCart: (id: string) => void;
   onRemoveCart: (id: string) => void;
@@ -552,6 +561,9 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
       onClose={onClose}
       meta={{ money }}
     >
+        {speakerName && (
+          <SpeakerBanner ent={speakerEnt} name={speakerName} variant="boniment">{boniment}</SpeakerBanner>
+        )}
         <Tabs
           className="mp-tabnav"
           tabs={[
@@ -606,6 +618,7 @@ export function MerchantPanel() {
   const merchant = useGame((s) => s.merchant);
   const party = useGame((s) => s.party);
   const money = useGame((s) => s.money);
+  const scene = useGame((s) => s.scene);
   const addToCart = useGame((s) => s.addToCart);
   const decFromCart = useGame((s) => s.decFromCart);
   const removeFromCart = useGame((s) => s.removeFromCart);
@@ -626,9 +639,12 @@ export function MerchantPanel() {
   const barterExchange = useGame((s) => s.barterExchange);
   const searchAvailability = useGame((s) => s.searchAvailability);
   if (!merchant) return null;
+  const speakerEnt = scene?.entities.find((e) => e.id === merchant.entityId);
+  const arch = MERCHANTS[merchant.archetype];
+  const speakerName = speakerEnt?.label ?? arch?.label;
   return (
     <MerchantPanelView
-      merchant={merchant} party={party} money={money}
+      merchant={merchant} party={party} money={money} speakerEnt={speakerEnt} speakerName={speakerName} boniment={arch?.boniment}
       onAddToCart={addToCart} onDecCart={decFromCart} onRemoveCart={removeFromCart} onClearCart={clearCart} onRefuse={refuseBargain} onPay={payCart}
       onAssignDist={assignDistribution} onConfirmDist={confirmDistribution}
       onAddToSellCart={addToSellCart} onRemoveSellCart={removeFromSellCart} onClearSellCart={clearSellCart} onConfirmSell={confirmSell}

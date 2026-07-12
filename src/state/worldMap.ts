@@ -53,6 +53,9 @@ export interface MapPlace {
    *  coordonnées PLAN-LOCALES 0-100 (indépendantes de `pos`, qui reste la position du lieu sur la
    *  carte du MONDE). Absent/vide ⇒ le lieu n'offre pas d'onglet Plan. */
   poi?: PlacePoi[];
+  /** Bande d'ambiance du hub de ce lieu (id du registre `src/ui/backdrops`) — surcharge le défaut
+   *  éventuel porté par le service (`lieux-services.json`, ex. auberge). Éditable dans `WorldMapEditor`. */
+  backdrop?: string;
 }
 
 /** Un POI de PLAN (#345 phase 5) : cible EXCLUSIVE `sceneId` (transition vers une scène du projet,
@@ -236,6 +239,10 @@ export interface ResolvedPlaceService {
   market?: LandMarketProfile;
   /** Offre de couchage/repas effective d'une auberge (propre au service, sinon dérivée de la scène). */
   rest?: RestPlaces;
+  /** Réplique de boniment (catalogue `lieux-services.json`) du bandeau d'interlocuteur statique. */
+  hostLine?: string;
+  /** Bande d'ambiance par défaut (catalogue `lieux-services.json`, id du registre `src/ui/backdrops`). */
+  backdrop?: string;
 }
 
 /** Offre de couchage en AUBERGE portée par une scène (`rest.auberge`, ou une `restZone` qui l'offre) —
@@ -270,6 +277,8 @@ export function placeServices(place: MapPlace, scene?: Scene): ResolvedPlaceServ
       icon: def?.icon,
       desc: def?.desc,
       rest: auberge ? (s.rest ?? sceneAubergeOffer(scene)) : undefined,
+      hostLine: def?.hostLine,
+      backdrop: def?.backdrop,
     });
     declared.add(s.kind);
   }
@@ -279,7 +288,7 @@ export function placeServices(place: MapPlace, scene?: Scene): ResolvedPlaceServ
     const rest = sceneAubergeOffer(scene);
     if (rest) {
       const def = findLieuServiceById('auberge');
-      out.push({ id: 'auberge', category: 'auberge', label: def?.label ?? 'Auberge', icon: def?.icon, desc: def?.desc, rest });
+      out.push({ id: 'auberge', category: 'auberge', label: def?.label ?? 'Auberge', icon: def?.icon, desc: def?.desc, rest, hostLine: def?.hostLine, backdrop: def?.backdrop });
     }
   }
   return out;

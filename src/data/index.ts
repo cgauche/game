@@ -1423,6 +1423,10 @@ export interface LieuServiceData {
   label: string;
   icon?: string;
   desc?: string;
+  /** Réplique de boniment (saveur maison) du bandeau d'interlocuteur statique (`SpeakerBanner`). */
+  hostLine?: string;
+  /** Bande d'ambiance par défaut (id du registre `src/ui/backdrops`). */
+  backdrop?: string;
 }
 export const lieuxServices = lieuxServicesJson as LieuServiceData[];
 const lieuServiceById = new Map(lieuxServices.map((s) => [s.id, s]));

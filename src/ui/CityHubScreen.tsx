@@ -14,6 +14,8 @@ import { VB_H } from './worldMapViewport';
 import { Prose } from './Prose';
 import { Coins } from './Coins';
 import { Icon, IconG } from './Icon';
+import { SpeakerBanner } from './SpeakerBanner';
+import { SceneBackdrop } from './SceneBackdrop';
 
 /**
  * HUB DE VILLE (#343) — l'écran UNIQUE d'un LIEU de la carte : on n'empile plus des boutons flottants
@@ -128,6 +130,8 @@ export function CityHubScreen({
     if (svc.category === 'auberge') {
       return (
         <div className="city-hub-panel">
+          <SceneBackdrop backdropId={place.backdrop ?? svc.backdrop} />
+          <SpeakerBanner name="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>
           {svc.desc && <div className="city-hub-desc"><Prose md={svc.desc} /></div>}
           {/* Jamais une promesse d'action impossible (cf. `cityHubCanEnterPort`) : sans offre de
               couchage effective (`svc.rest`), les prix de chambre/repas ne s'affichent pas — ils ne
