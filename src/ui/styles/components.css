@@ -465,14 +465,21 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   .voyage-day-card { flex: 1 1 140px; }
 }
 
-/* Hub de ville (#343) — services à gauche, détail au centre (composé sur MasterDetail). */
+/* Hub de ville (#343) — services à gauche, détail au centre (composé sur MasterDetail). Le hub
+   COMPOSE `.panel` (liste ET détail) comme le Compendium (`codex-aside`/`codex-detail`) et le marché
+   (`.port-section`/`.merchant-body`) — un détail en lignes nues sur fond noir est un manque de
+   composition, pas une variante (recette 2026-07-12, cf. étalon marché). */
 .city-hub-body { display: flex; flex-direction: column; min-width: 0; padding: 12px; overflow: auto; }
-.city-hub-master { flex: 1 1 auto; }
+/* Bornée + centrée (#359bis) : sans borne, la composition liste+détail colle à gauche avec un océan
+   vide à droite au-delà de son propre max-width interne (même patron que `.port-body`/`.merchant-body`). */
+.city-hub-master { flex: 1 1 auto; width: 100%; max-width: 960px; margin: 0 auto; }
 .city-hub-weather { opacity: 0.85; }
-.city-hub-services { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-.city-hub-service { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); text-align: left; cursor: pointer; }
-.city-hub-service:hover { border-color: var(--accent); }
-.city-hub-service.active { border-color: var(--accent); background: var(--panel-strong, var(--panel)); }
+.city-hub-services { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 10px; }
+/* `color` EXPLICITE (#358bis) : ce sont des `<button>` bruts hors `.btn`/`.chip` — sans elle ils
+   héritent du noir UA (`buttontext`), illisible sur fond sombre (recette 2026-07-12). */
+.city-hub-service { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel2); color: var(--muted); text-align: left; cursor: pointer; }
+.city-hub-service:hover { border-color: var(--accent); color: var(--text); }
+.city-hub-service.active { border-color: var(--accent); background: var(--panel-strong, var(--panel2)); color: var(--text); }
 .city-hub-service-label { font-weight: 600; }
 /* Largeur max + ancrage haut (#359) : sans borne, le détail (souvent quelques lignes courtes) file
    sur toute la colonne `1fr` du master-detail — un panneau aéré-à-vide lit comme inachevé (charte). */

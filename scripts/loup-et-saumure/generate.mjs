@@ -716,6 +716,16 @@ for (const s of scenes) {
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
+// Offre de REPOS par scène (patron `scripts/arene/generate.mjs`) — les quais déclarent le service
+// `auberge` (`worldMap.places[].services`) mais `placeServices` dérive son couchage effectif de
+// `scene.rest.auberge` (`sceneAubergeOffer`, `worldMap.ts`) : sans cette offre, le panneau auberge du
+// hub affiche des prix sans bouton Dormir actionnable (recette 2026-07-12).
+const REST_OFFERS = {
+  'ls-quai-salzenmund': { auberge: true },
+  'ls-quai-erengrad': { auberge: true },
+};
+for (const s of scenes) if (REST_OFFERS[s.id] !== undefined) s.rest = REST_OFFERS[s.id];
+
 const doc = { schema: 2, scenes, worldMap };
 const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/loup-et-saumure/loup-et-saumure-projet.json');
 writeFileSync(out, JSON.stringify(doc, null, 1) + '\n');

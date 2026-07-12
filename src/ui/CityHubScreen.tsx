@@ -129,11 +129,18 @@ export function CityHubScreen({
       return (
         <div className="city-hub-panel">
           {svc.desc && <div className="city-hub-desc"><Prose md={svc.desc} /></div>}
-          <ul className="city-hub-prices">
-            <li><span>Chambre privée / nuit</span><b><Coins money={restServicePrice('privee')} /></b></li>
-            <li><span>Chambre commune / nuit</span><b><Coins money={restServicePrice('commune')} /></b></li>
-            <li><span>Repas</span><b><Coins money={restServicePrice('repas')} /></b></li>
-          </ul>
+          {/* Jamais une promesse d'action impossible (cf. `cityHubCanEnterPort`) : sans offre de
+              couchage effective (`svc.rest`), les prix de chambre/repas ne s'affichent pas — ils ne
+              mènent nulle part ici (recette 2026-07-12). */}
+          {svc.rest
+            ? (
+              <ul className="city-hub-prices">
+                <li><span>Chambre privée / nuit</span><b><Coins money={restServicePrice('privee')} /></b></li>
+                <li><span>Chambre commune / nuit</span><b><Coins money={restServicePrice('commune')} /></b></li>
+                <li><span>Repas</span><b><Coins money={restServicePrice('repas')} /></b></li>
+              </ul>
+            )
+            : <p className="city-hub-empty">Aucun couchage proposé ici pour l’instant.</p>}
           <div className="bar city-hub-actions">
             {svc.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: svc.rest, quality: rest?.quality })}>Dormir</button>}
             <button type="button" className="btn btn-primary" onClick={gatherInnInfo}>
@@ -270,7 +277,7 @@ export function CityHubScreen({
               </div>
             }
             detail={
-              <div className="city-hub-detail">
+              <div className="city-hub-detail panel">
                 {poiSel && <h3 className="city-hub-detail-head"><Icon id={poiSel.icon ?? 'nav/entry-point'} size="sm" /> {poiSel.label}</h3>}
                 {poiDetail}
               </div>
@@ -281,7 +288,7 @@ export function CityHubScreen({
             className="city-hub-master"
             listLabel="Services du lieu"
             list={
-              <div className="city-hub-services" role="listbox" aria-label="Services du lieu">
+              <div className="city-hub-services panel flush" role="listbox" aria-label="Services du lieu">
                 {services.map((s) => (
                   <button
                     key={s.id}
@@ -298,7 +305,7 @@ export function CityHubScreen({
               </div>
             }
             detail={
-              <div className="city-hub-detail">
+              <div className="city-hub-detail panel">
                 {sel && <h3 className="city-hub-detail-head"><Icon id={serviceIcon(sel)} size="sm" /> {sel.label}</h3>}
                 {detail}
               </div>
