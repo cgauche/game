@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { TAVERN_GAMES, findTavernGameById } from '../engine/tavernGame';
-import { tavernGameValue, type TavernOpponent } from '../state/tavernFlow';
+import { tavernGameValue, TAVERN_GAME_KIND, type TavernOpponent } from '../state/tavernFlow';
 import { refLabel } from '../data/index';
 import { PA_PER_SC, toBrass, fromBrass } from '../engine/money';
 import { Modal } from './Modal';
@@ -13,10 +13,12 @@ import { SceneBackdrop } from './SceneBackdrop';
 
 /**
  * Jeux de taverne (Nuits agitées & dures journées, ch.16) — modale UNIQUE : choisir un jeu, un
- * challenger et un adversaire (compagnon OU valeur abstraite fixée par la table), puis résoudre par
- * le moteur générique (`resolveTavernGame`, variante « jeu rapide » : Test opposé Intermédiaire (+0),
- * le plus de DR l'emporte). Affiche l'issue et la mise éventuelle. Ouverte via `openTavernGames`
- * (affordance montrée seulement si l'option `tavern-games` est active).
+ * challenger et un adversaire (compagnon OU valeur abstraite fixée par la table), puis résoudre EN
+ * DEUX TEMPS (#370) : le jet du challenger s'ouvre par le seam de jet (`openRoll`, modale RollShell
+ * influençable Chance/Pacte/Résilience, surfacée PAR-DESSUS) ; à son retour, le moteur générique
+ * (`resolveTavernRound`, variante « jeu rapide » : Test opposé Intermédiaire (+0), le plus de DR
+ * l'emporte) décide l'issue depuis les deux jets. Affiche l'issue et la mise éventuelle. Ouverte via
+ * `openTavernGames` (affordance montrée seulement si l'option `tavern-games` est active).
  */
 export function TavernGameModal() {
   const state = useGame((s) => s.tavernGames);
@@ -25,6 +27,9 @@ export function TavernGameModal() {
   const play = useGame((s) => s.playTavernGame);
   const replay = useGame((s) => s.openTavernGames);
   const close = useGame((s) => s.closeTavernGames);
+  // Manche EN COURS (jet du challenger surfacé par-dessus, cf. docstring) : masque le formulaire de
+  // réglage — la cascade (RollShell) porte l'interaction tant qu'elle n'a pas committé.
+  const rolling = useGame((s) => !!s.pendingCascade?.participants.some((p) => p.kind === TAVERN_GAME_KIND));
 
   const heroes = party.filter((h) => !h.dead);
   const [gameId, setGameId] = useState(TAVERN_GAMES[0]?.id ?? '');
@@ -68,7 +73,11 @@ export function TavernGameModal() {
   return (
     <Modal title="Jeux de taverne" variant="plain" className="tavern-modal" onClose={close} backdropClose>
       <SceneBackdrop backdropId="taverne-commune" />
-      {result ? (
+      {rolling ? (
+        <div className="tavern-result panel">
+          <p className="tavern-detail muted">Jet en cours…</p>
+        </div>
+      ) : result ? (
         <div className="tavern-result panel">
           <p className="tavern-vs">
             <strong>{result.gameLabel}</strong> — {result.challengerName} contre {result.opponentName}

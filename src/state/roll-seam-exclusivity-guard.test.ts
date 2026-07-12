@@ -4,6 +4,8 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanRollSeamExclusivity } from '../../scripts/guards/lib/rollSeamExclusivity.mjs';
 import { rollSeamExcluded } from '../../scripts/guards/lib/rollSeamWhitelist.mjs';
+import { scanBattleRngEngineLeak } from '../../scripts/guards/lib/battleRngEngineLeak.mjs';
+import { battleRngEngineLeakExcluded } from '../../scripts/guards/lib/battleRngEngineLeakWhitelist.mjs';
 
 /**
  * Garde-fou « exclusivité du seam de jet » (#274, DERNIER verrou du programme #276).
@@ -96,5 +98,50 @@ describe('garde-fou « seam de jet » — exclusivité de rollTest/d100/TestOutc
   it('le noyau du seam (rollSeam.ts, hors scan) porte bien TestOutcome.seal( — sinon le foyer a bougé', () => {
     const src = readFileSync(join(ROOT, 'src/state/rollSeam.ts'), 'utf8');
     expect(scanRollSeamExclusivity('src/state/rollSeam.ts', src).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Garde-fou « rng vivant → résolveur moteur » (#370, ronde 2 — cf. `battleRngEngineLeak.mjs`). Le
+ * garde d'exclusivité ci-dessus exempte TOUT `src/engine/**` au motif que le moteur pur « reçoit un
+ * rng sans jamais décider du surfaçage » — motif qui suppose que l'APPELANT passe par le seam. Ce
+ * second garde ferme le trou : un flux `state/**` qui appelle DIRECTEMENT un résolveur moteur `resolveXxx`
+ * (convention du dépôt : « roule ET décide » une confrontation complète — Test opposé/étendu, gagnant/DR)
+ * avec un rng VIVANT (`battleRng()`) au call-site contourne la policy M/V/I aussi sûrement qu'un
+ * `rollTest(` inline. C'était EXACTEMENT le trou de `tavernFlow.playTavernGame` →
+ * `resolveTavernGame(..., battleRng())` avant #370 (dorénavant décomposé en `resolveTavernRound`,
+ * PUR — aucun rng — et `rollTavernTest`, primitive `roll*` à un seul jet, appelée en POST-COMMIT par
+ * l'applier, patron `portFlow.ts`).
+ */
+describe('garde-fou « rng vivant → résolveur moteur » — un flux state/** ne peut plus appeler un resolveXxx(…) moteur avec battleRng() en direct (#370)', () => {
+  it('aucun fichier hors whitelist ne remet un rng vivant à un résolveur moteur', () => {
+    const offenders: string[] = [];
+    for (const f of scanFiles()) {
+      const rel = relative(ROOT, f).split('\\').join('/');
+      if (/\.test\.[tj]sx?$/.test(rel) || battleRngEngineLeakExcluded(rel)) continue;
+      const findings = scanBattleRngEngineLeak(rel, readFileSync(f, 'utf8'));
+      for (const x of findings) offenders.push(`${rel}:${x.line} [rng vivant → ${x.name}] ${x.detail}`);
+    }
+    expect(
+      offenders,
+      `rng vivant remis à un résolveur moteur hors seam — router par openRoll (côté joueur) + rouler l'adversaire en POST-COMMIT dans l'applier (patron portFlow.ts), ou justifier l'entrée dans battleRngEngineLeakWhitelist.mjs :\n${offenders.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('fail-closed : le scanner détecte un resolveXxx(…, battleRng()) SYNTHÉTIQUE', () => {
+    const regressed = [
+      "import { resolveTavernGame } from '../engine/tavernGame';",
+      "const res = resolveTavernGame(game, playerValue, opponentValue, battleRng());",
+    ].join('\n');
+    expect(scanBattleRngEngineLeak('src/state/x.ts', regressed).length).toBe(1);
+  });
+
+  it('zéro faux positif : une primitive roll*/valeur (testValue/effectiveChar) voisine d’un battleRng() sur une AUTRE ligne ne matche pas', () => {
+    const clean = [
+      "import { rollTavernTest } from '../engine/tavernGame';",
+      "const v = testValue(hero, 'pari');",
+      "const opponentTR = rollTavernTest(opponentValue, battleRng());",
+    ].join('\n');
+    expect(scanBattleRngEngineLeak('src/state/x.ts', clean).length).toBe(0);
   });
 });

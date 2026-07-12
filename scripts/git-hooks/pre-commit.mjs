@@ -14,6 +14,8 @@ import { emojisIn } from '../guards/lib/emojiAffordance.mjs';
 import { scanHardcode } from '../guards/lib/hardcode.mjs';
 import { scanRollSeamExclusivity } from '../guards/lib/rollSeamExclusivity.mjs';
 import { rollSeamExcluded } from '../guards/lib/rollSeamWhitelist.mjs';
+import { scanBattleRngEngineLeak } from '../guards/lib/battleRngEngineLeak.mjs';
+import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWhitelist.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -55,6 +57,10 @@ for (const f of staged) {
   // détente avec src/state/roll-seam-exclusivity-guard.test.ts, SOURCE UNIQUE de la whitelist).
   if (!rollSeamExcluded(rel))
     for (const x of scanRollSeamExclusivity(rel, text)) offenders.push(`${rel}:${x.line} [seam de jet contourné] ${x.detail}`);
+  // #370 — rng vivant → résolveur moteur : resolveXxx(…, battleRng()) hors whitelist (double détente
+  // avec src/state/roll-seam-exclusivity-guard.test.ts, SOURCE UNIQUE de la whitelist).
+  if (!battleRngEngineLeakExcluded(rel))
+    for (const x of scanBattleRngEngineLeak(rel, text)) offenders.push(`${rel}:${x.line} [rng vivant → résolveur moteur] ${x.detail}`);
 }
 
 // #290 — emoji dans la DONNÉE (`src/scenes/**/*.json` + `src/data/*.json`) : même tolérance zéro que le code.

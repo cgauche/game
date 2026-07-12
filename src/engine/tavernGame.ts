@@ -59,40 +59,53 @@ export interface TavernGameResult {
   log: string;
 }
 
+/** Difficulté du Test de jeu de taverne (variante rapide, l.9-11 / Bras de fer l.34) — Intermédiaire (+0). */
+export const TAVERN_TEST_DIFFICULTY: Difficulty = 'intermediaire';
+
 /** DR d'une manche, plafonné par `drCap` sur une réussite (Boules : « Le DR maximal est de 6 DR »). */
-function roundSL(t: TestResult, cap?: number): number {
+export function roundSL(t: TestResult, cap?: number): number {
   return cap != null && t.success ? Math.min(t.sl, cap) : t.sl;
 }
 
 /**
- * Résout une partie de jeu de taverne (variante rapide RAW, ch.16 l.9-11 / Bras de fer l.34). PUR :
- * `playerValue`/`opponentValue` = valeurs EFFECTIVES de la Compétence/caractéristique du jeu (calculées par
- * l'appelant depuis le groupe), toutes deux testées Intermédiaire (+0). Le plus de DR l'emporte ; en mode
- * étendu, on accumule les DR jusqu'à ce qu'un joueur atteigne `target`.
+ * Roule UN côté (Intermédiaire (+0)) — PRIMITIVE `roll*` (convention du dépôt : `roll*` = un seul jet,
+ * jamais une décision de confrontation ; cf. `rollMerchantOpposition`/`rollTest`). Utilisée par
+ * l'APPLIER (`state/tavernFlow.ts`, POST-COMMIT du jet du joueur déjà surfacé par `openRoll`) pour
+ * rouler le côté ADVERSAIRE (« l'adversaire roule côté monde » — jamais le côté joueur, qui passe par
+ * le seam). N'accepte QU'un rng — ne décide rien (#370, décomposition de l'ex-`resolveTavernGame`).
  */
-export function resolveTavernGame(
-  game: TavernGame,
-  playerValue: number,
-  opponentValue: number,
-  rng: RNG = defaultRNG,
-): TavernGameResult {
-  const diff: Difficulty = 'intermediaire'; // « Test opposé de Compétence Intermédiaire (+0) » (l.11)
-  if (game.mode === 'extended') {
-    const target = game.target ?? 10;
-    let p = 0, o = 0, rounds = 0;
-    while (p < target && o < target && rounds < 50) {
-      rounds++;
-      p += Math.max(0, roundSL(rollTest(playerValue, diff, rng), game.drCap));
-      o += Math.max(0, roundSL(rollTest(opponentValue, diff, rng), game.drCap));
-    }
-    const winner = p > o ? 'player' : o > p ? 'opponent' : 'tie';
-    return { winner, playerSL: p, opponentSL: o, rounds, log: `${game.label} : ${p} DR cumulés contre ${o} en ${rounds} manche${rounds > 1 ? 's' : ''}.` };
-  }
-  const pt = rollTest(playerValue, diff, rng);
-  const ot = rollTest(opponentValue, diff, rng);
-  const ps = roundSL(pt, game.drCap);
-  const os = roundSL(ot, game.drCap);
-  const opp = resolveOpposed({ ...pt, sl: ps }, { ...ot, sl: os });
+export function rollTavernTest(value: number, rng: RNG = defaultRNG): TestResult {
+  return rollTest(value, TAVERN_TEST_DIFFICULTY, rng);
+}
+
+/** Issue d'UNE manche entre deux `TestResult` DÉJÀ roulés — PUR (aucun rng, aucune décision de
+ *  surfaçage) : compare via `resolveOpposed`, plafonne par `game.drCap` (Boules). */
+export interface TavernRoundOutcome {
+  winner: 'player' | 'opponent' | 'tie';
+  playerSL: number;
+  opponentSL: number;
+}
+
+/**
+ * Décide UNE manche depuis deux `TestResult` DÉJÀ roulés par l'appelant (#370 : l'ex-`resolveTavernGame`
+ * roulait ET décidait, contournant le seam de jet côté joueur — cette fonction ne roule plus RIEN, elle
+ * ne fait QUE décider, comme `resolveOpposed`). Sert au mode `opposed` (manche unique) et, manche par
+ * manche, au mode `extended` (Bras de fer, l'appelant cumule `playerSL`/`opponentSL` jusqu'à `target`).
+ */
+export function resolveTavernRound(game: TavernGame, playerTR: TestResult, opponentTR: TestResult): TavernRoundOutcome {
+  const ps = roundSL(playerTR, game.drCap);
+  const os = roundSL(opponentTR, game.drCap);
+  const opp = resolveOpposed({ ...playerTR, sl: ps }, { ...opponentTR, sl: os });
   const winner = opp.winner === 'attacker' ? 'player' : opp.winner === 'defender' ? 'opponent' : 'tie';
-  return { winner, playerSL: ps, opponentSL: os, rounds: 1, log: `${game.label} : ${ps} DR contre ${os} → ${winner === 'player' ? 'gagné' : winner === 'opponent' ? 'perdu' : 'égalité'}.` };
+  return { winner, playerSL: ps, opponentSL: os };
+}
+
+/** Ligne de journal d'une manche `opposed` (variante rapide, l.11) — DR contre DR. */
+export function tavernOpposedLog(game: TavernGame, playerSL: number, opponentSL: number, winner: TavernRoundOutcome['winner']): string {
+  return `${game.label} : ${playerSL} DR contre ${opponentSL} → ${winner === 'player' ? 'gagné' : winner === 'opponent' ? 'perdu' : 'égalité'}.`;
+}
+
+/** Ligne de journal d'une partie `extended` (Bras de fer, l.34) — DR cumulés sur N manches. */
+export function tavernExtendedLog(game: TavernGame, playerSL: number, opponentSL: number, rounds: number): string {
+  return `${game.label} : ${playerSL} DR cumulés contre ${opponentSL} en ${rounds} manche${rounds > 1 ? 's' : ''}.`;
 }
