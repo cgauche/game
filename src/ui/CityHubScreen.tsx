@@ -183,6 +183,7 @@ export function CityHubScreen({
     selected: poiSel?.id === p.id,
     onClick: () => setPoiSelId(p.id),
     cursor: 'pointer',
+    label: p.label,
     children: (
       <>
         <circle r="3.4" fill="transparent" />

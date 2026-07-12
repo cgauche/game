@@ -109,6 +109,7 @@
   color: var(--muted);
   margin-bottom: 10px;
 }
+.ed-hint { font-style: italic; color: var(--muted); font-size: 0.75rem; }
 
 /* ── Bloc de champs « background » (Motivation + Ambitions) — primitive `BackgroundFields`, partagée
    créateur ⇄ fiche : empilement + contrôles pleine largeur. Les champs sont des `div.field` (≠ label)
@@ -491,6 +492,10 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   .city-hub-services { flex-direction: row; flex-wrap: wrap; }
   .city-hub-service { flex: 1 1 140px; }
 }
-/* Onglet Plan (#345 phase 5) : le plan a besoin de plus de largeur que la liste de services étroite. */
-.city-hub-plan.master-detail { grid-template-columns: minmax(240px, 1.3fr) 1fr; }
+/* Onglet Plan (#345 phase 5) : le plan a besoin de plus de largeur que la liste de services étroite
+   — au-delà du breakpoint canon d'empilement seulement (`MASTER_DETAIL_STACK_BREAKPOINT_PX`) : sous
+   700px, le Plan s'empile comme tout MasterDetail (régression recette #343). */
+@media (min-width: 701px) {
+  .city-hub-plan.master-detail { grid-template-columns: minmax(240px, 1.3fr) 1fr; }
+}
 .city-hub-plan-canvas { min-height: 220px; }

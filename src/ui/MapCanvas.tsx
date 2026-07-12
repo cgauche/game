@@ -27,6 +27,9 @@ export interface MapMarker {
   onHover?: (hovered: boolean) => void;
   cursor?: string;
   opacity?: number;
+  /** Nom accessible — requis pour un clavier/lecteur d'écran quand `onClick` est fourni
+   *  (rendu en `role="button"`/`aria-label`, cf. recette a11y #343). */
+  label?: string;
 }
 
 /** Un tracé (route, contour…) en données de path SVG (unités viewBox). Quand `onClick` est fourni, une
@@ -202,6 +205,12 @@ export function MapCanvas({ computeFit, background, chrome, paths = [], markers 
                 onPointerLeave={mk.onHover ? () => mk.onHover!(false) : undefined}
                 style={mk.cursor ? { cursor: mk.cursor } : undefined}
                 opacity={mk.opacity}
+                role={mk.onClick ? 'button' : undefined}
+                aria-label={mk.onClick ? mk.label : undefined}
+                tabIndex={mk.onClick ? 0 : undefined}
+                onKeyDown={mk.onClick ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mk.onClick!(); }
+                } : undefined}
               >
                 {typeof mk.children === 'function' ? mk.children(state) : mk.children}
               </g>

@@ -338,6 +338,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       y: pr.y,
       selected: isHere || isDest,
       onClick: clickable ? () => selectRoute(route!) : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined,
+      label: p.label,
       onHover: (h: boolean) => setHoveredId((cur) => (h ? p.id : cur === p.id ? null : cur)),
       cursor: clickable ? 'pointer' : !isHere ? 'help' : undefined,
       opacity: clickable || isHere ? 1 : 0.55,

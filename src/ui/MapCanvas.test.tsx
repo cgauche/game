@@ -49,4 +49,16 @@ describe('MapCanvas — rendu data-driven des marqueurs/tracés et routage des c
     expect(html).toContain('aria-label="Dézoomer"');
     expect(html).toContain('aria-label="Recentrer"');
   });
+
+  it('un marqueur CLIQUABLE porte role="button" + aria-label + tabIndex ; un marqueur non cliquable, aucun de ces attributs', () => {
+    const markers: MapMarker[] = [
+      { id: 'grunburg', x: 20, y: 30, onClick: noop, label: 'Grünburg', children: <text>Grünburg</text> },
+      { id: 'eilhart', x: 60, y: 40, children: <text>Eilhart</text> },
+    ];
+    const html = renderToStaticMarkup(<MapCanvas computeFit={fit} markers={markers} />);
+    expect(html).toContain('role="button"');
+    expect(html).toContain('aria-label="Grünburg"');
+    expect(html).toContain('tabindex="0"');
+    expect((html.match(/role="button"/g) ?? []).length).toBe(1);
+  });
 });

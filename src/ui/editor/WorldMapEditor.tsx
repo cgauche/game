@@ -194,7 +194,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                 {linkFrom === p.id && <circle r="3.6" fill="none" stroke="#8a2f1d" strokeWidth="0.5" strokeDasharray="1 0.7" />}
                 {/* Icône LIBRE saisie par l'auteur (champ « Icône » ci-dessous, DONNÉE runtime — pas
                     un emoji en dur ici) ; à défaut, l'épingle du registre. */}
-                {p.icon ? <text y="1.3" textAnchor="middle" fontSize="3.8">{p.icon}</text> : <IconG id="map-tool/pin" x={-2} y={-1.6} size={4} />}
+                {p.icon ? <text y="1.3" textAnchor="middle" fontSize="3.8" fill="var(--wm-ink)">{p.icon}</text> : <IconG id="map-tool/pin" x={-2} y={-1.6} size={4} />}
                 <text y="5.6" textAnchor="middle" fontSize="2.6" fill="#3c2d14">{p.label}</text>
               </g>
             ))}
