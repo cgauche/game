@@ -87,7 +87,6 @@ const FILL_LITERAL_BASELINE: Record<string, number> = {
   'EquipmentPanel.tsx': 1,
   'editor/EditorCanvas.tsx': 9,
   'editor/Inspector.tsx': 1,
-  'editor/WorldMapEditor.tsx': 6,
 };
 
 // ── (ix) Redéfinition de `.panel` hors `components.css` : la primitive canonique (#306) n'a qu'UNE

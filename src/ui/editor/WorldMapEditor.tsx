@@ -8,6 +8,8 @@ import { navalPorts, findNavalPortById, lieuxServices } from '../../data';
 import { resolvePortRef } from '../../state/worldMap';
 import { EffectList } from './EffectList';
 import { Icon, IconG } from '../Icon';
+import { ICON_DEFS } from '../icons';
+import { MediaSelect, type MediaOption } from '../MediaSelect';
 import { ScreenShell } from '../ScreenShell';
 import { Prose } from '../Prose';
 import { MapCanvas } from '../MapCanvas';
@@ -31,6 +33,33 @@ const PORT_PRODUITS: readonly { id: string; label: string }[] = [
 ];
 /** Port MARITIME par défaut posé quand l'auteur coche « Port » (petit port de production côtière). */
 const DEFAULT_PORT: PortProfile & { lighthouse?: boolean } = { taille: 2, richesse: 2, production: [] };
+
+/** Options du picker d'icône (#361) : catalogue COMPLET `src/ui/icons` — un id du registre, jamais
+ *  un emoji libre. Composition MediaSelect + Icon (patron `ItemIcon`/`MediaSelect`). */
+const ICON_OPTIONS: MediaOption[] = [
+  { key: '', media: <Icon id="map-tool/pin" size="sm" />, label: 'Épingle par défaut' },
+  ...Object.values(ICON_DEFS)
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((d) => ({ key: d.id, media: <Icon id={d.id} size="sm" />, label: d.label, sub: d.id })),
+];
+
+/** Picker d'icône de médaillon (lieu/POI) — remplace le champ « emoji libre » (#361, BLOQUANT doctrine
+ *  no-emoji-affordance). Une valeur héritée hors catalogue (emoji d'ancienne donnée) n'est PAS
+ *  proposée à la ressaisie mais reste signalée dans le déclencheur. */
+function IconField({ label, value, onChange }: { label: string; value?: string; onChange: (v: string | undefined) => void }) {
+  const known = value != null && !!ICON_DEFS[value];
+  return (
+    <label className="ed-field">
+      {label}
+      <MediaSelect
+        options={ICON_OPTIONS}
+        value={known ? value : undefined}
+        onSelect={(k) => onChange(k || undefined)}
+        placeholder={value && !known ? `Icône héritée « ${value} » — choisir dans le catalogue` : 'Épingle par défaut'}
+      />
+    </label>
+  );
+}
 
 /**
  * Éditeur de la CARTE DU MONDE (#T2 Voyage) — overlay plein écran de l'éditeur de niveau.
@@ -129,7 +158,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
 
   return (
     <ScreenShell
-      title={<><Icon id="nav/campaign" size="sm" /> Carte du monde — {m.nom}</>}
+      title={<><Icon id="nav/campaign" size="sm" /> {m.nom === 'Carte du monde' ? m.nom : <>Carte du monde — {m.nom}</>}</>}
       onClose={() => { setMap(m); onClose(); }}
       className="wme-shell"
       actions={
@@ -162,22 +191,34 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
             }}
             onPointerUp={() => { dragRef.current = null; }}
           >
-            <rect x="0" y="0" width="100" height="64" rx="2" fill="#d9c28c" stroke="#7a5f38" strokeWidth="0.6" />
+            <title>Double-clic : ajouter un lieu</title>
+            <defs>
+              {/* Médaillon des lieux — MÊME langage que le rendu joueur (`WorldMapView`, tokens --wm-*). */}
+              <radialGradient id="wme-medal" cx="50%" cy="38%" r="70%">
+                <stop offset="0%" stopColor="#f4e8c6" />
+                <stop offset="100%" stopColor="#d2b87e" />
+              </radialGradient>
+              <filter id="wme-drop" x="-40%" y="-40%" width="180%" height="180%">
+                <feDropShadow dx="0" dy="0.5" stdDeviation="0.5" floodColor="#000" floodOpacity="0.35" />
+              </filter>
+            </defs>
+            {planChrome()}
             {m.routes.map((r) => {
               const a = placeById(m, r.a);
               const b = placeById(m, r.b);
               if (!a || !b) return null;
               return (
                 <g key={r.id} onClick={() => setSel({ kind: 'route', id: r.id })} style={{ cursor: 'pointer' }}>
+                  <title>Clic : éditer la route</title>
                   {/* zone de clic large + trait visible */}
                   <line x1={a.pos.x} y1={a.pos.y * 0.64} x2={b.pos.x} y2={b.pos.y * 0.64} stroke="transparent" strokeWidth="3" />
                   <line
                     x1={a.pos.x} y1={a.pos.y * 0.64} x2={b.pos.x} y2={b.pos.y * 0.64}
-                    stroke={sel?.kind === 'route' && sel.id === r.id ? '#8a2f1d' : '#6d4f24'}
+                    stroke={sel?.kind === 'route' && sel.id === r.id ? 'var(--accent)' : 'var(--wm-frame-dark)'}
                     strokeWidth={sel?.kind === 'route' && sel.id === r.id ? 1.2 : 0.7}
                     strokeDasharray="1.6 1.1"
                   />
-                  <text x={(a.pos.x + b.pos.x) / 2} y={(a.pos.y + b.pos.y) / 2 * 0.64 - 1} textAnchor="middle" fontSize="2.6" fill="#5d4520">
+                  <text x={(a.pos.x + b.pos.x) / 2} y={(a.pos.y + b.pos.y) / 2 * 0.64 - 1} textAnchor="middle" fontSize="2.6" fill="var(--wm-ink)">
                     {r.km} km
                   </text>
                 </g>
@@ -190,16 +231,24 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                 style={{ cursor: 'grab' }}
                 onPointerDown={(ev) => { ev.stopPropagation(); dragRef.current = p.id; clickPlace(p.id); }}
               >
-                {sel?.kind === 'place' && sel.id === p.id && <circle r="3.6" fill="none" stroke="#1d6fb8" strokeWidth="0.5" />}
-                {linkFrom === p.id && <circle r="3.6" fill="none" stroke="#8a2f1d" strokeWidth="0.5" strokeDasharray="1 0.7" />}
-                {/* Icône LIBRE saisie par l'auteur (champ « Icône » ci-dessous, DONNÉE runtime — pas
-                    un emoji en dur ici) ; à défaut, l'épingle du registre. */}
-                {p.icon ? <text y="1.3" textAnchor="middle" fontSize="3.8" fill="var(--wm-ink)">{p.icon}</text> : <IconG id="map-tool/pin" x={-2} y={-1.6} size={4} />}
-                <text y="5.6" textAnchor="middle" fontSize="2.6" fill="#3c2d14">{p.label}</text>
+                <title>Glisser : déplacer</title>
+                {sel?.kind === 'place' && sel.id === p.id && <circle r="2.1" fill="none" stroke="var(--accent)" strokeWidth="0.4" />}
+                {linkFrom === p.id && <circle r="2.1" fill="none" stroke="var(--gold2)" strokeWidth="0.3" strokeDasharray="0.7 0.55" />}
+                {/* Médaillon — MÊME langage que le rendu joueur (`WorldMapView`) : `p.icon` = id du registre
+                    src/ui/icons (le champ « Icône » ci-dessous n'invite plus l'emoji, #361). Une valeur
+                    héritée hors catalogue (ancien emoji) reste affichée en repli, jamais silencieuse. */}
+                <circle r="1.5" fill="url(#wme-medal)" stroke="var(--wm-age-spot)" strokeWidth="0.22" filter="url(#wme-drop)" />
+                {p.icon && ICON_DEFS[p.icon] ? (
+                  <g style={{ color: 'var(--wm-marker-icon)' }}><IconG id={p.icon} x={-1.05} y={-1.05} size={2.1} /></g>
+                ) : p.icon ? (
+                  <text y="0.75" textAnchor="middle" fontSize="2.2" fill="var(--wm-marker-icon)">{p.icon}</text>
+                ) : (
+                  <g style={{ color: 'var(--wm-marker-icon)' }}><IconG id="map-tool/pin" x={-1.05} y={-1.05} size={2.1} /></g>
+                )}
+                <text y="3.6" textAnchor="middle" fontSize="2.6" fill="var(--wm-ink)">{p.label}</text>
               </g>
             ))}
           </svg>
-          <p className="hint">Double-clic : ajouter un lieu · glisser : déplacer · clic sur un trait : éditer la route.</p>
         </div>
 
         <aside className="wme-inspector">
@@ -251,20 +300,19 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               <label className="ed-field">Nom
                 <input value={selPlace.label} onChange={(e) => updPlace(selPlace.id, { label: e.target.value })} />
               </label>
-              <label className="ed-field">Icône (emoji libre — vide = épingle par défaut)
-                <input value={selPlace.icon ?? ''} placeholder="vide = épingle par défaut" onChange={(e) => updPlace(selPlace.id, { icon: e.target.value || undefined })} />
-              </label>
+              <IconField label="Icône" value={selPlace.icon} onChange={(icon) => updPlace(selPlace.id, { icon })} />
               <label className="ed-field">Scène liée
                 <select value={selPlace.scene} onChange={(e) => updPlace(selPlace.id, { scene: e.target.value })}>
                   {scenes.map((s) => <option key={s.id} value={s.id}>{s.nom} ({s.id})</option>)}
                 </select>
               </label>
-              <label className="ed-field">Point d'entrée (entryPoints de la scène, optionnel)
+              {/* Cible = un point nommé des `entryPoints` de la scène liée (sinon heroStart). */}
+              <label className="ed-field">Point d'entrée (optionnel)
                 <input value={selPlace.entry ?? ''} onChange={(e) => updPlace(selPlace.id, { entry: e.target.value || undefined })} />
               </label>
 
               {/* ── Marché de cargaison (Mort sur le Reik Compagnon ch.11) : Taille + Richesse + Produits ── */}
-              <div className="mini-title">Marché (commerce de cargaison, T2C ch.11)</div>
+              <div className="mini-title">Marché</div>
               <label className="ed-check">
                 <input
                   type="checkbox"
@@ -313,7 +361,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               })()}
 
               {/* ── Port maritime (Index des ports, MDG ch.15) : Taille + Richesse + Production/Surplus/Demande ── */}
-              <div className="mini-title">Port maritime (commerce d'escale, MDG ch.15)</div>
+              <div className="mini-title">Port maritime</div>
               <label className="ed-check">
                 <input
                   type="checkbox"
@@ -426,11 +474,17 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               })()}
 
               {/* ── Services du lieu (auberge/temple/forgeron/guilde…, catalogue lieux-services.json #343) ── */}
-              <div className="mini-title">Services du lieu (hub, #343)</div>
+              <div className="mini-title">Services du lieu</div>
               {lieuxServices.map((sv) => {
                 const has = (selPlace.services ?? []).some((s) => s.kind === sv.id);
                 return (
-                  <label key={sv.id} className="ed-check">
+                  <label
+                    key={sv.id}
+                    className="ed-check"
+                    // L'auberge dérive aussi de l'offre de repos de la scène liée (onglet Scène) : inutile
+                    // de la cocher ici si la scène l'offre déjà.
+                    title={sv.id === 'auberge' ? 'Dérive aussi de l’offre de repos de la scène liée (onglet Scène)' : undefined}
+                  >
                     <input
                       type="checkbox"
                       checked={has}
@@ -444,7 +498,6 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                   </label>
                 );
               })}
-              <p className="ed-hint">L'auberge dérive aussi de l'offre de repos de la scène liée (onglet Scène) : inutile de la cocher ici si la scène l'offre déjà.</p>
 
               {/* ── POI du plan de ce lieu (onglet Plan du hub, #345 phase 5) ── */}
               <div className="mini-title">Points d'intérêt du plan (onglet Plan du hub)</div>
@@ -460,9 +513,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                         <label className="ed-field">Libellé
                           <input value={poi.label} onChange={(e) => updPoi(poi.id, { label: e.target.value })} />
                         </label>
-                        <label className="ed-field">Icône (id du registre `src/ui/icons`, vide = épingle par défaut)
-                          <input value={poi.icon ?? ''} placeholder="vide = épingle par défaut" onChange={(e) => updPoi(poi.id, { icon: e.target.value || undefined })} />
-                        </label>
+                        <IconField label="Icône" value={poi.icon} onChange={(icon) => updPoi(poi.id, { icon })} />
                         <label className="ed-field">Cible (scène OU service, exclusif)
                           <select
                             value={poi.sceneId != null ? 'scene' : poi.serviceKind != null ? 'service' : ''}
