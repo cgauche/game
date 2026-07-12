@@ -109,6 +109,104 @@ const PANEL_REDEFINE_BASELINE: Record<string, number> = {
   'styles/world-meta.css': 3,
 };
 
+// ── (x) `<button` « nu » (#373) : un `<button` dont le `className` (littéral OU gabarit) ne porte
+//    AUCUNE classe canon `.btn`/`.chip`/`.seg` est de la dette gelée — cas d'école du hub (noir-sur-
+//    noir, feedback user 2026-07-12 verbatim « tu as tendance a ne pas utiliser les primitives et
+//    objets React, c'est de la folie »). Un `className` totalement OPAQUE (aucun littéral de chaîne
+//    dedans, ex. `className={fn(x)}`) est traité honnêtement à part (catégorie OPAQUE, jamais fondu
+//    dans le compte « nu ») plutôt que jugé aveuglément conforme ou non-conforme. Les commentaires
+//    (bloc et ligne) sont neutralisés avant le scan — un `<button>` cité en JSDoc n'est pas du markup.
+//    EXEMPTÉS (fichiers-PRIMITIVES qui définissent légitimement leur propre rendu de bouton, à charge
+//    à l'appelant de les composer — jamais à réécrire un `<button>` à la main) :
+//      - OptionChooser.tsx / Tabs.tsx / RollShell.tsx : primitives canon de bouton/onglet/action de la
+//        table `docs/architecture.md`, citées nommément par le ticket #373 comme patron d'exemption.
+//      - PortraitTile.tsx : primitive canon d'affichage de personnage (`.ptile*`), sa propre famille de
+//        classes.
+//      - MediaSelect.tsx : primitive canon de champ média (`.ms-trigger`), sa propre classe déclencheur.
+//      - ViewControls.tsx / PovControls.tsx : chrome de bouton PARTAGÉ (constante `BTN`) flottant en
+//        overlay HTML par-dessus le canvas iso (jeu + éditeur) — l'exception « boutons de canvas »
+//        nommée par le ticket #373, hors flux document donc hors `.panel`/`.btn` par nature.
+//    TODO(#373) : cliquet (xi) « écran plein-champ sans `.panel` dans son sous-arbre » DIFFÉRÉ —
+//    heuristique à calibrer au triage du programme #371 (fichiers cibles pas encore nominés).
+const BARE_BUTTON_EXEMPT_FILES = new Set([
+  'OptionChooser.tsx',
+  'Tabs.tsx',
+  'RollShell.tsx',
+  'PortraitTile.tsx',
+  'MediaSelect.tsx',
+  'ViewControls.tsx',
+  'PovControls.tsx',
+]);
+const BARE_BUTTON_CANON = /\b(btn|chip|seg)\b/;
+const BARE_BUTTON_BASELINE: Record<string, number> = {
+  'ActionBar.tsx': 1,
+  'CityHubScreen.tsx': 1,
+  'compendium/CompendiumScreen.tsx': 1,
+  'creator/CharacterCreator.tsx': 2,
+  'editor/DialogueDetail.tsx': 1,
+  'editor/EditorToolbar.tsx': 1,
+  'editor/EffectList.tsx': 1,
+  'editor/FlowEditor.tsx': 3,
+  'editor/GameOpEditor.tsx': 1,
+  'editor/Inspector.tsx': 5,
+  'editor/LogicDock.tsx': 4,
+  'editor/Palette.tsx': 7,
+  'editor/StatblockEditor.tsx': 2,
+  'ErrorCollectorBanner.tsx': 1,
+  'HouseRulesModal.tsx': 1,
+  'InitiativeStrip.tsx': 3,
+  'MerchantPanel.tsx': 1,
+  'ObjectiveBanner.tsx': 1,
+  'VoyageScreen.tsx': 4,
+};
+// Baseline SÉPARÉE des `className` opaques (aucun littéral dedans) : au recensement, zéro site après
+// exemption des primitives — tout `<button className={fn(...)}>` NOUVEAU doit désormais soit exposer un
+// littéral `btn`/`chip`/`seg` dans son expression, soit vivre dans un fichier-primitive exempté ci-dessus.
+const BARE_BUTTON_OPAQUE_BASELINE: Record<string, number> = {};
+
+function scanBareButtons(files: string[]) {
+  const bare: Record<string, number> = {};
+  const opaque: Record<string, number> = {};
+  for (const f of files) {
+    const raw = readFileSync(f, 'utf8');
+    // Neutralise les commentaires bloc `/* ... */` (dont JSDoc/`{/* JSX */}`) et ligne `//…` avant le
+    // scan — un `<button>` cité en prose ne doit pas polluer le compte.
+    const src = raw
+      .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+      .replace(/(^|[^:])\/\/.*$/gm, (_m, p) => p);
+    const re = /<button\b/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(src))) {
+      // Fin de la balise ouvrante = premier `>` hors accolades (les expressions `{…}` d'attribut
+      // peuvent contenir des `>` de comparaison/générique).
+      let depth = 0;
+      let tagEnd = -1;
+      for (let i = m.index; i < src.length; i++) {
+        const c = src[i];
+        if (c === '{') depth++;
+        else if (c === '}') depth--;
+        else if (c === '>' && depth === 0) { tagEnd = i; break; }
+      }
+      if (tagEnd === -1) continue;
+      const tag = src.slice(m.index, tagEnd + 1);
+      const cls = tag.match(/className\s*=\s*(\{[\s\S]*?\}|"[^"]*"|'[^']*'|`[^`]*`)/);
+      const r = rel(f);
+      if (!cls) {
+        bare[r] = (bare[r] ?? 0) + 1;
+        continue;
+      }
+      const clsVal = cls[1];
+      if (BARE_BUTTON_CANON.test(clsVal)) continue; // conforme (littéral btn/chip/seg présent)
+      if (!/["'`]/.test(clsVal)) {
+        opaque[r] = (opaque[r] ?? 0) + 1; // expression opaque, catégorisée à part — pas un échec aveugle
+        continue;
+      }
+      bare[r] = (bare[r] ?? 0) + 1;
+    }
+  }
+  return { bare, opaque };
+}
+
 describe('#236 — cliquets d’hygiène UI', () => {
   it('(iv) hex hors tokens : aucune hausse par module CSS (base.css exclu)', () => {
     const files = walk(UI, (e) => e.endsWith('.css') && e !== 'base.css');
@@ -168,5 +266,14 @@ describe('#236 — cliquets d’hygiène UI', () => {
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, PANEL_REDEFINE_BASELINE, '.panel redéfini hors components.css');
+  });
+
+  it('(x) <button> nu : aucune hausse par fichier .tsx (composer .btn/.chip ou une primitive — feedback user 2026-07-12, #373)', () => {
+    const files = walk(UI, (e) => /\.tsx$/.test(e) && !/\.test\./.test(e)).filter(
+      (f) => !BARE_BUTTON_EXEMPT_FILES.has(rel(f)),
+    );
+    const { bare, opaque } = scanBareButtons(files);
+    assertRatchet(bare, BARE_BUTTON_BASELINE, '<button> nu — composer .btn/.chip ou une primitive (feedback user 2026-07-12, #373)');
+    assertRatchet(opaque, BARE_BUTTON_OPAQUE_BASELINE, '<button> className opaque — exposer un littéral btn/chip/seg ou passer par une primitive (feedback user 2026-07-12, #373)');
   });
 });
