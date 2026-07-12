@@ -51,6 +51,14 @@ export function cityHubHasPlan(place: MapPlace): boolean {
   return (place.poi ?? []).length > 0;
 }
 
+/** Porte du bouton « Entrer au port » — surface PURE testable : `openPort` (`portFlow.ts`) est un
+ *  no-op silencieux sans navire de campagne (`!get().vessel`). Sans cette porte le bouton resterait
+ *  une affordance MORTE (clic muet) — source unique de la condition, partagée par `CityHubScreen`
+ *  (désactive le bouton avec sa raison) et son test. */
+export function cityHubCanEnterPort(vessel: unknown): boolean {
+  return vessel != null;
+}
+
 /** Icône de repli d'un service (le catalogue fournit la sienne ; défauts par catégorie). */
 function serviceIcon(s: ResolvedPlaceService): string {
   return s.icon ?? (s.category === 'port' ? 'travel/anchor' : s.category === 'marche' ? 'merchant/cart' : s.category === 'auberge' ? 'rest/bed' : 'nav/entry-point');
@@ -92,6 +100,7 @@ export function CityHubScreen({
   const tradeRumours = useGame((s) => s.tradeRumours);
   const openRest = useGame((s) => s.openRest);
   const openPort = useGame((s) => s.openPort);
+  const vessel = useGame((s) => s.vessel);
   const openLandMarket = useGame((s) => s.openLandMarket);
   const gatherInnInfo = useGame((s) => s.gatherInnInfo);
   const transitionTo = useGame((s) => s.transitionTo);
@@ -150,7 +159,13 @@ export function CityHubScreen({
         <div className="city-hub-panel">
           <ProfileSynth taille={svc.port.taille} richesse={svc.port.richesse} production={svc.port.production} />
           <div className="bar city-hub-actions">
-            <button type="button" className="btn btn-primary" onClick={() => enter(openPort)}>Entrer au port</button>
+            <button
+              type="button" className="btn btn-primary" disabled={!cityHubCanEnterPort(vessel)}
+              title={cityHubCanEnterPort(vessel) ? undefined : 'Aucun navire de campagne'}
+              onClick={() => enter(openPort)}
+            >
+              Entrer au port
+            </button>
           </div>
         </div>
       );

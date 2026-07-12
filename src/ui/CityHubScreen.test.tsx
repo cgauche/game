@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cityHubServices, cityHubHasPlan } from './CityHubScreen';
+import { cityHubServices, cityHubHasPlan, cityHubCanEnterPort } from './CityHubScreen';
 import { restServicePrice } from '../state/restFlow';
 import { atLocationPlace, type MapPlace, type WorldMap } from '../state/worldMap';
 import { findTrappingById } from '../data';
@@ -48,6 +48,16 @@ describe('cityHubHasPlan — porte de l’onglet Plan (#345 phase 5)', () => {
   });
   it('lieu avec au moins un POI : onglet Plan', () => {
     expect(cityHubHasPlan(place({ poi: [{ id: 'poi-1', label: 'Auberge', pos: { x: 10, y: 10 }, serviceKind: 'auberge' }] }))).toBe(true);
+  });
+});
+
+describe('cityHubCanEnterPort — porte du bouton « Entrer au port » (affordance vs no-op silencieux de openPort)', () => {
+  it('sans navire de campagne : porte fermée (openPort serait un no-op muet)', () => {
+    expect(cityHubCanEnterPort(null)).toBe(false);
+    expect(cityHubCanEnterPort(undefined)).toBe(false);
+  });
+  it('avec un navire de campagne : porte ouverte', () => {
+    expect(cityHubCanEnterPort({ vehicleId: 'barge' })).toBe(true);
   });
 });
 

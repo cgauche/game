@@ -104,14 +104,22 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
           if (v != null && (v < 0 || v > 59)) add('error', scope, refId, `Fenêtre horaire « ${refId} » : ${k} ${v} hors 0-59`);
       });
     /** Parcours RÉCURSIF d'un Flow (branches `if`/`test`, et le `flow` imbriqué d'un `delayedEffect`) :
-     *  effets référencés + bornes des conditions horaires. */
-    const checkFlow = (flow: Flow, refId: string, scope: Warning['scope']) =>
-      walkFlow(flow, (node) => {
-        if (node.kind === 'do') {
-          checkEffect(node.effect, refId, scope);
-          if (node.effect.type === 'delayedEffect') checkFlow(node.effect.flow, refId, scope);
-        } else if (node.kind === 'if') checkCondTimes(node.cond, refId, scope);
-      });
+     *  effets référencés + bornes des conditions horaires. ENVELOPPÉ : un Flow corrompu (nœud manquant/
+     *  réf pendante — document ANCIEN qu'un `normalizeScene` ne peut pas tout réparer sans inventer de
+     *  donnée) rapporte un Warning `error` au lieu de faire tomber la validation de TOUTE la scène —
+     *  chaque flow est indépendant, un flow cassé ne masque pas les autres. */
+    const checkFlow = (flow: Flow, refId: string, scope: Warning['scope']) => {
+      try {
+        walkFlow(flow, (node) => {
+          if (node.kind === 'do') {
+            checkEffect(node.effect, refId, scope);
+            if (node.effect.type === 'delayedEffect') checkFlow(node.effect.flow, refId, scope);
+          } else if (node.kind === 'if') checkCondTimes(node.cond, refId, scope);
+        });
+      } catch {
+        add('error', scope, refId, `Flow « ${refId} » corrompu (nœud invalide/réf pendante)`);
+      }
+    };
 
     for (const t of s.triggers) {
       if (!within(t.rect.x, t.rect.y) || !within(t.rect.x + t.rect.w - 1, t.rect.y + t.rect.h - 1)) add('warn', 'trigger', t.id, `Zone « ${t.id} » déborde de la carte`);
