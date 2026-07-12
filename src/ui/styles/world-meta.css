@@ -147,6 +147,19 @@
   user-select: none;
   touch-action: none; /* zoom/pan au doigt : on gère molette + glisser + pincement nous-mêmes */
 }
+/* Marqueurs cliquables (#372) : l'anneau de focus PAR DÉFAUT du navigateur, en espace SVG zoomé,
+   devient un énorme pavé blanc/noir — supprimé au profit de l'anneau maison `.map-marker-focus-ring`
+   (dessiné par `MapCanvas`, visible seulement au clavier via `:focus-visible`). */
+.map-canvas-frame svg [role="button"] {
+  outline: none;
+}
+.map-marker-focus-ring {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.map-canvas-frame svg [role="button"]:focus-visible .map-marker-focus-ring {
+  opacity: 1;
+}
 /* Commandes de zoom, coin bas-droit de la carte — cibles tactiles ≥40px (pointer: coarse). */
 .wm-zoom {
   position: absolute;

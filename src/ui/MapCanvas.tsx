@@ -216,6 +216,18 @@ export function MapCanvas({ computeFit, background, chrome, paths = [], markers 
                 } : undefined}
               >
                 {typeof mk.children === 'function' ? mk.children(state) : mk.children}
+                {/* Anneau de focus CLAVIER maison (#372) — opacité pilotée par `:focus-visible` en
+                   CSS (world-meta.css), jamais affiché au clic souris. */}
+                {mk.onClick && (
+                  <circle
+                    className="map-marker-focus-ring"
+                    r="2.6"
+                    fill="none"
+                    stroke="var(--gold)"
+                    strokeWidth="0.35"
+                    pointerEvents="none"
+                  />
+                )}
               </g>
             );
           })}

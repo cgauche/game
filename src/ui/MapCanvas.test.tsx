@@ -61,4 +61,16 @@ describe('MapCanvas — rendu data-driven des marqueurs/tracés et routage des c
     expect(html).toContain('tabindex="0"');
     expect((html.match(/role="button"/g) ?? []).length).toBe(1);
   });
+
+  it('un marqueur CLIQUABLE porte son anneau de focus maison (opacité pilotée par :focus-visible, jamais l\'outline UA) ; un marqueur non cliquable n\'en a pas', () => {
+    const markers: MapMarker[] = [
+      { id: 'grunburg', x: 20, y: 30, onClick: noop, label: 'Grünburg', children: <text>Grünburg</text> },
+      { id: 'eilhart', x: 60, y: 40, children: <text>Eilhart</text> },
+    ];
+    const html = renderToStaticMarkup(<MapCanvas computeFit={fit} markers={markers} />);
+    expect(html).toContain('class="map-marker-focus-ring"');
+    expect((html.match(/map-marker-focus-ring/g) ?? []).length).toBe(1);
+    // Pas d'outline UA écrit inline — la suppression vit dans la CSS scopée au composant.
+    expect(html).not.toMatch(/style="[^"]*outline/);
+  });
 });
