@@ -164,6 +164,74 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
 // littéral `btn`/`chip`/`seg` dans son expression, soit vivre dans un fichier-primitive exempté ci-dessus.
 const BARE_BUTTON_OPAQUE_BASELINE: Record<string, number> = {};
 
+// ── (xii) Sélecteurs de classe DÉFINIS par module CSS de DOMAINE (doctrine user 2026-07-12, #373 —
+//    « J'y crois pas une seule seconde à des classes mono-écrans, c'est une excuse à la dérive »).
+//    Le stock de classes de domaine doit être GELÉ et DÉCROISSANT — hausse = échec, motif : « motif
+//    partagé ? → couche atomique (charte, catalogue) ; vraiment spécifique → justifier ». Modules
+//    scannés = la liste canon de `docs/charte-ui.md` §Architecture CSS (`base`/`components` EXCLUS,
+//    couche partagée ; `styles.css` EXCLU, orchestrateur d'`@import`) : creator, combat-ui,
+//    combat-modals, sheet, merchant, hud, world-meta, editor, compendium, codex-edit, house-rules,
+//    mass-battle, ornaments, tavern.
+//    Comptage = NOMS de classes DISTINCTS apparaissant en position de définition (sélecteur), toute
+//    forme confondue (bare, composé `X.foo`, descendant `.foo .bar`, modificateur `.foo:hover`,
+//    dans un `@media`) — dédupliqué PAR MODULE. Parse par accumulation caractère-par-caractère : le
+//    tampon de sélecteur courant se vide à chaque `{` (capturé si ce n'est pas un prélude `@…`, ex.
+//    `@media (...)`) et à chaque `}` (referme la règle OU le bloc `@media` — le contenu de règle,
+//    jamais un sélecteur, n'est donc jamais scanné). Les commentaires sont neutralisés en amont.
+const DOMAIN_CSS_MODULES = [
+  'creator',
+  'combat-ui',
+  'combat-modals',
+  'sheet',
+  'merchant',
+  'hud',
+  'world-meta',
+  'editor',
+  'compendium',
+  'codex-edit',
+  'house-rules',
+  'mass-battle',
+  'ornaments',
+  'tavern',
+];
+const CLASS_SELECTOR_BASELINE: Record<string, number> = {
+  'styles/codex-edit.css': 20,
+  'styles/combat-modals.css': 141,
+  'styles/combat-ui.css': 122,
+  'styles/compendium.css': 55,
+  'styles/creator.css': 74,
+  'styles/editor.css': 112,
+  'styles/house-rules.css': 9,
+  'styles/hud.css': 148,
+  'styles/mass-battle.css': 29,
+  'styles/merchant.css': 69,
+  'styles/ornaments.css': 13,
+  'styles/sheet.css': 91,
+  'styles/tavern.css': 13,
+  'styles/world-meta.css': 146,
+};
+
+function classNamesDefined(css: string): Set<string> {
+  const names = new Set<string>();
+  let buf = '';
+  for (let i = 0; i < css.length; i++) {
+    const c = css[i];
+    if (c === '{') {
+      const sel = buf.trim();
+      if (sel && !sel.startsWith('@')) {
+        const matches = sel.match(/\.[a-zA-Z_-][\w-]*/g) || [];
+        for (const m of matches) names.add(m.slice(1));
+      }
+      buf = '';
+    } else if (c === '}') {
+      buf = '';
+    } else {
+      buf += c;
+    }
+  }
+  return names;
+}
+
 function scanBareButtons(files: string[]) {
   const bare: Record<string, number> = {};
   const opaque: Record<string, number> = {};
@@ -275,5 +343,15 @@ describe('#236 — cliquets d’hygiène UI', () => {
     const { bare, opaque } = scanBareButtons(files);
     assertRatchet(bare, BARE_BUTTON_BASELINE, '<button> nu — composer .btn/.chip ou une primitive (feedback user 2026-07-12, #373)');
     assertRatchet(opaque, BARE_BUTTON_OPAQUE_BASELINE, '<button> className opaque — exposer un littéral btn/chip/seg ou passer par une primitive (feedback user 2026-07-12, #373)');
+  });
+
+  it('(xii) sélecteurs de classe DÉFINIS par module CSS de domaine : gelé et décroissant (doctrine user 2026-07-12, #373)', () => {
+    const counts: Record<string, number> = {};
+    for (const mod of DOMAIN_CSS_MODULES) {
+      const f = join(UI, 'styles', `${mod}.css`);
+      const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      counts[rel(f)] = classNamesDefined(css).size;
+    }
+    assertRatchet(counts, CLASS_SELECTOR_BASELINE, 'sélecteurs de classe définis (stock de classes de domaine, #373)');
   });
 });
