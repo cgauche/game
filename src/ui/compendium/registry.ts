@@ -257,6 +257,7 @@ const QUALITY_CAP_LABEL: Record<string, string> = {
 export const ACTIVITY_CONTEXT_LABEL: Record<ActivityContext, string> = {
   interlude: 'Entre deux aventures', voyage: 'Voyage (terre)', mer: 'Mer',
   bataille: 'Bataille — préparation', 'bataille-round': 'Bataille — Scène de Round',
+  auberge: 'Auberge (hub de ville)',
 };
 export const OUTCOME_ON_LABEL: Record<'success' | 'failure' | 'fumble', string> = {
   success: 'Succès', failure: 'Échec', fumble: 'Maladresse',

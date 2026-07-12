@@ -4,6 +4,7 @@ import { placeServices, type ResolvedPlaceService, type MapPlace } from '../stat
 import type { Scene } from '../state/scene';
 import { restServicePrice, type RestPlaces } from '../state/restFlow';
 import { findLandCargoById } from '../engine/landCargo';
+import { innGatherInfoMinutes } from '../state/innFlow';
 import { ScreenShell } from './ScreenShell';
 import { MasterDetail } from './MasterDetail';
 import { Prose } from './Prose';
@@ -81,6 +82,7 @@ export function CityHubScreen({
   const openRest = useGame((s) => s.openRest);
   const openPort = useGame((s) => s.openPort);
   const openLandMarket = useGame((s) => s.openLandMarket);
+  const gatherInnInfo = useGame((s) => s.gatherInnInfo);
 
   const base = cityHubServices(place, scene);
   // Couchage sur place SANS auberge déclarée (camp/maison) : un service « Repos » de repli, pour que le
@@ -108,6 +110,9 @@ export function CityHubScreen({
         </ul>
         <div className="bar city-hub-actions">
           {sel.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: sel.rest, quality: rest?.quality })}>Dormir</button>}
+          <button type="button" className="btn" onClick={gatherInnInfo}>
+            Recueillir des informations (≈{Math.round(innGatherInfoMinutes() / 60)} h)
+          </button>
         </div>
         <section className="city-hub-rumours">
           <h4>Rumeurs déjà glanées</h4>

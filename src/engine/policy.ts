@@ -427,6 +427,21 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'RAW muet : aucune règle ne dit si prêter son Soutien à l’Entreprise d’un autre (ex. Planification de bataille) consomme l’une des trois Activités de l’assistant. Désactivé (défaut) : seul le meneur dépense un créneau, les assistants aident gratuitement. Activé : chaque assistant qui a encore un créneau en dépense un.',
   },
   {
+    // #352 — EDOC ch.5 l.151-153 chiffre le Test (Ragot Intermédiaire) mais jamais de durée à
+    // l'Activité « Recueillir des informations » jouée HORS voyage (au comptoir d'une auberge, en
+    // dehors d'une Étape) : le canon la borne implicitement à « une Étape » en voyage, muet ailleurs.
+    id: 'inn-gather-info-minutes',
+    label: 'Recueillir des informations à l’auberge — durée',
+    ref: 'EDOC ch.5 l.151-153 — durée hors voyage non chiffrée, valeur maison (#352)',
+    group: 'Activités',
+    kind: 'param',
+    default: 120,
+    min: 30,
+    max: 480,
+    step: 30,
+    hint: 'Temps passé à papoter et poser des questions dans une auberge (Ragot Intermédiaire, EDOC l.151), en MINUTES — avance l’horloge de campagne quelle que soit l’issue.',
+  },
+  {
     id: 'advancement-career-jump',
     label: 'Sauts de Niveau de Carrière (accord du MJ)',
     ref: 'LDB 07 l.140/148',

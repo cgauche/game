@@ -55,7 +55,8 @@
     "label": "Recueillir des informations",
     "icon": "char/soc",
     "contexts": [
-      "voyage"
+      "voyage",
+      "auberge"
     ],
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",

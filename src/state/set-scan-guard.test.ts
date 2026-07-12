@@ -35,7 +35,7 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * ad hoc (même site : pose directe de `pendingCascade`).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 706, totalAdHocResets: 285 };
+const BASELINE = { totalCalls: 707, totalAdHocResets: 285 }; // +1 (#352 innFlow.ts : set() du party après Exténué)
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

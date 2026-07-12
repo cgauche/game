@@ -15,7 +15,7 @@ const skillRefSchema = z.strictObject({
   spec: z.string().optional(),
 });
 
-const activityContextSchema = z.enum(['interlude', 'voyage', 'mer', 'bataille', 'bataille-round']);
+const activityContextSchema = z.enum(['interlude', 'voyage', 'mer', 'bataille', 'bataille-round', 'auberge']);
 
 const battleSideSchema = z.enum(['ally', 'enemy']);
 const battleOutcomeTargetSchema = z.enum(['might', 'startMight', 'allyTestMod', 'firstRoundBonus', 'planningBonus']);

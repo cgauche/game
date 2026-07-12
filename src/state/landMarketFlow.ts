@@ -121,8 +121,10 @@ registerCascadeApplier(LAND_GOSSIP_KIND, (get, set, step) => {
 /** Génère une RUMEUR CROSS-LIEU (T2C ch.11 l.180) : tire un AUTRE Lieu à `market` de la carte, puis une
  *  rumeur (Tableau des rumeurs) désignant les biens qui s'y vendent au double. Ajoutée au board persistant
  *  `store.tradeRumours` (dédupliquée : même Lieu + mêmes biens ne s'empile pas). Le RAW ne donne aucune
- *  échéance ni consommation par vente (« autant qu'ils le souhaitent ») → elle demeure sur le board. */
-function generateTradeRumour(get: Get, set: Set, currentPlaceId: string, rng: import('../engine/dice').RNG): void {
+ *  échéance ni consommation par vente (« autant qu'ils le souhaitent ») → elle demeure sur le board.
+ *  EXPORTÉ : générateur commercial UNIQUE, réutilisé tel quel par le Ragot d'auberge du hub de ville
+ *  (#352, `innFlow.ts`) — zéro prose de rumeur dupliquée. */
+export function generateTradeRumour(get: Get, set: Set, currentPlaceId: string, rng: import('../engine/dice').RNG): void {
   const map = get().worldMap;
   const targets = (map?.places ?? []).filter((p) => p.market && p.id !== currentPlaceId);
   if (targets.length === 0) return; // pas d'autre Lieu de commerce connu → aucune rumeur à raccrocher

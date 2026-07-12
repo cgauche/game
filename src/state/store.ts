@@ -105,6 +105,7 @@ import type { DeferredUpkeepTest } from './upkeep';
 import * as travelFlow from './travelFlow';
 import * as portFlow from './portFlow';
 import * as landMarketFlow from './landMarketFlow';
+import * as innFlow from './innFlow';
 import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
 import { applyLandCargoRaid } from './carriers';
@@ -1214,9 +1215,10 @@ export interface GameState extends RollFlowActionsMap {
   /** Débarque `count` PNJ salariés du rôle `roleId` (#228). */
   portDismissCrew: (roleId: string, count?: number) => void;
   /** Board de RUMEURS COMMERCIALES persistant (T2C ch.11 l.180) : chaque rumeur désigne un AUTRE Lieu où
-   *  des biens se vendent au double. Entendues aux marchés (Ragot Complexe −10), consultées dans l'écran
-   *  Marché, appliquées à la vente au Lieu désigné. Persiste au niveau GROUPE (sauvegardé, remis à zéro en
-   *  nouvelle partie via l'état initial). */
+   *  des biens se vendent au double. Entendues aux marchés (Ragot Complexe −10) OU à l'auberge du hub de
+   *  ville (#352, Activité `recueillir-informations`, EDOC l.151), consultées dans l'écran Marché/le
+   *  panneau auberge, appliquées à la vente au Lieu désigné. Persiste au niveau GROUPE (sauvegardé, remis
+   *  à zéro en nouvelle partie via l'état initial). */
   tradeRumours: import('../engine/landCargo').TradeRumour[];
   /** Écran MARCHÉ TERRESTRE ouvert (commerce de cargaison à un Lieu `market` de la carte — T2C ch.11) :
    *  offres d'achat générées à l'arrivée. `null` = fermé. */
@@ -1235,6 +1237,10 @@ export interface GameState extends RollFlowActionsMap {
   moveCargo: (fromId: string, toId: string, cargoId: string, enc: number) => void;
   /** Évalue la qualité secrète d'un lot de Vin proposé (Test d'Évaluation, T2C l.95). */
   landEvalWine: (cargoId: string) => void;
+  /** Ouvre le Test de Ragot de l'auberge du hub de ville (#352, Activité `recueillir-informations`
+   *  étendue au contexte `auberge`) : succès → rumeur commerciale (`generateTradeRumour`), échec →
+   *  Exténué (EDOC l.133). Avance l'horloge (`inn-gather-info-minutes`) quelle que soit l'issue. */
+  gatherInnInfo: () => void;
   /** ACTIVITÉS EN MER en attente (semaine de 8 jours, MDG 15 l.266-306) — modale de choix par héros. */
   pendingSeaActivities: import('./seaActivities').PendingSeaActivities | null;
   /** Résout les Activités choisies puis rend la main à la halte de nuit. */
@@ -2257,6 +2263,7 @@ export const useGame = create<GameState>((set, get) => ({
   landSellCargo: (carrierId, cargoIndex) => landMarketFlow.landSellCargo(get, set, carrierId, cargoIndex),
   landDumpCargo: (carrierId, cargoIndex) => landMarketFlow.landDumpCargo(get, set, carrierId, cargoIndex),
   moveCargo: (fromId, toId, cargoId, enc) => landMarketFlow.moveCargo(get, set, fromId, toId, cargoId, enc),
+  gatherInnInfo: () => innFlow.gatherInnInfo(get, set),
   landEvalWine: (cargoId) => landMarketFlow.landEvalWine(get, set, cargoId),
   seaActivitiesConfirm: (picks) => seaActivities.seaActivitiesConfirm(get, set, picks),
   resolveManannPriest: (pay) => seaVoyageFlow.resolveManannPriest(get, set, pay),

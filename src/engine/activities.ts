@@ -38,8 +38,10 @@ import activitiesJson from '../data/activities.json';
 /** Contexte où une Activité est proposable. `bataille` = Activité de PRÉPARATION avant la bataille de
  *  masse (ADE II ch.8 l.71-110 : Discours/Planification/Infiltration/Repérage/Sabotage/Rassembler des
  *  forces) ; `bataille-round` = Scène cinématique d'un Round de bataille (l.137-225 : Charge/Motivation/
- *  Ligne de mire/Survol/Duel/Tenez votre position/… + Rassemblement l.122). */
-export type ActivityContext = 'interlude' | 'voyage' | 'mer' | 'bataille' | 'bataille-round';
+ *  Ligne de mire/Survol/Duel/Tenez votre position/… + Rassemblement l.122) ; `auberge` = Activité jouée
+ *  HORS voyage, au comptoir d'une auberge du hub de ville (#352 : `recueillir-informations` s'y ouvre
+ *  à la demande, un jet indépendant d'une Étape). */
+export type ActivityContext = 'interlude' | 'voyage' | 'mer' | 'bataille' | 'bataille-round' | 'auberge';
 
 /** Camp visé par une issue de bataille (ADE II ch.8) : `ally` = l'armée des Personnages, `enemy` = l'armée
  *  adverse. */
