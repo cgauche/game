@@ -16,7 +16,8 @@
     "id": "forgeron",
     "label": "Forgeron",
     "icon": "item/weapon",
-    "merchantArchetype": "armurier"
+    "merchantArchetype": "armurier",
+    "backdrop": "forge"
   },
   {
     "id": "guilde",
