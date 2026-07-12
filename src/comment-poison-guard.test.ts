@@ -177,7 +177,7 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
   });
 
   (EXCUSE_GUARD_ACTIVE ? it : it.skip)(
-    'aucune excuse de src/**/*.ts(x) sans tag [entériné AAAA-MM-JJ] (désactivée — cf. rapport agent)',
+    'aucune excuse de src/**/*.ts(x) sans tag [entériné AAAA-MM-JJ] (ACTIVE depuis #177)',
     () => {
       const offenders: string[] = [];
       for (const f of scanSrcFiles()) {
