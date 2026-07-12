@@ -724,6 +724,7 @@ textarea:focus {
   padding: 1px 5px;
   border: 1px solid var(--border);
   background: var(--panel2);
+  color: var(--text);
 }
 .fx-chip b {
   font-size: 9px;
