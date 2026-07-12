@@ -40,6 +40,11 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    du diff ; règle/valeur → Atlas `docs/raw/` puis `Source/` ; UI → skill `recette-navigateur`.
    Livraison d'agent sur un sous-système → audit adversarial : fidélité RAW intégrale + éditabilité
    first-class (un raccourci « borne le reste » est un défaut, pas un choix).
+   **Livraison d'ÉCRAN → trois passes, pas une** : recette fonctionnelle (DoD), ET jugement
+   d'écran (captures → juges VISION en lentilles : charte/primitives, hiérarchie-densité,
+   cohérence inter-écrans, ressenti joueur « prototype ou produit ? » — défauts concrets +
+   ressentis, jamais des scores), ET lisibilité si du style a bougé. La conformité fonctionnelle
+   ne voit ni le noir-sur-noir ni le « ça fait pas fini » (vécu 2026-07-12, trouvés par l'user).
    **Les CLAIMS ARCHITECTURAUX d'un rendu se contre-grep comme des faits** (« X est le seul
    seam », « la primitive n'existe pas », « il n'y a pas de couture pour ça ») — des portes
    vertes ne valident pas la FORME, et des tests verts sur un câblage PARTIEL ne révèlent
