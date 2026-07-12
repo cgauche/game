@@ -655,6 +655,14 @@
 .rest-travel-lines { margin: 0 0 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
 .rest-travel-lines li { margin: 2px 0; }
 
+/* ── Ligne de récap structurée (#349, `ui/RecapLine.tsx`) — mêmes teintes que le PV multijet (.mrl-row). */
+.recap-lines { display: flex; flex-direction: column; gap: 2px; margin: 0 0 6px; }
+.recap-line { margin: 2px 0; font-size: 13px; color: var(--muted); }
+.recap-line.bad { color: var(--danger-soft); }
+.recap-line.ok { color: var(--ok-bright); }
+.recap-phase + .recap-phase { margin-top: 6px; }
+.recap-phase-label { margin: 0 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); opacity: .8; }
+
 /* ── Conseil de bord (paie hebdomadaire + Moral, #229) ── */
 .council-modal .rm-loc-grid { grid-template-columns: 1fr; gap: 6px; }
 .council-modal .rm-loc-grid button { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 10px; text-align: left; }

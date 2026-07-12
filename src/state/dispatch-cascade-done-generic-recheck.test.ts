@@ -44,7 +44,7 @@ describe('dispatchCascadeDone — re-check TOUT-PURPOSE de checkBattleOver (#345
       // visé, d'où l'injection directe plutôt qu'un chemin de jeu réel). Étape d'AFFICHAGE (toujours prête).
       pendingCascade: {
         title: 'Étape hypothétique', purpose: 'test', cursor: 0, log: [],
-        participants: [{ id: 'hypo-1', kind: 'hypoDisplayStep', actorId: hero.id, outcome: ['note'] }],
+        participants: [{ id: 'hypo-1', kind: 'hypoDisplayStep', actorId: hero.id, outcome: [{ text: 'note' }] }],
       } as PendingCascade,
     });
 

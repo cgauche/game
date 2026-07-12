@@ -96,7 +96,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
       applyMiscast(useGame.getState, useGame.setState, H, 'colere');
       const casc = useGame.getState().pendingCascade;
       const m = casc?.participants.find((p) => p.kind === 'miscast');
-      if (m?.outcome?.some((l) => /Purifier la chair/.test(l)) && casc?.participants.some((p) => p.kind === 'triggeredTest')) seed = s;
+      if (m?.outcome?.some((l) => /Purifier la chair/.test(l.text)) && casc?.participants.some((p) => p.kind === 'triggeredTest')) seed = s;
       useGame.setState({ pendingCascade: null });
     }
     expect(seed).toBeGreaterThanOrEqual(0);

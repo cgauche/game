@@ -64,7 +64,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
   /** Résout l'étape `triggeredTest` du Piège-lame (jet + validation) et RENVOIE l'`outcome` de l'étape
    *  d'AFFICHAGE `bladeTrapResult` empilée par la conséquence — la note « lame brisée/arrachée » du paradigme
    *  cascade (une étape propre, comme un Coup Critique, qui garde la cascade ouverte jusqu'à acquittement). */
-  function resolveTestOutcome(stepId: string): string[] {
+  function resolveTestOutcome(stepId: string): import('../recapLine').RecapLine[] {
     useGame.getState().cascadeRoll(stepId);
     useGame.getState().cascadeNext(); // valide le Test → applier → empile l'étape `bladeTrapResult`
     const res = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'bladeTrapResult');
@@ -120,7 +120,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
     expect(weapon.destroyed === true).toBe(o.netSL >= 6);
     // La conséquence est EMPILÉE comme étape d'affichage propre (paradigme cascade : « l'un sous l'autre »).
     const rx = o.netSL >= 6 ? /BRISÉE/ : /arrachée/;
-    expect(outcome.some((l) => rx.test(l))).toBe(true);
+    expect(outcome.some((l) => rx.test(l.text))).toBe(true);
   });
 
   it('Succès Stupéfiant (marge nette ≥ 6 via gros bonus defSL) : la lame est BRISÉE', () => {
@@ -142,7 +142,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
     const a = useGame.getState().battle!.combatants.find((x) => x.id === A.id)!;
     expect(a.weapons.find((w) => w.uid === 'atk-blade')).toBeUndefined(); // retirée du loadout
     expect(weapon.destroyed).toBe(true); // BRISÉE (Succès Stupéfiant)
-    expect(outcome.some((l) => /BRISÉE/.test(l))).toBe(true); // note empilée sous le jet
+    expect(outcome.some((l) => /BRISÉE/.test(l.text))).toBe(true); // note empilée sous le jet
   });
 
   it('Succès Stupéfiant sur une lame INCASSABLE : NON brisée (arrachée seulement)', () => {
@@ -159,7 +159,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
     const a = useGame.getState().battle!.combatants.find((x) => x.id === A.id)!;
     expect(a.weapons.find((w) => w.uid === 'atk-blade')).toBeUndefined(); // arrachée des mains
     expect(weapon.destroyed).toBeFalsy(); // Incassable → pas brisée (LDB 62 l.295)
-    expect(outcome.some((l) => /résiste à la casse/.test(l))).toBe(true); // note empilée
+    expect(outcome.some((l) => /résiste à la casse/.test(l.text))).toBe(true); // note empilée
   });
 
   it('héros perd (Force minime) : RIEN (l’adversaire garde sa lame)', () => {
@@ -201,7 +201,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
       // La ligne d'opposition part dans la file différée ; la conséquence est l'étape d'affichage empilée.
       expect(useGame.getState().pendingLogQueue.some((q) => /Force/.test(q.line))).toBe(true);
       const result = casc?.participants.find((s) => s.kind === 'bladeTrapResult');
-      expect(result?.outcome?.some((l) => /BRISÉE|arrachée/.test(l))).toBe(true);
+      expect(result?.outcome?.some((l) => /BRISÉE|arrachée/.test(l.text))).toBe(true);
     } finally {
       resetRule('combat-cadence');
     }

@@ -28,7 +28,8 @@ import { applyOps, type GameOp } from '../engine/ops';
 import { removeCondition, stacks } from '../engine/conditions';
 import { extendedTestStep } from '../engine/tests';
 import { registerCascadeApplier } from './cascade';
-import { freeCons, resultLine, type Consequence } from './rollSeam';
+import { freeCons, resultLines, type Consequence } from './rollSeam';
+import { toRecapLines } from './recapLine';
 import { t } from '../i18n';
 import { rule } from '../engine/policy';
 import {
@@ -147,7 +148,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
     // poste n'a plus d'objet → un pas d'AFFICHAGE « achevée », aucun jet ni accumulation (F1).
     if (spec.drTarget != null && (plan.extendedProgress ?? 0) >= spec.drTarget) {
       steps.push({ id: `poste-${hero.id}`, kind: 'stagePosteDone', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass',
-        label: def.label, interactive: true, outcome: [`${def.label} : déjà achevée (${spec.drTarget}/${spec.drTarget} DR).`] });
+        label: def.label, interactive: true, outcome: toRecapLines([`${def.label} : déjà achevée (${spec.drTarget}/${spec.drTarget} DR).`]) });
       continue;
     }
     if (spec.target == null) {
@@ -242,9 +243,9 @@ registerCascadeApplier('stagePosteBatch', (get, set, step) => {
     const def = posting ? activityById(posting.activityId) : undefined;
     if (!hero || !def || !posting) { part.outcome = []; continue; }
     const cons = applyPoste(get, set, hero, def, posting.freeSkill, part.result ?? null);
-    const lines = cons.map((c) => resultLine([c])).filter((s) => s.length > 0);
+    const lines = resultLines(cons); // #349 : ligne STRUCTURÉE (tone dérivé de la Consequence)
     part.outcome = lines; // conséquence SUR SA rangée (le portrait attribue)
-    for (const l of lines) get().log(l); // + journal/recap (une ligne par héros, pas d'agrégat)
+    for (const l of lines) get().log(l.text); // + journal/recap (une ligne par héros, pas d'agrégat)
   }
   set({ party: [...get().party] });
   return { consequences: [] };
@@ -276,7 +277,7 @@ export function buildWeatherResistanceSteps(get: Get, weather: Weather): Cascade
 }
 
 /** Test de RÉSISTANCE de traversée (l.86/127) : échec → Exténué (op `condition`, patron #338/#340), ligne
- *  DÉRIVÉE (`resultLine`/`opConsequenceLine` case condition) SUR SA rangée (le portrait attribue). Succès →
+ *  DÉRIVÉE (`resultLines`/`opConsequenceLine` case condition) SUR SA rangée (le portrait attribue). Succès →
  *  aucune note (la rangée ✓ ±DR porte le verdict). */
 registerCascadeApplier('weatherResistance', (get, set, step) => {
   if (!step.participants) return;
@@ -286,9 +287,9 @@ registerCascadeApplier('weatherResistance', (get, set, step) => {
     if (!hero || !res || res.success) { part.outcome = []; continue; }
     const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC ch.5 l.86/127
     applyOps(hero, [op]);
-    const line = resultLine([{ ops: [op] }]);
-    part.outcome = line ? [line] : [];
-    if (line) get().log(line);
+    const lines = resultLines([{ ops: [op] }]);
+    part.outcome = lines;
+    for (const l of lines) get().log(l.text);
   }
   set({ party: [...get().party] });
   return { consequences: [] };

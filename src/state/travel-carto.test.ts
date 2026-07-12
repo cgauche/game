@@ -93,7 +93,7 @@ describe('Voyage — poste Cartographie (Établir des cartes, test étendu)', ()
     const nextBatch = next.find((s) => s.kind === 'stagePosteBatch');
     expect(nextBatch?.participants?.some((p) => p.id === 'h') ?? false).toBe(false);
     const done = next.find((s) => s.kind === 'stagePosteDone');
-    expect(done?.outcome?.[0]).toContain(`${drTarget}/${drTarget} DR`);
+    expect(done?.outcome?.[0]?.text).toContain(`${drTarget}/${drTarget} DR`);
   });
 
   // VERROU RESSERRÉ (vague « lisibilité du voyage » 2/2, arbitrage user 2026-07-11) : `DrBar` n'est

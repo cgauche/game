@@ -206,14 +206,14 @@ describe('Cascade séquentielle influençable', () => {
     registerCascadeApplier('reveal', () => {}); // applier MUET (mutation seule, aucun journal)
     spyApplier('note', applied, () => ({ kind: 'note', success: true }));
     const steps: CascadeStep[] = [
-      { id: 'r', kind: 'reveal', actorId: h.id, outcome: ['Sonné appliqué (Assommante)'], interactive: true }, // affichage
+      { id: 'r', kind: 'reveal', actorId: h.id, outcome: [{ text: 'Sonné appliqué (Assommante)' }], interactive: true }, // affichage
       { id: 'd', kind: 'note', actorId: h.id, interactive: true },
     ];
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps });
     useGame.getState().cascadeNext(); // valide l'affichage → figé, avance sur 'd'
     const committed = useGame.getState().pendingCascade!.participants[0];
     expect(committed.committed).toBe(true);
-    expect(committed.outcome).toEqual(['Sonné appliqué (Assommante)']); // contenu pré-posé NON effacé
+    expect(committed.outcome).toEqual([{ text: 'Sonné appliqué (Assommante)' }]); // contenu pré-posé NON effacé
   });
 
   it('étape « batch » (participants — seam de jet #275 Décision 4 cran 1) : agrège les contributeurs à la validation', () => {
@@ -250,10 +250,10 @@ describe('Cascade séquentielle influençable', () => {
       { kind: 'effet', label: 'Effets', icon: '✨', lines: ['Cible Aveuglée 2 rounds.'] },
     ]);
     expect(steps.map((s) => s.kind)).toEqual(['miscast', 'effet']);
-    expect(steps[0].outcome).toEqual(['Le Vent se déchaîne.', 'L’incantateur perd 3 PB.']);
+    expect(steps[0].outcome).toEqual([{ text: 'Le Vent se déchaîne.' }, { text: 'L’incantateur perd 3 PB.' }]);
     expect(stepInteraction(steps[0])).toBe('affichage'); // ni target ni options
     expect(steps[0].actorId).toBe('x');
-    expect(steps[1].outcome).toEqual(['Cible Aveuglée 2 rounds.']);
+    expect(steps[1].outcome).toEqual([{ text: 'Cible Aveuglée 2 rounds.' }]);
   });
 
   it('liveMerge : un applier qui APPEND une étape (conséquence foldée) la préserve à la validation', () => {
@@ -262,11 +262,11 @@ describe('Cascade séquentielle influençable', () => {
     // APPEND une étape au pending (via set, comme pushReveal). advanceCascade doit la préserver.
     registerCascadeApplier('trigger', (get, set) => {
       const pc = get().pendingCascade!;
-      set({ pendingCascade: { ...pc, participants: [...pc.participants, { id: 'appended', kind: 'note', actorId: h.id, outcome: ['conséquence ajoutée'], interactive: true }] } });
+      set({ pendingCascade: { ...pc, participants: [...pc.participants, { id: 'appended', kind: 'note', actorId: h.id, outcome: [{ text: 'conséquence ajoutée' }], interactive: true }] } });
       return {};
     });
     spyApplier('note', applied, () => ({ kind: 'note', success: true }));
-    const trig: CascadeStep = { id: 't', kind: 'trigger', actorId: h.id, outcome: ['déclencheur'], interactive: true };
+    const trig: CascadeStep = { id: 't', kind: 'trigger', actorId: h.id, outcome: [{ text: 'déclencheur' }], interactive: true };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [trig] });
     useGame.getState().cascadeNext(); // valide 'trigger' → APPEND 'appended' ; le pending NE se ferme PAS
     const p = useGame.getState().pendingCascade;

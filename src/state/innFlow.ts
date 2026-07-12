@@ -53,7 +53,8 @@ registerCascadeApplier(INN_GOSSIP_KIND, (get, set, step, hero) => {
     return {};
   }
   const def = activityById(ACTIVITY_ID);
-  const cons = freeCons(['Personne ne semble savoir grand-chose ce soir-là.']); // EDOC l.153 : aucune rumeur récoltée
+  // EDOC l.153 : aucune rumeur récoltée — branche d'ÉCHEC (#349, dette 1 : ton dérivé, pas une chaîne muette).
+  const cons = freeCons([{ text: 'Personne ne semble savoir grand-chose ce soir-là.', tone: 'bad' }]);
   if (def?.failExtenue && hero) {
     const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC ch.5 l.133
     applyOps(hero, [op]);

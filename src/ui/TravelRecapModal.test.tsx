@@ -11,7 +11,7 @@ const base: TravelRecap = {
   fromLabel: 'Weiler', toLabel: 'Federholz', mode: 'pied', status: 'arrived',
   km: 24, kmDone: 24,
   days: [
-    { kmFrom: 0, kmTo: 24, hours: 6, lines: ['Péripétie : Un colporteur partage la route.'] },
+    { kmFrom: 0, kmTo: 24, hours: 6, lines: [{ text: 'Péripétie : Un colporteur partage la route.' }] },
   ],
   daysTotal: 1,
 };
@@ -30,7 +30,7 @@ describe('TravelRecapModal', () => {
   // INTERRUPTION : seule trace de la raison de l'arrêt — GARDE le déroulé jour par jour (migré ici
   // depuis le cas arrivée, désormais amincie).
   it('interruption : km restants + reprise par la carte + déroulé du jour (péripéties)', () => {
-    const html = renderToStaticMarkup(<TravelRecapModal seam={{ ...base, status: 'interrupted', kmDone: 10, days: [{ kmFrom: 0, kmTo: 10, hours: 2.5, lines: ['Péripétie : Un colporteur partage la route.', 'Péripétie : Brigands !'] }] }} />);
+    const html = renderToStaticMarkup(<TravelRecapModal seam={{ ...base, status: 'interrupted', kmDone: 10, days: [{ kmFrom: 0, kmTo: 10, hours: 2.5, lines: [{ text: 'Péripétie : Un colporteur partage la route.' }, { text: 'Péripétie : Brigands !' }] }] }} />);
     expect(html).toContain('Voyage interrompu');
     expect(html).toContain('14 km restants');
     expect(html).toContain('colporteur');

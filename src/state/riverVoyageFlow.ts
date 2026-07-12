@@ -31,6 +31,7 @@ import { damageVesselHull, healVesselHull, syncHullWoundsFromVessel, spoilVessel
 import { applyOps } from '../engine/ops';
 import { baseHoursPerDay } from './travelFlow';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
+import { toRecapLines } from './recapLine';
 import { travelSpeed } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById } from '../data';
@@ -426,7 +427,9 @@ registerCascadeApplier('riverControlRepair', (get, set, step, hero) => {
   if (!step.result) return;
   if (step.result.success) set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, broken: false, outOfControl: false } } });
   const name = hero?.name ?? 'Le charpentier';
-  return { consequences: freeCons([step.result.success ? `${name} rétablit le contrôle du gréement.` : `${name} ne parvient pas — le bateau dérive encore.`]) };
+  return { consequences: freeCons([step.result.success
+    ? { text: `${name} rétablit le contrôle du gréement.`, tone: 'ok' }
+    : { text: `${name} ne parvient pas — le bateau dérive encore.`, tone: 'bad' }]) };
 });
 
 /** Agilité de rame (l.17) : facteur de vitesse (1 / 0,8 / 0,5) posé sur `river.dayAgilityFactor`. */
@@ -436,7 +439,7 @@ registerCascadeApplier('riverAgility', (get, set, step, hero) => {
   set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, dayAgilityFactor: factor } } });
   const name = hero?.name ?? 'Le rameur';
   const text = step.result.success ? `${name} tient la cadence de rame.` : factor === 0.5 ? `${name} peine énormément — vitesse ÷2 aujourd'hui.` : `${name} peine à la rame — vitesse −20 % aujourd'hui.`;
-  return { consequences: freeCons([text]) };
+  return { consequences: freeCons([{ text, tone: step.result.success ? 'ok' : 'bad' }]) };
 });
 
 /** Navigation de l'étape (l.15) : perte de contrôle (échec non rattrapé par Savoir) → dérive. */
@@ -446,7 +449,10 @@ registerCascadeApplier('riverNav', (get, set, step, hero) => {
   const kept = riverControlKept(step.result.success, step.result.sl, savoir);
   if (!kept) patchDay(get, set, { forceDrift: true });
   const savoirNote = savoir > 0 ? ` (Savoir Voies fluviales +${savoir} DR)` : '';
-  return { consequences: freeCons([`${hero?.name ?? 'Le barreur'}${savoirNote} — ${controlLabel(kept, step.result.success)}`]) };
+  return { consequences: freeCons([{
+    text: `${hero?.name ?? 'Le barreur'}${savoirNote} — ${controlLabel(kept, step.result.success)}`,
+    tone: step.result.success ? 'ok' : kept ? 'info' : 'bad',
+  }]) };
 });
 
 /** Louvoyage (note 3, l.39) : le +% de vent n'est acquis qu'avec un Test réussi. */
@@ -456,7 +462,9 @@ registerCascadeApplier('riverTack', (get, set, step) => {
   const ok = step.result.success || (savoir > 0 && step.result.sl + savoir >= 0);
   const windPct = get().travelPlan?.river?.day?.windPct ?? 0;
   if (!ok) patchDay(get, set, { windPct: 0 });
-  return { consequences: freeCons([ok ? `Vent de côté capté — bonus de +${windPct} % de vitesse conservé.` : 'Louvoyage manqué — pas de bonus de vitesse.']) };
+  return { consequences: freeCons([ok
+    ? { text: `Vent de côté capté — bonus de +${windPct} % de vitesse conservé.`, tone: 'ok' }
+    : { text: 'Louvoyage manqué — pas de bonus de vitesse.', tone: 'bad' }]) };
 });
 
 /** Chavirage (note 4, l.40) : voile retirée à temps → dérive ; sinon redressement (BE Rounds, −5 cumulatif)
@@ -464,8 +472,8 @@ registerCascadeApplier('riverTack', (get, set, step) => {
 registerCascadeApplier('riverCapsize', (get, set, step) => {
   if (!step.result) return;
   patchDay(get, set, { forceDrift: true });
-  if (step.result.success) return { consequences: freeCons(['Voile affalée à temps — le chavirage est évité.']) };
-  const j = ['Trop tard — le bateau chavire !'];
+  if (step.result.success) return { consequences: freeCons([{ text: 'Voile affalée à temps — le chavirage est évité.', tone: 'ok' }]) };
+  const j: import('./rollSeam').FreeConsLine[] = [{ text: 'Trop tard — le bateau chavire !', tone: 'bad' }];
   const rng = battleRng();
   const be = capsizeSinkTurns(get().travelPlan!.vehicle!.characteristics?.endurance ?? 0);
   const pilotValue = Number(step.base ?? 0) + Number(step.meta?.savoir ?? 0);
@@ -481,8 +489,8 @@ registerCascadeApplier('riverCapsize', (get, set, step) => {
 /** Gréement en péril (note 5, l.41) : Test raté → Critique au gréement + dérive hors de contrôle. */
 registerCascadeApplier('riverRigging', (get, set, step) => {
   if (!step.result) return;
-  if (step.result.success) return { consequences: freeCons(['Le gréement tient.']) };
-  const j = ['Critique au gréement !'];
+  if (step.result.success) return { consequences: freeCons([{ text: 'Le gréement tient.', tone: 'ok' }]) };
+  const j: import('./rollSeam').FreeConsLine[] = [{ text: 'Critique au gréement !', tone: 'bad' }];
   const insert = applyBoatCritical(get, set, get().travelPlan!, get().travelPlan!.river!, get().travelPlan!.vehicle!, 'greement', (l) => j.push(...l), battleRng(), step.id);
   set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, outOfControl: true } } });
   patchDay(get, set, { forceDrift: true });
@@ -567,12 +575,12 @@ registerCascadeApplier('riverSplinterDodge', (get, set, step, hero) => {
   const dmg = Number(step.meta?.dmg ?? 0);
   const conditionId = String(step.meta?.conditionId ?? '') || undefined;
   const location = String(step.meta?.location ?? '');
-  if (step.result.success) return { consequences: freeCons([`Critique au ${location} — ${hero.name} esquive les éclats.`]) };
+  if (step.result.success) return { consequences: freeCons([{ text: `Critique au ${location} — ${hero.name} esquive les éclats.`, tone: 'ok' }]) };
   // HÉROS (pas la coque) : applyOps direct — les éclats sont un Dégât fixe RAW, sans mitigation BE/PA.
   applyOps(hero, [{ op: 'wounds', amount: dmg, ignoreTB: true, ignoreAP: true }]);
   if (conditionId) addCondition(hero, conditionId as Parameters<typeof addCondition>[1]);
   set({ party: [...get().party] });
-  return { consequences: freeCons([`Critique au ${location} — ${hero.name} subit ${dmg} Dégâts d'éclats${conditionId ? ` et gagne l'État ${conditionId}.` : '.'}`]) };
+  return { consequences: freeCons([{ text: `Critique au ${location} — ${hero.name} subit ${dmg} Dégâts d'éclats${conditionId ? ` et gagne l'État ${conditionId}.` : '.'}`, tone: 'bad' }]) };
 });
 
 /** Réparation d'urgence INFLUENÇABLE d'une coque PERCÉE (#270, Métier) — succès = voie d'eau colmatée
@@ -585,9 +593,9 @@ registerCascadeApplier('riverHoleRepair', (get, set, step, hero) => {
     const healed = Math.min(plan.vehicle!.wounds.max - plan.vehicle!.wounds.current, rollExpr(TEMPORARY_REPAIR.woundsPerRepair, battleRng()));
     healVesselHull(get, set, plan.vehicle!, healed);
     set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, holed: false } } });
-    return { consequences: freeCons([`${name} colmate la voie d'eau : +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`]) };
+    return { consequences: freeCons([{ text: `${name} colmate la voie d'eau : +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`, tone: 'ok' }]) };
   }
-  const j = [`${name} — le calfatage d'urgence ne tient pas.`];
+  const j: import('./rollSeam').FreeConsLine[] = [{ text: `${name} — le calfatage d'urgence ne tient pas.`, tone: 'bad' }];
   sinkBoat(get, set, (l) => j.push(...l), 'La coque prend l\'eau plus vite qu\'on ne la vide — le bateau sombre (T2C ch.5 l.103).');
   return { consequences: freeCons(j) };
 });
@@ -598,8 +606,8 @@ registerCascadeApplier('riverHoleRepair', (get, set, step, hero) => {
 registerCascadeApplier('riverPerilDetect', (get, set, step) => {
   const peril = findRiverPeril(String(step.meta?.perilId ?? ''));
   if (!step.result || !peril?.onHit) return;
-  if (step.result.success) return { consequences: freeCons([`${peril.label} — évité.`]) };
-  const j = [`${peril.label} — impact !`];
+  if (step.result.success) return { consequences: freeCons([{ text: `${peril.label} — évité.`, tone: 'ok' }]) };
+  const j: import('./rollSeam').FreeConsLine[] = [{ text: `${peril.label} — impact !`, tone: 'bad' }];
   const rng = battleRng();
   const impact = resolveRiverImpact(peril.onHit, rng);
   const plan = get().travelPlan!;
@@ -782,7 +790,7 @@ function echouageDifficulty(get: Get): { difficulty: Difficulty; encTxt: string 
 /** ÉCHOUAGE (#270) : Dégâts fixes appliqués immédiatement (non-jetés) ; le renflouage (Test de Force)
  *  devient une étape-jet INFLUENÇABLE (`riverEchouageForce`) si l'acteur est piloté par un humain —
  *  sinon délègue à `applyEchouage` (chemin IA/synchrone inchangé). */
-function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: string[]): CascadeStep[] {
+function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: import('./rollSeam').FreeConsLine[]): CascadeStep[] {
   const force = partyAssisted(get().party, undefined, 'force');
   if (!force || !humanControlled(get(), force.actor)) {
     applyEchouage(get, set, (l) => j.push(...l));
@@ -804,7 +812,9 @@ function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: string[]): 
 registerCascadeApplier('riverEchouageForce', (_get, _set, step, hero) => {
   if (!step.result) return;
   const name = hero?.name ?? 'Le groupe';
-  return { consequences: freeCons([step.result.success ? `${name} remet le bateau à flot.` : `${name} n'y parvient pas — il faudra s'y reprendre.`]) };
+  return { consequences: freeCons([step.result.success
+    ? { text: `${name} remet le bateau à flot.`, tone: 'ok' }
+    : { text: `${name} n'y parvient pas — il faudra s'y reprendre.`, tone: 'bad' }]) };
 });
 
 /** Fin de journée : horloge avancée (arrivée = +24 h ; halte = jusqu'au crépuscule), puis arrivée ou
@@ -840,7 +850,7 @@ function finishRiverDay(get: Get, set: Set, to: { scene: string; entry?: string;
     },
   });
 
-  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...dayLines] };
+  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: toRecapLines(dayLines) };
 
   if (arrived) { arriveRiver(get, set, to); return; }
   const route = (get().worldMap as WorldMap)?.routes.find((r) => r.id === plan.routeId);

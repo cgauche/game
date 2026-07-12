@@ -81,8 +81,8 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
 
   it('chronique : une carte par jour clos + le jour EN COURS', () => {
     const plan: TravelPlan = { ...seaPlan(), log: [
-      { kmFrom: 0, kmTo: 32, hours: 24, lines: ['Départ, vent portant'], entries: [] },
-      { kmFrom: 32, kmTo: 60, hours: 24, lines: ['Grain — voiles ✓'], entries: [] },
+      { kmFrom: 0, kmTo: 32, hours: 24, lines: [{ text: 'Départ, vent portant' }], entries: [] },
+      { kmFrom: 32, kmTo: 60, hours: 24, lines: [{ text: 'Grain — voiles ✓' }], entries: [] },
     ] };
     const cards = voyageDayCards(plan, 'mer', 'Jour', true);
     expect(cards).toHaveLength(3);
@@ -98,9 +98,9 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
   // la Nuit elle-même (plus de doublon jour/nuit sous un même index).
   it('chronique : une halte de nuit EN COURS ajoute une carte SÉLECTIONNABLE pour le jour clos, « Nuit » devient la carte current', () => {
     const plan: TravelPlan = { ...seaPlan(), log: [
-      { kmFrom: 0, kmTo: 32, hours: 24, lines: ['Départ, vent portant'], entries: [] },
+      { kmFrom: 0, kmTo: 32, hours: 24, lines: [{ text: 'Départ, vent portant' }], entries: [] },
     ] };
-    const pendingDay = { kmFrom: 32, kmTo: 60, hours: 24, lines: ['Grain — voiles ✓'], entries: [] };
+    const pendingDay = { kmFrom: 32, kmTo: 60, hours: 24, lines: [{ text: 'Grain — voiles ✓' }], entries: [] };
     const cards = voyageDayCards(plan, 'mer', 'Jour', true, [], pendingDay);
     expect(cards).toHaveLength(3); // Jour 1 (log) + Jour 2 (clos, en attente de la nuit) + Nuit (current)
     expect(cards[1].dayLabel).toBe('Jour 2');

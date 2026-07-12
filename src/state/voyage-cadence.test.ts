@@ -89,7 +89,7 @@ describe('traversée COMMANDÉE (mer) — routine auto-résolue, PV du jour, auc
     get().startTravel('r1', 'mer', { cadence: 'commande' });
     const day = get().pendingRest!.travelDay!;
     // Un RÉSUMÉ DR par Test (ligne « … : DR … → succès/échec ») au journal du jour, + les entrées.
-    const drLines = day.lines.filter((l) => /DR .* → (succès|échec)/.test(l)).length;
+    const drLines = day.lines.filter((l) => /DR .* → (succès|échec)/.test(l.text)).length;
     const kinds = new Set(day.entries!.map((e) => (e.id ?? '').split('-')[1]));
     expect(drLines).toBeGreaterThanOrEqual(kinds.size); // au moins une trace par nature de Test joué
   });

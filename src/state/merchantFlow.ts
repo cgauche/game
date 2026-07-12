@@ -4,6 +4,7 @@
  * (Test opposé), Évaluation. Refacto pure — comportement préservé.
  */
 import type { GameState } from './store';
+import { toRecapLines } from './recapLine';
 import { Combatant, ItemInstance } from '../engine/types';
 import { recomputeLoadout, itemFromTrappingById, addItemToHero, autoStowNewItem } from '../engine/items';
 import { isRepairable, itemRepairCostBrass } from '../engine/repair';
@@ -219,7 +220,7 @@ function openStockRevealCascade(
     kind: MERCHANT_STOCK_KIND,
     label: `Réassort — ${arch?.label ?? archetype}`,
     interactive: true,
-    ...(outcome?.length ? { outcome } : {}),
+    ...(outcome?.length ? { outcome: toRecapLines(outcome) } : {}),
     meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup },
   };
   startCascade(get, set, { title: 'Réassort marchand', purpose: 'test', steps: [step] });

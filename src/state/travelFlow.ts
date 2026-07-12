@@ -52,7 +52,9 @@ import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from 
 import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
 import { t } from '../i18n';
-import type { CascadeStep } from './pendings';
+import type { CascadeStep, PendingCascade } from './pendings';
+import type { RecapLine } from './recapLine';
+import { toRecapLines, phaseOfKind } from './recapLine';
 import { buildSeaPlan, runSeaDay, startFastVoyage, syncHullWoundsFromVessel } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { humanControlled } from './netOwnership';
@@ -65,8 +67,12 @@ export interface TravelRecapDay {
   kmFrom: number;
   kmTo: number;
   hours: number;
-  /** Fatigue, péripéties narratives, entretien… (les mêmes lignes que le journal). */
-  lines: string[];
+  /** Fatigue, péripéties narratives, entretien… Ligne STRUCTURÉE (#349) : `{ text, icon?, tone?,
+   *  phase? }`, rendue par le renderer partagé `ui/RecapLine.tsx` — `phase` (jour terrestre
+   *  seulement) rattache la ligne à `DAY_PHASE_CATALOG` (`state/recapLine.ts`), même catalogue que
+   *  l'agenda du jour EN COURS (`ui/VoyageScreen.dayAgenda`) : le sectionnement des jours CLOS en
+   *  tombe GRATUITEMENT (dette 3). */
+  lines: RecapLine[];
   /** Les JETS du jour (marche forcée, Survie, Perception…) en lignes de jet structurées —
    *  même brique multijet que le bilan de nuit (MultiRollList), pas du texte. */
   entries?: import('./restFlow').NightEntry[];
@@ -492,7 +498,7 @@ function runTravelDays(get: Get, set: Set): void {
     set({ travelPlan: { ...get().travelPlan!, kmDone } });
     const recapDay: TravelRecapDay = {
       kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday,
-      lines: [...(forced?.lines ?? [])], entries: [...(forced?.entries ?? [])],
+      lines: toRecapLines(forced?.lines ?? []), entries: [...(forced?.entries ?? [])],
     };
     recap?.days.push(recapDay);
     if (forced) {
@@ -503,7 +509,7 @@ function runTravelDays(get: Get, set: Set): void {
       if (forced.vehicleOut) {
         set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
         log(get, set, ['Le véhicule est hors d’usage — la route continue à pied.']);
-        recapDay.lines.push('Le véhicule est hors d’usage — la route continue à pied.');
+        recapDay.lines.push({ text: 'Le véhicule est hors d’usage — la route continue à pied.', tone: 'bad' });
       }
     }
 
@@ -523,7 +529,7 @@ function runTravelDays(get: Get, set: Set): void {
       const overBudget = totalFoot > base + 1e-9 && !prior.marched;
       for (const h of party) {
         if (h.dead || h.outOfRencontre) continue;
-        if (crossedFatigue) { const fatigue = applyTravelFatigue(h); dayLines.push(...fatigue); recapDay.lines.push(...fatigue); }
+        if (crossedFatigue) { const fatigue = applyTravelFatigue(h); dayLines.push(...fatigue); recapDay.lines.push(...toRecapLines(fatigue)); }
         if (overBudget) marchHeroes.push(h.id);
       }
       if (overBudget && marchHeroes.length) markMarchedToday(get, set, today0);
@@ -602,7 +608,9 @@ function buildTravelDayCascade(
     const season = currentSeason(get);
     const w = rollStageWeather(battleRng(), season);
     recapDay.weather = { id: w.weather, roll: w.roll };
-    log(get, set, [t('out.stageWeather', { weather: WEATHER_LABEL[w.weather] })]);
+    const weatherLine = t('out.stageWeather', { weather: WEATHER_LABEL[w.weather] });
+    log(get, set, [weatherLine]);
+    recapDay.lines.push({ text: weatherLine }); // hors-cascade (météo = CONTEXTE, jamais une phase)
     // Test de Résistance de traversée (Neige/Blizzard, l.86/127) au DÉMARRAGE du jour — un jet PAR héros
     // (BATCH influençable), avant les Activités ; DISTINCT de l'Exposition de fin d'Étape.
     steps.push(...buildWeatherResistanceSteps(get, w.weather));
@@ -631,6 +639,17 @@ function buildTravelDayCascade(
   return steps;
 }
 
+/** Lignes STRUCTURÉES d'une étape de cascade DÉJÀ committée, phase-taguée (#349, dette 3) — un pas
+ *  BATCH déplie ses PARTICIPANTS (chacun porte SA conséquence, `stagePosteBatch`/`weatherResistance`) ;
+ *  un pas MONO lit `step.outcome`. `phaseOfKind` (catalogue PARTAGÉ, `state/recapLine.ts`, le MÊME que
+ *  l'agenda du jour EN COURS `ui/VoyageScreen.dayAgenda`) rattache la ligne à sa phase — `undefined`
+ *  pour un `kind` hors catalogue (silencieux). */
+function stepRecapLines(step: CascadeStep): RecapLine[] {
+  const phase = phaseOfKind(step.kind);
+  const raw = step.participants ? step.participants.flatMap((p) => p.outcome ?? []) : (step.outcome ?? []);
+  return phase ? raw.map((l) => ({ ...l, phase })) : raw;
+}
+
 /**
  * Clôture de la cascade du jour terrestre (`purpose:'travelDay'`, appelée par le store) : le jour est
  * fini de se JOUER (postes/exposition/péripéties validés) — reste à enchaîner. Roule la marche forcée
@@ -638,8 +657,11 @@ function buildTravelDayCascade(
  * présenter), sinon la DIFFÈRE à la cascade de nuit (`travelMarch`). Puis : interruption (péripétie) →
  * recap `interrupted` + suite différée ; arrivée → transition ; sinon → halte de nuit (`openRest`).
  * Efface le contexte transitoire du jour. Renvoie `true` (le segment est toujours clos ici).
+ * `done` : la cascade `travelDay` FINALISÉE (`dispatchCascadeDone`, `combatSlice.ts`) — ses étapes
+ * committées portent les lignes de récap phase-taguées (#349) ; absente quand `buildTravelDayCascade`
+ * n'a produit AUCUNE étape (la météo/hors-cascade a déjà été poussée directement sur `recapDay.lines`).
  */
-export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
+export function continueTravelDayAfterCascade(get: Get, set: Set, done?: PendingCascade): boolean {
   const plan = get().travelPlan;
   if (!plan) return true;
   const worldMap = get().worldMap;
@@ -647,9 +669,9 @@ export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
   const ctx = plan.land;
   const recap = plan.recap;
   const recapDay = recap?.days[recap.days.length - 1];
-  // Récap du jour : la tranche de journal écrite pendant la cascade (météo, postes, Exposition,
-  // péripéties) — les lignes de la cascade ne vont pas d'elles-mêmes dans `recapDay.lines`.
-  if (recapDay && ctx) recapDay.lines.push(...get().journal.slice(ctx.journalMark));
+  // Récap du jour : les lignes des étapes de la cascade close (météo/hors-cascade déjà poussées au
+  // build, cf. `buildTravelDayCascade`) — phase-taguées via le catalogue partagé (dette 3).
+  if (recapDay && done) recapDay.lines.push(...done.participants.flatMap(stepRecapLines));
   // Attelage FORCÉ conducteur JOUEUR (#270) : gameTime/kmDone étaient DIFFÉRÉS depuis le build (la
   // chaîne `landForcedPace` n'a résolu km/heures qu'au fil des jets) — on les pose maintenant, comme
   // le chemin synchrone les pose avant le build. Absent (conducteur IA / pas d'attelage forcé) : rien
@@ -664,7 +686,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
     if (fp.vehicleOut) {
       set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
       log(get, set, ['Le véhicule est hors d’usage — la route continue à pied.']);
-      recapDay?.lines.push('Le véhicule est hors d’usage — la route continue à pied.');
+      recapDay?.lines.push({ text: 'Le véhicule est hors d’usage — la route continue à pied.', tone: 'bad' });
     }
     if (recapDay) { recapDay.kmTo = get().travelPlan?.kmDone ?? recapDay.kmTo; recapDay.hours = fp.hours; }
   }
@@ -708,7 +730,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
     const daysTotal = (get().travelPlan?.log?.length ?? 0) + 1;
     set({ travelPlan: null });
     const care = travelArrivalCare(get, set);
-    if (recapDay) recapDay.lines.push(...care);
+    if (recapDay) recapDay.lines.push(...toRecapLines(care));
     log(get, set, [`— Arrivée à ${ctx.toLabel} —`, ...care]);
     finishRecap('arrived', undefined, daysTotal);
     get().transitionTo(ctx.toScene, ctx.toEntry);
@@ -858,12 +880,12 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
   }
   set({ party: [...get().party] });
   log(get, set, lines);
-  day.lines.push(...lines);
+  day.lines.push(...toRecapLines(lines));
   if (!partyFullyMounted(get().party)) {
     set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
     const l = 'Le groupe n’est plus monté au complet — la route continue à pied.';
     log(get, set, [l]);
-    day.lines.push(l);
+    day.lines.push({ text: l });
   }
 }
 

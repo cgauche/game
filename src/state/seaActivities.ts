@@ -44,6 +44,7 @@ import { cargoTotalEnc, OPPORTUNITE, opportunityTradePct } from '../engine/seaVo
 import { findVehicleById } from '../data';
 import type { Combatant } from '../engine/types';
 import type { TravelRecapDay } from './travelFlow';
+import { toRecapLines } from './recapLine';
 import type { Get, Set } from './flowTypes';
 import type { CascadeStep } from './pendings';
 import { composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest } from './rollSeam';
@@ -225,7 +226,7 @@ export function continueSeaActivitiesAfterCascade(get: Get, set: Set): void {
   // `noteSeaLine`/`commitStep`) : les rapatrier dans le recap du jour puis purger l'accumulateur.
   const plan = get().travelPlan;
   const activityLines = plan?.sea?.lines ?? [];
-  const day: TravelRecapDay = { ...pending.day, lines: [...pending.day.lines, ...activityLines] };
+  const day: TravelRecapDay = { ...pending.day, lines: [...pending.day.lines, ...toRecapLines(activityLines)] };
   if (plan?.sea) patchSea(get, set, { lines: [] });
   set({ pendingSeaActivities: null });
   // Halte de nuit (machinerie EXISTANTE) — le recap du jour, Activités comprises, s'y lit. En mer, on

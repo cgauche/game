@@ -18,6 +18,7 @@ import type { OupsResolved } from '../engine/oups';
 import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from '../engine/magic';
 import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
+import type { RecapLine } from './recapLine';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlowFactory';
 import type { Money } from '../engine/money';
 /** Résultat du jet d'UN contributeur à un Test d'équipage par rôle (MDG ch.14). Défini ICI (neutre,
@@ -1112,9 +1113,9 @@ export interface BatchParticipant extends RollParticipant {
    *  RÉELLE reste au pas d'agrégation (`stageAggregate`), ceci n'est que l'affichage. */
   extendedDrDone?: number;
   extendedDrTarget?: number;
-  /** Conséquence appliquée à CETTE rangée (dérivée des ops, #295) — rendue comme note de la rangée
-   *  (le portrait porte l'attribution), PERSISTE dans les rangées-témoins/bilan. */
-  outcome?: string[];
+  /** Conséquence appliquée à CETTE rangée (dérivée des ops, #295 ; ligne STRUCTURÉE #349) — rendue
+   *  comme note de la rangée (le portrait porte l'attribution), PERSISTE dans les rangées-témoins/bilan. */
+  outcome?: RecapLine[];
   result: CascadeRoll | null;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
@@ -1159,8 +1160,9 @@ export interface CascadeStep extends RollParticipant {
   meta?: CascadeStepMeta;
   /** Étape déjà validée (conséquence appliquée). */
   committed?: boolean;
-  /** Conséquence appliquée à la validation (journal) — gardée pour rester lisible dans la pile. */
-  outcome?: string[];
+  /** Conséquence appliquée à la validation (journal) — gardée pour rester lisible dans la pile.
+   *  Ligne STRUCTURÉE (#349) : `RecapLine[]`, rendue par le renderer partagé `ui/RecapLine.tsx`. */
+  outcome?: RecapLine[];
   /** Charge RICHE d'une étape d'affichage (ex. Coup Critique : localisation/Blessures/Traumatismes/
    *  États) — rendue par le panneau détaillé partagé (`CriticalBody`) au lieu de simples lignes. */
   reveal?: RevealEntry;

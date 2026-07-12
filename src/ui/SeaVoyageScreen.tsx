@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { WindRose } from './WindRose';
 import { NotchGauge } from './NotchGauge';
 import { MultiRollList } from './MultiRollList';
+import { RecapLineList } from './RecapLine';
 import { Icon } from './Icon';
 import type { Dir8 } from '../state/dir8';
 import { windDirectionLabel, type SeaWindForceId } from '../engine/seaWeather';
@@ -50,9 +51,9 @@ export function SeaVoyageBody({ day }: { day: TravelRecapDay }) {
       {/* Le PV du jour DÉFILE : une ligne par jet de routine auto-résolu (aucun jet silencieux). */}
       {(day.entries?.length ?? 0) > 0
         ? <div className="sea-voyage-log"><MultiRollList entries={day.entries!} /></div>
-        : day.lines.length > 0 && <ul className="rest-travel-lines">{day.lines.map((l, i) => <li key={i}>{l}</li>)}</ul>}
+        : day.lines.length > 0 && <RecapLineList lines={day.lines} />}
       {(day.entries?.length ?? 0) > 0 && day.lines.length > 0 && (
-        <ul className="rest-travel-lines sea-voyage-notes">{day.lines.map((l, i) => <li key={i}>{l}</li>)}</ul>
+        <div className="sea-voyage-notes"><RecapLineList lines={day.lines} /></div>
       )}
       {active && (
         <div className="sea-voyage-orders">

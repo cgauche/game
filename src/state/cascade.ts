@@ -20,7 +20,8 @@ import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
 import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate } from './pendings';
 import type { Consequence } from './rollSeam';
-import { resultLine } from './rollSeam';
+import { resultLines } from './rollSeam';
+import { toRecapLines } from './recapLine';
 import { actorIn } from './combatOrParty';
 import { rollTest, evaluateTest, bestForcedRoll } from '../engine/tests';
 import { battleRng } from './battleRng';
@@ -210,13 +211,14 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   if (step.participants && !step.result && step.aggregate !== 'none') step = { ...step, result: aggregateBatchStep(step) };
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
-  // `consequences` (#295 Lot 0) : rendu par `resultLine` en UNE ligne — seule voie de dénouement.
-  const journal = out?.consequences ? [resultLine(out.consequences)].filter((l) => l.length > 0) : [];
-  for (const l of journal) get().log(l);
+  // `consequences` (#295 Lot 0) : rendu en LIGNES STRUCTURÉES (#349, `resultLines`) — seule voie de
+  // dénouement. Le journal texte (`get().log`) reste alimenté depuis le même texte (`l.text`).
+  const lines = out?.consequences ? resultLines(out.consequences) : [];
+  for (const l of lines) get().log(l.text);
   // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran. Une
   // étape d'AFFICHAGE porte son contenu d'avance (`outcome` pré-rempli) avec un applier muet → on le
   // PRÉSERVE (sinon le journal vide l'effacerait à la validation).
-  const shown = journal.length ? journal : (step.outcome ?? []);
+  const shown = lines.length ? lines : (step.outcome ?? []);
   // Pilote INTERACTIF (`liveMerge`) : l'applier d'une conséquence de combat FOLDÉE (déviation) re-déclenche
   // le reste de l'attaque, qui APPEND des étapes au pending (via pushReveal). On repart alors des
   // participants COURANTS (post-applier) pour préserver ces appends — le pending est EN PHASE ici
@@ -232,7 +234,7 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   // (une conséquence FOLDÉE re-déclenchée APPEND au pending, `pendingCascade` reste NON-null — pas une
   // suspension) : seul `null` signe la suspension, jamais une simple différence de référence.
   const suspended = before !== null && get().pendingCascade === null;
-  return { steps: next, journal, suspended };
+  return { steps: next, journal: lines.map((l) => l.text), suspended };
 }
 
 /** Cascade EN COURS de résolution suspendue EN PLEIN VOL (`commitStep` a détecté `suspended`) : replace
@@ -419,7 +421,7 @@ export function buildConsequenceSteps(groups: ConsequenceGroup[]): CascadeStep[]
       actorId: g.actorId,
       icon: g.icon,
       label: g.label,
-      outcome: g.lines,
+      outcome: toRecapLines(g.lines),
       interactive: true,
     }));
 }

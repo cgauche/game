@@ -35,6 +35,7 @@ import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
+import type { RecapLine, RecapTone } from './recapLine';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatOrParty';
 import { startCascade, runCascadeImmediate } from './cascade';
@@ -132,10 +133,12 @@ export function rollTitle(get: Get, req: RollRequest): string {
  * montant RÉEL rendu depuis le `GameOp` appliqué), soit une note narrative (`say`, clé `out.*` SANS
  * placeholder de jet — cf. garde i18n `i18n.test.ts`). AUCUN accès à roll/target/sl/won : la
  * duplication d'outcome (`${roll}/${target}`, « réussi (DR X) ») est INEXPRIMABLE par construction.
+ * `tone`/`icon` (#349) habillent l'affichage de la ligne — `RecapTone` = vocabulaire UNIQUE, celui de
+ * `NightEntry.tone`/`RecapLine.tone` (`state/recapLine.ts`), jamais un second jeu de valeurs.
  */
 export type Consequence =
-  | { ops: GameOp[] }
-  | { say: OutKey; vars?: OutVars };
+  | { ops: GameOp[]; tone?: RecapTone }
+  | { say: OutKey; vars?: OutVars; tone?: RecapTone; icon?: string };
 
 /** Ligne d'un `GameOp` DÉJÀ appliqué — le montant est un LITTÉRAL résolu par l'applier (jamais une
  *  `Formula` à re-tirer ici : `resultLine` ne reçoit ni cible ni RNG, cf. Décision 1b). Étend au fil
@@ -149,22 +152,48 @@ function opConsequenceLine(op: GameOp): string {
   }
 }
 
+/** Ton PAR DÉFAUT d'une conséquence `ops` sans `tone` explicite — dérivé du GameOp lui-même (soin =
+ *  positif, Blessures/État = négatif), jamais deviné au call-site. */
+function defaultOpsTone(ops: GameOp[]): RecapTone {
+  if (ops.some((o) => o.op === 'heal')) return 'ok';
+  if (ops.some((o) => o.op === 'wounds' || o.op === 'condition')) return 'bad';
+  return 'info';
+}
+
 /**
- * Rend la ou les conséquences d'une étape DÉJÀ dénouée — LA rangée « ce qui s'est passé », jamais un
- * re-print du jet (Décision 1b). `cons` vide ⇒ `''` : le verdict ✓/✗ ±DR reste porté par la rangée de
- * jet (`RollLine`) seule.
+ * Rend la ou les conséquences d'une étape DÉJÀ dénouée en LIGNES STRUCTURÉES (#349) — LA forme
+ * consommée par le renderer partagé (`ui/RecapLine.tsx`) : `CascadeStep.outcome`, `TravelRecapDay.
+ * lines`. Une entrée VIDE (`text` vide) est filtrée — `cons` vide ⇒ `[]`.
+ */
+export function resultLines(cons: Consequence[]): RecapLine[] {
+  return cons
+    .map((c): RecapLine => ('say' in c
+      ? { text: t(c.say, c.vars), tone: c.tone ?? 'info', ...(c.icon ? { icon: c.icon } : {}) }
+      : { text: c.ops.map(opConsequenceLine).filter(Boolean).join(' '), tone: c.tone ?? defaultOpsTone(c.ops) }))
+    .filter((l) => l.text.length > 0);
+}
+
+/**
+ * Rend la ou les conséquences d'une étape DÉJÀ dénouée EN UNE CHAÎNE — repli pour les ~100 call-sites
+ * NON convertis au rendu structuré (journal texte, `get().log()`) : joint `resultLines` (#349, source
+ * UNIQUE — ne recalcule rien). Le verdict ✓/✗ ±DR reste porté par la rangée de jet (`RollLine`) seule.
  */
 export function resultLine(cons: Consequence[]): string {
-  return cons
-    .map((c) => ('say' in c ? t(c.say, c.vars) : c.ops.map(opConsequenceLine).filter(Boolean).join(' ')))
-    .filter((s) => s.length > 0)
-    .join(' ');
+  return resultLines(cons).map((l) => l.text).join(' ');
 }
+
+/** Une entrée `freeCons` : un texte SIMPLE (repli neutre) ou une ligne déjà TONÉE/ICÔNÉE (#349, dette
+ *  1 — le flux DÉRIVE le ton depuis ce qu'il vient de résoudre, ex. `step.result.success`, au lieu de
+ *  composer une chaîne muette). */
+export type FreeConsLine = string | { text: string; tone?: RecapTone; icon?: string };
 
 /** Enveloppe des lignes de conséquence DÉJÀ composées (sans roll/target/sl du jet visible) en
  *  `Consequence[]` (#295 Lot 1, `out.free` passthrough) — SOURCE UNIQUE, réutilisée par tous les
  *  appliers de cascade migrés (river/travel/sea/shipwreck/pursuit/combat/rest/embrigadement). */
-export const freeCons = (texts: string[]): Consequence[] => texts.filter((s) => s.length > 0).map((text) => ({ say: 'out.free', vars: { text } }));
+export const freeCons = (texts: FreeConsLine[]): Consequence[] => texts
+  .map((x): { text: string; tone?: RecapTone; icon?: string } => (typeof x === 'string' ? { text: x } : x))
+  .filter((x) => x.text.length > 0)
+  .map(({ text, tone, icon }) => ({ say: 'out.free' as OutKey, vars: { text }, tone, icon }));
 
 /** Résout le côté d'un jet MONO (`hero-test`/`enemy`/`subi` non-`batch`) en acteur + éventuelle valeur
  *  DÉJÀ CALCULÉE (mandat coordinateur — le call-site ne calcule plus rien) :

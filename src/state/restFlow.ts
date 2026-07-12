@@ -23,6 +23,7 @@
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
 import type { RollBreakdown } from '../engine/combat';
+import type { RecapTone } from './recapLine';
 import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
 import { partyAssisted, testValue } from '../engine/skills';
@@ -86,7 +87,8 @@ export interface NightEntry {
   d?: RollBreakdown;
   /** Issue / note en clair (« +7 PB », « jour 4/6 »). */
   text?: string;
-  tone?: 'ok' | 'bad' | 'info';
+  /** Vocabulaire PARTAGÉ (#349) — `RecapTone`, `state/recapLine.ts` (même trio que `RecapLine.tone`). */
+  tone?: RecapTone;
   /** Type de conséquence RECALCULABLE ligne à ligne (delta pur, sans re-simuler la nuit) → seule une
    *  ligne ainsi taguée porte l'influence après coup. Absent = ligne LECTURE SEULE (conséquence tissée
    *  aux autres jours/jets, non réversible proprement : Exposition/Contagion/Faim). */

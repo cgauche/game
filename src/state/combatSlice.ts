@@ -323,7 +323,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // 'progression' (cascade fermée sans insert du reste du jour) — `resolveSteamSave` reprend la
       // journée lui-même à sa résolution ; ne pas clôturer prématurément ici.
       else if (get().travelPlan?.sea) { if (!get().pendingSteamSave) continueSeaDayAfterCascade(get, set); }
-      else travelFlow.continueTravelDayAfterCascade(get, set);
+      else travelFlow.continueTravelDayAfterCascade(get, set, done);
     }
     // Exposition hydrique fluviale (T2C ch.14) surfacée APRÈS le jour (#344) : la clôture reprend la fin du
     // jour (halte de nuit / arrivée), DIFFÉRÉE le temps du Test de Résistance — sinon le Repos et l'Exposition

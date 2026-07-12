@@ -33,6 +33,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { dayIndex } from './upkeep';
 import { placeById, type WorldMap, type MapPlace, type MapRoute } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
+import { toRecapLines } from './recapLine';
 import type { BatchParticipant } from './pendings';
 import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion, shipboardSouls } from './shipCrew';
 import { applyEffects, applyEffectsLoot } from './combatEffects';
@@ -946,7 +947,7 @@ registerCascadeApplier('sea-scorbut', (get, set, step, hero) => {
   const d = contractDisease('scorbut', battleRng());
   if (d) hero.diseases = [...(hero.diseases ?? []), d];
   set({ party: [...get().party] });
-  return { consequences: freeCons([`${hero.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : contracté.`]) };
+  return { consequences: freeCons([{ text: `${hero.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : contracté.`, tone: 'bad' }]) };
 });
 
 /** Épuisement (MDG 13 l.109-111, `klass:'subi'`) : même patron que Scorbut ci-dessus. */
@@ -958,7 +959,7 @@ registerCascadeApplier('sea-epuisement', (get, set, step, hero) => {
   if (success) { set({ party: [...get().party] }); return { consequences: freeCons([]) }; }
   addCondition(hero, 'extenue');
   set({ party: [...get().party] });
-  return { consequences: freeCons([`${hero.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[exhaustionDifficulty(true)]}) : +1 Exténué.`]) };
+  return { consequences: freeCons([{ text: `${hero.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[exhaustionDifficulty(true)]}) : +1 Exténué.`, tone: 'bad' }]) };
 });
 
 /** Applique les MILLES du jour depuis le total du Test de Progression (±10 %/DR, ch.15 l.78). Renvoie
@@ -1041,7 +1042,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
       const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Scorbut', test: {}, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-scorbut') === 'I') {
         const resolved = runCascadeImmediate(get, set, steps);
-        tell(get, set, resolved.flatMap((s) => s.outcome ?? []));
+        tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
       } else {
         startCascade(get, set, { title: 'Entretien — Scorbut', icon: 'medical/infection', purpose: 'seaScorbut', steps });
         return; // clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterScorbut`
@@ -1062,7 +1063,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
 export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: CascadeStep[]): void {
   const plan = get().travelPlan;
   if (!plan?.sea) return;
-  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => s.outcome ?? []));
+  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
   const rng = battleRng();
   const sea = plan.sea;
   const daysAtSea = sea.daysAtSea + 1;
@@ -1128,7 +1129,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
       const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Épuisement', test: {}, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-epuisement') === 'I') {
         const resolved = runCascadeImmediate(get, set, steps);
-        tell(get, set, resolved.flatMap((s) => s.outcome ?? []));
+        tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
       } else {
         startCascade(get, set, { title: 'Entretien — Épuisement', icon: 'medical/infection', purpose: 'seaExhaustion', steps });
         return; // clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterExhaustion`
@@ -1147,7 +1148,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
 export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: CascadeStep[]): void {
   const plan = get().travelPlan;
   if (!plan?.sea) return;
-  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => s.outcome ?? []));
+  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
   const rng = battleRng();
   const sea = plan.sea;
   const daysAtSea = sea.daysAtSea + 1;
@@ -1188,7 +1189,7 @@ export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: Ca
 
   const worldMap = get().worldMap as WorldMap;
   const to = placeById(worldMap, plan.toPlaceId);
-  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: todayLines, entries: dayEntries, sea: chrome };
+  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: toRecapLines(todayLines), entries: dayEntries, sea: chrome };
 
   if (plan.km - kmDone < 1e-9 && to) {
     // ARRIVÉE : la distance de la traversée est NOTÉE sur le navire (vente à un port producteur :

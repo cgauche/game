@@ -4,6 +4,7 @@ import type { CampaignVessel, PendingRest } from '../state/store';
 import type { TravelPlan, TravelRecapDay } from '../state/travelFlow';
 import { currentTravelDayWeather } from '../state/travelFlow';
 import type { PendingCascade } from '../state/pendings';
+import { DAY_PHASE_CATALOG } from '../state/recapLine';
 import type { Combatant } from '../engine/types';
 import { placeById } from '../state/worldMap';
 import { routeDistanceLabel, TRAVEL_MODE_LABEL } from '../engine/travel';
@@ -74,15 +75,9 @@ export interface DayAgendaItem {
   jets?: number;
 }
 
-/** Catalogue des PHASES reconnues d'une cascade de jour (`purpose:'travelDay'`), par PRÉFIXE de
- *  `CascadeStep.kind` — générique (aucun id de mode nommé) : ajouter une phase = une entrée ici, jamais
- *  un branchement par mode. `stagePoste*`/`stageAggregate`/`stageExposure` (Étapes EDOC) = Activités ;
- *  `landPeril*` = Rencontre/Péripéties ; `landForcedPace*` = Route (marche forcée). */
-const DAY_PHASE_CATALOG: { key: string; label: string; match: (kind: string) => boolean }[] = [
-  { key: 'activites', label: 'Activités', match: (k) => k.startsWith('stagePoste') || k === 'stageAggregate' || k === 'stageExposure' },
-  { key: 'rencontre', label: 'Rencontre / Péripéties', match: (k) => k.startsWith('landPeril') },
-  { key: 'route', label: 'Route', match: (k) => k.startsWith('landForcedPace') },
-];
+/** Catalogue des PHASES reconnues d'une cascade de jour (`purpose:'travelDay'`) — SOURCE UNIQUE
+ *  `state/recapLine.DAY_PHASE_CATALOG` (#349), partagée avec le sectionnement des jours CLOS
+ *  (`RecapLine.phase`, `ui/RecapLine.RecapLineSections`). Ne PAS redéfinir localement. */
 
 /** AGENDA DE PHASES du jour EN COURS (arbitrage user verbatim : « qu'on mette des sous-catégories …
  *  histoire qu'on sache ce qui se passe à l'écran et ce qui va se passer ») — DÉRIVÉ de l'état réel :
@@ -159,8 +154,8 @@ export function voyageMode(plan: TravelPlan): 'mer' | 'fleuve' | 'terre' {
 
 /** Résumé de carte de chronique d'un jour clos (première ligne signifiante, sinon libellé neutre). */
 function dayCardSummary(day: TravelRecapDay, sub: 'mer' | 'fleuve' | 'terre'): string {
-  const first = day.lines.find((l) => l && !l.startsWith('—')) ?? day.lines[0];
-  if (first) return first;
+  const first = day.lines.find((l) => l.text && !l.text.startsWith('—')) ?? day.lines[0];
+  if (first) return first.text;
   const km = Math.round(day.kmTo - day.kmFrom);
   return sub === 'mer' ? `${km} milles parcourus` : `${km} km parcourus`;
 }

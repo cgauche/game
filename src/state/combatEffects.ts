@@ -1,6 +1,7 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep } from './pendings';
+import { toRecapLines } from './recapLine';
 import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, defaultRNG, roll as rollDice, type RNG } from '../engine/dice';
@@ -77,7 +78,7 @@ function revealToStep(entry: RevealEntry, index: number): CascadeStep {
     actorId: entry.subjectId,
     icon: SEQ_ICON[entry.kind] ?? 'action/attack',
     label: entry.title,
-    outcome: entry.lines,
+    outcome: toRecapLines(entry.lines),
     reveal: isCrit ? entry : undefined,
     interactive: true,
   };

@@ -33,7 +33,7 @@ import { mountProfileForTrapping } from '../engine/mountTravel';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 export interface SaveMeta {
   version: number;
@@ -167,7 +167,44 @@ export const MIGRATIONS: MigrationMap = {
     rehomeCaravan(data);
     return { ...doc, version: 5, data };
   },
+  // v5 → v6 (#349) : `TravelRecapDay.lines` passe de `string[]` (chaîne plate) à `RecapLine[]`
+  // (`{ text, icon?, tone?, phase? }`, `state/recapLine.ts`). Normalise les QUATRE emplacements
+  // sérialisables d'un `TravelRecapDay` — `travelPlan.recap.days[]`/`travelPlan.log[]` (chronique
+  // de voyage), `pendingRest.travelDay`, `pendingSeaActivities.day` — en repli neutre (`{ text }`,
+  // ni icône ni ton) : patron `normalizeScene` (jamais un crash sur vieille donnée).
+  5: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    normalizeTravelRecapLines(data);
+    return { ...doc, version: 6, data };
+  },
 };
+
+/** Normalise `days: TravelRecapDay[]` (`lines: string[]` v5 → `RecapLine[]` v6) — MIGRATIONS[5]. */
+function normalizeTravelRecapDays(days: unknown): void {
+  if (!Array.isArray(days)) return;
+  for (const d of days) normalizeTravelRecapDay(d);
+}
+
+/** Normalise UN `TravelRecapDay` sérialisé — no-op si `lines` est déjà `RecapLine[]` (élément objet)
+ *  ou absent (patron `normalizeScene` : tolérant, jamais de crash sur vieille/forme inattendue). */
+function normalizeTravelRecapDay(day: unknown): void {
+  if (!day || typeof day !== 'object') return;
+  const d = day as { lines?: unknown };
+  if (!Array.isArray(d.lines)) return;
+  d.lines = d.lines.map((l) => (typeof l === 'string' ? { text: l } : l));
+}
+
+/** MIGRATIONS[5] (#349) : les QUATRE emplacements sérialisables d'un `TravelRecapDay` dans l'état
+ *  de jeu. Mute `data`. */
+function normalizeTravelRecapLines(data: Record<string, unknown>): void {
+  const plan = data.travelPlan as { recap?: { days?: unknown }; log?: unknown } | null | undefined;
+  if (plan?.recap?.days) normalizeTravelRecapDays(plan.recap.days);
+  if (plan?.log) normalizeTravelRecapDays(plan.log);
+  const rest = data.pendingRest as { travelDay?: unknown } | null | undefined;
+  if (rest?.travelDay) normalizeTravelRecapDay(rest.travelDay);
+  const seaActivities = data.pendingSeaActivities as { day?: unknown } | null | undefined;
+  if (seaActivities?.day) normalizeTravelRecapDay(seaActivities.day);
+}
 
 /** Forme minimale d'un héros sérialisé LUE par la migration v4→v5 (porteurs = items à `trappingId`). */
 interface SavedItem { trappingId?: string; cargo?: CargoLot[] }

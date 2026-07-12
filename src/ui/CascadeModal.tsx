@@ -16,12 +16,11 @@ import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser } from './OptionChooser';
 import { CriticalBody } from './RevealModal';
-import { JournalLine } from './NarratedLine';
+import { RecapLineList } from './RecapLine';
 import { Icon } from './Icon';
-import { ev, type CombatEventKind } from '../state/combatLog';
 import { stepInteraction, stepReady } from '../state/cascade';
 import { FLOWS } from '../state/rollFlowSpecs';
-import type { CascadeStep, CascadeRoll } from '../state/pendings';
+import type { CascadeStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
 import { Prose } from './Prose';
@@ -104,14 +103,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   };
   // Conséquence (issue style journal) d'une étape — rendue sous le jet, elle PERSISTE quand on
   // enchaîne (« on ne perd pas les conséquences »). Une étape VALIDÉE porte sa conséquence RÉELLE
-  // chiffrée dans `outcome` (lignes de l'applier : « récupère 8 PB », « contracte : Vérole… ») → on
-  // l'affiche telle quelle. `cons` vide (#295 Décision 1b) ⇒ rien à noter : la rangée ✓/✗ ±DR
-  // (breakdown, ci-dessous) porte SEULE le verdict — aucun repli « X réussit »/« X échoue ».
+  // chiffrée dans `outcome` (lignes STRUCTURÉES #349 : « récupère 8 PB », « contracte : Vérole… »,
+  // déjà tonées par leur `Consequence` d'origine, `rollSeam.resultLines`) → rendu par le renderer
+  // PARTAGÉ (`RecapLineList`, `ui/RecapLine.tsx`), MÊME brique que `TravelDayBody`/`dayCardSummary`.
+  // `cons` vide (#295 Décision 1b) ⇒ rien à noter : la rangée ✓/✗ ±DR (breakdown, ci-dessous) porte
+  // SEULE le verdict — aucun repli « X réussit »/« X échoue ».
   const noteFor = (s: CascadeStep): ReactNode => {
     if (!s.outcome?.length) return undefined;
-    // Ton : succès→soin (vert), échec→état (rouge), affichage sans jet→neutre (info).
-    const k: CombatEventKind = s.result ? (s.result.success ? 'heal' : 'condition') : 'info';
-    return <>{s.outcome.map((l, i) => <JournalLine key={i} event={ev(k, l, s.actorId)} combatants={pool} />)}</>;
+    return <RecapLineList lines={s.outcome} />;
   };
   const rowOf = (s: CascadeStep): PanelRow | null => {
     const a = actorOf(s);
@@ -136,12 +135,11 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // jet de complétion à gros DR ne déborde pas la barre en « 5/2 »/« 6/2 » (F1). Site UNIQUE du datum.
     return { cum: Math.min((done ?? 0) + gain, Number(target)), target: Number(target) };
   };
-  // Note de conséquence d'une rangée-participant (batch) : `part.outcome` porte l'attribution par le
-  // portrait (pas de note agrégée à l'étape) ; ton succès→soin / échec→état.
-  const partNote = (part: { id: string; outcome?: string[]; result?: CascadeRoll | null }): ReactNode => {
+  // Note de conséquence d'une rangée-participant (batch) : `part.outcome` (lignes STRUCTURÉES #349)
+  // porte l'attribution par le portrait (pas de note agrégée à l'étape) — MÊME renderer partagé.
+  const partNote = (part: Pick<BatchParticipant, 'outcome'>): ReactNode => {
     if (!part.outcome?.length) return undefined;
-    const k: CombatEventKind = part.result ? (part.result.success ? 'heal' : 'condition') : 'info';
-    return <>{part.outcome.map((l, i) => <JournalLine key={i} event={ev(k, l, part.id)} combatants={pool} />)}</>;
+    return <RecapLineList lines={part.outcome} />;
   };
   // Rangées TÉMOINS d'un pas VALIDÉ (pile persistante) — un pas BATCH est DÉPLIÉ en une rangée par
   // participant (breakdown + sa note + sa barre de Test étendu PERSISTANTE) ; les autres pas → une rangée.
@@ -272,7 +270,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         postRollExtra={
           <>
             {rev?.kind === 'critical' && <CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
-            {!rev && cur.outcome?.length ? <div className="rm-log">{cur.outcome.map((l, i) => <p key={i}>{l}</p>)}</div> : null}
+            {!rev && cur.outcome?.length ? <RecapLineList lines={cur.outcome} /> : null}
             <OptionChooser
               layout="grid"
               groupLabel={cur.label}

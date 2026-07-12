@@ -7,6 +7,7 @@ import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack } from './pendings';
 import { describeReload } from './flowOutcomes';
+import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -1814,10 +1815,10 @@ export function applyAttackResult(
           label: 'Parade — piéger la lame ?',
           options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
           defaultChoice: 'crit', bladeTrap: pbt,
-          outcome: [
+          outcome: toRecapLines([
             `${target.name} place un Critique en parant avec ${res.parryWeapon.name} — la lame de ${attacker.name} (${weapon.name}) est à portée.`,
             `Piéger : Test opposé de Force (+${dd.sl} DR). Succès → ${attacker.name} lâche sa lame (Stupéfiant → brisée).`,
-          ],
+          ]),
           interactive: true,
         });
       } else {
@@ -3094,7 +3095,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     // Critique d'attaque, appendu via pushReveal) — plus une cascade SÉPARÉE. `pushCombatStep` append
     // à la cascade `purpose:'combat'` en cours (jet d'incantation), ou démarre « Conséquences » si
     // aucune (Focalisation interrompue suppressReveal / contextes hors-cast) — fallback identique à l'ex-startCascade.
-    pushCombatStep(set, { id: 'cons-miscast-0', kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: lines, reveal, interactive: true });
+    pushCombatStep(set, { id: 'cons-miscast-0', kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: toRecapLines(lines), reveal, interactive: true });
   }
   // Test imbriqué de l'entrée (« Résistance ou Sonné ») — résolu CADENCE-AWARE par l'exécuteur de Flow
   // UNIQUE, APRÈS les ops immédiats et l'étape de révélation : un lanceur HÉROS manuel le subit comme une
@@ -4728,7 +4729,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   // ne sauve pas une arme brisée). Sinon, la 1re fois dans la période le porteur GARDE l'arme (−20/1 Round) ;
   // le 2e évènement de lâcher la fait tomber. Capacité lue en DONNÉE (`preventForcedDrop`), jamais par nom.
   if (!drop.destroyed && lockedGauntletHolds(attacker, drop, battle.round)) {
-    pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'action/defend', label: tr('cf.bladeTrapLabel'), outcome: [tr('cf.lockedGauntletHold', { name: attacker.name, weapon: drop.name })], interactive: true });
+    pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'action/defend', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([tr('cf.lockedGauntletHold', { name: attacker.name, weapon: drop.name })]), interactive: true });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
     return;
@@ -4736,7 +4737,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   attacker.weapons = attacker.weapons.filter((w) => w !== drop);
   // Étape d'AFFICHAGE empilée (comme un Coup Critique) : visible « l'un sous l'autre », acquittée par le
   // joueur. `actorId` = le défenseur piégeur (propriétaire de la modale en coop). Applier muet (préserve `outcome`).
-  pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'item/weapon', label: tr('cf.bladeTrapLabel'), outcome: [line], interactive: true });
+  pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'item/weapon', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([line]), interactive: true });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }

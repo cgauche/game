@@ -306,7 +306,7 @@ describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interru
     expect(r.toLabel).toBe('Bourg B');
     expect(r.kmDone).toBeCloseTo(12);
     expect(r.days.length).toBe(1); // 12 km à M4 = 3 h
-    expect(r.days[0].lines.some((l) => l.includes('colporteur'))).toBe(true);
+    expect(r.days[0].lines.some((l) => l.text.includes('colporteur'))).toBe(true);
     useGame.getState().dismissTravelRecap();
     expect(useGame.getState().travelRecap).toBeNull();
   });
@@ -321,7 +321,7 @@ describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interru
     let r = useGame.getState().travelRecap!;
     expect(r.status).toBe('interrupted');
     expect(r.kmDone).toBeLessThan(30);
-    expect(r.days[0].lines.some((l) => l.includes('Brigands'))).toBe(true);
+    expect(r.days[0].lines.some((l) => l.text.includes('Brigands'))).toBe(true);
     // « Faire face » : le combat différé démarre à l'acquittement du recap.
     useGame.getState().dismissTravelRecap();
     expect(useGame.getState().battle).toBeTruthy();
