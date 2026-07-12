@@ -1,6 +1,6 @@
 /* ════════════ CODEX (Compendium) — écran de référence en jeu ════════════
-   Compose les primitives canoniques (.panel/.listrow/.seg/.chip/.stat-chip) + .layout-sidebar
-   (s'empile ≤900px). Couleurs = tokens de base.css uniquement. */
+   Compose les primitives canoniques (.panel/.listrow/.seg/.chip/.stat-chip/MasterDetail).
+   Couleurs = tokens de base.css uniquement. */
 
 .screen.codex {
   display: flex;
@@ -62,14 +62,25 @@
   color: var(--gold2);
 }
 
-/* grille principale liste ⇄ détail — DEUX panneaux à défilement indépendant (pas le single-scroll
-   de .layout-sidebar : un Codex a 240+ entrées par catégorie). */
-.codex-grid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 12px;
+/* Composé sur la primitive MasterDetail (liste GAUCHE + détail CENTRE) : au-dessus de son
+   breakpoint d'empilement (700px canon), la liste remplit la hauteur du volet et scrolle en
+   interne (facettes/recherche PINNED hors du scroll) — un Codex a 240+ entrées par catégorie, deux
+   panneaux à défilement indépendant. En dessous de 700px, MasterDetail empile seul (aucune media
+   query dupliquée). */
+@media (min-width: 701px) {
+  .codex-md {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .codex-md .master-detail-list {
+    max-height: none;
+    overflow: hidden;
+    height: 100%;
+  }
+  .codex-md .master-detail-detail {
+    height: 100%;
+  }
 }
 
 .codex-aside {
@@ -425,11 +436,5 @@
   .codex-groups {
     margin-left: 0;
     width: 100%;
-  }
-  .codex-grid {
-    grid-template-columns: 1fr;
-  }
-  .codex-rows {
-    max-height: 38vh;
   }
 }

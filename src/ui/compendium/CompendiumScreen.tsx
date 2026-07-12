@@ -13,6 +13,8 @@ import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
 import { Icon } from '../Icon';
+import { MasterDetail } from '../MasterDetail';
+import { OptionChooser, type RollOption } from '../OptionChooser';
 
 export interface CodexFocus { category: string; label: string; instance?: string }
 
@@ -124,10 +126,11 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
         {/* Plein écran : « ← Retour » (navigation). En modale, la fermeture est le ✕ en haut à droite. */}
         {!onClose && <button className="btn small" onClick={close}>← Retour</button>}
         <h1 className="codex-h1"><Icon id="nav/compendium" size="sm" /> Compendium</h1>
-        <div className="seg codex-groups">
-          {CODEX_GROUPS.map((g) => (
-            <button key={g} className={g === group ? 'on' : ''} onClick={() => pickGroup(g)}>{g}</button>
-          ))}
+        <div className="codex-groups">
+          <OptionChooser
+            layout="seg"
+            options={CODEX_GROUPS.map((g): RollOption => ({ key: g, label: g, selected: g === group, onSelect: () => pickGroup(g) }))}
+          />
         </div>
         {/* En modale : fermeture à droite, dans le même langage de bouton que le reste (.btn small). */}
         {onClose && <button className="btn small" onClick={close} aria-label="Fermer le Compendium" title="Fermer">✕</button>}
@@ -142,64 +145,69 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
         ))}
       </div>
 
-      <div className="codex-grid">
-        <aside className="codex-aside panel flush">
-          {facetRows.map(({ facet, values }) => (
-            <div className="codex-facets" key={facet.key}>
-              <span className="codex-facet-label section-label">{facet.label}</span>
-              {values.map(({ value, count }) => {
-                const on = (facetSel[facet.key] ?? []).includes(value);
-                return (
-                  <button key={value} className={`chip codex-facet${on ? ' on' : ''}`} onClick={() => toggleFacet(facet.key, value)}>
-                    {value}
-                    <span className="count">{count}</span>
-                  </button>
-                );
-              })}
+      <MasterDetail
+        className="codex-md"
+        listLabel="Entrées du Codex"
+        list={
+          <div className="codex-aside panel flush">
+            {facetRows.map(({ facet, values }) => (
+              <div className="codex-facets" key={facet.key}>
+                <span className="codex-facet-label section-label">{facet.label}</span>
+                {values.map(({ value, count }) => {
+                  const on = (facetSel[facet.key] ?? []).includes(value);
+                  return (
+                    <button key={value} className={`chip codex-facet${on ? ' on' : ''}`} onClick={() => toggleFacet(facet.key, value)}>
+                      {value}
+                      <span className="count">{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+            <input
+              className="codex-search"
+              type="search"
+              placeholder={`Rechercher dans ${cat?.label ?? ''}…`}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              aria-label="Rechercher dans le Codex"
+            />
+            <div className="codex-rows">
+              {/* Liste TOUJOURS plate (aspect cohérent entre catégories) ; les hiérarchies n'ajoutent
+                  qu'un séparateur léger par groupe (muet, collant), pas une structure différente. */}
+              {grouped
+                ? grouped.flatMap(([g, items]) => [
+                    <div key={`grp-${g}`} className="codex-grouplbl">
+                      <span>{g}</span>
+                      <span className="count">{items.length}</span>
+                    </div>,
+                    ...items.map((it, i) => renderRow(it, `${g}-${it.label}-${i}`)),
+                  ])
+                : list.map((it, i) => renderRow(it, `${it.label}__${i}`))}
+              {list.length === 0 && <div className="codex-noresult">Aucun résultat</div>}
             </div>
-          ))}
-          <input
-            className="codex-search"
-            type="search"
-            placeholder={`Rechercher dans ${cat?.label ?? ''}…`}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            aria-label="Rechercher dans le Codex"
-          />
-          <div className="codex-rows">
-            {/* Liste TOUJOURS plate (aspect cohérent entre catégories) ; les hiérarchies n'ajoutent
-                qu'un séparateur léger par groupe (muet, collant), pas une structure différente. */}
-            {grouped
-              ? grouped.flatMap(([g, items]) => [
-                  <div key={`grp-${g}`} className="codex-grouplbl">
-                    <span>{g}</span>
-                    <span className="count">{items.length}</span>
-                  </div>,
-                  ...items.map((it, i) => renderRow(it, `${g}-${it.label}-${i}`)),
-                ])
-              : list.map((it, i) => renderRow(it, `${it.label}__${i}`))}
-            {list.length === 0 && <div className="codex-noresult">Aucun résultat</div>}
           </div>
-        </aside>
-
-        <section className="codex-detail panel">
-          {import.meta.env.DEV && cat && isEditableCategory(cat.key) && !creating && (
-            <div className="codex-detail-actions">
-              {selected && (
-                <button className="btn small" onClick={() => setEditing((v) => !v)}>
-                  {editing ? '↩︎ Voir la fiche' : <><Icon id="ui/edit" size="sm" /> Éditer (DEV)</>}
-                </button>
-              )}
-              <button className="btn small" onClick={() => { setEditing(false); setCreating(true); }}><Icon id="ui/add" size="sm" /> Nouveau (DEV)</button>
-            </div>
-          )}
-          {creating && import.meta.env.DEV && cat && isEditableCategory(cat.key)
-            ? <CodexEdit categoryKey={cat.key} label="" isNew onClose={() => setCreating(false)} />
-            : selected && editing && import.meta.env.DEV && cat && isEditableCategory(cat.key)
-              ? <CodexEdit categoryKey={cat.key} label={selected.label} onClose={() => setEditing(false)} />
-              : selected && <CodexEntry item={selected} instance={instance} category={cat?.key} />}
-        </section>
-      </div>
+        }
+        detail={
+          <section className="codex-detail panel">
+            {import.meta.env.DEV && cat && isEditableCategory(cat.key) && !creating && (
+              <div className="codex-detail-actions">
+                {selected && (
+                  <button className="btn small" onClick={() => setEditing((v) => !v)}>
+                    {editing ? '↩︎ Voir la fiche' : <><Icon id="ui/edit" size="sm" /> Éditer (DEV)</>}
+                  </button>
+                )}
+                <button className="btn small" onClick={() => { setEditing(false); setCreating(true); }}><Icon id="ui/add" size="sm" /> Nouveau (DEV)</button>
+              </div>
+            )}
+            {creating && import.meta.env.DEV && cat && isEditableCategory(cat.key)
+              ? <CodexEdit categoryKey={cat.key} label="" isNew onClose={() => setCreating(false)} />
+              : selected && editing && import.meta.env.DEV && cat && isEditableCategory(cat.key)
+                ? <CodexEdit categoryKey={cat.key} label={selected.label} onClose={() => setEditing(false)} />
+                : selected && <CodexEntry item={selected} instance={instance} category={cat?.key} />}
+          </section>
+        }
+      />
     </div>
   );
 }

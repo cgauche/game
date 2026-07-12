@@ -42,9 +42,9 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/d
 // précède le site).
 const RATCHET_EXCEPTIONS: Record<string, string> = {
   'ui/CharacterSheet.tsx:806': "SlotChoiceRow : options éphémères {label, display, owned} SANS id — `label` EST la valeur de câblage documentée (cf. docstring du composant), pas une FK vers une entité de donnée.",
-  'ui/compendium/CompendiumScreen.tsx:70': 'CodexItem (registry.ts) agrège ~20 catégories hétérogènes SANS id unifié — le Codex, navigateur de référence en LECTURE SEULE, sélectionne par label par construction.',
-  'ui/compendium/CompendiumScreen.tsx:72': 'idem CompendiumScreen.tsx:70 (CodexItem sans id unifié).',
-  'ui/compendium/CompendiumScreen.tsx:107': 'idem CompendiumScreen.tsx:70 (CodexItem sans id unifié).',
+  'ui/compendium/CompendiumScreen.tsx:72': 'CodexItem (registry.ts) agrège ~20 catégories hétérogènes SANS id unifié — le Codex, navigateur de référence en LECTURE SEULE, sélectionne par label par construction.',
+  'ui/compendium/CompendiumScreen.tsx:74': 'idem CompendiumScreen.tsx:72 (CodexItem sans id unifié).',
+  'ui/compendium/CompendiumScreen.tsx:109': 'idem CompendiumScreen.tsx:72 (CodexItem sans id unifié).',
   'ui/compendium/relations.ts:311': "auto-liage de PROSE (tokenizeLinks) : matching TEXTUEL d'un terme de règle vers son entité, pas une FK — aucun id en jeu (le texte affiché EST la recherche).",
   'ui/creator/CharacterCreator.tsx:125': "WEAPON_ID_BY_LABEL : id disponible des deux côtés (trappings) — debt RÉELLE, migration différée (le state de draft `specChoices`/`weaponChoice` est un Record<string,string> partagé par TOUS les choix « au choix », pas juste l'arme — refactor multi-site hors périmètre garde).",
   'ui/creator/CharacterCreator.tsx:1077': 'idem CharacterCreator.tsx:125 (même WEAPON_ID_BY_LABEL).',
