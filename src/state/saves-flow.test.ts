@@ -251,4 +251,18 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     const mule = s.party[0].items!.find((i) => i.uid === 'mule-1')!;
     expect(mule.cargo).toEqual([{ cargoId: 'vin', enc: 20, basePriceGold: 5 }]); // rehébergé sur ItemInstance.cargo
   });
+
+  // #349 — MIGRATIONS[5] (v5→v6) : les `lines: string[]` d'un `TravelRecapDay` deviennent des
+  // `RecapLine[]` structurées ({text,icon,tone,phase}) — normalisées aux QUATRE emplacements
+  // sérialisables (`normalizeTravelRecapLines`). Cette fixture couvre `pendingRest.travelDay` et
+  // `travelPlan.log[]`.
+  it('fixture v5 lignes de récap de voyage : chaînes brutes migrées en {text} aux emplacements sérialisés', () => {
+    loadFixture('v5-travel-recap-lines.json');
+    const s = useGame.getState();
+    expect(s.pendingRest?.travelDay?.lines).toEqual([
+      { text: 'Journée de route — Étape ensoleillée.' },
+      { text: 'Péripétie : Un colporteur partage la route.' },
+    ]);
+    expect(s.travelPlan?.log?.[0]?.lines).toEqual([{ text: 'Départ, vent portant.' }]);
+  });
 });

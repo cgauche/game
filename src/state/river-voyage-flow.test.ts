@@ -327,8 +327,7 @@ describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExpos
     expect(get().pendingRest).toBeTruthy();
     // La nuit franchie, la journée SUIVANTE se ré-arme (nouvelle cascade travelDay) — le voyage repart.
     get().restSleep();
-    let guard = 0;
-    while (get().pendingRest && guard++ < 10) get().restContinue();
+    expect(get().pendingRest).toBeNull();
     expect(get().pendingCascade?.purpose).toBe('travelDay');
     expect(get().travelPlan?.river).toBeTruthy();
     expect(get().travelPlan?.interrupted).toBe(false);

@@ -102,13 +102,7 @@ export interface PendingRest extends PendingBase {
   quality: 'normale' | 'pietre';
   days: number;
   perHero: Record<string, { lodging: RestLodging; food: RestFood }>;
-  /** `'bilan'` est VESTIGIAL depuis #347 (« Dormir » ouvre désormais une cascade, jamais un bilan
-   *  pré-résolu) — gardé pour la forme du pending (`restContinue`/`results`/`slept` restent des
-   *  primitives valides pour un futur consommateur EAGER, comme `results` l'est déjà via `sleepParty`). */
-  phase: 'setup' | 'bilan';
-  results?: NightEntry[];
-  /** Horloge avant/après (le passage du temps est VISIBLE) — bilan EAGER uniquement. */
-  slept?: { from: number; to: number };
+  phase: 'setup';
   /** COOP : ✓ par siège avant de dormir (l'hôte dort à l'unanimité). */
   readyBySeat?: Record<number, boolean>;
   /** Halte de NUIT d'un voyage (travelFlow) : portée par la DERNIÈRE cascade de nuit du séjour
@@ -127,8 +121,7 @@ import type { PendingBase } from './rollFlowFactory';
 
 /**
  * LE moteur de nuit (sans modale) : avance l'horloge à l'aube (× days), entretien #T3, récupération
- * + cauchemars, contagion. `beforeRecovery` (modale) s'exécute la nuit tombée, AVANT la récupération
- * (Exposition d'un campement). Renvoie le bilan structuré ; écrit aussi le journal.
+ * + cauchemars, contagion. Renvoie le bilan structuré ; écrit aussi le journal.
  * NB : on n'avance PAS l'horloge minute par minute (advanceTime rejouerait l'entretien de Round —
  * hémorragie/poison/feu tueraient le dormeur ; RAW 16 l.105 : le repos suppose des États stabilisés,
  * restRecovery refuse d'ailleurs un héros Hémorragique/En flammes/Empoisonné).
@@ -137,7 +130,7 @@ export function sleepParty(
   get: Get,
   set: Set,
   days = 1,
-  opts: { fedDaily?: boolean; beforeRecovery?: (entries: NightEntry[]) => void } = {},
+  opts: { fedDaily?: boolean } = {},
 ): NightEntry[] {
   if (get().battle) return [];
   const n = Math.max(1, Math.floor(days));
@@ -160,9 +153,6 @@ export function sleepParty(
   for (const text of runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily })) {
     entries.push({ actorId: get().party.find((h) => text.startsWith(h.name))?.id, icon: 'time/calendar', label: 'Entretien quotidien', text, tone: 'info' });
   }
-
-  // Campement (modale) : abri + Exposition AVANT la récupération.
-  opts.beforeRecovery?.(entries);
 
   // Récupération + cauchemars, héros par héros (jets structurés pour le bilan).
   const party = get().party;
@@ -668,15 +658,6 @@ export function restCancel(get: Get, set: Set): void {
   const p = get().pendingRest;
   if (!p || p.phase !== 'setup') return;
   set({ pendingRest: null });
-}
-
-/** « Continuer » d'un bilan EAGER (`phase:'bilan'`, vestigial depuis #347 — « Dormir » ouvre une
- *  cascade et ne pose plus jamais cette phase) — gardée pour un futur bilan multi-jets EAGER. */
-export function restContinue(get: Get, set: Set): void {
-  const p = get().pendingRest;
-  if (!p || p.phase !== 'bilan') return;
-  set({ pendingRest: null });
-  if (p.travelHalt) continueTravelAfterNight(get, set);
 }
 
 /** Dormir : paie (RAW ch.66), nourrit, puis ouvre la CHAÎNE de cascades de nuit (#347, `openRestNight`). */

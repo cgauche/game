@@ -780,7 +780,6 @@ export interface GameState extends RollFlowActionsMap {
   restReady: (seat: number) => void;
   restSleep: () => void;
   restCancel: () => void;
-  restContinue: () => void;
   /** CONSEIL DE BORD (#229) : arrête la paie de la semaine, puis clôt le bilan de Moral. */
   councilPay: (decision: string) => void;
   councilClose: () => void;
@@ -1999,7 +1998,6 @@ export const useGame = create<GameState>((set, get) => ({
   restReady: (seat) => restFlow.restReady(get, set, seat),
   restSleep: () => restFlow.restSleep(get, set),
   restCancel: () => restFlow.restCancel(get, set),
-  restContinue: () => restFlow.restContinue(get, set),
 
   // ── Conseil de bord (paie hebdomadaire + Moral) : cf. state/shipCrew ──
   councilPay: (decision) => councilPayFlow(get, set, decision),

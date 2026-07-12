@@ -190,10 +190,6 @@ export interface LandDayContext {
   toLabel: string;
   destLabel: string;
   marchHeroes: string[];
-  /** Longueur du journal au DÉBUT de la cascade du jour : le récap du jour (`recapDay.lines`, affiché
-   *  dans la halte de nuit / au recap d'arrivée) reçoit la tranche écrite depuis là (jets d'Étape,
-   *  Exposition, péripéties) — les lignes de la cascade n'y vont pas d'elles-mêmes. */
-  journalMark: number;
   /** INTERRUPTION posée par une péripétie (le voyage s'arrête, le combat/l'embuscade attend le recap). */
   interrupt?: TravelThen;
   /** Attelage FORCÉ (#270) : progression/conséquences du jour ACCUMULÉES par la chaîne de jets
@@ -596,8 +592,6 @@ function buildTravelDayCascade(
   dest: { toScene: string; toEntry?: string; toLabel: string; destLabel: string },
 ): CascadeStep[] {
   const steps: CascadeStep[] = [];
-  // Repère de journal : le récap du jour (recapDay.lines) = la tranche écrite pendant la cascade.
-  const journalMark = get().journal.length;
 
   // Météo « au début de chaque étape » (l.42) : tirage de MONDE (arbitrage user 2026-07-11 : aucune
   // interaction, PAS de pas de cascade). Tiré ici (même RNG), porté en CONTEXTE DU JOUR (`recapDay.weather`
@@ -633,7 +627,7 @@ function buildTravelDayCascade(
   // L'interruption d'une péripétie s'y posera.
   set({ travelPlan: { ...get().travelPlan!, land: {
     toScene: dest.toScene, toEntry: dest.toEntry, toLabel: dest.toLabel,
-    destLabel: dest.destLabel, marchHeroes: [...marchHeroes], journalMark,
+    destLabel: dest.destLabel, marchHeroes: [...marchHeroes],
   } } });
   void recapDay; // le récap du jour (plan.recap.days[dernier]) reçoit la tranche de journal à la clôture
   return steps;

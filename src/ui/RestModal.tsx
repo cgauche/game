@@ -4,13 +4,11 @@ import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
 import { StateChips } from './StateChips';
 import { Coins } from './Coins';
-import { MultiRollList } from './MultiRollList';
 import { OptionChooser } from './OptionChooser';
 import { lodgingOptions, foodOptions, restCost, type PendingRest, type RestLodging, type RestFood } from '../state/restFlow';
 import { weatherExposure, exposureTestCount, exposureShelterFromTent } from '../engine/exposure';
 import { hasCondition } from '../engine/conditions';
 import { toBrass } from '../engine/money';
-import { GameDate } from './GameDate';
 import { ownsLocally } from '../state/netFlow';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
@@ -59,7 +57,6 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   const restSet = useGame((s) => s.restSet);
   const restSleep = useGame((s) => s.restSleep);
   const restCancel = useGame((s) => s.restCancel);
-  const restContinue = useGame((s) => s.restContinue);
   const restReady = useGame((s) => s.restReady);
   const state = useGame();
   // Héros PERSONNALISÉS (détachés du choix maître de troupe) — le reste SUIT la troupe. Arbitrage user
@@ -70,32 +67,6 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   // Titre FRANC (arbitrage user 2026-07-11) : la nature de la halte + le lieu (`scene.nom`) quand il existe.
   const lieu = scene?.nom ? <> — {scene.nom}</> : null;
   const title = p.places.auberge ? <><Icon id="rest/bed" size="sm" /> Nuit à l’auberge{lieu}</> : p.places.maison ? <><Icon id="time/night" size="sm" /> Nuit chez soi{lieu}</> : p.places.bord ? <><Icon id="travel/sail-ship" size="sm" /> Nuit à bord{lieu}</> : <><Icon id="rest/camp" size="sm" /> À la belle étoile{lieu}</>;
-
-  // ── Phase BILAN : le temps écoulé + tous les jets de la nuit sur UN écran ──
-  if (p.phase === 'bilan') {
-    const bilanBody = (
-      <>
-        {p.slept && (
-          <p className="rest-time">
-            <GameDate time={p.slept.from} /> → <GameDate time={p.slept.to} />
-            <span className="rest-time-len"> · {Math.round((p.slept.to - p.slept.from) / 60)} h</span>
-          </p>
-        )}
-        <MultiRollList entries={p.results ?? []} />
-        <div className="modal-actions">
-          <button className="btn btn-primary" onClick={() => restContinue()}>{p.travelHalt ? 'Reprendre la route' : 'Continuer'}</button>
-        </div>
-      </>
-    );
-    if (embedded) {
-      return <div className="rs-embedded rest-modal"><div className="mini-title">{title}</div>{bilanBody}</div>;
-    }
-    return (
-      <Modal title={title} variant="plain" className="rest-modal" onClose={restContinue}>
-        {bilanBody}
-      </Modal>
-    );
-  }
 
   // ── Phase RÉGLAGES ──
   const cost = restCost(p, party);

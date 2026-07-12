@@ -199,7 +199,7 @@ function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number): Promise<strin
           real(tick, 0); return;
         }
         if (s.pendingRest) {
-          if (s.pendingRest.phase === 'setup') s.restSleep(); else s.restContinue();
+          s.restSleep();
           real(tick, 0); return;
         }
         if (s.pendingSeaActivities) { s.seaActivitiesConfirm({}); real(tick, 0); return; }
