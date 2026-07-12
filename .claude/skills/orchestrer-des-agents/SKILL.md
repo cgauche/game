@@ -30,6 +30,8 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
 4. **Isolation** — agent qui MUTE des fichiers pendant qu'une session // est active →
    `isolation: "worktree"` ; à défaut committer immédiatement au retour. Deux strays d'agents
    consécutifs dans l'arbre principal = j'applique moi-même le patch chirurgical connu.
+   **Les recetteurs sont un étage SÉQUENTIEL** : jamais deux en vol (même serveur dev, même
+   navigateur piloté — clics croisés et captures polluées ; vécu 2026-07-12, flag de l'user).
 5. **Attente** — un agent background n'est PAS fini avant sa `<task-notification>` : ne pas lire,
    tester ni diagnostiquer son WIP (erreurs fantômes garanties).
 6. **Vérification (par MOI, jamais sur la foi du rapport)** — typecheck en sortie COMPLÈTE
