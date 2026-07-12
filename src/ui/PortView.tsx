@@ -5,7 +5,7 @@ import { findCargoById, type PortProfile } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
-import { canAfford, toMoney, priceToMoney, formatMoney, type Money } from '../engine/money';
+import { canAfford, toMoney, priceToMoney, formatMoney } from '../engine/money';
 import { moraleBand } from '../engine/crewMorale';
 import type { CampaignVessel } from '../state/store';
 import type { PendingShoreLeave, PendingManannPriest } from '../state/seaVoyageFlow';
@@ -13,10 +13,11 @@ import { Coins } from './Coins';
 import { Prose } from './Prose';
 import { Icon } from './Icon';
 import { NotchGauge } from './NotchGauge';
-import { ChoiceButtons } from './OptionChooser';
 import { moraleTone, ShipCrewWages } from './shipStatus';
 import { ScreenShell } from './ScreenShell';
 import { Tabs } from './Tabs';
+import { ShoreLeaveBody } from './ShoreLeaveModal';
+import { ManannBody } from './ManannPriestModal';
 
 /** Libellé d'un id de cargaison / marqueur d'Index (`commerce`/`minimum-vital` ne sont pas des cargaisons). */
 const cargoLabel = (id: string): string => id === 'commerce' ? 'Commerce' : id === 'minimum-vital' ? 'Minimum vital' : findCargoById(id)?.label ?? id;
@@ -41,15 +42,14 @@ export function PortHeader({ pp, catalogue }: { pp: PortProfile; catalogue?: Nav
   );
 }
 
-/** Onglet ESCALE (#228) — actions d'escale agrégées, PUR (props) : événements d'escale en cours surfacés
- *  (Relâche à terre MDG 15 l.245 / Prêtre de Manann l.246 — le hub OUVRE les décisions existantes) et
- *  RECRUTEMENT salarié (MDG 14 l.293-302, `crew-roles.json`). Les modales autonomes restent montées à
- *  l'arrivée ; ici on réutilise leurs actions de résolution. */
-export function EscaleTab({ vessel, money, isGuest, pendingShoreLeave, pendingManannPriest, onHire, onDismiss, onShoreLeave, onManann }: {
-  vessel: CampaignVessel; money: Money; isGuest: boolean;
+/** Onglet ESCALE (#228) — actions d'escale agrégées : événements d'escale en cours surfacés (Relâche à
+ *  terre MDG 15 l.245 / Prêtre de Manann l.246 — le hub COMPOSE `ShoreLeaveBody`/`ManannBody`, déjà
+ *  résolvants et branchés au store, aucune 2e prose de décision) et RECRUTEMENT salarié (MDG 14
+ *  l.293-302, `crew-roles.json`, PUR sur ce volet — `onHire`/`onDismiss` en props). */
+export function EscaleTab({ vessel, isGuest, pendingShoreLeave, pendingManannPriest, onHire, onDismiss }: {
+  vessel: CampaignVessel; isGuest: boolean;
   pendingShoreLeave: PendingShoreLeave | null; pendingManannPriest: PendingManannPriest | null;
   onHire: (roleId: string) => void; onDismiss: (roleId: string) => void;
-  onShoreLeave: (allow: boolean) => void; onManann: (pay: boolean) => void;
 }) {
   const hireable = crewRoles.filter((r) => r.wage?.weekly);
   const countOf = (roleId: string) => vessel.crew?.find((h) => h.roleId === roleId)?.count ?? 0;
@@ -59,30 +59,8 @@ export function EscaleTab({ vessel, money, isGuest, pendingShoreLeave, pendingMa
       <section className="panel port-section">
         <h3>Vie du port</h3>
         {!hasEvent && <p className="port-hint">Aucun événement d’escale en cours.</p>}
-        {pendingShoreLeave && (
-          <div className="port-upgrade">
-            <div className="port-upgrade-head"><b><Icon id="travel/anchor" size="sm" /> Relâche à terre</b></div>
-            <p className="port-hint">Autorisez-vous l’équipage à faire relâche à terre pendant l’escale ? (MDG 15 l.245)</p>
-            <ChoiceButtons
-              options={[
-                { key: 'accorder', label: 'Accorder la relâche', primary: true, disabled: isGuest, onSelect: () => onShoreLeave(true) },
-                { key: 'refuser', label: 'Refuser la relâche', disabled: isGuest, onSelect: () => onShoreLeave(false), title: 'L\'Embrigadement n\'aura pas lieu' },
-              ]}
-            />
-          </div>
-        )}
-        {pendingManannPriest && (
-          <div className="port-upgrade">
-            <div className="port-upgrade-head"><b><Icon id="faith/church" size="sm" /> Un Prêtre de Manann s’avance</b></div>
-            <p className="port-hint">Payez <Coins money={pendingManannPriest.cost} /> pour une bénédiction, ou refusez (−4d10 Humeur de Manann). (MDG 15 l.246)</p>
-            <ChoiceButtons
-              options={[
-                { key: 'payer', label: <>Payer (<Coins money={pendingManannPriest.cost} />)</>, primary: true, disabled: isGuest || !canAfford(money, pendingManannPriest.cost), onSelect: () => onManann(true) },
-                { key: 'refuser', label: 'Refuser', disabled: isGuest, onSelect: () => onManann(false), title: 'Manann reste courroucé' },
-              ]}
-            />
-          </div>
-        )}
+        <ShoreLeaveBody embedded />
+        <ManannBody embedded />
       </section>
       <section className="panel port-section">
         <h3>Recruter de l’équipage</h3>
@@ -135,8 +113,6 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
   const dismiss = useGame((s) => s.portDismissCrew);
   const pendingShoreLeave = useGame((s) => s.pendingShoreLeave);
   const pendingManannPriest = useGame((s) => s.pendingManannPriest);
-  const resolveShoreLeave = useGame((s) => s.resolveShoreLeave);
-  const resolveManannPriest = useGame((s) => s.resolveManannPriest);
   const isGuest = useGame((s) => s.net.mode) === 'guest';
   const [tab, setTab] = useState<'coque' | 'cargaison' | 'escale'>(initialTab);
   const [buyEnc, setBuyEnc] = useState<Record<string, number>>({});
@@ -308,10 +284,9 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
           </div>
         ) : (
           <EscaleTab
-            vessel={vessel} money={money} isGuest={isGuest}
+            vessel={vessel} isGuest={isGuest}
             pendingShoreLeave={pendingShoreLeave} pendingManannPriest={pendingManannPriest}
             onHire={(roleId) => hire(roleId, 1)} onDismiss={(roleId) => dismiss(roleId, 1)}
-            onShoreLeave={resolveShoreLeave} onManann={resolveManannPriest}
           />
         )}
       </div>

@@ -555,19 +555,7 @@
   .objective-banner { top: 60px; max-width: 86vw; }
 }
 
-/* ── Overlay Défaite (centre du champ) ── */
-.defeat-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 70;
-}
-.defeat-overlay .battle-result {
-  min-width: 240px;
-}
+.defeat-modal { text-align: center; min-width: 240px; }
 
 /* Bandeau « sujet » des modales (R10 généralisé) : la tuile-portrait unifiée du combattant
    concerné, pour qu'on sache TOUJOURS à qui une modale (Critique/Maladresse/Colère…) s'applique. */

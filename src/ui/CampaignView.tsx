@@ -5,6 +5,7 @@ import { preemptShooterIds } from '../state/targeting';
 import { IsoStage } from '../gameIso/IsoStage';
 import { PovStage } from '../gameIso/pov/PovStage';
 import { SceneErrorBoundary } from './SceneErrorBoundary';
+import { Modal } from './Modal';
 import { PovControls } from './PovControls';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
@@ -343,31 +344,34 @@ export function CampaignView() {
             combat de bataille de masse (ADE II 08), `dismissDefeat` fait CONTINUER la bataille (repli
             tactique, pas game-over) ; hors bataille de masse, il rend la main à la scène. */}
         {mode === 'battle' && battle?.over === 'defeat' && (
-          <div className="defeat-overlay">
-            <div className="battle-result defeat">
-              <h2>{useGame.getState().massBattle?.combatScene ? 'Repoussés…' : 'Défaite…'}</h2>
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  const g = useGame.getState();
-                  if (g.massBattle?.combatScene || g.scene) g.dismissDefeat();
-                  else startScene(campaign[0].scene);
-                }}
-              >
-                {useGame.getState().massBattle?.combatScene ? 'Poursuivre la bataille' : 'Reprendre'}
-              </button>
-            </div>
-          </div>
+          <Modal
+            title={useGame.getState().massBattle?.combatScene ? 'Repoussés…' : 'Défaite…'}
+            variant="plain"
+            className="defeat-modal"
+            onClose={() => {
+              const g = useGame.getState();
+              if (g.massBattle?.combatScene || g.scene) g.dismissDefeat();
+              else startScene(campaign[0].scene);
+            }}
+          >
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                const g = useGame.getState();
+                if (g.massBattle?.combatScene || g.scene) g.dismissDefeat();
+                else startScene(campaign[0].scene);
+              }}
+            >
+              {useGame.getState().massBattle?.combatScene ? 'Poursuivre la bataille' : 'Reprendre'}
+            </button>
+          </Modal>
         )}
         {/* Anéantissement HORS COMBAT (`checkPartyWiped`) : MÊME écran de défaite que le combat, hors
             bataille (aucun `battle`) — le groupe entier est tombé (faim, exposition, damnation…). */}
         {partyWiped && (
-          <div className="defeat-overlay">
-            <div className="battle-result defeat">
-              <h2>Le groupe a péri…</h2>
-              <button className="btn btn-primary" onClick={() => useGame.getState().dismissDefeat()}>Retour au menu</button>
-            </div>
-          </div>
+          <Modal title="Le groupe a péri…" variant="plain" className="defeat-modal" onClose={() => useGame.getState().dismissDefeat()}>
+            <button className="btn btn-primary" onClick={() => useGame.getState().dismissDefeat()}>Retour au menu</button>
+          </Modal>
         )}
       </main>
 

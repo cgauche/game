@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { harvestProfileFor } from '../engine/harvest';
@@ -7,6 +7,7 @@ import { TeamPortrait } from './TeamPortrait';
 import { GearAssignList } from './GearAssignList';
 import { RuleDivider } from './Ornaments';
 import { Icon } from './Icon';
+import { useModalA11y } from './Modal';
 
 /** Beat de lisibilité avant l'écran plein écran : on laisse voir le COUP FATAL et la chute du dernier
  *  ennemi (le champ de bataille reste rendu sous l'overlay) avant de recouvrir la scène — sinon la victoire
@@ -42,9 +43,14 @@ export function VictoryScreen() {
     const id = setTimeout(() => setRevealed(true), VICTORY_REVEAL_MS);
     return () => clearTimeout(id);
   }, [overVictory]);
-  if (!battle || battle.over !== 'victory' || !revealed) return null;
   const online = net.mode !== 'local';
   const ready = pv?.readyBySeat ?? {};
+  // Échap = MÊME action que [Continuer] (jamais une fermeture qui perdrait le butin non attribué) :
+  // en coop, seulement tant que ce siège n'a pas déjà validé (bouton alors désactivé, Échap inerte).
+  const boxRef = useRef<HTMLDivElement>(null);
+  const continueAction = online ? (ready[net.mySeat] ? undefined : () => victoryReady(net.mySeat)) : dismiss;
+  useModalA11y(boxRef, continueAction);
+  if (!battle || battle.over !== 'victory' || !revealed) return null;
   const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
   const assignable = online ? party.filter((h) => ownsLocally(state, h.id)) : party;
 
@@ -55,7 +61,7 @@ export function VictoryScreen() {
 
   return (
     <div className="victory-overlay">
-      <div className="victory-screen">
+      <div ref={boxRef} role="dialog" aria-modal="true" aria-label="Victoire" className="victory-screen">
         <h1 className="victory-title">Victoire</h1>
         <RuleDivider />
 

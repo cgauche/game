@@ -21,9 +21,9 @@ export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}
   const body = (
     <>
       <p className="rm-log">
-        Autorisez-vous l'équipage à faire relâche à terre pendant l'escale ? Un équipage livré à
-        lui-même peut se faire embrigader de force par un navire en manque de bras — mais lui refuser
-        toute sortie prive aussi le bateau des faveurs que la vie du port pourrait lui offrir.
+        Autorisez-vous l'équipage à faire relâche à terre pendant l'escale ? Un refus empêche
+        l'Embrigadement, mais prive aussi l'équipage des faveurs que la vie du port pourrait lui
+        offrir (MDG 15 l.245).
       </p>
       <ChoiceButtons
         options={[

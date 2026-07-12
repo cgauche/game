@@ -325,20 +325,6 @@
   60% { opacity: 1; transform: scale(1.06) translateY(0); }
   100% { transform: scale(1) translateY(0); }
 }
-.battle-result {
-  text-align: center;
-  padding: 14px;
-  border-radius: 10px;
-}
-.battle-result.victory {
-  background: rgba(46, 204, 113, 0.15);
-  border: 1px solid var(--ok);
-}
-.battle-result.defeat {
-  background: rgba(192, 57, 43, 0.15);
-  border: 1px solid var(--danger);
-}
-
 /* Fiche du NAVIRE (couche Mer) : sections « Armes/postes » + « Rôles · manœuvre », chacune listant l'équipage
    du poste en PORTRAITS (plusieurs par poste, MDG ch.14 l.9). */
 .ship-section { margin-bottom: 14px; }
