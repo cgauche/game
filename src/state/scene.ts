@@ -892,6 +892,25 @@ export function emptyScene(w = 20, h = 15): Scene {
   };
 }
 
+/**
+ * Complète les COLLECTIONS requises d'une Scène absentes sur un document ANCIEN (le schéma de
+ * `ProjectDoc` — `worldMap.ts` `PROJECT_MIGRATIONS` — ne bump qu'aux ruptures de FORME du document ;
+ * `Scene` a gagné des champs collection non-optionnels au fil du temps sans bump de schéma, un projet
+ * sauvegardé avant ne les porte pas). Point d'entrée UNIQUE du chargement de projet (`parseProject`) :
+ * jamais un `?? []` saupoudré côté consommateur (`validateScene` et le runtime supposent ces
+ * collections présentes). PUR — ne mute pas `s`, ne touche à rien d'autre que ces défauts. */
+export function normalizeScene(s: Scene): Scene {
+  return {
+    ...s,
+    layers: s.layers ?? emptyScene(s.dimensions?.w, s.dimensions?.h).layers,
+    entities: s.entities ?? [],
+    dialogues: s.dialogues ?? [],
+    triggers: s.triggers ?? [],
+    encounters: s.encounters ?? [],
+    flags: s.flags ?? {},
+  };
+}
+
 /** `ambiance` ne distingue qu'intérieur vs extérieur (le jour/nuit vient de l'horloge). Absent → extérieur. */
 export function normalizeAmbiance(a: Scene['ambiance']): 'interieur' | 'exterieur' {
   return a === 'interieur' ? 'interieur' : 'exterieur';

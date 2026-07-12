@@ -11,6 +11,7 @@
  * marche forcée au niveau carte.
  */
 import type { Effect, Scene } from './scene';
+import { normalizeScene } from './scene';
 import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
 import type { LandMarketProfile } from '../engine/landCargo';
@@ -384,7 +385,9 @@ export const PROJECT_MIGRATIONS: MigrationMap = {};
  *  `schema` FUTUR (plus récent que l'app — on ne devine pas une structure inconnue), trou dans la
  *  chaîne de migration (pas de migrateur défini pour ce schema), ou forme finale invalide
  *  (`scenes` absent/non-tableau). Les anciens formats (tableau de scènes nu, scène unique) restent
- *  refusés : ils n'ont jamais porté de `schema`. */
+ *  refusés : ils n'ont jamais porté de `schema`. Chaque scène ressort passée par `normalizeScene`
+ *  (`scene.ts`) : les collections requises qu'un vieux document (même schema 2) ne portait pas encore
+ *  sont complétées ici, au SEUL point d'entrée, jamais par un `?? []` dispersé côté consommateur. */
 export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap } {
   const obj = data as Record<string, unknown> | null;
   if (!obj || typeof obj !== 'object') {
@@ -401,5 +404,5 @@ export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: World
   if (worldMap) {
     worldMap.places = worldMap.places.map((p) => (p.port ? { ...p, port: resolvePortRef(p.port) } : p));
   }
-  return { scenes: migrated.scenes as Scene[], worldMap };
+  return { scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap };
 }

@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { parseProject, declutterPositions, resolvePortRef, placeServices, type ProjectDoc, type RenderPoint, type MapPlace } from './worldMap';
+import { validateScene } from './validateScene';
 import type { Scene } from './scene';
 
 const scene = (id: string) => ({ id } as Scene);
@@ -44,6 +45,20 @@ describe('parseProject — validation du format projet v2', () => {
     expect(() => parseProject([scene('s1')])).toThrow(/Projet invalide/); // ancien : tableau nu
     expect(() => parseProject(scene('s1'))).toThrow(/Projet invalide/); // ancien : scène unique
     expect(() => parseProject(null)).toThrow(/Projet invalide/);
+  });
+
+  it('scène ANCIENNE (schema 2 mais sans les collections requises du Scene actuel) → normalisée, ne crashe pas validateScene', () => {
+    // Reproduit le crash « Ouvrir → L'Embuscade » (TypeError sur s.encounters.map, validateScene.ts:59) :
+    // un projet localStorage sauvegardé avant que `Scene` ne gagne `encounters`/`dialogues`/… ne les porte pas.
+    const old = { id: 'old', dimensions: { w: 3, h: 3 } } as Scene; // aucune collection
+    const { scenes } = parseProject({ schema: 2, scenes: [old] });
+    expect(scenes[0].encounters).toEqual([]);
+    expect(scenes[0].dialogues).toEqual([]);
+    expect(scenes[0].triggers).toEqual([]);
+    expect(scenes[0].entities).toEqual([]);
+    expect(scenes[0].flags).toEqual({});
+    expect(scenes[0].layers.length).toBeGreaterThan(0);
+    expect(() => validateScene(scenes)).not.toThrow();
   });
 
   it('MapPlace.port (Index des ports, MDG ch.15) survit au round-trip via parseProject', () => {
