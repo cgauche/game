@@ -419,6 +419,15 @@ textarea:focus {
   padding-bottom: 5px;
   margin: 0 0 10px;
 }
+/* Butin d'équipement EN AVANT (#377) : c'est la section « à toucher » de l'écran de victoire — un
+   liseré doré + fond légèrement rehaussé la distinguent des sections purement informatives. */
+.victory-section-gear {
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(201, 162, 39, 0.06);
+}
+.victory-section-gear h3 { display: flex; align-items: center; gap: 6px; border-bottom: none; padding-bottom: 0; }
 .victory-defeated { display: flex; flex-wrap: wrap; gap: 6px; }
 .victory-foe {
   font-size: 12px;

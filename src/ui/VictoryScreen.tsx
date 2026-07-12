@@ -58,6 +58,11 @@ export function VictoryScreen() {
   const gold = pv?.gold ?? { gold: 0, silver: 0, brass: 0 };
   const gear = pv?.gear ?? [];
   const defeated = pv?.defeated ?? [];
+  // #377 : un compteur à ZÉRO ne s'affiche jamais nu — masqué, et si le récapitulatif entier tombe à
+  // rien (pas de PX, pas d'or), une ligne narrative sobre le remplace plutôt qu'une rangée vide.
+  const hasXp = xp > 0;
+  const hasGold = (gold.gold ?? 0) > 0 || (gold.silver ?? 0) > 0 || (gold.brass ?? 0) > 0;
+  const hasRewards = hasXp || hasGold;
 
   return (
     <div className="victory-overlay">
@@ -72,10 +77,32 @@ export function VictoryScreen() {
           </div>
         )}
 
-        <div className="victory-rewards">
-          <div className="victory-stat"><span className="vs-ico"><Icon id="action/cast" size="sm" /></span> <b>{xp}</b> <span className="vs-unit">PX</span></div>
-          <div className="victory-stat"><span className="vs-ico"><Icon id="resource/gold-purse" size="sm" /></span> <Coins money={gold} /></div>
-        </div>
+        {hasRewards ? (
+          <div className="victory-rewards">
+            {hasXp && (
+              <div className="victory-stat"><span className="vs-ico"><Icon id="action/cast" size="sm" /></span> <b>{xp}</b> <span className="vs-unit">PX</span></div>
+            )}
+            {hasGold && (
+              <div className="victory-stat"><span className="vs-ico"><Icon id="resource/gold-purse" size="sm" /></span> <Coins money={gold} /></div>
+            )}
+          </div>
+        ) : (
+          <p className="victory-msg victory-msg-empty">Ni or ni gloire sonnante sur ces adversaires — le groupe repart les mains vides, mais entier.</p>
+        )}
+
+        {/* Équipement EN AVANT (#377) : la section « qui l'emporte ? » se joue AVANT le récapitulatif
+            des vaincus — c'est elle qui donne quelque chose à TOUCHER, jamais reléguée en bas d'écran. */}
+        {gear.length > 0 && (
+          <div className="victory-section victory-section-gear">
+            <h3><Icon id="resource/gold-purse" size="sm" /> Équipement — qui l'emporte&nbsp;?</h3>
+            <GearAssignList
+              gear={gear}
+              assignable={assignable}
+              onAssign={assignGear}
+              onAppraise={net.mode === 'guest' ? undefined : (i, mode) => appraiseGear('victory', i, mode)}
+            />
+          </div>
+        )}
 
         {defeated.length > 0 && (
           <div className="victory-section">
@@ -101,18 +128,6 @@ export function VictoryScreen() {
                 );
               })}
             </div>
-          </div>
-        )}
-
-        {gear.length > 0 && (
-          <div className="victory-section">
-            <h3>Équipement — qui l'emporte&nbsp;?</h3>
-            <GearAssignList
-              gear={gear}
-              assignable={assignable}
-              onAssign={assignGear}
-              onAppraise={net.mode === 'guest' ? undefined : (i, mode) => appraiseGear('victory', i, mode)}
-            />
           </div>
         )}
 

@@ -197,7 +197,7 @@ const DOMAIN_CSS_MODULES = [
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
   'styles/combat-modals.css': 141,
-  'styles/combat-ui.css': 112,
+  'styles/combat-ui.css': 113,
   'styles/compendium.css': 55,
   'styles/creator.css': 74,
   'styles/editor.css': 112,
