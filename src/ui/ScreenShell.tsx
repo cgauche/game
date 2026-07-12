@@ -25,10 +25,13 @@ import type { Money } from '../engine/money';
  * Habillage générique (#371 lot 2) : `body` bascule le traitement du CORPS — `'full'` (défaut, INCHANGÉ)
  * pour un écran-canevas (carte, plan) qui doit remplir tout le cadre ; `'centered'` borne et centre le
  * corps (`.screen-body`, patron ex-manuel `.port-body`/`.city-hub-master`, ~960px) — le réflexe pour un
- * écran de PANNEAUX (marché, dossier, hub) sans quoi le contenu colle à gauche avec un océan vide à droite
- * en large (famille « vide non habité » du juge, #371). `backdrop` pose la bande d'ambiance (`SceneBackdrop`,
- * lot 1) sous l'en-tête/barre d'outils, au-dessus du corps — absente du prop = pas de bande (zéro régression) ;
- * fournie (même id inconnu) = toujours un rendu (repli élégant géré par `SceneBackdrop`, jamais un trou).
+ * écran de PANNEAUX/LECTURE (marché, dossier, hub) sans quoi le contenu colle à gauche avec un océan vide
+ * à droite en large (famille « vide non habité » du juge, #371) ; `'centered-wide'` (politique grand écran,
+ * docs/charte-ui.md) — même bornage/centrage mais plafond relevé (`.screen-body-wide`, ~1400px au-delà de
+ * 1440px) pour un écran-GRILLE/catalogue (tables de négoce…) qui profite de plus de colonnes utiles.
+ * `backdrop` pose la bande d'ambiance (`SceneBackdrop`, lot 1) sous l'en-tête/barre d'outils, au-dessus du
+ * corps — absente du prop = pas de bande (zéro régression) ; fournie (même id inconnu) = toujours un rendu
+ * (repli élégant géré par `SceneBackdrop`, jamais un trou).
  */
 export function ScreenShell({
   title,
@@ -56,8 +59,9 @@ export function ScreenShell({
   /** Bande d'ambiance (id du registre `src/ui/backdrops`) — opt-in, rendue sous l'en-tête/barre d'outils. */
   backdrop?: string;
   /** Traitement du corps : `'full'` (défaut) laisse l'écran remplir le cadre ; `'centered'` borne/centre
-   *  le corps (`.screen-body`, ~960px) au patron des écrans de panneaux. */
-  body?: 'centered' | 'full';
+   *  le corps (`.screen-body`, ~960px) au patron des écrans de panneaux/lecture ; `'centered-wide'` idem
+   *  avec un plafond relevé (`.screen-body-wide`, ~1400px≥1440px) pour un écran-grille/catalogue. */
+  body?: 'centered' | 'centered-wide' | 'full';
   /** Classes ajoutées au voile plein écran (`port-overlay`, `ship-dossier`…). */
   className?: string;
   children: ReactNode;
@@ -77,7 +81,9 @@ export function ScreenShell({
       </div>
       {tabs != null && <div className="screen-toolbar">{tabs}</div>}
       {backdrop !== undefined && <SceneBackdrop backdropId={backdrop} />}
-      {body === 'centered' ? <div className="screen-body">{children}</div> : children}
+      {body === 'centered' ? <div className="screen-body">{children}</div>
+        : body === 'centered-wide' ? <div className="screen-body screen-body-wide">{children}</div>
+        : children}
     </div>
   );
 }

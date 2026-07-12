@@ -553,6 +553,14 @@
   width: min(960px, 96vw);
   margin: 6px auto 0;
 }
+/* Variante GRILLE/CATALOGUE (`ScreenShell` prop `body='centered-wide'`, politique grand écran
+   charte-ui.md) — un écran de tables/cartes (négoce…) profite d'un plafond plus large qu'un écran
+   de lecture ; en dessous de 1440px le comportement reste identique à `.screen-body`. */
+@media (min-width: 1440px) {
+  .screen-body.screen-body-wide {
+    width: min(1400px, 96vw);
+  }
+}
 
 /* ── STEPPER DE QUANTITÉ (primitive QtyStepper.tsx, #371 LOT 3) — triplet [−][centre][+], moissonné de
    l'étalon marchand (panier/parcourir). `.cart-step` = conteneur inline, `.btn-step` = bouton rond,

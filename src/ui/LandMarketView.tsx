@@ -54,7 +54,7 @@ export function LandMarketView() {
       title={<>Marché de {market.label}</>}
       onClose={close}
       meta={{ money }}
-      body="centered"
+      body="centered-wide"
       tabs={<span className="port-purse">Porteur : <b>{target ? `${target.label} — libre ${carrierFreeEnc(target)} / ${target.capacity} Enc` : 'aucun'}</b></span>}
     >
         {rumours.length > 0 && (

@@ -54,7 +54,10 @@
      SOUS 90 mais peint dans le MÊME contexte d'empilement) ne doit JAMAIS transparaître à travers le
      voile. Un `rgba(...)` avec alpha < 1 (même 0.97) laisse un résidu visible sur les chips vives du
      dock — le token `--bg` (opacité 1, pas un hex à alpha fractionnaire) coupe le fond net. */
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(201, 162, 39, 0.07), transparent 55%),
+    radial-gradient(ellipse at 50% 115%, rgba(110, 26, 16, 0.18), transparent 60%),
+    var(--bg); /* ambiance de la coquille partagée (politique grand écran, charte-ui.md) — pas un aplat nu quand le corps est borné en large */
   display: flex;
   flex-direction: column;
   padding: 10px;

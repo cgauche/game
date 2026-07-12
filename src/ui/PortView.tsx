@@ -148,7 +148,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
       title={<><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.name ?? vd.label}</>}
       onClose={close}
       meta={{ money }}
-      body="centered"
+      body="centered-wide"
     >
       <PortHeader pp={port.port} catalogue={catalogue} />
       <Tabs

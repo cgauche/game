@@ -123,7 +123,8 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.panel-grid` (+ `.span-2`) | Grille de `.panel` en auto-fit (min 340px) | Tableau de bord de plusieurs panels — 1 colonne ≤700px ; `.span-2` pour un panel pleine largeur. |
 | `.bar` | Barre d'écran (en-tête, fond dégradé, filet or) | En-tête d'écran avec titre + actions — s'enroule ≤700px ; ne PAS la détourner pour une simple rangée sans fond/padding de header (charte : « éviter les espaces vides »). |
 | `.screen` | Colonne plein-écran (flex column, hauteur 100%) | Coquille racine d'un écran plein-champ « historique » (hors `ScreenShell`, cf. table CLAUDE.md). |
-| `.screen-body` | Corps de `ScreenShell` borné/centré (~960px) | Posée par `ScreenShell` (prop `body='centered'`) — écran de PANNEAUX (marché, dossier, hub) plutôt que canevas plein cadre ; jamais un centrage/bornage manuel recopié par écran. |
+| `.screen-body` | Corps de `ScreenShell` borné/centré (~960px) | Posée par `ScreenShell` (prop `body='centered'`) — écran de PANNEAUX/LECTURE (marché, dossier, hub) plutôt que canevas plein cadre ; jamais un centrage/bornage manuel recopié par écran. |
+| `.screen-body-wide` | Modificateur de `.screen-body` — plafond relevé (~1400px) au-delà de 1440px | Posée par `ScreenShell` (prop `body='centered-wide'`, politique grand écran) — écran-GRILLE/catalogue (négoce en `TradeTable`/`.panel-grid`) plutôt que lecture ; toujours combinée à `.screen-body`, jamais seule. |
 | `.master-detail` (+ `.master-detail-list`, `.master-detail-detail`) | Gabarit maître-détail (liste gauche + détail centre), LAYOUT pur | Composé par `MasterDetail.tsx` (CLAUDE.md) — s'empile ≤700px (`MASTER_DETAIL_STACK_BREAKPOINT_PX`), jamais une 2ᵉ composition liste+détail recodée. |
 | `.tabs` (+ `.tab-btn`) | Style de base (variante `flat`) de la barre d'onglets | Posée par la primitive React `Tabs` (CLAUDE.md) — les variantes `pill`/`sub`/`dock` composent par-dessus dans `tabs.css` ; jamais un `role=tablist` recodé à la main. |
 | `.seg` (`sheet.css`) | Segmented control (choix exclusif, boutons collés) | Composé par la primitive React `OptionChooser` (variante `seg`) — jamais un groupe de boutons exclusifs recodé à la main. |
@@ -162,6 +163,32 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.dlg-speaker` / `.dlg-text` | Nom de l'interlocuteur / réplique | Idem, posées par `SpeakerBanner`. |
 | `.dlg-choices` (+ `.dlg-choice`, `.dlg-choice-text`, `.dlg-choice-cost`) | Zone de choix du dialogue arborescent | Variant `dialogue` seulement — le contenu des lignes reste au métier (`DialogueBox`), la primitive ne pose que le conteneur. |
 | `.scene-backdrop` (+ `.scene-backdrop-fallback`) | Bande d'illustration d'ambiance (bord haut d'un panel) | Composée par la primitive `SceneBackdrop` (CLAUDE.md) — sans `backdropId`/id inconnu, repli dégradé + fleuron `Ornaments`, jamais un trou. |
+
+## Politique grand écran (≥1440px)
+
+Les breakpoints canon de la règle stricte 4 (900/700/560) ne bornent que VERS LE BAS (empilement
+mobile). Sans politique symétrique vers le HAUT, un écran large (~1920px) lit un contenu enfermé
+dans un couloir étroit avec un océan vide de part et d'autre (« vide non habité », #371) — constat
+utilisateur sur moniteur large. Nouveau seuil documenté : **1440px**, au-delà duquel s'appliquent
+trois règles :
+
+1. **Les GRILLES de cartes s'élargissent.** Une grille de cartes (scénarios, catalogue…) compose
+   `grid-template-columns: repeat(auto-fill, minmax(~380-420px, 1fr))` sur la largeur UTILE du
+   conteneur (pas un `auto-fit` étroit qui laisse 2 colonnes flotter dans un couloir) — 3-4 colonnes
+   sur un 1920px plutôt que 2. `.ts-grid` (scénarios de test) applique ce motif.
+2. **Le PLAFOND diffère grille/lecture.** Un écran-GRILLE ou catalogue (tables, cartes,
+   `TradeTable`) monte son plafond vers ~1200-1600px — plus de colonnes utiles, plus de contenu par
+   écran. Un écran de LECTURE (prose, fiche, panneau centré) GARDE un plafond confortable
+   ~960-1080px : la lisibilité d'une ligne de texte a une largeur optimale (trop large = l'œil perd
+   la ligne en fin de retour), ce n'est pas un oubli mais un choix délibéré. `ScreenShell` porte
+   cette distinction via la prop `body` : `'centered'` (lecture, `.screen-body` ~960px, inchangé) vs
+   `'centered-wide'` (grille/catalogue, `.screen-body.screen-body-wide` ~1400px au-delà de 1440px) —
+   choisir selon la NATURE du contenu, pas par défaut.
+3. **Le FOND hors-cadre n'est jamais un aplat nu.** Les marges dégagées par un plafond de largeur
+   doivent lire « cadre de table de jeu », pas « vide » — l'ambiance existante (gradients radiaux
+   dorés/sang du menu principal, `.menu`) s'applique au CONTENEUR HÔTE partagé (`.worldmap-overlay`,
+   coquille de `ScreenShell` — pas écran par écran) pour habiller ces marges sur toute la famille
+   d'écrans plein-champ qui la composent.
 
 ## Densité et contrôles stylisés
 
