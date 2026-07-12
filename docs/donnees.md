@@ -66,6 +66,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | `mutations.json` · `mutationTables.json` | Mutations du Chaos · tables d100 de mutation |
 | `water-exposure.json` | Exposition à l'eau (noyade, maladies) |
 | `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) |
+| `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) |
 
 ### Objets & équipement
 | Fichier | Contient |

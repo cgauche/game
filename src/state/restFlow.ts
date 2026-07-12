@@ -45,7 +45,7 @@ import { freeCons } from './rollSeam';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, priceToMoney, type Money } from '../engine/money';
-import { findTrappingById } from '../data';
+import { findTrappingById, NIGHT_STAKES } from '../data';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { runDailyUpkeep, dayIndex } from './upkeep';
 import { continueTravelAfterNight } from './travelFlow';
@@ -246,43 +246,11 @@ function collectContagion(party: Combatant[]): ContagionSpec[] {
 //    — zéro duplication de formule vs la nuit eager (sleepParty/restRecovery). Une défaillance
 //    impacte la suite (escalade Exposition, abri → nombre de jets) → c'est pourquoi c'est séquentiel.
 
-/** ENJEU surfaçable (#331) des étapes de cascade de NUIT, par `kind` — ce que l'ÉCHEC coûte, ÉNONCÉ
- *  VERBATIM depuis la Source (règle 5 : recollé tel quel, formatage Markdown conservé — rendu par
- *  `<Prose>`). Le mécanisme est DÉJÀ dans l'applier ; ceci ne fait que le rendre LISIBLE sous le titre
- *  d'étape (« on ne sait ni à quoi ça correspond, ni le résultat »). Catalogue UNIQUE des kinds de nuit ;
- *  un kind absent n'affiche rien (surfaçage progressif — les autres restent à documenter). */
-const NIGHT_STAKES: Record<string, string> = {
-  // Nourriture (LDB 18-Traumatisme l.342) — verbatim.
-  faim: "lorsque vous n'avez plus de nourriture, vous devez effectuer un Test de Résistance tous les deux jours. Sur un premier échec, vous subissez une pénalité de –10 en **Force**  et **Endurance**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.",
-  // Eau (LDB 18-Traumatisme l.340) — verbatim.
-  soif: "chaque jour sans eau nécessite un Test de Résistance. Sur un premier échec, vous subissez une pénalité de -10 en **Intelligence***,*  **Force Mentale** et **Sociabilité**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.",
-  // Guérison des Blessures (LDB 18-Traumatisme l.296) — verbatim.
-  recovery: "Une fois par jour, vous pouvez tenter, sans aide médicale, un Test de **Résistance Accessible (+20)**, après avoir passé une bonne nuit de sommeil. Vous guérissez un nombre de Points de Blessure équivalent à votre DR + Bonus d'Endurance.",
-  // Trauma — exemple RAW (LDB 21-Psychologie l.95) — verbatim.
-  nightmare: "chaque nuit, Horst effectue un Test de **Calme Facile (+40)**. Sur un échec, il est en proie à de terribles cauchemars et gagne l'État *Exténué*.",
-  // Survie en extérieur — campement (LDB 09-Compétences l.554) — verbatim.
-  shelter: "Quand vous campez, faites un Test de Survie en extérieur, modifié par la rudesse des conditions – par exemple, un Test est **Intermédiaire (+0)** s'il pleut, **Difficile (-20)** lors d'une tempête. Un Test réussi indique que vous pouvez vous procurer de la nourriture et un abri pour la nuit. Chaque DR vous permet de procurer l'équivalent pour un Personnage de plus. Si le Test échoue, vous devez faire un Test de **Résistance Intermédiaire (+0)** ou recevoir l'État *Exténué*.",
-  // Exposition, chaleur/froid (LDB 18-Traumatisme l.330/334) — verbatim.
-  exposure: "**Chaleur :** sur un premier échec, vous subissez une pénalité de -10 en **Intelligence** et en **Force Mentale**, et vous gagnez un État *Exténué*. Le deuxième échec réduit toutes les autres caractéristiques de -10 % et vous gagnez un second État *Exténué*. À partir du troisième échec, vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure perdue.\n\n**Froid :** sur un premier échec, vous subissez une pénalité de -10 à votre Compétence de **CT**, à votre **Agilité** et votre **Dextérité**. Le deuxième échec réduit la valeur de toutes vos autres caractéristiques de -10 %. À partir du troisième échec, vous subissez 1d10 Dégâts, qui ignorent les PA, avec un minimum de 1 Blessure perdue. Si vous atteignez 0 Blessure, vous recevez immédiatement un État *Inconscient*.",
-  // Délestage annulant un échec de Chaleur (LDB 18-Traumatisme l.332) — verbatim.
-  'exposure-heat-drop': "Vous débarrasser d'une Possession lourde annule 1 Test échoué.",
-  // Marche forcée (LDB 51-Voyage l.224) — verbatim.
-  forcedMarch: "En prenant en compte les temps de repos, les arrêts nécessaires et une topographie standard, un groupe peut voyager l'équivalent de 6 heures par jour sans avoir besoin de Tests de Résistance. S'il voyage plus rapidement ou plus loin, donnez un État *Exténué* à ceux échouant à ce Test, et un État *Exténué* supplémentaire si le Personnage est Encombré.",
-  // Fractures Mineure/Majeure — guérison (LDB 18-Traumatisme l.202/212) — verbatim.
-  traumaFracture: "**Guérison :** il faudra 30+1d10 jours pour soigner une fracture. À la fin de cette période, un succès obtenu sur un Test de **Résistance Accessible (+20)** indique que l'os s'est remis correctement et que vous ne subirez aucun effet à long terme. Sur un échec, vous subirez une pénalité permanente de -5 à tous vos Tests d'Agilité pour une blessure au Bras, à la Jambe ou au Torse, ou une pénalité permanente de -5 à tous vos Tests de Langue s'il s'agit d'une blessure à la tête mal guérie.\n\n**Majeure :** la guérison est plus longue de 10 jours. Tous les Tests associés sont **Intermédiaires (+0)**. Les pénalités en cas d'échec augmentent à -10.",
-  // Symptômes Blessé et Toxine — Test de cycle quotidien (LDB 20-Maladies l.145/212-215) — verbatim.
-  diseaseTick: "**Blessé :** Chaque jour, réussissez un Test de **Résistance Accessible (+20)** ou subissez une Blessure Purulente si vous n'en avez pas déjà une.\n\n**Toxine :** Effectuez un Test de **Résistance Très Facile (+60)** tous les jours (en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie.",
-  // Symptôme Gangrène (LDB 20-Maladies l.176) — verbatim.
-  diseaseGangrene: "Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques).",
-  // Symptôme Persistant (LDB 20-Maladies l.200) — verbatim.
-  diseasePersist: "Après que votre maladie est arrivée à la fin de sa Durée, effectuez un Test de Résistance avec la Difficulté indiquée entre parenthèses après le symptôme comme ceci : Persistant (Accessible) ou Persistant (Facile). Sur un échec Minime (0), rajoutez 1d10 jours à la durée. Sur un échec (-2), vous subissez une *Blessure Purulente*. Sur un échec Stupéfiant (-6), vous développez *Infection du sang*.",
-  // Symptôme Toux et éternuements — contagion de promiscuité (LDB 20-Maladies l.206) — verbatim.
-  contagion: "Vous toussez et éternuez régulièrement, propageant ainsi votre maladie tout autour de vous. Tout Personnage se trouvant dans votre environnement immédiat s'expose à la maladie dont vous êtes porteur et doit effectuer un Test pour en éviter la Contraction une fois par heure entamée d'exposition.",
-};
-
-/** Enjeu d'un `kind` d'étape de nuit (`undefined` = aucun enjeu documenté → rien à afficher). */
+/** Enjeu d'un `kind` d'étape de nuit (`undefined` = aucun enjeu documenté → rien à afficher). Catalogue
+ *  UNIQUE `src/data/night-stakes.json` (règle 5 : verbatim Source, Markdown) — un kind absent n'affiche
+ *  rien (surfaçage progressif). */
 function nightStake(kind: string): string | undefined {
-  return NIGHT_STAKES[kind];
+  return NIGHT_STAKES.find((e) => e.kind === kind)?.stake;
 }
 
 /** Jets d'Exposition au froid pour les campeurs (`count` par campeur) — insérés par l'abri. */

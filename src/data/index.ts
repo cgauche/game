@@ -69,6 +69,7 @@ import peripetiesJson from './peripeties.json';
 import massBattleJson from './mass-battle.json';
 import grappleJson from './grapple.json';
 import waterExposureJson from './water-exposure.json';
+import nightStakesJson from './night-stakes.json';
 import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
@@ -127,6 +128,15 @@ export interface WaterExposureData {
   source: SourceRef;
 }
 export const WATER_EXPOSURE = waterExposureJson as WaterExposureData;
+
+/** Enjeu VERBATIM (règle 5, #331) d'un `kind` d'étape de la cascade de nuit (`src/state/restFlow.ts`
+ *  `nightStake`) — un `kind` absent du catalogue n'affiche rien (surfaçage progressif). */
+export interface NightStakeEntry {
+  kind: string;
+  stake: string;
+  source: SourceRef;
+}
+export const NIGHT_STAKES = nightStakesJson as NightStakeEntry[];
 
 export interface SpeciesData {
   /** id STABLE (slug du libellé) — cible de `Combatant.species`, pregens, draft. Le `label` ne sert
