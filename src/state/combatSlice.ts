@@ -14,6 +14,7 @@ import type { GameState, BattleState } from './store';
 import type { CounterParticipant } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
+import { continueRestNights } from './restFlow';
 import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './riverVoyageFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
@@ -316,7 +317,11 @@ export function createCombatSlice(get: Get, set: Set) {
     // Une cascade de NUIT/voyage (faim, exposition, maladie) a pu anéantir tout le groupe : défaite AVANT
     // de reprendre la route — no-op en combat (`combatEndBoundary` gère la défaite via `battle`).
     if (done && checkPartyWiped(get, set)) return;
-    if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+    // Repos MULTI-JOURS (#347) : la nuit qui vient de se clore en enchaîne une AUTRE tant qu'il en
+    // reste — AVANT le routage 'travel'/'travelHalt' (une nuit INTERMÉDIAIRE d'un séjour ne porte
+    // jamais `travelHalt`, cf. `openRestNight` — seule la DERNIÈRE nuit peut le porter).
+    if (done?.purpose === 'night' && done.restNights && done.restNights.nightsLeft > 0) continueRestNights(get, set, done.restNights);
+    else if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
     else if (done?.purpose === 'travelDay') {
       if (get().travelPlan?.river) continueRiverDayAfterCascade(get, set);
       // Mer : une « Fuite de vapeur » (pendingSteamSave) peut avoir suspendu la clôture DEPUIS l'applier

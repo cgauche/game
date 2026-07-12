@@ -1264,6 +1264,13 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  `attackerId` (attaques gratuites restantes puis avance) au lieu du `resumeSuspendedAI` générique —
    *  `free` = la manœuvre était une attaque gratuite (ne re-déclenche pas les libres d'Arme post-Action). */
   maneuverResume?: { attackerId: string; free: boolean };
+  /** Repos MULTI-JOURS authoré (#347, `state/restFlow.ts`) : nuits ENCORE à enchaîner après CETTE
+   *  cascade + le contexte de repos (couchage/pitance par héros) nécessaire pour reconstruire la nuit
+   *  suivante. La clôture ('night' purpose) enchaîne `continueRestNights` tant que `nightsLeft > 0` —
+   *  CHAQUE nuit reste sa PROPRE cascade influençable (patron #253, jamais un jet pré-résolu) ; la nuit
+   *  N+1 ne peut PAS être pré-construite avant que la nuit N soit validée (l'entretien du jour N+1 lit
+   *  l'état MUTÉ par la nuit N — compteurs de faim/soif, jours de maladie…). */
+  restNights?: { p: import('./restFlow').PendingRest; nightsLeft: number };
 }
 
 /** Soin de Guérison en attente (LDB 09-Compétences) : flux modale — « Lancer » (healRoll) → Chance

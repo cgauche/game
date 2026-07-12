@@ -61,7 +61,6 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   const restCancel = useGame((s) => s.restCancel);
   const restContinue = useGame((s) => s.restContinue);
   const restReady = useGame((s) => s.restReady);
-  const restLedgerReroll = useGame((s) => s.restLedgerReroll);
   const state = useGame();
   // Héros PERSONNALISÉS (détachés du choix maître de troupe) — le reste SUIT la troupe. Arbitrage user
   // 2026-07-11 : « ≠ personnaliser » déplie les contrôles du héros seul, « ↺ » le rend au choix de troupe.
@@ -82,12 +81,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
             <span className="rest-time-len"> · {Math.round((p.slept.to - p.slept.from) / 60)} h</span>
           </p>
         )}
-        {/* PV de la nuit : chaque ligne de HÉROS ratée à conséquence recalculable (récupération,
-            cauchemars) est influençable après coup — la Chance RELANCE (LDB 17 l.21-27). */}
-        <MultiRollList
-          entries={p.results ?? []}
-          influence={{ reroll: (id) => restLedgerReroll(id), owns: (hid) => net.mode === 'local' || ownsLocally(state, hid) }}
-        />
+        <MultiRollList entries={p.results ?? []} />
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={() => restContinue()}>{p.travelHalt ? 'Reprendre la route' : 'Continuer'}</button>
         </div>

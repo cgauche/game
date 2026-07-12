@@ -1,8 +1,10 @@
 /**
  * Modale de REPOS (state/restFlow) : offre par lieu/zone, choix PAR HÉROS (couchage + pitance,
- * orthogonaux), coût RAW (LDB ch.66), Exposition d'un campement (LDB 18 l.408-415). Une NUIT UNIQUE
- * passe par la CASCADE séquentielle influençable (chaque jet = une étape, verrouillée à
- * « Valider » avant le suivant) ; le moteur de nuit `sleepParty` (multi-jours/eager) reste testé par
+ * orthogonaux), coût RAW (LDB ch.66), Exposition d'un campement (LDB 18 l.408-415). UNE NUIT comme
+ * PLUSIEURS passent par une CHAÎNE de cascades séquentielles influençables (#347, `openRestNight`/
+ * `continueRestNights`) — chaque jet = une étape, verrouillée à « Valider » avant le suivant, chaque
+ * nuit reconstruite APRÈS que la précédente ait été validée (jamais de jet pré-résolu). Le moteur de
+ * nuit `sleepParty` (chemin EAGER — cheat `restParty`, clôture d'interlude) reste testé par
  * rest.test / upkeep-cascade.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -181,6 +183,84 @@ describe('couchage À BORD (MDG) — le navire n’est pas un bivouac', () => {
   it('à terre SANS navire : offre inchangée (pas de couchage `bord`)', () => {
     expect(lodgingOptions({ camp: true })).toEqual(['dehors']);
     expect(lodgingOptions({ auberge: true })).toEqual(['privee', 'commune', 'dehors']);
+  });
+});
+
+describe('repos MULTI-JOURS (#347) — chaîne de cascades nuit-par-nuit, jamais un jet pré-résolu', () => {
+  /** Verrouille un ÉCHEC garanti sur l'étape courante avant de la valider (dé 100, DR négatif) —
+   *  comme `walkCascadeAbriFails`, mais sur TOUTE cascade en cours (nuit courante de la chaîne). */
+  function forceFailCurrent(): void {
+    const p = useGame.getState().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    if (cur.target != null && !cur.result) {
+      const parts = p.participants.map((s) => (s.id === cur.id ? { ...s, result: { roll: 100, target: cur.target!, sl: -5, success: false } } : s));
+      useGame.setState({ pendingCascade: { ...p, participants: parts } });
+    }
+  }
+
+  /** Déroule TOUTE la chaîne de nuits (échecs garantis sur chaque étape-jet) jusqu'à ce qu'aucune
+   *  cascade ne reste pendante — renvoie le nombre de fois où une cascade de nuit s'est ouverte. */
+  function walkNightChain(maxSteps = 200): number {
+    let nights = 0;
+    let sawEmpty = true;
+    let guard = 0;
+    while (guard++ < maxSteps) {
+      const p = useGame.getState().pendingCascade;
+      if (!p) {
+        if (!sawEmpty) { nights++; sawEmpty = true; }
+        if (!useGame.getState().pendingCascade) break; // rien d'autre ne s'ouvrira
+        continue;
+      }
+      sawEmpty = false;
+      forceFailCurrent();
+      useGame.getState().cascadeNext();
+    }
+    return nights;
+  }
+
+  it('2 nuits d’affilée sans ration : CHAQUE nuit est SA PROPRE cascade influençable, non pré-résolue', () => {
+    const starving = hero({ id: 'h1', name: 'Hilda', hunger: { days: 1, tests: 0, failures: 0 } });
+    useGame.setState({ party: [starving], scene: emptyScene(10, 10), pendingRest: null, money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.getState().openRest({ places: { camp: true }, days: 4 }); // days>1 → repos multi-jours authoré (op `rest`)
+    useGame.getState().restSet('h1', { food: 'rien' });
+    useGame.getState().restSleep();
+
+    // Nuit 1 (jour 1→2) : le Test de Faim tombe (l.417 : tous les 2 jours) — étape NON pré-résolue.
+    expect(useGame.getState().pendingRest).toBeNull(); // basculé en cascade, plus de bilan
+    const cas1 = useGame.getState().pendingCascade!;
+    expect(cas1.purpose).toBe('night');
+    expect(cas1.restNights).toEqual({ p: expect.objectContaining({ days: 4 }), nightsLeft: 3 }); // 3 nuits ENCORE à enchaîner
+    const faim1 = cas1.participants.find((s) => s.kind === 'faim')!;
+    expect(faim1).toBeTruthy();
+    expect(faim1.interactive).toBe(true);
+    expect(useGame.getState().party[0].hunger!.tests).toBe(0); // DIFFÉRÉ, pas roulé en eager
+
+    // Valider la nuit 1 (échec garanti) → conséquence appliquée UNE fois.
+    forceFailCurrent();
+    useGame.getState().cascadeNext();
+    expect(useGame.getState().party[0].hunger!.tests).toBe(1);
+    expect(useGame.getState().party[0].hunger!.failures).toBe(1); // 1er échec (l.422)
+
+    // Nuit 2 (jour 2→3) : la chaîne a enchaîné SEULE (dispatchCascadeDone → continueRestNights) — la
+    // cascade de la nuit SUIVANTE s'ouvre automatiquement (jamais un bilan silencieux entre les deux).
+    const cas2 = useGame.getState().pendingCascade;
+    // jour 2→3 : days%2 != 0 → pas de Test de Faim cette nuit-ci (cadence RAW, l.422) → 0 étape → la
+    // chaîne enchaîne DIRECTEMENT (silencieusement pour cette nuit SANS jet, jamais un jet tissé).
+    if (cas2) expect(cas2.restNights?.nightsLeft).toBeLessThan(3);
+  });
+
+  it('escalade CUMULATIVE de la Faim PORTÉE d’une nuit à l’autre (compteur persisté sur le héros)', () => {
+    const starving = hero({ id: 'h1', name: 'Hilda', hunger: { days: 0, tests: 0, failures: 0 } });
+    useGame.setState({ party: [starving], scene: emptyScene(10, 10), pendingRest: null, money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.getState().openRest({ places: { camp: true }, days: 4 });
+    useGame.getState().restSet('h1', { food: 'rien' });
+    useGame.getState().restSleep();
+    walkNightChain();
+
+    expect(useGame.getState().pendingCascade).toBeNull(); // toute la chaîne close, aucune reste pendante
+    const h = useGame.getState().party[0];
+    expect(h.hunger!.tests).toBe(2); // Tests aux jours 2 et 4 (l.422 : tous les 2 jours)
+    expect(h.hunger!.failures).toBe(2); // les 2 Tests, forcés à l'échec → escalade au 2ᵉ échec
   });
 });
 

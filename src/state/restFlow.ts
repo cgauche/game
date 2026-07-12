@@ -7,9 +7,10 @@
  * par : la MODALE de Repos (ci-dessous), la nuit de voyage (travelFlow), la clôture d'interlude et
  * la triche de recette (`restParty`).
  *
- * La MODALE (pendingRest) ajoute par-dessus : phase RÉGLAGES par héros (couchage + pitance, coût
- * RAW calculé), puis phase BILAN — UN écran globalisé de jets subis (brique multi-jets NightEntry,
- * réutilisable pour d'autres cascades), au lieu d'une pluie de modales.
+ * La MODALE (pendingRest) ajoute par-dessus la phase RÉGLAGES par héros (couchage + pitance, coût
+ * RAW calculé) ; « Dormir » ouvre ensuite une CHAÎNE de cascades séquentielles influençables (#347,
+ * `openRestNight`/`continueRestNights`) — une nuit à la fois, jamais un jet pré-résolu, même pour un
+ * repos de plusieurs jours (chaque nuit est reconstruite APRÈS que la précédente ait été validée).
  *
  * RAW :
  *  - Récupération (LDB 18 l.380) : Résistance +20 après « une bonne nuit de sommeil » → DR+BE PB,
@@ -25,7 +26,6 @@ import type { RNG } from '../engine/dice';
 import type { RollBreakdown } from '../engine/combat';
 import type { RecapTone } from './recapLine';
 import { battleRng } from './battleRng';
-import { rollTest } from '../engine/tests';
 import { partyAssisted, testValue } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
 import { soberUpDissipate, soberUpHangover } from '../engine/drunkenness';
@@ -37,7 +37,7 @@ import { rule } from '../engine/policy';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
-import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureTarget, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureTarget, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
@@ -74,11 +74,11 @@ export function placesOfKind(kind: RestKind): RestPlaces {
   return kind === 'auberge' ? { auberge: true, camp: true } : kind === 'maison' ? { maison: true, camp: true } : { camp: true };
 }
 
-/** Entrée du PROCÈS-VERBAL (bilan multi-jets, réutilisable : bilan de nuit, jour de mer #232…). Une
- *  ligne = un jet de ROUTINE résolu en lot, rendu par le PV et — pour un jet de HÉROS RATÉ dont la
- *  conséquence est recalculable — INFLUENÇABLE après coup (Chance/relance, flux `restLedger`). */
+/** Entrée du PROCÈS-VERBAL (bilan multi-jets, réutilisable : jour de mer #232, chronique de voyage…).
+ *  Une ligne = un jet de ROUTINE déjà résolu (témoin), rendu en LECTURE SEULE par `MultiRollList` — la
+ *  nuit de repos (#347) n'en tisse plus : chaque jet de nuit est une ÉTAPE de cascade influençable
+ *  (`state/cascade.ts`), pas une ligne de PV recalculée après coup. */
 export interface NightEntry {
-  /** id STABLE de la ligne (ancre du flux `restLedger` : relance/+1 DR ciblent CETTE ligne). */
   id?: string;
   actorId?: string;
   icon?: string;
@@ -89,9 +89,8 @@ export interface NightEntry {
   text?: string;
   /** Vocabulaire PARTAGÉ (#349) — `RecapTone`, `state/recapLine.ts` (même trio que `RecapLine.tone`). */
   tone?: RecapTone;
-  /** Type de conséquence RECALCULABLE ligne à ligne (delta pur, sans re-simuler la nuit) → seule une
-   *  ligne ainsi taguée porte l'influence après coup. Absent = ligne LECTURE SEULE (conséquence tissée
-   *  aux autres jours/jets, non réversible proprement : Exposition/Contagion/Faim). */
+  /** Type de jet HÉROS de `sleepParty` (chemin EAGER — cheat `restParty`, clôture d'interlude) —
+   *  décoratif hors de ces deux chemins. */
   reKind?: 'recovery' | 'nightmare';
   /** Relance de Chance déjà consommée sur CETTE ligne (LDB 12 l.40 : une relance max par Test). */
   rerolled?: boolean;
@@ -103,14 +102,17 @@ export interface PendingRest extends PendingBase {
   quality: 'normale' | 'pietre';
   days: number;
   perHero: Record<string, { lodging: RestLodging; food: RestFood }>;
+  /** `'bilan'` est VESTIGIAL depuis #347 (« Dormir » ouvre désormais une cascade, jamais un bilan
+   *  pré-résolu) — gardé pour la forme du pending (`restContinue`/`results`/`slept` restent des
+   *  primitives valides pour un futur consommateur EAGER, comme `results` l'est déjà via `sleepParty`). */
   phase: 'setup' | 'bilan';
-  /** Bilan de la nuit (multi-jets). */
   results?: NightEntry[];
-  /** Horloge avant/après (le passage du temps est VISIBLE). */
+  /** Horloge avant/après (le passage du temps est VISIBLE) — bilan EAGER uniquement. */
   slept?: { from: number; to: number };
   /** COOP : ✓ par siège avant de dormir (l'hôte dort à l'unanimité). */
   readyBySeat?: Record<number, boolean>;
-  /** Halte de NUIT d'un voyage (travelFlow) : « Continuer » du bilan REPREND la route. */
+  /** Halte de NUIT d'un voyage (travelFlow) : portée par la DERNIÈRE cascade de nuit du séjour
+   *  (`openRestNight`) — sa clôture reprend la route (`dispatchCascadeDone`, `combatSlice.ts`). */
   travelHalt?: boolean;
   /** HALTE de voyage : le RAPPORT DU JOUR (km, jets, péripéties) — affiché en tête de la modale
    *  (la journée se lit le soir même, le recap final ne re-déroule plus tout le trajet). */
@@ -118,33 +120,6 @@ export interface PendingRest extends PendingBase {
   /** HALTE de voyage À PIED au-delà des heures RAW : héros à tester en MARCHE FORCÉE (l.224) — leurs
    *  jets ouvrent la cascade de la nuit (influençables), avant l'abri/la récupération. */
   travelMarch?: string[];
-}
-
-/**
- * RÉ-RÉSOLUTION d'une ligne de PV (Chance après coup, LDB 17 l.21-27) : le jet `tr` (relance ou +1 DR)
- * remplace celui de la ligne `entry`, et la CONSÉQUENCE est recalculée EN DELTA (sans re-simuler la
- * nuit) — recevable pour les seuls jets INDÉPENDANTS (`reKind`) :
- *  - `recovery` (LDB 18 l.380 volet a) : seul le soin de DR+BE est graduel ; le +BE inconditionnel
- *    (volet b) et la dissipation d'Exténué du sommeil ne dépendent PAS du jet → le delta = variation
- *    du volet a seul ;
- *  - `nightmare` (LDB 21 l.92) : échec → +1 Exténué ; la relance ajuste d'un cran l'Exténué.
- * Mute `hero`, renvoie le patch de la ligne (`d`/`text`/`tone`). `null` = ligne non ré-résolvable.
- */
-export function applyLedgerReresolve(hero: Combatant, entry: NightEntry, tr: import('../engine/tests').TestResult): Partial<NightEntry> | null {
-  const d = entry.d;
-  if (!d || !entry.reKind) return null;
-  const nd: RollBreakdown = { ...d, roll: tr.roll, success: tr.success, sl: tr.sl };
-  if (entry.reKind === 'recovery') {
-    const be = bonus(effectiveChar(hero, 'endurance'));
-    const heal = (r: { success: boolean; sl: number }) => (r.success ? Math.max(0, r.sl) + be : 0); // volet a (LDB 18 l.380)
-    const delta = heal(tr) - heal(d);
-    if (delta !== 0) hero.wounds.current = Math.max(0, Math.min(hero.wounds.max, hero.wounds.current + delta));
-    return { d: nd, text: delta > 0 ? `+${delta} PB (relance de Chance)` : tr.success ? 'récupération' : 'aucune récupération cette nuit', tone: tr.success ? 'ok' : 'bad' };
-  }
-  // nightmare : l'échec avait ajouté 1 Exténué (LDB 21 l.92) — la relance l'ajuste d'un cran.
-  if (!d.success && tr.success) removeCondition(hero, 'extenue', 1);
-  else if (d.success && !tr.success) addCondition(hero, 'extenue');
-  return { d: nd, text: tr.success ? 'sommeil sans rêve (relance de Chance)' : 'cauchemars → Exténué', tone: tr.success ? 'ok' : 'bad' };
 }
 
 import type { Get, Set } from './flowTypes';
@@ -727,7 +702,8 @@ export function restCancel(get: Get, set: Set): void {
   set({ pendingRest: null });
 }
 
-/** « Continuer » du bilan — une halte de voyage REPREND la route au matin. */
+/** « Continuer » d'un bilan EAGER (`phase:'bilan'`, vestigial depuis #347 — « Dormir » ouvre une
+ *  cascade et ne pose plus jamais cette phase) — gardée pour un futur bilan multi-jets EAGER. */
 export function restContinue(get: Get, set: Set): void {
   const p = get().pendingRest;
   if (!p || p.phase !== 'bilan') return;
@@ -735,8 +711,7 @@ export function restContinue(get: Get, set: Set): void {
   if (p.travelHalt) continueTravelAfterNight(get, set);
 }
 
-/** Dormir : paie (RAW ch.66), nourrit, dort (`sleepParty`) avec l'Exposition du campement,
- *  puis bascule la modale en BILAN (multi-jets + horloge avant/après). */
+/** Dormir : paie (RAW ch.66), nourrit, puis ouvre la CHAÎNE de cascades de nuit (#347, `openRestNight`). */
 export function restSleep(get: Get, set: Set): void {
   const p = get().pendingRest;
   if (!p || p.phase !== 'setup' || get().battle) return;
@@ -765,76 +740,60 @@ export function restSleep(get: Get, set: Set): void {
     // 'ration' : consommée par l'entretien quotidien (#T3) ; 'rien' : la Faim suivra son cours.
   }
 
-  // 3a. NUIT UNIQUE → CASCADE séquentielle influençable : CHAQUE jet subi (faim, maladie, convalescence,
-  //     contagion, abri, Exposition, récupération, cauchemars) est une ÉTAPE qu'on lance, influence
-  //     (Chance/Résilience) puis VERROUILLE avant la suivante. AUCUN jet pré-résolu. Le report de
-  //     voyage du jour a déjà été lu en phase RÉGLAGES (RestModal).
-  if (p.days === 1) {
-    const { steps, log } = buildNightCascade(get, set, p, { extraContagion });
-    set({ pendingRest: null });
-    if (steps.length) {
-      // Titre = le couchage RÉELLEMENT choisi (pas l'OFFRE du lieu) : tout le monde dehors → Campement,
-      // même si une auberge était dispo (le joueur a choisi la belle étoile).
-      const lodgings = party.filter((h) => !h.dead && p.perHero[h.id]).map((h) => p.perHero[h.id].lodging);
-      const title = lodgings.some((l) => l === 'privee' || l === 'commune') ? 'Nuit à l’auberge'
-        : lodgings.some((l) => l === 'maison') ? 'Nuit chez soi'
-        : lodgings.some((l) => l === 'bord') ? 'Nuit à bord'
-        : 'Campement';
-      startCascade(get, set, { title, icon: 'time/night', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log });
-    } else {
-      // `buildNightCascade` a DÉJÀ journalisé le titre + tout ce qui suit l'entretien (#216) — rien à
-      // influencer (PB pleins, pas de campement), rien à rejournaliser ici.
-      if (p.travelHalt) continueTravelAfterNight(get, set);
-    }
-    return;
-  }
+  // 3. Nuit(s) → CHAÎNE de cascades séquentielles influençables (#347, patron #253) : CHAQUE jet subi
+  //    (faim, maladie, convalescence, contagion, abri, Exposition, récupération, cauchemars) est une
+  //    ÉTAPE qu'on lance, influence (Chance/Résilience) puis VERROUILLE avant la suivante — AUCUN jet
+  //    pré-résolu. Un repos de PLUSIEURS jours n'est PAS pré-construit d'un coup (l'entretien de la
+  //    nuit N+1 lit l'état MUTÉ par la nuit N — compteurs de faim/soif, jours de maladie…) : chaque
+  //    nuit est reconstruite APRÈS que la précédente ait été validée, chaînée par `dispatchCascadeDone`
+  //    (`combatSlice.ts`, `done.restNights`) — une nuit UNIQUE est le cas `days=1` de la même primitive.
+  //    Le report de voyage du jour a déjà été lu en phase RÉGLAGES (RestModal).
+  set({ pendingRest: null });
+  openRestNight(get, set, p, p.days, extraContagion);
+}
 
-  // 3b. Repos de PLUSIEURS jours → résolution EAGER (on ne relance pas N nuits × M jets) : bilan lu.
-  const pre: NightEntry[] = [];
-  for (const c of extraContagion) { // tambouille piètre roulée d'office (multi-jours)
-    const h = party.find((x) => x.id === c.heroId);
-    if (!h) continue;
-    const cl = applyContraction(h, c.diseaseName, rollTest(c.resVal, c.difficulty, rng).success, rng);
-    pre.push({ actorId: c.heroId, icon: 'medical/infection', label: 'Tambouille douteuse', text: cl.join(' ') || 'Le repas passe mal…', tone: 'bad' });
-  }
-  const from = get().gameTime;
-  const entries = sleepParty(get, set, p.days, {
-    beforeRecovery: (out) => {
-      const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');
-      if (!campers.length) return;
-      const severity: ExposureSeverity = weatherExposure(get().scene?.weather);
-      let sheltered = exposureShelterFromTent(party);
-      if (sheltered) {
-        out.push({ icon: 'rest/camp', label: 'Campement', text: 'La tente est montée — le groupe dort à l’abri.', tone: 'info' });
-      } else if (severity !== 'clement') {
-        // Abri de fortune : Survie en extérieur (« construire un abri », ch.09 l.559).
-        const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
-        if (best) {
-          const res = rollTest(best.value, 'intermediaire', rng);
-          sheltered = res.success;
-          out.push({
-            actorId: best.actor.id, icon: 'rest/camp', label: 'Abri de fortune',
-            d: { label: 'Survie en extérieur', base: best.value, modifier: res.target - best.value, target: res.target, roll: res.roll, success: res.success, sl: res.sl },
-            text: res.success ? 'Un abri tient la nuit.' : 'Rien ne protège du temps.', tone: res.success ? 'ok' : 'bad',
-          });
-        }
-      }
-      const count = exposureTestCount(severity, sheltered);
-      if (count <= 0) return;
-      for (const h of campers) {
-        const r = exposureNight(h, count, restResistVal(h), rng);
-        for (const roll of r.rolls) {
-          out.push({
-            actorId: h.id, icon: 'rest/cold', label: 'Exposition (froid)',
-            d: { label: 'Résistance', base: roll.base, modifier: roll.target - roll.base, target: roll.target, roll: roll.roll, success: roll.success, sl: roll.sl },
-            tone: roll.success ? 'ok' : 'bad',
-          });
-        }
-        if (r.log.length) out.push({ actorId: h.id, icon: 'rest/cold', label: 'Exposition', text: r.log.join(' '), tone: 'bad' });
-        expireExposureEffects(h, get().gameTime + Number(rule('exposure-expire-hours')) * 60); // dissipation maison
-      }
-    },
-  });
+/** Titre de la nuit — le couchage RÉELLEMENT choisi (pas l'OFFRE du lieu) : tout le monde dehors →
+ *  Campement, même si une auberge était dispo (le joueur a choisi la belle étoile). Identique pour
+ *  toutes les nuits d'un repos multi-jours (les choix de couchage ne changent pas en cours de séjour). */
+function nightTitle(p: PendingRest, party: Combatant[]): string {
+  const lodgings = party.filter((h) => !h.dead && p.perHero[h.id]).map((h) => p.perHero[h.id].lodging);
+  return lodgings.some((l) => l === 'privee' || l === 'commune') ? 'Nuit à l’auberge'
+    : lodgings.some((l) => l === 'maison') ? 'Nuit chez soi'
+    : lodgings.some((l) => l === 'bord') ? 'Nuit à bord'
+    : 'Campement';
+}
 
-  set({ pendingRest: { ...p, phase: 'bilan', results: [...pre, ...entries], slept: { from, to: get().gameTime } } });
+/** Ouvre (ou enchaîne) UNE nuit de repos (#347) : reconstruit `buildNightCascade` pour CETTE nuit et
+ *  l'ouvre en cascade influençable, en portant `nightsLeft` (nuits ENCORE à enchaîner après celle-ci)
+ *  sur la cascade — sa clôture (`continueRestNights`, appelée par `dispatchCascadeDone`) reprend alors
+ *  la nuit suivante. `extraContagion` (tambouille piètre) ne s'applique qu'à la nuit d'ARRIVÉE (repas
+ *  du soir posé une fois en amont par `restSleep`).
+ */
+export function openRestNight(get: Get, set: Set, p: PendingRest, nightsLeft: number, extraContagion: ContagionSpec[] = []): void {
+  const { steps, log } = buildNightCascade(get, set, p, { extraContagion });
+  const remaining = nightsLeft - 1;
+  // La halte de voyage (travelHalt) reprend la route à la clôture — SEULEMENT sur la DERNIÈRE nuit du
+  // séjour (`remaining === 0`) : une nuit intermédiaire d'un repos multi-jours ne doit PAS re-déclencher
+  // la reprise du voyage avant que les nuits suivantes n'aient eu lieu.
+  const isLast = remaining <= 0;
+  if (steps.length) {
+    startCascade(get, set, {
+      title: nightTitle(p, get().party), icon: 'time/night', purpose: isLast && p.travelHalt ? 'travel' : 'night',
+      travelHalt: isLast ? p.travelHalt : undefined, steps, log, restNights: { p, nightsLeft: remaining },
+    });
+  } else if (remaining > 0) {
+    // `buildNightCascade` a DÉJÀ journalisé le titre + tout ce qui suit l'entretien (#216) — rien à
+    // influencer cette nuit-ci (PB pleins, pas de campement) → enchaîne directement la suivante.
+    openRestNight(get, set, p, remaining, []);
+  } else if (p.travelHalt) {
+    continueTravelAfterNight(get, set);
+  }
+}
+
+/** Reprend le repos MULTI-JOURS (#347) à la clôture d'une nuit (`dispatchCascadeDone`, `combatSlice.ts`,
+ *  `done.restNights`) : ouvre la nuit SUIVANTE tant que `nightsLeft > 0`. No-op silencieux — le
+ *  travelHalt de fin de séjour est repris par `openRestNight` lui-même sur la DERNIÈRE nuit. */
+export function continueRestNights(get: Get, set: Set, ctx: { p: PendingRest; nightsLeft: number }): void {
+  if (ctx.nightsLeft <= 0) return;
+  openRestNight(get, set, ctx.p, ctx.nightsLeft, []);
 }
