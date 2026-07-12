@@ -269,7 +269,7 @@ export const BATTLE_COND_LABEL: Record<BattleCond, string> = {
 export const BATTLE_TARGET_LABEL: Record<BattleOutcomeTarget, string> = {
   might: 'Puissance courante', startMight: 'Puissance de départ',
   allyTestMod: 'Mod. Tests alliés (permanent)', firstRoundBonus: 'Bonus au 1er Round',
-  planningBonus: 'Bonus à la Planification (à venir)',
+  planningBonus: 'Bonus au prochain Test de Planification',
 };
 export const BATTLE_SCALE_LABEL: Record<BattleOutcomeScale, string> = {
   fixed: 'Plat', perDR: '× DR', perHit: '× touches', perKill: '× ennemis tués',
