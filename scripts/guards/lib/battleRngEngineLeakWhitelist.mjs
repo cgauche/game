@@ -9,12 +9,20 @@
 // déjà listés, mais n'appelle jamais `rollTest(`/`d100(` EN DIRECT — seulement via des résolveurs
 // `resolve*` du moteur combat — d'où l'absence de cette entrée dans la whitelist SŒUR).
 
+// Ronde 2 (garde renforcé au niveau FICHIER, #370) : `portFlow.ts` et `tavernFlow.ts` appellent
+// `battleRng()` (pour `rollMerchantOpposition`/`rollTavernTest`, primitives à un seul jet) ET
+// `resolveOpposed`/`resolveTavernRound` — mais ces deux résolveurs sont PURS (`TestResult, TestResult
+// → issue`, jamais de rng en paramètre, direct ou hoisté) : la coexistence dans le fichier est
+// disjointe, pas un contournement du seam.
+
 import { ROLL_SEAM_FILE_WHITELIST } from './rollSeamWhitelist.mjs';
 
 /** @type {Set<string>} */
 export const BATTLE_RNG_ENGINE_LEAK_WHITELIST = new Set([
   ...ROLL_SEAM_FILE_WHITELIST,
   'src/state/combatSlice.ts',
+  'src/state/portFlow.ts',
+  'src/state/tavernFlow.ts',
 ]);
 
 /** @param {string} rel @returns {boolean} */

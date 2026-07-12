@@ -27,11 +27,11 @@ const scene = buildScene({
   terrain: 'planches',
   heroStart: [3, 7],
   startMessage:
-    'Embuscade sur le Reik (T2C) : votre barge fluviale est une COQUE à PV — un Coup Critique se résout sur ' +
-    'les tables du BATEAU FLUVIAL (T2C ch.5 : Gréement / Rames / Gouvernail / Coque / Superstructure → États ' +
-    'Dérive / Gouvernail brisé / Voie d’eau, Éclats +5), pas sur les tables de mer. En face : une barque de ' +
-    'pirates (leur équipage exposé encaisse Éclats & critiques « Équipage ») et une ANGUILLE DU REIK qui surgit ' +
-    'de l’eau (F65, Morsure +8, Constricteur). Repoussez l’abordage et abattez l’anguille !',
+    'Le batelier hurle et pointe l’aval : « Pirates à bâbord — et quelque chose de gros remue sous l’eau ! » Une ' +
+    'barque hérissée de rames fond sur la barge, son équipage prêt à l’abordage. Entre les deux coques, l’onde se ' +
+    'creuse : une anguille du Reik, énorme, s’enroule déjà autour d’un espar. Un Coup Critique sur le bois de la ' +
+    'barge peut briser le gréement, les rames ou le gouvernail, envoyer des éclats voler ou ouvrir une voie d’eau — ' +
+    'gare à quiconque reste sur le pont. Repoussez l’abordage et abattez l’anguille !',
   encounters: [
     {
       id: 'enc-fluvial',

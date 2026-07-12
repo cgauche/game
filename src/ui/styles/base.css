@@ -354,8 +354,8 @@ h3 {
   place-items: center;
   padding: 16px;
   background:
-    radial-gradient(ellipse at 50% -10%, rgba(201, 162, 39, 0.07), transparent 55%),
-    radial-gradient(ellipse at 50% 115%, rgba(110, 26, 16, 0.18), transparent 60%);
+    radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--gold) 7%, transparent), transparent 55%),
+    radial-gradient(ellipse at 50% 115%, color-mix(in srgb, var(--blood) 18%, transparent), transparent 60%);
   overflow-y: auto;
 }
 .menu-card {

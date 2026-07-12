@@ -136,6 +136,15 @@ describe('garde-fou « rng vivant → résolveur moteur » — un flux state/** 
     expect(scanBattleRngEngineLeak('src/state/x.ts', regressed).length).toBe(1);
   });
 
+  it('fail-closed : le scanner MORD le rng HOISTÉ (battleRng() et resolveXxx( sur des lignes séparées, #370)', () => {
+    const hoisted = [
+      "import { resolveTavernGame } from '../engine/tavernGame';",
+      "const rng = battleRng();",
+      "const res = resolveTavernGame(game, playerValue, opponentValue, rng);",
+    ].join('\n');
+    expect(scanBattleRngEngineLeak('src/state/x.ts', hoisted).length).toBe(1);
+  });
+
   it('zéro faux positif : une primitive roll*/valeur (testValue/effectiveChar) voisine d’un battleRng() sur une AUTRE ligne ne matche pas', () => {
     const clean = [
       "import { rollTavernTest } from '../engine/tavernGame';",

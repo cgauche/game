@@ -9,8 +9,10 @@
 // classe, pas le cas : tout AUTRE flux state/** qui ferait la même chose doit être rouge ICI.
 //
 // Détection : repère les IMPORTS nommés depuis un module `engine/` (fonctions de résolution
-// potentiellement « roule + décide »), puis les SITES D'APPEL de ces noms qui portent `battleRng` sur
-// la même ligne (le rng vivant passé en argument). Un fichier state/** NON listé dans la whitelist
+// potentiellement « roule + décide »), puis les SITES D'APPEL de ces noms — au niveau du FICHIER
+// entier (pas de la ligne) : si le même fichier appelle AUSSI `battleRng` quelque part (même via un
+// rng hoisté dans une variable avant d'être repassé au résolveur), c'est la COEXISTENCE des deux qui
+// est la violation, peu importe la ligne. Un fichier state/** NON listé dans la whitelist
 // (`battleRngEngineLeakWhitelist.mjs`) qui matche est un flux qui a contourné le seam. Module ESM pur
 // (node nu), même patron que `weatherTestModQuarantine.mjs`/`batchNavalQuarantine.mjs`.
 
@@ -55,22 +57,27 @@ export function collectEngineImportNames(contenu) {
 }
 
 /**
- * Scan complet d'un fichier : chaque ligne (hors commentaires) qui appelle un nom importé d'`engine/`
- * ET porte `battleRng` sur la MÊME ligne — un rng vivant remis à un résolveur moteur au call-site.
+ * Scan complet d'un fichier, à l'échelle du FICHIER (pas de la ligne) : si le fichier appelle AU
+ * MOINS UNE FOIS `battleRng` (n'importe où — y compris hoisté dans une variable réutilisée plus
+ * loin) ET appelle AU MOINS UNE FOIS un nom importé d'`engine/` au patron `resolveXxx`, chaque site
+ * d'appel `resolveXxx(` est une violation — la coexistence des deux capacités dans le même fichier
+ * est le signal, pas leur ligne commune (le hoisting `const rng = battleRng(); resolveX(rng)`
+ * contourne sinon la détection).
  * @param {string} relPath @param {string} contenu
  * @returns {{ line: number, name: string, detail: string }[]}
  */
 export function scanBattleRngEngineLeak(relPath, contenu) {
   const engineNames = collectEngineImportNames(contenu);
   if (engineNames.length === 0) return [];
-  const findings = [];
   const stripped = stripCommentsOnly(contenu);
+  if (!/\bbattleRng\s*\(/.test(stripped)) return [];
+  const findings = [];
   const lines = stripped.split('\n');
   for (const name of engineNames) {
     const callRx = new RegExp(`\\b${escapeRegex(name)}\\s*\\(`);
     lines.forEach((line, i) => {
       if (/^\s*import/.test(line)) return;
-      if (callRx.test(line) && /\bbattleRng\b/.test(line)) {
+      if (callRx.test(line)) {
         findings.push({ line: i + 1, name, detail: line.trim() });
       }
     });

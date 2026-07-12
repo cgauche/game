@@ -518,7 +518,7 @@
 }
 .ts-section { margin-top: 18px; }
 .ts-section > .mini-title { margin-bottom: 8px; }
-.ts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 12px; }
+.ts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr)); gap: 12px; }
 .ts-card { border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: var(--bg); display: flex; flex-direction: column; gap: 6px; }
 .ts-head { display: flex; align-items: center; gap: 8px; font-size: 15px; }
 .ts-ico { font-size: 20px; }

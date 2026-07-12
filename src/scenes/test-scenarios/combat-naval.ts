@@ -50,7 +50,10 @@ const scene = buildScene({
   terrain: 'planches',
   heroStart: [2, 6],
   startMessage:
-    'Bataille navale (MDG) : tes 2 canonniers SERVENT les pierriers de votre barge (bouton « Servir le pierrier ») — bombardez la cogue ! C’est une COQUE à PV, BLINDÉE de fer (+2 PA → elle encaisse plus longtemps). Un Coup Critique se résout sur les tables de NAVIRE (Voie d’eau / En flammes). Les pirates sur le pont sont l’ÉQUIPAGE exposé : un critique « Équipage » ou les Éclats leur reviennent. Les 2 autres héros abordent.',
+    'Le capitaine rugit par-dessus le vent : « Cogue pirate à l’horizon, coque blindée de fer — ça va cogner dur ! ' +
+    'Canonniers, à vos pièces, servez les pierriers et arrosez-la de boulets ! Un coup bien placé peut l’ouvrir à ' +
+    'la voie d’eau ou y mettre le feu. Le reste, apprêtez les grappins, on aborde ! » Sur le pont adverse, les ' +
+    'pirates restent exposés au feu et à l’abordage.',
   encounters: [
     {
       id: 'enc-naval',
