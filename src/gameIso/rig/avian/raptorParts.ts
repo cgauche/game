@@ -111,9 +111,10 @@ export function raptorHead(view: View): string {
     `<path d="M0 -2.3 L5.8 -1" stroke="#241505" stroke-width="0.8" fill="none"/>` + // arcade féroce
     `<circle cx="3" cy="0.3" r="1.5" fill="#e8b93c"/><circle cx="3.2" cy="0.4" r="0.85" fill="#140a04"/>` +
     `<path d="M5.5 -2.6 Q7.6 -3.6 9.4 -2.6 L9 0 L5.8 0 Z" fill="@cuir" stroke="${BEAK_O}" stroke-width="0.4"/>` + // cire
-    `<path d="M7 1 L13.2 2.6 L11 4.8 L6.4 3 Z" fill="#40140c"/>` + // gueule ouverte
-    `<path d="M8 -3 Q15 -2.6 17 0.4 Q17.6 2.4 15 5.6 L13.4 3.6 Q14.6 1.6 11 0.8 L7.4 0.4 Z" fill="${BEAK}" stroke="${BEAK_O}" stroke-width="0.6"/>` + // mandibule sup.
-    `<path d="M15.6 1.4 Q17.2 3 15 5.6 L13.4 3.6 Q14.5 2.7 14.5 1.2 Z" fill="${BEAK_TIP}"/>` + // crochet noir
-    `<path d="M6.4 2.6 L12 5 Q12 6.8 9.4 6.5 L5.4 4.4 Z" fill="#bfb49c" stroke="${BEAK_O}" stroke-width="0.5"/>` + // mandibule inf.
+    `<path d="M7 0.8 L15.2 2.8 L12.6 6.4 L6.2 3.2 Z" fill="#40140c"/>` + // gueule ouverte
+    `<path d="M7.6 -3.8 Q17.2 -4 20 -0.2 Q21 3.2 16.6 9 L14.4 5.6 Q16.2 2 11.6 0.9 L7.2 0.4 Z" fill="${BEAK}" stroke="${BEAK_O}" stroke-width="0.6"/>` + // mandibule sup.
+    `<path d="M17.8 0.4 Q20.2 3.6 16.6 9 L14.4 5.6 Q16.1 3.6 15.9 0.4 Z" fill="${BEAK_TIP}"/>` + // crochet noir
+    `<path d="M6.2 2.8 L14.2 5.8 Q14.6 8.2 10.6 7.7 L5.2 4.6 Z" fill="#bfb49c" stroke="${BEAK_O}" stroke-width="0.5"/>` + // mandibule inf.
+    `<path d="M13.2 5.5 Q14.9 6.4 14.2 8.1" stroke="${BEAK_TIP}" stroke-width="0.9" stroke-linecap="round" fill="none"/>` + // pointe inf.
     `</g>`;
 }

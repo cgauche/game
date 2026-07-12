@@ -385,16 +385,17 @@ function neck(p: QuadProps): string {
       lionHeadlet(1, -L * 1.18, -8, 1.12) + `</g>`;
   }
   if (p.head === 'dechiqueteur') { // 5 cous serpentins étagés (artwork ZI p.58) : 2 têtes au rang
-    // LOINTAIN (rouge sombre) + 3 au rang PROCHE (rouge vif) — entrelacs dressé au-dessus du garrot
+    // LOINTAIN (rouge sombre) + 3 au rang PROCHE (rouge vif) — chaque cou ÉMERGE du garrot/poitrail
+    // en un point PROPRE (racines étalées, jamais une tige commune) et ondule à sa façon
     const L = 30 * p.neckLen;
     return `<g>` +
-      hydraNeck(-3, 2, -15, -L * 0.55, -20, -L * 0.95, true) +
-      hydraNeck(1, 2, 9, -L * 0.6, 13, -L * 1.05, true) +
+      hydraNeck(-11, 4, -25, -L * 0.48, -20, -L * 0.95, true) +
+      hydraNeck(-2, 1, 17, -L * 0.58, 13, -L * 1.05, true) +
       shredderHeadlet(-20, -L * 0.95, -30, 0.9, true) +
       shredderHeadlet(13, -L * 1.05, 8, 0.92, true) +
-      hydraNeck(-4, 3, -12, -L * 0.4, -15, -L * 0.62) +
-      hydraNeck(0, 3, 2, -L * 0.55, 4, -L * 0.9) +
-      hydraNeck(4, 3, 13, -L * 0.36, 20, -L * 0.58) +
+      hydraNeck(-7, 6, -20, -L * 0.3, -15, -L * 0.62) +
+      hydraNeck(1, 3, 8, -L * 0.55, 4, -L * 0.9) +
+      hydraNeck(7, 4, 18, -L * 0.26, 20, -L * 0.58) +
       shredderHeadlet(-15, -L * 0.62, -26, 1.02) +
       shredderHeadlet(4, -L * 0.9, -4, 1.1) +
       shredderHeadlet(20, -L * 0.58, 24, 1.0) + `</g>`;
@@ -636,15 +637,16 @@ function tail(p: QuadProps): string {
   }
   if (p.tail === 'leonine') // queue de lion : fouet fin + GROS toupet terminal (tell de l'arrière félin)
     return `<path d="M0 0 Q13 7 17 18 Q19 28 14 33 Q16 24 10 15 Q3 8 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M14 30 Q9 33 10 38 Q13 41 16 38 Q20 40 21 35 Q24 33 21 29 Q19 26 14 30 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
-  if (p.tail === 'dard') // queue de SCORPION (manticore) : long fouet SEGMENTÉ qui file derrière puis
-    // s'ARQUE au-dessus de la croupe, bulbe terminal + DARD courbe (même compensation que 'reptile')
-    return `<g transform="rotate(-34) scale(-1,1)">` +
-      `<path d="M0 0 Q18 7 30 1 Q41 -5 44 -16 Q45.5 -25 40 -30" fill="none" stroke="@corps" stroke-width="6" stroke-linecap="round"/>` +
-      `<path d="M0 0 Q18 7 30 1 Q41 -5 44 -16 Q45.5 -25 40 -30" fill="none" stroke="@corpsO" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>` +
-      `<path d="M8 5 q0.6 -3.2 -0.2 -6 M16 5.4 q0.6 -3.2 -0.2 -6.2 M24 3.6 q0.4 -3 -0.6 -5.8 M31.6 -0.4 q-0.2 -2.8 -1.6 -5.2 M37.6 -5.8 q-0.8 -2.6 -2.8 -4.4 M41.6 -12 q-1.4 -2.2 -3.4 -3.4" stroke="@corpsO" stroke-width="0.9" fill="none"/>` + // anneaux de segments
-      `<path d="M12 -1.6 l1.6 -3.8 l1.4 3.4 M22 -2.4 l1.8 -3.6 l1.2 3.4 M31 -6 l2.4 -3 l0.6 3.4" stroke="@corpsO" stroke-width="0.8" fill="none" stroke-linecap="round"/>` + // barbelures
-      `<circle cx="40" cy="-30" r="4.6" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` + // bulbe à venin
-      `<path d="M42.6 -33.4 Q49 -38.6 50.6 -45.4 Q44.6 -42 41.2 -38.6 Q39.6 -35.6 42.6 -33.4 Z" fill="@cuir" stroke="#1a140e" stroke-width="0.5"/>` + // le dard
+  if (p.tail === 'dard') // queue de SCORPION (manticore) : fouet SEGMENTÉ qui s'ARQUE à la
+    // VERTICALE derrière la croupe puis crochète vers les ailes, bulbe terminal + DARD courbe.
+    // rotate(-42) compense l'os queue (angle 42) → coordonnées en axes MONDE, -y = vers le haut ;
+    // filé vers -x le fouet sortait du cadre 120×150 (pivot x≈10) → queue lue « lisse » en QC.
+    return `<g transform="rotate(-42)">` +
+      `<path d="M0 0 Q-3 -10 -2 -20 Q-1 -30 5 -36.5 Q8.5 -39.5 12 -39.5" fill="none" stroke="@corps" stroke-width="6" stroke-linecap="round"/>` +
+      `<path d="M0 0 Q-3 -10 -2 -20 Q-1 -30 5 -36.5 Q8.5 -39.5 12 -39.5" fill="none" stroke="@corpsO" stroke-width="1.1" opacity="0.5" stroke-linecap="round"/>` +
+      `<path d="M-4.8 -6 q3.2 1.2 6 0.6 M-5.6 -13 q3.4 1.2 6.2 0.5 M-5 -20 q3.3 1.1 6.2 0.4 M-4 -26.6 q3.2 1.2 6 0.6 M-1 -32.4 q2.8 1.6 5.4 1.2 M4 -36.8 q2 2 4.6 2.2" stroke="@corpsO" stroke-width="0.9" fill="none"/>` + // anneaux de segments
+      `<circle cx="13" cy="-39.5" r="4.4" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` + // bulbe à venin
+      `<path d="M15.8 -42.6 Q21.6 -47.8 23.4 -54.4 Q17.6 -50.8 14.4 -47.4 Q12.8 -44.6 15.8 -42.6 Z" fill="@cuir" stroke="#1a140e" stroke-width="0.5"/>` + // le dard
       `</g>`;
   if (p.tail === 'crin') return `<path d="M0 0 Q10 6 10 18 Q9 30 4 34 Q7 24 3 14 Q1 6 0 4 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>`;
   if (p.tail === 'touffe') return `<path d="M0 0 Q10 6 13 18 Q15 28 9 31 Q12 22 6 14 Q2 7 0 5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M11 16 Q16 24 10 30 Q12 22 8 16 Z" fill="@cheveux"/>`;
@@ -685,9 +687,9 @@ function headFront(p: QuadProps): string {
       dragonHeadlet(-12, -13, -125, 0.9) + raptorHeadlet(12, -13, -55, 0.9) + lionHeadlet(0, -17, -90, 1.0) + `</g>`;
   if (p.head === 'dechiqueteur') // 5 têtes rouges dressées : 2 lointaines hautes + 3 proches basses
     return `<g>` +
-      hydraNeck(-2, 8, -8, -7, -11, -19, true) + hydraNeck(2, 8, 8, -7, 11, -19, true) +
+      hydraNeck(-5, 7, -10, -7, -11, -19, true) + hydraNeck(5, 7, 10, -7, 11, -19, true) +
       shredderHeadlet(-11, -19, -115, 0.85, true) + shredderHeadlet(11, -19, -65, 0.85, true) +
-      hydraNeck(-4, 8, -8, -2, -11, -9) + hydraNeck(0, 8, 0, -3, 0, -12) + hydraNeck(4, 8, 8, -2, 11, -9) +
+      hydraNeck(-8, 9, -12, -2, -11, -9) + hydraNeck(0, 10, 1, -3, 0, -12) + hydraNeck(8, 9, 12, -2, 11, -9) +
       shredderHeadlet(-11, -9, -120, 0.95) + shredderHeadlet(0, -12, -90, 1.0) + shredderHeadlet(11, -9, -60, 0.95) + `</g>`;
   if (p.head === 'hydre') // 6 têtes dressées au-dessus du corps : rang lointain sombre haut + rang proche bas
     return `<g>` +
@@ -847,9 +849,9 @@ function napeBack(p: QuadProps): string {
     const spikes = (x: number, y: number) =>
       `<path d="M${x} ${y} l-1.4 -2.6 l0.4 2.4 l-1.8 -1.6 l0.9 2.2" stroke="@corpsO" stroke-width="0.7" fill="none"/>`;
     return `<g>` +
-      hydraNeck(-2, 6, -8, -9, -11, -20, true) + hydraNeck(2, 6, 8, -9, 11, -20, true) +
+      hydraNeck(-5, 5, -10, -9, -11, -20, true) + hydraNeck(5, 5, 10, -9, 11, -20, true) +
       `<ellipse cx="-11" cy="-20" rx="2.6" ry="3" fill="@cheveuxO"/><ellipse cx="11" cy="-20" rx="2.6" ry="3" fill="@cheveuxO"/>` +
-      hydraNeck(-4, 6, -8, -4, -11, -12) + hydraNeck(0, 6, 0, -6, 0, -14) + hydraNeck(4, 6, 8, -4, 11, -12) +
+      hydraNeck(-8, 7, -12, -4, -11, -12) + hydraNeck(0, 8, 1, -6, 0, -14) + hydraNeck(8, 7, 12, -4, 11, -12) +
       `<ellipse cx="-11" cy="-12" rx="2.8" ry="3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="0" cy="-14" rx="3" ry="3.4" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="11" cy="-12" rx="2.8" ry="3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` +
       spikes(-11, -14.6) + spikes(0, -16.8) + spikes(11, -14.6) + `</g>`;
   }
@@ -955,6 +957,18 @@ function wingFoldedProfile(p: QuadProps, far: boolean): string {
   const c = far ? '@aileO' : '@aile';
   const L = 46 * p.bodyLen; // longueur du pli (suit l'allongement du corps)
   if (p.wings === 'membrane') { // membrane pliée : doigts rabattus en faisceau le long du dos + griffe au poignet
+    if (p.wingPose === 'deployees') // PAIRE demi-ouverte DÉPLOYÉE (dragon, artwork LDB p.321) : même voile
+      // dressée que 'dressees' mais lisible en aile MEMBRANEUSE — panneaux pâles translucides (@aileH)
+      // entre les doigts côté proche, aile lointaine basculée vers la queue montrant son ENVERS clair
+      return `<g data-wing="folded" transform="rotate(${far ? -24 : 0})" opacity="${far ? 0.92 : 1}">` +
+        `<path d="M0 0 Q-3 -20 -13 -44 L-28 -12 Q-24 -9 -20 -4 Q-16 -9 -11 -2 Q-6 -6 0 2 Z" fill="${far ? '@aileH' : '@aile'}" stroke="@aileO" stroke-width="0.7"/>` +
+        (far ? '' :
+          `<path d="M-13 -44 Q-22 -28 -28 -12 Q-24 -9 -20 -4 Q-19 -26 -13 -44 Z" fill="@aileH" opacity="0.4"/>` +
+          `<path d="M-13 -44 Q-19 -26 -20 -4 Q-16 -9 -11 -2 Q-13 -24 -13 -44 Z" fill="@aileH" opacity="0.24"/>`) +
+        `<path d="M0 0 Q-7 -24 -13 -44" fill="none" stroke="@aileO" stroke-width="2.6" stroke-linecap="round"/>` +
+        `<path d="M-13 -44 Q-22 -28 -28 -12 M-13 -44 Q-19 -26 -20 -4 M-13 -44 Q-13 -24 -11 -2" fill="none" stroke="@aileO" stroke-width="1.4" stroke-linecap="round"/>` +
+        `<path d="M-13 -44 l-2.6 -4.6 l4 1.8 Z" fill="${far ? '@aileH' : '@aile'}" stroke="@aileO" stroke-width="0.6"/>` + // griffe de poignet au sommet
+        `</g>`;
     if (p.wingPose === 'dressees') // repliées DRESSÉES : membrane à demi-ouverte POINTÉE vers le haut,
       // poignet griffu au sommet (manticore/chauve-souris au repos — pas couchée façon planeur)
       return `<g data-wing="folded" opacity="${far ? 0.9 : 1}">` +
@@ -974,7 +988,7 @@ function wingFoldedProfile(p: QuadProps, far: boolean): string {
   // lointaine (far) est plus couchée en arrière que la proche → deux silhouettes distinctes en V.
   // Même vocabulaire wingPose que la membrane (manticore) ; défaut plumes = couchées ci-dessous.
   if (p.wingPose === 'dressees') {
-    const rot = far ? -26 : -4;
+    const rot = (far ? -26 : -4) + (p.wingLift ?? 0);
     return `<g data-wing="folded" transform="rotate(${rot})" opacity="${far ? 0.92 : 1}">` +
       // lame LARGE : bord d'attaque (avant) → pointe DIGITÉE au sommet → bord de fuite vers l'épaule
       `<path d="M4 0 Q0 -6 -3 -14 Q-6 -23 -12 -30 Q-17 -36 -24 -40 l-1 3.6 -3.8 -1 1 3.8 -3.8 -0.2 1.1 3.6 -3.7 0.7 Q-30 -21 -24 -14 Q-17 -5 -10 1 Q-3 6 5 4 Z" fill="${c}" stroke="@aileO" stroke-width="0.7"/>` +
@@ -1041,7 +1055,7 @@ function wingSpread(p: QuadProps): string {
 // grandes « oreilles d'âne » près de la tête (verdict unanime des juges aveugles, lot 4).
 function wingFoldedEnd(p: QuadProps): string {
   const c = p.wings === 'membrane' ? '@aileO' : '@aile';
-  if (p.wingPose === 'dressees') // pliées DRESSÉES vues de bout : panneau qui MONTE en pointe
+  if (p.wingPose === 'dressees' || p.wingPose === 'deployees') // pliées DRESSÉES vues de bout : panneau qui MONTE en pointe
     // au-dessus de l'épaule (silhouette de chauve-souris au repos), griffe au sommet
     return `<g data-wing="folded">` +
       `<path d="M0 -2 Q4 -10 6.5 -19 Q8 -23.5 9.6 -21.5 Q10 -8 8 6 Q5.5 12 2.6 9 Q1 4 0 0 Z" fill="${c}" stroke="@aileO" stroke-width="0.6"/>` +
@@ -1065,8 +1079,12 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
   // Décor PAR-OS propre à la créature (prop `deco` — précédent : épave du crabe, CrabProps.deco) :
   // SVG local à l'os, APPOSÉ après l'art du gabarit, uniquement là où l'os porte déjà un art dans
   // la vue courante (un os sans art dans cette vue n'affiche pas de décor flottant).
+  // Clé `os#vue` = décor limité à cette vue (cf. QuadProps.deco) ; clé nue = toutes les vues.
   const withDeco = (r: Partial<Record<QuadBoneId, string>>): Partial<Record<QuadBoneId, string>> => {
-    if (p.deco) for (const [id, svg] of Object.entries(p.deco) as [QuadBoneId, string][]) if (svg && r[id]) r[id] += svg;
+    if (p.deco) for (const [key, svg] of Object.entries(p.deco) as [string, string][]) {
+      const [id, vue] = key.split('#') as [QuadBoneId, View | undefined];
+      if (svg && (!vue || vue === view) && r[id]) r[id] += svg;
+    }
     return r;
   };
   // Ailes face/dos : déployées vers ±x, ou bosses pliées au garrot (aileG = miroir scale -1).

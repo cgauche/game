@@ -89,7 +89,13 @@ function gel(p: HulkProps, view: View): string {
   // masse gélatineuse TRANSLUCIDE dressée (plus haute que large), contour bosselé irrégulier,
   // fill semi-transparent + fine membrane rosâtre (@corpsO) — SANS visage
   const massD = `M${W(-19)} 17 Q${W(-27)} 13 ${W(-23)} 4 Q${W(-29)} -2 ${W(-22)} -9 Q${W(-27)} -17 ${W(-18)} -23 Q${W(-23)} -30 ${W(-13)} -34 Q${W(-12)} -41 ${W(-3)} -40.5 Q${W(6)} -43 ${W(10)} -36.5 Q${W(19)} -34.5 ${W(15)} -27 Q${W(24)} -22 ${W(19)} -15 Q${W(26)} -8 ${W(21)} -1 Q${W(26)} 7 ${W(18)} 14 Q${W(9)} 19.5 0 19.5 Q${W(-11)} 19.5 ${W(-19)} 17 Z`;
-  const mass = `<path d="${massD}" fill="@corps" fill-opacity="0.42" stroke="none"/>`;
+  const mass = `<path d="${massD}" fill="@corps" fill-opacity="0.62" stroke="none"/>`;
+  // dégradé interne (artwork ZI 48 : gelée CLAIRE et lumineuse en haut → s'assombrit en fondant
+  // dans la vase du socle) — deux voiles additifs sur tokens existants, pas de <defs>
+  const glow = `<path d="M${W(-15)} -22 Q${W(-19)} -31 ${W(-12)} -35 Q${W(-11)} -41 ${W(-3)} -40 Q${W(6)} -42 ${W(9)} -36 Q${W(17)} -34 ${W(14)} -27 Q${W(16)} -20 ${W(11)} -14 Q${W(1)} -18 ${W(-9)} -14 Q${W(-16)} -16 ${W(-15)} -22 Z" fill="@corpsH" opacity="0.38"/>` +
+    `<path d="M${W(-17)} -13 Q${W(-4)} -18 ${W(10)} -13 Q${W(14)} -6 ${W(11)} 0 Q0 -4 ${W(-12)} 0 Q${W(-18)} -6 ${W(-17)} -13 Z" fill="@corpsH" fill-opacity="0.2"/>`;
+  const shade = `<path d="M${W(-21)} 3 Q${W(-11)} 8 0 8.5 Q${W(12)} 8 ${W(20)} 2 Q${W(25)} 8 ${W(18)} 14 Q${W(9)} 19.5 0 19.5 Q${W(-11)} 19.5 ${W(-19)} 17 Q${W(-26)} 12 ${W(-21)} 3 Z" fill="@cheveux" opacity="0.45"/>` +
+    `<path d="M${W(-19)} 11 Q${W(-8)} 15 0 15.2 Q${W(9)} 15 ${W(17)} 10 Q${W(21)} 14 ${W(18)} 14 Q${W(9)} 19.5 0 19.5 Q${W(-11)} 19.5 ${W(-19)} 17 Q${W(-23)} 14 ${W(-19)} 11 Z" fill="@cheveuxO" opacity="0.4"/>`;
   const membrane = `<path d="${massD}" fill="none" stroke="@corpsO" stroke-width="1.3" stroke-opacity="0.8"/>` +
     `<path d="${massD}" fill="none" stroke="@corpsH" stroke-width="0.5" stroke-opacity="0.45" transform="scale(0.965)"/>`;
   // LE trait distinctif (ZI 48) : proies ENGLOUTIES en silhouettes sombres visibles PAR
@@ -118,11 +124,11 @@ function gel(p: HulkProps, view: View): string {
   const inner = view === 'back'
     ? `<g opacity="0.75" transform="scale(-1,1)">${skull}${ribs}${bones}${sword}${debris}</g>`
     : `<g transform="translate(${view === 'profile' ? W(4) : 0},0)">${skull}${ribs}${bones}${sword}${debris}</g>`;
-  return `<g>${pool}${ring}${sludge}${droplet}${mass}${inner}${bubbles}${sheen}${membrane}</g>`;
+  return `<g>${pool}${ring}${sludge}${droplet}${mass}${glow}${shade}${inner}${bubbles}${sheen}${membrane}</g>`;
 }
 function gelArm(sx: number): string {
   // pseudopode translucide court (repère d'épaule pour l'anim), même matière que la masse
-  return `<path d="M0 -3 Q${sx * 10} -1 ${sx * 9.5} 8 Q${sx * 9} 15 ${sx * 3} 16 Q${sx * 6} 10 ${sx * 4} 4 Q${sx * 2} 0 0 2 Z" fill="@corps" fill-opacity="0.42" stroke="@corpsO" stroke-width="0.9" stroke-opacity="0.75"/>` +
+  return `<path d="M0 -3 Q${sx * 10} -1 ${sx * 9.5} 8 Q${sx * 9} 15 ${sx * 3} 16 Q${sx * 6} 10 ${sx * 4} 4 Q${sx * 2} 0 0 2 Z" fill="@corps" fill-opacity="0.62" stroke="@corpsO" stroke-width="0.9" stroke-opacity="0.75"/>` +
     `<circle cx="${sx * 6}" cy="6" r="1.2" fill="@corpsH" opacity="0.4"/>`;
 }
 function bruteBody(p: HulkProps, view: View): string {
@@ -136,20 +142,36 @@ function bruteBody(p: HulkProps, view: View): string {
     `<ellipse cx="${W(25.5)}" cy="-18" rx="2.8" ry="4.4" fill="@corps" stroke="@corpsO" stroke-width="0.7" transform="rotate(-12 ${W(25.5)} -18)"/>` +
     `<ellipse cx="${W(-8)}" cy="-39" rx="4.4" ry="2.6" fill="@corps" stroke="@corpsO" stroke-width="0.7" transform="rotate(-8 ${W(-8)} -39)"/>`;
   const dome = `<path d="M${W(-11)} -33 Q${W(-10)} -43.5 ${W(-1)} -44 Q${W(9)} -43.5 ${W(10)} -32 Q${W(3)} -37 ${W(-4)} -37.5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>`;
-  // PAS de jambes : le bas du corps fond en jupe de vase qui dégouline (drips) jusqu'à une
-  // flaque lobée, d'où sortent des tendrons de racines — LE trait distinctif de l'artwork
-  const pool = `<path d="M${W(-24)} 27 Q${W(-27)} 24.5 ${W(-19)} 24 Q${W(-13)} 22.5 ${W(-7)} 23.8 Q0 22.2 ${W(8)} 23.8 Q${W(16)} 22.6 ${W(21)} 24.6 Q${W(27)} 25.8 ${W(23)} 28 Q${W(14)} 30.4 0 30.4 Q${W(-15)} 30.4 ${W(-24)} 27 Z" fill="@corpsO" opacity="0.5"/>`;
-  const roots = `<path d="M${W(-14)} 25 q-4 2.4 -7.4 1.6 M${W(12)} 24.5 q4.4 2 7.8 0.8 M${W(2)} 27 q1.8 2.4 4.8 2.6 M${W(-5)} 27.5 q-2 2.2 -4.8 2.2" stroke="@cuir" stroke-width="1.1" fill="none" opacity="0.8" stroke-linecap="round"/>`;
-  const skirt = `<path d="M${W(-16)} 4 Q${W(-19)} 14 ${W(-17)} 22 Q${W(-12)} 26 ${W(-8)} 24 Q${W(-4)} 27 0 25.5 Q${W(5)} 28 ${W(9)} 25 Q${W(14)} 26.5 ${W(17)} 21 Q${W(19)} 13 ${W(16)} 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.9"/>`;
-  const drips = `<path d="M${W(-13)} 23 q-1.6 6 -0.2 9.6 q2 -1 2.2 -5.2 q0.8 4.6 2.6 5.6 q1.4 -2.4 0.6 -7.6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
-    `<path d="M${W(-3)} 25 q-0.8 5.6 0.6 8.8 q1.8 -1.2 1.8 -5 q1 4 2.4 4.6 q1 -2.6 0.2 -7.4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
-    `<path d="M${W(8)} 24 q0.4 6.4 2 9 q1.6 -1.6 1.2 -5.6 q1.2 3.6 2.6 4 q0.6 -3 -0.6 -7.2 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>`;
+  // PAS de jambes : le bas du corps FOND en flaque de vase OPAQUE (les gouttes pointues et
+  // régulières lisaient « orteils griffés », verdict ronde 2) — jupe à bord bas DÉCHIQUETÉ qui
+  // plonge dans la flaque, langues de boue à bout ROND, mèches végétales pendantes, tendrons
+  const pool = `<path d="M${W(-28)} 27 Q${W(-33)} 23.5 ${W(-24)} 22.6 Q${W(-15)} 21 ${W(-8)} 22.8 Q0 21.2 ${W(9)} 22.8 Q${W(17)} 21.4 ${W(24)} 23.2 Q${W(31)} 25 ${W(26)} 28 Q${W(15)} 31 0 31 Q${W(-17)} 31 ${W(-28)} 27 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.8"/>` +
+    `<ellipse cx="${W(-12)}" cy="26" rx="5" ry="1.6" fill="@corps" opacity="0.35"/><ellipse cx="${W(11)}" cy="26.5" rx="4.2" ry="1.4" fill="@corps" opacity="0.3"/><ellipse cx="${W(-1)}" cy="24.5" rx="3.4" ry="1.1" fill="@corpsH" opacity="0.14"/>`;
+  const roots = `<path d="M${W(-16)} 25 q-4.6 2.2 -8.4 1 M${W(-22)} 27.5 q-3.4 1.6 -6 0.6 M${W(13)} 24.5 q4.8 1.8 8.4 0.4 M${W(20)} 27 q3.6 1.6 6.4 0.4 M${W(2)} 28 q2 2.2 5 2.2 M${W(-6)} 28.5 q-2.2 2 -5.2 1.8" stroke="@cuir" stroke-width="1.1" fill="none" opacity="0.85" stroke-linecap="round"/>`;
+  const skirt = `<path d="M${W(-17)} 3 Q${W(-21)} 13 ${W(-19)} 20.5 Q${W(-17.5)} 26 ${W(-13.5)} 24 Q${W(-12.5)} 28 ${W(-9)} 25.5 Q${W(-7.5)} 28.5 ${W(-4)} 26 Q${W(-2)} 29 ${W(1.5)} 26 Q${W(4)} 28.5 ${W(7)} 25.5 Q${W(9.5)} 28 ${W(12)} 24.5 Q${W(15)} 26.5 ${W(17.5)} 21.5 Q${W(20)} 13 ${W(17)} 3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.9"/>`;
+  const drips = `<path d="M${W(-14)} 23 Q${W(-15.6)} 27.5 ${W(-14.2)} 30.5 Q${W(-12.6)} 31.6 ${W(-11.8)} 29 Q${W(-11.2)} 26 ${W(-12)} 23.5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.55"/>` +
+    `<path d="M${W(-3.5)} 25 Q${W(-4.6)} 29.5 ${W(-3)} 32.5 Q${W(-1.2)} 33.4 ${W(-0.6)} 30 Q${W(-0.2)} 27 ${W(-1)} 25.2 Z" fill="@corps" stroke="@corpsO" stroke-width="0.55"/>` +
+    `<path d="M${W(8.5)} 24.5 Q${W(8)} 28.5 ${W(9.6)} 31 Q${W(11.2)} 31.8 ${W(11.6)} 28.6 Q${W(11.8)} 26 ${W(10.8)} 24.5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.55"/>`;
+  const skirtStrands = `<path d="M${W(-16)} 17 q-1.2 5.4 0.2 9.4 M${W(-6.5)} 21 q-0.8 5 0.4 8.6 M${W(4.5)} 21.5 q0.6 4.8 -0.4 8.2 M${W(14)} 18 q1 4.8 0.2 8.6" stroke="@cheveux" stroke-width="1.3" fill="none" stroke-linecap="round"/>` +
+    `<path d="M${W(-11)} 23 q-0.4 4 0.6 6.6 M${W(9.5)} 22.5 q0.8 3.8 0 6.6 M${W(0.5)} 24 q0.4 4 -0.4 6.8" stroke="@cuir" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.85"/>`;
   // matière grumeleuse et FILANDREUSE : fibres qui COULENT le long de la masse (jamais de
   // stries horizontales — elles lisaient « bedaine souriante »), enchevêtrements, plaques de
   // mousse irrégulières, mèches pendantes vers le BAS
-  const fibers = `<path d="M${W(-21)} -26 Q${W(-18)} -18 ${W(-21)} -10 Q${W(-23)} -3 ${W(-20)} 2 M${W(-13)} -33 Q${W(-9)} -22 ${W(-13)} -12 Q${W(-16)} -3 ${W(-12)} 4 M${W(-5)} -18 Q${W(-2)} -11 ${W(-6)} -3 Q${W(-8)} 3 ${W(-5)} 8 M${W(6)} -16 Q${W(9)} -9 ${W(5)} -1 Q${W(3)} 5 ${W(7)} 9 M${W(13)} -31 Q${W(17)} -21 ${W(13)} -11 Q${W(10)} -4 ${W(14)} 3 M${W(20)} -25 Q${W(22)} -18 ${W(19)} -10 Q${W(17)} -4 ${W(20)} 1" stroke="@corpsO" stroke-width="1" fill="none" opacity="0.4"/>` +
-    `<path d="M${W(-17)} -14 Q${W(-15)} -8 ${W(-17)} -2 M${W(1)} -30 Q${W(3)} -25 ${W(0)} -20 M${W(10)} 4 Q${W(12)} 9 ${W(10)} 14" stroke="@corpsO" stroke-width="0.8" fill="none" opacity="0.3"/>`;
-  const tangle = `<path d="M${W(-16)} -24 q3 2 6.4 0.6 M${W(-11)} -8 q4 2.4 8 0.8 M${W(4)} -26 q4 1.6 7 -0.4 M${W(2)} -2 q4 2 8 0.4 M${W(-7)} 6 q4 2 9 0.6 M${W(10)} 15 q3.4 1.8 6.8 0.4" stroke="@cheveuxO" stroke-width="0.8" fill="none" opacity="0.5"/>`;
+  const fibers = `<path d="M${W(-21)} -26 Q${W(-18)} -18 ${W(-21)} -10 Q${W(-23)} -3 ${W(-20)} 2 M${W(-13)} -33 Q${W(-9)} -22 ${W(-13)} -12 Q${W(-16)} -3 ${W(-12)} 4 M${W(-5)} -18 Q${W(-2)} -11 ${W(-6)} -3 Q${W(-8)} 3 ${W(-5)} 8 M${W(6)} -16 Q${W(9)} -9 ${W(5)} -1 Q${W(3)} 5 ${W(7)} 9 M${W(13)} -31 Q${W(17)} -21 ${W(13)} -11 Q${W(10)} -4 ${W(14)} 3 M${W(20)} -25 Q${W(22)} -18 ${W(19)} -10 Q${W(17)} -4 ${W(20)} 1" stroke="@corpsO" stroke-width="1" fill="none" opacity="0.55"/>` +
+    `<path d="M${W(-17)} -14 Q${W(-15)} -8 ${W(-17)} -2 M${W(1)} -30 Q${W(3)} -25 ${W(0)} -20 M${W(10)} 4 Q${W(12)} 9 ${W(10)} 14 M${W(-24)} -18 Q${W(-22)} -12 ${W(-24)} -6 M${W(23)} -16 Q${W(24)} -10 ${W(22)} -4" stroke="@corpsO" stroke-width="0.8" fill="none" opacity="0.42"/>`;
+  const tangle = `<path d="M${W(-16)} -24 q3 2 6.4 0.6 M${W(-11)} -8 q4 2.4 8 0.8 M${W(4)} -26 q4 1.6 7 -0.4 M${W(2)} -2 q4 2 8 0.4 M${W(-7)} 6 q4 2 9 0.6 M${W(10)} 15 q3.4 1.8 6.8 0.4 M${W(-20)} 0 q3.4 2 7 0.8 M${W(14)} -18 q3.6 1.8 6.6 0.2" stroke="@cheveuxO" stroke-width="0.8" fill="none" opacity="0.55"/>`;
+  // fouillis boue-végétation ENTREMÊLÉ (l'aplat + 6 fibres lisait « lisse/uniforme ») :
+  // lianes drapées en travers, mottes de boue en relief, alvéoles sombres éparses
+  const vines = `<path d="M${W(-23)} -22 Q${W(-16)} -8 ${W(-20)} 5 M${W(-3)} -37 Q${W(2)} -24 ${W(-2)} -11 Q${W(-4)} -1 ${W(0)} 8 M${W(16)} -29 Q${W(21)} -15 ${W(16)} -2 Q${W(14)} 6 ${W(17)} 12" stroke="@cuir" stroke-width="1.1" fill="none" opacity="0.55" stroke-linecap="round"/>` +
+    `<path d="M${W(-20)} -13 q2.6 -1.8 5 -0.6 M${W(-1)} -24 q2.4 -1.6 4.8 -0.4 M${W(17)} -12 q-2.6 -1.6 -5 -0.6" stroke="@cuir" stroke-width="0.8" fill="none" opacity="0.45" stroke-linecap="round"/>`;
+  const clods = `<ellipse cx="${W(-10)}" cy="-20" rx="2.6" ry="1.7" fill="@corpsO" opacity="0.32" transform="rotate(18 ${W(-10)} -20)"/>` +
+    `<ellipse cx="${W(9)}" cy="-6" rx="3" ry="1.9" fill="@corpsO" opacity="0.28" transform="rotate(-14 ${W(9)} -6)"/>` +
+    `<ellipse cx="${W(-14)}" cy="1" rx="2.4" ry="1.6" fill="@corpsO" opacity="0.3" transform="rotate(10 ${W(-14)} 1)"/>` +
+    `<ellipse cx="${W(19)}" cy="6" rx="2.2" ry="1.5" fill="@corpsO" opacity="0.26" transform="rotate(-20 ${W(19)} 6)"/>` +
+    `<ellipse cx="${W(-2)}" cy="16" rx="2.8" ry="1.7" fill="@corpsO" opacity="0.3" transform="rotate(8 ${W(-2)} 16)"/>`;
+  const pocks = `<circle cx="${W(-15)}" cy="-17" r="1" fill="@cheveuxO" opacity="0.5"/><circle cx="${W(-22)}" cy="-8" r="0.9" fill="@cheveuxO" opacity="0.45"/>` +
+    `<circle cx="${W(12)}" cy="-22" r="1.1" fill="@cheveuxO" opacity="0.5"/><circle cx="${W(21)}" cy="-9" r="0.9" fill="@cheveuxO" opacity="0.45"/>` +
+    `<circle cx="${W(-8)}" cy="10" r="1" fill="@cheveuxO" opacity="0.48"/><circle cx="${W(6)}" cy="5" r="0.8" fill="@cheveuxO" opacity="0.42"/><circle cx="${W(13)}" cy="18" r="0.9" fill="@cheveuxO" opacity="0.45"/>`;
   const mossHi = `<path d="M${W(-18)} -29 q3 -4 7 -3 q3 1 2 4 q-4 3 -9 -1 Z" fill="@corpsH" opacity="0.35"/>` +
     `<path d="M${W(11)} -28 q4 -3 7 -1 q2 2 -1 4 q-4 2 -6 -3 Z" fill="@corpsH" opacity="0.28"/>` +
     `<path d="M${W(-5)} -12 q3 -2 6 0 q2 2 -1 3.6 q-4 1.6 -5 -3.6 Z" fill="@corpsH" opacity="0.22"/>` +
@@ -157,7 +179,7 @@ function bruteBody(p: HulkProps, view: View): string {
   const tufts = `<path d="M${W(-19)} 3 q-1 5 0.4 8 M${W(-9)} 11 q-0.6 4.6 0.8 7 M${W(3)} 11.5 q-0.4 4.6 1 7 M${W(13)} 9 q-0.2 4.6 1.2 6.6 M${W(21)} 0 q0.8 4.6 2.2 6.4" stroke="@cheveux" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
   // racines drapées sur les épaules — elles RETOMBENT (des tiges dressées lisaient « antennes »)
   const sprigs = `<path d="M${W(-14)} -35 q-4.6 -1.6 -7.4 1.6 M${W(10)} -34 q4.6 -1.6 6.8 2 M${W(-8)} -41 q-3.2 0.4 -4.4 3" stroke="@cuir" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
-  const base = pool + roots + drips + skirt + torso + lobes + dome + fibers + tangle + mossHi + tufts + sprigs;
+  const base = pool + roots + drips + skirt + skirtStrands + torso + lobes + dome + fibers + tangle + vines + clods + pocks + mossHi + tufts + sprigs;
   if (view === 'back') return `<g>${base}<path d="M0 -40 Q${W(3)} -12 0 14" stroke="@corpsO" stroke-width="1.1" opacity="0.4" fill="none"/></g>`;
   // masque végétal fondu dans la masse : arcade de mousse en surplomb, orbites en creux,
   // 2 lueurs pâles asymétriques, grappe d'alvéoles (crâne englouti) sur la joue, gueule-fente amère
@@ -185,7 +207,9 @@ function bruteArm(sx: number): string {
     `<path d="M${sx * 19} 38 q${sx * 4} 6 ${sx * 6} 8.6 q${sx * -0.2} -4.4 ${sx * -2.6} -9 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>`;
   const tips = `<path d="M${sx * 5.4} 49 q${sx * -0.4} 1.8 ${sx * 0.2} 2.6 M${sx * 11.6} 51 q${sx * 0.2} 1.8 ${sx * 1} 2.4 M${sx * 17.6} 49.6 q${sx * 0.8} 1.4 ${sx * 1.6} 1.8 M${sx * 23.6} 45.4 q${sx * 1} 1 ${sx * 1.8} 1.2" stroke="@cuir" stroke-width="1" fill="none" stroke-linecap="round"/>`;
   const strands = `<path d="M${sx * 21} 12 q${sx * 1} 5 0 8 M${sx * 22} 24 q${sx * 1} 4.6 ${sx * -0.2} 7.6 M${sx * 9} 20 q${sx * -0.8} 4.6 ${sx * 0.4} 7" stroke="@cheveux" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
-  const fibers = `<path d="M${sx * 12} -6 Q${sx * 16} 2 ${sx * 13} 10 Q${sx * 11} 18 ${sx * 14} 24 M${sx * 6} 0 Q${sx * 9} 7 ${sx * 7} 14 Q${sx * 6} 20 ${sx * 8} 26" stroke="@corpsO" stroke-width="0.9" fill="none" opacity="0.4"/>`;
+  const fibers = `<path d="M${sx * 12} -6 Q${sx * 16} 2 ${sx * 13} 10 Q${sx * 11} 18 ${sx * 14} 24 M${sx * 6} 0 Q${sx * 9} 7 ${sx * 7} 14 Q${sx * 6} 20 ${sx * 8} 26 M${sx * 17} 4 Q${sx * 20} 12 ${sx * 18} 20 Q${sx * 17} 28 ${sx * 19} 34" stroke="@corpsO" stroke-width="0.9" fill="none" opacity="0.55"/>` +
+    `<path d="M${sx * 8} 8 q${sx * 4} 1.8 ${sx * 7.4} 0.4 M${sx * 10} 26 q${sx * 3.6} 1.8 ${sx * 7} 0.6" stroke="@cheveuxO" stroke-width="0.7" fill="none" opacity="0.5"/>` +
+    `<ellipse cx="${sx * 15}" cy="18" rx="2.2" ry="1.5" fill="@corpsO" opacity="0.3" transform="rotate(${sx * 16} ${sx * 15} 18)"/>`;
   const lumps = `<circle cx="${sx * 13}" cy="12" r="2.6" fill="@corpsO" opacity="0.35"/><circle cx="${sx * 10}" cy="32" r="2.2" fill="@corpsO" opacity="0.3"/><ellipse cx="${sx * 17}" cy="28" rx="3" ry="2.2" fill="@corpsH" opacity="0.25"/>`;
   return limb + shoulder + fingers + tips + strands + fibers + lumps;
 }

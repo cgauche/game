@@ -48,6 +48,17 @@ const OV_GUEULE_PINCE =
 const OV_CRETE_EPAULE =
   `<path d="M-3 0.5 q1.4 -2.2 2.8 0 q-1.4 1.8 -2.8 0 Z M0.4 -1.2 q1.4 -2.2 2.8 0 q-1.4 1.8 -2.8 0 Z M1 2.4 q1.3 -2 2.6 0 q-1.3 1.7 -2.6 0 Z" fill="#8a2a1e" stroke="#421008" stroke-width="0.4"/>`;
 
+// Plaque rouge côtelée sur le tibia (jambières striées de l'artwork — la jambe chevre est
+// dessinée entière sur l'os cuisse, même ancrage que la def sœur Whiptongue).
+const OV_TIBIA_ROUGE =
+  `<path d="M-2.6 26 L-3.4 43 L0.6 43 L0 26 Z" fill="#8a2a1e" opacity="0.9"/>`
+  + `<path d="M-2.8 30 l3 0.2 M-3 34 l3.2 0.2 M-3.1 38 l3.4 0.2" stroke="#421008" stroke-width="0.5" opacity="0.85"/>`;
+
+// Segment rouge côtelé sur l'avant-bras porteur de la faux (accents rouges du bras de l'artwork).
+const OV_AVANTBRAS_ROUGE =
+  `<path d="M-3 2 Q-4 7 -3.2 12 L0.8 12 Q1.4 7 0.6 2 Z" fill="#8a2a1e" opacity="0.9"/>`
+  + `<path d="M-3.4 5 l4.4 0.2 M-3.6 8.4 l4.6 0.2" stroke="#421008" stroke-width="0.5" opacity="0.85"/>`;
+
 export const creature: CreatureDef = {
   name: "Fr'hough Mournbreath",
   plan: 'biped',
@@ -67,6 +78,9 @@ export const creature: CreatureDef = {
       { bone: 'mainD', svg: OV_FAUX, layer: 80 },
       { bone: 'epauleG', svg: OV_GUEULE_PINCE, scale: 'bone', layer: 60 },
       { bone: 'epauleD', svg: OV_CRETE_EPAULE, scale: 'bone', layer: 60 },
+      { bone: 'cuisseG', svg: OV_TIBIA_ROUGE, layer: 10 },
+      { bone: 'cuisseD', svg: OV_TIBIA_ROUGE, layer: 10 },
+      { bone: 'avantBrasD', svg: OV_AVANTBRAS_ROUGE, layer: 10 },
     ],
   },
 };

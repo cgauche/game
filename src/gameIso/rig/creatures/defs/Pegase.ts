@@ -3,7 +3,9 @@ import type { CreatureDef } from '../types';
 // Pégase — fidélité à l'artwork officiel (art-ref/ldb/page325_img7829.png) : cheval à robe
 // BLANC ARGENTÉ pommelée (markings 'taches', ombres gris-bleu), paire d'IMMENSES ailes
 // emplumées BRUN/DORÉ nettement distinctes de la robe (@aile*), portées DRESSÉES vers le
-// haut/arrière (wingPose 'dressees' + wingSpan ample — le trait le plus reconnaissable),
+// haut/arrière (wingPose 'dressees' + wingLift 26 : sur l'artwork les deux ailes balaient à
+// ~65-70° — l'aile lointaine (base -26°) doit elle aussi MONTER, jamais couchée sur la croupe ;
+// wingSpan ample),
 // encolure arquée portée HAUTE tête entière dans le cadre (neckAngle court), crinière et
 // queue fauves (@cheveux), COLLIER D'HARNAIS DORÉ clouté au poitrail (deco encolure, @accent*).
 export const creature: CreatureDef = {
@@ -12,7 +14,7 @@ export const creature: CreatureDef = {
   quad: {
     sl: 0.95, build: 'equine', girth: 0.98, bodyLen: 0.96, neckLen: 0.95, neckAngle: -28,
     legLen: 1.18, head: 'cheval', tail: 'crin', tailLen: 1.05, ears: 'courtes', foot: 'sabot',
-    wings: 'plumes', wingSpan: 1.36, wingPose: 'dressees', mane: 'crin', markings: 'taches',
+    wings: 'plumes', wingSpan: 1.36, wingPose: 'dressees', wingLift: 26, mane: 'crin', markings: 'taches',
     deco: {
       // collier doré clouté à la base de l'encolure (repère local : base du cou = y 0..8)
       encolure: `<g data-deco="collier">` +

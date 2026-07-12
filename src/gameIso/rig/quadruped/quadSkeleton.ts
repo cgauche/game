@@ -44,7 +44,8 @@ export interface QuadProps {
   frontFoot?: QuadFoot; // pied AVANT distinct (griffon : serres devant / pattes derrière)
   wings?: 'plumes' | 'membrane'; // gabarit AILÉ : ailes emplumées (rapace/pégase) ou membraneuses (dragon)
   wingSpan?: number; // envergure (× sur l'art des ailes, défaut 1 — dragon ample, demigriffon court)
-  wingPose?: 'dressees'; // ailes REPLIÉES portées DRESSÉES à demi-ouvertes (manticore) — défaut : couchées le long du dos
+  wingPose?: 'dressees' | 'deployees'; // ailes REPLIÉES portées DRESSÉES à demi-ouvertes (manticore) ; 'deployees' (membrane seulement) = PAIRE demi-ouverte lisible : panneaux pâles entre les doigts, aile lointaine basculée vers la queue montrant son envers clair (dragon, artwork LDB p.321) — défaut : couchées le long du dos
+  wingLift?: number; // degrés de redressement SUPPLÉMENTAIRE des ailes pliées 'dressees' en plumes (+ = plus vertical ; défaut 0 — pégase, artwork LDB p.325)
   mane: QuadMane; // crinière d'encolure
   ridge?: 'epines' | 'epines-continues' | 'crete' | 'plaques' | 'sans'; // dorsale (défaut : 'epines' si draconic, sinon 'sans') — 'epines-continues' = rangée SERRÉE garrot→croupe (basilic)
   markings?: 'taches' | 'rayures' | 'balzanes' | 'sans'; // robe : taches/rayures de flanc, balzanes aux membres
@@ -63,8 +64,14 @@ export interface QuadProps {
   tailLen?: number; // × sur l'art de queue (défaut 1)
   /** Décor PAR-OS propre à la créature (harnais doré du pégase — précédent : épave du crabe,
    *  `CrabProps.deco`) : SVG dans le repère local de l'os, APPOSÉ après l'art du gabarit,
-   *  uniquement là où l'os porte déjà un art dans la vue courante. Jetons de palette admis. */
-  deco?: Partial<Record<QuadBoneId, string>>;
+   *  uniquement là où l'os porte déjà un art dans la vue courante. Jetons de palette admis.
+   *  Clé suffixée `#vue` = décor limité à cette vue (gueule de brame du grand cerf, dessinée
+   *  pour la tête de PROFIL seulement) ; clé nue = toutes les vues où l'os a un art. */
+  deco?: Partial<Record<QuadBoneId | `${QuadBoneId}#${'profile' | 'front' | 'back'}`, string>>;
+  /** Posture de REPOS propre à la créature en PROFIL (deltas additifs d'angle par os, même
+   *  vocabulaire que QuadPose) : port habituel qui s'ajoute SOUS toute pose d'anim (lion de
+   *  Chrace tapi prêt à bondir). Ignorée de face/dos (quadSkeletonForView y refige les angles). */
+  stance?: QuadPose;
   /** Robe/pelage par défaut (corps/cheveux/cuir…). Base custom `aile` = teinte PROPRE des ailes
    *  (@aile/@aileO/@aileH — pégase : ailes brun/doré sur robe blanche) ; absente, les ailes
    *  suivent la famille `corps` (cf. resolveQuadFromProps). */

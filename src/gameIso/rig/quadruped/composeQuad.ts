@@ -40,6 +40,13 @@ export function resolveQuadFromProps(
   wings: 'folded' | 'spread' = 'folded',
   eyes?: { G?: string; D?: string },
 ): ResolvedBone[] {
+  // Posture propre (p.stance) : deltas additifs SOUS la pose d'anim, en PROFIL seulement
+  // (les vues de bout refigent leurs angles dans quadSkeletonForView).
+  if (p.stance && view === 'profile') {
+    const merged: Record<string, number> = { ...p.stance } as Record<string, number>;
+    for (const [id, d] of Object.entries(pose)) merged[id] = (merged[id] ?? 0) + (d ?? 0);
+    pose = merged;
+  }
   const sk = groundQuad(quadSkeletonForView(buildQuadSkeleton(p), view), pose);
   const world = worldTransformsG(sk, pose) as Record<QuadBoneId, Matrix>;
   const parts = quadParts(p, view, wings);

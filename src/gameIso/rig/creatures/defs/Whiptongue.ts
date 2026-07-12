@@ -39,14 +39,15 @@ const OV_CRANE_PROFILE =
   + `<circle cx="0.4" cy="-19" r="0.8" fill="@peauO"/><circle cx="1.4" cy="-15" r="0.9" fill="@peauO"/><circle cx="2.2" cy="-11.5" r="1" fill="@peauO"/>`;
 // Langue-fouet grise démesurée pendant de la gueule, fléau à pointes au bout.
 const OV_LANGUE_FRONT =
-  `<path d="M-0.8 12.5 Q-3 19 0.6 25 Q3.4 29.5 1.2 34" stroke="#9aa0a4" stroke-width="1.7" fill="none" stroke-linecap="round"/>`
-  + `<path d="M-0.8 12.5 Q-3 19 0.6 25 Q3.4 29.5 1.2 34" stroke="#5c6066" stroke-width="0.5" fill="none" opacity="0.7"/>`
-  + `<circle cx="1" cy="35.6" r="1.9" fill="#4a4e54" stroke="#26282c" stroke-width="0.4"/>`
-  + `<path d="M1 32.8 l0 -1.4 M-1.6 34.6 l-1.2 -0.8 M3.6 34.6 l1.2 -0.8 M-1.2 37.4 l-1 1 M3.2 37.4 l1 1 M1 38.4 l0 1.4" stroke="#26282c" stroke-width="0.6"/>`;
+  `<path d="M-0.8 12.5 Q-4 21 0.6 30 Q4.6 37.5 1.4 46" stroke="#9aa0a4" stroke-width="1.7" fill="none" stroke-linecap="round"/>`
+  + `<path d="M-0.8 12.5 Q-4 21 0.6 30 Q4.6 37.5 1.4 46" stroke="#5c6066" stroke-width="0.5" fill="none" opacity="0.7"/>`
+  + `<circle cx="1.2" cy="47.6" r="1.9" fill="#4a4e54" stroke="#26282c" stroke-width="0.4"/>`
+  + `<path d="M1.2 44.8 l0 -1.4 M-1.4 46.6 l-1.2 -0.8 M3.8 46.6 l1.2 -0.8 M-1 49.4 l-1 1 M3.4 49.4 l1 1 M1.2 50.4 l0 1.4" stroke="#26282c" stroke-width="0.6"/>`;
 const OV_LANGUE_PROFILE =
-  `<path d="M8.6 11.5 Q12 18 8.8 24 Q6.4 28.5 9.4 33" stroke="#9aa0a4" stroke-width="1.7" fill="none" stroke-linecap="round"/>`
-  + `<circle cx="9.6" cy="34.6" r="1.9" fill="#4a4e54" stroke="#26282c" stroke-width="0.4"/>`
-  + `<path d="M9.6 31.8 l0 -1.4 M7 33.6 l-1.2 -0.8 M12.2 33.6 l1.2 -0.8 M9.6 37.4 l0 1.4" stroke="#26282c" stroke-width="0.6"/>`;
+  `<path d="M8.6 11.5 Q19 18 17.6 27 Q16.4 34 19.4 41" stroke="#9aa0a4" stroke-width="1.7" fill="none" stroke-linecap="round"/>`
+  + `<path d="M8.6 11.5 Q19 18 17.6 27 Q16.4 34 19.4 41" stroke="#5c6066" stroke-width="0.5" fill="none" opacity="0.7"/>`
+  + `<circle cx="19.7" cy="42.6" r="1.9" fill="#4a4e54" stroke="#26282c" stroke-width="0.4"/>`
+  + `<path d="M19.7 39.8 l0 -1.4 M17.1 41.6 l-1.2 -0.8 M22.3 41.6 l1.2 -0.8 M19.7 45.4 l0 1.4" stroke="#26282c" stroke-width="0.6"/>`;
 // Plaque rouge annelée sur le tibia (les jambières striées de l'illustration).
 const OV_TIBIA_ROUGE =
   `<path d="M-2.4 27 L-3 43 L0.4 43 L-0.2 27 Z" fill="#8e2a34" opacity="0.85"/>`

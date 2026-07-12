@@ -41,20 +41,44 @@ function norm(a: Pt, b: Pt): Pt {
   return [dy / l, -dx / l];
 }
 const off = (p: Pt, n: Pt, w: number): Pt => [p[0] + n[0] * w, p[1] + n[1] * w];
-/** Ruban EFFILÉ le long d'une cubique p0→c1→c2→p3 : large (w) à la base, pointe fine recourbée
- *  en crosse via `curl` (contrôle du bout). + ventouses (tirets clairs) et rugosités (taches
- *  sombres) le long de l'axe — le tentacule est charnu et grumeleux, pas un tube lisse. */
-function volute(p0: Pt, c1: Pt, c2: Pt, p3: Pt, w: number, curl: Pt): string {
+/** Amplifie la composante PERPENDICULAIRE d'un point de contrôle par rapport à la corde p0→p3
+ *  (k>1 = courbe en S plus prononcée, sans déplacer ni la base ni la pointe). */
+function sway(p0: Pt, p3: Pt, c: Pt, k: number): Pt {
+  const cx = p3[0] - p0[0], cy = p3[1] - p0[1], l = Math.hypot(cx, cy) || 1;
+  const ux = cx / l, uy = cy / l;
+  const dx = c[0] - p0[0], dy = c[1] - p0[1];
+  const par = dx * ux + dy * uy;
+  return [p0[0] + par * ux + (dx - par * ux) * k, p0[1] + par * uy + (dy - par * uy) * k];
+}
+/** Ruban EFFILÉ le long d'une cubique p0→c1→c2→p3 : large (w) à la base, s'amincit VITE (le
+ *  gros du bras est fin), pointe fine recourbée en crosse ample via `curl` (contrôle du bout).
+ *  + ventouses (tirets clairs) et rugosités (taches sombres) le long de l'axe — le tentacule
+ *  est charnu et grumeleux, pas un tube lisse. */
+function volute(p0: Pt, rc1: Pt, rc2: Pt, p3: Pt, w: number, curl: Pt): string {
+  // sinuosité : les contrôles s'écartent davantage de la corde → vrais S, pas des roseaux droits
+  const c1 = sway(p0, p3, rc1, 1.55), c2 = sway(p0, p3, rc2, 1.55);
   const n0 = norm(p0, c1), n1 = norm(p0, c2), n2 = norm(c1, p3), n3 = norm(c2, p3);
-  const w1 = w * 0.72, w2 = w * 0.42, w3 = w * 0.16;
+  const w1 = w * 0.52, w2 = w * 0.24, w3 = w * 0.11;
   const d =
     `M${P(off(p0, n0, w))} C${P(off(c1, n1, w1))} ${P(off(c2, n2, w2))} ${P(off(p3, n3, w3))} ` +
-    `Q${P(curl)} ${P(off(p3, n3, -w3))} ` +
+    `L${P(off(p3, n3, -w3))} ` +
     `C${P(off(c2, n2, -w2))} ${P(off(c1, n1, -w1))} ${P(off(p0, n0, -w))} Z`;
+  // crosse : TRAIT fin qui prolonge l'axe, dépasse `curl` puis se rabat vers le flanc interne
+  // (-n3) — pointe enroulée en volute, ni bout arrondi ni lobe charnu
+  const dx = curl[0] - p3[0], dy = curl[1] - p3[1], hl = Math.hypot(dx, dy);
+  // départ de crosse TANGENT à l'axe (c2→p3) pour une jonction sans cassure
+  const tx0 = p3[0] - c2[0], ty0 = p3[1] - c2[1], tl = Math.hypot(tx0, ty0) || 1;
+  const ext: Pt = [p3[0] + (tx0 / tl) * hl * 1.1, p3[1] + (ty0 / tl) * hl * 1.1];
+  const wrapC: Pt = [curl[0] + dx * 0.6 - n3[0] * hl * 0.6, curl[1] + dy * 0.6 - n3[1] * hl * 0.6];
+  const hookEnd: Pt = [curl[0] - n3[0] * hl * 0.7, curl[1] - n3[1] * hl * 0.7];
+  const hook = `M${P(p3)} C${P(ext)} ${P(wrapC)} ${P(hookEnd)}`;
+  const crosse =
+    `<path d="${hook}" fill="none" stroke="@corpsO" stroke-width="${(w * 0.22 + 1.1).toFixed(1)}" stroke-linecap="round"/>` +
+    `<path d="${hook}" fill="none" stroke="@corps" stroke-width="${(w * 0.22).toFixed(1)}" stroke-linecap="round"/>`;
   const axis = `M${P(p0)} C${P(c1)} ${P(c2)} ${P(p3)}`;
-  return `<path d="${d}" fill="@corps" stroke="@corpsO" stroke-width="0.7" stroke-linejoin="round"/>` +
-    `<path d="${axis}" fill="none" stroke="@corpsO" stroke-width="${(w * 0.5).toFixed(1)}" opacity="0.18" stroke-dasharray="2.8 4.2"/>` +
-    `<path d="${axis}" fill="none" stroke="@corpsH" stroke-width="0.9" opacity="0.45" stroke-dasharray="0.9 2.4"/>`;
+  return `<path d="${d}" fill="@corps" stroke="@corpsO" stroke-width="0.7" stroke-linejoin="round"/>` + crosse +
+    `<path d="${axis}" fill="none" stroke="@corpsO" stroke-width="${(w * 0.22).toFixed(1)}" opacity="0.18" stroke-dasharray="2.8 4.2"/>` +
+    `<path d="${axis}" fill="none" stroke="@corpsH" stroke-width="0.7" opacity="0.45" stroke-dasharray="0.9 2.4"/>`;
 }
 
 /** Volutes ARRIÈRE (6 bras) : forêt de volutes FINES et sinueuses (courbes en S), dressées

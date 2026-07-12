@@ -10,7 +10,7 @@ export const creature: CreatureDef = {
   name: 'Fantôme',
   plan: 'spectral',
   spectre: {
-    sl: 0.95, hood: false, face: 'crane-cri', cheveux: true, griffes: true,
+    sl: 0.95, hood: false, face: 'crane-cri', cheveux: true, griffes: true, brume: true,
     stored: { corps: '#dcefe3', corpsO: '#7c9c8b', corpsH: '#f6fff8', cheveux: '#cfe4d4', cheveuxO: '#98b5a4', cuir: '#6f9070' },
   },
 };

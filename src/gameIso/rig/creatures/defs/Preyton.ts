@@ -17,14 +17,15 @@ export const creature: CreatureDef = {
   quad: {
     sl: 1.1, build: 'feline', girth: 1.15, bodyLen: 0.92, neckLen: 0.7, neckAngle: -35, legLen: 0.78,
     head: 'dragon', headScale: 1.05, headgear: 'bois', ears: 'pointues',
-    foot: 'patte', frontFoot: 'sabot', tail: 'reptile', tailLen: 1.0,
+    foot: 'patte', frontFoot: 'sabot', tail: 'reptile', tailLen: 1.25,
     wings: 'membrane', wingSpan: 1.5, wingPose: 'dressees', mane: 'hirsute', ridge: 'sans',
     deco: {
       tronc:
-        `<g data-deco="queue-lovee" transform="translate(0,-8)">` +
-        `<path d="M-30 46 Q-41 52 -36 60 Q-24 66 -2 65.5 Q22 65 34 59 Q43 54.5 46 46 Q40 51 32 54.5 Q19 60 -2 60.5 Q-23 61 -30 56 Q-33.5 51.5 -27 46.5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
-        `<path d="M-32 50 l4.6 3.4 M-27 56.6 l2.6 4.4 M-18 58.8 l1 4.6 M-8 60 l0.6 4.8 M2 60.4 l0 4.8 M12 59.6 l-0.6 4.6 M22 57.6 l-1.2 4.4 M31 54.4 l-1.8 4 M39 49.6 l-2.6 3.4" stroke="@corpsO" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>` +
-        `<path d="M44 47 Q48 42 49 37 Q45.5 40 43 44 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+        `<g data-deco="queue-lovee" transform="translate(0,-8) scale(1,0.74)">` +
+        `<path d="M-30 42 Q-42 49 -37 58 Q-24 65 -2 64.5 Q22 64 34 58 Q43.5 53 46.5 44 Q40 49 32 52.5 Q19 57 -2 57.5 Q-22 58 -29 53.5 Q-33 49.5 -26.5 43.5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+        `<path d="M-31 46.5 q3.4 4 5 6.6 M-25.5 54.5 q1.6 3.6 2.2 6.6 M-17 56.8 q0.8 3.4 0.9 6.4 M-8 58.2 q0.4 3.2 0.4 6.2 M2 58.5 q0 3.2 -0.1 6 M12 57.7 q-0.4 3.2 -0.7 6 M22 55.7 q-0.9 3 -1.4 5.8 M31 52.3 q-1.5 2.8 -2.4 5.4 M39.5 47.5 q-2.2 2.6 -3.6 4.8" stroke="@corpsH" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.95"/>` +
+        `<path d="M-30 42.6 Q-41 49 -36.6 57 Q-24 63.6 -2 63.1 Q21 62.6 33.4 56.8 Q42 51.8 45.6 44.4" stroke="@corpsH" stroke-width="0.8" fill="none" opacity="0.6"/>` +
+        `<path d="M44.5 45.5 Q50 39 51 32.5 Q46 36.5 43 42.5 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
         `</g>`,
     },
     stored: { corps: '#3b332c', corpsO: '#171310', corpsH: '#6e6152', cheveux: '#1a1512', cheveuxO: '#0b0907', cuir: '#8a7a5e' },

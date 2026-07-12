@@ -17,6 +17,6 @@ export const creature: CreatureDef = {
   // silhouettes des objets engloutis, cuir = os du squelette digéré.
   hulk: {
     sl: 1.15, girth: 0.95, form: 'gel',
-    stored: { corps: '#a7d4cd', corpsO: '#c0a5ae', corpsH: '#edf8f3', cheveux: '#4d585c', cheveuxO: '#2b3336', cuir: '#8d968c' },
+    stored: { corps: '#7cecc2', corpsO: '#c8a8b2', corpsH: '#d9fff0', cheveux: '#3d534f', cheveuxO: '#22302d', cuir: '#8d968c' },
   },
 };
