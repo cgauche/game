@@ -128,7 +128,11 @@ export function forceBatchParticipant(p: BatchParticipant): CascadeRoll {
 /** Agrège les jets d'une étape À PARTICIPANTS PRÊTE en un `CascadeRoll` scalaire — GÉNÉRIQUE (aucun
  *  concept de domaine) : `best` = le meilleur DR l'emporte ; `summed-dr` (défaut) = Σ des DR (les
  *  participants `essential` comptent DOUBLE, MDG ch.14 l.19) + `flatDR` (modificateur plat versé par le
- *  flux, plafonné à 0 si `capMinime` — Manque de bras l.55) ; `opposed` = ce total net d'`opposeSl`. PUR. */
+ *  flux, plafonné à 0 si `capMinime` — Manque de bras l.55) ; `opposed` = ce total net d'`opposeSl`. PUR.
+ *  SOURCE UNIQUE pour `CascadeStep.participants` (`BatchParticipant[]`, flag `essential`) — le même
+ *  « essentiel ×2 » (l.19) est ré-implémenté sur une forme DISTINCTE par `maneuverCrewTotal`
+ *  (`state/shipManeuver.ts`, pending MULTI de COMBAT `ShipManeuverParticipant[]`, `roleId` matché) : NON
+ *  convergentes VOLONTAIREMENT, deux pendings de forme différente (#351). */
 export function aggregateBatchRolls(
   parts: BatchParticipant[],
   aggregate: CascadeAggregate = 'summed-dr',
@@ -200,9 +204,10 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   const before = get().pendingCascade;
   // Étape « batch » (participants — seam de jet #275 Décision 4 cran 1) : AGRÈGE les contributeurs
   // (déjà tous résolus, `stepReady`) en UN `CascadeRoll` scalaire — l'applier lit `step.result` comme
-  // n'importe quelle étape mono, kind-agnostique du nombre de rangées.
+  // n'importe quelle étape mono, kind-agnostique du nombre de rangées. `aggregate:'none'` (#351) : jets
+  // INDÉPENDANTS — RIEN à agréger, l'applier lit CHAQUE `participants[i].result` lui-même.
   let step = steps[i];
-  if (step.participants && !step.result) step = { ...step, result: aggregateBatchStep(step) };
+  if (step.participants && !step.result && step.aggregate !== 'none') step = { ...step, result: aggregateBatchStep(step) };
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
   // `consequences` (#295 Lot 0) : rendu par `resultLine` en UNE ligne — seule voie de dénouement.
@@ -341,7 +346,9 @@ export function finalizeCascade(get: Get, set: Set): PendingCascade | null {
 /**
  * Pilote IMMÉDIAT (sans modale) : lance chaque étape (RNG) et applique sa conséquence dans l'ordre,
  * insertions comprises. Pour les repos de plusieurs jours, la reprise automatique et la triche de
- * recette. Renvoie les étapes résolues (pour un éventuel bilan en lecture seule).
+ * recette. Renvoie les étapes RÉSOLUES (pour un éventuel bilan en lecture seule) — PEUT être un
+ * PRÉFIXE du tableau d'entrée (combat ouvert en plein vol, OU choix sans défaut authoré, cf. ci-dessous) :
+ * l'appelant DOIT vérifier `get().battle` / `get().pendingCascade` avant d'enchaîner une finalisation.
  *
  * `ctx` (optionnel) : titre/`purpose` du fragment — SEULEMENT nécessaire pour un appelant qui résout
  * un tableau DE PLUSIEURS étapes dont l'une peut ouvrir un combat en plein vol (`startCombat`, ex. la
@@ -349,6 +356,9 @@ export function finalizeCascade(get: Get, set: Set): PendingCascade | null {
  * étapes RESTANTES (non encore committées) sont poussées en pile (`suspendedCascades`) — jamais perdues
  * ni résolues À L'AVEUGLE pendant que le combat tourne. Sans `ctx` (mono-étape, l'immense majorité des
  * appels), rien à préserver : la boucle s'arrête simplement (comportement historique).
+ *
+ * CHOIX sans `defaultChoice` authoré : jamais tranché en silence (`options[0]`) — la cascade s'arrête
+ * PENDANTE, surfacée via `pendingCascade` (patron `resolveRemainingCascade`, #351).
  */
 export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ctx?: { title: string; purpose: PendingCascade['purpose']; log?: string[] }): CascadeStep[] {
   let cur = steps;
@@ -361,8 +371,17 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
     } else if (stepInteraction(st) === 'batch') {
       cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
-      const key = st.defaultChoice ?? st.options![0]?.key;
-      if (key != null) cur = cur.map((x, k) => (k === i ? { ...x, chosen: key } : x));
+      if (st.defaultChoice == null) {
+        // Aucun défaut AUTEURISÉ (patron `resolveRemainingCascade` l.317-320) : on ne tranche PAS en
+        // silence — la cascade s'arrête PENDANTE, surfacée (`pendingCascade`) pour que l'appelant/la
+        // modale la reprenne (devtools `advanceRiverDay`/`skipToArrival`, cadence commandée, tout
+        // futur appelant immédiat).
+        set({
+          pendingCascade: { title: ctx?.title ?? st.label ?? 'Choix', purpose: ctx?.purpose ?? 'test', participants: cur, cursor: i, log: ctx?.log ?? [] },
+        });
+        return cur;
+      }
+      cur = cur.map((x, k) => (k === i ? { ...x, chosen: st.defaultChoice! } : x));
     } // affichage : rien à résoudre avant la conséquence
     const r = commitStep(get, set, cur, i);
     cur = r.steps;

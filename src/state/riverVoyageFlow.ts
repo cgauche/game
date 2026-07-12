@@ -204,8 +204,9 @@ function resolveRiverDay(get: Get, set: Set, route: MapRoute, to: { scene: strin
   // influençable — l'auto-pilote pilote LE MÊME plan d'étapes via le pilote IMMÉDIAT de la cascade
   // (mêmes appliers, mêmes conséquences), SANS modale par jet ; les lignes tombent au PV du jour
   // (journal → recap de la halte). En coop, la conduite reste manuelle (modale).
-  if (get().net.mode === 'local' && riverAutoResolves(get().travelPlan?.orders)) {
+  if (get().net.mode === 'local' && riverAutoResolves(get().travelPlan?.orders, steps)) {
     runCascadeImmediate(get, set, steps);
+    if (get().battle || get().pendingCascade) return; // combat en plein vol OU choix sans défaut : surfacé, jamais résolu en silence
     continueRiverDayAfterCascade(get, set);
     return;
   }

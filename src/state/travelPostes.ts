@@ -182,7 +182,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
   }
   if (batchParts.length) {
     steps.push({ id: 'stage-postes', kind: 'stagePosteBatch', icon: 'travel/compass', label: 'Postes de l’Étape',
-      participants: batchParts, aggregate: 'summed-dr', interactive: true });
+      participants: batchParts, aggregate: 'none', interactive: true }); // jets INDÉPENDANTS (#351, cf. l'applier)
   }
   // Pas d'agrégation de fin d'Étape (fourrage cumulé, camp, cartes, Rencontre) + insertion des Expositions.
   steps.push({ id: 'stage-agg', kind: 'stageAggregate', icon: 'ui/tally', label: 'Bilan de l’Étape', interactive: true,
@@ -231,8 +231,8 @@ registerCascadeApplier('stagePoste', (get, set, step, hero) => {
 
 /** Postes AVEC Test = UN pas BATCH (arbitrage user 2026-07-11 : jets INDÉPENDANTS, un par héros posté).
  *  Chaque rangée porte son propre jet influençable (déjà résolu ici) ; sa CONSÉQUENCE est rendue SUR SA
- *  rangée (`part.outcome`, le portrait porte l'attribution — pas de note agrégée à l'étape). L'agrégat
- *  `summed-dr` de la primitive est IGNORÉ (ces Tests ne sont pas reliés). */
+ *  rangée (`part.outcome`, le portrait porte l'attribution — pas de note agrégée à l'étape). `aggregate:
+ *  'none'` (ces Tests ne sont pas reliés) : aucun `step.result` agrégé posé/lu (#351). */
 registerCascadeApplier('stagePosteBatch', (get, set, step) => {
   const plan = get().travelPlan;
   if (!step.participants || !plan?.postes) return;
@@ -271,7 +271,7 @@ export function buildWeatherResistanceSteps(get: Get, weather: Weather): Cascade
   }
   if (!parts.length) return [];
   return [{ id: 'weather-resistance', kind: 'weatherResistance', icon: 'rest/cold',
-    label: `Traversée — ${WEATHER_LABEL[weather]}`, participants: parts, aggregate: 'summed-dr',
+    label: `Traversée — ${WEATHER_LABEL[weather]}`, participants: parts, aggregate: 'none', // jets INDÉPENDANTS (#351, cf. l'applier)
     interactive: true, ...(rt.enjeu ? { stake: rt.enjeu } : {}) }];
 }
 

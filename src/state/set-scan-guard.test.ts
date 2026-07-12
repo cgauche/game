@@ -30,9 +30,12 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * combattants à l'ouverture — SOURCE du canal « Tests physiques » ; `openCombatEndCascade` VIDE la file
  * `deferredUpkeepQueue` après consommation des Tests d'entretien différés) ; +1 reset ad hoc (ce
  * `deferredUpkeepQueue: []` = vidage de la file per-combat, jamais rejouée).
+ * +1 set() légitime (#351 : `runCascadeImmediate` S'ARRÊTE et SURFACE `pendingCascade` sur un CHOIX sans
+ * `defaultChoice` authoré — patron `resolveRemainingCascade`, jamais un `options[0]` silencieux) ; +1 reset
+ * ad hoc (même site : pose directe de `pendingCascade`).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 705, totalAdHocResets: 284 };
+const BASELINE = { totalCalls: 706, totalAdHocResets: 285 };
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

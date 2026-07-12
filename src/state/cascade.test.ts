@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps } from './cascade';
+import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps, runCascadeImmediate } from './cascade';
 import { freeCons } from './rollSeam';
 import { spyApplier } from './cascadeTestKit';
 import type { CascadeStep, BatchParticipant } from './pendings';
@@ -166,6 +166,39 @@ describe('Cascade séquentielle influençable', () => {
     useGame.getState().cascadeNext(); // valide l'affichage → fin
     expect(applied.map((a) => a.kind)).toEqual(['tally', 'pick', 'note']);
     expect(useGame.getState().pendingCascade).toBeNull();
+  });
+
+  it('runCascadeImmediate : CHOIX sans `defaultChoice` authoré → S\'ARRÊTE PENDANTE (jamais `options[0]` en silence, #351)', () => {
+    useGame.getState().seedRng(7);
+    const h = hero();
+    spyApplier('pick', applied, (step) => ({ kind: 'pick', success: step.chosen === 'a' }));
+    spyApplier('note', applied, () => ({ kind: 'note', success: true }));
+    const steps: CascadeStep[] = [
+      step('s1', h.id), // jet (tally) — auto-résolu
+      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], interactive: true }, // CHOIX sans défaut → STOP
+      { id: 'd', kind: 'note', actorId: h.id, interactive: true }, // jamais atteint
+    ];
+    const resolved = runCascadeImmediate(useGame.getState, useGame.setState, steps);
+    expect(applied.map((a) => a.kind)).toEqual(['tally']); // seul le jet est résolu
+    expect(resolved.map((s) => s.id)).toEqual(['s1', 'c', 'd']); // renvoyé tel quel (préfixe committé + reste)
+    // La cascade est SURFACÉE (pas résolue en aveugle) — le joueur/l'appelant la reprend.
+    const p = useGame.getState().pendingCascade!;
+    expect(p).toBeTruthy();
+    expect(p.cursor).toBe(1); // curseur SUR le choix
+    expect(p.participants.map((s) => s.id)).toEqual(['s1', 'c', 'd']);
+  });
+
+  it('runCascadeImmediate : CHOIX avec `defaultChoice` authoré → tranché sans surfacer (comportement inchangé)', () => {
+    useGame.getState().seedRng(7);
+    const h = hero();
+    spyApplier('pick', applied, (step) => ({ kind: 'pick', success: step.chosen === 'a' }));
+    const steps: CascadeStep[] = [
+      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], defaultChoice: 'a', interactive: true },
+    ];
+    const resolved = runCascadeImmediate(useGame.getState, useGame.setState, steps);
+    expect(applied).toEqual([{ kind: 'pick', success: true }]); // défaut authoré appliqué
+    expect(resolved[0].chosen).toBe('a');
+    expect(useGame.getState().pendingCascade).toBeNull(); // rien à surfacer
   });
 
   it('étape « affichage » : contenu pré-posé (outcome) PRÉSERVÉ par un applier muet', () => {

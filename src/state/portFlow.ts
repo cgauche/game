@@ -133,7 +133,8 @@ export function closePort(_get: Get, set: Set): void {
   set({ port: null });
 }
 
-/** Magnitude d'un Marchandage gagné (±10 %, ±20 % si Négociateur ou DR net Stupéfiant, l.335). */
+/** Magnitude d'un Marchandage gagné (±10 %, ±20 % si Négociateur ou DR net Stupéfiant, MDG 15 l.335/385).
+ *  Homonyme `engine/bargain.ts` (LDB 60) : NON convergent, VOLONTAIREMENT — source RAW distincte, #351. */
 function bargainPct(winnerNegotiator: boolean, netSL: number): number {
   return winnerNegotiator || netSL >= SL_ASTOUNDING ? 20 : 10;
 }

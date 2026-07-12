@@ -1082,8 +1082,12 @@ export const WORLD_STEP_OWNER = '__world-step__';
 
 /** Agrégation d'une étape À PARTICIPANTS (batch multi — Test d'équipage, seam de jet #275 Décision 4
  *  cran 1). Canonique ICI (neutre, comme `WORLD_STEP_OWNER` ci-dessus) : `rollSeam.ts` importe déjà
- *  `CascadeStep` depuis ce module — la définir là-bas et l'importer ICI créerait un cycle. */
-export type CascadeAggregate = 'best' | 'opposed' | 'summed-dr';
+ *  `CascadeStep` depuis ce module — la définir là-bas et l'importer ICI créerait un cycle.
+ *  `'none'` (#351) : jets INDÉPENDANTS — aucun `CascadeRoll` scalaire n'est calculé/posé sur `step.result`,
+ *  chaque `part.result` porte SEULE sa conséquence (patron `stagePosteBatch`/`weatherResistance`, arbitrage
+ *  user 2026-07-11 : « jets INDÉPENDANTS, un par héros posté »). Sans cette valeur, `summed-dr` (le défaut)
+ *  se calcule quand même — un calcul MORT, jamais lu par l'applier ni affiché (aucun `step.outcome`). */
+export type CascadeAggregate = 'best' | 'opposed' | 'summed-dr' | 'none';
 
 /** Un CONTRIBUTEUR à une étape À PARTICIPANTS de cascade (batch multi). GÉNÉRIQUE, kind-agnostique : sa
  *  PRÉSENTATION (`label`/`base`/`mods`) et sa cible EFFECTIVE (`target`) sont RÉSOLUES à la CONSTRUCTION
@@ -1191,18 +1195,22 @@ export interface CascadeStep extends RollParticipant {
   options?: { key: string; label: string; detail?: string }[];
   /** Option retenue (clé) — analogue de `result` pour une étape « choix ». */
   chosen?: string;
-  /** Clé choisie d'office par « Tout lancer » / résolution immédiate (défaut = `options[0]`). */
+  /** Clé consommée par `runCascadeImmediate` (résolution immédiate) SEUL — SANS elle, une cascade
+   *  immédiate s'arrête PENDANTE sur ce choix (#351) ; « Tout résoudre » (`resolveRemainingCascade`)
+   *  s'arrête TOUJOURS sur un choix depuis 249e931f, ignore ce champ. */
   defaultChoice?: string;
   /** Étape À PARTICIPANTS (batch multi, seam de jet #275 Décision 4 cran 1) : UNE rangée par
    *  contributeur GÉNÉRIQUE (`BatchParticipant`, résolu via le flux `cascadeBatch`), influençable
    *  INDÉPENDAMMENT. Prête quand tous les participants INTERACTIFS ont `result` (`stepReady`) ;
-   *  `commitStep` agrège alors (`aggregate`, défaut `summed-dr`) dans `step.result` avant d'invoquer
-   *  l'applier — l'applier lit `step.result` comme une étape mono, kind-agnostique. `target`/`base` de
+   *  `commitStep` agrège alors (`aggregate`, défaut `summed-dr` ; `'none'` = jets INDÉPENDANTS, RIEN
+   *  d'agrégé, #351) dans `step.result` avant d'invoquer l'applier — l'applier lit `step.result` comme
+   *  une étape mono, kind-agnostique (sauf `'none'` : chaque `participants[i].result`). `target`/`base` de
    *  l'ÉTAPE restent absents (le jet vit sur chaque participant). Les paramètres de la formule d'agrégat
    *  (`aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`) sont posés en `meta` NEUTRE à la
    *  construction par le flux propriétaire (le naval y verse Moral/Manque de bras/sabotage déjà chiffrés). */
   participants?: BatchParticipant[];
-  /** Agrégation de `participants` (défaut `summed-dr`, Test d'équipage MDG ch.14 l.13). */
+  /** Agrégation de `participants` (défaut `summed-dr`, Test d'équipage MDG ch.14 l.13 ; `'none'` = jets
+   *  indépendants, #351). */
   aggregate?: CascadeAggregate;
 }
 /**

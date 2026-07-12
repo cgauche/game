@@ -394,7 +394,8 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
         id: `${step.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: 'item/misc',
         label: 'Possession lourde', interactive: true,
         options: [{ key: 'jeter', label: `Jeter ${heavy.name}` }, { key: 'garder', label: 'Garder son paquetage' }],
-        defaultChoice: 'garder', // résolution immédiate (repos multi-jours, « Tout lancer ») : comportement inchangé
+        defaultChoice: 'garder', // consommé par `runCascadeImmediate` (repos multi-jours) — `resolveRemainingCascade`
+        // (« Tout résoudre ») s'arrête TOUJOURS sur ce choix depuis 249e931f, n'applique plus JAMAIS de défaut
         meta: { failNumber: priorFails + 1 },
       }],
     };

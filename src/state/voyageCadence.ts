@@ -11,6 +11,7 @@
  */
 import type { NightEntry } from './restFlow';
 import type { RollBreakdown } from '../engine/combat';
+import type { CascadeStep } from './pendings';
 
 /** COMMANDÉE : les Tests d'équipage de ROUTINE s'auto-résolvent (leurs lignes au PV) ; seules les
  *  décisions interrompent. JOUR-PAR-JOUR : chaque jet ouvre sa modale (cadence manuelle historique). */
@@ -42,11 +43,20 @@ export function seaAutoResolves(orders: VoyageOrders | undefined, kind: string):
   return orders?.cadence === 'commande' && SEA_ROUTINE_KINDS.has(kind);
 }
 
-/** Une journée FLUVIALE de ROUTINE s'auto-résout-elle ? (route COMMANDÉE — la cascade du jour se joue
- *  d'un bloc, sans modale par jet ; #91). Le fleuve n'a pas de surface de décision propre au jour :
- *  toute la journée est de la routine influençable → tout ou rien selon les ordres. */
-export function riverAutoResolves(orders: VoyageOrders | undefined): boolean {
-  return orders?.cadence === 'commande';
+/** Étapes du jour FLUVIAL de ROUTINE (patron `SEA_ROUTINE_KINDS`) — LISTE FERMÉE : Réparation de
+ *  gréement/Agilité de rame/Navigation/Louvoyage/sauvegardes de vent, jets déterministes SANS décision.
+ *  `riverPerilCheck` (péril de rivière) en est exclu : sa CONSÉQUENCE peut ESCALADER en CHOIX joueur
+ *  (Barrage — `riverObstacleChoice`, l.128), inconnu tant que le péril n'a pas été vérifié (chance
+ *  d'auteur tirée à l'application) — une journée qui en porte un force l'INTERACTIF (#351, patron
+ *  `seaDayAllRoutine` : toute décision potentielle bascule le jour ENTIER en cascade interactive). */
+export const RIVER_ROUTINE_KINDS: ReadonlySet<string> = new Set([
+  'riverControlRepair', 'riverAgility', 'riverNav', 'riverTack', 'riverCapsize', 'riverRigging',
+]);
+
+/** Une journée FLUVIALE de ROUTINE s'auto-résout-elle ? (route COMMANDÉE + AUCUNE étape hors
+ *  `RIVER_ROUTINE_KINDS` — la cascade du jour se joue d'un bloc, sans modale par jet ; #91, filtre #351). */
+export function riverAutoResolves(orders: VoyageOrders | undefined, steps: readonly CascadeStep[]): boolean {
+  return orders?.cadence === 'commande' && steps.every((s) => RIVER_ROUTINE_KINDS.has(s.kind));
 }
 
 /** Brique d'ENTRÉE du PV du jour (une ligne du procès-verbal, rendue par `MultiRollList`). Source unique

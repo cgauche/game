@@ -881,7 +881,7 @@ export function runSeaDay(get: Get, set: Set): void {
   // prévoir un franchissement d'ancrage exact) suspend le fragment restant (`runCascadeImmediate` `ctx`).
   if (get().net.mode === 'local' && seaAutoResolves(plan.orders, 'progression') && seaDayAllRoutine(get)) {
     const resolved = runCascadeImmediate(get, set, steps, { title: 'Journée en mer', purpose: 'travelDay' });
-    if (get().battle) return;
+    if (get().battle || get().pendingCascade) return; // combat en plein vol OU choix sans défaut : surfacé, jamais résolu en silence
     pushDayEntries(get, set, resolved);
     continueSeaDayAfterCascade(get, set);
     return;
@@ -1546,7 +1546,7 @@ function continueSeaDayFromPostProgression(get: Get, set: Set): void {
   if (!insert.length) { continueSeaDayAfterCascade(get, set); return; }
   if (get().net.mode === 'local' && seaAutoResolves(get().travelPlan?.orders, 'progression') && seaDayAllRoutine(get)) {
     const resolved = runCascadeImmediate(get, set, insert, { title: 'Journée en mer', purpose: 'travelDay' });
-    if (get().battle) return;
+    if (get().battle || get().pendingCascade) return; // combat en plein vol OU choix sans défaut : surfacé, jamais résolu en silence
     pushDayEntries(get, set, resolved);
     continueSeaDayAfterCascade(get, set);
     return;

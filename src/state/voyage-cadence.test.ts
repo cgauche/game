@@ -4,7 +4,7 @@ import { makePregens } from '../data/pregens';
 import { buildSeaPlan, runSeaDay } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { seedBattleRng } from './battleRng';
-import { seaAutoResolves, riverAutoResolves, SEA_ROUTINE_KINDS } from './voyageCadence';
+import { seaAutoResolves, riverAutoResolves, SEA_ROUTINE_KINDS, RIVER_ROUTINE_KINDS } from './voyageCadence';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { buildScene } from './mapSpec';
@@ -48,8 +48,17 @@ describe('couche voyageCadence — prédicats de routine', () => {
     expect(seaAutoResolves({ cadence: 'commande' }, 'progression')).toBe(true);
     expect(seaAutoResolves({ cadence: 'commande' }, 'poursuite')).toBe(false);
     expect(seaAutoResolves({ cadence: 'jour-par-jour' }, 'progression')).toBe(false);
-    expect(riverAutoResolves({ cadence: 'commande' })).toBe(true);
-    expect(riverAutoResolves({ cadence: 'jour-par-jour' })).toBe(false);
+    expect(riverAutoResolves({ cadence: 'commande' }, [])).toBe(true);
+    expect(riverAutoResolves({ cadence: 'jour-par-jour' }, [])).toBe(false);
+  });
+
+  it('RIVER_ROUTINE_KINDS exclut `riverPerilCheck` (peut escalader en CHOIX, #351) — un péril bascule le jour en interactif', () => {
+    for (const k of ['riverControlRepair', 'riverAgility', 'riverNav', 'riverTack', 'riverCapsize', 'riverRigging']) expect(RIVER_ROUTINE_KINDS.has(k)).toBe(true);
+    expect(RIVER_ROUTINE_KINDS.has('riverPerilCheck')).toBe(false);
+    const routine = [{ id: 's1', kind: 'riverAgility' }, { id: 's2', kind: 'riverNav' }] as never;
+    const withPeril = [{ id: 's1', kind: 'riverAgility' }, { id: 'p1', kind: 'riverPerilCheck' }] as never;
+    expect(riverAutoResolves({ cadence: 'commande' }, routine)).toBe(true);
+    expect(riverAutoResolves({ cadence: 'commande' }, withPeril)).toBe(false);
   });
 });
 
@@ -169,6 +178,17 @@ describe('descente FLUVIALE COMMANDÉE (#91) — routine sans modale par jet', (
     const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0], { cadence: 'jour-par-jour' })!;
     set({ travelPlan: plan } as never);
     runRiverDays(get, set);
+    expect(get().pendingCascade).toBeTruthy();
+    expect(get().pendingCascade!.purpose).toBe('travelDay');
+  });
+
+  it('#351 : un péril-à-choix (Barrage) injecté en cadence COMMANDÉE bascule le jour en INTERACTIF (pas de résolution silencieuse)', () => {
+    const routeWithPeril = { ...get().worldMap!.routes[0], riverPerils: [{ perilId: 'barrage', chancePct: 100 }] };
+    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', routeWithPeril, { cadence: 'commande' })!;
+    set({ travelPlan: plan, worldMap: { ...get().worldMap!, routes: [routeWithPeril] } } as never);
+    runRiverDays(get, set);
+    // Le jour n'est PLUS de pure routine (route.riverPerils non vide) : la cascade s'ouvre et ATTEND,
+    // au lieu de se dérouler d'un bloc (aucun jet/choix silencieux).
     expect(get().pendingCascade).toBeTruthy();
     expect(get().pendingCascade!.purpose).toBe('travelDay');
   });

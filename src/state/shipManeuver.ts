@@ -63,7 +63,11 @@ export function forceCrewRole(crew: Combatant, roleId: string, cumul = false, se
  *  DOUBLE (l.19), + la bande de Moral (l.13 « bonus/pénalités… en masse »), + le **Manque de bras** global
  *  (`undercrew` : −2 DR/tranche de 10 % manquant + plafond Succès Minime, l.55), + `extraDR` (SABOTAGE,
  *  l.45-47 : −1..−5 DR imposés au Test d'équipage). Ce total tient lieu de DR de
- *  Navigation que la manœuvre (ch.13) module ensuite par le Man du navire. PUR. */
+ *  Navigation que la manœuvre (ch.13) module ensuite par le Man du navire. PUR — pending MULTI de COMBAT
+ *  (`ShipManeuverParticipant[]`, `roleId` matché à `essentialRoleId`, RollShell). Le même « essentiel ×2 »
+ *  (l.19) est ré-implémenté sur une forme DISTINCTE par `aggregateBatchRolls` (`cascade.ts`, `BatchParticipant[]`
+ *  + flag `essential` — Cascade `CascadeStep.participants`) : NON convergentes VOLONTAIREMENT, deux pendings
+ *  de forme différente (#351). */
 export function maneuverCrewTotal(
   participants: { roleId: string; result: CrewRoleRoll | null }[],
   essentialRoleId: string | undefined,
@@ -79,29 +83,6 @@ export function maneuverCrewTotal(
   let total = base + moraleBand(moraleScore).crewTestDR + (undercrew?.dr ?? 0) + extraDR;
   if (undercrew?.capSuccesMinime && total > 0) total = 0; // jamais mieux qu'un Succès Minime (l.55)
   return total;
-}
-
-/** Agrège les jets d'une étape/pending À PARTICIPANTS (batch multi, MDG ch.14) selon `aggregate` —
- *  PARTAGÉ par le seam de jet (`rollSeam.buildBatchStep`, surface I) et la cascade (`cascade.commitStep`,
- *  surfaces M/V — `CascadeStep.participants`, seam de jet #275 Décision 4 cran 1). PUR : `'best'` = le
- *  meilleur DR l'emporte (porte forcée), `'opposed'` = le total net d'une marge adverse (contresort),
- *  `'summed-dr'` (défaut) = la somme MDG ch.14 l.13 (`maneuverCrewTotal`, Test d'équipage). */
-export function aggregateCrewRolls(
-  rolled: { roleId: string; result: CrewRoleRoll | null }[],
-  aggregate: 'best' | 'opposed' | 'summed-dr' = 'summed-dr',
-  opts: { essentialRoleId?: string; moraleScore?: number; extraDR?: number; undercrew?: { dr: number; capSuccesMinime: boolean }; opposeSl?: number } = {},
-): { sl: number; success: boolean } {
-  if (aggregate === 'best') {
-    const best = rolled.reduce<CrewRoleRoll | null>((m, p) => (p.result && (!m || p.result.sl > m.sl) ? p.result : m), null);
-    const sl = best?.sl ?? 0;
-    return { sl, success: sl > 0 };
-  }
-  const total = maneuverCrewTotal(rolled, opts.essentialRoleId, opts.moraleScore ?? 0, opts.undercrew, opts.extraDR ?? 0);
-  if (aggregate === 'opposed') {
-    const sl = total - (opts.opposeSl ?? 0);
-    return { sl, success: sl > 0 };
-  }
-  return { sl: total, success: total >= 1 };
 }
 
 /** `ManeuverResult` d'un Test d'ÉQUIPAGE : le total d'équipage tient lieu de DR de Navigation ; le virage RÉUSSIT
@@ -145,12 +126,22 @@ export interface ManeuverResult extends ShipManeuverOutcome {
 }
 
 /** Paramètres de Manœuvre d'un navire, lus en DONNÉE (facette `ship` de `vehicles.json` + Traits/Améliorations
- *  + répartition des pièces). PUR — `M`/`Man`/`extraDR` EFFECTIFS (Lissage, Peu maniable, déséquilibre des bords). */
+ *  + répartition des pièces). PUR — `M`/`Man`/`extraDR` EFFECTIFS (Lissage, Peu maniable, déséquilibre des bords).
+ *  `extraDR` NE PORTE PAS le `skillDRBonus` ciblé `testType:"manoeuvre"` (#221) — SOURCE UNIQUE de son addition :
+ *  `openCrewTestPending` (combatSlice.ts, testTypeId='manoeuvre') pour le Test d'équipage ; `maneuverTestTypeDR`
+ *  ci-dessous pour le barreur SOLO (`deriveManeuver`, hors Test d'équipage) — jamais les deux à la fois. */
 export interface ManeuverParams {
   baseM: number;
   manoeuvre: number;
   extraDR: number;
   skillId: string;
+}
+/** `skillDRBonus` ciblé `testType:"manoeuvre"` (#221) — consommé UNIQUEMENT par `deriveManeuver` (barreur solo,
+ *  hors Test d'équipage) ; le Test d'équipage l'obtient déjà via `openCrewTestPending`. PUR. */
+function maneuverTestTypeDR(ship: Combatant): number {
+  const vd = ship.creatureId ? findVehicleById(ship.creatureId)?.ship : undefined;
+  const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
+  return navalTestTypeDR(navalTraits, 'manoeuvre');
 }
 export function shipManeuverParams(ship: Combatant): ManeuverParams {
   const vd = ship.creatureId ? findVehicleById(ship.creatureId)?.ship : undefined;
@@ -176,9 +167,9 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
     baseM: Math.round(((baseM + navalMoveMod(navalTraits) + place.m + (overload?.mMod ?? 0)) * mult.num) / mult.den),
     manoeuvre: (vd?.manoeuvre ?? 0) + place.man + (overload?.manoeuvreDR ?? 0),
     // « Bouteur » (T2C ch.10 l.66) → +20 au Test de Navigation pour diriger ; « Gréement de course » (l.137)
-    // → −10. Converti en DR d'équipage (`navalNavTestDR`, ÷10) — injecté ICI UNE fois (deriveManeuver[FromCrew]),
+    // → −10. Converti en DR d'équipage (`navalNavTestDR`, ÷10) — injecté ICI UNE fois (deriveManeuver/FromCrew),
     // jamais dans openCrewTestPending, pour ne pas double-compter.
-    extraDR: navalSkillTestDR(navalTraits, skillId) + navalTestTypeDR(navalTraits, 'manoeuvre') + navalNavTestDR(navalTraits) + place.navDR,
+    extraDR: navalSkillTestDR(navalTraits, skillId) + navalNavTestDR(navalTraits) + place.navDR,
     skillId,
   };
 }
@@ -191,7 +182,7 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
  *  jamais `dr ≥ 0` (qui conflaterait un d100 raté à DR 0 en faux succès, ou un d100 réussi à DR<0 en faux échec). */
 function deriveManeuver(ship: Combatant, nav: { sl: number; roll?: number; target?: number; success?: boolean }, helmsman?: string): ManeuverResult {
   const { baseM, manoeuvre, extraDR } = shipManeuverParams(ship);
-  const out = resolveShipManeuver(nav.sl, baseM, manoeuvre, extraDR);
+  const out = resolveShipManeuver(nav.sl, baseM, manoeuvre, extraDR + maneuverTestTypeDR(ship)); // barreur SOLO, hors Test d'équipage
   return { ...out, success: nav.success ?? out.success, navDR: nav.sl, roll: nav.roll, target: nav.target, helmsman, advanced: 0 };
 }
 
@@ -218,8 +209,8 @@ export function rollShipManeuver(get: Get, shipId: string, helmsmanId?: string):
 export function forceShipManeuver(ship: Combatant, prev: ManeuverResult | null): ManeuverResult | null {
   if (prev?.success) return null;
   const { manoeuvre, extraDR } = shipManeuverParams(ship);
-  // navDR tel que `dr = navDR + Man + extraDR = 0` ; réussite FORCÉE (le virage a lieu).
-  return deriveManeuver(ship, { sl: -(manoeuvre + extraDR), roll: prev?.roll ?? 1, target: prev?.target, success: true }, prev?.helmsman);
+  // navDR tel que `dr = navDR + Man + extraDR + maneuverTestTypeDR = 0` ; réussite FORCÉE (le virage a lieu).
+  return deriveManeuver(ship, { sl: -(manoeuvre + extraDR + maneuverTestTypeDR(ship)), roll: prev?.roll ?? 1, target: prev?.target, success: true }, prev?.helmsman);
 }
 
 /** Chance « +1 DR » (LDB 17 l.26) : re-dérive la manœuvre avec `navDR + 1` (meilleure Progression / collision) ;

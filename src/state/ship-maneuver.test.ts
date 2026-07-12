@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { rotateDir8, DIR8_DELTA } from './dir8';
 import { inFireArc, targetArc } from './fireArc';
 import { resolveShipManeuver } from '../engine/shipNavigation';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
-import { maneuverShip, rollShipManeuver, applyShipManeuver, forceShipManeuver, bonusShipManeuver, type ManeuverResult } from './shipManeuver';
+import { maneuverShip, rollShipManeuver, applyShipManeuver, forceShipManeuver, bonusShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew, shipManeuverParams, type ManeuverResult } from './shipManeuver';
+import * as navalTraitsMod from '../engine/navalTraits';
 import type { Combatant, NavalTraitRef, ShipPoste } from '../engine/types';
 
 /**
@@ -372,5 +373,42 @@ describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG c
     useGame.setState({ battle: { combatants: [ship(), helm()], order: ['helm'], turn: 0, acted: true } as never, party: [], facing: { ship: 'N' }, pendingShipManeuver: null, scene: null as never });
     useGame.getState().battleShipManeuver('helm');
     expect(useGame.getState().pendingShipManeuver).toBeNull();
+  });
+
+  // #351 : `navalTestTypeDR(traits,'manoeuvre')` (#221 skillDRBonus ciblé testType) était additionné DEUX fois
+  // (openCrewTestPending ET shipManeuverParams, consommé par deriveManeuverFromCrew) — site canonique désormais
+  // UNIQUE (openCrewTestPending, comme la bordée/le Test d'équipage générique) ; shipManeuverParams.extraDR ne
+  // porte plus JAMAIS de terme `testType`.
+  it('shipManeuverParams n’ajoute JAMAIS le mod `testType:"manoeuvre"` (site canonique = openCrewTestPending seul)', () => {
+    const shipC = ship();
+    const baseline = shipManeuverParams(shipC).extraDR; // sans mod `testType`
+    const spy = vi.spyOn(navalTraitsMod, 'navalTestTypeDR').mockImplementation((_traits, testTypeId) => (testTypeId === 'manoeuvre' ? 3 : 0));
+    try {
+      // Si shipManeuverParams consommait encore `navalTestTypeDR('manoeuvre')`, cette valeur (3) SE VERRAIT ICI —
+      // elle ne doit rien changer : le mod est UNIQUEMENT lu par `openCrewTestPending` (combatSlice.ts).
+      expect(shipManeuverParams(shipC).extraDR).toBe(baseline);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('Test d’équipage de manœuvre : le DR final ne compte le mod `testType:"manoeuvre"` qu’UNE SEULE fois', () => {
+    const spy = vi.spyOn(navalTraitsMod, 'navalTestTypeDR').mockImplementation((_traits, testTypeId) => (testTypeId === 'manoeuvre' ? 3 : 0));
+    try {
+      seedBattleRng(7);
+      useGame.setState({ battle: { combatants: [ship(), helm()], order: ['helm'], turn: 0, acted: false } as never, party: [helm()], facing: { ship: 'N' }, pendingShipManeuver: null, scene: null as never });
+      useGame.getState().battleShipManeuver('helm');
+      const p = useGame.getState().pendingShipManeuver!;
+      expect(p.extraDR).toBe(3); // openCrewTestPending : SEUL site d'addition du mod
+      useGame.getState().shipManeuverRoll('helm');
+      const rolled = useGame.getState().pendingShipManeuver!;
+      const total = maneuverCrewTotal(rolled.participants, rolled.essentialRoleId, rolled.moraleScore, rolled.undercrew, rolled.extraDR);
+      const shipC = useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!;
+      const params = shipManeuverParams(shipC); // n'a jamais lu le mod `testType` (test précédent)
+      const result = deriveManeuverFromCrew(shipC, total);
+      expect(result.dr).toBe(total + params.manoeuvre + params.extraDR); // AUCUN +3 caché en plus
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
