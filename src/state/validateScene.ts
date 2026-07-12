@@ -5,9 +5,8 @@ import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, E
 // canonique préserve l'ordre d'évaluation (un import direct de `combatEffects` ici casse la
 // liaison vive `fireScheduledEffects` que le store lit du baril sous le bundler).
 import { EFFECT_HANDLERS, type EffectHandler, type EffectRefCtx } from './combatFlow';
-import type { WorldMap } from './worldMap';
+import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
-import { findLieuServiceById } from '../data';
 
 export interface Warning {
   level: 'error' | 'warn';
@@ -33,13 +32,17 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     const poiIds = new Set<string>();
     for (const p of worldMap.places) {
       if (!sceneIds.has(p.scene)) addWm(p.id, `Lieu « ${p.label} » → scène inexistante « ${p.scene} »`);
+      // Cible RÉSOLUE via `placeServices` (source unique, `state/worldMap.ts`) — pas le seul catalogue
+      // `lieux-services.json` : un POI peut aussi cibler le port/marché AUTOMATIQUES du lieu (`id`
+      // `'port'`/`'marche'`), exactement ce que `CityHubScreen` résout à l'affichage (#360).
+      const resolvedServiceIds = new Set(placeServices(p).map((s) => s.id));
       for (const poi of p.poi ?? []) {
         if (poiIds.has(poi.id)) addWm(poi.id, `POI « ${poi.id} » du lieu « ${p.label} » : id dupliqué`);
         poiIds.add(poi.id);
         const hasScene = poi.sceneId != null, hasService = poi.serviceKind != null;
         if (hasScene === hasService) addWm(poi.id, `POI « ${poi.label} » (lieu « ${p.label} ») : cible EXCLUSIVE scène XOR service requise`);
         if (hasScene && !sceneIds.has(poi.sceneId!)) addWm(poi.id, `POI « ${poi.label} » → scène inexistante « ${poi.sceneId} »`);
-        if (hasService && !findLieuServiceById(poi.serviceKind!)) addWm(poi.id, `POI « ${poi.label} » → service inconnu « ${poi.serviceKind} »`);
+        if (hasService && !resolvedServiceIds.has(poi.serviceKind!)) addWm(poi.id, `POI « ${poi.label} » → service inconnu « ${poi.serviceKind} »`);
       }
     }
     for (const r of worldMap.routes) {

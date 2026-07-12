@@ -167,7 +167,10 @@ export function MapCanvas({ computeFit, background, chrome, paths = [], markers 
   const recenter = () => setView(fitRef.current());
 
   return (
-    <>
+    // Cadre au ratio EXACT du viewBox (`map-canvas-frame`) : les commandes de zoom s'ancrent à CE
+    // cadre (pas au conteneur englobant, souvent plus grand — lettrboxing) → toujours DANS le cadre,
+    // à toutes les largeurs (#360, débordement 360px partagé WorldMapView/CityHubScreen).
+    <div className="map-canvas-frame">
       <svg
         ref={svgRef}
         viewBox={`0 0 ${VB_W} ${VB_H}`}
@@ -224,6 +227,6 @@ export function MapCanvas({ computeFit, background, chrome, paths = [], markers 
         <button type="button" className="wm-zoom-btn" onClick={() => zoomBy(1 / 1.3)} title="Dézoomer" aria-label="Dézoomer">－</button>
         <button type="button" className="wm-zoom-btn" onClick={recenter} title="Recentrer" aria-label="Recentrer">✦</button>
       </div>
-    </>
+    </div>
   );
 }

@@ -3424,6 +3424,9 @@
      },
      {
       "kind": "forgeron"
+     },
+     {
+      "kind": "temple"
      }
     ],
     "poi": [
@@ -3444,6 +3447,24 @@
        "y": 60
       },
       "serviceKind": "forgeron"
+     },
+     {
+      "id": "salzenmund-temple",
+      "label": "Temple de Manann",
+      "pos": {
+       "x": 48,
+       "y": 30
+      },
+      "serviceKind": "temple"
+     },
+     {
+      "id": "salzenmund-port",
+      "label": "Le port",
+      "pos": {
+       "x": 15,
+       "y": 70
+      },
+      "serviceKind": "port"
      }
     ]
    },
@@ -3462,6 +3483,12 @@
     "services": [
      {
       "kind": "auberge"
+     },
+     {
+      "kind": "guilde"
+     },
+     {
+      "kind": "chantier"
      }
     ],
     "poi": [
@@ -3473,6 +3500,33 @@
        "y": 50
       },
       "serviceKind": "auberge"
+     },
+     {
+      "id": "erengrad-port",
+      "label": "Le port",
+      "pos": {
+       "x": 20,
+       "y": 70
+      },
+      "serviceKind": "port"
+     },
+     {
+      "id": "erengrad-guilde",
+      "label": "Guilde marchande",
+      "pos": {
+       "x": 60,
+       "y": 25
+      },
+      "serviceKind": "guilde"
+     },
+     {
+      "id": "erengrad-chantier",
+      "label": "Chantier naval",
+      "pos": {
+       "x": 75,
+       "y": 55
+      },
+      "serviceKind": "chantier"
      }
     ]
    }

@@ -644,19 +644,29 @@ const worldMap = {
     {
       id: 'salzenmund', label: 'Salzenmund', pos: { x: 25, y: 60 }, scene: 'ls-quai-salzenmund', icon: 'scenario/port',
       port: { ref: 'salzenmund' }, // #217 — Taille/Richesse/Production/Surplus/Demande RAW coulent du catalogue
-      services: [{ kind: 'auberge' }, { kind: 'forgeron' }],
-      // POI (#345 phase 5) : onglet Plan du hub — l'auberge et le forgeron du quai, cliquables sur le plan.
+      // `temple` : `naval-ports.json#salzenmund.desc` (RAW MDG p.138) — « Grand Temple d'Ulric et temple de
+      // Manann Resplendissant » — Frère Aldo (NPC de la scène) l'incarne (bénédiction du départ, #360).
+      services: [{ kind: 'auberge' }, { kind: 'forgeron' }, { kind: 'temple' }],
+      // POI (#345 phase 5, densifié #360) : onglet Plan du hub — services réels du quai, cliquables sur le plan.
       poi: [
         { id: 'salzenmund-auberge', label: 'Auberge du Port', pos: { x: 30, y: 45 }, serviceKind: 'auberge' },
         { id: 'salzenmund-forgeron', label: 'Arsenal du Port', pos: { x: 62, y: 60 }, serviceKind: 'forgeron' },
+        { id: 'salzenmund-temple', label: 'Temple de Manann', pos: { x: 48, y: 30 }, serviceKind: 'temple' },
+        { id: 'salzenmund-port', label: 'Le port', pos: { x: 15, y: 70 }, serviceKind: 'port' },
       ],
     },
     {
       id: 'erengrad', label: 'Erengrad', pos: { x: 78, y: 20 }, scene: 'ls-quai-erengrad', icon: 'scenario/port',
       port: { ref: 'erengrad' }, // #217
-      services: [{ kind: 'auberge' }],
+      // `guilde` : la guilde marchande d'Erengrad (dlg-rumeur-olg, prime sur Olg Blóðsalt) ; `chantier` :
+      // `naval-ports.json#erengrad.surplus` (RAW MDG p.138) — surplus « pièces détachées de navire » —
+      // le Charpentier de bord (NPC de la scène, réparation du Grimm) l'incarne (#360).
+      services: [{ kind: 'auberge' }, { kind: 'guilde' }, { kind: 'chantier' }],
       poi: [
         { id: 'erengrad-auberge', label: 'Auberge du Quai', pos: { x: 40, y: 50 }, serviceKind: 'auberge' },
+        { id: 'erengrad-port', label: 'Le port', pos: { x: 20, y: 70 }, serviceKind: 'port' },
+        { id: 'erengrad-guilde', label: 'Guilde marchande', pos: { x: 60, y: 25 }, serviceKind: 'guilde' },
+        { id: 'erengrad-chantier', label: 'Chantier naval', pos: { x: 75, y: 55 }, serviceKind: 'chantier' },
       ],
     },
   ],

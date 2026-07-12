@@ -474,7 +474,9 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
 .city-hub-service:hover { border-color: var(--accent); }
 .city-hub-service.active { border-color: var(--accent); background: var(--panel-strong, var(--panel)); }
 .city-hub-service-label { font-weight: 600; }
-.city-hub-detail { min-width: 0; }
+/* Largeur max + ancrage haut (#359) : sans borne, le détail (souvent quelques lignes courtes) file
+   sur toute la colonne `1fr` du master-detail — un panneau aéré-à-vide lit comme inachevé (charte). */
+.city-hub-detail { min-width: 0; max-width: min(640px, 96vw); }
 .city-hub-detail-head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
 .city-hub-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .city-hub-desc { font-size: 0.95em; }
@@ -499,3 +501,12 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   .city-hub-plan.master-detail { grid-template-columns: minmax(240px, 1.3fr) 1fr; }
 }
 .city-hub-plan-canvas { min-height: 220px; }
+/* En-tête mobile compact (#359) : `.port-purse` porte `margin-left:auto` (générique, `world-meta.css`)
+   qui consomme le reste de la ligne et rejette le bouton Fermer seul sur sa propre rangée à 360px ;
+   la pilule de date/météo/bourse se resserre pour tenir en 2 rangées max (titre + actions), jamais 3. */
+@media (max-width: 560px) {
+  .city-hub .worldmap-head-actions { gap: 6px; }
+  .city-hub .port-purse { margin-left: 0; font-size: 12px; }
+  .city-hub .hud-clock { height: 32px; padding: 0 8px; font-size: 11px; }
+  .city-hub .city-hub-weather { font-size: 12px; }
+}

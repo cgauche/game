@@ -56,9 +56,10 @@ export interface MapPlace {
 }
 
 /** Un POI de PLAN (#345 phase 5) : cible EXCLUSIVE `sceneId` (transition vers une scène du projet,
- *  `transitionTo`) OU `serviceKind` (id du catalogue `lieux-services.json` — le MÊME panneau de
- *  service que l'onglet Services), jamais les deux. `id` STABLE (référencé par l'éditeur et les
- *  tests) ; `label` est le SEUL champ d'affichage (doctrine ids internes, CLAUDE.md). */
+ *  `transitionTo`) OU `serviceKind` (`id` d'un service RÉSOLU du lieu — `placeServices`, dont le
+ *  port/marché AUTOMATIQUES `'port'`/`'marche'` — le MÊME panneau de service que l'onglet Services),
+ *  jamais les deux. `id` STABLE (référencé par l'éditeur et les tests, `validateScene`) ; `label` est
+ *  le SEUL champ d'affichage (doctrine ids internes, CLAUDE.md). */
 export interface PlacePoi {
   id: string;
   label: string;

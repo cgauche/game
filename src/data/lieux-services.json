@@ -18,5 +18,10 @@
     "id": "guilde",
     "label": "Guilde",
     "icon": "merchant/deal"
+  },
+  {
+    "id": "chantier",
+    "label": "Chantier naval",
+    "icon": "item/misc"
   }
 ]

@@ -142,16 +142,34 @@ describe('validateScene — Flow corrompu (crash n°2 éditeur, document ANCIEN)
 });
 
 describe('validateScene — POI de plan (#345 phase 5)', () => {
-  const place = (poi: MapPlace['poi']): MapPlace => ({ id: 'lieu', label: 'Lieu', pos: { x: 0, y: 0 }, scene: 'A', poi });
-  const wm = (poi: MapPlace['poi']): WorldMap => ({ id: 'w', nom: 'Carte', places: [place(poi)], routes: [] });
+  // `services` : le lieu doit RÉSOUDRE (`placeServices`) la cible d'un POI de service (#360 — un POI
+  // peut aussi cibler le port/marché AUTOMATIQUES du lieu, `'port'`/`'marche'`, pas que le catalogue).
+  const place = (poi: MapPlace['poi'], services?: MapPlace['services']): MapPlace => ({ id: 'lieu', label: 'Lieu', pos: { x: 0, y: 0 }, scene: 'A', poi, services });
+  const wm = (poi: MapPlace['poi'], services?: MapPlace['services']): WorldMap => ({ id: 'w', nom: 'Carte', places: [place(poi, services)], routes: [] });
 
   it('POI bien formé ciblant une scène du projet → aucune erreur', () => {
     const w = validateScene([base()], wm([{ id: 'poi-1', label: 'Entrée', pos: { x: 10, y: 10 }, sceneId: 'A' }]));
     expect(w.filter((x) => x.level === 'error')).toEqual([]);
   });
 
-  it('POI bien formé ciblant un service du catalogue → aucune erreur', () => {
-    const w = validateScene([base()], wm([{ id: 'poi-1', label: 'Auberge', pos: { x: 10, y: 10 }, serviceKind: 'auberge' }]));
+  it('POI bien formé ciblant un service DÉCLARÉ par le lieu → aucune erreur', () => {
+    const w = validateScene([base()], wm(
+      [{ id: 'poi-1', label: 'Auberge', pos: { x: 10, y: 10 }, serviceKind: 'auberge' }],
+      [{ kind: 'auberge' }],
+    ));
+    expect(w.filter((x) => x.level === 'error')).toEqual([]);
+  });
+
+  it('POI ciblant le PORT automatique du lieu (`serviceKind: "port"`, sans catalogue) → aucune erreur', () => {
+    const w = validateScene([base()], {
+      id: 'w', nom: 'Carte',
+      places: [{
+        id: 'lieu', label: 'Lieu', pos: { x: 0, y: 0 }, scene: 'A',
+        port: { ref: undefined, taille: 1, richesse: 1, production: [] } as unknown as MapPlace['port'],
+        poi: [{ id: 'poi-1', label: 'Le port', pos: { x: 10, y: 10 }, serviceKind: 'port' }],
+      }],
+      routes: [],
+    });
     expect(w.filter((x) => x.level === 'error')).toEqual([]);
   });
 

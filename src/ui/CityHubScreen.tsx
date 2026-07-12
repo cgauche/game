@@ -137,7 +137,7 @@ export function CityHubScreen({
           </ul>
           <div className="bar city-hub-actions">
             {svc.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: svc.rest, quality: rest?.quality })}>Dormir</button>}
-            <button type="button" className="btn" onClick={gatherInnInfo}>
+            <button type="button" className="btn btn-primary" onClick={gatherInnInfo}>
               Recueillir des informations (≈{Math.round(innGatherInfoMinutes() / 60)} h)
             </button>
           </div>
@@ -191,25 +191,36 @@ export function CityHubScreen({
 
   const detail = renderServiceDetail(sel);
 
-  const poiMarkers: MapMarker[] = poi.map((p) => ({
-    id: p.id,
-    x: p.pos.x,
-    y: p.pos.y * (VB_H / 100),
-    selected: poiSel?.id === p.id,
-    onClick: () => setPoiSelId(p.id),
-    cursor: 'pointer',
-    label: p.label,
-    children: (
-      <>
-        <circle r="3.4" fill="transparent" />
-        {poiSel?.id === p.id && <circle r="2.1" fill="none" stroke="var(--accent)" strokeWidth="0.4" opacity="0.95" />}
-        <circle r="1.5" fill="var(--wm-badge-bg)" stroke="var(--wm-age-spot)" strokeWidth="0.22" />
-        <g style={{ color: 'var(--wm-marker-icon)' }}>
-          <IconG id={p.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
-        </g>
-      </>
-    ),
-  }));
+  // Tailles de marqueur du plan : hit-circle ≥44px de cible tactile (le plan rend le viewBox 100×64 sur
+  // ~320-340px à 360 → r=6 en unités écran-constantes ≈ 41-44px de diamètre, pointer coarse #360).
+  // Cartouche du libellé au patron worldmap (`wm-cartouche-bg`/`fg`) mais TOUJOURS visible (pas
+  // seulement au survol : un plan de ville dense reste petit, ses POI restent peu nombreux).
+  const poiMarkers: MapMarker[] = poi.map((p) => {
+    const w = Math.max(9, p.label.length * 1.3 + 3.4);
+    return {
+      id: p.id,
+      x: p.pos.x,
+      y: p.pos.y * (VB_H / 100),
+      selected: poiSel?.id === p.id,
+      onClick: () => setPoiSelId(p.id),
+      cursor: 'pointer',
+      label: p.label,
+      children: (
+        <>
+          <circle r="6" fill="transparent" />
+          {poiSel?.id === p.id && <circle r="3" fill="none" stroke="var(--accent)" strokeWidth="0.45" opacity="0.95" />}
+          <circle r="2.2" fill="var(--wm-badge-bg)" stroke="var(--wm-age-spot)" strokeWidth="0.28" />
+          <g style={{ color: 'var(--wm-marker-icon)' }}>
+            <IconG id={p.icon ?? 'nav/entry-point'} x={-1.4} y={-1.4} size={2.8} />
+          </g>
+          <g transform="translate(0 4.7)">
+            <rect x={-w / 2} y="-2.1" width={w} height="3.4" rx="1.6" fill="var(--wm-cartouche-bg)" opacity="0.9" />
+            <text y="0.25" textAnchor="middle" fontSize="2.3" fontWeight={poiSel?.id === p.id ? 700 : 500} fill="var(--wm-cartouche-fg)">{p.label}</text>
+          </g>
+        </>
+      ),
+    };
+  });
 
   const poiServiceTarget = poiSel?.serviceKind ? services.find((s) => s.id === poiSel.serviceKind) : undefined;
   let poiDetail: React.ReactNode = null;
