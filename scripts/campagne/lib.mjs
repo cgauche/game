@@ -251,10 +251,11 @@ export function fouille(effectsOrFlow, consume = false) {
   return { interact: { flow, ...(consume ? { consume: true } : {}) } };
 }
 
-/** Statblocks d'AUTEUR conservés VERBATIM du projet Arène v1 (sourcés à leur création). */
+/** Statblocks d'AUTEUR (sourcés à leur création). */
 export const NUEE_DE_RATS = {
   name: 'Nuée de rats',
-  char: { M: 4, CC: 30, F: 25, E: 30, Ag: 40, B: 5 },
+  // Clés = `CharKey` (slugs pleins, #311/`src/engine/types.ts`) ∪ `M`/`B` (`CustomStatblock.char`).
+  char: { M: 4, 'capacite-de-combat': 30, force: 25, endurance: 30, agilite: 40, B: 5 },
   // `Taille` a `specsSource: sizes` (registre FERMÉ, ids en camelCase) : `parseTraitInstance` ne
   // normalise QUE le nom du trait, jamais son `arg` (#146) — on écrit donc directement l'id ('petite'),
   // pas le libellé du livre ('Petite'), pour ne pas régénérer la dérive libellé-pris-pour-un-id.
@@ -262,7 +263,20 @@ export const NUEE_DE_RATS = {
 };
 export const DRAGON_DES_TENEBRES = {
   name: 'Dragon des ténèbres',
-  char: { M: 6, CC: 55, CT: 45, F: 55, E: 55, I: 50, Ag: 35, Dex: 30, Int: 40, FM: 60, Soc: 40, B: 104 },
+  char: {
+    M: 6,
+    'capacite-de-combat': 55,
+    'capacite-de-tir': 45,
+    force: 55,
+    endurance: 55,
+    initiative: 50,
+    agilite: 35,
+    dexterite: 30,
+    intelligence: 40,
+    'force-mentale': 60,
+    sociabilite: 40,
+    B: 104,
+  },
   // Taille : id du registre FERMÉ ('monstrueuse'), cf. commentaire NUEE_DE_RATS. Souffle (Ténèbres) reste
   // un descripteur LIBRE (registre `breath-types.json` : Feu/Froid/Corrosif/Électrique/Poison/Fumée
   // seulement — « Ténèbres » n'y figure pas, trait ouvert `specsOpen`, texte verbatim légitime).
