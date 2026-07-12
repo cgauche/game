@@ -59,9 +59,12 @@ export interface MapCanvasProps {
   overlay?: (view: Viewport) => ReactNode;
   className?: string;
   ariaLabel?: string;
+  /** Clic sur le FOND (hors tracé/marqueur) en coordonnées logiques du viewBox — placement d'auteur
+   *  (éditeur, #345 : positionner un POI). Absent = fond non cliquable (comportement historique). */
+  onBackgroundClick?: (p: { x: number; y: number }) => void;
 }
 
-export function MapCanvas({ computeFit, background, chrome, paths = [], markers = [], overlay, className, ariaLabel }: MapCanvasProps) {
+export function MapCanvas({ computeFit, background, chrome, paths = [], markers = [], overlay, className, ariaLabel, onBackgroundClick }: MapCanvasProps) {
   const [view, setView] = useState<Viewport>(computeFit);
   // computeFit change à chaque rendu (capture la sélection/les routes courantes) : on lit la DERNIÈRE
   // version au clic « recentrer », sans re-cadrer à chaque rendu.
@@ -144,6 +147,13 @@ export function MapCanvas({ computeFit, background, chrome, paths = [], markers 
   const swallowClickAfterDrag = (e: ReactMouseEvent) => {
     if (draggedRef.current) { e.stopPropagation(); draggedRef.current = false; }
   };
+  // Clic sur le fond (bulle APRÈS les handlers de tracé/marqueur, capturés par `swallowClickAfterDrag`
+  // qui a déjà stoppé la propagation d'un clic post-glisser) : placement d'auteur.
+  const onBgClick = (e: ReactMouseEvent<SVGSVGElement>) => {
+    if (!onBackgroundClick) return;
+    const p = screenToVb(e.clientX, e.clientY);
+    onBackgroundClick({ x: Math.max(0, Math.min(VB_W, p.x)), y: Math.max(0, Math.min(VB_H, p.y)) });
+  };
 
   const zoomBy = (factor: number) =>
     setView((v) => {
@@ -167,7 +177,8 @@ export function MapCanvas({ computeFit, background, chrome, paths = [], markers 
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onClickCapture={swallowClickAfterDrag}
-        style={{ touchAction: 'none', cursor: ptrs.current.size ? 'grabbing' : 'grab' }}
+        onClick={onBgClick}
+        style={{ touchAction: 'none', cursor: ptrs.current.size ? 'grabbing' : (onBackgroundClick ? 'crosshair' : 'grab') }}
       >
         {chrome}
         <g transform={`translate(${view.panX} ${view.panY}) scale(${view.z})`}>

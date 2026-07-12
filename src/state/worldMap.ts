@@ -47,6 +47,25 @@ export interface MapPlace {
    *  une liste unique. Une auberge peut porter son offre de couchage PROPRE (`rest`) ou, à défaut,
    *  dériver de l'offre de repos de la scène liée. */
   services?: PlaceService[];
+  /** POI (#345 phase 5, option A) : marqueurs cliquables du PLAN de ce lieu (onglet Plan du hub,
+   *  `MapCanvas` en second consommateur — AUCUNE forme nouvelle, juste des marqueurs). Position en
+   *  coordonnées PLAN-LOCALES 0-100 (indépendantes de `pos`, qui reste la position du lieu sur la
+   *  carte du MONDE). Absent/vide ⇒ le lieu n'offre pas d'onglet Plan. */
+  poi?: PlacePoi[];
+}
+
+/** Un POI de PLAN (#345 phase 5) : cible EXCLUSIVE `sceneId` (transition vers une scène du projet,
+ *  `transitionTo`) OU `serviceKind` (id du catalogue `lieux-services.json` — le MÊME panneau de
+ *  service que l'onglet Services), jamais les deux. `id` STABLE (référencé par l'éditeur et les
+ *  tests) ; `label` est le SEUL champ d'affichage (doctrine ids internes, CLAUDE.md). */
+export interface PlacePoi {
+  id: string;
+  label: string;
+  pos: { x: number; y: number };
+  /** Icône du médaillon (id du registre `src/ui/icons`), défaut `nav/entry-point`. */
+  icon?: string;
+  sceneId?: string;
+  serviceKind?: string;
 }
 
 /** Un service EXTENSIBLE attaché à un lieu (catalogue `lieux-services.json`) — hors port/marché, qui

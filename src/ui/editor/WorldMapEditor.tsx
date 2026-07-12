@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Scene } from '../../state/scene';
-import { WorldMap, MapPlace, MapRoute, emptyWorldMap, placeById } from '../../state/worldMap';
+import { WorldMap, MapPlace, MapRoute, type PlacePoi, emptyWorldMap, placeById } from '../../state/worldMap';
 import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
 import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
 import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
@@ -10,6 +10,9 @@ import { EffectList } from './EffectList';
 import { Icon, IconG } from '../Icon';
 import { ScreenShell } from '../ScreenShell';
 import { Prose } from '../Prose';
+import { MapCanvas } from '../MapCanvas';
+import { planChrome } from '../PlanChrome';
+import { VB_W, VB_H } from '../worldMapViewport';
 
 /** Libellés des Tailles de communauté (T2C ch.11 l.44-50, indices 1-4). */
 const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
@@ -46,6 +49,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
   const m: WorldMap = map ?? emptyWorldMap();
   const [sel, setSel] = useState<{ kind: 'place' | 'route'; id: string } | null>(null);
   const [linkFrom, setLinkFrom] = useState<string | null>(null);
+  const [poiSel, setPoiSel] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<string | null>(null); // lieu en cours de glisser (ref : voir « Pièges connus »)
 
@@ -441,6 +445,108 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                 );
               })}
               <p className="ed-hint">L'auberge dérive aussi de l'offre de repos de la scène liée (onglet Scène) : inutile de la cocher ici si la scène l'offre déjà.</p>
+
+              {/* ── POI du plan de ce lieu (onglet Plan du hub, #345 phase 5) ── */}
+              <div className="mini-title">Points d'intérêt du plan (onglet Plan du hub)</div>
+              {(() => {
+                const poiList = selPlace.poi ?? [];
+                const activePoiId = poiList.some((p) => p.id === poiSel) ? poiSel : null;
+                const updPoi = (id: string, patch: Partial<PlacePoi>) =>
+                  updPlace(selPlace.id, { poi: poiList.map((x) => (x.id === id ? { ...x, ...patch } : x)) });
+                return (
+                  <>
+                    {poiList.map((poi) => (
+                      <div key={poi.id} className={`wme-poi${activePoiId === poi.id ? ' active' : ''}`}>
+                        <label className="ed-field">Libellé
+                          <input value={poi.label} onChange={(e) => updPoi(poi.id, { label: e.target.value })} />
+                        </label>
+                        <label className="ed-field">Icône (id du registre `src/ui/icons`, vide = épingle par défaut)
+                          <input value={poi.icon ?? ''} placeholder="vide = épingle par défaut" onChange={(e) => updPoi(poi.id, { icon: e.target.value || undefined })} />
+                        </label>
+                        <label className="ed-field">Cible (scène OU service, exclusif)
+                          <select
+                            value={poi.sceneId != null ? 'scene' : poi.serviceKind != null ? 'service' : ''}
+                            onChange={(e) => {
+                              if (e.target.value === 'scene') updPoi(poi.id, { sceneId: scenes[0]?.id ?? '', serviceKind: undefined });
+                              else if (e.target.value === 'service') updPoi(poi.id, { serviceKind: lieuxServices[0]?.id ?? '', sceneId: undefined });
+                              else updPoi(poi.id, { sceneId: undefined, serviceKind: undefined });
+                            }}
+                          >
+                            <option value="">— choisir —</option>
+                            <option value="scene">Scène du projet</option>
+                            <option value="service">Service (catalogue)</option>
+                          </select>
+                        </label>
+                        {poi.sceneId != null && (
+                          <label className="ed-field">Scène
+                            <select value={poi.sceneId} onChange={(e) => updPoi(poi.id, { sceneId: e.target.value })}>
+                              {scenes.map((s) => <option key={s.id} value={s.id}>{s.nom} ({s.id})</option>)}
+                            </select>
+                          </label>
+                        )}
+                        {poi.serviceKind != null && (
+                          <label className="ed-field">Service
+                            <select value={poi.serviceKind} onChange={(e) => updPoi(poi.id, { serviceKind: e.target.value })}>
+                              {lieuxServices.map((sv) => <option key={sv.id} value={sv.id}>{sv.label}</option>)}
+                            </select>
+                          </label>
+                        )}
+                        <div className="bar">
+                          <button
+                            type="button"
+                            className={`btn small${activePoiId === poi.id ? ' btn-primary' : ''}`}
+                            onClick={() => setPoiSel(activePoiId === poi.id ? null : poi.id)}
+                          >
+                            {activePoiId === poi.id ? 'Cliquez le plan pour placer…' : 'Placer sur le plan'}
+                          </button>
+                          <button type="button" className="btn small" onClick={() => { const next = poiList.filter((x) => x.id !== poi.id); updPlace(selPlace.id, { poi: next.length ? next : undefined }); if (activePoiId === poi.id) setPoiSel(null); }}>
+                            <Icon id="ui/delete" size="sm" /> Retirer ce POI
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      className="btn small"
+                      onClick={() => {
+                        const id = `poi-${Date.now().toString(36)}`;
+                        const p: PlacePoi = { id, label: 'Nouveau point', pos: { x: 50, y: 50 } };
+                        updPlace(selPlace.id, { poi: [...poiList, p] });
+                        setPoiSel(id);
+                      }}
+                    >
+                      + Point d'intérêt
+                    </button>
+                    <div className="wme-poi-plan">
+                      <MapCanvas
+                        ariaLabel="Aperçu de placement des POI"
+                        computeFit={() => ({ z: 1, panX: 0, panY: 0 })}
+                        chrome={planChrome()}
+                        markers={poiList.map((poi) => ({
+                          id: poi.id,
+                          x: poi.pos.x,
+                          y: poi.pos.y * (VB_H / 100),
+                          selected: activePoiId === poi.id,
+                          cursor: 'default',
+                          children: (
+                            <>
+                              <circle r="1.5" fill="var(--wm-badge-bg)" stroke="var(--wm-age-spot)" strokeWidth="0.22" />
+                              <g style={{ color: 'var(--wm-marker-icon)' }}>
+                                <IconG id={poi.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
+                              </g>
+                            </>
+                          ),
+                        }))}
+                        onBackgroundClick={activePoiId ? (p) => {
+                          const pos = { x: Math.round((p.x / VB_W) * 100), y: Math.round((p.y / VB_H) * 100) };
+                          updPoi(activePoiId, { pos });
+                        } : undefined}
+                      />
+                      <p className="hint">{activePoiId ? 'Cliquez le plan pour placer le POI sélectionné.' : 'Sélectionnez « Placer sur le plan » sur un POI, puis cliquez ce plan.'}</p>
+                    </div>
+                  </>
+                );
+              })()}
             </>
           )}
 

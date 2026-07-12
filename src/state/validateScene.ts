@@ -7,6 +7,7 @@ import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, E
 import { EFFECT_HANDLERS, type EffectHandler, type EffectRefCtx } from './combatFlow';
 import type { WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
+import { findLieuServiceById } from '../data';
 
 export interface Warning {
   level: 'error' | 'warn';
@@ -29,7 +30,18 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     const addWm = (refId: string, message: string) =>
       out.push({ level: 'error', sceneId: worldMap.id, scope: 'worldMap', refId, message });
     const placeIds = new Set(worldMap.places.map((p) => p.id));
-    for (const p of worldMap.places) if (!sceneIds.has(p.scene)) addWm(p.id, `Lieu « ${p.label} » → scène inexistante « ${p.scene} »`);
+    const poiIds = new Set<string>();
+    for (const p of worldMap.places) {
+      if (!sceneIds.has(p.scene)) addWm(p.id, `Lieu « ${p.label} » → scène inexistante « ${p.scene} »`);
+      for (const poi of p.poi ?? []) {
+        if (poiIds.has(poi.id)) addWm(poi.id, `POI « ${poi.id} » du lieu « ${p.label} » : id dupliqué`);
+        poiIds.add(poi.id);
+        const hasScene = poi.sceneId != null, hasService = poi.serviceKind != null;
+        if (hasScene === hasService) addWm(poi.id, `POI « ${poi.label} » (lieu « ${p.label} ») : cible EXCLUSIVE scène XOR service requise`);
+        if (hasScene && !sceneIds.has(poi.sceneId!)) addWm(poi.id, `POI « ${poi.label} » → scène inexistante « ${poi.sceneId} »`);
+        if (hasService && !findLieuServiceById(poi.serviceKind!)) addWm(poi.id, `POI « ${poi.label} » → service inconnu « ${poi.serviceKind} »`);
+      }
+    }
     for (const r of worldMap.routes) {
       for (const end of [r.a, r.b] as const) if (!placeIds.has(end)) addWm(r.id, `Route « ${r.id} » → lieu inexistant « ${end} »`);
       const amb = r.ambush;

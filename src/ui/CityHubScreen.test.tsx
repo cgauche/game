@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cityHubServices } from './CityHubScreen';
+import { cityHubServices, cityHubHasPlan } from './CityHubScreen';
 import { restServicePrice } from '../state/restFlow';
 import { atLocationPlace, type MapPlace, type WorldMap } from '../state/worldMap';
 import { findTrappingById } from '../data';
@@ -39,6 +39,15 @@ describe('cityHubServices — composition des services d’un lieu (#343)', () =
 
   it('lieu sans service ni offre : liste vide (le hub n’a alors rien à ouvrir)', () => {
     expect(cityHubServices(place())).toEqual([]);
+  });
+});
+
+describe('cityHubHasPlan — porte de l’onglet Plan (#345 phase 5)', () => {
+  it('lieu sans POI : pas d’onglet Plan', () => {
+    expect(cityHubHasPlan(place())).toBe(false);
+  });
+  it('lieu avec au moins un POI : onglet Plan', () => {
+    expect(cityHubHasPlan(place({ poi: [{ id: 'poi-1', label: 'Auberge', pos: { x: 10, y: 10 }, serviceKind: 'auberge' }] }))).toBe(true);
   });
 });
 

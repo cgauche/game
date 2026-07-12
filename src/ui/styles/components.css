@@ -491,3 +491,6 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   .city-hub-services { flex-direction: row; flex-wrap: wrap; }
   .city-hub-service { flex: 1 1 140px; }
 }
+/* Onglet Plan (#345 phase 5) : le plan a besoin de plus de largeur que la liste de services étroite. */
+.city-hub-plan.master-detail { grid-template-columns: minmax(240px, 1.3fr) 1fr; }
+.city-hub-plan-canvas { min-height: 220px; }

@@ -644,10 +644,20 @@ const worldMap = {
     {
       id: 'salzenmund', label: 'Salzenmund', pos: { x: 25, y: 60 }, scene: 'ls-quai-salzenmund', icon: 'scenario/port',
       port: { ref: 'salzenmund' }, // #217 — Taille/Richesse/Production/Surplus/Demande RAW coulent du catalogue
+      services: [{ kind: 'auberge' }, { kind: 'forgeron' }],
+      // POI (#345 phase 5) : onglet Plan du hub — l'auberge et le forgeron du quai, cliquables sur le plan.
+      poi: [
+        { id: 'salzenmund-auberge', label: 'Auberge du Port', pos: { x: 30, y: 45 }, serviceKind: 'auberge' },
+        { id: 'salzenmund-forgeron', label: 'Arsenal du Port', pos: { x: 62, y: 60 }, serviceKind: 'forgeron' },
+      ],
     },
     {
       id: 'erengrad', label: 'Erengrad', pos: { x: 78, y: 20 }, scene: 'ls-quai-erengrad', icon: 'scenario/port',
       port: { ref: 'erengrad' }, // #217
+      services: [{ kind: 'auberge' }],
+      poi: [
+        { id: 'erengrad-auberge', label: 'Auberge du Quai', pos: { x: 40, y: 50 }, serviceKind: 'auberge' },
+      ],
     },
   ],
   routes: [

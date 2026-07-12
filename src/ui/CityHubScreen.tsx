@@ -7,10 +7,14 @@ import { findLandCargoById } from '../engine/landCargo';
 import { innGatherInfoMinutes } from '../state/innFlow';
 import { ScreenShell } from './ScreenShell';
 import { MasterDetail } from './MasterDetail';
+import { Tabs, type TabItem } from './Tabs';
+import { MapCanvas, type MapMarker } from './MapCanvas';
+import { planChrome } from './PlanChrome';
+import { VB_H } from './worldMapViewport';
 import { Prose } from './Prose';
 import { Coins } from './Coins';
 import { GameDate } from './GameDate';
-import { Icon } from './Icon';
+import { Icon, IconG } from './Icon';
 
 /**
  * HUB DE VILLE (#343) — l'écran UNIQUE d'un LIEU de la carte : on n'empile plus des boutons flottants
@@ -38,6 +42,13 @@ const SCENE_WEATHER_LABEL: Record<NonNullable<Scene['weather']>, string> = {
  *  PURE testable (composition + ordre : port, marché, puis services de catalogue dont l'auberge). */
 export function cityHubServices(place: MapPlace, scene?: Scene): ResolvedPlaceService[] {
   return placeServices(place, scene);
+}
+
+/** Porte de l'onglet Plan (#345 phase 5) — surface PURE testable : le lieu doit porter au moins un
+ *  POI, sinon l'onglet n'a rien à montrer et reste absent (source unique de la condition d'affichage,
+ *  partagée par `CityHubScreen` et son test). */
+export function cityHubHasPlan(place: MapPlace): boolean {
+  return (place.poi ?? []).length > 0;
 }
 
 /** Icône de repli d'un service (le catalogue fournit la sienne ; défauts par catégorie). */
@@ -83,6 +94,7 @@ export function CityHubScreen({
   const openPort = useGame((s) => s.openPort);
   const openLandMarket = useGame((s) => s.openLandMarket);
   const gatherInnInfo = useGame((s) => s.gatherInnInfo);
+  const transitionTo = useGame((s) => s.transitionTo);
 
   const base = cityHubServices(place, scene);
   // Couchage sur place SANS auberge déclarée (camp/maison) : un service « Repos » de repli, pour que le
@@ -93,66 +105,117 @@ export function CityHubScreen({
   const [selId, setSelId] = useState<string | null>(services[0]?.id ?? null);
   const sel = services.find((s) => s.id === selId) ?? services[0];
 
+  const poi = place.poi ?? [];
+  const [screenTab, setScreenTab] = useState<'services' | 'plan'>('services');
+  const [poiSelId, setPoiSelId] = useState<string | null>(null);
+  const poiSel = poi.find((p) => p.id === poiSelId) ?? poi[0];
+
   // « Entrer » un écran plein-champ existant : on FERME le hub d'abord (pas de ScreenShell imbriqué).
   const enter = (open: () => void) => { onClose(); open(); };
 
-  let detail: React.ReactNode = null;
-  if (!sel) {
-    detail = <p className="city-hub-empty">Ce lieu n’offre encore aucun service.</p>;
-  } else if (sel.category === 'auberge') {
-    detail = (
-      <div className="city-hub-panel">
-        {sel.desc && <div className="city-hub-desc"><Prose md={sel.desc} /></div>}
-        <ul className="city-hub-prices">
-          <li><span>Chambre privée / nuit</span><b><Coins money={restServicePrice('privee')} /></b></li>
-          <li><span>Chambre commune / nuit</span><b><Coins money={restServicePrice('commune')} /></b></li>
-          <li><span>Repas</span><b><Coins money={restServicePrice('repas')} /></b></li>
-        </ul>
-        <div className="bar city-hub-actions">
-          {sel.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: sel.rest, quality: rest?.quality })}>Dormir</button>}
-          <button type="button" className="btn" onClick={gatherInnInfo}>
-            Recueillir des informations (≈{Math.round(innGatherInfoMinutes() / 60)} h)
-          </button>
+  /** Panneau de détail d'un SERVICE résolu — source UNIQUE, appelée pour la sélection de l'onglet
+   *  Services ET pour un POI de plan ciblant un `serviceKind` (#345 : zéro copie du renderer). */
+  const renderServiceDetail = (svc: ResolvedPlaceService | undefined): React.ReactNode => {
+    if (!svc) return <p className="city-hub-empty">Ce lieu n’offre encore aucun service.</p>;
+    if (svc.category === 'auberge') {
+      return (
+        <div className="city-hub-panel">
+          {svc.desc && <div className="city-hub-desc"><Prose md={svc.desc} /></div>}
+          <ul className="city-hub-prices">
+            <li><span>Chambre privée / nuit</span><b><Coins money={restServicePrice('privee')} /></b></li>
+            <li><span>Chambre commune / nuit</span><b><Coins money={restServicePrice('commune')} /></b></li>
+            <li><span>Repas</span><b><Coins money={restServicePrice('repas')} /></b></li>
+          </ul>
+          <div className="bar city-hub-actions">
+            {svc.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: svc.rest, quality: rest?.quality })}>Dormir</button>}
+            <button type="button" className="btn" onClick={gatherInnInfo}>
+              Recueillir des informations (≈{Math.round(innGatherInfoMinutes() / 60)} h)
+            </button>
+          </div>
+          <section className="city-hub-rumours">
+            <h4>Rumeurs déjà glanées</h4>
+            {tradeRumours.length === 0
+              ? <p className="city-hub-empty">Aucune rumeur pour l’instant.</p>
+              : <ul className="city-hub-hint">{tradeRumours.map((r, i) => {
+                  const target = worldMap?.places.find((p) => p.id === r.placeId)?.label ?? r.placeId;
+                  const biens = r.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ');
+                  return <li key={i}>{biens} — recherchés à {target}.</li>;
+                })}</ul>}
+          </section>
         </div>
-        <section className="city-hub-rumours">
-          <h4>Rumeurs déjà glanées</h4>
-          {tradeRumours.length === 0
-            ? <p className="city-hub-empty">Aucune rumeur pour l’instant.</p>
-            : <ul className="city-hub-hint">{tradeRumours.map((r, i) => {
-                const target = worldMap?.places.find((p) => p.id === r.placeId)?.label ?? r.placeId;
-                const biens = r.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ');
-                return <li key={i}>{biens} — recherchés à {target}.</li>;
-              })}</ul>}
-        </section>
+      );
+    }
+    if (svc.category === 'port' && svc.port) {
+      return (
+        <div className="city-hub-panel">
+          <ProfileSynth taille={svc.port.taille} richesse={svc.port.richesse} production={svc.port.production} />
+          <div className="bar city-hub-actions">
+            <button type="button" className="btn btn-primary" onClick={() => enter(openPort)}>Entrer au port</button>
+          </div>
+        </div>
+      );
+    }
+    if (svc.category === 'marche' && svc.market) {
+      return (
+        <div className="city-hub-panel">
+          <ProfileSynth taille={svc.market.taille} richesse={svc.market.richesse} production={svc.market.produits} />
+          <div className="bar city-hub-actions">
+            <button type="button" className="btn btn-primary" onClick={() => enter(openLandMarket)}>Entrer au marché</button>
+          </div>
+        </div>
+      );
+    }
+    // Service de catalogue sans écran dédié (temple/forgeron/guilde) : desc si le catalogue la porte,
+    // sinon un constat FACTUEL (aucune promesse « à venir » non fondée par la donnée, cf. règle 1/7).
+    return (
+      <div className="city-hub-panel">
+        {svc.desc ? <div className="city-hub-desc"><Prose md={svc.desc} /></div> : <p className="city-hub-empty">Ce service n’a pas encore d’écran dédié.</p>}
       </div>
     );
-  } else if (sel.category === 'port' && sel.port) {
-    detail = (
+  };
+
+  const detail = renderServiceDetail(sel);
+
+  const poiMarkers: MapMarker[] = poi.map((p) => ({
+    id: p.id,
+    x: p.pos.x,
+    y: p.pos.y * (VB_H / 100),
+    selected: poiSel?.id === p.id,
+    onClick: () => setPoiSelId(p.id),
+    cursor: 'pointer',
+    children: (
+      <>
+        <circle r="3.4" fill="transparent" />
+        {poiSel?.id === p.id && <circle r="2.1" fill="none" stroke="var(--accent)" strokeWidth="0.4" opacity="0.95" />}
+        <circle r="1.5" fill="var(--wm-badge-bg)" stroke="var(--wm-age-spot)" strokeWidth="0.22" />
+        <g style={{ color: 'var(--wm-marker-icon)' }}>
+          <IconG id={p.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
+        </g>
+      </>
+    ),
+  }));
+
+  const poiServiceTarget = poiSel?.serviceKind ? services.find((s) => s.id === poiSel.serviceKind) : undefined;
+  let poiDetail: React.ReactNode = null;
+  if (!poiSel) {
+    poiDetail = <p className="city-hub-empty">Ce lieu n’a aucun point d’intérêt.</p>;
+  } else if (poiSel.sceneId) {
+    poiDetail = (
       <div className="city-hub-panel">
-        <ProfileSynth taille={sel.port.taille} richesse={sel.port.richesse} production={sel.port.production} />
+        <p className="city-hub-desc">Ce point mène à un autre endroit.</p>
         <div className="bar city-hub-actions">
-          <button type="button" className="btn btn-primary" onClick={() => enter(openPort)}>Entrer au port</button>
-        </div>
-      </div>
-    );
-  } else if (sel.category === 'marche' && sel.market) {
-    detail = (
-      <div className="city-hub-panel">
-        <ProfileSynth taille={sel.market.taille} richesse={sel.market.richesse} production={sel.market.produits} />
-        <div className="bar city-hub-actions">
-          <button type="button" className="btn btn-primary" onClick={() => enter(openLandMarket)}>Entrer au marché</button>
+          <button type="button" className="btn btn-primary" onClick={() => enter(() => transitionTo(poiSel.sceneId!))}>Entrer</button>
         </div>
       </div>
     );
   } else {
-    // Service de catalogue sans écran dédié (temple/forgeron/guilde) : desc si le catalogue la porte,
-    // sinon un constat FACTUEL (aucune promesse « à venir » non fondée par la donnée, cf. règle 1/7).
-    detail = (
-      <div className="city-hub-panel">
-        {sel.desc ? <div className="city-hub-desc"><Prose md={sel.desc} /></div> : <p className="city-hub-empty">Ce service n’a pas encore d’écran dédié.</p>}
-      </div>
-    );
+    poiDetail = renderServiceDetail(poiServiceTarget);
   }
+
+  const screenTabs: TabItem<'services' | 'plan'>[] = [
+    { key: 'services', label: 'Services' },
+    ...(cityHubHasPlan(place) ? [{ key: 'plan' as const, label: 'Plan' }] : []),
+  ];
 
   return (
     <ScreenShell
@@ -165,35 +228,59 @@ export function CityHubScreen({
         {scene?.weather && <span className="city-hub-weather">· {SCENE_WEATHER_LABEL[scene.weather]}</span>}
         <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
       </>}
+      tabs={screenTabs.length > 1 ? <Tabs tabs={screenTabs} active={screenTab} onChange={setScreenTab} label={`Onglets de ${place.label}`} /> : undefined}
     >
       <div className="city-hub-body">
-        <MasterDetail
-          className="city-hub-master"
-          listLabel="Services du lieu"
-          list={
-            <div className="city-hub-services" role="listbox" aria-label="Services du lieu">
-              {services.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  role="option"
-                  aria-selected={sel?.id === s.id}
-                  className={`city-hub-service${sel?.id === s.id ? ' active' : ''}`}
-                  onClick={() => setSelId(s.id)}
-                >
-                  <Icon id={serviceIcon(s)} size="sm" />
-                  <span className="city-hub-service-label">{s.label}</span>
-                </button>
-              ))}
-            </div>
-          }
-          detail={
-            <div className="city-hub-detail">
-              {sel && <h3 className="city-hub-detail-head"><Icon id={serviceIcon(sel)} size="sm" /> {sel.label}</h3>}
-              {detail}
-            </div>
-          }
-        />
+        {screenTab === 'plan' && poi.length > 0 ? (
+          <MasterDetail
+            className="city-hub-master city-hub-plan"
+            listLabel={`Plan de ${place.label}`}
+            list={
+              <div className="worldmap-canvas city-hub-plan-canvas">
+                <MapCanvas
+                  ariaLabel={`Plan de ${place.label}`}
+                  computeFit={() => ({ z: 1, panX: 0, panY: 0 })}
+                  chrome={planChrome()}
+                  markers={poiMarkers}
+                />
+              </div>
+            }
+            detail={
+              <div className="city-hub-detail">
+                {poiSel && <h3 className="city-hub-detail-head"><Icon id={poiSel.icon ?? 'nav/entry-point'} size="sm" /> {poiSel.label}</h3>}
+                {poiDetail}
+              </div>
+            }
+          />
+        ) : (
+          <MasterDetail
+            className="city-hub-master"
+            listLabel="Services du lieu"
+            list={
+              <div className="city-hub-services" role="listbox" aria-label="Services du lieu">
+                {services.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="option"
+                    aria-selected={sel?.id === s.id}
+                    className={`city-hub-service${sel?.id === s.id ? ' active' : ''}`}
+                    onClick={() => setSelId(s.id)}
+                  >
+                    <Icon id={serviceIcon(s)} size="sm" />
+                    <span className="city-hub-service-label">{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            }
+            detail={
+              <div className="city-hub-detail">
+                {sel && <h3 className="city-hub-detail-head"><Icon id={serviceIcon(sel)} size="sm" /> {sel.label}</h3>}
+                {detail}
+              </div>
+            }
+          />
+        )}
       </div>
     </ScreenShell>
   );
