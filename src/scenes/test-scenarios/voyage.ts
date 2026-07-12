@@ -68,11 +68,12 @@ const village = buildScene({
   weather: 'pluie', // nuit dehors = Exposition (la météo de la scène de départ suit le voyage)
   rest: { auberge: true },
   startMessage:
-    'Ouvrez la carte du monde pour voyager : le hameau (24 km, route peu sûre), le bourg (30 km, diligence, relais) — ' +
-    'et depuis le hameau, la LONGUE route d’Altdorf (96 km, 3 nuits). Chacun tient son POSTE (Bjorn au plein air, ' +
-    'Mira aux aguets, Aldric cartographie, Greta fourrage) — le mode Étapes (EDOC) est activé, coupable au panneau ' +
-    'Règles maison. Le groupe part blessé : chaque nuit, le bilan montre récupération, faim, Vérole et cauchemars. ' +
-    'À Altdorf, marchez sur le cercle : l’interlude d’Activités s’ouvre.',
+    'L’aubergiste essuie un verre en jaugeant le groupe. « La route du hameau (24 km) n’est pas sûre, mais le bourg ' +
+    '(30 km) a ses relais et sa diligence — et depuis le hameau, la longue route d’Altdorf (96 km) vous prendra trois ' +
+    'nuits. » Chacun tient déjà son poste de voyage : Bjorn au plein air, Mira aux aguets, Aldric cartographie, Greta ' +
+    'fourrage. Le groupe part blessé : chaque nuit apportera son lot de récupération, de faim, de Vérole et de ' +
+    'cauchemars. À Altdorf, un cercle au sol ouvrira le répit entre deux aventures. (Ouvrez la carte du monde pour ' +
+    'voyager.)',
   entities: [
     { id: 'aubergiste', kind: 'personnage', label: 'Aubergiste', pos: { x: 8, y: 3 }, dialogueId: 'dlg-auberge' },
   ],

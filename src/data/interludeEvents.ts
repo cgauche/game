@@ -39,6 +39,9 @@ export interface InterludeEvent {
   /** Résumé fidèle du texte (verbatim abrégé) — affiché au joueur et journalisé. */
   text: string;
   fx?: InterludeEventFx;
+  /** Note d'atelier — JAMAIS affichée au joueur ni journalisée : précise ce que `fx` ne modélise
+   *  pas pour cet événement, à l'usage des auteurs de données. */
+  atelierNote?: string;
 }
 
 export const INTERLUDE_EVENTS = interludeEvents;

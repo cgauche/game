@@ -71,12 +71,12 @@ const departPort = buildScene({
   heroStart: [3, 4],
   weather: 'brouillard',
   startMessage:
-    'Salzenmund, port de départ. Ouvrez la carte du monde et prenez la route MARITIME de Marienburg (480 milles) ' +
-    'en mode « Mer » : votre cogue appareille (state.vessel). Chaque jour de mer = météo/vent, Test d’équipage de ' +
-    'Progression puis d’Orientation, entretien de la coque le soir (elle part endommagée), et une halte de nuit. ' +
-    'À l’approche de Marienburg, la vigie guette le phare. À l’accostage, l’écran Port ouvre réparation et commerce. ' +
-    'Le Navigateur est aussi Astromancien : depuis sa fiche → « Sorts », il peut Focaliser puis lancer Bienfait de Bel ' +
-    'Shanaar (Domaine des Cieux) en mer pour gagner +2 DR à ses Tests d’Orientation.',
+    'Le capitaine Brenner arpente le pont de la cogue. « Cap sur Marienburg, plusieurs jours de mer nous attendent. ' +
+    'Chacun tient son poste : au vent et à la Progression, à l’Orientation, à l’entretien de la coque — elle a pris ' +
+    'l’eau à Salzenmund, alors on la choie chaque soir. Vigie, ouvre l’œil dès qu’on approche : le phare de Marienburg ' +
+    'annoncera la côte. Une fois à quai, on répare et on commerce au Grand Port. » Le Navigateur, qui sert aussi ' +
+    'd’astromancien de bord, sait invoquer le Bienfait de Bel Shanaar pour affiner sa route en mer. (Ouvrez la carte ' +
+    'du monde pour appareiller vers Marienburg.)',
 });
 
 const arrivePort = buildScene({
@@ -87,8 +87,9 @@ const arrivePort = buildScene({
   terrain: 'planches',
   heroStart: [3, 4],
   startMessage:
-    'Marienburg, au bout de la traversée. Ouvrez l’écran Port : réparez la coque (1 CO/Blessure), carénez les ' +
-    'Salissures, achetez/vendez de la cargaison (grand port cosmopolite). (Reprenez la carte pour repartir.)',
+    'Marienburg, au bout de la traversée. Un maître de port vous hèle depuis le quai : « Charpentiers et calfats sont ' +
+    'là pour la coque (1 CO la Blessure), le carénage débarrasse la coque de ses Salissures, et le grand marché ' +
+    'cosmopolite achète comme il vend. » (Ouvrez l’écran Port depuis la scène ; reprenez la carte du monde pour repartir.)',
 });
 
 // ── Carte du monde : une seule route, MARITIME (milles), avec phare à l'arrivée ──

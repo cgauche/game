@@ -3,23 +3,25 @@
     "min": 1,
     "max": 3,
     "label": "Allié inculpé",
-    "text": "Un de vos alliés est impliqué dans un horrible crime — le disculper demanderait des Activités (Savoir (Loi) Accessible +20, ou trois Activités du groupe) ; sinon il sera pendu. Arbitrage table.",
+    "text": "Un de vos alliés est impliqué dans un horrible crime — le disculper demanderait des Activités (Savoir (Loi) Accessible +20, ou trois Activités du groupe) ; sinon il sera pendu.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "Le suivi des Activités de disculpation n'est pas modélisé en fx — se rejoue en narration/journal."
   },
   {
     "min": 4,
     "max": 6,
     "label": "Enchères ésotériques",
-    "text": "Les biens d’un voisin décédé sont aux enchères, dont un vieux livre d’origine inconnue (10 CO) — il donnerait +20 aux Recherches de Savoir des Lettrés. Arbitrage table.",
+    "text": "Les biens d’un voisin décédé sont aux enchères, dont un vieux livre d’origine inconnue (10 CO) — il donnerait +20 aux Recherches de Savoir des Lettrés.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "L'achat du livre et son bonus aux Recherches ne sont pas modélisés en fx — se rejoue en narration/journal."
   },
   {
     "min": 7,
@@ -36,12 +38,13 @@
     "min": 11,
     "max": 14,
     "label": "Imprévu",
-    "text": "La porte de l’écurie est restée ouverte : votre monture s’est enfuie (Test de Dressage (Cheval) Accessible +20 pour la rattraper — arbitrage table). Sans monture : une ampoule douloureuse au pied.",
+    "text": "La porte de l’écurie est restée ouverte : votre monture s’est enfuie (Test de Dressage (Cheval) Accessible +20 pour la rattraper). Sans monture : une ampoule douloureuse au pied.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "Le Test de Dressage pour rattraper la monture n'est pas modélisé en fx — se rejoue en narration/journal."
   },
   {
     "min": 15,
@@ -148,12 +151,13 @@
     "min": 41,
     "max": 44,
     "label": "Météo défavorable",
-    "text": "Conditions détestables : pour la prochaine aventure, les Tests sociaux subissent −10 et le prix des aliments augmente de 20 %. Arbitrage table.",
+    "text": "Conditions détestables : pour la prochaine aventure, les Tests sociaux subissent −10 et le prix des aliments augmente de 20 %.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "Le malus social et la hausse du prix des aliments ne sont pas modélisés en fx pour la prochaine aventure — se rejoue en narration/journal."
   },
   {
     "min": 45,
@@ -186,12 +190,13 @@
     "min": 53,
     "max": 56,
     "label": "Maladie pernicieuse",
-    "text": "Le Flux Sanglant sévit en ville : Test d’Endurance Facile (+40) ou contracter la maladie. Arbitrage table (maladie hors registre V1).",
+    "text": "Le Flux Sanglant sévit en ville : Test d’Endurance Facile (+40) ou contracter la maladie.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "Le Flux Sanglant n'existe pas au registre des maladies (V1) — Test et maladie se rejouent en narration/journal."
   },
   {
     "min": 57,
@@ -284,23 +289,25 @@
     "min": 72,
     "max": 73,
     "label": "Colporteur",
-    "text": "Un colporteur friand de ragots arrive : pour 3 sc, +10 à toutes vos Activités Dernières nouvelles. Arbitrage table (Activité V2).",
+    "text": "Un colporteur friand de ragots arrive : pour 3 sc, +10 à toutes vos Activités Dernières nouvelles.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "L'Activité « Dernières nouvelles » n'existe pas au catalogue (V2) — se rejoue en narration/journal."
   },
   {
     "min": 74,
     "max": 76,
     "label": "Animal domestique malade",
-    "text": "Un de vos animaux tombe malade : Test de Soin aux animaux Intermédiaire (+0) ou la créature meurt. Sans animal : un nuage menaçant vous tourmente. Arbitrage table.",
+    "text": "Un de vos animaux tombe malade : Test de Soin aux animaux Intermédiaire (+0) ou la créature meurt. Sans animal : un nuage menaçant vous tourmente.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "Le Test de Soin aux animaux et ses conséquences ne sont pas modélisés en fx — se rejoue en narration/journal."
   },
   {
     "min": 77,
@@ -351,12 +358,13 @@
     "min": 86,
     "max": 88,
     "label": "Soupçonné d’hérésie",
-    "text": "Un Répurgateur vous soupçonne : Test de Charme Très Difficile (−30) pour le convaincre, sinon vous gagnez une némésis. Arbitrage table.",
+    "text": "Un Répurgateur vous soupçonne : Test de Charme Très Difficile (−30) pour le convaincre, sinon vous gagnez une némésis.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "Le Test de Charme et la némésis résultante ne sont pas modélisés en fx — se rejoue en narration/journal."
   },
   {
     "min": 89,
@@ -390,22 +398,24 @@
     "min": 95,
     "max": 97,
     "label": "Considération inattendue",
-    "text": "Quelqu’un que vous avez aidé vous rend la pareille — d’un objet de grande qualité à une bourse d’argent. Tout ce qui brille n’est pas or… Arbitrage table.",
+    "text": "Quelqu’un que vous avez aidé vous rend la pareille — d’un objet de grande qualité à une bourse d’argent. Tout ce qui brille n’est pas or…",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "Le don (objet ou bourse, et son éventuel piège) n'est pas modélisé en fx — se rejoue en narration/journal."
   },
   {
     "min": 98,
     "max": 100,
     "label": "Mercenaires particuliers",
-    "text": "Des mercenaires peu communs cherchent du travail : Entraînement et Apprentissage coûtent −20 %, et l’Entraînement au combat gagne +20. Arbitrage table.",
+    "text": "Des mercenaires peu communs cherchent du travail : Entraînement et Apprentissage coûtent −20 %, et l’Entraînement au combat gagne +20.",
     "source": {
       "book": "livre-de-base",
       "page": 193,
       "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
-    }
+    },
+    "atelierNote": "La réduction de coût d'Entraînement/Apprentissage et le bonus d'Entraînement au combat ne sont pas modélisés en fx — se rejoue en narration/journal."
   }
 ]

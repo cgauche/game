@@ -29,6 +29,9 @@ export const schema = z.array(
     text: z.string(),
     fx: fxSchema.optional(),
     source: sourceRefSchema.optional(),
+    /** Note d'atelier — JAMAIS affichée au joueur ni journalisée (contrairement à `text`) : précise
+     *  ce que `fx` ne modélise pas pour cet événement, à l'usage des auteurs de données. */
+    atelierNote: z.string().optional(),
   }),
 );
 

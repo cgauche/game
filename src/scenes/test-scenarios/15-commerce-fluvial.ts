@@ -100,11 +100,11 @@ function quay(e: ReikEntry, start: boolean): Scene {
     terrain: 'planches',
     heroStart: [3, 4],
     startMessage: start
-      ? `${e.name}, sur le Reik. Ouvrez le marché pour acheter une cargaison bon marché, puis la carte du monde ` +
-        `pour descendre le fleuve en BARGE et la revendre plus cher là où la Richesse est plus haute — Altdorf (Florissant) ` +
-        `paie +10 % (T2C ch.11 l.156). La cargaison voyage avec vous (le convoi persiste). Berta marchande, évalue le vin et ` +
-        `tend l’oreille aux rumeurs du marché.`
-      : `${e.name}. (Marché pour acheter/vendre ; carte du monde pour reprendre la barge.)`,
+      ? `Berta Kaufmann inspecte les étals de ${e.name} d’un œil connaisseur. « On achète bon marché ici, on redescend ` +
+        `le Reik en barge, et on revend plus cher où la ville est florissante — à Altdorf, on paiera dix bons pour cent ` +
+        `de plus. Le chariot de convoi porte la cargaison tout le voyage. » (Ouvrez le marché pour acheter, puis la carte ` +
+        `du monde pour prendre la barge.) Berta marchande, jauge le vin et tend l’oreille aux rumeurs de marché.`
+      : `${e.name}, sur le Reik. (Le marché pour acheter ou vendre ; la carte du monde pour reprendre la barge.)`,
   });
 }
 
