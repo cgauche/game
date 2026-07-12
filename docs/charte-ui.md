@@ -3,6 +3,30 @@
 > À lire avant de créer ou retoucher un écran (CSS, densité, responsive). Complète la règle
 > stricte 4 du `CLAUDE.md` (responsive, breakpoints canon) et la table « Primitives partagées ».
 
+## L'anatomie d'un écran (#371)
+
+Gabarit canonique de tout écran plein-champ — cite CETTE recette avant d'assembler un écran neuf,
+ne pas la réinventer par fichier :
+
+1. **`ScreenShell`** (`src/ui/ScreenShell.tsx`) — voile + en-tête (titre/méta date-bourse/actions/
+   fermeture), a11y de dialogue câblée. Choisir la prop `body` dès la création : `'centered'` pour
+   un écran de PANNEAUX (marché, dossier, hub — corps borné/centré `.screen-body`, ~960px, sinon le
+   contenu colle à gauche avec un océan vide à droite en large) ; `'full'` pour un écran-canevas
+   (carte, plan) qui doit remplir tout le cadre.
+2. **Bande d'ambiance** — slot `backdrop` de `ScreenShell` (id du registre `src/ui/backdrops`),
+   rendue sous l'en-tête/barre d'outils, au-dessus du corps ; repli élégant géré par `SceneBackdrop`
+   (jamais un trou, même id absent/inconnu).
+3. **`SpeakerBanner`** si l'écran porte un interlocuteur (aubergiste, marchand) — juste sous la bande
+   d'ambiance, avant le contenu.
+4. **Contenu** en primitives composées : `.panel`/`.panel-grid`, `MasterDetail` (liste+détail),
+   tables (`.port-table`…) — jamais une liste/section maison recodée (cf. « Couche atomique » et la
+   table « Primitives partagées » du `CLAUDE.md`).
+5. **Pied d'action** — `.bar`/`.modal-actions` selon le contexte (barre d'écran vs modale imbriquée).
+
+**Anti-patrons** : un écran nu sur fond noir (zéro `.panel`, zéro ambiance — famille « vide non
+habité » du juge, #371) ; un centrage/bornage codé à la main par écran (traitement manuel ex-
+`.city-hub-master`, remplacé par `body='centered'` de `ScreenShell`) au lieu de la prop partagée.
+
 ## Architecture CSS
 
 - **Couleurs UNIQUEMENT dans les tokens `:root`** (`src/ui/styles/base.css`) — jamais de hex en
@@ -92,6 +116,7 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.panel-grid` (+ `.span-2`) | Grille de `.panel` en auto-fit (min 340px) | Tableau de bord de plusieurs panels — 1 colonne ≤700px ; `.span-2` pour un panel pleine largeur. |
 | `.bar` | Barre d'écran (en-tête, fond dégradé, filet or) | En-tête d'écran avec titre + actions — s'enroule ≤700px ; ne PAS la détourner pour une simple rangée sans fond/padding de header (charte : « éviter les espaces vides »). |
 | `.screen` | Colonne plein-écran (flex column, hauteur 100%) | Coquille racine d'un écran plein-champ « historique » (hors `ScreenShell`, cf. table CLAUDE.md). |
+| `.screen-body` | Corps de `ScreenShell` borné/centré (~960px) | Posée par `ScreenShell` (prop `body='centered'`) — écran de PANNEAUX (marché, dossier, hub) plutôt que canevas plein cadre ; jamais un centrage/bornage manuel recopié par écran. |
 | `.master-detail` (+ `.master-detail-list`, `.master-detail-detail`) | Gabarit maître-détail (liste gauche + détail centre), LAYOUT pur | Composé par `MasterDetail.tsx` (CLAUDE.md) — s'empile ≤700px (`MASTER_DETAIL_STACK_BREAKPOINT_PX`), jamais une 2ᵉ composition liste+détail recodée. |
 | `.tabs` (+ `.tab-btn`) | Style de base (variante `flat`) de la barre d'onglets | Posée par la primitive React `Tabs` (CLAUDE.md) — les variantes `pill`/`sub`/`dock` composent par-dessus dans `tabs.css` ; jamais un `role=tablist` recodé à la main. |
 | `.seg` (`sheet.css`) | Segmented control (choix exclusif, boutons collés) | Composé par la primitive React `OptionChooser` (variante `seg`) — jamais un groupe de boutons exclusifs recodé à la main. |

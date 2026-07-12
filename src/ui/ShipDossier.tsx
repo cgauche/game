@@ -109,6 +109,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
         <span className="char-sub"> — {vd.label}{rig ? ` · ${RIG_LABEL[rig] ?? rig}` : ''}</span>
       </>}
       onClose={onClose}
+      body="centered"
       tabs={
         <Tabs
           tabs={[
@@ -121,7 +122,6 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
         />
       }
     >
-      <div className="port-body">
         {tab === 'apercu' && (
           <div className="layout-sidebar port-yard">
             <section className="panel port-section">
@@ -271,7 +271,6 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
             </section>
           </div>
         )}
-      </div>
     </ScreenShell>
   );
 }

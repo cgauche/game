@@ -544,6 +544,14 @@
   color: var(--gold2);
 }
 
+/* ── CORPS BORNÉ/CENTRÉ (`ScreenShell` prop `body='centered'`, #371 lot 2) — même patron que les
+   traitements manuels qu'elle remplace (`.port-body`/`.city-hub-master`) : un écran de PANNEAUX (pas
+   un canevas plein cadre) borne et centre son corps pour ne pas laisser un océan vide en large. ── */
+.screen-body {
+  width: min(960px, 96vw);
+  margin: 6px auto 0;
+}
+
 /* ── ÉCRAN-HUB DE VOYAGE (#333) — VoyageScreen.tsx : ScreenShell + tuiles + chronique + MasterDetail ── */
 .voyage-body { display: flex; flex-direction: column; gap: 12px; padding: 12px; min-width: 0; overflow: auto; }
 .voyage-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.95em; }
@@ -593,9 +601,9 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
    (`.port-section`/`.merchant-body`) — un détail en lignes nues sur fond noir est un manque de
    composition, pas une variante (recette 2026-07-12, cf. étalon marché). */
 .city-hub-body { display: flex; flex-direction: column; min-width: 0; padding: 12px; overflow: auto; }
-/* Bornée + centrée (#359bis) : sans borne, la composition liste+détail colle à gauche avec un océan
-   vide à droite au-delà de son propre max-width interne (même patron que `.port-body`/`.merchant-body`). */
-.city-hub-master { flex: 1 1 auto; width: 100%; max-width: 960px; margin: 0 auto; }
+/* Bornage/centrage (#359bis) porté par `ScreenShell` (`body='centered'`, #371 lot 2) — cette classe ne
+   garde que le comportement de flex INTERNE, la borne/centrage vit désormais dans `.screen-body`. */
+.city-hub-master { flex: 1 1 auto; width: 100%; }
 .city-hub-weather { opacity: 0.85; }
 .city-hub-services { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 10px; }
 /* `color` EXPLICITE (#358bis) : ce sont des `<button>` bruts hors `.btn`/`.chip` — sans elle ils

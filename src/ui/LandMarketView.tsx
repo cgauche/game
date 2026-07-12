@@ -47,9 +47,9 @@ export function LandMarketView() {
       title={<>Marché de {market.label}</>}
       onClose={close}
       meta={{ money }}
+      body="centered"
       tabs={<span className="port-purse">Porteur : <b>{target ? `${target.label} — libre ${carrierFreeEnc(target)} / ${target.capacity} Enc` : 'aucun'}</b></span>}
     >
-      <div className="port-body">
         {rumours.length > 0 && (
           <section className="panel port-section">
             <h3>Rumeurs de commerce</h3>
@@ -134,7 +134,6 @@ export function LandMarketView() {
           </section>
           <CargoTransferPanel carriers={carriers} onMove={move} labelOf={cargoLabel} disabled={isGuest} />
         </div>
-      </div>
     </ScreenShell>
   );
 }

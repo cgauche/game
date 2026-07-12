@@ -94,6 +94,13 @@
   width: min(900px, 96vw);
   margin: 0 auto;
 }
+/* Bande d'ambiance de la coquille (`ScreenShell` prop `backdrop`, #371 lot 2) — même primitive
+   `SceneBackdrop` que dans un `.panel`, mais SANS le bleed négatif pensé pour un bord de panel : ici
+   enfant direct du voile plein écran. */
+.worldmap-overlay > .scene-backdrop {
+  margin: 0;
+  border-radius: 10px;
+}
 /* Phase 3 (#343) : la carte reste la zone principale, le panneau de départ (4 états mutuellement
    exclusifs — reprise/départ/muet/porte de nuit, tous `.worldmap-panel`) devient une colonne latérale
    FIXE (compose `.layout-sidebar` — jamais une grille maison). ≤900px : la primitive empile déjà
@@ -245,7 +252,6 @@
   margin: 0 auto;
 }
 .port-purse { margin-left: auto; font-size: 13px; color: var(--muted); }
-.port-body { width: min(900px, 96vw); margin: 6px auto 0; }
 .port-yard, .port-trade, .port-escale { align-items: start; }
 /* En-tête d'escale-hub (#228) : région + 5 indices de l'Index des ports + desc du catalogue. */
 .port-head { width: min(900px, 96vw); margin: 0 auto 6px; }

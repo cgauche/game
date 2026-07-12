@@ -15,7 +15,6 @@ import { Prose } from './Prose';
 import { Coins } from './Coins';
 import { Icon, IconG } from './Icon';
 import { SpeakerBanner } from './SpeakerBanner';
-import { SceneBackdrop } from './SceneBackdrop';
 
 /**
  * HUB DE VILLE (#343) — l'écran UNIQUE d'un LIEU de la carte : on n'empile plus des boutons flottants
@@ -130,7 +129,6 @@ export function CityHubScreen({
     if (svc.category === 'auberge') {
       return (
         <div className="city-hub-panel">
-          <SceneBackdrop backdropId={place.backdrop ?? svc.backdrop} />
           <SpeakerBanner name="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>
           {svc.desc && <div className="city-hub-desc"><Prose md={svc.desc} /></div>}
           {/* Jamais une promesse d'action impossible (cf. `cityHubCanEnterPort`) : sans offre de
@@ -264,6 +262,8 @@ export function CityHubScreen({
       meta={{ time: gameTime, money }}
       actions={scene?.weather && <span className="city-hub-weather">· {SCENE_WEATHER_LABEL[scene.weather]}</span>}
       tabs={screenTabs.length > 1 ? <Tabs tabs={screenTabs} active={screenTab} onChange={setScreenTab} label={`Onglets de ${place.label}`} /> : undefined}
+      backdrop={place.backdrop ?? sel?.backdrop}
+      body="centered"
     >
       <div className="city-hub-body">
         {screenTab === 'plan' && poi.length > 0 ? (

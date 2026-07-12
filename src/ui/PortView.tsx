@@ -147,6 +147,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
       title={<><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.name ?? vd.label}</>}
       onClose={close}
       meta={{ money }}
+      body="centered"
     >
       <PortHeader pp={port.port} catalogue={catalogue} />
       <Tabs
@@ -160,7 +161,6 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
         onChange={setTab}
       />
 
-      <div className="port-body">
         {tab === 'coque' ? (
           <div className="layout-sidebar port-yard">
             <section className="panel port-section">
@@ -289,7 +289,6 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
             onHire={(roleId) => hire(roleId, 1)} onDismiss={(roleId) => dismiss(roleId, 1)}
           />
         )}
-      </div>
     </ScreenShell>
   );
 }

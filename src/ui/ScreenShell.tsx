@@ -2,6 +2,7 @@ import { useRef, type ReactNode } from 'react';
 import { useModalA11y } from './Modal';
 import { GameDate } from './GameDate';
 import { Coins } from './Coins';
+import { SceneBackdrop } from './SceneBackdrop';
 import type { Money } from '../engine/money';
 
 /**
@@ -20,6 +21,14 @@ import type { Money } from '../engine/money';
  * sur deux lignes avec un contenu large). Barre d'outils : slot `tabs` OPTIONNEL rendu dans
  * `.screen-toolbar`, sous l'en-tête — l'écran y pose la primitive `<Tabs>` (onglets réels) et/ou du
  * contenu libre, tel quel. `className` ajoute des classes au voile (ex. `port-overlay`, `ship-dossier`).
+ *
+ * Habillage générique (#371 lot 2) : `body` bascule le traitement du CORPS — `'full'` (défaut, INCHANGÉ)
+ * pour un écran-canevas (carte, plan) qui doit remplir tout le cadre ; `'centered'` borne et centre le
+ * corps (`.screen-body`, patron ex-manuel `.port-body`/`.city-hub-master`, ~960px) — le réflexe pour un
+ * écran de PANNEAUX (marché, dossier, hub) sans quoi le contenu colle à gauche avec un océan vide à droite
+ * en large (famille « vide non habité » du juge, #371). `backdrop` pose la bande d'ambiance (`SceneBackdrop`,
+ * lot 1) sous l'en-tête/barre d'outils, au-dessus du corps — absente du prop = pas de bande (zéro régression) ;
+ * fournie (même id inconnu) = toujours un rendu (repli élégant géré par `SceneBackdrop`, jamais un trou).
  */
 export function ScreenShell({
   title,
@@ -28,6 +37,8 @@ export function ScreenShell({
   meta,
   actions,
   tabs,
+  backdrop,
+  body = 'full',
   className,
   children,
 }: {
@@ -42,6 +53,11 @@ export function ScreenShell({
   actions?: ReactNode;
   /** Barre d'outils OPTIONNELLE (`.screen-toolbar`) : `<Tabs>` et/ou badges de l'écran, tels quels. */
   tabs?: ReactNode;
+  /** Bande d'ambiance (id du registre `src/ui/backdrops`) — opt-in, rendue sous l'en-tête/barre d'outils. */
+  backdrop?: string;
+  /** Traitement du corps : `'full'` (défaut) laisse l'écran remplir le cadre ; `'centered'` borne/centre
+   *  le corps (`.screen-body`, ~960px) au patron des écrans de panneaux. */
+  body?: 'centered' | 'full';
   /** Classes ajoutées au voile plein écran (`port-overlay`, `ship-dossier`…). */
   className?: string;
   children: ReactNode;
@@ -60,7 +76,8 @@ export function ScreenShell({
         </div>
       </div>
       {tabs != null && <div className="screen-toolbar">{tabs}</div>}
-      {children}
+      {backdrop !== undefined && <SceneBackdrop backdropId={backdrop} />}
+      {body === 'centered' ? <div className="screen-body">{children}</div> : children}
     </div>
   );
 }
