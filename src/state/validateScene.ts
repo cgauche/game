@@ -1,4 +1,5 @@
 import type { Scene, Effect } from './scene';
+import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, EMPTY_FLOW } from './flow';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
@@ -7,6 +8,10 @@ import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, E
 import { EFFECT_HANDLERS, type EffectHandler, type EffectRefCtx } from './combatFlow';
 import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
+
+/** Clés valides de `CustomStatblock.char` : les 10 `CharKey` (slugs pleins, #311) ∪ `M`/`B`
+ *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
+const VALID_STATBLOCK_CHAR_KEYS = new Set<string>([...CHAR_KEYS, 'M', 'B']);
 
 export interface Warning {
   level: 'error' | 'warn';
@@ -93,6 +98,9 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (e.dialogueId && !dlgIds.has(e.dialogueId)) add('error', 'entity', e.id, `${e.label ?? e.id} → dialogue inexistant « ${e.dialogueId} »`);
       if (!within(e.pos.x, e.pos.y)) add('warn', 'entity', e.id, `${e.label ?? e.id} hors carte (${e.pos.x},${e.pos.y})`);
       if (e.z && !layerZs.has(e.z)) add('warn', 'entity', e.id, `${e.label ?? e.id} sur étage ${e.z} inexistant`);
+      if (e.statblock?.char)
+        for (const k of Object.keys(e.statblock.char))
+          if (!VALID_STATBLOCK_CHAR_KEYS.has(k)) add('error', 'entity', e.id, `${e.label ?? e.id} : statblock.char porte une clé étrangère « ${k} » (format canonique = CharKey slug plein, cf. #311)`);
     }
     // Toits (`Scene.roofs`) : leur couche couverte doit exister (cohérence du cutaway de rendu). L'avertissement
     // pointe le toit fautif (`scope: 'roof'`, refId) → clic = sélection dans l'éditeur (`selectWarning`).

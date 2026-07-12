@@ -75,7 +75,24 @@ const GUN_SKILLS = [{ id: 'projectiles', spec: 'poudre-noire', value: 55 }];
 function marinDuGrimm(id, x, y, label, skills) {
   return {
     id, kind: 'personnage', pos: { x, y }, label,
-    statblock: { name: label, char: { M: 4, CC: 35, CT: 40, F: 33, E: 35, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 12 }, ...(skills ? { skills } : {}) },
+    statblock: {
+      name: label,
+      // Clés = `CharKey` (slugs pleins, #311/`src/engine/types.ts`) ∪ `M`/`B` (`CustomStatblock.char`).
+      char: {
+        M: 4,
+        'capacite-de-combat': 35,
+        'capacite-de-tir': 40,
+        force: 33,
+        endurance: 35,
+        agilite: 30,
+        dexterite: 30,
+        intelligence: 30,
+        'force-mentale': 30,
+        sociabilite: 30,
+        B: 12,
+      },
+      ...(skills ? { skills } : {}),
+    },
   };
 }
 
