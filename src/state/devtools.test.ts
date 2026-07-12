@@ -11,6 +11,7 @@ import { seedBattleRng } from './battleRng';
 import type { BattleState } from './store';
 import type { Combatant, ShipPoste } from '../engine/types';
 import type { WorldMap } from './worldMap';
+import { builtinCampaigns } from '../scenes/campaign';
 
 describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, victoire normale)', () => {
   beforeEach(() => {
@@ -371,6 +372,55 @@ describe('__wfrp.advanceSeaDay / skipToArrival / dealShipDamage / clickRoute —
   it('forceShipwreck() sans navire de campagne : refus explicite', () => {
     useGame.setState({ vessel: null });
     expect(buildApi().forceShipwreck()).toContain('✗');
+  });
+});
+
+describe('__wfrp.campaign — charge une campagne BUILT-IN sans le character creator (#353)', () => {
+  beforeEach(() => {
+    useGame.setState({ battle: null, party: [], scene: null, pendingCampaign: null } as never);
+  });
+
+  it('sans argument : liste les ids', () => {
+    const out = buildApi().campaign() as string[];
+    expect(out.some((s) => s.startsWith('loup-et-saumure'))).toBe(true);
+  });
+
+  it('id inconnu : refus explicite', () => {
+    expect(buildApi().campaign('campagne-qui-n-existe-pas')).toContain('✗');
+  });
+
+  it("id connu : groupe canonique constitué, scène d'entrée chargée, écran campaign", () => {
+    const msg = buildApi().campaign('loup-et-saumure', 42) as string;
+
+    expect(msg).toContain('✓');
+    expect(msg).toContain('Le Loup et la Saumure');
+    const s = useGame.getState();
+    expect(s.party.length).toBe(4);
+    // `pendingCampaign` est le champ TRANSITOIRE du picker (avant lancement) — `loadProject` appelle
+    // `startScene`, qui réinitialise l'état à l'INITIAL (hors le sous-ensemble préservé, cf.
+    // `store.ts:startScene`) : `pendingCampaign` n'y figure pas et redevient `null` après chargement,
+    // EXACTEMENT comme le flux réel du picker (`PartyScreen.startCampaign`) — pas une régression d'ici.
+    expect(s.pendingCampaign).toBeNull();
+    expect(s.scene).toBeTruthy();
+    expect(s.worldMap).toBeTruthy();
+    expect(s.screen).toBe('campaign');
+  });
+
+  it('déterministe sous seed : même seed → même groupe (mêmes ids)', () => {
+    buildApi().campaign('loup-et-saumure', 7);
+    const ids1 = useGame.getState().party.map((h) => h.id);
+    useGame.setState({ battle: null, party: [], scene: null, pendingCampaign: null } as never);
+    buildApi().campaign('loup-et-saumure', 7);
+    const ids2 = useGame.getState().party.map((h) => h.id);
+    expect(ids2).toEqual(ids1);
+  });
+
+  it('sceneId optionnel : démarre sur une autre scène du projet que l’entrée par défaut', () => {
+    const c = builtinCampaigns.find((b) => b.id === 'loup-et-saumure')!;
+    const otherSceneId = c.scenes.find((sc) => sc.id !== c.startSceneId)?.id;
+    if (!otherSceneId) return; // projet à une seule scène — rien à vérifier ici
+    buildApi().campaign('loup-et-saumure', 1, otherSceneId);
+    expect(useGame.getState().scene?.id).toBe(otherSceneId);
   });
 });
 

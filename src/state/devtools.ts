@@ -16,6 +16,8 @@ import { applyOps } from '../engine/ops';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
+import { builtinCampaigns } from '../scenes/campaign';
+import { makeShowcaseParty } from '../data/pregens';
 import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
 import { getViewZ, setViewZ } from './viewLevel';
@@ -42,6 +44,15 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.screen('menu') → navigue vers un écran
  *   __wfrp.scenario('id', seed?) → lance un scénario de test PRÊT À JOUER (sans menu, Round 1 acquitté,
  *                           initiative déterministe si seed) ; sans arg : liste les ids
+ *   __wfrp.campaign('id', seed?, sceneId?) → charge une CAMPAGNE BUILT-IN (`builtinCampaigns`,
+ *                           `scenes/campaign.ts`) SANS dérouler le character creator ×4 à la main :
+ *                           groupe canonique (`makeShowcaseParty`, MÊME 4 piliers que l'Arène — les
+ *                           campagnes built-in ne portent pas leurs propres pré-tirés, seul le picker
+ *                           `PartyScreen` propose `pregens.json` en libre-service), `setPendingCampaign` +
+ *                           `loadProject` (MÊME chemin que le picker `CampaignSelect`), écran 'campaign'.
+ *                           `sceneId` (optionnel) démarre ailleurs qu'à l'entrée par défaut de la
+ *                           campagne. `seed` (optionnel) ré-ensemence le RNG de bataille AVANT le
+ *                           chargement (déterminisme des rencontres). Sans arg : liste les ids.
  *   __wfrp.hover('id')    → survol PROGRAMMATIQUE (tooltip + réticule de visée, sans souris) ; null efface
  *   __wfrp.aim('id')      → vérité state du ciblage (ok/invalid + raison, compétence, dégâts)
  *   __wfrp.pad('A'|'B'|…) → simule un BOUTON de manette (Playwright n'a pas l'API Gamepad) — MÊME chemin
@@ -462,6 +473,24 @@ export function buildApi() {
       }
       s.setScreen('campaign');
       return `✓ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;
+    },
+
+    /** Charge une CAMPAGNE BUILT-IN sans dérouler le character creator ×4 à la main :
+     *  __wfrp.campaign('loup-et-saumure', 42). Sans argument : liste les ids. `sceneId` (optionnel)
+     *  démarre ailleurs qu'à l'entrée par défaut. MÊME chemin que le picker `PartyScreen` (`setParty` +
+     *  `setPendingCampaign` + `loadProject`) — jamais une reconstruction parallèle de l'état. */
+    campaign: (id?: string, seed?: number, sceneId?: string) => {
+      if (!id) return builtinCampaigns.map((c) => `${c.id} — ${c.name}`);
+      const c = builtinCampaigns.find((b) => b.id === id);
+      if (!c) return `✗ « ${id} » introuvable — ids : ${builtinCampaigns.map((b) => b.id).join(', ')}`;
+      const s = g();
+      if (seed != null) s.seedRng(seed);
+      s.setParty(makeShowcaseParty()); // campagnes built-in sans pré-tirés propres — groupe canonique (4 piliers)
+      s.setPendingCampaign({ name: c.name, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap });
+      s.loadProject(c.scenes, sceneId ?? c.startSceneId, c.worldMap ?? null);
+      s.setScreen('campaign');
+      const after = useGame.getState();
+      return `✓ campagne « ${c.name} » chargée (${after.party.length} héros, scène « ${after.scene?.id} »)`;
     },
 
     /** Lance une bataille de masse de démonstration (ADE II 08) sans scénario : __wfrp.massBattle(60, 40, 3).
