@@ -46,10 +46,8 @@ export function LandMarketView() {
       className="port-overlay"
       title={<>Marché de {market.label}</>}
       onClose={close}
-      tabs={<>
-        <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
-        <span className="port-purse">Porteur : <b>{target ? `${target.label} — libre ${carrierFreeEnc(target)} / ${target.capacity} Enc` : 'aucun'}</b></span>
-      </>}
+      meta={{ money }}
+      tabs={<span className="port-purse">Porteur : <b>{target ? `${target.label} — libre ${carrierFreeEnc(target)} / ${target.capacity} Enc` : 'aucun'}</b></span>}
     >
       <div className="port-body">
         {rumours.length > 0 && (

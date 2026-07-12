@@ -146,6 +146,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
       className="port-overlay"
       title={<><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.name ?? vd.label}</>}
       onClose={close}
+      meta={{ money }}
     >
       <PortHeader pp={port.port} catalogue={catalogue} />
       <Tabs
@@ -157,7 +158,6 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
         ]}
         active={tab}
         onChange={setTab}
-        trailing={<span className="port-purse">Bourse : <b><Coins money={money} /></b></span>}
       />
 
       <div className="port-body">

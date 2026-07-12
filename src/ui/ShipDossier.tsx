@@ -7,8 +7,9 @@ import { findCargoById, findManannFactor, cargoTotalEnc, cargoOverload, overload
 import { foulingEffects } from '../engine/seaNavigation';
 import { moraleBand, weeklyCrewWageBrass, findMoraleFactor } from '../engine/crewMorale';
 import { provisioningManifest } from '../engine/provisions';
-import { fromBrass, formatMoney } from '../engine/money';
+import { fromBrass } from '../engine/money';
 import { bulkCarriers, type CarrierStateSlice } from '../state/carriers';
+import { Coins } from './Coins';
 import { Icon } from './Icon';
 import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { moraleTone, crewRoleLabel } from './shipStatus';
@@ -234,20 +235,20 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
                       <tr key={h.roleId}>
                         <td>{crewRoleLabel(h.roleId)}</td>
                         <td>{h.count}</td>
-                        <td><b>{formatMoney(fromBrass(weeklyCrewWageBrass([h])))}</b></td>
+                        <td><b><Coins money={fromBrass(weeklyCrewWageBrass([h]))} /></b></td>
                       </tr>
                     ))}
                     <tr>
                       <td><b>Solde hebdomadaire</b></td>
                       <td />
-                      <td><b>{formatMoney(fromBrass(weeklyWageBrass))}</b></td>
+                      <td><b><Coins money={fromBrass(weeklyWageBrass)} /></b></td>
                     </tr>
                   </tbody>
                 </table>
               ) : (
                 <p className="port-hint">Aucun équipage salarié embauché.</p>
               )}
-              {vessel.wagesOwed ? <p className="port-hint">Dette de paie cumulée : <b>{formatMoney(fromBrass(vessel.wagesOwed))}</b> (bourse insuffisante à l’entretien).</p> : null}
+              {vessel.wagesOwed ? <p className="port-hint">Dette de paie cumulée : <b><Coins money={fromBrass(vessel.wagesOwed)} /></b> (bourse insuffisante à l’entretien).</p> : null}
               <p className="port-hint">Le roster est agrégé par RÔLE (nombre × salaire) — pas d’individus nommés (MDG 14).</p>
             </section>
 

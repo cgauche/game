@@ -1,6 +1,7 @@
 import { moraleBand, weeklyCrewWageBrass } from '../engine/crewMorale';
-import { fromBrass, formatMoney } from '../engine/money';
+import { fromBrass } from '../engine/money';
 import { crewRoles } from '../data';
+import { Coins } from './Coins';
 import type { GaugeTone } from './NotchGauge';
 import type { CampaignVessel } from '../state/store';
 
@@ -29,8 +30,8 @@ export function ShipCrewWages({ vessel }: { vessel: CampaignVessel }) {
       Équipage salarié : {vessel.crew?.length
         ? vessel.crew.map((h) => `${h.count} ${crewRoleLabel(h.roleId)}`).join(', ')
         : '—'}
-      {' · solde hebdomadaire '}<b>{formatMoney(fromBrass(weeklyWageBrass))}</b>
-      {vessel.wagesOwed ? <> · dette <b>{formatMoney(fromBrass(vessel.wagesOwed))}</b></> : null}
+      {' · solde hebdomadaire '}<b><Coins money={fromBrass(weeklyWageBrass)} /></b>
+      {vessel.wagesOwed ? <> · dette <b><Coins money={fromBrass(vessel.wagesOwed)} /></b></> : null}
     </p>
   );
 }

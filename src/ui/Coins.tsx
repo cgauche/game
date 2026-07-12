@@ -1,11 +1,14 @@
 import { Fragment } from 'react';
-import type { Money } from '../engine/money';
+import { spellMoney, type Money } from '../engine/money';
 
 /**
  * Affichage COLORÉ de la monnaie impériale (LDB 57) — or en couleur or, pistole d'argent en argent,
  * sou de cuivre en cuivre. Miroir JSX de `formatMoney` (MÊMES règles canon : couronne d'or `N CO`,
  * pistoles+sous en notation `S/C` « 6/8 », sous seuls `N sc`) ; `formatMoney` reste la source unique
  * pour les contextes texte (titres, journal). Utiliser <Coins> partout où un prix s'AFFICHE.
+ *
+ * `title` = épellation française COMPLÈTE (#354, `spellMoney`) : le survol de TOUT montant explique
+ * la notation « S/C », sans duplication par écran.
  */
 export function Coins({ money }: { money: Money }) {
   const parts: JSX.Element[] = [];
@@ -24,7 +27,7 @@ export function Coins({ money }: { money: Money }) {
   }
   if (!parts.length) parts.push(<span key="0" className="coin-copper">0 sc</span>);
   return (
-    <span className="coins">
+    <span className="coins" title={spellMoney(money)}>
       {parts.map((p, i) => (
         <Fragment key={i}>
           {i > 0 ? ' ' : ''}

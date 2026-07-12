@@ -501,12 +501,6 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   .city-hub-plan.master-detail { grid-template-columns: minmax(240px, 1.3fr) 1fr; }
 }
 .city-hub-plan-canvas { min-height: 220px; }
-/* En-tête mobile compact (#359) : `.port-purse` porte `margin-left:auto` (générique, `world-meta.css`)
-   qui consomme le reste de la ligne et rejette le bouton Fermer seul sur sa propre rangée à 360px ;
-   la pilule de date/météo/bourse se resserre pour tenir en 2 rangées max (titre + actions), jamais 3. */
 @media (max-width: 560px) {
-  .city-hub .worldmap-head-actions { gap: 6px; }
-  .city-hub .port-purse { margin-left: 0; font-size: 12px; }
-  .city-hub .hud-clock { height: 32px; padding: 0 8px; font-size: 11px; }
-  .city-hub .city-hub-weather { font-size: 12px; }
+  .city-hub-weather { font-size: 12px; }
 }

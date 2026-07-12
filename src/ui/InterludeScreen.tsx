@@ -759,7 +759,7 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
       desc={desc}
       blocked={sel && !xpOk ? <>PX insuffisants : {xp}/{sel.xpCost}.</> : undefined}
       prejet={prejet}
-      cost={sel ? <>{sel.xpCost} PX (il vous en reste {xp}) + tuteur {fmt(sel.tutorMinBrass)} à {fmt(sel.tutorMaxBrass)}</> : undefined}
+      cost={sel ? <>{sel.xpCost} PX (il vous en reste {xp}) + tuteur <CoinsB brass={sel.tutorMinBrass} /> à <CoinsB brass={sel.tutorMaxBrass} /></> : undefined}
       note={sel
         ? <><EntityRef category="talents" label={sel.label} /> — tuteur 2d10 pa / 100 PX ; PX et argent perdus même sur un échec.</>
         : <>Choisir un Talent hors carrière — tuteur 2d10 pa / 100 PX ; PX et argent perdus même sur un échec.</>}

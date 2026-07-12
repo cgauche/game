@@ -13,7 +13,6 @@ import { planChrome } from './PlanChrome';
 import { VB_H } from './worldMapViewport';
 import { Prose } from './Prose';
 import { Coins } from './Coins';
-import { GameDate } from './GameDate';
 import { Icon, IconG } from './Icon';
 
 /**
@@ -208,7 +207,9 @@ export function CityHubScreen({
       children: (
         <>
           <circle r="6" fill="transparent" />
-          {poiSel?.id === p.id && <circle r="3" fill="none" stroke="var(--accent)" strokeWidth="0.45" opacity="0.95" />}
+          {/* Sélection = anneau OR (charte-ui : `--gold` réservé aux bordures/focus, jamais `--accent`,
+              action primaire) — langage UNIQUE partagé avec la carte du monde (`WorldMapView`, #362). */}
+          {poiSel?.id === p.id && <circle r="3" fill="none" stroke="var(--gold)" strokeWidth="0.45" opacity="0.95" />}
           <circle r="2.2" fill="var(--wm-badge-bg)" stroke="var(--wm-age-spot)" strokeWidth="0.28" />
           <g style={{ color: 'var(--wm-marker-icon)' }}>
             <IconG id={p.icon ?? 'nav/entry-point'} x={-1.4} y={-1.4} size={2.8} />
@@ -249,12 +250,8 @@ export function CityHubScreen({
       className="city-hub"
       title={<><Icon id={place.icon ?? 'nav/entry-point'} size="sm" /> {place.label}</>}
       onClose={onClose}
-      closeLabel="Quitter"
-      actions={<>
-        <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={gameTime} /></span>
-        {scene?.weather && <span className="city-hub-weather">· {SCENE_WEATHER_LABEL[scene.weather]}</span>}
-        <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
-      </>}
+      meta={{ time: gameTime, money }}
+      actions={scene?.weather && <span className="city-hub-weather">· {SCENE_WEATHER_LABEL[scene.weather]}</span>}
       tabs={screenTabs.length > 1 ? <Tabs tabs={screenTabs} active={screenTab} onChange={setScreenTab} label={`Onglets de ${place.label}`} /> : undefined}
     >
       <div className="city-hub-body">

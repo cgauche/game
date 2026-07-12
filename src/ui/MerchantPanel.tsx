@@ -550,11 +550,10 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
       className="merchant-overlay"
       title={<><Icon id="resource/gold-purse" size="sm" /> Marchand</>}
       onClose={onClose}
-      actions={<span className="purse">Bourse <Coins money={money} /></span>}
+      meta={{ money }}
     >
         <Tabs
           className="mp-tabnav"
-          variant="pill"
           tabs={[
             { key: 'buy' as const, label: 'Acheter', count: cartCount || undefined },
             { key: 'sell' as const, label: 'Vendre', count: sellable.length || undefined },

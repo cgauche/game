@@ -20,6 +20,7 @@ import { shipHasNavalTrait } from '../engine/navalTraits';
 import { DIFFICULTY_LABELS } from '../engine/types';
 import { TravelRolesPanel } from './TravelRolesPanel';
 import { ShipRolesPanel } from './ShipRolesPanel';
+import { OptionChooser } from './OptionChooser';
 import { Icon, IconG } from './Icon';
 import { ScreenShell } from './ScreenShell';
 import { formatImperial } from '../engine/clock';
@@ -88,6 +89,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const scene = useGame((s) => s.scene);
   const party = useGame((s) => s.party);
   const money = useGame((s) => s.money);
+  const gameTime = useGame((s) => s.gameTime);
   const travelPlan = useGame((s) => s.travelPlan);
   const close = useGame((s) => s.closeWorldMap);
   const startTravel = useGame((s) => s.startTravel);
@@ -347,8 +349,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           {/* cible de clic/survol généreuse (taille écran constante) */}
           <circle r="3.4" fill="transparent" />
           {isHere && <text y="-2.6" textAnchor="middle" fontSize="1.5" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
+          {/* Sélection = anneau OR (charte-ui : `--gold` réservé aux bordures/focus, jamais `--accent`,
+              action primaire) — langage UNIQUE partagé avec le plan du hub (`CityHubScreen`, #362). */}
           {(isHere || isDest) && (
-            <circle r="2.1" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--accent)'} strokeWidth="0.4" opacity="0.95" />
+            <circle r="2.1" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--gold)'} strokeWidth="0.4" opacity="0.95" />
           )}
           {clickable && !isDest && (
             <circle r="2.1" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="0.7 0.55" opacity="0.9" />
@@ -389,7 +393,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   );
 
   return (
-    <ScreenShell title={<><Icon id="nav/campaign" size="sm" /> {map.nom}</>} onClose={close}>
+    <ScreenShell title={<><Icon id="nav/campaign" size="sm" /> {map.nom}</>} onClose={close} meta={{ time: gameTime, money }}>
       <div className="layout-sidebar worldmap-layout">
       <div className="worldmap-canvas">
         <MapCanvas
@@ -425,13 +429,18 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
         <div className="worldmap-panel">
           <div className="wm-trip">
             <span className="wm-trip-route"><b>{here.label}</b> <span className="wm-arrow">→</span> <b>{dest.label}</b> · {routeDistanceLabel(selRoute.km, selRoute.sea)}</span>
-            <div className="wm-modes">
-              {modeChoices.map((m) => (
-                <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>
-                  <Icon id={travelModeIcon(m)} /> {TRAVEL_MODE_LABEL[m]}
-                </button>
-              ))}
-            </div>
+            {/* Choix du MODE de voyage = un état, pas une action — segmented control (#362 : « En mer »
+                stylé `.btn-primary` concurrençait visuellement « Partir »). */}
+            <OptionChooser
+              layout="seg"
+              options={modeChoices.map((m) => ({
+                key: m,
+                label: TRAVEL_MODE_LABEL[m],
+                selected: mode === m,
+                content: <><Icon id={travelModeIcon(m)} /> {TRAVEL_MODE_LABEL[m]}</>,
+                onSelect: () => pickMode(m),
+              }))}
+            />
           </div>
           {mode === 'pied' && (
             <label className="wm-opt" title={`${maxH} h de route par jour au lieu de ${base} — Test de Résistance en fin de journée, ou État Exténué`}>

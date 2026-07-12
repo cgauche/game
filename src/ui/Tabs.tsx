@@ -16,10 +16,12 @@ const VARIANT_CLASS = { flat: '', pill: ' tabs-pill', sub: ' tabs-sub', dock: ' 
  * cliquet #288 — `.port-tabs`/`.zone-tabs`/`.logic-tabs`/`.merchant-tabs`+`.merch-subtabs`/`.sheet-tabs`).
  * Markup et comportement UNIQUES (`role="tablist"`/`"tab"`, `aria-selected`, roving tabindex — flèches
  * Gauche/Droite/Home/End déplacent le focus ET activent l'onglet, cf. pattern WAI-ARIA Tabs) ; seule la
- * PRÉSENTATION varie par `variant` : `flat` (fiche/zone — soulignement), `pill` (marchand/fiche —
- * onglets boîtes), `sub` (sous-onglets marchand — pilules compactes), `dock` (panneau Logique repliable
- * de l'éditeur — `editor.css` compose la mise en page du dock autour). `trailing` reçoit un contrôle
- * HORS tablist (ex. replier/déplier le dock), rendu après les onglets dans la même rangée.
+ * PRÉSENTATION varie par `variant` : `flat` (soulignement — CANON des onglets de PREMIER niveau d'un
+ * écran plein-champ, #362 : Hub de ville, Port, Marchand partagent le MÊME habillage), `pill` (onglets
+ * boîtes — fiche personnage/groupe, dans une modale), `sub` (sous-onglets marchand — pilules
+ * compactes, un niveau SOUS le `flat` de l'écran), `dock` (panneau Logique repliable de l'éditeur —
+ * `editor.css` compose la mise en page du dock autour). `trailing` reçoit un contrôle HORS tablist
+ * (ex. replier/déplier le dock), rendu après les onglets dans la même rangée.
  */
 export function Tabs<K extends string>({
   tabs,

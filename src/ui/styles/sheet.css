@@ -390,6 +390,13 @@
 .rm-roll-empty {
   opacity: 0.55;
 }
+/* Empreinte réservée de la colonne DR avant résolution (#362) : largeur STABLE (pas de saut de mise
+   en page au résultat), libellé lisible plutôt qu'un « -- DR » cryptique (porté par la case dé). */
+.rm-roll-sl-pending {
+  display: inline-block;
+  min-width: 4.5ch;
+  text-align: right;
+}
 /* Rangée d100 SUR TABLE (Oups !, Critiques, Imparfaites…) : neutre, compacte. */
 .rm-roll.table {
   grid-template-columns: auto 1fr auto;

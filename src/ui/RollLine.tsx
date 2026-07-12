@@ -82,9 +82,9 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
         <span className="rm-roll-label">{p.label}</span>
         <RollCalc base={p.base} modifier={diff} target={target} hidden={!showValue} />
         <span className="rm-roll-dice">
-          <Icon id="nav/dice" size="sm" /> <b className="rm-roll-empty">--</b>
+          <Icon id="nav/dice" size="sm" /> <b className="rm-roll-empty">à lancer</b>
         </span>
-        <span className="rm-roll-sl">-- DR</span>
+        <span className="rm-roll-sl rm-roll-sl-pending" aria-hidden="true">—</span>
       </div>
       {mods.length > 0 && <ModChips mods={mods} />}
     </div>

@@ -24,7 +24,6 @@ import { RestBody } from './RestModal';
 import { ShoreLeaveBody } from './ShoreLeaveModal';
 import { TravelDayBody } from './TravelRecapModal';
 import { ShipDossier } from './ShipDossier';
-import { GameDate } from './GameDate';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 
@@ -338,10 +337,8 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
         </>}
         onClose={onClose}
         closeLabel="Réduire"
-        actions={<>
-          <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={gameTime} /></span>
-          {dossier && <button type="button" className="btn small" onClick={dossier}>Dossier navire</button>}
-        </>}
+        meta={{ time: gameTime }}
+        actions={dossier && <button type="button" className="btn small" onClick={dossier}>Dossier navire</button>}
       >
         <div className="voyage-body">
           <div className="voyage-head">

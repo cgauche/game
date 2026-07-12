@@ -213,6 +213,15 @@
   .worldmap-head h2 { font-size: 15px; }
   .wm-role-row { flex-direction: column; align-items: stretch; }
 }
+/* En-tête mobile compact (#359, généralisé #362) : `.port-purse` porte `margin-left:auto` qui
+   consomme le reste de la ligne et rejette le bouton Fermer seul sur sa propre rangée à 360px ; la
+   pilule de date/bourse (slot `meta` de `ScreenShell`) se resserre pour tenir en 2 rangées max
+   (titre + actions), jamais 3 — comportement UNIQUE, quel que soit l'écran plein-champ. */
+@media (max-width: 560px) {
+  .worldmap-head-actions { gap: 6px; }
+  .port-purse { margin-left: 0; font-size: 12px; }
+  .hud-clock { height: 32px; padding: 0 8px; font-size: 11px; }
+}
 
 /* ── Écran Port (MDG 15 : chantier naval + commerce maritime) ─────────────────── */
 .port-overlay { overflow-y: auto; }
@@ -278,9 +287,6 @@
 .sea-act-invest { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; }
 .sea-act-invest input { width: 84px; }
 .sea-act-purse { font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
-@media (max-width: 560px) {
-  .port-purse { margin-left: 0; }
-}
 
 /* ── Éditeur de carte du monde (#T2) — coquille `ScreenShell` (voile+en-tête ⇒ classes worldmap-*),
    `.wme-shell` n'ajoute que le fond opaque (l'éditeur masque tout le jeu, pas un voile translucide). ── */

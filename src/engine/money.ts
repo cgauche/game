@@ -79,3 +79,14 @@ export function formatMoney(m: Money): string {
   else if (m.brass) parts.push(`${m.brass} sc`); // sous seuls (LDB 57 « 240sc »)
   return parts.length ? parts.join(' ') : '0 sc';
 }
+
+/** Épellation française COMPLÈTE d'un montant (#354 : la notation canon « 10/– » n'est pas
+ *  auto-explicative — « 10 pistoles d'argent » l'est). SOURCE UNIQUE pour le `title` de `<Coins>`,
+ *  jamais dupliquée par écran. */
+export function spellMoney(m: Money): string {
+  const parts: string[] = [];
+  if (m.gold) parts.push(`${m.gold} couronne${m.gold > 1 ? 's' : ''} d'or`);
+  if (m.silver) parts.push(`${m.silver} pistole${m.silver > 1 ? 's' : ''} d'argent`);
+  if (m.brass) parts.push(`${m.brass} sou${m.brass > 1 ? 's' : ''} de cuivre`);
+  return parts.length ? parts.join(', ') : 'aucune monnaie';
+}

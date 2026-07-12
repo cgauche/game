@@ -239,7 +239,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     }
     return (
       <RollShell
-        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+        title={p.title}
         subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
         rows={[...doneWitnessRows, ...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }])]}
@@ -265,7 +265,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const revSubject = rev?.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
     return (
       <RollShell
-        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+        title={p.title}
         subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
         rows={doneWitnessRows}
@@ -328,7 +328,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     ];
     return (
       <RollShell
-        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+        title={p.title}
         subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         extra={stakeNote ?? undefined}
         rolled={ready}
