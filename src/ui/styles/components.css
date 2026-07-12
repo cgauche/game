@@ -386,8 +386,10 @@
 }
 
 /* ── MASTER-DETAIL (primitive MasterDetail.tsx, #330) — liste GAUCHE + détail CENTRE, gabarit de
-   LAYOUT pur (aucun état dedans, cf. doc du composant). ≤700px (breakpoint canon) : empilement,
-   liste en rangée qui s'enroule (pas de scroll horizontal, y compris à 360px). ── */
+   LAYOUT pur (aucun état dedans, cf. doc du composant). ≤700px (breakpoint canon, aligné sur
+   `MASTER_DETAIL_STACK_BREAKPOINT_PX` — les deux se modifient ENSEMBLE) : empilement, liste en
+   rangée qui s'enroule (pas de scroll horizontal, y compris à 360px), scroll-vers-détail au clic
+   (#343). ── */
 .master-detail {
   display: grid;
   grid-template-columns: minmax(160px, 240px) 1fr;
