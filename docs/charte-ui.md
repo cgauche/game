@@ -12,11 +12,18 @@
   éditer `:root` seul. Seules exceptions tolérées : `rgba(0,0,0/255,255,255,…)` génériques
   (ombres/voiles). **Réflexe : à chaque couleur écrite, utiliser ou créer un token.**
 - **Pas de monolithe CSS.** `src/ui/styles.css` est un orchestrateur d'`@import` ; le style vit
-  dans des modules par domaine sous `src/ui/styles/` (`base`, `components`, `creator`,
+  dans des modules sous `src/ui/styles/` — couche PARTAGÉE : `base`, `components`, `tabs`
+  (variantes de la primitive `Tabs`), `gauges` (jauges partagées) ; modules de DOMAINE : `creator`,
   `combat-ui`, `combat-modals`, `sheet`, `merchant`, `hud`, `world-meta`, `editor`, `compendium`,
-  `codex-edit`, `house-rules`, `mass-battle`, `ornaments`, `tavern`). **Nouveau style → dans le
-  module du domaine concerné** ; garder chaque module raisonnablement borné (pas de retour à un
-  fichier de mille+ lignes).
+  `codex-edit`, `house-rules`, `mass-battle`, `ornaments`, `tavern`.
+- **Nouveau style : le réflexe est la couche PARTAGÉE, jamais la classe locale par défaut**
+  (doctrine utilisateur 2026-07-12 : « classe mono-écran = excuse à la dérive » ; « si on ne sait
+  pas faire, on ajoute de nouveaux génériques — on en a déjà pas mal, j'en doute »). Ordre :
+  (1) composer une classe du catalogue ci-dessous ; (2) motif inexprimable → l'ajouter en
+  GÉNÉRIQUE paramétrable à la couche partagée (cas attendu RARE) ; (3) une classe de domaine ne
+  se crée que pour du vraiment spécifique (géométrie d'un canevas, skin d'un écran unique) et se
+  justifie. Cliquets CI : (x) boutons nus, (xii) stock de classes par module de domaine —
+  baselines gelées, décroissantes.
 - **Primitives canoniques** (`src/ui/styles/components.css`) — **composer, ne pas recréer une
   surface ad-hoc** : `.panel` (surface ; variantes `.sunken`/`.gold`/`.flush`), `.fold` (section
   repliable `<details>`), `.field` (champ libellé-au-dessus), `.stat-chip` (cartouche
@@ -71,9 +78,11 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.fold` (+ `.fold-title`, `.fold-body`) | Section repliable (`<details>`) | `<details class=fold><summary><span class=fold-title>…</span></summary><div class=fold-body>…</div></details>` — toute section optionnelle/secondaire dépliable. |
 | `.stat-chip` (+ `.sc-label`, `.sc-value`) | Cartouche « label + valeur » (PV, carac, ressource) | Afficher une valeur nommée — jamais un format cryptique (« 4·4 » sans libellé, cf. règle charte ci-dessus). |
 | `.listrow` (+ `.lr-name`) | Rangée de liste : nom (flex:1) + méta + action | Toute liste d'entités cliquables/actionnables (inventaire, roster…) plutôt qu'un `<li>` stylé à la main. |
+| `.stack` | Empilement vertical (flex column, gap 8px) | Toute pile de blocs verticale simple — pas de `display:flex;flex-direction:column` recopié. |
+| `.row-flex` | Rangée horizontale qui s'enroule (flex-wrap) | Toute rangée d'éléments qui doit passer à la ligne sur petit écran plutôt qu'un `overflow` caché. |
 | `.wounds-badge` / `.char-value` / `.game-date` / `.fx-chip-label` | Composants de donnée unifiés (LOT 5) — respectivement PB/carac+avancées/date de jeu/étiquette d'effet | Rendus par leurs composants (`WoundsBadge`, `CharValue`, `GameDate`, `FxChip`) — ne pas reformater ces données à la main ailleurs. |
 | `.icon` | Cadrage de l'icône SVG maison | Posée par la primitive `<Icon>` (`src/ui/Icon.tsx`) — cale l'icône sur la ligne de base du texte adjacent ; jamais un `<svg>` brut à côté de texte. |
-| `.charprev` (+ `.charprev-svg`, tailles `.charprev-xs/sm/md/lg`, `.charprev-fill`, ambiances `.charprev-amb-panel/parchment/spotlight`) | Cadre d'aperçu « perso en pied » (`CharacterPreview`) | Toute vignette de personnage EN PIED — les tailles/ambiances sont des modificateurs, jamais un `<img>`/SVG dimensionné à la main. |
+| `.charprev` (+ `.charprev-svg`, tailles `.charprev-xs`/`.charprev-sm`/`.charprev-md`/`.charprev-lg`, `.charprev-fill`, ambiances `.charprev-amb-panel`/`.charprev-amb-parchment`/`.charprev-amb-spotlight`) | Cadre d'aperçu « perso en pied » (`CharacterPreview`) | Toute vignette de personnage EN PIED — les tailles/ambiances sont des modificateurs, jamais un `<img>`/SVG dimensionné à la main. |
 
 ### Layouts responsive (règle stricte 4)
 
@@ -84,6 +93,7 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.bar` | Barre d'écran (en-tête, fond dégradé, filet or) | En-tête d'écran avec titre + actions — s'enroule ≤700px ; ne PAS la détourner pour une simple rangée sans fond/padding de header (charte : « éviter les espaces vides »). |
 | `.screen` | Colonne plein-écran (flex column, hauteur 100%) | Coquille racine d'un écran plein-champ « historique » (hors `ScreenShell`, cf. table CLAUDE.md). |
 | `.master-detail` (+ `.master-detail-list`, `.master-detail-detail`) | Gabarit maître-détail (liste gauche + détail centre), LAYOUT pur | Composé par `MasterDetail.tsx` (CLAUDE.md) — s'empile ≤700px (`MASTER_DETAIL_STACK_BREAKPOINT_PX`), jamais une 2ᵉ composition liste+détail recodée. |
+| `.tabs` (+ `.tab-btn`) | Style de base (variante `flat`) de la barre d'onglets | Posée par la primitive React `Tabs` (CLAUDE.md) — les variantes `pill`/`sub`/`dock` composent par-dessus dans `tabs.css` ; jamais un `role=tablist` recodé à la main. |
 | `.seg` (`sheet.css`) | Segmented control (choix exclusif, boutons collés) | Composé par la primitive React `OptionChooser` (variante `seg`) — jamais un groupe de boutons exclusifs recodé à la main. |
 
 ### Formulaires

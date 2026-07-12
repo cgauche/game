@@ -117,6 +117,92 @@ if (existsSync(CLAUDE_MD)) {
   }
 }
 
+// 4. Catalogue atomique CSS (docs/charte-ui.md, section « Couche atomique — catalogue »), les DEUX
+// sens :
+//   4a. chaque classe backtiquée `.foo` de la section doit exister comme sélecteur réel dans
+//       src/ui/styles/*.css — sinon la doc ment (classe fantôme).
+//   4b. chaque classe CANONIQUE (sélecteur de PREMIER NIVEAU, ni pseudo/combinateur/parenthèse) de
+//       la zone PARTAGÉE de `src/ui/styles/components.css` doit être citée dans la section — sinon
+//       la doc devient incomplète en silence. Zone PARTAGÉE = tout le fichier AVANT le premier bloc
+//       de domaine (repéré par le marqueur `DOMAIN_MARKER` ci-dessous, cf. le propre commentaire de
+//       section du CSS) ; le fichier place systématiquement ses sections « 1 écran » en QUEUE. La
+//       liste de classes est DÉRIVÉE du CSS (parsing des sélecteurs), jamais d'une liste en dur ici.
+const CHARTE_MD = 'docs/charte-ui.md'
+const COMPONENTS_CSS = 'src/ui/styles/components.css'
+const DOMAIN_MARKER = 'ÉCRAN-HUB DE VOYAGE' // 1er bloc de CSS propre-à-un-écran dans components.css
+if (existsSync(CHARTE_MD)) {
+  const text = readFileSync(CHARTE_MD, 'utf8')
+  const lines = text.split('\n')
+  const startIdx = lines.findIndex((l) => l.trim() === '## Couche atomique — catalogue')
+  if (startIdx >= 0) {
+    let endIdx = lines.findIndex((l, i) => i > startIdx && /^## /.test(l))
+    if (endIdx < 0) endIdx = lines.length
+    const section = lines.slice(startIdx, endIdx).join('\n')
+
+    const CSS_TEXT = walk('src/ui/styles', ['.css']).map((f) => readFileSync(f, 'utf8')).join('\n')
+
+    // Faux positifs à écarter : extensions de fichier (`CLAUDE.md`…) et motifs jocker cités comme
+    // ANTI-exemples exprès NON catalogués (`.voyage-*`, `.char-card*`…, cf. prose de la section).
+    const FILE_EXTS = new Set(['md', 'ts', 'tsx', 'js', 'jsx', 'mjs', 'mts', 'cjs', 'json', 'css'])
+    const seen = new Set()
+    const codeRe2 = /`([^`\n]+)`/g
+    let mm
+    while ((mm = codeRe2.exec(section))) {
+      for (const c of mm[1].matchAll(/\.[A-Za-z][\w-]*/g)) {
+        const cls = c[0]
+        if (mm[1][c.index + cls.length] === '*') continue // motif jocker anti-exemple (`.voyage-*`)
+        if (seen.has(cls) || FILE_EXTS.has(cls.slice(1))) continue
+        seen.add(cls)
+        const rx = new RegExp('\\' + cls + '(?![\\w-])')
+        if (!rx.test(CSS_TEXT)) {
+          const line = startIdx + lineAt(section, mm.index)
+          problems.push({ file: CHARTE_MD, line, kind: 'classe cataloguée absente du CSS', tok: cls })
+        }
+      }
+    }
+
+    // 4b. sens inverse — classes canoniques de components.css (zone partagée) absentes du catalogue.
+    if (existsSync(COMPONENTS_CSS)) {
+      const cssFull = readFileSync(COMPONENTS_CSS, 'utf8')
+      const domainAt = cssFull.indexOf(DOMAIN_MARKER)
+      const sharedCss = (domainAt >= 0 ? cssFull.slice(0, domainAt) : cssFull).replace(/\/\*[\s\S]*?\*\//g, '')
+
+      // Premier sélecteur simple d'une liste de sélecteurs (avant tout combinateur hors parenthèses)
+      // — exclut les classes NESTED (`.tabs .tab-btn`, `.stat-chip > .sc-label`…) : celles-là sont
+      // des sous-parties documentées EN PLUS de leur classe racine, pas des primitives autonomes.
+      const firstCompound = (sel) => {
+        let depth = 0
+        for (let i = 0; i < sel.length; i++) {
+          const c = sel[i]
+          if (c === '(') depth++
+          else if (c === ')') depth--
+          else if (depth === 0 && /[\s>+~]/.test(c)) return sel.slice(0, i)
+        }
+        return sel
+      }
+      const canonicalClasses = new Set()
+      let buf = ''
+      for (const ch of sharedCss) {
+        if (ch === '{') {
+          const sel = buf.trim(); buf = ''
+          if (sel && !sel.startsWith('@')) {
+            for (const part of sel.split(',')) {
+              const compound = firstCompound(part.trim()).replace(/\([^)]*\)/g, '')
+              for (const c of compound.matchAll(/\.[A-Za-z][\w-]*/g)) canonicalClasses.add(c[0])
+            }
+          }
+        } else if (ch === '}') buf = ''
+        else buf += ch
+      }
+      for (const cls of canonicalClasses) {
+        const rx = new RegExp('\\' + cls + '(?![\\w-])')
+        if (!rx.test(section))
+          problems.push({ file: CHARTE_MD, line: startIdx + 1, kind: 'classe canonique components.css absente du catalogue', tok: cls })
+      }
+    }
+  }
+}
+
 if (problems.length) {
   console.error(`docs:check — ${problems.length} référence(s) morte(s) :`)
   for (const p of problems.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line))

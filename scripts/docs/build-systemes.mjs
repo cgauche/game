@@ -2,8 +2,9 @@
 // dans src/data/systemes.manifest.json et src/data/primitives.manifest.json ; la matrice
 // d'adoption primitive×système est GÉNÉRÉE du graphe d'imports réel (closure transitive des
 // modules porteurs déclarés par système). Sortie : docs/systemes.md.
-// Re-run : node scripts/docs/build-systemes.mjs (npm run docs:systemes). Garde de fraîcheur
-// (patron raw:catalogs/gen-registry) : régénérer puis `git diff --exit-code -- docs/systemes.md`.
+// Re-run : node scripts/docs/build-systemes.mjs (npm run docs:systemes).
+// Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
+// exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { closureOf } from '../guards/lib/importGraph.mjs'
@@ -91,11 +92,22 @@ out += `unique ne « possède » légitimement ; à trier au fil de l'eau, pas u
 out += `${uncovered.length} fichier(s) :\n\n`
 out += uncovered.map((f) => `- \`${f}\`\n`).join('')
 
-writeFileSync('docs/systemes.md', out)
-console.log(`docs/systemes.md — ${SYSTEMES.length} systèmes, ${PRIMITIVES.length} primitives, ${orphanPrimitives.length} primitive(s) orpheline(s), ${uncovered.length} module(s) non rattaché(s).`)
-
 if (errors.length) {
   console.error(`build-systemes — ${errors.length} erreur(s) d'intégrité manifeste :`)
   for (const e of errors) console.error(`  ${e}`)
   process.exit(1)
+}
+
+const CHECK = process.argv.includes('--check')
+if (CHECK) {
+  const current = existsSync('docs/systemes.md') ? readFileSync('docs/systemes.md', 'utf8') : null
+  if (current !== out) {
+    console.error('docs:systemes — docs/systemes.md est PÉRIMÉ (diverge du graphe d\'imports réel).')
+    console.error('  → relancer `npm run docs:systemes` et committer le résultat.')
+    process.exit(1)
+  }
+  console.log('docs:systemes — OK (docs/systemes.md à jour)')
+} else {
+  writeFileSync('docs/systemes.md', out)
+  console.log(`docs/systemes.md — ${SYSTEMES.length} systèmes, ${PRIMITIVES.length} primitives, ${orphanPrimitives.length} primitive(s) orpheline(s), ${uncovered.length} module(s) non rattaché(s).`)
 }

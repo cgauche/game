@@ -49,12 +49,12 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `ScreenShell` |  |  |  |  |  |  |  | U |  |  | U |  |  |  | U |  |
 | `RollShell` |  | U | U |  |  |  |  | U | U | U |  | U |  |  |  |  |
-| `RollRow` |  | U | U |  | U |  | U | U | U | U |  | U | U |  |  |  |
+| `RollRow` |  | U | U |  | U |  | U | U | U | U |  | U |  |  |  |  |
 | `makeRollFlow/FLOWS` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `openRoll/resolveSurface` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
-| `OptionChooser/ChoiceButtons` |  | U | U |  | U |  | U | U | U | U | U | U | U |  | U |  |
+| `OptionChooser/ChoiceButtons` |  | U | U |  | U |  | U | U | U | U | U | U | U |  | U | U |
 | `optionValue/optionPending/testPending` |  | U | U |  |  |  |  | U | U | U |  | U |  |  |  |  |
-| `InfluenceRow` |  | U | U |  | U |  | U | U | U | U |  | U | U |  |  |  |
+| `InfluenceRow` |  | U | U |  | U |  | U | U | U | U |  | U |  |  |  |  |
 | `VsHeader` |  | U |  |  |  |  |  |  | U | U |  |  |  |  |  |  |
 | `PortraitTile/CharFrame` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `SearchFilterField` |  |  |  |  |  |  |  |  |  | U |  |  |  |  | U |  |
@@ -73,7 +73,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `RefField` |  |  |  |  |  |  | U | U | U | U | U |  |  |  | U | U |
 | `Prose` |  |  |  |  |  |  | U | U | U | U | U |  |  |  | U | U |
 | `resolveRender/pickBackend` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
-| `MasterDetail` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  |  |
+| `MasterDetail` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  | U |
 | `gen-registry (_registry.generated)` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
 ## Primitives jamais adoptées par un système déclaré
