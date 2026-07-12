@@ -175,9 +175,12 @@ const MERCHANT_STOCK_KIND = 'merchant-stock';
 registerCascadeApplier(MERCHANT_STOCK_KIND, (get, set, step) => {
   const meta = step.meta ?? {};
   const entityId = String(meta.entityId ?? '');
+  const archetype = String(meta.archetype ?? '');
   const ent = get().scene?.entities.find((e) => e.id === entityId);
-  const arch = MERCHANTS[String(meta.archetype ?? '')];
-  if (!ent?.merchant || !arch) return {};
+  const arch = MERCHANTS[archetype];
+  // `arch` (`meta.archetype`, sérialisé à l'ouverture) SUFFIT — un marchand de LIEU (#369, `openPlaceMerchant`)
+  // n'a aucune `SceneEntity` de scène, `ent` reste alors `undefined` (overrides d'entité simplement absents).
+  if (!arch) return {};
   const settlement = String(meta.settlement ?? arch.settlement) as Settlement;
   const now = Number(meta.now ?? get().gameTime);
   const restockPeriod = Number(meta.restockPeriod ?? MINUTES_PER_DAY);
@@ -192,7 +195,7 @@ registerCascadeApplier(MERCHANT_STOCK_KIND, (get, set, step) => {
     const resaleRate = Number(meta.resaleRate ?? arch.resaleRate);
     const buyMarkup = Number(meta.buyMarkup ?? arch.buyMarkup ?? 1);
     const persisted = s.merchantStocks[entityId];
-    return { merchant: { entityId, archetype: ent.merchant!.archetype, settlement, resaleRate, buyMarkup, stock, cart: [], bargainLocked: persisted?.bargainLocked ?? false } };
+    return { merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, stock, cart: [], bargainLocked: persisted?.bargainLocked ?? false } };
   });
   return {
     consequences: freeCons(tested.map((l) => `${l.label} — d100 ${l.test!.roll}/${l.test!.target} ✔ ×${l.qty}`)),
@@ -210,8 +213,10 @@ function openStockRevealCascade(
   // #331 réserve A-bis : PRÉ-POSE le tirage article par article dans `outcome` AVANT validation — la
   // modale d'affichage ne montrait QUE l'en-tête + « Terminer ». Le tirage est SEEDÉ déterministe
   // (`computeFreshStockLines`), donc ces lignes affichées == celles que l'applier recompose/persiste.
+  // `ent` n'existe pas pour un marchand de LIEU (#369, `openPlaceMerchant`) — le pretirage se calcule
+  // quand même, `computeFreshStockLines` tolère `ent` absent (overrides d'entité simplement absents).
   const ent = get().scene?.entities.find((e) => e.id === entityId);
-  const outcome = ent?.merchant && arch
+  const outcome = arch
     ? computeFreshStockLines(get, ent, arch, entityId, settlement, now, restockPeriod, gossipDay)
         .tested.map((l) => `${l.label} — d100 ${l.test!.roll}/${l.test!.target} ✔ ×${l.qty}`)
     : undefined;
@@ -226,15 +231,17 @@ function openStockRevealCascade(
   startCascade(get, set, { title: 'Réassort marchand', purpose: 'test', steps: [step] });
 }
 
-export function openMerchant(get: Get, set: Set, entityId: string): void {
-  const ent = get().scene?.entities.find((e) => e.id === entityId);
-  if (!ent?.merchant) return;
-  const arch = MERCHANTS[ent.merchant.archetype];
-  if (!arch) { get().log(`Archétype marchand inconnu : « ${ent.merchant.archetype} ».`); return; }
-  const settlement: Settlement = ent.merchant.settlement ?? arch.settlement;
-  const resaleRate = ent.merchant.resaleRate ?? arch.resaleRate;
-  const buyMarkup = ent.merchant.buyMarkup ?? arch.buyMarkup ?? 1; // majoration d’achat (1 = prix listé ; >1 = vend plus cher)
-  const restockPeriod = (ent.merchant.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY; // réassort (#T3)
+/** Ouverture PARTAGÉE d'une visite marchande (#369) — `ent` est l'override d'ENTITÉ de scène (PNJ posé
+ *  dans une scène) quand il existe ; un marchand de LIEU (`openPlaceMerchant`, catalogue `lieux-services.json`)
+ *  n'en porte aucun et joue les défauts d'archétype nus. SOURCE UNIQUE du calcul d'ouverture, réutilisée
+ *  par les deux entrées — aucune n'est un fork de l'autre. */
+function openMerchantByArchetype(get: Get, set: Set, entityId: string, archetype: string, ent?: SceneEntity): void {
+  const arch = MERCHANTS[archetype];
+  if (!arch) { get().log(`Archétype marchand inconnu : « ${archetype} ».`); return; }
+  const settlement: Settlement = ent?.merchant?.settlement ?? arch.settlement;
+  const resaleRate = ent?.merchant?.resaleRate ?? arch.resaleRate;
+  const buyMarkup = ent?.merchant?.buyMarkup ?? arch.buyMarkup ?? 1; // majoration d’achat (1 = prix listé ; >1 = vend plus cher)
+  const restockPeriod = (ent?.merchant?.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY; // réassort (#T3)
   const now = get().gameTime;
   const prev = get().merchantStocks[entityId];
   // Re-stock dans le temps (#T3) : on conserve le stock DÉPLÉTÉ entre visites ; on ne re-tire un stock
@@ -245,14 +252,27 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
     // #273 dernier volet — porte : siège MJ présent → tirage VISIBLE-LANÇABLE (jamais silencieux) ;
     // sinon → inline INCHANGÉ (zéro friction locale).
     if (get().net.gmSeat != null) {
-      openStockRevealCascade(get, set, entityId, ent.merchant.archetype, settlement, now, restockPeriod, false, resaleRate, buyMarkup);
+      openStockRevealCascade(get, set, entityId, archetype, settlement, now, restockPeriod, false, resaleRate, buyMarkup);
       return;
     }
     const stock = rollFreshStock(get, set, entityId, ent, arch, settlement, now, restockPeriod, false);
-    set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock, cart: [], bargainLocked: get().merchantStocks[entityId]?.bargainLocked ?? false } });
+    set({ merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, stock, cart: [], bargainLocked: get().merchantStocks[entityId]?.bargainLocked ?? false } });
     return;
   }
-  set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: prev.stock, cart: [], bargainLocked: prev.bargainLocked ?? false } });
+  set({ merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, stock: prev.stock, cart: [], bargainLocked: prev.bargainLocked ?? false } });
+}
+
+export function openMerchant(get: Get, set: Set, entityId: string): void {
+  const ent = get().scene?.entities.find((e) => e.id === entityId);
+  if (!ent?.merchant) return;
+  openMerchantByArchetype(get, set, entityId, ent.merchant.archetype, ent);
+}
+
+/** Marchand de LIEU (#369) — ouvre le système marchand EXISTANT pour un service de catalogue sans
+ *  `SceneEntity` (forgeron du hub de ville…) : même `openMerchantByArchetype`, keyé sur l'id virtuel
+ *  `placeServiceMerchantId` (stock persistant propre au lieu+service). Extension du général, pas un fork. */
+export function openPlaceMerchant(get: Get, set: Set, entityId: string, archetype: string): void {
+  openMerchantByArchetype(get, set, entityId, archetype);
 }
 
 /** Kind d'étape de cascade du Test de Ragot de recherche active (#274, sweep pré-garde — site consigné

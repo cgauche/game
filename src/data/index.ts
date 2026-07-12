@@ -1427,6 +1427,8 @@ export interface LieuServiceData {
   hostLine?: string;
   /** Bande d'ambiance par défaut (id du registre `src/ui/backdrops`). */
   backdrop?: string;
+  /** Archétype marchand ouvert par ce service (`src/state/merchants/defs/*.ts`, #369). */
+  merchantArchetype?: string;
 }
 export const lieuxServices = lieuxServicesJson as LieuServiceData[];
 const lieuServiceById = new Map(lieuxServices.map((s) => [s.id, s]));

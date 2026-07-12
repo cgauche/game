@@ -682,6 +682,9 @@ export interface GameState extends RollFlowActionsMap {
   chooseDialogue: (choiceIndex: number) => void;
   closeDialogue: () => void;
   openMerchant: (entityId: string) => void;
+  /** Marchand de LIEU (#369) — service de catalogue sans `SceneEntity` (forgeron du hub de ville…) : même
+   *  système marchand, keyé sur `placeServiceMerchantId` (`worldMap.ts`). */
+  openPlaceMerchant: (entityId: string, archetype: string) => void;
   closeMerchant: () => void;
   /** Recherche active de Disponibilité (LDB 59 l.50) : passer une journée entière + un Test de Ragot →
    *  réassort frais avec +10 % de Disponibilité si le Ragot réussit (avance l'horloge d'une journée). */
@@ -1864,6 +1867,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   // ─── Marchand (#2) : délégué à merchantFlow ───
   openMerchant: (entityId) => merchantFlow.openMerchant(get, set, entityId),
+  openPlaceMerchant: (entityId, archetype) => merchantFlow.openPlaceMerchant(get, set, entityId, archetype),
   closeMerchant: () => merchantFlow.closeMerchant(get, set),
   searchAvailability: () => merchantFlow.searchAvailability(get, set),
   buyItem: (label, heroId) => merchantFlow.buyItem(get, set, label, heroId),

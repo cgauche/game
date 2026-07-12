@@ -23,6 +23,10 @@ export const schema = z.array(
     hostLine: z.string().optional(),
     /** Bande d'ambiance par défaut du service (id du registre `src/ui/backdrops`). */
     backdrop: z.string().optional(),
+    /** Archétype marchand ouvert par ce service (`src/state/merchants/defs/*.ts`, ex. `armurier` pour
+     *  le forgeron) — routage vers le système marchand EXISTANT via `openPlaceMerchant`, aucune donnée
+     *  de commerce dupliquée ici (#369). */
+    merchantArchetype: z.string().optional(),
   }),
 );
 

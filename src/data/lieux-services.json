@@ -9,17 +9,20 @@
   {
     "id": "temple",
     "label": "Temple",
-    "icon": "faith/church"
+    "icon": "faith/church",
+    "desc": "Le temple ne reçoit personne pour l’instant."
   },
   {
     "id": "forgeron",
     "label": "Forgeron",
-    "icon": "item/weapon"
+    "icon": "item/weapon",
+    "merchantArchetype": "armurier"
   },
   {
     "id": "guilde",
     "label": "Guilde",
-    "icon": "merchant/deal"
+    "icon": "merchant/deal",
+    "desc": "La guilde n’ouvre pas encore ses portes."
   },
   {
     "id": "chantier",

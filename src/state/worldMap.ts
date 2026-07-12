@@ -243,6 +243,16 @@ export interface ResolvedPlaceService {
   hostLine?: string;
   /** Bande d'ambiance par défaut (catalogue `lieux-services.json`, id du registre `src/ui/backdrops`). */
   backdrop?: string;
+  /** Archétype marchand (catalogue `lieux-services.json`, ex. `armurier` pour le forgeron) — porte vers
+   *  le système marchand EXISTANT (`openPlaceMerchant`, #369), aucun système neuf. */
+  merchantArchetype?: string;
+}
+
+/** id STABLE du marchand VIRTUEL d'un service de lieu (#369) : le service de catalogue (forgeron…) n'a
+ *  aucune `SceneEntity` de scène — l'écran marchand s'ouvre quand même, keyé sur cet id pour son propre
+ *  stock persistant (`merchantStocks`). PUR/testable, source unique du format. */
+export function placeServiceMerchantId(placeId: string, serviceId: string): string {
+  return `lieu:${placeId}:${serviceId}`;
 }
 
 /** Offre de couchage en AUBERGE portée par une scène (`rest.auberge`, ou une `restZone` qui l'offre) —
@@ -279,6 +289,7 @@ export function placeServices(place: MapPlace, scene?: Scene): ResolvedPlaceServ
       rest: auberge ? (s.rest ?? sceneAubergeOffer(scene)) : undefined,
       hostLine: def?.hostLine,
       backdrop: def?.backdrop,
+      merchantArchetype: def?.merchantArchetype,
     });
     declared.add(s.kind);
   }
