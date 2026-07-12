@@ -49,11 +49,12 @@
 .worldmap-overlay {
   position: fixed;
   inset: 0;
-  z-index: 90; /* sous les modales (100) */
-  /* Quasi-opaque (#333 correctif) : le HUD de scène (dock de portraits, commandes de vue — z-index
-     bien SOUS 90 mais peints dans le MÊME contexte d'empilement) ne doit pas transparaître à travers
-     le voile ; une transparence trop marquée le laissait « saigner » derrière l'en-tête. */
-  background: rgba(10, 12, 18, 0.97);
+  z-index: 90; /* sous les modales de jet (.modal-overlay = 130) */
+  /* Opaque (#358 correctif) : le HUD de scène (dock de portraits, commandes de vue — z-index bien
+     SOUS 90 mais peint dans le MÊME contexte d'empilement) ne doit JAMAIS transparaître à travers le
+     voile. Un `rgba(...)` avec alpha < 1 (même 0.97) laisse un résidu visible sur les chips vives du
+     dock — le token `--bg` (opacité 1, pas un hex à alpha fractionnaire) coupe le fond net. */
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   padding: 10px;
