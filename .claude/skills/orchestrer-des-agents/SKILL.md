@@ -18,6 +18,11 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    réfs RAW nues (`LDB 13 l.142` — jamais paraphrasées), le chemin ABSOLU du worktree à utiliser
    tel quel, l'interdit de tout `git checkout/restore/reset/stash/add/commit`, et « ton rendu
    final = données brutes, pas un message ».
+   **Brief UI** : nommer AUSSI la couche atomique — AUCUN élément nu (`<button>` → `.btn`/`.chip`/
+   primitive ; conteneur de contenu → `.panel` ; focusable custom → style de focus maison) ; citer
+   la table « Primitives partagées » + `docs/charte-ui.md`. Vécu 2026-07-12 (« c'est de la
+   folie ») : le hub composait le squelette (ScreenShell/MasterDetail) mais des feuilles à la
+   main → noir-sur-noir, lignes nues, focus UA. Cliquet #373 garde la classe.
 3. **Dispatch** — l'effort de chaque étage est MAÎTRISÉ, jamais subi. Trois canaux : Workflow
    `agent()` (opts `model` + `effort` par appel — le seul contrôle par appel) ; tool Agent
    (`model` seul — l'effort vient de la définition du type dans `.claude/agents/*.md`, sinon
