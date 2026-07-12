@@ -1,7 +1,5 @@
 /**
- * Marchandage RAW (LDB 60 « Marchandage » l.12) : gagner un Test opposé réduit le prix de 10 %,
- * jusqu'à 20 % avec un Succès Stupéfiant (DR net ≥ 6) ou le talent Négociateur. Vente (l.22) :
- * base = ½ du prix listé, on obtient ¼ à ½ après Marchandage.
+ * Marchandage RAW — achat (LDB 60 l.3) et vente (LDB 60 l.5) d'objets du commerce courant.
  *
  * Homonyme `bargainPct` (`state/portFlow.ts`, MDG 15 l.335/385) : NON convergent, VOLONTAIREMENT —
  * source RAW distincte (négoce de cargaison, pas l'achat/vente d'objet du commerce courant), #351.
