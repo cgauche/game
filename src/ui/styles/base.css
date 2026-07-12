@@ -93,6 +93,7 @@
   --wm-fleuron: #8a6c2f; /* carte du monde : fleurons d'angle */
   --wm-badge-bg: #efe2bd; /* carte du monde : fond du badge de distance */
   --wm-ink: #5d4520; /* carte du monde : encre du texte (badge, rose des vents) */
+  --wm-marker-icon: #4a3517; /* carte du monde : couleur de l'icône des médaillons de lieu */
   --wm-compass-faint: #8a6c3e; /* carte du monde : branches pâles de la rose des vents */
   --wm-cartouche-bg: #33240f; /* carte du monde : fond du cartouche de nom de lieu */
   --wm-cartouche-fg: #f1e2bb; /* carte du monde : texte du cartouche de nom de lieu */

@@ -313,7 +313,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               </text>
               {/* Badge de mode : barque (voie d'eau) / compas (route carrossable). */}
               {r.modes.some((mm) => mm !== 'pied') && (
-                <g style={{ color: '#5d4520' }}>
+                <g style={{ color: 'var(--wm-ink)' }}>
                   <IconG id={water ? 'scenario/naval' : 'scenario/travel'} x={5.4} y={-1.35} size={2.5} />
                 </g>
               )}
@@ -354,7 +354,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           )}
           <circle r="1.5" fill="url(#wm-medal)" stroke="var(--wm-age-spot)" strokeWidth="0.22" filter="url(#wm-drop)" />
           {/* `p.icon` = id d'icône (registre src/ui/icons) ; sans icône, drapeau de lieu. */}
-          <g style={{ color: '#4a3517' }}>
+          <g style={{ color: 'var(--wm-marker-icon)' }}>
             <IconG id={p.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
           </g>
         </>

@@ -17,6 +17,7 @@ export function ManannBody({ embedded = false }: { embedded?: boolean } = {}) {
   const p = useGame((s) => s.pendingManannPriest);
   const money = useGame((s) => s.money);
   const resolve = useGame((s) => s.resolveManannPriest);
+  const isGuest = useGame((s) => s.net.mode) === 'guest';
   if (!p) return null;
   const affordable = canAfford(money, p.cost);
   const title = <><Icon id="faith/church" size="sm" /> Un Prêtre de Manann s'avance…</>;
@@ -29,8 +30,8 @@ export function ManannBody({ embedded = false }: { embedded?: boolean } = {}) {
       </p>
       <ChoiceButtons
         options={[
-          { key: 'payer', label: <><Icon id="resource/gold-purse" size="sm" /> Payer (<Coins money={p.cost} />)</>, primary: true, disabled: !affordable, onSelect: () => resolve(true), title: affordable ? 'Payer la bénédiction' : 'La bourse ne suit pas' },
-          { key: 'refuser', label: <><Icon id="faith/trident" size="sm" /> Refuser (−4d10 Humeur de Manann)</>, onSelect: () => resolve(false), title: 'Refuser la bénédiction — Manann reste courroucé' },
+          { key: 'payer', label: <><Icon id="resource/gold-purse" size="sm" /> Payer (<Coins money={p.cost} />)</>, primary: true, disabled: isGuest || !affordable, onSelect: () => resolve(true), title: isGuest ? 'L\'hôte décide.' : affordable ? 'Payer la bénédiction' : 'La bourse ne suit pas' },
+          { key: 'refuser', label: <><Icon id="faith/trident" size="sm" /> Refuser (−4d10 Humeur de Manann)</>, disabled: isGuest, onSelect: () => resolve(false), title: isGuest ? 'L\'hôte décide.' : 'Refuser la bénédiction — Manann reste courroucé' },
         ]}
       />
     </>

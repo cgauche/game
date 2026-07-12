@@ -16,6 +16,7 @@ import { Icon } from './Icon';
 export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}) {
   const p = useGame((s) => s.pendingShoreLeave);
   const resolve = useGame((s) => s.resolveShoreLeave);
+  const isGuest = useGame((s) => s.net.mode) === 'guest';
   if (!p) return null;
   const title = <><Icon id="travel/anchor" size="sm" /> Accostage à {p.to.label}</>;
   const body = (
@@ -27,8 +28,8 @@ export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}
       </p>
       <ChoiceButtons
         options={[
-          { key: 'accorder', label: <><Icon id="travel/anchor" size="sm" /> Accorder la relâche</>, primary: true, onSelect: () => resolve(true), title: 'Autoriser l\'équipage à faire relâche à terre' },
-          { key: 'refuser', label: <><Icon id="travel/anchor" size="sm" /> Refuser la relâche</>, onSelect: () => resolve(false), title: 'Garder l\'équipage à bord — l\'Embrigadement n\'aura pas lieu' },
+          { key: 'accorder', label: <><Icon id="travel/anchor" size="sm" /> Accorder la relâche</>, primary: true, disabled: isGuest, onSelect: () => resolve(true), title: isGuest ? 'L\'hôte décide de la relâche.' : 'Autoriser l\'équipage à faire relâche à terre' },
+          { key: 'refuser', label: <><Icon id="travel/anchor" size="sm" /> Refuser la relâche</>, disabled: isGuest, onSelect: () => resolve(false), title: isGuest ? 'L\'hôte décide de la relâche.' : 'Garder l\'équipage à bord — l\'Embrigadement n\'aura pas lieu' },
         ]}
       />
     </>

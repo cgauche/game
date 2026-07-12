@@ -17,11 +17,12 @@ import { PortHeader, EscaleTab } from './PortView';
 // `getServerState ?? getInitialState` (cf. `node_modules/zustand/react.js`) — un `setState` classique
 // n'est donc JAMAIS visible ici : seule une mutation de l'objet `getInitialState()` l'est. Restauré
 // après chaque test (jamais de fuite vers un test ultérieur qui lirait `getInitialState()`).
-const seedInitial = (patch: { pendingShoreLeave?: unknown; pendingManannPriest?: unknown }) => {
+const seedInitial = (patch: { pendingShoreLeave?: unknown; pendingManannPriest?: unknown; net?: unknown }) => {
   Object.assign(useGame.getInitialState() as unknown as Record<string, unknown>, patch);
 };
+const initialNetMode = useGame.getInitialState().net;
 afterEach(() => {
-  seedInitial({ pendingShoreLeave: null, pendingManannPriest: null });
+  seedInitial({ pendingShoreLeave: null, pendingManannPriest: null, net: initialNetMode });
 });
 
 const pp: PortProfile = {
@@ -98,5 +99,23 @@ describe('EscaleTab — actions d’escale (#228)', () => {
     const html = renderToStaticMarkup(<EscaleTab {...escaleProps} isGuest />);
     expect(html).toMatch(/Embaucher<\/button>/); // le bouton existe
     expect(html).toContain('disabled'); // et il est désactivé
+  });
+
+  it('invité (guest) : RELÂCHE À TERRE non résolvable localement (régression #343)', () => {
+    const pendingShoreLeave = { to: { id: 'x', label: 'X', pos: { x: 0, y: 0 }, scene: 's' } };
+    seedInitial({ pendingShoreLeave, net: { ...initialNetMode, mode: 'guest' } });
+    const html = renderToStaticMarkup(<EscaleTab {...escaleProps} isGuest pendingShoreLeave={pendingShoreLeave} />);
+    expect(html).toContain('Accorder la relâche');
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>[\s\S]*?Accorder la relâche/);
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>[\s\S]*?Refuser la relâche/);
+  });
+
+  it('invité (guest) : PRÊTRE DE MANANN non résolvable localement (régression #343)', () => {
+    const pendingManannPriest = { cost: toMoney({ gold: 5, silver: 3 }) };
+    seedInitial({ pendingManannPriest, net: { ...initialNetMode, mode: 'guest' } });
+    const html = renderToStaticMarkup(<EscaleTab {...escaleProps} isGuest pendingManannPriest={pendingManannPriest} />);
+    expect(html).toContain('Payer');
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>[\s\S]*?Payer/);
+    expect(html).toMatch(/<button[^>]*disabled[^>]*>[\s\S]*?Refuser/);
   });
 });
