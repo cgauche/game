@@ -198,6 +198,8 @@ fait DANS la primitive, pas dans une nième copie.
 | Affichage d'un personnage (HUD/modale/picker) | `PortraitTile` / `CharFrame` | `src/ui/PortraitTile.tsx` |
 | Champ de **filtre/recherche** de liste (catalogue, palette, sélecteur) — état + filtre pur | `SearchFilterField` (widget) + `useFilteredList`/`filterByLabel` (état/pur) | `src/ui/SearchFilterField.tsx` |
 | **Maître-détail** (liste GAUCHE + détail CENTRE — Codex/Compendium ad hoc, palettes de l'éditeur, pickers…) — *réflexe avant toute 2e composition liste+détail* | `MasterDetail` (gabarit de LAYOUT pur, slots `list`/`detail` : l'état de sélection reste chez l'appelant) | `src/ui/MasterDetail.tsx` |
+| **Table de NÉGOCE** (colonnes de stats + prix `<Coins>` + action par rangée + groupes de rubrique — marchand, port, marché terrestre) — *réflexe avant tout tableau d'achat/vente recodé* | `TradeTable` (moissonnée de l'étalon `MerchantPanel`, #371 LOT 3) | `src/ui/TradeTable.tsx` |
+| **Stepper de quantité** `[−][centre][+]` (panier, quantité en stock, baisse de prix par cran) | `QtyStepper` | `src/ui/QtyStepper.tsx` |
 | Lookup d'une table d100 par fourchette `[min,max]` | `findTableEntry` | `src/engine/tables.ts` |
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
 | Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |

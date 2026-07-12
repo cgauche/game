@@ -1,4 +1,4 @@
-import { useState, useMemo, Fragment } from 'react';
+import { useState, useMemo } from 'react';
 import { useGame } from '../state/store';
 import { findTrappingById, weaponGroupLabel, type QualityRef } from '../data/index';
 import { priceToMoney, fromBrass, toBrass, canAfford, add as moneyAdd, type Money } from '../engine/money';
@@ -22,6 +22,8 @@ import { Icon } from './Icon';
 import { ScreenShell } from './ScreenShell';
 import { Tabs } from './Tabs';
 import { SpeakerBanner } from './SpeakerBanner';
+import { TradeTable, type TradeColumn, type TradeGroup } from './TradeTable';
+import { QtyStepper } from './QtyStepper';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
@@ -279,9 +281,15 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
                   <tr key={c.id}>
                     <td className="cart-name">{labelOf(c.id)}</td>
                     <td className="cart-step">
-                      <button className="btn-step" onClick={() => onDecCart(c.id)} aria-label="Un de moins">−</button>
-                      <span className="cart-n">{c.qty}</span>
-                      <button className="btn-step" disabled={sealed || c.qty >= stockQty} title={sealed ? 'Marché négocié — vous ne pouvez plus ajouter' : undefined} onClick={() => onAddToCart(c.id)} aria-label="Un de plus">+</button>
+                      <QtyStepper
+                        center={c.qty}
+                        onDec={() => onDecCart(c.id)}
+                        onInc={() => onAddToCart(c.id)}
+                        incDisabled={sealed || c.qty >= stockQty}
+                        incTitle={sealed ? 'Marché négocié — vous ne pouvez plus ajouter' : undefined}
+                        decLabel="Un de moins"
+                        incLabel="Un de plus"
+                      />
                     </td>
                     <td className="cart-unit">{u ? <Coins money={u} /> : '—'}</td>
                     <td className="cart-sub">{sub ? <Coins money={sub} /> : '—'}</td>
@@ -337,72 +345,55 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             />
             {(() => {
               const cols = FAMILY_COLS[activeCat] ?? [];
-              const span = cols.length + 4;
-              const groups: { key: string; label: string; items: typeof rows }[] = [];
+              const groups: TradeGroup<{ id: string; qty: number }>[] = [];
               for (const l of rows) {
                 const g = findTrappingById(l.id)?.subType ?? 'autres';
                 let bucket = groups.find((x) => x.key === g);
-                if (!bucket) { bucket = { key: g, label: weaponGroupLabel(g) || 'Autres', items: [] }; groups.push(bucket); }
-                bucket.items.push(l);
+                if (!bucket) { bucket = { key: g, label: weaponGroupLabel(g) || 'Autres', rows: [] }; groups.push(bucket); }
+                bucket.rows.push(l);
               }
-              groups.sort((a, b) => a.label.localeCompare(b.label));
-              const showGroups = groups.length > 1;
-              const itemRow = (l: { id: string; qty: number }) => {
-                const t = findTrappingById(l.id);
-                const unit = lineCost(l.id, buyFactor);
-                const canAffordOne = unit ? canAfford(money, unit) : false;
-                const inCart = cartQtyOf(l.id);
-                const open = details === l.id;
-                return (
-                  <Fragment key={l.id}>
-                    <tr className={`merch-trow ${canAffordOne ? '' : 'unaffordable'} ${open ? 'open' : ''}`}>
-                      <td className="col-name">
-                        <button className="merch-name as-link" onClick={() => toggleDetails(l.id)} aria-expanded={open} title="Voir les détails de l’objet">
-                          <span className="caret">{open ? '▾' : '▸'}</span> {labelOf(l.id)}
-                          <span className="merch-qty" title="En stock">×{l.qty}</span>
-                        </button>
-                      </td>
-                      {cols.map((c) => <td key={c.label} className={c.emph ? 'col-emph' : 'col-stat'}>{t ? c.get(t) : DASH}</td>)}
-                      <td className="col-enc">{t?.enc ?? 0}</td>
-                      <td className="col-price">{unit ? <Coins money={unit} /> : '—'}</td>
-                      <td className="col-buy">
-                        {inCart > 0 ? (
-                          <span className="cart-step">
-                            <button className="btn-step" onClick={() => onDecCart(l.id)} aria-label="Un de moins">−</button>
-                            <span className="cart-n">{inCart}</span>
-                            <button className="btn-step" disabled={sealed || inCart >= l.qty || !canAffordOne} onClick={() => onAddToCart(l.id)} aria-label="Un de plus">+</button>
-                          </span>
-                        ) : (
-                          <button className="btn small" disabled={sealed || !canAffordOne} title={sealed ? 'Marché conclu — panier figé' : canAffordOne ? 'Ajouter au panier' : 'Bourse insuffisante'} onClick={() => onAddToCart(l.id)}>+ Ajouter</button>
-                        )}
-                      </td>
-                    </tr>
-                    {open && previews[l.id] && (
-                      <tr className="detail-row"><td colSpan={span}>{renderDetailCard(previews[l.id])}</td></tr>
-                    )}
-                  </Fragment>
-                );
-              };
+              groups.sort((a, b) => String(a.label).localeCompare(String(b.label)));
+              const tradeCols: TradeColumn<{ id: string; qty: number }>[] = cols.map((c) => ({
+                key: c.label,
+                label: c.label,
+                emph: c.emph,
+                render: (l) => { const t = findTrappingById(l.id); return t ? c.get(t) : DASH; },
+              }));
               return (
-                <table className="merch-table">
-                  <thead>
-                    <tr>
-                      <th className="col-name">Objet</th>
-                      {cols.map((c) => <th key={c.label} className={c.emph ? 'col-emph' : 'col-stat'}>{c.label}</th>)}
-                      <th className="col-enc" title="Encombrement">Enc</th>
-                      <th className="col-price">Prix</th>
-                      <th className="col-buy" aria-label="Panier" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {groups.map((g) => (
-                      <Fragment key={g.key}>
-                        {showGroups && <tr className="group-row"><td colSpan={span}>{g.label}</td></tr>}
-                        {g.items.map(itemRow)}
-                      </Fragment>
-                    ))}
-                  </tbody>
-                </table>
+                <TradeTable
+                  className="merch-table"
+                  columns={tradeCols}
+                  groups={groups}
+                  rowKey={(l) => l.id}
+                  name={(l) => (
+                    <button className="merch-name as-link" onClick={() => toggleDetails(l.id)} aria-expanded={details === l.id} title="Voir les détails de l’objet">
+                      <span className="caret">{details === l.id ? '▾' : '▸'}</span> {labelOf(l.id)}
+                      <span className="merch-qty" title="En stock">×{l.qty}</span>
+                    </button>
+                  )}
+                  enc={(l) => findTrappingById(l.id)?.enc ?? 0}
+                  price={(l) => lineCost(l.id, buyFactor)}
+                  disabled={(l) => { const unit = lineCost(l.id, buyFactor); return unit ? !canAfford(money, unit) : true; }}
+                  open={(l) => details === l.id}
+                  detail={(l) => (previews[l.id] ? renderDetailCard(previews[l.id]) : null)}
+                  action={(l) => {
+                    const unit = lineCost(l.id, buyFactor);
+                    const canAffordOne = unit ? canAfford(money, unit) : false;
+                    const inCart = cartQtyOf(l.id);
+                    return inCart > 0 ? (
+                      <QtyStepper
+                        center={inCart}
+                        onDec={() => onDecCart(l.id)}
+                        onInc={() => onAddToCart(l.id)}
+                        incDisabled={sealed || inCart >= l.qty || !canAffordOne}
+                        decLabel="Un de moins"
+                        incLabel="Un de plus"
+                      />
+                    ) : (
+                      <button className="btn small" disabled={sealed || !canAffordOne} title={sealed ? 'Marché conclu — panier figé' : canAffordOne ? 'Ajouter au panier' : 'Bourse insuffisante'} onClick={() => onAddToCart(l.id)}>+ Ajouter</button>
+                    );
+                  }}
+                />
               );
             })()}
           </>
@@ -449,9 +440,17 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
               if (sellBuyerAvailability(it, 0) === 'Commune' && h === 0) return null;
               return (
                 <span className="sell-haggle" title="Baisser le prix de moitié augmente la Disponibilité d'un acheteur d'un cran (LDB 59 l.60)">
-                  <button className="btn-step" disabled={h <= 0} onClick={() => onSellHalving(it.uid, -1)} aria-label="Prix plein">−</button>
-                  <span className="sell-av">acheteur {sellBuyerAvailability(it, h)}{h > 0 ? ` (÷${2 ** h})` : ''}</span>
-                  <button className="btn-step" disabled={h >= 4} onClick={() => onSellHalving(it.uid, 1)} aria-label="Brader de moitié" title="Diviser le prix par deux">÷2</button>
+                  <QtyStepper
+                    center={<span className="sell-av">acheteur {sellBuyerAvailability(it, h)}{h > 0 ? ` (÷${2 ** h})` : ''}</span>}
+                    onDec={() => onSellHalving(it.uid, -1)}
+                    onInc={() => onSellHalving(it.uid, 1)}
+                    decDisabled={h <= 0}
+                    incDisabled={h >= 4}
+                    decLabel="Prix plein"
+                    incLabel="Brader de moitié"
+                    incTitle="Diviser le prix par deux"
+                    incContent="÷2"
+                  />
                 </span>
               );
             })()}

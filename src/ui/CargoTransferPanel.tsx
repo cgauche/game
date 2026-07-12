@@ -9,11 +9,13 @@ import { carriersColocated, carrierFreeEnc } from '../engine/cargo';
  * source→cible→lot→quantité, filtré aux porteurs au même endroit (`carriersColocated`). Ne s'affiche que
  * s'il y a au moins deux porteurs et du vrac à déplacer.
  */
-export function CargoTransferPanel({ carriers, onMove, labelOf, disabled }: {
+export function CargoTransferPanel({ carriers, onMove, labelOf, disabled, className }: {
   carriers: CargoCarrier[];
   onMove: (fromId: string, toId: string, cargoId: string, enc: number) => void;
   labelOf: (cargoId: string) => string;
   disabled?: boolean;
+  /** Modificateur de layout de l'appelant (ex. `span-2` dans un `.panel-grid`). */
+  className?: string;
 }) {
   const [rawFrom, setFrom] = useState('');
   const [rawTo, setTo] = useState('');
@@ -31,37 +33,39 @@ export function CargoTransferPanel({ carriers, onMove, labelOf, disabled }: {
   const amount = rawEnc === '' ? maxEnc : Math.max(0, Math.min(Math.floor(Number(rawEnc) || 0), maxEnc));
 
   return (
-    <section className="panel port-section">
-      <h3>Transférer une cargaison</h3>
-      {dests.length === 0 ? (
-        <p className="port-hint">Aucun autre porteur co-localisé pour recevoir la cargaison.</p>
-      ) : (
-        <div className="bar cargo-transfer">
-          <label>De
-            <select value={from.id} disabled={disabled} onChange={(e) => setFrom(e.target.value)}>
-              {sources.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-            </select>
-          </label>
-          <label>Lot
-            <select value={lot?.cargoId ?? ''} disabled={disabled} onChange={(e) => setCargo(e.target.value)}>
-              {from.cargo.map((l, i) => <option key={i} value={l.cargoId}>{labelOf(l.cargoId)} ({l.enc} Enc)</option>)}
-            </select>
-          </label>
-          <label>Vers
-            <select value={to?.id ?? ''} disabled={disabled} onChange={(e) => setTo(e.target.value)}>
-              {dests.map((c) => <option key={c.id} value={c.id}>{c.label} — libre {carrierFreeEnc(c)} Enc</option>)}
-            </select>
-          </label>
-          <label>Enc
-            <input type="number" min={0} max={maxEnc} value={rawEnc} placeholder={String(maxEnc)} disabled={disabled}
-              onChange={(e) => setEnc(e.target.value)} />
-          </label>
-          <button type="button" className="btn small" disabled={disabled || !to || !lot || amount <= 0}
-            onClick={() => { if (to && lot && amount > 0) { onMove(from.id, to.id, lot.cargoId, amount); setEnc(''); } }}>
-            Transférer
-          </button>
-        </div>
-      )}
-    </section>
+    <details className={`fold cargo-transfer-fold${className ? ` ${className}` : ''}`}>
+      <summary><span className="fold-title">Transférer une cargaison</span></summary>
+      <div className="fold-body">
+        {dests.length === 0 ? (
+          <p className="port-hint">Aucun autre porteur co-localisé pour recevoir la cargaison.</p>
+        ) : (
+          <div className="bar cargo-transfer">
+            <label>De
+              <select value={from.id} disabled={disabled} onChange={(e) => setFrom(e.target.value)}>
+                {sources.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </select>
+            </label>
+            <label>Lot
+              <select value={lot?.cargoId ?? ''} disabled={disabled} onChange={(e) => setCargo(e.target.value)}>
+                {from.cargo.map((l, i) => <option key={i} value={l.cargoId}>{labelOf(l.cargoId)} ({l.enc} Enc)</option>)}
+              </select>
+            </label>
+            <label>Vers
+              <select value={to?.id ?? ''} disabled={disabled} onChange={(e) => setTo(e.target.value)}>
+                {dests.map((c) => <option key={c.id} value={c.id}>{c.label} — libre {carrierFreeEnc(c)} Enc</option>)}
+              </select>
+            </label>
+            <label>Enc
+              <input type="number" min={0} max={maxEnc} value={rawEnc} placeholder={String(maxEnc)} disabled={disabled}
+                onChange={(e) => setEnc(e.target.value)} />
+            </label>
+            <button type="button" className="btn small" disabled={disabled || !to || !lot || amount <= 0}
+              onClick={() => { if (to && lot && amount > 0) { onMove(from.id, to.id, lot.cargoId, amount); setEnc(''); } }}>
+              Transférer
+            </button>
+          </div>
+        )}
+      </div>
+    </details>
   );
 }

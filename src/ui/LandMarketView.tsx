@@ -8,14 +8,18 @@ import { canAfford, toMoney } from '../engine/money';
 import { Coins } from './Coins';
 import { ScreenShell } from './ScreenShell';
 import { CargoTransferPanel } from './CargoTransferPanel';
+import { TradeTable, type TradeGroup } from './TradeTable';
 
 /**
  * ÉCRAN MARCHÉ TERRESTRE (Mort sur le Reik Compagnon ch.11 « Règles du commerce ») — commerce de cargaison à
  * un Lieu `market` de la carte : acheter les offres de l'étape (disponibilité 2 temps + Marchandage + lot
  * partiel, plafonné à la Contenance du porteur, #327), vendre/brader la cargaison des porteurs, transférer
  * entre porteurs co-localisés. PENDANT terrestre de `PortView` (commerce maritime) : même overlay plein écran
- * (patron `WorldMapView`), sections `.layout-sidebar`/`.panel` (responsive ≤900/700/560), français, aucun tuto.
+ * (patron `WorldMapView`), sections Acheter/Vendre en `TradeTable` (#371 LOT 3, table marchande étalon),
+ * transfert relégué en panneau secondaire replié (`CargoTransferPanel` → `.fold`), français, aucun tuto.
  */
+type Offer = { cargoId: string; label: string; enc: number; basePrice: number; wine?: boolean; wineTier?: string; wineEvalOk?: boolean };
+
 export function LandMarketView() {
   const market = useGame((s) => s.landMarket);
   const party = useGame((s) => s.party);
@@ -40,6 +44,9 @@ export function LandMarketView() {
 
   if (!market) return null;
   const cargoLabel = (id: string) => findLandCargoById(id)?.label ?? id;
+
+  const offerGroups: TradeGroup<Offer>[] = [{ key: 'offers', rows: market.offers }];
+  const sellGroups: TradeGroup<typeof refs[number]>[] = [{ key: 'refs', rows: refs }];
 
   return (
     <ScreenShell
@@ -67,35 +74,50 @@ export function LandMarketView() {
             </ul>
           </section>
         )}
-        <div className="layout-sidebar port-trade">
+        <div className="panel-grid port-trade">
           <section className="panel port-section">
             <h3>Acheter — offres de l’étape</h3>
             {!target && <p className="port-hint">Aucun porteur de charge : procurez-vous une bête de somme ou un véhicule pour transporter une cargaison (EDOC ch.4).</p>}
             {market.offers.length === 0 && <p className="port-hint">Aucun marchand n’a de cargaison à céder ici (disponibilité T2C ch.11 l.22-42).</p>}
-            <div className="panel-grid">
-              {market.offers.map((o) => {
-                const free = target ? carrierFreeEnc(target) : 0;
-                const want = buyEnc[o.cargoId] ?? Math.min(o.enc, free || o.enc);
-                const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
-                const affordable = canAfford(money, estCost);
-                const fits = want <= free;
-                return (
-                  <div key={o.cargoId} className="market-offer">
-                    <div className="market-offer-head">
-                      <b>
-                        {o.label}
-                        {o.wine && (o.wineTier
-                          ? <span className="port-hint"> — {o.wineTier}{o.wineEvalOk ? '' : ' (?)'}</span>
-                          : <> <button type="button" className="btn small ghost" disabled={isGuest} title="Test d’Évaluation pour révéler la qualité secrète du vin (T2C ch.11 l.95)" onClick={() => evalWine(o.cargoId)}>Évaluer</button></>)}
-                      </b>
-                      <span className="port-hint">Dispo <b>{o.enc}</b> Enc · <Coins money={toMoney({ gold: o.basePrice })} />/Enc</span>
-                    </div>
+            {market.offers.length > 0 && (
+              <TradeTable
+                columns={[]}
+                groups={offerGroups}
+                rowKey={(o) => o.cargoId}
+                name={(o) => (
+                  <span className="trade-offer-name">
+                    {o.label}
+                    {o.wine && (o.wineTier
+                      ? <span className="port-hint"> — {o.wineTier}{o.wineEvalOk ? '' : ' (?)'}</span>
+                      : <> <button type="button" className="btn small ghost" disabled={isGuest} title="Test d’Évaluation pour révéler la qualité secrète du vin (T2C ch.11 l.95)" onClick={() => evalWine(o.cargoId)}>Évaluer</button></>)}
+                  </span>
+                )}
+                enc={(o) => o.enc}
+                encLabel="Dispo"
+                priceLabel="Prix/Enc"
+                price={(o) => toMoney({ gold: o.basePrice })}
+                disabled={(o) => {
+                  const free = target ? carrierFreeEnc(target) : 0;
+                  const want = buyEnc[o.cargoId] ?? Math.min(o.enc, free || o.enc);
+                  const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
+                  if (!target) return { reason: 'Aucun porteur' };
+                  if (want > free) return { reason: `Contenance dépassée (libre ${free} Enc)` };
+                  if (!canAfford(money, estCost)) return { reason: 'Bourse insuffisante' };
+                  return false;
+                }}
+                action={(o) => {
+                  const free = target ? carrierFreeEnc(target) : 0;
+                  const want = buyEnc[o.cargoId] ?? Math.min(o.enc, free || o.enc);
+                  const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
+                  const affordable = canAfford(money, estCost);
+                  const fits = want <= free;
+                  return (
                     <div className={`market-offer-buy ${affordable ? '' : 'unaffordable'}`}>
                       <input
                         type="number" min={1} max={o.enc} value={want}
                         onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, Number(e.target.value) || 1)) }))}
                       />
-                      <span className="market-offer-total">Total ≈ <Coins money={estCost} /></span>
+                      <span className="market-offer-total">≈ <Coins money={estCost} /></span>
                       <button
                         type="button"
                         className="btn small"
@@ -106,33 +128,32 @@ export function LandMarketView() {
                         Acheter
                       </button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                }}
+              />
+            )}
           </section>
           <section className="panel port-section">
             <h3>Vendre — cargaison des porteurs</h3>
-            {refs.length === 0 && <p className="port-hint">Aucune cargaison à vendre.</p>}
-            <table className="port-table">
-              <thead><tr><th>Porteur</th><th>Lot</th><th>Enc</th><th>Prix base</th><th /></tr></thead>
-              <tbody>
-                {refs.map((r) => (
-                  <tr key={`${r.carrierId}-${r.index}`}>
-                    <td>{r.carrierLabel}</td>
-                    <td>{cargoLabel(r.lot.cargoId)}</td>
-                    <td>{r.lot.enc}</td>
-                    <td><Coins money={toMoney({ gold: r.lot.basePriceGold })} />/Enc</td>
-                    <td className="port-sell-actions">
-                      <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (T2C ch.11 l.133-160)" onClick={() => sell(r.carrierId, r.index)}>Vendre</button>
-                      <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à la moitié du prix de base (T2C ch.11 l.160)" onClick={() => dump(r.carrierId, r.index)}>Brader</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {refs.length === 0 ? <p className="port-hint">Aucune cargaison à vendre.</p> : (
+              <TradeTable
+                columns={[{ key: 'carrier', label: 'Porteur', render: (r) => r.carrierLabel }]}
+                groups={sellGroups}
+                rowKey={(r) => `${r.carrierId}-${r.index}`}
+                name={(r) => cargoLabel(r.lot.cargoId)}
+                enc={(r) => r.lot.enc}
+                priceLabel="Prix base/Enc"
+                price={(r) => toMoney({ gold: r.lot.basePriceGold })}
+                action={(r) => (
+                  <div className="port-sell-actions">
+                    <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (T2C ch.11 l.133-160)" onClick={() => sell(r.carrierId, r.index)}>Vendre</button>
+                    <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à la moitié du prix de base (T2C ch.11 l.160)" onClick={() => dump(r.carrierId, r.index)}>Brader</button>
+                  </div>
+                )}
+              />
+            )}
           </section>
-          <CargoTransferPanel carriers={carriers} onMove={move} labelOf={cargoLabel} disabled={isGuest} />
+          <CargoTransferPanel className="span-2" carriers={carriers} onMove={move} labelOf={cargoLabel} disabled={isGuest} />
         </div>
     </ScreenShell>
   );

@@ -13,79 +13,9 @@
   border-radius: 12px;
 }
 .merch-tab { display: flex; flex-direction: column; }
-/* Liste Acheter = tableau comparatif (colonnes alignées → comparer les articles entre eux) */
-.merch-table { width: 100%; border-collapse: collapse; }
-.merch-table thead th {
-  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
-  color: var(--muted); font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--border);
-}
-.merch-table th.col-emph { color: var(--accent2); }
-.merch-table th.col-enc, .merch-table th.col-price { text-align: right; }
-.merch-trow > td { padding: 5px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
-.merch-table td.col-name { width: 100%; }
-/* nowrap UNIQUEMENT sur les cellules de la ligne d'article (pas la carte de détail dépliée ni ses tables imbriquées) */
-.merch-trow > td:not(.col-name) { white-space: nowrap; }
-.merch-table .detail-row > td { white-space: normal; }
-.merch-table td.col-emph { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-.merch-table th.col-emph, .merch-table td.col-emph { padding-right: 14px; }
-.merch-table td.col-enc { text-align: right; color: var(--muted); }
-.merch-table td.col-price { text-align: right; color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
-.merch-table td.col-buy { text-align: right; }
-.merch-trow.unaffordable { opacity: 0.5; }
-.merch-trow.unaffordable td.col-price { color: var(--muted); }
-.merch-trow.open { background: rgba(122, 79, 208, 0.10); }
-.merch-table .merch-qty { margin-left: 8px; color: var(--muted); font-size: 11px; font-weight: 400; }
-.merch-table .detail-row > td { padding: 0 0 8px; border: none; }
-.merch-table .group-row td {
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent2);
-  font-weight: 700; padding: 10px 8px 3px; border-bottom: 1px solid var(--border);
-}
-.merch-table tbody tr:first-child.group-row td { padding-top: 2px; }
-/* 360px : la table d'achat se reconfigure en CARTES empilées — nom en tête, puis
-   Dégâts · Prix · Acheter sur une ligne. Fini le défilement horizontal pour atteindre
-   « Ajouter » ; les colonnes secondaires (Allonge/Portée/Enc…) restent lisibles via ▸. */
-@media (max-width: 560px) {
-  .merch-table,
-  .merch-table tbody {
-    display: block;
-    width: 100%;
-  }
-  .merch-table thead {
-    display: none;
-  }
-  .merch-table th.col-stat,
-  .merch-table td.col-stat,
-  .merch-table th.col-enc,
-  .merch-table td.col-enc {
-    display: none;
-  }
-  .merch-trow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: 12px;
-    row-gap: 2px;
-    padding: 8px 4px;
-  }
-  .merch-trow > td {
-    border: none;
-    padding: 0;
-  }
-  .merch-trow > td.col-name {
-    flex: 1 1 100%;
-    width: auto;
-    white-space: normal;
-  }
-  .merch-trow > td.col-price {
-    margin-left: auto;
-  }
-  .merch-table .group-row,
-  .merch-table .group-row > td,
-  .merch-table .detail-row,
-  .merch-table .detail-row > td {
-    display: block;
-  }
-}
+/* Liste Acheter = table de négoce (primitive partagée `TradeTable`, components.css) : ne reste ici que
+   le libellé « en stock » composé DANS le nom (cellule `.col-name`), spécifique au marchand. */
+.merch-qty { margin-left: 8px; color: var(--muted); font-size: 11px; font-weight: 400; }
 /* Panier (#2) */
 .cart-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 7px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; }
 .cart-bar .cart-info { font-weight: 600; }
@@ -100,11 +30,7 @@
 .cart-table .cart-unit, .cart-table .cart-sub { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cart-table .cart-unit { color: var(--muted); }
 .cart-table .cart-sub { color: var(--gold); font-weight: 600; }
-.cart-step { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.btn-step { width: 24px; height: 24px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 14px; padding: 0; }
-.btn-step:hover:not(:disabled) { border-color: var(--accent2); }
-.btn-step:disabled { opacity: 0.35; cursor: not-allowed; }
-.cart-step .cart-n { min-width: 16px; text-align: center; font-variant-numeric: tabular-nums; }
+/* .cart-step/.btn-step (stepper de quantité) : primitive partagée `QtyStepper`, components.css. */
 .cart-haggle { margin: 10px 0; }
 .cart-total { font-size: 15px; margin: 8px 0; }
 .cart-total .cart-disc { color: var(--ok); font-size: 13px; }

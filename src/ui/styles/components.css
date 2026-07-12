@@ -15,6 +15,8 @@
      .charprev           aperçu « perso en pied » (CharacterPreview) : tailles + ambiances
      .icon               icône SVG maison (primitive <Icon> — src/ui/Icon.tsx, registre src/ui/icons/)
      .master-detail      maître-détail (liste gauche + détail centre) — primitive MasterDetail.tsx
+     .cart-step/.btn-step  stepper de quantité [−][centre][+] — primitive QtyStepper.tsx
+     .trade-table        table de négoce (colonnes+prix+action+groupes) — primitive TradeTable.tsx
    Titres de section : réutiliser `.mini-title` (déjà global).                              */
 
 /* ── SURFACE ── */
@@ -550,6 +552,91 @@
 .screen-body {
   width: min(960px, 96vw);
   margin: 6px auto 0;
+}
+
+/* ── STEPPER DE QUANTITÉ (primitive QtyStepper.tsx, #371 LOT 3) — triplet [−][centre][+], moissonné de
+   l'étalon marchand (panier/parcourir). `.cart-step` = conteneur inline, `.btn-step` = bouton rond,
+   `.cart-n` = centre (compteur OU libellé libre, ex. disponibilité d'un acheteur). ── */
+.cart-step { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn-step { width: 24px; height: 24px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 14px; padding: 0; }
+.btn-step:hover:not(:disabled) { border-color: var(--accent2); }
+.btn-step:disabled { opacity: 0.35; cursor: not-allowed; }
+.cart-step .cart-n { min-width: 16px; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* ── TABLE DE NÉGOCE (primitive TradeTable.tsx, #371 LOT 3) — moissonnée de l'étalon marchand
+   (`MerchantPanel` Acheter/Parcourir) : colonnes de stats paramétrables, rangée grisée si inabordable
+   (`unaffordable`), groupes de rubrique optionnels, fiche de détail dépliable (`detail-row`). Tout
+   écran de négoce (marchand, port, marché terrestre) la COMPOSE au lieu d'un tableau maison. */
+.trade-table { width: 100%; border-collapse: collapse; }
+.trade-table thead th {
+  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--muted); font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--border);
+}
+.trade-table th.col-emph { color: var(--accent2); }
+.trade-table th.col-enc, .trade-table th.col-price { text-align: right; }
+.trade-row > td { padding: 5px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
+.trade-table td.col-name { width: 100%; }
+/* nowrap UNIQUEMENT sur les cellules de la ligne d'article (pas la carte de détail dépliée ni ses tables imbriquées) */
+.trade-row > td:not(.col-name) { white-space: nowrap; }
+.trade-table .detail-row > td { white-space: normal; }
+.trade-table td.col-emph { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.trade-table th.col-emph, .trade-table td.col-emph { padding-right: 14px; }
+.trade-table td.col-enc { text-align: right; color: var(--muted); }
+.trade-table td.col-price { text-align: right; color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
+.trade-table td.col-buy { text-align: right; }
+.trade-row.unaffordable { opacity: 0.5; }
+.trade-row.unaffordable td.col-price { color: var(--muted); }
+.trade-row.open { background: rgba(122, 79, 208, 0.10); }
+.trade-table .detail-row > td { padding: 0 0 8px; border: none; }
+.trade-table .group-row td {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent2);
+  font-weight: 700; padding: 10px 8px 3px; border-bottom: 1px solid var(--border);
+}
+.trade-table tbody tr:first-child.group-row td { padding-top: 2px; }
+/* 360px : la table se reconfigure en CARTES empilées — nom en tête, puis stats · Prix · Action sur une
+   ligne. Fini le défilement horizontal pour atteindre l'action ; les colonnes secondaires restent
+   lisibles via la fiche de détail. */
+@media (max-width: 560px) {
+  .trade-table,
+  .trade-table tbody {
+    display: block;
+    width: 100%;
+  }
+  .trade-table thead {
+    display: none;
+  }
+  .trade-table th.col-stat,
+  .trade-table td.col-stat,
+  .trade-table th.col-enc,
+  .trade-table td.col-enc {
+    display: none;
+  }
+  .trade-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 2px;
+    padding: 8px 4px;
+  }
+  .trade-row > td {
+    border: none;
+    padding: 0;
+  }
+  .trade-row > td.col-name {
+    flex: 1 1 100%;
+    width: auto;
+    white-space: normal;
+  }
+  .trade-row > td.col-price {
+    margin-left: auto;
+  }
+  .trade-table .group-row,
+  .trade-table .group-row > td,
+  .trade-table .detail-row,
+  .trade-table .detail-row > td {
+    display: block;
+  }
 }
 
 /* ── ÉCRAN-HUB DE VOYAGE (#333) — VoyageScreen.tsx : ScreenShell + tuiles + chronique + MasterDetail ── */

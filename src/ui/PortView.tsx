@@ -16,6 +16,7 @@ import { NotchGauge } from './NotchGauge';
 import { moraleTone, ShipCrewWages } from './shipStatus';
 import { ScreenShell } from './ScreenShell';
 import { Tabs } from './Tabs';
+import { TradeTable, type TradeGroup } from './TradeTable';
 import { ShoreLeaveBody } from './ShoreLeaveModal';
 import { ManannBody } from './ManannPriestModal';
 
@@ -228,24 +229,33 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                 {port.maxLoadEnc > port.freeEnc && <> · surcharge possible jusqu’à <b>+{port.maxLoadEnc - port.freeEnc} Enc</b> (jusqu’à 150 %, MDG ch.12)</>}
               </p>
               {port.offers.length === 0 && <p className="port-hint">Aucune cargaison à vendre dans ce port (production « minimum vital » ou stock épuisé).</p>}
-              <div className="panel-grid">
-                {port.offers.map((o) => {
-                  const want = buyEnc[o.cargoId] ?? Math.min(o.enc, Math.max(port.freeEnc, 1));
-                  const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
-                  const affordable = canAfford(money, estCost);
-                  const wouldOverload = want > port.freeEnc; // achat qui pousse en zone de surcharge (#243)
-                  return (
-                    <div key={o.cargoId} className="market-offer">
-                      <div className="market-offer-head">
-                        <b>{o.label}{o.surplus ? ' (Surplus)' : ''}</b>
-                        <span className="port-hint">Dispo <b>{o.enc}</b> Enc · <Coins money={toMoney({ gold: o.basePrice })} />/Enc</span>
-                      </div>
+              {port.offers.length > 0 && (
+                <TradeTable
+                  columns={[]}
+                  groups={[{ key: 'offers', rows: port.offers }] as TradeGroup<typeof port.offers[number]>[]}
+                  rowKey={(o) => o.cargoId}
+                  name={(o) => <>{o.label}{o.surplus ? ' (Surplus)' : ''}</>}
+                  enc={(o) => o.enc}
+                  encLabel="Dispo"
+                  priceLabel="Prix/Enc"
+                  price={(o) => toMoney({ gold: o.basePrice })}
+                  disabled={(o) => {
+                    const want = buyEnc[o.cargoId] ?? Math.min(o.enc, Math.max(port.freeEnc, 1));
+                    const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
+                    return !canAfford(money, estCost) ? { reason: 'Bourse insuffisante' } : false;
+                  }}
+                  action={(o) => {
+                    const want = buyEnc[o.cargoId] ?? Math.min(o.enc, Math.max(port.freeEnc, 1));
+                    const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
+                    const affordable = canAfford(money, estCost);
+                    const wouldOverload = want > port.freeEnc; // achat qui pousse en zone de surcharge (#243)
+                    return (
                       <div className={`market-offer-buy ${affordable ? '' : 'unaffordable'}`}>
                         <input
                           type="number" min={1} max={Math.min(o.enc, port.maxLoadEnc)} value={want}
                           onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, port.maxLoadEnc, Number(e.target.value) || 1)) }))}
                         />
-                        <span className="market-offer-total">Total ≈ <Coins money={estCost} /></span>
+                        <span className="market-offer-total">≈ <Coins money={estCost} /></span>
                         <button
                           type="button"
                           className="btn small"
@@ -256,30 +266,30 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                           {wouldOverload ? 'Surcharger' : 'Acheter'}
                         </button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  }}
+                />
+              )}
             </section>
             <section className="panel port-section">
               <h3>Vendre — cale du navire</h3>
-              {cargo.length === 0 && <p className="port-hint">La cale est vide.</p>}
-              <table className="port-table">
-                <thead><tr><th>Lot</th><th>Enc</th><th>Prix base</th><th /></tr></thead>
-                <tbody>
-                  {cargo.map((lot, i) => (
-                    <tr key={i}>
-                      <td>{findCargoById(lot.cargoId)?.label ?? lot.cargoId}</td>
-                      <td>{lot.enc}</td>
-                      <td><Coins money={toMoney({ gold: lot.basePriceGold })} />/Enc</td>
-                      <td className="port-sell-actions">
-                        <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (MDG 15 l.351-397)" onClick={() => sell(i)}>Vendre</button>
-                        <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à ¼ du prix de base (MDG 15 l.399)" onClick={() => dump(i)}>Brader</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {cargo.length === 0 ? <p className="port-hint">La cale est vide.</p> : (
+                <TradeTable
+                  columns={[]}
+                  groups={[{ key: 'cargo', rows: cargo.map((lot, i) => ({ lot, i })) }]}
+                  rowKey={(r) => String(r.i)}
+                  name={(r) => findCargoById(r.lot.cargoId)?.label ?? r.lot.cargoId}
+                  enc={(r) => r.lot.enc}
+                  priceLabel="Prix base/Enc"
+                  price={(r) => toMoney({ gold: r.lot.basePriceGold })}
+                  action={(r) => (
+                    <div className="port-sell-actions">
+                      <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (MDG 15 l.351-397)" onClick={() => sell(r.i)}>Vendre</button>
+                      <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à ¼ du prix de base (MDG 15 l.399)" onClick={() => dump(r.i)}>Brader</button>
+                    </div>
+                  )}
+                />
+              )}
             </section>
           </div>
         ) : (

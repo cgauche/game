@@ -108,6 +108,13 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.icon` | Cadrage de l'icône SVG maison | Posée par la primitive `<Icon>` (`src/ui/Icon.tsx`) — cale l'icône sur la ligne de base du texte adjacent ; jamais un `<svg>` brut à côté de texte. |
 | `.charprev` (+ `.charprev-svg`, tailles `.charprev-xs`/`.charprev-sm`/`.charprev-md`/`.charprev-lg`, `.charprev-fill`, ambiances `.charprev-amb-panel`/`.charprev-amb-parchment`/`.charprev-amb-spotlight`) | Cadre d'aperçu « perso en pied » (`CharacterPreview`) | Toute vignette de personnage EN PIED — les tailles/ambiances sont des modificateurs, jamais un `<img>`/SVG dimensionné à la main. |
 
+### Négoce (table marchande, #371 LOT 3)
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.cart-step` (+ `.btn-step`, `.cart-n`) | Stepper de quantité `[−][centre][+]` | Composé par la primitive `QtyStepper` (`src/ui/QtyStepper.tsx`, CLAUDE.md) — jamais une paire de `<button>` +/- recodée à la main. |
+| `.trade-table` (+ `.trade-row`, états `.unaffordable`/`.open`) | Table de négoce (colonnes de stats + prix `<Coins>` + action par rangée, groupes de rubrique) | Composé par la primitive `TradeTable` (`src/ui/TradeTable.tsx`, CLAUDE.md) — tout écran de négoce (marchand, port, marché terrestre) la COMPOSE au lieu d'un tableau maison ; `.unaffordable` grise une rangée inabordable, `.open` marque sa fiche de détail dépliée. |
+
 ### Layouts responsive (règle stricte 4)
 
 | Classe | Rôle | Quand l'utiliser / anti-patron |
