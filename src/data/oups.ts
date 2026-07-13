@@ -11,9 +11,9 @@ export type OupsKind =
   | 'selfWound' | 'weaponDamageActLast' | 'actionPenalty'
   | 'loseMovement' | 'loseAction' | 'trauma' | 'hitAlly';
 
-export interface OupsEntry { min: number; max: number; kind: OupsKind; label: string; }
+export interface OupsEntry { id: string; min: number; max: number; kind: OupsKind; label: string; }
 /** Incident de Tir (LDB 14 l.56-57) — HORS table d100 : déclenché par arme à Poudre noire + jet PAIR. */
-export interface OupsMisfireEntry { kind: 'misfire'; label: string; }
+export interface OupsMisfireEntry { id: string; kind: 'misfire'; label: string; }
 export type OupsRow = OupsEntry | OupsMisfireEntry;
 
 /** Bandes d100 du Tableau des Oups ! (les 7 fourchettes) — lues par `findTableEntry`. */

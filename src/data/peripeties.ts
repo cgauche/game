@@ -18,6 +18,7 @@
 import { peripeties } from './index';
 
 export interface Peripetie {
+  id: string;
   roll: number;
   label: string;
   text: string;

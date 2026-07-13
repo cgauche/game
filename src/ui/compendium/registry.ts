@@ -65,7 +65,7 @@ import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, c
 import { humanizeCastBonus } from './humanize';
 import { reverseGroups, bookContents } from './relations';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL, formatManeuverMeasure } from './maneuverLabels';
-import { slugId, uniqueSlugId } from '../../data/slug';
+import { slugId } from '../../data/slug';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
 
@@ -1046,36 +1046,27 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'eyes', label: 'Couleur des yeux', group: 'Tables', cluster: 'Création de personnage',
-    // Dataset SANS id propre (donnée éditoriale table 2d10) — id DÉRIVÉ (slug du libellé) au build,
-    // désambiguïsé par catégorie (`uniqueSlugId`). Ajout d'un id RÉEL en donnée = follow-up hors lot.
-    build: () => { const taken = new Set<string>(); return eyes.map((e) => ({ id: uniqueSlugId(e.label, taken), label: e.label, sub: `2d10 ≤ ${e.rand}`, sections: sections(colorTableSection(e)) })); },
+    build: () => eyes.map((e) => ({ id: e.id, label: e.label, sub: `2d10 ≤ ${e.rand}`, sections: sections(colorTableSection(e)) })),
   },
   {
     key: 'hairs', label: 'Couleur des cheveux', group: 'Tables', cluster: 'Création de personnage',
-    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
-    build: () => { const taken = new Set<string>(); return hairs.map((h) => ({ id: uniqueSlugId(h.label, taken), label: h.label, sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })); },
+    build: () => hairs.map((h) => ({ id: h.id, label: h.label, sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })),
   },
   {
     key: 'calendarMonths', label: 'Calendrier — Mois', group: 'Tables', cluster: 'Calendrier',
-    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
-    build: () => { const taken = new Set<string>(); return calendarMonths.map((m) => ({ id: uniqueSlugId(m.name, taken), label: m.name, sub: `${m.days} jours` })); },
+    build: () => calendarMonths.map((m) => ({ id: m.id, label: m.name, sub: `${m.days} jours` })),
   },
   {
     key: 'calendarIntercalary', label: 'Calendrier — Jours intercalaires', group: 'Tables', cluster: 'Calendrier',
-    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
-    build: () => {
-      const taken = new Set<string>();
-      return calendarIntercalary.map((i) => ({
-        id: uniqueSlugId(i.name, taken),
-        label: i.name,
-        sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.name ?? `mois ${i.afterMonth}`}`,
-      }));
-    },
+    build: () => calendarIntercalary.map((i) => ({
+      id: i.id,
+      label: i.name,
+      sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.name ?? `mois ${i.afterMonth}`}`,
+    })),
   },
   {
     key: 'calendarWeekdays', label: 'Calendrier — Jours de la semaine', group: 'Tables', cluster: 'Calendrier',
-    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
-    build: () => { const taken = new Set<string>(); return calendarWeekdays.map((w) => ({ id: uniqueSlugId(w.name, taken), label: w.name })); },
+    build: () => calendarWeekdays.map((w) => ({ id: w.id, label: w.name })),
   },
   {
     key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables', cluster: 'Calendrier',
@@ -1098,42 +1089,33 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'pregens', label: 'Pré-tirés', group: 'Tables', cluster: 'Création de personnage',
-    // Dataset sans id (name seul) — id dérivé (slug du name) — cf. `eyes` ci-dessus.
-    build: () => {
-      const taken = new Set<string>();
-      return pregens.map((p) => ({
-        id: uniqueSlugId(p.name, taken),
-        label: p.name, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
-        meta: facts(fact('Motivation', p.motivation), fact('Graine', p.seed)),
-        sections: p.spells?.length ? sections(chips('Sorts/Prières', 'spells', p.spells)) : undefined,
-      }));
-    },
+    build: () => pregens.map((p) => ({
+      id: p.id,
+      label: p.name, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
+      meta: facts(fact('Motivation', p.motivation), fact('Graine', p.seed)),
+      sections: p.spells?.length ? sections(chips('Sorts/Prières', 'spells', p.spells)) : undefined,
+    })),
   },
   {
     key: 'oups', label: 'Oups !', group: 'Tables',
     // Le `label` EST le texte du résultat (et la clé d'édition `entryKey`) → on le garde tel quel ;
-    // on enrichit par la plage d100 et le TYPE d'effet (kind) en méta. id dérivé (donnée sans id).
-    build: () => {
-      const taken = new Set<string>();
-      return oups.map((o) => {
-        const range = 'min' in o ? `d100 ${o.min}–${o.max}` : 'Hors table (arme à Poudre noire, jet pair)';
-        return {
-          id: uniqueSlugId(o.label, taken),
-          label: o.label, sub: range,
-          meta: facts(fact('d100', range), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
-        };
-      });
-    },
+    // on enrichit par la plage d100 et le TYPE d'effet (kind) en méta.
+    build: () => oups.map((o) => {
+      const range = 'min' in o ? `d100 ${o.min}–${o.max}` : 'Hors table (arme à Poudre noire, jet pair)';
+      return {
+        id: o.id,
+        label: o.label, sub: range,
+        meta: facts(fact('d100', range), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
+      };
+    }),
   },
   {
     key: 'interludeEvents', label: 'Entre deux aventures', group: 'Tables',
-    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
-    build: () => { const taken = new Set<string>(); return interludeEvents.map((e) => ({ id: uniqueSlugId(e.label, taken), label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text })); },
+    build: () => interludeEvents.map((e) => ({ id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text })),
   },
   {
     key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables', cluster: 'Voyage terrestre',
-    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
-    build: () => { const taken = new Set<string>(); return peripeties.map((p) => ({ id: uniqueSlugId(p.label, taken), label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })); },
+    build: () => peripeties.map((p) => ({ id: p.id, label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })),
   },
   {
     key: 'activities', label: 'Activités', group: 'Tables',
@@ -1202,8 +1184,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'massBattleHazards', label: 'Bataille de masse — Aléas de bataille', group: 'Tables', cluster: 'Bataille de masse',
-    // Dataset SANS id propre (min/max/label/text) — id dérivé (slug du libellé), cf. `eyes` plus haut.
-    build: () => { const taken = new Set<string>(); return BATTLE_HAZARDS.map((h) => ({ id: uniqueSlugId(h.label, taken), label: h.label, sub: `1d10 = ${h.min}`, desc: h.text })); },
+    build: () => BATTLE_HAZARDS.map((h) => ({ id: h.id, label: h.label, sub: `1d10 = ${h.min}`, desc: h.text })),
   },
   // ── Datasets-OBJETS uniques (E3b) : config de création (objet) + banque de noms (Record par race) ──
   {
@@ -1460,8 +1441,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'obsessions', label: 'Obsessions (table)', group: 'Tables',
-    // Dataset SANS id propre (min/max/label) — id dérivé (slug du libellé), cf. `eyes` plus haut.
-    build: () => { const taken = new Set<string>(); return OBSESSIONS.map((o) => ({ id: uniqueSlugId(o.label, taken), label: o.label, sub: `2d10 ${o.min}–${o.max}` })); },
+    build: () => OBSESSIONS.map((o) => ({ id: o.id, label: o.label, sub: `2d10 ${o.min}–${o.max}` })),
   },
   {
     key: 'structureCriticals', label: 'Critiques de structure', group: 'Effets',

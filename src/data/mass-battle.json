@@ -388,6 +388,7 @@
   ],
   "hazards": [
     {
+      "id": "tempete",
       "min": 1,
       "max": 1,
       "label": "Tempête",
@@ -399,6 +400,7 @@
       }
     },
     {
+      "id": "pieges",
       "min": 2,
       "max": 2,
       "label": "Pièges",
@@ -410,6 +412,7 @@
       }
     },
     {
+      "id": "armes-de-siege",
       "min": 3,
       "max": 3,
       "label": "Armes de siège",
@@ -421,6 +424,7 @@
       }
     },
     {
+      "id": "influence-corruptrice",
       "min": 4,
       "max": 4,
       "label": "Influence corruptrice",
@@ -432,6 +436,7 @@
       }
     },
     {
+      "id": "nuage-toxique",
       "min": 5,
       "max": 5,
       "label": "Nuage toxique",
@@ -443,6 +448,7 @@
       }
     },
     {
+      "id": "broussailles-genantes",
       "min": 6,
       "max": 6,
       "label": "Broussailles gênantes",
@@ -454,6 +460,7 @@
       }
     },
     {
+      "id": "riviere",
       "min": 7,
       "max": 7,
       "label": "Rivière",
@@ -465,6 +472,7 @@
       }
     },
     {
+      "id": "brasier",
       "min": 8,
       "max": 8,
       "label": "Brasier",
@@ -476,6 +484,7 @@
       }
     },
     {
+      "id": "retour-a-la-vie",
       "min": 9,
       "max": 9,
       "label": "Retour à la vie",
@@ -487,6 +496,7 @@
       }
     },
     {
+      "id": "peur",
       "min": 10,
       "max": 10,
       "label": "Peur",

@@ -6,96 +6,115 @@
   "ref": "EDOC ch.8 l.170",
   "table": [
     {
+      "id": "objets-inanimes",
       "min": 2,
       "max": 2,
       "label": "Objets inanimés"
     },
     {
+      "id": "pauvrete",
       "min": 3,
       "max": 3,
       "label": "Pauvreté"
     },
     {
+      "id": "feu",
       "min": 4,
       "max": 4,
       "label": "Feu"
     },
     {
+      "id": "figures-symboles-de-guerre",
       "min": 5,
       "max": 5,
       "label": "Figures/Symboles de guerre"
     },
     {
+      "id": "figures-symboles-d-autorite",
       "min": 6,
       "max": 6,
       "label": "Figures/Symboles d'autorité"
     },
     {
+      "id": "figures-symboles-religieux",
       "min": 7,
       "max": 7,
       "label": "Figures/Symboles religieux"
     },
     {
+      "id": "monstres",
       "min": 8,
       "max": 8,
       "label": "Monstres"
     },
     {
+      "id": "mutants",
       "min": 9,
       "max": 9,
       "label": "Mutants"
     },
     {
+      "id": "halflings",
       "min": 10,
       "max": 10,
       "label": "Halflings"
     },
     {
+      "id": "humains",
       "min": 11,
       "max": 11,
       "label": "Humains"
     },
     {
+      "id": "nains",
       "min": 12,
       "max": 12,
       "label": "Nains"
     },
     {
+      "id": "elfes",
       "min": 13,
       "max": 13,
       "label": "Elfes"
     },
     {
+      "id": "animaux-sauvages",
       "min": 14,
       "max": 14,
       "label": "Animaux sauvages"
     },
     {
+      "id": "animaux-domestiques",
       "min": 15,
       "max": 15,
       "label": "Animaux domestiques"
     },
     {
+      "id": "magie",
       "min": 16,
       "max": 16,
       "label": "Magie"
     },
     {
+      "id": "maladie",
       "min": 17,
       "max": 17,
       "label": "Maladie"
     },
     {
+      "id": "eau",
       "min": 18,
       "max": 18,
       "label": "Eau"
     },
     {
+      "id": "richesse",
       "min": 19,
       "max": 19,
       "label": "Richesse"
     },
     {
+      "id": "bonheur",
       "min": 20,
       "max": 20,
       "label": "Bonheur"

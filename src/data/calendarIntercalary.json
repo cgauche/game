@@ -1,5 +1,6 @@
 [
   {
+    "id": "hexenstag",
     "name": "Hexenstag",
     "afterMonth": -1,
     "source": {
@@ -9,6 +10,7 @@
     }
   },
   {
+    "id": "mitterfruhl",
     "name": "Mitterfrühl",
     "afterMonth": 1,
     "source": {
@@ -18,6 +20,7 @@
     }
   },
   {
+    "id": "sonnstill",
     "name": "Sonnstill",
     "afterMonth": 4,
     "source": {
@@ -27,6 +30,7 @@
     }
   },
   {
+    "id": "geheimnistag",
     "name": "Geheimnistag",
     "afterMonth": 5,
     "source": {
@@ -36,6 +40,7 @@
     }
   },
   {
+    "id": "mittherbst",
     "name": "Mittherbst",
     "afterMonth": 7,
     "source": {
@@ -45,6 +50,7 @@
     }
   },
   {
+    "id": "mondstille",
     "name": "Mondstille",
     "afterMonth": 8,
     "source": {

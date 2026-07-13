@@ -1,5 +1,6 @@
 [
   {
+    "id": "vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa",
     "min": 1,
     "max": 20,
     "kind": "selfWound",
@@ -11,6 +12,7 @@
     }
   },
   {
+    "id": "arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round",
     "min": 21,
     "max": 40,
     "kind": "weaponDamageActLast",
@@ -22,6 +24,7 @@
     }
   },
   {
+    "id": "10-a-votre-action-au-prochain-round",
     "min": 41,
     "max": 60,
     "kind": "actionPenalty",
@@ -33,6 +36,7 @@
     }
   },
   {
+    "id": "vous-trebuchez-vous-perdez-votre-prochain-mouvement",
     "min": 61,
     "max": 70,
     "kind": "loseMovement",
@@ -44,6 +48,7 @@
     }
   },
   {
+    "id": "vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action",
     "min": 71,
     "max": 80,
     "kind": "loseAction",
@@ -55,6 +60,7 @@
     }
   },
   {
+    "id": "vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique",
     "min": 81,
     "max": 90,
     "kind": "trauma",
@@ -66,6 +72,7 @@
     }
   },
   {
+    "id": "vous-touchez-un-allie-au-hasard-ou-vous-meme-sonne",
     "min": 91,
     "max": 100,
     "kind": "hitAlly",
@@ -77,6 +84,7 @@
     }
   },
   {
+    "id": "incident-de-tir-l-arme-explose-dans-votre-main-degats-au-bras-principal-arme-detruite",
     "kind": "misfire",
     "label": "Incident de Tir ! L’arme explose dans votre main (Dégâts au Bras principal, arme détruite).",
     "source": {

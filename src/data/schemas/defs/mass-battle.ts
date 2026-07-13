@@ -48,6 +48,7 @@ const structureRowSchema = z.strictObject({
 });
 
 const hazardRowSchema = z.strictObject({
+  id: z.string(),
   min: z.number(),
   max: z.number(),
   label: z.string(),

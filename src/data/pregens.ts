@@ -12,6 +12,8 @@ import { makeRNG } from '../engine/dice';
 import { findSpell, rigSpeciesId, pregens } from './index';
 
 export interface PregenDef {
+  /** `id` STABLE app-owned (kebab-case) — identité de navigation/Codex, découplée du `name`. */
+  id: string;
   name: string;
   /** `id` STABLE de l'espèce (`SpeciesData.id`). */
   species: string;

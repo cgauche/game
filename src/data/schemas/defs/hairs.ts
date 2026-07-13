@@ -9,6 +9,7 @@ export const file = 'hairs.json';
 
 export const schema = z.array(
   z.strictObject({
+    id: z.string(),
     label: z.string(),
     rand: z.number(),
     /** Clé = `raceKeySchema` (id stable, #313) — partiel (7 colonnes, pas toutes présentes par entrée). */

@@ -1,5 +1,6 @@
 [
   {
+    "id": "sigmund-reikhardt",
     "name": "Sigmund Reikhardt",
     "species": "humains-reiklander",
     "career": "soldat",
@@ -9,6 +10,7 @@
     "ambitionLong": "Commander sa propre compagnie"
   },
   {
+    "id": "grunni-pierre-de-fer",
     "name": "Grunni Pierre-de-Fer",
     "species": "nains",
     "career": "tueur",
@@ -18,6 +20,7 @@
     "ambitionLong": "Effacer sa honte par un acte légendaire"
   },
   {
+    "id": "wilhelmina-faust",
     "name": "Wilhelmina Faust",
     "species": "humains-reiklander",
     "career": "sorcier",
@@ -34,6 +37,7 @@
     "build": 0.42
   },
   {
+    "id": "frere-anselm",
     "name": "Frère Anselm",
     "species": "humains-reiklander",
     "career": "pretre",
@@ -48,6 +52,7 @@
     ]
   },
   {
+    "id": "aelindra-feuille-d-argent",
     "name": "Aelindra Feuille-d’Argent",
     "species": "elfes-sylvains",
     "career": "chasseur",
@@ -57,6 +62,7 @@
     "ambitionLong": "Préserver la forêt des intrusions humaines"
   },
   {
+    "id": "rosa-brandt",
     "name": "Rosa Brandt",
     "species": "humains-reiklander",
     "career": "apothicaire",
@@ -68,6 +74,7 @@
     "build": 0.45
   },
   {
+    "id": "klein-burger",
     "name": "Klein Bürger",
     "species": "halflings",
     "career": "voleur",
@@ -77,6 +84,7 @@
     "ambitionLong": "Réussir le casse dont on parlera longtemps"
   },
   {
+    "id": "otto-hammerfest",
     "name": "Otto Hammerfest",
     "species": "humains-reiklander",
     "career": "repurgateur",

@@ -32,7 +32,7 @@ export interface WarMachineRow { id: string; label: string; price: string; crew:
 /** Une structure ciblable par les armes de siège (l.282-288) : BE + Blessures + Atout. */
 export interface StructureRow { id: string; label: string; be: number; wounds: number; traits: string }
 /** Un facteur environnemental d'aléa de bataille (l.311-322, 1d10) — texte verbatim. */
-export interface HazardRow { min: number; max: number; label: string; text: string }
+export interface HazardRow { id: string; min: number; max: number; label: string; text: string }
 
 // Les 5 tableaux sont maintenant portés par la facade `data/index.ts` (seam `overrides.ts` — édition
 // Codex) ; ce module en reste le PROPRIÉTAIRE des types (import type ré-emprunté par la facade, comme

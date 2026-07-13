@@ -12,6 +12,7 @@ import obsessionsJson from './obsessions.json';
 
 /** Une entrée du Tableau des Obsessions : plage de 2d10 → libellé de la Cible (objet/groupe). */
 export interface ObsessionEntry {
+  id: string;
   min: number;
   max: number;
   label: string;

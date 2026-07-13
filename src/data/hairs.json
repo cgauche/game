@@ -1,5 +1,6 @@
 [
   {
+    "id": "blond-blanc",
     "label": "Blond blanc",
     "rand": 2,
     "color": {
@@ -13,6 +14,7 @@
     }
   },
   {
+    "id": "blond-dore",
     "label": "Blond doré",
     "rand": 3,
     "color": {
@@ -26,6 +28,7 @@
     }
   },
   {
+    "id": "blond-roux",
     "label": "Blond roux",
     "rand": 4,
     "color": {
@@ -39,6 +42,7 @@
     }
   },
   {
+    "id": "brun-dore",
     "label": "Brun doré",
     "rand": 7,
     "color": {
@@ -52,6 +56,7 @@
     }
   },
   {
+    "id": "brun-clair",
     "label": "Brun clair",
     "rand": 11,
     "color": {
@@ -65,6 +70,7 @@
     }
   },
   {
+    "id": "brun-fonce",
     "label": "Brun foncé",
     "rand": 14,
     "color": {
@@ -78,6 +84,7 @@
     }
   },
   {
+    "id": "noir",
     "label": "Noir",
     "rand": 17,
     "color": {
@@ -91,6 +98,7 @@
     }
   },
   {
+    "id": "auburn",
     "label": "Auburn",
     "rand": 18,
     "color": {
@@ -104,6 +112,7 @@
     }
   },
   {
+    "id": "roux",
     "label": "Roux",
     "rand": 19,
     "color": {
@@ -117,6 +126,7 @@
     }
   },
   {
+    "id": "gris",
     "label": "Gris",
     "rand": 20,
     "color": {

@@ -1,5 +1,6 @@
 [
   {
+    "id": "wellentag",
     "name": "Wellentag",
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -8,6 +9,7 @@
     }
   },
   {
+    "id": "aubentag",
     "name": "Aubentag",
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -16,6 +18,7 @@
     }
   },
   {
+    "id": "marktag",
     "name": "Marktag",
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -24,6 +27,7 @@
     }
   },
   {
+    "id": "backertag",
     "name": "Backertag",
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -32,6 +36,7 @@
     }
   },
   {
+    "id": "bezahltag",
     "name": "Bezahltag",
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -40,6 +45,7 @@
     }
   },
   {
+    "id": "konistag",
     "name": "Konistag",
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -48,6 +54,7 @@
     }
   },
   {
+    "id": "angestag",
     "name": "Angestag",
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -56,6 +63,7 @@
     }
   },
   {
+    "id": "festag",
     "name": "Festag",
     "source": {
       "book": "ennemi-dans-l-ombre",

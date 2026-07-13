@@ -1,5 +1,6 @@
 [
   {
+    "id": "voyage-reposant",
     "roll": 1,
     "label": "Voyage reposant",
     "kind": "reposant",
@@ -11,6 +12,7 @@
     }
   },
   {
+    "id": "quelque-chose-d-interessant",
     "roll": 2,
     "label": "Quelque chose d’intéressant !",
     "kind": "narratif",
@@ -22,6 +24,7 @@
     }
   },
   {
+    "id": "a-present-c-est-utile",
     "roll": 3,
     "label": "À présent, c’est utile !",
     "kind": "narratif",
@@ -33,6 +36,7 @@
     }
   },
   {
+    "id": "voyage-ereintant",
     "roll": 4,
     "label": "Voyage éreintant !",
     "kind": "ereintant",
@@ -44,6 +48,7 @@
     }
   },
   {
+    "id": "poursuivis",
     "roll": 5,
     "label": "Poursuivis !",
     "kind": "narratif",
@@ -55,6 +60,7 @@
     }
   },
   {
+    "id": "voleurs",
     "roll": 6,
     "label": "Voleurs !",
     "kind": "narratif",
@@ -66,6 +72,7 @@
     }
   },
   {
+    "id": "pas-encore",
     "roll": 7,
     "label": "Pas encore !",
     "kind": "narratif",
@@ -77,6 +84,7 @@
     }
   },
   {
+    "id": "mauvaise-influence",
     "roll": 8,
     "label": "Mauvaise influence !",
     "kind": "narratif",
@@ -88,6 +96,7 @@
     }
   },
   {
+    "id": "meme-la-nature-vous-deteste",
     "roll": 9,
     "label": "Même la nature vous déteste !",
     "kind": "narratif",
@@ -99,6 +108,7 @@
     }
   },
   {
+    "id": "attaques",
     "roll": 10,
     "label": "Attaqués !",
     "kind": "attaque",

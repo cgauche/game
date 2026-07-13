@@ -1,5 +1,6 @@
 [
   {
+    "id": "nachhexen",
     "name": "Nachhexen",
     "days": 32,
     "source": {
@@ -9,6 +10,7 @@
     }
   },
   {
+    "id": "jahrdrung",
     "name": "Jahrdrung",
     "days": 33,
     "source": {
@@ -18,6 +20,7 @@
     }
   },
   {
+    "id": "pflugzeit",
     "name": "Pflugzeit",
     "days": 33,
     "source": {
@@ -27,6 +30,7 @@
     }
   },
   {
+    "id": "sigmarzeit",
     "name": "Sigmarzeit",
     "days": 33,
     "source": {
@@ -36,6 +40,7 @@
     }
   },
   {
+    "id": "sommerzeit",
     "name": "Sommerzeit",
     "days": 33,
     "source": {
@@ -45,6 +50,7 @@
     }
   },
   {
+    "id": "vorgeheim",
     "name": "Vorgeheim",
     "days": 33,
     "source": {
@@ -54,6 +60,7 @@
     }
   },
   {
+    "id": "nachgeheim",
     "name": "Nachgeheim",
     "days": 32,
     "source": {
@@ -63,6 +70,7 @@
     }
   },
   {
+    "id": "erntezeit",
     "name": "Erntezeit",
     "days": 33,
     "source": {
@@ -72,6 +80,7 @@
     }
   },
   {
+    "id": "brauzeit",
     "name": "Brauzeit",
     "days": 33,
     "source": {
@@ -81,6 +90,7 @@
     }
   },
   {
+    "id": "kaldezeit",
     "name": "Kaldezeit",
     "days": 33,
     "source": {
@@ -90,6 +100,7 @@
     }
   },
   {
+    "id": "ulriczeit",
     "name": "Ulriczeit",
     "days": 33,
     "source": {
@@ -99,6 +110,7 @@
     }
   },
   {
+    "id": "vorhexen",
     "name": "Vorhexen",
     "days": 33,
     "source": {

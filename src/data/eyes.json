@@ -1,5 +1,6 @@
 [
   {
+    "id": "au-choix",
     "label": "Au choix",
     "rand": 2,
     "color": {
@@ -13,6 +14,7 @@
     }
   },
   {
+    "id": "vert",
     "label": "Vert",
     "rand": 3,
     "color": {
@@ -26,6 +28,7 @@
     }
   },
   {
+    "id": "bleu-pale",
     "label": "Bleu pâle",
     "rand": 4,
     "color": {
@@ -39,6 +42,7 @@
     }
   },
   {
+    "id": "bleu",
     "label": "Bleu",
     "rand": 7,
     "color": {
@@ -52,6 +56,7 @@
     }
   },
   {
+    "id": "gris-pale",
     "label": "Gris pâle",
     "rand": 11,
     "color": {
@@ -65,6 +70,7 @@
     }
   },
   {
+    "id": "gris",
     "label": "Gris",
     "rand": 14,
     "color": {
@@ -78,6 +84,7 @@
     }
   },
   {
+    "id": "marron",
     "label": "Marron",
     "rand": 17,
     "color": {
@@ -91,6 +98,7 @@
     }
   },
   {
+    "id": "noisette",
     "label": "Noisette",
     "rand": 18,
     "color": {
@@ -104,6 +112,7 @@
     }
   },
   {
+    "id": "marron-fonce",
     "label": "Marron foncé",
     "rand": 19,
     "color": {
@@ -117,6 +126,7 @@
     }
   },
   {
+    "id": "noir",
     "label": "Noir",
     "rand": 20,
     "color": {

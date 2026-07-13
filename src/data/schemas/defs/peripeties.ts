@@ -11,6 +11,7 @@ export const file = 'peripeties.json';
 
 export const schema = z.array(
   z.strictObject({
+    id: z.string(),
     roll: z.number(),
     label: z.string(),
     /** Ce que le MOTEUR sait jouer sans rien inventer (cf. `src/data/peripeties.ts:11-16`). */
