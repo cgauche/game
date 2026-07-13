@@ -104,6 +104,19 @@ describe('MerchantPanel (#2 — panier)', () => {
     expect(html).not.toMatch(/Marchander le panier/);
   });
 
+  it('bande d’ambiance : rendue quand le service porte un backdrop (forgeron → forge), absente sinon (#381)', () => {
+    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const withBd = renderToStaticMarkup(
+      <MerchantPanelView merchant={{ ...base, backdrop: 'forge' }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
+    );
+    expect(withBd).toContain('scene-backdrop'); // slot backdrop de ScreenShell rempli par le registre
+    expect(withBd).not.toContain('scene-backdrop-fallback'); // id connu → décor, pas le repli
+    const withoutBd = renderToStaticMarkup(
+      <MerchantPanelView merchant={base} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
+    );
+    expect(withoutBd).not.toContain('scene-backdrop'); // pas de backdrop → slot absent (aucune régression)
+  });
+
   it('onglet Vendre / Réparer + Marchandage par onglet (#2c/#2d)', () => {
     const party = [stubHero('h', 'H', [
       { uid: 'x', trappingId: 'dague', name: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false },

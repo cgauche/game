@@ -225,7 +225,7 @@ export function CityHubScreen({
           actions={
             <button
               type="button" className="btn btn-primary"
-              onClick={() => enter(() => openPlaceMerchant(placeServiceMerchantId(place.id, svc.id), svc.merchantArchetype!))}
+              onClick={() => enter(() => openPlaceMerchant(placeServiceMerchantId(place.id, svc.id), svc.merchantArchetype!, svc.backdrop))}
             >
               Entrer chez le forgeron
             </button>

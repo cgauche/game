@@ -566,6 +566,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
       title={<><Icon id="resource/gold-purse" size="sm" /> Marchand</>}
       onClose={onClose}
       meta={{ money }}
+      backdrop={merchant.backdrop}
     >
         {speakerName && (
           <SpeakerBanner ent={speakerEnt} name={speakerName} variant="boniment">{boniment}</SpeakerBanner>

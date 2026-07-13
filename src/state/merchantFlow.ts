@@ -47,6 +47,10 @@ export interface MerchantState {
   settlement: Settlement;
   resaleRate: number;
   buyMarkup?: number;
+  /** Bande d'ambiance de l'écran (id du registre `src/ui/backdrops`) — provient de la donnée du service
+   *  de lieu qui ouvre la visite (`lieux-services.json`, ex. `forge` pour le forgeron, #369) ; absente
+   *  pour un marchand de scène sans décor seedé. Rendue dans le slot `backdrop` du `ScreenShell`. */
+  backdrop?: string;
   /** Stock & panier keyés par `trappingId` (`TrappingData.id`) — le libellé est résolu à l'affichage. */
   stock: { id: string; qty: number }[];
   bargainBuy?: BargainOutcome | null;
@@ -194,8 +198,9 @@ registerCascadeApplier(MERCHANT_STOCK_KIND, (get, set, step) => {
     }
     const resaleRate = Number(meta.resaleRate ?? arch.resaleRate);
     const buyMarkup = Number(meta.buyMarkup ?? arch.buyMarkup ?? 1);
+    const backdrop = meta.backdrop != null ? String(meta.backdrop) : undefined;
     const persisted = s.merchantStocks[entityId];
-    return { merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, stock, cart: [], bargainLocked: persisted?.bargainLocked ?? false } };
+    return { merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, backdrop, stock, cart: [], bargainLocked: persisted?.bargainLocked ?? false } };
   });
   return {
     consequences: freeCons(tested.map((l) => `${l.label} — d100 ${l.test!.roll}/${l.test!.target} ✔ ×${l.qty}`)),
@@ -207,7 +212,7 @@ registerCascadeApplier(MERCHANT_STOCK_KIND, (get, set, step) => {
  *  `computeFreshStockLines`, jamais transporté). Le call-site n'assemble plus rien d'autre. */
 function openStockRevealCascade(
   get: Get, set: Set,
-  entityId: string, archetype: string, settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean, resaleRate: number, buyMarkup: number,
+  entityId: string, archetype: string, settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean, resaleRate: number, buyMarkup: number, backdrop?: string,
 ): void {
   const arch = MERCHANTS[archetype];
   // #331 réserve A-bis : PRÉ-POSE le tirage article par article dans `outcome` AVANT validation — la
@@ -226,7 +231,7 @@ function openStockRevealCascade(
     label: `Réassort — ${arch?.label ?? archetype}`,
     interactive: true,
     ...(outcome?.length ? { outcome: toRecapLines(outcome) } : {}),
-    meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup },
+    meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup, ...(backdrop != null ? { backdrop } : {}) },
   };
   startCascade(get, set, { title: 'Réassort marchand', purpose: 'test', steps: [step] });
 }
@@ -235,7 +240,7 @@ function openStockRevealCascade(
  *  dans une scène) quand il existe ; un marchand de LIEU (`openPlaceMerchant`, catalogue `lieux-services.json`)
  *  n'en porte aucun et joue les défauts d'archétype nus. SOURCE UNIQUE du calcul d'ouverture, réutilisée
  *  par les deux entrées — aucune n'est un fork de l'autre. */
-function openMerchantByArchetype(get: Get, set: Set, entityId: string, archetype: string, ent?: SceneEntity): void {
+function openMerchantByArchetype(get: Get, set: Set, entityId: string, archetype: string, ent?: SceneEntity, backdrop?: string): void {
   const arch = MERCHANTS[archetype];
   if (!arch) { get().log(`Archétype marchand inconnu : « ${archetype} ».`); return; }
   const settlement: Settlement = ent?.merchant?.settlement ?? arch.settlement;
@@ -252,14 +257,14 @@ function openMerchantByArchetype(get: Get, set: Set, entityId: string, archetype
     // #273 dernier volet — porte : siège MJ présent → tirage VISIBLE-LANÇABLE (jamais silencieux) ;
     // sinon → inline INCHANGÉ (zéro friction locale).
     if (get().net.gmSeat != null) {
-      openStockRevealCascade(get, set, entityId, archetype, settlement, now, restockPeriod, false, resaleRate, buyMarkup);
+      openStockRevealCascade(get, set, entityId, archetype, settlement, now, restockPeriod, false, resaleRate, buyMarkup, backdrop);
       return;
     }
     const stock = rollFreshStock(get, set, entityId, ent, arch, settlement, now, restockPeriod, false);
-    set({ merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, stock, cart: [], bargainLocked: get().merchantStocks[entityId]?.bargainLocked ?? false } });
+    set({ merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, backdrop, stock, cart: [], bargainLocked: get().merchantStocks[entityId]?.bargainLocked ?? false } });
     return;
   }
-  set({ merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, stock: prev.stock, cart: [], bargainLocked: prev.bargainLocked ?? false } });
+  set({ merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, backdrop, stock: prev.stock, cart: [], bargainLocked: prev.bargainLocked ?? false } });
 }
 
 export function openMerchant(get: Get, set: Set, entityId: string): void {
@@ -271,8 +276,8 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
 /** Marchand de LIEU (#369) — ouvre le système marchand EXISTANT pour un service de catalogue sans
  *  `SceneEntity` (forgeron du hub de ville…) : même `openMerchantByArchetype`, keyé sur l'id virtuel
  *  `placeServiceMerchantId` (stock persistant propre au lieu+service). Extension du général, pas un fork. */
-export function openPlaceMerchant(get: Get, set: Set, entityId: string, archetype: string): void {
-  openMerchantByArchetype(get, set, entityId, archetype);
+export function openPlaceMerchant(get: Get, set: Set, entityId: string, archetype: string, backdrop?: string): void {
+  openMerchantByArchetype(get, set, entityId, archetype, undefined, backdrop);
 }
 
 /** Kind d'étape de cascade du Test de Ragot de recherche active (#274, sweep pré-garde — site consigné
@@ -309,7 +314,7 @@ function finalizeSearchAvailability(get: Get, set: Set, entityId: string, restoc
   const arch = MERCHANTS[m.archetype];
   if (!arch) return;
   if (get().net.gmSeat != null) {
-    openStockRevealCascade(get, set, entityId, m.archetype, m.settlement, now, restockPeriod, gossipDay, m.resaleRate, m.buyMarkup ?? 1);
+    openStockRevealCascade(get, set, entityId, m.archetype, m.settlement, now, restockPeriod, gossipDay, m.resaleRate, m.buyMarkup ?? 1, m.backdrop);
     return;
   }
   rollFreshStock(get, set, entityId, ent, arch, m.settlement, now, restockPeriod, gossipDay);
