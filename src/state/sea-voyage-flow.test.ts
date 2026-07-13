@@ -22,6 +22,8 @@ import { crewRoleValue } from '../engine/crewMorale';
 import { findCrewRoleById } from '../data';
 import { resultLine } from './rollSeam';
 import { checkBattleOver } from './combatFlow';
+import { BOARD_EVENTS, seaBoardEventById } from '../engine/seaVoyage';
+import type { RecapEvent } from './recapLine';
 
 /**
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15), pilotée
@@ -737,6 +739,48 @@ describe('Cogue pirate (#327 A5.3) — l’événement navire-hostile PRÉSENTE 
     expect(get().vessel!.cargo!.reduce((n, l) => n + l.enc, 0)).toBe(0); // cale vidée (piratePillagePct 100 %)
     const p2 = get().pendingCascade;
     expect(p2?.participants.some((s) => s.kind === 'sea-pirate-tribute')).toBe(true); // choix du tribut offert
+  });
+});
+
+describe('Événement de bord RACONTÉ → carte-parchemin (#371 LOT 4, non couvert avant #383)', () => {
+  beforeEach(freshState);
+
+  it('un événement de bord FORCÉ (couture réelle `forcedEventId` + `runSeaDay`) pousse un `RecapEvent` {title,text} VERBATIM (source `sea-events.json`, sans tirage — recette #332)', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, forcedEventId: 'calme-plat' } } });
+    runSeaDay(get, set);
+    const events = get().travelPlan!.sea!.events ?? [];
+    expect(events).toHaveLength(1);
+    const def = seaBoardEventById('calme-plat')!;
+    expect(events[0]).toEqual({ title: def.label, text: def.desc, roll: undefined }); // forcé → pas de tirage (recapLine.ts)
+  });
+
+  it('un tirage NATUREL (non forcé, `daysToEvent` échu) capture le d100 dans le `RecapEvent` — label+texte SOURCÉS (`BOARD_EVENTS`, pas de copie en dur)', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysToEvent: 1, forcedEventId: undefined } } });
+    runSeaDay(get, set);
+    const events = get().travelPlan!.sea!.events ?? [];
+    expect(events).toHaveLength(1);
+    const ev = events[0];
+    expect(typeof ev.roll).toBe('number'); // tirage capturé (chemin non forcé)
+    const def = BOARD_EVENTS.find((e) => e.label === ev.title && e.desc === ev.text);
+    expect(def).toBeTruthy(); // titre + texte VERBATIM d'une entrée RÉELLE de sea-events.json
+  });
+});
+
+describe('Clôture du jour de mer — le récap porte les events, `sea.events` se RÉINITIALISE (#371 LOT 4, non couvert avant #383)', () => {
+  beforeEach(freshState);
+
+  it('`continueSeaDayAfterCascade` : le `TravelRecapDay` (`travelPlan.log`) porte les events du jour ; `sea.events` repart à vide (pas de fuite au lendemain)', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    const def = seaBoardEventById('calme-plat')!;
+    const carried: RecapEvent = { title: def.label, text: def.desc, roll: 21 };
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, events: [carried], milesToday: 5 } } });
+    continueSeaDayAfterCascade(get, set);
+    const log = get().travelPlan!.log!;
+    expect(log).toHaveLength(1);
+    expect(log[0].events).toEqual([carried]); // la carte du jour porte l'événement
+    expect(get().travelPlan!.sea!.events).toEqual([]); // reset — pas de fuite au jour suivant
   });
 });
 
