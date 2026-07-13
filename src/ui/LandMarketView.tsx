@@ -7,6 +7,7 @@ import { placeById } from '../state/worldMap';
 import { canAfford, toMoney } from '../engine/money';
 import { Coins } from './Coins';
 import { ScreenShell } from './ScreenShell';
+import { SpeakerBanner } from './SpeakerBanner';
 import { CargoTransferPanel } from './CargoTransferPanel';
 import { TradeTable, type TradeGroup } from './TradeTable';
 
@@ -17,6 +18,9 @@ import { TradeTable, type TradeGroup } from './TradeTable';
  * entre porteurs co-localisés. PENDANT terrestre de `PortView` (commerce maritime) : même overlay plein écran
  * (patron `WorldMapView`), sections Acheter/Vendre en `TradeTable` (#371 LOT 3, table marchande étalon),
  * transfert relégué en panneau secondaire replié (`CargoTransferPanel` → `.fold`), français, aucun tuto.
+ * INCARNATION (#371) : bandeau d'hôte de halle (`SpeakerBanner` variant `boniment`, réplique en donnée
+ * `landMarket.hostLine`) + bande d'ambiance (`ScreenShell` slot `backdrop`, `landMarket.backdrop`) — un
+ * visage, une voix et un lieu, jamais un ERP. Corps borné/centré (`body='centered'`) : la halle respire.
  */
 type Offer = { cargoId: string; label: string; enc: number; basePrice: number; wine?: boolean; wineTier?: string; wineEvalOk?: boolean };
 
@@ -54,9 +58,11 @@ export function LandMarketView() {
       title={<>Marché de {market.label}</>}
       onClose={close}
       meta={{ money }}
-      body="centered-wide"
+      backdrop={market.backdrop}
+      body="centered"
       tabs={<span className="port-purse">Porteur : <b>{target ? `${target.label} — libre ${carrierFreeEnc(target)} / ${target.capacity} Enc` : 'aucun'}</b></span>}
     >
+        <SpeakerBanner name="Le crieur de la halle" variant="boniment">{market.hostLine}</SpeakerBanner>
         {rumours.length > 0 && (
           <section className="panel port-section">
             <h3>Rumeurs de commerce</h3>

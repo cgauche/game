@@ -33,6 +33,7 @@ import {
   type TradeRumour, tradeRumourMult,
 } from '../engine/landCargo';
 import { type CargoLot, loadCargo, carrierCanLoad, carrierFreeEnc, transferCargo } from '../engine/cargo';
+import { findLieuServiceById } from '../data/index';
 import { primaryCargoCarrier, carrierById, persistCarriersCargo } from './carriers';
 import { seasonOfMonth } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
@@ -61,6 +62,12 @@ export interface LandMarketState {
   label: string;
   market: LandMarketProfile;
   offers: LandOffer[];
+  /** Réplique de halle de l'hôte (surcharge de lieu `market.hostLine`, sinon défaut partagé du catalogue
+   *  `lieux-services.json` id `marche`) — rendue par le bandeau `SpeakerBanner`. */
+  hostLine?: string;
+  /** Bande d'ambiance (surcharge de lieu `market.backdrop`, sinon défaut du catalogue) — slot `backdrop`
+   *  du `ScreenShell`. */
+  backdrop?: string;
 }
 
 const log = (get: Get, _set: Set, lines: string[]) => {
@@ -97,7 +104,12 @@ export function openLandMarket(get: Get, set: Set): void {
   if (find.localFound) for (const id of market.produits.filter((p) => p !== 'commerce' && p !== 'subsistance')) addOffer(id);
   // « Commerce » (l.32-34) : une cargaison ALÉATOIRE de la table saisonnière en plus.
   if (find.randomFound) addOffer(rollRandomLandCargo(season, rng).id);
-  set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers } });
+  // Identité de HALLE (#371) : hôte + décor. Défaut partagé au catalogue `marche` (`lieux-services.json`),
+  // surchargé PAR LIEU par le profil de marché — la halle a un visage et une voix comme le marchand.
+  const marcheDef = findLieuServiceById('marche');
+  const hostLine = market.hostLine ?? marcheDef?.hostLine;
+  const backdrop = market.backdrop ?? marcheDef?.backdrop;
+  set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers, hostLine, backdrop } });
   // Rumeurs commerciales (T2C ch.11 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, on
   // tire un AUTRE Emplacement puis une rumeur (Tableau des rumeurs) → les biens visés s'y vendent au DOUBLE
   // du prix de base (l.180). L'« index géographique du Reikland » (l.180) est ici la liste des Lieux de la

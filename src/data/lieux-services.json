@@ -7,6 +7,13 @@
     "backdrop": "taverne-commune"
   },
   {
+    "id": "marche",
+    "label": "Marché",
+    "icon": "merchant/cart",
+    "hostLine": "Bonnes gens, approchez ! Étoffes, grains, fer et bon vin — la halle est ouverte, et mes prix ne mordent pas plus que ma voix !",
+    "backdrop": "halle-marchande"
+  },
+  {
     "id": "temple",
     "label": "Temple",
     "icon": "faith/church",
