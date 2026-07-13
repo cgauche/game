@@ -51,7 +51,10 @@ const OVERLAY_OWNERS = ['Modal.tsx', 'ScreenShell.tsx'];
 // VictoryScreen/CampaignView (defeat) : splash plein-écran de RÉSULTAT (bouton unique, non fermable
 // par Échap) — pas un dialogue (pas de role="dialog"/useModalA11y), donc hors du périmètre a11y de
 // la primitive. Dette connue distincte, pas couverte par ce ticket de garde (#285).
-const OVERLAY_WHITELIST = ['CharacterSheet.tsx', 'ShipSheet.tsx', 'InspectPanel.tsx', 'compendium/CompendiumScreen.tsx', 'VictoryScreen.tsx', 'CampaignView.tsx'];
+// GameMenu.tsx : menu SYSTÈME plein écran (pause) — voile `.game-menu-overlay` semi-canonique (squelette
+// maison composant la primitive MenuCard, a11y `useModalA11y` câblée) ; langage MenuCard voulu, pas la
+// chrome de Modal/ScreenShell.
+const OVERLAY_WHITELIST = ['CharacterSheet.tsx', 'ShipSheet.tsx', 'InspectPanel.tsx', 'compendium/CompendiumScreen.tsx', 'VictoryScreen.tsx', 'CampaignView.tsx', 'GameMenu.tsx'];
 
 describe('#236 — gardes du système de composants unifié', () => {
   // ── (ii) Le voile plein écran est une PRIMITIVE : `modal-overlay`/`worldmap-overlay` n'apparaissent

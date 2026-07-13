@@ -466,7 +466,6 @@
 .hud-topbar > * {
   pointer-events: auto;
 }
-/* Contexte de positionnement du tiroir (`.menu-card-panel`, components.css). */
 .game-menu {
   position: relative;
 }
@@ -481,10 +480,7 @@
   cursor: pointer;
   opacity: 0.92;
 }
-.game-menu.open .gm-btn {
-  border-color: var(--gold);
-}
-/* Sous-groupe interne du tiroir (audio, coop) — pile verticale serrée. */
+/* Sous-groupe interne (audio, coop) — pile verticale serrée. */
 .gm-section {
   display: flex;
   flex-direction: column;

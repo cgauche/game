@@ -6,13 +6,12 @@ import { RuleDivider } from './Ornaments';
 /**
  * MenuCard — primitive du patron « vrai menu » : une carte qui empile un en-tête, des SECTIONS de
  * grands boutons pleine largeur (icône + libellé) séparées par un filet titré. Source UNIQUE
- * composée par le MENU PRINCIPAL (`MainMenu`, variante `screen` — carte plein-champ centrée) ET le
- * menu ☰ EN JEU (`GameMenu`, variante `panel` — tiroir sous le bouton). Ne jamais recoder un
- * `.menu-card` ni un `<button className="btn">` de menu à la main : composer
+ * composée par le MENU PRINCIPAL (`MainMenu`, carte plein-champ centrée) ET le MENU SYSTÈME plein
+ * écran EN JEU (`GameMenu`, pause + ses sous-écrans Coopération/Options) — MÊME langage visuel.
+ * Ne jamais recoder un `.menu-card` ni un `<button className="btn">` de menu à la main : composer
  * `MenuCard` > `MenuSection` > `MenuButton` (et `MenuToggle` pour un interrupteur de menu).
  */
-export function MenuCard({ variant = 'screen', header, footer, className, children }: {
-  variant?: 'screen' | 'panel';
+export function MenuCard({ header, footer, className, children }: {
   /** En-tête de la carte (titre, sous-titre/méta) — rendu avant les sections. */
   header?: ReactNode;
   /** Pied de carte (note discrète) — rendu après les sections. */
@@ -21,7 +20,7 @@ export function MenuCard({ variant = 'screen', header, footer, className, childr
   children: ReactNode;
 }) {
   return (
-    <div className={`menu-card${variant === 'panel' ? ' menu-card-panel' : ''}${className ? ` ${className}` : ''}`}>
+    <div className={`menu-card${className ? ` ${className}` : ''}`}>
       {header}
       {children}
       {footer}

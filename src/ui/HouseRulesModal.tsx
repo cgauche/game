@@ -10,8 +10,10 @@ import { Icon } from './Icon';
  * en dur : il itère le registre, groupe par `group` et rend un contrôle par entrée selon `kind`.
  * Ajouter une règle optionnelle = ajouter une entrée au registre, elle apparaît ICI automatiquement.
  * Les surcharges sont persistées immédiatement et lues en direct par le moteur (`rule(id)`).
+ * SOURCE UNIQUE composée par la modale du menu principal (`HouseRulesModal`) ET l'onglet « Règles
+ * maison » de l'écran Options en jeu (`OptionsScreen`) — même contenu, deux foyers.
  */
-export function HouseRulesModal({ onClose }: { onClose: () => void }) {
+export function HouseRulesPanel() {
   const [, force] = useState(0);
   const rerender = () => force((n) => n + 1);
   const change = (id: string, v: RuleValue) => {
@@ -23,9 +25,8 @@ export function HouseRulesModal({ onClose }: { onClose: () => void }) {
   };
   const reset = (id: string) => { resetHouseRule(id); rerender(); };
   const groups = [...new Set(OPTIONAL_RULES.map((r) => r.group))];
-
   return (
-    <Modal title={<><Icon id="nav/rules" size="sm" /> Règles maison</>} variant="plain" className="house-rules" onClose={onClose} backdropClose>
+    <>
       {groups.map((g) => (
         <section key={g} className="hr-group">
           <h4 className="mini-title">{g}</h4>
@@ -34,6 +35,15 @@ export function HouseRulesModal({ onClose }: { onClose: () => void }) {
           ))}
         </section>
       ))}
+    </>
+  );
+}
+
+/** Modale « Règles maison » du menu principal (`MainMenu`) — enrobe `HouseRulesPanel` du cadre modal. */
+export function HouseRulesModal({ onClose }: { onClose: () => void }) {
+  return (
+    <Modal title={<><Icon id="nav/rules" size="sm" /> Règles maison</>} variant="plain" className="house-rules" onClose={onClose} backdropClose>
+      <HouseRulesPanel />
       <div className="modal-actions">
         <button className="btn btn-primary" onClick={onClose}>Fermer</button>
       </div>

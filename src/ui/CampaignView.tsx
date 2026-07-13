@@ -32,10 +32,7 @@ import { Icon } from './Icon';
 import { GameMenu } from './GameMenu';
 import { ObjectiveBannerMount } from './ObjectiveBanner';
 import { SaveLoadModal } from './SaveLoadModal';
-import { HouseRulesModal } from './HouseRulesModal';
 import { SessionEndModal } from './SessionEndModal';
-import { CoopMenuSection, GmSoloToggle } from './CoopPanels';
-import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
 import { GameDate } from './GameDate';
 import { PortView } from './PortView';
@@ -55,7 +52,6 @@ import { controlsActive, controlsCombatant } from '../state/netOwnership';
 import { combatantClickActs } from '../state/combatOrParty';
 import { useGameKeyboard } from './useGameKeyboard';
 import { useGamepad } from './useGamepad';
-import { OptionsModal } from './OptionsModal';
 import { campaign } from '../scenes/campaign';
 
 export function CampaignView() {
@@ -66,7 +62,6 @@ export function CampaignView() {
   const journal = useGame((s) => s.journal);
   const dialogue = useGame((s) => s.dialogue);
   const battle = useGame((s) => s.battle);
-  const money = useGame((s) => s.money);
   const merchant = useGame((s) => s.merchant);
   const sessionEndOpen = useGame((s) => s.sessionEndOpen); // Effet `sessionEnd` (#83) : ouvre la même modale
   const closeSessionEnd = useGame((s) => s.closeSessionEnd);
@@ -109,8 +104,6 @@ export function CampaignView() {
   const setHoverCombatant = useGame((s) => s.setHoverCombatant);
   const hovered = useGame((s) => s.hovered);
   const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
-  const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
-  const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)
   const [dossierOpen, setDossierOpen] = useState(false); // dossier du navire persistant (#227, EN et HORS combat)
   const [voyageMin, setVoyageMin] = useState(false); // écran-hub de voyage RÉDUIT (#333) — forcé ouvert dès qu'une étape attend
   const [cityHubOpen, setCityHubOpen] = useState(false); // hub de ville (#343) — s'ouvre depuis le bouton du lieu
@@ -226,7 +219,7 @@ export function CampaignView() {
             ≤700px — plus deux îlots absolus indépendants. Sauvegarder : exploration seulement (refusée
             en combat) et jamais l'invité (la save vit chez l'hôte). */}
         <div className="hud-topbar">
-        <GameMenu sceneName={scene?.nom} money={money} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} audio={<AudioControls />} coop={netMode === 'guest' ? undefined : <><CoopMenuSection /><GmSoloToggle /></>} />
+        <GameMenu sceneName={scene?.nom} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} />
         {/* Horloge de campagne : chip de la barre (date/heure), source unique `GameDate`. */}
         {mode === 'exploration' && (
           <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={gameTime} /></span>
@@ -297,8 +290,6 @@ export function CampaignView() {
             modale système au-dessus resterait invisible/inatteignable sous elle sans cette garde. */}
         {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
-        {rulesOpen && !dialogue && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
-        {optionsOpen && !dialogue && <OptionsModal onClose={() => setOptionsOpen(false)} />}
         <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />
         <LogDrawer battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
         <ViewControls

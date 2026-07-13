@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../state/store';
 import { KEYBINDINGS, KEY_SECTION_LABEL, effectiveCodes, keyLabel, type KeyBindingSection } from '../state/keybindings';
-import { Modal } from './Modal';
 import { Icon } from './Icon';
 
 /**
- * Écran Options — REMAP clavier (1ʳᵉ pièce). Liste les raccourcis de jeu (registre `keybindings`),
- * GROUPÉS par section (`KeyBindingSection`), et permet de réassigner chaque touche : un clic arme la
- * capture, la PROCHAINE touche pressée devient le binding (par POSITION physique `event.code` →
- * AZERTY-safe). Échap pendant la capture = annuler. « Réinitialiser » efface toutes les surcharges.
- * (Volume, reduce-motion, vitesse — à venir.)
+ * Panneau Options — REMAP clavier (onglet « Clavier » de l'écran Options). Liste les raccourcis de jeu
+ * (registre `keybindings`), GROUPÉS par section (`KeyBindingSection`), et permet de réassigner chaque
+ * touche : un clic arme la capture, la PROCHAINE touche pressée devient le binding (par POSITION
+ * physique `event.code` → AZERTY-safe). Échap pendant la capture = annuler. « Réinitialiser » efface
+ * toutes les surcharges. (Volume → onglet Audio ; reduce-motion, vitesse — à venir.)
  *
  * Détection de PARTAGE de touche (#376 pt.5) : deux raccourcis sur la MÊME touche effective sont
  * signalés par un badge — la plupart sont des contextes MUTUELLEMENT EXCLUSIFS voulus (POV vs Caméra
@@ -17,9 +16,9 @@ import { Icon } from './Icon';
  * REMAPPE à la main peut créer un VRAI conflit (même touche, même contexte) — le badge est donc
  * informatif dans TOUS les cas, la garde `when` de chaque binding restant l'arbitre d'exécution.
  */
-const SECTION_ORDER: KeyBindingSection[] = ['pov', 'camera', 'combat', 'curseur', 'hotbar', 'exploration'];
+const SECTION_ORDER: KeyBindingSection[] = ['systeme', 'pov', 'camera', 'combat', 'curseur', 'hotbar', 'exploration'];
 
-export function OptionsModal({ onClose }: { onClose: () => void }) {
+export function KeyBindingsPanel() {
   const keyOverrides = useGame((s) => s.keyOverrides);
   const setKeyBinding = useGame((s) => s.setKeyBinding);
   const resetKeyBindings = useGame((s) => s.resetKeyBindings);
@@ -64,7 +63,7 @@ export function OptionsModal({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <Modal title="Options — Clavier" variant="test" onClose={onClose}>
+    <div className="opt-panel">
       <div className="opt-keys">
         {SECTION_ORDER.filter((sec) => bySection.has(sec)).map((sec) => (
           <div className="opt-key-section" key={sec}>
@@ -100,8 +99,7 @@ export function OptionsModal({ onClose }: { onClose: () => void }) {
       <p className="hint">Touches par POSITION physique (le binding suit l’endroit de la touche, AZERTY comme QWERTY). Échap pendant la capture = annuler.</p>
       <div className="modal-actions">
         <button type="button" className="btn small" onClick={() => resetKeyBindings()}>Réinitialiser les touches</button>
-        <button type="button" className="btn" onClick={onClose}>Fermer</button>
       </div>
-    </Modal>
+    </div>
   );
 }

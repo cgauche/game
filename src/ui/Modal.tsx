@@ -63,6 +63,7 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
       if (e.key === 'Escape') {
         if (closeRef.current) {
           e.preventDefault();
+          e.stopPropagation(); // une modale/écran qui CONSOMME Échap ne le laisse pas ouvrir le menu système (useGameKeyboard, phase window)
           closeRef.current();
         }
         return;

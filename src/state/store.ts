@@ -1153,6 +1153,9 @@ export interface GameState extends RollFlowActionsMap {
   worldMapOpen: boolean;
   openWorldMap: () => void;
   closeWorldMap: () => void;
+  /** Menu système plein écran (pause) ouvert — commuté par Échap (binding `toggle-menu`) et le bouton ☰. */
+  gameMenuOpen: boolean;
+  setGameMenu: (open: boolean) => void;
   /** Voyage en cours/interrompu (progression km — « Reprendre le voyage » après une embuscade). */
   travelPlan: import('./travelFlow').TravelPlan | null;
   /** Récapitulatif du dernier segment de voyage (audit M4) — modale à l'arrivée/interruption. */
@@ -1338,6 +1341,7 @@ export const useGame = create<GameState>((set, get) => ({
   landMarket: null,
   worldMap: campaignWorldMap,
   worldMapOpen: false,
+  gameMenuOpen: false,
   travelPlan: null,
   travelRecap: null,
   party: [],
@@ -2244,6 +2248,7 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Voyage & nourriture (#T2) ──
   openWorldMap: () => { if (!get().battle && get().worldMap) set({ worldMapOpen: true }); },
   closeWorldMap: () => set({ worldMapOpen: false }),
+  setGameMenu: (open) => set({ gameMenuOpen: open }),
   startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
   resumeTravel: () => travelFlow.resumeTravel(get, set),
   departWaitDawn: () => travelFlow.departWaitDawn(get, set),

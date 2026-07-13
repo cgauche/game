@@ -19,7 +19,7 @@
      .cart-step/.btn-step  stepper de quantité [−][centre][+] — primitive QtyStepper.tsx
      .trade-table        table de négoce (colonnes+prix+action+groupes) — primitive TradeTable.tsx
      .menu-card          carte de menu (en-tête + sections de boutons pleine largeur) — primitive MenuCard.tsx
-                         (.menu-card-panel = variante tiroir du menu ☰ en jeu ; .menu-btn/.menu-toggle)
+                         (.game-menu-overlay = menu système plein écran en jeu ; .menu-btn/.menu-toggle)
    Titres de section : réutiliser `.mini-title` (déjà global).                              */
 
 /* ── SURFACE ── */
@@ -807,7 +807,7 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
 }
 
 /* ── MENU (primitive MenuCard.tsx) : patron « vrai menu » partagé — menu principal (`.menu-card`,
-   base.css) ET tiroir du menu ☰ en jeu (`.menu-card-panel`). ── */
+   base.css) ET menu SYSTÈME plein écran en jeu (`.game-menu-overlay`, hud.css). ── */
 /* Grand bouton de menu : icône + libellé, pleine largeur. Centré par défaut (menu principal). */
 .menu-btn {
   display: flex;
@@ -830,34 +830,6 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   flex: none;
   margin: 0;
 }
-/* Tiroir du menu ☰ en jeu : surface flottante sous le bouton (contexte `.game-menu`, hud.css). */
-.menu-card-panel {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 6px;
-  z-index: 5;
-  width: min(320px, 88vw);
-  max-width: none;
-  max-height: min(72vh, calc(100vh - 80px));
-  overflow: auto;
-  padding: 12px;
-  text-align: left;
-  border-radius: 10px;
-  border-top: 3px solid var(--gold);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
-}
-.menu-card-panel .menu-buttons {
-  margin: 0;
-  gap: 6px;
-}
-.menu-card-panel .menu-btn {
-  justify-content: flex-start;
-  text-align: left;
-}
 .menu-card-head {
   display: flex;
   flex-direction: column;
@@ -869,6 +841,7 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  text-align: center;
 }
 .menu-card-sub {
   margin: 0;
@@ -881,4 +854,56 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   align-items: center;
   gap: 8px;
   margin-top: 3px;
+}
+
+/* Menu SYSTÈME plein écran (pause, GameMenu.tsx) : voile sombre + carte `.menu-card` centrée. MÊME
+   langage que le menu principal ; sous-écrans Coopération/Options via la même carte. z-index 130 =
+   au-dessus de la scène/HUD (n'apparaît que si aucune modale n'est ouverte, cf. binding toggle-menu). */
+.game-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+  background:
+    radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--gold) 6%, transparent), transparent 55%),
+    rgba(0, 0, 0, 0.72);
+}
+.game-menu-card {
+  text-align: left;
+  border-top-color: var(--gold);
+}
+.game-menu-card .menu-card-meta {
+  justify-content: center;
+}
+.game-menu-card .menu-buttons {
+  margin: 20px 0 4px;
+}
+.game-menu-card .menu-btn {
+  justify-content: flex-start;
+}
+/* Sous-écrans (Coopération, Options) : en-tête Retour + titre, corps aligné à gauche, carte élargie. */
+.game-menu-sub-wide {
+  max-width: 720px;
+}
+.menu-sub-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.menu-sub-head .menu-back {
+  justify-self: start;
+}
+.menu-sub-head .menu-card-title {
+  grid-column: 2;
+}
+.menu-sub-body {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }

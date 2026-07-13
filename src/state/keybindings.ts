@@ -17,7 +17,7 @@ import type { ScreenDir } from './combatCursor';
 
 /** Section d'affichage de l'écran Options (remap) — REGROUPE les raccourcis par contexte de jeu.
  *  Purement présentationnel (le `when` de chaque binding reste l'unique arbitre d'exécution). */
-export type KeyBindingSection = 'pov' | 'camera' | 'combat' | 'curseur' | 'hotbar' | 'exploration';
+export type KeyBindingSection = 'pov' | 'camera' | 'combat' | 'curseur' | 'hotbar' | 'exploration' | 'systeme';
 export const KEY_SECTION_LABEL: Record<KeyBindingSection, string> = {
   pov: 'Vue subjective (POV)',
   camera: 'Caméra',
@@ -25,6 +25,7 @@ export const KEY_SECTION_LABEL: Record<KeyBindingSection, string> = {
   curseur: 'Curseur de combat',
   hotbar: "Barre d'action",
   exploration: 'Exploration',
+  systeme: 'Système',
 };
 
 export interface KeyBinding {
@@ -168,6 +169,17 @@ export const KEYBINDINGS: KeyBinding[] = [
   ...EXPLORE_STEP.map(({ code, dir, label }): KeyBinding => ({
     id: `explore-${dir}`, codes: [code], label, section: 'exploration', when: (s) => exploring(s) && !s.povActive, run: (g) => g().stepPartyDir(dir),
   })),
+  // Menu système PLEIN ÉCRAN (pause) : Échap l'OUVRE quand rien d'autre ne réclame la touche. Placé
+  // EN DERNIER → cursor-cancel/clear-preview (mêmes codes, gardes propres) gagnent d'abord en combat.
+  // N'OUVRE que si aucune modale de combat n'est active (`noModal`) et que le menu est fermé — le menu
+  // OUVERT (`gameMenuOpen`) rend la main à son propre focus-trap (Modal.a11y : Échap = Retour/Fermer,
+  // qui stoppe la propagation avant ce hook). Les écrans/modales plein-champ (role=dialog) consomment
+  // déjà Échap et coupent la propagation → ils ne rouvrent jamais ce menu par mégarde.
+  {
+    id: 'toggle-menu', codes: ['Escape'], label: 'Ouvrir le menu système', section: 'systeme',
+    when: (s) => s.screen === 'campaign' && !s.gameMenuOpen && noModal(s),
+    run: (g) => g().setGameMenu(true),
+  },
 ];
 
 /** Touche(s) EFFECTIVE(s) d'un raccourci : la surcharge utilisateur remplace les codes par défaut. */
