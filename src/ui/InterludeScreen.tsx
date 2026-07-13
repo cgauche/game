@@ -69,7 +69,7 @@ const skillNode = (chip: ReactNode, diff: Difficulty): ReactNode =>
 
 /** Chip de compétence du Codex (popover desc + source) par id (+ spécialisation affichée). */
 const SkillChip = ({ skillId, show }: { skillId: string; show?: string }) => (
-  <EntityRef category="skills" label={refLabel('skills', { id: skillId })} show={show} />
+  <EntityRef category="skills" id={skillId} label={refLabel('skills', { id: skillId })} show={show} />
 );
 
 /** Vue réseau minimale pour la possession (audit M7) — sous-ensemble de `GameState['net']`. */
@@ -709,7 +709,7 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
       prejet={prejet}
       cost={sel ? <>{sel.xpCost} PX (il vous en reste {xp}) + tuteur <CoinsB brass={sel.tutorMinBrass} /> à <CoinsB brass={sel.tutorMaxBrass} /></> : undefined}
       note={sel
-        ? <><EntityRef category="talents" label={sel.label} /> — tuteur 2d10 pa / 100 PX ; PX et argent perdus même sur un échec.</>
+        ? <><EntityRef category="talents" id={sel.id} label={sel.label} /> — tuteur 2d10 pa / 100 PX ; PX et argent perdus même sur un échec.</>
         : <>Choisir un Talent hors carrière — tuteur 2d10 pa / 100 PX ; PX et argent perdus même sur un échec.</>}
       actions={
         <button

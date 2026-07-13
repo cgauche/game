@@ -329,29 +329,50 @@ export function labelIndex(): Map<string, { category: string; label: string }> {
  *  On EXCLUT les noms propres (créatures/sorts/objets/lieux…) : ils bloatent le matcher et sur-lient. */
 const LINKABLE_CATS = new Set(['characteristics', 'skills', 'talents', 'etats', 'maneuvers', 'traits', 'qualities', 'domains']);
 
-/** Ordre de résolution des HOMONYMES (même libellé, catégories DIFFÉRENTES) au sein du vocabulaire
- *  auto-liable — appliqué seulement quand aucun contexte de fiche (`selfCategory`, cf. `tokenizeLinks`)
- *  ne tranche. Collisions RÉELLES du catalogue (relevées 2026-07-13, `deburrLower` sur libellé
- *  entier) : `Résistance` (skills/talents) ; `Béni`, `Frénésie`, `Haine`, `Résistance à la Magie`,
- *  `Vision nocturne` (talents/traits) ; `Morsure`, `Attaque caudale`, `Cornes`, `Tentacules`,
- *  `Langue préhensile`, `Étreinte glaciale`, `Regard pétrifiant`, `Vomissement`, `Hurlement
- *  fantomatique`, `Hurlement de la Bête indomptable`, `Frisson paralysant` (maneuvers/traits — une
- *  attaque de créature existe souvent À LA FOIS en trait passif et en manœuvre jouable) ;
- *  `Corruption` (traits/characteristics) ; `Infecté`, `Magique`, `Rapide`, `Taille`
- *  (traits/qualities). Priorité : un État infligé prime toujours (vocabulaire le plus normé) ;
- *  Compétence avant Talent (le Test nomme la compétence) ; Trait avant Domaine/Qualité/Manœuvre
- *  (la prose de créature réfère le trait passif plus souvent que la manœuvre ponctuelle ou la
- *  qualité d'arme) ; Caractéristique en dernier (terme le plus générique). */
-const PRIORITY_CAT_ORDER = ['etats', 'skills', 'talents', 'traits', 'domains', 'qualities', 'maneuvers', 'characteristics'];
-
-/** Pluriel FR simple (accord régulier SEUL — pas d'irréguliers) : chaque mot du libellé qui ne finit
- *  pas déjà par « s » en gagne un — « Sort mineur » → « Sorts mineurs ». */
-const pluralize = (label: string): string => label.split(' ').map((w) => (w.endsWith('s') ? w : `${w}s`)).join(' ');
+/** ── HOMONYMES du vocabulaire auto-liable (même libellé NU, catégories DIFFÉRENTES) ──
+ *  Collisions RÉELLES du catalogue (relevées 2026-07-13, `deburrLower` sur libellé entier), classées
+ *  par NATURE — c'est elle qui DÉCIDE la résolution d'un match NU (sans contexte de fiche) :
+ *
+ *   A. MÊME concept, deux REPRÉSENTATIONS (un match nu tombe TOUJOURS juste — on LIE, priorité à la
+ *      représentation canonique via `PRIORITY_CAT_ORDER`, cf. `SAME_CONCEPT_GROUPS`) :
+ *      · talents⇄traits : un Talent joueur miroité en Trait de créature — `Béni`, `Frénésie`,
+ *        `Haine`, `Résistance à la Magie`, `Vision nocturne` → on lie le TALENT (règle joueur).
+ *      · maneuvers⇄traits : une attaque de créature = Trait passif + Manœuvre jouable — `Morsure`,
+ *        `Attaque caudale`, `Cornes`, `Tentacules`, `Langue préhensile`, `Étreinte glaciale`,
+ *        `Regard pétrifiant`, `Vomissement`, `Hurlement fantomatique`, `Hurlement de la Bête
+ *        indomptable`, `Frisson paralysant` → on lie le TRAIT (forme descriptive citée en prose).
+ *
+ *   B. Concepts GENUINEMENT DIFFÉRENTS partageant un nom (un match nu n'est JAMAIS tranchable → on NE
+ *      LIE PAS ; comportement sûr — la forme PRÉFIXÉE cible chaque sens sans ambiguïté, cf.
+ *      `prefixedForms`) :
+ *      · characteristics⇄traits : `Corruption` — la JAUGE d'âme (LDB 182) ≠ le Trait de créature.
+ *        Nu → aucun lien ; « Points de Corruption » → la jauge. (Régression B3 corrigée : l'ancien
+ *        `PRIORITY_CAT_ORDER` liait à tort le « Points de Corruption » d'« Âme pure » au TRAIT.)
+ *      · skills⇄talents : `Résistance` — la Compétence ≠ le Talent. Nu → aucun lien ;
+ *        « Compétence Résistance »/« Talent Résistance » tranche.
+ *      · traits⇄qualities : `Infecté`, `Magique`, `Rapide`, `Taille` — Qualité d'arme ≠ Trait de
+ *        créature. Nu → aucun lien.
+ *
+ *  `selfCategory` (catégorie de la fiche affichante) tranche AVANT cette politique (cf. `resolveLink`). */
+const PRIORITY_CAT_ORDER = ['talents', 'traits', 'maneuvers'];
+/** Groupes d'homonymes de NATURE A (cf. la table ci-dessus) : un match NU dont TOUTES les catégories
+ *  candidates tiennent dans un même groupe est résolu par `PRIORITY_CAT_ORDER` (représentation
+ *  canonique). Toute autre collision (nature B, ou débordant un groupe) reste NON liée (sûr). */
+const SAME_CONCEPT_GROUPS: ReadonlySet<string>[] = [new Set(['talents', 'traits']), new Set(['maneuvers', 'traits'])];
 
 /** Préfixe de catégorie au SINGULIER, pour les formes préfixées toujours non ambiguës (« Trait Vol »,
  *  « Sort Vol »). Dérivé du libellé PLURIEL déjà déclaré (`GENERIC_PLURAL`) — jamais une table en
  *  dur nouvelle : « Compétences » → « Compétence ». */
 const catPrefix = (cat: string): string => { const p = GENERIC_PLURAL[cat] ?? cat; return p.endsWith('s') ? p.slice(0, -1) : p; };
+
+/** Formes PRÉFIXÉES non ambiguës d'une entité liable — clés d'index toujours mono-catégorie :
+ *  « Trait X »/« Sort X »/« Compétence X » (préfixe de catégorie au singulier), et pour les
+ *  CARACTÉRISTIQUES la forme de JAUGE « Points de X »/« Point de X » : le labelItem naturel d'une
+ *  jauge est « Points de … » (LDB 182 « Points de Corruption », caractéristique `corruption` —
+ *  jamais « Caractéristique … »). Ces formes tranchent les homonymes de concepts distincts (nature B
+ *  ci-dessus) sans ambiguïté. */
+const prefixedForms = (cat: string, label: string): string[] =>
+  cat === 'characteristics' ? [`Points de ${label}`, `Point de ${label}`] : [`${catPrefix(cat)} ${label}`];
 
 interface LinkCandidate { category: string; id: string; label: string; }
 
@@ -364,7 +385,7 @@ const linkRootsCached = versionCached<string[]>(() => {
   for (const e of catalog()) {
     if (!LINKABLE_CATS.has(e.category) || e.label.length < 4) continue;
     roots.add(e.label);
-    roots.add(`${catPrefix(e.category)} ${e.label}`);
+    for (const form of prefixedForms(e.category, e.label)) roots.add(form);
   }
   return [...roots].sort((a, b) => b.length - a.length);
 });
@@ -372,7 +393,9 @@ const linkRootsCached = versionCached<string[]>(() => {
 /** Index d'auto-liage LINKABLE (LOCALE-SCOPED), MULTI-VALUÉ — à la différence de `labelIndex`
  *  (général, une collision = écartée), un même libellé peut résoudre PLUSIEURS entités (homonymes
  *  RÉELS, cf. `PRIORITY_CAT_ORDER`) : on ne jette plus, la désambiguïsation se fait à la RÉSOLUTION
- *  (`resolveLink`). Clés : libellé (singulier ET pluriel simple) + forme préfixée par catégorie.
+ *  (`resolveLink`). Clés : libellé + formes préfixées par catégorie (le pluriel FR régulier est géré
+ *  au MATCH par le pattern `linkRe` — chaque mot y accepte un « s » — et ramené au singulier à la
+ *  résolution, cf. `lookupCandidates` ; l'index reste keyé au SINGULIER, pas de clés absurdes).
  *  RE-CALCULÉ par version (suit une édition Codex). */
 const linkCandidatesCached = versionCached<Map<string, LinkCandidate[]>>(() => {
   const idx = new Map<string, LinkCandidate[]>();
@@ -386,9 +409,7 @@ const linkCandidatesCached = versionCached<Map<string, LinkCandidate[]>>(() => {
     if (!LINKABLE_CATS.has(e.category)) continue;
     const c: LinkCandidate = { category: e.category, id: e.id, label: e.label };
     add(deburrLower(e.label), c);
-    const plural = pluralize(e.label);
-    if (plural !== e.label) add(deburrLower(plural), c);
-    add(deburrLower(`${catPrefix(e.category)} ${e.label}`), c);
+    for (const form of prefixedForms(e.category, e.label)) add(deburrLower(form), c);
   }
   return idx;
 });
@@ -403,22 +424,39 @@ const idByLabelCached = versionCached<Map<string, string>>(() => {
   return m;
 });
 
+/** Candidats d'un fragment matché : lookup direct, puis repli PLURIEL en retirant un « s » final par
+ *  mot — le pattern `linkRe` tolère le pluriel FR régulier par mot ; l'index reste keyé au SINGULIER,
+ *  la résolution y ramène (« Attaques caudales » → « attaque caudale »). */
+const lookupCandidates = (rawText: string): LinkCandidate[] | undefined => {
+  const idx = linkCandidatesCached();
+  const key = deburrLower(rawText);
+  const direct = idx.get(key);
+  if (direct?.length) return direct;
+  const singular = key.split(/\s+/).map((w) => (w.endsWith('s') ? w.slice(0, -1) : w)).join(' ');
+  return singular !== key ? idx.get(singular) : undefined;
+};
+
 /** Résout un fragment de texte matché (déjà littéral, casse d'origine) vers SON entité : 1 seul
- *  candidat → direct ; homonyme → la catégorie de la fiche affichante (`selfCategory`) tranche EN
- *  PREMIER (dans une desc de trait, « Vol » → le trait), sinon `PRIORITY_CAT_ORDER`. */
+ *  candidat → direct ; HOMONYME → la catégorie de la fiche affichante (`selfCategory`) tranche EN
+ *  PREMIER (dans une desc de trait, « Vol » → le trait) ; sans contexte, seuls les homonymes de
+ *  NATURE A (même concept, deux représentations — `SAME_CONCEPT_GROUPS`) sont liés (représentation
+ *  canonique via `PRIORITY_CAT_ORDER`) ; toute autre collision reste NON liée (comportement sûr). */
 const resolveLink = (rawText: string, selfCategory?: string): LinkCandidate | undefined => {
-  const candidates = linkCandidatesCached().get(deburrLower(rawText));
+  const candidates = lookupCandidates(rawText);
   if (!candidates?.length) return undefined;
   if (candidates.length === 1) return candidates[0];
   if (selfCategory) {
     const own = candidates.find((c) => c.category === selfCategory);
     if (own) return own;
   }
+  const cats = new Set(candidates.map((c) => c.category));
+  const group = SAME_CONCEPT_GROUPS.find((g) => [...cats].every((c) => g.has(c)));
+  if (!group) return undefined; // concepts genuinement différents (nature B) → pas de lien nu
   for (const cat of PRIORITY_CAT_ORDER) {
     const hit = candidates.find((c) => c.category === cat);
     if (hit) return hit;
   }
-  return candidates[0];
+  return undefined;
 };
 
 /** Un fragment de prose tokenisé : texte brut, OU une mention d'entité à lier (category+id+label) —
@@ -428,7 +466,8 @@ const resolveLink = (rawText: string, selfCategory?: string): LinkCandidate | un
 export type LinkToken = string | { category: string; id: string; label: string; spec?: string; text: string };
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** Regex des racines auto-liables (RE-CALCULÉE par version) : chaque MOT de la racine accepte un
- *  « s » optionnel (pluriel FR simple, cf. `pluralize`), plus longues d'abord, bornée aux frontières
+ *  « s » optionnel (pluriel FR régulier par mot ; le singulier est reformé au lookup, cf.
+ *  `lookupCandidates`), plus longues d'abord, bornée aux frontières
  *  de mot Unicode (gère accents/apostrophes français). SENSIBLE À LA CASSE (pas de flag `i`) : la
  *  convention typographique des livres CAPITALISE les termes de jeu (« un test d'Art ») — la casse
  *  discrimine le terme de règle du mot commun (« une œuvre d'art » ne doit pas lier « Art »). Le

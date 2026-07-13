@@ -17,6 +17,9 @@ export interface EffectChip {
   label: string;
   /** malus = État négatif ; buff = effet temporisé (activeEffects) ; state = état-drapeau (Frénésie…). */
   kind: 'malus' | 'buff' | 'state';
+  /** id STABLE de l'État (malus) pour la résolution Codex par id — `ConditionInstance.name` (slug
+   *  d'etats.json). Absent sur buff/état-drapeau (hors catalogue États). */
+  condId?: string;
   severity: number;
   /** Empilement (n>1) — ex. Hémorragique ×3. */
   count?: number;
@@ -56,7 +59,7 @@ function malusChips(conditions: ConditionInstance[]): EffectChip[] {
   return conditions
     .map((c): EffectChip => {
       const m = conditionMeta(c.name);
-      return { key: `c-${c.name}`, icon: m.icon, label: conditionLabel(c.name), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined };
+      return { key: `c-${c.name}`, condId: c.name, icon: m.icon, label: conditionLabel(c.name), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined };
     })
     .sort((a, b) => b.severity - a.severity);
 }

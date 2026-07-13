@@ -24,8 +24,9 @@ export function EntityRef({
   className,
 }: {
   category: string;
-  /** Identité STABLE de la cible (préférée quand fournie) — les appelants hors Codex (non migrés
-   *  ce lot) omettent la prop, `CodexRef` se rabat alors sur le lookup par `label`. */
+  /** Identité STABLE de la cible (préférée quand fournie) — omise seulement pour les cas SANS id
+   *  stable (`EntityChoice` « A ou B » éclaté d'un libellé brut) ; `CodexRef` se rabat alors sur le
+   *  lookup par `label`. */
   id?: string;
   label: string;
   show?: ReactNode;

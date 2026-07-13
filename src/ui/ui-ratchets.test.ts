@@ -171,10 +171,11 @@ const BARE_BUTTON_OPAQUE_BASELINE: Record<string, number> = {};
 //    « J'y crois pas une seule seconde à des classes mono-écrans, c'est une excuse à la dérive »).
 //    Le stock de classes de domaine doit être GELÉ et DÉCROISSANT — hausse = échec, motif : « motif
 //    partagé ? → couche atomique (charte, catalogue) ; vraiment spécifique → justifier ». Modules
-//    scannés = la liste canon de `docs/charte-ui.md` §Architecture CSS (`base`/`components` EXCLUS,
-//    couche partagée ; `styles.css` EXCLU, orchestrateur d'`@import`) : creator, combat-ui,
+//    scannés = les modules de DOMAINE (`base`/`components`/`tabs` EXCLUS, couche partagée gardée par
+//    xiii ; `styles.css` orchestrateur d'`@import` gardé par xiii) : creator, combat-ui,
 //    combat-modals, sheet, merchant, hud, world-meta, editor, compendium, codex-edit, house-rules,
-//    mass-battle, ornaments, tavern.
+//    mass-battle, ornaments, tavern, party, gauges (jauges navire). L'exhaustivité (xiv) garantit
+//    qu'AUCUN .css n'échappe à xii OU xiii.
 //    Comptage = NOMS de classes DISTINCTS apparaissant en position de définition (sélecteur), toute
 //    forme confondue (bare, composé `X.foo`, descendant `.foo .bar`, modificateur `.foo:hover`,
 //    dans un `@media`) — dédupliqué PAR MODULE. Parse par accumulation caractère-par-caractère : le
@@ -197,9 +198,11 @@ const DOMAIN_CSS_MODULES = [
   'ornaments',
   'tavern',
   'party',
+  'gauges',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
+  'styles/gauges.css': 27,
   'styles/party.css': 44,
   'styles/combat-modals.css': 141,
   'styles/combat-ui.css': 112,
@@ -228,10 +231,15 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
 //    domaine (ex. `.city-hub-*`/`.voyage-*` → leur module) ABAISSE la baseline ; en ajouter une la fait
 //    monter → échec. Mesure STRUCTURELLE (pas une liste de noms) — la baseline est un COMPTE, pas un
 //    allowlist nominatif. L'usage TSX se lit dans les valeurs `className` (littéraux, gabarits, ternaires).
-const SHARED_CSS_FILES = ['base.css', 'components.css'];
+// Couche PARTAGÉE gardée par xiii (chemins relatifs à `src/ui/`) : la couche atomique
+// (`base`/`components`), la primitive d'onglets `tabs`, et l'orchestrateur d'`@import` `styles.css`
+// (top-level) qui porte aussi les règles TRANSVERSES manette + le bandeau DEV du collecteur d'erreurs.
+const SHARED_CSS_FILES = ['styles/base.css', 'styles/components.css', 'styles/tabs.css', 'styles.css'];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
   'styles/base.css': 21,
   'styles/components.css': 54,
+  'styles/tabs.css': 4,
+  'styles.css': 6,
 };
 
 /** Classes `.foo` citées entre backticks dans le catalogue de la charte (contrat de couche atomique). */
@@ -413,7 +421,7 @@ describe('#236 — cliquets d’hygiène UI', () => {
     const usage = classUsageByModule();
     const counts: Record<string, number> = {};
     for (const file of SHARED_CSS_FILES) {
-      const f = join(UI, 'styles', file);
+      const f = join(UI, file);
       const defined = classNamesDefined(readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''));
       let leaks = 0;
       for (const c of defined) {
@@ -424,5 +432,18 @@ describe('#236 — cliquets d’hygiène UI', () => {
       counts[rel(f)] = leaks;
     }
     assertRatchet(counts, SHARED_LEAK_BASELINE, 'classe de domaine planquée en couche partagée — la déplacer dans un module de domaine (cliqueté par xii) ou la documenter au catalogue de charte-ui.md (#371)');
+  });
+
+  // ── (xiv) EXHAUSTIVITÉ (#371, gap gauges.css) : les cliquets xii (domaine) et xiii (partagé) ne
+  //    valent QUE pour les fichiers listés — un module CSS oublié (ex. `gauges.css`, ~40 classes de
+  //    domaine naval) échappait aux DEUX en silence. Ce test STRUCTUREL refuse tout `.css` de
+  //    `src/ui/**` non couvert : il doit appartenir soit à `DOMAIN_CSS_MODULES` (xii, `styles/<mod>.css`)
+  //    soit à `SHARED_CSS_FILES` (xiii). Ajouter un module CSS force donc à le classer et à poser sa
+  //    baseline — plus de fichier hors radar.
+  it('(xiv) exhaustivité : chaque .css de src/ui est couvert par xii (domaine) OU xiii (partagé)', () => {
+    const all = walk(UI, (e) => e.endsWith('.css')).map(rel);
+    const accounted = new Set<string>([...DOMAIN_CSS_MODULES.map((m) => `styles/${m}.css`), ...SHARED_CSS_FILES]);
+    const orphans = all.filter((f) => !accounted.has(f)).sort();
+    expect(orphans, `CSS hors radar (ni cliquet de domaine xii, ni garde partagée xiii) — l’ajouter à DOMAIN_CSS_MODULES ou SHARED_CSS_FILES :\n${orphans.join('\n')}`).toEqual([]);
   });
 });

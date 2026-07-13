@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { reverseGroups, bookContents, labelIndex, tokenizeLinks } from './relations';
 import { invalidateCodexLookup } from './registry';
 import { setDataset } from '../../data/overrides';
-import { creatures, traits, gods, trappings, skills, talents, careerLevels, etats, locations, findCareerById, findLocationById } from '../../data';
+import { creatures, traits, gods, trappings, skills, talents, careerLevels, etats, locations, characteristics, findCareerById, findLocationById } from '../../data';
 
 /** Un groupe inverse de catégorie `cat` contient-il `label` ? */
 const groupHas = (groups: ReturnType<typeof reverseGroups>, cat: string, label: string): boolean =>
@@ -213,6 +213,46 @@ describe('relations — graphe inverse id-based', () => {
     const talentForm = tokenizeLinks('On y joue son Talent Résistance.').find((t) => typeof t === 'object') as
       { category: string; label: string } | undefined;
     expect(talentForm).toEqual({ category: 'talents', id: resTalent!.id, label: 'Résistance', spec: undefined, text: 'Talent Résistance' });
+  });
+
+  it('B3 : « Âme pure » — « Points de Corruption » lie la JAUGE (characteristics), jamais le TRAIT homonyme', () => {
+    // Régression B3 : l'ancienne politique liait « Points de Corruption » (desc d'Âme pure) au TRAIT
+    // Corruption (PRIORITY_CAT_ORDER traits avant characteristics). La forme de jauge « Points de X »
+    // est désormais une clé mono-catégorie → la JAUGE.
+    const ame = talents.find((x) => x.id === 'ame-pure')!;
+    expect(ame?.desc, 'desc d’Âme pure présente et mentionnant Points de Corruption').toMatch(/Points de Corruption/);
+    const toks = tokenizeLinks(ame.desc!, ame.label, 'talents', ame.id);
+    const corr = toks.find((t) => typeof t === 'object' && /corruption/i.test((t as { text: string }).text)) as
+      { category: string } | undefined;
+    expect(corr, 'la mention Corruption est bien liée').toBeTruthy();
+    expect(corr!.category).toBe('characteristics'); // la JAUGE
+    // Plus AUCUN lien faux vers le trait Corruption.
+    expect(toks.some((t) => typeof t === 'object' && (t as { category: string }).category === 'traits')).toBe(false);
+  });
+
+  it('B3 : forme de JAUGE « Points de X » cible la caractéristique sans ambiguïté', () => {
+    const corr = characteristics.find((x) => x.label === 'Corruption')!;
+    expect(corr, 'caractéristique Corruption présente').toBeTruthy();
+    const link = tokenizeLinks('Vous gagnez des Points de Corruption.').find((t) => typeof t === 'object') as
+      { category: string; id: string; text: string } | undefined;
+    expect(link).toEqual({ category: 'characteristics', id: corr.id, label: 'Corruption', spec: undefined, text: 'Points de Corruption' });
+  });
+
+  it('B3 : « Corruption » NU (homonyme jauge⇄trait, concepts DISTINCTS) → aucun lien sans contexte (sûr)', () => {
+    // Nature B (cf. HOMONYM_DECISION) : la jauge d'âme et le trait de créature ne sont pas le même
+    // concept → un match nu n'est jamais tranchable → on ne lie pas.
+    expect(characteristics.find((x) => x.label === 'Corruption') && traits.find((x) => x.label === 'Corruption'), 'homonyme réel Corruption').toBeTruthy();
+    const toks = tokenizeLinks('Le sanctuaire répand la Corruption alentour.');
+    expect(toks.every((t) => typeof t === 'string')).toBe(true);
+  });
+
+  it('B3 : contexte de fiche — « Corruption » NU dans une fiche de TRAIT résout au TRAIT (selfCategory prime)', () => {
+    const traitCorr = traits.find((x) => x.label === 'Corruption')!;
+    const link = tokenizeLinks('Cette créature répand la Corruption.', undefined, 'traits').find((t) => typeof t === 'object') as
+      { category: string; id: string } | undefined;
+    expect(link, 'le contexte de fiche tranche l’homonyme').toBeTruthy();
+    expect(link!.category).toBe('traits');
+    expect(link!.id).toBe(traitCorr.id);
   });
 
   it('FRAÎCHEUR après persist : renommer une créature (mutation en place) + invalidate → graphe inverse ET index de libellés re-projetés', () => {

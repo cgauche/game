@@ -44,7 +44,7 @@ export function EffectChips({
         // Les États (malus) sont des entrées du Codex → popover desc + source ; les autres gardent
         // un title (buff temporisé / drapeau, hors Codex).
         return c.kind === 'malus' ? (
-          <CodexRef key={c.key} category="etats" label={c.label} className={`fx-chip ${c.kind}`}>
+          <CodexRef key={c.key} category="etats" id={c.condId} label={c.label} className={`fx-chip ${c.kind}`}>
             {inner}
           </CodexRef>
         ) : (

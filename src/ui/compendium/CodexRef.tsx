@@ -64,7 +64,8 @@ export function CodexRef({
 }: {
   category: string;
   /** Identité STABLE de la cible — PRÉFÉRÉE quand fournie (`codexLookupById`) ; `label` reste requis
-   *  (affichage + repli de résolution pour les ~40 appelants hors Codex non migrés ce lot). */
+   *  (affichage + repli de résolution pour les cas SANS id stable : `EntityChoice` — entrées « A ou B »
+   *  éclatées d'un libellé brut — et l'auto-liage de prose depuis une donnée sans id). */
   id?: string;
   label: string;
   /** Texte affiché si différent du libellé d'entrée (ex. libellé avec spécialisation). */
