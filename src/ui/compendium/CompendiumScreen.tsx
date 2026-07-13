@@ -8,7 +8,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../../state/store';
 import { useModalA11y } from '../Modal';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, codexItemKey, codexLookup, useCodexVersion, type CodexCategory, type CodexGroup, type CodexItem } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, codexItemKey, useCodexVersion, type CodexCategory, type CodexGroup, type CodexItem } from './registry';
+import type { CodexFocus } from '../../state/codexFocus';
 import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
@@ -17,15 +18,9 @@ import { Icon } from '../Icon';
 import { MasterDetail } from '../MasterDetail';
 import { OptionChooser, type RollOption } from '../OptionChooser';
 
-export interface CodexFocus { category: string; label: string; instance?: string }
-
-/** Clé de navigation d'un `CodexFocus` (venu du store, encore label-only — LOT B) : résout l'id
- *  RÉEL de la cible via `codexLookup` (repli de compat), puis compose `codexItemKey`. */
-const focusItemKey = (focus: CodexFocus | null | undefined): string | null => {
-  if (!focus) return null;
-  const id = codexLookup(focus.category, focus.label)?.id;
-  return id != null ? codexItemKey(focus.category, id) : null;
-};
+/** Clé de navigation d'un `CodexFocus` (identité qualifiée `category+id`) — le focus PORTE l'id. */
+const focusItemKey = (focus: CodexFocus | null | undefined): string | null =>
+  focus ? codexItemKey(focus.category, focus.id) : null;
 
 export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexFocus | null; onClose?: () => void } = {}) {
   const setScreen = useGame((s) => s.setScreen);

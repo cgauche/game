@@ -265,4 +265,21 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     ]);
     expect(s.travelPlan?.log?.[0]?.lines).toEqual([{ text: 'Départ, vent portant.' }]);
   });
+
+  // #371 lot B — MIGRATIONS[6] (v6→v7) : le focus Codex passe de `{category,label}` à `{category,id}`.
+  // La résolution label→id vit dans `src/ui` (interdit à `state`, règle 3) : un focus label-only (toute
+  // save v6) est donc ramené à `null` (Codex clos = sain, sans navigation fantôme). Réel = null partout.
+  it('fixture v6 focus Codex : compendiumFocus label-only ramené à null (résolution id hors couche state)', () => {
+    loadFixture('v6-codex-focus-label.json');
+    const s = useGame.getState();
+    expect(s.compendiumFocus).toBeNull();
+    expect(s.codexOverlay).toBeNull();
+  });
+
+  it('MIGRATIONS[6] : un focus DÉJÀ id-based (défensif) est conservé', () => {
+    const raw = { version: 6, savedAt: '2026', sceneLabel: 's', gameTime: 0, data: { compendiumFocus: { category: 'talents', id: 'sixieme-sens', label: 'Sixième sens' }, codexOverlay: null } };
+    const migrated = migrateSave(raw);
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    expect((migrated!.data as Record<string, unknown>).compendiumFocus).toEqual({ category: 'talents', id: 'sixieme-sens', label: 'Sixième sens' });
+  });
 });

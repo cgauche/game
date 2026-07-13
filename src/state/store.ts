@@ -38,6 +38,7 @@ export type { MassBattleState, MassBattleSpec } from './massBattleFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveGame } from './saves';
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
+import type { CodexFocus } from './codexFocus';
 
 /** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
  *  JSON round-trip écarte les fonctions) + données de la save par-dessus, écran campagne.
@@ -224,17 +225,16 @@ export interface Objective {
 
 export interface GameState extends RollFlowActionsMap {
   screen: Screen;
-  /** Codex : entrée ciblée à l'ouverture (depuis un `CodexRef`), null = page d'accueil du Codex.
-   *  `instance` = libellé paramétré porté par le lien (« 8 Tentacules +8 ») affiché en tête de fiche. */
-  compendiumFocus: { category: string; label: string; instance?: string } | null;
+  /** Codex : entrée ciblée à l'ouverture (depuis un `CodexRef`, keyée par `id`), null = page d'accueil. */
+  compendiumFocus: CodexFocus | null;
   /** Écran à restaurer en quittant le Codex plein écran (capturé depuis le menu). */
   compendiumReturn: Screen;
   /** Drill-in d'une réf Codex EN JEU : fiche ouverte en MODALE par-dessus la partie (sans changer
    *  d'écran → musique et fiche perso intactes derrière). null = pas de modale. */
-  codexOverlay: { category: string; label: string; instance?: string } | null;
+  codexOverlay: CodexFocus | null;
   /** Ouvre le Codex sur une entrée. Depuis le jeu (focus fourni) → modale ; depuis le menu (sans
    *  focus) → écran plein ; déjà ouvert → on s'y déplace en place. */
-  openCodex: (focus?: { category: string; label: string; instance?: string }) => void;
+  openCodex: (focus?: CodexFocus) => void;
   /** Ferme la modale Codex (drill-in). */
   closeCodexOverlay: () => void;
   party: Combatant[];

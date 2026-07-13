@@ -110,7 +110,7 @@ export function CodexRef({
   // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul (prop
   // `tooltipOnly`, ex. cellule d'équipement déjà cliquable comme picker).
   const interactive = !tooltipOnly && !!item;
-  const open = () => { if (item) openCodex({ category, label: item.label, instance: inst }); };
+  const open = () => { if (item) openCodex({ category, id: item.id, label: item.label, instance: inst }); };
 
   return (
     <span

@@ -26,6 +26,9 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   motive `MIGRATIONS[4]` (v4→v5, matérialisation du convoi sur `ItemInstance.cargo`, #327). Fixture de
   version PASSÉE, MINIMALE et écrite à la main (comme `v3-en-vol` : on ne peut pas générer une version
   antérieure depuis le code courant) — le seul cas où le « jamais à la main » cède à la nécessité.
+- `v6-codex-focus-label.json` — focus Codex `compendiumFocus` en forme label-only `{category,label}`,
+  motive `MIGRATIONS[6]` (v6→v7, focus keyé par `id` ; un label-only non résoluble par `state` est
+  ramené à `null`, #371 lot B). Fixture de version PASSÉE, MINIMALE et écrite à la main (idem `v4-convoi`).
 
 ## Ajouter/régénérer une fixture
 

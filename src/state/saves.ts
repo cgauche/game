@@ -32,8 +32,9 @@ import { findVehicleById } from '../data';
 import { mountProfileForTrapping } from '../engine/mountTravel';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
+import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 export interface SaveMeta {
   version: number;
@@ -177,7 +178,29 @@ export const MIGRATIONS: MigrationMap = {
     normalizeTravelRecapLines(data);
     return { ...doc, version: 6, data };
   },
+  // v6 → v7 (#371 lot B) : le focus Codex (`compendiumFocus`/`codexOverlay`) passe de `{category,label}`
+  // à `{category,id}` — l'identité est désormais l'`id`. La résolution label→id vit dans `src/ui`
+  // (`codexLookup`) et la couche `state` ne peut pas l'importer (règle 3) : un focus label-only non
+  // résoluble ici est donc ramené à `null`. C'est un état sain — une save est écrite Codex clos
+  // (`compendiumFocus`/`codexOverlay` nuls dans toutes les saves réelles) et la clé localStorage
+  // porte la version, donc aucun focus label-only ne survit à un chargement croisé de versions.
+  6: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    data.compendiumFocus = migrateCodexFocus(data.compendiumFocus);
+    data.codexOverlay = migrateCodexFocus(data.codexOverlay);
+    return { ...doc, version: 7, data };
+  },
 };
+
+/** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
+ *  DÉJÀ id-based (défensif) est conservé ; un focus label-only (toute save v6, pré-lot-B) n'est pas
+ *  résoluble sans `src/ui/codexLookup` (interdit à `state`, règle 3) → `null` (Codex clos, sain). */
+function migrateCodexFocus(f: unknown): CodexFocus | null {
+  if (!f || typeof f !== 'object') return null;
+  const old = f as { category?: string; id?: string; label?: string; instance?: string };
+  if (old.category && typeof old.id === 'string' && old.id) return old as CodexFocus;
+  return null;
+}
 
 /** Normalise `days: TravelRecapDay[]` (`lines: string[]` v5 → `RecapLine[]` v6) — MIGRATIONS[5]. */
 function normalizeTravelRecapDays(days: unknown): void {
