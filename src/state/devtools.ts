@@ -7,7 +7,8 @@ import { routeDistanceLabel } from '../engine/travel';
 import { actorIn, inBattleId } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
-import { pushCombatStep } from './combatEffects';
+import { pushCombatStep, gearFromEffects } from './combatEffects';
+import { trappings } from '../data';
 import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
@@ -64,7 +65,9 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.turnShip('id', 'tribord'|'babord'|crans) → vire le cap d'un NAVIRE (manœuvre) → re-mappe ses bordées
  *   __wfrp.modal()        → modale(s) ouvertes ; __wfrp.roll()/confirm()/cancel() → pilote LA modale
  *                           (convention <flux>Roll/Confirm/Cancel ; reveals/Round ont leur verbe propre)
- *   __wfrp.killEnemies()  → élimine tous les ennemis du combat et déclenche la victoire (flux normal)
+ *   __wfrp.killEnemies()  → élimine tous les ennemis du combat et déclenche la victoire (flux normal) ;
+ *                           killEnemies({withQualityLoot:true}) → ajoute au butin un objet catalogué à qualités
+ *   __wfrp.interlude()    → arme un INTERLUDE de démo jouable (startInterlude — sans voyager jusqu'à Altdorf)
  *   __wfrp.dealDamage('id', n) → inflige n Dégâts (op wounds, VRAI pipeline : armure de coque, reddition/naufrage)
  *   __wfrp.combatEnd({…}) → arme les conséquences de fin de combat (critique infectant + exposition
  *                           Corruption) puis termine le combat en LAISSANT la cascade ouverte (influençable)
@@ -84,7 +87,8 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.advanceSeaDay() → symétrique VOYAGE de `fastForward` : pilote la journée en mer EN COURS
  *                           (cascade du jour, halte de nuit, Activités hebdo…) jusqu'au jour SUIVANT,
  *                           l'arrivée ou un combat — MÊME machinerie que le joueur (cascadeResolveAll/
- *                           Finish, restSleep, seaActivitiesConfirm…), juste sans les clics
+ *                           Finish, restSleep, seaActivitiesConfirm…), juste sans les clics ;
+ *                           advanceSeaDay({stopOnEveryEvent:true}) → s'arrête AUSSI au recap d'un événement raconté
  *   __wfrp.skipToArrival() → comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (ou interruption)
  *   __wfrp.advanceRiverDay() → symétrique FLUVIAL d'`advanceSeaDay` : pilote la journée de descente EN
  *                           COURS (cascade du jour, Exposition hydrique, halte de nuit) jusqu'au jour
@@ -150,8 +154,11 @@ function devDriveModal(verb: 'Roll' | 'Confirm' | 'Cancel'): string {
  *  cascade `travelDay` FRAÎCHE (`cursor===0`, encore intacte) apparaisse — on s'arrête AVANT de la
  *  toucher (jamais `sea.daysAtSea`, qui avance AVANT la halte : #297 piège vécu — un guard sur ce seul
  *  compteur coupe la halte de nuit en plein vol). `skipToArrival` (`stopAtNextDay=false`) ignore ce
- *  garde et roule jusqu'à l'arrivée/interruption. `maxIters` = scrutations, jamais une taille attendue. */
-function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number): Promise<string> {
+ *  garde et roule jusqu'à l'arrivée/interruption. `maxIters` = scrutations, jamais une taille attendue.
+ *  `stopOnEvent` (#380) : arrêt SUPPLÉMENTAIRE dès qu'une halte/Activités hebdo porte un événement de
+ *  bord RACONTÉ (`travelDay.events`, rendu `ParchmentCard` — routine, non décisionnel) — le recetteur
+ *  constate la carte-parchemin au recap AVANT que le drive ne dorme la nuit. Défaut inchangé (faux). */
+function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number, stopOnEvent = false): Promise<string> {
   return new Promise((resolve, reject) => {
     // `globalThis` (pas `window`) — même raison que `fastForward` : identique navigateur/vitest 'node'.
     type TimeoutSetter = (cb: (...a: unknown[]) => void, ms?: number, ...a: unknown[]) => unknown;
@@ -199,10 +206,22 @@ function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number): Promise<strin
           real(tick, 0); return;
         }
         if (s.pendingRest) {
+          const evts = s.pendingRest.travelDay?.events ?? [];
+          if (stopOnEvent && evts.length) {
+            resolve(`✓ événement de bord raconté au recap (${evts.length}) — carte-parchemin visible à la halte de nuit (__wfrp.modal()/state()) ; restSleep() ou advanceSeaDay() reprend`);
+            return;
+          }
           s.restSleep();
           real(tick, 0); return;
         }
-        if (s.pendingSeaActivities) { s.seaActivitiesConfirm({}); real(tick, 0); return; }
+        if (s.pendingSeaActivities) {
+          const evts = s.pendingSeaActivities.day.events ?? [];
+          if (stopOnEvent && evts.length) {
+            resolve(`✓ événement de bord raconté au recap (${evts.length}) — carte-parchemin visible (Activités hebdo ouvertes) ; seaActivitiesConfirm({}) ou advanceSeaDay() reprend`);
+            return;
+          }
+          s.seaActivitiesConfirm({}); real(tick, 0); return;
+        }
         const sr = s as unknown as Record<string, unknown>;
         const open = Object.keys(sr).filter((k) => /^pending/.test(k) && (Array.isArray(sr[k]) ? (sr[k] as unknown[]).length > 0 : sr[k] != null));
         if (open.length) { devDriveModal('Roll'); devDriveModal('Confirm'); real(tick, 0); return; }
@@ -500,6 +519,24 @@ export function buildApi() {
       return `✓ bataille de masse lancée — Puissance ${ally} contre ${enemy}, ${rounds} Round(s)`;
     },
 
+    /** RECETTE #380 : arme un INTERLUDE de démonstration jouable sans voyager jusqu'à Altdorf. MÊME
+     *  chemin que le flux réel (`startInterlude` : `state.interlude` peuplé — Événement d100 par héros,
+     *  budget d'Activités `min(3, semaines)`, écran 'interlude') — le catalogue d'Activités reste dérivé
+     *  de la DONNÉE (`interludeCatalog`/`activities.json`), rien d'inventé. Sans groupe chargé, pose le
+     *  groupe canonique (`makeShowcaseParty`, comme `campaign()`/`scenario()`). À conduire à la main
+     *  ensuite (Activités, clôture). `weeks` (défaut 3) fixe le budget d'Activités observable. */
+    interlude: (weeks = 3) => {
+      const s = g();
+      if (s.battle) return '✗ combat en cours — impossible d\'ouvrir un interlude (voir __wfrp.killEnemies())';
+      if (s.interlude) return `interlude déjà ouvert (${Object.keys(s.interlude.perHero).length} héros) — écran 'interlude', à conduire à la main`;
+      if (!s.party.length) s.setParty(makeShowcaseParty()); // pas de groupe chargé → 4 piliers canoniques
+      s.startInterlude(weeks);
+      const after = useGame.getState();
+      if (!after.interlude) return '✗ interlude non ouvert — voir __wfrp.state()/__wfrp.log()';
+      const budget = Math.min(3, Math.max(1, Math.floor(weeks)));
+      return `✓ interlude ouvert (${weeks} sem., ${after.party.length} héros, ${budget} Activité(s) max/héros) — catalogue réel, écran 'interlude' (à conduire à la main)`;
+    },
+
     /** Snapshot COMBAT compact : round, actif, modales ouvertes, et chaque combattant en une ligne. */
     battle: () => {
       const s = g();
@@ -636,8 +673,12 @@ export function buildApi() {
 
     /** RECETTE : élimine tous les ennemis du combat en cours puis passe par le flux de
      *  victoire NORMAL (`checkBattleOver` : finalize, pendingVictory/butin, onVictory).
-     *  `dead` couvre aussi les ennemis « importants » que la Mort Subite à 0 PB ne sort pas. */
-    killEnemies: () => {
+     *  `dead` couvre aussi les ennemis « importants » que la Mort Subite à 0 PB ne sort pas.
+     *  `withQualityLoot` (#380) : à la victoire, INJECTE dans le butin attribuable de l'écran
+     *  (`pendingVictory.gear`) un objet CATALOGUÉ portant des qualités — choisi dynamiquement (premier
+     *  trapping de `trappings.json` avec `qualities` non vide, pas d'id en dur), par la MÊME brique que
+     *  le vrai butin (`gearFromEffects` d'un `giveTrapping`). Défaut inchangé (aucun butin ajouté). */
+    killEnemies: (opts?: { withQualityLoot?: boolean }) => {
       const s = g();
       if (!s.battle || s.battle.over) return '✗ pas de combat en cours';
       const slain = s.battle.combatants.filter((c) => c.kind === 'enemy' && !isOutOfAction(c));
@@ -665,7 +706,19 @@ export function buildApi() {
         useGame.getState().cascadeFinish();
         if (!useGame.getState().battle?.over) checkBattleOver(() => useGame.getState(), useGame.setState);
       }
-      return `✓ ${slain.length} ennemi(s) éliminé(s) — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
+      let lootNote = '';
+      if (opts?.withQualityLoot) {
+        const pv = useGame.getState().pendingVictory;
+        const t = trappings.find((x) => x.qualities?.length);
+        if (pv && t) {
+          const { gear } = gearFromEffects([{ type: 'giveTrapping', trappingId: t.id }]);
+          useGame.setState({ pendingVictory: { ...pv, gear: [...(pv.gear ?? []), ...gear] } });
+          lootNote = ` — butin qualité ajouté : ${t.label} (${t.qualities.map((q) => q.id).join(', ')})`;
+        } else if (!pv) {
+          lootNote = ' — butin qualité NON ajouté (pas de victoire : cascade ouverte ou combat en cours)';
+        }
+      }
+      return `✓ ${slain.length} ennemi(s) éliminé(s) — ${useGame.getState().battle?.over ?? 'combat en cours'}${lootNote}`;
     },
 
     /** RECETTE : inflige `n` Dégâts (op `wounds`, VRAI pipeline `applyOps`) à un combattant du combat — armure
@@ -1093,9 +1146,13 @@ export function buildApi() {
       }),
 
     /** RECETTE #297 : symétrique VOYAGE de `fastForward` — pilote la journée en mer EN COURS (cascade
-     *  du jour, halte de nuit, Activités hebdo) jusqu'au JOUR SUIVANT, l'arrivée ou un combat. `n`
-     *  (scrutations) borne l'anti-boucle infinie, jamais une durée de voyage attendue. */
-    advanceSeaDay: (n = 400) => driveSeaVoyage(true, n),
+     *  du jour, halte de nuit, Activités hebdo) jusqu'au JOUR SUIVANT, l'arrivée ou un combat.
+     *  `maxIters` (scrutations) borne l'anti-boucle infinie, jamais une durée de voyage attendue.
+     *  `stopOnEveryEvent` (#380) : arrêt ADDITIONNEL au recap dès qu'un événement de bord RACONTÉ
+     *  (routine, non décisionnel — carte-parchemin) vient d'être résolu, pour le constater ; défaut
+     *  inchangé (arrêt uniquement au jour suivant / décision présentée). */
+    advanceSeaDay: (opts: { stopOnEveryEvent?: boolean; maxIters?: number } = {}) =>
+      driveSeaVoyage(true, opts.maxIters ?? 400, opts.stopOnEveryEvent ?? false),
 
     /** RECETTE #297 : comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (ou une interruption —
      *  combat, échouage, péripétie d'auteur). `n` (scrutations) borne l'anti-boucle infinie. */
@@ -1104,9 +1161,12 @@ export function buildApi() {
     /** RECETTE #332 : symétrique FLUVIAL d'`advanceSeaDay` — résout la journée de descente EN COURS
      *  (cascade du jour `travelDay`, cascade d'Exposition hydrique `riverExposure` #344, halte de nuit)
      *  jusqu'au JOUR SUIVANT, l'arrivée ou un combat, aux DÉFAUTS (aucun clic). MÊME pilote que le voyage
-     *  maritime (`driveSeaVoyage`, machinerie identique) — juste sans les délais/clics. `n` (scrutations)
-     *  borne l'anti-boucle infinie, jamais une durée de descente attendue. */
-    advanceRiverDay: (n = 400) => driveSeaVoyage(true, n),
+     *  maritime (`driveSeaVoyage`, machinerie identique) — juste sans les délais/clics. `maxIters`
+     *  (scrutations) borne l'anti-boucle infinie, jamais une durée de descente attendue.
+     *  `stopOnEveryEvent` (#380) : arrêt ADDITIONNEL au recap dès qu'un événement de bord raconté vient
+     *  d'être résolu (symétrique fluvial de `advanceSeaDay`) ; défaut inchangé. */
+    advanceRiverDay: (opts: { stopOnEveryEvent?: boolean; maxIters?: number } = {}) =>
+      driveSeaVoyage(true, opts.maxIters ?? 400, opts.stopOnEveryEvent ?? false),
 
     /** RECETTE #297 : inflige `n` Dégâts de coque HORS COMBAT (VRAI pipeline — `damageVesselHull` si un
      *  voyage est en cours sur le navire de campagne, sinon `setVesselHull` directement au port) —
