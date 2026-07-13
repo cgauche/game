@@ -18,6 +18,8 @@
      .master-detail      maître-détail (liste gauche + détail centre) — primitive MasterDetail.tsx
      .cart-step/.btn-step  stepper de quantité [−][centre][+] — primitive QtyStepper.tsx
      .trade-table        table de négoce (colonnes+prix+action+groupes) — primitive TradeTable.tsx
+     .menu-card          carte de menu (en-tête + sections de boutons pleine largeur) — primitive MenuCard.tsx
+                         (.menu-card-panel = variante tiroir du menu ☰ en jeu ; .menu-btn/.menu-toggle)
    Titres de section : réutiliser `.mini-title` (déjà global).                              */
 
 /* ── SURFACE ── */
@@ -802,4 +804,81 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
 .city-hub-plan-canvas { min-height: 220px; }
 @media (max-width: 560px) {
   .city-hub-weather { font-size: 12px; }
+}
+
+/* ── MENU (primitive MenuCard.tsx) : patron « vrai menu » partagé — menu principal (`.menu-card`,
+   base.css) ET tiroir du menu ☰ en jeu (`.menu-card-panel`). ── */
+/* Grand bouton de menu : icône + libellé, pleine largeur. Centré par défaut (menu principal). */
+.menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+/* Interrupteur de menu (case + libellé alignés) — remplace le `.radio` détourné. */
+.menu-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.35;
+  padding: 2px 0;
+}
+.menu-toggle input {
+  flex: none;
+  margin: 0;
+}
+/* Tiroir du menu ☰ en jeu : surface flottante sous le bouton (contexte `.game-menu`, hud.css). */
+.menu-card-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  z-index: 5;
+  width: min(320px, 88vw);
+  max-width: none;
+  max-height: min(72vh, calc(100vh - 80px));
+  overflow: auto;
+  padding: 12px;
+  text-align: left;
+  border-radius: 10px;
+  border-top: 3px solid var(--gold);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.menu-card-panel .menu-buttons {
+  margin: 0;
+  gap: 6px;
+}
+.menu-card-panel .menu-btn {
+  justify-content: flex-start;
+  text-align: left;
+}
+.menu-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.menu-card-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.menu-card-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.menu-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
 }

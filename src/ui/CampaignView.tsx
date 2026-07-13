@@ -221,23 +221,13 @@ export function CampaignView() {
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
             la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
-        {/* Sauvegarder : exploration seulement (refusée en combat) et jamais l'invité (la save vit chez l'hôte). */}
-        <GameMenu sceneName={scene?.nom} money={money} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><GmSoloToggle /><AudioControls /></>} />
-        {/* Objectif courant (#238) — surface discrète TOUJOURS visible en exploration ; masquée en
-            combat (l'écran tactique se réserve le HUD). Nulle si la pile d'objectifs est vide. */}
-        {mode === 'exploration' && <ObjectiveBannerMount />}
-        {/* Panneaux du menu ☰ : surfaces SYSTÈME, jamais par-dessus un dialogue PNJ en cours (#376 pt.2)
-            — `DialogueBox` ne porte pas de `.modal-overlay` (pas de voile plein écran), donc une
-            modale système au-dessus resterait invisible/inatteignable sous elle sans cette garde. */}
-        {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
-        {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
-        {rulesOpen && !dialogue && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
-        {optionsOpen && !dialogue && <OptionsModal onClose={() => setOptionsOpen(false)} />}
-        {/* Barre d'actions de lieu : carte / port / marché / repos — rangée qui s'auto-empile
-            (aucune se recouvre, quel que soit le sous-ensemble affiché). */}
-        <div className="worldmap-actions">
-        {/* Horloge in-game (vague « lisibilité du voyage » 2/2) : chip discret dans le HUD d'exploration —
-            jusqu'ici la date/heure n'était visible qu'en ouvrant le menu ☰ (`GameMenu`/`.gm-date`). */}
+        {/* Barre HUD supérieure UNIFIÉE : le menu ☰, l'horloge de campagne et les raccourcis de lieu
+            (navire / voyage / carte / hub / repos) partagent UN conteneur en rangée qui s'enroule
+            ≤700px — plus deux îlots absolus indépendants. Sauvegarder : exploration seulement (refusée
+            en combat) et jamais l'invité (la save vit chez l'hôte). */}
+        <div className="hud-topbar">
+        <GameMenu sceneName={scene?.nom} money={money} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} audio={<AudioControls />} coop={netMode === 'guest' ? undefined : <><CoopMenuSection /><GmSoloToggle /></>} />
+        {/* Horloge de campagne : chip de la barre (date/heure), source unique `GameDate`. */}
         {mode === 'exploration' && (
           <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={gameTime} /></span>
         )}
@@ -299,6 +289,16 @@ export function CampaignView() {
           </button>
         )}
         </div>
+        {/* Objectif courant (#238) — surface discrète TOUJOURS visible en exploration ; masquée en
+            combat (l'écran tactique se réserve le HUD). Nulle si la pile d'objectifs est vide. */}
+        {mode === 'exploration' && <ObjectiveBannerMount />}
+        {/* Panneaux du menu ☰ : surfaces SYSTÈME, jamais par-dessus un dialogue PNJ en cours (#376 pt.2)
+            — `DialogueBox` ne porte pas de `.modal-overlay` (pas de voile plein écran), donc une
+            modale système au-dessus resterait invisible/inatteignable sous elle sans cette garde. */}
+        {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
+        {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
+        {rulesOpen && !dialogue && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
+        {optionsOpen && !dialogue && <OptionsModal onClose={() => setOptionsOpen(false)} />}
         <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />
         <LogDrawer battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
         <ViewControls

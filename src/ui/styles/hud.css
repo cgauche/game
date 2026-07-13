@@ -450,12 +450,25 @@
   .log-drawer { right: 8px; bottom: 88px; }
 }
 
-/* ── Menu ☰ (haut-gauche, les deux modes) ── */
-.game-menu {
+/* ── Barre HUD supérieure (haut-gauche, les deux modes) : menu ☰ + horloge + raccourcis de lieu.
+   UN conteneur en rangée qui s'enroule ≤700px — plus deux îlots absolus indépendants. */
+.hud-topbar {
   position: absolute;
   top: 10px;
   left: 10px;
   z-index: 60;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: none; /* les interstices ne bloquent pas les clics sur la scène */
+}
+.hud-topbar > * {
+  pointer-events: auto;
+}
+/* Contexte de positionnement du tiroir (`.menu-card-panel`, components.css). */
+.game-menu {
+  position: relative;
 }
 .gm-btn {
   width: 42px;
@@ -471,46 +484,11 @@
 .game-menu.open .gm-btn {
   border-color: var(--gold);
 }
-.gm-panel {
-  position: absolute;
-  top: 48px;
-  left: 0;
-  width: min(300px, 88vw);
-  max-height: 72vh;
-  overflow: auto;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-top: 3px solid var(--gold);
-  border-radius: 10px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
-}
-.gm-title {
-  margin: 0;
-  font-size: 15px;
-  color: var(--gold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.gm-scene {
-  margin: 0;
-  font-size: 12.5px;
-  color: var(--muted);
-}
-.gm-date {
-  font-size: 12px;
-  color: var(--muted);
-}
+/* Sous-groupe interne du tiroir (audio, coop) — pile verticale serrée. */
 .gm-section {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-.gm-quit {
-  align-self: flex-start;
 }
 
 /* ── Bandeau d'objectif courant (#238 — haut-centre, exploration) ── */

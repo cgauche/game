@@ -69,7 +69,7 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/creator.css': 8,
   'styles/editor.css': 10,
   'styles/gauges.css': 1,
-  'styles/hud.css': 5,
+  'styles/hud.css': 6,
   'styles/mass-battle.css': 2,
   'styles/merchant.css': 1,
   'styles/sheet.css': 2,
@@ -136,6 +136,10 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
   'MediaSelect.tsx',
   'ViewControls.tsx',
   'PovControls.tsx',
+  // MenuCard.tsx : primitive canon du bouton de MENU (`MenuButton`, table CLAUDE.md) — même famille
+  // que OptionChooser/Tabs, à charge à l'appelant (MainMenu/GameMenu) de la composer, jamais de recoder
+  // un `<button className="btn">` de menu à la main.
+  'MenuCard.tsx',
 ]);
 const BARE_BUTTON_CANON = /\b(btn|chip|seg)\b/;
 const BARE_BUTTON_BASELINE: Record<string, number> = {
@@ -202,13 +206,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/creator.css': 74,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
-  'styles/hud.css': 149,
+  'styles/hud.css': 145,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,
   'styles/sheet.css': 91,
   'styles/tavern.css': 13,
-  'styles/world-meta.css': 134,
+  'styles/world-meta.css': 133,
 };
 
 function classNamesDefined(css: string): Set<string> {

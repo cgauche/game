@@ -15,7 +15,7 @@ import { emojisIn } from '../../scripts/guards/lib/emojiAffordance.mjs';
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // racine du projet (src/ui/ → ../../)
-const SCAN_DIRS = ['src/ui', 'src/state', 'src/gameIso', 'src/scenes'];
+const SCAN_DIRS = ['src/ui', 'src/state', 'src/gameIso', 'src/scenes', 'src/i18n'];
 
 /** Fichiers exclus par NATURE (pas par état de migration) :
  *  - `*.test.*` : les tests portent les emojis de leurs composants non migrés et sont réécrits

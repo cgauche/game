@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { CharFrame } from './CharFrame';
+import { MenuToggle } from './MenuCard';
 import { Icon } from './Icon';
 
 /**
@@ -92,22 +93,19 @@ export function GmSoloToggle() {
   const setGmSeat = useGame((s) => s.setGmSeat);
   if (net.mode !== 'local') return null;
   return (
-    <div className="gm-section gm-solo-toggle">
-      <label className="radio">
-        <input type="checkbox" checked={net.gmSeat != null} onChange={(e) => setGmSeat(e.target.checked ? 0 : null)} />
-        <span>Siège du contrôleur — piloter aussi les ennemis / le monde</span>
-      </label>
-    </div>
+    <MenuToggle checked={net.gmSeat != null} onChange={(v) => setGmSeat(v ? 0 : null)}>
+      Siège du contrôleur — piloter aussi les ennemis / le monde
+    </MenuToggle>
   );
 }
 
-/** Section coop du menu ☰ (HÔTE en partie) : sièges connectés + code de room + réattribuer. */
+/** Section coop du menu ☰ (HÔTE en partie) : sièges connectés + code de room + réattribuer.
+ *  Le titre de rubrique est porté par la `MenuSection` « Coopération » qui la compose. */
 export function CoopMenuSection() {
   const net = useGame((s) => s.net);
   if (net.mode !== 'host') return null;
   return (
     <div className="gm-section">
-      <span className="mini-title"><Icon id="nav/online" size="sm" /> Coop — joueurs</span>
       <CoopSeatList />
       <CoopRoomPanel />
       <CoopAssignList />

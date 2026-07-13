@@ -1,7 +1,6 @@
 import { useRef, type ReactNode } from 'react';
 import { useModalA11y } from './Modal';
-import { GameDate } from './GameDate';
-import { Coins } from './Coins';
+import { ScreenMeta } from './ScreenMeta';
 import { SceneBackdrop } from './SceneBackdrop';
 import type { Money } from '../engine/money';
 
@@ -73,8 +72,7 @@ export function ScreenShell({
       <div className="worldmap-head">
         <h2>{title}</h2>
         <div className="worldmap-head-actions">
-          {meta?.time != null && <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={meta.time} /></span>}
-          {meta?.money && <span className="port-purse">Bourse : <b><Coins money={meta.money} /></b></span>}
+          <ScreenMeta meta={meta} />
           {actions}
           <button type="button" className="btn small" onClick={onClose}>{closeLabel}</button>
         </div>

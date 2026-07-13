@@ -3,8 +3,7 @@ import { useGame } from '../state/store';
 import { listSaves } from '../state/saves';
 import { SaveLoadModal } from './SaveLoadModal';
 import { HouseRulesModal } from './HouseRulesModal';
-import { RuleDivider } from './Ornaments';
-import { Icon } from './Icon';
+import { MenuCard, MenuSection, MenuButton } from './MenuCard';
 import { t } from '../i18n';
 
 export function MainMenu() {
@@ -17,41 +16,26 @@ export function MainMenu() {
 
   return (
     <div className="menu tx-ink">
-      <div className="menu-card">
-        <h1 className="title">{t('menu.title')}</h1>
-        <p className="subtitle">{t('menu.subtitle')}</p>
-        <RuleDivider />
-        <div className="menu-buttons">
-          <button className="btn btn-primary" onClick={() => { setPendingCampaign(null); setScreen('party'); }}>
-            <Icon id="nav/new-game" /> {t('menu.newGame')}
-          </button>
-          <button className="btn" onClick={() => setLoadOpen(true)} title={hasSaves ? t('menu.load.titleHas') : t('menu.load.titleEmpty')}>
-            <Icon id="nav/load" /> {t('menu.load')}
-          </button>
-          <button className="btn" onClick={() => setScreen('coop')}>
-            <Icon id="nav/online" /> {t('menu.online')}
-          </button>
-          <button className="btn" onClick={() => setRulesOpen(true)} title={t('menu.houseRules.title')}>
-            <Icon id="nav/rules" /> {t('menu.houseRules')}
-          </button>
-          <button className="btn" onClick={() => openCodex()} title={t('menu.compendium.title')}>
-            <Icon id="nav/compendium" /> {t('menu.compendium')}
-          </button>
-        </div>
-        <RuleDivider className="menu-tools-rule" label={t('menu.workshop')} />
-        <div className="menu-buttons menu-tools">
-          <button className="btn" onClick={() => setScreen('editor')}>
-            <Icon id="nav/editor" /> {t('menu.editor')}
-          </button>
-          <button className="btn btn-test" onClick={() => setScreen('test')}>
-            <Icon id="nav/test-scenarios" /> {t('menu.testScenarios')}
-          </button>
-          <a className="btn menu-link" href="galeries.html" target="_blank" rel="noopener">
-            <Icon id="nav/art-gallery" /> {t('menu.galleries')}
-          </a>
-        </div>
-        <p className="footnote">{t('menu.footnote')}</p>
-      </div>
+      <MenuCard
+        header={<>
+          <h1 className="title">{t('menu.title')}</h1>
+          <p className="subtitle">{t('menu.subtitle')}</p>
+        </>}
+        footer={<p className="footnote">{t('menu.footnote')}</p>}
+      >
+        <MenuSection rule={false}>
+          <MenuButton icon="nav/new-game" tone="primary" onClick={() => { setPendingCampaign(null); setScreen('party'); }}>{t('menu.newGame')}</MenuButton>
+          <MenuButton icon="nav/load" onClick={() => setLoadOpen(true)} title={hasSaves ? t('menu.load.titleHas') : t('menu.load.titleEmpty')}>{t('menu.load')}</MenuButton>
+          <MenuButton icon="nav/online" onClick={() => setScreen('coop')}>{t('menu.online')}</MenuButton>
+          <MenuButton icon="nav/rules" onClick={() => setRulesOpen(true)} title={t('menu.houseRules.title')}>{t('menu.houseRules')}</MenuButton>
+          <MenuButton icon="nav/compendium" onClick={() => openCodex()} title={t('menu.compendium.title')}>{t('menu.compendium')}</MenuButton>
+        </MenuSection>
+        <MenuSection label={t('menu.workshop')} ruleClassName="menu-tools-rule" className="menu-tools">
+          <MenuButton icon="nav/editor" onClick={() => setScreen('editor')}>{t('menu.editor')}</MenuButton>
+          <MenuButton icon="nav/test-scenarios" tone="test" onClick={() => setScreen('test')}>{t('menu.testScenarios')}</MenuButton>
+          <MenuButton icon="nav/art-gallery" href="galeries.html" target="_blank" rel="noopener">{t('menu.galleries')}</MenuButton>
+        </MenuSection>
+      </MenuCard>
       {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}
       {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
     </div>

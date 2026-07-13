@@ -1,20 +1,19 @@
 import { useState, type ReactNode } from 'react';
 import { type Money } from '../engine/money';
-import { Coins } from './Coins';
-import { GameDate } from './GameDate';
+import { ScreenMeta } from './ScreenMeta';
+import { MenuCard, MenuSection, MenuButton } from './MenuCard';
 import { t } from '../i18n';
-import { Icon } from './Icon';
 
 /**
- * Menu ☰ du jeu (haut-gauche, COMBAT et EXPLORATION — mobile-first). Regroupe ce qui a quitté
- * l'écran : nom de la scène, Bourse (`<Coins>`), date complète du Calendrier Impérial
- * (`<GameDate>`), et « Quitter la partie » (retour à l'écran de groupe — parité avec l'ancien
- * bouton toujours visible). `initialOpen` = aide de test. Pur à props.
+ * Menu ☰ du jeu (barre HUD supérieure, COMBAT et EXPLORATION). Tiroir « vrai menu » composé de la
+ * primitive `MenuCard` : en-tête (titre « Menu » + lieu LABELLISÉ en méta discrète + méta unifiée
+ * date/bourse via `ScreenMeta`), puis sections nettes (Partie / Réglages / Coopération). `initialOpen`
+ * = aide de test. Pur à props.
  */
-export function GameMenu({ sceneName, money, time, onQuit, onSaveLoad, onEndSession, onHouseRules, onOptions, coop, initialOpen = false }: {
+export function GameMenu({ sceneName, money, time, onQuit, onSaveLoad, onEndSession, onHouseRules, onOptions, audio, coop, initialOpen = false }: {
   sceneName?: string;
   money: Money;
-  /** Horloge de campagne (minutes depuis l'époque) — rendue par `<GameDate>`. */
+  /** Horloge de campagne (minutes depuis l'époque) — méta d'en-tête via `ScreenMeta`. */
   time: number;
   onQuit: () => void;
   /** Ouvre la modale Sauvegarder/Charger (Jalon 5) — absent en combat (sauvegarde refusée). */
@@ -25,48 +24,44 @@ export function GameMenu({ sceneName, money, time, onQuit, onSaveLoad, onEndSess
   onHouseRules?: () => void;
   /** Ouvre l'écran Options (remap clavier, etc.). */
   onOptions?: () => void;
-  /** Section coop de l'HÔTE (réinviter un déconnecté, réattribuer les héros — Jalon 7 P3c). */
+  /** Contrôles audio (`AudioControls`) — rendus dans la section Réglages. */
+  audio?: ReactNode;
+  /** Section coop de l'HÔTE / siège du contrôleur solo (réinviter, réattribuer les héros). */
   coop?: ReactNode;
   initialOpen?: boolean;
 }) {
   const [open, setOpen] = useState(initialOpen);
+  const act = (fn?: () => void) => () => { setOpen(false); fn?.(); };
   return (
     <div className={`game-menu ${open ? 'open' : ''}`}>
       <button type="button" className="gm-btn" aria-label={open ? t('gameMenu.close') : t('gameMenu.menu')} aria-expanded={open} onClick={() => setOpen(!open)} title={open ? t('gameMenu.close') : t('gameMenu.menu')}>
         ☰
       </button>
       {open && (
-        <div className="gm-panel">
-          <h3 className="gm-title">{t('gameMenu.menu')}</h3>
-          {sceneName && <p className="gm-scene">{sceneName}</p>}
-          <div className="gm-date"><GameDate time={time} /></div>
-          <div className="gm-section">
-            <span className="mini-title">{t('gameMenu.purse')}</span>
-            <Coins money={money} />
-          </div>
-          {coop}
-          {onSaveLoad && (
-            <button type="button" className="btn small" onClick={() => { setOpen(false); onSaveLoad(); }}>
-              {t('gameMenu.saveLoad')}
-            </button>
+        <MenuCard
+          variant="panel"
+          header={<div className="menu-card-head">
+            <h3 className="menu-card-title">{t('gameMenu.menu')}</h3>
+            {sceneName && <p className="menu-card-sub">{t('gameMenu.scene')} — {sceneName}</p>}
+            <div className="menu-card-meta"><ScreenMeta meta={{ time, money }} /></div>
+          </div>}
+        >
+          <MenuSection label={t('gameMenu.section.game')}>
+            {onSaveLoad && <MenuButton icon="file/save" onClick={act(onSaveLoad)}>{t('gameMenu.saveLoad')}</MenuButton>}
+            {onEndSession && <MenuButton icon="resource/xp" onClick={act(onEndSession)}>{t('gameMenu.endSession')}</MenuButton>}
+            <MenuButton icon="map-tool/door" onClick={onQuit}>{t('gameMenu.quit')}</MenuButton>
+          </MenuSection>
+          <MenuSection label={t('gameMenu.section.settings')}>
+            {onOptions && <MenuButton icon="ui/settings" onClick={act(onOptions)}>{t('gameMenu.options')}</MenuButton>}
+            {onHouseRules && <MenuButton icon="nav/rules" onClick={act(onHouseRules)}>{t('gameMenu.houseRules')}</MenuButton>}
+            {audio}
+          </MenuSection>
+          {coop && (
+            <MenuSection label={t('gameMenu.section.coop')}>
+              {coop}
+            </MenuSection>
           )}
-          {onEndSession && (
-            <button type="button" className="btn small" onClick={() => { setOpen(false); onEndSession(); }}>
-              Fin de séance
-            </button>
-          )}
-          {onHouseRules && (
-            <button type="button" className="btn small" onClick={() => { setOpen(false); onHouseRules(); }}>
-              {t('gameMenu.houseRules')}
-            </button>
-          )}
-          {onOptions && (
-            <button type="button" className="btn small" onClick={() => { setOpen(false); onOptions(); }}>
-              <Icon id="ui/settings" size="sm" /> Options
-            </button>
-          )}
-          <button type="button" className="btn small gm-quit" onClick={onQuit}>{t('gameMenu.quit')}</button>
-        </div>
+        </MenuCard>
       )}
     </div>
   );

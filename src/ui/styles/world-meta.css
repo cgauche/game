@@ -1,16 +1,6 @@
 /* ── Carte du monde (#T2 Voyage) ─────────────────────────────────────────────── */
-/* Rangée des actions de lieu (carte / port / marché / repos) : ancrée à droite du menu ☰
-   (.game-menu à left:10 + 42px), s'empile automatiquement — aucun bouton n'en recouvre un autre,
-   quel que soit le sous-ensemble affiché (fin des emplacements `left` codés en dur par bouton). */
-.worldmap-actions {
-  position: absolute;
-  top: 10px;
-  left: 58px;
-  z-index: 60;
-  display: flex;
-  gap: 6px;
-  pointer-events: none; /* les interstices ne bloquent pas les clics sur la scène */
-}
+/* Raccourcis de lieu (navire / voyage / carte / hub / repos) : boutons de la barre HUD supérieure
+   unifiée (`.hud-topbar`, hud.css) — plus d'îlot absolu propre, alignement continu avec le menu ☰. */
 .worldmap-btn {
   pointer-events: auto;
   width: 42px;

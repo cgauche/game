@@ -1,0 +1,90 @@
+import { type ReactNode } from 'react';
+import { Icon } from './Icon';
+import type { IconIdInput } from './icons';
+import { RuleDivider } from './Ornaments';
+
+/**
+ * MenuCard — primitive du patron « vrai menu » : une carte qui empile un en-tête, des SECTIONS de
+ * grands boutons pleine largeur (icône + libellé) séparées par un filet titré. Source UNIQUE
+ * composée par le MENU PRINCIPAL (`MainMenu`, variante `screen` — carte plein-champ centrée) ET le
+ * menu ☰ EN JEU (`GameMenu`, variante `panel` — tiroir sous le bouton). Ne jamais recoder un
+ * `.menu-card` ni un `<button className="btn">` de menu à la main : composer
+ * `MenuCard` > `MenuSection` > `MenuButton` (et `MenuToggle` pour un interrupteur de menu).
+ */
+export function MenuCard({ variant = 'screen', header, footer, className, children }: {
+  variant?: 'screen' | 'panel';
+  /** En-tête de la carte (titre, sous-titre/méta) — rendu avant les sections. */
+  header?: ReactNode;
+  /** Pied de carte (note discrète) — rendu après les sections. */
+  footer?: ReactNode;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={`menu-card${variant === 'panel' ? ' menu-card-panel' : ''}${className ? ` ${className}` : ''}`}>
+      {header}
+      {children}
+      {footer}
+    </div>
+  );
+}
+
+/** Section de menu : filet séparateur (fleuron si `label` absent, titré sinon) + liste verticale de
+ *  `MenuButton`. `rule={false}` supprime le filet (première section adossée à l'en-tête). */
+export function MenuSection({ label, rule = true, ruleClassName, className, children }: {
+  label?: ReactNode;
+  rule?: boolean;
+  ruleClassName?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <>
+      {rule && <RuleDivider label={label} className={ruleClassName} />}
+      <div className={`menu-buttons${className ? ` ${className}` : ''}`}>{children}</div>
+    </>
+  );
+}
+
+/** Grand bouton de menu : `<Icon>` + libellé, pleine largeur. `href` → lien (`<a>`, ex. galeries) ;
+ *  `tone` mappe les variantes canon `.btn-primary`/`.btn-test`. */
+export function MenuButton({ icon, tone, onClick, href, target, rel, title, disabled, children }: {
+  icon: IconIdInput;
+  tone?: 'primary' | 'test';
+  onClick?: () => void;
+  href?: string;
+  target?: string;
+  rel?: string;
+  title?: string;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
+  const cls = `btn menu-btn${tone === 'primary' ? ' btn-primary' : tone === 'test' ? ' btn-test' : ''}`;
+  if (href) {
+    return (
+      <a className={`${cls} menu-link`} href={href} target={target} rel={rel} title={title}>
+        <Icon id={icon} /> {children}
+      </a>
+    );
+  }
+  return (
+    <button type="button" className={cls} onClick={onClick} title={title} disabled={disabled}>
+      <Icon id={icon} /> {children}
+    </button>
+  );
+}
+
+/** Interrupteur de menu (case à cocher alignée + libellé) — motif partagé, remplace le `.radio` de
+ *  talent détourné (case cochée mal alignée, feedback juge). */
+export function MenuToggle({ checked, onChange, children }: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="menu-toggle">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span>{children}</span>
+    </label>
+  );
+}
