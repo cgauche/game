@@ -46,8 +46,8 @@ const RATCHET_EXCEPTIONS: Record<string, string> = {
   'ui/compendium/CompendiumScreen.tsx:84': 'idem CompendiumScreen.tsx:82 (CodexItem sans id unifié).',
   'ui/compendium/CompendiumScreen.tsx:126': 'idem CompendiumScreen.tsx:82 (CodexItem sans id unifié).',
   'ui/compendium/relations.ts:311': "auto-liage de PROSE (tokenizeLinks) : matching TEXTUEL d'un terme de règle vers son entité, pas une FK — aucun id en jeu (le texte affiché EST la recherche).",
-  'ui/creator/CharacterCreator.tsx:126': "WEAPON_ID_BY_LABEL : id disponible des deux côtés (trappings) — debt RÉELLE, migration différée (le state de draft `specChoices`/`weaponChoice` est un Record<string,string> partagé par TOUS les choix « au choix », pas juste l'arme — refactor multi-site hors périmètre garde).",
-  'ui/creator/CharacterCreator.tsx:1091': 'idem CharacterCreator.tsx:126 (même WEAPON_ID_BY_LABEL).',
+  'ui/creator/CharacterCreator.tsx:127': "WEAPON_ID_BY_LABEL : id disponible des deux côtés (trappings) — debt RÉELLE, migration différée (le state de draft `specChoices`/`weaponChoice` est un Record<string,string> partagé par TOUS les choix « au choix », pas juste l'arme — refactor multi-site hors périmètre garde).",
+  'ui/creator/CharacterCreator.tsx:1084': 'idem CharacterCreator.tsx:127 (même WEAPON_ID_BY_LABEL).',
   'ui/InterludeScreen.tsx:649': "LearnPane : recherche par texte tapé (motif `RefField` freeText) sur `LearnOption` qui PORTE un id (`sel.id`) — migration possible vers id-first mais composant de saisie à refactorer, hors périmètre garde.",
   'ui/TabbedEntry.tsx:35': "fallback DÉLIBÉRÉ et documenté (JSDoc du composant) : résolution PAR ID en premier, repli par nom SEULEMENT pour garder un onglet actif au changement de fiche (UX, pas une FK).",
 };

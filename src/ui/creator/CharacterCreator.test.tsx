@@ -24,7 +24,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).toContain('creator-main');
     expect(html).toContain('creator-summary');
     // Page blanche : AUCUNE race sélectionnée au montage (fin du fantôme pré-tiré).
-    expect(html).not.toContain('pick-row selected');
+    expect(html).not.toContain('pick-card selected');
     // La fiche vivante démarre grisée mais STRUCTURÉE : tous les blocs présents dès l'étape 1.
     expect(html).toContain('Race à choisir');
     expect(html).toContain('Carrière à choisir');
@@ -45,10 +45,40 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
 
   it('remplissage progressif : une race choisie ouvre son profil (Zone B) et se sélectionne (Zone A)', () => {
     const { choice, detail } = SpeciesZones({ d: withSpecies(newDraft(7), SP.id), setD: () => {} });
-    expect(renderToStaticMarkup(<>{choice}</>)).toContain('pick-row selected'); // race sélectionnée
+    expect(renderToStaticMarkup(<>{choice}</>)).toContain('pick-card selected'); // race sélectionnée
     const body = renderToStaticMarkup(<>{detail.body}</>);
     expect(body).toContain('Caractéristiques de base'); // profil chiffré (CodexSections)
     expect(body).toContain('Compétences de race');
+  });
+
+  it('étape 1 — grille facettée : facettes de famille (tablist) + grille de cartes (listbox/option), sans rail-ascenseur', () => {
+    const html = renderToStaticMarkup(<>{SpeciesZones({ d: newDraft(7), setD: () => {} }).choice}</>);
+    expect(html).toContain('tabs tabs-sub'); // facettes de famille = primitive Tabs (variante sub)
+    expect(html).toContain('role="listbox"'); // grille de sélection a11y
+    expect(html).toContain('role="option"');
+    expect(html).toContain('pick-grid');
+    expect(html).not.toContain('pick-row'); // mort de l'ancien rail-liste
+    expect(html).not.toContain('rail-group');
+  });
+
+  it('étape 2 — grille facettée de carrière : recherche + facettes de CLASSE (données) + grille listbox', () => {
+    const html = renderToStaticMarkup(<>{CareerZones({ d: withSpecies(newDraft(7), SP.id), setD: () => {} }).choice}</>);
+    expect(html).toContain('Rechercher une carrière'); // SearchFilterField canonique en tête
+    expect(html).toContain('tabs tabs-sub'); // facettes de classe = primitive Tabs
+    expect(html).toContain('role="listbox"');
+    // Les facettes viennent des données (classes.json), pas d'une liste en dur.
+    for (const cl of ['Guerriers', 'Lettrés', 'Roublards']) expect(html).toContain(cl);
+    expect(html).not.toContain('pick-row');
+  });
+
+  it('étape 2 — d100 → sélection VISIBLE : la carrière posée est active dans la grille ET sa facette de classe est active', () => {
+    // « soldat » = classe Guerriers, PAS la première facette : le choix doit basculer la facette active
+    // (comme un tirage d100 qui tombe hors de la classe affichée) et marquer la carte.
+    const soldat = findCareerById('soldat')!;
+    const html = renderToStaticMarkup(<>{CareerZones({ d: withCareer(withSpecies(newDraft(7), SP.id), 'soldat'), setD: () => {} }).choice}</>);
+    expect(html).toContain('pick-card selected'); // carte de la carrière tirée = active
+    expect(html).toContain(soldat.label); // et visible (sa facette de classe est ouverte)
+    expect(html).toMatch(/aria-selected="true"/); // facette + carte marquées sélectionnées
   });
 
   it('PX en direct : accepter le tirage de race incrémente le compteur PX de la fiche vivante (+20)', () => {

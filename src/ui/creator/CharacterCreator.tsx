@@ -67,6 +67,7 @@ import type { Appearance } from '../../gameIso/rig/appearance';
 import { previewHero } from './CreatorSummary';
 import { CreatorStepFrame, Section, Stepper, type StepZones } from './CreatorStepFrame';
 import { CreatorDice } from './CreatorDice';
+import { FacetedPickGrid } from './FacetedPickGrid';
 import {
   CreatorDraft,
   newDraft,
@@ -311,18 +312,6 @@ export function SpeciesZones({ d, setD }: StepProps): StepZones {
   }
   families.sort((a, b) => Number(b.list.some((s) => CORE.includes(s.label))) - Number(a.list.some((s) => CORE.includes(s.label))));
 
-  const row = (s: SpeciesData) => (
-    <button key={s.label} className={`pick-row ${d.speciesId === s.id ? 'selected' : ''}`} onClick={() => setD(withSpecies(d, s.id))}>
-      <CharacterPreview appearance={pickAppearance(s.id, d.sex)} size="xs" />
-      <span className="row-body">
-        <strong>{s.variant ?? s.label}</strong>
-        <em>
-          M {s.movement} · Destin {s.fate.fate} · Rés. {s.fate.resilience} · +{s.fate.extra}
-        </em>
-      </span>
-    </button>
-  );
-
   const dice = (
     <CreatorDice
       label="Tirer la race (d100)"
@@ -348,14 +337,23 @@ export function SpeciesZones({ d, setD }: StepProps): StepZones {
   );
 
   const choice = (
-    <>
-      {families.map(({ family, list }) => (
-        <div key={family}>
-          <div className="rail-group">{family}</div>
-          <div className="pick-list">{list.map(row)}</div>
-        </div>
-      ))}
-    </>
+    <Section title={`Races (${families.reduce((n, f) => n + f.list.length, 0)})`}>
+      <FacetedPickGrid
+        label="Choix de la race"
+        groups={families.map((f) => ({ id: f.family, label: f.family }))}
+        cards={families.flatMap((f) =>
+          f.list.map((s) => ({
+            id: s.id,
+            group: f.family,
+            label: s.variant ?? s.label,
+            title: s.variant ?? s.label,
+            sub: `M ${s.movement} · Destin ${s.fate.fate}`,
+          })),
+        )}
+        selectedId={d.speciesId || undefined}
+        onSelect={(id) => setD(withSpecies(d, id))}
+      />
+    </Section>
   );
 
   if (!sp) {
@@ -465,40 +463,35 @@ export function CareerZones({ d, setD }: StepProps): StepZones {
 
   const choice = (
     <Section title={`Carrières (${accessible.length} accessibles)`}>
-      <label className="radio" style={{ marginBottom: 8, fontSize: 12 }}>
-        <input type="checkbox" checked={d.ignoreRestrictions} onChange={(e) => setD({ ...d, ignoreRestrictions: e.target.checked })} />
-        Ignorer les restrictions de race
-      </label>
-      {/* MDG 09 l.9 : choix AVANT le jet — basculer réinitialise les jets (même d100, autre table). */}
-      {coastalSwapAvailable(d) && (
-        <label className="radio" style={{ marginBottom: 8, fontSize: 12 }}>
-          <input type="checkbox" checked={d.coastalSwap} onChange={(e) => setD(withCoastalSwap(d, e.target.checked))} />
-          Côtiers à la place des Riverains
+      <div className="row-flex" style={{ marginBottom: 8 }}>
+        <label className="radio">
+          <input type="checkbox" checked={d.ignoreRestrictions} onChange={(e) => setD({ ...d, ignoreRestrictions: e.target.checked })} />
+          Ignorer les restrictions de race
         </label>
-      )}
-      {classes.map((cl) => {
-        const list = accessible.filter((c) => c.class === cl.id);
-        if (!list.length) return null;
-        return (
-          <div key={cl.id}>
-            <div className="rail-group"><CodexRef category="classes" label={cl.label}>{cl.label}</CodexRef></div>
-            <div className="pick-list">
-              {list.map((c: CareerData) => {
-                const l1 = levelsForCareer(c.id).find((l) => l.level === 1);
-                return (
-                  <button key={c.id} className={`pick-row ${d.careerId === c.id ? 'selected' : ''}`} onClick={() => setD(withCareer(d, c.id))}>
-                    <CharacterPreview appearance={pickAppearance(sp?.id ?? d.speciesId, d.sex)} career={c.id} size="xs" />
-                    <span className="row-body">
-                      <strong>{c.label}</strong>
-                      <em>{l1 ? `${l1.label} · ${l1.status}` : findClassById(c.class)?.label}</em>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+        {/* MDG 09 l.9 : choix AVANT le jet — basculer réinitialise les jets (même d100, autre table). */}
+        {coastalSwapAvailable(d) && (
+          <label className="radio">
+            <input type="checkbox" checked={d.coastalSwap} onChange={(e) => setD(withCoastalSwap(d, e.target.checked))} />
+            Côtiers à la place des Riverains
+          </label>
+        )}
+      </div>
+      <FacetedPickGrid
+        label="Choix de la carrière"
+        searchable
+        searchPlaceholder="Rechercher une carrière…"
+        groups={classes
+          .filter((cl) => accessible.some((c) => c.class === cl.id))
+          .map((cl) => ({ id: cl.id, label: cl.label }))}
+        cards={accessible.map((c: CareerData) => ({
+          id: c.id,
+          group: c.class,
+          label: c.label,
+          title: c.label,
+        }))}
+        selectedId={d.careerId || undefined}
+        onSelect={(id) => setD(withCareer(d, id))}
+      />
     </Section>
   );
 
