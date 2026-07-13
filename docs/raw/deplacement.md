@@ -784,7 +784,7 @@ Adaptation des règles de Poursuite terrestres à plus grande échelle. Sauf int
 
 **Voir aussi :** [`deplacement.md`](deplacement.md#poursuites) (Poursuite terrestre LdB 15), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
 
-**Implémente :** (non implémenté)
+**Implémente :** `src/state/seaVoyageFlow.ts` — `startSeaPursuit` (pose la crise `sea.crisis` `kind:'poursuite'`, distance de départ + seuil d'évasion par visibilité `escapeAt` l.364-370), `resolveSeaCrisisRound` (une manche : Test de Navigation d'équipage `progression-poursuite` via `buildVoyageCrewStep`, tableau `pursuitDistanceGain`/`pursuitLowMPenalty` de `src/engine/seaNavigation.ts`, issue `pursuitOutcome` de `src/engine/pursuit.ts` escaped/caught → `startChaseBoarding` abordage l.420) ; une manche par jour de mer, jamais droppée faute d'équipage apte (`buildPostProgressionSteps`).
 
 ---
 

@@ -494,12 +494,16 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
   const worldMap = get().worldMap as WorldMap;
   const route = worldMap?.routes.find((r) => r.id === plan.routeId);
   const out: CascadeStep[] = [];
-  // 6. CRISE en cours (Poursuite ch.13 l.354 / Tourbillon l.514) : un Test d'équipage par JOUR.
+  // 6. CRISE en cours (Poursuite ch.13 l.354 / Tourbillon l.514) : un Test d'équipage par JOUR. Aucun PJ
+  // apte au poste → la manche se joue quand même à DR 0 (baseline, MDG 14 l.39/61 — miroir de la
+  // Progression sans équipage `buildSeaDayCascade`) : une CRISE ne se drop JAMAIS faute de titulaire,
+  // sinon elle reste posée sans jamais resurgir (soft-lock #383).
   if (sea.crisis) {
     const kind = sea.crisis.kind === 'poursuite' ? 'poursuite' : 'tourbillon';
     const testTypeId = sea.crisis.kind === 'poursuite' ? 'progression-poursuite' : 'manoeuvre';
     const st = buildVoyageCrewStep(get, testTypeId, kind);
     if (st) out.push(st);
+    else resolveSeaCrisisRound(get, set, 0);
   }
   // #212. Embuscade AUTHORÉE à ancrage déterministe : franchissement de l'ancrage ce jour → Test de
   // Perception PUIS abordage (applier `embuscade`, déjà enregistré).
@@ -827,8 +831,8 @@ function resolveSeaDayPerils(get: Get, set: Set, rng: RNG): boolean {
 
 /** Événement de bord tous les 1d10 jours (ch.15 l.89) — résolu AVANT la cascade du jour (ne dépend
  *  d'aucune Progression). La Prière d'un Présage (`sea-priere`) et l'Ouragan (`sea-ouragan-affaler`,
- *  applier ci-dessous) peuvent SURFACER leur propre mini-cascade — renvoie `true` si c'est le cas
- *  (leur applier reprend `runSeaDay` lui-même à la fermeture, comme `sea-force-pace`/`sea-priere`). */
+ *  applier ci-dessous) peuvent SURFACER leur propre mini-cascade (`purpose:'test'`) — renvoie `true` si
+ *  c'est le cas ; sa clôture reprend `runSeaDay` par la couture canonique `dispatchCascadeDone`. */
 function resolveSeaDayEvent(get: Get, set: Set, rng: RNG): boolean {
   const plan = get().travelPlan!;
   const sea = plan.sea!;
@@ -885,6 +889,10 @@ export function runSeaDay(get: Get, set: Set): void {
   if (resolveSeaDayEvent(get, set, rng)) return;
   const { steps, log: lines } = buildSeaDayCascade(get, set);
   for (const l of lines) log(get, set, [l]);
+  // La construction du jour a pu ouvrir un ABORDAGE en plein vol (crise « caught » / embuscade ancrée
+  // sans équipage à tester → `startChaseBoarding`/`openAuthoredSeaAmbush` posent `interrupted` + combat) :
+  // la traversée s'arrête là (reprise par `resumeTravel` après le combat), jamais de fin-de-jour en plein combat.
+  if (get().battle || get().travelPlan?.interrupted) return;
   if (!steps.length) { continueSeaDayAfterCascade(get, set); return; }
   // Route COMMANDÉE + journée de PURE routine (#275 Ronde 2 cran 3) : l'auto-pilote local résout la
   // cascade d'un bloc (mêmes appliers, mêmes conséquences), sans modale — lignes au journal. En coop,
@@ -904,10 +912,7 @@ export function runSeaDay(get: Get, set: Set): void {
 
 /** Forcer le rythme (MDG 13 l.95-107) : pose `paceToday`, le +M du jour se lit ensuite par
  *  `effectiveSeaM`. Étape du TRONC de la cascade du jour (`buildForcePaceStep`, avant Progression) —
- *  `tell()` (pas `{journal}`) : la ligne rejoint le RECAP du jour (`sea.lines` → `TravelRecapDay.lines`).
- *  Reprise différée (`setTimeout`, patron `combatAuto.ts:99`) : `advanceCascade`/`runCascadeImmediate`
- *  écrivent `pendingCascade` APRÈS le retour de cet applier — une reprise synchrone ICI verrait encore
- *  l'étape courante et boucleraient sur elle-même. */
+ *  `tell()` (pas `{journal}`) : la ligne rejoint le RECAP du jour (`sea.lines` → `TravelRecapDay.lines`). */
 registerCascadeApplier('sea-force-pace', (get, set, step) => {
   if (!step.result) return;
   const won = step.result.success;
@@ -921,8 +926,8 @@ registerCascadeApplier('sea-force-pace', (get, set, step) => {
 
 /** Prière d'un Présage (ch.15 l.236, `klass:'hero-test'`) : bon présage → il faut RÉUSSIR pour
  *  l'appliquer ; mauvais présage → RÉUSSIR l'évite (`manannD >= 0 ? success : !success`, logique
- *  inchangée). `tell()` pour la même raison recap que `sea-force-pace` ci-dessus. Reprise de la
- *  boucle : même garde différée que `sea-force-pace`. */
+ *  inchangée). `tell()` pour la même raison recap que `sea-force-pace` ci-dessus. La reprise du jour à
+ *  la fermeture est portée par `dispatchCascadeDone` (purpose `test` en mer → `runSeaDay`), pas ici. */
 registerCascadeApplier('sea-priere', (get, set, step) => {
   if (!step.result) return;
   const manannD = Number(step.meta?.manannD ?? 0);
@@ -939,7 +944,6 @@ registerCascadeApplier('sea-priere', (get, set, step) => {
       for (const l of applyShipMoraleDelta(get, set, ship, delta)) tell(get, set, [l]);
     }
   }
-  if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
   noteSeaLine(get, set, j);
   return { consequences: freeCons(j) };
 });
@@ -1264,13 +1268,9 @@ function affalerConsequence(get: Get, set: Set, step: CascadeStep): Consequence[
   return [];
 }
 registerCascadeApplier('affaler', (get, set, step) => ({ consequences: affalerConsequence(get, set, step) }));
-// Ouragan : cascade AUTONOME ouverte AVANT la construction du jour (`resolveSeaDayEvent`) — reprend
-// `runSeaDay` elle-même à sa clôture (patron `sea-force-pace`/`sea-priere`, `combatAuto.ts:99`).
-registerCascadeApplier('sea-ouragan-affaler', (get, set, step) => {
-  const consequences = affalerConsequence(get, set, step);
-  if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
-  return { consequences };
-});
+// Ouragan : cascade AUTONOME (`purpose:'test'`) ouverte AVANT la construction du jour
+// (`resolveSeaDayEvent`) — sa clôture reprend `runSeaDay` par la couture canonique `dispatchCascadeDone`.
+registerCascadeApplier('sea-ouragan-affaler', (get, set, step) => ({ consequences: affalerConsequence(get, set, step) }));
 
 /** Orientation quotidienne (« un Test par jour de voyage », ch.13 l.311) → Repères / Changement de cap. */
 registerCascadeApplier('orientation', (get, set, step) => {
@@ -1325,45 +1325,44 @@ registerCascadeApplier('embuscade', (get, set, step) => {
   return { consequences: freeCons(j) };
 });
 
-/** Manche de Poursuite (ch.13 l.354-370) — issue partagée avec la poursuite terrestre (`engine/pursuit`). */
-registerCascadeApplier('poursuite', (get, set, step) => {
-  if (!step.result) return;
+/**
+ * Cœur d'UNE manche de CRISE (Poursuite ch.13 l.354-370 / Tourbillon ch.13 l.514-528) : dispatche sur
+ * `sea.crisis.kind`, applique l'issue et journalise (recap). `total` = DR net de l'équipage —
+ * `step.result.sl` quand un Test d'équipage a pu s'ouvrir, `0` (baseline, aucun bonus) quand AUCUN
+ * PJ n'est apte au poste : la manche se joue quand même, comme la Progression sans équipage apte
+ * (`buildSeaDayCascade` → `applySeaProgress(0)`). Peut ouvrir l'abordage (Poursuite « caught »,
+ * `startChaseBoarding` → `interrupted`). SOURCE UNIQUE partagée par les appliers `poursuite`/`tourbillon`
+ * ET le repli sans équipage de `buildPostProgressionSteps` — une crise ne se DROP jamais faute de titulaire.
+ */
+function resolveSeaCrisisRound(get: Get, set: Set, total: number): string[] {
   const plan = get().travelPlan;
   const sea = plan?.sea;
-  if (sea?.crisis?.kind !== 'poursuite') return;
-  const c = sea.crisis;
-  const total = step.result.sl;
+  if (!sea?.crisis) return [];
   const rng = battleRng();
-  const eff = effectiveSeaM(get);
-  const myM = eff.m ?? 1;
-  const foe = rollTest(c.foeSkill, 'intermediaire', rng);
-  const gain = pursuitDistanceGain(myM, total + pursuitLowMPenalty(myM)) - pursuitDistanceGain(c.foeM, foe.sl + pursuitLowMPenalty(c.foeM));
-  const distance = c.distance + gain;
-  const j = [`Poursuite — ${c.label} : ${gain >= 0 ? 'le navire creuse l\'écart' : 'le poursuivant gagne du terrain'} (${gain >= 0 ? '+' : ''}${gain} → Distance ${distance}/${c.escapeAt}).`];
-  const outcome = pursuitOutcome(distance, c.escapeAt);
-  if (outcome === 'escaped') {
-    patchSea(get, set, { crisis: undefined, boarding: undefined });
-    j.push('Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).');
-  } else if (outcome === 'caught') {
-    patchSea(get, set, { crisis: undefined });
-    j.push('Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG ch.13 l.420).');
-    startChaseBoarding(get, set);
-  } else {
-    patchSea(get, set, { crisis: { ...c, distance } });
+  if (sea.crisis.kind === 'poursuite') {
+    const c = sea.crisis;
+    const eff = effectiveSeaM(get);
+    const myM = eff.m ?? 1;
+    const foe = rollTest(c.foeSkill, 'intermediaire', rng);
+    const gain = pursuitDistanceGain(myM, total + pursuitLowMPenalty(myM)) - pursuitDistanceGain(c.foeM, foe.sl + pursuitLowMPenalty(c.foeM));
+    const distance = c.distance + gain;
+    const j = [`Poursuite — ${c.label} : ${gain >= 0 ? 'le navire creuse l\'écart' : 'le poursuivant gagne du terrain'} (${gain >= 0 ? '+' : ''}${gain} → Distance ${distance}/${c.escapeAt}).`];
+    const outcome = pursuitOutcome(distance, c.escapeAt);
+    if (outcome === 'escaped') {
+      patchSea(get, set, { crisis: undefined, boarding: undefined });
+      j.push('Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).');
+    } else if (outcome === 'caught') {
+      patchSea(get, set, { crisis: undefined });
+      j.push('Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG ch.13 l.420).');
+      startChaseBoarding(get, set);
+    } else {
+      patchSea(get, set, { crisis: { ...c, distance } });
+    }
+    noteSeaLine(get, set, j);
+    return j;
   }
-  noteSeaLine(get, set, j);
-  return { consequences: freeCons(j) };
-});
-
-/** Manche d'Évasion du Tourbillon (ch.13 l.514-528) : chaque manche coûte des Dégâts de collision. */
-registerCascadeApplier('tourbillon', (get, set, step) => {
-  if (!step.result) return;
-  const plan = get().travelPlan;
-  const sea = plan?.sea;
-  if (sea?.crisis?.kind !== 'tourbillon') return;
   const c = sea.crisis;
   const w = findWhirlpool(c.whirlpoolId)!;
-  const total = step.result.sl;
   const progress = c.progress + Math.max(0, total + w.manDR);
   const hull = plan!.vehicle!;
   const dmg = Math.max(0, w.ic - Math.floor((hull.characteristics?.endurance ?? 0) / 10));
@@ -1374,7 +1373,19 @@ registerCascadeApplier('tourbillon', (get, set, step) => {
     j.push('Le navire s\'arrache du Tourbillon (Test étendu d\'Évasion accompli, MDG ch.13 l.528).');
   } else patchSea(get, set, { crisis: { ...c, progress } });
   noteSeaLine(get, set, j);
-  return { consequences: freeCons(j) };
+  return j;
+}
+
+/** Manche de Poursuite (ch.13 l.354-370) — issue partagée avec la poursuite terrestre (`engine/pursuit`). */
+registerCascadeApplier('poursuite', (get, set, step) => {
+  if (!step.result) return;
+  return { consequences: freeCons(resolveSeaCrisisRound(get, set, step.result.sl)) };
+});
+
+/** Manche d'Évasion du Tourbillon (ch.13 l.514-528) : chaque manche coûte des Dégâts de collision. */
+registerCascadeApplier('tourbillon', (get, set, step) => {
+  if (!step.result) return;
+  return { consequences: freeCons(resolveSeaCrisisRound(get, set, step.result.sl)) };
 });
 
 /** Extermination des nuisibles (MDG 14 l.98-104) : Test étendu, 1d10 h par Test — cumul mutualisé
@@ -1700,7 +1711,6 @@ registerCascadeApplier('sea-pirate-hail', (get, set, step) => {
       if (r.removed) set({ vessel: { ...get().vessel!, cargo: r.lots } });
       j.push(`Les forbans fouillent la cale et emportent ${r.removed} Enc de cargaison (${pct} %, MDG ch.15 p.131).`);
     } else j.push('Les forbans fouillent une cale vide — rien à prendre.');
-    if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
     return { consequences: freeCons(j), insert: [{
       id: 'sea-pirate-tribute', kind: 'sea-pirate-tribute', icon: 'nautical/wind',
       label: 'Un prisonnier à sacrifier à Stromfels', interactive: true, defaultChoice: 'livrer',
@@ -1712,7 +1722,8 @@ registerCascadeApplier('sea-pirate-hail', (get, set, step) => {
   } else {
     startSeaPursuit(get, set, { label: String(step.meta?.crisisLabel ?? 'Cogue pirate'), desc: String(step.meta?.crisisDesc ?? '') }, 5);
   }
-  if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
+  // La reprise du jour à la fermeture de cette cascade (`purpose:'test'` en mer) est portée par
+  // `dispatchCascadeDone` → `runSeaDay` (couture canonique de clôture, jamais un `setTimeout` ad hoc).
   return { consequences: freeCons(j) };
 });
 
@@ -1730,7 +1741,6 @@ registerCascadeApplier('sea-pirate-tribute', (get, set, step) => {
     const ship = get().travelPlan?.vehicle;
     if (ship) for (const l of applyShipMoraleDelta(get, set, ship, -rollDice(2, 10, battleRng()))) j.push(l); // déplaisir de Manann (MDG ch.14)
   }
-  if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
   return { consequences: freeCons(j) };
 });
 

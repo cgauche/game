@@ -730,6 +730,31 @@ describe('Cogue pirate (#327 A5.3) — l’événement navire-hostile PRÉSENTE 
     expect(get().travelPlan!.sea!.crisis?.kind).toBe('poursuite');
   });
 
+  it('après « fuir », la conduite du jour REPREND SYNCHRONEMENT (couture `dispatchCascadeDone`, pas de `setTimeout`) → la manche de Poursuite finit par surfacer (#383)', () => {
+    forceHail();
+    const cur = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    get().cascadeChoose(cur.id, 'fuir');
+    get().cascadeNext(); // ferme la cascade de choix → dispatchCascadeDone (purpose 'test' + mer) relance runSeaDay
+    // Pas de soft-lock : le jour a redémarré SANS attendre un macrotask (la crise reste posée).
+    expect(get().travelPlan!.sea!.crisis?.kind).toBe('poursuite');
+    expect(get().pendingCascade?.purpose).toBe('travelDay');
+    // La Progression du jour ouvre ; sa résolution INSÈRE la manche de Poursuite (buildPostProgressionSteps).
+    for (let i = 0; i < 6 && !get().pendingCascade?.participants.some((s) => s.kind === 'poursuite'); i++) stepCascade();
+    expect(get().pendingCascade?.participants.some((s) => s.kind === 'poursuite')).toBe(true);
+  });
+
+  it('équipage SANS compétence navale : la manche de Poursuite se JOUE quand même (DR 0), jamais droppée en silence (#383)', () => {
+    set({ party: makePregens().slice(0, 3).map((h) => ({ ...h, skills: [] })) } as never);
+    forceHail();
+    const cur = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    get().cascadeChoose(cur.id, 'fuir');
+    get().cascadeNext(); // → runSeaDay : aucun PJ apte → la crise se résout à DR 0 (baseline), pas de lock
+    // La manche a JOUÉ : la crise a avancé (distance ≠ départ `escapeAt/2`) ou s'est résolue — jamais figée.
+    const crisis = get().travelPlan?.sea?.crisis;
+    const advanced = crisis?.kind !== 'poursuite' || crisis.distance !== Math.floor(crisis.escapeAt / 2);
+    expect(advanced).toBe(true);
+  });
+
   it('branche PRÉSENTÉE « soumettre » → pillage (100 %) puis choix du tribut (étape insérée)', () => {
     set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'vin', enc: 30, basePriceGold: 2 }] } } as never);
     forceHail();
