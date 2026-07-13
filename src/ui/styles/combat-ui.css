@@ -455,7 +455,6 @@ textarea:focus {
 .vl-assign { display: flex; gap: 6px; flex-wrap: wrap; }
 /* Révélation du butin (partagé victoire/fenêtre de loot) : état d'identification + actions courtes. */
 .vl-unid { margin-left: 8px; font-size: 0.78em; color: var(--magic); white-space: nowrap; }
-.vl-quals { margin-left: 8px; font-size: 0.8em; color: var(--muted); }
 .vl-acts { display: flex; gap: 6px; }
 .vl-act { font-size: 12px; padding: 4px 10px; white-space: nowrap; }
 

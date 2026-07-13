@@ -22,7 +22,7 @@ import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, careerLabelFor, findClassById, talentConcrete, symptomLabel, qualityRefLabel, findTrappingById } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, careerLabelFor, findClassById, talentConcrete, symptomLabel, findTrappingById } from '../data';
 import { weaponFormLabel } from '../gameIso/rig/parts/weaponForms';
 import { formatTrait } from '../engine/traits/dispatch';
 import { formatRemaining } from '../engine/disease';
@@ -30,7 +30,7 @@ import { CodexRef } from './compendium/CodexRef';
 import { CharStatsGrid } from './CharStatsGrid';
 import { CharValue } from './CharValue';
 import { Coins } from './Coins';
-import { TalentChip } from './EntityChip';
+import { TalentChip, QualityChips } from './EntityChip';
 import { WoundsBadge } from './WoundsBadge';
 import { FateChips } from './FateChips';
 import { ColorPalettePickers } from './ColorPalettePickers';
@@ -441,16 +441,18 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
   // Verrou d'Évaluation : un échec bloque la re-tentative jusqu'au lendemain (LDB 12 l.120).
   const today = useGame((s) => Math.floor(s.gameTime / MINUTES_PER_DAY));
 
-  const itemStats = (it: ItemInstance): string => {
+  const itemStats = (it: ItemInstance): ReactNode => {
     // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat) ;
     // une identification RATÉE de beaucoup (ADE2) peut y ancrer de FAUSSES certitudes, affichées telles.
-    const quals = it.identified === false
-      ? (it.suspectedQualities?.length ? `soupçonné : ${it.suspectedQualities.join(', ')}` : '')
-      : it.qualities.map(qualityRefLabel).filter(Boolean).join(', ');
+    // Identifié : qualités = chips canoniques (`QualityChips`, popover Codex).
+    const quals: ReactNode = it.identified === false
+      ? (it.suspectedQualities?.length ? `soupçonné : ${it.suspectedQualities.join(', ')}` : null)
+      : (it.qualities.length ? <QualityChips qualities={it.qualities} /> : null);
     if (it.kind === 'melee' || it.kind === 'ranged') {
       // Dégâts résolus (« +BF+4 (7) ») + Allonge/Portée via le composeur partagé `weaponStatParts`
       // (BF du héros injecté, comme au combat) ; les qualités restent gérées ici (masquage non-identifié).
-      return [...weaponStatParts(it, charBonus(hero.characteristics, 'force')), quals].filter(Boolean).join(' · ');
+      const mech = weaponStatParts(it, charBonus(hero.characteristics, 'force')).join(' · ');
+      return <>{mech}{mech && quals ? ' · ' : ''}{quals}</>;
     }
     if (it.kind === 'armor')
       return [it.pa != null && `PA ${it.pa}`, (it.locs ?? []).map((l) => LOC_SHORT[l]).join(', '), `couche ${armourLayer(it)}`]

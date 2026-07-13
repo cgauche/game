@@ -1,6 +1,7 @@
 import { useGame, type LootGear } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
 import { PortraitPicker } from './PortraitPicker';
+import { QualityChips } from './EntityChip';
 import type { Combatant } from '../engine/types';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { Icon } from './Icon';
@@ -37,7 +38,7 @@ export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {
               {unidentified
                 ? <span className="vl-unid">{aura ? 'magique, non identifié' : 'non identifié'}</span>
                 : fx.qualities?.length
-                  ? <span className="vl-quals">{fx.qualities.join(', ')}</span>
+                  ? <>{' '}<QualityChips qualities={fx.qualities.map((id) => ({ id }))} /></>
                   : null}
             </span>
             {onAppraise && unidentified && (

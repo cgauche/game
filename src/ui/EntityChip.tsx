@@ -9,8 +9,8 @@ import { Fragment, type ReactNode } from 'react';
 import { CodexRef } from './compendium/CodexRef';
 import { splitTopLevelOu } from '../engine/careerSlots';
 import { statName } from '../engine/statEntry';
-import { findSkillById, findTalentById, skillInstanceLabel, talentConcrete } from '../data';
-import type { SkillInstance, TalentInstance } from '../engine/types';
+import { findSkillById, findTalentById, skillInstanceLabel, talentConcrete, qualityRefLabel } from '../data';
+import type { SkillInstance, TalentInstance, QualityInstance } from '../engine/types';
 
 /** Un chip : boîte `.entity-chip` + déclencheur `CodexRef` (`label` = clé de résolution) + badge
  *  optionnel en fin (carac/valeur, `+avancées`, `×N`…). */
@@ -84,5 +84,27 @@ export function TalentChip({ talent }: { talent: TalentInstance }) {
       label={findTalentById(talent.talentId)?.label ?? talent.talentId}
       show={`${talentConcrete(talent)}${talent.times > 1 ? ` ×${talent.times}` : ''}`}
     />
+  );
+}
+
+/** Chip d'une QUALITÉ/DÉFAUT d'objet (`{id, value?}`) — clé Codex `qualities` = libellé de base ; l'Indice
+ *  (« Solide 3 ») s'affiche mais n'entre pas dans la clé de résolution. */
+export function QualityChip({ quality }: { quality: QualityInstance }) {
+  return (
+    <EntityRef category="qualities" label={qualityRefLabel({ id: quality.id })} show={qualityRefLabel(quality)} />
+  );
+}
+
+/** Suite inline de chips de qualités (espace sécable entre chips → enroulement naturel, sans wrapper flex). */
+export function QualityChips({ qualities }: { qualities: QualityInstance[] }) {
+  return (
+    <>
+      {qualities.map((q, i) => (
+        <Fragment key={i}>
+          {i > 0 && ' '}
+          <QualityChip quality={q} />
+        </Fragment>
+      ))}
+    </>
   );
 }

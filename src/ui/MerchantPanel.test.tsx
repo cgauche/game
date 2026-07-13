@@ -51,8 +51,9 @@ describe('MerchantPanel (#2 — panier)', () => {
     );
     expect(html).toContain('merch-compare');
     expect(html).toContain('Dégâts'); // colonne / comparaison
-    expect(html).toContain('Empaleuse'); // Atout listé
-    expect(html).toMatch(/Critique/); // … avec sa description canon
+    expect(html).toContain('entity-chip'); // le NOM de qualité = chip canonique (EntityRef)
+    expect(html).toContain('Empaleuse'); // Atout listé (dans le chip)
+    expect(html).toMatch(/Critique/); // … avec sa description canon (sous le chip)
     expect(html).toContain('Fermer');
     expect(html).not.toMatch(/Équiper/); // plus d'équipement depuis le marchand
   });

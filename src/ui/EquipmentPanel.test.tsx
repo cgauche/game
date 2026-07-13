@@ -87,4 +87,15 @@ describe('EquipmentPanel (rendu)', () => {
     const html = renderToStaticMarkup(<EquipmentPanel hero={h} />);
     expect(html).toContain('deux mains'); // titre de la cellule 2nde bloquée
   });
+
+  it('« En main » : les qualités de l’arme = chips canoniques (EntityRef)', () => {
+    const h = mkHero();
+    h.loadouts![0].main = 'halle'; // Hallebarde : Défensive/Taille/Empaleuse
+    h.loadouts![0].off = undefined;
+    recomputeLoadout(h);
+    const html = renderToStaticMarkup(<EquipmentPanel hero={h} />);
+    expect(html).toContain('weap-quals');
+    expect(html).toContain('entity-chip'); // plus de texte plat « Défensive, … »
+    expect(html).toContain('Empaleuse');
+  });
 });

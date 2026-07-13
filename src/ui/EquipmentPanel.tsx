@@ -6,6 +6,7 @@ import { defaultAppearance } from '../gameIso/rig/appearance';
 import { equipFromCombatant } from '../gameIso/rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/combatantVisuals';
 import { CodexRef } from './compendium/CodexRef';
+import { QualityChips } from './EntityChip';
 import { ItemIcon } from './ItemIcon';
 import { MediaSelect, type MediaOption } from './MediaSelect';
 import { charBonus } from '../engine/characteristics';
@@ -288,14 +289,13 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           ) : (
             activeWeapons.map((w, i) => {
               const ammo = w.type === 'ranged' ? compatibleAmmo(hero, w).reduce((s, a) => s + (a.qty ?? 0), 0) : null;
-              const quals = weaponQualities(w.qualities);
               return (
                 <div className="weap" key={i}>
                   <ItemIcon item={w} size="sm" />
                   <span className="weap-text">
                     <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef>{' '}
                     <em>{weaponStatParts(w, strBonus).join(' · ')}</em>
-                    {quals && <span className="weap-quals"> · {quals}</span>}
+                    {w.qualities.length > 0 && <span className="weap-quals"> · <QualityChips qualities={w.qualities} /></span>}
                     {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · <Icon id="item/ammo" size="sm" /> {ammo}</span>}
                   </span>
                 </div>

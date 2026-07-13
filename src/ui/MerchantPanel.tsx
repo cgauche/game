@@ -10,6 +10,7 @@ import { itemFromTrappingById, isWeaponActive, damageString } from '../engine/it
 import { rangeSpecLabel, ammoRangeModLabel } from './weaponStats';
 import type { WeaponDamageSpec, WeaponRangeSpec, AmmoRangeMod } from '../engine/types';
 import { describeQuality } from '../engine/qualities/describe';
+import { QualityChip } from './EntityChip';
 import { sellGain, barterQuote, sellBuyerAvailability } from '../state/merchantFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
 import type { SceneEntity } from '../state/scene';
@@ -206,9 +207,11 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
 
   // Fiche de détail (clic sur le nom) : INFORMATIVE — Atouts/Défauts + description + comparaison.
   const renderDetailCard = (item: ItemInstance) => {
-    const quals = item.qualities.map((q) => describeQuality(q)).filter((q): q is NonNullable<typeof q> => q != null);
-    const atouts = quals.filter((q) => q.type !== 'defaut');
-    const defauts = quals.filter((q) => q.type === 'defaut');
+    // Qualités : NOM = chip canonique (`EntityRef`, popover Codex → type Atout/Défaut + source) ;
+    // la description d'achat reste sous le chip. Atouts d'abord, Défauts ensuite.
+    const quals = item.qualities
+      .flatMap((q) => { const info = describeQuality(q); return info ? [{ q, info }] : []; })
+      .sort((a, b) => (a.info.type === 'defaut' ? 1 : 0) - (b.info.type === 'defaut' ? 1 : 0));
     const canCompare = item.kind === 'melee' || item.kind === 'ranged' || item.kind === 'armor';
     return (
       <div className="merch-compare preview" role="region" aria-label={`Détails ${item.name}`}>
@@ -216,10 +219,14 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
           <strong>{item.name}</strong>
           <button className="btn small" onClick={() => setDetails(null)}>Fermer</button>
         </div>
-        {(atouts.length > 0 || defauts.length > 0) && (
+        {quals.length > 0 && (
           <div className="mc-quals">
-            {atouts.map((q) => <div className="mc-qual atout" key={`a-${q.key}`}><span className="q-name">{q.label}</span>{q.desc && <span className="q-desc">{mdToText(q.desc)}</span>}</div>)}
-            {defauts.map((q) => <div className="mc-qual flaw" key={`d-${q.key}`}><span className="q-name">{q.label}</span>{q.desc && <span className="q-desc">{mdToText(q.desc)}</span>}</div>)}
+            {quals.map(({ q, info }) => (
+              <div className="mc-qual" key={q.id}>
+                <QualityChip quality={q} />
+                {info.desc && <span className="q-desc">{mdToText(info.desc)}</span>}
+              </div>
+            ))}
           </div>
         )}
         {item.desc && <div className="mc-desc"><Prose md={item.desc} /></div>}

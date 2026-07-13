@@ -41,7 +41,7 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/d
 // `stripComments` — peut différer du numéro de ligne brut du fichier si un bloc `/* … */` multi-lignes
 // précède le site).
 const RATCHET_EXCEPTIONS: Record<string, string> = {
-  'ui/CharacterSheet.tsx:806': "SlotChoiceRow : options éphémères {label, display, owned} SANS id — `label` EST la valeur de câblage documentée (cf. docstring du composant), pas une FK vers une entité de donnée.",
+  'ui/CharacterSheet.tsx:808': "SlotChoiceRow : options éphémères {label, display, owned} SANS id — `label` EST la valeur de câblage documentée (cf. docstring du composant), pas une FK vers une entité de donnée.",
   'ui/compendium/CompendiumScreen.tsx:72': 'CodexItem (registry.ts) agrège ~20 catégories hétérogènes SANS id unifié — le Codex, navigateur de référence en LECTURE SEULE, sélectionne par label par construction.',
   'ui/compendium/CompendiumScreen.tsx:74': 'idem CompendiumScreen.tsx:72 (CodexItem sans id unifié).',
   'ui/compendium/CompendiumScreen.tsx:109': 'idem CompendiumScreen.tsx:72 (CodexItem sans id unifié).',
