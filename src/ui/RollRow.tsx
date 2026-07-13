@@ -57,7 +57,7 @@ export function RollRow({
       <button className="btn btn-resource" onClick={determination.onResolve}>
         <Icon id="resource/resolve" size="sm" /> Détermination ×{determination.resolve}
       </button>
-      <CodexRef category="characteristics" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+      <CodexRef category="characteristics" id="determination" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
     </>
   );
   return (

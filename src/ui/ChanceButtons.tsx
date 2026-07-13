@@ -54,14 +54,14 @@ export function ChanceButtons({
     <>
       {rerollBtn}
       {!freeReroll && rerollable && fortune > 0 && (
-        <CodexRef category="characteristics" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+        <CodexRef category="characteristics" id="chance" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
       )}
       {fortune > 0 && onBonusSL && (
         <>
           <button className="btn btn-resource" onClick={onBonusSL}>
             <Icon id="ui/add" size="sm" /> +1 DR ×{fortune}
           </button>
-          <CodexRef category="characteristics" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+          <CodexRef category="characteristics" id="chance" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
         </>
       )}
       {pactBtn}

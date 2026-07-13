@@ -156,7 +156,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
               <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" />
               <h3>{hero.name}</h3>
               <span className="char-sub">
-                <CodexRef category="races" label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
+                <CodexRef category="races" id={hero.species} label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" id={hero.career} label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
               {hero.star && (() => {
@@ -164,7 +164,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 const label = s?.label ?? hero.star;
                 return (
                   <span className="char-sub star-sub">
-                    ★ <CodexRef category="stars" label={label}>{label}</CodexRef>
+                    ★ <CodexRef category="stars" id={hero.star} label={label}>{label}</CodexRef>
                     {s?.signe ? ` — ${s.signe}` : ''}
                   </span>
                 );
@@ -222,7 +222,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
       <span className="mini-title">Sorts — incantation hors combat</span>
       {(hero.sinPoints ?? 0) > 0 && (
         <span className="muted">
-          <Icon id="ui/balance" size="sm" /> <CodexRef category="characteristics" label="Péché">Péché : {hero.sinPoints}</CodexRef>
+          <Icon id="ui/balance" size="sm" /> <CodexRef category="characteristics" id="peche" label="Péché">Péché : {hero.sinPoints}</CodexRef>
         </span>
       )}
       <div className="spell-target">
@@ -248,7 +248,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           return (
             <div className="spell-row" key={sp.label} title={support !== 'mecanique' ? 'Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : undefined}>
               <span className="spell-name">
-                <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
+                <CodexRef category="spells" id={sp.id} label={sp.label}>{sp.label}</CodexRef>
                 {sp.cn != null ? ` · NI ${sp.cn}` : ''}
                 {support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? (<> <Icon id="ui/partial" size="sm" /></>) : ''}
               </span>
@@ -278,7 +278,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         {grimoireSpells.map((sp) => (
           <div className="spell-row" key={`g-${sp.label}`} title="Lecture au grimoire : sort non mémorisé de votre Domaine — NI doublé, deux mains.">
             <span className="spell-name">
-              <Icon id="nav/compendium" size="sm" /> <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
+              <Icon id="nav/compendium" size="sm" /> <CodexRef category="spells" id={sp.id} label={sp.label}>{sp.label}</CodexRef>
               {sp.cn != null ? ` · NI ${sp.cn}→${sp.cn * 2}` : ''}
             </span>
             {isMagicMissile(sp) ? (
@@ -314,7 +314,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                 return (
                   <div className="spell-row" key={`comp-${sp.id}`}>
                     <span className="spell-name">
-                      <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
+                      <CodexRef category="spells" id={sp.id} label={sp.label}>{sp.label}</CodexRef>
                       {n > 0 ? <span className="muted"> · ×{n}</span> : null}
                     </span>
                     <span className="spell-actions">
@@ -467,7 +467,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
           </div>
           <div className="stat-chip">
-            <span className="sc-label" title="Mouvement"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
+            <span className="sc-label" title="Mouvement"><CodexRef category="characteristics" id="mouvement" label="Mouvement">Mouvement</CodexRef></span>
             <span className="sc-value">{hero.movement}</span>
           </div>
           <div className={`stat-chip ${over ? 'enc-over' : ''}`}>
@@ -508,7 +508,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             return (
               <div className="skill-line" key={i} title={`${s.characteristic} ${effectiveChar(hero, s.characteristic)} + ${s.advances}`}>
                 <span className="sk-name">
-                  <CodexRef category="skills" label={findSkillById(s.skillId)?.label ?? s.skillId}>
+                  <CodexRef category="skills" id={s.skillId} label={findSkillById(s.skillId)?.label ?? s.skillId}>
                     {skillInstanceLabel(s)}
                   </CodexRef>
                 </span>
@@ -537,7 +537,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           <div className="inv-rows">
             {(hero.corruption ?? 0) > 0 && (
               <div className="inv-row" style={{ alignItems: 'center' }}>
-                <span className="ir-name"><Icon id="nav/mutation" size="sm" /> <CodexRef category="characteristics" label="Corruption">Corruption</CodexRef></span>
+                <span className="ir-name"><Icon id="nav/mutation" size="sm" /> <CodexRef category="characteristics" id="corruption" label="Corruption">Corruption</CodexRef></span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {hero.corruption} point{(hero.corruption ?? 0) > 1 ? 's' : ''}{hero.damned ? ' — DAMNÉ' : ''}
                 </span>
@@ -606,7 +606,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                   <ItemIcon item={it} size="sm" />
                   <div className="ir-main">
                     <span className="ir-name">
-                      <CodexRef category="trappings" label={itemLabel(it)}>{itemLabel(it)}</CodexRef>{skinned && (<> <Icon id="action/cast" size="sm" /></>)}
+                      <CodexRef category="trappings" id={it.trappingId} label={itemLabel(it)}>{itemLabel(it)}</CodexRef>{skinned && (<> <Icon id="action/cast" size="sm" /></>)}
                       {it.identified === false && (
                         <span className="ir-unid" title="Objet non identifié — Évaluer (ou Détecter l'artefact) pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>
                           {it.magicKnown ? (<><Icon id="action/cast" size="sm" /> Magique — non identifié</>) : (<><Icon id="nav/identify" size="sm" /> Non identifié</>)}
@@ -978,7 +978,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
                 return (
                 <div className="adv-row acquire" key={spell.label} title={support !== 'mecanique' ? 'Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : undefined}>
                   <span className="adv-name">
-                    <CodexRef category="spells" label={spell.label}>{spell.label}</CodexRef>{support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? (<> <Icon id="ui/partial" size="sm" /></>) : ''}
+                    <CodexRef category="spells" id={spell.id} label={spell.label}>{spell.label}</CodexRef>{support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? (<> <Icon id="ui/partial" size="sm" /></>) : ''}
                     <span className="muted"> · {spell.type}{spell.subType ? ` (${spell.subType})` : ''}{spell.cn != null ? ` · NI ${spell.cn}` : ''}</span>
                   </span>
                   <span className="adv-meta" />

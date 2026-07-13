@@ -14,19 +14,19 @@ export function FateChips({ c }: { c: Combatant }) {
   return (
     <>
       <div className="stat-chip">
-        <span className="sc-label" title="Destin"><CodexRef category="characteristics" label="Destin">Destin</CodexRef></span>
+        <span className="sc-label" title="Destin"><CodexRef category="characteristics" id="destin" label="Destin">Destin</CodexRef></span>
         <span className="sc-value">{c.fate}</span>
       </div>
       <div className="stat-chip">
-        <span className="sc-label" title="Chance"><CodexRef category="characteristics" label="Chance">Chance</CodexRef></span>
+        <span className="sc-label" title="Chance"><CodexRef category="characteristics" id="chance" label="Chance">Chance</CodexRef></span>
         <span className="sc-value">{c.fortune ?? 0}</span>
       </div>
       <div className="stat-chip">
-        <span className="sc-label" title="Résilience"><CodexRef category="characteristics" label="Résilience">Résilience</CodexRef></span>
+        <span className="sc-label" title="Résilience"><CodexRef category="characteristics" id="resilience" label="Résilience">Résilience</CodexRef></span>
         <span className="sc-value">{c.resilience ?? 0}</span>
       </div>
       <div className="stat-chip">
-        <span className="sc-label" title="Détermination"><CodexRef category="characteristics" label="Détermination">Détermination</CodexRef></span>
+        <span className="sc-label" title="Détermination"><CodexRef category="characteristics" id="determination" label="Détermination">Détermination</CodexRef></span>
         <span className="sc-value">{c.resolve ?? 0}</span>
       </div>
     </>

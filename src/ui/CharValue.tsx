@@ -12,7 +12,7 @@ import { CodexRef } from './compendium/CodexRef';
 export function CharValue({ charKey, value, bonus }: { charKey: CharKey; value: number | string; bonus?: number }) {
   return (
     <span className="char-value">
-      <CodexRef category="characteristics" label={CHAR_LABELS[charKey]}>{CHAR_ABR[charKey]}</CodexRef>
+      <CodexRef category="characteristics" id={charKey} label={CHAR_LABELS[charKey]}>{CHAR_ABR[charKey]}</CodexRef>
       <b>{value}</b>
       {bonus != null && <em title={`Bonus de ${CHAR_LABELS[charKey]}`}>B{bonus}</em>}
     </span>

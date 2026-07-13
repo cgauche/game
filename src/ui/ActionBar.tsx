@@ -474,7 +474,7 @@ export function ActionBar() {
                   {spell.label} <span className="bp-spell-ni">({ni})</span>
                   <span className="ab-spell-meta">{meta}</span>
                 </button>
-                <CodexRef category="spells" label={label} className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+                <CodexRef category="spells" id={spell.id} label={label} className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
                 {canFocus && (
                   <button className="btn btn-sm" onClick={() => focusSpell(spell.id)} title="Test étendu de Focalisation">
                     Focaliser{focusDr != null ? ` (${focusDr}/${spell.cn})` : ''}
@@ -510,7 +510,7 @@ export function ActionBar() {
                 <button className="btn btn-sm" onClick={() => gainAdvantage(s.skillId)} title={`Test de ${label} : +1 Avantage sur réussite (max ${s.cap}) — coûte l’Action`}>
                   <Icon id="action/aim" size="sm" /> {label} <span className="bp-spell-ni">(max {s.cap})</span>
                 </button>
-                <CodexRef category="skills" label={label} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
+                <CodexRef category="skills" id={s.skillId} label={label} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
               </div>
             );
           })}
@@ -521,7 +521,7 @@ export function ActionBar() {
           {ammoChoices.map((a) => (
             <div key={a.uid} className="ab-spell-row">
               <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => selectAmmo(a.uid)}><ItemIcon item={a} size={18} /> {a.name} ×{a.qty}</button>
-              <CodexRef category="trappings" label={a.name} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
+              <CodexRef category="trappings" id={a.trappingId} label={a.name} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           ))}
         </div>
@@ -551,14 +551,14 @@ export function ActionBar() {
             <button className="btn btn-sm" onClick={resolvePsychImmune}>
               <Icon id="action/defend" size="sm" /> Immunité Psychologie (ce Round + le prochain)
             </button>
-            <CodexRef category="characteristics" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+            <CodexRef category="characteristics" id="determination" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
           </div>
           {(active.traumas?.length ?? 0) > 0 && (
             <div className="ab-spell-row">
               <button className="btn btn-sm" onClick={resolveIgnoreCrit}>
                 <Icon id="journal/heal" size="sm" /> Ignorer modifs de critique (ce Round)
               </button>
-              <CodexRef category="characteristics" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+              <CodexRef category="characteristics" id="determination" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           )}
           {removableConditions.map((c) => (
@@ -566,7 +566,7 @@ export function ActionBar() {
               <button className="btn btn-sm" onClick={() => spendResolve(c.name)}>
                 <Icon id="resource/resolve" size="sm" /> Retirer {c.name}{c.value > 1 ? ` (${c.value})` : ''}
               </button>
-              <CodexRef category="characteristics" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+              <CodexRef category="characteristics" id="determination" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           ))}
         </div>

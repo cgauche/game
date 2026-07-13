@@ -23,7 +23,7 @@ export function CharStatsGrid({ value, valClass, note, className }: CharStatsGri
       {CHAR_KEYS.map((k) => (
         <div className="stat" key={k}>
           <span className="stat-label">
-            <CodexRef category="characteristics" label={CHAR_LABELS[k]}>{CHAR_ABR[k]}</CodexRef>
+            <CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_ABR[k]}</CodexRef>
           </span>
           <span className={`stat-val${valClass?.(k) ? ` ${valClass(k)}` : ''}`} title={note?.(k)}>{value(k)}</span>
         </div>

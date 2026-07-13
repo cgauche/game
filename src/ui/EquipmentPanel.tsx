@@ -105,7 +105,7 @@ function SlotCell({ item, pa, fallback, options, value, onSelect, disabled, empt
   }
   const trigger = (
     <>
-      <CodexRef category="trappings" label={itemLabel(item)} className="eq-slot-icon" tooltipOnly fallback={fallback}>
+      <CodexRef category="trappings" id={item.trappingId} label={itemLabel(item)} className="eq-slot-icon" tooltipOnly fallback={fallback}>
         <ItemIcon item={item} size="md" />
       </CodexRef>
       {pa != null && <span className="eq-slot-pa">{pa}</span>}
@@ -293,7 +293,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                 <div className="weap" key={i}>
                   <ItemIcon item={w} size="sm" />
                   <span className="weap-text">
-                    <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef>{' '}
+                    <CodexRef category="trappings" id={items.find((it) => it.uid === w.uid)?.trappingId} label={w.name}>{w.name}</CodexRef>{' '}
                     <em>{weaponStatParts(w, strBonus).join(' · ')}</em>
                     {w.qualities.length > 0 && <span className="weap-quals"> · <QualityChips qualities={w.qualities} /></span>}
                     {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · <Icon id="item/ammo" size="sm" /> {ammo}</span>}

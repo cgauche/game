@@ -11,7 +11,7 @@ import { CodexRef } from './compendium/CodexRef';
  */
 export function WoundsBadge({ wounds }: { wounds: { current: number; max: number } }) {
   return (
-    <CodexRef category="characteristics" label="Blessure" className="wounds-badge">
+    <CodexRef category="characteristics" id="blessure" label="Blessure" className="wounds-badge">
       <b>{wounds.current}/{wounds.max}</b>
     </CodexRef>
   );

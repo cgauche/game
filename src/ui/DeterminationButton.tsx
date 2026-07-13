@@ -24,7 +24,7 @@ export function DeterminationButton({ combatant, onSpend }: { combatant?: Combat
       >
         <Icon id="resource/resolve" size="sm" /> Détermination ×{resolve}
       </button>
-      <CodexRef category="characteristics" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+      <CodexRef category="characteristics" id="determination" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
       {open &&
         conds.map((c) => (
           <button
