@@ -68,6 +68,7 @@ import interludeEventsJson from './interludeEvents.json';
 import peripetiesJson from './peripeties.json';
 import massBattleJson from './mass-battle.json';
 import grappleJson from './grapple.json';
+import reglesJson from './regles.json';
 import waterExposureJson from './water-exposure.json';
 import nightStakesJson from './night-stakes.json';
 import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
@@ -1230,6 +1231,16 @@ export const careerLevels = careerLevelsJson as CareerLevelData[];
 export const skills = skillsJson as SkillData[];
 export const talents = talentsJson as TalentData[];
 export const etats = etatsJson as EtatData[];
+/** Procédures / options de jeu (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation
+ *  étendue…) — texte VERBATIM du Source (règle stricte 5), app-owned éditable au Codex. Routées en
+ *  tooltip `CodexRef` (catégorie `regles`). */
+export interface RegleData {
+  id: string;
+  label: string;
+  desc: string;
+  source: SourceRef;
+}
+export const regles = reglesJson as RegleData[];
 /** Maladies (LDB 20) — app-owned éditable au Codex ; le COMPORTEMENT (cycle/symptômes) vit dans
  *  `engine/disease`. `DiseaseDef` (type) y est défini ; ici on n'expose que la DONNÉE. */
 export const maladies = maladiesJson as DiseaseDef[];

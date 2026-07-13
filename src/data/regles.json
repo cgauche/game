@@ -1,0 +1,122 @@
+[
+  {
+    "id": "sombre-pacte",
+    "label": "Sombre Pacte",
+    "desc": "Quelquefois, vous devez l'emporter. La plupart du temps, cela signifie réussir un Test important. Si ce Test aboutit à un échec, vous pouvez utiliser un Point de Chance pour le relancer, en espérant que la seconde tentative sera couronnée de succès. Mais qu'en sera-t-il si ce second Test se solde lui aussi par un échec ? Ou qu'il ne vous reste plus de Points de Chance à utiliser ? Il est temps de conclure un Sombre Pacte.\n\nVous pouvez décider de recevoir volontairement un Point de Corruption pour pouvoir relancer un Test, même si un deuxième jet a déjà été effectué. C'est toujours un choix qui vous appartient – jamais le MJ ne peut prendre cette décision à votre place – même s'il n'y à rien d'anormal à ce que le MJ vous rappelle gentiment qu'il existe un moyen de pouvoir relancer une fois de plus. Après tout, c'est quoi, le pire ?",
+    "source": {
+      "book": "livre-de-base",
+      "page": 182,
+      "note": "LDB ch.19 « Sombres Pactes »"
+    }
+  },
+  {
+    "id": "combat-deux-armes",
+    "label": "Combat à deux armes",
+    "desc": "Certains guerriers préfèrent se battre avec une arme dans chaque main – comme utiliser une épée et un brise-épée, ou une épée et un bouclier. Les règles suivantes s'appliquent lorsque vous combattez avec deux armes.\n\n- Vous pouvez utiliser n'importe quelle arme de combat rapproché à une main ou n'importe quel pistolet lorsque vous vous battez à deux armes.\n- Vous pouvez utiliser n'importe quelle main pour effectuer une attaque. Les attaques effectuées avec votre main secondaire subissent une pénalité de -20 sur tous les Tests applicables (voir Difficulté de Combat pour plus d'informations.)\n- Si vous possédez le talent Maniement de deux armes, vous pouvez attaquer avec les deux armes. Voir le **Chapitre 4 : Compétences et Talents** pour plus d'informations.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 163,
+      "note": "LDB ch.13 « Combat à deux armes »"
+    }
+  },
+  {
+    "id": "main-secondaire",
+    "label": "Attaque de la main secondaire",
+    "desc": "Vous pouvez utiliser n'importe quelle main pour effectuer une attaque. Les attaques effectuées avec votre main secondaire subissent une pénalité de -20 sur tous les Tests applicables (voir Difficulté de Combat pour plus d'informations.)",
+    "source": {
+      "book": "livre-de-base",
+      "page": 163,
+      "note": "LDB ch.13 « Combat à deux armes »"
+    }
+  },
+  {
+    "id": "viser-une-localisation",
+    "label": "Viser une Localisation",
+    "desc": "Une attaque ou un tir qui cherche à atteindre une Localisation particulière. Sur un succès, vous touchez à l'endroit désiré.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 161,
+      "note": "LDB ch.13, Tableau des Difficultés de Combat — Complexe (-20)"
+    }
+  },
+  {
+    "id": "tirer-dans-le-tas",
+    "label": "Tirer dans le tas",
+    "desc": "Les Tests de **Capacité de Tir** effectués pour toucher un groupe de cibles sont **Accessibles (+20)** si le groupe comporte entre 3 et 6 personnes, **Faciles (+40)** s'ils sont entre 7 et 12, et **Très Faciles (+60)** s'ils sont 13 ou plus. Tout succès est appliqué au hasard parmi les cibles éligibles, à la discrétion du MJ. Si ce modificateur vous permet de toucher alors que le Test aurait sinon échoué, vous réussissez avec 0 DR.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 162,
+      "note": "LDB ch.13 « Tirer dans le tas »"
+    }
+  },
+  {
+    "id": "tir-en-mouvement",
+    "label": "Tirer en se déplaçant",
+    "desc": "Tirer pendant un Round où vous utilisez aussi votre Mouvement.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 161,
+      "note": "LDB ch.13, Tableau des Difficultés de Combat — Complexe (-10)"
+    }
+  },
+  {
+    "id": "empoignade",
+    "label": "Empoignade",
+    "desc": "Au lieu d'infliger des Dégâts suite à une attaque à mains nues, vous pouvez tenter d'Empoigner et d'immobiliser votre adversaire. Vous devez déclarer cette intention avant d'effectuer le lancer pour toucher votre adversaire. Si vous remportez le Test opposé, vous et votre adversaire êtes Empoignés, et votre adversaire gagne l'État *Empêtré*.\n\nSi vous commencez votre tour Empoigné, vous pouvez briser l'Empoignade si vous disposez d'un Avantage supérieur à celui de votre adversaire, et vous n'êtes pas considéré comme *Engagé* pour votre Mouvement ; autrement, vous devez effectuer un Test opposé de **Force** pour votre Action, Sur un succès, vous pouvez choisir une des deux options suivantes :\n\n• Infliger BF + DR Dégâts en utilisant votre lancer de Force pour déterminer la Localisation affectée. Vous ignorez tous les PA car vous ne faites qu'effectuer des clefs de bras tout en tirant sur les muscles.\n\n• Soit : 1) Conférer l'État *Empêtré* à votre adversaire, ou 2) vous défaire de ce même État et vous débarrasser d'un État *Empêtré* supplémentaire pour chaque DR obtenu.\n\nSi vous perdez le Test opposé, vous ne pouvez rien faire d'autre que de vous débattre et votre adversaire gagne +1 Avantage.\n\nCeux qui ne sont pas partie prenante dans cette Empoignade gagnent un bonus de +20 pour toucher le Personnage Empoigné avec le plus faible Avantage, et de +10 pour celui qui dispose de l'avantage le plus important.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 163,
+      "note": "LDB ch.13 « Empoignade »"
+    }
+  },
+  {
+    "id": "retenir-ses-coups",
+    "label": "Retenir ses coups (maîtriser sans tuer)",
+    "desc": "Les règles partent du principe que vous voulez infliger toutes les Blessures Critiques que vous pouvez. Cependant, vous pourriez désirer maîtriser un adversaire sans le tuer. Dans ce cas, vous devez déclarer que vous Retenez vos coups avant de faire le jet pour toucher votre ennemi, ce qui veut dire que vous utilisez le plat de votre lame ou une technique vous permettant d'éviter de blesser gravement votre opposant. Dans ce cas, vous infligez tout de même des Blessures, mais vous n'infligez de Blessure Critique que si votre adversaire tombe à 0 Blessure.",
+    "source": {
+      "book": "aux-armes",
+      "page": 82,
+      "note": "AA « Mises à jour de l'État Hémorragique » — Blessures critiques"
+    }
+  },
+  {
+    "id": "double-critique-maladresse",
+    "label": "Critique et Maladresse (double)",
+    "desc": "Nous proposons des règles additionnelles pour les Critiques et la Maladresse en Combat un peu plus loin dans ce chapitre. Ces dernières peuvent être utilisées pour rajouter de la tension à **tous** les Tests, offrant ainsi une perspective épique où les résultats extraordinaires deviennent monnaie courante. Si cela correspond à votre groupe, vous pouvez vous servir de ce qui suit comme d'une règle optionnelle.\n\nTout Test dont le résultat est à la fois un succès et un double est appelé un **Critique**, ce qui signifie que vous avez obtenu un Succès Stupéfiant sur le **Tableau des Résultats** ; de même, un échec qui est également un double est appelé une **Maladresse**, et devient un Échec Stupéfiant sur le **Tableau des Résultats**. C'est avec les Tests simples que cette règle fonctionne le mieux, ajoutant un côté plus amusant aux résultats « oui » ou « non » obtenus normalement.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 153,
+      "note": "LDB ch.12 « OPTIONS : CRITIQUES ET MALADRESSES »"
+    }
+  },
+  {
+    "id": "focalisation-etendue",
+    "label": "Test de Focalisation (étendu)",
+    "desc": "Certains Sorts magiques nécessitent beaucoup plus de magie que ce que l'on peut normalement trouver à travers le monde. Pour alimenter de tels Sorts, il est possible d'attirer les Vents de la Magie et de les concentrer en une forme beaucoup plus puissante en utilisant la Compétence Focalisation. Concentrer les Vents de la Magie peut s'avérer être une procédure dangereuse, mais c'est le seul moyen sûr de lancer certains Sorts puissants. Pour focaliser la magie pour un Sort, effectuez un Test étendu de Focalisation.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 237,
+      "note": "LDB ch.9 « Test de Focalisation »"
+    }
+  },
+  {
+    "id": "ragot-au-marche",
+    "label": "Ragot au marché (bonus de Disponibilité)",
+    "desc": "Les pourcentages de Disponibilité peuvent être augmentés de +10 % ou +20 % si un Personnage est particulièrement assidu, appartient à une Carrière cohérente telle que Marchand ou Receleur, ou passe une journée entière à effectuer des achats et des Tests de Ragot.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 291,
+      "note": "LDB ch.11 « Faire son marché » — Disponibilité"
+    }
+  },
+  {
+    "id": "calme-d-approche",
+    "label": "Calme d'approche (Peur)",
+    "desc": "Lorsque vous êtes sous le coup de la *Peur*, vous subissez -1 DR à tous les Tests en rapport avec la source de votre peur. Vous êtes incapable de vous rapprocher de ce qui provoque cette *Peur* à moins de réussir un Test de **Calme Intermédiaire (+0)**. Si la source de votre *Peur* se rapproche de vous, vous devez réussir un Test de **Calme Intermédiaire (+0)** ou gagner un État *Brisé*.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 191,
+      "note": "LDB ch.7 « Peur (Indice) »"
+    }
+  }
+]

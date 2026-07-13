@@ -16,7 +16,7 @@ import {
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed, specIdsOf, specLabel,
-  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures,
+  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
   CHAR_ABR,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
@@ -1502,6 +1502,12 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.desc,
       meta: facts(fact('Moteur détruit', e.engineDestroyed ? 'oui' : null)),
     })),
+  },
+  {
+    // Procédures / options de jeu au texte VERBATIM (Sombre Pacte, Empoignade, modes d'attaque…) —
+    // cible des tooltips `CodexRef` qui portaient une paraphrase de règle (#392).
+    key: 'regles', label: 'Règles de jeu', group: 'Monde',
+    build: () => regles.map((r) => ({ id: r.id, label: r.label, desc: r.desc, source: src(r.source) })),
   },
 ];
 

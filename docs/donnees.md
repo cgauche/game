@@ -51,6 +51,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | `criticals.json` · `aa-criticals.json` | Blessures critiques par localisation (base · variante *Aux Armes*) |
 | `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) |
 | `grapple.json` | Lutte / empoignade |
+| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) |
 | `damage-types.json` | Types de dégâts (poison, feu, électrique) |
 | `sizes.json` · `encumbranceTiers.json` | Modif. de Taille au tir · paliers d'Encombrement |
 | `etats.json` | États / Conditions (À terre, Aveuglé…) |
