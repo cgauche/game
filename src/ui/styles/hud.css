@@ -602,14 +602,16 @@
   white-space: nowrap;
 }
 
-/* Barre de panier (achat) toujours visible au défilement (sticky). */
+/* Barre de panier (achat) toujours visible au défilement (sticky). L'écart sous la barre est de la
+   MARGE OPAQUE (padding-bottom), pas une marge transparente : une ligne qui défile ne peut pas
+   « pointer » dans un interstice sous la barre (chevauchement, #375). */
 .merch-tab .cart-bar {
   position: sticky;
   top: -2px;
   z-index: 3;
   background: var(--bg2);
-  padding: 6px 2px;
-  margin: -2px 0 6px;
+  padding: 6px 2px 8px;
+  margin: -2px 0 0;
 }
 
 /* ── Infirmerie (modale de soins persistante — MedicModal) ── */

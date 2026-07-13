@@ -1,6 +1,6 @@
 import { useGame } from '../state/store';
 import type { Combatant, HitLocation, ItemInstance, QualityInstance } from '../engine/types';
-import { armourLayer, isCapeItem, weaponHands, compatibleAmmo, loadoutLabel, isOffHandEligible, isUnarmed, type ArmourLayer } from '../engine/items';
+import { armourLayer, isCapeItem, itemLabel, weaponHands, compatibleAmmo, loadoutLabel, isOffHandEligible, isUnarmed, type ArmourLayer } from '../engine/items';
 import { RigSprite } from '../gameIso/rig/composeRig';
 import { defaultAppearance } from '../gameIso/rig/appearance';
 import { equipFromCombatant } from '../gameIso/rig/parts/equipment';
@@ -62,14 +62,14 @@ function weaponQualities(qualities?: QualityInstance[]): string {
 const armourOpt = (it: ItemInstance): MediaOption => ({
   key: it.uid,
   media: <ItemIcon item={it} size="sm" />,
-  label: `${it.name} · PA ${it.pa ?? 0}${(it.locs?.length ?? 0) > 1 ? ` · ${zonesOf(it).join('+')}` : ''}`,
+  label: `${itemLabel(it)} · PA ${it.pa ?? 0}${(it.locs?.length ?? 0) > 1 ? ` · ${zonesOf(it).join('+')}` : ''}`,
 });
 const weaponOpt = (w: ItemInstance): MediaOption => ({
   key: w.uid,
   media: <ItemIcon item={w} size="sm" />,
-  label: `${w.name}${weaponHands(w) === 2 ? ' (2M)' : ''}`,
+  label: `${itemLabel(w)}${weaponHands(w) === 2 ? ' (2M)' : ''}`,
 });
-const capeOpt = (c: ItemInstance): MediaOption => ({ key: c.uid, media: <ItemIcon item={c} size="sm" />, label: c.name });
+const capeOpt = (c: ItemInstance): MediaOption => ({ key: c.uid, media: <ItemIcon item={c} size="sm" />, label: itemLabel(c) });
 
 /** Corps du popover de stats (arme invoquée / hors-catalogue) : Dégâts résolus + Allonge/Portée
  *  (composeur partagé `weaponStatParts`) + qualités. */
@@ -105,7 +105,7 @@ function SlotCell({ item, pa, fallback, options, value, onSelect, disabled, empt
   }
   const trigger = (
     <>
-      <CodexRef category="trappings" label={item.name} className="eq-slot-icon" tooltipOnly fallback={fallback}>
+      <CodexRef category="trappings" label={itemLabel(item)} className="eq-slot-icon" tooltipOnly fallback={fallback}>
         <ItemIcon item={item} size="md" />
       </CodexRef>
       {pa != null && <span className="eq-slot-pa">{pa}</span>}

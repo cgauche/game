@@ -5,7 +5,7 @@ import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
 import { Tabs } from './Tabs';
-import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
+import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
 import { CHAR_LABELS, HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { locationLabel } from '../engine/combat';
@@ -609,7 +609,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                   <ItemIcon item={it} size="sm" />
                   <div className="ir-main">
                     <span className="ir-name">
-                      <CodexRef category="trappings" label={it.name}>{it.name}</CodexRef>{skinned && (<> <Icon id="action/cast" size="sm" /></>)}
+                      <CodexRef category="trappings" label={itemLabel(it)}>{itemLabel(it)}</CodexRef>{skinned && (<> <Icon id="action/cast" size="sm" /></>)}
                       {it.identified === false && (
                         <span className="ir-unid" title="Objet non identifié — Évaluer (ou Détecter l'artefact) pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>
                           {it.magicKnown ? (<><Icon id="action/cast" size="sm" /> Magique — non identifié</>) : (<><Icon id="nav/identify" size="sm" /> Non identifié</>)}
@@ -713,7 +713,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       options={containers.map((bag) => ({
                         key: bag.uid,
                         media: <ItemIcon item={bag} size="sm" />,
-                        label: bag.name,
+                        label: itemLabel(bag),
                         sub: `${containerFillEnc(hero, bag.uid)}/${bag.container?.capacity ?? 0}`,
                       }))}
                       onSelect={(cid) => stowItem(hero.id, it.uid, cid)}
@@ -758,7 +758,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       {stowed.map((s) => (
                         <div key={s.uid} className={`inv-row kind-${s.kind}`}>
                           <ItemIcon item={s} size="sm" />
-                          <span className="ir-name">{s.name}</span>
+                          <span className="ir-name">{itemLabel(s)}</span>
                           <span className="ir-enc" style={{ marginLeft: 'auto' }}>Enc {s.enc}</span>
                           <button className="btn small" disabled={inBattleNow} title="Sortir du contenant" onClick={() => stowItem(hero.id, s.uid, null)}>Sortir</button>
                         </div>

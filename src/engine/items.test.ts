@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping } from './items';
 import { effectiveWeaponRange } from './weaponDamage';
 import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
@@ -15,6 +15,19 @@ const refsByLabel = (labels: string[]): TrappingRef[] => labels.map((l) => ({ id
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
   ({ uid: 'u', name: 'x', kind: 'misc', qualities: [], enc: 0, equipped: false, ...o }) as ItemInstance;
+
+describe('itemLabel — id STABLE → libellé FR (jamais l’id brut)', () => {
+  it('un objet CATALOGUÉ rangé affiche le libellé FR, jamais son id kebab-case (même si name a dérivé)', () => {
+    const it = itemFromTrappingById('epee-batarde')!;
+    it.name = 'epee-large'; // name FAUTIF (save ancienne / donnée corrompue) : ne doit PAS fuir à l'affichage
+    it.inside = 'sac-1'; // objet RANGÉ dans un contenant
+    expect(itemLabel(it)).toBe('Épée bâtarde');
+    expect(itemLabel(it)).not.toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)+$/); // aucun id kebab-case rendu
+  });
+  it('objet CUSTOM (hors-base, sans trappingId) : repli sur le nom libre', () => {
+    expect(itemLabel(customTrapping('Fiole de sang'))).toBe('Fiole de sang');
+  });
+});
 
 describe('weaponHands (latéralité)', () => {
   const it_ = (p: Partial<ItemInstance>): ItemInstance =>

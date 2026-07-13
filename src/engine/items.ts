@@ -10,7 +10,7 @@ import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
-import { findTrappingById, findVehicleById, qualityInstance, type TrappingRef } from '../data';
+import { findTrappingById, findVehicleById, qualityInstance, refLabel, type TrappingRef } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
 import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';
@@ -231,6 +231,15 @@ export function giveTrappingLabel(give: { trappingId?: string; custom?: string }
   return give.trappingId ? (findTrappingById(give.trappingId)?.label ?? give.trappingId) : (give.custom ?? 'Objet');
 }
 
+/** Libellé D'AFFICHAGE d'une instance d'objet, DÉRIVÉ de son id STABLE (`trappingId` → libellé FR du
+ *  catalogue via `refLabel`) — id = logique, label = affichage. Repli sur `name` pour un objet CUSTOM
+ *  hors-base (nom libre — trinket/quête/pièces de monstre, sans `trappingId`). SOURCE UNIQUE de l'affichage
+ *  du nom d'un objet catalogué (fiche/sac/pickers) : un objet CATALOGUÉ ne rend jamais son id brut, même si
+ *  son champ `name` a dérivé (save ancienne, donnée fautive). */
+export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'name'>): string {
+  return it.trappingId ? refLabel('trappings', { id: it.trappingId }) : it.name;
+}
+
 /** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance, +2 par niveau de Costaud
  *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
 export function maxEncumbrance(c: Combatant): number {
@@ -383,7 +392,10 @@ export function unarmedWeapon(): Weapon {
  *  lus dans l'inventaire du combattant (`c.items`). Remplace l'affichage du champ `name` (« Set I/II »). PUR. */
 export function loadoutLabel(lo: WeaponLoadout, c: Combatant): string {
   const items = c.items ?? [];
-  const nameOf = (uid?: string) => (uid ? items.find((i) => i.uid === uid)?.name : undefined);
+  const nameOf = (uid?: string) => {
+    const it = uid ? items.find((i) => i.uid === uid) : undefined;
+    return it ? itemLabel(it) : undefined;
+  };
   const main = nameOf(lo.main);
   const off = nameOf(lo.off);
   if (main && off) return `${main} + ${off}`;
@@ -439,7 +451,7 @@ export function recomputeLoadout(c: Combatant): void {
     const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
-    return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
+    return applyEnchants({ name: itemLabel(it), type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
       skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
   };
