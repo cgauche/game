@@ -36,6 +36,17 @@
         ]
       },
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/exception-add-guard.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Ajout d'exception de garde = autorisation utilisateur"
+          }
+        ]
+      },
+      {
         "matcher": "Bash|PowerShell",
         "hooks": [
           {
