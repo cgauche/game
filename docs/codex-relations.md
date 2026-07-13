@@ -46,6 +46,11 @@ Construite UNE fois au chargement, en inversant les refs de `src/data` :
   un titre dans `REVERSE_TITLE` si besoin, et `...reverseSections(cat, id)` dans la catégorie du registre.
 - **Nouveau champ de fiche** : enrichir l'`item` dans `registry.ts` (méta `fact(...)` ou section via les
   helpers `describe.ts` — `passiveSection`/`effectsSection`/`careerGrantSection`/`spellFlowSection`).
+- **Riders / effets / formules de sort en clair** : `effectsSection`/`spellFlowSection` rendent d'abord la
+  phrase JOUEUR (`src/ui/compendium/humanize.ts` — registre naturel : `humanizeFlow`/`humanizeCondition`/
+  `humanizeOp`/`humanizeFormula`, switchs EXHAUSTIFS, zéro id brut), la forme technique d'atelier
+  (`flowSummary` → `condSummary`/`opSummary`) restant dépliée dans un bloc « Détail technique »
+  (`CodexRow` `t:'fold'`, primitive `.fold`). Garde : `humanize.test.ts` (itère `domains.json`/`spells.json`).
 - **Édition** : tout reste éditable au Compendium (DEV) ; les VIEWS (Psychologie) ne sont pas éditables
   (`isEditableCategory=false`) — éditer la source (Traits).
 

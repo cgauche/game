@@ -1,0 +1,318 @@
+/**
+ * REGISTRE JOUEUR — traduit les structures de LOGIQUE authorée (`Flow`/`Condition`/`GameOp`/`Formula`)
+ * en phrases FRANÇAISES NATURELLES lisibles par un joueur qui ne connaît PAS le moteur. Pendant JOUEUR du
+ * registre d'ATELIER (`flowSummary`/`condSummary`/`opSummary`, éditeur) : là où l'atelier crache la forme
+ * technique (« si … → … », « NON( … ) », ids bruts), ce module rend « Les ennemis touchés s'embrasent,
+ * sauf les lanceurs du Domaine du Feu ».
+ *
+ * Le vocabulaire des 4 algèbres est FINI (`Flow` 5 kinds, `Condition` ~24 kinds, `GameOp` ~96 kinds,
+ * `Formula` 10 formes) → le renderer est MÉCANIQUE : chaque switch est EXHAUSTIF (garde `assertNever` en
+ * default — un kind futur force une phrase humaine à la compilation, jamais de repli silencieux vers
+ * l'atelier). Zéro id brut à l'écran : toute réf (État, Talent, Trait, Groupe, Caractéristique, Maladie,
+ * arme…) est résolue en libellé via les résolveurs canoniques (`conditionLabel`/`refLabel`/`CHAR_LABELS`/
+ * `CHAR_ABR`/`traitLabelById`/`groupLabel`/`psychologyLabel`/`symptomLabel`/`creatureLabel`), jamais une
+ * table id→label parallèle. PUR (structure → string) — testable sans DOM.
+ */
+import type { Flow, Condition, EffectOp } from '../../state/flow';
+import type { ActorRef, CompareOp, CompareSubject } from '../../engine/flowCore';
+import type { GameOp, Formula } from '../../engine/ops';
+import type { Camp, Relation } from '../../engine/relations';
+import { CHAR_LABELS, HIT_LOCATION_LABELS } from '../../engine/types';
+import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
+import { giveTrappingLabel } from '../../engine/items';
+import { formatMoney } from '../../engine/money';
+import {
+  CHAR_ABR, conditionLabel, psychologyLabel, groupLabel, symptomLabel, creatureLabel,
+  diseaseLabel, refLabel, qualityRefLabel, talentConcrete,
+} from '../../data';
+
+function assertNever(x: never): never {
+  throw new Error(`humanize: cas non couvert — ${JSON.stringify(x)}`);
+}
+
+/** Nom d'affichage d'un État nommé, en *italique* (convention des desc : `*Hémorragique*`). */
+const stateItal = (id: string): string => `*${conditionLabel(id)}*`;
+const whoLabel = (w: ActorRef): string => (w === 'caster' ? 'le lanceur' : 'la cible');
+
+/** Libellés JOUEUR d'un camp / d'une relation (enum FERMÉ, pas un id de registre) — pendant naturel des
+ *  libellés d'atelier (« adversaire (camp ≠) »). */
+const REL_PLAYER: Record<Relation | Camp, string> = {
+  self: 'lui-même', ally: 'un allié', opponent: 'un adversaire',
+  party: 'un membre du groupe', neutral: 'un neutre', hostile: 'un ennemi',
+};
+
+// ---------------------------------------------------------------------------
+// Formule
+// ---------------------------------------------------------------------------
+
+/** Quantité (`Formula`) en toutes lettres — « le Bonus de Force Mentale », « 1d10+2 », « le résultat du dé ». */
+export function humanizeFormula(f: Formula): string {
+  if (typeof f === 'number') return String(f);
+  // Placeholder RUNTIME baké ('$indice' — Redoutable ZI, substitué à l'attache) qui peut atteindre
+  // l'affichage : jamais un objet Formula, donc gardé AVANT les `in` (mirroir de `resolveFormula`).
+  if (typeof f !== 'object' || f === null) return String(f) === '$indice' ? "l'Indice" : String(f);
+  if ('bonusOf' in f) return `le Bonus de ${CHAR_LABELS[f.bonusOf]}`;
+  if ('charOf' in f) return `la ${CHAR_LABELS[f.charOf]}`;
+  if ('dice' in f) return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
+  if ('rolled' in f) return 'le résultat du dé';
+  if ('indiceOf' in f) return "l'Indice de l'attaque";
+  if ('stacks' in f) return "le nombre de pions de l'État";
+  if ('engagedAdvantageGap' in f) return "l'écart d'Avantage avec les ennemis engagés";
+  if ('woundsDealt' in f) return 'les Blessures infligées';
+  if ('sum' in f) return f.sum.map(humanizeFormula).join(' + ');
+  if ('times' in f) return `${humanizeFormula(f.times.of)} × ${f.times.factor}`;
+  return assertNever(f);
+}
+
+// ---------------------------------------------------------------------------
+// Condition
+// ---------------------------------------------------------------------------
+
+/** Comparateur en toutes lettres (`neg` inverse l'opérateur, De Morgan pour une négation naturelle). */
+function opWord(op: CompareOp, neg: boolean): string {
+  const table: Record<CompareOp, string> = {
+    '>=': 'est au moins', '<=': 'est au plus', '==': 'égale', '<': 'est inférieur à', '>': 'est supérieur à',
+  };
+  const negTable: Record<CompareOp, string> = {
+    '>=': 'est inférieur à', '<=': 'est supérieur à', '==': 'ne vaut pas', '<': 'est au moins', '>': 'est au plus',
+  };
+  return neg ? negTable[op] : table[op];
+}
+
+/** Nom du membre d'une comparaison (donnée fixe / valeur d'État / Caractéristique) rattaché à son acteur. */
+function subjectNoun(s: CompareSubject): string {
+  const who = whoLabel(s.who);
+  if ('condition' in s) return `le nombre d'États ${stateItal(s.condition)} de ${who}`;
+  if ('char' in s) return `la ${CHAR_LABELS[s.char]}${s.bonus ? ' (Bonus)' : ''} de ${who}`;
+  const FIELD: Record<typeof s.field, string> = {
+    woundsCurrent: 'les PB', woundsMax: 'les PB maximum', size: 'la Taille', advantage: "l'Avantage",
+  } as Record<typeof s.field, string>;
+  return `${FIELD[s.field]} de ${who}`;
+}
+
+/** Comparaison NATURELLE — cas privilégié « porte / ne porte pas l'État X » quand le sujet est un État. */
+function comparePhrase(c: Extract<Condition, { kind: 'compare' }>, neg: boolean): string {
+  const who = whoLabel(c.subject.who);
+  if ('condition' in c.subject && typeof c.value === 'number') {
+    const holds = (c.op === '>=' || c.op === '>') && c.value >= 1;
+    const absent = (c.op === '==' && c.value === 0) || (c.op === '<' && c.value <= 1);
+    if (holds || absent) {
+      const carries = holds !== neg; // « porte » vrai si (seuil de présence) XOR négation
+      return `${who} ${carries ? 'porte' : 'ne porte pas'} ${stateItal(c.subject.condition)}`;
+    }
+  }
+  const rhs = typeof c.value === 'number' ? String(c.value) : subjectNoun(c.value);
+  return `${subjectNoun(c.subject)} ${opWord(c.op, neg)} ${rhs}`;
+}
+
+/** Fenêtre horaire lisible (« entre 06:00 et 18:00 »). */
+function timePhrase(w: { afterHour?: number; afterMinute?: number; beforeHour?: number; beforeMinute?: number }): string {
+  const pad = (n?: number) => String(n ?? 0).padStart(2, '0');
+  const a = w.afterHour != null ? `${pad(w.afterHour)}:${pad(w.afterMinute)}` : null;
+  const b = w.beforeHour != null ? `${pad(w.beforeHour)}:${pad(w.beforeMinute)}` : null;
+  return a && b ? `entre ${a} et ${b}` : a ? `à partir de ${a}` : b ? `avant ${b}` : "à n'importe quelle heure";
+}
+
+/** Condition en clause NATURELLE. `neg` porte la négation (poussée dans la feuille — « ne possède pas … »,
+ *  De Morgan sur `all`/`any` — au lieu d'un « NON( … ) » d'atelier). SOURCE UNIQUE joueur des Conditions. */
+export function humanizeCondition(c: Condition, neg = false): string {
+  const who = (r: ActorRef) => whoLabel(r);
+  switch (c.kind) {
+    case 'always': return neg ? 'jamais' : 'toujours';
+    case 'flag': return `${neg ? 'sauf si ' : 'si '}la condition de scénario « ${c.expr} » est ${neg ? 'fausse' : 'remplie'}`;
+    case 'time': return neg ? `hors du créneau ${timePhrase(c.window)}` : timePhrase(c.window);
+    case 'hasItem': {
+      const label = c.trappingId || '?';
+      return `le groupe ${neg ? 'ne possède pas' : 'possède'} « ${label} »${c.count && c.count > 1 ? ` (×${c.count})` : ''}`;
+    }
+    case 'money': return `la bourse du groupe ${neg ? "n'atteint pas" : 'atteint'} ${formatMoney({ gold: c.atLeast.gold ?? 0, silver: c.atLeast.silver ?? 0, brass: c.atLeast.brass ?? 0 })}`;
+    case 'partyDead': {
+      const subj = c.who === 'all' ? 'tout le groupe' : 'un héros';
+      return neg ? `${subj} ${c.who === 'all' ? "n'est pas entièrement mort" : "n'est mort"}` : `${subj} est mort`;
+    }
+    case 'compare': return comparePhrase(c, neg);
+    case 'slThreshold': return `la marge ${opWord(c.op, neg)} ${c.value} DR`;
+    case 'location': return `la touche ${neg ? "n'atteint pas" : 'atteint'} ${HIT_LOCATION_LABELS[c.is]}`;
+    case 'attackKind': return `l'attaque ${neg ? "n'est pas" : 'est'} de type « ${c.is} »`;
+    case 'startleCause': return `l'effarouchement ${neg ? 'ne vient pas' : 'vient'} ${c.is === 'noise' ? "d'un bruit fort" : 'de la magie'}`;
+    case 'woundsDealt': return `les Blessures infligées ${opWord(c.op, neg)} ${c.value}`;
+    case 'engagedAdvantageGap': return `l'écart d'Avantage avec les ennemis engagés ${opWord(c.op, neg)} ${c.value}`;
+    case 'engagedAdvantageLead': return `l'avance d'Avantage sur les ennemis engagés ${opWord(c.op, neg)} ${c.value}`;
+    case 'foeInLoS': return neg ? "aucun ennemi n'est en vue" : 'un ennemi est en vue';
+    case 'hiddenFromFoes': return `la cible ${neg ? "n'est pas cachée" : 'est cachée'} de l'ennemi`;
+    case 'engaged': return `la cible ${neg ? "n'est pas engagée" : 'est engagée'} avec un ennemi`;
+    case 'crewTest': return neg ? "ce n'est pas un Test d'équipage" : "il s'agit d'un Test d'équipage";
+    case 'nearestFoe': return `l'ennemi le plus proche ${opWord(c.op, neg)} ${c.value} cases`;
+    case 'capability': return `${who(c.who)} ${neg ? "n'a pas" : 'a'} la capacité « ${c.id} »${c.value != null ? ` (${c.op ?? '>='} ${c.value})` : ''}`;
+    case 'relation': return `${who(c.who)} ${neg ? "n'est pas" : 'est'} ${REL_PLAYER[c.is]}`;
+    case 'has': {
+      const v = neg ? 'ne possède pas' : 'possède';
+      if (c.what === 'talent') return `${who(c.who)} ${v} le Talent ${refLabel('talents', { id: c.value, spec: c.spec })}`;
+      if (c.what === 'trait') return `${who(c.who)} ${v} le Trait ${traitLabelById(c.value)}`;
+      if (c.what === 'psych') return `${who(c.who)} ${v} l'état psychologique ${psychologyLabel(c.value)}`;
+      return `${who(c.who)} ${neg ? "n'appartient pas" : 'appartient'} au Groupe ${groupLabel(c.value)}`;
+    }
+    // De Morgan : NON(A ET B) = (NON A) OU (NON B) ; NON(A OU B) = (NON A) ET (NON B).
+    case 'all': return c.of.length ? c.of.map((x) => humanizeCondition(x, neg)).join(neg ? ' ou ' : ' et ') : (neg ? 'jamais' : 'toujours');
+    case 'any': return c.of.length ? c.of.map((x) => humanizeCondition(x, neg)).join(neg ? ' et ' : ' ou ') : (neg ? 'toujours' : 'jamais');
+    case 'not': return humanizeCondition(c.of, !neg);
+  }
+  return assertNever(c);
+}
+
+// ---------------------------------------------------------------------------
+// GameOp
+// ---------------------------------------------------------------------------
+
+const RESOURCE_LABEL = { fortune: 'Chance', fate: 'Destin' } as const;
+const ATTR_LABEL = { wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination' } as const;
+const SENSE_LABEL = { vue: 'la vue', ouie: "l'ouïe" } as const;
+
+/** Effet mécanique (`GameOp`) en verbe d'action JOUEUR (sujet = la cible de l'effet, implicite). SOURCE
+ *  UNIQUE joueur des ops. Switch EXHAUSTIF (never en default). */
+export function humanizeOp(o: GameOp): string {
+  switch (o.op) {
+    case 'wounds': return `subit ${humanizeFormula(o.amount)} Blessure(s)${o.ignoreAP === false ? '' : ', ignorant les PA'}${o.bypassArmour === 'metal' ? " (perce l'armure métallique)" : o.bypassArmour === 'nonMagic' ? " (perce l'armure non magique)" : ''}`;
+    case 'heal': return `récupère ${humanizeFormula(o.amount)} PB`;
+    case 'healCaster': return `le lanceur récupère ${humanizeFormula(o.amount)} PB`;
+    case 'condition': return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.name)}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}${o.perRound ? ' à chaque Round' : ''}`;
+    case 'removeCondition': return `perd ${o.name ? `l'État ${stateItal(o.name)}` : 'un État au choix'}`;
+    case 'endPsych': return `n'est plus sous l'effet de ${psychologyLabel(o.type)}`;
+    case 'charMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} en ${CHAR_LABELS[o.char]}`;
+    case 'ap': return `gagne +${humanizeFormula(o.amount)} PA${o.loc ? ` (${HIT_LOCATION_LABELS[o.loc]})` : ' à toutes les Localisations'}`;
+    case 'corruption': return `gagne ${o.amount >= 0 ? '+' : ''}${o.amount} point(s) de Corruption`;
+    case 'sinMod': return `${o.amount >= 0 ? 'gagne' : 'perd'} ${Math.abs(o.amount)} point(s) de Péché`;
+    case 'corruptionExposure': return `est exposé à une influence corruptrice`;
+    case 'gainResource': return `gagne ${o.amount} point(s) de ${RESOURCE_LABEL[o.resource]}${o.temporary ? ' (temporaire)' : ''}`;
+    case 'gainAdvantage': return `voit son Avantage porté à au moins ${humanizeFormula(o.amount)}`;
+    case 'castPenalty': return o.blocked ? "ne peut plus lancer de magie" : o.maxZeroDR ? 'ne peut plus obtenir de DR en Prière' : `subit ${o.mod ?? 0} aux Tests de magie`;
+    case 'grantTrait': return `gagne le Trait ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${humanizeFormula(o.indice)}` : ''}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}`;
+    case 'grantPsychTrait': return `gagne l'état psychologique ${psychologyLabel(o.psychType)}${o.cible ? ` (${o.cible})` : ''}`;
+    case 'removePsychTrait': return `perd ${o.psychType ? `l'état psychologique ${psychologyLabel(o.psychType)}` : 'un état psychologique au choix'}`;
+    case 'grantTalent': return `gagne le Talent ${talentConcrete(o)}`;
+    case 'grantCareerSkill': return `ajoute ${refLabel('skills', { id: o.skillId, spec: o.spec })} à ses carrières`;
+    case 'grantCareerTalent': return `ajoute le Talent ${refLabel('talents', { id: o.talentId, spec: o.spec })} à ses carrières`;
+    case 'augmentWeapon': return `voit son arme enchantée${o.addQualities?.length ? ` (${o.addQualities.map((id) => qualityRefLabel({ id })).join(', ')})` : ''}${o.damageBonus != null ? ` +${humanizeFormula(o.damageBonus)} Dégâts` : ''}`;
+    case 'cureDisease': return `guérit ${o.count ?? 1} maladie(s)`;
+    case 'reduceDiseaseDays': return `raccourcit ${o.disease ? diseaseLabel(o.disease) : 'une maladie'} de ${o.dice ? `${o.dice.n}d${o.dice.sides}` : (o.days ?? 1)} jour(s)`;
+    case 'preventInfection': return `voit ses Blessures protégées de l'infection`;
+    case 'exposeDisease': return `est exposé à la maladie ${diseaseLabel(o.disease)}`;
+    case 'contractDisease': return `contracte la maladie ${diseaseLabel(o.disease)}`;
+    case 'kill': return `meurt (sauf point de Destin dépensé)`;
+    case 'cureCriticalWound': return `soigne ${o.count ?? 1} Blessure(s) critique(s)`;
+    case 'reduceToZero': return `voit ses PB réduits à 0`;
+    case 'banish': return `est retiré du jeu`;
+    case 'ignoreStatePenalties': return `ignore les pénalités ${o.count ? `de ses ${o.count} pire(s) États` : "d'État"}`;
+    case 'freeReroll': return `peut relancer son prochain Test raté`;
+    case 'critTwice': return `lance deux fois ses Blessures critiques et garde le meilleur`;
+    case 'damageArmour': return `voit une pièce d'armure en cuir perdre 1 PA`;
+    case 'suppressPsych': return `voit tous ses Traits psychologiques apaisés`;
+    case 'castWard': return `impose −20 aux Tests de magie dans un rayon de ${humanizeFormula(o.radius)} m`;
+    case 'suffocate': return `est soumis aux règles de la Suffocation`;
+    case 'arrowWard': return `détruit les projectiles organiques dans un rayon de ${humanizeFormula(o.radius)} m`;
+    case 'domeWard': return `érige un dôme protecteur de ${humanizeFormula(o.radius)} m`;
+    case 'attackWardFM': return `ne peut être attaqué qu'après un Test de Force Mentale réussi`;
+    case 'martyr': return `reçoit à leur place les Dégâts subis par ses protégés`;
+    case 'noBreath': return `n'a plus besoin de respirer`;
+    case 'noHunger': return `n'a plus besoin de manger ni de boire`;
+    case 'ignoreAnimosity': return `ignore ses Animosités et Préjugés`;
+    case 'testMod': return `${o.amount >= 0 ? 'gagne' : 'subit'} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char]}` : ''}`;
+    case 'weatherWard': return `est immunisé aux intempéries`;
+    case 'giveTrapping': return `reçoit ${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
+    case 'grantWeapon': return `invoque ${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${humanizeFormula(o.damage)})`;
+    case 'grantNaturalWeapon': return `gagne l'arme naturelle ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${humanizeFormula(o.damage)})`;
+    case 'grantFreeAttack': return `peut porter une attaque gratuite`;
+    case 'interruptFocus': return `voit sa Focalisation interrompue`;
+    case 'breakBlade': return `voit l'arme adverse arrachée`;
+    case 'push': return `est repoussé de ${humanizeFormula(o.meters)} m`;
+    case 'teleport': return `se téléporte jusqu'à ${humanizeFormula(o.meters)} m`;
+    case 'chain': return `rebondit sur ${humanizeFormula(o.maxBounces)} ennemi(s) à ${humanizeFormula(o.hopMeters)} m`;
+    case 'perRound': return `déclenche à chaque Round : ${o.ops.map(humanizeOp).join(' ; ')}`;
+    case 'rollThreshold': return `lance 1d${o.sides} pour un effet à paliers`;
+    case 'summon': return `invoque ${humanizeFormula(o.count)}× ${creatureLabel(o.ref)}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
+    case 'scheduleRespawn': return `se reconstitue (${creatureLabel(o.ref)}) après ${humanizeFormula(o.delayDays)} jour(s)`;
+    case 'zone': return `pose ${o.shape === 'wall' ? `un mur de ${humanizeFormula(o.lengthMeters ?? 2)} m` : `un disque de ${humanizeFormula(o.radiusMeters ?? 2)} m`}`;
+    case 'polymorph': return `se métamorphose en ${creatureLabel(o.ref)}`;
+    case 'transform': return `se transforme (${creatureLabel(o.morphRef ?? o.tag)})`;
+    case 'endTransform': return `retrouve sa forme initiale`;
+    case 'lifeSteal': return `draine ${o.num}/${o.den} des Dégâts infligés en PB`;
+    case 'skillMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} en ${refLabel('skills', { id: o.skill })}`;
+    case 'skillDRBonus': return `gagne +${humanizeFormula(o.bonus)} DR ${o.skill ? refLabel('skills', { id: o.skill }) : 'aux Tests concernés'}`;
+    case 'charDRBonus': return `gagne +${humanizeFormula(o.bonus)} DR aux Tests de ${CHAR_LABELS[o.char]}`;
+    case 'crewTestMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} aux Tests d'équipage`;
+    case 'incomingAttackMod': return `impose ${o.amount >= 0 ? '+' : ''}${o.amount} aux attaques qui le visent`;
+    case 'incomingAdvantage': return `donne +${o.amount} Avantage à qui l'attaque`;
+    case 'sbBonus': return `gagne +${o.amount} au Bonus de Force pour ses Dégâts`;
+    case 'attackKeyword': return `voit ses attaques comptées comme magiques`;
+    case 'mitigateIncoming': return `annule les Dégâts qu'il subit${o.unlessKeyword === 'magic' ? ' (sauf attaques magiques)' : ''}`;
+    case 'moveScale': return `voit son Mouvement ${o.num === 1 && o.den === 2 ? 'réduit de moitié' : `multiplié par ${o.num}/${o.den}`}`;
+    case 'moveMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} en Mouvement`;
+    case 'offTerrainMod': return `est diminué hors de son terrain d'élection`;
+    case 'attrMod': return `gagne +${humanizeFormula(o.mod)} ${ATTR_LABEL[o.attr]} (maximum)`;
+    case 'maxWeaponHands': return `ne peut manier que des armes à ${o.hands} main(s)`;
+    case 'disarm': return `lâche l'objet tenu dans une main`;
+    case 'handGate': return `doit réussir un Test avant d'agir de cette main`;
+    case 'senseLoss': return `perd ${SENSE_LABEL[o.sense]}`;
+    case 'loseTurn': return `perd ${o.what === 'action' ? 'son Action' : o.what === 'movement' ? 'son Mouvement' : 'son Action et son Mouvement'}`;
+    case 'actGate': return `doit réussir un Test de ${CHAR_LABELS[o.char]} chaque Round pour agir`;
+    case 'diseaseTestMod': return `${o.amount >= 0 ? 'gagne' : 'subit'} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie`;
+    case 'suppressSymptom': return `voit le symptôme ${symptomLabel(o.symptomId)} suspendu`;
+    case 'delayed': return `déclenche plus tard : ${o.ops.map(humanizeOp).join(' ; ')}`;
+    case 'removeShipPoste': return `perd une pièce d'artillerie`;
+    case 'teamCommander': return `est dirigé par un commandant d'équipe`;
+    case 'weaponRollMod': return `modifie une phase de son jet de combat`;
+    case 'weaponDamageMod': return `modifie ses Dégâts d'arme`;
+    case 'armourPierce': return `perce ${o.amount} PA`;
+    case 'critOnRoll': return `déclenche un Critique sur certains jets`;
+    case 'spendAdvantage': return `dépense ${o.amount} point(s) d'Avantage`;
+    case 'light': return `émet de la lumière sur ${o.radiusTiles} case(s)`;
+    case 'intoxicate': return `échoue à résister à l'alcool`;
+    case 'narrative': return o.text;
+  }
+  return assertNever(o);
+}
+
+// ---------------------------------------------------------------------------
+// Flow
+// ---------------------------------------------------------------------------
+
+/** Met une majuscule initiale (première phrase d'un effet). */
+const cap = (s: string): string => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+/** Effet MÉCANIQUE d'un Flow en prose JOUEUR — « Si {condition}, {conséquence}. » / « Jet de … : en cas
+ *  de réussite … ». Switch EXHAUSTIF sur les 5 kinds de Flow (never en default). SOURCE UNIQUE joueur. */
+export function humanizeFlow(f: Flow): string {
+  switch (f.kind) {
+    case 'do': {
+      const e = f.effect as EffectOp;
+      if (e && e.type === 'ops') return e.ops.map(humanizeOp).filter(Boolean).join(' ; ');
+      return (f.effect as { type?: string }).type ?? '';
+    }
+    case 'seq': return f.steps.map(humanizeFlow).filter(Boolean).join(' ; ');
+    case 'if': {
+      const then = humanizeFlow(f.then);
+      const base = `Si ${humanizeCondition(f.cond)}, ${then}`;
+      return f.else ? `${base} ; sinon ${humanizeFlow(f.else)}` : base;
+    }
+    case 'test': {
+      const who = f.test.skill ? refLabel('skills', { id: f.test.skill, spec: f.test.spec }) : (f.test.characteristic ? CHAR_LABELS[f.test.characteristic] : 'un Test');
+      const opp = f.test.opposed ? ' opposé' : '';
+      return `Jet${opp} de ${who} : en cas de réussite, ${humanizeFlow(f.success)} ; en cas d'échec, ${humanizeFlow(f.fail)}`;
+    }
+    case 'choice':
+      return `Au choix${f.cost ? ` (${f.cost.advantage} Avantage)` : ''} « ${f.prompt} » : si oui, ${humanizeFlow(f.yes)}${f.no ? ` ; sinon ${humanizeFlow(f.no)}` : ''}`;
+  }
+  return assertNever(f);
+}
+
+/** Wrapper : effet de Flow rendu comme UNE phrase (majuscule initiale). Utilisé par `describe`. */
+export function humanizeFlowSentence(f: Flow): string {
+  return cap(humanizeFlow(f));
+}
+
+/** Bonus d'incantation d'un Domaine (`castBonus`) en clair — « +10 par État *En flammes* à ≤ BFM m ».
+ *  Fix du fact « Bonus d'incantation » (`registry.ts`) : État en libellé, Caractéristique en abréviation
+ *  canonique (`CHAR_ABR` → « BFM »), jamais l'id brut. */
+export function humanizeCastBonus(cb: { bonus: number; perCondition: string; radiusStat: keyof typeof CHAR_ABR }): string {
+  return `+${cb.bonus} par État ${stateItal(cb.perCondition)} à ≤ B${CHAR_ABR[cb.radiusStat]} m`;
+}

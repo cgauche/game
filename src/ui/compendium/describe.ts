@@ -13,6 +13,7 @@ import type { Flow, TriggeredEffect } from '../../state/flow';
 import { refLabel } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { TRIGGER_LABEL, onLabel } from './triggerLabels';
+import { humanizeFlowSentence } from './humanize';
 
 /** Octrois de carrière (`grantCareerSkill`/`grantCareerTalent`) — affichés à part (cross-réf cliquable),
  *  jamais comme « modificateur continu ». Filtrés ici pour ne pas doublonner avec `careerGrantSection`. */
@@ -56,16 +57,19 @@ function flowSummary(f: Flow): string {
   }
 }
 
-/** Effets DÉCLENCHÉS (`TriggeredEffect[]`) → déclencheur → cible PUIS le contenu mécanique du Flow
- *  (conditions de gating + ops), pour que la fiche décrive VRAIMENT ce que l'effet fait. */
+/** Effets DÉCLENCHÉS (`TriggeredEffect[]`) → déclencheur + cible, PUIS la phrase JOUEUR (`humanize`) de ce
+ *  que l'effet fait, avec la forme TECHNIQUE d'atelier (`flowSummary`) repliée dans « Détail technique ». */
 const effectRows = (effects: TriggeredEffect[] | undefined): CodexRow[] =>
   (effects ?? []).flatMap((e) => {
-    const head = `${TRIGGER_LABEL[e.trigger]} → ${onLabel(e.on)}`;
-    const body = flowSummary(e.flow);
-    return [
-      { t: 'sub', label: head } as CodexRow,
-      { t: 'text', text: body || '(aucun effet)' } as CodexRow,
+    const head = `${TRIGGER_LABEL[e.trigger]} — ${onLabel(e.on)}`;
+    const human = humanizeFlowSentence(e.flow);
+    const tech = flowSummary(e.flow);
+    const rows: CodexRow[] = [
+      { t: 'sub', label: head },
+      { t: 'text', text: human || '(aucun effet)' },
     ];
+    if (tech) rows.push({ t: 'fold', summary: 'Détail technique', text: tech });
+    return rows;
   });
 
 export function effectsSection(effects: TriggeredEffect[] | undefined, title = 'Effets déclenchés'): CodexSection | null {
@@ -86,6 +90,10 @@ export function capabilitySection(caps: Record<string, unknown> | undefined, lab
  *  Source unique de la projection des effets de sort au Codex (≠ desc narrative). Vide → null. */
 export function spellFlowSection(flow: Flow | undefined, title = 'Effet mécanique'): CodexSection | null {
   if (!flow) return null;
-  const text = flowSummary(flow);
-  return text ? { title, layout: 'list', rows: [{ t: 'text', text }] } : null;
+  const human = humanizeFlowSentence(flow);
+  const tech = flowSummary(flow);
+  const rows: CodexRow[] = [];
+  if (human) rows.push({ t: 'text', text: human });
+  if (tech) rows.push({ t: 'fold', summary: 'Détail technique', text: tech });
+  return rows.length ? { title, layout: 'list', rows } : null;
 }

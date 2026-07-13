@@ -35,6 +35,14 @@ function CodexRowView({ row }: { row: CodexRow }) {
     case 'choice':
       // « A ou B » : rendu via la brique PARTAGÉE (identique partout — Codex et écrans).
       return <ChoiceChips category={row.category} options={row.options} />;
+    case 'fold':
+      // Dépliable CANONIQUE (`.fold`, cf. components.css) : forme technique d'atelier sous la phrase humaine.
+      return (
+        <details className="fold codex-fold">
+          <summary><span className="fold-title">{row.summary}</span></summary>
+          <div className="fold-body"><Prose md={row.text} /></div>
+        </details>
+      );
   }
 }
 

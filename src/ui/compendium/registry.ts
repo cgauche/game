@@ -62,6 +62,7 @@ import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
+import { humanizeCastBonus } from './humanize';
 import { reverseGroups, bookContents } from './relations';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL, formatManeuverMeasure } from './maneuverLabels';
 
@@ -103,7 +104,10 @@ export type CodexRow =
   /** CHOIX « A ou B » : chaque option est un lien cross-réf cliquable, séparées par « ou ». */
   | { t: 'choice'; category: string; options: { label: string; show: string }[] }
   /** Mini sous-en-tête à l'intérieur d'une section (« Compétences », « Talents »…). */
-  | { t: 'sub'; label: string };
+  | { t: 'sub'; label: string }
+  /** Bloc REPLIABLE (`<details class="fold">`) : `summary` visible, `text` (Markdown) dévoilé au clic.
+   *  Porte la forme TECHNIQUE d'atelier (« Détail technique ») sous la phrase humaine — cf. `describe`. */
+  | { t: 'fold'; summary: string; text: string };
 export interface CodexSection {
   title: string;
   layout?: 'list' | 'chips' | 'grid';
@@ -841,7 +845,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       label: d.label, desc: d.desc, source: src(d.source),
       meta: facts(
         fact('Projectile', d.missile ? `ignore les PA ${d.missile.bypass === 'metal' ? 'métalliques' : 'non magiques'}${d.missile.bonusFromBypass ? ' (+ Dégâts)' : ''}` : null),
-        fact('Bonus d’incantation', d.castBonus ? `+${d.castBonus.bonus} par « ${d.castBonus.perCondition} » à ≤ B${d.castBonus.radiusStat} m` : null),
+        fact('Bonus d’incantation', d.castBonus ? humanizeCastBonus(d.castBonus) : null),
         fact('Post-incantation', d.casterOps?.length ? `${d.casterOps.length} op(s) au lanceur` : null),
       ),
       sections: sections(effectsSection(d.effects, 'Riders à la touche'), ...reverseSections('domains', d.id)),
