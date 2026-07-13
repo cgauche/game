@@ -95,9 +95,13 @@ export function nameCallHasLiteralArg(line) {
  * seulement `c`/`target`. Toute lecture d'un État en INTERROGATION nominative est candidate ;
  * les GATES/mesures de machinerie universelle en sont retranchés par `MACHINERY_RX` (ci-dessous),
  * PAS par une entrée nominative d'entité (COND.hemorragique/aTerre/surpris…).
+ * Étendu (#411, 2026-07-13) aux formes en CHAÎNE LITTÉRALE (`hasCondition(c, 'inconscient')` /
+ * `stacks(c, "aveugle")`) : le contournement consistant à taper la chaîne au lieu de la constante
+ * `COND.*` échappait totalement au scan (audit #410). Un 2e argument variable/propriété/gabarit
+ * interpolé reste NON signalé (data-driven, même doctrine que #385 pour `hasTraitKey`/`hasTalent`).
  * @type {RegExp}
  */
-export const PER_ETAT_RX = /hasCondition\(\w+, ?COND\.|stacks\(\w+, ?COND\./;
+export const PER_ETAT_RX = /hasCondition\(\w+, ?(?:COND\.|['"])|stacks\(\w+, ?(?:COND\.|['"])/;
 
 /**
  * Lignes à EXCLURE inconditionnellement : déclarations d'import (jamais un site d'appel réactif).

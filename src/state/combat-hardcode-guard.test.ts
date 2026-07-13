@@ -13,9 +13,11 @@ import { scanHardcode } from '../../scripts/guards/lib/hardcode.mjs';
  * Cleave, infection, contenu caché dans un hook…) doit devenir de la DONNÉE (`TriggeredEffect`/
  * `passive`), pas une branche impérative nommant l'entité. Deux familles de marqueurs (cf.
  * `hardcode.mjs`) : TRAIT/TALENT (`hasTraitKey(`, `isUnstable`…) et PAR-ÉTAT (`hasCondition(_, COND.*)`
- * / `stacks(_, COND.*)`, généralisé à tout l'arbre — issue #160). La famille PAR-ÉTAT retranche les
- * GATES/mesures de machinerie universelle (mort, gating, géométrie, journal, sélecteur d'ouverture)
- * via `MACHINERY_RX` — des RÈGLES d'arène générales, jamais un nom d'État éditable.
+ * / `stacks(_, COND.*)`, généralisé à tout l'arbre — issue #160 — puis ÉTENDU à la forme en chaîne
+ * littérale `hasCondition(_, 'id')`/`stacks(_, "id")`, issue #411 : la forme quotée contournait le
+ * scan). La famille PAR-ÉTAT retranche les GATES/mesures de machinerie universelle (mort, gating,
+ * géométrie, journal, sélecteur d'ouverture) via `MACHINERY_RX` — des RÈGLES d'arène générales,
+ * jamais un nom d'État éditable.
  *
  * MODE CLIQUET (Lot 8 — généralisation du report-only Lot 0/4bis/6, qui ne portait que sur 3
  * fichiers nommés) : `BASELINES` gèle, PAR FICHIER, le nombre de sites tolérés au recensement.
@@ -47,14 +49,28 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
  *  data-driven `hasTalent(c, spec.easierIf!.hasTalent)` (combatEffects.ts → 0) et les DÉFINITIONS
  *  auto-référentes `hasTalent(c, name)` / `hasTraitKey(traits, id)` (magic.ts → 1, dispatch.ts → 2 :
  *  restent isUnstable/isBestial, marqueurs par-nom nus, hors périmètre #385).
- *  Chaque abaissement = une vraie migration vers la donnée ; chaque hausse = une régression. */
+ *  Chaque abaissement = une vraie migration vers la donnée ; chaque hausse = une régression.
+ *
+ *  Extension #411 (2026-07-13) : `PER_ETAT_RX` couvrait UNIQUEMENT `hasCondition(_, COND.*)` /
+ *  `stacks(_, COND.*)` — les mêmes appels en chaîne littérale (`hasCondition(c, 'inconscient')`,
+ *  `stacks(c, "extenue")`) échappaient totalement au scan (audit #410). Étendue aux formes quotées
+ *  (même fonctions, argument chaîne), même retranchement `MACHINERY_RX`. Recensement du stock
+ *  révélé (aucune migration dans ce lot — la garde arrête la croissance, patron #410) : 6 fichiers,
+ *  12 sites, tous des réactions par-nom (aucun n'est retranché par `MACHINERY_RX`, qui ne couvre
+ *  que les gates/mesures universels déjà listés) — GELÉS ci-dessous. */
 const BASELINES: Record<string, number> = {
   'src/engine/magic.ts': 1,
   'src/engine/psychology.ts': 1,
   'src/engine/traits/dispatch.ts': 2,
-  'src/state/ai.ts': 3,
+  'src/state/ai.ts': 6, // dont #411 : recover/retreat par-nom en-flammes (l.403) + empetre (l.558,959)
   'src/state/combatManeuvers.ts': 2,
   'src/state/mount.ts': 1,
+  // #411 (2026-07-13) — stock révélé par l'extension aux littéraux, GELÉ, à résorber (doctrine #295)
+  'src/engine/rest.ts': 3, // gate de repos (hemorragique/en-flammes/empoisonne, l.13) + fatigue extenue (l.125,145)
+  'src/engine/suffocation.ts': 2, // pose Inconscient par-nom à l'issue du décompte (l.43,51)
+  'src/state/combatEffects.ts': 2, // détection « mis à terre » par-nom (a-terre, l.776,779)
+  'src/engine/combat.ts': 1, // isHelplessTarget — hasCondition(c, 'inconscient') (l.651)
+  'src/engine/healing.ts': 1, // Soin ciblant un Inconscient par-nom (l.86)
 };
 
 function scanFiles(): string[] {

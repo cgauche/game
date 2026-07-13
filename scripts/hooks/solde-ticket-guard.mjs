@@ -210,7 +210,9 @@ if (isMain) {
   for await (const chunk of process.stdin) raw += chunk
   let command = ''
   try { command = String(JSON.parse(raw)?.tool_input?.command ?? '') } catch { /* stdin illisible → silence */ }
-  const today = new Date().toISOString().slice(0, 10)
+  // Date LOCALE (pas UTC) : un solde écrit après minuit heure locale porte la date locale.
+  const d = new Date()
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   const decision = evaluate({
     command,
     today,
