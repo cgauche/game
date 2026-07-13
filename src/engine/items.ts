@@ -179,7 +179,10 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     trappingId: t.id,
     name: t.label,
     kind,
-    damage: t.damage ?? undefined,
+    // Le spec de Dégâts est CLONÉ (jamais l'objet du catalogue) : une instance possède son profil, une
+    // mutation d'instance ne peut PAS corrompre la def de trapping partagée (aliasing → pollution cross-test
+    // sous isolate:false : un canon muté à 999 coulait toute coque, #379 #339).
+    damage: t.damage ? { ...t.damage } : undefined,
     // Allonge (mêlée) ⊥ Portée (tir) — LDB 62. La donnée est NORMALISÉE : `reach` = string|null (Allonge
     // ou formule de jet « BFx3 »), `range` = Portée numérique (m) des armes à portée fixe → copie DIRECTE,
     // plus de `Number(t.reach)` (le « type menteur » d'avant la migration est éliminé).
