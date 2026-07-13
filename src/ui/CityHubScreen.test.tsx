@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { cityHubServices, cityHubHasPlan, cityHubCanEnterPort } from './CityHubScreen';
 import { restServicePrice } from '../state/restFlow';
-import { atLocationPlace, type MapPlace, type WorldMap } from '../state/worldMap';
+import { atLocationPlace, poiIcon, type MapPlace, type WorldMap } from '../state/worldMap';
 import { findTrappingById } from '../data';
 import { toBrass, priceToMoney } from '../engine/money';
 import type { LandMarketProfile } from '../engine/landCargo';
@@ -74,6 +74,34 @@ describe('atLocationPlace — porte du hub de ville (#343)', () => {
   });
   it('scène qui n’est PAS un lieu de la carte : pas de hub', () => {
     expect(atLocationPlace({ mode: 'exploration', travelPlan: null, worldMap: map, sceneId: 'ailleurs' })).toBeUndefined();
+  });
+});
+
+describe('poiIcon — résolution GÉNÉRALE de l’icône d’un marqueur de plan (#371, aucun backfill de donnée)', () => {
+  // Un lieu de type ville : le service `temple` (catalogue) porte l'icône `faith/church`, le port
+  // `travel/anchor` — la résolution les DÉRIVE de la cible sans que le POI ne redéclare son icône.
+  const services = cityHubServices(place({
+    port: { taille: 4, richesse: 3, production: ['commerce'] } as MapPlace['port'],
+    services: [{ kind: 'temple' }],
+  }));
+
+  it('serviceKind sans icon authoré : DÉRIVE l’icône du service résolu (temple → faith/church)', () => {
+    expect(poiIcon({ id: 'p', label: 'Temple', pos: { x: 0, y: 0 }, serviceKind: 'temple' }, services)).toBe('faith/church');
+  });
+  it('serviceKind = port automatique : icône du profil de port (travel/anchor)', () => {
+    expect(poiIcon({ id: 'p', label: 'Port', pos: { x: 0, y: 0 }, serviceKind: 'port' }, services)).toBe('travel/anchor');
+  });
+  it('icon authoré PRIME sur la cible (surcharge d’auteur)', () => {
+    expect(poiIcon({ id: 'p', label: 'X', pos: { x: 0, y: 0 }, icon: 'nav/dice', serviceKind: 'temple' }, services)).toBe('nav/dice');
+  });
+  it('sceneId sans icon : porte (map-tool/door)', () => {
+    expect(poiIcon({ id: 'p', label: 'Ailleurs', pos: { x: 0, y: 0 }, sceneId: 'sc-x' }, services)).toBe('map-tool/door');
+  });
+  it('serviceKind introuvable dans les services résolus : défaut nav/entry-point', () => {
+    expect(poiIcon({ id: 'p', label: 'Rien', pos: { x: 0, y: 0 }, serviceKind: 'inconnu' }, services)).toBe('nav/entry-point');
+  });
+  it('cible absente : défaut nav/entry-point', () => {
+    expect(poiIcon({ id: 'p', label: 'Nu', pos: { x: 0, y: 0 } }, services)).toBe('nav/entry-point');
   });
 });
 

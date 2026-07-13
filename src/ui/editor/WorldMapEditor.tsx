@@ -5,7 +5,7 @@ import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travel
 import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
 import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
 import { navalPorts, findNavalPortById, lieuxServices } from '../../data';
-import { resolvePortRef } from '../../state/worldMap';
+import { resolvePortRef, placeServices, poiIcon } from '../../state/worldMap';
 import { EffectList } from './EffectList';
 import { Icon, IconG } from '../Icon';
 import { ICON_DEFS } from '../icons';
@@ -600,7 +600,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                       <MapCanvas
                         ariaLabel="Aperçu de placement des POI"
                         computeFit={() => ({ z: 1, panX: 0, panY: 0 })}
-                        chrome={planChrome()}
+                        chrome={planChrome(selPlace.label)}
                         markers={poiList.map((poi) => ({
                           id: poi.id,
                           x: poi.pos.x,
@@ -611,7 +611,8 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                             <>
                               <circle r="1.5" fill="var(--wm-badge-bg)" stroke="var(--wm-age-spot)" strokeWidth="0.22" />
                               <g style={{ color: 'var(--wm-marker-icon)' }}>
-                                <IconG id={poi.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
+                                {/* Aperçu TRUTHFUL : même résolution d'icône par cible que le hub joueur (#371). */}
+                                <IconG id={poiIcon(poi, placeServices(selPlace))} x={-1.05} y={-1.05} size={2.1} />
                               </g>
                             </>
                           ),

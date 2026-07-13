@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
-import { placeServices, placeServiceMerchantId, type ResolvedPlaceService, type MapPlace } from '../state/worldMap';
+import { placeServices, placeServiceMerchantId, serviceIcon, poiIcon, type ResolvedPlaceService, type MapPlace } from '../state/worldMap';
 import type { Scene } from '../state/scene';
 import { restServicePrice, type RestPlaces } from '../state/restFlow';
 import { findLandCargoById } from '../engine/landCargo';
@@ -74,11 +74,6 @@ function GatedAction({ id, label, enabled, reason, onClick }: { id: string; labe
       {!enabled && <p className="city-hub-empty" id={reasonId}>{reason}</p>}
     </div>
   );
-}
-
-/** Icône de repli d'un service (le catalogue fournit la sienne ; défauts par catégorie). */
-function serviceIcon(s: ResolvedPlaceService): string {
-  return s.icon ?? (s.category === 'port' ? 'travel/anchor' : s.category === 'marche' ? 'merchant/cart' : s.category === 'auberge' ? 'rest/bed' : 'nav/entry-point');
 }
 
 /** Carte de synthèse d'un profil commercial (port/marché) : Taille/Richesse + colonne Produits. */
@@ -286,7 +281,7 @@ export function CityHubScreen({
           {poiSel?.id === p.id && <circle r="3" fill="none" stroke="var(--gold)" strokeWidth="0.45" opacity="0.95" />}
           <circle r="2.2" fill="var(--wm-badge-bg)" stroke="var(--wm-age-spot)" strokeWidth="0.28" />
           <g style={{ color: 'var(--wm-marker-icon)' }}>
-            <IconG id={p.icon ?? 'nav/entry-point'} x={-1.4} y={-1.4} size={2.8} />
+            <IconG id={poiIcon(p, services)} x={-1.4} y={-1.4} size={2.8} />
           </g>
           <g transform="translate(0 4.7)">
             <rect x={-w / 2} y="-2.1" width={w} height="3.4" rx="1.6" fill="var(--wm-cartouche-bg)" opacity="0.9" />
@@ -304,7 +299,7 @@ export function CityHubScreen({
   } else if (poiSel.sceneId) {
     poiDetail = (
       <ActivityPane
-        icon={poiSel.icon ?? 'nav/entry-point'}
+        icon={poiIcon(poiSel, services)}
         title={poiSel.label}
         desc="Ce point mène à un autre endroit."
         actions={<button type="button" className="btn btn-primary" onClick={() => enter(() => transitionTo(poiSel.sceneId!))}>Entrer</button>}
@@ -340,7 +335,7 @@ export function CityHubScreen({
                 <MapCanvas
                   ariaLabel={`Plan de ${place.label}`}
                   computeFit={() => ({ z: 1, panX: 0, panY: 0 })}
-                  chrome={planChrome()}
+                  chrome={planChrome(place.label)}
                   markers={poiMarkers}
                 />
               </div>

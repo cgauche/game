@@ -26,6 +26,7 @@ import { ScreenShell } from './ScreenShell';
 import { formatImperial } from '../engine/clock';
 import { VB_W, VB_H, fitViewport, type Viewport } from './worldMapViewport';
 import { MapCanvas, type MapMarker, type MapPath } from './MapCanvas';
+import { CompassRose } from './PlanChrome';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
 function hashStr(s: string): number {
@@ -45,30 +46,6 @@ function routeCurve(ax: number, ay: number, bx: number, by: number, id: string) 
   const lx = 0.25 * ax + 0.5 * cx + 0.25 * bx;
   const ly = 0.25 * ay + 0.5 * cy + 0.25 * by;
   return { d: `M ${ax} ${ay} Q ${cx} ${cy} ${bx} ${by}`, lx, ly };
-}
-
-/** Rose des vents décorative (carte ancienne) — 4 branches cardinales bicolores + N. */
-function CompassRose({ x, y }: { x: number; y: number }) {
-  const ink = 'var(--wm-ink)', faint = 'var(--wm-compass-faint)';
-  const ray = (rot: number, long: boolean) => {
-    const r = long ? 5.4 : 3.2;
-    return (
-      <g key={rot} transform={`rotate(${rot})`}>
-        <path d={`M 0 0 L 0.9 -${r * 0.5} L 0 -${r} Z`} fill={ink} />
-        <path d={`M 0 0 L -0.9 -${r * 0.5} L 0 -${r} Z`} fill={faint} />
-      </g>
-    );
-  };
-  return (
-    <g transform={`translate(${x} ${y})`} opacity="0.85" aria-hidden>
-      <circle r="6" fill="none" stroke={faint} strokeWidth="0.25" />
-      <circle r="4.4" fill="none" stroke={faint} strokeWidth="0.2" />
-      {[45, 135, 225, 315].map((d) => ray(d, false))}
-      {[0, 90, 180, 270].map((d) => ray(d, true))}
-      <circle r="0.7" fill={ink} />
-      <text y="-6.6" textAnchor="middle" fontSize="2.4" fill={ink} fontWeight={700}>N</text>
-    </g>
-  );
 }
 
 // ── Cadre logique de la carte (unités du viewBox) ────────────────────────────────────────────
