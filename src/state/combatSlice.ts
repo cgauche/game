@@ -65,7 +65,7 @@ import { applyShipPostes, autoFormCrews, servingCrewPresent, shipOfCrew, servabl
 import { posteHullOf, pushEligible, pushCrewOk, pushReachable } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipCrewAssignments, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
-import { resolveSteamSave, continueSeaDayAfterCascade, continueSeaDayAfterScorbut, continueSeaDayAfterExhaustion, runSeaDay } from './seaVoyageFlow';
+import { resolveSteamSave, continueSeaDayAfterCascade, continueSeaDayAfterScorbut, continueSeaDayAfterExhaustion, runSeaDay, finalizePortArrival } from './seaVoyageFlow';
 import { continueSeaActivitiesAfterCascade } from './seaActivities';
 import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
@@ -346,6 +346,11 @@ export function createCombatSlice(get: Get, set: Set) {
     // synchronisation. Gaté sur `travelPlan.sea` : à l'accostage `travelPlan` est nul (la désertion `purpose:'test'`
     // a sa propre reprise `resolvePortArrival`) ; `runSeaDay` re-garde de son côté combat/steamSave.
     else if (done?.purpose === 'test' && get().travelPlan?.sea && !get().pendingSteamSave) runSeaDay(get, set);
+    // Accostage à FINALISER à la clôture (désertion à la relâche surfacée, #387) : `travelPlan` est déjà nul
+    // ici (l'arrivée l'a annulé), hors de la branche sea ci-dessus — la cascade porte sa continuation dans
+    // `portArrival`. Couture GÉNÉRALE (la CLASSE « cascade dont la fermeture finalise une transition »),
+    // remplaçant le `setTimeout(finish)` de l'applier : `pendingCascade` est DÉJÀ null, plus de garde de synchro.
+    else if (done?.portArrival) finalizePortArrival(get, set, done.portArrival);
     else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
     else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
     else if (done?.maneuverResume) resumeManeuverDefense(get, set, done.maneuverResume); // défense de manœuvre de zone close → reprendre le tour de la créature (attaques gratuites restantes / avance)

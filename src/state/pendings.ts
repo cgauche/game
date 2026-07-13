@@ -1264,6 +1264,13 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  `attackerId` (attaques gratuites restantes puis avance) au lieu du `resumeSuspendedAI` générique —
    *  `free` = la manœuvre était une attaque gratuite (ne re-déclenche pas les libres d'Arme post-Action). */
   maneuverResume?: { attackerId: string; free: boolean };
+  /** ACCOSTAGE à finaliser À LA CLÔTURE (MDG 15 l.245) : une cascade dont la fermeture doit résoudre
+   *  l'événement de port puis transitionner vers la scène du lieu — porté par la désertion à la relâche
+   *  (`resolveShoreLeave`), surfacée au siège MJ (`travelPlan` déjà nul à l'accostage, hors de la branche
+   *  générique `purpose:'test' && travelPlan.sea`). La clôture (`dispatchCascadeDone`) enchaîne
+   *  `finalizePortArrival` — `resolvePortArrival` peut ouvrir SA propre cascade (`openEmbrigadementRecovery`)
+   *  sans garde de synchro puisque `pendingCascade` est DÉJÀ null post-`advanceCascade` (#387, patron #383). */
+  portArrival?: { toPlaceId: string; allow: boolean };
   /** Repos MULTI-JOURS authoré (#347, `state/restFlow.ts`) : nuits ENCORE à enchaîner après CETTE
    *  cascade + le contexte de repos (couchage/pitance par héros) nécessaire pour reconstruire la nuit
    *  suivante. La clôture ('night' purpose) enchaîne `continueRestNights` tant que `nightsLeft > 0` —

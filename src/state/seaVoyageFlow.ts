@@ -2162,30 +2162,36 @@ export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
       ownerId: vessel!.vehicleId,
       actionLabel: 'Désertion',
       difficulty: 'intermediaire',
-    }, 'sea-desertion', { baseValue: threshold, toPlaceId: p.to.id });
-    if (get().pendingCascade) return; // surfacé (V, MJ voit/lance) — l'applier `sea-desertion` reprend la suite
-    return; // inline : l'applier a DÉJÀ enchaîné `resolvePortArrival`/`transitionTo` (cf. ci-dessous)
+    }, 'sea-desertion', { baseValue: threshold });
+    const casc = get().pendingCascade;
+    if (casc) { set({ pendingCascade: { ...casc, portArrival: { toPlaceId: p.to.id, allow: true } } }); return; } // surfacé (V) → la clôture finalise l'accostage (`dispatchCascadeDone` → `finalizePortArrival`)
+    finalizePortArrivalTo(get, set, p.to, true); // inline : le test s'est auto-résolu (l'applier a joué la désertion) → accoster maintenant
+    return;
   }
-  resolvePortArrival(get, set, p.to.port, battleRng(), allow);
-  get().transitionTo(p.to.scene, p.to.entry);
+  finalizePortArrivalTo(get, set, p.to, allow);
+}
+
+/** Finalise un ACCOSTAGE (MDG 15 l.245) : événement de port (`resolvePortArrival`, qui peut ouvrir SA
+ *  propre cascade) puis transition vers la scène du lieu. SOURCE UNIQUE des deux gestes enchaînés,
+ *  partagée par `resolveShoreLeave` (inline) et la clôture de cascade surfacée (`dispatchCascadeDone`). */
+export function finalizePortArrivalTo(get: Get, set: Set, to: MapPlace, allow: boolean): void {
+  resolvePortArrival(get, set, to.port, battleRng(), allow);
+  get().transitionTo(to.scene, to.entry);
+}
+
+/** Clôture d'une cascade `portArrival` (désertion à la relâche surfacée, #387) : résout le lieu par id
+ *  puis finalise l'accostage. Appelée par `dispatchCascadeDone` — `pendingCascade` est DÉJÀ null. */
+export function finalizePortArrival(get: Get, set: Set, arrival: { toPlaceId: string; allow: boolean }): void {
+  const to = placeById(get().worldMap as WorldMap, arrival.toPlaceId);
+  if (to) finalizePortArrivalTo(get, set, to, arrival.allow);
 }
 
 /** Désertion (MDG 14 l.192-202, `klass:'subi'`) : la boucle d100/marin réelle (INCHANGÉE, même seuil,
  *  mêmes tirages via `battleRng()`) vit ICI — l'étape `sea-desertion` n'est que le vecteur de visibilité
- *  MJ. Enchaîne `resolvePortArrival`/`transitionTo` (repris de `resolveShoreLeave`) : DIFFÉRÉ si surfacée
- *  (même garde que `sea-force-pace`/`sea-priere` — `resolvePortArrival` peut ouvrir SA PROPRE cascade,
- *  `openEmbrigadementRecovery`, pendant que `advanceCascade` est encore dans son propre `commitStep`). */
+ *  MJ. La FINALISATION de l'accostage (`finalizePortArrival`) est portée par le champ `portArrival` de la
+ *  cascade et jouée à sa clôture par `dispatchCascadeDone` (#387) — plus de `setTimeout` de reprise. */
 registerCascadeApplier('sea-desertion', (get, set, step) => {
   if (!step.result) return;
   const journal = resolveShoreLeaveDesertion(get, set, battleRng());
-  const toPlaceId = String(step.meta?.toPlaceId ?? '');
-  const finish = () => {
-    const to = toPlaceId ? placeById(get().worldMap as WorldMap, toPlaceId) : undefined;
-    if (!to) return;
-    resolvePortArrival(get, set, to.port, battleRng(), true);
-    get().transitionTo(to.scene, to.entry);
-  };
-  if (get().pendingCascade) setTimeout(finish, 0);
-  else finish();
   return { consequences: freeCons(journal) };
 });
