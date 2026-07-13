@@ -60,6 +60,11 @@ Tables → *Création de personnage*, *Calendrier*, *Voyage terrestre*, *Rencont
   un titre dans `REVERSE_TITLE` si besoin, et `...reverseSections(cat, id)` dans la catégorie du registre.
 - **Nouveau champ de fiche** : enrichir l'`item` dans `registry.ts` (méta `fact(...)` ou section via les
   helpers `describe.ts` — `passiveSection`/`effectsSection`/`careerGrantSection`/`spellFlowSection`).
+- **Exergue de fiche** (`CodexItem.exergue`, Markdown verbatim) : citation/tract levé en tête de fiche sur
+  `ParchmentCard` (slot `band` de `TabbedEntry`). Pour les Carrières, `extractEpigraph(desc)` sélectionne
+  MÉCANIQUEMENT le couple citation `« … »` (ou `*« … »*`) + attribution (tiret) — convention d'épigraphe
+  LDB ch.2, 93/96 carrières — et le retire du corps (pas de doublon). Aucun champ JSON ajouté : extraction
+  structurelle depuis la desc verbatim. Garde : `registry.test.ts` (extraction + rendu `.parchment-card`).
 - **Riders / effets / formules de sort en clair** : `effectsSection`/`spellFlowSection` rendent d'abord la
   phrase JOUEUR (`src/ui/compendium/humanize.ts` — registre naturel : `humanizeFlow`/`humanizeCondition`/
   `humanizeOp`/`humanizeFormula`, switchs EXHAUSTIFS, zéro id brut), la forme technique d'atelier

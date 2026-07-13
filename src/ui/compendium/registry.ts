@@ -132,6 +132,9 @@ export interface CodexItem {
   tabs?: CodexTab[];
   /** Corps prose en **Markdown** (verbatim de la source), rendu par `<Prose>` (auto-liage des règles). */
   desc?: string;
+  /** Exergue Markdown VERBATIM (extrait de la desc, jamais reformulé) : citation/tract mis en tête de
+   *  fiche sur `ParchmentCard` (bande parchemin). Optionnel — item sans exergue = fiche telle quelle. */
+  exergue?: string;
   source?: CodexSource | null;
   /** Apparence (rig) à prévisualiser dans la fiche : créature, difformité de mutation, trait à visuel. */
   appearance?: EntityAppearance;
@@ -627,6 +630,28 @@ function waterModifiersSection(mods: WaterExposureModifier[]): CodexSection | nu
   return { title: 'Modificateurs', layout: 'list', rows };
 }
 
+/** Exergue d'une fiche : SÉLECTION STRUCTURELLE (pas d'heuristique fragile) de la citation/tract d'une
+ *  desc. Les desc de Carrière (LDB ch.2) suivent la convention d'épigraphe WFRP — un paragraphe
+ *  ENTIÈREMENT cité `« … »` (parfois en italique `*« … »*`) SUIVI d'un paragraphe d'attribution (tiret
+ *  `–`/`—`/`-`, parfois échappé `\-`) — sur 93/96 carrières. On lève ce couple VERBATIM (règle stricte 5)
+ *  et on le retire du corps (pas de doublon visuel entre l'exergue et l'onglet Description) ; une desc
+ *  sans épigraphe (ex. Chevalier Errant : citation sans attribution suivante) reste entière, exergue absent. */
+const QUOTE_PARA = /^\s*\*?\s*«/;
+const ATTRIB_PARA = /^\s*\*?\s*\\?\s*[–—-]/;
+export function extractEpigraph(desc: string): { epigraph?: string; body: string } {
+  const paras = desc.split(/\n\n+/);
+  for (let i = 0; i < paras.length - 1; i++) {
+    const q = paras[i].trim();
+    if (QUOTE_PARA.test(q) && q.includes('»') && ATTRIB_PARA.test(paras[i + 1].trim())) {
+      return {
+        epigraph: `${q}\n\n${paras[i + 1].trim()}`,
+        body: paras.filter((_, j) => j !== i && j !== i + 1).join('\n\n'),
+      };
+    }
+  }
+  return { body: desc };
+}
+
 const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'races', label: 'Races', group: 'Personnage',
@@ -659,8 +684,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...refRows('trappings', lv.trappings.map(trappingRefLabel))] : []),
         ],
       }));
+      // Citation/tract levée en tête de fiche (`ParchmentCard`) — c'est le flavor qui « vend » la
+      // carrière ; le corps restant garde la desc verbatim moins ce couple (pas de doublon).
+      const { epigraph, body } = extractEpigraph(c.desc);
       return {
-        label: c.label, sub: className, group: className, desc: c.desc, source: src(c.source),
+        label: c.label, sub: className, group: className, desc: body, exergue: epigraph, source: src(c.source),
         // Faits-clés en en-tête (comme les Races portent M/Destin/Résilience) : Classe + fourchette de Statut social.
         meta: facts(fact('Classe', className), fact('Statut', careerStatusRange(levels))),
         tabs: [

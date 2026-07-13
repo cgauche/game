@@ -6,6 +6,7 @@ import { CodexRef } from './CodexRef';
 import { CreaturePreview } from './CreaturePreview';
 import { TabbedEntry, type EntryTab } from '../TabbedEntry';
 import { OrnateFrame } from '../Ornaments';
+import { ParchmentCard } from '../ParchmentCard';
 import { Prose } from '../Prose';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
@@ -138,7 +139,11 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
         blurb={item.sub}
         meta={meta}
         tabs={tabs}
-        band={item.statblock && (
+        band={item.exergue ? (
+          // Exergue en tête de fiche (bande parchemin) : la citation/tract qui « vend » l'entité, mise
+          // en avant plutôt que noyée dans la prose. Réutilise la primitive `ParchmentCard`.
+          <ParchmentCard><Prose md={item.exergue} /></ParchmentCard>
+        ) : item.statblock && (
           <div className="codex-statblock tx-parchment">
             <table className="codex-statblock-profile">
               <thead><tr>{item.statblock.profile.map((f) => <th key={f.label}>{f.label}</th>)}</tr></thead>

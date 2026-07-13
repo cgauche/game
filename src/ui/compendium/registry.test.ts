@@ -2,7 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, codexLookup, codexLookupVersion, invalidateCodexLookup, type CodexItem, type CodexFacet } from './registry';
 import { codexMatch, deburr, filterItems, facetValues } from './search';
 import { isEditableCategory } from './CodexEdit';
-import { creatures, etats, trappings, findTraitById, WATER_EXPOSURE } from '../../data';
+import { careers, creatures, etats, trappings, findTraitById, WATER_EXPOSURE } from '../../data';
+import { extractEpigraph } from './registry';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { createElement } from 'react';
+import { CodexEntry } from './CodexEntry';
 import { setDataset } from '../../data/overrides';
 import { CHAR_KEYS } from '../../engine/types';
 import { CHAR_ABR } from '../../data';
@@ -403,6 +407,66 @@ describe('Codex registry — fiche de Carrière étoffée (#378 volet C)', () =>
       expect(prog, it.label).toBeTruthy();
       expect(prog!.sections.length, it.label).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('Codex registry — exergue de Carrière (tract/citation en tête, #381)', () => {
+  const careerItems = () => categoryByKey('careers')!.items;
+
+  it('Agitateur : le tract passe en exergue VERBATIM et sort du corps (pas de doublon)', () => {
+    const ag = careerItems().find((i) => i.label === 'Agitateur')!;
+    expect(ag.exergue).toBeTruthy();
+    expect(ag.exergue).toContain('ALTDORF À SES HABITANTS ! DEHORS LES MIDDENLANDERS !');
+    expect(ag.exergue).toContain('Tract, Rue des Cent Tavernes, Altdorf');
+    // Le tract est RETIRÉ du corps de l'onglet Description (pas de duplication visuelle).
+    expect(ag.desc).not.toContain('ALTDORF À SES HABITANTS');
+    // …mais le reste de la desc verbatim demeure (dont la 2e citation, non levée).
+    expect(ag.desc).toContain('Pamphlétaires');
+    expect(ag.desc).toContain('Adrian Hoven');
+  });
+
+  it('la vaste majorité des carrières portent un exergue, chacun sous-chaîne littérale de la desc source', () => {
+    const items = careerItems();
+    const withEx = items.filter((i) => i.exergue);
+    expect(withEx.length).toBeGreaterThan(items.length * 0.9);
+    for (const it of withEx) {
+      const source = careers.find((c) => c.label === it.label)!.desc!;
+      // Verbatim (règle stricte 5) : chaque paragraphe de l'exergue est un extrait littéral de la source.
+      for (const para of it.exergue!.split('\n\n')) expect(source, it.label).toContain(para);
+    }
+  });
+
+  it('une desc sans épigraphe (Chevalier Errant : citation sans attribution ; Frère Loup : aucune citation) → exergue absent, desc entière', () => {
+    const items = careerItems();
+    for (const label of ['Chevalier Errant', 'Frère Loup']) {
+      const it = items.find((i) => i.label === label)!;
+      expect(it.exergue, label).toBeUndefined();
+      expect(it.desc, label).toBe(careers.find((c) => c.label === label)!.desc);
+    }
+  });
+
+  it('extractEpigraph : couple citation+attribution levé ; ni citation orpheline ni attribution seule', () => {
+    expect(extractEpigraph('Corps.\n\n« Cité. »\n\n– Un témoin\n\nSuite.')).toEqual({
+      epigraph: '« Cité. »\n\n– Un témoin',
+      body: 'Corps.\n\nSuite.',
+    });
+    // Citation SANS attribution suivante = pas un épigraphe (reste dans le corps).
+    expect(extractEpigraph('« Dialogue inline. »\n\nSuite du récit.')).toEqual({
+      body: '« Dialogue inline. »\n\nSuite du récit.',
+    });
+    // Citation en italique `*« … »*` (carrières navales) reconnue.
+    expect(extractEpigraph('Corps.\n\n*« Cité. »*\n\n– Marin').body).toBe('Corps.');
+  });
+
+  it('rendu : une fiche AVEC exergue rend une .parchment-card en tête ; SANS exergue n\'en rend pas', () => {
+    const ag = careerItems().find((i) => i.label === 'Agitateur')!;
+    const html = renderToStaticMarkup(createElement(CodexEntry, { item: ag }));
+    expect(html).toContain('parchment-card');
+    expect(html).toContain('ALTDORF À SES HABITANTS');
+
+    const chev = careerItems().find((i) => i.label === 'Chevalier Errant')!;
+    const htmlNo = renderToStaticMarkup(createElement(CodexEntry, { item: chev }));
+    expect(htmlNo).not.toContain('parchment-card');
   });
 });
 
