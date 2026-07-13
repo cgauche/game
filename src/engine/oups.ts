@@ -7,7 +7,7 @@ import { d100, RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
 import { isDoubleRoll } from './tests';
 import { Weapon } from './types';
-import { OUPS_TABLE, OupsKind } from '../data/oups';
+import { OUPS_TABLE, OUPS_MISFIRE, OupsKind } from '../data/oups';
 import { isFirearmQuality } from './qualities/dispatch';
 
 export interface OupsResolved {
@@ -37,7 +37,7 @@ function isFirearm(w: Weapon | undefined): boolean {
 export function rollOups(weapon: Weapon | undefined, rng: RNG = defaultRNG): OupsResolved {
   const roll = d100(rng);
   if (isFirearm(weapon) && roll % 2 === 0) {
-    return { roll, kind: 'misfire', label: 'Incident de Tir ! L’arme explose dans votre main (Dégâts au Bras principal, arme détruite).' };
+    return { roll, kind: 'misfire', label: OUPS_MISFIRE.label };
   }
   const entry = findTableEntry(OUPS_TABLE, roll);
   return { roll, kind: entry.kind, label: entry.label };

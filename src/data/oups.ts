@@ -12,5 +12,11 @@ export type OupsKind =
   | 'loseMovement' | 'loseAction' | 'trauma' | 'hitAlly';
 
 export interface OupsEntry { min: number; max: number; kind: OupsKind; label: string; }
+/** Incident de Tir (LDB 14 l.56-57) — HORS table d100 : déclenché par arme à Poudre noire + jet PAIR. */
+export interface OupsMisfireEntry { kind: 'misfire'; label: string; }
+export type OupsRow = OupsEntry | OupsMisfireEntry;
 
-export const OUPS_TABLE = oups;
+/** Bandes d100 du Tableau des Oups ! (les 7 fourchettes) — lues par `findTableEntry`. */
+export const OUPS_TABLE = oups.filter((e): e is OupsEntry => e.kind !== 'misfire');
+/** Entrée « Incident de Tir » (label DISPLAY-ONLY) — source UNIQUE, lue par `rollOups`. */
+export const OUPS_MISFIRE = oups.find((e): e is OupsMisfireEntry => e.kind === 'misfire')!;

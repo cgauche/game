@@ -75,5 +75,14 @@
       "page": 160,
       "note": "Tableau des Oups !, LDB 14 l.21-34"
     }
+  },
+  {
+    "kind": "misfire",
+    "label": "Incident de Tir ! L’arme explose dans votre main (Dégâts au Bras principal, arme détruite).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "Maladresses — Incident de Tir (arme à Poudre noire + jet pair), LDB 14 l.56-57"
+    }
   }
 ]

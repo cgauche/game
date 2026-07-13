@@ -8,21 +8,30 @@ import { sourceRefSchema } from '../common';
 export const file = 'oups.json';
 
 export const schema = z.array(
-  z.strictObject({
-    min: z.number(),
-    max: z.number(),
-    kind: z.enum([
-      'selfWound',
-      'weaponDamageActLast',
-      'actionPenalty',
-      'loseMovement',
-      'loseAction',
-      'trauma',
-      'hitAlly',
-    ]),
-    label: z.string(),
-    source: sourceRefSchema.optional(),
-  }),
+  z.union([
+    // Bandes d100 du Tableau des Oups ! (LDB 14 l.21-34).
+    z.strictObject({
+      min: z.number(),
+      max: z.number(),
+      kind: z.enum([
+        'selfWound',
+        'weaponDamageActLast',
+        'actionPenalty',
+        'loseMovement',
+        'loseAction',
+        'trauma',
+        'hitAlly',
+      ]),
+      label: z.string(),
+      source: sourceRefSchema.optional(),
+    }),
+    // Incident de Tir — hors table d100 (arme à Poudre noire + jet pair, LDB 14 l.56-57).
+    z.strictObject({
+      kind: z.literal('misfire'),
+      label: z.string(),
+      source: sourceRefSchema.optional(),
+    }),
+  ]),
 );
 
 export type OupsData = z.infer<typeof schema>;

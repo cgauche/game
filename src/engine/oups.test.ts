@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import { isFumble, rollOups } from './oups';
-import { OUPS_TABLE } from '../data/oups';
+import { OUPS_TABLE, OUPS_MISFIRE } from '../data/oups';
 import type { Weapon } from './types';
 
 const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
@@ -54,10 +54,14 @@ describe('rollOups (Tableau des Oups !)', () => {
     let sawMisfire = false;
     for (let s = 1; s <= 200; s++) {
       const r = rollOups(pistol, makeRNG(s));
-      if (r.roll % 2 === 0) { expect(r.kind).toBe('misfire'); sawMisfire = true; }
+      if (r.roll % 2 === 0) { expect(r.kind).toBe('misfire'); expect(r.label).toBe(OUPS_MISFIRE.label); sawMisfire = true; }
       else expect(r.kind).not.toBe('misfire');
     }
     expect(sawMisfire).toBe(true);
+  });
+  it("parité #365 : le label Incident de Tir vit dans oups.json, byte-identique à l'ancien code en dur", () => {
+    expect(OUPS_MISFIRE.label).toBe('Incident de Tir ! L’arme explose dans votre main (Dégâts au Bras principal, arme détruite).');
+    expect(OUPS_TABLE).toHaveLength(7); // la table d100 = 7 bandes, le misfire en est exclu (filtré hors table)
   });
   it("arme non à poudre : jamais de misfire", () => {
     for (let s = 1; s <= 200; s++) expect(rollOups(sword, makeRNG(s)).kind).not.toBe('misfire');

@@ -226,6 +226,37 @@
     }
   },
   {
+    "id": "fracture-mal-ressoudee-membre",
+    "label": "Fracture mal ressoudée",
+    "desc": "Sur un échec, vous subirez une pénalité permanente à tous vos Tests d’Agilité pour une blessure au Bras, à la Jambe ou au Torse.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fracture — séquelle de mauvaise guérison (Test de fin), LDB 18 l.202/212."
+    }
+  },
+  {
+    "id": "fracture-mal-ressoudee-tete",
+    "label": "Fracture mal ressoudée",
+    "desc": "Sur un échec, vous subirez une pénalité permanente à tous vos Tests de Langue s’il s’agit d’une blessure à la tête mal guérie.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fracture — séquelle de mauvaise guérison (Test de fin), LDB 18 l.202/212."
+    }
+  },
+  {
+    "id": "amputation-plaie",
+    "label": "Amputation",
+    "needsSurgery": true,
+    "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Membres amputés — nécessité de la chirurgie, LDB 18 l.239."
+    }
+  },
+  {
     "id": "orteil-ampute",
     "label": "Orteil(s) amputé(s)",
     "ops": [

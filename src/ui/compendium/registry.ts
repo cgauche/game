@@ -267,6 +267,7 @@ const diceLabel = formatDice;
 const OUPS_KIND_LABEL: Record<string, string> = {
   selfWound: 'Auto-blessure', weaponDamageActLast: 'Arme abîmée + agit en dernier', actionPenalty: 'Malus d’Action',
   loseMovement: 'Perte de Mouvement', loseAction: 'Perte d’Action', trauma: 'Traumatisme', hitAlly: 'Touche un allié',
+  misfire: 'Incident de Tir',
 };
 /** Libellés FR des CAPACITÉS de Trait (drapeaux booléens lus par le moteur — `TraitCapabilities`).
  *  Les capacités psy (psychType/psychImmune/psychIndice) sont surfacées à part (méta). */
@@ -1114,11 +1115,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // on enrichit par la plage d100 et le TYPE d'effet (kind) en méta. id dérivé (donnée sans id).
     build: () => {
       const taken = new Set<string>();
-      return oups.map((o) => ({
-        id: uniqueSlugId(o.label, taken),
-        label: o.label, sub: `d100 ${o.min}–${o.max}`,
-        meta: facts(fact('d100', `${o.min}–${o.max}`), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
-      }));
+      return oups.map((o) => {
+        const range = 'min' in o ? `d100 ${o.min}–${o.max}` : 'Hors table (arme à Poudre noire, jet pair)';
+        return {
+          id: uniqueSlugId(o.label, taken),
+          label: o.label, sub: range,
+          meta: facts(fact('d100', range), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
+        };
+      });
     },
   },
   {

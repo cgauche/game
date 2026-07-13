@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaById, dechirureFractureFicheId, traumaRecoveryDays, tickTraumaRecovery, applyFractureEnd, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma } from './trauma';
+import { traumaById, dechirureFractureFicheId, traumaRecoveryDays, tickTraumaRecovery, applyFractureEnd, treatTrauma, hasTreatableTrauma, traumaSkillPenalty, hasSurgeryTrauma, removeSurgicalTrauma, AMPUTATION_WOUND_DESC } from './trauma';
 import type { HitLocation } from './types';
 const tk = (k: 'dechirure' | 'fracture', sv: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, sv, loc), opts, loc);
 import { testValue } from './skills';
@@ -138,6 +138,18 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     expect(c.criticalWounds).toBe(0);
     expect(log.join(' ')).toMatch(/chirurgie/i);
     expect(hasSurgeryTrauma(c)).toBe(false);
+  });
+
+  it('parité #365 : prose migrée en donnée (traumas.json), byte-identique à l’ancien code en dur', () => {
+    // Séquelle de fracture mal ressoudée (ex-`fractureSequela`, LDB 18 l.202) — desc lue depuis la fiche.
+    const membre = C({});
+    applyFractureEnd(membre, false, 'mineur', 'jambeG', 'Fracture');
+    expect(membre.traumas![0].desc).toBe('Sur un échec, vous subirez une pénalité permanente à tous vos Tests d’Agilité pour une blessure au Bras, à la Jambe ou au Torse.');
+    const tete = C({});
+    applyFractureEnd(tete, false, 'majeur', 'tete', 'Fracture');
+    expect(tete.traumas![0].desc).toBe('Sur un échec, vous subirez une pénalité permanente à tous vos Tests de Langue s’il s’agit d’une blessure à la tête mal guérie.');
+    // Plaie chirurgicale d'amputation (ex-`AMPUTATION_WOUND_DESC`, LDB 18 l.239).
+    expect(AMPUTATION_WOUND_DESC).toBe('Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.');
   });
 
   it('hasTreatableTrauma : faux pour une fracture hors fenêtre d’une semaine', () => {

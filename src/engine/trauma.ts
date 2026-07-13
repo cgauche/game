@@ -30,10 +30,9 @@ export type TraumaSeverity = 'mineur' | 'majeur';
 
 const LEG: HitLocation[] = ['jambeG', 'jambeD'];
 
-/** Texte de la plaie chirurgicale d'une amputation (LDB 18 l.239, DISPLAY-ONLY) — SOURCE UNIQUE partagée par
- *  `resolveAmputation` (critical.ts) et `stampCriticalEscalation` (« Pied écrasé »). */
-export const AMPUTATION_WOUND_DESC =
-  'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.';
+/** Texte de la plaie chirurgicale d'une amputation (fiche `amputation-plaie`, LDB 18 l.239, DISPLAY-ONLY) —
+ *  SOURCE UNIQUE partagée par `resolveAmputation` (critical.ts) et `stampCriticalEscalation` (« Pied écrasé »). */
+export const AMPUTATION_WOUND_DESC = (traumasJson as TraumaFiche[]).find((f) => f.id === 'amputation-plaie')!.desc;
 
 /**
  * Fiche de Traumatisme (registre `traumas.json`, app-owned) : mécanique = `ops` (GameOp[]), `desc` =
@@ -150,8 +149,8 @@ function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
  */
 function fractureSequela(t: Trauma): Trauma | null {
   const pen = t.severity === 'majeur' ? -10 : -5;
-  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], desc: 'Sur un échec, vous subirez une pénalité permanente à tous vos Tests de Langue s’il s’agit d’une blessure à la tête mal guérie.' };
-  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'agilite', mod: pen }], desc: 'Sur un échec, vous subirez une pénalité permanente à tous vos Tests d’Agilité pour une blessure au Bras, à la Jambe ou au Torse.' };
+  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-tete').desc };
+  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'agilite', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-membre').desc };
 }
 
 /** Difficulté du Test de fin de fracture (LDB 18 l.300/309) selon la sévérité. */

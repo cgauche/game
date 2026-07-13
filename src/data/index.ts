@@ -78,7 +78,7 @@ import type { PowerEstimateRow, MightModifierRow, WarMachineRow, StructureRow as
 import { type DiceSpec, formatDice } from '../engine/dice';
 import { SIZE_LABEL } from '../engine/size'; // runtime : registre feuille (data/sizes.json + engine/qualities/ids), sans cycle vers data/index
 import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la donnée d'ici)
-import type { OupsEntry } from './oups';
+import type { OupsRow } from './oups';
 import type { InterludeEvent } from './interludeEvents';
 import type { Peripetie } from './peripeties';
 import type { CharacteristicsData } from './schemas/defs/characteristics';
@@ -1626,7 +1626,7 @@ export const RACE_KEY_LABEL: Record<RaceKey, string> = {
  *  vit dans `pregens.ts`, qui consomme CE tableau (même référence → mutation live de l'éditeur). */
 export const pregens = pregensJson as PregenDef[];
 /** Tableau des Oups ! (LDB Maladresses) — app-owned éditable ; consommé par `oups.ts` (même référence). */
-export const oups = oupsJson as OupsEntry[];
+export const oups = oupsJson as OupsRow[];
 /** Événements « Entre deux aventures » (LDB d100) — app-owned éditable ; consommé par `interludeEvents.ts`. */
 export const interludeEvents = interludeEventsJson as InterludeEvent[];
 /** Péripéties de voyage (1d10) — app-owned éditable ; consommé par `peripeties.ts` (même référence). */
