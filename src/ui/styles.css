@@ -7,6 +7,8 @@
 @import './styles/tabs.css'; /* Tabs — primitive UNIQUE d'onglets (#314), variantes flat/pill/sub/dock */
 @import './styles/ornaments.css'; /* textures maison (.tx-parchment/.tx-iron/.tx-ink) + cadres/fleurons (Ornaments.tsx) */
 @import './styles/party.css'; /* écran d'équipe (sélection des héros) : colonne compagnie + étal de candidats */
+@import './styles/city-hub.css'; /* hub de ville (#343) : services + détail (MasterDetail) */
+@import './styles/voyage.css'; /* écran-hub de voyage (#333) : tuiles + chronique + MasterDetail */
 @import './styles/creator.css'; /* cadre Modal partagé + assistant de création + apparence */
 @import './styles/combat-ui.css'; /* audio, coop, select, campaign, victoire, dialogue, barre d'action */
 @import './styles/combat-modals.css'; /* modales de jet (attaque/défense/incantation/critique…) */

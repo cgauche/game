@@ -74,6 +74,8 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/merchant.css': 1,
   'styles/sheet.css': 2,
   'styles/world-meta.css': 18,
+  'styles/city-hub.css': 1,
+  'styles/voyage.css': 3,
 };
 
 // ── (viii) Couleurs `fill=`/`stroke=` LITTÉRALES dans le JSX de `src/ui` : un fill/stroke codé en dur
@@ -199,6 +201,8 @@ const DOMAIN_CSS_MODULES = [
   'tavern',
   'party',
   'gauges',
+  'city-hub',
+  'voyage',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -217,6 +221,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/sheet.css': 91,
   'styles/tavern.css': 13,
   'styles/world-meta.css': 133,
+  'styles/city-hub.css': 18,
+  'styles/voyage.css': 30,
 };
 
 // ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules
@@ -237,7 +243,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
 const SHARED_CSS_FILES = ['styles/base.css', 'styles/components.css', 'styles/tabs.css', 'styles.css'];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
   'styles/base.css': 21,
-  'styles/components.css': 54,
+  'styles/components.css': 11,
   'styles/tabs.css': 4,
   'styles.css': 6,
 };
