@@ -789,6 +789,9 @@ export function resolveMeleePassive(
   return res;
 }
 
+/** Cible sans défense possible face à une attaque (LDB 16 l.112 / États l.113). */
+export const isHelplessTarget = (c: Combatant): boolean => hasCondition(c, 'inconscient');
+
 /** Résout une attaque de mêlée (Test opposé de Corps à corps). Orchestrateur :
  *  jet d'attaque PUIS jet de défense (ordre RNG inchangé) ; voie instantanée. */
 export function resolveMelee(
@@ -804,7 +807,7 @@ export function resolveMelee(
   // Cible Inconsciente (LDB 16 l.112) : auto-réussite + Critique (RAW). Règle optionnelle « mort-auto » :
   // en CORPS À CORPS la cible est tuée automatiquement → on marque `autoKill` (le store finalise la mort
   // par le chemin normal, Destin possible). Le tir n'est PAS concerné (cf. resolveRanged).
-  const helpless = hasCondition(defender, 'inconscient');
+  const helpless = isHelplessTarget(defender);
   if (helpless) atk = helplessTest(atk, 'melee');
   const autoKill = helpless && rule('combat-helpless-mode') === 'mort-auto';
   let res: AttackResult;
@@ -928,11 +931,11 @@ export function resolveRanged(
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
   let atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
-  if (hasCondition(defender, 'inconscient')) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
+  if (isHelplessTarget(defender)) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
   const atkBd = bd(attackTestLabel(weapon, 'ranged'), atkVal, atk, mods);
   // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.307 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
   // Test OPPOSÉ, cœur partagé avec la mêlée (`combineOpposed`). L'Inconscient ne se défend pas.
-  if (defense && !hasCondition(defender, 'inconscient')) {
+  if (defense && !isHelplessTarget(defender)) {
     const def = rollMeleeDefender(defender, defense.mode, rng, defense.dodgeMod ?? 0, defense.parryWeapon ?? defender.weapons[0], weapon);
     return combineOpposed(attacker, defender, weapon, atk, def, defense.mode, atkBd, { location, parryWeapon: defense.parryWeapon, dodgeMod: defense.dodgeMod });
   }

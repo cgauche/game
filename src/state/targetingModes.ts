@@ -12,7 +12,7 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant, Weapon } from '../engine/types';
-import { combineMods, attackTestLabel } from '../engine/combat';
+import { combineMods, attackTestLabel, isHelplessTarget } from '../engine/combat';
 import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveRange } from '../engine/weaponDamage';
@@ -527,7 +527,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   // Résilience → réutilise le MÊME picker de Localisation (`pa.forced`/CritLocationPicker, LDB 17 l.68)
   // que le Critique forcé par Résilience. Réservé au joueur qui PILOTE ; l'IA (doAttack) résout hors de
   // ce chemin (pendingAttack), donc ne voit jamais ce choix.
-  if (hasCondition(target, COND.inconscient) && pilotedByHuman(get(), active)) pa = { ...pa, forced: true };
+  if (isHelplessTarget(target) && pilotedByHuman(get(), active)) pa = { ...pa, forced: true };
   // (2) FRAPPE — après le glissé d'approche : ouvre la SÉQUENCE de combat (jet d'attaque = ÉTAPE 0,
   // CascadeModal via useAttackJetProps ; ses conséquences s'empilent APRÈS dans la MÊME fenêtre). Garde
   // dans le différé : encore le tour de l'acteur et aucune autre cascade ouverte (anti double-ouverture).
