@@ -152,6 +152,8 @@ export interface CodexCategory {
   key: string;
   label: string;
   group: CodexGroup;
+  /** Sous-groupe FR (dépliable dans la barre de catégories) — cf. `CodexCategorySpec.cluster`. */
+  cluster?: string;
   /** Projection PARESSEUSE (getter, cache par version) : les datasets étant mutés EN PLACE
    *  (`overrides.ts::setDataset`), la re-projection après `invalidateCodexLookup()` lit la donnée
    *  FRAÎCHE. Ne se re-matérialise qu'à l'invalidation (persist DEV, rare), jamais par rendu. */
@@ -221,6 +223,15 @@ const reverseSections = (category: string, id: string | undefined): CodexSection
     layout: 'chips' as const,
     rows: g.referrers.map((r) => ({ t: 'ref', category: r.category, label: r.label, show: r.label, badge: r.detail } as CodexRow)),
   }));
+
+/** Fourchette de Statut social d'une carrière (LDB 05) : `status` du 1er échelon → celui du dernier
+ *  (« Bronze 1 → Or 1 »). Un seul échelon ⇒ statut simple ; aucune donnée ⇒ null (fait omis). */
+const careerStatusRange = (levels: import('../../data').CareerLevelData[]): string | null => {
+  if (!levels.length) return null;
+  const first = levels[0].status;
+  const last = levels[levels.length - 1].status;
+  return first === last ? first : `${first} → ${last}`;
+};
 
 /** Libellés FR du déclenchement / ciblage d'une Manœuvre (Codex). */
 const WEAPON_GROUP_KIND_LABEL: Record<string, string> = { weapon: 'Groupe d’arme', ammo: 'Munitions', armour: 'Armure', inventory: 'Inventaire' };
@@ -474,6 +485,9 @@ interface CodexCategorySpec {
   key: string;
   label: string;
   group: CodexGroup;
+  /** Sous-groupe FR : les catégories d'un même `cluster` se replient sous UN dépliable dans la barre
+   *  de catégories (anti-avalanche des groupes touffus Effets/Tables). Absent = pastille à plat. */
+  cluster?: string;
   build: () => CodexItem[];
 }
 
@@ -494,6 +508,7 @@ function makeCategory(spec: CodexCategorySpec): CodexCategory {
     key: spec.key,
     label: spec.label,
     group: spec.group,
+    cluster: spec.cluster,
     get items() { return fresh(); },
     get facets() { fresh(); return facets; },
   };
@@ -623,22 +638,31 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'careers', label: 'Carrières', group: 'Personnage',
-    build: () => careers.map((c) => ({
-      label: c.label, sub: findClassById(c.class)?.label ?? c.class, group: findClassById(c.class)?.label ?? c.class, desc: c.desc, source: src(c.source),
-      sections: [
-        ...levelsForCareer(c.id).map((lv) => ({
-          title: `Niveau ${lv.level} : ${lv.label} — ${lv.status}`,
-          layout: 'chips' as const,
-          rows: [
-            ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, { t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') } as CodexRow] : []),
-            ...(lv.skills.length ? [{ t: 'sub', label: 'Compétences' } as CodexRow, ...refRows('skills', lv.skills.map((a) => advancementLabel('skills', a)))] : []),
-            ...(lv.talents.length ? [{ t: 'sub', label: 'Talents' } as CodexRow, ...refRows('talents', lv.talents.map((a) => advancementLabel('talents', a)))] : []),
-            ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...refRows('trappings', lv.trappings.map(trappingRefLabel))] : []),
-          ],
-        })),
-        ...reverseSections('careers', c.id), // Races y accédant
-      ],
-    })),
+    build: () => careers.map((c) => {
+      const levels = levelsForCareer(c.id);
+      const className = findClassById(c.class)?.label ?? c.class;
+      // Les 4 échelons réunis en UN onglet « Progression » (au lieu d'un onglet par niveau) → la
+      // montée en Carrière se lit d'un trait ; la description flavor gagne en proéminence relative.
+      const levelSections: CodexSection[] = levels.map((lv) => ({
+        title: `Niveau ${lv.level} : ${lv.label} — ${lv.status}`,
+        layout: 'chips' as const,
+        rows: [
+          ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, { t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') } as CodexRow] : []),
+          ...(lv.skills.length ? [{ t: 'sub', label: 'Compétences' } as CodexRow, ...refRows('skills', lv.skills.map((a) => advancementLabel('skills', a)))] : []),
+          ...(lv.talents.length ? [{ t: 'sub', label: 'Talents' } as CodexRow, ...refRows('talents', lv.talents.map((a) => advancementLabel('talents', a)))] : []),
+          ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...refRows('trappings', lv.trappings.map(trappingRefLabel))] : []),
+        ],
+      }));
+      return {
+        label: c.label, sub: className, group: className, desc: c.desc, source: src(c.source),
+        // Faits-clés en en-tête (comme les Races portent M/Destin/Résilience) : Classe + fourchette de Statut social.
+        meta: facts(fact('Classe', className), fact('Statut', careerStatusRange(levels))),
+        tabs: [
+          ...(levelSections.length ? [{ title: 'Progression', sections: levelSections }] : []),
+          ...reverseSections('careers', c.id).map((s) => ({ title: s.title, sections: [s] })), // Races y accédant
+        ],
+      };
+    }),
   },
   {
     key: 'characteristics', label: 'Caractéristiques', group: 'Personnage',
@@ -959,30 +983,30 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'eyes', label: 'Couleur des yeux', group: 'Tables',
+    key: 'eyes', label: 'Couleur des yeux', group: 'Tables', cluster: 'Création de personnage',
     build: () => eyes.map((e) => ({ label: e.label, sub: `2d10 ≤ ${e.rand}`, sections: sections(colorTableSection(e)) })),
   },
   {
-    key: 'hairs', label: 'Couleur des cheveux', group: 'Tables',
+    key: 'hairs', label: 'Couleur des cheveux', group: 'Tables', cluster: 'Création de personnage',
     build: () => hairs.map((h) => ({ label: h.label, sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })),
   },
   {
-    key: 'calendarMonths', label: 'Calendrier — Mois', group: 'Tables',
+    key: 'calendarMonths', label: 'Calendrier — Mois', group: 'Tables', cluster: 'Calendrier',
     build: () => calendarMonths.map((m) => ({ label: m.name, sub: `${m.days} jours` })),
   },
   {
-    key: 'calendarIntercalary', label: 'Calendrier — Jours intercalaires', group: 'Tables',
+    key: 'calendarIntercalary', label: 'Calendrier — Jours intercalaires', group: 'Tables', cluster: 'Calendrier',
     build: () => calendarIntercalary.map((i) => ({
       label: i.name,
       sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.name ?? `mois ${i.afterMonth}`}`,
     })),
   },
   {
-    key: 'calendarWeekdays', label: 'Calendrier — Jours de la semaine', group: 'Tables',
+    key: 'calendarWeekdays', label: 'Calendrier — Jours de la semaine', group: 'Tables', cluster: 'Calendrier',
     build: () => calendarWeekdays.map((w) => ({ label: w.name })),
   },
   {
-    key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables',
+    key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables', cluster: 'Calendrier',
     build: () => calendarPhases.map((p) => ({
       label: p.label, // `p.icon` = id d'icône (time/*, registre src/ui/icons), plus un glyphe affichable en préfixe
 
@@ -990,18 +1014,18 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'weather', label: 'Météo de voyage', group: 'Tables',
+    key: 'weather', label: 'Météo de voyage', group: 'Tables', cluster: 'Voyage terrestre',
     build: () => weather.map((s) => ({ label: s.label, sub: `${s.ranges.length} plages d100 (EDOC ch.5)` })),
   },
   {
-    key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables',
+    key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables', cluster: 'Création de personnage',
     build: () => raceAppearance.map((r) => ({
       label: r.id, sub: r.gabarit, appearance: { species: r.id },
       meta: facts(fact('Gabarit', r.gabarit), fact('Tenue', r.tenue), fact('Tête', r.head), fact('Jambes', r.legs)),
     })),
   },
   {
-    key: 'pregens', label: 'Pré-tirés', group: 'Tables',
+    key: 'pregens', label: 'Pré-tirés', group: 'Tables', cluster: 'Création de personnage',
     build: () => pregens.map((p) => ({
       label: p.name, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
       meta: facts(fact('Motivation', p.motivation), fact('Graine', p.seed)),
@@ -1022,7 +1046,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => interludeEvents.map((e) => ({ label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text })),
   },
   {
-    key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables',
+    key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables', cluster: 'Voyage terrestre',
     build: () => peripeties.map((p) => ({ label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })),
   },
   {
@@ -1058,7 +1082,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   // « Explosion » ici, trait « Impénétrable (structure) » vs « Impénétrable » ici) — une décomposition
   // par id resterait à faire côté donnée (hors périmètre #148, ne pas inventer un rapprochement flou). ──
   {
-    key: 'massBattlePowerEstimate', label: 'Bataille de masse — Estimation de Puissance', group: 'Tables',
+    key: 'massBattlePowerEstimate', label: 'Bataille de masse — Estimation de Puissance', group: 'Tables', cluster: 'Bataille de masse',
     build: () => POWER_ESTIMATE.map((p) => ({
       label: p.label,
       meta: facts(fact('Puissance alliée', p.ally), fact('Puissance ennemie', p.enemy)),
@@ -1066,7 +1090,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'massBattleMightModifiers', label: 'Bataille de masse — Modificateurs de Puissance', group: 'Tables',
+    key: 'massBattleMightModifiers', label: 'Bataille de masse — Modificateurs de Puissance', group: 'Tables', cluster: 'Bataille de masse',
     build: () => MIGHT_MODIFIERS.map((m) => ({
       label: m.label,
       meta: facts(fact('Modificateur', m.mod > 0 ? `+${m.mod}` : String(m.mod))),
@@ -1074,7 +1098,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'massBattleWarMachines', label: 'Bataille de masse — Machines de guerre', group: 'Tables',
+    key: 'massBattleWarMachines', label: 'Bataille de masse — Machines de guerre', group: 'Tables', cluster: 'Bataille de masse',
     build: () => WAR_MACHINES.map((w) => ({
       label: w.label,
       meta: facts(
@@ -1084,19 +1108,19 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'massBattleStructures', label: 'Bataille de masse — Structures', group: 'Tables',
+    key: 'massBattleStructures', label: 'Bataille de masse — Structures', group: 'Tables', cluster: 'Bataille de masse',
     build: () => MASS_BATTLE_STRUCTURES.map((s) => ({
       label: s.label,
       meta: facts(fact('BE', s.be), fact('Blessures', s.wounds), fact('Atouts', s.traits)),
     })),
   },
   {
-    key: 'massBattleHazards', label: 'Bataille de masse — Aléas de bataille', group: 'Tables',
+    key: 'massBattleHazards', label: 'Bataille de masse — Aléas de bataille', group: 'Tables', cluster: 'Bataille de masse',
     build: () => BATTLE_HAZARDS.map((h) => ({ label: h.label, sub: `1d10 = ${h.min}`, desc: h.text })),
   },
   // ── Datasets-OBJETS uniques (E3b) : config de création (objet) + banque de noms (Record par race) ──
   {
-    key: 'details', label: 'Détails de création', group: 'Tables',
+    key: 'details', label: 'Détails de création', group: 'Tables', cluster: 'Création de personnage',
     // UNE seule entrée (objet `details.json`) — formules Âge/Taille par espèce + textes d'aide.
     build: () => [{
       label: 'Détails de création (LDB 05)',
@@ -1110,7 +1134,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     }],
   },
   {
-    key: 'names', label: 'Banque de noms', group: 'Tables',
+    key: 'names', label: 'Banque de noms', group: 'Tables', cluster: 'Création de personnage',
     // Record race → NamePool : une entrée par race (clé = libellé de l'item, édité au Codex).
     build: () => Object.entries(names).map(([race, pool]) => ({
       label: race,
@@ -1200,111 +1224,111 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'criticalsTete', label: 'Critiques — Tête (Traumatisme, LDB 18)', group: 'Effets',
+    key: 'criticalsTete', label: 'Critiques — Tête (Traumatisme, LDB 18)', group: 'Effets', cluster: 'Blessures critiques',
     build: () => datasetArray('criticalsTete').map(critEntryItem),
   },
   {
-    key: 'criticalsBras', label: 'Critiques — Bras (Traumatisme, LDB 18)', group: 'Effets',
+    key: 'criticalsBras', label: 'Critiques — Bras (Traumatisme, LDB 18)', group: 'Effets', cluster: 'Blessures critiques',
     build: () => datasetArray('criticalsBras').map(critEntryItem),
   },
   {
-    key: 'criticalsCorps', label: 'Critiques — Corps (Traumatisme, LDB 18)', group: 'Effets',
+    key: 'criticalsCorps', label: 'Critiques — Corps (Traumatisme, LDB 18)', group: 'Effets', cluster: 'Blessures critiques',
     build: () => datasetArray('criticalsCorps').map(critEntryItem),
   },
   {
-    key: 'criticalsJambe', label: 'Critiques — Jambe (Traumatisme, LDB 18)', group: 'Effets',
+    key: 'criticalsJambe', label: 'Critiques — Jambe (Traumatisme, LDB 18)', group: 'Effets', cluster: 'Blessures critiques',
     build: () => datasetArray('criticalsJambe').map(critEntryItem),
   },
   {
-    key: 'aaCriticalsTete', label: 'Critiques AA — Tête (approche alternative)', group: 'Effets',
+    key: 'aaCriticalsTete', label: 'Critiques AA — Tête (approche alternative)', group: 'Effets', cluster: 'Blessures critiques',
     build: () => datasetArray('aaCriticalsTete').map(critEntryItem),
   },
   {
-    key: 'aaCriticalsBras', label: 'Critiques AA — Bras (approche alternative)', group: 'Effets',
+    key: 'aaCriticalsBras', label: 'Critiques AA — Bras (approche alternative)', group: 'Effets', cluster: 'Blessures critiques',
     build: () => datasetArray('aaCriticalsBras').map(critEntryItem),
   },
   {
-    key: 'aaCriticalsCorps', label: 'Critiques AA — Corps (approche alternative)', group: 'Effets',
+    key: 'aaCriticalsCorps', label: 'Critiques AA — Corps (approche alternative)', group: 'Effets', cluster: 'Blessures critiques',
     build: () => datasetArray('aaCriticalsCorps').map(critEntryItem),
   },
   {
-    key: 'aaCriticalsJambe', label: 'Critiques AA — Jambe (approche alternative)', group: 'Effets',
+    key: 'aaCriticalsJambe', label: 'Critiques AA — Jambe (approche alternative)', group: 'Effets', cluster: 'Blessures critiques',
     build: () => datasetArray('aaCriticalsJambe').map(critEntryItem),
   },
   {
-    key: 'incidentsMonture', label: 'Incidents de monte', group: 'Tables',
+    key: 'incidentsMonture', label: 'Incidents de monte', group: 'Tables', cluster: 'Voyage terrestre',
     build: () => MOUNT_INCIDENTS.map((e) => travelEntryItem(e, 'Effet sur le cavalier')),
   },
   {
-    key: 'problemesVehicule', label: 'Problèmes de véhicule', group: 'Tables',
+    key: 'problemesVehicule', label: 'Problèmes de véhicule', group: 'Tables', cluster: 'Voyage terrestre',
     build: () => VEHICLE_PROBLEMS.map((e) => travelEntryItem(e, 'Effet sur les occupants')),
   },
   {
-    key: 'rencontresPositives', label: 'Rencontres — Positives', group: 'Tables',
+    key: 'rencontresPositives', label: 'Rencontres — Positives', group: 'Tables', cluster: 'Rencontres',
     build: () => datasetArray('rencontresPositives').map((e) => travelEntryItem(e, 'Effet sur les occupants')),
   },
   {
-    key: 'rencontresFortuites', label: 'Rencontres — Fortuites', group: 'Tables',
+    key: 'rencontresFortuites', label: 'Rencontres — Fortuites', group: 'Tables', cluster: 'Rencontres',
     build: () => datasetArray('rencontresFortuites').map((e) => travelEntryItem(e, 'Effet sur les occupants')),
   },
   {
-    key: 'rencontresDangereuses', label: 'Rencontres — Dangereuses', group: 'Tables',
+    key: 'rencontresDangereuses', label: 'Rencontres — Dangereuses', group: 'Tables', cluster: 'Rencontres',
     build: () => datasetArray('rencontresDangereuses').map((e) => travelEntryItem(e, 'Effet sur les occupants')),
   },
   {
-    key: 'shipCriticalsCargaison', label: 'Critiques de navire — Cargaison (MDG ch.13)', group: 'Effets',
+    key: 'shipCriticalsCargaison', label: 'Critiques de navire — Cargaison (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
     build: () => datasetArray('shipCriticalsCargaison').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsGreement', label: 'Critiques de navire — Gréement (MDG ch.13)', group: 'Effets',
+    key: 'shipCriticalsGreement', label: 'Critiques de navire — Gréement (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
     build: () => datasetArray('shipCriticalsGreement').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsCoque', label: 'Critiques de navire — Coque (MDG ch.13)', group: 'Effets',
+    key: 'shipCriticalsCoque', label: 'Critiques de navire — Coque (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
     build: () => datasetArray('shipCriticalsCoque').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsAvirons', label: 'Critiques de navire — Avirons (MDG ch.13)', group: 'Effets',
+    key: 'shipCriticalsAvirons', label: 'Critiques de navire — Avirons (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
     build: () => datasetArray('shipCriticalsAvirons').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsEquipements', label: 'Critiques de navire — Équipements (MDG ch.13)', group: 'Effets',
+    key: 'shipCriticalsEquipements', label: 'Critiques de navire — Équipements (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
     build: () => datasetArray('shipCriticalsEquipements').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement (T2C ch.5)', group: 'Effets',
+    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
     build: () => datasetArray('riverCriticalsGreement').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames (T2C ch.5)', group: 'Effets',
+    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
     build: () => datasetArray('riverCriticalsAvirons').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail (T2C ch.5)', group: 'Effets',
+    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
     build: () => datasetArray('riverCriticalsGouvernail').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque (T2C ch.5)', group: 'Effets',
+    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
     build: () => datasetArray('riverCriticalsCoque').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure (T2C ch.5)', group: 'Effets',
+    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
     build: () => datasetArray('riverCriticalsSuperstructure').map(shipCritEntryItem),
   },
   {
-    key: 'seaManannFactors', label: 'Humeur de Manann — Facteurs (MDG ch.15)', group: 'Tables',
+    key: 'seaManannFactors', label: 'Humeur de Manann — Facteurs (MDG ch.15)', group: 'Tables', cluster: 'Mer & rivière',
     build: () => datasetArray('seaManannFactors').map(manannFactorItem),
   },
   {
-    key: 'seaBoardEvents', label: 'Événements de bord (mer, MDG ch.15)', group: 'Tables',
+    key: 'seaBoardEvents', label: 'Événements de bord (mer, MDG ch.15)', group: 'Tables', cluster: 'Mer & rivière',
     build: () => datasetArray('seaBoardEvents').map(seaEventItem),
   },
   {
-    key: 'seaPortEvents', label: 'Événements de port (mer, MDG ch.15)', group: 'Tables',
+    key: 'seaPortEvents', label: 'Événements de port (mer, MDG ch.15)', group: 'Tables', cluster: 'Mer & rivière',
     build: () => datasetArray('seaPortEvents').map(seaEventItem),
   },
   {
-    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques, T2C ch.14)', group: 'Tables',
+    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques, T2C ch.14)', group: 'Tables', cluster: 'Mer & rivière',
     build: () => {
       const w = datasetObject('waterExposure');
       return [{
@@ -1374,11 +1398,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => RIVER_PERILS.map((p) => ({ label: p.label, sub: p.kind })),
   },
   {
-    key: 'crewMoraleFactors', label: 'Moral d’équipage — Facteurs', group: 'Tables',
+    key: 'crewMoraleFactors', label: 'Moral d’équipage — Facteurs', group: 'Tables', cluster: 'Équipage & navire',
     build: () => MORALE_FACTORS.map((f) => ({ label: f.label, desc: f.effect })),
   },
   {
-    key: 'crewMoraleBands', label: 'Moral d’équipage — Effets', group: 'Tables',
+    key: 'crewMoraleBands', label: 'Moral d’équipage — Effets', group: 'Tables', cluster: 'Équipage & navire',
     build: () => MORALE_BANDS.map((b) => ({
       label: b.id, sub: `d100 ${b.min}–${b.max}`,
       meta: facts(
@@ -1388,7 +1412,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'steamBreakdowns', label: 'Pannes de navire à vapeur', group: 'Tables',
+    key: 'steamBreakdowns', label: 'Pannes de navire à vapeur', group: 'Tables', cluster: 'Équipage & navire',
     build: () => STEAM_BREAKDOWNS.map((e) => ({
       label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.desc,
       meta: facts(fact('Moteur détruit', e.engineDestroyed ? 'oui' : null)),
@@ -1409,6 +1433,24 @@ function colorTableSection(c: (typeof eyes)[number]): CodexSection {
 
 /** Catégories d'une famille, dans l'ordre de déclaration. */
 export const categoriesIn = (group: CodexGroup): CodexCategory[] => CODEX.filter((c) => c.group === group);
+
+/** Un sous-groupe repliable de catégories (barre de catégories du Compendium). */
+export interface CodexCluster { name: string; cats: CodexCategory[] }
+/** Éclate les catégories d'une famille en pastilles À PLAT (sans `cluster`) + sous-groupes repliables
+ *  (par `cluster`), dans l'ordre de déclaration. Anti-avalanche des familles touffues (Effets/Tables) :
+ *  les catégories d'un même `cluster` se replient sous un unique dépliable. */
+export const clustersIn = (group: CodexGroup): { flat: CodexCategory[]; clusters: CodexCluster[] } => {
+  const flat: CodexCategory[] = [];
+  const clusters: CodexCluster[] = [];
+  const byName = new Map<string, CodexCluster>();
+  for (const c of categoriesIn(group)) {
+    if (!c.cluster) { flat.push(c); continue; }
+    let cl = byName.get(c.cluster);
+    if (!cl) { cl = { name: c.cluster, cats: [] }; byName.set(c.cluster, cl); clusters.push(cl); }
+    cl.cats.push(c);
+  }
+  return { flat, clusters };
+};
 
 /** Catégorie par clé. */
 export const categoryByKey = (key: string): CodexCategory | undefined => CODEX.find((c) => c.key === key);

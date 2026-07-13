@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../../state/store';
 import { useModalA11y } from '../Modal';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, useCodexVersion, type CodexGroup, type CodexItem } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, useCodexVersion, type CodexCategory, type CodexGroup, type CodexItem } from './registry';
 import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
@@ -54,7 +54,13 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   // (`invalidateCodexLookup` → les getters `items`/`facets` re-projettent la donnée persistée).
   const version = useCodexVersion();
   const cats = useMemo(() => categoriesIn(group), [group]);
+  // Barre de catégories : pastilles À PLAT + sous-groupes repliables (`cluster`) — anti-avalanche
+  // des familles touffues (Effets/Tables). Ordre de déclaration préservé (`clustersIn`).
+  const { flat: flatCats, clusters } = useMemo(() => clustersIn(group), [group]);
   const cat = categoryByKey(catKey) ?? cats[0];
+  // Repli par cluster : fermé par défaut ; s'ouvre si la catégorie active y vit (arrivée par cross-réf),
+  // ou selon le dernier toggle utilisateur (mémorisé par nom, tant que l'écran est monté).
+  const [manualOpen, setManualOpen] = useState<Record<string, boolean>>({});
   const list = useMemo(() => filterItems(cat?.items ?? [], q, cat?.facets ?? [], facetSel), [cat, q, facetSel, version]);
   // Facettes de la catégorie : valeurs dérivées des items, avec COMPTEUR LIVE — chaque compte est
   // calculé sous la recherche + les AUTRES facettes (faceting standard) ; une facette à valeur
@@ -109,6 +115,13 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
     setFacetSel({});
   };
 
+  const renderChip = (c: CodexCategory) => (
+    <button key={c.key} className={`chip codex-cat${c.key === catKey ? ' on' : ''}`} onClick={() => pickCat(c.key)}>
+      {c.label}
+      <span className="count">{c.items.length}</span>
+    </button>
+  );
+
   const renderRow = (it: CodexItem, key: string) => (
     <button
       key={key}
@@ -137,12 +150,26 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
       </header>
 
       <div className="row-flex codex-cats">
-        {cats.map((c) => (
-          <button key={c.key} className={`chip codex-cat${c.key === catKey ? ' on' : ''}`} onClick={() => pickCat(c.key)}>
-            {c.label}
-            <span className="count">{c.items.length}</span>
-          </button>
-        ))}
+        {flatCats.map(renderChip)}
+        {clusters.map((cl) => {
+          const hasActive = cl.cats.some((c) => c.key === catKey);
+          const open = manualOpen[cl.name] ?? hasActive;
+          return (
+            <details
+              key={cl.name}
+              className="fold"
+              style={{ flexBasis: '100%' }}
+              open={open}
+              onToggle={(e) => setManualOpen((m) => ({ ...m, [cl.name]: e.currentTarget.open }))}
+            >
+              <summary>
+                <span className="fold-title">{cl.name}</span>
+                <span className="count">{cl.cats.length}</span>
+              </summary>
+              <div className="fold-body row-flex codex-cats">{cl.cats.map(renderChip)}</div>
+            </details>
+          );
+        })}
       </div>
 
       <MasterDetail

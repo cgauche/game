@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup, codexLookupVersion, invalidateCodexLookup, type CodexItem, type CodexFacet } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, codexLookup, codexLookupVersion, invalidateCodexLookup, type CodexItem, type CodexFacet } from './registry';
 import { codexMatch, deburr, filterItems, facetValues } from './search';
 import { isEditableCategory } from './CodexEdit';
 import { creatures, etats, trappings, findTraitById, WATER_EXPOSURE } from '../../data';
@@ -352,6 +352,56 @@ describe('Codex — facettes', () => {
       const hasGroup = c.items.some((i) => i.group);
       expect(!!c.facets?.some((f) => f.key === 'book'), `${c.key} facette livre`).toBe(hasBook);
       expect(!!c.facets?.some((f) => f.key === 'group'), `${c.key} facette groupe`).toBe(hasGroup);
+    }
+  });
+});
+
+describe('Codex registry — sous-groupes repliables (clusters, #378 volet B)', () => {
+  it('clustersIn éclate flat + clusters sans perte ni doublon, cluster cohérent', () => {
+    for (const g of CODEX_GROUPS) {
+      const { flat, clusters } = clustersIn(g);
+      const all = categoriesIn(g);
+      const recomposed = [...flat, ...clusters.flatMap((c) => c.cats)];
+      expect(new Set(recomposed.map((c) => c.key)).size).toBe(all.length);
+      expect(recomposed.map((c) => c.key).sort()).toEqual(all.map((c) => c.key).sort());
+      for (const c of flat) expect(c.cluster).toBeUndefined();
+      for (const cl of clusters) for (const c of cl.cats) expect(c.cluster).toBe(cl.name);
+    }
+  });
+
+  it('tout cluster déclaré regroupe AU MOINS 2 catégories (sinon = pastille à plat)', () => {
+    for (const g of CODEX_GROUPS)
+      for (const cl of clustersIn(g).clusters)
+        expect(cl.cats.length, `${g} › ${cl.name}`).toBeGreaterThanOrEqual(2);
+  });
+
+  it('les familles touffues Effets/Tables sont dégonflées (anti-avalanche)', () => {
+    for (const g of ['Effets', 'Tables'] as const) {
+      const { flat, clusters } = clustersIn(g);
+      // Éléments visibles dans la barre (pastilles à plat + en-têtes de dépliables) ≪ nombre brut de catégories.
+      expect(flat.length + clusters.length, g).toBeLessThan(categoriesIn(g).length);
+      expect(clusters.length, g).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('Codex registry — fiche de Carrière étoffée (#378 volet C)', () => {
+  it('porte des faits-clés (Classe + Statut), un onglet Progression et sa desc verbatim', () => {
+    const agitateur = categoryByKey('careers')!.items.find((i) => i.label === 'Agitateur')!;
+    expect(agitateur, 'Agitateur').toBeTruthy();
+    expect(agitateur.meta?.find((f) => f.label === 'Classe')?.value).toBeTruthy();
+    expect(agitateur.meta?.find((f) => f.label === 'Statut')?.value).toContain('→');
+    expect(agitateur.tabs?.some((t) => t.title === 'Progression')).toBe(true);
+    expect(agitateur.desc).toBeTruthy();
+  });
+
+  it('chaque carrière porte Classe + Statut + un onglet Progression peuplé', () => {
+    for (const it of categoryByKey('careers')!.items) {
+      expect(it.meta?.find((f) => f.label === 'Classe')?.value, it.label).toBeTruthy();
+      expect(it.meta?.find((f) => f.label === 'Statut')?.value, it.label).toBeTruthy();
+      const prog = it.tabs?.find((t) => t.title === 'Progression');
+      expect(prog, it.label).toBeTruthy();
+      expect(prog!.sections.length, it.label).toBeGreaterThan(0);
     }
   });
 });

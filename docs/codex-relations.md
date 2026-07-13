@@ -40,6 +40,20 @@ Construite UNE fois au chargement, en inversant les refs de `src/data` :
   vocabulaire de RÈGLES : carac/compétences/talents/états/manœuvres/traits/qualités/domaines), hors
   liens vers soi, hors noms propres. Rendu par `<LinkedText>` (CodexEntry) — texte BRUT seulement.
 
+## Barre de catégories — sous-groupes repliables (`cluster`)
+
+Les familles touffues (**Effets** ~28 catégories, **Tables** ~35) affichaient une *avalanche* de
+pastilles à plat. Chaque `CodexCategory` porte désormais un champ optionnel `cluster` (libellé FR du
+sous-groupe) : `clustersIn(group)` éclate les catégories en pastilles **à plat** (sans `cluster`) +
+**sous-groupes repliables** (`CodexCluster`, un par `cluster`, ordre de déclaration préservé).
+`CompendiumScreen` rend chaque cluster comme un `<details class="fold codex-catfold">` (primitive
+`.fold`, **fermé par défaut**, compteur de catégories visible) ; il s'ouvre automatiquement si la
+catégorie active y vit (arrivée par cross-réf). Les pastilles restent des `<button>` (a11y inchangée).
+Sous-groupes actuels : Effets → *Blessures critiques*, *Critiques de navire*, *Critiques fluviaux* ;
+Tables → *Création de personnage*, *Calendrier*, *Voyage terrestre*, *Rencontres*, *Mer & rivière*,
+*Bataille de masse*, *Équipage & navire*. Garde : `registry.test.ts` (tout cluster ≥ 2 catégories,
+éclatement sans perte). Regrouper une catégorie = poser `cluster: '…'` sur son littéral, rien d'autre.
+
 ## Étendre
 
 - **Nouvelle relation inverse** : ajouter l'arête dans `relations.ts` (`addReverse(targetCat, id, by)`),
