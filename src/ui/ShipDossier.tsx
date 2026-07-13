@@ -16,6 +16,7 @@ import { moraleTone, crewRoleLabel } from './shipStatus';
 import { ScreenShell } from './ScreenShell';
 import { Tabs } from './Tabs';
 import { CargoTransferPanel } from './CargoTransferPanel';
+import { ShipPreview } from './ShipPreview';
 
 /**
  * DOSSIER DE NAVIRE persistant (#227, attendu C.1) — écran plein-champ du `CampaignVessel` (l'INSTANCE
@@ -122,7 +123,15 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
         />
       }
     >
-        {tab === 'apercu' && (
+        {tab === 'apercu' && (<>
+          <section className="panel" data-ship-proue>
+            <ShipPreview vehicleId={vessel.vehicleId} sunk={woundsCur <= 0} label={name} />
+            <div>
+              <h3>{name}</h3>
+              <p className="port-hint">{vd.label}{rig ? ` · ${RIG_LABEL[rig] ?? rig}` : ''}{vd.ship.lengthM ? ` · ${vd.ship.lengthM} m` : ''}</p>
+              <p>Coque : <b>{woundsCur}</b> / {woundsMax} Blessure(s){woundsCur <= 0 ? ' — épave, échouée' : missing > 0 ? ' — avariée' : ' — intacte'}</p>
+            </div>
+          </section>
           <div className="layout-sidebar port-yard">
             <section className="panel port-section">
               <h3>Jauges</h3>
@@ -194,7 +203,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
               </details>
             </section>
           </div>
-        )}
+        </>)}
 
         {tab === 'cargaison' && (
           <div className="layout-sidebar port-trade">

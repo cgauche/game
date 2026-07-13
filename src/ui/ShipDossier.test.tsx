@@ -41,6 +41,14 @@ describe('ShipDossier — dossier de navire persistant (#227)', () => {
     expect(html).toContain('Voile'); // gréement (rig)
   });
 
+  it('Vue d’ensemble : bande de PROUE — le navire du joueur se MONTRE (silhouette + nom + état coque)', () => {
+    const html = render('apercu');
+    expect(html).toContain('data-ship-proue'); // bande de proue présente
+    expect(html).toContain('data-bone="coque"'); // silhouette effectivement rendue par le gabarit navire
+    expect(html).toContain('Silhouette — Le Cormoran'); // a11y : nom d’instance
+    expect(html).toContain('avariée'); // état RÉEL : coque 8/20 → avariée (source unique state.vessel)
+  });
+
   it('Vue d’ensemble : les quatre jauges à crans (Coque, Moral, Humeur, Soute)', () => {
     const html = render('apercu');
     const gauges = html.match(/notch-gauge__track/g) ?? [];
