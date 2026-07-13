@@ -84,9 +84,12 @@ describe('relations — graphe inverse id-based', () => {
     expect(contents.length).toBeGreaterThan(0);
     // Les talents du LDB doivent apparaître.
     const tCat = contents.find((c) => c.category === 'talents');
-    expect(tCat && tCat.labels.length).toBeGreaterThan(0);
+    expect(tCat && tCat.entries.length).toBeGreaterThan(0);
     // Trié alpha à l'intérieur d'une catégorie.
-    if (tCat) expect([...tCat.labels]).toEqual([...tCat.labels].sort((a, b) => a.localeCompare(b, 'fr')));
+    if (tCat) {
+      const labels = tCat.entries.map((e) => e.label);
+      expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'fr')));
+    }
   });
 
   it('tokenizeLinks lie le vocabulaire de règles, écarte soi-même et l’inconnu', () => {
@@ -206,10 +209,10 @@ describe('relations — graphe inverse id-based', () => {
     expect(resSkill && resTalent, 'homonyme réel Résistance (compétence + talent)').toBeTruthy();
     const skillForm = tokenizeLinks('On y joue sa Compétence Résistance.').find((t) => typeof t === 'object') as
       { category: string; label: string } | undefined;
-    expect(skillForm).toEqual({ category: 'skills', label: 'Résistance', spec: undefined, text: 'Compétence Résistance' });
+    expect(skillForm).toEqual({ category: 'skills', id: resSkill!.id, label: 'Résistance', spec: undefined, text: 'Compétence Résistance' });
     const talentForm = tokenizeLinks('On y joue son Talent Résistance.').find((t) => typeof t === 'object') as
       { category: string; label: string } | undefined;
-    expect(talentForm).toEqual({ category: 'talents', label: 'Résistance', spec: undefined, text: 'Talent Résistance' });
+    expect(talentForm).toEqual({ category: 'talents', id: resTalent!.id, label: 'Résistance', spec: undefined, text: 'Talent Résistance' });
   });
 
   it('FRAÎCHEUR après persist : renommer une créature (mutation en place) + invalidate → graphe inverse ET index de libellés re-projetés', () => {

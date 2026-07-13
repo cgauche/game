@@ -16,6 +16,7 @@ import type { SkillInstance, TalentInstance, QualityInstance } from '../engine/t
  *  optionnel en fin (carac/valeur, `+avancées`, `×N`…). */
 export function EntityRef({
   category,
+  id,
   label,
   show,
   badge,
@@ -23,6 +24,9 @@ export function EntityRef({
   className,
 }: {
   category: string;
+  /** Identité STABLE de la cible (préférée quand fournie) — les appelants hors Codex (non migrés
+   *  ce lot) omettent la prop, `CodexRef` se rabat alors sur le lookup par `label`. */
+  id?: string;
   label: string;
   show?: ReactNode;
   badge?: ReactNode;
@@ -32,7 +36,7 @@ export function EntityRef({
 }) {
   return (
     <span className={`entity-chip${className ? ` ${className}` : ''}`}>
-      <CodexRef category={category} label={label} instance={instance}>
+      <CodexRef category={category} id={id} label={label} instance={instance}>
         {show ?? label}
       </CodexRef>
       {badge != null && badge !== '' && <em className="entity-badge">{badge}</em>}
@@ -41,13 +45,13 @@ export function EntityRef({
 }
 
 /** Groupe de CHOIX « A ou B » avec options DÉJÀ séparées : un chip cliquable par option + « ou ». */
-export function ChoiceChips({ category, options }: { category: string; options: { label: string; show: string }[] }) {
+export function ChoiceChips({ category, options }: { category: string; options: { id?: string; label: string; show: string }[] }) {
   return (
     <span className="entity-choice">
       {options.map((o, i) => (
         <Fragment key={i}>
           {i > 0 && <em className="chip-ou">ou</em>}
-          <EntityRef category={category} label={o.label} show={o.show} />
+          <EntityRef category={category} id={o.id} label={o.label} show={o.show} />
         </Fragment>
       ))}
     </span>

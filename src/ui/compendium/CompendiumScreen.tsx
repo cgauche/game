@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../../state/store';
 import { useModalA11y } from '../Modal';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, codexItemKey, useCodexVersion, type CodexCategory, type CodexGroup, type CodexItem } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, codexItemKey, codexLookup, useCodexVersion, type CodexCategory, type CodexGroup, type CodexItem } from './registry';
 import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
@@ -18,6 +18,14 @@ import { MasterDetail } from '../MasterDetail';
 import { OptionChooser, type RollOption } from '../OptionChooser';
 
 export interface CodexFocus { category: string; label: string; instance?: string }
+
+/** Clé de navigation d'un `CodexFocus` (venu du store, encore label-only — LOT B) : résout l'id
+ *  RÉEL de la cible via `codexLookup` (repli de compat), puis compose `codexItemKey`. */
+const focusItemKey = (focus: CodexFocus | null | undefined): string | null => {
+  if (!focus) return null;
+  const id = codexLookup(focus.category, focus.label)?.id;
+  return id != null ? codexItemKey(focus.category, id) : null;
+};
 
 export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexFocus | null; onClose?: () => void } = {}) {
   const setScreen = useGame((s) => s.setScreen);
@@ -32,7 +40,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   const initialCat = (focus && categoryByKey(focus.category)) || CODEX[0];
   const [group, setGroup] = useState<CodexGroup>(initialCat.group);
   const [catKey, setCatKey] = useState<string>(initialCat.key);
-  const [picked, setPicked] = useState<string | null>(focus ? codexItemKey(focus.category, focus.label) : null);
+  const [picked, setPicked] = useState<string | null>(focusItemKey(focus));
   const [q, setQ] = useState('');
   const [facetSel, setFacetSel] = useState<FacetSelection>({});
   const [editing, setEditing] = useState(false);
@@ -49,7 +57,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
     if (!fc) return;
     setGroup(fc.group);
     setCatKey(fc.key);
-    setPicked(codexItemKey(focus.category, focus.label));
+    setPicked(focusItemKey(focus));
     setQ('');
     setFacetSel({}); // une facette cochée pourrait masquer l'entrée ciblée
   }, [focus]);
@@ -62,9 +70,9 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   // des familles touffues (Effets/Tables). Ordre de déclaration préservé (`clustersIn`).
   const { flat: flatCats, clusters } = useMemo(() => clustersIn(group), [group]);
   const cat = categoryByKey(catKey) ?? cats[0];
-  // Clé de navigation d'une entrée = identité qualifiée `category+label` (`codexItemKey`), jamais le label nu.
-  const itemKey = (it: CodexItem): string => codexItemKey(cat?.key ?? '', it.label);
-  const focusKey = focus ? codexItemKey(focus.category, focus.label) : null;
+  // Clé de navigation d'une entrée = identité qualifiée `category+id` (`codexItemKey`), jamais le label nu.
+  const itemKey = (it: CodexItem): string => codexItemKey(cat?.key ?? '', it.id);
+  const focusKey = focusItemKey(focus);
   // Repli par cluster : fermé par défaut ; s'ouvre si la catégorie active y vit (arrivée par cross-réf),
   // ou selon le dernier toggle utilisateur (mémorisé par nom, tant que l'écran est monté).
   const [manualOpen, setManualOpen] = useState<Record<string, boolean>>({});

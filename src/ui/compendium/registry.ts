@@ -11,7 +11,7 @@ import { useSyncExternalStore } from 'react';
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
-  stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
+  stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names, RACE_KEY_LABEL,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
@@ -65,6 +65,7 @@ import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, c
 import { humanizeCastBonus } from './humanize';
 import { reverseGroups, bookContents } from './relations';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL, formatManeuverMeasure } from './maneuverLabels';
+import { slugId, uniqueSlugId } from '../../data/slug';
 
 export type CodexGroup = 'Personnage' | 'Compétences' | 'Équipement' | 'Effets' | 'Magie' | 'Monde' | 'Tables';
 
@@ -96,13 +97,14 @@ export interface CodexFact {
 /** Une ligne d'une section. */
 export type CodexRow =
   | { t: 'text'; text: string }
-  | { t: 'kv'; k: string; v: string; kref?: { category: string; label: string } }
-  /** Lien vers une autre fiche. `label` = clé de résolution (base) ; `show` = libellé affiché,
-   *  qui PORTE les Indices (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance.
+  | { t: 'kv'; k: string; v: string; kref?: { category: string; id: string; label: string } }
+  /** Lien vers une autre fiche. `id` = identité STABLE de la cible (navigation) ; `label` reste la clé
+   *  de résolution (base, affichage/repli) ; `show` = libellé affiché, qui PORTE les Indices
+   *  (« 8 Tentacules +8 ») et est transmis au Codex/popover comme instance.
    *  `badge` = annotation de fin NON cliquable (rang « N2 », « facultatif », « Bénédiction »…). */
-  | { t: 'ref'; category: string; label: string; show: string; badge?: string }
+  | { t: 'ref'; category: string; id: string; label: string; show: string; badge?: string }
   /** CHOIX « A ou B » : chaque option est un lien cross-réf cliquable, séparées par « ou ». */
-  | { t: 'choice'; category: string; options: { label: string; show: string }[] }
+  | { t: 'choice'; category: string; options: { id: string; label: string; show: string }[] }
   /** Mini sous-en-tête à l'intérieur d'une section (« Compétences », « Talents »…). */
   | { t: 'sub'; label: string }
   /** Bloc REPLIABLE (`<details class="fold">`) : `summary` visible, `text` (Markdown) dévoilé au clic.
@@ -121,6 +123,9 @@ export interface CodexTab {
 }
 /** Entrée normalisée, rendue uniformément par `CodexEntry`. */
 export interface CodexItem {
+  /** Identité STABLE (id de l'entité source ; slug dérivé du libellé pour les datasets sans id
+   *  propre — cf. `CODEX_SPECS`) — la clé de navigation/comparaison ; `label` reste l'AFFICHAGE. */
+  id: string;
   label: string;
   sub?: string;
   /** Groupe pour la liste hiérarchique (famille de race, classe de carrière, dossier de créature…). */
@@ -202,9 +207,18 @@ const damageFact = (t: { damage: import('../../engine/types').WeaponDamageSpec |
 /** Famille d'une race/variante : « Humains (Reiklander) » → « Humains ». */
 const family = (label: string): string => label.split(' (')[0].trim();
 
+/** Id résolu d'une référence par (catégorie, libellé) — même résolution que `CodexRef` (recherche
+ *  exacte puis casse pliée dans les items DÉJÀ projetés de la catégorie cible) ; repli sur un slug
+ *  du libellé si la cible n'est pas (encore) au catalogue (défensif — arme naturelle hors catalogue,
+ *  entrée cassée… — ne doit jamais faire échouer un build). */
+const refId = (category: string, label: string): string => codexLookup(category, label)?.id ?? slugId(label);
+
 /** Lien cross-réf : nom canonique pour le lookup (via le parseur PARTAGÉ `parseStatEntry` —
  *  « 8 Tentacules +8 » → « Tentacules »), libellé complet conservé pour l'affichage + l'instance. */
-const refRow = (category: string, raw: string): CodexRow => ({ t: 'ref', category, label: statName(raw), show: raw.trim() });
+const refRow = (category: string, raw: string): CodexRow => {
+  const label = statName(raw);
+  return { t: 'ref', category, id: refId(category, label), label, show: raw.trim() };
+};
 const refRows = (category: string, items?: string[] | null): CodexRow[] => (items ?? []).map((s) => refRow(category, s));
 const kvRows = (pairs: [string, unknown][]): CodexRow[] =>
   pairs
@@ -227,7 +241,7 @@ const reverseSections = (category: string, id: string | undefined): CodexSection
   id == null ? [] : reverseGroups(category, id).map((g) => ({
     title: g.title,
     layout: 'chips' as const,
-    rows: g.referrers.map((r) => ({ t: 'ref', category: r.category, label: r.label, show: r.label, badge: r.detail } as CodexRow)),
+    rows: g.referrers.map((r) => ({ t: 'ref', category: r.category, id: r.id, label: r.label, show: r.label, badge: r.detail } as CodexRow)),
   }));
 
 /** Fourchette de Statut social d'une carrière (LDB 05) : `status` du 1er échelon → celui du dernier
@@ -332,7 +346,14 @@ function outcomeBandsSection(bands?: OutcomeBand[]): CodexSection | null {
  *  cliquable), sinon un simple lien cross-réf. Lit l'`AdvancementRef` STRUCTURÉ (plus de split de prose). */
 const choiceOrRef = (category: string, a: AdvancementRef): CodexRow => {
   if ('choice' in a) {
-    return { t: 'choice', category, options: a.choice.map((x) => { const lbl = advancementLabel(category, x); return { label: statName(lbl), show: lbl }; }) };
+    return {
+      t: 'choice', category,
+      options: a.choice.map((x) => {
+        const lbl = advancementLabel(category, x);
+        const name = statName(lbl);
+        return { id: advancementBaseId(x) ?? refId(category, name), label: name, show: lbl };
+      }),
+    };
   }
   return refRow(category, advancementLabel(category, a));
 };
@@ -423,7 +444,7 @@ function creatureStatblock(c: (typeof creatures)[number]): NonNullable<CodexItem
 const traitItem = (t: (typeof traits)[number]): CodexItem => {
   const cap = t.capabilities;
   return {
-    label: t.label, sub: traitArgSkeleton(t), desc: t.desc, source: src(t.source), appearance: t.appearance,
+    id: t.id, label: t.label, sub: traitArgSkeleton(t), desc: t.desc, source: src(t.source), appearance: t.appearance,
     meta: facts(
       cap?.psychType ? fact('Psychologie', psychologyLabel(cap.psychType)) : null,
       cap?.psychImmune ? fact('Immunité', '(Psychologie)') : null,
@@ -444,7 +465,7 @@ const traitItem = (t: (typeof traits)[number]): CodexItem => {
 // catégorie matérialise donc ses `items` (et ses facettes dérivées) PARESSEUSEMENT, cachés tant que
 // la version ne bouge pas ; `invalidateCodexLookup()` (appelé par `CodexEdit` au persist) bump la
 // version → le prochain accès re-projette, et les composants abonnés (`useCodexVersion`) re-rendent.
-let LOOKUP: Map<string, { exact: Map<string, CodexItem>; folded: Map<string, CodexItem> }> | null = null;
+let LOOKUP: Map<string, { byId: Map<string, CodexItem>; exact: Map<string, CodexItem>; folded: Map<string, CodexItem> }> | null = null;
 let LOOKUP_VERSION = 0;
 const VERSION_LISTENERS = new Set<() => void>();
 
@@ -533,7 +554,7 @@ const traumaLabelOf = (id: string): string => { try { return traumaFicheById(id)
  *  en cross-réf (résolus par id → libellé, comme les Tables de Corruption pour les mutations). */
 function critEntryItem(e: CritTableEntry): CodexItem {
   return {
-    label: e.name,
+    id: e.id, label: e.name,
     sub: `d100 ${e.min}–${e.max}`,
     desc: e.desc,
     meta: facts(
@@ -546,7 +567,7 @@ function critEntryItem(e: CritTableEntry): CodexItem {
       e.traumas?.length
         ? {
             title: 'Traumatismes engendrés', layout: 'chips',
-            rows: e.traumas.map((id) => { const label = traumaLabelOf(id); return { t: 'ref', category: 'traumas', label, show: label } as CodexRow; }),
+            rows: e.traumas.map((id) => { const label = traumaLabelOf(id); return { t: 'ref', category: 'traumas', id, label, show: label } as CodexRow; }),
           }
         : null,
     ),
@@ -558,7 +579,7 @@ function critEntryItem(e: CritTableEntry): CodexItem {
  *  familles : plage d100 → texte + Dégâts véhicule éventuels + effet GameOp sur les occupants. */
 function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem {
   return {
-    label: e.label,
+    id: e.id, label: e.label,
     sub: `d100 ${e.min}–${e.max}`,
     desc: e.text,
     meta: facts(fact('Dégâts véhicule', e.vehicleWounds ?? null)),
@@ -572,7 +593,7 @@ function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem
 function shipCritEntryItem(e: ShipCritEntry): CodexItem {
   const ct = e.crewTest;
   return {
-    label: e.name,
+    id: e.id, label: e.name,
     sub: `d10 ${e.min}–${e.max}`,
     desc: e.note,
     meta: facts(
@@ -599,7 +620,7 @@ function shipCritEntryItem(e: ShipCritEntry): CodexItem {
 /** Item Codex d'un Événement de bord/de port (`SeaEventDef` — MDG ch.15, #157 suite) : plage de jet
  *  (d100 modifié par l'Humeur de Manann, ou 2d10) → texte verbatim. */
 function seaEventItem(e: SeaEventDef): CodexItem {
-  return { label: e.label, sub: `${e.min}–${e.max}`, desc: e.desc };
+  return { id: e.id, label: e.label, sub: `${e.min}–${e.max}`, desc: e.desc };
 }
 
 /** Item Codex d'un Facteur d'Humeur de Manann (`ManannFactor` — MDG ch.15, #157 suite) : effet signé
@@ -608,7 +629,7 @@ function manannFactorItem(f: ManannFactor): CodexItem {
   const eff = f.effect;
   const magnitude = eff.d10 > 0 ? diceLabel({ n: eff.d10, sides: 10, plus: eff.flat || undefined }) : String(eff.flat);
   return {
-    label: f.label,
+    id: f.id, label: f.label,
     meta: facts(fact('Effet sur l’Humeur de Manann', `${eff.sign > 0 ? '+' : '−'}${magnitude}`)),
   };
 }
@@ -656,6 +677,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'races', label: 'Races', group: 'Personnage',
     build: () => species.map((s) => ({
+      id: s.id,
       label: s.label,
       group: family(s.label),
       desc: s.desc,
@@ -688,7 +710,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       // carrière ; le corps restant garde la desc verbatim moins ce couple (pas de doublon).
       const { epigraph, body } = extractEpigraph(c.desc);
       return {
-        label: c.label, sub: className, group: className, desc: body, exergue: epigraph, source: src(c.source),
+        id: c.id, label: c.label, sub: className, group: className, desc: body, exergue: epigraph, source: src(c.source),
         // Faits-clés en en-tête (comme les Races portent M/Destin/Résilience) : Classe + fourchette de Statut social.
         meta: facts(fact('Classe', className), fact('Statut', careerStatusRange(levels))),
         tabs: [
@@ -700,8 +722,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'characteristics', label: 'Caractéristiques', group: 'Personnage',
-    build: () => (characteristics as { id?: string; label: string; abr?: string; type?: string; desc?: string; source?: CodexSource }[]).map((c) => ({
-      label: c.label, sub: c.abr, desc: c.desc, source: src(c.source),
+    build: () => (characteristics as { id: string; label: string; abr?: string; type?: string; desc?: string; source?: CodexSource }[]).map((c) => ({
+      id: c.id, label: c.label, sub: c.abr, desc: c.desc, source: src(c.source),
       // Bonus de Caractéristique = chiffre des dizaines (LDB 03) — rappel sur les caracs à jet (d100).
       meta: c.type === 'roll' ? facts(fact('Bonus', 'chiffre des dizaines')) : undefined,
       sections: sections(...reverseSections('characteristics', c.id)),
@@ -710,14 +732,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'classes', label: 'Classes', group: 'Personnage',
     build: () => classes.map((c) => ({
-      label: c.label, desc: c.desc, source: src(c.source),
+      id: c.id, label: c.label, desc: c.desc, source: src(c.source),
       sections: sections(chips('Possessions de départ', 'trappings', c.trappings.map(trappingRefLabel)), ...reverseSections('classes', c.id)),
     })),
   },
   {
     key: 'stars', label: 'Étoiles', group: 'Personnage',
     build: () => stars.map((s) => ({
-      label: s.label, sub: s.signe ?? undefined, desc: s.desc ?? undefined, source: src(s.source),
+      id: s.id, label: s.label, sub: s.signe ?? undefined, desc: s.desc ?? undefined, source: src(s.source),
       meta: facts(fact('Dates', s.dates), fact('Dieu', s.dieux), fact('Ascendant', s.ascendant)),
       sections: sections(passiveSection(s.effect, 'Effet du signe')),
     })),
@@ -725,7 +747,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'skills', label: 'Compétences', group: 'Compétences',
     build: () => skills.map((s) => ({
-      label: s.label, sub: join(CHAR_LABELS[s.characteristic], s.type), desc: s.desc, source: src(s.source),
+      id: s.id, label: s.label, sub: join(CHAR_LABELS[s.characteristic], s.type), desc: s.desc, source: src(s.source),
       meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Type', s.type), fact('Spécialisations', specsFact('skills', s))),
       sections: sections(...reverseSections('skills', s.id)),
     })),
@@ -733,7 +755,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'talents', label: 'Talents', group: 'Compétences',
     build: () => talents.map((t) => ({
-      label: t.label, desc: groupAdvantage() && t.descAA ? t.descAA : t.desc, source: src(t.source), // lecture « Avantage de groupe » (AA) selon le toggle
+      id: t.id, label: t.label, desc: groupAdvantage() && t.descAA ? t.descAA : t.desc, source: src(t.source), // lecture « Avantage de groupe » (AA) selon le toggle
 
       meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test?.raw ?? null), fact('Spécialisations', specsFact('talents', t))),
       sections: sections(
@@ -763,7 +785,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         ? fact('Portée', rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod))
         : fact('Allonge', t.reach);
       return {
-        label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+        id: t.id, label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
         meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', damageFact(t)), fact('PA', t.pa), reachFact),
         sections: sections(
           chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)),
@@ -780,7 +802,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // MÊME chemin — appearance.species = siegeRig) ET de « Possessions » pour les faits d'arme
     // (Portée/Dégâts) + Atouts (l'Indice « Arme d'équipe N » = équipage requis).
     build: () => siegeEngines.map((t) => ({
-      label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+      id: t.id, label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
       // Aperçu rig de l'affût, résolu comme une créature (par id + apparence species).
       appearance: { species: t.siegeRig! }, previewRef: t.siegeRig!,
       meta: facts(
@@ -796,25 +818,26 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'weaponGroups', label: 'Groupes d’objet', group: 'Équipement',
-    build: () => weaponGroups.map((g) => ({ label: g.label, sub: WEAPON_GROUP_KIND_LABEL[g.kind], sections: sections(...reverseSections('weaponGroups', g.id)) })),
+    build: () => weaponGroups.map((g) => ({ id: g.id, label: g.label, sub: WEAPON_GROUP_KIND_LABEL[g.kind], sections: sections(...reverseSections('weaponGroups', g.id)) })),
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
     build: () => (qualities as { id: string; label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => ({
-      label: q.label, sub: join(qualityTypeLabel(q.type), qualitySubtypeLabel(q.subType)), desc: q.desc, source: src(q.source),
+      id: q.id, label: q.label, sub: join(qualityTypeLabel(q.type), qualitySubtypeLabel(q.subType)), desc: q.desc, source: src(q.source),
       sections: sections(capabilitySection(q.capabilities, QUALITY_CAP_LABEL), passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
     })),
   },
   {
     key: 'etats', label: 'États', group: 'Effets',
     build: () => etats.map((e) => ({
-      label: e.label, desc: e.desc, source: src(e.source),
+      id: e.id, label: e.label, desc: e.desc, source: src(e.source),
       sections: sections(...reverseSections('etats', e.id)), // Sorts/Traits/Qualités/Talents/Domaines l'infligeant
     })),
   },
   {
     key: 'maladies', label: 'Maladies', group: 'Effets',
     build: () => maladies.map((m) => ({
+      id: m.id,
       label: m.label,
       sub: m.symptoms.map((s) => symptomLabel(s.symptomId)).join(', '),
       meta: facts(
@@ -835,7 +858,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'symptoms', label: 'Symptômes', group: 'Effets',
     build: () => symptoms.map((s) => ({
-      label: s.label, desc: s.desc, source: src(s.source),
+      id: s.id, label: s.label, desc: s.desc, source: src(s.source),
       sections: sections(
         passiveSection(s.passive),
         passiveSection(s.severePassive, 'Modificateurs (Modérée / Grave)'),
@@ -847,6 +870,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'mutations', label: 'Mutations', group: 'Effets',
     build: () => (mutations as MutationData[]).map((m) => ({
+      id: m.id,
       label: m.label,
       sub: m.kind === 'physique' ? 'Physique' : 'Mentale',
       group: m.kind === 'physique' ? 'Physiques' : 'Mentales',
@@ -863,14 +887,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'mutationTables', label: 'Tables de Corruption', group: 'Effets',
-    build: () => (mutationTables as { label: string; ranges: { min: number; max: number; mutation: string }[] }[]).map((t) => ({
-      label: t.label, sub: `${t.ranges.length} plages d100`,
+    build: () => (mutationTables as { id: string; label: string; ranges: { min: number; max: number; mutation: string }[] }[]).map((t) => ({
+      id: t.id, label: t.label, sub: `${t.ranges.length} plages d100`,
       // Tirage d100 → Mutation : chaque plage est un lien cross-réf vers la fiche de mutation.
       sections: sections({
         title: 'Tirage (d100 → Mutation)', layout: 'list',
         rows: t.ranges.map((r) => {
           const label = (mutations as MutationData[]).find((mu) => mu.id === r.mutation)?.label ?? r.mutation;
-          return { t: 'ref', category: 'mutations', label, show: label, badge: `${r.min}–${r.max}` } as CodexRow;
+          return { t: 'ref', category: 'mutations', id: r.mutation, label, show: label, badge: `${r.min}–${r.max}` } as CodexRow;
         }),
       }),
     })),
@@ -878,7 +902,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'maneuvers', label: 'Manœuvres', group: 'Effets',
     build: () => maneuvers.map((m) => ({
-      label: m.label, sub: ATTACK_LABEL[m.kind], desc: m.desc, source: src(m.source),
+      id: m.id, label: m.label, sub: ATTACK_LABEL[m.kind], desc: m.desc, source: src(m.source),
       meta: facts(
         fact('Activation', MANEUVER_ACTIVATION_LABEL[m.activation]),
         fact('Coût Av', m.advantageCost),
@@ -900,7 +924,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'domains', label: 'Domaines', group: 'Magie',
     build: () => domains.map((d) => ({
-      label: d.label, desc: d.desc, source: src(d.source),
+      id: d.id, label: d.label, desc: d.desc, source: src(d.source),
       meta: facts(
         fact('Projectile', d.missile ? `ignore les PA ${d.missile.bypass === 'metal' ? 'métalliques' : 'non magiques'}${d.missile.bonusFromBypass ? ' (+ Dégâts)' : ''}` : null),
         fact('Bonus d’incantation', d.castBonus ? humanizeCastBonus(d.castBonus) : null),
@@ -912,7 +936,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'spells', label: 'Sorts', group: 'Magie',
     build: () => spells.map((s) => ({
-      label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
+      id: s.id, label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
       meta: facts(
         fact('NI', s.cn),
         fact('Portée', s.range ? formatSpellRange(s.range) : null),
@@ -930,7 +954,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'gods', label: 'Dieux', group: 'Magie',
     build: () => gods.map((c) => ({
-      label: c.label, sub: c.title, desc: c.desc, source: c.source ?? null,
+      id: c.id, label: c.label, sub: c.title, desc: c.desc, source: c.source ?? null,
       sections: sections(
         chips('Bénédictions', 'spells', c.blessings.map((b) => refLabel('spells', b))),
         chips('Miracles', 'spells', c.miracles.map((m) => refLabel('spells', m))),
@@ -941,7 +965,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'creatures', label: 'Créatures', group: 'Monde',
     build: () => creatures.map((c) => ({
-      label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, source: src(c.source),
+      id: c.id, label: c.label, sub: c.title ?? undefined, group: c.folder ?? undefined, desc: c.desc ?? undefined, source: src(c.source),
       appearance: c.appearance, previewRef: c.id, // aperçu rig résolu par id (Nuées/non-bipèdes lisent leurs traits)
       statblock: creatureStatblock(c),
       meta: facts(
@@ -982,7 +1006,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => locations.map((l) => {
       const parentLabel = findLocationById(l.parent)?.label;
       return {
-        label: l.label, sub: parentLabel, group: parentLabel, desc: l.desc ?? undefined, source: src(l.source),
+        id: l.id, label: l.label, sub: parentLabel, group: parentLabel, desc: l.desc ?? undefined, source: src(l.source),
         sections: sections(...reverseSections('locations', l.id)),
       };
     }),
@@ -994,18 +1018,21 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // `categoryByKey(...)?.label` ne lit que l'identité STATIQUE des catégories (pas leurs items :
     // aucun cycle de projection).
     build: () => books.map((b) => ({
-      label: b.label, sub: b.abr ?? b.folder ?? undefined, group: b.folder ?? undefined, desc: b.desc ?? undefined,
+      id: b.id, label: b.label, sub: b.abr ?? b.folder ?? undefined, group: b.folder ?? undefined, desc: b.desc ?? undefined,
       sections: bookContents(b.id).map((g) => ({
         title: categoryByKey(g.category)?.label ?? g.category,
         layout: 'chips' as const,
-        rows: g.labels.map((label) => ({ t: 'ref', category: g.category, label, show: label } as CodexRow)),
+        rows: g.entries.map((e) => ({ t: 'ref', category: g.category, id: e.id, label: e.label, show: e.label } as CodexRow)),
       })),
     })),
   },
   // ── Tables & gabarits éditables (E3a) ─────────────────────────────────────────
   {
     key: 'careerLevels', label: 'Niveaux de carrière', group: 'Tables',
+    // Pas de clé mono-champ UNIQUE (même libellé de niveau sur plusieurs carrières) — id composite
+    // carrière + niveau, cf. `entryKey` (même composition côté éditeur `CodexEdit`).
     build: () => careerLevels.map((lv) => ({
+      id: `${lv.career}:${lv.level}`,
       label: entryKey(lv as unknown as Record<string, unknown>),
       sub: lv.status, group: findCareerById(lv.career)?.label ?? lv.career,
       sections: sections(
@@ -1018,70 +1045,91 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'eyes', label: 'Couleur des yeux', group: 'Tables', cluster: 'Création de personnage',
-    build: () => eyes.map((e) => ({ label: e.label, sub: `2d10 ≤ ${e.rand}`, sections: sections(colorTableSection(e)) })),
+    // Dataset SANS id propre (donnée éditoriale table 2d10) — id DÉRIVÉ (slug du libellé) au build,
+    // désambiguïsé par catégorie (`uniqueSlugId`). Ajout d'un id RÉEL en donnée = follow-up hors lot.
+    build: () => { const taken = new Set<string>(); return eyes.map((e) => ({ id: uniqueSlugId(e.label, taken), label: e.label, sub: `2d10 ≤ ${e.rand}`, sections: sections(colorTableSection(e)) })); },
   },
   {
     key: 'hairs', label: 'Couleur des cheveux', group: 'Tables', cluster: 'Création de personnage',
-    build: () => hairs.map((h) => ({ label: h.label, sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })),
+    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
+    build: () => { const taken = new Set<string>(); return hairs.map((h) => ({ id: uniqueSlugId(h.label, taken), label: h.label, sub: `2d10 ≤ ${h.rand}`, sections: sections(colorTableSection(h)) })); },
   },
   {
     key: 'calendarMonths', label: 'Calendrier — Mois', group: 'Tables', cluster: 'Calendrier',
-    build: () => calendarMonths.map((m) => ({ label: m.name, sub: `${m.days} jours` })),
+    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
+    build: () => { const taken = new Set<string>(); return calendarMonths.map((m) => ({ id: uniqueSlugId(m.name, taken), label: m.name, sub: `${m.days} jours` })); },
   },
   {
     key: 'calendarIntercalary', label: 'Calendrier — Jours intercalaires', group: 'Tables', cluster: 'Calendrier',
-    build: () => calendarIntercalary.map((i) => ({
-      label: i.name,
-      sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.name ?? `mois ${i.afterMonth}`}`,
-    })),
+    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
+    build: () => {
+      const taken = new Set<string>();
+      return calendarIntercalary.map((i) => ({
+        id: uniqueSlugId(i.name, taken),
+        label: i.name,
+        sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.name ?? `mois ${i.afterMonth}`}`,
+      }));
+    },
   },
   {
     key: 'calendarWeekdays', label: 'Calendrier — Jours de la semaine', group: 'Tables', cluster: 'Calendrier',
-    build: () => calendarWeekdays.map((w) => ({ label: w.name })),
+    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
+    build: () => { const taken = new Set<string>(); return calendarWeekdays.map((w) => ({ id: uniqueSlugId(w.name, taken), label: w.name })); },
   },
   {
     key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables', cluster: 'Calendrier',
     build: () => calendarPhases.map((p) => ({
-      label: p.label, // `p.icon` = id d'icône (time/*, registre src/ui/icons), plus un glyphe affichable en préfixe
+      id: p.key, label: p.label, // `p.icon` = id d'icône (time/*, registre src/ui/icons), plus un glyphe affichable en préfixe
 
       sub: `dès ${String(Math.floor(p.start / 60)).padStart(2, '0')}:${String(p.start % 60).padStart(2, '0')}`,
     })),
   },
   {
     key: 'weather', label: 'Météo de voyage', group: 'Tables', cluster: 'Voyage terrestre',
-    build: () => weather.map((s) => ({ label: s.label, sub: `${s.ranges.length} plages d100 (EDOC ch.5)` })),
+    build: () => weather.map((s) => ({ id: s.id, label: s.label, sub: `${s.ranges.length} plages d100 (EDOC ch.5)` })),
   },
   {
     key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables', cluster: 'Création de personnage',
     build: () => raceAppearance.map((r) => ({
-      label: r.id, sub: r.gabarit, appearance: { species: r.id },
+      id: r.id, label: r.id, sub: r.gabarit, appearance: { species: r.id },
       meta: facts(fact('Gabarit', r.gabarit), fact('Tenue', r.tenue), fact('Tête', r.head), fact('Jambes', r.legs)),
     })),
   },
   {
     key: 'pregens', label: 'Pré-tirés', group: 'Tables', cluster: 'Création de personnage',
-    build: () => pregens.map((p) => ({
-      label: p.name, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
-      meta: facts(fact('Motivation', p.motivation), fact('Graine', p.seed)),
-      sections: p.spells?.length ? sections(chips('Sorts/Prières', 'spells', p.spells)) : undefined,
-    })),
+    // Dataset sans id (name seul) — id dérivé (slug du name) — cf. `eyes` ci-dessus.
+    build: () => {
+      const taken = new Set<string>();
+      return pregens.map((p) => ({
+        id: uniqueSlugId(p.name, taken),
+        label: p.name, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
+        meta: facts(fact('Motivation', p.motivation), fact('Graine', p.seed)),
+        sections: p.spells?.length ? sections(chips('Sorts/Prières', 'spells', p.spells)) : undefined,
+      }));
+    },
   },
   {
     key: 'oups', label: 'Oups !', group: 'Tables',
     // Le `label` EST le texte du résultat (et la clé d'édition `entryKey`) → on le garde tel quel ;
-    // on enrichit par la plage d100 et le TYPE d'effet (kind) en méta.
-    build: () => oups.map((o) => ({
-      label: o.label, sub: `d100 ${o.min}–${o.max}`,
-      meta: facts(fact('d100', `${o.min}–${o.max}`), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
-    })),
+    // on enrichit par la plage d100 et le TYPE d'effet (kind) en méta. id dérivé (donnée sans id).
+    build: () => {
+      const taken = new Set<string>();
+      return oups.map((o) => ({
+        id: uniqueSlugId(o.label, taken),
+        label: o.label, sub: `d100 ${o.min}–${o.max}`,
+        meta: facts(fact('d100', `${o.min}–${o.max}`), fact('Type', OUPS_KIND_LABEL[o.kind] ?? o.kind)),
+      }));
+    },
   },
   {
     key: 'interludeEvents', label: 'Entre deux aventures', group: 'Tables',
-    build: () => interludeEvents.map((e) => ({ label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text })),
+    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
+    build: () => { const taken = new Set<string>(); return interludeEvents.map((e) => ({ id: uniqueSlugId(e.label, taken), label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text })); },
   },
   {
     key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables', cluster: 'Voyage terrestre',
-    build: () => peripeties.map((p) => ({ label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })),
+    // id dérivé (donnée sans id) — cf. `eyes` ci-dessus.
+    build: () => { const taken = new Set<string>(); return peripeties.map((p) => ({ id: uniqueSlugId(p.label, taken), label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })); },
   },
   {
     key: 'activities', label: 'Activités', group: 'Tables',
@@ -1089,7 +1137,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // masse ADE II ch.8). Un Test « posté » (compétence(s) au choix + Difficulté) dont l'issue s'exprime
     // en `onSuccess` (GameOp) et/ou en bandes `outcomes` (table DR → résultat, verbatim + effets).
     build: () => ACTIVITIES.map((a) => ({
-      label: a.label,
+      id: a.id, label: a.label,
       sub: a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', '),
       desc: a.desc,
       source: src(a.source),
@@ -1118,7 +1166,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'massBattlePowerEstimate', label: 'Bataille de masse — Estimation de Puissance', group: 'Tables', cluster: 'Bataille de masse',
     build: () => POWER_ESTIMATE.map((p) => ({
-      label: p.label,
+      id: p.id, label: p.label,
       meta: facts(fact('Puissance alliée', p.ally), fact('Puissance ennemie', p.enemy)),
       desc: p.example,
     })),
@@ -1126,7 +1174,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'massBattleMightModifiers', label: 'Bataille de masse — Modificateurs de Puissance', group: 'Tables', cluster: 'Bataille de masse',
     build: () => MIGHT_MODIFIERS.map((m) => ({
-      label: m.label,
+      id: m.id, label: m.label,
       meta: facts(fact('Modificateur', m.mod > 0 ? `+${m.mod}` : String(m.mod))),
       desc: m.example,
     })),
@@ -1134,7 +1182,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'massBattleWarMachines', label: 'Bataille de masse — Machines de guerre', group: 'Tables', cluster: 'Bataille de masse',
     build: () => WAR_MACHINES.map((w) => ({
-      label: w.label,
+      id: w.id, label: w.label,
       meta: facts(
         fact('Prix', w.price), fact('Équipe', w.crew), fact('Disponibilité', w.availability),
         fact('Portée', w.range), fact('Dégâts', w.damage), fact('Atouts', w.traits),
@@ -1144,20 +1192,21 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'massBattleStructures', label: 'Bataille de masse — Structures', group: 'Tables', cluster: 'Bataille de masse',
     build: () => MASS_BATTLE_STRUCTURES.map((s) => ({
-      label: s.label,
+      id: s.id, label: s.label,
       meta: facts(fact('BE', s.be), fact('Blessures', s.wounds), fact('Atouts', s.traits)),
     })),
   },
   {
     key: 'massBattleHazards', label: 'Bataille de masse — Aléas de bataille', group: 'Tables', cluster: 'Bataille de masse',
-    build: () => BATTLE_HAZARDS.map((h) => ({ label: h.label, sub: `1d10 = ${h.min}`, desc: h.text })),
+    // Dataset SANS id propre (min/max/label/text) — id dérivé (slug du libellé), cf. `eyes` plus haut.
+    build: () => { const taken = new Set<string>(); return BATTLE_HAZARDS.map((h) => ({ id: uniqueSlugId(h.label, taken), label: h.label, sub: `1d10 = ${h.min}`, desc: h.text })); },
   },
   // ── Datasets-OBJETS uniques (E3b) : config de création (objet) + banque de noms (Record par race) ──
   {
     key: 'details', label: 'Détails de création', group: 'Tables', cluster: 'Création de personnage', sourceRef: 'LDB 05',
     // UNE seule entrée (objet `details.json`) — formules Âge/Taille par espèce + textes d'aide.
     build: () => [{
-      label: 'Détails de création',
+      id: 'details', label: 'Détails de création',
       sections: sections({
         title: 'Formules Âge & Taille (base + Nd10)', layout: 'list',
         rows: (Object.keys(details.ageBase) as RaceKey[]).map((sp) => ({
@@ -1169,9 +1218,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'names', label: 'Banque de noms', group: 'Tables', cluster: 'Création de personnage',
-    // Record race → NamePool : une entrée par race (clé = libellé de l'item, édité au Codex).
+    // Record race → NamePool : une entrée par race (clé = libellé de l'item, édité au Codex) — la clé
+    // de Record EST déjà une identité stable (`RaceKey`), reprise telle quelle comme id.
     build: () => Object.entries(names).map(([race, pool]) => ({
-      label: race,
+      id: race, label: race,
       sub: `${pool.maleFirstNames.length}♂ · ${pool.femaleFirstNames.length}♀ · ${pool.lastNames.length} noms`,
       sections: sections(
         pool.maleFirstNames.length ? { title: 'Prénoms masculins', layout: 'chips', rows: [{ t: 'text', text: pool.maleFirstNames.join(', ') }] } : null,
@@ -1184,7 +1234,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'structures', label: 'Structures (siège)', group: 'Monde',
     build: () => structures.map((s) => ({
-      label: s.label, sub: s.kind === 'porte' ? 'Porte' : 'Mur', desc: s.desc ?? undefined,
+      id: s.id, label: s.label, sub: s.kind === 'porte' ? 'Porte' : 'Mur', desc: s.desc ?? undefined,
       meta: facts(
         fact('BE', s.char.BE), fact('Blessures', s.char.B), fact('Fortifiée', s.fortified ? 'oui' : null),
         fact('Source', s.source ? `${bookAbr(s.source.book)} ch.${s.source.chapter}` : null),
@@ -1195,7 +1245,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'vehicles', label: 'Véhicules', group: 'Monde',
     build: () => vehicles.map((v) => ({
-      label: v.label, desc: v.desc ?? undefined, source: src(v.source),
+      id: v.id, label: v.label, desc: v.desc ?? undefined, source: src(v.source),
       meta: facts(
         fact('Prix', priceLabel(v.purchase?.price)), fact('Disponibilité', v.purchase?.availability ?? null),
         fact('Enc', v.enc), fact('Mouvement (voyage)', v.travel?.movement),
@@ -1205,23 +1255,23 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'celestialHouses', label: 'Demeures astrologiques', group: 'Personnage',
-    build: () => celestialHouses.map((h) => ({ label: h.label, sub: `2d10 ≤ ${h.rand}`, desc: h.desc, source: src(h.source) })),
+    build: () => celestialHouses.map((h) => ({ id: h.id, label: h.label, sub: `2d10 ≤ ${h.rand}`, desc: h.desc, source: src(h.source) })),
   },
   {
     key: 'groups', label: 'Groupes (Cible)', group: 'Monde',
-    build: () => groups.map((g) => ({ label: g.label })),
+    build: () => groups.map((g) => ({ id: g.id, label: g.label })),
   },
   {
     key: 'psychologies', label: 'États psychologiques', group: 'Effets',
     build: () => psychologies.map((p) => ({
-      label: p.label, desc: p.desc, source: src(p.source),
+      id: p.id, label: p.label, desc: p.desc, source: src(p.source),
       sections: sections(passiveSection(p.passive), effectsSection(p.effects), ...reverseSections('psychologies', p.id)),
     })),
   },
   {
     key: 'seaShanties', label: 'Chants de marins', group: 'Monde',
     build: () => seaShanties.map((s) => ({
-      label: s.label, desc: s.desc, source: src(s.source),
+      id: s.id, label: s.label, desc: s.desc, source: src(s.source),
       meta: facts(fact('Note', s.note ?? null)),
       sections: sections(passiveSection(s.crewOps, 'Effet (équipage)'), passiveSection(s.captainOps, 'Effet (capitaine)')),
     })),
@@ -1229,14 +1279,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'crewRoles', label: 'Rôles d’équipage', group: 'Monde',
     build: () => crewRoles.map((r) => ({
-      label: r.label, desc: r.desc,
+      id: r.id, label: r.label, desc: r.desc,
       sections: sections(chips('Compétences', 'skills', r.skills.map((sk) => refLabel('skills', { id: sk.skillId, spec: sk.spec })))),
     })),
   },
   {
     key: 'crewTestTypes', label: 'Tests d’équipage (types)', group: 'Monde',
     build: () => crewTestTypes.map((t) => ({
-      label: t.label,
+      id: t.id, label: t.label,
       meta: facts(fact('Rôle essentiel', crewRoles.find((r) => r.id === t.essential)?.label ?? t.essential)),
       sections: sections(chips('Rôles contributeurs', 'crewRoles', t.roles.map((id) => crewRoles.find((r) => r.id === id)?.label ?? id))),
     })),
@@ -1244,14 +1294,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'navalTraits', label: 'Traits & améliorations navales', group: 'Équipement',
     build: () => NAVAL_TRAITS.map((t) => ({
-      label: t.label, sub: t.kind === 'trait' ? 'Trait (construction)' : 'Amélioration', desc: t.desc, source: src(t.source),
+      id: t.id, label: t.label, sub: t.kind === 'trait' ? 'Trait (construction)' : 'Amélioration', desc: t.desc, source: src(t.source),
       sections: sections(passiveSection(t.passive)),
     })),
   },
   {
     key: 'traumas', label: 'Traumatismes (séquelles)', group: 'Effets',
     build: () => datasetArray('traumas').map((f) => ({
-      label: f.label,
+      id: f.id, label: f.label,
       sub: f.kind ? `${f.kind === 'dechirure' ? 'Déchirure' : 'Fracture'}${f.severity ? ` (${f.severity})` : ''}` : undefined,
       desc: f.desc,
       sections: sections(passiveSection(f.ops, 'Effet permanent')),
@@ -1366,7 +1416,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => {
       const w = datasetObject('waterExposure');
       return [{
-        label: w.label, desc: w.desc, source: src(w.source),
+        id: 'waterExposure', label: w.label, desc: w.desc, source: src(w.source),
         meta: facts(
           fact('Test', `${refLabel('skills', { id: w.test.skillId })} ${DIFFICULTY_LABELS[w.test.difficulty]}`),
           fact('Malus par DR négatif (jet de maladie)', `+${w.rollModPerNegativeSL}`),
@@ -1377,7 +1427,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
             title: 'Maladies (jet d100 après échec du Test)', layout: 'list',
             rows: w.diseases.map((d) => {
               const label = maladies.find((m) => m.id === d.disease)?.label ?? d.disease;
-              return { t: 'ref', category: 'maladies', label, show: label, badge: `${d.min}–${d.max}${d.rerollUnlessWounded ? ' · relance si indemne' : ''}` } as CodexRow;
+              return { t: 'ref', category: 'maladies', id: d.disease, label, show: label, badge: `${d.min}–${d.max}${d.rerollUnlessWounded ? ' · relance si indemne' : ''}` } as CodexRow;
             }),
           },
         ),
@@ -1387,7 +1437,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'montures', label: 'Montures (profils de voyage)', group: 'Monde',
     build: () => MOUNT_PROFILES.map((p) => ({
-      label: p.label,
+      id: p.id, label: p.label,
       meta: facts(fact('Mouvement', p.m), fact('Endurance', p.e), fact('Trotte', p.trot ? 'oui' : 'non')),
       sections: sections(chips('Possessions liées', 'trappings', p.trappingIds.map((id) => findTrappingById(id)?.label ?? id))),
     })),
@@ -1395,7 +1445,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'tavernGames', label: 'Jeux de taverne', group: 'Monde',
     build: () => TAVERN_GAMES.map((g) => ({
-      label: g.label, desc: g.desc, source: src(g.source),
+      id: g.id, label: g.label, desc: g.desc, source: src(g.source),
       meta: facts(
         fact('Compétence', g.skill ? refLabel('skills', { id: g.skill, spec: g.spec }) : 'Pari (aucune Compétence)'),
         fact('Caractéristique', g.characteristic ? CHAR_LABELS[g.characteristic] : null),
@@ -1406,12 +1456,13 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'obsessions', label: 'Obsessions (table)', group: 'Tables',
-    build: () => OBSESSIONS.map((o) => ({ label: o.label, sub: `2d10 ${o.min}–${o.max}` })),
+    // Dataset SANS id propre (min/max/label) — id dérivé (slug du libellé), cf. `eyes` plus haut.
+    build: () => { const taken = new Set<string>(); return OBSESSIONS.map((o) => ({ id: uniqueSlugId(o.label, taken), label: o.label, sub: `2d10 ${o.min}–${o.max}` })); },
   },
   {
     key: 'structureCriticals', label: 'Critiques de structure', group: 'Effets',
     build: () => STRUCTURE_CRITICALS.map((c) => ({
-      label: c.name, sub: `d100 ${c.min}–${c.max}`, desc: c.note,
+      id: c.id, label: c.name, sub: `d100 ${c.min}–${c.max}`, desc: c.note,
       meta: facts(
         c.wounds != null ? fact('Blessures', c.wounds) : null,
         c.trivial ? fact('Type', 'Triviale (« T »)') : null,
@@ -1421,24 +1472,24 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'landCargo', label: 'Cargaison terrestre', group: 'Monde',
-    build: () => LAND_CARGOES.map((c) => ({ label: c.label, meta: facts(fact('Vin', c.wine ? 'oui' : null)) })),
+    build: () => LAND_CARGOES.map((c) => ({ id: c.id, label: c.label, meta: facts(fact('Vin', c.wine ? 'oui' : null)) })),
   },
   {
     key: 'seaCargo', label: 'Cargaison maritime', group: 'Monde',
-    build: () => CARGOES.map((c) => ({ label: c.label })),
+    build: () => CARGOES.map((c) => ({ id: c.id, label: c.label })),
   },
   {
     key: 'riverPerils', label: 'Périls fluviaux', group: 'Monde',
-    build: () => RIVER_PERILS.map((p) => ({ label: p.label, sub: p.kind })),
+    build: () => RIVER_PERILS.map((p) => ({ id: p.id, label: p.label, sub: p.kind })),
   },
   {
     key: 'crewMoraleFactors', label: 'Moral d’équipage — Facteurs', group: 'Tables', cluster: 'Équipage & navire',
-    build: () => MORALE_FACTORS.map((f) => ({ label: f.label, desc: f.effect })),
+    build: () => MORALE_FACTORS.map((f) => ({ id: f.id, label: f.label, desc: f.effect })),
   },
   {
     key: 'crewMoraleBands', label: 'Moral d’équipage — Effets', group: 'Tables', cluster: 'Équipage & navire',
     build: () => MORALE_BANDS.map((b) => ({
-      label: b.id, sub: `d100 ${b.min}–${b.max}`,
+      id: b.id, label: b.id, sub: `d100 ${b.min}–${b.max}`,
       meta: facts(
         fact('DR Commandement (capitaine)', b.captainCmdDR), fact('DR Tests équipage', b.crewTestDR),
         fact('Désertion (seuil d100)', b.desertionRoll ?? null),
@@ -1448,7 +1499,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'steamBreakdowns', label: 'Pannes de navire à vapeur', group: 'Tables', cluster: 'Équipage & navire',
     build: () => STEAM_BREAKDOWNS.map((e) => ({
-      label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.desc,
+      id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.desc,
       meta: facts(fact('Moteur détruit', e.engineDestroyed ? 'oui' : null)),
     })),
   },
@@ -1489,10 +1540,10 @@ export const clustersIn = (group: CodexGroup): { flat: CodexCategory[]; clusters
 /** Catégorie par clé. */
 export const categoryByKey = (key: string): CodexCategory | undefined => CODEX.find((c) => c.key === key);
 
-/** Identité STABLE d'une entrée de Codex = sérialisation canonique du couple `CodexFocus`
- *  (`{category, label}`) : les labels ne sont uniques QUE par catégorie, la clé de navigation
- *  qualifie donc la catégorie. C'est la clé de sélection du navigateur (jamais un `.label ===` nu). */
-export const codexItemKey = (category: string, label: string): string => `${category}␞${label}`;
+/** Identité STABLE d'une entrée de Codex = sérialisation canonique du couple `{category, id}` —
+ *  `CodexItem.id` est unique par catégorie, la clé de navigation qualifie donc la catégorie. C'est
+ *  la clé de sélection du navigateur (jamais un `.label ===` nu). */
+export const codexItemKey = (category: string, id: string): string => `${category}␞${id}`;
 
 // ── Index de lookup PARESSEUX (par catégorie) ────────────────────────────────────────────────────
 // `codexLookup` est appelé par CHAQUE `CodexRef` à CHAQUE rendu → un `items.find` linéaire ne scale
@@ -1504,19 +1555,17 @@ export const codexItemKey = (category: string, label: string): string => `${cate
 // les lecteurs (CompendiumScreen). L'état (`LOOKUP`/`LOOKUP_VERSION`) vit en tête de fichier, avec
 // la machinerie de fraîcheur.
 
-/** Résout une entrée (catégorie + libellé) → sa fiche, pour les liens `CodexRef`.
- *  Exact d'abord, puis casse ignorée (les libellés à spécialisation s'écrivent parfois autrement). */
-export function codexLookup(category: string, label: string): CodexItem | undefined {
-  // Robustesse : un libellé absent (entité sans nom — arme/compétence malformée) ou une entrée sans
-  // label NE DOIT PAS crasher tout le rendu. Pas de fiche trouvée → le CodexRef se replie en texte.
-  if (!label) return undefined;
+/** Index (byId + label exact/casse pliée) d'une catégorie, construit à la 1re résolution — `undefined`
+ *  si la catégorie est inconnue (jamais mis en cache, répond `undefined` à chaque appel). */
+function categoryIndex(category: string): { byId: Map<string, CodexItem>; exact: Map<string, CodexItem>; folded: Map<string, CodexItem> } | undefined {
   if (!LOOKUP) LOOKUP = new Map();
   let idx = LOOKUP.get(category);
   if (!idx) {
     const items = categoryByKey(category)?.items;
-    if (!items) return undefined; // catégorie inconnue : jamais mise en cache (répond undefined à chaque appel)
-    idx = { exact: new Map(), folded: new Map() };
+    if (!items) return undefined;
+    idx = { byId: new Map(), exact: new Map(), folded: new Map() };
     for (const it of items) {
+      if (it.id && !idx.byId.has(it.id)) idx.byId.set(it.id, it);
       if (!it.label) continue; // entrée sans label (défensif) : non indexée
       if (!idx.exact.has(it.label)) idx.exact.set(it.label, it);
       const folded = it.label.toLowerCase();
@@ -1524,6 +1573,25 @@ export function codexLookup(category: string, label: string): CodexItem | undefi
     }
     LOOKUP.set(category, idx);
   }
+  return idx;
+}
+
+/** Résout une entrée (catégorie + id) → sa fiche, pour les liens `CodexRef` qui connaissent déjà
+ *  l'identité STABLE de leur cible (résolution PRIMAIRE — cf. `codexLookup` pour le repli par libellé). */
+export function codexLookupById(category: string, id: string): CodexItem | undefined {
+  if (!id) return undefined;
+  return categoryIndex(category)?.byId.get(id);
+}
+
+/** Résout une entrée (catégorie + libellé) → sa fiche, pour les liens `CodexRef` — REPLI de compat/
+ *  affichage (l'auto-liage matche du texte). Exact d'abord, puis casse ignorée (les libellés à
+ *  spécialisation s'écrivent parfois autrement). */
+export function codexLookup(category: string, label: string): CodexItem | undefined {
+  // Robustesse : un libellé absent (entité sans nom — arme/compétence malformée) ou une entrée sans
+  // label NE DOIT PAS crasher tout le rendu. Pas de fiche trouvée → le CodexRef se replie en texte.
+  if (!label) return undefined;
+  const idx = categoryIndex(category);
+  if (!idx) return undefined;
   return idx.exact.get(label) ?? idx.folded.get(label.toLowerCase());
 }
 
@@ -1535,8 +1603,8 @@ const ARMOUR_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG',
 export function combatantSections(c: Combatant): CodexSection[] {
   const ch = c.characteristics;
   const charRows: CodexRow[] = [
-    { t: 'kv', k: 'M', v: String(c.movement), kref: { category: 'characteristics', label: 'Mouvement' } },
-    ...CHAR_KEYS.map((k) => ({ t: 'kv', k: CHAR_ABR[k], v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–', kref: { category: 'characteristics', label: CHAR_LABELS[k] } } as CodexRow)),
+    { t: 'kv', k: 'M', v: String(c.movement), kref: { category: 'characteristics', id: 'mouvement', label: 'Mouvement' } },
+    ...CHAR_KEYS.map((k) => ({ t: 'kv', k: CHAR_ABR[k], v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–', kref: { category: 'characteristics', id: k, label: CHAR_LABELS[k] } } as CodexRow)),
     { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] }, // Taille : pas une caractéristique → pas de lien Codex
   ];
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
@@ -1545,7 +1613,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
   // Comme les compétences/talents/sorts : chaque arme est une ENTITÉ (CodexRef vers sa fiche Codex
   // « trappings » — popover au survol + clic — repli gracieux en texte pour une arme naturelle hors
   // catalogue type « Morsure »), avec les Dégâts en BADGE (damageString, jamais l'objet brut).
-  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'ref', category: 'trappings', label: w.name, show: w.name, badge: damageString(w.damage) }));
+  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'ref', category: 'trappings', id: refId('trappings', w.name), label: w.name, show: w.name, badge: damageString(w.damage) }));
   const worn = ARMOUR_LOCS.filter((l) => (c.armour?.[l] ?? 0) > 0);
   return sections(
     { title: 'Caractéristiques', layout: 'grid', rows: charRows },

@@ -30,11 +30,13 @@ import { spellEffectOps } from '../../state/flow';
 import type { Flow, TriggeredEffect } from '../../state/flow';
 import { codexLookupVersion } from './registry';
 
-/** Un référant (entité QUI pointe vers la cible) — ouvrable au Codex via (category, label). */
+/** Un référant (entité QUI pointe vers la cible) — ouvrable au Codex via (category, id). */
 export interface Referrer {
   /** Catégorie Codex du référant (clé de `CODEX`) — pour le lien `CodexRef`. */
   category: string;
-  /** Libellé d'affichage = `CodexItem.label` (résolu par `codexLookup`). */
+  /** Identité STABLE du référant (`CodexItem.id`) — clé de dédoublonnage/navigation. */
+  id: string;
+  /** Libellé d'affichage = `CodexItem.label`. */
   label: string;
   /** Contexte optionnel (« N2 », « facultatif »…) — fusionné en cas de doublon. */
   detail?: string;
@@ -112,7 +114,7 @@ const graph = versionCached<ReverseGraph>(() => {
 
   // 1) Espèces (cat `races`) → compétences/talents de race + carrières accessibles.
   for (const s of species) {
-    const by: Referrer = { category: 'races', label: s.label };
+    const by: Referrer = { category: 'races', id: s.id, label: s.label };
     for (const id of advancementIds(s.skills)) addReverse('skills', id, by);
     for (const id of advancementIds(s.talents)) addReverse('talents', id, by);
     // Carrières accessibles à l'espèce (LDB 05) → inverse « Races y accédant » sur la carrière.
@@ -120,13 +122,13 @@ const graph = versionCached<ReverseGraph>(() => {
   }
 
   // 2) Carrières (cat `careers`) → classe.
-  for (const c of careers) addReverse('classes', c.class, { category: 'careers', label: c.label }, 'Carrières de la classe');
+  for (const c of careers) addReverse('classes', c.class, { category: 'careers', id: c.id, label: c.label }, 'Carrières de la classe');
 
   // 3) Niveaux de carrière → compétences/talents/possessions/caractéristiques (référant = la CARRIÈRE, rang en détail).
   for (const lv of careerLevels) {
     const career = findCareerById(lv.career);
     if (!career) continue;
-    const by: Referrer = { category: 'careers', label: career.label, detail: `N${lv.level}` };
+    const by: Referrer = { category: 'careers', id: career.id, label: career.label, detail: `N${lv.level}` };
     for (const id of advancementIds(lv.skills)) addReverse('skills', id, by, 'Carrières (par rang)');
     for (const id of advancementIds(lv.talents)) addReverse('talents', id, by, 'Carrières (par rang)');
     for (const k of lv.characteristics) addReverse('characteristics', k, by, 'Carrières (avancée)');
@@ -134,11 +136,11 @@ const graph = versionCached<ReverseGraph>(() => {
   }
 
   // 4) Compétences → caractéristique de test.
-  for (const s of skills) addReverse('characteristics', s.characteristic, { category: 'skills', label: s.label }, 'Compétences liées');
+  for (const s of skills) addReverse('characteristics', s.characteristic, { category: 'skills', id: s.id, label: s.label }, 'Compétences liées');
 
   // 5) Talents → octrois de carrière (grantCareerSkill/Talent) + bonus de carac (charMod).
   for (const t of talents) {
-    const by: Referrer = { category: 'talents', label: t.label };
+    const by: Referrer = { category: 'talents', id: t.id, label: t.label };
     for (const op of t.passive ?? []) {
       if (op.op === 'grantCareerSkill') addReverse('skills', op.skillId, by, 'Talents le conférant');
       else if (op.op === 'grantCareerTalent') addReverse('talents', op.talentId, by, 'Talents le conférant');
@@ -148,7 +150,7 @@ const graph = versionCached<ReverseGraph>(() => {
 
   // 6) Créatures → traits (+ facultatifs) · compétences · talents · sorts · possessions.
   for (const c of creatures) {
-    const by: Referrer = { category: 'creatures', label: c.label };
+    const by: Referrer = { category: 'creatures', id: c.id, label: c.label };
     for (const tr of c.traits) addReverse('traits', tr.id, by, 'Créatures ayant ce trait');
     // Les optionnels COMPOSÉS (notes « tous les traits »/« swap ») n'ont pas d'`id` de trait → seuls
     // les optionnels ORDINAIRES (`TraitInstance`) alimentent le rétro-liage « facultatif de X ».
@@ -161,51 +163,51 @@ const graph = versionCached<ReverseGraph>(() => {
 
   // 7) Possessions → qualités + groupe d'objet.
   for (const t of trappings) {
-    const by: Referrer = { category: 'trappings', label: t.label };
+    const by: Referrer = { category: 'trappings', id: t.id, label: t.label };
     for (const q of t.qualities) addReverse('qualities', q.id, by, 'Équipements ayant cette qualité');
     addReverse('weaponGroups', t.subType, by, 'Objets du groupe');
   }
 
   // 8) Classes → possessions de départ.
   for (const cl of classes) {
-    const by: Referrer = { category: 'classes', label: cl.label };
+    const by: Referrer = { category: 'classes', id: cl.id, label: cl.label };
     for (const t of cl.trappings) if ('id' in t) addReverse('trappings', t.id, by, 'Possession de classe');
   }
 
   // 9) Traits → manœuvres conférées.
   for (const t of traits) {
-    const by: Referrer = { category: 'traits', label: t.label };
+    const by: Referrer = { category: 'traits', id: t.id, label: t.label };
     for (const m of t.grantsManeuvers ?? []) addReverse('maneuvers', m.id, by, 'Traits l’accordant');
   }
 
   // 10) Mutations → traits conférés.
   for (const m of mutations) {
-    const by: Referrer = { category: 'mutations', label: m.label };
+    const by: Referrer = { category: 'mutations', id: m.id, label: m.label };
     for (const op of m.passive ?? []) if (op.op === 'grantTrait') addReverse('traits', op.traitId, by, 'Mutations conférant ce trait');
   }
 
   // 11) Sorts → domaine.
-  for (const s of spells) addReverse('domains', s.domainId, { category: 'spells', label: s.label }, 'Sorts du domaine');
+  for (const s of spells) addReverse('domains', s.domainId, { category: 'spells', id: s.id, label: s.label }, 'Sorts du domaine');
 
   // 12) Dieux/Cultes → bénédictions + miracles.
   for (const g of gods) {
-    const by: Referrer = { category: 'gods', label: g.label };
+    const by: Referrer = { category: 'gods', id: g.id, label: g.label };
     for (const b of g.blessings) addReverse('spells', b.id, { ...by, detail: 'Bénédiction' }, 'Cultes (Bénédictions / Miracles)');
     for (const mi of g.miracles) addReverse('spells', mi.id, { ...by, detail: 'Miracle' }, 'Cultes (Bénédictions / Miracles)');
     for (const cs of g.chaosSpells ?? []) addReverse('spells', cs.id, { ...by, detail: 'Sort du Chaos' }, 'Cultes (Bénédictions / Miracles)');
   }
 
   // 13) États INFLIGÉS — ops `condition` des effets (Sort = Flow ; Trait/Qualité/Talent/Domaine = TriggeredEffect[].flow).
-  for (const s of spells) for (const id of conditionIdsInFlow(s.effects)) addReverse('etats', id, { category: 'spells', label: s.label }, 'Sorts l’infligeant');
-  for (const t of traits) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'traits', label: t.label }, 'Traits l’infligeant');
-  for (const q of qualities) for (const id of conditionIdsInEffects(q.effects)) addReverse('etats', id, { category: 'qualities', label: q.label }, 'Qualités d’arme l’infligeant');
-  for (const t of talents) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'talents', label: t.label }, 'Talents l’infligeant');
-  for (const d of domains) for (const id of conditionIdsInEffects(d.effects)) addReverse('etats', id, { category: 'domains', label: d.label }, 'Domaines l’infligeant');
+  for (const s of spells) for (const id of conditionIdsInFlow(s.effects)) addReverse('etats', id, { category: 'spells', id: s.id, label: s.label }, 'Sorts l’infligeant');
+  for (const t of traits) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'traits', id: t.id, label: t.label }, 'Traits l’infligeant');
+  for (const q of qualities) for (const id of conditionIdsInEffects(q.effects)) addReverse('etats', id, { category: 'qualities', id: q.id, label: q.label }, 'Qualités d’arme l’infligeant');
+  for (const t of talents) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'talents', id: t.id, label: t.label }, 'Talents l’infligeant');
+  for (const d of domains) for (const id of conditionIdsInEffects(d.effects)) addReverse('etats', id, { category: 'domains', id: d.id, label: d.label }, 'Domaines l’infligeant');
 
   // 14) Mutation ← Table de Corruption qui la tire (inversion de mutationTable.ranges[].mutation).
-  for (const tab of mutationTables) for (const r of tab.ranges) addReverse('mutations', r.mutation, { category: 'mutationTables', label: tab.label, detail: `${r.min}–${r.max}` }, 'Tables de Corruption la tirant');
+  for (const tab of mutationTables) for (const r of tab.ranges) addReverse('mutations', r.mutation, { category: 'mutationTables', id: tab.id, label: tab.label, detail: `${r.min}–${r.max}` }, 'Tables de Corruption la tirant');
   // 15) Lieu ← sous-lieux (inversion de location.parent, désormais un id de parent).
-  for (const l of locations) if (l.parent) addReverse('locations', l.parent, { category: 'locations', label: l.label }, 'Sous-lieux');
+  for (const l of locations) if (l.parent) addReverse('locations', l.parent, { category: 'locations', id: l.id, label: l.label }, 'Sous-lieux');
 
   return { reverse: REVERSE, titles: TITLES };
 });
@@ -234,15 +236,15 @@ const orderOf = (cat: string): number => (REF_CAT_ORDER.indexOf(cat) + 1) || 99;
 export function reverseGroups(category: string, id: string): ReverseGroup[] {
   const raw = graph().reverse.get(rkey(category, id));
   if (!raw?.length) return [];
-  const byCat = new Map<string, Map<string, Referrer>>(); // refCat → (label → référant fusionné)
+  const byCat = new Map<string, Map<string, Referrer>>(); // refCat → (id → référant fusionné)
   for (const r of raw) {
     const m = byCat.get(r.category) ?? new Map<string, Referrer>();
-    const prev = m.get(r.label);
+    const prev = m.get(r.id);
     if (prev) {
       // Fusion des détails distincts (« N1 » + « N2 » → « N1, N2 »).
       const details = new Set([...(prev.detail ? prev.detail.split(', ') : []), ...(r.detail ? [r.detail] : [])]);
       prev.detail = details.size ? [...details].join(', ') : undefined;
-    } else m.set(r.label, { ...r });
+    } else m.set(r.id, { ...r });
     byCat.set(r.category, m);
   }
   const groups: ReverseGroup[] = [];
@@ -254,14 +256,14 @@ export function reverseGroups(category: string, id: string): ReverseGroup[] {
 }
 
 // ── Index par LIVRE + index de libellés (auto-liage) ────────────────────────────────────────────
-/** Une entité cataloguée : sa catégorie Codex, son libellé, son livre/page source. */
-interface CatalogEntry { category: string; label: string; book?: string; page?: number; }
+/** Une entité cataloguée : sa catégorie Codex, son identité STABLE, son libellé, son livre/page source. */
+interface CatalogEntry { category: string; id: string; label: string; book?: string; page?: number; }
 
 /** Liste plate de TOUTES les entités cataloguées (pour byBook + labelIndex), RE-CALCULÉE par version. */
 const catalog = versionCached<CatalogEntry[]>(() => {
   const CATALOG: CatalogEntry[] = [];
-  const pushCatalog = (category: string, items: { label: string; source?: { book: string; page: number } | null }[]): void => {
-    for (const it of items) CATALOG.push({ category, label: it.label, book: it.source?.book, page: it.source?.page });
+  const pushCatalog = (category: string, items: { id: string; label: string; source?: { book: string; page: number } | null }[]): void => {
+    for (const it of items) CATALOG.push({ category, id: it.id, label: it.label, book: it.source?.book, page: it.source?.page });
   };
   pushCatalog('races', species);
   pushCatalog('careers', careers);
@@ -269,36 +271,36 @@ const catalog = versionCached<CatalogEntry[]>(() => {
   pushCatalog('skills', skills);
   pushCatalog('talents', talents);
   pushCatalog('trappings', trappings);
-  pushCatalog('qualities', qualities as { label: string; source?: { book: string; page: number } }[]);
+  pushCatalog('qualities', qualities as { id: string; label: string; source?: { book: string; page: number } }[]);
   pushCatalog('etats', etats);
   pushCatalog('maneuvers', maneuvers);
-  pushCatalog('domains', domains as { label: string; source?: { book: string; page: number } }[]);
+  pushCatalog('domains', domains as { id: string; label: string; source?: { book: string; page: number } }[]);
   pushCatalog('spells', spells);
-  pushCatalog('creatures', creatures as { label: string; source?: { book: string; page: number } }[]);
+  pushCatalog('creatures', creatures as { id: string; label: string; source?: { book: string; page: number } }[]);
   pushCatalog('traits', traits);
-  pushCatalog('mutations', mutations as { label: string; source?: { book: string; page: number } | null }[]);
+  pushCatalog('mutations', mutations as { id: string; label: string; source?: { book: string; page: number } | null }[]);
   pushCatalog('stars', stars);
-  pushCatalog('locations', locations as { label: string; source?: { book: string; page: number } }[]);
-  pushCatalog('characteristics', characteristics as { label: string }[]);
-  CATALOG.push(...gods.map((g) => ({ category: 'gods', label: g.label, book: g.source?.book, page: g.source?.page })));
-  CATALOG.push(...maladies.map((m) => ({ category: 'maladies', label: m.label })));
+  pushCatalog('locations', locations as { id: string; label: string; source?: { book: string; page: number } }[]);
+  pushCatalog('characteristics', characteristics as { id: string; label: string }[]);
+  CATALOG.push(...gods.map((g) => ({ category: 'gods', id: g.id, label: g.label, book: g.source?.book, page: g.source?.page })));
+  CATALOG.push(...maladies.map((m) => ({ category: 'maladies', id: m.id, label: m.label })));
   return CATALOG;
 });
 
 /** Contenu d'un livre, GROUPÉ par catégorie (« par type ») — pour la fiche Livre. Les entités portent
  *  leur livre dans `source.book` = l'`id` STABLE du livre (jamais un libellé) ; on matche par cet id
  *  (relation id-pure, i18n-safe). Trié par catégorie (`orderOf`) puis alpha. */
-export function bookContents(bookId: string | undefined): { category: string; labels: string[] }[] {
+export function bookContents(bookId: string | undefined): { category: string; entries: { id: string; label: string }[] }[] {
   const keys = new Set(bookId ? [bookId] : []);
-  const byCat = new Map<string, string[]>();
+  const byCat = new Map<string, { id: string; label: string }[]>();
   for (const e of catalog()) {
     if (!e.book || !keys.has(e.book)) continue;
     const arr = byCat.get(e.category) ?? [];
-    arr.push(e.label);
+    arr.push({ id: e.id, label: e.label });
     byCat.set(e.category, arr);
   }
   return [...byCat.entries()]
-    .map(([category, labels]) => ({ category, labels: labels.sort((a, b) => a.localeCompare(b, 'fr')) }))
+    .map(([category, entries]) => ({ category, entries: entries.sort((a, b) => a.label.localeCompare(b.label, 'fr')) }))
     .sort((a, b) => orderOf(a.category) - orderOf(b.category));
 }
 
@@ -351,7 +353,7 @@ const pluralize = (label: string): string => label.split(' ').map((w) => (w.ends
  *  dur nouvelle : « Compétences » → « Compétence ». */
 const catPrefix = (cat: string): string => { const p = GENERIC_PLURAL[cat] ?? cat; return p.endsWith('s') ? p.slice(0, -1) : p; };
 
-interface LinkCandidate { category: string; label: string; }
+interface LinkCandidate { category: string; id: string; label: string; }
 
 /** Racines de surface (CASSE ORIGINALE conservée — c'est elle qui doit matcher le texte) qui
  *  alimentent le matcher : le libellé lui-même + sa forme préfixée par catégorie, dédupliquées,
@@ -377,18 +379,28 @@ const linkCandidatesCached = versionCached<Map<string, LinkCandidate[]>>(() => {
   const add = (key: string, c: LinkCandidate): void => {
     if (key.length < 4) return;
     const arr = idx.get(key);
-    if (arr) { if (!arr.some((x) => x.category === c.category && x.label === c.label)) arr.push(c); }
+    if (arr) { if (!arr.some((x) => x.category === c.category && x.id === c.id)) arr.push(c); }
     else idx.set(key, [c]);
   };
   for (const e of catalog()) {
     if (!LINKABLE_CATS.has(e.category)) continue;
-    const c: LinkCandidate = { category: e.category, label: e.label };
+    const c: LinkCandidate = { category: e.category, id: e.id, label: e.label };
     add(deburrLower(e.label), c);
     const plural = pluralize(e.label);
     if (plural !== e.label) add(deburrLower(plural), c);
     add(deburrLower(`${catPrefix(e.category)} ${e.label}`), c);
   }
   return idx;
+});
+
+/** Id d'une entité cataloguée par son libellé — résolution de REPLI pour les appelants de
+ *  `tokenizeLinks` qui ne connaissent que le libellé de leur propre fiche (Prose hors Codex, non
+ *  migrés ce lot, cf. `CodexRef`) : MÊME mécanisme que `codexLookup` (registry.ts) — un Map, pas une
+ *  comparaison d'égalité — la décision finale (anti-auto-lien) reste 100 % id-based en aval. */
+const idByLabelCached = versionCached<Map<string, string>>(() => {
+  const m = new Map<string, string>();
+  for (const e of catalog()) if (!m.has(e.label)) m.set(e.label, e.id);
+  return m;
 });
 
 /** Résout un fragment de texte matché (déjà littéral, casse d'origine) vers SON entité : 1 seul
@@ -409,11 +421,11 @@ const resolveLink = (rawText: string, selfCategory?: string): LinkCandidate | un
   return candidates[0];
 };
 
-/** Un fragment de prose tokenisé : texte brut, OU une mention d'entité à lier (category+label) —
+/** Un fragment de prose tokenisé : texte brut, OU une mention d'entité à lier (category+id+label) —
  *  `spec` porte la spécialisation LIBRE absorbée entre parenthèses (« Art (Écriture)» → spec
  *  `Écriture`), non validée contre les données (précédent GAS permissif assumé) ; `text` reste le
  *  VERBATIM affiché (libellé + parenthèse comprise). */
-export type LinkToken = string | { category: string; label: string; spec?: string; text: string };
+export type LinkToken = string | { category: string; id: string; label: string; spec?: string; text: string };
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** Regex des racines auto-liables (RE-CALCULÉE par version) : chaque MOT de la racine accepte un
  *  « s » optionnel (pluriel FR simple, cf. `pluralize`), plus longues d'abord, bornée aux frontières
@@ -436,26 +448,29 @@ const SPEC_TAIL = /^\s*\(([^()]{1,60})\)/;
 /**
  * Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex,
  * façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais
- * une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI (`selfLabel`) et les
- * libellés inconnus/courts. `selfCategory` (catégorie de la fiche affichante) tranche les homonymes
- * en priorité — cf. `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié.
+ * une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI et les libellés
+ * inconnus/courts — la comparaison est 100 % id-based (`selfId` si l'appelant le connaît, sinon
+ * résolu depuis `selfLabel` via `idByLabelCached`, repli des appelants non encore migrés).
+ * `selfCategory` (catégorie de la fiche affichante) tranche les homonymes en priorité — cf.
+ * `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié.
  */
-export function tokenizeLinks(text: string, selfLabel?: string, selfCategory?: string): LinkToken[] {
+export function tokenizeLinks(text: string, selfLabel?: string, selfCategory?: string, selfId?: string): LinkToken[] {
   const re = linkRe();
   re.lastIndex = 0;
+  const resolvedSelfId = selfId ?? (selfLabel ? idByLabelCached().get(selfLabel) : undefined);
   const out: LinkToken[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text))) {
     const hit = resolveLink(m[1], selfCategory);
-    if (!hit || hit.label === selfLabel) continue; // inconnu / auto-référence → laissé en texte
+    if (!hit || hit.id === resolvedSelfId) continue; // inconnu / auto-référence → laissé en texte
     if (m.index > last) out.push(text.slice(last, m.index));
     let end = m.index + m[1].length;
     let display = m[1];
     let spec: string | undefined;
     const tail = SPEC_TAIL.exec(text.slice(end));
     if (tail) { spec = tail[1]; display += tail[0]; end += tail[0].length; }
-    out.push({ category: hit.category, label: hit.label, spec, text: display });
+    out.push({ category: hit.category, id: hit.id, label: hit.label, spec, text: display });
     last = end;
     re.lastIndex = end;
   }

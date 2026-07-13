@@ -12,7 +12,7 @@
 import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
-import { codexLookup } from './registry';
+import { codexLookup, codexLookupById } from './registry';
 import { mdToText } from '../Prose';
 
 const truncate = (s: string, n = 400): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
@@ -52,6 +52,7 @@ export function computePopoverPos(
 
 export function CodexRef({
   category,
+  id,
   label,
   children,
   className,
@@ -62,6 +63,9 @@ export function CodexRef({
   fallback,
 }: {
   category: string;
+  /** Identité STABLE de la cible — PRÉFÉRÉE quand fournie (`codexLookupById`) ; `label` reste requis
+   *  (affichage + repli de résolution pour les ~40 appelants hors Codex non migrés ce lot). */
+  id?: string;
   label: string;
   /** Texte affiché si différent du libellé d'entrée (ex. libellé avec spécialisation). */
   children?: ReactNode;
@@ -82,7 +86,7 @@ export function CodexRef({
   fallback?: { sub?: string; body?: string };
 }) {
   const openCodex = useGame((s) => s.openCodex);
-  const item = codexLookup(category, label);
+  const item = (id ? codexLookupById(category, id) : undefined) ?? codexLookup(category, label);
   const ref = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<PopoverPlacement | null>(null);
 

@@ -41,20 +41,8 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/d
 // `stripComments` — peut différer du numéro de ligne brut du fichier si un bloc `/* … */` multi-lignes
 // précède le site).
 const RATCHET_EXCEPTIONS: Record<string, string> = {
-  // LÉGITIME PERMANENTE (2026-07-13) : auto-liage de PROSE (`tokenizeLinks`). Le matcher est dérivé du
-  // texte libre d'une description ; une mention n'est QU'un token de texte, sans id disponible. Le garde
-  // anti-auto-lien (`hit.label === selfLabel`) compare des libellés d'index (résolus, uniques par
-  // construction pour une entrée du multi-index d'auto-liage — les homonymes sont TRANCHÉS avant
-  // comparaison, cf. `resolveLink`) car le texte affiché EST la recherche. Pas de FK, rien à migrer.
   'ui/creator/CharacterCreator.tsx:127': "WEAPON_ID_BY_LABEL : id disponible des deux côtés (trappings) — debt RÉELLE, migration différée (le state de draft `specChoices`/`weaponChoice` est un Record<string,string> partagé par TOUS les choix « au choix », pas juste l'arme — refactor multi-site hors périmètre garde).",
   'ui/creator/CharacterCreator.tsx:1084': 'idem CharacterCreator.tsx:127 (même WEAPON_ID_BY_LABEL).',
-  'ui/compendium/relations.ts:371': "auto-liage de PROSE (tokenizeLinks) : matching TEXTUEL d'un terme de règle vers son entité, pas une FK — aucun id en jeu (le texte affiché EST la recherche).",
-  // LÉGITIME PERMANENTE (2026-07-13, #363 extension homonymes) : dédoublonnage de l'index MULTI-VALUÉ
-  // d'auto-liage (`linkCandidatesCached`) — une même entité catalogue (category+label, `CatalogEntry`
-  // n'a PAS d'id, cf. son interface) peut être ajoutée sous plusieurs clés (libellé/pluriel/forme
-  // préfixée) ; la comparaison évite de la dupliquer dans le tableau de candidats d'une même clé. Même
-  // famille que l'exception ci-dessus : catalogue de PROSE, pas une FK d'entité applicative.
-  'ui/compendium/relations.ts:319': "dédoublonnage de l'index d'auto-liage (catalogue de prose sans id, category+label = identité) — pas une FK.",
 };
 
 // Mécanique de scan (stripComments + BY_LABEL_RX/LABEL_EQ_RX + scanLabelLogic) :

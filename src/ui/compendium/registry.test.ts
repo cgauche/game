@@ -320,10 +320,10 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
 describe('Codex — facettes', () => {
   it('filterItems : ET entre facettes, OU à l’intérieur, item sans valeur écarté par une facette active', () => {
     const items: CodexItem[] = [
-      { label: 'Averland', source: { book: 'LDB', page: 1 }, group: 'G1' },
-      { label: 'Barak', source: { book: 'ADE', page: 2 }, group: 'G1' },
-      { label: 'Carroburg', source: { book: 'LDB', page: 3 }, group: 'G2' },
-      { label: 'Dötern' },
+      { id: 'averland', label: 'Averland', source: { book: 'LDB', page: 1 }, group: 'G1' },
+      { id: 'barak', label: 'Barak', source: { book: 'ADE', page: 2 }, group: 'G1' },
+      { id: 'carroburg', label: 'Carroburg', source: { book: 'LDB', page: 3 }, group: 'G2' },
+      { id: 'dotern', label: 'Dötern' },
     ];
     const facets: CodexFacet[] = [
       { key: 'book', label: 'Livre', valueOf: (i) => i.source?.book },
@@ -339,10 +339,10 @@ describe('Codex — facettes', () => {
   it('facetValues dérive les valeurs des items (comptées, triées FR)', () => {
     const facet: CodexFacet = { key: 'book', label: 'Livre', valueOf: (i) => i.source?.book };
     const items: CodexItem[] = [
-      { label: 'A', source: { book: 'LDB', page: 1 } },
-      { label: 'B', source: { book: 'ADE', page: 1 } },
-      { label: 'C', source: { book: 'LDB', page: 2 } },
-      { label: 'D' },
+      { id: 'a', label: 'A', source: { book: 'LDB', page: 1 } },
+      { id: 'b', label: 'B', source: { book: 'ADE', page: 1 } },
+      { id: 'c', label: 'C', source: { book: 'LDB', page: 2 } },
+      { id: 'd', label: 'D' },
     ];
     expect(facetValues(items, facet)).toEqual([
       { value: 'ADE', count: 1 },
@@ -477,12 +477,12 @@ describe('Codex search', () => {
   });
 
   it('terme vide = tout passe', () => {
-    expect(codexMatch({ label: 'X' }, '')).toBe(true);
-    expect(codexMatch({ label: 'X' }, '   ')).toBe(true);
+    expect(codexMatch({ id: 'x', label: 'X' }, '')).toBe(true);
+    expect(codexMatch({ id: 'x', label: 'X' }, '   ')).toBe(true);
   });
 
   it('match insensible casse/accents sur label, sub et desc', () => {
-    const it = { label: 'Bénédiction de Chance', sub: 'Béni', desc: 'relancer un Test' };
+    const it = { id: 'benediction-de-chance', label: 'Bénédiction de Chance', sub: 'Béni', desc: 'relancer un Test' };
     expect(codexMatch(it, 'benediction')).toBe(true);
     expect(codexMatch(it, 'CHANCE')).toBe(true);
     expect(codexMatch(it, 'beni')).toBe(true);

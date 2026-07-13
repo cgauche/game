@@ -31,13 +31,13 @@ const NO_LINK_TAGS = new Set(['a', 'code', 'pre']);
 
 /** Plugin rehype : remplace dans chaque nœud texte les mentions de règles par un élément `coderef`
  *  (mappé plus bas sur `CodexRef`). `tokenizeLinks` reste la SOURCE unique du matcher. */
-function autolink(tree: HastNode, selfLabel?: string, selfCategory?: string): void {
+function autolink(tree: HastNode, selfLabel?: string, selfCategory?: string, selfId?: string): void {
   const walk = (node: HastNode): void => {
     if (!node.children?.length || (node.tagName && NO_LINK_TAGS.has(node.tagName))) return;
     const next: HastNode[] = [];
     for (const child of node.children) {
       if (child.type === 'text' && typeof child.value === 'string') {
-        const tokens = tokenizeLinks(child.value, selfLabel, selfCategory);
+        const tokens = tokenizeLinks(child.value, selfLabel, selfCategory, selfId);
         if (tokens.length === 1 && typeof tokens[0] === 'string') {
           next.push(child);
         } else {
@@ -50,7 +50,7 @@ function autolink(tree: HastNode, selfLabel?: string, selfCategory?: string): vo
                 // `instance` = texte verbatim absorbant la spécialisation entre parenthèses (« Art
                 // (Écriture) ») — la fiche ouverte reste le libellé de base (`reflabel`) ; `instance`
                 // n'affecte que l'affichage du popover (cf. `CodexRef`), la fiche ne se paramètre pas.
-                properties: { category: t.category, reflabel: t.label, instance: t.spec ? t.text : undefined },
+                properties: { category: t.category, refid: t.id, reflabel: t.label, instance: t.spec ? t.text : undefined },
                 children: [{ type: 'text', value: t.text }],
               });
           }
@@ -68,9 +68,9 @@ function autolink(tree: HastNode, selfLabel?: string, selfCategory?: string): vo
 const COMPONENTS = {
   // Élément synthétique injecté par `autolink` → notre popover/lien de Codex.
   coderef: ({ node, children }: { node?: HastNode; children?: ReactNode }) => {
-    const props = (node?.properties ?? {}) as { category?: string; reflabel?: string; instance?: string };
+    const props = (node?.properties ?? {}) as { category?: string; refid?: string; reflabel?: string; instance?: string };
     return (
-      <CodexRef category={String(props.category ?? '')} label={String(props.reflabel ?? '')} instance={props.instance} inline>
+      <CodexRef category={String(props.category ?? '')} id={props.refid} label={String(props.reflabel ?? '')} instance={props.instance} inline>
         {children}
       </CodexRef>
     );
@@ -79,9 +79,10 @@ const COMPONENTS = {
 
 /** Rend une description Markdown (verbatim de la source) en React, avec auto-liage des règles.
  *  `selfCategory` (catégorie de la fiche affichante) tranche les homonymes de vocabulaire — cf.
- *  `tokenizeLinks`/`PRIORITY_CAT_ORDER` (`relations.ts`). */
-export function Prose({ md, selfLabel, selfCategory }: { md: string; selfLabel?: string; selfCategory?: string }) {
-  const rehypePlugins = useMemo(() => [() => (tree: HastNode) => autolink(tree, selfLabel, selfCategory)], [selfLabel, selfCategory]);
+ *  `tokenizeLinks`/`PRIORITY_CAT_ORDER` (`relations.ts`). `selfId` (connu du Codex, `CodexItem.id`)
+ *  affine l'anti-auto-lien ; sans lui, résolu depuis `selfLabel` (repli des appelants non migrés). */
+export function Prose({ md, selfLabel, selfCategory, selfId }: { md: string; selfLabel?: string; selfCategory?: string; selfId?: string }) {
+  const rehypePlugins = useMemo(() => [() => (tree: HastNode) => autolink(tree, selfLabel, selfCategory, selfId)], [selfLabel, selfCategory, selfId]);
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={rehypePlugins} components={COMPONENTS}>
       {md}

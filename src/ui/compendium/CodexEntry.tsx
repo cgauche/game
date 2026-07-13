@@ -26,14 +26,14 @@ function CodexRowView({ row }: { row: CodexRow }) {
     case 'kv':
       return (
         <div className="codex-kv">
-          <span className="ck-k">{row.kref ? <CodexRef category={row.kref.category} label={row.kref.label}>{row.k}</CodexRef> : row.k}</span>
+          <span className="ck-k">{row.kref ? <CodexRef category={row.kref.category} id={row.kref.id} label={row.kref.label}>{row.k}</CodexRef> : row.k}</span>
           <span className="ck-v">{row.v}</span>
         </div>
       );
     case 'text':
       return <div className="codex-rowtext"><Prose md={row.text} /></div>;
     case 'ref':
-      return <EntityRef category={row.category} label={row.label} show={row.show} instance={row.show} badge={row.badge} />;
+      return <EntityRef category={row.category} id={row.id} label={row.label} show={row.show} instance={row.show} badge={row.badge} />;
     case 'choice':
       // « A ou B » : rendu via la brique PARTAGÉE (identique partout — Codex et écrans).
       return <ChoiceChips category={row.category} options={row.options} />;
@@ -73,8 +73,6 @@ export function CodexSections({ sections }: { sections: CodexSection[] }) {
 }
 
 export function CodexEntry({ item, instance, category }: { item: CodexItem; instance?: string; category?: string }) {
-  void category; // conservé pour la compat des appelants ; l'aperçu est piloté par `item.appearance`.
-
   // ONGLETS data-driven : CHAQUE section de la fiche (statbloc, compétences, niveaux de carrière,
   // bénédictions…) devient un onglet → les onglets reflètent les données PROPRES de l'entité (une
   // créature, un sort et une race n'exposent pas les mêmes). La CHARTE (figurine + onglets) est, elle,
@@ -110,7 +108,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
       id: 'desc',
       label: 'Description',
       content: (
-        <div className="codex-tabpane codex-body"><Prose md={item.desc} selfLabel={item.label} /></div>
+        <div className="codex-tabpane codex-body"><Prose md={item.desc} selfLabel={item.label} selfId={item.id} selfCategory={category} /></div>
       ),
     });
   }
