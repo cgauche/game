@@ -12,6 +12,7 @@ import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, useCodexV
 import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
+import { useAtelierMode, setAtelierMode } from './atelierMode';
 import { Icon } from '../Icon';
 import { MasterDetail } from '../MasterDetail';
 import { OptionChooser, type RollOption } from '../OptionChooser';
@@ -36,6 +37,9 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   const [facetSel, setFacetSel] = useState<FacetSelection>({});
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState(false);
+  // Mode ATELIER (édition des fiches) : bascule persistante et découvrable — l'éditabilité est un pilier
+  // produit, jamais derrière un flag de build. OFF par défaut : la vue joueur n'expose aucune affordance DEV.
+  const atelier = useAtelierMode();
 
   // Un clic de cross-référence (ou une ouverture externe) change `compendiumFocus` alors que
   // l'écran est DÉJÀ monté → on s'y déplace (les initialiseurs useState ne re-lisent pas le focus).
@@ -145,6 +149,16 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
             options={CODEX_GROUPS.map((g): RollOption => ({ key: g, label: g, selected: g === group, onSelect: () => pickGroup(g) }))}
           />
         </div>
+        {/* Bascule ATELIER (édition des fiches) — composée sur la primitive `.btn` (état ON = `.btn-primary`,
+            `aria-pressed`). Découvrable, sobre ; désactiver ferme toute édition en cours. */}
+        <button
+          className={`btn small${atelier ? ' btn-primary' : ''}`}
+          aria-pressed={atelier}
+          onClick={() => { if (atelier) { setEditing(false); setCreating(false); } setAtelierMode(!atelier); }}
+          title="Mode atelier : éditer les fiches du Compendium"
+        >
+          <Icon id="ui/edit" size="sm" /> Atelier
+        </button>
         {/* En modale : fermeture à droite, dans le même langage de bouton que le reste (.btn small). */}
         {onClose && <button className="btn small" onClick={close} aria-label="Fermer le Compendium" title="Fermer">✕</button>}
       </header>
@@ -177,6 +191,13 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
         listLabel="Entrées du Codex"
         list={
           <div className="codex-aside panel flush">
+            {/* Réf de source de la CATÉGORIE (table entière) — hors du libellé JOUEUR, en chip discret. */}
+            {cat?.sourceRef && (
+              <div className="codex-facets">
+                <span className="codex-facet-label section-label">Source</span>
+                <span className="codex-src">{cat.sourceRef}</span>
+              </div>
+            )}
             {facetRows.map(({ facet, values }) => (
               <div className="codex-facets" key={facet.key}>
                 <span className="codex-facet-label section-label">{facet.label}</span>
@@ -217,19 +238,19 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
         }
         detail={
           <section className="codex-detail panel">
-            {import.meta.env.DEV && cat && isEditableCategory(cat.key) && !creating && (
+            {atelier && cat && isEditableCategory(cat.key) && !creating && (
               <div className="codex-detail-actions">
                 {selected && (
                   <button className="btn small" onClick={() => setEditing((v) => !v)}>
-                    {editing ? '↩︎ Voir la fiche' : <><Icon id="ui/edit" size="sm" /> Éditer (DEV)</>}
+                    {editing ? '↩︎ Voir la fiche' : <><Icon id="ui/edit" size="sm" /> Éditer</>}
                   </button>
                 )}
-                <button className="btn small" onClick={() => { setEditing(false); setCreating(true); }}><Icon id="ui/add" size="sm" /> Nouveau (DEV)</button>
+                <button className="btn small" onClick={() => { setEditing(false); setCreating(true); }}><Icon id="ui/add" size="sm" /> Nouveau</button>
               </div>
             )}
-            {creating && import.meta.env.DEV && cat && isEditableCategory(cat.key)
+            {creating && atelier && cat && isEditableCategory(cat.key)
               ? <CodexEdit categoryKey={cat.key} label="" isNew onClose={() => setCreating(false)} />
-              : selected && editing && import.meta.env.DEV && cat && isEditableCategory(cat.key)
+              : selected && editing && atelier && cat && isEditableCategory(cat.key)
                 ? <CodexEdit categoryKey={cat.key} label={selected.label} onClose={() => setEditing(false)} />
                 : selected && <CodexEntry item={selected} instance={instance} category={cat?.key} />}
           </section>

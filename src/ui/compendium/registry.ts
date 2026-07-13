@@ -154,6 +154,9 @@ export interface CodexCategory {
   group: CodexGroup;
   /** Sous-groupe FR (dépliable dans la barre de catégories) — cf. `CodexCategorySpec.cluster`. */
   cluster?: string;
+  /** Réf de source de la TABLE entière (« LDB 18 », « MDG ch.13 ») — affichée discrètement, JAMAIS
+   *  dans le libellé joueur (une réf de livre nue n'est pas un nom de catégorie). */
+  sourceRef?: string;
   /** Projection PARESSEUSE (getter, cache par version) : les datasets étant mutés EN PLACE
    *  (`overrides.ts::setDataset`), la re-projection après `invalidateCodexLookup()` lit la donnée
    *  FRAÎCHE. Ne se re-matérialise qu'à l'invalidation (persist DEV, rare), jamais par rendu. */
@@ -488,6 +491,8 @@ interface CodexCategorySpec {
   /** Sous-groupe FR : les catégories d'un même `cluster` se replient sous UN dépliable dans la barre
    *  de catégories (anti-avalanche des groupes touffus Effets/Tables). Absent = pastille à plat. */
   cluster?: string;
+  /** Réf de source de la table (« LDB 18 ») — hors du libellé, cf. `CodexCategory.sourceRef`. */
+  sourceRef?: string;
   build: () => CodexItem[];
 }
 
@@ -509,6 +514,7 @@ function makeCategory(spec: CodexCategorySpec): CodexCategory {
     label: spec.label,
     group: spec.group,
     cluster: spec.cluster,
+    sourceRef: spec.sourceRef,
     get items() { return fresh(); },
     get facets() { fresh(); return facets; },
   };
@@ -1120,10 +1126,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   // ── Datasets-OBJETS uniques (E3b) : config de création (objet) + banque de noms (Record par race) ──
   {
-    key: 'details', label: 'Détails de création', group: 'Tables', cluster: 'Création de personnage',
+    key: 'details', label: 'Détails de création', group: 'Tables', cluster: 'Création de personnage', sourceRef: 'LDB 05',
     // UNE seule entrée (objet `details.json`) — formules Âge/Taille par espèce + textes d'aide.
     build: () => [{
-      label: 'Détails de création (LDB 05)',
+      label: 'Détails de création',
       sections: sections({
         title: 'Formules Âge & Taille (base + Nd10)', layout: 'list',
         rows: (Object.keys(details.ageBase) as RaceKey[]).map((sp) => ({
@@ -1224,35 +1230,35 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'criticalsTete', label: 'Critiques — Tête (Traumatisme, LDB 18)', group: 'Effets', cluster: 'Blessures critiques',
+    key: 'criticalsTete', label: 'Critiques — Tête (Traumatisme)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'LDB 18',
     build: () => datasetArray('criticalsTete').map(critEntryItem),
   },
   {
-    key: 'criticalsBras', label: 'Critiques — Bras (Traumatisme, LDB 18)', group: 'Effets', cluster: 'Blessures critiques',
+    key: 'criticalsBras', label: 'Critiques — Bras (Traumatisme)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'LDB 18',
     build: () => datasetArray('criticalsBras').map(critEntryItem),
   },
   {
-    key: 'criticalsCorps', label: 'Critiques — Corps (Traumatisme, LDB 18)', group: 'Effets', cluster: 'Blessures critiques',
+    key: 'criticalsCorps', label: 'Critiques — Corps (Traumatisme)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'LDB 18',
     build: () => datasetArray('criticalsCorps').map(critEntryItem),
   },
   {
-    key: 'criticalsJambe', label: 'Critiques — Jambe (Traumatisme, LDB 18)', group: 'Effets', cluster: 'Blessures critiques',
+    key: 'criticalsJambe', label: 'Critiques — Jambe (Traumatisme)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'LDB 18',
     build: () => datasetArray('criticalsJambe').map(critEntryItem),
   },
   {
-    key: 'aaCriticalsTete', label: 'Critiques AA — Tête (approche alternative)', group: 'Effets', cluster: 'Blessures critiques',
+    key: 'aaCriticalsTete', label: 'Critiques — Tête (approche alternative)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'AA',
     build: () => datasetArray('aaCriticalsTete').map(critEntryItem),
   },
   {
-    key: 'aaCriticalsBras', label: 'Critiques AA — Bras (approche alternative)', group: 'Effets', cluster: 'Blessures critiques',
+    key: 'aaCriticalsBras', label: 'Critiques — Bras (approche alternative)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'AA',
     build: () => datasetArray('aaCriticalsBras').map(critEntryItem),
   },
   {
-    key: 'aaCriticalsCorps', label: 'Critiques AA — Corps (approche alternative)', group: 'Effets', cluster: 'Blessures critiques',
+    key: 'aaCriticalsCorps', label: 'Critiques — Corps (approche alternative)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'AA',
     build: () => datasetArray('aaCriticalsCorps').map(critEntryItem),
   },
   {
-    key: 'aaCriticalsJambe', label: 'Critiques AA — Jambe (approche alternative)', group: 'Effets', cluster: 'Blessures critiques',
+    key: 'aaCriticalsJambe', label: 'Critiques — Jambe (approche alternative)', group: 'Effets', cluster: 'Blessures critiques', sourceRef: 'AA',
     build: () => datasetArray('aaCriticalsJambe').map(critEntryItem),
   },
   {
@@ -1276,59 +1282,59 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => datasetArray('rencontresDangereuses').map((e) => travelEntryItem(e, 'Effet sur les occupants')),
   },
   {
-    key: 'shipCriticalsCargaison', label: 'Critiques de navire — Cargaison (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
+    key: 'shipCriticalsCargaison', label: 'Critiques de navire — Cargaison', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
     build: () => datasetArray('shipCriticalsCargaison').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsGreement', label: 'Critiques de navire — Gréement (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
+    key: 'shipCriticalsGreement', label: 'Critiques de navire — Gréement', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
     build: () => datasetArray('shipCriticalsGreement').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsCoque', label: 'Critiques de navire — Coque (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
+    key: 'shipCriticalsCoque', label: 'Critiques de navire — Coque', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
     build: () => datasetArray('shipCriticalsCoque').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsAvirons', label: 'Critiques de navire — Avirons (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
+    key: 'shipCriticalsAvirons', label: 'Critiques de navire — Avirons', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
     build: () => datasetArray('shipCriticalsAvirons').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsEquipements', label: 'Critiques de navire — Équipements (MDG ch.13)', group: 'Effets', cluster: 'Critiques de navire',
+    key: 'shipCriticalsEquipements', label: 'Critiques de navire — Équipements', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
     build: () => datasetArray('shipCriticalsEquipements').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
+    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.5',
     build: () => datasetArray('riverCriticalsGreement').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
+    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.5',
     build: () => datasetArray('riverCriticalsAvirons').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
+    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.5',
     build: () => datasetArray('riverCriticalsGouvernail').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
+    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.5',
     build: () => datasetArray('riverCriticalsCoque').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure (T2C ch.5)', group: 'Effets', cluster: 'Critiques fluviaux',
+    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.5',
     build: () => datasetArray('riverCriticalsSuperstructure').map(shipCritEntryItem),
   },
   {
-    key: 'seaManannFactors', label: 'Humeur de Manann — Facteurs (MDG ch.15)', group: 'Tables', cluster: 'Mer & rivière',
+    key: 'seaManannFactors', label: 'Humeur de Manann — Facteurs', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.15',
     build: () => datasetArray('seaManannFactors').map(manannFactorItem),
   },
   {
-    key: 'seaBoardEvents', label: 'Événements de bord (mer, MDG ch.15)', group: 'Tables', cluster: 'Mer & rivière',
+    key: 'seaBoardEvents', label: 'Événements de bord (mer)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.15',
     build: () => datasetArray('seaBoardEvents').map(seaEventItem),
   },
   {
-    key: 'seaPortEvents', label: 'Événements de port (mer, MDG ch.15)', group: 'Tables', cluster: 'Mer & rivière',
+    key: 'seaPortEvents', label: 'Événements de port (mer)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.15',
     build: () => datasetArray('seaPortEvents').map(seaEventItem),
   },
   {
-    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques, T2C ch.14)', group: 'Tables', cluster: 'Mer & rivière',
+    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'T2C ch.14',
     build: () => {
       const w = datasetObject('waterExposure');
       return [{

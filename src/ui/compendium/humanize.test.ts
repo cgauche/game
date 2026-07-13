@@ -65,7 +65,22 @@ describe('humanize — registre JOUEUR', () => {
       { kind: 'has', who: 'target', what: 'trait', value: 'mort-vivant' },
       { kind: 'has', who: 'target', what: 'trait', value: 'demoniaque' },
     ] } };
-    expect(humanizeCondition(morgan)).toBe('la cible ne possède pas le Trait Mort-vivant et la cible ne possède pas le Trait Démoniaque');
+    // Sujet dédoublonné dans la conjonction (même « la cible » en tête des deux clauses).
+    expect(humanizeCondition(morgan)).toBe('la cible ne possède pas le Trait Mort-vivant et ne possède pas le Trait Démoniaque');
+  });
+
+  it('humanizeCondition : dédoublonne le sujet répété dans all/any (jamais deux sujets différents)', () => {
+    const same: Condition = { kind: 'all', of: [
+      { kind: 'relation', who: 'target', is: 'opponent' },
+      { kind: 'not', of: { kind: 'has', who: 'target', what: 'talent', value: 'magie-des-arcanes', spec: 'feu' } },
+    ] };
+    expect(humanizeCondition(same)).toBe('la cible est un adversaire et ne possède pas le Talent Magie des Arcanes (Feu)');
+    // Sujets DIFFÉRENTS (cible / lanceur) : aucun dédoublonnage (sûreté grammaticale).
+    const mixed: Condition = { kind: 'all', of: [
+      { kind: 'relation', who: 'target', is: 'opponent' },
+      { kind: 'not', of: { kind: 'has', who: 'caster', what: 'trait', value: 'mort-vivant' } },
+    ] };
+    expect(humanizeCondition(mixed)).toBe('la cible est un adversaire et le lanceur ne possède pas le Trait Mort-vivant');
   });
 
   it('humanizeCondition : compare sur un État → « porte / ne porte pas »', () => {
@@ -87,9 +102,9 @@ describe('humanize — registre JOUEUR', () => {
     expect(firstKebab(humanizeOp(op))).toBeUndefined();
   });
 
-  it('humanizeCastBonus : caractéristique en abréviation canonique (BFM), unité « m »', () => {
+  it('humanizeCastBonus : français JOUEUR, sans jargon ni Markdown (contexte plein texte)', () => {
     const feu = domains.find((d) => d.id === 'feu')!;
-    expect(humanizeCastBonus(feu.castBonus!)).toBe('+10 par État *En flammes* à ≤ BFM m');
+    expect(humanizeCastBonus(feu.castBonus!)).toBe('+10 par cible affectée par En flammes dans un rayon égal à votre Bonus de Force Mentale en mètres');
   });
 });
 

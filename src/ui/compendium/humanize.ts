@@ -17,12 +17,12 @@ import type { Flow, Condition, EffectOp } from '../../state/flow';
 import type { ActorRef, CompareOp, CompareSubject } from '../../engine/flowCore';
 import type { GameOp, Formula } from '../../engine/ops';
 import type { Camp, Relation } from '../../engine/relations';
-import { CHAR_LABELS, HIT_LOCATION_LABELS } from '../../engine/types';
+import { CHAR_LABELS, HIT_LOCATION_LABELS, type CharKey } from '../../engine/types';
 import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
 import { giveTrappingLabel } from '../../engine/items';
 import { formatMoney } from '../../engine/money';
 import {
-  CHAR_ABR, conditionLabel, psychologyLabel, groupLabel, symptomLabel, creatureLabel,
+  conditionLabel, psychologyLabel, groupLabel, symptomLabel, creatureLabel,
   diseaseLabel, refLabel, qualityRefLabel, talentConcrete,
 } from '../../data';
 
@@ -113,6 +113,20 @@ function timePhrase(w: { afterHour?: number; afterMinute?: number; beforeHour?: 
   return a && b ? `entre ${a} et ${b}` : a ? `à partir de ${a}` : b ? `avant ${b}` : "à n'importe quelle heure";
 }
 
+/** Sujets d'acteur (`whoLabel`) susceptibles de se répéter en tête de clauses conjointes. */
+const CLAUSE_SUBJECTS = ['le lanceur', 'la cible'] as const;
+
+/** Dédoublonne le sujet répété en tête de clauses jointes : « la cible est un adversaire ET la cible ne
+ *  possède pas … » → « … ET ne possède pas … ». Ne retire le sujet que si la clause ET sa précédente
+ *  partagent EXACTEMENT le même sujet en tête (sûreté grammaticale : sinon on conserve le sujet). */
+function dedupSubjects(parts: string[]): string[] {
+  return parts.map((p, i) => {
+    if (i === 0) return p;
+    const subj = CLAUSE_SUBJECTS.find((s) => p.startsWith(`${s} `) && parts[i - 1].startsWith(`${s} `));
+    return subj ? p.slice(subj.length + 1) : p;
+  });
+}
+
 /** Condition en clause NATURELLE. `neg` porte la négation (poussée dans la feuille — « ne possède pas … »,
  *  De Morgan sur `all`/`any` — au lieu d'un « NON( … ) » d'atelier). SOURCE UNIQUE joueur des Conditions. */
 export function humanizeCondition(c: Condition, neg = false): string {
@@ -153,8 +167,8 @@ export function humanizeCondition(c: Condition, neg = false): string {
       return `${who(c.who)} ${neg ? "n'appartient pas" : 'appartient'} au Groupe ${groupLabel(c.value)}`;
     }
     // De Morgan : NON(A ET B) = (NON A) OU (NON B) ; NON(A OU B) = (NON A) ET (NON B).
-    case 'all': return c.of.length ? c.of.map((x) => humanizeCondition(x, neg)).join(neg ? ' ou ' : ' et ') : (neg ? 'jamais' : 'toujours');
-    case 'any': return c.of.length ? c.of.map((x) => humanizeCondition(x, neg)).join(neg ? ' et ' : ' ou ') : (neg ? 'toujours' : 'jamais');
+    case 'all': return c.of.length ? dedupSubjects(c.of.map((x) => humanizeCondition(x, neg))).join(neg ? ' ou ' : ' et ') : (neg ? 'jamais' : 'toujours');
+    case 'any': return c.of.length ? dedupSubjects(c.of.map((x) => humanizeCondition(x, neg))).join(neg ? ' et ' : ' ou ') : (neg ? 'toujours' : 'jamais');
     case 'not': return humanizeCondition(c.of, !neg);
   }
   return assertNever(c);
@@ -310,9 +324,10 @@ export function humanizeFlowSentence(f: Flow): string {
   return cap(humanizeFlow(f));
 }
 
-/** Bonus d'incantation d'un Domaine (`castBonus`) en clair — « +10 par État *En flammes* à ≤ BFM m ».
- *  Fix du fact « Bonus d'incantation » (`registry.ts`) : État en libellé, Caractéristique en abréviation
- *  canonique (`CHAR_ABR` → « BFM »), jamais l'id brut. */
-export function humanizeCastBonus(cb: { bonus: number; perCondition: string; radiusStat: keyof typeof CHAR_ABR }): string {
-  return `+${cb.bonus} par État ${stateItal(cb.perCondition)} à ≤ B${CHAR_ABR[cb.radiusStat]} m`;
+/** Bonus d'incantation d'un Domaine (`castBonus`) en français JOUEUR — « +10 par cible affectée par En
+ *  flammes dans un rayon égal à votre Bonus de Force Mentale en mètres ». Contexte PLEIN TEXTE (fact
+ *  « Bonus d'incantation », `registry.ts`) : ni jargon (« ≤ BFM m »), ni Markdown — État et Caractéristique
+ *  en libellé résolu, jamais l'id brut. */
+export function humanizeCastBonus(cb: { bonus: number; perCondition: string; radiusStat: CharKey }): string {
+  return `+${cb.bonus} par cible affectée par ${conditionLabel(cb.perCondition)} dans un rayon égal à votre Bonus de ${CHAR_LABELS[cb.radiusStat]} en mètres`;
 }
