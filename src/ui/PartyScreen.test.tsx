@@ -214,7 +214,8 @@ describe("PartyScreen -- libelles i18n Phase D", () => {
     expect(html).toContain("Aventurier 1");
     expect(html).toContain("Aventurier 4");
     expect(html).toContain("Créer un personnage");
-    expect(html).toContain("Choisir un personnage");
+    expect(html).toContain("candidate-gallery"); // galerie de candidats sur l’écran (recrutement)
+    expect(html).toContain("Candidats"); // titre de la galerie
     expect(html).toContain("Commencer →");
   });
 
@@ -267,9 +268,10 @@ describe('PartyScreen — présentation v2 (cadres ornés, carte en pied, nav cl
     );
 
   it('roving tabindex : UN seul emplacement tabbable, les trois autres à -1', () => {
-    const html = render([], initialNet()); // groupe vide : les seuls tabindex sont ceux des slots
-    expect((html.match(/tabindex="0"/g) ?? []).length).toBe(1);
-    expect((html.match(/tabindex="-1"/g) ?? []).length).toBe(3);
+    const html = render([], initialNet());
+    // Scopé aux EMPLACEMENTS (la galerie de candidats a ses propres onglets tabbables) : un seul slot à 0.
+    expect((html.match(/party-slot[^>]*tabindex="0"/g) ?? []).length).toBe(1);
+    expect((html.match(/party-slot[^>]*tabindex="-1"/g) ?? []).length).toBe(3);
   });
 
   it('slotKeyNav (pur) : flèches = focus voisin bouclé, Enter/Espace = action principale', () => {
@@ -283,23 +285,26 @@ describe('PartyScreen — présentation v2 (cadres ornés, carte en pied, nav cl
     expect(slotKeyNav('ArrowDown', 2, 4)).toBeNull();
   });
 
-  it('emplacement vide : cadre orné + fleuron dessiné (plus de ✠ texte, plus de min-height CSS)', () => {
+  it('emplacement vide : cadre orné + silhouette d’aventurier assombrie (plus de ✠ texte)', () => {
     const html = render([], initialNet());
     expect(html).toContain('empty-slot');
     expect(html).toContain('ornate-frame'); // OrnateFrame
-    expect(html).toContain('orn-fleuron'); // motif Ornaments
+    expect(html).toContain('slot-silhouette'); // ombre de personnage (rig réel assombri en CSS)
+    expect(html).toContain('charprev'); // CharacterPreview (rig d’un pré-tiré)
+    expect(html).toContain('Un siège à pourvoir'); // libellé d’invitation
     expect(html).not.toContain('✠');
   });
 
   it('slot occupé : carte v2 — perso EN PIED (CharacterPreview) dans un cadre orné, identité + statut', () => {
-    const h = savedHero();
-    const html = render([h], initialNet());
+    // Groupe COMPLET (4/4) : plus de vivier, chaque emplacement occupé affiche la carte PLEINE.
+    const heroes = makePregens().slice(0, 4);
+    const html = render(heroes, initialNet());
     expect(html).toContain('char-card');
     expect(html).toContain('ornate-frame');
     expect(html).toContain('charprev'); // figure en pied (rig réel)
-    expect(html).toContain(h.name);
+    expect(html).toContain(heroes[0].name);
     expect(html).toContain('Statut'); // statut social du niveau de carrière
-    expect(html).not.toContain('char-card-row'); // mode plein, pas la rangée compacte
+    expect(html).not.toContain('char-card-row'); // mode plein, pas la rangée compacte du vivier
   });
 
   it('picker : « Créer un personnage » visible MÊME avec un roster non vide', () => {
@@ -313,5 +318,15 @@ describe('PartyScreen — présentation v2 (cadres ornés, carte en pied, nav cl
     const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
     expect(html).toContain('char-card-row');
     expect(html).toContain('charprev-xs');
+  });
+
+  it('galerie de candidats : visible tant qu’un siège est libre (rangées + « Choisir »), masquée à 4/4', () => {
+    const recruiting = render([], initialNet());
+    expect(recruiting).toContain('candidate-gallery');
+    expect(recruiting).toContain('pregen-row'); // les VISAGES des candidats (CharCard compact) sur l’écran
+    expect(recruiting).toContain('Choisir'); // clic = 1er siège libre (même onAddHero que la modale)
+
+    const full = render(makePregens().slice(0, 4), initialNet());
+    expect(full).not.toContain('candidate-gallery'); // groupe complet → plus de vivier
   });
 });

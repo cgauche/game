@@ -10,10 +10,11 @@ import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
 import { Coins } from './Coins';
 import { CharCard } from './CharCard';
+import { CharacterPreview } from './CharacterPreview';
 import { CharacterSheet } from './CharacterSheet';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
-import { OrnateFrame, Fleuron } from './Ornaments';
+import { OrnateFrame, RuleDivider } from './Ornaments';
 import { Tabs } from './Tabs';
 import { t } from '../i18n';
 
@@ -207,9 +208,11 @@ export function PartyScreenView({
   onStart: () => void;
   onResume?: () => void;
 }) {
-  const [picker, setPicker] = useState(false);
   // Slot occupé → « Remplacer » : ouvre le picker MÊME à 4/4 (un remplacement ne change pas l'effectif).
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null);
+  // Silhouettes d'invitation des emplacements vides : le rig réel d'un pré-tiré, assombri (cf. CSS
+  // .slot-silhouette) — une ombre de personnage plutôt qu'un cadre nu.
+  const silhouettes = useState(() => makePregens())[0];
   // Roving tabindex : UN seul emplacement tabbable ; flèches gauche/droite entre emplacements,
   // Enter/Espace = action principale (fiche du héros / créer). Cf. `slotKeyNav` (pur).
   const [focusSlot, setFocusSlot] = useState(0);
@@ -249,24 +252,20 @@ export function PartyScreenView({
   const ownsHero = (id: string) => !coop || (net.ownership[id] ?? 0) === net.mySeat;
   /** Un emplacement attribué à un invité n'est pas rempli → l'hôte ne peut pas lancer. */
   const guestPending = views.some((v) => v.seat !== 0 && !v.hero);
+  // Il reste un siège à MOI (solo : n'importe lequel) à pourvoir → la galerie de candidats s'affiche.
+  const canRecruit = party.length < 4 && views.some((v) => !v.hero && (!coop || v.seat === net.mySeat));
 
   const pick = (h: Combatant, wealth?: Money) => {
     if (party.length >= 4 || party.some((p) => p.id === h.id)) return;
     onAddHero(h, wealth);
-    if (party.length + 1 >= 4) setPicker(false); // groupe complet → on ferme ; sinon on enchaîne
   };
-  // Le picker sert au recrutement (slot vide) ET au remplacement (slot occupé) : on aiguille selon
-  // `replaceTarget`. Fermeture commune : on réinitialise les deux modes.
-  const onPickHero = (h: Combatant, wealth?: Money) => {
-    if (replaceTarget) {
-      onReplaceHero?.(replaceTarget, h, wealth);
-      setReplaceTarget(null);
-      setPicker(false);
-      return;
-    }
-    pick(h, wealth);
+  // Recrutement = galerie de candidats sur l'écran (clic → 1er siège libre) ; la modale ne sert plus
+  // qu'au REMPLACEMENT ciblé (`replaceTarget`) — un seul chemin par intention, zéro doublon.
+  const onReplacePick = (h: Combatant, wealth?: Money) => {
+    if (!replaceTarget) return;
+    onReplaceHero?.(replaceTarget, h, wealth);
+    setReplaceTarget(null);
   };
-  const closePicker = () => { setPicker(false); setReplaceTarget(null); };
   const replaceName = replaceTarget ? party.find((h) => h.id === replaceTarget)?.name : undefined;
 
   return (
@@ -301,7 +300,8 @@ export function PartyScreenView({
         <p className="hint party-coop-hint">{t('party.coop.pending')}</p>
       )}
 
-      <div className="party-grid">
+      <div className="party-body">
+        <div className="party-grid">
         {views.map(({ seat, hero: h }, i) => {
           const mine = !coop || seat === net.mySeat;
           return (
@@ -367,18 +367,20 @@ export function PartyScreenView({
                 </>
               ) : mine ? (
                 <OrnateFrame className="empty-slot">
-                  <Fleuron />
+                  {silhouettes.length > 0 && (
+                    <CharacterPreview hero={silhouettes[i % silhouettes.length]} size="fill" className="slot-silhouette" />
+                  )}
                   <span className="slot-num">{t('party.slot.adventurer', { n: i + 1 })}</span>
+                  <span className="hint slot-invite">{t('party.slot.invite')}</span>
                   <button className="btn" onClick={onCreate}>
                     {t('party.slot.create')}
-                  </button>
-                  <button className="btn" onClick={() => setPicker(true)}>
-                    {t('party.slot.pick')}
                   </button>
                 </OrnateFrame>
               ) : (
                 <OrnateFrame className="empty-slot">
-                  <Fleuron />
+                  {silhouettes.length > 0 && (
+                    <CharacterPreview hero={silhouettes[i % silhouettes.length]} size="fill" className="slot-silhouette" />
+                  )}
                   <span className="slot-num">{t('party.slot.adventurer', { n: i + 1 })}</span>
                   <span className="hint">{t('party.slot.waiting', { name: seatName(seat) })}</span>
                 </OrnateFrame>
@@ -386,6 +388,15 @@ export function PartyScreenView({
             </div>
           );
         })}
+        </div>
+
+        {canRecruit && (
+          <section className="candidate-gallery" aria-label={t('party.recruit.pool')}>
+            <RuleDivider label={t('party.recruit.pool')} />
+            <p className="hint party-intro">{t('party.recruit.intro')}</p>
+            <CandidatePool party={party} onPick={pick} />
+          </section>
+        )}
       </div>
 
       {net.mode !== 'guest' && (
@@ -408,12 +419,12 @@ export function PartyScreenView({
         </footer>
       )}
 
-      {((picker && party.length < 4) || (replaceTarget && onReplaceHero)) && (
+      {replaceTarget && onReplaceHero && (
         <PartyPicker
           party={party}
-          title={replaceTarget ? t('picker.title.replace', { name: replaceName ?? '' }) : undefined}
-          onPick={onPickHero}
-          onClose={closePicker}
+          title={t('picker.title.replace', { name: replaceName ?? '' })}
+          onPick={onReplacePick}
+          onClose={() => setReplaceTarget(null)}
         />
       )}
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
@@ -421,7 +432,8 @@ export function PartyScreenView({
   );
 }
 
-/** Modale de choix : personnages sauvegardés (roster localStorage LOCAL du joueur) + pré-tirés. */
+/** Modale de REMPLACEMENT ciblé (slot occupé → « Remplacer {nom} ») : réutilise `CandidatePool`.
+ *  Le recrutement d'un slot vide, lui, passe par la galerie de l'écran (un seul chemin par intention). */
 export function PartyPicker({
   party,
   onPick,
@@ -433,6 +445,26 @@ export function PartyPicker({
   onClose: () => void;
   /** Titre du picker (défaut = recrutement). Le mode « Remplacer » passe « Remplacer {nom} ». */
   title?: string;
+}) {
+  return (
+    <Modal variant="plain" className="picker-modal" title={title ?? t('picker.title', { n: party.length })} onClose={onClose} backdropClose>
+      <CandidatePool party={party} onPick={onPick} />
+      <button className="btn" onClick={onClose}>
+        {t('picker.done')}
+      </button>
+    </Modal>
+  );
+}
+
+/** Vivier de candidats — personnages sauvegardés (roster localStorage LOCAL du joueur) + pré-tirés,
+ *  onglets Mes personnages / Pré-tirés, création et import. Rendu à l'IDENTIQUE par la galerie de
+ *  l'écran d'équipe (recrutement) ET la modale `PartyPicker` (remplacement) : source unique. */
+export function CandidatePool({
+  party,
+  onPick,
+}: {
+  party: Combatant[];
+  onPick: (h: Combatant, wealth?: Money) => void;
 }) {
   const pregens = useState(() => makePregens())[0];
   const [roster, setRoster] = useState(() => rosterLoad());
@@ -463,7 +495,7 @@ export function PartyPicker({
   };
 
   return (
-    <Modal variant="plain" className="picker-modal" title={title ?? t('picker.title', { n: party.length })} onClose={onClose} backdropClose>
+    <>
         <Tabs
           className="sheet-tabnav"
           variant="pill"
@@ -527,10 +559,6 @@ export function PartyPicker({
             ))}
           </div>
         )}
-
-        <button className="btn" onClick={onClose}>
-          {t('picker.done')}
-        </button>
-    </Modal>
+    </>
   );
 }

@@ -450,14 +450,19 @@ h3 {
   margin-left: auto;
 }
 
+/* Party screen — corps défilant : emplacements + galerie de candidats empilés. */
+.party-body {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
 /* Party screen — auto-fit : 4 colonnes en desktop large, empilement mobile. */
 .party-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
   gap: 16px;
   padding: 18px;
-  flex: 1;
-  overflow: auto;
 }
 .party-slot {
   display: flex;
@@ -489,8 +494,10 @@ h3 {
   flex: 1;
 }
 /* Emplacement vide : cadre orné (OrnateFrame) au gabarit de la carte pleine — aspect-ratio au lieu
-   d'une hauteur fixe ; fleuron discret en tête (motif Ornaments, remplace le ✠ texte). */
+   d'une hauteur fixe ; une silhouette d'aventurier assombrie en fond (invitation) plutôt qu'un cadre nu. */
 .empty-slot {
+  position: relative;
+  overflow: hidden;
   background: var(--panel);
   display: flex;
   flex-direction: column;
@@ -500,12 +507,48 @@ h3 {
   aspect-ratio: 3 / 4;
   flex: 1;
 }
-.empty-slot > .orn-fleuron {
-  color: var(--border);
+/* Ombre de personnage : le rig réel d'un pré-tiré, aplati en silhouette sombre, ancré en bas du cadre. */
+.slot-silhouette {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.16;
+  filter: grayscale(1) brightness(0);
+  pointer-events: none;
+}
+.empty-slot > .slot-num,
+.empty-slot > .slot-invite,
+.empty-slot > .hint,
+.empty-slot > .btn {
+  position: relative;
+  z-index: 1;
+}
+.slot-invite {
+  font-family: var(--font-display);
+  letter-spacing: 0.4px;
 }
 .empty-slot .btn {
   width: 100%;
   max-width: 240px;
+}
+
+/* Galerie de candidats — vivier (CandidatePool) rendu sous les emplacements : grille de fiches
+   compactes (pré-tirés + roster), clic = recrutement du 1er siège libre. */
+.candidate-gallery {
+  padding: 4px 18px 18px;
+}
+.party-intro {
+  text-align: center;
+  margin: 0 0 8px;
+}
+.candidate-gallery .pregen-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.candidate-gallery .pregen-row {
+  margin: 0;
 }
 .slot-num {
   color: var(--muted);
