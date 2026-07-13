@@ -15,6 +15,7 @@ import { Prose } from './Prose';
 import { Coins } from './Coins';
 import { Icon, IconG } from './Icon';
 import { SpeakerBanner } from './SpeakerBanner';
+import { ActivityPane } from './ActivityPane';
 
 /**
  * HUB DE VILLE (#343) — l'écran UNIQUE d'un LIEU de la carte : on n'empile plus des boutons flottants
@@ -66,7 +67,7 @@ export function cityHubCanEnterPort(vessel: unknown): boolean {
 function GatedAction({ id, label, enabled, reason, onClick }: { id: string; label: string; enabled: boolean; reason: string; onClick: () => void }) {
   const reasonId = `${id}-reason`;
   return (
-    <div className="bar city-hub-actions">
+    <div className="city-hub-gate">
       <button type="button" className="btn btn-primary" disabled={!enabled} aria-describedby={enabled ? undefined : reasonId} onClick={onClick}>
         {label}
       </button>
@@ -145,9 +146,20 @@ export function CityHubScreen({
     if (!svc) return <p className="city-hub-empty">Ce lieu n’offre encore aucun service.</p>;
     if (svc.category === 'auberge') {
       return (
-        <div className="city-hub-panel">
+        <ActivityPane
+          icon={serviceIcon(svc)}
+          title={svc.label}
+          actions={
+            <>
+              {svc.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: svc.rest, quality: rest?.quality })}>Dormir</button>}
+              <button type="button" className="btn btn-primary" onClick={gatherInnInfo}>
+                Recueillir des informations (≈{Math.round(innGatherInfoMinutes() / 60)} h)
+              </button>
+            </>
+          }
+        >
           <SpeakerBanner name="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>
-          {svc.desc && <div className="city-hub-desc"><Prose md={svc.desc} /></div>}
+          {svc.desc && <div className="activity-pane-desc"><Prose md={svc.desc} /></div>}
           {/* Jamais une promesse d'action impossible (cf. `cityHubCanEnterPort`) : sans offre de
               couchage effective (`svc.rest`), les prix de chambre/repas ne s'affichent pas — ils ne
               mènent nulle part ici (recette 2026-07-12). */}
@@ -160,12 +172,6 @@ export function CityHubScreen({
               </ul>
             )
             : <p className="city-hub-empty">Aucun couchage proposé ici pour l’instant.</p>}
-          <div className="bar city-hub-actions">
-            {svc.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: svc.rest, quality: rest?.quality })}>Dormir</button>}
-            <button type="button" className="btn btn-primary" onClick={gatherInnInfo}>
-              Recueillir des informations (≈{Math.round(innGatherInfoMinutes() / 60)} h)
-            </button>
-          </div>
           <section className="city-hub-rumours">
             <h4>Rumeurs déjà glanées</h4>
             {tradeRumours.length === 0
@@ -176,71 +182,83 @@ export function CityHubScreen({
                   return <li key={i}>{biens} — recherchés à {target}.</li>;
                 })}</ul>}
           </section>
-        </div>
+        </ActivityPane>
       );
     }
     if (svc.category === 'port' && svc.port) {
       return (
-        <div className="city-hub-panel">
+        <ActivityPane
+          icon={serviceIcon(svc)}
+          title={svc.label}
+          actions={
+            <GatedAction
+              id="city-hub-port-enter"
+              label="Entrer au port"
+              enabled={cityHubCanEnterPort(vessel)}
+              reason="Aucun navire de campagne."
+              onClick={() => enter(openPort)}
+            />
+          }
+        >
           <ProfileSynth taille={svc.port.taille} richesse={svc.port.richesse} production={svc.port.production} />
-          <GatedAction
-            id="city-hub-port-enter"
-            label="Entrer au port"
-            enabled={cityHubCanEnterPort(vessel)}
-            reason="Aucun navire de campagne."
-            onClick={() => enter(openPort)}
-          />
-        </div>
+        </ActivityPane>
       );
     }
     if (svc.category === 'marche' && svc.market) {
       return (
-        <div className="city-hub-panel">
+        <ActivityPane
+          icon={serviceIcon(svc)}
+          title={svc.label}
+          actions={<button type="button" className="btn btn-primary" onClick={() => enter(openLandMarket)}>Entrer au marché</button>}
+        >
           <ProfileSynth taille={svc.market.taille} richesse={svc.market.richesse} production={svc.market.produits} />
-          <div className="bar city-hub-actions">
-            <button type="button" className="btn btn-primary" onClick={() => enter(openLandMarket)}>Entrer au marché</button>
-          </div>
-        </div>
+        </ActivityPane>
       );
     }
     // Forgeron (#369) : porte vers le système marchand EXISTANT (archétype Armurier) — zéro système neuf.
     if (svc.merchantArchetype) {
       return (
-        <div className="city-hub-panel">
-          {svc.desc && <div className="city-hub-desc"><Prose md={svc.desc} /></div>}
-          <div className="bar city-hub-actions">
+        <ActivityPane
+          icon={serviceIcon(svc)}
+          title={svc.label}
+          desc={svc.desc}
+          actions={
             <button
               type="button" className="btn btn-primary"
               onClick={() => enter(() => openPlaceMerchant(placeServiceMerchantId(place.id, svc.id), svc.merchantArchetype!))}
             >
               Entrer chez le forgeron
             </button>
-          </div>
-        </div>
+          }
+        />
       );
     }
     // Chantier naval (#369) : porte vers l'onglet Chantier de l'écran de port existant (défaut de PortView)
     // quand un navire de campagne est là — même garde/patron que « Entrer au port ».
     if (svc.id === 'chantier') {
       return (
-        <div className="city-hub-panel">
-          {svc.desc && <div className="city-hub-desc"><Prose md={svc.desc} /></div>}
-          <GatedAction
-            id="city-hub-chantier-enter"
-            label="Entrer au chantier"
-            enabled={cityHubCanEnterPort(vessel)}
-            reason="Aucun navire de campagne."
-            onClick={() => enter(openPort)}
-          />
-        </div>
+        <ActivityPane
+          icon={serviceIcon(svc)}
+          title={svc.label}
+          desc={svc.desc}
+          actions={
+            <GatedAction
+              id="city-hub-chantier-enter"
+              label="Entrer au chantier"
+              enabled={cityHubCanEnterPort(vessel)}
+              reason="Aucun navire de campagne."
+              onClick={() => enter(openPort)}
+            />
+          }
+        />
       );
     }
     // Service de catalogue sans écran dédié (temple/guilde) : desc si le catalogue la porte (état HONNÊTE,
     // pas de promesse ni de roadmap-speak, #375), sinon un constat FACTUEL (règle 1/7).
     return (
-      <div className="city-hub-panel">
-        {svc.desc ? <div className="city-hub-desc"><Prose md={svc.desc} /></div> : <p className="city-hub-empty">Ce service n’a pas encore d’écran dédié.</p>}
-      </div>
+      <ActivityPane icon={serviceIcon(svc)} title={svc.label} desc={svc.desc}>
+        {!svc.desc && <p className="city-hub-empty">Ce service n’a pas encore d’écran dédié.</p>}
+      </ActivityPane>
     );
   };
 
@@ -285,12 +303,12 @@ export function CityHubScreen({
     poiDetail = <p className="city-hub-empty">Ce lieu n’a aucun point d’intérêt.</p>;
   } else if (poiSel.sceneId) {
     poiDetail = (
-      <div className="city-hub-panel">
-        <p className="city-hub-desc">Ce point mène à un autre endroit.</p>
-        <div className="bar city-hub-actions">
-          <button type="button" className="btn btn-primary" onClick={() => enter(() => transitionTo(poiSel.sceneId!))}>Entrer</button>
-        </div>
-      </div>
+      <ActivityPane
+        icon={poiSel.icon ?? 'nav/entry-point'}
+        title={poiSel.label}
+        desc="Ce point mène à un autre endroit."
+        actions={<button type="button" className="btn btn-primary" onClick={() => enter(() => transitionTo(poiSel.sceneId!))}>Entrer</button>}
+      />
     );
   } else {
     poiDetail = renderServiceDetail(poiServiceTarget);
@@ -329,7 +347,6 @@ export function CityHubScreen({
             }
             detail={
               <div className="city-hub-detail panel">
-                {poiSel && <h3 className="city-hub-detail-head"><Icon id={poiSel.icon ?? 'nav/entry-point'} size="sm" /> {poiSel.label}</h3>}
                 {poiDetail}
               </div>
             }
@@ -357,7 +374,6 @@ export function CityHubScreen({
             }
             detail={
               <div className="city-hub-detail panel">
-                {sel && <h3 className="city-hub-detail-head"><Icon id={serviceIcon(sel)} size="sm" /> {sel.label}</h3>}
                 {detail}
               </div>
             }

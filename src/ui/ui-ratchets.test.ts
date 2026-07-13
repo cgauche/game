@@ -73,7 +73,7 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/mass-battle.css': 2,
   'styles/merchant.css': 1,
   'styles/sheet.css': 2,
-  'styles/world-meta.css': 21,
+  'styles/world-meta.css': 18,
 };
 
 // ── (viii) Couleurs `fill=`/`stroke=` LITTÉRALES dans le JSX de `src/ui` : un fill/stroke codé en dur
@@ -208,7 +208,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/ornaments.css': 13,
   'styles/sheet.css': 91,
   'styles/tavern.css': 13,
-  'styles/world-meta.css': 142,
+  'styles/world-meta.css': 134,
 };
 
 function classNamesDefined(css: string): Set<string> {

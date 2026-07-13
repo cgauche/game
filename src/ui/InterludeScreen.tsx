@@ -34,9 +34,10 @@ import { RuleDivider, OrnateFrame } from './Ornaments';
 import { GameDate } from './GameDate';
 import { Icon } from './Icon';
 import type { IconId } from './icons';
-import { PendingRollLine, type PendingRoll } from './RollLine';
+import { type PendingRoll } from './RollLine';
 import { testPending, optionPending, difficultyMods } from './breakdown';
-import { Prose, mdToText } from './Prose';
+import { mdToText } from './Prose';
+import { ActivityPane } from './ActivityPane';
 import { SearchFilterField, useFilteredList } from './SearchFilterField';
 import { MasterDetail } from './MasterDetail';
 import { Tabs } from './Tabs';
@@ -372,53 +373,6 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
  *  d'affordance DATA-DRIVEN (ex. « expie du Péché » ⇒ inutile à 0 Péché). */
 const activityOps = (def: ActivityDef): GameOp[] =>
   [...(def.onSuccess ?? []), ...(def.outcomes ?? []).flatMap((b) => b.ops ?? [])];
-
-/**
- * GABARIT UNIQUE des volets d'Activité : en-tête (icône du registre + titre), description
- * VERBATIM `<Prose>`, zone de paramètres (corps DÉFILABLE), et PIED FIXE — pré-jet
- * (`PendingRollLine`), coût `<Coins>`, formule des activités sans jet, bouton(s) d'action
- * jamais cachés par le scroll.
- */
-function ActivityPane({ icon, title, desc, blocked, prejet, cost, note, actions, children }: {
-  icon: string;
-  title: string;
-  /** Description VERBATIM (Markdown) de la source — rendue par `<Prose>` (règle 5). */
-  desc?: string;
-  /** Raison d'indisponibilité (gate d'affordance) — l'action du pied est alors désactivée. */
-  blocked?: ReactNode;
-  /** Ligne de test AVANT d'entreprendre (compétence en chip + Difficulté + cible). */
-  prejet?: PendingRoll;
-  /** Coût de l'Activité (rendu `<Coins>`/PX) — affiché dans le pied. */
-  cost?: ReactNode;
-  /** Formule/complément du pied (activités SANS jet : tirage direct, taux, livraison…). */
-  note?: ReactNode;
-  /** Bouton(s) du pied. */
-  actions: ReactNode;
-  children?: ReactNode;
-}) {
-  return (
-    <div className="interlude-pane">
-      <header className="interlude-pane-head"><Icon id={icon} /> <b>{title}</b></header>
-      <div className="interlude-pane-body">
-        {desc && <div className="interlude-pane-desc"><Prose md={desc} /></div>}
-        {blocked && <p className="interlude-blocked">{blocked}</p>}
-        {children}
-      </div>
-      <footer className="interlude-pane-foot">
-        <div className="interlude-pane-terms">
-          {prejet && <PendingRollLine p={prejet} />}
-          {(cost != null || note != null) && (
-            <p className="interlude-detail">
-              {cost != null && <>Coût : <b>{cost}</b>{note != null ? ' · ' : ''}</>}
-              {note}
-            </p>
-          )}
-        </div>
-        <div className="interlude-pane-actions">{actions}</div>
-      </footer>
-    </div>
-  );
-}
 
 /** Résolveurs des Activités du catalogue qui ont un VOLET DÉDIÉ (UX riche : formule de Revenus,
  *  flux 2 étapes de l'Artisanat, sélecteur de Talent, sélecteur d'artefact) ou vivent ailleurs

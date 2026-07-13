@@ -78,9 +78,9 @@ describe('InterludeScreen — refonte LOT 6', () => {
       <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'revenus' } }} />,
     );
     expect(html).toContain('master-detail'); // maître-détail (#330) : liste GAUCHE + détail CENTRE
-    expect(html).toContain('interlude-pane-desc'); // la description VERBATIM `<Prose>` (`desc` de activities.json)
+    expect(html).toContain('activity-pane-desc'); // la description VERBATIM `<Prose>` (`desc` de activities.json)
     expect(html).toContain('Cette Activité englobe'); // desc de Revenus — EXISTAIT en donnée, jamais affichée avant #330
-    expect(html).toContain('interlude-pane-foot'); // le pied du gabarit
+    expect(html).toContain('activity-pane-foot'); // le pied du gabarit
     expect(html).toContain('rm-roll pending'); // la ligne de pré-jet (PendingRollLine)
     expect(html).toContain('Accessible'); // la Difficulté du Test de Revenus (LDB 08)
     expect(html).toContain('Entreprendre');
@@ -96,7 +96,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
       <InterludeScreen seam={{ ...seam, phase: 'activities', catalog, openPane: { heroId: hero.id, pane: 'convalescence' } }} />,
     );
     expect(html).toContain('master-detail'); // maître-détail (#330)
-    expect(html).toContain('interlude-pane-foot');
+    expect(html).toContain('activity-pane-foot');
     expect(html).toContain('Calme'); // la compétence du Test (chip Codex)
     expect(html).toContain('Très difficile'); // la Difficulté (chip de mod du pré-jet)
     expect(html).toContain('Entreprendre');
@@ -109,7 +109,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
       <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'bank' } }} />,
     );
     expect(html).toContain('master-detail'); // maître-détail (#330)
-    expect(html).toContain('interlude-pane-foot');
+    expect(html).toContain('activity-pane-foot');
     expect(html).not.toContain('rm-roll pending'); // pas de Test : dépôt direct
     expect(html).toContain('Sans jet');
     expect(html).toContain('Investir');

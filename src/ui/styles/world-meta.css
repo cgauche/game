@@ -520,26 +520,10 @@
 .interlude-blocked { font-size: 12px; color: var(--danger-soft); margin: 0; }
 .interlude-amount input { width: 90px; }
 
-/* Gabarit UNIQUE des volets d'Activité : corps DÉFILABLE, pied FIXE (pré-jet + action). */
-.interlude-pane { margin-top: 8px; padding-top: 10px; border-top: 1px dashed color-mix(in srgb, var(--gold) 35%, var(--border)); display: flex; flex-direction: column; gap: 6px; }
-.interlude-pane-head { display: flex; align-items: center; gap: 6px; font-size: 14px; font-family: var(--font-display); color: var(--gold2); }
-.interlude-pane-body { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 38vh; min-height: 0; }
-/* Description VERBATIM d'une Activité du catalogue (ACE Annexe I) — prose dans le corps défilable. */
-.interlude-pane-desc { font-size: 12px; color: var(--muted); text-align: left; }
-.interlude-pane-desc p { margin: 0 0 6px; }
-.interlude-pane-foot {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
-  border-top: 1px solid var(--border); padding-top: 8px;
-}
-.interlude-pane-terms { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 220px; text-align: left; }
-.interlude-pane-terms .rm-roll { flex-wrap: wrap; }
-.interlude-pane-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
 /* ≤700px : le ruban défile horizontalement (vignettes non écrasées), volets pleine largeur. */
 @media (max-width: 700px) {
   .interlude-synth-hero { flex: 0 0 auto; }
   .interlude-synth-purse { flex: 0 0 auto; }
-  .interlude-pane-actions { margin-left: 0; width: 100%; }
-  .interlude-pane-actions .btn { flex: 1 1 auto; }
   .interlude-phase-actions .btn { width: 100%; min-width: 0; }
 }
 /* ≤560px : la chronique s'empile (sceau au-dessus du récit). */

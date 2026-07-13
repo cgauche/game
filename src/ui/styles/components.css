@@ -692,6 +692,29 @@
   }
 }
 
+/* ActivityPane (#371) — gabarit PARTAGÉ d'un panneau d'Activité/Service : en-tête (icône + titre),
+   corps DÉFILABLE, pied FIXE (pré-jet + coût + action jamais cachés par le scroll). Composé par
+   InterludeScreen (volets d'Activité) et CityHubScreen (détail de service). */
+.activity-pane { margin-top: 8px; padding-top: 10px; border-top: 1px dashed color-mix(in srgb, var(--gold) 35%, var(--border)); display: flex; flex-direction: column; gap: 6px; }
+.activity-pane-head { display: flex; align-items: center; gap: 6px; font-size: 14px; font-family: var(--font-display); color: var(--gold2); }
+.activity-pane-body { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 38vh; min-height: 0; }
+.activity-pane-desc { font-size: 12px; color: var(--muted); text-align: left; }
+.activity-pane-desc p { margin: 0 0 6px; }
+.activity-pane-blocked { font-size: 12px; color: var(--danger-soft); margin: 0; }
+.activity-pane-detail { font-size: 12px; color: var(--muted); margin: 0; }
+.activity-pane-detail b { color: inherit; }
+.activity-pane-foot {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  border-top: 1px solid var(--border); padding-top: 8px;
+}
+.activity-pane-terms { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 220px; text-align: left; }
+.activity-pane-terms .rm-roll { flex-wrap: wrap; }
+.activity-pane-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+@media (max-width: 700px) {
+  .activity-pane-actions { margin-left: 0; width: 100%; }
+  .activity-pane-actions .btn { flex: 1 1 auto; }
+}
+
 /* ── ÉCRAN-HUB DE VOYAGE (#333) — VoyageScreen.tsx : ScreenShell + tuiles + chronique + MasterDetail ── */
 .voyage-body { display: flex; flex-direction: column; gap: 12px; padding: 12px; min-width: 0; overflow: auto; }
 .voyage-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.95em; }
@@ -755,16 +778,14 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
 /* Largeur max + ancrage haut (#359) : sans borne, le détail (souvent quelques lignes courtes) file
    sur toute la colonne `1fr` du master-detail — un panneau aéré-à-vide lit comme inachevé (charte). */
 .city-hub-detail { min-width: 0; max-width: min(640px, 96vw); }
-.city-hub-detail-head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
-.city-hub-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.city-hub-desc { font-size: 0.95em; }
 .city-hub-prices { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .city-hub-prices li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
 .city-hub-synth { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .city-hub-synth li { display: flex; gap: 10px; }
 .city-hub-synth-k { flex: 0 0 84px; opacity: 0.8; font-size: 0.85em; }
 .city-hub-synth-v { font-weight: 600; }
-.city-hub-actions { flex-wrap: wrap; }
+/* Action GATÉE (`GatedAction`) : bouton + raison d'indisponibilité empilée dessous, dans le pied. */
+.city-hub-gate { display: flex; flex-direction: column; gap: 6px; }
 .city-hub-rumours h4 { margin: 0 0 6px; }
 .city-hub-hint { margin: 0; padding-left: 18px; font-size: 0.9em; opacity: 0.9; }
 .city-hub-empty { opacity: 0.75; font-style: italic; }
