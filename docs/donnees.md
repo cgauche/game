@@ -72,6 +72,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | Fichier | Contient |
 |---|---|
 | `trappings.json` | **Équipement PORTÉ** : armes, armures, objets tenus/portés. ⚠ **PAS** les machines de guerre. |
+| `disponibilite.json` | Tables numériques de « Faire son marché » (LDB 59) : `dispoPct` (% de Disponibilité par taille de colonie) + `barterRatios` (RATIOS DE TROC) — consommées par `src/engine/disponibilite.ts` (`DISPO_PCT`/`BARTER_RATIOS`) |
 
 ### Bestiaire
 | Fichier | Contient |

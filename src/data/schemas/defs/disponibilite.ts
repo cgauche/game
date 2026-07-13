@@ -1,0 +1,42 @@
+/**
+ * Schéma de `disponibilite.json` — les deux tables numériques de « Faire son marché » (LDB 59)
+ * migrées en donnée éditable (#366) : `dispoPct` (Tableau de Disponibilité, folio 290 l.25-30) et
+ * `barterRatios` (RATIOS DE TROC, folio 291 l.68-76). Consommé par `src/engine/disponibilite.ts`
+ * (`DISPO_PCT` / `BARTER_RATIOS`). `availability` = `Availability` (`src/engine/types.ts`), clé
+ * STABLE ; `village`/`ville`/`cite` = `Settlement`.
+ */
+import { z } from 'zod';
+import { sourceRefSchema } from '../common';
+
+export const file = 'disponibilite.json';
+
+const availabilitySchema = z.enum(['Commune', 'Limitée', 'Rare', 'Exotique']);
+const ratioSchema = z.strictObject({ give: z.number(), get: z.number() });
+
+export const schema = z.strictObject({
+  /** Tableau de Disponibilité — % de réussite du Test (d100 ≤ %) par taille de colonie. Commune
+   *  (toujours en stock) et Exotique (jamais) n'ont pas de %, donc absentes de la table. */
+  dispoPct: z.array(
+    z.strictObject({
+      availability: z.enum(['Limitée', 'Rare']),
+      pct: z.strictObject({ village: z.number(), ville: z.number(), cite: z.number() }),
+      source: sourceRefSchema,
+    }),
+  ),
+  /** RATIOS DE TROC — une entrée par Disponibilité de l'objet DONNÉ (`give`), portant le ratio
+   *  `{give,get}` contre chaque Disponibilité d'objet ACQUIS. */
+  barterRatios: z.array(
+    z.strictObject({
+      give: availabilitySchema,
+      ratios: z.strictObject({
+        Commune: ratioSchema,
+        Limitée: ratioSchema,
+        Rare: ratioSchema,
+        Exotique: ratioSchema,
+      }),
+      source: sourceRefSchema,
+    }),
+  ),
+});
+
+export type DisponibiliteData = z.infer<typeof schema>;

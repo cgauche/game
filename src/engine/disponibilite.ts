@@ -1,22 +1,22 @@
 /**
- * Disponibilité RAW (pur, seedé). Source : Livre de Base FR « Faire son marché » (LDB 59, p.292,
- * l.26-35). Ne rien inventer : la table % et les quantités viennent directement du LDB FR.
- *  - Test de Disponibilité (réussite si d100 ≤ %) : Commune = toujours ; Limitée 30/60/90 ;
- *    Rare 15/30/45 ; Exotique = jamais (sauf curaté/commande).
+ * Disponibilité RAW (pur, seedé). LDB 59 « Faire son marché » l.13-34. Les tables numériques (% de
+ * Disponibilité, RATIOS DE TROC) vivent en donnée éditable `src/data/disponibilite.json` (#366).
+ *  - Test de Disponibilité (réussite si d100 ≤ %) : Commune = toujours ; Limitée/Rare = table ;
+ *    Exotique = jamais (sauf curaté/commande).
  *  - Quantité de base si en stock : Village 1 / Ville 1d10 / Cité illimité ; ×2 Commune, ÷2 Rare (ceil).
  */
 import { d100, d10, type RNG } from './dice';
 import type { Availability } from './types';
+import dispoJson from '../data/disponibilite.json';
 
 export type Settlement = 'village' | 'ville' | 'cite';
 export interface CatalogItem { id: string; label: string; availability: Availability | null; }
 export interface StockLine { id: string; label: string; qty: number; test?: { roll: number; target: number } }
 
-/** % de Disponibilité (réussite si d100 ≤ %). RAW LDB 59 p.292. */
-export const DISPO_PCT: Record<'Limitée' | 'Rare', Record<Settlement, number>> = {
-  'Limitée': { village: 30, ville: 60, cite: 90 },
-  'Rare': { village: 15, ville: 30, cite: 45 },
-};
+/** % de Disponibilité (réussite si d100 ≤ %). Donnée : `src/data/disponibilite.json` (LDB 59 l.25-30). */
+export const DISPO_PCT: Record<'Limitée' | 'Rare', Record<Settlement, number>> = Object.fromEntries(
+  dispoJson.dispoPct.map((e) => [e.availability, e.pct]),
+) as Record<'Limitée' | 'Rare', Record<Settlement, number>>;
 
 const CITE_UNLIMITED = 99; // Cité : « autant que le MJ » → modélisé illimité (paramétrable)
 
@@ -81,13 +81,13 @@ export function priceAfterHalvings(baseBrass: number, halvings: number): number 
 // ── Troc (LDB 59 l.64-76) ───────────────────────────────────────────────────────────────────────
 /** RATIOS DE TROC (LDB 59 l.68-76) : `[objets échangés : objets acquis]` selon les deux Disponibilités.
  *  Lecture : donné (ligne) vs acquis (colonne). Ex. Commune → Exotique = 8 : 1 (il faut 8 unités de
- *  l'objet commun pour 1 unité de l'objet exotique). SOURCE UNIQUE de la table (recopiée VERBATIM). */
-export const BARTER_RATIOS: Record<Availability, Record<Availability, [number, number]>> = {
-  Commune: { Commune: [1, 1], Limitée: [2, 1], Rare: [4, 1], Exotique: [8, 1] },
-  Limitée: { Commune: [1, 2], Limitée: [1, 1], Rare: [2, 1], Exotique: [4, 1] },
-  Rare: { Commune: [1, 4], Limitée: [1, 2], Rare: [1, 1], Exotique: [2, 1] },
-  Exotique: { Commune: [1, 8], Limitée: [1, 4], Rare: [1, 2], Exotique: [1, 1] },
-};
+ *  l'objet commun pour 1 unité de l'objet exotique). Donnée : `src/data/disponibilite.json`. */
+export const BARTER_RATIOS: Record<Availability, Record<Availability, [number, number]>> = Object.fromEntries(
+  dispoJson.barterRatios.map((row) => [
+    row.give,
+    Object.fromEntries(Object.entries(row.ratios).map(([get, r]) => [get, [r.give, r.get]])),
+  ]),
+) as Record<Availability, Record<Availability, [number, number]>>;
 
 /** Ratio de Troc (LDB 59 l.66-76) : combien d'unités de l'objet DONNÉ contre combien d'unités de
  *  l'objet ACQUIS, d'après leurs Disponibilités. `{ give, get }` = les deux membres du ratio. */

@@ -1,0 +1,136 @@
+{
+  "dispoPct": [
+    {
+      "availability": "Limitée",
+      "pct": {
+        "village": 30,
+        "ville": 60,
+        "cite": 90
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 290,
+        "note": "Tableau de Disponibilité (Village/Ville/Cité), LDB 59 « Faire son marché » l.25-30"
+      }
+    },
+    {
+      "availability": "Rare",
+      "pct": {
+        "village": 15,
+        "ville": 30,
+        "cite": 45
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 290,
+        "note": "Tableau de Disponibilité (Village/Ville/Cité), LDB 59 « Faire son marché » l.25-30"
+      }
+    }
+  ],
+  "barterRatios": [
+    {
+      "give": "Commune",
+      "ratios": {
+        "Commune": {
+          "give": 1,
+          "get": 1
+        },
+        "Limitée": {
+          "give": 2,
+          "get": 1
+        },
+        "Rare": {
+          "give": 4,
+          "get": 1
+        },
+        "Exotique": {
+          "give": 8,
+          "get": 1
+        }
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 291,
+        "note": "RATIOS DE TROC, LDB 59 « Faire son marché » l.68-76"
+      }
+    },
+    {
+      "give": "Limitée",
+      "ratios": {
+        "Commune": {
+          "give": 1,
+          "get": 2
+        },
+        "Limitée": {
+          "give": 1,
+          "get": 1
+        },
+        "Rare": {
+          "give": 2,
+          "get": 1
+        },
+        "Exotique": {
+          "give": 4,
+          "get": 1
+        }
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 291,
+        "note": "RATIOS DE TROC, LDB 59 « Faire son marché » l.68-76"
+      }
+    },
+    {
+      "give": "Rare",
+      "ratios": {
+        "Commune": {
+          "give": 1,
+          "get": 4
+        },
+        "Limitée": {
+          "give": 1,
+          "get": 2
+        },
+        "Rare": {
+          "give": 1,
+          "get": 1
+        },
+        "Exotique": {
+          "give": 2,
+          "get": 1
+        }
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 291,
+        "note": "RATIOS DE TROC, LDB 59 « Faire son marché » l.68-76"
+      }
+    },
+    {
+      "give": "Exotique",
+      "ratios": {
+        "Commune": {
+          "give": 1,
+          "get": 8
+        },
+        "Limitée": {
+          "give": 1,
+          "get": 4
+        },
+        "Rare": {
+          "give": 1,
+          "get": 2
+        },
+        "Exotique": {
+          "give": 1,
+          "get": 1
+        }
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 291,
+        "note": "RATIOS DE TROC, LDB 59 « Faire son marché » l.68-76"
+      }
+    }
+  ]
+}

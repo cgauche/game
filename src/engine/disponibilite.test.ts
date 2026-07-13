@@ -4,6 +4,7 @@ import {
   rollAvailability, rollStock, fullStock, DISPO_PCT, type CatalogItem,
   barterRatio, BARTER_RATIOS, availabilityAfterHalvings, priceAfterHalvings, availabilitySearchBonus,
 } from './disponibilite';
+import dispoJson from '../data/disponibilite.json';
 
 describe('disponibilite — Disponibilité RAW (LDB 59 p.292)', () => {
   it('table RAW : Limitée 30/60/90, Rare 15/30/45', () => {
@@ -112,5 +113,17 @@ describe('disponibilite — Troc (LDB 59 l.64-76)', () => {
     expect(barterRatio('Commune', 'Exotique')).toEqual({ give: 8, get: 1 });
     expect(barterRatio('Exotique', 'Commune')).toEqual({ give: 1, get: 8 });
     expect(barterRatio('Rare', 'Rare')).toEqual({ give: 1, get: 1 });
+  });
+});
+
+describe('disponibilite — donnée éditable (src/data/disponibilite.json, #366)', () => {
+  it('chaque entrée migrée porte sa source (book + page)', () => {
+    const entries = [...dispoJson.dispoPct, ...dispoJson.barterRatios];
+    expect(entries.length).toBe(6); // 2 lignes de %, 4 lignes de troc
+    for (const e of entries) {
+      expect(e.source.book).toBe('livre-de-base');
+      expect(typeof e.source.page).toBe('number');
+      expect(e.source.page).toBeGreaterThan(0);
+    }
   });
 });
