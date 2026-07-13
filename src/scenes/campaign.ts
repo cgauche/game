@@ -51,3 +51,18 @@ export const builtinCampaigns: BuiltinCampaign[] = [
     worldMap: loupEtSaumure.worldMap ?? null,
   },
 ];
+
+/** L'Arène (chemin `pendingCampaign: null` historique) sous la MÊME forme `BuiltinCampaign`, pour
+ *  la réutiliser partout où une liste homogène est nécessaire (#367 : « Ouvrir » de l'éditeur). */
+export const areneCampaign: BuiltinCampaign = {
+  id: 'arene',
+  name: "L'Arène",
+  icon: 'scenario/arena',
+  scenes: arene.map((c) => c.scene),
+  startSceneId: arene[0].id,
+  worldMap: campaignWorldMap,
+};
+
+/** Toutes les campagnes BUILT-IN (Arène + `builtinCampaigns`), source unique pour tout listing
+ *  homogène (picker de campagne ET « Ouvrir » de l'éditeur, #367). */
+export const allBuiltinCampaigns: BuiltinCampaign[] = [areneCampaign, ...builtinCampaigns];

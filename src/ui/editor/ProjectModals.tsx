@@ -1,17 +1,23 @@
 import { useState } from 'react';
 import { Modal } from '../Modal';
+import { Icon } from '../Icon';
 import { Scene } from '../../state/scene';
 import { testScenarios, TestScenario } from '../../scenes/test-scenarios';
 import { projectsLoad, projectRemove, SavedProject } from '../../state/projectLibrary';
+import { allBuiltinCampaigns, BuiltinCampaign } from '../../scenes/campaign';
 
-/** « Ouvrir » : reprendre un projet enregistré (localStorage) ou repartir d'un scénario de test. */
+/** « Ouvrir » : reprendre un projet enregistré (localStorage), repartir d'une campagne du jeu
+ *  (Arène + campagnes built-in — #367 : les fichiers `src/scenes/**‑projet.json` sont commités,
+ *  jamais écrasés depuis l'éditeur, donc ouverture = COPIE de travail) ou d'un scénario de test. */
 export function OpenProjectModal({
   onScenario,
   onProject,
+  onBuiltin,
   onClose,
 }: {
   onScenario: (sc: TestScenario) => void;
   onProject: (p: SavedProject) => void;
+  onBuiltin: (bc: BuiltinCampaign) => void;
   onClose: () => void;
 }) {
   const [projects, setProjects] = useState(() => projectsLoad());
@@ -41,6 +47,20 @@ export function OpenProjectModal({
           </div>
         </>
       )}
+      <div className="mini-title">Campagnes du jeu</div>
+      <div className="stack">
+        {allBuiltinCampaigns.map((bc) => (
+          <div className="listrow" key={bc.id}>
+            <span className="lr-name">
+              <Icon id={bc.icon} size="sm" /> {bc.name}
+            </span>
+            <span className="chip">s'ouvre en copie</span>
+            <button className="btn small btn-primary" onClick={() => onBuiltin(bc)}>
+              Ouvrir
+            </button>
+          </div>
+        ))}
+      </div>
       <div className="mini-title">Scénarios de test</div>
       <div className="stack">
         {testScenarios.map((sc) => (

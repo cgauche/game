@@ -1,6 +1,14 @@
-import { describe, it, expect } from 'vitest';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeAll } from 'vitest';
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Editor } from './Editor';
+import { allBuiltinCampaigns } from '../../scenes/campaign';
+
+beforeAll(() => {
+  (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+});
 
 /** Test de fumée du rendu de l'éditeur v2 (toolbar / rail / canvas / inspecteur / statut / dock). */
 describe('Editor v2 (rendu)', () => {
@@ -43,5 +51,40 @@ describe('Editor v2 (rendu)', () => {
   it('ne rend AUCUNE modale d’édition (l’édition est dockée)', () => {
     expect(html).not.toContain('editor-edit-modal');
     expect(html).not.toContain('modal-overlay');
+  });
+});
+
+describe('Editor v2 — « Ouvrir » une campagne built-in ouvre une COPIE (#367)', () => {
+  it('charge la campagne en projet SANS id (Enregistrer créera un NOUVEAU projet, jamais un écrasement du source)', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor />);
+    });
+
+    const fileBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes('Fichier'))!;
+    await act(async () => {
+      fileBtn.click();
+    });
+    const openItem = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes('Ouvrir…'))!;
+    await act(async () => {
+      openItem.click();
+    });
+
+    const first = allBuiltinCampaigns[0];
+    const row = Array.from(container.querySelectorAll('.listrow')).find((el) => el.textContent?.includes(first.name))!;
+    const openBuiltinBtn = row.querySelector('button.btn-primary') as HTMLButtonElement;
+    await act(async () => {
+      openBuiltinBtn.click();
+    });
+
+    const h2 = container.querySelector('h2')!;
+    expect(h2.getAttribute('title')).toBe(`Copie de ${first.name}`);
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });

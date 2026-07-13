@@ -17,6 +17,7 @@ import { OpenProjectModal, SaveProjectModal } from './ProjectModals';
 import { projectSave, SavedProject } from '../../state/projectLibrary';
 import { downloadText } from '../../state/fileIo';
 import type { TestScenario } from '../../scenes/test-scenarios';
+import type { BuiltinCampaign } from '../../scenes/campaign';
 import { WorldMap, parseProject } from '../../state/worldMap';
 import { nextEntityId } from '../../state/entityId';
 import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer } from './editorState';
@@ -232,6 +233,21 @@ export function Editor() {
     setPublished(false);
     setSel(null);
     resetScene(clone(sc.scene));
+    setOpenOpen(false);
+  }
+  /** Ouvrir une campagne BUILT-IN (Arène ou campagne du jeu) : jamais en édition directe du JSON
+   *  commité — `projectId` reste `null`, donc « Enregistrer » crée un NOUVEAU projet localStorage
+   *  (#367, même garantie que `loadScenario` pour les scénarios de test). */
+  function loadBuiltin(bc: BuiltinCampaign) {
+    const start = bc.scenes.find((s) => s.id === bc.startSceneId) ?? bc.scenes[0];
+    const rest = bc.scenes.filter((s) => s.id !== start.id);
+    setOtherScenes(rest.map(clone));
+    setWorldMap(bc.worldMap ? JSON.parse(JSON.stringify(bc.worldMap)) : null);
+    setProjectId(null);
+    setProjectName(`Copie de ${bc.name}`);
+    setPublished(false);
+    setSel(null);
+    resetScene(clone(start));
     setOpenOpen(false);
   }
   function loadSaved(p: SavedProject) {
@@ -475,7 +491,9 @@ export function Editor() {
       </div>
 
       {worldOpen && <WorldMapEditor map={worldMap} setMap={setWorldMap} scenes={[scene, ...otherScenes]} onClose={() => setWorldOpen(false)} />}
-      {openOpen && <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onClose={() => setOpenOpen(false)} />}
+      {openOpen && (
+        <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onBuiltin={loadBuiltin} onClose={() => setOpenOpen(false)} />
+      )}
       {saveOpen && (
         <SaveProjectModal
           initialName={projectName}
