@@ -97,7 +97,9 @@ export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: '
     return { front: e.front, back: e.back, profile: e.profile };
   }
   // Visage : art de tête dédié (dos = nuque, profil = silhouette générique commune à toutes les
-  // espèces), sinon repli générique (espèce sans tête, ex. Ogre).
-  const visage = head?.visage ?? DEFAULT_VISAGE[idx >= 0 && idx < DEFAULT_VISAGE.length ? idx : 0];
+  // espèces), sinon repli générique (espèce sans tête, ex. Ogre). `idx` (override/seed) choisit
+  // la variante dans le pool de la tête — même convention que les cheveux (pool + idx modulo).
+  const pool = head?.visage?.length ? head.visage : DEFAULT_VISAGE;
+  const visage = pool[((idx % pool.length) + pool.length) % pool.length];
   return { front: visage, back: BACK_NAPE, profile: PROFILE_FACE };
 }

@@ -220,6 +220,16 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(dHtml).not.toContain('Nom du personnage'); // le nom n'est plus dans le détail
   });
 
+  it('étape Détails — bouton « Visage → Variante » (appSeed) change réellement le rig rendu (#bug visage figé)', () => {
+    const d1 = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const { detail: detail1 } = DetailZones({ d: d1, setD: () => {} });
+    const html1 = renderToStaticMarkup(<>{detail1.body}</>);
+    const d2 = { ...d1, appSeed: (d1.appSeed ?? 0) + 1 };
+    const { detail: detail2 } = DetailZones({ d: d2, setD: () => {} });
+    const html2 = renderToStaticMarkup(<>{detail2.body}</>);
+    expect(html1).not.toBe(html2);
+  });
+
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {
     const d = ready();
     const html = renderToStaticMarkup(<CreatorSummary d={d} />);

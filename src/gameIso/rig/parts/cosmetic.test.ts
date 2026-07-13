@@ -11,10 +11,10 @@ describe('cosmeticPart', () => {
     expect(sv('visage', 'Humain', 'M', 0)).toContain('<');
     expect(sv('cheveux', 'Humain', 'M', 0)).toContain('<');
   });
-  it('visage généré : déterministe (1 visage par espèce, index ignoré)', () => {
+  it('visage généré : l’index choisit une variante dans le pool de la tête (bouton « Variante »)', () => {
     const a = sv('visage', 'Humain', 'M', 0);
-    const b = sv('visage', 'Humain', 'M', 5);
-    expect(a).toBe(b);
+    const b = sv('visage', 'Humain', 'M', 1);
+    expect(a).not.toBe(b);
     expect(a.length).toBeGreaterThan(20);
   });
   it('cheveux : l’index choisit une coiffure dans le pool (0 = défaut espèce)', () => {

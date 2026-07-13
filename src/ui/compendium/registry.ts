@@ -17,7 +17,7 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
-  CHAR_ABR,
+  CHAR_ABR, rigSpeciesId,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
@@ -684,7 +684,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       desc: s.desc,
       source: src(s.source),
       // Aperçu rig DATA-DRIVEN (même chemin que le créateur) : la fiche de race montre sa silhouette.
-      appearance: { species: s.label },
+      appearance: { species: rigSpeciesId(s.id) },
       meta: facts(fact('Mouvement', s.movement), fact('Destin', s.fate?.fate), fact('Résilience', s.fate?.resilience)),
       // Contenu = SOURCE UNIQUE partagée avec le créateur (plus de ré-implémentation divergente).
       tabs: raceFicheTabs(s),

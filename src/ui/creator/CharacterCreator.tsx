@@ -1136,7 +1136,7 @@ export function DetailZones({ d, setD }: StepProps): StepZones {
       detail: { title: 'Détails', body: <p className="hint">Identité et apparence s'ouvriront une fois votre race choisie.</p> },
     };
   }
-  const appearance: Appearance = { species: sp.label, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  const appearance: Appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   // Zone A = UNE seule région identité (nom+dé, physique, motivation/ambitions) — fin de l'identité
   // coupée en trois. Zone B = l'apparence/personnalisateur.
   const choice = (
