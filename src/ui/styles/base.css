@@ -450,34 +450,42 @@ h3 {
   margin-left: auto;
 }
 
-/* Party screen — corps défilant : emplacements + galerie de candidats empilés. */
-.party-body {
-  flex: 1;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
+/* ── ÉCRAN D'ÉQUIPE : colonne latérale ÉQUIPE (star) + étal des candidats ──
+   Compose `.layout-sidebar` (empile ≤900px). L'équipe grossit en poids visuel à mesure qu'elle se
+   remplit ; les candidats sont l'étal. Colonne généreuse (340px), sans le plafond 1480px de la
+   primitive (on veut toute la largeur pour l'étal), scroll interne de secours seulement. */
+.party-layout.layout-sidebar {
+  grid-template-columns: 340px minmax(0, 1fr);
+  max-width: none;
+  padding: 10px 16px;
+  gap: 16px;
+  align-content: start;
 }
-/* Party screen — auto-fit : 4 colonnes en desktop large, empilement mobile. */
-.party-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
-  gap: 14px;
-  padding: 14px 18px;
-}
-.party-slot {
+.party-roster {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border-radius: 8px;
+  min-width: 0;
 }
-/* Roving tabindex : le slot lui-même est focusable (flèches ⇄, Enter = action principale). */
-.party-slot:focus-visible {
+.party-roster-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--gold2);
+  letter-spacing: 0.4px;
+}
+.seat-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 10px;
+}
+.seat-slot:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
-/* Apparition en cascade des emplacements (index par slot via --i, posé par le composant). */
+/* Apparition en cascade des sièges (index par siège via --i, posé par le composant). */
 @media (prefers-reduced-motion: no-preference) {
-  .party-slot {
+  .seat-slot {
     animation: slot-in 0.35s ease-out backwards;
     animation-delay: calc(var(--i, 0) * 60ms);
   }
@@ -488,97 +496,91 @@ h3 {
     transform: translateY(10px);
   }
 }
-/* La carte remplit le slot étiré par la grille (iso-hauteur entre slots) — scopé au slot d'équipe
- * pour ne pas toucher la rangée compacte du picker. */
-.party-slot > .char-card {
-  flex: 1;
-}
-/* Emplacement vide : cadre orné (OrnateFrame) au gabarit de la carte pleine — aspect-ratio au lieu
-   d'une hauteur fixe ; une silhouette d'aventurier assombrie en fond (invitation) plutôt qu'un cadre nu. */
-.empty-slot {
+/* Carte de SIÈGE (membre d'équipe) — HORIZONTALE, riche (même info qu'un candidat). */
+.seat-card {
   position: relative;
-  overflow: hidden;
-  background: var(--panel);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 72px 1fr;
   gap: 10px;
-  align-items: center;
-  justify-content: center;
-  /* Hauteur BORNÉE au gabarit de la carte pleine (plus d'aspect-ratio qui enfle avec la largeur
-     de colonne sur grand écran → l'écran de sélection tient sans ascenseur). */
-  min-height: 236px;
-  flex: 1;
+  padding: 6px 10px;
+  background: var(--panel);
+  align-items: start;
 }
-/* Ombre de personnage : le rig réel d'un pré-tiré, aplati en silhouette sombre, en FOND du cadre.
-   Spécificité `.empty-slot .slot-silhouette` (0,2,0) : sinon `.charprev { position: relative }`
-   (components.css, importé APRÈS base.css) gagne l'égalité (0,1,0) et remet la figurine EN FLUX —
-   elle mesurait alors sa hauteur intrinsèque (~425px) et gonflait chaque emplacement (repro CDP,
-   #371). Le fond ne doit JAMAIS dicter la hauteur du cadre. */
-.empty-slot .slot-silhouette {
+.seat-card-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--gold);
+}
+.seat-card-fig {
+  position: relative;
+  width: 72px;
+  height: 88px;
+  border-radius: 8px;
+}
+.seat-card-fig > .charprev {
   position: absolute;
   inset: 0;
-  z-index: 0;
-  opacity: 0.16;
-  filter: grayscale(1) brightness(0);
-  pointer-events: none;
 }
-.empty-slot > .slot-num,
-.empty-slot > .slot-invite,
-.empty-slot > .hint,
-.empty-slot > .btn {
-  position: relative;
-  z-index: 1;
-}
-.slot-invite {
-  font-family: var(--font-display);
-  letter-spacing: 0.4px;
-}
-.empty-slot .btn {
-  width: 100%;
-  max-width: 240px;
-}
-
-/* Galerie de candidats — vivier (CandidatePool) rendu sous les emplacements : grille de fiches
-   compactes (pré-tirés + roster), clic = recrutement du 1er siège libre. */
-.candidate-gallery {
-  padding: 2px 18px 10px;
-}
-/* Le séparateur « Candidats à l'aventure » titre déjà la section : intro resserrée (jamais un
-   pavé qui pousse la galerie sous le pli). */
-.party-intro {
-  text-align: center;
-  margin: 0 0 4px;
-  font-size: 12px;
-}
-.candidate-gallery .sheet-tabnav {
-  margin-bottom: 6px;
-}
-.candidate-gallery .pregen-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-/* Rangée candidate DENSE : figure + identité + « Choisir » sur UNE ligne (le bouton ne repasse pas
-   dessous → la galerie tient sans ascenseur). Cartes assez larges (min 300px) pour l'éviter. */
-.candidate-gallery .pregen-row {
-  flex-wrap: nowrap;
-  gap: 8px;
-}
-.candidate-gallery .pregen-row .char-card-row {
+.seat-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
-.candidate-gallery .pregen-row {
-  margin: 0;
+/* Actions du siège — compose `.row-flex` (rangée qui s'enroule, components.css) ; ici seulement le
+   rapprochement vertical. */
+.seat-card-actions {
+  margin-top: 3px;
 }
-.slot-num {
-  color: var(--muted);
-  font-weight: 600;
+/* Gestion révélée au survol/focus du siège — au repos la carte reste compacte (4 sièges tiennent
+   la colonne sans ascenseur), toujours atteignable au clavier. Compose `.row-flex`. */
+.seat-card-manage {
+  flex-basis: 100%;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: opacity 0.12s ease, max-height 0.12s ease;
+}
+.seat-slot:hover .seat-card-manage,
+.seat-slot:focus-within .seat-card-manage {
+  max-height: 40px;
+  opacity: 1;
+}
+/* Siège VIDE : placeholder COURT et discret (il ne vole pas la place des sièges pleins). */
+.seat-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 10px 12px;
+  border: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--panel) 45%, transparent);
+}
+.seat-num {
   font-family: var(--font-display);
-  font-size: 17px;
+  font-size: 15px;
   letter-spacing: 0.5px;
+  color: var(--gold);
 }
-/* Coop : bandeau « à qui est cet emplacement » au-dessus de chaque slot (select côté hôte). */
+.seat-invite {
+  font-size: 11px;
+}
+
+/* ── ÉTAL des candidats (CandidatePool) : onglets + grille de cartes-portraits ── */
+.candidate-gallery {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.candidate-gallery .sheet-tabnav {
+  margin: 0 0 8px;
+  justify-content: center;
+}
+/* Coop : bandeau « à qui est cet emplacement » au-dessus de chaque siège (select côté hôte). */
 .slot-owner {
   display: flex;
   align-items: center;
@@ -631,103 +633,215 @@ h3 {
   letter-spacing: 0.4px;
 }
 
-/* ── Carte de personnage v2 (CharCard) — cadre orné + perso EN PIED dominant ── */
-.char-card {
+/* ── GRILLE + CARTE-PORTRAIT de candidat (CandidateCard) — l'étal, source unique galerie + modale ──
+   L'équipe étant en colonne latérale, l'étal occupe le reste : ~4-5 cartes/rangée à 1600px. */
+.candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+/* Carte-portrait : figure EN GRAND (dominante), nom COMPLET, archétype, RÔLE + ACCROCHE, action. */
+.candidate-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 10px 10px;
   background: var(--panel);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  text-align: center;
 }
-.char-card.ornate-frame {
-  padding: 10px 12px;
+.candidate-card.ornate-frame {
+  padding: 9px 10px 10px;
 }
-/* Zone cliquable figure + identité (ouvre la fiche complète). */
-.char-head {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.char-head.clickable {
-  cursor: pointer;
-  border-radius: 8px;
-  margin: -4px;
-  padding: 4px;
-  transition: background 0.12s ease;
-}
-.char-head.clickable:hover {
-  background: var(--panel2);
-}
-.char-head.clickable:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 1px;
-}
-/* Figure dominante : le rig réel en pied (CharacterPreview size=fill, ambiance panel).
-   L'aperçu est posé en ABSOLU : le ratio intrinsèque du SVG (120/150) gonflerait sinon la
-   hauteur min-content du flex item au-delà de la hauteur voulue.
-   Hauteur BORNÉE (pas un aspect-ratio qui enfle avec la largeur de colonne sur grand écran) :
-   la carte de siège reste un aperçu qui tient sans ascenseur (écran de sélection). */
-.char-fig {
+/* Figure dominante : rig réel en pied (CharacterPreview size=fill). Posée en ABSOLU dans un cadre à
+   hauteur bornée. Plancher 100px : interdit d'une vignette de candidat < 100px de haut (#371). */
+.candidate-fig {
   position: relative;
   width: 100%;
-  height: clamp(76px, 11vh, 124px);
+  height: clamp(100px, 13.5vh, 150px);
+  border-radius: 8px;
 }
-.char-fig > .charprev {
+.candidate-fig > .charprev {
   position: absolute;
   inset: 0;
 }
-.char-id {
+.candidate-id {
   display: flex;
   flex-direction: column;
+  gap: 1px;
   min-width: 0;
 }
-.char-sub {
-  color: var(--gold);
-  font-size: 12px;
-}
-.char-status {
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.4px;
-}
-/* Rangée compacte (PartyPicker) : figure xs + identité + l'essentiel — une rangée dense, pas une carte. */
-.char-card-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-.char-card-row.clickable {
-  cursor: pointer;
-}
-.char-card-row .char-id {
-  flex: 1;
-}
-/* Rangée compacte (vivier/picker) : identité DENSE — 2 lignes (nom + race·carrière) en ellipse, pas
-   de ligne Statut (secondaire ; présente sur la carte de siège et la fiche complète). La galerie
-   tient ainsi sans ascenseur ; le nom complet se lit sur la carte de siège après recrutement. */
-.char-card-row .char-id {
-  min-width: 0;
-}
-.char-card-row .char-status {
-  display: none;
-}
-.char-card-row .char-id strong,
-.char-card-row .char-sub {
+/* Nom COMPLET, jamais tronqué (interdit d'ellipse à 1600px) : il s'enroule si besoin. */
+.candidate-name {
+  font-size: 14px;
   line-height: 1.2;
+  color: var(--gold2);
+}
+.candidate-sub {
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--gold);
+}
+/* RÔLE (forces en toutes lettres) — jamais une rangée de chips cryptiques. */
+.card-roles {
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--text);
+}
+/* Colonne d'équipe : rôle sur UNE ligne (ellipsée) — 4 sièges tiennent la hauteur. */
+.card-roles-1line {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.char-card-row .char-id strong {
-  font-size: 13px;
-}
-.char-row-stats {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+/* ACCROCHE (motivation/ambition) — 1 ligne, ellipsée sur la carte (le récit complet est en présentation). */
+.card-hook {
+  font-size: 11px;
+  font-style: italic;
   color: var(--muted);
-  font-size: 12px;
+  line-height: 1.25;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.candidate-wealth {
+  font-size: 11px;
+}
+/* Actions de la carte — compose `.row-flex` ; ici seulement le centrage et le collage en bas. */
+.candidate-actions {
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 2px;
+}
+.candidate-actions .btn-primary {
+  min-width: 88px;
+}
+.who-btn {
+  gap: 3px;
+}
+.candidate-actions .who-btn {
+  padding: 4px 7px;
+}
+.candidate-tools {
+  display: inline-flex;
+  gap: 2px;
+}
+.candidate-tools .btn {
+  padding: 4px 6px;
+}
+/* Carte-ACTION (créer / importer) — même famille visuelle que la carte-portrait, figure remplacée par
+   une icône + une invite (jamais une icône dans le vide). */
+.candidate-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 190px;
+  padding: 14px;
+  border: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--panel) 60%, transparent);
+  color: var(--gold);
+  cursor: pointer;
+  font-family: var(--font-display);
+  letter-spacing: 0.3px;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.candidate-action-card:hover {
+  background: var(--panel2);
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+.candidate-action-label {
+  font-size: 14px;
+}
+.candidate-action-invite {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+.candidate-import-err {
+  text-align: center;
+  margin: 6px 0 0;
+}
+/* Modale de REMPLACEMENT : les MÊMES cartes, plus compactes (pas un 3e format). */
+.candidate-modal .candidate-fig {
+  height: clamp(88px, 12vh, 116px);
+}
+.picker-modal .candidate-grid {
+  grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+  gap: 10px;
+  max-height: 62vh;
+  overflow: auto;
+}
+
+/* ── PRÉSENTATION d'un personnage (HeroPresentation) — le récit avant les chiffres ── */
+.hero-present-body {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.hero-present-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.hero-present-fig {
+  position: relative;
+  width: 100%;
+  height: 260px;
+}
+.hero-present-fig > .charprev {
+  position: absolute;
+  inset: 0;
+}
+.hero-present-sub {
+  font-family: var(--font-display);
+  color: var(--gold);
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+.hero-present-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.hero-present-amb {
+  font-style: italic;
+  color: var(--gold2);
+}
+.hero-present-sec h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 0.4px;
+}
+/* Chips de compétences/talents — compose `.row-flex` (rangée qui s'enroule). */
+.lore-chip {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.hero-present-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+@media (max-width: 700px) {
+  .hero-present-body {
+    grid-template-columns: 1fr;
+  }
+  .hero-present-fig {
+    height: 220px;
+  }
 }
 .char-stats {
   display: grid;
@@ -756,35 +870,6 @@ h3 {
 .stat-val {
   font-weight: 700;
   font-size: 15px;
-}
-/* Réserves en UNE ligne dense sur la carte de siège (aperçu), le détail complet est au clic. */
-.char-reserves {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 2px;
-  font-size: 13px;
-  color: var(--text);
-}
-.char-reserves > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-}
-/* Grille des 10 caractéristiques RESSERRÉE dans la carte de siège (dense, sans ascenseur). */
-.char-card .char-stats {
-  gap: 2px;
-}
-.char-card .char-stats .stat {
-  padding: 1px 2px;
-}
-.char-card .char-stats .stat-label {
-  padding: 0;
-  font-size: 9px;
-}
-.char-card .char-stats .stat-val {
-  font-size: 13px;
 }
 .mini-title {
   font-size: 11px;

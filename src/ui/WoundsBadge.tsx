@@ -1,16 +1,17 @@
 import { CodexRef } from './compendium/CodexRef';
-import { Icon } from './Icon';
 
 /**
- * Rendu UNIQUE des Blessures (LOT 5 — composants de donnée unifiés) : icône `resource/wounds` +
- * « courant/max », popover Codex de la caractéristique Blessure. TOUT écran qui affiche des PB
- * passe par ici (CharCard, fiche, inspection) ; TOUJOURS « courant/max » — l'unité EST le
- * composant, plus de « max seul » ni de « N/M PB » divergents.
+ * Rendu UNIQUE de la VALEUR des Blessures (LOT 5 — composants de donnée unifiés) : « courant/max »
+ * avec ses tons, popover Codex de la caractéristique Blessure. TOUT écran qui affiche des PB passe
+ * par ici (fiche, inspection, cartes) ; TOUJOURS « courant/max » — l'unité EST le composant, plus de
+ * « max seul » ni de « N/M PB » divergents.
+ *
+ * Le badge N'EMBARQUE PAS d'icône : l'icône `resource/wounds` est le choix DÉLIBÉRÉ du site d'appel
+ * (motif icône + valeur là où le contexte le veut, jamais deux — directive user 2026-07-13).
  */
 export function WoundsBadge({ wounds }: { wounds: { current: number; max: number } }) {
   return (
     <CodexRef category="characteristics" label="Blessure" className="wounds-badge">
-      <Icon id="resource/wounds" size="sm" />
       <b>{wounds.current}/{wounds.max}</b>
     </CodexRef>
   );

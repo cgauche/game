@@ -8,37 +8,41 @@ import { campaign, builtinCampaigns } from '../scenes/campaign';
 import { publishedProjects } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
-import { Coins } from './Coins';
-import { CharCard } from './CharCard';
-import { CharacterPreview } from './CharacterPreview';
+import { CandidateCard, SeatCard, ActionCard, type RecruitState } from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
+import { HeroPresentation } from './HeroPresentation';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
-import { OrnateFrame, RuleDivider } from './Ornaments';
 import { Tabs } from './Tabs';
 import { t } from '../i18n';
 
 /**
- * Écran d'équipe — solo ET coop. En coop, l'hôte attribue chaque EMPLACEMENT (Aventurier 1-4)
- * à un siège (`net.slots`) ; chaque joueur remplit LES SIENS (créer / charger son roster local /
- * pré-tiré) via `partyAddHero` — enveloppé en intent côté invité, l'hôte reste autoritaire.
+ * Écran d'équipe — solo ET coop. En coop, l'hôte attribue chaque SIÈGE (`net.slots`) ; chaque joueur
+ * remplit LES SIENS (créer / roster local / pré-tiré) via `partyAddHero` — enveloppé en intent côté
+ * invité, l'hôte reste autoritaire.
+ *
+ * HIÉRARCHIE : l'ÉQUIPE est la star — colonne latérale gauche de cartes de siège RICHES (portrait +
+ * archétype + rôle + accroche, même info qu'un candidat), qui grossit à mesure qu'elle se remplit ;
+ * à droite, l'ÉTAL des candidats en grille de cartes-portraits. Un visage recruté quitte l'étal pour
+ * la colonne (`hideInParty`). Depuis TOUTE carte, un clic ouvre la PRÉSENTATION (récit) du personnage
+ * (`HeroPresentation`) ; la modale `PartyPicker` ne sert qu'au remplacement ciblé (mêmes cartes).
  *
  * C'est AUSSI ici que se choisit la campagne (cartouche Campagne + « Changer ») — solo comme coop
  * (hôte seul ; les invités voient le nom via le snapshot). Le choix par défaut est l'Arène.
  */
 
-/** Nav clavier des emplacements (roving tabindex) : flèches ⇄ emplacement voisin (bouclé),
- *  Enter/Espace = action principale de l'emplacement. Pur — testé sans DOM. */
+/** Nav clavier des sièges (roving tabindex) : flèches Haut/Bas (colonne d'équipe) — ⇄ tolérées —
+ *  vers le siège voisin (bouclé), Enter/Espace = présentation du héros assis (aucune action sur un
+ *  siège vide — le recrutement se joue à l'étal). Pur. */
 export function slotKeyNav(key: string, idx: number, count: number): { focus: number } | 'primary' | null {
-  if (key === 'ArrowLeft' || key === 'ArrowRight') {
-    return { focus: (idx + (key === 'ArrowLeft' ? -1 : 1) + count) % count };
-  }
+  const prev = key === 'ArrowUp' || key === 'ArrowLeft';
+  const next = key === 'ArrowDown' || key === 'ArrowRight';
+  if (prev || next) return { focus: (idx + (prev ? -1 : 1) + count) % count };
   return key === 'Enter' || key === ' ' ? 'primary' : null;
 }
 
-/** Appariement emplacements → héros : le k-ième emplacement du siège S affiche le k-ième héros
- *  possédé par S (ordre de `party`). Les héros orphelins (siège sans emplacement, ex. réattribution
- *  après remplissage) sont reversés dans les emplacements vides restants pour rester visibles. */
+/** Appariement sièges → héros : le k-ième siège attribué au joueur S affiche le k-ième héros possédé
+ *  par S (ordre de `party`). Les héros orphelins sont reversés dans les sièges vides restants. */
 function slotViews(party: Combatant[], slots: number[], ownership: Record<string, number>) {
   const queues = new Map<number, Combatant[]>();
   for (const h of party) {
@@ -208,20 +212,18 @@ export function PartyScreenView({
   onStart: () => void;
   onResume?: () => void;
 }) {
-  // Slot occupé → « Remplacer » : ouvre le picker MÊME à 4/4 (un remplacement ne change pas l'effectif).
+  // Siège occupé → « Remplacer » : ouvre le picker MÊME à 4/4 (un remplacement ne change pas l'effectif).
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null);
-  // Silhouettes d'invitation des emplacements vides : le rig réel d'un pré-tiré, assombri (cf. CSS
-  // .slot-silhouette) — une ombre de personnage plutôt qu'un cadre nu.
-  const silhouettes = useState(() => makePregens())[0];
-  // Roving tabindex : UN seul emplacement tabbable ; flèches gauche/droite entre emplacements,
-  // Enter/Espace = action principale (fiche du héros / créer). Cf. `slotKeyNav` (pur).
+  // Roving tabindex : UN seul siège tabbable ; flèches haut/bas entre sièges, Enter/Espace = présentation
+  // du héros assis. Cf. `slotKeyNav` (pur).
   const [focusSlot, setFocusSlot] = useState(0);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
-  // F1 : cliquer le portrait d'un héros ouvre sa fiche complète (réutilise CharacterSheet).
+  // Cliquer le portrait/nom d'un héros (siège ou carte) ouvre sa PRÉSENTATION (récit) ; « Fiche
+  // complète » y mène ensuite à CharacterSheet (chiffres) pour un membre du groupe.
   const [sheetId, setSheetId] = useState<string | null>(null);
-  // L2 (solo) : carte slot→héros STABLE — l'emplacement d'un héros retiré RESTE en place (le trou ne
-  // file plus à droite). Réconciliée avec `party` : un héros disparu libère SA case ; un nouveau prend
-  // la 1re case vide. En coop, on garde `slotViews` (cases attribuées par siège).
+  const [presentHero, setPresentHero] = useState<Combatant | null>(null);
+  // Solo : carte siège→héros STABLE — le siège d'un héros retiré RESTE en place (le trou ne file plus
+  // à droite). Réconciliée avec `party`. En coop, on garde `slotViews` (sièges attribués).
   const [slotMap, setSlotMap] = useState<(string | null)[]>(() => {
     const m: (string | null)[] = [null, null, null, null];
     party.forEach((h, i) => { if (i < 4) m[i] = h.id; });
@@ -250,16 +252,16 @@ export function PartyScreenView({
     ? slotViews(party, net.slots ?? [0, 0, 0, 0], net.ownership)
     : slotMap.map((id) => ({ seat: 0, hero: id ? party.find((h) => h.id === id) : undefined }));
   const ownsHero = (id: string) => !coop || (net.ownership[id] ?? 0) === net.mySeat;
-  /** Un emplacement attribué à un invité n'est pas rempli → l'hôte ne peut pas lancer. */
+  /** Un siège attribué à un invité n'est pas rempli → l'hôte ne peut pas lancer. */
   const guestPending = views.some((v) => v.seat !== 0 && !v.hero);
-  // Il reste un siège à MOI (solo : n'importe lequel) à pourvoir → la galerie de candidats s'affiche.
+  // Il reste un siège à MOI (solo : n'importe lequel) à pourvoir → recrutement possible.
   const canRecruit = party.length < 4 && views.some((v) => !v.hero && (!coop || v.seat === net.mySeat));
 
   const pick = (h: Combatant, wealth?: Money) => {
     if (party.length >= 4 || party.some((p) => p.id === h.id)) return;
     onAddHero(h, wealth);
   };
-  // Recrutement = galerie de candidats sur l'écran (clic → 1er siège libre) ; la modale ne sert plus
+  // Recrutement = cartes de la galerie sur l'écran (clic → 1er siège libre) ; la modale ne sert plus
   // qu'au REMPLACEMENT ciblé (`replaceTarget`) — un seul chemin par intention, zéro doublon.
   const onReplacePick = (h: Combatant, wealth?: Money) => {
     if (!replaceTarget) return;
@@ -267,6 +269,7 @@ export function PartyScreenView({
     setReplaceTarget(null);
   };
   const replaceName = replaceTarget ? party.find((h) => h.id === replaceTarget)?.name : undefined;
+  const inParty = (id: string) => party.some((p) => p.id === id);
 
   return (
     <div className="screen party-screen">
@@ -300,38 +303,39 @@ export function PartyScreenView({
         <p className="hint party-coop-hint">{t('party.coop.pending')}</p>
       )}
 
-      <div className="party-body">
-        <div className="party-grid">
-        {views.map(({ seat, hero: h }, i) => {
-          const mine = !coop || seat === net.mySeat;
-          return (
-            <div
-              className="party-slot"
-              key={i}
-              ref={(el) => { slotRefs.current[i] = el; }}
-              style={{ '--i': i } as CSSProperties}
-              role="group"
-              aria-label={t('party.slot.adventurer', { n: i + 1 })}
-              tabIndex={i === focusSlot ? 0 : -1}
-              onFocus={(e) => { if (e.target === e.currentTarget) setFocusSlot(i); }}
-              onKeyDown={(e) => {
-                const nav = slotKeyNav(e.key, i, views.length);
-                if (!nav) return;
-                if (nav === 'primary') {
-                  // Enter/Espace sur un contrôle INTERNE (bouton, select…) = le contrôle, pas le slot.
-                  if (e.target !== e.currentTarget) return;
-                  e.preventDefault();
-                  if (h) setSheetId(h.id);
-                  else if (mine) onCreate();
-                } else {
-                  e.preventDefault();
-                  setFocusSlot(nav.focus);
-                  slotRefs.current[nav.focus]?.focus();
-                }
-              }}
-            >
-              {coop && (
-                net.mode === 'host' && !h ? (
+      {/* Colonne latérale = L'ÉQUIPE (la star, grossit à mesure qu'elle se remplit) ; à droite, l'étal
+          des candidats. Compose la primitive `.layout-sidebar` (empile ≤900px). */}
+      <div className="layout-sidebar party-layout">
+        <aside className="party-roster" aria-label={t('party.company')}>
+          <h3 className="party-roster-title">{t('party.company')} ({party.length}/4)</h3>
+          {views.map(({ seat, hero: h }, i) => {
+            const mine = !coop || seat === net.mySeat;
+            return (
+              <div
+                className={`seat-slot ${h ? 'filled' : 'empty'}`}
+                key={i}
+                ref={(el) => { slotRefs.current[i] = el; }}
+                style={{ '--i': i } as CSSProperties}
+                role="group"
+                aria-label={t('party.slot.adventurer', { n: i + 1 })}
+                tabIndex={i === focusSlot ? 0 : -1}
+                onFocus={(e) => { if (e.target === e.currentTarget) setFocusSlot(i); }}
+                onKeyDown={(e) => {
+                  const nav = slotKeyNav(e.key, i, views.length);
+                  if (!nav) return;
+                  if (nav === 'primary') {
+                    if (e.target !== e.currentTarget) return; // contrôle interne (select…) = lui, pas le siège
+                    if (!h) return;
+                    e.preventDefault();
+                    setPresentHero(h);
+                  } else {
+                    e.preventDefault();
+                    setFocusSlot(nav.focus);
+                    slotRefs.current[nav.focus]?.focus();
+                  }
+                }}
+              >
+                {coop && (net.mode === 'host' && !h ? (
                   <label className="slot-owner">
                     <span>{t('party.slot.player')}</span>
                     <select value={seat} onChange={(e) => onAssignSlot(i, Number(e.target.value))}>
@@ -340,63 +344,51 @@ export function PartyScreenView({
                       ))}
                     </select>
                   </label>
+                ) : h ? (
+                  <div className="slot-owner hint"><Icon id="nav/seat-owner" size="sm" /> {seatName(seat)}{seat === net.mySeat ? t('party.slot.you') : ''}</div>
+                ) : null)}
+                {h ? (
+                  <SeatCard
+                    hero={h}
+                    seatLabel={t('party.seat.badge', { n: i + 1 })}
+                    onPresent={() => setPresentHero(h)}
+                    actions={ownsHero(h.id) && (
+                      <>
+                        {onEditHero && (
+                          <button className="btn small ghost" onClick={() => onEditHero(h.id)}>{t('party.hero.edit')}</button>
+                        )}
+                        {onReplaceHero && (
+                          <button className="btn small ghost" onClick={() => setReplaceTarget(h.id)}>{t('party.hero.replace')}</button>
+                        )}
+                        <button className="btn small ghost danger" onClick={() => onRemoveHero(h.id)}>{t('party.hero.remove')}</button>
+                      </>
+                    )}
+                  />
                 ) : (
-                  <div className="slot-owner hint"><Icon id="nav/seat-owner" size="sm" /> {seatName(seat)}{coop && seat === net.mySeat ? t('party.slot.you') : ''}</div>
-                )
-              )}
-              {h ? (
-                <>
-                  <CharCard hero={h} onOpen={() => setSheetId(h.id)} />
-                  {ownsHero(h.id) && (
-                    <div className="row-flex slot-actions">
-                      {onEditHero && (
-                        <button className="btn small" onClick={() => onEditHero(h.id)}>
-                          {t('party.hero.edit')}
-                        </button>
-                      )}
-                      {onReplaceHero && (
-                        <button className="btn small" onClick={() => setReplaceTarget(h.id)}>
-                          {t('party.hero.replace')}
-                        </button>
-                      )}
-                      <button className="btn small danger" onClick={() => onRemoveHero(h.id)}>
-                        {t('party.hero.remove')}
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : mine ? (
-                <OrnateFrame className="empty-slot">
-                  {silhouettes.length > 0 && (
-                    <CharacterPreview hero={silhouettes[i % silhouettes.length]} size="fill" className="slot-silhouette" />
-                  )}
-                  <span className="slot-num">{t('party.slot.adventurer', { n: i + 1 })}</span>
-                  <span className="hint slot-invite">{t('party.slot.invite')}</span>
-                  <button className="btn" onClick={onCreate}>
-                    {t('party.slot.create')}
-                  </button>
-                </OrnateFrame>
-              ) : (
-                <OrnateFrame className="empty-slot">
-                  {silhouettes.length > 0 && (
-                    <CharacterPreview hero={silhouettes[i % silhouettes.length]} size="fill" className="slot-silhouette" />
-                  )}
-                  <span className="slot-num">{t('party.slot.adventurer', { n: i + 1 })}</span>
-                  <span className="hint">{t('party.slot.waiting', { name: seatName(seat) })}</span>
-                </OrnateFrame>
-              )}
-            </div>
-          );
-        })}
-        </div>
+                  <div className="seat-empty">
+                    <span className="seat-num">{t('party.seat.label', { n: i + 1 })}</span>
+                    <span className="hint seat-invite">
+                      {mine ? t('party.slot.invite') : t('party.slot.waiting', { name: seatName(seat) })}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </aside>
 
-        {canRecruit && (
-          <section className="candidate-gallery" aria-label={t('party.recruit.pool')}>
-            <RuleDivider label={t('party.recruit.pool')} />
-            <p className="hint party-intro">{t('party.recruit.intro')}</p>
-            <CandidatePool party={party} onPick={pick} hideInParty />
-          </section>
-        )}
+        {/* L'ÉTAL : grille de candidats — un visage recruté quitte l'étal pour la colonne (hideInParty). */}
+        <section className="candidate-gallery" aria-label={t('party.recruit.pool')}>
+          <CandidatePool
+            party={party}
+            variant="gallery"
+            onPick={pick}
+            canRecruit={canRecruit}
+            hideInParty
+            onPresent={setPresentHero}
+            onCreate={onCreate}
+          />
+        </section>
       </div>
 
       {net.mode !== 'guest' && (
@@ -424,7 +416,16 @@ export function PartyScreenView({
           party={party}
           title={t('picker.title.replace', { name: replaceName ?? '' })}
           onPick={onReplacePick}
+          onPresent={setPresentHero}
+          onCreate={onCreate}
           onClose={() => setReplaceTarget(null)}
+        />
+      )}
+      {presentHero && (
+        <HeroPresentation
+          hero={presentHero}
+          onFullSheet={inParty(presentHero.id) ? () => { setSheetId(presentHero.id); setPresentHero(null); } : undefined}
+          onClose={() => setPresentHero(null)}
         />
       )}
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
@@ -432,23 +433,30 @@ export function PartyScreenView({
   );
 }
 
-/** Modale de REMPLACEMENT ciblé (slot occupé → « Remplacer {nom} ») : réutilise `CandidatePool`.
- *  Le recrutement d'un slot vide, lui, passe par la galerie de l'écran (un seul chemin par intention). */
+/** Modale de REMPLACEMENT ciblé (siège occupé → « Remplacer {nom} ») : réutilise `CandidatePool`
+ *  en `variant='modal'` (mêmes cartes, plus compactes). Le recrutement d'un siège vide, lui, passe
+ *  par la galerie de l'écran (un seul chemin par intention). */
 export function PartyPicker({
   party,
   onPick,
   onClose,
+  onCreate,
+  onPresent,
   title,
 }: {
   party: Combatant[];
   onPick: (h: Combatant, wealth?: Money) => void;
   onClose: () => void;
+  /** Ouvre le créateur (carte-action « Créer un personnage »). */
+  onCreate?: () => void;
+  /** Ouvre la présentation d'un candidat (clic figure/nom). */
+  onPresent?: (h: Combatant) => void;
   /** Titre du picker (défaut = recrutement). Le mode « Remplacer » passe « Remplacer {nom} ». */
   title?: string;
 }) {
   return (
     <Modal variant="plain" className="picker-modal" title={title ?? t('picker.title', { n: party.length })} onClose={onClose} backdropClose>
-      <CandidatePool party={party} onPick={onPick} />
+      <CandidatePool party={party} variant="modal" onPick={onPick} onPresent={onPresent} onCreate={onCreate} />
       <button className="btn" onClick={onClose}>
         {t('picker.done')}
       </button>
@@ -457,19 +465,31 @@ export function PartyPicker({
 }
 
 /** Vivier de candidats — personnages sauvegardés (roster localStorage LOCAL du joueur) + pré-tirés,
- *  onglets Mes personnages / Pré-tirés, création et import. Rendu à l'IDENTIQUE par la galerie de
- *  l'écran d'équipe (recrutement) ET la modale `PartyPicker` (remplacement) : source unique. */
+ *  onglets Mes personnages / Pré-tirés, cartes-action créer/importer. Rendu à l'IDENTIQUE par la
+ *  galerie de l'écran d'équipe (`gallery`) ET la modale `PartyPicker` (`modal`) : source unique de
+ *  la carte-portrait `CandidateCard`. */
 export function CandidatePool({
   party,
   onPick,
+  variant = 'gallery',
+  canRecruit = true,
   hideInParty = false,
+  onPresent,
+  onCreate,
 }: {
   party: Combatant[];
   onPick: (h: Combatant, wealth?: Money) => void;
-  /** Écarte du vivier les personnages DÉJÀ dans le groupe (recrutement) : un visage déjà assis dans
-   *  un emplacement ne se re-propose pas en double sous les cartes (feedback user 2026-07-13). Le
-   *  picker de REMPLACEMENT laisse `false` → ils restent visibles, grisés « Déjà choisi ». */
+  /** `gallery` = grandes cartes de l'écran (recruter) ; `modal` = cartes compactes (choisir). */
+  variant?: 'gallery' | 'modal';
+  /** Galerie : un siège reste-t-il à pourvoir ? Sinon « Recruter » est grisé (groupe complet). */
+  canRecruit?: boolean;
+  /** Écarte du vivier les personnages DÉJÀ dans le groupe (galerie) : un recruté quitte l'étal pour
+   *  la colonne d'équipe. La modale de remplacement (`false`) les garde, grisés « Déjà choisi ». */
   hideInParty?: boolean;
+  /** Ouvre la PRÉSENTATION d'un candidat (clic figure/nom + loupe « Qui est-ce ? »). */
+  onPresent?: (h: Combatant) => void;
+  /** Ouvre le créateur (carte-action « Créer un personnage »). */
+  onCreate?: () => void;
 }) {
   const allPregens = useState(() => makePregens())[0];
   const [roster, setRoster] = useState(() => rosterLoad());
@@ -480,14 +500,21 @@ export function CandidatePool({
   const setEditingHero = useGame((s) => s.setEditingHero);
 
   const inParty = (id: string) => party.some((p) => p.id === id);
-  const pregens = hideInParty ? allPregens.filter((h) => !inParty(h.id)) : allPregens;
+  const shownPregens = hideInParty ? allPregens.filter((h) => !inParty(h.id)) : allPregens;
   const shownRoster = hideInParty ? roster.filter((e) => !inParty(e.hero.id)) : roster;
+  const state: RecruitState = { status: canRecruit ? 'available' : 'blocked' };
+
   const removeSaved = (id: string) => {
     rosterRemove(id);
     setRoster(rosterLoad());
   };
   const exportHero = (entry: { hero: Combatant; wealth: Money }) =>
     downloadText(`wfrp4-perso-${fileSlug(entry.hero.name)}.json`, rosterExport(entry));
+  const startCreate = () => {
+    if (onCreate) return onCreate();
+    setEditingHero(null);
+    setScreen('creator');
+  };
   const onImportFile = async (file: File | undefined) => {
     if (!file) return;
     const result = rosterImport(await file.text());
@@ -503,69 +530,59 @@ export function CandidatePool({
 
   return (
     <>
-        <Tabs
-          className="sheet-tabnav"
-          variant="pill"
-          tabs={[
-            { key: 'roster' as const, label: t('picker.tab.roster') },
-            { key: 'pregens' as const, label: t('picker.tab.pregens') },
-          ]}
-          active={tab}
-          onChange={setTab}
-        />
+      <Tabs
+        className="sheet-tabnav"
+        variant="pill"
+        tabs={[
+          { key: 'roster' as const, label: t('picker.tab.roster') },
+          { key: 'pregens' as const, label: t('picker.tab.pregens') },
+        ]}
+        active={tab}
+        onChange={setTab}
+      />
 
-        {tab === 'roster' ? (
-          <div className="pregen-list">
-            {/* TOUJOURS visible (pas seulement roster vide) : créer reste un chemin de recrutement.
-               setEditingHero(null) : un « Modifier » antérieur ne doit pas rouvrir le créateur en mode édition. */}
-            <button className="btn" onClick={() => { setEditingHero(null); setScreen('creator'); }}>
-              {t('picker.roster.create')}
-            </button>
-            {shownRoster.map(({ hero, wealth }) => (
-              <div key={hero.id} className="pregen-row">
-                <CharCard hero={hero} compact />
-                <span className="hint">Bourse : <Coins money={wealth} /></span>
-                <button
-                  className="btn small btn-primary"
-                  disabled={inParty(hero.id)}
-                  onClick={() => onPick(hero, wealth)}
-                >
-                  {inParty(hero.id) ? t('picker.hero.inParty') : t('picker.hero.choose')}
-                </button>
-                <button className="btn small" onClick={() => exportHero({ hero, wealth })} title={t('picker.hero.export.title')}>
-                  {t('picker.hero.export')}
-                </button>
-                <button className="btn small danger" onClick={() => removeSaved(hero.id)}>
-                  {t('picker.hero.delete')}
-                </button>
-              </div>
-            ))}
-            <div className="party-import">
-              <button className="btn small" onClick={() => fileRef.current?.click()} title={t('picker.import.btn.title')}>
-                {t('picker.import.btn')}
-              </button>
-              {importErr && <span className="hint danger">{importErr}</span>}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="application/json,.json"
-                style={{ display: 'none' }}
-                onChange={(e) => { void onImportFile(e.target.files?.[0]); e.target.value = ''; }}
+      <div className="candidate-grid">
+        {tab === 'roster'
+          ? shownRoster.map(({ hero, wealth }) => (
+              <CandidateCard
+                key={hero.id}
+                hero={hero}
+                variant={variant}
+                state={state}
+                recruited={inParty(hero.id)}
+                wealth={wealth}
+                onRecruit={() => onPick(hero, wealth)}
+                onPresent={onPresent ? () => onPresent(hero) : undefined}
+                onExport={() => exportHero({ hero, wealth })}
+                onDelete={() => removeSaved(hero.id)}
               />
-            </div>
-          </div>
-        ) : (
-          <div className="pregen-list">
-            {pregens.map((h) => (
-              <div key={h.id} className="pregen-row">
-                <CharCard hero={h} compact />
-                <button className="btn small btn-primary" disabled={inParty(h.id)} onClick={() => onPick(h)}>
-                  {inParty(h.id) ? t('picker.hero.inParty') : t('picker.hero.choose')}
-                </button>
-              </div>
+            ))
+          : shownPregens.map((h) => (
+              <CandidateCard
+                key={h.id}
+                hero={h}
+                variant={variant}
+                state={state}
+                recruited={inParty(h.id)}
+                onRecruit={() => onPick(h)}
+                onPresent={onPresent ? () => onPresent(h) : undefined}
+              />
             ))}
-          </div>
+        {/* Cartes-action (même famille visuelle) : UNE carte « Créer un personnage » sur tout l'écran ;
+            « Importer » à côté, dans l'onglet Mes personnages. */}
+        <ActionCard icon="nav/new-game" label={t('picker.roster.create')} invite={t('party.create.invite')} onClick={startCreate} />
+        {tab === 'roster' && (
+          <ActionCard icon="file/import" label={t('picker.import.btn')} invite={t('party.import.invite')} title={t('picker.import.btn.title')} onClick={() => fileRef.current?.click()} />
         )}
+      </div>
+      {importErr && <p className="hint danger candidate-import-err">{importErr}</p>}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        style={{ display: 'none' }}
+        onChange={(e) => { void onImportFile(e.target.files?.[0]); e.target.value = ''; }}
+      />
     </>
   );
 }

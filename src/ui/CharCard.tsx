@@ -1,82 +1,208 @@
-import type { KeyboardEvent } from 'react';
+import type { ReactNode } from 'react';
 import { Combatant } from '../engine/types';
+import { Money } from '../engine/money';
 import { CharacterPreview } from './CharacterPreview';
 import { OrnateFrame } from './Ornaments';
 import { Icon } from './Icon';
-import { speciesSingular, findSpeciesById, careerLabelFor, levelsForCareer } from '../data';
-import { CharStatsGrid } from './CharStatsGrid';
-import { WoundsBadge } from './WoundsBadge';
+import type { IconIdInput } from './icons';
+import { Coins } from './Coins';
+import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete } from '../data';
+import { t } from '../i18n';
 
-/** Attributs de zone cliquable « ouvre la fiche complète » — partagés carte pleine / rangée compacte. */
-const openAttrs = (onOpen?: () => void) =>
-  onOpen
-    ? {
-        onClick: onOpen,
-        role: 'button' as const,
-        tabIndex: 0,
-        title: 'Voir la fiche complète',
-        onKeyDown: (e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); }
-        },
-      }
-    : {};
+/** Sous-titre d'ARCHÉTYPE : « Espèce · Carrière ». Sans « (niv. N) » (bruit : tous niveau 1 à la
+ *  sélection ; le niveau vit dans la fiche). Source unique carte de candidat + carte de siège. */
+export function heroSubtitle(hero: Combatant): string {
+  const race = speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species);
+  return `${race} · ${careerLabelFor(hero)}`;
+}
 
-/** Identité : nom, espèce · carrière (niv.), Statut social du niveau de carrière courant. */
-function CharIdentity({ hero }: { hero: Combatant }) {
-  const status = levelsForCareer(hero.career ?? '').find((l) => l.level === (hero.careerLevel ?? 1))?.status;
+/** RÔLE dans le groupe — 2-3 forces EN TOUTES LETTRES, dérivées des DONNÉES (compétences les mieux
+ *  notées), pas d'une table en dur par carrière. Libellé de base (sans spec) dédoublonné. */
+export function heroRoles(hero: Combatant, max = 3): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const s of [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances)) {
+    const label = skillInstanceLabel({ skillId: s.skillId });
+    if (seen.has(label)) continue;
+    seen.add(label);
+    out.push(label);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+/** ACCROCHE narrative — l'ambition à court terme (évocatrice) ou, à défaut, la motivation. */
+export function heroHook(hero: Combatant): string | undefined {
+  return hero.details?.ambitionShort || hero.motivation || undefined;
+}
+
+/** Compétences CLÉS (libellé concret avec spec) — présentation lisible, top par avances. */
+export function heroKeySkills(hero: Combatant, max = 6): string[] {
+  return [...hero.skills]
+    .filter((s) => s.advances > 0)
+    .sort((a, b) => b.advances - a.advances)
+    .slice(0, max)
+    .map((s) => skillInstanceLabel(s));
+}
+
+/** Talents CLÉS (libellé concret) — présentation lisible. */
+export function heroKeyTalents(hero: Combatant, max = 6): string[] {
+  return hero.talents.slice(0, max).map((tt) => talentConcrete(tt));
+}
+
+/** État de recrutement d'un candidat vis-à-vis du groupe (calculé par l'écran d'équipe). */
+export interface RecruitState {
+  status: 'available' | 'blocked';
+}
+
+/** Identité (nom COMPLET + archétype). La PRÉSENTATION s'ouvre par le bouton loupe `WhoButton`
+ *  (`.btn` canon) — pas un `<button>` nu recodé sur le nom (cliquet #373). */
+function CardIdentity({ hero }: { hero: Combatant }) {
   return (
-    <div className="char-id">
-      <strong>{hero.name}</strong>
-      {/* Race/carrière en texte simple : la zone parente est elle-même cliquable (ouvre la fiche)
-          → pas de CodexRef imbriqué (conflit de clic) ; le survol-info vit sur la fiche. */}
-      <span className="char-sub">
-        {speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)} · {careerLabelFor(hero)}
-        {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
-      </span>
-      {status && <span className="char-status">Statut {status}</span>}
+    <div className="candidate-id">
+      <strong className="candidate-name">{hero.name}</strong>
+      <span className="candidate-sub">{heroSubtitle(hero)}</span>
     </div>
   );
 }
 
-/**
- * Carte de personnage v2 — le perso EN PIED (rig réel équipé, CharacterPreview) en zone dominante,
- * dans un cadre orné (OrnateFrame tone iron). Deux modes :
- *  - plein (emplacements de l'écran d'équipe) : figure + identité + carac + réserves. Le détail
- *    (équipement, compétences, talents) vit dans la fiche complète, ouverte au clic (`onOpen`) —
- *    la carte de siège reste un APERÇU compact qui tient sans ascenseur (écran de sélection).
- *  - `compact` (rangées du vivier/PartyPicker) : une RANGÉE dense — figure xs + identité + l'essentiel.
- */
-export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
-  if (compact) {
-    return (
-      <div className={`char-card-row ${onOpen ? 'clickable' : ''}`} {...openAttrs(onOpen)}>
-        <CharacterPreview hero={hero} size="xs" />
-        <CharIdentity hero={hero} />
-        <span className="char-row-stats">
-          <WoundsBadge wounds={hero.wounds} />
-          <span title="Mouvement"><Icon id="resource/movement" size="sm" /> {hero.movement}</span>
-        </span>
-      </div>
-    );
-  }
+/** RÔLE + ACCROCHE (forces en toutes lettres + ambition) — le contenu qui aide à CHOISIR. `seat` =
+ *  rôle sur UNE ligne (colonne d'équipe étroite : 4 sièges tiennent la hauteur). */
+function CardLore({ hero, seat }: { hero: Combatant; seat?: boolean }) {
+  const roles = heroRoles(hero);
+  const hook = heroHook(hero);
   return (
-    <OrnateFrame className="char-card">
-      <div className={`char-head ${onOpen ? 'clickable' : ''}`} {...openAttrs(onOpen)}>
-        <div className="char-fig">
-          <CharacterPreview hero={hero} size="fill" ambiance="panel" />
-        </div>
-        <CharIdentity hero={hero} />
+    <>
+      {roles.length > 0 && <div className={`card-roles${seat ? ' card-roles-1line' : ''}`}>{roles.join(' · ')}</div>}
+      {hook && <div className="card-hook">« {hook} »</div>}
+    </>
+  );
+}
+
+/** Bouton d'affordance « Qui est-ce ? » (loupe) — ouvre la présentation du personnage. `compact` =
+ *  loupe SEULE (cartes de l'étal, où l'espace est compté ; le nom cliquable double l'affordance). */
+function WhoButton({ onPresent, compact }: { onPresent: () => void; compact?: boolean }) {
+  return (
+    <button type="button" className="btn small ghost who-btn" onClick={onPresent} title={t('party.who')} aria-label={t('party.who')}>
+      <Icon id="ui/eye" size="sm" />{compact ? '' : ` ${t('party.who')}`}
+    </button>
+  );
+}
+
+/**
+ * Carte-portrait de CANDIDAT (l'étal) — figure en pied dominante, nom complet, archétype, rôle +
+ * accroche. Source unique du vivier : `gallery` (grille de l'écran) ET `modal` (remplacement, plus
+ * compacte). Clic figure/nom → PRÉSENTATION (`onPresent`). L'équipe, elle, est rendue par `SeatCard`.
+ */
+export function CandidateCard({
+  hero,
+  variant = 'gallery',
+  state,
+  wealth,
+  recruited,
+  onRecruit,
+  onPresent,
+  onExport,
+  onDelete,
+}: {
+  hero: Combatant;
+  variant?: 'gallery' | 'modal';
+  state?: RecruitState;
+  wealth?: Money;
+  /** Déjà dans le groupe (modale de remplacement) → bouton « Déjà choisi » désactivé. */
+  recruited?: boolean;
+  onRecruit?: () => void;
+  onPresent?: () => void;
+  onExport?: () => void;
+  onDelete?: () => void;
+}) {
+  const blocked = state?.status === 'blocked';
+  return (
+    <OrnateFrame className={`candidate-card candidate-${variant}`}>
+      <div className="candidate-fig">
+        <CharacterPreview hero={hero} size="fill" ambiance="panel" />
       </div>
-      <CharStatsGrid value={(k) => hero.characteristics[k]} />
-      {/* Réserves en UNE ligne dense (le détail — Chance/Détermination, équipement, compétences — vit
-          dans la fiche complète, ouverte au clic). La carte de siège reste un aperçu qui tient sans
-          ascenseur. */}
-      <div className="char-reserves">
-        <span title="Blessures"><Icon id="resource/wounds" size="sm" /> <WoundsBadge wounds={hero.wounds} /></span>
-        <span title="Mouvement"><Icon id="resource/movement" size="sm" /> {hero.movement}</span>
-        {hero.fate != null && <span title="Destin"><Icon id="resource/fate" size="sm" /> {hero.fate}</span>}
-        {hero.resilience != null && <span title="Résilience"><Icon id="resource/resilience" size="sm" /> {hero.resilience}</span>}
+      <CardIdentity hero={hero} />
+      <CardLore hero={hero} />
+      {wealth != null && (
+        <span className="candidate-wealth hint">{t('picker.hero.purse')} <Coins money={wealth} /></span>
+      )}
+      <div className="candidate-actions row-flex">
+        <button
+          className="btn btn-primary small"
+          disabled={variant === 'modal' ? recruited : blocked}
+          title={variant !== 'modal' && blocked ? t('party.recruit.full') : undefined}
+          onClick={onRecruit}
+        >
+          {variant === 'modal' ? (recruited ? t('picker.hero.inParty') : t('picker.hero.choose')) : t('party.hero.recruit')}
+        </button>
+        {onPresent && variant !== 'modal' && <WhoButton onPresent={onPresent} compact />}
+        {(onExport || onDelete) && (
+          <span className="candidate-tools">
+            {onExport && (
+              <button className="btn small ghost" onClick={onExport} title={t('picker.hero.export.title')} aria-label={t('picker.hero.export')}>
+                <Icon id="file/export" size="sm" />
+              </button>
+            )}
+            {onDelete && (
+              <button className="btn small ghost danger" onClick={onDelete} title={t('picker.hero.delete')} aria-label={t('picker.hero.delete')}>
+                <Icon id="ui/delete" size="sm" />
+              </button>
+            )}
+          </span>
+        )}
       </div>
     </OrnateFrame>
+  );
+}
+
+/**
+ * Carte de SIÈGE (l'équipe — la star) : carte HORIZONTALE riche, MÊME niveau d'information que la
+ * carte de candidat (portrait + nom + archétype + rôle + accroche), plus les actions de gestion.
+ * Composée dans la colonne latérale de l'écran d'équipe.
+ */
+export function SeatCard({
+  hero,
+  seatLabel,
+  onPresent,
+  actions,
+}: {
+  hero: Combatant;
+  /** Numéro de siège (« Siège 1 ») posé en médaillon. */
+  seatLabel?: string;
+  onPresent?: () => void;
+  /** Boutons de gestion (Modifier / Remplacer / Retirer) — rendus par l'écran (droits coop). */
+  actions?: ReactNode;
+}) {
+  return (
+    <OrnateFrame className="seat-card">
+      {seatLabel && <span className="seat-card-badge">{seatLabel}</span>}
+      <div className="seat-card-fig">
+        <CharacterPreview hero={hero} size="fill" ambiance="panel" />
+      </div>
+      <div className="seat-card-body">
+        <CardIdentity hero={hero} />
+        <CardLore hero={hero} seat />
+        <div className="seat-card-actions row-flex">
+          {onPresent && <WhoButton onPresent={onPresent} />}
+          {/* Gestion (Modifier/Remplacer/Retirer) révélée au survol/focus — la carte reste compacte
+              au repos (4 sièges tiennent la colonne) ; toujours atteignable au clavier (a11y). */}
+          {actions && <span className="seat-card-manage row-flex">{actions}</span>}
+        </div>
+      </div>
+    </OrnateFrame>
+  );
+}
+
+/** Carte-action du vivier (même famille visuelle que la carte-portrait) : créer / importer, avec
+ *  une ligne d'invite pour ne pas être une icône dans le vide. */
+export function ActionCard({ icon, label, invite, onClick, title }: { icon: IconIdInput; label: string; invite?: string; onClick: () => void; title?: string }) {
+  return (
+    // `btn` (canon) : la carte-action EST un bouton — styles de carte surchargés par `.candidate-action-card`.
+    <button type="button" className="btn candidate-action-card" onClick={onClick} title={title}>
+      <Icon id={icon} size={38} />
+      <span className="candidate-action-label">{label}</span>
+      {invite && <span className="candidate-action-invite">{invite}</span>}
+    </button>
   );
 }

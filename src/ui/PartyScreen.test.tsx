@@ -28,7 +28,9 @@ function savedHero(): Combatant {
   return h;
 }
 
-describe('PartyPicker — pré-tirés + roster persistant', () => {
+const noop = () => {};
+
+describe('PartyPicker — remplacement : mêmes cartes-portraits (variant modal)', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
   });
@@ -36,22 +38,24 @@ describe('PartyPicker — pré-tirés + roster persistant', () => {
     delete (globalThis as { localStorage?: Storage }).localStorage;
   });
 
-  it('roster vide : onglet Pré-tirés actif, liste des pré-tirés rendue', () => {
+  it('roster vide : onglet Pré-tirés actif, cartes-portraits des pré-tirés rendues', () => {
     const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
     expect(html).toContain('Pré-tirés');
     expect(html).toContain('Mes personnages');
-    expect(html).toContain('pregen-row'); // au moins un pré-tiré listé
+    expect(html).toContain('candidate-card');
+    expect(html).toContain('candidate-modal'); // format modale (pas un 3e format)
   });
 
-  it('roster non vide : onglet « Mes personnages » actif par défaut, perso + Choisir + Supprimer', () => {
+  it('roster non vide : onglet « Mes personnages » actif, la MÊME carte-portrait (nom + choisir + actions)', () => {
     rosterAdd({ hero: savedHero(), wealth: { gold: 1, silver: 0, brass: 0 } });
     const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
-    expect(html).toContain('Aventurière Sauvegardée');
+    expect(html).toContain('Aventurière Sauvegardée'); // nom COMPLET, pas une ligne anonyme
+    expect(html).toContain('candidate-name');
     expect(html).toContain('Choisir');
-    expect(html).toContain('Supprimer');
+    expect(html).toContain('Supprimer'); // action secondaire SUR la carte
   });
 
-  it('perso du roster déjà dans le groupe : « Déjà choisi »', () => {
+  it('carte du roster déjà dans le groupe : bouton « Déjà choisi » désactivé', () => {
     const h = savedHero();
     rosterAdd({ hero: h, wealth: { gold: 0, silver: 5, brass: 0 } });
     const html = renderToStaticMarkup(<PartyPicker party={[h]} onPick={() => {}} onClose={() => {}} />);
@@ -59,7 +63,7 @@ describe('PartyPicker — pré-tirés + roster persistant', () => {
   });
 });
 
-describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit les siens)', () => {
+describe('PartyScreen — équipe (colonne latérale) coop : l’hôte attribue, chacun remplit les siens', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
   });
@@ -67,7 +71,6 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
     delete (globalThis as { localStorage?: Storage }).localStorage;
   });
 
-  const noop = () => {};
   const render = (party: Combatant[], net: NetState, inProgress = false, campaign?: { name: string; canChange?: boolean }) =>
     renderToStaticMarkup(
       <PartyScreenView
@@ -88,23 +91,25 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
       />,
     );
 
-  it('solo : 4 emplacements à soi (boutons), pas de bandeau joueur', () => {
+  it('solo : colonne d’équipe (4 sièges vides), UNE seule carte-action « Créer un personnage »', () => {
     const html = render([], initialNet());
-    expect(html).not.toContain('slot-owner');
-    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(4);
+    expect(html).toContain('party-roster');
+    expect(html).toContain('seat-empty');
+    expect(html).not.toContain('slot-owner'); // pas de bandeau joueur en solo
+    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(1);
     expect(html).toContain('Commencer');
-    expect(html).not.toContain('Reprendre'); // pas de partie en cours
+    expect(html).not.toContain('Reprendre');
   });
 
   it('cartouche campagne : nom + « Changer » quand on peut choisir, lecture seule sinon', () => {
     const editable = render([], initialNet(), false, { name: "L'Arène", canChange: true });
-    expect(editable).toContain('Arène'); // l'apostrophe est échappée (&#x27;) dans le HTML statique
+    expect(editable).toContain('Arène');
     expect(editable).toContain('Changer');
     const guest = render([], { ...initialNet(), mode: 'guest', mySeat: 1 }, false, { name: 'Ma campagne' });
-    expect(guest).toContain('Ma campagne'); // l'invité voit le choix de l'hôte…
-    expect(guest).not.toContain('Changer'); // …sans pouvoir le modifier
+    expect(guest).toContain('Ma campagne');
+    expect(guest).not.toContain('Changer');
     const absent = render([], initialNet());
-    expect(absent).not.toContain('campaign-pill'); // pas de cartouche sans campagne fournie
+    expect(absent).not.toContain('campaign-pill');
   });
 
   it('partie en cours : « Reprendre » prend la primauté, « Commencer » reste (rétrogradé)', () => {
@@ -112,7 +117,7 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
     const html = render([h], initialNet(), true);
     expect(html).toMatch(/btn btn-primary[^>]*>Reprendre/);
     expect(html).toContain('Commencer');
-    expect(html).not.toMatch(/btn btn-primary[^>]*>Commencer/); // plus le bouton primaire
+    expect(html).not.toMatch(/btn btn-primary[^>]*>Commencer/);
   });
 
   it('invité : pas de « Reprendre » même partie en cours (l’hôte pilote)', () => {
@@ -122,37 +127,37 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
     expect(html).not.toContain('Reprendre');
   });
 
-  it('invité : ses slots actifs, ceux des autres en attente, pas de « Commencer »', () => {
+  it('invité : sièges des autres « en attente », étal de recrutement présent, pas de « Commencer »', () => {
     const html = render([], {
       ...initialNet(), mode: 'guest', mySeat: 1, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 1, 0],
     });
-    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(2); // slots 1 et 2 (siège 1)
-    expect(html).toContain('En attente de Hôte'); // slots 0 et 3
+    expect(html).toContain('En attente de Hôte'); // sièges 0 et 3 (siège 0)
+    expect(html).toContain('candidate-gallery'); // l’invité recrute ses sièges via l’étal
     expect(html).not.toContain('Commencer');
     expect(html).toContain('Quitter');
   });
 
-  it('hôte : select de siège sur les slots vides, « Commencer » grisé tant qu’un slot invité est vide', () => {
+  it('hôte : select de siège sur les sièges vides, « Commencer » grisé tant qu’un siège invité est vide', () => {
     const html = render([], {
       ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 0, 0],
     });
-    expect(html).toContain('<select'); // attribution par slot
+    expect(html).toContain('<select');
     expect(html).toContain('Antoine');
     expect(html).toMatch(/Commencer[^<]*→<\/button>/);
-    expect(html).toContain('disabled'); // slot du siège 1 vide → bouton grisé
+    expect(html).toContain('disabled');
     expect(html).toContain('En attente que chaque joueur remplisse ses emplacements');
   });
 
-  it('hôte : héros de l’invité dans SON slot, « Retirer » réservé au propriétaire', () => {
+  it('hôte : héros de l’invité dans SON siège (carte), « Retirer » réservé au propriétaire', () => {
     const h = savedHero();
     const html = render([h], {
       ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { [h.id]: 1 }, slots: [1, 0, 0, 0],
     });
-    expect(html).toContain(h.name); // affiché dans le slot du siège 1
-    expect(html).not.toContain('Retirer'); // pas à l'hôte → pas de retrait
+    expect(html).toContain(h.name); // carte de siège dans la colonne
+    expect(html).not.toMatch(/<button[^>]*>Retirer<\/button>/); // siège non possédé → pas d'action
   });
 
-  it('slot possédé : bouton « Remplacer » rendu quand onReplaceHero est fourni', () => {
+  it('siège possédé : bouton « Remplacer » rendu quand onReplaceHero est fourni', () => {
     const h = savedHero();
     const html = renderToStaticMarkup(
       <PartyScreenView
@@ -167,7 +172,7 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
     expect(html).toContain('Remplacer');
   });
 
-  it('slot d’un AUTRE siège : pas de « Remplacer » (non possédé)', () => {
+  it('siège d’un AUTRE joueur : pas de « Remplacer » (non possédé)', () => {
     const h = savedHero();
     const html = renderToStaticMarkup(
       <PartyScreenView
@@ -183,7 +188,7 @@ describe('PartyScreen — emplacements coop (l’hôte attribue, chacun remplit 
   });
 });
 
-describe("PartyScreen -- libelles i18n Phase D", () => {
+describe('PartyScreen — libellés i18n', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
   });
@@ -191,7 +196,6 @@ describe("PartyScreen -- libelles i18n Phase D", () => {
     delete (globalThis as { localStorage?: Storage }).localStorage;
   });
 
-  const noop = () => {};
   const renderView = (party: Combatant[], net: NetState) =>
     renderToStaticMarkup(
       <PartyScreenView
@@ -208,41 +212,41 @@ describe("PartyScreen -- libelles i18n Phase D", () => {
       />,
     );
 
-  it("libelles solo : navigation, emplacements, actions", () => {
+  it('libellés solo : navigation, sièges, étal, action', () => {
     const html = renderView([], initialNet());
-    expect(html).toContain("← Menu");
-    expect(html).toContain("Aventurier 1");
-    expect(html).toContain("Aventurier 4");
-    expect(html).toContain("Créer un personnage");
-    expect(html).toContain("candidate-gallery"); // galerie de candidats sur l’écran (recrutement)
-    expect(html).toContain("Candidats"); // titre de la galerie
-    expect(html).toContain("Commencer →");
+    expect(html).toContain('← Menu');
+    expect(html).toContain('Siège 1');
+    expect(html).toContain('Siège 4');
+    expect(html).toContain('Un siège à pourvoir');
+    expect(html).toContain('candidate-gallery');
+    expect(html).toContain('Pré-tirés');
+    expect(html).toContain('Commencer →');
   });
 
-  it("libelles invite : bouton Quitter, message attente hote", () => {
-    const html = renderView([], { ...initialNet(), mode: "guest", mySeat: 1, slots: [0, 1, 0, 0] });
-    expect(html).toContain("← Quitter");
+  it('libellés invité : bouton Quitter, message attente hôte', () => {
+    const html = renderView([], { ...initialNet(), mode: 'guest', mySeat: 1, slots: [0, 1, 0, 0] });
+    expect(html).toContain('← Quitter');
     expect(html).toMatch(/L\S*h\S*te lance la partie/);
   });
 
-  it("libelles hote avec slot invite vide : Commencer, message en attente", () => {
+  it('libellés hôte avec siège invité vide : Commencer, message en attente', () => {
     const html = renderView([], {
-      ...initialNet(), mode: "host", mySeat: 0, seatNames: { 0: "Hote", 1: "Antoine" }, ownership: {}, slots: [0, 1, 0, 0],
+      ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hote', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 0, 0],
     });
-    expect(html).toContain("Commencer →");
-    expect(html).toContain("En attente que chaque joueur remplisse ses emplacements");
+    expect(html).toContain('Commencer →');
+    expect(html).toContain('En attente que chaque joueur remplisse ses emplacements');
   });
 
-  it("libelles PartyPicker : onglets, bouton Termine", () => {
+  it('libellés PartyPicker : onglets, bouton Terminé', () => {
     const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
-    expect(html).toContain("Mes personnages");
-    expect(html).toContain("Pré-tirés");
-    expect(html).toContain("Terminé");
-    expect(html).toContain("Choisir");
+    expect(html).toContain('Mes personnages');
+    expect(html).toContain('Pré-tirés');
+    expect(html).toContain('Terminé');
+    expect(html).toContain('Choisir');
   });
 });
 
-describe('PartyScreen — présentation v2 (cadres ornés, carte en pied, nav clavier, picker)', () => {
+describe('PartyScreen — hiérarchie : équipe (star, colonne) + étal de candidats', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
   });
@@ -250,7 +254,6 @@ describe('PartyScreen — présentation v2 (cadres ornés, carte en pied, nav cl
     delete (globalThis as { localStorage?: Storage }).localStorage;
   });
 
-  const noop = () => {};
   const render = (party: Combatant[], net: NetState) =>
     renderToStaticMarkup(
       <PartyScreenView
@@ -267,66 +270,85 @@ describe('PartyScreen — présentation v2 (cadres ornés, carte en pied, nav cl
       />,
     );
 
-  it('roving tabindex : UN seul emplacement tabbable, les trois autres à -1', () => {
+  it('layout : colonne latérale (layout-sidebar) équipe + étal', () => {
     const html = render([], initialNet());
-    // Scopé aux EMPLACEMENTS (la galerie de candidats a ses propres onglets tabbables) : un seul slot à 0.
-    expect((html.match(/party-slot[^>]*tabindex="0"/g) ?? []).length).toBe(1);
-    expect((html.match(/party-slot[^>]*tabindex="-1"/g) ?? []).length).toBe(3);
+    expect(html).toContain('layout-sidebar party-layout');
+    expect(html).toContain('party-roster');
+    expect(html).toContain('candidate-gallery');
   });
 
-  it('slotKeyNav (pur) : flèches = focus voisin bouclé, Enter/Espace = action principale', () => {
-    expect(slotKeyNav('ArrowRight', 0, 4)).toEqual({ focus: 1 });
-    expect(slotKeyNav('ArrowLeft', 1, 4)).toEqual({ focus: 0 });
-    expect(slotKeyNav('ArrowLeft', 0, 4)).toEqual({ focus: 3 }); // bouclé à gauche
-    expect(slotKeyNav('ArrowRight', 3, 4)).toEqual({ focus: 0 }); // bouclé à droite
+  it('roving tabindex : UN seul siège tabbable, les trois autres à -1', () => {
+    const html = render([], initialNet());
+    expect((html.match(/seat-slot[^>]*?tabindex="0"/g) ?? []).length).toBe(1);
+    expect((html.match(/seat-slot[^>]*?tabindex="-1"/g) ?? []).length).toBe(3);
+  });
+
+  it('slotKeyNav (pur) : Haut/Bas (⇄ tolérées) = focus voisin bouclé, Enter/Espace = action', () => {
+    expect(slotKeyNav('ArrowDown', 0, 4)).toEqual({ focus: 1 });
+    expect(slotKeyNav('ArrowUp', 1, 4)).toEqual({ focus: 0 });
+    expect(slotKeyNav('ArrowUp', 0, 4)).toEqual({ focus: 3 }); // bouclé
+    expect(slotKeyNav('ArrowDown', 3, 4)).toEqual({ focus: 0 }); // bouclé
+    expect(slotKeyNav('ArrowRight', 0, 4)).toEqual({ focus: 1 }); // ⇄ tolérées
+    expect(slotKeyNav('ArrowLeft', 0, 4)).toEqual({ focus: 3 });
     expect(slotKeyNav('Enter', 2, 4)).toBe('primary');
     expect(slotKeyNav(' ', 2, 4)).toBe('primary');
     expect(slotKeyNav('Tab', 2, 4)).toBeNull();
-    expect(slotKeyNav('ArrowDown', 2, 4)).toBeNull();
+    expect(slotKeyNav('x', 2, 4)).toBeNull();
   });
 
-  it('emplacement vide : cadre orné + silhouette d’aventurier assombrie (plus de ✠ texte)', () => {
+  it('siège vide : placeholder COURT « Siège N » (il ne vole pas la place des sièges pleins)', () => {
     const html = render([], initialNet());
-    expect(html).toContain('empty-slot');
-    expect(html).toContain('ornate-frame'); // OrnateFrame
-    expect(html).toContain('slot-silhouette'); // ombre de personnage (rig réel assombri en CSS)
-    expect(html).toContain('charprev'); // CharacterPreview (rig d’un pré-tiré)
-    expect(html).toContain('Un siège à pourvoir'); // libellé d’invitation
-    expect(html).not.toContain('✠');
+    expect(html).toContain('seat-empty');
+    expect(html).toContain('Siège 1');
+    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(1);
   });
 
-  it('slot occupé : carte v2 — perso EN PIED (CharacterPreview) dans un cadre orné, identité + statut', () => {
-    // Groupe COMPLET (4/4) : plus de vivier, chaque emplacement occupé affiche la carte PLEINE.
-    const heroes = makePregens().slice(0, 4);
+  it('siège occupé : carte de siège RICHE — portrait + nom + rôle + accroche + badge « Siège N »', () => {
+    const heroes = makePregens().slice(0, 2);
     const html = render(heroes, initialNet());
-    expect(html).toContain('char-card');
-    expect(html).toContain('ornate-frame');
-    expect(html).toContain('charprev'); // figure en pied (rig réel)
-    expect(html).toContain(heroes[0].name);
-    expect(html).toContain('Statut'); // statut social du niveau de carrière
-    expect(html).not.toContain('char-card-row'); // mode plein, pas la rangée compacte du vivier
+    expect(html).toContain('seat-card');
+    expect(html).toContain('seat-card-badge');
+    expect(html).toContain('Siège 1');
+    expect(html).toContain(heroes[0].name); // nom COMPLET dans la colonne
+    expect(html).toContain('card-roles'); // rôle (forces) sur la carte de siège
   });
 
-  it('picker : « Créer un personnage » visible MÊME avec un roster non vide', () => {
+  it('étal : grandes cartes-portraits (figure + nom + rôle + accroche) + carte-action + « Qui est-ce ? »', () => {
+    const html = render([], initialNet());
+    expect(html).toContain('candidate-grid');
+    expect(html).toContain('candidate-card');
+    expect(html).toContain('candidate-name');
+    expect(html).toContain('card-roles'); // RÔLE en toutes lettres (plus de chips cryptiques)
+    expect(html).not.toContain('res-chip'); // plus de chips icône+nombre
+    expect(html).toContain('candidate-action-card');
+    expect(html).toContain('Recruter');
+    expect(html).toContain('Qui est-ce ?'); // affordance présentation VISIBLE
+  });
+
+  it('recruté : le visage QUITTE l’étal pour la colonne (hideInParty)', () => {
+    const heroes = makePregens().slice(0, 4);
+    const full = render(heroes, initialNet());
+    // les 4 recrutés sont dans la colonne (4 cartes de siège), plus dans l’étal.
+    expect((full.match(/seat-card-badge/g) ?? []).length).toBe(4);
+    for (const h of heroes) expect(full).toContain(h.name);
+    // étal restant : 4 pré-tirés non recrutés + la carte-action « Créer ».
+    expect(full).toContain('candidate-card');
+    expect(full).not.toContain('seat-empty'); // groupe complet → aucun siège vide
+  });
+
+  it('archétype : sous-titre « Espèce · Carrière » SANS « (niv. N) » (bruit retiré)', () => {
+    const html = render([], initialNet());
+    expect(html).toContain('candidate-sub');
+    expect(html).not.toContain('(niv.'); // le niveau vit dans la fiche, pas sur la carte
+  });
+
+  it('onglet Mes personnages : carte-action Créer + carte-action Importer (même famille)', () => {
     rosterAdd({ hero: savedHero(), wealth: { gold: 0, silver: 0, brass: 0 } });
-    const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
-    expect(html).toContain('Créer un personnage');
-    expect(html).toContain('Aventurière Sauvegardée'); // le roster reste listé sous le bouton
-  });
-
-  it('picker : rangées compactes v2 (char-card-row + figure xs)', () => {
-    const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
-    expect(html).toContain('char-card-row');
-    expect(html).toContain('charprev-xs');
-  });
-
-  it('galerie de candidats : visible tant qu’un siège est libre (rangées + « Choisir »), masquée à 4/4', () => {
-    const recruiting = render([], initialNet());
-    expect(recruiting).toContain('candidate-gallery');
-    expect(recruiting).toContain('pregen-row'); // les VISAGES des candidats (CharCard compact) sur l’écran
-    expect(recruiting).toContain('Choisir'); // clic = 1er siège libre (même onAddHero que la modale)
-
-    const full = render(makePregens().slice(0, 4), initialNet());
-    expect(full).not.toContain('candidate-gallery'); // groupe complet → plus de vivier
+    const html = render([], initialNet());
+    expect(html).toContain('Aventurière Sauvegardée');
+    expect(html).toContain('candidate-name');
+    expect((html.match(/candidate-action-card/g) ?? []).length).toBe(2); // Créer + Importer
+    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(1);
+    expect(html).toContain('Importer un personnage');
   });
 });

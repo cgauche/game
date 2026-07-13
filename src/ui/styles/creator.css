@@ -11,19 +11,6 @@
   align-items: center;
   flex-wrap: wrap; /* 360px : la carte garde sa largeur, les boutons passent dessous */
 }
-.pregen-row .char-card-row {
-  flex: 1;
-  min-width: 200px;
-}
-.party-import {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
 /* ══ Créateur de personnage — composition 3 ZONES bord à bord ══
    rail (choix) | détail (travail de l'étape) | fiche vivante. Pas de panneaux flottants :
    colonnes pleine hauteur séparées par des bordures, sections internes à séparateurs. */
@@ -284,57 +271,58 @@
 .warn-text {
   color: var(--gold);
 }
-/* Listes de sélection (rail) façon BG3 : rangées pleine largeur, liseré doré. */
-.pick-list {
+/* Grille de sélection FACETTÉE (Zone A des étapes Race/Carrière) — recherche + facettes en tête,
+   grille de cartes dense qui tient SANS scroll ; tirage d100 en tête reste dans la section « Aux dés ». */
+.pick-facets {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-bottom: 10px;
+  gap: 8px;
 }
-.pick-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 8px;
-  background: transparent;
-  border: 0;
+.pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 4px;
+}
+.pick-card {
+  padding: 4px 6px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
   border-left: 3px solid transparent;
   border-radius: 6px;
   color: var(--text);
-  font: inherit;
-  text-align: left;
   cursor: pointer;
+  min-width: 0;
 }
-.pick-row:hover {
-  background: rgba(255, 255, 255, 0.05);
+.pick-card:hover {
+  border-color: var(--accent2);
 }
-.pick-row.selected {
+.pick-card:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 1px;
+}
+.pick-card.selected {
   border-left-color: var(--gold);
-  background: rgba(255, 224, 102, 0.08);
+  background: rgba(255, 224, 102, 0.09);
 }
-.pick-row .row-body {
+.pick-card-body {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.pick-row .row-body strong {
-  font-size: 13px;
+.pick-card-body strong {
+  font-size: 12px;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.pick-row .row-body em {
+.pick-card-body em {
   font-style: normal;
-  font-size: 10.5px;
+  font-size: 10px;
   color: var(--muted);
-}
-.rail-group {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent2);
-  margin: 10px 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* Ligne de rail : libellé + contrôle (stepper, cases) alignés. */
 .rail-line {
