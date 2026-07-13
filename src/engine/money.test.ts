@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toBrass, fromBrass, add, subtract, canAfford, formatMoney, priceToMoney, statusBudgetBrass, withinStatusBudget, parseStatus } from './money';
+import { toBrass, fromBrass, add, subtract, canAfford, formatMoney, spellMoney, priceToMoney, statusBudgetBrass, withinStatusBudget, parseStatus } from './money';
 
 describe('« Tenir les comptes » — budget par Statut (LDB 59 l.9-11)', () => {
   it('statusBudgetBrass : Bronze N = N sous, Argent N = N pistoles, Or N = N couronnes', () => {
@@ -48,5 +48,15 @@ describe('money — monnaie impériale (LDB 57 : 1 CO=20 SC=240 PA, 1 SC=12 PA)'
     expect(formatMoney({ gold: 0, silver: 20, brass: 0 })).toBe('20/–'); // LDB 57 « 20/– »
     expect(formatMoney({ gold: 0, silver: 0, brass: 5 })).toBe('5 sc'); // sous seuls
     expect(formatMoney({ gold: 0, silver: 0, brass: 0 })).toBe('0 sc');
+  });
+  it('spellMoney : épellation française complète (#354, LDB 57 l.25/31/33 — couronne d\'or, pistole d\'argent, sou de cuivre)', () => {
+    expect(spellMoney({ gold: 1, silver: 0, brass: 0 })).toBe("1 couronne d'or"); // or seul, singulier
+    expect(spellMoney({ gold: 2, silver: 0, brass: 0 })).toBe("2 couronnes d'or"); // or seul, pluriel
+    expect(spellMoney({ gold: 0, silver: 10, brass: 0 })).toBe('10 pistoles d\'argent'); // pistoles seules (« 10/– »)
+    expect(spellMoney({ gold: 0, silver: 1, brass: 0 })).toBe("1 pistole d'argent"); // pistole seule, singulier
+    expect(spellMoney({ gold: 0, silver: 0, brass: 4 })).toBe('4 sous de cuivre'); // sous seuls
+    expect(spellMoney({ gold: 0, silver: 0, brass: 1 })).toBe('1 sou de cuivre'); // sou seul, singulier
+    expect(spellMoney({ gold: 2, silver: 3, brass: 4 })).toBe("2 couronnes d'or, 3 pistoles d'argent, 4 sous de cuivre"); // mixte
+    expect(spellMoney({ gold: 0, silver: 0, brass: 0 })).toBe('aucune monnaie'); // zéro
   });
 });
