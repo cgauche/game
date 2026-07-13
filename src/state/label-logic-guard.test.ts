@@ -36,7 +36,7 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/d
 
 // Exceptions JUSTIFIÉES (#289, src/gameIso + src/ui SEULEMENT — src/engine/src/state restent à zéro).
 // Une entrée = `fichier:ligne` EXACT constaté au recensement ; toute dérive de ligne ou nettoyage du
-// site fait échouer le CLIQUET ci-dessous (à réviser, pas à re-décaler idempotemment). ⚠ `ligne` est
+// site fait échouer le CLIQUET ci-dessous (à réviser, pas à re-décaler idempotemment). `ligne` est
 // celle rapportée par `scanLabelLogic` (contenu POST-retrait des commentaires de bloc, cf.
 // `stripComments` — peut différer du numéro de ligne brut du fichier si un bloc `/* … */` multi-lignes
 // précède le site).

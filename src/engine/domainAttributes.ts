@@ -116,7 +116,7 @@ export function domainCasterOps(caster: Combatant, spell: SpellDomainRef, rng: R
 export type SeaWind = 'violente-tempete' | 'calme-plat' | string;
 
 /** Feu (Aqshy, l.182) : « Les Tests de Focalisation pour ce Domaine subissent -1 DR. »
- *  ⚠ Omission ASSUMÉE (#337) : l'exception « +1 DR si le sort cible un vaisseau EN FLAMMES » (même
+ *  Omission ASSUMÉE (#337) : l'exception « +1 DR si le sort cible un vaisseau EN FLAMMES » (même
  *  ligne) n'est pas modélisée — `resolveFocus` n'a pas de cible physique (pas de `target: Combatant`),
  *  donc rien à tester pour l'État *En flammes* d'une COQUE. Nécessiterait de faire porter une cible
  *  au Test de Focalisation (chantier hors périmètre #337). */

@@ -32,7 +32,7 @@ via la matrice monde de l'os puis l'échelonne par `(sx, sy) = thickness/réf, l
 | `arme` | arme (main D) | poignée dans la main | x ±15, **y −50..+10** | lame/tête vers −y (haut), pommeau vers +y ; échelle uniforme |
 | `bouclier` | bouclier (main G) | centre dans la main | x −12..12, y −10..+22 | échelle uniforme |
 
-> ⚠️ Le slot `jambes` se dessine **du haut (hanche, y=0) vers le bas (cheville, y≈50)** —
+> Attention : le slot `jambes` se dessine **du haut (hanche, y=0) vers le bas (cheville, y≈50)** —
 > c'est la convention réelle du code (cf. generic/career/armour jambes : `<rect y="0" height="50">`).
 
 ## Ordre de calque

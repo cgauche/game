@@ -192,7 +192,7 @@ export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarc
   const t = rollTest(base, 'intermediaire', rng);
   const d = testDetail('Résistance', base, t);
   const r = applyForcedMarch(c, t.success);
-  return { line: `${c.name} — marche forcée : Test de Résistance 🎲 ${t.roll}/${t.target} → ${t.success ? "il tient l'allure." : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}.`}`, gained: r.gained, d };
+  return { line: `${c.name} — marche forcée : Test de Résistance ${t.roll}/${t.target} → ${t.success ? "il tient l'allure." : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}.`}`, gained: r.gained, d };
 }
 
 /** Fatigue d'Encombrement d'une journée de voyage à pied (LDB p.295 — `travelFatigue` enfin

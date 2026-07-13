@@ -1004,7 +1004,7 @@ export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
 }
 
 /** Ligne de journal d'un Test résolu inline — SOURCE UNIQUE du format « X — Test de Y Difficulté :
- *  🎲 roll / cible → réussite/échec. » Réutilisée par l'op `test` ET par la branche inline de
+ *  roll / cible → réussite/échec. » Réutilisée par l'op `test` ET par la branche inline de
  *  `resolveFlowTest` (parité du journal des jets de trigger résolus en silence). */
 export function describeTestRoll(
   name: string, what: string, difficulty: Difficulty, res: { roll: number; target: number; success: boolean },

@@ -5,7 +5,7 @@
  * ce module ne lit que des **réfs par id** (`NavalTraitRef` = `{ id, value? }`, JAMAIS un libellé) — l'Indice
  * d'un Trait `ranked` vit dans `value` (plus aucun parsing de chaîne au runtime).
  *
- * ✅ EFFET = `GameOp[]`, langue UNIQUE (pas de champ ad hoc) : l'effet mécanisé vit dans le `passive` des
+ * EFFET = `GameOp[]`, langue UNIQUE (pas de champ ad hoc) : l'effet mécanisé vit dans le `passive` des
  * entrées de `src/data/naval-traits.json` (éditable au Codex via le `GameOpEditor` EXISTANT) — `ap` pour
  * Blindage, `moveMod` pour Lissage, `skillDRBonus` pour Peu maniable : le MÊME vocabulaire que les passifs de
  * trait/mutation. Seul le PORTEUR diffère (réf de coque vs `TraitInstance` du Combattant) → un collecteur
@@ -14,7 +14,7 @@
  * géométrie de collision) et `deckCover` (Sabord, géométrie de Pont). Ce module ne fait qu'EXPOSER ces effets
  * là où une brique EXISTANTE les consomme (spawn → PA de coque ; manœuvre → M/DR ; collision → Bélier ; pont → Sabord).
  *
- * ⚠ Anti-double-compte : les colonnes E/B des navires NOMMÉS de `vehicles.json` sont DÉJÀ finales (elles
+ * Anti-double-compte : les colonnes E/B des navires NOMMÉS de `vehicles.json` sont DÉJÀ finales (elles
  * intègrent Renforcé/Solide) → ces Traits-là n'ont PAS de `passive` (desc seule). Man et « Peu maniable » sont
  * en revanche des colonnes DISTINCTES → Peu maniable porte bien son `skillDRBonus` (Voile/Ramer).
  */

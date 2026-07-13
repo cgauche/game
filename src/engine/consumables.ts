@@ -21,7 +21,7 @@ export interface ConsumableDuration {
 }
 
 /** L'objet est-il un consommable utilisable ? Flow présent et NON VIDE (un `seq` sans étape = rien à
- *  boire). Sert l'icône (glyphe 🧪) et tout filtre « utilisable » sans Combatant sous la main. */
+ *  boire). Sert l'icône et tout filtre « utilisable » sans Combatant sous la main. */
 export function isConsumable(item: ItemInstance): boolean {
   const f = item.consumable;
   return !!f && !(f.kind === 'seq' && f.steps.length === 0);

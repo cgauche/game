@@ -211,7 +211,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     const t = rollTest(resVal, 'intermediaire', rng, penalty);
     h.tests += 1;
     res.log.push(
-      `${c.name} — Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''} : 🎲 ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`,
+      `${c.name} — Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''} : ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`,
     );
     if (!t.success) {
       h.failures += 1;
@@ -285,7 +285,7 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   }
   const t = rollTest(resVal, 'intermediaire', rng, penalty);
   s.tests += 1;
-  res.log.push(`${c.name} — Soif : Test de Résistance${s.tests > 1 ? ` (−${(s.tests - 1) * 10})` : ''} : 🎲 ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`);
+  res.log.push(`${c.name} — Soif : Test de Résistance${s.tests > 1 ? ` (−${(s.tests - 1) * 10})` : ''} : ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`);
   if (!t.success) {
     s.failures += 1;
     if (s.failures === 1) res.log.push(`${c.name} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);

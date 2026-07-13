@@ -561,8 +561,8 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
     counter: counterT,
     casterNetSL: net,
     log: dispelled
-      ? `Contre-sort de ${counter.name} (🎲 ${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
-      : `Contre-sort de ${counter.name} (🎲 ${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : insuffisant — l'incantation se résout à DR ${net}.`,
+      ? `Contre-sort de ${counter.name} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
+      : `Contre-sort de ${counter.name} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : insuffisant — l'incantation se résout à DR ${net}.`,
   };
 }
 

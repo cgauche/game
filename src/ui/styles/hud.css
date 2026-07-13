@@ -68,7 +68,7 @@
   vertical-align: middle;
 }
 /* MediaSelect — sélecteur visuel partagé (déclencheur + popover de rangées « média + texte ») :
-   sélecteurs d'armes/armure de la fiche, menu « Donner » d'une ligne d'inventaire (🎁 → héros). */
+   sélecteurs d'armes/armure de la fiche, menu « Donner » d'une ligne d'inventaire (objet → héros). */
 .media-select {
   position: relative;
   display: inline-flex;
@@ -276,7 +276,7 @@
 .is-tiles {
   display: flex;
   flex-direction: column;
-  /* Portraits CALÉS À GAUCHE (pas centrés) : une tuile portant le badge ⏫🍀 (pré-emption) est plus
+  /* Portraits CALÉS À GAUCHE (pas centrés) : une tuile portant le badge de pré-emption est plus
      large — centrer décalerait son portrait vs les tuiles sans badge (frise en zigzag, cf. retour
      2026-06-11). En flex-start tous les portraits partagent le même bord gauche, badge à droite. */
   align-items: flex-start;
@@ -440,7 +440,7 @@
   text-shadow: 0 1px 3px var(--shadow-ink), 0 0 5px var(--shadow-ink); /* lisibilité sur le champ quand le fond est transparent */
   transition: background 0.15s ease, border-color 0.15s ease;
 }
-/* Au survol du tiroir (panneau ou bouton 📜), on révèle le fond opaque ; sinon il reste transparent. */
+/* Au survol du tiroir (panneau ou bouton du journal), on révèle le fond opaque ; sinon il reste transparent. */
 .log-drawer:hover .ld-panel {
   background: rgba(14, 16, 22, 0.94);
   border-color: var(--border);

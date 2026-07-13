@@ -17,7 +17,7 @@
  * ni se débarrasser de l'Exténué » — un héros AFFAMÉ (`isStarving`, suivi des rations par
  * `engine/provisions.ts`) ne regagne ni PB ni Exténué par le repos (dette levée, #T2).
  *
- * ⚠️ #T3 (cascade d'horloge) : la PROGRESSION des maladies (LDB 20 — incubation/durée en jours
+ * #T3 (cascade d'horloge) : la PROGRESSION des maladies (LDB 20 — incubation/durée en jours
  * CALENDAIRES) et la CONVALESCENCE des traumas (LDB 18 l.317 — « un nombre de jours égal à 30 − BE »)
  * ne dépendent PAS du sommeil : elles sont décomptées par l'entretien quotidien (`state/upkeep.ts`,
  * sur franchissement de jour, quel que soit le chemin — advanceTime, repos, voyage). `restRecovery`

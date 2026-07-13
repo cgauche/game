@@ -842,7 +842,7 @@ export interface ItemInstance {
    *  (elles restent ACTIVES mécaniquement) tant qu'une Évaluation ne l'a pas révélé. Absent/true = identifié. */
   identified?: boolean;
   /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
-   *  l'objet est magique ») — s'affiche ✨ magique même tant que ses règles restent non identifiées. */
+   *  l'objet est magique ») — s'affiche « magique » même tant que ses règles restent non identifiées. */
   magicKnown?: boolean;
   /** Détection d'artefact déjà tentée sur cet objet (LDB 10 l.312 : « En principe, vous ne pouvez
    *  tenter ce Test qu'une seule fois par artefact touché »). */
