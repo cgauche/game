@@ -8,6 +8,7 @@ import { TabbedEntry, type EntryTab } from '../TabbedEntry';
 import { OrnateFrame } from '../Ornaments';
 import { ParchmentCard } from '../ParchmentCard';
 import { Prose } from '../Prose';
+import { uniqueSlugId } from '../../data/slug';
 
 export function CodexSourceBadge({ source }: { source: CodexItem['source'] }) {
   if (!source) return null;
@@ -78,10 +79,13 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
   // bénédictions…) devient un onglet → les onglets reflètent les données PROPRES de l'entité (une
   // créature, un sort et une race n'exposent pas les mêmes). La CHARTE (figurine + onglets) est, elle,
   // partagée avec le créateur via `TabbedEntry` — on ne se perd pas d'une fiche à l'autre.
+  // `id` d'onglet STABLE = slug du titre (identité sémantique invariante d'une fiche à l'autre) : le
+  // même onglet reste ouvert en feuilletant (« Caractéristiques »), par simple égalité d'id côté TabbedEntry.
+  const tabIds = new Set<string>();
   const tabs: EntryTab[] = item.tabs
     ? // Regroupement EXPLICITE (ex. race : Profil bundle carac+compétences+talents) → sections avec titre.
-      item.tabs.map((t, i) => ({
-        id: `tab-${i}`,
+      item.tabs.map((t) => ({
+        id: uniqueSlugId(t.title, tabIds),
         label: t.title,
         content: (
           <div className="codex-tabpane">
@@ -90,8 +94,8 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
         ),
       }))
     : // Sinon : UN onglet par section (corps seul, le libellé d'onglet porte déjà le titre).
-      (item.sections ?? []).map((sec, i) => ({
-        id: `sec-${i}`,
+      (item.sections ?? []).map((sec) => ({
+        id: uniqueSlugId(sec.title, tabIds),
         label: sec.title,
         content: (
           <div className={`codex-tabpane codex-sec-body codex-${sec.layout ?? 'list'}`}>

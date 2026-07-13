@@ -1489,6 +1489,11 @@ export const clustersIn = (group: CodexGroup): { flat: CodexCategory[]; clusters
 /** Catégorie par clé. */
 export const categoryByKey = (key: string): CodexCategory | undefined => CODEX.find((c) => c.key === key);
 
+/** Identité STABLE d'une entrée de Codex = sérialisation canonique du couple `CodexFocus`
+ *  (`{category, label}`) : les labels ne sont uniques QUE par catégorie, la clé de navigation
+ *  qualifie donc la catégorie. C'est la clé de sélection du navigateur (jamais un `.label ===` nu). */
+export const codexItemKey = (category: string, label: string): string => `${category}␞${label}`;
+
 // ── Index de lookup PARESSEUX (par catégorie) ────────────────────────────────────────────────────
 // `codexLookup` est appelé par CHAQUE `CodexRef` à CHAQUE rendu → un `items.find` linéaire ne scale
 // pas (des centaines de refs × des centaines d'items). L'index (label exact → item, + repli casse

@@ -18,7 +18,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { testValue } from '../engine/skills';
 import { combatValue } from '../engine/combat';
 import { buildWeapon } from '../engine/items';
-import { findTalent, findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel } from '../data';
+import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel } from '../data';
 import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
 import { ActiveModal } from './ActiveModal';
@@ -683,9 +683,9 @@ function CraftPane({ hero, disabled, money, desc }: { hero: Combatant; disabled:
 function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; disabled: boolean; fails?: Record<string, number>; money: Money; desc?: string }) {
   const activity = useGame((s) => s.interludeActivity);
   const options = useMemo(() => learnableTalents(hero), [hero]);
-  const [label, setLabel] = useState('');
+  const [id, setId] = useState('');
   const { search, setSearch, filtered } = useFilteredList(options, (o) => o.label);
-  const sel: LearnOption | undefined = options.find((o) => o.label === label);
+  const sel: LearnOption | undefined = options.find((o) => o.id === id);
   const xp = hero.xp ?? 0;
   const failCount = sel ? fails?.[sel.id] ?? 0 : 0;
   const xpOk = !sel || xp >= sel.xpCost;
@@ -723,9 +723,9 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
       }
     >
       <SearchFilterField className="interlude-search" value={search} onChange={setSearch} placeholder="Filtrer les talents…" ariaLabel="Filtrer les talents" />
-      <select className="interlude-select" value={label} onChange={(e) => setLabel(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
+      <select className="interlude-select" value={id} onChange={(e) => setId(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
         {filtered.map((o) => (
-          <option key={o.label} value={o.label} title={mdToText(findTalent(o.label)?.desc ?? '')}>
+          <option key={o.id} value={o.id} title={mdToText(findTalentById(o.id)?.desc ?? '')}>
             {o.label} — {o.xpCost} PX · tuteur {fmt(o.tutorMinBrass)} à {fmt(o.tutorMaxBrass)}
           </option>
         ))}

@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../../state/store';
 import { useModalA11y } from '../Modal';
-import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, useCodexVersion, type CodexCategory, type CodexGroup, type CodexItem } from './registry';
+import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, codexItemKey, useCodexVersion, type CodexCategory, type CodexGroup, type CodexItem } from './registry';
 import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
@@ -32,7 +32,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   const initialCat = (focus && categoryByKey(focus.category)) || CODEX[0];
   const [group, setGroup] = useState<CodexGroup>(initialCat.group);
   const [catKey, setCatKey] = useState<string>(initialCat.key);
-  const [picked, setPicked] = useState<string | null>(focus?.label ?? null);
+  const [picked, setPicked] = useState<string | null>(focus ? codexItemKey(focus.category, focus.label) : null);
   const [q, setQ] = useState('');
   const [facetSel, setFacetSel] = useState<FacetSelection>({});
   const [editing, setEditing] = useState(false);
@@ -49,7 +49,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
     if (!fc) return;
     setGroup(fc.group);
     setCatKey(fc.key);
-    setPicked(focus.label);
+    setPicked(codexItemKey(focus.category, focus.label));
     setQ('');
     setFacetSel({}); // une facette cochée pourrait masquer l'entrée ciblée
   }, [focus]);
@@ -62,6 +62,9 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   // des familles touffues (Effets/Tables). Ordre de déclaration préservé (`clustersIn`).
   const { flat: flatCats, clusters } = useMemo(() => clustersIn(group), [group]);
   const cat = categoryByKey(catKey) ?? cats[0];
+  // Clé de navigation d'une entrée = identité qualifiée `category+label` (`codexItemKey`), jamais le label nu.
+  const itemKey = (it: CodexItem): string => codexItemKey(cat?.key ?? '', it.label);
+  const focusKey = focus ? codexItemKey(focus.category, focus.label) : null;
   // Repli par cluster : fermé par défaut ; s'ouvre si la catégorie active y vit (arrivée par cross-réf),
   // ou selon le dernier toggle utilisateur (mémorisé par nom, tant que l'écran est monté).
   const [manualOpen, setManualOpen] = useState<Record<string, boolean>>({});
@@ -85,9 +88,9 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
       return { ...s, [key]: cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value] };
     });
   // Jamais d'état vide : à défaut de sélection valide dans la liste filtrée, on montre la 1re.
-  const selected = list.find((it) => it.label === picked) ?? list[0] ?? null;
+  const selected = list.find((it) => itemKey(it) === picked) ?? list[0] ?? null;
   // Instance paramétrée du lien d'ouverture (« 8 Tentacules +8 ») — seulement sur l'entrée ciblée.
-  const instance = selected && focus?.instance && selected.label === focus.label ? focus.instance : undefined;
+  const instance = selected && focus?.instance && itemKey(selected) === focusKey ? focus.instance : undefined;
   // Revenir en mode lecture dès qu'on change d'entrée ou de catégorie (édition DEV ponctuelle).
   useEffect(() => setEditing(false), [selected?.label, cat?.key]);
   useEffect(() => setCreating(false), [cat?.key]); // abandonner la création en changeant de catégorie
@@ -129,8 +132,8 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   const renderRow = (it: CodexItem, key: string) => (
     <button
       key={key}
-      className={`listrow codex-row${selected?.label === it.label ? ' on' : ''}`}
-      onClick={() => setPicked(it.label)}
+      className={`listrow codex-row${selected && itemKey(selected) === itemKey(it) ? ' on' : ''}`}
+      onClick={() => setPicked(itemKey(it))}
     >
       <span className="lr-name">{it.label}</span>
       {it.source && <span className="codex-row-src">{it.source.book}</span>}

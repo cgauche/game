@@ -799,9 +799,9 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
 /** Ligne d'un emplacement à choix (compétence ou talent) : sélecteur d'option + Désigner/Acquérir.
  *  Une option DÉJÀ possédée (via l'espèce…) se DÉSIGNE gratuitement — elle devient le choix de
  *  carrière de l'emplacement et donc montable en PX ; une nouvelle option s'achète. */
-/** `label` = valeur DE CÂBLAGE (concreteLabel exact, ré-utilisé tel quel par `onPick` — jamais reparsé
- *  ici) ; `display` = texte affiché si distinct (une spec de Groupe d'arme est un id, `display` porte
- *  son libellé résolu via `specLabel` — l'id ne doit jamais s'afficher brut). */
+/** `key` = clé de câblage OPAQUE (id+spec via `refKey`, ré-utilisée telle quelle par `onPick` puis
+ *  `parseRefKey` — jamais affichée) ; `display` = texte affiché (une spec de Groupe d'arme est un id,
+ *  `display` porte son libellé résolu via `specLabel` — l'id ne doit jamais s'afficher brut). */
 function SlotChoiceRow({
   entry,
   options,
@@ -810,13 +810,13 @@ function SlotChoiceRow({
   onPick,
 }: {
   entry: string;
-  options: { label: string; display?: string; owned: boolean; hint?: string }[];
+  options: { key: string; display?: string; owned: boolean; hint?: string }[];
   acquireCost: number;
   afford: (c: number) => boolean;
-  onPick: (label: string, owned: boolean) => void;
+  onPick: (key: string, owned: boolean) => void;
 }) {
   const [choice, setChoice] = useState('');
-  const opt = options.find((o) => o.label === choice);
+  const opt = options.find((o) => o.key === choice);
   const cost = opt?.owned ? 0 : acquireCost;
   return (
     <div className="adv-row acquire">
@@ -826,14 +826,14 @@ function SlotChoiceRow({
       <select value={choice} onChange={(e) => setChoice(e.target.value)}>
         <option value="">— choisir —</option>
         {options.map((o) => (
-          <option key={o.label} value={o.label}>
-            {o.display ?? o.label}
+          <option key={o.key} value={o.key}>
+            {o.display ?? o.key}
             {o.hint ? ` ${o.hint}` : ''}
             {o.owned ? ' (possédé)' : ''}
           </option>
         ))}
       </select>
-      <button className="btn small" disabled={!opt || !afford(cost)} onClick={() => opt && onPick(opt.label, opt.owned)}>
+      <button className="btn small" disabled={!opt || !afford(cost)} onClick={() => opt && onPick(opt.key, opt.owned)}>
         {opt?.owned ? 'Désigner · 0 PX' : `Acquérir · ${acquireCost} PX`}
       </button>
     </div>
@@ -915,7 +915,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
             acquireCost={slot.nextCost}
             afford={afford}
             options={slot.options.map((o) => ({
-              label: refKey(slot.groupId, o.spec), // clé de câblage OPAQUE (id+spec), jamais affichée
+              key: refKey(slot.groupId, o.spec), // clé de câblage OPAQUE (id+spec), jamais affichée
               display: `${slot.group} (${o.display})`,
               owned: o.ownedAdvances > 0,
               hint: o.ownedAdvances > 0 ? `+${o.ownedAdvances}` : undefined,
@@ -952,7 +952,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
               entry={t.entry}
               acquireCost={t.nextCost}
               afford={afford}
-              options={(t.options ?? []).map((o) => ({ label: o.refKey, display: o.display, owned: o.owned }))}
+              options={(t.options ?? []).map((o) => ({ key: o.refKey, display: o.display, owned: o.owned }))}
               onPick={(key, owned) => {
                 const { id, spec } = parseRefKey(key);
                 if (owned) designateCareerSlot(hero.id, t.slotKey, id, spec);

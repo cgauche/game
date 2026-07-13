@@ -14,10 +14,10 @@ export interface EntryTab {
  * scroller un long pavé. SOURCE UNIQUE de la page d'espèce du créateur ET de la fiche du Codex
  * (réutilise `.main-head` de `creator.css` + la primitive `<Tabs>`).
  *
- * L'onglet actif est mémorisé par (id, nom) : DANS une même fiche on résout par `id` (deux onglets
- * homonymes restent atteignables) ; au changement de fiche (les `tabs` changent), si un onglet du
- * même NOM existe on y reste (feuilleter les créatures garde « Caractéristiques » ouvert), sinon on
- * retombe sur le 1er. Ne PAS remonter le composant via `key` côté appelant.
+ * L'onglet actif est mémorisé par `id` STABLE : les appelants keyent chaque onglet par une identité
+ * sémantique invariante d'une fiche à l'autre (CodexEntry : slug du titre de section ; créateur :
+ * `profil`/`carrieres`/…). Feuilleter les créatures garde donc « Caractéristiques » ouvert par simple
+ * égalité d'id (l'onglet absent retombe sur le 1er). Ne PAS remonter le composant via `key` côté appelant.
  */
 export function TabbedEntry({
   figure,
@@ -41,8 +41,8 @@ export function TabbedEntry({
   band?: ReactNode;
   tabs: EntryTab[];
 }) {
-  const [active, setActive] = useState<{ id?: string; label?: string }>({ id: tabs[0]?.id, label: tabs[0]?.label });
-  const current = tabs.find((t) => t.id === active.id) ?? tabs.find((t) => t.label === active.label) ?? tabs[0];
+  const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
+  const current = tabs.find((t) => t.id === active) ?? tabs[0];
   return (
     <>
       <div className="main-head">
@@ -62,7 +62,7 @@ export function TabbedEntry({
           className="zone-tabnav"
           tabs={tabs.map((t) => ({ key: t.id, label: t.label }))}
           active={current?.id ?? null}
-          onChange={(id) => setActive({ id, label: tabs.find((t) => t.id === id)?.label })}
+          onChange={(id) => setActive(id)}
         />
       )}
       {current?.content}
