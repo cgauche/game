@@ -1,4 +1,5 @@
 import { useGame, type LootGear } from '../state/store';
+import { giveTrappingQualities } from '../engine/items';
 import { bestDetector } from '../state/merchantFlow';
 import { PortraitPicker } from './PortraitPicker';
 import { QualityChips } from './EntityChip';
@@ -28,6 +29,10 @@ export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {
         const fx = g.effect;
         const unidentified = fx.identified === false;
         const aura = !!fx.magicKnown;
+        // Qualités affichées = celles de l'objet REÇU (def du catalogue + magiques), pas seulement les
+        // magiques portées par l'Effet — un objet catalogué (Bâton de combat : Assommante, Défensive)
+        // porte ses qualités dans sa def. Masquées tant que non identifié (révélées par Évaluation).
+        const quals = giveTrappingQualities(fx);
         return (
           <li key={`${g.label}-${i}`} className="victory-loot-row">
             <span className="vl-name">
@@ -37,8 +42,8 @@ export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {
               )}
               {unidentified
                 ? <span className="vl-unid">{aura ? 'magique, non identifié' : 'non identifié'}</span>
-                : fx.qualities?.length
-                  ? <>{' '}<QualityChips qualities={fx.qualities.map((id) => ({ id }))} /></>
+                : quals.length
+                  ? <>{' '}<QualityChips qualities={quals} /></>
                   : null}
             </span>
             {onAppraise && unidentified && (

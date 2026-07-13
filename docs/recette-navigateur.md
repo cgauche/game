@@ -34,7 +34,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule |
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
 | `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du token `[data-cid="id"]` — COMBAT ET EXPLORATION (même canal `data-cid`, #226) | lecture seule ; `null` si le token n'est pas dans le DOM (hors vue) ; pour un clic, **viser `{x: x+width/2, y: y+height}` (le BAS de la bbox, pied du token) plutôt que le centre géométrique** — un token de grande taille (créature haute) a sa bbox étirée vers le haut, et le centre géométrique tombe hors silhouette (retour vécu en recette, résidu #199) |
-| `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand |
+| `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand ; ⚠ un marchand-PNJ de scène n'a PAS de bande de décor (`ScreenShell` slot `backdrop`) — cette ambiance n'existe QUE par le chemin service-de-lieu (`openPlaceMerchant`, hub de ville) qui la porte en donnée. Ne pas conclure à une régression de décor en interpellant un PNJ |
 | `goto('id'\|{x,y,z?})` | place le groupe sur une case (déclenche portes/triggers au pas) | — |
 | `screen('menu'\|'party'\|…)` | navigue vers un écran | id validé contre `SCREENS` (`state/store.ts`) — `throw` immédiat + liste des ids valides si invalide (#211 ; avant : routage silencieux, écran blanc, zéro erreur console). ⚠ `screen('interlude')` n'ARME PAS l'interlude : `InterludeScreen` rend `null` sans `state.interlude` (peuplé par `startInterlude`) → écran vide. Utiliser `interlude()` (ci-dessous), pas `screen('interlude')` |
 | `levels()` | décompose le rendu multi-niveaux (tuiles/murs/hauteurs par étage) | lecture seule |
@@ -144,6 +144,12 @@ laissant `pendingCascade` intact pour que le recetteur voie et tranche les 3 cho
 `defaultChoice` appliqué en silence, jamais l'état vidé sous l'écran). Les choix INTERNES d'une
 journée (`purpose:travelDay`) gardent, eux, leur défaut de routine. Dérouler alors la branche au clic
 (vrais boutons) ; `advanceSeaDay()` reprend ensuite le voyage.
+
+**Constater une carte-parchemin de ROUTINE** : `forceEncounter()` tire par défaut
+`navire-hostile`, un événement DÉCISIONNEL (le drive s'arrête sur la décision, pas sur une carte
+racontée). Pour observer une carte-parchemin de routine (`sea.events`, `SeaVoyageBody`), NE PAS
+forcer : laisser le tirage d100/Manann jouer et rouler avec `advanceSeaDay({stopOnEveryEvent:true})`
+— le drive s'arrête au recap dès qu'un événement raconté vient d'être résolu.
 
 **Piège des DEUX copies de coque** (#296) : la coque « source de vérité » est `state.vessel.wounds` ;
 `travelPlan.vehicle` n'en est qu'une COPIE DE TRAVAIL utilisée par `applyOps`/le combat pendant la

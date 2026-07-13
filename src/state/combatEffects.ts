@@ -19,7 +19,7 @@ import { easeDifficulty } from '../engine/tests';
 import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
 import { traumaOnImpossibleAmbition } from '../engine/psychology';
-import { recomputeLoadout, itemFromGive, giveTrappingLabel, autoStowNewItem } from '../engine/items';
+import { recomputeLoadout, itemFromGive, giveTrappingLabel, withGiveQualities, autoStowNewItem } from '../engine/items';
 import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
 import { clampSaboteurDR } from './shipCrew';
@@ -695,7 +695,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const it = itemFromGive(e);
       // Butin MAGIQUE (optionnel) : qualités ajoutées, objet non identifié (qualités masquées jusqu'à
       // Évaluation, #2), skin légendaire. Les qualités restent ACTIVES mécaniquement (registre).
-      if (e.qualities?.length) it.qualities = [...it.qualities, ...e.qualities.map((id) => ({ id }))]; // e.qualities = ids (donnée de scène)
+      it.qualities = withGiveQualities(it.qualities, e); // def du catalogue + magiques (ids de scène)
       if (e.identified === false) it.identified = false;
       if (e.skin) it.skin = e.skin;
       if (e.magicKnown) it.magicKnown = true; // aura détectée en fenêtre de loot → suit l'objet

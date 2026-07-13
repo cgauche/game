@@ -226,6 +226,19 @@ export function itemFromGive(give: { trappingId?: string; custom?: string }): It
   return (give.trappingId ? itemFromTrappingById(give.trappingId) : null) ?? customTrapping(give.custom ?? give.trappingId ?? 'Objet');
 }
 
+/** Fusionne les qualités MAGIQUES ajoutées d'un `giveTrapping` (`give.qualities` = ids de scène) aux
+ *  qualités de base d'un objet — SOURCE UNIQUE du merge (apply giveTrapping + affichage du butin). */
+export function withGiveQualities(base: QualityInstance[], give: { qualities?: string[] }): QualityInstance[] {
+  return give.qualities?.length ? [...base, ...give.qualities.map((id) => ({ id }))] : base;
+}
+
+/** Qualités RÉSOLUES d'un `giveTrapping` = qualités de la def du catalogue (`itemFromGive`) + qualités
+ *  magiques ajoutées. Même liste que l'objet effectivement reçu (apply) → sert l'AFFICHAGE des chips de
+ *  butin, qu'elles vivent dans la def (objet catalogué) ou sur l'Effet (magique). */
+export function giveTrappingQualities(give: { trappingId?: string; custom?: string; qualities?: string[] }): QualityInstance[] {
+  return withGiveQualities(itemFromGive(give).qualities ?? [], give);
+}
+
 /** Libellé d'affichage d'un Effet `giveTrapping` (catalogue → label, sinon nom custom). */
 export function giveTrappingLabel(give: { trappingId?: string; custom?: string }): string {
   return give.trappingId ? (findTrappingById(give.trappingId)?.label ?? give.trappingId) : (give.custom ?? 'Objet');
