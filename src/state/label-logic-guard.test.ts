@@ -41,8 +41,6 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/d
 // `stripComments` — peut différer du numéro de ligne brut du fichier si un bloc `/* … */` multi-lignes
 // précède le site).
 const RATCHET_EXCEPTIONS: Record<string, string> = {
-  'ui/creator/CharacterCreator.tsx:127': "WEAPON_ID_BY_LABEL : id disponible des deux côtés (trappings) — debt RÉELLE, migration différée (le state de draft `specChoices`/`weaponChoice` est un Record<string,string> partagé par TOUS les choix « au choix », pas juste l'arme — refactor multi-site hors périmètre garde).",
-  'ui/creator/CharacterCreator.tsx:1084': 'idem CharacterCreator.tsx:127 (même WEAPON_ID_BY_LABEL).',
 };
 
 // Mécanique de scan (stripComments + BY_LABEL_RX/LABEL_EQ_RX + scanLabelLogic) :

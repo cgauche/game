@@ -225,6 +225,9 @@ export interface CreateHeroOptions {
   motivation?: string;
   rng?: RNG;
   id?: string;
+  /** Id de trapping (catalogue) choisi pour la possession narrative « Arme (Au choix) » —
+   *  substitue le ref `{text}` par `{id}` AVANT `buildInventory` (créateur, étape Possessions). */
+  weaponChoiceId?: string;
 }
 
 let heroCounter = 0;
@@ -353,11 +356,18 @@ export function createHero(opts: CreateHeroOptions): Combatant {
 
   // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées. Les refs `{id}`
   //    (catalogue) deviennent des objets ; les refs `{text}` (« Arme (Base) », flavor) n'ont pas de
-  //    stats → ignorées par buildInventory (un libellé non catalogué n'est pas trouvé).
-  const items = buildInventory([
+  //    stats → ignorées par buildInventory (un libellé non catalogué n'est pas trouvé). Exception :
+  //    « Arme (Au choix) » — texte narratif mais SLOT à résoudre (créateur) — se substitue par le ref
+  //    `{id}` catalogue choisi (`opts.weaponChoiceId`) avant résolution.
+  const rawTrappings = [
     ...(classForCareer(opts.careerId)?.trappings ?? []),
     ...(level?.trappings ?? []),
-  ]);
+  ];
+  const items = buildInventory(
+    opts.weaponChoiceId
+      ? rawTrappings.flatMap((ref) => ('text' in ref && ref.text === 'Arme (Au choix)') ? [{ id: opts.weaponChoiceId! }] : [ref])
+      : rawTrappings,
+  );
 
   // Taille de l'espèce (LDB 85) : Halfling = Petite (talent Petit), Ogre = Grande, sinon Moyenne.
   const size: import('./size').SizeCategory = sp.small ? 'petite' : /ogre/i.test(sp.label) ? 'grande' : 'moyenne';

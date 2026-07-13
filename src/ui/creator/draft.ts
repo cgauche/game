@@ -105,6 +105,7 @@ export interface CreatorDraft {
   /** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587) — exactement BFM à choisir. */
   pettySpells: string[];
   // 5) Possessions
+  /** Id de trapping (catalogue) choisi pour « Arme (Au choix) » — id STABLE, jamais un libellé. */
   weaponChoice?: string;
   // 6) Détails
   name: string;
@@ -406,6 +407,44 @@ export function evenCareerSkillAdvances(d: CreatorDraft): Record<string, number>
   }));
 }
 
+/** Palier (+5/+3/0) d'une Compétence de race dans le brouillon (LDB 05 l.484). */
+export function speciesSkillTier(d: CreatorDraft, skill: string): 0 | 3 | 5 {
+  return d.speciesPlus5.includes(skill) ? 5 : d.speciesPlus3.includes(skill) ? 3 : 0;
+}
+
+/** Pose la Compétence de race `skill` au palier `tier` (0/3/5) en respectant les quotas (3 à +5, 3 à
+ *  +3, LDB 05 l.484) : la retire des deux listes puis l'ajoute au palier cible si son quota a de la
+ *  place — sinon renvoie le brouillon INCHANGÉ. Source unique consommée par le Stepper de l'étape 5. */
+export function withSpeciesSkillTier(d: CreatorDraft, skill: string, tier: 0 | 3 | 5): CreatorDraft {
+  const plus5 = d.speciesPlus5.filter((s) => s !== skill);
+  const plus3 = d.speciesPlus3.filter((s) => s !== skill);
+  if (tier === 5) {
+    if (plus5.length >= SPECIES_SKILLS_PLUS5) return d;
+    plus5.push(skill);
+  } else if (tier === 3) {
+    if (plus3.length >= SPECIES_SKILLS_PLUS3) return d;
+    plus3.push(skill);
+  }
+  return { ...d, speciesPlus5: plus5, speciesPlus3: plus3 };
+}
+
+/** Palier atteignable au-dessus (`dir=1`) / au-dessous (`dir=-1`) du palier courant, quotas inclus —
+ *  `null` = bouton grisé. Le `+` saute +3 quand son quota est plein mais qu'un +5 reste libre (et
+ *  inversement le `−`) : le geste reste un Stepper, les paliers valides suivent le RAW. */
+export function speciesSkillStep(d: CreatorDraft, skill: string, dir: 1 | -1): (0 | 3 | 5) | null {
+  const cur = speciesSkillTier(d, skill);
+  const p5free = d.speciesPlus5.filter((s) => s !== skill).length < SPECIES_SKILLS_PLUS5;
+  const p3free = d.speciesPlus3.filter((s) => s !== skill).length < SPECIES_SKILLS_PLUS3;
+  if (dir === 1) {
+    if (cur === 0) return p3free ? 3 : p5free ? 5 : null;
+    if (cur === 3) return p5free ? 5 : null;
+    return null;
+  }
+  if (cur === 5) return p3free ? 3 : 0;
+  if (cur === 3) return 0;
+  return null;
+}
+
 /** Options de spec d'une entrée « (Au choix) » (liste restreinte, sinon `wildcardSpecs` partagé). */
 export function specOptionsFor(entry: string): string[] {
   const opt = parseEntry(entry)[0];
@@ -576,6 +615,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     starId: d.star,
     fateSplit: d.fateSplit,
     xpBonus: xpTotal(d),
+    weaponChoiceId: d.weaponChoice,
     details: {
       age: d.age,
       height: d.height,

@@ -54,11 +54,11 @@ export function CreatorSummary({ d }: { d: CreatorDraft; step?: number }) {
       )}
       <div className="creator-id" style={started ? undefined : DIM}>
         <strong>{d.name.trim() || 'Aventurier'}</strong>
-        <span className="char-sub">{sp?.label ?? 'Race à choisir'}</span>
         <span className="char-sub">
           {level ? `${level.label} (${careerLabel})` : careerLabel || 'Carrière à choisir'}
           {level?.status ? ` · ${level.status}` : ''}
         </span>
+        <span className="char-sub">{sp?.label ?? 'Race à choisir'}</span>
       </div>
 
       <div style={started ? undefined : DIM}>

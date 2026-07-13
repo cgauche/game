@@ -203,6 +203,18 @@ describe('buildHero — bout en bout', () => {
   });
 });
 
+describe('Possessions — « Arme (Au choix) » (LDB 05 l.559-585)', () => {
+  it('weaponChoice (id STABLE) résout la possession narrative en l\'objet catalogue choisi', () => {
+    // Prêtre Guerrier (Novice) : seule carrière du LDB à porter { text: 'Arme (Au choix)' } (l.1).
+    const d = { ...withCareer(readyDraft(), 'pretre-guerrier'), specChoices: {}, careerTalent: 'Obstiné', weaponChoice: 'baton-de-combat' };
+    const hero = buildHero(d, 'h-weapon');
+    expect((hero.items ?? []).some((it) => it.trappingId === 'baton-de-combat')).toBe(true);
+    // Sans choix : la possession narrative reste un texte sans stats — aucun objet fantôme.
+    const noChoice = buildHero({ ...d, weaponChoice: undefined }, 'h-noweapon');
+    expect((noChoice.items ?? []).some((it) => it.trappingId === 'baton-de-combat')).toBe(false);
+  });
+});
+
 describe('Magie mineure à la création (LDB 10 l.587) — BFM sorts inclus au Talent', () => {
   /** Brouillon Sorcier valide (Niveau 1 : talent « Magie mineure » choisissable). */
   function sorcererDraft() {

@@ -66,15 +66,30 @@ export function XpBadge({ value }: { value: number }) {
   return value > 0 ? <span className="xp-badge">+{value} PX</span> : null;
 }
 
-/** Stepper +/− avec compteur — l'outil d'allocation standard des créateurs de RPG. */
-export function Stepper({ value, min = 0, max, onChange, disabled }: { value: number; min?: number; max: number; onChange: (v: number) => void; disabled?: boolean }) {
+/** Stepper +/− avec compteur — l'UNIQUE widget d'allocation du créateur (Augmentations de
+ *  Caractéristiques/Compétences de carrière, répartition Destin/Résilience, ET paliers de Compétences
+ *  de race). Mode LINÉAIRE par défaut (± 1 entre `min` et `max`) ; mode DISCRET si `up`/`down` sont
+ *  fournis (valeur cible résolue par l'appelant, `null` = bouton grisé) — même geste, contraintes RAW
+ *  propres à l'étape (ex. paliers 0/3/5 quota-gérés des Compétences de race, LDB 05 l.484). */
+export function Stepper({ value, min = 0, max, onChange, disabled, up, down }: {
+  value: number;
+  min?: number;
+  max: number;
+  onChange: (v: number) => void;
+  disabled?: boolean;
+  up?: number | null;
+  down?: number | null;
+}) {
+  const discrete = up !== undefined || down !== undefined;
+  const canDown = discrete ? down != null : value > min;
+  const canUp = discrete ? up != null : value < max;
   return (
     <span className="stepper">
-      <button type="button" className="btn small" disabled={disabled || value <= min} onClick={() => onChange(value - 1)}>
+      <button type="button" className="btn small" disabled={disabled || !canDown} onClick={() => onChange(discrete ? (down as number) : value - 1)}>
         −
       </button>
       <b>{value}</b>
-      <button type="button" className="btn small" disabled={disabled || value >= max} onClick={() => onChange(value + 1)}>
+      <button type="button" className="btn small" disabled={disabled || !canUp} onClick={() => onChange(discrete ? (up as number) : value + 1)}>
         +
       </button>
     </span>

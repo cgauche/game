@@ -374,6 +374,19 @@
   font-size: 16px;
   color: var(--gold);
 }
+/* Concept du personnage = la carrière, mise en évidence en premier ; la race suit, atténuée
+   (directive utilisateur 2026-07-13 : « mettre en évidence la race devant la carrière est un choix
+   étrange »). Pas de classe supplémentaire (cliquet xii) : hiérarchie par POSITION dans `.creator-id`
+   (l'ordre JSX place déjà la carrière avant la race). */
+.creator-id span:first-of-type {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.creator-id span:last-of-type {
+  font-size: 12px;
+  color: var(--muted);
+}
 .creator-summary .stat-val.boost {
   color: var(--ok);
 }
@@ -463,6 +476,29 @@
   margin: 6px 0 0;
   font-size: 11.5px;
 }
+/* Widgets à fond SOMBRE (pensés pour le fond app) postés DANS la ParchmentCard (Zone B, fond clair
+   `.tx-parchment` → texte `--ink` sombre hérité) : sans leur PROPRE couleur, l'ink hérité se pose sur
+   leur fond sombre = illisible (Talent de carrière étape Compétences, tags d'effet étape Signe astral
+   — LOT #393 correction). Réutilise les tokens de ces mêmes widgets HORS parchemin ; scopé à
+   `.creator-main` (jamais `.parchment-card-body`, partagé par d'autres écrans hors périmètre). */
+.creator-main .tag {
+  color: var(--text);
+}
+.creator-main .talent-option {
+  color: var(--text);
+}
+.creator-main .talent-desc {
+  color: var(--muted);
+}
+/* Même défaut au fil des AUTRES étapes : grille d'allocation des Caractéristiques (étape 3, corps
+   `.char-alloc`) et jalons d'Évolution de carrière (étape 2, corps `.path-node`) — même fond bg2
+   sans couleur propre, même correction. */
+.creator-main .char-alloc {
+  color: var(--text);
+}
+.creator-main .path-node {
+  color: var(--text);
+}
 .talent-options-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -500,18 +536,65 @@
   color: var(--muted);
   font-size: 10.5px;
 }
-.trapping-list {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 13px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* Roue céleste (étape Signe astral) — astrolabe SVG sobre : anneaux + un point par signe, le signe
+   choisi mis en évidence (rayon + point d'or) et nommé au moyeu. Nœuds stylés par sélecteurs
+   structurels (aucune classe supplémentaire) : anneaux = `circle` enfant direct du `svg`, points =
+   `g circle`, sélection = `[aria-checked="true"]`. */
+.celestial-wheel {
+  position: relative;
+  margin: 4px 0 8px;
 }
-.item-meta {
+.celestial-wheel svg {
+  display: block;
+  width: 100%;
+  max-width: 250px;
+  margin: 0 auto;
+}
+.celestial-wheel svg > circle {
+  fill: none;
+  stroke: var(--border);
+}
+.celestial-wheel g {
+  cursor: pointer;
+}
+.celestial-wheel g circle {
+  fill: var(--muted);
+}
+.celestial-wheel g:hover circle {
+  fill: var(--accent2);
+}
+.celestial-wheel g:focus-visible {
+  outline: none;
+}
+.celestial-wheel g:focus-visible circle {
+  stroke: var(--accent2);
+  stroke-width: 2;
+}
+.celestial-wheel [aria-checked='true'] circle {
+  fill: var(--gold);
+}
+.celestial-wheel line {
+  stroke: var(--gold);
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+.celestial-wheel > div {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  max-width: 118px;
+  pointer-events: none;
+}
+.celestial-wheel > div strong {
+  color: var(--gold);
+  font-size: 13px;
+  line-height: 1.2;
+}
+.celestial-wheel > div span {
   color: var(--muted);
-  font-size: 11.5px;
-  font-style: normal;
+  font-size: 11px;
 }
 .char-alloc .char-name {
   display: flex;

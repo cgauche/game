@@ -68,6 +68,7 @@ import { previewHero } from './CreatorSummary';
 import { CreatorStepFrame, Section, Stepper, type StepZones } from './CreatorStepFrame';
 import { CreatorDice } from './CreatorDice';
 import { FacetedPickGrid } from './FacetedPickGrid';
+import { CelestialWheel } from './CelestialWheel';
 import {
   CreatorDraft,
   newDraft,
@@ -102,6 +103,9 @@ import {
   rollDraftAstrology,
   SPECIES_SKILLS_PLUS5,
   SPECIES_SKILLS_PLUS3,
+  speciesSkillTier,
+  withSpeciesSkillTier,
+  speciesSkillStep,
   CAREER_SKILL_ADVANCES,
   MAX_ADV_PER_SKILL,
   CAREER_CHAR_ADVANCES,
@@ -138,8 +142,6 @@ const WEAPON_CHOICES = allTrappings
   .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !/mains nues/i.test(t.label))
   .map((t) => ({ id: t.id, label: t.label }))
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
-/** Lookup id d'arme par libellé (le brouillon stocke le LIBELLÉ choisi) — Map module-scope, pas de `.find()` par rendu. */
-const WEAPON_ID_BY_LABEL = new Map(WEAPON_CHOICES.map((w) => [w.label, w.id]));
 /** Demeure céleste par ID (ADE2 ch.03 l.504-512) — libellé affiché + desc RAW en tooltip du thème astral. */
 const HOUSE_BY_ID = new Map(celestialHouses.map((h) => [h.id, h]));
 
@@ -723,8 +725,8 @@ function SpecSelect({ d, setD, raw }: StepProps & { raw: string }) {
   );
 }
 
-// ════ 3bis) Signe astral (ADE2 ch.03, optionnel) — Zone A : « Aux dés » + choix + effet ; Zone B : sens + astrologie ════
-function StarZones({ d, setD }: StepProps): StepZones {
+// ════ 3bis) Signe astral (ADE2 ch.03, optionnel) — Zone A : « Aux dés » + ROUE CÉLESTE ; Zone B : sens + astrologie ════
+export function StarZones({ d, setD }: StepProps): StepZones {
   const sign = d.star ? starsTable.find((s) => s.id === d.star) : undefined; // d.star = id STABLE
   // Talent « (Au choix) » octroyé par le signe (ex. Maître artisan) → spec à préciser (réutilise specChoices).
   const grantChoice = sign?.effect?.flatMap((o) => (o.op === 'grantTalent' && isUnresolvedChoice(talentConcrete(o)) ? [talentConcrete(o)] : []))[0];
@@ -739,44 +741,39 @@ function StarZones({ d, setD }: StepProps): StepZones {
       onRoll={() => setD(rollDraftStar(d))}
     >
       <p className="hint" style={{ marginTop: 0 }}>
-        Signe tiré : <b>{starsTable.find((s) => s.id === d.starRoll)?.label ?? '—'}</b> — gardez-le ou choisissez librement ci-dessous.
+        Signe tiré : <b>{starsTable.find((s) => s.id === d.starRoll)?.label ?? '—'}</b> — gardez-le ou choisissez librement sur la roue.
       </p>
     </CreatorDice>
   );
 
   const choice = (
-    <Section title="Signe astral">
-      <label>
-        Signe
-        <select value={d.star ?? ''} onChange={(e) => setD({ ...d, star: e.target.value || undefined })}>
-          <option value="">— aucun —</option>
-          {starsTable.map((s) => (
-            <option key={s.id} value={s.id}>{s.label}</option>
-          ))}
-        </select>
-      </label>
+    <Section title="Roue céleste">
+      <CelestialWheel
+        signs={starsTable.map((s) => ({ id: s.id, label: s.label }))}
+        selectedId={d.star}
+        onSelect={(id) => setD({ ...d, star: id })}
+      />
       {sign && (
-        <>
-          <p className="hint" style={{ margin: '2px 0 0' }}>{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
-          {!!sign.effect?.length && <ul className="trapping-list">{sign.effect.map((o, i) => <li key={i}>{opSummary(o)}</li>)}</ul>}
-          {grantChoice && grantOpts.length > 0 && (
-            <label>
-              {splitLabel(grantChoice).name}
-              <select
-                value={d.specChoices[grantChoice] ?? ''}
-                onChange={(e) => {
-                  const specChoices = { ...d.specChoices };
-                  if (e.target.value) specChoices[grantChoice] = e.target.value; // spec SEULE, jamais un libellé complet
-                  else delete specChoices[grantChoice];
-                  setD({ ...d, specChoices });
-                }}
-              >
-                <option value="">— au choix —</option>
-                {grantOpts.map((o) => <option key={o} value={o}>{o}</option>)}
-              </select>
-            </label>
-          )}
-        </>
+        <button className="btn small" style={{ marginTop: 8 }} onClick={() => setD({ ...d, star: undefined })}>
+          Aucun signe
+        </button>
+      )}
+      {grantChoice && grantOpts.length > 0 && (
+        <label style={{ marginTop: 10 }}>
+          {splitLabel(grantChoice).name}
+          <select
+            value={d.specChoices[grantChoice] ?? ''}
+            onChange={(e) => {
+              const specChoices = { ...d.specChoices };
+              if (e.target.value) specChoices[grantChoice] = e.target.value; // spec SEULE, jamais un libellé complet
+              else delete specChoices[grantChoice];
+              setD({ ...d, specChoices });
+            }}
+          >
+            <option value="">— au choix —</option>
+            {grantOpts.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </label>
       )}
     </Section>
   );
@@ -784,33 +781,43 @@ function StarZones({ d, setD }: StepProps): StepZones {
   const body = (
     <>
       <Section title={sign ? sign.label : 'Sous quel signe êtes-vous né ?'}>
-        {sign ? <LoreText md={sign.desc} /> : <p className="hint">Choisissez ou tirez votre signe astral (ADE2 ch.03) — son sens apparaîtra ici.</p>}
-      </Section>
-      <Section title="Astrologie (facultatif)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}><Icon id="nav/dice" size="sm" /> Thème astral</button>}>
-        {d.ascendant || d.dwellings?.length ? (
+        {sign ? (
           <>
-            {d.ascendant && <p style={{ margin: '0 0 4px' }}><b>Ascendant :</b> {d.ascendant}</p>}
-            {d.dwellings?.length ? (
-              <ul className="trapping-list">
-                {d.dwellings.map((h) => (
-                  <li key={h.house} title={mdToText(HOUSE_BY_ID.get(h.house)?.desc ?? '')}>
-                    <b>{HOUSE_BY_ID.get(h.house)?.label ?? h.house} :</b> {h.sign}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+            <p className="hint" style={{ margin: '0 0 8px' }}>{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
+            {!!sign.effect?.length && (
+              <div className="skill-tags" style={{ marginBottom: 10 }}>
+                {sign.effect.map((o, i) => <span key={i} className="tag">{opSummary(o)}</span>)}
+              </div>
+            )}
+            <LoreText md={sign.desc} />
           </>
         ) : (
-          <p className="hint">Ascendant + {celestialHouses.length} demeures célestes — pur roleplay (aucun effet de jeu).</p>
+          <p className="hint">Choisissez ou tirez votre signe astral (ADE2 ch.03) — son sens apparaîtra ici.</p>
+        )}
+      </Section>
+      <Section title="Astrologie (pur roleplay)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}><Icon id="nav/dice" size="sm" /> Thème astral</button>}>
+        {d.ascendant || d.dwellings?.length ? (
+          <div className="lore-text">
+            {d.ascendant && <p style={{ margin: '0 0 6px' }}><b>Ascendant :</b> {d.ascendant}</p>}
+            {d.dwellings?.map((h) => (
+              <p key={h.house} style={{ margin: '0 0 4px' }} title={mdToText(HOUSE_BY_ID.get(h.house)?.desc ?? '')}>
+                <b>{HOUSE_BY_ID.get(h.house)?.label ?? h.house} :</b> {h.sign}
+              </p>
+            ))}
+          </div>
+        ) : (
+          <p className="hint">Ascendant + {celestialHouses.length} demeures célestes — flavor pur (aucun effet de jeu).</p>
         )}
       </Section>
     </>
   );
-  return { dice, choice, detail: { title: sign ? sign.label : 'Signe astral', body } };
+  // Pas de `title` ici (doublon) : le corps porte déjà son propre titre via `Section`
+  // (sign.label ou la question de repli), même patron que SpeciesZones/CareerZones.
+  return { dice, choice, detail: { body } };
 }
 
 // ════ 4) Compétences & Talents (LDB 05 l.493-555) — Zone A : espèce ; Zone B : carrière ════
-function SkillZones({ d, setD }: StepProps): StepZones {
+export function SkillZones({ d, setD }: StepProps): StepZones {
   const sp = draftSpecies(d);
   const entries = careerSkillEntries(d);
   const total = careerAdvTotal(d);
@@ -821,14 +828,6 @@ function SkillZones({ d, setD }: StepProps): StepZones {
   const charOf = (raw: string): { k: CharKey | null; v: number } => {
     const k = skillCharKey(raw);
     return { k, v: k ? liveChars[k] : 0 };
-  };
-
-  const togglePick = (list: 'speciesPlus5' | 'speciesPlus3', skill: string) => {
-    const cur = d[list];
-    const quota = list === 'speciesPlus5' ? SPECIES_SKILLS_PLUS5 : SPECIES_SKILLS_PLUS3;
-    const other = list === 'speciesPlus5' ? d.speciesPlus3 : d.speciesPlus5;
-    if (cur.includes(skill)) setD({ ...d, [list]: cur.filter((s) => s !== skill) });
-    else if (cur.length < quota && !other.includes(skill)) setD({ ...d, [list]: [...cur, skill] });
   };
 
   if (!sp) {
@@ -863,23 +862,22 @@ function SkillZones({ d, setD }: StepProps): StepZones {
         </button>
         {sp.skills.map((a) => advancementLabel('skills', a)).map((raw) => {
           const { k, v } = charOf(raw);
-          const adv = d.speciesPlus5.includes(raw) ? 5 : d.speciesPlus3.includes(raw) ? 3 : 0;
+          const tier = speciesSkillTier(d, raw);
           return (
             <div key={raw} className="rail-line" title={skillTip(raw)}>
               <span>
-                {raw} {k && <em className="tag-char">{k} {v}{adv ? ` → ${v + adv}` : ''}</em>}
-                {isUnresolvedChoice(raw) && adv > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
+                {raw} {k && <em className="tag-char">{k} {v}{tier ? ` → ${v + tier}` : ''}</em>}
+                {isUnresolvedChoice(raw) && tier > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
               </span>
-              <span className="row-flex">
-                <label className="radio">
-                  <input type="checkbox" checked={d.speciesPlus5.includes(raw)} onChange={() => togglePick('speciesPlus5', raw)} />
-                  +5
-                </label>
-                <label className="radio">
-                  <input type="checkbox" checked={d.speciesPlus3.includes(raw)} onChange={() => togglePick('speciesPlus3', raw)} />
-                  +3
-                </label>
-              </span>
+              {/* MÊME widget d'allocation que les Compétences de carrière (Stepper) — paliers 0/3/5
+                  quota-gérés (LDB 05 l.484), le geste unifié tue la double mécanique cases/steppers. */}
+              <Stepper
+                value={tier}
+                max={5}
+                up={speciesSkillStep(d, raw, 1)}
+                down={speciesSkillStep(d, raw, -1)}
+                onChange={(t) => setD(withSpeciesSkillTier(d, raw, t as 0 | 3 | 5))}
+              />
             </div>
           );
         })}
@@ -1063,21 +1061,19 @@ function trappingMeta(id: string): string {
   return bits.join(' · ');
 }
 
-// ════ 5) Possessions (LDB 05 l.559-585) — Zone A : richesse + choix ; Zone B : équipement ════
-function TrappingZones({ d, setD }: StepProps): StepZones {
+// ════ 5) Possessions (LDB 05 l.559-585) — Zone A : richesse + arme au choix ; Zone B : revue d'équipement ════
+export function TrappingZones({ d, setD }: StepProps): StepZones {
   const level = draftLevel(d);
   const klass = findClassById(findCareerById(d.careerId)?.class);
   const wealth = draftWealth(d);
   const careerTrappings = level?.trappings ?? []; // TrappingRef[]
-  // Rendu d'une possession : libellé via trappingRefLabel, CodexRef par libellé (popover), meta par id.
-  const item = (ref: import('../../data').TrappingRef, key: number) => {
+  const enc = previewHero(d)?.encumbrance;
+  // Chip d'équipement : libellé via trappingRefLabel ; CodexRef par libellé → popover de stats au survol
+  // (Dégâts/PA/Enc…) + fiche au clic. Plus de méta inline recodée.
+  const chip = (ref: import('../../data').TrappingRef, key: number) => {
     const label = trappingRefLabel(ref);
-    const meta = 'id' in ref ? trappingMeta(ref.id) : '';
     return (
-      <li key={key}>
-        <CodexRef category="trappings" label={splitLabel(label).name}>{label}</CodexRef>
-        {meta && <em className="item-meta"> — {meta}</em>}
-      </li>
+      <CodexRef key={key} category="trappings" label={splitLabel(label).name}>{label}</CodexRef>
     );
   };
   const choice = (
@@ -1088,42 +1084,51 @@ function TrappingZones({ d, setD }: StepProps): StepZones {
           Standing. Le jet est figé.
         </p>
         <p style={{ margin: 0 }}>
-          Bourse : <b><Coins money={wealth} /></b> (au groupe)
+          Bourse de départ : <b><Coins money={wealth} /></b> <span className="hint">(créditée au groupe)</span>
         </p>
       </Section>
       {careerTrappings.some((t) => 'text' in t && t.text === 'Arme (Au choix)') && (
         <Section title="Arme (au choix)">
-          <select
-            value={d.specChoices['Arme (Au choix)'] ?? ''}
-            onChange={(e) => setD({ ...d, specChoices: { ...d.specChoices, 'Arme (Au choix)': e.target.value }, weaponChoice: e.target.value })}
-          >
-            <option value="">— choisir —</option>
-            {WEAPON_CHOICES.map((w) => (
-              <option key={w.id} value={w.label}>
-                {w.label}
-              </option>
-            ))}
-          </select>
-          {d.weaponChoice && <p className="hint">{trappingMeta(WEAPON_ID_BY_LABEL.get(d.weaponChoice) ?? '')}</p>}
+          <label>
+            Choisissez votre arme de départ
+            <select
+              value={d.weaponChoice ?? ''}
+              onChange={(e) => setD({ ...d, weaponChoice: e.target.value || undefined })}
+            >
+              <option value="">— choisir —</option>
+              {WEAPON_CHOICES.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {d.weaponChoice && <p className="hint">{trappingMeta(d.weaponChoice)}</p>}
         </Section>
       )}
     </>
   );
   const body = (
     <>
-      <Section title={`Équipement de Classe (${klass?.label ?? '—'})`}>
-        <ul className="trapping-list">{(klass?.trappings ?? []).map(item)}</ul>
-      </Section>
-      <Section title={`Équipement de Carrière (${level?.label ?? '—'})`}>
-        <ul className="trapping-list">{careerTrappings.filter((t) => !('text' in t && t.text === 'Arme (Au choix)')).map(item)}</ul>
+      <Section
+        title="Revue d'équipement"
+        right={enc != null ? <span className="hint">Encombrement total <b>{enc}</b></span> : undefined}
+      >
+        <div className="mini-title">Dotation de Classe ({klass?.label ?? '—'})</div>
+        <div className="skill-tags" style={{ marginBottom: 12 }}>{(klass?.trappings ?? []).map(chip)}</div>
+        <div className="mini-title">Dotation de Carrière ({level?.label ?? '—'})</div>
+        <div className="skill-tags">{careerTrappings.filter((t) => !('text' in t && t.text === 'Arme (Au choix)')).map(chip)}</div>
+        <p className="hint" style={{ marginTop: 12 }}>
+          Chaque objet ouvre sa fiche au clic ; l'Encombrement total est reporté dans la fiche vivante.
+        </p>
       </Section>
     </>
   );
   return { choice, detail: { title: 'Possessions de départ', body } };
 }
 
-// ════ 6) Détails (LDB 05 l.587-744) — Zone A : détails physiques ; Zone B : identité + apparence ════
-function DetailZones({ d, setD }: StepProps): StepZones {
+// ════ 6) Détails (LDB 05 l.587-744) — Zone A : UNE région identité (nom, physique, motivation) ; Zone B : apparence ════
+export function DetailZones({ d, setD }: StepProps): StepZones {
   const sp = draftSpecies(d);
   if (!sp) {
     return {
@@ -1132,42 +1137,24 @@ function DetailZones({ d, setD }: StepProps): StepZones {
     };
   }
   const appearance: Appearance = { species: sp.label, sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  // Zone A = UNE seule région identité (nom+dé, physique, motivation/ambitions) — fin de l'identité
+  // coupée en trois. Zone B = l'apparence/personnalisateur.
   const choice = (
-    <Section
-      title="Détails physiques"
-      right={
-        <button
-          className="btn small"
-          onClick={() => {
-            const r = rolledDetails(d);
-            setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair });
-          }}
-        >
-          <Icon id="nav/dice" size="sm" /> Tirer
-        </button>
-      }
-    >
-      <label>
-        Âge
-        <input type="number" value={d.age ?? ''} onChange={(e) => setD({ ...d, age: Number(e.target.value) || undefined })} />
-      </label>
-      <label>
-        Taille (cm)
-        <input type="number" value={d.height ?? ''} onChange={(e) => setD({ ...d, height: Number(e.target.value) || undefined })} />
-      </label>
-      <label>
-        Yeux
-        <input value={d.eyes ?? ''} onChange={(e) => setD({ ...d, eyes: e.target.value })} />
-      </label>
-      <label>
-        Cheveux
-        <input value={d.hair ?? ''} onChange={(e) => setD({ ...d, hair: e.target.value })} />
-      </label>
-    </Section>
-  );
-  const body = (
     <>
-      <Section title="Identité">
+      <Section
+        title="Identité"
+        right={
+          <button
+            className="btn small"
+            onClick={() => {
+              const r = rolledDetails(d);
+              setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair });
+            }}
+          >
+            <Icon id="nav/dice" size="sm" /> Tirer le physique
+          </button>
+        }
+      >
         <label>
           Nom
           <span className="input-dice">
@@ -1185,22 +1172,42 @@ function DetailZones({ d, setD }: StepProps): StepZones {
             </button>
           </span>
         </label>
+        <label>
+          Âge
+          <input type="number" value={d.age ?? ''} onChange={(e) => setD({ ...d, age: Number(e.target.value) || undefined })} />
+        </label>
+        <label>
+          Taille (cm)
+          <input type="number" value={d.height ?? ''} onChange={(e) => setD({ ...d, height: Number(e.target.value) || undefined })} />
+        </label>
+        <label>
+          Yeux
+          <input value={d.eyes ?? ''} onChange={(e) => setD({ ...d, eyes: e.target.value })} />
+        </label>
+        <label>
+          Cheveux
+          <input value={d.hair ?? ''} onChange={(e) => setD({ ...d, hair: e.target.value })} />
+        </label>
+      </Section>
+      <Section title="Motivation & ambitions">
         <BackgroundFields
           values={{ motivation: d.motivation, ambitionShort: d.ambitionShort, ambitionLong: d.ambitionLong }}
           onChange={(patch) => setD({ ...d, ...patch })}
         />
       </Section>
-      <Section title="Apparence">
-        <AppearancePanel
-          value={appearance}
-          equip={{ weapons: [], armour: [] }}
-          career={d.careerId}
-          onChange={(a) => setD({ ...d, sex: a.sex, build: a.build, appSeed: a.seed ?? d.appSeed, colors: a.colors, parts: a.parts })}
-        />
-      </Section>
     </>
   );
-  return { choice, detail: { title: 'Identité & apparence', body } };
+  const body = (
+    <Section title="Apparence">
+      <AppearancePanel
+        value={appearance}
+        equip={{ weapons: [], armour: [] }}
+        career={d.careerId}
+        onChange={(a) => setD({ ...d, sex: a.sex, build: a.build, appSeed: a.seed ?? d.appSeed, colors: a.colors, parts: a.parts })}
+      />
+    </Section>
+  );
+  return { choice, detail: { title: 'Apparence', body } };
 }
 
 // ════ 7) Récapitulatif — la « feuille de personnage » cérémonielle : parchemin, figurine équipée

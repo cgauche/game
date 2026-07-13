@@ -1,9 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator, CareerZones, CharZones, SpeciesZones, PettySpellsSection } from './CharacterCreator';
+import { CharacterCreator, CareerZones, CharZones, SpeciesZones, SkillZones, StarZones, TrappingZones, DetailZones, PettySpellsSection } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
-import { newDraft, withSpecies, withCareer, rollDraftSpecies } from './draft';
-import { species as allSpecies, careersForSpecies, findCareerById } from '../../data';
+import {
+  newDraft,
+  withSpecies,
+  withCareer,
+  rollDraftSpecies,
+  withSpeciesSkillTier,
+  speciesSkillTier,
+  speciesSkillStep,
+  SPECIES_SKILLS_PLUS5,
+  SPECIES_SKILLS_PLUS3,
+} from './draft';
+import { species as allSpecies, careersForSpecies, findCareerById, advancementLabel } from '../../data';
 import { CHAR_LABELS } from '../../engine/types';
 
 // Défauts dérivés (page blanche : plus de pré-tiré dans newDraft) — 1ʳᵉ espèce LDB + sa 1ʳᵉ carrière.
@@ -133,6 +143,81 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     const html = renderToStaticMarkup(<>{SpeciesZones({ d: withSpecies(newDraft(7), SP.id), setD: () => {} }).detail.body}</>);
     // Le clic ouvre le Codex en MODALE par-dessus l'assistant (cf. CodexOverlay), sans changer d'écran.
     expect(html).toMatch(/class="codex-ref[^"]*"[^>]*role="button"/); // ≥1 ref cliquable
+  });
+
+  it('étape 5 (verdict 1) — UN seul widget d\'allocation : les Compétences de RACE passent au Stepper (fin des cases +5/+3)', () => {
+    const { choice } = SkillZones({ d: withCareer(withSpecies(newDraft(7), SP.id), 'soldat'), setD: () => {} });
+    const html = renderToStaticMarkup(<>{choice}</>);
+    expect(html).toContain('Compétences de race');
+    expect(html).toContain('class="stepper"'); // même widget que les Compétences de carrière
+    // Plus de cases à cocher « +5 »/« +3 » : la double mécanique cases/steppers est morte.
+    expect(html).not.toMatch(/type="checkbox"[^>]*\/>\s*\+5/);
+    expect(html).not.toContain('>+5<'); // l'ancien libellé de case n'existe plus
+  });
+
+  it('draft — palier de Compétence de race (Stepper) : quotas 3×+5 / 3×+3 respectés, + saute +3 quand son quota est plein', () => {
+    const base = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const names = SP.skills.map((a) => advancementLabel('skills', a));
+    // On pose 3 Compétences à +3 : le quota +3 est plein, un 4ᵉ +3 est refusé (brouillon inchangé).
+    let d = base;
+    d = withSpeciesSkillTier(d, names[0], 3);
+    d = withSpeciesSkillTier(d, names[1], 3);
+    d = withSpeciesSkillTier(d, names[2], 3);
+    expect(d.speciesPlus3.length).toBe(SPECIES_SKILLS_PLUS3);
+    const refused = withSpeciesSkillTier(d, names[3], 3);
+    expect(refused.speciesPlus3.length).toBe(SPECIES_SKILLS_PLUS3); // 4ᵉ +3 refusé (quota plein)
+    // Le + d'une Compétence à 0, quota +3 plein mais +5 libre → saute directement à 5.
+    expect(speciesSkillStep(d, names[3], 1)).toBe(5);
+    // Quota +5 plein (3) : une 4ᵉ Compétence à 0 ne peut monter qu'au palier +3 encore libre.
+    let e = withSpeciesSkillTier(base, names[0], 5);
+    e = withSpeciesSkillTier(e, names[1], 5);
+    e = withSpeciesSkillTier(e, names[2], 5);
+    expect(e.speciesPlus5.length).toBe(SPECIES_SKILLS_PLUS5);
+    expect(withSpeciesSkillTier(e, names[3], 5).speciesPlus5.length).toBe(SPECIES_SKILLS_PLUS5); // 4ᵉ +5 refusé
+    expect(speciesSkillStep(e, names[3], 1)).toBe(3); // +5 plein → le + monte au +3 libre
+    expect(speciesSkillTier(e, names[0])).toBe(5);
+  });
+
+  it('étape Signe astral (verdict 2) — ROUE CÉLESTE a11y (radiogroup) remplace le <select> ; desc verbatim en Zone B', () => {
+    const rolled = { ...newDraft(7), star: 'la-grande-croix' };
+    const { choice, detail } = StarZones({ d: rolled, setD: () => {} });
+    const cHtml = renderToStaticMarkup(<>{choice}</>);
+    expect(cHtml).toContain('celestial-wheel');
+    expect(cHtml).toContain('role="radiogroup"');
+    expect(cHtml).toMatch(/role="radio"[^>]*aria-checked="true"/); // signe choisi mis en évidence
+    expect(cHtml).not.toContain('<select value="la-grande-croix"'); // fin du <select> de signe
+    const dHtml = renderToStaticMarkup(<>{detail.body}</>);
+    expect(dHtml).toContain('La Grande Croix'); // titre de la ParchmentCard
+    expect(dHtml).toContain('Astrologie (pur roleplay)');
+    expect(dHtml).not.toContain('trapping-list'); // classe libérée
+  });
+
+  it('étape Possessions (verdict 3) — revue d\'équipement : chips CodexRef + Encombrement total + bourse (plus de liste à puces)', () => {
+    const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const { choice, detail } = TrappingZones({ d, setD: () => {} });
+    const cHtml = renderToStaticMarkup(<>{choice}</>);
+    expect(cHtml).toContain('Bourse de départ');
+    const dHtml = renderToStaticMarkup(<>{detail.body}</>);
+    expect(dHtml).toContain('Encombrement total');
+    expect(dHtml).toContain('skill-tags'); // objets en chips
+    expect(dHtml).toContain('Dotation de Classe');
+    expect(dHtml).not.toContain('trapping-list');
+    expect(dHtml).not.toContain('item-meta');
+  });
+
+  it('étape Détails (verdict 4) — identité fusionnée : nom + physique + motivation en Zone A ; apparence en Zone B', () => {
+    const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const { choice, detail } = DetailZones({ d, setD: () => {} });
+    const cHtml = renderToStaticMarkup(<>{choice}</>);
+    // UNE région identité en Zone A : nom, âge/taille/yeux/cheveux, motivation/ambitions ensemble.
+    expect(cHtml).toContain('Nom du personnage');
+    expect(cHtml).toContain('Âge');
+    expect(cHtml).toContain('Cheveux');
+    expect(cHtml).toContain('Motivation'); // BackgroundFields présent en Zone A
+    // Zone B = apparence seule (le personnalisateur), plus l'identité éclatée.
+    const dHtml = renderToStaticMarkup(<>{detail.body}</>);
+    expect(dHtml).toContain('appear-panel');
+    expect(dHtml).not.toContain('Nom du personnage'); // le nom n'est plus dans le détail
   });
 
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {
