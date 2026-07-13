@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planche — Choix des personnages (compagnie + sélecteur), charte Atelier du scribe</title>
+<link rel="stylesheet" href="planche-fonts.css">
+<style>
+/* ══════ Tokens (copie de src/ui/styles/base.css) ══════ */
+:root{
+  --bg:#100e0b; --bg2:#171410; --panel:#1d1913; --panel2:#272119;
+  --border:#443626; --text:#e4dabf; --muted:#a3936f;
+  --gold:#b8912f; --gold2:#d8b954;
+  --accent:#7c1d12; --accent2:#a13224;
+  --danger:#d6543a; --ok:#5d8a46;
+  --parchment:#decb9d; --parchment2:#cbb478; --ink:#221a11; --blood:#5a120a;
+  --font-display:'Grenze Gotisch','Trebuchet MS',serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#0a0908;color:var(--text);font-family:'Segoe UI','Trebuchet MS',system-ui,sans-serif}
+::-webkit-scrollbar{width:7px;height:7px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}
+
+/* ══════ Habillage de la planche ══════ */
+.plate-head{max-width:1600px;margin:36px auto 8px;padding:0 8px}
+.plate-head h1{font-family:var(--font-display);color:var(--gold2);font-size:34px;margin:0;letter-spacing:1px}
+.plate-head p{color:var(--muted);margin:6px 0 0;font-size:14px;max-width:1150px;line-height:1.5}
+.screen-head{max-width:1600px;margin:58px auto 4px;padding:0 8px;border-bottom:1px solid #2a2218;padding-bottom:10px}
+.screen-head h2{font-family:var(--font-display);color:var(--parchment);font-size:27px;margin:0;letter-spacing:1px}
+.screen-head p{color:var(--muted);font-size:13.5px;max-width:1150px;line-height:1.5;margin:6px 0 0}
+.mock{width:1600px;height:830px;position:relative;overflow:hidden;
+  margin:14px auto 0;border:1px solid #2a2218;border-radius:6px;box-shadow:0 34px 90px rgba(0,0,0,.65)}
+.plate-foot{max-width:1600px;margin:56px auto 60px;padding:0 8px;color:#7c6e52;font-size:12px;line-height:1.55}
+
+/* ══════ Boutons / chips (charte) ══════ */
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;
+  padding:10px 16px;font-size:14px;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:hover{border-color:var(--gold)}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn-primary{background:linear-gradient(180deg,var(--accent2),var(--accent));border:1px solid #c9573f;
+  color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.btn-ghost{background:transparent;border:1px solid transparent;color:var(--muted)}
+.btn-ghost:hover{border-color:var(--border)}
+.btn-danger{color:var(--danger)}
+.chip{display:inline-flex;align-items:baseline;gap:5px;font-size:12px;line-height:1.35;padding:2px 9px;
+  border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text)}
+.chip b{color:var(--gold2)}
+.chiprow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+
+/* ══════ Statuts métallisés (Bronze / Argent / Or) ══════ */
+.st-bronze,.st-argent,.st-or{font-weight:600;background-clip:text;-webkit-background-clip:text;
+  color:transparent !important;white-space:nowrap}
+.st-bronze{background-image:linear-gradient(180deg,#e29a6a,#b06a3a 55%,#7d4a28)}
+.st-argent{background-image:linear-gradient(180deg,#e8edf1,#aab4bc 55%,#7e8890)}
+.st-or{background-image:linear-gradient(180deg,#ffe6a8,#d8b954 55%,#9c7526)}
+.mini-title{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:0 0 6px}
+.figsvg{display:block}
+.fig-dark{filter:drop-shadow(0 0 22px rgba(216,185,84,.10)) drop-shadow(0 0 1.5px rgba(216,185,84,.40))}
+
+/* ══════ Bouton retour enrichi (mini-têtes + compteur) ══════ */
+.grp{display:inline-flex;align-items:center;gap:7px}
+.grp .heads{display:inline-flex}
+.grp .heads svg{width:17px;height:17px;fill:#6b5c42;border:1px solid #4a3a24;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#241a10,#0d0805)}
+.grp .heads svg + svg{margin-left:-6px}
+.grp .ct{color:#8a744a;font-size:12px}
+
+/* ══════ Coquille ATELIER DU SCRIBE (chrome unique) ══════ */
+.dirC{background:
+  radial-gradient(640px 420px at 76% 26%, rgba(255,196,110,.09), transparent 62%),
+  radial-gradient(900px 520px at 50% 122%, rgba(60,32,14,.55), transparent 60%),
+  linear-gradient(160deg,#1a130c,#0a0705);
+  display:flex;flex-direction:column}
+.c-bar{display:flex;align-items:center;gap:14px;padding:10px 18px;
+  background:linear-gradient(180deg,#241a10,#150e08);border-bottom:1px solid #55402a;
+  box-shadow:0 1px 0 rgba(224,181,90,.16)}
+.c-bar h1{font-family:var(--font-display);font-size:21px;color:var(--gold2);margin:0;letter-spacing:.8px;white-space:nowrap}
+.c-bar .ctitle{color:#8a744a;font-size:14px;font-family:var(--font-display);letter-spacing:.6px}
+.c-sub{display:flex;justify-content:center;gap:6px;padding:6px 0;
+  background:#150e08;border-bottom:1px solid #2e2314}
+.substep{font-size:11.5px;padding:4px 13px;border-radius:999px;border:1px solid var(--border);color:#7c6e52;letter-spacing:.4px;white-space:nowrap;cursor:pointer}
+.substep.on{border-color:var(--gold);color:var(--gold2);background:rgba(216,185,84,.08);font-weight:600}
+.c-main{flex:1;display:flex;gap:16px;padding:16px;min-height:0}
+.c-rail{width:286px;flex:none;background:linear-gradient(160deg,#241a10,#150e08);
+  border:1px solid #55402a;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:7px;
+  box-shadow:inset 0 0 24px rgba(0,0,0,.4);overflow:hidden}
+.c-lectern{flex:1;position:relative;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:10px;
+  background:radial-gradient(480px 300px at 50% 0%, rgba(224,181,90,.06), transparent 65%),
+  linear-gradient(180deg,#180f09,#0d0805);
+  border:1px solid #55402a;border-radius:12px;padding:14px 24px 12px}
+.c-rivet{position:absolute;width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 1px 2px rgba(0,0,0,.6);z-index:2}
+.c-rivet.tl{top:10px;left:10px}.c-rivet.tr{top:10px;right:10px}
+.c-rivet.bl{bottom:10px;left:10px}.c-rivet.br{bottom:10px;right:10px}
+.c-dhead{display:flex;align-items:baseline;gap:14px}
+.c-dhead h2{font-family:var(--font-display);font-size:26px;color:var(--gold2);margin:0;letter-spacing:.6px}
+.c-dhead .sub{color:var(--muted);font-size:12.5px;font-variant-caps:small-caps;letter-spacing:1.4px}
+.c-foot{display:flex;align-items:center;gap:16px;padding:11px 18px;border-top:1px solid #55402a;
+  background:linear-gradient(0deg,#201709,#150e08)}
+.c-foot .hint{font-size:13px;color:#c9ac72}
+.c-foot .hint b{color:var(--gold2)}
+.c-foot .btn-primary{margin-left:auto;padding:11px 26px;font-size:15px}
+.c-note{font-size:11.5px;color:#8a744a;line-height:1.5;padding:2px 4px 0}
+.c-note b{color:#c9ac72}
+.c-search{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:8px;
+  border:1px solid #55402a;background:rgba(12,7,4,.75);font-size:12.5px;color:#8a744a}
+.c-search b{color:#d9c48f;font-weight:400}
+.c-lamp{position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:34px;background:#3a2c1a}
+.c-lamp::after{content:'';position:absolute;left:50%;top:34px;transform:translateX(-50%);width:14px;height:10px;
+  border-radius:0 0 7px 7px;background:linear-gradient(180deg,#8a6c2f,#3a2c1a);box-shadow:0 0 26px 10px rgba(255,196,110,.14)}
+.c-carve{background:linear-gradient(160deg,#241a10,#170f09);border:1px solid #4a3a24;color:#d9c48f;
+  font-size:12px;padding:3px 9px;border-radius:5px}
+.c-carve.talent{border-color:var(--gold);color:var(--gold2)}
+.c-carve b{color:#ffe6a8}
+.c-carve.ghost{border-style:dashed;color:#6b5836;background:transparent}
+.c-meta{display:flex;gap:6px;flex-wrap:wrap}
+.c-ink-prose{position:relative;background:rgba(8,5,3,.5);border:1px solid #3a2c1a;border-radius:8px;
+  padding:11px 14px;max-height:130px;overflow:auto;font-size:12.5px;line-height:1.55;color:#e7d9bc}
+.c-ink-prose p{margin:0 0 8px}
+.c-ink-prose p:last-child{margin-bottom:0}
+.skillref{cursor:help;transition:color .1s}
+.skillref:hover{color:#ffe6a8}
+.sealwax{position:absolute;left:-8px;top:8px;width:34px;height:34px;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+/* Alvéoles de quota (kit — réglette à alvéoles) */
+.socket{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#241a10,#0a0603);
+  border:1px solid #8a6c2f;box-shadow:inset 0 2px 4px rgba(0,0,0,.75)}
+.socket.lit{background:radial-gradient(circle at 35% 30%,#ffd97a,#a87f2c);
+  box-shadow:0 0 9px rgba(255,217,122,.5), inset 0 1px 2px rgba(255,255,255,.35)}
+
+/* ══════ Cartouche Campagne (rail du registre) ══════ */
+.camp-plate{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:8px;
+  border:1px solid #55402a;background:linear-gradient(160deg,#2f2415,#1c140c)}
+.camp-plate .lb{font-size:10.5px;text-transform:uppercase;letter-spacing:1.3px;color:#8a744a}
+.camp-plate .nm{font-family:var(--font-display);font-size:17px;color:#ffe6a8;letter-spacing:.4px;line-height:1.25}
+.camp-plate .btn{align-self:flex-start}
+
+/* ══════ Composition de la compagnie (chips dérivées des rôles) ══════ */
+.compo{display:flex;flex-direction:column;gap:5px}
+.compo-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;
+  border:1px solid #3a2c1a;background:linear-gradient(160deg,rgba(47,36,21,.55),rgba(28,20,12,.55));font-size:12px}
+.compo-row .socket{flex:none}
+.compo-row .ax{color:#d9c48f;font-variant-caps:small-caps;letter-spacing:1px}
+.compo-row .who{margin-left:auto;color:#8a744a;font-size:11px;text-align:right}
+.compo-row.miss{border-style:dashed;background:transparent}
+.compo-row.miss .ax{color:#6b5836}
+.compo-row.miss .who{color:#5c4a30;font-style:italic}
+
+/* ══════ Les ACTES D'ENGAGEMENT (sièges de la compagnie, grille 2×2) ══════ */
+.actes{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;margin-top:2px}
+.acte{position:relative;display:flex;gap:16px;border-radius:10px;padding:14px 16px 12px 14px;
+  background:linear-gradient(160deg,#251b10,#160e08);border:1px solid #55402a;
+  box-shadow:0 4px 14px rgba(0,0,0,.4), inset 0 1px 0 rgba(232,196,103,.14);min-height:0}
+.acte::before,.acte::after{content:'';position:absolute;top:7px;width:5px;height:5px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 1px 2px rgba(0,0,0,.6)}
+.acte::before{left:8px}.acte::after{right:8px}
+.acte .sealwax{left:auto;right:-10px;top:-8px;width:44px;height:44px;z-index:2}
+.acte-fig{width:168px;flex:none;position:relative;display:flex;align-items:flex-end;justify-content:center;
+  border-radius:8px;overflow:hidden;padding-bottom:4px;
+  background:radial-gradient(120px 190px at 50% 22%, rgba(255,196,110,.16), transparent 65%),
+  linear-gradient(180deg,#140e08,#080503);border:1px solid #4a3a24;cursor:pointer;transition:.15s}
+.acte-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.acte-num{font-size:10.5px;text-transform:uppercase;letter-spacing:1.6px;color:#8a744a}
+.acte-name{font-family:var(--font-display);font-size:26px;color:#ffe6a8;letter-spacing:.5px;line-height:1.1;margin:0;cursor:pointer}
+.acte-sub{font-size:13.5px;color:var(--muted)}
+.acte-sub b{color:#d9c48f;font-weight:600}
+.acte-roles{font-size:12.5px;color:#c9ac72;font-variant-caps:small-caps;letter-spacing:.8px}
+.acte-hook{font-size:12.5px;color:#b09b6f;font-style:italic;line-height:1.45}
+.acte-actions{margin-top:auto;display:flex;gap:6px;align-items:center;padding-top:6px;border-top:1px solid rgba(85,64,42,.5)}
+.acte:hover .acte-fig{border-color:#8a6c2f}
+/* Acte VIERGE : la page blanche du registre */
+.acte.blank{border-style:dashed;border-color:#4a3a24;background:linear-gradient(160deg,rgba(37,27,16,.45),rgba(22,14,8,.45));
+  box-shadow:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:default}
+.acte.blank::before,.acte.blank::after{display:none}
+.acte.blank .acte-num{color:#6b5836}
+.acte.blank .invite{font-family:var(--font-display);font-size:19px;color:#8a744a;letter-spacing:.5px}
+.acte.blank .subinvite{font-size:12px;color:#6b5836;margin-top:-4px}
+.acte.blank .blank-actions{display:flex;gap:8px;margin-top:4px}
+
+/* ══════ Le sélecteur : PLAQUES DE CANDIDATURE ══════ */
+.cand-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  align-content:start;padding:2px 2px 4px}
+.plaq{position:relative;display:flex;gap:12px;border-radius:9px;padding:11px 13px 9px 12px;cursor:pointer;
+  background:linear-gradient(160deg,#2f2415,#1c140c);border:1px solid #4a3a24;min-height:0;transition:.15s}
+.plaq::before,.plaq::after{content:'';position:absolute;top:6px;width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 0 2px rgba(0,0,0,.6)}
+.plaq::before{left:7px}.plaq::after{right:7px}
+.plaq:hover{border-color:#8a6c2f}
+.plaq.sel{background:linear-gradient(160deg,#4a2c18,#2c1810);border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32), 0 6px 16px rgba(0,0,0,.5), inset 0 0 22px rgba(224,181,90,.08)}
+.plaq-fig{width:86px;flex:none;position:relative;display:flex;align-items:flex-end;justify-content:center;border-radius:7px;
+  overflow:hidden;padding-bottom:3px;
+  background:radial-gradient(70px 110px at 50% 25%, rgba(255,196,110,.13), transparent 65%),
+  linear-gradient(180deg,#140e08,#080503);border:1px solid #3a2c1a}
+.plaq-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.plaq-name{font-family:var(--font-display);font-size:16px;color:#d9c48f;letter-spacing:.4px;line-height:1.2;margin:0}
+.plaq.sel .plaq-name{color:#ffe6a8;font-weight:600}
+.plaq-sub{font-size:12px;color:var(--muted)}
+.plaq-roles{font-size:11.5px;color:#c9ac72;font-variant-caps:small-caps;letter-spacing:.7px}
+.plaq-hook{font-size:11.5px;color:#b09b6f;font-style:italic;line-height:1.4}
+.plaq-foot{margin-top:auto;display:flex;gap:6px;align-items:center;padding-top:5px}
+.plaq-foot .purse{font-size:11px;color:#8a744a}
+.plaq-foot .purse b{color:#c9ac72;font-weight:600}
+.plaq-foot .tools{margin-left:auto;display:flex;gap:4px}
+/* Plaques-action (créer / importer) — même famille visuelle, page à écrire */
+.plaq.action{flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  border-style:dashed;background:linear-gradient(160deg,rgba(47,36,21,.4),rgba(28,20,12,.4))}
+.plaq.action::before,.plaq.action::after{display:none}
+.plaq.action .glyph{font-size:26px;color:#8a744a;line-height:1}
+.plaq.action .lbl{font-family:var(--font-display);font-size:16.5px;color:#c9ac72;letter-spacing:.4px}
+.plaq.action .inv{font-size:11.5px;color:#6b5836}
+.plaq.action:hover .lbl{color:var(--gold2)}
+
+/* ══════ L'acte de présentation (détail du candidat élu) ══════ */
+.cand-detail{width:520px;flex:none;position:relative;display:flex;flex-direction:column;gap:9px;
+  background:radial-gradient(380px 260px at 50% 0%, rgba(224,181,90,.07), transparent 65%),
+  linear-gradient(180deg,#180f09,#0d0805);
+  border:1px solid #55402a;border-radius:12px;padding:14px 18px 12px;overflow:hidden}
+.cand-detail .rubs{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:2px}
+.cand-detail .engage{display:flex;align-items:center;gap:10px;padding-top:9px;border-top:1px solid #55402a}
+.cand-detail .engage .hint{font-size:12px;color:#8a744a;line-height:1.35}
+.cand-detail .engage .btn-primary{margin-left:auto;white-space:nowrap}
+
+/* ══════ La rose des forces (kit v2 — arbitrage axes 2026-07-13, #409) ══════ */
+.rose{display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+.rose text{font-family:'Segoe UI','Trebuchet MS',sans-serif}
+.rose-corner{position:absolute;right:5px;bottom:5px;z-index:2;pointer-events:none}
+.rose-corner.sm .rose{width:36px;height:36px}
+</style>
+</head>
+<body>
+
+<!-- ══════ Silhouettes (placeholder aux proportions rig SP1 — rig réel en production) ══════ -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="fig-human" viewBox="0 0 200 420">
+      <ellipse cx="100" cy="30" rx="35" ry="7"/>
+      <path d="M78 30 Q80 6 100 6 Q120 6 122 30 Z"/>
+      <ellipse cx="100" cy="45" rx="14" ry="16"/>
+      <rect x="93" y="58" width="14" height="12"/>
+      <path d="M100 66 C82 68 70 76 67 92 C62 118 66 150 70 178 C64 234 60 288 60 314 L86 308 L100 298 L114 308 L140 314 C140 288 136 234 130 178 C134 150 138 118 133 92 C130 76 118 68 100 66 Z"/>
+      <path d="M84 298 L80 378 L70 392 L94 392 L96 304 Z"/>
+      <path d="M116 298 L120 378 L130 392 L106 392 L104 304 Z"/>
+      <path d="M72 90 C60 106 55 140 54 188 L66 191 C68 150 72 118 82 100 Z"/>
+      <path d="M57 182 L64 182 L62 332 L59 339 L56 332 Z"/>
+      <rect x="46" y="190" width="28" height="5" rx="2"/>
+      <circle cx="60" cy="179" r="4"/>
+      <path d="M128 90 C140 104 144 130 140 158 C132 166 118 168 112 160 C124 150 128 120 118 100 Z"/>
+    </symbol>
+    <symbol id="fig-human-agit" viewBox="0 0 200 420">
+      <use href="#fig-human"/>
+      <path d="M100 8 Q121 8 127 27 L163 20 Q140 44 100 42 Q60 44 37 20 L73 27 Q79 8 100 8 Z"/>
+      <g fill="#cbb478" opacity=".88">
+        <rect x="106" y="148" width="26" height="34" rx="2" transform="rotate(9 119 165)"/>
+        <rect x="114" y="144" width="26" height="34" rx="2" transform="rotate(20 127 161)"/>
+      </g>
+      <g stroke="#221a11" stroke-width="1.6" fill="none" opacity=".8">
+        <path d="M112 156 l16 2 M111 162 l16 2 M110 168 l16 2" transform="rotate(9 119 165)"/>
+      </g>
+    </symbol>
+    <symbol id="fig-dwarf-slayer" viewBox="0 0 200 420">
+      <!-- Nain tueur : trapu, crête dressée, barbe en pointe, grande hache double -->
+      <path d="M88 192 Q76 148 100 130 Q124 148 112 192 Z"/>
+      <ellipse cx="100" cy="206" rx="17" ry="18"/>
+      <path d="M80 210 Q100 218 120 210 L114 288 Q100 304 86 288 Z"/>
+      <path d="M100 222 C70 226 56 244 55 268 C53 300 57 324 61 340 L89 334 L100 330 L111 334 L139 340 C143 324 147 300 145 268 C144 244 130 226 100 222 Z"/>
+      <path d="M85 330 L81 384 L66 398 L98 398 L97 336 Z"/>
+      <path d="M115 330 L119 384 L134 398 L102 398 L103 336 Z"/>
+      <path d="M64 252 C52 264 47 286 47 312 L61 316 C62 290 66 270 76 260 Z"/>
+      <path d="M136 252 C147 262 151 276 152 292 L139 296 C137 277 133 264 126 258 Z"/>
+      <path d="M148 150 L157 150 L155 396 L151 404 L147 396 Z"/>
+      <path d="M156 142 C180 143 193 160 193 186 L156 190 Z"/>
+      <path d="M149 142 C125 143 112 160 112 186 L149 190 Z"/>
+    </symbol>
+    <symbol id="fig-human-wiz" viewBox="0 0 200 420">
+      <!-- Apprentie sorcière : robe à capuche + bâton -->
+      <path d="M100 10 Q126 14 128 44 L124 52 Q100 40 76 52 L72 44 Q74 14 100 10 Z"/>
+      <ellipse cx="100" cy="52" rx="13" ry="14"/>
+      <path d="M100 66 C80 68 68 78 64 96 C56 140 54 220 48 340 L74 348 L100 352 L126 348 L152 340 C146 220 144 140 136 96 C132 78 120 68 100 66 Z"/>
+      <path d="M70 92 C58 108 52 150 50 208 L62 211 C64 166 68 122 80 102 Z"/>
+      <path d="M130 92 C142 108 148 150 150 208 L138 211 L136 204 C134 162 130 122 120 102 Z"/>
+      <path d="M143 96 L151 96 L149 344 L145 352 L141 344 Z"/>
+      <circle cx="147" cy="88" r="9"/>
+      <path d="M64 210 Q100 226 136 210 L138 232 Q100 246 62 232 Z" opacity=".55"/>
+    </symbol>
+    <symbol id="fig-halfling" viewBox="0 0 200 420">
+      <!-- Halfling : petit gabarit, pieds nus, besace -->
+      <g transform="translate(24,148) scale(0.76)">
+        <path d="M100 12 Q122 14 124 34 Q112 26 100 26 Q88 26 76 34 Q78 14 100 12 Z"/>
+        <ellipse cx="100" cy="42" rx="15" ry="16"/>
+        <rect x="93" y="55" width="14" height="10"/>
+        <path d="M100 62 C82 64 70 74 67 90 C62 118 64 156 68 186 C64 232 62 272 62 296 L88 292 L100 286 L112 292 L138 296 C138 272 136 232 132 186 C136 156 138 118 133 90 C130 74 118 64 100 62 Z"/>
+        <path d="M84 288 L80 344 L66 354 L96 354 L96 294 Z"/>
+        <path d="M116 288 L120 344 L134 354 L104 354 L104 294 Z"/>
+        <ellipse cx="80" cy="356" rx="17" ry="7"/>
+        <ellipse cx="120" cy="356" rx="17" ry="7"/>
+        <path d="M70 88 C58 104 54 136 54 176 L68 179 C69 142 72 112 82 96 Z"/>
+        <path d="M130 88 C142 104 146 136 146 176 L132 179 C131 142 128 112 118 96 Z"/>
+        <path d="M56 168 Q76 160 78 184 Q78 204 60 204 Q48 202 48 186 Q48 172 56 168 Z"/>
+      </g>
+    </symbol>
+    <linearGradient id="fgC3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a2c15"/><stop offset="1" stop-color="#0a0805"/>
+    </linearGradient>
+    <radialGradient id="waxG" cx="35%" cy="30%">
+      <stop offset="0" stop-color="#c8503a"/><stop offset=".55" stop-color="#8f1f14"/><stop offset="1" stop-color="#5a120a"/>
+    </radialGradient>
+    <radialGradient id="roseWell" cx="40%" cy="35%">
+      <stop offset="0" stop-color="#2c2012"/><stop offset="1" stop-color="#050302"/>
+    </radialGradient>
+    <symbol id="wax-seal" viewBox="0 0 64 64">
+      <path d="M33 3 C44 2 55 8 59 18 C63 27 61 37 56 45 C58 50 56 54 51 56 C45 61 36 63 28 60 C24 62 19 61 16 57 C9 53 3 45 3 36 C2 26 8 15 16 9 C21 5 27 4 33 3 Z" fill="url(#waxG)"/>
+      <path d="M56 45 C60 47 63 51 61 54 C59 56 55 55 54 52 C53 49 54 46 56 45 Z" fill="#7c1810"/>
+      <circle cx="32" cy="32" r="20" fill="none" stroke="#5e0f08" stroke-width="2.4" opacity=".85"/>
+      <circle cx="32" cy="33.4" r="20" fill="none" stroke="#e08a68" stroke-width=".9" opacity=".38"/>
+      <path fill="#5e0f08" d="M32 15 C42 15 47 22 47 29.5 C47 35 44 38.5 40.5 40 L40.5 44 Q32 47.5 23.5 44 L23.5 40 C20 38.5 17 35 17 29.5 C17 22 22 15 32 15 Z"/>
+      <g fill="#8f1f14">
+        <ellipse cx="26.3" cy="29" rx="3.7" ry="4.5"/>
+        <ellipse cx="37.7" cy="29" rx="3.7" ry="4.5"/>
+        <path d="M32 33.2 L34.5 38 L29.5 38 Z"/>
+        <rect x="27.4" y="40.2" width="1.5" height="4.8" rx=".7"/>
+        <rect x="31.25" y="40.8" width="1.5" height="5.4" rx=".7"/>
+        <rect x="35.1" y="40.2" width="1.5" height="4.8" rx=".7"/>
+      </g>
+      <path fill="#e08a68" opacity=".3" d="M23.5 44 Q32 47.5 40.5 44 L40.5 45.3 Q32 48.8 23.5 45.3 Z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="plate-head">
+  <h1>Choix des personnages — le REGISTRE DE COMPAGNIE (charte Atelier du scribe)</h1>
+  <p style="color:#9db07a;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin:6px 0 0">
+  Conforme au design system v2 (design-system-atelier.html) — réconciliation croisée du 2026-07-13.</p>
+  <p>Les deux écrans du recrutement sous la charte ratifiée du créateur : <b style="color:var(--gold2)">écran de
+  compagnie = le registre du scribe</b>, quatre ACTES D'ENGAGEMENT posés sur le bureau (occupé = acte scellé à la
+  cire, figurine sous lampe, nom en blackletter, statut métallisé ; vide = acte vierge en pointillés) —
+  <b style="color:var(--text)">sélecteur dédié = le mur des plaques de candidature</b>, chaque candidat sur sa
+  plaque de laiton, l'élu déplié dans son ACTE DE PRÉSENTATION (le gabarit-cadre de la charte : en-tête · chips
+  méta · rubriques — la présentation « qui est-ce » vit DANS le sélecteur, plus de modale). L'équipe est la STAR
+  (la grille 2×2 occupe tout le pupitre et gagne du poids à chaque siège scellé) ; le personnage (figurine + nom)
+  est cliquable → présentation, sans bouton « Qui est-ce ? » ; layout stable au survol (actions toujours
+  visibles) ; aucun nom tronqué ; une figurine par carte. Pas de grain de matière (en attente d'arbitrage).</p>
+</header>
+
+<!-- ════════════════════════════ A. ÉCRAN DE COMPAGNIE (2/4) ════════════════════════════ -->
+<div class="screen-head">
+  <h2>A — La compagnie (2/4 recrutés) : les actes d'engagement du registre</h2>
+  <p>Rail = le REGISTRE : cartouche de campagne (plaque de bois + « Changer ») et COMPOSITION de la compagnie —
+  la ROSE DE COMPAGNIE (médaillon agrégé, meilleure valeur par axe) au-dessus des rangées d'axes (social / mêlée /
+  tir / soins / savoir — même ordre que la rose), alvéole allumée = couverte, pointillés = à pourvoir. Pupitre =
+  quatre actes 2×2 : les deux scellés portent le sceau de cire débordant, la figurine sous sa lampe avec le GLYPHE
+  de la rose des forces au coin bas-droit (Ludwig pointe vers Social, Borri vers Mêlée — les mêmes axes que le
+  rail), « Carrière — Race » avec statut MÉTALLISÉ, rôles en toutes lettres, accroche ; les deux
+  vierges invitent Créer / Choisir. Pied = « Commencer » gaté (ici la compagnie peut partir ; à 0 recruté le
+  bouton se grise et la raison « Recrutez au moins un aventurier pour commencer. » s'affiche à sa place d'hint).</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost">← Menu</button>
+    <h1>Votre compagnie</h1>
+    <span class="ctitle">2/4 aventuriers engagés</span>
+  </header>
+  <div class="c-main">
+    <aside class="c-rail">
+      <div class="mini-title">Le registre de compagnie</div>
+      <div class="camp-plate">
+        <span class="lb">Campagne</span>
+        <span class="nm">L'Ennemi Intérieur — L'Œil pour l'Œil</span>
+        <button class="btn small">Changer</button>
+      </div>
+      <div class="mini-title" style="margin-top:8px">Composition — ce que la compagnie sait faire</div>
+      <div style="display:flex;justify-content:center;padding:1px 0 3px">
+        <div data-rose="Social|S:82,Mêlée|M:88,Tir|T:30,Soins|So:18,Savoir|Sa:46" data-mode="medal"></div>
+      </div>
+      <div class="compo">
+        <div class="compo-row"><span class="socket lit"></span><span class="ax">Social</span><span class="who">Ludwig</span></div>
+        <div class="compo-row"><span class="socket lit"></span><span class="ax">Mêlée</span><span class="who">Borri</span></div>
+        <div class="compo-row miss"><span class="socket"></span><span class="ax">Tir</span><span class="who">à pourvoir</span></div>
+        <div class="compo-row miss"><span class="socket"></span><span class="ax">Soins</span><span class="who">à pourvoir</span></div>
+        <div class="compo-row miss"><span class="socket"></span><span class="ax">Savoir</span><span class="who">à pourvoir</span></div>
+      </div>
+      <div class="c-note">La rose de COMPAGNIE agrège la meilleure valeur de chaque axe des membres — mêmes
+      axes, même ordre que la rose de chaque acte. Un axe en pointillés n'interdit rien : il reste à pourvoir.</div>
+      <div class="c-note" style="margin-top:auto">Cliquez un aventurier (figurine ou nom) pour le rencontrer —
+      sa présentation s'ouvre, la fiche complète est à un pas.</div>
+    </aside>
+    <section class="c-lectern">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="c-dhead">
+        <h2>Les actes d'engagement</h2>
+        <span class="sub">quatre sièges — deux scellés</span>
+      </div>
+      <div class="actes">
+        <!-- Acte I — Ludwig -->
+        <article class="acte">
+          <svg class="sealwax" aria-hidden="true"><use href="#wax-seal"/></svg>
+          <div class="acte-fig">
+            <div class="c-lamp"></div>
+            <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:224px">
+              <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+              <use href="#fig-human-agit" fill="url(#fgC3)"/>
+            </svg>
+            <div class="rose-corner" data-rose="Social|S:82,Mêlée|M:38,Tir|T:30,Soins|So:18,Savoir|Sa:46" data-mode="glyph"></div>
+          </div>
+          <div class="acte-body">
+            <span class="acte-num">Acte I</span>
+            <h3 class="acte-name">Ludwig Bachmeier</h3>
+            <span class="acte-sub"><b>Pamphlétaire</b> — Humain (Reiklander) · <span class="st-bronze">Bronze 1</span></span>
+            <span class="acte-roles">Charme · Ragot · Art (Écriture)</span>
+            <span class="acte-hook">« Faire tomber un échevin »</span>
+            <div class="acte-actions">
+              <button class="btn small">Modifier</button>
+              <button class="btn small btn-ghost">Remplacer</button>
+              <button class="btn small btn-ghost btn-danger">Retirer</button>
+            </div>
+          </div>
+        </article>
+        <!-- Acte II — Borri -->
+        <article class="acte">
+          <svg class="sealwax" aria-hidden="true"><use href="#wax-seal"/></svg>
+          <div class="acte-fig">
+            <div class="c-lamp"></div>
+            <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:224px">
+              <ellipse cx="100" cy="404" rx="60" ry="9" fill="rgba(0,0,0,.55)"/>
+              <use href="#fig-dwarf-slayer" fill="url(#fgC3)"/>
+            </svg>
+            <div class="rose-corner" data-rose="Social|S:22,Mêlée|M:88,Tir|T:25,Soins|So:15,Savoir|Sa:20" data-mode="glyph"></div>
+          </div>
+          <div class="acte-body">
+            <span class="acte-num">Acte II</span>
+            <h3 class="acte-name">Borri Grimmbrasson</h3>
+            <span class="acte-sub"><b>Tueur de trolls</b> — Nain · <span class="st-bronze">Bronze 2</span></span>
+            <span class="acte-roles">Corps à corps (Base) · Intimidation · Résistance à l'alcool</span>
+            <span class="acte-hook">« Laver son serment dans le sang des trolls »</span>
+            <div class="acte-actions">
+              <button class="btn small">Modifier</button>
+              <button class="btn small btn-ghost">Remplacer</button>
+              <button class="btn small btn-ghost btn-danger">Retirer</button>
+            </div>
+          </div>
+        </article>
+        <!-- Acte III — vierge -->
+        <article class="acte blank">
+          <span class="acte-num">Acte III</span>
+          <span class="invite">Un acte vierge attend son aventurier</span>
+          <span class="subinvite">Un siège à pourvoir</span>
+          <div class="blank-actions">
+            <button class="btn">Créer</button>
+            <button class="btn btn-primary">Choisir</button>
+          </div>
+        </article>
+        <!-- Acte IV — vierge -->
+        <article class="acte blank">
+          <span class="acte-num">Acte IV</span>
+          <span class="invite">Un acte vierge attend son aventurier</span>
+          <span class="subinvite">Un siège à pourvoir</span>
+          <div class="blank-actions">
+            <button class="btn">Créer</button>
+            <button class="btn btn-primary">Choisir</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+  <footer class="c-foot">
+    <span class="hint"><b>2</b> aventuriers engagés — la compagnie peut se mettre en route ;
+    deux actes restent vierges (soins, tir et savoir à pourvoir).</span>
+    <button class="btn btn-primary">Commencer →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ B. SÉLECTEUR DÉDIÉ ════════════════════════════ -->
+<div class="screen-head">
+  <h2>B — Le sélecteur (ouvert par « Choisir », acte III) : le mur des plaques de candidature</h2>
+  <p>Même chrome Atelier. Bandeau = onglets Mes personnages / Pré-tirés (pastilles de la charte). Gauche = les
+  candidats en PLAQUES DE LAITON vissées (figurine avec glyphe de rose au coin bas-droit, nom jamais tronqué,
+  « Carrière — Race » + statut métallisé, rôles, accroche, bourse pour un personnage sauvegardé, outils
+  exporter/supprimer) + plaques-action Créer / Importer (pages à écrire, en pointillés). Droite = l'ACTE DE
+  PRÉSENTATION du candidat élu — médaillon de rose (90px, initiales d'axes) près de l'en-tête — le gabarit-cadre de
+  la charte (en-tête · chips méta · rubriques « Qui est-ce ? » / Rôle / Compétences / Talents / Possessions) : la
+  présentation intégrée au sélecteur, plus de modale. Cliquer une plaque la déplie à droite (bordure or = élu en
+  lecture) ; le sceau de cire n'apparaît qu'à l'ENGAGEMENT. Une figurine par carte : le candidat déplié ne se
+  répète pas en double figurine dans l'acte (le héros n'apparaît qu'une fois — arbitrage de la charte).</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Compagnie <span class="ct">(2/4)</span></button>
+    <h1>Choisir un aventurier</h1>
+    <span class="ctitle">pour l'acte III</span>
+  </header>
+  <div class="c-sub">
+    <span class="substep on">Mes personnages</span>
+    <span class="substep">Pré-tirés</span>
+  </div>
+  <div class="c-main">
+    <section class="c-lectern" style="padding:14px 16px 12px">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="c-search">⌕ <b>Rechercher un personnage…</b></div>
+      <div class="cand-grid">
+        <!-- Elsa — sélectionnée (dépliée à droite) -->
+        <article class="plaq sel">
+          <div class="plaq-fig">
+            <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:132px">
+              <ellipse cx="100" cy="404" rx="58" ry="9" fill="rgba(0,0,0,.55)"/>
+              <use href="#fig-human-wiz" fill="url(#fgC3)"/>
+            </svg>
+            <div class="rose-corner sm" data-rose="Social|S:35,Mêlée|M:18,Tir|T:20,Soins|So:30,Savoir|Sa:85" data-mode="glyph"></div>
+          </div>
+          <div class="plaq-body">
+            <h3 class="plaq-name">Elsa Falkenrath</h3>
+            <span class="plaq-sub"><b style="color:#d9c48f">Apprentie sorcière</b> — Humaine (Reiklander) · <span class="st-bronze">Bronze 3</span></span>
+            <span class="plaq-roles">Focalisation · Savoir (Magie) · Perception</span>
+            <span class="plaq-hook">« Être admise aux Collèges d'Altdorf »</span>
+            <div class="plaq-foot">
+              <button class="btn small btn-primary">Recruter</button>
+              <span class="purse">Bourse <b>14 s.c.</b></span>
+              <span class="tools">
+                <button class="btn small btn-ghost" title="Exporter">⇓</button>
+                <button class="btn small btn-ghost btn-danger" title="Supprimer">✕</button>
+              </span>
+            </div>
+          </div>
+        </article>
+        <!-- Dieter -->
+        <article class="plaq">
+          <div class="plaq-fig">
+            <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:132px">
+              <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+              <use href="#fig-human" fill="url(#fgC3)"/>
+            </svg>
+            <div class="rose-corner sm" data-rose="Social|S:30,Mêlée|M:65,Tir|T:45,Soins|So:25,Savoir|Sa:20" data-mode="glyph"></div>
+          </div>
+          <div class="plaq-body">
+            <h3 class="plaq-name">Dieter Holzmann</h3>
+            <span class="plaq-sub"><b style="color:#d9c48f">Milicien</b> — Humain (Middenlander) · <span class="st-bronze">Bronze 3</span></span>
+            <span class="plaq-roles">Corps à corps (Base) · Perception · Intuition</span>
+            <span class="plaq-hook">« Retrouver le gang qui a brûlé sa rue »</span>
+            <div class="plaq-foot">
+              <button class="btn small btn-primary">Recruter</button>
+              <span class="purse">Bourse <b>9 s.c.</b></span>
+              <span class="tools">
+                <button class="btn small btn-ghost" title="Exporter">⇓</button>
+                <button class="btn small btn-ghost btn-danger" title="Supprimer">✕</button>
+              </span>
+            </div>
+          </div>
+        </article>
+        <!-- Petra -->
+        <article class="plaq">
+          <div class="plaq-fig">
+            <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:132px">
+              <ellipse cx="100" cy="404" rx="48" ry="8" fill="rgba(0,0,0,.55)"/>
+              <use href="#fig-halfling" fill="url(#fgC3)"/>
+            </svg>
+            <div class="rose-corner sm" data-rose="Social|S:25,Mêlée|M:45,Tir|T:55,Soins|So:20,Savoir|Sa:30" data-mode="glyph"></div>
+          </div>
+          <div class="plaq-body">
+            <h3 class="plaq-name">Petra Fouillepied</h3>
+            <span class="plaq-sub"><b style="color:#d9c48f">Chasseuse de rats</b> — Halfling · <span class="st-bronze">Bronze 3</span></span>
+            <span class="plaq-roles">Discrétion (Urbaine) · Perception · Corps à corps (Base)</span>
+            <span class="plaq-hook">« Débarrasser Ubersreik de son roi des rats »</span>
+            <div class="plaq-foot">
+              <button class="btn small btn-primary">Recruter</button>
+              <span class="purse">Bourse <b>11 s.c.</b></span>
+              <span class="tools">
+                <button class="btn small btn-ghost" title="Exporter">⇓</button>
+                <button class="btn small btn-ghost btn-danger" title="Supprimer">✕</button>
+              </span>
+            </div>
+          </div>
+        </article>
+        <!-- Plaque-action : créer -->
+        <article class="plaq action">
+          <span class="glyph">✎</span>
+          <span class="lbl">Créer un personnage</span>
+          <span class="inv">Forgez votre propre héros</span>
+        </article>
+        <!-- Plaque-action : importer -->
+        <article class="plaq action">
+          <span class="glyph">⇪</span>
+          <span class="lbl">Importer un personnage…</span>
+          <span class="inv">Un personnage exporté (JSON)</span>
+        </article>
+      </div>
+    </section>
+    <aside class="cand-detail">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div class="c-dhead" style="flex:1;min-width:0">
+          <h2>Elsa Falkenrath</h2>
+          <span class="sub">acte de présentation</span>
+        </div>
+        <div data-rose="Social|S:35,Mêlée|M:18,Tir|T:20,Soins|So:30,Savoir|Sa:85" data-mode="medal" style="flex:none;margin:-2px 0 -6px"></div>
+      </div>
+      <div class="c-meta">
+        <span class="chip">Statut <b class="st-bronze">Bronze 3</b></span>
+        <span class="chip">Blessures <b>11</b></span>
+        <span class="chip">Mouvement <b>4</b></span>
+        <span class="chip">Destin <b>2</b> · Résilience <b>1</b></span>
+        <span class="chip">Bourse <b>14 s.c.</b></span>
+      </div>
+      <div class="rubs">
+        <div>
+          <div class="mini-title">Qui est-ce ?</div>
+          <div class="c-ink-prose" style="max-height:none">
+            <p>Fille d'un batelier du Reik, Elsa a vu le vent de l'Aethyr avant de savoir le nommer. Ramassée par
+            un maître errant qui a reconnu la flamme dans son regard, elle porte depuis un bâton trop grand pour
+            elle et un grimoire qu'elle recopie chaque soir, page à page.</p>
+            <p>Motivée par <b>la soif de comprendre</b>, elle veut d'abord <b>être admise aux Collèges
+            d'Altdorf</b> — et, un jour, y enseigner à ceux qu'on refuse.</p>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Rôle dans le groupe</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Focalisation</span>
+            <span class="c-carve skillref">Savoir (Magie)</span>
+            <span class="c-carve skillref">Perception</span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Compétences formées</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Focalisation <b>+10</b></span>
+            <span class="c-carve skillref">Savoir (Magie) <b>+8</b></span>
+            <span class="c-carve skillref">Langue (Magick) <b>+5</b></span>
+            <span class="c-carve skillref">Perception <b>+5</b></span>
+            <span class="c-carve skillref">Intuition <b>+3</b></span>
+            <span class="c-carve skillref">Calme <b>+3</b></span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Magie mineure</span>
+            <span class="c-carve talent skillref">Lire/Écrire</span>
+            <span class="c-carve talent skillref">Seconde vue</span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Possessions</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Bâton</span>
+            <span class="c-carve skillref">Grimoire</span>
+            <span class="c-carve skillref">Sac à dos</span>
+            <span class="c-carve skillref">Nécessaire d'écriture</span>
+            <span class="c-carve skillref">Vêtements</span>
+          </div>
+        </div>
+      </div>
+      <div class="engage">
+        <span class="hint">L'engager scelle son acte au registre —<br>elle reste modifiable au créateur ensuite.</span>
+        <button class="btn btn-primary">Engager pour l'acte III →</button>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Compagnie</button>
+    <span class="hint">Vos personnages sauvegardés sont <b>locaux</b> à ce navigateur — exportez-les pour les
+    emporter ; la fiche complète du candidat est dans son acte de présentation.</span>
+  </footer>
+</div>
+
+<footer class="plate-foot">
+  Planche statique — aucune interaction câblée, aucun fichier du repo touché. Deux maquettes 1600×830, chrome
+  UNIQUE « Atelier du scribe » repris de la planche-créateur FINALE (plaques laiton/bois, rivets, lampes,
+  statuts métallisés, sceau de cire, blackletter Grenze Gotisch). MÉTAPHORES : écran A = le REGISTRE DE
+  COMPAGNIE — quatre actes d'engagement sur le bureau du scribe (occupé = acte scellé à la cire ; vide = acte
+  vierge en pointillés, la « page blanche » de la charte) ; écran B = le MUR DES PLAQUES DE CANDIDATURE — les
+  candidats en plaques vissées, l'élu déplié dans son acte de présentation (gabarit-cadre de la charte :
+  en-tête · chips méta · rubriques), la présentation « qui est-ce » intégrée au sélecteur au lieu d'une modale.
+  GRAMMAIRE : chip = référence (statut, blessures, dotations) ; plaque/acte/sceau = décision — la bordure OR
+  d'une plaque = candidat en lecture, le sceau de CIRE = engagement consommé (jamais posé au sélecteur) ; tout
+  nom d'entité porte l'affordance CodexRef (`src/ui/compendium/CodexRef.tsx`, `.codex-ref`). EXIGENCES UTILISATEUR
+  honorées : l'équipe est la star (grille 2×2 plein pupitre, poids croissant au remplissage — un acte scellé
+  pèse, un acte vierge est discret) ; personnage cliquable (figurine + nom = poignée de présentation, aucun
+  bouton « Qui est-ce ? ») ; layout stable au survol (actions Modifier/Remplacer/Retirer TOUJOURS posées sous
+  filet, hover = bordure/lueur seulement) ; zéro troncature (les noms wrappent, jamais d'ellipsis) ; UNE
+  figurine par carte et le candidat déplié n'est jamais dédoublé (son acte de présentation est textuel — arbitrage
+  « le héros n'apparaît qu'une fois » de la charte) ; densité maîtrisée (2 colonnes de plaques, rubriques
+  défilables dans l'acte). COMPOSITION du groupe : rail de l'écran A, axes mêlée/social/soins/tir/savoir dérivés
+  des rôles (`heroRoles`, compétences les mieux formées — aucune table en dur par carrière), alvéole allumée =
+  couverte + prénom du porteur, pointillés = à pourvoir ; c'est une AIDE, jamais un blocage. GATE : « Commencer »
+  (libellés réels de `fr.ts` : party.action.start / .empty / .guestPending) — à 0 recruté il se grise et la
+  raison s'affiche en hint de pied (`GatedAction`) ; en coop la raison « emplacements attribués encore vides »
+  prend le relais et les actes portent leur propriétaire de siège (non maquetté — solo montré). FIGURINES :
+  placeholders aux proportions du rig — rig réel (`CharacterPreview`) en production. DONNÉES : Ludwig Bachmeier
+  = le personnage de la planche-créateur (dotations vérifiées) ; Borri/Elsa/Dieter/Petra = candidats d'ambiance
+  PLACEHOLDER (carrières, niveaux, statuts, bourses et libellés de compétences À RECOLLER au RAW à
+  l'implémentation — règles strictes 1 et 5) ; campagne « L'Ennemi Intérieur — L'Œil pour l'Œil » = intitulé
+  d'ambiance. Pas de grain de matière (en attente d'arbitrage). RÉCONCILIATION v2 (2026-07-13) : styles
+  partagés recollés au pixel sur design-system-atelier.html (lampe 34px, prose 130px de cap, sceau 34px de base,
+  nom de plaque 16px « nom de plaque » de l'échelle, outils en .btn.small standard, --danger au token) ; les
+  alvéoles de composition composent la réglette .socket/.socket.lit du kit ; les organismes propres à cet écran
+  (acte d'engagement, plaque de candidature, acte de présentation, cartouche de campagne, rangée de composition,
+  .btn-danger, .ctitle de barre) sont VERSÉS au kit, section Molécules/Organismes, pastille « ajouté par : écran
+  compagnie ». ROSE DES FORCES (arbitrage axes 2026-07-13) : mini-radar GRAVÉ du kit v2 (molécule #spec-rose de
+  design-system-atelier.html — cercle de laiton, rayons gravés, toile en encre dorée translucide sous filet or) ;
+  glyphe 44px au coin bas-droit de chaque figurine d'acte, glyphe 36px (.sm) sur chaque plaque de candidature,
+  médaillon 90px (initiales S·M·T·So·Sa) près de l'en-tête de l'acte de présentation ET en rose de COMPAGNIE
+  agrégée (meilleure valeur par axe) en tête du bloc composition — les alvéoles du rail rendent les MÊMES axes,
+  dans le MÊME ordre que la rose. Axes = catalogue paramétrable par campagne (#409) : la rose rend les N axes
+  ACTIFS, 5 à 8 (base Social · Mêlée · Tir · Soins · Savoir ; extensibles Négoce, Ingénierie, Navigation…).
+  Valeurs des roses = placeholders d'ambiance cohérents avec les rôles (Ludwig pointe Social, Borri Mêlée, Elsa
+  Savoir) — en production, dérivées des compétences les mieux formées par axe, jamais une table en dur. Rendu
+  ici par le générateur [data-rose] (outil de planche) — en production, UN composant React unique.
+</footer>
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  var CFG={glyph:{w:44,h:44,R:18,lab:null},
+           medal:{w:100,h:96,R:30,labR:38.5,fs:8,lab:'init'},
+           grand:{w:280,h:196,R:70,labR:84,fs:10.5,lab:'full'}};
+  function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);return e;}
+  function build(host){
+    var mode=host.getAttribute('data-mode')||'glyph', C=CFG[mode];
+    var axes=host.getAttribute('data-rose').split(',').map(function(s){
+      var m=s.split(':'), nm=m[0].split('|');
+      return {name:nm[0], init:nm[1]||nm[0].charAt(0), val:(m[1]==null||m[1]===''||m[1]==='x')?null:+m[1]};
+    });
+    var empty=axes.every(function(a){return a.val==null});
+    var cx=C.w/2, cy=C.h/2, n=axes.length, i, p;
+    function pt(r,i){var a=-Math.PI/2+i*2*Math.PI/n;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+    var svg=el('svg',{viewBox:'0 0 '+C.w+' '+C.h,width:C.w,height:C.h,'class':'rose','aria-hidden':'true'});
+    svg.appendChild(el('circle',{cx:cx,cy:cy,r:C.R,fill:'url(#roseWell)',
+      stroke:empty?'#4a3a24':'#8a6c2f','stroke-width':mode==='glyph'?1.3:1.6}));
+    svg.appendChild(el('circle',{cx:cx,cy:cy+0.8,r:C.R,fill:'none',
+      stroke:'rgba(255,217,122,'+(empty?'.10':'.28')+')','stroke-width':0.8}));
+    [2/3,1/3].forEach(function(f){svg.appendChild(el('circle',{cx:cx,cy:cy,r:C.R*f,fill:'none',
+      stroke:empty?'#241a10':'#3a2c1a','stroke-width':0.7}));});
+    for(i=0;i<n;i++){p=pt(C.R,i);
+      svg.appendChild(el('line',{x1:cx,y1:cy,x2:p[0],y2:p[1],
+        stroke:empty?'#241a10':'#4a3a24','stroke-width':0.8}));
+      svg.appendChild(el('circle',{cx:p[0],cy:p[1],r:mode==='glyph'?1.1:1.4,fill:empty?'#3a2c1a':'#8a6c2f'}));
+    }
+    if(!empty){
+      var pts=axes.map(function(a,i){return pt(C.R*Math.max(a.val||0,6)/100,i);});
+      svg.appendChild(el('polygon',{points:pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),
+        fill:'rgba(216,185,84,.17)',stroke:'#d8b954','stroke-width':mode==='glyph'?1.1:1.3,'stroke-linejoin':'round'}));
+      pts.forEach(function(p){svg.appendChild(el('circle',{cx:p[0],cy:p[1],r:mode==='glyph'?1.2:1.7,fill:'#ffd97a'}));});
+    } else {
+      var d=el('text',{x:cx,y:cy,'text-anchor':'middle','dominant-baseline':'central',
+        fill:'#5c4a30','font-size':mode==='glyph'?11:14});
+      d.textContent='—'; svg.appendChild(d);
+    }
+    if(C.lab){
+      for(i=0;i<n;i++){
+        var lp=pt(C.labR,i);
+        var anchor=Math.abs(lp[0]-cx)<4?'middle':(lp[0]>cx?'start':'end');
+        var t=el('text',{x:lp[0].toFixed(1),y:lp[1].toFixed(1),'text-anchor':anchor,
+          'dominant-baseline':'central',fill:empty?'#5c4a30':'#c9ac72','font-size':C.fs,'letter-spacing':'.4'});
+        if(C.lab==='init'){t.textContent=axes[i].init;}
+        else{
+          t.textContent=axes[i].name+' ';
+          var b=el('tspan',{fill:empty?'#5c4a30':'#ffe6a8','font-weight':'600'});
+          b.textContent=axes[i].val==null?'—':axes[i].val;
+          t.appendChild(b);
+        }
+        svg.appendChild(t);
+      }
+    }
+    host.appendChild(svg);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-rose]'),build);
+})();
+</script>
+</body>
+</html>

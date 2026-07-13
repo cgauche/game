@@ -12,6 +12,13 @@ je vais valider ca ») — l'étalon de STYLE des lots de transposition, pas de 
 - `design-system-atelier.html` — le kit UI (tokens, organismes, interdits, notes datées).
 - `finale-mock0-race.png` … `finale-mock9-presentation.png` — captures 1600px de référence
   pour les juges vision des lots P1-P5 (cf. #393).
+- `planche-compagnie.html` + `compagnie-mock0/1.png` — l'écran de SÉLECTION DE LA
+  COMPAGNIE (hors créateur), conforme au kit v2. Décisions propres (2026-07-13) : la
+  compagnie en COLONNE RICHE (jamais annulée — miniaturisée : le bouton groupe porte les
+  portraits + « (X/4) ») ; candidats en tuiles-portraits ; présentation « Qui est-ce ? »
+  du candidat élu ; même colonne de droite universelle que le créateur. Le code socle
+  (sélection v4/v5, commits 3c486ded/7cfceda8) précède la peau Atelier — sa transposition
+  est un lot de #371/#414, pas de #393.
 
 ## Écarts CONNUS où les arbitrages priment sur la maquette
 
