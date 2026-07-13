@@ -1,0 +1,2311 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planche FINALE — Créateur de personnage, charte mariée (Atelier du scribe × découpage B)</title>
+<link rel="stylesheet" href="planche-fonts.css">
+<style>
+/* ══════ Tokens (copie de src/ui/styles/base.css) ══════ */
+:root{
+  --bg:#100e0b; --bg2:#171410; --panel:#1d1913; --panel2:#272119;
+  --border:#443626; --text:#e4dabf; --muted:#a3936f;
+  --gold:#b8912f; --gold2:#d8b954;
+  --accent:#7c1d12; --accent2:#a13224;
+  --danger:#d6543a; --ok:#5d8a46;
+  --parchment:#decb9d; --parchment2:#cbb478; --ink:#221a11; --blood:#5a120a;
+  --font-display:'Grenze Gotisch','Trebuchet MS',serif;
+  /* Colonne de droite UNIVERSELLE — fiche vivante (étapes 3+) OU détail de l'élue (écrans Race/Carrière) : MÊME
+     largeur partout (arbitrages 2026-07-13, verbatims : « N'oublie pas que la fiche vivante et le volet de
+     droite des variants doivent faire la même taille » puis « C'est beaucoup trop petit ! Comment on peut passer
+     de 40% a 352px » puis « Ajuste la taille de la partie droite, pour etre vraiment adapté a la fiche vivante en
+     format "plus grand", qu'on ait pas pour autant des espaces vides inutiles »). Valeur CALIBRÉE sur le contenu
+     de la fiche restructurée (chantier 2 colonnes internes) : mesuré à la plaque de caractéristique (.c-gauge,
+     10 colonnes) et au taux de remplissage des dernières lignes de chips — 615px et 600px produisent le MÊME
+     comportement de retour à la ligne (aucune gouttière gagnée entre les deux), 600px est donc la largeur
+     minimale qui n'économise plus rien à réduire davantage sans resserrer les jauges de profil (≈52px/jauge,
+     encore confortable) : c'est le contenu qui a tranché, pas un pourcentage. */
+  --col-droite:600px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#0a0908;color:var(--text);font-family:'Segoe UI','Trebuchet MS',system-ui,sans-serif}
+::-webkit-scrollbar{width:7px;height:7px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}
+
+/* ══════ Habillage de la planche ══════ */
+.plate-head{max-width:1600px;margin:36px auto 8px;padding:0 8px}
+.plate-head h1{font-family:var(--font-display);color:var(--gold2);font-size:34px;margin:0;letter-spacing:1px}
+.plate-head p{color:var(--muted);margin:6px 0 0;font-size:14px;max-width:1150px;line-height:1.5}
+.screen-head{max-width:1600px;margin:58px auto 4px;padding:0 8px;border-bottom:1px solid #2a2218;padding-bottom:10px}
+.screen-head h2{font-family:var(--font-display);color:var(--parchment);font-size:27px;margin:0;letter-spacing:1px}
+.screen-head p{color:var(--muted);font-size:13.5px;max-width:1150px;line-height:1.5;margin:6px 0 0}
+.mock{width:1600px;height:830px;position:relative;overflow:hidden;
+  margin:14px auto 0;border:1px solid #2a2218;border-radius:6px;box-shadow:0 34px 90px rgba(0,0,0,.65)}
+.plate-foot{max-width:1600px;margin:56px auto 60px;padding:0 8px;color:#7c6e52;font-size:12px;line-height:1.55}
+
+/* ══════ Boutons / étapes / chips (charte) ══════ */
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;
+  padding:10px 16px;font-size:14px;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:hover{border-color:var(--gold)}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn-primary{background:linear-gradient(180deg,var(--accent2),var(--accent));border:1px solid #c9573f;
+  color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.btn-ghost{background:transparent;border:1px solid transparent;color:var(--muted)}
+.btn-ghost:hover{border-color:var(--border)}
+.steps{display:flex;gap:5px;align-items:center;flex-wrap:nowrap}
+.step{font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid transparent;color:#7c6e52;white-space:nowrap}
+.step.done{color:var(--muted)}
+.step.active{border-color:var(--accent2);color:var(--gold2);background:rgba(124,29,18,.28);font-weight:600}
+.substeps{display:flex;gap:6px;align-items:center}
+.substep{font-size:11.5px;padding:4px 13px;border-radius:999px;border:1px solid var(--border);color:#7c6e52;letter-spacing:.4px;white-space:nowrap}
+.substep.on{border-color:var(--gold);color:var(--gold2);background:rgba(216,185,84,.08);font-weight:600}
+.substep.done{color:var(--muted)}
+.subarrow{color:#5c4e38;font-size:11px}
+.chip{display:inline-flex;align-items:baseline;gap:5px;font-size:12px;line-height:1.35;padding:2px 9px;
+  border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text)}
+.chip b{color:var(--gold2)}
+.chiprow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.orword{color:#7c6e52;font-size:11px;font-style:italic;align-self:center}
+
+/* ══════ Statuts métallisés (marqueur social WFRP4 : Bronze / Argent / Or) ══════ */
+.st-bronze,.st-argent,.st-or{font-weight:600;background-clip:text;-webkit-background-clip:text;
+  color:transparent !important;white-space:nowrap}
+.st-bronze{background-image:linear-gradient(180deg,#e29a6a,#b06a3a 55%,#7d4a28)}
+.st-argent{background-image:linear-gradient(180deg,#e8edf1,#aab4bc 55%,#7e8890)}
+.st-or{background-image:linear-gradient(180deg,#ffe6a8,#d8b954 55%,#9c7526)}
+.mini-title{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:0 0 6px}
+.figsvg{display:block}
+.fig-dark{filter:drop-shadow(0 0 22px rgba(216,185,84,.10)) drop-shadow(0 0 1.5px rgba(216,185,84,.40))}
+
+/* ══════ Groupe (bouton enrichi : mini-têtes + compteur) ══════ */
+.grp{display:inline-flex;align-items:center;gap:7px}
+.grp .heads{display:inline-flex}
+.grp .heads svg{width:17px;height:17px;fill:#6b5c42;border:1px solid #4a3a24;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#241a10,#0d0805)}
+.grp .heads svg + svg{margin-left:-6px}
+.grp .ct{color:#8a744a;font-size:12px}
+
+/* ══════ Alvéoles laiton / manivelles / dés ══════ */
+.socket{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#241a10,#0a0603);
+  border:1px solid #8a6c2f;box-shadow:inset 0 2px 4px rgba(0,0,0,.75)}
+.socket.lit{background:radial-gradient(circle at 35% 30%,#ffd97a,#a87f2c);
+  box-shadow:0 0 9px rgba(255,217,122,.5), inset 0 1px 2px rgba(255,255,255,.35)}
+.ck-sockets{display:flex;gap:8px;align-items:center}
+.crank{display:inline-flex;align-items:center;gap:5px}
+.crank button{width:21px;height:21px;border-radius:5px;border:1px solid #8a6c2f;cursor:pointer;padding:0;
+  background:linear-gradient(180deg,#3a2c15,#1c130b);color:#e8c467;font-size:12px;line-height:1;
+  box-shadow:0 1px 2px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,217,122,.18)}
+.crank button:hover{border-color:var(--gold2);color:#ffd97a}
+.crank b{min-width:18px;text-align:center;font-size:14px;color:#ffe6a8}
+.crank b.z{color:#6b5836;font-weight:400}
+.d10{width:26px;height:26px;flex:none;display:inline-grid;place-items:center;transform:rotate(45deg);border-radius:6px;
+  border:1px solid #8a6c2f;background:linear-gradient(160deg,#3a2c15,#14100a);
+  box-shadow:0 1px 3px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,217,122,.2)}
+.d10 i{transform:rotate(-45deg);font-style:normal;font-size:12.5px;color:#ffe6a8;font-weight:600}
+.d10.roll{border-style:dashed;border-color:#ffd97a;box-shadow:0 0 14px rgba(255,217,122,.45)}
+.d10.roll i{color:#d8b954}
+.d10.roll.r2{transform:rotate(66deg)}
+.d10.roll.r2 i{transform:rotate(-66deg)}
+.d10.wait{border-color:#3a2c1a;background:rgba(13,11,8,.6);box-shadow:none}
+.d10.wait i{color:#4a3a24}
+.dice{display:inline-flex;gap:10px;margin:0 6px}
+
+/* ══════ Coquille ATELIER DU SCRIBE (chrome unique de la planche) ══════ */
+.dirC{background:
+  radial-gradient(640px 420px at 76% 26%, rgba(255,196,110,.09), transparent 62%),
+  radial-gradient(900px 520px at 50% 122%, rgba(60,32,14,.55), transparent 60%),
+  linear-gradient(160deg,#1a130c,#0a0705);
+  display:flex;flex-direction:column}
+.c-bar{display:flex;align-items:center;gap:14px;padding:10px 18px;
+  background:linear-gradient(180deg,#241a10,#150e08);border-bottom:1px solid #55402a;
+  box-shadow:0 1px 0 rgba(224,181,90,.16)}
+.c-bar h1{font-family:var(--font-display);font-size:21px;color:var(--gold2);margin:0;letter-spacing:.8px;white-space:nowrap}
+.c-bar .steps{margin-left:auto}
+.c-sub{display:flex;justify-content:center;gap:6px;padding:6px 0;
+  background:#150e08;border-bottom:1px solid #2e2314}
+.c-main{flex:1;display:flex;gap:16px;padding:16px;min-height:0}
+/* .c-rail — MORT (arbitrage 2026-07-13). Token conservé, plus aucun mock ne l'instancie : son contenu
+   (recherche/liste, encrier, intro, notes) remonte dans la zone de travail (.c-lectern), qui hérite
+   de sa largeur. */
+.c-rail{width:286px;flex:none;background:linear-gradient(160deg,#241a10,#150e08);
+  border:1px solid #55402a;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:7px;
+  box-shadow:inset 0 0 24px rgba(0,0,0,.4);overflow:hidden}
+.c-lectern{flex:1;position:relative;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:10px;
+  background:radial-gradient(480px 300px at 50% 0%, rgba(224,181,90,.06), transparent 65%),
+  linear-gradient(180deg,#180f09,#0d0805);
+  border:1px solid #55402a;border-radius:12px;padding:14px 24px 12px}
+.c-rivet{position:absolute;width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 1px 2px rgba(0,0,0,.6);z-index:2}
+.c-rivet.tl{top:10px;left:10px}.c-rivet.tr{top:10px;right:10px}
+.c-rivet.bl{bottom:10px;left:10px}.c-rivet.br{bottom:10px;right:10px}
+.c-dhead{display:flex;align-items:baseline;gap:14px}
+.c-dhead h2{font-family:var(--font-display);font-size:26px;color:var(--gold2);margin:0;letter-spacing:.6px}
+.c-dhead .sub{color:var(--muted);font-size:12.5px;font-variant-caps:small-caps;letter-spacing:1.4px}
+.c-foot{display:flex;align-items:center;gap:16px;padding:11px 18px;border-top:1px solid #55402a;
+  background:linear-gradient(0deg,#201709,#150e08)}
+.c-foot .hint{font-size:13px;color:#c9ac72}
+.c-foot .hint b{color:var(--gold2)}
+.c-foot .btn-primary{margin-left:auto;padding:11px 26px;font-size:15px}
+.c-alcove{width:var(--col-droite);flex:none;position:relative;overflow:hidden;display:flex;flex-direction:column;
+  background:radial-gradient(240px 380px at 50% 18%, rgba(255,196,110,.18), transparent 65%),
+  linear-gradient(180deg,#140e08,#080503);
+  border:1px solid #55402a;border-radius:12px}
+.c-lamp{position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:34px;background:#3a2c1a}
+.c-lamp::after{content:'';position:absolute;left:50%;top:34px;transform:translateX(-50%);width:14px;height:10px;
+  border-radius:0 0 7px 7px;background:linear-gradient(180deg,#8a6c2f,#3a2c1a);box-shadow:0 0 26px 10px rgba(255,196,110,.14)}
+.c-alcove .figwrap{flex:none;display:flex;align-items:flex-end;justify-content:center;padding:36px 0 2px;position:relative;z-index:1}
+.c-plaque{border-top:1px solid #55402a;background:linear-gradient(180deg,#241a10,#170f09);
+  padding:8px 14px;text-align:center;font-size:12.5px;color:#c9ac72;line-height:1.4}
+.c-plaque b{color:var(--gold2)}
+/* Fiche vivante — REGISTRE en grille 2 colonnes (chantier A, 2026-07-13, verbatim : « la fiche vivante a été
+   aggrandi mais son contenu n'a clairement pas été adapté pour sa taille »). Profil en UNE rangée de 10 et
+   sections chip-lourdes (Compétences formées/Talents/Possessions/Motivation) occupent les 2 colonnes
+   (.cs-full) ; les sections COURTES (Valeurs dérivées, Identité) s'apparient côte à côte par le flux naturel
+   de la grille — aucune gouttière morte, le motif se généralise à toute fiche à 2 colonnes internes. */
+.c-sheet{flex:1;min-height:0;overflow:auto;padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:9px 16px;align-content:start}
+.c-sheet .cs-full{grid-column:1/-1}
+.c-gaugerow{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.c-gauge{background:linear-gradient(160deg,#241a10,#150e08);border:1px solid #4a3a24;border-radius:6px;
+  text-align:center;padding:6px 2px 7px}
+.c-gauge span{display:block;font-size:9.5px;color:#8a744a;letter-spacing:.6px;margin-bottom:2px}
+.c-gauge b{font-size:14px;color:var(--gold2)}
+.c-derived{display:grid;grid-template-columns:1fr;gap:5px;font-size:12px;color:#b09b6f}
+.c-derived b{color:#e7d9bc}
+.c-carve{background:linear-gradient(160deg,#241a10,#170f09);border:1px solid #4a3a24;color:#d9c48f;
+  font-size:12px;padding:3px 9px;border-radius:5px}
+.c-carve.talent{border-color:var(--gold);color:var(--gold2)}
+.c-carve b{color:#ffe6a8}
+.c-plate{position:relative;display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:6px;cursor:pointer;background:linear-gradient(160deg,#2f2415,#1c140c);border:1px solid #4a3a24}
+.c-plate::before,.c-plate::after{content:'';position:absolute;top:5px;width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 0 2px rgba(0,0,0,.6)}
+.c-plate::before{left:6px}.c-plate::after{right:6px}
+.c-plate .nm{font-family:var(--font-display);font-size:13.5px;color:#d9c48f;letter-spacing:.4px;line-height:1.25}
+.c-plate .mt{margin-left:auto;font-size:11px;color:#8a744a;white-space:nowrap;text-align:right}
+.c-plate .mt em{color:#e8c467;font-style:normal;font-weight:600}
+.c-plate.sel{background:linear-gradient(160deg,#4a2c18,#2c1810);border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32), 0 6px 16px rgba(0,0,0,.5), inset 0 0 22px rgba(224,181,90,.08)}
+.c-plate.sel .nm{color:#ffe6a8;font-weight:600}
+.c-plate.sel .mt{color:var(--muted)}
+.c-note{font-size:11.5px;color:#8a744a;line-height:1.5;padding:2px 4px 0}
+.c-note b{color:#c9ac72}
+.c-inkwell{display:flex;align-items:center;gap:10px;padding:9px 10px;
+  background:radial-gradient(circle at 30% 30%,#241a10,#0c0704);border:1px solid #55402a;border-radius:9px;cursor:pointer}
+.c-inkwell .well{width:32px;height:32px;flex:none;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#3a2a18,#050302);border:2px solid #8a6c2f;
+  box-shadow:inset 0 4px 8px rgba(0,0,0,.7)}
+.c-inkwell .txt{font-size:11.5px;color:var(--muted);line-height:1.35}
+.c-inkwell .txt b{display:block;color:var(--gold2);font-size:12.5px}
+.c-search{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:8px;
+  border:1px solid #55402a;background:rgba(12,7,4,.75);font-size:12.5px;color:#8a744a}
+.c-search b{color:#d9c48f;font-weight:400}
+
+/* ══════ L'encrier à dés — l'instrument de tirage UNIQUE (rail de chaque écran à tirage) ══════
+   C'EST UN BOUTON (retour user : « on ne voit pas que c'est cliquable ») — et dans la langue du produit
+   l'ACTION se lit ROUGE (les remplis .btn-primary : Recruter / Choisir / Suivant). Règle de l'encrier :
+   ROUGE → « tu peux agir » (état attente, .act — le seul cliquable), LAITON → statut (roulants / rendu).
+   L'attente parle la famille rouge en version BORDÉE-TEINTÉE (bordure #c9573f + surface sang), en retrait
+   du rouge PLEIN : « Suivant → » reste l'unique rempli de l'écran, l'encrier ne concurrence pas la
+   navigation. Libellé d'ACTION à l'impératif en tête, les dés = icône du bouton, gain PX en sous-texte. */
+.c-dicewell{display:flex;align-items:center;gap:11px;padding:9px 14px;
+  background:linear-gradient(180deg,#33270f,#1c130a);border:1px solid #8a6c2f;border-radius:9px;
+  transition:border-color .15s,box-shadow .15s,transform .1s;
+  box-shadow:0 2px 6px rgba(0,0,0,.4), inset 0 1px 0 rgba(232,196,103,.14)}
+.c-dicewell.act{cursor:pointer;border-color:#c9573f;
+  background:linear-gradient(180deg,#4c1d11,#280d08);
+  box-shadow:0 2px 6px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,169,141,.2)}
+.c-dicewell.act .txt{color:#c9a08c}
+.c-dicewell.act .txt b{color:#ffd9cd}
+.c-dicewell.act:hover,.c-dicewell.act.hoverdemo{border-color:#e0765a;
+  box-shadow:0 3px 11px rgba(0,0,0,.5), 0 0 14px rgba(214,84,58,.32), inset 0 1px 0 rgba(255,169,141,.32)}
+.c-dicewell.act:active{transform:translateY(1px)}
+.c-dicewell .tray{flex:none;display:inline-flex;gap:10px;align-items:center;padding:8px 10px;border-radius:11px;
+  background:radial-gradient(circle at 40% 35%,#2c2012,#050302);border:2px solid #8a6c2f;
+  box-shadow:inset 0 4px 9px rgba(0,0,0,.75)}
+.c-dicewell .tray .d10{width:22px;height:22px}
+.c-dicewell .tray .d10 i{font-size:11px}
+.c-dicewell .txt{font-size:11px;color:var(--muted);line-height:1.35}
+.c-dicewell .txt b{display:block;color:var(--gold2);font-size:13.5px;font-weight:700;letter-spacing:.2px}
+/* Emphase — le tirage aléatoire (« Aux dés ») rapporte des PX de création à CHAQUE étape à choix :
+   affordance à ne jamais laisser passer inaperçue, quelle que soit l'étape. */
+.c-dicewell.emph{border-color:var(--gold);box-shadow:0 0 0 1px rgba(216,185,84,.3), 0 0 22px rgba(216,185,84,.14), inset 0 1px 0 rgba(232,196,103,.16);padding:11px 18px}
+.c-dicewell.act.emph{border-color:#c9573f;box-shadow:0 0 0 1px rgba(214,84,58,.3), 0 0 22px rgba(214,84,58,.16), inset 0 1px 0 rgba(255,169,141,.2)}
+.c-dicewell.act.emph:hover,.c-dicewell.act.emph.hoverdemo{border-color:#e0765a}
+.c-dicewell.emph .tray .d10{width:26px;height:26px}
+.c-dicewell.emph .tray .d10 i{font-size:13px}
+.c-dicewell.emph .txt{font-size:12.5px}
+.c-dicewell.emph .txt b{font-size:15.5px}
+.c-dicewell.emph:hover,.c-dicewell.emph.hoverdemo{border-color:var(--gold2)}
+
+/* ══════ Pastille de teinte (Détails — apparence) ══════ */
+.sw{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:7px;vertical-align:-1.5px;
+  border:1px solid rgba(0,0,0,.45);box-shadow:inset 0 1px 1px rgba(255,255,255,.25)}
+
+/* ══════ En-tête de section de MÊME RANG (titre gravé + jauge-quota) ══════ */
+.cu-sechead{display:flex;align-items:center;gap:13px;padding:9px 14px;border-radius:8px;
+  border:1px solid #55402a;background:linear-gradient(180deg,#241a10,#140d07);
+  box-shadow:inset 0 1px 0 rgba(232,196,103,.18), 0 2px 8px rgba(0,0,0,.4)}
+.cu-sechead .ttl{font-family:var(--font-display);font-size:16.5px;color:#e8c467;letter-spacing:.6px;white-space:nowrap}
+.cu-sechead .ttl small{font-family:'Segoe UI',sans-serif;font-size:11.5px;color:#c9ac72;
+  font-variant-caps:small-caps;letter-spacing:1.3px;margin-left:10px}
+.cu-sechead .gauge{margin-left:auto;display:flex;align-items:center;gap:12px}
+.cu-sechead .cnt{font-size:12.5px;color:#8a744a;white-space:nowrap}
+.cu-sechead .cnt b{color:#ffe6a8;font-size:14px}
+.cu-minibar{position:relative;width:170px;height:14px;border-radius:7px;border:1px solid #55402a;overflow:hidden;
+  background:repeating-linear-gradient(90deg,#17100933 0 16px,#0d080533 16px 17px),linear-gradient(180deg,#1c130b,#0d0805)}
+.cu-minibar .fill{position:absolute;top:0;bottom:0;left:0;width:55%;
+  background:linear-gradient(180deg,rgba(216,185,84,.5),rgba(138,108,47,.45));border-right:2px solid #ffd97a;
+  box-shadow:0 0 10px rgba(255,217,122,.35)}
+
+/* ══════ Rangée de compétence (plaque + manivelle) ══════ */
+.cs-row{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:6px;
+  border:1px solid #3a2c1a;background:linear-gradient(160deg,rgba(47,36,21,.55),rgba(28,20,12,.55))}
+.cs-row .id{flex:1;min-width:0}
+.cs-row .nm{font-size:13px;color:#d9c48f;display:block;line-height:1.2}
+.cs-row .rf{font-size:9.5px;color:#7a6440;display:block;margin-top:1px}
+.cs-row .val{width:34px;text-align:right;font-size:13px;color:#5c4a30}
+.cs-row .val.on{color:#ffe6a8;font-weight:600}
+.cs-row.on{border-color:#8a6c2f;box-shadow:inset 0 1px 0 rgba(232,196,103,.3)}
+.cs-row.on .nm{color:#ffe6a8}
+.cu-rows{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+
+/* ══════ Cellule de tirage de caractéristique (étape 3) ══════ */
+.ck-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.ck-cell{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:6px;
+  border:1px solid #3a2c1a;background:linear-gradient(160deg,rgba(47,36,21,.55),rgba(28,20,12,.55))}
+.ck-cell .id{flex:1;min-width:0}
+.ck-cell .nm{font-size:13px;color:#d9c48f;display:block;line-height:1.2}
+.ck-cell .rf{font-size:9.5px;color:#7a6440;display:block;margin-top:1px}
+.ck-cell b.tot{width:42px;text-align:right;font-size:16px;color:#ffe6a8}
+.ck-cell b.tot.z{color:#5c4a30;font-weight:400;font-size:13px}
+.ck-cell.on{border-color:#8a6c2f;box-shadow:inset 0 1px 0 rgba(232,196,103,.3)}
+.ck-cell.rolling{border-color:#c9a44a;box-shadow:inset 0 0 18px rgba(255,217,122,.08), 0 0 0 1px rgba(216,185,84,.3)}
+.ck-cell.rolling .nm{color:#ffe6a8}
+
+/* ══════ Plaques scellées de talent (sceau de cire) ══════ */
+.cs-tcard{position:relative;border:1px solid #4a3a24;border-radius:9px;padding:14px 16px 14px 52px;cursor:pointer;
+  background:linear-gradient(160deg,#241a10,#170f09);box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.cs-tcard:hover{border-color:#8a6c2f}
+.cs-tcard .seal{position:absolute;left:15px;top:16px;width:22px;height:22px;border-radius:50%;
+  border:1.5px solid #6b5836;background:radial-gradient(circle at 40% 35%,#241a10,#0a0603);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.7)}
+.cs-tcard b{display:block;font-family:var(--font-display);font-size:16px;color:#d9c48f;letter-spacing:.4px}
+.cs-tcard .ds{display:block;font-size:11.5px;color:#b09b6f;line-height:1.5;margin-top:5px}
+.cs-tcard.sel{background:linear-gradient(160deg,#4a2c18,#2c1810);border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32), 0 6px 16px rgba(0,0,0,.5), inset 0 0 26px rgba(224,181,90,.08)}
+.cs-tcard.sel b{color:#ffe6a8}
+.cs-tcard.sel .ds{color:#cbb478}
+.cs-tcard.sel .seal{border-color:var(--accent2);
+  background:radial-gradient(circle at 35% 30%,#c9573f,var(--blood));box-shadow:0 0 10px rgba(161,50,36,.5)}
+.tal-panel{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;gap:8px;
+  background:radial-gradient(480px 300px at 50% 0%, rgba(224,181,90,.06), transparent 65%),
+  linear-gradient(180deg,#180f09,#0d0805);
+  border:1px solid #55402a;border-radius:12px;padding:12px 13px 10px;overflow:hidden}
+.tal-panel .cs-tcard{padding:9px 12px 9px 42px}
+.tal-panel .cs-tcard .seal{left:11px;top:11px;width:19px;height:19px}
+.tal-panel .cs-tcard b{font-size:15px}
+.tal-panel .cs-tcard .ds{font-size:11px;line-height:1.45;margin-top:4px}
+.tal-panel.tal-air{gap:10px}
+.tal-panel.tal-air .cs-tcard{padding:14px 16px 14px 52px}
+.tal-panel.tal-air .cs-tcard .seal{left:15px;top:16px;width:22px;height:22px}
+.tal-panel.tal-air .cs-tcard b{font-size:16px}
+.tal-panel.tal-air .cs-tcard .ds{font-size:11.5px;line-height:1.5;margin-top:5px}
+
+/* ══════ Plaque COMPACTE (talent tiré d'office au d100, sans description — le résultat vit AVEC ce qu'il a
+   rendu, à son point d'usage, jamais dans une topbar fourre-tout ; motif généralisable : « résultat de dés
+   au point d'usage » — chantier « intégré ou mort », 2026-07-13) ══════ */
+.cs-tcard.compact{display:flex;align-items:center;gap:9px;padding:7px 11px 7px 34px;cursor:default}
+.cs-tcard.compact .sealwax{width:24px;height:24px;left:-6px;top:6px}
+.cs-tcard.compact b{font-size:13.5px}
+.cs-tcard.compact .nb{margin-left:auto;font-size:10.5px;color:#8a744a;font-style:italic;white-space:nowrap}
+.cs-tcard.compact + .c-inkwell{margin-top:-2px;margin-left:8px;padding:6px 10px}
+.cs-tcard.compact + .c-inkwell .well{width:22px;height:22px}
+/* Panel de talents dense (deux colonnes + registre « tirés d'office ») : en-têtes de section resserrés. */
+.tal-panel{gap:6px}
+.tal-panel .cu-sechead{padding:5px 10px}
+.tal-panel .cu-sechead .ttl{font-size:14px}
+
+/* ══════ Sceau de cire DESSINÉ (talents élus) + rappel sur la fiche vivante ══════ */
+.sealwax{position:absolute;left:-8px;top:8px;width:34px;height:34px;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+.tal-panel.tal-air .cs-tcard .sealwax{width:40px;height:40px;left:-9px;top:11px}
+.c-carve.sealed::before{content:'';display:inline-block;width:8px;height:8px;margin:0 5px -1px 0;
+  border-radius:52% 46% 55% 48%;background:radial-gradient(circle at 35% 30%,#c8503a,#6e130b);
+  box-shadow:0 1px 1px rgba(0,0,0,.5)}
+
+/* ══════ Grain de matière — TESTÉ sur l'écran Carrière uniquement (dosage à comparer) ══════ */
+.grainy::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:60;
+  background:
+   radial-gradient(ellipse at 50% 45%, transparent 60%, rgba(0,0,0,.16) 100%),
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23g)' opacity='0.045'/%3E%3C/svg%3E")}
+
+/* ══════ Pastilles + chemin gravé + dotations (détail race/carrière) ══════ */
+.cc-mini{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:2px;border-bottom:1px solid rgba(85,64,42,.6)}
+.cc-pill{padding:5px 13px;border-radius:999px;border:1px solid #4a3a24;font-family:var(--font-display);
+  font-size:12.5px;letter-spacing:.3px;color:#c9ac72;cursor:pointer;
+  background:linear-gradient(160deg,#2f2415,#1c140c)}
+.cc-pill.sel{border-color:var(--gold);color:#ffe6a8;background:linear-gradient(160deg,#4a2c18,#2c1810);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32)}
+.c-frame{flex:1;min-height:0;display:flex;flex-direction:column;gap:11px;padding-top:2px}
+.c-meta{display:flex;gap:6px;flex-wrap:wrap}
+.c-ink-prose{position:relative;background:rgba(8,5,3,.5);border:1px solid #3a2c1a;border-radius:8px;
+  padding:11px 14px;max-height:130px;overflow:auto;font-size:12.5px;line-height:1.55;color:#e7d9bc}
+.c-ink-prose p{margin:0 0 8px}
+.c-ink-prose p:last-child{margin-bottom:0}
+.cc-path{display:flex;align-items:stretch;gap:0}
+.cc-step{flex:1;display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:7px;
+  background:linear-gradient(160deg,#241a10,#150e08);border:1px solid #4a3a24}
+.cc-step .lv{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:#8a744a}
+.cc-step .nm{font-family:var(--font-display);font-size:14.5px;color:#d9c48f;line-height:1.2}
+.cc-step .st{font-size:10.5px;color:#8a744a}
+.cc-step.now{border-color:#8a6c2f;box-shadow:inset 0 1px 0 rgba(232,196,103,.4)}
+.cc-step.now .nm{color:#ffe6a8}
+.cc-step.now .st{color:#c9ac72}
+.cc-link{align-self:center;width:22px;height:1px;flex:none;background:linear-gradient(90deg,rgba(232,196,103,.5),rgba(232,196,103,.15))}
+.cd-dots{display:flex;flex-direction:column;gap:6px;padding:1px 2px 0}
+.cd-row{display:flex;align-items:baseline;gap:10px}
+.cd-row .lb{flex:none;width:150px;text-align:right;font-variant-caps:small-caps;letter-spacing:1.2px;
+  font-size:11.5px;color:#c9ac72;white-space:nowrap}
+.cd-row .lb small{display:block;font-size:10px;color:#8a744a;letter-spacing:.6px}
+.cd-row .chiprow{flex:1;gap:4px;row-gap:4px}
+.cd-row .nb,.chiprow .nb{font-size:11px;color:#8a744a;font-style:italic;align-self:center}
+
+/* ══════ Champ d'identité (étape 7) ══════ */
+.idf{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:6px;position:relative;
+  background:linear-gradient(160deg,#2f2415,#1c140c);border:1px solid #4a3a24}
+.idf .lb{width:92px;flex:none;font-variant-caps:small-caps;letter-spacing:1.3px;font-size:11.5px;color:#c9ac72}
+.idf .vl{flex:1;font-family:var(--font-display);font-size:16.5px;color:#ffe6a8;letter-spacing:.4px;
+  border-bottom:1px dashed #55402a;padding-bottom:3px}
+.idf .db{width:27px;height:27px;flex:none;border-radius:6px;border:1px solid #8a6c2f;cursor:pointer;
+  background:linear-gradient(180deg,#3a2c15,#1c130b);color:#e8c467;font-size:13px;display:grid;place-items:center}
+.idf .db.q{border-color:#4a3a24;color:#8a744a}
+.idf.sm{padding:7px 14px}
+.idf.sm .vl{font-size:14.5px}
+
+/* ══════ Écran final (présentation du héros) ══════ */
+.fin-col{flex:1;min-width:0;background:linear-gradient(160deg,#241a10,#150e08);border:1px solid #55402a;border-radius:10px;
+  padding:14px 16px;display:flex;flex-direction:column;gap:12px;box-shadow:inset 0 0 24px rgba(0,0,0,.4);overflow:auto}
+.fin-stage{width:520px;flex:none;position:relative;display:flex;flex-direction:column;align-items:center;
+  background:radial-gradient(300px 480px at 50% 24%, rgba(255,196,110,.2), transparent 65%),
+  linear-gradient(180deg,#140e08,#080503);
+  border:1px solid #55402a;border-radius:12px;padding:0 18px 14px;overflow:hidden}
+.fin-stage h2{font-family:var(--font-display);font-size:34px;color:var(--gold2);margin:8px 0 0;letter-spacing:1px;text-align:center}
+.fin-stage .sub{font-variant-caps:small-caps;letter-spacing:1.5px;font-size:12.5px;color:#c9ac72;margin-top:3px;text-align:center}
+.fin-stage .figwrap{flex:1;display:flex;align-items:flex-end;justify-content:center;padding-top:38px}
+
+/* ══════ Affordance CodexRef (src/ui/compendium/CodexRef.tsx, .codex-ref) ══════ */
+.skillref{cursor:help;transition:color .1s}
+.skillref:hover{color:#ffe6a8}
+
+/* ══════ Fiche vivante grisée (page blanche) ══════ */
+.ghost, .c-gauge b.ghost{color:#5c4a30 !important;font-weight:400}
+.chip.ghost{border-style:dashed;color:#6b5c42;background:transparent}
+.c-carve.ghost{border-style:dashed;color:#6b5836;background:transparent}
+
+/* ══════ Tuile-FIGURINE de famille (variante Race : patron des tuiles vissées, une silhouette
+   de rig par famille — TOUTES à la même échelle : la stature relative doit se sentir) ══════ */
+.fam-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.fam-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 6px 9px;border-radius:9px;cursor:pointer;
+  background:linear-gradient(160deg,#241a10,#170f09);border:1px solid #4a3a24;
+  box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.fam-tile::before,.fam-tile::after{content:'';position:absolute;top:5px;width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 0 2px rgba(0,0,0,.6)}
+.fam-tile::before{left:6px}.fam-tile::after{right:6px}
+.fam-tile:hover{border-color:#8a6c2f}
+.fam-tile .fam-fig{height:104px;width:100%;display:flex;align-items:flex-end;justify-content:center;
+  background:radial-gradient(70px 16px at 50% 100%, rgba(255,196,110,.10), transparent 72%)}
+.fam-tile .nm{font-family:var(--font-display);font-size:14px;color:#d9c48f;letter-spacing:.4px;
+  line-height:1.15;text-align:center}
+.fam-tile .ct{font-size:10.5px;color:#8a744a;white-space:nowrap}
+.fam-tile.sel{background:linear-gradient(160deg,#4a2c18,#2c1810);border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32), 0 6px 16px rgba(0,0,0,.5), inset 0 0 22px rgba(224,181,90,.08)}
+.fam-tile.sel .nm{color:#ffe6a8;font-weight:600}
+.fam-tile.sel .ct{color:var(--muted)}
+/* Variante grille de figurines pleine zone (surface PRINCIPALE, plus de rail) — 4+3, tuiles qui respirent */
+.fam-grid.big{grid-template-columns:repeat(4,1fr);gap:16px}
+.fam-grid.big .fam-tile{padding:18px 10px 15px;gap:6px}
+.fam-grid.big .fam-fig{height:172px}
+.fam-grid.big .nm{font-size:17px}
+.fam-grid.big .ct{font-size:12px}
+.fam-topbar{display:flex;align-items:center;gap:10px}
+.fam-topbar .c-search{flex:1;max-width:320px}
+.fam-topbar .c-dicewell{flex:1}
+
+/* ══════ Variante Carrière en SECTIONS (croquis user — patron = Espèce (Variante), proportions des
+   zones CONSERVÉES) : 9 classes empilées, en-têtes small-caps, carrières en tuiles-PORTRAITS réduites
+   (même patron que les tuiles de race, silhouette placeholder aux proportions du rig — en production,
+   rig réel en tenue de carrière). 86 tuiles-portraits ne tiennent pas en 830px : scroll interne de la
+   grille (dernier recours), assumé au bandeau ══════ */
+.car-secs{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;padding-right:6px}
+.car-sec .hd{display:flex;align-items:baseline;gap:8px;font-variant-caps:small-caps;letter-spacing:1.5px;
+  font-size:12px;color:#c9ac72;border-bottom:1px solid rgba(85,64,42,.6);padding-bottom:2px;margin-bottom:6px}
+.car-sec .hd .ct{font-size:10.5px;color:#8a744a;letter-spacing:.4px;font-variant-caps:normal}
+.car-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:5px}
+.car-tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;
+  padding:7px 5px 6px;border-radius:8px;cursor:pointer;text-align:center;font-size:10.5px;line-height:1.2;
+  color:#d9c48f;background:linear-gradient(160deg,#241a10,#170f09);border:1px solid #4a3a24}
+.car-tile .fig{height:36px;display:flex;align-items:flex-end;justify-content:center;
+  background:radial-gradient(36px 8px at 50% 100%, rgba(255,196,110,.10), transparent 72%)}
+.car-tile:hover{border-color:#8a6c2f}
+.car-tile.sel{background:linear-gradient(160deg,#4a2c18,#2c1810);border-color:var(--gold);color:#ffe6a8;
+  font-weight:600;box-shadow:0 0 0 1px rgba(216,185,84,.32)}
+</style>
+</head>
+<body>
+
+<!-- ══════ Silhouettes (placeholder aux proportions rig SP1) ══════ -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="fig-human" viewBox="0 0 200 420">
+      <ellipse cx="100" cy="30" rx="35" ry="7"/>
+      <path d="M78 30 Q80 6 100 6 Q120 6 122 30 Z"/>
+      <ellipse cx="100" cy="45" rx="14" ry="16"/>
+      <rect x="93" y="58" width="14" height="12"/>
+      <path d="M100 66 C82 68 70 76 67 92 C62 118 66 150 70 178 C64 234 60 288 60 314 L86 308 L100 298 L114 308 L140 314 C140 288 136 234 130 178 C134 150 138 118 133 92 C130 76 118 68 100 66 Z"/>
+      <path d="M84 298 L80 378 L70 392 L94 392 L96 304 Z"/>
+      <path d="M116 298 L120 378 L130 392 L106 392 L104 304 Z"/>
+      <path d="M72 90 C60 106 55 140 54 188 L66 191 C68 150 72 118 82 100 Z"/>
+      <path d="M57 182 L64 182 L62 332 L59 339 L56 332 Z"/>
+      <rect x="46" y="190" width="28" height="5" rx="2"/>
+      <circle cx="60" cy="179" r="4"/>
+      <path d="M128 90 C140 104 144 130 140 158 C132 166 118 168 112 160 C124 150 128 120 118 100 Z"/>
+    </symbol>
+    <symbol id="fig-human-agit" viewBox="0 0 200 420">
+      <use href="#fig-human"/>
+      <path d="M100 8 Q121 8 127 27 L163 20 Q140 44 100 42 Q60 44 37 20 L73 27 Q79 8 100 8 Z"/>
+      <g fill="#cbb478" opacity=".88">
+        <rect x="106" y="148" width="26" height="34" rx="2" transform="rotate(9 119 165)"/>
+        <rect x="114" y="144" width="26" height="34" rx="2" transform="rotate(20 127 161)"/>
+      </g>
+      <g stroke="#221a11" stroke-width="1.6" fill="none" opacity=".8">
+        <path d="M112 156 l16 2 M111 162 l16 2 M110 168 l16 2" transform="rotate(9 119 165)"/>
+      </g>
+    </symbol>
+    <symbol id="fig-human-agit-tint" viewBox="0 0 200 420">
+      <use href="#fig-human-agit"/>
+      <path d="M85 43 Q78 55 84 66 Q91 57 89 45 Z" fill="#a8834a"/>
+      <path d="M115 43 Q122 55 116 66 Q109 57 111 45 Z" fill="#a8834a"/>
+      <circle cx="94" cy="51" r="2.2" fill="#7d93a8"/><circle cx="106" cy="51" r="2.2" fill="#7d93a8"/>
+    </symbol>
+    <linearGradient id="fgC3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a2c15"/><stop offset="1" stop-color="#0a0805"/>
+    </linearGradient>
+    <radialGradient id="wheelSel" cx="35%" cy="30%">
+      <stop offset="0" stop-color="#ffd97a"/><stop offset="1" stop-color="#8a6c2f"/>
+    </radialGradient>
+    <radialGradient id="waxG" cx="35%" cy="30%">
+      <stop offset="0" stop-color="#c8503a"/><stop offset=".55" stop-color="#8f1f14"/><stop offset="1" stop-color="#5a120a"/>
+    </radialGradient>
+    <symbol id="wax-seal" viewBox="0 0 64 64">
+      <path d="M33 3 C44 2 55 8 59 18 C63 27 61 37 56 45 C58 50 56 54 51 56 C45 61 36 63 28 60 C24 62 19 61 16 57 C9 53 3 45 3 36 C2 26 8 15 16 9 C21 5 27 4 33 3 Z" fill="url(#waxG)"/>
+      <path d="M56 45 C60 47 63 51 61 54 C59 56 55 55 54 52 C53 49 54 46 56 45 Z" fill="#7c1810"/>
+      <circle cx="32" cy="32" r="20" fill="none" stroke="#5e0f08" stroke-width="2.4" opacity=".85"/>
+      <circle cx="32" cy="33.4" r="20" fill="none" stroke="#e08a68" stroke-width=".9" opacity=".38"/>
+      <path fill="#5e0f08" d="M32 15 C42 15 47 22 47 29.5 C47 35 44 38.5 40.5 40 L40.5 44 Q32 47.5 23.5 44 L23.5 40 C20 38.5 17 35 17 29.5 C17 22 22 15 32 15 Z"/>
+      <g fill="#8f1f14">
+        <ellipse cx="26.3" cy="29" rx="3.7" ry="4.5"/>
+        <ellipse cx="37.7" cy="29" rx="3.7" ry="4.5"/>
+        <path d="M32 33.2 L34.5 38 L29.5 38 Z"/>
+        <rect x="27.4" y="40.2" width="1.5" height="4.8" rx=".7"/>
+        <rect x="31.25" y="40.8" width="1.5" height="5.4" rx=".7"/>
+        <rect x="35.1" y="40.2" width="1.5" height="4.8" rx=".7"/>
+      </g>
+      <path fill="#e08a68" opacity=".3" d="M23.5 44 Q32 47.5 40.5 44 L40.5 45.3 Q32 48.8 23.5 45.3 Z"/>
+    </symbol>
+    <!-- Silhouettes de FAMILLE (placeholder aux proportions rig SP1) — mêmes unités que #fig-human
+         (1 unité ≈ 0,155 px dans les tuiles) : la hauteur du viewBox PORTE la stature. -->
+    <symbol id="figt-halfling" viewBox="0 0 220 235">
+      <circle cx="94" cy="22" r="9"/><circle cx="110" cy="18" r="10"/><circle cx="126" cy="22" r="9"/>
+      <circle cx="110" cy="42" r="24"/>
+      <path d="M110 62 C68 66 50 96 50 132 C50 168 76 192 110 192 C144 192 170 168 170 132 C170 96 152 66 110 62 Z"/>
+      <rect x="84" y="186" width="18" height="30"/><rect x="118" y="186" width="18" height="30"/>
+      <ellipse cx="88" cy="219" rx="21" ry="9"/><ellipse cx="134" cy="219" rx="21" ry="9"/>
+    </symbol>
+    <symbol id="figt-nain" viewBox="0 0 260 300">
+      <circle cx="130" cy="46" r="26"/>
+      <path d="M130 68 C86 70 60 84 54 104 C46 132 48 182 58 226 L100 234 L130 238 L160 234 L202 226 C212 182 214 132 206 104 C200 84 174 70 130 68 Z"/>
+      <rect x="90" y="234" width="27" height="42"/><rect x="143" y="234" width="27" height="42"/>
+      <ellipse cx="100" cy="284" rx="27" ry="11"/><ellipse cx="160" cy="284" rx="27" ry="11"/>
+      <rect x="222" y="104" width="8" height="172"/>
+      <path d="M198 108 Q226 82 256 108 Q243 126 227 126 Q211 126 198 108 Z"/>
+    </symbol>
+    <symbol id="figt-gnome" viewBox="0 0 200 255">
+      <path d="M100 2 L128 62 L72 62 Z"/>
+      <circle cx="100" cy="76" r="17"/>
+      <path d="M100 92 C84 94 76 103 74 116 C71 140 73 168 76 193 L100 199 L124 193 C127 168 129 140 126 116 C124 103 116 94 100 92 Z"/>
+      <rect x="87" y="197" width="10" height="38"/><rect x="103" y="197" width="10" height="38"/>
+      <ellipse cx="90" cy="238" rx="13" ry="6"/><ellipse cx="111" cy="238" rx="13" ry="6"/>
+    </symbol>
+    <symbol id="figt-hautelfe" viewBox="0 0 200 460">
+      <ellipse cx="100" cy="40" rx="13" ry="17"/>
+      <path d="M87 34 L77 24 L88 44 Z"/><path d="M113 34 L123 24 L112 44 Z"/>
+      <path d="M100 56 C86 58 78 66 76 78 C72 98 74 132 77 172 C71 262 65 362 62 442 L100 450 L138 442 C135 362 129 262 123 172 C126 132 128 98 124 78 C122 66 114 58 100 56 Z"/>
+      <rect x="146" y="66" width="4" height="376"/>
+      <circle cx="148" cy="56" r="8"/>
+    </symbol>
+    <symbol id="figt-sylvain" viewBox="0 0 210 450">
+      <ellipse cx="102" cy="40" rx="13" ry="16"/>
+      <path d="M89 34 L79 24 L90 44 Z"/><path d="M115 34 L125 24 L114 44 Z"/>
+      <path d="M110 26 Q132 36 127 76 Q118 78 113 60 Q113 42 105 34 Z"/>
+      <path d="M102 55 C87 57 79 66 77 80 C73 104 75 142 79 174 L102 180 L125 174 C129 142 131 104 127 80 C125 66 117 57 102 55 Z"/>
+      <path d="M92 178 L85 330 L77 432 L95 434 L100 186 Z"/>
+      <path d="M112 178 L119 330 L127 432 L109 434 L104 186 Z"/>
+      <path d="M52 88 Q18 240 52 392 Q42 240 60 94 Z"/>
+    </symbol>
+    <symbol id="figt-ogre" viewBox="0 0 340 640">
+      <circle cx="170" cy="76" r="32"/>
+      <path d="M170 104 C108 108 64 138 54 190 C40 258 48 362 70 442 L110 472 L170 482 L230 472 L270 442 C292 362 300 258 286 190 C276 138 232 108 170 104 Z"/>
+      <path d="M74 158 C40 190 28 262 34 332 C46 344 66 344 76 332 C68 272 74 212 92 176 Z"/>
+      <path d="M266 158 C300 190 312 262 306 332 C294 344 274 344 264 332 C272 272 266 212 248 176 Z"/>
+      <circle cx="52" cy="352" r="22"/><circle cx="288" cy="352" r="22"/>
+      <rect x="108" y="470" width="50" height="112"/><rect x="182" y="470" width="50" height="112"/>
+      <ellipse cx="128" cy="596" rx="45" ry="16"/><ellipse cx="212" cy="596" rx="45" ry="16"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="plate-head">
+  <h1>Créateur de personnage — PLANCHE FINALE (charte mariée)</h1>
+  <p>Le parcours COMPLET du créateur, sous la charte mariée : <b style="color:var(--gold2)">chrome « Atelier du
+  scribe » partout</b> (plaques laiton et bois, tuiles vissées, manivelles, réglettes à alvéoles, sceaux de cire,
+  alcôve à figurine sous lampe) ; <b style="color:var(--text)">découpage volé à B</b> — un écran = UNE nature de
+  geste (compétences scindées 5a ▸ 5b ▸ 5c, sous-stepper au bandeau) ; <b style="color:var(--text)">talents en deux
+  colonnes de même rang, scellés à la cire</b> (la fiche vivante ne quitte jamais la droite — le héros n'apparaît
+  qu'une fois) ; <b style="color:var(--text)">figurine
+  qui ÉVOLUE</b> avec les choix (carrière, puis teintes des Détails) ; <b style="color:var(--text)">l'encrier à
+  dés</b> — deux d10 physiques en tête de la zone de travail, instrument IDENTIQUE sur tous les écrans à tirage ;
+  bouton « ← Groupe » enrichi des mini-portraits (1/4). Dix maquettes 1600×830 (arbitrage 2026-07-13, verbatim :
+  « Et on garde juste les variantes des étapes concernés » — Race et Carrière retiennent leur grille par
+  familles/classes, les listes à plaques facettées sont écartées), données réelles d'un même personnage qui se
+  construit : <b style="color:var(--gold2)">Humain Reiklander → Agitateur, départ Pamphlétaire</b>.
+  <b style="color:var(--gold2)">Rail 286px MORT partout</b> (arbitrage 2026-07-13, verbatim : « J'essaye de me
+  débarasser du bloc de gauche qui sert souvent a rien ») — son contenu (intro, encrier, notes) remonte dans la
+  zone de travail sur les dix maquettes ; le contenu de pur remplissage n'a PAS survécu au déménagement (voir
+  bandeaux d'écran, « intégré ou mort »). <b style="color:var(--gold2)">Fiche vivante à partir de l'étape 3
+  seulement</b> (même arbitrage, verbatim : « À part les 2 premiers écrans, la fiche vivante peut exister ») —
+  absente sur Race et Carrière (deux zones adjacentes sans alcôve), grisée page-blanche dès l'étape 3, puis
+  s'épaissit d'écran en écran, restructurée en registre dense (profil en ligne, sections courtes appariées).
+  <b style="color:var(--gold2)">Colonne de droite UNIVERSELLE, <code>--col-droite</code></b> — calibrée sur le
+  CONTENU de la fiche restructurée (arbitrage 2026-07-13, verbatim : « Ajuste la taille de la partie droite,
+  pour etre vraiment adapté a la fiche vivante en format "plus grand", qu'on ait pas pour autant des espaces
+  vides inutiles ») : pas de pourcentage « au jugé », la largeur naturelle de la fiche décide — même valeur
+  reprise par le détail de l'élue sur les écrans Race/Carrière.</p>
+</header>
+
+<!-- ════════════════════════════ 1. RACE ════════════════════════════ -->
+<div class="screen-head">
+  <h2>1 — Race (grille de familles)</h2>
+  <p><b style="color:var(--gold2)">Rail mort</b> — pas de rail : la grille des <b>7 familles</b> occupe la zone
+  gauche/principale, en tuiles-figurines qui respirent (4+3), recherche + encrier « Aux dés » posés
+  en tête de cette même zone. Le détail (lignées en pastilles, en-tête, dotations, description) devient une
+  <b>colonne droite</b>. Les silhouettes restent à la même échelle : l'ogre écrase sa tuile, le halfling arrive
+  à la ceinture de l'humain, le nain est plus large que haut.
+  <b style="color:var(--gold2)">L'encrier « Aux dés » est mis en évidence</b> (famille ROUGE d'action — bordure
+  et surface sang, lueur rouge au survol —, pleine largeur à côté de la recherche) — le tirage aléatoire rapporte
+  des PX de création à CHAQUE étape à choix (race, carrière, caractéristiques, signe astral…), une affordance
+  qu'il ne faut jamais laisser passer inaperçue.
+  <br><b style="color:var(--gold2)">Pas de fiche vivante à l'étape Race</b> — à l'étape 1 rien n'est commis, la
+  fiche n'a rien à montrer ; elle apparaît à partir de l'étape 3.
+  <br><b style="color:var(--gold2)">Arbitrage 2026-07-13</b> (verbatim : « Et on garde juste les variantes des
+  étapes concernés ») — la grille de familles remplace la liste à plaques facettées, écartée.</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step active">1. Race</span><span class="step">2. Carrière</span>
+      <span class="step">3. Caractéristiques</span><span class="step">4. Signe astral</span>
+      <span class="step">5. Compétences &amp; Talents</span><span class="step">6. Possessions</span>
+      <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <div class="c-main">
+    <section class="c-lectern">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="fam-topbar">
+        <div class="c-search">⌕ <b>Rechercher une race…</b></div>
+        <div class="c-dicewell act emph"><span class="tray"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span>
+          <span class="txt"><b>Tirer aux dés — d100</b>sa race au hasard : <span style="color:#e8c467">+20 PX de création</span> (garder le tirage)</span></div>
+      </div>
+      <div class="mini-title">7 familles — 27 races</div>
+      <div class="fam-grid big">
+        <div class="fam-tile sel">
+          <span class="fam-fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:110px">
+            <ellipse cx="100" cy="408" rx="60" ry="14" fill="rgba(0,0,0,.55)"/>
+            <use href="#fig-human" fill="url(#fgC3)"/></svg></span>
+          <span class="nm">Humains</span><span class="ct">8 lignées</span>
+        </div>
+        <div class="fam-tile">
+          <span class="fam-fig"><svg class="figsvg fig-dark" viewBox="0 0 220 235" style="height:61px">
+            <ellipse cx="110" cy="226" rx="70" ry="16" fill="rgba(0,0,0,.55)"/>
+            <use href="#figt-halfling" fill="url(#fgC3)"/></svg></span>
+          <span class="nm">Halflings</span><span class="ct">13 lignées</span>
+        </div>
+        <div class="fam-tile">
+          <span class="fam-fig"><svg class="figsvg fig-dark" viewBox="0 0 260 300" style="height:80px">
+            <ellipse cx="130" cy="290" rx="92" ry="16" fill="rgba(0,0,0,.55)"/>
+            <use href="#figt-nain" fill="url(#fgC3)"/></svg></span>
+          <span class="nm">Nains</span><span class="ct">2 lignées</span>
+        </div>
+        <div class="fam-tile">
+          <span class="fam-fig"><svg class="figsvg fig-dark" viewBox="0 0 200 255" style="height:68px">
+            <ellipse cx="100" cy="246" rx="46" ry="15" fill="rgba(0,0,0,.55)"/>
+            <use href="#figt-gnome" fill="url(#fgC3)"/></svg></span>
+          <span class="nm">Gnomes</span><span class="ct">1 lignée</span>
+        </div>
+        <div class="fam-tile">
+          <span class="fam-fig"><svg class="figsvg fig-dark" viewBox="0 0 200 460" style="height:121px">
+            <ellipse cx="100" cy="450" rx="56" ry="13" fill="rgba(0,0,0,.55)"/>
+            <use href="#figt-hautelfe" fill="url(#fgC3)"/></svg></span>
+          <span class="nm">Hauts elfes</span><span class="ct">1 lignée</span>
+        </div>
+        <div class="fam-tile">
+          <span class="fam-fig"><svg class="figsvg fig-dark" viewBox="0 0 210 450" style="height:119px">
+            <ellipse cx="105" cy="440" rx="56" ry="13" fill="rgba(0,0,0,.55)"/>
+            <use href="#figt-sylvain" fill="url(#fgC3)"/></svg></span>
+          <span class="nm">Elfes sylvains</span><span class="ct">1 lignée</span>
+        </div>
+        <div class="fam-tile">
+          <span class="fam-fig"><svg class="figsvg fig-dark" viewBox="0 0 340 640" style="height:170px">
+            <ellipse cx="170" cy="614" rx="124" ry="15" fill="rgba(0,0,0,.55)"/>
+            <use href="#figt-ogre" fill="url(#fgC3)"/></svg></span>
+          <span class="nm">Ogres</span><span class="ct">1 lignée</span>
+        </div>
+      </div>
+    </section>
+    <aside class="c-lectern" style="flex:0 0 var(--col-droite)">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="cc-mini">
+        <span class="cc-pill sel">Reiklander</span><span class="cc-pill">Middenheim</span>
+        <span class="cc-pill">Middenland</span><span class="cc-pill">Nordland</span>
+        <span class="cc-pill">Tiléens</span><span class="cc-pill">Bjornling Norse</span>
+        <span class="cc-pill">Sarl Norse</span><span class="cc-pill">Skaeling Norse</span>
+      </div>
+      <div class="c-frame" style="overflow-y:auto">
+        <div class="c-dhead">
+          <h2>Humains (Reiklander)</h2>
+          <span class="sub">Le cœur de l'Empire · Livre de base p. 25</span>
+        </div>
+        <div class="c-meta">
+          <span class="chip">Mouvement <b>4</b></span>
+          <span class="chip">Destin <b>2</b></span>
+          <span class="chip">Résilience <b>1</b></span>
+          <span class="chip"><b>+3</b> à répartir</span>
+        </div>
+        <div>
+          <div class="mini-title">Caractéristiques de base</div>
+          <div class="c-gaugerow">
+            <div class="c-gauge"><span>CC</span><b>20</b></div><div class="c-gauge"><span>CT</span><b>20</b></div>
+            <div class="c-gauge"><span>F</span><b>20</b></div><div class="c-gauge"><span>E</span><b>20</b></div>
+            <div class="c-gauge"><span>I</span><b>20</b></div>
+          </div>
+          <div class="c-gaugerow" style="margin-top:5px">
+            <div class="c-gauge"><span>AG</span><b>20</b></div><div class="c-gauge"><span>DEX</span><b>20</b></div>
+            <div class="c-gauge"><span>INT</span><b>20</b></div><div class="c-gauge"><span>FM</span><b>20</b></div>
+            <div class="c-gauge"><span>SOC</span><b>20</b></div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Compétences</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Calme</span><span class="c-carve skillref">Charme</span>
+            <span class="c-carve skillref">Commandement</span><span class="c-carve skillref">Corps à corps (Base)</span>
+            <span class="c-carve skillref">Évaluation</span><span class="c-carve skillref">Langue (Bretonnien)</span>
+            <span class="c-carve skillref">Langue (Wastelander)</span><span class="c-carve skillref">Marchandage</span>
+            <span class="c-carve skillref">Projectiles (Arc)</span><span class="c-carve skillref">Ragot</span>
+            <span class="c-carve skillref">Savoir (Reikland)</span><span class="c-carve skillref">Soin aux animaux</span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Destinée</span>
+            <span class="c-carve talent ghost">Perspicace ou Affable</span>
+            <span class="c-carve talent ghost">3 au d100</span>
+            <span class="nb">se tranchent à l'étape 5</span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Description</div>
+          <div class="c-ink-prose">
+            <p>Les humains constituent la race civilisée la plus répandue du Vieux Monde. Depuis les plaines des
+            Royaumes estaliens aux provinces gelées de Kislev, les humains occupent chaque région du continent,
+            et ils y prospèrent. Le plus grand et le plus puissant royaume humain est l'Empire, une mosaïque de
+            provinces puissantes couvertes de forêts apparemment sans fin. Situé au cœur de l'Empire, le Reikland
+            en est la région la plus riche et la plus cosmopolite.</p>
+            <p>Beaucoup de Reiklanders estiment qu'il leur revient de gouverner de droit divin, car Sigmar, le
+            dieu protecteur de l'Empire, était lui-même un Reiklander avant de s'élever au rang de divinité, il y
+            a plusieurs siècles. Les temples et sanctuaires dédiés à ce dieu sont légion dans l'Empire, et la
+            majorité des Reiklanders croient pieusement au message de Sigmar, qui promeut l'Empire et son unité.
+            Pour cette raison, ils sont beaucoup plus amicaux, ouverts et optimistes que les autres peuples, car
+            qu'est-ce qui pourrait mal tourner sur une terre qui a donné naissance à un dieu ?</p>
+            <p>Au-delà de leur style de vie aisé et de leur personnalité arrogantes, les Reiklanders sont en tous
+            points identiques aux autres humains. Si les humains ont une espérance de vie plus courte que celles
+            des autres races, ils sont en revanche plus vigoureux, plus ambitieux et pleins de ressources.</p>
+          </div>
+        </div>
+        <div class="c-note">Choisir librement sa race n'accorde aucun PX de création — la tirer
+        <b>aux dés</b> et garder le tirage en accorde 20.</div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Précédent</button>
+    <span class="hint">Race <b>Humains (Reiklander)</b> — M 4 · Destin 2 · Résilience 1 · <b>+3</b> à répartir.</span>
+    <button class="btn btn-primary">Suivant →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 2. CARRIÈRE ════════════════════════════ -->
+<div class="screen-head">
+  <h2>2 — Carrière (classes en sections)</h2>
+  <p><b>Toutes les classes d'un coup</b> : 9 sections empilées (en-tête small-caps), leurs carrières en
+  tuiles-portraits réduites (même patron que les tuiles de race, l'élue au liseré sel ; la silhouette est le
+  placeholder du rig — en production chaque carrière porte son rig en tenue, ici seule l'élue coiffe le
+  tricorne), recherche + encrier « Tirer aux dés » (famille ROUGE d'action) en tête de zone. Honnêteté : les
+  <b>86 carrières accessibles aux humains</b> (données réelles de <code>careers.json</code>) en tuiles-portraits
+  NE tiennent PAS en 830px — scroll interne de la grille, dernier recours toléré.
+  <br><b style="color:var(--gold2)">Pas de fiche vivante à l'étape Carrière</b> : le détail de l'élue occupe la
+  colonne droite — en-tête + statut métallisé, chemin des quatre niveaux, rubriques de plein rang (pas de
+  « Dotations » intermédiaire) ; l'engagement reste au seul « Suivant → » (arbitrage user 2026-07-13 :
+  « Suivant fait déjà ça »).
+  <br><b style="color:var(--gold2)">Arbitrage 2026-07-13</b> (verbatim : « Et on garde juste les variantes des
+  étapes concernés ») — la grille par classes remplace la liste à plaques facettées, écartée.</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step active">2. Carrière</span>
+      <span class="step">3. Caractéristiques</span><span class="step">4. Signe astral</span>
+      <span class="step">5. Compétences &amp; Talents</span><span class="step">6. Possessions</span>
+      <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <div class="c-main">
+    <section class="c-lectern">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="fam-topbar">
+        <div class="c-search">⌕ <b>Rechercher une carrière…</b></div>
+        <div class="c-dicewell act"><span class="tray"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span>
+          <span class="txt"><b>Tirer aux dés — d100</b>sa carrière au hasard : <span style="color:#e8c467">+50 PX</span>, deux relances</span></div>
+      </div>
+      <div class="car-secs">
+        <div class="car-sec">
+          <div class="hd">Citadins <span class="ct">8 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile sel"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human-agit" fill="url(#fgC3)"/></svg></span>Agitateur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Artisan</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Bourgeois</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Enquêteur</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Marchand</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Mendiant</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Milicien</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Ratier</span>
+          </div>
+        </div>
+        <div class="car-sec">
+          <div class="hd">Côtiers <span class="ct">8 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Artilleur de navire</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Chansonnier</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Marin (Côtier)</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Naufrageur (Côtier)</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Nautonier (Côtier)</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Officier</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Prêtre marin de Manann</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Ratisseur de plages</span>
+          </div>
+        </div>
+        <div class="car-sec">
+          <div class="hd">Courtisans <span class="ct">8 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Artiste</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Conseiller</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Duelliste</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Émissaire</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Espion</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Intendant</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Noble</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Serviteur</span>
+          </div>
+        </div>
+        <div class="car-sec">
+          <div class="hd">Guerriers <span class="ct">19 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Archer</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Arquebusier</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Cavalier</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Cavalier Léger</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Chevalier</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Chevalier Errant</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Chevalier du Loup Blanc</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Chevalier Panthère</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Chevalier du Soleil flamboyant</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Garde</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Gladiateur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Hallebardier</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Joueur d'épée</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Piquier</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Prêtre guerrier</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Prêtre de Myrmidia</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Soldat</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Spadassin</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Spécialiste de Siège</span>
+          </div>
+        </div>
+        <div class="car-sec">
+          <div class="hd">Itinérants <span class="ct">9 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Chasseur de primes</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Cocher</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Colporteur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Flagellant</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Messager</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Patrouilleur routier</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Répurgateur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Saltimbanque</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Suiveur de Camp</span>
+          </div>
+        </div>
+        <div class="car-sec">
+          <div class="hd">Lettrés <span class="ct">10 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Apothicaire</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Artilleur</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Cartographe</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Érudit</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Ingénieur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Juriste</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Médecin</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Nonne</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Prêtre</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Sorcier</span>
+          </div>
+        </div>
+        <div class="car-sec">
+          <div class="hd">Riverains <span class="ct">8 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Batelier</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Contrebandier</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Débardeur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Femme du fleuve</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Marin</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Naufrageur</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Nautonier</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Patrouilleur fluvial</span>
+          </div>
+        </div>
+        <div class="car-sec">
+          <div class="hd">Roublards <span class="ct">8 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Charlatan</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Entremetteur</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Hors-la-loi</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Pilleur de tombes</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Rançonneur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Receleur</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Sorcier dissident</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Voleur</span>
+          </div>
+        </div>
+        <div class="car-sec">
+          <div class="hd">Ruraux <span class="ct">8 carrières</span></div>
+          <div class="car-grid">
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Bailli</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Chasseur</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Éclaireur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Herboriste</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Mineur</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Mystique</span>
+            <span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Sorcier de village</span><span class="car-tile"><span class="fig"><svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:36px"><use href="#fig-human" fill="url(#fgC3)"/></svg></span>Villageois</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <aside class="c-lectern" style="flex:0 0 var(--col-droite)">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="c-frame" style="overflow-y:auto">
+        <div class="c-dhead">
+          <h2>Agitateur</h2>
+          <span class="sub">Citadins · débute Pamphlétaire · Livre de base p. 53</span>
+        </div>
+        <div class="c-meta">
+          <span class="chip">Départ <b>Pamphlétaire</b></span>
+          <span class="chip">Statut <b class="st-bronze">Bronze 1</b></span>
+          <span class="chip"><b class="st-bronze">Bronze 1</b> → <b class="st-bronze">Bronze 5</b></span>
+        </div>
+        <div>
+          <div class="mini-title">Évolution — quatre niveaux</div>
+          <div class="cc-path">
+            <div class="cc-step now"><span class="lv">Niveau 1 — départ</span><span class="nm">Pamphlétaire</span><span class="st st-bronze">Bronze 1</span></div>
+            <span class="cc-link"></span>
+            <div class="cc-step"><span class="lv">Niveau 2</span><span class="nm">Agitateur</span><span class="st st-bronze">Bronze 2</span></div>
+            <span class="cc-link"></span>
+            <div class="cc-step"><span class="lv">Niveau 3</span><span class="nm">Fauteur de troubles</span><span class="st st-bronze">Bronze 3</span></div>
+            <span class="cc-link"></span>
+            <div class="cc-step"><span class="lv">Niveau 4</span><span class="nm">Démagogue</span><span class="st st-bronze">Bronze 5</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Caractéristiques — niveau 1</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Capacité de Tir</span><span class="c-carve skillref">Intelligence</span>
+            <span class="c-carve skillref">Sociabilité</span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Compétences — niveau 1</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Art (Écriture)</span><span class="c-carve skillref">Charme</span>
+            <span class="c-carve skillref">Marchandage</span><span class="c-carve skillref">Métier (Imprimerie)</span>
+            <span class="c-carve skillref">Ragot</span><span class="c-carve skillref">Résistance à l'alcool</span>
+            <span class="c-carve skillref">Savoir (Politique)</span><span class="c-carve skillref">Subornation</span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Talents — un au choix</div>
+          <div class="chiprow">
+            <span class="c-carve talent ghost">Baratiner</span><span class="orword">ou</span><span class="c-carve talent ghost">Faire la manche</span>
+            <span class="orword">ou</span><span class="c-carve talent ghost">Lire/Écrire</span>
+            <span class="orword">ou</span><span class="c-carve talent ghost">Sociable</span>
+            <span class="nb">se tranche à l'étape 5</span>
+          </div>
+        </div>
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column">
+          <div class="mini-title">Description</div>
+          <div class="c-ink-prose" style="max-height:none;flex:1">
+            <p><em>Charismatique et beau parleur, vous défendez votre cause face à l'ordre établi.</em></p>
+            <p>Les Agitateurs font pression pour diverses causes politiques, en utilisant des affiches, en
+            manifestant et en prenant la parole en public. Ils gagnent la sympathie et le soutien des populations
+            les plus pauvres, mais doivent faire attention à ne pas attirer l'attention des Sigmarites ou des
+            nains, très conservateurs. Les Agitateurs les plus dangereux parviennent à mettre à mal l'autorité de
+            nobles, de villes, et même quelquefois de provinces entières. Les Pamphlétaires placardent des tracts
+            sur les panneaux d'affichage ou les distribuent sur les places de marché.</p>
+          </div>
+        </div>
+        <div class="c-note">Choisir librement n'accorde aucun PX de création — tirer
+        <b>aux dés</b> en accorde 50 (deux relances autorisées).</div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Précédent</button>
+    <span class="hint">Classe <b>Citadins</b> · carrière <b>Agitateur</b> — départ <b>Pamphlétaire</b>, <b class="st-bronze">Bronze 1</b>.</span>
+    <button class="btn btn-primary">Suivant →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 3. CARACTÉRISTIQUES ════════════════════════════ -->
+<div class="screen-head">
+  <h2>3 — Caractéristiques (le théâtre du tirage)</h2>
+  <p><b style="color:var(--gold2)">Rail mort</b> — la méthode (garder le tirage +50 PX, réorganiser +25, répartir
+  100 points) et l'encrier « Aux dés » remontent dans la zone de travail, qui hérite de la largeur libérée ; la
+  fiche vivante (alcôve) reste légitime dès cette étape. Huit profils déjà couchés, les <b>deux d10 de Force
+  Mentale roulent encore</b> (résultat masqué), Sociabilité attend son tour.
+  <b style="color:var(--gold2)">Précision utilisateur 2026-07-13</b> (verbatim : « mettre "Destin &amp; Résilience
+  — +3 à répartir …" a gauche ca n'a pas trop de sens, ca a plus sa place sous les carac normales ») — le bloc
+  d'allocation Destin &amp; Résilience n'est plus un bandeau d'en-tête : il se pose DANS la zone de travail, SOUS
+  la grille des dix caractéristiques, dans la continuité du profil (même famille de rangées <code>.ck-cell</code>,
+  manivelles <code>.crank</code> conservées).</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+      <span class="step active">3. Caractéristiques</span><span class="step">4. Signe astral</span>
+      <span class="step">5. Compétences &amp; Talents</span><span class="step">6. Possessions</span>
+      <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <div class="c-main">
+    <section class="c-lectern" style="flex:1">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="fam-topbar" style="align-items:flex-start">
+        <div class="c-dhead" style="flex:1">
+          <h2>Caractéristiques</h2>
+          <span class="sub">base + 2d10 — le profil se couche sur le registre</span>
+        </div>
+        <div class="c-dicewell" style="flex:none"><span class="tray"><span class="d10 roll"><i>?</i></span><span class="d10 roll r2"><i>?</i></span></span>
+          <span class="txt"><b>Aux dés</b>les 2d10 de Force Mentale roulent — Sociabilité suivra</span></div>
+      </div>
+      <div>
+        <div class="mini-title">La méthode</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="c-plate sel" style="flex:1"><span class="nm">Aux dés — garder le tirage</span><span class="mt"><em>+50 PX</em></span></div>
+          <div class="c-plate" style="flex:1"><span class="nm">Aux dés — réorganiser ensuite</span><span class="mt">+25 PX</span></div>
+          <div class="c-plate" style="flex:1"><span class="nm">Répartir 100 points</span><span class="mt">0 PX</span></div>
+        </div>
+        <div class="c-note">Chaque caractéristique s'écrit <b>base + 2d10</b>. Garder le tirage tel quel rapporte
+        le plus de PX de création.</div>
+      </div>
+      <div class="cu-sechead">
+        <span class="ttl">Le tirage<small>2d10 par caractéristique</small></span>
+        <span class="gauge">
+          <span class="cu-minibar"><span class="fill" style="width:80%"></span></span>
+          <span class="cnt"><b>8</b> / 10 tirées</span>
+        </span>
+      </div>
+      <div class="ck-grid">
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Capacité de Combat</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>5</i></span><span class="d10"><i>6</i></span></span><b class="tot">31</b></div>
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Capacité de Tir</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>6</i></span><span class="d10"><i>7</i></span></span><b class="tot">33</b></div>
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Force</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>7</i></span><span class="d10"><i>9</i></span></span><b class="tot">36</b></div>
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Endurance</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>2</i></span><span class="d10"><i>4</i></span></span><b class="tot">26</b></div>
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Initiative</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>3</i></span><span class="d10"><i>6</i></span></span><b class="tot">29</b></div>
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Agilité</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>4</i></span><span class="d10"><i>7</i></span></span><b class="tot">31</b></div>
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Dextérité</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>8</i></span><span class="d10"><i>2</i></span></span><b class="tot">30</b></div>
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Intelligence</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>5</i></span><span class="d10"><i>2</i></span></span><b class="tot">27</b></div>
+        <div class="ck-cell rolling"><span class="id"><span class="nm skillref">Force Mentale</span><span class="rf">base 20 — les dés roulent…</span></span>
+          <span class="dice"><span class="d10 roll"><i>?</i></span><span class="d10 roll r2"><i>?</i></span></span><b class="tot z">—</b></div>
+        <div class="ck-cell"><span class="id"><span class="nm skillref">Sociabilité</span><span class="rf">base 20 — en attente</span></span>
+          <span class="dice"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span><b class="tot z">—</b></div>
+      </div>
+      <div class="cu-sechead" style="margin-top:2px">
+        <span class="ttl">Destin &amp; Résilience<small>+3 à répartir</small></span>
+      </div>
+      <div class="ck-grid">
+        <div class="ck-cell"><span class="id"><span class="nm">Points de Destin</span><span class="rf">race : 2</span></span>
+          <span class="crank"><button>−</button><b class="z">2</b><button>+</button></span></div>
+        <div class="ck-cell"><span class="id"><span class="nm">Points de Résilience</span><span class="rf">race : 1</span></span>
+          <span class="crank"><button>−</button><b class="z">1</b><button>+</button></span></div>
+      </div>
+      <div class="c-note" style="margin-top:auto">Les 3 points s'allouent une fois le profil couché — le profil
+      couché s'additionne aux compétences : <b>Charme</b> lira Sociabilité + formation au premier jet d'éloquence.</div>
+    </section>
+    <aside class="c-alcove">
+      <div class="c-lamp"></div>
+      <div class="figwrap">
+        <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+          <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+          <use href="#fig-human-agit" fill="url(#fgC3)"/>
+        </svg>
+      </div>
+      <div class="c-plaque"><b>Aventurier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+      <div class="c-sheet">
+        <div class="cs-full">
+          <div class="mini-title">Profil — tirage en cours</div>
+          <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+            <div class="c-gauge"><span>CC</span><b>31</b></div><div class="c-gauge"><span>CT</span><b>33</b></div>
+            <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+            <div class="c-gauge"><span>I</span><b>29</b></div>
+            <div class="c-gauge"><span>AG</span><b>31</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+            <div class="c-gauge"><span>INT</span><b>27</b></div><div class="c-gauge"><span>FM</span><b class="ghost">—</b></div>
+            <div class="c-gauge"><span>SOC</span><b class="ghost">—</b></div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Valeurs dérivées</div>
+          <div class="c-derived">
+            <span>Blessures <b class="ghost">—</b></span><span>Mouvement <b>4</b></span>
+            <span>Destin <b class="ghost">—</b> · Chance <b class="ghost">—</b></span><span>Résilience <b class="ghost">—</b> · Dét. <b class="ghost">—</b></span>
+            <span>Bourse <b class="ghost">—</b></span><span>PX création <b class="ghost">—</b></span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Identité</div>
+          <div class="chiprow">
+            <span class="c-carve ghost">signe — étape 4</span>
+            <span class="c-carve ghost">nom, traits — étape 7</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Compétences formées</div>
+          <div class="chiprow"><span class="c-carve ghost">à répartir — étape 5</span></div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Destinée</span>
+            <span class="c-carve ghost">au choix — étape 5</span>
+            <span class="c-carve ghost">3 au d100 — étape 5</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Possessions</div>
+          <div class="chiprow"><span class="c-carve ghost">dotations — étape 6</span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Précédent</button>
+    <span class="hint">Les dés roulent — <b>Force Mentale</b> en cours · garder le tirage : <b>+50 PX</b>.</span>
+    <button class="btn btn-primary">Suivant →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 4. SIGNE ASTRAL ════════════════════════════ -->
+<div class="screen-head">
+  <h2>4 — Signe astral (la roue céleste)</h2>
+  <p><b style="color:var(--gold2)">Rail mort</b> — intro, encrier « Aux dés » et notes remontent en tête de la
+  zone de travail (topbar titre+encrier, note fusionnée sous l'astrolabe). L'astrolabe de laiton dans le chrome
+  Atelier : vingt signes (Archives de l'Empire II), aiguille sur l'élu, détail verbatim à droite de la roue —
+  description PLEINE hauteur, jamais coupée. L'apparence de la constellation est un texte d'ambiance (elle décrit
+  le ciel, pas le personnage). Le profil de la fiche vient d'encaisser <b>CT +2 · Ag +2 · CC −3</b>.</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+      <span class="step done">3. Caractéristiques</span><span class="step active">4. Signe astral</span>
+      <span class="step">5. Compétences &amp; Talents</span><span class="step">6. Possessions</span>
+      <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <div class="c-main">
+    <section class="c-lectern">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="fam-topbar" style="align-items:flex-start">
+        <div class="c-dhead" style="flex:1">
+          <h2>Signe astral</h2>
+          <span class="sub">la roue céleste — vingt signes · Archives de l'Empire II</span>
+        </div>
+        <div class="c-dicewell" style="flex:none"><span class="tray"><span class="d10"><i>1</i></span><span class="d10"><i>5</i></span></span>
+          <span class="txt"><b>Aux dés — d100</b>le ciel a rendu <span style="color:#e8c467">15</span> — Le Trait du Peintre</span></div>
+      </div>
+      <div class="c-note" style="padding-top:0">Le signe sous lequel on naît marque le profil pour la vie —
+      chaque signe porte ses grâces et son revers, gravés au verso de la roue. Tourner la roue à la main choisit
+      librement ; le d100 s'arrête sur la fourchette du signe tiré. L'Étoile du Sorcier (100) ouvre quatre
+      destins distincts — la roue les déplie si l'aiguille s'y pose.</div>
+      <div style="flex:1;min-height:0;display:flex;gap:24px;align-items:center">
+        <svg viewBox="0 0 840 560" style="width:560px;height:373px;flex:none">
+          <circle cx="420" cy="280" r="252" fill="none" stroke="#55402a" stroke-width="2"/>
+          <circle cx="420" cy="280" r="246" fill="none" stroke="rgba(232,196,103,.14)" stroke-width="1"/>
+          <circle cx="420" cy="280" r="164" fill="none" stroke="rgba(85,64,42,.5)" stroke-width="1" stroke-dasharray="3 5"/>
+          <line x1="420" y1="280" x2="543.4" y2="110.1" stroke="#ffd97a" stroke-width="1.5" opacity=".7"/>
+      <line x1="420.0" y1="184.0" x2="420.0" y2="130.0" stroke="#55402a" stroke-width="1"/>
+      <circle cx="420.0" cy="70.0" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="420.0" y="54.0" text-anchor="middle" font-size="11.5" fill="#b09b6f">Wymund l'Anachorète</text>
+      <text x="420.0" y="98.0" text-anchor="middle" font-size="8.5" fill="#7a6440">5</text>
+      <line x1="449.7" y1="188.7" x2="466.4" y2="137.3" stroke="#55402a" stroke-width="1"/>
+      <circle cx="484.9" cy="80.3" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="491.1" y="65.3" text-anchor="start" font-size="11.5" fill="#b09b6f">La Grande Croix</text>
+      <text x="477.2" y="107.1" text-anchor="middle" font-size="8.5" fill="#7a6440">10</text>
+      <line x1="476.4" y1="202.3" x2="508.2" y2="158.6" stroke="#d8b954" stroke-width="2"/>
+      <circle cx="543.4" cy="110.1" r="8" fill="url(#wheelSel)" stroke="#ffd97a" stroke-width="2"/>
+      <text x="555.2" y="97.9" text-anchor="start" font-size="11.5" fill="#ffe6a8" font-weight="600">Le Trait du Peintre</text>
+      <text x="528.7" y="133.3" text-anchor="middle" font-size="8.5" fill="#7a6440">15</text>
+      <line x1="497.7" y1="223.6" x2="541.4" y2="191.8" stroke="#55402a" stroke-width="1"/>
+      <circle cx="589.9" cy="156.6" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="606.1" y="148.8" text-anchor="start" font-size="11.5" fill="#b09b6f">Gnuthus le Buffle</text>
+      <text x="569.7" y="174.3" text-anchor="middle" font-size="8.5" fill="#7a6440">20</text>
+      <line x1="511.3" y1="250.3" x2="562.7" y2="233.6" stroke="#55402a" stroke-width="1"/>
+      <circle cx="619.7" cy="215.1" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="638.7" y="212.9" text-anchor="start" font-size="11.5" fill="#b09b6f">Dragomas le Dragon</text>
+      <text x="595.9" y="225.8" text-anchor="middle" font-size="8.5" fill="#7a6440">25</text>
+      <line x1="516.0" y1="280.0" x2="570.0" y2="280.0" stroke="#55402a" stroke-width="1"/>
+      <circle cx="630.0" cy="280.0" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="650.0" y="284.0" text-anchor="start" font-size="11.5" fill="#b09b6f">Le Crépuscule</text>
+      <text x="605.0" y="283.0" text-anchor="middle" font-size="8.5" fill="#7a6440">30</text>
+      <line x1="511.3" y1="309.7" x2="562.7" y2="326.4" stroke="#55402a" stroke-width="1"/>
+      <circle cx="619.7" cy="344.9" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="638.7" y="355.1" text-anchor="start" font-size="11.5" fill="#b09b6f">Le Fourreau de Grungni</text>
+      <text x="595.9" y="340.2" text-anchor="middle" font-size="8.5" fill="#7a6440">35</text>
+      <line x1="497.7" y1="336.4" x2="541.4" y2="368.2" stroke="#55402a" stroke-width="1"/>
+      <circle cx="589.9" cy="403.4" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="606.1" y="419.2" text-anchor="start" font-size="11.5" fill="#b09b6f">Mammit le Sage</text>
+      <text x="569.7" y="391.7" text-anchor="middle" font-size="8.5" fill="#7a6440">40</text>
+      <line x1="476.4" y1="357.7" x2="508.2" y2="401.4" stroke="#55402a" stroke-width="1"/>
+      <circle cx="543.4" cy="449.9" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="555.2" y="470.1" text-anchor="start" font-size="11.5" fill="#b09b6f">Mummit le Fou</text>
+      <text x="528.7" y="432.7" text-anchor="middle" font-size="8.5" fill="#7a6440">45</text>
+      <line x1="449.7" y1="371.3" x2="466.4" y2="422.7" stroke="#55402a" stroke-width="1"/>
+      <circle cx="484.9" cy="479.7" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="491.1" y="502.7" text-anchor="start" font-size="11.5" fill="#b09b6f">Les Deux Bœufs</text>
+      <text x="477.2" y="458.9" text-anchor="middle" font-size="8.5" fill="#7a6440">50</text>
+      <line x1="420.0" y1="376.0" x2="420.0" y2="430.0" stroke="#55402a" stroke-width="1"/>
+      <circle cx="420.0" cy="490.0" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="420.0" y="514.0" text-anchor="middle" font-size="11.5" fill="#b09b6f">Le Danseur</text>
+      <text x="420.0" y="468.0" text-anchor="middle" font-size="8.5" fill="#7a6440">55</text>
+      <line x1="390.3" y1="371.3" x2="373.6" y2="422.7" stroke="#55402a" stroke-width="1"/>
+      <circle cx="355.1" cy="479.7" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="348.9" y="502.7" text-anchor="end" font-size="11.5" fill="#b09b6f">Le Tambour</text>
+      <text x="362.8" y="458.9" text-anchor="middle" font-size="8.5" fill="#7a6440">60</text>
+      <line x1="363.6" y1="357.7" x2="331.8" y2="401.4" stroke="#55402a" stroke-width="1"/>
+      <circle cx="296.6" cy="449.9" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="284.8" y="470.1" text-anchor="end" font-size="11.5" fill="#b09b6f">Le Flûtiste</text>
+      <text x="311.3" y="432.7" text-anchor="middle" font-size="8.5" fill="#7a6440">65</text>
+      <line x1="342.3" y1="336.4" x2="298.6" y2="368.2" stroke="#55402a" stroke-width="1"/>
+      <circle cx="250.1" cy="403.4" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="233.9" y="419.2" text-anchor="end" font-size="11.5" fill="#b09b6f">Vobist le Pâle</text>
+      <text x="270.3" y="391.7" text-anchor="middle" font-size="8.5" fill="#7a6440">70</text>
+      <line x1="328.7" y1="309.7" x2="277.3" y2="326.4" stroke="#55402a" stroke-width="1"/>
+      <circle cx="220.3" cy="344.9" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="201.3" y="355.1" text-anchor="end" font-size="11.5" fill="#b09b6f">La Charrette Brisée</text>
+      <text x="244.1" y="340.2" text-anchor="middle" font-size="8.5" fill="#7a6440">75</text>
+      <line x1="324.0" y1="280.0" x2="270.0" y2="280.0" stroke="#55402a" stroke-width="1"/>
+      <circle cx="210.0" cy="280.0" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="190.0" y="284.0" text-anchor="end" font-size="11.5" fill="#b09b6f">La Chèvre Sauvage</text>
+      <text x="235.0" y="283.0" text-anchor="middle" font-size="8.5" fill="#7a6440">80</text>
+      <line x1="328.7" y1="250.3" x2="277.3" y2="233.6" stroke="#55402a" stroke-width="1"/>
+      <circle cx="220.3" cy="215.1" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="201.3" y="212.9" text-anchor="end" font-size="11.5" fill="#b09b6f">Le Chaudron de Rhya</text>
+      <text x="244.1" y="225.8" text-anchor="middle" font-size="8.5" fill="#7a6440">85</text>
+      <line x1="342.3" y1="223.6" x2="298.6" y2="191.8" stroke="#55402a" stroke-width="1"/>
+      <circle cx="250.1" cy="156.6" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="233.9" y="148.8" text-anchor="end" font-size="11.5" fill="#b09b6f">Cackelfax le Coq</text>
+      <text x="270.3" y="174.3" text-anchor="middle" font-size="8.5" fill="#7a6440">90</text>
+      <line x1="363.6" y1="202.3" x2="331.8" y2="158.6" stroke="#55402a" stroke-width="1"/>
+      <circle cx="296.6" cy="110.1" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="284.8" y="97.9" text-anchor="end" font-size="11.5" fill="#b09b6f">La Scie à Os</text>
+      <text x="311.3" y="133.3" text-anchor="middle" font-size="8.5" fill="#7a6440">95</text>
+      <line x1="390.3" y1="188.7" x2="373.6" y2="137.3" stroke="#55402a" stroke-width="1"/>
+      <circle cx="355.1" cy="80.3" r="4.5" fill="#241a10" stroke="#6b5836" stroke-width="1"/>
+      <text x="348.9" y="65.3" text-anchor="end" font-size="11.5" fill="#b09b6f">L'Étoile du Sorcier</text>
+      <text x="362.8" y="107.1" text-anchor="middle" font-size="8.5" fill="#7a6440">100</text>
+          <circle cx="420" cy="280" r="96" fill="#1a120a" stroke="#8a6c2f" stroke-width="2"/>
+          <circle cx="420" cy="280" r="88" fill="none" stroke="rgba(232,196,103,.2)" stroke-width="1"/>
+          <text x="420" y="262" text-anchor="middle" font-size="17" fill="#ffe6a8" font-family="Grenze Gotisch" letter-spacing="1">Le Trait</text>
+          <text x="420" y="284" text-anchor="middle" font-size="17" fill="#ffe6a8" font-family="Grenze Gotisch" letter-spacing="1">du Peintre</text>
+          <text x="420" y="306" text-anchor="middle" font-size="10" fill="#c9ac72" letter-spacing="1.4">SIGNE DE LA PRÉCISION</text>
+          <text x="420" y="324" text-anchor="middle" font-size="9.5" fill="#8a744a">d100 : 15</text>
+        </svg>
+        <div style="flex:1;min-width:0;align-self:stretch;display:flex;flex-direction:column;gap:9px;padding-top:6px">
+          <div class="c-dhead" style="gap:10px;flex-wrap:wrap">
+            <h2 style="font-size:21px">Le Trait du Peintre</h2>
+            <span class="sub">Archives de l'Empire II p. 41</span>
+          </div>
+          <div style="font-size:12px;color:#8a744a;font-style:italic;line-height:1.45">Au ciel du berceau, la
+          constellation dessine un archer bandant son arc.</div>
+          <div class="c-meta">
+            <span class="chip">Dates <b>9-28 nachhexen</b></span>
+          </div>
+          <div class="chiprow">
+            <span class="c-carve">Capacité de Tir <b>+2</b></span>
+            <span class="c-carve">Agilité <b>+2</b></span>
+            <span class="c-carve">Capacité de Combat <b>−3</b></span>
+          </div>
+          <div class="mini-title" style="margin:2px 0 0">Description</div>
+          <div class="c-ink-prose" style="max-height:none;flex:1">
+            <p>Les natifs du Trait du Peintre sont faits pour devenir poètes, peintres, sculpteurs... Des artistes
+            de toutes sortes. Ils créent de la beauté partout où ils vont, et même ceux qui, au gré des aléas de
+            l'existence, ne se retrouvent pas à exercer dans un domaine artistique, trouvent le moyen de faire de
+            l'œuvre de leur vie une sorte d'art. S'ils sont docteurs en médecine, ce sont des chirurgiens hors
+            pair. S'ils sont soldats, ils deviennent des maîtres tacticiens. Les personnes nées sous le signe du
+            Trait du Peintre doivent veiller à ne pas se montrer trop critiques envers elles-mêmes ou leur
+            travail.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <aside class="c-alcove">
+      <div class="c-lamp"></div>
+      <div class="figwrap">
+        <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+          <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+          <use href="#fig-human-agit" fill="url(#fgC3)"/>
+        </svg>
+      </div>
+      <div class="c-plaque"><b>Aventurier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+      <div class="c-sheet">
+        <div class="cs-full">
+          <div class="mini-title">Profil</div>
+          <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+            <div class="c-gauge"><span>CC</span><b>28</b></div><div class="c-gauge"><span>CT</span><b>35</b></div>
+            <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+            <div class="c-gauge"><span>I</span><b>29</b></div>
+            <div class="c-gauge"><span>AG</span><b>33</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+            <div class="c-gauge"><span>INT</span><b>27</b></div><div class="c-gauge"><span>FM</span><b>30</b></div>
+            <div class="c-gauge"><span>SOC</span><b>31</b>          </div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Valeurs dérivées</div>
+          <div class="c-derived">
+            <span>Blessures <b>10</b></span><span>Mouvement <b>4</b></span>
+            <span>Destin <b>4</b> · Chance <b>4</b></span><span>Résilience <b>2</b> · Dét. <b>2</b></span>
+            <span>Bourse <b class="ghost">—</b></span><span>PX création <b>+50</b></span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Identité</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Le Trait du Peintre</span>
+            <span class="c-carve ghost">nom, traits — étape 7</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Compétences formées</div>
+          <div class="chiprow"><span class="c-carve ghost">à répartir — étape 5</span></div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Destinée</span>
+            <span class="c-carve ghost">au choix — étape 5</span>
+            <span class="c-carve ghost">3 au d100 — étape 5</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Possessions</div>
+          <div class="chiprow"><span class="c-carve ghost">dotations — étape 6</span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Précédent</button>
+    <span class="hint">Signe <b>Le Trait du Peintre</b> — CT <b>+2</b> · Ag <b>+2</b> · CC <b>−3</b>.</span>
+    <button class="btn btn-primary">Suivant →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 5a. COMPÉTENCES DE RACE ════════════════════════════ -->
+<div class="screen-head">
+  <h2>5a — Compétences de race (sous-stepper au bandeau)</h2>
+  <p><b style="color:var(--gold2)">Rail mort</b> — intro, encrier « Aux dés » et plaque de répartition par défaut
+  remontent en tête de la zone de travail. Un écran = UN geste : seule l'allocation de RACE (3×+5 · 3×+3 parmi
+  douze) est en scène. Les manivelles de laiton reprennent chaque alvéole ; la réglette sertie compte les quotas
+  au même endroit, toujours.</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+      <span class="step done">3. Caractéristiques</span><span class="step done">4. Signe astral</span>
+      <span class="step active">5. Compétences &amp; Talents</span><span class="step">6. Possessions</span>
+      <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <nav class="c-sub substeps">
+    <span class="substep on">a. Compétences de race</span><span class="subarrow">▸</span>
+    <span class="substep">b. de carrière</span><span class="subarrow">▸</span>
+    <span class="substep">c. Talents</span>
+  </nav>
+  <div class="c-main">
+    <section class="c-lectern">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="fam-topbar" style="align-items:flex-start">
+        <div class="c-dhead" style="flex:1">
+          <h2>Compétences de race</h2>
+          <span class="sub">un seul geste — l'héritage du sang</span>
+        </div>
+        <div class="c-dicewell act" style="flex:none"><span class="tray"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span>
+          <span class="txt"><b>Tirer aux dés — d100</b>l'atelier répartit pour vous — modifiable ensuite</span></div>
+      </div>
+      <div class="c-note" style="padding-top:0">Votre <b>sang reiklander</b> offre 3 compétences à +5 et 3 à +3,
+      parmi les douze du registre. L'allocation de <b>métier</b> vient à l'écran suivant — les deux se cumulent
+      sur une même compétence.</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="c-plate" style="flex:none;min-width:230px"><span class="nm">Répartition par défaut</span><span class="mt">↺</span></div>
+        <div class="c-note" style="flex:1">Une rangée sertie (liseré laiton) porte déjà une allocation ; la
+        manivelle la reprend à tout moment avant de quitter l'étape.</div>
+      </div>
+      <div class="cu-sechead">
+        <span class="ttl">De race<small>3×+5 · 3×+3 parmi douze</small></span>
+        <span class="gauge">
+          <span class="ck-sockets"><span style="font-size:11px;color:#c9ac72;margin-right:2px">×+5</span>
+            <span class="socket lit"></span><span class="socket lit"></span><span class="socket"></span></span>
+          <span class="ck-sockets"><span style="font-size:11px;color:#c9ac72;margin-right:2px">×+3</span>
+            <span class="socket lit"></span><span class="socket"></span><span class="socket"></span></span>
+          <span class="cnt"><b>2</b>/3 · <b>1</b>/3</span>
+        </span>
+      </div>
+      <div class="cu-rows">
+        <div class="cs-row"><span class="id"><span class="nm skillref">Calme</span><span class="rf">Force Mentale 30</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row on"><span class="id"><span class="nm skillref">Charme</span><span class="rf">Sociabilité 31</span></span>
+          <span class="crank"><button>−</button><b>5</b><button>+</button></span><span class="val on">+5</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Commandement</span><span class="rf">Sociabilité 31</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Corps à corps (Base)</span><span class="rf">Capacité de Combat 28</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Évaluation</span><span class="rf">Intelligence 27</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Langue (Bretonnien)</span><span class="rf">Intelligence 27</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Langue (Wastelander)</span><span class="rf">Intelligence 27</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Marchandage</span><span class="rf">Sociabilité 31</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Projectiles (Arc)</span><span class="rf">Capacité de Tir 35</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row on"><span class="id"><span class="nm skillref">Ragot</span><span class="rf">Sociabilité 31</span></span>
+          <span class="crank"><button>−</button><b>5</b><button>+</button></span><span class="val on">+5</span></div>
+        <div class="cs-row on"><span class="id"><span class="nm skillref">Savoir (Reikland)</span><span class="rf">Intelligence 27</span></span>
+          <span class="crank"><button>−</button><b>3</b><button>+</button></span><span class="val on">+3</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Soin aux animaux</span><span class="rf">Intelligence 27</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+      </div>
+      <div class="c-note" style="margin-top:auto">Charme, Ragot et Marchandage reviendront au registre de
+      carrière : les deux allocations restent distinctes et se <b>cumulent</b>. Les valeurs formées s'ajoutent à
+      la caractéristique liée — Charme 31 + 5 = <b>36</b> au premier jet d'éloquence.</div>
+    </section>
+    <aside class="c-alcove">
+      <div class="c-lamp"></div>
+      <div class="figwrap">
+        <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+          <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+          <use href="#fig-human-agit" fill="url(#fgC3)"/>
+        </svg>
+      </div>
+      <div class="c-plaque"><b>Aventurier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+      <div class="c-sheet">
+        <div class="cs-full">
+          <div class="mini-title">Profil</div>
+          <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+            <div class="c-gauge"><span>CC</span><b>28</b></div><div class="c-gauge"><span>CT</span><b>35</b></div>
+            <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+            <div class="c-gauge"><span>I</span><b>29</b></div>
+            <div class="c-gauge"><span>AG</span><b>33</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+            <div class="c-gauge"><span>INT</span><b>27</b></div><div class="c-gauge"><span>FM</span><b>30</b></div>
+            <div class="c-gauge"><span>SOC</span><b>31</b>          </div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Valeurs dérivées</div>
+          <div class="c-derived">
+            <span>Blessures <b>10</b></span><span>Mouvement <b>4</b></span>
+            <span>Destin <b>4</b> · Chance <b>4</b></span><span>Résilience <b>2</b> · Dét. <b>2</b></span>
+            <span>Bourse <b class="ghost">—</b></span><span>PX création <b>+50</b></span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Identité</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Le Trait du Peintre</span>
+            <span class="c-carve ghost">nom, traits — étape 7</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Compétences formées</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Charme <b>+5</b></span><span class="c-carve skillref">Ragot <b>+5</b></span>
+            <span class="c-carve skillref">Savoir (Reikland) <b>+3</b></span>
+            <span class="c-carve ghost">carrière — 5·b</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Destinée</span>
+            <span class="c-carve ghost">au choix — 5·c</span>
+            <span class="c-carve ghost">3 au d100 — 5·c</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Possessions</div>
+          <div class="chiprow"><span class="c-carve ghost">dotations — étape 6</span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Précédent</button>
+    <span class="hint">Race : <b>2/3</b> à +5, <b>1/3</b> à +3 — un seul geste sur cet écran.</span>
+    <button class="btn btn-primary">Vers la carrière →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 5b. COMPÉTENCES DE CARRIÈRE ════════════════════════════ -->
+<div class="screen-head">
+  <h2>5b — Compétences de carrière</h2>
+  <p><b style="color:var(--gold2)">Rail mort</b> — intro, encrier et plaque de répartition remontent en tête de
+  zone de travail. Même gabarit exactement, seule la source change : <b>40 points de métier</b>, max 10 par
+  compétence, sur les huit du Pamphlétaire. Le cumul (Charme +5 puis +10) se LIT dans la fiche vivante qui
+  s'épaissit.</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+      <span class="step done">3. Caractéristiques</span><span class="step done">4. Signe astral</span>
+      <span class="step active">5. Compétences &amp; Talents</span><span class="step">6. Possessions</span>
+      <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <nav class="c-sub substeps">
+    <span class="substep done">a. Compétences de race ✓</span><span class="subarrow">▸</span>
+    <span class="substep on">b. de carrière</span><span class="subarrow">▸</span>
+    <span class="substep">c. Talents</span>
+  </nav>
+  <div class="c-main">
+    <section class="c-lectern">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="fam-topbar" style="align-items:flex-start">
+        <div class="c-dhead" style="flex:1">
+          <h2>Compétences de carrière</h2>
+          <span class="sub">un seul geste — l'école du métier</span>
+        </div>
+        <div class="c-dicewell act" style="flex:none"><span class="tray"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span>
+          <span class="txt"><b>Tirer aux dés — d100</b>l'atelier répartit pour vous — modifiable ensuite</span></div>
+      </div>
+      <div class="c-note" style="padding-top:0">Votre métier de <b>Pamphlétaire</b> enseigne 40 points, 10 au
+      plus par compétence. Les +5/+3 de race sont acquis et se <b>cumulent</b> — la rangée le rappelle
+      (« +5 de race »).</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="c-plate" style="flex:none;min-width:230px"><span class="nm">+5 sur les huit</span><span class="mt">simple ↺</span></div>
+        <div class="c-note" style="flex:1">Charme 31 + 5 de race + 10 de métier = <b>46</b> au premier jet
+        d'éloquence.</div>
+      </div>
+      <div class="cu-sechead">
+        <span class="ttl">De carrière<small>40 points · max 10 par compétence</small></span>
+        <span class="gauge">
+          <span class="cu-minibar"><span class="fill"></span></span>
+          <span class="cnt"><b>22</b> / 40 · reste <b>18</b></span>
+        </span>
+      </div>
+      <div class="cu-rows">
+        <div class="cs-row on"><span class="id"><span class="nm skillref">Art (Écriture)</span><span class="rf">Dextérité 30</span></span>
+          <span class="crank"><button>−</button><b>5</b><button>+</button></span><span class="val on">+5</span></div>
+        <div class="cs-row on"><span class="id"><span class="nm skillref">Charme</span><span class="rf">Sociabilité 31 · +5 de race</span></span>
+          <span class="crank"><button>−</button><b>10</b><button>+</button></span><span class="val on">+10</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Marchandage</span><span class="rf">Sociabilité 31</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Métier (Imprimerie)</span><span class="rf">Dextérité 30</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row on"><span class="id"><span class="nm skillref">Ragot</span><span class="rf">Sociabilité 31 · +5 de race</span></span>
+          <span class="crank"><button>−</button><b>5</b><button>+</button></span><span class="val on">+5</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Résistance à l'alcool</span><span class="rf">Endurance 26</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row on"><span class="id"><span class="nm skillref">Savoir (Politique)</span><span class="rf">Intelligence 27</span></span>
+          <span class="crank"><button>−</button><b>2</b><button>+</button></span><span class="val on">+2</span></div>
+        <div class="cs-row"><span class="id"><span class="nm skillref">Subornation</span><span class="rf">Sociabilité 31</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+      </div>
+      <div class="c-note" style="margin-top:auto">Les +5/+3 posés à l'écran précédent restent visibles rangée
+      par rangée — les deux allocations se <b>cumulent</b> (Charme +5 de race, +10 de métier → formé +15).</div>
+    </section>
+    <aside class="c-alcove">
+      <div class="c-lamp"></div>
+      <div class="figwrap">
+        <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+          <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+          <use href="#fig-human-agit" fill="url(#fgC3)"/>
+        </svg>
+      </div>
+      <div class="c-plaque"><b>Aventurier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+      <div class="c-sheet">
+        <div class="cs-full">
+          <div class="mini-title">Profil</div>
+          <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+            <div class="c-gauge"><span>CC</span><b>28</b></div><div class="c-gauge"><span>CT</span><b>35</b></div>
+            <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+            <div class="c-gauge"><span>I</span><b>29</b></div>
+            <div class="c-gauge"><span>AG</span><b>33</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+            <div class="c-gauge"><span>INT</span><b>27</b></div><div class="c-gauge"><span>FM</span><b>30</b></div>
+            <div class="c-gauge"><span>SOC</span><b>31</b>          </div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Valeurs dérivées</div>
+          <div class="c-derived">
+            <span>Blessures <b>10</b></span><span>Mouvement <b>4</b></span>
+            <span>Destin <b>4</b> · Chance <b>4</b></span><span>Résilience <b>2</b> · Dét. <b>2</b></span>
+            <span>Bourse <b class="ghost">—</b></span><span>PX création <b>+50</b></span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Identité</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Le Trait du Peintre</span>
+            <span class="c-carve ghost">nom, traits — étape 7</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Compétences formées</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Charme <b>+15</b></span><span class="c-carve skillref">Ragot <b>+10</b></span>
+            <span class="c-carve skillref">Art (Écriture) <b>+5</b></span><span class="c-carve skillref">Savoir (Reikland) <b>+3</b></span>
+            <span class="c-carve skillref">Savoir (Politique) <b>+2</b></span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Destinée</span>
+            <span class="c-carve ghost">au choix — 5·c</span>
+            <span class="c-carve ghost">3 au d100 — 5·c</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Possessions</div>
+          <div class="chiprow"><span class="c-carve ghost">dotations — étape 6</span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Compétences de race</button>
+    <span class="hint">Carrière : <b>22/40</b> points répartis — un seul geste sur cet écran.</span>
+    <button class="btn btn-primary">Vers les Talents →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 5c. TALENTS (ENCADRENT L'ALCÔVE) ════════════════════════════ -->
+<div class="screen-head">
+  <h2>5c — Talents (deux colonnes de même rang, sceaux de cire)</h2>
+  <p><b style="color:var(--gold2)">Rail mort</b> — l'encrier à dés, les trois talents que le d100 a rendus
+  (Guerrier né, Ambidextre, Artiste) et la spécialisation à trancher remontent en topbar de la zone de travail,
+  au-dessus des deux colonnes. Écran de décision mono-nature à deux sections d'égal poids : <b>De race 1/1</b> et
+  <b>De carrière 1/1</b>, deux colonnes ADJACENTES qui remplissent la zone de travail — le héros n'apparaît qu'UNE
+  fois, dans l'alcôve de la fiche vivante à droite, à sa place et sa largeur exactes. Les talents élus portent un
+  <b>sceau de cire rouge frappé de la tête de mort</b> (arbitrage 2026-07-13), à cheval sur le bord de la plaque.</p>
+  <div style="margin:12px 0 0;max-width:600px;border:1px dashed #443626;border-radius:8px;padding:10px 12px;background:#120d08">
+    <div style="font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#8a744a;margin-bottom:8px">
+      Variante — Nain : 2 choix de race — preuve de composition : la colonne « De race » empile N groupes
+      (en-tête 1/1 + paire de plaques par choix)</div>
+    <div class="cu-sechead" style="padding:6px 10px"><span class="ttl" style="font-size:14px">De race — choix 1<small>un au choix</small></span>
+      <span class="gauge"><span class="ck-sockets"><span class="socket lit"></span></span><span class="cnt"><b>1</b> / 1</span></span></div>
+    <div style="display:flex;gap:8px;align-items:center;margin:6px 0 10px">
+      <div class="cs-tcard sel" style="flex:1;padding:8px 10px 8px 32px"><svg class="sealwax" viewBox="0 0 64 64" style="width:27px;height:27px;left:-7px;top:7px"><use href="#wax-seal"/></svg><b style="font-size:13.5px">Déterminé</b></div>
+      <span class="orword">ou</span>
+      <div class="cs-tcard" style="flex:1;padding:8px 10px 8px 32px"><span class="seal" style="left:8px;top:8px;width:16px;height:16px"></span><b style="font-size:13.5px">Obstiné</b></div>
+    </div>
+    <div class="cu-sechead" style="padding:6px 10px"><span class="ttl" style="font-size:14px">De race — choix 2<small>un au choix</small></span>
+      <span class="gauge"><span class="ck-sockets"><span class="socket"></span></span><span class="cnt"><b>0</b> / 1</span></span></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+      <div class="cs-tcard" style="flex:1;padding:8px 10px 8px 32px"><span class="seal" style="left:8px;top:8px;width:16px;height:16px"></span><b style="font-size:13.5px">Lire/Écrire</b></div>
+      <span class="orword">ou</span>
+      <div class="cs-tcard" style="flex:1;padding:8px 10px 8px 32px"><span class="seal" style="left:8px;top:8px;width:16px;height:16px"></span><b style="font-size:13.5px">Impitoyable</b></div>
+    </div>
+  </div>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+      <span class="step done">3. Caractéristiques</span><span class="step done">4. Signe astral</span>
+      <span class="step active">5. Compétences &amp; Talents</span><span class="step">6. Possessions</span>
+      <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <nav class="c-sub substeps">
+    <span class="substep done">a. Compétences de race ✓</span><span class="subarrow">▸</span>
+    <span class="substep done">b. de carrière ✓</span><span class="subarrow">▸</span>
+    <span class="substep on">c. Talents</span>
+  </nav>
+  <div class="c-main">
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+      <div class="c-dhead" style="justify-content:space-between">
+        <div>
+          <h2 style="font-size:20px">Talents</h2>
+          <span class="sub">ce que le sort a tranché</span>
+        </div>
+        <div class="c-dicewell" style="flex:none"><span class="tray"><span class="d10"><i>3</i></span><span class="d10"><i>6</i></span></span>
+          <span class="txt"><b>Aux dés — d100</b>trois talents de race rendus, gravés d'office</span></div>
+      </div>
+      <div class="c-note" style="padding-top:0">Un seul talent de carrière au Niveau 1 — les trois autres
+      s'achèteront en PX au fil du jeu.</div>
+      <div style="flex:1;min-height:0;display:flex;gap:16px">
+        <section class="tal-panel">
+          <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+          <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+          <div class="cu-sechead">
+            <span class="ttl">De race<small>un au choix</small></span>
+            <span class="gauge">
+              <span class="ck-sockets"><span class="socket lit"></span></span>
+              <span class="cnt"><b>1</b> / 1</span>
+            </span>
+          </div>
+          <div class="cs-tcard sel"><svg class="sealwax" viewBox="0 0 64 64"><use href="#wax-seal"/></svg><b>Perspicace</b>
+            <span class="ds">Vous gagnez un bonus permanent de +5 à votre Caractéristique Intelligence de départ
+            (ne compte pas comme Augmentation).</span></div>
+          <div class="orword" style="align-self:center">ou</div>
+          <div class="cs-tcard"><span class="seal"></span><b>Affable</b>
+            <span class="ds">Vous gagnez un bonus permanent de +5 à votre Caractéristique Sociabilité de départ
+            (qui ne compte pas comme des Augmentations).</span></div>
+          <div class="c-note">Sceau de cire rouge = l'élu — Intelligence <b>27 → 32</b>.</div>
+          <div class="cu-sechead">
+            <span class="ttl">Tirés d'office<small>d100 — trois talents rendus</small></span>
+          </div>
+          <div class="cs-tcard compact sel"><svg class="sealwax" viewBox="0 0 64 64"><use href="#wax-seal"/></svg>
+            <b>Guerrier né</b><span class="nb">1er d100 · CC 28 → 33</span></div>
+          <div class="cs-tcard compact sel"><svg class="sealwax" viewBox="0 0 64 64"><use href="#wax-seal"/></svg>
+            <b>Ambidextre</b><span class="nb">2e d100</span></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="cs-tcard compact sel" style="flex:1"><svg class="sealwax" viewBox="0 0 64 64"><use href="#wax-seal"/></svg>
+              <b>Artiste</b><span class="nb">3e d100</span></div>
+            <div class="c-inkwell"><span class="well"></span>
+              <span class="txt"><b>Spécialisation</b>Calligraphie ▾</span></div>
+          </div>
+          <div class="cu-sechead" style="margin-top:auto">
+            <span class="ttl">Acquis d'office<small>le sang reiklander</small></span>
+          </div>
+          <div class="chiprow" style="padding:0 2px"><span class="c-carve talent skillref">Destinée</span></div>
+        </section>
+        <section class="tal-panel">
+          <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+          <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+          <div class="cu-sechead">
+            <span class="ttl">De carrière<small>un au choix</small></span>
+            <span class="gauge">
+              <span class="ck-sockets"><span class="socket lit"></span></span>
+              <span class="cnt"><b>1</b> / 1</span>
+            </span>
+          </div>
+          <div class="cs-tcard sel"><svg class="sealwax" viewBox="0 0 64 64"><use href="#wax-seal"/></svg><b>Baratiner</b>
+            <span class="ds">Appelé « parler à tort et à travers » dans le Nordland, ou simplement « raconter des
+            âneries » au Ostland, Baratiner consiste à parler rapidement de façon incessante, ou parler longuement
+            de façon volubile, en parlant de choses sans importance ou n'ayant aucun sens, pour embrouiller et
+            déconcerter votre interlocuteur.</span></div>
+          <div class="cs-tcard"><span class="seal"></span><b>Faire la manche</b>
+            <span class="ds">Vous êtes un mendiant expérimenté, capable de faire mettre la main à la poche même aux
+            individus les plus cyniques. Vous pouvez effectuer un Test de Charme toutes les demi-heures quand vous
+            Mendiez, et non toutes les heures.</span></div>
+          <div class="cs-tcard"><span class="seal"></span><b>Lire/Écrire</b>
+            <span class="ds">Vous êtes l'un des rares individus lettrés du Vieux Monde. On considère que vous pouvez
+            lire et écrire (si nécessaire) toutes les Langues que vous parlez.</span></div>
+          <div class="cs-tcard"><span class="seal"></span><b>Sociable</b>
+            <span class="ds">Vous aimez parler avec les autres et on dirait bien qu'ils aiment discuter avec vous.
+            Vous pouvez inverser n'importe quel Test de Ragot si cela permet au Test de réussir.</span></div>
+        </section>
+      </div>
+    </div>
+    <aside class="c-alcove">
+      <div class="c-lamp"></div>
+      <div class="figwrap">
+        <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+          <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+          <use href="#fig-human-agit" fill="url(#fgC3)"/>
+        </svg>
+      </div>
+      <div class="c-plaque"><b>Aventurier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+      <div class="c-sheet">
+        <div class="cs-full">
+          <div class="mini-title">Profil</div>
+          <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+            <div class="c-gauge"><span>CC</span><b>33</b></div><div class="c-gauge"><span>CT</span><b>35</b></div>
+            <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+            <div class="c-gauge"><span>I</span><b>29</b></div>
+            <div class="c-gauge"><span>AG</span><b>33</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+            <div class="c-gauge"><span>INT</span><b>32</b></div><div class="c-gauge"><span>FM</span><b>30</b></div>
+            <div class="c-gauge"><span>SOC</span><b>31</b>          </div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Valeurs dérivées</div>
+          <div class="c-derived">
+            <span>Blessures <b>10</b></span><span>Mouvement <b>4</b></span>
+            <span>Destin <b>4</b> · Chance <b>4</b></span><span>Résilience <b>2</b> · Dét. <b>2</b></span>
+            <span>Bourse <b class="ghost">—</b></span><span>PX création <b>+50</b></span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Identité</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Le Trait du Peintre</span>
+            <span class="c-carve ghost">nom, traits — étape 7</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Compétences formées</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Charme <b>+15</b></span><span class="c-carve skillref">Art (Écriture) <b>+10</b></span>
+            <span class="c-carve skillref">Ragot <b>+10</b></span><span class="c-carve skillref">Commandement <b>+5</b></span>
+            <span class="c-carve skillref">Métier (Imprimerie) <b>+5</b></span><span class="c-carve skillref">Savoir (Politique) <b>+5</b></span>
+            <span class="c-carve skillref">Subornation <b>+5</b></span><span class="c-carve skillref">Calme <b>+3</b></span>
+            <span class="c-carve skillref">Évaluation <b>+3</b></span><span class="c-carve skillref">Savoir (Reikland) <b>+3</b></span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Destinée</span><span class="c-carve talent skillref">Guerrier né</span>
+            <span class="c-carve talent skillref">Ambidextre</span><span class="c-carve talent skillref">Artiste (Calligraphie)</span>
+            <span class="c-carve talent skillref sealed">Perspicace</span><span class="c-carve talent skillref sealed">Baratiner</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Possessions</div>
+          <div class="chiprow"><span class="c-carve ghost">dotations — étape 6</span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Compétences de carrière</button>
+    <span class="hint">Sceaux posés : <b>Perspicace</b> (race) · <b>Baratiner</b> (carrière) — <b>2</b> / 2.</span>
+    <button class="btn btn-primary">Suivant →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 6. POSSESSIONS ════════════════════════════ -->
+<div class="screen-head">
+  <h2>6 — Possessions</h2>
+  <p><b style="color:var(--gold2)">Rail mort</b> — statut et note de train de vie remontent en tête de zone de
+  travail. Rien ne se décide ici : on reçoit. Dotations de carrière et de classe en chips-référence
+  (chip = référence, plaque = décision), et la bourse se tire sous vos yeux — 2d10 pour Bronze 1 → <b>12 sous</b>.</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+      <span class="step done">3. Caractéristiques</span><span class="step done">4. Signe astral</span>
+      <span class="step done">5. Compétences &amp; Talents</span><span class="step active">6. Possessions</span>
+      <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <div class="c-main">
+    <section class="c-lectern">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="fam-topbar" style="align-items:flex-start">
+        <div class="c-dhead" style="flex:1">
+          <h2>Possessions</h2>
+          <span class="sub">ce que le départ vous met dans les mains</span>
+        </div>
+        <div class="c-plate" style="flex:none;min-width:200px"><span class="nm">Statut</span><span class="mt"><em class="st-bronze">Bronze 1</em></span></div>
+      </div>
+      <div class="c-note" style="padding-top:0">Le statut <b class="st-bronze">Bronze 1</b> du Pamphlétaire fixe
+      la bourse de départ (2d10 sous de cuivre) et le train de vie entre les aventures. Chaque objet reçu s'ouvre
+      sur sa fiche du Codex — encombrement et qualités compris.</div>
+      <div class="cu-sechead">
+        <span class="ttl">De carrière<small>Pamphlétaire — niveau 1</small></span>
+        <span class="gauge"><span class="cnt"><b>4</b> objets</span></span>
+      </div>
+      <div class="chiprow" style="padding:2px 4px">
+        <span class="c-carve skillref">Nécessaire d'écriture</span><span class="c-carve skillref">Marteau</span>
+        <span class="c-carve skillref">Clous</span><span class="c-carve skillref">Pile de prospectus</span>
+      </div>
+      <div class="cu-sechead" style="margin-top:4px">
+        <span class="ttl">De classe<small>Citadins</small></span>
+        <span class="gauge"><span class="cnt"><b>7</b> objets</span></span>
+      </div>
+      <div class="chiprow" style="padding:2px 4px">
+        <span class="c-carve skillref">Cape</span><span class="c-carve skillref">Vêtements</span>
+        <span class="c-carve skillref">Dague</span><span class="c-carve skillref">Chapeau</span>
+        <span class="c-carve skillref">Bourse</span><span class="c-carve skillref">Besace</span>
+        <span class="c-carve skillref">Déjeuner</span>
+      </div>
+      <div class="cu-sechead" style="margin-top:4px">
+        <span class="ttl">La bourse<small>statut <span class="st-bronze">Bronze 1</span> — 2d10 sous de cuivre</small></span>
+        <span class="gauge">
+          <span class="dice"><span class="d10"><i>5</i></span><span class="d10"><i>7</i></span></span>
+          <span class="cnt"><b>12</b> sous</span>
+        </span>
+      </div>
+      <div style="margin-top:2px">
+        <div class="mini-title">La classe — Citadins</div>
+        <div class="c-ink-prose">
+          <p>Il s'agit communément de citoyens respectueux des lois qui vivent et travaillent dans les nombreuses
+          villes et cités de l'Empire. Beaucoup de Citadins appartiennent à la classe moyenne et gagnent
+          convenablement leur vie.</p>
+        </div>
+      </div>
+      <div class="c-note" style="margin-top:auto">Tout objet va sur le héros — il se retrouvera dans son
+      inventaire dès l'engagement.</div>
+    </section>
+    <aside class="c-alcove">
+      <div class="c-lamp"></div>
+      <div class="figwrap">
+        <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+          <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+          <use href="#fig-human-agit" fill="url(#fgC3)"/>
+        </svg>
+      </div>
+      <div class="c-plaque"><b>Aventurier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+      <div class="c-sheet">
+        <div class="cs-full">
+          <div class="mini-title">Profil</div>
+          <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+            <div class="c-gauge"><span>CC</span><b>33</b></div><div class="c-gauge"><span>CT</span><b>35</b></div>
+            <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+            <div class="c-gauge"><span>I</span><b>29</b></div>
+            <div class="c-gauge"><span>AG</span><b>33</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+            <div class="c-gauge"><span>INT</span><b>32</b></div><div class="c-gauge"><span>FM</span><b>30</b></div>
+            <div class="c-gauge"><span>SOC</span><b>31</b>          </div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Valeurs dérivées</div>
+          <div class="c-derived">
+            <span>Blessures <b>10</b></span><span>Mouvement <b>4</b></span>
+            <span>Destin <b>4</b> · Chance <b>4</b></span><span>Résilience <b>2</b> · Dét. <b>2</b></span>
+            <span>Bourse <b>12 sous</b></span><span>PX création <b>+50</b></span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Identité</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Le Trait du Peintre</span>
+            <span class="c-carve ghost">nom, traits — étape 7</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Compétences formées</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Charme <b>+15</b></span><span class="c-carve skillref">Art (Écriture) <b>+10</b></span>
+            <span class="c-carve skillref">Ragot <b>+10</b></span><span class="c-carve skillref">Commandement <b>+5</b></span>
+            <span class="c-carve skillref">Métier (Imprimerie) <b>+5</b></span><span class="c-carve skillref">Savoir (Politique) <b>+5</b></span>
+            <span class="c-carve skillref">Subornation <b>+5</b></span><span class="c-carve skillref">Calme <b>+3</b></span>
+            <span class="c-carve skillref">Évaluation <b>+3</b></span><span class="c-carve skillref">Savoir (Reikland) <b>+3</b></span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Destinée</span><span class="c-carve talent skillref">Guerrier né</span>
+            <span class="c-carve talent skillref">Ambidextre</span><span class="c-carve talent skillref">Artiste (Calligraphie)</span>
+            <span class="c-carve talent skillref sealed">Perspicace</span><span class="c-carve talent skillref sealed">Baratiner</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Possessions</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Nécessaire d'écriture</span><span class="c-carve skillref">Marteau</span>
+            <span class="c-carve skillref">Clous</span><span class="c-carve skillref">Pile de prospectus</span>
+            <span class="c-carve skillref">Cape</span><span class="c-carve skillref">Vêtements</span>
+            <span class="c-carve skillref">Dague</span><span class="c-carve skillref">Chapeau</span>
+            <span class="c-carve skillref">Bourse</span><span class="c-carve skillref">Besace</span>
+            <span class="c-carve skillref">Déjeuner</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Précédent</button>
+    <span class="hint"><b>11</b> possessions reçues · bourse <b>12 sous de cuivre</b> (2d10 — <b class="st-bronze">Bronze 1</b>).</span>
+    <button class="btn btn-primary">Suivant →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 7. DÉTAILS ════════════════════════════ -->
+<div class="screen-head">
+  <h2>7 — Détails</h2>
+  <p><b style="color:var(--gold2)">Rail mort</b> — plaque « Tirer le physique » et encrier remontent en tête de
+  zone de travail. L'état civil : chaque trait s'écrit à la plume ou se tire aux dés, rangée par rangée —
+  <b>Motivation &amp; Ambitions</b> encadre l'identité (Motivation recharge la Détermination, ambitions
+  courte/longue guident le rôle) — et l'<b>Apparence</b> couvre sexe, coiffure, morphologie et variante de visage
+  en plus des teintes cheveux/yeux, qui passent SUR la silhouette. La fiche vivante gagne son nom — la plaque de
+  l'alcôve cesse de dire « Aventurier ».</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+      <span class="step done">3. Caractéristiques</span><span class="step done">4. Signe astral</span>
+      <span class="step done">5. Compétences &amp; Talents</span><span class="step done">6. Possessions</span>
+      <span class="step active">7. Détails</span><span class="step">8. Présentation</span>
+    </nav>
+  </header>
+  <div class="c-main">
+    <section class="c-lectern">
+      <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+      <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+      <div class="fam-topbar" style="align-items:flex-start">
+        <div class="c-dhead" style="flex:1">
+          <h2>Détails</h2>
+          <span class="sub">le registre d'état civil du héros</span>
+        </div>
+        <div class="c-plate" style="cursor:pointer;flex:none;min-width:220px"><span class="nm">Tirer le physique</span><span class="mt">tout d'un coup</span></div>
+        <div class="c-dicewell" style="flex:none"><span class="tray"><span class="d10"><i>7</i></span><span class="d10"><i>3</i></span></span>
+          <span class="txt"><b>Aux dés</b>tout tirer d'un trait — modifiable ensuite</span></div>
+      </div>
+      <div class="c-note" style="padding-top:0">Le nom peut se tirer d'un générateur ou s'écrire à la plume ; âge,
+      taille, yeux et cheveux se tirent aux dés, trait par trait — ou tous d'un coup. Motivation et ambitions sont
+      libres — elles guident le jeu de rôle, pas les règles ; la Motivation est la donnée qui recharge la
+      Détermination en jeu.</div>
+      <div class="ck-grid" style="margin-top:3px;gap:6px 12px">
+        <div class="idf sm"><span class="lb">Nom</span><span class="vl">Ludwig Bachmeier</span><button class="db">⚄</button></div>
+        <div class="idf sm"><span class="lb">Sexe</span><span class="vl">Masculin</span><button class="db q">⇄</button></div>
+        <div class="idf sm"><span class="lb">Âge</span><span class="vl">22 ans</span><button class="db">⚄</button></div>
+        <div class="idf sm"><span class="lb">Taille</span><span class="vl">1,77 m</span><button class="db">⚄</button></div>
+        <div class="idf sm"><span class="lb">Yeux</span><span class="vl">Gris-bleu</span><button class="db">⚄</button></div>
+        <div class="idf sm"><span class="lb">Cheveux</span><span class="vl">Châtain clair</span><button class="db">⚄</button></div>
+      </div>
+      <div class="cu-sechead" style="margin-top:7px;padding:6px 14px">
+        <span class="ttl">Motivation &amp; Ambitions<small>recharge la Détermination · guide le rôle</small></span>
+      </div>
+      <div class="ck-grid" style="margin-top:4px;grid-template-columns:1fr;gap:5px">
+        <div class="idf sm"><span class="lb" style="width:150px">Motivation</span><span class="vl">La colère des rues</span><button class="db q">✎</button></div>
+        <div class="idf sm"><span class="lb" style="width:150px">Ambition court terme</span><span class="vl">Faire tomber un échevin</span><button class="db q">✎</button></div>
+        <div class="idf sm"><span class="lb" style="width:150px">Ambition long terme</span><span class="vl">Devenir la voix du peuple d'Altdorf</span><button class="db q">✎</button></div>
+      </div>
+      <div class="cu-sechead" style="margin-top:7px;padding:6px 14px">
+        <span class="ttl">Apparence<small>la silhouette prend les teintes</small></span>
+        <span class="gauge"><span class="cnt">tirées aux dés — retouche libre</span></span>
+      </div>
+      <div class="cd-dots" style="gap:5px;padding-top:4px">
+        <div class="cd-row"><span class="lb">Cheveux</span>
+          <div class="chiprow">
+            <span class="cc-pill"><span class="sw" style="background:#c9b37a"></span>Blond cendré</span>
+            <span class="cc-pill sel"><span class="sw" style="background:#a8834a"></span>Châtain clair</span>
+            <span class="cc-pill"><span class="sw" style="background:#6b4a2c"></span>Brun</span>
+            <span class="cc-pill"><span class="sw" style="background:#2a2320"></span>Noir</span>
+            <span class="cc-pill"><span class="sw" style="background:#a85a2c"></span>Roux</span>
+          </div></div>
+        <div class="cd-row"><span class="lb">Yeux</span>
+          <div class="chiprow">
+            <span class="cc-pill"><span class="sw" style="background:#9db8cc"></span>Bleu pâle</span>
+            <span class="cc-pill sel"><span class="sw" style="background:#7d93a8"></span>Gris-bleu</span>
+            <span class="cc-pill"><span class="sw" style="background:#7a9060"></span>Vert</span>
+            <span class="cc-pill"><span class="sw" style="background:#a08050"></span>Noisette</span>
+            <span class="cc-pill"><span class="sw" style="background:#6b4a33"></span>Brun</span>
+          </div></div>
+        <div class="cd-row"><span class="lb">Silhouette</span>
+          <div class="chiprow">
+            <span class="cc-pill sel">Coiffure — courte nouée</span>
+            <span class="cc-pill sel">Morphologie — robuste</span>
+            <button class="btn small" style="padding:3px 10px;font-size:11px">Visage — variante 3 ⇄</button>
+          </div></div>
+      </div>
+      <div class="c-note" style="margin-top:6px">La figurine porte déjà la mèche châtain clair et le regard
+      gris-bleu — teintes reprises par le rig réel en production.</div>
+    </section>
+    <aside class="c-alcove">
+      <div class="c-lamp"></div>
+      <div class="figwrap">
+        <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+          <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+          <use href="#fig-human-agit-tint" fill="url(#fgC3)"/>
+        </svg>
+      </div>
+      <div class="c-plaque"><b>Ludwig Bachmeier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+      <div class="c-sheet">
+        <div class="cs-full">
+          <div class="mini-title">Profil</div>
+          <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+            <div class="c-gauge"><span>CC</span><b>33</b></div><div class="c-gauge"><span>CT</span><b>35</b></div>
+            <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+            <div class="c-gauge"><span>I</span><b>29</b></div>
+            <div class="c-gauge"><span>AG</span><b>33</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+            <div class="c-gauge"><span>INT</span><b>32</b></div><div class="c-gauge"><span>FM</span><b>30</b></div>
+            <div class="c-gauge"><span>SOC</span><b>31</b>          </div>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Valeurs dérivées</div>
+          <div class="c-derived">
+            <span>Blessures <b>10</b></span><span>Mouvement <b>4</b></span>
+            <span>Destin <b>4</b> · Chance <b>4</b></span><span>Résilience <b>2</b> · Dét. <b>2</b></span>
+            <span>Bourse <b>12 sous</b></span><span>PX création <b>+50</b></span>
+          </div>
+        </div>
+        <div>
+          <div class="mini-title">Identité</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Le Trait du Peintre</span>
+            <span class="c-carve">Masculin</span><span class="c-carve">22 ans</span><span class="c-carve">1,77 m</span>
+            <span class="c-carve">Yeux gris-bleu</span><span class="c-carve">Cheveux châtain clair</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Motivation &amp; Ambitions</div>
+          <div class="chiprow">
+            <span class="c-carve">Motivation — La colère des rues</span>
+            <span class="c-carve">Ambition courte — Faire tomber un échevin</span>
+            <span class="c-carve">Ambition longue — la voix du peuple d'Altdorf</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Compétences formées</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Charme <b>+15</b></span><span class="c-carve skillref">Art (Écriture) <b>+10</b></span>
+            <span class="c-carve skillref">Ragot <b>+10</b></span><span class="c-carve skillref">Commandement <b>+5</b></span>
+            <span class="c-carve skillref">Métier (Imprimerie) <b>+5</b></span><span class="c-carve skillref">Savoir (Politique) <b>+5</b></span>
+            <span class="c-carve skillref">Subornation <b>+5</b></span><span class="c-carve skillref">Calme <b>+3</b></span>
+            <span class="c-carve skillref">Évaluation <b>+3</b></span><span class="c-carve skillref">Savoir (Reikland) <b>+3</b></span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Talents</div>
+          <div class="chiprow">
+            <span class="c-carve talent skillref">Destinée</span><span class="c-carve talent skillref">Guerrier né</span>
+            <span class="c-carve talent skillref">Ambidextre</span><span class="c-carve talent skillref">Artiste (Calligraphie)</span>
+            <span class="c-carve talent skillref sealed">Perspicace</span><span class="c-carve talent skillref sealed">Baratiner</span>
+          </div>
+        </div>
+        <div class="cs-full">
+          <div class="mini-title">Possessions</div>
+          <div class="chiprow">
+            <span class="c-carve skillref">Nécessaire d'écriture</span><span class="c-carve skillref">Marteau</span>
+            <span class="c-carve skillref">Clous</span><span class="c-carve skillref">Pile de prospectus</span>
+            <span class="c-carve skillref">Cape</span><span class="c-carve skillref">Vêtements</span>
+            <span class="c-carve skillref">Dague</span><span class="c-carve skillref">Chapeau</span>
+            <span class="c-carve skillref">Bourse</span><span class="c-carve skillref">Besace</span>
+            <span class="c-carve skillref">Déjeuner</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Précédent</button>
+    <span class="hint"><b>Ludwig Bachmeier</b>, 22 ans — motivé par la <b>colère des rues</b>, prêt à être présenté.</span>
+    <button class="btn btn-primary">Suivant →</button>
+  </footer>
+</div>
+
+<!-- ════════════════════════════ 8. PRÉSENTATION ════════════════════════════ -->
+<div class="screen-head">
+  <h2>8 — Présentation du héros (le moment B assumé)</h2>
+  <p>L'écran mono-nature où la scène a le droit d'exister : la figurine en grand sous la lampe, la feuille
+  complète de part et d'autre — un seul geste possible : <b>engager</b>. Chaque étape reste modifiable avant.</p>
+</div>
+<div class="mock dirC">
+  <header class="c-bar">
+    <button class="btn small btn-ghost grp">←
+      <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+      Groupe <span class="ct">(1/4)</span></button>
+    <h1>Créateur de personnage</h1>
+    <nav class="steps">
+      <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+      <span class="step done">3. Caractéristiques</span><span class="step done">4. Signe astral</span>
+      <span class="step done">5. Compétences &amp; Talents</span><span class="step done">6. Possessions</span>
+      <span class="step done">7. Détails</span><span class="step active">8. Présentation</span>
+    </nav>
+  </header>
+  <div class="c-main">
+    <aside class="fin-col">
+      <div>
+        <div class="mini-title">Profil</div>
+        <div class="c-gaugerow">
+          <div class="c-gauge"><span>CC</span><b>33</b></div><div class="c-gauge"><span>CT</span><b>35</b></div>
+            <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+            <div class="c-gauge"><span>I</span><b>29</b></div>
+          </div>
+        <div class="c-gaugerow" style="margin-top:5px">
+          <div class="c-gauge"><span>AG</span><b>33</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+            <div class="c-gauge"><span>INT</span><b>32</b></div><div class="c-gauge"><span>FM</span><b>30</b></div>
+            <div class="c-gauge"><span>SOC</span><b>31</b></div>
+          </div>
+      </div>
+      <div>
+        <div class="mini-title">Valeurs dérivées</div>
+        <div class="c-derived">
+          <span>Blessures <b>10</b></span><span>Mouvement <b>4</b></span>
+          <span>Destin <b>4</b> · Chance <b>4</b></span><span>Résilience <b>2</b> · Dét. <b>2</b></span>
+          <span>Bourse <b>12 sous</b></span><span>PX création <b>+50</b></span>
+        </div>
+      </div>
+      <div>
+        <div class="mini-title">Identité</div>
+        <div class="chiprow">
+          <span class="c-carve skillref">Le Trait du Peintre</span>
+          <span class="c-carve">Masculin</span><span class="c-carve">22 ans</span><span class="c-carve">1,77 m</span>
+          <span class="c-carve">Yeux gris-bleu</span><span class="c-carve">Cheveux châtain clair</span>
+        </div>
+      </div>
+      <div>
+        <div class="mini-title">Motivation &amp; Ambitions</div>
+        <div class="chiprow">
+          <span class="c-carve">Motivation — La colère des rues</span>
+          <span class="c-carve">Court terme — faire tomber un échevin</span>
+          <span class="c-carve">Long terme — la voix du peuple d'Altdorf</span>
+        </div>
+      </div>
+      <div>
+        <div class="mini-title">Évolution — Agitateur</div>
+        <div class="chiprow">
+          <span class="c-carve"><b>Pamphlétaire</b> (<span class="st-bronze">Bronze 1</span>)</span><span class="c-carve">Agitateur (<span class="st-bronze">Bronze 2</span>)</span>
+          <span class="c-carve">Fauteur de troubles (<span class="st-bronze">Bronze 3</span>)</span><span class="c-carve">Démagogue (<span class="st-bronze">Bronze 5</span>)</span>
+        </div>
+      </div>
+    </aside>
+    <section class="fin-stage">
+      <div class="c-lamp"></div>
+      <div class="figwrap">
+        <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:430px">
+          <ellipse cx="100" cy="404" rx="60" ry="10" fill="rgba(0,0,0,.6)"/>
+          <use href="#fig-human-agit-tint" fill="url(#fgC3)"/>
+        </svg>
+      </div>
+      <h2>Ludwig Bachmeier</h2>
+      <div class="sub">Humains (Reiklander) · Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+      <div class="chiprow" style="justify-content:center;margin-top:9px">
+        <span class="chip">Signe <b>Le Trait du Peintre</b></span>
+        <span class="chip">PX création <b>+50</b></span>
+      </div>
+    </section>
+    <aside class="fin-col">
+      <div>
+        <div class="mini-title">Compétences formées</div>
+        <div class="chiprow">
+          <span class="c-carve skillref">Charme <b>+15</b></span><span class="c-carve skillref">Art (Écriture) <b>+10</b></span>
+          <span class="c-carve skillref">Ragot <b>+10</b></span><span class="c-carve skillref">Commandement <b>+5</b></span>
+          <span class="c-carve skillref">Métier (Imprimerie) <b>+5</b></span><span class="c-carve skillref">Savoir (Politique) <b>+5</b></span>
+          <span class="c-carve skillref">Subornation <b>+5</b></span><span class="c-carve skillref">Calme <b>+3</b></span>
+          <span class="c-carve skillref">Évaluation <b>+3</b></span><span class="c-carve skillref">Savoir (Reikland) <b>+3</b></span>
+        </div>
+      </div>
+      <div>
+        <div class="mini-title">Talents</div>
+        <div class="chiprow">
+          <span class="c-carve talent skillref">Destinée</span><span class="c-carve talent skillref">Guerrier né</span>
+          <span class="c-carve talent skillref">Ambidextre</span><span class="c-carve talent skillref">Artiste (Calligraphie)</span>
+          <span class="c-carve talent skillref sealed">Perspicace</span><span class="c-carve talent skillref sealed">Baratiner</span>
+        </div>
+      </div>
+      <div>
+        <div class="mini-title">Possessions</div>
+        <div class="chiprow">
+          <span class="c-carve skillref">Nécessaire d'écriture</span><span class="c-carve skillref">Marteau</span>
+          <span class="c-carve skillref">Clous</span><span class="c-carve skillref">Pile de prospectus</span>
+          <span class="c-carve skillref">Cape</span><span class="c-carve skillref">Vêtements</span>
+          <span class="c-carve skillref">Dague</span><span class="c-carve skillref">Chapeau</span>
+          <span class="c-carve skillref">Bourse</span><span class="c-carve skillref">Besace</span>
+          <span class="c-carve skillref">Déjeuner</span>
+        </div>
+      </div>
+      <div style="margin-top:auto">
+        <div class="mini-title">Les jets qui le définissent</div>
+        <div class="chiprow">
+          <span class="c-carve">Éloquence — Charme <b>46</b></span>
+          <span class="c-carve">Rumeurs — Ragot <b>41</b></span>
+          <span class="c-carve">Tracts — Art (Écriture) <b>40</b></span>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="c-foot">
+    <button class="btn btn-ghost">← Détails</button>
+    <span class="hint">Relisez votre héros — chaque étape reste <b>modifiable</b> avant l'engagement.</span>
+    <button class="btn btn-primary">Engager ce héros →</button>
+  </footer>
+</div>
+
+<footer class="plate-foot">
+  Planche statique — aucune interaction câblée, aucun fichier du repo touché. Dix maquettes 1600×830, chrome
+  UNIQUE « Atelier du scribe » (direction C de la v3), découpage B (un écran = une nature de geste ; étape 5
+  scindée a ▸ b ▸ c, sous-stepper au bandeau sous la barre d'étapes). Personnage suivi de bout en bout : Humain
+  Reiklander → Agitateur (départ Pamphlétaire, Bronze 1), profil tiré aux dés et gardé (+50 PX), signe Le Trait
+  du Peintre (CT +2 · Ag +2 · CC −3), Perspicace (Int 27 → 32) et Guerrier né (CC 28 → 33) — la fiche vivante
+  encaisse chaque effet à l'étape où il tombe.
+  FIGURINE : placeholder de silhouette aux proportions du rig — en production c'est le RIG RÉEL du jeu, qui
+  évolue déjà avec race/apparence/équipement ; les PROPS de carrière (tricorne + liasse de pamphlets d'Agitateur
+  montrés ici dès l'étape 2) sont à instruire en donnée ; dès les Détails (étapes 7-8) la silhouette porte les
+  teintes élues (mèche châtain clair, regard gris-bleu) — l'« apparence » d'un signe astral décrit la
+  CONSTELLATION, pas le personnage : elle est rendue en texte d'ambiance, jamais en chip. GROUPE : le bouton « ← Groupe » porte les
+  mini-portraits des héros existants (pile compacte grisée) + compteur (1/4) — aucun bandeau dédié, densité
+  intacte. GRAMMAIRE appliquée partout : chip = référence (faits, dérivés, dotations reçues — Mouvement et
+  Statut compris), plaque/tuile/sceau = décision ; tout nom d'entité porte l'affordance CodexRef
+  (`src/ui/compendium/CodexRef.tsx`, `.codex-ref` : curseur d'aide, teinte or au survol, aucun soulignement au
+  repos) ; aucune note de designer dans les écrans (les explications vivent dans les bandeaux DE PLANCHE) ;
+  aucun fade/troncature de prose — scroll interne sobre uniquement.
+  DONNÉES : species.json (Reiklander verbatim, 12 compétences, Destinée + Perspicace/Affable + 3 aléatoires),
+  careers.json/careerLevels.json (Agitateur verbatim, dotations réelles du Pamphlétaire : Nécessaire d'écriture,
+  Marteau, Clous, Pile de prospectus), classes.json (Citadins verbatim + 7 dotations), stars.json (20 signes
+  ADE II, Le Trait du Peintre verbatim), talents.json (Perspicace/Affable/Baratiner/Faire la manche/Lire·Écrire/
+  Sociable verbatim). Restent placeholders d'ambiance à recoller au verbatim source à l'implémentation (règle
+  stricte 5) : listes de carrières par classe et statuts de départ, formules et noms de teintes
+  d'âge/taille/yeux/cheveux, texte du train de vie, valeurs de d100 des tirages figés. L'écran 5c garde la
+  fiche vivante à DROITE au pixel (gabarit <code>--col-droite</code> 600px, comme les autres écrans qui la
+  portent — étapes 3+) ; la zone de travail = deux
+  colonnes ADJACENTES de même rang (De race 1/1 · De carrière 1/1) — le héros n'apparaît qu'UNE fois, dans
+  l'alcôve (arbitrage utilisateur : plus de scène-figurine centrale). Une race à N choix (Nain : 2 paires)
+  empile N groupes dans la colonne De race — encart de démonstration au bandeau du 5c. L'ENCRIER À DÉS (deux
+  d10 dans leur plateau de laiton, états attente/roulent/rendu) est l'unique instrument « Aux dés », identique
+  au rail de chaque écran à tirage — plus aucune pastille-texte.
+  RETOUCHES D'IDENTITÉ (ratifiées) : statuts MÉTALLISÉS partout (`.st-bronze`/`.st-argent`/`.st-or`, dégradé
+  sur texte — seul le bronze est porté par le personnage suivi) ; sceau de cire DESSINÉ (SVG `#wax-seal` :
+  pastille irrégulière + goutte, empreinte de TÊTE DE MORT en creux — arbitrage 2026-07-13, ex-marteau —
+  débord sur le bord de la plaque) sur les talents
+  élus, décliné en pointe de cire sur les chips de la fiche vivante ; GRAIN de matière testé sur la seule
+  maquette Carrière (feTurbulence 4,5 % + vignette des coins) pour comparaison avant généralisation — pas de
+  filigrane impérial (écarté).
+</footer>
+</body>
+</html>

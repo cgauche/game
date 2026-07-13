@@ -1,0 +1,1833 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Design System v2 — « L'Atelier du scribe » (charte ratifiée, UI kit de référence)</title>
+<link rel="stylesheet" href="planche-fonts.css">
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   TOKENS — copie exacte de src/ui/styles/base.css (:root)
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#100e0b; --bg2:#171410; --panel:#1d1913; --panel2:#272119;
+  --border:#443626; --text:#e4dabf; --muted:#a3936f;
+  --gold:#b8912f; --gold2:#d8b954;
+  --accent:#7c1d12; --accent2:#a13224;
+  --danger:#d6543a; --ok:#5d8a46;
+  --parchment:#decb9d; --parchment2:#cbb478; --ink:#221a11; --blood:#5a120a;
+  --font-display:'Grenze Gotisch','Trebuchet MS',serif;
+  /* Colonne de droite UNIVERSELLE (arbitrages 2026-07-13, verbatims : « N'oublie pas que la fiche vivante et le
+     volet de droite des variants doivent faire la même taille », « C'est beaucoup trop petit ! Comment on peut
+     passer de 40% a 352px », puis « Ajuste la taille de la partie droite, pour etre vraiment adapté a la fiche
+     vivante en format "plus grand", qu'on ait pas pour autant des espaces vides inutiles ») — calibrée au
+     contenu de la fiche restructurée (2 colonnes internes), pas à un pourcentage. */
+  --col-droite:600px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#0a0908;color:var(--text);font-family:'Segoe UI','Trebuchet MS',system-ui,sans-serif}
+::-webkit-scrollbar{width:7px;height:7px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}
+
+/* ══════ Habillage du KIT (chrome du document, pas de la charte) ══════ */
+.kit-head{max-width:1440px;margin:36px auto 8px;padding:0 20px}
+.kit-head h1{font-family:var(--font-display);color:var(--gold2);font-size:36px;margin:0;letter-spacing:1px}
+.kit-head p{color:var(--muted);margin:8px 0 0;font-size:14px;max-width:1100px;line-height:1.55}
+.kit-toc{max-width:1440px;margin:18px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+.kit-toc a{font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border);
+  color:var(--muted);text-decoration:none;background:var(--panel)}
+.kit-toc a:hover{border-color:var(--gold);color:var(--gold2)}
+.kit-sec{max-width:1440px;margin:54px auto 0;padding:0 20px}
+.kit-sec>h2{font-family:var(--font-display);color:var(--parchment);font-size:28px;margin:0 0 4px;
+  letter-spacing:1px;border-bottom:1px solid #2a2218;padding-bottom:10px}
+.kit-sec>h2 small{font-family:'Segoe UI',sans-serif;font-size:12px;color:#7c6e52;letter-spacing:1.4px;
+  text-transform:uppercase;margin-left:14px;vertical-align:2px}
+.kit-sec>p.lead{color:var(--muted);font-size:13.5px;max-width:1100px;line-height:1.5;margin:8px 0 0}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px;margin-top:18px}
+.spec-grid.wide{grid-template-columns:1fr}
+.spec{background:#14100b;border:1px solid #2a2218;border-radius:10px;padding:16px 18px 15px;
+  display:flex;flex-direction:column;gap:11px}
+.spec.span2{grid-column:span 2}
+@media(max-width:920px){.spec.span2{grid-column:auto}}
+.spec-name{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid #221b12;padding-bottom:8px}
+.spec-name b{font-family:var(--font-display);font-size:17px;color:#e8c467;letter-spacing:.5px}
+.spec-name code{font-size:11px;color:#7a6440;background:#0d0a06;border:1px solid #221b12;
+  border-radius:4px;padding:2px 7px;font-family:Consolas,monospace}
+.spec-stage{background:
+  radial-gradient(420px 200px at 50% 0%, rgba(224,181,90,.05), transparent 65%),
+  linear-gradient(180deg,#180f09,#0d0805);
+  border:1px solid #2e2314;border-radius:8px;padding:16px 16px;display:flex;flex-wrap:wrap;
+  gap:14px;align-items:center}
+.spec-stage.col{flex-direction:column;align-items:stretch;gap:8px}
+.spec-stage.dark{background:linear-gradient(180deg,#0d0906,#080503)}
+.state-lab{display:flex;flex-direction:column;gap:7px;align-items:center}
+.state-lab>span.t{font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:#6b5c42}
+.state-lab.stretch{align-items:stretch;flex:1;min-width:0}
+.spec-use{font-size:12px;color:#8a744a;line-height:1.55;margin:0}
+.spec-use b{color:#c9ac72}
+.spec-use code{font-size:11px;color:#b09b6f;font-family:Consolas,monospace}
+.kit-foot{max-width:1440px;margin:56px auto 60px;padding:0 20px;color:#7c6e52;font-size:12px;line-height:1.55}
+
+/* ══════ Nuanciers (fondations) ══════ */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;width:100%}
+.sw-card{background:#0f0b07;border:1px solid #2a2218;border-radius:7px;overflow:hidden}
+.sw-card .c{height:44px;border-bottom:1px solid rgba(0,0,0,.4)}
+.sw-card .m{padding:6px 9px 8px}
+.sw-card .m b{display:block;font-size:11.5px;color:#d9c48f;font-family:Consolas,monospace}
+.sw-card .m span{display:block;font-size:10px;color:#7a6440;margin-top:1px}
+.sw-card .m i{display:block;font-size:9.5px;color:#5c4e38;font-style:normal;font-family:Consolas,monospace}
+.type-row{display:flex;align-items:baseline;gap:16px;border-bottom:1px dashed #221b12;padding:7px 2px}
+.type-row:last-child{border-bottom:none}
+.type-row .lab{flex:none;width:210px;font-size:10.5px;color:#7a6440;font-family:Consolas,monospace}
+.radius-demo{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.radius-demo .r{width:74px;height:52px;background:linear-gradient(160deg,#241a10,#150e08);
+  border:1px solid #4a3a24;display:grid;place-items:center;font-size:10.5px;color:#8a744a}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CHARTE « ATELIER DU SCRIBE » — styles COPIÉS de planche-creator-FINALE.html
+   (identiques au pixel ; seuls ajouts : classes .sim-* qui figent un état
+   d'interaction pour l'exposer côte à côte)
+   ══════════════════════════════════════════════════════════════════════ */
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;
+  padding:10px 16px;font-size:14px;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:hover{border-color:var(--gold)}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn-primary{background:linear-gradient(180deg,var(--accent2),var(--accent));border:1px solid #c9573f;
+  color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.btn-ghost{background:transparent;border:1px solid transparent;color:var(--muted)}
+.btn-ghost:hover{border-color:var(--border)}
+.steps{display:flex;gap:5px;align-items:center;flex-wrap:nowrap}
+.step{font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid transparent;color:#7c6e52;white-space:nowrap}
+.step.done{color:var(--muted)}
+.step.active{border-color:var(--accent2);color:var(--gold2);background:rgba(124,29,18,.28);font-weight:600}
+.substeps{display:flex;gap:6px;align-items:center}
+.substep{font-size:11.5px;padding:4px 13px;border-radius:999px;border:1px solid var(--border);color:#7c6e52;letter-spacing:.4px;white-space:nowrap}
+.substep.on{border-color:var(--gold);color:var(--gold2);background:rgba(216,185,84,.08);font-weight:600}
+.substep.done{color:var(--muted)}
+.subarrow{color:#5c4e38;font-size:11px}
+.chip{display:inline-flex;align-items:baseline;gap:5px;font-size:12px;line-height:1.35;padding:2px 9px;
+  border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text)}
+.chip b{color:var(--gold2)}
+.chiprow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.orword{color:#7c6e52;font-size:11px;font-style:italic;align-self:center}
+.st-bronze,.st-argent,.st-or{font-weight:600;background-clip:text;-webkit-background-clip:text;
+  color:transparent !important;white-space:nowrap}
+.st-bronze{background-image:linear-gradient(180deg,#e29a6a,#b06a3a 55%,#7d4a28)}
+.st-argent{background-image:linear-gradient(180deg,#e8edf1,#aab4bc 55%,#7e8890)}
+.st-or{background-image:linear-gradient(180deg,#ffe6a8,#d8b954 55%,#9c7526)}
+.mini-title{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:0 0 6px}
+.figsvg{display:block}
+.fig-dark{filter:drop-shadow(0 0 22px rgba(216,185,84,.10)) drop-shadow(0 0 1.5px rgba(216,185,84,.40))}
+.grp{display:inline-flex;align-items:center;gap:7px}
+.grp .heads{display:inline-flex}
+.grp .heads svg{width:17px;height:17px;fill:#6b5c42;border:1px solid #4a3a24;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#241a10,#0d0805)}
+.grp .heads svg + svg{margin-left:-6px}
+.grp .ct{color:#8a744a;font-size:12px}
+.socket{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#241a10,#0a0603);
+  border:1px solid #8a6c2f;box-shadow:inset 0 2px 4px rgba(0,0,0,.75)}
+.socket.lit{background:radial-gradient(circle at 35% 30%,#ffd97a,#a87f2c);
+  box-shadow:0 0 9px rgba(255,217,122,.5), inset 0 1px 2px rgba(255,255,255,.35)}
+.ck-sockets{display:flex;gap:8px;align-items:center}
+.crank{display:inline-flex;align-items:center;gap:5px}
+.crank button{width:21px;height:21px;border-radius:5px;border:1px solid #8a6c2f;cursor:pointer;padding:0;
+  background:linear-gradient(180deg,#3a2c15,#1c130b);color:#e8c467;font-size:12px;line-height:1;
+  box-shadow:0 1px 2px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,217,122,.18)}
+.crank button:hover{border-color:var(--gold2);color:#ffd97a}
+.crank b{min-width:18px;text-align:center;font-size:14px;color:#ffe6a8}
+.crank b.z{color:#6b5836;font-weight:400}
+.d10{width:26px;height:26px;flex:none;display:inline-grid;place-items:center;transform:rotate(45deg);border-radius:6px;
+  border:1px solid #8a6c2f;background:linear-gradient(160deg,#3a2c15,#14100a);
+  box-shadow:0 1px 3px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,217,122,.2)}
+.d10 i{transform:rotate(-45deg);font-style:normal;font-size:12.5px;color:#ffe6a8;font-weight:600}
+.d10.roll{border-style:dashed;border-color:#ffd97a;box-shadow:0 0 14px rgba(255,217,122,.45)}
+.d10.roll i{color:#d8b954}
+.d10.roll.r2{transform:rotate(66deg)}
+.d10.roll.r2 i{transform:rotate(-66deg)}
+.d10.wait{border-color:#3a2c1a;background:rgba(13,11,8,.6);box-shadow:none}
+.d10.wait i{color:#4a3a24}
+.dice{display:inline-flex;gap:10px;margin:0 6px}
+.c-bar{display:flex;align-items:center;gap:14px;padding:10px 18px;
+  background:linear-gradient(180deg,#241a10,#150e08);border-bottom:1px solid #55402a;
+  box-shadow:0 1px 0 rgba(224,181,90,.16)}
+.c-bar h1{font-family:var(--font-display);font-size:21px;color:var(--gold2);margin:0;letter-spacing:.8px;white-space:nowrap}
+.c-bar .steps{margin-left:auto}
+.c-sub{display:flex;justify-content:center;gap:6px;padding:6px 0;
+  background:#150e08;border-bottom:1px solid #2e2314}
+/* .c-rail — MORT (arbitrage 2026-07-13, verbatim : « J'essaye de me débarasser du bloc de gauche
+   qui sert souvent a rien »). Conservé ci-dessous en TOKEN MORT (aucun spec du kit ne l'instancie
+   plus) : son contenu (intro, encrier, notes) remonte dans la zone de travail sur tous les écrans. */
+.c-rail{width:286px;flex:none;background:linear-gradient(160deg,#241a10,#150e08);
+  border:1px solid #55402a;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:7px;
+  box-shadow:inset 0 0 24px rgba(0,0,0,.4);overflow:hidden}
+.c-lectern{flex:1;position:relative;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:10px;
+  background:radial-gradient(480px 300px at 50% 0%, rgba(224,181,90,.06), transparent 65%),
+  linear-gradient(180deg,#180f09,#0d0805);
+  border:1px solid #55402a;border-radius:12px;padding:14px 24px 12px}
+.c-rivet{position:absolute;width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 1px 2px rgba(0,0,0,.6);z-index:2}
+.c-rivet.tl{top:10px;left:10px}.c-rivet.tr{top:10px;right:10px}
+.c-rivet.bl{bottom:10px;left:10px}.c-rivet.br{bottom:10px;right:10px}
+.c-dhead{display:flex;align-items:baseline;gap:14px}
+.c-dhead h2{font-family:var(--font-display);font-size:26px;color:var(--gold2);margin:0;letter-spacing:.6px}
+.c-dhead .sub{color:var(--muted);font-size:12.5px;font-variant-caps:small-caps;letter-spacing:1.4px}
+.c-foot{display:flex;align-items:center;gap:16px;padding:11px 18px;border-top:1px solid #55402a;
+  background:linear-gradient(0deg,#201709,#150e08)}
+.c-foot .hint{font-size:13px;color:#c9ac72}
+.c-foot .hint b{color:var(--gold2)}
+.c-foot .btn-primary{margin-left:auto;padding:11px 26px;font-size:15px}
+.c-alcove{width:var(--col-droite);flex:none;position:relative;overflow:hidden;display:flex;flex-direction:column;
+  background:radial-gradient(240px 380px at 50% 18%, rgba(255,196,110,.18), transparent 65%),
+  linear-gradient(180deg,#140e08,#080503);
+  border:1px solid #55402a;border-radius:12px}
+.c-lamp{position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:34px;background:#3a2c1a}
+.c-lamp::after{content:'';position:absolute;left:50%;top:34px;transform:translateX(-50%);width:14px;height:10px;
+  border-radius:0 0 7px 7px;background:linear-gradient(180deg,#8a6c2f,#3a2c1a);box-shadow:0 0 26px 10px rgba(255,196,110,.14)}
+.c-alcove .figwrap{flex:none;display:flex;align-items:flex-end;justify-content:center;padding:36px 0 2px;position:relative;z-index:1}
+.c-plaque{border-top:1px solid #55402a;background:linear-gradient(180deg,#241a10,#170f09);
+  padding:8px 14px;text-align:center;font-size:12.5px;color:#c9ac72;line-height:1.4}
+.c-plaque b{color:var(--gold2)}
+/* Fiche vivante — REGISTRE en grille 2 colonnes (2026-07-13) : Profil en 1 rangée de 10 + sections
+   chip-lourdes en pleine largeur (.cs-full) ; les sections courtes s'apparient par le flux naturel. */
+.c-sheet{flex:1;min-height:0;overflow:auto;padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:9px 16px;align-content:start}
+.c-sheet .cs-full{grid-column:1/-1}
+.c-gaugerow{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.c-gauge{background:linear-gradient(160deg,#241a10,#150e08);border:1px solid #4a3a24;border-radius:6px;
+  text-align:center;padding:6px 2px 7px}
+.c-gauge span{display:block;font-size:9.5px;color:#8a744a;letter-spacing:.6px;margin-bottom:2px}
+.c-gauge b{font-size:14px;color:var(--gold2)}
+.c-derived{display:grid;grid-template-columns:1fr;gap:5px;font-size:12px;color:#b09b6f}
+.c-derived b{color:#e7d9bc}
+.c-carve{background:linear-gradient(160deg,#241a10,#170f09);border:1px solid #4a3a24;color:#d9c48f;
+  font-size:12px;padding:3px 9px;border-radius:5px}
+.c-carve.talent{border-color:var(--gold);color:var(--gold2)}
+.c-carve b{color:#ffe6a8}
+.c-plate{position:relative;display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:6px;cursor:pointer;background:linear-gradient(160deg,#2f2415,#1c140c);border:1px solid #4a3a24}
+.c-plate::before,.c-plate::after{content:'';position:absolute;top:5px;width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 0 2px rgba(0,0,0,.6)}
+.c-plate::before{left:6px}.c-plate::after{right:6px}
+.c-plate .nm{font-family:var(--font-display);font-size:13.5px;color:#d9c48f;letter-spacing:.4px;line-height:1.25}
+.c-plate .mt{margin-left:auto;font-size:11px;color:#8a744a;white-space:nowrap;text-align:right}
+.c-plate .mt em{color:#e8c467;font-style:normal;font-weight:600}
+.c-plate.sel{background:linear-gradient(160deg,#4a2c18,#2c1810);border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32), 0 6px 16px rgba(0,0,0,.5), inset 0 0 22px rgba(224,181,90,.08)}
+.c-plate.sel .nm{color:#ffe6a8;font-weight:600}
+.c-plate.sel .mt{color:var(--muted)}
+.c-note{font-size:11.5px;color:#8a744a;line-height:1.5;padding:2px 4px 0}
+.c-note b{color:#c9ac72}
+.c-inkwell{display:flex;align-items:center;gap:10px;padding:9px 10px;
+  background:radial-gradient(circle at 30% 30%,#241a10,#0c0704);border:1px solid #55402a;border-radius:9px;cursor:pointer}
+.c-inkwell .well{width:32px;height:32px;flex:none;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#3a2a18,#050302);border:2px solid #8a6c2f;
+  box-shadow:inset 0 4px 8px rgba(0,0,0,.7)}
+.c-inkwell .txt{font-size:11.5px;color:var(--muted);line-height:1.35}
+.c-inkwell .txt b{display:block;color:var(--gold2);font-size:12.5px}
+.c-search{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:8px;
+  border:1px solid #55402a;background:rgba(12,7,4,.75);font-size:12.5px;color:#8a744a}
+.c-search b{color:#d9c48f;font-weight:400}
+/* C'EST UN BOUTON (retour user : « on ne voit pas que c'est cliquable ») — et l'action se lit ROUGE
+   (langue des remplis .btn-primary). Règle : ROUGE (.act, état attente, le seul cliquable) → « tu peux
+   agir » ; LAITON (roulants/rendu) → statut. Rouge BORDÉ-TEINTÉ, en retrait du rempli de navigation. */
+.c-dicewell{display:flex;align-items:center;gap:11px;padding:9px 14px;
+  background:linear-gradient(180deg,#33270f,#1c130a);border:1px solid #8a6c2f;border-radius:9px;
+  transition:border-color .15s,box-shadow .15s,transform .1s;
+  box-shadow:0 2px 6px rgba(0,0,0,.4), inset 0 1px 0 rgba(232,196,103,.14)}
+.c-dicewell.act{cursor:pointer;border-color:#c9573f;
+  background:linear-gradient(180deg,#4c1d11,#280d08);
+  box-shadow:0 2px 6px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,169,141,.2)}
+.c-dicewell.act .txt{color:#c9a08c}
+.c-dicewell.act .txt b{color:#ffd9cd}
+.c-dicewell.act:hover,.c-dicewell.act.hoverdemo{border-color:#e0765a;
+  box-shadow:0 3px 11px rgba(0,0,0,.5), 0 0 14px rgba(214,84,58,.32), inset 0 1px 0 rgba(255,169,141,.32)}
+.c-dicewell.act:active{transform:translateY(1px)}
+.c-dicewell .tray{flex:none;display:inline-flex;gap:10px;align-items:center;padding:8px 10px;border-radius:11px;
+  background:radial-gradient(circle at 40% 35%,#2c2012,#050302);border:2px solid #8a6c2f;
+  box-shadow:inset 0 4px 9px rgba(0,0,0,.75)}
+.c-dicewell .tray .d10{width:22px;height:22px}
+.c-dicewell .tray .d10 i{font-size:11px}
+.c-dicewell .txt{font-size:11px;color:var(--muted);line-height:1.35}
+.c-dicewell .txt b{display:block;color:var(--gold2);font-size:13.5px;font-weight:700;letter-spacing:.2px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:7px;vertical-align:-1.5px;
+  border:1px solid rgba(0,0,0,.45);box-shadow:inset 0 1px 1px rgba(255,255,255,.25)}
+.cu-sechead{display:flex;align-items:center;gap:13px;padding:9px 14px;border-radius:8px;
+  border:1px solid #55402a;background:linear-gradient(180deg,#241a10,#140d07);
+  box-shadow:inset 0 1px 0 rgba(232,196,103,.18), 0 2px 8px rgba(0,0,0,.4)}
+.cu-sechead .ttl{font-family:var(--font-display);font-size:16.5px;color:#e8c467;letter-spacing:.6px;white-space:nowrap}
+.cu-sechead .ttl small{font-family:'Segoe UI',sans-serif;font-size:11.5px;color:#c9ac72;
+  font-variant-caps:small-caps;letter-spacing:1.3px;margin-left:10px}
+.cu-sechead .gauge{margin-left:auto;display:flex;align-items:center;gap:12px}
+.cu-sechead .cnt{font-size:12.5px;color:#8a744a;white-space:nowrap}
+.cu-sechead .cnt b{color:#ffe6a8;font-size:14px}
+.cu-minibar{position:relative;width:170px;height:14px;border-radius:7px;border:1px solid #55402a;overflow:hidden;
+  background:repeating-linear-gradient(90deg,#17100933 0 16px,#0d080533 16px 17px),linear-gradient(180deg,#1c130b,#0d0805)}
+.cu-minibar .fill{position:absolute;top:0;bottom:0;left:0;width:55%;
+  background:linear-gradient(180deg,rgba(216,185,84,.5),rgba(138,108,47,.45));border-right:2px solid #ffd97a;
+  box-shadow:0 0 10px rgba(255,217,122,.35)}
+.cs-row{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:6px;
+  border:1px solid #3a2c1a;background:linear-gradient(160deg,rgba(47,36,21,.55),rgba(28,20,12,.55))}
+.cs-row .id{flex:1;min-width:0}
+.cs-row .nm{font-size:13px;color:#d9c48f;display:block;line-height:1.2}
+.cs-row .rf{font-size:9.5px;color:#7a6440;display:block;margin-top:1px}
+.cs-row .val{width:34px;text-align:right;font-size:13px;color:#5c4a30}
+.cs-row .val.on{color:#ffe6a8;font-weight:600}
+.cs-row.on{border-color:#8a6c2f;box-shadow:inset 0 1px 0 rgba(232,196,103,.3)}
+.cs-row.on .nm{color:#ffe6a8}
+.cu-rows{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+.ck-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.ck-cell{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:6px;
+  border:1px solid #3a2c1a;background:linear-gradient(160deg,rgba(47,36,21,.55),rgba(28,20,12,.55))}
+.ck-cell .id{flex:1;min-width:0}
+.ck-cell .nm{font-size:13px;color:#d9c48f;display:block;line-height:1.2}
+.ck-cell .rf{font-size:9.5px;color:#7a6440;display:block;margin-top:1px}
+.ck-cell b.tot{width:42px;text-align:right;font-size:16px;color:#ffe6a8}
+.ck-cell b.tot.z{color:#5c4a30;font-weight:400;font-size:13px}
+.ck-cell.on{border-color:#8a6c2f;box-shadow:inset 0 1px 0 rgba(232,196,103,.3)}
+.ck-cell.rolling{border-color:#c9a44a;box-shadow:inset 0 0 18px rgba(255,217,122,.08), 0 0 0 1px rgba(216,185,84,.3)}
+.ck-cell.rolling .nm{color:#ffe6a8}
+.cs-tcard{position:relative;border:1px solid #4a3a24;border-radius:9px;padding:14px 16px 14px 52px;cursor:pointer;
+  background:linear-gradient(160deg,#241a10,#170f09);box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.cs-tcard:hover{border-color:#8a6c2f}
+.cs-tcard .seal{position:absolute;left:15px;top:16px;width:22px;height:22px;border-radius:50%;
+  border:1.5px solid #6b5836;background:radial-gradient(circle at 40% 35%,#241a10,#0a0603);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.7)}
+.cs-tcard b{display:block;font-family:var(--font-display);font-size:16px;color:#d9c48f;letter-spacing:.4px}
+.cs-tcard .ds{display:block;font-size:11.5px;color:#b09b6f;line-height:1.5;margin-top:5px}
+.cs-tcard.sel{background:linear-gradient(160deg,#4a2c18,#2c1810);border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32), 0 6px 16px rgba(0,0,0,.5), inset 0 0 26px rgba(224,181,90,.08)}
+.cs-tcard.sel b{color:#ffe6a8}
+.cs-tcard.sel .ds{color:#cbb478}
+.cs-tcard.sel .seal{border-color:var(--accent2);
+  background:radial-gradient(circle at 35% 30%,#c9573f,var(--blood));box-shadow:0 0 10px rgba(161,50,36,.5)}
+.sealwax{position:absolute;left:-8px;top:8px;width:34px;height:34px;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+.c-carve.sealed::before{content:'';display:inline-block;width:8px;height:8px;margin:0 5px -1px 0;
+  border-radius:52% 46% 55% 48%;background:radial-gradient(circle at 35% 30%,#c8503a,#6e130b);
+  box-shadow:0 1px 1px rgba(0,0,0,.5)}
+.cc-mini{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:2px;border-bottom:1px solid rgba(85,64,42,.6)}
+.cc-pill{padding:5px 13px;border-radius:999px;border:1px solid #4a3a24;font-family:var(--font-display);
+  font-size:12.5px;letter-spacing:.3px;color:#c9ac72;cursor:pointer;
+  background:linear-gradient(160deg,#2f2415,#1c140c)}
+.cc-pill.sel{border-color:var(--gold);color:#ffe6a8;background:linear-gradient(160deg,#4a2c18,#2c1810);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32)}
+.c-frame{flex:1;min-height:0;display:flex;flex-direction:column;gap:11px;padding-top:2px}
+.c-meta{display:flex;gap:6px;flex-wrap:wrap}
+.c-ink-prose{position:relative;background:rgba(8,5,3,.5);border:1px solid #3a2c1a;border-radius:8px;
+  padding:11px 14px;max-height:130px;overflow:auto;font-size:12.5px;line-height:1.55;color:#e7d9bc}
+.c-ink-prose p{margin:0 0 8px}
+.c-ink-prose p:last-child{margin-bottom:0}
+.cc-path{display:flex;align-items:stretch;gap:0}
+.cc-step{flex:1;display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:7px;
+  background:linear-gradient(160deg,#241a10,#150e08);border:1px solid #4a3a24}
+.cc-step .lv{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:#8a744a}
+.cc-step .nm{font-family:var(--font-display);font-size:14.5px;color:#d9c48f;line-height:1.2}
+.cc-step .st{font-size:10.5px;color:#8a744a}
+.cc-step.now{border-color:#8a6c2f;box-shadow:inset 0 1px 0 rgba(232,196,103,.4)}
+.cc-step.now .nm{color:#ffe6a8}
+.cc-step.now .st{color:#c9ac72}
+.cc-link{align-self:center;width:22px;height:1px;flex:none;background:linear-gradient(90deg,rgba(232,196,103,.5),rgba(232,196,103,.15))}
+.cd-dots{display:flex;flex-direction:column;gap:6px;padding:1px 2px 0}
+.cd-row{display:flex;align-items:baseline;gap:10px}
+.cd-row .lb{flex:none;width:150px;text-align:right;font-variant-caps:small-caps;letter-spacing:1.2px;
+  font-size:11.5px;color:#c9ac72;white-space:nowrap}
+.cd-row .lb small{display:block;font-size:10px;color:#8a744a;letter-spacing:.6px}
+.cd-row .chiprow{flex:1;gap:4px;row-gap:4px}
+.cd-row .nb{font-size:11px;color:#8a744a;font-style:italic;align-self:center}
+.idf{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:6px;position:relative;
+  background:linear-gradient(160deg,#2f2415,#1c140c);border:1px solid #4a3a24}
+.idf .lb{width:92px;flex:none;font-variant-caps:small-caps;letter-spacing:1.3px;font-size:11.5px;color:#c9ac72}
+.idf .vl{flex:1;font-family:var(--font-display);font-size:16.5px;color:#ffe6a8;letter-spacing:.4px;
+  border-bottom:1px dashed #55402a;padding-bottom:3px}
+.idf .db{width:27px;height:27px;flex:none;border-radius:6px;border:1px solid #8a6c2f;cursor:pointer;
+  background:linear-gradient(180deg,#3a2c15,#1c130b);color:#e8c467;font-size:13px;display:grid;place-items:center}
+.idf .db.q{border-color:#4a3a24;color:#8a744a}
+.idf.sm{padding:7px 14px}
+.idf.sm .vl{font-size:14.5px}
+.skillref{cursor:help;transition:color .1s}
+.skillref:hover{color:#ffe6a8}
+.ghost, .c-gauge b.ghost{color:#5c4a30 !important;font-weight:400}
+.chip.ghost{border-style:dashed;color:#6b5c42;background:transparent}
+.c-carve.ghost{border-style:dashed;color:#6b5836;background:transparent}
+
+/* ══════════════════════════════════════════════════════════════════════
+   AJOUTS v2 — éléments VERSÉS AU KIT par l'écran compagnie
+   (planche-compagnie.html, réconciliation croisée 2026-07-13)
+   ══════════════════════════════════════════════════════════════════════ */
+.spec-badge{margin-left:auto;align-self:center;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;
+  color:#9db07a;border:1px solid #3f4d2e;background:rgba(93,138,70,.10);border-radius:999px;
+  padding:2px 8px;white-space:nowrap}
+.btn-danger{color:var(--danger)}
+.c-bar .ctitle{color:#8a744a;font-size:14px;font-family:var(--font-display);letter-spacing:.6px}
+/* Cartouche de campagne (rail) */
+.camp-plate{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:8px;
+  border:1px solid #55402a;background:linear-gradient(160deg,#2f2415,#1c140c)}
+.camp-plate .lb{font-size:10.5px;text-transform:uppercase;letter-spacing:1.3px;color:#8a744a}
+.camp-plate .nm{font-family:var(--font-display);font-size:17px;color:#ffe6a8;letter-spacing:.4px;line-height:1.25}
+.camp-plate .btn{align-self:flex-start}
+/* Rangée de composition (alvéole nominative — compose .socket) */
+.compo{display:flex;flex-direction:column;gap:5px}
+.compo-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;
+  border:1px solid #3a2c1a;background:linear-gradient(160deg,rgba(47,36,21,.55),rgba(28,20,12,.55));font-size:12px}
+.compo-row .socket{flex:none}
+.compo-row .ax{color:#d9c48f;font-variant-caps:small-caps;letter-spacing:1px}
+.compo-row .who{margin-left:auto;color:#8a744a;font-size:11px;text-align:right}
+.compo-row.miss{border-style:dashed;background:transparent}
+.compo-row.miss .ax{color:#6b5836}
+.compo-row.miss .who{color:#5c4a30;font-style:italic}
+/* Plaque de candidature (+ plaque-action) */
+.plaq{position:relative;display:flex;gap:12px;border-radius:9px;padding:11px 13px 9px 12px;cursor:pointer;
+  background:linear-gradient(160deg,#2f2415,#1c140c);border:1px solid #4a3a24;min-height:0;transition:.15s}
+.plaq::before,.plaq::after{content:'';position:absolute;top:6px;width:4px;height:4px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 0 2px rgba(0,0,0,.6)}
+.plaq::before{left:7px}.plaq::after{right:7px}
+.plaq:hover,.plaq.sim-hover{border-color:#8a6c2f}
+.plaq.sel{background:linear-gradient(160deg,#4a2c18,#2c1810);border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(216,185,84,.32), 0 6px 16px rgba(0,0,0,.5), inset 0 0 22px rgba(224,181,90,.08)}
+.plaq-fig{width:86px;flex:none;position:relative;display:flex;align-items:flex-end;justify-content:center;border-radius:7px;
+  overflow:hidden;padding-bottom:3px;
+  background:radial-gradient(70px 110px at 50% 25%, rgba(255,196,110,.13), transparent 65%),
+  linear-gradient(180deg,#140e08,#080503);border:1px solid #3a2c1a}
+.plaq-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.plaq-name{font-family:var(--font-display);font-size:16px;color:#d9c48f;letter-spacing:.4px;line-height:1.2;margin:0}
+.plaq.sel .plaq-name{color:#ffe6a8;font-weight:600}
+.plaq-sub{font-size:12px;color:var(--muted)}
+.plaq-roles{font-size:11.5px;color:#c9ac72;font-variant-caps:small-caps;letter-spacing:.7px}
+.plaq-hook{font-size:11.5px;color:#b09b6f;font-style:italic;line-height:1.4}
+.plaq-foot{margin-top:auto;display:flex;gap:6px;align-items:center;padding-top:5px}
+.plaq-foot .purse{font-size:11px;color:#8a744a}
+.plaq-foot .purse b{color:#c9ac72;font-weight:600}
+.plaq-foot .tools{margin-left:auto;display:flex;gap:4px}
+.plaq.action{flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  border-style:dashed;background:linear-gradient(160deg,rgba(47,36,21,.4),rgba(28,20,12,.4))}
+.plaq.action::before,.plaq.action::after{display:none}
+.plaq.action .glyph{font-size:26px;color:#8a744a;line-height:1}
+.plaq.action .lbl{font-family:var(--font-display);font-size:16.5px;color:#c9ac72;letter-spacing:.4px}
+.plaq.action .inv{font-size:11.5px;color:#6b5836}
+.plaq.action:hover .lbl,.plaq.action.sim-hover .lbl{color:var(--gold2)}
+/* L'acte d'engagement (siège de compagnie) */
+.acte{position:relative;display:flex;gap:16px;border-radius:10px;padding:14px 16px 12px 14px;
+  background:linear-gradient(160deg,#251b10,#160e08);border:1px solid #55402a;
+  box-shadow:0 4px 14px rgba(0,0,0,.4), inset 0 1px 0 rgba(232,196,103,.14);min-height:0}
+.acte::before,.acte::after{content:'';position:absolute;top:7px;width:5px;height:5px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8c467,#8a6c2f);box-shadow:0 1px 2px rgba(0,0,0,.6)}
+.acte::before{left:8px}.acte::after{right:8px}
+.acte .sealwax{left:auto;right:-10px;top:-8px;width:44px;height:44px;z-index:2}
+.acte-fig{width:168px;flex:none;position:relative;display:flex;align-items:flex-end;justify-content:center;
+  border-radius:8px;overflow:hidden;padding-bottom:4px;
+  background:radial-gradient(120px 190px at 50% 22%, rgba(255,196,110,.16), transparent 65%),
+  linear-gradient(180deg,#140e08,#080503);border:1px solid #4a3a24;cursor:pointer;transition:.15s}
+.acte-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.acte-num{font-size:10.5px;text-transform:uppercase;letter-spacing:1.6px;color:#8a744a}
+.acte-name{font-family:var(--font-display);font-size:26px;color:#ffe6a8;letter-spacing:.5px;line-height:1.1;margin:0;cursor:pointer}
+.acte-sub{font-size:13.5px;color:var(--muted)}
+.acte-sub b{color:#d9c48f;font-weight:600}
+.acte-roles{font-size:12.5px;color:#c9ac72;font-variant-caps:small-caps;letter-spacing:.8px}
+.acte-hook{font-size:12.5px;color:#b09b6f;font-style:italic;line-height:1.45}
+.acte-actions{margin-top:auto;display:flex;gap:6px;align-items:center;padding-top:6px;border-top:1px solid rgba(85,64,42,.5)}
+.acte:hover .acte-fig,.acte.sim-hover .acte-fig{border-color:#8a6c2f}
+.acte.blank{border-style:dashed;border-color:#4a3a24;background:linear-gradient(160deg,rgba(37,27,16,.45),rgba(22,14,8,.45));
+  box-shadow:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:default}
+.acte.blank::before,.acte.blank::after{display:none}
+.acte.blank .acte-num{color:#6b5836}
+.acte.blank .invite{font-family:var(--font-display);font-size:19px;color:#8a744a;letter-spacing:.5px}
+.acte.blank .subinvite{font-size:12px;color:#6b5836;margin-top:-4px}
+.acte.blank .blank-actions{display:flex;gap:8px;margin-top:4px}
+/* L'acte de présentation (détail du candidat élu) */
+.cand-detail{width:520px;flex:none;position:relative;display:flex;flex-direction:column;gap:9px;
+  background:radial-gradient(380px 260px at 50% 0%, rgba(224,181,90,.07), transparent 65%),
+  linear-gradient(180deg,#180f09,#0d0805);
+  border:1px solid #55402a;border-radius:12px;padding:14px 18px 12px;overflow:hidden}
+.cand-detail .rubs{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:2px}
+.cand-detail .engage{display:flex;align-items:center;gap:10px;padding-top:9px;border-top:1px solid #55402a}
+.cand-detail .engage .hint{font-size:12px;color:#8a744a;line-height:1.35}
+.cand-detail .engage .btn-primary{margin-left:auto;white-space:nowrap}
+/* La rose des forces (mini-radar gravé — arbitrage axes 2026-07-13, #409) */
+.rose{display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+.rose text{font-family:'Segoe UI','Trebuchet MS',sans-serif}
+.rose-corner{position:absolute;right:5px;bottom:5px;z-index:2;pointer-events:none}
+.rose-corner.sm .rose{width:36px;height:36px}
+
+/* ══════ États SIMULÉS (figés pour l'exposition — copies des règles :hover/:focus) ══════ */
+.btn.sim-hover{border-color:var(--gold)}
+.btn-ghost.sim-hover{border-color:var(--border)}
+.sim-focus{outline:2px solid var(--gold);outline-offset:2px}
+.crank button.sim-hover{border-color:var(--gold2);color:#ffd97a}
+.cs-tcard.sim-hover{border-color:#8a6c2f}
+.c-plate.sim-hover{border-color:#8a6c2f;box-shadow:inset 0 1px 0 rgba(232,196,103,.3)}
+.skillref.sim-hover{color:#ffe6a8}
+.sim-disabled{opacity:.45;cursor:not-allowed !important;pointer-events:none}
+</style>
+</head>
+<body>
+
+<!-- ══════ Défs SVG partagées (silhouette rig SP1 + sceau de cire + dégradés) ══════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="fig-human" viewBox="0 0 200 420">
+      <ellipse cx="100" cy="30" rx="35" ry="7"/>
+      <path d="M78 30 Q80 6 100 6 Q120 6 122 30 Z"/>
+      <ellipse cx="100" cy="45" rx="14" ry="16"/>
+      <rect x="93" y="58" width="14" height="12"/>
+      <path d="M100 66 C82 68 70 76 67 92 C62 118 66 150 70 178 C64 234 60 288 60 314 L86 308 L100 298 L114 308 L140 314 C140 288 136 234 130 178 C134 150 138 118 133 92 C130 76 118 68 100 66 Z"/>
+      <path d="M84 298 L80 378 L70 392 L94 392 L96 304 Z"/>
+      <path d="M116 298 L120 378 L130 392 L106 392 L104 304 Z"/>
+      <path d="M72 90 C60 106 55 140 54 188 L66 191 C68 150 72 118 82 100 Z"/>
+      <path d="M57 182 L64 182 L62 332 L59 339 L56 332 Z"/>
+      <rect x="46" y="190" width="28" height="5" rx="2"/>
+      <circle cx="60" cy="179" r="4"/>
+      <path d="M128 90 C140 104 144 130 140 158 C132 166 118 168 112 160 C124 150 128 120 118 100 Z"/>
+    </symbol>
+    <symbol id="fig-human-agit" viewBox="0 0 200 420">
+      <use href="#fig-human"/>
+      <path d="M100 8 Q121 8 127 27 L163 20 Q140 44 100 42 Q60 44 37 20 L73 27 Q79 8 100 8 Z"/>
+      <g fill="#cbb478" opacity=".88">
+        <rect x="106" y="148" width="26" height="34" rx="2" transform="rotate(9 119 165)"/>
+        <rect x="114" y="144" width="26" height="34" rx="2" transform="rotate(20 127 161)"/>
+      </g>
+      <g stroke="#221a11" stroke-width="1.6" fill="none" opacity=".8">
+        <path d="M112 156 l16 2 M111 162 l16 2 M110 168 l16 2" transform="rotate(9 119 165)"/>
+      </g>
+    </symbol>
+    <linearGradient id="fgC3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a2c15"/><stop offset="1" stop-color="#0a0805"/>
+    </linearGradient>
+    <radialGradient id="waxG" cx="35%" cy="30%">
+      <stop offset="0" stop-color="#c8503a"/><stop offset=".55" stop-color="#8f1f14"/><stop offset="1" stop-color="#5a120a"/>
+    </radialGradient>
+    <radialGradient id="roseWell" cx="40%" cy="35%">
+      <stop offset="0" stop-color="#2c2012"/><stop offset="1" stop-color="#050302"/>
+    </radialGradient>
+    <symbol id="wax-seal" viewBox="0 0 64 64">
+      <path d="M33 3 C44 2 55 8 59 18 C63 27 61 37 56 45 C58 50 56 54 51 56 C45 61 36 63 28 60 C24 62 19 61 16 57 C9 53 3 45 3 36 C2 26 8 15 16 9 C21 5 27 4 33 3 Z" fill="url(#waxG)"/>
+      <path d="M56 45 C60 47 63 51 61 54 C59 56 55 55 54 52 C53 49 54 46 56 45 Z" fill="#7c1810"/>
+      <circle cx="32" cy="32" r="20" fill="none" stroke="#5e0f08" stroke-width="2.4" opacity=".85"/>
+      <circle cx="32" cy="33.4" r="20" fill="none" stroke="#e08a68" stroke-width=".9" opacity=".38"/>
+      <path fill="#5e0f08" d="M32 15 C42 15 47 22 47 29.5 C47 35 44 38.5 40.5 40 L40.5 44 Q32 47.5 23.5 44 L23.5 40 C20 38.5 17 35 17 29.5 C17 22 22 15 32 15 Z"/>
+      <g fill="#8f1f14">
+        <ellipse cx="26.3" cy="29" rx="3.7" ry="4.5"/>
+        <ellipse cx="37.7" cy="29" rx="3.7" ry="4.5"/>
+        <path d="M32 33.2 L34.5 38 L29.5 38 Z"/>
+        <rect x="27.4" y="40.2" width="1.5" height="4.8" rx=".7"/>
+        <rect x="31.25" y="40.8" width="1.5" height="5.4" rx=".7"/>
+        <rect x="35.1" y="40.2" width="1.5" height="4.8" rx=".7"/>
+      </g>
+      <path fill="#e08a68" opacity=".3" d="M23.5 44 Q32 47.5 40.5 44 L40.5 45.3 Q32 48.8 23.5 45.3 Z"/>
+    </symbol>
+    <!-- v1 HISTORIQUE — marteau de face (écarté 2026-07-13, se lisait « T ») -->
+    <symbol id="wax-seal-hammer1" viewBox="0 0 64 64">
+      <use href="#wax-blob"/>
+      <g fill="#5e0f08">
+        <path d="M21.5 19.5 h21 a1.5 1.5 0 0 1 1.5 1.5 v5 a1.5 1.5 0 0 1 -1.5 1.5 h-21 a1.5 1.5 0 0 1 -1.5 -1.5 v-5 a1.5 1.5 0 0 1 1.5 -1.5 Z"/>
+        <rect x="30.2" y="27.5" width="3.6" height="17" rx="1.4"/>
+      </g>
+      <g fill="#e08a68" opacity=".3">
+        <path d="M21.5 27.5 h21 v1.4 h-21 Z"/>
+        <rect x="30.2" y="44.5" width="3.6" height="1.4" rx=".7"/>
+      </g>
+    </symbol>
+    <!-- v2 — pastille de cire NUE (base des candidates d'empreinte) -->
+    <symbol id="wax-blob" viewBox="0 0 64 64">
+      <path d="M33 3 C44 2 55 8 59 18 C63 27 61 37 56 45 C58 50 56 54 51 56 C45 61 36 63 28 60 C24 62 19 61 16 57 C9 53 3 45 3 36 C2 26 8 15 16 9 C21 5 27 4 33 3 Z" fill="url(#waxG)"/>
+      <path d="M56 45 C60 47 63 51 61 54 C59 56 55 55 54 52 C53 49 54 46 56 45 Z" fill="#7c1810"/>
+      <circle cx="32" cy="32" r="20" fill="none" stroke="#5e0f08" stroke-width="2.4" opacity=".85"/>
+      <circle cx="32" cy="33.4" r="20" fill="none" stroke="#e08a68" stroke-width=".9" opacity=".38"/>
+    </symbol>
+    <!-- v2 — candidate A : MARTEAU redessiné (trois quarts) — ÉCARTÉE 2026-07-13 -->
+    <symbol id="wax-seal-hammer2" viewBox="0 0 64 64">
+      <use href="#wax-blob"/>
+      <g transform="rotate(-35 32 33)">
+        <g fill="#5e0f08">
+          <rect x="30.3" y="23" width="3.4" height="21" rx="1.3"/>
+          <rect x="21" y="15.5" width="13.5" height="9.5" rx="1.5"/>
+          <path d="M34.5 16.5 L43.5 20.2 L34.5 24 Z"/>
+          <rect x="29" y="42.5" width="6" height="3.2" rx="1.2"/>
+        </g>
+        <g fill="#8f1f14">
+          <rect x="29.6" y="33.5" width="4.8" height="1.3" rx=".6"/>
+          <rect x="29.6" y="37" width="4.8" height="1.3" rx=".6"/>
+        </g>
+        <g fill="#e08a68" opacity=".3">
+          <path d="M21 24 h13.5 v1.3 h-13.5 Z"/>
+        </g>
+      </g>
+    </symbol>
+    <!-- v2 — candidate B : TÊTE DE MORT (crâne en creux, façon sceau de pureté) — RETENUE 2026-07-13, motif repris par #wax-seal -->
+    <symbol id="wax-seal-skull" viewBox="0 0 64 64">
+      <use href="#wax-blob"/>
+      <path fill="#5e0f08" d="M32 15 C42 15 47 22 47 29.5 C47 35 44 38.5 40.5 40 L40.5 44 Q32 47.5 23.5 44 L23.5 40 C20 38.5 17 35 17 29.5 C17 22 22 15 32 15 Z"/>
+      <g fill="#8f1f14">
+        <ellipse cx="26.3" cy="29" rx="3.7" ry="4.5"/>
+        <ellipse cx="37.7" cy="29" rx="3.7" ry="4.5"/>
+        <path d="M32 33.2 L34.5 38 L29.5 38 Z"/>
+        <rect x="27.4" y="40.2" width="1.5" height="4.8" rx=".7"/>
+        <rect x="31.25" y="40.8" width="1.5" height="5.4" rx=".7"/>
+        <rect x="35.1" y="40.2" width="1.5" height="4.8" rx=".7"/>
+      </g>
+      <path fill="#e08a68" opacity=".3" d="M23.5 44 Q32 47.5 40.5 44 L40.5 45.3 Q32 48.8 23.5 45.3 Z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="kit-head">
+  <h1>Design System — L'Atelier du scribe <span style="font-size:20px;color:#9db07a">· v2</span></h1>
+  <p>UI kit de référence de la charte ratifiée (planche FINALE du créateur de personnage). Chaque élément de la
+  grammaire visuelle est présenté <b style="color:var(--gold2)">isolément</b>, sur fond neutre, dans <b
+  style="color:var(--text)">tous ses états</b>, avec ses tokens et sa règle d'usage. C'est la traduction
+  visuelle de la table « Primitives partagées » du projet : les styles sont <b style="color:var(--text)">copiés
+  au pixel</b> de la planche, rien n'est réinventé. Pas de grain de matière (en arbitrage — testé sur une seule
+  maquette). Les états survol/focus sont FIGÉS par classes de simulation pour être lisibles côte à côte.
+  <b style="color:#9db07a">v2</b> : le kit VIT — les éléments légitimes nés sur d'autres écrans y sont versés,
+  chacun marqué d'une pastille de provenance (premier versement : l'écran compagnie).</p>
+</header>
+<nav class="kit-toc">
+  <a href="#fondations">1 · Fondations</a>
+  <a href="#atomes">2 · Atomes</a>
+  <a href="#molecules">3 · Molécules</a>
+  <a href="#organismes">4 · Organismes</a>
+  <a href="#regles">5 · Règles de charte</a>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     1. FONDATIONS
+     ════════════════════════════════════════════════════════════════════ -->
+<section class="kit-sec" id="fondations">
+  <h2>1 — Fondations<small>tokens · encres · métaux · cire · typographie · géométrie</small></h2>
+  <p class="lead">Deux couches de couleur : les <b style="color:var(--gold2)">tokens <code>:root</code></b>
+  (source unique <code>src/ui/styles/base.css</code> — jamais de hex en dur dans une classe, règle de charte) ;
+  et les <b style="color:var(--text)">encres d'atelier</b>, la gamme laiton/bois propre au chrome « Atelier du
+  scribe » (à promouvoir en tokens à l'implémentation).</p>
+
+  <div class="spec-grid wide">
+    <div class="spec">
+      <div class="spec-name"><b>Palette de tokens</b><code>:root — base.css</code></div>
+      <div class="swatches">
+        <div class="sw-card"><div class="c" style="background:#100e0b"></div><div class="m"><b>--bg</b><span>fond de scène</span><i>#100e0b</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#171410"></div><div class="m"><b>--bg2</b><span>fond creux</span><i>#171410</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#1d1913"></div><div class="m"><b>--panel</b><span>surface de carte</span><i>#1d1913</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#272119"></div><div class="m"><b>--panel2</b><span>surface haute / bouton</span><i>#272119</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#443626"></div><div class="m"><b>--border</b><span>bordure standard</span><i>#443626</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#e4dabf"></div><div class="m"><b>--text</b><span>encre principale</span><i>#e4dabf</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#a3936f"></div><div class="m"><b>--muted</b><span>encre atténuée</span><i>#a3936f</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#b8912f"></div><div class="m"><b>--gold</b><span>or — bordures/focus</span><i>#b8912f</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#d8b954"></div><div class="m"><b>--gold2</b><span>or vif — titres/valeurs</span><i>#d8b954</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#7c1d12"></div><div class="m"><b>--accent</b><span>rouge sang — primaire</span><i>#7c1d12</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#a13224"></div><div class="m"><b>--accent2</b><span>rouge sang haut</span><i>#a13224</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#d6543a"></div><div class="m"><b>--danger</b><span>alerte</span><i>#d6543a</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#5d8a46"></div><div class="m"><b>--ok</b><span>succès (vert mousse)</span><i>#5d8a46</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#decb9d"></div><div class="m"><b>--parchment</b><span>document clair (accent)</span><i>#decb9d</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#cbb478"></div><div class="m"><b>--parchment2</b><span>parchemin ombré</span><i>#cbb478</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#221a11"></div><div class="m"><b>--ink</b><span>encre sur parchemin</span><i>#221a11</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#5a120a"></div><div class="m"><b>--blood</b><span>cire profonde</span><i>#5a120a</i></div></div>
+      </div>
+      <p class="spec-use"><b>Règle</b> : couleurs UNIQUEMENT via tokens ; seule exception tolérée, les
+      <code>rgba(0,0,0/255,…)</code> génériques d'ombres et de voiles. Sombre partout — le parchemin est un
+      <b>accent</b> (documents), jamais un fond d'écran.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Encres d'atelier — gamme laiton &amp; bois</b><code>chrome « Atelier du scribe »</code></div>
+      <div class="swatches">
+        <div class="sw-card"><div class="c" style="background:#ffe6a8"></div><div class="m"><b>laiton·élu</b><span>valeur élue / nom scellé</span><i>#ffe6a8</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#ffd97a"></div><div class="m"><b>laiton·lumière</b><span>alvéole allumée, dés roulants</span><i>#ffd97a</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#e8c467"></div><div class="m"><b>laiton·vif</b><span>titres gravés, rivets</span><i>#e8c467</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#d9c48f"></div><div class="m"><b>gravure</b><span>nom au repos (plaque/chip)</span><i>#d9c48f</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#c9ac72"></div><div class="m"><b>rubrique</b><span>small-caps, hints</span><i>#c9ac72</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#b09b6f"></div><div class="m"><b>prose·2nd</b><span>descriptions secondaires</span><i>#b09b6f</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#8a744a"></div><div class="m"><b>méta</b><span>compteurs, notes</span><i>#8a744a</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#8a6c2f"></div><div class="m"><b>laiton·corps</b><span>bordure laiton (manivelle, dé)</span><i>#8a6c2f</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#7a6440"></div><div class="m"><b>réf</b><span>petite référence de rangée</span><i>#7a6440</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#6b5836"></div><div class="m"><b>creux·sceau</b><span>sceau vide, valeur 0 manivelle</span><i>#6b5836</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#5c4a30"></div><div class="m"><b>fantôme</b><span>.ghost — « — » page blanche</span><i>#5c4a30</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#55402a"></div><div class="m"><b>bois·liseré</b><span>cadre des panneaux d'atelier</span><i>#55402a</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#4a3a24"></div><div class="m"><b>bois·gravé</b><span>bordure des chips/rangées</span><i>#4a3a24</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#3a2c1a"></div><div class="m"><b>bois·creux</b><span>bordure basse (prose, rangée)</span><i>#3a2c1a</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#241a10"></div><div class="m"><b>fond·atelier</b><span>haut des dégradés bois</span><i>#241a10</i></div></div>
+        <div class="sw-card"><div class="c" style="background:#0d0805"></div><div class="m"><b>fond·nuit</b><span>bas des dégradés / alcôve</span><i>#0d0805</i></div></div>
+      </div>
+      <p class="spec-use"><b>Règle</b> : ces valeurs vivent aujourd'hui dans la planche — à l'implémentation elles
+      deviennent des tokens (<code>--brass-*</code>/<code>--wood-*</code>) dans <code>base.css</code>, jamais des
+      hex recopiés par écran.</p>
+    </div>
+  </div>
+
+  <div class="spec-grid">
+    <div class="spec">
+      <div class="spec-name"><b>Les trois métaux de statut</b><code>.st-bronze · .st-argent · .st-or</code></div>
+      <div class="spec-stage">
+        <div class="state-lab"><span style="font-size:22px" class="st-bronze">Bronze 2</span><span class="t">bronze</span></div>
+        <div class="state-lab"><span style="font-size:22px" class="st-argent">Argent 3</span><span class="t">argent</span></div>
+        <div class="state-lab"><span style="font-size:22px" class="st-or">Or 1</span><span class="t">or</span></div>
+        <div class="state-lab"><span class="chip">Statut <b class="st-bronze">Bronze 1</b></span><span class="t">dans une chip</span></div>
+        <div class="state-lab"><span class="chip"><b class="st-bronze">Bronze 1</b> → <b class="st-bronze">Bronze 5</b></span><span class="t">fourchette</span></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : le statut social WFRP4 est TOUJOURS métallisé (dégradé sur texte,
+      <code>background-clip:text</code>) — partout, jamais un statut en texte plat. Le métal est la seule
+      « couleur sémantique » autorisée à traverser chips, plaques, chemins d'évolution et fiche vivante.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>La cire</b><code>#wax-seal (SVG) · dégradé waxG</code></div>
+      <div class="spec-stage">
+        <div class="state-lab">
+          <svg viewBox="0 0 64 64" style="width:56px;height:56px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))"><use href="#wax-seal"/></svg>
+          <span class="t">sceau dessiné (tête de mort en creux)</span>
+        </div>
+        <div class="state-lab">
+          <span style="display:inline-block;width:22px;height:22px;border-radius:52% 46% 55% 48%;
+            background:radial-gradient(circle at 35% 30%,#c8503a,#6e130b);box-shadow:0 1px 1px rgba(0,0,0,.5)"></span>
+          <span class="t">pointe de cire (rappel de chip)</span>
+        </div>
+        <div class="state-lab">
+          <div class="swatches" style="grid-template-columns:repeat(3,86px)">
+            <div class="sw-card"><div class="c" style="background:#c8503a;height:30px"></div><div class="m"><i>#c8503a</i></div></div>
+            <div class="sw-card"><div class="c" style="background:#8f1f14;height:30px"></div><div class="m"><i>#8f1f14</i></div></div>
+            <div class="sw-card"><div class="c" style="background:#5a120a;height:30px"></div><div class="m"><i>--blood</i></div></div>
+          </div>
+          <span class="t">gamme de cire</span>
+        </div>
+      </div>
+      <div class="spec-stage" style="border-color:#5a4a20">
+        <div class="state-lab" style="filter:grayscale(1) opacity(.5)">
+          <svg viewBox="0 0 64 64" style="width:28px;height:28px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))"><use href="#wax-seal-hammer1"/></svg>
+          <span class="t" style="text-decoration:line-through">v1 — marteau de face<br>écartée (se lisait « T »)</span>
+        </div>
+        <div class="state-lab" style="filter:grayscale(1) opacity(.5)">
+          <svg viewBox="0 0 64 64" style="width:28px;height:28px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))"><use href="#wax-seal-hammer2"/></svg>
+          <span class="t" style="text-decoration:line-through">candidate A — marteau ¾<br>écartée</span>
+        </div>
+        <div class="state-lab">
+          <span style="display:flex;gap:10px;align-items:flex-end">
+            <svg viewBox="0 0 64 64" style="width:56px;height:56px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))"><use href="#wax-seal-skull"/></svg>
+            <svg viewBox="0 0 64 64" style="width:24px;height:24px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))"><use href="#wax-seal-skull"/></svg>
+          </span>
+          <span class="t">candidate B — tête de mort (56 / 24px)<br><b style="color:#d8b954">RETENUE</b> = <code>#wax-seal</code></span>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : la cire marque une DÉCISION scellée (talent élu). Le sceau dessiné
+      (pastille irrégulière + goutte, empreinte de tête de mort) déborde sur le bord de la plaque élue ; la pointe de
+      cire est son rappel compact sur les chips de la fiche vivante (<code>.c-carve.sealed</code>) — abstraite,
+      SANS empreinte à cette taille.
+      <br><b style="color:#d8b954">ARBITRÉ (2026-07-13) : tête de mort</b> — décision utilisateur, verbatim :
+      « Ce marteau ... met moi un crane oui ». L'empreinte de <code>#wax-seal</code> est désormais la tête de
+      mort en creux façon sceau de pureté (orbites, nasale, dents — la candidate B, lisible à 24px), propagée à
+      l'IDENTIQUE dans toutes les planches. Historique ci-dessus : v1 marteau de face (se lisait « T »,
+      question utilisateur du même jour : « Pourquoi le tampon c'est un T et pas une tete de mort, comme les
+      sceau de pureté ? ») et candidate A marteau ¾, toutes deux écartées.</p>
+    </div>
+  </div>
+
+  <div class="spec-grid wide">
+    <div class="spec">
+      <div class="spec-name"><b>Typographie</b><code>--font-display 'Grenze Gotisch' · 'Segoe UI' · small-caps</code></div>
+      <div class="spec-stage col">
+        <div class="type-row"><span class="lab">display 34px — présentation</span><span style="font-family:var(--font-display);font-size:34px;color:var(--gold2);letter-spacing:1px">Ludwig Bachmeier</span></div>
+        <div class="type-row"><span class="lab">display 26px — titre de cadre</span><span style="font-family:var(--font-display);font-size:26px;color:var(--gold2);letter-spacing:.6px">Humains (Reiklander)</span></div>
+        <div class="type-row"><span class="lab">display 21px — titre de barre</span><span style="font-family:var(--font-display);font-size:21px;color:var(--gold2);letter-spacing:.8px">Créateur de personnage</span></div>
+        <div class="type-row"><span class="lab">display 16.5px — section gravée</span><span style="font-family:var(--font-display);font-size:16.5px;color:#e8c467;letter-spacing:.6px">De carrière</span></div>
+        <div class="type-row"><span class="lab">display 16px — nom de plaque</span><span style="font-family:var(--font-display);font-size:16px;color:#d9c48f;letter-spacing:.4px">Baratiner</span></div>
+        <div class="type-row"><span class="lab">small-caps 12.5px — sous-titre</span><span style="color:var(--muted);font-size:12.5px;font-variant-caps:small-caps;letter-spacing:1.4px">Le cœur de l'Empire · Livre de base p. 25</span></div>
+        <div class="type-row"><span class="lab">.mini-title 11px — rubrique</span><span class="mini-title" style="margin:0">Valeurs dérivées</span></div>
+        <div class="type-row"><span class="lab">courant 12.5px — prose</span><span style="font-size:12.5px;line-height:1.55;color:#e7d9bc">Les humains constituent la race civilisée la plus répandue du Vieux Monde.</span></div>
+        <div class="type-row"><span class="lab">note 11.5px — annotation</span><span class="c-note" style="padding:0">Choisir librement sa race n'accorde aucun PX de création — la tirer <b>aux dés</b> en accorde 20.</span></div>
+      </div>
+      <p class="spec-use"><b>Règle</b> : la blackletter (<code>Grenze Gotisch</code>) porte titres, noms d'entités
+      et sections gravées ; le texte courant reste en sans-serif système ; la rubrique se marque en
+      small-caps/petites capitales dures (<code>.mini-title</code>) — pas de nouveau style de titre ad hoc.</p>
+    </div>
+  </div>
+
+  <div class="spec-grid">
+    <div class="spec">
+      <div class="spec-name"><b>Rayons canon</b><code>border-radius</code></div>
+      <div class="spec-stage">
+        <div class="radius-demo">
+          <div class="r" style="border-radius:12px">12 — panneau</div>
+          <div class="r" style="border-radius:10px">10 — rail</div>
+          <div class="r" style="border-radius:9px">9 — plaque scellée</div>
+          <div class="r" style="border-radius:8px">8 — chip / btn</div>
+          <div class="r" style="border-radius:6px">6 — plaque / rangée</div>
+          <div class="r" style="border-radius:5px">5 — chip gravée</div>
+          <div class="r" style="border-radius:999px;width:96px">999 — pastille</div>
+        </div>
+      </div>
+      <p class="spec-use"><b>Hiérarchie</b> : plus l'élément est grand et « meuble » (lutrin, alcôve, rail), plus
+      le rayon est large ; les éléments gravés/incrustés retombent à 5-6px, les pastilles de navigation à 999px.</p>
+    </div>
+    <div class="spec">
+      <div class="spec-name"><b>Espacements &amp; gabarits</b><code>gaps · breakpoints</code></div>
+      <div class="spec-stage col" style="font-size:12px;color:#b09b6f;line-height:1.7">
+        <div>Gouttières de composition : <b style="color:#e8c467">16px</b> entre panneaux (<code>.c-main</code>), <b style="color:#e8c467">10-12px</b> entre blocs d'un panneau, <b style="color:#e8c467">5-8px</b> entre chips/rangées.</div>
+        <div>Padding de panneau : <b style="color:#e8c467">14px 24px</b> (lutrin), <b style="color:#e8c467">12px 14px</b> (fiche vivante).</div>
+        <div>Gabarit : <b style="color:#e8c467">colonne de droite UNIVERSELLE (<code>--col-droite</code>, 600px à 1600px)</b> — fiche vivante (étapes 3+) OU détail de l'élue sur Race/Carrière, même gabarit partout. Recalée au CONTENU le 2026-07-13 (verbatims : « N'oublie pas que la fiche vivante et le volet de droite des variants doivent faire la même taille », « C'est beaucoup trop petit ! Comment on peut passer de 40% a 352px » — 352px rejeté —, puis « Ajuste la taille de la partie droite, pour etre vraiment adapté a la fiche vivante en format "plus grand", qu'on ait pas pour autant des espaces vides inutiles ») : plus de pourcentage au jugé — la fiche restructurée en 2 colonnes internes (profil en 1 rangée de 10, sections courtes appariées) a été mesurée (jauge de profil, taux de remplissage des dernières lignes de chips) ; 600px est le plancher où les jauges restent confortables (~52px chacune) sans gagner une seule gouttière de plus au-delà. <b style="color:var(--danger)">Rail 286px = MORT</b> (arbitrage 2026-07-13) : son contenu remonte dans la zone de travail, qui hérite de sa largeur.</div>
+        <div>Breakpoints canon (règle stricte 4) : <b style="color:#e8c467">900 / 700 / 560px</b> vers le bas ; politique grand écran à <b style="color:#e8c467">1440px</b> vers le haut.</div>
+      </div>
+      <p class="spec-use"><b>Règle</b> : densité maîtrisée, pas d'espaces vides — un panneau aéré-à-vide lit
+      comme inachevé ; vérifier à 360px ET en large.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     2. ATOMES
+     ════════════════════════════════════════════════════════════════════ -->
+<section class="kit-sec" id="atomes">
+  <h2>2 — Atomes<small>boutons · chips · champs · compteurs · dés</small></h2>
+  <p class="lead">Les plus petites pièces réutilisables. États figés côte à côte : <b style="color:var(--text)">
+  repos · survol · focus · indisponible</b>. Le survol TEINTE (or/laiton), il ne déplace jamais rien (hover stable).</p>
+
+  <div class="spec-grid">
+    <div class="spec span2">
+      <div class="spec-name"><b>Boutons</b><code>.btn · .btn-primary · .btn.small · .btn-ghost</code></div>
+      <div class="spec-stage">
+        <div class="state-lab"><button class="btn">Suivant</button><span class="t">.btn repos</span></div>
+        <div class="state-lab"><button class="btn sim-hover">Suivant</button><span class="t">survol (bord or)</span></div>
+        <div class="state-lab"><button class="btn sim-focus">Suivant</button><span class="t">focus (liseré --gold)</span></div>
+        <div class="state-lab"><button class="btn sim-disabled">Suivant</button><span class="t">indisponible</span></div>
+        <div class="state-lab"><button class="btn small">Reprendre</button><span class="t">.btn.small</span></div>
+      </div>
+      <div class="spec-stage">
+        <div class="state-lab"><button class="btn btn-primary">Engager ce héros →</button><span class="t">.btn-primary repos</span></div>
+        <div class="state-lab"><button class="btn btn-primary sim-hover">Engager ce héros →</button><span class="t">survol</span></div>
+        <div class="state-lab"><button class="btn btn-primary sim-focus">Engager ce héros →</button><span class="t">focus</span></div>
+        <div class="state-lab"><button class="btn btn-primary sim-disabled">Engager ce héros →</button><span class="t">indisponible</span></div>
+      </div>
+      <div class="spec-stage">
+        <div class="state-lab"><button class="btn btn-ghost">← Précédent</button><span class="t">.btn-ghost repos</span></div>
+        <div class="state-lab"><button class="btn btn-ghost sim-hover">← Précédent</button><span class="t">survol (bord révélé)</span></div>
+        <div class="state-lab"><button class="btn btn-ghost sim-focus">← Précédent</button><span class="t">focus</span></div>
+      </div>
+      <p class="spec-use"><b>Règles</b> : un SEUL rempli rouge (action primaire) par barre ; le ghost porte le
+      retour/renoncement, ancré à gauche ; un bouton n'est jamais nu (le noir UA est illisible sur fond sombre).
+      Un bouton principal indisponible ne reste pas muet : il compose <code>GatedAction</code> (raison visible
+      sous le bouton) plutôt qu'un <code>disabled title=…</code>.</p>
+    </div>
+
+    <div class="spec span2">
+      <div class="spec-name"><b>Chips — référence, jamais décision</b><code>.chip · .c-carve (+.talent, +.sealed, +.ghost) · .skillref</code></div>
+      <div class="spec-stage">
+        <div class="state-lab"><span class="chip">Mouvement <b>4</b></span><span class="t">.chip fait/dérivé</span></div>
+        <div class="state-lab"><span class="c-carve skillref">Charme <b>+15</b></span><span class="t">.c-carve gravée (entité)</span></div>
+        <div class="state-lab"><span class="c-carve skillref sim-hover">Charme <b>+15</b></span><span class="t">survol CodexRef (or, curseur d'aide)</span></div>
+        <div class="state-lab"><span class="c-carve talent skillref">Destinée</span><span class="t">.talent (bord or)</span></div>
+        <div class="state-lab"><span class="c-carve talent skillref sealed">Perspicace</span><span class="t">.sealed — pointe de cire (élu)</span></div>
+      </div>
+      <div class="spec-stage">
+        <div class="state-lab"><span class="c-carve ghost">signe — étape 4</span><span class="t">.ghost « à venir » (tiretée)</span></div>
+        <div class="state-lab"><span class="chip ghost">carrière — étape 2</span><span class="t">.chip.ghost</span></div>
+        <div class="state-lab"><span class="c-carve"><b class="st-bronze">Bronze 1</b></span><span class="t">chip à statut métallisé</span></div>
+        <div class="state-lab"><span class="c-carve talent ghost">Baratiner</span><span class="t">option non tranchée (dotation)</span></div>
+        <div class="state-lab"><span class="orword">ou</span><span class="t">.orword — liant d'alternative</span></div>
+      </div>
+      <p class="spec-use"><b>Grammaire de charte</b> : <b>chip = référence</b> (fait, valeur dérivée, dotation
+      reçue), <b>plaque = décision</b> — ne jamais faire cliquer une décision sur une chip. Tout nom d'entité de
+      règle porte l'affordance CodexRef (<code>.skillref</code>/<code>.codex-ref</code>) : curseur d'aide, teinte
+      or au survol, AUCUN soulignement au repos. La chip fantôme (tiretée, grisée) annonce ce qui viendra — la
+      fiche vivante est complète en structure dès la première seconde.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Champ de recherche</b><code>.c-search</code></div>
+      <div class="spec-stage col">
+        <div class="c-search">⌕ <b>Rechercher une race…</b></div>
+        <div class="c-search sim-focus">⌕ <b>agita</b><span style="margin-left:auto;color:#8a744a">1 résultat</span></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : tête de rail d'un catalogue (races, carrières). Côté code :
+      <code>SearchFilterField</code> + <code>useFilteredList</code> (primitives partagées), jamais un input
+      filtrant recodé.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Champ d'identité</b><code>.idf (+.sm) · .db dé / .db.q</code></div>
+      <div class="spec-stage col">
+        <div class="idf sm"><span class="lb">Nom</span><span class="vl">Ludwig Bachmeier</span><button class="db">⚄</button></div>
+        <div class="idf sm"><span class="lb">Âge</span><span class="vl ghost">—</span><button class="db">⚄</button></div>
+        <div class="idf sm"><span class="lb">Motivation</span><span class="vl">La colère des rues</span><button class="db q">✎</button></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : rangée d'état civil — libellé small-caps, valeur en blackletter sur
+      pointillé de plume, action à droite (⚄ dé laiton = tirable ; <code>.q</code> discret = saisie/bascule).
+      Vide = « — » fantôme, jamais un placeholder verbeux.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Manivelle d'allocation</b><code>.crank (± laiton)</code></div>
+      <div class="spec-stage">
+        <div class="state-lab"><span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="t">valeur nulle (.z)</span></div>
+        <div class="state-lab"><span class="crank"><button>−</button><b>5</b><button>+</button></span><span class="t">allouée</span></div>
+        <div class="state-lab"><span class="crank"><button class="sim-hover">−</button><b>5</b><button>+</button></span><span class="t">survol du cran</span></div>
+        <div class="state-lab"><span class="crank sim-disabled"><button>−</button><b class="z">0</b><button>+</button></span><span class="t">quota épuisé</span></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : l'unique stepper ± de la charte (boutons laiton 21px). Côté code :
+      primitive <code>QtyStepper</code> — jamais une paire de boutons +/− recodée.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Réglette à alvéoles</b><code>.ck-sockets · .socket / .socket.lit</code></div>
+      <div class="spec-stage">
+        <div class="state-lab">
+          <span class="ck-sockets"><span class="socket lit"></span><span class="socket lit"></span><span class="socket"></span></span>
+          <span class="t">quota 2/3 (alvéoles laiton)</span>
+        </div>
+        <div class="state-lab">
+          <span class="ck-sockets"><span class="socket"></span></span>
+          <span class="t">0/1 — rien d'élu</span>
+        </div>
+        <div class="state-lab">
+          <span class="ck-sockets"><span class="socket lit"></span></span>
+          <span class="t">1/1 — comblé</span>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : quota DISCRET et petit (3×+5, 1 talent…) — chaque unité est une alvéole
+      qui s'ALLUME. Toujours dans l'en-tête de section (<code>.cu-sechead .gauge</code>), au même endroit sur
+      tous les écrans.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Jauge graduée</b><code>.cu-minibar + .cnt</code></div>
+      <div class="spec-stage col">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="cu-minibar"><span class="fill" style="width:55%"></span></span>
+          <span class="cu-sechead" style="all:unset;font-size:12.5px;color:#8a744a"><b style="color:#ffe6a8;font-size:14px">22</b> / 40 · reste <b style="color:#ffe6a8;font-size:14px">18</b></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="cu-minibar"><span class="fill" style="width:0%;border-right:none;box-shadow:none"></span></span>
+          <span style="font-size:12.5px;color:#8a744a"><b style="color:#5c4a30;font-size:14px">0</b> / 40</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="cu-minibar"><span class="fill" style="width:100%"></span></span>
+          <span style="font-size:12.5px;color:#8a744a"><b style="color:#ffe6a8;font-size:14px">40</b> / 40 — épuisé</span>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : quota CONTINU (40 points de métier, 8/10 tirées) — barre graduée par
+      crans de 16px, front lumineux laiton. Compteur textuel toujours adjacent (valeur nommée, jamais une barre
+      seule).</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Le d10</b><code>.d10 · .d10.roll (+.r2) · .d10.wait</code></div>
+      <div class="spec-stage">
+        <div class="state-lab" style="padding-top:6px"><span class="dice"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span><span class="t">attente (·)</span></div>
+        <div class="state-lab" style="padding-top:6px"><span class="dice"><span class="d10 roll"><i>?</i></span><span class="d10 roll r2"><i>?</i></span></span><span class="t">roulants (? tiretés, lueur)</span></div>
+        <div class="state-lab" style="padding-top:6px"><span class="dice"><span class="d10"><i>5</i></span><span class="d10"><i>7</i></span></span><span class="t">rendus (chiffres)</span></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : le dé physique de la charte (losange laiton). Trois états et rien
+      d'autre : en attente du geste, roulant (résultat masqué), rendu. Un résultat n'apparaît JAMAIS sans que le
+      joueur ait fait le geste (tirage = geste du joueur).</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Pastille de teinte</b><code>.sw (dans .cc-pill)</code></div>
+      <div class="spec-stage">
+        <div class="state-lab"><span class="cc-pill"><span class="sw" style="background:#c9b37a"></span>Blond cendré</span><span class="t">repos</span></div>
+        <div class="state-lab"><span class="cc-pill sel"><span class="sw" style="background:#a8834a"></span>Châtain clair</span><span class="t">élue</span></div>
+        <div class="state-lab"><span class="cc-pill"><span class="sw" style="background:#7d93a8"></span>Gris-bleu</span><span class="t">teinte d'yeux</span></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : choix d'apparence (cheveux, yeux) — l'échantillon rond précède le nom
+      de la teinte ; la teinte élue passe SUR la silhouette de l'alcôve.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Bouton d'outil destructeur</b><code>.btn-danger (sur .btn-ghost)</code>
+        <span class="spec-badge">ajouté par : écran compagnie</span></div>
+      <div class="spec-stage">
+        <div class="state-lab"><button class="btn small btn-ghost btn-danger">Retirer</button><span class="t">repos</span></div>
+        <div class="state-lab"><button class="btn small btn-ghost btn-danger sim-hover">Retirer</button><span class="t">survol (bord révélé)</span></div>
+        <div class="state-lab"><button class="btn small btn-ghost btn-danger" title="Supprimer">✕</button><span class="t">outil glyphe (suppr.)</span></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : teinte <code>--danger</code> posée sur un ghost pour les outils
+      DESTRUCTEURS secondaires (Retirer un membre, Supprimer un personnage sauvegardé). Jamais une action
+      primaire ; la destruction se confirme toujours (modale) — le bouton ne fait qu'annoncer la nature du
+      geste. Une couleur = un token, jamais un hex adouci.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     3. MOLÉCULES
+     ════════════════════════════════════════════════════════════════════ -->
+<section class="kit-sec" id="molecules">
+  <h2>3 — Molécules<small>plaques de décision · encrier à dés · rangées · tuiles · en-têtes</small></h2>
+  <p class="lead">Les assemblages porteurs de la grammaire : tout ce qui SE DÉCIDE est une plaque (bois + laiton,
+  élue = chauffée or + sceau) ; tout ce qui SE LIT est une chip. L'encrier à dés est l'instrument de tirage
+  UNIQUE, identique sur tous les écrans à tirage.</p>
+
+  <div class="spec-grid">
+    <div class="spec span2">
+      <div class="spec-name"><b>Plaque de liste (familles/classes/méthodes)</b><code>.c-plate (vis aux coins)</code></div>
+      <div class="spec-stage">
+        <div class="state-lab stretch" style="min-width:230px"><div class="c-plate"><span class="nm">Halflings</span><span class="mt">13</span></div><span class="t">disponible</span></div>
+        <div class="state-lab stretch" style="min-width:230px"><div class="c-plate sim-hover"><span class="nm">Halflings</span><span class="mt">13</span></div><span class="t">survolée (liseré laiton)</span></div>
+        <div class="state-lab stretch" style="min-width:230px"><div class="c-plate sel"><span class="nm">Humains</span><span class="mt"><em>8</em></span></div><span class="t">élue (.sel — chauffée or)</span></div>
+        <div class="state-lab stretch" style="min-width:230px"><div class="c-plate sim-disabled"><span class="nm">Ogres</span><span class="mt">1</span></div><span class="t">indisponible</span></div>
+      </div>
+      <p class="spec-use"><b>Règle « plaque = décision, chip = référence »</b> : la plaque vissée (deux têtes de
+      vis laiton) est la ligne CLIQUABLE d'une liste posée DANS la zone de travail (le rail-colonne qui la
+      logeait est mort, arbitrage 2026-07-13) ; l'élue chauffe (fond brun-rouge, bord or, halo). La méta de
+      droite (<code>.mt</code>) porte compteur ou gain (<code>em</code> = mis en valeur). Le survol teinte sans
+      rien déplacer.</p>
+    </div>
+
+    <div class="spec span2">
+      <div class="spec-name"><b>Plaque de décision scellée (talents)</b><code>.cs-tcard · .seal · .sealwax (#wax-seal)</code></div>
+      <div class="spec-stage col">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="state-lab stretch">
+            <div class="cs-tcard"><span class="seal"></span><b>Affable</b>
+              <span class="ds">Vous gagnez un bonus permanent de +5 à votre Caractéristique Sociabilité de départ
+              (qui ne compte pas comme des Augmentations).</span></div>
+            <span class="t">disponible — sceau en creux (vide)</span>
+          </div>
+          <div class="state-lab stretch">
+            <div class="cs-tcard sim-hover"><span class="seal"></span><b>Affable</b>
+              <span class="ds">Vous gagnez un bonus permanent de +5 à votre Caractéristique Sociabilité de départ
+              (qui ne compte pas comme des Augmentations).</span></div>
+            <span class="t">survolée (bord laiton)</span>
+          </div>
+          <div class="state-lab stretch">
+            <div class="cs-tcard sel"><svg class="sealwax" viewBox="0 0 64 64"><use href="#wax-seal"/></svg><b>Perspicace</b>
+              <span class="ds">Vous gagnez un bonus permanent de +5 à votre Caractéristique Intelligence de départ
+              (ne compte pas comme Augmentation).</span></div>
+            <span class="t">ÉLUE — sceau de cire dessiné, à cheval sur le bord</span>
+          </div>
+          <div class="state-lab stretch">
+            <div class="cs-tcard sim-disabled"><span class="seal"></span><b>Lire/Écrire</b>
+              <span class="ds">Vous êtes l'un des rares individus lettrés du Vieux Monde. On considère que vous
+              pouvez lire et écrire toutes les Langues que vous parlez.</span></div>
+            <span class="t">indisponible (quota comblé ailleurs)</span>
+          </div>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : LA plaque de décision riche (nom blackletter + description verbatim).
+      Le creux de sceau annonce qu'un sceau peut s'y poser ; l'élection frappe le sceau de cire rouge
+      (<code>#wax-seal</code>, débordant à gauche) et chauffe la plaque. Rappel compact sur la fiche vivante :
+      <code>.c-carve.sealed</code> (pointe de cire).</p>
+    </div>
+
+    <div class="spec span2">
+      <div class="spec-name"><b>L'encrier à dés — instrument de tirage unique</b><code>.c-dicewell · .tray</code></div>
+      <div class="spec-stage col">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <div class="state-lab stretch">
+            <div class="c-dicewell act"><span class="tray"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span>
+              <span class="txt"><b>Tirer aux dés — d100</b>sa carrière au hasard : <span style="color:#e8c467">+50 PX</span>, deux relances</span></div>
+            <span class="t">attente (.act) — rouge d'action, les dés dorment dans le plateau</span>
+          </div>
+          <div class="state-lab stretch">
+            <div class="c-dicewell act hoverdemo"><span class="tray"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span>
+              <span class="txt"><b>Tirer aux dés — d100</b>sa carrière au hasard : <span style="color:#e8c467">+50 PX</span>, deux relances</span></div>
+            <span class="t">survol (figé) — bordure et lueur rouges répondent</span>
+          </div>
+          <div class="state-lab stretch">
+            <div class="c-dicewell"><span class="tray"><span class="d10 roll"><i>?</i></span><span class="d10 roll r2"><i>?</i></span></span>
+              <span class="txt"><b>Aux dés</b>les 2d10 de Force Mentale roulent — Sociabilité suivra</span></div>
+            <span class="t">roulants — laiton de statut : « ? », lueur, résultat masqué</span>
+          </div>
+          <div class="state-lab stretch">
+            <div class="c-dicewell"><span class="tray"><span class="d10"><i>1</i></span><span class="d10"><i>5</i></span></span>
+              <span class="txt"><b>Aux dés — d100</b>le ciel a rendu <span style="color:#e8c467">15</span> — Le Trait du Peintre</span></div>
+            <span class="t">rendu — laiton de statut, chiffres couchés</span>
+          </div>
+        </div>
+      </div>
+      <p class="spec-use"><b>Règle</b> : deux d10 physiques dans leur plateau de laiton, posés au rail de CHAQUE
+      écran à tirage — identiques partout, plus aucune pastille-texte « aléatoire ». Le texte adjacent nomme
+      l'enjeu de DÉCISION (PX de création, relances) — ce n'est pas du texte tutoriel. <b style="color:#e8c467">C'est
+      un BOUTON</b> (retour user, il ne se lisait pas comme tel) : verbe d'action à l'impératif en tête
+      (« Tirer aux dés — d100 », pas juste « Aux dés »), relief de bouton (fond levé, bordure franche, curseur),
+      et <b style="color:#e0765a">la couleur ROUGE signale l'action disponible</b> (langue des remplis
+      .btn-primary — user : « les boutons sont souvent en rouge ») : à l'état ATTENTE seulement (.act, le seul
+      cliquable), rouge bordé-teinté qui ne concurrence pas le rempli de navigation, survol en bordure et lueur
+      rouges ; les états non cliquables (roulants/rendu) restent LAITON de statut, pas une invite à cliquer.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Rangée d'allocation</b><code>.cs-row (+.on) · .cu-rows</code></div>
+      <div class="spec-stage col">
+        <div class="cs-row"><span class="id"><span class="nm skillref">Calme</span><span class="rf">Force Mentale 30</span></span>
+          <span class="crank"><button>−</button><b class="z">0</b><button>+</button></span><span class="val">—</span></div>
+        <div class="cs-row on"><span class="id"><span class="nm skillref">Charme</span><span class="rf">Sociabilité 31 · +5 de race</span></span>
+          <span class="crank"><button>−</button><b>10</b><button>+</button></span><span class="val on">+10</span></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : nom <code>.skillref</code> (CodexRef) + référence de calcul en 9.5px +
+      manivelle + valeur à droite. Sertie (<code>.on</code>, liseré laiton) dès qu'elle porte une allocation ;
+      la rangée rappelle le cumul (« +5 de race ») — deux sources ne se confondent jamais.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Cellule de tirage de caractéristique</b><code>.ck-cell (+.on / +.rolling)</code></div>
+      <div class="spec-stage col">
+        <div class="ck-cell"><span class="id"><span class="nm skillref">Sociabilité</span><span class="rf">base 20 — en attente</span></span>
+          <span class="dice"><span class="d10 wait"><i>·</i></span><span class="d10 wait"><i>·</i></span></span><b class="tot z">—</b></div>
+        <div class="ck-cell rolling"><span class="id"><span class="nm skillref">Force Mentale</span><span class="rf">base 20 — les dés roulent…</span></span>
+          <span class="dice"><span class="d10 roll"><i>?</i></span><span class="d10 roll r2"><i>?</i></span></span><b class="tot z">—</b></div>
+        <div class="ck-cell on"><span class="id"><span class="nm skillref">Force</span><span class="rf">base 20</span></span>
+          <span class="dice"><span class="d10"><i>7</i></span><span class="d10"><i>9</i></span></span><b class="tot">36</b></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : le théâtre du tirage — chaque caractéristique montre SES deux d10 et le
+      total (base + 2d10). Trois états stricts : attente / roulante (bord chauffé, total masqué) / couchée
+      (<code>.on</code>, total laiton).</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Tuile facettée</b><code>.cc-pill (+.sel) · .cc-mini</code></div>
+      <div class="spec-stage col">
+        <div class="cc-mini">
+          <span class="cc-pill sel">Reiklander</span><span class="cc-pill">Middenheim</span>
+          <span class="cc-pill">Nordland</span><span class="cc-pill">Tiléens</span>
+          <span class="cc-pill">Sarl Norse</span>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : facettes d'une famille élue au rail (les 8 races humaines, les carrières
+      d'une classe) — pastilles blackletter sous le bord du lutrin, l'élue chauffée or. C'est une mini-décision :
+      même langage chaud que les plaques, format pastille.</p>
+    </div>
+
+    <div class="spec span2">
+      <div class="spec-name"><b>En-tête de section de même rang</b><code>.cu-sechead (+ .gauge)</code></div>
+      <div class="spec-stage col">
+        <div class="cu-sechead">
+          <span class="ttl">De race<small>3×+5 · 3×+3 parmi douze</small></span>
+          <span class="gauge">
+            <span class="ck-sockets"><span style="font-size:11px;color:#c9ac72;margin-right:2px">×+5</span>
+              <span class="socket lit"></span><span class="socket lit"></span><span class="socket"></span></span>
+            <span class="ck-sockets"><span style="font-size:11px;color:#c9ac72;margin-right:2px">×+3</span>
+              <span class="socket lit"></span><span class="socket"></span><span class="socket"></span></span>
+            <span class="cnt"><b>2</b>/3 · <b>1</b>/3</span>
+          </span>
+        </div>
+        <div class="cu-sechead">
+          <span class="ttl">De carrière<small>40 points · max 10 par compétence</small></span>
+          <span class="gauge">
+            <span class="cu-minibar"><span class="fill"></span></span>
+            <span class="cnt"><b>22</b> / 40 · reste <b>18</b></span>
+          </span>
+        </div>
+      </div>
+      <p class="spec-use"><b>Règle « même nature = même traitement »</b> : deux sections d'égal poids portent
+      le MÊME en-tête gravé (titre blackletter + sous-titre small-caps + jauge de quota à droite, toujours au
+      même endroit) — jamais une hiérarchie visuelle entre choix équivalents.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Cartouche méta &amp; bouton Groupe enrichi</b><code>.c-plaque · .grp</code></div>
+      <div class="spec-stage col">
+        <div style="max-width:var(--col-droite);border:1px solid #55402a;border-radius:0 0 8px 8px;overflow:hidden">
+          <div class="c-plaque" style="border-top:none"><b>Ludwig Bachmeier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+        </div>
+        <div style="max-width:var(--col-droite);border:1px solid #55402a;border-radius:0 0 8px 8px;overflow:hidden">
+          <div class="c-plaque" style="border-top:none"><b>Aventurier</b> — Humains (Reiklander)<br><span class="ghost">carrière — étape 2</span></div>
+        </div>
+        <div>
+          <button class="btn small btn-ghost grp">←
+            <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+            Groupe <span class="ct">(2/4)</span></button>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : le cartouche (<code>.c-plaque</code>) nomme l'occupant de l'alcôve —
+      « Aventurier » + fantômes tant que rien n'est scellé, le NOM dès l'étape Détails. Le bouton
+      « ← Groupe » empile les mini-portraits grisés des héros existants + compteur (2/4) — aucun bandeau dédié.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Chemin d'évolution</b><code>.cc-path · .cc-step (+.now) · .cc-link</code></div>
+      <div class="spec-stage col">
+        <div class="cc-path">
+          <div class="cc-step now"><span class="lv">Niveau 1 — départ</span><span class="nm">Pamphlétaire</span><span class="st st-bronze">Bronze 1</span></div>
+          <span class="cc-link"></span>
+          <div class="cc-step"><span class="lv">Niveau 2</span><span class="nm">Agitateur</span><span class="st st-bronze">Bronze 2</span></div>
+          <span class="cc-link"></span>
+          <div class="cc-step"><span class="lv">Niveau 3</span><span class="nm">Fauteur de troubles</span><span class="st st-bronze">Bronze 3</span></div>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : les quatre niveaux d'une carrière, reliés par un filet doré dégradé ;
+      l'étape courante sertie laiton (<code>.now</code>). Statuts métallisés dans chaque étape.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Encrier à choix (spécialisation)</b><code>.c-inkwell</code></div>
+      <div class="spec-stage col">
+        <div class="c-inkwell"><span class="well"></span>
+          <span class="txt"><b>Artiste — spécialisation</b>Calligraphie ▾</span></div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : petit puits d'encre du rail pour un choix ponctuel qui n'a pas rang de
+      section (spécialisation d'un talent tiré) — même famille de matière que l'encrier à dés.</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Cartouche de campagne</b><code>.camp-plate</code>
+        <span class="spec-badge">ajouté par : écran compagnie</span></div>
+      <div class="spec-stage col">
+        <div class="camp-plate">
+          <span class="lb">Campagne</span>
+          <span class="nm">L'Ennemi Intérieur — L'Œil pour l'Œil</span>
+          <button class="btn small">Changer</button>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : tête de rail de l'écran de compagnie — nomme le CONTEXTE de
+      l'engagement (la campagne élue) : libellé small-caps, nom en blackletter laiton·élu, action
+      <code>.btn.small</code> standard. Un cartouche d'information avec UNE action de changement — pas une
+      plaque de décision (le choix de campagne vit sur son propre écran).</p>
+    </div>
+
+    <div class="spec">
+      <div class="spec-name"><b>Rangée de composition (alvéole nominative)</b><code>.compo-row (+.miss) — compose .socket</code>
+        <span class="spec-badge">ajouté par : écran compagnie</span></div>
+      <div class="spec-stage col">
+        <div class="compo">
+          <div class="compo-row"><span class="socket lit"></span><span class="ax">Social</span><span class="who">Ludwig</span></div>
+          <div class="compo-row miss"><span class="socket"></span><span class="ax">Soins</span><span class="who">à pourvoir</span></div>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : les axes de la compagnie (mêlée / social / soins / tir / savoir) en
+      rangées de rail : l'alvéole est LA réglette du kit (<code>.socket</code>/<code>.socket.lit</code>, jamais
+      un point redessiné), allumée = axe couvert + PRÉNOM du porteur à droite ; <code>.miss</code> (tiretée,
+      encres fantômes) = à pourvoir. C'est une AIDE de lecture dérivée des rôles, jamais un blocage.</p>
+    </div>
+
+    <div class="spec span2">
+      <div class="spec-name"><b>Plaque de candidature</b><code>.plaq (+.sel · +.action) · .plaq-foot .purse/.tools</code>
+        <span class="spec-badge">ajouté par : écran compagnie</span></div>
+      <div class="spec-stage col">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:stretch">
+          <div class="state-lab stretch">
+            <article class="plaq">
+              <div class="plaq-fig">
+                <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:132px">
+                  <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+                  <use href="#fig-human" fill="url(#fgC3)"/>
+                </svg>
+                <div class="rose-corner sm" data-rose="Social|S:30,Mêlée|M:65,Tir|T:45,Soins|So:25,Savoir|Sa:20" data-mode="glyph"></div>
+              </div>
+              <div class="plaq-body">
+                <h3 class="plaq-name">Dieter Holzmann</h3>
+                <span class="plaq-sub"><b style="color:#d9c48f">Milicien</b> — Humain (Middenlander) · <span class="st-bronze">Bronze 3</span></span>
+                <span class="plaq-roles">Corps à corps (Base) · Perception · Intuition</span>
+                <span class="plaq-hook">« Retrouver le gang qui a brûlé sa rue »</span>
+                <div class="plaq-foot">
+                  <button class="btn small btn-primary">Recruter</button>
+                  <span class="purse">Bourse <b>9 s.c.</b></span>
+                  <span class="tools">
+                    <button class="btn small btn-ghost" title="Exporter">⇓</button>
+                    <button class="btn small btn-ghost btn-danger" title="Supprimer">✕</button>
+                  </span>
+                </div>
+              </div>
+            </article>
+            <span class="t">repos — plaque vissée, outils toujours posés</span>
+          </div>
+          <div class="state-lab stretch">
+            <article class="plaq sel">
+              <div class="plaq-fig">
+                <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:132px">
+                  <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+                  <use href="#fig-human-agit" fill="url(#fgC3)"/>
+                </svg>
+                <div class="rose-corner sm" data-rose="Social|S:35,Mêlée|M:18,Tir|T:20,Soins|So:30,Savoir|Sa:85" data-mode="glyph"></div>
+              </div>
+              <div class="plaq-body">
+                <h3 class="plaq-name">Elsa Falkenrath</h3>
+                <span class="plaq-sub"><b style="color:#d9c48f">Apprentie sorcière</b> — Humaine (Reiklander) · <span class="st-bronze">Bronze 3</span></span>
+                <span class="plaq-roles">Focalisation · Savoir (Magie) · Perception</span>
+                <span class="plaq-hook">« Être admise aux Collèges d'Altdorf »</span>
+                <div class="plaq-foot">
+                  <button class="btn small btn-primary">Recruter</button>
+                  <span class="purse">Bourse <b>14 s.c.</b></span>
+                  <span class="tools">
+                    <button class="btn small btn-ghost" title="Exporter">⇓</button>
+                    <button class="btn small btn-ghost btn-danger" title="Supprimer">✕</button>
+                  </span>
+                </div>
+              </div>
+            </article>
+            <span class="t">élue (.sel — chauffée or, dépliée dans l'acte de présentation)</span>
+          </div>
+          <div class="state-lab stretch">
+            <article class="plaq action">
+              <span class="glyph">✎</span>
+              <span class="lbl">Créer un personnage</span>
+              <span class="inv">Forgez votre propre héros</span>
+            </article>
+            <span class="t">plaque-action « créer » (page à écrire, tiretée)</span>
+          </div>
+          <div class="state-lab stretch">
+            <article class="plaq action">
+              <span class="glyph">⇪</span>
+              <span class="lbl">Importer un personnage…</span>
+              <span class="inv">Un personnage exporté (JSON)</span>
+            </article>
+            <span class="t">plaque-action « importer »</span>
+          </div>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : la ligne d'un CANDIDAT au mur du sélecteur — figurine 86px, nom
+      blackletter <b>16px « nom de plaque »</b> (jamais tronqué, il wrappe), « Carrière — Race » + statut
+      métallisé, rôles small-caps, accroche italique, pied avec <b>Recruter</b> (primaire), bourse, outils
+      exporter/supprimer (<code>.btn.small</code> standard, TOUJOURS visibles — layout stable au survol).
+      L'élection (<code>.sel</code>) chauffe or = candidat EN LECTURE ; le sceau de cire n'est jamais posé au
+      sélecteur (il appartient à l'engagement). Les plaques-action (Créer / Importer) ferment la grille en
+      pointillés — même famille visuelle, nature « page à écrire ». Le coin bas-droit de la figurine porte le
+      <b>glyphe de la rose des forces</b> (44px — voir la molécule ci-dessous).</p>
+    </div>
+
+    <div class="spec span2" id="spec-rose">
+      <div class="spec-name"><b>La rose des forces (mini-radar)</b><code>.rose · .rose-corner · [data-rose] (SVG gravé)</code>
+        <span class="spec-badge">ajouté par : arbitrage axes 2026-07-13</span></div>
+      <div class="spec-stage dark" style="justify-content:center;gap:34px">
+        <div class="state-lab">
+          <div data-rose="Social|S:82,Mêlée|M:38,Tir|T:30,Soins|So:18,Savoir|Sa:46" data-mode="glyph"></div>
+          <span class="t">GLYPHE de coin — 44px<br>la silhouette de la toile suffit</span>
+        </div>
+        <div class="state-lab">
+          <div data-rose="Social|S:82,Mêlée|M:38,Tir|T:30,Soins|So:18,Savoir|Sa:46" data-mode="medal"></div>
+          <span class="t">MÉDAILLON — 90px<br>initiales d'axes S·M·T·So·Sa</span>
+        </div>
+        <div class="state-lab">
+          <div data-rose="Social|S:82,Mêlée|M:38,Tir|T:30,Soins|So:18,Savoir|Sa:46" data-mode="grand"></div>
+          <span class="t">GRAND — ~160px de cadran<br>libellés complets + valeurs (panneau de détail)</span>
+        </div>
+      </div>
+      <div class="spec-stage dark" style="justify-content:center;gap:30px">
+        <div class="state-lab">
+          <div data-rose="Social|S:55,Mêlée|M:60,Tir|T:50,Soins|So:45,Savoir|Sa:55" data-mode="medal"></div>
+          <span class="t">ÉQUILIBRÉ — toile ronde</span>
+        </div>
+        <div class="state-lab">
+          <div data-rose="Social|S:22,Mêlée|M:88,Tir|T:25,Soins|So:15,Savoir|Sa:20" data-mode="medal"></div>
+          <span class="t">SPÉCIALISTE — toile en pointe<br>(ici : mêlée)</span>
+        </div>
+        <div class="state-lab">
+          <div data-rose="Social|S:x,Mêlée|M:x,Tir|T:x,Soins|So:x,Savoir|Sa:x" data-mode="medal"></div>
+          <span class="t">VIDE grisé — page blanche<br>(acte vierge, candidat non né)</span>
+        </div>
+        <div class="state-lab">
+          <div data-rose="Social|S:x,Mêlée|M:x,Tir|T:x,Soins|So:x,Savoir|Sa:x" data-mode="glyph"></div>
+          <span class="t">vide — glyphe</span>
+        </div>
+        <div class="state-lab">
+          <div data-rose="Social|S:30,Mêlée|M:25,Tir|T:20,Soins|So:35,Savoir|Sa:40,Négoce|N:80,Navigation|Na:74" data-mode="medal"></div>
+          <span class="t">7 AXES ACTIFS — campagne fluviale<br>(+ Négoce, + Navigation)</span>
+        </div>
+      </div>
+      <p class="spec-use"><b>Vocabulaire</b> : un INSTRUMENT gravé, pas un chart moderne — <b>cercle de
+      laiton</b> (bord <code>#8a6c2f</code> + prise de lumière décalée, le même métal que manivelle et dé) sur le
+      <b>puits</b> de l'encrier à dés (<code>#roseWell</code>) ; <b>rayons et graduations gravés</b> dans le bois
+      (<code>#4a3a24</code>/<code>#3a2c1a</code>, tiers concentriques) ; la <b>toile des valeurs en encre dorée
+      translucide</b> (<code>rgba(216,185,84,.17)</code>) sous <b>filet or</b> (<code>--gold2</code>), pointes
+      ponctuées laiton·lumière. Aucune couleur sémantique, aucun quadrillage clair. <b>Grammaire</b> : la rose est
+      une <b>référence</b> qui se LIT (famille des chips), jamais une décision — elle ne se clique pas.
+      <br><b>Axes = catalogue paramétrable par campagne (#409)</b> — la rose rend les N axes ACTIFS de la
+      campagne, 5 à 8 (base : Social · Mêlée · Tir · Soins · Savoir ; extensibles : Négoce, Ingénierie,
+      Navigation…) ; mêmes axes, même ordre (départ au zénith, sens horaire) sur TOUTES les roses d'un écran —
+      les alvéoles de composition du rail sont les MÊMES axes, dans le même ordre. <b>Portées</b> : glyphe
+      au coin bas-droit de la figurine (<code>.rose-corner</code> — 44px sur l'acte d'engagement, 36px
+      <code>.sm</code> sur la plaque de candidature plus étroite) ;
+      médaillon 90px (acte de présentation, rose de COMPAGNIE agrégée en tête du bloc composition) ; grand
+      (panneau de détail/fiche). Vide grisé = page blanche de la charte. Valeurs 0–100 dérivées des compétences
+      les mieux formées par axe — jamais une table en dur par carrière.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     4. ORGANISMES
+     ════════════════════════════════════════════════════════════════════ -->
+<section class="kit-sec" id="organismes">
+  <h2>4 — Organismes<small>cadre de détail · alcôve · fiche vivante · bandeau · pied</small></h2>
+  <p class="lead">Les grands meubles de l'atelier. Le gabarit-cadre est le lutrin flexible, plus l'alcôve
+  <code>--col-droite</code> (600px, calibrée au contenu) à partir de l'étape 3 (arbitrage 2026-07-13) —
+  chaque organisme est montré ici isolé, à sa géométrie réelle.
+  <b style="color:var(--danger)">Le rail 286px n'est plus un meuble du gabarit</b> : son contenu (recherche,
+  encrier, intro, notes) remonte dans le lutrin.</p>
+
+  <div class="spec-grid wide">
+    <div class="spec">
+      <div class="spec-name"><b>Le cadre de détail (lutrin)</b><code>.c-lectern · .c-rivet · .c-dhead · .c-meta · .cd-dots · .c-ink-prose</code></div>
+      <div class="spec-stage dark" style="align-items:stretch">
+        <section class="c-lectern" style="min-height:480px;max-width:900px;margin:0 auto">
+          <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+          <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+          <div class="cc-mini">
+            <span class="cc-pill sel">Agitateur</span><span class="cc-pill">Artisan</span>
+            <span class="cc-pill">Bourgeois</span><span class="cc-pill">Enquêteur</span>
+          </div>
+          <div class="c-frame">
+            <div class="c-dhead">
+              <h2>Agitateur</h2>
+              <span class="sub">Citadins · débute Pamphlétaire · Livre de base p. 53</span>
+            </div>
+            <div class="c-meta">
+              <span class="chip">Départ <b>Pamphlétaire</b></span>
+              <span class="chip">Statut <b class="st-bronze">Bronze 1</b></span>
+              <span class="chip"><b class="st-bronze">Bronze 1</b> → <b class="st-bronze">Bronze 5</b></span>
+            </div>
+            <div>
+              <div class="mini-title">Dotations — niveau 1</div>
+              <div class="cd-dots">
+                <div class="cd-row"><span class="lb">Compétences</span>
+                  <div class="chiprow">
+                    <span class="c-carve skillref">Art (Écriture)</span><span class="c-carve skillref">Charme</span>
+                    <span class="c-carve skillref">Marchandage</span><span class="c-carve skillref">Ragot</span>
+                    <span class="c-carve skillref">Savoir (Politique)</span><span class="c-carve skillref">Subornation</span>
+                  </div></div>
+                <div class="cd-row"><span class="lb">Talents<small>un au choix — à venir</small></span>
+                  <div class="chiprow">
+                    <span class="c-carve talent ghost">Baratiner</span><span class="orword">ou</span>
+                    <span class="c-carve talent ghost">Sociable</span>
+                    <span class="nb">se tranche à l'étape 5</span>
+                  </div></div>
+                <div class="cd-row"><span class="lb">Statut de départ</span>
+                  <div class="chiprow"><span class="c-carve"><b class="st-bronze">Bronze 1</b></span>
+                    <span class="nb">fixe la bourse et le train de vie de départ</span></div></div>
+              </div>
+            </div>
+            <div style="flex:1;min-height:0;display:flex;flex-direction:column">
+              <div class="mini-title">Description</div>
+              <div class="c-ink-prose" style="max-height:none;flex:1">
+                <p><em>Charismatique et beau parleur, vous défendez votre cause face à l'ordre établi.</em></p>
+                <p>Les Agitateurs font pression pour diverses causes politiques, en utilisant des affiches, en
+                manifestant et en prenant la parole en public. Ils gagnent la sympathie et le soutien des
+                populations les plus pauvres, mais doivent faire attention à ne pas attirer l'attention des
+                Sigmarites ou des nains, très conservateurs.</p>
+              </div>
+            </div>
+            <div class="c-note">Choisir librement sa carrière n'accorde aucun PX de création — la tirer
+            <b>aux dés</b> en accorde 50 (deux relances autorisées).</div>
+          </div>
+        </section>
+      </div>
+      <p class="spec-use"><b>Anatomie fixe</b> (même gabarit Race/Carrière/Signe) : rivets laiton aux quatre
+      coins · facettes <code>.cc-mini</code> · en-tête nom blackletter + sous-titre small-caps sourcé · chips
+      méta · rubriques de MÊME RANG (<code>.mini-title</code> ou <code>.cu-sechead</code>) · dotations en rangées
+      libellé-droite/chips · prose VERBATIM sur encre sombre, scroll interne sobre — <b>zéro troncature, zéro
+      fade</b>. La note de bas de cadre porte l'enjeu de décision.</p>
+    </div>
+  </div>
+
+  <div class="spec-grid">
+    <div class="spec span2">
+      <div class="spec-name"><b>L'alcôve à figurine + fiche vivante</b><code>.c-alcove · .c-lamp · .figwrap · .c-plaque · .c-sheet</code></div>
+      <div class="spec-stage dark" style="justify-content:center;gap:26px;align-items:flex-start">
+        <div class="state-lab">
+          <aside class="c-alcove" style="height:560px">
+            <div class="c-lamp"></div>
+            <div class="figwrap">
+              <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+                <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+                <use href="#fig-human" fill="url(#fgC3)"/>
+              </svg>
+            </div>
+            <div class="c-plaque"><b>Aventurier</b> — Humains (Reiklander)<br><span class="ghost">carrière — étape 2</span></div>
+            <div class="c-sheet">
+              <div class="cs-full">
+                <div class="mini-title">Profil — à tirer (étape 3)</div>
+                <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+                  <div class="c-gauge"><span>CC</span><b class="ghost">—</b></div><div class="c-gauge"><span>CT</span><b class="ghost">—</b></div>
+                  <div class="c-gauge"><span>F</span><b class="ghost">—</b></div><div class="c-gauge"><span>E</span><b class="ghost">—</b></div>
+                  <div class="c-gauge"><span>I</span><b class="ghost">—</b></div>
+                  <div class="c-gauge"><span>AG</span><b class="ghost">—</b></div><div class="c-gauge"><span>DEX</span><b class="ghost">—</b></div>
+                  <div class="c-gauge"><span>INT</span><b class="ghost">—</b></div><div class="c-gauge"><span>FM</span><b class="ghost">—</b></div>
+                  <div class="c-gauge"><span>SOC</span><b class="ghost">—</b></div>
+                </div>
+              </div>
+              <div>
+                <div class="mini-title">Valeurs dérivées</div>
+                <div class="c-derived">
+                  <span>Blessures <b class="ghost">—</b></span><span>Mouvement <b>4</b></span>
+                  <span>Destin <b class="ghost">—</b> · Chance <b class="ghost">—</b></span><span>Bourse <b class="ghost">—</b></span>
+                </div>
+              </div>
+              <div>
+                <div class="mini-title">Identité</div>
+                <div class="chiprow">
+                  <span class="c-carve ghost">signe — étape 4</span>
+                  <span class="c-carve ghost">nom, traits — étape 7</span>
+                </div>
+              </div>
+              <div class="cs-full">
+                <div class="mini-title">Compétences formées</div>
+                <div class="chiprow"><span class="c-carve ghost">à répartir — étape 5</span></div>
+              </div>
+              <div class="cs-full">
+                <div class="mini-title">Talents</div>
+                <div class="chiprow">
+                  <span class="c-carve talent skillref">Destinée</span>
+                  <span class="c-carve ghost">au choix — étape 5</span>
+                </div>
+              </div>
+              <div class="cs-full">
+                <div class="mini-title">Possessions</div>
+                <div class="chiprow"><span class="c-carve ghost">dotations — étape 6</span></div>
+              </div>
+            </div>
+          </aside>
+          <span class="t">état PAGE BLANCHE — structure complète, valeurs fantômes</span>
+        </div>
+        <div class="state-lab">
+          <aside class="c-alcove" style="height:560px">
+            <div class="c-lamp"></div>
+            <div class="figwrap">
+              <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:150px">
+                <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+                <use href="#fig-human-agit" fill="url(#fgC3)"/>
+              </svg>
+            </div>
+            <div class="c-plaque"><b>Ludwig Bachmeier</b> — Humains (Reiklander)<br>Pamphlétaire (Agitateur) · <span class="st-bronze">Bronze 1</span></div>
+            <div class="c-sheet">
+              <div class="cs-full">
+                <div class="mini-title">Profil</div>
+                <div class="c-gaugerow" style="grid-template-columns:repeat(10,1fr)">
+                  <div class="c-gauge"><span>CC</span><b>33</b></div><div class="c-gauge"><span>CT</span><b>35</b></div>
+                  <div class="c-gauge"><span>F</span><b>36</b></div><div class="c-gauge"><span>E</span><b>26</b></div>
+                  <div class="c-gauge"><span>I</span><b>29</b></div>
+                  <div class="c-gauge"><span>AG</span><b>33</b></div><div class="c-gauge"><span>DEX</span><b>30</b></div>
+                  <div class="c-gauge"><span>INT</span><b>32</b></div><div class="c-gauge"><span>FM</span><b>30</b></div>
+                  <div class="c-gauge"><span>SOC</span><b>31</b></div>
+                </div>
+              </div>
+              <div>
+                <div class="mini-title">Valeurs dérivées</div>
+                <div class="c-derived">
+                  <span>Blessures <b>10</b></span><span>Mouvement <b>4</b></span>
+                  <span>Destin <b>4</b> · Chance <b>4</b></span><span>Bourse <b>12 sous</b></span>
+                </div>
+              </div>
+              <div>
+                <div class="mini-title">Identité</div>
+                <div class="chiprow">
+                  <span class="c-carve skillref">Le Trait du Peintre</span>
+                  <span class="c-carve">22 ans</span><span class="c-carve">1,77 m</span>
+                </div>
+              </div>
+              <div class="cs-full">
+                <div class="mini-title">Compétences formées</div>
+                <div class="chiprow">
+                  <span class="c-carve skillref">Charme <b>+15</b></span><span class="c-carve skillref">Ragot <b>+10</b></span>
+                  <span class="c-carve skillref">Art (Écriture) <b>+10</b></span><span class="c-carve skillref">Savoir (Reikland) <b>+3</b></span>
+                </div>
+              </div>
+              <div class="cs-full">
+                <div class="mini-title">Talents</div>
+                <div class="chiprow">
+                  <span class="c-carve talent skillref">Destinée</span><span class="c-carve talent skillref">Guerrier né</span>
+                  <span class="c-carve talent skillref sealed">Perspicace</span><span class="c-carve talent skillref sealed">Baratiner</span>
+                </div>
+              </div>
+              <div class="cs-full">
+                <div class="mini-title">Possessions</div>
+                <div class="chiprow">
+                  <span class="c-carve skillref">Nécessaire d'écriture</span><span class="c-carve skillref">Marteau</span>
+                  <span class="c-carve skillref">Dague</span><span class="c-carve skillref">Cape</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+          <span class="t">état PEUPLÉ — le héros scellé, nom au cartouche</span>
+        </div>
+      </div>
+      <p class="spec-use"><b>La fiche vivante</b> (<code>--col-droite</code> 600px, colonne de droite à partir de l'ÉTAPE 3 — arbitrage
+      utilisateur 2026-07-13, verbatim : « À part les 2 premiers écrans, la fiche vivante peut exister » ; le
+      héros n'apparaît qu'UNE fois) : lampe de laiton en douche, figurine (rig réel en production) qui ÉVOLUE avec
+      les choix, cartouche, puis six rubriques FIXES — Profil · Valeurs dérivées · Identité · Compétences formées ·
+      Talents · Possessions. Présente dès l'étape où elle est légitime : structure complète, valeurs « — »
+      fantômes qui s'épaississent d'écran en écran ; jamais une rubrique masquée parce que vide.
+      <b style="color:var(--danger)">Interdite sur Race et Carrière</b> (étapes 1-2) — rien n'y est encore commis,
+      la fiche n'a rien à montrer ; ces deux écrans composent en deux zones (grille de familles/classes + détail),
+      sans alcôve.
+      <b style="color:#e8c467">Motif — REGISTRE en 2 colonnes internes</b> (chantier 2026-07-13, verbatim : « la fiche
+      vivante a été aggrandi mais son contenu n'a clairement pas été adapté pour sa taille ») : <code>.c-sheet</code>
+      passe en CSS grid 2 colonnes ; le Profil (1 rangée de 10 jauges) et les rubriques chip-lourdes (Compétences
+      formées/Talents/Possessions/Motivation) portent <code>.cs-full</code> (grid-column:1/-1, pleine largeur) —
+      les rubriques COURTES (Valeurs dérivées, Identité) restent sans classe et s'apparient côte à côte par le
+      flux naturel de la grille, sans gouttière morte. Motif réutilisable pour toute fiche à 2 colonnes internes.</p>
+    </div>
+
+    <div class="spec span2" style="grid-column:1/-1">
+      <div class="spec-name"><b>Bandeau d'étapes + sous-stepper</b><code>.c-bar · .steps/.step · .c-sub · .substep · .grp</code></div>
+      <div class="spec-stage col" style="padding:0;overflow:hidden;border-radius:8px">
+        <header class="c-bar">
+          <button class="btn small btn-ghost grp">←
+            <span class="heads"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4.5"/><path d="M2.5 18.5 Q10 10 17.5 18.5 Z"/></svg></span>
+            Groupe <span class="ct">(1/4)</span></button>
+          <h1>Créateur de personnage</h1>
+          <nav class="steps">
+            <span class="step done">1. Race</span><span class="step done">2. Carrière</span>
+            <span class="step done">3. Caractéristiques</span><span class="step done">4. Signe astral</span>
+            <span class="step active">5. Compétences &amp; Talents</span><span class="step">6. Possessions</span>
+            <span class="step">7. Détails</span><span class="step">8. Présentation</span>
+          </nav>
+        </header>
+        <nav class="c-sub substeps">
+          <span class="substep done">a. Compétences de race ✓</span><span class="subarrow">▸</span>
+          <span class="substep on">b. de carrière</span><span class="subarrow">▸</span>
+          <span class="substep">c. Talents</span>
+        </nav>
+        <header class="c-bar" style="border-top:1px solid #2e2314">
+          <button class="btn small btn-ghost">← Menu</button>
+          <h1>Votre compagnie</h1>
+          <span class="ctitle">2/4 aventuriers engagés</span>
+        </header>
+        <nav class="c-sub">
+          <span class="substep on" style="cursor:pointer">Mes personnages</span>
+          <span class="substep" style="cursor:pointer">Pré-tirés</span>
+        </nav>
+      </div>
+      <p class="spec-use"><b>Anatomie</b> : retour « ← Groupe » enrichi (mini-portraits + compteur) · titre
+      blackletter · pastilles d'étapes à droite — <b>à venir</b> (brun éteint), <b>faite</b> (--muted),
+      <b>active</b> (bord --accent2, texte or, fond sang léger). Une étape scindée déplie son SOUS-STEPPER dans
+      une seconde barre (a ▸ b ▸ c) : un écran = une nature de geste, la barre principale ne bouge pas.
+      <span class="spec-badge" style="margin-left:0;display:inline-block;vertical-align:1px">ajouté par : écran compagnie</span>
+      <b>Variantes</b> : hors stepper, la barre porte un <b>sous-titre de contexte</b>
+      (<code>.c-bar .ctitle</code>, blackletter méta — « 2/4 aventuriers engagés », « pour l'acte III ») ; et
+      les pastilles <code>.substep</code> de la seconde barre servent d'<b>onglets de source</b> (Mes
+      personnages / Pré-tirés) — côté code, la primitive <code>Tabs</code> (variant pill), jamais un tablist
+      recodé.</p>
+    </div>
+
+    <div class="spec span2">
+      <div class="spec-name"><b>Pied de page — fil narratif + navigation</b><code>.c-foot · .hint</code></div>
+      <div class="spec-stage col" style="padding:0;overflow:hidden;border-radius:8px">
+        <footer class="c-foot">
+          <button class="btn btn-ghost">← Précédent</button>
+          <span class="hint">Classe <b>Citadins</b> · carrière <b>Agitateur</b> — départ <b>Pamphlétaire</b>, <b class="st-bronze">Bronze 1</b>.</span>
+          <button class="btn btn-primary">Suivant →</button>
+        </footer>
+        <footer class="c-foot" style="border-top:1px solid #2e2314">
+          <button class="btn btn-ghost">← Détails</button>
+          <span class="hint">Relisez votre héros — chaque étape reste <b>modifiable</b> avant l'engagement.</span>
+          <button class="btn btn-primary">Engager ce héros →</button>
+        </footer>
+      </div>
+      <p class="spec-use"><b>Anatomie</b> : ghost de retour à gauche (nommant l'écran précédent quand il y a
+      sous-stepper) · fil narratif au centre (<code>.hint</code> : l'état de la décision en une phrase, valeurs
+      en or/métal) · UNE action primaire à droite. Jamais de troisième bouton.</p>
+    </div>
+
+    <div class="spec span2">
+      <div class="spec-name"><b>L'acte d'engagement (siège de compagnie)</b><code>.acte (+.blank) · .acte-fig · .acte-actions · .sealwax</code>
+        <span class="spec-badge">ajouté par : écran compagnie</span></div>
+      <div class="spec-stage dark">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch;width:100%">
+          <div class="state-lab stretch">
+            <article class="acte">
+              <svg class="sealwax" aria-hidden="true"><use href="#wax-seal"/></svg>
+              <div class="acte-fig">
+                <div class="c-lamp"></div>
+                <svg class="figsvg fig-dark" viewBox="0 0 200 420" style="height:200px">
+                  <ellipse cx="100" cy="404" rx="56" ry="9" fill="rgba(0,0,0,.55)"/>
+                  <use href="#fig-human-agit" fill="url(#fgC3)"/>
+                </svg>
+                <div class="rose-corner" data-rose="Social|S:82,Mêlée|M:38,Tir|T:30,Soins|So:18,Savoir|Sa:46" data-mode="glyph"></div>
+              </div>
+              <div class="acte-body">
+                <span class="acte-num">Acte I</span>
+                <h3 class="acte-name">Ludwig Bachmeier</h3>
+                <span class="acte-sub"><b>Pamphlétaire</b> — Humain (Reiklander) · <span class="st-bronze">Bronze 1</span></span>
+                <span class="acte-roles">Charme · Ragot · Art (Écriture)</span>
+                <span class="acte-hook">« Faire tomber un échevin »</span>
+                <div class="acte-actions">
+                  <button class="btn small">Modifier</button>
+                  <button class="btn small btn-ghost">Remplacer</button>
+                  <button class="btn small btn-ghost btn-danger">Retirer</button>
+                </div>
+              </div>
+            </article>
+            <span class="t">SCELLÉ — sceau de cire à l'angle, figurine sous lampe, actions sous filet</span>
+          </div>
+          <div class="state-lab stretch">
+            <article class="acte blank">
+              <span class="acte-num">Acte III</span>
+              <span class="invite">Un acte vierge attend son aventurier</span>
+              <span class="subinvite">Un siège à pourvoir</span>
+              <div class="blank-actions">
+                <button class="btn">Créer</button>
+                <button class="btn btn-primary">Choisir</button>
+              </div>
+            </article>
+            <span class="t">VIERGE — la « page blanche » du registre (tiretée, discrète)</span>
+          </div>
+        </div>
+      </div>
+      <p class="spec-use"><b>Usage</b> : le siège d'un membre de la compagnie, en grille 2×2 plein pupitre
+      (l'équipe est la STAR — un acte scellé pèse, un acte vierge est discret). Scellé : le sceau de cire
+      (<code>#wax-seal</code>, 44px) déborde à l'angle HAUT-DROIT — position d'ENGAGEMENT, distincte du sceau de
+      talent (34px, à gauche de la plaque) ; nom 26px « titre de cadre » en laiton·élu (nom scellé, encres
+      d'atelier) ; figurine + nom = poignée de présentation cliquable ; actions Modifier / Remplacer / Retirer
+      TOUJOURS posées sous filet (hover = liseré laiton sur l'écrin, rien ne bouge). Vierge (<code>.blank</code>) :
+      invitation blackletter fantôme + Créer / <b>Choisir</b> (primaire).</p>
+    </div>
+
+    <div class="spec span2">
+      <div class="spec-name"><b>L'acte de présentation (détail du candidat)</b><code>.cand-detail · .rubs · .engage</code>
+        <span class="spec-badge">ajouté par : écran compagnie</span></div>
+      <div class="spec-stage dark" style="justify-content:center">
+        <aside class="cand-detail" style="height:460px">
+          <span class="c-rivet tl"></span><span class="c-rivet tr"></span>
+          <span class="c-rivet bl"></span><span class="c-rivet br"></span>
+          <div class="c-dhead">
+            <h2>Elsa Falkenrath</h2>
+            <span class="sub">acte de présentation</span>
+          </div>
+          <div class="c-meta">
+            <span class="chip">Statut <b class="st-bronze">Bronze 3</b></span>
+            <span class="chip">Blessures <b>11</b></span>
+            <span class="chip">Mouvement <b>4</b></span>
+            <span class="chip">Bourse <b>14 s.c.</b></span>
+          </div>
+          <div class="rubs">
+            <div>
+              <div class="mini-title">Qui est-ce ?</div>
+              <div class="c-ink-prose" style="max-height:none">
+                <p>Fille d'un batelier du Reik, Elsa a vu le vent de l'Aethyr avant de savoir le nommer. Elle
+                porte un bâton trop grand pour elle et un grimoire qu'elle recopie chaque soir, page à page.</p>
+              </div>
+            </div>
+            <div>
+              <div class="mini-title">Rôle dans le groupe</div>
+              <div class="chiprow">
+                <span class="c-carve skillref">Focalisation</span>
+                <span class="c-carve skillref">Savoir (Magie)</span>
+                <span class="c-carve skillref">Perception</span>
+              </div>
+            </div>
+            <div>
+              <div class="mini-title">Talents</div>
+              <div class="chiprow">
+                <span class="c-carve talent skillref">Magie mineure</span>
+                <span class="c-carve talent skillref">Seconde vue</span>
+              </div>
+            </div>
+          </div>
+          <div class="engage">
+            <span class="hint">L'engager scelle son acte au registre —<br>elle reste modifiable au créateur ensuite.</span>
+            <button class="btn btn-primary">Engager pour l'acte III →</button>
+          </div>
+        </aside>
+      </div>
+      <p class="spec-use"><b>Usage</b> : la présentation « Qui est-ce ? » INTÉGRÉE au sélecteur (plus de
+      modale) — 520px à droite, composée du gabarit-cadre de la charte (rivets, <code>.c-dhead</code>, chips
+      méta, rubriques <code>.mini-title</code>, prose verbatim, chips <code>.c-carve</code> CodexRef). Corps
+      défilable (<code>.rubs</code>), pied FIXE <code>.engage</code> : hint de conséquence + UNE primaire
+      « Engager pour l'acte N → » jamais cachée par le scroll (même contrat que l'ActivityPane). Aucune
+      figurine ici : le candidat est déjà incarné sur sa plaque — « une figurine par écran ».</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     5. RÈGLES DE CHARTE
+     ════════════════════════════════════════════════════════════════════ -->
+<section class="kit-sec" id="regles">
+  <h2>5 — Règles de charte<small>principes et interdits ratifiés</small></h2>
+  <div class="spec-grid wide">
+    <div class="spec">
+      <div class="spec-name"><b>La grammaire — ce qui fait « Atelier du scribe »</b></div>
+      <div class="spec-stage col" style="font-size:12.5px;line-height:1.75;color:#b09b6f;gap:2px">
+        <div><b style="color:#e8c467">1 · Chip = référence, plaque = décision.</b> Un fait se LIT (chip gravée, jamais cliquable comme choix) ; un choix se FAIT sur une plaque/tuile/sceau. Ne jamais mélanger les deux natures.</div>
+        <div><b style="color:#e8c467">2 · Même nature = même traitement.</b> Deux sections d'égal poids = deux colonnes/en-têtes de MÊME RANG (<code>.cu-sechead</code>) — jamais une hiérarchie visuelle entre choix équivalents.</div>
+        <div><b style="color:#e8c467">3 · Un écran = une nature de geste.</b> Choisir, allouer, tirer, recevoir, relire : jamais deux natures sur le même écran — une étape composite se scinde (sous-stepper au bandeau).</div>
+        <div><b style="color:#e8c467">4 · Une figurine par écran, fiche vivante à partir de l'étape 3.</b> Interdite sur Race et Carrière (arbitrage 2026-07-13 : « À part les 2 premiers écrans, la fiche vivante peut exister ») — le héros n'apparaît qu'UNE fois, dans l'alcôve (<code>--col-droite</code> 600px, calibrée au contenu, à droite) dès l'étape 3 ; la fiche vivante ne quitte jamais sa place ; seule la Présentation finale a droit à la scène centrale.</div>
+        <div><b style="color:#e8c467">5 · La fiche vivante est là dès qu'elle est légitime.</b> Structure complète, valeurs « — » fantômes (<code>.ghost</code>, chips tiretées « à venir — étape N ») ; elle s'épaissit d'écran en écran, elle ne surgit pas. Restructurée en registre 2 colonnes internes (<code>.cs-full</code>) le 2026-07-13, aucune rubrique ne s'étire seule dans une colonne trop large.</div>
+        <div><b style="color:#e8c467">6 · Tirage = geste du joueur — le résultat vit au point d'usage.</b> L'encrier à dés est l'UNIQUE instrument « Aux dés » ; les dés ont trois états (attente · roulants · rendus) — un résultat n'apparaît jamais spontanément. L'attente parle la famille ROUGE d'action (rouge → « tu peux agir ») ; roulants/rendus restent laiton de statut. Un résultat de tirage MULTIPLE (ex. 3 talents rendus au d100) ne s'affiche JAMAIS dans une topbar fourre-tout séparée de ce qu'il a produit : chaque résultat rejoint sa plaque, à son point d'usage — arbitrage 2026-07-13 après retour user sur l'écran Talents (« le pire étant Talent »), motif <code>.cs-tcard.compact</code> réutilisable pour tout tirage multiple.</div>
+        <div><b style="color:#e8c467">7 · La cire scelle la décision.</b> Talent élu = sceau de cire dessiné à cheval sur la plaque ; rappel en pointe de cire sur la fiche. L'or/laiton marque l'élection, le rouge sang l'engagement.</div>
+        <div><b style="color:#e8c467">8 · Statuts toujours métallisés.</b> Bronze/Argent/Or en dégradé sur texte (<code>.st-*</code>), partout — jamais un statut en texte plat.</div>
+        <div><b style="color:#e8c467">9 · Tout nom d'entité porte l'affordance CodexRef.</b> Curseur d'aide, teinte or au survol, aucun soulignement au repos (<code>src/ui/compendium/CodexRef.tsx</code>, <code>.codex-ref</code>).</div>
+      </div>
+    </div>
+    <div class="spec">
+      <div class="spec-name"><b>Les interdits</b></div>
+      <div class="spec-stage col" style="font-size:12.5px;line-height:1.75;color:#b09b6f;gap:2px">
+        <div><b style="color:var(--danger)">✕ Troncature ou fade de prose.</b> Une description est un verbatim de la source (règle stricte 5) : elle se donne ENTIÈRE, scroll interne sobre uniquement.</div>
+        <div><b style="color:var(--danger)">✕ Hover instable.</b> Le survol teinte (bord laiton/or), il ne change JAMAIS taille, poids de layout ou position — rien ne saute sous le curseur.</div>
+        <div><b style="color:var(--danger)">✕ Parchemin en fond.</b> Sombre partout ; <code>--parchment</code> est un accent de document, pas un thème d'écran.</div>
+        <div><b style="color:var(--danger)">✕ Texte tutoriel.</b> L'UI se comprend par ses affordances ; on GARDE en revanche les infos de décision (PX de création, prix, relances) et le lore. Jamais de réf de livre dans un texte joueur.</div>
+        <div><b style="color:var(--danger)">✕ Bouton nu, contrôle natif, disabled muet.</b> Tout bouton porte <code>.btn</code>/une primitive ; checkbox/radio/select sont stylés globalement ; un bouton gâté compose <code>GatedAction</code> (raison visible).</div>
+        <div><b style="color:var(--danger)">✕ Hex en dur, markup recopié.</b> Couleurs = tokens <code>:root</code> ; toute surface/rangée/onglet compose la primitive canonique (table « Primitives partagées ») — jamais une nième copie.</div>
+        <div><b style="color:var(--danger)">✕ Deux CTA rouges de MÊME rôle sur un écran.</b> Un seul rempli rouge par barre/modale (le ghost porte le renoncement, à gauche) ; l'encrier d'attente, rouge BORDÉ-TEINTÉ, coexiste avec le rempli de navigation — rôles distincts (tirage vs avancer). Reformulé 2026-07-13 (encrier passé à la famille rouge d'action).</div>
+        <div><b style="color:var(--danger)">✕ Grain de matière généralisé.</b> EN ARBITRAGE — testé sur une seule maquette (feTurbulence 4,5 %), absent de ce kit tant que non tranché. Filigrane impérial : écarté.</div>
+        <div><b style="color:var(--danger)">✕ Note de designer dans un écran.</b> Les explications vivent dans les documents de planche/kit, jamais dans l'UI livrée.</div>
+        <div><b style="color:var(--danger)">✕ Rail-colonne gauche d'intro.</b> Arbitrage 2026-07-13, verbatim : « J'essaye de me débarasser du bloc de gauche qui sert souvent a rien. » Le rail 286px meurt sur TOUS les écrans du créateur ; son contenu (intro d'étape, encrier, notes) remonte dans la zone de travail (encrier en tête de zone, note en pied), qui hérite de sa largeur.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="kit-foot">
+  Document de référence STATIQUE — aucun fichier du repo touché ; styles copiés au pixel de
+  planche-creator-FINALE.html (charte ratifiée « Atelier du scribe », découpage B). Les classes
+  <code>.sim-hover/.sim-focus/.sim-disabled</code> n'existent que dans ce kit pour figer les états
+  d'interaction ; en production les états restent les pseudo-classes natives. Le focus visible reprend le token
+  <code>--gold</code> (politique focus de base.css). La silhouette est le placeholder aux proportions du rig
+  SP1 — en production, rig réel. À l'implémentation : promouvoir les encres d'atelier en tokens
+  (<code>--brass-*</code>/<code>--wood-*</code>) dans <code>src/ui/styles/base.css</code>, et router chaque
+  molécule vers sa primitive React de la table « Primitives partagées » (QtyStepper, SearchFilterField, Tabs,
+  OptionChooser, GatedAction, ParchmentCard…). — <b style="color:#9db07a">v2 (2026-07-13)</b> : réconciliation
+  croisée avec planche-compagnie.html — versés au kit avec pastille de provenance : .btn-danger (atome),
+  cartouche de campagne, rangée de composition (compose .socket), plaque de candidature (+ plaques-action
+  Créer/Importer) (molécules), acte d'engagement (+ vierge, sceau 44px à l'angle haut-droit) et acte de
+  présentation (.engage) (organismes), sous-titre de barre .ctitle et substeps-onglets (variantes du bandeau).
+  — <b style="color:#9db07a">Rose des forces (2026-07-13)</b> : mini-radar gravé versé aux molécules (pastille
+  « arbitrage axes 2026-07-13 »), rendu par le générateur <code>[data-rose]</code> en fin de document (outil de
+  planche — en production, un composant React <code>&lt;RoseDesForces&gt;</code> unique) ; axes = catalogue
+  paramétrable par campagne (#409), valeurs des spécimens = placeholders d'ambiance.
+</footer>
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  var CFG={glyph:{w:44,h:44,R:18,lab:null},
+           medal:{w:100,h:96,R:30,labR:38.5,fs:8,lab:'init'},
+           grand:{w:280,h:196,R:70,labR:84,fs:10.5,lab:'full'}};
+  function el(n,at){var e=document.createElementNS(NS,n);for(var k in at)e.setAttribute(k,at[k]);return e;}
+  function build(host){
+    var mode=host.getAttribute('data-mode')||'glyph', C=CFG[mode];
+    var axes=host.getAttribute('data-rose').split(',').map(function(s){
+      var m=s.split(':'), nm=m[0].split('|');
+      return {name:nm[0], init:nm[1]||nm[0].charAt(0), val:(m[1]==null||m[1]===''||m[1]==='x')?null:+m[1]};
+    });
+    var empty=axes.every(function(a){return a.val==null});
+    var cx=C.w/2, cy=C.h/2, n=axes.length, i, p;
+    function pt(r,i){var a=-Math.PI/2+i*2*Math.PI/n;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+    var svg=el('svg',{viewBox:'0 0 '+C.w+' '+C.h,width:C.w,height:C.h,'class':'rose','aria-hidden':'true'});
+    svg.appendChild(el('circle',{cx:cx,cy:cy,r:C.R,fill:'url(#roseWell)',
+      stroke:empty?'#4a3a24':'#8a6c2f','stroke-width':mode==='glyph'?1.3:1.6}));
+    svg.appendChild(el('circle',{cx:cx,cy:cy+0.8,r:C.R,fill:'none',
+      stroke:'rgba(255,217,122,'+(empty?'.10':'.28')+')','stroke-width':0.8}));
+    [2/3,1/3].forEach(function(f){svg.appendChild(el('circle',{cx:cx,cy:cy,r:C.R*f,fill:'none',
+      stroke:empty?'#241a10':'#3a2c1a','stroke-width':0.7}));});
+    for(i=0;i<n;i++){p=pt(C.R,i);
+      svg.appendChild(el('line',{x1:cx,y1:cy,x2:p[0],y2:p[1],
+        stroke:empty?'#241a10':'#4a3a24','stroke-width':0.8}));
+      svg.appendChild(el('circle',{cx:p[0],cy:p[1],r:mode==='glyph'?1.1:1.4,fill:empty?'#3a2c1a':'#8a6c2f'}));
+    }
+    if(!empty){
+      var pts=axes.map(function(a,i){return pt(C.R*Math.max(a.val||0,6)/100,i);});
+      svg.appendChild(el('polygon',{points:pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),
+        fill:'rgba(216,185,84,.17)',stroke:'#d8b954','stroke-width':mode==='glyph'?1.1:1.3,'stroke-linejoin':'round'}));
+      pts.forEach(function(p){svg.appendChild(el('circle',{cx:p[0],cy:p[1],r:mode==='glyph'?1.2:1.7,fill:'#ffd97a'}));});
+    } else {
+      var d=el('text',{x:cx,y:cy,'text-anchor':'middle','dominant-baseline':'central',
+        fill:'#5c4a30','font-size':mode==='glyph'?11:14});
+      d.textContent='—'; svg.appendChild(d);
+    }
+    if(C.lab){
+      for(i=0;i<n;i++){
+        var lp=pt(C.labR,i);
+        var anchor=Math.abs(lp[0]-cx)<4?'middle':(lp[0]>cx?'start':'end');
+        var t=el('text',{x:lp[0].toFixed(1),y:lp[1].toFixed(1),'text-anchor':anchor,
+          'dominant-baseline':'central',fill:empty?'#5c4a30':'#c9ac72','font-size':C.fs,'letter-spacing':'.4'});
+        if(C.lab==='init'){t.textContent=axes[i].init;}
+        else{
+          t.textContent=axes[i].name+' ';
+          var b=el('tspan',{fill:empty?'#5c4a30':'#ffe6a8','font-weight':'600'});
+          b.textContent=axes[i].val==null?'—':axes[i].val;
+          t.appendChild(b);
+        }
+        svg.appendChild(t);
+      }
+    }
+    host.appendChild(svg);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-rose]'),build);
+})();
+</script>
+</body>
+</html>
