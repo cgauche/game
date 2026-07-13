@@ -73,6 +73,7 @@ export function SkillChip({ skill }: { skill: SkillInstance }) {
   return (
     <EntityRef
       category="skills"
+      id={skill.skillId}
       label={findSkillById(skill.skillId)?.label ?? skill.skillId}
       show={skillInstanceLabel(skill)}
       badge={`+${skill.advances}`}
@@ -85,6 +86,7 @@ export function TalentChip({ talent }: { talent: TalentInstance }) {
   return (
     <EntityRef
       category="talents"
+      id={talent.talentId}
       label={findTalentById(talent.talentId)?.label ?? talent.talentId}
       show={`${talentConcrete(talent)}${talent.times > 1 ? ` ×${talent.times}` : ''}`}
     />
@@ -95,7 +97,7 @@ export function TalentChip({ talent }: { talent: TalentInstance }) {
  *  (« Solide 3 ») s'affiche mais n'entre pas dans la clé de résolution. */
 export function QualityChip({ quality }: { quality: QualityInstance }) {
   return (
-    <EntityRef category="qualities" label={qualityRefLabel({ id: quality.id })} show={qualityRefLabel(quality)} />
+    <EntityRef category="qualities" id={quality.id} label={qualityRefLabel({ id: quality.id })} show={qualityRefLabel(quality)} />
   );
 }
 

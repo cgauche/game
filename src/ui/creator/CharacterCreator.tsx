@@ -402,7 +402,7 @@ export function SpeciesZones({ d, setD }: StepProps): StepZones {
   const body = (
     <TabbedEntry
       figure={<CharacterPreview appearance={pickAppearance(sp.id, d.sex)} size="md" ambiance="panel" />}
-      title={<CodexRef category="races" label={sp.label}>{sp.label}</CodexRef>}
+      title={<CodexRef category="races" id={sp.id} label={sp.label}>{sp.label}</CodexRef>}
       blurb={blurb(sp.desc, 300)}
       tabs={[
         { id: 'profil', label: 'Profil', content: profil },
@@ -514,9 +514,9 @@ export function CareerZones({ d, setD }: StepProps): StepZones {
         <CharacterPreview appearance={pickAppearance(sp?.id ?? d.speciesId, d.sex)} career={d.careerId} size="md" ambiance="panel" />
         <div>
           <h2>
-            <CodexRef category="careers" label={career.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>{' '}
+            <CodexRef category="careers" id={career.id} label={career.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>{' '}
             {career.class && (
-              <span className="hint">(<CodexRef category="classes" label={findClassById(career.class)?.label ?? career.class}>{findClassById(career.class)?.label ?? career.class}</CodexRef>)</span>
+              <span className="hint">(<CodexRef category="classes" id={career.class} label={findClassById(career.class)?.label ?? career.class}>{findClassById(career.class)?.label ?? career.class}</CodexRef>)</span>
             )}
           </h2>
           <p className="hint">{blurb(career.desc, 460)}</p>
@@ -535,7 +535,7 @@ export function CareerZones({ d, setD }: StepProps): StepZones {
       <Section title="Caractéristiques de carrière">
         <div className="skill-tags">
           {lvl1.characteristics.map((c) => (
-            <EntityRef key={c} category="characteristics" label={c} />
+            <EntityRef key={c} category="characteristics" id={c} label={c} />
           ))}
         </div>
       </Section>
@@ -613,7 +613,7 @@ export function CharZones({ d, setD }: StepProps): StepZones {
         </p>
         {careerKeys.map((k) => (
           <div key={k} className="rail-line">
-            <span><CodexRef category="characteristics" label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef></span>
+            <span><CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef></span>
             <Stepper
               value={d.charAdvancesAlloc[k] ?? 0}
               max={Math.min(CAREER_CHAR_ADVANCES, (d.charAdvancesAlloc[k] ?? 0) + (CAREER_CHAR_ADVANCES - allocTotal))}
@@ -661,7 +661,7 @@ export function CharZones({ d, setD }: StepProps): StepZones {
         <div className="char-alloc-grid">
           {CHAR_KEYS.map((k, i) => (
             <div key={k} className="char-alloc">
-              <CodexRef category="characteristics" label={CHAR_LABELS[k]} className="char-key">{CHAR_ABR[k]}</CodexRef>
+              <CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]} className="char-key">{CHAR_ABR[k]}</CodexRef>
               <span className="char-name">
                 {CHAR_LABELS[k]}
                 {careerKeys.includes(k) && <span className="tag char">carrière</span>}
@@ -1073,7 +1073,7 @@ export function TrappingZones({ d, setD }: StepProps): StepZones {
   const chip = (ref: import('../../data').TrappingRef, key: number) => {
     const label = trappingRefLabel(ref);
     return (
-      <CodexRef key={key} category="trappings" label={splitLabel(label).name}>{label}</CodexRef>
+      <CodexRef key={key} category="trappings" id={'id' in ref ? ref.id : undefined} label={splitLabel(label).name}>{label}</CodexRef>
     );
   };
   const choice = (
@@ -1243,8 +1243,8 @@ export function RecapZones({ d }: { d: CreatorDraft }): StepZones {
         <div className="recap-id">
           <h2>{d.name.trim() || 'Aventurier'}</h2>
           <p>
-            <CodexRef category="races" label={speciesLabel}>{speciesLabel}</CodexRef>, {displayLabelForSex(d.sex, draftLevel(d)?.label ?? '', draftLevel(d)?.labelF)} (
-            <CodexRef category="careers" label={careerLabel}>{displayLabelForSex(d.sex, careerLabel, career?.labelF)}</CodexRef>) · {draftLevel(d)?.status}
+            <CodexRef category="races" id={d.speciesId} label={speciesLabel}>{speciesLabel}</CodexRef>, {displayLabelForSex(d.sex, draftLevel(d)?.label ?? '', draftLevel(d)?.labelF)} (
+            <CodexRef category="careers" id={d.careerId} label={careerLabel}>{displayLabelForSex(d.sex, careerLabel, career?.labelF)}</CodexRef>) · {draftLevel(d)?.status}
           </p>
           <p className="recap-meta">
             {hero?.details?.age ? `${hero.details.age} ans · ` : ''}
@@ -1305,7 +1305,7 @@ export function RecapZones({ d }: { d: CreatorDraft }): StepZones {
       <RuleDivider label="Équipement" />
       <div className="skill-tags">
         {(hero?.items ?? []).map((it) => (
-          <EntityRef key={it.uid} category="trappings" label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
+          <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
         ))}
       </div>
     </div>
