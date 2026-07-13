@@ -461,8 +461,8 @@ h3 {
 .party-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
-  gap: 16px;
-  padding: 18px;
+  gap: 14px;
+  padding: 14px 18px;
 }
 .party-slot {
   display: flex;
@@ -504,11 +504,17 @@ h3 {
   gap: 10px;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 3 / 4;
+  /* Hauteur BORNÉE au gabarit de la carte pleine (plus d'aspect-ratio qui enfle avec la largeur
+     de colonne sur grand écran → l'écran de sélection tient sans ascenseur). */
+  min-height: 236px;
   flex: 1;
 }
-/* Ombre de personnage : le rig réel d'un pré-tiré, aplati en silhouette sombre, ancré en bas du cadre. */
-.slot-silhouette {
+/* Ombre de personnage : le rig réel d'un pré-tiré, aplati en silhouette sombre, en FOND du cadre.
+   Spécificité `.empty-slot .slot-silhouette` (0,2,0) : sinon `.charprev { position: relative }`
+   (components.css, importé APRÈS base.css) gagne l'égalité (0,1,0) et remet la figurine EN FLUX —
+   elle mesurait alors sa hauteur intrinsèque (~425px) et gonflait chaque emplacement (repro CDP,
+   #371). Le fond ne doit JAMAIS dicter la hauteur du cadre. */
+.empty-slot .slot-silhouette {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -535,17 +541,32 @@ h3 {
 /* Galerie de candidats — vivier (CandidatePool) rendu sous les emplacements : grille de fiches
    compactes (pré-tirés + roster), clic = recrutement du 1er siège libre. */
 .candidate-gallery {
-  padding: 4px 18px 18px;
+  padding: 2px 18px 10px;
 }
+/* Le séparateur « Candidats à l'aventure » titre déjà la section : intro resserrée (jamais un
+   pavé qui pousse la galerie sous le pli). */
 .party-intro {
   text-align: center;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
+  font-size: 12px;
+}
+.candidate-gallery .sheet-tabnav {
+  margin-bottom: 6px;
 }
 .candidate-gallery .pregen-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 8px;
   margin: 0;
+}
+/* Rangée candidate DENSE : figure + identité + « Choisir » sur UNE ligne (le bouton ne repasse pas
+   dessous → la galerie tient sans ascenseur). Cartes assez larges (min 300px) pour l'éviter. */
+.candidate-gallery .pregen-row {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+.candidate-gallery .pregen-row .char-card-row {
+  min-width: 0;
 }
 .candidate-gallery .pregen-row {
   margin: 0;
@@ -615,16 +636,16 @@ h3 {
   background: var(--panel);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 .char-card.ornate-frame {
-  padding: 14px;
+  padding: 10px 12px;
 }
 /* Zone cliquable figure + identité (ouvre la fiche complète). */
 .char-head {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 .char-head.clickable {
   cursor: pointer;
@@ -642,11 +663,13 @@ h3 {
 }
 /* Figure dominante : le rig réel en pied (CharacterPreview size=fill, ambiance panel).
    L'aperçu est posé en ABSOLU : le ratio intrinsèque du SVG (120/150) gonflerait sinon la
-   hauteur min-content du flex item au-delà de l'aspect-ratio voulu. */
+   hauteur min-content du flex item au-delà de la hauteur voulue.
+   Hauteur BORNÉE (pas un aspect-ratio qui enfle avec la largeur de colonne sur grand écran) :
+   la carte de siège reste un aperçu qui tient sans ascenseur (écran de sélection). */
 .char-fig {
   position: relative;
   width: 100%;
-  aspect-ratio: 5 / 4;
+  height: clamp(76px, 11vh, 124px);
 }
 .char-fig > .charprev {
   position: absolute;
@@ -678,6 +701,25 @@ h3 {
 }
 .char-card-row .char-id {
   flex: 1;
+}
+/* Rangée compacte (vivier/picker) : identité DENSE — 2 lignes (nom + race·carrière) en ellipse, pas
+   de ligne Statut (secondaire ; présente sur la carte de siège et la fiche complète). La galerie
+   tient ainsi sans ascenseur ; le nom complet se lit sur la carte de siège après recrutement. */
+.char-card-row .char-id {
+  min-width: 0;
+}
+.char-card-row .char-status {
+  display: none;
+}
+.char-card-row .char-id strong,
+.char-card-row .char-sub {
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.char-card-row .char-id strong {
+  font-size: 13px;
 }
 .char-row-stats {
   display: inline-flex;
@@ -715,25 +757,34 @@ h3 {
   font-weight: 700;
   font-size: 15px;
 }
-/* Vitalité + réserves (Destin/Chance/Résilience/Détermination) = cartouches .stat-chip (primitive),
-   comme la fiche. Grille 3 cols, minmax(0,…) anti-débordement. */
-.char-vitals {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  margin-top: 10px;
-}
-/* F4 : aperçu d'équipement sur la mini-carte (armes en main + PA corps). */
-.char-equip {
+/* Réserves en UNE ligne dense sur la carte de siège (aperçu), le détail complet est au clic. */
+.char-reserves {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.char-equip .ce-weap {
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 13px;
   color: var(--text);
+}
+.char-reserves > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+/* Grille des 10 caractéristiques RESSERRÉE dans la carte de siège (dense, sans ascenseur). */
+.char-card .char-stats {
+  gap: 2px;
+}
+.char-card .char-stats .stat {
+  padding: 1px 2px;
+}
+.char-card .char-stats .stat-label {
+  padding: 0;
+  font-size: 9px;
+}
+.char-card .char-stats .stat-val {
+  font-size: 13px;
 }
 .mini-title {
   font-size: 11px;

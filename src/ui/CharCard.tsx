@@ -1,15 +1,10 @@
 import type { KeyboardEvent } from 'react';
 import { Combatant } from '../engine/types';
-import { isUnarmed, damageString } from '../engine/items';
 import { CharacterPreview } from './CharacterPreview';
 import { OrnateFrame } from './Ornaments';
 import { Icon } from './Icon';
 import { speciesSingular, findSpeciesById, careerLabelFor, levelsForCareer } from '../data';
 import { CharStatsGrid } from './CharStatsGrid';
-import { ZONES } from './EquipmentPanel';
-import { SkillChip, TalentChip, EntityRef } from './EntityChip';
-import { FateChips } from './FateChips';
-import { CodexRef } from './compendium/CodexRef';
 import { WoundsBadge } from './WoundsBadge';
 
 /** Attributs de zone cliquable « ouvre la fiche complète » — partagés carte pleine / rangée compacte. */
@@ -46,8 +41,10 @@ function CharIdentity({ hero }: { hero: Combatant }) {
 /**
  * Carte de personnage v2 — le perso EN PIED (rig réel équipé, CharacterPreview) en zone dominante,
  * dans un cadre orné (OrnateFrame tone iron). Deux modes :
- *  - plein (emplacements de l'écran d'équipe) : figure + identité + carac + réserves + équipement + chips ;
- *  - `compact` (rangées du PartyPicker) : une RANGÉE dense — figure xs + identité + l'essentiel.
+ *  - plein (emplacements de l'écran d'équipe) : figure + identité + carac + réserves. Le détail
+ *    (équipement, compétences, talents) vit dans la fiche complète, ouverte au clic (`onOpen`) —
+ *    la carte de siège reste un APERÇU compact qui tient sans ascenseur (écran de sélection).
+ *  - `compact` (rangées du vivier/PartyPicker) : une RANGÉE dense — figure xs + identité + l'essentiel.
  */
 export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?: boolean; onOpen?: () => void }) {
   if (compact) {
@@ -62,9 +59,6 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
       </div>
     );
   }
-  // Aperçu d'équipement : armes en main + PA par ZONE (Tête/Bras/Corps/Jambes, couches cumulées).
-  const arms = hero.weapons.filter((w) => !isUnarmed(w));
-  const wornZones = ZONES.map((z) => ({ label: z.label, ap: hero.armour?.[z.apLoc] ?? 0 })).filter((z) => z.ap > 0);
   return (
     <OrnateFrame className="char-card">
       <div className={`char-head ${onOpen ? 'clickable' : ''}`} {...openAttrs(onOpen)}>
@@ -74,49 +68,14 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
         <CharIdentity hero={hero} />
       </div>
       <CharStatsGrid value={(k) => hero.characteristics[k]} />
-      <div className="char-vitals">
-        <div className="stat-chip">
-          <span className="sc-label" title="Blessures">Blessures</span>
-          <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
-        </div>
-        <div className="stat-chip">
-          <span className="sc-label" title="Mouvement"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
-          <span className="sc-value">{hero.movement}</span>
-        </div>
-        <FateChips c={hero} />
-      </div>
-      {(arms.length > 0 || wornZones.length > 0) && (
-        <div className="char-equip">
-          <div className="mini-title">Équipement</div>
-          {arms.length > 0 && (
-            <span className="ce-weap"><Icon id="item/weapon" size="sm" /> {arms.map((w, i) => (
-              <EntityRef key={i} category="trappings" label={w.name} show={w.name} badge={damageString(w.damage)} />
-            ))}</span>
-          )}
-          {wornZones.length > 0 && (
-            <span className="ce-pa" title="Points d'Armure par zone (couches rigide + flexible cumulées)">
-              <Icon id="item/armour" size="sm" /> {wornZones.map((z) => `${z.label} ${z.ap}`).join(' · ')}
-            </span>
-          )}
-        </div>
-      )}
-      <div className="char-skills">
-        <div className="mini-title">Compétences</div>
-        <div className="skill-tags">
-          {hero.skills.slice(0, 8).map((s, i) => (
-            <SkillChip key={i} skill={s} />
-          ))}
-        </div>
-        {hero.talents.length > 0 && (
-          <>
-            <div className="mini-title">Talents</div>
-            <div className="skill-tags">
-              {hero.talents.map((t, i) => (
-                <TalentChip key={i} talent={t} />
-              ))}
-            </div>
-          </>
-        )}
+      {/* Réserves en UNE ligne dense (le détail — Chance/Détermination, équipement, compétences — vit
+          dans la fiche complète, ouverte au clic). La carte de siège reste un aperçu qui tient sans
+          ascenseur. */}
+      <div className="char-reserves">
+        <span title="Blessures"><Icon id="resource/wounds" size="sm" /> <WoundsBadge wounds={hero.wounds} /></span>
+        <span title="Mouvement"><Icon id="resource/movement" size="sm" /> {hero.movement}</span>
+        {hero.fate != null && <span title="Destin"><Icon id="resource/fate" size="sm" /> {hero.fate}</span>}
+        {hero.resilience != null && <span title="Résilience"><Icon id="resource/resilience" size="sm" /> {hero.resilience}</span>}
       </div>
     </OrnateFrame>
   );

@@ -61,7 +61,7 @@ const PRICE_BASELINE: Record<string, number> = {};
 //    `.bar`/primitives partagées de `components.css` (§charte-ui). Un `flex-wrap` codé en dur dans un
 //    AUTRE module CSS est de la dette gelée (#287) — le cliquet interdit sa hausse, impose la décrue. ──
 const FLEX_WRAP_BASELINE: Record<string, number> = {
-  'styles/base.css': 5,
+  'styles/base.css': 4,
   'styles/codex-edit.css': 1,
   'styles/combat-modals.css': 7,
   'styles/combat-ui.css': 7,

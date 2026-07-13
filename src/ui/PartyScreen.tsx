@@ -394,7 +394,7 @@ export function PartyScreenView({
           <section className="candidate-gallery" aria-label={t('party.recruit.pool')}>
             <RuleDivider label={t('party.recruit.pool')} />
             <p className="hint party-intro">{t('party.recruit.intro')}</p>
-            <CandidatePool party={party} onPick={pick} />
+            <CandidatePool party={party} onPick={pick} hideInParty />
           </section>
         )}
       </div>
@@ -462,11 +462,16 @@ export function PartyPicker({
 export function CandidatePool({
   party,
   onPick,
+  hideInParty = false,
 }: {
   party: Combatant[];
   onPick: (h: Combatant, wealth?: Money) => void;
+  /** Écarte du vivier les personnages DÉJÀ dans le groupe (recrutement) : un visage déjà assis dans
+   *  un emplacement ne se re-propose pas en double sous les cartes (feedback user 2026-07-13). Le
+   *  picker de REMPLACEMENT laisse `false` → ils restent visibles, grisés « Déjà choisi ». */
+  hideInParty?: boolean;
 }) {
-  const pregens = useState(() => makePregens())[0];
+  const allPregens = useState(() => makePregens())[0];
   const [roster, setRoster] = useState(() => rosterLoad());
   const [tab, setTab] = useState<'roster' | 'pregens'>(roster.length ? 'roster' : 'pregens');
   const [importErr, setImportErr] = useState<string | null>(null);
@@ -475,6 +480,8 @@ export function CandidatePool({
   const setEditingHero = useGame((s) => s.setEditingHero);
 
   const inParty = (id: string) => party.some((p) => p.id === id);
+  const pregens = hideInParty ? allPregens.filter((h) => !inParty(h.id)) : allPregens;
+  const shownRoster = hideInParty ? roster.filter((e) => !inParty(e.hero.id)) : roster;
   const removeSaved = (id: string) => {
     rosterRemove(id);
     setRoster(rosterLoad());
@@ -514,7 +521,7 @@ export function CandidatePool({
             <button className="btn" onClick={() => { setEditingHero(null); setScreen('creator'); }}>
               {t('picker.roster.create')}
             </button>
-            {roster.map(({ hero, wealth }) => (
+            {shownRoster.map(({ hero, wealth }) => (
               <div key={hero.id} className="pregen-row">
                 <CharCard hero={hero} compact />
                 <span className="hint">Bourse : <Coins money={wealth} /></span>
