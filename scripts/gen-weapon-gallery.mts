@@ -12,6 +12,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { weaponFamily } from '../src/gameIso/rig/parts/equipment';
 import trappings from '../src/data/trappings.json';
 import type { Weapon } from '../src/engine/types';
+import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const GROUPS = [
   'Base', 'Escrime', 'Cavalerie', 'Deux-mains', "Armes d'hast", 'Fléau', 'Parade', 'Bagarre',
@@ -29,7 +30,7 @@ function fig(w: Weapon, shield = false) {
     React.createElement('svg', { viewBox: '0 0 120 150', width: 92, height: 115 },
       React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#1d2230' }),
-      React.createElement(RigSprite, { appearance: { species: 'Humain', sex: 'M', build: 0.5, seed: 4 }, equip, career: 'Soldat' }),
+      React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, equip, career: 'Soldat' }),
     ),
   );
   const fam = shield ? 'bouclier' : weaponFamily(w) || '(mains nues)';

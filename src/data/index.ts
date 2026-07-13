@@ -4,6 +4,7 @@
  * aucune migration ne les régénère.
  */
 import type { EntityAppearance } from '../engine/authoringAppearance';
+import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, RaceKey, RefCareerId } from './schemas/common';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
@@ -1685,8 +1686,8 @@ export function findSpeciesById(id: string | undefined): SpeciesData | undefined
  *  slug du LIBELLÉ d'espèce. Pont UNIQUE rules→rig (pregens/draft/creator/defaultAppearance). Défaut Humain.
  *  Invariant : `slugId(label) === id` pour TOUTE entrée de species.json → la sortie est un id species.json
  *  (vocabulaire canonique d'`appearance.species`, gardé par `refs-migrated.test.ts`). */
-export function rigSpeciesId(rulesId: string | undefined): string {
-  return slugId(findSpeciesById(rulesId)?.label ?? rulesId ?? 'Humain');
+export function rigSpeciesId(rulesId: string | undefined): RigSpeciesId {
+  return slugId(findSpeciesById(rulesId)?.label ?? rulesId ?? 'Humain') as RigSpeciesId;
 }
 /** Seuil d100 de mutation PHYSIQUE d'une espèce par `id` (LDB 19 l.87-91). Défaut **50** = colonne
  *  Humain (LDB) — couvre aussi le Gnome (NADJ « Gnomes et Corruption » : « mutent comme les humains »)

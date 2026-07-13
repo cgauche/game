@@ -8,6 +8,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { weaponRest, weaponAttackClip, weaponParryClip } from '../src/gameIso/rig/anim/weaponClips';
 import { addPose } from '../src/gameIso/rig/poses';
 import type { Weapon } from '../src/engine/types';
+import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const WEAPONS = ['Épée', 'Rapière', 'Zweihänder', 'Fléau d\'armes', 'Hallebarde', 'Main Gauche', 'Mains nues'];
 const wpn = (name: string): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] });
@@ -25,7 +26,7 @@ WEAPONS.forEach((name, r) => {
   ];
   cells.push(`<text x="6" y="${28 + r * CH + CH / 2}" font-size="9" fill="#9fb0c8" font-family="sans-serif">${name}</text>`);
   cols.forEach((col, ci) => {
-    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: { species: 'Humain', sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [w], armour: [] }, career: 'Soldat', view: 'front', pose: col.pose }));
+    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [w], armour: [] }, career: 'Soldat', view: 'front', pose: col.pose }));
     const x = 96 + ci * CW, y = 28 + r * CH;
     cells.push(`<g transform="translate(${x},${y})"><rect width="${CW - 4}" height="${CH - 14}" fill="#262d3b"/><line x1="0" y1="150" x2="${CW - 4}" y2="150" stroke="#e06a4a" stroke-width="0.5"/>${inner}<text x="${(CW - 4) / 2}" y="${CH - 3}" text-anchor="middle" font-size="8" fill="#cdd" font-family="sans-serif">${col.l}</text></g>`);
   });

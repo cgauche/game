@@ -1,7 +1,7 @@
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { itemFromTrappingById, recomputeLoadout } from '../../engine/items';
-import { trappings } from '../../data';
+import { trappings, rigSpeciesId } from '../../data';
 import { Combatant } from '../../engine/types';
 import { flowFromEffects } from '../../state/flow';
 import { buildScene } from '../../state/mapSpec';
@@ -31,7 +31,7 @@ function negociant(): Combatant {
   const dague = itemFromTrappingById('dague')!; // un objet à vendre
   h.items = [epee, maille, dague];
   recomputeLoadout(h);
-  h.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.5 };
+  h.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.5 };
   return h;
 }
 
@@ -61,7 +61,7 @@ function maitreArmes(): Combatant {
   h.loadouts = undefined; // inventaire de carrière REMPLACÉ → régénérer les sets par défaut
   h.activeLoadoutId = undefined;
   recomputeLoadout(h);
-  h.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.5 };
+  h.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.5 };
   return h;
 }
 

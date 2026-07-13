@@ -9,6 +9,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
 import type { View } from '../src/gameIso/rig/facing';
+import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const W_ = (name: string, hand: 'main' | 'off', q: { id: string; value?: number }[] = []): Weapon =>
   ({ name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: q, hand, hands: 1 } as Weapon);
@@ -33,7 +34,7 @@ CFGS.forEach((cfg, r) => {
   VIEWS.forEach((vw, c) => {
     const inner = renderToStaticMarkup(
       React.createElement(RigSprite, {
-        appearance: { species: 'Humain', sex: 'M', build: 0.5, seed: 4 },
+        appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 },
         equip: { weapons: cfg.weapons, armour: [], shield: cfg.shield },
         career: 'Soldat', view: vw.v, pose: weaponRest(cfg.weapons[0]), mirror: vw.m,
       }),

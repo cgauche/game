@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { AppearancePanel } from './AppearancePanel';
-import type { Appearance } from '../gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../gameIso/rig/appearance';
 
-const app: Appearance = { species: 'Humain', sex: 'F', build: 0.4, seed: 2 };
+const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'F', build: 0.4, seed: 2 };
 
 describe('AppearancePanel', () => {
   it('rend un aperçu de rig + les contrôles sexe/morpho', () => {

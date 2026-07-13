@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CharacterPreview } from './CharacterPreview';
-import type { Appearance } from '../gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../gameIso/rig/appearance';
 import { pregen, PREGEN } from '../data/pregens';
 
-const app: Appearance = { species: 'Humain', sex: 'F', build: 0.5, seed: 3 };
+const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'F', build: 0.5, seed: 3 };
 
 describe('CharacterPreview (rendu headless)', () => {
   it('rend le rig depuis une apparence brute, SANS <defs> local (DEFS montés au niveau App)', () => {

@@ -6,7 +6,7 @@ import { weaponFromLabel } from '../../../engine/creatureEquip';
 import { resolveSpecies } from '../bodyPlan';
 import { slugId } from '../../../data/slug';
 import type { View } from '../facing';
-import type { Appearance } from '../appearance';
+import type { Appearance, RigSpeciesId } from '../appearance';
 import type { EquipCtx } from '../parts/equipment';
 
 // Espèces bipèdes couvertes (LIBELLÉS canoniques) + rôles génériques. Comme un outil, on part d'un
@@ -35,7 +35,7 @@ describe('golden master — rendu bipède (anti-régression migration gabarit/ra
 
 describe('golden master — héros équipés (anti-régression chemins arme/armure/couleur)', () => {
   // (a) Porteur d'arme de mêlée : chemin os `arme` + twist de pose profil mêlée
-  const appSoldat: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 3 };
+  const appSoldat: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 3 };
   const equipSoldat: EquipCtx = {
     weapons: [weaponFromLabel('Épée')],
     armour: [],
@@ -48,7 +48,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   }
 
   // (b) Bouclier + armure corporelle : chemin os `bouclier` + parts armure
-  const appGuardien: Appearance = { species: 'Humain', sex: 'F', build: 0.6, seed: 11 };
+  const appGuardien: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'F', build: 0.6, seed: 11 };
   const equipGuardien: EquipCtx = {
     weapons: [weaponFromLabel('Grande hache')],
     armour: [
@@ -66,7 +66,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
 
   // (c) Surcharge de couleur (appearance.colors) : chemin tokenMap couleur personnalisée
   const appMercenaire: Appearance = {
-    species: 'Humain', sex: 'M', build: 0.45, seed: 17,
+    species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.45, seed: 17,
     colors: { vet1: '#3a5a7a' },
   };
   const equipMercenaire: EquipCtx = {

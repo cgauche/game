@@ -5,6 +5,7 @@ import type { Combatant, SkillInstance } from '../../engine/types';
 import { buildScene } from '../../state/mapSpec';
 import type { WorldMap } from '../../state/worldMap';
 import type { TestScenario } from './_shared';
+import { rigSpeciesId } from '../../data';
 
 /**
  * « Voyage maritime » — la traversée en mer JOUABLE (MDG ch.13/15), pendant naval du « Voyage & temps long »
@@ -32,14 +33,14 @@ function crew(): Combatant[] {
   skill(cap, 'commandement', 50);
   skill(cap, 'voile', 40);
   cap.items = [...(cap.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!];
-  cap.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.55 };
+  cap.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.55 };
 
   const timo = createHero({ speciesId: 'humains-reiklander', careerId: 'chasseur', name: 'Timonière Hilda', motivation: 'Test', rng: makeRNG(4802), id: 'mar-timo' });
   timo.shipRole = 'timonier';
   skill(timo, 'voile', 55);
   skill(timo, 'ramer', 45);
   skill(timo, 'metier', 40, 'Charpentier'); // entretien de la coque au soir
-  timo.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.42 };
+  timo.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'F', build: 0.42 };
 
   const navi = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Navigateur Ansmann', motivation: 'Test', rng: makeRNG(4803), id: 'mar-navi' });
   navi.shipRole = 'navigateur';
@@ -50,13 +51,13 @@ function crew(): Combatant[] {
   skill(navi, 'langue', 40, 'magick');
   skill(navi, 'focalisation', 40);
   navi.spells = ['bienfait-de-bel-shanaar'];
-  navi.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.48 };
+  navi.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.48 };
 
   const vigie = createHero({ speciesId: 'humains-reiklander', careerId: 'eclaireur', name: 'Vigie Perla', motivation: 'Test', rng: makeRNG(4804), id: 'mar-vigie' });
   vigie.shipRole = 'vigie';
   skill(vigie, 'perception', 55);
   skill(vigie, 'voile', 35);
-  vigie.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.4 };
+  vigie.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'F', build: 0.4 };
 
   return [cap, timo, navi, vigie];
 }

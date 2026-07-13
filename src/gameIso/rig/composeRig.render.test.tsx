@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RigSprite } from './composeRig';
-import type { Appearance } from './appearance';
+import type { Appearance, RigSpeciesId } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import type { Weapon } from '../../engine/types';
 
-const app: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 7 };
+const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 };
 
 describe('RigSprite (rendu headless)', () => {
   it('émet un <g data-bone> par os avec une matrice de transform', () => {

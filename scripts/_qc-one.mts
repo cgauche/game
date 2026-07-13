@@ -4,10 +4,10 @@ import { Resvg } from '@resvg/resvg-js';
 import { DEFS } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { View } from '../src/gameIso/rig/facing';
 
-const app: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 1 };
+const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 1 };
 const bare = { weapons: [], armour: [] };
 const careers = process.argv.slice(2);
 if (!careers.length) { console.error('usage: tsx _qc-one.mts <Carrière> [...]'); process.exit(1); }

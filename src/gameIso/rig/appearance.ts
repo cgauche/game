@@ -5,9 +5,16 @@ import { rigSpeciesId } from '../../data';
 import type { MonsterParts } from './parts/monstrous';
 import type { Palette } from './palette';
 
+/** Vocabulaire (marque NOMINALE, #406) : id RIG (slug d'espèce `species.json`, id de créature/race/
+ *  véhicule/affût-de-siège) — jamais un `SpeciesData.label` (« Humains (Reiklander) »). UNE seule
+ *  monnaie : un littéral `string` (dont un `.label`) n'est plus assignable à `Appearance.species`
+ *  (échec STRUCTUREL) — la seule production sanctionnée pour un id RULES est `rigSpeciesId` ; les
+ *  autres sites partent déjà d'un id RIG (race/créature/véhicule/affût) et l'assertent `as RigSpeciesId`. */
+export type RigSpeciesId = string & { readonly __rigSpeciesId: unique symbol };
+
 /** Descripteur d'apparence COSMÉTIQUE (type pur ; l'engine ne le lit jamais). */
 export interface Appearance {
-  species: string;
+  species: RigSpeciesId;
   gabarit?: string;                                 // id de carrure résolu (sinon dérivé de l'espèce)
   sex: 'M' | 'F';
   build: number;                                   // 0..1

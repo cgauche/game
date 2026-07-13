@@ -16,9 +16,10 @@ import { addPose, type Pose } from '../src/gameIso/rig/poses';
 import { weaponRest, weaponAttackClip } from '../src/gameIso/rig/anim/weaponClips';
 import { clipDuration, sampleClip } from '../src/gameIso/rig/anim/clips';
 import type { Weapon } from '../src/engine/types';
+import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 mkdirSync('public/qc', { recursive: true });
-const APP = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 } as const;
+const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
 const wp = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 // Un représentant par classe (le libellé résout la classe via la forme).

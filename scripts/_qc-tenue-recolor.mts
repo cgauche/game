@@ -5,10 +5,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Palette } from '../src/gameIso/rig/palette';
 
-const app = (colors?: Palette): Appearance => ({ species: 'Humain', sex: 'M', build: 0.5, seed: 4, colors });
+const app = (colors?: Palette): Appearance => ({ species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, colors });
 const CASES: { career: string; label: string; colors?: Palette }[] = [
   { career: 'Batelier', label: 'Batelier défaut' },
   { career: 'Batelier', label: 'vet1 rouge', colors: { vet1: '#a83838' } },

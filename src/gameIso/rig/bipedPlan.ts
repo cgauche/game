@@ -5,15 +5,15 @@
  */
 import type { BodyPlan, ResolveOpts } from './bodyPlan';
 import type { View } from './facing';
-import type { Appearance } from './appearance';
+import type { Appearance, RigSpeciesId } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { resolveRig, type ResolvedBone } from './composeRig';
 
-const DEFAULT_APPEARANCE: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 1 };
+const DEFAULT_APPEARANCE: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 1 };
 const EMPTY_EQUIP: EquipCtx = { weapons: [], armour: [] };
 
 function resolveBiped(species: string, view: View, pose: Record<string, number>, opts?: ResolveOpts): ResolvedBone[] {
-  const appearance: Appearance = opts?.appearance ?? { ...DEFAULT_APPEARANCE, species, colors: opts?.colors };
+  const appearance: Appearance = opts?.appearance ?? { ...DEFAULT_APPEARANCE, species: species as RigSpeciesId, colors: opts?.colors };
   const equip: EquipCtx = opts?.equip ?? EMPTY_EQUIP;
   return resolveRig(appearance, equip, pose, opts?.tenue, view);
 }

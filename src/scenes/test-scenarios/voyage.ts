@@ -4,6 +4,7 @@ import { makeRNG } from '../../engine/dice';
 import { contractDisease } from '../../engine/disease';
 import { itemFromTrappingById } from '../../engine/items';
 import { Combatant, SkillInstance } from '../../engine/types';
+import { rigSpeciesId } from '../../data';
 import { WorldMap } from '../../state/worldMap';
 import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
@@ -28,20 +29,20 @@ function groupe(): Combatant[] {
   bjorn.travelRole = 'plein-air';
   skill(bjorn, 'survie-en-exterieur', 60);
   bjorn.items = [...(bjorn.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!, itemFromTrappingById('ration')!];
-  bjorn.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.55 };
+  bjorn.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.55 };
 
   // Éclaireuse — Rester aux aguets (Perception) : le groupe ne peut être surpris cette Étape.
   const mira = createHero({ speciesId: 'humains-reiklander', careerId: 'eclaireur', name: 'Mira (test)', motivation: 'Test', rng: makeRNG(2402), id: 'mira' });
   mira.travelRole = 'rester-aux-aguets';
   skill(mira, 'perception', 50);
-  mira.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.42 };
+  mira.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'F', build: 0.42 };
 
   // Érudit — Établir des cartes (Métier Cartographe) : Test étendu cumulé ; PX pour l'Apprentissage (interlude).
   const aldric = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Aldric (test)', motivation: 'Test', rng: makeRNG(2403), id: 'aldric' });
   aldric.travelRole = 'etablir-cartes';
   skill(aldric, 'metier', 70, 'Cartographe', 'dexterite');
   aldric.xp = 300;
-  aldric.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.5 };
+  aldric.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.5 };
 
   // Soldate — Approvisionnement (Survie FAIBLE → Rencontres dangereuses) ET « mauvais état » : blessée,
   // SANS rations (faim RAW), Vérole Urticante contagieuse (LDB 20), cauchemars (Test de Calme/nuit).
@@ -51,7 +52,7 @@ function groupe(): Combatant[] {
   greta.wounds.current = Math.max(1, greta.wounds.max - 6);
   greta.nightmares = true;
   greta.diseases = [contractDisease('verole-urticante', makeRNG(1503), { incubation: 0, duration: 5 })!];
-  greta.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.45 };
+  greta.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'F', build: 0.45 };
   bjorn.wounds.current = Math.max(1, bjorn.wounds.max - 8); // un blessé de plus → jet de Récupération de nuit
 
   return [bjorn, mira, aldric, greta];

@@ -7,6 +7,7 @@ import type { Scene } from '../../state/scene';
 import type { MapPlace, MapRoute, WorldMap } from '../../state/worldMap';
 import type { TestScenario } from './_shared';
 import { REIK_INDEX, hasTradeGoods, reikMarket, type ReikEntry } from './_reik-index';
+import { rigSpeciesId } from '../../data';
 
 /**
  * « Commerce fluvial sur le Reik » — le commerce de cargaison de Mort sur le Reik Compagnon (ch.11
@@ -45,20 +46,20 @@ function traders(): Combatant[] {
   // vrac vit sur `ItemInstance.cargo`, embarqué sur la barge à la descente (Décision 5, EDOC ch.4).
   const convoi = { uid: 'com-convoi', name: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as never;
   berta.items = [...(berta.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!, convoi];
-  berta.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.5 };
+  berta.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'F', build: 0.5 };
 
   const gunnar = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', name: 'Gunnar le Batelier', motivation: 'Test', rng: makeRNG(1502), id: 'com-gunnar' });
   skill(gunnar, 'ramer', 50);
   skill(gunnar, 'voile', 40);
-  gunnar.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.58 };
+  gunnar.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.58 };
 
   const otto = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', name: 'Otto le Garde', motivation: 'Test', rng: makeRNG(1503), id: 'com-otto' });
   skill(otto, 'intimidation', 40);
-  otto.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.62 };
+  otto.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.62 };
 
   const lise = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Lise la Scribe', motivation: 'Test', rng: makeRNG(1504), id: 'com-lise' });
   skill(lise, 'metier', 40, 'Cartographe');
-  lise.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.42 };
+  lise.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'F', build: 0.42 };
 
   return [berta, gunnar, otto, lise];
 }

@@ -7,6 +7,7 @@ import { buildScene } from '../../state/mapSpec';
 import { flowFromEffects } from '../../state/flow';
 import { pregen, PREGEN } from '../../data/pregens';
 import type { TestScenario } from './_shared';
+import { rigSpeciesId } from '../../data';
 
 /**
  * SANDBOX combat « un terrain bien agencé, des mannequins bien placés » : un seul lieu qui exerce une
@@ -49,7 +50,7 @@ function tireur(): Combatant {
   recomputeLoadout(h);
   // Tir rapide (LDB 10) : interruption à distance pendant la pause de début de Round (badge de la frise d'Initiative).
   if (!h.talents.some((t) => t.talentId === 'tir-rapide')) h.talents.push({ talentId: 'tir-rapide', times: 1 });
-  h.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.5 };
+  h.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.5 };
   return h;
 }
 

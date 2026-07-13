@@ -5,15 +5,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const CASES: { label: string; app: Appearance }[] = [
-  { label: 'Lézard défaut (vert)', app: { species: 'Humain', sex: 'M', build: 0.5, seed: 4, monster: { tete: 'lezard' } } },
-  { label: 'Lézard peau bleue', app: { species: 'Humain', sex: 'M', build: 0.5, seed: 4, monster: { tete: 'lezard' }, colors: { peau: '#3f6fb0' } } },
-  { label: 'Lézard peau rouge', app: { species: 'Humain', sex: 'M', build: 0.5, seed: 4, monster: { tete: 'lezard' }, colors: { peau: '#a83838' } } },
-  { label: 'Chien défaut (fauve)', app: { species: 'Humain', sex: 'M', build: 0.5, seed: 4, monster: { tete: 'chien' } } },
-  { label: 'Chien peau grise', app: { species: 'Humain', sex: 'M', build: 0.5, seed: 4, monster: { tete: 'chien' }, colors: { peau: '#8a8f96' } } },
-  { label: 'Mendiant + peau verte', app: { species: 'Humain', sex: 'M', build: 0.5, seed: 4, colors: { peau: '#5d7a42' } } },
+  { label: 'Lézard défaut (vert)', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, monster: { tete: 'lezard' } } },
+  { label: 'Lézard peau bleue', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, monster: { tete: 'lezard' }, colors: { peau: '#3f6fb0' } } },
+  { label: 'Lézard peau rouge', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, monster: { tete: 'lezard' }, colors: { peau: '#a83838' } } },
+  { label: 'Chien défaut (fauve)', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, monster: { tete: 'chien' } } },
+  { label: 'Chien peau grise', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, monster: { tete: 'chien' }, colors: { peau: '#8a8f96' } } },
+  { label: 'Mendiant + peau verte', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, colors: { peau: '#5d7a42' } } },
 ];
 const cells = CASES.map((c, i) => {
   const svg = renderToStaticMarkup(React.createElement(RigSprite, { appearance: c.app, equip: { weapons: [], armour: [] }, career: 'Mendiant' }));

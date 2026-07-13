@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
 import { feat, elementsOf } from './elements';
-import type { Appearance } from '../appearance';
+import type { Appearance, RigSpeciesId } from '../appearance';
 
 const NO_EQUIP = { weapons: [], armour: [] };
 const EAR = 'M-8 7 Q-15 4 -14 -3'; // début du path de l'oreille pointue (élément 'oreilles-pointues')
-const base: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 7 };
+const base: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 };
 
 describe("catalogue d'apparence — éléments réutilisables (convergence B1)", () => {
   it('feat() résout des clés en calques ; clé inconnue ignorée ; concat additive', () => {
@@ -26,7 +26,7 @@ describe("catalogue d'apparence — éléments réutilisables (convergence B1)",
     expect(without).not.toContain(EAR);          // un Humain nu n'a pas d'oreilles pointues
     expect(withEars).toContain(EAR);             // …jusqu'à ce qu'il en pioche dans le catalogue
     // et c'est EXACTEMENT l'élément que la race Elfe porte par défaut (catalogue PARTAGÉ, pas dupliqué)
-    const elf = bonesToSvg(resolveRig({ ...base, species: 'Haut-Elfe' }, NO_EQUIP, {}, 'Nu', 'front'));
+    const elf = bonesToSvg(resolveRig({ ...base, species: 'Haut-Elfe' as RigSpeciesId }, NO_EQUIP, {}, 'Nu', 'front'));
     expect(elf).toContain(EAR);
   });
 

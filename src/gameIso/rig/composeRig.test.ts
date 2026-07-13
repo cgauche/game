@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { resolveRig } from './composeRig';
-import type { Appearance } from './appearance';
+import type { Appearance, RigSpeciesId } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 
-const app: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 7 };
+const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 };
 const equip: EquipCtx = { weapons: [], armour: [] };
 
 describe('resolveRig', () => {
@@ -28,7 +28,7 @@ describe('resolveRig', () => {
 
 describe('resolveRig — échelle des parts par os', () => {
   const torse = (species: string, build = 0.5) =>
-    resolveRig({ species, sex: 'M', build, seed: 1 }, equip, {}).find((b) => b.id === 'torse')!;
+    resolveRig({ species: species as RigSpeciesId, sex: 'M', build, seed: 1 }, equip, {}).find((b) => b.id === 'torse')!;
 
   it('humain build 0.5 = échelle ~1 ; Gnome plus petit ; Ogre plus grand', () => {
     const h = torse('Humain');
@@ -48,7 +48,7 @@ describe('resolveRig — échelle des parts par os', () => {
 
   it('l’arme (os de longueur nulle) hérite de l’échelle de son parent', () => {
     const weap = { name: 'Épée', type: 'melee' as const, damage: { plusBF: false, flat: 4 }, qualities: [] };
-    const bones = resolveRig({ species: 'Ogre', sex: 'M', build: 0.5, seed: 1 }, { weapons: [weap], armour: [] }, {});
+    const bones = resolveRig({ species: 'Ogre' as RigSpeciesId, sex: 'M', build: 0.5, seed: 1 }, { weapons: [weap], armour: [] }, {});
     const arme = bones.find((b) => b.id === 'arme');
     expect(arme).toBeTruthy();
     expect(arme!.scale[0]).toBeGreaterThan(1); // l'Ogre agrandit aussi son arme

@@ -8,12 +8,12 @@ import { Resvg } from '@resvg/resvg-js';
 import { DEFS } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
 import type { View } from '../src/gameIso/rig/facing';
 
 const appearance: Appearance = {
-  species: 'Skaven',
+  species: 'Skaven' as RigSpeciesId,
   sex: 'M',
   build: 0.5,
   seed: 1,

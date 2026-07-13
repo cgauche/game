@@ -11,6 +11,7 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { Palette } from '../src/gameIso/rig/palette';
+import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 // (libellé affiché, espèce, carrière, recolor?) — carrières fallback + 1 normale (Soldat).
 const ROWS: Array<{ label: string; species: string; career: string; colors?: Palette }> = [
@@ -25,7 +26,7 @@ const ROWS: Array<{ label: string; species: string; career: string; colors?: Pal
 mkdirSync('public/qc', { recursive: true });
 const CW = 124, CH = 168;
 const tiles = ROWS.map((r, i) => {
-  const appearance = { species: r.species, sex: 'M', build: 0.5, seed: 4, colors: r.colors } as const;
+  const appearance = { species: r.species as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, colors: r.colors } as const;
   const body = renderToStaticMarkup(React.createElement(RigSprite, { appearance, equip: { weapons: [], armour: [] }, career: r.career, view: 'front' }));
   const lines = r.label.split('\n');
   const txt = lines.map((l, j) => `<text x="60" y="${150 + 8 + j * 8}" text-anchor="middle" font-size="7" fill="#cdd">${l}</text>`).join('');

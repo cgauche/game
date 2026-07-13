@@ -5,7 +5,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { DEFS } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { View } from '../src/gameIso/rig/facing';
 
 const equip = { weapons: [], armour: [] };
@@ -15,11 +15,11 @@ const VIEWS: { l: string; view: View }[] = [
   { l: 'dos', view: 'back' },
 ];
 const ROWS: { l: string; app: Appearance }[] = [
-  { l: 'Humain M', app: { species: 'Humain', sex: 'M', build: 0.5, seed: 1 } },
-  { l: 'Humain M (2)', app: { species: 'Humain', sex: 'M', build: 0.5, seed: 7 } },
-  { l: 'Humain F', app: { species: 'Humain', sex: 'F', build: 0.5, seed: 3 } },
-  { l: 'Nain M', app: { species: 'Nain', sex: 'M', build: 0.6, seed: 1 } },
-  { l: 'Haut-Elfe F', app: { species: 'Haut-Elfe', sex: 'F', build: 0.4, seed: 2 } },
+  { l: 'Humain M', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 1 } },
+  { l: 'Humain M (2)', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 } },
+  { l: 'Humain F', app: { species: 'Humain' as RigSpeciesId, sex: 'F', build: 0.5, seed: 3 } },
+  { l: 'Nain M', app: { species: 'Nain' as RigSpeciesId, sex: 'M', build: 0.6, seed: 1 } },
+  { l: 'Haut-Elfe F', app: { species: 'Haut-Elfe' as RigSpeciesId, sex: 'F', build: 0.4, seed: 2 } },
 ];
 
 // On ne rend QUE la tête : zoom fort sur la zone tête (boîte locale ~ y0..y30, x±14).

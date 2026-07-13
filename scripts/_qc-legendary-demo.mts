@@ -12,8 +12,9 @@ import { DEFS } from '../src/gameIso/sprites';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import { recomputeLoadout } from '../src/engine/items';
 import type { Combatant, ItemInstance } from '../src/engine/types';
+import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
-const APP = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 } as const;
+const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
 
 /** Construit un héros tenant une épée bâtarde, avec ou sans skin légendaire, via la VRAIE chaîne. */
 function heroWeapon(skin?: Record<string, string>) {

@@ -4,9 +4,9 @@ import { combatantOverlays, combatantAppearance } from './combatantVisuals';
 import { APPEARANCE_ELEMENTS } from './elements';
 import { resolveRig } from '../composeRig';
 import type { Combatant } from '../../../engine/types';
-import type { Appearance } from '../appearance';
+import type { Appearance, RigSpeciesId } from '../appearance';
 
-const APP: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 3 };
+const APP: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 3 };
 const NO_EQUIP = { weapons: [], armour: [] };
 /** Combatant minimal porteur de mutations, résolues PAR ID (les autres champs lus — traits/traumas —
  *  sont undefined). */

@@ -12,9 +12,10 @@ import { DEFS } from '../src/gameIso/sprites';
 import { WEAPON_FORMS, SHIELD_FORMS } from '../src/gameIso/rig/parts/weaponForms';
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
+import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 mkdirSync('public/qc', { recursive: true });
-const APP = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 } as const;
+const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
 type Cell = { slug: string; label: string; svg: string };
 
 // Applique la PRISE/orientation réelle du jeu (weaponRest) pour un rendu fidèle.

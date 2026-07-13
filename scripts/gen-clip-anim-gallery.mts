@@ -15,7 +15,7 @@ import { seatRiderOnMount, mountedRest, mountTackBones } from '../src/gameIso/ri
 import { planById, resolveSpecies } from '../src/gameIso/rig/bodyPlan';
 import { sizeTokenScale } from '../src/gameIso/sizeScale';
 import { animatedRig, sampleTimes } from './_lib-anim-rig';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
 import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
 
@@ -34,8 +34,8 @@ function tile(label: string, clip: Clip, app: Appearance, equip: EquipCtx, caree
     <figcaption style="color:#bcd;font:11px sans-serif">${label}</figcaption></figure>`;
 }
 
-const soldat: Appearance = { species: 'Humain', sex: 'M', build: 0.55, seed: 4 };
-const sorcier: Appearance = { species: 'Humain', sex: 'F', build: 0.45, seed: 5 };
+const soldat: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.55, seed: 4 };
+const sorcier: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'F', build: 0.45, seed: 5 };
 const epee: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] };
 const arc: Weapon = { name: 'Arc long', type: 'ranged', damage: { plusBF: false, flat: 4 }, qualities: [] };
 const baton: Weapon = { name: 'Bâton', type: 'melee', damage: { plusBF: false, flat: 2 }, qualities: [] };

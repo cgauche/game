@@ -4,9 +4,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
+import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 const careers = ['Soldat', 'Mendiant', 'Villageois', 'Noble', 'Garde'];
 const cells = careers.map((c, i) => {
-  const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: { species: 'Humain', sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [], armour: [] }, career: c }));
+  const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, equip: { weapons: [], armour: [] }, career: c }));
   const x = i * 150;
   return `<g transform="translate(${x},0)"><rect width="146" height="180" fill="#222a38"/><g transform="translate(13,8) scale(1.05)">${inner}</g><text x="73" y="196" text-anchor="middle" font-size="11" fill="#cdd" font-family="sans-serif">${c}</text></g>`;
 });

@@ -6,11 +6,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const CAREERS = ['Batelier', 'Apothicaire', 'Serviteur', 'Soldat', 'Mendiant', 'Médecin', 'Garde', 'Villageois'];
 const slug = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-const app: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 };
+const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
 mkdirSync('public/qc/tenue-new', { recursive: true });
 for (const career of CAREERS) {
   const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career }));

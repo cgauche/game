@@ -6,13 +6,13 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { SPECIFIC_TENUE_NAMES } from '../src/gameIso/rig/parts/tenues';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const careers = SPECIFIC_TENUE_NAMES.slice().sort((a, b) => a.localeCompare(b, 'fr'));
 const SC = 1.85; // sprite natif ~120×150 → ~222×278
 const CW = Math.round(120 * SC + 24);
 const CH = Math.round(150 * SC + 16);
-const app: Appearance = { species: 'Humain', sex: 'M', build: 0.5, seed: 4 };
+const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
 
 const cells = careers
   .map((career) => {

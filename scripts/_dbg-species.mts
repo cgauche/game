@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import type { Appearance } from '../src/gameIso/rig/appearance';
+import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
 
 const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
@@ -24,7 +24,7 @@ function cell(label: string, app: Appearance, w?: Weapon) {
 const cells: string[] = [];
 // Ligne 1 : espèces avec épée — vérifie ancrage au sol (ligne verte = y150) + tenue d'arme
 for (const sp of ['Humain', 'Halfling', 'Nain', 'Gnome', 'Ogre', 'Haut-Elfe', 'Elfe sylvain']) {
-  cells.push(cell(`${sp} +épée`, { species: sp, sex: 'M', build: 0.5, seed: 4 }, wep('Arme simple')));
+  cells.push(cell(`${sp} +épée`, { species: sp as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, wep('Arme simple')));
 }
 cells.push('<div style="flex-basis:100%;height:0"></div>');
 // Ligne 2 : Humain avec chaque famille d'arme — qualité de l'art + grip
@@ -35,7 +35,7 @@ for (const [lab, nm, ty] of [
   ['pistolet', 'Pistolet', 'ranged'], ['fronde', 'Fronde', 'ranged'], ['fouet', 'Fouet', 'ranged'],
   ['bombe', 'Bombe', 'ranged'], ['javelot', 'Javelot', 'ranged'],
 ] as [string, string, 'melee' | 'ranged'][]) {
-  cells.push(cell(lab, { species: 'Humain', sex: 'M', build: 0.5, seed: 4 }, wep(nm, ty)));
+  cells.push(cell(lab, { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, wep(nm, ty)));
 }
 
 writeFileSync('public/dbg-species.html', `<!doctype html><body style="background:#11141c;padding:16px"><h2 style="color:#eee;font:14px sans-serif">L1 ancrage espèces · L2 armes (Humain). Vert=sol(y150) Rouge=haut(y0)</h2><div style="display:flex;flex-wrap:wrap;gap:8px">${cells.join('')}</div></body>`);
