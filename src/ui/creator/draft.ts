@@ -39,7 +39,7 @@ import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLeve
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
-import { findSpeciesById, rigSpeciesId, findTalent, careers, careersForSpecies, species as allSpecies, levelsForCareer, findSpell, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData } from '../../data';
+import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData } from '../../data';
 import { slugId } from '../../data/slug';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
@@ -130,18 +130,13 @@ export interface CreatorDraft {
   parts?: Appearance['parts'];
 }
 
-/** Défauts DÉRIVÉS des données (rien en dur) : première espèce du Livre de base, et la
- *  première carrière qui lui est accessible. */
-function defaultSpecies(): SpeciesData {
-  return allSpecies.find((s) => s.source.book === 'livre-de-base') ?? allSpecies[0];
-}
-
 export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff) | 0)): CreatorDraft {
-  const sp = defaultSpecies();
+  // Page blanche cérémonielle (arbitrage 2026-07-13) : aucune race/carrière pré-tirée — l'id vide
+  // signifie « non choisi », la fiche vivante démarre grisée et se remplit choix par choix.
   return {
     seed,
-    speciesId: sp.id,
-    careerId: careersForSpecies(sp.refCareer)[0]?.id ?? careers[0].id,
+    speciesId: '',
+    careerId: '',
     ignoreRestrictions: false,
     coastalSwap: false,
     careerRolls: [],
@@ -208,9 +203,13 @@ export function draftFromHero(hero: Combatant): CreatorDraft {
   };
 }
 
-export const draftSpecies = (d: CreatorDraft): SpeciesData => findSpeciesById(d.speciesId)!;
+/** Race du brouillon — `undefined` tant qu'aucune n'est choisie (page blanche, id vide). */
+export const draftSpecies = (d: CreatorDraft): SpeciesData | undefined => (d.speciesId ? findSpeciesById(d.speciesId) : undefined);
 export const draftLevel = (d: CreatorDraft): CareerLevelData | undefined =>
   levelsForCareer(d.careerId).find((l) => l.level === 1);
+/** Race choisie ET carrière choisie — la fiche vivante ne se construit qu'une fois les deux posées. */
+export const hasSpecies = (d: CreatorDraft): boolean => !!d.speciesId && !!draftSpecies(d);
+export const hasCareer = (d: CreatorDraft): boolean => !!d.careerId && !!draftLevel(d);
 
 /** Caractéristiques de carrière du Niveau 1 (clés `CharKey` stables) sur lesquelles se répartissent
  *  les 5 Augmentations gratuites de création (LDB 05 l.379). La donnée EST déjà en `CharKey`
@@ -252,7 +251,8 @@ export function withSpecies(d: CreatorDraft, id: string): CreatorDraft {
  *  (Middenheim/ADE2/NADJ) ne sont pas étendues par MDG, et la table Norse embarque déjà les variantes
  *  côtières SANS portion Riverains (rien à remplacer). Dérivé de la DONNÉE, aucune liste de colonnes. */
 export const coastalSwapAvailable = (d: CreatorDraft): boolean => {
-  const col = draftSpecies(d).refCareer;
+  const col = draftSpecies(d)?.refCareer;
+  if (!col) return false;
   return careers.some((c) => c.class === 'riverains' && c.rand?.[col] != null)
     && careers.some((c) => c.class === 'cotiers' && c.rand?.[col] != null);
 };
@@ -274,6 +274,7 @@ export function withCoastalSwap(d: CreatorDraft, coastalSwap: boolean): CreatorD
 
 export function rollDraftCareer(d: CreatorDraft): CreatorDraft {
   const sp = draftSpecies(d);
+  if (!sp) return d; // pas de tirage de carrière sans race (l'UI empêche d'y arriver)
   const pool = careerRollPool(d);
   const n = d.careerRolls.length;
   if (n === 0) {
@@ -316,6 +317,7 @@ export function draftChars(d: CreatorDraft): Characteristics {
   const sp = draftSpecies(d);
   const rolls = charRolls(d);
   const out = {} as Characteristics;
+  if (!sp) { for (const k of CHAR_KEYS) out[k] = 0; return out; } // page blanche : aucune base d'espèce
   for (let i = 0; i < CHAR_KEYS.length; i++) {
     const k = CHAR_KEYS[i];
     const base = sp.baseChar[k] ?? 20;
@@ -325,6 +327,7 @@ export function draftChars(d: CreatorDraft): Characteristics {
   return out;
 }
 export function charsXp(d: CreatorDraft): number {
+  if (!draftSpecies(d)) return 0; // page blanche : pas de bonus 2d10 tant qu'aucune race n'existe
   if (d.charRerolls > 0 || d.charMode === 'pointBuy') return 0;
   return d.charMode === 'rolled' ? XP_CHARS_KEPT : XP_CHARS_REASSIGNED;
 }
@@ -355,7 +358,9 @@ export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {
 // ── 4) Compétences & Talents ──
 /** Talents d'espèce résolus (choix appliqués, tirages aléatoires FIGÉS par le seed). */
 export function resolvedSpeciesTalents(d: CreatorDraft): string[] {
-  return resolveSpeciesTalents(draftSpecies(d), {
+  const sp = draftSpecies(d);
+  if (!sp) return [];
+  return resolveSpeciesTalents(sp, {
     rng: makeRNG(d.seed ^ 0x7a1e),
     choices: { ...d.speciesTalentChoices, ...d.specChoices },
     pickSpec: (base, free) => (d.randomSpecPicks[base] && free.includes(d.randomSpecPicks[base]) ? d.randomSpecPicks[base] : free[0]),
@@ -372,7 +377,7 @@ export function probeHero(d: CreatorDraft, withCareerTalent = true): Combatant {
   };
   for (const t of resolvedSpeciesTalents(d)) add(t);
   if (withCareerTalent && d.careerTalent) add(d.careerTalent);
-  return { characteristics: draftChars(d), talents, skills: [], movement: draftSpecies(d).movement } as unknown as Combatant;
+  return { characteristics: draftChars(d), talents, skills: [], movement: draftSpecies(d)?.movement ?? 0 } as unknown as Combatant;
 }
 
 /** Entrées de compétences de carrière allouables : les 8 du Niveau + ajouts de talents (LDB 10).
@@ -459,6 +464,7 @@ export function draftWealth(d: CreatorDraft): Money {
 // ── 6) Détails ──
 export function rolledDetails(d: CreatorDraft): { age: number; height: number; eyes: string; hair: string } {
   const sp = draftSpecies(d);
+  if (!sp) return { age: 0, height: 0, eyes: '', hair: '' };
   const rng = makeRNG(d.seed ^ 0xde7a);
   return { age: rollAge(sp, rng), height: rollHeight(sp, rng), eyes: rollEyes(sp, rng), hair: rollHair(sp, rng) };
 }
@@ -479,11 +485,15 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
   const sp = draftSpecies(d);
   const level = draftLevel(d);
   switch (id) {
+    case 'species':
+      return sp ? null : 'Choisissez votre race.';
     case 'career': {
+      if (!d.careerId) return 'Choisissez votre carrière.';
       if (!level) return 'Carrière sans Niveau 1 dans les données.';
       return null;
     }
     case 'chars': {
+      if (!sp) return 'Choisissez votre race.';
       if (d.charMode === 'pointBuy') {
         const v = validatePointBuy(d.pointBuy as Record<CharKey, number>);
         if (!v.ok) return `Répartition des 100 Points : ${v.reason}.`;
@@ -501,6 +511,7 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
       return null;
     }
     case 'skills': {
+      if (!sp) return 'Choisissez votre race.';
       if (d.speciesPlus5.length !== SPECIES_SKILLS_PLUS5 || d.speciesPlus3.length !== SPECIES_SKILLS_PLUS3)
         return `Choisissez ${SPECIES_SKILLS_PLUS5} Compétences d'espèce à +5 et ${SPECIES_SKILLS_PLUS3} à +3.`;
       if (d.speciesPlus5.some((s) => d.speciesPlus3.includes(s))) return 'Une Compétence d\'espèce ne peut pas être à la fois +5 et +3.';
@@ -544,6 +555,7 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
 // ── Construction finale ──
 export function buildHero(d: CreatorDraft, id?: string): Combatant {
   const sp = draftSpecies(d);
+  if (!sp) throw new Error('Aucune race choisie'); // page blanche : previewHero catch → fiche grisée
   const plus5 = d.speciesPlus5.length === SPECIES_SKILLS_PLUS5
     ? d.speciesPlus5
     : sp.skills.slice(0, SPECIES_SKILLS_PLUS5).map((a) => advancementLabel('skills', a));

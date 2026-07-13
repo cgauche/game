@@ -30,14 +30,18 @@ import { CHAR_KEYS } from '../../engine/types';
 import { rigSpeciesId } from '../../data';
 import { isUnresolvedChoice, concreteLabel, splitLabel } from '../../engine/careerSlots';
 import { specOptionsFor, pettySpellQuota } from './draft';
-import { spells, advancementLabel, stars, celestialHouses } from '../../data';
+import { spells, advancementLabel, stars, celestialHouses, species as allSpecies, careersForSpecies } from '../../data';
 
-const draft = () => newDraft(1234);
+// Page blanche : `newDraft` ne pré-tire plus race/carrière — les tests posent explicitement les
+// mêmes défauts dérivés qu'avant (1ʳᵉ espèce du LDB, sa 1ʳᵉ carrière accessible = Reiklander / Soldat).
+const DEFAULT_SPECIES = allSpecies.find((s) => s.source.book === 'livre-de-base')!;
+const DEFAULT_CAREER = careersForSpecies(DEFAULT_SPECIES.refCareer)[0]!;
+const draft = () => withCareer(withSpecies(newDraft(1234), DEFAULT_SPECIES.id), DEFAULT_CAREER.id);
 
 /** Brouillon minimal VALIDE jusqu'à l'étape 4 (répartitions par défaut, specs résolues). */
 function readyDraft() {
   const d = draft();
-  const sp = draftSpecies(d);
+  const sp = draftSpecies(d)!;
   const level = draftLevel(d)!;
   // Résolution des entrées « (Au choix) » / « (A ou B) » qui reçoivent des augmentations
   // (Soldat : « Musicien (Tambour ou Fifre) », « Corps à corps (Base) »…).
@@ -72,7 +76,7 @@ describe('B3 — Répartition simple des Compétences de carrière (étape 5)', 
   });
   it('n\'est PAS effacée par la répartition des Compétences de race (champs disjoints)', () => {
     const d = draft();
-    const sp = draftSpecies(d);
+    const sp = draftSpecies(d)!;
     // Carrière remplie, PUIS répartition de race appliquée (le symptôme rapporté).
     const after = {
       ...d,
