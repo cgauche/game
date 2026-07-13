@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { reverseGroups, bookContents, labelIndex, tokenizeLinks } from './relations';
 import { invalidateCodexLookup } from './registry';
 import { setDataset } from '../../data/overrides';
-import { creatures, traits, gods, trappings, skills, careerLevels, etats, locations, findCareerById, findLocationById } from '../../data';
+import { creatures, traits, gods, trappings, skills, talents, careerLevels, etats, locations, findCareerById, findLocationById } from '../../data';
 
 /** Un groupe inverse de catégorie `cat` contient-il `label` ? */
 const groupHas = (groups: ReturnType<typeof reverseGroups>, cat: string, label: string): boolean =>
@@ -110,6 +110,106 @@ describe('relations — graphe inverse id-based', () => {
     // (peut être absent si homonyme entre catégories — mais alors c'est volontairement écarté, pas une fausse résolution)
     if (hit) expect(hit.label).toBe(t.label);
     expect([...idx.keys()].every((k) => k.length >= 4)).toBe(true);
+  });
+
+  it('tokenizeLinks est SENSIBLE À LA CASSE : la casse discrimine le terme de règle du mot commun', () => {
+    // « Charme » (compétence, libellé UNIQUE dans le catalogue) : capitalisé = terme de règle → lié ;
+    // en minuscule dans un mot commun ("le charme discret") → pas lié.
+    const charme = skills.find((x) => x.label === 'Charme');
+    expect(charme, 'compétence Charme présente').toBeTruthy();
+    const linkedUpper = tokenizeLinks('Effectuez un Test de Charme pour convaincre.');
+    expect(linkedUpper.some((t) => typeof t === 'object' && t.label === 'Charme' && t.category === 'skills')).toBe(true);
+    const notLinkedLower = tokenizeLinks('Il dégage un charme discret et naturel.');
+    expect(notLinkedLower.every((t) => typeof t === 'string')).toBe(true);
+
+    // « En flammes » (état, multi-mots) : capitalisé en toutes lettres, tel qu'écrit dans la source
+    // (« l'État En flammes ») → lié ; en minuscule dans un usage courant → pas lié.
+    const enFlammes = etats.find((x) => x.label === 'En flammes');
+    expect(enFlammes, 'état En flammes présent').toBeTruthy();
+    const flammesLinked = tokenizeLinks("La cible subit l'État En flammes.");
+    expect(flammesLinked.some((t) => typeof t === 'object' && t.label === 'En flammes' && t.category === 'etats')).toBe(true);
+    const flammesNotLinked = tokenizeLinks('Le brasero est en flammes dans la cheminée.');
+    expect(flammesNotLinked.every((t) => typeof t === 'string')).toBe(true);
+
+    // « une œuvre d'art » (mot commun) ne doit jamais lier un terme de règle (casse en minuscule).
+    const artLower = tokenizeLinks("Il peint une œuvre d'art dans son atelier.");
+    expect(artLower.every((t) => typeof t === 'string')).toBe(true);
+
+    // Accent conservé : « Charme » avec sa capitale ordinaire fonctionne aussi en tout DÉBUT de phrase.
+    const startOfSentence = tokenizeLinks('Charme est une compétence sociale.', 'Charme');
+    // Auto-référence (selfLabel) → écarté malgré le lien potentiel.
+    expect(startOfSentence.every((t) => typeof t === 'string')).toBe(true);
+  });
+
+  it('tokenizeLinks garde un libellé MULTI-MOTS tel qu’écrit (casse figée, pas de variante)', () => {
+    const magie = talents.find((x) => x.label === 'Magie des Arcanes');
+    expect(magie, 'talent Magie des Arcanes présent').toBeTruthy();
+    const linked = tokenizeLinks('Le sort relève de la Magie des Arcanes.');
+    expect(linked.some((t) => typeof t === 'object' && t.label === 'Magie des Arcanes' && t.category === 'talents')).toBe(true);
+    // Variante de casse partielle (« magie des Arcanes ») ≠ libellé exact → pas de lien.
+    const notLinked = tokenizeLinks('Cette étrange magie des Arcanes intrigue les érudits.');
+    expect(notLinked.every((t) => typeof t === 'string')).toBe(true);
+  });
+
+  it('tokenizeLinks : pluriel FR simple (chaque mot du libellé accepte un « s » optionnel)', () => {
+    // « Attaque caudale » (trait ET manœuvre — homonyme RÉEL, cf. `PRIORITY_CAT_ORDER`) : le pluriel
+    // « Attaques caudales » (accord régulier des deux mots) doit lier le libellé SINGULIER d'origine.
+    const traitHit = traits.find((x) => x.label === 'Attaque caudale');
+    expect(traitHit, 'trait Attaque caudale présent').toBeTruthy();
+    const toks = tokenizeLinks('Les Attaques caudales sont redoutables.');
+    const link = toks.find((t) => typeof t === 'object' && t.label === 'Attaque caudale');
+    expect(link, 'lien vers le libellé singulier malgré le pluriel dans le texte').toBeTruthy();
+    expect((link as { text: string }).text).toBe('Attaques caudales'); // texte affiché = VERBATIM de la source
+    // Simple compétence au pluriel : « Charmes » → « Charme ».
+    expect(skills.find((x) => x.label === 'Charme'), 'compétence Charme présente').toBeTruthy();
+    const charmeToks = tokenizeLinks('Vous déployez tous vos Charmes.');
+    expect(charmeToks.some((t) => typeof t === 'object' && t.label === 'Charme' && t.category === 'skills')).toBe(true);
+  });
+
+  it('tokenizeLinks : absorbe la parenthèse de spécialisation ADJACENTE en une seule mention', () => {
+    expect(skills.find((x) => x.label === 'Savoir'), 'compétence Savoir présente').toBeTruthy();
+    const toks = tokenizeLinks('Vous maîtrisez Savoir (Histoire) parfaitement.');
+    const link = toks.find((t) => typeof t === 'object' && t.label === 'Savoir') as
+      { category: string; label: string; spec?: string; text: string } | undefined;
+    expect(link, 'une SEULE mention, pas coupée au milieu de la parenthèse').toBeTruthy();
+    expect(link!.category).toBe('skills');
+    expect(link!.spec).toBe('Histoire'); // spec = PARAMÈTRE structuré, séparé du texte affiché
+    expect(link!.text).toBe('Savoir (Histoire)'); // texte affiché = verbatim complet (libellé + parenthèse)
+    // Sans parenthèse adjacente : pas de `spec`, comportement inchangé.
+    const bare = tokenizeLinks('Vous maîtrisez Savoir parfaitement.').find((t) => typeof t === 'object') as
+      { spec?: string; text: string } | undefined;
+    expect(bare?.spec).toBeUndefined();
+    expect(bare?.text).toBe('Savoir');
+  });
+
+  it('tokenizeLinks : homonymes RÉSOLUS (pas jetés) — priorité GLOBALE puis `selfCategory`', () => {
+    // « Haine » existe en TALENT et en TRAIT (collision réelle du catalogue) — labelIndex() général
+    // écarterait ce libellé ; le matcher LINKABLE le résout au lieu de le jeter.
+    const talentHaine = talents.find((x) => x.label === 'Haine');
+    const traitHaine = traits.find((x) => x.label === 'Haine');
+    expect(talentHaine && traitHaine, 'homonyme réel Haine (talent + trait)').toBeTruthy();
+    // Sans contexte → priorité GLOBALE (talents avant traits, cf. PRIORITY_CAT_ORDER documentée).
+    const noCtx = tokenizeLinks('Il agit par pure Haine.').find((t) => typeof t === 'object') as
+      { category: string } | undefined;
+    expect(noCtx?.category).toBe('talents');
+    // Avec `selfCategory` = la fiche affichante (ex. une fiche de TRAIT parlant d'un autre trait
+    // « Haine ») → le contexte prime sur la priorité globale.
+    const withCtx = tokenizeLinks('Il agit par pure Haine.', undefined, 'traits').find((t) => typeof t === 'object') as
+      { category: string } | undefined;
+    expect(withCtx?.category).toBe('traits');
+  });
+
+  it('tokenizeLinks : forme PRÉFIXÉE par catégorie (« Compétence X »/« Talent X ») toujours non ambiguë', () => {
+    // Dérivées de `GENERIC_PLURAL`, pas une table en dur nouvelle : « Compétences » → « Compétence ».
+    const resSkill = skills.find((x) => x.label === 'Résistance');
+    const resTalent = talents.find((x) => x.label === 'Résistance');
+    expect(resSkill && resTalent, 'homonyme réel Résistance (compétence + talent)').toBeTruthy();
+    const skillForm = tokenizeLinks('On y joue sa Compétence Résistance.').find((t) => typeof t === 'object') as
+      { category: string; label: string } | undefined;
+    expect(skillForm).toEqual({ category: 'skills', label: 'Résistance', spec: undefined, text: 'Compétence Résistance' });
+    const talentForm = tokenizeLinks('On y joue son Talent Résistance.').find((t) => typeof t === 'object') as
+      { category: string; label: string } | undefined;
+    expect(talentForm).toEqual({ category: 'talents', label: 'Résistance', spec: undefined, text: 'Talent Résistance' });
   });
 
   it('FRAÎCHEUR après persist : renommer une créature (mutation en place) + invalidate → graphe inverse ET index de libellés re-projetés', () => {

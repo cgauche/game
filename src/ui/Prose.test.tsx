@@ -34,6 +34,14 @@ describe('Prose — rendu Markdown', () => {
     const html = renderToStaticMarkup(<Prose md="La compétence Esquive." selfLabel="Esquive" />);
     expect(html).not.toContain('codex-ref');
   });
+
+  it('absorbe la parenthèse de spécialisation ADJACENTE en une seule mention (spec structurée, fiche = libellé de base)', () => {
+    // « Savoir (Histoire) » → une seule mention CodexRef ; la fiche ouverte reste « Savoir »
+    // (`reflabel`), la spécialisation n'apparaît qu'en affichage (`instance`, popover).
+    const html = renderToStaticMarkup(<Prose md="Un Test de Savoir (Histoire) est requis." />);
+    expect(html).toContain('codex-ref');
+    expect(html).toContain('Savoir (Histoire)');
+  });
 });
 
 describe('mdToText — Markdown → texte brut', () => {

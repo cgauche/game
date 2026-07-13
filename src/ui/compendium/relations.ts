@@ -216,7 +216,7 @@ const GENERIC_PLURAL: Record<string, string> = {
   races: 'Races', careers: 'Carrières', classes: 'Classes', skills: 'Compétences', talents: 'Talents',
   trappings: 'Équipements', qualities: 'Qualités', creatures: 'Créatures', traits: 'Traits',
   mutations: 'Mutations', spells: 'Sorts', domains: 'Domaines', gods: 'Cultes', maneuvers: 'Manœuvres',
-  weaponGroups: 'Groupes d’objet', characteristics: 'Caractéristiques',
+  weaponGroups: 'Groupes d’objet', characteristics: 'Caractéristiques', etats: 'États',
 };
 const reverseTitle = (targetCat: string, refCat: string): string =>
   graph().titles.get(`${targetCat}:${refCat}`) ?? GENERIC_PLURAL[refCat] ?? refCat;
@@ -326,37 +326,138 @@ export function labelIndex(): Map<string, { category: string; label: string }> {
 /** Catégories dont le VOCABULAIRE apparaît en prose (règles) → auto-liées dans les descriptions.
  *  On EXCLUT les noms propres (créatures/sorts/objets/lieux…) : ils bloatent le matcher et sur-lient. */
 const LINKABLE_CATS = new Set(['characteristics', 'skills', 'talents', 'etats', 'maneuvers', 'traits', 'qualities', 'domains']);
-/** Un fragment de prose tokenisé : texte brut, OU une mention d'entité à lier (category+label). */
-export type LinkToken = string | { category: string; label: string; text: string };
+
+/** Ordre de résolution des HOMONYMES (même libellé, catégories DIFFÉRENTES) au sein du vocabulaire
+ *  auto-liable — appliqué seulement quand aucun contexte de fiche (`selfCategory`, cf. `tokenizeLinks`)
+ *  ne tranche. Collisions RÉELLES du catalogue (relevées 2026-07-13, `deburrLower` sur libellé
+ *  entier) : `Résistance` (skills/talents) ; `Béni`, `Frénésie`, `Haine`, `Résistance à la Magie`,
+ *  `Vision nocturne` (talents/traits) ; `Morsure`, `Attaque caudale`, `Cornes`, `Tentacules`,
+ *  `Langue préhensile`, `Étreinte glaciale`, `Regard pétrifiant`, `Vomissement`, `Hurlement
+ *  fantomatique`, `Hurlement de la Bête indomptable`, `Frisson paralysant` (maneuvers/traits — une
+ *  attaque de créature existe souvent À LA FOIS en trait passif et en manœuvre jouable) ;
+ *  `Corruption` (traits/characteristics) ; `Infecté`, `Magique`, `Rapide`, `Taille`
+ *  (traits/qualities). Priorité : un État infligé prime toujours (vocabulaire le plus normé) ;
+ *  Compétence avant Talent (le Test nomme la compétence) ; Trait avant Domaine/Qualité/Manœuvre
+ *  (la prose de créature réfère le trait passif plus souvent que la manœuvre ponctuelle ou la
+ *  qualité d'arme) ; Caractéristique en dernier (terme le plus générique). */
+const PRIORITY_CAT_ORDER = ['etats', 'skills', 'talents', 'traits', 'domains', 'qualities', 'maneuvers', 'characteristics'];
+
+/** Pluriel FR simple (accord régulier SEUL — pas d'irréguliers) : chaque mot du libellé qui ne finit
+ *  pas déjà par « s » en gagne un — « Sort mineur » → « Sorts mineurs ». */
+const pluralize = (label: string): string => label.split(' ').map((w) => (w.endsWith('s') ? w : `${w}s`)).join(' ');
+
+/** Préfixe de catégorie au SINGULIER, pour les formes préfixées toujours non ambiguës (« Trait Vol »,
+ *  « Sort Vol »). Dérivé du libellé PLURIEL déjà déclaré (`GENERIC_PLURAL`) — jamais une table en
+ *  dur nouvelle : « Compétences » → « Compétence ». */
+const catPrefix = (cat: string): string => { const p = GENERIC_PLURAL[cat] ?? cat; return p.endsWith('s') ? p.slice(0, -1) : p; };
+
+interface LinkCandidate { category: string; label: string; }
+
+/** Racines de surface (CASSE ORIGINALE conservée — c'est elle qui doit matcher le texte) qui
+ *  alimentent le matcher : le libellé lui-même + sa forme préfixée par catégorie, dédupliquées,
+ *  plus longues d'abord (« Magie des Arcanes » avant « Magie », « Talent Résistance » avant
+ *  « Résistance »). */
+const linkRootsCached = versionCached<string[]>(() => {
+  const roots = new Set<string>();
+  for (const e of catalog()) {
+    if (!LINKABLE_CATS.has(e.category) || e.label.length < 4) continue;
+    roots.add(e.label);
+    roots.add(`${catPrefix(e.category)} ${e.label}`);
+  }
+  return [...roots].sort((a, b) => b.length - a.length);
+});
+
+/** Index d'auto-liage LINKABLE (LOCALE-SCOPED), MULTI-VALUÉ — à la différence de `labelIndex`
+ *  (général, une collision = écartée), un même libellé peut résoudre PLUSIEURS entités (homonymes
+ *  RÉELS, cf. `PRIORITY_CAT_ORDER`) : on ne jette plus, la désambiguïsation se fait à la RÉSOLUTION
+ *  (`resolveLink`). Clés : libellé (singulier ET pluriel simple) + forme préfixée par catégorie.
+ *  RE-CALCULÉ par version (suit une édition Codex). */
+const linkCandidatesCached = versionCached<Map<string, LinkCandidate[]>>(() => {
+  const idx = new Map<string, LinkCandidate[]>();
+  const add = (key: string, c: LinkCandidate): void => {
+    if (key.length < 4) return;
+    const arr = idx.get(key);
+    if (arr) { if (!arr.some((x) => x.category === c.category && x.label === c.label)) arr.push(c); }
+    else idx.set(key, [c]);
+  };
+  for (const e of catalog()) {
+    if (!LINKABLE_CATS.has(e.category)) continue;
+    const c: LinkCandidate = { category: e.category, label: e.label };
+    add(deburrLower(e.label), c);
+    const plural = pluralize(e.label);
+    if (plural !== e.label) add(deburrLower(plural), c);
+    add(deburrLower(`${catPrefix(e.category)} ${e.label}`), c);
+  }
+  return idx;
+});
+
+/** Résout un fragment de texte matché (déjà littéral, casse d'origine) vers SON entité : 1 seul
+ *  candidat → direct ; homonyme → la catégorie de la fiche affichante (`selfCategory`) tranche EN
+ *  PREMIER (dans une desc de trait, « Vol » → le trait), sinon `PRIORITY_CAT_ORDER`. */
+const resolveLink = (rawText: string, selfCategory?: string): LinkCandidate | undefined => {
+  const candidates = linkCandidatesCached().get(deburrLower(rawText));
+  if (!candidates?.length) return undefined;
+  if (candidates.length === 1) return candidates[0];
+  if (selfCategory) {
+    const own = candidates.find((c) => c.category === selfCategory);
+    if (own) return own;
+  }
+  for (const cat of PRIORITY_CAT_ORDER) {
+    const hit = candidates.find((c) => c.category === cat);
+    if (hit) return hit;
+  }
+  return candidates[0];
+};
+
+/** Un fragment de prose tokenisé : texte brut, OU une mention d'entité à lier (category+label) —
+ *  `spec` porte la spécialisation LIBRE absorbée entre parenthèses (« Art (Écriture)» → spec
+ *  `Écriture`), non validée contre les données (précédent GAS permissif assumé) ; `text` reste le
+ *  VERBATIM affiché (libellé + parenthèse comprise). */
+export type LinkToken = string | { category: string; label: string; spec?: string; text: string };
 const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-/** Regex des libellés auto-liables (RE-CALCULÉE par version), plus longs d'abord (« Magie des Arcanes »
- *  avant « Magie »), bornée aux frontières de mot Unicode (gère accents/apostrophes français). */
+/** Regex des racines auto-liables (RE-CALCULÉE par version) : chaque MOT de la racine accepte un
+ *  « s » optionnel (pluriel FR simple, cf. `pluralize`), plus longues d'abord, bornée aux frontières
+ *  de mot Unicode (gère accents/apostrophes français). SENSIBLE À LA CASSE (pas de flag `i`) : la
+ *  convention typographique des livres CAPITALISE les termes de jeu (« un test d'Art ») — la casse
+ *  discrimine le terme de règle du mot commun (« une œuvre d'art » ne doit pas lier « Art »). Le
+ *  lookup (`linkCandidatesCached`) reste normalisé côté index ; seule la CAPTURE dans le texte
+ *  respecte la casse (et le pluriel réel) de la source. */
 const linkReCached = versionCached<RegExp>(() => {
-  const labels = [...new Set([...labelIndex().values()].filter((v) => LINKABLE_CATS.has(v.category)).map((v) => v.label))]
-    .sort((a, b) => b.length - a.length);
-  return new RegExp(`(?<![\\p{L}\\p{N}])(${labels.map(escapeRe).join('|')})(?![\\p{L}\\p{N}])`, 'giu');
+  const patterns = linkRootsCached().map((root) => root.split(' ').map((w) => `${escapeRe(w)}s?`).join('\\s+'));
+  return new RegExp(`(?<![\\p{L}\\p{N}])(${patterns.join('|')})(?![\\p{L}\\p{N}])`, 'gu');
 });
 const linkRe = (): RegExp => linkReCached();
+
+/** Parenthèse de spécialisation absorbée immédiatement APRÈS un libellé matché (« Art (Écriture) »)
+ *  → une SEULE mention (au lieu de couper au milieu). Libre : contenu non validé contre les données
+ *  (précédent GAS permissif assumé pour ce lot). */
+const SPEC_TAIL = /^\s*\(([^()]{1,60})\)/;
 
 /**
  * Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex,
  * façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais
  * une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI (`selfLabel`) et les
- * libellés ambigus/courts (déjà filtrés par `labelIndex`). Seul le vocabulaire de RÈGLES est lié.
+ * libellés inconnus/courts. `selfCategory` (catégorie de la fiche affichante) tranche les homonymes
+ * en priorité — cf. `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié.
  */
-export function tokenizeLinks(text: string, selfLabel?: string): LinkToken[] {
+export function tokenizeLinks(text: string, selfLabel?: string, selfCategory?: string): LinkToken[] {
   const re = linkRe();
   re.lastIndex = 0;
   const out: LinkToken[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
-  const index = labelIndex();
   while ((m = re.exec(text))) {
-    const hit = index.get(deburrLower(m[1]));
+    const hit = resolveLink(m[1], selfCategory);
     if (!hit || hit.label === selfLabel) continue; // inconnu / auto-référence → laissé en texte
     if (m.index > last) out.push(text.slice(last, m.index));
-    out.push({ category: hit.category, label: hit.label, text: m[1] });
-    last = m.index + m[1].length;
+    let end = m.index + m[1].length;
+    let display = m[1];
+    let spec: string | undefined;
+    const tail = SPEC_TAIL.exec(text.slice(end));
+    if (tail) { spec = tail[1]; display += tail[0]; end += tail[0].length; }
+    out.push({ category: hit.category, label: hit.label, spec, text: display });
+    last = end;
+    re.lastIndex = end;
   }
   if (last < text.length) out.push(text.slice(last));
   return out;
