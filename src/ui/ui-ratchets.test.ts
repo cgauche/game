@@ -196,13 +196,15 @@ const DOMAIN_CSS_MODULES = [
   'mass-battle',
   'ornaments',
   'tavern',
+  'party',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
+  'styles/party.css': 44,
   'styles/combat-modals.css': 141,
   'styles/combat-ui.css': 112,
   'styles/compendium.css': 55,
-  'styles/creator.css': 72,
+  'styles/creator.css': 71,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -213,6 +215,54 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/tavern.css': 13,
   'styles/world-meta.css': 133,
 };
+
+// ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules
+//    de DOMAINE — `base.css`/`components.css` (couche atomique partagée) en sont EXCLUS. C'était le trou :
+//    44 classes `.party-*`/`.candidate-*`/`.seat-*` s'étaient planquées dans base.css pour échapper au gel
+//    (feedback user 2026-07-13 « elle réinvente la roue, on a des guards mais elle passe à travers »). Une
+//    classe de la couche partagée n'est LÉGITIME que si elle est VRAIMENT partagée : soit DOCUMENTÉE au
+//    catalogue de `docs/charte-ui.md` (contrat de couche atomique — inclut les primitives React qui posent
+//    leurs classes), soit UTILISÉE par ≥2 modules `.tsx` distincts (usage transversal réel). Une classe
+//    définie là, mono-consommateur ET non cataloguée = du DOMAINE déguisé → elle doit vivre dans un module
+//    de domaine (cliqueté par xii). BASELINE par fichier, GELÉE et DÉCROISSANTE : sortir une famille de
+//    domaine (ex. `.city-hub-*`/`.voyage-*` → leur module) ABAISSE la baseline ; en ajouter une la fait
+//    monter → échec. Mesure STRUCTURELLE (pas une liste de noms) — la baseline est un COMPTE, pas un
+//    allowlist nominatif. L'usage TSX se lit dans les valeurs `className` (littéraux, gabarits, ternaires).
+const SHARED_CSS_FILES = ['base.css', 'components.css'];
+const SHARED_LEAK_BASELINE: Record<string, number> = {
+  'styles/base.css': 21,
+  'styles/components.css': 54,
+};
+
+/** Classes `.foo` citées entre backticks dans le catalogue de la charte (contrat de couche atomique). */
+function catalogueClasses(): Set<string> {
+  const doc = readFileSync(fileURLToPath(new URL('../../docs/charte-ui.md', import.meta.url)), 'utf8');
+  const names = new Set<string>();
+  for (const m of doc.matchAll(/`([^`]*)`/g)) {
+    for (const c of m[1].match(/\.[a-zA-Z_-][\w-]*/g) ?? []) names.add(c.slice(1));
+  }
+  return names;
+}
+
+/** class → nombre de modules `.tsx` distincts qui la citent dans une valeur `className` (littéral,
+ *  gabarit, ternaire — on collecte les tokens des sous-chaînes quotées de l'attribut). */
+function classUsageByModule(): Map<string, Set<string>> {
+  const uses = new Map<string, Set<string>>();
+  const files = walk(fileURLToPath(new URL('../', import.meta.url)), (e) => /\.tsx$/.test(e) && !/\.test\./.test(e));
+  for (const f of files) {
+    const raw = readFileSync(f, 'utf8');
+    const re = /className\s*=\s*(\{[\s\S]*?\}|"[^"]*"|'[^']*'|`[^`]*`)/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(raw))) {
+      for (const seg of m[1].matchAll(/(["'`])([^"'`]*)\1/g)) {
+        for (const tok of seg[2].split(/\s+/)) {
+          if (/^[a-zA-Z][\w-]*$/.test(tok)) (uses.get(tok) ?? uses.set(tok, new Set()).get(tok)!).add(f);
+        }
+      }
+    }
+  }
+  return uses;
+}
 
 function classNamesDefined(css: string): Set<string> {
   const names = new Set<string>();
@@ -356,5 +406,23 @@ describe('#236 — cliquets d’hygiène UI', () => {
       counts[rel(f)] = classNamesDefined(css).size;
     }
     assertRatchet(counts, CLASS_SELECTOR_BASELINE, 'sélecteurs de classe définis (stock de classes de domaine, #373)');
+  });
+
+  it('(xiii) fuite de domaine en couche partagée : classe base/components mono-consommateur ET non cataloguée = gelée et décroissante (#371)', () => {
+    const catalogue = catalogueClasses();
+    const usage = classUsageByModule();
+    const counts: Record<string, number> = {};
+    for (const file of SHARED_CSS_FILES) {
+      const f = join(UI, 'styles', file);
+      const defined = classNamesDefined(readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''));
+      let leaks = 0;
+      for (const c of defined) {
+        if (catalogue.has(c)) continue; // documentée au catalogue = contrat de couche atomique
+        if ((usage.get(c)?.size ?? 0) >= 2) continue; // usage transversal réel (≥2 modules)
+        leaks++;
+      }
+      counts[rel(f)] = leaks;
+    }
+    assertRatchet(counts, SHARED_LEAK_BASELINE, 'classe de domaine planquée en couche partagée — la déplacer dans un module de domaine (cliqueté par xii) ou la documenter au catalogue de charte-ui.md (#371)');
   });
 });

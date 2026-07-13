@@ -12,6 +12,8 @@ import { CandidateCard, SeatCard, ActionCard, type RecruitState } from './CharCa
 import { CharacterSheet } from './CharacterSheet';
 import { HeroPresentation } from './HeroPresentation';
 import { Modal } from './Modal';
+import { ScreenShell } from './ScreenShell';
+import { GatedAction } from './GatedAction';
 import { Icon } from './Icon';
 import { Tabs } from './Tabs';
 import { t } from '../i18n';
@@ -21,11 +23,13 @@ import { t } from '../i18n';
  * remplit LES SIENS (créer / roster local / pré-tiré) via `partyAddHero` — enveloppé en intent côté
  * invité, l'hôte reste autoritaire.
  *
- * HIÉRARCHIE : l'ÉQUIPE est la star — colonne latérale gauche de cartes de siège RICHES (portrait +
- * archétype + rôle + accroche, même info qu'un candidat), qui grossit à mesure qu'elle se remplit ;
- * à droite, l'ÉTAL des candidats en grille de cartes-portraits. Un visage recruté quitte l'étal pour
- * la colonne (`hideInParty`). Depuis TOUTE carte, un clic ouvre la PRÉSENTATION (récit) du personnage
- * (`HeroPresentation`) ; la modale `PartyPicker` ne sert qu'au remplacement ciblé (mêmes cartes).
+ * STRUCTURE (arbitrage user 2026-07-13) : l'écran de groupe = LA COMPAGNIE SEULE (aucune galerie de
+ * candidats inline — c'est un écran à part). Une grille de sièges : occupé = carte RICHE (portrait +
+ * archétype + rôle + accroche, personnage cliquable → présentation) ; vide = placeholder sobre avec
+ * deux actions « Créer » (créateur) / « Choisir » (sélecteur dédié). Le sélecteur (`HeroSelector`,
+ * plein-champ `ScreenShell`) porte les onglets Mes personnages / Pré-tirés, les grandes cartes-portraits
+ * et l'import — c'est LÀ qu'on recrute ou remplace. La compagnie a toujours toute la place (le problème
+ * « 3/4 d'écran figé sur des candidats » disparaît).
  *
  * C'est AUSSI ici que se choisit la campagne (cartouche Campagne + « Changer ») — solo comme coop
  * (hôte seul ; les invités voient le nom via le snapshot). Le choix par défaut est l'Arène.
@@ -33,7 +37,7 @@ import { t } from '../i18n';
 
 /** Nav clavier des sièges (roving tabindex) : flèches Haut/Bas (colonne d'équipe) — ⇄ tolérées —
  *  vers le siège voisin (bouclé), Enter/Espace = présentation du héros assis (aucune action sur un
- *  siège vide — le recrutement se joue à l'étal). Pur. */
+ *  siège vide — le recrutement se joue au sélecteur). Pur. */
 export function slotKeyNav(key: string, idx: number, count: number): { focus: number } | 'primary' | null {
   const prev = key === 'ArrowUp' || key === 'ArrowLeft';
   const next = key === 'ArrowDown' || key === 'ArrowRight';
@@ -167,6 +171,9 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
   );
 }
 
+/** Cible ouverte dans le sélecteur dédié : recruter un siège vide, ou remplacer un héros en place. */
+type SelectorTarget = { mode: 'recruit' } | { mode: 'replace'; heroId: string };
+
 /** Vue pure de l'écran d'équipe (testable sans store — le rendu statique des tests lit
  *  l'état INITIAL de zustand, pas l'état muté). */
 export function PartyScreenView({
@@ -205,21 +212,21 @@ export function PartyScreenView({
   onEditHero?: (heroId: string) => void;
   onAddHero: (h: Combatant, wealth?: Money) => void;
   onRemoveHero: (heroId: string) => void;
-  /** Remplace EN PLACE le héros `oldId` par celui choisi dans le picker (bouton « Remplacer »).
+  /** Remplace EN PLACE le héros `oldId` par celui choisi dans le sélecteur (bouton « Remplacer »).
    *  Absent = pas de bouton « Remplacer ». La bourse (`wealth`) est ignorée (pas un recrutement). */
   onReplaceHero?: (oldId: string, hero: Combatant, wealth?: Money) => void;
   onAssignSlot: (slot: number, seat: number) => void;
   onStart: () => void;
   onResume?: () => void;
 }) {
-  // Siège occupé → « Remplacer » : ouvre le picker MÊME à 4/4 (un remplacement ne change pas l'effectif).
-  const [replaceTarget, setReplaceTarget] = useState<string | null>(null);
+  // Sélecteur dédié ouvert (recrutement d'un siège vide OU remplacement ciblé).
+  const [selector, setSelector] = useState<SelectorTarget | null>(null);
   // Roving tabindex : UN seul siège tabbable ; flèches haut/bas entre sièges, Enter/Espace = présentation
   // du héros assis. Cf. `slotKeyNav` (pur).
   const [focusSlot, setFocusSlot] = useState(0);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
-  // Cliquer le portrait/nom d'un héros (siège ou carte) ouvre sa PRÉSENTATION (récit) ; « Fiche
-  // complète » y mène ensuite à CharacterSheet (chiffres) pour un membre du groupe.
+  // Cliquer le portrait/nom d'un héros ouvre sa PRÉSENTATION (récit) ; « Fiche complète » y mène ensuite
+  // à CharacterSheet (chiffres) pour un membre du groupe.
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [presentHero, setPresentHero] = useState<Combatant | null>(null);
   // Solo : carte siège→héros STABLE — le siège d'un héros retiré RESTE en place (le trou ne file plus
@@ -254,21 +261,19 @@ export function PartyScreenView({
   const ownsHero = (id: string) => !coop || (net.ownership[id] ?? 0) === net.mySeat;
   /** Un siège attribué à un invité n'est pas rempli → l'hôte ne peut pas lancer. */
   const guestPending = views.some((v) => v.seat !== 0 && !v.hero);
-  // Il reste un siège à MOI (solo : n'importe lequel) à pourvoir → recrutement possible.
-  const canRecruit = party.length < 4 && views.some((v) => !v.hero && (!coop || v.seat === net.mySeat));
 
-  const pick = (h: Combatant, wealth?: Money) => {
-    if (party.length >= 4 || party.some((p) => p.id === h.id)) return;
-    onAddHero(h, wealth);
+  // Recrutement / remplacement : un seul chemin, le SÉLECTEUR dédié.
+  const onSelectorPick = (h: Combatant, wealth?: Money) => {
+    if (!selector) return;
+    if (selector.mode === 'replace') {
+      onReplaceHero?.(selector.heroId, h, wealth);
+    } else if (party.length < 4 && !party.some((p) => p.id === h.id)) {
+      onAddHero(h, wealth);
+    }
+    setSelector(null);
   };
-  // Recrutement = cartes de la galerie sur l'écran (clic → 1er siège libre) ; la modale ne sert plus
-  // qu'au REMPLACEMENT ciblé (`replaceTarget`) — un seul chemin par intention, zéro doublon.
-  const onReplacePick = (h: Combatant, wealth?: Money) => {
-    if (!replaceTarget) return;
-    onReplaceHero?.(replaceTarget, h, wealth);
-    setReplaceTarget(null);
-  };
-  const replaceName = replaceTarget ? party.find((h) => h.id === replaceTarget)?.name : undefined;
+  const selectorReplaceName =
+    selector?.mode === 'replace' ? party.find((h) => h.id === selector.heroId)?.name : undefined;
   const inParty = (id: string) => party.some((p) => p.id === id);
 
   return (
@@ -303,11 +308,10 @@ export function PartyScreenView({
         <p className="hint party-coop-hint">{t('party.coop.pending')}</p>
       )}
 
-      {/* Colonne latérale = L'ÉQUIPE (la star, grossit à mesure qu'elle se remplit) ; à droite, l'étal
-          des candidats. Compose la primitive `.layout-sidebar` (empile ≤900px). */}
-      <div className="layout-sidebar party-layout">
-        <aside className="party-roster" aria-label={t('party.company')}>
-          <h3 className="party-roster-title">{t('party.company')} ({party.length}/4)</h3>
+      {/* L'écran de groupe = LA COMPAGNIE SEULE (grille de sièges, 2×2, généreuse). Aucune galerie ici. */}
+      <div className="party-company">
+        <h3 className="party-roster-title">{t('party.company')} ({party.length}/4)</h3>
+        <div className="party-roster" aria-label={t('party.company')}>
           {views.map(({ seat, hero: h }, i) => {
             const mine = !coop || seat === net.mySeat;
             return (
@@ -358,7 +362,7 @@ export function PartyScreenView({
                           <button className="btn small ghost" onClick={() => onEditHero(h.id)}>{t('party.hero.edit')}</button>
                         )}
                         {onReplaceHero && (
-                          <button className="btn small ghost" onClick={() => setReplaceTarget(h.id)}>{t('party.hero.replace')}</button>
+                          <button className="btn small ghost" onClick={() => setSelector({ mode: 'replace', heroId: h.id })}>{t('party.hero.replace')}</button>
                         )}
                         <button className="btn small ghost danger" onClick={() => onRemoveHero(h.id)}>{t('party.hero.remove')}</button>
                       </>
@@ -370,25 +374,18 @@ export function PartyScreenView({
                     <span className="hint seat-invite">
                       {mine ? t('party.slot.invite') : t('party.slot.waiting', { name: seatName(seat) })}
                     </span>
+                    {mine && (
+                      <div className="seat-empty-actions row-flex">
+                        <button className="btn small" onClick={onCreate}>{t('party.seat.create')}</button>
+                        <button className="btn small btn-primary" onClick={() => setSelector({ mode: 'recruit' })}>{t('party.seat.choose')}</button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             );
           })}
-        </aside>
-
-        {/* L'ÉTAL : grille de candidats — un visage recruté quitte l'étal pour la colonne (hideInParty). */}
-        <section className="candidate-gallery" aria-label={t('party.recruit.pool')}>
-          <CandidatePool
-            party={party}
-            variant="gallery"
-            onPick={pick}
-            canRecruit={canRecruit}
-            hideInParty
-            onPresent={setPresentHero}
-            onCreate={onCreate}
-          />
-        </section>
+        </div>
       </div>
 
       {net.mode !== 'guest' && (
@@ -398,27 +395,28 @@ export function PartyScreenView({
               {t('party.action.resume')}
             </button>
           )}
-          <button
-            className={`btn ${inProgress ? '' : 'btn-primary'} party-start`}
-            disabled={party.length === 0 || guestPending}
-            title={guestPending
-              ? t('party.action.start.guestPending')
-              : inProgress ? t('party.action.start.willReset') : undefined}
+          {/* « Commencer » gaté (`GatedAction`) : la raison d'indisponibilité est VISIBLE sous le bouton. */}
+          <GatedAction
+            id="party-start"
+            className="party-start"
+            label={t('party.action.start')}
+            enabled={party.length > 0 && !guestPending}
+            reason={guestPending ? t('party.action.start.guestPending') : t('party.action.start.empty')}
+            primary={!inProgress}
             onClick={onStart}
-          >
-            {t('party.action.start')}
-          </button>
+          />
         </footer>
       )}
 
-      {replaceTarget && onReplaceHero && (
-        <PartyPicker
+      {selector && (selector.mode === 'recruit' || onReplaceHero) && (
+        <HeroSelector
           party={party}
-          title={t('picker.title.replace', { name: replaceName ?? '' })}
-          onPick={onReplacePick}
+          mode={selector.mode}
+          replaceName={selectorReplaceName}
+          onPick={onSelectorPick}
           onPresent={setPresentHero}
           onCreate={onCreate}
-          onClose={() => setReplaceTarget(null)}
+          onClose={() => setSelector(null)}
         />
       )}
       {presentHero && (
@@ -433,41 +431,55 @@ export function PartyScreenView({
   );
 }
 
-/** Modale de REMPLACEMENT ciblé (siège occupé → « Remplacer {nom} ») : réutilise `CandidatePool`
- *  en `variant='modal'` (mêmes cartes, plus compactes). Le recrutement d'un siège vide, lui, passe
- *  par la galerie de l'écran (un seul chemin par intention). */
-export function PartyPicker({
+/** Sélecteur d'aventurier DÉDIÉ (« un écran différent et adapté », arbitrage user 2026-07-13) : écran
+ *  plein-champ `ScreenShell` portant les onglets Mes personnages / Pré-tirés, les grandes cartes-portraits
+ *  et l'import. Recrute un siège vide (`recruit`, les déjà-recrutés quittent l'étal) ou remplace un héros
+ *  en place (`replace`, les membres restent grisés « Déjà choisi »). Source unique de la carte-portrait
+ *  = `CandidatePool`/`CandidateCard`. */
+export function HeroSelector({
   party,
+  mode,
+  replaceName,
   onPick,
   onClose,
   onCreate,
   onPresent,
-  title,
 }: {
   party: Combatant[];
+  mode: 'recruit' | 'replace';
+  /** Nom du héros remplacé (titre du mode `replace`). */
+  replaceName?: string;
   onPick: (h: Combatant, wealth?: Money) => void;
   onClose: () => void;
   /** Ouvre le créateur (carte-action « Créer un personnage »). */
   onCreate?: () => void;
   /** Ouvre la présentation d'un candidat (clic figure/nom). */
   onPresent?: (h: Combatant) => void;
-  /** Titre du picker (défaut = recrutement). Le mode « Remplacer » passe « Remplacer {nom} ». */
-  title?: string;
 }) {
+  const replace = mode === 'replace';
   return (
-    <Modal variant="plain" className="picker-modal" title={title ?? t('picker.title', { n: party.length })} onClose={onClose} backdropClose>
-      <CandidatePool party={party} variant="modal" onPick={onPick} onPresent={onPresent} onCreate={onCreate} />
-      <button className="btn" onClick={onClose}>
-        {t('picker.done')}
-      </button>
-    </Modal>
+    <ScreenShell
+      title={replace ? t('picker.title.replace', { name: replaceName ?? '' }) : t('party.select.title')}
+      onClose={onClose}
+      body="centered-wide"
+      className="hero-selector"
+    >
+      <CandidatePool
+        party={party}
+        variant={replace ? 'modal' : 'gallery'}
+        onPick={onPick}
+        hideInParty={!replace}
+        onPresent={onPresent}
+        onCreate={onCreate}
+      />
+    </ScreenShell>
   );
 }
 
 /** Vivier de candidats — personnages sauvegardés (roster localStorage LOCAL du joueur) + pré-tirés,
- *  onglets Mes personnages / Pré-tirés, cartes-action créer/importer. Rendu à l'IDENTIQUE par la
- *  galerie de l'écran d'équipe (`gallery`) ET la modale `PartyPicker` (`modal`) : source unique de
- *  la carte-portrait `CandidateCard`. */
+ *  onglets Mes personnages / Pré-tirés, cartes-action créer/importer. Rendu DANS le sélecteur dédié
+ *  (`HeroSelector`) : source unique de la carte-portrait `CandidateCard`, en mode `gallery` (recrutement,
+ *  grandes cartes) ou `modal` (remplacement — les membres restent grisés « Déjà choisi »). */
 export function CandidatePool({
   party,
   onPick,
@@ -479,14 +491,14 @@ export function CandidatePool({
 }: {
   party: Combatant[];
   onPick: (h: Combatant, wealth?: Money) => void;
-  /** `gallery` = grandes cartes de l'écran (recruter) ; `modal` = cartes compactes (choisir). */
+  /** `gallery` = recrutement (les recrutés quittent l'étal) ; `modal` = remplacement (membres grisés). */
   variant?: 'gallery' | 'modal';
-  /** Galerie : un siège reste-t-il à pourvoir ? Sinon « Recruter » est grisé (groupe complet). */
+  /** Un siège reste-t-il à pourvoir ? Sinon « Recruter » est grisé (groupe complet). */
   canRecruit?: boolean;
-  /** Écarte du vivier les personnages DÉJÀ dans le groupe (galerie) : un recruté quitte l'étal pour
-   *  la colonne d'équipe. La modale de remplacement (`false`) les garde, grisés « Déjà choisi ». */
+  /** Écarte du vivier les personnages DÉJÀ dans le groupe (recrutement) : un recruté quitte l'étal. Le
+   *  mode remplacement (`false`) les garde, grisés « Déjà choisi ». */
   hideInParty?: boolean;
-  /** Ouvre la PRÉSENTATION d'un candidat (clic figure/nom + loupe « Qui est-ce ? »). */
+  /** Ouvre la PRÉSENTATION d'un candidat (clic figure/nom). */
   onPresent?: (h: Combatant) => void;
   /** Ouvre le créateur (carte-action « Créer un personnage »). */
   onCreate?: () => void;
@@ -568,8 +580,8 @@ export function CandidatePool({
                 onPresent={onPresent ? () => onPresent(h) : undefined}
               />
             ))}
-        {/* Cartes-action (même famille visuelle) : UNE carte « Créer un personnage » sur tout l'écran ;
-            « Importer » à côté, dans l'onglet Mes personnages. */}
+        {/* Cartes-action (même famille visuelle) : UNE carte « Créer un personnage » ; « Importer » à
+            côté, dans l'onglet Mes personnages. */}
         <ActionCard icon="nav/new-game" label={t('picker.roster.create')} invite={t('party.create.invite')} onClick={startCreate} />
         {tab === 'roster' && (
           <ActionCard icon="file/import" label={t('picker.import.btn')} invite={t('party.import.invite')} title={t('picker.import.btn.title')} onClick={() => fileRef.current?.click()} />

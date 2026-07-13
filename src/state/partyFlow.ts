@@ -596,7 +596,7 @@ export function creditPartyMoney(get: Get, set: Set, m: Money, note?: string): v
 }
 
 /** Ajoute un héros au groupe dans un emplacement du siège `seat` (0 = hôte/solo) — point
- *  d'entrée UNIQUE de la composition d'équipe (PartyScreen, PartyPicker, créateur ; côté
+ *  d'entrée UNIQUE de la composition d'équipe (PartyScreen, HeroSelector, créateur ; côté
  *  invité l'action est enveloppée en intent, l'hôte injecte le siège autoritaire). Refuse
  *  groupe plein, doublon d'id, ou quota d'emplacements du siège épuisé. */
 export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money, seat = 0): void {

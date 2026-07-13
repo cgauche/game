@@ -16,6 +16,7 @@ import { Coins } from './Coins';
 import { Icon, IconG } from './Icon';
 import { SpeakerBanner } from './SpeakerBanner';
 import { ActivityPane } from './ActivityPane';
+import { GatedAction } from './GatedAction';
 
 /**
  * HUB DE VILLE (#343) — l'écran UNIQUE d'un LIEU de la carte : on n'empile plus des boutons flottants
@@ -58,22 +59,6 @@ export function cityHubHasPlan(place: MapPlace): boolean {
  *  (désactive le bouton avec sa raison) et son test. */
 export function cityHubCanEnterPort(vessel: unknown): boolean {
   return vessel != null;
-}
-
-/** Action de porte GATÉE (Entrer au port, au chantier…) — un `title` seul ne suffit pas (la raison
- *  d'un bouton désactivé restait invisible à l'arbre a11y, recette 2026-07-12) : la raison se rend en
- *  texte VISIBLE sous le bouton (info de DÉCISION, cf. charte-ui « Zéro texte tutoriel »), liée par
- *  `aria-describedby`. Local à l'écran (2 sites, pas de 2ᵉ composition liste+détail à en tirer). */
-function GatedAction({ id, label, enabled, reason, onClick }: { id: string; label: string; enabled: boolean; reason: string; onClick: () => void }) {
-  const reasonId = `${id}-reason`;
-  return (
-    <div className="city-hub-gate">
-      <button type="button" className="btn btn-primary" disabled={!enabled} aria-describedby={enabled ? undefined : reasonId} onClick={onClick}>
-        {label}
-      </button>
-      {!enabled && <p className="city-hub-empty" id={reasonId}>{reason}</p>}
-    </div>
-  );
 }
 
 /** Carte de synthèse d'un profil commercial (port/marché) : Taille/Richesse + colonne Produits. */

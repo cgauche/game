@@ -9,11 +9,13 @@ import { Coins } from './Coins';
 import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete } from '../data';
 import { t } from '../i18n';
 
-/** Sous-titre d'ARCHÉTYPE : « Espèce · Carrière ». Sans « (niv. N) » (bruit : tous niveau 1 à la
- *  sélection ; le niveau vit dans la fiche). Source unique carte de candidat + carte de siège. */
+/** Sous-titre d'ARCHÉTYPE : « Carrière — Espèce » (la CARRIÈRE en tête, c'est le concept du personnage
+ *  en WFRP ; l'espèce suit, atténuée — arbitrage user 2026-07-13). Sans « (niv. N) » (bruit : tous
+ *  niveau 1 à la sélection ; le niveau vit dans la fiche). Source unique (cartes siège + candidat +
+ *  HeroPresentation + sélecteur). */
 export function heroSubtitle(hero: Combatant): string {
   const race = speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species);
-  return `${race} · ${careerLabelFor(hero)}`;
+  return `${careerLabelFor(hero)} — ${race}`;
 }
 
 /** RÔLE dans le groupe — 2-3 forces EN TOUTES LETTRES, dérivées des DONNÉES (compétences les mieux
@@ -79,13 +81,29 @@ function CardLore({ hero, seat }: { hero: Combatant; seat?: boolean }) {
   );
 }
 
-/** Bouton d'affordance « Qui est-ce ? » (loupe) — ouvre la présentation du personnage. `compact` =
- *  loupe SEULE (cartes de l'étal, où l'espace est compté ; le nom cliquable double l'affordance). */
-function WhoButton({ onPresent, compact }: { onPresent: () => void; compact?: boolean }) {
+/** Poignée de PRÉSENTATION — la figurine + l'identité du personnage forment le contrôle cliquable qui
+ *  ouvre son récit (`HeroPresentation`) : l'affordance d'un jeu (on clique le PERSONNAGE), pas un bouton
+ *  « loupe » (directive user 2026-07-13). Vrai contrôle a11y (role/aria-label/focusable, Entrée ouvre),
+ *  jamais un div sourd ; feedback de survol NON DÉCALANT (`.char-present`, box-shadow/brightness — aucune
+ *  dimension ne change). Sans `onPresent`, rend un conteneur inerte (même flux). */
+function PresentHandle({ hero, onPresent, className, children }: { hero: Combatant; onPresent?: () => void; className?: string; children: ReactNode }) {
+  if (!onPresent) return <div className={className}>{children}</div>;
   return (
-    <button type="button" className="btn small ghost who-btn" onClick={onPresent} title={t('party.who')} aria-label={t('party.who')}>
-      <Icon id="ui/eye" size="sm" />{compact ? '' : ` ${t('party.who')}`}
-    </button>
+    <div
+      className={`char-present${className ? ` ${className}` : ''}`}
+      role="button"
+      tabIndex={0}
+      aria-label={t('party.present.aria', { name: hero.name })}
+      onClick={onPresent}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onPresent();
+        }
+      }}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -119,10 +137,14 @@ export function CandidateCard({
   const blocked = state?.status === 'blocked';
   return (
     <OrnateFrame className={`candidate-card candidate-${variant}`}>
-      <div className="candidate-fig">
-        <CharacterPreview hero={hero} size="fill" ambiance="panel" />
-      </div>
-      <CardIdentity hero={hero} />
+      {/* Le personnage (figurine + identité) EST le contrôle qui ouvre sa présentation (directive
+          user 2026-07-13) — plus de bouton « loupe ». */}
+      <PresentHandle hero={hero} onPresent={onPresent} className="candidate-present">
+        <div className="candidate-fig">
+          <CharacterPreview hero={hero} size="fill" ambiance="panel" />
+        </div>
+        <CardIdentity hero={hero} />
+      </PresentHandle>
       <CardLore hero={hero} />
       {wealth != null && (
         <span className="candidate-wealth hint">{t('picker.hero.purse')} <Coins money={wealth} /></span>
@@ -136,7 +158,6 @@ export function CandidateCard({
         >
           {variant === 'modal' ? (recruited ? t('picker.hero.inParty') : t('picker.hero.choose')) : t('party.hero.recruit')}
         </button>
-        {onPresent && variant !== 'modal' && <WhoButton onPresent={onPresent} compact />}
         {(onExport || onDelete) && (
           <span className="candidate-tools">
             {onExport && (
@@ -177,19 +198,19 @@ export function SeatCard({
   return (
     <OrnateFrame className="seat-card">
       {seatLabel && <span className="seat-card-badge">{seatLabel}</span>}
-      <div className="seat-card-fig">
-        <CharacterPreview hero={hero} size="fill" ambiance="panel" />
-      </div>
-      <div className="seat-card-body">
-        <CardIdentity hero={hero} />
-        <CardLore hero={hero} seat />
-        <div className="seat-card-actions row-flex">
-          {onPresent && <WhoButton onPresent={onPresent} />}
-          {/* Gestion (Modifier/Remplacer/Retirer) révélée au survol/focus — la carte reste compacte
-              au repos (4 sièges tiennent la colonne) ; toujours atteignable au clavier (a11y). */}
-          {actions && <span className="seat-card-manage row-flex">{actions}</span>}
+      {/* Figurine + identité = le contrôle de présentation (directive user 2026-07-13). */}
+      <PresentHandle hero={hero} onPresent={onPresent} className="seat-card-main">
+        <div className="seat-card-fig">
+          <CharacterPreview hero={hero} size="fill" ambiance="panel" />
         </div>
-      </div>
+        <div className="seat-card-body">
+          <CardIdentity hero={hero} />
+          <CardLore hero={hero} seat />
+        </div>
+      </PresentHandle>
+      {/* Gestion (Modifier/Remplacer/Retirer) TOUJOURS visible : le layout est stable, rien ne se
+          décale ni n'apparaît en flux au survol (directive user 2026-07-13). */}
+      {actions && <div className="seat-card-actions row-flex">{actions}</div>}
     </OrnateFrame>
   );
 }

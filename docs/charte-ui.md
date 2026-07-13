@@ -90,6 +90,7 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.count` | Pastille numérique (compteur) | À l'intérieur d'un `.chip`/`.tab-btn`, jamais seule dans le flux de texte. |
 | `.entity-chip` (+ `.entity-badge`, `.entity-choice`) | Chip d'ENTITÉ unifié (compétence/talent/sort/objet) avec déclencheur popover CodexRef | Source unique = `EntityChip.tsx` — remplace `.tag`/`.codex-chip` pour toute entité de règle ; ne pas recréer un badge ad hoc pour un nom de sort/talent. |
 | `.tag` (+ `.tag.talent`) | Badge historique (alias de `.chip`) | Ne pas en créer de nouveaux usages — préférer `.chip` ou `.entity-chip` selon le contenu (texte libre vs entité de règle). |
+| `.gated-action` (+ `.gated-action-reason`) | Action GATÉE : bouton d'engagement + RAISON d'indisponibilité en texte visible dessous (a11y `aria-describedby`) | Composée par la primitive `GatedAction` (`src/ui/GatedAction.tsx`, CLAUDE.md) — tout bouton principal désactivé pour un motif intelligible (hub de ville « Entrer », écran d'équipe « Commencer ») la COMPOSE au lieu d'un `<button disabled title=…>` muet. |
 
 ### Conteneurs / surfaces
 

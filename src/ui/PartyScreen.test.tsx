@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { PartyPicker, PartyScreenView, slotKeyNav } from './PartyScreen';
+import { HeroSelector, PartyScreenView, slotKeyNav } from './PartyScreen';
+import { heroSubtitle } from './CharCard';
 import { makePregens } from '../data/pregens';
 import { rosterAdd } from '../state/roster';
 import { initialNet, type NetState } from '../state/netFlow';
@@ -30,7 +31,7 @@ function savedHero(): Combatant {
 
 const noop = () => {};
 
-describe('PartyPicker — remplacement : mêmes cartes-portraits (variant modal)', () => {
+describe('HeroSelector — sélecteur dédié (écran plein-champ) : recrutement & remplacement', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
   });
@@ -38,32 +39,36 @@ describe('PartyPicker — remplacement : mêmes cartes-portraits (variant modal)
     delete (globalThis as { localStorage?: Storage }).localStorage;
   });
 
-  it('roster vide : onglet Pré-tirés actif, cartes-portraits des pré-tirés rendues', () => {
-    const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
+  it('recrutement : écran ScreenShell (voile plein champ) + onglets + cartes-portraits des pré-tirés', () => {
+    const html = renderToStaticMarkup(<HeroSelector party={[]} mode="recruit" onPick={noop} onClose={noop} />);
+    expect(html).toContain('worldmap-overlay'); // coquille plein-champ (ScreenShell), pas une petite modale
+    expect(html).toContain('Choisir un aventurier'); // titre du mode recrutement
     expect(html).toContain('Pré-tirés');
     expect(html).toContain('Mes personnages');
     expect(html).toContain('candidate-card');
-    expect(html).toContain('candidate-modal'); // format modale (pas un 3e format)
+    expect(html).not.toContain('candidate-modal'); // recrutement = grandes cartes (gallery)
   });
 
-  it('roster non vide : onglet « Mes personnages » actif, la MÊME carte-portrait (nom + choisir + actions)', () => {
+  it('roster non vide : MÊME carte-portrait (nom complet + recruter + outils export/suppr)', () => {
     rosterAdd({ hero: savedHero(), wealth: { gold: 1, silver: 0, brass: 0 } });
-    const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
-    expect(html).toContain('Aventurière Sauvegardée'); // nom COMPLET, pas une ligne anonyme
+    const html = renderToStaticMarkup(<HeroSelector party={[]} mode="recruit" onPick={noop} onClose={noop} />);
+    expect(html).toContain('Aventurière Sauvegardée'); // nom COMPLET
     expect(html).toContain('candidate-name');
-    expect(html).toContain('Choisir');
+    expect(html).toContain('Recruter');
     expect(html).toContain('Supprimer'); // action secondaire SUR la carte
   });
 
-  it('carte du roster déjà dans le groupe : bouton « Déjà choisi » désactivé', () => {
+  it('remplacement : cartes compactes, membre du groupe grisé « Déjà choisi »', () => {
     const h = savedHero();
     rosterAdd({ hero: h, wealth: { gold: 0, silver: 5, brass: 0 } });
-    const html = renderToStaticMarkup(<PartyPicker party={[h]} onPick={() => {}} onClose={() => {}} />);
+    const html = renderToStaticMarkup(<HeroSelector party={[h]} mode="replace" replaceName={h.name} onPick={noop} onClose={noop} />);
+    expect(html).toContain('Remplacer Aventurière Sauvegardée'); // titre du mode remplacement
+    expect(html).toContain('candidate-modal');
     expect(html).toContain('Déjà choisi');
   });
 });
 
-describe('PartyScreen — équipe (colonne latérale) coop : l’hôte attribue, chacun remplit les siens', () => {
+describe('PartyScreen — LA COMPAGNIE SEULE (aucune galerie inline) : coop, hôte attribue', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
   });
@@ -91,12 +96,15 @@ describe('PartyScreen — équipe (colonne latérale) coop : l’hôte attribue,
       />,
     );
 
-  it('solo : colonne d’équipe (4 sièges vides), UNE seule carte-action « Créer un personnage »', () => {
+  it('solo : compagnie (grille de sièges vides), siège vide = actions Créer / Choisir, AUCUNE galerie inline', () => {
     const html = render([], initialNet());
     expect(html).toContain('party-roster');
     expect(html).toContain('seat-empty');
     expect(html).not.toContain('slot-owner'); // pas de bandeau joueur en solo
-    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(1);
+    expect(html).toContain('Créer'); // action sur siège vide
+    expect(html).toContain('Choisir'); // ouvre le sélecteur dédié
+    expect(html).not.toContain('candidate-gallery'); // plus de galerie sur l'écran de groupe
+    expect(html).not.toContain('candidate-card'); // ni de cartes-candidats inline
     expect(html).toContain('Commencer');
     expect(html).not.toContain('Reprendre');
   });
@@ -127,17 +135,17 @@ describe('PartyScreen — équipe (colonne latérale) coop : l’hôte attribue,
     expect(html).not.toContain('Reprendre');
   });
 
-  it('invité : sièges des autres « en attente », étal de recrutement présent, pas de « Commencer »', () => {
+  it('invité : sièges des autres « en attente », son siège recrutable (Choisir), pas de « Commencer »', () => {
     const html = render([], {
       ...initialNet(), mode: 'guest', mySeat: 1, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 1, 0],
     });
     expect(html).toContain('En attente de Hôte'); // sièges 0 et 3 (siège 0)
-    expect(html).toContain('candidate-gallery'); // l’invité recrute ses sièges via l’étal
+    expect(html).toContain('Choisir'); // l’invité recrute ses sièges via le sélecteur dédié
     expect(html).not.toContain('Commencer');
     expect(html).toContain('Quitter');
   });
 
-  it('hôte : select de siège sur les sièges vides, « Commencer » grisé tant qu’un siège invité est vide', () => {
+  it('hôte : select de siège sur les sièges vides, « Commencer » grisé + RAISON visible tant qu’un siège invité est vide', () => {
     const html = render([], {
       ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 0, 0],
     });
@@ -145,7 +153,8 @@ describe('PartyScreen — équipe (colonne latérale) coop : l’hôte attribue,
     expect(html).toContain('Antoine');
     expect(html).toMatch(/Commencer[^<]*→<\/button>/);
     expect(html).toContain('disabled');
-    expect(html).toContain('En attente que chaque joueur remplisse ses emplacements');
+    expect(html).toContain('gated-action-reason'); // raison VISIBLE (a11y), plus un simple title
+    expect(html).toContain('Des emplacements attribués aux autres joueurs sont encore vides.');
   });
 
   it('hôte : héros de l’invité dans SON siège (carte), « Retirer » réservé au propriétaire', () => {
@@ -153,7 +162,7 @@ describe('PartyScreen — équipe (colonne latérale) coop : l’hôte attribue,
     const html = render([h], {
       ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { [h.id]: 1 }, slots: [1, 0, 0, 0],
     });
-    expect(html).toContain(h.name); // carte de siège dans la colonne
+    expect(html).toContain(h.name); // carte de siège dans la compagnie
     expect(html).not.toMatch(/<button[^>]*>Retirer<\/button>/); // siège non possédé → pas d'action
   });
 
@@ -171,82 +180,9 @@ describe('PartyScreen — équipe (colonne latérale) coop : l’hôte attribue,
     );
     expect(html).toContain('Remplacer');
   });
-
-  it('siège d’un AUTRE joueur : pas de « Remplacer » (non possédé)', () => {
-    const h = savedHero();
-    const html = renderToStaticMarkup(
-      <PartyScreenView
-        party={[h]}
-        net={{ ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { [h.id]: 1 }, slots: [1, 0, 0, 0] }}
-        title="Votre groupe d'aventuriers"
-        onMenu={noop} onQuitCoop={noop} onCreate={noop}
-        onAddHero={noop} onRemoveHero={noop} onReplaceHero={noop}
-        onAssignSlot={noop} onStart={noop}
-      />,
-    );
-    expect(html).not.toContain('Remplacer');
-  });
 });
 
-describe('PartyScreen — libellés i18n', () => {
-  beforeEach(() => {
-    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
-  });
-  afterEach(() => {
-    delete (globalThis as { localStorage?: Storage }).localStorage;
-  });
-
-  const renderView = (party: Combatant[], net: NetState) =>
-    renderToStaticMarkup(
-      <PartyScreenView
-        party={party}
-        net={net}
-        title="Votre groupe d'aventuriers"
-        onMenu={noop}
-        onQuitCoop={noop}
-        onCreate={noop}
-        onAddHero={noop}
-        onRemoveHero={noop}
-        onAssignSlot={noop}
-        onStart={noop}
-      />,
-    );
-
-  it('libellés solo : navigation, sièges, étal, action', () => {
-    const html = renderView([], initialNet());
-    expect(html).toContain('← Menu');
-    expect(html).toContain('Siège 1');
-    expect(html).toContain('Siège 4');
-    expect(html).toContain('Un siège à pourvoir');
-    expect(html).toContain('candidate-gallery');
-    expect(html).toContain('Pré-tirés');
-    expect(html).toContain('Commencer →');
-  });
-
-  it('libellés invité : bouton Quitter, message attente hôte', () => {
-    const html = renderView([], { ...initialNet(), mode: 'guest', mySeat: 1, slots: [0, 1, 0, 0] });
-    expect(html).toContain('← Quitter');
-    expect(html).toMatch(/L\S*h\S*te lance la partie/);
-  });
-
-  it('libellés hôte avec siège invité vide : Commencer, message en attente', () => {
-    const html = renderView([], {
-      ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hote', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 0, 0],
-    });
-    expect(html).toContain('Commencer →');
-    expect(html).toContain('En attente que chaque joueur remplisse ses emplacements');
-  });
-
-  it('libellés PartyPicker : onglets, bouton Terminé', () => {
-    const html = renderToStaticMarkup(<PartyPicker party={[]} onPick={() => {}} onClose={() => {}} />);
-    expect(html).toContain('Mes personnages');
-    expect(html).toContain('Pré-tirés');
-    expect(html).toContain('Terminé');
-    expect(html).toContain('Choisir');
-  });
-});
-
-describe('PartyScreen — hiérarchie : équipe (star, colonne) + étal de candidats', () => {
+describe('PartyScreen — présentation par le PERSONNAGE (plus de bouton « Qui est-ce ? »)', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
   });
@@ -270,11 +206,18 @@ describe('PartyScreen — hiérarchie : équipe (star, colonne) + étal de candi
       />,
     );
 
-  it('layout : colonne latérale (layout-sidebar) équipe + étal', () => {
-    const html = render([], initialNet());
-    expect(html).toContain('layout-sidebar party-layout');
-    expect(html).toContain('party-roster');
-    expect(html).toContain('candidate-gallery');
+  it('siège occupé : carte RICHE — portrait + nom + rôle + badge « Siège N », personnage cliquable', () => {
+    const heroes = makePregens().slice(0, 2);
+    const html = render(heroes, initialNet());
+    expect(html).toContain('seat-card');
+    expect(html).toContain('seat-card-badge');
+    expect(html).toContain('Siège 1');
+    expect(html).toContain(heroes[0].name); // nom COMPLET dans la compagnie
+    expect(html).toContain('card-roles'); // rôle (forces) sur la carte de siège
+    expect(html).toContain('char-present'); // la figurine+identité EST le contrôle de présentation
+    expect(html).toContain(`Voir ${heroes[0].name}`); // aria-label du contrôle
+    expect(html).not.toContain('Qui est-ce ?'); // le bouton loupe est SUPPRIMÉ
+    expect(html).not.toContain('who-btn');
   });
 
   it('roving tabindex : UN seul siège tabbable, les trois autres à -1', () => {
@@ -296,59 +239,22 @@ describe('PartyScreen — hiérarchie : équipe (star, colonne) + étal de candi
     expect(slotKeyNav('x', 2, 4)).toBeNull();
   });
 
-  it('siège vide : placeholder COURT « Siège N » (il ne vole pas la place des sièges pleins)', () => {
-    const html = render([], initialNet());
-    expect(html).toContain('seat-empty');
-    expect(html).toContain('Siège 1');
-    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(1);
-  });
-
-  it('siège occupé : carte de siège RICHE — portrait + nom + rôle + accroche + badge « Siège N »', () => {
-    const heroes = makePregens().slice(0, 2);
-    const html = render(heroes, initialNet());
-    expect(html).toContain('seat-card');
-    expect(html).toContain('seat-card-badge');
-    expect(html).toContain('Siège 1');
-    expect(html).toContain(heroes[0].name); // nom COMPLET dans la colonne
-    expect(html).toContain('card-roles'); // rôle (forces) sur la carte de siège
-  });
-
-  it('étal : grandes cartes-portraits (figure + nom + rôle + accroche) + carte-action + « Qui est-ce ? »', () => {
-    const html = render([], initialNet());
-    expect(html).toContain('candidate-grid');
-    expect(html).toContain('candidate-card');
-    expect(html).toContain('candidate-name');
-    expect(html).toContain('card-roles'); // RÔLE en toutes lettres (plus de chips cryptiques)
-    expect(html).not.toContain('res-chip'); // plus de chips icône+nombre
-    expect(html).toContain('candidate-action-card');
-    expect(html).toContain('Recruter');
-    expect(html).toContain('Qui est-ce ?'); // affordance présentation VISIBLE
-  });
-
-  it('recruté : le visage QUITTE l’étal pour la colonne (hideInParty)', () => {
+  it('groupe complet : 4 cartes de siège, aucun siège vide, aucune galerie', () => {
     const heroes = makePregens().slice(0, 4);
     const full = render(heroes, initialNet());
-    // les 4 recrutés sont dans la colonne (4 cartes de siège), plus dans l’étal.
     expect((full.match(/seat-card-badge/g) ?? []).length).toBe(4);
     for (const h of heroes) expect(full).toContain(h.name);
-    // étal restant : 4 pré-tirés non recrutés + la carte-action « Créer ».
-    expect(full).toContain('candidate-card');
     expect(full).not.toContain('seat-empty'); // groupe complet → aucun siège vide
+    expect(full).not.toContain('candidate-card'); // pas de galerie sur l'écran de groupe
   });
 
-  it('archétype : sous-titre « Espèce · Carrière » SANS « (niv. N) » (bruit retiré)', () => {
-    const html = render([], initialNet());
-    expect(html).toContain('candidate-sub');
-    expect(html).not.toContain('(niv.'); // le niveau vit dans la fiche, pas sur la carte
-  });
-
-  it('onglet Mes personnages : carte-action Créer + carte-action Importer (même famille)', () => {
-    rosterAdd({ hero: savedHero(), wealth: { gold: 0, silver: 0, brass: 0 } });
-    const html = render([], initialNet());
-    expect(html).toContain('Aventurière Sauvegardée');
-    expect(html).toContain('candidate-name');
-    expect((html.match(/candidate-action-card/g) ?? []).length).toBe(2); // Créer + Importer
-    expect((html.match(/Créer un personnage/g) ?? []).length).toBe(1);
-    expect(html).toContain('Importer un personnage');
+  it('sous-titre d’archétype : la CARRIÈRE d’abord, l’espèce ensuite (arbitrage user 2026-07-13)', () => {
+    const hero = makePregens()[0];
+    const sub = heroSubtitle(hero);
+    expect(sub).toContain(' — '); // « Carrière — Espèce »
+    // la carrière précède l'espèce (séparateur em-dash entre les deux)
+    const [career] = sub.split(' — ');
+    expect(career.length).toBeGreaterThan(0);
+    expect(render([hero], initialNet())).toContain('candidate-sub');
   });
 });

@@ -59,6 +59,19 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+/* ── ACTION GATÉE (primitive GatedAction.tsx) : bouton d'engagement + raison d'indisponibilité en
+   texte VISIBLE empilée dessous (a11y `aria-describedby`) — hub de ville, écran d'équipe. ── */
+.gated-action {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gated-action-reason {
+  margin: 0;
+  opacity: 0.8;
+  font-size: 0.9em;
+  font-style: italic;
+}
 
 /* ── SECTION REPLIABLE ── <details class="fold"><summary><span class="fold-title">…</span></summary><div class="fold-body">…</div></details> */
 .fold {
@@ -786,8 +799,6 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
 .city-hub-synth li { display: flex; gap: 10px; }
 .city-hub-synth-k { flex: 0 0 84px; opacity: 0.8; font-size: 0.85em; }
 .city-hub-synth-v { font-weight: 600; }
-/* Action GATÉE (`GatedAction`) : bouton + raison d'indisponibilité empilée dessous, dans le pied. */
-.city-hub-gate { display: flex; flex-direction: column; gap: 6px; }
 .city-hub-rumours h4 { margin: 0 0 6px; }
 .city-hub-hint { margin: 0; padding-left: 18px; font-size: 0.9em; opacity: 0.9; }
 .city-hub-empty { opacity: 0.75; font-style: italic; }
