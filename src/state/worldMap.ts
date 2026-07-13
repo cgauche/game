@@ -248,10 +248,11 @@ export interface ResolvedPlaceService {
   merchantArchetype?: string;
 }
 
-/** Icône (id du registre `src/ui/icons`) d'un service résolu : le catalogue fournit la sienne, sinon un
- *  défaut par catégorie. PUR (id → id), source unique partagée par le hub, le plan et l'aperçu d'éditeur. */
+/** Icône (id du registre `src/ui/icons`) d'un service résolu : le catalogue (`lieux-services.json`) fournit
+ *  la sienne via `placeServices`, sinon un défaut générique. PUR (id → id), source unique partagée par le
+ *  hub, le plan et l'aperçu d'éditeur. */
 export function serviceIcon(s: ResolvedPlaceService): string {
-  return s.icon ?? (s.category === 'port' ? 'travel/anchor' : s.category === 'marche' ? 'merchant/cart' : s.category === 'auberge' ? 'rest/bed' : 'nav/entry-point');
+  return s.icon ?? 'nav/entry-point';
 }
 
 /** Résolution GÉNÉRALE de l'icône d'un marqueur de plan (#371) : l'`icon` authoré du POI PRIME (surcharge
@@ -294,8 +295,14 @@ function sceneAubergeOffer(scene?: Scene): RestPlaces | undefined {
  */
 export function placeServices(place: MapPlace, scene?: Scene): ResolvedPlaceService[] {
   const out: ResolvedPlaceService[] = [];
-  if (place.port) out.push({ id: 'port', category: 'port', label: 'Port', icon: 'travel/anchor', port: place.port });
-  if (place.market) out.push({ id: 'marche', category: 'marche', label: 'Marché', icon: 'merchant/cart', market: place.market });
+  if (place.port) {
+    const def = findLieuServiceById('port');
+    out.push({ id: 'port', category: 'port', label: def?.label ?? 'Port', icon: def?.icon, desc: def?.desc, port: place.port, hostLine: def?.hostLine, backdrop: def?.backdrop });
+  }
+  if (place.market) {
+    const def = findLieuServiceById('marche');
+    out.push({ id: 'marche', category: 'marche', label: def?.label ?? 'Marché', icon: def?.icon, desc: def?.desc, market: place.market, hostLine: def?.hostLine, backdrop: def?.backdrop });
+  }
   const declared = new Set<string>();
   for (const s of place.services ?? []) {
     const def = findLieuServiceById(s.kind);

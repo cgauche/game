@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { parseProject, declutterPositions, resolvePortRef, placeServices, type ProjectDoc, type RenderPoint, type MapPlace } from './worldMap';
+import { lieuxServices } from '../data';
 import { validateScene } from './validateScene';
 import type { Scene } from './scene';
 
@@ -220,6 +221,12 @@ describe('placeServices — vocabulaire unique des services de lieu (#343)', () 
     expect(svc[1].market).toBe(p.market);
     expect(svc[2].rest).toBe(rest);
     expect(svc[2].label).toBe('Auberge'); // libellé du catalogue lieux-services.json
+    expect(svc[0].icon).toBe('travel/anchor'); // icône LUE au catalogue, pas codée en dur
+    expect(svc[1].icon).toBe('merchant/cart');
+  });
+
+  it('toute entrée du catalogue lieux-services.json porte une icône (source unique des icônes de service)', () => {
+    for (const def of lieuxServices) expect(def.icon, def.id).toBeTruthy();
   });
 
   it('services de catalogue (temple/forgeron) → catégorie « autre », libellé/icône du catalogue', () => {

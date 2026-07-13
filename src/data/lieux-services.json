@@ -7,6 +7,13 @@
     "backdrop": "taverne-commune"
   },
   {
+    "id": "port",
+    "label": "Port",
+    "icon": "travel/anchor",
+    "hostLine": "Bienvenue à quai ! Amarrage, fret et passage — ici on négocie tout ce qui flotte, et le reste aussi.",
+    "backdrop": "port"
+  },
+  {
     "id": "marche",
     "label": "Marché",
     "icon": "merchant/cart",
