@@ -353,9 +353,16 @@
   .initiative-strip { left: 4px; }
   .is-tiles { gap: 5px; padding: 5px 4px; }
   .ptile-states { font-size: 10px; }
-  .combat-feed { top: 96px; max-width: 94vw; } /* sous le dock d'équipe désormais en haut */
+  /* Le dock d'équipe (4 héros + navires alliés en combat naval) S'ENROULE en dessous de cette largeur
+     (`.party-dock` — enrouler plutôt que chevaucher les coins) : 96px ne couvrait qu'UNE rangée, la
+     bannière chevauchait dès que le dock passait à 2 rangées (dès 4 tuiles) — #376 pt.7, repro CDP 360px. */
+  .combat-feed { top: 176px; max-width: 94vw; }
   .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne sur mobile (pas de débord) */
   .modal-actions { flex-wrap: wrap; justify-content: center; } /* boutons de modale : passage à la ligne propre sur mobile */
+}
+@media (max-width: 420px) {
+  /* En dessous de 420px, un combat NAVAL (4 héros + 1 navire allié = 5 tuiles) s'enroule sur 3 rangées. */
+  .combat-feed { top: 254px; }
 }
 
 /* TÉLÉPHONE étroit seulement : la barre passe pleine largeur (la hotbar remplit). Aux largeurs tablette
@@ -390,7 +397,11 @@
   max-width: calc(100vw - 220px);
 }
 @media (max-width: 700px) {
-  .party-dock { top: 6px; gap: 8px 10px; }
+  /* `max-width` desktop réserve les COINS (menu/carte) via un `calc(100vw - 220px)` : à largeur
+     mobile ce reste fixe de 220px dévore presque toute la largeur (140px à 360px !), forçant le dock
+     à s'enrouler sur 2 rangées et déborder sous la bannière d'annonce (#376 pt.7, repro CDP 360px).
+     Les coins sont déjà petits/redisposés en mobile → un plafond en vw (comme `.combat-feed`) suffit. */
+  .party-dock { top: 6px; gap: 8px 10px; max-width: 92vw; }
 }
 
 /* ── Tiroir journal (bas-droite) ── */
@@ -477,10 +488,17 @@
   gap: 10px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
 }
-.gm-scene {
+.gm-title {
   margin: 0;
   font-size: 15px;
   color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.gm-scene {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
 }
 .gm-date {
   font-size: 12px;

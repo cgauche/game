@@ -37,7 +37,8 @@ export function GameMenu({ sceneName, money, time, onQuit, onSaveLoad, onEndSess
       </button>
       {open && (
         <div className="gm-panel">
-          {sceneName && <h3 className="gm-scene">{sceneName}</h3>}
+          <h3 className="gm-title">{t('gameMenu.menu')}</h3>
+          {sceneName && <p className="gm-scene">{sceneName}</p>}
           <div className="gm-date"><GameDate time={time} /></div>
           <div className="gm-section">
             <span className="mini-title">{t('gameMenu.purse')}</span>

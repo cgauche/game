@@ -567,9 +567,16 @@
   .creator-main {
     overflow: visible;
   }
-  /* Bandeau compact : la figurine (charprev fill) est bornée en largeur, l'aspect-ratio fait le reste. */
+  /* Bandeau compact : la figurine (charprev fill) est bornée en largeur, l'aspect-ratio fait le reste.
+     `.charprev-fill` (components.css) remet `height:100%` + `aspect-ratio:auto` pour le mode 3ᵉ colonne
+     pleine hauteur (desktop) — ici la figurine redevient une VIGNETTE de rangée : sans un `height`
+     borné, `height:100%` se résout contre la hauteur du flex row lui-même déterminée PAR la figurine
+     (dépendance circulaire) → Chromium lui donne une hauteur disproportionnée qui écrase le reste du
+     bandeau ET déborde sur le rail suivant (#376 pt.1, repro 360px capturée en CDP headless). */
   .creator-summary .creator-fig {
     width: 76px;
+    height: auto;
+    aspect-ratio: 120 / 150;
     flex: 0 0 auto;
   }
   .creator-summary .creator-id {

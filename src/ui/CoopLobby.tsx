@@ -87,6 +87,7 @@ export function CoopLobby() {
           </section>
           <section className="panel coop-role">
             <div className="mini-title">{t("coop.join.section")}</div>
+            <p className="hint">{t("coop.join.hint")}</p>
             <input
               className="coop-code-input"
               value={joinCode}

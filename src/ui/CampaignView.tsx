@@ -226,10 +226,13 @@ export function CampaignView() {
         {/* Objectif courant (#238) — surface discrète TOUJOURS visible en exploration ; masquée en
             combat (l'écran tactique se réserve le HUD). Nulle si la pile d'objectifs est vide. */}
         {mode === 'exploration' && <ObjectiveBannerMount />}
-        {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
-        {(sessionOpen || sessionEndOpen) && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
-        {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
-        {optionsOpen && <OptionsModal onClose={() => setOptionsOpen(false)} />}
+        {/* Panneaux du menu ☰ : surfaces SYSTÈME, jamais par-dessus un dialogue PNJ en cours (#376 pt.2)
+            — `DialogueBox` ne porte pas de `.modal-overlay` (pas de voile plein écran), donc une
+            modale système au-dessus resterait invisible/inatteignable sous elle sans cette garde. */}
+        {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
+        {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
+        {rulesOpen && !dialogue && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
+        {optionsOpen && !dialogue && <OptionsModal onClose={() => setOptionsOpen(false)} />}
         {/* Barre d'actions de lieu : carte / port / marché / repos — rangée qui s'auto-empile
             (aucune se recouvre, quel que soit le sous-ensemble affiché). */}
         <div className="worldmap-actions">
@@ -324,8 +327,11 @@ export function CampaignView() {
             du jour EN SON CENTRE (l'arbitre supprime la modale flottante). */}
         {showVoyage && <VoyageScreen onClose={() => setVoyageMin(true)} />}
         {/* Hub de ville (#343) : écran-lieu plein-champ. Cédé aux écrans plein-champ qu'il ouvre
-            (carte du monde, port, marché) — « Entrer » ferme le hub avant de les ouvrir. */}
-        {cityHubOpen && hubPlace && mode === 'exploration' && !worldMapOpen && !port && !landMarket && (
+            (carte du monde, port, marché) — « Entrer » ferme le hub avant de les ouvrir. Cédé aussi à
+            la modale de repos (`pendingRest` → `ActiveModal` clé `rest`) : « Dormir » depuis le panneau
+            auberge armait `pendingRest` SANS fermer le hub, qui restait monté DERRIÈRE la modale flottante
+            (bouton « Recueillir des informations » écrasé sous son bord, #376 pt.4). */}
+        {cityHubOpen && hubPlace && mode === 'exploration' && !worldMapOpen && !port && !landMarket && !pendingRest && (
           <CityHubScreen place={hubPlace} scene={scene ?? undefined} rest={restHere} onClose={() => setCityHubOpen(false)} />
         )}
         {landMarket && mode === 'exploration' && <LandMarketView />}

@@ -93,9 +93,9 @@ export function GmSoloToggle() {
   if (net.mode !== 'local') return null;
   return (
     <div className="gm-section gm-solo-toggle">
-      <label>
+      <label className="radio">
         <input type="checkbox" checked={net.gmSeat != null} onChange={(e) => setGmSeat(e.target.checked ? 0 : null)} />
-        <span>Contrôler aussi les ennemis / le monde (MJ)</span>
+        <span>Siège du contrôleur — piloter aussi les ennemis / le monde</span>
       </label>
     </div>
   );

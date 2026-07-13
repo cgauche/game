@@ -31,7 +31,8 @@ describe("CoopLobby -- libelles i18n Phase D", () => {
     expect(html).toContain("Rejoindre");
     expect(html).toContain("← Menu");
     expect(html).toContain("Le groupe se compose ensemble");
-    expect(html).toContain("Code (6 caractères)");
+    expect(html).toContain("Le code de room fait 6 caractères.");
+    expect(html).toContain("CODE");
   });
 
   it("catalogue : libelles coop guest/host resolus par t()", () => {

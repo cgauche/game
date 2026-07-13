@@ -58,4 +58,9 @@ export const shipPlan: BodyPlan = {
   attackPose: shipRam,
   deathPose: () => SHIP_DEATH,
   hasView: () => true,
+  // Coque ANCRÉE AU SOL (`groundedBody`, base en y=GROUND_Y=150) — SANS ce cadre, le portrait retombe
+  // sur le défaut `CREATURE_BOX` haut-avant (bodyPlan.ts) qui ne couvre QUE y∈[14,94] : la coque entière
+  // (dessinée en y négatif depuis la base 150, donc bien plus bas) tombait hors cadre → portrait noir/vide
+  // en frise d'initiative et fiche navire (#376 pt.3). Même bloc bas que engin/land (mêmes fondations).
+  portraitBox: '25 80 70 70',
 };

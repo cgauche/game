@@ -202,13 +202,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/creator.css': 74,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
-  'styles/hud.css': 148,
+  'styles/hud.css': 149,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 56,
   'styles/ornaments.css': 13,
   'styles/sheet.css': 91,
   'styles/tavern.css': 13,
-  'styles/world-meta.css': 144,
+  'styles/world-meta.css': 147,
 };
 
 function classNamesDefined(css: string): Set<string> {

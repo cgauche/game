@@ -139,7 +139,10 @@
 .sea-voyage-gauges { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 200px; min-width: 0; }
 .sea-voyage-meta { align-items: center; gap: 6px 8px; font-size: 0.9em; margin: 0; }
 .sv-weather { font-weight: 600; margin-right: 2px; }
-.sea-voyage-log { max-height: 40vh; overflow-y: auto; }
+/* max-height réduit (40vh → 25vh, #376 pt.4) : ce PV défilant est imbriqué dans `.travel-recap-days`
+   (elle-même scrollable) — lui laisser 40vh pouvait à lui seul saturer le budget de l'ascenseur
+   PARENT et repousser la rangée météo/vent/cap/distance sous le pli. */
+.sea-voyage-log { max-height: 25vh; overflow-y: auto; }
 .sea-voyage-notes { color: var(--muted); font-size: 0.85em; }
 .sea-voyage-orders { display: flex; justify-content: flex-end; }
 @media (max-width: 560px) {

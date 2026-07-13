@@ -373,10 +373,22 @@
 .save-slot-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .save-error { color: var(--danger-bright); font-size: 13px; margin: 6px 0 0; }
 
-/* Écran Options — remap clavier (rangées libellé ↔ touche). */
-.opt-keys { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 10px; }
+/* Écran Options — remap clavier (rangées libellé ↔ touche), GROUPÉES par section (#376 pt.5). */
+.opt-keys { display: flex; flex-direction: column; gap: 14px; margin: 4px 0 10px; }
+.opt-key-section { display: flex; flex-direction: column; gap: 6px; }
+.opt-key-section-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
 .opt-key-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.opt-key-label { color: var(--text); }
+.opt-key-label { color: var(--text); display: inline-flex; align-items: center; gap: 6px; }
+.opt-key-shared { color: var(--gold); display: inline-flex; }
 .opt-key-row .btn { min-width: 132px; text-align: center; }
 
 /* ══════════ Entre deux aventures — « Le Registre du Répit » (refonte #257) ══════════
@@ -561,7 +573,10 @@
 .travel-recap { max-width: min(560px, 94vw); }
 .travel-recap-route { margin: 4px 0 10px; font-size: 14px; }
 /* « Jour N » est écrit DANS le texte (le ::marker était rogné par l'overflow — bug recette). */
-.travel-recap-days { text-align: left; list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; max-height: 40vh; overflow-y: auto; }
+/* max-height AUGMENTÉ (40vh → 60vh, #376 pt.4) : une journée de MER (`SeaVoyageBody` — rose des
+   vents + jauges + météo/vent/cap/distance) dépasse à elle seule 40vh, clippant la rangée météo
+   sous le pli d'un ascenseur interne discret (repro CDP headless, non visible sans scroller). */
+.travel-recap-days { text-align: left; list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; max-height: 60vh; overflow-y: auto; }
 .travel-recap-day { font-weight: 600; color: var(--gold); }
 .travel-recap-days ul { margin: 2px 0 0; padding-left: 16px; color: var(--muted); }
 .travel-recap-foot { font-size: 13px; color: var(--muted); margin: 0 0 4px; }
