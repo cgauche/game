@@ -24,8 +24,9 @@
  *     hebdomadaires (l.148) ; eau/scorbut (ch.14 l.224-242) ; halte de repos (machinerie existante).
  *  À l'accostage : ÉVÉNEMENT DE PORT (2d10 ± Humeur, ch.15 l.127).
  *
- * ÉQUIPAGE hors combat : ABSTRAIT, tenu par les PJ (MDG 14 l.39) — pas de Manque de bras (l.53-55).
- * En combat, l'équipage est réel (`battle.combatants`) et le Manque de bras s'applique (`shipCrew.ts`).
+ * ÉQUIPAGE hors combat : ABSTRAIT, tenu par les PJ (MDG 14 l.39) ; aucun PJ apte à un poste = sous
+ * l'effectif minimal → Manque de bras (MDG 14 l.55). En combat, l'équipage est réel
+ * (`battle.combatants`) et le Manque de bras s'applique aussi (`shipCrew.ts`).
  */
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
@@ -79,7 +80,7 @@ import {
 import { navalMoveMod, navalTestTypeDR, navalNavTestDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { seaAutoResolves, voyageDayEntry, type VoyageOrders, type VoyageCadence } from './voyageCadence';
-import { crewRoleValue, moraleBand, crewTalentDR } from '../engine/crewMorale';
+import { crewRoleValue, moraleBand, crewTalentDR, UNDERCREW_DR, capToSuccesMinime } from '../engine/crewMorale';
 import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
 import { subtract, toMoney, type Money } from '../engine/money';
@@ -495,15 +496,15 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
   const route = worldMap?.routes.find((r) => r.id === plan.routeId);
   const out: CascadeStep[] = [];
   // 6. CRISE en cours (Poursuite ch.13 l.354 / Tourbillon l.514) : un Test d'équipage par JOUR. Aucun PJ
-  // apte au poste → la manche se joue quand même à DR 0 (baseline, MDG 14 l.39/61 — miroir de la
-  // Progression sans équipage `buildSeaDayCascade`) : une CRISE ne se drop JAMAIS faute de titulaire,
-  // sinon elle reste posée sans jamais resurgir (soft-lock #383).
+  // apte au poste = sous l'effectif minimal (MDG 14 l.55) → la manche se joue quand même au plancher de
+  // Manque de bras (miroir de la Progression sans équipage `buildSeaDayCascade`) : une CRISE ne se drop
+  // JAMAIS faute de titulaire, sinon elle reste posée sans jamais resurgir (soft-lock #383).
   if (sea.crisis) {
     const kind = sea.crisis.kind === 'poursuite' ? 'poursuite' : 'tourbillon';
     const testTypeId = sea.crisis.kind === 'poursuite' ? 'progression-poursuite' : 'manoeuvre';
     const st = buildVoyageCrewStep(get, testTypeId, kind);
     if (st) out.push(st);
-    else resolveSeaCrisisRound(get, set, 0);
+    else resolveSeaCrisisRound(get, set, capToSuccesMinime(UNDERCREW_DR));
   }
   // #212. Embuscade AUTHORÉE à ancrage déterministe : franchissement de l'ancrage ce jour → Test de
   // Perception PUIS abordage (applier `embuscade`, déjà enregistré).
@@ -546,8 +547,8 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
  * Construit la CASCADE du jour (#275 Ronde 2 cran 3) : tronc = Forcer le rythme (si demandé) → Affaler
  * (si vents violents) → Progression — l'applier `'progression'` (déjà enregistré, cran 2a) INSÈRE les
  * étapes post-progression (`buildPostProgressionSteps`) une fois `sea.milesToday` connu. Aucun PJ apte
- * pour la Progression → applique la progression à DR nul et bâtit quand même les étapes qui n'en
- * dépendent pas (miroir de l'ancien chemin `'none'`).
+ * pour la Progression → applique la progression au plancher de Manque de bras (MDG 14 l.55) et bâtit
+ * quand même les étapes qui n'en dépendent pas (miroir de l'ancien chemin `'none'`).
  */
 function buildSeaDayCascade(get: Get, set: Set): { steps: CascadeStep[]; log: string[] } {
   const steps: CascadeStep[] = [];
@@ -583,7 +584,8 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: CascadeStep[]; log: st
   const progStep = buildVoyageCrewStep(get, 'progression', 'progression');
   if (progStep) steps.push(progStep);
   else {
-    tell(get, set, applySeaProgress(get, set, 0)); // aucun équipage apte → progression sans DR
+    // aucun PJ apte = sous l'effectif minimal (MDG 14 l.55) : Progression au plancher de Manque de bras.
+    tell(get, set, applySeaProgress(get, set, capToSuccesMinime(UNDERCREW_DR)));
     steps.push(...buildPostProgressionSteps(get, set));
   }
   return { steps, log: [] };
@@ -1328,9 +1330,9 @@ registerCascadeApplier('embuscade', (get, set, step) => {
 /**
  * Cœur d'UNE manche de CRISE (Poursuite ch.13 l.354-370 / Tourbillon ch.13 l.514-528) : dispatche sur
  * `sea.crisis.kind`, applique l'issue et journalise (recap). `total` = DR net de l'équipage —
- * `step.result.sl` quand un Test d'équipage a pu s'ouvrir, `0` (baseline, aucun bonus) quand AUCUN
- * PJ n'est apte au poste : la manche se joue quand même, comme la Progression sans équipage apte
- * (`buildSeaDayCascade` → `applySeaProgress(0)`). Peut ouvrir l'abordage (Poursuite « caught »,
+ * `step.result.sl` quand un Test d'équipage a pu s'ouvrir, le plancher de Manque de bras (MDG 14 l.55,
+ * `capToSuccesMinime(UNDERCREW_DR)`) quand AUCUN PJ n'est apte au poste : la manche se joue quand même,
+ * comme la Progression sans équipage apte (`buildSeaDayCascade`). Peut ouvrir l'abordage (Poursuite « caught »,
  * `startChaseBoarding` → `interrupted`). SOURCE UNIQUE partagée par les appliers `poursuite`/`tourbillon`
  * ET le repli sans équipage de `buildPostProgressionSteps` — une crise ne se DROP jamais faute de titulaire.
  */

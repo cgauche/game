@@ -1,5 +1,5 @@
 /**
- * Disponibilité RAW (pur, seedé). LDB 59 « Faire son marché » l.13-34. Les tables numériques (% de
+ * Disponibilité RAW (pur, seedé). LDB 59 « Faire son marché » l.13-34 (p.290-291). Les tables numériques (% de
  * Disponibilité, RATIOS DE TROC) vivent en donnée éditable `src/data/disponibilite.json` (#366).
  *  - Test de Disponibilité (réussite si d100 ≤ %) : Commune = toujours ; Limitée/Rare = table ;
  *    Exotique = jamais (sauf curaté/commande).
@@ -7,7 +7,7 @@
  */
 import { d100, d10, type RNG } from './dice';
 import type { Availability } from './types';
-import dispoJson from '../data/disponibilite.json';
+import { disponibilite as dispoJson } from '../data/index';
 
 export type Settlement = 'village' | 'ville' | 'cite';
 export interface CatalogItem { id: string; label: string; availability: Availability | null; }

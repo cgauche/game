@@ -69,6 +69,7 @@ import peripetiesJson from './peripeties.json';
 import massBattleJson from './mass-battle.json';
 import grappleJson from './grapple.json';
 import reglesJson from './regles.json';
+import disponibiliteJson from './disponibilite.json';
 import waterExposureJson from './water-exposure.json';
 import nightStakesJson from './night-stakes.json';
 import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
@@ -1241,6 +1242,12 @@ export interface RegleData {
   source: SourceRef;
 }
 export const regles = reglesJson as RegleData[];
+/** Tables numériques de Disponibilité & de Troc (LDB 59 « Faire son marché » p.290-291) — app-owned
+ *  éditable ; consommé par `engine/disponibilite` (mêmes références). */
+export interface DispoPctRow { availability: 'Limitée' | 'Rare'; pct: Record<'village' | 'ville' | 'cite', number>; source: SourceRef }
+export interface BarterRatioRow { give: Availability; ratios: Record<Availability, { give: number; get: number }>; source: SourceRef }
+export interface DispoData { dispoPct: DispoPctRow[]; barterRatios: BarterRatioRow[] }
+export const disponibilite = disponibiliteJson as DispoData;
 /** Maladies (LDB 20) — app-owned éditable au Codex ; le COMPORTEMENT (cycle/symptômes) vit dans
  *  `engine/disease`. `DiseaseDef` (type) y est défini ; ici on n'expose que la DONNÉE. */
 export const maladies = maladiesJson as DiseaseDef[];

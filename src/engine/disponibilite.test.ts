@@ -6,7 +6,7 @@ import {
 } from './disponibilite';
 import dispoJson from '../data/disponibilite.json';
 
-describe('disponibilite — Disponibilité RAW (LDB 59 p.292)', () => {
+describe('disponibilite — Disponibilité RAW (LDB 59 l.13-34, p.290-291)', () => {
   it('table RAW : Limitée 30/60/90, Rare 15/30/45', () => {
     expect(DISPO_PCT.Limitée).toEqual({ village: 30, ville: 60, cite: 90 });
     expect(DISPO_PCT.Rare).toEqual({ village: 15, ville: 30, cite: 45 });

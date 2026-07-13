@@ -195,6 +195,11 @@ export interface UndercrewPenalty {
  * type ; `present` = membres encore en état). Dès qu'au moins une tranche manque, le Test « ne peut jamais être
  * meilleur qu'un Succès Minime » (plafond du DR total à 0). Aucune pénalité si l'effectif est complet ou si moins
  * de 10 % manque. PUR. */
+/** DR d'un Test d'équipage joué SOUS l'effectif minimal (MDG ch.14 l.55) : −2 DR. */
+export const UNDERCREW_DR = -2;
+/** Plafonne un total de DR d'équipage au Succès Minime (MDG ch.14 l.55) : jamais > 0. */
+export function capToSuccesMinime(total: number): number { return Math.min(0, total); }
+
 export function undercrewPenalty(nominal: number, present: number): UndercrewPenalty {
   if (nominal <= 0 || present >= nominal) return { tranches: 0, dr: 0, capSuccesMinime: false };
   const tranches = Math.floor(((nominal - present) * 10) / nominal); // tranches de 10 % manquantes (arith. entière, <10 % → 0)
@@ -334,10 +339,11 @@ export function resolveCrewTestByRoles(
       successDR: role ? crewTalentDR(a.crew, role) : 0, // Commandant émérite (MDG 09 l.54)
     };
   });
-  const res = resolveCrewTest(contributors, difficulty, moraleScore, rng, (opts.understaffed ? -2 : 0) + (opts.extraDR ?? 0));
-  if (opts.understaffed && res.total > 0) {
-    // MDG ch.14 l.55 : « ne peuvent jamais être meilleurs qu'un Succès Minime » → DR total plafonné à 0.
-    return { ...res, total: 0, lines: [...res.lines, 'Manque de bras : jamais mieux qu’un Succès Minime (DR total plafonné à 0).'] };
+  const res = resolveCrewTest(contributors, difficulty, moraleScore, rng, (opts.understaffed ? UNDERCREW_DR : 0) + (opts.extraDR ?? 0));
+  const capped = capToSuccesMinime(res.total);
+  if (opts.understaffed && res.total > capped) {
+    // MDG ch.14 l.55
+    return { ...res, total: capped, lines: [...res.lines, 'Manque de bras : jamais mieux qu’un Succès Minime (DR total plafonné à 0).'] };
   }
   return res;
 }

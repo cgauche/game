@@ -743,16 +743,20 @@ describe('Cogue pirate (#327 A5.3) — l’événement navire-hostile PRÉSENTE 
     expect(get().pendingCascade?.participants.some((s) => s.kind === 'poursuite')).toBe(true);
   });
 
-  it('équipage SANS compétence navale : la manche de Poursuite se JOUE quand même (DR 0), jamais droppée en silence (#383)', () => {
+  it('équipage SANS compétence navale : la manche de Poursuite se JOUE quand même (plancher de Manque de bras, MDG 14 l.55), jamais droppée en silence (#383)', () => {
     set({ party: makePregens().slice(0, 3).map((h) => ({ ...h, skills: [] })) } as never);
     forceHail();
     const cur = get().pendingCascade!.participants[get().pendingCascade!.cursor];
     get().cascadeChoose(cur.id, 'fuir');
-    get().cascadeNext(); // → runSeaDay : aucun PJ apte → la crise se résout à DR 0 (baseline), pas de lock
-    // La manche a JOUÉ : la crise a avancé (distance ≠ départ `escapeAt/2`) ou s'est résolue — jamais figée.
-    const crisis = get().travelPlan?.sea?.crisis;
-    const advanced = crisis?.kind !== 'poursuite' || crisis.distance !== Math.floor(crisis.escapeAt / 2);
-    expect(advanced).toBe(true);
+    get().cascadeNext(); // → runSeaDay : aucun PJ apte = sous l'effectif minimal → crise résolue au plancher (−2 DR, MDG 14 l.55), pas de lock
+    // La manche a JOUÉ : soit la crise s'est résolue (échappée/rattrapée), soit une manche a été jouée
+    // ET JOURNALISÉE (`sea.lines`). Au plancher de Manque de bras l'écart peut nier à 0 milles (le navire
+    // sous-armé ne creuse pas l'écart, MDG 14 l.55) — c'est le RAW, pas un drop : le journal le prouve.
+    const sea = get().travelPlan?.sea;
+    const journaled = (sea?.lines ?? []).some((l) => l.includes('Poursuite'))
+      || (get().travelPlan?.log ?? []).some((d) => d.lines?.some((l) => l.text.includes('Poursuite')));
+    const played = sea?.crisis?.kind !== 'poursuite' || journaled;
+    expect(played).toBe(true);
   });
 
   it('branche PRÉSENTÉE « soumettre » → pillage (100 %) puis choix du tribut (étape insérée)', () => {

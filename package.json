@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:hooks": "node --test scripts/hooks/exception-add-guard.test.mjs",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "docs:check": "node scripts/docs/check-doc-refs.mjs && node scripts/docs/build-systemes.mjs --check",
     "docs:systemes": "node scripts/docs/build-systemes.mjs",
