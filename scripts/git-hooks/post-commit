@@ -8,6 +8,20 @@
 # Motifs reconnus, insensibles à la casse, plusieurs occurrences par message :
 #   fixes #N | closes #N | corrige #N | ferme #N
 #
+# Solde de ticket (demande 2026-07-14) : `scripts/hooks/solde-ticket-guard.mjs` (PreToolUse)
+# refuse déjà le commit si `.claude/soldes/<N>.md` est absent/non conforme pour un #N fermé — au
+# moment où CE hook tourne, le solde existe donc pour tout commit qui a pu se créer. Quand il est
+# présent, son CONTENU devient le commentaire de fermeture (le solde vit sur l'issue, pas dans git),
+# puis le fichier est supprimé. Sans solde (fermeture héritée, hors du repo `Game`…) : comportement
+# hérité, commentaire générique.
+#
+# Palier de revue adversariale (même demande, extension 2026-07-14) : `.claude/soldes/.compteur`
+# cumule les fermetures depuis la dernière revue de PALIER ; le même hook PreToolUse bloque toute
+# fermeture une fois `.compteur` >= 10 sans `.claude/soldes/revue-palier.md` conforme. Ici, une
+# fois les fermetures de CE commit passées, on incrémente le compteur d'autant — sauf si
+# `revue-palier.md` est présent (la revue vient de débloquer le palier) : on le CONSOMME (compteur
+# remis à 0, fichier supprimé — son contenu a déjà été porté ailleurs par l'orchestrateur).
+#
 # Contrat : ce hook ne doit JAMAIS faire échouer le commit qui vient d'avoir
 # lieu. Toute erreur (hors-ligne, `gh` absent, issue déjà fermée, dépôt sans
 # token...) reste un warning silencieux sur stderr ; sortie TOUJOURS 0.
@@ -40,12 +54,39 @@ fi
 HASH="$(git rev-parse --short HEAD 2>/dev/null)"
 [ -n "$HASH" ] || HASH="?"
 
+COUNTER_FILE=".claude/soldes/.compteur"
+REVUE_PALIER_FILE=".claude/soldes/revue-palier.md"
+CLOSED_COUNT=0
+
 for N in $ISSUES; do
-  if gh issue close "$N" --repo "$REPO" --comment "Fermé automatiquement par le commit $HASH" >/dev/null 2>/dev/null; then
-    :
+  SOLDE=".claude/soldes/$N.md"
+  if [ -f "$SOLDE" ]; then
+    COMMENT="$(cat "$SOLDE")"
+    if gh issue close "$N" --repo "$REPO" --comment "$COMMENT" >/dev/null 2>/dev/null; then
+      rm -f "$SOLDE"
+      CLOSED_COUNT=$((CLOSED_COUNT + 1))
+    else
+      warn "impossible de fermer #$N (hors-ligne, déjà fermée, ou gh en erreur) — solde conservé"
+    fi
   else
-    warn "impossible de fermer #$N (hors-ligne, déjà fermée, ou gh en erreur) — ignoré"
+    if gh issue close "$N" --repo "$REPO" --comment "Fermé automatiquement par le commit $HASH" >/dev/null 2>/dev/null; then
+      CLOSED_COUNT=$((CLOSED_COUNT + 1))
+    else
+      warn "impossible de fermer #$N (hors-ligne, déjà fermée, ou gh en erreur) — ignoré"
+    fi
   fi
 done
+
+if [ "$CLOSED_COUNT" -gt 0 ]; then
+  mkdir -p .claude/soldes 2>/dev/null
+  if [ -f "$REVUE_PALIER_FILE" ]; then
+    rm -f "$REVUE_PALIER_FILE"
+    printf '0' > "$COUNTER_FILE"
+  else
+    PREV="$(cat "$COUNTER_FILE" 2>/dev/null)"
+    case "$PREV" in ''|*[!0-9]*) PREV=0 ;; esac
+    printf '%s' "$((PREV + CLOSED_COUNT))" > "$COUNTER_FILE"
+  fi
+fi
 
 exit 0

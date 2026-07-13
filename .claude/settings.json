@@ -56,6 +56,17 @@
             "statusMessage": "Garde git destructif (arbre partagé)"
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/solde-ticket-guard.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Fermeture de ticket au commit = solde écrit obligatoire"
+          }
+        ]
       }
     ],
     "PostToolUse": [
