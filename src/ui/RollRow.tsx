@@ -8,6 +8,7 @@ import { ForcedRollPicker } from './ForcedRollPicker';
 import { useRollFrisson } from './useRollFrisson';
 import { DrBar } from './DrBar';
 import { Icon } from './Icon';
+import { CodexRef } from './compendium/CodexRef';
 
 /** Libellé par défaut du bouton « Lancer » (rangée seule ET coquille `RollShell` hissée). */
 export const DEFAULT_ROLL_LABEL = <><Icon id="nav/dice" size="sm" /> Lancer</>;
@@ -52,13 +53,12 @@ export function RollRow({
   const { rolling, trigger: doRoll } = useRollFrisson(onRoll, { frisson: rollFrisson });
   const resil = resilience ?? actor?.resilience ?? 0;
   const determineBtn = determination && determination.resolve > 0 && (
-    <button
-      className="btn btn-resource"
-      onClick={determination.onResolve}
-      title="Dépense 1 Détermination : immunité à la Psychologie jusqu'à la fin du prochain Round"
-    >
-      <Icon id="resource/resolve" size="sm" /> Détermination ×{determination.resolve}
-    </button>
+    <>
+      <button className="btn btn-resource" onClick={determination.onResolve}>
+        <Icon id="resource/resolve" size="sm" /> Détermination ×{determination.resolve}
+      </button>
+      <CodexRef category="characteristics" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+    </>
   );
   return (
     <div className="prow">

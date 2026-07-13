@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Combatant } from '../engine/types';
 import { conditionMeta } from '../gameIso/effectIcons';
 import { Icon } from './Icon';
+import { CodexRef } from './compendium/CodexRef';
 
 /**
  * Détermination en modale de jet (LDB ch.17 l.62-66) : AVANT de lancer, un héros qui subit des
@@ -20,10 +21,10 @@ export function DeterminationButton({ combatant, onSpend }: { combatant?: Combat
       <button
         className={`btn btn-resource ${open ? 'btn-primary' : ''}`}
         onClick={() => setOpen(!open)}
-        title="Détermination : retire un État négatif — le jet recalcule ses modificateurs"
       >
         <Icon id="resource/resolve" size="sm" /> Détermination ×{resolve}
       </button>
+      <CodexRef category="characteristics" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
       {open &&
         conds.map((c) => (
           <button

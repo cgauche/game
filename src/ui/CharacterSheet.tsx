@@ -536,8 +536,8 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           <div className="mini-title">Afflictions</div>
           <div className="inv-rows">
             {(hero.corruption ?? 0) > 0 && (
-              <div className="inv-row" style={{ alignItems: 'center' }} title="Points de Corruption : au-delà de BFM + BE, chaque gain impose un Test de Résistance ou MUTATION.">
-                <span className="ir-name"><Icon id="nav/mutation" size="sm" /> Corruption</span>
+              <div className="inv-row" style={{ alignItems: 'center' }}>
+                <span className="ir-name"><Icon id="nav/mutation" size="sm" /> <CodexRef category="characteristics" label="Corruption">Corruption</CodexRef></span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {hero.corruption} point{(hero.corruption ?? 0) > 1 ? 's' : ''}{hero.damned ? ' — DAMNÉ' : ''}
                 </span>

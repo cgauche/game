@@ -1,4 +1,5 @@
 import { Icon } from './Icon';
+import { CodexRef } from './compendium/CodexRef';
 
 /**
  * Boutons de dépense de Chance partagés par les modales de jet (LDB « Destin et Résistance »
@@ -44,9 +45,7 @@ export function ChanceButtons({
     <button
       className="btn btn-resource"
       onClick={onReroll}
-      title={freeReroll
-        ? 'Bénédiction de Chance : relance gratuite du Test raté — sans dépenser de Chance'
-        : 'Dépense un point de Chance pour relancer le jet'}
+      title={freeReroll ? 'Bénédiction de Chance : relance gratuite du Test raté — sans dépenser de Chance' : undefined}
     >
       {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer</>}
     </button>
@@ -54,10 +53,16 @@ export function ChanceButtons({
   return (
     <>
       {rerollBtn}
+      {!freeReroll && rerollable && fortune > 0 && (
+        <CodexRef category="characteristics" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+      )}
       {fortune > 0 && onBonusSL && (
-        <button className="btn btn-resource" onClick={onBonusSL} title="Dépense un point de Chance pour ajouter +1 DR">
-          <Icon id="ui/add" size="sm" /> +1 DR ×{fortune}
-        </button>
+        <>
+          <button className="btn btn-resource" onClick={onBonusSL}>
+            <Icon id="ui/add" size="sm" /> +1 DR ×{fortune}
+          </button>
+          <CodexRef category="characteristics" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+        </>
       )}
       {pactBtn}
     </>
