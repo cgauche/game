@@ -20,6 +20,7 @@ import { Prose, mdToText } from './Prose';
 import { CharFrame } from './CharFrame';
 import { TeamPortrait } from './TeamPortrait';
 import { Icon } from './Icon';
+import { CodexRef } from './compendium/CodexRef';
 import { ScreenShell } from './ScreenShell';
 import { Tabs } from './Tabs';
 import { SpeakerBanner } from './SpeakerBanner';
@@ -239,7 +240,12 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
   const buyHaggleControl = () => {
     if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie"><Icon id="ui/forbidden" size="sm" /> Marchand méfiant — fini de marchander</span>;
     if (merchant.bargainLocked) return <span className="bargain-tag locked" title="Vous avez déjà négocié puis quitté sans conclure ; revenez après son réassort"><Icon id="ui/lock" size="sm" /> Marchandage indisponible jusqu’au réassort</span>;
-    if (merchant.bargainBuy == null) return <button className="btn small" onClick={() => onBargain('buy')} title="Test de Marchandage : en cas de réussite, le marchand baisse ses prix de 10 à 20 %"><Icon id="merchant/haggle" size="sm" /> Marchander le panier</button>;
+    if (merchant.bargainBuy == null) return (
+      <>
+        <button className="btn small" onClick={() => onBargain('buy')}><Icon id="merchant/haggle" size="sm" /> Marchander le panier</button>
+        <CodexRef category="skills" id="marchandage" label="Marchandage" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+      </>
+    );
     return merchant.bargainBuy.won
       ? <span className="bargain-tag won">✔ Prix réduits de {buyDiscount} %</span>
       : <span className="bargain-tag">✘ Marchandage raté — prix plein</span>;
@@ -335,9 +341,12 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             ? <><span className="cart-info"><Icon id="merchant/cart" size="sm" /> {cartCount} article{cartCount > 1 ? 's' : ''} · <Coins money={cartTotal} /></span><button className="btn small btn-primary" onClick={() => setBuyView('cart')}>Voir le panier →</button></>
             : <span className="cart-info empty"><Icon id="merchant/cart" size="sm" /> Panier vide</span>}
           {onSearchAvailability && (
-            <button className="btn small" onClick={onSearchAvailability} title="Passer une journée entière à écumer les étals (Test de Ragot) : réassort frais, Disponibilité +10 % si le Ragot réussit (LDB 59 l.50)">
-              <Icon id="ui/search" size="sm" /> Chercher activement (1 journée)
-            </button>
+            <>
+              <button className="btn small" onClick={onSearchAvailability}>
+                <Icon id="ui/search" size="sm" /> Chercher activement (1 journée)
+              </button>
+              <CodexRef category="regles" id="ragot-au-marche" label="Ragot au marché (bonus de Disponibilité)" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+            </>
           )}
         </div>
         {!cats.length ? (
@@ -591,7 +600,12 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
               <div className="haggle-bar">
                 {merchant.soured ? <span className="bargain-tag soured"><Icon id="ui/forbidden" size="sm" /> Marchand méfiant — fini de marchander</span>
                   : merchant.bargainLocked ? <span className="bargain-tag locked" title="Vous avez refusé/renié un marché ; revenez après son réassort"><Icon id="ui/lock" size="sm" /> Marchandage indisponible jusqu’au réassort</span>
-                  : merchant.bargainSell == null ? <button className="btn small" onClick={() => onBargain('sell')} title="Test de Marchandage : en cas de réussite, il rachète à ½ du prix au lieu de ¼"><Icon id="merchant/haggle" size="sm" /> Marchander la vente</button>
+                  : merchant.bargainSell == null ? (
+                      <>
+                        <button className="btn small" onClick={() => onBargain('sell')}><Icon id="merchant/haggle" size="sm" /> Marchander la vente</button>
+                        <CodexRef category="skills" id="marchandage" label="Marchandage" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+                      </>
+                    )
                   : <>
                       <span className={`bargain-tag ${merchant.bargainSell.won ? 'won' : ''}`}>{merchant.bargainSell.won ? '✔ Rachat à ½ du prix' : '✘ Rachat à ¼ du prix'}</span>
                       <button className="btn small danger" onClick={() => onRefuse('sell')} title="Décliner l’offre — le marchand ne marchandera plus (achat ni vente) jusqu’au réassort">Refuser l’offre</button>

@@ -259,13 +259,12 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               ) : (
                 <span className="spell-actions">
                   {isArcaneSpell(sp) && (
-                    <button
-                      className="btn small"
-                      title="Test étendu de Focalisation : accumule du DR pour lancer au NI 0"
-                      onClick={() => oocFocusSpell(hero.id, sp.id)}
-                    >
-                      <Icon id="flag/focus" size="sm" /> Focaliser
-                    </button>
+                    <>
+                      <button className="btn small" onClick={() => oocFocusSpell(hero.id, sp.id)}>
+                        <Icon id="flag/focus" size="sm" /> Focaliser
+                      </button>
+                      <CodexRef category="regles" id="focalisation-etendue" label="Test de Focalisation (étendu)" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+                    </>
                   )}
                   <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.id, targetId)}>
                     <Icon id="nav/dice" size="sm" /> Lancer
@@ -303,7 +302,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         const countOf = (id: string) => owned.filter((x) => x === id).length;
         return (
           <div className="spell-components">
-            <span className="mini-title" title="Sacrifié à l'incantation pour dégrader une Incantation Imparfaite (Majeure → Mineure, Mineure → aucun effet) — LDB 46 l.158-163. Coût = NI pistoles d'argent.">
+            <span className="mini-title" title="LDB 46 l.158-163">
               <Icon id="magic/component" size="sm" /> Composants d'incantation
             </span>
             <div className="spell-list">

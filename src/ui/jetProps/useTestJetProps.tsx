@@ -9,6 +9,7 @@ import { JournalLine } from '../NarratedLine';
 import { ev } from '../../state/combatLog';
 import { describeTest, amazingTestLabel } from '../../state/flowOutcomes';
 import { rule } from '../../engine/policy';
+import { CodexRef } from '../compendium/CodexRef';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'un Test de compétence de scène
@@ -103,12 +104,14 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
        mécanique nouvelle), gaté par la règle. */
     postRollExtra: amazing ? (
       <div className="amazing-row">
-        <span
+        <CodexRef
+          category="regles"
+          id="double-critique-maladresse"
+          label="Critique et Maladresse (double)"
           className={`chip amazing-chip ${amazing.success ? 'amazing-success' : 'amazing-failure'}`}
-          title="Test réussi/raté sur un double (LDB 12 l.151)"
         >
           ✦ {amazing.text}
-        </span>
+        </CodexRef>
       </div>
     ) : undefined,
     actions,

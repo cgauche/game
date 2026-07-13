@@ -588,7 +588,10 @@ export function ActionBar() {
               <div className="ab-actor-top">
                 {assailliN >= 2 && <span className="ab-assailli" title={`${assailliN} ennemis au contact`}><Icon id="action/attack" size="sm" /> ×{assailliN}</span>}
                 {isHero && battle.fearGate === 'failed' && (
-                  <span className="ab-assailli" title="Test de Calme d'approche raté : impossible de se rapprocher de la source de sa Peur ce Tour"><Icon id="flag/fear" size="sm" /> Cloué</span>
+                  <span className="ab-assailli">
+                    <Icon id="flag/fear" size="sm" /> Cloué
+                    <CodexRef category="regles" id="calme-d-approche" label="Calme d'approche (Peur)" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+                  </span>
                 )}
                 {isRenfort && (
                   <span className="ab-assailli" title="Vous soutenez la pièce (bonus de servant) ; c'est le chef de pièce qui fait feu — vous gardez votre arme pour l'abordage"><Icon id="action/serve-engine" size="sm" /> Renfort de pièce (le chef fait feu)</span>

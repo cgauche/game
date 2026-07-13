@@ -13,6 +13,7 @@ import { firedWeapon, crowdEligible, previewAttack, previewDefense } from '../..
 import { attackModesFor } from '../../engine/combatFeatures/dispatch';
 import { CritLocationPicker } from '../ForcedRollPicker';
 import { DeterminationButton } from '../DeterminationButton';
+import { CodexRef } from '../compendium/CodexRef';
 import { RollShell, type RollRowData, type RollAction } from '../RollShell';
 import { VsHeader } from '../VsHeader';
 import { JournalLine } from '../NarratedLine';
@@ -158,13 +159,13 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
         <div className="rm-options">
           {/* Maniement de deux armes (LDB 10 l.638) : attaquer des DEUX armes pour son Action. */}
           {dualEligible && (
-            <label
-              className="rm-loc-inline rm-dual-toggle"
-              title="Frapper des deux armes : 2ᵉ frappe de la main secondaire si la 1ʳᵉ touche ; -10 à TOUTES vos défenses jusqu'à votre prochain Tour ; Avantage seulement si les deux touchent."
-            >
-              <input type="checkbox" checked={!!pa.dualMode} onChange={(e) => setDualMode(e.target.checked)} />
-              <span className="mini-title"><Icon id="action/attack" size="sm" /> Des deux armes</span>
-            </label>
+            <div className="rm-loc-inline rm-dual-toggle">
+              <label>
+                <input type="checkbox" checked={!!pa.dualMode} onChange={(e) => setDualMode(e.target.checked)} />
+                <span className="mini-title"><Icon id="action/attack" size="sm" /> Des deux armes</span>
+              </label>
+              <CodexRef category="regles" id="combat-deux-armes" label="Combat à deux armes" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+            </div>
           )}
           {/* Choix d'arme (dual-wield) : la main secondaire affiche son -20 ; le panneau reflète le mod.
               Masqué en mode « des deux armes » (l'attaque-Action utilise alors la main directrice). */}
@@ -175,12 +176,12 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 className="rm-loc-select"
                 value={pa.weaponUid ?? weapon.uid ?? ''}
                 onChange={(e) => setWeapon(e.target.value || null)}
-                title="Avec quelle arme frapper ? La main secondaire subit -20 (réduit par Ambidextre)."
               >
                 {pickable.map((w) => (
                   <option key={w.uid} value={w.uid}>{w.name}{w.hand === 'off' ? ' (2nde -20)' : ''}</option>
                 ))}
               </select>
+              <CodexRef category="regles" id="main-secondaire" label="Attaque de la main secondaire" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           )}
           {/* Localisation visée = choix RARE (par défaut « Au hasard ») → menu déroulant compact.
@@ -193,13 +194,13 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 className="rm-loc-select"
                 value={pa.location ?? ''}
                 onChange={(e) => setLocation((e.target.value as HitLocation) || null)}
-                title="Où frapper ? « Au hasard » par défaut ; viser une localisation précise rend le Test Complexe (-10)."
               >
                 <option value="">Au hasard</option>
                 {LOCS.map((l) => (
                   <option key={l} value={l}>{locationLabel(l, target.bodyShape)} (-10)</option>
                 ))}
               </select>
+              <CodexRef category="regles" id="viser-une-localisation" label="Viser une Localisation" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           )}
           {cm && (
@@ -207,10 +208,10 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               <button
                 className={`btn small ${pa.intoCrowd ? 'btn-primary' : ''}`}
                 onClick={() => setIntoCrowd(!pa.intoCrowd)}
-                title="Tu ne choisis pas ta cible : un combattant au contact de la cible (les DEUX camps — tir fratricide possible) est touché au hasard, mais tu gagnes le bonus, et un succès dû au seul bonus est à 0 DR."
               >
                 <Icon id="action/aim" size="sm" /> Tirer dans le tas (+{cm.value})
               </button>
+              <CodexRef category="regles" id="tirer-dans-le-tas" label="Tirer dans le tas" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
               {pa.intoCrowd && <span className="rm-crowd-note">{crowd.length} au contact — touche au hasard, 0 DR si sauvé par le bonus.</span>}
             </div>
           )}
@@ -219,10 +220,10 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               <button
                 className={`btn small ${pa.heldGround ? 'btn-primary' : ''}`}
                 onClick={() => setHeldGround(!pa.heldGround)}
-                title="Tire sans bouger : annule la pénalité -10 « Tir en bougeant », mais consomme ton Mouvement du Tour (tu ne pourras plus te déplacer)."
               >
                 <Icon id="travel/anchor" size="sm" /> Je ne bouge pas (annule le -10)
               </button>
+              <CodexRef category="regles" id="tir-en-mouvement" label="Tirer en se déplaçant" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
               {pa.heldGround
                 ? <span className="rm-crowd-note">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>
                 : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
@@ -233,10 +234,10 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               <button
                 className={`btn small ${pa.withhold ? 'btn-primary' : ''}`}
                 onClick={() => setWithhold(!pa.withhold)}
-                title="Maîtriser sans tuer : tu infliges des Blessures normales, mais aucune Blessure Critique tant que l'adversaire n'est pas à 0. Tu perds les Atouts Empaleuse, Percutante, Perforante et Taille. (Aux Armes)"
               >
                 <Icon id="melee/pulled-punch" size="sm" /> Retenir ses coups
               </button>
+              <CodexRef category="regles" id="retenir-ses-coups" label="Retenir ses coups (maîtriser sans tuer)" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
               {pa.withhold && <span className="rm-crowd-note">Non létal : Critique seulement si la cible tombe à 0 ; sans Empaleuse/Percutante/Perforante/Taille.</span>}
             </div>
           )}
@@ -245,10 +246,10 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               <button
                 className={`btn small ${pa.grapple ? 'btn-primary' : ''}`}
                 onClick={() => setGrapple(!pa.grapple)}
-                title="Empoigner au lieu de blesser : sur une touche, tu n'infliges AUCUN Dégât — vous êtes tous deux Empoignés et l'adversaire gagne l'État Empêtré. (LDB 14)"
               >
                 <Icon id="melee/grapple" size="sm" /> Empoigner
               </button>
+              <CodexRef category="regles" id="empoignade" label="Empoignade" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
               {pa.grapple && <span className="rm-crowd-note">Sur une touche : aucun Dégât ; Empoignade + Empêtré (cible).</span>}
             </div>
           )}

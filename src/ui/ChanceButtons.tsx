@@ -33,26 +33,24 @@ export function ChanceButtons({
   onDarkPact?: () => void;
 }) {
   const pactBtn = onDarkPact && darkPactable && (
-    <button
-      className="btn btn-resource"
-      onClick={onDarkPact}
-      title="Sombre Pacte : recevoir volontairement 1 Point de Corruption pour relancer ce Test — même après une relance de Chance. Les Dieux Sombres écoutent…"
-    >
-      <Icon id="condition/bleeding" size="sm" /> Pacte
-    </button>
+    <>
+      <button className="btn btn-resource" onClick={onDarkPact}>
+        <Icon id="condition/bleeding" size="sm" /> Pacte
+      </button>
+      <CodexRef category="regles" id="sombre-pacte" label="Sombre Pacte" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+    </>
   );
   const rerollBtn = rerollable && (freeReroll || fortune > 0) && (
-    <button
-      className="btn btn-resource"
-      onClick={onReroll}
-      title={freeReroll ? 'Bénédiction de Chance : relance gratuite du Test raté — sans dépenser de Chance' : undefined}
-    >
+    <button className="btn btn-resource" onClick={onReroll}>
       {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer</>}
     </button>
   );
   return (
     <>
       {rerollBtn}
+      {freeReroll && rerollable && (
+        <CodexRef category="spells" id="benediction-de-chance" label="Bénédiction de Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+      )}
       {!freeReroll && rerollable && fortune > 0 && (
         <CodexRef category="characteristics" id="chance" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
       )}

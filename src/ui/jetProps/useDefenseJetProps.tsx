@@ -15,6 +15,8 @@ import { VsHeader } from '../VsHeader';
 import { DeterminationButton } from '../DeterminationButton';
 import { JournalLine } from '../NarratedLine';
 import { ev } from '../../state/combatLog';
+import { Icon } from '../Icon';
+import { CodexRef } from '../compendium/CodexRef';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de défense réactive — extrait de
@@ -150,12 +152,12 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
                 className="rm-loc-select"
                 value={pd.parryWeaponUid ?? chosenParry?.uid ?? ''}
                 onChange={(e) => setParry(e.target.value || null)}
-                title="Avec quelle arme parer ? La main secondaire subit -20 (sauf Corps à corps (Parade) + arme Défensive)."
               >
                 {parryPickable.map((w) => (
                   <option key={w.uid} value={w.uid}>{w.name}{w.hand === 'off' ? ' (2nde)' : ''}</option>
                 ))}
               </select>
+              <CodexRef category="regles" id="main-secondaire" label="Attaque de la main secondaire" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           )}
           {reactionCost > 0 && (

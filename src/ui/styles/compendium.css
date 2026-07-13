@@ -415,7 +415,7 @@
   padding: 6px;
 }
 
-/* déclencheur-icône ℹ️ (ActionBar : à côté d'un bouton d'action) */
+/* déclencheur-icône ℹ️ à côté d'un bouton/contrôle d'action (ActionBar, modales de jet, marchand…) */
 .codex-ref.ab-codex-info {
   flex-shrink: 0;
   font-size: 13px;
