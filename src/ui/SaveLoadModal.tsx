@@ -4,6 +4,7 @@ import { listSaves, readSlot, deleteSlot, exportSave, SAVE_SLOTS, AUTO_SLOT, typ
 import { downloadText } from '../state/fileIo';
 import { GameDate } from './GameDate';
 import { Modal } from './Modal';
+import { Icon } from './Icon';
 import { t } from '../i18n';
 
 /**
@@ -66,14 +67,18 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
   );
 
   return (
-    <Modal title={mode === 'save' ? t('saveload.title.save') : t('saveload.title.load')} variant="test" onClose={onClose}>
+    <Modal
+      title={<><Icon id={mode === 'save' ? 'file/save' : 'file/open'} /> {mode === 'save' ? t('saveload.title.save') : t('saveload.title.load')}</>}
+      variant="test"
+      onClose={onClose}
+    >
       <div className="save-slots">
         {SAVE_SLOTS.map((slot) => slotRow(slot, t('saveload.slot.label', { n: slot }), metas[slot - 1], mode === 'save'))}
         {autoMeta && slotRow(AUTO_SLOT, 'Auto ⟳', autoMeta, false)}
       </div>
       <div className="modal-actions">
         <button type="button" className="btn small" onClick={() => fileRef.current?.click()} title={t('saveload.import.btn.title')}>
-          {t('saveload.import.btn')}
+          <Icon id="file/import" /> {t('saveload.import.btn')}
         </button>
         <input
           ref={fileRef}

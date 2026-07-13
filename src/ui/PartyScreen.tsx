@@ -301,11 +301,11 @@ export function PartyScreenView({
           </div>
         )}
         {net.mode === 'guest' && (
-          <span className="hint">{t('party.guest.waiting')}</span>
+          <span className="hint"><Icon id="ui/wait" size="sm" /> {t('party.guest.waiting')}</span>
         )}
       </header>
       {isHost && guestPending && (
-        <p className="hint party-coop-hint">{t('party.coop.pending')}</p>
+        <p className="hint party-coop-hint"><Icon id="ui/wait" size="sm" /> {t('party.coop.pending')}</p>
       )}
 
       {/* L'écran de groupe = LA COMPAGNIE SEULE (grille de sièges, 2×2, généreuse). Aucune galerie ici. */}
@@ -372,7 +372,7 @@ export function PartyScreenView({
                   <div className="seat-empty">
                     <span className="seat-num">{t('party.seat.label', { n: i + 1 })}</span>
                     <span className="hint seat-invite">
-                      {mine ? t('party.slot.invite') : t('party.slot.waiting', { name: seatName(seat) })}
+                      {mine ? t('party.slot.invite') : <><Icon id="ui/wait" size="sm" /> {t('party.slot.waiting', { name: seatName(seat) })}</>}
                     </span>
                     {mine && (
                       <div className="seat-empty-actions row-flex">

@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { CoopRoomPanel, CoopSeatList, CoopAssignList } from './CoopPanels';
 import { SaveLoadModal } from './SaveLoadModal';
 import { RuleDivider } from './Ornaments';
+import { Icon } from './Icon';
 import { t } from '../i18n';
 
 /**
@@ -123,6 +124,7 @@ export function CoopLobby() {
           <CoopSeatList />
         </section>
         <p className="hint coop-waiting">
+          <Icon id={net.connection === 'reconnecting' ? 'coop/away' : 'ui/wait'} size="sm" />{' '}
           {net.hostAway ? t("coop.guest.waiting.hostAway")
             : net.connection === 'reconnecting' ? t("coop.guest.waiting.reconnecting")
             : t("coop.guest.waiting.default")}
@@ -149,7 +151,7 @@ export function CoopLobby() {
       {/* Charger en session : le salon survit (`applyLoadedSave` préserve `net`), l'invité
           suit au snapshot — c'est LE chemin pour reprendre une partie coop sauvegardée. */}
       <div className="coop-actions">
-        <button className="btn" onClick={() => setLoadOpen(true)}>{t("coop.host.loadGame")}</button>
+        <button className="btn" onClick={() => setLoadOpen(true)}><Icon id="file/open" /> {t("coop.host.loadGame")}</button>
         <button className="btn btn-primary" onClick={() => setScreen('party')}>
           {t("coop.host.compose")}
         </button>
