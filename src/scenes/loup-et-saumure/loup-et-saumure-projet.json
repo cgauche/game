@@ -3421,6 +3421,7 @@
     },
     "scene": "ls-quai-salzenmund",
     "icon": "scenario/port",
+    "backdrop": "port",
     "port": {
      "ref": "salzenmund"
     },
@@ -3483,6 +3484,7 @@
     },
     "scene": "ls-quai-erengrad",
     "icon": "scenario/port",
+    "backdrop": "port",
     "port": {
      "ref": "erengrad"
     },
