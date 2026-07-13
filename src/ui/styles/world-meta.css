@@ -465,32 +465,13 @@
 .interlude-phase-actions { display: flex; justify-content: center; margin: 16px 0 4px; }
 .interlude-phase-actions .btn { min-width: 220px; }
 
-/* Phase ÉVÉNEMENTS — chronique sur parchemin : sceau de cire (d100) + récit enluminé. */
+/* Phase ÉVÉNEMENTS — chronique de cartes-parchemin (`ParchmentCard`, sceau de cire d100 + récit
+   enluminé) : ici, seul l'agencement propre à l'interlude (portrait + nom du héros par carte). */
 .interlude-chronicle { display: flex; flex-direction: column; gap: 14px; margin: 6px 0 4px; }
-.interlude-chronicle-entry {
-  display: flex; gap: 14px; align-items: flex-start; text-align: left;
-  border-radius: 10px; padding: 14px 16px;
-  border: 1px solid color-mix(in srgb, var(--gold) 30%, var(--border));
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-}
-.interlude-seal {
-  flex: 0 0 auto; width: 54px; height: 54px; border-radius: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: radial-gradient(circle at 38% 30%, color-mix(in srgb, var(--blood) 72%, var(--ink)), var(--blood));
-  border: 2px solid color-mix(in srgb, var(--gold) 60%, var(--ink));
-  color: var(--parchment); box-shadow: inset 0 0 7px rgba(0, 0, 0, 0.55);
-}
-.interlude-seal-roll { font-family: var(--font-display); font-size: 22px; line-height: 1; }
-.interlude-seal-d100 { font-size: 9px; letter-spacing: 1px; opacity: .78; text-transform: uppercase; }
-.interlude-chronicle-body { min-width: 0; flex: 1; }
 .interlude-chronicle-head { display: flex; align-items: center; gap: 8px; }
 .interlude-chronicle-who { font-family: var(--font-display); font-weight: 600; color: color-mix(in srgb, var(--ink) 82%, var(--blood)); }
-.interlude-chronicle-title {
-  font-family: var(--font-display); margin: 8px 0 4px; font-size: 20px; letter-spacing: .3px;
-  color: color-mix(in srgb, var(--ink) 76%, var(--blood));
-}
-.interlude-chronicle-entry .interlude-event { color: var(--ink); font-size: 13.5px; line-height: 1.5; margin: 0; }
 .interlude-event { margin: 0; font-size: 13px; }
+.interlude-chronicle .interlude-event { color: var(--ink); font-size: 13.5px; line-height: 1.5; margin: 8px 0 0; }
 
 /* Phase ACTIVITÉS — feuilles de route en fer, filet d'or au fer gauche. */
 .interlude-heroes { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; text-align: left; }
@@ -563,7 +544,7 @@
 }
 /* ≤560px : la chronique s'empile (sceau au-dessus du récit). */
 @media (max-width: 560px) {
-  .interlude-chronicle-entry { flex-direction: column; align-items: center; text-align: center; }
+  .interlude-chronicle .parchment-card { flex-direction: column; align-items: center; text-align: center; }
   .interlude-chronicle-head { justify-content: center; }
 }
 .interlude-recap { max-width: min(560px, 94vw); }

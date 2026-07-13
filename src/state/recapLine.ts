@@ -25,6 +25,20 @@ export function toRecapLines(texts: string[]): RecapLine[] {
   return texts.filter((s) => s.length > 0).map((text) => ({ text }));
 }
 
+/** Un ÉVÉNEMENT RACONTÉ du jour (#371 LOT « moisson n°4 ») — distinct d'une `RecapLine` : porte un
+ *  RÉCIT (titre + texte verbatim de la source), pas une simple ligne de journal, et se rend en
+ *  `ParchmentCard` (sceau d100 optionnel) plutôt qu'en ligne. Un jet de routine / une note de météo
+ *  RESTE une `RecapLine` — seul un événement qui RACONTE quelque chose (texte d'auteur/de table)
+ *  mérite la carte. */
+export interface RecapEvent {
+  title: string;
+  text: string;
+  /** Tirage d100 ayant fait sortir l'événement — absent si l'événement est FORCÉ (recette de test)
+   *  ou d'auteur (péripétie de route, pas de d100 propre). */
+  roll?: number;
+  tone?: RecapTone;
+}
+
 /** Une PHASE reconnue d'une journée de voyage TERRESTRE (agenda du jour EN COURS, #333 vague 2) —
  *  catalogue GÉNÉRIQUE par PRÉFIXE de `CascadeStep.kind` (aucun id de mode nommé) : ajouter une
  *  phase = une entrée ici, jamais un branchement par mode. Source UNIQUE, partagée par l'agenda du

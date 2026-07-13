@@ -29,6 +29,7 @@ import { Coins } from './Coins';
 import { EffectChips } from './EffectChips';
 import { EntityRef } from './EntityChip';
 import { FxChip } from './FxChip';
+import { ParchmentCard } from './ParchmentCard';
 import { RuleDivider, OrnateFrame } from './Ornaments';
 import { GameDate } from './GameDate';
 import { Icon } from './Icon';
@@ -345,25 +346,18 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
           const ev = interludeEventFor(st.eventRoll);
           const chips = fxChips(st, h);
           return (
-            <article key={h.id} className="interlude-chronicle-entry tx-parchment">
-              <div className="interlude-seal" title={`Événement tiré : ${st.eventRoll}`}>
-                <span className="interlude-seal-roll">{st.eventRoll}</span>
-                <span className="interlude-seal-d100">d100</span>
-              </div>
-              <div className="interlude-chronicle-body">
-                <header className="interlude-chronicle-head">
-                  <CharFrame c={h} variant="identity" size="sm" />
-                  <span className="interlude-chronicle-who">{h.name}</span>
-                </header>
-                <h3 className="interlude-chronicle-title">{ev.label}</h3>
-                <p className="interlude-event">{ev.text}</p>
-                {chips.length > 0 && (
-                  <div className="interlude-fx">
-                    {chips.map((c) => <FxChip key={c.label} icon={c.icon} label={c.label} />)}
-                  </div>
-                )}
-              </div>
-            </article>
+            <ParchmentCard key={h.id} seal={{ label: 'd100', roll: st.eventRoll }} title={ev.label}>
+              <header className="interlude-chronicle-head">
+                <CharFrame c={h} variant="identity" size="sm" />
+                <span className="interlude-chronicle-who">{h.name}</span>
+              </header>
+              <p className="interlude-event">{ev.text}</p>
+              {chips.length > 0 && (
+                <div className="interlude-fx">
+                  {chips.map((c) => <FxChip key={c.label} icon={c.icon} label={c.label} />)}
+                </div>
+              )}
+            </ParchmentCard>
           );
         })}
       </div>

@@ -3,6 +3,7 @@ import { WindRose } from './WindRose';
 import { NotchGauge } from './NotchGauge';
 import { MultiRollList } from './MultiRollList';
 import { RecapLineList } from './RecapLine';
+import { ParchmentCard } from './ParchmentCard';
 import { Icon } from './Icon';
 import type { Dir8 } from '../state/dir8';
 import { windDirectionLabel, type SeaWindForceId } from '../engine/seaWeather';
@@ -48,6 +49,17 @@ export function SeaVoyageBody({ day }: { day: TravelRecapDay }) {
         <span className="stat-chip"><span className="sc-label">Distance</span><span className="sc-value">{chrome.milesLeft} milles{chrome.daysLeft > 0 ? ` · ~${chrome.daysLeft} j` : ''}</span></span>
         {chrome.manann !== 0 && <span className="stat-chip"><span className="sc-label">Manann</span><span className="sc-value">{chrome.manann >= 0 ? `+${chrome.manann}` : chrome.manann}</span></span>}
       </div>
+      {/* Événements de bord RACONTÉS (un récit → une carte-parchemin) — AVANT le procès-verbal, ils
+          en sont la cause narrative du jour. */}
+      {(day.events?.length ?? 0) > 0 && (
+        <div className="sea-voyage-events">
+          {day.events!.map((ev, i) => (
+            <ParchmentCard key={i} title={ev.title} tone={ev.tone} seal={ev.roll != null ? { label: 'd100', roll: ev.roll } : undefined}>
+              <p>{ev.text}</p>
+            </ParchmentCard>
+          ))}
+        </div>
+      )}
       {/* Le PV du jour DÉFILE : une ligne par jet de routine auto-résolu (aucun jet silencieux). */}
       {(day.entries?.length ?? 0) > 0
         ? <div className="sea-voyage-log"><MultiRollList entries={day.entries!} /></div>

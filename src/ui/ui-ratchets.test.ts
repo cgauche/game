@@ -208,7 +208,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/ornaments.css': 13,
   'styles/sheet.css': 91,
   'styles/tavern.css': 13,
-  'styles/world-meta.css': 147,
+  'styles/world-meta.css': 142,
 };
 
 function classNamesDefined(css: string): Set<string> {

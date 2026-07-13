@@ -76,6 +76,10 @@ export interface TravelRecapDay {
   /** Les JETS du jour (marche forcée, Survie, Perception…) en lignes de jet structurées —
    *  même brique multijet que le bilan de nuit (MultiRollList), pas du texte. */
   entries?: import('./restFlow').NightEntry[];
+  /** Événements de bord RACONTÉS du jour (#371 LOT 4, mer seulement) — titre + texte verbatim +
+   *  tirage d100 optionnel, rendus en `ParchmentCard` (`SeaVoyageBody`) : un événement PORTE UN
+   *  RÉCIT, distinct des `lines` de routine. */
+  events?: import('./recapLine').RecapEvent[];
   /** MER (route COMMANDÉE) : instantané du jour pour l'écran de traversée (rose des vents + jauges +
    *  distance restante) — rendu par `SeaVoyageScreen` à la place du corps de recap terrestre. */
   sea?: import('./seaVoyageFlow').SeaRecapChrome;

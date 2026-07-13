@@ -33,7 +33,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { dayIndex } from './upkeep';
 import { placeById, type WorldMap, type MapPlace, type MapRoute } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
-import { toRecapLines } from './recapLine';
+import { toRecapLines, type RecapEvent } from './recapLine';
 import type { BatchParticipant } from './pendings';
 import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion, shipboardSouls } from './shipCrew';
 import { applyEffects, applyEffectsLoot } from './combatEffects';
@@ -123,6 +123,9 @@ export interface SeaVoyageState {
   daysAtSea: number;
   /** Lignes du jour (recap de la halte de nuit). */
   lines: string[];
+  /** Événements de bord RACONTÉS aujourd'hui (#371 LOT 4) — rendus en `ParchmentCard`, distincts des
+   *  lignes de routine (`lines`) : un événement PORTE UN RÉCIT (titre + texte d'auteur/de table). */
+  events?: RecapEvent[];
   /** PROCÈS-VERBAL structuré du jour (couche `voyageCadence`) : une ligne de JET par Test d'équipage de
    *  ROUTINE auto-résolu en route COMMANDÉE — « aucun jet silencieux » (rendu par `MultiRollList`). */
   entries?: NightEntry[];
@@ -206,6 +209,15 @@ function tell(get: Get, set: Set, lines: string[]): void {
   log(get, set, lines);
   const plan = get().travelPlan;
   if (plan?.sea) set({ travelPlan: { ...plan, sea: { ...plan.sea, lines: [...plan.sea.lines, ...lines] } } });
+}
+
+/** Écrit un ÉVÉNEMENT RACONTÉ (#371 LOT 4) — au JOURNAL (résumé texte, même patron que `tell`) ET au
+ *  recap du jour EN CARTE (`sea.events`, distinct de `sea.lines`) : le titre + texte verbatim de
+ *  l'événement se rendent en `ParchmentCard` (`SeaVoyageBody`), pas en ligne de routine. */
+function tellEvent(get: Get, set: Set, event: RecapEvent): void {
+  log(get, set, [`${event.title} — ${event.text}`]);
+  const plan = get().travelPlan;
+  if (plan?.sea) set({ travelPlan: { ...plan, sea: { ...plan.sea, events: [...(plan.sea.events ?? []), event] } } });
 }
 
 /** Écrit SEULEMENT au recap du jour (`sea.lines`) — le JOURNAL des appliers de cascade migrés (#295
@@ -825,7 +837,6 @@ function resolveSeaDayEvent(get: Get, set: Set, rng: RNG): boolean {
     const forced = seaBoardEventById(sea.forcedEventId);
     patchSea(get, set, { forcedEventId: undefined });
     if (forced) {
-      tell(get, set, [`Événement de bord (forcé) — ${forced.label}`]);
       resolveBoardEvent(get, set, forced, rng);
       return !!get().pendingCascade;
     }
@@ -842,8 +853,7 @@ function resolveSeaDayEvent(get: Get, set: Set, rng: RNG): boolean {
   // reprise re-déclencherait CE même tirage (le garde `days <= 0` retomberait sur la même valeur).
   patchSea(get, set, { daysToEvent: days });
   if (!firing) return false;
-  tell(get, set, [`Événement de bord (d100 ${firing.roll} · Humeur de Manann ${firing.mood.score >= 0 ? '+' : ''}${firing.mood.score}) — ${firing.event.label}`]);
-  resolveBoardEvent(get, set, firing.event, rng);
+  resolveBoardEvent(get, set, firing.event, rng, firing.roll);
   return !!get().pendingCascade;
 }
 
@@ -1153,6 +1163,7 @@ export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: Ca
   const sea = plan.sea;
   const daysAtSea = sea.daysAtSea + 1;
   const todayLines = sea.lines;
+  const todayEvents = sea.events ?? [];
 
   const miles = sea.milesToday;
   const kmDone = Math.min(plan.km, plan.kmDone + miles);
@@ -1181,7 +1192,7 @@ export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: Ca
   let reversed = sea.reversedWinds;
   if (reversed && reversed > 0) { windFrom = 'est'; reversed -= 1; } // dominants d'ouest inversés (ch.15)
   patchSea(get, set, {
-    daysAtSea, lines: [], entries: [],
+    daysAtSea, lines: [], entries: [], events: [],
     weather, windFrom, weatherLock: lock, reversedWinds: reversed,
     milesToday: 0, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, paceToday: undefined,
   });
@@ -1189,7 +1200,7 @@ export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: Ca
 
   const worldMap = get().worldMap as WorldMap;
   const to = placeById(worldMap, plan.toPlaceId);
-  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: toRecapLines(todayLines), entries: dayEntries, sea: chrome };
+  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: toRecapLines(todayLines), entries: dayEntries, events: todayEvents, sea: chrome };
 
   if (plan.km - kmDone < 1e-9 && to) {
     // ARRIVÉE : la distance de la traversée est NOTÉE sur le navire (vente à un port producteur :
@@ -1744,9 +1755,9 @@ function eventParam(event: SeaEventDef, k: string, rng: RNG, dflt = 0): number {
   return dflt;
 }
 
-function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): void {
+function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, roll?: number): void {
   const num = (k: string, dflt = 0): number => eventParam(event, k, rng, dflt);
-  tell(get, set, [event.desc]);
+  tellEvent(get, set, { title: event.label, text: event.desc, roll });
   const vessel = get().vessel;
   const ship = get().travelPlan?.vehicle;
   switch (event.kind) {

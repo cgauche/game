@@ -142,6 +142,8 @@
 /* max-height réduit (40vh → 25vh, #376 pt.4) : ce PV défilant est imbriqué dans `.travel-recap-days`
    (elle-même scrollable) — lui laisser 40vh pouvait à lui seul saturer le budget de l'ascenseur
    PARENT et repousser la rangée météo/vent/cap/distance sous le pli. */
+/* Événements de bord RACONTÉS (#371 LOT 4) — cartes-parchemin (`ParchmentCard`), un récit = une carte. */
+.sea-voyage-events { display: flex; flex-direction: column; gap: 10px; }
 .sea-voyage-log { max-height: 25vh; overflow-y: auto; }
 .sea-voyage-notes { color: var(--muted); font-size: 0.85em; }
 .sea-voyage-orders { display: flex; justify-content: flex-end; }

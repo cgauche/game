@@ -215,10 +215,10 @@ describe('InterludeScreen — refonte visuelle #257 (coquille dédiée, masthead
   it('phase Événements : chronique sur parchemin + sceau de cire portant le d100', () => {
     const seam = buildSeam();
     const html = renderToStaticMarkup(<InterludeScreen seam={seam} />);
-    expect(html).toContain('interlude-chronicle-entry'); // récit enluminé par héros
+    expect(html).toContain('parchment-card'); // récit enluminé par héros (primitive ParchmentCard)
     expect(html).toContain('tx-parchment'); // parchemin (récit dark-ink)
-    expect(html).toContain('interlude-seal'); // sceau du d100
-    expect(html).toContain('interlude-chronicle-title'); // titre d’événement en font-display
+    expect(html).toContain('parchment-seal'); // sceau du d100
+    expect(html).toContain('parchment-card-title'); // titre d’événement en font-display
   });
 
   it('zéro emoji dans les affordances de clôture (charte)', () => {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useGame, type RevealEntry } from '../state/store';
 import { Modal } from './Modal';
+import { ParchmentCard } from './ParchmentCard';
 import { TableRollLine } from './RollLine';
 import { VsHeader } from './VsHeader';
 import { conditionMeta } from '../gameIso/effectIcons';
@@ -106,13 +107,13 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
       {isCrit ? (
         <CriticalBody entry={entry} actor={actor} subject={subject} />
       ) : isScene ? (
-        <div className="scene-intro">
+        <ParchmentCard>
           {entry.lines.map((l, i) => (
             <p key={i} className="rm-log">
               {l}
             </p>
           ))}
-        </div>
+        </ParchmentCard>
       ) : (
         <>
           <TableRollLine table={TABLE_LABEL[entry.kind] ?? entry.title} roll={entry.dice} result={entry.lines[0] ?? ''} />

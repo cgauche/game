@@ -199,6 +199,7 @@ fait DANS la primitive, pas dans une nième copie.
 | Champ de **filtre/recherche** de liste (catalogue, palette, sélecteur) — état + filtre pur | `SearchFilterField` (widget) + `useFilteredList`/`filterByLabel` (état/pur) | `src/ui/SearchFilterField.tsx` |
 | **Maître-détail** (liste GAUCHE + détail CENTRE — Codex/Compendium ad hoc, palettes de l'éditeur, pickers…) — *réflexe avant toute 2e composition liste+détail* | `MasterDetail` (gabarit de LAYOUT pur, slots `list`/`detail` : l'état de sélection reste chez l'appelant) | `src/ui/MasterDetail.tsx` |
 | **Table de NÉGOCE** (colonnes de stats + prix `<Coins>` + action par rangée + groupes de rubrique — marchand, port, marché terrestre) — *réflexe avant tout tableau d'achat/vente recodé* | `TradeTable` (moissonnée de l'étalon `MerchantPanel`, #371 LOT 3) | `src/ui/TradeTable.tsx` |
+| **Carte-parchemin narrative** (récit ponctuel adossé à un tirage : événement d'interlude, événement de bord en mer, révélation de scène) — *réflexe avant tout `.tx-parchment` + sceau recodé à la main* | `ParchmentCard` (`seal?` médaillon d100, `title?`, `tone?`, `children` — moissonnée de l'étalon `InterludeScreen`, #371 LOT 4) | `src/ui/ParchmentCard.tsx` |
 | **Stepper de quantité** `[−][centre][+]` (panier, quantité en stock, baisse de prix par cran) | `QtyStepper` | `src/ui/QtyStepper.tsx` |
 | Lookup d'une table d100 par fourchette `[min,max]` | `findTableEntry` | `src/engine/tables.ts` |
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
