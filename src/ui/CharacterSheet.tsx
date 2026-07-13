@@ -221,11 +221,8 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
     <div className="sc-block sheet-spells">
       <span className="mini-title">Sorts — incantation hors combat</span>
       {(hero.sinPoints ?? 0) > 0 && (
-        <span
-          className="muted"
-          title="Points de Péché : si le dé des unités d'un Test de Prière leur est inférieur ou égal, la Colère des dieux frappe — même sur un Test réussi. Chaque jet de Colère en expie 1."
-        >
-          <Icon id="ui/balance" size="sm" /> Péché : {hero.sinPoints}
+        <span className="muted">
+          <Icon id="ui/balance" size="sm" /> <CodexRef category="characteristics" label="Péché">Péché : {hero.sinPoints}</CodexRef>
         </span>
       )}
       <div className="spell-target">

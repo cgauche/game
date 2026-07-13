@@ -196,5 +196,16 @@
       "book": "livre-de-base",
       "page": 182
     }
+  },
+  {
+    "id": "peche",
+    "abr": "",
+    "label": "Péché",
+    "type": "",
+    "desc": "Les dieux gardent un œil sur les Bienheureux, et ces derniers risquent la disgrâce s'ils agissent de façon contraire à la volonté de leur divinité. Dans le jeu, les Points de Péché représentent ce problème.\n\nSi vous violez n'importe lequel des commandements de votre dieu, le MJ vous octroiera un Point de Péché ou plus. Chaque fois que vous recevez un Point de Péché, il est ajouté à votre total actuel. Il n'y a pas de maximum au nombre de Points de Péché que vous pouvez obtenir, mais, plus vous en avez, plus votre dieu risque d'être mécontent en cas d'appel à l'aide divine.\n\n**Péché et Colère divine**\n\nIl est risqué de faire appel à votre divinité quand vous avez agi de façon contraire à sa volonté. Chaque fois que vous effectuez un Test de Prière, si le dé des unités est inférieur ou égal à votre total actuel de Points de Péché, vous subirez la Colère des dieux, même si le Test de Prière est réussi.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 218
+    }
   }
 ]

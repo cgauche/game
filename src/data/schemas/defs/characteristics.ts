@@ -1,7 +1,7 @@
 /**
  * Schéma de `characteristics.json` — l'EXEMPLAIRE de la convention des defs de schéma (Lot 1 du
  * contrat de donnée). Dérivé du contenu RÉEL du JSON (10 caracs à jet + Blessure/Destin/Chance/
- * Résilience/Détermination/Extra Points/Mouvement/Corruption) et de son seul consommateur typé,
+ * Résilience/Détermination/Extra Points/Mouvement/Corruption/Péché) et de son seul consommateur typé,
  * `src/ui/compendium/registry.ts:460` (`{ label, abr?, type?, desc?, source? }`, `c.type === 'roll'`).
  */
 import { z } from 'zod';
@@ -9,12 +9,12 @@ import { sourceRefSchema, charKeySchema } from '../common';
 
 export const file = 'characteristics.json';
 
-/** id STABLE — `CharKey` du moteur pour les 10 caracs à jet (« CC »…), slug dédié pour les 8 autres
- *  entrées (Blessure/Destin/Chance/Résilience/Détermination/Extra Points/Mouvement/Corruption) qui
- *  ne sont pas des `CharKey`. Catalogue FERMÉ (18 entrées) — union énumérée, pas `z.string()`. */
+/** id STABLE — `CharKey` du moteur pour les 10 caracs à jet (« CC »…), slug dédié pour les 9 autres
+ *  entrées (Blessure/Destin/Chance/Résilience/Détermination/Extra Points/Mouvement/Corruption/Péché)
+ *  qui ne sont pas des `CharKey`. Catalogue FERMÉ (19 entrées) — union énumérée, pas `z.string()`. */
 const characteristicIdSchema = z.union([
   charKeySchema,
-  z.enum(['blessure', 'destin', 'chance', 'resilience', 'determination', 'extra-points', 'mouvement', 'corruption']),
+  z.enum(['blessure', 'destin', 'chance', 'resilience', 'determination', 'extra-points', 'mouvement', 'corruption', 'peche']),
 ]);
 
 /** `type` observés dans le JSON : 'roll' (10 caracs à jet), 'wounds' (B), 'extra' (Destin/Résilience),
