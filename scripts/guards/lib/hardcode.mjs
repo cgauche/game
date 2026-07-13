@@ -24,9 +24,70 @@ export function stripComments(src) {
  * Marqueurs réactifs par-nom, famille TRAIT/TALENT — recensés aux Lots 4bis/6 sur
  * state/combat/roundHooks.ts et state/combatFlow.ts, généralisés à tout src/engine + src/state
  * (Lot 8) : une réaction de combat codée PAR-NOM (trait/talent) plutôt que par donnée.
+ * Les appels `hasTraitKey(`/`hasTalent(` NE sont PAS ici : leur nocivité dépend de l'ARGUMENT-entité
+ * (littéral en dur vs donnée), tranchée par `nameCallHasLiteralArg` (#385) — un `hasTalent(c, X)` dont
+ * `X` est une variable/donnée est data-driven, pas un hardcode par-nom.
  * @type {RegExp}
  */
-export const TRAIT_TALENT_RX = /isBestial|id: '(bestial-fire-fear|determination)|hasTraitKey\(|isUnstable|hasTalent\(/;
+export const TRAIT_TALENT_RX = /isBestial|id: '(bestial-fire-fear|determination)|isUnstable/;
+
+/**
+ * Appels dont la nocivité se juge à l'ARGUMENT-entité : `hasTraitKey(traits, id)` / `hasTalent(c, name)`.
+ * Le 2e argument est le nom d'entité. LITTÉRAL de chaîne (`'…'`/`"…"`/gabarit sans interpolation) =>
+ * réaction par-nom en dur (signalée) ; variable, accès de propriété ou paramètre => data-driven
+ * (non signalé). Affinage STRUCTUREL (#385, même standard que le volet excuses #177 : les faux
+ * positifs se retranchent par la FORME de l'argument, jamais par une liste d'exceptions nominatives).
+ * @type {RegExp}
+ */
+export const NAME_CALL_RX = /\b(?:hasTraitKey|hasTalent)\(/g;
+
+/**
+ * Index du 1er caractère non-espace du 2e argument d'un appel dont la `(` est à `open`, ou null (appel
+ * à 0/1 argument). Suit la profondeur `()`/`[]`/`{}` et saute les chaînes, pour trouver la virgule de
+ * séparation à la profondeur 1.
+ * @param {string} line @param {number} open @returns {number|null}
+ */
+function secondArgIndex(line, open) {
+  let depth = 0;
+  for (let i = open; i < line.length; i++) {
+    const c = line[i];
+    if (c === "'" || c === '"' || c === '`') {
+      const q = c;
+      for (i++; i < line.length && line[i] !== q; i++) if (line[i] === '\\') i++;
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') depth++;
+    else if (c === ')' || c === ']' || c === '}') { if (--depth === 0) return null; }
+    else if (c === ',' && depth === 1) {
+      let j = i + 1;
+      while (j < line.length && /\s/.test(line[j])) j++;
+      return j < line.length ? j : null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Vrai si un appel `hasTraitKey(`/`hasTalent(` de la ligne porte un 2e argument LITTÉRAL de chaîne
+ * (nom d'entité en dur). Gabarit avec interpolation (`${…}`) = dynamique => NON littéral.
+ * @param {string} line @returns {boolean}
+ */
+export function nameCallHasLiteralArg(line) {
+  NAME_CALL_RX.lastIndex = 0;
+  let m;
+  while ((m = NAME_CALL_RX.exec(line))) {
+    const arg = secondArgIndex(line, m.index + m[0].length - 1);
+    if (arg == null) continue;
+    const ch = line[arg];
+    if (ch === "'" || ch === '"') return true;
+    if (ch === '`') {
+      const close = line.indexOf('`', arg + 1);
+      const seg = close === -1 ? line.slice(arg + 1) : line.slice(arg + 1, close);
+      if (!seg.includes('${')) return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Marqueurs réactifs par-nom, famille PAR-ÉTAT — motif du Lot 4 (`hasCondition(_, COND.*)` /
@@ -87,7 +148,7 @@ export function scanHardcode(relPath, contenu) {
     .split('\n')
     .forEach((line, i) => {
       if (EXCLUDE_RX.test(line)) return;
-      const trait = TRAIT_TALENT_RX.test(line);
+      const trait = TRAIT_TALENT_RX.test(line) || nameCallHasLiteralArg(line);
       const etat = PER_ETAT_RX.test(line);
       if (!trait && !etat) return;
       if (etat && !trait && MACHINERY_RX.test(line)) return; // gate/mesure d'arène — pas une réaction par-nom

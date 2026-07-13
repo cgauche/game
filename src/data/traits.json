@@ -1619,6 +1619,18 @@
         "id": "tentacules"
       }
     ],
+    "passive": [
+      {
+        "op": "grantNaturalWeapon",
+        "name": "Tentacule",
+        "attackKind": "tentacules",
+        "subType": "base",
+        "uid": "nat-tentacule",
+        "damage": 0,
+        "plusBF": true,
+        "bare": true
+      }
+    ],
     "capabilities": {
       "naturalWeapon": {}
     }

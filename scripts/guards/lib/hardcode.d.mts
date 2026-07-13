@@ -5,6 +5,8 @@ export interface Finding {
 
 export function stripComments(src: string): string;
 export const TRAIT_TALENT_RX: RegExp;
+export const NAME_CALL_RX: RegExp;
+export function nameCallHasLiteralArg(line: string): boolean;
 export const PER_ETAT_RX: RegExp;
 export const EXCLUDE_RX: RegExp;
 export const MACHINERY_RX: RegExp;

@@ -10,12 +10,11 @@ import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
-import { findTrappingById, findVehicleById, qualityInstance, refLabel, type TrappingRef } from '../data';
+import { findTrappingById, findVehicleById, findTraitById, qualityInstance, refLabel, type TrappingRef } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
 import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality, qualityIndice } from './qualities/dispatch';
-import { hasTraitKey } from './traits/dispatch';
 import { itemCapability } from './capabilities';
 
 let uidCounter = 0;
@@ -502,22 +501,22 @@ export function recomputeLoadout(c: Combatant): void {
     const dw = i.equipped && i.trappingId ? findTrappingById(i.trappingId)?.derivedWeapon : undefined;
     if (dw) weapons.push({ hand: 'main', ...dw });
   }
-  // Tentacule (trait Tentacules, LDB 85 p.343) : AUSSI une Attaque gratuite 1/tour (battleTentacle) ;
-  // ici utilisable comme arme ordinaire. La mutation « Tentacule épais » confère le trait → couvert.
-  if (hasTraitKey(c.traits, 'tentacules')) {
-    weapons.push({ ...buildWeapon({ name: 'Tentacule', attackKind: 'tentacules', subType: 'base', uid: 'nat-tentacule', damage: { plusBF: true, flat: 0, bare: true } }), hand: 'main' });
-  }
-  // Armes NATURELLES de MUTATION (LDB 19 : « Compte comme une Arme de Créature », Dégâts = BF) —
-  // op `grantNaturalWeapon` du `passive` de la mutation (même vocabulaire que les sorts/traits).
-  // Ajouter une mutation-arme = ajouter cet op à la donnée. Dégâts LITTÉRAUX (mutations RAW = fixes).
-  for (const m of c.mutations ?? []) for (const op of m.passive ?? []) {
-    if (op.op === 'grantNaturalWeapon') {
-      const flat = (typeof op.damage === 'number' ? op.damage : 0) + (op.damagePlus ?? 0);
-      weapons.push({ hand: 'main', ...buildWeapon({
-        name: op.name, damage: { plusBF: op.plusBF !== false, flat, bare: op.bare ? true : undefined },
-        qualities: (op.qualities ?? []).map((id) => ({ id })), uid: { prefix: `nat-${slugId(op.name)}` },
-      }) });
-    }
+  // Armes NATURELLES portées en DONNÉE par le `passive` d'une source — trait (Tentacules, LDB 85 p.343) ou
+  // mutation (Tentacule épais → trait ; LDB 19 : « Compte comme une Arme de Créature »). Op `grantNaturalWeapon`,
+  // MÊME vocabulaire, boucle KIND-AGNOSTIQUE : ajouter une source = l'itérer ici, aucun kind nommé en dur.
+  // (L'Attaque gratuite 1/tour du Tentacule est portée par le maneuver `tentacule`, keyé sur uid `nat-tentacule`.)
+  const naturalWeaponPassives = [
+    ...(c.mutations ?? []).map((m) => m.passive),
+    ...(c.traits ?? []).map((t) => findTraitById(t.id)?.passive),
+  ];
+  for (const ops of naturalWeaponPassives) for (const op of ops ?? []) {
+    if (op.op !== 'grantNaturalWeapon') continue;
+    const flat = (typeof op.damage === 'number' ? op.damage : 0) + (op.damagePlus ?? 0);
+    weapons.push({ hand: 'main', ...buildWeapon({
+      name: op.name, attackKind: op.attackKind, subType: op.subType,
+      damage: { plusBF: op.plusBF !== false, flat, bare: op.bare ? true : undefined },
+      qualities: (op.qualities ?? []).map((id) => ({ id })), uid: op.uid ?? { prefix: `nat-${slugId(op.name)}` },
+    }) });
   }
   // Armes NATURELLES accordées par un Sort (op `grantNaturalWeapon` — Dent et griffe : Morsure/Arme ;
   // Incarnation de Wyssan) : attaques ADDITIONNELLES tant que l'effet dure (retirées au recompute

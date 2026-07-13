@@ -28,6 +28,8 @@ describe('armes naturelles de mutation (recomputeLoadout)', () => {
     const t = hero.weapons.find((w) => w.uid === 'nat-tentacule');
     expect(t?.name).toBe('Tentacule');
     expect(damageString(t!.damage)).toBe('+BF');
+    expect(t?.attackKind).toBe('tentacules'); // routage pose/anim (handlingClass) — porté par l'op grantNaturalWeapon
+    expect(t?.subType).toBe('base');
     const c = hero.weapons.find((w) => w.name === 'Cornes'); // arme dérivée de mutation (derivedWeapon)
     expect(c?.name).toBe('Cornes');
     expect(damageString(c!.damage)).toBe('+BF');

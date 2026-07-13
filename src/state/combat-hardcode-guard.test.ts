@@ -40,19 +40,19 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
  *  `focusNoMiscastOnDouble` (dispatch `hasInstinctiveDiction`/`hasFocusHarmony`, id-only, comme
  *  tout `combatFeatures/dispatch.ts`) ; Béni (sélection de cible « Petites Prières ») → comparaison
  *  directe par id (`talentId === 'beni'`, patron déjà en place dans combatGeometry.ts/psychology.ts/
- *  provisions.ts/mount.ts/vision.ts). `combatFlow.ts`/`combatSlice.ts` retombent à 0 ; `combatEffects.ts`
- *  ne garde que le site data-driven `spec.easierIf!.hasTalent` (combatEffects.ts:351 — l'argument
- *  vient de la donnée, pas un nom en dur, mais la mécanique de scan ne distingue pas l'appel de son
- *  argument) — `src/engine/magic.ts` garde sa baseline 2 (définition de `hasTalent` auto-référente +
- *  `hasTraitKey` l.218, hors périmètre #317).
+ *  provisions.ts/mount.ts/vision.ts). `combatFlow.ts`/`combatSlice.ts` retombent à 0.
+ *  Révision #385 : la mécanique de scan ne signale un `hasTraitKey(`/`hasTalent(` que si son
+ *  2e argument (le nom d'entité) est un LITTÉRAL de chaîne (`nameCallHasLiteralArg`) — un argument
+ *  DONNÉE/variable est data-driven. Trois faux positifs retranchés STRUCTURELLEMENT : le site
+ *  data-driven `hasTalent(c, spec.easierIf!.hasTalent)` (combatEffects.ts → 0) et les DÉFINITIONS
+ *  auto-référentes `hasTalent(c, name)` / `hasTraitKey(traits, id)` (magic.ts → 1, dispatch.ts → 2 :
+ *  restent isUnstable/isBestial, marqueurs par-nom nus, hors périmètre #385).
  *  Chaque abaissement = une vraie migration vers la donnée ; chaque hausse = une régression. */
 const BASELINES: Record<string, number> = {
-  'src/engine/items.ts': 1,
-  'src/engine/magic.ts': 2,
+  'src/engine/magic.ts': 1,
   'src/engine/psychology.ts': 1,
-  'src/engine/traits/dispatch.ts': 3,
+  'src/engine/traits/dispatch.ts': 2,
   'src/state/ai.ts': 3,
-  'src/state/combatEffects.ts': 1,
   'src/state/combatManeuvers.ts': 2,
   'src/state/mount.ts': 1,
 };
@@ -95,6 +95,25 @@ describe('garde-fou « tout migrer » — réactions de combat hardcodées (cliq
       'Nouveau(x) hardcode(s) réactif(s) par-nom — migrer vers la DONNÉE (TriggeredEffect/passive), ' +
         `ou si migration déjà faite ABAISSER la baseline du fichier :\n${offenders.join('\n')}`,
     ).toEqual([]);
+  });
+
+  it('#385 — arg LITTÉRAL de chaîne signalé, arg DONNÉE/variable/paramètre non signalé', () => {
+    // (a) littéral => réaction par-nom en dur => signalée.
+    expect(scanHardcode('src/x.ts', "if (hasTraitKey(c.traits, 'tentacules')) {").length).toBe(1);
+    expect(scanHardcode('src/x.ts', "const b = hasTalent(c, 'Béni');").length).toBe(1);
+    // (b) accès de propriété / variable / paramètre => data-driven => NON signalé.
+    expect(scanHardcode('src/x.ts', 'if (hasTalent(c, spec.easierIf!.hasTalent)) {').length).toBe(0);
+    expect(scanHardcode('src/x.ts', 'const b = hasTraitKey(c.traits, key);').length).toBe(0);
+    expect(scanHardcode('src/x.ts', 'export function hasTalent(c: Combatant, name: string): boolean {').length).toBe(0);
+    // gabarit avec interpolation = dynamique => NON littéral ; sans interpolation => littéral.
+    expect(scanHardcode('src/x.ts', 'const b = hasTalent(c, `${prefix}-beni`);').length).toBe(0);
+    expect(scanHardcode('src/x.ts', 'const b = hasTalent(c, `beni`);').length).toBe(1);
+  });
+
+  it('#385 — le site data-driven réel combatEffects.ts (spec.easierIf!.hasTalent) ne remonte plus', () => {
+    const src = readFileSync(join(ROOT, 'src/state/combatEffects.ts'), 'utf8');
+    const findings = scanHardcode('src/state/combatEffects.ts', src);
+    expect(findings.map((f) => f.detail).filter((d) => /easierIf/.test(d))).toEqual([]);
   });
 
   it('CLIQUET : toute baseline devenue trop haute (fichier assaini) doit être ABAISSÉE', () => {
