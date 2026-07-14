@@ -180,7 +180,14 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
               className="fold"
               style={{ flexBasis: '100%' }}
               open={open}
-              onToggle={(e) => setManualOpen((m) => ({ ...m, [cl.name]: e.currentTarget.open }))}
+              onToggle={(e) => {
+                // `toggle` ne bulle pas (spec HTML) : React l'écoute en DIRECT sur le nœud, hors du
+                // flush synchrone du batching d'événement délégué — le natif nullifie `currentTarget`
+                // à la fin du `dispatchEvent`, AVANT que le rendu suivant applique cet updater. Capturer
+                // la valeur ICI (synchrone), jamais la déréférencer depuis le corps du updater `setState`.
+                const nowOpen = e.currentTarget.open;
+                setManualOpen((m) => ({ ...m, [cl.name]: nowOpen }));
+              }}
             >
               <summary>
                 <span className="fold-title">{cl.name}</span>
