@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { careerClass, tenueForClass, tenueFor, wardrobeKeyResolves } from './career';
+import { careerClass, tenueForClass, tenueFor, tenuePaletteFor, wardrobeKeyResolves } from './career';
 import { CLASS_TENUE_BY_ID, TENUE_BY_ID } from './tenues';
 import { pickView } from './types';
+import { careers } from '../../../data';
 
 describe('careerClass — renvoie un id de CLASSE, par id de carrière EXACT (aucun libellé)', () => {
   it('lit la classe depuis careers.json (id → classe)', () => {
@@ -52,6 +53,25 @@ describe('tenueFor — garde-robe id→id (aucun slugId au milieu)', () => {
     expect(front).toContain('<');
     expect(pickView(t.torse, 'back')).not.toBe(front);
     expect(pickView(t.torse, 'profile')).not.toBe(front);
+  });
+});
+
+describe('tenueFor — carrière SANS archétype de classe réutilisant la tenue d’une autre (CareerData.tenue, MDG 09 « Côtier »)', () => {
+  it('marin/naufrageur/nautonier (Côtier) résolvent la tenue de leur carrière de base', () => {
+    expect(tenueFor('marin-cotier')).toBe(TENUE_BY_ID.marin);
+    expect(tenueFor('naufrageur-cotier')).toBe(TENUE_BY_ID.naufrageur);
+    expect(tenueFor('nautonier-cotier')).toBe(TENUE_BY_ID.nautonier);
+  });
+  it('tenuePaletteFor en miroir exact', () => {
+    expect(tenuePaletteFor('marin-cotier')).toBe(tenuePaletteFor('marin'));
+    expect(tenuePaletteFor('naufrageur-cotier')).toBe(tenuePaletteFor('naufrageur'));
+    expect(tenuePaletteFor('nautonier-cotier')).toBe(tenuePaletteFor('nautonier'));
+  });
+  it('garde d’intégrité : toute `CareerData.tenue` référence une tenue connue (TENUE_BY_ID)', () => {
+    const orphans = (careers as Array<{ id: string; tenue?: string }>)
+      .filter((c) => c.tenue && !(c.tenue in TENUE_BY_ID))
+      .map((c) => `${c.id} → ${c.tenue}`);
+    expect(orphans, `tenue(s) orpheline(s) : ${orphans.join(', ')}`).toEqual([]);
   });
 });
 

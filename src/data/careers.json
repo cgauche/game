@@ -2058,6 +2058,7 @@
     "id": "marin-cotier",
     "label": "Marin (Côtier)",
     "class": "cotiers",
+    "tenue": "marin",
     "rand": {
       "humain": 66,
       "halfling": 71,
@@ -2082,6 +2083,7 @@
     "label": "Naufrageur (Côtier)",
     "labelF": "Naufrageuse (Côtier)",
     "class": "cotiers",
+    "tenue": "naufrageur",
     "rand": {
       "humain": 67,
       "halfling": null,
@@ -2106,6 +2108,7 @@
     "label": "Nautonier (Côtier)",
     "labelF": "Nautonière (Côtier)",
     "class": "cotiers",
+    "tenue": "nautonier",
     "rand": {
       "humain": 68,
       "halfling": 73,

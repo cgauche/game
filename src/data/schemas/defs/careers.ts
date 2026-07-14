@@ -20,6 +20,9 @@ export const schema = z.array(
     labelF: z.string().optional(),
     /** `id` de la Classe (`ClassData.id`). */
     class: z.string(),
+    /** id d'une tenue spécifique (`TENUE_BY_ID`) réutilisée par cette carrière quand son rendu
+     *  reprend la tenue d'une autre carrière (variants MDG « (Côtier) », MDG 09 l.255/343/458). */
+    tenue: z.string().optional(),
     /** Clé = `refCareerIdSchema` (id stable, #313) → borne haute d100 ; clé ABSENTE = carrière
      *  indisponible pour cette espèce (partiel : toutes les carrières ne portent pas les 11 colonnes). */
     rand: z.partialRecord(refCareerIdSchema, z.number().nullable()),

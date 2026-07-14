@@ -196,6 +196,9 @@ export interface CareerData {
   labelF?: string;
   /** `id` de la Classe (`ClassData.id`) — réf d'entité, ≠ libellé. */
   class: string;
+  /** id d'une tenue spécifique (`TENUE_BY_ID`) réutilisée par cette carrière quand son rendu
+   *  reprend la tenue d'une autre carrière (variants MDG « (Côtier) », MDG 09 l.255/343/458). */
+  tenue?: string;
   /** Tableau des Classes et Carrières aléatoires (LDB 05 l.197+) : borne haute d100 par colonne
    *  d'espèce (`SpeciesData.refCareer`). Clé ABSENTE = carrière INDISPONIBLE pour cette espèce (l.360). */
   rand: Partial<Record<RefCareerId, number | null>>;

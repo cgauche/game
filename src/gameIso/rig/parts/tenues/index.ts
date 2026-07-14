@@ -10,7 +10,8 @@ export type { TenueSet, TenueDef } from './types';
  * Table des tenues DÉRIVÉE des seuls fichiers `defs/` (plus d'AUTO/MANUAL/merge). Ajouter une
  * tenue = déposer un fichier dans `defs/` (puis `npm run gen` hors dev). La taxonomie des classes
  * (careers.json) discrimine les archétypes de CLASSE (repli) des tenues SPÉCIFIQUES (par id) —
- * aucun flag `career` sur le def : la donnée des carrières est l'unique autorité.
+ * aucun flag `career` sur le def : la donnée des carrières est l'unique autorité. Une carrière sans
+ * tenue dédiée peut réutiliser celle d'une autre via `CareerData.tenue` (résolu dans `career.ts`).
  */
 const CLASS_IDS = new Set((careers as Array<{ class: string }>).map((c) => c.class));
 const isClassDef = (name: string): boolean => CLASS_IDS.has(slugId(name));

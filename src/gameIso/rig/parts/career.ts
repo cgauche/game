@@ -9,6 +9,11 @@ import type { StoredPalette } from '../palette';
 const CAREER_CLASS_BY_ID: Record<string, string> = {};
 for (const row of careers) CAREER_CLASS_BY_ID[row.id] = row.class;
 
+// Carrière (id) → tenue spécifique réutilisée (id) ; `careers.json` porte `tenue` (variants MDG
+// « (Côtier) » sans archétype de classe dédié, MDG 09 l.255/343/458) — champ optionnel, DÉJÀ un id.
+const CAREER_TENUE_BY_ID: Record<string, string> = {};
+for (const row of careers) if (row.tenue) CAREER_TENUE_BY_ID[row.id] = row.tenue;
+
 // Vocabulaire de garde-robe RÉSOLVABLE (id STABLE, jamais un libellé) : carrière (careers.json) ∪ classe
 // (CLASS_TENUE_BY_ID) ∪ tenue spécifique (TENUE_BY_ID, dont 'nu'). Hors de cet ensemble = vocabulaire
 // INCONNU (faute d'authoring) → repli citadins BRUYANT (#223).
@@ -47,16 +52,18 @@ export function tenueLabel(id: string | undefined): string { return TENUE_LABEL_
  */
 export function tenuePaletteFor(tenue: string | undefined): StoredPalette {
   const id = tenue ?? '';
-  return TENUE_PALETTE_BY_ID[id] ?? CLASS_PALETTE_BY_ID[careerClass(id)] ?? {};
+  const specificId = CAREER_TENUE_BY_ID[id] ?? id;
+  return TENUE_PALETTE_BY_ID[specificId] ?? CLASS_PALETTE_BY_ID[careerClass(id)] ?? {};
 }
 
 /** Tenue résolue pour une CLÉ de garde-robe (id STABLE — appearance.tenue = id de tenue, sinon
- *  Combatant.career = id de carrière) : tenue SPÉCIFIQUE si dispo, sinon archétype de CLASSE. Id inconnu
- *  (ni carrière ∪ classe ∪ tenue) → repli citadins BRUYANT (#223). */
+ *  Combatant.career = id de carrière) : tenue SPÉCIFIQUE si dispo (celle de la carrière, ou celle
+ *  réutilisée via `CareerData.tenue` — variants MDG « (Côtier) »), sinon archétype de CLASSE. Id
+ *  inconnu (ni carrière ∪ classe ∪ tenue) → repli citadins BRUYANT (#223). */
 export function tenueFor(tenue: string | undefined): TenueSet {
   const id = tenue ?? '';
   if (id === 'nu') return TENUE_NUE; // corps nu (monstres sans habit)
-  const specific = TENUE_BY_ID[id];
+  const specific = TENUE_BY_ID[CAREER_TENUE_BY_ID[id] ?? id];
   if (specific) return specific;
   if (id !== '' && !wardrobeKeyResolves(id))
     console.warn(`[tenue] « ${tenue} » introuvable au catalogue (careers ∪ classes ∪ tenues) — repli citadins (#223)`);
