@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { makeRNG } from './dice';
+import { makeRNG, roll } from './dice';
 import { setRule, resetRule } from './policy';
 import { CHAR_KEYS, CharKey } from './types';
 import {
@@ -204,5 +204,32 @@ describe('Détails (LDB 05 l.691-744)', () => {
     expect(rollEyes(elf, makeRNG(3))).toBe(rollEyes(elf, makeRNG(3)));
     expect(rollEyes(elf, makeRNG(3)).length).toBeGreaterThan(0);
     expect(rollHair(elf, makeRNG(3)).length).toBeGreaterThan(0);
+  });
+});
+
+describe('Couleur des cheveux — bornes 2d10 PAR RACE (rollHair, #420)', () => {
+  // NADJ « 15 - _GoBack.md » l.99-104 (gnome, p.89) : bornes 4-6/7-10/11 ≠ LDB.
+  const gnomeHair = (d2: number): string =>
+    d2 <= 2 ? 'Noir' : d2 === 3 ? 'Brun foncé' : d2 <= 6 ? 'Brun' : d2 <= 10 ? 'Brun pâle'
+    : d2 === 11 ? 'Auburn' : d2 <= 14 ? 'Roux' : d2 <= 17 ? 'Blond roux' : d2 === 18 ? 'Bond doré'
+    : d2 === 19 ? 'Blond platine' : 'Blanc';
+  // LDB 05 l.758-768 (humain reiklander) : bornes 4/5-7/8-11.
+  const humainHair = (d2: number): string =>
+    d2 <= 2 ? 'Blond blanc' : d2 === 3 ? 'Blond doré' : d2 === 4 ? 'Blond roux' : d2 <= 7 ? 'Brun doré'
+    : d2 <= 11 ? 'Brun clair' : d2 <= 14 ? 'Brun foncé' : d2 <= 17 ? 'Noir' : d2 === 18 ? 'Auburn'
+    : d2 === 19 ? 'Roux' : 'Gris';
+  const gnome = findSpeciesById('gnomes')!;
+  const humain = findSpeciesById('humains-reiklander')!;
+  it('Gnome : chaque 2d10 rend la couleur NADJ — décalée du LDB pour 5,6,8,9,10 (rouge avant #420)', () => {
+    for (let seed = 0; seed < 400; seed++) {
+      const d2 = roll(2, 10, makeRNG(seed)); // même 1er tirage que rollHair(makeRNG(seed))
+      expect(rollHair(gnome, makeRNG(seed)), `seed=${seed} 2d10=${d2}`).toBe(gnomeHair(d2));
+    }
+  });
+  it('Les races LDB gardent les bornes LDB (override race-scopé) — humain reiklander', () => {
+    for (let seed = 0; seed < 400; seed++) {
+      const d2 = roll(2, 10, makeRNG(seed));
+      expect(rollHair(humain, makeRNG(seed)), `seed=${seed} 2d10=${d2}`).toBe(humainHair(d2));
+    }
   });
 });

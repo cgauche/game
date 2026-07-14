@@ -1,6 +1,6 @@
 /**
- * Schéma de `eyes.json` — table Couleur des Yeux (LDB 05 l.698-744, 2d10), consommée comme
- * `DetailColorData[]` (`src/data/index.ts:655`, partagée avec `hairs.json`).
+ * Schéma de `eyes.json` — table Couleur des Yeux (2d10, LDB 05 l.742-754), consommée comme
+ * `DetailColorData` (src/data/index.ts, partagée avec `hairs.json`).
  */
 import { z } from 'zod';
 import { raceKeySchema, sourceRefSchema } from '../common';

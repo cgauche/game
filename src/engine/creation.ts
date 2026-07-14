@@ -141,20 +141,25 @@ export function rollHeight(sp: SpeciesData, rng: RNG = defaultRNG): number {
   return rollDetailFormula(detailTables.heightBase, detailTables.heightRoll, sp, rng);
 }
 
-/** Couleur des yeux (2d10, table LDB 05 l.719-731) pour la colonne d'espèce (refChar). */
+/** Couleur des yeux (2d10, table LDB 05 l.742-754) pour la colonne d'espèce (refChar). */
 export function rollEyes(sp: SpeciesData, rng: RNG = defaultRNG): string {
   return rollDetail(eyesTable, sp, rng);
 }
 
-/** Couleur des cheveux (2d10, table LDB 05 l.733-744). */
+/** Couleur des cheveux (2d10, table LDB 05 l.756-768). */
 export function rollHair(sp: SpeciesData, rng: RNG = defaultRNG): string {
   return rollDetail(hairsTable, sp, rng);
 }
 
-function rollDetail(table: { rand: number; color: Partial<Record<RaceKey, string>> }[], sp: SpeciesData, rng: RNG): string {
+function rollDetail(
+  table: { rand: number; randByRace?: Partial<Record<RaceKey, number>>; color: Partial<Record<RaceKey, string>> }[],
+  sp: SpeciesData,
+  rng: RNG,
+): string {
   const r = roll(2, 10, rng);
-  const sorted = [...table].sort((a, b) => a.rand - b.rand);
-  const entry = sorted.find((e) => r <= e.rand) ?? sorted[sorted.length - 1];
+  const randFor = (e: { rand: number; randByRace?: Partial<Record<RaceKey, number>> }) => e.randByRace?.[sp.refChar] ?? e.rand;
+  const sorted = [...table].sort((a, b) => randFor(a) - randFor(b));
+  const entry = sorted.find((e) => r <= randFor(e)) ?? sorted[sorted.length - 1];
   return entry.color[sp.refChar] ?? entry.color.humain ?? '';
 }
 

@@ -716,6 +716,9 @@ export interface DetailColorData {
   label: string;
   /** Borne haute 2d10 (incluse). */
   rand: number;
+  /** Override de `rand` PAR RACE (`RaceKey`, #313) quand une édition utilise d'autres bornes que le
+   *  LDB (ex. gnome NADJ, #420) ; défaut = `rand`. Lu par `rollDetail`. */
+  randByRace?: Partial<Record<RaceKey, number>>;
   color: Partial<Record<RaceKey, string>>;
 }
 /** Texte d'aide (LDB 05 « Détails ») : global + par espèce (clé OUVERTE — libellé, saisie libre à
