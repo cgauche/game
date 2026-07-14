@@ -47,7 +47,7 @@ export function GroupedPickGrid({ sections, selectedId, onSelect, label }: {
     nodes.push(
       <div className="gpg-section" key={section.id}>
         <h4 className="gpg-heading">{section.label}</h4>
-        <div className="gpg-row row-flex">
+        <div className="gpg-row">
           {section.items.map((it) => {
             const idx = cursor++;
             return (

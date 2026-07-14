@@ -56,8 +56,11 @@ function useTumbleDigit(landed: boolean, real: number | null): number | null {
 
 /** UN dé physique (SVG, gemme d10 — même silhouette que l'icône `nav/dice`) : le chiffre est un
  *  `<text>` DANS le même SVG que la gemme — appartient au dé, jamais un overlay HTML à côté.
- *  `n=null` (score réel inconnu à l'atterrissage) → PAS de `<text>` (dé nu) plutôt qu'un chiffre inventé. */
-function DieFace({ n, landed }: { n: number | null; landed: boolean }) {
+ *  `n=null` (score réel inconnu à l'atterrissage) → PAS de `<text>` (dé nu) plutôt qu'un chiffre inventé.
+ *  EXPORTÉ (#393 P2) : les encriers « Aux dés » du créateur (Race/Carrière) le montent debout dans
+ *  leur plateau (`.dicewell-die`) — idle (dé nu) ET rendu (vraie face gravée), jamais une icône
+ *  générique recopiée à côté. */
+export function DieFace({ n, landed }: { n: number | null; landed: boolean }) {
   return (
     <svg viewBox="0 0 24 24" className={`rm-die-svg${landed ? ' rm-die-landed' : ' rm-die-rolling'}`} aria-hidden="true">
       <path className="rm-die-gem" d="M12.1 3.1 L18.9 8.5 L17.1 16.7 L12 20.9 L6.9 16.7 L5.1 8.5 Z" />

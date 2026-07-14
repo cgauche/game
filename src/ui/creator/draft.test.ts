@@ -25,6 +25,9 @@ import {
   draftSpecies,
   draftLevel,
   careerCharKeys,
+  coastalSwapAvailable,
+  careerRollPool,
+  withCoastalSwap,
 } from './draft';
 import { CHAR_KEYS } from '../../engine/types';
 import { rigSpeciesId } from '../../data';
@@ -108,6 +111,36 @@ describe('aléatoire FIGÉ (anti-savescum)', () => {
     const d2 = { ...d, speciesTalentChoices: { 'Perspicace ou Affable': 'Affable' } };
     const randoms = (x: string[]) => x.filter((t) => !['Perspicace', 'Affable', 'Destinée'].includes(t));
     expect(randoms(resolvedSpeciesTalents(d2))).toEqual(randoms(resolvedSpeciesTalents(d)));
+  });
+});
+
+describe('Riverains ⇄ Côtiers (MDG 09 l.9, #393 P2 correctif utilisateur)', () => {
+  const swappableSpecies = allSpecies.find((s) => coastalSwapAvailable(withSpecies(newDraft(1), s.id)))!;
+  const swappable = () => withSpecies(newDraft(1234), swappableSpecies.id);
+
+  it('la table effective exclut Riverains XOR Côtiers selon la bascule — jamais les deux', () => {
+    const off = careerRollPool({ ...swappable(), coastalSwap: false });
+    expect(off.some((c) => c.class === 'cotiers')).toBe(false);
+    expect(off.some((c) => c.class === 'riverains')).toBe(true);
+    const on = careerRollPool({ ...swappable(), coastalSwap: true });
+    expect(on.some((c) => c.class === 'riverains')).toBe(false);
+    expect(on.some((c) => c.class === 'cotiers')).toBe(true);
+  });
+
+  it('anti-exploit : la bascule refuse de changer d\'état une fois un jet posé (relance gratuite bloquée)', () => {
+    const rolled = rollDraftCareer(swappable());
+    expect(rolled.careerRolls.length).toBeGreaterThan(0);
+    const before = rolled.careerRolls;
+    const attempted = withCoastalSwap(rolled, !rolled.coastalSwap);
+    expect(attempted.coastalSwap).toBe(rolled.coastalSwap); // état INCHANGÉ
+    expect(attempted.careerRolls).toBe(before); // jets INTACTS (pas de reset détourné)
+  });
+
+  it('la bascule fonctionne normalement tant qu\'aucun jet n\'existe', () => {
+    const d = swappable();
+    expect(d.careerRolls.length).toBe(0);
+    const swapped = withCoastalSwap(d, !d.coastalSwap);
+    expect(swapped.coastalSwap).toBe(!d.coastalSwap);
   });
 });
 

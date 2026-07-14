@@ -11,7 +11,7 @@
  * Les sections internes utilisent des séparateurs (.zone-section), pas des boîtes. La logique
  * (tirages figés, bonus de PX, validation, construction) vit dans ./draft.ts (pur).
  */
-import { useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useGame } from '../../state/store';
 import { rosterAdd, rosterLoad } from '../../state/roster';
 import {
@@ -69,12 +69,14 @@ import { previewHero } from './CreatorSummary';
 import { CreatorStepFrame, Section, Stepper, type StepZones } from './CreatorStepFrame';
 import { CreatorDice } from './CreatorDice';
 import { useRollFrisson } from '../useRollFrisson';
-import { DiceRoll } from '../DiceRoll';
+import { DiceRoll, DieFace } from '../DiceRoll';
 import { d10PairFaces, d100Faces } from '../Dice';
-import { FacetedPickGrid } from './FacetedPickGrid';
 import { CelestialWheel } from './CelestialWheel';
 import { MasterDetail } from '../MasterDetail';
 import { DetailFrame } from '../DetailFrame';
+import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
+import { MetalStatus } from '../MetalStatus';
+import { CareerPath } from '../CareerPath';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import {
   CreatorDraft,
@@ -87,6 +89,7 @@ import {
   rollDraftCareer,
   withCoastalSwap,
   coastalSwapAvailable,
+  careerRollPool,
   speciesXp,
   careerXp,
   charsXp,
@@ -126,6 +129,7 @@ import {
   splitTopLevelOu,
 } from './draft';
 import { wildcardSpecs } from '../../engine/careerSlots';
+import { XP_CAREER_FIRST, XP_CAREER_TOP3 } from '../../engine/creation';
 
 /** Métadonnées d'étape : libellé FR + fabrique de zones (rail/main) OU écran de plein rendu
  *  (`screen`, gabarit propre — étapes transposées à la charte « Atelier du scribe », #393). SOURCE
@@ -134,7 +138,7 @@ import { wildcardSpecs } from '../../engine/careerSlots';
  *  d'un index positionnel codé. */
 const STEP_META: Record<StepId, { label: string; zone?: (p: StepProps) => StepZones; screen?: (p: StepProps) => ReactNode }> = {
   species: { label: 'Race', screen: SpeciesRaceScreen },
-  career: { label: 'Carrière', zone: CareerZones },
+  career: { label: 'Carrière', screen: CareerScreen },
   chars: { label: 'Caractéristiques', zone: CharZones },
   star: { label: 'Signe astral', zone: StarZones },
   skills: { label: 'Compétences & Talents', zone: SkillZones },
@@ -241,12 +245,19 @@ export function CharacterCreator() {
   const meta = STEP_META[curId];
   const stepProps: StepProps = { d, setD, charReroll };
 
-  // Récap de pied VALIDE — étape Race uniquement (#393 P4) : le message d'erreur garde toujours
-  // la priorité (cf. footer, `err ?? ...`) ; une fois la race choisie, la barre redit le choix fait.
+  // Récap de pied VALIDE — étapes Race/Carrière (#393 P2/P4) : le message d'erreur garde toujours
+  // la priorité (cf. footer, `err ?? ...`) ; une fois le choix fait, la barre le redit.
   const raceFooterSummary = (): string | null => {
     const sp = draftSpecies(d);
     if (!sp) return null;
     return `Race ${sp.label} — M ${sp.movement} · Destin ${sp.fate.fate} · Résilience ${sp.fate.resilience} · +${sp.fate.extra} à répartir.`;
+  };
+  const careerFooterSummary = (): string | null => {
+    const c = findCareerById(d.careerId);
+    if (!c) return null;
+    const lvl1 = levelsForCareer(d.careerId).find((l) => l.level === 1);
+    const cl = findClassById(c.class);
+    return `Classe ${cl?.label ?? c.class} · carrière ${c.label} — départ ${lvl1?.label ?? '—'}, ${lvl1?.status ?? ''}.`;
   };
 
   // Une réf Codex cliquée ouvre la fiche en MODALE par-dessus l'assistant (cf. CodexOverlay) : le
@@ -254,8 +265,8 @@ export function CharacterCreator() {
   return (
     <div className="screen creator">
       <header className="bar">
-        <button className="btn small" onClick={closeCreator}>
-          ← Groupe
+        <button className="btn small row-flex" onClick={closeCreator}>
+          ← <Icon id="nav/seat-owner" size="sm" /> Groupe ({party.length}/4)
         </button>
         <h2>{editing ? 'Modifier le personnage' : 'Créateur de personnage'}</h2>
         <div className="wizard-steps">
@@ -288,14 +299,20 @@ export function CharacterCreator() {
         </p>
       )}
 
-      {meta.screen ? meta.screen(stepProps) : <CreatorStepFrame d={d} step={step} zones={meta.zone!(stepProps)} />}
+      {/* `screen` monté en JSX (jamais en appel de fonction nue) : chaque écran-étape (Race/Carrière)
+          pose ses PROPRES hooks internes (recherche, `useRollFrisson`…) — un appel de fonction directe
+          les compterait dans les hooks de CE composant `CharacterCreator`, en ordre instable d'une
+          étape à l'autre (violation des Règles des Hooks, #393 P2 — crashait au passage Race→Carrière,
+          chacun avec un nombre de hooks internes différent). En JSX, React isole chaque écran dans son
+          PROPRE Fiber (identité = le type de composant) : bascule d'étape = démonte/remonte proprement. */}
+      {meta.screen ? <meta.screen {...stepProps} /> : <CreatorStepFrame d={d} step={step} zones={meta.zone!(stepProps)} />}
 
       <footer className="bar">
         <button className="btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
           ← Précédent
         </button>
         <span className={`hint wizard-hint${err ? ' warn-text' : ''}`}>
-          {err ?? (curId === 'species' ? raceFooterSummary() ?? '' : '')}
+          {err ?? (curId === 'species' ? raceFooterSummary() ?? '' : curId === 'career' ? careerFooterSummary() ?? '' : '')}
         </span>
         {step < ids.length - 1 ? (
           <button className="btn btn-primary" disabled={!canNext} onClick={() => setStep(step + 1)}>
@@ -405,19 +422,19 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   ) : !d.speciesRoll ? (
     <button type="button" className="dicewell act emph" onClick={() => trigger()}>
       <span className="dicewell-tray">
-        <Icon id="nav/dice" size="sm" />
-        <Icon id="nav/dice" size="sm" />
+        <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+        <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
       </span>
       <span className="dicewell-copy">
         <span className="dicewell-txt">Tirer aux dés — d100</span>
-        <span className="dicewell-sub">sa race au hasard : +20 PX de création (garder le tirage)</span>
+        <span className="dicewell-sub">sa race au hasard : <b>+20 PX de création</b> (garder le tirage)</span>
       </span>
     </button>
   ) : (
     <div className="dicewell done">
       <span className="dicewell-tray">
-        <Icon id="nav/dice" size="sm" />
-        <Icon id="nav/dice" size="sm" />
+        <span className="rm-die dicewell-die"><DieFace n={d100Faces(d.speciesRoll.roll)[0]} landed /></span>
+        <span className="rm-die dicewell-die"><DieFace n={d100Faces(d.speciesRoll.roll)[1]} landed /></span>
       </span>
       <span className="dicewell-copy">
         <span className="dicewell-txt">
@@ -429,13 +446,13 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
 
   const list = (
     <>
-      <div className="creator-race-toolbar">
-        <div className="creator-race-search">
+      <div className="creator-pick-toolbar">
+        <div className="creator-pick-search">
           <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une race…" />
         </div>
         {diceCell}
       </div>
-      <p className="creator-race-count">{families.length} races — {totalRaces} lignées</p>
+      <p className="creator-pick-count">{families.length} races — {totalRaces} lignées</p>
       <div ref={gridRef} role="listbox" aria-label="Choix de la race" className="creator-race-grid" onKeyDown={onGridKeyDown}>
         {visibleFamilies.map((f, idx) => {
           const rep = f.list[0];
@@ -530,160 +547,222 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
     />
   );
 
-  return <MasterDetail className="creator-race-shell" listLabel="Choix de la race" list={list} detail={detail} />;
+  return <MasterDetail className="creator-pick-shell" listLabel="Choix de la race" list={list} detail={detail} />;
 }
 
-// ════ 2) Carrière (LDB 05 l.186-365) — Zone A : classes + liste + « Aux dés » ; Zone B : plan complet ════
-export function CareerZones({ d, setD }: StepProps): StepZones {
+// ════ 2) Carrière (LDB 05 l.186-365) — charte « Atelier du scribe » (#393 P2, MÊME gabarit DEUX
+//      ZONES que Race, `MasterDetail`) : liste = TOUTES les classes en SECTIONS empilées
+//      (`GroupedPickGrid`, une tuile-figurine compacte par carrière — `FigTile`/`CharacterPreview`,
+//      ~6-7 par rangée, maquette ratifiée `finale-mock1-carriere.png`, corrigé 2026-07-14 : le brief
+//      « nominatif sans figurine » venait du croquis initial, la planche RATIFIÉE montre bien de
+//      petites figurines) ⇄ détail = la carrière élue (`DetailFrame` — `MetalStatus`+`CareerPath`,
+//      1ers consommateurs réels, #412). Mort du call-site Carrière de `FacetedPickGrid` (DERNIER
+//      consommateur, #393 P2) : le fichier meurt avec lui. Mécanique INCHANGÉE (`withCareer`/
+//      `rollDraftCareer`, draft.ts) — présentation seule se restructure, patron encrier de Race
+//      (rangée toolbar, résultat vit dans l'encrier plutôt qu'un mur de boutons).
+export function CareerScreen({ d, setD }: StepProps): ReactNode {
+  const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
-  const accessible = sp ? careersForSpecies(sp.refCareer, d.ignoreRestrictions) : [];
+  // Table EFFECTIVE (#393 P2 correctif utilisateur) : `careersForSpecies` seule renvoie les DEUX
+  // portions Riverains/Côtiers quand la colonne d'espèce les porte toutes deux — la grille doit
+  // rester en phase avec la bascule `coastalSwap` (MÊME exclusivité que le tirage, `careerRollPool`),
+  // sinon la classe désactivée reste visible/sélectionnable quel que soit l'état de la chip.
+  const pool = careerRollPool(d);
+  const accessible = sp ? careersForSpecies(sp.refCareer, d.ignoreRestrictions).filter((c) => pool.some((p) => p.id === c.id)) : [];
   const career = findCareerById(d.careerId);
   const levels = levelsForCareer(d.careerId);
   const lvl1 = levels.find((l) => l.level === 1);
+  const lvlMax = levels.length ? levels.reduce((a, b) => (a.level > b.level ? a : b)) : undefined;
 
-  const dice = (
-    <CreatorDice
-      label="Tirer la carrière (d100)"
-      hint="1ᵉʳ jet accepté : +50 PX · choix parmi 3 jets : +25 PX · choix libre / relances : +0 PX (LDB 05)."
-      rolled={d.careerRolls.length > 0}
-      xp={careerXp(d)}
-      onRoll={() => setD(rollDraftCareer(d))}
-      roll={d.careerRolls[d.careerRolls.length - 1]?.roll}
-    >
-      <div className="talent-choices">
-        {d.careerRolls.map((r, i) => (
-          <div key={`roll-${i}`} style={{ marginBottom: 4 }}>
-            <div className="mini-title">
-              Jet {i + 1} : {r.roll}
-              {r.ids.length > 1 && <em className="hint"> — choisissez parmi les carrières de cette borne</em>}
-            </div>
-            {r.ids.map((id) => {
-              const rc = findCareerById(id);
-              return (
-                <label className="radio" key={`${id}-${i}`}>
-                  <input type="radio" name="career-roll" checked={d.careerId === id} onChange={() => setD(withCareer(d, id))} />
-                  <b>{rc?.label}</b> ({findClassById(rc?.class)?.label})
-                </label>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-      {d.careerRolls.length === 1 && (
-        <button className="btn small" style={{ marginTop: 8 }} onClick={() => setD(rollDraftCareer(d))}>
-          <Icon id="nav/dice" size="sm" /> Pas convaincu : 2 jets de plus (choix parmi 3, +25 PX)
-        </button>
-      )}
-      {d.careerRolls.length >= 3 && (
-        <button className="btn small" style={{ marginTop: 8 }} onClick={() => setD(rollDraftCareer(d))}>
-          <Icon id="nav/dice" size="sm" /> Continuer à relancer (0 PX)
-        </button>
-      )}
-    </CreatorDice>
-  );
+  // Rang CONSULTÉ (exploration en LECTURE du détail, #393 P2 correctif utilisateur) : la chaîne
+  // `CareerPath` bascule les rubriques Caractéristiques/Compétences/Talents sur le niveau cliqué —
+  // le CHOIX de création reste au niveau 1 (`draft.ts`/`buildHero` ne lisent jamais `exploredLevel`).
+  const [exploredLevel, setExploredLevel] = useState(1);
+  useEffect(() => setExploredLevel(1), [d.careerId]);
+  const lvlExplored = levels.find((l) => l.level === exploredLevel) ?? lvl1;
 
-  const choice = (
-    <Section title={`Carrières (${accessible.length} accessibles)`}>
-      <div className="row-flex" style={{ marginBottom: 8 }}>
-        <label className="radio">
-          <input type="checkbox" checked={d.ignoreRestrictions} onChange={(e) => setD({ ...d, ignoreRestrictions: e.target.checked })} />
-          Ignorer les restrictions de race
-        </label>
-        {/* MDG 09 l.9 : choix AVANT le jet — basculer réinitialise les jets (même d100, autre table). */}
-        {coastalSwapAvailable(d) && (
-          <label className="radio">
-            <input type="checkbox" checked={d.coastalSwap} onChange={(e) => setD(withCoastalSwap(d, e.target.checked))} />
-            Côtiers à la place des Riverains
-          </label>
+  const sectionsAll: PickGridSection[] = sp
+    ? classes
+        .filter((cl) => accessible.some((c) => c.class === cl.id))
+        .map((cl) => ({
+          id: cl.id,
+          label: cl.label,
+          items: accessible
+            .filter((c) => c.class === cl.id)
+            .map((c: CareerData) => ({ id: c.id, label: c.label, preview: { appearance: pickAppearance(sp.id, d.sex), career: c.id } })),
+        }))
+    : [];
+  const q = search.trim();
+  const sections = q
+    ? sectionsAll.map((s) => ({ ...s, items: filterByLabel(s.items, (it) => it.label, q) })).filter((s) => s.items.length)
+    : sectionsAll;
+
+  // Encrier de tirage CARRIÈRE (#393 P2, même patron que Race #393 P3) : rangée unique recherche +
+  // encrier, le résultat vit dans l'encrier rendu (plus de mur de boutons de borne). LDB 05 l.191-195 :
+  // 1ᵉʳ jet gardé = +50 PX ; pas convaincu → deux jets de plus (3 bornes au choix) = +25 PX ; au-delà,
+  // relances libres = 0 PX (mécanique `rollDraftCareer`/`careerXp`, INCHANGÉE).
+  const rolledLast = d.careerRolls[d.careerRolls.length - 1];
+  const kept = careerXp(d) > 0;
+  const { rolling, landed, trigger, skip } = useRollFrisson(() => setD(rollDraftCareer(d)));
+  const faces = landed && rolledLast ? d100Faces(rolledLast.roll) : null;
+
+  const diceCell = rolling || landed ? (
+    <DiceRoll scene landed={landed} faces={faces} onSkip={skip} />
+  ) : d.careerRolls.length === 0 ? (
+    <button type="button" className="dicewell act emph" disabled={!sp} onClick={() => trigger()}>
+      <span className="dicewell-tray">
+        <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+        <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+      </span>
+      <span className="dicewell-copy">
+        <span className="dicewell-txt">Tirer aux dés — d100</span>
+        <span className="dicewell-sub">
+          sa carrière au hasard : <b>+{XP_CAREER_FIRST} PX</b> (1ᵉʳ jet) · pas convaincu, deux relances → <b>+{XP_CAREER_TOP3} PX</b> (LDB 05)
+        </span>
+      </span>
+    </button>
+  ) : (
+    <div className="dicewell done">
+      <span className="dicewell-tray">
+        <span className="rm-die dicewell-die"><DieFace n={d100Faces(rolledLast.roll)[0]} landed /></span>
+        <span className="rm-die dicewell-die"><DieFace n={d100Faces(rolledLast.roll)[1]} landed /></span>
+      </span>
+      <span className="dicewell-copy">
+        <span className="dicewell-txt">
+          {d.careerRolls.length >= 3 ? (
+            <>Jets : <b>{d.careerRolls.map((r) => r.roll).join(' · ')}</b> — 3 choix · {kept ? `+${careerXp(d)} PX conservé` : '+0 PX (choix libre)'}</>
+          ) : (
+            <>Jet : <b>{rolledLast.roll}</b> — {kept ? `+${careerXp(d)} PX conservé` : '+0 PX (choix libre)'}</>
+          )}
+        </span>
+        {d.careerRolls.length === 1 && (
+          <button type="button" className="btn small" style={{ marginTop: 4 }} onClick={() => trigger()}>
+            <Icon id="nav/dice" size="sm" /> Pas convaincu : 2 jets de plus (3 choix, +{XP_CAREER_TOP3} PX)
+          </button>
         )}
-      </div>
-      <FacetedPickGrid
-        label="Choix de la carrière"
-        searchable
-        searchPlaceholder="Rechercher une carrière…"
-        groups={classes
-          .filter((cl) => accessible.some((c) => c.class === cl.id))
-          .map((cl) => ({ id: cl.id, label: cl.label }))}
-        cards={accessible.map((c: CareerData) => ({
-          id: c.id,
-          group: c.class,
-          label: c.label,
-          title: c.label,
-        }))}
-        selectedId={d.careerId || undefined}
-        onSelect={(id) => setD(withCareer(d, id))}
-      />
-    </Section>
+        {d.careerRolls.length >= 3 && (
+          <button type="button" className="btn small" style={{ marginTop: 4 }} onClick={() => trigger()}>
+            <Icon id="nav/dice" size="sm" /> Continuer à relancer (0 PX)
+          </button>
+        )}
+      </span>
+    </div>
   );
 
-  if (!career || !lvl1) {
-    return {
-      dice,
-      choice,
-      detail: {
-        title: 'Choisissez votre carrière',
-        body: <p className="hint">Sélectionnez une carrière dans la liste, ou tirez-la aux dés (LDB 05 l.186-365).</p>,
-      },
-    };
-  }
-
-  const body = (
+  const list = !sp ? (
+    <p className="hint">Choisissez d'abord une race pour découvrir les carrières accessibles.</p>
+  ) : (
     <>
-      <div className="main-head">
-        <CharacterPreview appearance={pickAppearance(sp?.id ?? d.speciesId, d.sex)} career={d.careerId} size="md" ambiance="panel" />
-        <div>
-          <h2>
-            <CodexRef category="careers" id={career.id} label={career.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>{' '}
-            {career.class && (
-              <span className="hint">(<CodexRef category="classes" id={career.class} label={findClassById(career.class)?.label ?? career.class}>{findClassById(career.class)?.label ?? career.class}</CodexRef>)</span>
-            )}
-          </h2>
-          <p className="hint">{blurb(career.desc, 460)}</p>
+      <div className="creator-pick-toolbar">
+        <div className="creator-pick-search">
+          <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une carrière…" />
         </div>
+        {diceCell}
       </div>
-      <Section title="Évolution de carrière">
-        <div className="career-path">
-          {levels.map((l) => (
-            <span key={l.level} className={`path-node ${l.level === 1 ? 'current' : ''}`} title={`Compétences : ${l.skills.map((a) => advancementLabel('skills', a)).join(', ')}\nTalents : ${l.talents.map((a) => advancementLabel('talents', a)).join(', ')}`}>
-              <b>{l.level}.</b> {l.label}
-              <em>{l.status}</em>
-            </span>
-          ))}
-        </div>
-      </Section>
-      <Section title="Caractéristiques de carrière">
-        <div className="skill-tags">
-          {lvl1.characteristics.map((c) => (
-            <EntityRef key={c} category="characteristics" id={c} label={c} />
-          ))}
-        </div>
-      </Section>
-      <Section title="Compétences du Niveau 1">
-        <div className="skill-tags">
-          {lvl1.skills.map((a) => advancementLabel('skills', a)).map((s) => (
-            <EntityChoice key={s} category="skills" entry={s} />
-          ))}
-        </div>
-      </Section>
-      <Section title="Talents du Niveau 1">
-        <div className="skill-tags">
-          {lvl1.talents.map((a) => advancementLabel('talents', a)).map((t) => (
-            <EntityChoice key={t} category="talents" entry={t} />
-          ))}
-        </div>
-      </Section>
-      <Section title="Possessions & Statut">
-        <p className="hint" style={{ margin: 0 }}>
-          {lvl1.trappings.map(trappingRefLabel).join(', ') || '—'} · Statut <b>{lvl1.status}</b>
-        </p>
-      </Section>
+      <div className="row-flex creator-pick-filters">
+        <button
+          type="button"
+          className="chip"
+          aria-pressed={d.ignoreRestrictions}
+          onClick={() => setD({ ...d, ignoreRestrictions: !d.ignoreRestrictions })}
+        >
+          Ignorer les restrictions de race
+        </button>
+        {/* MDG 09 l.9 : choix AVANT le jet — VERROUILLÉE dès qu'un jet existe (`withCoastalSwap` refuse
+            déjà le changement côté draft ; l'UI le reflète en désactivant la chip, anti-exploit
+            relance gratuite, #393 P2 correctif utilisateur). */}
+        {coastalSwapAvailable(d) && (
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={d.coastalSwap}
+            disabled={d.careerRolls.length > 0}
+            title={
+              d.careerRolls.length > 0
+                ? 'MDG 09 l.9 — se choisit avant de lancer les dés (verrouillé après jet)'
+                : 'MDG 09 l.9 — bascule avant le jet (variante Côtiers à la place des Riverains)'
+            }
+            onClick={() => setD(withCoastalSwap(d, !d.coastalSwap))}
+          >
+            Côtiers à la place des Riverains
+          </button>
+        )}
+        <span className="creator-pick-count">{sectionsAll.length} classes — {accessible.length} carrières</span>
+      </div>
+      <GroupedPickGrid sections={sections} selectedId={d.careerId || undefined} onSelect={(id) => setD(withCareer(d, id))} label="Choix de la carrière" />
     </>
   );
-  return {
-    dice,
-    choice,
-    detail: { seal: d.careerRolls[0] ? { label: 'd100', roll: d.careerRolls[0].roll } : undefined, body },
-  };
+
+  const bookLabel = career?.source ? findBookById(career.source.book)?.label ?? career.source.book : undefined;
+
+  const detail = !sp ? (
+    <p className="hint">Sélectionnez d'abord une race (étape précédente).</p>
+  ) : !career || !lvl1 ? (
+    <p className="hint">Sélectionnez une carrière dans la liste, ou tirez-la aux dés (LDB 05 l.186-365).</p>
+  ) : (
+    <DetailFrame
+      name={<CodexRef category="careers" id={career.id} label={career.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>}
+      sub={bookLabel && career.source ? `${bookLabel} p. ${career.source.page}` : undefined}
+      meta={
+        <>
+          {career.class && (
+            <span className="chip">
+              <CodexRef category="classes" id={career.class} label={findClassById(career.class)?.label ?? career.class}>{findClassById(career.class)?.label ?? career.class}</CodexRef>
+            </span>
+          )}
+          <span className="chip">Départ <b>{lvl1.label}</b></span>
+          <MetalStatus status={lvl1.status} size="chip" />
+          {lvlMax && lvlMax.status !== lvl1.status && (
+            <span className="chip">
+              {lvl1.status} → {lvlMax.status}
+            </span>
+          )}
+        </>
+      }
+      sections={
+        <>
+          <div>
+            <div className="mini-title">Évolution — quatre niveaux <em className="hint">(cliquer un rang pour le consulter)</em></div>
+            <CareerPath levels={levels} currentLevel={1} selected={exploredLevel} onSelect={setExploredLevel} />
+          </div>
+          {lvlExplored && (
+            <>
+              <div>
+                <div className="mini-title">Caractéristiques — Niveau {lvlExplored.level}</div>
+                <div className="skill-tags">
+                  {lvlExplored.characteristics.map((c) => (
+                    <EntityRef key={c} category="characteristics" id={c} label={CHAR_LABELS[c]} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="mini-title">Compétences — Niveau {lvlExplored.level}</div>
+                <div className="skill-tags">
+                  {lvlExplored.skills.map((a) => advancementLabel('skills', a)).map((s) => (
+                    <EntityChoice key={s} category="skills" entry={s} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="mini-title">Talents — un au choix</div>
+                <div className="skill-tags">
+                  {lvlExplored.talents.map((a) => advancementLabel('talents', a)).map((t) => (
+                    <EntityChoice key={t} category="talents" entry={t} />
+                  ))}
+                  <em className="nb">se tranche à l'étape 5</em>
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      }
+      prose={career.desc}
+      proseSelfLabel={career.label}
+      proseSelfCategory="careers"
+    />
+  );
+
+  return <MasterDetail className="creator-pick-shell" listLabel="Choix de la carrière" list={list} detail={detail} />;
 }
 
 // ════ 3) Caractéristiques (LDB 05 l.370-491) — Zone A : « Aux dés » (méthode) + répartitions ; Zone B : grille (ÉDITION) ════

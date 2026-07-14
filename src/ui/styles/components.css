@@ -243,6 +243,22 @@
   border: 1px solid var(--border);
   color: var(--muted);
 }
+/* Chip-INTERRUPTEUR (`<button className="chip" aria-pressed>`) — bascule booléenne au langage des
+   chips (état pressé = élu doré), remplace toute case à cocher nue collée à son libellé. Couche
+   PARTAGÉE (cliquet xiii) : tout écran peut composer ce bouton, pas seulement le créateur. */
+button.chip {
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+button.chip:hover {
+  border-color: var(--gold2);
+}
+.chip[aria-pressed='true'] {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  color: var(--gold2);
+}
 .count {
   font-size: 11px;
   min-width: 18px;

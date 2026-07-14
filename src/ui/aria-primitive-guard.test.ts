@@ -34,8 +34,11 @@ type CompositeRole = (typeof ROLES)[number];
 
 /** Fichier PROPRIÉTAIRE canonique de chaque rôle composite. */
 const OWNERS: Record<CompositeRole, string[]> = {
-  listbox: ['GroupedPickGrid.tsx', 'creator/FacetedPickGrid.tsx'],
-  radiogroup: ['creator/CelestialWheel.tsx', 'OptionChooser.tsx'],
+  listbox: ['GroupedPickGrid.tsx'],
+  // `CareerPath.tsx` (#393 P2, 2026-07-14) : CONSÉCRATION documentée — sélecteur de rang (chaîne de
+  // médaillons d'évolution de carrière, `onSelect` optionnel), pas une réinvention d'`OptionChooser`
+  // (patron géométrique distinct : liens `.cc-link` entre médaillons, pas une grille/segmented control).
+  radiogroup: ['creator/CelestialWheel.tsx', 'OptionChooser.tsx', 'CareerPath.tsx'],
   tablist: ['Tabs.tsx'],
   menu: [],
   grid: [],

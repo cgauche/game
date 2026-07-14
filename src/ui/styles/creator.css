@@ -20,25 +20,35 @@
   gap: 6px;
   margin-left: auto;
 }
+/* États du stepper « Atelier du scribe » (#393 tâche 6, étalon `finale-mock2-caracteristiques.png`) :
+   ACTIVE = pastille bordée or sur fond sombre (même langage que `.tabs .tab-btn.active`,
+   components.css) ; VISITÉE = texte simple charte, sans pilule ; FUTURE = idem, plus éteint. */
 .step-chip {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--atelier-brass-rubric);
   padding: 5px 12px;
   font-size: 12px;
+  font-family: inherit;
   cursor: pointer;
 }
-.step-chip.active {
-  border-color: var(--accent2);
+.step-chip:hover:not(:disabled):not(.active) {
   color: var(--text);
+}
+.step-chip.active {
+  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px rgba(216, 185, 84, 0.32);
+  color: var(--atelier-brass-elu);
   font-weight: 600;
 }
 .step-chip.done {
-  color: var(--ok);
+  color: var(--muted);
 }
 .step-chip:disabled {
-  opacity: 0.45;
+  color: var(--atelier-wood-etch);
+  opacity: 0.7;
   cursor: default;
 }
 /* Indicateur d'étape compact (mobile) — remplace les puces, AUCUN défilement. */
@@ -93,10 +103,12 @@
   border-right: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.16);
   overflow-y: auto;
+  min-height: 0; /* colonne de grille bornée (#425) */
   padding: 14px 16px;
 }
 .creator-main {
   overflow-y: auto;
+  min-height: 0;
   padding: 16px 26px 26px;
 }
 /* Lisibilité écran large : le contenu central garde une largeur de lecture. */
@@ -272,58 +284,6 @@
 .warn-text {
   color: var(--gold);
 }
-/* Grille de sélection FACETTÉE (Zone A des étapes Race/Carrière) — recherche + facettes en tête,
-   grille de cartes dense qui tient SANS scroll ; tirage d100 en tête reste dans la section « Aux dés ». */
-.pick-facets {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.pick-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-  gap: 4px;
-}
-.pick-card {
-  padding: 4px 6px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-left: 3px solid transparent;
-  border-radius: 6px;
-  color: var(--text);
-  cursor: pointer;
-  min-width: 0;
-}
-.pick-card:hover {
-  border-color: var(--accent2);
-}
-.pick-card:focus-visible {
-  outline: 2px solid var(--accent2);
-  outline-offset: 1px;
-}
-.pick-card.selected {
-  border-left-color: var(--gold);
-  background: rgba(255, 224, 102, 0.09);
-}
-.pick-card-body {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.pick-card-body strong {
-  font-size: 11.5px;
-  line-height: 1.2;
-  font-weight: 600;
-  white-space: normal;
-  overflow-wrap: break-word;
-}
-.pick-card-body em {
-  font-style: normal;
-  font-size: 10px;
-  color: var(--muted);
-  white-space: normal;
-  overflow-wrap: break-word;
-}
 /* Ligne de rail : libellé + contrôle (stepper, cases) alignés. */
 .rail-line {
   display: flex;
@@ -365,6 +325,7 @@
   flex-direction: column;
   gap: 10px;
   overflow-y: auto;
+  min-height: 0;
 }
 .creator-id {
   display: flex;
@@ -484,7 +445,7 @@
 }
 .dicewell.act {
   border-color: var(--atelier-dicewell-border);
-  background: linear-gradient(180deg, var(--accent2), var(--blood));
+  background: linear-gradient(180deg, var(--atelier-dicewell-act-hi), var(--atelier-dicewell-act-lo));
   color: var(--atelier-dicewell-txt-muted);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 169, 141, 0.2);
 }
@@ -539,6 +500,11 @@
   font-weight: 400;
   color: var(--atelier-dicewell-txt-muted);
 }
+/* Segment PX du sous-titre — OR (cible utilisateur 2026-07-14), le reste reste muted. */
+.dicewell-sub b {
+  color: var(--gold2);
+  font-weight: 700;
+}
 .dicewell.done {
   cursor: default;
   border-color: var(--gold);
@@ -551,6 +517,24 @@
 }
 .dicewell.done .dicewell-txt {
   color: var(--atelier-brass-elu);
+}
+/* Grands losanges de l'encrier (idle ET rendu, `DieFace` — #393 P2, correctif toolbar P1) : le
+   plateau `.dicewell-tray` remplace les icônes `nav/dice` étriquées par le VRAI dé (`DieFace`,
+   `src/ui/DiceRoll.tsx`), gravé de son chiffre une fois posé — jamais de face inventée. Recoloré en
+   SILHOUETTE sombre à liseré laiton fin (`.d10`/`.d10.wait` du kit, planche-creator-FINALE.html) —
+   PAS la gemme rouge vif de la scène de combat (`.rm-die-gem` par défaut), qui lue ici comme un
+   écusson plutôt qu'un dé (correctif utilisateur 2026-07-14). */
+.dicewell-tray .dicewell-die.rm-die {
+  width: 40px;
+  height: 40px;
+}
+.dicewell-die .rm-die-gem {
+  fill: var(--atelier-wood-mid);
+  stroke: var(--atelier-brass-hover);
+  stroke-width: 1.1;
+}
+.dicewell-die .rm-die-num {
+  fill: var(--atelier-brass-elu);
 }
 .talent-option {
   border: 1px solid var(--border);
@@ -901,20 +885,30 @@
 }
 .sealed-plaque.sel .sealed-plaque-title { color: var(--atelier-brass-elu); }
 
-/* -- CareerPath (chemin de carrière, médaillons de niveau) — `.cc-path` compose `.row-flex` (JSX). */
+/* -- CareerPath (chemin de carrière, médaillons de niveau) — `.cc-path` compose `.row-flex` (JSX).
+   NOWRAP (correctif utilisateur 2026-07-14, #393 P2) : la chaîne des 4 niveaux tient sur UNE ligne
+   (maquette ratifiée) — les médaillons se COMPRIMENT (`min-width:0`, ellipse du nom AVEC `title`)
+   plutôt que de laisser le 4e wrapper en pleine largeur sous les trois autres. */
 .cc-path {
   align-items: stretch;
+  flex-wrap: nowrap;
   gap: 0;
 }
 .cc-step {
-  flex: 1 1 140px;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 9px 12px;
+  padding: 9px 10px;
   border-radius: 7px;
   background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-bottom));
   border: 1px solid var(--atelier-wood-etch);
+  /* Médaillons EXPLORABLES (`onSelect`) = de vrais boutons `role="radio"` — reset des styles UA. */
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 .cc-step-lv {
   font-size: 9.5px;
@@ -922,17 +916,35 @@
   text-transform: uppercase;
   color: var(--muted);
 }
+/* Nom du médaillon : 2 lignes RÉSERVÉES (jamais d'ellipse — troncature interdite, verdict juge
+   vision #393 P2), centrées verticalement quel que soit le nombre de lignes réellement occupées. */
 .cc-step-nm {
   font-family: var(--font-display);
   font-size: 14.5px;
   color: var(--atelier-brass-etch);
   line-height: 1.2;
+  min-height: calc(1.2em * 2);
+  display: flex;
+  align-items: center;
+  white-space: normal;
+  overflow: visible;
+  word-break: break-word;
 }
 .cc-step.now {
   border-color: var(--atelier-brass-hover);
   box-shadow: inset 0 1px 0 rgba(232, 196, 103, 0.4);
 }
 .cc-step.now .cc-step-nm { color: var(--atelier-brass-elu); }
+/* Rang CONSULTÉ (exploration du détail) — anneau doré, langage `.fig-tile.sel`/`.creator-race-card.sel`. */
+.cc-step.sel {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.32);
+}
+.cc-step.sel .cc-step-nm { color: var(--atelier-brass-elu); }
+.cc-step:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 1px;
+}
 .cc-link {
   align-self: center;
   width: 18px;
@@ -955,7 +967,8 @@
   background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
   color: var(--text);
   cursor: pointer;
-  min-width: 76px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .fig-tile::before,
 .fig-tile::after {
@@ -973,8 +986,15 @@
 .fig-tile:hover { border-color: var(--atelier-brass-hover); }
 .fig-tile-name {
   font-size: 12px;
+  line-height: 1.25;
   color: var(--atelier-brass-etch);
   text-align: center;
+  /* Zéro troncature (correctif utilisateur 2026-07-14) : le libellé WRAPPE (« Prêtre marin de
+     Manann »), jamais d'ellipse — hauteur de DEUX lignes réservée sur TOUTE tuile (même les noms
+     courts) pour que chaque rangée de la grille garde une hauteur uniforme. */
+  min-height: 2.5em;
+  display: flex;
+  align-items: center;
 }
 .fig-tile-sub {
   font-size: 10.5px;
@@ -987,9 +1007,8 @@
 }
 .fig-tile.sel .fig-tile-name { color: var(--atelier-brass-elu); }
 
-/* -- GroupedPickGrid (grille en sections) — `.gpg-row` compose `.row-flex` (JSX). Préfixe `gpg-`
-   DÉLIBÉRÉ : `.pick-grid` est DÉJÀ pris par FacetedPickGrid (ligne 282) — une collision de nom ici
-   écraserait silencieusement son layout en cascade (bug vécu, #412). */
+/* -- GroupedPickGrid (grille en sections) — Préfixe `gpg-` DÉLIBÉRÉ : nom distinct hérité de l'époque
+   où `.pick-grid` était pris par `FacetedPickGrid` (créateur, MORT #393 P2). */
 .gpg-grid {
   display: flex;
   flex-direction: column;
@@ -998,6 +1017,13 @@
 .gpg-section {
   display: flex;
   flex-direction: column;
+}
+/* Grille UNIFORME (correctif utilisateur 2026-07-14) : colonnes de largeur FIXE (jamais dimensionnées
+   par le libellé de la tuile la plus longue) — même largeur/hauteur pour toute tuile d'une rangée. */
+.gpg-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
 }
 .gpg-heading {
   font-variant-caps: small-caps;
@@ -1088,7 +1114,7 @@
    bordure/radius/halo + 4 rivets laiton d'angle, valeurs `.c-lectern`/`.c-rivet` de la planche
    (docs/plans/2026-07-14-maquettes-createur/planche-creator-FINALE.html). Rivets en COUCHES de fond
    (radial-gradient positionnées aux 4 coins) — seuls 2 pseudo-éléments par élément, il en faut 4. */
-.creator-race-shell > :first-child,
+.creator-pick-shell > :first-child,
 .detail-frame {
   position: relative;
   padding: 14px 24px 12px;
@@ -1109,7 +1135,7 @@
   content: none;
 }
 
-.creator-race-shell {
+.creator-pick-shell {
   flex: 1;
   min-height: 0;
   padding: 16px 20px;
@@ -1119,7 +1145,7 @@
     scrollée) — ici la liste est longue (grille de cartes) : elle doit occuper toute la hauteur
     disponible pour scroller EN INTERNE plutôt que de pousser le pied de l'étape hors écran. */
 }
-.creator-race-shell > :first-child {
+.creator-pick-shell > :first-child {
   flex-direction: column;
   flex-wrap: nowrap; /* le canon `.master-detail-list` enroule ses lignes ≤700px (liste de boutons
     courts) — ici une colonne verticale bornée en hauteur + cet enroulement hérité fait déborder en
@@ -1129,12 +1155,12 @@
   overflow-y: auto;
   padding-right: 6px;
 }
-.creator-race-shell > :last-child {
+.creator-pick-shell > :last-child {
   min-height: 0;
   overflow-y: auto;
 }
 @media (max-width: 900px) {
-  .creator-race-shell {
+  .creator-pick-shell {
     grid-template-columns: minmax(0, 1fr) minmax(280px, 38%);
   }
 }
@@ -1142,7 +1168,7 @@
   /* `display:flex` (pas grid) : la répartition auto/auto de deux tracks grid a résisté à toute
      tentative de forcer une hauteur de CONTENU (chaque enfant récupérait la MOITIÉ de la hauteur du
      conteneur au lieu de sa hauteur naturelle) — flux normal empilé, page défilée entière. */
-  .creator-race-shell {
+  .creator-pick-shell {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -1150,10 +1176,10 @@
     overflow-y: auto;
     padding: 12px;
   }
-  .creator-race-shell > :first-child,
-  .creator-race-shell > :last-child {
+  .creator-pick-shell > :first-child,
+  .creator-pick-shell > :last-child {
     flex-shrink: 0; /* sinon la liste/le détail se COMPRESSENT sous leur hauteur de contenu (le
-      flex-shrink par défaut les tasse pour tenir dans le `.creator-race-shell` scrollable) et leur
+      flex-shrink par défaut les tasse pour tenir dans le `.creator-pick-shell` scrollable) et leur
       `overflow:visible` laisse le surplus baver par-dessus le panneau suivant au lieu de le pousser. */
     min-height: 0;
     max-height: none;
@@ -1165,10 +1191,10 @@
      à largeur intrinsèque (non rétrécissable en grille) quel que soit le conteneur — troncature du
      verdict de tirage (races de la borne) à 360px. Scopé à l'étape Race (jamais le fichier
      partagé) : 1 colonne, boutons rétrécissables, texte qui s'enroule au lieu de déborder. */
-  .creator-race-shell .rm-loc-grid {
+  .creator-pick-shell .rm-loc-grid {
     grid-template-columns: 1fr;
   }
-  .creator-race-shell .rm-loc-grid button {
+  .creator-pick-shell .rm-loc-grid button {
     min-width: 0;
     white-space: normal;
     text-align: left;
@@ -1177,39 +1203,76 @@
 
 /* -- Rangée recherche + encrier (#393 P3) : recherche à gauche, l'encrier remplit le reste de la
    rangée (maquette ratifiée) — plus de section « Aux dés » ni de rangée d'aide séparée au-dessus. */
-.creator-race-toolbar {
+.creator-pick-toolbar {
   display: flex;
   gap: 10px;
-  align-items: stretch;
+  align-items: center; /* la recherche reste MODESTE (hauteur d'input normale, centrée verticalement
+    face à l'encrier) — jamais étirée à sa hauteur, correctif toolbar P1 (#393 P2). */
+  /* Le panneau parent réduit son padding droit à 6px (gouttière de scrollbar interne, cf.
+     `.creator-pick-shell > :first-child`) — trop court pour le rivet d'angle du cadre-parchemin
+     (centré à 10px du bord + son propre rayon) : la rangée toolbar reprend sa marge de sécurité
+     SEULE (les lignes suivantes, hors zone des rivets, gardent la gouttière 6px). */
+  margin-right: 12px;
 }
-.creator-race-search {
+.creator-pick-search {
   flex: 1;
   max-width: 320px;
   min-width: 0;
 }
-.creator-race-toolbar > :last-child {
+.creator-pick-toolbar > :last-child {
   flex: 1;
   min-width: 0;
   width: auto;
 }
 @media (max-width: 700px) {
-  .creator-race-toolbar {
+  .creator-pick-toolbar {
     flex-direction: column;
+    align-items: stretch;
   }
-  .creator-race-search {
+  .creator-pick-search {
     flex: none;
     width: 100%;
   }
 }
+/* Boîte de recherche MODESTE (`.c-search` du kit, planche-creator-FINALE.html) — panneau bordé
+   discret, PAS le plateau bois/laiton de l'encrier (réservé à l'action). */
+.creator-pick-search .pal-search-row {
+  gap: 8px;
+  padding: 8px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--atelier-wood-liseret);
+  background: var(--atelier-night);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.creator-pick-search .search-filter {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--atelier-brass-etch);
+  font: inherit;
+  outline: none;
+  padding: 0;
+}
 
 /* -- Grille de cartes de RACE (7 familles, `.chip` de base surchargée en grande carte-figurine) --
    quatre colonnes à 1600px large (gabarit de la maquette ratifiée), rétrécit avec le conteneur. */
-.creator-race-count {
+.creator-pick-count {
   font-variant-caps: small-caps;
   letter-spacing: 1.2px;
   font-size: 12px;
   color: var(--muted);
   margin: 2px 0 0;
+}
+/* Rangée FILTRES (chips-interrupteurs + compteur, correctif utilisateur 2026-07-14) — UNE seule
+   rangée sous la toolbar recherche+encrier (Carrière : Restrictions/Côtiers), le compteur ancré à
+   droite (`margin-left:auto`) au lieu d'un `<p>` d'aide flottant entre deux blocs. */
+.creator-pick-filters {
+  margin: 6px 0 8px;
+}
+.creator-pick-filters .creator-pick-count {
+  margin: 0 0 0 auto;
 }
 .creator-race-grid {
   display: grid;

@@ -5,7 +5,7 @@
  * (rayon tracé vers le centre, point agrandi) et son nom s'affiche au moyeu.
  *
  * SVG sobre en tokens : couleurs via `var(--…)`, aucune palette littérale. Radiogroup a11y : roving
- * tabindex + flèches/Home/End (selection-follows-focus, patron `<Tabs>`/`FacetedPickGrid`). Une seule
+ * tabindex + flèches/Home/End (selection-follows-focus, patron `<Tabs>`/`GroupedPickGrid`). Une seule
  * classe de domaine `.celestial-wheel` ; les nœuds sont stylés par sélecteurs structurels descendants
  * (anneaux = `circle` enfant direct du `svg`, points = `g circle`) — zéro classe supplémentaire.
  */

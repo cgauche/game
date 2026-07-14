@@ -270,10 +270,15 @@ export const careerRollPool = (d: CreatorDraft): typeof careers => {
   return careers.filter((c) => c.class !== (d.coastalSwap ? 'riverains' : 'cotiers'));
 };
 
-/** Bascule Riverains ↔ Côtiers (MDG 09 l.9 : « avant de lancer les dés ») — réinitialise les jets ;
- *  les d100 étant figés par le seed, ils retombent à l'identique sur l'autre table. */
+/** Bascule Riverains ↔ Côtiers (MDG 09 l.9 : « avant de lancer les dés ») — VERROUILLÉE dès qu'un
+ *  jet existe (`careerRolls` non vide) : sans cette garde, cocher/décocher effaçait les jets et
+ *  offrait une relance GRATUITE illimitée (contourne la limite RAW des 2 relances + l'économie de
+ *  PX, #393 P2 correctif utilisateur). Garde posée ICI (pas seulement côté UI désactivée) — aucun
+ *  appelant ne peut la contourner. Se réactive seulement quand les jets sont vides (choix libre, ou
+ *  un futur reset d'étape explicite). */
 export function withCoastalSwap(d: CreatorDraft, coastalSwap: boolean): CreatorDraft {
   if (coastalSwap === d.coastalSwap) return d;
+  if (d.careerRolls.length > 0) return d;
   return { ...d, coastalSwap, careerRolls: [], careerFreeRolls: 0 };
 }
 

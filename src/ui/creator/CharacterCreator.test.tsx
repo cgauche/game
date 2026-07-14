@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator, CareerZones, CharZones, SpeciesRaceScreen, SkillZones, StarZones, TrappingZones, DetailZones, PettySpellsSection } from './CharacterCreator';
+import { CharacterCreator, CareerScreen, CharZones, SpeciesRaceScreen, SkillZones, StarZones, TrappingZones, DetailZones, PettySpellsSection } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
 import {
   newDraft,
@@ -29,7 +29,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).toContain('4. Signe astral');
     expect(html).toContain('8. Récapitulatif');
     // Étape 1 : coquille DEUX zones (MasterDetail), pas de fiche vivante à ce stade.
-    expect(html).toContain('creator-race-shell');
+    expect(html).toContain('creator-pick-shell');
     expect(html).toContain('master-detail-list');
     expect(html).toContain('master-detail-detail');
     expect(html).not.toContain('creator-summary');
@@ -39,8 +39,10 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     // « Aux dés » ni de rangée d'aide séparée — le sous-titre de l'encrier porte la règle.
     expect(html).not.toContain('>Aux dés<');
     expect(html).toContain('Tirer aux dés — d100');
-    expect(html).toContain('sa race au hasard : +20 PX de création (garder le tirage)');
-    expect(html).toContain('creator-race-toolbar');
+    expect(html).toContain('sa race au hasard : ');
+    expect(html).toContain('+20 PX de création');
+    expect(html).toContain('(garder le tirage)');
+    expect(html).toContain('creator-pick-toolbar');
     // Recherche + grille de 7 GRANDES CARTES DE RACE (une par famille, #393 P2)
     expect(html).toContain('Rechercher une race');
     expect(html).toContain('role="listbox"');
@@ -87,24 +89,29 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).not.toContain('tabs tabs-sub'); // plus de facettes de famille (grille de cartes directe)
   });
 
-  it('étape 2 — grille facettée de carrière : recherche + facettes de CLASSE (données) + grille listbox', () => {
-    const html = renderToStaticMarkup(<>{CareerZones({ d: withSpecies(newDraft(7), SP.id), setD: () => {} }).choice}</>);
+  it('étape 2 — Carrière (#393 P2) : gabarit DEUX ZONES « Atelier du scribe » (MasterDetail), sections par classe + recherche + encrier', () => {
+    const html = renderToStaticMarkup(<CareerScreen d={withSpecies(newDraft(7), SP.id)} setD={() => {}} />);
+    expect(html).toContain('creator-pick-shell');
+    expect(html).toContain('master-detail-list');
+    expect(html).toContain('master-detail-detail');
     expect(html).toContain('Rechercher une carrière'); // SearchFilterField canonique en tête
-    expect(html).toContain('tab-btn'); // facettes de classe = primitive Tabs (présentation unique, #414)
-    expect(html).toContain('role="listbox"');
-    // Les facettes viennent des données (classes.json), pas d'une liste en dur.
+    expect(html).toContain('Tirer aux dés — d100');
+    expect(html).toContain('role="listbox"'); // GroupedPickGrid (sections par classe)
+    expect(html).toContain('gpg-section');
+    // Les sections viennent des données (classes.json), pas d'une liste en dur.
     for (const cl of ['Guerriers', 'Lettrés', 'Roublards']) expect(html).toContain(cl);
-    expect(html).not.toContain('pick-row');
+    expect(html).not.toContain('pick-facets'); // mort du call-site Carrière de FacetedPickGrid
   });
 
-  it('étape 2 — d100 → sélection VISIBLE : la carrière posée est active dans la grille ET sa facette de classe est active', () => {
-    // « soldat » = classe Guerriers, PAS la première facette : le choix doit basculer la facette active
-    // (comme un tirage d100 qui tombe hors de la classe affichée) et marquer la carte.
+  it('étape 2 — une carrière choisie ouvre son détail (DetailFrame : MetalStatus + CareerPath) et se sélectionne dans la grille', () => {
     const soldat = findCareerById('soldat')!;
-    const html = renderToStaticMarkup(<>{CareerZones({ d: withCareer(withSpecies(newDraft(7), SP.id), 'soldat'), setD: () => {} }).choice}</>);
-    expect(html).toContain('pick-card selected'); // carte de la carrière tirée = active
-    expect(html).toContain(soldat.label); // et visible (sa facette de classe est ouverte)
-    expect(html).toMatch(/aria-selected="true"/); // facette + carte marquées sélectionnées
+    const html = renderToStaticMarkup(<CareerScreen d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />);
+    expect(html).toContain('fig-tile sel'); // tuile de la carrière tirée = active
+    expect(html).toContain(soldat.label); // et visible (sa section de classe est ouverte, scroll interne)
+    expect(html).toMatch(/aria-selected="true"/);
+    expect(html).toContain('detail-frame');
+    expect(html).toContain('metal-status'); // statut Bronze/Argent/Or du niveau 1
+    expect(html).toContain('cc-path'); // CareerPath — chemin d'évolution
   });
 
   it('PX en direct : accepter le tirage de race incrémente le compteur PX de la fiche vivante (+20)', () => {
@@ -147,12 +154,12 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).not.toMatch(/>B\d</);
   });
 
-  it('étape 2 — Possessions et tooltip d\'évolution affichent des libellés, jamais [object Object]', () => {
-    const { detail } = CareerZones({ d: withCareer(withSpecies(newDraft(7), SP.id), 'soldat'), setD: () => {} });
-    const html = renderToStaticMarkup(<>{detail.body}</>);
+  it('étape 2 — Compétences/Talents/Caractéristiques du détail affichent des libellés, jamais [object Object]', () => {
+    const html = renderToStaticMarkup(<CareerScreen d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />);
     expect(html).not.toContain('[object Object]');
-    expect(html).toContain('Possessions &amp; Statut');
-    expect(html).toContain('title="Compétences : '); // tooltip d'évolution → libellés résolus
+    expect(html).toContain('Caractéristiques — Niveau 1');
+    expect(html).toContain('Compétences — Niveau 1');
+    expect(html).toContain('Talents — un au choix');
   });
 
   it('les références Codex de l\'assistant sont INTERACTIVES (clic → fiche en modale, brouillon préservé)', () => {
