@@ -278,6 +278,7 @@ const TRAIT_CAP_LABEL: Record<string, string> = {
   psychImmuneIfAhead: 'Immunité psy si en avantage', mindless: 'Sans esprit', bestial: 'Bestial',
   coldBlooded: 'Sang-froid', stupid: 'Stupidité', rage: 'Rage', territorial: 'Territorial', skittishMount: 'Monture ombrageuse',
   fly: 'Vol', leap: 'Bond', stride: 'Foulée', seesInDark: 'Vision nocturne',
+  spellcaster: 'Lanceur de Sorts', frenzyCapable: 'Peut entrer en Frénésie', undead: 'Mort-vivant',
 };
 /** Libellés FR des CAPACITÉS de Qualité d'arme/armure (`QualityCapabilities`). */
 const QUALITY_CAP_LABEL: Record<string, string> = {
@@ -338,7 +339,8 @@ function outcomeBandsSection(bands?: OutcomeBand[]): CodexSection | null {
 
 /**
  * SOURCE UNIQUE du contenu structuré d'une fiche de race — onglets Profil / Carrières / Détails.
- * Consommée par le Codex (`registry.races`) ET la page de race du créateur (`SpeciesZones`), pour
+ * Consommée par le Codex (`registry.races`) ET l'étape Race du créateur (`SpeciesRaceScreen`, ses
+ * sections Caractéristiques/Compétences/Talents seulement — Carrières/Détails restent au Codex), pour
  * qu'elles ne puissent plus diverger. Données tirées des MÊMES tables que le créateur
  * (`careersForSpecies`, `details`, `eyes`, `hairs`). Les faits-clés (M/Destin/Résilience) restent en
  * en-tête (méta), pas ici ; le tirage aléatoire (création) est ajouté PAR le créateur.

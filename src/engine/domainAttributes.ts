@@ -68,6 +68,10 @@ export function domainMissileMods(
   return { apIgnored: ignored, bonusDamage: missile.bonusFromBypass ? ignored : 0 };
 }
 
+/** Appartenance au Groupe « mort-vivant » (LDB 85 : catégorie de bestiaire, dérivée du FOLDER
+ *  bestiaire OU du trait — `groupsFor`/`FOLDER_RULES`/`TRAIT_RULES`) — GROUPE, pas le trait lui-même
+ *  (un folder « Morts sans repos » sans le trait est du Groupe « mort-vivant » sans être ciblable par
+ *  un effet qui exige LE TRAIT, cf. `capabilities.undead` pour ce cas). */
 const isUndead = (c: Combatant): boolean => groupMatch('mort-vivant', c.groups ?? []);
 const isDaemon = (c: Combatant): boolean => groupMatch('demon', c.groups ?? []);
 /** « cible vivante » (Mort/Vie) : ni Mort-vivant ni Démon. */

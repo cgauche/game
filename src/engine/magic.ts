@@ -19,7 +19,7 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, isDoubleRoll, evaluateTest, TestResult } from './tests';
 import { getTestPolicy } from './testPolicy';
-import { hasTraitKey } from './traits/dispatch';
+import { traitCapability } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveSkillCharKey } from './skills';
 import { reverseRoll, hitLocationByShape } from './combat';
@@ -215,7 +215,7 @@ export function focusSkillFor(c: Combatant, spell: SpellLike) {
  * sur la Caractéristique seule (castingValue, avances 0).
  */
 export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string): boolean {
-  if (hasTraitKey(c.traits, 'lanceur-de-sorts')) return true;
+  if (traitCapability(c.traits, 'spellcaster')) return true;
   // `skillName` EST déjà l'id stable de la Compétence (skills.json) — lookup direct.
   return c.skills.some(
     (s) => s.skillId === skillName && (spec == null || s.spec === spec) && s.advances >= 1,

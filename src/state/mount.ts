@@ -14,7 +14,7 @@ import { assertAttackWeapon } from '../engine/combat';
 import { reachTiles, meleeReachTiles } from '../engine/engagement';
 import { Scene, isWalkable } from './scene';
 import { occupiesTile, footprintN, combatDistance } from './footprint';
-import { hasTraitKey } from '../engine/traits/dispatch';
+import { isSkittishMount } from '../engine/traits/dispatch';
 import { meleeWarMachineHullOf, isMeleeWarMachine } from './siegePush';
 import { structureImmune } from '../engine/structures';
 import type { Pt } from './path';
@@ -31,7 +31,7 @@ export const isMount = (c: Combatant): boolean => !!c.riderId;
  *  propre tant qu'elle est montée (exclue de `battle.order`). Un destrier (SANS Nerveux) est « un autre
  *  combattant à part entière » et GARDE son tour ; une monture LIBRE (sans cavalier) aussi. */
 export function isControlledMount(c: Combatant): boolean {
-  return !!c.riderId && hasTraitKey(c.traits, 'nerveux'); // `nerveux` = trait de DONNÉE (profil créature), hors registre TRAITS
+  return !!c.riderId && isSkittishMount(c.traits);
 }
 
 /** Réinsère `id` dans une liste d'ordre triée par Initiative DÉCROISSANTE (descente d'une monture Nerveux

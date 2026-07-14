@@ -687,6 +687,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 339
+    },
+    "capabilities": {
+      "frenzyCapable": true
     }
   },
   {
@@ -971,6 +974,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 340
+    },
+    "capabilities": {
+      "spellcaster": true
     }
   },
   {
@@ -1111,6 +1117,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 340
+    },
+    "capabilities": {
+      "undead": true
     }
   },
   {

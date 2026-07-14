@@ -47,7 +47,7 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
  *  2e argument (le nom d'entité) est un LITTÉRAL de chaîne (`nameCallHasLiteralArg`) — un argument
  *  DONNÉE/variable est data-driven. Trois faux positifs retranchés STRUCTURELLEMENT : le site
  *  data-driven `hasTalent(c, spec.easierIf!.hasTalent)` (combatEffects.ts → 0) et les DÉFINITIONS
- *  auto-référentes `hasTalent(c, name)` / `hasTraitKey(traits, id)` (magic.ts → 1, dispatch.ts → 2 :
+ *  auto-référentes `hasTalent(c, name)` / `hasTraitKey(traits, id)` (dispatch.ts → 2 :
  *  restent isUnstable/isBestial, marqueurs par-nom nus, hors périmètre #385).
  *  Chaque abaissement = une vraie migration vers la donnée ; chaque hausse = une régression.
  *
@@ -57,14 +57,22 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
  *  (même fonctions, argument chaîne), même retranchement `MACHINERY_RX`. Recensement du stock
  *  révélé (aucune migration dans ce lot — la garde arrête la croissance, patron #410) : 6 fichiers,
  *  12 sites, tous des réactions par-nom (aucun n'est retranché par `MACHINERY_RX`, qui ne couvre
- *  que les gates/mesures universels déjà listés) — GELÉS ci-dessous. */
+ *  que les gates/mesures universels déjà listés) — GELÉS ci-dessous.
+ *
+ *  #402 (2026-07-14) : les 4 derniers `hasTraitKey(traits, '<littéral>')` codés PAR-NOM migrés vers
+ *  le vocabulaire de CAPABILITY (`TraitData.capabilities`, lu par `traitCapability`/helpers dédiés) :
+ *  `lanceur-de-sorts` → `capabilities.spellcaster` (magic.ts), `frenesie` → `capabilities.frenzyCapable`
+ *  (psychology.ts), `nerveux` → `capabilities.skittishMount` déjà porté par le trait, appel direct à
+ *  `isSkittishMount` (mount.ts), `mort-vivant` → `capabilities.undead` — le TRAIT, pas le Groupe bestiaire
+ *  (contre-preuve du juge de réfutation : Goule de crypte, folder « Les morts sans repos » SANS le Trait,
+ *  reste ciblable par Hurlement fantomatique, LDB 85 l.170 — `traitCapability(c.traits, 'undead')`,
+ *  combatManeuvers.ts ; test verrou `maneuver-effects.test.ts`).
+ *  `magic.ts`/`psychology.ts`/`mount.ts` retombent à 0 (retirés de `BASELINES`, défaut implicite).
+ *  `combatManeuvers.ts` passe de 2 à 1 (reste `isBestial`, hors périmètre #402). */
 const BASELINES: Record<string, number> = {
-  'src/engine/magic.ts': 1,
-  'src/engine/psychology.ts': 1,
   'src/engine/traits/dispatch.ts': 2,
   'src/state/ai.ts': 6, // dont #411 : recover/retreat par-nom en-flammes (l.403) + empetre (l.558,959)
-  'src/state/combatManeuvers.ts': 2,
-  'src/state/mount.ts': 1,
+  'src/state/combatManeuvers.ts': 1, // #402 : hasTraitKey(mort-vivant) littéral → capabilities.undead (Trait), reste isBestial (défense)
   // #411 (2026-07-13) — stock révélé par l'extension aux littéraux, GELÉ, à résorber (doctrine #295)
   'src/engine/rest.ts': 3, // gate de repos (hemorragique/en-flammes/empoisonne, l.13) + fatigue extenue (l.125,145)
   'src/engine/suffocation.ts': 2, // pose Inconscient par-nom à l'issue du décompte (l.43,51)

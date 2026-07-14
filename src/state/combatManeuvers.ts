@@ -25,7 +25,7 @@ import { isVehicle } from '../engine/vehicle';
 import { rollTest, resolveOpposed, hydrateTR, type TestResult } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isOutOfAction, applyZeroWounds, stacks, COND, cannotDefend } from '../engine/conditions';
-import { hasTraitKey, isBestial } from '../engine/traits/dispatch';
+import { isBestial, traitCapability } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
 import { findTalentById, findPsychologyById, findManeuverById, type ManeuverDef, type ManeuverMeasure } from '../data';
@@ -425,9 +425,11 @@ export function resolveManeuver(
       set({ battle: { ...get().battle!, zones } });
     }
   } else if (def.targeting === 'allFoes') {
-    // Hurlement (l.135) : tous les ennemis VIVANTS (≠ Mort-vivant) à Initiative mètres — filtre de Groupe moteur.
+    // Hurlement fantomatique (LDB 85 l.170) : « créatures vivantes (ne possédant pas le trait Mort-vivant) »
+    // à Initiative mètres — le TRAIT (capability `undead`), PAS le Groupe bestiaire (folder « Morts sans
+    // repos » sans le Trait, ex. Goule de crypte, reste ciblable — cf. domainAttributes.test.ts).
     const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'initiative') / 2));
-    affected = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => alive(c) && !hasTraitKey(c.traits, 'mort-vivant'));
+    affected = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => alive(c) && !traitCapability(c.traits, 'undead'));
     emitAoe(get, attacker.pos, radius, def.kind, def.label);
   } else {
     // melee / ranged : cible unique (clic joueur, ou la plus proche pour l'IA/auto).

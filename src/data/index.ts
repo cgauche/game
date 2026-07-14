@@ -800,6 +800,13 @@ export interface TraitCapabilities {
    *  tenu par le rig. Remplace l'ancienne reconnaissance par découpe du libellé + Map FR au runtime
    *  (`statEntry` interdit le parsing de chaîne au runtime). `ranged` pour les attaques à distance (crachat). */
   naturalWeapon?: { ranged?: boolean };
+  /** Lanceur de Sorts (LDB 85 l.182-183 : « La créature peut lancer des Sorts ») — autorise
+   *  l'incantation SANS Compétence avancée (statblocs du bestiaire), lu par `knowsCastingSkill`. */
+  spellcaster?: boolean;
+  /** Porte le Trait Mort-vivant (LDB 85 p.340, lu par Hurlement fantomatique LDB 85 l.170 :
+   *  « créatures vivantes (ne possédant pas le trait Mort-vivant) ») — le TRAIT, PAS le Groupe
+   *  bestiaire (un folder « Morts sans repos » sans ce Trait, ex. Goule de crypte, N'EST PAS visé). */
+  undead?: boolean;
   // Résolution de combat (seuil/type éventuel depuis l'instance)
   wardSave?: boolean;
   magicResistance?: boolean;
@@ -825,6 +832,9 @@ export interface TraitCapabilities {
   psychType?: 'peur' | 'terreur' | 'animosite' | 'haine' | 'prejuge' | 'amour' | 'camaraderie' | 'phobie';
   psychImmune?: boolean; // Immunité (Psychologie) — annule Peur/Terreur (LDB 85 l.143-144)
   psychIndice?: number; // Indice FIXE si absent de l'instance (Phobie = 1, Effrayé = 0)
+  /** Peut entrer en Frénésie (LDB 21 l.31 / LDB 85 p.339 Trait « Frénésie »), lu par `isFrenzyCapable`
+   *  (une des 3 sources : Trait, Talent « Frénésie », Trait psy octroyé). */
+  frenzyCapable?: boolean;
   mindless?: boolean;
   bestial?: boolean;
   coldBlooded?: boolean;

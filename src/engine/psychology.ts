@@ -13,7 +13,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { findPsychologyById, psychologies } from '../data';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch } from './groups';
-import { bellicosePsychImmune, hasTraitKey } from './traits/dispatch';
+import { bellicosePsychImmune, traitCapability } from './traits/dispatch';
 import { fearImmuneVs } from './combatFeatures/dispatch';
 import { diseasePsychTraits } from './disease';
 
@@ -233,7 +233,7 @@ export function clearPsychOf(all: Combatant[], deadId: string): void {
  *  OU Trait psy 'frenesie' OCTROYÉ (mutation / maladie active — ex. Rage meurtrière), lu via
  *  `effectivePsychTraits` (seul point de lecture des psychTraits, dérivés-maladie compris). */
 export function isFrenzyCapable(c: Combatant): boolean {
-  return hasTraitKey(c.traits, 'frenesie')
+  return traitCapability(c.traits, 'frenzyCapable')
     || (c.talents ?? []).some((t) => t.talentId === 'frenesie')
     || effectivePsychTraits(c).some((p) => p.type === 'frenesie');
 }

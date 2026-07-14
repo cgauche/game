@@ -135,4 +135,46 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
     const live = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(live.conditions.find((c) => c.name === 'assourdi')?.value).toBe(3); // continuation `after` rejouée
   });
+
+  /**
+   * #402 — le filtre `allFoes` doit lire la CAPABILITY `undead` (portée par le TRAIT Mort-vivant),
+   * PAS le Groupe bestiaire (dérivé aussi du FOLDER, `groups.ts` FOLDER_RULES « morts sans repos »).
+   * Contre-preuve du juge de réfutation : une créature de folder « Les morts sans repos » SANS le
+   * Trait (ex. RAW Goule de crypte, `creatures.json`) reste une cible VALIDE du Hurlement fantomatique
+   * (LDB 85 l.170 : « créatures vivantes (ne possédant pas le trait Mort-vivant) »).
+   */
+  it('cible une créature de Groupe « mort-vivant » (folder seul, sans le Trait) — exclut le PORTEUR du Trait', () => {
+    seedBattleRng(5);
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    H.dead = true; H.pos = undefined; // hors-cible : on isole le cas sur les 2 synthétiques ci-dessous
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    const banshee = enemies[0];
+    banshee.traits = [...(banshee.traits ?? []), { id: 'hurlement-fantomatique', value: 0 }];
+    banshee.pos = { x: 10, y: 10 };
+    banshee.advantage = 3;
+    // Goule-de-crypte-like : folder « Les morts sans repos » → Groupe dérivé, mais AUCUN Trait Mort-vivant.
+    const goule = enemies[1];
+    goule.kind = 'hero'; goule.aiControlled = true; goule.dead = false;
+    goule.traits = []; goule.groups = ['mort-vivant']; goule.pos = { x: 9, y: 10 };
+    goule.wounds = { current: 15, max: 15 };
+    // Vrai Mort-vivant : PORTE le Trait (capability `undead`) → doit rester EXCLU.
+    const trueUndead = enemies[2];
+    trueUndead.kind = 'hero'; trueUndead.aiControlled = true; trueUndead.dead = false;
+    trueUndead.traits = [{ id: 'mort-vivant' }]; trueUndead.groups = ['mort-vivant']; trueUndead.pos = { x: 11, y: 10 };
+    trueUndead.wounds = { current: 15, max: 15 };
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+
+    applyWail(useGame.getState, useGame.setState, banshee);
+
+    const live = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!;
+    expect(live(goule.id).wounds.current).toBeLessThan(15); // folder-only → CIBLÉE (RAW : « ne possédant pas le trait »)
+    expect(live(trueUndead.id).wounds.current).toBe(15); // Trait Mort-vivant porté → EXCLUE
+  });
 });
