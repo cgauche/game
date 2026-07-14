@@ -323,8 +323,7 @@ function genOne(r) {
   try {
     entries = readdirSync(r.dir);
   } catch {
-    console.log(`gen-registry: ${r.arrayName} ← dossier absent (${r.dir}) — ignoré`);
-    return 0;
+    return { arrayName: r.arrayName, dir: r.dir, files: 0, changed: false, missing: true };
   }
   const files = entries
     .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !/\.test\.tsx?$/.test(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
@@ -364,16 +363,39 @@ function genOne(r) {
   // n'écrit que si le contenu change (évite de toucher le mtime → boucles de watch)
   let prev = '';
   try { prev = readFileSync(r.out, 'utf8'); } catch { /* nouveau */ }
-  if (prev !== body) writeFileSync(r.out, body);
-  console.log(`gen-registry: ${r.arrayName} ← ${files.length} fichiers (${r.dir})${prev !== body ? '' : ' [inchangé]'}`);
-  return files.length;
+  const changed = prev !== body;
+  if (changed) writeFileSync(r.out, body);
+  return { arrayName: r.arrayName, dir: r.dir, files: files.length, changed, missing: false };
 }
 
-export function genAll() {
-  for (const r of REGISTRIES) genOne(r);
+/**
+ * `verbose` (param, défaut `false`) : régénère TOUS les registres. En mode silencieux (défaut —
+ * appel `buildStart` du plugin Vite, donc CHAQUE run Vitest via `globalSetup`), n'imprime QUE les
+ * registres réellement RÉGÉNÉRÉS ou en erreur (dossier absent), + UNE ligne agrégée pour le reste
+ * — évite les ~15 lignes « [inchangé] » qui polluent chaque sortie de test et cassent le parseur
+ * pass/fail de l'outil `rtk`. En mode verbose (exécution directe `npm run gen`), détail complet
+ * inchangé (usage : audit manuel de ce que le générateur a vu).
+ */
+export function genAll(verbose = false) {
+  const results = REGISTRIES.map(genOne);
+  let unchangedCount = 0;
+  for (const res of results) {
+    if (res.missing) {
+      console.log(`gen-registry: ${res.arrayName} ← dossier absent (${res.dir}) — ignoré`);
+      continue;
+    }
+    if (res.changed || verbose) {
+      console.log(`gen-registry: ${res.arrayName} ← ${res.files} fichiers (${res.dir})${res.changed ? '' : ' [inchangé]'}`);
+    } else {
+      unchangedCount++;
+    }
+  }
+  if (!verbose && unchangedCount > 0) {
+    console.log(`gen-registry: ${unchangedCount} registre${unchangedCount > 1 ? 's' : ''} à jour`);
+  }
 }
 
-// Exécution directe (node scripts/gen-registry.mjs)
+// Exécution directe (node scripts/gen-registry.mjs) : détail complet (audit manuel).
 if (import.meta.url === `file://${join(process.cwd(), 'scripts/gen-registry.mjs').replace(/\\/g, '/')}` || process.argv[1]?.endsWith('gen-registry.mjs')) {
-  genAll();
+  genAll(true);
 }
