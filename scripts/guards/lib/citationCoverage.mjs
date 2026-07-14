@@ -121,8 +121,6 @@ export const EXEMPT_DATASETS = {
   'raceAppearance.json': "presets d'apparence (rendu iso) par race — esthétique, pas une règle RAW.",
   'roofMaterials.json': 'catalogue de matériaux de toiture (rendu iso), pas une donnée RAW.',
   'structureAppearance.json': "presets d'apparence de structure (rendu iso), pas une donnée RAW.",
-  'hairs.json': "catalogue de coiffures (rendu iso), esthétique — pas une donnée RAW.",
-  'eyes.json': 'catalogue de couleurs d\'yeux (rendu iso), esthétique — pas une donnée RAW.',
   'breath-types.json': "vocabulaire de catégorisation (id+label uniquement, ex. « feu »/« poison ») — aucune valeur mécanique propre à sourcer, la RÈGLE (souffle de créature) est ailleurs.",
   'damage-types.json': "vocabulaire de catégorisation (id+label uniquement) — aucune valeur mécanique propre à sourcer.",
   'qualityTypes.json': "vocabulaire de catégorisation des Qualités/Défauts (id+label, Atout/Défaut) — aucune valeur mécanique propre.",
@@ -132,4 +130,5 @@ export const EXEMPT_DATASETS = {
   'primitives.manifest.json': "manifeste TOOLING (#298) des primitives partagées du code (nom/fichier/concept/verrou) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
   'systemes.manifest.json': "manifeste TOOLING (#298) éditorial des systèmes implémentés (nom/modules/état/ticket) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
   'lieux-services.json': "vocabulaire des SERVICES de lieu (#343 — auberge/temple/forgeron/guilde) : id/label/icône de routage d'écran (hub de lieu), aucune valeur mécanique propre à sourcer (port/marché portent leur propre schéma sourcé).",
+  'axes.json': "axes de forces/faiblesses (#409) — mécanique MAISON tracée par ticket (aucune règle RAW ne stat un axe de forces) : `source: 'maison'` par entrée, pas de folio {book,page} à citer.",
 };

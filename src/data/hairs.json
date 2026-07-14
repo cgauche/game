@@ -11,6 +11,11 @@
       "elfe-sylvain": "Bouleau argenté",
       "gnome": "Noir",
       "ogre": "Marron"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -25,6 +30,11 @@
       "elfe-sylvain": "Blond cendré",
       "gnome": "Brun foncé",
       "ogre": "Acajou"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -39,6 +49,11 @@
       "elfe-sylvain": "Or rose",
       "gnome": "Brun",
       "ogre": "Blond cendré"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -53,6 +68,11 @@
       "elfe-sylvain": "Blond miel",
       "gnome": "Brun pâle",
       "ogre": "Marron clair"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -67,6 +87,11 @@
       "elfe-sylvain": "Brun",
       "gnome": "Auburn",
       "ogre": "Lie de vin"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -81,6 +106,11 @@
       "elfe-sylvain": "Brun acajou",
       "gnome": "Roux",
       "ogre": "Marron foncé"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -95,6 +125,11 @@
       "elfe-sylvain": "Brun foncé",
       "gnome": "Blond roux",
       "ogre": "Noir"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -109,6 +144,11 @@
       "elfe-sylvain": "Brun clair",
       "gnome": "Bond doré",
       "ogre": "Charbon"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89, « Bond doré » verbatim source (coquille probable, conservée règle 5) ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -123,6 +163,11 @@
       "elfe-sylvain": "Ebène",
       "gnome": "Blond platine",
       "ogre": "Noir de jais"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   },
   {
@@ -137,6 +182,11 @@
       "elfe-sylvain": "Noir bleuté",
       "gnome": "Blanc",
       "ogre": "Bleu nuit"
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 40,
+      "note": "Tableau Couleur des Cheveux (2d10, LDB 05 l.733-744, Étape 6 Détails supplémentaires — 5 colonnes humain/nain/halfling/haut-elfe/elfe-sylvain, pagination Marker estimée entre les folios 37 et 41) ; colonne gnome = NADJ (Nuits agitées et dures journées) p.89 ; colonne ogre = ADE2 (Archives de l'Empire vol. II) p.21. ATTENTION dette RAW : les tableaux Cheveux de NADJ/ADE2 utilisent des BORNES 2d10 différentes du LDB (2,3,4-6,7-10,11,12-14… au lieu de 2,3,4,5-7,8-11,12-14…) — le champ `rand` PARTAGÉ ici colle les bornes LDB, donc les tirages 2d10=5,6,8,9,10 donnent une couleur gnome/ogre FAUSSE (décalée d'une case) ; non corrigé dans ce lot (nécessite des bornes par race, hors périmètre citation)."
     }
   }
 ]
