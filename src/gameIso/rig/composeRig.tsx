@@ -1,4 +1,4 @@
-import { BONE_IDS, SLOT_BONES, SLOT_LAYER, type BoneId, type Slot, type RigOverlay } from './bones';
+import { BONE_IDS, SLOT_BONES, SLOT_LAYER, splitPartBehind, type BoneId, type Slot, type RigOverlay } from './bones';
 import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf } from './skeletons';
 import { bipedDef } from './creatures';
 import { gabaritById } from './gabarits';
@@ -137,16 +137,22 @@ export function resolveRig(
     if ((slot === 'visage' || slot === 'cheveux') && raceHead) continue;
     const part = parts[slot];
     if (!part || !part.svg) continue;
+    // Composante ARRIÈRE de la part (chevelure : masse qui épouse le crâne, chutes derrière
+    // les épaules) — pliée dans la chaîne par cosmeticPart, peinte au layer −2 : DERRIÈRE la
+    // part de visage, même sémantique que RigOverlay.behind.
+    const { behind, main } = splitPartBehind(part.svg);
     // Visage inversé (mutation LDB 19) : le VRAI visage du personnage est retourné tête en bas
     // (flip vertical au centre du visage, y≈7) — cheveux et crâne restent en place.
     const svg = slot === 'visage' && faceFlip
-      ? `<g transform="translate(0,14) scale(1,-1)">${part.svg}</g>`
-      : part.svg;
+      ? `<g transform="translate(0,14) scale(1,-1)">${main}</g>`
+      : main;
     SLOT_BONES[slot].forEach((bid, idx) => {
       // Le 2e os d'une paire est miroité POUR LA SYMÉTRIE DE FACE/DOS. En PROFIL c'est
       // faux : les deux pieds/jambes/bras regardent dans la même direction (pas en miroir)
       // — sinon le pied arrière pointe à l'envers (« chaussures vers l'intérieur »).
-      boneParts[bid].push({ svg, layer: SLOT_LAYER[slot], mirror: idx === 1 && view !== 'profile' });
+      const mirror = idx === 1 && view !== 'profile';
+      if (behind) boneParts[bid].push({ svg: behind, layer: -2, mirror });
+      boneParts[bid].push({ svg, layer: SLOT_LAYER[slot], mirror });
     });
   }
 

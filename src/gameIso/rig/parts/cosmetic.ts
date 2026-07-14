@@ -1,9 +1,19 @@
 import type { PartArt } from './types';
 import { baseSpeciesOf } from '../skeletons';
+import { PART_BEHIND_SEP } from '../bones';
 import { HEADS_BY_KEY } from './heads';
-import { hairstylesForSex } from './hairstyles';
-// Têtes (visage + coiffure défaut) en heads/defs, coiffures en hairstyles/defs (3 vues bakées).
-// Le profil/dos du VISAGE reste un art GÉNÉRIQUE token ci-dessous (PROFILE_FACE / BACK_NAPE).
+import { hairstylesForSex, type HairArt } from './hairstyles';
+// Têtes (visage + coiffure défaut) en heads/defs, coiffures en hairstyles/defs — CHAQUE chevelure
+// porte ses 3 vues + composante `behind` éventuelle (HairArt), pliée ici dans la chaîne de vue
+// (dépliée par composeRig au layer −2, cf. splitPartBehind dans bones.ts).
+// Seul le profil/dos du VISAGE reste un art GÉNÉRIQUE token ci-dessous (PROFILE_FACE / BACK_NAPE).
+
+const foldView = (main: string, behind?: string) => (behind ? `${behind}${PART_BEHIND_SEP}${main}` : main);
+const foldHair = (h: HairArt): PartArt => ({
+  front: foldView(h.front, h.behind?.front),
+  profile: foldView(h.profile, h.behind?.profile),
+  back: foldView(h.back, h.behind?.back),
+});
 
 // Œil de secours : blanc + iris @yeux + pupille (PAS le gradient monstre g_eye).
 // ANCRÉ data-eye comme les têtes générées → remplaçable par le système d'yeux
@@ -18,35 +28,14 @@ const DEFAULT_VISAGE: string[] = [
 ];
 
 // =========================================================================================
-// VUES PROFIL / DOS de la TÊTE — art générique COMMUN (partagé par toutes les espèces),
+// VUES PROFIL / DOS du VISAGE — art générique COMMUN (partagé par toutes les espèces),
 // 100 % en tokens (@peau/@cheveux…) pour recoloriage correct. La FACE reste l'art détaillé
 // par espèce (heads/defs) ; ici on dessine un profil/dos PROPRES qui matchent ses proportions :
 // crâne ovale (x±9, y -9..16), yeux à y≈6.6, bouche à y≈12.6. Le profil regarde vers +x.
+// (Les CHEVEUX, eux, portent leurs vues DANS leur def — HairArt — plus d'art générique partagé.)
 // =========================================================================================
 
-// Vue de DOS générique : crâne COUVERT de cheveux (@cheveux) — évite les « cheveux invisibles
-// de dos ». La nuque/cou minimale (@peau) vient du visage de dos.
-const BACK_HAIR =
-  // calotte qui épouse le crâne, descend bas sur la nuque (couvre les oreilles)
-  '<path d="M-9.6 6 Q-10.6 -9.5 0 -10 Q10.6 -9.5 9.6 6 Q9.4 11.5 6.4 14 Q0 16 -6.4 14 Q-9.4 11.5 -9.6 6Z" fill="@cheveux"/>' +
-  // reflet à gauche (lumière), ombre à droite — volume du crâne
-  '<path d="M-9.6 6 Q-10.6 -9.5 0 -10 Q-6.5 -8 -7.9 -1 Q-9 4 -9.6 6Z" fill="@cheveuxH" opacity="0.65"/>' +
-  '<path d="M0 -10 Q10.6 -9.5 9.6 6 Q8.6 0 6.8 -3.4 Q3.6 -7.6 0 -8Z" fill="@cheveuxO" opacity="0.7"/>' +
-  // raie centrale + mèches (texture)
-  '<path d="M0 -9 Q0.4 3 0 14.5" stroke="@cheveuxO" stroke-width="0.6" fill="none" opacity="0.5"/>' +
-  '<path d="M-5.5 -3 Q-6 6 -5 13 M5.5 -3 Q6 6 5 13 M-2.6 -5 Q-3 6 -2.6 14 M2.6 -5 Q3 6 2.6 14" stroke="@cheveuxO" stroke-width="0.45" fill="none" opacity="0.45"/>';
-// Vue de PROFIL générique : scalp de CÔTÉ qui couvre le crâne (sommet + arrière) et dégage
-// le visage (front, nez, bouche) côté +x. Solide (pas une couronne) → plus de crâne nu.
-const PROFILE_HAIR =
-  // masse principale : du front (+x, y≈-4) par-dessus le crâne (y≈-10) jusqu'à la nuque (-x, y≈13)
-  '<path d="M5.5 -4 Q3.6 -10 -2 -10.2 Q-9 -10 -10 0 Q-10.4 7 -8.6 12.5 Q-7 15 -4.4 14.6 ' +
-  'Q-6.2 11 -6.6 6 Q-7 -1 -3.6 -4.2 Q-0.4 -6.6 3.4 -5.6 Q5 -5.2 5.5 -4Z" fill="@cheveux"/>' +
-  // reflet (haut/avant du crâne) et ombre (arrière)
-  '<path d="M5.5 -4 Q3.6 -10 -2 -10.2 Q-6 -10 -8.2 -3.5 Q-5 -8 -1 -7.4 Q3 -7.2 5.5 -4Z" fill="@cheveuxH" opacity="0.55"/>' +
-  '<path d="M-10 0 Q-10.4 7 -8.6 12.5 Q-7 15 -4.4 14.6 Q-6.2 11 -6.6 6 Q-7.4 2 -10 0Z" fill="@cheveuxO" opacity="0.6"/>' +
-  // mèches (texture, suivent la courbe du crâne)
-  '<path d="M2 -8 Q-4 -8 -7 -2 M-1 -9 Q-7 -7 -9 1 M-5 -7 Q-8 0 -7 8" stroke="@cheveuxO" stroke-width="0.45" fill="none" opacity="0.45"/>';
-// Nuque/cou vus de dos (le crâne est couvert par les cheveux ci-dessus) — un peu d'oreille.
+// Nuque/cou vus de dos (le crâne est couvert par les cheveux de la coiffure) — un peu d'oreille.
 const BACK_NAPE =
   '<path d="M-3.8 11 Q0 13.4 3.8 11 L3.2 17.5 Q0 19.2 -3.2 17.5Z" fill="@peau"/>' +
   '<path d="M-3.6 12.4 Q0 14 3.6 12.4" stroke="@peauO" stroke-width="0.5" fill="none" opacity="0.5"/>';
@@ -86,15 +75,14 @@ const PROFILE_FACE =
 export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): PartArt {
   const head = HEADS_BY_KEY[`${baseSpeciesOf(species)}:${sex}`];
   if (slot === 'cheveux') {
-    // Pool = [défaut de tête (archétype 'court' → profil/dos GÉNÉRIQUES), ...coiffures du sexe
-    // (chacune porte ses propres profil/dos bakés)]. L'idx (pins.cheveux / seed) choisit.
-    const entries: { front: string; profile: string; back: string }[] = [
-      ...(head?.cheveux != null ? [{ front: head.cheveux, profile: PROFILE_HAIR, back: BACK_HAIR }] : []),
-      ...hairstylesForSex(sex).map((h) => ({ front: h.front, profile: h.profile, back: h.back })),
+    // Pool = [coiffure par défaut de la tête, ...coiffures du sexe] — CHAQUE entrée porte ses
+    // 3 vues + `behind` éventuel (HairArt). L'idx (pins.cheveux / seed) choisit.
+    const entries: HairArt[] = [
+      ...(head?.cheveux != null ? [head.cheveux] : []),
+      ...hairstylesForSex(sex),
     ];
-    if (!entries.length) return { front: '', back: BACK_HAIR, profile: PROFILE_HAIR };
-    const e = entries[((idx % entries.length) + entries.length) % entries.length];
-    return { front: e.front, back: e.back, profile: e.profile };
+    if (!entries.length) return ''; // aucun pool (jamais atteint : le pool par sexe est non vide)
+    return foldHair(entries[((idx % entries.length) + entries.length) % entries.length]);
   }
   // Visage : art de tête dédié (dos = nuque, profil = silhouette générique commune à toutes les
   // espèces), sinon repli générique (espèce sans tête, ex. Ogre). `idx` (override/seed) choisit

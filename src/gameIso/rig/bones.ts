@@ -56,6 +56,19 @@ export const SLOT_LAYER: Record<Slot, number> = {
   bouclier: 0, arme: 0,
 };
 
+/** Une part de slot peut porter une composante ARRIÈRE : `arrière` + séparateur + `principal`
+ *  dans la MÊME chaîne SVG (elle traverse ainsi la résolution par vue sans champ dédié).
+ *  Le compositeur la peint au layer −2 — DERRIÈRE la part de visage, même sémantique que
+ *  `RigOverlay.behind` — et le principal au `SLOT_LAYER` du slot. Un consommateur qui ne
+ *  splitte pas rend les deux composantes d'affilée (dégradation sans trou : le séparateur
+ *  est un commentaire SVG légal). Producteur : cosmeticPart (cheveux). */
+export const PART_BEHIND_SEP = '<!--@behind-->';
+export function splitPartBehind(svg: string): { behind?: string; main: string } {
+  const i = svg.indexOf(PART_BEHIND_SEP);
+  if (i < 0) return { main: svg };
+  return { behind: svg.slice(0, i) || undefined, main: svg.slice(i + PART_BEHIND_SEP.length) };
+}
+
 /** Calque cosmétique additionnel attaché à un os (mutations, accessoires).
  *  Rendu PAR-DESSUS les parts, dans le repère local (échellé) de l'os. */
 export interface RigOverlay {
