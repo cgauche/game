@@ -6,8 +6,12 @@ import { OrnateFrame } from './Ornaments';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import { Coins } from './Coins';
-import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete, allAxes } from '../data';
-import { dominantAxes } from '../engine/axes';
+import { RoseAxes, type RoseAxisValue } from './RoseAxes';
+import { MetalStatus } from './MetalStatus';
+import { WaxSeal } from './WaxSeal';
+import { EntityRef } from './EntityChip';
+import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete, allAxes, levelsForCareer, CORE_AXIS_IDS, type AxisData } from '../data';
+import { dominantAxes, axesProfile } from '../engine/axes';
 import { t } from '../i18n';
 
 /** Sous-titre d'ARCHÉTYPE : « Carrière — Espèce » (la CARRIÈRE en tête, c'est le concept du personnage
@@ -30,6 +34,34 @@ export function heroRoles(hero: Combatant, max = 3): string[] {
 /** ACCROCHE narrative — l'ambition à court terme (évocatrice) ou, à défaut, la motivation. */
 export function heroHook(hero: Combatant): string | undefined {
   return hero.details?.ambitionShort || hero.motivation || undefined;
+}
+
+/** Statut « Échelon Standing » AFFICHÉ (« Bronze 2 ») — MÊME lookup que `heroStatus`
+ *  (`state/interludeFlow.ts`), la forme texte brute pour `MetalStatus` (#417). */
+export function heroStatusLabel(hero: Combatant): string {
+  const levels = levelsForCareer(hero.career ?? '');
+  const lvl = levels[Math.max(0, (hero.careerLevel ?? 1) - 1)];
+  return lvl?.status ?? 'Bronze 1';
+}
+
+/** Résout des ids d'axes en `AxisData[]`, dans l'ORDRE fourni (ids inconnus écartés). */
+export function axisDataFor(ids: string[] = CORE_AXIS_IDS): AxisData[] {
+  return ids.map((id) => allAxes.find((a) => a.id === id)).filter((a): a is AxisData => !!a);
+}
+
+/** Profil « rose des forces » d'un héros pour les axes actifs — SOURCE UNIQUE `axesProfile`
+ *  (`engine/axes.ts`), directement consommable par `RoseAxes` (#417). */
+export function heroRoseAxes(hero: Combatant, axisIds: string[] = CORE_AXIS_IDS): RoseAxisValue[] {
+  return axesProfile(hero, axisDataFor(axisIds));
+}
+
+/** Glyphe de rose 44/36px posé au coin bas-droit d'une figurine (`.rose-corner`, `rose.css`). */
+function RoseGlyphCorner({ hero, axisIds, small }: { hero: Combatant; axisIds?: string[]; small?: boolean }) {
+  return (
+    <div className={`rose-corner${small ? ' sm' : ''}`}>
+      <RoseAxes axes={heroRoseAxes(hero, axisIds)} size="glyph" title={t('party.rose.title', { name: hero.name })} />
+    </div>
+  );
 }
 
 /** Compétences CLÉS (libellé concret avec spec) — présentation lisible, top par avances. */
@@ -57,19 +89,30 @@ function CardIdentity({ hero }: { hero: Combatant }) {
   return (
     <div className="candidate-id">
       <strong className="candidate-name">{hero.name}</strong>
-      <span className="candidate-sub">{heroSubtitle(hero)}</span>
+      <span className="candidate-sub">
+        {heroSubtitle(hero)} · <MetalStatus status={heroStatusLabel(hero)} size="chip" />
+      </span>
     </div>
   );
 }
 
 /** RÔLE + ACCROCHE (forces en toutes lettres + ambition) — le contenu qui aide à CHOISIR. `seat` =
  *  rôle sur UNE ligne (colonne d'équipe étroite : 4 sièges tiennent la hauteur). */
-function CardLore({ hero, seat }: { hero: Combatant; seat?: boolean }) {
-  const roles = heroRoles(hero);
+function CardLore({ hero, seat, axisIds }: { hero: Combatant; seat?: boolean; axisIds?: string[] }) {
+  const axes = dominantAxes(hero, axisDataFor(axisIds), 3);
   const hook = heroHook(hero);
   return (
     <>
-      {roles.length > 0 && <div className={`card-roles${seat ? ' card-roles-1line' : ''}`}>{roles.join(' · ')}</div>}
+      <div className={`card-roles${seat ? ' card-roles-1line' : ''}`}>
+        {axes.length > 0
+          ? axes.map((a, i) => (
+              <span key={a.id}>
+                {i > 0 && ' · '}
+                <EntityRef category="axes" id={a.id} label={a.label} />
+              </span>
+            ))
+          : t('party.roles.none')}
+      </div>
       {hook && <div className="card-hook">« {hook} »</div>}
     </>
   );
@@ -112,6 +155,8 @@ export function CandidateCard({
   state,
   wealth,
   recruited,
+  selected,
+  axisIds,
   onRecruit,
   onPresent,
   onExport,
@@ -123,6 +168,10 @@ export function CandidateCard({
   wealth?: Money;
   /** Déjà dans le groupe (modale de remplacement) → bouton « Déjà choisi » désactivé. */
   recruited?: boolean;
+  /** Candidat déplié dans le détail (bordure or « en lecture », #417). */
+  selected?: boolean;
+  /** Axes ACTIFS de la campagne pour le glyphe de rose (`CORE_AXIS_IDS` par défaut). */
+  axisIds?: string[];
   onRecruit?: () => void;
   onPresent?: () => void;
   onExport?: () => void;
@@ -130,16 +179,17 @@ export function CandidateCard({
 }) {
   const blocked = state?.status === 'blocked';
   return (
-    <OrnateFrame className={`candidate-card candidate-${variant}`}>
+    <OrnateFrame className={`candidate-card candidate-${variant}${selected ? ' selected' : ''}`}>
       {/* Le personnage (figurine + identité) EST le contrôle qui ouvre sa présentation (directive
           user 2026-07-13) — plus de bouton « loupe ». */}
       <PresentHandle hero={hero} onPresent={onPresent} className="candidate-present">
         <div className="candidate-fig">
           <CharacterPreview hero={hero} size="fill" ambiance="panel" />
+          <RoseGlyphCorner hero={hero} axisIds={axisIds} small />
         </div>
         <CardIdentity hero={hero} />
       </PresentHandle>
-      <CardLore hero={hero} />
+      <CardLore hero={hero} axisIds={axisIds} />
       {wealth != null && (
         <span className="candidate-wealth hint">{t('picker.hero.purse')} <Coins money={wealth} /></span>
       )}
@@ -172,40 +222,49 @@ export function CandidateCard({
 }
 
 /**
- * Carte de SIÈGE (l'équipe — la star) : carte HORIZONTALE riche, MÊME niveau d'information que la
- * carte de candidat (portrait + nom + archétype + rôle + accroche), plus les actions de gestion.
- * Composée dans la colonne latérale de l'écran d'équipe.
+ * Carte de SIÈGE (l'équipe — la star) : un ACTE D'ENGAGEMENT scellé — cartouche « Acte N » + figurine
+ * sous lampe (ambiance `spotlight`) + identité + sceau de cire au coin (`WaxSeal`, motif du kit
+ * « Atelier du scribe », #412), MÊME niveau d'information que la carte de candidat (nom + archétype +
+ * rôle + accroche), plus les actions de gestion. Composée dans la grille de sièges de l'écran d'équipe
+ * (correction de cap 2026-07-14, transposition fidèle de `compagnie-mock0.png`).
  */
 export function SeatCard({
   hero,
   seatLabel,
+  axisIds,
   onPresent,
   actions,
 }: {
   hero: Combatant;
-  /** Numéro de siège (« Siège 1 ») posé en médaillon. */
+  /** Libellé de l'acte (« Acte I »), rendu en cartouche au-dessus du nom. */
   seatLabel?: string;
+  /** Axes ACTIFS de la campagne pour le glyphe de rose (`CORE_AXIS_IDS` par défaut). */
+  axisIds?: string[];
   onPresent?: () => void;
   /** Boutons de gestion (Modifier / Remplacer / Retirer) — rendus par l'écran (droits coop). */
   actions?: ReactNode;
 }) {
   return (
-    <OrnateFrame className="seat-card">
-      {seatLabel && <span className="seat-card-badge">{seatLabel}</span>}
+    <article className="seat-card">
+      <WaxSeal size={44} className="seat-card-seal" />
       {/* Figurine + identité = le contrôle de présentation (directive user 2026-07-13). */}
       <PresentHandle hero={hero} onPresent={onPresent} className="seat-card-main">
         <div className="seat-card-fig">
-          <CharacterPreview hero={hero} size="fill" ambiance="panel" />
+          <CharacterPreview hero={hero} size="fill" ambiance="spotlight" />
+          <RoseGlyphCorner hero={hero} axisIds={axisIds} />
         </div>
         <div className="seat-card-body">
+          {seatLabel && <span className="seat-card-contract">{seatLabel}</span>}
           <CardIdentity hero={hero} />
-          <CardLore hero={hero} seat />
+          <CardLore hero={hero} seat axisIds={axisIds} />
         </div>
       </PresentHandle>
       {/* Gestion (Modifier/Remplacer/Retirer) TOUJOURS visible : le layout est stable, rien ne se
-          décale ni n'apparaît en flux au survol (directive user 2026-07-13). */}
+          décale ni n'apparaît en flux au survol (directive user 2026-07-13). Filet + collée en pied
+          (`.acte-actions` du kit, #417 — mort du cadre `OrnateFrame` interne, la carte de siège est
+          plate bordée à la `.acte`, pas un cadre-dans-le-cadre). */}
       {actions && <div className="seat-card-actions row-flex">{actions}</div>}
-    </OrnateFrame>
+    </article>
   );
 }
 

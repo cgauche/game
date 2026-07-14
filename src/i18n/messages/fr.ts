@@ -92,6 +92,7 @@ export const fr = {
   'party.back.menu': '← Menu',
   'party.back.quit': '← Quitter',
   'party.campaign.change': 'Changer',
+  'party.campaign.label': 'Campagne',
   'party.guest.waiting': "L'hôte lance la partie",
   'party.coop.pending': 'En attente que chaque joueur remplisse ses emplacements…',
   'party.slot.player': 'Joueur :',
@@ -99,9 +100,6 @@ export const fr = {
   'party.slot.invite': 'Un siège à pourvoir',
   'party.slot.waiting': 'En attente de {name}…',
   'party.recruit.full': 'Groupe complet — retirez un aventurier pour en recruter un autre.',
-  'party.company': 'Votre compagnie',
-  'party.seat.label': 'Siège {n}',
-  'party.seat.badge': 'Siège {n}',
   'party.seat.create': 'Créer',
   'party.seat.choose': 'Choisir',
   'party.select.title': 'Choisir un aventurier',
@@ -115,16 +113,54 @@ export const fr = {
   'party.present.aria': 'Voir {name}',
   'party.create.invite': 'Forgez votre propre héros',
   'party.import.invite': 'Un personnage exporté (JSON)',
+  // Rail de composition (rose de compagnie, #417) — la couverture COLLECTIVE des axes de forces.
+  'party.rail.composition': 'Composition — ce que la compagnie sait faire',
+  'party.rail.missing': 'à pourvoir',
+  'party.rail.hint': 'La rose de compagnie agrège la meilleure valeur de chaque axe des membres — un axe à pourvoir n\'interdit rien.',
+  'party.rose.title': 'Rose des forces de {name}',
+  // Carte sans force qualifiée (`AXIS_QUALIFY_MIN`, `engine/axes.ts`) — sobre, jamais un vide muet.
+  'party.roles.none': 'Aucune force marquée',
+  'party.rose.company.title': 'Rose de composition de la compagnie',
+  // Présentation inline du candidat élu (sélecteur dédié, #417) — plus de modale.
+  'picker.detail.empty': 'Sélectionnez un candidat pour le rencontrer.',
   // Présentation d'un personnage (HeroPresentation) — le récit avant les chiffres.
   'present.story': "Ce qui l'anime",
   'present.motivation': 'Motivation',
   'present.ambitionLong': 'Ambition',
   'present.noStory': 'Aucune histoire notée pour ce personnage.',
   'present.forces': 'Forces',
+  // Rubrique Sorts/Miracles (#417) — titre distingué par nature (`isPrayer`), jamais une invention
+  // fragile quand le catalogue mêle les deux.
+  'present.spells.spells': 'Sorts',
+  'present.spells.prayers': 'Miracles',
+  'present.spells.both': 'Sorts & Miracles',
   'present.skills': 'Compétences clés',
   'present.talents': 'Talents',
+  'present.possessions': 'Possessions',
   'present.fullSheet': 'Fiche complète →',
   'present.close': 'Fermer',
+  // Les contrats d'engagement — grille de sièges (correction de cap 2026-07-14, transposition
+  // de `docs/plans/2026-07-14-maquettes-createur/compagnie-mock0.png` — la maquette porte encore
+  // le mot « acte », remplacé par « contrat » [entériné 2026-07-14] : « sans toi je n'aurai pas
+  // deviné que c'était des contrats, j'avais l'impression que c'était des actes d'une histoire ou
+  // théâtre et j'étais perplexe » — écart maquette/code documenté).
+  'party.acts.title': "Les contrats d'engagement",
+  'party.acts.subtitle': '{seats} sièges — {sealed} scellés',
+  // Accord singulier (0 ou 1 scellé) — call-site conditionnel (`PartyScreen.tsx`), pas de moteur
+  // de pluriel i18n dans le projet (patron `plural(n)` local aux modales de navire).
+  'party.acts.subtitle.one': '{seats} sièges — {sealed} scellé',
+  'party.acts.badge': 'Contrat {n}',
+  'party.acts.empty.title': 'Un contrat vierge attend son aventurier',
+  'party.acts.summary.engaged.zero': 'Aucun aventurier engagé',
+  'party.acts.summary.engaged.one': '1 aventurier engagé',
+  'party.acts.summary.engaged.many': '{n} aventuriers engagés',
+  'party.acts.summary.ready': 'la compagnie peut se mettre en route',
+  'party.acts.summary.notReady': 'recrutez au moins un aventurier',
+  'party.acts.summary.vierge.zero': 'tous les contrats sont scellés',
+  'party.acts.summary.vierge.one': 'un contrat reste vierge ({axes} à pourvoir)',
+  'party.acts.summary.vierge.one.plain': 'un contrat reste vierge',
+  'party.acts.summary.vierge.many': '{n} contrats restent vierges ({axes} à pourvoir)',
+  'party.acts.summary.vierge.many.plain': '{n} contrats restent vierges',
   'party.action.resume': 'Reprendre →',
   'party.action.start': 'Commencer →',
   'party.action.start.guestPending': "Des emplacements attribués aux autres joueurs sont encore vides.",

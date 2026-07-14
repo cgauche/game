@@ -513,7 +513,7 @@ export interface GameState extends RollFlowActionsMap {
 
   /** Campagne publiée choisie au menu — jouée après constitution du groupe (PartyScreen).
    *  null = « Nouvelle partie » standard (campagne par défaut). */
-  pendingCampaign: { name: string; scenes: Scene[]; startSceneId: string; worldMap?: import('./worldMap').WorldMap | null } | null;
+  pendingCampaign: { name: string; scenes: Scene[]; startSceneId: string; worldMap?: import('./worldMap').WorldMap | null; activeAxes?: string[] } | null;
   setPendingCampaign: (pc: GameState['pendingCampaign']) => void;
 
   setScreen: (s: Screen) => void;

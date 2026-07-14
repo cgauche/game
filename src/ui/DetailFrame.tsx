@@ -11,7 +11,9 @@ export function DetailFrame({ topper, name, sub, meta, sections, prose, proseSel
   /** Rangée d'en-tête AVANT le nom (ex. chips de variante/lignée) — le cadre en devient le seul
    *  porteur visuel, plus de bloc sibling posé à côté (#393 P3, correction structurelle Race). */
   topper?: ReactNode;
-  name: ReactNode;
+  /** Absent = pas de bande nom/sous-titre par défaut — le `topper` porte alors l'identité en entier
+   *  (bande figurine+identité+rose, #417 correction de cap 2026-07-14). */
+  name?: ReactNode;
   /** Tagline SOURCÉE affichée à côté du nom (ex. « Livre de base p. 25 ») — jamais de flavor inventé,
    *  toujours dérivée d'un `source.book`/`source.page` de donnée (#393 P4). */
   sub?: ReactNode;
@@ -27,10 +29,12 @@ export function DetailFrame({ topper, name, sub, meta, sections, prose, proseSel
   return (
     <div className="detail-frame">
       {topper}
-      <div className="detail-frame-head row-flex">
-        <h3 className="detail-frame-name">{name}</h3>
-        {sub && <span className="detail-frame-sub">{sub}</span>}
-      </div>
+      {name != null && (
+        <div className="detail-frame-head row-flex">
+          <h3 className="detail-frame-name">{name}</h3>
+          {sub && <span className="detail-frame-sub">{sub}</span>}
+        </div>
+      )}
       {meta && <div className="detail-frame-meta row-flex">{meta}</div>}
       {sections}
       {prose != null && (

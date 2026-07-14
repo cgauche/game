@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { axisScore, axesProfile, partyCoverage, dominantAxes } from './axes';
+import { axisScore, axesProfile, partyCoverage, dominantAxes, AXIS_QUALIFY_MIN } from './axes';
 import { allAxes, findAxisById } from '../data';
 import { PREGEN, pregen, pregenParty } from '../data/pregens';
 
@@ -8,6 +8,7 @@ const TIR = findAxisById('tir')!;
 const SOCIAL = findAxisById('social')!;
 const SOINS = findAxisById('soins')!;
 const INGENIERIE = findAxisById('ingenierie')!;
+const DISCRETION = findAxisById('discretion')!;
 
 describe('#409 — engine/axes : axisScore/axesProfile/partyCoverage/dominantAxes', () => {
   it('axisScore : 0..1, un pré-tiré martial score plus haut en Mêlée qu\'un pré-tiré peu combattant', () => {
@@ -37,6 +38,14 @@ describe('#409 — engine/axes : axisScore/axesProfile/partyCoverage/dominantAxe
     expect(axisScore(wilhelmina, INGENIERIE)).toBe(0);
   });
 
+  it('axisScore : NON durci par `AXIS_QUALIFY_MIN` (LDB 09 l.25 — une Compétence de Base se teste non formée) : Mêlée/Discrétion de Wilhelmina restent BRUTES sous le seuil, jamais forcées à 0', () => {
+    const wilhelmina = pregen(PREGEN.sorcier);
+    expect(axisScore(wilhelmina, MELEE)).toBeGreaterThan(0);
+    expect(axisScore(wilhelmina, MELEE)).toBeLessThan(AXIS_QUALIFY_MIN);
+    expect(axisScore(wilhelmina, DISCRETION)).toBeGreaterThan(0);
+    expect(axisScore(wilhelmina, DISCRETION)).toBeLessThan(AXIS_QUALIFY_MIN);
+  });
+
   it('axisScore : Talent seul BONIFIE sans jamais faire déborder [0,1] — formule stable sur tout le catalogue', () => {
     const tueur = pregen(PREGEN.tueur);
     for (const axis of allAxes) {
@@ -53,22 +62,56 @@ describe('#409 — engine/axes : axisScore/axesProfile/partyCoverage/dominantAxe
     expect(profile.every((p) => p.value >= 0 && p.value <= 1)).toBe(true);
   });
 
-  it('partyCoverage : agrégat MAX par axe — le groupe couvre Mêlée dès qu\'UN membre la couvre', () => {
+  it('partyCoverage : agrégat MAX par axe — le groupe couvre Mêlée dès qu\'UN membre la couvre (au-delà du seuil de qualification)', () => {
     const group = pregenParty(PREGEN.soldat, PREGEN.sorcier, PREGEN.chasseur, PREGEN.pretre);
     const coverage = partyCoverage(group, [MELEE, TIR]);
     const meleeCov = coverage.find((c) => c.id === 'melee')!;
     const soloBest = Math.max(...group.map((m) => axisScore(m, MELEE)));
+    expect(soloBest).toBeGreaterThanOrEqual(AXIS_QUALIFY_MIN);
     expect(meleeCov.value).toBe(soloBest);
     expect(meleeCov.value).toBeGreaterThan(0);
   });
 
-  it('dominantAxes : les N axes les mieux notés, triés décroissant, jamais un axe à score nul', () => {
+  it('partyCoverage : un axe sous `AXIS_QUALIFY_MIN` (même porté par le meilleur du groupe) reste à 0 — « à pourvoir », pas une fausse couverture par Caractéristique nue', () => {
+    const solo = pregenParty(PREGEN.sorcier);
+    const coverage = partyCoverage(solo, [MELEE]);
+    const raw = axisScore(solo[0], MELEE);
+    expect(raw).toBeGreaterThan(0);
+    expect(raw).toBeLessThan(AXIS_QUALIFY_MIN);
+    expect(coverage[0].value).toBe(0);
+  });
+
+  it('dominantAxes : les N axes les mieux notés, triés décroissant, jamais un axe sous le seuil de qualification', () => {
     const soldat = pregen(PREGEN.soldat);
     const dom = dominantAxes(soldat, allAxes, 3);
     expect(dom.length).toBeLessThanOrEqual(3);
-    for (const a of dom) expect(a.value).toBeGreaterThan(0);
+    for (const a of dom) expect(a.value).toBeGreaterThanOrEqual(AXIS_QUALIFY_MIN);
     const values = dom.map((a) => a.value);
     expect(values).toEqual([...values].sort((a, b) => b - a));
+  });
+
+  it('dominantAxes VERROU NOMINATIF — Wilhelmina Faust ne garde QUE ses vraies forces (Social/Savoir/Négoce), jamais Mêlée/Discrétion à Caractéristique nue (réfutation utilisateur 2026-07-14, 3e reprise 2026-07-15)', () => {
+    const wilhelmina = pregen(PREGEN.sorcier);
+    const dom = dominantAxes(wilhelmina, allAxes, allAxes.length);
+    const ids = dom.map((a) => a.id);
+    expect(ids).not.toContain('melee');
+    expect(ids).not.toContain('discretion');
+    expect(ids.length).toBeGreaterThan(0);
+  });
+
+  it('FRONTIÈRE `AXIS_QUALIFY_MIN` — un héros synthétique à score EXACTEMENT 0.45 QUALIFIE (verrou du `>=`, pas `>`), en `dominantAxes` ET en `partyCoverage`', () => {
+    // Corps à corps (Compétence de BASE, sans Talent référencé par l'axe Mêlée — `talentPart` reste
+    // à 0) : `(valeur − 15) / 55 = 0.45` ⇔ `valeur = 39.75` ⇔ Capacité de Combat = `31.75` avec les
+    // 8 avances du Soldat pré-tiré (`skillBaseValue` = Caractéristique EFFECTIVE + avances).
+    const boundary = pregen(PREGEN.soldat);
+    // `effectiveChar` inclut les modificateurs passifs INTRINSÈQUES du Soldat (+5 sur cette
+    // Caractéristique via son Talent, `passiveCharSum`) — la base brute compense cet écart pour
+    // atterrir exactement sur Capacité de Combat EFFECTIVE 31.75 (39.75 avec les 8 avances).
+    boundary.characteristics['capacite-de-combat'] = 26.75;
+    const score = axisScore(boundary, MELEE);
+    expect(score).toBeCloseTo(AXIS_QUALIFY_MIN, 10);
+    expect(dominantAxes(boundary, [MELEE], 1).map((a) => a.id)).toEqual(['melee']);
+    expect(partyCoverage([boundary], [MELEE])[0].value).toBeCloseTo(AXIS_QUALIFY_MIN, 10);
   });
 
   it('dominantAxes : un pré-tiré soigneur (Frère Anselm, guérison en carrière) fait ressortir Soins', () => {

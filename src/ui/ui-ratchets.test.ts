@@ -150,7 +150,9 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
 ]);
 // `dicewell` : bouton-encrier canon de `CreatorDice` (#414, langage `.c-dicewell.act` du kit
 // « Atelier du scribe ») — même famille que `.btn`/`.chip`, sa propre classe de composant.
-const BARE_BUTTON_CANON = /\b(btn|chip|seg|dicewell)\b/;
+// `cc-step` : médaillon-bouton canon de `CareerPath` (#393 P2, 2026-07-14) — même famille, chaîne
+// explorable propre (langage `.cc-path`/`.cc-link`, pas un `.chip`/`.seg` recyclé).
+const BARE_BUTTON_CANON = /\b(btn|chip|seg|dicewell|cc-step)\b/;
 const BARE_BUTTON_BASELINE: Record<string, number> = {
   'ActionBar.tsx': 1,
   'CityHubScreen.tsx': 1,
@@ -216,12 +218,18 @@ const DOMAIN_CSS_MODULES = [
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
   'styles/gauges.css': 27,
-  'styles/party.css': 44,
+  'styles/party.css': 72, // #417 passe finale : eyebrow .camp-plate-eyebrow (CAMPAGNE) + override scopé .entity-chip sous .card-roles (chips d'axes small-caps inline, jamais une boîte)
+  // +5 : bande d'en-tête figurine+identité+rose du détail candidat (correction de cap 2026-07-14,
+  // remplace `.candidate-detail-rose` par `.candidate-detail-head`/`-fig`/`-id`).
+  // +6 : grille de sièges « Les contrats d'engagement » (compagnie-mock0.png, correction de cap
+  // 2026-07-14) — `.party-acts-header`/`-title`/`-subtitle`, `.seat-card-seal`/`-contract`,
+  // `.seat-contract-badge`/`.seat-empty-title`, `.party-actions-summary`/`-buttons`.
   // +6 : scène centrale du roulis + dé SVG au chiffre gravé sur la face (#396 v2-v4) — `.rm-scene`/
   // `.rm-die-landed`/`.rm-die-svg`/`.rm-die-gem`/`.rm-die-num`/`.rm-die-rolling` (primitive DiceRoll).
   'styles/combat-modals.css': 147,
   'styles/combat-ui.css': 112,
-  'styles/compendium.css': 55,
+  // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
+  'styles/compendium.css': 56,
   // +25 : charte « Atelier du scribe » (#412) — MetalStatus/WaxSeal+SealedPlaque/CareerPath/
   // FigTile/GroupedPickGrid/DetailFrame (primitives SANS canon préexistant).
   // +1 : `.creator-race-shell` (#393 P1) — gabarit deux-zones de l'étape Race (compose
@@ -238,7 +246,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // +6 : polish finale Race (#393 P4, rapport juge vision) — `.detail-frame-head`/`.detail-frame-sub`
   // (tagline sourcée), `.dicewell.emph` (encrier idle en emphase), override local
   // `.creator-race-card .charprev-lg` (figurine généreuse sans casser le zéro-scroll).
-  'styles/creator.css': 122,
+  // +2 net (#393 P2) : mort du call-site Carrière de `FacetedPickGrid` — `.pick-facets`/`.pick-grid`/
+  // `.pick-card*` PARTENT (dernier consommateur), `.creator-race-shell/-toolbar/-search/-count`
+  // deviennent `.creator-pick-*` (partagées Race+Carrière, renommage 1:1) + `.dicewell-die` (grands
+  // losanges de l'encrier, correctif toolbar P1).
+  // +2 : correctifs utilisateur 2026-07-14 (rang CareerPath explorable — `.cc-step.sel`/
+  // `.cc-step:focus-visible` ; rangée filtres Carrière — `.creator-pick-filters`).
+  'styles/creator.css': 126,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -274,7 +288,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
 // (top-level) qui porte aussi les règles TRANSVERSES manette + le bandeau DEV du collecteur d'erreurs.
 const SHARED_CSS_FILES = ['styles/base.css', 'styles/components.css', 'styles/tabs.css', 'styles.css'];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
-  'styles/base.css': 17, // #418 : `.char-stats`/`.stat*` catalogués (charte-ui.md), 4 leaks résorbées
+  'styles/base.css': 16, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
+  // `.hero-present-chips` repassent mono-consommateur — le détail candidat compose désormais `SkillChip`/
+  // `TalentChip`/`EntityRef` + `.skill-tags` (recalage utilisateur 2026-07-14, primitives de fiche vivante)
   'styles/components.css': 11,
   'styles/tabs.css': 1,
   'styles.css': 6,

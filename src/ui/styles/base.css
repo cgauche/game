@@ -138,6 +138,9 @@
   --atelier-dicewell-border-hover: #e0765a; /* encrier attente — bordure survolée */
   --atelier-dicewell-txt: #ffd9cd; /* encrier attente — libellé clair */
   --atelier-dicewell-txt-muted: #c9a08c; /* encrier attente — texte atténué */
+  --atelier-dicewell-act-hi: #4c1d11; /* encrier attente — surface BORDÉ-TEINTÉE, sang sombre (haut) :
+    « Suivant → » reste l'UNIQUE rempli rouge vif de l'écran (#393 P2, correctif toolbar P1). */
+  --atelier-dicewell-act-lo: #280d08; /* encrier attente — surface bordé-teintée (bas) */
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
   /* Échelle NOMMÉE des plaques de caractéristique (#418) — CONTRAT partagé par `.char-stats`
      (`CharStatsGrid`) et `.codex-kv` (fiche Codex) : sm = densité fiche/codex, md = écran plein

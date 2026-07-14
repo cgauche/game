@@ -32,6 +32,16 @@
  *     possédé », aucune ambiguïté Base/Avancée à trancher). `TALENT_BONUS_WEIGHT = 0.3` : le Talent
  *     BONIFIE le score de compétence, il ne le remplace jamais (un axe SANS compétence possédée et
  *     SANS Talent reste à 0 — « un axe expert s'allume avec la formation », jamais compensé).
+ *
+ * `axisScore` reste NON durci (`possesses` — LDB 09 l.25 — les Compétences de Base se testent non
+ * formées, c'est légitime). Le score BRUT d'une Compétence de Base nue (Caractéristique moyenne, zéro
+ * avance) atterrit néanmoins dans une zone basse-mais-non-nulle (~0.25-0.45 sur les pré-tirés réels) :
+ * suffisant pour un TEST, pas pour une FORCE affichée. `AXIS_QUALIFY_MIN` (3e reprise 2026-07-15, #417)
+ * sépare les deux lectures : `dominantAxes`/`partyCoverage` (vitrines « forces marquées ») EXIGENT ce
+ * plancher de QUALIFICATION en plus du tri décroissant — `axisScore` seul (jets, calculs internes)
+ * reste inchangé. Calibré sur Wilhelmina Faust (`PREGEN.sorcier`) : Mêlée/Discrétion (Caractéristiques
+ * nues, aucune avance) tombent à 0.44/0.25 — sous le seuil, écartées des « forces » — tandis que
+ * Social/Savoir/Négoce (avances réelles) dépassent 0.49 et restent.
  */
 import type { Combatant } from './types';
 import { skillBaseValue } from './skills';
@@ -43,6 +53,10 @@ const SKILL_VALUE_SPAN = 55;
 const TALENT_BASE = 0.5;
 const TALENT_STEP = 0.1;
 const TALENT_BONUS_WEIGHT = 0.3;
+
+/** Plancher de QUALIFICATION d'un axe comme « force marquée » (vitrines `dominantAxes`/
+ *  `partyCoverage` uniquement — `axisScore` brut reste non durci, cf. tête de fichier). */
+export const AXIS_QUALIFY_MIN = 0.45;
 
 function skillContribution(hero: Combatant, ref: { skillId: string; spec?: string }): number {
   if (!possesses(hero, ref.skillId, ref.spec)) return 0;
@@ -82,21 +96,23 @@ export function axesProfile(hero: Combatant, axes: AxisData[]): AxisValue[] {
 
 /** Couverture de GROUPE : agrégat MAX par axe (le rail de composition ne demande pas « la moyenne
  *  couvre-t-elle l'axe » mais « quelqu'un dans le groupe couvre-t-il l'axe »). #417 consomme ceci
- *  pour le rail de composition — AUCUN placement en jeu dans ce lot. */
+ *  pour le rail de composition — AUCUN placement en jeu dans ce lot. Vitrine « forces marquées » :
+ *  une alvéole ne s'allume QUE si le meilleur porteur franchit `AXIS_QUALIFY_MIN` (sous le seuil,
+ *  agrégat ramené à 0 — « à pourvoir », pas une fausse couverture par Caractéristique nue). */
 export function partyCoverage(members: Combatant[], axes: AxisData[]): AxisValue[] {
-  return axes.map((a) => ({
-    id: a.id,
-    label: a.label,
-    value: members.reduce((best, m) => Math.max(best, axisScore(m, a)), 0),
-  }));
+  return axes.map((a) => {
+    const best = members.reduce((b, m) => Math.max(b, axisScore(m, a)), 0);
+    return { id: a.id, label: a.label, value: best >= AXIS_QUALIFY_MIN ? best : 0 };
+  });
 }
 
-/** Les `n` axes DOMINANTS d'un Combattant (score décroissant, axes à score nul écartés — même filtre
- *  que l'ex-`heroRoles` sur les avances). SOURCE UNIQUE des « rôles » en toutes lettres des cartes
- *  (`heroRoles`, `src/ui/CharCard.tsx`) ET du mini-radar. */
+/** Les `n` axes DOMINANTS d'un Combattant (score décroissant, filtrés à `AXIS_QUALIFY_MIN` — une
+ *  « force » affichée exige plus qu'une Caractéristique nue non formée, cf. tête de fichier). SOURCE
+ *  UNIQUE des « rôles » en toutes lettres des cartes (`heroRoles`, `src/ui/CharCard.tsx`) ET du
+ *  mini-radar. */
 export function dominantAxes(hero: Combatant, axes: AxisData[], n: number): AxisValue[] {
   return axesProfile(hero, axes)
-    .filter((a) => a.value > 0)
+    .filter((a) => a.value >= AXIS_QUALIFY_MIN)
     .sort((a, b) => b.value - a.value)
     .slice(0, n);
 }

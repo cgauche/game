@@ -8,14 +8,29 @@ import { campaign, builtinCampaigns } from '../scenes/campaign';
 import { publishedProjects } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
-import { CandidateCard, SeatCard, ActionCard, type RecruitState } from './CharCard';
+import { itemLabel } from '../engine/items';
+import { axisScore, dominantAxes, AXIS_QUALIFY_MIN } from '../engine/axes';
+import { Coins } from './Coins';
+import {
+  CandidateCard, SeatCard, ActionCard, heroStatusLabel, heroSubtitle,
+  axisDataFor, heroRoseAxes, type RecruitState,
+} from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
 import { HeroPresentation } from './HeroPresentation';
 import { Modal } from './Modal';
 import { ScreenShell } from './ScreenShell';
 import { GatedAction } from './GatedAction';
+import { MetalStatus } from './MetalStatus';
+import { RoseAxes } from './RoseAxes';
+import { CharacterPreview } from './CharacterPreview';
+import { DetailFrame } from './DetailFrame';
+import { MasterDetail } from './MasterDetail';
+import { CharStatsGrid } from './CharStatsGrid';
+import { SkillChip, TalentChip, EntityRef } from './EntityChip';
 import { Icon } from './Icon';
 import { Tabs } from './Tabs';
+import { CORE_AXIS_IDS, findSpellById } from '../data';
+import { resolveActiveAxes } from '../state/worldMap';
 import { t } from '../i18n';
 
 /**
@@ -90,12 +105,17 @@ export function PartyScreen() {
   const inProgress = sceneInProgress && !pendingCampaign;
   // Le choix de campagne appartient à l'hôte (ou au solo), hors partie en cours (« Reprendre »).
   const canPickCampaign = net.mode !== 'guest' && !inProgress;
+  // Axes ACTIFS de la campagne (#409/#417) : `resolveActiveAxes` lit `activeAxes` sur
+  // `pendingCampaign` (`ProjectDoc`, `state/worldMap.ts`) et retombe sur le socle `CORE_AXIS_IDS`
+  // si absent — SOURCE UNIQUE de ce défaut, jamais un `?? []` dispersé côté écran.
+  const axisIds = resolveActiveAxes(pendingCampaign ?? {});
 
   return (
     <>
       <PartyScreenView
         party={party}
         net={net}
+        axisIds={axisIds}
         title={t('party.title')}
         campaignName={pendingCampaign ? pendingCampaign.name : t('campaign.builtin')}
         onChangeCampaign={canPickCampaign ? () => setCampaignPick(true) : undefined}
@@ -174,6 +194,102 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
 /** Cible ouverte dans le sélecteur dédié : recruter un siège vide, ou remplacer un héros en place. */
 type SelectorTarget = { mode: 'recruit' } | { mode: 'replace'; heroId: string };
 
+/** Couverture de GROUPE par axe + PORTEUR (le meilleur score) — même seuil `AXIS_QUALIFY_MIN` que le
+ *  jumeau moteur `partyCoverage` (`engine/axes.ts`), réutilisé pour retrouver QUI porte la meilleure
+ *  valeur QUALIFIÉE, ce que `partyCoverage` seul (agrégat nu, sans porteur) ne donne pas (#417 rail
+ *  de composition). Sous le seuil : `value` ramené à 0 ET `heroName` omis — « à pourvoir », jamais une
+ *  fausse couverture par Caractéristique nue (réfutation utilisateur 2026-07-15, le rail affichait
+ *  Sigmund sur Discrétion à 0.31 < 0.45 alors que la carte de siège l'écartait déjà). */
+function partyCoverageWithHero(party: Combatant[], axisIds: string[]): { id: string; label: string; value: number; heroName?: string }[] {
+  return axisDataFor(axisIds).map((axis) => {
+    let best = 0;
+    let heroName: string | undefined;
+    for (const h of party) {
+      const v = axisScore(h, axis);
+      if (v > best) { best = v; heroName = h.name; }
+    }
+    return best >= AXIS_QUALIFY_MIN ? { id: axis.id, label: axis.label, value: best, heroName } : { id: axis.id, label: axis.label, value: 0 };
+  });
+}
+
+/** Numéraux romains des 4 sièges (« Contrat I »…« Contrat IV ») — habillage cérémoniel de la
+ *  grille (`compagnie-mock0.png`, #417 correction de cap 2026-07-14 ; mot « acte » de la maquette
+ *  remplacé par « contrat » [entériné 2026-07-14], moins ambigu). */
+const ACT_ROMAN = ['I', 'II', 'III', 'IV'];
+/** Nombre en toutes lettres (0-4, le format d'un mot dans le sous-titre « quatre sièges — deux
+ *  scellés » — jamais un chiffre nu dans ce libellé cérémoniel). */
+const NUM_WORDS_FR = ['zéro', 'un', 'deux', 'trois', 'quatre'];
+
+/** Énumération « à la française » (Oxford comma absent, dernier élément lié par « et »). Pur. */
+function joinFr(items: string[]): string {
+  if (items.length === 0) return '';
+  if (items.length === 1) return items[0];
+  return `${items.slice(0, -1).join(', ')} et ${items[items.length - 1]}`;
+}
+
+/** Phrase de synthèse du pied d'écran — composée depuis `partyCoverageWithHero` (axes ACTIFS à
+ *  pourvoir), textes du patron `compagnie-mock0.png` (#417 correction de cap 2026-07-14). */
+function partySummaryText(party: Combatant[], axisIds: string[]): string {
+  const n = party.length;
+  const engaged = n === 0
+    ? t('party.acts.summary.engaged.zero')
+    : n === 1
+      ? t('party.acts.summary.engaged.one')
+      : t('party.acts.summary.engaged.many', { n });
+  const ready = n > 0 ? t('party.acts.summary.ready') : t('party.acts.summary.notReady');
+  const vierges = 4 - n;
+  const missingAxes = partyCoverageWithHero(party, axisIds).filter((c) => c.value === 0).map((c) => c.label);
+  const viergePart = vierges === 0
+    ? t('party.acts.summary.vierge.zero')
+    : missingAxes.length === 0
+      ? t(vierges === 1 ? 'party.acts.summary.vierge.one.plain' : 'party.acts.summary.vierge.many.plain', { n: vierges })
+      : t(vierges === 1 ? 'party.acts.summary.vierge.one' : 'party.acts.summary.vierge.many', { n: vierges, axes: joinFr(missingAxes) });
+  return `${engaged} — ${ready} ; ${viergePart}.`;
+}
+
+/** Rail du REGISTRE de compagnie : cartouche de campagne + rose de COMPOSITION (médaillon agrégé) +
+ *  rangées d'axes (alvéole allumée = couverte + porteur, pointillés = à pourvoir). AIDE, jamais un
+ *  blocage — le rail ne gate rien (#417, planche-compagnie.html §A). */
+function CompanyRail({ party, axisIds, campaignName, onChangeCampaign }: {
+  party: Combatant[];
+  axisIds: string[];
+  campaignName?: string;
+  onChangeCampaign?: () => void;
+}) {
+  const coverage = partyCoverageWithHero(party, axisIds);
+  return (
+    <aside className="party-rail">
+      {campaignName && (
+        <div className="camp-plate">
+          <span className="camp-plate-eyebrow">{t('party.campaign.label')}</span>
+          <span className="camp-plate-name">{campaignName}</span>
+          {onChangeCampaign && (
+            <button className="btn small" onClick={onChangeCampaign}>{t('party.campaign.change')}</button>
+          )}
+        </div>
+      )}
+      <div className="mini-title">{t('party.rail.composition')}</div>
+      <div className="party-rail-rose">
+        <RoseAxes
+          axes={coverage.map((c) => ({ id: c.id, label: c.label, value: c.value > 0 ? c.value : null }))}
+          size="medal"
+          title={t('party.rose.company.title')}
+        />
+      </div>
+      <div className="compo">
+        {coverage.map((c) => (
+          <div className={`compo-row${c.value > 0 ? '' : ' miss'}`} key={c.id}>
+            <span className={`socket${c.value > 0 ? ' lit' : ''}`} aria-hidden="true" />
+            <span className="compo-ax">{c.label}</span>
+            <span className="compo-who">{c.heroName ?? t('party.rail.missing')}</span>
+          </div>
+        ))}
+      </div>
+      <p className="c-note party-rail-hint">{t('party.rail.hint')}</p>
+    </aside>
+  );
+}
+
 /** Vue pure de l'écran d'équipe (testable sans store — le rendu statique des tests lit
  *  l'état INITIAL de zustand, pas l'état muté). */
 export function PartyScreenView({
@@ -182,6 +298,7 @@ export function PartyScreenView({
   title,
   campaignName,
   onChangeCampaign,
+  axisIds = CORE_AXIS_IDS,
   inProgress,
   onMenu,
   onQuitCoop,
@@ -197,8 +314,10 @@ export function PartyScreenView({
   party: Combatant[];
   net: NetState;
   title: string;
-  /** Campagne sélectionnée (cartouche Icon nav/campagne). Absent = cartouche masqué (vue partielle/tests). */
+  /** Campagne sélectionnée (cartouche du rail). Absent = cartouche masqué (vue partielle/tests). */
   campaignName?: string;
+  /** Axes ACTIFS de la campagne (rose des forces, rail de composition, #417). `CORE_AXIS_IDS` par défaut. */
+  axisIds?: string[];
   /** Ouvre le choix de campagne — absent = lecture seule (invité coop, partie en cours). */
   onChangeCampaign?: () => void;
   /** Une partie est en cours (scène vivante, hors lancement explicite de campagne) :
@@ -289,17 +408,6 @@ export function PartyScreenView({
           </button>
         )}
         <h2>{title} ({party.length}/4)</h2>
-        {campaignName && (
-          <div className="campaign-pill">
-            <span aria-hidden><Icon id="nav/campaign" /></span>
-            <span className="campaign-pill-name">{campaignName}</span>
-            {onChangeCampaign && (
-              <button className="btn small" onClick={onChangeCampaign}>
-                {t('party.campaign.change')}
-              </button>
-            )}
-          </div>
-        )}
         {net.mode === 'guest' && (
           <span className="hint"><Icon id="ui/wait" size="sm" /> {t('party.guest.waiting')}</span>
         )}
@@ -308,10 +416,18 @@ export function PartyScreenView({
         <p className="hint party-coop-hint"><Icon id="ui/wait" size="sm" /> {t('party.coop.pending')}</p>
       )}
 
-      {/* L'écran de groupe = LA COMPAGNIE SEULE (grille de sièges, 2×2, généreuse). Aucune galerie ici. */}
+      {/* L'écran de groupe = LA COMPAGNIE SEULE (grille de sièges, 2×2, généreuse) + le RAIL du
+          registre (campagne + composition, #417). Aucune galerie ici. */}
+      <div className="party-main">
+      <CompanyRail party={party} axisIds={axisIds} campaignName={campaignName} onChangeCampaign={onChangeCampaign} />
       <div className="party-company">
-        <h3 className="party-roster-title">{t('party.company')} ({party.length}/4)</h3>
-        <div className="party-roster" aria-label={t('party.company')}>
+        <div className="party-acts-header row-flex">
+          <h3 className="party-acts-title">{t('party.acts.title')}</h3>
+          <span className="party-acts-subtitle">
+            {t(party.length <= 1 ? 'party.acts.subtitle.one' : 'party.acts.subtitle', { seats: NUM_WORDS_FR[4], sealed: NUM_WORDS_FR[Math.min(party.length, 4)] })}
+          </span>
+        </div>
+        <div className="party-roster" aria-label={t('party.acts.title')}>
           {views.map(({ seat, hero: h }, i) => {
             const mine = !coop || seat === net.mySeat;
             return (
@@ -354,7 +470,8 @@ export function PartyScreenView({
                 {h ? (
                   <SeatCard
                     hero={h}
-                    seatLabel={t('party.seat.badge', { n: i + 1 })}
+                    seatLabel={t('party.acts.badge', { n: ACT_ROMAN[i] })}
+                    axisIds={axisIds}
                     onPresent={() => setPresentHero(h)}
                     actions={ownsHero(h.id) && (
                       <>
@@ -370,7 +487,8 @@ export function PartyScreenView({
                   />
                 ) : (
                   <div className="seat-empty">
-                    <span className="seat-num">{t('party.seat.label', { n: i + 1 })}</span>
+                    <span className="seat-contract-badge">{t('party.acts.badge', { n: ACT_ROMAN[i] })}</span>
+                    <span className="seat-empty-title">{t('party.acts.empty.title')}</span>
                     <span className="hint seat-invite">
                       {mine ? t('party.slot.invite') : <><Icon id="ui/wait" size="sm" /> {t('party.slot.waiting', { name: seatName(seat) })}</>}
                     </span>
@@ -387,24 +505,28 @@ export function PartyScreenView({
           })}
         </div>
       </div>
+      </div>
 
       {net.mode !== 'guest' && (
-        <footer className="party-actions">
-          {inProgress && (
-            <button className="btn btn-primary" onClick={onResume}>
-              {t('party.action.resume')}
-            </button>
-          )}
-          {/* « Commencer » gaté (`GatedAction`) : la raison d'indisponibilité est VISIBLE sous le bouton. */}
-          <GatedAction
-            id="party-start"
-            className="party-start"
-            label={t('party.action.start')}
-            enabled={party.length > 0 && !guestPending}
-            reason={guestPending ? t('party.action.start.guestPending') : t('party.action.start.empty')}
-            primary={!inProgress}
-            onClick={onStart}
-          />
+        <footer className="party-actions row-flex">
+          <p className="party-actions-summary">{partySummaryText(party, axisIds)}</p>
+          <div className="party-actions-buttons row-flex">
+            {inProgress && (
+              <button className="btn btn-primary" onClick={onResume}>
+                {t('party.action.resume')}
+              </button>
+            )}
+            {/* « Commencer » gaté (`GatedAction`) : la raison d'indisponibilité est VISIBLE sous le bouton. */}
+            <GatedAction
+              id="party-start"
+              className="party-start"
+              label={t('party.action.start')}
+              enabled={party.length > 0 && !guestPending}
+              reason={guestPending ? t('party.action.start.guestPending') : t('party.action.start.empty')}
+              primary={!inProgress}
+              onClick={onStart}
+            />
+          </div>
         </footer>
       )}
 
@@ -412,9 +534,9 @@ export function PartyScreenView({
         <HeroSelector
           party={party}
           mode={selector.mode}
+          axisIds={axisIds}
           replaceName={selectorReplaceName}
           onPick={onSelectorPick}
-          onPresent={setPresentHero}
           onCreate={onCreate}
           onClose={() => setSelector(null)}
         />
@@ -439,22 +561,22 @@ export function PartyScreenView({
 export function HeroSelector({
   party,
   mode,
+  axisIds = CORE_AXIS_IDS,
   replaceName,
   onPick,
   onClose,
   onCreate,
-  onPresent,
 }: {
   party: Combatant[];
   mode: 'recruit' | 'replace';
+  /** Axes ACTIFS de la campagne (glyphes de rose des candidats, #417). `CORE_AXIS_IDS` par défaut. */
+  axisIds?: string[];
   /** Nom du héros remplacé (titre du mode `replace`). */
   replaceName?: string;
   onPick: (h: Combatant, wealth?: Money) => void;
   onClose: () => void;
   /** Ouvre le créateur (carte-action « Créer un personnage »). */
   onCreate?: () => void;
-  /** Ouvre la présentation d'un candidat (clic figure/nom). */
-  onPresent?: (h: Combatant) => void;
 }) {
   const replace = mode === 'replace';
   return (
@@ -467,9 +589,9 @@ export function HeroSelector({
       <CandidatePool
         party={party}
         variant={replace ? 'modal' : 'gallery'}
+        axisIds={axisIds}
         onPick={onPick}
         hideInParty={!replace}
-        onPresent={onPresent}
         onCreate={onCreate}
       />
     </ScreenShell>
@@ -486,7 +608,7 @@ export function CandidatePool({
   variant = 'gallery',
   canRecruit = true,
   hideInParty = false,
-  onPresent,
+  axisIds = CORE_AXIS_IDS,
   onCreate,
 }: {
   party: Combatant[];
@@ -498,8 +620,8 @@ export function CandidatePool({
   /** Écarte du vivier les personnages DÉJÀ dans le groupe (recrutement) : un recruté quitte l'étal. Le
    *  mode remplacement (`false`) les garde, grisés « Déjà choisi ». */
   hideInParty?: boolean;
-  /** Ouvre la PRÉSENTATION d'un candidat (clic figure/nom). */
-  onPresent?: (h: Combatant) => void;
+  /** Axes ACTIFS de la campagne (glyphe + médaillon de rose, #417). `CORE_AXIS_IDS` par défaut. */
+  axisIds?: string[];
   /** Ouvre le créateur (carte-action « Créer un personnage »). */
   onCreate?: () => void;
 }) {
@@ -507,6 +629,9 @@ export function CandidatePool({
   const [roster, setRoster] = useState(() => rosterLoad());
   const [tab, setTab] = useState<'roster' | 'pregens'>(roster.length ? 'roster' : 'pregens');
   const [importErr, setImportErr] = useState<string | null>(null);
+  // Candidat ÉLU (déplié dans l'ACTE DE PRÉSENTATION, `DetailFrame`) — plus de modale (#417,
+  // planche-compagnie.html §B « la présentation intégrée au sélecteur »).
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const setScreen = useGame((s) => s.setScreen);
   const setEditingHero = useGame((s) => s.setEditingHero);
@@ -515,6 +640,9 @@ export function CandidatePool({
   const shownPregens = hideInParty ? allPregens.filter((h) => !inParty(h.id)) : allPregens;
   const shownRoster = hideInParty ? roster.filter((e) => !inParty(e.hero.id)) : roster;
   const state: RecruitState = { status: canRecruit ? 'available' : 'blocked' };
+  const shownList: { hero: Combatant; wealth?: Money }[] =
+    tab === 'roster' ? shownRoster.map(({ hero, wealth }) => ({ hero, wealth })) : shownPregens.map((h) => ({ hero: h }));
+  const selected = shownList.find((e) => e.hero.id === selectedId) ?? shownList[0] ?? null;
 
   const removeSaved = (id: string) => {
     rosterRemove(id);
@@ -552,40 +680,53 @@ export function CandidatePool({
         onChange={setTab}
       />
 
-      <div className="candidate-grid">
-        {tab === 'roster'
-          ? shownRoster.map(({ hero, wealth }) => (
-              <CandidateCard
-                key={hero.id}
-                hero={hero}
-                variant={variant}
-                state={state}
-                recruited={inParty(hero.id)}
-                wealth={wealth}
-                onRecruit={() => onPick(hero, wealth)}
-                onPresent={onPresent ? () => onPresent(hero) : undefined}
-                onExport={() => exportHero({ hero, wealth })}
-                onDelete={() => removeSaved(hero.id)}
-              />
-            ))
-          : shownPregens.map((h) => (
-              <CandidateCard
-                key={h.id}
-                hero={h}
-                variant={variant}
-                state={state}
-                recruited={inParty(h.id)}
-                onRecruit={() => onPick(h)}
-                onPresent={onPresent ? () => onPresent(h) : undefined}
-              />
-            ))}
-        {/* Cartes-action (même famille visuelle) : UNE carte « Créer un personnage » ; « Importer » à
-            côté, dans l'onglet Mes personnages. */}
-        <ActionCard icon="nav/new-game" label={t('picker.roster.create')} invite={t('party.create.invite')} onClick={startCreate} />
-        {tab === 'roster' && (
-          <ActionCard icon="file/import" label={t('picker.import.btn')} invite={t('party.import.invite')} title={t('picker.import.btn.title')} onClick={() => fileRef.current?.click()} />
-        )}
-      </div>
+      <MasterDetail
+        className="candidate-master-detail"
+        listLabel={t('party.select.title')}
+        list={
+          <div className="candidate-grid">
+            {tab === 'roster'
+              ? shownRoster.map(({ hero, wealth }) => (
+                  <CandidateCard
+                    key={hero.id}
+                    hero={hero}
+                    variant={variant}
+                    state={state}
+                    recruited={inParty(hero.id)}
+                    wealth={wealth}
+                    axisIds={axisIds}
+                    selected={selected?.hero.id === hero.id}
+                    onRecruit={() => onPick(hero, wealth)}
+                    onPresent={() => setSelectedId(hero.id)}
+                    onExport={() => exportHero({ hero, wealth })}
+                    onDelete={() => removeSaved(hero.id)}
+                  />
+                ))
+              : shownPregens.map((h) => (
+                  <CandidateCard
+                    key={h.id}
+                    hero={h}
+                    variant={variant}
+                    state={state}
+                    recruited={inParty(h.id)}
+                    axisIds={axisIds}
+                    selected={selected?.hero.id === h.id}
+                    onRecruit={() => onPick(h)}
+                    onPresent={() => setSelectedId(h.id)}
+                  />
+                ))}
+            {/* Cartes-action (même famille visuelle) : UNE carte « Créer un personnage » ; « Importer » à
+                côté, dans l'onglet Mes personnages. */}
+            <ActionCard icon="nav/new-game" label={t('picker.roster.create')} invite={t('party.create.invite')} onClick={startCreate} />
+            {tab === 'roster' && (
+              <ActionCard icon="file/import" label={t('picker.import.btn')} invite={t('party.import.invite')} title={t('picker.import.btn.title')} onClick={() => fileRef.current?.click()} />
+            )}
+          </div>
+        }
+        detail={
+          selected ? <CandidateDetailPane hero={selected.hero} wealth={selected.wealth} axisIds={axisIds} /> : <p className="hint">{t('picker.detail.empty')}</p>
+        }
+      />
       {importErr && <p className="hint danger candidate-import-err">{importErr}</p>}
       <input
         ref={fileRef}
@@ -595,5 +736,103 @@ export function CandidatePool({
         onChange={(e) => { void onImportFile(e.target.files?.[0]); e.target.value = ''; }}
       />
     </>
+  );
+}
+
+/** ACTE DE PRÉSENTATION du candidat élu — `DetailFrame` (nom + chips méta + rubriques + prose),
+ *  médaillon de rose près de l'en-tête (#417, planche-compagnie.html §B). Un candidat EST un
+ *  `Combatant` complet (pregen) : le corps compose les MÊMES primitives que la fiche vivante du
+ *  créateur (`CreatorSummary`) — `CharStatsGrid` pour les Caractéristiques, `SkillChip`/`TalentChip`/
+ *  `EntityRef` codex-liées pour compétences/talents/possessions/axes — jamais une ligne de texte
+ *  (recalage utilisateur 2026-07-14, écho de « composer, jamais de markup brut », 2026-07-12).
+ *  Aucun bouton dédié : le recrutement reste sur la carte de la liste (`CandidateCard`), jamais
+ *  dupliqué ici. */
+function CandidateDetailPane({ hero, wealth, axisIds }: { hero: Combatant; wealth?: Money; axisIds: string[] }) {
+  const axes = dominantAxes(hero, axisDataFor(axisIds), 3);
+  const skills = [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances).slice(0, 14);
+  const talents = hero.talents;
+  const possessions = (hero.items ?? []).slice(0, 12);
+  // Sorts/prières connus (`hero.spells`, `types.ts:1173` — pregens sorcier/prêtre, `pregens.json`) :
+  // titre distingué par `isPrayer` (`schemas/defs/spells.ts:49`) — Sorts SEULS, Miracles SEULS, ou
+  // les deux (« Sorts & Miracles »), jamais une invention de nature quand le catalogue est mêlé.
+  const spellRefs = (hero.spells ?? []).map((id) => ({ id, data: findSpellById(id) }));
+  const hasSpell = spellRefs.some((s) => s.data && !s.data.isPrayer);
+  const hasPrayer = spellRefs.some((s) => s.data?.isPrayer);
+  const spellsTitle = hasSpell && hasPrayer ? t('present.spells.both') : hasPrayer ? t('present.spells.prayers') : t('present.spells.spells');
+  const proseParts: string[] = [];
+  if (hero.motivation) proseParts.push(`**${t('present.motivation')} :** ${hero.motivation}`);
+  if (hero.details?.ambitionShort) proseParts.push(`« ${hero.details.ambitionShort} »`);
+  if (hero.details?.ambitionLong) proseParts.push(`${t('present.ambitionLong')} : ${hero.details.ambitionLong}`);
+  const prose = proseParts.length > 0 ? proseParts.join('\n\n') : t('present.noStory');
+
+  return (
+    <div className="candidate-detail-pane">
+    <DetailFrame
+      topper={
+        <div className="candidate-detail-head">
+          <CharacterPreview hero={hero} size="md" ambiance="panel" className="candidate-detail-fig" />
+          <div className="candidate-detail-id">
+            <h3 className="detail-frame-name">{hero.name}</h3>
+            <span className="detail-frame-sub">{heroSubtitle(hero)}</span>
+            <div className="detail-frame-meta row-flex">
+              <MetalStatus status={heroStatusLabel(hero)} size="chip" />
+              {wealth != null && <span className="chip">{t('picker.hero.purse')} <Coins money={wealth} /></span>}
+            </div>
+          </div>
+          <RoseAxes axes={heroRoseAxes(hero, axisIds)} size="medal" title={t('party.rose.title', { name: hero.name })} />
+        </div>
+      }
+      sections={
+        <>
+          <CharStatsGrid size="sm" value={(k) => hero.characteristics[k]} className="candidate-detail-stats" />
+          <div className="creator-derived">
+            <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>
+            <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>
+            <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>
+            <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Déterm. <b>{hero.resolve ?? '—'}</b></span>
+          </div>
+          {axes.length > 0 && (
+            <section className="hero-present-sec">
+              <h4>{t('present.forces')}</h4>
+              <div className="skill-tags">
+                {axes.map((a) => <EntityRef key={a.id} category="axes" id={a.id} label={a.label} />)}
+              </div>
+            </section>
+          )}
+          {spellRefs.length > 0 && (
+            <section className="hero-present-sec">
+              <h4>{spellsTitle}</h4>
+              <div className="skill-tags">
+                {spellRefs.map(({ id, data }) => (
+                  <EntityRef key={id} category="spells" id={id} label={data?.label ?? id} />
+                ))}
+              </div>
+            </section>
+          )}
+          <section className="hero-present-sec">
+            <h4>{t('present.skills')}</h4>
+            <div className="skill-tags">
+              {skills.length ? skills.map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />) : <span className="hint">—</span>}
+            </div>
+          </section>
+          <section className="hero-present-sec">
+            <h4>{t('present.talents')}</h4>
+            <div className="skill-tags">
+              {talents.length ? talents.map((tt) => <TalentChip key={`${tt.talentId}|${tt.spec ?? ''}`} talent={tt} />) : <span className="hint">—</span>}
+            </div>
+          </section>
+          <section className="hero-present-sec">
+            <h4>{t('present.possessions')}</h4>
+            <div className="skill-tags">
+              {possessions.length
+                ? possessions.map((it) => <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={itemLabel(it)} />)
+                : <span className="hint">—</span>}
+            </div>
+          </section>
+        </>
+      }
+      prose={prose}
+    />
+    </div>
   );
 }

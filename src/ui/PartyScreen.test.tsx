@@ -206,12 +206,13 @@ describe('PartyScreen — présentation par le PERSONNAGE (plus de bouton « Qui
       />,
     );
 
-  it('siège occupé : carte RICHE — portrait + nom + rôle + badge « Siège N », personnage cliquable', () => {
+  it('siège occupé : contrat scellé — portrait + nom + rôle + cartouche « Contrat N » + sceau, personnage cliquable', () => {
     const heroes = makePregens().slice(0, 2);
     const html = render(heroes, initialNet());
     expect(html).toContain('seat-card');
-    expect(html).toContain('seat-card-badge');
-    expect(html).toContain('Siège 1');
+    expect(html).toContain('seat-card-contract');
+    expect(html).toContain('Contrat I');
+    expect(html).toContain('seat-card-seal'); // sceau de cire (contrat scellé)
     expect(html).toContain(heroes[0].name); // nom COMPLET dans la compagnie
     expect(html).toContain('card-roles'); // rôle (forces) sur la carte de siège
     expect(html).toContain('char-present'); // la figurine+identité EST le contrôle de présentation
@@ -242,7 +243,7 @@ describe('PartyScreen — présentation par le PERSONNAGE (plus de bouton « Qui
   it('groupe complet : 4 cartes de siège, aucun siège vide, aucune galerie', () => {
     const heroes = makePregens().slice(0, 4);
     const full = render(heroes, initialNet());
-    expect((full.match(/seat-card-badge/g) ?? []).length).toBe(4);
+    expect((full.match(/seat-card-contract/g) ?? []).length).toBe(4);
     for (const h of heroes) expect(full).toContain(h.name);
     expect(full).not.toContain('seat-empty'); // groupe complet → aucun siège vide
     expect(full).not.toContain('candidate-card'); // pas de galerie sur l'écran de groupe
