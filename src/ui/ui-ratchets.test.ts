@@ -142,6 +142,9 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
   // que OptionChooser/Tabs, à charge à l'appelant (MainMenu/GameMenu) de la composer, jamais de recoder
   // un `<button className="btn">` de menu à la main.
   'MenuCard.tsx',
+  // FigTile.tsx : primitive canon de tuile-figurine cliquable (`.fig-tile`, #412) — même famille que
+  // PortraitTile.tsx, sa propre classe de composant.
+  'FigTile.tsx',
 ]);
 const BARE_BUTTON_CANON = /\b(btn|chip|seg)\b/;
 const BARE_BUTTON_BASELINE: Record<string, number> = {
@@ -203,15 +206,20 @@ const DOMAIN_CSS_MODULES = [
   'gauges',
   'city-hub',
   'voyage',
+  'gallery',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
   'styles/gauges.css': 27,
   'styles/party.css': 44,
-  'styles/combat-modals.css': 141,
+  // +6 : scène centrale du roulis + dé SVG au chiffre gravé sur la face (#396 v2-v4) — `.rm-scene`/
+  // `.rm-die-landed`/`.rm-die-svg`/`.rm-die-gem`/`.rm-die-num`/`.rm-die-rolling` (primitive DiceRoll).
+  'styles/combat-modals.css': 147,
   'styles/combat-ui.css': 112,
   'styles/compendium.css': 55,
-  'styles/creator.css': 71,
+  // +25 : charte « Atelier du scribe » (#412) — MetalStatus/WaxSeal+SealedPlaque/CareerPath/
+  // FigTile/GroupedPickGrid/DetailFrame (primitives SANS canon préexistant).
+  'styles/creator.css': 98,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -223,6 +231,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/world-meta.css': 133,
   'styles/city-hub.css': 18,
   'styles/voyage.css': 30,
+  // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).
+  'styles/gallery.css': 17,
 };
 
 // ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules

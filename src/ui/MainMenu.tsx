@@ -34,6 +34,9 @@ export function MainMenu() {
           <MenuButton icon="nav/editor" onClick={() => setScreen('editor')}>{t('menu.editor')}</MenuButton>
           <MenuButton icon="nav/test-scenarios" tone="test" onClick={() => setScreen('test')}>{t('menu.testScenarios')}</MenuButton>
           <MenuButton icon="nav/art-gallery" href="galeries.html" target="_blank" rel="noopener">{t('menu.galleries')}</MenuButton>
+          {import.meta.env.DEV && (
+            <MenuButton icon="nav/art-gallery" tone="test" onClick={() => setScreen('gallery')}>{t('menu.designGallery')}</MenuButton>
+          )}
         </MenuSection>
       </MenuCard>
       {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}

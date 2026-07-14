@@ -1,0 +1,129 @@
+/* Galerie design system IN-APP (#412, DEV uniquement) — MasterDetail liste de primitives + détail
+   vivant. Layout de l'ÉCRAN seulement : les SPÉCIMENS composent le canon existant (`.btn`/`.tabs`/
+   `.chip`/`.panel`/`.parchment-card`…) et les nouvelles primitives (`creator.css`) — cette feuille
+   ne redéfinit AUCUNE de ces classes. */
+
+/* Scroll de l'écran ENTIER (patron `.port-overlay{overflow-y:auto}`, world-meta.css) — posé sur le
+   voile racine (`className="gallery-screen"` de `ScreenShell`) : `.screen-body`/`.master-detail`
+   sont dimensionnés à leur contenu (hauteur `auto`), un `overflow` posé plus bas dans l'arbre n'a
+   aucune boîte bornée contre laquelle défiler. */
+.gallery-screen {
+  overflow-y: auto;
+}
+.gallery-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 12px;
+}
+.gallery-list-group {
+  margin-bottom: 4px;
+}
+.gallery-list-heading {
+  font-variant-caps: small-caps;
+  letter-spacing: 1.2px;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 14px 0 6px;
+  padding: 0 4px;
+}
+.gallery-list-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13.5px;
+}
+.gallery-list-item:hover {
+  border-color: var(--border);
+  background: var(--panel2);
+}
+.gallery-list-item.active {
+  border-color: var(--gold);
+  background: var(--panel2);
+  color: var(--gold2);
+  font-weight: 600;
+}
+.gallery-detail-wrap,
+.gallery-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+/* `.gallery-detail-head`/`.gallery-spec-stage` composent `.row-flex` (JSX) pour l'enroulement —
+   cette feuille ne pose que leurs propriétés PROPRES (cliquet vii : pas de flex-wrap local). */
+.gallery-detail-head {
+  align-items: baseline;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.gallery-detail-head h3 {
+  font-family: var(--font-display);
+  color: var(--gold2);
+  margin: 0;
+  font-size: 20px;
+}
+.gallery-detail-source {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: Consolas, monospace;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+.gallery-spec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.gallery-spec-label {
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gallery-spec-stage {
+  gap: 12px;
+}
+.gallery-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.gallery-swatch {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg2);
+}
+.gallery-swatch-color {
+  height: 34px;
+}
+.gallery-swatch-meta {
+  padding: 5px 8px 7px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.gallery-swatch-meta b {
+  display: block;
+  color: var(--text);
+  font-family: Consolas, monospace;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) {
+  .gallery-spec-stage {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

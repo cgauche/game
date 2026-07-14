@@ -23,6 +23,7 @@
 @import './styles/house-rules.css'; /* panneau des règles optionnelles (généré depuis le registre) */
 @import './styles/compendium.css'; /* Codex : écran de référence (browse + recherche) + popover CodexRef */
 @import './styles/codex-edit.css'; /* édition DEV des données dans le Compendium */
+@import './styles/gallery.css'; /* galerie design system DEV (#412) : MasterDetail liste/spécimen */
 
 /* ══════════════════ Couche MANETTE — affordances focus + curseur (transverse) ══════════════════
    Ces règles servent la navigation manette/clavier (cf. src/ui/useGamepad.ts) : comme elles touchent

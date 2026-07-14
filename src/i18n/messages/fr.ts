@@ -70,6 +70,7 @@ export const fr = {
   'menu.editor': 'Éditeur de niveau',
   'menu.testScenarios': 'Scénarios de test',
   'menu.galleries': "Galeries d'art",
+  'menu.designGallery': 'Design system',
   'menu.footnote': "Adapté du Livre de base et des Archives de l'Empire I & II (WFRP 4ᵉ édition).",
   // Menu système plein écran (pause) en jeu (UI). Affordances via <Icon> dans GameMenu (jamais un emoji en libellé).
   'gameMenu.menu': 'Menu',

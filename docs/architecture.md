@@ -140,6 +140,10 @@ src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
 src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, modales
   creator/                    assistant de création multi-étapes (LDB 04/05) : CharacterCreator.tsx
                               (rendu) + draft.ts (état pur : tirages figés, bonus PX, validation)
+  gallery/DesignGallery.tsx   galerie design system IN-APP (#412, DEV uniquement) : MasterDetail
+                              liste de primitives → spécimen vivant (données réelles) — référence de
+                              goût pérenne du canon UI, voir docs/charte-ui.md § « Galerie design
+                              system »
   RollShell.tsx               coquille PARTAGÉE et UNIQUE des modales de jet (mono, opposé, ou N
                               contributeurs — le mono = N=1) : Lancer→Chance→Pacte→Résilience→Appliquer
                               + frisson + pickers (dé forcé `caps.picker` / localisation du Critique) +

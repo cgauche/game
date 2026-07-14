@@ -1,0 +1,462 @@
+/**
+ * Registre de la galerie design system (#412) — SOURCE UNIQUE lue par `DesignGallery` (rendu) ET
+ * par la garde structurelle `gallery-exhaustive.test.ts` (couverture). Extension utilisateur
+ * verbatim (2026-07-14) : « Faudrait forcer à ce que la galerie ait toutes les primitives » — chaque
+ * primitive de la table « Primitives partagées » du `CLAUDE.md` dont le fichier vit sous `src/ui/`
+ * (rendu réel, pas un module d'état/moteur pur) reçoit une entrée ICI, `file` reprenant le chemin
+ * EXACT cité par la table (le test fait un import + une comparaison de chaîne, pas une heuristique).
+ *
+ * `render` est une fabrique paresseuse (composant React) pour ne rien monter avant que la galerie
+ * ne sélectionne l'entrée. `note` documente une exception explicite (maquette statique plutôt que
+ * vivante) — jamais une exclusion silencieuse : la garde compte aussi les entrées notées.
+ */
+import { type ComponentType, useState } from 'react';
+import { ScreenMeta } from '../ScreenMeta';
+import { Tabs, type TabItem } from '../Tabs';
+import { OptionChooser } from '../OptionChooser';
+import { ParchmentCard } from '../ParchmentCard';
+import { QtyStepper } from '../QtyStepper';
+import { GatedAction } from '../GatedAction';
+import { PortraitTile } from '../PortraitTile';
+import { CharacterPreview } from '../CharacterPreview';
+import { MetalStatus } from '../MetalStatus';
+import { WaxSeal, SealedPlaque } from '../WaxSeal';
+import { CareerPath } from '../CareerPath';
+import { FigTile } from '../FigTile';
+import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
+import { DetailFrame } from '../DetailFrame';
+import { InfluenceRow } from '../InfluenceRow';
+import { VsHeader } from '../VsHeader';
+import { MasterDetail } from '../MasterDetail';
+import { SearchFilterField, useFilteredList } from '../SearchFilterField';
+import { TradeTable, type TradeColumn, type TradeGroup } from '../TradeTable';
+import { ActivityPane } from '../ActivityPane';
+import { Prose } from '../Prose';
+import { MenuCard, MenuSection, MenuButton, MenuToggle } from '../MenuCard';
+import { CreatorDice } from '../creator/CreatorDice';
+import { GameOpEditor } from '../editor/GameOpEditor';
+import type { GameOp } from '../../engine/ops';
+import { species, careers, levelsForCareer, stars, rigSpeciesId } from '../../data';
+import { makePregens } from '../../data/pregens';
+import { toMoney } from '../../engine/money';
+
+// ── Données réelles pour les spécimens vivants (aucune donnée inventée) ──
+const HUMAN_SPECIES = species.find((s) => s.id === 'humains-reiklander') ?? species[0];
+const SPECIES_BY_FAMILY = new Map<string, typeof species>();
+for (const sp of species) {
+  const arr = SPECIES_BY_FAMILY.get(sp.family) ?? [];
+  arr.push(sp);
+  SPECIES_BY_FAMILY.set(sp.family, arr);
+}
+export const SPECIES_SECTIONS: PickGridSection[] = [...SPECIES_BY_FAMILY.entries()].slice(0, 3).map(([family, list]) => ({
+  id: family,
+  label: family,
+  items: list.slice(0, 3).map((sp) => ({
+    id: sp.id,
+    label: sp.label,
+    preview: { appearance: { species: rigSpeciesId(sp.id), sex: 'M' as const, build: 0.5, seed: 7 } },
+  })),
+}));
+export const SAMPLE_CAREER = careers.find((c) => c.id === 'agitateur') ?? careers[0];
+export const SAMPLE_CAREER_LEVELS = levelsForCareer(SAMPLE_CAREER.id);
+export const SAMPLE_STAR = stars[0];
+export const SAMPLE_HEROES = makePregens();
+export const SAMPLE_HERO = SAMPLE_HEROES[0];
+export const SAMPLE_HERO_B = SAMPLE_HEROES[1] ?? SAMPLE_HEROES[0];
+
+function TokenSwatches() {
+  const TOKEN_SWATCHES: { name: string; token: string; role: string }[] = [
+    { name: '--bg', token: 'var(--bg)', role: 'fond de scène' },
+    { name: '--panel', token: 'var(--panel)', role: 'surface de carte' },
+    { name: '--panel2', token: 'var(--panel2)', role: 'surface haute / bouton' },
+    { name: '--border', token: 'var(--border)', role: 'bordure standard' },
+    { name: '--text', token: 'var(--text)', role: 'encre principale' },
+    { name: '--muted', token: 'var(--muted)', role: 'encre atténuée' },
+    { name: '--gold', token: 'var(--gold)', role: 'or — bordures/focus' },
+    { name: '--gold2', token: 'var(--gold2)', role: 'or vif — titres/valeurs' },
+    { name: '--accent', token: 'var(--accent)', role: 'rouge sang — primaire' },
+    { name: '--accent2', token: 'var(--accent2)', role: 'rouge sang haut' },
+    { name: '--danger', token: 'var(--danger)', role: 'alerte' },
+    { name: '--ok', token: 'var(--ok)', role: 'succès' },
+    { name: '--parchment', token: 'var(--parchment)', role: 'document clair (accent)' },
+    { name: '--ink', token: 'var(--ink)', role: 'encre sur parchemin' },
+    { name: '--blood', token: 'var(--blood)', role: 'cire profonde' },
+  ];
+  return (
+    <div className="gallery-swatches">
+      {TOKEN_SWATCHES.map((s) => (
+        <div className="gallery-swatch" key={s.name}>
+          <div className="gallery-swatch-color" style={{ background: s.token }} />
+          <div className="gallery-swatch-meta"><b>{s.name}</b>{s.role}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Buttons() {
+  return (
+    <div className="row-flex">
+      <button type="button" className="btn">Neutre</button>
+      <button type="button" className="btn btn-primary">Primaire</button>
+      <button type="button" className="btn btn-ghost">Discret</button>
+      <button type="button" className="btn btn-test">Outil de test</button>
+      <button type="button" className="btn" disabled>Désactivé</button>
+    </div>
+  );
+}
+
+function Chips() {
+  return (
+    <div className="row-flex">
+      <span className="chip">Chip simple</span>
+      <span className="chip"><b>Nom</b> — détail</span>
+      <span className="chip">Compteur <span className="count">3</span></span>
+    </div>
+  );
+}
+
+function Panels() {
+  return (
+    <div className="row-flex">
+      <div className="panel" style={{ padding: 12 }}>Surface</div>
+      <div className="panel sunken" style={{ padding: 12 }}>Creuse</div>
+      <div className="panel gold" style={{ padding: 12 }}>Liseré or</div>
+    </div>
+  );
+}
+
+function TabsDemo() {
+  const [active, setActive] = useState<'a' | 'b' | 'c'>('a');
+  const tabs: TabItem<'a' | 'b' | 'c'>[] = [
+    { key: 'a', label: 'Onglet A' },
+    { key: 'b', label: 'Onglet B', count: 2 },
+    { key: 'c', label: 'Onglet C' },
+  ];
+  return (
+    <div className="stack">
+      <Tabs tabs={tabs} active={active} onChange={setActive} label="Onglets — variante flat" />
+      <Tabs tabs={tabs} active={active} onChange={setActive} variant="pill" label="Onglets — variante pill" />
+      <Tabs tabs={tabs} active={active} onChange={setActive} variant="sub" label="Onglets — variante sub" />
+      <Tabs tabs={tabs} active={active} onChange={setActive} variant="dock" label="Onglets — variante dock" />
+    </div>
+  );
+}
+
+function OptionChooserDemo() {
+  const [choice, setChoice] = useState<'parry' | 'dodge'>('parry');
+  return (
+    <div className="stack">
+      <OptionChooser
+        layout="seg"
+        groupLabel="Réaction (seg)"
+        options={[
+          { key: 'parry', label: 'Parade', selected: choice === 'parry', onSelect: () => setChoice('parry') },
+          { key: 'dodge', label: 'Esquive', selected: choice === 'dodge', onSelect: () => setChoice('dodge') },
+        ]}
+      />
+      <OptionChooser
+        layout="grid"
+        groupLabel="Menu (grid)"
+        options={[
+          { key: 'a', label: 'Option A', onSelect: () => {} },
+          { key: 'b', label: 'Option B', onSelect: () => {} },
+        ]}
+      />
+      <OptionChooser
+        layout="actions"
+        options={[
+          { key: 'cancel', label: 'Renoncer', ghost: true, onSelect: () => {} },
+          { key: 'ok', label: 'Confirmer', primary: true, onSelect: () => {} },
+        ]}
+      />
+    </div>
+  );
+}
+
+function QtyStepperDemo() {
+  const [n, setN] = useState(1);
+  return (
+    <QtyStepper
+      center={n}
+      onDec={() => setN((v) => Math.max(0, v - 1))}
+      onInc={() => setN((v) => v + 1)}
+      decLabel="Diminuer"
+      incLabel="Augmenter"
+    />
+  );
+}
+
+function GroupedPickGridDemo() {
+  const [sel, setSel] = useState<string | undefined>(SPECIES_SECTIONS[0]?.items[0]?.id);
+  return <GroupedPickGrid sections={SPECIES_SECTIONS} selectedId={sel} onSelect={setSel} label="Choix d'espèce" />;
+}
+
+function FigTileDemo() {
+  return (
+    <div className="row-flex">
+      <FigTile
+        preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 7 } }}
+        label={HUMAN_SPECIES.label}
+        sub="Non sélectionné"
+        onClick={() => {}}
+        tabIndex={0}
+      />
+      <FigTile
+        preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'F', build: 0.5, seed: 7 } }}
+        label={HUMAN_SPECIES.label}
+        sub="Sélectionné"
+        selected
+        onClick={() => {}}
+        tabIndex={0}
+      />
+    </div>
+  );
+}
+
+function MetalStatusDemo() {
+  return (
+    <div className="row-flex">
+      <MetalStatus status="Bronze 1" />
+      <MetalStatus status="Argent 2" />
+      <MetalStatus status="Or 3" />
+      <MetalStatus status="Or 3" size="plaque" />
+    </div>
+  );
+}
+
+function WaxSealDemo() {
+  return (
+    <div className="row-flex">
+      <WaxSeal size={40} />
+      <SealedPlaque title={SAMPLE_CAREER.label} desc="Carrière élue" selected />
+      <SealedPlaque title="Carrière non retenue" desc="Autre proposition" />
+    </div>
+  );
+}
+
+function DetailFrameDemo() {
+  return (
+    <DetailFrame
+      name={SAMPLE_CAREER.label}
+      meta={<MetalStatus status={SAMPLE_CAREER_LEVELS[0]?.status ?? 'Bronze 1'} />}
+      prose={SAMPLE_CAREER.desc}
+      proseSelfLabel={SAMPLE_CAREER.label}
+      proseSelfCategory="career"
+    />
+  );
+}
+
+function CreatorDiceDemo() {
+  return (
+    <div className="stack">
+      <CreatorDice label={`Tirer le Signe astral (d100) — ${SAMPLE_STAR?.label ?? ''}`} rolled={false} xp={20} onRoll={() => {}} />
+      <CreatorDice rolled xp={20}>
+        <p className="hint">Résultat gardé — {SAMPLE_STAR?.label}.</p>
+      </CreatorDice>
+    </div>
+  );
+}
+
+function PortraitTileDemo() {
+  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <div className="row-flex">
+      <PortraitTile c={SAMPLE_HERO} ring="var(--gold)" variant="identity" size="md" />
+      <PortraitTile c={SAMPLE_HERO} ring="var(--gold)" variant="vital" size="md" />
+      <PortraitTile c={SAMPLE_HERO} ring="var(--gold)" variant="full" size="md" active />
+    </div>
+  );
+}
+
+function CharacterPreviewDemo() {
+  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  return <CharacterPreview hero={SAMPLE_HERO} size="lg" ambiance="panel" />;
+}
+
+function ScreenMetaDemo() {
+  return <ScreenMeta meta={{ time: 0, money: toMoney({ gold: 12, silver: 4, brass: 8 }) }} />;
+}
+
+function GatedActionDemo() {
+  return <GatedAction id="gal-gated" label="Entrer" enabled={false} reason="Bourse insuffisante." onClick={() => {}} />;
+}
+
+function ParchmentCardDemo() {
+  return (
+    <ParchmentCard title="Événement" seal={{ label: 'Tirage', roll: 42 }} tone="ok">
+      Récit ponctuel adossé à un tirage d100 — texture parcheminée + sceau de cire.
+    </ParchmentCard>
+  );
+}
+
+function InfluenceRowDemo() {
+  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  return <InfluenceRow actor={SAMPLE_HERO} rerollable onReroll={() => {}} onBonusSL={() => {}} onForce={() => {}} forceShow />;
+}
+
+function VsHeaderDemo() {
+  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  return <VsHeader actor={SAMPLE_HERO} target={SAMPLE_HERO_B} label="Épée · Dégâts 6 + DR" />;
+}
+
+function MasterDetailDemo() {
+  const [sel, setSel] = useState<'x' | 'y'>('x');
+  return (
+    <MasterDetail
+      listLabel="Exemple de maître-détail"
+      list={
+        <div className="stack">
+          <button type="button" className="btn gallery-list-item" onClick={() => setSel('x')}>Élément X</button>
+          <button type="button" className="btn gallery-list-item" onClick={() => setSel('y')}>Élément Y</button>
+        </div>
+      }
+      detail={<p>Détail de l'élément « {sel === 'x' ? 'X' : 'Y'} ».</p>}
+    />
+  );
+}
+
+function SearchFilterFieldDemo() {
+  const items = ['Épée', 'Hallebarde', 'Arquebuse', 'Dague'];
+  const { search, setSearch, filtered } = useFilteredList(items, (i) => i);
+  return (
+    <div className="stack">
+      <SearchFilterField value={search} onChange={setSearch} placeholder="Filtrer…" icon />
+      <div className="row-flex">{filtered.map((i) => <span className="chip" key={i}>{i}</span>)}</div>
+    </div>
+  );
+}
+
+function TradeTableDemo() {
+  interface Row { id: string; name: string; dmg: string; price: { gold: number; silver: number; brass: number } }
+  const rows: Row[] = [
+    { id: 'r1', name: 'Exemple — Épée', dmg: '+4', price: toMoney({ silver: 6, brass: 8 }) },
+    { id: 'r2', name: 'Exemple — Dague', dmg: '+2', price: toMoney({ silver: 1 }) },
+  ];
+  const columns: TradeColumn<Row>[] = [{ key: 'dmg', label: 'Dégâts', emph: true, render: (r) => r.dmg }];
+  const groups: TradeGroup<Row>[] = [{ key: 'g', rows }];
+  return (
+    <TradeTable
+      columns={columns}
+      groups={groups}
+      rowKey={(r) => r.id}
+      name={(r) => r.name}
+      price={(r) => r.price}
+      action={() => <button type="button" className="btn small">Acheter</button>}
+    />
+  );
+}
+
+function ActivityPaneDemo() {
+  return (
+    <ActivityPane icon="nav/activity" title="Exemple d'Activité" desc="*Description verbatim* — rendue via `Prose`." cost="6 sc" actions={<button type="button" className="btn btn-primary">Entreprendre</button>} />
+  );
+}
+
+function ProseDemo() {
+  return (
+    <div className="detail-frame-prose">
+      <Prose md={SAMPLE_CAREER.desc} selfLabel={SAMPLE_CAREER.label} selfCategory="career" />
+    </div>
+  );
+}
+
+function MenuCardDemo() {
+  const [toggled, setToggled] = useState(false);
+  return (
+    <MenuCard header={<h3 style={{ margin: 0 }}>Exemple de menu</h3>}>
+      <MenuSection rule={false}>
+        <MenuButton icon="nav/new-game" tone="primary" onClick={() => {}}>Action primaire</MenuButton>
+        <MenuButton icon="nav/rules" onClick={() => {}}>Action secondaire</MenuButton>
+      </MenuSection>
+      <MenuSection label="Réglages">
+        <MenuToggle checked={toggled} onChange={setToggled}>Interrupteur</MenuToggle>
+      </MenuSection>
+    </MenuCard>
+  );
+}
+
+function GameOpEditorDemo() {
+  const [ops, setOps] = useState<GameOp[]>([]);
+  return <GameOpEditor ops={ops} onChange={setOps} />;
+}
+
+/** RollShell/RollRow : #396 (`useRollFrisson.ts`/`DiceRoll.tsx`/`RollRow.tsx`/`RollShell.tsx`) est du
+ *  WIP NON committé en cours d'arbitrage — les monter vivants coupleriait la galerie à une forme
+ *  instable. Maquette STATIQUE des états (composée des MÊMES classes canon `.modal`/`.rm-vs`/
+ *  `.rm-influence`, sans importer les composants WIP), légendée. */
+function RollShellStaticMock() {
+  return (
+    <div className="modal" style={{ position: 'static', width: 420 }}>
+      <h3>Attaque — maquette statique</h3>
+      <p className="hint">États : Lancer → Chance/Pacte → Résilience → Appliquer (`.modal-actions`, `.rm-influence`).</p>
+      <div className="modal-actions">
+        <button type="button" className="btn btn-ghost">Annuler</button>
+        <button type="button" className="btn btn-primary">Lancer</button>
+      </div>
+    </div>
+  );
+}
+function RollRowStaticMock() {
+  return (
+    <div className="rm-vs" style={{ position: 'static' }}>
+      <p className="hint">Une rangée de `RollShell` (mono = N=1) — maquette statique, cf. entrée « RollShell ».</p>
+    </div>
+  );
+}
+
+function ScreenShellNote() {
+  return (
+    <p className="hint">
+      Maquette d'états non applicable : la coquille `ScreenShell` EST le cadre de CETTE galerie
+      (voile, en-tête, corps borné) — s'observe directement en pourtour de cet écran.
+    </p>
+  );
+}
+
+export interface GallerySpecimen {
+  /** Nom d'affichage — reprend le nom de la primitive (table CLAUDE.md). */
+  name: string;
+  /** Chemin EXACT cité par la table « Primitives partagées » du CLAUDE.md (comparaison stricte). */
+  file: string;
+  category: string;
+  /** Légende d'exception (ex. maquette statique) — sinon absente (spécimen vivant, données réelles). */
+  note?: string;
+  render: ComponentType;
+}
+
+export const GALLERY_SPECIMENS: GallerySpecimen[] = [
+  { name: 'Palette de tokens', file: 'src/ui/styles/base.css', category: 'Atomes', render: TokenSwatches },
+  { name: 'Boutons', file: 'src/ui/styles/base.css', category: 'Atomes', render: Buttons },
+  { name: 'Chips', file: 'src/ui/styles/components.css', category: 'Atomes', render: Chips },
+  { name: 'Panel', file: 'src/ui/styles/components.css', category: 'Atomes', render: Panels },
+  { name: 'ScreenShell', file: 'src/ui/ScreenShell.tsx', category: 'Écrans & layout', note: 'maquette d’états — la coquille EST cet écran', render: ScreenShellNote },
+  { name: 'ScreenMeta', file: 'src/ui/ScreenMeta.tsx', category: 'Écrans & layout', render: ScreenMetaDemo },
+  { name: 'MasterDetail', file: 'src/ui/MasterDetail.tsx', category: 'Écrans & layout', render: MasterDetailDemo },
+  { name: 'Tabs', file: 'src/ui/Tabs.tsx', category: 'Écrans & layout', render: TabsDemo },
+  { name: 'MenuCard', file: 'src/ui/MenuCard.tsx', category: 'Écrans & layout', render: MenuCardDemo },
+  { name: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
+  { name: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
+  { name: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
+  { name: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
+  { name: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états (#396 WIP non committé — RollRow/useRollFrisson non importés)', render: RollShellStaticMock },
+  { name: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états (#396 WIP non committé)', render: RollRowStaticMock },
+  { name: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
+  { name: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
+  { name: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },
+  { name: 'TradeTable', file: 'src/ui/TradeTable.tsx', category: 'Négoce & activités', render: TradeTableDemo },
+  { name: 'ActivityPane', file: 'src/ui/ActivityPane.tsx', category: 'Négoce & activités', render: ActivityPaneDemo },
+  { name: 'QtyStepper', file: 'src/ui/QtyStepper.tsx', category: 'Négoce & activités', render: QtyStepperDemo },
+  { name: 'GatedAction', file: 'src/ui/GatedAction.tsx', category: 'Négoce & activités', render: GatedActionDemo },
+  { name: 'ParchmentCard', file: 'src/ui/ParchmentCard.tsx', category: 'Négoce & activités', render: ParchmentCardDemo },
+  { name: 'Prose', file: 'src/ui/Prose.tsx', category: 'Texte', render: ProseDemo },
+  { name: 'GameOpEditor', file: 'src/ui/editor/GameOpEditor.tsx', category: 'Éditeur', render: GameOpEditorDemo },
+  { name: 'MetalStatus', file: 'src/ui/MetalStatus.tsx', category: 'Atelier du scribe', render: MetalStatusDemo },
+  { name: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
+  { name: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={SAMPLE_CAREER_LEVELS} currentLevel={2} /> },
+  { name: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
+  { name: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
+  { name: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
+];
+
+export const GALLERY_CATEGORIES = [...new Set(GALLERY_SPECIMENS.map((s) => s.category))];

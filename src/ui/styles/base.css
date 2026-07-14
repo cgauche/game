@@ -97,6 +97,35 @@
   --wm-compass-faint: #8a6c3e; /* carte du monde : branches pâles de la rose des vents */
   --wm-cartouche-bg: #33240f; /* carte du monde : fond du cartouche de nom de lieu */
   --wm-cartouche-fg: #f1e2bb; /* carte du monde : texte du cartouche de nom de lieu */
+  /* Encres d'atelier — gamme laiton/bois/cire ratifiée par le kit « Atelier du scribe » (#412),
+     retunées ICI (couche PARTAGÉE) plutôt qu'en variables parallèles : tout module qui les consomme
+     hérite d'un changement de palette en un seul geste. */
+  --atelier-brass-elu: #ffe6a8; /* valeur élue / nom scellé */
+  --atelier-brass-light: #ffd97a; /* alvéole allumée, dés roulants */
+  --atelier-brass-vif: #e8c467; /* titres gravés, rivets */
+  --atelier-brass-etch: #d9c48f; /* nom au repos (plaque/chip) */
+  --atelier-brass-rubric: #c9ac72; /* small-caps, hints */
+  --atelier-wood-liseret: #55402a; /* liseré des panneaux d'atelier */
+  --atelier-wood-etch: #4a3a24; /* bordure des chips/rangées */
+  --atelier-wood-hollow: #3a2c1a; /* bordure basse (prose, rangée) */
+  --atelier-wood-top: #241a10; /* haut des dégradés bois */
+  --atelier-wood-mid: #170f09; /* bas des dégradés bois (surface) */
+  --atelier-wood-bottom: #150e08; /* bas des dégradés bois (creux) */
+  --atelier-brass-hover: #8a6c2f; /* bordure laiton survolée (tuile, plaque) */
+  --atelier-plaque-hi: #4a2c18; /* haut du dégradé « plaque élue » */
+  --atelier-plaque-lo: #2c1810; /* bas du dégradé « plaque élue » */
+  --atelier-prose: #e7d9bc; /* texte de la prose sombre à scroll interne */
+  --atelier-wax-fold: #7c1810; /* pli du sceau de cire */
+  --atelier-wax-ring: #5e0f08; /* anneau/crâne du sceau */
+  --atelier-wax-ring-light: #e08a68; /* liseré clair du sceau */
+  --atelier-wax-shadow: #8f1f14; /* orbites/ombre du crâne */
+  --atelier-bronze-hi: #e29a6a; /* dégradé statut Bronze — haut */
+  --atelier-bronze-mid: #b06a3a; /* dégradé statut Bronze — milieu */
+  --atelier-bronze-lo: #7d4a28; /* dégradé statut Bronze — bas */
+  --atelier-argent-hi: #e8edf1; /* dégradé statut Argent — haut */
+  --atelier-argent-mid: #aab4bc; /* dégradé statut Argent — milieu */
+  --atelier-argent-lo: #7e8890; /* dégradé statut Argent — bas */
+  --atelier-or-lo: #9c7526; /* dégradé statut Or — bas */
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
 }
 

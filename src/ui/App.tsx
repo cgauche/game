@@ -25,6 +25,11 @@ const CodexOverlay = lazy(() => import('./compendium/CompendiumScreen').then((m)
 const ErrorCollectorBanner = import.meta.env.DEV
   ? lazy(() => import('./ErrorCollectorBanner').then((m) => ({ default: m.ErrorCollectorBanner })))
   : null;
+// Galerie design system (#412) : écran DEV-only — même garde statique que le bandeau du collecteur
+// d'erreurs (`import.meta.env.DEV`, éliminée au build prod par Vite/Rollup).
+const DesignGallery = import.meta.env.DEV
+  ? lazy(() => import('./gallery/DesignGallery').then((m) => ({ default: m.DesignGallery })))
+  : null;
 
 /** Bannière coop non bloquante : reconnexions en cours (invité comme hôte). */
 function CoopBanner() {
@@ -74,6 +79,7 @@ export function App() {
           {screen === 'massBattle' && <MassBattleView />}
           {screen === 'coop' && <CoopLobby />}
           {screen === 'compendium' && <CompendiumScreen />}
+          {screen === 'gallery' && DesignGallery && <DesignGallery />}
           {/* Drill-in d'une réf Codex EN JEU : modale par-dessus l'écran courant (n'importe lequel),
               sans démonter le jeu/la fiche → musique et contexte préservés (cf. openCodex). */}
           {codexOverlay && <CodexOverlay />}

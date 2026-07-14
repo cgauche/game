@@ -215,6 +215,16 @@ fait DANS la primitive, pas dans une nième copie.
 | Attaque GRATUITE déclenchée (`grantFreeAttack` : Frappe réactive/Assaut féroce, et tout Trait/État) | `resolveFreeAttacks` (itère `freeAttackSourcesOf`, filtre `flowHasFreeAttack`) — kind-agnostique | `src/state/combatFlow.ts` |
 | Dégâts/soin de **coque** (voyage fluvial/maritime) | `damageHull`/`healHull` routent `applyOps` ; `damageVesselHull`/`healVesselHull` (`seaVoyageFlow.ts`) enchaînent la persistance — SOURCE UNIQUE `state.vessel.wounds` | `src/state/shipDamage.ts` |
 | **Suspendre/reprendre une CASCADE** quand un combat/une transition s'ouvre en plein vol (le slot `pendingCascade` = la cascade ACTIVE, unique) | `suspendActiveCascade` / `resumeSuspendedCascade` (pile persistée de cascades suspendues ; coutures universelles : ouverture de combat/transition de scène → suspend, teardown victoire/défaite → resume) — JAMAIS un checkpoint parallèle ni une purge | `src/state/cascade.ts` |
+| **Cérémonie de tirage** du créateur (Race/Carrière/Caractéristiques/Signe astral) : attente→roulant→rendu, gain de PX en direct | `CreatorDice` (compose `Section`/`XpBadge`/`useRollFrisson`/`DiceRoll`) | `src/ui/creator/CreatorDice.tsx` |
+| Aperçu « perso en pied » hors combat (roster, créateur, fiche, marchand) — rig réel, apparence bas niveau OU `hero` (Combatant) | `CharacterPreview` | `src/ui/CharacterPreview.tsx` |
+| Bouton d'engagement dont l'indisponibilité porte sa RAISON en texte visible (a11y `aria-describedby`) | `GatedAction` | `src/ui/GatedAction.tsx` |
+| Chip statut métallisé Bronze/Argent/Or + échelon (dérivée de `parseStatus`) | `MetalStatus` | `src/ui/MetalStatus.tsx` |
+| Sceau de cire (tête de mort, SVG) + plaque d'élu scellée | `WaxSeal` / `SealedPlaque` | `src/ui/WaxSeal.tsx` |
+| Chemin d'évolution d'une carrière en médaillons de niveau (`levelsForCareer`) | `CareerPath` | `src/ui/CareerPath.tsx` |
+| Tuile-figurine compacte cliquable (compose `CharacterPreview`) | `FigTile` | `src/ui/FigTile.tsx` |
+| Grille de sélection en SECTIONS par famille/classe (roving tabindex, `role=listbox`) | `GroupedPickGrid` | `src/ui/GroupedPickGrid.tsx` |
+| Cadre de détail de l'élue (nom + chips méta + rubriques + prose scrollable, sans slot d'actions) | `DetailFrame` | `src/ui/DetailFrame.tsx` |
+| **Galerie design system IN-APP** (DEV) : référence de goût pérenne, chaque primitive montée VIVANTE avec des données réelles | `DesignGallery` (`MasterDetail`) | `src/ui/gallery/DesignGallery.tsx` |
 
 > **Frontière orchestrateur · machinerie · data-driven** (cf. `docs/combat-events-coherence.md` §3bis) : un
 > Trigger doit fonctionner pour TOUT kind d'entité (maladie/talent/trait/sort/état/mutation) **sans code

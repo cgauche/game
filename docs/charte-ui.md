@@ -112,6 +112,21 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.activity-pane` (+ `.activity-pane-head`, `.activity-pane-body`, `.activity-pane-desc`, `.activity-pane-blocked`, `.activity-pane-foot`, `.activity-pane-terms`, `.activity-pane-detail`, `.activity-pane-actions`) | Panneau d'Activité/Service : en-tête (icône + titre), corps DÉFILABLE, pied FIXE (pré-jet + coût `<Coins>` + action jamais cachés par le scroll) | Composé par la primitive `ActivityPane` (`src/ui/ActivityPane.tsx`, CLAUDE.md) — tout volet d'Activité (interlude) ou détail de service (hub de ville) la COMPOSE au lieu d'un markup en-tête/corps/pied recodé à la main. |
 | `.menu-card` (+ `.game-menu-overlay` menu système plein écran, `.game-menu-card`/`.game-menu-sub-wide`/`.menu-sub-head`/`.menu-sub-body`, `.menu-card-head`/`.menu-card-title`/`.menu-card-sub`/`.menu-card-meta`, `.menu-btn`, `.menu-toggle`, `.menu-buttons`) | Carte de menu : en-tête + sections de grands boutons pleine largeur (icône + libellé) séparées par un filet titré ; `.game-menu-overlay` = voile plein écran du menu système (pause) en jeu, ses sous-écrans Coopération/Options composant la même carte | Composée par la primitive `MenuCard`/`MenuSection`/`MenuButton`/`MenuToggle` (`src/ui/MenuCard.tsx`, CLAUDE.md) — le menu principal (`MainMenu`) ET le menu système plein écran en jeu (`GameMenu`) la COMPOSENT ; jamais un `.menu-card` recodé ni un `<button className="btn">` de menu à la main. |
 
+### Atelier du scribe (#412)
+
+Primitives SANS canon préexistant, ratifiant le kit HTML « Atelier du scribe » — tokens `--atelier-*`
+(`base.css`, encres laiton/bois/cire, couche PARTAGÉE) ; le reste de la charte (boutons, onglets,
+chips, panneaux, carte-parchemin) s'ALIGNE sur le canon déjà existant ci-dessus, jamais dupliqué.
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.metal-status` (+ `.metal-status-chip`/`.metal-status-plaque`, `.st-bronze`/`.st-argent`/`.st-or`) | Chip statut métallisé Bronze/Argent/Or + échelon | Composée par `MetalStatus` (`src/ui/MetalStatus.tsx`, CLAUDE.md) — dérivée de `parseStatus`, jamais un `switch` de couleur recodé. |
+| `.wax-seal` / `.sealed-plaque` (+ `.sealed-plaque-seal`/`-title`/`-desc`, `.sel`) | Sceau de cire tête de mort (SVG) + plaque d'élu scellée | Composés par `WaxSeal`/`SealedPlaque` (`src/ui/WaxSeal.tsx`, CLAUDE.md) — tout médaillon de candidature/carrière élue. |
+| `.cc-path` (+ `.cc-step`, `.cc-step-lv`/`-nm`, `.now`, `.cc-link`) | Chemin d'évolution de carrière en médaillons de niveau | Composé par `CareerPath` (`src/ui/CareerPath.tsx`, CLAUDE.md) depuis `levelsForCareer` (données réelles). |
+| `.fig-tile` (+ `.fig-tile-name`/`-sub`, `.sel`) | Tuile-figurine compacte cliquable (compose `CharacterPreview`) | Composée par `FigTile` (`src/ui/FigTile.tsx`, CLAUDE.md) — brique de rangée d'une `GroupedPickGrid`. |
+| `.gpg-grid` (+ `.gpg-heading`, `.gpg-row`, `.gpg-section`) | Grille de sélection en sections par famille/classe | Composée par `GroupedPickGrid` (`src/ui/GroupedPickGrid.tsx`, CLAUDE.md) — `role=listbox`/`option`, roving tabindex. Préfixe `gpg-` DÉLIBÉRÉ : `.pick-grid` est déjà pris par `FacetedPickGrid` (créateur), une collision de nom écraserait son layout en cascade. |
+| `.detail-frame` (+ `.detail-frame-name`/`-meta`/`-prose`) | Cadre de détail de l'élue (nom + chips + rubriques + prose scrollable) | Composé par `DetailFrame` (`src/ui/DetailFrame.tsx`, CLAUDE.md) — aucun slot d'actions (« Suivant » fait déjà ça). |
+
 ### Négoce (table marchande, #371 LOT 3)
 
 | Classe | Rôle | Quand l'utiliser / anti-patron |
@@ -232,6 +247,16 @@ pastille `token-endmark`), le portrait et la frise d'initiative (`PortraitTile`,
 la frise réutilise `PortraitTile`). Une coque (`bodyShape 'vehicule'`) passe par le même token :
 prise = pavillon amené (`rendu`), coulée = `hors-combat`. Verrou : `src/engine/endState.test.ts`
 (4 états distincts) + `src/ui/endStateVisual.test.ts` (icône/classe uniques sur token ET portrait).
+
+## Galerie design system (#412)
+
+`src/ui/gallery/DesignGallery.tsx` — écran DEV uniquement (`import.meta.env.DEV`, chunk async,
+`setScreen('gallery')` depuis l'entrée « Design system » du menu principal en dev) : la référence
+de goût pérenne du design system, **remplace la planche HTML** figée (retraitée par ce ticket).
+Gabarit `MasterDetail` : liste de primitives (Atomes du canon partagé, primitives « Atelier du
+scribe », portraits/aperçus) → détail = la primitive **vivante**, montée dans ses états, avec des
+DONNÉES RÉELLES de `src/data` (jamais inventées). Toute nouvelle primitive UI se catalogue ici EN
+MÊME TEMPS qu'au catalogue ci-dessus et à la table « Primitives partagées » du `CLAUDE.md`.
 
 ## Zéro texte tutoriel
 

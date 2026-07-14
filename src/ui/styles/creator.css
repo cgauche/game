@@ -120,6 +120,7 @@
 }
 /* Sections à séparateurs (remplacent les boîtes flottantes). */
 .zone-section {
+  position: relative; /* ancre la scène centrale du roulis de dés (#396, `.rm-scene`, CreatorDice) */
   margin-bottom: 20px;
 }
 .zone-section > h3 {
@@ -733,4 +734,197 @@
 /* Le hint du footer prend l'espace entre les boutons (desktop). */
 .wizard-hint {
   flex: 1;
+}
+
+/* ══ Charte « Atelier du scribe » (#412, kit ratifié) — primitives SANS canon préexistant :
+   MetalStatus / WaxSeal+SealedPlaque / CareerPath / FigTile / GroupedPickGrid / DetailFrame.
+   Tokens : couleurs `:root` (`--atelier-*`, base.css — retunées EN PARTAGÉ, jamais un hex en dur
+   ici). Rangées qui s'enroulent : composent `.row-flex` (base primitive) — jamais un flex-wrap
+   redéclaré localement (cliquet vii). */
+
+/* -- MetalStatus (chip statut Bronze/Argent/Or) -- */
+.metal-status {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.metal-status-chip {
+  display: inline-flex;
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+}
+.metal-status-plaque {
+  display: inline-flex;
+  font-size: 14.5px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-bottom));
+  border: 1px solid var(--border);
+}
+.st-bronze,
+.st-argent,
+.st-or {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.st-bronze { background-image: linear-gradient(180deg, var(--atelier-bronze-hi), var(--atelier-bronze-mid) 55%, var(--atelier-bronze-lo)); }
+.st-argent { background-image: linear-gradient(180deg, var(--atelier-argent-hi), var(--atelier-argent-mid) 55%, var(--atelier-argent-lo)); }
+.st-or { background-image: linear-gradient(180deg, var(--atelier-brass-elu), var(--gold2) 55%, var(--atelier-or-lo)); }
+
+/* -- WaxSeal / SealedPlaque -- */
+.wax-seal { display: block; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55)); }
+.sealed-plaque {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--atelier-wood-etch);
+  border-radius: 9px;
+  padding: 10px 14px 10px 40px;
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.sealed-plaque-seal {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.sealed-plaque-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--atelier-brass-etch);
+  letter-spacing: 0.4px;
+}
+.sealed-plaque-desc {
+  font-size: 12px;
+  color: var(--muted);
+}
+.sealed-plaque.sel {
+  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.32);
+}
+.sealed-plaque.sel .sealed-plaque-title { color: var(--atelier-brass-elu); }
+
+/* -- CareerPath (chemin de carrière, médaillons de niveau) — `.cc-path` compose `.row-flex` (JSX). */
+.cc-path {
+  align-items: stretch;
+  gap: 0;
+}
+.cc-step {
+  flex: 1 1 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-bottom));
+  border: 1px solid var(--atelier-wood-etch);
+}
+.cc-step-lv {
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cc-step-nm {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  color: var(--atelier-brass-etch);
+  line-height: 1.2;
+}
+.cc-step.now {
+  border-color: var(--atelier-brass-hover);
+  box-shadow: inset 0 1px 0 rgba(232, 196, 103, 0.4);
+}
+.cc-step.now .cc-step-nm { color: var(--atelier-brass-elu); }
+.cc-link {
+  align-self: center;
+  width: 18px;
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, rgba(232, 196, 103, 0.5), rgba(232, 196, 103, 0.15));
+}
+
+/* -- FigTile (tuile-figurine cliquable) -- */
+.fig-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--atelier-wood-etch);
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+  color: var(--text);
+  cursor: pointer;
+  min-width: 76px;
+}
+.fig-tile:hover { border-color: var(--atelier-brass-hover); }
+.fig-tile-name {
+  font-size: 12px;
+  color: var(--atelier-brass-etch);
+  text-align: center;
+}
+.fig-tile-sub {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.fig-tile.sel {
+  border-color: var(--gold);
+  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
+  box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.32);
+}
+.fig-tile.sel .fig-tile-name { color: var(--atelier-brass-elu); }
+
+/* -- GroupedPickGrid (grille en sections) — `.gpg-row` compose `.row-flex` (JSX). Préfixe `gpg-`
+   DÉLIBÉRÉ : `.pick-grid` est DÉJÀ pris par FacetedPickGrid (ligne 282) — une collision de nom ici
+   écraserait silencieusement son layout en cascade (bug vécu, #412). */
+.gpg-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.gpg-section {
+  display: flex;
+  flex-direction: column;
+}
+.gpg-heading {
+  font-variant-caps: small-caps;
+  letter-spacing: 1.2px;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+/* -- DetailFrame (cadre de détail de l'élue) — `.detail-frame-meta` compose `.row-flex` (JSX). */
+.detail-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.detail-frame-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--gold2);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+.detail-frame-prose {
+  background: rgba(8, 5, 3, 0.5);
+  border: 1px solid var(--atelier-wood-hollow);
+  border-radius: 8px;
+  padding: 11px 14px;
+  max-height: 220px;
+  overflow: auto;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--atelier-prose);
 }
