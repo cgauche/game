@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Tabs } from '../Tabs';
 import { Scene } from '../../state/scene';
 import { WorldMap, MapPlace, MapRoute, type PlacePoi, emptyWorldMap, placeById } from '../../state/worldMap';
 import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
@@ -102,8 +103,8 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
   scenes: Scene[];
   onClose: () => void;
   /** Axes de forces/faiblesses ACTIFS du PROJET (#409, `ProjectDoc.activeAxes`) — `undefined` =
-   *  socle de base (`CORE_AXIS_IDS`). Porté au niveau projet (pas la carte), édité ICI faute d'écran
-   *  dédié dans ce lot : premier réglage de campagne déjà présent dans l'éditeur. */
+   *  socle de base (`CORE_AXIS_IDS`). Propriété PROJET réglée ici, dans l'éditeur de carte du monde
+   *  (la surface d'authoring de la campagne). */
   activeAxes?: string[];
   setActiveAxes?: (ids: string[] | undefined) => void;
 }) {
@@ -111,6 +112,8 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
   const [sel, setSel] = useState<{ kind: 'place' | 'route'; id: string } | null>(null);
   const [linkFrom, setLinkFrom] = useState<string | null>(null);
   const [poiSel, setPoiSel] = useState<string | null>(null);
+  const [placeTab, setPlaceTab] = useState<'lieu' | 'commerce' | 'plan'>('lieu');
+  const [routeTab, setRouteTab] = useState<'trajet' | 'peripeties'>('trajet');
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<string | null>(null); // lieu en cours de glisser (ref : voir « Pièges connus »)
 
@@ -347,6 +350,14 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
           {/* ── Lieu sélectionné ── */}
           {selPlace && (
             <>
+              <Tabs
+                tabs={[{ key: 'lieu', label: 'Lieu' }, { key: 'commerce', label: 'Commerce' }, { key: 'plan', label: 'Plan du hub' }]}
+                active={placeTab}
+                onChange={setPlaceTab}
+                label="Onglets du lieu"
+              />
+              {placeTab === 'lieu' && (
+                <>
               <div className="mini-title">Lieu</div>
               <label className="ed-field">Nom
                 <input value={selPlace.label} onChange={(e) => updPlace(selPlace.id, { label: e.target.value })} />
@@ -363,6 +374,35 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                 <input value={selPlace.entry ?? ''} onChange={(e) => updPlace(selPlace.id, { entry: e.target.value || undefined })} />
               </label>
 
+              {/* ── Services du lieu (auberge/temple/forgeron/guilde…, catalogue lieux-services.json #343) ── */}
+              <div className="mini-title">Services du lieu</div>
+              {lieuxServices.map((sv) => {
+                const has = (selPlace.services ?? []).some((s) => s.kind === sv.id);
+                return (
+                  <label
+                    key={sv.id}
+                    className="ed-check"
+                    // L'auberge dérive aussi de l'offre de repos de la scène liée (onglet Scène) : inutile
+                    // de la cocher ici si la scène l'offre déjà.
+                    title={sv.id === 'auberge' ? 'Dérive aussi de l’offre de repos de la scène liée (onglet Scène)' : undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={has}
+                      onChange={() => {
+                        const cur = selPlace.services ?? [];
+                        const next = has ? cur.filter((s) => s.kind !== sv.id) : [...cur, { kind: sv.id }];
+                        updPlace(selPlace.id, { services: next.length ? next : undefined });
+                      }}
+                    />
+                    {sv.icon && <Icon id={sv.icon} size="sm" />} {sv.label}
+                  </label>
+                );
+              })}
+                </>
+              )}
+              {placeTab === 'commerce' && (
+                <>
               {/* ── Marché de cargaison (Mort sur le Reik Compagnon ch.11) : Taille + Richesse + Produits ── */}
               <div className="mini-title">Marché</div>
               <label className="ed-check">
@@ -524,33 +564,10 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                   </>
                 );
               })()}
-
-              {/* ── Services du lieu (auberge/temple/forgeron/guilde…, catalogue lieux-services.json #343) ── */}
-              <div className="mini-title">Services du lieu</div>
-              {lieuxServices.map((sv) => {
-                const has = (selPlace.services ?? []).some((s) => s.kind === sv.id);
-                return (
-                  <label
-                    key={sv.id}
-                    className="ed-check"
-                    // L'auberge dérive aussi de l'offre de repos de la scène liée (onglet Scène) : inutile
-                    // de la cocher ici si la scène l'offre déjà.
-                    title={sv.id === 'auberge' ? 'Dérive aussi de l’offre de repos de la scène liée (onglet Scène)' : undefined}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={has}
-                      onChange={() => {
-                        const cur = selPlace.services ?? [];
-                        const next = has ? cur.filter((s) => s.kind !== sv.id) : [...cur, { kind: sv.id }];
-                        updPlace(selPlace.id, { services: next.length ? next : undefined });
-                      }}
-                    />
-                    {sv.icon && <Icon id={sv.icon} size="sm" />} {sv.label}
-                  </label>
-                );
-              })}
-
+                </>
+              )}
+              {placeTab === 'plan' && (
+                <>
               {/* ── POI du plan de ce lieu (onglet Plan du hub, #345 phase 5) ── */}
               <div className="mini-title">Points d'intérêt du plan (onglet Plan du hub)</div>
               {(() => {
@@ -651,12 +668,22 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                   </>
                 );
               })()}
+                </>
+              )}
             </>
           )}
 
           {/* ── Route sélectionnée ── */}
           {selRoute && (
             <>
+              <Tabs
+                tabs={[{ key: 'trajet', label: 'Trajet' }, { key: 'peripeties', label: 'Péripéties' }]}
+                active={routeTab}
+                onChange={setRouteTab}
+                label="Onglets de la route"
+              />
+              {routeTab === 'trajet' && (
+                <>
               <div className="mini-title">
                 Route : {placeById(m, selRoute.a)?.label} ↔ {placeById(m, selRoute.b)?.label}
               </div>
@@ -734,7 +761,10 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                   </select>
                 </label>
               )}
-
+                </>
+              )}
+              {routeTab === 'peripeties' && (
+                <>
               <div className="mini-title">Embuscade (« Attaqués ! » de la table d10)</div>
               <label className="ed-field">Scène d'embuscade (vide = narratif seul)
                 <select
@@ -807,6 +837,8 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
               >
                 + Péripétie d'auteur
               </button>
+                </>
+              )}
             </>
           )}
         </aside>
