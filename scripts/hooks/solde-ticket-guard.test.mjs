@@ -495,6 +495,6 @@ test('evaluateAmendInvisible : --amend sans -m/-F, diff staged ne touche pas src
 test('extractMessageSources : « -F » en PROSE d un message -m n est pas un flag fichier (git refuse -m+-F — faux positif vécu 2026-07-14)', () => {
   const cmd = 'git commit -m "fix(hooks): les fermetures via -F et, pire, laissant passer — utiliser -m ou un chemin lisible"'
   const r = extractMessageSources(cmd, { readFile: () => { throw new Error('ne doit jamais être appelé') } })
-  assert.equal(r.fileError, undefined)
+  assert.equal(r.fileError, null)
   assert.equal(r.text, cmd)
 })
