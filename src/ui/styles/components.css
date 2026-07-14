@@ -299,6 +299,7 @@
   background: rgba(0, 0, 0, 0.28);
 }
 .modal {
+  position: relative; /* ancre la scène centrale du roulis de dés (#396, `.rm-scene`) */
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;

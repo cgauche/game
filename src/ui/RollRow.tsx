@@ -6,6 +6,8 @@ import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
 import { ForcedRollPicker } from './ForcedRollPicker';
 import { useRollFrisson } from './useRollFrisson';
+import { DiceRoll } from './DiceRoll';
+import { d100Faces } from './Dice';
 import { DrBar } from './DrBar';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
@@ -43,15 +45,22 @@ export function RollRow({
   forcedRoll,
   determination,
   resist,
-  rollFrisson = false,
+  rollFrisson = true,
   rollInBar = false,
   winner,
   extra,
   extendedDr,
 }: RollRowProps) {
   // Frisson du jet (helper partagé avec le bouton « Lancer » hissé dans la barre du RollShell).
-  const { rolling, trigger: doRoll } = useRollFrisson(onRoll, { frisson: rollFrisson });
+  const { rolling, landed, trigger: doRoll, skip } = useRollFrisson(onRoll, { frisson: rollFrisson });
+  // Frisson de la RELANCE (Chance/Sombre Pacte, #396) — même geste que le jet initial : les deux
+  // verbes appellent `reresolveOf` (nouveau jet RNG) dans `rollFlowFactory`, à la différence de
+  // « +1 DR »/Résilience/Résistance/Détermination qui AJUSTENT le jet existant sans le relancer.
+  const { rolling: rerolling, landed: rerollLanded, trigger: doReroll, skip: skipReroll } = useRollFrisson(undefined, { frisson: rollFrisson });
   const resil = resilience ?? actor?.resilience ?? 0;
+  // Vraies faces (#396 v3) : `row.d.roll` n'est FRAIS qu'une fois le résolveur commis (React 18 batch
+  // la transition `landed` et le re-rendu du store dans le MÊME rendu) — jamais pendant le tumble.
+  const rowFaces = (landed || rerollLanded) && row.d ? d100Faces(row.d.roll) : null;
   const determineBtn = determination && determination.resolve > 0 && (
     <>
       <button className="btn btn-resource" onClick={determination.onResolve}>
@@ -70,24 +79,30 @@ export function RollRow({
           QUE la donnée `extendedDr` ; elle vit SUR la rangée et persiste (rangées témoins/batch/bilan). */}
       {extendedDr && <DrBar cum={extendedDr.cum} target={extendedDr.target} />}
       {extra}
-      {interactive && !rolled && (
-        // `rollInBar` : la coquille (RollShell) rend le « Lancer » ET son spinner dans `.modal-actions`
-        // (cas mono, une seule rangée à lancer) → la rangée n'affiche plus que ses contrôles pré-jet.
-        rolling && !rollInBar ? (
-          <div className="rm-rolling"><span className="rm-die"><Icon id="nav/dice" /></span></div>
-        ) : (
-          <div className="prow-act">
-            {/* Résilience PRÉ-jet (LDB 17 l.73 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
-                seulement après un échec, comme la coquille `RollShell`. */}
-            {onForce && <ResilienceButton resilience={resil} show onForce={preRollForce ?? onForce} />}
-            {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
-            {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
-            {determineBtn}
-            {onRoll && !rollInBar && <button className="btn small btn-primary" onClick={doRoll}>{rollLabel}</button>}
-          </div>
-        )
+      {/* Roulis du jet INITIAL — inline (`scene={false}`) : une scène centrale par participant serait
+          absurde en multi. `rollInBar` : la coquille (RollShell) porte la scène CENTRALE à sa place
+          (cas mono, une seule rangée à lancer). Découplé de `rolled` (`rolled` bascule DÈS le
+          résolveur commis, en plein `landed`) : sinon les vraies faces n'auraient pas le temps de
+          s'afficher avant que ce bloc ne cède la place à `InfluenceRow`. */}
+      {interactive && (rolling || landed) && !rollInBar && (
+        <DiceRoll onSkip={skip} landed={landed} faces={rowFaces} scene={false} />
       )}
-      {interactive && rolled && (
+      {interactive && !rolled && !rolling && !landed && (
+        <div className="prow-act">
+          {/* Résilience PRÉ-jet (LDB 17 l.73 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
+              seulement après un échec, comme la coquille `RollShell`. */}
+          {onForce && <ResilienceButton resilience={resil} show onForce={preRollForce ?? onForce} />}
+          {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
+          {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
+          {determineBtn}
+          {onRoll && !rollInBar && <button className="btn small btn-primary" onClick={() => doRoll()}>{rollLabel}</button>}
+        </div>
+      )}
+      {/* Roulis de la RELANCE (Chance/Sombre Pacte) — même primitive inline, même règle de découplage. */}
+      {interactive && (rerolling || rerollLanded) && (
+        <DiceRoll onSkip={skipReroll} landed={rerollLanded} faces={rowFaces} scene={false} />
+      )}
+      {interactive && rolled && !rolling && !landed && !rerolling && !rerollLanded && (
         <>
           {forcedRoll && <ForcedRollPicker {...forcedRoll} />}
           <InfluenceRow
@@ -96,10 +111,10 @@ export function RollRow({
             freeReroll={freeReroll}
             resilience={resilience}
             rerollable={rerollable}
-            onReroll={onReroll ?? (() => {})}
+            onReroll={() => doReroll(onReroll ?? (() => {}))}
             onBonusSL={onBonusSL}
             darkPactable={darkPactable}
-            onDarkPact={onDarkPact}
+            onDarkPact={onDarkPact && (() => doReroll(onDarkPact))}
             onForce={onForce}
             forceShow={forceShow}
           >
@@ -142,7 +157,8 @@ export interface RollRowProps {
   /** Résistance (Menace) (LDB 10) : auto-succès du talent — fourni quand disponible ET issue encore
    *  défavorable (le parent décide). Affiché AVANT le jet et après un échec. */
   resist?: { menace: string; onResist: () => void };
-  /** Anime le jet (« frisson » ~480 ms) avant de résoudre. Honore reduced-motion. */
+  /** Anime le jet (dés qui roulent puis se figent sur les vraies faces) avant de résoudre — DÉFAUT
+   *  `true` (#396 : tout jet roule). Honore `prefers-reduced-motion`. Skippable au clic sur le roulis. */
   rollFrisson?: boolean;
   /** La coquille (`RollShell`, cas mono) rend « Lancer » + son spinner dans `.modal-actions` :
    *  la rangée n'affiche alors NI le bouton inline NI le spinner (le reste — influence, Résilience

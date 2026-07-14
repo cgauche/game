@@ -162,16 +162,16 @@ function rollDetail(table: { rand: number; color: Partial<Record<RaceKey, string
  *  multilangue-safe ; `Combatant.star` stocke l'id). `rand` = borne haute cumulée du 1d100. L'Étoile du
  *  Sorcier (l.62) regroupe plusieurs variantes sur la même borne, départagées par un 1d10 interne
  *  (`sub` = [min, max]) → table partagée. */
-export function rollStar(rng: RNG = defaultRNG): string {
+export function rollStar(rng: RNG = defaultRNG): { roll: number; id: string } {
   const sorted = [...starsTable].sort((a, b) => a.rand - b.rand);
   const r = roll(1, 100, rng);
   const hit = sorted.find((e) => r <= e.rand) ?? sorted[0];
   const variants = sorted.filter((e) => e.rand === hit.rand && e.sub);
   if (variants.length > 1) {
     const table = variants.map((e) => ({ min: e.sub![0], max: e.sub![1], id: e.id }));
-    return findTableEntry(table, roll(1, 10, rng)).id;
+    return { roll: r, id: findTableEntry(table, roll(1, 10, rng)).id };
   }
-  return hit.id;
+  return { roll: r, id: hit.id };
 }
 
 /** Applique l'effet ADE2 d'un signe astral AUX ATTRIBUTS DE DÉPART (ch.03 l.38) : `charMod` ajuste

@@ -13,7 +13,7 @@
  *    d'autres choix « A ou B » ne re-tire pas les dés.
  */
 import { CharKey, CHAR_KEYS, Characteristics, Combatant } from '../../engine/types';
-import { makeRNG, roll } from '../../engine/dice';
+import { makeRNG } from '../../engine/dice';
 import { Money } from '../../engine/money';
 import {
   rollSpecies,
@@ -121,6 +121,10 @@ export interface CreatorDraft {
   star?: string;
   /** Signe TIRÉ (1d100 figé, `id`) : si `star` lui reste égal → +25 PX (RAW l.36) ; un choix libre l'écarte. */
   starRoll?: string;
+  /** Valeur d100 BRUTE du tirage de signe (même patron que `speciesRoll.roll`/`careerRolls[].roll`) —
+   *  seule donnée qui permet à `CreatorDice` d'animer les VRAIES faces (#396 v5) ; `starRoll` ne
+   *  conserve que l'id résolu, insuffisant pour `d100Faces`. */
+  starRollValue?: number;
   /** Ascendant + 5 demeures célestes (ADE2 l.331-360) — flavor pur, aucun effet mécanique. */
   ascendant?: string;
   dwellings?: { house: string; sign: string }[];
@@ -308,10 +312,16 @@ export function withCareer(d: CreatorDraft, id: string): CreatorDraft {
 }
 
 // ── 3) Caractéristiques ──
-/** Les dix jets 2d10 figés (l'ordre suit CHAR_KEYS) — relancés en bloc par `charRerolls`. */
-export function charRolls(d: CreatorDraft): number[] {
+/** Les dix jets 2d10 figés (paire RÉELLE [d10, d10], l'ordre suit CHAR_KEYS) — relancés en bloc par
+ *  `charRerolls`. Tirée dé par dé (au lieu de `roll(2, 10, rng)`) pour EXPOSER chaque face physique
+ *  à l'animation (`CreatorDice`/`DiceRoll`) — même séquence RNG que `roll(2, 10, rng)` (deux tirages
+ *  `rng.int(1, 10)` consécutifs par Caractéristique), donc `charRolls` reste bit-à-bit identique. */
+export function charRollPairs(d: CreatorDraft): [number, number][] {
   const rng = makeRNG((d.seed ^ 0xc4a5) + d.charRerolls * 7919);
-  return CHAR_KEYS.map(() => roll(2, 10, rng));
+  return CHAR_KEYS.map(() => [rng.int(1, 10), rng.int(1, 10)] as [number, number]);
+}
+export function charRolls(d: CreatorDraft): number[] {
+  return charRollPairs(d).map(([a, b]) => a + b);
 }
 /** Caractéristiques AVANT Augmentations gratuites et talents (base d'espèce incluse). */
 export function draftChars(d: CreatorDraft): Characteristics {
@@ -342,8 +352,8 @@ export const xpTotal = (d: CreatorDraft): number => speciesXp(d) + careerXp(d) +
 /** Tirage 1d100 FIGÉ du signe (anti-savescum, comme l'espèce) : on le garde (+25 PX) ou on choisit
  *  librement ensuite (+0 PX, RAW l.36). Pas de relance — RAW n'en offre aucune. */
 export function rollDraftStar(d: CreatorDraft): CreatorDraft {
-  const id = rollStar(makeRNG(d.seed ^ 0x57a2)); // `id` STABLE du signe (≠ libellé)
-  return { ...d, starRoll: id, star: id };
+  const { roll: r, id } = rollStar(makeRNG(d.seed ^ 0x57a2)); // `id` STABLE du signe (≠ libellé)
+  return { ...d, starRoll: id, starRollValue: r, star: id };
 }
 
 /** Ascendant (ADE2 ch.03 l.496) + un signe par demeure céleste (l.514, la donnée `celestialHouses`
@@ -352,7 +362,7 @@ export function rollDraftStar(d: CreatorDraft): CreatorDraft {
  *  fiche, aucune mécanique n'y référence un signe). */
 export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {
   const rng = makeRNG(d.seed ^ 0xa57e);
-  const signLabel = (): string => findStarById(rollStar(rng))?.label ?? '';
+  const signLabel = (): string => findStarById(rollStar(rng).id)?.label ?? '';
   return { ...d, ascendant: signLabel(), dwellings: celestialHouses.map((h) => ({ house: h.id, sign: signLabel() })) };
 }
 

@@ -606,6 +606,7 @@
 /* Zone de JET embarquée (RollShell `embedded`) : encart dans la modale persistante —
    neutralise le min-width des classes de modale autonome. */
 .rs-embedded {
+  position: relative; /* ancre la scène centrale du roulis de dés (#396, `.rm-scene`) */
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px 10px;

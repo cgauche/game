@@ -36,15 +36,18 @@ describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () =>
 });
 
 describe('rollStar — signe astral (ADE2, table d100)', () => {
-  it('renvoie toujours un signe existant (par id STABLE)', () => {
+  it('renvoie toujours un signe existant (par id STABLE) + le d100 tiré', () => {
     const ids = new Set(stars.map((s) => s.id));
     for (let seed = 0; seed < 200; seed++) {
-      expect(ids.has(rollStar(makeRNG(seed)))).toBe(true);
+      const r = rollStar(makeRNG(seed));
+      expect(ids.has(r.id)).toBe(true);
+      expect(r.roll).toBeGreaterThanOrEqual(1);
+      expect(r.roll).toBeLessThanOrEqual(100);
     }
   });
 
   it('déterministe pour un même seed', () => {
-    expect(rollStar(makeRNG(1234))).toBe(rollStar(makeRNG(1234)));
+    expect(rollStar(makeRNG(1234))).toEqual(rollStar(makeRNG(1234)));
   });
 
   it('la sentinelle de test « TEST » est absente des données émises', () => {
@@ -56,7 +59,7 @@ describe('rollStar — signe astral (ADE2, table d100)', () => {
     expect(variants.length).toBe(4);
     const seen = new Set<string>();
     for (let seed = 0; seed < 3000; seed++) {
-      const r = rollStar(makeRNG(seed));
+      const r = rollStar(makeRNG(seed)).id;
       if (/etoile-du-sorcier/.test(r)) {
         expect(variants).toContain(r); // jamais une variante hors des 4 bandes
         seen.add(r);

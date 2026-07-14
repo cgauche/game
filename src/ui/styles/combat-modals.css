@@ -39,28 +39,93 @@
 .rm-threat b {
   color: var(--danger-bright);
 }
-/* Frisson du dé (R3) : beat de roulement cosmétique avant la révélation du jet. */
+/* Roulis de dés (#396, DiceRoll) : beat visuel avant la révélation du jet — deux d10 (d100 = dizaines
+   + unités) au chiffre DÉFILANT (grave sur la face SVG, jamais un texte posé à côté), déphasés pour
+   ne pas paraître synchrones. Skippable au clic (le composant pose `role="button"`/`tabIndex`). */
 .rm-rolling {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 10px;
   min-height: 44px;
   padding: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.rm-rolling:hover,
+.rm-rolling:focus-visible,
+.rm-scene:hover,
+.rm-scene:focus-visible {
+  outline: none;
+}
+.rm-rolling:hover,
+.rm-rolling:focus-visible {
+  background: rgba(255, 255, 255, 0.05);
 }
 .rm-die {
-  font-size: 30px;
   display: inline-block;
-  animation: rm-die-roll 0.46s ease-in-out infinite;
+  width: 34px;
+  height: 34px;
 }
-@keyframes rm-die-roll {
-  0% { transform: rotate(-22deg) scale(0.82); }
-  25% { transform: rotate(18deg) scale(1.14); }
-  50% { transform: rotate(-14deg) scale(0.96); }
-  75% { transform: rotate(10deg) scale(1.1); }
-  100% { transform: rotate(-22deg) scale(0.82); }
+.rm-die-svg {
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+}
+/* Gemme du dé — `--accent` EST le rouge sang de la charte (base.css : « rouge sang — action primaire »), liseré laiton. */
+.rm-die-gem {
+  fill: var(--accent);
+  stroke: var(--gold2);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+/* Le chiffre est GRAVÉ sur la face (même SVG que la gemme) — ivoire (`--parchment`), jamais un overlay HTML à côté. */
+.rm-die-num {
+  fill: var(--parchment);
+  font-size: 11px;
+  font-weight: 800;
+  font-family: inherit;
+  dominant-baseline: middle;
+}
+/* Tremblement de rotation autour du CENTRE (±13°) + pulsation d'échelle — AUCUNE translation latérale
+   (le défilement du chiffre, `useTumbleDigit`, porte la sensation de vitesse/décélération). */
+.rm-die-rolling {
+  animation: rm-die-wobble 0.42s ease-in-out infinite;
+}
+@keyframes rm-die-wobble {
+  0% { transform: rotate(-13deg) scale(0.94); }
+  50% { transform: rotate(13deg) scale(1.08); }
+  100% { transform: rotate(-13deg) scale(0.94); }
+}
+.rm-die-landed {
+  animation: none;
+  transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .rm-die { animation: none; }
+  .rm-die-rolling { animation: none; }
+}
+/* Scène centrale (#396 v2, arbitrage user 2026-07-14 « scène plus théâtrale ») : le roulis MONO
+   (bouton « Lancer » hissé du `RollShell`, `CreatorDice`) occupe le centre de son ancêtre positionné
+   (`.modal`/`.rs-embedded`/`.zone-section`, `position: relative` posé sur chacun) — voile sur le
+   contenu, qui reste dessous et revient une fois l'atterrissage terminé. Voile OPAQUE, teinte du
+   panneau (#396 v4, bug reproduit en recette navigateur : `rolled` bascule DÈS l'atterrissage → le
+   panneau de résultat sous-jacent était DÉJÀ visible et transparaissait à travers un voile
+   translucide — double exposition dés+texte, même à 97 % d'opacité). */
+.rm-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+  background: var(--panel);
+  border-radius: inherit;
+  cursor: pointer;
+  z-index: 5;
+}
+.rm-scene .rm-die {
+  width: 92px;
+  height: 92px;
 }
 .rm-loc {
   margin-bottom: 12px;

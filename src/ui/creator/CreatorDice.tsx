@@ -9,9 +9,12 @@
  */
 import type { ReactNode } from 'react';
 import { Icon } from '../Icon';
+import { useRollFrisson } from '../useRollFrisson';
+import { DiceRoll } from '../DiceRoll';
+import { d100Faces } from '../Dice';
 import { Section, XpBadge } from './CreatorStepFrame';
 
-export function CreatorDice({ label, hint, rolled, xp, onRoll, children }: {
+export function CreatorDice({ label, hint, rolled, xp, onRoll, roll, children }: {
   /** Libellé du bouton de tirage (« Tirer la race (d100) »…) — inutile si `rolled` (jets figés par le seed). */
   label?: string;
   /** Règle du bonus (LDB) sous le bouton — réf sourcée, jamais une paraphrase. */
@@ -21,15 +24,28 @@ export function CreatorDice({ label, hint, rolled, xp, onRoll, children }: {
   /** PX gagnés si le tirage est gardé — reflété EN DIRECT dans le compteur de la fiche. */
   xp: number;
   onRoll?: () => void;
+  /** Valeur d100 COURANTE du tirage (#396 v3) — traduite en vraies faces à l'atterrissage
+   *  (`d100Faces`). Absente (ex. signe astral : seul l'id résolu est conservé) ⇒ les dés se figent
+   *  SANS chiffre plutôt que d'en inventer un (jamais une face qui contredit le score). */
+  roll?: number;
   /** Verdict garder/relancer/choisir (contrôles propres à l'étape). */
   children?: ReactNode;
 }) {
+  // Même geste que RollShell/RollRow (#396) : le tirage du créateur roule au centre de sa zone avant
+  // de révéler son verdict. Découplé de `rolled` (qui bascule DÈS le résolveur commis, en plein
+  // `landed`) : sinon les vraies faces n'auraient pas le temps de s'afficher.
+  const { rolling, landed, trigger, skip } = useRollFrisson(onRoll);
+  const faces = landed && roll != null ? d100Faces(roll) : null;
   return (
     <Section title="Aux dés" right={<XpBadge value={xp} />}>
       {hint && <p className="hint" style={{ marginTop: 0 }}>{hint}</p>}
-      {!rolled && onRoll ? (
+      {rolling || landed ? (
+        <DiceRoll scene landed={landed} faces={faces} onSkip={skip} />
+      ) : !rolled && onRoll ? (
         <div className="row-flex">
-          <button className="btn" onClick={onRoll}>
+          {/* Attente = famille rouge du canon existant (`.btn-primary` — le seul bouton cliquable de
+              la section, langue « tu peux agir » de la charte « Atelier du scribe », #412). */}
+          <button className="btn btn-primary" onClick={() => trigger()}>
             <Icon id="nav/dice" size="sm" /> {label}
           </button>
         </div>

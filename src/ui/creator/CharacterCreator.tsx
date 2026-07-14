@@ -67,6 +67,9 @@ import type { Appearance } from '../../gameIso/rig/appearance';
 import { previewHero } from './CreatorSummary';
 import { CreatorStepFrame, Section, Stepper, type StepZones } from './CreatorStepFrame';
 import { CreatorDice } from './CreatorDice';
+import { useRollFrisson } from '../useRollFrisson';
+import { DiceRoll } from '../DiceRoll';
+import { d10PairFaces } from '../Dice';
 import { FacetedPickGrid } from './FacetedPickGrid';
 import { CelestialWheel } from './CelestialWheel';
 import {
@@ -84,6 +87,7 @@ import {
   careerXp,
   charsXp,
   charRolls,
+  charRollPairs,
   draftChars,
   resolvedSpeciesTalents,
   careerCharKeys,
@@ -225,7 +229,10 @@ export function CharacterCreator() {
     closeCreator();
   };
 
-  const zones = STEP_META[curId].zone({ d, setD });
+  // Hook appelé INCONDITIONNELLEMENT (règles des hooks) — ordre stable quelle que soit l'étape
+  // active ; seule `CharZones` le consomme (via `StepProps.charReroll`).
+  const charReroll = useRollFrisson(() => setD({ ...d, charRerolls: d.charRerolls + 1 }));
+  const zones = STEP_META[curId].zone({ d, setD, charReroll });
 
   // Une réf Codex cliquée ouvre la fiche en MODALE par-dessus l'assistant (cf. CodexOverlay) : le
   // brouillon reste intact (plus de changement d'écran qui le réinitialisait).
@@ -289,7 +296,17 @@ export function CharacterCreator() {
   );
 }
 
-type StepProps = { d: CreatorDraft; setD: (d: CreatorDraft) => void };
+type StepProps = {
+  d: CreatorDraft;
+  setD: (d: CreatorDraft) => void;
+  /** Frisson de la relance des dix 2d10 (LDB 05 l.385, #396 v5) — le hook DOIT être appelé
+   *  INCONDITIONNELLEMENT par le vrai composant React (`CharacterCreator`, ordre de hooks stable
+   *  quelle que soit l'étape active) puis PASSÉ à `CharZones` : les fonctions `*Zones` sont des
+   *  fabriques de JSX simples (pas des composants), y appeler un hook directement romprait les
+   *  règles des Hooks au changement d'étape. Absent (appel direct hors render, ex. tests) → repli
+   *  inerte (pas d'animation, la relance s'applique quand même). */
+  charReroll?: ReturnType<typeof useRollFrisson>;
+};
 
 /** Rendu Markdown des textes de données (descriptions — verbatim de la source, via la primitive Prose). */
 function LoreText({ md }: { md: string | null | undefined }) {
@@ -321,6 +338,7 @@ export function SpeciesZones({ d, setD }: StepProps): StepZones {
       rolled={!!d.speciesRoll}
       xp={speciesXp(d)}
       onRoll={() => setD(rollDraftSpecies(d))}
+      roll={d.speciesRoll?.roll}
     >
       <p className="hint" style={{ marginTop: 0 }}>
         Jet : <b>{d.speciesRoll?.roll}</b>
@@ -430,6 +448,7 @@ export function CareerZones({ d, setD }: StepProps): StepZones {
       rolled={d.careerRolls.length > 0}
       xp={careerXp(d)}
       onRoll={() => setD(rollDraftCareer(d))}
+      roll={d.careerRolls[d.careerRolls.length - 1]?.roll}
     >
       <div className="talent-choices">
         {d.careerRolls.map((r, i) => (
@@ -568,14 +587,21 @@ export function CareerZones({ d, setD }: StepProps): StepZones {
 }
 
 // ════ 3) Caractéristiques (LDB 05 l.370-491) — Zone A : « Aux dés » (méthode) + répartitions ; Zone B : grille (ÉDITION) ════
-export function CharZones({ d, setD }: StepProps): StepZones {
+export function CharZones({ d, setD, charReroll }: StepProps): StepZones {
   const sp = draftSpecies(d);
   const rolls = charRolls(d);
+  const pairs = charRollPairs(d);
   const chars = draftChars(d);
   const careerKeys = careerCharKeys(d);
   const allocTotal = Object.values(d.charAdvancesAlloc).reduce((a, b) => a + (b ?? 0), 0);
   const pbTotal = CHAR_KEYS.reduce((a, k) => a + d.pointBuy[k], 0);
   const splitTotal = d.fateSplit.fate + d.fateSplit.resilience;
+  // Relance des dix jets (LDB 05 l.385) : MÊME primitive de frisson que les autres tirages du
+  // créateur (arbitrage user « pareil pour toutes les modales », #396 v5) — un unique roulis pilote
+  // les DIX rangées (une relance touche les dix jets à la fois) ; chaque rangée anime sa PROPRE paire
+  // réelle (`pairs[i]`, `charRollPairs`), jamais une valeur reconstruite depuis la somme. Le hook vit
+  // dans `CharacterCreator` (appel inconditionnel, cf. `StepProps.charReroll`) ; repli inerte hors render.
+  const reroll = charReroll ?? { rolling: false, landed: false, trigger: () => setD({ ...d, charRerolls: d.charRerolls + 1 }), skip: () => {} };
 
   if (!sp) {
     return {
@@ -595,7 +621,7 @@ export function CharZones({ d, setD }: StepProps): StepZones {
         ].map(({ key, label, mode }) => ({ key, label, primary: d.charMode === mode, onSelect: () => setD({ ...d, charMode: mode }) }))}
       />
       {d.charMode !== 'pointBuy' && (
-        <button className="btn small" style={{ marginTop: 10 }} onClick={() => setD({ ...d, charRerolls: d.charRerolls + 1 })}>
+        <button className="btn small" style={{ marginTop: 10 }} onClick={() => reroll.trigger()}>
           <Icon id="nav/dice" size="sm" /> Relancer les dix jets (bonus perdus)
         </button>
       )}
@@ -667,7 +693,13 @@ export function CharZones({ d, setD }: StepProps): StepZones {
                 {careerKeys.includes(k) && <span className="tag char">carrière</span>}
               </span>
               <em>base {sp.baseChar[k] ?? 20}</em>
-              {d.charMode === 'rolled' && <span className="char-roll">+{rolls[i]}</span>}
+              {d.charMode === 'rolled' && (reroll.rolling || reroll.landed) ? (
+                <span className="char-roll">
+                  <DiceRoll scene={false} landed={reroll.landed} faces={reroll.landed ? d10PairFaces(pairs[i]) : null} onSkip={reroll.skip} />
+                </span>
+              ) : d.charMode === 'rolled' ? (
+                <span className="char-roll">+{rolls[i]}</span>
+              ) : null}
               {d.charMode === 'reassigned' && (
                 <select
                   value={d.assignment[k]}
@@ -738,6 +770,7 @@ export function StarZones({ d, setD }: StepProps): StepZones {
       hint="Gardez le tirage : +25 PX (ADE2 ch.03) · Choix libre : +0 PX."
       rolled={!!d.starRoll}
       xp={starXp(d)}
+      roll={d.starRollValue}
       onRoll={() => setD(rollDraftStar(d))}
     >
       <p className="hint" style={{ marginTop: 0 }}>

@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { Modal } from './Modal';
 import { RollRow, type RollRowProps, DEFAULT_ROLL_LABEL } from './RollRow';
 import { useRollFrisson } from './useRollFrisson';
-import { Icon } from './Icon';
+import { DiceRoll } from './DiceRoll';
+import { d100Faces } from './Dice';
 import { FLOW_VERBS } from '../state/rollFlowSpecs';
 
 /**
@@ -141,12 +142,26 @@ export function RollShell({
   const hoistRow = hoistIdx >= 0 ? rows[hoistIdx] : undefined;
   // Hook appelé INCONDITIONNELLEMENT (règles des hooks) : no-op quand rien à hisser.
   const hoist = useRollFrisson(hoistRow?.onRoll, { frisson: hoistRow?.rollFrisson });
-  // Échap = annuler seulement pré-jet. JAMAIS pendant le frisson : le frisson est LOCAL à la rangée
-  // (RollRow), l'enveloppe n'a pas à l'attendre ; un bouton Annuler post-jet porte sa visibilité via `when`.
-  const escClose = disableEscClose ? undefined : (!rolled ? onCancel : undefined);
+  // BUG CORRIGÉ (#396 v4) : dès que le résolveur commet (`rolled` bascule, en plein `landed`),
+  // `hoistIdx` retombe à -1 (la rangée n'est plus « à lancer ») → `hoistRow` disparaît PENDANT
+  // `landed`, avant que la scène n'ait eu le temps de lire ses vraies faces. On fige l'INDEX de la
+  // rangée hissée dans une ref (mise à jour tant qu'elle est valide, càd AVANT/PENDANT `rolling`) —
+  // `rows[hoistedRowIdx.current]` reste résolvable pendant tout `landed`, `.row.d` y est FRAIS
+  // (React 18 batch la transition `landed` et le commit du store dans le MÊME rendu).
+  const hoistedRowIdx = useRef<number>(-1);
+  if (hoistIdx >= 0) hoistedRowIdx.current = hoistIdx;
+  const landedRow = hoist.landed ? rows[hoistedRowIdx.current] : undefined;
+  const hoistFaces = landedRow?.row.d ? d100Faces(landedRow.row.d.roll) : null;
+  // Échap : pendant le frisson HISSÉ (roulis ou atterrissage de la scène centrale), SKIPPE — même
+  // geste qu'un clic sur les dés (`hoist.skip`), jamais une annulation en pleine animation. Sinon,
+  // annule seulement pré-jet ; un bouton Annuler post-jet porte sa visibilité via `when`.
+  const escClose = disableEscClose ? undefined : (hoist.rolling || hoist.landed) ? hoist.skip : (!rolled ? onCancel : undefined);
   const shownActions = actions.filter((a) => a.when === 'always' || (rolled ? a.when === 'post' : a.when === 'pre'));
   const body = (
     <>
+      {/* Scène centrale du roulis (#396 v2/v3, mono/opposé — le hissage `hoistIdx` ne s'active que
+          pour UNE rangée à lancer) : grands dés au centre, voile sur le contenu qui reste dessous. */}
+      {(hoist.rolling || hoist.landed) && <DiceRoll scene landed={hoist.landed} faces={hoistFaces} onSkip={hoist.skip} />}
       {subtitle != null && <p className={subClass}>{subtitle}</p>}
       {instruction != null && <div className="mini-title">{instruction}</div>}
       {extra}
@@ -184,16 +199,12 @@ export function RollShell({
           </button>
         ))}
         {/* « Lancer » HISSÉ (mono) : au MÊME niveau qu'Annuler/Appliquer, en DERNIER (à DROITE) — action
-            PRIMAIRE à droite, « Annuler » à gauche (convention de la coquille). Pendant le frisson, le
-            spinner remplace le bouton (même markup qu'en rangée, juste déplacé). */}
-        {hoistIdx >= 0 && !rolled && (
-          hoist.rolling ? (
-            <div className="rm-rolling"><span className="rm-die"><Icon id="nav/dice" /></span></div>
-          ) : (
-            <button key="roll" className="btn btn-primary" onClick={() => hoist.trigger()}>
-              {hoistRow?.rollLabel ?? DEFAULT_ROLL_LABEL}
-            </button>
-          )
+            PRIMAIRE à droite, « Annuler » à gauche (convention de la coquille). Pendant le roulis/
+            l'atterrissage, la SCÈNE centrale (ci-dessus) porte les dés : ce bouton disparaît sans repli. */}
+        {hoistIdx >= 0 && !rolled && !hoist.rolling && (
+          <button key="roll" className="btn btn-primary" onClick={() => hoist.trigger()}>
+            {hoistRow?.rollLabel ?? DEFAULT_ROLL_LABEL}
+          </button>
         )}
       </div>
     </>
