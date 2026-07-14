@@ -15,6 +15,8 @@ const propulsionRow = z.strictObject({ m: z.number(), crew: z.number() });
 export const schema = z.strictObject({
   standard: z.array(
     z.strictObject({
+      /** id STABLE = `size` (déjà une clé fermée à 7 valeurs) — identité d'entrée pour le Codex (#422). */
+      id: z.string(),
       size: shipSize,
       costGold: z.number(),
       crew: z.number(),

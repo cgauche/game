@@ -74,6 +74,11 @@ import disponibiliteJson from './disponibilite.json';
 import waterExposureJson from './water-exposure.json';
 import nightStakesJson from './night-stakes.json';
 import axesJson from './axes.json';
+import navalProgressionJson from './naval-progression.json';
+import seaNavigationJson from './sea-navigation.json';
+import seaPerilsJson from './sea-perils.json';
+import seaWeatherJson from './sea-weather.json';
+import shipConstructionJson from './ship-construction.json';
 import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
@@ -86,6 +91,11 @@ import type { InterludeEvent } from './interludeEvents';
 import type { Peripetie } from './peripeties';
 import type { CharacteristicsData } from './schemas/defs/characteristics';
 import type { AxesData } from './schemas/defs/axes';
+import type { NavalProgressionData } from './schemas/defs/naval-progression';
+import type { SeaNavigationData } from './schemas/defs/sea-navigation';
+import type { SeaPerilsData } from './schemas/defs/sea-perils';
+import type { SeaWeatherData } from './schemas/defs/sea-weather';
+import type { ShipConstructionData } from './schemas/defs/ship-construction';
 
 /** Règle d'EMPOIGNADE en DONNÉE (LDB 14 l.155-169) : `init` = ops à la touche d'une Empoignade déclarée
  *  (Empêtré + relation via le flag `grapple`) ; `win` = les 3 options du Test opposé GAGNÉ (l.161), appliquées
@@ -1451,6 +1461,17 @@ const navalPortById = new Map(navalPorts.map((p) => [p.id, p]));
 export function findNavalPortById(id: string): NavalPortData | undefined {
   return navalPortById.get(id);
 }
+
+/** LOT 1 #422 : 5 datasets NAVAUX de contenu (tables MDG ch.12/13/15) exposés au Codex — mêmes garanties
+ *  de référence LIVE (singleton ESM, même fichier physique relu par `engine/shipNavigation.ts`,
+ *  `engine/seaNavigation.ts`, `engine/seaPerils.ts`, `engine/seaWeather.ts`, `engine/shipBuild.ts`) que
+ *  `WATER_EXPOSURE` ci-dessus. Types réutilisés DEPUIS le schéma zod (`schemas/defs/*`, patron
+ *  `CharacteristicsData`/`AxesData`) — pas de redéclaration divergente. */
+export const navalProgression = navalProgressionJson as NavalProgressionData;
+export const seaNavigation = seaNavigationJson as SeaNavigationData;
+export const seaPerils = seaPerilsJson as SeaPerilsData;
+export const seaWeather = seaWeatherJson as SeaWeatherData;
+export const shipConstruction = shipConstructionJson as ShipConstructionData;
 
 /** Vocabulaire des SERVICES de lieu (#343, `lieux-services.json`) — catalogue EXTENSIBLE consommé par
  *  référence (`MapPlace.services[].kind`) et résolu par `placeServices` (`src/state/worldMap.ts`).

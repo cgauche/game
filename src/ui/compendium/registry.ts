@@ -18,7 +18,7 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
-  CHAR_ABR, rigSpeciesId,
+  CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
@@ -113,7 +113,10 @@ export type CodexRow =
   | { t: 'sub'; label: string }
   /** Bloc REPLIABLE (`<details class="fold">`) : `summary` visible, `text` (Markdown) dévoilé au clic.
    *  Porte la forme TECHNIQUE d'atelier (« Détail technique ») sous la phrase humaine — cf. `describe`. */
-  | { t: 'fold'; summary: string; text: string };
+  | { t: 'fold'; summary: string; text: string }
+  /** Note d'atelier NON cliquable, en fin de section (« se tranchent à l'étape 5 ») — jamais un lien,
+   *  jamais une règle inventée : un simple repère de parcours (#393 P2, verdict juge vision P1 item 8). */
+  | { t: 'nb'; text: string };
 export interface CodexSection {
   title: string;
   layout?: 'list' | 'chips' | 'grid';
@@ -392,10 +395,13 @@ export function raceSkillSection(s: (typeof species)[number]): CodexSection | nu
   return rows.length ? { title: 'Compétences de race', layout: 'chips', rows } : null;
 }
 
-/** Section « Talents de race » — chips cliquables, « A ou B » éclaté en choix. */
+/** Section « Talents de race » — chips cliquables, « A ou B » éclaté en choix. Note d'atelier finale
+ *  (#393 P2, verdict juge vision P1 item 8) : les choix/tirages (« au d100 ») ne se tranchent pas ici,
+ *  mais à l'étape 5 (Compétences & Talents) du créateur. */
 export function raceTalentSection(s: (typeof species)[number]): CodexSection | null {
   const rows = s.talents.map((a) => choiceOrRef('talents', a));
-  return rows.length ? { title: 'Talents de race', layout: 'chips', rows } : null;
+  if (!rows.length) return null;
+  return { title: 'Talents de race', layout: 'chips', rows: [...rows, { t: 'nb', text: 'se tranchent à l’étape 5' }] };
 }
 
 /** Section « Carrières accessibles » d'une race — groupées par classe, cliquables (→ fiche carrière). */
@@ -693,6 +699,63 @@ export function extractEpigraph(desc: string): { epigraph?: string; body: string
     }
   }
   return { body: desc };
+}
+
+// ── LOT 1 #422 : famille NAVALE (MDG ch.12/13/15) — Ports, Progression, Navigation, Périls, Météo,
+//    Construction navale. Ports & sous-tableaux de construction restent des CATÉGORIES-tableau (une
+//    fiche par entité, patron `criticalsTete`) ; Navigation/Périls/Météo sont des FICHES DE RÈGLE
+//    UNIQUES (dataset-objet, MÊME patron que `waterExposure`, #157 suite) — chaque config imbriquée
+//    (Salissures, Orientation, Détroits, Tourbillons…) devient une section plutôt qu'une entité isolée. ──
+
+/** Libellé FR d'une entrée de `production`/`surplus`/`demande` d'un Port (`naval-ports.json`) : id réel
+ *  de `sea-cargo.json` → lien cross-réf ; marqueur `commerce`/`minimum-vital` (hors catalogue de
+ *  cargaison, LDB/MDG l.343-349) → texte simple non cliquable. */
+function portCargoRow(id: string, qty?: number): CodexRow {
+  const cargo = CARGOES.find((c) => c.id === id);
+  const label = cargo?.label ?? (id === 'commerce' ? 'Commerce (marqueur)' : id === 'minimum-vital' ? 'Minimum vital (marqueur)' : id);
+  const show = qty != null ? `${label} (${qty})` : label;
+  return cargo ? { t: 'ref', category: 'seaCargo', id: cargo.id, label, show } : { t: 'text', text: show };
+}
+
+/** Libellés FR des 5 modes de la table PROGRESSION D'UN NAVIRE (`naval-progression.json`, MDG ch.13 l.68-75). */
+const PROGRESSION_MODE_LABEL: Record<string, string> = {
+  plus2: 'Progression maximale (M+2)', plus1: 'Bonne progression (M+1)', normal: 'Progression normale (M)',
+  minus1: 'Progression lente (M−1)', half: 'Lutte pour avancer (M÷2)',
+};
+
+/** Libellés FR des 7 gabarits de coque standard (`ship-construction.json::standard`, MDG ch.12 l.120-129). */
+const SHIP_SIZE_LABEL: Record<string, string> = {
+  minuscule: 'Minuscule', 'tres-petite': 'Très petite', petite: 'Petite', moyenne: 'Moyenne',
+  grande: 'Grande', enorme: 'Énorme', monstrueuse: 'Monstrueuse',
+};
+
+/** Libellés FR des 4 Traits de CONSTRUCTION (`ship-construction.json::constructionTraits`, sans champ
+ *  `label` en donnée — id STABLE déjà la clé, MDG ch.12 l.167-193). */
+const CONSTRUCTION_TRAIT_LABEL: Record<string, string> = {
+  'peu-maniable': 'Peu maniable', renforce: 'Renforcé', robuste: 'Robuste', solide: 'Solide',
+};
+
+/** Fait signé (« +10 % », « −20 », « 0 ») — évite de dupliquer le ternaire de signe à chaque site. */
+const signedFact = (label: string, v: number | undefined, suffix = ''): CodexFact | null =>
+  v == null ? null : fact(label, `${v > 0 ? '+' : ''}${v}${suffix}`);
+
+/** Section « Propulsion & Manœuvrabilité » (MDG ch.12 l.131-144, `ship-construction.json::propulsion`/
+ *  `::manoeuvrability`) — règle GLOBALE de construction (pas une entité par gabarit) : répétée telle
+ *  quelle sur chaque fiche de coque (patron « note de règle partagée », comme `Ligne CE` sur un profil
+ *  de créature). Lecture seule — les 2 sous-tables restent hors des 3 catégories-tableau (aucun id
+ *  propre par ligne côté source), mais le FICHIER entier reste couvert par le schéma/la garde d'exposition. */
+function shipConstructionRulesSection(): CodexSection {
+  const p = shipConstruction.propulsion;
+  return {
+    title: 'Propulsion & Manœuvrabilité (règle de construction)', layout: 'list',
+    rows: [
+      { t: 'kv', k: 'Propulsion secondaire — malus au coût', v: `${p.secondaryMalus > 0 ? '+' : ''}${p.secondaryMalus}` } as CodexRow,
+      { t: 'kv', k: 'Propulsion secondaire — M minimum', v: String(p.secondaryMinM) } as CodexRow,
+      ...shipConstruction.manoeuvrability.map((m) => ({
+        t: 'kv', k: `Manœuvrabilité ${m.manDR >= 0 ? '+' : ''}${m.manDR}`, v: `Coût ${m.costPct >= 0 ? '+' : ''}${m.costPct} %`,
+      } as CodexRow)),
+    ],
+  };
 }
 
 const CODEX_SPECS: CodexCategorySpec[] = [
@@ -1446,6 +1509,213 @@ const CODEX_SPECS: CodexCategorySpec[] = [
               const label = maladies.find((m) => m.id === d.disease)?.label ?? d.disease;
               return { t: 'ref', category: 'maladies', id: d.disease, label, show: label, badge: `${d.min}–${d.max}${d.rerollUnlessWounded ? ' · relance si indemne' : ''}` } as CodexRow;
             }),
+          },
+        ),
+      }];
+    },
+  },
+  {
+    key: 'navalPorts', label: 'Ports (Index de la Mer des Griffes)', group: 'Monde', sourceRef: 'MDG ch.15',
+    build: () => navalPorts.map((p) => ({
+      id: p.id, label: p.label, group: p.region, desc: p.desc, source: src(p.source),
+      meta: facts(
+        fact('Taille', p.taille), fact('Richesse', p.richesse),
+        fact('Dirigeant', p.dirigeant ?? null), fact('Cosmopolite', p.cosmopolite ? 'oui' : null),
+      ),
+      sections: sections(
+        p.production?.length ? { title: 'Production', layout: 'chips', rows: p.production.map((id) => portCargoRow(id)) } : null,
+        p.surplus && Object.keys(p.surplus).length ? { title: 'Surplus', layout: 'chips', rows: Object.entries(p.surplus).map(([id, q]) => portCargoRow(id, q)) } : null,
+        p.demande && Object.keys(p.demande).length ? { title: 'Demande', layout: 'chips', rows: Object.entries(p.demande).map(([id, q]) => portCargoRow(id, q)) } : null,
+      ),
+    })),
+  },
+  {
+    key: 'navalProgression', label: 'Progression de navire (DR de Navigation → Mouvement)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.13',
+    build: () => datasetArray('navalProgression').map((e) => ({
+      id: e.id, label: PROGRESSION_MODE_LABEL[e.mode] ?? e.mode,
+      sub: `DR ${e.min}…${e.max}`, desc: e.desc, source: src(e.source),
+    })),
+  },
+  {
+    key: 'shipHullSizes', label: 'Gabarits de coque (Construction navale)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG ch.12',
+    build: () => datasetArray('shipHullSizes').map((s) => ({
+      id: s.id, label: SHIP_SIZE_LABEL[s.size] ?? s.size, source: src(s.source),
+      meta: facts(
+        fact('Coût', formatMoney(priceToMoney({ gold: s.costGold, silver: 0, bronze: 0 }))),
+        fact('Équipage', s.crew),
+        s.sail ? fact('Voile', `M${s.sail.m} (équipage ${s.sail.crew})`) : null,
+        s.oars ? fact('Rames', `M${s.oars.m} (équipage ${s.oars.crew})`) : null,
+        fact('Longueur', `${s.lengthM[0]}–${s.lengthM[1]} m`),
+        fact('Endurance', s.e), fact('Blessures', s.b), fact('Capacité', s.capacity),
+      ),
+      sections: sections(shipConstructionRulesSection()),
+    })),
+  },
+  {
+    key: 'shipSpeedTraits', label: 'Traits de vitesse (Construction navale)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG ch.12',
+    build: () => datasetArray('shipSpeedTraits').map((t) => ({
+      id: t.id, label: t.label, source: src(t.source),
+      meta: facts(
+        signedFact('Mouvement', t.mMod), signedFact('Capacité', t.capacityPct, ' %'),
+        signedFact('Manœuvrabilité', t.manDR), signedFact('Coût', t.costPct, ' %'),
+      ),
+    })),
+  },
+  {
+    key: 'shipConstructionTraits', label: 'Traits de construction (navire)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG ch.12',
+    build: () => datasetArray('shipConstructionTraits').map((t) => ({
+      id: t.id, label: CONSTRUCTION_TRAIT_LABEL[t.id] ?? t.id, source: src(t.source),
+      meta: facts(
+        fact('Niveau max', t.maxLevel), signedFact('Coût / niveau', t.costPctPerLevel, ' %'),
+        signedFact('Endurance / niveau', t.ePerLevel), signedFact('Blessures / niveau', t.bPctPerLevel, ' %'),
+        signedFact('Capacité / niveau', t.capacityPctPerLevel, ' %'),
+      ),
+    })),
+  },
+  {
+    key: 'seaNavigation', label: 'Navigation maritime (Progression, Salissures, Orientation, Phares, Poursuite…)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.13/15',
+    build: () => {
+      const n = datasetObject('seaNavigation');
+      return [{
+        id: 'seaNavigation', label: 'Navigation maritime', source: src(n.workPeriodHours.source),
+        sections: sections(
+          {
+            title: 'Périodes de travail & Épuisement', layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Voile / Barre', v: `${n.workPeriodHours.voile} h` },
+              { t: 'kv', k: 'Rames', v: `${n.workPeriodHours.avirons} h` },
+              { t: 'kv', k: 'Test d’Épuisement', v: DIFFICULTY_LABELS[n.epuisement.difficulty] },
+              { t: 'kv', k: 'Test d’Épuisement (rythme forcé)', v: DIFFICULTY_LABELS[n.epuisement.forcedDifficulty] },
+            ],
+          },
+          {
+            title: 'Forcer le rythme', layout: 'list',
+            rows: n.forcerLeRythme.map((r) => ({
+              t: 'kv', k: `+${r.bonusM} M`,
+              v: [r.voile ? `Voile ${DIFFICULTY_LABELS[r.voile]}` : null, r.avirons ? `Rames ${DIFFICULTY_LABELS[r.avirons]}` : null].filter(Boolean).join(' · '),
+            } as CodexRow)),
+          },
+          {
+            title: 'Vitesses maximum (« Ça va lâcher, capitaine ! »)', layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Sans risque', v: `jusqu’à M+${n.vitesseMax.safeBonus}` } as CodexRow,
+              ...n.vitesseMax.table.map((row) => ({ t: 'kv', k: `M+${row.min}${row.max > row.min ? `…+${row.max}` : ''}`, v: `${DIFFICULTY_LABELS[row.difficulty]} · ${row.damage} Dégâts/${row.per}` } as CodexRow)),
+            ],
+          },
+          {
+            title: 'Salissures (Test hebdomadaire de Résistance du navire)', layout: 'list',
+            rows: n.salissures.levels.map((l) => ({ t: 'kv', k: `Niveau ${l.level}`, v: `Man ${l.manDR} · M${l.mMod} · Nav ${l.navDR} · réparation ${l.repairPctOfBase} % — ${l.desc}` } as CodexRow)),
+          },
+          {
+            title: 'Orientation — Repères (1 Test/jour)', layout: 'list',
+            rows: n.orientation.reperes.map((r) => ({ t: 'kv', k: `DR ${r.min}…${r.max}`, v: r.desc } as CodexRow)),
+          },
+          {
+            title: 'Changement de cap', layout: 'list',
+            rows: n.orientation.changementDeCap.map((r) => ({ t: 'kv', k: `d10 ${r.min}…${r.max}`, v: r.desc } as CodexRow)),
+          },
+          {
+            title: 'Phares & clochers (Perception)', layout: 'list',
+            rows: n.phares.voirLaLumiere.map((r) => ({ t: 'kv', k: `jusqu’à ${r.max} milles`, v: DIFFICULTY_LABELS[r.difficulty] } as CodexRow)),
+          },
+          {
+            title: 'Longs voyages', layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Milles/jour par point de M', v: String(n.longsVoyages.millesParJourParM) } as CodexRow,
+              { t: 'kv', k: 'Sans voguer de nuit', v: `÷${n.longsVoyages.sansVoguerDeNuitDiviseur}` } as CodexRow,
+              { t: 'kv', k: 'Progression du Test d’équipage', v: `±${n.longsVoyages.progressionPctParDR} % / DR` } as CodexRow,
+            ],
+          },
+          {
+            title: 'Course-poursuite (distances d’évasion)', layout: 'list',
+            rows: n.poursuite.escapeDistances.map((e) => ({ t: 'kv', k: e.label, v: `${e.distance} points` } as CodexRow)),
+          },
+          {
+            title: 'Réparations au port', layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Coût au port', v: `${n.reparation.portCostGoldPerWound} po / Blessure` } as CodexRow,
+              { t: 'kv', k: 'Temps de Test', v: n.reparation.testHours } as CodexRow,
+              { t: 'kv', k: 'Blessures réparées / Test', v: n.reparation.woundsPerTest } as CodexRow,
+            ],
+          },
+        ),
+      }];
+    },
+  },
+  {
+    key: 'seaPerils', label: 'Périls en mer (Échouage, Icebergs, Détroits, Tourbillons)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.13',
+    build: () => {
+      const p = datasetObject('seaPerils');
+      return [{
+        id: 'seaPerils', label: 'Périls en mer', desc: p.echouer.desc, source: src(p.echouer.source),
+        sections: sections(
+          {
+            title: 'Dangers flottants', layout: 'list',
+            rows: p.hazards.map((h) => ({ t: 'kv', k: h.label, v: `IC ${h.ic}${h.m != null ? ` · M${h.m}` : ''}${h.strandChancePct != null ? ` · Échouage ${h.strandChancePct} %` : ''}${h.entangleChancePct != null ? ` · Empêtrement ${h.entangleChancePct} %` : ''} — ${h.desc}` } as CodexRow)),
+          },
+          {
+            title: 'Détroits', layout: 'list',
+            rows: p.detroits.map((d) => ({ t: 'kv', k: d.label, v: `M${d.m} · Nav ${d.navDR}` } as CodexRow)),
+          },
+          {
+            title: 'Tourbillons', layout: 'list',
+            rows: p.tourbillons.map((w) => ({ t: 'kv', k: w.label, v: `M${w.m} · rayon ${w.zoneRadiusM} m (spirale ${w.zoneSpiralM} m) · Man ${w.manDR} · IC ${w.ic} · évasion ${DIFFICULTY_LABELS[w.evasion.difficulty]} (${w.evasion.totalDR} DR)` } as CodexRow)),
+          },
+          {
+            title: 'Gestion des périls (repérage / évitement par distance)', layout: 'list',
+            rows: p.gestionDesPerils.map((g) => ({ t: 'kv', k: `${g.distanceM} m`, v: `repérage ${DIFFICULTY_LABELS[g.spot]} · évitement ${DIFFICULTY_LABELS[g.avoid]}` } as CodexRow)),
+          },
+        ),
+      }];
+    },
+  },
+  {
+    key: 'seaWeather', label: 'Météo de la Mer des Griffes', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.13',
+    build: () => {
+      const w = datasetObject('seaWeather');
+      // Les 4 aspects du tirage (`table[].precipitations`/`.temperature`/`.visibilite`/`.vent`) sont des
+      // ids de catalogue (`w.precipitations`/`.temperatures`/`.visibilites`/`.vents`, CHACUN déjà porteur
+      // de son `label` FR verbatim MDG) — la fiche résout id→label PAR LOOKUP (jamais l'id affiché ;
+      // aucune duplication de `label` sur `table[]`, la SOURCE UNIQUE du libellé reste le catalogue).
+      const precipLabel = new Map(w.precipitations.map((p) => [p.id, p.label]));
+      const tempLabel = new Map(w.temperatures.map((t) => [t.id, t.label]));
+      const visLabel = new Map(w.visibilites.map((v) => [v.id, v.label]));
+      const windLabel = new Map(w.vents.map((v) => [v.id, v.label]));
+      return [{
+        id: 'seaWeather', label: 'Météo de la Mer des Griffes', source: src(w.table[0]?.source),
+        meta: facts(fact('Modificateur mer chaude', w.warmSeaMod)),
+        sections: sections(
+          {
+            title: 'Tirage quotidien (2d10)', layout: 'list',
+            rows: w.table.map((row) => ({
+              t: 'kv', k: `2d10 ${row.min}…${row.max}`,
+              v: [precipLabel.get(row.precipitations), tempLabel.get(row.temperature), visLabel.get(row.visibilite), windLabel.get(row.vent)].join(' · '),
+            } as CodexRow)),
+          },
+          {
+            title: 'Modificateur saisonnier', layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Été', v: String(w.seasonMod.ete) } as CodexRow,
+              { t: 'kv', k: 'Automne', v: String(w.seasonMod.automne) } as CodexRow,
+              { t: 'kv', k: 'Printemps', v: String(w.seasonMod.printemps) } as CodexRow,
+              { t: 'kv', k: 'Hiver', v: String(w.seasonMod.hiver) } as CodexRow,
+            ],
+          },
+          {
+            title: 'Précipitations', layout: 'list',
+            rows: w.precipitations.map((p) => ({ t: 'kv', k: p.label, v: p.desc ?? '—' } as CodexRow)),
+          },
+          {
+            title: 'Température', layout: 'list',
+            rows: w.temperatures.map((t) => ({ t: 'kv', k: t.label, v: t.difficulty ? `Test toutes les ${t.testEveryHours} h — ${DIFFICULTY_LABELS[t.difficulty]} (${t.exposure})` : '—' } as CodexRow)),
+          },
+          {
+            title: 'Visibilité', layout: 'list',
+            rows: w.visibilites.map((v) => ({ t: 'kv', k: v.label, v: v.drPenalty != null ? `${v.drPenalty} DR au-delà de ${v.beyondM} m` : '—' } as CodexRow)),
+          },
+          {
+            title: 'Vents', layout: 'chips',
+            rows: w.vents.map((v) => ({ t: 'text', text: v.label } as CodexRow)),
           },
         ),
       }];

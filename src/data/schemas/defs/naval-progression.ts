@@ -12,6 +12,8 @@ export const file = 'naval-progression.json';
 export const schema = z.strictObject({
   table: z.array(
     z.strictObject({
+      /** id STABLE = `mode` (déjà une clé fermée à 5 valeurs) — identité d'entrée pour le Codex (#422). */
+      id: z.string(),
       min: z.number(),
       max: z.number(),
       mode: z.enum(['plus2', 'plus1', 'normal', 'minus1', 'half']),

@@ -45,6 +45,8 @@ function CodexRowView({ row }: { row: CodexRow }) {
           <div className="fold-body"><Prose md={row.text} /></div>
         </details>
       );
+    case 'nb':
+      return <em className="nb">{row.text}</em>;
   }
 }
 

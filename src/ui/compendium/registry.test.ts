@@ -317,6 +317,75 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
   });
 });
 
+describe('Codex registry — LOT 1 #422 (famille NAVALE : Ports, Progression, Navigation, Périls, Météo, Construction navale)', () => {
+  it('les 8 nouvelles catégories navales sont exposées, peuplées et ÉDITABLES au Codex', () => {
+    const keys = [
+      'navalPorts', 'navalProgression', 'shipHullSizes', 'shipSpeedTraits', 'shipConstructionTraits',
+      'seaNavigation', 'seaPerils', 'seaWeather',
+    ];
+    for (const key of keys) {
+      const cat = categoryByKey(key);
+      expect(cat, key).toBeTruthy();
+      expect(cat!.items.length, key).toBeGreaterThan(0);
+      expect(isEditableCategory(key), key).toBe(true);
+    }
+  });
+
+  it('un Port (Index de la Mer des Griffes, MDG ch.15) porte ses faits + sa Production en cross-réf vers la Cargaison maritime', () => {
+    const items = categoryByKey('navalPorts')!.items;
+    const marienburg = items.find((i) => i.label === 'Marienburg')!;
+    expect(marienburg, 'Marienburg').toBeTruthy();
+    expect(marienburg.meta?.find((f) => f.label === 'Richesse')?.value).toBe('5');
+    expect(marienburg.group).toBe('Wasteland');
+    const prodSec = marienburg.sections?.find((s) => s.title === 'Production');
+    expect(prodSec, 'section Production').toBeTruthy();
+    expect(prodSec!.rows.some((r) => r.t === 'ref' && r.category === 'seaCargo')).toBe(true);
+  });
+
+  it('la table de Progression de navire (MDG ch.13) porte ses 5 modes avec leur fourchette de DR', () => {
+    const items = categoryByKey('navalProgression')!.items;
+    expect(items).toHaveLength(5);
+    for (const it of items) expect(it.sub).toMatch(/^DR /);
+  });
+
+  it('les gabarits de coque (Construction navale, MDG ch.12) portent Coût/Équipage/Longueur', () => {
+    const items = categoryByKey('shipHullSizes')!.items;
+    const moyenne = items.find((i) => i.label === 'Moyenne')!;
+    expect(moyenne, 'Moyenne').toBeTruthy();
+    expect(moyenne.meta?.find((f) => f.label === 'Équipage')?.value).toBe('20');
+    expect(moyenne.meta?.find((f) => f.label === 'Longueur')?.value).toBe('21–35 m');
+  });
+
+  it('la fiche « Navigation maritime » (dataset-OBJET, MDG ch.13/15) projette Salissures + Orientation + Course-poursuite', () => {
+    const cat = categoryByKey('seaNavigation')!;
+    expect(cat.items).toHaveLength(1);
+    const item = cat.items[0];
+    expect(item.sections?.some((s) => /Salissures/.test(s.title))).toBe(true);
+    expect(item.sections?.some((s) => /Orientation/.test(s.title))).toBe(true);
+    expect(item.sections?.some((s) => /Course-poursuite/.test(s.title))).toBe(true);
+  });
+
+  it('la fiche « Périls en mer » (dataset-OBJET, MDG ch.13) projette Dangers flottants + Détroits + Tourbillons', () => {
+    const cat = categoryByKey('seaPerils')!;
+    expect(cat.items).toHaveLength(1);
+    const item = cat.items[0];
+    const hazardSec = item.sections?.find((s) => s.title === 'Dangers flottants');
+    expect(hazardSec, 'section Dangers flottants').toBeTruthy();
+    expect(hazardSec!.rows.some((r) => r.t === 'kv' && r.k === 'Iceberg')).toBe(true);
+    expect(item.sections?.some((s) => s.title === 'Tourbillons')).toBe(true);
+  });
+
+  it('la fiche « Météo de la Mer des Griffes » (dataset-OBJET, MDG ch.13) projette le tirage quotidien + Vents', () => {
+    const cat = categoryByKey('seaWeather')!;
+    expect(cat.items).toHaveLength(1);
+    const item = cat.items[0];
+    const tirageSec = item.sections?.find((s) => /Tirage quotidien/.test(s.title));
+    expect(tirageSec, 'section Tirage quotidien').toBeTruthy();
+    expect(tirageSec!.rows.length).toBeGreaterThan(0);
+    expect(item.sections?.some((s) => s.title === 'Vents')).toBe(true);
+  });
+});
+
 describe('Codex — facettes', () => {
   it('filterItems : ET entre facettes, OU à l’intérieur, item sans valeur écarté par une facette active', () => {
     const items: CodexItem[] = [

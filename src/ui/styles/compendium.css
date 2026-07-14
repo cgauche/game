@@ -237,6 +237,15 @@
   color: var(--muted);
   margin-top: 4px;
 }
+/* Note d'atelier NON cliquable en fin de section chips (ex. « se tranchent à l'étape 5 », #393 P2
+   verdict juge vision P1 item 8) — jamais un lien, jamais une règle, juste un repère de parcours. */
+.nb {
+  flex-basis: 100%;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
 .codex-kv {
   display: flex;
   flex-direction: column;

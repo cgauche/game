@@ -86,6 +86,11 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   riverCriticalsGouvernail: 'riverCriticalsGouvernail', riverCriticalsCoque: 'riverCriticalsCoque', riverCriticalsSuperstructure: 'riverCriticalsSuperstructure',
   rencontresPositives: 'rencontresPositives', rencontresFortuites: 'rencontresFortuites', rencontresDangereuses: 'rencontresDangereuses',
   seaManannFactors: 'seaManannFactors', seaBoardEvents: 'seaBoardEvents', seaPortEvents: 'seaPortEvents',
+  // LOT 1 #422 : Ports (MDG ch.15), Progression de navire (MDG ch.13) et 3 sous-tableaux de
+  // Construction navale (MDG ch.12) — mêmes garanties (édition tableau, `datasetFile`/`datasetSerializeRoot`
+  // réécrivent le PARENT entier au save pour les 4 dernières, NICHÉES).
+  navalPorts: 'navalPorts', navalProgression: 'navalProgression',
+  shipHullSizes: 'shipHullSizes', shipSpeedTraits: 'shipSpeedTraits', shipConstructionTraits: 'shipConstructionTraits',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -97,6 +102,10 @@ const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | '
   // Exposition à l'eau (T2C ch.14, #157 suite) : UNE seule fiche de règle (fichier `water-exposure.json`,
   // clé JS `waterExposure` — `datasetObjectFile` gère la divergence de nom).
   waterExposure: { ds: 'waterExposure', mode: 'single' },
+  // LOT 1 #422 : 3 fiches de règle UNIQUES navales (MDG ch.13) — même patron que `waterExposure`.
+  seaNavigation: { ds: 'seaNavigation', mode: 'single' },
+  seaPerils: { ds: 'seaPerils', mode: 'single' },
+  seaWeather: { ds: 'seaWeather', mode: 'single' },
 };
 export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
@@ -258,6 +267,13 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'details') add('texts');
   if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}
   if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (T2C ch.14)
+  // LOT 1 #422 : seules les tables NICHÉES en TABLEAU top-level d'une fiche-objet navale retombent en
+  // json (repli générique) — chaque sous-objet HÉTÉROGÈNE (vitesseMax/salissures/orientation/phares/
+  // poursuite/reparation…) recourt déjà au sous-formulaire récursif (`ObjectField`), hors guard.
+  if (categoryKey === 'seaNavigation') add('forcerLeRythme');
+  if (categoryKey === 'seaPerils') add('hazards', 'detroits', 'tourbillons', 'gestionDesPerils');
+  if (categoryKey === 'seaWeather') add('table', 'precipitations', 'temperatures', 'visibilites', 'vents', 'roseDesVents');
+  if (categoryKey === 'shipHullSizes') add('lengthM'); // [minM,maxM] — éditeur dédié (2 nombres, comme StarSubField)
   // #168 : Activité — Test « posté » (contexts/skills « au choix »/char/difficulty) + table d'issues
   // `outcomes` (OutcomeBand[]) → éditeurs dédiés ; `onSuccess` couvert par opsFieldsOf ci-dessus.
   if (categoryKey === 'activities') add('contexts', 'skills', 'char', 'difficulty', 'outcomes');
@@ -414,6 +430,13 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Exposition à l'eau (`waterExposure`, #157 suite, T2C ch.14) : `test` (Compétence+Difficulté),
   // `modifiers` (WaterExposureModifier[]) et `diseases` (plages d100 → maladie) ont chacun leur éditeur.
   const isWaterExposure = categoryKey === 'waterExposure';
+  // LOT 1 #422 : fiches de règle navales UNIQUES (mode 'single', patron `waterExposure`) — leurs
+  // tableaux top-level NICHÉS (`forcerLeRythme`/`hazards`/…/`roseDesVents`) ont un éditeur GÉNÉRIQUE
+  // commun (`GenericArrayField`, réutilise `inferFields`+`Field` — pas de forme dédiée par champ).
+  const isSeaNavigation = categoryKey === 'seaNavigation';
+  const isSeaPerils = categoryKey === 'seaPerils';
+  const isSeaWeather = categoryKey === 'seaWeather';
+  const hasHullLength = categoryKey === 'shipHullSizes'; // `lengthM` : [minM,maxM]
   // #168 : Activité (`activities`) — Test « posté » (contexts/skills « au choix »/char/difficulty) +
   // table d'issues `outcomes` (OutcomeBand[]) ; `onSuccess` reste sur le lot GameOpEditor commun.
   const isActivity = categoryKey === 'activities';
@@ -551,6 +574,18 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isWaterExposure && <WaterTestField value={entry.test as { skillId: string; difficulty: Difficulty } | undefined} onChange={(v) => edit('test', v)} />}
         {isWaterExposure && <WaterModifiersField value={entry.modifiers as WaterExposureModifier[] | undefined} onChange={(v) => edit('modifiers', v)} />}
         {isWaterExposure && <WaterDiseasesField value={entry.diseases as WaterExposureData['diseases'] | undefined} onChange={(v) => edit('diseases', v)} />}
+        {isSeaNavigation && <GenericArrayField label="forcerLeRythme (bonus M → difficulté Voile/Rames)" value={entry.forcerLeRythme as Record<string, unknown>[] | undefined} onChange={(v) => edit('forcerLeRythme', v)} />}
+        {isSeaPerils && <GenericArrayField label="hazards (dangers flottants)" value={entry.hazards as Record<string, unknown>[] | undefined} onChange={(v) => edit('hazards', v)} />}
+        {isSeaPerils && <GenericArrayField label="detroits" value={entry.detroits as Record<string, unknown>[] | undefined} onChange={(v) => edit('detroits', v)} />}
+        {isSeaPerils && <GenericArrayField label="tourbillons" value={entry.tourbillons as Record<string, unknown>[] | undefined} onChange={(v) => edit('tourbillons', v)} />}
+        {isSeaPerils && <GenericArrayField label="gestionDesPerils" value={entry.gestionDesPerils as Record<string, unknown>[] | undefined} onChange={(v) => edit('gestionDesPerils', v)} />}
+        {isSeaWeather && <GenericArrayField label="table (tirage quotidien)" value={entry.table as Record<string, unknown>[] | undefined} onChange={(v) => edit('table', v)} />}
+        {isSeaWeather && <GenericArrayField label="precipitations" value={entry.precipitations as Record<string, unknown>[] | undefined} onChange={(v) => edit('precipitations', v)} />}
+        {isSeaWeather && <GenericArrayField label="temperatures" value={entry.temperatures as Record<string, unknown>[] | undefined} onChange={(v) => edit('temperatures', v)} />}
+        {isSeaWeather && <GenericArrayField label="visibilites" value={entry.visibilites as Record<string, unknown>[] | undefined} onChange={(v) => edit('visibilites', v)} />}
+        {isSeaWeather && <GenericArrayField label="vents" value={entry.vents as Record<string, unknown>[] | undefined} onChange={(v) => edit('vents', v)} />}
+        {isSeaWeather && <GenericArrayField label="roseDesVents" value={entry.roseDesVents as Record<string, unknown>[] | undefined} onChange={(v) => edit('roseDesVents', v)} />}
+        {hasHullLength && <LengthRangeField value={entry.lengthM as [number, number] | undefined} onChange={(v) => edit('lengthM', v)} />}
         {isActivity && <ActivityTestField entry={entry} edit={edit} />}
         {isActivity && <OutcomeBandsField value={entry.outcomes as OutcomeBand[] | undefined} onChange={(v) => edit('outcomes', v.length ? v : undefined)} />}
         {opsFields.map((fieldKey) => (
@@ -1380,7 +1415,18 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
   }
   if (kind === 'recordText') return <RecordTextField label={key} value={value as Record<string, string> | undefined} onChange={onChange} />;
   if (kind === 'object') return <ObjectField label={key} value={value as Record<string, unknown> | undefined} onChange={onChange} />;
-  if (kind === 'json') return <JsonField label={field.key} value={value} onChange={onChange} />;
+  if (kind === 'json') {
+    // Un tableau d'objets PLATS niché (`vitesseMax.table`, `hazards[].entanglePenalties`… sous un
+    // `ObjectField`/`GenericArrayField` récursif, hors du périmètre TOP-LEVEL du garde
+    // `no-json-fields.test`) retombe sur le MÊME éditeur générique que les tableaux top-level
+    // (`GenericArrayField`) plutôt que `JsonField` — y compris quand CETTE instance vaut `null`/absent
+    // (champ optionnel non renseigné sur cette entrée : `GenericArrayField` démarre vide, « + Ajouter »
+    // fonctionnel). `JsonField` ne reste qu'un filet pour une forme vraiment hors gabarit (tableau de
+    // tableaux…), aucun cas réel actuel.
+    if (value == null || (Array.isArray(value) && value.every((x) => x != null && typeof x === 'object' && !Array.isArray(x))))
+      return <GenericArrayField label={key} value={value as Record<string, unknown>[] | undefined} onChange={onChange as (v: Record<string, unknown>[]) => void} />;
+    return <JsonField label={field.key} value={value} onChange={onChange} />;
+  }
   return <label className="ed-field"><span>{key}</span><input value={(value as string) ?? ''} onChange={(e) => onChange(field.nullable && e.target.value === '' ? null : e.target.value)} /></label>;
 }
 
@@ -1423,6 +1469,62 @@ function ObjectField({ label, value, onChange }: { label: string; value: Record<
         {subFields.map((f) => (
           <Field key={f.key} field={f} value={obj[f.key]} onChange={(v) => onChange({ ...obj, [f.key]: v })} />
         ))}
+      </div>
+    </div>
+  );
+}
+
+/** Tableau de lignes HÉTÉROGÈNES (LOT 1 #422) — une entrée par rangée, colonnes DÉRIVÉES par
+ *  `inferFields` (comme `ObjectField`, mais pour un tableau top-level plutôt qu'un objet unique). Chaque
+ *  champ retrouve son kind structuré (number/text/source/stringList…) ; un sous-champ COLONNE lui-même
+ *  tableau-d'objets (ex. `hazards[].entanglePenalties`) reste JSON-FREE : il redescend en `GenericArrayField`
+ *  RÉCURSIF — ses propres colonnes sont dérivées de TOUTES les occurrences non-vides de cette colonne
+ *  À TRAVERS les rangées (`nestedCols`), pas seulement de la valeur de la rangée courante — sinon une
+ *  rangée où le sous-champ est encore vide/absent (ex. `entanglePenalties` non renseigné sur Iceberg,
+ *  alors que Débris marins le porte) perdrait la forme et retomberait sur `JsonField` faute de colonne
+ *  inférable localement. `columns` (optionnel) permet à un appelant récursif d'imposer ce gabarit externe
+ *  plutôt que de le re-dériver depuis un tableau parfois vide. « + Ajouter » clone la 1ʳᵉ ligne (gabarit
+ *  de champs) ou démarre vide si le tableau l'est. */
+function GenericArrayField({ label, value, onChange, columns }: { label: string; value: Record<string, unknown>[] | undefined; onChange: (v: Record<string, unknown>[]) => void; columns?: FieldDesc[] }) {
+  const list = value ?? [];
+  const selfCols = useMemo(() => inferFields(list), [list]);
+  const cols = columns ?? selfCols;
+  const nestedCols = useMemo(() => {
+    const map = new Map<string, FieldDesc[]>();
+    for (const f of cols) {
+      if (f.kind !== 'json') continue;
+      const pool = list.flatMap((r) => (Array.isArray(r[f.key]) ? (r[f.key] as Record<string, unknown>[]) : []));
+      if (pool.length && pool.every((x) => x != null && typeof x === 'object' && !Array.isArray(x))) map.set(f.key, inferFields(pool));
+    }
+    return map;
+  }, [list, cols]);
+  const setRow = (i: number, key: string, v: unknown) => onChange(list.map((r, j) => (j === i ? { ...r, [key]: v } : r)));
+  return (
+    <div className="ed-field ed-subform">
+      <span>{label}</span>
+      {list.map((row, i) => (
+        <div className="ed-subfield" key={i}>
+          {cols.map((f) => nestedCols.has(f.key)
+            ? <GenericArrayField key={f.key} label={f.key} value={(row[f.key] as Record<string, unknown>[] | undefined) ?? []} columns={nestedCols.get(f.key)} onChange={(v) => setRow(i, f.key, v)} />
+            : <Field key={f.key} field={f} value={row[f.key]} onChange={(v) => setRow(i, f.key, v)} />)}
+          <button className="btn small danger" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕ Retirer la rangée</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange([...list, structuredClone(list[0] ?? {})])}>+ Ajouter</button>
+    </div>
+  );
+}
+
+/** Fourchette [minM,maxM] REQUISE (`ship-construction.json::standard[].lengthM`) — même idée que
+ *  `StarSubField` mais tuple obligatoire (pas de bascule vide/actif). */
+function LengthRangeField({ value, onChange }: { value: [number, number] | undefined; onChange: (v: [number, number]) => void }) {
+  const [lo, hi] = value ?? [1, 1];
+  return (
+    <div className="ed-field">
+      <span>lengthM — longueur (m)</span>
+      <div className="tf-row">
+        <input type="number" min={1} value={lo} onChange={(e) => onChange([Number(e.target.value) || 1, hi])} />–
+        <input type="number" min={1} value={hi} onChange={(e) => onChange([lo, Number(e.target.value) || 1])} />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 {
   "standard": [
     {
+      "id": "minuscule",
       "size": "minuscule",
       "costGold": 10,
       "crew": 1,
@@ -26,6 +27,7 @@
       }
     },
     {
+      "id": "tres-petite",
       "size": "tres-petite",
       "costGold": 50,
       "crew": 2,
@@ -51,6 +53,7 @@
       }
     },
     {
+      "id": "petite",
       "size": "petite",
       "costGold": 200,
       "crew": 5,
@@ -76,6 +79,7 @@
       }
     },
     {
+      "id": "moyenne",
       "size": "moyenne",
       "costGold": 500,
       "crew": 20,
@@ -101,6 +105,7 @@
       }
     },
     {
+      "id": "grande",
       "size": "grande",
       "costGold": 1000,
       "crew": 30,
@@ -126,6 +131,7 @@
       }
     },
     {
+      "id": "enorme",
       "size": "enorme",
       "costGold": 2500,
       "crew": 50,
@@ -147,6 +153,7 @@
       }
     },
     {
+      "id": "monstrueuse",
       "size": "monstrueuse",
       "costGold": 5000,
       "crew": 100,

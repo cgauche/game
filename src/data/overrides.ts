@@ -16,7 +16,8 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS,
-  WATER_EXPOSURE,
+  WATER_EXPOSURE, navalPorts,
+  navalProgression, seaNavigation, seaPerils, seaWeather, shipConstruction,
 } from './index';
 // #157 : catalogues de CONTENU déjà chargés par un module dédié (`src/data/*.ts` ou `src/engine/*.ts`,
 // pas la façade `index.ts`) — importés DIRECTEMENT ici (même patron que `massBattle*` ci-dessus, qui
@@ -122,6 +123,16 @@ const ARRAYS = {
   // Longs voyages en mer (MDG ch.15) : Humeur de Manann (facteurs) + Événements de bord/de port —
   // 3 tableaux frères NICHÉS dans `sea-events.json`.
   seaManannFactors: MANANN_FACTORS, seaBoardEvents: BOARD_EVENTS, seaPortEvents: PORT_EVENTS,
+  // LOT 1 #422 : Ports (MDG ch.15), Progression de navire (MDG ch.13) et 3 sous-tableaux de
+  // Construction navale (MDG ch.12) — `navalPorts` est DÉJÀ un tableau racine ; les 4 autres sont des
+  // sous-tableaux NICHÉS dans un objet-config parent (`navalProgression.table`, `shipConstruction.*`,
+  // même patron que `seaManannFactors`/`seaBoardEvents`/`seaPortEvents` ci-dessus) — `NESTED_ARRAY_FILE`
+  // réécrit le PARENT entier au save.
+  navalPorts,
+  navalProgression: navalProgression.table,
+  shipHullSizes: shipConstruction.standard,
+  shipSpeedTraits: shipConstruction.speedTraits,
+  shipConstructionTraits: shipConstruction.constructionTraits,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
@@ -132,7 +143,11 @@ export const DATASET_KEYS = Object.keys(ARRAYS) as DatasetKey[];
  *  EN PLACE (mêmes garanties que les tableaux) → preview live + écriture disque par l'éditeur du Codex.
  *  Le fichier disque est `<clé>.json` par défaut (`details.json`, `names.json`) ou l'override
  *  `OBJECT_FILE` pour une clé dont le nom diverge du fichier (`waterExposure` → `water-exposure.json`). */
-const OBJECTS = { details, names, waterExposure: WATER_EXPOSURE } as const;
+const OBJECTS = {
+  details, names, waterExposure: WATER_EXPOSURE,
+  // LOT 1 #422 : 3 fiches de règle UNIQUES (MDG ch.13) — même patron que `waterExposure` (T2C ch.14).
+  seaNavigation, seaPerils, seaWeather,
+} as const;
 export type ObjectDatasetKey = keyof typeof OBJECTS;
 export const OBJECT_DATASET_KEYS = Object.keys(OBJECTS) as ObjectDatasetKey[];
 
@@ -151,6 +166,9 @@ export function datasetObject<K extends ObjectDatasetKey>(key: K): (typeof OBJEC
  *  Absente d'ici → `<clé>.json` (défaut historique, zéro changement pour `details`/`names`). */
 const OBJECT_FILE: Partial<Record<ObjectDatasetKey, string>> = {
   waterExposure: 'water-exposure.json',
+  seaNavigation: 'sea-navigation.json',
+  seaPerils: 'sea-perils.json',
+  seaWeather: 'sea-weather.json',
 };
 /** Fichier disque d'un dataset-objet (`<clé>.json` par défaut, ou l'override `OBJECT_FILE`). */
 export function datasetObjectFile(key: ObjectDatasetKey): string {
@@ -216,6 +234,15 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   seaManannFactors: { file: 'sea-events.json', root: () => seaEventsRawJson },
   seaBoardEvents: { file: 'sea-events.json', root: () => seaEventsRawJson },
   seaPortEvents: { file: 'sea-events.json', root: () => seaEventsRawJson },
+  // LOT 1 #422 : `navalPorts` (tableau racine, nom de fichier kebab-case divergent — même besoin que
+  // `file` ci-dessous sans nichage) ; Progression de navire (1 tableau NICHÉ dans `naval-progression.json`)
+  // et 3 sous-tableaux de Construction navale NICHÉS dans `ship-construction.json` — réécrire le PARENT
+  // entier au save.
+  navalPorts: { file: 'naval-ports.json', root: () => navalPorts },
+  navalProgression: { file: 'naval-progression.json', root: () => navalProgression },
+  shipHullSizes: { file: 'ship-construction.json', root: () => shipConstruction },
+  shipSpeedTraits: { file: 'ship-construction.json', root: () => shipConstruction },
+  shipConstructionTraits: { file: 'ship-construction.json', root: () => shipConstruction },
 };
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {
