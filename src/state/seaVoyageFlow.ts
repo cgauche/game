@@ -114,7 +114,7 @@ export type SeaCrisis =
  *  (`runSeaDay`) est désormais UNE cascade `purpose:'travelDay'` (#275 Ronde 2 cran 3) — plus de FSM
  *  `step` persisté : le point de reprise EST `pendingCascade`/`suspendedCascades` (state/cascade.ts). */
 export interface SeaVoyageState {
-  /** Cap dominant du trajet (aspect du vent) — d'auteur (`MapRoute.seaHeading`), défaut est→ouest. */
+  /** Cap dominant du trajet (aspect du vent) — d'auteur (`MapRoute.seaHeading`), requis (#416). */
   heading: WindDirection;
   weather: SeaWeather;
   windFrom: WindDirection;
@@ -649,6 +649,8 @@ export function buildSeaPlan(
 ): TravelPlan | null {
   const ship = voyageShip(get);
   if (!ship || ship.hull.wounds.current <= 0) return null;
+  const heading = route.seaHeading;
+  if (!heading) throw new Error(`buildSeaPlan: route mer sans seaHeading — cap requis, jamais de défaut silencieux (#416, pit #408)`);
   const rng = battleRng();
   const season = seasonOfMonth(toDate(get().gameTime).month);
   // ORDRES permanents (couche `voyageCadence`) : l'API par défaut reste JOUR-PAR-JOUR (rétro-compat) ;
@@ -659,7 +661,7 @@ export function buildSeaPlan(
     orders,
     vehicle: ship.hull,
     sea: {
-      heading: route.seaHeading ?? 'ouest',
+      heading,
       weather: rollSeaWeather(season, rng), // graine du 1ᵉʳ jour (le cran de vent quotidien s'y accroche)
       windFrom: rollWindDirection(rng),
       daysToEvent: rollDaysToNextEvent(rng), // « Tous les 1d10 jours » (ch.15 l.89)

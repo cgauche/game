@@ -89,6 +89,10 @@ describe('buildSeaPlan — appareillage sur le navire de campagne', () => {
     expect(plan.sea!.daysToEvent).toBeGreaterThanOrEqual(1);
     expect(plan.sea!.daysToEvent).toBeLessThanOrEqual(10);
   });
+
+  it('jette sans défaut silencieux si la route mer n\'a pas de seaHeading (#416, pit #408)', () => {
+    expect(() => buildSeaPlan(get, 'r1', 'A', 'B', { km: 550 })).toThrow(/seaHeading/);
+  });
 });
 
 describe('#296 — state.vessel SOURCE UNIQUE de la coque de trajet (non-divergence)', () => {

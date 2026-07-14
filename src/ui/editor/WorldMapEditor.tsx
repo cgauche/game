@@ -719,7 +719,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                   type="checkbox"
                   checked={selRoute.sea ?? false}
                   onChange={(e) => updRoute(selRoute.id, e.target.checked
-                    ? { sea: true, modes: ['mer'] }
+                    ? { sea: true, modes: ['mer'], seaHeading: selRoute.seaHeading ?? 'est' }
                     : { sea: undefined, seaHeading: undefined, modes: selRoute.modes.filter((x) => x !== 'mer').length ? selRoute.modes.filter((x) => x !== 'mer') : ['pied'] })}
                 />
                 <Icon id="travel/anchor" size="sm" /> Route maritime (navire de campagne ; distance en milles)
@@ -727,7 +727,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
               {selRoute.sea && (
                 <label className="ed-field">Cap dominant (aspect du vent, MDG ch.13 l.262-270)
                   <select
-                    value={selRoute.seaHeading ?? 'ouest'}
+                    value={selRoute.seaHeading ?? 'est'}
                     onChange={(e) => updRoute(selRoute.id, { seaHeading: e.target.value as MapRoute['seaHeading'] })}
                   >
                     {(['nord', 'sud', 'est', 'ouest'] as const).map((d) => <option key={d} value={d}>{d}</option>)}

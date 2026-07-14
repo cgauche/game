@@ -57,6 +57,11 @@ persistance — chaque combat spawn une coque fraîche.
 - `sea: true` → voyage joué sur le navire de campagne (`src/state/seaVoyageFlow.ts`, cap `seaHeading`) ;
   `river: true` → descente jouée jour par jour (`src/state/riverVoyageFlow.ts`, `riverPerils`/
   `riverExposure`). Terrestre = table de péripéties + `inns` (relais d'auberge).
+- Une route `sea: true` REQUIERT un `seaHeading` explicite d'auteur — aucun défaut silencieux :
+  `buildSeaPlan` jette si absent (#416). L'éditeur pose `'est'` (neutre) à l'activation du toggle
+  « mer » ; à l'auteur de régler le vrai cap. Rappel RAW : la dominante de la Mer des Griffes souffle
+  DE l'OUEST (MDG ch.13 l.253) — poser `'ouest'` en cap plein donne un vent de face ~60 % des jours
+  (pit #408, traversées interminables).
 
 ## 4. Catalogues navals (data-driven, éditables)
 

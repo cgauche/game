@@ -19,14 +19,14 @@ describe('#230 — voyageShip (coque de trajet maritime) porte le nom d’instan
 
   it('la coque de trajet reprend le nom d’instance quand il est posé', () => {
     useGame.setState({ vessel: vessel({ name: 'Le Cormoran' }) });
-    const plan = buildSeaPlan(useGame.getState, 'r', 'a', 'b', { km: 100 });
+    const plan = buildSeaPlan(useGame.getState, 'r', 'a', 'b', { km: 100, seaHeading: 'est' });
     expect(plan?.vehicle?.name).toBe('Le Cormoran');
     expect(plan?.vehicle?.creatureId).toBe('cogue'); // le rendu reste keyé par creatureId
   });
 
   it('sans nom d’instance : la coque garde le label du TYPE', () => {
     useGame.setState({ vessel: vessel() });
-    const plan = buildSeaPlan(useGame.getState, 'r', 'a', 'b', { km: 100 });
+    const plan = buildSeaPlan(useGame.getState, 'r', 'a', 'b', { km: 100, seaHeading: 'est' });
     expect(plan?.vehicle?.name).toBe(findVehicleById('cogue')!.label);
   });
 });
