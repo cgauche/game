@@ -3,7 +3,16 @@
 // adversariale (demande 2026-07-14). Lancé par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { extractClosedIssues, validateSolde, validateRevuePalier, evaluate } from './solde-ticket-guard.mjs'
+import {
+  extractClosedIssues,
+  validateSolde,
+  validateRevuePalier,
+  evaluate,
+  extractRefIssues,
+  validateRefFile,
+  evaluateAntiEsquive,
+  analyzeStagedDiff,
+} from './solde-ticket-guard.mjs'
 
 const TODAY = '2026-07-14'
 const VERIFIE_OK = 'VERIFIE: relu le diff complet, lancé npm test et vérifié les 3 fichiers touchés à la main.'
@@ -229,4 +238,147 @@ test('evaluate : palier >=10 + revue-palier.md présent mais trop maigre → den
   })
   assert.ok(d)
   assert.match(d.reason, /[Pp]alier/)
+})
+
+// ── extractRefIssues (anti-esquive, extension 2026-07-14) ──────────────────────────────────────────
+test('extractRefIssues : "ref #N" et "refs #N" reconnus, dédupliqués/triés', () => {
+  assert.deepEqual(extractRefIssues('git commit -m "feat: truc, ref #371 refs #371 ref #393"'), [371, 393])
+})
+
+test('extractRefIssues : aucun mot-clef → vide', () => {
+  assert.deepEqual(extractRefIssues('git commit -m "feat: truc"'), [])
+})
+
+test('extractRefIssues : pas un commit → vide même avec mot-clef', () => {
+  assert.deepEqual(extractRefIssues('git log --grep "ref #371"'), [])
+})
+
+// ── validateRefFile ──────────────────────────────────────────────────────────────────────────────
+const refFile = ({ verdict = 'CONFIRMÉ', desc = REFUTATION_OK } = {}) => `## Réfutation\nverdict: ${verdict}\n${desc}\n`
+
+test('validateRefFile : conforme', () => {
+  const r = validateRefFile(refFile())
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
+test('validateRefFile : fichier absent', () => {
+  assert.equal(validateRefFile(null).ok, false)
+})
+
+test('validateRefFile : section Réfutation trop maigre', () => {
+  const r = validateRefFile(refFile({ desc: 'ok.' }))
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /trop maigre/)
+})
+
+// ── analyzeStagedDiff ────────────────────────────────────────────────────────────────────────────
+test('analyzeStagedDiff : touche src/**, compte les lignes', () => {
+  const raw = '5\t2\tsrc/engine/character.ts\n1\t0\tdocs/plans/truc.md\n'
+  const r = analyzeStagedDiff(raw)
+  assert.equal(r.touchesSrc, true)
+  assert.equal(r.totalLines, 8)
+})
+
+test('analyzeStagedDiff : docs-only ne touche pas src', () => {
+  const raw = '10\t3\tdocs/architecture.md\n'
+  const r = analyzeStagedDiff(raw)
+  assert.equal(r.touchesSrc, false)
+})
+
+test('analyzeStagedDiff : vide/absent → aucune touche, 0 ligne', () => {
+  assert.deepEqual(analyzeStagedDiff(''), { touchesSrc: false, totalLines: 0 })
+  assert.deepEqual(analyzeStagedDiff(undefined), { touchesSrc: false, totalLines: 0 })
+})
+
+// ── evaluateAntiEsquive ──────────────────────────────────────────────────────────────────────────
+const REFUTATION_LINE_OK = 'REFUTATION: un juge adversarial a rejoué le diff et tenté 2 contournements, aucun ne passe.'
+
+test('evaluateAntiEsquive : pas un commit → silence', () => {
+  assert.equal(evaluateAntiEsquive({ command: 'git status', stagedTouchesSrc: true, stagedTotalLines: 100 }), null)
+})
+
+test('evaluateAntiEsquive : diff ne touche pas src → silence', () => {
+  const d = evaluateAntiEsquive({ command: 'git commit -m "ref #371 doc"', stagedTouchesSrc: false, stagedTotalLines: 100 })
+  assert.equal(d, null)
+})
+
+test('evaluateAntiEsquive : diff < 10 lignes → silence (one-liner sur la suite verte)', () => {
+  const d = evaluateAntiEsquive({ command: 'git commit -m "fix: typo, ref #371"', stagedTouchesSrc: true, stagedTotalLines: 9 })
+  assert.equal(d, null)
+})
+
+test('evaluateAntiEsquive : fermeture déjà couverte par evaluate() → silence', () => {
+  const d = evaluateAntiEsquive({ command: 'git commit -m "corrige #9"', stagedTouchesSrc: true, stagedTotalLines: 100 })
+  assert.equal(d, null)
+})
+
+test('evaluateAntiEsquive : "ref #N" src touché sans réfutation → deny', () => {
+  const d = evaluateAntiEsquive({
+    command: 'git commit -m "feat: truc, ref #371"',
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    readRefFile: () => null,
+  })
+  assert.ok(d)
+  assert.match(d.reason, /#371/)
+  assert.match(d.reason, /ref-371\.md/)
+})
+
+test('evaluateAntiEsquive : "ref #N" avec ligne REFUTATION: inline valide → pass', () => {
+  const d = evaluateAntiEsquive({
+    command: `git commit -m "feat: truc, ref #371\n\n${REFUTATION_LINE_OK}"`,
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateAntiEsquive : "ref #N" avec ligne REFUTATION: trop courte → deny', () => {
+  const d = evaluateAntiEsquive({
+    command: 'git commit -m "feat: truc, ref #371\n\nREFUTATION: vu."',
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    readRefFile: () => null,
+  })
+  assert.ok(d)
+})
+
+test('evaluateAntiEsquive : "ref #N" avec fichier ref-N.md conforme → pass', () => {
+  const d = evaluateAntiEsquive({
+    command: 'git commit -m "feat: truc, ref #371"',
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    readRefFile: (n) => (n === 371 ? refFile() : null),
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateAntiEsquive : "ref #N" avec fichier ref-N.md non conforme → deny', () => {
+  const d = evaluateAntiEsquive({
+    command: 'git commit -m "feat: truc, ref #371"',
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    readRefFile: (n) => (n === 371 ? refFile({ desc: 'ok.' }) : null),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /trop maigre/)
+})
+
+test('evaluateAntiEsquive : aucun ticket, src touché, sans réfutation → deny', () => {
+  const d = evaluateAntiEsquive({
+    command: 'git commit -m "feat: refonte truc"',
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+  })
+  assert.ok(d)
+  assert.match(d.reason, /aucun ticket rattaché/)
+})
+
+test('evaluateAntiEsquive : aucun ticket, src touché, avec ligne REFUTATION: → pass', () => {
+  const d = evaluateAntiEsquive({
+    command: `git commit -m "feat: refonte truc\n\n${REFUTATION_LINE_OK}"`,
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+  })
+  assert.equal(d, null)
 })

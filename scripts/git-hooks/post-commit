@@ -16,11 +16,15 @@
 # hérité, commentaire générique.
 #
 # Palier de revue adversariale (même demande, extension 2026-07-14) : `.claude/soldes/.compteur`
-# cumule les fermetures depuis la dernière revue de PALIER ; le même hook PreToolUse bloque toute
-# fermeture une fois `.compteur` >= 10 sans `.claude/soldes/revue-palier.md` conforme. Ici, une
-# fois les fermetures de CE commit passées, on incrémente le compteur d'autant — sauf si
-# `revue-palier.md` est présent (la revue vient de débloquer le palier) : on le CONSOMME (compteur
-# remis à 0, fichier supprimé — son contenu a déjà été porté ailleurs par l'orchestrateur).
+# cumule depuis la dernière revue de PALIER ; le même hook PreToolUse bloque toute fermeture une
+# fois `.compteur` >= 10 sans `.claude/soldes/revue-palier.md` conforme.
+#
+# Extension 2026-07-14 (constat utilisateur : un commit « ref #N »/sans ticket n'avançait jamais le
+# palier) : le compteur incrémente désormais sur TOUT commit de substance — dont le diff touche
+# `src/**` ou `scripts/**` — fermeture ou pas, un commit = +1 (jamais plus, même multi-fermeture).
+# Quand `revue-palier.md` est présent (la revue vient de débloquer le palier), le prochain commit de
+# substance le CONSOMME (compteur remis à 0, fichier supprimé — son contenu a déjà été porté
+# ailleurs par l'orchestrateur) au lieu d'incrémenter.
 #
 # Contrat : ce hook ne doit JAMAIS faire échouer le commit qui vient d'avoir
 # lieu. Toute erreur (hors-ligne, `gh` absent, issue déjà fermée, dépôt sans
@@ -39,45 +43,41 @@ if [ -z "$MSG" ]; then
   exit 0
 fi
 
-if ! command -v gh >/dev/null 2>&1; then
-  warn "gh introuvable — fermeture auto d'issue ignorée"
-  exit 0
-fi
-
-# Extrait tous les numéros d'issue suivant fixes/closes/corrige/ferme, dédupliqués.
-ISSUES="$(printf '%s\n' "$MSG" | grep -Eio '(fixes|closes|corrige|ferme)[[:space:]]+#[0-9]+' | grep -Eo '[0-9]+' | sort -un)"
-
-if [ -z "$ISSUES" ]; then
-  exit 0
-fi
-
 HASH="$(git rev-parse --short HEAD 2>/dev/null)"
 [ -n "$HASH" ] || HASH="?"
 
 COUNTER_FILE=".claude/soldes/.compteur"
 REVUE_PALIER_FILE=".claude/soldes/revue-palier.md"
-CLOSED_COUNT=0
 
-for N in $ISSUES; do
-  SOLDE=".claude/soldes/$N.md"
-  if [ -f "$SOLDE" ]; then
-    COMMENT="$(cat "$SOLDE")"
-    if gh issue close "$N" --repo "$REPO" --comment "$COMMENT" >/dev/null 2>/dev/null; then
-      rm -f "$SOLDE"
-      CLOSED_COUNT=$((CLOSED_COUNT + 1))
-    else
-      warn "impossible de fermer #$N (hors-ligne, déjà fermée, ou gh en erreur) — solde conservé"
-    fi
+# Extrait tous les numéros d'issue suivant fixes/closes/corrige/ferme, dédupliqués.
+ISSUES="$(printf '%s\n' "$MSG" | grep -Eio '(fixes|closes|corrige|ferme)[[:space:]]+#[0-9]+' | grep -Eo '[0-9]+' | sort -un)"
+
+if [ -n "$ISSUES" ]; then
+  if ! command -v gh >/dev/null 2>&1; then
+    warn "gh introuvable — fermeture auto d'issue ignorée"
   else
-    if gh issue close "$N" --repo "$REPO" --comment "Fermé automatiquement par le commit $HASH" >/dev/null 2>/dev/null; then
-      CLOSED_COUNT=$((CLOSED_COUNT + 1))
-    else
-      warn "impossible de fermer #$N (hors-ligne, déjà fermée, ou gh en erreur) — ignoré"
-    fi
+    for N in $ISSUES; do
+      SOLDE=".claude/soldes/$N.md"
+      if [ -f "$SOLDE" ]; then
+        COMMENT="$(cat "$SOLDE")"
+        if gh issue close "$N" --repo "$REPO" --comment "$COMMENT" >/dev/null 2>/dev/null; then
+          rm -f "$SOLDE"
+        else
+          warn "impossible de fermer #$N (hors-ligne, déjà fermée, ou gh en erreur) — solde conservé"
+        fi
+      else
+        if ! gh issue close "$N" --repo "$REPO" --comment "Fermé automatiquement par le commit $HASH" >/dev/null 2>/dev/null; then
+          warn "impossible de fermer #$N (hors-ligne, déjà fermée, ou gh en erreur) — ignoré"
+        fi
+      fi
+    done
   fi
-done
+fi
 
-if [ "$CLOSED_COUNT" -gt 0 ]; then
+# Compteur de palier (extension 2026-07-14) : TOUT commit dont le diff touche `src/**`/`scripts/**`
+# fait avancer le palier — fermeture ou pas, un commit = +1.
+TOUCHED="$(git diff-tree --no-commit-id --name-only -r --root HEAD 2>/dev/null)"
+if printf '%s\n' "$TOUCHED" | grep -Eq '^(src|scripts)/'; then
   mkdir -p .claude/soldes 2>/dev/null
   if [ -f "$REVUE_PALIER_FILE" ]; then
     rm -f "$REVUE_PALIER_FILE"
@@ -85,7 +85,7 @@ if [ "$CLOSED_COUNT" -gt 0 ]; then
   else
     PREV="$(cat "$COUNTER_FILE" 2>/dev/null)"
     case "$PREV" in ''|*[!0-9]*) PREV=0 ;; esac
-    printf '%s' "$((PREV + CLOSED_COUNT))" > "$COUNTER_FILE"
+    printf '%s' "$((PREV + 1))" > "$COUNTER_FILE"
   fi
 fi
 

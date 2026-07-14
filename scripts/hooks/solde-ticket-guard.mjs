@@ -11,9 +11,20 @@
 // (1) chaque solde porte sa propre réfutation adversariale (verdict CONFIRMÉ/PARTIEL/RÉFUTÉ) ;
 // (2) tous les `PALIER` tickets fermés, une revue adversariale de PALIER (cumul) est exigée avant
 // toute nouvelle fermeture.
+//
+// Extension 2026-07-14 (constat utilisateur, verbatim) — « je pensais que tu avais un hook qui te
+// forceait a faire une review reversal, elle ne doit clairement pas marcher » puis « Ou alors
+// seulement sur les tickets ? » : un commit « ref #N » (rattaché SANS fermer) ou sans ticket du
+// tout échappait à tout regard adversarial ET n'avançait jamais le compteur de palier. Deux volets :
+// (1) le compteur (`.claude/soldes/.compteur`, incrémenté par `scripts/git-hooks/post-commit`)
+// avance désormais sur TOUT commit de substance (diff touche `src/**`/`scripts/**`), pas seulement
+// les fermetures ; (2) anti-esquive — un commit `ref #N`/sans ticket qui touche `src/**` (≥10
+// lignes de diff staged) exige lui aussi sa réfutation (ligne `REFUTATION:` dans le message, ou
+// fichier `.claude/soldes/ref-<N>.md`).
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
+import { execSync } from 'node:child_process'
 
 // Motif de fermeture repris du closer post-commit (`scripts/git-hooks/post-commit`) : mêmes
 // mots-clefs, mais capturés ICI sur le texte ENTIER de la commande (couvre les here-strings/heredocs
@@ -202,6 +213,108 @@ export function readRevuePalierFile() {
   try { return readFileSync(resolve('.claude/soldes/revue-palier.md'), 'utf8') } catch { return null }
 }
 
+// ── Anti-esquive (extension 2026-07-14) ─────────────────────────────────────────────────────────
+// Un commit `ref #N`/`refs #N` (rattaché SANS fermer) ou sans aucun ticket, qui touche `src/**`
+// pour un diff STAGED de substance, doit lui aussi porter sa réfutation — sinon la fermeture reste
+// le SEUL chemin regardé et « ref #N » devient l'esquive mécanique.
+const REF_KEYWORD_RE = /\brefs?\s+#(\d+)/gi
+const REFUTATION_LINE_RE = /REFUTATION\s*:\s*(.+)/i
+const MIN_REFUTATION_LINE_LEN = 40
+const SUBSTANTIVE_MIN_LINES = 10
+
+/** Numéros de ticket que la commande RATTACHE sans fermer (`ref #N`/`refs #N`), dédupliqués/triés. */
+export function extractRefIssues(command) {
+  if (!command || !/git\s+commit\b/i.test(command)) return []
+  const nums = new Set()
+  for (const m of command.matchAll(REF_KEYWORD_RE)) nums.add(Number(m[1]))
+  return [...nums].sort((a, b) => a - b)
+}
+
+/** `true` si le message porte une ligne "REFUTATION: <...>" d'au moins `MIN_REFUTATION_LINE_LEN`
+ *  caractères après le mot-clef. */
+function hasInlineRefutation(command) {
+  const m = REFUTATION_LINE_RE.exec(command)
+  return !!m && m[1].trim().length >= MIN_REFUTATION_LINE_LEN
+}
+
+/** Valide un fichier `.claude/soldes/ref-<N>.md` : seule la section "## Réfutation" (même gabarit
+ *  que les soldes de fermeture) est exigée — pas de VERIFIE/Restes, ce n'est pas une fermeture. */
+export function validateRefFile(content) {
+  if (!content) return { ok: false, problems: ['fichier absent'] }
+  const { problems } = checkRefutationSection(content)
+  return { ok: problems.length === 0, problems }
+}
+
+/**
+ * Décision anti-esquive (PURE, testable). `stagedTouchesSrc`/`stagedTotalLines` = état du diff
+ * STAGED (`git diff --cached`), injectés par le driver. `readRefFile(n)` lit
+ * `.claude/soldes/ref-<n>.md` (ou `null`).
+ * @returns {{ reason: string } | null} — non-null = `deny`, null = silence.
+ */
+export function evaluateAntiEsquive({ command, stagedTouchesSrc, stagedTotalLines, readRefFile = () => null }) {
+  if (!command || !/git\s+commit\b/i.test(command)) return null
+  if (!stagedTouchesSrc) return null
+  if (typeof stagedTotalLines === 'number' && stagedTotalLines < SUBSTANTIVE_MIN_LINES) return null
+
+  // Une fermeture est déjà couverte par `evaluate()` (solde complet, réfutation comprise) — pas de
+  // double exigence ici.
+  if (extractClosedIssues(command).length > 0) return null
+
+  if (hasInlineRefutation(command)) return null
+
+  const refIssues = extractRefIssues(command)
+  if (refIssues.length > 0) {
+    const failures = []
+    for (const n of refIssues) {
+      const { ok, problems } = validateRefFile(readRefFile(n))
+      if (!ok) failures.push({ n, problems })
+    }
+    if (failures.length === 0) return null
+    const detail = failures.map(({ n, problems }) => `#${n} (.claude/soldes/ref-${n}.md) — ${problems.join(' ; ')}`).join(' | ')
+    return {
+      reason:
+        `⚠ Commit "ref #N" (src/** touché, ≥${SUBSTANTIVE_MIN_LINES} lignes de diff staged) sans réfutation : ${detail}. ` +
+        `Ajouter une ligne "REFUTATION: <qui a attaqué quoi, ≥${MIN_REFUTATION_LINE_LEN} caractères>" dans le ` +
+        `message de commit, ou écrire .claude/soldes/ref-<N>.md avec une section "## Réfutation" conforme ` +
+        `(verdict + synthèse — extension anti-esquive 2026-07-14).`,
+    }
+  }
+
+  return {
+    reason:
+      `⚠ Commit touchant src/** (≥${SUBSTANTIVE_MIN_LINES} lignes de diff staged, aucun ticket rattaché) sans ` +
+      `réfutation : ajouter une ligne "REFUTATION: <qui a attaqué quoi, ≥${MIN_REFUTATION_LINE_LEN} caractères>" ` +
+      `dans le message de commit (extension anti-esquive 2026-07-14).`,
+  }
+}
+
+/** Lecture d'un fichier de réfutation `ref-<n>` depuis le disque. `null` si absent/illisible. */
+export function readRefFile(n) {
+  try { return readFileSync(resolve('.claude/soldes', `ref-${n}.md`), 'utf8') } catch { return null }
+}
+
+/** Analyse du diff STAGED (`git diff --cached --numstat`) : touche-t-il `src/**` ? combien de
+ *  lignes (insertions+suppressions) au total ? Fichiers binaires (`-\t-\t<path>`) comptés 0 ligne
+ *  mais peuvent toucher `src/**`. `''`/erreur git → aucune touche, 0 ligne (silence, jamais un deny
+ *  par accident hors dépôt). */
+export function analyzeStagedDiff(raw) {
+  let touchesSrc = false
+  let totalLines = 0
+  for (const line of String(raw ?? '').split('\n')) {
+    if (!line.trim()) continue
+    const [ins, del, ...pathParts] = line.split('\t')
+    const path = pathParts.join('\t')
+    totalLines += (Number.parseInt(ins, 10) || 0) + (Number.parseInt(del, 10) || 0)
+    if (/^src\//.test(path)) touchesSrc = true
+  }
+  return { touchesSrc, totalLines }
+}
+
+/** Lecture du diff STAGED brut (`git diff --cached --numstat`) depuis le disque/le dépôt courant. */
+export function readStagedDiffStat() {
+  try { return execSync('git diff --cached --numstat', { encoding: 'utf8' }) } catch { return '' }
+}
+
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 if (isMain) {
@@ -220,12 +333,20 @@ if (isMain) {
     counter: readCounterFile(),
     readRevuePalier: readRevuePalierFile,
   })
-  if (decision) {
+  const { touchesSrc, totalLines } = analyzeStagedDiff(readStagedDiffStat())
+  const antiEsquive = evaluateAntiEsquive({
+    command,
+    stagedTouchesSrc: touchesSrc,
+    stagedTotalLines: totalLines,
+    readRefFile,
+  })
+  const reasons = [decision, antiEsquive].filter(Boolean).map((d) => d.reason)
+  if (reasons.length > 0) {
     console.log(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
         permissionDecision: 'deny',
-        permissionDecisionReason: decision.reason,
+        permissionDecisionReason: reasons.join(' || '),
       },
     }))
   }
