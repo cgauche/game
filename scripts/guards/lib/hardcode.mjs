@@ -73,9 +73,19 @@ function secondArgIndex(line, open) {
  * @param {string} line @returns {boolean}
  */
 export function nameCallHasLiteralArg(line) {
-  NAME_CALL_RX.lastIndex = 0;
+  return callHasLiteralArg(line, NAME_CALL_RX);
+}
+
+/**
+ * Vrai si un appel dont la regex `callRx` (globale, `\(` en fin de motif) matche sur `line` porte
+ * un 2e argument LITTÉRAL de chaîne (`'…'`/`"…"`/gabarit sans interpolation `${…}`). Généralisation
+ * de `nameCallHasLiteralArg` (#385) à toute famille d'appel à 2 arguments (#413).
+ * @param {string} line @param {RegExp} callRx @returns {boolean}
+ */
+function callHasLiteralArg(line, callRx) {
+  callRx.lastIndex = 0;
   let m;
-  while ((m = NAME_CALL_RX.exec(line))) {
+  while ((m = callRx.exec(line))) {
     const arg = secondArgIndex(line, m.index + m[0].length - 1);
     if (arg == null) continue;
     const ch = line[arg];
@@ -99,9 +109,34 @@ export function nameCallHasLiteralArg(line) {
  * `stacks(c, "aveugle")`) : le contournement consistant à taper la chaîne au lieu de la constante
  * `COND.*` échappait totalement au scan (audit #410). Un 2e argument variable/propriété/gabarit
  * interpolé reste NON signalé (data-driven, même doctrine que #385 pour `hasTraitKey`/`hasTalent`).
+ * Le gabarit BACKTICK STATIQUE (`` hasCondition(c, `inconscient`) ``) n'est PAS couvert par cette
+ * regex : un backtick en tête de 2e argument peut être suivi d'une interpolation ARBITRAIREMENT
+ * loin dans le segment (`` `etat-${x}` ``), donc juger sa littéralité exige de lire le segment ENTIER
+ * jusqu'au backtick fermant — pas juste le caractère suivant. C'est `perEtatHasLiteralArg` (même
+ * mécanique que `nameCallHasLiteralArg`, #385) qui tranche cette forme, dans `scanHardcode` (#413,
+ * corrige un faux positif de la 1ère version qui testait seulement `` `(?!\$\{) `` — flaguait à tort
+ * un préfixe littéral suivi d'interpolation).
  * @type {RegExp}
  */
 export const PER_ETAT_RX = /hasCondition\(\w+, ?(?:COND\.|['"])|stacks\(\w+, ?(?:COND\.|['"])/;
+
+/**
+ * Appels de la famille PAR-ÉTAT (`hasCondition(`/`stacks(`), pour juger si leur 2e argument est un
+ * LITTÉRAL de chaîne — sert à fermer le loophole d'instrumentation (#413) : une ligne qui matche
+ * `MACHINERY_RX` (ex. `const _ = stacks(c, …)`) ne doit rester une machinerie retranchée QUE si son
+ * argument est la constante canonique `COND.*` ; un littéral de chaîne dans le MÊME gabarit est
+ * toujours une réaction par-nom, jamais un gate.
+ * @type {RegExp}
+ */
+const PER_ETAT_CALL_RX = /\b(?:hasCondition|stacks)\(/g;
+
+/**
+ * Vrai si une ligne porte un appel `hasCondition(`/`stacks(` dont le 2e argument est un LITTÉRAL
+ * de chaîne (`'…'`/`"…"`/gabarit sans interpolation). @param {string} line @returns {boolean}
+ */
+export function perEtatHasLiteralArg(line) {
+  return callHasLiteralArg(line, PER_ETAT_CALL_RX);
+}
 
 /**
  * Lignes à EXCLURE inconditionnellement : déclarations d'import (jamais un site d'appel réactif).
@@ -127,6 +162,9 @@ export const EXCLUDE_RX = /^\s*import/;
  *  - SÉLECTEURS d'ouverture de combat / doctrine IA (l'État Surpris lu comme SIGNAL d'initiative) :
  *    `return 'ambush'|'assault'|'combat'|'embuscade'`.
  * Toute NOUVELLE lecture par-État qui n'est aucune de ces machineries = réaction par-nom → signalée.
+ * Retranchement (#413) : la machinerie ne retranche QUE la forme canonique `COND.*` — un 2e argument
+ * LITTÉRAL de chaîne dans le MÊME gabarit (ex. `const _ = stacks(c, 'inconscient')`) reste COMPTÉ,
+ * ferme le contournement où l'instrumentation masquait un nom d'État en dur (`perEtatHasLiteralArg`).
  * @type {RegExp}
  */
 export const MACHINERY_RX = new RegExp([
@@ -142,7 +180,9 @@ export const MACHINERY_RX = new RegExp([
  * Scan complet d'un fichier source : chaque ligne portant un marqueur réactif par-nom (hors
  * lignes exclues), commentaires/imports retirés. Une lecture PAR-ÉTAT (et par-État SEULE) qui est
  * de la machinerie/instrumentation universelle (`MACHINERY_RX`) est un GATE, pas une réaction —
- * retranchée. La famille TRAIT/TALENT n'est JAMAIS retranchée par la machinerie (baselines inchangées).
+ * retranchée, SAUF (#413) si son 2e argument est un LITTÉRAL de chaîne (`perEtatHasLiteralArg`) :
+ * seule la forme canonique `COND.*` reste un gate, un nom d'État en dur derrière de la machinerie
+ * reste compté. La famille TRAIT/TALENT n'est JAMAIS retranchée par la machinerie (baselines inchangées).
  * @param {string} relPath @param {string} contenu
  * @returns {{ line: number, detail: string }[]}
  */
@@ -153,9 +193,9 @@ export function scanHardcode(relPath, contenu) {
     .forEach((line, i) => {
       if (EXCLUDE_RX.test(line)) return;
       const trait = TRAIT_TALENT_RX.test(line) || nameCallHasLiteralArg(line);
-      const etat = PER_ETAT_RX.test(line);
+      const etat = PER_ETAT_RX.test(line) || perEtatHasLiteralArg(line);
       if (!trait && !etat) return;
-      if (etat && !trait && MACHINERY_RX.test(line)) return; // gate/mesure d'arène — pas une réaction par-nom
+      if (etat && !trait && MACHINERY_RX.test(line) && !perEtatHasLiteralArg(line)) return; // gate/mesure d'arène (forme canonique) — pas une réaction par-nom
       findings.push({ line: i + 1, detail: line.trim() });
     });
   return findings;

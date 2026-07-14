@@ -68,17 +68,44 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
  *  reste ciblable par Hurlement fantomatique, LDB 85 l.170 — `traitCapability(c.traits, 'undead')`,
  *  combatManeuvers.ts ; test verrou `maneuver-effects.test.ts`).
  *  `magic.ts`/`psychology.ts`/`mount.ts` retombent à 0 (retirés de `BASELINES`, défaut implicite).
- *  `combatManeuvers.ts` passe de 2 à 1 (reste `isBestial`, hors périmètre #402). */
+ *  `combatManeuvers.ts` passe de 2 à 1 (reste `isBestial`, hors périmètre #402).
+ *
+ *  Révision #413 (2026-07-14) : deux durcissements de la mécanique de scan (`hardcode.mjs`), ZÉRO
+ *  migration dans ce lot — la garde arrête la croissance, elle ne résorbe pas :
+ *   (a) `PER_ETAT_RX` couvrait la quote (`'…'`/`"…"`) mais pas le gabarit BACKTICK STATIQUE
+ *       (`` hasCondition(c, `inconscient`) ``) — routé via `perEtatHasLiteralArg` (jugement sur le
+ *       segment ENTIER jusqu'au backtick fermant, même mécanique que `nameCallHasLiteralArg` #385),
+ *       pas via une classe de caractères sur la regex (un 1er essai `` `(?!\$\{) `` flaguait à tort
+ *       un préfixe littéral suivi d'interpolation plus loin dans le segment, ex. `` `etat-${x}` `` —
+ *       corrigé en passant la détection au helper, seul juge fiable de la littéralité d'un backtick) ;
+ *   (b) loophole d'INSTRUMENTATION : une ligne de machinerie (`const _ = stacks(c, …)`,
+ *       `removeCondition`, gate `wounds.current <= 0`…) retranchait TOUTE lecture PAR-ÉTAT qui la
+ *       matchait, y compris quand son argument était un NOM D'ÉTAT LITTÉRAL (`stacks(c, 'inconscient')`)
+ *       plutôt que la constante canonique `COND.*` — le contournement passait inaperçu derrière la
+ *       machinerie. Seule la forme canonique `COND.*` reste retranchée ; un littéral en machinerie est
+ *       désormais COMPTÉ. Stock révélé (aucun de ces sites n'était du hardcode NOUVEAU, seulement
+ *       masqué par la machinerie) : `engine/conditions.ts` (l.446, gate `isOutOfAction` coque —
+ *       `hasCondition(c, 'naufrage')`), `engine/exposure.ts` (l.111, gate hypothermie), `engine/rest.ts`
+ *       (5 sites revélés : l.97/112/113/141/155, instrumentation `stacks(c, 'extenue'/'inconscient'/
+ *       'a-terre')` masquée derrière `const/let … = stacks(` ou `removeCondition`), `state/
+ *       outOfCombatUpkeep.ts` (l.11, gate de veille), `state/travelFlow.ts` (l.687) et `state/
+ *       travelPostes.ts` (l.278,308) — fatigue `extenue` par-nom en instrumentation de voyage. */
 const BASELINES: Record<string, number> = {
   'src/engine/traits/dispatch.ts': 2,
   'src/state/ai.ts': 6, // dont #411 : recover/retreat par-nom en-flammes (l.403) + empetre (l.558,959)
   'src/state/combatManeuvers.ts': 1, // #402 : hasTraitKey(mort-vivant) littéral → capabilities.undead (Trait), reste isBestial (défense)
   // #411 (2026-07-13) — stock révélé par l'extension aux littéraux, GELÉ, à résorber (doctrine #295)
-  'src/engine/rest.ts': 3, // gate de repos (hemorragique/en-flammes/empoisonne, l.13) + fatigue extenue (l.125,145)
+  'src/engine/rest.ts': 8, // #413 : gate repos (l.13) + fatigue/veille extenue+inconscient+a-terre (l.97,112,113,125,141,145,155)
   'src/engine/suffocation.ts': 2, // pose Inconscient par-nom à l'issue du décompte (l.43,51)
   'src/state/combatEffects.ts': 2, // détection « mis à terre » par-nom (a-terre, l.776,779)
   'src/engine/combat.ts': 1, // isHelplessTarget — hasCondition(c, 'inconscient') (l.651)
   'src/engine/healing.ts': 1, // Soin ciblant un Inconscient par-nom (l.86)
+  // #413 (2026-07-14) — stock révélé par la fermeture du loophole d'instrumentation, GELÉ
+  'src/engine/conditions.ts': 1, // isOutOfAction coque — hasCondition(c, 'naufrage') derrière gate wounds<=0 (l.446)
+  'src/engine/exposure.ts': 1, // gate hypothermie — hasCondition(c, 'inconscient') derrière wounds<=0 (l.111)
+  'src/state/outOfCombatUpkeep.ts': 1, // gate de veille — hasCondition(c, …) derrière wounds<=0 (l.11)
+  'src/state/travelFlow.ts': 1, // instrumentation voyage — stacks(h, 'extenue') (l.687)
+  'src/state/travelPostes.ts': 2, // instrumentation voyage — stacks(h, 'extenue') (l.278,308)
 };
 
 function scanFiles(): string[] {
@@ -138,6 +165,17 @@ describe('garde-fou « tout migrer » — réactions de combat hardcodées (cliq
     const src = readFileSync(join(ROOT, 'src/state/combatEffects.ts'), 'utf8');
     const findings = scanHardcode('src/state/combatEffects.ts', src);
     expect(findings.map((f) => f.detail).filter((d) => /easierIf/.test(d))).toEqual([]);
+  });
+
+  it('#413 — backtick statique signalé, interpolé non signalé', () => {
+    expect(scanHardcode('src/x.ts', 'if (hasCondition(c, `inconscient`)) {').length).toBe(1);
+    expect(scanHardcode('src/x.ts', 'if (hasCondition(c, `${cond}`)) {').length).toBe(0);
+    expect(scanHardcode('src/x.ts', 'hasCondition(c, `etat-${x}`)').length).toBe(0);
+  });
+
+  it('#413 — arg littéral en ligne de machinerie compté ; COND.* canonique retranché', () => {
+    expect(scanHardcode('src/x.ts', "const _ = stacks(c, 'inconscient');").length).toBe(1);
+    expect(scanHardcode('src/x.ts', 'const before = stacks(c, COND.extenue);').length).toBe(0);
   });
 
   it('CLIQUET : toute baseline devenue trop haute (fichier assaini) doit être ABAISSÉE', () => {
