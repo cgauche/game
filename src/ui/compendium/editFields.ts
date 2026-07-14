@@ -13,7 +13,10 @@ export interface FieldDesc {
 }
 
 function kindOf(key: string, v: unknown): FieldKind {
-  if (key === 'source') return 'source';
+  // `source` = composite {book,page} SEULEMENT quand la donnée l'est réellement — un `source` MAISON
+  // (littéral string, ex. `axes.json` #409, aucune page RAW à citer) retombe sur l'inférence générique
+  // (chaîne courte) plutôt que le widget livre/page (qui écraserait la valeur par un objet au 1er edit).
+  if (key === 'source' && v != null && typeof v === 'object') return 'source';
   if (key === 'desc') return 'textarea';
   if (typeof v === 'string') return v.length > 80 ? 'textarea' : 'text';
   if (typeof v === 'number') return 'number';

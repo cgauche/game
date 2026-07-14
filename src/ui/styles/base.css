@@ -126,7 +126,28 @@
   --atelier-argent-mid: #aab4bc; /* dégradé statut Argent — milieu */
   --atelier-argent-lo: #7e8890; /* dégradé statut Argent — bas */
   --atelier-or-lo: #9c7526; /* dégradé statut Or — bas */
+  --atelier-rose-well-hi: #2c2012; /* puits de la rose des forces — haut du dégradé */
+  --atelier-rose-well-lo: #050302; /* puits de la rose des forces — bas du dégradé */
+  --atelier-rose-rim: rgba(255, 217, 122, .28); /* liseré laiton du puits, rose renseignée */
+  --atelier-rose-rim-empty: rgba(255, 217, 122, .1); /* liseré laiton du puits, rose vide */
+  --atelier-rose-fill: rgba(216, 185, 84, .17); /* remplissage encre du polygone de score */
+  --atelier-rose-stroke: #d8b954; /* liseré du polygone de score */
+  --atelier-rose-empty-ink: #5c4a30; /* tiret/étiquettes d'une rose sans donnée */
+  --atelier-night: #0d0805; /* bas des dégradés d'alcôve/cadre de détail */
+  --atelier-dicewell-border: #c9573f; /* encrier attente — bordure rouge bordé-teinté */
+  --atelier-dicewell-border-hover: #e0765a; /* encrier attente — bordure survolée */
+  --atelier-dicewell-txt: #ffd9cd; /* encrier attente — libellé clair */
+  --atelier-dicewell-txt-muted: #c9a08c; /* encrier attente — texte atténué */
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
+  /* Échelle NOMMÉE des plaques de caractéristique (#418) — CONTRAT partagé par `.char-stats`
+     (`CharStatsGrid`) et `.codex-kv` (fiche Codex) : sm = densité fiche/codex, md = écran plein
+     type Race, lg = allocation créateur (patron `CHAR_SIZE_PX` de PortraitTile). */
+  --stat-label-sm: 10px;
+  --stat-val-sm: 15px;
+  --stat-label-md: 11px;
+  --stat-val-md: 20px;
+  --stat-label-lg: 12px;
+  --stat-val-lg: 25px;
 }
 
 * {
@@ -545,21 +566,41 @@ h3 {
     height: 220px;
   }
 }
+/* ── Grille de plaques de caractéristique (CharStatsGrid, #418) — plaque Atelier : libellé
+   small-caps gravé au-dessus, valeur en grand en dessous, cadre laiton discret. Échelle NOMMÉE
+   via `.char-stats-<size>` (jamais de taille en dur au consommateur) — jetons `--stat-*`. */
 .char-stats {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
+  --stat-label-size: var(--stat-label-sm);
+  --stat-val-size: var(--stat-val-sm);
+}
+.char-stats-sm {
+  --stat-label-size: var(--stat-label-sm);
+  --stat-val-size: var(--stat-val-sm);
+}
+.char-stats-md {
+  --stat-label-size: var(--stat-label-md);
+  --stat-val-size: var(--stat-val-md);
+}
+.char-stats-lg {
+  --stat-label-size: var(--stat-label-lg);
+  --stat-val-size: var(--stat-val-lg);
 }
 .stat {
-  background: var(--panel2);
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+  border: 1px solid var(--atelier-wood-etch);
   border-radius: 6px;
   padding: 4px 2px;
   text-align: center;
 }
 .stat-label {
   display: block;
-  font-size: 10px;
-  color: var(--muted);
+  font-variant-caps: small-caps;
+  letter-spacing: 0.6px;
+  font-size: var(--stat-label-size);
+  color: var(--atelier-brass-rubric);
   padding: 3px 0;
 }
 /* #200 : le déclencheur CodexRef d'un libellé de caractéristique (I, CC…) est minuscule
@@ -571,7 +612,8 @@ h3 {
 }
 .stat-val {
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--stat-val-size);
+  color: var(--atelier-brass-etch);
 }
 .mini-title {
   font-size: 11px;
@@ -615,9 +657,9 @@ h3 {
   line-height: 1.35;
   padding: 2px 9px;
   border-radius: 8px;
-  background: var(--panel2);
-  border: 1px solid var(--border);
-  color: var(--text);
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+  border: 1px solid var(--atelier-wood-etch);
+  color: var(--atelier-brass-etch);
   cursor: help;
   transition: border-color 0.12s, color 0.12s, background 0.12s;
 }
@@ -625,7 +667,7 @@ h3 {
 .entity-chip:focus-within {
   border-color: var(--gold);
   color: var(--gold2);
-  background: var(--bg2);
+  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
 }
 .entity-chip .codex-ref {
   color: inherit;

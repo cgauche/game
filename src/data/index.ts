@@ -73,6 +73,7 @@ import reglesJson from './regles.json';
 import disponibiliteJson from './disponibilite.json';
 import waterExposureJson from './water-exposure.json';
 import nightStakesJson from './night-stakes.json';
+import axesJson from './axes.json';
 import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
@@ -84,6 +85,7 @@ import type { OupsRow } from './oups';
 import type { InterludeEvent } from './interludeEvents';
 import type { Peripetie } from './peripeties';
 import type { CharacteristicsData } from './schemas/defs/characteristics';
+import type { AxesData } from './schemas/defs/axes';
 
 /** Règle d'EMPOIGNADE en DONNÉE (LDB 14 l.155-169) : `init` = ops à la touche d'une Empoignade déclarée
  *  (Empêtré + relation via le flag `grapple`) ; `win` = les 3 options du Test opposé GAGNÉ (l.161), appliquées
@@ -1563,6 +1565,17 @@ export const findDomainById = (id: string | null | undefined): DomainData | unde
  *  Domaine et AFFICHE le Vent ; ce lookup fait l'inverse (authoring/migration Vent → id). */
 export const domainByWind: Map<string, DomainData> = new Map(domains.filter((d) => d.wind).map((d) => [d.wind as string, d]));
 export const findDomainByWind = (wind: string | null | undefined): DomainData | undefined => (wind ? domainByWind.get(wind) : undefined);
+/** Un axe du catalogue `axes.json` (#409) — vue TS de son schéma zod. */
+export type AxisData = AxesData[number];
+/** Catalogue des axes de forces/faiblesses (mécanique MAISON, #409) : socle de base (`core`) +
+ *  exemples de scénario (négoce/ingénierie/navigation). `derivation` liste des ids STABLES de
+ *  `skills.json`/`talents.json` — résolus par `axisScore` (`src/engine/axes.ts`). Intégrité des ids
+ *  vérifiée par `axes-integrity.test.ts` (patron `book-source-integrity.test.ts`). */
+export const allAxes = axesJson as AxisData[];
+const AXIS_BY_ID = new Map(allAxes.map((a) => [a.id, a]));
+export const findAxisById = (id: string): AxisData | undefined => AXIS_BY_ID.get(id);
+/** Socle par défaut d'une campagne SANS `activeAxes` déclaré (`WorldMap.activeAxes`). */
+export const CORE_AXIS_IDS: string[] = allAxes.filter((a) => a.core).map((a) => a.id);
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 /** Calendrier impérial — tables de CONTENU éditables au Codex (cf. `engine/clock.ts` pour la mécanique). */

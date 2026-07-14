@@ -127,7 +127,7 @@
   margin-bottom: 14px;
 }
 
-/* ── Fiche : onglets Fiche / Avancement — primitive `<Tabs variant="pill">` (tabs.css) ── */
+/* ── Fiche : onglets Fiche / Avancement — primitive `<Tabs>` (components.css) ── */
 .sheet-tabnav {
   margin-bottom: 12px;
 }

@@ -1,0 +1,148 @@
+[
+  {
+    "id": "social",
+    "label": "Social",
+    "desc": "Aptitude à convaincre, mener et lire les autres.",
+    "core": true,
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "charme"
+      },
+      {
+        "skillId": "commandement"
+      }
+    ]
+  },
+  {
+    "id": "melee",
+    "label": "Mêlée",
+    "desc": "Combat rapproché, toutes armes de corps à corps confondues.",
+    "core": true,
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "corps-a-corps"
+      }
+    ]
+  },
+  {
+    "id": "tir",
+    "label": "Tir",
+    "desc": "Combat à distance, toutes armes de trait confondues.",
+    "core": true,
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "projectiles"
+      }
+    ]
+  },
+  {
+    "id": "soins",
+    "label": "Soins",
+    "desc": "Soigner les blessures et les maux du groupe.",
+    "core": true,
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "guerison"
+      }
+    ]
+  },
+  {
+    "id": "savoir",
+    "label": "Savoir",
+    "desc": "Érudition et connaissances livresques, toutes spécialisations confondues.",
+    "core": true,
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "savoir"
+      }
+    ]
+  },
+  {
+    "id": "discretion",
+    "label": "Discrétion",
+    "desc": "Se fondre, se faufiler et forcer un accès sans se faire remarquer.",
+    "core": true,
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "discretion"
+      },
+      {
+        "skillId": "escamotage"
+      },
+      {
+        "skillId": "crochetage"
+      }
+    ]
+  },
+  {
+    "id": "negoce",
+    "label": "Négoce",
+    "desc": "Évaluer la valeur des biens et négocier en expert — utile dès qu'un scénario tourne autour du commerce.",
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "evaluation"
+      }
+    ],
+    "talents": [
+      {
+        "talentId": "negociateur"
+      }
+    ]
+  },
+  {
+    "id": "ingenierie",
+    "label": "Ingénierie",
+    "desc": "Machines de siège, artillerie et constructions — utile dès qu'un scénario tourne autour d'un siège.",
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "savoir",
+        "spec": "ingenierie"
+      },
+      {
+        "skillId": "savoir",
+        "spec": "artillerie"
+      },
+      {
+        "skillId": "metier",
+        "spec": "ingenieur"
+      }
+    ],
+    "talents": [
+      {
+        "talentId": "maitre-artisan",
+        "spec": "ingenieur"
+      }
+    ]
+  },
+  {
+    "id": "navigation",
+    "label": "Navigation",
+    "desc": "Mener un vaisseau à bon port — utile dès qu'un scénario tourne autour de la mer ou du fleuve.",
+    "source": "maison",
+    "skills": [
+      {
+        "skillId": "voile"
+      },
+      {
+        "skillId": "savoir",
+        "spec": "cotes-et-marees"
+      }
+    ],
+    "talents": [
+      {
+        "talentId": "pied-marin"
+      },
+      {
+        "talentId": "loup-de-mer"
+      }
+    ]
+  }
+]

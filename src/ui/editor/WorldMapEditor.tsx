@@ -4,7 +4,7 @@ import { WorldMap, MapPlace, MapRoute, type PlacePoi, emptyWorldMap, placeById }
 import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
 import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
 import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
-import { navalPorts, findNavalPortById, lieuxServices } from '../../data';
+import { navalPorts, findNavalPortById, lieuxServices, allAxes, CORE_AXIS_IDS } from '../../data';
 import { resolvePortRef, placeServices, poiIcon } from '../../state/worldMap';
 import { EffectList } from './EffectList';
 import { Icon, IconG } from '../Icon';
@@ -95,12 +95,17 @@ function BackdropField({ label, value, onChange }: { label: string; value?: stri
  * d'auteur via EffectList, cible d'embuscade), paramètres de carte (heures/jour, marche forcée,
  * seuil d10 par défaut). Défauts = valeurs RAW citées dans `engine/travel.ts`.
  */
-export function WorldMapEditor({ map, setMap, scenes, onClose }: {
+export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setActiveAxes }: {
   map: WorldMap | null;
   setMap: (m: WorldMap | null) => void;
   /** Toutes les scènes du projet (active + réserve) — pour lier lieux/embuscades. */
   scenes: Scene[];
   onClose: () => void;
+  /** Axes de forces/faiblesses ACTIFS du PROJET (#409, `ProjectDoc.activeAxes`) — `undefined` =
+   *  socle de base (`CORE_AXIS_IDS`). Porté au niveau projet (pas la carte), édité ICI faute d'écran
+   *  dédié dans ce lot : premier réglage de campagne déjà présent dans l'éditeur. */
+  activeAxes?: string[];
+  setActiveAxes?: (ids: string[] | undefined) => void;
 }) {
   const m: WorldMap = map ?? emptyWorldMap();
   const [sel, setSel] = useState<{ kind: 'place' | 'route'; id: string } | null>(null);
@@ -317,6 +322,25 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                   onChange={(e) => upd({ params: { ...m.params, perilDie: Math.max(0, Math.min(10, Number(e.target.value) || 0)) } })}
                 />
               </label>
+              {setActiveAxes && (
+                <>
+                  <div className="mini-title">Axes actifs (#409) — vide = socle de base</div>
+                  {allAxes.map((a) => (
+                    <label key={a.id} className="ed-check" title={a.desc}>
+                      <input
+                        type="checkbox"
+                        checked={(activeAxes ?? CORE_AXIS_IDS).includes(a.id)}
+                        onChange={(e) => {
+                          const base = activeAxes ?? CORE_AXIS_IDS;
+                          const next = e.target.checked ? [...base, a.id] : base.filter((id) => id !== a.id);
+                          setActiveAxes(next.length ? next : undefined);
+                        }}
+                      />
+                      {a.label}
+                    </label>
+                  ))}
+                </>
+              )}
             </>
           )}
 

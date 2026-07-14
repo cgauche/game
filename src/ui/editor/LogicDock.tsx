@@ -104,7 +104,6 @@ export function LogicDock({
         onPointerUp={() => (dragRef.current = null)}
       />
       <Tabs
-        variant="dock"
         tabs={tabs}
         active={open ? tab : null}
         onChange={clickTab}

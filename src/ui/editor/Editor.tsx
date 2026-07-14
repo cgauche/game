@@ -52,6 +52,8 @@ export function Editor() {
   // --- Projet multi-scènes + métadonnées ---
   const [otherScenes, setOtherScenes] = useState<Scene[]>([]);
   const [worldMap, setWorldMap] = useState<WorldMap | null>(null);
+  /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — `undefined` = socle de base. */
+  const [activeAxes, setActiveAxes] = useState<string[] | undefined>(undefined);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('La Diligence');
   const [published, setPublished] = useState(false);
@@ -199,17 +201,18 @@ export function Editor() {
   // --- Fichier : import/export/bibliothèque/test ---
   function exportJson() {
     // Exporte le PROJET v2 (scènes + carte du monde) ; la première scène est l'entrée.
-    const project = { schema: 2 as const, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}) };
+    const project = { schema: 2 as const, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}) };
     downloadText(`${scene.id}-projet.json`, JSON.stringify(project, null, 2));
   }
   function importJson(file: File) {
     file.text().then((txt) => {
       try {
         const data = JSON.parse(txt);
-        const { scenes, worldMap: wm } = parseProject(data); // projet v2 ({ schema: 2, scenes, worldMap? })
+        const { scenes, worldMap: wm, activeAxes: aa } = parseProject(data); // projet v2 ({ schema: 2, scenes, worldMap?, activeAxes? })
         if (!scenes.length) return;
         setOtherScenes(scenes.slice(1).map(clone));
         setWorldMap(wm ?? null);
+        setActiveAxes(aa);
         setSel(null);
         resetScene(clone(scenes[0]));
       } catch {
@@ -228,6 +231,7 @@ export function Editor() {
   function loadScenario(sc: TestScenario) {
     setOtherScenes((sc.extraScenes ?? []).map(clone));
     setWorldMap(sc.worldMap ? JSON.parse(JSON.stringify(sc.worldMap)) : null);
+    setActiveAxes(undefined);
     setProjectId(null);
     setProjectName(sc.title);
     setPublished(false);
@@ -243,6 +247,7 @@ export function Editor() {
     const rest = bc.scenes.filter((s) => s.id !== start.id);
     setOtherScenes(rest.map(clone));
     setWorldMap(bc.worldMap ? JSON.parse(JSON.stringify(bc.worldMap)) : null);
+    setActiveAxes(undefined);
     setProjectId(null);
     setProjectName(`Copie de ${bc.name}`);
     setPublished(false);
@@ -253,8 +258,9 @@ export function Editor() {
   function loadSaved(p: SavedProject) {
     let scenes: Scene[];
     let wm: WorldMap | undefined;
+    let aa: string[] | undefined;
     try {
-      ({ scenes, worldMap: wm } = parseProject(p.project)); // même validation/migration que l'import JSON
+      ({ scenes, worldMap: wm, activeAxes: aa } = parseProject(p.project)); // même validation/migration que l'import JSON
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Projet invalide');
       return;
@@ -262,6 +268,7 @@ export function Editor() {
     if (!scenes.length) return;
     setOtherScenes(scenes.slice(1).map(clone));
     setWorldMap(wm ? JSON.parse(JSON.stringify(wm)) : null);
+    setActiveAxes(aa);
     setProjectId(p.id);
     setProjectName(p.name);
     setPublished(p.published);
@@ -277,7 +284,7 @@ export function Editor() {
       startSceneId,
       savedAt: Date.now(),
       published: pub,
-      project: { schema: 2, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}) },
+      project: { schema: 2, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}) },
     });
     setProjectId(id);
     setProjectName(name);
@@ -287,6 +294,7 @@ export function Editor() {
   function newProject() {
     setOtherScenes([]);
     setWorldMap(null);
+    setActiveAxes(undefined);
     setProjectId(null);
     setProjectName('Nouveau projet');
     setPublished(false);
@@ -490,7 +498,9 @@ export function Editor() {
         </button>
       </div>
 
-      {worldOpen && <WorldMapEditor map={worldMap} setMap={setWorldMap} scenes={[scene, ...otherScenes]} onClose={() => setWorldOpen(false)} />}
+      {worldOpen && (
+        <WorldMapEditor map={worldMap} setMap={setWorldMap} scenes={[scene, ...otherScenes]} onClose={() => setWorldOpen(false)} activeAxes={activeAxes} setActiveAxes={setActiveAxes} />
+      )}
       {openOpen && (
         <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onBuiltin={loadBuiltin} onClose={() => setOpenOpen(false)} />
       )}

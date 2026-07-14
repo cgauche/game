@@ -218,6 +218,7 @@ fait DANS la primitive, pas dans une nième copie.
 | **Cérémonie de tirage** du créateur (Race/Carrière/Caractéristiques/Signe astral) : attente→roulant→rendu, gain de PX en direct | `CreatorDice` (compose `Section`/`XpBadge`/`useRollFrisson`/`DiceRoll`) | `src/ui/creator/CreatorDice.tsx` |
 | Aperçu « perso en pied » hors combat (roster, créateur, fiche, marchand) — rig réel, apparence bas niveau OU `hero` (Combatant) | `CharacterPreview` | `src/ui/CharacterPreview.tsx` |
 | Bouton d'engagement dont l'indisponibilité porte sa RAISON en texte visible (a11y `aria-describedby`) | `GatedAction` | `src/ui/GatedAction.tsx` |
+| **Rose des forces** (mini-radar gravé, N axes paramétrables — `axisScore`/`axesProfile`, `src/engine/axes.ts`) : glyphe 44px coin de figurine, médaillon 90×86, rendu plein 280×196 | `RoseAxes` | `src/ui/RoseAxes.tsx` |
 | Chip statut métallisé Bronze/Argent/Or + échelon (dérivée de `parseStatus`) | `MetalStatus` | `src/ui/MetalStatus.tsx` |
 | Sceau de cire (tête de mort, SVG) + plaque d'élu scellée | `WaxSeal` / `SealedPlaque` | `src/ui/WaxSeal.tsx` |
 | Chemin d'évolution d'une carrière en médaillons de niveau (`levelsForCareer`) | `CareerPath` | `src/ui/CareerPath.tsx` |

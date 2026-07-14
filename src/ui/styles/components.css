@@ -24,13 +24,15 @@
 
 /* ── SURFACE ── */
 .panel {
-  background: var(--panel);
+  background: linear-gradient(160deg, var(--panel2), var(--panel));
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
+  box-shadow: inset 0 1px 0 rgba(232, 196, 103, 0.06);
 }
 .panel.sunken {
   background: var(--bg2);
+  box-shadow: none;
 }
 .panel.gold {
   border-top: 3px solid var(--gold);
@@ -252,31 +254,35 @@
 }
 
 /* ── Tabs — primitive UNIQUE de navigation par onglets (#314) : `src/ui/Tabs.tsx`.
-   Style de BASE (variante `flat` : fiche/zone) ; les variantes `pill`/`sub`/`dock` sont composées
-   dans `styles/tabs.css`. */
+   Présentation UNIQUE chartée « Atelier du scribe » [entériné 2026-07-14, #414] — pilules gravées
+   (langage `.substep`/`.cc-pill` du kit), plus de variantes. */
 .tabs {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
+  border-bottom: none;
+  padding-bottom: 2px;
 }
 .tabs .tab-btn {
   display: inline-flex;
   align-items: center;
-  background: transparent;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  color: var(--muted);
-  padding: 7px 12px;
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+  border: 1px solid var(--atelier-wood-etch);
+  border-radius: 999px;
+  color: var(--atelier-brass-rubric);
+  padding: 6px 14px;
   cursor: pointer;
   font-size: 13px;
   font-family: inherit;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
 }
-.tabs .tab-btn:hover { color: var(--text); }
+.tabs .tab-btn:hover { border-color: var(--atelier-brass-hover); color: var(--text); }
 .tabs .tab-btn.active {
-  color: var(--gold);
-  border-bottom-color: var(--gold);
+  border-color: var(--gold);
+  color: var(--atelier-brass-elu);
+  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
+  box-shadow: inset 0 0 0 1px rgba(216, 185, 84, 0.32);
   font-weight: 600;
 }
 .tabs .tab-btn .count { margin-left: 6px; }
@@ -434,6 +440,17 @@
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
+}
+/* Échelle NOMMÉE (CONTRAT `--stat-*` partagé avec `.char-stats`, #418) — la VALEUR prend le jeton,
+   jamais un `font-size` hérité du contexte. */
+.char-value-sm b {
+  font-size: var(--stat-val-sm);
+}
+.char-value-md b {
+  font-size: var(--stat-val-md);
+}
+.char-value-lg b {
+  font-size: var(--stat-val-lg);
 }
 .char-value em {
   font-style: normal;

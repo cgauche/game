@@ -63,6 +63,7 @@ export function CreatorSummary({ d }: { d: CreatorDraft; step?: number }) {
 
       <div style={started ? undefined : DIM}>
         <CharStatsGrid
+          size="sm"
           value={(k) => (hero ? hero.characteristics[k] : sp ? baseChars[k] : '—')}
           valClass={(k) => { const v = hero?.characteristics[k] ?? baseChars[k]; return hero != null && v > baseChars[k] ? 'boost' : ''; }}
           note={(k) => { const v = hero?.characteristics[k] ?? baseChars[k]; return hero != null && v > baseChars[k] ? `${baseChars[k]} + Augmentations/talents` : undefined; }}

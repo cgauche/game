@@ -1,0 +1,58 @@
+import { describe, it, expect } from 'vitest';
+import { allAxes, findSkillById, findTalentById, specIdsOf } from './index';
+
+/**
+ * Garde d'INTÉGRITÉ de `axes.json` (#409) — patron `book-source-integrity.test.ts` : chaque
+ * `skillId`/`talentId` DOIT être un `id` STABLE de `skills.json`/`talents.json`, chaque `spec` DOIT
+ * résoudre dans le pool de spéc de sa Compétence/Talent (`specIdsOf`, inline OU `specsSource`). Un id
+ * qui ne résout plus (renommage/suppression amont) casse le moteur (`axisScore`) en silence sans
+ * cette garde.
+ */
+describe('#409 — intégrité de axes.json', () => {
+  for (const axis of allAxes) {
+    describe(`axe « ${axis.id} »`, () => {
+      for (const ref of axis.skills ?? []) {
+        it(`compétence ${ref.skillId}${ref.spec ? ` (${ref.spec})` : ''} existe`, () => {
+          const skill = findSkillById(ref.skillId);
+          expect(skill, `skillId « ${ref.skillId} » introuvable dans skills.json`).toBeDefined();
+          if (ref.spec && skill) {
+            expect(specIdsOf(skill), `spec « ${ref.spec} » absente du pool de « ${ref.skillId} »`).toContain(ref.spec);
+          }
+        });
+      }
+      for (const ref of axis.talents ?? []) {
+        it(`talent ${ref.talentId}${ref.spec ? ` (${ref.spec})` : ''} existe`, () => {
+          const talent = findTalentById(ref.talentId);
+          expect(talent, `talentId « ${ref.talentId} » introuvable dans talents.json`).toBeDefined();
+          if (ref.spec && talent) {
+            expect(specIdsOf(talent), `spec « ${ref.spec} » absente du pool de « ${ref.talentId} »`).toContain(ref.spec);
+          }
+        });
+      }
+    });
+  }
+
+  it('ids d\'axe uniques et non vides', () => {
+    const ids = allAxes.map((a) => a.id);
+    expect(ids.every((x) => !!x)).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  /** Réfutation utilisateur 2026-07-14 (« bonne en ingénierie » / « taggée Soins » sans formation) :
+   *  un axe EXPERT (scénario, non-`core`) ne doit reposer QUE sur des Compétences AVANCÉES (LDB 09
+   *  l.30 — inutilisables sans Augmentation, cf. `docs/raw/competences.md`), jamais une Compétence de
+   *  Base qui laisserait la Caractéristique nue « allumer » l'axe sans formation. Verrou id par id
+   *  (pas un sondage sur les pregens) — une régression de DONNÉE (ajout d'un skillId de Base à un axe
+   *  expert) casse ce test AVANT de reproduire le bug en jeu. */
+  it('les axes EXPERT (non-core) ne dérivent QUE de Compétences AVANCÉES — jamais de Compétence de Base', () => {
+    const offenders: string[] = [];
+    for (const axis of allAxes) {
+      if (axis.core) continue;
+      for (const ref of axis.skills ?? []) {
+        const skill = findSkillById(ref.skillId);
+        if (skill && skill.type !== 'avancée') offenders.push(`${axis.id} ← ${ref.skillId} (type « ${skill.type} »)`);
+      }
+    }
+    expect(offenders, `Axe(s) expert dérivant d'une Compétence de Base (RAW l.25 : testable sans formation) :\n${offenders.join('\n')}`).toEqual([]);
+  });
+});

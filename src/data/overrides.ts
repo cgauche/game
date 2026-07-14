@@ -12,7 +12,7 @@
 import {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
-  pregens, oups, interludeEvents, peripeties, details, names,
+  pregens, oups, interludeEvents, peripeties, details, names, allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS,
@@ -88,6 +88,8 @@ const ARRAYS = {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
   pregens, oups, interludeEvents, peripeties,
+  // Axes de forces/faiblesses (#409) — mécanique MAISON, éditable au Codex comme tout catalogue.
+  axes: allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate,
   // #168 : catalogue UNIQUE des Activités (interlude/voyage/mer/bataille de masse) exposé au Codex —

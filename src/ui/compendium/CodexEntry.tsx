@@ -148,7 +148,13 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
         ) : item.statblock && (
           <div className="codex-statblock tx-parchment">
             <table className="codex-statblock-profile">
-              <thead><tr>{item.statblock.profile.map((f) => <th key={f.label}>{f.label}</th>)}</tr></thead>
+              <thead>
+                <tr>
+                  {item.statblock.profile.map((f) => (
+                    <th key={f.label}>{f.kref ? <CodexRef category={f.kref.category} id={f.kref.id} label={f.kref.label}>{f.label}</CodexRef> : f.label}</th>
+                  ))}
+                </tr>
+              </thead>
               <tbody><tr>{item.statblock.profile.map((f) => <td key={f.label}>{f.value}</td>)}</tr></tbody>
             </table>
             {item.statblock.traits.length > 0 && (

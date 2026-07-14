@@ -47,7 +47,16 @@ describe('CharStatsGrid (rendu — markup unifié .char-stats)', () => {
 
   it('className est ajoutée au conteneur .char-stats (parité sheet-stats)', () => {
     const html = renderToStaticMarkup(<CharStatsGrid className="sheet-stats" value={(k) => k} />);
-    expect(html).toContain('class="char-stats sheet-stats"');
+    expect(html).toContain('class="char-stats char-stats-sm sheet-stats"');
+  });
+
+  it("size (défaut 'sm') pilote la classe d'échelle NOMMÉE `.char-stats-<size>`", () => {
+    const sm = renderToStaticMarkup(<CharStatsGrid value={(k) => k} />);
+    expect(sm).toContain('class="char-stats char-stats-sm"');
+    const md = renderToStaticMarkup(<CharStatsGrid value={(k) => k} size="md" />);
+    expect(md).toContain('class="char-stats char-stats-md"');
+    const lg = renderToStaticMarkup(<CharStatsGrid value={(k) => k} size="lg" />);
+    expect(lg).toContain('class="char-stats char-stats-lg"');
   });
 
   it('le libellé court suit la DONNÉE (CHAR_ABR), jamais la clé littérale — altère le dataset réel', () => {

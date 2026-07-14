@@ -52,9 +52,15 @@ src/engine/                 Règles WFRP4, PUR + testé :
   grimoire.ts                 apprentissage/mémorisation des sorts (coûts par Talent) + lecture au livre
   travel.ts                   voyage RAW (#T2) : vitesses km/h, 6 h/jour, marche forcée, coûts diligence/barge
   provisions.ts               rations & Faim (LDB 18 l.417-422) : consommation/jour, Tests, malus, Brouet
+  axes.ts                      axes de forces/faiblesses (#409, mécanique MAISON) : axisScore/axesProfile/
+                                partyCoverage/dominantAxes depuis `data/axes.json` (`derivation` en ids de
+                                skills/talents) — SOURCE UNIQUE du mini-radar, du rail de composition (#417)
+                                et des « rôles » de carte (`heroRoles`, `ui/CharCard.tsx`, réconcilié dessus)
 src/state/
   scene.ts                  SCHÉMA DE SCÈNE (tiles, entities, dialogues, triggers, encounters, Effect[])
-  worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2.
+  worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2
+                            (`ProjectDoc`, `activeAxes?: string[]` #409 — axes de forces/faiblesses ACTIFS de
+                            la campagne, ids de `data/axes.json`, défaut `CORE_AXIS_IDS` via `resolveActiveAxes`).
                             DONNÉES DE LIEU (#343) : le nœud `MapPlace` est LA source des services d'un lieu —
                             `port` (schéma riche + catalogue `naval-ports.json`), `market` (LandMarketProfile) et
                             `services[]` EXTENSIBLES (catalogue `lieux-services.json` : auberge/temple/forgeron/

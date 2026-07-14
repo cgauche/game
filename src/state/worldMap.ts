@@ -16,7 +16,7 @@ import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
 import type { LandMarketProfile } from '../engine/landCargo';
 import type { RestPlaces } from './restFlow';
-import { findNavalPortById, findLieuServiceById } from '../data';
+import { findNavalPortById, findLieuServiceById, findAxisById, CORE_AXIS_IDS } from '../data';
 
 /** Lieu posé sur la carte. Être dans `scene` = être à ce lieu ; y arriver → transition vers elle. */
 export interface MapPlace {
@@ -418,6 +418,17 @@ export interface ProjectDoc {
   schema: 2;
   scenes: Scene[];
   worldMap?: WorldMap;
+  /** Axes de forces/faiblesses ACTIFS de la campagne (#409, ids de `src/data/axes.json`) — un
+   *  scénario marchand active `negoce`, un siège `ingenierie`. Absent = socle de base (`CORE_AXIS_IDS`,
+   *  cf. `resolveActiveAxes`). Placement en jeu (rail de composition, mini-radar) hors périmètre de
+   *  ce lot (#417). */
+  activeAxes?: string[];
+}
+
+/** Axes RÉELLEMENT actifs d'un projet — `activeAxes` déclaré (validé) sinon le socle de base. SOURCE
+ *  UNIQUE de ce défaut (jamais un `?? []` dispersé côté consommateur, cf. #417). */
+export function resolveActiveAxes(doc: { activeAxes?: string[] }): string[] {
+  return doc.activeAxes && doc.activeAxes.length > 0 ? doc.activeAxes : CORE_AXIS_IDS;
 }
 
 const CURRENT_PROJECT_SCHEMA = 2;
@@ -436,7 +447,7 @@ export const PROJECT_MIGRATIONS: MigrationMap = {};
  *  refusés : ils n'ont jamais porté de `schema`. Chaque scène ressort passée par `normalizeScene`
  *  (`scene.ts`) : les collections requises qu'un vieux document (même schema 2) ne portait pas encore
  *  sont complétées ici, au SEUL point d'entrée, jamais par un `?? []` dispersé côté consommateur. */
-export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap } {
+export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap; activeAxes?: string[] } {
   const obj = data as Record<string, unknown> | null;
   if (!obj || typeof obj !== 'object') {
     throw new Error('Projet invalide : document absent ou mal formé.');
@@ -452,5 +463,12 @@ export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: World
   if (worldMap) {
     worldMap.places = worldMap.places.map((p) => (p.port ? { ...p, port: resolvePortRef(p.port) } : p));
   }
-  return { scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap };
+  const activeAxes = (migrated.activeAxes as string[] | undefined) ?? undefined;
+  if (activeAxes) {
+    const unknown = activeAxes.filter((id) => !findAxisById(id));
+    if (unknown.length) {
+      throw new Error(`Projet invalide : activeAxes référence des axes inconnus de axes.json : ${unknown.join(', ')}.`);
+    }
+  }
+  return { scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap, activeAxes };
 }

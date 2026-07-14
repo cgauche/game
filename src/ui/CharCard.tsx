@@ -6,7 +6,8 @@ import { OrnateFrame } from './Ornaments';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import { Coins } from './Coins';
-import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete } from '../data';
+import { speciesSingular, findSpeciesById, careerLabelFor, skillInstanceLabel, talentConcrete, allAxes } from '../data';
+import { dominantAxes } from '../engine/axes';
 import { t } from '../i18n';
 
 /** Sous-titre d'ARCHÉTYPE : « Carrière — Espèce » (la CARRIÈRE en tête, c'est le concept du personnage
@@ -18,19 +19,12 @@ export function heroSubtitle(hero: Combatant): string {
   return `${careerLabelFor(hero)} — ${race}`;
 }
 
-/** RÔLE dans le groupe — 2-3 forces EN TOUTES LETTRES, dérivées des DONNÉES (compétences les mieux
- *  notées), pas d'une table en dur par carrière. Libellé de base (sans spec) dédoublonné. */
+/** RÔLE dans le groupe — les N axes DOMINANTS EN TOUTES LETTRES (`dominantAxes`, `src/engine/axes.ts`
+ *  — SOURCE UNIQUE partagée avec le mini-radar et le rail de composition #417), pas une table en dur
+ *  par carrière. Catalogue COMPLET (`allAxes`) : le filtrage aux axes ACTIFS de la campagne arrive
+ *  avec le placement en jeu (#417). */
 export function heroRoles(hero: Combatant, max = 3): string[] {
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const s of [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances)) {
-    const label = skillInstanceLabel({ skillId: s.skillId });
-    if (seen.has(label)) continue;
-    seen.add(label);
-    out.push(label);
-    if (out.length >= max) break;
-  }
-  return out;
+  return dominantAxes(hero, allAxes, max).map((a) => a.label);
 }
 
 /** ACCROCHE narrative — l'ambition à court terme (évocatrice) ou, à défaut, la motivation. */

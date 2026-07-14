@@ -31,6 +31,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | `names.json` | Générateur de noms par espèce |
 | `details.json` | Détails physiques aléatoires (âge, taille, textes) |
 | `eyes.json` · `hairs.json` | Couleurs d'yeux / de cheveux (tirage) |
+| `axes.json` | Axes de forces/faiblesses (#409, mécanique MAISON) — socle de base + exemples de scénario, `derivation` en ids de `skills.json`/`talents.json` ; moteur `src/engine/axes.ts` |
 
 ### Magie & religion
 | Fichier | Contient |

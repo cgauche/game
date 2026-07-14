@@ -98,7 +98,6 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
           {view === 'options' && (
             <MenuSubScreen title={t('gameMenu.options')} onBack={back} wide>
               <Tabs
-                variant="flat"
                 label={t('gameMenu.options')}
                 active={tab}
                 onChange={setTab}

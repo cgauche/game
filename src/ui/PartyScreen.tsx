@@ -544,7 +544,6 @@ export function CandidatePool({
     <>
       <Tabs
         className="sheet-tabnav"
-        variant="pill"
         tabs={[
           { key: 'roster' as const, label: t('picker.tab.roster') },
           { key: 'pregens' as const, label: t('picker.tab.pregens') },

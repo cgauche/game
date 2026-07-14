@@ -175,7 +175,6 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
           <div className="sheet-main">
             <Tabs
               className="sheet-tabnav"
-              variant="pill"
               tabs={tabs.map((t) => ({ key: t, label: TAB_LABELS[t] }))}
               active={tab}
               onChange={setTab}
@@ -488,6 +487,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         <div className="mini-title">Caractéristiques</div>
         <CharStatsGrid
           className="sheet-stats"
+          size="sm"
           value={(k) => effectiveChar(hero, k)}
           valClass={(k) => { const b = baseWithTalents(hero, k), e = effectiveChar(hero, k); return e > b ? 'ok-text' : e < b ? 'warn-text' : ''; }}
           note={(k) => { const b = baseWithTalents(hero, k), e = effectiveChar(hero, k); return e !== b ? `Base ${b} (${e > b ? '+' : ''}${e - b} de modificateurs actifs)` : undefined; }}
@@ -881,7 +881,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
         {v.chars.map((c) => (
           <div className="adv-row" key={c.key}>
             <span className="adv-name">
-              <CharValue charKey={c.key} value={c.value} /> {pill(c.inCareer)}
+              <CharValue charKey={c.key} value={c.value} size="sm" /> {pill(c.inCareer)}
             </span>
             <span className="adv-meta">×{c.advances}</span>
             <button className="btn small" disabled={!afford(c.nextCost)} onClick={() => buyCharAdvance(hero.id, c.key)}>

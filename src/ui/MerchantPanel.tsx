@@ -354,7 +354,6 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
         ) : (
           <>
             <Tabs
-              variant="sub"
               tabs={cats.map((fam) => ({ key: fam.key, label: fam.label, count: byFamily[fam.key].length }))}
               active={activeCat}
               onChange={setBuyCat}
@@ -436,7 +435,6 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             : <span className="cart-info empty"><Icon id="merchant/cart" size="sm" /> Rien à vendre sélectionné</span>}
         </div>
         <Tabs
-          variant="sub"
           tabs={sellHeroes.map((h) => ({ key: h.id, label: <span title={h.name}><TeamPortrait combatant={h} size={24} /></span>, count: (h.items ?? []).length }))}
           active={activeSellId}
           onChange={setSellHero}

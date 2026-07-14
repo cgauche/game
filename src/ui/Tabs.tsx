@@ -9,25 +9,20 @@ export interface TabItem<K extends string = string> {
   alert?: boolean;
 }
 
-const VARIANT_CLASS = { flat: '', pill: ' tabs-pill', sub: ' tabs-sub', dock: ' tabs-dock' } as const;
-
 /**
  * Tabs — LA primitive UNIQUE de navigation par onglets (#314 : remplace les 5 systèmes gelés par le
  * cliquet #288 — `.port-tabs`/`.zone-tabs`/`.logic-tabs`/`.merchant-tabs`+`.merch-subtabs`/`.sheet-tabs`).
- * Markup et comportement UNIQUES (`role="tablist"`/`"tab"`, `aria-selected`, roving tabindex — flèches
- * Gauche/Droite/Home/End déplacent le focus ET activent l'onglet, cf. pattern WAI-ARIA Tabs) ; seule la
- * PRÉSENTATION varie par `variant` : `flat` (soulignement — CANON des onglets de PREMIER niveau d'un
- * écran plein-champ, #362 : Hub de ville, Port, Marchand partagent le MÊME habillage), `pill` (onglets
- * boîtes — fiche personnage/groupe, dans une modale), `sub` (sous-onglets marchand — pilules
- * compactes, un niveau SOUS le `flat` de l'écran), `dock` (panneau Logique repliable de l'éditeur —
- * `editor.css` compose la mise en page du dock autour). `trailing` reçoit un contrôle HORS tablist
- * (ex. replier/déplier le dock), rendu après les onglets dans la même rangée.
+ * Markup, comportement ET présentation UNIQUES (`role="tablist"`/`"tab"`, `aria-selected`, roving
+ * tabindex — flèches Gauche/Droite/Home/End déplacent le focus ET activent l'onglet, cf. pattern
+ * WAI-ARIA Tabs). Une seule présentation chartée « Atelier du scribe » [entériné 2026-07-14, #414] :
+ * « Disons que je ne vois pas l'intérêt d'en avoir plus que 1 » — la prop `variant` est morte.
+ * `trailing` reçoit un contrôle HORS tablist (ex. replier/déplier le dock), rendu après les onglets
+ * dans la même rangée.
  */
 export function Tabs<K extends string>({
   tabs,
   active,
   onChange,
-  variant = 'flat',
   trailing,
   className,
   label,
@@ -36,7 +31,6 @@ export function Tabs<K extends string>({
   /** Onglet actif ; `null` = aucun sélectionné (ex. dock replié). */
   active: K | null;
   onChange: (key: K) => void;
-  variant?: 'flat' | 'pill' | 'sub' | 'dock';
   trailing?: ReactNode;
   className?: string;
   /** `aria-label` du tablist — à fournir quand le titre de l'écran ne le porte pas déjà. */
@@ -62,7 +56,7 @@ export function Tabs<K extends string>({
       ref={ref}
       role="tablist"
       aria-label={label}
-      className={`tabs${VARIANT_CLASS[variant]}${className ? ` ${className}` : ''}`}
+      className={`tabs${className ? ` ${className}` : ''}`}
       onKeyDown={onKeyDown}
     >
       {tabs.map((t, i) => (

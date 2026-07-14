@@ -11,7 +11,7 @@
  * Les sections internes utilisent des séparateurs (.zone-section), pas des boîtes. La logique
  * (tirages figés, bonus de PX, validation, construction) vit dans ./draft.ts (pur).
  */
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useGame } from '../../state/store';
 import { rosterAdd, rosterLoad } from '../../state/roster';
 import {
@@ -39,6 +39,7 @@ import {
   rigSpeciesId,
   findTalentById,
   specLabel,
+  findBookById,
   SpeciesData,
   CareerData,
 } from '../../data';
@@ -60,7 +61,8 @@ import { CodexRef } from '../compendium/CodexRef';
 import { Prose, mdToText } from '../Prose';
 import { CodexSections } from '../compendium/CodexEntry';
 import { EntityRef, EntityChoice, SkillChip, TalentChip } from '../EntityChip';
-import { raceCharSection, raceSkillSection, raceTalentSection, type CodexSection } from '../compendium/registry';
+import { raceSkillSection, raceTalentSection, type CodexSection } from '../compendium/registry';
+import { CharStatsGrid } from '../CharStatsGrid';
 import { opSummary } from '../editor/GameOpEditor';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { previewHero } from './CreatorSummary';
@@ -68,11 +70,10 @@ import { CreatorStepFrame, Section, Stepper, type StepZones } from './CreatorSte
 import { CreatorDice } from './CreatorDice';
 import { useRollFrisson } from '../useRollFrisson';
 import { DiceRoll } from '../DiceRoll';
-import { d10PairFaces } from '../Dice';
+import { d10PairFaces, d100Faces } from '../Dice';
 import { FacetedPickGrid } from './FacetedPickGrid';
 import { CelestialWheel } from './CelestialWheel';
 import { MasterDetail } from '../MasterDetail';
-import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { DetailFrame } from '../DetailFrame';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import {
@@ -240,6 +241,14 @@ export function CharacterCreator() {
   const meta = STEP_META[curId];
   const stepProps: StepProps = { d, setD, charReroll };
 
+  // Récap de pied VALIDE — étape Race uniquement (#393 P4) : le message d'erreur garde toujours
+  // la priorité (cf. footer, `err ?? ...`) ; une fois la race choisie, la barre redit le choix fait.
+  const raceFooterSummary = (): string | null => {
+    const sp = draftSpecies(d);
+    if (!sp) return null;
+    return `Race ${sp.label} — M ${sp.movement} · Destin ${sp.fate.fate} · Résilience ${sp.fate.resilience} · +${sp.fate.extra} à répartir.`;
+  };
+
   // Une réf Codex cliquée ouvre la fiche en MODALE par-dessus l'assistant (cf. CodexOverlay) : le
   // brouillon reste intact (plus de changement d'écran qui le réinitialisait).
   return (
@@ -286,7 +295,7 @@ export function CharacterCreator() {
           ← Précédent
         </button>
         <span className={`hint wizard-hint${err ? ' warn-text' : ''}`}>
-          {err ?? ''}
+          {err ?? (curId === 'species' ? raceFooterSummary() ?? '' : '')}
         </span>
         {step < ids.length - 1 ? (
           <button className="btn btn-primary" disabled={!canNext} onClick={() => setStep(step + 1)}>
@@ -320,17 +329,25 @@ function LoreText({ md }: { md: string | null | undefined }) {
   return <div className="lore-text"><Prose md={md} /></div>;
 }
 
-// ════ 1) Race (LDB 04 l.84-90) — charte « Atelier du scribe » (#393 P1) : gabarit DEUX ZONES
-//      (compose `MasterDetail`) — liste (recherche + « Aux dés » + `GroupedPickGrid` de `FigTile`
-//      par famille) ⇄ détail (`DetailFrame` de l'élue). Pas de fiche vivante à cette étape
-//      (arbitrage 2026-07-14) : mort du call-site Race de `FacetedPickGrid` — Carrière (#393 P2)
+// ════ 1) Race (LDB 04 l.84-90) — charte « Atelier du scribe » (#393 P2, correction structurelle
+//      du verdict utilisateur 2026-07-14) : gabarit DEUX ZONES (compose `MasterDetail`, grille
+//      ~60 % / détail ~40 %) — liste = 7 GRANDES CARTES DE RACE (une par `SpeciesData.family`,
+//      figurine généreuse + « N lignées ») ⇄ détail = la LIGNÉE choisie (chips-pills en tête du
+//      panneau, une par variante de la famille — Reiklander/Middenheim/…) puis `DetailFrame` de la
+//      lignée élue. Le brouillon reste keyé sur `speciesId` (id de LIGNÉE, ex. `humains-reiklander`)
+//      — seule la PRÉSENTATION du choix se restructure en race→lignée, jamais la mécanique
+//      (`withSpecies`/`rollDraftSpecies` inchangés). Pas de fiche vivante à cette étape (arbitrage
+//      2026-07-14) : mort du call-site Race de `FacetedPickGrid` — Carrière (#393 P2 volet Carrière)
 //      transpose son propre call-site séparément, `FacetedPickGrid` reste son composant jusque-là.
 export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const lineageRef = useRef<HTMLDivElement>(null);
 
   // Groupes par race (`SpeciesData.family` — donnée, plus de regex sur le libellé),
-  // les races du Livre de base d'abord — l'ordre des familles suit les données.
+  // les races du Livre de base d'abord — l'ordre des familles suit les données ; au sein d'une
+  // famille, la 1ʳᵉ lignée des données EST la canonique (ex. Reiklander pour Humains, LDB 04 l.84).
   // Le Gnome (et tout contenu NADJ) n'apparaît dans la grille que si la règle optionnelle l'autorise.
   const gnomeOn = !!rule('creation-gnome-jouable');
   const families: { family: string; list: SpeciesData[] }[] = [];
@@ -341,61 +358,110 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
     else families.push({ family: s.family, list: [s] });
   }
   families.sort((a, b) => Number(b.list.some((s) => CORE.includes(s.label))) - Number(a.list.some((s) => CORE.includes(s.label))));
+  const totalRaces = families.reduce((n, f) => n + f.list.length, 0);
 
-  const matchedIds = new Set(
-    filterByLabel(
-      families.flatMap((f) => f.list),
-      (s) => s.variant ?? s.label,
-      search,
-    ).map((s) => s.id),
-  );
-  const sections: PickGridSection[] = families
-    .map((f) => ({
-      id: f.family,
-      label: f.family,
-      items: f.list
-        .filter((s) => matchedIds.has(s.id))
-        .map((s) => ({
-          id: s.id,
-          label: s.variant ?? s.label,
-          sub: `M ${s.movement} · Destin ${s.fate.fate}`,
-          preview: { appearance: pickAppearance(s.id, d.sex) },
-        })),
-    }))
-    .filter((f) => f.items.length > 0);
+  // La recherche filtre les RACES (nom de famille) ET les LIGNÉES (variantes) — une lignée matchée
+  // garde/surligne sa carte de race (le filtre agit au niveau famille, jamais en éclatant la grille).
+  const visibleFamilies = filterByLabel(families, (f) => `${f.family} ${f.list.map((s) => s.variant ?? s.label).join(' ')}`, search);
+  const activeFamilyIdx = Math.max(0, visibleFamilies.findIndex((f) => f.family === sp?.family));
+  const selectFamily = (list: SpeciesData[]) => setD(withSpecies(d, sp && list.some((s) => s.id === sp.id) ? sp.id : list[0].id));
+  const onGridKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) || !visibleFamilies.length) return;
+    e.preventDefault();
+    const delta = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : 0;
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? visibleFamilies.length - 1 : (activeFamilyIdx + delta + visibleFamilies.length) % visibleFamilies.length;
+    selectFamily(visibleFamilies[next].list);
+    gridRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]')[next]?.focus();
+  };
 
-  const dice = (
-    <CreatorDice
-      label="Tirer la race (d100)"
-      hint="Gardez une race de la borne tirée : +20 PX (LDB 04) · Choix libre : +0 PX."
-      rolled={!!d.speciesRoll}
-      xp={speciesXp(d)}
-      onRoll={() => setD(rollDraftSpecies(d))}
-      roll={d.speciesRoll?.roll}
-    >
-      <p className="hint" style={{ marginTop: 0 }}>
-        Jet : <b>{d.speciesRoll?.roll}</b>
-        {(d.speciesRoll?.ids.length ?? 0) > 1 && ' — choisissez librement parmi les races de cette borne (le bonus est conservé)'}
-      </p>
-      <OptionChooser
-        layout="grid"
-        options={(d.speciesRoll?.ids ?? []).map((id) => ({
-          key: id,
-          label: `${findSpeciesById(id)?.label ?? id} (+20 PX)`,
-          primary: d.speciesId === id,
-          onSelect: () => setD(withSpecies(d, id)),
-        }))}
-      />
-    </CreatorDice>
+  // Lignées de la famille COURANTE (chips en tête du panneau détail) — masquées si la famille n'a
+  // qu'une lignée (Gnomes/Hauts elfes/Elfes sylvains/Ogres du LDB) : rien à trancher.
+  const famList = sp ? families.find((f) => f.family === sp.family)?.list ?? [] : [];
+  const onLineageKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!sp || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) || !famList.length) return;
+    e.preventDefault();
+    const activeIdx = Math.max(0, famList.findIndex((s) => s.id === sp.id));
+    const delta = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : 0;
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? famList.length - 1 : (activeIdx + delta + famList.length) % famList.length;
+    setD(withSpecies(d, famList[next].id));
+    lineageRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next]?.focus();
+  };
+
+  // Encrier de tirage RACE (#393 P3, correction structurelle du verdict utilisateur 2026-07-14) :
+  // rangée UNIQUE avec la recherche (recherche à gauche, encrier remplit le reste — pas de section
+  // « Aux dés » séparée, pas de rangée d'aide flottante : le sous-titre PORTE la règle). Une fois le
+  // d100 posé, le mur de boutons meurt : le résultat vit dans l'encrier (rendu laiton) et l'éligibilité
+  // se marque sur les surfaces existantes (badge « +20 PX » des chips de lignée, liseré des cartes de
+  // famille) — la sélection reste la même mécanique (chips/cartes), le bonus de PX inchangé (`speciesXp`).
+  const rolledIds = d.speciesRoll?.ids ?? [];
+  const rolledFamilies = new Set(rolledIds.map((id) => findSpeciesById(id)?.family).filter((f): f is string => !!f));
+  const rolledFamily = d.speciesRoll ? (sp && rolledIds.includes(sp.id) ? sp.family : findSpeciesById(rolledIds[0])?.family) : undefined;
+  const kept = speciesXp(d) > 0;
+  const { rolling, landed, trigger, skip } = useRollFrisson(() => setD(rollDraftSpecies(d)));
+  const faces = landed && d.speciesRoll ? d100Faces(d.speciesRoll.roll) : null;
+
+  const diceCell = rolling || landed ? (
+    <DiceRoll scene landed={landed} faces={faces} onSkip={skip} />
+  ) : !d.speciesRoll ? (
+    <button type="button" className="dicewell act emph" onClick={() => trigger()}>
+      <span className="dicewell-tray">
+        <Icon id="nav/dice" size="sm" />
+        <Icon id="nav/dice" size="sm" />
+      </span>
+      <span className="dicewell-copy">
+        <span className="dicewell-txt">Tirer aux dés — d100</span>
+        <span className="dicewell-sub">sa race au hasard : +20 PX de création (garder le tirage)</span>
+      </span>
+    </button>
+  ) : (
+    <div className="dicewell done">
+      <span className="dicewell-tray">
+        <Icon id="nav/dice" size="sm" />
+        <Icon id="nav/dice" size="sm" />
+      </span>
+      <span className="dicewell-copy">
+        <span className="dicewell-txt">
+          Jet : <b>{d.speciesRoll.roll}</b> — borne {rolledFamily} · {kept ? '+20 PX conservé' : '+0 PX (choix libre)'}
+        </span>
+      </span>
+    </div>
   );
 
   const list = (
     <>
-      <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une race…" />
-      {dice}
-      <GroupedPickGrid sections={sections} selectedId={d.speciesId || undefined} onSelect={(id) => setD(withSpecies(d, id))} label="Choix de la race" />
+      <div className="creator-race-toolbar">
+        <div className="creator-race-search">
+          <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une race…" />
+        </div>
+        {diceCell}
+      </div>
+      <p className="creator-race-count">{families.length} races — {totalRaces} lignées</p>
+      <div ref={gridRef} role="listbox" aria-label="Choix de la race" className="creator-race-grid" onKeyDown={onGridKeyDown}>
+        {visibleFamilies.map((f, idx) => {
+          const rep = f.list[0];
+          const selected = sp?.family === f.family;
+          const rolled = !selected && rolledFamilies.has(f.family);
+          return (
+            <button
+              key={f.family}
+              type="button"
+              role="option"
+              aria-selected={selected}
+              tabIndex={idx === activeFamilyIdx ? 0 : -1}
+              className={`chip creator-race-card${selected ? ' sel' : ''}${rolled ? ' rolled' : ''}`}
+              onClick={() => selectFamily(f.list)}
+            >
+              <CharacterPreview appearance={pickAppearance(rep.id, d.sex)} size="lg" ambiance="panel" />
+              <span className="creator-race-card-name">{f.family}</span>
+              <span className="creator-race-card-sub">{f.list.length} lignée{f.list.length > 1 ? 's' : ''}</span>
+            </button>
+          );
+        })}
+      </div>
     </>
   );
+
+  const bookLabel = sp?.source ? findBookById(sp.source.book)?.label ?? sp.source.book : undefined;
 
   const detail = !sp ? (
     <p className="hint">
@@ -403,24 +469,61 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
     </p>
   ) : (
     <DetailFrame
-      name={<CodexRef category="races" id={sp.id} label={sp.label}>{sp.variant ?? sp.label}</CodexRef>}
+      topper={
+        famList.length > 1 ? (
+          <div ref={lineageRef} role="radiogroup" aria-label="Lignée" className="creator-race-lineages" onKeyDown={onLineageKeyDown}>
+            {famList.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                role="radio"
+                aria-checked={s.id === sp.id}
+                tabIndex={s.id === sp.id ? 0 : -1}
+                className={`chip creator-race-lineage${s.id === sp.id ? ' sel' : ''}`}
+                onClick={() => setD(withSpecies(d, s.id))}
+              >
+                {s.variant ?? s.label}
+              </button>
+            ))}
+          </div>
+        ) : undefined
+      }
+      name={<CodexRef category="races" id={sp.id} label={sp.label}>{sp.label}</CodexRef>}
+      sub={bookLabel && sp.source ? `${bookLabel} p. ${sp.source.page}` : undefined}
       meta={
         <>
-          <span className="stat-chip"><span className="sc-label">Mouvement</span><span className="sc-value">{sp.movement}</span></span>
-          <span className="stat-chip"><span className="sc-label">Destin</span><span className="sc-value">{sp.fate.fate}</span></span>
-          <span className="stat-chip"><span className="sc-label">Résilience</span><span className="sc-value">{sp.fate.resilience}</span></span>
-          <span className="stat-chip"><span className="sc-label">À répartir</span><span className="sc-value">+{sp.fate.extra}</span></span>
+          <span className="chip">Mouvement <b>{sp.movement}</b></span>
+          <span className="chip">Destin <b>{sp.fate.fate}</b></span>
+          <span className="chip">Résilience <b>{sp.fate.resilience}</b></span>
+          <span className="chip"><b>+{sp.fate.extra}</b> à répartir</span>
           {sp.small && (
-            <span className="stat-chip" title="Talent Petit : Blessures calculées sans le Bonus de Force">
-              <span className="sc-label">Taille</span><span className="sc-value">Petite</span>
+            <span className="chip" title="Talent Petit : Blessures calculées sans le Bonus de Force">
+              Taille <b>Petite</b>
             </span>
           )}
         </>
       }
-      // Caractéristiques / Compétences / Talents : MÊMES sections que le Codex (source unique
-      // `raceCharSection`/`raceSkillSection`/`raceTalentSection`) → rendu identique des deux côtés,
-      // « ou » en chips SÉPARÉES codex-liées (arbitrage 2026-07-14, `ChoiceChips` via `CodexSections`).
-      sections={<CodexSections sections={[raceCharSection(sp), raceSkillSection(sp), raceTalentSection(sp)].filter((s): s is CodexSection => !!s)} />}
+      // Caractéristiques : `CharStatsGrid` (source unique de la plaque .char-stats, #418) avec
+      // `sp.baseChar` — plus de rows codex-kv ; le delta vs base humaine (20) passe en `note` (tooltip
+      // discret), jamais dans la valeur affichée. Compétences/Talents : mêmes sections que le Codex
+      // (source unique `raceSkillSection`/`raceTalentSection`), « ou » en chips SÉPARÉES codex-liées.
+      sections={
+        <>
+          <div>
+            <div className="mini-title">Caractéristiques de base</div>
+            <CharStatsGrid
+              size="md"
+              value={(k) => sp.baseChar?.[k] ?? 20}
+              note={(k) => {
+                const base = sp.baseChar?.[k] ?? 20;
+                const diff = base - 20;
+                return diff !== 0 ? `Base humaine 20 (${diff > 0 ? '+' : ''}${diff})` : undefined;
+              }}
+            />
+          </div>
+          <CodexSections sections={[raceSkillSection(sp), raceTalentSection(sp)].filter((s): s is CodexSection => !!s)} />
+        </>
+      }
       prose={sp.desc}
       proseSelfLabel={sp.label}
       proseSelfCategory="races"

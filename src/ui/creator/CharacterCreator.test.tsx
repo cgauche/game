@@ -34,15 +34,18 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).toContain('master-detail-detail');
     expect(html).not.toContain('creator-summary');
     // Page blanche : AUCUNE race sélectionnée au montage (fin du fantôme pré-tiré).
-    expect(html).not.toContain('fig-tile sel');
-    // Cérémonie « Aux dés » : tirage d100 de la race (LDB 04)
-    expect(html).toContain('Aux dés');
-    expect(html).toContain('Tirer la race (d100)');
-    // Recherche + grille de figurines groupées par famille (GroupedPickGrid)
+    expect(html).not.toContain('creator-race-card sel');
+    // Encrier de tirage RACE en rangée UNIQUE avec la recherche (#393 P3) : plus de titre de section
+    // « Aux dés » ni de rangée d'aide séparée — le sous-titre de l'encrier porte la règle.
+    expect(html).not.toContain('>Aux dés<');
+    expect(html).toContain('Tirer aux dés — d100');
+    expect(html).toContain('sa race au hasard : +20 PX de création (garder le tirage)');
+    expect(html).toContain('creator-race-toolbar');
+    // Recherche + grille de 7 GRANDES CARTES DE RACE (une par famille, #393 P2)
     expect(html).toContain('Rechercher une race');
     expect(html).toContain('role="listbox"');
     expect(html).toContain('role="option"');
-    for (const s of ['Reiklander', 'Nains', 'Halflings', 'Hauts elfes', 'Elfes sylvains']) {
+    for (const s of ['Humains', 'Nains', 'Halflings', 'Hauts elfes', 'Elfes sylvains']) {
       expect(html).toContain(s);
     }
     // Validation : « Suivant » gardé tant que la race n'est pas choisie
@@ -52,25 +55,42 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
 
   it('remplissage progressif : une race choisie ouvre son détail (DetailFrame) et se sélectionne (grille)', () => {
     const html = renderToStaticMarkup(<SpeciesRaceScreen d={withSpecies(newDraft(7), SP.id)} setD={() => {}} />);
-    expect(html).toContain('fig-tile sel'); // race sélectionnée
+    expect(html).toContain('creator-race-card sel'); // carte de FAMILLE sélectionnée
     expect(html).toContain('detail-frame'); // détail rendu (DetailFrame)
     expect(html).toContain('Caractéristiques de base'); // profil chiffré (CodexSections)
     expect(html).toContain('Compétences de race');
+    // Humains a 8 lignées : chips de lignée EN TÊTE du cadre de détail (`topper`, #393 P3) —
+    // jamais un sibling posé à côté du cadre.
+    expect(html).toMatch(/<div class="detail-frame"><div role="radiogroup"[^>]*creator-race-lineages/);
+    expect(html).toMatch(/creator-race-lineage sel"[^>]*>Reiklander/);
   });
 
-  it('étape 1 — grille GROUPÉE par famille (listbox/option, GroupedPickGrid) + recherche, sans grille facettée', () => {
+  it('#393 P4 — après le tirage, le mur de boutons meurt : le résultat vit dans l\'encrier, PLUS de badge par chip de lignée (l\'éligibilité vit dans l\'encrier + le liseré de la carte de famille)', () => {
+    const rolled = rollDraftSpecies(withSpecies(newDraft(7), SP.id));
+    const html = renderToStaticMarkup(<SpeciesRaceScreen d={rolled} setD={() => {}} />);
+    // Encrier « résolu » (rendu laiton) — plus de bouton de tirage ni de grille d'options de borne.
+    expect(html).toContain('dicewell done');
+    expect(html).toMatch(/Jet : <b>\d+<\/b> — borne \w+/);
+    expect(html).not.toMatch(/\(\+20 PX\)<\/(?:span|button)>\s*<\/button>/); // pas d'ancien libellé de bouton de borne
+    // Mort du badge « +20 PX » par chip de lignée (#393 P4) — la borne couvre une famille entière,
+    // l'éligibilité vit dans l'encrier rendu (ci-dessus) + le liseré `.rolled`/`.sel` de la carte de
+    // famille (surfaces existantes déjà couvertes par les autres assertions de ce fichier).
+    expect(html).not.toContain('xp-badge');
+  });
+
+  it('étape 1 — grille de 7 CARTES DE RACE (listbox/option) + recherche, sans grille facettée', () => {
     const html = renderToStaticMarkup(<SpeciesRaceScreen d={newDraft(7)} setD={() => {}} />);
     expect(html).toContain('role="listbox"'); // grille de sélection a11y
     expect(html).toContain('role="option"');
-    expect(html).toContain('gpg-grid');
+    expect(html).toContain('creator-race-grid');
     expect(html).not.toContain('pick-grid'); // mort du call-site Race de FacetedPickGrid
-    expect(html).not.toContain('tabs tabs-sub'); // plus de facettes de famille (grille groupée directe)
+    expect(html).not.toContain('tabs tabs-sub'); // plus de facettes de famille (grille de cartes directe)
   });
 
   it('étape 2 — grille facettée de carrière : recherche + facettes de CLASSE (données) + grille listbox', () => {
     const html = renderToStaticMarkup(<>{CareerZones({ d: withSpecies(newDraft(7), SP.id), setD: () => {} }).choice}</>);
     expect(html).toContain('Rechercher une carrière'); // SearchFilterField canonique en tête
-    expect(html).toContain('tabs tabs-sub'); // facettes de classe = primitive Tabs
+    expect(html).toContain('tab-btn'); // facettes de classe = primitive Tabs (présentation unique, #414)
     expect(html).toContain('role="listbox"');
     // Les facettes viennent des données (classes.json), pas d'une liste en dur.
     for (const cl of ['Guerriers', 'Lettrés', 'Roublards']) expect(html).toContain(cl);

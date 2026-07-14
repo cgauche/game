@@ -60,9 +60,10 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 
 **Sources RAW :** LDB 09 l.22-32
 
-**Implémente :** la distinction Base/Avancée est portée par `SkillData.advanced` (boolean) dans
-`src/data/skills.json`. Le moteur (`testValue`) ne distingue pas — c'est l'UI/authoring qui bloque
-un Test sans Augmentation sur une Compétence Avancée.
+**Implémente :** la distinction Base/Avancée est portée par `SkillData.type` (`'base'`/`'avancée'`)
+dans `src/data/skills.json`. Le gate canonique est `possesses` (`src/engine/skillCombatApps.ts`) :
+base = toujours testable sur la caractéristique nue ; avancée = exige au moins une Augmentation
+(consommé par les axes de forces `src/engine/axes.ts` et les applications de combat).
 
 ---
 

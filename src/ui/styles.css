@@ -6,6 +6,7 @@
 @import './styles/components.css'; /* PRIMITIVES CANONIQUES (panel/fold/field/stat-chip/listrow…) — composer celles-ci */
 @import './styles/tabs.css'; /* Tabs — primitive UNIQUE d'onglets (#314), variantes flat/pill/sub/dock */
 @import './styles/ornaments.css'; /* textures maison (.tx-parchment/.tx-iron/.tx-ink) + cadres/fleurons (Ornaments.tsx) */
+@import './styles/rose.css'; /* rose des forces (mini-radar gravé, #409) — RoseAxes.tsx, coin/médaillon/pleine */
 @import './styles/party.css'; /* écran d'équipe (sélection des héros) : colonne compagnie + étal de candidats */
 @import './styles/city-hub.css'; /* hub de ville (#343) : services + détail (MasterDetail) */
 @import './styles/voyage.css'; /* écran-hub de voyage (#333) : tuiles + chronique + MasterDetail */

@@ -411,7 +411,7 @@ button.insp-row.active {
   z-index: 5;
   touch-action: none;
 }
-/* Onglets du dock — primitive `<Tabs variant="dock">` (tabs.css). */
+/* Onglets du dock — primitive `<Tabs>` (présentation unique, components.css). */
 .logic-body {
   flex: 1;
   min-height: 0;

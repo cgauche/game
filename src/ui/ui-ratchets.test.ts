@@ -66,7 +66,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/combat-modals.css': 7,
   'styles/combat-ui.css': 7,
   'styles/compendium.css': 3,
-  'styles/creator.css': 7,
+  // +1 : `.creator-race-lineages` (#393 P2, correction structurelle Race) — rangée de chips de
+  // lignée en tête du détail, s'enroule (motif `.bar` non composable ici, boutons de largeur variable).
+  'styles/creator.css': 8,
   'styles/editor.css': 10,
   'styles/gauges.css': 1,
   'styles/hud.css': 6,
@@ -146,7 +148,9 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
   // PortraitTile.tsx, sa propre classe de composant.
   'FigTile.tsx',
 ]);
-const BARE_BUTTON_CANON = /\b(btn|chip|seg)\b/;
+// `dicewell` : bouton-encrier canon de `CreatorDice` (#414, langage `.c-dicewell.act` du kit
+// « Atelier du scribe ») — même famille que `.btn`/`.chip`, sa propre classe de composant.
+const BARE_BUTTON_CANON = /\b(btn|chip|seg|dicewell)\b/;
 const BARE_BUTTON_BASELINE: Record<string, number> = {
   'ActionBar.tsx': 1,
   'CityHubScreen.tsx': 1,
@@ -224,7 +228,17 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `MasterDetail`, enfants ciblés par position pour ne pas re-déclarer ses classes).
   // +1 : `.rm-loc-grid` (#393 P1) — override responsive 360px scopé à l'étape Race, la primitive
   // `OptionChooser` (combat-modals.css) fige 3 colonnes quel que soit le conteneur.
-  'styles/creator.css': 100,
+  // +11 : peau « Atelier du scribe » LOT #414 (`.dicewell`/`.dicewell-tray`/`.dicewell-txt` —
+  // encrier bordé-teinté de CreatorDice) + restructuration concurrente de l'étape Race (#393 P2,
+  // `.creator-race-card`/`.creator-race-grid`/`.creator-race-lineages`/`.creator-race-lineage`…).
+  // +5 : correction structurelle Race (#393 P3, verdict utilisateur 2026-07-14) — rangée recherche+
+  // encrier (`.creator-race-toolbar`/`.creator-race-search`), copy titre+sous-titre de l'encrier
+  // (`.dicewell-copy`/`.dicewell-sub`), état résolu (`.dicewell.done`) et liseré de borne
+  // (`.creator-race-card.rolled`).
+  // +6 : polish finale Race (#393 P4, rapport juge vision) — `.detail-frame-head`/`.detail-frame-sub`
+  // (tagline sourcée), `.dicewell.emph` (encrier idle en emphase), override local
+  // `.creator-race-card .charprev-lg` (figurine généreuse sans casser le zéro-scroll).
+  'styles/creator.css': 122,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -260,9 +274,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
 // (top-level) qui porte aussi les règles TRANSVERSES manette + le bandeau DEV du collecteur d'erreurs.
 const SHARED_CSS_FILES = ['styles/base.css', 'styles/components.css', 'styles/tabs.css', 'styles.css'];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
-  'styles/base.css': 21,
+  'styles/base.css': 17, // #418 : `.char-stats`/`.stat*` catalogués (charte-ui.md), 4 leaks résorbées
   'styles/components.css': 11,
-  'styles/tabs.css': 4,
+  'styles/tabs.css': 1,
   'styles.css': 6,
 };
 

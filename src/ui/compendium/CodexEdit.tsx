@@ -51,6 +51,8 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   stars: 'stars', skills: 'skills', talents: 'talents', trappings: 'trappings', weaponGroups: 'weaponGroups', qualities: 'qualities',
   etats: 'etats', maladies: 'maladies', spells: 'spells', maneuvers: 'maneuvers', creatures: 'creatures', traits: 'traits', locations: 'locations', books: 'books',
   mutations: 'mutations', mutationTables: 'mutationTables', gods: 'gods', domains: 'domains',
+  // #409 : catalogue des axes de forces/faiblesses (mécanique MAISON) — clé catégorie = clé dataset.
+  axes: 'axes',
   // E3a : tables & gabarits éditables (catégorie Codex = clé identique au dataset).
   careerLevels: 'careerLevels', eyes: 'eyes', hairs: 'hairs', raceAppearance: 'raceAppearance',
   pregens: 'pregens', oups: 'oups', interludeEvents: 'interludeEvents', peripeties: 'peripeties',
@@ -232,6 +234,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings', 'psychologies', 'navalTraits'].includes(categoryKey)) add('passive');
   if (categoryKey === 'structures') add('traits'); // {id,value?}[] → réutilise TraitListField (comme creatures)
   if (categoryKey === 'crewRoles') add('skills'); // {skillId,spec?}[] → éditeur dédié (SkillSpecListField)
+  if (categoryKey === 'axes') add('skills', 'talents'); // #409 : {skillId,spec?}[]/{talentId,spec?}[] → SkillSpecListField/TalentSpecListField
   if (categoryKey === 'traumas') add('prosthesis'); // {trappingId,cancels}[] → éditeur dédié (ProsthesisField)
   if (CRITICAL_CATEGORIES.includes(categoryKey)) add('traumas'); // string[] d'ids → éditeur dédié (TraumaListField, #173)
   if (categoryKey === 'steamBreakdowns') add('restart'); // {skillId,spec?,difficulty,extendedDR?}[] → éditeur dédié
@@ -353,6 +356,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isStructure = categoryKey === 'structures';
   // Rôle d'équipage (`crewRoles`, #157) : `skills` = {skillId,spec?}[] → éditeur dédié.
   const hasCrewSkills = categoryKey === 'crewRoles';
+  // Axe de forces (`axes`, #409) : `skills`/`talents` = {skillId|talentId,spec?}[] → éditeurs dédiés
+  // (SkillSpecListField, réutilisé tel quel côté Compétences ; TalentSpecListField, même patron côté Talents).
+  const hasAxes = categoryKey === 'axes';
   // Traumatisme (`traumas`, #157) : `prosthesis` (prothèses annulatrices, LDB 73) = {trappingId,cancels}[].
   const hasProsthesis = categoryKey === 'traumas';
   // Critique localisé (LDB ch.6/AA, #173) : `traumas` = string[] d'ids de fiche (`traumas.json`) →
@@ -536,6 +542,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isTrait && <TraitSchemaField entry={entry} edit={edit} />}
         {isStructure && <TraitListField label="Atouts" hint="(Résistant/Impénétrable — ADE II ch.08)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
         {hasCrewSkills && <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
+        {hasAxes && <SkillSpecListField hint="compétences contribuant à l'axe (facultatif)" value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
+        {hasAxes && <TalentSpecListField value={entry.talents as { talentId: string; spec?: string }[] | undefined} onChange={(v) => edit('talents', v)} />}
         {hasProsthesis && <ProsthesisField value={entry.prosthesis as { trappingId: string; cancels: 'all' | 'movement' }[] | undefined} onChange={(v) => edit('prosthesis', v.length ? v : undefined)} />}
         {hasTraumaList && <TraumaListField value={entry.traumas as string[] | undefined} onChange={(v) => edit('traumas', v.length ? v : undefined)} />}
         {hasRestartTest && <RestartTestField value={entry.restart as { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}
@@ -820,15 +828,16 @@ function TraitSchemaField({ entry, edit }: { entry: Entry; edit: (key: string, v
   );
 }
 
-/** Compétences d'un Rôle d'équipage (`crewRoles.skills`, MDG ch.14, #157) : `{skillId,spec?}[]` — un
- *  rôle peut mapper plusieurs Compétences candidates (Mousse = Voile OU Ramer, la meilleure retenue). */
-function SkillSpecListField({ value, onChange }: { value: { skillId: string; spec?: string }[] | undefined; onChange: (v: { skillId: string; spec?: string }[]) => void }) {
+/** Compétences d'un Rôle d'équipage (`crewRoles.skills`, MDG ch.14, #157) OU d'un axe de forces
+ *  (`axes.skills`, #409) : `{skillId,spec?}[]` — plusieurs Compétences candidates possibles (`hint`
+ *  précise la sémantique par appelant : « la meilleure retenue » pour un rôle, dérivation pour un axe). */
+function SkillSpecListField({ value, onChange, hint = 'compétences du rôle (au moins une ; « au choix » si plusieurs — la meilleure est retenue)' }: { value: { skillId: string; spec?: string }[] | undefined; onChange: (v: { skillId: string; spec?: string }[]) => void; hint?: string }) {
   const list = value ?? [];
   const skillOpts = datasetArray('skills') as { id: string; label: string }[];
   const set = (next: typeof list) => onChange(next);
   return (
     <div className="ed-field">
-      <span>compétences du rôle (au moins une ; « au choix » si plusieurs — la meilleure est retenue)</span>
+      <span>{hint}</span>
       {list.map((s, i) => (
         <div className="tf-row" key={i}>
           <select value={s.skillId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skillId: e.target.value } : x)))}>
@@ -839,6 +848,29 @@ function SkillSpecListField({ value, onChange }: { value: { skillId: string; spe
         </div>
       ))}
       <button className="btn small" onClick={() => set([...list, { skillId: skillOpts[0]?.id ?? '' }])}>+ Compétence</button>
+    </div>
+  );
+}
+
+/** Talents contribuant à un axe de forces (`axes.talents`, #409) : `{talentId,spec?}[]` — MÊME patron
+ *  que `SkillSpecListField` (Compétences), sur le dataset `talents`. */
+function TalentSpecListField({ value, onChange }: { value: { talentId: string; spec?: string }[] | undefined; onChange: (v: { talentId: string; spec?: string }[]) => void }) {
+  const list = value ?? [];
+  const talentOpts = datasetArray('talents') as { id: string; label: string }[];
+  const set = (next: typeof list) => onChange(next);
+  return (
+    <div className="ed-field">
+      <span>talents contribuant à l'axe (facultatif)</span>
+      {list.map((s, i) => (
+        <div className="tf-row" key={i}>
+          <select value={s.talentId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, talentId: e.target.value } : x)))}>
+            {talentOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </select>
+          <input placeholder="spécialisation (facultatif)" value={s.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, spec: e.target.value || undefined } : x)))} />
+          <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, { talentId: talentOpts[0]?.id ?? '' }])}>+ Talent</button>
     </div>
   );
 }

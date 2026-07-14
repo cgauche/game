@@ -36,9 +36,12 @@ import { MenuCard, MenuSection, MenuButton, MenuToggle } from '../MenuCard';
 import { CreatorDice } from '../creator/CreatorDice';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
-import { species, careers, levelsForCareer, stars, rigSpeciesId } from '../../data';
+import { species, careers, levelsForCareer, stars, rigSpeciesId, allAxes } from '../../data';
 import { makePregens } from '../../data/pregens';
 import { toMoney } from '../../engine/money';
+import { RoseAxes } from '../RoseAxes';
+import { CharStatsGrid } from '../CharStatsGrid';
+import { axesProfile } from '../../engine/axes';
 
 // ── Données réelles pour les spécimens vivants (aucune donnée inventée) ──
 const HUMAN_SPECIES = species.find((s) => s.id === 'humains-reiklander') ?? species[0];
@@ -135,10 +138,7 @@ function TabsDemo() {
   ];
   return (
     <div className="stack">
-      <Tabs tabs={tabs} active={active} onChange={setActive} label="Onglets — variante flat" />
-      <Tabs tabs={tabs} active={active} onChange={setActive} variant="pill" label="Onglets — variante pill" />
-      <Tabs tabs={tabs} active={active} onChange={setActive} variant="sub" label="Onglets — variante sub" />
-      <Tabs tabs={tabs} active={active} onChange={setActive} variant="dock" label="Onglets — variante dock" />
+      <Tabs tabs={tabs} active={active} onChange={setActive} label="Onglets" />
     </div>
   );
 }
@@ -221,6 +221,20 @@ function MetalStatusDemo() {
       <MetalStatus status="Argent 2" />
       <MetalStatus status="Or 3" />
       <MetalStatus status="Or 3" size="plaque" />
+    </div>
+  );
+}
+
+function CharStatsGridDemo() {
+  const ch = SAMPLE_HERO.characteristics;
+  return (
+    <div className="stack">
+      {(['sm', 'md', 'lg'] as const).map((size) => (
+        <div key={size}>
+          <span className="hint">size=&quot;{size}&quot;</span>
+          <CharStatsGrid size={size} value={(k) => ch[k]} />
+        </div>
+      ))}
     </div>
   );
 }
@@ -376,6 +390,30 @@ function MenuCardDemo() {
   );
 }
 
+function RoseAxesDemo() {
+  if (SAMPLE_HEROES.length < 2) return <p className="hint">Aucun pregen disponible.</p>;
+  const CORE = allAxes.filter((a) => a.core);
+  const heroes = SAMPLE_HEROES.slice(0, 3);
+  return (
+    <div className="stack">
+      <p className="hint">Scores RÉELS des pré-tirés (`axesProfile`, `src/engine/axes.ts`) sur les axes du socle de base.</p>
+      <div className="row-flex">
+        <RoseAxes axes={axesProfile(heroes[0], CORE)} size="glyph" title={`${heroes[0].name} — glyphe`} />
+        <RoseAxes axes={axesProfile(heroes[0], CORE)} size="medal" title={`${heroes[0].name} — médaillon`} />
+      </div>
+      <RoseAxes axes={axesProfile(heroes[0], CORE)} size="grand" title={`${heroes[0].name} — rendu plein`} />
+      <div className="row-flex">
+        {heroes.map((h) => (
+          <div key={h.id} className="stack" style={{ alignItems: 'center' }}>
+            <RoseAxes axes={axesProfile(h, CORE)} size="medal" title={`${h.name} — médaillon`} />
+            <span className="hint">{h.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function GameOpEditorDemo() {
   const [ops, setOps] = useState<GameOp[]>([]);
   return <GameOpEditor ops={ops} onChange={setOps} />;
@@ -444,6 +482,8 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
   { name: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
   { name: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },
+  { name: 'RoseAxes', file: 'src/ui/RoseAxes.tsx', category: 'Personnages', render: RoseAxesDemo },
+  { name: 'CharStatsGrid', file: 'src/ui/CharStatsGrid.tsx', category: 'Personnages', render: CharStatsGridDemo },
   { name: 'TradeTable', file: 'src/ui/TradeTable.tsx', category: 'Négoce & activités', render: TradeTableDemo },
   { name: 'ActivityPane', file: 'src/ui/ActivityPane.tsx', category: 'Négoce & activités', render: ActivityPaneDemo },
   { name: 'QtyStepper', file: 'src/ui/QtyStepper.tsx', category: 'Négoce & activités', render: QtyStepperDemo },

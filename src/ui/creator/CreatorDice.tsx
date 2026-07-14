@@ -43,10 +43,14 @@ export function CreatorDice({ label, hint, rolled, xp, onRoll, roll, children }:
         <DiceRoll scene landed={landed} faces={faces} onSkip={skip} />
       ) : !rolled && onRoll ? (
         <div className="row-flex">
-          {/* Attente = famille rouge du canon existant (`.btn-primary` — le seul bouton cliquable de
-              la section, langue « tu peux agir » de la charte « Atelier du scribe », #412). */}
-          <button className="btn btn-primary" onClick={() => trigger()}>
-            <Icon id="nav/dice" size="sm" /> {label}
+          {/* Attente = encrier rouge bordé-teinté « Atelier du scribe » (#414 : composant unique,
+              langue « tu peux agir » — ROUGE bordé, en retrait du rempli de navigation). */}
+          <button className="dicewell act" onClick={() => trigger()}>
+            <span className="dicewell-tray">
+              <Icon id="nav/dice" size="sm" />
+              <Icon id="nav/dice" size="sm" />
+            </span>
+            <span className="dicewell-txt">{label}</span>
           </button>
         </div>
       ) : (

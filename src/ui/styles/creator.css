@@ -464,6 +464,94 @@
   font-size: 11px;
   padding: 2px 8px;
 }
+/* -- CreatorDice, état attente : « encrier » rouge bordé-teinté (langage `.c-dicewell.act` du kit —
+   C'EST UN BOUTON qui se lit ROUGE, la seule action de la section). -- */
+.dicewell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 14px;
+  width: 100%;
+  border-radius: 9px;
+  border: 1px solid var(--atelier-brass-hover);
+  background: linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-wood-bottom));
+  color: var(--muted);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(232, 196, 103, 0.14);
+}
+.dicewell.act {
+  border-color: var(--atelier-dicewell-border);
+  background: linear-gradient(180deg, var(--accent2), var(--blood));
+  color: var(--atelier-dicewell-txt-muted);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 169, 141, 0.2);
+}
+.dicewell.act:hover {
+  border-color: var(--atelier-dicewell-border-hover);
+  box-shadow: 0 3px 11px rgba(0, 0, 0, 0.5), 0 0 14px rgba(214, 84, 58, 0.32), inset 0 1px 0 rgba(255, 169, 141, 0.32);
+}
+.dicewell.act:active { transform: translateY(1px); }
+/* Emphase — le tirage aléatoire rapporte des PX de création, affordance à ne jamais laisser passer
+   inaperçue (langage `.c-dicewell.emph` du kit). #393 P4 : encrier Race à l'état attente. */
+.dicewell.emph {
+  padding: 11px 18px;
+  box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.3), 0 0 22px rgba(216, 185, 84, 0.14), inset 0 1px 0 rgba(232, 196, 103, 0.16);
+}
+.dicewell.act.emph {
+  box-shadow: 0 0 0 1px rgba(214, 84, 58, 0.3), 0 0 22px rgba(214, 84, 58, 0.16), inset 0 1px 0 rgba(255, 169, 141, 0.2);
+}
+.dicewell.emph .dicewell-txt {
+  font-size: 15.5px;
+}
+.dicewell.emph .dicewell-sub {
+  font-size: 12.5px;
+}
+.dicewell-tray {
+  flex: none;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 9px;
+  border-radius: 11px;
+  background: radial-gradient(circle at 40% 35%, var(--atelier-wood-etch), var(--atelier-rose-well-lo));
+  border: 2px solid var(--atelier-brass-hover);
+  box-shadow: inset 0 4px 9px rgba(0, 0, 0, 0.75);
+  color: var(--atelier-brass-vif);
+}
+.dicewell-txt {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--atelier-dicewell-txt);
+  letter-spacing: 0.2px;
+}
+/* -- Encrier RACE (#393 P3) : titre + sous-titre intégrés (copy en colonne) et état RÉSOLU (`.done`,
+   rendu laiton — plus un bouton, le résultat vit ici, plus de mur de boutons post-tirage). -- */
+.dicewell-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.dicewell-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--atelier-dicewell-txt-muted);
+}
+.dicewell.done {
+  cursor: default;
+  border-color: var(--gold);
+  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
+}
+.dicewell.done .dicewell-tray {
+  background: radial-gradient(circle at 40% 35%, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
+  border-color: var(--gold);
+  color: var(--atelier-brass-elu);
+}
+.dicewell.done .dicewell-txt {
+  color: var(--atelier-brass-elu);
+}
 .talent-option {
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -853,8 +941,10 @@
   background: linear-gradient(90deg, rgba(232, 196, 103, 0.5), rgba(232, 196, 103, 0.15));
 }
 
-/* -- FigTile (tuile-figurine cliquable) -- */
+/* -- FigTile (tuile-figurine cliquable) — tuile VISSÉE (rivets laiton coin haut, langage
+   `.plaq`/`.c-plate` du kit) -- */
 .fig-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -867,6 +957,19 @@
   cursor: pointer;
   min-width: 76px;
 }
+.fig-tile::before,
+.fig-tile::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover));
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+}
+.fig-tile::before { left: 6px; }
+.fig-tile::after { right: 6px; }
 .fig-tile:hover { border-color: var(--atelier-brass-hover); }
 .fig-tile-name {
   font-size: 12px;
@@ -900,15 +1003,46 @@
   font-variant-caps: small-caps;
   letter-spacing: 1.2px;
   font-size: 12.5px;
-  color: var(--muted);
+  color: var(--atelier-brass-rubric);
   margin: 0 0 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--atelier-wood-liseret);
+  background: linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+  box-shadow: inset 0 1px 0 rgba(232, 196, 103, 0.14);
 }
 
-/* -- DetailFrame (cadre de détail de l'élue) — `.detail-frame-meta` compose `.row-flex` (JSX). */
+/* -- DetailFrame (cadre de détail de l'élue) — panneau à liseré laiton + coins vissés (langage
+   `.c-frame`/`.cand-detail` du kit), `.detail-frame-meta` compose `.row-flex` (JSX). */
 .detail-frame {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 11px;
+  padding: 16px 18px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--atelier-wood-liseret);
+  background:
+    radial-gradient(380px 260px at 50% 0%, rgba(224, 181, 90, 0.07), transparent 65%),
+    linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-night));
+}
+.detail-frame::before,
+.detail-frame::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.detail-frame::before { left: 10px; }
+.detail-frame::after { right: 10px; }
+/* Compose `.row-flex` (JSX, base primitive) — n'y redéclare pas `flex-wrap` (cliquet vii). */
+.detail-frame-head {
+  align-items: baseline;
+  gap: 14px;
 }
 .detail-frame-name {
   font-family: var(--font-display);
@@ -916,6 +1050,20 @@
   color: var(--gold2);
   margin: 0;
   letter-spacing: 0.5px;
+}
+/* Tagline sourcée (« Livre de base p. 25 ») — jamais de flavor inventé (#393 P4). */
+.detail-frame-sub {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-variant-caps: small-caps;
+  letter-spacing: 1.4px;
+}
+/* Méta en pills inline (Mouvement/Destin/Résilience/+3/Taille) — compose `.chip` (canon,
+   components.css), valeur en or gras localement (`.chip` de base ne le porte pas — usage générique
+   partagé). #393 P4, écart juge vision : plus de cartouches `.stat-chip` 2 lignes ici. */
+.detail-frame-meta .chip b {
+  color: var(--gold2);
+  font-weight: 700;
 }
 .detail-frame-prose {
   background: rgba(8, 5, 3, 0.5);
@@ -929,19 +1077,46 @@
   color: var(--atelier-prose);
 }
 
-/* -- Étape Race (P1, #393) : gabarit DEUX ZONES (compose `MasterDetail`) — liste (recherche +
-   « Aux dés » + `GroupedPickGrid`) ⇄ détail (`DetailFrame`), pas de fiche vivante à ce stade
-   (arbitrage 2026-07-14). Enfants ciblés PAR POSITION (`:first-child`/`:last-child`) plutôt qu'en
-   re-déclarant `.master-detail-list`/`.master-detail-detail` ici — évite de gonfler le stock de
-   classes de domaine (cliquet xii) pour un simple calage de proportions. */
+/* -- Étape Race (P2, #393 — correction structurelle du verdict utilisateur 2026-07-14) : gabarit
+   DEUX ZONES (compose `MasterDetail`) — liste = 7 GRANDES CARTES DE RACE (grille ~60 % de large)
+   ⇄ détail = chips de LIGNÉE + `DetailFrame` (colonne ~40 %, plafonnée ~600px à 1600px large), pas
+   de fiche vivante à ce stade (arbitrage 2026-07-14). Enfants ciblés PAR POSITION
+   (`:first-child`/`:last-child`) plutôt qu'en re-déclarant `.master-detail-list`/
+   `.master-detail-detail` ici — évite de gonfler le stock de classes de domaine (cliquet xii) pour
+   un simple calage de proportions. */
+/* Cadre-parchemin DEUX PANNEAUX (rail liste + détail élu, juge vision #393 polish, écart n°1) :
+   bordure/radius/halo + 4 rivets laiton d'angle, valeurs `.c-lectern`/`.c-rivet` de la planche
+   (docs/plans/2026-07-14-maquettes-createur/planche-creator-FINALE.html). Rivets en COUCHES de fond
+   (radial-gradient positionnées aux 4 coins) — seuls 2 pseudo-éléments par élément, il en faut 4. */
+.creator-race-shell > :first-child,
+.detail-frame {
+  position: relative;
+  padding: 14px 24px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--atelier-wood-liseret);
+  background:
+    radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover)) 10px 10px / 6px 6px no-repeat,
+    radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover)) calc(100% - 10px) 10px / 6px 6px no-repeat,
+    radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover)) 10px calc(100% - 10px) / 6px 6px no-repeat,
+    radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover)) calc(100% - 10px) calc(100% - 10px) / 6px 6px no-repeat,
+    radial-gradient(480px 300px at 50% 0%, rgba(224, 181, 90, 0.06), transparent 65%),
+    linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-night));
+}
+/* Les rivets du cadre-parchemin ci-dessus (4 coins, en fond) remplacent les 2 pseudo-éléments
+   historiques de `.detail-frame` (top-left/top-right seulement). */
+.detail-frame::before,
+.detail-frame::after {
+  content: none;
+}
+
 .creator-race-shell {
   flex: 1;
   min-height: 0;
   padding: 16px 20px;
-  grid-template-columns: minmax(300px, 38%) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 600px);
   grid-template-rows: minmax(0, 1fr);
   align-items: stretch; /* le canon `.master-detail` pose `align-items:start` (liste courte, JAMAIS
-    scrollée) — ici la liste est longue (grille de figurines) : elle doit occuper toute la hauteur
+    scrollée) — ici la liste est longue (grille de cartes) : elle doit occuper toute la hauteur
     disponible pour scroller EN INTERNE plutôt que de pousser le pied de l'étape hors écran. */
 }
 .creator-race-shell > :first-child {
@@ -960,7 +1135,7 @@
 }
 @media (max-width: 900px) {
   .creator-race-shell {
-    grid-template-columns: minmax(260px, 34%) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 38%);
   }
 }
 @media (max-width: 700px) {
@@ -998,4 +1173,132 @@
     white-space: normal;
     text-align: left;
   }
+}
+
+/* -- Rangée recherche + encrier (#393 P3) : recherche à gauche, l'encrier remplit le reste de la
+   rangée (maquette ratifiée) — plus de section « Aux dés » ni de rangée d'aide séparée au-dessus. */
+.creator-race-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.creator-race-search {
+  flex: 1;
+  max-width: 320px;
+  min-width: 0;
+}
+.creator-race-toolbar > :last-child {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+@media (max-width: 700px) {
+  .creator-race-toolbar {
+    flex-direction: column;
+  }
+  .creator-race-search {
+    flex: none;
+    width: 100%;
+  }
+}
+
+/* -- Grille de cartes de RACE (7 familles, `.chip` de base surchargée en grande carte-figurine) --
+   quatre colonnes à 1600px large (gabarit de la maquette ratifiée), rétrécit avec le conteneur. */
+.creator-race-count {
+  font-variant-caps: small-caps;
+  letter-spacing: 1.2px;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+.creator-race-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.creator-race-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 10px 15px;
+  border-radius: 10px;
+  border: 1px solid var(--atelier-wood-etch);
+  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+  color: var(--text);
+  cursor: pointer;
+}
+/* Points dorés d'angle (langage `.fig-tile`/`.fam-tile` du kit) — tuile VISSÉE. */
+.creator-race-card::before,
+.creator-race-card::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover));
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+}
+.creator-race-card::before { left: 6px; }
+.creator-race-card::after { right: 6px; }
+.creator-race-card:hover {
+  border-color: var(--atelier-brass-hover);
+}
+/* Figurine généreuse (#393 P4) — étage sur le gabarit `.charprev-lg` (components.css) réduit
+   localement : 190px déborde le zéro-scroll à 1600×900 une fois les cartes aérées (padding/gap ↑). */
+.creator-race-card .charprev-lg {
+  height: 150px;
+}
+/* Liseré = borne du tirage COURANT (#393 P3) — distinct de `.sel` (gold, la race ÉLUE) : rouge
+   d'encrier (`--accent2`, même langage que le `.dicewell.act`), jamais superposé à la sélection. */
+.creator-race-card.rolled {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 1px rgba(214, 84, 58, 0.35);
+}
+.creator-race-card-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--atelier-brass-etch);
+  text-align: center;
+}
+.creator-race-card-sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+.creator-race-card.sel {
+  border-color: var(--gold);
+  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
+  box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.32);
+}
+.creator-race-card.sel .creator-race-card-name {
+  color: var(--atelier-brass-elu);
+}
+@media (max-width: 900px) {
+  .creator-race-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .creator-race-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -- Chips de LIGNÉE (variantes de la race élue, en tête du panneau détail, `.chip` de base) --
+   l'élue en surbrillance dorée (motif `.fig-tile.sel`/`.sealed-plaque.sel`). */
+.creator-race-lineages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.creator-race-lineage {
+  cursor: pointer;
+}
+.creator-race-lineage.sel {
+  border-color: var(--gold);
+  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
+  color: var(--atelier-brass-elu);
+  font-weight: 600;
 }

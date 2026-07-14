@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
  * `.logic-tabs`, `.merchant-tabs`+`.merch-subtabs`, `.sheet-tabs`) sont MORTS — fusionnés dans la
  * primitive UNIQUE `<Tabs>` (`src/ui/Tabs.tsx`, styles `src/ui/styles/tabs.css`). Le cliquet est
  * DÉCROISSANT : baseline ZÉRO pour tout sélecteur `.xxx-tabs` (une nouvelle occurrence = un 6e système
- * réintroduit). Ajouter un besoin d'onglets → étendre `<Tabs>` (nouvelle `variant`), jamais un CSS à part.
+ * réintroduit). `<Tabs>` porte une présentation UNIQUE [entériné 2026-07-14, #414] — un besoin
+ * d'onglets se compose avec la primitive telle quelle, jamais un CSS à part ni une variante réintroduite.
  */
 
 const UI = fileURLToPath(new URL('.', import.meta.url)); // src/ui/
@@ -44,7 +45,7 @@ describe('#288/#314 — cliquet DÉCROISSANT des systèmes d’onglets CSS (base
     }
     expect(
       offenders,
-      "Nouveau système d'onglets CSS — étendre la primitive <Tabs> (src/ui/Tabs.tsx, nouvelle `variant`), jamais un CSS à part :\n" + offenders.join('\n'),
+      "Nouveau système d'onglets CSS — composer la primitive <Tabs> (src/ui/Tabs.tsx, présentation unique), jamais un CSS à part :\n" + offenders.join('\n'),
     ).toEqual([]);
   });
 

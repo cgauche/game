@@ -14,6 +14,7 @@ import {
   stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names, RACE_KEY_LABEL,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
+  allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
@@ -93,6 +94,9 @@ export interface CodexSource {
 export interface CodexFact {
   label: string;
   value: string;
+  /** Lien Codex du LIBELLÉ (facultatif) — même forme que `CodexRow['kv'].kref` : la bande statbloc
+   *  (profil M+carac+B) devient cliquable quand le fait référence une entité du Codex. */
+  kref?: { category: string; id: string; label: string };
 }
 /** Une ligne d'une section. */
 export type CodexRow =
@@ -220,6 +224,12 @@ const refRow = (category: string, raw: string): CodexRow => {
   return { t: 'ref', category, id: refId(category, label), label, show: raw.trim() };
 };
 const refRows = (category: string, items?: string[] | null): CodexRow[] => (items ?? []).map((s) => refRow(category, s));
+/** Lien cross-réf par `id` STABLE DÉJÀ CONNU (skip le round-trip par libellé de `refRow` — patron
+ *  `critEntryItem`/traumas) : compétence/talent référencé par un axe de forces (axes.json, #409). */
+const idRefRow = (category: 'skills' | 'talents', id: string, spec?: string): CodexRow => {
+  const label = refLabel(category, { id, spec });
+  return { t: 'ref', category, id, label, show: label };
+};
 const kvRows = (pairs: [string, unknown][]): CodexRow[] =>
   pairs
     .filter(([, v]) => v != null && v !== '' && v !== '–')
@@ -366,7 +376,12 @@ export function raceCharSection(s: (typeof species)[number]): CodexSection {
   const rows: CodexRow[] = CHAR_KEYS.map((k) => {
     const base = s.baseChar?.[k] ?? 20;
     const diff = base - 20;
-    return { t: 'kv', k: CHAR_ABR[k], v: diff !== 0 ? `${base} (${diff > 0 ? '+' : ''}${diff})` : String(base) };
+    return {
+      t: 'kv',
+      k: CHAR_ABR[k],
+      v: diff !== 0 ? `${base} (${diff > 0 ? '+' : ''}${diff})` : String(base),
+      kref: { category: 'characteristics', id: k, label: CHAR_LABELS[k] },
+    };
   });
   return { title: 'Caractéristiques de base', layout: 'grid', rows };
 }
@@ -433,13 +448,17 @@ export function raceFicheTabs(s: (typeof species)[number]): CodexTab[] {
  *  LDB 76, Schéma des Profils) + Blessures (valeur livre `char.B` si imprimée, sinon formule
  *  BF+2×BE+BFM × Taille, LDB 85) + traits en chips cross-réf. Zéro logique par-créature. */
 function creatureStatblock(c: (typeof creatures)[number]): NonNullable<CodexItem['statblock']> {
-  const cell = (label: string, v: number | null | undefined): CodexFact => ({ label, value: v != null ? String(v) : '–' });
+  const cell = (label: string, v: number | null | undefined, kref?: CodexFact['kref']): CodexFact => ({ label, value: v != null ? String(v) : '–', kref });
   const size = sizeFromTraits(c.traits) ?? 'moyenne';
   const wounds = typeof c.char.B === 'number'
     ? c.char.B
     : woundsForSize(bonus(c.char.force ?? 0), bonus(c.char.endurance ?? 0), bonus(c.char['force-mentale'] ?? 0), size);
   return {
-    profile: [cell('M', c.char.M), ...CHAR_KEYS.map((k) => cell(CHAR_ABR[k], c.char[k])), { label: 'B', value: String(wounds) }],
+    profile: [
+      cell('M', c.char.M, { category: 'characteristics', id: 'mouvement', label: 'Mouvement' }),
+      ...CHAR_KEYS.map((k) => cell(CHAR_ABR[k], c.char[k], { category: 'characteristics', id: k, label: CHAR_LABELS[k] })),
+      { label: 'B', value: String(wounds), kref: { category: 'characteristics', id: 'blessure', label: 'Blessure' } },
+    ],
     traits: refRows('traits', traitLabels(c.traits)),
   };
 }
@@ -766,6 +785,17 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         passiveSection(t.passive),
         effectsSection(t.effects, 'Effets déclenchés'),
         ...reverseSections('talents', t.id), // Races · Carrières (rang) · Créatures · Talents le conférant
+      ),
+    })),
+  },
+  {
+    key: 'axes', label: 'Axes de forces', group: 'Compétences',
+    build: () => allAxes.map((a) => ({
+      id: a.id, label: a.label, desc: a.desc,
+      meta: facts(fact('Portée', a.core ? 'Socle de base' : 'Axe de scénario')),
+      sections: sections(
+        a.skills?.length ? { title: 'Compétences', layout: 'chips', rows: a.skills.map((r) => idRefRow('skills', r.skillId, r.spec)) } : null,
+        a.talents?.length ? { title: 'Talents', layout: 'chips', rows: a.talents.map((r) => idRefRow('talents', r.talentId, r.spec)) } : null,
       ),
     })),
   },

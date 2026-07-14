@@ -77,7 +77,7 @@ export function FacetedPickGrid({
         <SearchFilterField value={search} onChange={setSearch} icon placeholder={searchPlaceholder} ariaLabel={searchPlaceholder ?? label} />
       )}
       {!searching && groups.length > 1 && (
-        <Tabs variant="sub" tabs={groups.map((g) => ({ key: g.id, label: g.label }))} active={facet} onChange={setFacet} label={label} />
+        <Tabs tabs={groups.map((g) => ({ key: g.id, label: g.label }))} active={facet} onChange={setFacet} label={label} />
       )}
       <div ref={gridRef} role="listbox" aria-label={label} className="pick-grid" onKeyDown={onKeyDown}>
         {visible.map((c, i) => (

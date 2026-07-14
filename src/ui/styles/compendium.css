@@ -249,12 +249,12 @@
   text-align: center;
 }
 .codex-kv .ck-k {
-  font-size: 10px;
+  font-size: var(--stat-label-sm); /* converge sur le CONTRAT `.char-stats` (#418) */
   text-transform: uppercase;
   color: var(--muted);
 }
 .codex-kv .ck-v {
-  font-size: 15px;
+  font-size: var(--stat-val-sm);
   font-weight: 700;
   color: var(--text);
 }
@@ -379,7 +379,7 @@
   font-variant-numeric: tabular-nums;
 }
 .codex-statblock-profile th {
-  font-size: 10px;
+  font-size: var(--stat-label-sm); /* converge sur le CONTRAT `.char-stats` (#418) */
   text-transform: uppercase;
   letter-spacing: 0.04em;
   opacity: 0.75;
@@ -387,7 +387,7 @@
   border-bottom: 1px solid currentColor;
 }
 .codex-statblock-profile td {
-  font-size: 14px;
+  font-size: var(--stat-val-sm);
   font-weight: 700;
   padding: 3px 4px;
 }
