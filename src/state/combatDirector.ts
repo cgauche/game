@@ -29,8 +29,7 @@ export function beatHold(get: Get, base: keyof typeof TEMPO): number {
 
 /**
  * Le beat « APPROCHE puis AGIS » — source UNIQUE du séquencement « rejoindre la cible avant de résoudre »,
- * partagé par le clic d'attaque du HÉROS (combatSlice) ET l'IA (combatFlow). Avant, joueur et IA
- * chorégraphiaient ce même beat séparément (setTimeout dispersés).
+ * partagé par le clic d'attaque du HÉROS (combatSlice) ET l'IA (combatFlow).
  */
 
 /** Durée (ms) du glissé d'approche : durée réelle de marche (`walkMs`) + un beat lisible (`afterMove`).

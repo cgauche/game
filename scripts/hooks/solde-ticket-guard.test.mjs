@@ -12,6 +12,8 @@ import {
   validateRefFile,
   evaluateAntiEsquive,
   analyzeStagedDiff,
+  extractMessageSources,
+  evaluateAmendInvisible,
 } from './solde-ticket-guard.mjs'
 
 const TODAY = '2026-07-14'
@@ -381,4 +383,118 @@ test('evaluateAntiEsquive : aucun ticket, src touché, avec ligne REFUTATION: �
     stagedTotalLines: 100,
   })
   assert.equal(d, null)
+})
+
+// ── extractMessageSources (message par fichier -F/--file, fix production 2026-07-14) ──────────────
+test('extractMessageSources : pas de -F → texte = commande telle quelle', () => {
+  const r = extractMessageSources('git commit -m "corrige #42"')
+  assert.equal(r.text, 'git commit -m "corrige #42"')
+  assert.equal(r.fileError, null)
+})
+
+test('extractMessageSources : -F <path> lu et concaténé', () => {
+  const r = extractMessageSources('git commit -F commit-415.txt', {
+    readFile: (p) => { assert.match(p, /commit-415\.txt$/); return 'corrige #415\n\ndétail' },
+  })
+  assert.equal(r.fileError, null)
+  assert.match(r.text, /corrige #415/)
+  assert.match(r.text, /git commit -F commit-415\.txt/)
+})
+
+test('extractMessageSources : --file=<path> (forme =) lu', () => {
+  const r = extractMessageSources('git commit --file=commit-415.txt', {
+    readFile: () => 'corrige #415',
+  })
+  assert.match(r.text, /corrige #415/)
+})
+
+test('extractMessageSources : --file <path> (forme espace) lu', () => {
+  const r = extractMessageSources('git commit --file commit-415.txt', {
+    readFile: () => 'corrige #415',
+  })
+  assert.match(r.text, /corrige #415/)
+})
+
+test('extractMessageSources : chemin quoté (doubles/simples) dépouillé avant lecture', () => {
+  const seen = []
+  extractMessageSources('git commit -F "commit 415.txt"', { readFile: (p) => { seen.push(p); return 'x' } })
+  assert.match(seen[0], /commit 415\.txt$/)
+  const seen2 = []
+  extractMessageSources("git commit -F 'commit-415.txt'", { readFile: (p) => { seen2.push(p); return 'x' } })
+  assert.match(seen2[0], /commit-415\.txt$/)
+})
+
+test('extractMessageSources : ligne REFUTATION: dans le fichier -F visible dans le texte', () => {
+  const r = extractMessageSources('git commit -F commit-x.txt', {
+    readFile: () => `feat: truc\n\n${REFUTATION_LINE_OK}`,
+  })
+  assert.match(r.text, /REFUTATION:/)
+})
+
+test('extractMessageSources : -F présent mais fichier illisible → fileError renseigné, texte = commande seule', () => {
+  const r = extractMessageSources('git commit -F absent.txt', {
+    readFile: () => { throw new Error('ENOENT') },
+  })
+  assert.equal(r.fileError, 'absent.txt')
+  assert.equal(r.text, 'git commit -F absent.txt')
+})
+
+test('extractMessageSources : commande vide → texte vide, pas d\'erreur', () => {
+  assert.deepEqual(extractMessageSources(''), { text: '', fileError: null })
+})
+
+// ── evaluate/evaluateAntiEsquive sur le texte étendu (-F) — intégration bout en bout ───────────────
+test('intégration -F : fermeture via -F sans solde → deny (invisible avec l\'ancien driver, visible maintenant)', () => {
+  const { text } = extractMessageSources('git commit -F commit-415.txt', { readFile: () => 'corrige #415' })
+  const d = evaluate({ command: text, today: TODAY, readSolde: () => null })
+  assert.ok(d)
+  assert.match(d.reason, /#415/)
+})
+
+test('intégration -F : fermeture via -F avec solde conforme → pass', () => {
+  const { text } = extractMessageSources('git commit -F commit-415.txt', { readFile: () => 'corrige #415' })
+  const d = evaluate({ command: text, today: TODAY, readSolde: () => solde() })
+  assert.equal(d, null)
+})
+
+test('intégration -F : REFUTATION: dans le fichier -F accepte l\'anti-esquive', () => {
+  const { text } = extractMessageSources('git commit -F commit-x.txt', {
+    readFile: () => `feat: refonte\n\n${REFUTATION_LINE_OK}`,
+  })
+  const d = evaluateAntiEsquive({ command: text, stagedTouchesSrc: true, stagedTotalLines: 100 })
+  assert.equal(d, null)
+})
+
+// ── evaluateAmendInvisible (--amend sans -m/-F, message hérité invisible) ──────────────────────────
+test('evaluateAmendInvisible : pas un commit → silence', () => {
+  assert.equal(evaluateAmendInvisible({ command: 'git status', stagedTouchesSrc: true }), null)
+})
+
+test('evaluateAmendInvisible : pas --amend → silence', () => {
+  assert.equal(evaluateAmendInvisible({ command: 'git commit -m "x"', stagedTouchesSrc: true }), null)
+})
+
+test('evaluateAmendInvisible : --amend avec -m → silence (message visible)', () => {
+  assert.equal(evaluateAmendInvisible({ command: 'git commit --amend -m "corrige #9"', stagedTouchesSrc: true }), null)
+})
+
+test('evaluateAmendInvisible : --amend avec -F → silence (message visible via -F)', () => {
+  assert.equal(evaluateAmendInvisible({ command: 'git commit --amend -F msg.txt', stagedTouchesSrc: true }), null)
+})
+
+test('evaluateAmendInvisible : --amend sans -m/-F, diff staged touche src → deny', () => {
+  const d = evaluateAmendInvisible({ command: 'git commit --amend', stagedTouchesSrc: true })
+  assert.ok(d)
+  assert.match(d.reason, /--amend/)
+})
+
+test('evaluateAmendInvisible : --amend sans -m/-F, diff staged ne touche pas src → silence', () => {
+  assert.equal(evaluateAmendInvisible({ command: 'git commit --amend', stagedTouchesSrc: false }), null)
+})
+
+test('extractMessageSources : « -F » en PROSE d un message -m n est pas un flag fichier (git refuse -m+-F — faux positif vécu 2026-07-14)', () => {
+  const cmd = 'git commit -m "fix(hooks): les fermetures via -F et, pire, laissant passer — utiliser -m ou un chemin lisible"'
+  const r = extractMessageSources(cmd, { readFile: () => { throw new Error('ne doit jamais être appelé') } })
+  assert.equal(r.fileError, undefined)
+  assert.equal(r.text, cmd)
 })

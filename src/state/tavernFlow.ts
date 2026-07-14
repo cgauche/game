@@ -25,6 +25,7 @@ import { toBrass, fromBrass, formatMoney } from '../engine/money';
 import { openRoll, freeCons, type Consequence } from './rollSeam';
 import { registerCascadeApplier } from './cascade';
 import { actorIn } from './combatOrParty';
+import { scheduleFlowTimer } from './combatTimers';
 
 /** Adversaire d'une partie : un compagnon du groupe (ses vraies valeurs) ou une valeur ABSTRAITE fixée
  *  par la table (le MJ — le jeu sans MJ n'invente pas de stats de PNJ). */
@@ -120,7 +121,7 @@ function openTavernRound(
 /** Rejoue une cascade différée si la cascade EN COURS n'a pas fini de committer son étape (patron
  *  `portFlow.ts` `chainStep`) — sinon exécute directement (chemin inline/immédiat). */
 function chainRound(get: Get, open: () => void): void {
-  if (get().pendingCascade) setTimeout(open, 0);
+  if (get().pendingCascade) scheduleFlowTimer(open, 0);
   else open();
 }
 

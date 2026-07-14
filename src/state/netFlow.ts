@@ -28,6 +28,7 @@ import { RoomGuest, RoomHost, relayHttpUrl } from '../net/relay';
 import type { NetMessage } from '../net/protocol';
 import type { Scene } from './scene';
 import { bus, EVT } from './bus';
+import { scheduleFlowTimer, clearTrackedTimer } from './combatTimers';
 
 import type { Get, Set } from './flowTypes';
 
@@ -110,7 +111,7 @@ function campaignMessages(get: Get): NetMessage[] {
  *  Upload saturé (bufferedAmount) → on retente, seul le DERNIER état partira (coalescing). */
 function scheduleBroadcast(get: Get): void {
   if (!host || broadcastTimer != null) return;
-  broadcastTimer = setTimeout(() => {
+  broadcastTimer = scheduleFlowTimer(() => {
     broadcastTimer = null;
     if (!host) return;
     if ((roomHost?.relay.buffered() ?? 0) > BUFFER_MAX) {
@@ -234,7 +235,7 @@ export async function netHostStart(get: Get, set: Set, name: string): Promise<bo
   rh.onResume = (seat, gname) => {
     const t = graceTimers.get(seat);
     if (t != null) {
-      clearTimeout(t);
+      clearTrackedTimer(t);
       graceTimers.delete(seat);
     }
     // Revenu APRÈS la grace : son siège a été fermé → re-join sur le même siège.
@@ -243,7 +244,7 @@ export async function netHostStart(get: Get, set: Set, name: string): Promise<bo
   };
   rh.onGone = (seat) => {
     setPresence(get, set, seat, 'away');
-    graceTimers.set(seat, setTimeout(() => {
+    graceTimers.set(seat, scheduleFlowTimer(() => {
       graceTimers.delete(seat);
       rh.closeSeat(seat); // → onClose du transport virtuel → onSeatClosed (héros à l'hôte)
     }, GRACE_MS));
@@ -268,7 +269,7 @@ export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Prom
       netLeave(get, set);
       resolve(msg);
     };
-    const timeout = setTimeout(() => fail('Connexion impossible — réessayez.'), 15_000);
+    const timeout = scheduleFlowTimer(() => fail('Connexion impossible — réessayez.'), 15_000);
     const rg = new RoomGuest(code, name, undefined, stored);
     roomGuest = rg;
     rg.onFatal = (reason) => {
@@ -290,7 +291,7 @@ export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Prom
       sessionStorage.setItem(tokenKey(code), rg.token);
       if (settled) return; // reprise en cours de partie : déjà câblé
       settled = true;
-      clearTimeout(timeout);
+      clearTrackedTimer(timeout);
       guest = new GuestSession({
         build: BUILD_ID,
         name,
@@ -341,10 +342,10 @@ export function netLeave(_get: Get, set: Set): void {
   unsubscribe?.();
   unsubscribe = null;
   if (broadcastTimer != null) {
-    clearTimeout(broadcastTimer);
+    clearTrackedTimer(broadcastTimer);
     broadcastTimer = null;
   }
-  for (const t of graceTimers.values()) clearTimeout(t);
+  for (const t of graceTimers.values()) clearTrackedTimer(t);
   graceTimers.clear();
   lastCampaign = null;
   host?.close();

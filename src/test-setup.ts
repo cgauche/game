@@ -29,13 +29,13 @@
  *    rendre la main arme un timer RÉEL (`setTimeout` natif, pas `vi.useFakeTimers`) que `vi.useRealTimers()`
  *    ne touche pas : sous `isolate:false` (module partagé entre fichiers du worker), ce timer en vol se
  *    déclenche pendant un test ULTÉRIEUR et corrompt son `battle`/sa séquence de RNG (#405, flake
- *    d'ordonnancement). `clearCombatTimers()` annule tout timer de combat encore en vol au teardown.
+ *    d'ordonnancement). `clearTrackedTimers()` annule tout timer tracé encore en vol au teardown (#405, #415).
  */
 import { afterEach, beforeEach, vi } from 'vitest';
 import { useGame, type GameState } from './state/store';
 import { loadRuleOverrides } from './engine/policy';
 import { cascadeAppliers } from './state/cascade';
-import { clearCombatTimers } from './state/combatTimers';
+import { clearTrackedTimers } from './state/combatTimers';
 
 // État initial figé UNE fois (le `stringify` est la moitié coûteuse, et le geler à l'init le rend
 // immunisé à toute mutation du gabarit) ; chaque test n'en `parse` qu'une copie fraîche.
@@ -52,5 +52,5 @@ afterEach(() => {
   for (const k of Object.keys(cascadeAppliers)) if (!(k in cascadeSnapshot)) delete cascadeAppliers[k];
   Object.assign(cascadeAppliers, cascadeSnapshot);
   vi.useRealTimers();
-  clearCombatTimers();
+  clearTrackedTimers();
 });

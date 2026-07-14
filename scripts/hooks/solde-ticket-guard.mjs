@@ -26,9 +26,51 @@ import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import { execSync } from 'node:child_process'
 
+// Message passé par FICHIER (`git commit -F <path>` / `--file <path>` / `--file=<path>`) : le
+// driver stdin ne voit que `tool_input.command` — un message packé dans un fichier externe y est
+// INVISIBLE, ce qui (a) bloque à tort une fermeture légitime (aucun "corrige #N" vu dans la commande)
+// et (b) pire, laisse le closer post-commit (qui LIT le vrai message) fermer un ticket SANS être
+// passé par ce contrôle de solde. Fix découvert en production 2026-07-14.
+const FILE_FLAG_RE = /(?:^|\s)(?:-F|--file)(=|\s+)("[^"]*"|'[^']*'|\S+)/
+
+/** Chemin du fichier de message porté par `-F <path>` / `--file <path>` / `--file=<path>` dans la
+ *  commande, guillemets simples/doubles retirés. `null` si aucun de ces flags n'est présent.
+ *  Sémantique git : `-m` et `-F` sont MUTUELLEMENT EXCLUSIFS (git refuse la combinaison) — un
+ *  `-m` présent signifie donc qu'aucun vrai flag fichier n'existe, et toute séquence « -F x »
+ *  restante n'est que de la PROSE du message lui-même (faux positif vécu : un message -m citant
+ *  « via -F et, » a fait chercher le fichier « et, » — fail-closed sur sa propre annonce). */
+function fileFlagPath(command) {
+  if (!command) return null
+  if (MESSAGE_FLAG_RE.test(command)) return null
+  const m = FILE_FLAG_RE.exec(command)
+  if (!m) return null
+  let path = m[2]
+  if ((path.startsWith('"') && path.endsWith('"')) || (path.startsWith("'") && path.endsWith("'"))) {
+    path = path.slice(1, -1)
+  }
+  return path
+}
+
+/** Texte COMPLET à analyser pour la fermeture/réfutation : la commande elle-même + le contenu du
+ *  fichier `-F`/`--file` s'il y en a un (lu via `readFile`, résolu relatif à `cwd`). Le gate « est-ce
+ *  un git commit » continue de s'appliquer sur la commande seule (le fichier ne la contient jamais).
+ *  `fileError` = chemin illisible (fail-closed : ne JAMAIS retomber en silence sur un -F cassé). */
+export function extractMessageSources(command, { readFile = readFileSync, cwd = process.cwd() } = {}) {
+  if (!command) return { text: '', fileError: null }
+  const path = fileFlagPath(command)
+  if (!path) return { text: command, fileError: null }
+  try {
+    const fileContent = readFile(resolve(cwd, path), 'utf8')
+    return { text: `${command}\n${fileContent}`, fileError: null }
+  } catch {
+    return { text: command, fileError: path }
+  }
+}
+
 // Motif de fermeture repris du closer post-commit (`scripts/git-hooks/post-commit`) : mêmes
 // mots-clefs, mais capturés ICI sur le texte ENTIER de la commande (couvre les here-strings/heredocs
-// `git commit -m "$(cat <<EOF ... EOF)"` où le message est packé dans la commande shell elle-même).
+// `git commit -m "$(cat <<EOF ... EOF)"` où le message est packé dans la commande shell elle-même,
+// ET le texte étendu par `extractMessageSources` quand le message est passé par `-F`).
 const CLOSE_KEYWORD_RE = /(corrige|fixe?s?|closes?|ferme)\s+#(\d+)/gi
 
 /** Numéros de ticket que la commande FERME, dédupliqués/triés. `[]` si la commande n'est pas un
@@ -288,6 +330,30 @@ export function evaluateAntiEsquive({ command, stagedTouchesSrc, stagedTotalLine
   }
 }
 
+// ── --amend sans message explicite (message hérité invisible au contrôle) ──────────────────────────
+const AMEND_RE = /--amend\b/
+const MESSAGE_FLAG_RE = /(?:^|\s)(?:-m\b|--message\b)/
+
+/**
+ * `git commit --amend` sans `-m`/`-F` hérite du message du commit précédent — invisible à ce hook
+ * (et au closer post-commit) puisque ni la commande ni un fichier lisible ne le portent. Deny
+ * PRUDENT si le diff staged touche `src/**` ; silence sinon (les règles maison découragent déjà
+ * l'amend, mais un amend sans substance src ne mérite pas un blocage).
+ * @returns {{ reason: string } | null}
+ */
+export function evaluateAmendInvisible({ command, stagedTouchesSrc }) {
+  if (!command || !/git\s+commit\b/i.test(command)) return null
+  if (!AMEND_RE.test(command)) return null
+  if (MESSAGE_FLAG_RE.test(command) || FILE_FLAG_RE.test(command)) return null
+  if (!stagedTouchesSrc) return null
+  return {
+    reason:
+      `⚠ Commit --amend sans message explicite (-m/-F) : le message hérité est invisible au ` +
+      `contrôle de solde (src/** touché) — re-committer avec -m (ou -F sur un fichier lisible) ` +
+      `pour que la fermeture/réfutation reste contrôlable.`,
+  }
+}
+
 /** Lecture d'un fichier de réfutation `ref-<n>` depuis le disque. `null` si absent/illisible. */
 export function readRefFile(n) {
   try { return readFileSync(resolve('.claude/soldes', `ref-${n}.md`), 'utf8') } catch { return null }
@@ -326,21 +392,37 @@ if (isMain) {
   // Date LOCALE (pas UTC) : un solde écrit après minuit heure locale porte la date locale.
   const d = new Date()
   const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const { touchesSrc, totalLines } = analyzeStagedDiff(readStagedDiffStat())
+
+  const { text, fileError } = extractMessageSources(command)
+  if (fileError) {
+    console.log(JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason:
+          `⚠ Message de commit en fichier illisible pour le contrôle de solde (-F/--file "${fileError}") ` +
+          `— utiliser -m ou un chemin lisible (fail-closed : pas de fermeture ni de réfutation invisibles).`,
+      },
+    }))
+    process.exit(0)
+  }
+
   const decision = evaluate({
-    command,
+    command: text,
     today,
     readSolde: readSoldeFile,
     counter: readCounterFile(),
     readRevuePalier: readRevuePalierFile,
   })
-  const { touchesSrc, totalLines } = analyzeStagedDiff(readStagedDiffStat())
   const antiEsquive = evaluateAntiEsquive({
-    command,
+    command: text,
     stagedTouchesSrc: touchesSrc,
     stagedTotalLines: totalLines,
     readRefFile,
   })
-  const reasons = [decision, antiEsquive].filter(Boolean).map((d) => d.reason)
+  const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
+  const reasons = [decision, antiEsquive, amendInvisible].filter(Boolean).map((d) => d.reason)
   if (reasons.length > 0) {
     console.log(JSON.stringify({
       hookSpecificOutput: {

@@ -341,15 +341,15 @@ export function createCombatSlice(get: Get, set: Set) {
     else if (done?.purpose === 'seaActivities') continueSeaActivitiesAfterCascade(get, set); // Activités en mer (#273 Étape 2) → Commerce d'opportunité séquencé puis halte
     // Mini-cascade AUTONOME d'un événement de bord maritime (`purpose:'test'` : Cogue pirate, Ouragan,
     // Prière d'un Présage — `resolveSeaDayEvent` a mis le jour EN ATTENTE) : sa clôture REPREND la conduite
-    // du jour. Couture GÉNÉRIQUE (toute la classe, pas seulement « fuir »), remplaçant le `setTimeout(runSeaDay)`
-    // ad hoc des appliers (#383) : ici `pendingCascade` est DÉJÀ null (post-`advanceCascade`), plus de garde de
-    // synchronisation. Gaté sur `travelPlan.sea` : à l'accostage `travelPlan` est nul (la désertion `purpose:'test'`
+    // du jour. Couture GÉNÉRIQUE (toute la classe, pas seulement « fuir ») : ici `pendingCascade` est DÉJÀ
+    // null (post-`advanceCascade`), plus de garde de synchronisation. Gaté sur `travelPlan.sea` : à
+    // l'accostage `travelPlan` est nul (la désertion `purpose:'test'`
     // a sa propre reprise `resolvePortArrival`) ; `runSeaDay` re-garde de son côté combat/steamSave.
     else if (done?.purpose === 'test' && get().travelPlan?.sea && !get().pendingSteamSave) runSeaDay(get, set);
     // Accostage à FINALISER à la clôture (désertion à la relâche surfacée, #387) : `travelPlan` est déjà nul
     // ici (l'arrivée l'a annulé), hors de la branche sea ci-dessus — la cascade porte sa continuation dans
-    // `portArrival`. Couture GÉNÉRALE (la CLASSE « cascade dont la fermeture finalise une transition »),
-    // remplaçant le `setTimeout(finish)` de l'applier : `pendingCascade` est DÉJÀ null, plus de garde de synchro.
+    // `portArrival`. Couture GÉNÉRALE (la CLASSE « cascade dont la fermeture finalise une transition ») :
+    // `pendingCascade` est DÉJÀ null, plus de garde de synchro.
     else if (done?.portArrival) finalizePortArrival(get, set, done.portArrival);
     else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
     else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)

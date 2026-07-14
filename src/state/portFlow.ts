@@ -41,6 +41,7 @@ import { toDate } from '../engine/clock';
 import { registerCascadeApplier } from './cascade';
 import { openPartyTest, openWorldTest, freeCons } from './rollSeam';
 import { actorIn } from './combatOrParty';
+import { scheduleFlowTimer } from './combatTimers';
 import type { Get, Set } from './flowTypes';
 
 /** Une offre d'achat générée à l'escale (l.319-331) — Enc disponible + prix de base NOTÉ (le Vin fige son 3d10). */
@@ -227,7 +228,7 @@ registerCascadeApplier(PORT_BUY_BARGAIN_KIND, (get, set, step) => {
 /** Ouvre la cascade différée si la cascade EN COURS n'a pas fini de committer son étape (patron
  *  `seaVoyageFlow.ts` `sea-desertion`) — sinon exécute directement (chemin inline/immédiat). */
 function chainStep(get: Get, open: () => void): void {
-  if (get().pendingCascade) setTimeout(open, 0);
+  if (get().pendingCascade) scheduleFlowTimer(open, 0);
   else open();
 }
 
