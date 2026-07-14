@@ -21,15 +21,21 @@
  *      écrasé → `rest-flow` n'insère plus l'Exposition).
  *
  * 2. FILET D'ISOLATION DES TIMERS. Le combat planifie l'IA et l'enchaînement des tours via de VRAIS
- *    `setTimeout` (`combatFlow.ts`) qui MUTENT `battle`. Un test qui arme `vi.useFakeTimers()` sans le
- *    restaurer laisse des timers fantômes : un `setTimeout` planifié mais non drainé se déclenche
- *    pendant un test ULTÉRIEUR et corrompt `battle.turn` → flake. `vi.useRealTimers()` DÉSINSTALLE
- *    l'horloge factice et JETTE ses timers en attente ; en mode réel, c'est un no-op → ZÉRO risque.
+ *    `setTimeout` (`combatFlow.ts`/`combatDirector.ts`/`combatAuto.ts`, via `scheduleCombatTimer` de
+ *    `state/combatTimers.ts`) qui MUTENT `battle` et tirent `battleRng` (singleton de module) à leur
+ *    échéance. Un test qui arme `vi.useFakeTimers()` sans le restaurer laisse des timers fantômes :
+ *    `vi.useRealTimers()` DÉSINSTALLE l'horloge factice et JETTE ses timers en attente (en mode réel,
+ *    c'est un no-op → ZÉRO risque). Mais un test SYNCHRONE qui déclenche un beat de combat AVANT de
+ *    rendre la main arme un timer RÉEL (`setTimeout` natif, pas `vi.useFakeTimers`) que `vi.useRealTimers()`
+ *    ne touche pas : sous `isolate:false` (module partagé entre fichiers du worker), ce timer en vol se
+ *    déclenche pendant un test ULTÉRIEUR et corrompt son `battle`/sa séquence de RNG (#405, flake
+ *    d'ordonnancement). `clearCombatTimers()` annule tout timer de combat encore en vol au teardown.
  */
 import { afterEach, beforeEach, vi } from 'vitest';
 import { useGame, type GameState } from './state/store';
 import { loadRuleOverrides } from './engine/policy';
 import { cascadeAppliers } from './state/cascade';
+import { clearCombatTimers } from './state/combatTimers';
 
 // État initial figé UNE fois (le `stringify` est la moitié coûteuse, et le geler à l'init le rend
 // immunisé à toute mutation du gabarit) ; chaque test n'en `parse` qu'une copie fraîche.
@@ -46,4 +52,5 @@ afterEach(() => {
   for (const k of Object.keys(cascadeAppliers)) if (!(k in cascadeSnapshot)) delete cascadeAppliers[k];
   Object.assign(cascadeAppliers, cascadeSnapshot);
   vi.useRealTimers();
+  clearCombatTimers();
 });

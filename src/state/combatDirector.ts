@@ -13,6 +13,7 @@ import type { Get } from './flowTypes';
 import { TEMPO } from './tempo';
 import { walkMs } from '../geometry/walk';
 import { lastEventTone, type CombatTone } from './combatLog';
+import { scheduleCombatTimer } from './combatTimers';
 
 type Pt = { x: number; y: number };
 
@@ -42,6 +43,6 @@ export function approachMs(get: Get, path: Pt[] | null | undefined): number {
  *  On VOIT le combattant rejoindre la cible AVANT la résolution (modale joueur / frappe IA). */
 export function afterApproach(get: Get, path: Pt[] | null | undefined, resolve: () => void): void {
   const ms = approachMs(get, path);
-  if (ms > 0) setTimeout(resolve, ms);
+  if (ms > 0) scheduleCombatTimer(resolve, ms);
   else resolve();
 }

@@ -23,6 +23,7 @@ import { stepInteraction } from './cascade';
 import { ownsLocally } from './netOwnership';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 import { beatHold } from './combatDirector';
+import { scheduleCombatTimer } from './combatTimers';
 
 /**
  * Politique d'auto-résolution par TYPE de jet de cascade de COMBAT. `self` = jet propre piloté par son
@@ -62,7 +63,7 @@ function driveSelf(get: Get, set: Set, drive: readonly (keyof GameState)[]): voi
     if (i >= drive.length) { tickCombatAuto(get, set); return; } // séquence finie → continuer (étape/modale suivante)
     const fn = get()[drive[i++]] as undefined | (() => void);
     if (typeof fn === 'function') fn();        // roll() idempotent, puis confirm() (ferme/avance)
-    setTimeout(step, beatHold(get, 'autoResolve'));
+    scheduleCombatTimer(step, beatHold(get, 'autoResolve'));
   };
   step();
 }
@@ -96,10 +97,10 @@ function autoResolveCascade(get: Get, set: Set): void {
     }
     // Combat : avancer d'UNE étape (comme le joueur) → les étapes-jet en aval (Maladresse…) gardent leur
     // driver bespoke au tick suivant, au lieu d'être écrasées par un `cascadeResolveAll` global.
-    if (pc.purpose === 'combat') { get().cascadeNext(); setTimeout(() => tickCombatAuto(get, set), beatHold(get, 'autoResolve')); return; }
+    if (pc.purpose === 'combat') { get().cascadeNext(); scheduleCombatTimer(() => tickCombatAuto(get, set), beatHold(get, 'autoResolve')); return; }
   }
   get().cascadeResolveAll();
-  setTimeout(() => tickCombatAuto(get, set), beatHold(get, 'autoResolve')); // gérer le bilan / l'étape suivante
+  scheduleCombatTimer(() => tickCombatAuto(get, set), beatHold(get, 'autoResolve')); // gérer le bilan / l'étape suivante
 }
 
 /** Une étape de cascade sera-t-elle auto-résolue ? (sert à MASQUER la modale, cf. `willAutoResolve`). */
@@ -157,11 +158,11 @@ export function tickCombatAuto(get: Get, set: Set): void {
       // autre jour »). En Rapide, on NE touche PAS (la modale reste — vrai choix du joueur).
       if (cadenceAutoCombat() && pickActiveModalKey(s) === 'fateSave') {
         const hit = s.pendingFateSave?.source === 'hit';
-        setTimeout(() => (hit ? get().fateNegate() : get().fateSurvive()), beatHold(get, 'autoResolve'));
+        scheduleCombatTimer(() => (hit ? get().fateNegate() : get().fateSurvive()), beatHold(get, 'autoResolve'));
       }
       return;
     case 'partial':
-      if (pickActiveModalKey(s) === 'reveal') { setTimeout(() => get().dismissReveal(), beatHold(get, 'autoResolve')); return; }
+      if (pickActiveModalKey(s) === 'reveal') { scheduleCombatTimer(() => get().dismissReveal(), beatHold(get, 'autoResolve')); return; }
       autoResolveCascade(get, set);
       return;
     case 'self':
@@ -180,6 +181,6 @@ export function initCombatAuto(): void {
   useGame.subscribe(() => {
     if (!cadenceAuto() || scheduled) return;
     scheduled = true;
-    setTimeout(() => { scheduled = false; tickCombatAuto(useGame.getState, useGame.setState); }, 0);
+    scheduleCombatTimer(() => { scheduled = false; tickCombatAuto(useGame.getState, useGame.setState); }, 0);
   });
 }

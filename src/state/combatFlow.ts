@@ -15,6 +15,7 @@ import { ev, evLines, type CombatEventKind } from './combatLog';
 import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (cibles/jets)
 import { TEMPO } from './tempo';
 import { beatHold, approachMs, afterApproach } from './combatDirector';
+import { scheduleCombatTimer } from './combatTimers';
 import { facingToward, DIR8_ORDER, type Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
 import { setVesselHull } from './seaVoyageFlow';
@@ -4790,7 +4791,7 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: Get, set: SetFn): void {
   if (combatAdvanceBlocked(get())) return;
-  setTimeout(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
+  scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
 }
 
 /** Reprend un tour d'IA SUSPENDU par une modale bloquante (révélations OU séquence de conséquences de
@@ -5013,7 +5014,7 @@ export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   const battle = get().battle!;
   const active = activeCombatant(battle);
   if (!active || !aiDriven(get(), active) || isOutOfAction(active)) return;
-  setTimeout(() => runEnemyAI(get, set, active.id), beatHold(get, 'turnHandoff'));
+  scheduleCombatTimer(() => runEnemyAI(get, set, active.id), beatHold(get, 'turnHandoff'));
 }
 
 /** LDB 21 (Psychologie) l.29 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un
@@ -5373,7 +5374,7 @@ function shipMaxPosteRange(ship: Combatant): number {
 /** Clôt le tour d'une coque IA (readability : mêmes tenues que le tour ennemi). Ne progresse PAS si la bordée a
  *  conclu le combat (reddition/naufrage — `checkBattleOver` l'a déjà fermé). */
 function endShipTurn(get: Get, set: SetFn, delay?: number): void {
-  setTimeout(() => { if (!get().battle?.over) advanceTurn(get, set); }, delay ?? beatHold(get, 'enemyAdvance'));
+  scheduleCombatTimer(() => { if (!get().battle?.over) advanceTurn(get, set); }, delay ?? beatHold(get, 'enemyAdvance'));
 }
 
 /**
@@ -5530,7 +5531,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     const aimKind = firedWeapon(enemy, target).type === 'ranged' ? 'ranged' : enemy.chargedThisTurn ? 'charge' : 'melee';
     set({ actorAim: { fromId: enemy.id, toId: target.id, kind: aimKind } });
     bus.emit(EVT.SCENE_DIRTY);
-    setTimeout(() => {
+    scheduleCombatTimer(() => {
       set({ actorAim: null });
       const b = get().battle;
       // Tour caduc (combat fini OU relancé pendant le télégraphe → `enemy` hors du combat courant).
@@ -5546,7 +5547,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         aiAvailableFreeAttack(get, set, enemy); // attaque(s) d'Arme GRATUITE(S) « disponible(s) » après l'attaque principale (Frénésie LDB 21 l.34 = seule source en donnée)
         // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
         // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
-        if (!aiCreatureFreeAttacks(get, set, enemy)) setTimeout(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
+        if (!aiCreatureFreeAttacks(get, set, enemy)) scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
       }
     }, delay);
   };
@@ -5578,7 +5579,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // Télégraphe d'incantation (parité tir) : ligne pointillée + réticule ~0,7 s avant le jet.
       set({ actorAim: { fromId: enemy.id, toId: ctgt.id, kind: 'cast' } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => {
+      scheduleCombatTimer(() => {
         set({ actorAim: null });
         const b = get().battle;
         if (!b || b.over) return;
@@ -5587,7 +5588,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         // l'IA : la reprise est portée par castConfirm/castCancel → resumeEnemyTurn (anti
         // double-advance, même pattern que la défense). castSpell peut refuser (contrecoup
         // bloquant, hors de portée…) → pas de modale → l'ennemi passe.
-        if (!get().pendingCast) setTimeout(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
+        if (!get().pendingCast) scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
       }, TEMPO.aimTelegraph);
       return;
     }
@@ -5600,7 +5601,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       resolveManeuver(get, set, enemy, def, 0, null, 0, enemy); // cible = soi
       set({ battle: { ...get().battle!, acted: true } });
       checkBattleOver(get, set);
-      setTimeout(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
+      scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
       return;
     }
     case 'castArea': {
@@ -5622,7 +5623,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         ?? (aoeSp ? zdeRadiusTiles(aoeSp.target, enemy) ?? 1 : 1);
       set({ actorAoe: { casterId: enemy.id, center, radius: aoeRadius } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => {
+      scheduleCombatTimer(() => {
         set({ actorAoe: null });
         const b = get().battle;
         if (!b || b.over || !b.combatants.includes(enemy)) return;
@@ -5677,7 +5678,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const pr: PendingReload = { actorId: enemy.id, actorName: enemy.name, weaponUid: rw.uid ?? '', reload: reloadTarget, progressBefore, skillValue, difficulty: 'intermediaire', roll: test.roll, target: test.target, sl: test.sl, success: test.success };
       set({ battle: { ...battle, acted: true, log: [...battle.log, ev('reload', describeReload(pr, progress, rw.name), enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
+      scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;
     }
     case 'melee':
@@ -5712,7 +5713,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         : (action.state === COND.empetre ? tr('cf.enemyStaysEmpetre', { name: enemy.name }) : tr('cf.enemyStaysFlames', { name: enemy.name }));
       set({ battle: { ...battle, log: [...battle.log, ...struggleLines.map((l) => ev('condition', l, enemy.id)), ev('condition', line, enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
+      scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;
     }
     case 'grapple': {
@@ -5729,7 +5730,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('attack', line, enemy.id, foe.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
-      setTimeout(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
+      scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
       return;
     }
     case 'manPoste': {
@@ -5743,7 +5744,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       serveAtPoste(enemy, poste, battle.combatants);
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', tr('cs.manPoste', { name: enemy.name, weapon: poste.item.name }), enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
+      scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;
     }
     case 'move': {
@@ -5764,7 +5765,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // sont DIFFÉRÉS après la tenue (beatHold moveTelegraph) — mêmes effets, juste annoncés d'abord.
       set({ actorMove: { id: enemy.id, path: path ?? [{ ...mv.to }] }, battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
-      setTimeout(() => {
+      scheduleCombatTimer(() => {
         set({ actorMove: null }); // toujours retirer le télégraphe (même si le tour est devenu caduc)
         const b = get().battle;
         // Tour caduc (combat fini OU combat/scène relancé pendant le télégraphe → `enemy` n'appartient
