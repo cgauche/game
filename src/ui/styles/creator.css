@@ -928,3 +928,74 @@
   line-height: 1.55;
   color: var(--atelier-prose);
 }
+
+/* -- Étape Race (P1, #393) : gabarit DEUX ZONES (compose `MasterDetail`) — liste (recherche +
+   « Aux dés » + `GroupedPickGrid`) ⇄ détail (`DetailFrame`), pas de fiche vivante à ce stade
+   (arbitrage 2026-07-14). Enfants ciblés PAR POSITION (`:first-child`/`:last-child`) plutôt qu'en
+   re-déclarant `.master-detail-list`/`.master-detail-detail` ici — évite de gonfler le stock de
+   classes de domaine (cliquet xii) pour un simple calage de proportions. */
+.creator-race-shell {
+  flex: 1;
+  min-height: 0;
+  padding: 16px 20px;
+  grid-template-columns: minmax(300px, 38%) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch; /* le canon `.master-detail` pose `align-items:start` (liste courte, JAMAIS
+    scrollée) — ici la liste est longue (grille de figurines) : elle doit occuper toute la hauteur
+    disponible pour scroller EN INTERNE plutôt que de pousser le pied de l'étape hors écran. */
+}
+.creator-race-shell > :first-child {
+  flex-direction: column;
+  flex-wrap: nowrap; /* le canon `.master-detail-list` enroule ses lignes ≤700px (liste de boutons
+    courts) — ici une colonne verticale bornée en hauteur + cet enroulement hérité fait déborder en
+    COLONNES successives (recherche/dés/grille côte à côte au lieu d'empilés). */
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+.creator-race-shell > :last-child {
+  min-height: 0;
+  overflow-y: auto;
+}
+@media (max-width: 900px) {
+  .creator-race-shell {
+    grid-template-columns: minmax(260px, 34%) minmax(0, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  /* `display:flex` (pas grid) : la répartition auto/auto de deux tracks grid a résisté à toute
+     tentative de forcer une hauteur de CONTENU (chaque enfant récupérait la MOITIÉ de la hauteur du
+     conteneur au lieu de sa hauteur naturelle) — flux normal empilé, page défilée entière. */
+  .creator-race-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: initial;
+    overflow-y: auto;
+    padding: 12px;
+  }
+  .creator-race-shell > :first-child,
+  .creator-race-shell > :last-child {
+    flex-shrink: 0; /* sinon la liste/le détail se COMPRESSENT sous leur hauteur de contenu (le
+      flex-shrink par défaut les tasse pour tenir dans le `.creator-race-shell` scrollable) et leur
+      `overflow:visible` laisse le surplus baver par-dessus le panneau suivant au lieu de le pousser. */
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+}
+@media (max-width: 560px) {
+  /* `.rm-loc-grid` (OptionChooser layout='grid', combat-modals.css) fige 3 colonnes ET des boutons
+     à largeur intrinsèque (non rétrécissable en grille) quel que soit le conteneur — troncature du
+     verdict de tirage (races de la borne) à 360px. Scopé à l'étape Race (jamais le fichier
+     partagé) : 1 colonne, boutons rétrécissables, texte qui s'enroule au lieu de déborder. */
+  .creator-race-shell .rm-loc-grid {
+    grid-template-columns: 1fr;
+  }
+  .creator-race-shell .rm-loc-grid button {
+    min-width: 0;
+    white-space: normal;
+    text-align: left;
+  }
+}

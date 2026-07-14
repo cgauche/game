@@ -207,6 +207,7 @@ const DOMAIN_CSS_MODULES = [
   'city-hub',
   'voyage',
   'gallery',
+  'rose',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -219,7 +220,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/compendium.css': 55,
   // +25 : charte « Atelier du scribe » (#412) — MetalStatus/WaxSeal+SealedPlaque/CareerPath/
   // FigTile/GroupedPickGrid/DetailFrame (primitives SANS canon préexistant).
-  'styles/creator.css': 98,
+  // +1 : `.creator-race-shell` (#393 P1) — gabarit deux-zones de l'étape Race (compose
+  // `MasterDetail`, enfants ciblés par position pour ne pas re-déclarer ses classes).
+  // +1 : `.rm-loc-grid` (#393 P1) — override responsive 360px scopé à l'étape Race, la primitive
+  // `OptionChooser` (combat-modals.css) fige 3 colonnes quel que soit le conteneur.
+  'styles/creator.css': 100,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -233,6 +238,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/voyage.css': 30,
   // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).
   'styles/gallery.css': 17,
+  // Rose des forces (#409) — `.rose`/`.rose text`/`.rose-corner` (`.rose-corner.sm .rose` réutilise
+  // le sélecteur `.rose` déjà compté, dédoublonné par module).
+  'styles/rose.css': 3,
 };
 
 // ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules

@@ -11,7 +11,7 @@
  * Les sections internes utilisent des séparateurs (.zone-section), pas des boîtes. La logique
  * (tirages figés, bonus de PX, validation, construction) vit dans ./draft.ts (pur).
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../../state/store';
 import { rosterAdd, rosterLoad } from '../../state/roster';
 import {
@@ -57,11 +57,10 @@ import { RuleDivider } from '../Ornaments';
 import { AppearancePanel } from '../AppearancePanel';
 import { BackgroundFields } from '../BackgroundFields';
 import { CodexRef } from '../compendium/CodexRef';
-import { TabbedEntry } from '../TabbedEntry';
 import { Prose, mdToText } from '../Prose';
 import { CodexSections } from '../compendium/CodexEntry';
 import { EntityRef, EntityChoice, SkillChip, TalentChip } from '../EntityChip';
-import { raceCareerSection, raceDetailSection, raceCharSection, raceSkillSection, raceTalentSection, type CodexSection } from '../compendium/registry';
+import { raceCharSection, raceSkillSection, raceTalentSection, type CodexSection } from '../compendium/registry';
 import { opSummary } from '../editor/GameOpEditor';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { previewHero } from './CreatorSummary';
@@ -72,6 +71,10 @@ import { DiceRoll } from '../DiceRoll';
 import { d10PairFaces } from '../Dice';
 import { FacetedPickGrid } from './FacetedPickGrid';
 import { CelestialWheel } from './CelestialWheel';
+import { MasterDetail } from '../MasterDetail';
+import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
+import { DetailFrame } from '../DetailFrame';
+import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import {
   CreatorDraft,
   newDraft,
@@ -123,11 +126,13 @@ import {
 } from './draft';
 import { wildcardSpecs } from '../../engine/careerSlots';
 
-/** Métadonnées d'étape : libellé FR + fabrique de zones (rail/main). SOURCE UNIQUE du rendu, indexée
- *  par `StepId` stable — l'ordre ET la présence des étapes viennent de `stepIds()` (draft.ts, qui
- *  insère « Signe astral » selon la règle optionnelle ADE2), jamais d'un index positionnel codé. */
-const STEP_META: Record<StepId, { label: string; zone: (p: StepProps) => StepZones }> = {
-  species: { label: 'Race', zone: SpeciesZones },
+/** Métadonnées d'étape : libellé FR + fabrique de zones (rail/main) OU écran de plein rendu
+ *  (`screen`, gabarit propre — étapes transposées à la charte « Atelier du scribe », #393). SOURCE
+ *  UNIQUE du rendu, indexée par `StepId` stable — l'ordre ET la présence des étapes viennent de
+ *  `stepIds()` (draft.ts, qui insère « Signe astral » selon la règle optionnelle ADE2), jamais
+ *  d'un index positionnel codé. */
+const STEP_META: Record<StepId, { label: string; zone?: (p: StepProps) => StepZones; screen?: (p: StepProps) => ReactNode }> = {
+  species: { label: 'Race', screen: SpeciesRaceScreen },
   career: { label: 'Carrière', zone: CareerZones },
   chars: { label: 'Caractéristiques', zone: CharZones },
   star: { label: 'Signe astral', zone: StarZones },
@@ -232,7 +237,8 @@ export function CharacterCreator() {
   // Hook appelé INCONDITIONNELLEMENT (règles des hooks) — ordre stable quelle que soit l'étape
   // active ; seule `CharZones` le consomme (via `StepProps.charReroll`).
   const charReroll = useRollFrisson(() => setD({ ...d, charRerolls: d.charRerolls + 1 }));
-  const zones = STEP_META[curId].zone({ d, setD, charReroll });
+  const meta = STEP_META[curId];
+  const stepProps: StepProps = { d, setD, charReroll };
 
   // Une réf Codex cliquée ouvre la fiche en MODALE par-dessus l'assistant (cf. CodexOverlay) : le
   // brouillon reste intact (plus de changement d'écran qui le réinitialisait).
@@ -273,7 +279,7 @@ export function CharacterCreator() {
         </p>
       )}
 
-      <CreatorStepFrame d={d} step={step} zones={zones} />
+      {meta.screen ? meta.screen(stepProps) : <CreatorStepFrame d={d} step={step} zones={meta.zone!(stepProps)} />}
 
       <footer className="bar">
         <button className="btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
@@ -314,8 +320,13 @@ function LoreText({ md }: { md: string | null | undefined }) {
   return <div className="lore-text"><Prose md={md} /></div>;
 }
 
-// ════ 1) Race (LDB 04 l.84-90) — Zone A : liste groupée + « Aux dés » ; Zone B : profil onglets ════
-export function SpeciesZones({ d, setD }: StepProps): StepZones {
+// ════ 1) Race (LDB 04 l.84-90) — charte « Atelier du scribe » (#393 P1) : gabarit DEUX ZONES
+//      (compose `MasterDetail`) — liste (recherche + « Aux dés » + `GroupedPickGrid` de `FigTile`
+//      par famille) ⇄ détail (`DetailFrame` de l'élue). Pas de fiche vivante à cette étape
+//      (arbitrage 2026-07-14) : mort du call-site Race de `FacetedPickGrid` — Carrière (#393 P2)
+//      transpose son propre call-site séparément, `FacetedPickGrid` reste son composant jusque-là.
+export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
+  const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
 
   // Groupes par race (`SpeciesData.family` — donnée, plus de regex sur le libellé),
@@ -330,6 +341,28 @@ export function SpeciesZones({ d, setD }: StepProps): StepZones {
     else families.push({ family: s.family, list: [s] });
   }
   families.sort((a, b) => Number(b.list.some((s) => CORE.includes(s.label))) - Number(a.list.some((s) => CORE.includes(s.label))));
+
+  const matchedIds = new Set(
+    filterByLabel(
+      families.flatMap((f) => f.list),
+      (s) => s.variant ?? s.label,
+      search,
+    ).map((s) => s.id),
+  );
+  const sections: PickGridSection[] = families
+    .map((f) => ({
+      id: f.family,
+      label: f.family,
+      items: f.list
+        .filter((s) => matchedIds.has(s.id))
+        .map((s) => ({
+          id: s.id,
+          label: s.variant ?? s.label,
+          sub: `M ${s.movement} · Destin ${s.fate.fate}`,
+          preview: { appearance: pickAppearance(s.id, d.sex) },
+        })),
+    }))
+    .filter((f) => f.items.length > 0);
 
   const dice = (
     <CreatorDice
@@ -356,81 +389,45 @@ export function SpeciesZones({ d, setD }: StepProps): StepZones {
     </CreatorDice>
   );
 
-  const choice = (
-    <Section title={`Races (${families.reduce((n, f) => n + f.list.length, 0)})`}>
-      <FacetedPickGrid
-        label="Choix de la race"
-        groups={families.map((f) => ({ id: f.family, label: f.family }))}
-        cards={families.flatMap((f) =>
-          f.list.map((s) => ({
-            id: s.id,
-            group: f.family,
-            label: s.variant ?? s.label,
-            title: s.variant ?? s.label,
-            sub: `M ${s.movement} · Destin ${s.fate.fate}`,
-          })),
-        )}
-        selectedId={d.speciesId || undefined}
-        onSelect={(id) => setD(withSpecies(d, id))}
-      />
-    </Section>
-  );
-
-  if (!sp) {
-    return {
-      dice,
-      choice,
-      detail: {
-        title: 'Choisissez votre race',
-        body: (
-          <p className="hint">
-            Sélectionnez une race dans la liste, ou tirez-la aux dés (LDB 04 l.84-90). La fiche vivante à
-            droite se remplira au fil de vos choix.
-          </p>
-        ),
-      },
-    };
-  }
-
-  // ── Onglet Profil : l'essentiel chiffré ──
-  const profil = (
+  const list = (
     <>
-      <div className="derived" style={{ margin: '2px 0 8px' }}>
-        <span>
-          Mouvement <b>{sp.movement}</b>
-        </span>
-        <span>
-          Destin <b>{sp.fate.fate}</b> · Résilience <b>{sp.fate.resilience}</b> · +<b>{sp.fate.extra}</b> à répartir
-        </span>
-        {sp.small && <span title="Talent Petit : Blessures calculées sans le Bonus de Force">Taille <b>Petite</b></span>}
-      </div>
-      {/* Caractéristiques / Compétences / Talents : MÊMES sections que le Codex (source unique
-          `raceCharSection`/`raceSkillSection`/`raceTalentSection`) → rendu identique des deux côtés. */}
-      <CodexSections sections={[raceCharSection(sp), raceSkillSection(sp), raceTalentSection(sp)].filter((s): s is CodexSection => !!s)} />
+      <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une race…" />
+      {dice}
+      <GroupedPickGrid sections={sections} selectedId={d.speciesId || undefined} onSelect={(id) => setD(withSpecies(d, id))} label="Choix de la race" />
     </>
   );
 
-  // ── Onglets Carrières / Description / Détails : MÊME contenu que le Codex (source unique
-  //    `raceCareerSection`/`raceDetailSection`) — plus de ré-implémentation divergente. ──
-  const careerSec = raceCareerSection(sp);
-  const carrieres = careerSec ? <CodexSections sections={[careerSec]} /> : <p className="hint">Aucune carrière accessible.</p>;
-  const description = sp.desc ? <div className="codex-body"><Prose md={sp.desc} selfLabel={sp.label} /></div> : null;
-  const detailsTab = <CodexSections sections={[raceDetailSection(sp)]} />;
-
-  const body = (
-    <TabbedEntry
-      figure={<CharacterPreview appearance={pickAppearance(sp.id, d.sex)} size="md" ambiance="panel" />}
-      title={<CodexRef category="races" id={sp.id} label={sp.label}>{sp.label}</CodexRef>}
-      blurb={blurb(sp.desc, 300)}
-      tabs={[
-        { id: 'profil', label: 'Profil', content: profil },
-        { id: 'carrieres', label: 'Carrières', content: carrieres },
-        { id: 'description', label: 'Description', content: description },
-        { id: 'details', label: 'Détails', content: detailsTab },
-      ]}
+  const detail = !sp ? (
+    <p className="hint">
+      Sélectionnez une race dans la liste, ou tirez-la aux dés (LDB 04 l.84-90). Le détail se remplira au fil de vos choix.
+    </p>
+  ) : (
+    <DetailFrame
+      name={<CodexRef category="races" id={sp.id} label={sp.label}>{sp.variant ?? sp.label}</CodexRef>}
+      meta={
+        <>
+          <span className="stat-chip"><span className="sc-label">Mouvement</span><span className="sc-value">{sp.movement}</span></span>
+          <span className="stat-chip"><span className="sc-label">Destin</span><span className="sc-value">{sp.fate.fate}</span></span>
+          <span className="stat-chip"><span className="sc-label">Résilience</span><span className="sc-value">{sp.fate.resilience}</span></span>
+          <span className="stat-chip"><span className="sc-label">À répartir</span><span className="sc-value">+{sp.fate.extra}</span></span>
+          {sp.small && (
+            <span className="stat-chip" title="Talent Petit : Blessures calculées sans le Bonus de Force">
+              <span className="sc-label">Taille</span><span className="sc-value">Petite</span>
+            </span>
+          )}
+        </>
+      }
+      // Caractéristiques / Compétences / Talents : MÊMES sections que le Codex (source unique
+      // `raceCharSection`/`raceSkillSection`/`raceTalentSection`) → rendu identique des deux côtés,
+      // « ou » en chips SÉPARÉES codex-liées (arbitrage 2026-07-14, `ChoiceChips` via `CodexSections`).
+      sections={<CodexSections sections={[raceCharSection(sp), raceSkillSection(sp), raceTalentSection(sp)].filter((s): s is CodexSection => !!s)} />}
+      prose={sp.desc}
+      proseSelfLabel={sp.label}
+      proseSelfCategory="races"
     />
   );
-  return { dice, choice, detail: { seal: d.speciesRoll ? { label: 'd100', roll: d.speciesRoll.roll } : undefined, body } };
+
+  return <MasterDetail className="creator-race-shell" listLabel="Choix de la race" list={list} detail={detail} />;
 }
 
 // ════ 2) Carrière (LDB 05 l.186-365) — Zone A : classes + liste + « Aux dés » ; Zone B : plan complet ════
@@ -845,7 +842,7 @@ export function StarZones({ d, setD }: StepProps): StepZones {
     </>
   );
   // Pas de `title` ici (doublon) : le corps porte déjà son propre titre via `Section`
-  // (sign.label ou la question de repli), même patron que SpeciesZones/CareerZones.
+  // (sign.label ou la question de repli), même patron que CareerZones.
   return { dice, choice, detail: { body } };
 }
 

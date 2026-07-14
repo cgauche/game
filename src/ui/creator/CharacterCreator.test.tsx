@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator, CareerZones, CharZones, SpeciesZones, SkillZones, StarZones, TrappingZones, DetailZones, PettySpellsSection } from './CharacterCreator';
+import { CharacterCreator, CareerZones, CharZones, SpeciesRaceScreen, SkillZones, StarZones, TrappingZones, DetailZones, PettySpellsSection } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
 import {
   newDraft,
@@ -22,29 +22,26 @@ const CAREER = careersForSpecies(SP.refCareer)[0]!;
 const ready = () => withCareer(withSpecies(newDraft(7), SP.id), CAREER.id);
 
 describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () => {
-  it('étape 1 : trois zones STABLES + « Aux dés » ; fiche vivante GRISÉE, aucune race pré-tirée', () => {
+  it('étape 1 (Race, #393 P1) : gabarit DEUX ZONES « Atelier du scribe » (MasterDetail) ; aucune race pré-tirée', () => {
     const html = renderToStaticMarkup(<CharacterCreator />);
     // Barre d'étapes — le signe astral (ADE2, règle activée par défaut) insère une étape après Caractéristiques.
     expect(html).toContain('1. Race');
     expect(html).toContain('4. Signe astral');
     expect(html).toContain('8. Récapitulatif');
-    // Coquille 3 zones : Zone A (choix), Zone B (détail), Zone C (fiche vivante)
-    expect(html).toContain('creator-shell');
-    expect(html).toContain('creator-rail');
-    expect(html).toContain('creator-main');
-    expect(html).toContain('creator-summary');
+    // Étape 1 : coquille DEUX zones (MasterDetail), pas de fiche vivante à ce stade.
+    expect(html).toContain('creator-race-shell');
+    expect(html).toContain('master-detail-list');
+    expect(html).toContain('master-detail-detail');
+    expect(html).not.toContain('creator-summary');
     // Page blanche : AUCUNE race sélectionnée au montage (fin du fantôme pré-tiré).
-    expect(html).not.toContain('pick-card selected');
-    // La fiche vivante démarre grisée mais STRUCTURÉE : tous les blocs présents dès l'étape 1.
-    expect(html).toContain('Race à choisir');
-    expect(html).toContain('Carrière à choisir');
-    expect(html).toContain('Blessures');
-    expect(html).toContain('PX bonus de création');
-    expect(html).toContain('Talents'); // bloc Talents présent (grisé), plus d'apparition surprise
+    expect(html).not.toContain('fig-tile sel');
     // Cérémonie « Aux dés » : tirage d100 de la race (LDB 04)
     expect(html).toContain('Aux dés');
     expect(html).toContain('Tirer la race (d100)');
-    // Espèces du Livre de base listées dans la Zone A (variantes + familles)
+    // Recherche + grille de figurines groupées par famille (GroupedPickGrid)
+    expect(html).toContain('Rechercher une race');
+    expect(html).toContain('role="listbox"');
+    expect(html).toContain('role="option"');
     for (const s of ['Reiklander', 'Nains', 'Halflings', 'Hauts elfes', 'Elfes sylvains']) {
       expect(html).toContain(s);
     }
@@ -53,22 +50,21 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).toContain('Suivant →');
   });
 
-  it('remplissage progressif : une race choisie ouvre son profil (Zone B) et se sélectionne (Zone A)', () => {
-    const { choice, detail } = SpeciesZones({ d: withSpecies(newDraft(7), SP.id), setD: () => {} });
-    expect(renderToStaticMarkup(<>{choice}</>)).toContain('pick-card selected'); // race sélectionnée
-    const body = renderToStaticMarkup(<>{detail.body}</>);
-    expect(body).toContain('Caractéristiques de base'); // profil chiffré (CodexSections)
-    expect(body).toContain('Compétences de race');
+  it('remplissage progressif : une race choisie ouvre son détail (DetailFrame) et se sélectionne (grille)', () => {
+    const html = renderToStaticMarkup(<SpeciesRaceScreen d={withSpecies(newDraft(7), SP.id)} setD={() => {}} />);
+    expect(html).toContain('fig-tile sel'); // race sélectionnée
+    expect(html).toContain('detail-frame'); // détail rendu (DetailFrame)
+    expect(html).toContain('Caractéristiques de base'); // profil chiffré (CodexSections)
+    expect(html).toContain('Compétences de race');
   });
 
-  it('étape 1 — grille facettée : facettes de famille (tablist) + grille de cartes (listbox/option), sans rail-ascenseur', () => {
-    const html = renderToStaticMarkup(<>{SpeciesZones({ d: newDraft(7), setD: () => {} }).choice}</>);
-    expect(html).toContain('tabs tabs-sub'); // facettes de famille = primitive Tabs (variante sub)
+  it('étape 1 — grille GROUPÉE par famille (listbox/option, GroupedPickGrid) + recherche, sans grille facettée', () => {
+    const html = renderToStaticMarkup(<SpeciesRaceScreen d={newDraft(7)} setD={() => {}} />);
     expect(html).toContain('role="listbox"'); // grille de sélection a11y
     expect(html).toContain('role="option"');
-    expect(html).toContain('pick-grid');
-    expect(html).not.toContain('pick-row'); // mort de l'ancien rail-liste
-    expect(html).not.toContain('rail-group');
+    expect(html).toContain('gpg-grid');
+    expect(html).not.toContain('pick-grid'); // mort du call-site Race de FacetedPickGrid
+    expect(html).not.toContain('tabs tabs-sub'); // plus de facettes de famille (grille groupée directe)
   });
 
   it('étape 2 — grille facettée de carrière : recherche + facettes de CLASSE (données) + grille listbox', () => {
@@ -140,7 +136,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
   });
 
   it('les références Codex de l\'assistant sont INTERACTIVES (clic → fiche en modale, brouillon préservé)', () => {
-    const html = renderToStaticMarkup(<>{SpeciesZones({ d: withSpecies(newDraft(7), SP.id), setD: () => {} }).detail.body}</>);
+    const html = renderToStaticMarkup(<SpeciesRaceScreen d={withSpecies(newDraft(7), SP.id)} setD={() => {}} />);
     // Le clic ouvre le Codex en MODALE par-dessus l'assistant (cf. CodexOverlay), sans changer d'écran.
     expect(html).toMatch(/class="codex-ref[^"]*"[^>]*role="button"/); // ≥1 ref cliquable
   });
