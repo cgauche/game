@@ -70,6 +70,31 @@ describe('Scénario Voyage maritime — enregistrement & carte', () => {
     expect(marienburg.port!.lighthouse).toBe(true);
     expect(scen.extraScenes?.some((s) => s.id === 'test-mer-arrivee')).toBe(true);
   });
+
+  it('cap EST — vent de dos sur les dominantes d\'ouest (MDG ch.13 l.253), jamais de face permanent (#408)', () => {
+    const route = scen.worldMap!.routes.find((r) => r.id === 'route-marienburg')!;
+    expect(route.seaHeading).toBe('est');
+  });
+});
+
+describe('Scénario Voyage maritime — durée bornée sur un échantillon de seeds (#408)', () => {
+  /** `seaHeading: 'ouest'` (avant fix #408) mettait le cap DIRECTEMENT contre les vents dominants
+   *  d'ouest (`windAspect` → 'face' quand cap==vent, Affaler quasi systématique dès Vent violent) :
+   *  sur seeds 1..30, la traversée s'étirait jusqu'à 106,875 jours (moyenne 12,1) au lieu des
+   *  « plusieurs jours » attendus. Cap EST (vent de dos dominant) : plafond large pour couvrir la
+   *  variance légitime des tempêtes (RAW), mais qui aurait échoué sur l'ancien cap. */
+  it('aucune des 15 premières seeds ne dépasse 40 jours de mer (l\'ancien cap ouest atteignait 106,875)', () => {
+    const days: number[] = [];
+    for (let seed = 1; seed <= 15; seed++) {
+      launch(seed);
+      const t0 = get().gameTime;
+      get().startTravel('route-marienburg', 'mer');
+      sailToPort(2000);
+      days.push((get().gameTime - t0) / (24 * 60));
+    }
+    for (const d of days) expect(d).toBeLessThanOrEqual(40);
+    expect(days.reduce((a, b) => a + b, 0) / days.length).toBeLessThan(10);
+  });
 });
 
 describe('Scénario Voyage maritime — beat de Magie des mers (lancer en mer)', () => {
