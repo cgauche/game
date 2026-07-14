@@ -29,6 +29,7 @@
     "relay:dev": "npm --prefix server run dev",
     "relay:deploy": "npm --prefix server run deploy",
     "galleries": "node scripts/gen-galleries.mjs",
+    "recette:shot": "node scripts/recette/shot-screen.mjs",
     "qc:sheets": "tsx scripts/_qc-sheets.mts",
     "qc:env": "tsx scripts/qc/render-env.mts",
     "qc:occlusion": "tsx scripts/qc/render-occlusion.mts"

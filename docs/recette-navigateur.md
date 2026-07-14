@@ -9,6 +9,78 @@
 combat direct) ; **passer par le scénario adapté, sinon en créer un** — un scénario = un fichier
 dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 
+## Preuve headless (agents)
+
+Kit **committé** `scripts/recette/` — capture d'écran + console sans réinventer un script CDP par
+agent (constat 2026-07-14 : plusieurs dizaines de scripts scratchpad ad hoc, un par session, pour
+faire la même chose). Deux niveaux :
+
+- **Cas simple** : `scripts/recette/shot-screen.mjs`, la CLI prête à l'emploi — plus AUCUN script à
+  écrire.
+- **Cas sur-mesure** : `scripts/recette/lib.mjs`, le socle (à importer dans un script jetable pour
+  dérouler un flux précis).
+
+Moissonné de scripts scratchpad éprouvés (patrons repris tels quels) : CDP nu sur Chrome headless
+(`des-v5-verify.mjs`, `gallery-v2-tour.mjs`, `repro-399.mjs` — spawn Chrome, `Target.attachToTarget`,
+`Runtime.evaluate`), filtrage console par `sessionId` (`repro-399.mjs`, `gallery-v2-tour.mjs`),
+émulation `prefers-reduced-motion` via `Emulation.setEmulatedMedia` (`dice-reduced-motion.mjs`).
+**Zéro dépendance nouvelle** : `playwright-core` n'était PAS installé dans ce dépôt (vérifié —
+seul le scratchpad d'un agent l'avait en local) ; le socle reste donc en CDP nu (fetch + WebSocket
+natifs Node ≥ 22), le choix le plus robuste des scripts moissonnés au regard de cette contrainte.
+Le kit ne DÉMARRE **jamais** le serveur de dev — il s'y **attache** (erreur claire si injoignable).
+
+### CLI — `scripts/recette/shot-screen.mjs`
+
+```
+node scripts/recette/shot-screen.mjs --screen gallery --out mon-dossier
+node scripts/recette/shot-screen.mjs --screen menu --mobile
+```
+
+Options : `--screen <id>` (obligatoire, un id de `SCREENS`, `src/state/store.ts`), `--out <dir>`
+(défaut CWD), `--url <url>` (défaut `http://localhost:5173/`), `--mobile` (viewport 360×740),
+`--width`/`--height`, `--settle <ms>`. Exit ≠ 0 si la console a remonté une erreur/exception après
+l'ouverture de l'écran.
+
+### Socle — `scripts/recette/lib.mjs`
+
+| Fonction | Rôle |
+|---|---|
+| `openApp` | vérifie le serveur (fetch), lance Chrome headless, navigue, attend que `__wfrp.screen` soit prêt (chargement async, cf. `src/main.tsx`) |
+| `gotoScreen` | navigue vers un écran via `__wfrp.screen` |
+| `shot` | capture PNG nommée dans un dossier donné (créé si absent) |
+| `consoleGuard` | collecte erreurs/warnings/exceptions, filtrés sur LA session courante (piège du buffer partagé, § « Pièges vécus » ci-dessous) |
+| `freezeTimeout` / `unfreezeTimeout` | monkey-patch `setTimeout` pour figer/dégeler une durée d'animation avant capture |
+| `emulateReducedMotion` | force `prefers-reduced-motion: reduce` (CDP `Emulation.setEmulatedMedia`) |
+| `setViewport` / `setMobileViewport` | viewport explicite / mobile canon 360×740 (charte-ui.md — testable dès 360px) |
+| `evaluate` / `waitFor` | eval JS dans la page (attend les promesses) / poll jusqu'à condition vraie |
+| `checkServer` / `launchSession` | briques bas niveau d'`openApp` (séparément utilisables) |
+
+**Capturer un écran** :
+```js
+import { openApp, gotoScreen, shot, consoleGuard } from './scripts/recette/lib.mjs';
+const session = await openApp();
+const guard = consoleGuard(session);
+await gotoScreen(session, 'compendium');
+await shot(session, 'compendium-01', 'mon-dossier');
+console.log(guard.errors());
+await session.close();
+```
+
+**Figer une animation le temps d'une capture** :
+```js
+import { openApp, evaluate, freezeTimeout, shot } from './scripts/recette/lib.mjs';
+const session = await openApp();
+await freezeTimeout(session, [0]); // AVANT de déclencher l'animation
+await evaluate(session, "document.querySelector('.dice-roll-btn').click()");
+await shot(session, 'des-figes', 'mon-dossier');
+await session.close();
+```
+
+Pièges déjà documentés (renvois, pas de doublon) : le buffer console **partagé** entre
+sessions/onglets, le **closure-sync** (lire le DOM dans le même `evaluate` que l'action qui change
+l'état React), le **HMR silencieux** qui ramène au menu en pleine recette — voir « Pièges vécus » et
+« Piège du *closure-sync* » plus bas dans ce document.
+
 ## Doctrine : piloter COMME UN JOUEUR, pas à la main
 
 Ordre de préférence STRICT pour exercer un flux :
