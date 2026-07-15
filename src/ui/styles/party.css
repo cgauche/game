@@ -465,10 +465,16 @@
   width: 100%;
   height: clamp(110px, 14vh, 160px);
   border-radius: 8px;
+  overflow: hidden;
 }
+/* UN SEUL cadre (#430) : `.candidate-fig` (bordée par l'`OrnateFrame` englobant) porte le cadre,
+   la figurine `ambiance="spotlight"` (CharCard.tsx) n'a ni bordure ni rayon propres — jamais un
+   `charprev-amb-panel` imbriqué (motif corrigé, directive user 2026-07-15). */
 .candidate-fig > .charprev {
   position: absolute;
   inset: 0;
+  border: none;
+  border-radius: 0;
 }
 .candidate-id {
   display: flex;

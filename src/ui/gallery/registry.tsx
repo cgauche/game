@@ -193,24 +193,50 @@ function GroupedPickGridDemo() {
   return <GroupedPickGrid sections={SPECIES_SECTIONS} selectedId={sel} onSelect={setSel} label="Choix d'espèce" />;
 }
 
+/** Cadre-figurine unique (#430) : normal, sélectionné (liseré or), scellé (sceau de cire), et une
+ *  ambiance alternative (`parchment`) — la même primitive couvre les 4 états, aucun cadre imbriqué. */
 function FigTileDemo() {
   return (
     <div className="row-flex">
-      <FigTile
-        preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 7 } }}
-        label={HUMAN_SPECIES.label}
-        sub="Non sélectionné"
-        onClick={() => {}}
-        tabIndex={0}
-      />
-      <FigTile
-        preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'F', build: 0.5, seed: 7 } }}
-        label={HUMAN_SPECIES.label}
-        sub="Sélectionné"
-        selected
-        onClick={() => {}}
-        tabIndex={0}
-      />
+      <div style={{ width: 140 }}>
+        <FigTile
+          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 7 } }}
+          label={HUMAN_SPECIES.label}
+          sub="Non sélectionné"
+          onClick={() => {}}
+          tabIndex={0}
+        />
+      </div>
+      <div style={{ width: 140 }}>
+        <FigTile
+          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'F', build: 0.5, seed: 7 } }}
+          label={HUMAN_SPECIES.label}
+          sub="Sélectionné"
+          selected
+          onClick={() => {}}
+          tabIndex={0}
+        />
+      </div>
+      <div style={{ width: 140 }}>
+        <FigTile
+          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 9 } }}
+          label={HUMAN_SPECIES.label}
+          sub="Scellé"
+          sealed
+          onClick={() => {}}
+          tabIndex={0}
+        />
+      </div>
+      <div style={{ width: 140 }}>
+        <FigTile
+          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'F', build: 0.5, seed: 11 } }}
+          label={HUMAN_SPECIES.label}
+          sub="Ambiance parchemin"
+          ambiance="parchment"
+          onClick={() => {}}
+          tabIndex={0}
+        />
+      </div>
     </div>
   );
 }

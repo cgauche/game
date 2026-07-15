@@ -184,7 +184,7 @@ export function CandidateCard({
           user 2026-07-13) — plus de bouton « loupe ». */}
       <PresentHandle hero={hero} onPresent={onPresent} className="candidate-present">
         <div className="candidate-fig">
-          <CharacterPreview hero={hero} size="fill" ambiance="panel" />
+          <CharacterPreview hero={hero} size="fill" ambiance="spotlight" />
           <RoseGlyphCorner hero={hero} axisIds={axisIds} small />
         </div>
         <CardIdentity hero={hero} />

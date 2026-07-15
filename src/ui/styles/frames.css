@@ -1,0 +1,86 @@
+/* ══════════════════ Cadre-figurine UNIQUE (FigTile, #430) ══════════════════
+   Règle n°1 (directive user 2026-07-15, verbatim ci-dessous, ticket #430) : « le soucis sur ces
+   cellules […] c'est d'avoir 2 cadres, le cadre principale avec le nom de la carrière/race, et un
+   2nd cadre avec l'apparence du personnage, ce qui fait beaucoup de vide et des petits models ». La
+   figurine occupe la tuile EN PLEIN (full-bleed) — AUCUN cadre imbriqué, la légende est un slot du
+   MÊME cadre (bandeau bas dégradé), jamais une 2e boîte bordée.
+   Import APRÈS creator.css (styles.css) : redéclare intégralement `.fig-tile*` pour primer par
+   cascade sur l'ancien motif « tuile en bois + `.charprev-amb-panel` imbriqué » (#412) sans éditer
+   ce fichier (hors périmètre agent, collision #430). */
+.fig-tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--atelier-wood-liseret);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+/* Neutralise les rivets `::before/::after` de l'ancien motif creator.css (#412) — la tuile
+   full-bleed n'a plus de bordure « tuile vissée », un seul liseré sobre. */
+.fig-tile::before,
+.fig-tile::after {
+  content: none;
+}
+.fig-tile:hover {
+  border-color: var(--atelier-brass-hover);
+}
+.fig-tile:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 1px;
+}
+/* La figurine EST le cadre (full-bleed, `size="fill"`) — sa propre bordure/rayon d'ambiance
+   (`.charprev-amb-*`, components.css) est neutralisée : un seul liseré visible, celui de `.fig-tile`. */
+.fig-tile > .charprev {
+  position: absolute;
+  inset: 0;
+  border: none;
+  border-radius: 0;
+}
+.fig-tile-legend {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 18px 8px 6px;
+  background: linear-gradient(180deg, transparent, rgba(10, 8, 6, 0.88) 60%);
+  pointer-events: none;
+}
+.fig-tile-name {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--text);
+  text-align: center;
+}
+.fig-tile-sub {
+  font-size: 10.5px;
+  line-height: 1.2;
+  color: var(--muted);
+  text-align: center;
+}
+/* Sceau de cire optionnel (candidat/rang « scellé », patron `SealedPlaque`) — déborde au coin
+   haut-droit, MÊME langage que `.seat-card-seal` (party.css). */
+.fig-tile-seal {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 2;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+}
+.fig-tile.sel {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(216, 185, 84, 0.5), inset 0 0 0 1px var(--gold);
+}
+.fig-tile.sel .fig-tile-name {
+  color: var(--atelier-brass-elu);
+}

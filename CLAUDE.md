@@ -222,7 +222,7 @@ fait DANS la primitive, pas dans une nième copie.
 | Chip statut métallisé Bronze/Argent/Or + échelon (dérivée de `parseStatus`) | `MetalStatus` | `src/ui/MetalStatus.tsx` |
 | Sceau de cire (tête de mort, SVG) + plaque d'élu scellée | `WaxSeal` / `SealedPlaque` | `src/ui/WaxSeal.tsx` |
 | Chemin d'évolution d'une carrière en médaillons de niveau (`levelsForCareer`) | `CareerPath` | `src/ui/CareerPath.tsx` |
-| Tuile-figurine compacte cliquable (compose `CharacterPreview`) | `FigTile` | `src/ui/FigTile.tsx` |
+| **Cadre-figurine UNIQUE** (#430) : figurine full-bleed dans l'enceinte bordée, légende en bandeau bas, liseré or si sélectionné, sceau optionnel — *réflexe avant tout « cadre dans un cadre » (carte bordée + boîte d'aperçu bordée à l'intérieur)* | `FigTile` (compose `CharacterPreview` ; styles `src/ui/styles/frames.css`) | `src/ui/FigTile.tsx` |
 | Grille de sélection en SECTIONS par famille/classe (roving tabindex, `role=listbox`) | `GroupedPickGrid` | `src/ui/GroupedPickGrid.tsx` |
 | Cadre de détail de l'élue (nom + chips méta + rubriques + prose scrollable, sans slot d'actions) | `DetailFrame` | `src/ui/DetailFrame.tsx` |
 | **Corps de FICHE HÉROS** (bande d'en-tête figurine+identité+statut+rose `header` désactivable, Caractéristiques+dérivées, Forces seuillées, Compétences/Talents/Sorts-Miracles/Possessions en chips codex) — *réflexe avant toute Nᵉ fiche perso recodée* | `HeroSheet` (composé par `creator/CreatorSummary.tsx` et `PartyScreen.tsx`) | `src/ui/HeroSheet.tsx` |

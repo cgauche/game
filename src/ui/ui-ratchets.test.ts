@@ -215,6 +215,7 @@ const DOMAIN_CSS_MODULES = [
   'gallery',
   'rose',
   'hero-sheet',
+  'frames',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -265,7 +266,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `.rolled`/`.row-flex`/`NotchGauge` réutilisés pour le surlignage de rangée et la jauge N/10.
   // Lot P3 final (retouches juge vision) : +2 — `.cw-label-dash` (tirets d'anneau à 23 signes),
   // `.creator-identity-roadmap` (chips signe/nom prospectives).
-  'styles/creator.css': 128,
+  // Lot P3bis+P4 (#393, écrans Caractéristiques/Compétences & Talents à la charte Atelier) : +17 —
+  // scaffolding de layout des DEUX NOUVEAUX écrans plein-panneau (`Band` générique + gabarit
+  // deux-zones panneau/fiche vivante, MÊME composition que Race/Carrière) : `.creator-band(-head|-right)`,
+  // `.creator-chars-(screen|shell|main)`, `.creator-skills-(screen|shell|main|head|title|sub|card|tabnav)`,
+  // `.creator-talents-cols`, `.skill-row(-grid|-label)` — widgets d'allocation composent `QtyStepper`
+  // (canonique, mort du `Stepper` local), aucune classe recodée pour ça.
+  'styles/creator.css': 145,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -282,6 +289,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Rose des forces (#409) — `.rose`/`.rose text`/`.rose-corner` (`.rose-corner.sm .rose` réutilise
   // le sélecteur `.rose` déjà compté, dédoublonné par module).
   'styles/rose.css': 3,
+  // Cadre-figurine UNIQUE (FigTile, #430) — `.fig-tile`/`-legend`/`-name`/`-sub`/`-seal`/`.sel`/`.charprev`
+  // (descendant `.fig-tile > .charprev`, dédoublonné) — module primitive dédiée, MÊME patron que
+  // rose.css/hero-sheet.css (creator.css hors périmètre agent, collision #430).
+  'styles/frames.css': 7,
   // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
   // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
   // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).
