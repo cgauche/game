@@ -33,6 +33,8 @@ jobs:
         run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
       - run: npm run raw:coverage
       - run: npm run raw:reconcile
+      - run: npm run test:raw
+      - run: npm run raw:check-refs
       - run: npm --prefix server ci
       - name: Audit sécurité server (échoue sur high/critical)
         run: npm --prefix server audit --audit-level=high
