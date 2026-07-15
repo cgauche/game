@@ -56,6 +56,63 @@ test('otherRe : "AA 5 l.12" (sans ch.) matche toujours comme avant', () => {
   assert.equal(m[0][3], '12')
 })
 
+test('otherRe : "MDG 12 l.221" matche (#434 défaut 10 : MDG dérivé de BOOKS)', () => {
+  const m = [...'MDG 12 l.221'.matchAll(otherRe())]
+  assert.equal(m.length, 1)
+  assert.equal(m[0][1], 'MDG')
+  assert.equal(m[0][2], '12')
+  assert.equal(m[0][3], '221')
+})
+
+test('otherRe : "MDG ch.12 l.221" matche (forme ch. optionnelle)', () => {
+  const m = [...'MDG ch.12 l.221'.matchAll(otherRe())]
+  assert.equal(m.length, 1)
+  assert.equal(m[0][1], 'MDG')
+  assert.equal(m[0][2], '12')
+  assert.equal(m[0][3], '221')
+})
+
+test('otherRe : "T2C 14 l.5" matche comme T2C, pas comme T2 (tri par longueur décroissante)', () => {
+  const m = [...'T2C 14 l.5'.matchAll(otherRe())]
+  assert.equal(m.length, 1)
+  assert.equal(m[0][1], 'T2C')
+})
+
+test('otherRe : "EDOC 5 l.29" matche comme EDOC, pas comme EDO', () => {
+  const m = [...'EDOC 5 l.29'.matchAll(otherRe())]
+  assert.equal(m.length, 1)
+  assert.equal(m[0][1], 'EDOC')
+})
+
+test('otherRe : "ADE II 08 l.233" matche toujours (variante tolérante)', () => {
+  const m = [...'ADE II 08 l.233'.matchAll(otherRe())]
+  assert.equal(m.length, 1)
+  assert.equal(m[0][1], 'ADE II')
+  assert.equal(m[0][2], '08')
+  assert.equal(m[0][3], '233')
+})
+
+test('otherRe : "ADE2 ch.8 l.65" matche toujours (chiffre arabe, forme ch.)', () => {
+  const m = [...'ADE2 ch.8 l.65'.matchAll(otherRe())]
+  assert.equal(m.length, 1)
+  assert.equal(m[0][1], 'ADE2')
+  assert.equal(m[0][2], '8')
+  assert.equal(m[0][3], '65')
+})
+
+test('otherRe : "Midd 02 l.10" matche toujours (préfixe tronqué Middenheim)', () => {
+  const m = [...'Midd 02 l.10'.matchAll(otherRe())]
+  assert.equal(m.length, 1)
+  assert.equal(m[0][1], 'Midd')
+  assert.equal(m[0][2], '02')
+  assert.equal(m[0][3], '10')
+})
+
+test('otherRe : "ch.23 l.75" SANS livre ne matche pas', () => {
+  const m = [...'La Difficulté (ch.23 l.75)'.matchAll(otherRe())]
+  assert.equal(m.length, 0)
+})
+
 test('ldbRe / otherRe : instances FRAÎCHES à chaque appel (lastIndex non partagé)', () => {
   const re1 = ldbRe()
   re1.exec('LDB 1 l.1')

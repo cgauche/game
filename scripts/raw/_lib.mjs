@@ -1,6 +1,10 @@
 // Helpers partagés des gardes Atlas RAW (coverage / reconcile / reanchor).
-// Source UNIQUE de : map des livres, résolveur de fichier-chapitre, regex de réfs, dépliage de plage,
-// échappement regex, et normalisation de texte pour le match exact des citations.
+// Source UNIQUE de : map des livres (BOOKS), résolveur de fichier-chapitre, regex de réfs LDB
+// (ldbRe, consommée par reconcile/check-refs) et « autres livres » (otherRe, dérivée de BOOKS,
+// consommée par reconcile/check-refs), dépliage de plage, échappement regex, et normalisation de
+// texte pour le match exact des citations. reanchor.mjs dérive sa PROPRE alternation de BOOKS
+// (réfs SANS abréviation LDB séparée : LDB s'y traite comme les autres livres) — pas encore
+// unifiée avec otherRe/ldbRe (#434 défaut 10, périmètre non couvert par ce fichier).
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -32,8 +36,30 @@ export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 // `ch.` optionnel devant le numéro de chapitre (#434 défaut 3) : le code écrit indifféremment
 // `LIVRE NN l.X` et `LIVRE ch.NN l.X` — le groupe livre reste OBLIGATOIRE dans les deux regex.
 export const ldbRe = () => /\bLDB (?:ch\.)?(\d+) l\.(\d+)((?:[-+]\d+)*)/g       // LDB <ch> l.<line>[-end][+n…]
+
+// otherRe DÉRIVE de BOOKS (#434 défaut 10 : une alternation écrite à la main avait oublié MDG).
+// Graphies tolérées en plus des abréviations canoniques (préfixes tronqués, chiffre arabe pour le
+// chiffre romain…) — chaque entrée référence un livre RÉEL de BOOKS (vérifié ci-dessous, fail-fast).
+const EXTRA_ABBR_VARIANTS = [
+  ['ADE I', 'ADE ?I{1,2}'],   // ADE I / ADEI / ADE II / ADEII
+  ['ADE I', 'ADE ?[12]'],     // ADE1 / ADE2 (chiffre arabe)
+  ['Middenheim', 'Midd\\w*'],
+  ['NADAJ', 'NAD\\w+'],
+  ['Altdorf', 'Ald\\w+'],     // dossier Source : "Aldorf"
+  ['Altdorf', 'Alt\\w+'],     // abréviation : "Altdorf"
+  ['Ubersreik', 'Uber\\w+'],
+]
+const VARIANT_COVERED = new Set(EXTRA_ABBR_VARIANTS.map(([book]) => book))
+for (const [book] of EXTRA_ABBR_VARIANTS) {
+  if (!BOOK_DIR.has(book)) throw new Error(`otherRe: variante tolérante référence un livre inconnu de BOOKS: ${book}`)
+}
+// Tri par longueur décroissante OBLIGATOIRE : sinon "T2" matcherait avant "T2C", "EDO" avant "EDOC".
+const OTHER_ABBR_ALT = [
+  ...BOOKS.filter(([a]) => a !== 'LDB' && !VARIANT_COVERED.has(a)).map(([a]) => esc(a)),
+  ...EXTRA_ABBR_VARIANTS.map(([, pat]) => pat),
+].sort((a, b) => b.length - a.length).join('|')
 export const otherRe = () =>
-  /\b(ADE ?I{1,2}|ADE ?[12]|AA|ZI|EDOC|EDO|T2C|T2|T3|Midd\w*|NAD\w+|Ald\w+|Alt\w+|Uber\w+)(?: (?:ch\.)?(\d+))? l\.(\d+)/g
+  new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)`, 'g')
 
 // Déplie un suffixe "-285" (intervalle) ou "+217+220" (points) → [lo, hi].
 export function span(line, suffix) {
