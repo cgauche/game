@@ -745,60 +745,6 @@
   background: linear-gradient(90deg, rgba(232, 196, 103, 0.5), rgba(232, 196, 103, 0.15));
 }
 
-/* -- FigTile (tuile-figurine cliquable) — tuile VISSÉE (rivets laiton coin haut, langage
-   `.plaq`/`.c-plate` du kit) -- */
-.fig-tile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid var(--atelier-wood-etch);
-  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
-  color: var(--text);
-  cursor: pointer;
-  width: 100%;
-  box-sizing: border-box;
-}
-.fig-tile::before,
-.fig-tile::after {
-  content: '';
-  position: absolute;
-  top: 5px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover));
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
-}
-.fig-tile::before { left: 6px; }
-.fig-tile::after { right: 6px; }
-.fig-tile:hover { border-color: var(--atelier-brass-hover); }
-.fig-tile-name {
-  font-size: 12px;
-  line-height: 1.25;
-  color: var(--atelier-brass-etch);
-  text-align: center;
-  /* Zéro troncature (correctif utilisateur 2026-07-14) : le libellé WRAPPE (« Prêtre marin de
-     Manann »), jamais d'ellipse — hauteur de DEUX lignes réservée sur TOUTE tuile (même les noms
-     courts) pour que chaque rangée de la grille garde une hauteur uniforme. */
-  min-height: 2.5em;
-  display: flex;
-  align-items: center;
-}
-.fig-tile-sub {
-  font-size: 10.5px;
-  color: var(--muted);
-}
-.fig-tile.sel {
-  border-color: var(--gold);
-  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
-  box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.32);
-}
-.fig-tile.sel .fig-tile-name { color: var(--atelier-brass-elu); }
-
 /* -- GroupedPickGrid (grille en sections) — Préfixe `gpg-` DÉLIBÉRÉ : nom distinct hérité de l'époque
    où `.pick-grid` était pris par `FacetedPickGrid` (créateur, MORT #393 P2). */
 .gpg-grid {
@@ -1070,35 +1016,38 @@
 .creator-pick-filters .creator-pick-count {
   margin: 0 0 0 auto;
 }
-/* Grille de cartes de race — les cartes elles-mêmes sont `FigTile` (#430 phase 2, cadre UNIQUE
-   full-bleed, styles `frames.css`) : purge de l'ancien motif « tuile bois + charprev imbriqué »
-   (mort par cascade depuis be3fe9e0, dette transitoire payée ici). Seul modificateur DOMAINE qui
-   survit : `.rolled` (liseré de borne du tirage COURANT, #393 P3 — distinct de `.sel` gold posé par
-   `FigTile` lui-même) — classe ADDITIVE (`FigTile.className`), jamais un second cadre. */
+/* Grille de cartes de race — les cartes elles-mêmes sont `FigTile` (cadre UNIQUE, styles
+   `frames.css`, prop `fig="big"`). La grille ne borne PAS sa largeur : c'est la HAUTEUR FIXE de la
+   boîte-figurine (`.fig-tile.big`, patron `.fam-grid.big` de la planche — `repeat(4,1fr)` sans
+   plafond) qui tient la tuile, à toute largeur d'écran. Seul modificateur DOMAINE : `.rolled`
+   (liseré de borne du tirage COURANT, #393 P3 — distinct du `.sel` doré posé par `FigTile`
+   lui-même) — classe ADDITIVE (`FigTile.className`), jamais un second cadre. */
 .creator-race-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* La tuile garde la TAILLE de la planche à toute largeur de zone : une zone plus large donne PLUS
+     DE COLONNES, jamais des tuiles ballonnées (`repeat(4, 1fr)` donnait 381px de large sur une zone
+     de 1540 — la boîte-figurine restant à 172px, la figurine flottait : « les modeles sont encore
+     plus petit qu'avant », user 2026-07-15). La colonne est donc BORNÉE à la mesure de la planche
+     (213px), et `auto-fill` en pose autant que la zone en porte : ~940 → 4 (la planche), ~1540 → 6. */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 213px));
+  justify-content: start;
+  /* Les rangées se dimensionnent par leur CONTENU. Sans ceci, `align-content` vaut `normal` (≈
+     `stretch`) et ÉTIRE les rangées `auto` à la hauteur du pupitre — c'est ce qui gonflait la tuile
+     à ~400px de haut (au lieu de ~254) et redonnait l'ascenseur, une fois l'`aspect-ratio` retiré. */
+  align-content: start;
   gap: 16px;
-  /* Carte BORNÉE à la mesure de la planche (#431, verdict user 2026-07-15 : « la grille ne tient pas
-     sur un écran ») : 4 colonnes de 213px + 3 gouttières de 16 = 900px, les valeurs MESURÉES de
-     `.fam-grid.big` dans son pupitre à 1600 (`planche-creator-FINALE.html` — 7 tuiles en 4+3, sans
-     ascenseur). Sans ce plafond la carte suit `1fr` SANS BORNE : mesurée à 297px de large sur un
-     écran de 1920, ~380 au-delà — deux rangées ne tenaient plus la hauteur et la grille prenait
-     l'ascenseur. Le plafond ne borne QUE le haut : sous 900px la grille rétrécit avec le pupitre. */
-  max-width: calc(4 * 213px + 3 * 16px);
 }
 .creator-race-grid .fig-tile.rolled {
   border-color: var(--accent2);
   box-shadow: 0 0 0 1px rgba(214, 84, 58, 0.35);
 }
-@media (max-width: 900px) {
-  .creator-race-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
+/* Le repli ≤900 est porté par `auto-fill` lui-même (la zone rétrécit → moins de colonnes) : pas de
+   media-query pour le compte de colonnes, elle ne ferait que rendre les tuiles ballonnées. Sous
+   560px en revanche, une colonne bornée à 213px laisserait un vide à droite : la tuile reprend
+   `1fr` — la zone est alors plus étroite que la mesure de la planche, jamais plus large. */
 @media (max-width: 560px) {
   .creator-race-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 }
 

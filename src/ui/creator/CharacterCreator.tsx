@@ -199,10 +199,6 @@ const skillIdOf = (name: string): string | undefined => findSkill(splitLabel(nam
  *  CACHE module-scope (entrées finies, objets immuables) : un objet STABLE par (espèce, sexe), sinon
  *  le `React.memo` de CharacterPreview ne prend jamais et les ~25 lignes du rail re-résolvent le rig
  *  à chaque rendu de l'étape. */
-/** Cadrage des cartes de RACE (grille SERRÉE, #431, verdict user « ça écrase les visages » à 88 %
- *  plein champ) — comparaison 88/75 tranchée en faveur du plus digne (visage/silhouette respirent). */
-const RACE_CARD_FILL = 0.75;
-
 const PICK_APPEARANCES = new Map<string, Appearance>();
 function pickAppearance(speciesId: string, sex: 'M' | 'F', variantId?: string): Appearance {
   const key = `${speciesId}|${sex}|${variantId ?? ''}`;
@@ -531,14 +527,19 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
               preview={{
                 appearance: famAppearance(f),
                 career: rep.preview?.career,
-                fillFraction: RACE_CARD_FILL,
+                // Cadrage par DÉFAUT de la primitive (0.88) : le cadrage large (0.75) était une
+                // réponse à la tuile PLEIN CHAMP, où la figurine était la tuile et où le visage
+                // touchait le bord (« ça écrase les visages », #431). La boîte-figurine du patron
+                // planche est DÉDIÉE (172px, légende DEHORS, padding de tuile au-dessus) : la tête
+                // ne touche plus rien, et 0.75 n'y laisserait qu'un quart de boîte d'air mort
+                // au-dessus de la plus grande figurine (planche : son ogre remplit la boîte).
                 scaleRef: raceScaleRef, // ÉCHELLE VRAIE : toise commune à la grille, pas à la tuile (#431)
               }}
               label={f.family}
               sub={`${f.list.length} lignée${f.list.length > 1 ? 's' : ''}`}
               selected={selected}
               sealed={selected}
-              ambiance="panel"
+              fig="big" // surface PRINCIPALE de l'étape : boîte-figurine pleine zone (patron `.fam-grid.big`)
               tabIndex={idx === activeFamilyIdx ? 0 : -1}
               className={rolled ? 'rolled' : undefined}
               onClick={() => selectFamily(f.list)}

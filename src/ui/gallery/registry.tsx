@@ -196,8 +196,10 @@ function GroupedPickGridDemo() {
   return <GroupedPickGrid sections={SPECIES_SECTIONS} selectedId={sel} onSelect={setSel} label="Choix d'espèce" />;
 }
 
-/** Cadre-figurine unique (#430) : normal, sélectionné (liseré or), scellé (sceau de cire), et une
- *  ambiance alternative (`parchment`) — la même primitive couvre les 4 états, aucun cadre imbriqué. */
+/** Cadre-figurine unique (#430/#431) — patron `.fam-tile` de la planche : rivets d'or, boîte-figurine
+ *  à hauteur FIXE sur sa lueur de sol, nom et compte DESSOUS. Les trois états de la tuile `compact`
+ *  (repos, élue au liseré doré, scellée) + la variante `big` (grille de race, prop `fig`) — aucun
+ *  cadre imbriqué, aucune ambiance : la tuile porte sa propre matière. */
 function FigTileDemo() {
   return (
     <div className="row-flex">
@@ -230,12 +232,12 @@ function FigTileDemo() {
           tabIndex={0}
         />
       </div>
-      <div style={{ width: 140 }}>
+      <div style={{ width: 213 }}>
         <FigTile
           preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'F', build: 0.5, seed: 11 } }}
           label={HUMAN_SPECIES.label}
-          sub="Ambiance parchemin"
-          ambiance="parchment"
+          sub="Variante pleine zone"
+          fig="big"
           onClick={() => {}}
           tabIndex={0}
         />

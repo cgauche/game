@@ -14,7 +14,7 @@
 @import './styles/creator-shell.css'; /* coquille « Atelier du scribe » du créateur (.dirC planche) : le SOL de l'écran */
 @import './styles/creator.css'; /* cadre Modal partagé + assistant de création + apparence */
 @import './styles/creator-step.css'; /* ossature 2 zones du créateur (CreatorStepFrame, #393) : slots + dés dorés planche — APRÈS creator.css : prime sur la gemme par défaut */
-@import './styles/frames.css'; /* cadre-figurine UNIQUE (FigTile, #430) — APRÈS creator.css : prime sur l'ancien .fig-tile imbriqué */
+@import './styles/frames.css'; /* cadre-figurine UNIQUE (FigTile, #430/#431) : SEULE définition de .fig-tile* — le doublon de creator.css est purgé */
 @import './styles/plaque-row.css'; /* rangée-plaque à rivets d'or (PlaqueRow, #393) — matière .c-plate/.ck-cell de la planche FINALE */
 @import './styles/celestial-wheel.css'; /* astrolabe de laiton (CelestialWheel, #393) — matières du cadran, valeurs du svg « 4 — Signe astral » de la planche FINALE */
 @import './styles/creator-presentation.css'; /* mise en scène finale du créateur (PresentationScreen, #393) : registre ⇄ scène ⇄ rubriques, valeurs .fin-col/.fin-stage de la planche */

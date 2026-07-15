@@ -356,7 +356,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // vivante, définie juste en dessous). Audit de décrue : les 4 autres classes sans consommateur
   // LITTÉRAL du fichier sont des faux positifs (`metal-status-chip|-plaque`, `st-argent|-or` sont
   // bâties par gabarit dans `MetalStatus.tsx` — `metal-status-${size}` / `st-${tier}`).
-  'styles/creator.css': 107,
+  // LOT « la tuile, aux valeurs » (#431) : -2 (107 → 105) — PURGE du doublon `.fig-tile*`, la dette
+  // de la « phase 2 » annoncée par #430 et jamais payée (frames.css redéclarait la primitive « sans
+  // toucher creator.css » : deux peaux se disputaient la tuile par cascade). `.fig-tile-name` et
+  // `.fig-tile-sub` meurent ICI, frames.css devient la SEULE définition (+1 en regard, cf. plus bas).
+  // `fig-tile` et `sel` restent comptés : le modificateur DOMAINE `.creator-race-grid .fig-tile.rolled`
+  // et `.cc-step.sel` les gardent vivants dans ce module.
+  'styles/creator.css': 105,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -373,10 +379,17 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Rose des forces (#409) — `.rose`/`.rose text`/`.rose-corner` (`.rose-corner.sm .rose` réutilise
   // le sélecteur `.rose` déjà compté, dédoublonné par module).
   'styles/rose.css': 3,
-  // Cadre-figurine UNIQUE (FigTile, #430) — `.fig-tile`/`-legend`/`-name`/`-sub`/`-seal`/`.sel`/`.charprev`
-  // (descendant `.fig-tile > .charprev`, dédoublonné) — module primitive dédiée, MÊME patron que
-  // rose.css/hero-sheet.css (creator.css hors périmètre agent, collision #430).
-  'styles/frames.css': 7,
+  // Cadre-figurine UNIQUE (FigTile, #430) — `.fig-tile`/`-name`/`-sub`/`-seal`/`.sel`/`.charprev`
+  // (descendant `.fig-tile-fig > .charprev`, dédoublonné) — module primitive dédiée, MÊME patron que
+  // rose.css/hero-sheet.css.
+  // Consolidation #431 (LOT « la tuile, aux valeurs ») : +1 (7 → 8) — le doublon `.fig-tile*` de
+  // creator.css est PURGÉ (phase 2 de #430, jamais faite : deux peaux se disputaient la primitive
+  // par cascade — ce que frames.css redéclarait gagnait, ce qu'il ignorait survivait), ce module
+  // devient la SEULE définition. `.fig-tile-legend` (bandeau superposé) meurt au profit de
+  // `.fig-tile-fig` (boîte-figurine à hauteur FIXE, patron `.fam-tile` de la planche) et de la
+  // variante par PROP `.big` (172px pleine zone vs 104 compacte) — l'appelant choisit une taille,
+  // jamais une classe par écran. Contrepartie : creator.css paie -2 en regard.
+  'styles/frames.css': 8,
   // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
   // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
   // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).

@@ -81,6 +81,17 @@ maquette, 2026-07-14 — la maquette avait raison).
 
 ## Écarts CONNUS où les arbitrages priment sur la maquette
 
+0quater. **Compteurs : la JAUGE CRANTÉE prime sur le compteur texte de la planche**
+   (arbitrage user 2026-07-15, verbatim : « Perso le style utilisé pour les carac me vont,
+   le truc cranté, mais je ne veux pas 10 facon de faire la même chose »). La planche
+   compte partout en texte `.cu-sechead .cnt` (laiton 12,5px + chiffre `#ffe6a8` 14px) ;
+   l'app garde la MATIÈRE crantée (`NotchGauge`) avec la TYPO `.cnt` de la planche pour son
+   libellé. UN SEUL idiome partout (tirage, augmentations, Destin&Résilience, quotas,
+   budget, talents) — le badge vert « n/m » est MORT (le vert n'est pas une couleur de
+   comptage). Grandes plages : le COMPOSANT bascule sur la barre de piste de la planche
+   (`.cu-minibar .fill`) au-delà de ~12 — décision prise dans la primitive depuis la
+   donnée, jamais par l'appelant.
+
 0bis. **Carte de contrat : les AXES dominants remplacent les « 3 compétences clés »**
    de la maquette (arbitrage user 2026-07-14 : « Ca ne me dérange pas de mettre les
    axes ») — cohérence avec la rose et le rail des porteurs ; la typo reprend le style
