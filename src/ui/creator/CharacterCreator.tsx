@@ -66,7 +66,7 @@ import { CharStatsGrid } from '../CharStatsGrid';
 import { opSummary } from '../editor/GameOpEditor';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { previewHero } from './CreatorSummary';
-import { CreatorStepFrame, Section, Stepper, type StepZones } from './CreatorStepFrame';
+import { CreatorStepFrame, Section, Stepper, XpBadge, type StepZones } from './CreatorStepFrame';
 import { CreatorDice } from './CreatorDice';
 import { useRollFrisson } from '../useRollFrisson';
 import { DiceRoll, DieFace } from '../DiceRoll';
@@ -77,6 +77,7 @@ import { DetailFrame } from '../DetailFrame';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { MetalStatus } from '../MetalStatus';
 import { CareerPath } from '../CareerPath';
+import { NotchGauge } from '../NotchGauge';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import {
   CreatorDraft,
@@ -789,14 +790,21 @@ export function CharZones({ d, setD, charReroll }: StepProps): StepZones {
     };
   }
 
+  // « LA MÉTHODE » (#393 P3, étalon `finale-mock2-caracteristiques.png`) : sélecteur PERMANENT, pas
+  // une cérémonie de tirage unique (`CreatorDice` suppose un bouton « Tirer » puis un verdict — ici
+  // les trois options coexistent toujours) — `Section`+`XpBadge` nus, jamais `CreatorDice` mal titré.
   const dice = (
-    <CreatorDice rolled xp={charsXp(d)} hint="Garder le tirage 2d10 : +50 PX · Réassigner les dix jets : +25 PX · 100 Points : +0 PX (LDB 05).">
+    <Section title="La méthode" right={<XpBadge value={charsXp(d)} />}>
+      <p className="hint" style={{ marginTop: 0 }}>
+        Chaque Caractéristique s'écrit base + 2d10 (LDB 05). Garder le tirage 2d10 : +50 PX · Réassigner les dix
+        jets : +25 PX · 100 Points : +0 PX.
+      </p>
       <OptionChooser
         layout="grid"
         options={[
-          { key: 'rolled', label: `Garder le tirage 2d10 ${d.charRerolls === 0 ? '(+50 PX)' : '(+0 PX)'}`, mode: 'rolled' as const },
-          { key: 'reassigned', label: `Réassigner les dix jets ${d.charRerolls === 0 ? '(+25 PX)' : '(+0 PX)'}`, mode: 'reassigned' as const },
-          { key: 'pointBuy', label: 'Répartir 100 Points (4-18, +0 PX)', mode: 'pointBuy' as const },
+          { key: 'rolled', label: `Aux dés — garder le tirage ${d.charRerolls === 0 ? '(+50 PX)' : '(+0 PX)'}`, mode: 'rolled' as const },
+          { key: 'reassigned', label: `Aux dés — réorganiser ensuite ${d.charRerolls === 0 ? '(+25 PX)' : '(+0 PX)'}`, mode: 'reassigned' as const },
+          { key: 'pointBuy', label: 'Répartir 100 points (0 PX)', mode: 'pointBuy' as const },
         ].map(({ key, label, mode }) => ({ key, label, primary: d.charMode === mode, onSelect: () => setD({ ...d, charMode: mode }) }))}
       />
       {d.charMode !== 'pointBuy' && (
@@ -804,7 +812,7 @@ export function CharZones({ d, setD, charReroll }: StepProps): StepZones {
           <Icon id="nav/dice" size="sm" /> Relancer les dix jets (bonus perdus)
         </button>
       )}
-    </CreatorDice>
+    </Section>
   );
 
   const choice = (
@@ -852,11 +860,25 @@ export function CharZones({ d, setD, charReroll }: StepProps): StepZones {
     </>
   );
 
+  // « LE TIRAGE » (#393 P3, étalon `finale-mock2-caracteristiques.png`) : titre adapté à la méthode
+  // choisie — jamais un doublon du titre « Caractéristiques » déjà porté par la `ParchmentCard`
+  // (`detail.title` ci-dessous). Jauge « N/10 tirées » en mode dés : les DIX Caractéristiques roulent
+  // EN UN SEUL geste (`charReroll`, seed unique — LDB 05 l.385, aucun tirage rangée par rangée dans le
+  // moteur) ; la jauge reflète honnêtement ce mécanisme simultané (0/10 pendant le roulis, 10/10 posé)
+  // plutôt que de mimer une révélation séquentielle que le brouillon ne modélise pas.
+  const bodyTitle = d.charMode === 'rolled' ? 'Le tirage' : d.charMode === 'reassigned' ? 'Réassignation des jets' : 'Répartition des points';
+  const tiredCount = d.charMode === 'rolled' ? (reroll.rolling ? 0 : 10) : 0;
   const body = (
     <>
       <Section
-        title="Caractéristiques"
-        right={d.charMode === 'pointBuy' ? <b className={pbTotal === 100 ? 'ok-text' : 'warn-text'}>Points : {pbTotal}/100</b> : undefined}
+        title={bodyTitle}
+        right={
+          d.charMode === 'pointBuy' ? (
+            <b className={pbTotal === 100 ? 'ok-text' : 'warn-text'}>Points : {pbTotal}/100</b>
+          ) : d.charMode === 'rolled' ? (
+            <NotchGauge value={tiredCount} max={10} notches={10} format={(v, m) => `${v}/${m} tirées`} tone={tiredCount === 10 ? 'ok' : 'neutral'} />
+          ) : undefined
+        }
       >
         <p className="hint" style={{ marginTop: 0 }}>
           Vous réglez ici la valeur d'ÉDITION (base d'espèce + tirage/allocation) ; la fiche vivante en montre
@@ -865,7 +887,7 @@ export function CharZones({ d, setD, charReroll }: StepProps): StepZones {
         </p>
         <div className="char-alloc-grid">
           {CHAR_KEYS.map((k, i) => (
-            <div key={k} className="char-alloc">
+            <div key={k} className={`char-alloc${d.charMode === 'rolled' && reroll.rolling ? ' rolled' : ''}`}>
               <CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]} className="char-key">{CHAR_ABR[k]}</CodexRef>
               <span className="char-name">
                 {CHAR_LABELS[k]}
@@ -873,11 +895,14 @@ export function CharZones({ d, setD, charReroll }: StepProps): StepZones {
               </span>
               <em>base {sp.baseChar[k] ?? 20}</em>
               {d.charMode === 'rolled' && (reroll.rolling || reroll.landed) ? (
-                <span className="char-roll">
+                <span className="char-roll row-flex">
                   <DiceRoll scene={false} landed={reroll.landed} faces={reroll.landed ? d10PairFaces(pairs[i]) : null} onSkip={reroll.skip} />
                 </span>
               ) : d.charMode === 'rolled' ? (
-                <span className="char-roll">+{rolls[i]}</span>
+                <span className="char-roll row-flex">
+                  <span className="rm-die char-die"><DieFace n={pairs[i][0]} landed /></span>
+                  <span className="rm-die char-die"><DieFace n={pairs[i][1]} landed /></span>
+                </span>
               ) : null}
               {d.charMode === 'reassigned' && (
                 <select
@@ -958,70 +983,74 @@ export function StarZones({ d, setD }: StepProps): StepZones {
     </CreatorDice>
   );
 
-  const choice = (
-    <Section title="Roue céleste">
-      <CelestialWheel
-        signs={starsTable.map((s) => ({ id: s.id, label: s.label }))}
-        selectedId={d.star}
-        onSelect={(id) => setD({ ...d, star: id })}
-      />
-      {sign && (
-        <button className="btn small" style={{ marginTop: 8 }} onClick={() => setD({ ...d, star: undefined })}>
-          Aucun signe
-        </button>
-      )}
-      {grantChoice && grantOpts.length > 0 && (
-        <label style={{ marginTop: 10 }}>
-          {splitLabel(grantChoice).name}
-          <select
-            value={d.specChoices[grantChoice] ?? ''}
-            onChange={(e) => {
-              const specChoices = { ...d.specChoices };
-              if (e.target.value) specChoices[grantChoice] = e.target.value; // spec SEULE, jamais un libellé complet
-              else delete specChoices[grantChoice];
-              setD({ ...d, specChoices });
-            }}
-          >
-            <option value="">— au choix —</option>
-            {grantOpts.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </label>
-      )}
-    </Section>
-  );
+  // Rail SANS zone « choix » propre (#393 P3, étalon `finale-mock3-signe.png`) : la roue céleste est
+  // le TRAVAIL de l'étape (Zone B, large), pas un contrôle annexe du rail — seul l'encrier d100 y reste.
+  const choice = null;
 
   const body = (
-    <>
-      <Section title={sign ? sign.label : 'Sous quel signe êtes-vous né ?'}>
-        {sign ? (
-          <>
-            <p className="hint" style={{ margin: '0 0 8px' }}>{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
-            {!!sign.effect?.length && (
-              <div className="skill-tags" style={{ marginBottom: 10 }}>
-                {sign.effect.map((o, i) => <span key={i} className="tag">{opSummary(o)}</span>)}
-              </div>
-            )}
-            <LoreText md={sign.desc} />
-          </>
-        ) : (
-          <p className="hint">Choisissez ou tirez votre signe astral (ADE2 ch.03) — son sens apparaîtra ici.</p>
+    <div className="appear-panel">
+      <div className="star-wheel-col">
+        <p className="creator-pick-count">La roue céleste — {starsTable.length} signes — Archives de l'Empire II</p>
+        <CelestialWheel
+          signs={starsTable.map((s) => ({ id: s.id, label: s.label }))}
+          selectedId={d.star}
+          onSelect={(id) => setD({ ...d, star: id })}
+        />
+        {sign && (
+          <button className="btn small" style={{ marginTop: 8 }} onClick={() => setD({ ...d, star: undefined })}>
+            Aucun signe
+          </button>
         )}
-      </Section>
-      <Section title="Astrologie (pur roleplay)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}><Icon id="nav/dice" size="sm" /> Thème astral</button>}>
-        {d.ascendant || d.dwellings?.length ? (
-          <div className="lore-text">
-            {d.ascendant && <p style={{ margin: '0 0 6px' }}><b>Ascendant :</b> {d.ascendant}</p>}
-            {d.dwellings?.map((h) => (
-              <p key={h.house} style={{ margin: '0 0 4px' }} title={mdToText(HOUSE_BY_ID.get(h.house)?.desc ?? '')}>
-                <b>{HOUSE_BY_ID.get(h.house)?.label ?? h.house} :</b> {h.sign}
-              </p>
-            ))}
-          </div>
-        ) : (
-          <p className="hint">Ascendant + {celestialHouses.length} demeures célestes — flavor pur (aucun effet de jeu).</p>
+        {grantChoice && grantOpts.length > 0 && (
+          <label style={{ marginTop: 10 }}>
+            {splitLabel(grantChoice).name}
+            <select
+              value={d.specChoices[grantChoice] ?? ''}
+              onChange={(e) => {
+                const specChoices = { ...d.specChoices };
+                if (e.target.value) specChoices[grantChoice] = e.target.value; // spec SEULE, jamais un libellé complet
+                else delete specChoices[grantChoice];
+                setD({ ...d, specChoices });
+              }}
+            >
+              <option value="">— au choix —</option>
+              {grantOpts.map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </label>
         )}
-      </Section>
-    </>
+      </div>
+      <div className="appear-controls">
+        <Section title={sign ? sign.label : 'Sous quel signe êtes-vous né ?'}>
+          {sign ? (
+            <>
+              <p className="hint" style={{ margin: '0 0 8px' }}>{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
+              {!!sign.effect?.length && (
+                <div className="skill-tags" style={{ marginBottom: 10 }}>
+                  {sign.effect.map((o, i) => <span key={i} className="tag">{opSummary(o)}</span>)}
+                </div>
+              )}
+              <LoreText md={sign.desc} />
+            </>
+          ) : (
+            <p className="hint">Choisissez ou tirez votre signe astral (ADE2 ch.03) — son sens apparaîtra ici.</p>
+          )}
+        </Section>
+        <Section title="Astrologie (pur roleplay)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}><Icon id="nav/dice" size="sm" /> Thème astral</button>}>
+          {d.ascendant || d.dwellings?.length ? (
+            <div className="lore-text">
+              {d.ascendant && <p style={{ margin: '0 0 6px' }}><b>Ascendant :</b> {d.ascendant}</p>}
+              {d.dwellings?.map((h) => (
+                <p key={h.house} style={{ margin: '0 0 4px' }} title={mdToText(HOUSE_BY_ID.get(h.house)?.desc ?? '')}>
+                  <b>{HOUSE_BY_ID.get(h.house)?.label ?? h.house} :</b> {h.sign}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="hint">Ascendant + {celestialHouses.length} demeures célestes — flavor pur (aucun effet de jeu).</p>
+          )}
+        </Section>
+      </div>
+    </div>
   );
   // Pas de `title` ici (doublon) : le corps porte déjà son propre titre via `Section`
   // (sign.label ou la question de repli), même patron que CareerZones.

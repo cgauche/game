@@ -37,3 +37,11 @@
 .hero-sheet-derived b {
   color: var(--text);
 }
+/* Chip roadmap (rubrique à une étape ultérieure du créateur, #417 suite) — compose `.chip`
+   (components.css), pointillé + atténué, jamais une nouvelle boîte. */
+.chip-roadmap {
+  border-style: dashed;
+  border-color: var(--border);
+  opacity: 0.6;
+  font-style: italic;
+}

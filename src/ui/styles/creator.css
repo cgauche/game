@@ -349,6 +349,11 @@
   font-size: 12px;
   color: var(--muted);
 }
+/* Roadmap d'IDENTITÉ (signe astral + nom/traits, #417 suite P3) — compose `.row-flex`, chips via
+   `.chip`/`.chip-roadmap` (hero-sheet.css). */
+.creator-identity-roadmap {
+  gap: 4px;
+}
 .creator-derived {
   display: flex;
   flex-direction: column;
@@ -408,6 +413,27 @@
 }
 .char-alloc .char-roll {
   color: var(--accent2);
+}
+/* Rangée SURLIGNÉE pendant le roulis (#393 P3, étalon `finale-mock2-caracteristiques.png`) — les
+   DIX Caractéristiques roulent ensemble (`charReroll`, seed unique) : la surbrillance s'applique
+   donc aux dix rangées à la fois, reflet honnête du mécanisme simultané. Réutilise `.rolled`
+   (langage déjà porté par `.creator-race-card.rolled` — borne du tirage courant, #393 P3). */
+.char-alloc.rolled {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.28);
+}
+.char-alloc .char-die {
+  width: 22px;
+  height: 22px;
+}
+.char-alloc .char-die .rm-die-gem {
+  fill: var(--atelier-wood-mid);
+  stroke: var(--atelier-brass-hover);
+  stroke-width: 1.1;
+}
+.char-alloc .char-die .rm-die-num {
+  fill: var(--atelier-brass-elu);
+  font-size: 10px;
 }
 .char-alloc .char-total {
   margin-left: auto;
@@ -606,6 +632,20 @@
   color: var(--muted);
   font-size: 10.5px;
 }
+/* Corps de l'étape Signe astral (#393 P3, étalon `finale-mock3-signe.png`) : la roue à gauche, le
+   sens du signe (Section + Astrologie) à droite — même zone B large, jamais un rail 330px étriqué.
+   Compose `.appear-panel`/`.appear-controls` (patron figure+contrôles déjà canon dans ce fichier,
+   étape Détails) ; seule la largeur de la colonne roue diffère de `.appear-figure`. */
+.star-wheel-col {
+  flex: 0 0 auto;
+  width: 320px;
+}
+@media (max-width: 700px) {
+  .star-wheel-col {
+    width: 100%;
+  }
+}
+
 /* Roue céleste (étape Signe astral) — astrolabe SVG sobre : anneaux + un point par signe, le signe
    choisi mis en évidence (rayon + point d'or) et nommé au moyeu. Nœuds stylés par sélecteurs
    structurels (aucune classe supplémentaire) : anneaux = `circle` enfant direct du `svg`, points =
@@ -617,8 +657,21 @@
 .celestial-wheel svg {
   display: block;
   width: 100%;
-  max-width: 250px;
+  max-width: 340px;
   margin: 0 auto;
+}
+.celestial-wheel .cw-label {
+  fill: var(--muted);
+  font-size: 8.5px;
+  pointer-events: none;
+}
+.celestial-wheel .cw-label-dash {
+  font-size: 9px;
+  opacity: 0.55;
+}
+.celestial-wheel [aria-checked='true'] .cw-label {
+  fill: var(--gold);
+  font-weight: 600;
 }
 .celestial-wheel svg > circle {
   fill: none;

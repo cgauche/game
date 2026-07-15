@@ -41,9 +41,12 @@ export function HeroSheet({
   header?: boolean;
   /** Bourse — chip dans la bande d'en-tête (ignoré si `header={false}`). */
   wealth?: Money;
-  /** État(s) fantôme(s) — ex. avances de compétences restant à répartir — chips pointillées ajoutées
-   *  en fin de rubrique Compétences. */
-  pending?: ReactNode;
+  /** Roadmap PROSPECTIVE par rubrique (chips pointillées `RoadmapChip`, étapes ULTÉRIEURES du
+   *  créateur) : Compétences/Possessions REMPLACENT le contenu vif quand elles sont fournies (masque
+   *  un défaut moteur prématuré) ; Talents s'AJOUTE après les talents déjà réels (les talents
+   *  d'espèce sont résolus dès l'espèce choisie, indépendamment de l'étape Compétences/Talents —
+   *  cf. `CreatorSummary`, seul appelant à ce jour). */
+  pending?: { skills?: ReactNode; talents?: ReactNode; possessions?: ReactNode };
   /** Annotation PAR CARACTÉRISTIQUE de la grille (`CharStatsGrid` `valClass`/`note`) — data-driven,
    *  aucun branchement créateur ICI : l'appelant (ex. `CreatorSummary`, augmentations/talents)
    *  calcule ses propres classes/notes et les fournit. */
@@ -101,8 +104,7 @@ export function HeroSheet({
       <section className="hero-present-sec">
         <h4>{t('present.skills')}</h4>
         <div className="skill-tags">
-          {skills.length ? skills.map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />) : <span className="hint">—</span>}
-          {pending}
+          {pending?.skills ?? (skills.length ? skills.map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />) : <span className="hint">—</span>)}
         </div>
       </section>
 
@@ -110,6 +112,7 @@ export function HeroSheet({
         <h4>{t('present.talents')}</h4>
         <div className="skill-tags">
           {talents.length ? talents.map((tt) => <TalentChip key={`${tt.talentId}|${tt.spec ?? ''}`} talent={tt} />) : <span className="hint">—</span>}
+          {pending?.talents}
         </div>
       </section>
 
@@ -125,11 +128,19 @@ export function HeroSheet({
       <section className="hero-present-sec">
         <h4>{t('present.possessions')}</h4>
         <div className="skill-tags">
-          {possessions.length
+          {pending?.possessions ?? (possessions.length
             ? possessions.map((it) => <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={itemLabel(it)} />)
-            : <span className="hint">—</span>}
+            : <span className="hint">—</span>)}
         </div>
       </section>
     </div>
   );
+}
+
+/** Chip prospective pointillée — rubrique renseignée à une étape ULTÉRIEURE du créateur (#417
+ *  suite). Écrite ICI (vocabulaire de chip de la fiche) pour être composée aussi HORS `HeroSheet`
+ *  (identité du créateur : `CreatorSummary` compose ce chip directement, hors mandat de la primitive
+ *  qui n'entre qu'un `Combatant`). */
+export function RoadmapChip({ children }: { children: ReactNode }) {
+  return <span className="chip chip-roadmap">{children}</span>;
 }

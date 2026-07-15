@@ -201,15 +201,15 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(speciesSkillTier(e, names[0])).toBe(5);
   });
 
-  it('étape Signe astral (verdict 2) — ROUE CÉLESTE a11y (radiogroup) remplace le <select> ; desc verbatim en Zone B', () => {
+  it('étape Signe astral (verdict 2, #393 P3 — la roue rejoint Zone B, étalon finale-mock3-signe.png) — ROUE CÉLESTE a11y (radiogroup) remplace le <select> ; desc verbatim en Zone B', () => {
     const rolled = { ...newDraft(7), star: 'la-grande-croix' };
     const { choice, detail } = StarZones({ d: rolled, setD: () => {} });
     const cHtml = renderToStaticMarkup(<>{choice}</>);
-    expect(cHtml).toContain('celestial-wheel');
-    expect(cHtml).toContain('role="radiogroup"');
-    expect(cHtml).toMatch(/role="radio"[^>]*aria-checked="true"/); // signe choisi mis en évidence
     expect(cHtml).not.toContain('<select value="la-grande-croix"'); // fin du <select> de signe
     const dHtml = renderToStaticMarkup(<>{detail.body}</>);
+    expect(dHtml).toContain('celestial-wheel');
+    expect(dHtml).toContain('role="radiogroup"');
+    expect(dHtml).toMatch(/role="radio"[^>]*aria-checked="true"/); // signe choisi mis en évidence
     expect(dHtml).toContain('La Grande Croix'); // titre de la ParchmentCard
     expect(dHtml).toContain('Astrologie (pur roleplay)');
     expect(dHtml).not.toContain('trapping-list'); // classe libérée

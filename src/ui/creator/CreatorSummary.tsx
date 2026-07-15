@@ -22,9 +22,9 @@ import type { Appearance } from '../../gameIso/rig/appearance';
 import { CharacterPreview } from '../CharacterPreview';
 import { Icon } from '../Icon';
 import { CharStatsGrid } from '../CharStatsGrid';
-import { HeroSheet } from '../HeroSheet';
-import { careerLabelFor, rigSpeciesId } from '../../data';
-import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, hasSpecies, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
+import { HeroSheet, RoadmapChip } from '../HeroSheet';
+import { careerLabelFor, findStarById, rigSpeciesId } from '../../data';
+import { CreatorDraft, StepId, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, hasSpecies, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
 
 /** Grisage cérémoniel d'un bloc « non renseigné » (page blanche). */
 const DIM: CSSProperties = { opacity: 0.38 };
@@ -37,8 +37,23 @@ export function previewHero(d: CreatorDraft): Combatant | null {
   }
 }
 
-export function CreatorSummary({ d }: { d: CreatorDraft; step?: number }) {
+/** Étapes du créateur pas ULTÉRIEUREMENT franchies (index STRICTEMENT devant `step`, `stepIds()`
+ *  SOURCE UNIQUE de l'ordre) — la fiche vivante masque le contenu vif d'une rubrique et pose une
+ *  `RoadmapChip` tant que son étape est devant, quel que soit ce que le moteur a déjà résolu par
+ *  défaut (LDB 05 : compétences/talent de carrière/possessions ont tous une valeur de repli avant
+ *  même que le joueur ne visite l'étape). */
+function useCreatorRoadmap(step: number) {
+  const ids = stepIds();
+  const idxOf = (id: StepId) => ids.indexOf(id);
+  const ahead = (id: StepId) => { const i = idxOf(id); return i !== -1 && step < i; };
+  const stepNo = (id: StepId) => idxOf(id) + 1;
+  return { ids, ahead, stepNo };
+}
+
+export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number }) {
   const hero = useMemo(() => previewHero(d), [d]);
+  const { ids, ahead, stepNo } = useCreatorRoadmap(step);
+  const starActive = ids.includes('star');
   const sp = draftSpecies(d);
   const level = draftLevel(d);
   const baseChars = draftChars(d);
@@ -80,9 +95,32 @@ export function CreatorSummary({ d }: { d: CreatorDraft; step?: number }) {
         </span>
         <span className="char-sub">{sp?.label ?? 'Race à choisir'}</span>
       </div>
+      {started && (starActive || ahead('details')) && (
+        <div className="creator-identity-roadmap row-flex">
+          {starActive && (ahead('star')
+            ? <RoadmapChip>signe — étape {stepNo('star')}</RoadmapChip>
+            : d.star ? <span className="chip">{findStarById(d.star)?.label ?? d.star}</span> : null)}
+          {ahead('details') && <RoadmapChip>nom, traits — étape {stepNo('details')}</RoadmapChip>}
+        </div>
+      )}
 
       {hero ? (
-        <HeroSheet hero={hero} header={false} statAnnotations={statAnnotations} className="creator-hero-sheet" />
+        <HeroSheet
+          hero={hero}
+          header={false}
+          statAnnotations={statAnnotations}
+          className="creator-hero-sheet"
+          pending={{
+            skills: ahead('skills') ? <RoadmapChip>à répartir — étape {stepNo('skills')}</RoadmapChip> : undefined,
+            talents: ahead('skills') ? (
+              <>
+                <RoadmapChip>au choix — étape {stepNo('skills')}</RoadmapChip>
+                <RoadmapChip>3 au d100 — étape {stepNo('skills')}</RoadmapChip>
+              </>
+            ) : undefined,
+            possessions: ahead('trappings') ? <RoadmapChip>dotations — étape {stepNo('trappings')}</RoadmapChip> : undefined,
+          }}
+        />
       ) : (
         <>
           <div style={started ? undefined : DIM}>

@@ -22,12 +22,19 @@ export function CelestialWheel({ signs, selectedId, onSelect }: {
   onSelect: (id: string) => void;
 }) {
   const n = signs.length;
-  const cx = 110;
-  const cy = 110;
-  const r = 90;
+  const cx = 150;
+  const cy = 150;
+  const r = 110;
+  const labelR = r + 22;
   const activeIdx = Math.max(0, signs.findIndex((s) => s.id === selectedId));
   const svgRef = useRef<SVGSVGElement>(null);
   const selected = signs.find((s) => s.id === selectedId);
+  // Télescopage à 23 signes (juge vision, lot P3) : la roue ne montre le nom EN CLAIR que pour le
+  // signe élu et ses deux voisins immédiats (le focus clavier suit le même patron) — les autres
+  // restent un tiret. Identification/activation intactes pour TOUS (title + aria-label inconditionnels,
+  // clic/Entrée/Espace sur le point). Alterner le rayon des tirets brise l'alignement radial strict
+  // pour aérer visuellement l'anneau sans dépendre de la longueur du libellé.
+  const isExpanded = (i: number) => i === activeIdx || i === (activeIdx - 1 + n) % n || i === (activeIdx + 1) % n;
 
   const focusNode = (idx: number) => {
     onSelect(signs[idx].id); // selection-follows-focus (patron Tabs)
@@ -43,7 +50,7 @@ export function CelestialWheel({ signs, selectedId, onSelect }: {
 
   return (
     <div className="celestial-wheel">
-      <svg ref={svgRef} viewBox="0 0 220 220" role="radiogroup" aria-label="Roue céleste — signe astral" onKeyDown={onKeyDown}>
+      <svg ref={svgRef} viewBox="-15 -8 330 316" role="radiogroup" aria-label="Roue céleste — signe astral" onKeyDown={onKeyDown}>
         <circle cx={cx} cy={cy} r={r + 14} />
         <circle cx={cx} cy={cy} r={r - 10} />
         {signs.map((s, i) => {
@@ -51,6 +58,17 @@ export function CelestialWheel({ signs, selectedId, onSelect }: {
           const x = cx + r * Math.cos(a);
           const y = cy + r * Math.sin(a);
           const sel = s.id === selectedId;
+          const expanded = isExpanded(i);
+          // Tirets en 2 rayons alternés : casse l'alignement radial strict, aère l'anneau serré.
+          const lr = expanded ? labelR + 6 : labelR + (i % 2 ? 8 : 0);
+          const dx = Math.cos(a);
+          const lx = cx + lr * dx;
+          const ly = cy + lr * Math.sin(a);
+          // Zéro troncature (juge vision, lot P3 suite) : un label ÉTENDU (souvent long) ancré au
+          // centre déborde côté droit/gauche de la roue — ancrage par QUADRANT (`end` = le texte
+          // s'étend VERS le centre depuis un point de droite, `start` l'inverse à gauche) ; les tirets
+          // (1 caractère) restent centrés, aucun risque de débord.
+          const anchor: 'start' | 'middle' | 'end' = !expanded ? 'middle' : dx > 0.25 ? 'end' : dx < -0.25 ? 'start' : 'middle';
           return (
             <g
               key={s.id}
@@ -68,6 +86,15 @@ export function CelestialWheel({ signs, selectedId, onSelect }: {
             >
               {sel && <line x1={cx} y1={cy} x2={x} y2={y} />}
               <circle cx={x} cy={y} r={sel ? 6.5 : 3} />
+              <text
+                x={lx}
+                y={ly}
+                textAnchor={anchor}
+                dominantBaseline="middle"
+                className={expanded ? 'cw-label cw-label-full' : 'cw-label cw-label-dash'}
+              >
+                {expanded ? s.label : '–'}
+              </text>
               <title>{s.label}</title>
             </g>
           );

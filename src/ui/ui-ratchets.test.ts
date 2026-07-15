@@ -259,7 +259,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // #417 suite (consécration HeroSheet) : -3 — .creator-summary .stat-val.boost (highlight
   // d'augmentation, plus rendu par la fiche vivante — HeroSheet ne le porte pas) et
   // .creator-summary .char-skills (bloc mort, remplacé par le corps HeroSheet) retirés.
-  'styles/creator.css': 123,
+  // #393 P3 (Caractéristiques/Signe astral, étalons finale-mock2/mock3) : +3 — `.char-die` (dés
+  // permanents par rangée du tirage), `.star-wheel-col` (colonne roue, `.appear-panel`/`.appear-
+  // controls` réutilisés pour le reste du layout) et `.cw-label` (noms de signe autour de la roue) ;
+  // `.rolled`/`.row-flex`/`NotchGauge` réutilisés pour le surlignage de rangée et la jauge N/10.
+  // Lot P3 final (retouches juge vision) : +2 — `.cw-label-dash` (tirets d'anneau à 23 signes),
+  // `.creator-identity-roadmap` (chips signe/nom prospectives).
+  'styles/creator.css': 128,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -278,7 +284,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/rose.css': 3,
   // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
   // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
-  'styles/hero-sheet.css': 6,
+  // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).
+  'styles/hero-sheet.css': 7,
 };
 
 // ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules
