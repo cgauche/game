@@ -29,9 +29,11 @@ const BOOK_DIR = new Map(BOOKS)
 export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 // Regex de réfs (factories : instances FRAÎCHES — l'état /g `lastIndex` n'est pas partagé entre appelants).
-export const ldbRe = () => /\bLDB (\d+) l\.(\d+)((?:[-+]\d+)*)/g       // LDB <ch> l.<line>[-end][+n…]
+// `ch.` optionnel devant le numéro de chapitre (#434 défaut 3) : le code écrit indifféremment
+// `LIVRE NN l.X` et `LIVRE ch.NN l.X` — le groupe livre reste OBLIGATOIRE dans les deux regex.
+export const ldbRe = () => /\bLDB (?:ch\.)?(\d+) l\.(\d+)((?:[-+]\d+)*)/g       // LDB <ch> l.<line>[-end][+n…]
 export const otherRe = () =>
-  /\b(ADE ?I{1,2}|ADE ?[12]|AA|ZI|EDOC|EDO|T2C|T2|T3|Midd\w*|NAD\w+|Ald\w+|Alt\w+|Uber\w+)(?: (\d+))? l\.(\d+)/g
+  /\b(ADE ?I{1,2}|ADE ?[12]|AA|ZI|EDOC|EDO|T2C|T2|T3|Midd\w*|NAD\w+|Ald\w+|Alt\w+|Uber\w+)(?: (?:ch\.)?(\d+))? l\.(\d+)/g
 
 // Déplie un suffixe "-285" (intervalle) ou "+217+220" (points) → [lo, hi].
 export function span(line, suffix) {
