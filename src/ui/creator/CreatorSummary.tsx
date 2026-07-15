@@ -43,6 +43,7 @@ import {
   stepIds,
   careerSkillsDone,
   speciesTalentChoicesDone,
+  speciesTalentRandomCount,
 } from './draft';
 
 /** Grisage cérémoniel d'un bloc « non renseigné » (page blanche). */
@@ -124,12 +125,24 @@ export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number
             skills: ahead('skills')
               ? <RoadmapChip>à répartir — étape {stepNo('skills')}</RoadmapChip>
               : !careerSkillsDone(d) ? <RoadmapChip>carrière — 5b</RoadmapChip> : undefined,
+            // Talents aléatoires (#393 agentivité) : un tirage non encore LANCÉ n'apparaît nulle
+            // part — la fiche montre l'emplacement « à tirer » (compte dérivé de la DONNÉE,
+            // `speciesTalentRandomCount`, jamais un « 3 » codé) jusqu'au geste 5c.
             talents: ahead('skills') ? (
               <>
                 <RoadmapChip>au choix — étape {stepNo('skills')}</RoadmapChip>
-                <RoadmapChip>3 au d100 — étape {stepNo('skills')}</RoadmapChip>
+                {speciesTalentRandomCount(d) > 0 && (
+                  <RoadmapChip>{speciesTalentRandomCount(d)} à tirer au d100 — étape {stepNo('skills')}</RoadmapChip>
+                )}
               </>
-            ) : !speciesTalentChoicesDone(d) ? <RoadmapChip>au choix — 5c</RoadmapChip> : undefined,
+            ) : !speciesTalentChoicesDone(d) || (speciesTalentRandomCount(d) > 0 && !d.talentsRolled) ? (
+              <>
+                {!speciesTalentChoicesDone(d) && <RoadmapChip>au choix — 5c</RoadmapChip>}
+                {speciesTalentRandomCount(d) > 0 && !d.talentsRolled && (
+                  <RoadmapChip>{speciesTalentRandomCount(d)} à tirer au d100 — 5c</RoadmapChip>
+                )}
+              </>
+            ) : undefined,
             possessions: ahead('trappings') ? <RoadmapChip>dotations — étape {stepNo('trappings')}</RoadmapChip> : undefined,
           }}
         />

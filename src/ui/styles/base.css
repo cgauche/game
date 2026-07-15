@@ -114,6 +114,8 @@
   --atelier-brass-hover: #8a6c2f; /* bordure laiton survolée (tuile, plaque) */
   --atelier-plaque-hi: #4a2c18; /* haut du dégradé « plaque élue » */
   --atelier-plaque-lo: #2c1810; /* bas du dégradé « plaque élue » */
+  --atelier-alcove-hi: #140e08; /* haut du fond d'alcôve/scène (la figurine sous la lampe) */
+  --atelier-alcove-lo: #080503; /* bas du fond d'alcôve/scène — le noir où la scène s'éteint */
   --atelier-prose: #e7d9bc; /* texte de la prose sombre à scroll interne */
   --atelier-wax-fold: #7c1810; /* pli du sceau de cire */
   --atelier-wax-ring: #5e0f08; /* anneau/crâne du sceau */
@@ -141,6 +143,21 @@
   --atelier-dicewell-act-hi: #4c1d11; /* encrier attente — surface BORDÉ-TEINTÉE, sang sombre (haut) :
     « Suivant → » reste l'UNIQUE rempli rouge vif de l'écran (#393 P2, correctif toolbar P1). */
   --atelier-dicewell-act-lo: #280d08; /* encrier attente — surface bordé-teintée (bas) */
+  --atelier-dicewell-hi: #33270f; /* encrier statut laiton (roulants/rendu) — surface haut, `.c-dicewell` planche FINALE */
+  --atelier-dicewell-lo: #1c130a; /* encrier statut laiton — surface bas */
+  /* Astrolabe de la roue céleste (`CelestialWheel`) — gravure du laiton, `svg` du mock « 4 — Signe
+     astral » de la planche FINALE : la gamme est PLUS PÂLE que les encres de plaque (un cadran gravé
+     se lit au trait, pas au contraste). */
+  --atelier-wheel-hub: #1a120a; /* fond du moyeu */
+  --atelier-wheel-node: #6b5836; /* liseré des pastilles de signe au repos */
+  --atelier-brass-pale: #b09b6f; /* laiton PÂLE : prose secondaire d'une plaque (`.cs-tcard .ds`
+                                    planche), nom d'un signe au repos sur la roue */
+  --atelier-brass-engrave: #7a6440; /* gravure FINE : rubrique sous un nom de plaque (`.rf` planche),
+                                       borne d100 gravée sur un rayon de la roue */
+  --atelier-plate-hi: #2f2415; /* rangée-plaque (PlaqueRow) — surface haut, `.c-plate` planche FINALE */
+  --atelier-plate-lo: #1c140c; /* rangée-plaque — surface bas */
+  --atelier-brass-meta: #8a744a; /* méta de plaque (base/annotations), `.c-plate .mt` planche FINALE */
+  --atelier-brass-roll: #c9a44a; /* bordure d'une rangée qui ROULE, `.ck-cell.rolling` planche FINALE */
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
   /* Échelle NOMMÉE des plaques de caractéristique (#418) — CONTRAT partagé par `.char-stats`
      (`CharStatsGrid`) et `.codex-kv` (fiche Codex) : sm = densité fiche/codex, md = écran plein

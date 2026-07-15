@@ -1,15 +1,16 @@
 /**
- * Assistant de création de personnage (LDB 04/05 « Personnage ») — composition « RPG vidéo »
- * en TROIS ZONES bord à bord (pas de panneaux flottants) :
+ * Assistant de création de personnage (LDB 04/05 « Personnage ») — OSSATURE 2 ZONES canonique
+ * (croquis user 2026-07-15, lot « ossature enforcée » #393), encodée dans `CreatorStepFrame` :
  *
- *   ┌ header : titre + étapes ──────────────────────────────────────────┐
- *   │ RAIL (choix/actions)  │  DÉTAIL (le travail de l'étape)  │ FICHE  │
- *   │ liste de sélection,   │  profil d'espèce, plan de        │ vivante│
- *   │ tirages, méthodes     │  carrière, grilles d'allocation… │ sticky │
- *   └ footer : précédent / validation / suivant ────────────────────────┘
+ *   ┌ header : titre + étapes ─────────────────────────────────────────┐
+ *   │ CHOIX : bande d'ACTION en tête (Choisir /   │  DESC : fiche de   │
+ *   │ Tirer aux dés — slot REQUIS du gabarit),    │  l'élue, puis      │
+ *   │ puis grille/contrôles de l'étape            │  FICHE VIVANTE     │
+ *   └ footer : précédent / validation / suivant ───────────────────────┘
  *
- * Les sections internes utilisent des séparateurs (.zone-section), pas des boîtes. La logique
- * (tirages figés, bonus de PX, validation, construction) vit dans ./draft.ts (pur).
+ * Seule l'étape Présentation garde un gabarit dédié (user 2026-07-15 : « c'est sensé être le même
+ * sauf sur le dernier écran »). La logique (tirages figés, bonus de PX, validation, construction)
+ * vit dans ./draft.ts (pur).
  */
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useGame } from '../../state/store';
@@ -42,7 +43,9 @@ import {
   skillInstanceLabel,
   SpeciesData,
   CareerData,
+  StarData,
 } from '../../data';
+import type { SourceRef } from '../../data/schemas/common';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
 import { rule } from '../../engine/policy';
 import { damageString } from '../../engine/items';
@@ -56,7 +59,6 @@ import { CharacterPreview } from '../CharacterPreview';
 import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
 import { Tabs } from '../Tabs';
-import { RuleDivider } from '../Ornaments';
 import { AppearancePanel } from '../AppearancePanel';
 import { BackgroundFields } from '../BackgroundFields';
 import { CodexRef } from '../compendium/CodexRef';
@@ -68,20 +70,20 @@ import { CharStatsGrid } from '../CharStatsGrid';
 import { opSummary } from '../editor/GameOpEditor';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { hash32 } from '../../gameIso/detail/hash';
-import { previewHero, CreatorSummary } from './CreatorSummary';
-import { CreatorStepFrame, Section, Band, XpBadge, type StepZones } from './CreatorStepFrame';
+import { previewHero } from './CreatorSummary';
+import { CreatorStepFrame, StepHeader, Section, Band, XpBadge, type StepZones } from './CreatorStepFrame';
 import { QtyStepper } from '../QtyStepper';
 import { CreatorDice } from './CreatorDice';
-import { useRollFrisson } from '../useRollFrisson';
+import { useRollFrisson, prefersReducedMotion } from '../useRollFrisson';
 import { DiceRoll, DieFace } from '../DiceRoll';
-import { d10PairFaces, d100Faces, d10Face } from '../Dice';
+import { d100Faces, d10Face } from '../Dice';
 import { CelestialWheel } from './CelestialWheel';
-import { MasterDetail } from '../MasterDetail';
 import { DetailFrame } from '../DetailFrame';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { MetalStatus } from '../MetalStatus';
 import { CareerPath } from '../CareerPath';
 import { FigTile } from '../FigTile';
+import { PlaqueRow, PlaqueGrid } from '../PlaqueRow';
 import { NotchGauge } from '../NotchGauge';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import {
@@ -93,6 +95,8 @@ import {
   withCareer,
   rollDraftSpecies,
   rollDraftCareer,
+  rollDraftChars,
+  rollDraftTalents,
   withCoastalSwap,
   coastalSwapAvailable,
   careerRollPool,
@@ -145,16 +149,19 @@ import {
 } from './draft';
 import { XP_CAREER_FIRST, XP_CAREER_TOP3, parseStatus } from '../../engine/creation';
 
-/** Métadonnées d'étape : libellé FR + fabrique de zones (rail/main) OU écran de plein rendu
- *  (`screen`, gabarit propre — étapes transposées à la charte « Atelier du scribe », #393). SOURCE
- *  UNIQUE du rendu, indexée par `StepId` stable — l'ordre ET la présence des étapes viennent de
- *  `stepIds()` (draft.ts, qui insère « Signe astral » selon la règle optionnelle ADE2), jamais
- *  d'un index positionnel codé. */
-const STEP_META: Record<StepId, { label: string; zone?: (p: StepProps) => StepZones; screen?: (p: StepProps) => ReactNode }> = {
+/** Métadonnées d'étape : libellé FR + ÉCRAN de plein rendu. Les HUIT pas passent par la MÊME porte —
+ *  un pas pose ses propres hooks puis compose `CreatorStepFrame` (seule Présentation garde un
+ *  gabarit dédié, user 2026-07-15) : le dispatcher `StepBody` n'a donc qu'une branche, sans
+ *  assertion. SOURCE UNIQUE du rendu, indexée par `StepId` stable — l'ordre ET la présence des
+ *  étapes viennent de `stepIds()` (draft.ts, qui insère « Signe astral » selon la règle optionnelle
+ *  ADE2), jamais d'un index positionnel codé. EXPORTÉE pour la garde structurelle
+ *  (`creator-ossature.test.tsx`), qui monte chaque étape via `StepBody` et vérifie les slots du
+ *  gabarit. */
+export const STEP_META: Record<StepId, { label: string; screen: (p: StepProps) => ReactNode }> = {
   species: { label: 'Race', screen: SpeciesRaceScreen },
   career: { label: 'Carrière', screen: CareerScreen },
   chars: { label: 'Caractéristiques', screen: CharScreen },
-  star: { label: 'Signe astral', zone: StarZones },
+  star: { label: 'Signe astral', screen: StarScreen },
   skills: { label: 'Compétences & Talents', screen: SkillsScreen },
   trappings: { label: 'Possessions', screen: TrappingsScreen },
   details: { label: 'Détails', screen: DetailsScreen },
@@ -179,14 +186,12 @@ function blurb(md: string | null | undefined, max = 160): string {
   const txt = mdToText(md);
   return txt.length > max ? `${txt.slice(0, max)}…` : txt;
 }
-const skillTip = (name: string) => {
-  const data = findSkill(splitLabel(name).name);
-  if (!data) return '';
-  return `${CHAR_LABELS[data.characteristic]} · Compétence ${data.type === 'base' ? 'de Base' : 'Avancée'}\n${blurb(data.desc, 280)}`;
-};
 const talentTip = (name: string) => blurb(findTalent(splitLabel(name).name)?.desc, 300);
 /** Clé de la Caractéristique liée à une compétence (« Ag »), pour annoter les listes. */
 const skillCharKey = (name: string): CharKey | null => findSkill(splitLabel(name).name)?.characteristic ?? null;
+/** Id STABLE de la Compétence désignée par une entrée d'avancement (« Corps à corps (Base) ») —
+ *  le nom gravé sur la plaque est un déclencheur Codex, comme le `.skillref` de la planche. */
+const skillIdOf = (name: string): string | undefined => findSkill(splitLabel(name).name)?.id;
 
 /** Apparence de PRÉ-SÉLECTION (rail/entête, avant tout réglage) d'une espèce par `id` rules —
  *  mêmes briques que le brouillon (`rigSpeciesId`), rendue par la primitive `CharacterPreview`.
@@ -231,6 +236,9 @@ export function CharacterCreator() {
 
   const [d, setD] = useState<CreatorDraft>(() => editing?.draft ?? newDraft());
   const [step, setStep] = useState(0);
+  // Machine à états de l'ossature (#393) : plus haute étape VALIDÉE (« Suivant » pressé depuis
+  // elle) — en y revenant, la tuile élue porte le sceau (`StepProps.validated` → FigTile.sealed).
+  const [maxStep, setMaxStep] = useState(0);
 
   const ids = stepIds();
   const curId = ids[step] ?? ids[ids.length - 1]; // garde-fou si la règle change le nombre d'étapes
@@ -260,11 +268,7 @@ export function CharacterCreator() {
     closeCreator();
   };
 
-  // Hook appelé INCONDITIONNELLEMENT (règles des hooks) — ordre stable quelle que soit l'étape
-  // active ; seule `CharZones` le consomme (via `StepProps.charReroll`).
-  const charReroll = useRollFrisson(() => setD({ ...d, charRerolls: d.charRerolls + 1 }));
-  const meta = STEP_META[curId];
-  const stepProps: StepProps = { d, setD, charReroll, skillsSub, setSkillsSub };
+  const stepProps: StepProps = { d, setD, validated: step < maxStep, skillsSub, setSkillsSub };
 
   // Récap de pied VALIDE — étapes Race/Carrière (#393 P2/P4) : le message d'erreur garde toujours
   // la priorité (cf. footer, `err ?? ...`) ; une fois le choix fait, la barre le redit.
@@ -320,13 +324,7 @@ export function CharacterCreator() {
         </p>
       )}
 
-      {/* `screen` monté en JSX (jamais en appel de fonction nue) : chaque écran-étape (Race/Carrière)
-          pose ses PROPRES hooks internes (recherche, `useRollFrisson`…) — un appel de fonction directe
-          les compterait dans les hooks de CE composant `CharacterCreator`, en ordre instable d'une
-          étape à l'autre (violation des Règles des Hooks, #393 P2 — crashait au passage Race→Carrière,
-          chacun avec un nombre de hooks internes différent). En JSX, React isole chaque écran dans son
-          PROPRE Fiber (identité = le type de composant) : bascule d'étape = démonte/remonte proprement. */}
-      {meta.screen ? <meta.screen {...stepProps} /> : <CreatorStepFrame d={d} step={step} zones={meta.zone!(stepProps)} />}
+      <StepBody id={curId} step={step} {...stepProps} />
 
       <footer className="bar">
         <button className="btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
@@ -345,7 +343,14 @@ export function CharacterCreator() {
                     : '')}
         </span>
         {step < ids.length - 1 ? (
-          <button className="btn btn-primary" disabled={!canNext} onClick={() => setStep(step + 1)}>
+          <button
+            className="btn btn-primary"
+            disabled={!canNext}
+            onClick={() => {
+              setMaxStep(Math.max(maxStep, step + 1)); // valide l'étape → sceau sur la tuile élue
+              setStep(step + 1);
+            }}
+          >
             Suivant →
           </button>
         ) : (
@@ -361,18 +366,27 @@ export function CharacterCreator() {
 type StepProps = {
   d: CreatorDraft;
   setD: (d: CreatorDraft) => void;
-  /** Frisson de la relance des dix 2d10 (LDB 05 l.385, #396 v5) — le hook DOIT être appelé
-   *  INCONDITIONNELLEMENT par le vrai composant React (`CharacterCreator`, ordre de hooks stable
-   *  quelle que soit l'étape active) puis PASSÉ à `CharZones` : les fonctions `*Zones` sont des
-   *  fabriques de JSX simples (pas des composants), y appeler un hook directement romprait les
-   *  règles des Hooks au changement d'étape. Absent (appel direct hors render, ex. tests) → repli
-   *  inerte (pas d'animation, la relance s'applique quand même). */
-  charReroll?: ReturnType<typeof useRollFrisson>;
+  /** L'étape COURANTE a déjà été validée (« Suivant » pressé depuis elle au moins une fois) —
+   *  machine à états de l'ossature (#393) : la grille scelle alors la tuile élue (`FigTile.sealed`,
+   *  sceau `WaxSeal`). Absent (montage isolé, tests) → non scellé. */
+  validated?: boolean;
   /** Sous-onglet actif de l'étape 5 (a/b/c) — levé jusqu'ici pour que le pied de page (footer,
    *  `CharacterCreator`) reflète le volet ACTIF plutôt que le premier blocage toutes-branches. */
   skillsSub?: SkillsSub;
   setSkillsSub?: (s: SkillsSub) => void;
 };
+
+/** Corps d'étape — dispatcher UNIQUE de `STEP_META` (consommé par l'assistant ET la garde
+ *  d'ossature `creator-ossature.test.tsx` : même chemin de montage, aucun double dispatch).
+ *  `screen` monté en JSX (jamais en appel de fonction nue) : chaque écran-étape pose ses PROPRES
+ *  hooks internes (recherche, `useRollFrisson`…) — un appel direct les compterait dans les hooks
+ *  du composant appelant, en ordre instable d'une étape à l'autre (violation des Règles des Hooks,
+ *  #393 P2 — crashait au passage Race→Carrière). En JSX, React isole chaque écran dans son PROPRE
+ *  Fiber (identité = le type de composant) : bascule d'étape = démonte/remonte proprement. */
+export function StepBody({ id, ...props }: StepProps & { id: StepId; step: number }) {
+  const Screen = STEP_META[id].screen;
+  return <Screen {...props} />;
+}
 
 /** Titre de la rubrique Talents de l'explorateur de carrière (LDB 05 l.288 : « Vous pouvez choisir un
  *  unique Talent » — un SEUL choix à la création, parmi les 4 du Niveau de DÉPART uniquement). Les
@@ -389,8 +403,8 @@ function LoreText({ md }: { md: string | null | undefined }) {
 }
 
 // ════ 1) Race (LDB 04 l.84-90) — charte « Atelier du scribe » (#393 P2, correction structurelle
-//      du verdict utilisateur 2026-07-14) : gabarit DEUX ZONES (compose `MasterDetail`, grille
-//      ~60 % / détail ~40 %) — liste = 7 GRANDES CARTES DE RACE (une par `SpeciesData.family`,
+//      du verdict utilisateur 2026-07-14) : ossature `CreatorStepFrame` (bande d'action = recherche
+//      + encrier ; choix ~60 % / desc ~40 %) — choix = 7 GRANDES CARTES DE RACE (une par `SpeciesData.family`,
 //      figurine généreuse + « N lignées ») ⇄ détail = la LIGNÉE choisie (chips-pills en tête du
 //      panneau, une par variante de la famille — Reiklander/Middenheim/…) puis `DetailFrame` de la
 //      lignée élue. Le brouillon reste keyé sur `speciesId` (id de LIGNÉE, ex. `humains-reiklander`)
@@ -398,7 +412,7 @@ function LoreText({ md }: { md: string | null | undefined }) {
 //      (`withSpecies`/`rollDraftSpecies` inchangés). Pas de fiche vivante à cette étape (arbitrage
 //      2026-07-14) : mort du call-site Race de `FacetedPickGrid` — Carrière (#393 P2 volet Carrière)
 //      transpose son propre call-site séparément, `FacetedPickGrid` reste son composant jusque-là.
-export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
+export function SpeciesRaceScreen({ d, setD, validated }: StepProps): ReactNode {
   const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -486,14 +500,17 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
     </div>
   );
 
-  const list = (
-    <>
-      <div className="creator-pick-toolbar">
-        <div className="creator-pick-search">
-          <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une race…" />
-        </div>
-        {diceCell}
+  // Bande d'ACTION (slot requis de l'ossature) : recherche + encrier de tirage en rangée unique.
+  const action = (
+    <div className="creator-pick-toolbar">
+      <div className="creator-pick-search">
+        <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une race…" />
       </div>
+      {diceCell}
+    </div>
+  );
+  const choice = (
+    <>
       <p className="creator-pick-count">{families.length} races — {totalRaces} lignées</p>
       <div ref={gridRef} role="listbox" aria-label="Choix de la race" className="creator-race-grid" onKeyDown={onGridKeyDown}>
         {visibleFamilies.map((f, idx) => {
@@ -511,6 +528,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
               label={f.family}
               sub={`${f.list.length} lignée${f.list.length > 1 ? 's' : ''}`}
               selected={selected}
+              sealed={!!validated && selected}
               ambiance="panel"
               tabIndex={idx === activeFamilyIdx ? 0 : -1}
               className={rolled ? 'rolled' : undefined}
@@ -522,7 +540,6 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
     </>
   );
 
-  const bookLabel = sp?.source ? findBookById(sp.source.book)?.label ?? sp.source.book : undefined;
 
   const detail = !sp ? (
     <p className="hint">
@@ -550,7 +567,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
         ) : undefined
       }
       name={<CodexRef category="races" id={sp.id} label={sp.label}>{sp.label}</CodexRef>}
-      sub={bookLabel && sp.source ? `${bookLabel} p. ${sp.source.page}` : undefined}
+      sub={sourceSub(sp.source)}
       meta={
         <>
           <span className="chip">Mouvement <b>{sp.movement}</b></span>
@@ -591,11 +608,11 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
     />
   );
 
-  return <MasterDetail className="creator-pick-shell" listLabel="Choix de la race" list={list} detail={detail} />;
+  return <CreatorStepFrame d={d} step={stepIds().indexOf('species')} label="Choix de la race" zones={{ action, choice, desc: detail }} />;
 }
 
-// ════ 2) Carrière (LDB 05 l.186-365) — charte « Atelier du scribe » (#393 P2, MÊME gabarit DEUX
-//      ZONES que Race, `MasterDetail`) : liste = TOUTES les classes en SECTIONS empilées
+// ════ 2) Carrière (LDB 05 l.186-365) — charte « Atelier du scribe » (#393 P2, MÊME ossature
+//      `CreatorStepFrame` que Race) : choix = TOUTES les classes en SECTIONS empilées
 //      (`GroupedPickGrid`, une tuile-figurine compacte par carrière — `FigTile`/`CharacterPreview`,
 //      ~6-7 par rangée, maquette ratifiée `finale-mock1-carriere.png`, corrigé 2026-07-14 : le brief
 //      « nominatif sans figurine » venait du croquis initial, la planche RATIFIÉE montre bien de
@@ -604,7 +621,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
 //      consommateur, #393 P2) : le fichier meurt avec lui. Mécanique INCHANGÉE (`withCareer`/
 //      `rollDraftCareer`, draft.ts) — présentation seule se restructure, patron encrier de Race
 //      (rangée toolbar, résultat vit dans l'encrier plutôt qu'un mur de boutons).
-export function CareerScreen({ d, setD }: StepProps): ReactNode {
+export function CareerScreen({ d, setD, validated }: StepProps): ReactNode {
   const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
   // Table EFFECTIVE (#393 P2 correctif utilisateur) : `careersForSpecies` seule renvoie les DEUX
@@ -693,16 +710,20 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
     </div>
   );
 
-  const list = !sp ? (
+  // Bande d'ACTION (slot requis de l'ossature) : recherche + encrier (désactivé tant que la race
+  // n'est pas posée — le bouton reste PRÉSENT, croquis « boutons toujours présents »).
+  const action = (
+    <div className="creator-pick-toolbar">
+      <div className="creator-pick-search">
+        <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une carrière…" />
+      </div>
+      {diceCell}
+    </div>
+  );
+  const choice = !sp ? (
     <p className="hint">Choisissez d'abord une race pour découvrir les carrières accessibles.</p>
   ) : (
     <>
-      <div className="creator-pick-toolbar">
-        <div className="creator-pick-search">
-          <SearchFilterField value={search} onChange={setSearch} icon placeholder="Rechercher une carrière…" />
-        </div>
-        {diceCell}
-      </div>
       <div className="row-flex creator-pick-filters">
         <button
           type="button"
@@ -733,11 +754,16 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
         )}
         <span className="creator-pick-count">{sectionsAll.length} classes — {accessible.length} carrières</span>
       </div>
-      <GroupedPickGrid sections={sections} selectedId={d.careerId || undefined} onSelect={(id) => setD(withCareer(d, id))} label="Choix de la carrière" />
+      <GroupedPickGrid
+        sections={sections}
+        selectedId={d.careerId || undefined}
+        sealedId={validated ? d.careerId || undefined : undefined}
+        onSelect={(id) => setD(withCareer(d, id))}
+        label="Choix de la carrière"
+      />
     </>
   );
 
-  const bookLabel = career?.source ? findBookById(career.source.book)?.label ?? career.source.book : undefined;
 
   const detail = !sp ? (
     <p className="hint">Sélectionnez d'abord une race (étape précédente).</p>
@@ -746,7 +772,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
   ) : (
     <DetailFrame
       name={<CodexRef category="careers" id={career.id} label={career.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>}
-      sub={bookLabel && career.source ? `${bookLabel} p. ${career.source.page}` : undefined}
+      sub={sourceSub(career.source)}
       meta={
         <>
           {career.class && (
@@ -811,7 +837,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
     />
   );
 
-  return <MasterDetail className="creator-pick-shell" listLabel="Choix de la carrière" list={list} detail={detail} />;
+  return <CreatorStepFrame d={d} step={stepIds().indexOf('career')} label="Choix de la carrière" zones={{ action, choice, desc: detail }} />;
 }
 
 // ════ 3) Caractéristiques (LDB 05 l.370-491) — charte « Atelier du scribe » (#393 P3bis, correctif
@@ -821,7 +847,11 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
 //      `finale-mock2-caracteristiques.png`) : La méthode (segmenté) → Le tirage (grille + jauge N/10)
 //      → Augmentations gratuites (0ter, la maquette a PERDU ce bloc — transposé ICI, même bandage que
 //      Destin & Résilience, jamais supprimé) → Destin & Résilience. Mécanique INCHANGÉE (draft.ts).
-export function CharScreen({ d, setD, charReroll }: StepProps): ReactNode {
+/** Cadence de la cérémonie séquentielle des dix 2d10 (#393 agentivité) — chaque rangée roule
+ *  ~400 ms avant de figer sa paire (clic sur la rangée qui roule = tout révéler, même impatience
+ *  que `useRollFrisson.skip`). */
+const CHAR_SEQ_MS = 400;
+export function CharScreen({ d, setD }: StepProps): ReactNode {
   const sp = draftSpecies(d);
   const rolls = charRolls(d);
   const pairs = charRollPairs(d);
@@ -830,180 +860,246 @@ export function CharScreen({ d, setD, charReroll }: StepProps): ReactNode {
   const allocTotal = Object.values(d.charAdvancesAlloc).reduce((a, b) => a + (b ?? 0), 0);
   const pbTotal = CHAR_KEYS.reduce((a, k) => a + d.pointBuy[k], 0);
   const splitTotal = d.fateSplit.fate + d.fateSplit.resilience;
-  // Relance des dix jets (LDB 05 l.385) : MÊME primitive de frisson que les autres tirages du
-  // créateur (arbitrage user « pareil pour toutes les modales », #396 v5) — un unique roulis pilote
-  // les DIX rangées (une relance touche les dix jets à la fois) ; chaque rangée anime sa PROPRE paire
-  // réelle (`pairs[i]`, `charRollPairs`), jamais une valeur reconstruite depuis la somme. Le hook vit
-  // dans `CharacterCreator` (appel inconditionnel, cf. `StepProps.charReroll`) ; repli inerte hors render.
-  const reroll = charReroll ?? { rolling: false, landed: false, trigger: () => setD({ ...d, charRerolls: d.charRerolls + 1 }), skip: () => {} };
+  // CÉRÉMONIE SÉQUENTIELLE des dix 2d10 (#393 agentivité) : aucun dé à l'écran avant le geste
+  // « Tirer aux dés » (caracs à « — ») ; le geste commit le brouillon (`rollDraftChars` — valeurs
+  // figées par le seed, découvertes seulement) puis les rangées roulent UNE PAR UNE (`seq` = rangée
+  // en cours, jauge N/10) ; chaque rangée fige sa PROPRE paire réelle (`pairs[i]`, `charRollPairs`),
+  // jamais une valeur reconstruite depuis la somme. La relance (LDB 05 l.385, bonus perdus) rejoue
+  // la MÊME cérémonie. `prefers-reduced-motion` (source unique `prefersReducedMotion`) saute le
+  // théâtre : tout se révèle au clic.
+  const [seq, setSeq] = useState<number | null>(null);
+  useEffect(() => {
+    if (seq == null) return;
+    if (seq >= CHAR_KEYS.length) { setSeq(null); return; }
+    const t = window.setTimeout(() => setSeq(seq + 1), CHAR_SEQ_MS);
+    return () => window.clearTimeout(t);
+  }, [seq]);
+  const startCeremony = (next: CreatorDraft) => {
+    setD(next);
+    if (!prefersReducedMotion()) setSeq(0);
+  };
 
+  const stepIdx = stepIds().indexOf('chars');
   if (!sp) {
     return (
-      <div className="creator-chars-screen">
-        <div className="creator-chars-shell">
-          <div className="creator-chars-main">
-            <p className="hint">Choisissez d'abord une race pour répartir vos Caractéristiques.</p>
-          </div>
-        </div>
-      </div>
+      <CreatorStepFrame
+        d={d}
+        step={stepIdx}
+        label="Caractéristiques"
+        zones={{ action: null, choice: <p className="hint">Choisissez d'abord une race pour répartir vos Caractéristiques.</p> }}
+      />
     );
   }
 
-  const tiredCount = d.charMode === 'rolled' ? (reroll.rolling ? 0 : 10) : 0;
-  const tirageTitle = d.charMode === 'rolled' ? 'Le tirage — 2d10 par Caractéristique' : d.charMode === 'reassigned' ? 'Réassignation des dix jets' : 'Répartition des points';
+  // Jauge HONNÊTE de la cérémonie : 0 avant le geste, N pendant le défilé séquentiel, 10 posé.
+  const tiredCount = !d.charsRolled ? 0 : seq == null ? 10 : Math.min(seq, 10);
+  // Titre de bande à la planche (`.cu-sechead .ttl` + `small`) : mot-clef en display, suite en
+  // petites capitales — même prose qu'avant, seulement scindée.
+  const [tirageMain, tirageSub] =
+    d.charMode === 'rolled' ? ['Le tirage', '2d10 par caractéristique'] : d.charMode === 'reassigned' ? ['Réassignation', 'des dix jets'] : ['Répartition', 'des points'];
 
-  return (
-    <div className="creator-chars-screen">
-      <div className="creator-chars-shell">
-        <div className="detail-frame creator-chars-main">
-          <h3 className="creator-skills-title">Caractéristiques</h3>
-          <p className="hint creator-skills-sub">Base + 2d10 — le profil se couche sur le registre</p>
+  // Bande d'ACTION (slot requis de l'ossature) : LA MÉTHODE — le choix de la voie (#393 P3bis,
+  // sélecteur PERMANENT segmenté, les trois options coexistent toujours) + le GESTE « Tirer aux
+  // dés » (carte canonique `CreatorDice`, #393 agentivité — `frisson=false` : le théâtre appartient
+  // aux rangées, pas à la carte) ; la relance RAW vit dans son verdict.
+  const action = (
+    <>
+      <StepHeader title="Caractéristiques" sub="Base + 2d10 — le profil se couche sur le registre" />
+      {/* LA MÉTHODE en mini-titre (planche : `.mini-title`, pas une barre de MÊME RANG que « Le
+          tirage »/« Destin & Résilience ») — Section, même rang que « Aux dés » dessous. */}
+      <Section title="La méthode" right={<XpBadge value={charsXp(d)} />}>
+        <OptionChooser
+          layout="seg"
+          options={[
+            { key: 'rolled', label: `Aux dés — garder le tirage`, value: undefined, mode: 'rolled' as const, px: d.charRerolls === 0 ? '+50 PX' : '+0 PX' },
+            { key: 'reassigned', label: `Aux dés — réorganiser ensuite`, mode: 'reassigned' as const, px: d.charRerolls === 0 ? '+25 PX' : '+0 PX' },
+            { key: 'pointBuy', label: 'Répartir 100 points', mode: 'pointBuy' as const, px: '0 PX' },
+          ].map(({ key, label, mode, px }) => ({
+            key,
+            label: <>{label} <em className="hint" style={{ fontStyle: 'normal' }}>{px}</em></>,
+            selected: d.charMode === mode,
+            onSelect: () => setD({ ...d, charMode: mode }),
+          }))}
+        />
+        <p className="hint" style={{ marginTop: 8 }}>
+          Chaque Caractéristique s'écrit base + 2d10 (LDB 05). Garder le tirage tel quel rapporte le plus de PX de création.
+        </p>
+      </Section>
+      {d.charMode !== 'pointBuy' && (
+        <CreatorDice
+          label="Tirer les dix jets — 2d10 par Caractéristique"
+          hint={<>Garder le tirage : +50 PX · réorganiser ensuite : +25 PX · relancer : +0 PX (LDB 05).</>}
+          rolled={!!d.charsRolled}
+          xp={charsXp(d)}
+          frisson={false}
+          onRoll={() => startCeremony(rollDraftChars(d))}
+        >
+          <button className="btn small" disabled={seq != null} onClick={() => startCeremony({ ...d, charRerolls: d.charRerolls + 1 })}>
+            <Icon id="nav/dice" size="sm" /> Relancer les dix jets (bonus perdus)
+          </button>
+        </CreatorDice>
+      )}
+    </>
+  );
 
-          {/* LA MÉTHODE (#393 P3bis) : sélecteur PERMANENT segmenté — les trois options coexistent
-              toujours (pas une cérémonie de tirage unique). */}
-          <Band title="La méthode" right={<XpBadge value={charsXp(d)} />}>
-            <OptionChooser
-              layout="seg"
-              options={[
-                { key: 'rolled', label: `Aux dés — garder le tirage`, value: undefined, mode: 'rolled' as const, px: d.charRerolls === 0 ? '+50 PX' : '+0 PX' },
-                { key: 'reassigned', label: `Aux dés — réorganiser ensuite`, mode: 'reassigned' as const, px: d.charRerolls === 0 ? '+25 PX' : '+0 PX' },
-                { key: 'pointBuy', label: 'Répartir 100 points', mode: 'pointBuy' as const, px: '0 PX' },
-              ].map(({ key, label, mode, px }) => ({
-                key,
-                label: <>{label} <em className="hint" style={{ fontStyle: 'normal' }}>{px}</em></>,
-                selected: d.charMode === mode,
-                onSelect: () => setD({ ...d, charMode: mode }),
-              }))}
-            />
-            <p className="hint" style={{ marginTop: 8 }}>
-              Chaque Caractéristique s'écrit base + 2d10 (LDB 05). Garder le tirage tel quel rapporte le plus de PX de création.
-            </p>
-          </Band>
-
-          {/* LE TIRAGE (#393 P3bis) : jauge « N/10 tirées » en tête de bande — les DIX Caractéristiques
-              roulent EN UN SEUL geste (`charReroll`, seed unique, LDB 05 l.385) ; la jauge reflète
-              honnêtement ce mécanisme simultané (0/10 pendant le roulis, 10/10 posé). */}
+  const choice = (
+    <>
+          {/* LE TIRAGE (#393 P3bis + agentivité) : jauge « N/10 tirées » en tête de bande — avant le
+              geste rien n'est tiré (0/10, rangées à « — ») ; la cérémonie séquentielle révèle les
+              rangées une à une (jauge qui monte), 10/10 posé. */}
           <Band
-            title={tirageTitle}
+            title={<>{tirageMain}<small>{tirageSub}</small></>}
             right={
               d.charMode === 'pointBuy' ? (
                 <b className={pbTotal === 100 ? 'ok-text' : 'warn-text'}>Points : {pbTotal}/100</b>
-              ) : d.charMode === 'rolled' ? (
+              ) : (
                 <NotchGauge value={tiredCount} max={10} notches={10} format={(v, m) => `${v}/${m} tirées`} tone={tiredCount === 10 ? 'ok' : 'neutral'} />
-              ) : undefined
+              )
             }
           >
-            <p className="hint" style={{ margin: '4px 0 10px' }}>
-              Vous réglez ici la valeur d'ÉDITION (base d'espèce + tirage/allocation) ; la fiche vivante en montre
-              le résultat. Les Caractéristiques <span className="tag char">carrière</span> progressent au coût normal
-              en PX et comptent pour la complétion du Niveau ; l'Initiative départage l'ordre du combat.
-            </p>
-            <div className="char-alloc-grid">
-              {CHAR_KEYS.map((k, i) => (
-                <div key={k} className={`char-alloc${d.charMode === 'rolled' && reroll.rolling ? ' rolled' : ''}`}>
-                  <CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]} className="char-key">{CHAR_ABR[k]}</CodexRef>
-                  <span className="char-name">
-                    {CHAR_LABELS[k]}
-                    {careerKeys.includes(k) && <span className="tag char">carrière</span>}
-                  </span>
-                  <em>base {sp.baseChar[k] ?? 20}</em>
-                  {d.charMode === 'rolled' && (reroll.rolling || reroll.landed) ? (
-                    <span className="char-roll row-flex">
-                      <DiceRoll scene={false} landed={reroll.landed} faces={reroll.landed ? d10PairFaces(pairs[i]) : null} onSkip={reroll.skip} />
-                    </span>
-                  ) : d.charMode === 'rolled' ? (
-                    <span className="char-roll row-flex">
-                      <span className="rm-die char-die"><DieFace n={pairs[i][0]} landed /></span>
-                      <span className="rm-die char-die"><DieFace n={pairs[i][1]} landed /></span>
-                    </span>
-                  ) : null}
-                  {d.charMode === 'reassigned' && (
-                    <select
-                      value={d.assignment[k]}
-                      onChange={(e) => {
-                        const idx = Number(e.target.value);
-                        const holder = CHAR_KEYS.find((kk) => d.assignment[kk] === idx)!; // échange → permutation garantie
-                        setD({ ...d, assignment: { ...d.assignment, [k]: idx, [holder]: d.assignment[k] } });
-                      }}
-                    >
-                      {rolls.map((r, j) => (
-                        <option key={j} value={j}>
-                          +{r}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  {d.charMode === 'pointBuy' && (
-                    <AllocStepper value={d.pointBuy[k]} min={4} max={18} onChange={(v) => setD({ ...d, pointBuy: { ...d.pointBuy, [k]: v } })} label={CHAR_LABELS[k]} />
-                  )}
-                  <b className="char-total">{chars[k]}</b>
-                </div>
-              ))}
-            </div>
-            {d.charMode !== 'pointBuy' && (
-              <button className="btn small" style={{ marginTop: 10 }} onClick={() => reroll.trigger()}>
-                <Icon id="nav/dice" size="sm" /> Relancer les dix jets (bonus perdus)
-              </button>
-            )}
+            <PlaqueGrid>
+              {CHAR_KEYS.map((k, i) => {
+                // revealed : la rangée a livré sa paire (cérémonie passée dessus, ou tirage posé).
+                const revealed = !!d.charsRolled && (seq == null || i < seq);
+                const rowRolling = seq === i;
+                return (
+                  <PlaqueRow
+                    key={k}
+                    rolling={rowRolling}
+                    prefix={<CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_ABR[k]}</CodexRef>}
+                    name={
+                      <>
+                        {CHAR_LABELS[k]}
+                        {careerKeys.includes(k) && <span className="tag char">carrière</span>}
+                      </>
+                    }
+                    // La base est la RUBRIQUE de la plaque, pas un item de méta : la planche la pose
+                    // SOUS le nom (`.ck-cell .id > .rf`, « base 20 »), jamais à sa droite. En méta
+                    // (`white-space:nowrap`) elle disputait la largeur au nom — d'où « Initiative »
+                    // qui chevauchait « base 20 » dans une colonne de grille à deux.
+                    sub={`base ${sp.baseChar[k] ?? 20}`}
+                    meta={
+                      <>
+                        {d.charMode !== 'pointBuy' && rowRolling && (
+                          <span className="row-flex">
+                            <DiceRoll scene={false} landed={false} faces={null} onSkip={() => setSeq(null)} />
+                          </span>
+                        )}
+                        {d.charMode !== 'pointBuy' && !rowRolling && !revealed && (
+                          <span className="row-flex">
+                            <span className="rm-die"><DieFace n={null} landed /></span>
+                            <span className="rm-die"><DieFace n={null} landed /></span>
+                          </span>
+                        )}
+                        {d.charMode === 'rolled' && revealed && (
+                          <span className="row-flex">
+                            <span className="rm-die"><DieFace n={pairs[i][0]} landed /></span>
+                            <span className="rm-die"><DieFace n={pairs[i][1]} landed /></span>
+                          </span>
+                        )}
+                        {d.charMode === 'reassigned' && revealed && (
+                          <select
+                            value={d.assignment[k]}
+                            onChange={(e) => {
+                              const idx = Number(e.target.value);
+                              const holder = CHAR_KEYS.find((kk) => d.assignment[kk] === idx)!; // échange → permutation garantie
+                              setD({ ...d, assignment: { ...d.assignment, [k]: idx, [holder]: d.assignment[k] } });
+                            }}
+                          >
+                            {rolls.map((r, j) => (
+                              <option key={j} value={j}>
+                                +{r}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        {d.charMode === 'pointBuy' && (
+                          <AllocStepper value={d.pointBuy[k]} min={4} max={18} onChange={(v) => setD({ ...d, pointBuy: { ...d.pointBuy, [k]: v } })} label={CHAR_LABELS[k]} />
+                        )}
+                      </>
+                    }
+                    value={d.charMode !== 'pointBuy' && !revealed ? '—' : chars[k]}
+                  />
+                );
+              })}
+            </PlaqueGrid>
           </Band>
 
           {/* AUGMENTATIONS GRATUITES (arbitrage 0ter, 2026-07-15) : la maquette a PERDU ce bloc — la
               MÉCANIQUE (5 Augmentations de carrière) reste, transposée au même bandage que Destin &
               Résilience plutôt qu'un widget recopié de l'ancien créateur. */}
           <Band
-            title={`Augmentations gratuites — ${allocTotal}/${CAREER_CHAR_ADVANCES} à répartir`}
+            title={<>Augmentations gratuites<small>{CAREER_CHAR_ADVANCES} sur les Caractéristiques de carrière</small></>}
             right={<b className={allocTotal === CAREER_CHAR_ADVANCES ? 'ok-text' : 'warn-text'}>{allocTotal}/{CAREER_CHAR_ADVANCES}</b>}
           >
-            <p className="hint" style={{ margin: '4px 0 10px' }}>À répartir sur les Caractéristiques de votre carrière.</p>
-            <div className="skill-row-grid">
+            <PlaqueGrid>
               {careerKeys.map((k) => (
-                <div key={k} className="skill-row">
-                  <span className="skill-row-label"><CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef></span>
-                  <AllocStepper
-                    value={d.charAdvancesAlloc[k] ?? 0}
-                    max={Math.min(CAREER_CHAR_ADVANCES, (d.charAdvancesAlloc[k] ?? 0) + (CAREER_CHAR_ADVANCES - allocTotal))}
-                    onChange={(v) => setD({ ...d, charAdvancesAlloc: { ...d.charAdvancesAlloc, [k]: v } })}
-                    label={CHAR_LABELS[k]}
-                  />
-                </div>
+                <PlaqueRow
+                  key={k}
+                  name={<CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef>}
+                  meta={
+                    <AllocStepper
+                      value={d.charAdvancesAlloc[k] ?? 0}
+                      max={Math.min(CAREER_CHAR_ADVANCES, (d.charAdvancesAlloc[k] ?? 0) + (CAREER_CHAR_ADVANCES - allocTotal))}
+                      onChange={(v) => setD({ ...d, charAdvancesAlloc: { ...d.charAdvancesAlloc, [k]: v } })}
+                      label={CHAR_LABELS[k]}
+                    />
+                  }
+                />
               ))}
-            </div>
+            </PlaqueGrid>
           </Band>
 
           <Band
-            title={`Destin & Résilience — +${sp.fate.extra} à répartir`}
+            title={<>Destin &amp; Résilience<small>+{sp.fate.extra} à répartir</small></>}
             right={<b className={splitTotal === sp.fate.extra ? 'ok-text' : 'warn-text'}>{splitTotal}/{sp.fate.extra}</b>}
           >
-            <p className="hint" style={{ margin: '4px 0 10px' }}>
+            <p className="hint">
               <Icon id="resource/fate" size="sm" /> Destin : survie & Chance. <Icon id="resource/resilience" size="sm" /> Résilience :
               Détermination (votre Motivation la recharge).
             </p>
-            <div className="skill-row-grid">
-              <div className="skill-row">
-                <span className="skill-row-label"><Icon id="resource/fate" size="sm" /> Destin<em>race : {sp.fate.fate}</em></span>
-                <AllocStepper
-                  value={d.fateSplit.fate}
-                  max={Math.min(sp.fate.extra, d.fateSplit.fate + (sp.fate.extra - splitTotal))}
-                  onChange={(v) => setD({ ...d, fateSplit: { ...d.fateSplit, fate: v } })}
-                  label="Destin"
-                />
-              </div>
-              <div className="skill-row">
-                <span className="skill-row-label"><Icon id="resource/resilience" size="sm" /> Résilience<em>race : {sp.fate.resilience}</em></span>
-                <AllocStepper
-                  value={d.fateSplit.resilience}
-                  max={Math.min(sp.fate.extra, d.fateSplit.resilience + (sp.fate.extra - splitTotal))}
-                  onChange={(v) => setD({ ...d, fateSplit: { ...d.fateSplit, resilience: v } })}
-                  label="Résilience"
-                />
-              </div>
-            </div>
+            <PlaqueGrid>
+              <PlaqueRow
+                name={<><Icon id="resource/fate" size="sm" /> Points de Destin</>}
+                meta={
+                  <>
+                    <em>race : {sp.fate.fate}</em>
+                    <AllocStepper
+                      value={d.fateSplit.fate}
+                      max={Math.min(sp.fate.extra, d.fateSplit.fate + (sp.fate.extra - splitTotal))}
+                      onChange={(v) => setD({ ...d, fateSplit: { ...d.fateSplit, fate: v } })}
+                      label="Destin"
+                    />
+                  </>
+                }
+              />
+              <PlaqueRow
+                name={<><Icon id="resource/resilience" size="sm" /> Points de Résilience</>}
+                meta={
+                  <>
+                    <em>race : {sp.fate.resilience}</em>
+                    <AllocStepper
+                      value={d.fateSplit.resilience}
+                      max={Math.min(sp.fate.extra, d.fateSplit.resilience + (sp.fate.extra - splitTotal))}
+                      onChange={(v) => setD({ ...d, fateSplit: { ...d.fateSplit, resilience: v } })}
+                      label="Résilience"
+                    />
+                  </>
+                }
+              />
+            </PlaqueGrid>
+            {/* NOTE DE PIED de la planche (`.c-note` à `margin-top:auto`, mock2) : la pédagogie du
+                profil quitte la bande « Le tirage » pour le pied de la zone de travail. */}
+            <p className="hint">
+              Vous réglez ici la valeur d'ÉDITION (base d'espèce + tirage/allocation) ; la fiche vivante en montre
+              le résultat. Les Caractéristiques <span className="tag char">carrière</span> progressent au coût normal
+              en PX et comptent pour la complétion du Niveau ; l'Initiative départage l'ordre du combat.
+            </p>
           </Band>
-        </div>
-        <CreatorSummary d={d} step={stepIds().indexOf('chars')} />
-      </div>
-    </div>
+    </>
   );
+
+  return <CreatorStepFrame d={d} step={stepIdx} label="Caractéristiques" zones={{ action, choice }} />;
 }
 
 /** Adapte `QtyStepper` (primitive canonique, table CLAUDE.md) au vocabulaire LINÉAIRE de l'allocation
@@ -1052,80 +1148,108 @@ function SpecSelect({ d, setD, raw }: StepProps & { raw: string }) {
   );
 }
 
-// ════ 3bis) Signe astral (ADE2 ch.03, optionnel) — Zone A : « Aux dés » + ROUE CÉLESTE ; Zone B : sens + astrologie ════
-export function StarZones({ d, setD }: StepProps): StepZones {
+/** Les POSITIONS de la roue céleste = les VINGT fourchettes d100 de la table RAW (ADE2 ch.03 l.36-56,
+ *  « Les 20 signes »), pas les 23 entrées de `stars.json` : L'Étoile du Sorcier (96-00) porte QUATRE
+ *  destins (sous-table 1d10, `StarData.sub`) qui partagent sa borne `rand` et se déplient en plaques
+ *  une fois l'aiguille posée. Grouper ICI est ce qui rend le cadran lisible — les quatre destins
+ *  occupaient quatre positions voisines sous le MÊME nom, d'où le télescopage du pôle nord.
+ *  Clé de position = la borne `rand` (donnée RAW stable, jamais un libellé). Dérivée une fois : les
+ *  données sont statiques et immuables. */
+const STAR_POSITIONS = (() => {
+  const byRand = new Map<number, StarData[]>();
+  for (const s of [...starsTable].sort((a, b) => a.rand - b.rand)) {
+    const at = byRand.get(s.rand) ?? byRand.set(s.rand, []).get(s.rand)!;
+    at.push(s);
+  }
+  let prev = 0;
+  return [...byRand.entries()].map(([rand, members]) => {
+    const from = prev + 1;
+    prev = rand;
+    // Plusieurs destins ⇒ ils ne diffèrent que par leur spec entre parenthèses : la position porte
+    // le nom NU du signe (« L'Étoile du Sorcier »), les destins leur spec.
+    const label = members.length > 1 ? splitLabel(members[0].label).name : members[0].label;
+    return { key: String(rand), rand, from, members, label };
+  });
+})();
+
+/** Tagline SOURCÉE d'une entrée de donnée (« Archives de l'Empire II p. 41 ») — `DetailFrame.sub`
+ *  n'accepte rien d'autre qu'une réf de source, et trois étapes la composaient à l'identique. */
+function sourceSub(source: SourceRef | undefined): string | undefined {
+  if (!source) return undefined;
+  return `${findBookById(source.book)?.label ?? source.book} p. ${source.page}`;
+}
+
+// ════ 3bis) Signe astral (ADE2 ch.03, optionnel) — ossature `CreatorStepFrame`, étalon planche
+//      FINALE mock « 4 — Signe astral » : bande d'ACTION (en-tête + note + encrier d100) ; CHOIX =
+//      l'ASTROLABE et, à sa droite, le `DetailFrame` du signe élu ; DESC = fiche vivante (défaut du
+//      gabarit). Un ÉCRAN (et non des `zones` nues) parce que le pas pose son propre état d'UI. ════
+export function StarScreen({ d, setD }: StepProps) {
+  // Position POINTÉE sans destin encore élu (L'Étoile du Sorcier : la roue déplie ses quatre destins,
+  // le joueur en choisit un). État d'UI PUR — le brouillon ne connaît que `star`, l'id du destin élu.
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
   const sign = d.star ? starsTable.find((s) => s.id === d.star) : undefined; // d.star = id STABLE
+  const selPos = STAR_POSITIONS.find((p) => p.members.some((m) => m.id === d.star)) ?? STAR_POSITIONS.find((p) => p.key === pendingKey);
   // Talent « (Au choix) » octroyé par le signe (ex. Maître artisan) → spec à préciser (réutilise specChoices).
   const grantChoice = sign?.effect?.flatMap((o) => (o.op === 'grantTalent' && isUnresolvedChoice(talentConcrete(o)) ? [talentConcrete(o)] : []))[0];
   const grantOpts = grantChoice ? specOptionsFor(grantChoice) : [];
 
-  const dice = (
-    <CreatorDice
-      label="Tirer le signe astral (d100)"
-      hint="Gardez le tirage : +25 PX (ADE2 ch.03) · Choix libre : +0 PX."
-      rolled={!!d.starRoll}
-      xp={starXp(d)}
-      roll={d.starRollValue}
-      onRoll={() => setD(rollDraftStar(d))}
-    >
-      <p className="hint" style={{ marginTop: 0 }}>
-        Signe tiré : <b>{starsTable.find((s) => s.id === d.starRoll)?.label ?? '—'}</b> — gardez-le ou choisissez librement sur la roue.
+  const pickPos = (key: string) => {
+    const pos = STAR_POSITIONS.find((p) => p.key === key);
+    if (!pos) return;
+    setPendingKey(key);
+    // Un seul destin ⇒ l'élection est immédiate ; plusieurs ⇒ RIEN n'est élu tant que le joueur n'a
+    // pas choisi son destin (jamais un destin imposé d'office — agentivité, amendement #393).
+    setD({ ...d, star: pos.members.length === 1 ? pos.members[0].id : undefined });
+  };
+
+  // Bande d'ACTION (slot requis de l'ossature) : en-tête + note de la planche + encrier d100.
+  const action = (
+    <>
+      <StepHeader title="Signe astral" sub={`La roue céleste — ${STAR_POSITIONS.length} signes · Archives de l'Empire II`} />
+      <p className="hint" style={{ margin: '0 0 8px' }}>
+        Tourner la roue à la main choisit librement ; le d100 s'arrête sur la fourchette du signe tiré.
       </p>
-    </CreatorDice>
+      <CreatorDice
+        label="Tirer aux dés — son signe au hasard : +25 PX"
+        hint="Gardez le tirage : +25 PX (ADE2 ch.03) · Choix libre : +0 PX."
+        rolled={!!d.starRoll}
+        xp={starXp(d)}
+        roll={d.starRollValue}
+        onRoll={() => {
+          setPendingKey(null);
+          setD(rollDraftStar(d));
+        }}
+      >
+        <p className="hint" style={{ marginTop: 0 }}>
+          Signe tiré : <b>{starsTable.find((s) => s.id === d.starRoll)?.label ?? '—'}</b> — gardez-le ou choisissez librement sur la roue.
+        </p>
+      </CreatorDice>
+    </>
   );
 
-  // Rail SANS zone « choix » propre (#393 P3, étalon `finale-mock3-signe.png`) : la roue céleste est
-  // le TRAVAIL de l'étape (Zone B, large), pas un contrôle annexe du rail — seul l'encrier d100 y reste.
-  const choice = null;
-
-  const body = (
+  // Zone de CHOIX : l'astrolabe à gauche, le sens du signe à droite (planche — description PLEINE
+  // hauteur à côté de la roue, jamais sous elle).
+  const choice = (
     <div className="appear-panel">
       <div className="star-wheel-col">
-        <p className="creator-pick-count">La roue céleste — {starsTable.length} signes — Archives de l'Empire II</p>
         <CelestialWheel
-          signs={starsTable.map((s) => ({ id: s.id, label: s.label }))}
-          selectedId={d.star}
-          onSelect={(id) => setD({ ...d, star: id })}
+          signs={STAR_POSITIONS.map((p) => ({ key: p.key, label: p.label, roll: p.rand }))}
+          selectedKey={selPos?.key}
+          onSelect={pickPos}
+          placeholder="Tirez ou choisissez votre signe"
+          hub={
+            selPos && {
+              title: selPos.label,
+              // La rubrique du moyeu n'est gravée que si la POSITION en porte une seule : les quatre
+              // destins de L'Étoile du Sorcier partagent « Signe de la Magie » (elle vaut donc pour
+              // la position), là où des destins discordants ne pourraient pas se résumer d'un mot.
+              sub: selPos.members.every((m) => m.signe === selPos.members[0].signe) ? selPos.members[0].signe : null,
+              note: `d100 : ${selPos.from === selPos.rand ? selPos.rand : `${selPos.from}-${selPos.rand}`}`,
+            }
+          }
         />
-        {sign && (
-          <button className="btn small" style={{ marginTop: 8 }} onClick={() => setD({ ...d, star: undefined })}>
-            Aucun signe
-          </button>
-        )}
-        {grantChoice && grantOpts.length > 0 && (
-          <label style={{ marginTop: 10 }}>
-            {splitLabel(grantChoice).name}
-            <select
-              value={d.specChoices[grantChoice] ?? ''}
-              onChange={(e) => {
-                const specChoices = { ...d.specChoices };
-                if (e.target.value) specChoices[grantChoice] = e.target.value; // spec SEULE, jamais un libellé complet
-                else delete specChoices[grantChoice];
-                setD({ ...d, specChoices });
-              }}
-            >
-              <option value="">— au choix —</option>
-              {grantOpts.map((o) => <option key={o} value={o}>{o}</option>)}
-            </select>
-          </label>
-        )}
-      </div>
-      <div className="appear-controls">
-        <Section title={sign ? sign.label : 'Sous quel signe êtes-vous né ?'}>
-          {sign ? (
-            <>
-              <p className="hint" style={{ margin: '0 0 8px' }}>{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
-              {!!sign.effect?.length && (
-                <div className="skill-tags" style={{ marginBottom: 10 }}>
-                  {sign.effect.map((o, i) => <span key={i} className="tag">{opSummary(o)}</span>)}
-                </div>
-              )}
-              <LoreText md={sign.desc} />
-            </>
-          ) : (
-            <p className="hint">Choisissez ou tirez votre signe astral (ADE2 ch.03) — son sens apparaîtra ici.</p>
-          )}
-        </Section>
+        {/* Astrologie : flavor PUR (ADE2 ch.03 l.502-512, aucun effet de jeu) — sous le cadran, là où
+            la roue laisse sa marge, jamais en concurrence avec le sens du signe. */}
         <Section title="Astrologie (pur roleplay)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}><Icon id="nav/dice" size="sm" /> Thème astral</button>}>
           {d.ascendant || d.dwellings?.length ? (
             <div className="lore-text">
@@ -1141,11 +1265,79 @@ export function StarZones({ d, setD }: StepProps): StepZones {
           )}
         </Section>
       </div>
+      <div className="appear-controls">
+        {selPos && selPos.members.length > 1 && (
+          <Section title="Quatre destins — 1d10 (ADE2 ch.03)">
+            <PlaqueGrid>
+              {selPos.members.map((m) => (
+                <PlaqueRow
+                  key={m.id}
+                  name={splitLabel(m.label).spec ?? m.label}
+                  meta={m.sub && <span className="hint">1d10 : {m.sub[0] === m.sub[1] ? m.sub[0] : `${m.sub[0]}-${m.sub[1]}`}</span>}
+                  selected={m.id === d.star}
+                  onClick={() => setD({ ...d, star: m.id })}
+                />
+              ))}
+            </PlaqueGrid>
+          </Section>
+        )}
+        {sign ? (
+          <DetailFrame
+            name={<CodexRef category="stars" id={sign.id} label={sign.label}>{sign.label}</CodexRef>}
+            sub={sourceSub(sign.source)}
+            meta={
+              <>
+                {sign.signe && <span className="chip">{sign.signe}</span>}
+                {sign.dates && <span className="chip">Dates <b>{sign.dates}</b></span>}
+                {sign.dieux && <span className="chip">Dieu <b>{sign.dieux}</b></span>}
+                {sign.effect?.map((o, i) => <span key={i} className="chip">{opSummary(o)}</span>)}
+              </>
+            }
+            sections={
+              <>
+                {/* L'« apparence » d'un signe décrit la CONSTELLATION, pas le natif (ADE2 ch.03 :
+                    La Grande Croix → « un X ») — texte d'ambiance verbatim, jamais une chip de fait. */}
+                {sign.apparence && <p className="star-apparence">Au ciel : {sign.apparence}.</p>}
+                {grantChoice && grantOpts.length > 0 && (
+                  <label>
+                    {splitLabel(grantChoice).name}
+                    <select
+                      value={d.specChoices[grantChoice] ?? ''}
+                      onChange={(e) => {
+                        const specChoices = { ...d.specChoices };
+                        if (e.target.value) specChoices[grantChoice] = e.target.value; // spec SEULE, jamais un libellé complet
+                        else delete specChoices[grantChoice];
+                        setD({ ...d, specChoices });
+                      }}
+                    >
+                      <option value="">— au choix —</option>
+                      {grantOpts.map((o) => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </label>
+                )}
+                {d.star && (
+                  <button className="btn small" onClick={() => { setPendingKey(null); setD({ ...d, star: undefined }); }}>
+                    Aucun signe
+                  </button>
+                )}
+              </>
+            }
+            prose={sign.desc ?? undefined}
+            proseSelfLabel={sign.label}
+            proseSelfCategory="stars"
+          />
+        ) : (
+          <p className="hint">
+            {selPos && selPos.members.length > 1
+              ? 'L’Étoile du Sorcier ouvre quatre destins — choisissez le vôtre ci-dessus.'
+              : 'Choisissez ou tirez votre signe astral (ADE2 ch.03) — son sens apparaîtra ici.'}
+          </p>
+        )}
+      </div>
     </div>
   );
-  // Pas de `title` ici (doublon) : le corps porte déjà son propre titre via `Section`
-  // (sign.label ou la question de repli), même patron que CareerZones.
-  return { dice, choice, detail: { body } };
+
+  return <CreatorStepFrame d={d} step={stepIds().indexOf('star')} label="Signe astral" zones={{ action, choice }} />;
 }
 
 // ════ 4) Compétences & Talents (LDB 05 l.493-555) — charte « Atelier du scribe » (#393 P4, étalons
@@ -1167,15 +1359,15 @@ export function SkillsScreen({ d, setD, skillsSub, setSkillsSub }: StepProps): R
   const sp = draftSpecies(d);
   const career = findCareerById(d.careerId);
 
+  const stepIdx = stepIds().indexOf('skills');
   if (!sp || !career) {
     return (
-      <div className="creator-skills-screen">
-        <div className="creator-skills-shell">
-          <div className="creator-skills-main">
-            <p className="hint">Choisissez d'abord une race et une carrière.</p>
-          </div>
-        </div>
-      </div>
+      <CreatorStepFrame
+        d={d}
+        step={stepIdx}
+        label="Compétences & Talents"
+        zones={{ action: null, choice: <p className="hint">Choisissez d'abord une race et une carrière.</p> }}
+      />
     );
   }
 
@@ -1185,24 +1377,35 @@ export function SkillsScreen({ d, setD, skillsSub, setSkillsSub }: StepProps): R
     { key: 'talents' as const, label: <>c. Talents{talentsDone(d) ? ' ✓' : ''}</> },
   ];
 
+  // Chaque volet livre SES zones (bande d'action + choix) — le gabarit les pose, le volet ne
+  // décide pas où son geste atterrit.
+  const pane =
+    sub === 'race' ? speciesSkillsZones(d, setD, sp) : sub === 'career' ? careerSkillsZones(d, setD) : talentsZones(d, setD);
+
   return (
-    <div className="creator-skills-screen">
-      <Tabs tabs={tabs} active={sub} onChange={setSub} label="Sous-étape Compétences & Talents" className="creator-skills-tabnav" />
-      <div className="creator-skills-shell">
-        <div className="creator-skills-main">
-          {sub === 'race' && <SpeciesSkillsPane d={d} setD={setD} sp={sp} />}
-          {sub === 'career' && <CareerSkillsPane d={d} setD={setD} />}
-          {sub === 'talents' && <TalentsPane d={d} setD={setD} sp={sp} />}
-        </div>
-        <CreatorSummary d={d} step={stepIds().indexOf('skills')} />
-      </div>
-    </div>
+    <CreatorStepFrame
+      d={d}
+      step={stepIdx}
+      label="Compétences & Talents"
+      zones={{
+        // Bande d'ACTION : le sous-stepper a/b/c (« sous-stepper au bandeau », planche FINALE) PUIS
+        // l'en-tête du volet courant, qui porte son geste (encrier de répartition/de tirage) — la
+        // planche pose ces cartes en topbar de la zone de travail, jamais dans un head de volet.
+        action: (
+          <>
+            <Tabs tabs={tabs} active={sub} onChange={setSub} label="Sous-étape Compétences & Talents" className="creator-skills-tabnav" />
+            {pane.action}
+          </>
+        ),
+        choice: pane.choice,
+      }}
+    />
   );
 }
 
 /** Valeurs VIVANTES : caractéristique liée + valeur du héros prévisualisé (talents +5/Augmentations
- *  incluses) — partagé par les trois sous-écrans (annotation `<em class="tag-char">` des rangées). */
-function useLiveCharOf(d: CreatorDraft) {
+ *  incluses) — partagé par les trois sous-écrans (rubrique `.rf` gravée sous le nom de la plaque). */
+function liveCharOf(d: CreatorDraft) {
   const liveChars: Characteristics = previewHero(d)?.characteristics ?? draftChars(d);
   return (raw: string): { k: CharKey | null; v: number } => {
     const k = skillCharKey(raw);
@@ -1211,16 +1414,13 @@ function useLiveCharOf(d: CreatorDraft) {
 }
 
 // ── 5a) Compétences de race (LDB 05 l.484) ──
-function SpeciesSkillsPane({ d, setD, sp }: StepProps & { sp: SpeciesData }) {
-  const charOf = useLiveCharOf(d);
+function speciesSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, sp: SpeciesData): StepZones {
+  const charOf = liveCharOf(d);
   const done = speciesSkillsDone(d);
-  return (
-    <div className="detail-frame creator-skills-card">
-      <div className="creator-skills-head">
-        <div>
-          <h3 className="creator-skills-title">Compétences de race</h3>
-          <p className="hint creator-skills-sub">Un seul geste — l'héritage du sang</p>
-        </div>
+  return {
+    // Bande d'ACTION (planche mock4 : le `.c-dhead` et sa carte de répartition en topbar).
+    action: (
+      <StepHeader title="Compétences de race" sub="Un seul geste — l'héritage du sang">
         <button
           type="button"
           className={`dicewell${done ? ' done' : ' act emph'}`}
@@ -1237,193 +1437,239 @@ function SpeciesSkillsPane({ d, setD, sp }: StepProps & { sp: SpeciesData }) {
             <span className="dicewell-sub">l'atelier répartit pour vous — modifiable ensuite</span>
           </span>
         </button>
-      </div>
-      <p className="hint" style={{ marginTop: 0 }}>
-        Votre sang {sp.label} offre 3 Compétences à +5 et 3 à +3, parmi les {sp.skills.length} du registre. L'allocation
-        de métier vient à l'écran suivant — les deux se cumulent sur une même Compétence.
-      </p>
-      <div className="row-flex creator-skill-quota-gauges">
-        <NotchGauge
-          value={d.speciesPlus5.length}
-          max={SPECIES_SKILLS_PLUS5}
-          notches={SPECIES_SKILLS_PLUS5}
-          format={(v, m) => `${v}/${m} à +5`}
-          tone={d.speciesPlus5.length === SPECIES_SKILLS_PLUS5 ? 'ok' : 'neutral'}
-        />
-        <NotchGauge
-          value={d.speciesPlus3.length}
-          max={SPECIES_SKILLS_PLUS3}
-          notches={SPECIES_SKILLS_PLUS3}
-          format={(v, m) => `${v}/${m} à +3`}
-          tone={d.speciesPlus3.length === SPECIES_SKILLS_PLUS3 ? 'ok' : 'neutral'}
-        />
-      </div>
-      <div className="skill-row-grid">
-        {sp.skills.map((a) => advancementLabel('skills', a)).map((raw) => {
-          const { k, v } = charOf(raw);
-          const tier = speciesSkillTier(d, raw);
-          return (
-            <div key={raw} className="skill-row" title={skillTip(raw)}>
-              <span className="skill-row-label">
-                {raw}
-                {k && <em>{CHAR_LABELS[k]} {v}{tier ? ` → ${v + tier}` : ''}</em>}
-                {isUnresolvedChoice(raw) && tier > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
-              </span>
-              {/* Paliers 0/3/5 quota-gérés (LDB 05 l.484) : mode DISCRET de `QtyStepper` — la valeur
-                  cible vient de `speciesSkillStep` (source unique), `null` grise le bouton. */}
-              <QtyStepper
-                center={<b>{tier}</b>}
-                onDec={() => setD(withSpeciesSkillTier(d, raw, speciesSkillStep(d, raw, -1) as 0 | 3 | 5))}
-                onInc={() => setD(withSpeciesSkillTier(d, raw, speciesSkillStep(d, raw, 1) as 0 | 3 | 5))}
-                decDisabled={speciesSkillStep(d, raw, -1) == null}
-                incDisabled={speciesSkillStep(d, raw, 1) == null}
-                decLabel={`${raw} : palier inférieur`}
-                incLabel={`${raw} : palier supérieur`}
+      </StepHeader>
+    ),
+    choice: (
+      <>
+        <p className="hint">
+          Votre sang {sp.label} offre 3 Compétences à +5 et 3 à +3, parmi les {sp.skills.length} du registre. L'allocation
+          de métier vient à l'écran suivant — les deux se cumulent sur une même Compétence.
+        </p>
+        {/* Les quotas comptent DANS la bande titrée (planche `.cu-sechead .gauge` : « toujours au
+            même endroit »), plus dans une rangée de jauges flottante sous l'intro. */}
+        <Band
+          title={<>De race<small>3×+5 · 3×+3 parmi {sp.skills.length}</small></>}
+          right={
+            <>
+              <NotchGauge
+                value={d.speciesPlus5.length}
+                max={SPECIES_SKILLS_PLUS5}
+                notches={SPECIES_SKILLS_PLUS5}
+                format={(v, m) => `${v}/${m} à +5`}
+                tone={d.speciesPlus5.length === SPECIES_SKILLS_PLUS5 ? 'ok' : 'neutral'}
               />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+              <NotchGauge
+                value={d.speciesPlus3.length}
+                max={SPECIES_SKILLS_PLUS3}
+                notches={SPECIES_SKILLS_PLUS3}
+                format={(v, m) => `${v}/${m} à +3`}
+                tone={d.speciesPlus3.length === SPECIES_SKILLS_PLUS3 ? 'ok' : 'neutral'}
+              />
+            </>
+          }
+        >
+          <PlaqueGrid>
+            {sp.skills.map((a) => advancementLabel('skills', a)).map((raw) => {
+              const { k, v } = charOf(raw);
+              const tier = speciesSkillTier(d, raw);
+              return (
+                <PlaqueRow
+                  key={raw}
+                  selected={tier > 0}
+                  name={<CodexRef category="skills" id={skillIdOf(raw)} label={splitLabel(raw).name}>{raw}</CodexRef>}
+                  sub={k ? `${CHAR_LABELS[k]} ${v}${tier ? ` → ${v + tier}` : ''}` : undefined}
+                  meta={
+                    <>
+                      {isUnresolvedChoice(raw) && tier > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
+                      {/* Paliers 0/3/5 quota-gérés (LDB 05 l.484) : mode DISCRET de `QtyStepper` — la
+                          valeur cible vient de `speciesSkillStep` (source unique), `null` grise le bouton. */}
+                      <QtyStepper
+                        center={<b>{tier}</b>}
+                        onDec={() => setD(withSpeciesSkillTier(d, raw, speciesSkillStep(d, raw, -1) as 0 | 3 | 5))}
+                        onInc={() => setD(withSpeciesSkillTier(d, raw, speciesSkillStep(d, raw, 1) as 0 | 3 | 5))}
+                        decDisabled={speciesSkillStep(d, raw, -1) == null}
+                        incDisabled={speciesSkillStep(d, raw, 1) == null}
+                        decLabel={`${raw} : palier inférieur`}
+                        incLabel={`${raw} : palier supérieur`}
+                      />
+                    </>
+                  }
+                  value={tier > 0 ? `+${tier}` : '—'}
+                />
+              );
+            })}
+          </PlaqueGrid>
+        </Band>
+        <p className="hint">
+          Les Compétences qui reviendront au registre de carrière restent DISTINCTES et se cumulent : la valeur
+          formée s'ajoute à la Caractéristique liée — la rubrique de chaque plaque en montre le résultat.
+        </p>
+      </>
+    ),
+  };
 }
 
-// ── 5b) Compétences de carrière (LDB 05 l.535) ──
-function CareerSkillsPane({ d, setD }: StepProps) {
-  const charOf = useLiveCharOf(d);
+// ── 5b) Compétences de carrière (LDB 05 l.535) — « Même gabarit exactement, seule la source
+//      change » (planche mock5) : le MÊME meuble qu'en 5a, alimenté par les points de métier. ──
+function careerSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZones {
+  const charOf = liveCharOf(d);
   const entries = careerSkillEntries(d);
   const total = careerAdvTotal(d);
   const done = careerSkillsDone(d);
-  return (
-    <div className="detail-frame creator-skills-card">
-      <div className="creator-skills-head">
-        <div>
-          <h3 className="creator-skills-title">Compétences de carrière</h3>
-          <p className="hint creator-skills-sub">Un seul geste — l'école du métier</p>
-        </div>
+  return {
+    action: (
+      <StepHeader title="Compétences de carrière" sub="Un seul geste — l'école du métier">
         <button type="button" className={`dicewell${done ? ' done' : ' act emph'}`} onClick={() => setD({ ...d, skillAdvances: evenCareerSkillAdvances(d) })}>
           <span className="dicewell-copy">
             <span className="dicewell-txt">+5 sur les huit</span>
             <span className="dicewell-sub">répartition simple, modifiable ensuite</span>
           </span>
         </button>
-      </div>
-      <p className="hint" style={{ marginTop: 0 }}>
-        Votre métier enseigne {CAREER_SKILL_ADVANCES} points, {Math.floor(CAREER_SKILL_ADVANCES / (entries.length || 1))} au plus par Compétence
-        d'un coup. Les +5/+3 de race sont acquis et se CUMULENT — la rangée le rappelle (« +5 de race »).
-      </p>
-      <p className="creator-pick-count">
-        De carrière — {total}/{CAREER_SKILL_ADVANCES} points répartis · max {MAX_ADV_PER_SKILL} par Compétence
-      </p>
-      <NotchGauge
-        value={total}
-        max={CAREER_SKILL_ADVANCES}
-        format={(v, m) => `${m} points · reste ${m - v}`}
-        tone={done ? 'ok' : 'neutral'}
-      />
-      <div className="skill-row-grid">
-        {entries.map((raw) => {
-          const { k, v } = charOf(raw);
-          const adv = d.skillAdvances[raw] ?? 0;
-          const raceTier = speciesSkillTier(d, raw);
-          return (
-            <div key={raw} className="skill-row" title={skillTip(raw)}>
-              <span className="skill-row-label">
-                {raw}
-                {k && <em>{CHAR_LABELS[k]} {v}{adv ? ` → ${v + adv}` : ''}</em>}
-                {raceTier > 0 && <em>+{raceTier} de race</em>}
-                {isUnresolvedChoice(raw) && adv > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
-              </span>
-              <AllocStepper
-                value={adv}
-                max={Math.min(MAX_ADV_PER_SKILL, adv + (CAREER_SKILL_ADVANCES - total))}
-                onChange={(val) => setD({ ...d, skillAdvances: { ...d.skillAdvances, [raw]: val } })}
-                label={raw}
-              />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+      </StepHeader>
+    ),
+    choice: (
+      <>
+        <p className="hint">
+          Votre métier enseigne {CAREER_SKILL_ADVANCES} points, {MAX_ADV_PER_SKILL} au plus par Compétence
+          d'un coup. Les +5/+3 de race sont acquis et se CUMULENT — la rangée le rappelle (« +5 de race »).
+        </p>
+        <Band
+          title={<>De carrière<small>{CAREER_SKILL_ADVANCES} points · max {MAX_ADV_PER_SKILL} par Compétence</small></>}
+          right={
+            <NotchGauge
+              value={total}
+              max={CAREER_SKILL_ADVANCES}
+              format={(v, m) => `${v} / ${m} · reste ${m - v}`}
+              tone={done ? 'ok' : 'neutral'}
+            />
+          }
+        >
+          <PlaqueGrid>
+            {entries.map((raw) => {
+              const { k, v } = charOf(raw);
+              const adv = d.skillAdvances[raw] ?? 0;
+              const raceTier = speciesSkillTier(d, raw);
+              return (
+                <PlaqueRow
+                  key={raw}
+                  selected={adv > 0}
+                  name={<CodexRef category="skills" id={skillIdOf(raw)} label={splitLabel(raw).name}>{raw}</CodexRef>}
+                  // `.rf` de la planche : « Sociabilité 31 · +5 de race » — le cumul se LIT sur la rangée.
+                  sub={
+                    [k ? `${CHAR_LABELS[k]} ${v}${adv ? ` → ${v + adv}` : ''}` : '', raceTier > 0 ? `+${raceTier} de race` : '']
+                      .filter(Boolean)
+                      .join(' · ') || undefined
+                  }
+                  meta={
+                    <>
+                      {isUnresolvedChoice(raw) && adv > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
+                      <AllocStepper
+                        value={adv}
+                        max={Math.min(MAX_ADV_PER_SKILL, adv + (CAREER_SKILL_ADVANCES - total))}
+                        onChange={(val) => setD({ ...d, skillAdvances: { ...d.skillAdvances, [raw]: val } })}
+                        label={raw}
+                      />
+                    </>
+                  }
+                  value={adv > 0 ? `+${adv}` : '—'}
+                />
+              );
+            })}
+          </PlaqueGrid>
+        </Band>
+      </>
+    ),
+  };
 }
 
 // ── 5c) Talents (LDB 05 l.493-510) — de race « un au choix » ⇄ de carrière « un au choix » ⇄
 //      tirés au d100 (figés dès la race choisie, listés ici en lecture — jamais une relance). ──
-export function TalentsPane({ d, setD }: StepProps & { sp: SpeciesData }) {
+function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZones {
   const probe = probeHero(d, false);
   const fixed = speciesTalentFixedEntries(d);
   const choiceEntries = speciesTalentChoiceEntries(d);
   const drawn = speciesTalentRandomDrawn(d);
   const randomCount = speciesTalentRandomCount(d);
-  return (
-    <div className="detail-frame creator-skills-card">
-      <div className="creator-skills-head">
-        <div>
-          <h3 className="creator-skills-title">Talents</h3>
-          <p className="hint creator-skills-sub">Ce que le sort a tranché</p>
-        </div>
-      </div>
-      <p className="hint" style={{ marginTop: 0 }}>
-        Un seul Talent de carrière au Niveau 1 — les trois autres s'achèteront en PX au fil du jeu.
-      </p>
-      <div className="creator-talents-cols">
-        <div>
-          <div className="mini-title">De race — un au choix</div>
-          {choiceEntries.length === 0 ? (
-            <p className="hint">Aucune décision ici — la race ne propose pas de branche « A ou B ».</p>
-          ) : (
-            <div className="talent-options-grid">
-              {choiceEntries.map((entry) => {
-                const options = splitTopLevelOu(entry);
-                const selected = d.speciesTalentChoices[entry] ?? null;
-                return (
-                  <div key={entry} className={`talent-option ${selected ? 'selected' : ''}`}>
-                    {options.map((opt, i) => (
-                      <span key={opt}>
-                        {i > 0 && <span className="talent-option-ou">ou</span>}
-                        <label className="radio" style={{ display: 'flex', marginBottom: 4 }}>
-                          <input
-                            type="radio"
-                            name={`species-talent-${entry}`}
-                            checked={selected === opt}
-                            onChange={() => setD({ ...d, speciesTalentChoices: { ...d.speciesTalentChoices, [entry]: opt } })}
-                          />
-                          <b>{opt}</b>
-                        </label>
-                      </span>
-                    ))}
-                    <p className="hint talent-desc">{talentTip(selected ?? options[0])}</p>
-                  </div>
-                );
-              })}
+  const careerChoices = careerTalentOptions(d);
+  return {
+    // Bande d'ACTION (planche mock6 : « l'encrier à dés […] remonte en topbar de la zone de
+    // travail, AU-DESSUS des deux colonnes »). TIRÉS AU D100 (#393 agentivité) : VIDES avant le
+    // geste — la carte canonique `CreatorDice` porte le tirage (frisson central, chips au verdict) ;
+    // un doublon déjà possédé est relancé D'OFFICE par le résolveur (LDB 05 l.484), RAW n'offre
+    // aucune relance au joueur (aucun bouton de relance ici, cf. `rollDraftTalents`).
+    action: (
+      <>
+        <StepHeader title="Talents" sub="Ce que le sort a tranché" />
+        {randomCount > 0 && (
+          <CreatorDice
+            label={`Tirer ${randomCount} Talent${randomCount > 1 ? 's' : ''} — d100`}
+            hint={<>Sur le Tableau des Talents aléatoires (LDB 05 l.510) — un doublon déjà possédé se relance d'office.</>}
+            rolled={!!d.talentsRolled}
+            xp={0}
+            onRoll={() => setD(rollDraftTalents(d))}
+          >
+            <div className="mini-title" style={{ marginTop: 0 }}>Tirés d'office — d100 — {randomCount} Talent{randomCount > 1 ? 's' : ''} rendu{randomCount > 1 ? 's' : ''}</div>
+            <div className="skill-tags">
+              {drawn.map((label) => (
+                <EntityChoice key={label} category="talents" entry={label} />
+              ))}
             </div>
-          )}
-          {randomCount > 0 && (
-            <>
-              <div className="mini-title" style={{ marginTop: 12 }}>Tirés d'office — d100 — {randomCount} Talent{randomCount > 1 ? 's' : ''} rendu{randomCount > 1 ? 's' : ''}</div>
-              <div className="skill-tags">
-                {drawn.map((label) => (
-                  <EntityChoice key={label} category="talents" entry={label} />
-                ))}
+          </CreatorDice>
+        )}
+      </>
+    ),
+    choice: (
+      <>
+        <p className="hint">
+          Un seul Talent de carrière au Niveau 1 — les trois autres s'achèteront en PX au fil du jeu.
+        </p>
+        {/* « Deux colonnes de MÊME RANG » (planche mock6) : la primitive globale `.panel-grid`
+            (auto-fit, une seule colonne ≤700px) — jamais une 2e grille 2-colonnes de domaine. */}
+        <div className="panel-grid">
+          <Band title={<>De race<small>un au choix</small></>} right={<b className={choiceEntries.every((e) => d.speciesTalentChoices[e]) ? 'ok-text' : 'warn-text'}>{choiceEntries.filter((e) => d.speciesTalentChoices[e]).length}/{choiceEntries.length}</b>}>
+            {choiceEntries.length === 0 ? (
+              <p className="hint">Aucune décision ici — la race ne propose pas de branche « A ou B ».</p>
+            ) : (
+              <div className="talent-options-grid">
+                {choiceEntries.map((entry) => {
+                  const options = splitTopLevelOu(entry);
+                  const selected = d.speciesTalentChoices[entry] ?? null;
+                  return (
+                    <div key={entry} className={`talent-option ${selected ? 'selected' : ''}`}>
+                      {options.map((opt, i) => (
+                        <span key={opt}>
+                          {i > 0 && <span className="talent-option-ou">ou</span>}
+                          <label className="radio" style={{ display: 'flex', marginBottom: 4 }}>
+                            <input
+                              type="radio"
+                              name={`species-talent-${entry}`}
+                              checked={selected === opt}
+                              onChange={() => setD({ ...d, speciesTalentChoices: { ...d.speciesTalentChoices, [entry]: opt } })}
+                            />
+                            <b>{opt}</b>
+                          </label>
+                        </span>
+                      ))}
+                      <p className="hint talent-desc">{talentTip(selected ?? options[0])}</p>
+                    </div>
+                  );
+                })}
               </div>
-            </>
-          )}
-          {fixed.length > 0 && (
-            <>
-              <div className="mini-title" style={{ marginTop: 12 }}>Acquis d'office</div>
-              <div className="skill-tags">
-                {fixed.map((label) => (
-                  <EntityChoice key={label} category="talents" entry={label} />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-        <div>
-          <div className="mini-title">De carrière — un au choix</div>
-          <div className="talent-options-grid">
-            {careerTalentOptions(d).map(({ entry, choices, selected, maxed }) => (
+            )}
+            {fixed.length > 0 && (
+              <>
+                <div className="mini-title">Acquis d'office</div>
+                <div className="skill-tags">
+                  {fixed.map((label) => (
+                    <EntityChoice key={label} category="talents" entry={label} />
+                  ))}
+                </div>
+              </>
+            )}
+          </Band>
+          <Band title={<>De carrière<small>un au choix</small></>} right={<b className={d.careerTalent ? 'ok-text' : 'warn-text'}>{d.careerTalent ? 1 : 0}/1</b>}>
+            <div className="talent-options-grid">
+            {careerChoices.map(({ entry, choices, selected, maxed }) => (
               <div key={entry} className={`talent-option ${selected && d.careerTalent === selected ? 'selected' : ''}`}>
                 <label className="radio" style={{ flexWrap: 'wrap' }}>
                   <input
@@ -1457,12 +1703,13 @@ export function TalentsPane({ d, setD }: StepProps & { sp: SpeciesData }) {
                 <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
               </div>
             ))}
-          </div>
+            </div>
+          </Band>
         </div>
-      </div>
-      <PettySpellsSection d={d} setD={setD} />
-    </div>
-  );
+        <PettySpellsSection d={d} setD={setD} />
+      </>
+    ),
+  };
 }
 
 /** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587) : le Talent pris → choisir
@@ -1542,15 +1789,15 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
   const careerTrappings = level?.trappings ?? []; // TrappingRef[]
   const weaponChoiceEntry = careerTrappings.some((t) => 'text' in t && t.text === 'Arme (Au choix)');
 
+  const stepIdx = stepIds().indexOf('trappings');
   if (!level || !career) {
     return (
-      <div className="creator-trappings-screen">
-        <div className="creator-trappings-shell">
-          <div className="creator-trappings-main">
-            <p className="hint">Choisissez d'abord une race et une carrière.</p>
-          </div>
-        </div>
-      </div>
+      <CreatorStepFrame
+        d={d}
+        step={stepIdx}
+        label="Possessions"
+        zones={{ action: null, choice: <p className="hint">Choisissez d'abord une race et une carrière.</p> }}
+      />
     );
   }
 
@@ -1560,86 +1807,99 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
   };
   const classItems = klass?.trappings ?? [];
   const careerItems = careerTrappings.filter((t) => !('text' in t && t.text === 'Arme (Au choix)'));
+  // Formule de bourse fixée par le TIER du statut (SOURCE UNIQUE : titre de bande, sous-texte du geste
+  // et note d'intro la citent tous — planche `finale-mock7`, « 2d10 sous de cuivre » sous « La bourse »).
+  const purseFormula = level.status.startsWith('Bronze') ? '2d10 sous de cuivre' : level.status.startsWith('Argent') ? '1d10 pistoles' : "1 couronne d'or";
 
-  return (
-    <div className="creator-trappings-screen">
-      <div className="creator-trappings-shell">
-        <div className="detail-frame creator-trappings-main">
-          <div className="creator-skills-head">
-            <div>
-              <h3 className="creator-skills-title">Possessions</h3>
-              <p className="hint creator-skills-sub">Ce que le départ vous met dans les mains</p>
+  // Bande d'ACTION (slot requis de l'ossature) : le GESTE de l'étape — « Tirer aux dés — la
+  // bourse » (jet figé, agentivité #393 P5) remonte en tête, avec le statut qui fixe sa formule.
+  const action = (
+    <>
+      <StepHeader title="Possessions" sub="Ce que le départ vous met dans les mains">
+        <MetalStatus status={level.status} size="chip" />
+      </StepHeader>
+      {/* Le TOTAL s'ancre à droite de la barre (motif `.cu-sechead .cnt` de la planche — même rang que
+          les « N objets » des dotations) ; les FACES restent sous la barre : la planche n'illustre que
+          le cas Bronze 1 (2 dés) quand le RAW en pose jusqu'à 2×Standing (10 pour Bronze 5), qu'un
+          plateau ancré à droite (`white-space: nowrap`) ferait déborder. */}
+      <Band
+        title={<>La bourse<small>statut {level.status} — {purseFormula}</small></>}
+        right={d.wealthRoll && !rolling && !landed ? <b><Coins money={wealth} /></b> : null}
+      >
+        {rolling || landed ? (
+          <DiceRoll scene landed={landed} faces={null} onSkip={skip} />
+        ) : !d.wealthRoll ? (
+          <button type="button" className="dicewell act emph" onClick={() => trigger()}>
+            <span className="dicewell-tray">
+              <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+              <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+            </span>
+            <span className="dicewell-copy">
+              <span className="dicewell-txt">Tirer aux dés — la bourse</span>
+              <span className="dicewell-sub">
+                {purseFormula} × Standing — jet figé, aucune relance
+              </span>
+            </span>
+          </button>
+        ) : (
+          // Faces RÉELLES figées (draftWealthDice, même graine/ordre RNG que draftWealth) — jamais une
+          // face fabriquée ; le total est porté par la barre (`right`).
+          <>
+            {/* `.row-flex` : la bande est une COLONNE flex (ses enfants s'étirent) — le plateau doit
+                rester à la taille de ses dés, pas s'allonger en bandeau vide. */}
+            <div className="row-flex">
+              <span className="dicewell-tray">
+                {draftWealthDice(d).map((n, i) => (
+                  <span key={i} className="rm-die dicewell-die"><DieFace n={n} landed /></span>
+                ))}
+              </span>
             </div>
-            <MetalStatus status={level.status} size="chip" />
-          </div>
-          <p className="hint" style={{ marginTop: 0 }}>
-            Le statut <b>{level.status}</b> du {career.label} fixe la bourse de départ ({level.status.startsWith('Bronze') ? '2d10 sous de cuivre' : level.status.startsWith('Argent') ? '1d10 pistoles' : '1 couronne d\'or'} × Standing) et le
-            train de vie entre les aventures. Chaque objet reçu s'ouvre sur sa fiche du Codex — encombrement et qualités comprises.
-          </p>
-
-          <Band title="De carrière" right={<span className="hint">{level.label} — {careerItems.length} objet{careerItems.length > 1 ? 's' : ''}</span>}>
-            <div className="skill-tags">{careerItems.map(chip)}</div>
-          </Band>
-
-          <Band title="De classe" right={<span className="hint">{klass?.label ?? '—'} — {classItems.length} objet{classItems.length > 1 ? 's' : ''}</span>}>
-            <div className="skill-tags">{classItems.map(chip)}</div>
-          </Band>
-
-          {weaponChoiceEntry && (
-            <Band title="Arme (au choix)">
-              <label>
-                Choisissez votre arme de départ
-                <select value={d.weaponChoice ?? ''} onChange={(e) => setD({ ...d, weaponChoice: e.target.value || undefined })}>
-                  <option value="">— choisir —</option>
-                  {WEAPON_CHOICES.map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}
-                </select>
-              </label>
-              {d.weaponChoice && <p className="hint">{trappingMeta(d.weaponChoice)}</p>}
-            </Band>
-          )}
-
-          <Band
-            title="La bourse"
-            right={<span className="hint">statut <b>{level.status}</b></span>}
-          >
-            {rolling || landed ? (
-              <DiceRoll scene landed={landed} faces={null} onSkip={skip} />
-            ) : !d.wealthRoll ? (
-              <button type="button" className="dicewell act emph" onClick={() => trigger()}>
-                <span className="dicewell-tray">
-                  <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
-                  <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
-                </span>
-                <span className="dicewell-copy">
-                  <span className="dicewell-txt">Tirer aux dés — la bourse</span>
-                  <span className="dicewell-sub">
-                    {level.status.startsWith('Bronze') ? '2d10 sous de cuivre' : level.status.startsWith('Argent') ? '1d10 pistoles' : '1 couronne d\'or'} × Standing — jet figé, aucune relance
-                  </span>
-                </span>
-              </button>
-            ) : (
-              // Faces RÉELLES figées (draftWealthDice, même graine/ordre RNG que draftWealth) + total (mock7).
-              <div className="row-flex" style={{ marginTop: 4 }}>
-                <span className="dicewell-tray">
-                  {draftWealthDice(d).map((n, i) => (
-                    <span key={i} className="rm-die dicewell-die"><DieFace n={n} landed /></span>
-                  ))}
-                </span>
-                <p className="creator-purse-line">
-                  <Coins money={wealth} /> <span className="hint">— créditée au groupe à l'engagement</span>
-                </p>
-              </div>
-            )}
-          </Band>
-
-          <RuleDivider label="La classe" />
-          <div className="mini-title">{klass?.label ?? '—'}</div>
-          <LoreText md={klass?.desc} />
-        </div>
-        <CreatorSummary d={d} step={stepIds().indexOf('trappings')} />
-      </div>
-    </div>
+            <p className="hint">Jet figé, aucune relance — la bourse est créditée au groupe à l'engagement.</p>
+          </>
+        )}
+      </Band>
+    </>
   );
+
+  const choice = (
+    <>
+      <p className="hint" style={{ marginTop: 0 }}>
+        {/* Carrière/niveau entre parenthèses, jamais « du {label} » : le libellé est une DONNÉE (« du
+            Agitateur », et toute carrière à initiale vocalique casserait l'élision). */}
+        Le statut <b>{level.status}</b> ({career.label} — {level.label}) fixe la bourse de départ ({purseFormula} × Standing) et le
+        train de vie entre les aventures. Chaque objet reçu s'ouvre sur sa fiche du Codex — encombrement et qualités comprises.
+      </p>
+
+      <Band title={<>De carrière<small>{level.label}</small></>} right={<span className="hint">{careerItems.length} objet{careerItems.length > 1 ? 's' : ''}</span>}>
+        <div className="skill-tags">{careerItems.map(chip)}</div>
+      </Band>
+
+      <Band title={<>De classe<small>{klass?.label ?? '—'}</small></>} right={<span className="hint">{classItems.length} objet{classItems.length > 1 ? 's' : ''}</span>}>
+        <div className="skill-tags">{classItems.map(chip)}</div>
+      </Band>
+
+      {weaponChoiceEntry && (
+        <Band title="Arme (au choix)">
+          <label>
+            Choisissez votre arme de départ
+            <select value={d.weaponChoice ?? ''} onChange={(e) => setD({ ...d, weaponChoice: e.target.value || undefined })}>
+              <option value="">— choisir —</option>
+              {WEAPON_CHOICES.map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}
+            </select>
+          </label>
+          {d.weaponChoice && <p className="hint">{trappingMeta(d.weaponChoice)}</p>}
+        </Band>
+      )}
+
+      <div className="mini-title">La classe — {klass?.label ?? '—'}</div>
+      <LoreText md={klass?.desc} />
+
+      {/* Note de PIED (planche `finale-mock7`, `.c-note` en bas de zone) : où atterrit le butin de départ. */}
+      <p className="hint">Tout objet va sur le héros — il se retrouvera dans son inventaire dès l'engagement.</p>
+    </>
+  );
+
+  return <CreatorStepFrame d={d} step={stepIdx} label="Possessions" zones={{ action, choice }} />;
 }
 
 /** Champ IDENTITÉ du registre d'état civil (nom/âge/taille/yeux/cheveux) — libellé au-dessus, contrôle
@@ -1652,34 +1912,32 @@ function IdentityField({ label, value, onChange, onClear, type = 'text' }: {
   type?: 'text' | 'number';
 }) {
   return (
-    <label className="identity-field">
-      {label}
-      <span className="input-dice">
-        <input type={type} value={value} onChange={(e) => onChange(e.target.value)} />
+    <PlaqueRow
+      label={label}
+      name={<input type={type} aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} />}
+      meta={
         <button type="button" className="btn small" title={`${label} : effacer`} onClick={onClear}>
           <Icon id="ui/undo" size="sm" />
         </button>
-      </span>
-    </label>
+      }
+    />
   );
 }
 
-// ════ 7) Détails (LDB 05 l.587-744) — charte « Atelier du scribe » (#393 P5, étalon
-//      `finale-mock8-details.png`) : gabarit DEUX ZONES (panneau + fiche vivante) — encrier « Tirer
-//      le physique » en tête (même patron `.dicewell` idle/done que Race/Carrière), grille Nom/Sexe/
-//      Âge/Taille/Yeux/Cheveux, bande Motivation & Ambitions (`BackgroundFields`), bande Apparence
-//      (`AppearancePanel`, personnalisateur INCHANGÉ). Mécanique INCHANGÉE (`rolledDetails`, draft.ts).
+// ════ 7) Détails (LDB 05 l.587-744) — charte « Atelier du scribe » (#393, lot « ossature enforcée » ;
+//      étalon = les VALEURS de `planche-creator-FINALE.html`, écran 7) : ossature 2 zones (bande
+//      d'ACTION à la topbar `.fam-topbar` — titre + plaque « Tirer le nom » + encrier « Aux dés » —
+//      puis zone de CHOIX ; fiche vivante à droite). L'état civil COMPOSE la rangée-plaque
+//      (`PlaqueGrid`/`PlaqueRow` : `.idf` de la planche = la plaque, colonne de libellé gravée +
+//      valeur à la plume sur trait pointillé), puis bande Motivation & Ambitions (`BackgroundFields`,
+//      primitive PARTAGÉE avec l'onglet Background de la fiche) et bande Apparence (`AppearancePanel`,
+//      personnalisateur INCHANGÉ). Mécanique INCHANGÉE (`rolledDetails`, draft.ts).
 export function DetailsScreen({ d, setD }: StepProps): ReactNode {
   const sp = draftSpecies(d);
+  const stepIdx = stepIds().indexOf('details');
   if (!sp) {
     return (
-      <div className="creator-details-screen">
-        <div className="creator-details-shell">
-          <div className="creator-details-main">
-            <p className="hint">Choisissez d'abord une race.</p>
-          </div>
-        </div>
-      </div>
+      <CreatorStepFrame d={d} step={stepIdx} label="Détails" zones={{ action: null, choice: <p className="hint">Choisissez d'abord une race.</p> }} />
     );
   }
   const appearance: Appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
@@ -1689,76 +1947,101 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
     setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair });
   });
 
-  return (
-    <div className="creator-details-screen">
-      <div className="creator-details-shell">
-        <div className="detail-frame creator-details-main">
-          <h3 className="creator-skills-title">Détails</h3>
-          <p className="hint creator-skills-sub">Le registre d'état civil du héros</p>
-          <p className="hint" style={{ marginTop: 0 }}>
-            Le nom peut se tirer d'un générateur ou s'écrire à la plume ; âge, taille, yeux et cheveux se tirent aux dés,
-            trait par trait — ou tous d'un coup. Motivation et ambitions sont libres — elles guident le jeu de rôle, pas les
-            règles ; la Motivation est la donnée qui recharge la Détermination en jeu.
-          </p>
-
-          <div className="row-flex creator-details-toolbar">
-            <button type="button" className="btn small" onClick={() => { const n = generateName(sp.refChar, d.sex, makeRNG(Math.floor(Math.random() * 1e9))); if (n) setD({ ...d, name: n }); }}>
-              <Icon id="nav/dice" size="sm" /> Tirer le nom
-            </button>
-            {rolling || landed ? (
-              <DiceRoll scene landed={landed} faces={null} onSkip={skip} />
-            ) : (
-              <button type="button" className={`dicewell${physiqueRolled ? ' done' : ' act emph'}`} onClick={() => trigger()}>
-                <span className="dicewell-copy">
-                  <span className="dicewell-txt">{physiqueRolled ? 'Aux dés — tout tiré' : 'Aux dés — tout d\'un coup'}</span>
-                  <span className="dicewell-sub">âge, taille, yeux, cheveux — trait par trait, modifiable ensuite</span>
-                </span>
-              </button>
-            )}
-          </div>
-
-          <div className="identity-grid">
-            <label className="identity-field">
-              Nom
-              <input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />
-            </label>
-            <label className="identity-field">
-              Sexe
-              <button type="button" className="btn small identity-sex-toggle" onClick={() => setD({ ...d, sex: d.sex === 'M' ? 'F' : 'M' })}>
-                <Icon id="ui/branch" size="sm" /> {d.sex === 'F' ? 'Féminin' : 'Masculin'}
-              </button>
-            </label>
-            <IdentityField label="Âge" type="number" value={d.age ?? ''} onChange={(v) => setD({ ...d, age: Number(v) || undefined })} onClear={() => setD({ ...d, age: undefined })} />
-            <IdentityField label="Taille (cm)" type="number" value={d.height ?? ''} onChange={(v) => setD({ ...d, height: Number(v) || undefined })} onClear={() => setD({ ...d, height: undefined })} />
-            <IdentityField label="Yeux" value={d.eyes ?? ''} onChange={(v) => setD({ ...d, eyes: v })} onClear={() => setD({ ...d, eyes: undefined })} />
-            <IdentityField label="Cheveux" value={d.hair ?? ''} onChange={(v) => setD({ ...d, hair: v })} onClear={() => setD({ ...d, hair: undefined })} />
-          </div>
-
-          <Band title="Motivation & Ambitions" right={<span className="hint">recharge la Détermination · guide le rôle</span>}>
-            <BackgroundFields
-              values={{ motivation: d.motivation, ambitionShort: d.ambitionShort, ambitionLong: d.ambitionLong }}
-              onChange={(patch) => setD({ ...d, ...patch })}
-            />
-          </Band>
-
-          <Band title="Apparence" right={<span className="hint">la silhouette prend les teintes</span>}>
-            <AppearancePanel
-              value={appearance}
-              equip={{ weapons: [], armour: [] }}
-              career={d.careerId}
-              onChange={(a) => setD({ ...d, sex: a.sex, build: a.build, appSeed: a.seed ?? d.appSeed, colors: a.colors, parts: a.parts })}
-            />
-          </Band>
-        </div>
-        <CreatorSummary d={d} step={stepIds().indexOf('details')} />
-      </div>
-    </div>
+  // Bande d'ACTION (slot requis de l'ossature) : les GESTES de l'étape, à la topbar de la planche
+  // (`.fam-topbar` : `.c-dhead` titre+sous-titre à gauche, plaque d'action + encrier à droite) —
+  // tirer le nom au générateur, tirer le physique (âge/taille/yeux/cheveux) d'un coup.
+  const action = (
+    <StepHeader title="Détails" sub="Le registre d'état civil du héros">
+      <PlaqueRow
+        onClick={() => { const n = generateName(sp.refChar, d.sex, makeRNG(Math.floor(Math.random() * 1e9))); if (n) setD({ ...d, name: n }); }}
+        name="Tirer le nom"
+        meta={<em>au générateur</em>}
+      />
+      {rolling || landed ? (
+        <DiceRoll scene landed={landed} faces={null} onSkip={skip} />
+      ) : (
+        <button type="button" className={`dicewell${physiqueRolled ? ' done' : ' act emph'}`} onClick={() => trigger()}>
+          <span className="dicewell-copy">
+            <span className="dicewell-txt">{physiqueRolled ? 'Aux dés — tout tiré' : 'Aux dés — tout d\'un coup'}</span>
+            <span className="dicewell-sub">âge, taille, yeux, cheveux — modifiables ensuite</span>
+          </span>
+        </button>
+      )}
+    </StepHeader>
   );
+
+  const choice = (
+    <>
+      <p className="hint" style={{ marginTop: 0 }}>
+        Le nom peut se tirer d'un générateur ou s'écrire à la plume ; âge, taille, yeux et cheveux se tirent aux dés
+        d'un seul geste, puis se retouchent trait par trait. Motivation et ambitions sont libres — elles guident le jeu
+        de rôle, pas les règles ; la Motivation est la donnée qui recharge la Détermination en jeu.
+      </p>
+
+      <PlaqueGrid>
+        <PlaqueRow
+          label="Nom"
+          name={<input aria-label="Nom" value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />}
+        />
+        <PlaqueRow
+          label="Sexe"
+          name={
+            <button type="button" className="btn small" onClick={() => setD({ ...d, sex: d.sex === 'M' ? 'F' : 'M' })}>
+              <Icon id="ui/branch" size="sm" /> {d.sex === 'F' ? 'Féminin' : 'Masculin'}
+            </button>
+          }
+        />
+        <IdentityField label="Âge" type="number" value={d.age ?? ''} onChange={(v) => setD({ ...d, age: Number(v) || undefined })} onClear={() => setD({ ...d, age: undefined })} />
+        <IdentityField label="Taille (cm)" type="number" value={d.height ?? ''} onChange={(v) => setD({ ...d, height: Number(v) || undefined })} onClear={() => setD({ ...d, height: undefined })} />
+        <IdentityField label="Yeux" value={d.eyes ?? ''} onChange={(v) => setD({ ...d, eyes: v })} onClear={() => setD({ ...d, eyes: undefined })} />
+        <IdentityField label="Cheveux" value={d.hair ?? ''} onChange={(v) => setD({ ...d, hair: v })} onClear={() => setD({ ...d, hair: undefined })} />
+      </PlaqueGrid>
+
+      <Band title={<>Motivation &amp; Ambitions<small>recharge la Détermination · guide le rôle</small></>}>
+        <BackgroundFields
+          values={{ motivation: d.motivation, ambitionShort: d.ambitionShort, ambitionLong: d.ambitionLong }}
+          onChange={(patch) => setD({ ...d, ...patch })}
+        />
+      </Band>
+
+      <Band title={<>Apparence<small>la silhouette prend les teintes</small></>} right="tirées aux dés — retouche libre">
+        <AppearancePanel
+          value={appearance}
+          equip={{ weapons: [], armour: [] }}
+          career={d.careerId}
+          onChange={(a) => setD({ ...d, sex: a.sex, build: a.build, appSeed: a.seed ?? d.appSeed, colors: a.colors, parts: a.parts })}
+        />
+      </Band>
+
+      {/* Note de PIED (planche `finale-mock8`, `.c-note` en clôture de zone) : la prose du mock décrit
+          SES teintes d'exemple (« la mèche châtain clair ») — la règle de préséance réserve la maquette
+          au STYLE, jamais aux données ; c'est donc le lien vivant figurine ⇄ registre qui est dit ici. */}
+      <p className="hint">
+        Teintes des yeux et des cheveux : la figurine de droite les porte aussitôt — le registre et la silhouette ne
+        divergent jamais. Rien n'est figé, tout se retouche jusqu'à l'engagement.
+      </p>
+    </>
+  );
+
+  return <CreatorStepFrame d={d} step={stepIdx} label="Détails" zones={{ action, choice }} />;
 }
 
 /** Top-3 des Compétences par valeur de Test effective (Caractéristique + avances, `skillBaseValue`) —
  *  « Les jets qui le définissent » (mock9) : les épreuves où le héros excelle le plus. Composé de
  *  chips CodexRef réels (jamais un libellé de flavor inventé) + la valeur de Test. */
+/** RUBRIQUE du registre de présentation — titre + contenu en UN groupe (planche FINALE, mock9 :
+ *  `.fin-col > div` = `.mini-title` + son bloc). Le groupe est ce que le `gap` de la colonne sépare :
+ *  sans lui, titres et contenus flottent à intervalle égal et plus rien ne dit à quoi se rattache un
+ *  titre. Local à l'écran (aucune classe neuve — `.mini-title` est déjà la primitive de titre). */
+function Rubrique({ title, children }: { title: ReactNode; children: ReactNode }) {
+  return (
+    <div>
+      <div className="mini-title">{title}</div>
+      {children}
+    </div>
+  );
+}
+
 function topSkillTests(hero: Combatant, max = 3): { skillId: string; spec?: string; label: string; value: number }[] {
   return [...hero.skills]
     .filter((s) => s.advances > 0)
@@ -1796,45 +2079,57 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
   return (
     <div className="creator-presentation-screen">
       <div className="presentation-col presentation-left">
-        <div className="mini-title">Profil</div>
-        <CharStatsGrid size="sm" value={(k) => hero.characteristics[k]} />
-        <div className="mini-title">Valeurs dérivées</div>
-        <div className="creator-derived">
-          <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>
-          <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>
-          <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>
-          <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Dét. <b>{hero.resolve ?? '—'}</b></span>
-          <span><Icon id="resource/gold-purse" size="sm" /> Bourse <b><Coins money={draftWealth(d)} /></b></span>
-          <span>PX création <b>+{xpTotal(d)}</b></span>
-        </div>
-        <div className="mini-title">Identité</div>
-        <div className="skill-tags">
-          {sign && <CodexRef category="stars" id={sign.id} label={sign.label}><span className="chip">{sign.label}</span></CodexRef>}
-          <span className="chip">{d.sex === 'F' ? 'Féminin' : 'Masculin'}</span>
-          {hero.details?.age != null && <span className="chip">{hero.details.age} ans</span>}
-          {hero.details?.height != null && <span className="chip">{hero.details.height} cm</span>}
-          {hero.details?.eyes && <span className="chip">Yeux {hero.details.eyes}</span>}
-          {hero.details?.hair && <span className="chip">Cheveux {hero.details.hair}</span>}
-        </div>
+        <Rubrique title="Profil">
+          <CharStatsGrid size="sm" value={(k) => hero.characteristics[k]} />
+        </Rubrique>
+        <Rubrique title="Valeurs dérivées">
+          <div className="creator-derived">
+            <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>
+            <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>
+            <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>
+            <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Dét. <b>{hero.resolve ?? '—'}</b></span>
+            <span><Icon id="resource/gold-purse" size="sm" /> Bourse <b><Coins money={draftWealth(d)} /></b></span>
+            <span>PX création <b>+{xpTotal(d)}</b></span>
+          </div>
+        </Rubrique>
+        <Rubrique title="Identité">
+          <div className="skill-tags">
+            {sign && <CodexRef category="stars" id={sign.id} label={sign.label}><span className="chip">{sign.label}</span></CodexRef>}
+            <span className="chip">{d.sex === 'F' ? 'Féminin' : 'Masculin'}</span>
+            {hero.details?.age != null && <span className="chip">{hero.details.age} ans</span>}
+            {hero.details?.height != null && <span className="chip">{hero.details.height} cm</span>}
+            {hero.details?.eyes && <span className="chip">Yeux {hero.details.eyes}</span>}
+            {hero.details?.hair && <span className="chip">Cheveux {hero.details.hair}</span>}
+          </div>
+        </Rubrique>
         {(d.motivation || d.ambitionShort || d.ambitionLong) && (
-          <>
-            <div className="mini-title">Motivation &amp; Ambitions</div>
+          <Rubrique title={<>Motivation &amp; Ambitions</>}>
             <div className="skill-tags">
               {d.motivation && <span className="chip">Motivation — {d.motivation}</span>}
               {d.ambitionShort && <span className="chip">Court terme — {d.ambitionShort}</span>}
               {d.ambitionLong && <span className="chip">Long terme — {d.ambitionLong}</span>}
             </div>
-          </>
+          </Rubrique>
         )}
       </div>
 
-      <div className="presentation-col presentation-center">
+      {/* La SCÈNE (`.fin-stage` de la planche) : la lampe, la figurine posée sous son halo, puis le nom
+          gravé. Aucune ambiance sur `CharacterPreview` — c'est la scène qui porte le halo et le cadre
+          (une ambiance de plus y peindrait une seconde boîte par-dessus l'alcôve). */}
+      <div className="presentation-stage">
+        <div className="presentation-lamp" />
         <div className="presentation-fig">
-          <CharacterPreview hero={hero} view="front" size="fill" ambiance="spotlight" />
+          <CharacterPreview hero={hero} view="front" size="fill" />
         </div>
         <h2 className="presentation-name">{hero.name}</h2>
+        {/* Race · NIVEAU (carrière) · statut MÉTALLISÉ — la planche nomme le niveau de départ
+            (« Pamphlétaire (Agitateur) ») là où l'écran ne portait que la carrière, et rend le statut
+            en métal (`.st-bronze`) là où il était en texte nu : `MetalStatus` est la primitive. */}
         <p className="presentation-sub">
-          <CodexRef category="races" id={d.speciesId} label={speciesLabel}>{speciesLabel}</CodexRef> ({displayLabelForSex(d.sex, careerLabel, career?.labelF)}) · {level?.status}
+          <CodexRef category="races" id={d.speciesId} label={speciesLabel}>{speciesLabel}</CodexRef>
+          {' · '}
+          {level?.label ? `${level.label} (${displayLabelForSex(d.sex, careerLabel, career?.labelF)})` : displayLabelForSex(d.sex, careerLabel, career?.labelF)}
+          {level?.status && <> · <MetalStatus status={level.status} size="chip" /></>}
         </p>
         <div className="row-flex">
           {sign && <span className="chip">Signe <CodexRef category="stars" id={sign.id} label={sign.label}>{sign.label}</CodexRef></span>}
@@ -1843,29 +2138,31 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
       </div>
 
       <div className="presentation-col presentation-right">
-        <div className="mini-title">Compétences formées</div>
-        <div className="skill-tags">
-          {hero.skills.filter((s) => s.advances > 0).map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />)}
-        </div>
-        <div className="mini-title">Talents</div>
-        <div className="skill-tags">
-          {hero.talents.map((t) => <TalentChip key={`${t.talentId}|${t.spec ?? ''}`} talent={t} />)}
-        </div>
-        <div className="mini-title">Possessions</div>
-        <div className="skill-tags">
-          {(hero.items ?? []).map((it) => (
-            <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
-          ))}
-        </div>
+        <Rubrique title="Compétences formées">
+          <div className="skill-tags">
+            {hero.skills.filter((s) => s.advances > 0).map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />)}
+          </div>
+        </Rubrique>
+        <Rubrique title="Talents">
+          <div className="skill-tags">
+            {hero.talents.map((t) => <TalentChip key={`${t.talentId}|${t.spec ?? ''}`} talent={t} />)}
+          </div>
+        </Rubrique>
+        <Rubrique title="Possessions">
+          <div className="skill-tags">
+            {(hero.items ?? []).map((it) => (
+              <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
+            ))}
+          </div>
+        </Rubrique>
         {jets.length > 0 && (
-          <>
-            <div className="mini-title">Les jets qui le définissent</div>
+          <Rubrique title="Les jets qui le définissent">
             <div className="skill-tags">
               {jets.map((j) => (
                 <EntityRef key={`${j.skillId}|${j.spec ?? ''}`} category="skills" id={j.skillId} label={j.label} show={`${j.label} ${j.value}`} />
               ))}
             </div>
-          </>
+          </Rubrique>
         )}
       </div>
 
@@ -1876,8 +2173,9 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
           écrasés « Pamphl étaire »/« Bronz »). */}
       {levels.length > 0 && (
         <div className="presentation-col" style={{ gridColumn: '1 / -1' }}>
-          <div className="mini-title">Évolution — {career?.class ? findClassById(career.class)?.label ?? '' : ''}</div>
-          <CareerPath levels={levels} currentLevel={1} selected={1} />
+          <Rubrique title={<>Évolution — {career?.class ? findClassById(career.class)?.label ?? '' : ''}</>}>
+            <CareerPath levels={levels} currentLevel={1} selected={1} />
+          </Rubrique>
         </div>
       )}
     </div>

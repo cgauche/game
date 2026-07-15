@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator, CareerScreen, CharScreen, SpeciesRaceScreen, SkillsScreen, TalentsPane, StarZones, TrappingsScreen, DetailsScreen, PresentationScreen, PettySpellsSection, careerLevelTalentsTitle } from './CharacterCreator';
+import { CharacterCreator, CareerScreen, CharScreen, SpeciesRaceScreen, SkillsScreen, StarScreen, TrappingsScreen, DetailsScreen, PresentationScreen, PettySpellsSection, careerLevelTalentsTitle } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
 import {
   newDraft,
@@ -10,11 +10,14 @@ import {
   withSpeciesSkillTier,
   speciesSkillTier,
   speciesSkillStep,
-  draftSpecies,
   SPECIES_SKILLS_PLUS5,
   SPECIES_SKILLS_PLUS3,
   validateStep,
   rollDraftWealth,
+  rollDraftChars,
+  rollDraftTalents,
+  stepIds,
+  draftLevel,
 } from './draft';
 import { species as allSpecies, careersForSpecies, findCareerById, advancementLabel } from '../../data';
 import { CHAR_LABELS } from '../../engine/types';
@@ -24,15 +27,15 @@ const SP = allSpecies.find((s) => s.source.book === 'livre-de-base')!;
 const CAREER = careersForSpecies(SP.refCareer)[0]!;
 const ready = () => withCareer(withSpecies(newDraft(7), SP.id), CAREER.id);
 
-describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () => {
-  it('étape 1 (Race, #393 P1) : gabarit DEUX ZONES « Atelier du scribe » (MasterDetail) ; aucune race pré-tirée', () => {
+describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () => {
+  it('étape 1 (Race, #393 P1) : ossature 2 ZONES « Atelier du scribe » (CreatorStepFrame) ; aucune race pré-tirée', () => {
     const html = renderToStaticMarkup(<CharacterCreator />);
     // Barre d'étapes — le signe astral (ADE2, règle activée par défaut) insère une étape après Caractéristiques.
     expect(html).toContain('1. Race');
     expect(html).toContain('4. Signe astral');
     expect(html).toContain('8. Présentation');
-    // Étape 1 : coquille DEUX zones (MasterDetail), pas de fiche vivante à ce stade.
-    expect(html).toContain('creator-pick-shell');
+    // Étape 1 : gabarit UNIQUE (CreatorStepFrame → MasterDetail), pas de fiche vivante à ce stade.
+    expect(html).toContain('creator-step');
     expect(html).toContain('master-detail-list');
     expect(html).toContain('master-detail-detail');
     expect(html).not.toContain('creator-summary');
@@ -92,9 +95,9 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).not.toContain('tabs tabs-sub'); // plus de facettes de famille (grille de cartes directe)
   });
 
-  it('étape 2 — Carrière (#393 P2) : gabarit DEUX ZONES « Atelier du scribe » (MasterDetail), sections par classe + recherche + encrier', () => {
+  it('étape 2 — Carrière (#393 P2) : ossature 2 ZONES « Atelier du scribe » (CreatorStepFrame), sections par classe + recherche + encrier', () => {
     const html = renderToStaticMarkup(<CareerScreen d={withSpecies(newDraft(7), SP.id)} setD={() => {}} />);
-    expect(html).toContain('creator-pick-shell');
+    expect(html).toContain('creator-step');
     expect(html).toContain('master-detail-list');
     expect(html).toContain('master-detail-detail');
     expect(html).toContain('Rechercher une carrière'); // SearchFilterField canonique en tête
@@ -143,7 +146,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     // Régression : `level.characteristics` est déjà en CharKey ; un mapping libellé→clé renvoyait
     // une liste vide → aucune ligne → « Suivant » jamais actif → création infranchissable.
     const html = renderToStaticMarkup(<CharScreen d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />);
-    expect(html).toContain('creator-chars-shell');
+    expect(html).toContain('creator-step');
     expect(html).toContain('creator-summary'); // fiche vivante, MÊME composition que Race/Carrière
     expect(html).toContain('Augmentations gratuites');
     expect(html).toContain(CHAR_LABELS['capacite-de-combat']); // Soldat : CC est de carrière → ligne présente
@@ -155,7 +158,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
 
   it('étape 3 — la grille centrale (ÉDITION) ne montre PLUS la notation cryptique « B<bonus> » (source unique)', () => {
     const html = renderToStaticMarkup(<CharScreen d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />);
-    expect(html).toContain('char-total'); // le total d'ÉDITION est bien rendu
+    expect(html).toContain('plaque-value'); // le total d'ÉDITION est bien rendu (PlaqueRow, valeur de droite)
     // Plus de double notation « 30B3 » : la fiche vivante porte le RÉSULTAT, le centre la valeur seule.
     expect(html).not.toMatch(/>B\d</);
   });
@@ -182,7 +185,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
 
   it('étape 5 (#393 P4, étalons finale-mock4/5/6-5{a,b,c}) — TROIS sous-écrans (a/b/c, Tabs) ; a. Compétences de race au QtyStepper (fin des cases +5/+3)', () => {
     const html = renderToStaticMarkup(<SkillsScreen d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />);
-    expect(html).toContain('creator-skills-shell');
+    expect(html).toContain('creator-step');
     expect(html).toContain('creator-summary'); // fiche vivante, MÊME composition que Race/Carrière
     expect(html).toContain('class="tabs creator-skills-tabnav"'); // primitive <Tabs> (jamais un tablist recodé)
     expect(html).toContain('Compétences de race');
@@ -192,11 +195,81 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).not.toContain('>+5<'); // l'ancien libellé de case n'existe plus
   });
 
-  it('étape 5c (#393 P4) — Talents : trois lots dérivés de la donnée (fixes / à choisir / tirés au d100)', () => {
+  it('étape 5a/5b (#393 amendement 3) — les rangées d\'allocation COMPOSENT la rangée-plaque (même meuble que les caracs de l\'étape 3), le geste vit dans la bande d\'ACTION', () => {
+    const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    for (const [sub, geste] of [['race', 'Répartition par défaut'], ['career', '+5 sur les huit']] as const) {
+      const html = renderToStaticMarkup(<SkillsScreen d={d} setD={() => {}} skillsSub={sub} setSkillsSub={() => {}} />);
+      expect(html).toContain('class="plaque-row'); // primitive PlaqueRow (plaque-row.css)
+      expect(html).toContain('class="plaque-grid"');
+      expect(html).toContain('creator-band'); // quotas comptés dans la bande titrée (`.cu-sechead`)
+      // Le meuble par-étape est MORT : plus aucune rangée redessinée à la main.
+      expect(html).not.toContain('skill-row');
+      // La rubrique `.rf` de la planche (carac liée) est portée par la plaque, jamais un `<em>` ad hoc.
+      expect(html).toMatch(/class="plaque-name">[^<]*<[^>]*>[\s\S]*?<small>/);
+      // Le geste du volet est dans la bande d'ACTION du gabarit (planche : topbar, pas un head de volet).
+      expect(html.slice(html.indexOf('creator-slot-action'), html.indexOf('creator-slot-choice'))).toContain(geste);
+    }
+  });
+
+  it('étape 5c (#393 P4) — Talents : trois lots dérivés de la donnée (fixes / à choisir / tirés au d100), deux bandes de MÊME rang', () => {
     const soldier = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
-    const html = renderToStaticMarkup(<TalentsPane d={soldier} setD={() => {}} sp={draftSpecies(soldier)!} />);
-    expect(html).toContain('De race — un au choix');
-    expect(html).toContain('De carrière — un au choix');
+    const html = renderToStaticMarkup(<SkillsScreen d={soldier} setD={() => {}} skillsSub="talents" setSkillsSub={() => {}} />);
+    // Les deux colonnes sont des bandes titrées (`Band` = `.cu-sechead` de la planche), posées par
+    // la primitive globale `.panel-grid` — jamais une 2e grille 2-colonnes de domaine.
+    expect(html).toContain('creator-band');
+    expect(html).toContain('panel-grid');
+    expect(html).toContain('De race');
+    expect(html).toContain('De carrière');
+    expect(html).toContain('un au choix');
+  });
+
+  it('étape 3 — agentivité (#393) : caracs à « — » au montage (0/10, aucun dé chiffré), geste « Tirer aux dés » en bande d\'action ; après le geste : dés, totaux, relance', () => {
+    const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const before = renderToStaticMarkup(<CharScreen d={d} setD={() => {}} />);
+    expect(before).toContain('Tirer les dix jets'); // la carte canonique CreatorDice porte le geste
+    expect(before).toContain('class="plaque-value">—<'); // aucune valeur tirée pré-affichée
+    expect(before).toContain('0/10 tirées'); // jauge honnête avant le geste
+    expect(before).not.toContain('Relancer les dix jets'); // la relance n'existe qu'après un premier tirage
+    expect(validateStep(d, 'chars')).toBe('Tirez vos Caractéristiques aux dés.');
+    const rolled = rollDraftChars(d);
+    const after = renderToStaticMarkup(<CharScreen d={rolled} setD={() => {}} />);
+    expect(after).not.toContain('class="plaque-value">—<'); // les dix totaux sont posés
+    expect(after).toContain('10/10 tirées');
+    expect(after).toContain('Relancer les dix jets (bonus perdus)');
+  });
+
+  it('étape 5c — agentivité (#393) : talents d100 VIDES avant le geste (carte « Tirer aux dés » en bande d\'ACTION), chips codex-liées après', () => {
+    const soldier = withCareer(withSpecies(newDraft(7), SP.id), 'soldat'); // Reiklander : « 3 Talent aléatoire »
+    const talents = (d: Parameters<typeof rollDraftTalents>[0]) =>
+      renderToStaticMarkup(<SkillsScreen d={d} setD={() => {}} skillsSub="talents" setSkillsSub={() => {}} />);
+    const before = talents(soldier);
+    expect(before).toContain('Tirer 3 Talents — d100');
+    expect(before).not.toContain('Talents rendus'); // aucun tiré pré-affiché
+    // Le geste vit dans la bande d'ACTION du gabarit (planche mock6 : l'encrier remonte en topbar,
+    // au-dessus des deux colonnes) — pas dans un head de volet.
+    const action = before.slice(before.indexOf('creator-slot-action'), before.indexOf('creator-slot-choice'));
+    expect(action).toContain('Tirer 3 Talents — d100');
+    const after = talents(rollDraftTalents(soldier));
+    expect(after).not.toContain('Tirer 3 Talents — d100');
+    expect(after).toContain('— d100 — 3 Talents rendus');
+  });
+
+  it('fiche vivante — l\'emplacement des talents aléatoires reste « à tirer » (compte dérivé de la donnée) tant que le geste 5c n\'est pas fait', () => {
+    const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const atSkills = stepIds().indexOf('skills');
+    const before = renderToStaticMarkup(<CreatorSummary d={d} step={atSkills} />);
+    expect(before).toContain('3 à tirer au d100 — 5c');
+    const after = renderToStaticMarkup(<CreatorSummary d={rollDraftTalents(d)} step={atSkills} />);
+    expect(after).not.toContain('à tirer au d100');
+  });
+
+  it('machine à états (#393) : étape VALIDÉE revisitée → tuile élue SCELLÉE (WaxSeal via FigTile), jamais avant', () => {
+    const d = withSpecies(newDraft(7), SP.id);
+    expect(renderToStaticMarkup(<SpeciesRaceScreen d={d} setD={() => {}} />)).not.toContain('fig-tile-seal');
+    expect(renderToStaticMarkup(<SpeciesRaceScreen d={d} setD={() => {}} validated />)).toContain('fig-tile-seal');
+    const dc = withCareer(d, 'soldat');
+    expect(renderToStaticMarkup(<CareerScreen d={dc} setD={() => {}} validated />)).toContain('fig-tile-seal');
+    expect(renderToStaticMarkup(<CareerScreen d={dc} setD={() => {}} />)).not.toContain('fig-tile-seal');
   });
 
   it('draft — palier de Compétence de race (Stepper) : quotas 3×+5 / 3×+3 respectés, + saute +3 quand son quota est plein', () => {
@@ -222,24 +295,56 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(speciesSkillTier(e, names[0])).toBe(5);
   });
 
-  it('étape Signe astral (verdict 2, #393 P3 — la roue rejoint Zone B, étalon finale-mock3-signe.png) — ROUE CÉLESTE a11y (radiogroup) remplace le <select> ; desc verbatim en Zone B', () => {
+  it('étape Signe astral (#393 ossature, étalon planche FINALE mock 4) — en-tête + encrier en bande d\'action ; ROUE CÉLESTE a11y (radiogroup) ; DetailFrame sourcé du signe élu', () => {
     const rolled = { ...newDraft(7), star: 'la-grande-croix' };
-    const { choice, detail } = StarZones({ d: rolled, setD: () => {} });
-    const cHtml = renderToStaticMarkup(<>{choice}</>);
-    expect(cHtml).not.toContain('<select value="la-grande-croix"'); // fin du <select> de signe
-    const dHtml = renderToStaticMarkup(<>{detail.body}</>);
-    expect(dHtml).toContain('celestial-wheel');
-    expect(dHtml).toContain('role="radiogroup"');
-    expect(dHtml).toMatch(/role="radio"[^>]*aria-checked="true"/); // signe choisi mis en évidence
-    expect(dHtml).toContain('La Grande Croix'); // titre de la ParchmentCard
-    expect(dHtml).toContain('Astrologie (pur roleplay)');
-    expect(dHtml).not.toContain('trapping-list'); // classe libérée
+    const html = renderToStaticMarkup(<StarScreen d={rolled} setD={() => {}} />);
+    expect(html).toContain('creator-step'); // ossature 2 zones (MÊME gabarit que les 7 autres pas)
+    expect(html).toContain('Signe astral'); // en-tête d'étape (absent avant le lot ossature)
+    expect(html).toContain('Aux dés'); // l'encrier vit dans la bande d'action (slot requis)
+    expect(html).not.toContain('<select value="la-grande-croix"'); // fin du <select> de signe
+    expect(html).toContain('celestial-wheel');
+    expect(html).toContain('role="radiogroup"');
+    expect(html).toMatch(/role="radio"[^>]*aria-checked="true"/); // signe choisi mis en évidence
+    expect(html).toContain('detail-frame'); // le sens du signe COMPOSE la primitive, jamais une Section ad hoc
+    expect(html).toContain('La Grande Croix');
+    expect(html).toContain("Archives de l&#x27;Empire Vol. II p. 40"); // tagline SOURCÉE (DetailFrame.sub)
+    expect(html).toContain('Astrologie (pur roleplay)');
+  });
+
+  it('roue céleste — VINGT positions (les fourchettes d100 du RAW ADE2 ch.03), pas les 23 entrées : les 4 destins de L\'Étoile du Sorcier partagent la borne 100', () => {
+    const html = renderToStaticMarkup(<StarScreen d={newDraft(7)} setD={() => {}} />);
+    const nodes = html.match(/role="radio"/g) ?? [];
+    expect(nodes.length).toBe(20); // 23 entrées de stars.json → 20 positions de cadran
+    // Le nom NU du signe sur le cadran — jamais quatre « L'Étoile du Sorcier (…) » empilés au pôle.
+    expect(html).toContain('aria-label="L&#x27;Étoile du Sorcier"');
+    expect(html).not.toContain('L&#x27;Étoile du Sorcier (Sixième sens)');
+  });
+
+  it('roue céleste — AUCUN libellé escamoté : les vingt noms sont gravés EN CLAIR (la géométrie de la planche remplace les tirets), et rien n\'est élu au montage', () => {
+    const html = renderToStaticMarkup(<StarScreen d={newDraft(7)} setD={() => {}} />);
+    for (const label of ['Wymund l&#x27;Anachorète', 'Le Trait du Peintre', 'La Chèvre Sauvage', 'Le Danseur']) {
+      expect(html).toContain(label);
+    }
+    expect(html).not.toContain('cw-label-dash'); // l'escamotage est mort
+    // Agentivité (#393) : page blanche — aucune aiguille posée avant le geste du joueur.
+    expect(html).not.toContain('aria-checked="true"');
+    expect(html).toContain('Tirez ou'); // le moyeu invite au geste (l'invite est découpée en tspans)
+    expect(html).not.toContain('cw-needle'); // aucune aiguille posée
+  });
+
+  it('L\'Étoile du Sorcier — la position déplie ses QUATRE destins en plaques (1d10, ADE2 ch.03) et n\'en impose aucun', () => {
+    const elu = { ...newDraft(7), star: 'l-etoile-du-sorcier-seconde-vue' };
+    const html = renderToStaticMarkup(<StarScreen d={elu} setD={() => {}} />);
+    expect(html).toContain('Quatre destins');
+    expect((html.match(/plaque-row/g) ?? []).length).toBe(4);
+    expect(html).toMatch(/plaque-row sel/); // le destin élu porte la plaque chaude
+    expect(html).toContain('1d10 : 4-6'); // sa fourchette de sous-table
   });
 
   it('étape Possessions (#393 P5, étalon finale-mock7-possessions.png) — gabarit DEUX ZONES (panneau + fiche vivante), chips CodexRef + statut + bourse (plus de liste à puces)', () => {
     const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
     const html = renderToStaticMarkup(<TrappingsScreen d={d} setD={() => {}} />);
-    expect(html).toContain('creator-trappings-shell');
+    expect(html).toContain('creator-step');
     expect(html).toContain('creator-summary'); // fiche vivante, MÊME composition que Race/Carrière
     expect(html).toContain('metal-status'); // statut en tête de panneau
     expect(html).toContain('skill-tags'); // objets en chips
@@ -254,20 +359,21 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
     expect(d.wealthRoll).toBeFalsy();
     const before = renderToStaticMarkup(<TrappingsScreen d={d} setD={() => {}} />);
-    expect(before).toContain('Tirer aux dés — la bourse');
-    expect(before).not.toContain('creator-purse-line');
+    expect(before).toContain('Tirer aux dés — la bourse'); // l'encrier : le GESTE de l'étape est offert
+    expect(before).not.toContain('créditée au groupe'); // rien n'est tiré → aucun montant posé
     expect(validateStep(d, 'trappings')).toBe('Tirez la bourse de départ aux dés.');
     const rolled = rollDraftWealth(d);
     expect(rolled.wealthRoll).toBe(true);
     const after = renderToStaticMarkup(<TrappingsScreen d={rolled} setD={() => {}} />);
-    expect(after).toContain('creator-purse-line');
+    expect(after).not.toContain('Tirer aux dés — la bourse'); // le geste est consommé (jet figé)
+    expect(after).toContain('créditée au groupe'); // le montant figé est posé
     expect(validateStep(rolled, 'trappings')).toBeNull();
   });
 
   it('étape Détails (#393 P5, étalon finale-mock8-details.png) — gabarit DEUX ZONES, identité + motivation + apparence dans le panneau', () => {
     const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
     const html = renderToStaticMarkup(<DetailsScreen d={d} setD={() => {}} />);
-    expect(html).toContain('creator-details-shell');
+    expect(html).toContain('creator-step');
     expect(html).toContain('creator-summary');
     expect(html).toContain('Nom du personnage');
     expect(html).toContain('Âge');
@@ -288,10 +394,17 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     const d = ready();
     const html = renderToStaticMarkup(<PresentationScreen d={d} setD={() => {}} />);
     expect(html).toContain('creator-presentation-screen');
-    expect(html).toContain('presentation-center');
+    // La SCÈNE de la planche (`.fin-stage`) et sa lampe — ex-`.presentation-center`, renommée à la
+    // migration aux valeurs de l'étalon : le centre n'est pas une colonne de plus, c'est le théâtre.
+    expect(html).toContain('presentation-stage');
+    expect(html).toContain('presentation-lamp');
     expect(html).toContain('Compétences formées');
     expect(html).toContain('Les jets qui le définissent');
     expect(html).toContain('codex-ref');
+    // Statut MÉTALLISÉ (`MetalStatus`, `.st-bronze` de la planche) — jamais le libellé en texte nu.
+    expect(html).toContain('metal-status');
+    // Le NIVEAU de départ est nommé (« Pamphlétaire (Agitateur) » de la planche) — pas la seule carrière.
+    expect(html).toContain(draftLevel(d)!.label);
   });
 
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {

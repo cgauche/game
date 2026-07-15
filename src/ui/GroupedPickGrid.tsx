@@ -19,9 +19,12 @@ export interface PickGridSection {
  * avec roving tabindex (flèches/Home/End, MÊME patron que `Tabs`/`CelestialWheel`/`FacetedPickGrid`
  * — celui-ci n'est pas modifié, son recâblage éventuel est un chantier ultérieur).
  */
-export function GroupedPickGrid({ sections, selectedId, onSelect, label }: {
+export function GroupedPickGrid({ sections, selectedId, sealedId, onSelect, label }: {
   sections: PickGridSection[];
   selectedId?: string;
+  /** Tuile SCELLÉE (machine à états de l'ossature #393 : choix validé → sceau `WaxSeal` via
+   *  `FigTile.sealed`) — id de l'élue une fois l'étape validée, absent sinon. */
+  sealedId?: string;
   onSelect: (id: string) => void;
   label: string;
 }) {
@@ -57,6 +60,7 @@ export function GroupedPickGrid({ sections, selectedId, onSelect, label }: {
                 label={it.label}
                 sub={it.sub}
                 selected={it.id === selectedId}
+                sealed={sealedId != null && it.id === sealedId}
                 onClick={() => onSelect(it.id)}
                 tabIndex={idx === activeIdx ? 0 : -1}
               />

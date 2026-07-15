@@ -11,6 +11,12 @@
  *    relance (RAW, 0 PX) ou répartition de 100 Points = 0.
  *  - Talents d'espèce aléatoires (l.510) : résolus par un RNG seedé fixe → re-résoudre avec
  *    d'autres choix « A ou B » ne re-tire pas les dés.
+ *
+ * AGENTIVITÉ (#393, amendement « ossature enforcée » 2026-07-15) : figé par le seed ≠ pré-affiché.
+ * AUCUN résultat aléatoire n'existe à l'écran avant le GESTE du joueur — chaque famille de tirage
+ * porte son drapeau de geste (`speciesRoll` absent, `careerRolls` vide, `charsRolled`,
+ * `talentsRolled`, `wealthRoll`) ; le geste ne fait que DÉCOUVRIR un résultat déjà déterminé
+ * (zéro savescum), et la validation d'étape EXIGE le geste.
  */
 import { CharKey, CHAR_KEYS, Characteristics, Combatant } from '../../engine/types';
 import { makeRNG } from '../../engine/dice';
@@ -82,6 +88,10 @@ export interface CreatorDraft {
   careerFreeRolls: number;
   // 3) Caractéristiques
   charMode: CharMode;
+  /** Les dix 2d10 TIRÉS (geste « Tirer aux dés » requis, #393 agentivité) : avant le geste, aucune
+   *  valeur de dé n'existe à l'écran (caracs à « — ») — les jets eux-mêmes restent figés par le
+   *  seed (`charRollPairs`), le geste n'en découvre que l'affichage. */
+  charsRolled?: boolean;
   /** Nombre de relances des dix 2d10 (0 = tirage initial ; >0 → bonus perdus, RAW l.385). */
   charRerolls: number;
   /** Réassignation : pour chaque Caractéristique, l'INDEX du jet (permutation de 0..9). */
@@ -98,6 +108,10 @@ export interface CreatorDraft {
   speciesTalentChoices: Record<string, string>;
   /** Choix de spec des talents aléatoires tirés (libellé de base → spec). */
   randomSpecPicks: Record<string, string>;
+  /** Talents d'espèce aléatoires TIRÉS (geste « Tirer aux dés » de l'étape 5c, #393 agentivité) :
+   *  avant le geste, les d100 n'apparaissent NULLE PART (ni volet ni fiche vivante) — la résolution
+   *  reste figée par le seed, le geste n'en découvre que l'affichage. */
+  talentsRolled?: boolean;
   /** Résolution des entrées « (Au choix) » (entrée brute → libellé concret). */
   specChoices: Record<string, string>;
   skillAdvances: Record<string, number>;
@@ -151,6 +165,7 @@ export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff
     careerRolls: [],
     careerFreeRolls: 0,
     charMode: 'rolled',
+    charsRolled: false,
     charRerolls: 0,
     assignment: Object.fromEntries(CHAR_KEYS.map((k, i) => [k, i])) as Record<CharKey, number>,
     pointBuy: Object.fromEntries(CHAR_KEYS.map((k) => [k, 10])) as Record<CharKey, number>,
@@ -160,6 +175,7 @@ export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff
     speciesPlus3: [],
     speciesTalentChoices: {},
     randomSpecPicks: {},
+    talentsRolled: false,
     specChoices: {},
     skillAdvances: {},
     pettySpells: [],
@@ -240,7 +256,8 @@ export const speciesXp = (d: CreatorDraft): number =>
 
 export function withSpecies(d: CreatorDraft, id: string): CreatorDraft {
   if (id === d.speciesId) return d;
-  // Changer d'espèce invalide les choix dépendants (compétences/talents d'espèce, carrière tirée).
+  // Changer d'espèce invalide les choix dépendants (compétences/talents d'espèce, carrière tirée) —
+  // le geste des Talents aléatoires compris (la table des tirages appartient à l'espèce).
   return {
     ...d,
     speciesId: id,
@@ -248,6 +265,7 @@ export function withSpecies(d: CreatorDraft, id: string): CreatorDraft {
     speciesPlus3: [],
     speciesTalentChoices: {},
     randomSpecPicks: {},
+    talentsRolled: false,
     pettySpells: [],
     careerRolls: [],
     careerFreeRolls: 0,
@@ -352,13 +370,20 @@ export function draftChars(d: CreatorDraft): Characteristics {
     const k = CHAR_KEYS[i];
     const base = sp.baseChar[k] ?? 20;
     if (d.charMode === 'pointBuy') out[k] = base + d.pointBuy[k];
-    else out[k] = base + rolls[d.charMode === 'reassigned' ? d.assignment[k] : i];
+    // Agentivité (#393) : avant le geste « Tirer aux dés », aucun jet n'existe — base d'espèce seule.
+    else out[k] = base + (d.charsRolled ? rolls[d.charMode === 'reassigned' ? d.assignment[k] : i] : 0);
   }
   return out;
 }
+/** Pose le geste « Tirer aux dés » des dix 2d10 (LDB 05 l.337) — FIGÉ côté valeurs (`charRollPairs`
+ *  dérive du seed), ce geste n'en découvre que l'affichage (#393 agentivité : jamais un résultat
+ *  pré-rempli au montage). La relance RAW (l.341, bonus perdus) passe par `charRerolls`. */
+export function rollDraftChars(d: CreatorDraft): CreatorDraft {
+  return d.charsRolled ? d : { ...d, charsRolled: true };
+}
 export function charsXp(d: CreatorDraft): number {
   if (!draftSpecies(d)) return 0; // page blanche : pas de bonus 2d10 tant qu'aucune race n'existe
-  if (d.charRerolls > 0 || d.charMode === 'pointBuy') return 0;
+  if (!d.charsRolled || d.charRerolls > 0 || d.charMode === 'pointBuy') return 0;
   return d.charMode === 'rolled' ? XP_CHARS_KEPT : XP_CHARS_REASSIGNED;
 }
 
@@ -386,8 +411,9 @@ export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {
 }
 
 // ── 4) Compétences & Talents ──
-/** Talents d'espèce résolus (choix appliqués, tirages aléatoires FIGÉS par le seed). */
-export function resolvedSpeciesTalents(d: CreatorDraft): string[] {
+/** Résolution COMPLÈTE (tirages d100 compris) — INTERNE : l'exposition publique passe par
+ *  `resolvedSpeciesTalents`, qui retient les tirés tant que le geste 5c n'est pas fait. */
+function resolvedSpeciesTalentsAll(d: CreatorDraft): string[] {
   const sp = draftSpecies(d);
   if (!sp) return [];
   return resolveSpeciesTalents(sp, {
@@ -395,6 +421,26 @@ export function resolvedSpeciesTalents(d: CreatorDraft): string[] {
     choices: { ...d.speciesTalentChoices, ...d.specChoices },
     pickSpec: (base, free) => (d.randomSpecPicks[base] && free.includes(d.randomSpecPicks[base]) ? d.randomSpecPicks[base] : free[0]),
   });
+}
+
+/** Talents d'espèce résolus (choix appliqués, tirages aléatoires FIGÉS par le seed) — les TIRÉS AU
+ *  D100 n'y figurent qu'une fois le geste « Tirer aux dés » posé (`talentsRolled`, #393 agentivité :
+ *  un talent non encore lancé n'apparaît NULLE PART, ni volet ni fiche vivante). */
+export function resolvedSpeciesTalents(d: CreatorDraft): string[] {
+  const all = resolvedSpeciesTalentsAll(d);
+  if (d.talentsRolled) return all;
+  for (const label of randomDrawnOf(d)) {
+    const i = all.indexOf(label);
+    if (i !== -1) all.splice(i, 1);
+  }
+  return all;
+}
+
+/** Geste « Tirer aux dés » des Talents d'espèce aléatoires (LDB 05 l.510 ; un doublon déjà possédé
+ *  est relancé D'OFFICE par `resolveSpeciesTalents`, l.484) — tirages figés par le seed, découverts
+ *  ici ; RAW n'offre aucune relance au joueur. */
+export function rollDraftTalents(d: CreatorDraft): CreatorDraft {
+  return d.talentsRolled ? d : { ...d, talentsRolled: true };
 }
 
 /** Entrées BRUTES de Talents d'espèce en TROIS lots (LDB 05 l.510, catégorisation de l'écran
@@ -424,10 +470,15 @@ export function speciesTalentRandomCount(d: CreatorDraft): number {
   }
   return n;
 }
-/** Les N talents TIRÉS au d100 (LDB 05 l.510) — le reste de `resolvedSpeciesTalents` une fois les
- *  entrées fixes et choisies retirées (par libellé, en respectant les doublons via un multiset). */
+/** Les N talents TIRÉS au d100 (LDB 05 l.510), tels que le geste 5c les découvre — VIDE tant que le
+ *  joueur n'a pas tiré (#393 agentivité). */
 export function speciesTalentRandomDrawn(d: CreatorDraft): string[] {
-  const resolved = [...resolvedSpeciesTalents(d)];
+  return d.talentsRolled ? randomDrawnOf(d) : [];
+}
+/** INTERNE : les tirés au d100 de la résolution complète — le reste de `resolvedSpeciesTalentsAll`
+ *  une fois les entrées fixes et choisies retirées (par libellé, doublons respectés via multiset). */
+function randomDrawnOf(d: CreatorDraft): string[] {
+  const resolved = [...resolvedSpeciesTalentsAll(d)];
   const known = [...speciesTalentFixedEntries(d)];
   for (const raw of speciesTalentChoiceEntries(d)) {
     const chosen = d.speciesTalentChoices[raw] ?? splitTopLevelOu(raw)[0];
@@ -619,6 +670,7 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
     }
     case 'chars': {
       if (!sp) return 'Choisissez votre race.';
+      if (d.charMode !== 'pointBuy' && !d.charsRolled) return 'Tirez vos Caractéristiques aux dés.';
       if (d.charMode === 'pointBuy') {
         const v = validatePointBuy(d.pointBuy as Record<CharKey, number>);
         if (!v.ok) return `Répartition des 100 Points : ${v.reason}.`;
@@ -648,6 +700,7 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
         const entry = advancementLabel('talents', ref);
         if (splitTopLevelOu(entry).length > 1 && !d.speciesTalentChoices[entry]) return `Choisissez : « ${entry} ».`;
       }
+      if (speciesTalentRandomCount(d) > 0 && !d.talentsRolled) return 'Tirez vos Talents aléatoires aux dés.';
       const entries = careerSkillEntries(d);
       const total = entries.reduce((a, e) => a + (d.skillAdvances[e] ?? 0), 0);
       if (total !== CAREER_SKILL_ADVANCES) return `Répartissez ${CAREER_SKILL_ADVANCES} Augmentations de carrière (actuel : ${total}).`;
@@ -752,8 +805,10 @@ export function careerSkillsDone(d: CreatorDraft): boolean {
   if (careerAdvTotal(d) !== CAREER_SKILL_ADVANCES) return false;
   return careerSkillEntries(d).every((e) => (d.skillAdvances[e] ?? 0) === 0 || !isUnresolvedChoice(e) || !!d.specChoices[e]);
 }
-/** 5c — Talents : choix « A ou B » d'espèce tranché + Talent de carrière choisi + Magie mineure. */
+/** 5c — Talents : aléatoires TIRÉS + choix « A ou B » d'espèce tranché + Talent de carrière choisi
+ *  + Magie mineure. */
 export function talentsDone(d: CreatorDraft): boolean {
+  if (speciesTalentRandomCount(d) > 0 && !d.talentsRolled) return false;
   if (!speciesTalentChoicesDone(d)) return false;
   if (!d.careerTalent) return false;
   const quota = pettySpellQuota(d);
@@ -790,6 +845,7 @@ export function skillsSubMessage(d: CreatorDraft, sub: SkillsSub): string {
       return `Compétences de carrière posées — ${CAREER_SKILL_ADVANCES} Augmentations réparties.`;
     }
     case 'talents': {
+      if (speciesTalentRandomCount(d) > 0 && !d.talentsRolled) return 'Tirez vos Talents aléatoires aux dés.';
       for (const ref of sp.talents) {
         const entry = advancementLabel('talents', ref);
         if (splitTopLevelOu(entry).length > 1 && !d.speciesTalentChoices[entry]) return `Choisissez : « ${entry} ».`;

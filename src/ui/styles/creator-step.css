@@ -1,0 +1,94 @@
+/* ══ Ossature 2 ZONES du créateur (`CreatorStepFrame`, lot « ossature enforcée » #393 — croquis
+   user 2026-07-15) : zone de CHOIX (bande d'action OBLIGATOIRE en tête + grille/contrôles) | zone
+   DESC (fiche de l'élue ou fiche vivante). Le LAYOUT du gabarit (`.creator-step`, renommage 1:1 de
+   l'ex-`.creator-pick-shell`) vit dans creator.css, à côté du cadre-parchemin qu'il partage avec
+   `.detail-frame` — ICI ne vivent que les SLOTS de l'ossature et la matière des dés de la planche
+   (`planche-creator-FINALE.html`, l'étalon du lot). ══ */
+
+/* Les slots sont des STAMPS structurels (data-testid, garde `creator-ossature.test.tsx`) —
+   `display: contents` : ils n'introduisent AUCUNE boîte, le flux de la colonne de choix reste
+   celui du panneau (bande d'action en tête par ORDRE des slots dans le gabarit). */
+.creator-step-action,
+.creator-step-choice,
+.creator-step-desc {
+  display: contents;
+}
+
+/* ── En-tête d'étape (`StepHeader`) = la topbar de la planche : `.fam-topbar`
+   {display:flex;align-items:center;gap:10px} portant le `.c-dhead` puis les GESTES de l'étape en
+   FRÈRES (plaque d'action, encrier) — jamais une rangée intercalaire qui s'enroulerait. Les étapes à
+   plusieurs gestes (Détails) alignent le bloc titre en tête (`align-items:flex-start` de la planche
+   mock8) : le sous-titre ne se centre pas sur des cartes hautes. ── */
+.step-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+/* `.c-dhead` de la planche : titre et sous-titre EN LIGNE, alignés à la BASELINE (écart 14px) — le
+   bloc pousse les gestes à droite (`flex:1` de la planche). */
+.step-head-title {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--gold2);
+  letter-spacing: 0.6px;
+}
+/* `.c-dhead .sub` : la rubrique gravée du titre. L'écart est porté par la RUBRIQUE (pas un `gap` de
+   flex) — il survit ainsi au repli `display:block` du mobile, où la rubrique redevient du texte
+   INLINE qui s'enroule sous le titre sans `flex-wrap` (cliquet vii). */
+.step-head-title small {
+  margin-left: 14px;
+  /* La rubrique est en SANS, jamais dans la gothique du titre : `.c-dhead .sub` de la planche n'hérite
+     d'aucun `font-family` (son `.c-dhead` n'en pose pas), et `.cu-sechead .ttl small` l'écrit noir sur
+     blanc — même face que la rubrique de `Band` (`.creator-band-head h3 small`). */
+  font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+  font-weight: 400;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-caps: small-caps;
+  letter-spacing: 1.4px;
+}
+/* L'encrier de l'en-tête ne mange pas la largeur du titre (planche : l'encrier de topbar est borné). */
+.step-head .dicewell {
+  max-width: 380px;
+}
+/* Sous le breakpoint canon 700px, la topbar s'empile : un en-tête à plusieurs gestes (étape Détails)
+   déborderait sinon la colonne étroite (encrier rogné à 360px, mesuré). */
+@media (max-width: 700px) {
+  .step-head {
+    flex-direction: column;
+  }
+  .step-head-title {
+    display: block;
+  }
+}
+
+/* ── Dés DORÉS de la planche (`.d10` : silhouette sombre à liseré laiton, chiffre ivoire #ffe6a8)
+   — DieFace (`DiceRoll.tsx`) recoloré dans TOUT le gabarit d'étape + les plateaux d'encrier
+   (`.dicewell-tray`, où qu'ils soient montés : galerie comprise). La gemme ROUGE par défaut
+   (`.rm-die-gem`, combat-modals.css) reste le canon des modales de combat (#396). ── */
+.creator-step .rm-die-gem,
+.dicewell-tray .rm-die-gem {
+  fill: var(--atelier-wood-top);
+  stroke: var(--atelier-brass-hover);
+  stroke-width: 1.1;
+}
+.creator-step .rm-die-num,
+.dicewell-tray .rm-die-num {
+  fill: var(--atelier-brass-elu);
+}
+/* Roulis : liseré POINTILLÉ or clair + chiffre or (`.d10.roll` de la planche — bordure dashed
+   #ffd97a, chiffre #d8b954). */
+.creator-step .rm-die-rolling .rm-die-gem,
+.dicewell-tray .rm-die-rolling .rm-die-gem {
+  stroke: var(--atelier-brass-light);
+  stroke-dasharray: 3 2;
+}
+.creator-step .rm-die-rolling .rm-die-num,
+.dicewell-tray .rm-die-rolling .rm-die-num {
+  fill: var(--gold2);
+}

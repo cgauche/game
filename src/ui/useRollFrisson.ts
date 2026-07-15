@@ -41,6 +41,11 @@ const LAND_MS = 1100;
  * @param opts.frisson  Anime avant de résoudre (défaut : TRUE — #396, tout jet roule désormais ;
  *   un flux passe `false` pour un cas sans geste visuel, aucun aujourd'hui).
  */
+/** Préférence système « réduire les animations » — SOURCE UNIQUE, partagée par le hook et les
+ *  cérémonies custom qui séquencent leurs propres beats (ex. les dix 2d10 du créateur). */
+export const prefersReducedMotion = (): boolean =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
 export function useRollFrisson(onRoll?: () => void, opts?: { frisson?: boolean }): {
   rolling: boolean;
   landed: boolean;
@@ -53,7 +58,7 @@ export function useRollFrisson(onRoll?: () => void, opts?: { frisson?: boolean }
   const tumbleTimer = useRef<number | null>(null);
   const landTimer = useRef<number | null>(null);
   const fnRef = useRef<(() => void) | undefined>(onRoll);
-  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const reduceMotion = prefersReducedMotion();
 
   const clearTimers = () => {
     if (tumbleTimer.current != null) { window.clearTimeout(tumbleTimer.current); tumbleTimer.current = null; }

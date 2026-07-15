@@ -68,7 +68,7 @@ export function HeroSheet({
   return (
     <div className={['hero-sheet', className].filter(Boolean).join(' ')}>
       {header && (
-        <div className="hero-sheet-head">
+        <div className="hero-sheet-head row-flex">
           <CharacterPreview hero={hero} size="md" ambiance="panel" className="hero-sheet-fig" />
           <div className="hero-sheet-id">
             <h3 className="detail-frame-name">{hero.name}</h3>

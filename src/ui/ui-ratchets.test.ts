@@ -68,7 +68,11 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/compendium.css': 3,
   // +1 : `.creator-race-lineages` (#393 P2, correction structurelle Race) — rangée de chips de
   // lignée en tête du détail, s'enroule (motif `.bar` non composable ici, boutons de largeur variable).
-  'styles/creator.css': 8,
+  // -2 : lot « ossature enforcée » (#393) — mort du bandeau fiche-vivante ≤1100px du rail 3 zones
+  // (`.creator-shell > .creator-summary` et `.creator-derived` en rangée), l'empilement vit sur
+  // le gabarit unique `.creator-step`.
+  // -1 : purge du bloc MORT `.career-path` (superseded par CareerPath/`.cc-path`, 0 réf) — voir (xii).
+  'styles/creator.css': 5,
   'styles/editor.css': 10,
   'styles/gauges.css': 1,
   'styles/hud.css': 6,
@@ -147,6 +151,11 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
   // FigTile.tsx : primitive canon de tuile-figurine cliquable (`.fig-tile`, #412) — même famille que
   // PortraitTile.tsx, sa propre classe de composant.
   'FigTile.tsx',
+  // PlaqueRow.tsx : primitive canon de la rangée-plaque (`.plaque-row`, #393 amendement 3) — même
+  // famille que FigTile/MenuCard, sa propre classe de composant ; la plaque d'ACTION de la planche
+  // est cliquable (`.c-plate{cursor:pointer}`), la primitive rend alors un VRAI bouton plutôt que
+  // de laisser chaque écran piéger un `div` au clic.
+  'PlaqueRow.tsx',
 ]);
 // `dicewell` : bouton-encrier canon de `CreatorDice` (#414, langage `.c-dicewell.act` du kit
 // « Atelier du scribe ») — même famille que `.btn`/`.chip`, sa propre classe de composant.
@@ -216,6 +225,10 @@ const DOMAIN_CSS_MODULES = [
   'rose',
   'hero-sheet',
   'frames',
+  'creator-step',
+  'plaque-row',
+  'celestial-wheel',
+  'creator-presentation',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -286,7 +299,63 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Correctif responsive PRÉSENTATION (agent-œil post-livraison, même lot) : +1 —
   // `.presentation-left .char-stats` (repli 3 colonnes ≤560px, la grille 5 colonnes canonique
   // débordait la colonne étroite mobile).
-  'styles/creator.css': 163,
+  // Lot « OSSATURE ENFORCÉE » (#393, croquis user 2026-07-15) : -18 NET (163 → 145, décrue
+  // exigée par l'amendement 2 « revenir SOUS 123 » — premier maillon du lot). Le gabarit 2 zones
+  // s'encode dans `CreatorStepFrame` (`.creator-step`, renommage 1:1 de `.creator-pick-shell`) :
+  // MORT du rail 3 zones (`.creator-shell`/`.creator-rail`/`.creator-main` + overrides ParchmentCard
+  // `.creator-main .tag|.talent-option|.talent-desc|.char-alloc|.path-node`, bandeau fiche ≤1100px),
+  // des shells par-étape (`.creator-chars|skills|trappings|details-(screen|shell|main)`) et de
+  // `.rail-line` ; la teinte dorée des dés vit dans creator-step.css (module de la primitive).
+  // Consécration PlaqueRow (#393 amendement 3, même lot) : -8 (145 → 137) — les rangées de
+  // caractéristiques de l'étape 3 composent la primitive (plaque-row.css) : `.char-alloc(-grid)`/
+  // `.char-key`/`.char-name`/`.char-roll`/`.char-die`/`.char-total`/`.rm-die-num` morts ici.
+  // Migration étape 1 (species, même lot) : -3 (137 → 134) — purge du bloc MORT `.career-path`/
+  // `.path-node`(`.current`/`em`), ancien CareerPath superseded par la primitive `.cc-path`/`.cc-step`
+  // (0 réf TSX) rencontré en auditant creator.css pour la décrue.
+  // Migration étape 7 (details, même lot) : -5 (133 → 128) — l'état civil COMPOSE la rangée-plaque
+  // (`PlaqueGrid`/`PlaqueRow`, planche `.idf` = la plaque à colonne de libellé gravée) : mort de
+  // `.identity-(grid|field|sex-toggle)` et de `.input-dice` (la valeur éditable est une matière de
+  // plaque, plaque-row.css) ; la bande d'action rejoint l'en-tête d'étape PARTAGÉ
+  // (`.creator-skills-head`, topbar `.fam-topbar` de la planche) → `.creator-details-toolbar` MORTE.
+  // Migration étape 6 (trappings, même lot) : -1 (134 → 133) — `.creator-purse-line` MORTE : le total
+  // de la bourse s'ancre à droite de la barre (`Band.right`, motif `.cu-sechead .cnt` de la planche —
+  // même rang que les « N objets » des dotations), les faces figées + la note passent en enfants
+  // DIRECTS de la bande (valeurs `.c-note` déjà portées par `.creator-band > .hint`).
+  // Consécration StepHeader (#393 amendement 3, clôture de la migration étape 7) : -3 (128 → 125) —
+  // les 6 en-têtes de pas (étapes 3, 5a/5b/5c, 6, 7) COMPOSENT la primitive (creator-step.css, valeurs
+  // `.fam-topbar`/`.c-dhead` de la planche : titre 26px + rubrique small-caps EN LIGNE à la baseline,
+  // là où le markup recopié à la main les EMPILAIT) : `.creator-skills-head`/`-title`/`-sub` morts ici.
+  // Migration étape 8 (presentation, clôture du lot) : -9 (125 → 116, sous l'objectif < 123 de
+  // l'amendement 2) — tout le style de la mise en scène finale rejoint SON module dédié
+  // (creator-presentation.css, patron rose.css/frames.css) : `.creator-presentation-screen`,
+  // `.presentation-(col|center|fig|name|sub|left)` morts ici, et avec eux les deux descendants qui
+  // n'existaient QUE pour cet écran (`.presentation-col .mini-title`, `.presentation-left .char-stats`
+  // — d'où -9 et non -7 : le compte est par NOM de classe cité, pas par règle).
+  // Migration étape 4 (star, lot ossature) : -2 (116 → 114). L'astrolabe rejoint SON module dédié
+  // (celestial-wheel.css, patron plaque-row.css/creator-presentation.css) : `.celestial-wheel`,
+  // `.cw-label`, `.cw-label-dash` morts ici ; et le corps de l'étape COMPOSE le patron
+  // figure+contrôles déjà canon du fichier (`.appear-panel`/`.appear-controls`) au lieu des
+  // `.star-body`/`.star-detail-col` que la migration avait d'abord recodés — seules `.star-wheel-col`
+  // (l'astrolabe veut la moitié de la zone, `.appear-figure` est une vignette de 184px) et
+  // `.star-apparence` (l'ambiance de la constellation) restent propres au pas.
+  // Migration étape 5 (skills 5a/5b/5c, lot ossature) : -6 (114 → 108), SANS module neuf — la
+  // réserve annoncée par l'amendement 3 (« rangées d'allocation de l'étape 5 : MÊME meuble » que
+  // les caracs de l'étape 3 ; la planche le dit en clair, ses `.cs-row` et `.ck-cell` ont la MÊME
+  // matière au hex près). Les trois volets composent `PlaqueGrid`/`PlaqueRow` : `.skill-row`,
+  // `.skill-row-grid`, `.skill-row-label` morts ; `.creator-skills-card` morte (le gabarit porte le
+  // layout) ; `.creator-talents-cols` morte au profit de la primitive GLOBALE `.panel-grid` (« deux
+  // colonnes de même rang » de la planche mock6) ; `.creator-skill-quota-gauges` morte, les quotas
+  // se comptant dans la tête de `Band` (`.cu-sechead .gauge` : « la réglette sertie compte les
+  // quotas au même endroit, toujours »). La rubrique `.rf` de la planche (carac liée), portée à
+  // l'identique par `.cs-row` ET `.ck-cell`, entre dans la primitive (prop `sub`) SANS classe neuve :
+  // sélecteurs d'ÉLÉMENT sous la classe existante (`.plaque-name:has(> small)`, `.plaque-name > small`),
+  // l'idiome que le module tenait déjà pour la plaque éditable (`.plaque-name > input`).
+  // Vérification finale du lot ossature : -1 (108 → 107) — purge de `.tag-char`, MORTE (0 réf, la
+  // marque « carrière » des rangées de caractéristiques porte `.tag.char` — classe DISTINCTE, bien
+  // vivante, définie juste en dessous). Audit de décrue : les 4 autres classes sans consommateur
+  // LITTÉRAL du fichier sont des faux positifs (`metal-status-chip|-plaque`, `st-argent|-or` sont
+  // bâties par gabarit dans `MetalStatus.tsx` — `metal-status-${size}` / `st-${tier}`).
+  'styles/creator.css': 107,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -311,6 +380,40 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
   // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).
   'styles/hero-sheet.css': 7,
+  // Ossature 2 zones du créateur (CreatorStepFrame, lot « ossature enforcée » #393) — slots
+  // `.creator-step-(action|choice|desc)` + dés DORÉS planche (`.rm-die-*` scopés au gabarit et aux
+  // plateaux `.dicewell-tray`) ; le layout `.creator-step` vit dans creator.css (renommage 1:1).
+  // Consécration StepHeader (#393 amendement 3, clôture étape 7) : +3 (8 → 11) — l'en-tête de pas
+  // rejoint le module de SA primitive (`.step-head`/`-title`, + le bornage `.dicewell` de la topbar,
+  // classe déjà définie en creator.css : le compte est par-module) ; creator.css paie -3 en regard.
+  'styles/creator-step.css': 11,
+  // Mise en scène FINALE du créateur (`PresentationScreen`, migration étape 8 du lot ossature) —
+  // l'étape EXEMPTÉE du gabarit 2 zones (user 2026-07-15 : « sauf sur le dernier écran ») porte son
+  // style dans SON module, jamais dans creator.css (amendement 2 : décrue nette exigée). Valeurs de
+  // `planche-creator-FINALE.html` § « Écran final » : `.fin-col` (registre), `.fin-stage` (la scène),
+  // `.c-lamp` (la lampe), `.c-main` (gabarit). Contrepartie ASSUMÉE des -9 de creator.css.
+  'styles/creator-presentation.css': 8,
+  // Rangée-plaque à rivets d'or (PlaqueRow/PlaqueGrid, #393 amendement 3) — matière `.c-plate` +
+  // états `.ck-cell` de la planche FINALE, module primitive dédiée (patron rose.css/frames.css) :
+  // `.plaque-(row|grid|prefix|name|meta|value)`, états `.sel`/`.rolling`, dés compacts ET dorés
+  // scopés à la méta (`.rm-die`/`-num`/`-gem`/`-rolling` — la plaque rend or où qu'elle soit
+  // montée, galerie comprise ; la gemme rouge de combat-modals.css reste le canon du combat).
+  // Migration étape 7 (details, même lot) : +1 (12 → 13) — `.plaque-label` : la colonne de libellé
+  // gravée de la planche (`.idf .lb`, 92px small-caps) rejoint la primitive, contrepartie ASSUMÉE
+  // des -5 de creator.css (mécanisme voulu par l'amendement 3 : « les classes par-étape meurent
+  // dans les primitives ») — la plaque ÉDITABLE (`.idf .vl` : trait pointillé) et la plaque
+  // CLIQUABLE n'ont, elles, coûté aucune classe (sélecteurs d'élément `.plaque-name > input` /
+  // `button.plaque-row`).
+  'styles/plaque-row.css': 13,
+  // Astrolabe de la roue céleste (`CelestialWheel`, migration étape 4 du lot ossature) : les MATIÈRES
+  // du cadran aux valeurs du `svg` « 4 — Signe astral » de la planche FINALE. 14 pour 3 qui vivaient
+  // dans creator.css : contrepartie ASSUMÉE de la fidélité (l'ancienne roue était un croquis à deux
+  // anneaux — pas d'aiguille, pas de rayons gravés, pas de bornes d100, pas de moyeu), tenue au plus
+  // court par mutualisation — un SEUL filet laiton (`.cw-ring-fine`) pour l'anneau intérieur, l'anneau
+  // pointillé (dash en attribut) et le liseré du moyeu ; les deux `<stop>` de la gemme portent leur
+  // `stop-color` en attribut `var(--…)` ; la note du moyeu et l'invite du cadran vide partagent
+  // `.cw-hub-note`. Le reste est un nœud = une matière, sans descendant décoratif.
+  'styles/celestial-wheel.css': 14,
 };
 
 // ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules

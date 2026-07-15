@@ -5,6 +5,8 @@ import {
   withCareer,
   rollDraftSpecies,
   rollDraftCareer,
+  rollDraftChars,
+  rollDraftTalents,
   speciesXp,
   careerXp,
   charsXp,
@@ -12,6 +14,9 @@ import {
   charRolls,
   draftChars,
   resolvedSpeciesTalents,
+  speciesTalentRandomCount,
+  speciesTalentRandomDrawn,
+  talentsDone,
   careerSkillEntries,
   careerAdvTotal,
   evenCareerSkillAdvances,
@@ -55,6 +60,8 @@ function readyDraft() {
   }
   return {
     ...d,
+    charsRolled: true, // gestes « Tirer aux dés » posés (#393 agentivité : exigés par la validation)
+    talentsRolled: true,
     charAdvancesAlloc: { 'capacite-de-combat': 5 }, // Soldat : CC est de carrière
     fateSplit: { fate: Math.ceil(sp.fate.extra / 2), resilience: Math.floor(sp.fate.extra / 2) },
     speciesPlus5: sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a)),
@@ -105,12 +112,52 @@ describe('aléatoire FIGÉ (anti-savescum)', () => {
     expect(rollDraftSpecies(d1)).toBe(d1); // déjà tiré → no-op
   });
   it('les talents d\'espèce aléatoires sont identiques à chaque résolution (seed fixe)', () => {
-    const d = draft(); // Reiklander : « 3 Talent aléatoire »
+    const d = rollDraftTalents(draft()); // geste 5c posé — Reiklander : « 3 Talent aléatoire »
     expect(resolvedSpeciesTalents(d)).toEqual(resolvedSpeciesTalents(d));
     // Changer un choix « A ou B » ne re-tire pas les dés des aléatoires.
     const d2 = { ...d, speciesTalentChoices: { 'Perspicace ou Affable': 'Affable' } };
     const randoms = (x: string[]) => x.filter((t) => !['Perspicace', 'Affable', 'Destinée'].includes(t));
     expect(randoms(resolvedSpeciesTalents(d2))).toEqual(randoms(resolvedSpeciesTalents(d)));
+  });
+});
+
+describe('agentivité (#393, amendement « ossature enforcée ») — aucun résultat aléatoire avant le GESTE', () => {
+  it('caractéristiques : base d\'espèce seule avant le geste, jets révélés après — geste idempotent', () => {
+    const d = draft();
+    const sp = draftSpecies(d)!;
+    for (const k of CHAR_KEYS) expect(draftChars(d)[k]).toBe(sp.baseChar[k] ?? 20); // aucun 2d10 pré-affiché
+    const rolled = rollDraftChars(d);
+    expect(rolled.charsRolled).toBe(true);
+    expect(rollDraftChars(rolled)).toBe(rolled); // déjà tiré → no-op (les valeurs restent figées par le seed)
+    const rolls = charRolls(rolled);
+    CHAR_KEYS.forEach((k, i) => expect(draftChars(rolled)[k]).toBe((sp.baseChar[k] ?? 20) + rolls[i]));
+  });
+  it('validation étape 3 : le geste est EXIGÉ pour les voies aux dés, pas pour les 100 Points', () => {
+    expect(validateStep(draft(), 'chars')).toBe('Tirez vos Caractéristiques aux dés.');
+    expect(validateStep({ ...draft(), charMode: 'pointBuy' as const }, 'chars')).not.toMatch(/aux dés/);
+  });
+  it('talents aléatoires : AUCUN tiré avant le geste (ni liste ni résolution), révélés après — figés par le seed', () => {
+    const d = draft(); // Reiklander : « 3 Talent aléatoire »
+    expect(speciesTalentRandomCount(d)).toBe(3);
+    expect(speciesTalentRandomDrawn(d)).toEqual([]); // rien à l'écran avant le geste
+    const before = resolvedSpeciesTalents(d);
+    const rolled = rollDraftTalents(d);
+    const drawn = speciesTalentRandomDrawn(rolled);
+    expect(drawn).toHaveLength(3);
+    expect(resolvedSpeciesTalents(rolled)).toHaveLength(before.length + drawn.length);
+    expect(speciesTalentRandomDrawn(rollDraftTalents(draft()))).toEqual(drawn); // découverte, jamais un re-tirage
+  });
+  it('validation 5c : le tirage des Talents aléatoires est exigé (validateStep + talentsDone)', () => {
+    const untirés = { ...readyDraft(), talentsRolled: false };
+    expect(validateStep(untirés, 'skills')).toBe('Tirez vos Talents aléatoires aux dés.');
+    expect(talentsDone(untirés)).toBe(false);
+    expect(validateStep(readyDraft(), 'skills')).toBeNull();
+    expect(talentsDone(readyDraft())).toBe(true);
+  });
+  it('changer d\'espèce réinitialise le geste des Talents (la table de tirage appartient à l\'espèce)', () => {
+    const rolled = rollDraftTalents(draft());
+    const other = allSpecies.find((s) => s.id !== rolled.speciesId)!.id;
+    expect(withSpecies(rolled, other).talentsRolled).toBe(false);
   });
 });
 
@@ -165,8 +212,9 @@ describe('bonus de PX (LDB 04/05)', () => {
     const dFree = rollDraftCareer(d3); // « continuez à relancer » (l.195)
     expect(careerXp(dFree)).toBe(0);
   });
-  it('caractéristiques : +50 gardées, +25 réassignées, 0 après relance ou 100 Points', () => {
-    const d = draft();
+  it('caractéristiques : +50 gardées, +25 réassignées, 0 après relance ou 100 Points — et 0 sans le GESTE', () => {
+    expect(charsXp(draft())).toBe(0); // pas de bonus pour un tirage jamais lancé (#393 agentivité)
+    const d = rollDraftChars(draft());
     expect(charsXp(d)).toBe(50);
     expect(charsXp({ ...d, charMode: 'reassigned' })).toBe(25);
     expect(charsXp({ ...d, charRerolls: 1 })).toBe(0);
@@ -189,7 +237,7 @@ describe('careerCharKeys (Augmentations de carrière)', () => {
 
 describe('validation des étapes', () => {
   it('Caractéristiques : 5 Augmentations et split Destin/Résilience exigés', () => {
-    const d = draft();
+    const d = rollDraftChars(draft());
     expect(validateStep(d, 'chars')).toMatch(/5 Augmentations/);
     const ok = readyDraft();
     expect(validateStep(ok, 'chars')).toBeNull();

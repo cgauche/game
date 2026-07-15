@@ -23,6 +23,9 @@ import { MetalStatus } from '../MetalStatus';
 import { WaxSeal, SealedPlaque } from '../WaxSeal';
 import { CareerPath } from '../CareerPath';
 import { FigTile } from '../FigTile';
+import { PlaqueRow, PlaqueGrid } from '../PlaqueRow';
+import { DieFace } from '../DiceRoll';
+import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { DetailFrame } from '../DetailFrame';
 import { HeroSheet } from '../HeroSheet';
@@ -37,7 +40,7 @@ import { MenuCard, MenuSection, MenuButton, MenuToggle } from '../MenuCard';
 import { CreatorDice } from '../creator/CreatorDice';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
-import { species, careers, levelsForCareer, stars, rigSpeciesId, allAxes } from '../../data';
+import { species, careers, levelsForCareer, stars, rigSpeciesId, allAxes, CHAR_ABR } from '../../data';
 import { makePregens } from '../../data/pregens';
 import { toMoney } from '../../engine/money';
 import { RoseAxes } from '../RoseAxes';
@@ -241,6 +244,48 @@ function FigTileDemo() {
   );
 }
 
+/** Rangée-plaque à rivets d'or (#393) : rangées de registre aux valeurs RÉELLES du pré-tiré
+ *  (repos, roulant à dés compacts) + plaques d'option (élue `.sel` chaude, au repos) + rangée
+ *  d'ALLOCATION à rubrique gravée (`sub` = le `.rf` de la planche, étape 5) — les états de la
+ *  primitive, aucune rangée recodée. */
+function PlaqueRowDemo() {
+  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  const ch = SAMPLE_HERO.characteristics;
+  const [k1, k2, k3] = CHAR_KEYS;
+  return (
+    <div className="stack">
+      <PlaqueGrid>
+        {[k1, k2].map((k) => (
+          <PlaqueRow key={k} prefix={CHAR_ABR[k]} name={CHAR_LABELS[k]} value={ch[k]} />
+        ))}
+        <PlaqueRow
+          prefix={CHAR_ABR[k3]}
+          name={CHAR_LABELS[k3]}
+          rolling
+          meta={
+            <span className="row-flex">
+              <span className="rm-die"><DieFace n={5} landed /></span>
+              <span className="rm-die"><DieFace n={6} landed /></span>
+            </span>
+          }
+          value={ch[k3]}
+        />
+        <PlaqueRow name="Aux dés — garder le tirage" selected meta={<em>+50 PX</em>} />
+        <PlaqueRow name="Répartir 100 points" meta={<em>0 PX</em>} />
+        {/* Rangée d'ALLOCATION (étape 5) : la rubrique gravée porte la carac liée et son cumul —
+            la plaque s'empile alors sur deux lignes, un libellé long ne se tronque jamais. */}
+        <PlaqueRow
+          name="Corps à corps (Base)"
+          sub={`${CHAR_LABELS[k1]} ${ch[k1]} → ${ch[k1] + 5} · +5 de race`}
+          selected
+          value="+5"
+        />
+        <PlaqueRow name="Résistance à l'alcool" sub={`${CHAR_LABELS[k2]} ${ch[k2]}`} value="—" />
+      </PlaqueGrid>
+    </div>
+  );
+}
+
 function MetalStatusDemo() {
   return (
     <div className="row-flex">
@@ -297,6 +342,24 @@ function HeroSheetDemo() {
       <p className="hint">`header={false}` : composé par la fiche vivante du créateur (alcôve propre à l'appelant).</p>
       <HeroSheet hero={SAMPLE_HERO} header={false} />
     </div>
+  );
+}
+
+/** Gabarit d'étape du créateur — MÊME exception que `ScreenShell` : un gabarit PLEIN-CHAMP ne se
+ *  monte pas en vignette. Sa grille (`.creator-step`, `minmax(0,1fr) minmax(320px,600px)`) réclame la
+ *  largeur d'un écran, et son repli est piloté par des `@media` de VIEWPORT — dans le panneau de la
+ *  galerie (~660px, viewport large) la zone de choix serait réduite à un filet, ce qui donnerait à
+ *  voir un gabarit CASSÉ plutôt que l'ossature. Il s'observe donc là où il vit, en grandeur réelle. */
+function CreatorStepFrameNote() {
+  return (
+    <p className="hint">
+      Gabarit PLEIN-CHAMP non montable en vignette : `CreatorStepFrame` réclame la largeur d'un écran
+      (grille `minmax(0,1fr) minmax(320px,600px)`, repli au `@media` de viewport) — s'observe en
+      grandeur réelle sur les 7 pas du créateur (Race → Détails), zones estampillées
+      `data-testid="creator-slot-(action|choice|desc)"`. La garde `creator-ossature.test.tsx` monte
+      les 8 étapes et vérifie ces slots ; les meubles qu'il accueille (`StepHeader`, `PlaqueRow`,
+      `CreatorDice`) ont, eux, leur spécimen vivant ici.
+    </p>
   );
 }
 
@@ -521,6 +584,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
   { name: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
   { name: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },
+  { name: 'CreatorStepFrame', file: 'src/ui/creator/CreatorStepFrame.tsx', category: 'Personnages', note: 'gabarit plein-champ — s’observe sur les 7 pas du créateur, pas en vignette', render: CreatorStepFrameNote },
   { name: 'RoseAxes', file: 'src/ui/RoseAxes.tsx', category: 'Personnages', render: RoseAxesDemo },
   { name: 'CharStatsGrid', file: 'src/ui/CharStatsGrid.tsx', category: 'Personnages', render: CharStatsGridDemo },
   { name: 'TradeTable', file: 'src/ui/TradeTable.tsx', category: 'Négoce & activités', render: TradeTableDemo },
@@ -534,6 +598,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
   { name: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={SAMPLE_CAREER_LEVELS} currentLevel={2} /> },
   { name: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
+  { name: 'PlaqueRow / PlaqueGrid', file: 'src/ui/PlaqueRow.tsx', category: 'Atelier du scribe', render: PlaqueRowDemo },
   { name: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
   { name: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
   { name: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },

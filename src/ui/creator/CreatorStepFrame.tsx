@@ -1,50 +1,77 @@
 /**
- * Gabarit d'étape UNIQUE du créateur (arbitrage 2026-07-13) — 3 zones STABLES, identiques à chaque
- * étape, pour tuer l'instabilité du gabarit épinglée par le juge :
+ * Gabarit d'étape UNIQUE du créateur — OSSATURE 2 ZONES (croquis user 2026-07-15
+ * `docs/plans/2026-07-14-maquettes-createur/ossature-croquis-user.png`, lot « ossature enforcée »
+ * #393). Le rail 3 zones est MORT (planche FINALE : « Rail 286px MORT partout ») — le format
+ * canonique s'encode ICI comme des SLOTS OBLIGATOIRES, plus jamais comme une consigne de brief :
  *
- *   Zone A « le choix »  │  Zone B « le détail »   │  Zone C « la fiche vivante »
- *   (rail, slot libre :  │  (centre, TOUJOURS une   │  (CreatorSummary : structure
- *    grille ou form +     │   ParchmentCard : prose  │   stable dès l'étape 1, blocs
- *    « Aux dés » en tête)  │   sourcée / travail de   │   grisés qui se remplissent —
- *                          │   l'étape = l'ÉDITION)    │   le RÉSULTAT)
+ *   ┌ zone de CHOIX ──────────────────────────┐ ┌ zone DESC ────────────────┐
+ *   │ BANDE D'ACTION (slot REQUIS, en tête :  │ │ fiche de l'ÉLUE           │
+ *   │  le choix de la voie — Choisir / Tirer  │ │ (Race/Carrière), puis     │
+ *   │  aux dés — la carte d'action y vit)     │ │ FICHE VIVANTE (défaut :   │
+ *   │ CHOIX (grille/contrôles de l'étape)     │ │ CreatorSummary→HeroSheet) │
+ *   └─────────────────────────────────────────┘ └───────────────────────────┘
  *
- * Le centre montre l'ÉDITION (ce qu'on règle), la fiche montre le RÉSULTAT — source de vérité
- * UNIQUE des Caractéristiques. Chaque étape fournit `{ dice?, choice, detail }` ; la présence des
- * trois zones ne dépend jamais de l'étape.
+ * Compose `MasterDetail` (gabarit de layout canon) ; chaque slot est estampillé d'un
+ * `data-testid="creator-slot-*"` par CE composant UNIQUEMENT — la garde structurelle
+ * (`creator-ossature.test.tsx`) monte les 8 étapes et vérifie leur présence par ces stamps
+ * (identité du gabarit, jamais une convention de chaîne par-écran). Seule l'étape Présentation
+ * garde son gabarit dédié (user 2026-07-15, verbatim : « c'est sensé être le même sauf sur le
+ * dernier écran »).
  */
 import type { ReactNode } from 'react';
 import { CreatorDraft } from './draft';
 import { CreatorSummary } from './CreatorSummary';
-import { ParchmentCard } from '../ParchmentCard';
+import { MasterDetail } from '../MasterDetail';
 
-/** Zone B (le détail) : titre en font-display + corps ; `seal` = médaillon d100 quand un tirage est
- *  posé (la ParchmentCard le met en scène). */
-export interface StepDetail {
-  /** Titre de la ParchmentCard — omis quand le corps porte déjà son propre titre (TabbedEntry). */
-  title?: ReactNode;
-  seal?: { label?: string; roll: number };
-  body: ReactNode;
-}
-/** Ce que produit chaque étape pour le gabarit. `dice` = cérémonie « Aux dés » en tête de Zone A. */
+/** Ce que produit chaque étape pour le gabarit — les SLOTS de l'ossature. */
 export interface StepZones {
-  dice?: ReactNode;
+  /** Bande d'action, SLOT REQUIS en tête de la zone de choix : le choix de la voie de l'étape
+   *  (« Choisir librement / Tirer aux dés +PX ») — l'encrier/carte d'action (`CreatorDice`,
+   *  `.dicewell`) vit ici, jamais relégué ailleurs. */
+  action: ReactNode;
+  /** Zone de CHOIX : la grille/les contrôles de l'étape. */
   choice: ReactNode;
-  detail: StepDetail;
+  /** Zone DESC : fiche de l'ÉLUE (Race/Carrière). Absente → FICHE VIVANTE (CreatorSummary,
+   *  qui compose `HeroSheet` — identique au détail candidat du lobby). */
+  desc?: ReactNode;
 }
 
-export function CreatorStepFrame({ d, step, zones }: { d: CreatorDraft; step: number; zones: StepZones }) {
+export function CreatorStepFrame({ d, step, zones, label }: { d: CreatorDraft; step: number; zones: StepZones; label?: string }) {
   return (
-    <div className="creator-shell">
-      <aside className="creator-rail">
-        {zones.dice}
-        {zones.choice}
-      </aside>
-      <main className="creator-main">
-        <ParchmentCard seal={zones.detail.seal} title={zones.detail.title}>
-          {zones.detail.body}
-        </ParchmentCard>
-      </main>
-      <CreatorSummary d={d} step={step} />
+    <MasterDetail
+      className="creator-step"
+      listLabel={label}
+      list={
+        <>
+          <div className="creator-step-action" data-testid="creator-slot-action">{zones.action}</div>
+          <div className="creator-step-choice" data-testid="creator-slot-choice">{zones.choice}</div>
+        </>
+      }
+      detail={
+        <div className="creator-step-desc" data-testid="creator-slot-desc">
+          {zones.desc ?? <CreatorSummary d={d} step={step} />}
+        </div>
+      }
+    />
+  );
+}
+
+/** En-tête d'étape — LA topbar de la planche ratifiée (`planche-creator-FINALE.html` : `.fam-topbar`
+ *  portant `.c-dhead` = titre `--font-display` 26px + sous-titre small-caps EN LIGNE, à sa baseline,
+ *  puis les GESTES de l'étape en frères : plaque d'action, encrier). Consacrée en primitive par le lot
+ *  « ossature enforcée » #393 (amendement 3, user 2026-07-15 : « c'est sensé etre des primitives ces
+ *  éléments ») — le markup était recopié à la main par 6 appelants (étapes 3, 5a/5b/5c, 6, 7), qui ont
+ *  chacun dérivé (sous-titre EMPILÉ sous le titre là où la planche le pose en ligne). Stylée UNE fois
+ *  aux valeurs de la planche (`styles/creator-step.css`) — un pas COMPOSE cet en-tête, il ne le
+ *  redessine pas. */
+export function StepHeader({ title, sub, children }: { title: ReactNode; sub?: ReactNode; children?: ReactNode }) {
+  return (
+    <div className="step-head">
+      <h3 className="step-head-title">
+        {title}
+        {sub != null && <small>{sub}</small>}
+      </h3>
+      {children}
     </div>
   );
 }
@@ -68,8 +95,8 @@ export function XpBadge({ value }: { value: number }) {
 
 /** Bande titrée pleine largeur (fond bois/laiton, étalon `finale-mock2-caracteristiques.png`) — pour
  *  les rubriques d'un panneau à plusieurs blocs (« Le tirage », « Augmentations gratuites », « Destin
- *  & Résilience ») : LA MAQUETTE dicte quel bloc va dans le panneau central plutôt que le rail, ce
- *  bandeau habille ces blocs quand le panneau (pas `zone-section`, réservé au rail/parchemin) le porte. */
+ *  & Résilience ») : LA MAQUETTE dicte quel bloc va dans quelle zone, ce bandeau habille ces blocs
+ *  quand le panneau (pas `zone-section`) le porte. */
 export function Band({ title, right, children }: { title: ReactNode; right?: ReactNode; children?: ReactNode }) {
   return (
     <div className="creator-band">
@@ -81,4 +108,3 @@ export function Band({ title, right, children }: { title: ReactNode; right?: Rea
     </div>
   );
 }
-

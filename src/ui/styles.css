@@ -12,7 +12,11 @@
 @import './styles/city-hub.css'; /* hub de ville (#343) : services + détail (MasterDetail) */
 @import './styles/voyage.css'; /* écran-hub de voyage (#333) : tuiles + chronique + MasterDetail */
 @import './styles/creator.css'; /* cadre Modal partagé + assistant de création + apparence */
+@import './styles/creator-step.css'; /* ossature 2 zones du créateur (CreatorStepFrame, #393) : slots + dés dorés planche — APRÈS creator.css : prime sur la gemme par défaut */
 @import './styles/frames.css'; /* cadre-figurine UNIQUE (FigTile, #430) — APRÈS creator.css : prime sur l'ancien .fig-tile imbriqué */
+@import './styles/plaque-row.css'; /* rangée-plaque à rivets d'or (PlaqueRow, #393) — matière .c-plate/.ck-cell de la planche FINALE */
+@import './styles/celestial-wheel.css'; /* astrolabe de laiton (CelestialWheel, #393) — matières du cadran, valeurs du svg « 4 — Signe astral » de la planche FINALE */
+@import './styles/creator-presentation.css'; /* mise en scène finale du créateur (PresentationScreen, #393) : registre ⇄ scène ⇄ rubriques, valeurs .fin-col/.fin-stage de la planche */
 @import './styles/combat-ui.css'; /* audio, coop, select, campaign, victoire, dialogue, barre d'action */
 @import './styles/combat-modals.css'; /* modales de jet (attaque/défense/incantation/critique…) */
 @import './styles/sheet.css'; /* fiche de personnage + avancement */

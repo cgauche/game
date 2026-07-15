@@ -14,7 +14,7 @@ import { DiceRoll } from '../DiceRoll';
 import { d100Faces } from '../Dice';
 import { Section, XpBadge } from './CreatorStepFrame';
 
-export function CreatorDice({ label, hint, rolled, xp, onRoll, roll, children }: {
+export function CreatorDice({ label, hint, rolled, xp, onRoll, roll, frisson, children }: {
   /** Libellé du bouton de tirage (« Tirer la race (d100) »…) — inutile si `rolled` (jets figés par le seed). */
   label?: string;
   /** Règle du bonus (LDB) sous le bouton — réf sourcée, jamais une paraphrase. */
@@ -28,13 +28,17 @@ export function CreatorDice({ label, hint, rolled, xp, onRoll, roll, children }:
    *  (`d100Faces`). Absente (ex. signe astral : seul l'id résolu est conservé) ⇒ les dés se figent
    *  SANS chiffre plutôt que d'en inventer un (jamais une face qui contredit le score). */
   roll?: number;
+  /** `false` = pas de scène centrale : le résolveur s'exécute AU CLIC et l'étape porte son PROPRE
+   *  théâtre de dés (ex. cérémonie séquentielle des dix 2d10, #393 agentivité — les rangées roulent,
+   *  pas la carte). Défaut : `true` (roulis central puis vraies faces). */
+  frisson?: boolean;
   /** Verdict garder/relancer/choisir (contrôles propres à l'étape). */
   children?: ReactNode;
 }) {
   // Même geste que RollShell/RollRow (#396) : le tirage du créateur roule au centre de sa zone avant
   // de révéler son verdict. Découplé de `rolled` (qui bascule DÈS le résolveur commis, en plein
   // `landed`) : sinon les vraies faces n'auraient pas le temps de s'afficher.
-  const { rolling, landed, trigger, skip } = useRollFrisson(onRoll);
+  const { rolling, landed, trigger, skip } = useRollFrisson(onRoll, { frisson });
   const faces = landed && roll != null ? d100Faces(roll) : null;
   return (
     <Section title="Aux dés" right={<XpBadge value={xp} />}>
