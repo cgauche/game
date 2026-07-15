@@ -670,13 +670,13 @@ On subit toujours les **Dégâts normaux** (et probablement 1 PB de plus, les PA
 
 ### 6. Système alternatif d'*Aux Armes* (remplace les tables LDB)
 
-*Aux Armes* propose un système complet alternatif de Blessures critiques. Le **déclenchement** y est explicité en deux voies (`AA 01 l.2469-2486`) :
+*Aux Armes* propose un système complet alternatif de Blessures critiques. Le **déclenchement** y est explicité en deux voies (`AA 07 l.25-42`) :
 
-- **Coup Critique avec Blessures restantes** : un double réussi en CC/Projectiles inflige une Blessure critique même si la cible a encore des PB. Localisation par 1ᵉʳ d100, effet par 2ᵉ d100, **comme en LDB** (`AA 01 l.2473-2476`). En prime : une fois tous les États *Hémorragique* retirés, on gagne un État *Exténué* (`AA 01 l.2475`).
-- **Critique en faisant tomber à 0 Blessure** : si l'attaque amène la cible à 0 PB, elle subit automatiquement une Blessure critique. On **ajoute +10 par Blessure infligée au-delà** de celles nécessaires pour atteindre 0 (ou +10 par Blessure si la cible était déjà à 0) au jet 1d100 sur la table de la localisation (`AA 01 l.2480`). C'est ce **+10 escaladant** qui pousse le résultat vers les lignes hautes (mort), au lieu du −20 d'overkill du LDB.
-- **Chaque coup ne peut infliger qu'une seule Blessure critique** : les Blessures supplémentaires d'une ligne de table ne redéclenchent jamais de second jet (`AA 01 l.2484-2486`).
-- « Retenir vos coups » : on n'inflige une Blessure critique **que si l'adversaire tombe à 0 Blessure** ; impossible avec une arme *En flammes*, des projectiles ou des sorts ; on perd alors les Atouts *Empaleuse, Percutante, Perforante, Taille* (`AA 01 l.2503-2505`).
-- Une valeur de Blessure **« T »** (Blessure **triviale**) n'inflige aucune Blessure supplémentaire et **ne compte pas** dans le total de Blessures critiques nécessaires pour mourir (`AA 01 l.2523`).
+- **Coup Critique avec Blessures restantes** : un double réussi en CC/Projectiles inflige une Blessure critique même si la cible a encore des PB. Localisation par 1ᵉʳ d100, effet par 2ᵉ d100, **comme en LDB** (`AA 07 l.29-32`). En prime : une fois tous les États *Hémorragique* retirés, on gagne un État *Exténué* (`AA 07 l.31`).
+- **Critique en faisant tomber à 0 Blessure** : si l'attaque amène la cible à 0 PB, elle subit automatiquement une Blessure critique. On **ajoute +10 par Blessure infligée au-delà** de celles nécessaires pour atteindre 0 (ou +10 par Blessure si la cible était déjà à 0) au jet 1d100 sur la table de la localisation (`AA 07 l.36`). C'est ce **+10 escaladant** qui pousse le résultat vers les lignes hautes (mort), au lieu du −20 d'overkill du LDB.
+- **Chaque coup ne peut infliger qu'une seule Blessure critique** : les Blessures supplémentaires d'une ligne de table ne redéclenchent jamais de second jet (`AA 07 l.40-42`).
+- « Retenir vos coups » : on n'inflige une Blessure critique **que si l'adversaire tombe à 0 Blessure** ; impossible avec une arme *En flammes*, des projectiles ou des sorts ; on perd alors les Atouts *Empaleuse, Percutante, Perforante, Taille* (`AA 07 l.59-61`).
+- Une valeur de Blessure **« T »** (Blessure **triviale**) n'inflige aucune Blessure supplémentaire et **ne compte pas** dans le total de Blessures critiques nécessaires pour mourir (`AA 07 l.79`).
 
 Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête/Bras/Torse/Jambe, transcrits verbatim) sont regroupés dans le topic **[AA : système alternatif de Blessures et Critiques](#aa-systeme-alternatif-de-blessures-et-critiques)** — non répétés ici pour éviter la redite.
 
@@ -687,7 +687,7 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 - **Critiques multiples par explosion** (bombe de l'Opéra, *Une nuit à l'Opéra*) : « Celles réduites à 0 Blessure souffrent d'une Blessure critique à une **localisation aléatoire par tranche de 2 Blessures en dessous de 0**, en arrondissant à la hausse. Ainsi, si un Personnage est réduit à −5 Blessures […], cela occasionne **3 Blessures critiques**. » — `NADAJ 08 l.263`. (Bombe : Atout *Explosion 10*, 1d10+15 Dégâts, BonusAg −1d10 États *En Flammes* ; survivants : *Athlétisme Complexe (−10)* sinon chute de 7 m.)
 
 **Sources RAW** :
-- `LDB 13 l.183` — déclenchement : tout succès CC/Projectiles dont le **dé est un double** génère un Critique ; possible aussi en **défense** sur un Test opposé. (CONSOLIDE avec `AA 01 l.2473`.)
+- `LDB 13 l.183` — déclenchement : tout succès CC/Projectiles dont le **dé est un double** génère un Critique ; possible aussi en **défense** sur un Test opposé. (CONSOLIDE avec `AA 07 l.29`.)
 - `LDB 13 l.137-145` — Tableau de Localisation humanoïde (1ᵉʳ d100) utilisé pour la localisation du Coup Critique.
 - `LDB 14 l.4` — effet immédiat : Blessure critique immédiate ; le **DR reste calculé normalement** (Dégâts + vainqueur du Test opposé).
 - `LDB 14 l.6-7` — Option **Frappe Mortelle** : tuer en un coup en mêlée → se déplacer sur la case + frapper un autre adversaire, **jusqu'à BCC fois** ; certaines **grandes créatures** l'activent sans tuer.
@@ -695,8 +695,8 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 - `LDB 18 l.53-55` — résolution du Coup Critique : localisation par **2ᵉ d100**, PB perdus **en ignorant BE et PA**, Effets supplémentaires, **00 = mort** ; Dégâts non critiques recalculés sur la nouvelle localisation.
 - `LDB 18 l.56-187` — en-têtes et bornes des quatre Tableaux des Critiques LDB (Tête/Bras/Corps/Jambe), `01-10` → `00` (mort).
 - `LDB 63 l.29-32` — **Déviation Critique** : sacrifier 1 PA pour ignorer une Blessure critique sur une localisation protégée.
-- `AA 01 l.2469-2523` — système alternatif d'*Aux Armes* : 2 voies de déclenchement (double avec PB restants ; +10/Blessure au-delà de 0), un seul Critique par coup, valeurs « T » triviales, « Retenir vos coups ».
-- `AA 01 l.2526-2548 / 2568-2622 / 2625-2682 / 2684-2729` — tables alternatives Tête / Bras / Torse / Jambe (transcrites verbatim ci-dessus ; **remplacent** les tables LDB).
+- `AA 07 l.25-79` — système alternatif d'*Aux Armes* : 2 voies de déclenchement (double avec PB restants ; +10/Blessure au-delà de 0), un seul Critique par coup, valeurs « T » triviales, « Retenir vos coups ».
+- `AA 07 l.82-104 / 2568-2622 / 2625-2682 / 2684-2729` — tables alternatives Tête / Bras / Torse / Jambe (transcrites verbatim ci-dessus ; **remplacent** les tables LDB).
 - `EDO 11 l.237-239` — Trait *Dédoublement* : une Blessure critique (ou 0 Blessure) scinde la créature en deux Horreurs Bleues non blessées.
 - `Ubersreik 05 l.24` — exemple statbloc de Frappe mortelle pour une grande créature (touche sans tuer → balayage).
 - `NADAJ 08 l.263` — Critiques multiples : 1 Blessure critique à localisation aléatoire par tranche de 2 PB sous 0 (arrondi au supérieur).
@@ -1152,7 +1152,7 @@ Un **Test de Corps à corps (Bagarre)** réussi à mains nues se gère **exactem
 
 Les Mains nues sont l'arme par défaut de tout combattant désarmé. Profil (LDB Chapitre 11 / *Aux Armes*) : **+BF +0**, Allonge **Personnelle**, **Inoffensive**.
 
-### Les Armes de Bagarre (extension *Aux Armes*) — `AA 01 l.2851-2888`
+### Les Armes de Bagarre (extension *Aux Armes*) — `AA 08 l.224-261`
 
 *Aux Armes* fournit une table d'armes de bagarre, dont beaucoup peuvent être bricolées à partir d'objets adéquats.
 
@@ -1166,9 +1166,9 @@ Les Mains nues sont l'arme par défaut de tout combattant désarmé. Profil (LDB
 | Mains nues | N/A | 0 | – | Personnelle | +BF +0 | Inoffensive |
 | Matraque | 1/– | 0 | Rare | Personnelle | +BF +1 | Assommante, Déséquilibrée, Inoffensive |
 
-— `AA 01 l.2871-2883`
+— `AA 08 l.244-256`
 
-Notes mécaniques par arme (`AA 01 l.2855-2887`) :
+Notes mécaniques par arme (`AA 08 l.228-260`) :
 
 - **Coup-de-poing** : pièces de métal enfilées sur les doigts ; improvisable. Fabrication : Test étendu de **Métier (Charpentier, Forgeron, Ingénieur, Tailleur ou Tanneur) Intermédiaire (+0)**, total **10 DR**, en lieu urbain.
 - **Gaffe** : outil de docker ; arme efficace si maniée pour blesser.
@@ -1184,9 +1184,9 @@ Notes mécaniques par arme (`AA 01 l.2855-2887`) :
 - `LDB 14 l.181-184` — Dispersion : sur un échec à un Test de **Projectiles (Lancer)**, 1d10 → 1-8 direction (+ 2d10 m, ≤ moitié de la distance) ; 9 = à vos pieds ; 10 = aux pieds de la cible ; mécanique réutilisable pour toute direction aléatoire.
 - `LDB 14 l.185-199` — Combat à Mains Nues : Corps à corps (Bagarre) comme un Test de combat normal + option **Empoignade** (déclarée avant le jet ; Test opposé → Empêtré mutuel ; tour suivant : briser gratuit si Avantage supérieur, sinon Test opposé de Force → BF+DR PA-ignorés OU gestion d'Empêtré ; échec → +1 Avantage à l'adversaire ; tiers : +20/+10 pour toucher l'Empoigné).
 - `LDB 14 l.201-202` — Option : Empoignade Grâce aux Compétences (substitut au Test de Force selon le MJ).
-- `AA 01 l.2851-2888` — Table des Armes de Bagarre (Coup-de-poing, Gaffe, Gantelet à pointes, Gantelet verrouillé, Lacet étrangleur, Mains nues, Matraque) + règle spéciale du **Gantelet verrouillé** (conserve l'objet, −20 transitoire) + coûts de fabrication par Métier.
+- `AA 08 l.224-261` — Table des Armes de Bagarre (Coup-de-poing, Gaffe, Gantelet à pointes, Gantelet verrouillé, Lacet étrangleur, Mains nues, Matraque) + règle spéciale du **Gantelet verrouillé** (conserve l'objet, −20 transitoire) + coûts de fabrication par Métier.
 
-> « Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main, même lorsque les circonstances l'y obligeraient normalement. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet, y compris les Tests de Corps à Corps, tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). » — `AA 01 l.2863`
+> « Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main, même lorsque les circonstances l'y obligeraient normalement. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet, y compris les Tests de Corps à Corps, tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). » — `AA 08 l.236`
 
 **Voir aussi** : Maniement de deux armes (talent, LDB 10) ; Armes (Atouts/Défauts : Inoffensive, Déstabilisante, Empaleuse, Déséquilibrée, Assommante, Enchevêtrement) ; États (Empêtré, Engagé) ; Combat à distance (Projectiles/Lancer, portées) ; Désarmer (talent).
 
@@ -1415,8 +1415,8 @@ Le **Bras de fer** est un Test opposé **étendu** de **Force Intermédiaire (+0
 - `LDB 15 l.3-4` — « Obtenir Un Avantage » : Test opposé gagné / position tactique / plein d'espoir ; Surprise +1, Charge +1, Évaluer +1, Victoire (PNJ important au moins +1, némésis jusqu'à +2), Gagnant (Test opposé en combat) +1, Prendre le dessus (blesser sans Test opposé) +1 ; Talents nombreux.
 - `LDB 15 l.4-4` — « Bénéfices » : **+10 par pion** à un Test de Combat ou de Psychologie approprié ; exemple 5 pions = +50 (toucher / se défendre / résister à l'influence).
 - `LDB 15 l.4-5` — « Perdre Un Avantage » : Test opposé échoué OU perte d'une Blessure → tous perdus ; fin de combat → tous perdus ; aucun gagné ce Round OU infériorité numérique en fin de Round → −1 ; sacrifice possible pour se désengager ; Compétences/Talents peuvent en retirer ou transférer.
-- `ZI 01 l.4078-4079` — Trait *Redoutable* : minimum d'Avantage permanent par Indice → +10/niveau à la plupart des actions ; recommandation d'usage = activer les capacités spéciales (Vomissement, Souffle) plutôt que frapper plus fort.
-- `ZI 01 l.4086-4088` — précisions Redoutable : si le monstre a plus de niveaux que de Personnages, diminuer/supprimer ; **regain au début de son tour** jusqu'à l'Indice (défaut 1) ; **pas de gain** si *Empêtré*, *Inconscient* ou *Surpris*.
+- `ZI 14 l.1016-1017` — Trait *Redoutable* : minimum d'Avantage permanent par Indice → +10/niveau à la plupart des actions ; recommandation d'usage = activer les capacités spéciales (Vomissement, Souffle) plutôt que frapper plus fort.
+- `ZI 14 l.1024-1026` — précisions Redoutable : si le monstre a plus de niveaux que de Personnages, diminuer/supprimer ; **regain au début de son tour** jusqu'à l'Indice (défaut 1) ; **pas de gain** si *Empêtré*, *Inconscient* ou *Surpris*.
 - `NADAJ 16 l.34` — Bras de fer : Test opposé étendu de Force ; le gagnant de chaque tour gagne **+1 Avantage** utilisable selon les règles normales d'Avantage.
 
 > « L'Avantage représente votre vitesse en combat, et vous l'acquérez lorsque vous vous montrez plus malin que vos adversaires, que vous les dominez ou les battez. » — `LDB 15 l.10`
@@ -2168,7 +2168,7 @@ Aux Armes (*Up in Arms*) étend la liste de munitions Arc/Arbalète/Fronde avec 
 | Caillou [Fronde] | N/A | 0 | Commune | –10 | –2 | Imprécise, Inoffensive |
 | Projectile de pierre (12) [Fronde] | 2 sc | 0 | Commune | Comme l'arme | – | Assommante |
 
-*Réf. : `AA 01 l.2993-3008`.* Notes AA : la flèche barbelée *« inflige de vilaines blessures par entaille et cause des dommages supplémentaires si elle n'est pas retirée très précautionneusement »* ; la flèche bodkin *« est dotée d'une robuste pointe en pic pour perforer les armures »* (`AA 01 l.3012`). Les bâtons pointus et cailloux servent de munitions de secours : un caillou s'obtient par un Test étendu de **Survie en extérieur Facile (+40)** ou **Perception Intermédiaire (+0)** totalisant 5 DR ; un bâton pointu par un Test étendu de **Survie en extérieur Intermédiaire (+0)** totalisant 10 DR, mais *« les flèches improvisées ont tendance à provoquer des Maladresses »* (`AA 01 l.3013-3016`).
+*Réf. : `AA 08 l.366-381`.* Notes AA : la flèche barbelée *« inflige de vilaines blessures par entaille et cause des dommages supplémentaires si elle n'est pas retirée très précautionneusement »* ; la flèche bodkin *« est dotée d'une robuste pointe en pic pour perforer les armures »* (`AA 08 l.385`). Les bâtons pointus et cailloux servent de munitions de secours : un caillou s'obtient par un Test étendu de **Survie en extérieur Facile (+40)** ou **Perception Intermédiaire (+0)** totalisant 5 DR ; un bâton pointu par un Test étendu de **Survie en extérieur Intermédiaire (+0)** totalisant 10 DR, mais *« les flèches improvisées ont tendance à provoquer des Maladresses »* (`AA 08 l.386-389`).
 
 ### Sous-système : Groupes d'armes à Distance (spécialisations requises)
 
@@ -2205,8 +2205,8 @@ La Portée listée est la portée moyenne en mètres ; les fourchettes se calcul
 - `LDB 62 l.187-188` — Exception Ingénierie : utilisable avec Projectiles (Poudre noire), Atouts perdus, Défauts gardés.
 - `LDB 62 l.191-192` — Exception Poudre Noire & Explosifs : utilisables avec Projectiles (Ingénierie) **sans pénalité** (Atouts conservés).
 - `LDB 62 l.195-211` — Portée d'une arme : calcul des fourchettes + table d'exemple Bout portant/Courte/Moyenne/Longue/Extrême.
-- `AA 01 l.2993-3012` — Table « Munitions traditionnelles » (variantes Arc/Arbalète/Fronde : bâton pointu, flèche barbelée, flèche bodkin, flèche elfique, bille de plomb, caillou) + descriptions barbelée/bodkin.
-- `AA 01 l.3013-3016` — Munitions de secours (caillou, bâton pointu) : Tests étendus d'acquisition + risque de Maladresse.
+- `AA 08 l.366-385` — Table « Munitions traditionnelles » (variantes Arc/Arbalète/Fronde : bâton pointu, flèche barbelée, flèche bodkin, flèche elfique, bille de plomb, caillou) + descriptions barbelée/bodkin.
+- `AA 08 l.386-389` — Munitions de secours (caillou, bâton pointu) : Tests étendus d'acquisition + risque de Maladresse.
 
 > « Toutes les Armes à Poudre noire et d'Ingénierie possèdent les Atouts Poudre noire et Dévastatrice. » — `LDB 62 l.99`
 
@@ -2379,7 +2379,7 @@ Chaque arme peut porter un ou plusieurs **Atouts** (avantages) et **Défauts** (
 
 **Aux Armes (AA) — Atouts Optionnels.** Certaines armes peuvent **choisir** entre plusieurs Atouts avant le jet d'attaque. Exemple canonique : le **marteau de guerre** est toujours *Déséquilibrée*, mais celui qui le manie choisit d'utiliser *Assommante* (face contondante) **ou** *Perforante* (face pointue) — jamais les deux à la fois.
 
-> « Ce choix doit être effectué **avant** tout jet effectué pour déterminer le Succès de l'attaque. Si pour une raison quelconque, le Joueur ne choisit pas quel Atout employer, l'attaque applique le **premier** des Atouts optionnels (*Assommante* dans le cas du marteau de guerre). » — `AA 01 l.2704`
+> « Ce choix doit être effectué **avant** tout jet effectué pour déterminer le Succès de l'attaque. Si pour une raison quelconque, le Joueur ne choisit pas quel Atout employer, l'attaque applique le **premier** des Atouts optionnels (*Assommante* dans le cas du marteau de guerre). » — `AA 08 l.77`
 
 **Aux Armes (AA) — Nouveaux Atouts/Défauts** (non dans la liste LDB) :
 - **Déséquilibrée** (Défaut) : « Quand cette arme est utilisée pour s'opposer à une attaque, elle subit une pénalité de **-1 DR** sur cette attaque. »
@@ -2388,7 +2388,7 @@ Chaque arme peut porter un ou plusieurs **Atouts** (avantages) et **Défauts** (
 - **Tir de zone (Indice)** (Atout) : *Bout portant* = un seul individu, +Indice aux Dégâts ; *Courte→Longue* = la cible + les (Indice) créatures visibles les plus proches à ≤ (Indice) mètres ; *Extrême* = comme Courte→Longue mais Dégâts réduits de (Indice).
 - **Salve (Indice)** (Atout) : tire une par une ou par volées ; chaque tir réduit l'Indice de Salve de 1, recharge nécessaire quand Salve 0 ; chaque tir après le premier dans un Round impose **-10 cumulatif** au Test de Projectiles.
 
-**Aux Armes (AA) — Protectrice modifiée** (`AA 01 l.2729`) :
+**Aux Armes (AA) — Protectrice modifiée** (`AA 08 l.102`) :
 
 > « **Protectrice (Indice) :** chaque fois que vous vous opposez à une attaque avec votre **Capacité de Combat** ou avec votre **Compétence Corps à Corps** (Parade), vous bénéficiez d'un nombre de **PA supplémentaires égal à l'Indice**. Si votre arme a un Indice Protectrice de **2 minimum**, vous pouvez aussi l'utiliser pour vous opposer aux tirs de projectiles dans votre ligne de vue. » — Permet d'utiliser une arme de mêlée en main principale tout en gagnant les PA du bouclier (Protectrice) en main secondaire, sans pénalité.
 
@@ -2471,9 +2471,9 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 - `LDB 62 l.218-304` — Atouts d'arme : À Enroulement, À Poudre noire, À Répétition (Indice), Assommante, Défensive, Perturbante, Dévastatrice, Empaleuse (+ retrait de projectile l.284), Explosion (Indice), Immobilisante, Piège-Lame, Pistolet, Pointue, Précise, Protectrice (Indice), Incassable, Percutante, Perforante, Rapide.
 - `LDB 63 l.2` — Atout Taille (endommage de 1 PA une pièce d'armure/bouclier frappé tout en blessant).
 - `LDB 63 l.2-6` — Défauts d'arme : Dangereuse, Épuisante, Imprécise, Inoffensive, Lente, Recharge (Indice).
-- `AA 01 l.2694-2703` — Atouts Optionnels (choix avant le jet ; ex. marteau de guerre Assommante/Perforante ; défaut → premier Atout listé).
-- `AA 01 l.2706-2722` — nouveaux Atouts/Défauts : Déséquilibrée, Déstabilisante, Taillade (XA), Tir de zone (Indice), Salve (Indice).
-- `AA 01 l.2725-2735` — Atout Protectrice modifié (PA en opposition CC/Corps à Corps ; Protectrice 2+ pare les projectiles, exemple Uri).
+- `AA 08 l.67-76` — Atouts Optionnels (choix avant le jet ; ex. marteau de guerre Assommante/Perforante ; défaut → premier Atout listé).
+- `AA 08 l.79-95` — nouveaux Atouts/Défauts : Déséquilibrée, Déstabilisante, Taillade (XA), Tir de zone (Indice), Salve (Indice).
+- `AA 08 l.98-108` — Atout Protectrice modifié (PA en opposition CC/Corps à Corps ; Protectrice 2+ pare les projectiles, exemple Uri).
 - `ADE II 02 l.608-658` — armes ogres comme exemples d'Atouts (Défensive, Protectrice 1, Dévastatrice, Empaleuse, Percutante, Perforante, Pistolet, Recharge, Dangereuse, Explosion 3, Immobilisante de l'arbalète de siège).
 - `ADE II 04 l.212` — distinction « utilisateur » (manie l'arme) vs « porteur » (la transporte).
 - `ADE II 04 l.214` — **règle-cadre 1** : toute arme magique blesse les créatures immunisées aux attaques non magiques (Trait Éthéré).
@@ -2481,7 +2481,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 - `ADE II 04 l.218-253` — **tableau d100 complet des Atouts d'armes magiques** (28 entrées) : 01-19 sans particularité, 20-23 Dissimulée dans l'ombre, 24-27 Embrasée, 28-31 Funeste, 32-35 D'argent vif, 36-39 Taillée dans la rage, 40-43 Robuste, 44-47 Liée au destin, 48-51 De colère implacable, 52-54 De sorcellerie inflexible, 55-57 Déroutante, 58-60 D'aplomb, 61-63 De l'immense gueule du loup, 64-66 D'habileté et de ruse, 67-69 De sel et de saumure, 70-72 De plaies atroces, 73-75 De crocs et de griffes, 76-78 Du bannissement le plus profond, 79-81 De matière excessive, 82-84 De mort languissante, 85-87 Du bord le plus tranchant, 88-90 De féau, 91-92 De coupure infinie, 93-94 D'or vif, 95-96 De blessure grave, 97-98 D'apparence évolutive, 99 Lame du givre, 00 Arme légendaire.
 - `ADE II 04 l.278` — récupération des munitions magiques (90 % terrain propice, 50 % rocheux/marécageux ; détruite si elle touche).
 - `ADE II 04 l.280-287` — **tableau d100 des Munitions magiques** : 01-54 Flèche magique (+1 Dégât, blesse l'immunisé), 55-74 Flèche de puissance (+1d10 ignorant Armure/Endurance), 75-91 Flèche de vol infaillible (+30 CT), 92-00 Flèches de grêle funeste (1d10 flèches, cibles secondaires à ≤1,50 m en LdV).
-- `ZI 01 l.2756-2843` — Dague funeste, Lame à poignée bois de cerf, Trempe au sang de dragon (Atout Solide), Sève de trégara (Perforante), Empennage de griffon, Pointes barbelées (Hémorragique).
+- `ZI 13 l.759-844` — Dague funeste, Lame à poignée bois de cerf, Trempe au sang de dragon (Atout Solide), Sève de trégara (Perforante), Empennage de griffon, Pointes barbelées (Hémorragique).
 - `NADAJ 08 l.170-171` — Pétard improvisé (Explosion 1, Dangereuse, 5 % En flammes).
 
 > « causent un Coup Critique sur n'importe quel nombre divisible par 10 (par exemple : 10, 20, 30, etc.), ainsi que sur un double (par exemple : 11, 22, 33) obtenu inférieur ou égal au Test approprié au combat. » — `LDB 62 l.248` (Empaleuse)
@@ -2867,7 +2867,7 @@ Liste complète des Traits du Livre de base, avec leur effet exact. (Indice) = v
 | **Vol (Indice)** | Vole jusqu'à Indice mètres en se Déplaçant ; ignore terrains/obstacles/personnages ; peut Charger. Cible volante : distance **+1** (Extrême → intouchable). En vol : **−20** au combat à distance. |
 | **Vomissement** | Attaque gratuite **(coût 3 Avantages)** : cible visible à **BE** mètres ; tout à ≤ 2 m touché aussi. Test opposé **CT/Esquive** (**Facile +40** pour elle, **Intermédiaire +0** pour l'adversaire). Échec → **BE + 4** Dégâts d'Arme + État **Sonné** ; Armes/Armures touchées **−1**. |
 
-— `LDB 85 l.8-380` (catalogue complet) ; **Fouissement** et **Redoutable** ajoutés par `ZI 01 l.4078-4092`
+— `LDB 85 l.8-380` (catalogue complet) ; **Fouissement** et **Redoutable** ajoutés par `ZI 14 l.1016-1030`
 
 > *« Vous pouvez choisir d'appliquer n'importe quel Trait à n'importe quelle créature si cela correspond à ce que vous voulez utiliser dans votre partie. »* — `LDB 76 l.11`
 
@@ -2919,10 +2919,10 @@ Sept catégories de Taille (`LDB 85 l.344-355`) :
 ### 7. Présentation ZI : Armure (BE inclus), Traits d'attaque, Redoutable (`ZI`)
 
 Le supplément **Le Zoo Impérial** ne change pas les Traits, mais leur **présentation** :
-- **Armure** affiche un second chiffre entre parenthèses = **Indice du Trait Armure + Bonus d'Endurance**, c.-à-d. la valeur réellement soustraite de la plupart des Dégâts — *« Le Trait Armure inclut désormais un second chiffre entre parenthèses […] la somme de l'Indice du Trait Armure de la créature et de son Bonus d'Endurance »* (`ZI 01 l.4080-4081`).
-- Nouvelle catégorie d'encadré **« Traits d'attaque »** : sous-ensemble des Traits permettant une attaque/action particulière, isolé pour lecture rapide (`ZI 01 l.4084-4085`).
-- **Redoutable** : à utiliser avec parcimonie — *« si un monstre présente plus de niveaux de Redoutable qu'il n'y a de Personnages, vous pourriez diminuer ou supprimer ce Trait »* (`ZI 01 l.4086`).
-- `ZI 01 l.4099-4149` donne un **tableau de référence rapide** reprenant le texte de **tous** les Traits du LDB (À distance → Vomissement) + Fouissement + Redoutable.
+- **Armure** affiche un second chiffre entre parenthèses = **Indice du Trait Armure + Bonus d'Endurance**, c.-à-d. la valeur réellement soustraite de la plupart des Dégâts — *« Le Trait Armure inclut désormais un second chiffre entre parenthèses […] la somme de l'Indice du Trait Armure de la créature et de son Bonus d'Endurance »* (`ZI 14 l.1018-1019`).
+- Nouvelle catégorie d'encadré **« Traits d'attaque »** : sous-ensemble des Traits permettant une attaque/action particulière, isolé pour lecture rapide (`ZI 14 l.1022-1023`).
+- **Redoutable** : à utiliser avec parcimonie — *« si un monstre présente plus de niveaux de Redoutable qu'il n'y a de Personnages, vous pourriez diminuer ou supprimer ce Trait »* (`ZI 14 l.1024`).
+- `ZI 14 l.1037-1087` donne un **tableau de référence rapide** reprenant le texte de **tous** les Traits du LDB (À distance → Vomissement) + Fouissement + Redoutable.
 
 ### 8. Nouveaux Traits et Mutations de l'Ennemi dans l'Ombre (`EDO`)
 
@@ -3002,8 +3002,8 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 - `LDB 77 l.7-68` — profils PNJ standard (Humain, Nain, Halfling, Elfe, Ogre) : ligne M…B + Traits + Facultatif ; « Traits standard = meilleurs choix de départ ».
 - `LDB 85 l.8-380` — catalogue complet des Traits de créature (effet mécanique de chacun), Tableau Taille, modificateurs de Taille en combat, table Blessures-par-Taille.
 - `LDB 85 l.340-406` — modifier la Taille (+10 F/E, −5 Ag par catégorie), modificateurs en combat (Dévastatrice/Percutante, Dégâts ×catégories, Frappe Mortelle), défense −2 DR/cat., Force opposée, Peur/Terreur par différence de catégories, Piétinement, table Blessures-par-Taille.
-- `ZI 01 l.4075-4097` — présentation ZI : Armure affiche (Indice + BE), catégorie « Traits d'attaque », Trait **Redoutable**, Trait **Fouissement**, conseils d'emploi de Redoutable selon la taille du groupe.
-- `ZI 01 l.4099-4149` — tableau de référence rapide reprenant **tous** les Traits du LDB (texte complet).
+- `ZI 14 l.1013-1035` — présentation ZI : Armure affiche (Indice + BE), catégorie « Traits d'attaque », Trait **Redoutable**, Trait **Fouissement**, conseils d'emploi de Redoutable selon la taille du groupe.
+- `ZI 14 l.1037-1087` — tableau de référence rapide reprenant **tous** les Traits du LDB (texte complet).
 - `EDO 11 l.172-243` — nouveaux Traits (Absorption, Amorphe, Contagieux, Décérébré, Dédoublement, Voleur de Chair) + Mutations à effet de combat (Écailles Épineuses, Chair Nécrosée, Pattes Chèvre, Tête Pointue, Crétin).
 - `T2C 15 l.133-135` — introduction des Nouveaux Traits du Bestiaire fluvial (applicables à n'importe quelle créature au choix du MJ).
 - `T2C 15 l.138-163` — 8 nouveaux Traits du Compagnon T2 : Aquatique, S'accrocher Pour Se Nourrir, Hallucinogène, Rampant, Salive Analgésique, Salive Anticoagulante, Capricieux, Engloutir (effet mécanique verbatim).
@@ -3307,7 +3307,7 @@ Les Dégâts dus au **Feu** sont notés à part et **jamais** régénérés. —
 
 ### Traits de défense additionnels (autres livres — consolidation)
 
-**Redoutable (Indice)** *(Le Zoo Impérial — Nouveau Trait de Créature)*. « Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, **au début de son tour**, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (**par défaut, 1**), elle **gagne immédiatement tous les Avantages qui lui manquent**. Si la créature est sous l'effet d'un État ***Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage**. » C'est une résilience d'Avantage : la créature regénère son pool d'Avantage jusqu'à l'Indice chaque tour (sauf si Empêtrée/Inconsciente/Surprise). Guidage MJ : « si un monstre présente **plus de niveaux de Redoutable qu'il n'y a de Personnages**, vous pourriez diminuer ou supprimer ce Trait. » Le texte de référence apparaît **deux fois à l'identique** dans le livre (au statbloc inaugural et dans l'appendice des nouveaux traits). — `ZI 01 l.100-101`, `ZI 01 l.4087-4088` (guidage : `ZI 01 l.4086`)
+**Redoutable (Indice)** *(Le Zoo Impérial — Nouveau Trait de Créature)*. « Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, **au début de son tour**, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (**par défaut, 1**), elle **gagne immédiatement tous les Avantages qui lui manquent**. Si la créature est sous l'effet d'un État ***Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage**. » C'est une résilience d'Avantage : la créature regénère son pool d'Avantage jusqu'à l'Indice chaque tour (sauf si Empêtrée/Inconsciente/Surprise). Guidage MJ : « si un monstre présente **plus de niveaux de Redoutable qu'il n'y a de Personnages**, vous pourriez diminuer ou supprimer ce Trait. » Le texte de référence apparaît **deux fois à l'identique** dans le livre (au statbloc inaugural et dans l'appendice des nouveaux traits). — `ZI 01 l.79-80`, `ZI 14 l.1025-1026` (guidage : `ZI 14 l.1024`)
 
 **Amorphe** *(L'Ennemi dans l'Ombre — Appendice 2, Nouvelles règles)*. « La créature est un blob amorphe. Il **divise par deux toutes les Blessures subies par des dégâts autres que le feu, le froid ou la magie**. Il **ignore toutes les Blessures critiques** et **ne peut être détruit qu'en étant réduit à 0 Blessure par le froid extrême, le feu ou la magie**. **S'il est réduit à 0 Blessure par d'autres moyens, il tombe en torpeur pendant 1d10 Rounds, puis régénère +1 Blessure.** Les créatures amorphes évitent les sources intense de chaleur ou de froid. » (Trait porté notamment par l'Amibe, EDO ch. 7.) — `EDO 11 l.224-226`
 
@@ -3327,14 +3327,14 @@ Les Dégâts dus au **Feu** sont notés à part et **jamais** régénérés. —
 - `LDB 85 l.187-187` — **Infecté** : forcer une perte de PB sur cible non Mort-vivant → Test de Résistance Facile (+40) ou *Blessure Purulente*.
 - `LDB 85 l.256-257` — **Parasité** : −10 à tous les adversaires pour la toucher au Corps à corps.
 - `LDB 85 l.198-199` — **Instable** : fin de Round Engagé contre Avantage supérieur → perd (Avantage adverse − son Avantage) PB ; à 0 PB, « meurt ».
-- `ZI 01 l.100-101` et `ZI 01 l.4087-4088` — **Redoutable (Indice)** (Le Zoo Impérial) : début de tour, regagne l'Avantage manquant jusqu'à l'Indice (défaut 1), sauf si Empêtré/Inconscient/Surpris ; guidage MJ `ZI 01 l.4086`.
+- `ZI 01 l.79-80` et `ZI 14 l.1025-1026` — **Redoutable (Indice)** (Le Zoo Impérial) : début de tour, regagne l'Avantage manquant jusqu'à l'Indice (défaut 1), sauf si Empêtré/Inconscient/Surpris ; guidage MJ `ZI 14 l.1024`.
 - `EDO 11 l.224-226` — **Amorphe** (L'Ennemi dans l'Ombre) : Blessures non-feu/froid/magie ÷2, ignore tous les Critiques, détruit seulement à 0 PB par feu/froid extrême/magie ; sinon torpeur 1d10 Rounds puis +1 Blessure.
 
 > « Lancer 1d10 après chaque coup reçu. En cas de résultat supérieur ou égal à *Indice*, le coup est ignoré même s'il s'agit d'un Critique. » — `LDB 85 l.278` (Protection)
 
 > « Si elle est à 0 Point de Blessure, lancez 1d10. Sur un résultat de 8+, elle régénère 1 seul Point de Blessure. Sur un résultat de 10 à l'un ou l'autre de ces jets, elle régénère également une Blessure Critique […]. Les Blessures et Blessures Critiques infligées par le Feu ne peuvent pas être régénérées […]. » — `LDB 85 l.296` (Régénération)
 
-> « Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. » — `ZI 01 l.4107` (Redoutable)
+> « Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. » — `ZI 14 l.1045` (Redoutable)
 
 **Voir aussi** : Traits d'attaque et d'allonge des créatures (Arme, Morsure, Cornes, Souffle, Étreinte glaciale) · Avantage en combat (Redoutable, Belliqueux) · Blessures critiques et Traumatisme (LDB 18) · Maladies et infections (LDB 20 — Blessure Purulente) · Localisation et Points d'Armure · Attaques magiques et Résistance des sorts (LDB 46) · Psychologie des créatures (Bestial, Immunité Psychologique).
 
@@ -3646,9 +3646,9 @@ Le Trait **Dressé** liste entre parenthèses les disciplines acquises via la Co
 
 Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouissement (Indice)** :
 - Pour se déplacer, la créature peut **creuser dans le sol sur une distance en mètres égale à son *Indice***. En fouissant, elle **ignore tout obstacle, personnage ou terrain difficile**. À la fin, elle choisit **de sortir de terre ou de rester enfouie**. Elle **peut s'en servir pour Charger**. **Si elle commence son tour sous terre, elle doit se déplacer par fouissement.**
-- **Pour attaquer une cible enfouie**, on calcule la distance au sol normalement mais on **augmente la Portée de 2 niveaux** : un tir à Portée Moyenne passe à Extrême, et **un tir à Portée Longue ou Extrême devient impossible**. (ZI 01 l.628-632, l.2952-2958)
+- **Pour attaquer une cible enfouie**, on calcule la distance au sol normalement mais on **augmente la Portée de 2 niveaux** : un tir à Portée Moyenne passe à Extrême, et **un tir à Portée Longue ou Extrême devient impossible**. (ZI 02 l.66-70, l.2952-2958)
 
-> « Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. […] Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. » — `ZI 01 l.2953`
+> « Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. […] Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. » — `ZI 13 l.954`
 
 **Sources RAW** :
 - `LDB 85 l.62-63` — **Bond** : double le Mouvement en Charge/Course, ignore terrains et personnages traversés.
@@ -3665,7 +3665,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 - `LDB 85 l.110` — **Dressé : Guerre** : +10 CC, ignore Nerveux (bruits forts).
 - `LDB 85 l.141-142` — **Fabriqué** : pas d'Int/FM/Soc (Tests auto-réussis), Blessures calculées sur le bonus de **Force** (et non de FM), toutes Attaques Magiques, erre sans contrôle ni Territorial.
 - `LDB 85 l.357-370` — **Modificateurs de Taille en Combat** (support de l'Attaque de Piétinement de Se Cabrer) : ×Dégâts par écart de catégories, Atouts Dévastatrice/Percutante, Frappe Mortelle, +10 toucher pour le plus petit, −2 DR/catégorie en défense CC.
-- `ZI 01 l.628-632` / `ZI 01 l.4091-4097` — **Fouissement (Indice)** (hors LDB) : creuse *Indice* m en ignorant obstacles/terrain, peut Charger, peut rester enfouie ; ciblage d'une cible enfouie +2 niveaux de Portée (Longue/Extrême impossible).
+- `ZI 02 l.66-70` / `ZI 14 l.1029-1035` — **Fouissement (Indice)** (hors LDB) : creuse *Indice* m en ignorant obstacles/terrain, peut Charger, peut rester enfouie ; ciblage d'une cible enfouie +2 niveaux de Portée (Longue/Extrême impossible).
 - `Ubersreik 05 l.22` — exemple d'application de Foulée (basilic Mouvement 6 → 22 m de Course en un Round sans Test d'Athlétisme) ; renvoie au trait LDB p.339.
 
 **Voir aussi** : Taille des créatures et modificateurs de combat · Charge, Course et Désengagement · Bandes de portée (À distance) · Initiative et Avantage · Traits d'attaque de créature (Arme, Morsure, Cornes, Attaque Caudale)
@@ -3749,7 +3749,7 @@ Une créature **plus grande que son adversaire** peut effectuer une **Attaque de
 - inflige des Dégâts égaux à son **Bonus de Force +0** ;
 - utilise la Compétence **Corps à corps (Bagarre)**.
 
-*— `LDB 85 l.386-387`* (ZI nomme ce Trait **Se cabrer**, même effet : « Pour une action de Mouvement, la créature peut effectuer une attaque de Piétinement si elle est plus grande que son adversaire. Les Dégâts infligés sont égaux au BF+0. » — `ZI 01 l.4224`)
+*— `LDB 85 l.386-387`* (ZI nomme ce Trait **Se cabrer**, même effet : « Pour une action de Mouvement, la créature peut effectuer une attaque de Piétinement si elle est plus grande que son adversaire. Les Dégâts infligés sont égaux au BF+0. » — `ZI 14 l.1162`)
 
 ### Tableau des Blessures par Taille
 
@@ -3776,7 +3776,7 @@ Les créatures plus grandes encaissent plus de Blessures. (BF = Bonus de Force, 
 | +2 catégories | tout ce qui précède **+ Atout Percutante** ; **Dégâts ×2** ; inspire **Terreur (Indice 2)** ; cible en Parade subit **−4 DR** ; **gagne automatiquement** les Tests opposés de Force |
 | +3 catégories | Dévastatrice + Percutante ; **Dégâts ×3** ; **Terreur 3** ; **−6 DR** en Parade ; auto-victoire en Force |
 
-Côté inverse, l'adversaire **plus petit** gagne toujours **+10 pour toucher** la grande créature. *— consolidé de `LDB 85 l.357-387`, `ADE II 02 l.563-589`, `ZI 01 l.4137`.*
+Côté inverse, l'adversaire **plus petit** gagne toujours **+10 pour toucher** la grande créature. *— consolidé de `LDB 85 l.357-387`, `ADE II 02 l.563-589`, `ZI 14 l.1075`.*
 
 **Sources RAW** :
 - `LDB 85 l.339-340` — « Utiliser les Tailles » : agrandir = +10 F, +10 E, −5 Ag **par catégorie** de Taille supérieure ; procédé inversé pour rapetisser.
@@ -3790,7 +3790,7 @@ Côté inverse, l'adversaire **plus petit** gagne toujours **+10 pour toucher** 
 - `LDB 85 l.391-406` — Blessures par Taille (table) : Minuscule 1 · Très petite BE · Petite 2×BE+BFM · Moyenne BF+2×BE+BFM · Grande ×2 · Énorme ×4 · Monstrueuse ×8.
 - `ADE II 02 l.563-589` — application aux **ogres** (Taille Grande) : armes gagnent Dévastatrice vs Moyenne, Percutante + **Dégâts doublés** vs Petite ; défense **−2 DR** (Moyenne) / **−4 DR** (Petite) en Corps à corps (pas Esquive) ; pas de Désengagement vs taille inférieure ; Piétinement 1 Avantage BF+0 ; **+10 pour toucher** un ogre (CC et Projectiles). NB : ADE II nomme « Frappe Mortelle » l'enchaînement de l'ogre dans l'espace d'une cible plus petite (≤ Bonus de CC fois, jamais deux fois la même cible, pas besoin que la première meure) — c'est la même règle optionnelle LDB p. 160 déclenchée par la Taille.
 - `ADE II 02 l.584-585` — ogres hostiles : **Peur** chez les créatures Moyennes, **Terreur** chez les Petites.
-- `ZI 01 l.4132, l.2998` — tableau de référence rapide du Trait Taille : attaquant ≥ +1 cat. → Dévastatrice + Frappe Mortelle + inspire Peur + gagne les Tests opposés de Force (sauf Critique adverse) ; ≥ +2 cat. → + Percutante, **Dégâts × différence**, Terreur (Indice = différence), victoire automatique en Force ; plus petit → **+10 pour toucher** ; Piétinement (« Se cabrer ») 1 Avantage, BF+0 ; Blessures affectées (renvoi p. 342).
+- `ZI 14 l.1070, l.2998` — tableau de référence rapide du Trait Taille : attaquant ≥ +1 cat. → Dévastatrice + Frappe Mortelle + inspire Peur + gagne les Tests opposés de Force (sauf Critique adverse) ; ≥ +2 cat. → + Percutante, **Dégâts × différence**, Terreur (Indice = différence), victoire automatique en Force ; plus petit → **+10 pour toucher** ; Piétinement (« Se cabrer ») 1 Avantage, BF+0 ; Blessures affectées (renvoi p. 342).
 
 > « Vous multipliez les Dégâts infligés par le nombre de catégories de Taille supérieures (ainsi, 2 catégories = x2, 3 catégories = x3, et ainsi de suite) : cette multiplication est calculée après l'application des modificateurs. » — `LDB 85 l.361`
 
@@ -3826,7 +3826,7 @@ Effets, tels que définis verbatim au LDB :
 
 Le Zoo Impérial republie la définition dans son tableau récapitulatif des Traits (formulation légèrement resserrée, mécanique identique) :
 
-> « **Nuée** — La Nuée est considérée comme une seule créature et ignore les règles de Psychologie. Elle peut ignorer les règles d'Engagement pendant son Mouvement. Les attaques réussies activent la règle Frappes Mortelles (**WFJDR**, p. 160). Tous les adversaires Engagés perdent 1 Point de Blessure à la fin de chaque Round. La Nuée possède cinq fois plus de Points de Blessures qu'une créature normale et gagne +10 en Capacité de Combat. Toutes les tentatives de tirer sur la Nuée obtiennent un bonus de +40 au toucher. La Nuée ignore toutes les règles du Trait de créature Taille. » — `ZI 01 l.2993`
+> « **Nuée** — La Nuée est considérée comme une seule créature et ignore les règles de Psychologie. Elle peut ignorer les règles d'Engagement pendant son Mouvement. Les attaques réussies activent la règle Frappes Mortelles (**WFJDR**, p. 160). Tous les adversaires Engagés perdent 1 Point de Blessure à la fin de chaque Round. La Nuée possède cinq fois plus de Points de Blessures qu'une créature normale et gagne +10 en Capacité de Combat. Toutes les tentatives de tirer sur la Nuée obtiennent un bonus de +40 au toucher. La Nuée ignore toutes les règles du Trait de créature Taille. » — `ZI 13 l.984`
 
 ### Règle référencée — Frappe Mortelle (la règle activée par toute touche de la nuée)
 
@@ -3865,7 +3865,7 @@ Le profil ci-dessous porte le Trait **Nuée\*** (l'astérisque sur la créature 
 
 **Sources RAW** :
 - `LDB 85 l.252-253` — Définition complète et faisant foi du Trait Nuée : agit comme une seule créature ; ignore Psychologie (p.190), Engagement pendant le Mouvement, et **toutes** les règles de Taille ; toute attaque réussie active **Frappe Mortelle** (même sans tuer, p.160) ; chaque opposant Engagé perd **1 PB en fin de Round** (auto) ; **×5 PB** d'une créature-type ; **+10 CC** ; **+40 au toucher** pour tirer sur la nuée.
-- `ZI 01 l.4132` — Reformulation condensée identique en mécanique dans le tableau de référence des Traits du Zoo Impérial (CONSOLIDÉE : confirme chaque clause, « considérée comme une seule créature », +40 au tir, ×5 PB, +10 CC, −1 PB/Round, Frappe Mortelle).
+- `ZI 14 l.1070` — Reformulation condensée identique en mécanique dans le tableau de référence des Traits du Zoo Impérial (CONSOLIDÉE : confirme chaque clause, « considérée comme une seule créature », +40 au tir, ×5 PB, +10 CC, −1 PB/Round, Frappe Mortelle).
 - `ZI 01 l.702-709` — Application concrète : **Nuée de Squigs des Cavernes**, Trait **Nuée\*** ; CC **55\*** (base +10 CC déjà appliqué), B **60\*** (PB d'un squig ×5 déjà appliqué) ; rappelle que les valeurs astérisquées du statbloc incorporent la transformation Nuée.
 - `LDB 14 l.6-7` — Règle optionnelle **Frappe Mortelle** activée par la nuée : se déplacer sur l'emplacement de la cible touchée et frapper un autre adversaire, jusqu'à BCC fois ; certaines créatures (dont la nuée) l'activent sans tuer.
 - `LDB 85 l.346-355` — Tableau des sept catégories de Taille (Minuscule → Monstrueuse) que la nuée ignore intégralement.
@@ -3950,7 +3950,7 @@ Le système redéfinit l'État _Hémorragique_ :
 | 95-99 | Mâchoire mutilée | 5 | Le coup vous fracasse totalement la mâchoire : il vous détruit la langue et fait voler vos dents. Vous recevez 4 États _Hémorragique_ et 3 États _Sonné_. Vous subissez le Traumatisme _Fracture (Majeure)_ et vous perdez votre langue et 1d10 dents – _Amputation (Difficile)_. |
 | 00 ou plus | Crâne fracassé | Mort | Votre tête est écrasée et vous vous écroulez, mort sur le coup. |
 
-*— `AA 01 l.2526-2548`*
+*— `AA 07 l.82-104`*
 
 ### Table des Blessures Critiques au Bras
 
@@ -3977,7 +3977,7 @@ Le système redéfinit l'État _Hémorragique_ :
 | 131-135 | Tendons coupés | 5 | Le coup rend votre bras inutilisable de manière permanente – _Amputation (Très Difficile)_. Vous recevez 3 États _Hémorragique_ et 1 État _Sonné_. Vous devez réussir un Test de _Résistance Difficile (−20)_ sous peine de subir l'État _Inconscient_. |
 | 136 ou plus | Démembrement brutal | Mort | Votre bras est tranché et vous mourez presque instantanément à cause du choc et de la perte de sang. |
 
-*— `AA 01 l.2549-2575`*
+*— `AA 07 l.105-131`*
 
 ### Table des Blessures Critiques au Torse
 
@@ -4004,7 +4004,7 @@ Le système redéfinit l'État _Hémorragique_ :
 | 111-115 | Hémorragie interne | 5 | Gagnez 1 État _Hémorragique_ qui ne peut être retiré que par _Chirurgie_. Vous contractez une Infection du sang (voir _Maladies et Infections_ en page 186 de _WFJDR_). |
 | 116 ou plus | Éventré | Mort | Vous êtes littéralement coupé en deux. Les deux parties de votre corps atterrissent de façon parfaitement aléatoire au sol, et tout Personnage situé à moins de 2 mètres est recouvert de sang. |
 
-*— `AA 01 l.2576-2603`*
+*— `AA 07 l.132-159`*
 
 ### Table des Blessures Critiques à la Jambe
 
@@ -4031,34 +4031,34 @@ Le système redéfinit l'État _Hémorragique_ :
 | 121-125 | Tendon coupé | 5 | Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États _Hémorragique_, 2 États _Sonné_ et 1 État _À Terre_ et vous perdez l'usage de votre jambe – _Amputation (Très Difficile)_. |
 | 126 ou plus | Bassin fracassé | Mort | Le coup fracasse votre bassin, coupant une jambe. Vous mourez instantanément à cause du choc traumatique. |
 
-*— `AA 01 l.2604-2629`*
+*— `AA 07 l.160-185`*
 
 ---
 
 **Sources RAW** :
-- `AA 01 l.2441-2445` — Présentation du sous-système : approche optionnelle qui **remplace WFJDR p.172-178** ; objectifs (réduire la complexité, ajouter des choix tactiques de Localisation/armure).
-- `AA 01 l.2448-2454` — Mises à jour de l'État _Hémorragique_ propres au système alternatif (−1 PB/Round modificateurs ignorés ; −10 résistance infections ; Test Résistance Intermédiaire à 0 PB → _Inconscient_ ; 10 %/État si _Inconscient_, coagulation sur double ; retrait Guérison +20 / Sort-Prière ; gain _Exténué_ après retrait — voir `l.2476`).
-- `AA 01 l.2461-2465` — Blessures ordinaires : 1 Dégât = 1 Blessure ; BE + PA réduisent les Dégâts (exemple 10 − 3 − 1 = 6).
-- `AA 01 l.2467-2469` — Les **deux** déclencheurs de Critique (double au jet, ou cible mise/déjà à 0).
-- `AA 01 l.2472-2476` — Déclencheur **double sur le jet d'attaque** (double + réussite = Critique même si PB restent) ; **on n'inverse pas** le jet : relancer 1d100 (Localisation) puis 1d100 (ligne de table).
-- `AA 01 l.2479-2480` — Déclencheur **mise à zéro** : Critique automatique ; **+10 par Blessure** au-delà du seuil de 0 (ou +10/Blessure si déjà à 0).
-- `AA 01 l.2483-2486` — Colonne « Blessures » des tables ; Blessures supplémentaires calculées en dernier ; **pas de second jet** déclenché — un coup = une seule Critique.
-- `AA 01 l.2492-2501` — Exemples joués (Ibrit / Hugo) illustrant +10/PB, le second jet de table non-cascadant, et le calcul +80 (8 Blessures à un adversaire déjà à 0).
-- `AA 01 l.2502-2505` — **Retenir ses Coups** : déclaration avant le jet ; Critique seulement si chute à 0 ; **interdit** avec _En flammes_/projectiles/sorts ; perte des Atouts _Empaleuse, Percutante, Perforante, Taille_.
-- `AA 01 l.2508-2511` — Option **Mort Subite** (alternative AA) : à 0 PB, le MJ déclare mort/inconscient ; PNJ secondaires uniquement, **jamais** PJ ni PNJ Chanceux.
-- `AA 01 l.2513-2519` — **Mort par accumulation** : _Inconscient_ + 0 PB → si le nombre de Critiques subies **dépasse le BE**, mort en fin de Round sauf soin d'une Critique ; achèvement d'un _Inconscient_ pour 1 Action.
-- `AA 01 l.2522-2523` — **Blessures Triviales** (« T ») : invalidantes mais pas mortelles ; 0 Blessure supplémentaire ; non comptées pour la mort.
-- `AA 01 l.2526-2548` — **Table Critiques à la Tête** (verbatim, 01-03 … 00 ou plus).
-- `AA 01 l.2549-2575` — **Table Critiques au Bras** (verbatim, 01-10 … 136 ou plus).
-- `AA 01 l.2576-2603` — **Table Critiques au Torse** (verbatim, 01-10 … 116 ou plus).
-- `AA 01 l.2604-2629` — **Table Critiques à la Jambe** (verbatim, 01-10 … 126 ou plus).
+- `AA 06 l.554-558` — Présentation du sous-système : approche optionnelle qui **remplace WFJDR p.172-178** ; objectifs (réduire la complexité, ajouter des choix tactiques de Localisation/armure).
+- `AA 07 l.4-10` — Mises à jour de l'État _Hémorragique_ propres au système alternatif (−1 PB/Round modificateurs ignorés ; −10 résistance infections ; Test Résistance Intermédiaire à 0 PB → _Inconscient_ ; 10 %/État si _Inconscient_, coagulation sur double ; retrait Guérison +20 / Sort-Prière ; gain _Exténué_ après retrait — voir `l.2476`).
+- `AA 07 l.17-21` — Blessures ordinaires : 1 Dégât = 1 Blessure ; BE + PA réduisent les Dégâts (exemple 10 − 3 − 1 = 6).
+- `AA 07 l.23-25` — Les **deux** déclencheurs de Critique (double au jet, ou cible mise/déjà à 0).
+- `AA 07 l.28-32` — Déclencheur **double sur le jet d'attaque** (double + réussite = Critique même si PB restent) ; **on n'inverse pas** le jet : relancer 1d100 (Localisation) puis 1d100 (ligne de table).
+- `AA 07 l.35-36` — Déclencheur **mise à zéro** : Critique automatique ; **+10 par Blessure** au-delà du seuil de 0 (ou +10/Blessure si déjà à 0).
+- `AA 07 l.39-42` — Colonne « Blessures » des tables ; Blessures supplémentaires calculées en dernier ; **pas de second jet** déclenché — un coup = une seule Critique.
+- `AA 07 l.48-57` — Exemples joués (Ibrit / Hugo) illustrant +10/PB, le second jet de table non-cascadant, et le calcul +80 (8 Blessures à un adversaire déjà à 0).
+- `AA 07 l.58-61` — **Retenir ses Coups** : déclaration avant le jet ; Critique seulement si chute à 0 ; **interdit** avec _En flammes_/projectiles/sorts ; perte des Atouts _Empaleuse, Percutante, Perforante, Taille_.
+- `AA 07 l.64-67` — Option **Mort Subite** (alternative AA) : à 0 PB, le MJ déclare mort/inconscient ; PNJ secondaires uniquement, **jamais** PJ ni PNJ Chanceux.
+- `AA 07 l.69-75` — **Mort par accumulation** : _Inconscient_ + 0 PB → si le nombre de Critiques subies **dépasse le BE**, mort en fin de Round sauf soin d'une Critique ; achèvement d'un _Inconscient_ pour 1 Action.
+- `AA 07 l.78-79` — **Blessures Triviales** (« T ») : invalidantes mais pas mortelles ; 0 Blessure supplémentaire ; non comptées pour la mort.
+- `AA 07 l.82-104` — **Table Critiques à la Tête** (verbatim, 01-03 … 00 ou plus).
+- `AA 07 l.105-131` — **Table Critiques au Bras** (verbatim, 01-10 … 136 ou plus).
+- `AA 07 l.132-159` — **Table Critiques au Torse** (verbatim, 01-10 … 116 ou plus).
+- `AA 07 l.160-185` — **Table Critiques à la Jambe** (verbatim, 01-10 … 126 ou plus).
 - `ADE II 04 l.147` — Interaction avec un objet magique : la **Massue Brise-Tibias** ajoute **+20 au lancer sur la Table des Critiques** pour une Blessure Critique infligée aux jambes (« Sinon, la massue fonctionne comme une Arme simple normale »).
 
-> « Si le MJ et les Joueurs préfèrent utiliser ce système, il remplace alors les informations données en pages 172-178 de **WFJDR**. » — `AA 01 l.2443`
+> « Si le MJ et les Joueurs préfèrent utiliser ce système, il remplace alors les informations données en pages 172-178 de **WFJDR**. » — `AA 06 l.556`
 
-> « N'inversez pas votre jet d'attaque pour connaître la Localisation de votre coup comme vous le feriez pour un coup normal. Au lieu de cela, lancez de nouveau 1d100 pour savoir où votre coup touche. Puis lancez encore 1d100 et reportez-vous à la ligne concernée dans le tableau des Blessures Critiques pour cette Localisation. » — `AA 01 l.2476`
+> « N'inversez pas votre jet d'attaque pour connaître la Localisation de votre coup comme vous le feriez pour un coup normal. Au lieu de cela, lancez de nouveau 1d100 pour savoir où votre coup touche. Puis lancez encore 1d100 et reportez-vous à la ligne concernée dans le tableau des Blessures Critiques pour cette Localisation. » — `AA 07 l.32`
 
-> « En d'autres termes, chaque coup ne peut infliger qu'une seule Blessure Critique. » — `AA 01 l.2486`
+> « En d'autres termes, chaque coup ne peut infliger qu'une seule Blessure Critique. » — `AA 07 l.42`
 
 **Voir aussi** : Critiques & Traumatisme (système du Livre de base, LDB 18) ; Mort & Inconscience (LDB 17/18) ; État _Hémorragique_ et États ; Localisations & coups inversés (LDB 13) ; Amputation et Aide Médicale / Chirurgie ; Atouts & Défauts d'arme (_Empaleuse / Percutante / Perforante / Taille_, LDB 62) ; ADE II — objets magiques (Massue Brise-Tibias).
 
@@ -4084,7 +4084,7 @@ Le supplément redéfinit l'État *Hémorragique* dans le cadre de son système 
 - **Réveil et épuisement** : « **Une fois tous les États _Hémorragique_ retirés, gagnez un État _Exténué_.** »
 - **Retrait de l'État** : un **Test de Guérison Accessible (+20)** réussi retire 1 État *Hémorragique*, **+1 par DR**. Tout Sort ou Prière qui guérit des Points de Blessure retire **1 État par Point de Blessure guéri**. (Voir aussi les règles sur les bandages.)
 
-> « Vous saignez abondamment. Perdez 1 Blessure à la fin de chaque Round, en ignorant tous les modificateurs. De plus, vous subissez une pénalité de –10 lorsqu'il s'agit de faire un Test pour résister à une Blessure purulente, Infection mineure ou Infection du sang. » — `AA 01 l.2449`
+> « Vous saignez abondamment. Perdez 1 Blessure à la fin de chaque Round, en ignorant tous les modificateurs. De plus, vous subissez une pénalité de –10 lorsqu'il s'agit de faire un Test pour résister à une Blessure purulente, Infection mineure ou Infection du sang. » — `AA 07 l.5`
 
 ---
 
@@ -4104,7 +4104,7 @@ Le poids de l'arme est concentré dans sa tête, ce qui la rend inefficace pour 
 
 - **Quand cette arme est utilisée pour s'opposer à une attaque, elle subit une pénalité de −1 DR sur cette attaque** (Test opposé de défense).
 
-> « Quand cette arme est utilisée pour s'opposer à une attaque, elle subit une pénalité de -1 DR sur cette attaque. » — `AA 01 l.2708`
+> « Quand cette arme est utilisée pour s'opposer à une attaque, elle subit une pénalité de -1 DR sur cette attaque. » — `AA 08 l.81`
 
 ---
 
@@ -4117,7 +4117,7 @@ Arme conçue pour s'accrocher à la jambe de l'adversaire ou le faire tomber.
 - **Si vous l'emportez** : l'adversaire subit l'État *À Terre*. **S'il est monté**, il fait une **chute de 2 mètres** puis subit l'État *À Terre*.
 - **Si vous perdez** : rien ne se passe en dehors des effets standards du résultat de l'opposition.
 
-> « Après avoir touché votre opposant, vous pouvez dépenser 2 Avantages et effectuer un Test opposé de **Force/Athlétisme**. » — `AA 01 l.2710`
+> « Après avoir touché votre opposant, vous pouvez dépenser 2 Avantages et effectuer un Test opposé de **Force/Athlétisme**. » — `AA 08 l.83`
 
 ---
 
@@ -4128,7 +4128,7 @@ Armes tranchantes conçues pour ouvrir des blessures béantes. (« X » = l'Indi
 - **Si vous infligez une Blessure Critique avec cette arme, la cible subit un État _Hémorragique_** en plus de tous les autres effets du Coup Critique.
 - Vous pouvez dépenser **X Avantages** pour que votre opposant subisse **1 État _Hémorragique_ supplémentaire**.
 
-> « Si vous infligez une Blessure Critique avec cette arme, la cible subit un État _Hémorragique_ en plus de tous les autres effets du Coup Critique. Vous pouvez dépenser X Avantages pour que votre opposant subisse 1 État _Hémorragique_ supplémentaire. » — `AA 01 l.2714`
+> « Si vous infligez une Blessure Critique avec cette arme, la cible subit un État _Hémorragique_ en plus de tous les autres effets du Coup Critique. Vous pouvez dépenser X Avantages pour que votre opposant subisse 1 État _Hémorragique_ supplémentaire. » — `AA 08 l.87`
 
 ---
 
@@ -4142,7 +4142,7 @@ Armes qui tirent un nuage de projectiles se déployant pour frapper plusieurs ci
 | **Portée Courte à Longue** | Le tir cible un individu, **mais aussi les (Indice) créatures visibles les plus proches** si elles ne se trouvent pas à plus de **(Indice) mètres** de distance. |
 | **Portée Extrême** | Comme pour Portée Courte à Longue, **mais réduit les Dégâts de l'arme de (Indice)**. |
 
-*— `AA 01 l.2716-2722`*
+*— `AA 08 l.89-95`*
 
 ---
 
@@ -4156,7 +4156,7 @@ L'Atout *Protectrice* a été **modifié** pour être plus facile à utiliser en
 
 **Exemple (verbatim, AA)** : Uri, Surpris au premier Round, ne tire aucun bénéfice de son bouclier. Au Round suivant (plus Surpris), son **bouclier Protectrice 2** lui fournit **2 PA** en plus de son armure. Quand un gobelin lui tire dessus à **50 mètres**, il peut s'y opposer grâce à *Protectrice 2* ; comme le bouclier est en main secondaire, il subit **−20** (Combat à deux armes) **ou** pas de pénalité s'il utilise **Corps à Corps (Parade)** ; et comme le bouclier a *Défensive*, il bénéficie de **+1 DR**.
 
-> « Chaque fois que vous vous opposez à une attaque avec votre Capacité de Combat ou avec votre Compétence Corps à Corps, vous bénéficiez d'un nombre de PA supplémentaires égal à l'Indice de _Protectrice_. Si votre arme a un Indice _Protectrice_ de 2 minimum, vous pouvez aussi l'utiliser pour vous opposer aux tirs de projectiles dans votre ligne de vue. » — `AA 01 l.2729`
+> « Chaque fois que vous vous opposez à une attaque avec votre Capacité de Combat ou avec votre Compétence Corps à Corps, vous bénéficiez d'un nombre de PA supplémentaires égal à l'Indice de _Protectrice_. Si votre arme a un Indice _Protectrice_ de 2 minimum, vous pouvez aussi l'utiliser pour vous opposer aux tirs de projectiles dans votre ligne de vue. » — `AA 08 l.102`
 
 ---
 
@@ -4174,20 +4174,20 @@ Le **Tableau des Armes de Base** d'*Aux Armes* utilise ces nouveaux Atouts. Extr
 | Pique d'armes | Moyenne | +BF +4 | **Déséquilibrée**, Perforante |
 | Arme improvisée | Variable | +BF +1 | **Déséquilibrée**, Inoffensive |
 
-*— `AA 01 l.2758-2774`*
+*— `AA 08 l.131-147`*
 
 ---
 
 **Sources RAW** :
-- `AA 01 l.2448-2454` — Mises à jour de l'État *Hémorragique* : 1 Blessure/Round modificateurs ignorés ; −10 contre Blessure purulente/Infection mineure/Infection du sang ; plancher à 0 Blessure ; Test de Résistance Intermédiaire (+0) en fin de Tour sous peine d'*Inconscient* ; mort 10 %/État si Inconscient+Hémorragique (3 États → mort sur 1-30, double = coagulation −1 État) ; retrait via Guérison Accessible (+20) (+1/DR) ou guérison de PB (1 État/PB guéri).
-- `AA 01 l.2475` — « Une fois tous les États *Hémorragique* retirés, gagnez un État *Exténué*. »
-- `AA 01 l.2694-2703` — Atouts Optionnels : règle de choix avant le jet de touche, défaut = premier Atout listé (exemple du marteau de guerre).
-- `AA 01 l.2706-2708` — *Déséquilibrée* : −1 DR quand l'arme oppose une attaque.
-- `AA 01 l.2710-2712` — *Déstabilisante* : sur touche, 2 Avantages + Test opposé Force/Athlétisme → *À Terre* (chute de 2 m si monté).
-- `AA 01 l.2714` — *Taillade (XA)* : *Hémorragique* sur Critique, +1 *Hémorragique* par X Avantages dépensés.
-- `AA 01 l.2716-2722` — *Tir de zone (Indice)* : bout portant = cible unique +Indice Dégâts ; courte-à-longue = +Indice cibles ≤ Indice mètres ; extrême = idem mais −Indice Dégâts.
-- `AA 01 l.2725-2735` — *Protectrice (Indice)* mise à jour : Indice PA en opposant CC/Corps à Corps ; Protectrice ≥ 2 permet d'opposer les projectiles en ligne de vue ; exemple Uri.
-- `AA 01 l.2758-2774` — Tableau des Armes de Base : armes portant ces Atouts (cimeterre Taillade (1A), hache/marteau/masse/massue/pique/arme improvisée Déséquilibrée).
+- `AA 07 l.4-10` — Mises à jour de l'État *Hémorragique* : 1 Blessure/Round modificateurs ignorés ; −10 contre Blessure purulente/Infection mineure/Infection du sang ; plancher à 0 Blessure ; Test de Résistance Intermédiaire (+0) en fin de Tour sous peine d'*Inconscient* ; mort 10 %/État si Inconscient+Hémorragique (3 États → mort sur 1-30, double = coagulation −1 État) ; retrait via Guérison Accessible (+20) (+1/DR) ou guérison de PB (1 État/PB guéri).
+- `AA 07 l.31` — « Une fois tous les États *Hémorragique* retirés, gagnez un État *Exténué*. »
+- `AA 08 l.67-76` — Atouts Optionnels : règle de choix avant le jet de touche, défaut = premier Atout listé (exemple du marteau de guerre).
+- `AA 08 l.79-81` — *Déséquilibrée* : −1 DR quand l'arme oppose une attaque.
+- `AA 08 l.83-85` — *Déstabilisante* : sur touche, 2 Avantages + Test opposé Force/Athlétisme → *À Terre* (chute de 2 m si monté).
+- `AA 08 l.87` — *Taillade (XA)* : *Hémorragique* sur Critique, +1 *Hémorragique* par X Avantages dépensés.
+- `AA 08 l.89-95` — *Tir de zone (Indice)* : bout portant = cible unique +Indice Dégâts ; courte-à-longue = +Indice cibles ≤ Indice mètres ; extrême = idem mais −Indice Dégâts.
+- `AA 08 l.98-108` — *Protectrice (Indice)* mise à jour : Indice PA en opposant CC/Corps à Corps ; Protectrice ≥ 2 permet d'opposer les projectiles en ligne de vue ; exemple Uri.
+- `AA 08 l.131-147` — Tableau des Armes de Base : armes portant ces Atouts (cimeterre Taillade (1A), hache/marteau/masse/massue/pique/arme improvisée Déséquilibrée).
 
 **Voir aussi** : LDB — États (Hémorragique, Inconscient, Exténué, À Terre, Empoisonné) ; LDB 13 — Combat & Critiques ; LDB 62 — Atouts/Défauts d'arme (Protectrice/Défensive/Taille version Livre de Base) ; AA — Atouts à distance (Salve, etc.) ; LDB 18 — Traumatisme (Blessures Critiques).
 
@@ -4223,13 +4223,13 @@ Les armes de base sont maniées à une main et nécessitent relativement peu d'e
 | Massue | 4/– | 1 | Commune | Moyenne | +BF +4 | Déséquilibrée, Inoffensive |
 | Pique d'armes | 15/– | 1 | Limitée | Moyenne | +BF +4 | Déséquilibrée, Perforante |
 
-> **\*** Les Atouts d'arme *Empaleuse* et *Précise* (dague ballock) ne s'appliquent que si la cible subit l'État *Surpris* ou *À Terre*. — `AA 01 l.2774`
+> **\*** Les Atouts d'arme *Empaleuse* et *Précise* (dague ballock) ne s'appliquent que si la cible subit l'État *Surpris* ou *À Terre*. — `AA 08 l.147`
 
-Notes : le **marteau de guerre** porte un Atout au CHOIX (*Assommante* — tête plate — OU *Perforante* — pointes) en plus de *Déséquilibrée* (`AA 01 l.2767-2769+2872`). Le **cimeterre** a une Allonge Courte malgré une longueur comparable à l'épée (forme courbe → estoc réduit). Une **épée brisée** sert de dague mais reçoit le Défaut *Dangereuse* si elle n'a plus de garde complète. La **massue** peut être ramassée gratuitement en milieu boisé via un Test étendu de Survie en extérieur Intermédiaire (+0), total 7 DR. (`AA 01 l.2757-2780`)
+Notes : le **marteau de guerre** porte un Atout au CHOIX (*Assommante* — tête plate — OU *Perforante* — pointes) en plus de *Déséquilibrée* (`AA 08 l.140-142+245`). Le **cimeterre** a une Allonge Courte malgré une longueur comparable à l'épée (forme courbe → estoc réduit). Une **épée brisée** sert de dague mais reçoit le Défaut *Dangereuse* si elle n'a plus de garde complète. La **massue** peut être ramassée gratuitement en milieu boisé via un Test étendu de Survie en extérieur Intermédiaire (+0), total 7 DR. (`AA 08 l.130-153`)
 
 ### [AA 01] Règles du Pavois et Tableau des Boucliers
 
-Les boucliers s'utilisent avec la Compétence **Corps à Corps (Base)**. L'Atout *Protectrice (Indice)* a été révisé dans AA : chaque opposition avec Capacité de Combat / Corps à Corps ajoute un nombre de PA égal à l'Indice ; avec un Indice ≥ 2, le bouclier peut aussi s'opposer aux tirs de projectiles dans la ligne de vue. (`AA 01 l.2727-2731`)
+Les boucliers s'utilisent avec la Compétence **Corps à Corps (Base)**. L'Atout *Protectrice (Indice)* a été révisé dans AA : chaque opposition avec Capacité de Combat / Corps à Corps ajoute un nombre de PA égal à l'Indice ; avec un Indice ≥ 2, le bouclier peut aussi s'opposer aux tirs de projectiles dans la ligne de vue. (`AA 08 l.100-104`)
 
 | Arme | Prix | Enc | Disponibilité | Allonge | Dégâts | Atouts et Défauts |
 |---|---|---|---|---|---|---|
@@ -4240,7 +4240,7 @@ Les boucliers s'utilisent avec la Compétence **Corps à Corps (Base)**. L'Atout
 
 **Règle du Pavois** — le pavois (grand bouclier d'arbalétrier, ~1,20 m) s'utilise de **deux** manières :
 - **Comme un grand bouclier** : il confère *Protectrice 3, Défensive, Inoffensive* et ACQUIERT les Défauts *Épuisante* et *Lente* ; Encombrement 4, et n'inflige que **+BF +2** Dégâts.
-- **Comme couvert portatif (usage prévu)** : l'**installer coûte 2 Actions**. L'utilisateur doit indiquer la **direction du couvert** (orientation nord/sud/est/ouest ; position du corps à gauche/droite/devant/derrière ; ou repère géographique « entre le château et moi »). Tant qu'il reste à **1 mètre maximum** derrière le pavois, celui-ci le protège contre **toute attaque de projectiles venant de la direction indiquée**, accordant *Protectrice 5* et *Défensive*. Contre une attaque de corps à corps, le pavois ne protège que si l'attaque vient de la direction indiquée, et **seulement au premier Round** de combat. Aucune protection sur les flancs ou par derrière. (`AA 01 l.2783-2797`)
+- **Comme couvert portatif (usage prévu)** : l'**installer coûte 2 Actions**. L'utilisateur doit indiquer la **direction du couvert** (orientation nord/sud/est/ouest ; position du corps à gauche/droite/devant/derrière ; ou repère géographique « entre le château et moi »). Tant qu'il reste à **1 mètre maximum** derrière le pavois, celui-ci le protège contre **toute attaque de projectiles venant de la direction indiquée**, accordant *Protectrice 5* et *Défensive*. Contre une attaque de corps à corps, le pavois ne protège que si l'attaque vient de la direction indiquée, et **seulement au premier Round** de combat. Aucune protection sur les flancs ou par derrière. (`AA 08 l.156-170`)
 
 ### [AA 01] Tableau des Armes de Cavalerie + lance comme arme improvisée
 
@@ -4251,11 +4251,11 @@ Les boucliers s'utilisent avec la Compétence **Corps à Corps (Base)**. L'Atout
 | (2M) Marteau à bec-de-corbin | 3 CO | 3 | Limitée | Longue | +BF +5 | Assommante |
 | Sabre | 2 CO | 1 | Limitée | Moyenne | +BF +4 | Taillade (1A) |
 
-> **\*** Les lances de cavalerie et les demi-lances de cavalerie sont considérées comme des **armes improvisées** si vous les utilisez lors d'un Round où vous n'avez **pas Chargé**. — `AA 01 l.2838`
+> **\*** Les lances de cavalerie et les demi-lances de cavalerie sont considérées comme des **armes improvisées** si vous les utilisez lors d'un Round où vous n'avez **pas Chargé**. — `AA 08 l.211`
 
-**Règle lance de cavalerie improvisée** : sans Charge dans le Round, la lance/demi-lance bascule sur la ligne « Arme improvisée » du Tableau des Armes de Base (+BF +1, *Déséquilibrée, Inoffensive*) — elle perd donc ses dégâts élevés, *Empaleuse* et *Percutante* (`AA 01 l.2832-2838`).
+**Règle lance de cavalerie improvisée** : sans Charge dans le Round, la lance/demi-lance bascule sur la ligne « Arme improvisée » du Tableau des Armes de Base (+BF +1, *Déséquilibrée, Inoffensive*) — elle perd donc ses dégâts élevés, *Empaleuse* et *Percutante* (`AA 08 l.205-211`).
 
-**Sabre** : à pied avec **Corps à Corps (Base)**, son Atout *Taillade (1A)* devient *Taillade (2A)*. Utilisé avec **Corps à Corps (Escrime)**, le sabre **conserve** *Taillade (1A)*. Le **marteau à bec-de-corbin**, à pied, s'utilise avec **Corps à Corps (Deux mains)**. (`AA 01 l.2809-2817`)
+**Sabre** : à pied avec **Corps à Corps (Base)**, son Atout *Taillade (1A)* devient *Taillade (2A)*. Utilisé avec **Corps à Corps (Escrime)**, le sabre **conserve** *Taillade (1A)*. Le **marteau à bec-de-corbin**, à pied, s'utilise avec **Corps à Corps (Deux mains)**. (`AA 08 l.182-190`)
 
 ### [AA 01] Tableau des Armes d'Escrime
 
@@ -4267,7 +4267,7 @@ Pour employer pleinement une arme d'escrime, l'utilisateur doit maîtriser la te
 | Fleuret | 5 CO | 1 | Limitée | Moyenne | +BF +3 | Empaleuse, Inoffensive, Précise, Rapide |
 | Rapière | 5 CO | 1 | Limitée | Longue | +BF +4 | Empaleuse, Rapide |
 
-Note : les épées de cour à pointe boutonnée / lame émoussée (usage sportif) ont le Défaut *Inoffensive*. (`AA 01 l.2819-2827+2930-2936`)
+Note : les épées de cour à pointe boutonnée / lame émoussée (usage sportif) ont le Défaut *Inoffensive*. (`AA 08 l.192-200+303-309`)
 
 ### [AA 01] Règle Gantelet verrouillé + Lacet étrangleur + Tableau des Armes de Bagarre
 
@@ -4283,9 +4283,9 @@ Beaucoup d'armes de bagarre peuvent être bricolées à partir d'objets adéquat
 | Mains nues | N/A | 0 | – | Personnelle | +BF +0 | Inoffensive |
 | Matraque | 1/– | 0 | Rare | Personnelle | +BF +1 | Assommante, Déséquilibrée, Inoffensive |
 
-**Règle Gantelet verrouillé** : gantelet d'acier maintenu fermé par une vis ou un loquet ; il s'achète en complément d'une armure de plates pour un bras (ajouter son prix à celui de l'armure, sans Encombrement supplémentaire). Un personnage équipé d'un gantelet verrouillé **ne lâche pas** l'objet tenu dans cette main même quand les circonstances l'y obligeraient normalement (Désarmer, Critique *Cassure nette*, etc.). À la place, il subit **−20 sur tous les Tests** effectués avec cet objet (y compris Corps à Corps) **tant que** la circonstance persiste, et **pendant un Round minimum**. Si pendant cette période un **nouvel** événement survient qui aurait à nouveau dû le faire lâcher l'objet, il le **lâche** malgré le gantelet. (`AA 01 l.2860-2867`)
+**Règle Gantelet verrouillé** : gantelet d'acier maintenu fermé par une vis ou un loquet ; il s'achète en complément d'une armure de plates pour un bras (ajouter son prix à celui de l'armure, sans Encombrement supplémentaire). Un personnage équipé d'un gantelet verrouillé **ne lâche pas** l'objet tenu dans cette main même quand les circonstances l'y obligeraient normalement (Désarmer, Critique *Cassure nette*, etc.). À la place, il subit **−20 sur tous les Tests** effectués avec cet objet (y compris Corps à Corps) **tant que** la circonstance persiste, et **pendant un Round minimum**. Si pendant cette période un **nouvel** événement survient qui aurait à nouveau dû le faire lâcher l'objet, il le **lâche** malgré le gantelet. (`AA 08 l.233-240`)
 
-**Lacet étrangleur — règles spéciales** : longueur de corde/fil passée autour du cou de l'adversaire et serrée à la main. Fabrication possible (relais de poste ou lieu urbain) via un Test étendu de **Métier (Cirier, Ingénieur, Tailleur ou Tanneur) Intermédiaire (+0)**, total **5 DR**. C'est une arme à deux mains (2M) ; ses Atouts/Défauts sont **Déséquilibrée, Enchevêtrement, Inoffensive, Lente** (l'Atout *Enchevêtrement* en fait une arme d'entrave). (`AA 01 l.2869+2968-2974`)
+**Lacet étrangleur — règles spéciales** : longueur de corde/fil passée autour du cou de l'adversaire et serrée à la main. Fabrication possible (relais de poste ou lieu urbain) via un Test étendu de **Métier (Cirier, Ingénieur, Tailleur ou Tanneur) Intermédiaire (+0)**, total **5 DR**. C'est une arme à deux mains (2M) ; ses Atouts/Défauts sont **Déséquilibrée, Enchevêtrement, Inoffensive, Lente** (l'Atout *Enchevêtrement* en fait une arme d'entrave). (`AA 08 l.242+341-347`)
 
 ### [AA 01] Fléaux sans formation + Tableau des Fléaux
 
@@ -4295,11 +4295,11 @@ Beaucoup d'armes de bagarre peuvent être bricolées à partir d'objets adéquat
 | Fléau à grain | 10/– | 1 | Commune | Moyenne | +BF +3 | À Enroulement, Imprécise, Perturbante |
 | (2M) Fléau d'armes | 3 CO | 2 | Rare | Longue | +BF +6 | À Enroulement, Épuisante, Percutante, Perturbante |
 
-**Règle Fléaux sans formation** : un personnage **dépourvu de la Compétence Corps à Corps (Fléau)** qui manie un fléau **ajoute le Défaut d'arme *Dangereuse*** à son arme **ET perd tout autre Atout d'arme** que le fléau possède (donc *À Enroulement*, *Percutante*, etc. disparaissent ; seuls subsistent les Défauts + *Dangereuse*). (`AA 01 l.2889-2891+2992-2998`)
+**Règle Fléaux sans formation** : un personnage **dépourvu de la Compétence Corps à Corps (Fléau)** qui manie un fléau **ajoute le Défaut d'arme *Dangereuse*** à son arme **ET perd tout autre Atout d'arme** que le fléau possède (donc *À Enroulement*, *Percutante*, etc. disparaissent ; seuls subsistent les Défauts + *Dangereuse*). (`AA 08 l.262-264+365-371`)
 
 ### [AA 01] Armes de Parade (pénalité main secondaire) + Cape/Filet (Force d'entrave) + Tableau
 
-**Règle des Armes de Parade** : **toute arme à une main dotée de l'Atout *Défensive*** peut être utilisée avec **Corps à Corps (Parade)**. Quand vous utilisez Corps à Corps (Parade), vous pouvez vous opposer à une attaque **sans la pénalité habituelle de −20** liée à l'utilisation de la main secondaire (Combat à deux armes). (`AA 01 l.2897-2898`)
+**Règle des Armes de Parade** : **toute arme à une main dotée de l'Atout *Défensive*** peut être utilisée avec **Corps à Corps (Parade)**. Quand vous utilisez Corps à Corps (Parade), vous pouvez vous opposer à une attaque **sans la pénalité habituelle de −20** liée à l'utilisation de la main secondaire (Combat à deux armes). (`AA 08 l.270-271`)
 
 | Arme | Prix | Enc | Disponibilité | Allonge | Dégâts | Atouts et Défauts |
 |---|---|---|---|---|---|---|
@@ -4309,10 +4309,10 @@ Beaucoup d'armes de bagarre peuvent être bricolées à partir d'objets adéquat
 | Main gauche | 1 CO | 0 | Rare | Très courte | +BF +2 | Défensive |
 
 **Force d'entrave (Cape et Filet lesté)** : pour les Tests visant à savoir si un adversaire s'empêtre dans une arme d'entrave, l'arme est traitée comme ayant une **Force** propre :
-- **Cape** : Force **25** (peu adaptée aux attaques d'entrave). (`AA 01 l.2935`)
-- **Filet lesté** : Force **55**. (`AA 01 l.2937`)
+- **Cape** : Force **25** (peu adaptée aux attaques d'entrave). (`AA 08 l.308`)
+- **Filet lesté** : Force **55**. (`AA 08 l.310`)
 
-**Main gauche** : dague d'escrime ; un combattant **sans Corps à Corps (Parade)** peut quand même l'utiliser, mais elle **devient une dague et perd l'Atout *Défensive***. (`AA 01 l.2939-2941`)
+**Main gauche** : dague d'escrime ; un combattant **sans Corps à Corps (Parade)** peut quand même l'utiliser, mais elle **devient une dague et perd l'Atout *Défensive***. (`AA 08 l.312-314`)
 
 ### [AA 01] Tableau des Armes d'Hast
 
@@ -4328,7 +4328,7 @@ Beaucoup d'armes de bagarre peuvent être bricolées à partir d'objets adéquat
 | (2M) Pique | 18/– | 4 | Rare | Considérable | +BF +4 | Empaleuse |
 | (2M) Serpe de guerre | 2 CO | 3 | Limitée | Longue | +BF +4 | Défensive, Taille ou Déstabilisante |
 
-Notes : la **hache d'armes** choisit **Taille OU Empaleuse OU Assommante** (+ *Défensive*) ; **hallebarde**, **pertuisane/fauchard** et **serpe de guerre** offrent un choix d'Atout au moment de l'attaque ; le **bâton** peut être ramassé gratuitement en milieu boisé (Survie en extérieur Intermédiaire (+0), total 20 DR). **Attrape-coquin** : certains modèles à **mécanisme à ressort** coûtent **4 CO** et donnent **+20 sur tous les Tests de Force** pour empêtrer une cible. (`AA 01 l.2921-2933+3033-3060`)
+Notes : la **hache d'armes** choisit **Taille OU Empaleuse OU Assommante** (+ *Défensive*) ; **hallebarde**, **pertuisane/fauchard** et **serpe de guerre** offrent un choix d'Atout au moment de l'attaque ; le **bâton** peut être ramassé gratuitement en milieu boisé (Survie en extérieur Intermédiaire (+0), total 20 DR). **Attrape-coquin** : certains modèles à **mécanisme à ressort** coûtent **4 CO** et donnent **+20 sur tous les Tests de Force** pour empêtrer une cible. (`AA 08 l.294-306+406-433`)
 
 ### [AA 01] Tableau des Armes à Deux Mains
 
@@ -4341,27 +4341,27 @@ Notes : la **hache d'armes** choisit **Taille OU Empaleuse OU Assommante** (+ *D
 | (2M) Zweihänder | 10 CO | 3 | Limitée | Longue | +BF +5 | Dévastatrice, Taille |
 | (2M) Zweihänder flamberge | 30 CO | 3 | Exotique | Longue | +BF +5 | Dévastatrice, Taille, Taillade (2A) |
 
-**Épée bâtarde** : un combattant possédant **Corps à Corps (Base)** peut l'utiliser **à une main**, mais elle acquiert alors les Défauts **Épuisante** et **Lente** (en plus de perdre l'avantage des deux mains). La **zweihänder flamberge** (lame ondulée/dentelée) ajoute *Taillade (2A)* à la zweihänder standard. (`AA 01 l.2966-2991`)
+**Épée bâtarde** : un combattant possédant **Corps à Corps (Base)** peut l'utiliser **à une main**, mais elle acquiert alors les Défauts **Épuisante** et **Lente** (en plus de perdre l'avantage des deux mains). La **zweihänder flamberge** (lame ondulée/dentelée) ajoute *Taillade (2A)* à la zweihänder standard. (`AA 08 l.339-364`)
 
 ---
 
 **Sources RAW** :
-- `AA 01 l.2757-2780` — Tableau des Armes de Base révisé : cimeterre (Allonge Courte, Taillade 1A), dague ballock (Empaleuse\*+Perforante+Précise\*, \* = uniquement vs Surpris/À Terre), marteau de guerre (Assommante OU Perforante + Déséquilibrée), masse, massue, pique d'armes ; massue ramassable (Survie 7 DR).
-- `AA 01 l.2727-2731` — Atout *Protectrice* révisé (PA = Indice à chaque opposition ; Indice ≥ 2 → contre projectiles dans la ligne de vue).
-- `AA 01 l.2783-2797` — Tableau des Boucliers (bouclier, grand, targe, pavois) + règle du Pavois (déploiement en 2 Actions avec direction indiquée → Protectrice 5 + Défensive contre projectiles à 1 m, mêlée seulement 1er Round depuis la direction, rien sur flancs/dos ; ou employé comme grand bouclier : Protectrice 3 + Épuisante + Lente, +BF +2).
-- `AA 01 l.2809-2838` — Tableau des Armes de Cavalerie (demi-lance/lance/marteau à bec-de-corbin/sabre) ; lance et demi-lance = arme improvisée si pas de Charge dans le Round ; sabre Taillade 1A→2A sans Escrime ; bec-de-corbin = Corps à Corps (Deux mains) à pied.
-- `AA 01 l.2819-2847` — Tableau des Armes d'Escrime (épée de cour, fleuret Empaleuse+Inoffensive+Précise+Rapide, rapière).
-- `AA 01 l.2851-2887` — Tableau des Armes de Bagarre (coup-de-poing, gaffe, gantelet à pointes, gantelet verrouillé, lacet étrangleur, mains nues, matraque) + règle Gantelet verrouillé (−20 ≥ 1 Round, lâche au 2e événement) + fabrication du lacet étrangleur (Métier, 5 DR).
-- `AA 01 l.2889-2909` — Tableau des Fléaux (fléau, fléau à grain, fléau d'armes) + règle « sans Corps à Corps (Fléau) → +*Dangereuse* et perte de tous les autres Atouts ».
-- `AA 01 l.2897-2941` — Tableau des Armes de Parade (brise-épée Défensive+Piège-lame, cape, filet lesté, main gauche) + règle « arme à une main *Défensive* utilisable en Corps à Corps (Parade) sans la pénalité −20 main secondaire » + Force d'entrave Cape 25 / Filet lesté 55 + main gauche → dague (perd Défensive) sans Parade.
-- `AA 01 l.2921-2964` — Tableau des Armes d'Hast (ahlspiess, attrape-coquin +20 si mécanisme à ressort à 4 CO, bâton, hache d'armes choix Taille/Empaleuse/Assommante, hallebarde, lance, pertuisane/fauchard, pique, serpe de guerre).
-- `AA 01 l.2966-2991` — Tableau des Armes à Deux Mains (épée bâtarde utilisable à une main → Épuisante+Lente, grande hache, marteau de guerre 2M, pioche, zweihänder, zweihänder flamberge Dévastatrice+Taille+Taillade 2A).
+- `AA 08 l.130-153` — Tableau des Armes de Base révisé : cimeterre (Allonge Courte, Taillade 1A), dague ballock (Empaleuse\*+Perforante+Précise\*, \* = uniquement vs Surpris/À Terre), marteau de guerre (Assommante OU Perforante + Déséquilibrée), masse, massue, pique d'armes ; massue ramassable (Survie 7 DR).
+- `AA 08 l.100-104` — Atout *Protectrice* révisé (PA = Indice à chaque opposition ; Indice ≥ 2 → contre projectiles dans la ligne de vue).
+- `AA 08 l.156-170` — Tableau des Boucliers (bouclier, grand, targe, pavois) + règle du Pavois (déploiement en 2 Actions avec direction indiquée → Protectrice 5 + Défensive contre projectiles à 1 m, mêlée seulement 1er Round depuis la direction, rien sur flancs/dos ; ou employé comme grand bouclier : Protectrice 3 + Épuisante + Lente, +BF +2).
+- `AA 08 l.182-211` — Tableau des Armes de Cavalerie (demi-lance/lance/marteau à bec-de-corbin/sabre) ; lance et demi-lance = arme improvisée si pas de Charge dans le Round ; sabre Taillade 1A→2A sans Escrime ; bec-de-corbin = Corps à Corps (Deux mains) à pied.
+- `AA 08 l.192-220` — Tableau des Armes d'Escrime (épée de cour, fleuret Empaleuse+Inoffensive+Précise+Rapide, rapière).
+- `AA 08 l.224-260` — Tableau des Armes de Bagarre (coup-de-poing, gaffe, gantelet à pointes, gantelet verrouillé, lacet étrangleur, mains nues, matraque) + règle Gantelet verrouillé (−20 ≥ 1 Round, lâche au 2e événement) + fabrication du lacet étrangleur (Métier, 5 DR).
+- `AA 08 l.262-282` — Tableau des Fléaux (fléau, fléau à grain, fléau d'armes) + règle « sans Corps à Corps (Fléau) → +*Dangereuse* et perte de tous les autres Atouts ».
+- `AA 08 l.270-314` — Tableau des Armes de Parade (brise-épée Défensive+Piège-lame, cape, filet lesté, main gauche) + règle « arme à une main *Défensive* utilisable en Corps à Corps (Parade) sans la pénalité −20 main secondaire » + Force d'entrave Cape 25 / Filet lesté 55 + main gauche → dague (perd Défensive) sans Parade.
+- `AA 08 l.294-337` — Tableau des Armes d'Hast (ahlspiess, attrape-coquin +20 si mécanisme à ressort à 4 CO, bâton, hache d'armes choix Taille/Empaleuse/Assommante, hallebarde, lance, pertuisane/fauchard, pique, serpe de guerre).
+- `AA 08 l.339-364` — Tableau des Armes à Deux Mains (épée bâtarde utilisable à une main → Épuisante+Lente, grande hache, marteau de guerre 2M, pioche, zweihänder, zweihänder flamberge Dévastatrice+Taille+Taillade 2A).
 
-> « Les Personnages dépourvus de la Compétence Corps à Corps (Fléau) ajoutent le Défaut d'arme *Dangereuse* à leurs fléaux, et perdent tout autre Atout d'arme que le fléau peut posséder. » — `AA 01 l.2891`
+> « Les Personnages dépourvus de la Compétence Corps à Corps (Fléau) ajoutent le Défaut d'arme *Dangereuse* à leurs fléaux, et perdent tout autre Atout d'arme que le fléau peut posséder. » — `AA 08 l.264`
 
-> « Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main […]. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet […] tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). » — `AA 01 l.2863`
+> « Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main […]. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet […] tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). » — `AA 08 l.236`
 
-> « Quand vous effectuez un Test pour savoir si un adversaire s'empêtre dans un filet lesté, le filet a une Force de 55. » — `AA 01 l.2937`
+> « Quand vous effectuez un Test pour savoir si un adversaire s'empêtre dans un filet lesté, le filet a une Force de 55. » — `AA 08 l.310`
 
 **Voir aussi** : Atouts et Défauts d'arme (Taillade, Empaleuse, Précise, Protectrice, Défensive, Piège-lame, À Enroulement, Enchevêtrement, Immobilisante) ; Armes à distance et munitions AA ; Combat à deux armes et main secondaire (LDB 13) ; Allonge et Charge (LDB 13/15) ; Armures et boucliers (LDB 63).
 
@@ -4373,15 +4373,15 @@ Notes : la **hache d'armes** choisit **Taille OU Empaleuse OU Assommante** (+ *D
 
 Le supplément *Aux Armes* (chapitre VIII) détaille les **armes à poudre à canon** (aussi appelées poudre noire) et leurs **munitions**. Cette entrée reproduit verbatim les deux tableaux d'armes (Ingénierie + Poudre Noire), le tableau des munitions à poudre noire, la procédure de chargement et les règles particulières de munitions (gros calibre → Assourdi, cartouche en papier → +10 au rechargement, poudre imprégnée d'*Aqshy* → maladresse étendue). Toutes les armes listées portent au moins le Défaut **Recharge** (le rechargement complet prend un nombre d'Actions/Tests égal à l'Indice de Recharge), la plupart le Défaut **Dangereuse** (un jet raté incluant un 9 = Maladresse), et plusieurs portent **Tir de zone** ou **À répétition**.
 
-> **Correction d'édition (Indices de Recharge rétablis).** La source affiche chaque valeur sous la forme `<Qualité> — p. N` (artefact OCR de la mise en page à trois colonnes). Le `— p. N` n'est **pas** une référence de page : c'est l'**Indice** de la qualité qui le précède immédiatement. La preuve est interne à la même table : *Tromblon* est imprimé « Dangereuse, **Recharge 2**, Tir de zone — p. 3 » — l'Indice de Recharge y est explicite (2), et le « — p. 3 » est l'Indice de **Tir de zone**, pas une page. Donc « Recharge — p. N » signifie partout **Recharge N**, « Tir de zone — p. N » signifie **Tir de zone N**. Les tableaux ci-dessous rétablissent ces Indices (identiques à ceux du topic LDB jumeau *armes-distance-munitions-tables*). — `AA 01 l.3072-3093`
+> **Correction d'édition (Indices de Recharge rétablis).** La source affiche chaque valeur sous la forme `<Qualité> — p. N` (artefact OCR de la mise en page à trois colonnes). Le `— p. N` n'est **pas** une référence de page : c'est l'**Indice** de la qualité qui le précède immédiatement. La preuve est interne à la même table : *Tromblon* est imprimé « Dangereuse, **Recharge 2**, Tir de zone — p. 3 » — l'Indice de Recharge y est explicite (2), et le « — p. 3 » est l'Indice de **Tir de zone**, pas une page. Donc « Recharge — p. N » signifie partout **Recharge N**, « Tir de zone — p. N » signifie **Tir de zone N**. Les tableaux ci-dessous rétablissent ces Indices (identiques à ceux du topic LDB jumeau *armes-distance-munitions-tables*). — `AA 08 l.445-466`
 
 ### Charger une arme à poudre noire (règle)
 
-Dans l'Empire, toutes les armes à poudre noire se chargent **par le canon** : on introduit la poudre, puis la balle et un tampon de tissu, le tout compacté avec une **baguette** (rangée dans un logement de l'arme). De la **poudre d'amorçage** (poudre noire à grains très fins) est ensuite placée dans le récipient à poudre pour être versée dans un petit canal de l'arme ; elle est allumée par l'allumette, la mèche ou le mécanisme de tir et met le feu à la charge principale qui propulse la balle. — `AA 01 l.3055-3056`
+Dans l'Empire, toutes les armes à poudre noire se chargent **par le canon** : on introduit la poudre, puis la balle et un tampon de tissu, le tout compacté avec une **baguette** (rangée dans un logement de l'arme). De la **poudre d'amorçage** (poudre noire à grains très fins) est ensuite placée dans le récipient à poudre pour être versée dans un petit canal de l'arme ; elle est allumée par l'allumette, la mèche ou le mécanisme de tir et met le feu à la charge principale qui propulse la balle. — `AA 08 l.428-429`
 
-Des **matériaux de bourre** (coton, feutre, papier) garantissent que les gaz propulsent la balle avec un maximum de force. La bourre est généralement ajoutée **avant et après la balle** pour la précision ; certains vétérans portent un emporte-pièce à bourre pour tailler des tampons toujours identiques (meilleure précision). — `AA 01 l.3058`
+Des **matériaux de bourre** (coton, feutre, papier) garantissent que les gaz propulsent la balle avec un maximum de force. La bourre est généralement ajoutée **avant et après la balle** pour la précision ; certains vétérans portent un emporte-pièce à bourre pour tailler des tampons toujours identiques (meilleure précision). — `AA 08 l.431`
 
-Mécaniquement, le rechargement complet d'une de ces armes est régi par son Défaut **Recharge** (Indice = nombre de Tests/Actions requis ; sans Indice = 1). Les **mèches** (arquebuse à mèche, tromblon à mèche) doivent en outre être **allumées** : avant d'utiliser une arquebuse à mèche, le tireur dépense une Action pour allumer la mèche, qui brûle ensuite très longtemps sauf si elle est éteinte par la pluie ou le vent. — `AA 01 l.3067`, `l.3195`
+Mécaniquement, le rechargement complet d'une de ces armes est régi par son Défaut **Recharge** (Indice = nombre de Tests/Actions requis ; sans Indice = 1). Les **mèches** (arquebuse à mèche, tromblon à mèche) doivent en outre être **allumées** : avant d'utiliser une arquebuse à mèche, le tireur dépense une Action pour allumer la mèche, qui brûle ensuite très longtemps sauf si elle est éteinte par la pluie ou le vent. — `AA 08 l.440`, `l.3195`
 
 ### Tableau des Armes à Poudre à Canon — Ingénierie (table)
 
@@ -4393,7 +4393,7 @@ Mécaniquement, le rechargement complet d'une de ces armes est régi par son Dé
 | Pistolet à répétition | 15 CO | 1 | Rare | 10 | +8 | À répétition 4, Dangereuse, Pistolet, Recharge 4 |
 | Poivrière | 12 CO | 1 | Rare | 10 | +8 | À répétition 4\*, Dangereuse, Pistolet, Recharge 4 |
 
-\* Uniquement si l'arme est maniée à deux mains. — `AA 01 l.3073-3081`, `l.3179`
+\* Uniquement si l'arme est maniée à deux mains. — `AA 08 l.446-454`, `l.3179`
 
 ### Tableau des Armes à Poudre à Canon — Poudre Noire (table)
 
@@ -4411,21 +4411,21 @@ Mécaniquement, le rechargement complet d'une de ces armes est régi par son Dé
 | Tromblon *(2M)* | 2 CO | 1 | Limitée | 20 | +8 | Dangereuse, Recharge 2, Tir de zone 3 |
 | Tromblon à mèche *(2M)* | 1 CO | 1 | Rare | 20 | +7 | Dangereuse, Recharge 3, Tir de zone 3 |
 
-— `AA 01 l.3083-3093`
+— `AA 08 l.456-466`
 
 **Cas particuliers d'armes (texte) :**
-- **Arquebuse à mèche / Tromblon à mèche** : avant usage, dépenser une Action pour **allumer la mèche** (brûle longtemps sauf pluie/vent) ; le tromblon à mèche partage les mêmes inconvénients que l'arquebuse à mèche. — `AA 01 l.3067`, `l.3195`
-- **Hache-arquebuse** : utilisable en arquebuse ou en hache ; si maniée **comme hache alors qu'elle est chargée**, une Maladresse décharge l'arme **dans le corps de l'utilisateur**. — `AA 01 l.3069`
-- **Hallebarde-arquebuse** : si maniée **comme hallebarde alors qu'elle est chargée**, une Maladresse décharge l'arme **sur quiconque se tient juste derrière l'utilisateur**. — `AA 01 l.3099`
-- **Pistolet patte de griffon** : une seule gâchette décharge **les six canons** ; recharger exige **six munitions et autant de poudre** (d'où Recharge 6). — `AA 01 l.3107`
-- **Mortier à main** : ressemble à un tromblon court et trapu, conçu pour lancer bombes et gros objets ; une **Maladresse en rechargeant** fait **exploser** l'arme. — `AA 01 l.3136`
-- **Poivrière** : quatre canons préchargés ; doit être tournée/réamorcée entre les tirs (très rapide vs un rechargement complet), mais **perd l'Atout *À répétition* si la deuxième main n'est pas libre**. — `AA 01 l.3133`
-- **Pistolet à répétition / Arquebuse à répétition** : mécanismes d'horlogerie / chambres rotatives plaçant une nouvelle munition après chaque tir ; entre des mains non entraînées, le pistolet à répétition « a tendance à exploser ». — `AA 01 l.3132`, `l.3230`
-- **Canne-pistolet** : pistolet à canon court dissimulé dans une canne ; la repérer comme arme exige un Test de **Perception Difficile (–20)**, ou **Très Difficile (–30)** si l'on connaît mal les armes à poudre noire. — `AA 01 l.3134`
+- **Arquebuse à mèche / Tromblon à mèche** : avant usage, dépenser une Action pour **allumer la mèche** (brûle longtemps sauf pluie/vent) ; le tromblon à mèche partage les mêmes inconvénients que l'arquebuse à mèche. — `AA 08 l.440`, `l.3195`
+- **Hache-arquebuse** : utilisable en arquebuse ou en hache ; si maniée **comme hache alors qu'elle est chargée**, une Maladresse décharge l'arme **dans le corps de l'utilisateur**. — `AA 08 l.442`
+- **Hallebarde-arquebuse** : si maniée **comme hallebarde alors qu'elle est chargée**, une Maladresse décharge l'arme **sur quiconque se tient juste derrière l'utilisateur**. — `AA 08 l.472`
+- **Pistolet patte de griffon** : une seule gâchette décharge **les six canons** ; recharger exige **six munitions et autant de poudre** (d'où Recharge 6). — `AA 08 l.480`
+- **Mortier à main** : ressemble à un tromblon court et trapu, conçu pour lancer bombes et gros objets ; une **Maladresse en rechargeant** fait **exploser** l'arme. — `AA 08 l.509`
+- **Poivrière** : quatre canons préchargés ; doit être tournée/réamorcée entre les tirs (très rapide vs un rechargement complet), mais **perd l'Atout *À répétition* si la deuxième main n'est pas libre**. — `AA 08 l.506`
+- **Pistolet à répétition / Arquebuse à répétition** : mécanismes d'horlogerie / chambres rotatives plaçant une nouvelle munition après chaque tir ; entre des mains non entraînées, le pistolet à répétition « a tendance à exploser ». — `AA 08 l.505`, `l.3230`
+- **Canne-pistolet** : pistolet à canon court dissimulé dans une canne ; la repérer comme arme exige un Test de **Perception Difficile (–20)**, ou **Très Difficile (–30)** si l'on connaît mal les armes à poudre noire. — `AA 08 l.507`
 
 ### Munitions improvisées non-poudre (arcs / frondes)
 
-Le chapitre VIII traite aussi des munitions improvisées non-poudre : on peut se procurer un **caillou** pour fronde par un Test étendu de **Survie en extérieur Facile (+40)** ou de **Perception Intermédiaire (+0)** totalisant **5 DR** ; un **bâton pointu droit** (flèche improvisée) en lieu boisé par un Test étendu de **Survie en extérieur Intermédiaire (+0)** totalisant **10 DR**. Les flèches improvisées, non taillées par un professionnel, **ont tendance à provoquer des Maladresses**. — `AA 01 l.3013-3016`
+Le chapitre VIII traite aussi des munitions improvisées non-poudre : on peut se procurer un **caillou** pour fronde par un Test étendu de **Survie en extérieur Facile (+40)** ou de **Perception Intermédiaire (+0)** totalisant **5 DR** ; un **bâton pointu droit** (flèche improvisée) en lieu boisé par un Test étendu de **Survie en extérieur Intermédiaire (+0)** totalisant **10 DR**. Les flèches improvisées, non taillées par un professionnel, **ont tendance à provoquer des Maladresses**. — `AA 08 l.386-389`
 
 *(Le supplément ne présente pas de tableau chiffré distinct de « munitions traditionnelles » : seules ces deux entrées de fabrication improvisée figurent. Le seul tableau chiffré de munitions est celui des munitions à poudre noire ci-dessous.)*
 
@@ -4445,42 +4445,42 @@ Le chapitre VIII traite aussi des munitions improvisées non-poudre : on peut se
 | Petites munitions et poudre (12) | 3/3 | 0 | Commune | Comme l'arme | – | Tir de zone +3 |
 | Poudre imprégnée d'*Aqshy* (12) | 1 CO | 0 | Exotique | +10 | +2 | Empaleuse, Perforante |
 
-— `AA 01 l.3112-3127` (Prix « 3/3 » = 3 sous d'argent / 3 sous d'argent par lot selon variante ; « 5/– », « 3/– », « 2/– » suivent la même notation sous d'argent de la source. La munition à poudre noire/ingénierie ajoute son propre Indice à la qualité indiquée, p. ex. « Tir de zone **+3** » = +3 à l'Indice de Tir de zone, « Recharge **+2** » = +2 à l'Indice de Recharge de l'arme.)*
+— `AA 08 l.485-500` (Prix « 3/3 » = 3 sous d'argent / 3 sous d'argent par lot selon variante ; « 5/– », « 3/– », « 2/– » suivent la même notation sous d'argent de la source. La munition à poudre noire/ingénierie ajoute son propre Indice à la qualité indiquée, p. ex. « Tir de zone **+3** » = +3 à l'Indice de Tir de zone, « Recharge **+2** » = +2 à l'Indice de Recharge de l'arme.)*
 
 **Règles de munitions (texte) :**
-- **Balle de gros calibre** (petits boulets de canon pour armes à grand canon, haquebute/mortier) : le tireur **et** quiconque se tient à **2 mètres ou moins** doit réussir un **Test de Résistance Intermédiaire (+0)** sous peine de subir l'État **Assourdi**. — `AA 01 l.3115-3115`, `l.3233`
-- **Cartouche en papier** (paquet pré-rempli de munition + poudre + bourre) : les **Tests de rechargement** d'une arme appropriée bénéficient d'un **bonus de +10**. — `AA 01 l.3119`, `l.3245`
-- **Bombe explosive / incendiaire** : souvent lancées à la main, ou chargées dans un mortier à main ; mèche allumée avant chargement ; au chargement, on **fixe la durée de mèche** (1 Round → explose à la fin du Round actuel ; 2 Rounds → à la fin du Round suivant). La munition **explose à l'instant déterminé**, qu'on ait tiré ou non, et **le MJ n'est pas tenu de prévenir**. — `AA 01 l.3117-3118`, `l.3237-3243`
-- **Cartouche et poudre de précision** : poudre experte + balles polies arrondies → tirs plus fiables et précis (Atout Précise). — `AA 01 l.3120-3121`, `l.3247`
-- **Ferraille et poudre** : attaques avec le **Trait de créature Infecté** (réf. WFJDR p.340). — `AA 01 l.3122`, `l.3249`
-- **Grappin** (tiré par mortier à main uniquement, ~20 m de corde) : peut fixer une corde, ou **piéger un ennemi en fuite** (inflige l'État **Empêtré** si le coup touche) ; tir très bruyant. — `AA 01 l.3123`, `l.3251-3255`
-- **Munitions improvisées et poudre** : le coût ne fournit que la poudre ; le tireur doit **trouver son propre caillou**. — `AA 01 l.3123`, `l.3257`
-- **Petites munitions et poudre** : utilisées pour chasser oiseaux/petites créatures rapides ; il en faut ~une douzaine par tir. — `AA 01 l.3125`, `l.3259`
+- **Balle de gros calibre** (petits boulets de canon pour armes à grand canon, haquebute/mortier) : le tireur **et** quiconque se tient à **2 mètres ou moins** doit réussir un **Test de Résistance Intermédiaire (+0)** sous peine de subir l'État **Assourdi**. — `AA 08 l.488-488`, `l.3233`
+- **Cartouche en papier** (paquet pré-rempli de munition + poudre + bourre) : les **Tests de rechargement** d'une arme appropriée bénéficient d'un **bonus de +10**. — `AA 08 l.492`, `l.3245`
+- **Bombe explosive / incendiaire** : souvent lancées à la main, ou chargées dans un mortier à main ; mèche allumée avant chargement ; au chargement, on **fixe la durée de mèche** (1 Round → explose à la fin du Round actuel ; 2 Rounds → à la fin du Round suivant). La munition **explose à l'instant déterminé**, qu'on ait tiré ou non, et **le MJ n'est pas tenu de prévenir**. — `AA 08 l.490-491`, `l.3237-3243`
+- **Cartouche et poudre de précision** : poudre experte + balles polies arrondies → tirs plus fiables et précis (Atout Précise). — `AA 08 l.493-494`, `l.3247`
+- **Ferraille et poudre** : attaques avec le **Trait de créature Infecté** (réf. WFJDR p.340). — `AA 08 l.495`, `l.3249`
+- **Grappin** (tiré par mortier à main uniquement, ~20 m de corde) : peut fixer une corde, ou **piéger un ennemi en fuite** (inflige l'État **Empêtré** si le coup touche) ; tir très bruyant. — `AA 08 l.496`, `l.3251-3255`
+- **Munitions improvisées et poudre** : le coût ne fournit que la poudre ; le tireur doit **trouver son propre caillou**. — `AA 08 l.496`, `l.3257`
+- **Petites munitions et poudre** : utilisées pour chasser oiseaux/petites créatures rapides ; il en faut ~une douzaine par tir. — `AA 08 l.498`, `l.3259`
 
 ### Poudre imprégnée d'*Aqshy* — règle de maladresse étendue (règle)
 
 Cette poudre, fabriquée à partir de sable du désert de Néhékhara imprégné d'*Aqshy* par le Collège Flamboyant d'Altdorf, a **davantage de puissance explosive** que la poudre normale (Dégâts **+2**, Portée **+10**) mais **use les canons bien plus vite**. Sa contrepartie mécanique :
 
-> « Tout Test raté incluant un 8 ou un 9 sur le dé des dizaines ou celui des unités est considéré comme une Maladresse quand vous utilisez cette poudre. » — `AA 01 l.3171`
+> « Tout Test raté incluant un 8 ou un 9 sur le dé des dizaines ou celui des unités est considéré comme une Maladresse quand vous utilisez cette poudre. » — `AA 08 l.544`
 
-C'est une **extension de la règle de Maladresse** : la Maladresse standard d'une arme **Dangereuse** ne survient que sur un jet raté incluant un **9** (dizaines ou unités) ; avec la poudre d'*Aqshy*, le seuil s'élargit à **8 OU 9** (dizaines ou unités) sur **tout** Test raté de tir avec l'arme ainsi chargée. — `AA 01 l.3126-3127`, `l.3261`
+C'est une **extension de la règle de Maladresse** : la Maladresse standard d'une arme **Dangereuse** ne survient que sur un jet raté incluant un **9** (dizaines ou unités) ; avec la poudre d'*Aqshy*, le seuil s'élargit à **8 OU 9** (dizaines ou unités) sur **tout** Test raté de tir avec l'arme ainsi chargée. — `AA 08 l.499-500`, `l.3261`
 
 **Sources RAW** :
-- `AA 01 l.3048-3052` — Généralités : poudre versée par le canon (corne/récipient de dosage), balles de plomb en sac huilé, canon étroit (précision, ex. long fusil du Hochland) vs canon large (recharge/tir rapides) ; fusils de chasse à la guerre.
-- `AA 01 l.3055-3058` — Procédure de chargement par le canon (poudre → balle → bourre → baguette ; poudre d'amorçage ; bourre avant/après pour la précision ; emporte-pièce à bourre).
-- `AA 01 l.3067`, `l.3195` — Mèche : Action pour l'allumer avant usage ; éteinte par pluie/vent ; le tromblon à mèche partage les inconvénients de l'arquebuse à mèche.
-- `AA 01 l.3069`, `l.3183`, `l.3189`, `l.3222`, `l.3224`, `l.3226`, `l.3228`, `l.3230` — Cas particuliers d'armes : hache-/hallebarde-arquebuse (Maladresse décharge dans/derrière), patte de griffon (6 canons), arquebuse/pistolet à répétition, poivrière (4 canons, perd À répétition si 2e main occupée), canne-pistolet (Perception −20/−30 pour la repérer), mortier à main (Maladresse au rechargement = explosion).
-- `AA 01 l.3072-3095` — Tableaux des Armes à Poudre à Canon : section Ingénierie (l.3156-3164) + section Poudre Noire (l.3166-3177) + note « \* à deux mains » (l.3179) ; stats verbatim (Prix/Enc/Disponibilité/Portée/Dégâts/Atouts et Défauts). **Le format `Qualité — p. N` encode l'Indice N de la qualité (pas une page)** : Recharge — p. N = Recharge N ; Tir de zone — p. N = Tir de zone N.
-- `AA 01 l.3112-3127` — Tableau des Munitions à Poudre Noire : 11 munitions, stats verbatim (gros calibre, balle, bombes, cartouches, ferraille, grappin, improvisées, petites, *Aqshy*).
-- `AA 01 l.3143`, `l.3245`, `l.3237-3243`, `l.3247`, `l.3249`, `l.3251-3255`, `l.3257`, `l.3259` — Règles de munitions : gros calibre → Assourdi (Résistance Intermédiaire, 2 m) ; cartouche en papier → +10 rechargement ; bombes (durée de mèche) ; précision → Précise ; ferraille → Infecté ; grappin → Empêtré ; improvisées → caillou à trouver ; petites → ~12 par tir.
-- `AA 01 l.3172` — Poudre d'*Aqshy* : tout Test raté incluant un 8 ou 9 (dizaines/unités) = Maladresse (extension du seuil Dangereuse de 9 à 8/9).
-- `AA 01 l.3013-3016` — Munitions improvisées non-poudre (caillou de fronde 5 DR ; bâton pointu 10 DR ; flèches improvisées → Maladresses).
+- `AA 08 l.421-425` — Généralités : poudre versée par le canon (corne/récipient de dosage), balles de plomb en sac huilé, canon étroit (précision, ex. long fusil du Hochland) vs canon large (recharge/tir rapides) ; fusils de chasse à la guerre.
+- `AA 08 l.428-431` — Procédure de chargement par le canon (poudre → balle → bourre → baguette ; poudre d'amorçage ; bourre avant/après pour la précision ; emporte-pièce à bourre).
+- `AA 08 l.440`, `l.3195` — Mèche : Action pour l'allumer avant usage ; éteinte par pluie/vent ; le tromblon à mèche partage les inconvénients de l'arquebuse à mèche.
+- `AA 08 l.442`, `l.3183`, `l.3189`, `l.3222`, `l.3224`, `l.3226`, `l.3228`, `l.3230` — Cas particuliers d'armes : hache-/hallebarde-arquebuse (Maladresse décharge dans/derrière), patte de griffon (6 canons), arquebuse/pistolet à répétition, poivrière (4 canons, perd À répétition si 2e main occupée), canne-pistolet (Perception −20/−30 pour la repérer), mortier à main (Maladresse au rechargement = explosion).
+- `AA 08 l.445-468` — Tableaux des Armes à Poudre à Canon : section Ingénierie (l.3156-3164) + section Poudre Noire (l.3166-3177) + note « \* à deux mains » (l.3179) ; stats verbatim (Prix/Enc/Disponibilité/Portée/Dégâts/Atouts et Défauts). **Le format `Qualité — p. N` encode l'Indice N de la qualité (pas une page)** : Recharge — p. N = Recharge N ; Tir de zone — p. N = Tir de zone N.
+- `AA 08 l.485-500` — Tableau des Munitions à Poudre Noire : 11 munitions, stats verbatim (gros calibre, balle, bombes, cartouches, ferraille, grappin, improvisées, petites, *Aqshy*).
+- `AA 08 l.516`, `l.3245`, `l.3237-3243`, `l.3247`, `l.3249`, `l.3251-3255`, `l.3257`, `l.3259` — Règles de munitions : gros calibre → Assourdi (Résistance Intermédiaire, 2 m) ; cartouche en papier → +10 rechargement ; bombes (durée de mèche) ; précision → Précise ; ferraille → Infecté ; grappin → Empêtré ; improvisées → caillou à trouver ; petites → ~12 par tir.
+- `AA 08 l.545` — Poudre d'*Aqshy* : tout Test raté incluant un 8 ou 9 (dizaines/unités) = Maladresse (extension du seuil Dangereuse de 9 à 8/9).
+- `AA 08 l.386-389` — Munitions improvisées non-poudre (caillou de fronde 5 DR ; bâton pointu 10 DR ; flèches improvisées → Maladresses).
 
-> « Une seule gâchette décharge les six canons et pour recharger, il faut six munitions et la même quantité de poudre. » — `AA 01 l.3107` (Pistolet patte de griffon)
+> « Une seule gâchette décharge les six canons et pour recharger, il faut six munitions et la même quantité de poudre. » — `AA 08 l.480` (Pistolet patte de griffon)
 
-> « Les Tests effectués pour recharger une arme du type approprié avec ces munitions bénéficient d'un bonus de +10. » — `AA 01 l.3155` (Cartouche en papier)
+> « Les Tests effectués pour recharger une arme du type approprié avec ces munitions bénéficient d'un bonus de +10. » — `AA 08 l.528` (Cartouche en papier)
 
-> « Dangereuse, Recharge 2, Tir de zone — p. 3 » — `AA 01 l.3093` (Tromblon : preuve interne que « — p. N » est l'Indice de la qualité précédente, pas une page — la Recharge 2 y est déjà explicite.)
+> « Dangereuse, Recharge 2, Tir de zone — p. 3 » — `AA 08 l.466` (Tromblon : preuve interne que « — p. N » est l'Indice de la qualité précédente, pas une page — la Recharge 2 y est déjà explicite.)
 
 **Voir aussi** : Armes à distance et munitions (table LDB) — *armes-distance-munitions-tables* (résolution identique du `— p. N` = Indice) ; Qualités/Défauts d'armes (Recharge, Dangereuse, À répétition/Salve, Tir de zone, Empaleuse, Percutante, Perforante, Imprécise, Précise, Pointue, Explosion) ; États Assourdi / Empêtré / Enflammé ; bandes de portée (LDB 62) ; Maladresse au combat (LDB 13/14) ; Trait Infecté (LDB 85) ; Armes d'équipe maniées en sous-effectif (AA p.124).
 
@@ -4534,7 +4534,7 @@ Une monture **dressée pour la guerre et sans le Trait Nerveux** est un combatta
 | **Avec Trait Dressé (Guerre)** | Attaque les ennemis selon les désirs du cavalier et ignore Nerveux en ce qui concerne les bruits forts. | Attaque les ennemis selon les désirs du cavalier. |
 | **Sans Trait Dressé (Guerre)** | Attaque les ennemis selon les désirs du MJ et a tendance à ne pas attaquer les ennemis qui n'ont pas attaqué la monture les premiers. | Attaque les ennemis selon les désirs du MJ. |
 
-*Réf : `AA 01 l.3221-3225`.*
+*Réf : `AA 09 l.50-54`.*
 
 ### Montures et Avantages partagés
 - Un animal chevauché **sans Dressé (Guerre)** ne peut **pas bénéficier d'un Avantage**.
@@ -4575,7 +4575,7 @@ Pour déterminer la Localisation des Dégâts sur un animal à quatre pattes :
 | 79-89 | Patte arrière gauche |
 | 90-00 | Patte arrière droite |
 
-*Réf : `AA 01 l.3268-3274`.*
+*Réf : `AA 09 l.97-103`.*
 
 ### Tomber d'une monture
 Dans la plupart des cas, tomber d'une monture est traité comme une **chute de 2 mètres** (LDB p.166) et inflige **1d10+6 Dégâts**, réduits par le **Bonus d'Endurance** du cavalier **mais pas par les Points d'Armure**. Si la monture est de **Taille Grande ou supérieure**, on **augmente la hauteur de la chute de 1 mètre par catégorie de Taille**.
@@ -4603,31 +4603,31 @@ Le demigriffon décrit dans le Livre de base (p.318) est un **jeune** spécimen 
 **Traits de combat :** Arme (Serres) +9, Morsure +9.
 **Possessions :** barde.
 
-*Réf : `AA 01 l.3347-3359`.*
+*Réf : `AA 09 l.176-188`.*
 
-> Note RAW (acquisition, contexte) : un demigriffon sauvage doit être affronté et dompté ; si le cavalier monte sur son dos et **y reste un jour et une nuit** malgré les efforts de la bête, l'animal cède et gagne le Trait **Dressé (Dompté)**, mais n'autorise que la personne qui l'a dompté à le monter. Entretien : **viande fraîche valant 2 Couronnes d'or par semaine** ; selle/harnais sur mesure au **double du prix** d'un cheval (`AA 01 l.3328`, `AA 01 l.3338`).
+> Note RAW (acquisition, contexte) : un demigriffon sauvage doit être affronté et dompté ; si le cavalier monte sur son dos et **y reste un jour et une nuit** malgré les efforts de la bête, l'animal cède et gagne le Trait **Dressé (Dompté)**, mais n'autorise que la personne qui l'a dompté à le monter. Entretien : **viande fraîche valant 2 Couronnes d'or par semaine** ; selle/harnais sur mesure au **double du prix** d'un cheval (`AA 09 l.157`, `AA 09 l.167`).
 
 **Sources RAW** :
-- `AA 01 l.3180-3186` — Soin aux Animaux en campagne : Chevaucher = Compétence de Base ; entretien = Soin aux animaux ; 1 Augmentation suffit ; Tests Accessible (+20)/Intermédiaire (+0) par jour ; 6 / 12 animaux par soignant ; soins négligés → Résistance Intermédiaire (+0), 1er Échec = *Exténué*.
-- `AA 01 l.3188-3194` — Cadre : règles étendues s'ajoutent à WFJDR p.163 ; monture = animal possédant au moins Dressé (Monture).
-- `AA 01 l.3197-3201` — Mouvement & Initiative monté : monture a Mouvement + Action ; cavalier dépense son Mouvement/Action pour diriger ; cavalier emprunte le M de la monture ; Cavalier émérite = diriger l'Action sans Test ni Action.
-- `AA 01 l.3204-3211` — Attaquer/se défendre : +20 CC sur cible plus petite que la monture ; −10 pour viser le cavalier d'une monture de Taille supérieure (ignoré si même Taille de monture ou Allonge Longue+) ; Charge avec F+Taille de la monture ; −20 Esquive monté (sauf Acrobaties équestres) ; restrictions de tir (2 mains = avant ; 1 main = avant ou côté tenu ; Acrobaties équestres lève tout).
-- `AA 01 l.3213-3225` — Actions de la monture + tableau Nerveux / Dressé (Guerre) (verbatim ci-dessus).
-- `AA 01 l.3227-3230` — Avantages partagés : sans Dressé (Guerre), pas d'Avantage ; avec Dressé (Guerre) + 1 Augmentation Chevaucher, réserves combinées, événement néfaste = réserve réduite de moitié au lieu de perte.
-- `AA 01 l.3232-3234` — Peur/Terreur monté & Brisé : Chevaucher Intermédiaire (+0) pour calmer (−1 *Brisé*, +1/DR) ; Test de Calme de la monture à son tour.
-- `AA 01 l.3236-3243` — Dressage : identification par Dressage Intermédiaire (+0) (Difficulté ↑ si droguée/influencée) ; apprentissage via l'Activité Dressage → nouveaux Traits Dressé.
-- `AA 01 l.3246-3247` — Trait Dressé (Guerre) : +10 CC + ignore Nerveux pour les bruits forts.
-- `AA 01 l.3250-3251` — Trait Dressé (Magie) : ignore Nerveux pour tout ce qui concerne la magie.
-- `AA 01 l.3254-3261` — Nouveau Trait Dressé (Cavalerie de Choc) : prérequis Dressé (Guerre) ; riposte à la charge (renoncer à l'esquive pour une attaque, Charge poursuivie sauf si monture tuée/incapacitée).
-- `AA 01 l.3263-3277` — Localisation des Dégâts sur les Quadrupèdes (table verbatim) + Charge traversante : passer outre les plus petits, Esquive Intermédiaire (+0) ou 4 + BF de la monture Dégâts, −2 m de Mouvement par créature renversée, Taille ≥ arrête la progression, résolution finale Engagement normal.
-- `AA 01 l.3283-3287` — Tomber d'une monture : chute de 2 m (1d10+6, réduit par BE mais pas PA), +1 m par catégorie de Taille au-delà de Grande ; Perception Accessible (+20) pour que la bête remarque la chute.
-- `AA 01 l.3290-3307` — États d'une personne montée : Mort/Inconscient/À Terre (chute auto) ; Surpris (Chevaucher Facile +40) ; Sonné (Chevaucher Intermédiaire +0) ; Monture Surprise (Facile +40, seulement si Nerveuse) ; Empêtré cavalier/monture (Tests Chevaucher Intermédiaire +0, Force à la Taille de la monture).
-- `AA 01 l.3328+3399` — Acquisition/entretien du demigriffon : dompté en restant 1 jour + 1 nuit → Dressé (Dompté), monté seulement par le dompteur ; 2 CO de viande/semaine ; selle au double du prix.
-- `AA 01 l.3347-3359` — Profil Monture Demigriffon adulte dressé (statbloc verbatim ci-dessus).
+- `AA 09 l.9-15` — Soin aux Animaux en campagne : Chevaucher = Compétence de Base ; entretien = Soin aux animaux ; 1 Augmentation suffit ; Tests Accessible (+20)/Intermédiaire (+0) par jour ; 6 / 12 animaux par soignant ; soins négligés → Résistance Intermédiaire (+0), 1er Échec = *Exténué*.
+- `AA 09 l.17-23` — Cadre : règles étendues s'ajoutent à WFJDR p.163 ; monture = animal possédant au moins Dressé (Monture).
+- `AA 09 l.26-30` — Mouvement & Initiative monté : monture a Mouvement + Action ; cavalier dépense son Mouvement/Action pour diriger ; cavalier emprunte le M de la monture ; Cavalier émérite = diriger l'Action sans Test ni Action.
+- `AA 09 l.33-40` — Attaquer/se défendre : +20 CC sur cible plus petite que la monture ; −10 pour viser le cavalier d'une monture de Taille supérieure (ignoré si même Taille de monture ou Allonge Longue+) ; Charge avec F+Taille de la monture ; −20 Esquive monté (sauf Acrobaties équestres) ; restrictions de tir (2 mains = avant ; 1 main = avant ou côté tenu ; Acrobaties équestres lève tout).
+- `AA 09 l.42-54` — Actions de la monture + tableau Nerveux / Dressé (Guerre) (verbatim ci-dessus).
+- `AA 09 l.56-59` — Avantages partagés : sans Dressé (Guerre), pas d'Avantage ; avec Dressé (Guerre) + 1 Augmentation Chevaucher, réserves combinées, événement néfaste = réserve réduite de moitié au lieu de perte.
+- `AA 09 l.61-63` — Peur/Terreur monté & Brisé : Chevaucher Intermédiaire (+0) pour calmer (−1 *Brisé*, +1/DR) ; Test de Calme de la monture à son tour.
+- `AA 09 l.65-72` — Dressage : identification par Dressage Intermédiaire (+0) (Difficulté ↑ si droguée/influencée) ; apprentissage via l'Activité Dressage → nouveaux Traits Dressé.
+- `AA 09 l.75-76` — Trait Dressé (Guerre) : +10 CC + ignore Nerveux pour les bruits forts.
+- `AA 09 l.79-80` — Trait Dressé (Magie) : ignore Nerveux pour tout ce qui concerne la magie.
+- `AA 09 l.83-90` — Nouveau Trait Dressé (Cavalerie de Choc) : prérequis Dressé (Guerre) ; riposte à la charge (renoncer à l'esquive pour une attaque, Charge poursuivie sauf si monture tuée/incapacitée).
+- `AA 09 l.92-106` — Localisation des Dégâts sur les Quadrupèdes (table verbatim) + Charge traversante : passer outre les plus petits, Esquive Intermédiaire (+0) ou 4 + BF de la monture Dégâts, −2 m de Mouvement par créature renversée, Taille ≥ arrête la progression, résolution finale Engagement normal.
+- `AA 09 l.112-116` — Tomber d'une monture : chute de 2 m (1d10+6, réduit par BE mais pas PA), +1 m par catégorie de Taille au-delà de Grande ; Perception Accessible (+20) pour que la bête remarque la chute.
+- `AA 09 l.119-136` — États d'une personne montée : Mort/Inconscient/À Terre (chute auto) ; Surpris (Chevaucher Facile +40) ; Sonné (Chevaucher Intermédiaire +0) ; Monture Surprise (Facile +40, seulement si Nerveuse) ; Empêtré cavalier/monture (Tests Chevaucher Intermédiaire +0, Force à la Taille de la monture).
+- `AA 09 l.157+228` — Acquisition/entretien du demigriffon : dompté en restant 1 jour + 1 nuit → Dressé (Dompté), monté seulement par le dompteur ; 2 CO de viande/semaine ; selle au double du prix.
+- `AA 09 l.176-188` — Profil Monture Demigriffon adulte dressé (statbloc verbatim ci-dessus).
 
-> « Toute attaque au corps à corps portée par un cavalier sur une cible plus petite que sa monture gagne un bonus de +20 pour toucher. » — `AA 01 l.3205`
+> « Toute attaque au corps à corps portée par un cavalier sur une cible plus petite que sa monture gagne un bonus de +20 pour toucher. » — `AA 09 l.34`
 
-> « tomber d'une monture est considéré comme une chute de 2 mètres […] et inflige 1d10+6 Dégâts, réduits par le Bonus d'Endurance du cavalier, mais pas par les Points d'Armure. » — `AA 01 l.3285`
+> « tomber d'une monture est considéré comme une chute de 2 mètres […] et inflige 1d10+6 Dégâts, réduits par le Bonus d'Endurance du cavalier, mais pas par les Points d'Armure. » — `AA 09 l.114`
 
 **Voir aussi** : LDB — Combat monté (règles de base WFJDR p.163) ; LDB 85 — Trait Piétinement / Foulée ; LDB 15 — Mouvement, Course, Chute ; LDB 16 — États (Brisé, Surpris, Sonné, À Terre, Empêtré, Exténué) ; LDB 21 — Peur, Terreur, Calme ; Trait Nerveux ; Talents Cavalier émérite / Acrobaties équestres ; Compétences Chevaucher, Soin aux animaux, Dressage.
 
@@ -4637,20 +4637,20 @@ Le demigriffon décrit dans le Livre de base (p.318) est un **jeune** spécimen 
 
 ## AA : Structures et armes de Siège
 
-Règles d'*Aux Armes* pour attaquer/défendre des **Structures** (véhicules, embarcations, fortifications) et pour employer l'**artillerie** (armes de siège). Le supplément précise que les grandes manœuvres militaires sortent du cadre de WFJDR — pour un affrontement militaire à grande échelle, il renvoie aux règles de combat de masse d'*Archives de l'Empire : volume 2*. Ces règles servent quand les PJ doivent attaquer un emplacement gardé par des fortifications/de l'artillerie, ou en défendre un. `AA 01 l.3673-3677`
+Règles d'*Aux Armes* pour attaquer/défendre des **Structures** (véhicules, embarcations, fortifications) et pour employer l'**artillerie** (armes de siège). Le supplément précise que les grandes manœuvres militaires sortent du cadre de WFJDR — pour un affrontement militaire à grande échelle, il renvoie aux règles de combat de masse d'*Archives de l'Empire : volume 2*. Ces règles servent quand les PJ doivent attaquer un emplacement gardé par des fortifications/de l'artillerie, ou en défendre un. `AA 10 l.3-7`
 
 ### 1. Les Structures
 
-Une « Structure » est tout élément **trop grand et trop résistant** pour être détruit par les Tests étendus de Force du Livre de Règles (les Tests de Force conviennent pour enfoncer une porte ou réduire une chaise en miettes, pas pour une herse en fer renforcée ou une muraille de château). `AA 01 l.3679-3681`
+Une « Structure » est tout élément **trop grand et trop résistant** pour être détruit par les Tests étendus de Force du Livre de Règles (les Tests de Force conviennent pour enfoncer une porte ou réduire une chaise en miettes, pas pour une herse en fer renforcée ou une muraille de château). `AA 10 l.9-11`
 
 Profil d'une Structure (colonnes du tableau) :
-- **ENC** — points d'Encombrement qui s'appliquent quand la Structure est transportée. `AA 01 l.3686`
-- **Limite d'Encombrement** — combien de points d'Encombrement la Structure peut elle-même *supporter* avant de manquer d'espace ou de plier sous le poids ; restreint la quantité d'artillerie qu'on peut y placer (le MJ juge le raisonnable : une barge transporte beaucoup d'artillerie en théorie, mais surtout stockée en cale et donc inutilisable en combat). `AA 01 l.3686-3689`
-- **Endurance** — modifie les Dégâts subis (comme l'Endurance d'un Personnage). `AA 01 l.3771-3772`
-- **Blessures** — quantité de Dégâts encaissable. Pour les murs, le profil ne représente qu'une **bande de 5 mètres** de la Structure : sa destruction laisse la majorité du reste intact. `AA 01 l.3723` `AA 01 l.3772`
-- **Pénalité de Couvert** — Difficulté par défaut du tir d'un assaillant contre un Personnage à couvert dans/derrière la Structure (on présume qu'il s'en sert *activement* comme couvert : accroupi derrière les plats-bords, plongé derrière les créneaux). Ne s'applique pas si la cible subit l'État *Surpris* ou se comporte d'une manière ne lui fournissant pas de couvert ; d'autres modificateurs (portée, taille de cible) peuvent s'ajouter au gré du MJ. `AA 01 l.3692-3693`
+- **ENC** — points d'Encombrement qui s'appliquent quand la Structure est transportée. `AA 10 l.16`
+- **Limite d'Encombrement** — combien de points d'Encombrement la Structure peut elle-même *supporter* avant de manquer d'espace ou de plier sous le poids ; restreint la quantité d'artillerie qu'on peut y placer (le MJ juge le raisonnable : une barge transporte beaucoup d'artillerie en théorie, mais surtout stockée en cale et donc inutilisable en combat). `AA 10 l.16-19`
+- **Endurance** — modifie les Dégâts subis (comme l'Endurance d'un Personnage). `AA 10 l.101-102`
+- **Blessures** — quantité de Dégâts encaissable. Pour les murs, le profil ne représente qu'une **bande de 5 mètres** de la Structure : sa destruction laisse la majorité du reste intact. `AA 10 l.53` `AA 10 l.102`
+- **Pénalité de Couvert** — Difficulté par défaut du tir d'un assaillant contre un Personnage à couvert dans/derrière la Structure (on présume qu'il s'en sert *activement* comme couvert : accroupi derrière les plats-bords, plongé derrière les créneaux). Ne s'applique pas si la cible subit l'État *Surpris* ou se comporte d'une manière ne lui fournissant pas de couvert ; d'autres modificateurs (portée, taille de cible) peuvent s'ajouter au gré du MJ. `AA 10 l.22-23`
 
-> Note RAW : les règles de Dégâts aux Structures pourraient servir pour les véhicules, mais le supplément recommande d'employer plutôt celles de *L'Ennemi dans l'Ombre – Compagnon* (véhicules) et de *Mort sur le Reik – Compagnon* (navires) pour leurs Dégâts dédiés. `AA 01 l.3695`
+> Note RAW : les règles de Dégâts aux Structures pourraient servir pour les véhicules, mais le supplément recommande d'employer plutôt celles de *L'Ennemi dans l'Ombre – Compagnon* (véhicules) et de *Mort sur le Reik – Compagnon* (navires) pour leurs Dégâts dédiés. `AA 10 l.25`
 
 #### Tableau des Structures Courantes
 
@@ -4679,16 +4679,16 @@ Profil d'une Structure (colonnes du tableau) :
 | Solide porte en bois | 5 | N/A | 50 | 10 | N/A |
 | Terrassement* | N/A | 60 | 50 | 30 | Complexe (−10) |
 
-\* Le profil indiqué représente une **bande de 5 mètres** de la Structure concernée. `AA 01 l.3698-3723`
+\* Le profil indiqué représente une **bande de 5 mètres** de la Structure concernée. `AA 10 l.28-53`
 
-Notes narratives de quelques Structures : la **barge moyenne** mesure ~20 m (voile + rames, grosse cargaison) ; le **bateau de patrouille** ~25 m (rames pour les poursuites, voiles pour la patrouille, conçu pour encaisser) ; la **chaloupe** ≤10 m (bateau de pêche du Reikland, chaland de Marienburg) ; certains **chariots** de guerre peuvent, au gré du MJ, accorder une meilleure pénalité de Couvert ; la **clôture en clayonnage** est tressée de branches de saule (mieux pour les enclos que pour fortifier) ; la **diligence** est un véhicule fermé à 4 roues tiré par 2 à 6 chevaux ; la **herse** est une grille de fer abaissable ; le **mantelet** est une défense mobile sur supports/chariot ; le **mur de forteresse naine** est en pierre massive (plus résistant que le mur de château humain). `AA 01 l.3725-3762`
+Notes narratives de quelques Structures : la **barge moyenne** mesure ~20 m (voile + rames, grosse cargaison) ; le **bateau de patrouille** ~25 m (rames pour les poursuites, voiles pour la patrouille, conçu pour encaisser) ; la **chaloupe** ≤10 m (bateau de pêche du Reikland, chaland de Marienburg) ; certains **chariots** de guerre peuvent, au gré du MJ, accorder une meilleure pénalité de Couvert ; la **clôture en clayonnage** est tressée de branches de saule (mieux pour les enclos que pour fortifier) ; la **diligence** est un véhicule fermé à 4 roues tiré par 2 à 6 chevaux ; la **herse** est une grille de fer abaissable ; le **mantelet** est une défense mobile sur supports/chariot ; le **mur de forteresse naine** est en pierre massive (plus résistant que le mur de château humain). `AA 10 l.55-92`
 
 #### Attaquer une Structure
 
-- Une Structure ne peut ni esquiver ni se déplacer : toute attaque **au corps à corps touche automatiquement**. `AA 01 l.3764-3765`
-- Si la Structure est un **véhicule en mouvement**, ou si l'on vise un emplacement spécifique difficile à toucher, traiter l'attaque comme un **Tir ciblé à −20**. `AA 01 l.3765`
-- Attaquer au corps à corps le **conducteur d'un véhicule en mouvement** = Test opposé de **Corps à Corps** ; le conducteur peut opposer sa Compétence **Conduite d'attelage** s'il le désire. `AA 01 l.3765`
-- **Pénalité de Taille (armes inadaptées)** : épées/dagues ne sont pas conçues pour tailler une brèche dans un mur. Le MJ détermine la **Taille** de la Structure et compte son **Bonus d'Endurance une fois de plus par catégorie de Taille au-dessus de l'attaquant**. Exemple : un mur de pierre **Énorme** (BE 6) attaqué par un humain **Moyen** est traité avec un BE de **18** (6 × 3). **Les armes de siège ignorent cette restriction.** `AA 01 l.3768`
+- Une Structure ne peut ni esquiver ni se déplacer : toute attaque **au corps à corps touche automatiquement**. `AA 10 l.94-95`
+- Si la Structure est un **véhicule en mouvement**, ou si l'on vise un emplacement spécifique difficile à toucher, traiter l'attaque comme un **Tir ciblé à −20**. `AA 10 l.95`
+- Attaquer au corps à corps le **conducteur d'un véhicule en mouvement** = Test opposé de **Corps à Corps** ; le conducteur peut opposer sa Compétence **Conduite d'attelage** s'il le désire. `AA 10 l.95`
+- **Pénalité de Taille (armes inadaptées)** : épées/dagues ne sont pas conçues pour tailler une brèche dans un mur. Le MJ détermine la **Taille** de la Structure et compte son **Bonus d'Endurance une fois de plus par catégorie de Taille au-dessus de l'attaquant**. Exemple : un mur de pierre **Énorme** (BE 6) attaqué par un humain **Moyen** est traité avec un BE de **18** (6 × 3). **Les armes de siège ignorent cette restriction.** `AA 10 l.98`
 
 #### Dégâts à une Structure (tir raté)
 
@@ -4699,14 +4699,14 @@ Les Structures n'ont **pas de Localisations de Dégâts**. Si l'on tire sur une 
 | 0 à −2 | Le tir rate la cible, mais **touche la Structure** et peut lui infliger des Dégâts. |
 | −3 ou moins | Le tir rate la cible et **n'a aucun effet** sur la Structure. |
 
-`AA 01 l.3774-3781`
+`AA 10 l.104-111`
 
 #### Coups Critiques contre une Structure
 
 Infliger un Critique à une Structure est bien plus difficile que contre un Personnage :
-- Sur un **double**, la Structure risque un Critique, **uniquement si l'attaque retire aussi ≥ 25 % des Blessures restantes** de la Structure. `AA 01 l.3783-3784`
-- Une fois les **Blessures à 0**, **tout** coup qui touche cause une Blessure Critique. `AA 01 l.3784`
-- Les Critiques affectent la Structure comme un Personnage ; toute circonstance qui **entraînerait la mort d'un Personnage** inflige une Blessure Critique d'**Effondrement** à la Structure. `AA 01 l.3784`
+- Sur un **double**, la Structure risque un Critique, **uniquement si l'attaque retire aussi ≥ 25 % des Blessures restantes** de la Structure. `AA 10 l.113-114`
+- Une fois les **Blessures à 0**, **tout** coup qui touche cause une Blessure Critique. `AA 10 l.114`
+- Les Critiques affectent la Structure comme un Personnage ; toute circonstance qui **entraînerait la mort d'un Personnage** inflige une Blessure Critique d'**Effondrement** à la Structure. `AA 10 l.114`
 
 #### Tableau des Blessures Critiques sur une Structure
 
@@ -4721,27 +4721,27 @@ Infliger un Critique à une Structure est bien plus difficile que contre un Pers
 | 91-95 | *Enfoncée* | 3 | Un énorme trou s'ouvre : les Personnages sur/dans la Structure sont frappés par des débris (Dégâts = **Bonus d'Endurance de la Structure**). La Structure **ne fournit plus de couvert** à ceux dessus/dedans. |
 | 96 ou plus | *Effondrement* | Détruite | La Structure entière s'écroule. Ceux qui s'en servaient de couvert subissent Dégâts = **Bonus d'Endurance de la Structure**. Les Personnages sur/dans la Structure font un Test d'**Athlétisme Intermédiaire (+0)** (chute), puis subissent des Dégâts **comme touchés par une arme avec une Force = Blessures restantes de la Structure**. Toute artillerie/équipement lourd tombe et est inutilisable avant réparation. |
 
-`AA 01 l.3786-3798`
+`AA 10 l.116-128`
 
 #### Réparer les Structures
 
-- **Hors combat (permanent)** : Test de **Métier (Charpentier) Accessible (+20)** (bois) ou **Métier (Maçon) Accessible (+20)** (pierre). Chaque Test réussi prend **1d10 heures** et restaure **1d10 Blessures**. `AA 01 l.3802`
-- **En plein combat (réparation de fortune)** : Test **étendu** de **Métier (Charpentier) Très Difficile (−30)** (bois) ou **Métier (Maçon) Très Difficile (−30)** (pierre), requérant **20 DR** ; restaure **1d10 Blessures** à l'achèvement. `AA 01 l.3803-3804`
-- La Compétence **Guérison n'a aucun effet** sur une Structure ; le MJ peut autoriser l'usage créatif de certains Sorts/Miracles à effet bénéfique. `AA 01 l.3804`
+- **Hors combat (permanent)** : Test de **Métier (Charpentier) Accessible (+20)** (bois) ou **Métier (Maçon) Accessible (+20)** (pierre). Chaque Test réussi prend **1d10 heures** et restaure **1d10 Blessures**. `AA 10 l.132`
+- **En plein combat (réparation de fortune)** : Test **étendu** de **Métier (Charpentier) Très Difficile (−30)** (bois) ou **Métier (Maçon) Très Difficile (−30)** (pierre), requérant **20 DR** ; restaure **1d10 Blessures** à l'achèvement. `AA 10 l.133-134`
+- La Compétence **Guérison n'a aucun effet** sur une Structure ; le MJ peut autoriser l'usage créatif de certains Sorts/Miracles à effet bénéfique. `AA 10 l.134`
 
 ### 2. Les Armes de Siège
 
-Catégorie d'armes vaste et diverse, conçue contre des **formations de troupes ou de grosses cibles statiques**, pas des cibles individuelles. Toutes massives et puissantes, mais si lourdes et laborieuses à actionner qu'elles sont rarement utiles hors d'une action militaire sérieuse. `AA 01 l.3806-3808`
+Catégorie d'armes vaste et diverse, conçue contre des **formations de troupes ou de grosses cibles statiques**, pas des cibles individuelles. Toutes massives et puissantes, mais si lourdes et laborieuses à actionner qu'elles sont rarement utiles hors d'une action militaire sérieuse. `AA 10 l.136-138`
 
-**Maniement / Compétences :** comme toute arme à distance, il faut être formé au **groupe d'armes** concerné. `AA 01 l.3812`
-- *Projectiles (Arbalète)* ne permet **pas** d'actionner un canon ni un canon feu d'enfer. `AA 01 l.3812`
-- Les **catapultes** exigent **Projectiles (Catapulte)** (fonctionnement distinct). `AA 01 l.3814`
-- **Projectiles (Ingénierie)** permet de faire équipe sur une arme à **poudre noire** sans pénalité. `AA 01 l.3816`
-- Une **baliste** peut se tirer via **Projectiles (Arbalète)** (Capacité de Tir) : dans ce cas l'arme **perd tous ses Atouts** mais **conserve ses Défauts**. `AA 01 l.3818`
+**Maniement / Compétences :** comme toute arme à distance, il faut être formé au **groupe d'armes** concerné. `AA 10 l.142`
+- *Projectiles (Arbalète)* ne permet **pas** d'actionner un canon ni un canon feu d'enfer. `AA 10 l.142`
+- Les **catapultes** exigent **Projectiles (Catapulte)** (fonctionnement distinct). `AA 10 l.144`
+- **Projectiles (Ingénierie)** permet de faire équipe sur une arme à **poudre noire** sans pénalité. `AA 10 l.146`
+- Une **baliste** peut se tirer via **Projectiles (Arbalète)** (Capacité de Tir) : dans ce cas l'arme **perd tous ses Atouts** mais **conserve ses Défauts**. `AA 10 l.148`
 
-**Munitions :** les armes de siège doivent utiliser des **munitions spéciales** dédiées — un canon ne tire pas de balle d'arquebuse, une baliste ne tire pas de carreau d'arbalète. `AA 01 l.3820`
+**Munitions :** les armes de siège doivent utiliser des **munitions spéciales** dédiées — un canon ne tire pas de balle d'arquebuse, une baliste ne tire pas de carreau d'arbalète. `AA 10 l.150`
 
-**Canon à répétition (recul) :** chaque tir, le tireur fait un Test de **Résistance Accessible (+20)** et subit **1 Blessure par Degré d'échec** (l'arme s'enfonce dans son épaule) ; sur un **Échec Stupéfiant**, il subit un Coup Critique à l'épaule (table Blessures Critiques au bras, ajustée). Une balle + sa charge de poudre est consommée à chaque tir d'une salve. `AA 01 l.3833` `AA 01 l.3835`
+**Canon à répétition (recul) :** chaque tir, le tireur fait un Test de **Résistance Accessible (+20)** et subit **1 Blessure par Degré d'échec** (l'arme s'enfonce dans son épaule) ; sur un **Échec Stupéfiant**, il subit un Coup Critique à l'épaule (table Blessures Critiques au bras, ajustée). Une balle + sa charge de poudre est consommée à chaque tir d'une salve. `AA 10 l.163` `AA 10 l.165`
 
 #### Tableau des Armes de Siège
 
@@ -4764,9 +4764,9 @@ Catégorie d'armes vaste et diverse, conçue contre des **formations de troupes 
 | Mortier | 50 CO | 50 | Exotique | 100 | – | Recharge 4, Arme d'équipe 3 |
 | Pierrier | 20 CO | 5 | Rare | 30 | +14 | Dangereuse, Recharge 4 |
 
-\* **Recharger une arme à Atout *Salve* est laborieux** : l'Indice de Recharge ne recharge pas l'arme entièrement, il augmente de **1** l'Indice de *Salve* à chaque fois qu'il est atteint. Ex. : une batterie tonnerre de feu vide est à *Salve* 0 et nécessite Recharge 6 pour atteindre *Salve* 1, soit **9 × Recharge 6** pour la recharger entièrement à *Salve* 9. `AA 01 l.3845-3866`
+\* **Recharger une arme à Atout *Salve* est laborieux** : l'Indice de Recharge ne recharge pas l'arme entièrement, il augmente de **1** l'Indice de *Salve* à chaque fois qu'il est atteint. Ex. : une batterie tonnerre de feu vide est à *Salve* 0 et nécessite Recharge 6 pour atteindre *Salve* 1, soit **9 × Recharge 6** pour la recharger entièrement à *Salve* 9. `AA 10 l.175-196`
 
-> Note d'édition : le tableau source affiche les dernières lignes (canons à poudre noire, mortier, pierrier) avec un artefact de mise en page « … — p. N ». Pour les **canons et le mortier**, ce « — p. N » accole le Défaut **Recharge** à sa valeur de la colonne précédente (Recharge 4/6/8/4) puis donne l'**Indice d'Arme d'équipe** N (2/3/4/3) : « Arme d'équipe — p. 2 » = Recharge 4 + Arme d'équipe 2. Pour le **Pierrier** (arme à une seule personne, **sans** Atout *Arme d'équipe*), c'est le « **Dangereuse, Recharge — p. 4** » : le « — p. 4 » qui suit Recharge en est l'**Indice**, soit **Recharge 4**. L'entrée précédente avait par erreur calqué le Pierrier sur les canons et laissé « Recharge — » sans valeur — corrigé ici en **Recharge 4**. `AA 01 l.3861-3864`
+> Note d'édition : le tableau source affiche les dernières lignes (canons à poudre noire, mortier, pierrier) avec un artefact de mise en page « … — p. N ». Pour les **canons et le mortier**, ce « — p. N » accole le Défaut **Recharge** à sa valeur de la colonne précédente (Recharge 4/6/8/4) puis donne l'**Indice d'Arme d'équipe** N (2/3/4/3) : « Arme d'équipe — p. 2 » = Recharge 4 + Arme d'équipe 2. Pour le **Pierrier** (arme à une seule personne, **sans** Atout *Arme d'équipe*), c'est le « **Dangereuse, Recharge — p. 4** » : le « — p. 4 » qui suit Recharge en est l'**Indice**, soit **Recharge 4**. L'entrée précédente avait par erreur calqué le Pierrier sur les canons et laissé « Recharge — » sans valeur — corrigé ici en **Recharge 4**. `AA 10 l.191-194`
 
 #### Tableau des Munitions de Siège
 
@@ -4786,16 +4786,16 @@ Catégorie d'armes vaste et diverse, conçue contre des **formations de troupes 
 | **PIERRIER** — Balles et poudre (pour 1 tir) | 2/2 | 0 | Commune | Comme l'arme | +1 | Empaleuse, Perforante, Tir de zone 3 |
 | **PIERRIER** — Petites munitions et poudre (pour 1 tir) | 2/2 | 0 | Commune | Comme l'arme | – | Tir de zone 6 |
 
-\* **Carcasse d'animal** : Dégâts +4 à tous ceux dans la zone d'*Explosion 3*. De plus, toutes les cibles dans la zone d'*Explosion 20* doivent réussir un Test de **Résistance Très Facile (+60)** sous peine de subir une **Blessure Purulente** (Livre de Règles p.186). `AA 01 l.3892`
-\*\* **Bombe incendiaire** : n'inflige pas de Dégâts ; confère à toutes les cibles affectées **DR +1 États *En flammes***. `AA 01 l.3894`
+\* **Carcasse d'animal** : Dégâts +4 à tous ceux dans la zone d'*Explosion 3*. De plus, toutes les cibles dans la zone d'*Explosion 20* doivent réussir un Test de **Résistance Très Facile (+60)** sous peine de subir une **Blessure Purulente** (Livre de Règles p.186). `AA 10 l.222`
+\*\* **Bombe incendiaire** : n'inflige pas de Dégâts ; confère à toutes les cibles affectées **DR +1 États *En flammes***. `AA 10 l.224`
 
-`AA 01 l.3868-3891`
+`AA 10 l.198-221`
 
 ### 3. Défaut d'arme : *Arme d'équipe*
 
-Une arme à *Arme d'équipe* est si imposante, lourde et complexe qu'elle ne fonctionne bien que **gérée par une équipe**, pas par une seule personne. Tous les membres doivent posséder la **Compétence Projectiles appropriée** pour participer ; ils peuvent **nommer l'un d'eux** pour effectuer le Test de Projectiles déterminant l'efficacité du tir (typiquement le plus compétent). Un membre ne possédant pas le bon groupe d'armes (ex. *Projectiles (Arc)* sur une baliste du groupe Arbalète) **ne compte pas** dans l'équipe → équipe incomplète. `AA 01 l.3897-3901`
+Une arme à *Arme d'équipe* est si imposante, lourde et complexe qu'elle ne fonctionne bien que **gérée par une équipe**, pas par une seule personne. Tous les membres doivent posséder la **Compétence Projectiles appropriée** pour participer ; ils peuvent **nommer l'un d'eux** pour effectuer le Test de Projectiles déterminant l'efficacité du tir (typiquement le plus compétent). Un membre ne possédant pas le bon groupe d'armes (ex. *Projectiles (Arc)* sur une baliste du groupe Arbalète) **ne compte pas** dans l'équipe → équipe incomplète. `AA 10 l.227-231`
 
-La plupart des armes ont une équipe de **2, 3 ou 4**. Les membres au-delà de l'Indice n'améliorent pas l'arme mais peuvent la déplacer ou compenser les pertes en plein combat. `AA 01 l.3902`
+La plupart des armes ont une équipe de **2, 3 ou 4**. Les membres au-delà de l'Indice n'améliorent pas l'arme mais peuvent la déplacer ou compenser les pertes en plein combat. `AA 10 l.232`
 
 #### Table des pénalités d'équipe incomplète
 
@@ -4806,23 +4806,23 @@ La plupart des armes ont une équipe de **2, 3 ou 4**. Les membres au-delà de l
 | 2 | N/A | Temps de recharge doublé | Reçoit le Défaut *Imprécise* |
 | 1 | Temps de recharge doublé | Reçoit le Défaut *Imprécise* | Reçoit le Défaut *Dangereuse* |
 
-`AA 01 l.3906-3911`
+`AA 10 l.236-241`
 
-**Cumul :** les pénalités de sous-effectif sont **cumulatives** — une Arme d'équipe 4 maniée par **une seule** personne voit son temps de recharge doublé **et** reçoit *Imprécise* **et** *Dangereuse*. `AA 01 l.3913`
+**Cumul :** les pénalités de sous-effectif sont **cumulatives** — une Arme d'équipe 4 maniée par **une seule** personne voit son temps de recharge doublé **et** reçoit *Imprécise* **et** *Dangereuse*. `AA 10 l.243`
 
-**Doublon de Défaut :** si l'arme reçoit un Défaut qu'elle possède **déjà**, appliquer à la place une **pénalité −10** sur tous les Tests de Projectiles pour tirer (ex. : von Meinkopt seul sur un grand canon — Arme d'équipe 4, déjà Dangereuse — recharge 8→16, reçoit *Imprécise*, et −10 au lieu d'un second *Dangereuse*). `AA 01 l.3903` `AA 01 l.3915`
+**Doublon de Défaut :** si l'arme reçoit un Défaut qu'elle possède **déjà**, appliquer à la place une **pénalité −10** sur tous les Tests de Projectiles pour tirer (ex. : von Meinkopt seul sur un grand canon — Arme d'équipe 4, déjà Dangereuse — recharge 8→16, reçoit *Imprécise*, et −10 au lieu d'un second *Dangereuse*). `AA 10 l.233` `AA 10 l.245`
 
 **Autres précisions :**
-- Recharger une Arme d'équipe : un membre peut apporter son **Soutien** sur les Tests déterminant le temps de recharge. `AA 01 l.3917`
-- Si une Arme d'équipe subit un **Incident de tir**, **tous** les membres de l'équipe sont affectés. `AA 01 l.3919`
+- Recharger une Arme d'équipe : un membre peut apporter son **Soutien** sur les Tests déterminant le temps de recharge. `AA 10 l.247`
+- Si une Arme d'équipe subit un **Incident de tir**, **tous** les membres de l'équipe sont affectés. `AA 10 l.249`
 
 ### 4. Atout d'arme : *Salve*
 
-Une arme à *Salve* peut projeter ses munitions **une à une ou par volées**. L'**Indice de Salve** indique le nombre de tirs disponibles ; chaque tir réduit l'Indice de 1, et l'arme **ne nécessite un rechargement que lorsque l'Indice tombe à 0**. `AA 01 l.3924-3927`
+Une arme à *Salve* peut projeter ses munitions **une à une ou par volées**. L'**Indice de Salve** indique le nombre de tirs disponibles ; chaque tir réduit l'Indice de 1, et l'arme **ne nécessite un rechargement que lorsque l'Indice tombe à 0**. `AA 10 l.254-257`
 
-**Tirs multiples dans le Round :** une arme à *Salve* peut tirer **plusieurs fois par Round**, mais **chaque tir après le premier** impose une pénalité **cumulative de −10** à la Compétence Projectiles. (Ex. batterie tonnerre de feu *Salve 9* : 1er tir au plein score, 2e à −10, 3e à −20, 4e à −30 ; au Round suivant on repart à 0 de pénalité, mais le décompte de l'Indice de Salve persiste — 5e tir global = −40, et l'arme tombée à *Salve 0* doit être rechargée.) `AA 01 l.3932` `AA 01 l.3936-3938`
+**Tirs multiples dans le Round :** une arme à *Salve* peut tirer **plusieurs fois par Round**, mais **chaque tir après le premier** impose une pénalité **cumulative de −10** à la Compétence Projectiles. (Ex. batterie tonnerre de feu *Salve 9* : 1er tir au plein score, 2e à −10, 3e à −20, 4e à −30 ; au Round suivant on repart à 0 de pénalité, mais le décompte de l'Indice de Salve persiste — 5e tir global = −40, et l'arme tombée à *Salve 0* doit être rechargée.) `AA 10 l.262` `AA 10 l.266-268`
 
-Si l'arme subit un **Incident de tir** à n'importe quel moment, en résoudre les effets puis lancer dans la table suivante. `AA 01 l.3934`
+Si l'arme subit un **Incident de tir** à n'importe quel moment, en résoudre les effets puis lancer dans la table suivante. `AA 10 l.264`
 
 #### Tableau des Incidents de Tir d'Artillerie par Salve
 
@@ -4833,31 +4833,31 @@ Si l'arme subit un **Incident de tir** à n'importe quel moment, en résoudre le
 | 8-9 | **Pour chaque Indice de *Salve* restant**, tous les membres de l'équipe subissent les Dégâts à une Localisation tirée au hasard (dé des unités = DR pour toucher). La pièce d'artillerie est **détruite**. |
 | 10 | **Pour chaque Indice de *Salve* restant**, un tir part dans une direction tirée au hasard sur une distance d'**1d100 mètres**. Tout Personnage entre la machine et les points d'impact doit réussir un Test d'**Esquive Très Difficile (−30)** pour éviter d'être touché par un projectile. |
 
-`AA 01 l.3940-3946`
+`AA 10 l.270-276`
 
 **Sources RAW** :
-- `AA 01 l.3673-3695` — Cadre des règles (renvoi au combat de masse d'ADE II) ; définitions ENC / Limite d'Encombrement / Pénalité de Couvert ; renvoi aux Compagnons T1 (véhicules) et T2 (navires) pour leurs Dégâts dédiés.
-- `AA 01 l.3698-3723` — Tableau des Structures Courantes (véhicules, navires fluviaux, fortifications) ; note « bande de 5 m » pour les Structures marquées \*.
-- `AA 01 l.3725-3762` — Descriptions narratives de chaque Structure (barge, patrouilleur, chaloupe, chariots, charrettes, clayonnage, diligence, herse, mantelet, murs, palissade, porte renforcée, terrassement).
-- `AA 01 l.3764-3768` — Attaques contre les Structures : auto-touche en mêlée, véhicule en mouvement = Tir ciblé −20, conducteur = Test opposé CC/Conduite d'attelage, pénalité de Taille (BE ×N), exception des armes de siège.
-- `AA 01 l.3771-3781` — Dégâts aux Structures (Endurance/Blessures, bandes de mur de 5 m), absence de Localisations, table « tir raté » Degrés d'échec 0 à −2 / −3 ou moins.
-- `AA 01 l.3783-3798` — Critiques sur Structure (double + ≥25 % Blessures retirées ; tout coup à 0 Blessure ; Effondrement = « mort ») + Tableau des Blessures Critiques sur une Structure (Ébréchée → Effondrement).
-- `AA 01 l.3801-3804` — Réparation : Métier (Charpentier/Maçon) Accessible (+20) hors combat (1d10 h / 1d10 Blessures), Très Difficile (−30) en combat (20 DR) ; Guérison sans effet.
-- `AA 01 l.3806-3820` — Règles générales des Armes de Siège : groupes d'armes requis, baliste via Projectiles (Arbalète) sans Atouts, munitions spéciales obligatoires.
-- `AA 01 l.3822-3843` — Descriptions des armes de siège (baliste, batterie tonnerre de feu, canons, canon à répétition + recul Résistance Accessible/Critique épaule, catapulte, mortier, canon feu d'enfer, pierrier).
-- `AA 01 l.3845-3866` — Tableau des Armes de Siège (stats complètes + note de rechargement des armes à Salve).
-- `AA 01 l.3861-3864` — Artefact de mise en page « — p. N » des canons/mortier/pierrier : N = Indice d'Arme d'équipe (canons) ; pour le Pierrier (sans Arme d'équipe), le « — p. 4 » qualifie Recharge = **Recharge 4**.
-- `AA 01 l.3868-3894` — Tableau des Munitions de Siège + notes carcasse d'animal (Blessure Purulente) et bombe incendiaire (DR +1 *En flammes*).
-- `AA 01 l.3897-3919` — Défaut *Arme d'équipe* : équipe/nomination, table des pénalités d'équipe incomplète, cumul, doublon de Défaut (−10), Soutien au rechargement, Incident affecte toute l'équipe.
-- `AA 01 l.3924-3946` — Atout *Salve* : Indice/rechargement, tirs multiples −10 cumulatif/Round, et Tableau des Incidents de Tir d'Artillerie par Salve (d10).
+- `AA 10 l.3-25` — Cadre des règles (renvoi au combat de masse d'ADE II) ; définitions ENC / Limite d'Encombrement / Pénalité de Couvert ; renvoi aux Compagnons T1 (véhicules) et T2 (navires) pour leurs Dégâts dédiés.
+- `AA 10 l.28-53` — Tableau des Structures Courantes (véhicules, navires fluviaux, fortifications) ; note « bande de 5 m » pour les Structures marquées \*.
+- `AA 10 l.55-92` — Descriptions narratives de chaque Structure (barge, patrouilleur, chaloupe, chariots, charrettes, clayonnage, diligence, herse, mantelet, murs, palissade, porte renforcée, terrassement).
+- `AA 10 l.94-98` — Attaques contre les Structures : auto-touche en mêlée, véhicule en mouvement = Tir ciblé −20, conducteur = Test opposé CC/Conduite d'attelage, pénalité de Taille (BE ×N), exception des armes de siège.
+- `AA 10 l.101-111` — Dégâts aux Structures (Endurance/Blessures, bandes de mur de 5 m), absence de Localisations, table « tir raté » Degrés d'échec 0 à −2 / −3 ou moins.
+- `AA 10 l.113-128` — Critiques sur Structure (double + ≥25 % Blessures retirées ; tout coup à 0 Blessure ; Effondrement = « mort ») + Tableau des Blessures Critiques sur une Structure (Ébréchée → Effondrement).
+- `AA 10 l.131-134` — Réparation : Métier (Charpentier/Maçon) Accessible (+20) hors combat (1d10 h / 1d10 Blessures), Très Difficile (−30) en combat (20 DR) ; Guérison sans effet.
+- `AA 10 l.136-150` — Règles générales des Armes de Siège : groupes d'armes requis, baliste via Projectiles (Arbalète) sans Atouts, munitions spéciales obligatoires.
+- `AA 10 l.152-173` — Descriptions des armes de siège (baliste, batterie tonnerre de feu, canons, canon à répétition + recul Résistance Accessible/Critique épaule, catapulte, mortier, canon feu d'enfer, pierrier).
+- `AA 10 l.175-196` — Tableau des Armes de Siège (stats complètes + note de rechargement des armes à Salve).
+- `AA 10 l.191-194` — Artefact de mise en page « — p. N » des canons/mortier/pierrier : N = Indice d'Arme d'équipe (canons) ; pour le Pierrier (sans Arme d'équipe), le « — p. 4 » qualifie Recharge = **Recharge 4**.
+- `AA 10 l.198-224` — Tableau des Munitions de Siège + notes carcasse d'animal (Blessure Purulente) et bombe incendiaire (DR +1 *En flammes*).
+- `AA 10 l.227-249` — Défaut *Arme d'équipe* : équipe/nomination, table des pénalités d'équipe incomplète, cumul, doublon de Défaut (−10), Soutien au rechargement, Incident affecte toute l'équipe.
+- `AA 10 l.254-276` — Atout *Salve* : Indice/rechargement, tirs multiples −10 cumulatif/Round, et Tableau des Incidents de Tir d'Artillerie par Salve (d10).
 
-> « toute attaque au corps à corps portée contre une Structure touche automatiquement. Si la Structure est un véhicule qui se déplace ou si un Personnage veut attaquer un emplacement spécifique difficile à toucher, considérez l'attaque comme un Tir ciblé à -20. » — `AA 01 l.3766`
+> « toute attaque au corps à corps portée contre une Structure touche automatiquement. Si la Structure est un véhicule qui se déplace ou si un Personnage veut attaquer un emplacement spécifique difficile à toucher, considérez l'attaque comme un Tir ciblé à -20. » — `AA 10 l.96`
 
-> « la Structure risque de subir un Coup Critique, mais c'est uniquement le cas si l'attaque retire aussi au moins 25 % des Blessures restant à la Structure. En revanche, tous les coups qui touchent une fois que les Blessures de la Structure sont tombées à 0 causent des Blessures Critiques. » — `AA 01 l.3784`
+> « la Structure risque de subir un Coup Critique, mais c'est uniquement le cas si l'attaque retire aussi au moins 25 % des Blessures restant à la Structure. En revanche, tous les coups qui touchent une fois que les Blessures de la Structure sont tombées à 0 causent des Blessures Critiques. » — `AA 10 l.114`
 
-> « les pénalités infligées par un sous-nombre de l'équipe Arme sont cumulatives... une arme dotée d'd'équipe 4, mais qui n'est maniée que par une seule personne voit son temps de recharge doublé et reçoit les Défauts Imprécise et Dangereuse. » — `AA 01 l.3913`
+> « les pénalités infligées par un sous-nombre de l'équipe Arme sont cumulatives... une arme dotée d'd'équipe 4, mais qui n'est maniée que par une seule personne voit son temps de recharge doublé et reçoit les Défauts Imprécise et Dangereuse. » — `AA 10 l.243`
 
-> « Pierrier 20 CO 5 Rare 30 +14 Dangereuse, Recharge — p. 4 » — `AA 01 l.3885` (le « — p. 4 » suivant Recharge en est l'Indice : Recharge 4, le Pierrier n'ayant pas d'Atout *Arme d'équipe*)
+> « Pierrier 20 CO 5 Rare 30 +14 Dangereuse, Recharge — p. 4 » — `AA 10 l.215` (le « — p. 4 » suivant Recharge en est l'Indice : Recharge 4, le Pierrier n'ayant pas d'Atout *Arme d'équipe*)
 
 **Voir aussi** : AA : Qualités et Défauts d'armes (Imprécise, Dangereuse, Recharge, Salve, Tir de zone, Explosion, Empaleuse, Perforante, Percutante, Dévastatrice, Pointue, Pointe d'arme) ; LDB 13 : Combat (Tir ciblé, DR, doubles/Critiques) ; LDB 18 : Traumatisme (Localisations, Blessures Critiques au bras) ; LDB 16 : États (*Surpris*, *À Terre*, *En flammes*) ; LDB 14 : Taille (catégories, modificateurs de Taille de cible) ; ADE II : Combat de masse (grandes batailles).
 
@@ -4902,7 +4902,7 @@ Pour les Poursuites où les Mouvements diffèrent ou où la performance individu
 | Prairie à arbustes, collines peu élevées, plage rocheuse | 10 |
 | Désert totalement lisse, steppe herbeuse, plateau calcaire | 13 |
 
-*— `AA 01 l.3984-3990` (Table de Seuil de Fuite selon l'Environnement)*
+*— `AA 10 l.314-320` (Table de Seuil de Fuite selon l'Environnement)*
 
 Si la Cible est en **groupe très resserré**, tous ses membres sont à la même Distance ; mais dès qu'un membre prend une avance de **plus de 16 mètres** sur un Poursuivant ou sur un autre membre de son groupe, on calcule sa **Distance individuelle**. Les Poursuivants forment un seul grand groupe s'ils ont tous le même Mouvement, ou se divisent en petits groupes selon leur Mouvement ou leur capacité à réussir les Tests.
 
@@ -4922,7 +4922,7 @@ Le résultat du Test (DR) détermine la progression du Personnage ce Round :
 | **–3 à –4** | Le Personnage **s'arrête brutalement** pour éviter de tomber. **Il ne progresse pas** ce Round. |
 | **–5 ou moins** | Le Personnage **trébuche / tombe de cheval** (calamité similaire). Déterminez si la chute cause des Dégâts (LDB p. 166) ; le Personnage subit ensuite l'**État _À Terre_**. |
 
-*— `AA 01 l.4003-4014` (Table de Progression d'un Personnage en Poursuite Complexe)*
+*— `AA 10 l.333-344` (Table de Progression d'un Personnage en Poursuite Complexe)*
 
 À ce stade, si un Poursuivant réduit la Distance avec un membre de la Cible à **0**, il décide de le **charger** (déclenche le combat) ou de le **dépasser** pour attraper un membre situé plus loin.
 
@@ -4960,7 +4960,7 @@ Le MJ peut placer des **obstacles** sur le chemin (caisses de laine, flaques de 
 | Charrette laissée sans surveillance remplie de choux | Automatiquement | Test d'**Escalade Intermédiaire (+0)** | Le participant glisse vers l'arrière en escaladant, faisant tomber un torrent de choux. **Test d'Initiative Accessible (+20)** sous peine de subir l'État **_Surpris_**. L'obstacle devient **deux obstacles** : une charrette laissée sans surveillance et une pile de choux éparpillés. |
 | Pile de choux éparpillés | Automatiquement | Test d'**Athlétisme Difficile (–20)** | Le participant trébuche sur les choux : **chute d'1 mètre** et État **_À Terre_**. |
 
-*— `AA 01 l.4056-4076` (Table des Obstacles de Poursuite)*
+*— `AA 10 l.386-406` (Table des Obstacles de Poursuite)*
 
 ### Épuisement
 
@@ -4981,7 +4981,7 @@ Un participant (ou sa monture / animal de trait) qui **rate** son Test de Résis
 | 25 | Test de **Résistance Impossible (–50)** | – | Test de **Résistance Accessible (+20)** pour les animaux de trait |
 | 26 | Test de **Résistance Plus qu'Impossible (–60)** | Test de **Résistance Complexe (–10)** pour la monture | – |
 
-*— `AA 01 l.4078-4091` (Table d'Épuisement en Poursuite)*
+*— `AA 10 l.408-421` (Table d'Épuisement en Poursuite)*
 
 ### Conversion Combat → Poursuite
 
@@ -4993,27 +4993,27 @@ Si un guerrier rompt le combat mais que son opposant veut **toujours l'engager**
 | **Utiliser Esquive** | La Cible commence avec une avance de **1 Distance**. | La Cible commence avec une avance de **1 Distance**. |
 | **Fuir** | Si l'adversaire **porte** l'attaque gratuite, la Cible commence avec une avance de **3**. S'il **renonce** à son attaque gratuite pour poursuivre tout de suite, la Cible commence avec une avance de **1**. | La Cible effectue un **Test d'Athlétisme** (comme à l'étape « Effectuer un Test et actualiser la Distance » de la Poursuite complexe) ; son **résultat détermine la Distance initiale**. Si l'adversaire **a saisi** l'attaque gratuite, la Cible ajoute **+2 DR** à ce Test d'Athlétisme. |
 
-*— `AA 01 l.4097-4104` (Table de Distance Initiale selon mode de désengagement)*
+*— `AA 10 l.427-434` (Table de Distance Initiale selon mode de désengagement)*
 
 **Sources RAW** :
-- `AA 01 l.3954-3962` — **Rompre le Combat** : résumé AA des 3 méthodes du LDB p. 165 (Avantage → 0 sans pénalité ; Esquive opposée → +1 Avantage + Mouvement libre / échec → adversaires +1 Avantage + cloué ; Fuir → adversaire +1 Avantage + attaque gratuite Corps à corps non opposée **+20**, si touché +1 Avantage + Calme Intermédiaire (+0) sinon **Brisé +1 par DR négatif**, puis Mouvement de Course à l'opposé).
-- `AA 01 l.3964-3974` — **Poursuite simple** (résumé LDB p. 166) : Distance 0–10, Test Athlétisme/Chevaucher/Conduite, comparaison DR (min Cible vs max Poursuivant), issue à 0 / 10+, +1 DR par point de Mouvement supérieur.
-- `AA 01 l.3976-4018` — **Poursuite complexe** : Distance en mètres (1 point = 10 m), seuils d'échappement par environnement, Test +20 par ordre d'Initiative, pénalités Mouvement ≤ 3, table de Progression (sprint / course / gêné / arrêt / À Terre), seuil de 16 m pour la Distance individuelle.
-- `AA 01 l.3984-3990` — **Table de Seuil de Fuite selon l'Environnement** (3 / 5 / 7 / 10 / 13).
-- `AA 01 l.4003-4014` — **Table de Progression d'un Personnage en Poursuite Complexe** (par bande de DR).
-- `AA 01 l.4020-4022` — **Mouvement gêné** : _À Terre_ / _Empêtré_ → perte de la prochaine occasion de Test, temps passé à se libérer.
-- `AA 01 l.4025-4042` — **Obstacles** : obstacle = participant fixe, Test de négociation à Distance 0, perception facile ou non, changement de trajectoire ; **Créer des Obstacles** (Test de Perception + Athlétisme Intermédiaire (+0)).
-- `AA 01 l.4056-4076` — **Table des Obstacles de Poursuite** (rondin, tas de foin, flaque d'eau sale, caisses, grille, nid-de-poule, sables mouvants, troupeau de chèvres, seau/flaque d'entrailles, lattes pourries, ouvrier sur échelle, charrettes, pile de choux).
-- `AA 01 l.4045-4053` — **Épuisement** : Test de Résistance tous les N Rounds (fréquence/difficulté MJ), État _Exténué_ à l'échec, animaux veulent passer au pas (relançables par Emprise +0 / Chevaucher –10 / Conduite –20).
-- `AA 01 l.4078-4091` — **Table d'Épuisement en Poursuite** (Rounds × à pied / monté / véhicule).
-- `AA 01 l.4092-4094` — **Conversion Combat → Poursuite** : l'opposant veut toujours engager → la cible devient Cible d'une Poursuite, avance selon la méthode de rupture.
-- `AA 01 l.4097-4104` — **Table de Distance Initiale selon mode de désengagement** (Avantage / Esquive / Fuir × Poursuite simple / complexe).
+- `AA 10 l.284-292` — **Rompre le Combat** : résumé AA des 3 méthodes du LDB p. 165 (Avantage → 0 sans pénalité ; Esquive opposée → +1 Avantage + Mouvement libre / échec → adversaires +1 Avantage + cloué ; Fuir → adversaire +1 Avantage + attaque gratuite Corps à corps non opposée **+20**, si touché +1 Avantage + Calme Intermédiaire (+0) sinon **Brisé +1 par DR négatif**, puis Mouvement de Course à l'opposé).
+- `AA 10 l.294-304` — **Poursuite simple** (résumé LDB p. 166) : Distance 0–10, Test Athlétisme/Chevaucher/Conduite, comparaison DR (min Cible vs max Poursuivant), issue à 0 / 10+, +1 DR par point de Mouvement supérieur.
+- `AA 10 l.306-348` — **Poursuite complexe** : Distance en mètres (1 point = 10 m), seuils d'échappement par environnement, Test +20 par ordre d'Initiative, pénalités Mouvement ≤ 3, table de Progression (sprint / course / gêné / arrêt / À Terre), seuil de 16 m pour la Distance individuelle.
+- `AA 10 l.314-320` — **Table de Seuil de Fuite selon l'Environnement** (3 / 5 / 7 / 10 / 13).
+- `AA 10 l.333-344` — **Table de Progression d'un Personnage en Poursuite Complexe** (par bande de DR).
+- `AA 10 l.350-352` — **Mouvement gêné** : _À Terre_ / _Empêtré_ → perte de la prochaine occasion de Test, temps passé à se libérer.
+- `AA 10 l.355-372` — **Obstacles** : obstacle = participant fixe, Test de négociation à Distance 0, perception facile ou non, changement de trajectoire ; **Créer des Obstacles** (Test de Perception + Athlétisme Intermédiaire (+0)).
+- `AA 10 l.386-406` — **Table des Obstacles de Poursuite** (rondin, tas de foin, flaque d'eau sale, caisses, grille, nid-de-poule, sables mouvants, troupeau de chèvres, seau/flaque d'entrailles, lattes pourries, ouvrier sur échelle, charrettes, pile de choux).
+- `AA 10 l.375-383` — **Épuisement** : Test de Résistance tous les N Rounds (fréquence/difficulté MJ), État _Exténué_ à l'échec, animaux veulent passer au pas (relançables par Emprise +0 / Chevaucher –10 / Conduite –20).
+- `AA 10 l.408-421` — **Table d'Épuisement en Poursuite** (Rounds × à pied / monté / véhicule).
+- `AA 10 l.422-424` — **Conversion Combat → Poursuite** : l'opposant veut toujours engager → la cible devient Cible d'une Poursuite, avance selon la méthode de rupture.
+- `AA 10 l.427-434` — **Table de Distance Initiale selon mode de désengagement** (Avantage / Esquive / Fuir × Poursuite simple / complexe).
 
-> « Si vous êtes touché, votre opposant gagne +1 Avantage et vous devez réussir un Test de **Calme Intermédiaire (+0)** sous peine de recevoir un État _Brisé_ +1 État _Brisé_ supplémentaire par DR en dessous de 0. » — `AA 01 l.3962`
+> « Si vous êtes touché, votre opposant gagne +1 Avantage et vous devez réussir un Test de **Calme Intermédiaire (+0)** sous peine de recevoir un État _Brisé_ +1 État _Brisé_ supplémentaire par DR en dessous de 0. » — `AA 10 l.292`
 
-> « Chaque point de Distance représente 10 mètres. » — `AA 01 l.3982`
+> « Chaque point de Distance représente 10 mètres. » — `AA 10 l.312`
 
-> « si n'importe lequel d'entre eux a une avance de plus de 16 mètres sur un Poursuivant ou sur un autre Personnage du groupe de la Cible, calculez sa Distance individuelle par rapport aux Poursuivants de manière appropriée. » — `AA 01 l.3994`
+> « si n'importe lequel d'entre eux a une avance de plus de 16 mètres sur un Poursuivant ou sur un autre Personnage du groupe de la Cible, calculez sa Distance individuelle par rapport aux Poursuivants de manière appropriée. » — `AA 10 l.324`
 
 **Voir aussi** : États (_Brisé_, _À Terre_, _Empêtré_, _Exténué_, _Surpris_) ; Avantage ; Engagement et désengagement (LDB) ; Déplacement et Course ; Tests de Calme / Résistance / Athlétisme ; Combat monté et véhicules.
 
@@ -5088,7 +5088,7 @@ Règle facultative : au lieu de démarrer les deux réserves à zéro, on peut r
 | **Terrain** : fortifications, couvert léger ou position tenue avantageuse (ex. : sur une colline). | **1** |
 | **Terrain** : couvert lourd ou position tenue décisive (ex. : un pont). | **2** |
 
-> **Exemple :** un groupe de cinq aventuriers s'approche discrètement de dix gobelins et de leur chamane monté sur une manticore. La réserve des **alliés** gagne **2 Avantages** (surprise). La réserve des **adversaires** gagne **2 Avantages** (surnombre — deux fois plus nombreux) **+ 3 Avantages** (la manticore), soit **5 Avantages**. — `AA 01 l.4169`
+> **Exemple :** un groupe de cinq aventuriers s'approche discrètement de dix gobelins et de leur chamane monté sur une manticore. La réserve des **alliés** gagne **2 Avantages** (surprise). La réserve des **adversaires** gagne **2 Avantages** (surnombre — deux fois plus nombreux) **+ 3 Avantages** (la manticore), soit **5 Avantages**. — `AA 11 l.67`
 
 ### Talents modifiés (Avantage de Groupe)
 
@@ -5098,7 +5098,7 @@ Plusieurs Talents sont modifiés pour correspondre à ces règles alternatives (
 
 Le Trait de créature **Instable** est réécrit pour ce système :
 
-> Le corps de la créature est maintenu par d'ignobles magies, fondamentalement instables dans le plan matériel. À la **fin de chaque Round**, le MJ sélectionne **au hasard** une créature possédant le Trait **Instable**. Si la réserve d'Avantages du **camp opposé** est plus élevée que celle de la créature, la créature **perd un nombre de Blessures égal à la différence** entre les deux. Si elle tombe à **0 Blessure** de cette manière, les magies la maintenant entière cèdent et elle « meurt ». — `AA 01 l.4181`
+> Le corps de la créature est maintenu par d'ignobles magies, fondamentalement instables dans le plan matériel. À la **fin de chaque Round**, le MJ sélectionne **au hasard** une créature possédant le Trait **Instable**. Si la réserve d'Avantages du **camp opposé** est plus élevée que celle de la créature, la créature **perd un nombre de Blessures égal à la différence** entre les deux. Si elle tombe à **0 Blessure** de cette manière, les magies la maintenant entière cèdent et elle « meurt ». — `AA 11 l.79`
 
 (« Celle de la créature » désigne la réserve du camp de la créature : on compare réserve opposée vs réserve de son propre camp.)
 
@@ -5114,18 +5114,18 @@ Ce système modifie aussi la liste des Actions de combat :
 - **Spéciale** : Actions venant de Compétences ou Talents (Empoigner, intimider, lancer un Sort, Maniement de deux armes, arrêter un saignement avec des bandages…).
 
 **Sources RAW** :
-- `AA 01 l.4106-4116` — Annexe I, présentation du système optionnel : deux réserves mutualisées (alliés/adversaires), routage des gains selon Joueur/PNJ allié vs PNJ hostile ou neutre.
-- `AA 01 l.4117-4129` — « Obtenir Un Avantage » : modifie l'obtention p.164 LDB ; +1 Surprise, +2/+3 Évaluer (6 DR), +1/+2 Victoire (némésis), +1 Gagnant, +1 Prendre le dessus (un seul par action).
-- `AA 01 l.4130-4145` — « Les Bénéfices des Avantages » + table des dépenses (Battre 1, Coup tordu 1, Effort supplémentaire 2+, Retraite stratégique 2, Action gratuite 4) ; dépense possible pour activer des Traits de créature (p.338-343 LDB).
-- `AA 01 l.4146-4146` — « Perdre Un Avantage » : transfert de 1 Avantage du camp défavorisé vers le dominant en fin de Round (création nette si réserve défavorisée vide).
-- `AA 01 l.4150-4169` — « Remplir les Réserves Dès le Départ » + table « Avantage Initial » (Manœuvrabilité 2, Menace 1/3/5, Surnombre 1/2/3, Surprise 2, Terrain 1/2 ; seul le plus haut modificateur par circonstance) + exemple gobelins/manticore.
-- `AA 01 l.4171-4173` — « Les Talents Modifiés » : Artilleur, Battement, Coude-à-coude, Distraire, Impitoyable, Portebouclier, Rechargement rapide, Renversement (détails p.140 AA).
-- `AA 01 l.4175-4181` — « Les Traits de Créature Modifiés » / **Instable** réécrit (fin de Round, créature aléatoire, perte de Blessures = différence des réserves, « meurt » à 0).
-- `AA 01 l.4185-4200` — « Actions Modifiées En Combat » : Attaquer, Courir (Athlétisme +20, Course+DR m), Charger (+10 1er CàC), Évaluer (2/3 Avantages), Se Défendre (+20 défense), Spéciale.
+- `AA 11 l.4-14` — Annexe I, présentation du système optionnel : deux réserves mutualisées (alliés/adversaires), routage des gains selon Joueur/PNJ allié vs PNJ hostile ou neutre.
+- `AA 11 l.15-27` — « Obtenir Un Avantage » : modifie l'obtention p.164 LDB ; +1 Surprise, +2/+3 Évaluer (6 DR), +1/+2 Victoire (némésis), +1 Gagnant, +1 Prendre le dessus (un seul par action).
+- `AA 11 l.28-43` — « Les Bénéfices des Avantages » + table des dépenses (Battre 1, Coup tordu 1, Effort supplémentaire 2+, Retraite stratégique 2, Action gratuite 4) ; dépense possible pour activer des Traits de créature (p.338-343 LDB).
+- `AA 11 l.44-44` — « Perdre Un Avantage » : transfert de 1 Avantage du camp défavorisé vers le dominant en fin de Round (création nette si réserve défavorisée vide).
+- `AA 11 l.48-67` — « Remplir les Réserves Dès le Départ » + table « Avantage Initial » (Manœuvrabilité 2, Menace 1/3/5, Surnombre 1/2/3, Surprise 2, Terrain 1/2 ; seul le plus haut modificateur par circonstance) + exemple gobelins/manticore.
+- `AA 11 l.69-71` — « Les Talents Modifiés » : Artilleur, Battement, Coude-à-coude, Distraire, Impitoyable, Portebouclier, Rechargement rapide, Renversement (détails p.140 AA).
+- `AA 11 l.73-79` — « Les Traits de Créature Modifiés » / **Instable** réécrit (fin de Round, créature aléatoire, perte de Blessures = différence des réserves, « meurt » à 0).
+- `AA 11 l.83-98` — « Actions Modifiées En Combat » : Attaquer, Courir (Athlétisme +20, Course+DR m), Charger (+10 1er CàC), Évaluer (2/3 Avantages), Se Défendre (+20 défense), Spéciale.
 
-> « Les Avantages ne sont plus accumulés par chaque Joueur ou PNJ individuellement. Au lieu de cela, ils sont acquis et stockés dans la réserve d'Avantages des alliés ou dans celle des adversaires. » — `AA 01 l.4113`
+> « Les Avantages ne sont plus accumulés par chaque Joueur ou PNJ individuellement. Au lieu de cela, ils sont acquis et stockés dans la réserve d'Avantages des alliés ou dans celle des adversaires. » — `AA 11 l.11`
 
-> « transférez 1 Avantage de la réserve d'Avantages du camp défavorisé vers celle du camp dominant. Si la réserve d'Avantages du camp défavorisé ne contient pas d'Avantage, la réserve du camp dominant gagne 1 Avantage. » — `AA 01 l.4146`
+> « transférez 1 Avantage de la réserve d'Avantages du camp défavorisé vers celle du camp dominant. Si la réserve d'Avantages du camp défavorisé ne contient pas d'Avantage, la réserve du camp dominant gagne 1 Avantage. » — `AA 11 l.44`
 
 **Voir aussi** : Avantage (système standard LDB, individuel) ; États À Terre / Aveuglé / Empêtré / En flammes ; Tests opposés et Degrés de Réussite (DR) ; Désengagement (remplacé par Retraite stratégique) ; Trait Instable (version LDB) ; Surprise et État Surpris ; Évaluer (Compétence en combat) ; Charge.
 
@@ -5232,29 +5232,29 @@ Capable de retourner les situations les plus désastreuses à votre avantage. Si
 | Rechargement Rapide | Bonus de Dextérité | — | Comme Artilleur, mais pour toute arme à distance (+DR=niveau, Action Évaluer, +1 Avantage) |
 | Renversement | Bonus de Capacité de Combat | Corps à Corps en défense | Test opposé CàC gagné → prendre 1 Avantage adverse au lieu de +1 Avantage ; aucun Dégât infligé ce Tour |
 
-*Réf. table : `AA 01 l.4351-4441`.*
+*Réf. table : `AA 13 l.7-97`.*
 
 **Sources RAW** :
-- `AA 01 l.4351-4353` — Annexe III, en-tête « Nouveaux Talents et Talents Mis À Jour » + **Artilleur** (Maxi Bonus de Dextérité ; +DR=niveau au Test étendu de rechargement Poudre noire ; rechargement = Action Évaluer ; +1 Avantage).
-- `AA 01 l.4355-4361` — **Battement** (Maxi Bonus de CC ; Test CàC non opposé ; Succès → camp adverse −1 Avantage, −1 de plus à 6 DR ; nul si adversaire désarmé / Taille supérieure).
-- `AA 01 l.4364-4369` — **Cavalier Émérite** (Maxi Bonus d'Agilité ; monture fait une Action sans Test de Chevaucher ; Taille = celle de la monture vs Peur/Terreur par Taille).
-- `AA 01 l.4373-4379` — **Commandant d'Équipe** (Maxi Bonus d'Initiative ; Test Commandement Intermédiaire (+0) ; équipe à portée de voix tire avec le score de Projectiles du Personnage ; arme à Défaut *Arme d'équipe*).
-- `AA 01 l.4381-4387` — **Coude-à-Coude** (Maxi Bonus de CC ; compte comme deux combattants pour perdre un Avantage).
-- `AA 01 l.4390-4395` — **Distraire** (Maxi Bonus d'Agilité ; utilise le Mouvement ; Test opposé Athlétisme/Calme ; Succès → adversaire sans gain d'Avantage jusqu'à fin du prochain Round).
-- `AA 01 l.4398-4403` — **Frappe Blessante** (Maxi 1 ; lancer 2× sur la table de Blessures Critiques, choisir) + exemple de Peur par Taille.
-- `AA 01 l.4408-4412` — **Fuite !** (Maxi Bonus d'Agilité ; Mouvement +1 quand on Fuit ou Cible d'une Poursuite).
-- `AA 01 l.4414-4418` — **Impitoyable** (Maxi 1 ; dépense d'Avantages pour une Retraite stratégique tombe à 1).
-- `AA 01 l.4422-4428` — **Porte-Bouclier** (Maxi Bonus de Force ; 1×/Round, 2 Avantages : Dégâts comme une Action OU poussée 2 m + fin d'Engagement).
-- `AA 01 l.4430-4434` — **Rechargement Rapide** (Maxi Bonus de Dextérité ; identique à Artilleur mais toute arme à distance).
-- `AA 01 l.4438-4441` — **Renversement** (Maxi Bonus de CC ; Test opposé CàC gagné → prendre 1 Avantage adverse au lieu de +1 ; aucun Dégât ce Tour).
+- `AA 13 l.7-9` — Annexe III, en-tête « Nouveaux Talents et Talents Mis À Jour » + **Artilleur** (Maxi Bonus de Dextérité ; +DR=niveau au Test étendu de rechargement Poudre noire ; rechargement = Action Évaluer ; +1 Avantage).
+- `AA 13 l.11-17` — **Battement** (Maxi Bonus de CC ; Test CàC non opposé ; Succès → camp adverse −1 Avantage, −1 de plus à 6 DR ; nul si adversaire désarmé / Taille supérieure).
+- `AA 13 l.20-25` — **Cavalier Émérite** (Maxi Bonus d'Agilité ; monture fait une Action sans Test de Chevaucher ; Taille = celle de la monture vs Peur/Terreur par Taille).
+- `AA 13 l.29-35` — **Commandant d'Équipe** (Maxi Bonus d'Initiative ; Test Commandement Intermédiaire (+0) ; équipe à portée de voix tire avec le score de Projectiles du Personnage ; arme à Défaut *Arme d'équipe*).
+- `AA 13 l.37-43` — **Coude-à-Coude** (Maxi Bonus de CC ; compte comme deux combattants pour perdre un Avantage).
+- `AA 13 l.46-51` — **Distraire** (Maxi Bonus d'Agilité ; utilise le Mouvement ; Test opposé Athlétisme/Calme ; Succès → adversaire sans gain d'Avantage jusqu'à fin du prochain Round).
+- `AA 13 l.54-59` — **Frappe Blessante** (Maxi 1 ; lancer 2× sur la table de Blessures Critiques, choisir) + exemple de Peur par Taille.
+- `AA 13 l.64-68` — **Fuite !** (Maxi Bonus d'Agilité ; Mouvement +1 quand on Fuit ou Cible d'une Poursuite).
+- `AA 13 l.70-74` — **Impitoyable** (Maxi 1 ; dépense d'Avantages pour une Retraite stratégique tombe à 1).
+- `AA 13 l.78-84` — **Porte-Bouclier** (Maxi Bonus de Force ; 1×/Round, 2 Avantages : Dégâts comme une Action OU poussée 2 m + fin d'Engagement).
+- `AA 13 l.86-90` — **Rechargement Rapide** (Maxi Bonus de Dextérité ; identique à Artilleur mais toute arme à distance).
+- `AA 13 l.94-97` — **Renversement** (Maxi Bonus de CC ; Test opposé CàC gagné → prendre 1 Avantage adverse au lieu de +1 ; aucun Dégât ce Tour).
 
-> « Recharger une arme à Poudre noire pendant un combat est également considéré comme une Action Évaluer pour vous. Vous gagnez +1 Avantage supplémentaire quand vous effectuez ce Test d'Évaluer. » — `AA 01 l.4353`
+> « Recharger une arme à Poudre noire pendant un combat est également considéré comme une Action Évaluer pour vous. Vous gagnez +1 Avantage supplémentaire quand vous effectuez ce Test d'Évaluer. » — `AA 13 l.9`
 
-> « sur un Succès, la réserve d'Avantages du camp adverse perd -1 Avantage et -1 de plus si vous avez obtenu 6 DR. Ce Test n'est pas opposé. Ce Talent est inutile si votre adversaire ne porte pas d'arme, ou est d'une Taille supérieure à la vôtre. » — `AA 01 l.4361`
+> « sur un Succès, la réserve d'Avantages du camp adverse perd -1 Avantage et -1 de plus si vous avez obtenu 6 DR. Ce Test n'est pas opposé. Ce Talent est inutile si votre adversaire ne porte pas d'arme, ou est d'une Taille supérieure à la vôtre. » — `AA 13 l.17`
 
-> « vous pouvez dépenser 2 Avantages soit pour causer des Dégâts quand vous êtes attaqué comme s'il s'agissait de votre Action, soit pour pousser votre adversaire sur 2 mètres dans la direction directement opposée à vous et ne plus être considéré comme Engagé. » — `AA 01 l.4428`
+> « vous pouvez dépenser 2 Avantages soit pour causer des Dégâts quand vous êtes attaqué comme s'il s'agissait de votre Action, soit pour pousser votre adversaire sur 2 mètres dans la direction directement opposée à vous et ne plus être considéré comme Engagé. » — `AA 13 l.84`
 
-> « au lieu de gagner +1 Avantage, vous pouvez prendre 1 Avantage dans la réserve d'Avantages du camp opposé et l'ajouter à la vôtre. Dans ce cas, vous ne pouvez infliger aucun Dégât, même si c'était votre Tour dans le Round. » — `AA 01 l.4442`
+> « au lieu de gagner +1 Avantage, vous pouvez prendre 1 Avantage dans la réserve d'Avantages du camp opposé et l'ajouter à la vôtre. Dans ce cas, vous ne pouvez infliger aucun Dégât, même si c'était votre Tour dans le Round. » — `AA 13 l.98`
 
 **Voir aussi** : Avantage (réserve, gain/perte, surnombre) ; Manœuvres de combat (Battement, Désengagement, Retraite stratégique) ; Peur / Terreur (Taille) ; Rechargement & Tests étendus ; Armes d'équipe & artillerie (Défaut *Arme d'équipe*) ; Boucliers (défense).
 
@@ -5268,7 +5268,7 @@ Les **Activités de guerrier** (*Aux Armes*, Annexe II) sont des Activités d'in
 
 **Règle d'accès universelle.** N'importe quel Personnage peut tenter ces Activités, mais **s'il n'a jamais appartenu à la Classe des Guerriers, la Difficulté de tous les Tests qu'il effectue monte d'un Niveau** (p. ex. un Test Complexe –10 devient Difficile –20).
 
-> « N'importe quel Personnage peut tenter ces Activités, mais s'il n'a jamais appartenu à la Classe des Guerriers, la Difficulté de tous les Tests qu'il effectue monte d'un Niveau. Par exemple, un Test Complexe (–10) devient Difficile (–20). » — `AA 01 l.4205`
+> « N'importe quel Personnage peut tenter ces Activités, mais s'il n'a jamais appartenu à la Classe des Guerriers, la Difficulté de tous les Tests qu'il effectue monte d'un Niveau. Par exemple, un Test Complexe (–10) devient Difficile (–20). » — `AA 12 l.5`
 
 ---
 
@@ -5289,7 +5289,7 @@ Le Personnage consulte le manuel d'entraînement d'**Allavandrel Fanmaris** et s
 | +4 à +5 | Vous infligez automatiquement un Coup Critique. |
 | +6 | Votre arme gagne l'Atout *Dévastatrice* (page 298 de WFJDR) pour cette attaque. Si elle est déjà *Dévastatrice*, elle gagne l'Atout *Percutante* (page 298 de WFJDR). |
 
-*— `AA 01 l.4212-4218`*
+*— `AA 12 l.12-18`*
 
 ---
 
@@ -5304,7 +5304,7 @@ Le Personnage consulte le fascicule de la **Défense de Leitdorf**, censé rédi
 - **Si l'adversaire remporte le Test :** **il vous inflige un Coup Critique** (la manœuvre risquée vous expose et vous rend vulnérable).
 - **Vous pouvez entreprendre cette Activité plusieurs fois** si vous le désirez.
 
-> « Votre adversaire ne peut ni utiliser ses Talents ni ajouter ses Augmentations de Compétence quand il se défend contre cette attaque. Après avoir résolu l'attaque, si vous remportez le Test, vous subissez 1d10 Dégâts qui ignorent l'Armure. Si votre adversaire remporte le Test, il vous inflige un Coup Critique […]. » — `AA 01 l.4230`
+> « Votre adversaire ne peut ni utiliser ses Talents ni ajouter ses Augmentations de Compétence quand il se défend contre cette attaque. Après avoir résolu l'attaque, si vous remportez le Test, vous subissez 1d10 Dégâts qui ignorent l'Armure. Si votre adversaire remporte le Test, il vous inflige un Coup Critique […]. » — `AA 12 l.30`
 
 ---
 
@@ -5318,7 +5318,7 @@ Mélange de cris, menaces, discours, alcool et subornation pour transformer rapi
 - Les Personnages possédant déjà Coude-à-coude peuvent **augmenter de 1 leur rang**, sans dépasser le rang de Coude-à-coude du Personnage qui entreprend l'Activité.
 - Les Personnages dotés du Talent **Exaltant** multiplient le nombre de Personnages qui reçoivent Coude-à-coude, comme indiqué dans le Livre de Règles (page 137 de WFJDR). *Exemple RAW :* DR +3 au Test de Commandement + 2 rangs d'Exaltant → accorder +1 rang de Coude-à-coude à **jusqu'à 30 personnes**.
 
-*— `AA 01 l.4236-4244`*
+*— `AA 12 l.36-44`*
 
 ---
 
@@ -5339,11 +5339,11 @@ Quelques pièces et un mot glissé à un vieux compagnon dans les parties louche
 - **En cas d'Échec :** vous recevez **l'objet** ET **une Blessure Critique** sur une Localisation tirée au hasard, **en ajoutant** au jet du Tableau des Critiques **autant que le coût de l'objet en Couronnes d'or**.
 - Vous **ne pouvez pas dévier ce Critique avec votre armure**, mais **un point de Destin** pourrait permettre d'éviter certaines conséquences.
 
-*— `AA 01 l.4252-4261`*
+*— `AA 12 l.52-61`*
 
 #### Table : Générateur de Mission (Remaniement du Contremaître)
 
-Pour obtenir l'objet, faites un jet dans le **Tableau de Lieu** (où aller), le **Tableau d'Objectif** (que rapporter) et le **Tableau de Personnalité** (qui vous emploie). *— `AA 01 l.4264-4266`*
+Pour obtenir l'objet, faites un jet dans le **Tableau de Lieu** (où aller), le **Tableau d'Objectif** (que rapporter) et le **Tableau de Personnalité** (qui vous emploie). *— `AA 12 l.64-66`*
 
 > ⚠️ **Avertissement de fidélité :** dans le `.md` source, ce générateur est une mise en page PDF à **trois colonnes** que l'OCR a aplaties/entrelacées (`AA 01 l.4268-4350`). Les valeurs ci-dessous sont reconstruites passage par passage ; quelques cellules portent des artefacts OCR (orthographe, fusion de mots) signalés par `[sic]`. Les bornes d100 sont fiables.
 
@@ -5372,7 +5372,7 @@ Pour obtenir l'objet, faites un jet dans le **Tableau de Lieu** (où aller), le 
 | 91-95 | Une cave utilisée comme lieu de rendez-vous secret. |
 | 96-100 | Un quai pourri à plusieurs endroits. |
 
-*— `AA 01 l.4272-4334`*
+*— `AA 12 l.72-134`*
 
 **Tableau d'Objectif** :
 
@@ -5426,26 +5426,26 @@ Pour obtenir l'objet, faites un jet dans le **Tableau de Lieu** (où aller), le 
 | 91-95 | Un général commandant une armée. |
 | 96-100 | Un émissaire impérial. |
 
-*— `AA 01 l.4293-4344`*
+*— `AA 12 l.93-144`*
 
 ---
 
 ### Hors couverture du topic — Fabuleuse Vente du Comte de Punchausen (Guerriers)
 
-Listée dans la même annexe (le Personnage raconte ses aventures à un imprimeur de pamphlets). **Test : Charme Complexe (–10)** *ou* **Divertissement (Narration) Intermédiaire (+0)**. En cas de **Succès :** vous recevez **2d10 pistoles** et, une fois au cours de la prochaine aventure, vous pouvez **inverser les dés** sur un Test de **Charme** ou de **Divertissement (Narration)**. *— `AA 01 l.4246-4249`*
+Listée dans la même annexe (le Personnage raconte ses aventures à un imprimeur de pamphlets). **Test : Charme Complexe (–10)** *ou* **Divertissement (Narration) Intermédiaire (+0)**. En cas de **Succès :** vous recevez **2d10 pistoles** et, une fois au cours de la prochaine aventure, vous pouvez **inverser les dés** sur un Test de **Charme** ou de **Divertissement (Narration)**. *— `AA 12 l.46-49`*
 
 ---
 
 **Sources RAW** :
 - `AA 01 l.4202-4205` — Annexe II « Activités de guerrier » : cadre général + règle d'accès (non-Guerrier = Difficulté +1 Niveau, p. ex. Complexe –10 → Difficile –20).
-- `AA 01 l.4208-4218` — Tir Parfait de Fanmaris : Test Projectiles (Arc) Complexe (–10) à l'entreprise ; bénéfice après 1 Round de visée (Test Projectiles incluant +20 visée) ; table d'effets cumulatifs par DR.
-- `AA 01 l.4221-4232` — Défense de Leitdorf : Test Corps à Corps Complexe (–10) à l'entreprise ; attaque en Test opposé Corps à Corps –10, adversaire privé de Talents et d'Augmentations ; succès = 1d10 Dégâts ignorant l'Armure pour soi ; échec = Coup Critique reçu ; renouvelable.
-- `AA 01 l.4236-4244` — Méthode Alcatani : pré-requis 2 rangs de Coude-à-coude ; Test Commandement Complexe (–10) ; 1 rang temporaire de Coude-à-coude par DR (durée d'aventure), plafonné au rang de l'instructeur ; interaction avec Exaltant (exemple : 30 personnes).
-- `AA 01 l.4246-4249` — Fabuleuse Vente du Comte de Punchausen : Test Charme Complexe (–10) ou Divertissement (Narration) Intermédiaire (+0) ; gain 2d10 pistoles + inversion des dés sur 1 Test de Charme/Divertissement.
-- `AA 01 l.4252-4261` — Remaniement du Contremaître : objet (Atouts) à coût ≤20 CO (MJ peut lever) ; Test Ragot Intermédiaire (+0) pour le contact ; mission = Test Corps à Corps ou Projectiles Complexe (–10) ; Succès = objet + Critique avec –20 au jet ; Échec = objet + Critique avec +coût-en-CO au jet ; Critique non déviable par armure mais Destin possible.
+- `AA 12 l.8-18` — Tir Parfait de Fanmaris : Test Projectiles (Arc) Complexe (–10) à l'entreprise ; bénéfice après 1 Round de visée (Test Projectiles incluant +20 visée) ; table d'effets cumulatifs par DR.
+- `AA 12 l.21-32` — Défense de Leitdorf : Test Corps à Corps Complexe (–10) à l'entreprise ; attaque en Test opposé Corps à Corps –10, adversaire privé de Talents et d'Augmentations ; succès = 1d10 Dégâts ignorant l'Armure pour soi ; échec = Coup Critique reçu ; renouvelable.
+- `AA 12 l.36-44` — Méthode Alcatani : pré-requis 2 rangs de Coude-à-coude ; Test Commandement Complexe (–10) ; 1 rang temporaire de Coude-à-coude par DR (durée d'aventure), plafonné au rang de l'instructeur ; interaction avec Exaltant (exemple : 30 personnes).
+- `AA 12 l.46-49` — Fabuleuse Vente du Comte de Punchausen : Test Charme Complexe (–10) ou Divertissement (Narration) Intermédiaire (+0) ; gain 2d10 pistoles + inversion des dés sur 1 Test de Charme/Divertissement.
+- `AA 12 l.52-61` — Remaniement du Contremaître : objet (Atouts) à coût ≤20 CO (MJ peut lever) ; Test Ragot Intermédiaire (+0) pour le contact ; mission = Test Corps à Corps ou Projectiles Complexe (–10) ; Succès = objet + Critique avec –20 au jet ; Échec = objet + Critique avec +coût-en-CO au jet ; Critique non déviable par armure mais Destin possible.
 - `AA 01 l.4264-4350` — Générateur de Mission : règle d'usage (3 tableaux) + Tableaux de Lieu / Objectif / Personnalité (1d100). Mise en page PDF à trois colonnes ; OCR partiellement entrelacé (`l.4405-4439`), bloc Objectif propre `l.4441-4452`.
 
-> « Pour entreprendre cette Activité, choisissez une Possession, appliquez-lui les Atouts souhaités et calculez son coût final, en arrondissant à la couronne d'or la plus proche. Le coût devrait normalement être limité à 20 CO, mais le MJ peut lever cette limite s'il le veut. » — `AA 01 l.4255`
+> « Pour entreprendre cette Activité, choisissez une Possession, appliquez-lui les Atouts souhaités et calculez son coût final, en arrondissant à la couronne d'or la plus proche. Le coût devrait normalement être limité à 20 CO, mais le MJ peut lever cette limite s'il le veut. » — `AA 12 l.55`
 
 **Voir aussi** : Talent Coude-à-coude · Talent Exaltant · Atouts d'armes (*Perforante* / *Dévastatrice* / *Percutante*) · Tableau des Critiques & Localisations · Degrés de Réussite (DR) · Interlude & Activités (Engagements LDB).
 
@@ -5473,43 +5473,43 @@ Ces 9 Miracles forment trois familles : **buffs de groupe** (Dévotion de la Vie
 | Prouesses Martiales | Vous | Alliés dans la ZdE ([FM] m) | 4 Rounds | **+10 CC et +10 CT** à tous les alliés à portée |
 | Terrifier l'Ennemi | Vous | Vous | 1 Round | Vous gagnez le **Trait de créature Terreur 1** |
 
-*— `AA 01 l.2356-2438`*
+*— `AA 06 l.469-551`*
 
 ### Détail mécanique de chaque Miracle
 
-**Commander la Légion** — *Portée : Voir texte ; Cible : n'importe quel allié ; Durée : Instantanée.* « Myrmidia transmet vos ordres sur tout le champ de bataille. » Vous donnez un ordre à n'importe quel allié **dans votre ligne de vue**. L'ordre doit être **pertinent pour mener une lutte armée ou une stratégie en cours**. Tout **Test de Commandement** que vous effectuez en conséquence bénéficie d'un **bonus de +10**. *(Le bonus porte sur le Test que fait le prêtre lui-même, pas sur la cible.)* — `AA 01 l.2356-2364`
+**Commander la Légion** — *Portée : Voir texte ; Cible : n'importe quel allié ; Durée : Instantanée.* « Myrmidia transmet vos ordres sur tout le champ de bataille. » Vous donnez un ordre à n'importe quel allié **dans votre ligne de vue**. L'ordre doit être **pertinent pour mener une lutte armée ou une stratégie en cours**. Tout **Test de Commandement** que vous effectuez en conséquence bénéficie d'un **bonus de +10**. *(Le bonus porte sur le Test que fait le prêtre lui-même, pas sur la cible.)* — `AA 06 l.469-477`
 
-**Connais Ton Ennemi** — *Portée : (Force Mentale) mètres ; Cible : 1 ennemi ; Durée : Instantanée.* Vous implorez Myrmidia de vous indiquer les forces et faiblesses d'un ennemi proche. **Le MJ doit vous permettre de consulter le profil, les Traits, les Compétences et les Talents de la cible.** — `AA 01 l.2366-2372`
+**Connais Ton Ennemi** — *Portée : (Force Mentale) mètres ; Cible : 1 ennemi ; Durée : Instantanée.* Vous implorez Myrmidia de vous indiquer les forces et faiblesses d'un ennemi proche. **Le MJ doit vous permettre de consulter le profil, les Traits, les Compétences et les Talents de la cible.** — `AA 06 l.479-485`
 
-**Dévotion de la Vierge Guerrière** — *Portée : Vous ; Cible : les alliés dans la ZdE ([Force Mentale] mètres) ; Durée : 4 Rounds.* Tous les **myrmidéens à portée** gagnent **+1 rang du Talent Sans peur (Ennemi)**. Cet ennemi peut être soit **un individu en particulier**, soit **une espèce en particulier**. — `AA 01 l.2374-2382`
+**Dévotion de la Vierge Guerrière** — *Portée : Vous ; Cible : les alliés dans la ZdE ([Force Mentale] mètres) ; Durée : 4 Rounds.* Tous les **myrmidéens à portée** gagnent **+1 rang du Talent Sans peur (Ennemi)**. Cet ennemi peut être soit **un individu en particulier**, soit **une espèce en particulier**. — `AA 06 l.487-495`
 
-**En Bon Ordre** — *Portée : Vous ; Cible : les alliés dans la ZdE ([Force Mentale] mètres) ; Durée : (Bonus de Force Mentale) Rounds.* Tant que le Miracle est actif, n'importe lequel de vos alliés peut **rompre le combat sans permettre à l'ennemi de gagner 1 Avantage et de porter une attaque gratuite** (voir *Fuite*, p. 165 du livre de base). — `AA 01 l.2384-2393`
+**En Bon Ordre** — *Portée : Vous ; Cible : les alliés dans la ZdE ([Force Mentale] mètres) ; Durée : (Bonus de Force Mentale) Rounds.* Tant que le Miracle est actif, n'importe lequel de vos alliés peut **rompre le combat sans permettre à l'ennemi de gagner 1 Avantage et de porter une attaque gratuite** (voir *Fuite*, p. 165 du livre de base). — `AA 06 l.497-506`
 
-**En Terrain Dangereux** — *Portée : Vous ; Cible : les alliés dans la ZdE ([Force Mentale] mètres) ; Durée : (Bonus de Force Mentale) Rounds.* Vous invoquez Myrmidia pour qu'elle ôte toute idée de retraite de l'esprit de vos alliés. Tant que le Miracle est actif, **vos alliés ne reçoivent pas d'État *Brisé***. — `AA 01 l.2396-2404`
+**En Terrain Dangereux** — *Portée : Vous ; Cible : les alliés dans la ZdE ([Force Mentale] mètres) ; Durée : (Bonus de Force Mentale) Rounds.* Vous invoquez Myrmidia pour qu'elle ôte toute idée de retraite de l'esprit de vos alliés. Tant que le Miracle est actif, **vos alliés ne reçoivent pas d'État *Brisé***. — `AA 06 l.509-517`
 
-**Frappe Rapide** — *Portée : Vous ; Cible : Vous ; Durée : 3 Rounds.* Tant que le Miracle est actif, **au début de chaque Round**, vous pouvez tenter un **Test d'Initiative Intermédiaire (+0)** pour gagner une **attaque gratuite immédiate en dehors de l'ordre normal du Tour**. Cette attaque est résolue **avec l'arme tenue dans votre main principale**. — `AA 01 l.2408-2412`
+**Frappe Rapide** — *Portée : Vous ; Cible : Vous ; Durée : 3 Rounds.* Tant que le Miracle est actif, **au début de chaque Round**, vous pouvez tenter un **Test d'Initiative Intermédiaire (+0)** pour gagner une **attaque gratuite immédiate en dehors de l'ordre normal du Tour**. Cette attaque est résolue **avec l'arme tenue dans votre main principale**. — `AA 06 l.521-525`
 
-**Fureur Vengeresse** — *Portée : Vous ; Cible : Vous ; Durée : 6 Rounds.* Tant que le Miracle est actif, **vous devez Charger et attaquer l'ennemi impénitent le plus proche** (compulsion). Vous pouvez **relancer tous les jets de Compétence Corps à Corps** que vous effectuez tant que le Miracle est actif. — `AA 01 l.2414-2418`
+**Fureur Vengeresse** — *Portée : Vous ; Cible : Vous ; Durée : 6 Rounds.* Tant que le Miracle est actif, **vous devez Charger et attaquer l'ennemi impénitent le plus proche** (compulsion). Vous pouvez **relancer tous les jets de Compétence Corps à Corps** que vous effectuez tant que le Miracle est actif. — `AA 06 l.527-531`
 
-**Prouesses Martiales** — *Portée : Vous ; Cible : les alliés dans la ZdE ([Force Mentale] mètres) ; Durée : 4 Rounds.* Tant que le Miracle est actif, **tous les alliés à portée bénéficient d'un bonus de +10 à leur CC et à leur CT** (Capacité de Combat et Capacité de Tir). — `AA 01 l.2420-2427`
+**Prouesses Martiales** — *Portée : Vous ; Cible : les alliés dans la ZdE ([Force Mentale] mètres) ; Durée : 4 Rounds.* Tant que le Miracle est actif, **tous les alliés à portée bénéficient d'un bonus de +10 à leur CC et à leur CT** (Capacité de Combat et Capacité de Tir). — `AA 06 l.533-540`
 
-**Terrifier l'Ennemi** — *Portée : Vous ; Cible : Vous ; Durée : 1 Round.* « Vous incarnez Myrmidia sous son aspect le plus furieux. » Vous gagnez le **Trait de créature Terreur 1**. — `AA 01 l.2429-2438`
+**Terrifier l'Ennemi** — *Portée : Vous ; Cible : Vous ; Durée : 1 Round.* « Vous incarnez Myrmidia sous son aspect le plus furieux. » Vous gagnez le **Trait de créature Terreur 1**. — `AA 06 l.542-551`
 
 **Sources RAW** :
-- `AA 01 l.2352-2355` — En-tête « Miracles de Myrmidia » : ces Miracles s'ajoutent à ceux du chapitre 7 du livre de base (Test de Prière standard, non re-décrit dans *Aux Armes*).
-- `AA 01 l.2356-2364` — **Commander la Légion** : Portée « Voir texte », Cible « n'importe quel allié », Durée Instantanée ; ordre à un allié à vue, pertinent au combat/stratégie, **+10** au Test de Commandement du prêtre.
-- `AA 01 l.2366-2372` — **Connais Ton Ennemi** : Portée (FM) mètres, 1 ennemi, Instantanée ; le MJ révèle profil + Traits + Compétences + Talents.
-- `AA 01 l.2374-2382` — **Dévotion de la Vierge Guerrière** : Portée Vous, alliés ZdE ([FM] m), 4 Rounds ; **+1 rang Sans peur (Ennemi)** aux myrmidéens, ennemi = individu OU espèce.
-- `AA 01 l.2384-2393` — **En Bon Ordre** : Portée Vous, alliés ZdE ([FM] m), **(BFM) Rounds** ; rompre le combat sans donner Avantage ni attaque gratuite (renvoi Fuite p.165 LDB).
-- `AA 01 l.2396-2404` — **En Terrain Dangereux** : Portée Vous, alliés ZdE ([FM] m), **(BFM) Rounds** ; pas d'État *Brisé*.
-- `AA 01 l.2408-2412` — **Frappe Rapide** : Portée/Cible Vous, 3 Rounds ; Test d'Initiative Intermédiaire (+0) chaque début de Round → attaque gratuite immédiate hors-tour (arme de main principale).
-- `AA 01 l.2414-2418` — **Fureur Vengeresse** : Portée/Cible Vous, 6 Rounds ; Charge obligatoire de l'ennemi impénitent le plus proche + relance de tous les jets de Corps à Corps.
-- `AA 01 l.2420-2427` — **Prouesses Martiales** : Portée Vous, alliés ZdE ([FM] m), 4 Rounds ; **+10 CC et +10 CT** aux alliés.
-- `AA 01 l.2429-2438` — **Terrifier l'Ennemi** : Portée/Cible Vous, 1 Round ; gagne le Trait de créature **Terreur 1**.
+- `AA 06 l.465-468` — En-tête « Miracles de Myrmidia » : ces Miracles s'ajoutent à ceux du chapitre 7 du livre de base (Test de Prière standard, non re-décrit dans *Aux Armes*).
+- `AA 06 l.469-477` — **Commander la Légion** : Portée « Voir texte », Cible « n'importe quel allié », Durée Instantanée ; ordre à un allié à vue, pertinent au combat/stratégie, **+10** au Test de Commandement du prêtre.
+- `AA 06 l.479-485` — **Connais Ton Ennemi** : Portée (FM) mètres, 1 ennemi, Instantanée ; le MJ révèle profil + Traits + Compétences + Talents.
+- `AA 06 l.487-495` — **Dévotion de la Vierge Guerrière** : Portée Vous, alliés ZdE ([FM] m), 4 Rounds ; **+1 rang Sans peur (Ennemi)** aux myrmidéens, ennemi = individu OU espèce.
+- `AA 06 l.497-506` — **En Bon Ordre** : Portée Vous, alliés ZdE ([FM] m), **(BFM) Rounds** ; rompre le combat sans donner Avantage ni attaque gratuite (renvoi Fuite p.165 LDB).
+- `AA 06 l.509-517` — **En Terrain Dangereux** : Portée Vous, alliés ZdE ([FM] m), **(BFM) Rounds** ; pas d'État *Brisé*.
+- `AA 06 l.521-525` — **Frappe Rapide** : Portée/Cible Vous, 3 Rounds ; Test d'Initiative Intermédiaire (+0) chaque début de Round → attaque gratuite immédiate hors-tour (arme de main principale).
+- `AA 06 l.527-531` — **Fureur Vengeresse** : Portée/Cible Vous, 6 Rounds ; Charge obligatoire de l'ennemi impénitent le plus proche + relance de tous les jets de Corps à Corps.
+- `AA 06 l.533-540` — **Prouesses Martiales** : Portée Vous, alliés ZdE ([FM] m), 4 Rounds ; **+10 CC et +10 CT** aux alliés.
+- `AA 06 l.542-551` — **Terrifier l'Ennemi** : Portée/Cible Vous, 1 Round ; gagne le Trait de créature **Terreur 1**.
 
-> « Au début de chaque Round, vous pouvez tenter un Test d'**Initiative Intermédiaire (+0)** pour gagner une attaque gratuite immédiate en dehors de l'ordre normal du Tour. Cette attaque est résolue avec l'arme que vous tenez dans votre main principale. » — `AA 01 l.2412`
+> « Au début de chaque Round, vous pouvez tenter un Test d'**Initiative Intermédiaire (+0)** pour gagner une attaque gratuite immédiate en dehors de l'ordre normal du Tour. Cette attaque est résolue avec l'arme que vous tenez dans votre main principale. » — `AA 06 l.525`
 
-> « Tant que le Miracle est actif, vous devez Charger et attaquer l'ennemi impénitent le plus proche. Vous pouvez relancer tous les jets de Compétence Corps à Corps que vous effectuez tant que le Miracle est actif. » — `AA 01 l.2418`
+> « Tant que le Miracle est actif, vous devez Charger et attaquer l'ennemi impénitent le plus proche. Vous pouvez relancer tous les jets de Compétence Corps à Corps que vous effectuez tant que le Miracle est actif. » — `AA 06 l.531`
 
 **Voir aussi** : LDB 42 — Miracles de Myrmidia (les 6 Miracles de base : Appel à la Fureur, Bouclier de Myrmidia, Inspirant, Lance de Myrmidia, Œil de l'aigle, Soleil flamboyant) ; LDB 21 — Psychologie (Terreur, États Brisé) ; LDB 13 — Combat (Charge, attaque gratuite, Désengagement/Fuite) ; Sans peur (Talent) ; AA — Carrière Prêtre de Myrmidia.
 **Implemente** : `src/data/spellspecs/miracles-myrmidia.ts` (les 9 SpellSpec *Aux Armes* curées : `MIRACLES_MYRMIDIA`, chacune `curated: true` avec sa `durationRounds` — `null`/Instantanée pour Commander la Légion et Connais Ton Ennemi, `4` pour Dévotion/Prouesses, `{ bonusOf: 'FM' }` pour En Bon Ordre/En Terrain Dangereux, `3` Frappe Rapide, `6` Fureur Vengeresse, `1` Terrifier l'Ennemi) ; `src/data/spells.json` (entrées « Commander la Légion », « Connais Ton Ennemi », « Dévotion de la Vierge Guerrière », « En Bon Ordre », « En Terrain Dangereux », « Frappe Rapide », « Fureur Vengeresse », « Prouesses Martiales », « Terrifier l'Ennemi »). Note : les effets purement tactiques/narratifs (ordre + bonus de Commandement du prêtre, révélation de profil, compulsion de Charge, attaque gratuite hors-tour conditionnelle, immunité au Brisé, modification du Désengagement) ne sont **pas** modélisés en GameOp — ils sont seulement journalisés/arbitrés MJ ; seules les durées, les buffs de caractéristique/Talent (Terreur 1, Sans peur, +10 CC/CT) et la ZdE sont structurés.
@@ -6280,7 +6280,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - Vol (LDB 85 l.437) : la source dit « une Longue Distance devient une Distance Extrême » ; le topic dit « une Longue Distance devient Extrême » (suppression du deuxième « Distance ») — différence mineure de formulation.
 
 ### Taille : catégories et modificateurs de combat ⚠
-- ZI 'Se cabrer' vs Piétinement dans Taille — confusion d'action economy : l'entrée 'Se cabrer' (ZI 01 l.4132) coûte 'Pour une action de Mouvement' (pas 1 Avantage), tandis que le Piétinement décrit dans l'entrée Taille (ZI 01 l.4137) coûte '1 point d'Avantage'. Le markdown dit 'ZI nomme ce Trait Se cabrer, même effet' (dans le corps) et '(« Se cabrer ») 1 Avantage, BF+0' dans le Récapitulatif — ce n'est pas le 'même effet' : l'économie d'action diffère (Mouvement vs 1 Avantage). Les deux entrées ZI existent côte à côte dans le même tableau de référence. Incertitude : il est possible que 'Se cabrer' soit simplement un alias de présentation du Piétinement dans ce tableau, mais les textes diffèrent clairement.
+- ZI 'Se cabrer' vs Piétinement dans Taille — confusion d'action economy : l'entrée 'Se cabrer' (ZI 14 l.1070) coûte 'Pour une action de Mouvement' (pas 1 Avantage), tandis que le Piétinement décrit dans l'entrée Taille (ZI 14 l.1075) coûte '1 point d'Avantage'. Le markdown dit 'ZI nomme ce Trait Se cabrer, même effet' (dans le corps) et '(« Se cabrer ») 1 Avantage, BF+0' dans le Récapitulatif — ce n'est pas le 'même effet' : l'économie d'action diffère (Mouvement vs 1 Avantage). Les deux entrées ZI existent côte à côte dans le même tableau de référence. Incertitude : il est possible que 'Se cabrer' soit simplement un alias de présentation du Piétinement dans ce tableau, mais les textes diffèrent clairement.
 - Parenthèse éditoriale non sourcée — 'donc avant l'absorption Endurance + Armure' : le LDB (l.297) dit uniquement 'cette multiplication est calculée après l'application des modificateurs' sans préciser la relation avec l'absorption BE/PA. L'ajout '(donc avant l'absorption Endurance + Armure)' est une inférence de l'auteur absente du texte RAW. Correcte sur le plan des règles mais non attestée à cette ligne.
 - Inversion des modificateurs non verbatim : la section 'Utiliser les Tailles' du LDB (l.277) dit seulement 'Inversez le procédé si vous voulez rendre une créature plus petite', sans énoncer explicitement '−10 F/E, +5 Ag'. Le Récapitulatif 'Sources RAW' donne ces valeurs chiffrées comme si elles étaient dans la source — il s'agit d'une inférence correcte mais pas d'une citation verbatim.
 - ADE II l.526 — règle supplémentaire omise : ADE II dit qu'un ogre (Taille Grande) peut 'utiliser soit le nombre indiqué sur le dé, soit le DR pour déterminer les Dégâts'. Cette option spécifique aux ogres n'est pas mentionnée dans le markdown. Omission bénigne (le contexte traite la Taille en général, pas les ogres spécifiquement) mais signalable pour exhaustivité.
@@ -6300,7 +6300,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - AUCUNE erreur factuelle sur les valeurs/tables : toutes les stats du Tableau des Armes de Base (l.2852-2868), les textes verbatim des Atouts (Déséquilibrée l.2801, Déstabilisante l.2803-2805, Taillade l.2807, Tir de zone l.2809-2815, Protectrice l.2824), et la définition de l'État Hémorragique (l.2456-2460) sont conformes à la source AA.
 
 ### AA : armes de mêlée — tables et règles spéciales ⚠
-- Épée bâtarde (tableau Deux Mains) : la note "en plus de perdre l'avantage des deux mains" est un ajout éditorial absent du RAW (AA 01 l.2970). La source dit uniquement qu'elle acquiert Épuisante et Lente ; l'énoncé n'est pas faux mais n'est pas dans le texte source.
+- Épée bâtarde (tableau Deux Mains) : la note "en plus de perdre l'avantage des deux mains" est un ajout éditorial absent du RAW (AA 08 l.343). La source dit uniquement qu'elle acquiert Épuisante et Lente ; l'énoncé n'est pas faux mais n'est pas dans le texte source.
 - La ref l.2878 pour la règle du Pavois pointe sur le titre de section ("## Les Boucliers") ; le texte du Pavois commence réellement à l.2881. Décalage mineur sans impact sur le contenu.
 - La ref l.2902 pour les armes de cavalerie pointe sur le titre de section ("## Les Armes de Cavalerie") ; le texte commence à l.2903. Décalage mineur identique.
 
@@ -6315,13 +6315,13 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - [INFO] Profil Demigriffon : la prose (l.3390) liste 'Dressé (Monture, Guerre, Magie et Cavalerie de choc)' pour les demigriffons adultes dressés, mais le statbloc (l.3415) omet 'Magie'. Le markdown suit le statbloc (sans Magie), ce qui est cohérent avec la fiche de profil. L'incohérence est dans la source elle-même, non dans le markdown.
 
 ### AA : Structures et armes de Siège ❌
-- ERREUR dans l'explication de l'exemple Salve (§4) : le markdown dit « 5e tir global = −40 » en laissant entendre que la pénalité −10 cumulatif s'accumule GLOBALEMENT sur les rounds. La source (AA 01 l.3936-3938) indique que la pénalité repart bien à 0 au début de chaque Round, et que le 5e tir du Round 2 est à −40 parce que c'est le 5e tir de CE round, pas le 5e tir au total depuis le début du combat. L'expression « 5e tir global » est trompeuse et techniquement inexacte.
+- ERREUR dans l'explication de l'exemple Salve (§4) : le markdown dit « 5e tir global = −40 » en laissant entendre que la pénalité −10 cumulatif s'accumule GLOBALEMENT sur les rounds. La source (AA 10 l.266-268) indique que la pénalité repart bien à 0 au début de chaque Round, et que le 5e tir du Round 2 est à −40 parce que c'est le 5e tir de CE round, pas le 5e tir au total depuis le début du combat. L'expression « 5e tir global » est trompeuse et techniquement inexacte.
 - OMISSION mineure (§4, Salve) : la source (l.3955) précise que la pénalité cumulative de −10 s'applique « chaque fois que quelqu'un tire avec l'arme après la première » dans le Round. Le markdown reformule de façon exacte sur ce point, mais n'indique pas explicitement que le compteur repart à zéro à chaque nouveau Round (c'est seulement implicitement dit par « on repart à 0 de pénalité »). À clarifier pour éviter toute ambiguïté.
 - NOTE ÉDITORIALE § armes de siège (Pierrier) : le markdown interprète correctement l'artefact typographique « Recharge — p. 4 » comme Recharge 4 (sans Arme d'équipe), mais cette interprétation est présentée comme certaine alors que la source est ambiguë ; signaler l'incertitude résiduelle.
 - Tous les tableaux (Structures courantes, Blessures Critiques, Armes de Siège, Munitions, Pénalités d'équipe incomplète, Incidents de Tir) sont fidèles à la source : valeurs, ordres de lignes et libellés vérifiés ligne à ligne sans écart.
 
 ### AA : Rompre le combat et Poursuites détaillées ❌
-- ERREUR TABLE OBSTACLES — Caisses de marchandises : le document indique « Test d'Athlétisme Accessible (+20) » mais la source (AA 01 l.4060) dit clairement « Test d'Athlétisme Intermédiaire (+0) ». Valeur incorrecte à corriger.
+- ERREUR TABLE OBSTACLES — Caisses de marchandises : le document indique « Test d'Athlétisme Accessible (+20) » mais la source (AA 10 l.390) dit clairement « Test d'Athlétisme Intermédiaire (+0) ». Valeur incorrecte à corriger.
 - OMISSION MINEURE — Nid-de-poule (colonne Perçu) : la source (l.4101-4103) donne « Test de Perception Intermédiaire (+0) » (difficulté du test de détection), le document note juste « Test de Perception » sans mentionner la difficulté. Même omission pour Sables mouvants (l.4109) : « Test de Perception Intermédiaire (+0) » → doc dit « Test de Perception » seulement. À compléter pour être exhaustif, pas une invention.
 - Toutes les autres valeurs et tables vérifiées sont conformes à la source : méthodes de désengagement (l.3979-3983), poursuite simple (l.3988-3998), table de seuil d'échappement (l.4007-4013), pénalités Mouvement ≤3 (l.4023), table de Progression (l.4028-4043), seuil 16 m (l.4017), table des obstacles restants (l.4082-4151 sauf caisses), table d'Épuisement (l.4155-4176), table de conversion Combat→Poursuite (l.4182-4197) — tous exacts.
 
@@ -6331,7 +6331,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - NON VÉRIFIÉ — Les notes de divergence LDB (Battement '−1 par DR' vs '−1 à 6 DR', Frappe Blessante '+Blessures', Impitoyable 'Désengagement', Porte-Bouclier '+Avantage', Renversement 'TOUS les Avantages', Coude-à-Coude) n'ont pas pu être vérifiées faute de lecture du LDB dans cette session. Elles sont signalées comme divergences, pas vérifiées. L'agent relecteur devrait confirmer ces points contre Source/Warhammer v4 - Livre de base version corrigée.
 
 ### AA : Activités guerrières ⚠
-- Titre de la 4e activité tronqué : le topic écrit « Fabuleuse Vente du Comte de Punchausen » alors que la source (AA 01 l.4246) donne « Fabuleuse Vente des Aventures du Comte de Punchausen » (« des Aventures » manquant).
+- Titre de la 4e activité tronqué : le topic écrit « Fabuleuse Vente du Comte de Punchausen » alors que la source (AA 12 l.46) donne « Fabuleuse Vente des Aventures du Comte de Punchausen » (« des Aventures » manquant).
 
 ### AA : Miracles martiaux (Myrmidia) ⚠
 - Tableau récapitulatif, colonne Fureur Vengeresse : 'relance de tous les jets de Corps à Corps' — la source (l.2432) dit 'jets de Compétence Corps à Corps'. Abréviation sans incidence sur le sens, et la section détail reproduit le texte exact. Signalé pour cohérence de terminologie.

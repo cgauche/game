@@ -442,7 +442,7 @@ Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de
 
 **Source RAW** : `MDG 16 l.9-13`
 
-La **Mer des Griffes** rappelle et reformule le Trait **Redoutable (Indice)**, déjà introduit par le Zoo Impérial (`ZI 01 l.4107`). La règle de fond est **identique** (regain d'Avantage au début du tour jusqu'à l'Indice), mais MDG en donne une formulation propre et **ajoute une clause d'interaction** avec les règles d'**Avantage de groupe** d'*Aux Armes !* (AA).
+La **Mer des Griffes** rappelle et reformule le Trait **Redoutable (Indice)**, déjà introduit par le Zoo Impérial (`ZI 14 l.1045`). La règle de fond est **identique** (regain d'Avantage au début du tour jusqu'à l'Indice), mais MDG en donne une formulation propre et **ajoute une clause d'interaction** avec les règles d'**Avantage de groupe** d'*Aux Armes !* (AA).
 
 - Au début de son tour, si la créature n'a pas autant d'Avantages que son **Indice** de Redoutable (par défaut **1**), elle gagne **immédiatement tous les Avantages manquants**.
 - **Pas de regain** si la créature est sous l'effet d'un État **Empêtré**, **Inconscient** ou **Surpris**.
