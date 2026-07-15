@@ -1,7 +1,13 @@
 import type { PartArt } from '../types';
 import type { StoredPalette } from '../../palette';
 
-/** Slots habillables d'une tenue. Valeurs = PartArt (SVG dans le repère LOCAL de l'os porteur). */
+/**
+ * Slots habillables d'une tenue. Valeurs = PartArt (SVG dans le repère LOCAL de l'os porteur).
+ * Le slot `tete` recouvre le visage cosmétique (`heads/defs/*.ts` champ `visage`, PROFILE_FACE de
+ * `cosmetic.ts`) ET les cheveux (champ `cheveux`) : x ≈ -9..9 (visage), -11..11 (cheveux) ;
+ * y ≈ -2..17 (visage, front→menton), -12..-2 (cheveux, mèches→racine). Un casque/chapeau calé
+ * uniquement sur -2..17 laisse la chevelure (jusqu'à y≈-12) à nu.
+ */
 export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', PartArt>>;
 
 /**
