@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator, CareerScreen, CharZones, SpeciesRaceScreen, SkillZones, StarZones, TrappingZones, DetailZones, PettySpellsSection } from './CharacterCreator';
+import { CharacterCreator, CareerScreen, CharScreen, SpeciesRaceScreen, SkillsScreen, TalentsPane, StarZones, TrappingZones, DetailZones, PettySpellsSection, careerLevelTalentsTitle } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
 import {
   newDraft,
@@ -10,6 +10,7 @@ import {
   withSpeciesSkillTier,
   speciesSkillTier,
   speciesSkillStep,
+  draftSpecies,
   SPECIES_SKILLS_PLUS5,
   SPECIES_SKILLS_PLUS3,
 } from './draft';
@@ -34,7 +35,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).toContain('master-detail-detail');
     expect(html).not.toContain('creator-summary');
     // Page blanche : AUCUNE race sélectionnée au montage (fin du fantôme pré-tiré).
-    expect(html).not.toContain('creator-race-card sel');
+    expect(html).not.toContain('fig-tile sel');
     // Encrier de tirage RACE en rangée UNIQUE avec la recherche (#393 P3) : plus de titre de section
     // « Aux dés » ni de rangée d'aide séparée — le sous-titre de l'encrier porte la règle.
     expect(html).not.toContain('>Aux dés<');
@@ -57,7 +58,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
 
   it('remplissage progressif : une race choisie ouvre son détail (DetailFrame) et se sélectionne (grille)', () => {
     const html = renderToStaticMarkup(<SpeciesRaceScreen d={withSpecies(newDraft(7), SP.id)} setD={() => {}} />);
-    expect(html).toContain('creator-race-card sel'); // carte de FAMILLE sélectionnée
+    expect(html).toContain('fig-tile sel'); // carte de FAMILLE sélectionnée (FigTile, #430 phase 2)
     expect(html).toContain('detail-frame'); // détail rendu (DetailFrame)
     expect(html).toContain('Caractéristiques de base'); // profil chiffré (CodexSections)
     expect(html).toContain('Compétences de race');
@@ -136,19 +137,22 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(renderToStaticMarkup(<PettySpellsSection d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />)).toBe('');
   });
 
-  it('étape 3 — la grille des 5 Augmentations propose un stepper par Caractéristique de carrière (bug bloquant)', () => {
+  it('étape 3 (#393 P3bis, correctif « ni de près, ni de loin, la maquette ») : gabarit DEUX ZONES (panneau + fiche vivante), les 5 Augmentations en bande QtyStepper', () => {
     // Régression : `level.characteristics` est déjà en CharKey ; un mapping libellé→clé renvoyait
-    // une liste vide → aucun stepper → « Suivant » jamais actif → création infranchissable.
-    const { choice } = CharZones({ d: withCareer(withSpecies(newDraft(7), SP.id), 'soldat'), setD: () => {} });
-    const html = renderToStaticMarkup(<>{choice}</>);
+    // une liste vide → aucune ligne → « Suivant » jamais actif → création infranchissable.
+    const html = renderToStaticMarkup(<CharScreen d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />);
+    expect(html).toContain('creator-chars-shell');
+    expect(html).toContain('creator-summary'); // fiche vivante, MÊME composition que Race/Carrière
     expect(html).toContain('Augmentations gratuites');
     expect(html).toContain(CHAR_LABELS['capacite-de-combat']); // Soldat : CC est de carrière → ligne présente
-    expect(html).toContain('class="stepper"'); // contrôle d'allocation réellement rendu
+    expect(html).toContain('class="cart-step"'); // QtyStepper canonique — mort du Stepper local
+    expect(html).toContain('La méthode');
+    expect(html).toContain('Le tirage');
+    expect(html).toContain('Destin &amp; Résilience');
   });
 
   it('étape 3 — la grille centrale (ÉDITION) ne montre PLUS la notation cryptique « B<bonus> » (source unique)', () => {
-    const { detail } = CharZones({ d: withCareer(withSpecies(newDraft(7), SP.id), 'soldat'), setD: () => {} });
-    const html = renderToStaticMarkup(<>{detail.body}</>);
+    const html = renderToStaticMarkup(<CharScreen d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />);
     expect(html).toContain('char-total'); // le total d'ÉDITION est bien rendu
     // Plus de double notation « 30B3 » : la fiche vivante porte le RÉSULTAT, le centre la valeur seule.
     expect(html).not.toMatch(/>B\d</);
@@ -162,20 +166,35 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(html).toContain('Talents — un au choix');
   });
 
+  it('bug utilisateur 2026-07-15 — le qualificatif « un au choix » (LDB 05 l.288) ne vaut QUE pour le Niveau de départ, jamais un rang exploré supérieur', () => {
+    expect(careerLevelTalentsTitle(1)).toBe('Talents — un au choix');
+    expect(careerLevelTalentsTitle(3)).toBe('Talents — Niveau 3');
+    expect(careerLevelTalentsTitle(3)).not.toContain('un au choix');
+  });
+
   it('les références Codex de l\'assistant sont INTERACTIVES (clic → fiche en modale, brouillon préservé)', () => {
     const html = renderToStaticMarkup(<SpeciesRaceScreen d={withSpecies(newDraft(7), SP.id)} setD={() => {}} />);
     // Le clic ouvre le Codex en MODALE par-dessus l'assistant (cf. CodexOverlay), sans changer d'écran.
     expect(html).toMatch(/class="codex-ref[^"]*"[^>]*role="button"/); // ≥1 ref cliquable
   });
 
-  it('étape 5 (verdict 1) — UN seul widget d\'allocation : les Compétences de RACE passent au Stepper (fin des cases +5/+3)', () => {
-    const { choice } = SkillZones({ d: withCareer(withSpecies(newDraft(7), SP.id), 'soldat'), setD: () => {} });
-    const html = renderToStaticMarkup(<>{choice}</>);
+  it('étape 5 (#393 P4, étalons finale-mock4/5/6-5{a,b,c}) — TROIS sous-écrans (a/b/c, Tabs) ; a. Compétences de race au QtyStepper (fin des cases +5/+3)', () => {
+    const html = renderToStaticMarkup(<SkillsScreen d={withCareer(withSpecies(newDraft(7), SP.id), 'soldat')} setD={() => {}} />);
+    expect(html).toContain('creator-skills-shell');
+    expect(html).toContain('creator-summary'); // fiche vivante, MÊME composition que Race/Carrière
+    expect(html).toContain('class="tabs creator-skills-tabnav"'); // primitive <Tabs> (jamais un tablist recodé)
     expect(html).toContain('Compétences de race');
-    expect(html).toContain('class="stepper"'); // même widget que les Compétences de carrière
+    expect(html).toContain('class="cart-step"'); // QtyStepper canonique — même widget que les Compétences de carrière
     // Plus de cases à cocher « +5 »/« +3 » : la double mécanique cases/steppers est morte.
     expect(html).not.toMatch(/type="checkbox"[^>]*\/>\s*\+5/);
     expect(html).not.toContain('>+5<'); // l'ancien libellé de case n'existe plus
+  });
+
+  it('étape 5c (#393 P4) — Talents : trois lots dérivés de la donnée (fixes / à choisir / tirés au d100)', () => {
+    const soldier = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const html = renderToStaticMarkup(<TalentsPane d={soldier} setD={() => {}} sp={draftSpecies(soldier)!} />);
+    expect(html).toContain('De race — un au choix');
+    expect(html).toContain('De carrière — un au choix');
   });
 
   it('draft — palier de Compétence de race (Stepper) : quotas 3×+5 / 3×+3 respectés, + saute +3 quand son quota est plein', () => {

@@ -34,7 +34,7 @@ import {
   XP_STAR_ROLLED,
 } from '../../engine/creation';
 import { rule } from '../../engine/policy';
-import { createHero, resolveSpeciesTalents } from '../../engine/character';
+import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
 import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
@@ -383,6 +383,54 @@ export function resolvedSpeciesTalents(d: CreatorDraft): string[] {
   });
 }
 
+/** Entrées BRUTES de Talents d'espèce en TROIS lots (LDB 05 l.510, catégorisation de l'écran
+ *  Talents — 5c) : FIXES (acquis d'office, aucune décision) / À CHOISIR (« A ou B », un au choix) /
+ *  ALÉATOIRES (nombre de tirages d100 sur le Tableau des Talents, résolus par `resolvedSpeciesTalents`
+ *  — figés par le seed, aucune relance). Dérivé de la DONNÉE (`sp.talents`), jamais d'un stock parallèle. */
+export function speciesTalentFixedEntries(d: CreatorDraft): string[] {
+  const sp = draftSpecies(d);
+  if (!sp) return [];
+  return sp.talents
+    .map((a) => advancementLabel('talents', a).trim())
+    .filter((e) => !RANDOM_ENTRY_RE.test(e) && splitTopLevelOu(e).length <= 1);
+}
+export function speciesTalentChoiceEntries(d: CreatorDraft): string[] {
+  const sp = draftSpecies(d);
+  if (!sp) return [];
+  return sp.talents.map((a) => advancementLabel('talents', a).trim()).filter((e) => splitTopLevelOu(e).length > 1);
+}
+export function speciesTalentRandomCount(d: CreatorDraft): number {
+  const sp = draftSpecies(d);
+  if (!sp) return 0;
+  let n = 0;
+  for (const a of sp.talents) {
+    const e = advancementLabel('talents', a).trim();
+    const m = e.match(RANDOM_ENTRY_RE);
+    if (m) n += parseInt(m[1] ?? '1', 10);
+  }
+  return n;
+}
+/** Les N talents TIRÉS au d100 (LDB 05 l.510) — le reste de `resolvedSpeciesTalents` une fois les
+ *  entrées fixes et choisies retirées (par libellé, en respectant les doublons via un multiset). */
+export function speciesTalentRandomDrawn(d: CreatorDraft): string[] {
+  const resolved = [...resolvedSpeciesTalents(d)];
+  const known = [...speciesTalentFixedEntries(d)];
+  for (const raw of speciesTalentChoiceEntries(d)) {
+    const chosen = d.speciesTalentChoices[raw] ?? splitTopLevelOu(raw)[0];
+    const mRand = chosen.match(RANDOM_ENTRY_RE);
+    if (!mRand) known.push(isUnresolvedChoice(chosen) ? (d.specChoices[raw] ?? chosen) : chosen);
+  }
+  for (const label of known) {
+    const i = resolved.indexOf(label);
+    if (i !== -1) resolved.splice(i, 1);
+  }
+  return resolved;
+}
+/** Toutes les décisions de Talents d'espèce « A ou B » sont-elles tranchées ? */
+export function speciesTalentChoicesDone(d: CreatorDraft): boolean {
+  return speciesTalentChoiceEntries(d).every((e) => !!d.speciesTalentChoices[e]);
+}
+
 /** Probe : héros partiel (caracs + talents d'espèce + talent de carrière) pour Maxi/additions. */
 export function probeHero(d: CreatorDraft, withCareerTalent = true): Combatant {
   const talents: { name: string; times: number }[] = [];
@@ -662,6 +710,69 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
 /** Le total déjà alloué des 40 Augmentations de carrière. */
 export function careerAdvTotal(d: CreatorDraft): number {
   return careerSkillEntries(d).reduce((a, e) => a + (d.skillAdvances[e] ?? 0), 0);
+}
+
+// ── Étape 5 « Compétences & Talents » — complétion PAR SOUS-ÉCRAN (5a/5b/5c, charte Atelier) : la
+// fiche vivante et les onglets de sous-étape en dérivent — SOURCE UNIQUE, jamais un `ahead('skills')`
+// tout-ou-rien pour ce qui se joue À L'INTÉRIEUR de l'étape.
+/** 5a — Compétences de race : quotas 3×+5/3×+3 posés ET Spécialisations résolues (LDB 05 l.484). */
+export function speciesSkillsDone(d: CreatorDraft): boolean {
+  if (d.speciesPlus5.length !== SPECIES_SKILLS_PLUS5 || d.speciesPlus3.length !== SPECIES_SKILLS_PLUS3) return false;
+  return [...d.speciesPlus5, ...d.speciesPlus3].every((raw) => !isUnresolvedChoice(raw) || !!d.specChoices[raw]);
+}
+/** 5b — Compétences de carrière : les 40 Augmentations réparties ET Spécialisations résolues. */
+export function careerSkillsDone(d: CreatorDraft): boolean {
+  if (careerAdvTotal(d) !== CAREER_SKILL_ADVANCES) return false;
+  return careerSkillEntries(d).every((e) => (d.skillAdvances[e] ?? 0) === 0 || !isUnresolvedChoice(e) || !!d.specChoices[e]);
+}
+/** 5c — Talents : choix « A ou B » d'espèce tranché + Talent de carrière choisi + Magie mineure. */
+export function talentsDone(d: CreatorDraft): boolean {
+  if (!speciesTalentChoicesDone(d)) return false;
+  if (!d.careerTalent) return false;
+  const quota = pettySpellQuota(d);
+  if (quota && d.pettySpells.length !== quota) return false;
+  return true;
+}
+
+/** Trois sous-écrans de l'étape 5 (charte Atelier, dock d'onglets « a/b/c »). */
+export type SkillsSub = 'race' | 'career' | 'talents';
+
+/** Bandeau de pied PAR SOUS-ONGLET (5a/5b/5c) — chaque volet reflète SA propre complétion au lieu
+ *  du premier blocage toutes-branches de `validateStep('skills')` (agent-œil, LOT de clôture). */
+export function skillsSubMessage(d: CreatorDraft, sub: SkillsSub): string {
+  const sp = draftSpecies(d);
+  if (!sp) return 'Choisissez votre race.';
+  switch (sub) {
+    case 'race': {
+      if (d.speciesPlus5.length !== SPECIES_SKILLS_PLUS5 || d.speciesPlus3.length !== SPECIES_SKILLS_PLUS3)
+        return `Choisissez ${SPECIES_SKILLS_PLUS5} Compétences d'espèce à +5 et ${SPECIES_SKILLS_PLUS3} à +3.`;
+      if (d.speciesPlus5.some((s) => d.speciesPlus3.includes(s))) return 'Une Compétence d\'espèce ne peut pas être à la fois +5 et +3.';
+      for (const raw of [...d.speciesPlus5, ...d.speciesPlus3]) {
+        if (isUnresolvedChoice(raw) && !d.specChoices[raw]) return `Choisissez la Spécialisation de « ${raw} ».`;
+      }
+      return `Compétences de race posées — ${SPECIES_SKILLS_PLUS5} à +5, ${SPECIES_SKILLS_PLUS3} à +3.`;
+    }
+    case 'career': {
+      const entries = careerSkillEntries(d);
+      const total = careerAdvTotal(d);
+      if (total !== CAREER_SKILL_ADVANCES) return `Répartissez ${CAREER_SKILL_ADVANCES} Augmentations de carrière (actuel : ${total}).`;
+      for (const e of entries) {
+        const adv = d.skillAdvances[e] ?? 0;
+        if (adv > 0 && isUnresolvedChoice(e) && !d.specChoices[e]) return `Choisissez la Spécialisation de « ${e} ».`;
+      }
+      return `Compétences de carrière posées — ${CAREER_SKILL_ADVANCES} Augmentations réparties.`;
+    }
+    case 'talents': {
+      for (const ref of sp.talents) {
+        const entry = advancementLabel('talents', ref);
+        if (splitTopLevelOu(entry).length > 1 && !d.speciesTalentChoices[entry]) return `Choisissez : « ${entry} ».`;
+      }
+      if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
+      const quota = pettySpellQuota(d);
+      if (quota && d.pettySpells.length !== quota) return `Choisissez vos ${quota} sorts de Magie mineure (actuel : ${d.pettySpells.length}).`;
+      return 'Talents tranchés — race, carrière et Magie mineure réglés.';
+    }
+  }
 }
 
 /** Libellé concret d'une entrée pour l'affichage (résolution courante incluse). */

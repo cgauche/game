@@ -54,6 +54,7 @@ import { generateName } from '../../engine/names';
 import { CharacterPreview } from '../CharacterPreview';
 import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
+import { Tabs } from '../Tabs';
 import { RuleDivider } from '../Ornaments';
 import { AppearancePanel } from '../AppearancePanel';
 import { BackgroundFields } from '../BackgroundFields';
@@ -65,8 +66,10 @@ import { raceSkillSection, raceTalentSection, type CodexSection } from '../compe
 import { CharStatsGrid } from '../CharStatsGrid';
 import { opSummary } from '../editor/GameOpEditor';
 import type { Appearance } from '../../gameIso/rig/appearance';
-import { previewHero } from './CreatorSummary';
-import { CreatorStepFrame, Section, Stepper, XpBadge, type StepZones } from './CreatorStepFrame';
+import { hash32 } from '../../gameIso/detail/hash';
+import { previewHero, CreatorSummary } from './CreatorSummary';
+import { CreatorStepFrame, Section, Band, XpBadge, type StepZones } from './CreatorStepFrame';
+import { QtyStepper } from '../QtyStepper';
 import { CreatorDice } from './CreatorDice';
 import { useRollFrisson } from '../useRollFrisson';
 import { DiceRoll, DieFace } from '../DiceRoll';
@@ -77,6 +80,7 @@ import { DetailFrame } from '../DetailFrame';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { MetalStatus } from '../MetalStatus';
 import { CareerPath } from '../CareerPath';
+import { FigTile } from '../FigTile';
 import { NotchGauge } from '../NotchGauge';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import {
@@ -97,7 +101,6 @@ import {
   charRolls,
   charRollPairs,
   draftChars,
-  resolvedSpeciesTalents,
   careerCharKeys,
   careerSkillEntries,
   careerAdvTotal,
@@ -118,6 +121,15 @@ import {
   speciesSkillTier,
   withSpeciesSkillTier,
   speciesSkillStep,
+  speciesSkillsDone,
+  careerSkillsDone,
+  talentsDone,
+  skillsSubMessage,
+  type SkillsSub,
+  speciesTalentFixedEntries,
+  speciesTalentChoiceEntries,
+  speciesTalentRandomCount,
+  speciesTalentRandomDrawn,
   CAREER_SKILL_ADVANCES,
   MAX_ADV_PER_SKILL,
   CAREER_CHAR_ADVANCES,
@@ -126,10 +138,8 @@ import {
   probeHero,
   isUnresolvedChoice,
   splitLabel,
-  concreteLabel,
   splitTopLevelOu,
 } from './draft';
-import { wildcardSpecs } from '../../engine/careerSlots';
 import { XP_CAREER_FIRST, XP_CAREER_TOP3 } from '../../engine/creation';
 
 /** Métadonnées d'étape : libellé FR + fabrique de zones (rail/main) OU écran de plein rendu
@@ -140,9 +150,9 @@ import { XP_CAREER_FIRST, XP_CAREER_TOP3 } from '../../engine/creation';
 const STEP_META: Record<StepId, { label: string; zone?: (p: StepProps) => StepZones; screen?: (p: StepProps) => ReactNode }> = {
   species: { label: 'Race', screen: SpeciesRaceScreen },
   career: { label: 'Carrière', screen: CareerScreen },
-  chars: { label: 'Caractéristiques', zone: CharZones },
+  chars: { label: 'Caractéristiques', screen: CharScreen },
   star: { label: 'Signe astral', zone: StarZones },
-  skills: { label: 'Compétences & Talents', zone: SkillZones },
+  skills: { label: 'Compétences & Talents', screen: SkillsScreen },
   trappings: { label: 'Possessions', zone: TrappingZones },
   details: { label: 'Détails', zone: DetailZones },
   recap: { label: 'Récapitulatif', zone: ({ d }) => RecapZones({ d }) },
@@ -181,11 +191,11 @@ const skillCharKey = (name: string): CharKey | null => findSkill(splitLabel(name
  *  le `React.memo` de CharacterPreview ne prend jamais et les ~25 lignes du rail re-résolvent le rig
  *  à chaque rendu de l'étape. */
 const PICK_APPEARANCES = new Map<string, Appearance>();
-function pickAppearance(speciesId: string, sex: 'M' | 'F'): Appearance {
-  const key = `${speciesId}|${sex}`;
+function pickAppearance(speciesId: string, sex: 'M' | 'F', variantId?: string): Appearance {
+  const key = `${speciesId}|${sex}|${variantId ?? ''}`;
   let a = PICK_APPEARANCES.get(key);
   if (!a) {
-    a = { species: rigSpeciesId(speciesId), sex, build: 0.5, seed: 7 };
+    a = { species: rigSpeciesId(speciesId), sex, build: 0.5, seed: hash32(speciesId, sex, variantId ?? '') };
     PICK_APPEARANCES.set(key, a);
   }
   return a;
@@ -219,6 +229,9 @@ export function CharacterCreator() {
   const curId = ids[step] ?? ids[ids.length - 1]; // garde-fou si la règle change le nombre d'étapes
   const err = validateStep(d, curId);
   const canNext = err == null;
+  const [skillsSub, setSkillsSub] = useState<SkillsSub>('race');
+  const skillsSubDone =
+    skillsSub === 'race' ? speciesSkillsDone(d) : skillsSub === 'career' ? careerSkillsDone(d) : talentsDone(d);
 
   const closeCreator = () => {
     setEditingHero(null);
@@ -244,7 +257,7 @@ export function CharacterCreator() {
   // active ; seule `CharZones` le consomme (via `StepProps.charReroll`).
   const charReroll = useRollFrisson(() => setD({ ...d, charRerolls: d.charRerolls + 1 }));
   const meta = STEP_META[curId];
-  const stepProps: StepProps = { d, setD, charReroll };
+  const stepProps: StepProps = { d, setD, charReroll, skillsSub, setSkillsSub };
 
   // Récap de pied VALIDE — étapes Race/Carrière (#393 P2/P4) : le message d'erreur garde toujours
   // la priorité (cf. footer, `err ?? ...`) ; une fois le choix fait, la barre le redit.
@@ -312,8 +325,10 @@ export function CharacterCreator() {
         <button className="btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
           ← Précédent
         </button>
-        <span className={`hint wizard-hint${err ? ' warn-text' : ''}`}>
-          {err ?? (curId === 'species' ? raceFooterSummary() ?? '' : curId === 'career' ? careerFooterSummary() ?? '' : '')}
+        <span className={`hint wizard-hint${(curId === 'skills' ? !skillsSubDone : !!err) ? ' warn-text' : ''}`}>
+          {curId === 'skills'
+            ? skillsSubMessage(d, skillsSub)
+            : err ?? (curId === 'species' ? raceFooterSummary() ?? '' : curId === 'career' ? careerFooterSummary() ?? '' : '')}
         </span>
         {step < ids.length - 1 ? (
           <button className="btn btn-primary" disabled={!canNext} onClick={() => setStep(step + 1)}>
@@ -339,7 +354,19 @@ type StepProps = {
    *  règles des Hooks au changement d'étape. Absent (appel direct hors render, ex. tests) → repli
    *  inerte (pas d'animation, la relance s'applique quand même). */
   charReroll?: ReturnType<typeof useRollFrisson>;
+  /** Sous-onglet actif de l'étape 5 (a/b/c) — levé jusqu'ici pour que le pied de page (footer,
+   *  `CharacterCreator`) reflète le volet ACTIF plutôt que le premier blocage toutes-branches. */
+  skillsSub?: SkillsSub;
+  setSkillsSub?: (s: SkillsSub) => void;
 };
+
+/** Titre de la rubrique Talents de l'explorateur de carrière (LDB 05 l.288 : « Vous pouvez choisir un
+ *  unique Talent » — un SEUL choix à la création, parmi les 4 du Niveau de DÉPART uniquement). Les
+ *  niveaux supérieurs consultés (rangs 2-4, `CareerPath`) restent NEUTRES — de l'évolution future,
+ *  jamais un choix de création (bug utilisateur 2026-07-15 : le rang 3 affichait la même note). */
+export function careerLevelTalentsTitle(level: number): string {
+  return level === 1 ? 'Talents — un au choix' : `Talents — Niveau ${level}`;
+}
 
 /** Rendu Markdown des textes de données (descriptions — verbatim de la source, via la primitive Prose). */
 function LoreText({ md }: { md: string | null | undefined }) {
@@ -460,19 +487,17 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
           const selected = sp?.family === f.family;
           const rolled = !selected && rolledFamilies.has(f.family);
           return (
-            <button
+            <FigTile
               key={f.family}
-              type="button"
-              role="option"
-              aria-selected={selected}
+              preview={{ appearance: pickAppearance(rep.id, d.sex) }}
+              label={f.family}
+              sub={`${f.list.length} lignée${f.list.length > 1 ? 's' : ''}`}
+              selected={selected}
+              ambiance="panel"
               tabIndex={idx === activeFamilyIdx ? 0 : -1}
-              className={`chip creator-race-card${selected ? ' sel' : ''}${rolled ? ' rolled' : ''}`}
+              className={rolled ? 'rolled' : undefined}
               onClick={() => selectFamily(f.list)}
-            >
-              <CharacterPreview appearance={pickAppearance(rep.id, d.sex)} size="lg" ambiance="panel" />
-              <span className="creator-race-card-name">{f.family}</span>
-              <span className="creator-race-card-sub">{f.list.length} lignée{f.list.length > 1 ? 's' : ''}</span>
-            </button>
+            />
           );
         })}
       </div>
@@ -590,7 +615,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
           label: cl.label,
           items: accessible
             .filter((c) => c.class === cl.id)
-            .map((c: CareerData) => ({ id: c.id, label: c.label, preview: { appearance: pickAppearance(sp.id, d.sex), career: c.id } })),
+            .map((c: CareerData) => ({ id: c.id, label: c.label, preview: { appearance: pickAppearance(sp.id, d.sex, c.id), career: c.id } })),
         }))
     : [];
   const q = search.trim();
@@ -745,12 +770,17 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
                 </div>
               </div>
               <div>
-                <div className="mini-title">Talents — un au choix</div>
+                {/* Le qualificatif « un au choix » + la note de tranchage n'est vrai QU'AU NIVEAU DE
+                    DÉPART (LDB 05 l.288 : « Vous pouvez choisir un unique Talent » — un seul choix à
+                    la création, parmi les 4 du Niveau 1 SEUL) ; les niveaux supérieurs consultés ici
+                    ne sont que de l'ÉVOLUTION future, jamais un choix de création (bug utilisateur
+                    2026-07-15 : le rang 3 affichait la même note « se tranche à l'étape 5 »). */}
+                <div className="mini-title">{careerLevelTalentsTitle(lvlExplored.level)}</div>
                 <div className="skill-tags">
                   {lvlExplored.talents.map((a) => advancementLabel('talents', a)).map((t) => (
                     <EntityChoice key={t} category="talents" entry={t} />
                   ))}
-                  <em className="nb">se tranche à l'étape 5</em>
+                  {lvlExplored.level === 1 && <em className="nb">se tranche à l'étape 5</em>}
                 </div>
               </div>
             </>
@@ -766,8 +796,14 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
   return <MasterDetail className="creator-pick-shell" listLabel="Choix de la carrière" list={list} detail={detail} />;
 }
 
-// ════ 3) Caractéristiques (LDB 05 l.370-491) — Zone A : « Aux dés » (méthode) + répartitions ; Zone B : grille (ÉDITION) ════
-export function CharZones({ d, setD, charReroll }: StepProps): StepZones {
+// ════ 3) Caractéristiques (LDB 05 l.370-491) — charte « Atelier du scribe » (#393 P3bis, correctif
+//      utilisateur 2026-07-15 : « ni de près, ni de loin, la maquette » sur la composition 3-zones
+//      d'origine) : gabarit DEUX ZONES (panneau + fiche vivante, MÊME composition que Race/Carrière/
+//      Compétences) — plus de rail séparé, TOUT vit dans le panneau central en BANDES (`Band`, étalon
+//      `finale-mock2-caracteristiques.png`) : La méthode (segmenté) → Le tirage (grille + jauge N/10)
+//      → Augmentations gratuites (0ter, la maquette a PERDU ce bloc — transposé ICI, même bandage que
+//      Destin & Résilience, jamais supprimé) → Destin & Résilience. Mécanique INCHANGÉE (draft.ts).
+export function CharScreen({ d, setD, charReroll }: StepProps): ReactNode {
   const sp = draftSpecies(d);
   const rolls = charRolls(d);
   const pairs = charRollPairs(d);
@@ -784,153 +820,190 @@ export function CharZones({ d, setD, charReroll }: StepProps): StepZones {
   const reroll = charReroll ?? { rolling: false, landed: false, trigger: () => setD({ ...d, charRerolls: d.charRerolls + 1 }), skip: () => {} };
 
   if (!sp) {
-    return {
-      choice: <p className="hint">Choisissez d'abord une race pour répartir vos Caractéristiques.</p>,
-      detail: { title: 'Caractéristiques', body: <p className="hint">La grille apparaîtra une fois votre race choisie.</p> },
-    };
+    return (
+      <div className="creator-chars-screen">
+        <div className="creator-chars-shell">
+          <div className="creator-chars-main">
+            <p className="hint">Choisissez d'abord une race pour répartir vos Caractéristiques.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  // « LA MÉTHODE » (#393 P3, étalon `finale-mock2-caracteristiques.png`) : sélecteur PERMANENT, pas
-  // une cérémonie de tirage unique (`CreatorDice` suppose un bouton « Tirer » puis un verdict — ici
-  // les trois options coexistent toujours) — `Section`+`XpBadge` nus, jamais `CreatorDice` mal titré.
-  const dice = (
-    <Section title="La méthode" right={<XpBadge value={charsXp(d)} />}>
-      <p className="hint" style={{ marginTop: 0 }}>
-        Chaque Caractéristique s'écrit base + 2d10 (LDB 05). Garder le tirage 2d10 : +50 PX · Réassigner les dix
-        jets : +25 PX · 100 Points : +0 PX.
-      </p>
-      <OptionChooser
-        layout="grid"
-        options={[
-          { key: 'rolled', label: `Aux dés — garder le tirage ${d.charRerolls === 0 ? '(+50 PX)' : '(+0 PX)'}`, mode: 'rolled' as const },
-          { key: 'reassigned', label: `Aux dés — réorganiser ensuite ${d.charRerolls === 0 ? '(+25 PX)' : '(+0 PX)'}`, mode: 'reassigned' as const },
-          { key: 'pointBuy', label: 'Répartir 100 points (0 PX)', mode: 'pointBuy' as const },
-        ].map(({ key, label, mode }) => ({ key, label, primary: d.charMode === mode, onSelect: () => setD({ ...d, charMode: mode }) }))}
-      />
-      {d.charMode !== 'pointBuy' && (
-        <button className="btn small" style={{ marginTop: 10 }} onClick={() => reroll.trigger()}>
-          <Icon id="nav/dice" size="sm" /> Relancer les dix jets (bonus perdus)
-        </button>
-      )}
-    </Section>
-  );
-
-  const choice = (
-    <>
-      <Section
-        title="Augmentations gratuites"
-        right={<b className={allocTotal === CAREER_CHAR_ADVANCES ? 'ok-text' : 'warn-text'}>{allocTotal}/{CAREER_CHAR_ADVANCES}</b>}
-      >
-        <p className="hint" style={{ marginTop: 0 }}>
-          À répartir sur les Caractéristiques de votre carrière.
-        </p>
-        {careerKeys.map((k) => (
-          <div key={k} className="rail-line">
-            <span><CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef></span>
-            <Stepper
-              value={d.charAdvancesAlloc[k] ?? 0}
-              max={Math.min(CAREER_CHAR_ADVANCES, (d.charAdvancesAlloc[k] ?? 0) + (CAREER_CHAR_ADVANCES - allocTotal))}
-              onChange={(v) => setD({ ...d, charAdvancesAlloc: { ...d.charAdvancesAlloc, [k]: v } })}
-            />
-          </div>
-        ))}
-      </Section>
-      <Section title="Destin & Résilience" right={<b className={splitTotal === sp.fate.extra ? 'ok-text' : 'warn-text'}>{splitTotal}/{sp.fate.extra}</b>}>
-        <p className="hint" style={{ marginTop: 0 }}>
-          <Icon id="resource/fate" size="sm" /> Destin : survie & Chance. <Icon id="resource/resilience" size="sm" /> Résilience :
-          Détermination (votre Motivation la recharge).
-        </p>
-        <div className="rail-line">
-          <span><Icon id="resource/fate" size="sm" /> Destin (base {sp.fate.fate})</span>
-          <Stepper
-            value={d.fateSplit.fate}
-            max={Math.min(sp.fate.extra, d.fateSplit.fate + (sp.fate.extra - splitTotal))}
-            onChange={(v) => setD({ ...d, fateSplit: { ...d.fateSplit, fate: v } })}
-          />
-        </div>
-        <div className="rail-line">
-          <span><Icon id="resource/resilience" size="sm" /> Résilience (base {sp.fate.resilience})</span>
-          <Stepper
-            value={d.fateSplit.resilience}
-            max={Math.min(sp.fate.extra, d.fateSplit.resilience + (sp.fate.extra - splitTotal))}
-            onChange={(v) => setD({ ...d, fateSplit: { ...d.fateSplit, resilience: v } })}
-          />
-        </div>
-      </Section>
-    </>
-  );
-
-  // « LE TIRAGE » (#393 P3, étalon `finale-mock2-caracteristiques.png`) : titre adapté à la méthode
-  // choisie — jamais un doublon du titre « Caractéristiques » déjà porté par la `ParchmentCard`
-  // (`detail.title` ci-dessous). Jauge « N/10 tirées » en mode dés : les DIX Caractéristiques roulent
-  // EN UN SEUL geste (`charReroll`, seed unique — LDB 05 l.385, aucun tirage rangée par rangée dans le
-  // moteur) ; la jauge reflète honnêtement ce mécanisme simultané (0/10 pendant le roulis, 10/10 posé)
-  // plutôt que de mimer une révélation séquentielle que le brouillon ne modélise pas.
-  const bodyTitle = d.charMode === 'rolled' ? 'Le tirage' : d.charMode === 'reassigned' ? 'Réassignation des jets' : 'Répartition des points';
   const tiredCount = d.charMode === 'rolled' ? (reroll.rolling ? 0 : 10) : 0;
-  const body = (
-    <>
-      <Section
-        title={bodyTitle}
-        right={
-          d.charMode === 'pointBuy' ? (
-            <b className={pbTotal === 100 ? 'ok-text' : 'warn-text'}>Points : {pbTotal}/100</b>
-          ) : d.charMode === 'rolled' ? (
-            <NotchGauge value={tiredCount} max={10} notches={10} format={(v, m) => `${v}/${m} tirées`} tone={tiredCount === 10 ? 'ok' : 'neutral'} />
-          ) : undefined
-        }
-      >
-        <p className="hint" style={{ marginTop: 0 }}>
-          Vous réglez ici la valeur d'ÉDITION (base d'espèce + tirage/allocation) ; la fiche vivante en montre
-          le résultat. Les Caractéristiques <span className="tag char">carrière</span> progressent au coût normal
-          en PX et comptent pour la complétion du Niveau ; l'Initiative départage l'ordre du combat.
-        </p>
-        <div className="char-alloc-grid">
-          {CHAR_KEYS.map((k, i) => (
-            <div key={k} className={`char-alloc${d.charMode === 'rolled' && reroll.rolling ? ' rolled' : ''}`}>
-              <CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]} className="char-key">{CHAR_ABR[k]}</CodexRef>
-              <span className="char-name">
-                {CHAR_LABELS[k]}
-                {careerKeys.includes(k) && <span className="tag char">carrière</span>}
-              </span>
-              <em>base {sp.baseChar[k] ?? 20}</em>
-              {d.charMode === 'rolled' && (reroll.rolling || reroll.landed) ? (
-                <span className="char-roll row-flex">
-                  <DiceRoll scene={false} landed={reroll.landed} faces={reroll.landed ? d10PairFaces(pairs[i]) : null} onSkip={reroll.skip} />
-                </span>
+  const tirageTitle = d.charMode === 'rolled' ? 'Le tirage — 2d10 par Caractéristique' : d.charMode === 'reassigned' ? 'Réassignation des dix jets' : 'Répartition des points';
+
+  return (
+    <div className="creator-chars-screen">
+      <div className="creator-chars-shell">
+        <div className="detail-frame creator-chars-main">
+          <h3 className="creator-skills-title">Caractéristiques</h3>
+          <p className="hint creator-skills-sub">Base + 2d10 — le profil se couche sur le registre</p>
+
+          {/* LA MÉTHODE (#393 P3bis) : sélecteur PERMANENT segmenté — les trois options coexistent
+              toujours (pas une cérémonie de tirage unique). */}
+          <Band title="La méthode" right={<XpBadge value={charsXp(d)} />}>
+            <OptionChooser
+              layout="seg"
+              options={[
+                { key: 'rolled', label: `Aux dés — garder le tirage`, value: undefined, mode: 'rolled' as const, px: d.charRerolls === 0 ? '+50 PX' : '+0 PX' },
+                { key: 'reassigned', label: `Aux dés — réorganiser ensuite`, mode: 'reassigned' as const, px: d.charRerolls === 0 ? '+25 PX' : '+0 PX' },
+                { key: 'pointBuy', label: 'Répartir 100 points', mode: 'pointBuy' as const, px: '0 PX' },
+              ].map(({ key, label, mode, px }) => ({
+                key,
+                label: <>{label} <em className="hint" style={{ fontStyle: 'normal' }}>{px}</em></>,
+                selected: d.charMode === mode,
+                onSelect: () => setD({ ...d, charMode: mode }),
+              }))}
+            />
+            <p className="hint" style={{ marginTop: 8 }}>
+              Chaque Caractéristique s'écrit base + 2d10 (LDB 05). Garder le tirage tel quel rapporte le plus de PX de création.
+            </p>
+          </Band>
+
+          {/* LE TIRAGE (#393 P3bis) : jauge « N/10 tirées » en tête de bande — les DIX Caractéristiques
+              roulent EN UN SEUL geste (`charReroll`, seed unique, LDB 05 l.385) ; la jauge reflète
+              honnêtement ce mécanisme simultané (0/10 pendant le roulis, 10/10 posé). */}
+          <Band
+            title={tirageTitle}
+            right={
+              d.charMode === 'pointBuy' ? (
+                <b className={pbTotal === 100 ? 'ok-text' : 'warn-text'}>Points : {pbTotal}/100</b>
               ) : d.charMode === 'rolled' ? (
-                <span className="char-roll row-flex">
-                  <span className="rm-die char-die"><DieFace n={pairs[i][0]} landed /></span>
-                  <span className="rm-die char-die"><DieFace n={pairs[i][1]} landed /></span>
-                </span>
-              ) : null}
-              {d.charMode === 'reassigned' && (
-                <select
-                  value={d.assignment[k]}
-                  onChange={(e) => {
-                    const idx = Number(e.target.value);
-                    const holder = CHAR_KEYS.find((kk) => d.assignment[kk] === idx)!; // échange → permutation garantie
-                    setD({ ...d, assignment: { ...d.assignment, [k]: idx, [holder]: d.assignment[k] } });
-                  }}
-                >
-                  {rolls.map((r, j) => (
-                    <option key={j} value={j}>
-                      +{r}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {d.charMode === 'pointBuy' && (
-                <Stepper value={d.pointBuy[k]} min={4} max={18} onChange={(v) => setD({ ...d, pointBuy: { ...d.pointBuy, [k]: v } })} />
-              )}
-              <b className="char-total">{chars[k]}</b>
+                <NotchGauge value={tiredCount} max={10} notches={10} format={(v, m) => `${v}/${m} tirées`} tone={tiredCount === 10 ? 'ok' : 'neutral'} />
+              ) : undefined
+            }
+          >
+            <p className="hint" style={{ margin: '4px 0 10px' }}>
+              Vous réglez ici la valeur d'ÉDITION (base d'espèce + tirage/allocation) ; la fiche vivante en montre
+              le résultat. Les Caractéristiques <span className="tag char">carrière</span> progressent au coût normal
+              en PX et comptent pour la complétion du Niveau ; l'Initiative départage l'ordre du combat.
+            </p>
+            <div className="char-alloc-grid">
+              {CHAR_KEYS.map((k, i) => (
+                <div key={k} className={`char-alloc${d.charMode === 'rolled' && reroll.rolling ? ' rolled' : ''}`}>
+                  <CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]} className="char-key">{CHAR_ABR[k]}</CodexRef>
+                  <span className="char-name">
+                    {CHAR_LABELS[k]}
+                    {careerKeys.includes(k) && <span className="tag char">carrière</span>}
+                  </span>
+                  <em>base {sp.baseChar[k] ?? 20}</em>
+                  {d.charMode === 'rolled' && (reroll.rolling || reroll.landed) ? (
+                    <span className="char-roll row-flex">
+                      <DiceRoll scene={false} landed={reroll.landed} faces={reroll.landed ? d10PairFaces(pairs[i]) : null} onSkip={reroll.skip} />
+                    </span>
+                  ) : d.charMode === 'rolled' ? (
+                    <span className="char-roll row-flex">
+                      <span className="rm-die char-die"><DieFace n={pairs[i][0]} landed /></span>
+                      <span className="rm-die char-die"><DieFace n={pairs[i][1]} landed /></span>
+                    </span>
+                  ) : null}
+                  {d.charMode === 'reassigned' && (
+                    <select
+                      value={d.assignment[k]}
+                      onChange={(e) => {
+                        const idx = Number(e.target.value);
+                        const holder = CHAR_KEYS.find((kk) => d.assignment[kk] === idx)!; // échange → permutation garantie
+                        setD({ ...d, assignment: { ...d.assignment, [k]: idx, [holder]: d.assignment[k] } });
+                      }}
+                    >
+                      {rolls.map((r, j) => (
+                        <option key={j} value={j}>
+                          +{r}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {d.charMode === 'pointBuy' && (
+                    <AllocStepper value={d.pointBuy[k]} min={4} max={18} onChange={(v) => setD({ ...d, pointBuy: { ...d.pointBuy, [k]: v } })} label={CHAR_LABELS[k]} />
+                  )}
+                  <b className="char-total">{chars[k]}</b>
+                </div>
+              ))}
             </div>
-          ))}
+            {d.charMode !== 'pointBuy' && (
+              <button className="btn small" style={{ marginTop: 10 }} onClick={() => reroll.trigger()}>
+                <Icon id="nav/dice" size="sm" /> Relancer les dix jets (bonus perdus)
+              </button>
+            )}
+          </Band>
+
+          {/* AUGMENTATIONS GRATUITES (arbitrage 0ter, 2026-07-15) : la maquette a PERDU ce bloc — la
+              MÉCANIQUE (5 Augmentations de carrière) reste, transposée au même bandage que Destin &
+              Résilience plutôt qu'un widget recopié de l'ancien créateur. */}
+          <Band
+            title={`Augmentations gratuites — ${allocTotal}/${CAREER_CHAR_ADVANCES} à répartir`}
+            right={<b className={allocTotal === CAREER_CHAR_ADVANCES ? 'ok-text' : 'warn-text'}>{allocTotal}/{CAREER_CHAR_ADVANCES}</b>}
+          >
+            <p className="hint" style={{ margin: '4px 0 10px' }}>À répartir sur les Caractéristiques de votre carrière.</p>
+            <div className="skill-row-grid">
+              {careerKeys.map((k) => (
+                <div key={k} className="skill-row">
+                  <span className="skill-row-label"><CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef></span>
+                  <AllocStepper
+                    value={d.charAdvancesAlloc[k] ?? 0}
+                    max={Math.min(CAREER_CHAR_ADVANCES, (d.charAdvancesAlloc[k] ?? 0) + (CAREER_CHAR_ADVANCES - allocTotal))}
+                    onChange={(v) => setD({ ...d, charAdvancesAlloc: { ...d.charAdvancesAlloc, [k]: v } })}
+                    label={CHAR_LABELS[k]}
+                  />
+                </div>
+              ))}
+            </div>
+          </Band>
+
+          <Band
+            title={`Destin & Résilience — +${sp.fate.extra} à répartir`}
+            right={<b className={splitTotal === sp.fate.extra ? 'ok-text' : 'warn-text'}>{splitTotal}/{sp.fate.extra}</b>}
+          >
+            <p className="hint" style={{ margin: '4px 0 10px' }}>
+              <Icon id="resource/fate" size="sm" /> Destin : survie & Chance. <Icon id="resource/resilience" size="sm" /> Résilience :
+              Détermination (votre Motivation la recharge).
+            </p>
+            <div className="skill-row-grid">
+              <div className="skill-row">
+                <span className="skill-row-label"><Icon id="resource/fate" size="sm" /> Destin<em>race : {sp.fate.fate}</em></span>
+                <AllocStepper
+                  value={d.fateSplit.fate}
+                  max={Math.min(sp.fate.extra, d.fateSplit.fate + (sp.fate.extra - splitTotal))}
+                  onChange={(v) => setD({ ...d, fateSplit: { ...d.fateSplit, fate: v } })}
+                  label="Destin"
+                />
+              </div>
+              <div className="skill-row">
+                <span className="skill-row-label"><Icon id="resource/resilience" size="sm" /> Résilience<em>race : {sp.fate.resilience}</em></span>
+                <AllocStepper
+                  value={d.fateSplit.resilience}
+                  max={Math.min(sp.fate.extra, d.fateSplit.resilience + (sp.fate.extra - splitTotal))}
+                  onChange={(v) => setD({ ...d, fateSplit: { ...d.fateSplit, resilience: v } })}
+                  label="Résilience"
+                />
+              </div>
+            </div>
+          </Band>
         </div>
-      </Section>
-    </>
+        <CreatorSummary d={d} step={stepIds().indexOf('chars')} />
+      </div>
+    </div>
   );
-  return { dice, choice, detail: { title: 'Caractéristiques', body } };
+}
+
+/** Adapte `QtyStepper` (primitive canonique, table CLAUDE.md) au vocabulaire LINÉAIRE de l'allocation
+ *  du créateur (± 1 entre `min` et `max`) — un décrément/incrément d'UNE unité. Mort du `Stepper`
+ *  local du créateur (verdict utilisateur 2026-07-15 : « on créait des primitives ou on fait encore
+ *  du code spécifique création ? ») : ce site consomme la MÊME primitive que la table marchande. */
+function AllocStepper({ value, min = 0, max, onChange, label }: { value: number; min?: number; max: number; onChange: (v: number) => void; label: string }) {
+  return (
+    <QtyStepper
+      center={<b>{value}</b>}
+      onDec={() => onChange(value - 1)}
+      onInc={() => onChange(value + 1)}
+      decDisabled={value <= min}
+      incDisabled={value >= max}
+      decLabel={`${label} : diminuer`}
+      incLabel={`${label} : augmenter`}
+    />
+  );
 }
 
 /** Sélecteur de spec pour une entrée « (Au choix) » — bound à specChoices[raw]. La VALEUR stockée est
@@ -1057,40 +1130,82 @@ export function StarZones({ d, setD }: StepProps): StepZones {
   return { dice, choice, detail: { body } };
 }
 
-// ════ 4) Compétences & Talents (LDB 05 l.493-555) — Zone A : espèce ; Zone B : carrière ════
-export function SkillZones({ d, setD }: StepProps): StepZones {
+// ════ 4) Compétences & Talents (LDB 05 l.493-555) — charte « Atelier du scribe » (#393 P4, étalons
+//      `finale-mock4/5/6-5{a,b,c}`) : TROIS SOUS-ÉCRANS (`Tabs`, dock d'onglets « a/b/c ») — chacun
+//      GABARIT DEUX ZONES (panneau de travail + fiche vivante `CreatorSummary`, MÊME composition que
+//      Race/Carrière, #393 P2) : plus de rail séparé pour cette étape, l'encrier de sous-tirage/
+//      répartition rejoint l'en-tête du panneau. Mécanique INCHANGÉE (draft.ts) — seule la
+//      présentation se restructure en sous-écrans ; la fiche vivante RÉSOUT ses chips roadmap EN
+//      DIRECT au fil des trois (`speciesSkillsDone`/`careerSkillsDone`/`talentsDone`), au lieu d'un
+//      tout-ou-rien à l'arrivée sur l'étape (#417 suite). Talents d'espèce en TROIS lots dérivés de
+//      la donnée (LDB 05 l.510, `draft.ts`) : ACQUIS D'OFFICE (fixes) / DE RACE — UN AU CHOIX
+//      (« A ou B ») / TIRÉS AU D100 (figés par le seed dès la race choisie, jamais relancés).
+export function SkillsScreen({ d, setD, skillsSub, setSkillsSub }: StepProps): ReactNode {
+  // Contrôlé par `CharacterCreator` (pied de page par sous-onglet) quand fourni ; sinon état
+  // local (tests qui montent l'écran seul, ex. CharacterCreator.test.tsx).
+  const [localSub, setLocalSub] = useState<SkillsSub>('race');
+  const sub = skillsSub ?? localSub;
+  const setSub = setSkillsSub ?? setLocalSub;
   const sp = draftSpecies(d);
-  const entries = careerSkillEntries(d);
-  const total = careerAdvTotal(d);
-  const resolved = resolvedSpeciesTalents(d);
-  const probe = probeHero(d, false);
-  // Valeurs vivantes : caractéristiques du héros prévisualisé (talents +5 et Augmentations incluses).
+  const career = findCareerById(d.careerId);
+
+  if (!sp || !career) {
+    return (
+      <div className="creator-skills-screen">
+        <div className="creator-skills-shell">
+          <div className="creator-skills-main">
+            <p className="hint">Choisissez d'abord une race et une carrière.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const tabs = [
+    { key: 'race' as const, label: <>a. Compétences de race{speciesSkillsDone(d) ? ' ✓' : ''}</> },
+    { key: 'career' as const, label: <>b. de carrière{careerSkillsDone(d) ? ' ✓' : ''}</> },
+    { key: 'talents' as const, label: <>c. Talents{talentsDone(d) ? ' ✓' : ''}</> },
+  ];
+
+  return (
+    <div className="creator-skills-screen">
+      <Tabs tabs={tabs} active={sub} onChange={setSub} label="Sous-étape Compétences & Talents" className="creator-skills-tabnav" />
+      <div className="creator-skills-shell">
+        <div className="creator-skills-main">
+          {sub === 'race' && <SpeciesSkillsPane d={d} setD={setD} sp={sp} />}
+          {sub === 'career' && <CareerSkillsPane d={d} setD={setD} />}
+          {sub === 'talents' && <TalentsPane d={d} setD={setD} sp={sp} />}
+        </div>
+        <CreatorSummary d={d} step={stepIds().indexOf('skills')} />
+      </div>
+    </div>
+  );
+}
+
+/** Valeurs VIVANTES : caractéristique liée + valeur du héros prévisualisé (talents +5/Augmentations
+ *  incluses) — partagé par les trois sous-écrans (annotation `<em class="tag-char">` des rangées). */
+function useLiveCharOf(d: CreatorDraft) {
   const liveChars: Characteristics = previewHero(d)?.characteristics ?? draftChars(d);
-  const charOf = (raw: string): { k: CharKey | null; v: number } => {
+  return (raw: string): { k: CharKey | null; v: number } => {
     const k = skillCharKey(raw);
     return { k, v: k ? liveChars[k] : 0 };
   };
+}
 
-  if (!sp) {
-    return {
-      choice: <p className="hint">Choisissez d'abord une race et une carrière.</p>,
-      detail: { title: 'Compétences & Talents', body: <p className="hint">Les répartitions apparaîtront une fois race et carrière choisies.</p> },
-    };
-  }
-
-  const choice = (
-    <>
-      <Section
-        title="Compétences de race"
-        right={
-          <b className={d.speciesPlus5.length === SPECIES_SKILLS_PLUS5 && d.speciesPlus3.length === SPECIES_SKILLS_PLUS3 ? 'ok-text' : 'warn-text'}>
-            +5 : {d.speciesPlus5.length}/{SPECIES_SKILLS_PLUS5} · +3 : {d.speciesPlus3.length}/{SPECIES_SKILLS_PLUS3}
-          </b>
-        }
-      >
+// ── 5a) Compétences de race (LDB 05 l.484) ──
+function SpeciesSkillsPane({ d, setD, sp }: StepProps & { sp: SpeciesData }) {
+  const charOf = useLiveCharOf(d);
+  const done = speciesSkillsDone(d);
+  return (
+    <div className="detail-frame creator-skills-card">
+      <div className="creator-skills-head">
+        <div>
+          <h3 className="creator-skills-title">Compétences de race</h3>
+          <p className="hint creator-skills-sub">Un seul geste — l'héritage du sang</p>
+        </div>
         <button
-          className="btn small"
-          style={{ marginBottom: 8 }}
+          type="button"
+          className={`dicewell${done ? ' done' : ' act emph'}`}
           onClick={() =>
             setD({
               ...d,
@@ -1099,158 +1214,237 @@ export function SkillZones({ d, setD }: StepProps): StepZones {
             })
           }
         >
-          Répartition par défaut
+          <span className="dicewell-copy">
+            <span className="dicewell-txt">Répartition par défaut</span>
+            <span className="dicewell-sub">l'atelier répartit pour vous — modifiable ensuite</span>
+          </span>
         </button>
+      </div>
+      <p className="hint" style={{ marginTop: 0 }}>
+        Votre sang {sp.label} offre 3 Compétences à +5 et 3 à +3, parmi les {sp.skills.length} du registre. L'allocation
+        de métier vient à l'écran suivant — les deux se cumulent sur une même Compétence.
+      </p>
+      <div className="row-flex creator-skill-quota-gauges">
+        <NotchGauge
+          value={d.speciesPlus5.length}
+          max={SPECIES_SKILLS_PLUS5}
+          notches={SPECIES_SKILLS_PLUS5}
+          format={(v, m) => `${v}/${m} à +5`}
+          tone={d.speciesPlus5.length === SPECIES_SKILLS_PLUS5 ? 'ok' : 'neutral'}
+        />
+        <NotchGauge
+          value={d.speciesPlus3.length}
+          max={SPECIES_SKILLS_PLUS3}
+          notches={SPECIES_SKILLS_PLUS3}
+          format={(v, m) => `${v}/${m} à +3`}
+          tone={d.speciesPlus3.length === SPECIES_SKILLS_PLUS3 ? 'ok' : 'neutral'}
+        />
+      </div>
+      <div className="skill-row-grid">
         {sp.skills.map((a) => advancementLabel('skills', a)).map((raw) => {
           const { k, v } = charOf(raw);
           const tier = speciesSkillTier(d, raw);
           return (
-            <div key={raw} className="rail-line" title={skillTip(raw)}>
-              <span>
-                {raw} {k && <em className="tag-char">{k} {v}{tier ? ` → ${v + tier}` : ''}</em>}
+            <div key={raw} className="skill-row" title={skillTip(raw)}>
+              <span className="skill-row-label">
+                {raw}
+                {k && <em>{CHAR_LABELS[k]} {v}{tier ? ` → ${v + tier}` : ''}</em>}
                 {isUnresolvedChoice(raw) && tier > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
               </span>
-              {/* MÊME widget d'allocation que les Compétences de carrière (Stepper) — paliers 0/3/5
-                  quota-gérés (LDB 05 l.484), le geste unifié tue la double mécanique cases/steppers. */}
-              <Stepper
-                value={tier}
-                max={5}
-                up={speciesSkillStep(d, raw, 1)}
-                down={speciesSkillStep(d, raw, -1)}
-                onChange={(t) => setD(withSpeciesSkillTier(d, raw, t as 0 | 3 | 5))}
+              {/* Paliers 0/3/5 quota-gérés (LDB 05 l.484) : mode DISCRET de `QtyStepper` — la valeur
+                  cible vient de `speciesSkillStep` (source unique), `null` grise le bouton. */}
+              <QtyStepper
+                center={<b>{tier}</b>}
+                onDec={() => setD(withSpeciesSkillTier(d, raw, speciesSkillStep(d, raw, -1) as 0 | 3 | 5))}
+                onInc={() => setD(withSpeciesSkillTier(d, raw, speciesSkillStep(d, raw, 1) as 0 | 3 | 5))}
+                decDisabled={speciesSkillStep(d, raw, -1) == null}
+                incDisabled={speciesSkillStep(d, raw, 1) == null}
+                decLabel={`${raw} : palier inférieur`}
+                incLabel={`${raw} : palier supérieur`}
               />
             </div>
           );
         })}
-      </Section>
-      <Section title="Talents de race">
-        <div className="talent-choices">
-          {sp.talents.map((a) => advancementLabel('talents', a)).map((entry) => {
-            const options = splitTopLevelOu(entry);
-            if (options.length > 1) {
-              return (
-                <label key={entry} title={options.map((o) => `${o} : ${talentTip(o) || '(tirage aléatoire)'}`).join('\n\n')}>
-                  {entry}
-                  <select
-                    value={d.speciesTalentChoices[entry] ?? ''}
-                    onChange={(e) => setD({ ...d, speciesTalentChoices: { ...d.speciesTalentChoices, [entry]: e.target.value } })}
-                  >
-                    <option value="">— choisir —</option>
-                    {options.map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              );
-            }
-            return <EntityChoice key={entry} category="talents" entry={entry} />;
-          })}
-        </div>
-        <div className="mini-title" style={{ marginTop: 10 }}>Talents obtenus</div>
-        <div className="skill-tags">
-          {resolved.map((label) => (
-            <EntityChoice key={label} category="talents" entry={label} />
-          ))}
-        </div>
-        {resolved
-          .filter((label) => {
-            const { name, spec } = splitLabel(label);
-            const specs = wildcardSpecs(name);
-            return spec != null && specs.length > 0 && !sp.talents.map((a) => advancementLabel('talents', a)).some((e) => e.includes(label));
-          })
-          .map((label) => {
-            const { name, spec } = splitLabel(label);
-            const free = wildcardSpecs(name).filter((s) => s === spec || !resolved.includes(concreteLabel(name, s)));
-            return (
-              <label key={label} style={{ display: 'block', marginTop: 6 }}>
-                {name} (tiré) — spécialisation
-                <select value={d.randomSpecPicks[name] ?? spec} onChange={(e) => setD({ ...d, randomSpecPicks: { ...d.randomSpecPicks, [name]: e.target.value } })}>
-                  {free.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            );
-          })}
-      </Section>
-    </>
+      </div>
+    </div>
   );
+}
 
-  const body = (
-    <>
-      <Section
-        title="Compétences de carrière"
-        right={<b className={total === CAREER_SKILL_ADVANCES ? 'ok-text' : 'warn-text'}>{total}/{CAREER_SKILL_ADVANCES} · max {MAX_ADV_PER_SKILL}</b>}
-      >
-        <button className="btn small" style={{ marginBottom: 8 }} onClick={() => setD({ ...d, skillAdvances: evenCareerSkillAdvances(d) })}>
-          Répartition simple : +5 sur les 8 Compétences
+// ── 5b) Compétences de carrière (LDB 05 l.535) ──
+function CareerSkillsPane({ d, setD }: StepProps) {
+  const charOf = useLiveCharOf(d);
+  const entries = careerSkillEntries(d);
+  const total = careerAdvTotal(d);
+  const done = careerSkillsDone(d);
+  return (
+    <div className="detail-frame creator-skills-card">
+      <div className="creator-skills-head">
+        <div>
+          <h3 className="creator-skills-title">Compétences de carrière</h3>
+          <p className="hint creator-skills-sub">Un seul geste — l'école du métier</p>
+        </div>
+        <button type="button" className={`dicewell${done ? ' done' : ' act emph'}`} onClick={() => setD({ ...d, skillAdvances: evenCareerSkillAdvances(d) })}>
+          <span className="dicewell-copy">
+            <span className="dicewell-txt">+5 sur les huit</span>
+            <span className="dicewell-sub">répartition simple, modifiable ensuite</span>
+          </span>
         </button>
-        <div className="skill-adv-grid">
-          {entries.map((raw) => {
-            const { k, v } = charOf(raw);
-            const adv = d.skillAdvances[raw] ?? 0;
-            return (
-              <div key={raw} className="skill-adv" title={skillTip(raw)}>
-                <span>
-                  {raw} {k && <em className="tag-char">{k} {v}{adv ? ` → ${v + adv}` : ''}</em>}
-                  {isUnresolvedChoice(raw) && adv > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
-                </span>
-                <Stepper
-                  value={adv}
-                  max={Math.min(MAX_ADV_PER_SKILL, adv + (CAREER_SKILL_ADVANCES - total))}
-                  onChange={(val) => setD({ ...d, skillAdvances: { ...d.skillAdvances, [raw]: val } })}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </Section>
-      <Section title="Talent de carrière (un au choix)">
-        <div className="talent-options-grid">
-          {careerTalentOptions(d).map(({ entry, choices, selected, maxed }) => (
-            <div key={entry} className={`talent-option ${selected && d.careerTalent === selected ? 'selected' : ''}`}>
-              <label className="radio" style={{ flexWrap: 'wrap' }}>
-                <input
-                  type="radio"
-                  name="career-talent"
-                  disabled={!selected || maxed}
-                  checked={!!selected && d.careerTalent === selected}
-                  onChange={() => selected && setD({ ...d, careerTalent: selected })}
-                />
-                <b>{entry}</b>
-                {choices && (
-                  <select
-                    value={selected ?? ''}
-                    onChange={(e) => {
-                      const specChoices = { ...d.specChoices, [entry]: e.target.value };
-                      const next = { ...d, specChoices };
-                      setD(d.careerTalent && d.careerTalent === selected ? { ...next, careerTalent: e.target.value } : next);
-                    }}
-                  >
-                    <option value="">— choisir —</option>
-                    {choices.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                {maxed && <em className="hint">Maxi atteint (déjà possédé)</em>}
-                {!maxed && selected && probe.talents.some((t) => talentConcrete(t) === selected) && <em className="hint">déjà possédé via la race → passera ×2</em>}
-              </label>
-              <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
+      </div>
+      <p className="hint" style={{ marginTop: 0 }}>
+        Votre métier enseigne {CAREER_SKILL_ADVANCES} points, {Math.floor(CAREER_SKILL_ADVANCES / (entries.length || 1))} au plus par Compétence
+        d'un coup. Les +5/+3 de race sont acquis et se CUMULENT — la rangée le rappelle (« +5 de race »).
+      </p>
+      <p className="creator-pick-count">
+        De carrière — {total}/{CAREER_SKILL_ADVANCES} points répartis · max {MAX_ADV_PER_SKILL} par Compétence
+      </p>
+      <NotchGauge
+        value={total}
+        max={CAREER_SKILL_ADVANCES}
+        format={(v, m) => `${m} points · reste ${m - v}`}
+        tone={done ? 'ok' : 'neutral'}
+      />
+      <div className="skill-row-grid">
+        {entries.map((raw) => {
+          const { k, v } = charOf(raw);
+          const adv = d.skillAdvances[raw] ?? 0;
+          const raceTier = speciesSkillTier(d, raw);
+          return (
+            <div key={raw} className="skill-row" title={skillTip(raw)}>
+              <span className="skill-row-label">
+                {raw}
+                {k && <em>{CHAR_LABELS[k]} {v}{adv ? ` → ${v + adv}` : ''}</em>}
+                {raceTier > 0 && <em>+{raceTier} de race</em>}
+                {isUnresolvedChoice(raw) && adv > 0 && <SpecSelect d={d} setD={setD} raw={raw} />}
+              </span>
+              <AllocStepper
+                value={adv}
+                max={Math.min(MAX_ADV_PER_SKILL, adv + (CAREER_SKILL_ADVANCES - total))}
+                onChange={(val) => setD({ ...d, skillAdvances: { ...d.skillAdvances, [raw]: val } })}
+                label={raw}
+              />
             </div>
-          ))}
-        </div>
-      </Section>
-      <PettySpellsSection d={d} setD={setD} />
-    </>
+          );
+        })}
+      </div>
+    </div>
   );
-  return { choice, detail: { title: 'Compétences & Talents de carrière', body } };
+}
+
+// ── 5c) Talents (LDB 05 l.493-510) — de race « un au choix » ⇄ de carrière « un au choix » ⇄
+//      tirés au d100 (figés dès la race choisie, listés ici en lecture — jamais une relance). ──
+export function TalentsPane({ d, setD }: StepProps & { sp: SpeciesData }) {
+  const probe = probeHero(d, false);
+  const fixed = speciesTalentFixedEntries(d);
+  const choiceEntries = speciesTalentChoiceEntries(d);
+  const drawn = speciesTalentRandomDrawn(d);
+  const randomCount = speciesTalentRandomCount(d);
+  return (
+    <div className="detail-frame creator-skills-card">
+      <div className="creator-skills-head">
+        <div>
+          <h3 className="creator-skills-title">Talents</h3>
+          <p className="hint creator-skills-sub">Ce que le sort a tranché</p>
+        </div>
+      </div>
+      <p className="hint" style={{ marginTop: 0 }}>
+        Un seul Talent de carrière au Niveau 1 — les trois autres s'achèteront en PX au fil du jeu.
+      </p>
+      <div className="creator-talents-cols">
+        <div>
+          <div className="mini-title">De race — un au choix</div>
+          {choiceEntries.length === 0 ? (
+            <p className="hint">Aucune décision ici — la race ne propose pas de branche « A ou B ».</p>
+          ) : (
+            <div className="talent-options-grid">
+              {choiceEntries.map((entry) => {
+                const options = splitTopLevelOu(entry);
+                const selected = d.speciesTalentChoices[entry] ?? null;
+                return (
+                  <div key={entry} className={`talent-option ${selected ? 'selected' : ''}`}>
+                    {options.map((opt, i) => (
+                      <span key={opt}>
+                        {i > 0 && <span className="talent-option-ou">ou</span>}
+                        <label className="radio" style={{ display: 'flex', marginBottom: 4 }}>
+                          <input
+                            type="radio"
+                            name={`species-talent-${entry}`}
+                            checked={selected === opt}
+                            onChange={() => setD({ ...d, speciesTalentChoices: { ...d.speciesTalentChoices, [entry]: opt } })}
+                          />
+                          <b>{opt}</b>
+                        </label>
+                      </span>
+                    ))}
+                    <p className="hint talent-desc">{talentTip(selected ?? options[0])}</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {randomCount > 0 && (
+            <>
+              <div className="mini-title" style={{ marginTop: 12 }}>Tirés d'office — d100 — {randomCount} Talent{randomCount > 1 ? 's' : ''} rendu{randomCount > 1 ? 's' : ''}</div>
+              <div className="skill-tags">
+                {drawn.map((label) => (
+                  <EntityChoice key={label} category="talents" entry={label} />
+                ))}
+              </div>
+            </>
+          )}
+          {fixed.length > 0 && (
+            <>
+              <div className="mini-title" style={{ marginTop: 12 }}>Acquis d'office</div>
+              <div className="skill-tags">
+                {fixed.map((label) => (
+                  <EntityChoice key={label} category="talents" entry={label} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+        <div>
+          <div className="mini-title">De carrière — un au choix</div>
+          <div className="talent-options-grid">
+            {careerTalentOptions(d).map(({ entry, choices, selected, maxed }) => (
+              <div key={entry} className={`talent-option ${selected && d.careerTalent === selected ? 'selected' : ''}`}>
+                <label className="radio" style={{ flexWrap: 'wrap' }}>
+                  <input
+                    type="radio"
+                    name="career-talent"
+                    disabled={!selected || maxed}
+                    checked={!!selected && d.careerTalent === selected}
+                    onChange={() => selected && setD({ ...d, careerTalent: selected })}
+                  />
+                  <b>{entry}</b>
+                  {choices && (
+                    <select
+                      value={selected ?? ''}
+                      onChange={(e) => {
+                        const specChoices = { ...d.specChoices, [entry]: e.target.value };
+                        const next = { ...d, specChoices };
+                        setD(d.careerTalent && d.careerTalent === selected ? { ...next, careerTalent: e.target.value } : next);
+                      }}
+                    >
+                      <option value="">— choisir —</option>
+                      {choices.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {maxed && <em className="hint">Maxi atteint (déjà possédé)</em>}
+                  {!maxed && selected && probe.talents.some((t) => talentConcrete(t) === selected) && <em className="hint">déjà possédé via la race → passera ×2</em>}
+                </label>
+                <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <PettySpellsSection d={d} setD={setD} />
+    </div>
+  );
 }
 
 /** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587) : le Talent pris → choisir

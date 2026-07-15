@@ -373,21 +373,6 @@
 .creator-xp b {
   color: var(--gold);
 }
-/* Steppers +/− */
-.stepper {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  flex: 0 0 auto;
-}
-.stepper b {
-  min-width: 22px;
-  text-align: center;
-}
-.stepper .btn {
-  padding: 2px 9px;
-}
 /* Grille d'allocation des Caractéristiques */
 .char-alloc-grid {
   display: grid;
@@ -417,7 +402,7 @@
 /* Rangée SURLIGNÉE pendant le roulis (#393 P3, étalon `finale-mock2-caracteristiques.png`) — les
    DIX Caractéristiques roulent ensemble (`charReroll`, seed unique) : la surbrillance s'applique
    donc aux dix rangées à la fois, reflet honnête du mécanisme simultané. Réutilise `.rolled`
-   (langage déjà porté par `.creator-race-card.rolled` — borne du tirage courant, #393 P3). */
+   (langage déjà porté par `.fig-tile.rolled` — borne du tirage courant, #393 P3). */
 .char-alloc.rolled {
   border-color: var(--gold);
   box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.28);
@@ -571,6 +556,16 @@
 .talent-desc {
   margin: 6px 0 0;
   font-size: 11.5px;
+}
+/* Séparateur « ou » entre deux radios de talent de race « A ou B » (mock6) — le mot nu, pas de
+   pointillé (arbitrage talents « ou », doc mémoire game-charte-talents-ou-chips-codex-lisibles). */
+.talent-option-ou {
+  display: block;
+  margin: 2px 0 4px 24px;
+  font-size: 11px;
+  font-variant-caps: small-caps;
+  letter-spacing: 0.5px;
+  color: var(--muted);
 }
 /* Widgets à fond SOMBRE (pensés pour le fond app) postés DANS la ParchmentCard (Zone B, fond clair
    `.tx-parchment` → texte `--ink` sombre hérité) : sans leur PROPRE couleur, l'ink hérité se pose sur
@@ -745,7 +740,9 @@
     grid-template-rows: auto minmax(0, 1fr);
     overflow-y: auto;
   }
-  .creator-shell > .creator-summary {
+  .creator-shell > .creator-summary,
+  .creator-chars-shell > .creator-summary,
+  .creator-skills-shell > .creator-summary {
     order: -1;
     grid-column: 1 / -1;
     border-left: 0;
@@ -982,7 +979,7 @@
   box-shadow: inset 0 1px 0 rgba(232, 196, 103, 0.4);
 }
 .cc-step.now .cc-step-nm { color: var(--atelier-brass-elu); }
-/* Rang CONSULTÉ (exploration du détail) — anneau doré, langage `.fig-tile.sel`/`.creator-race-card.sel`. */
+/* Rang CONSULTÉ (exploration du détail) — anneau doré, langage `.fig-tile.sel`. */
 .cc-step.sel {
   border-color: var(--gold);
   box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.32);
@@ -1321,69 +1318,29 @@
 .creator-pick-filters .creator-pick-count {
   margin: 0 0 0 auto;
 }
+/* Pastilles de suivi 5a (quotas +5/+3 de race, LDB 05 l.484) : `NotchGauge` compacte réutilisée,
+   deux jauges côte à côte plutôt qu'un texte nu — compose `.row-flex` (JSX, base primitive), n'y
+   redéclare pas `flex-wrap` (cliquet vii). */
+.creator-skill-quota-gauges {
+  gap: 10px 20px;
+  margin: 6px 0 10px;
+}
+.creator-skill-quota-gauges .notch-gauge {
+  flex: 1 1 200px;
+}
+/* Grille de cartes de race — les cartes elles-mêmes sont `FigTile` (#430 phase 2, cadre UNIQUE
+   full-bleed, styles `frames.css`) : purge de l'ancien motif « tuile bois + charprev imbriqué »
+   (mort par cascade depuis be3fe9e0, dette transitoire payée ici). Seul modificateur DOMAINE qui
+   survit : `.rolled` (liseré de borne du tirage COURANT, #393 P3 — distinct de `.sel` gold posé par
+   `FigTile` lui-même) — classe ADDITIVE (`FigTile.className`), jamais un second cadre. */
 .creator-race-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
-.creator-race-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 18px 10px 15px;
-  border-radius: 10px;
-  border: 1px solid var(--atelier-wood-etch);
-  background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
-  color: var(--text);
-  cursor: pointer;
-}
-/* Points dorés d'angle (langage `.fig-tile`/`.fam-tile` du kit) — tuile VISSÉE. */
-.creator-race-card::before,
-.creator-race-card::after {
-  content: '';
-  position: absolute;
-  top: 5px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, var(--atelier-brass-vif), var(--atelier-brass-hover));
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
-}
-.creator-race-card::before { left: 6px; }
-.creator-race-card::after { right: 6px; }
-.creator-race-card:hover {
-  border-color: var(--atelier-brass-hover);
-}
-/* Figurine généreuse (#393 P4) — étage sur le gabarit `.charprev-lg` (components.css) réduit
-   localement : 190px déborde le zéro-scroll à 1600×900 une fois les cartes aérées (padding/gap ↑). */
-.creator-race-card .charprev-lg {
-  height: 150px;
-}
-/* Liseré = borne du tirage COURANT (#393 P3) — distinct de `.sel` (gold, la race ÉLUE) : rouge
-   d'encrier (`--accent2`, même langage que le `.dicewell.act`), jamais superposé à la sélection. */
-.creator-race-card.rolled {
+.creator-race-grid .fig-tile.rolled {
   border-color: var(--accent2);
   box-shadow: 0 0 0 1px rgba(214, 84, 58, 0.35);
-}
-.creator-race-card-name {
-  font-family: var(--font-display);
-  font-size: 17px;
-  color: var(--atelier-brass-etch);
-  text-align: center;
-}
-.creator-race-card-sub {
-  font-size: 11px;
-  color: var(--muted);
-}
-.creator-race-card.sel {
-  border-color: var(--gold);
-  background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
-  box-shadow: 0 0 0 1px rgba(216, 185, 84, 0.32);
-}
-.creator-race-card.sel .creator-race-card-name {
-  color: var(--atelier-brass-elu);
 }
 @media (max-width: 900px) {
   .creator-race-grid {
@@ -1392,6 +1349,151 @@
 }
 @media (max-width: 560px) {
   .creator-race-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -- Bande titrée pleine largeur (`Band`, étalon `finale-mock2-caracteristiques.png`) — habille les
+   rubriques d'un panneau à PLUSIEURS blocs (Caractéristiques, Compétences & Talents) : la maquette
+   pose ces rubriques DANS le panneau central, jamais dans le rail. -- */
+.creator-band {
+  margin: 14px 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--atelier-wood-liseret);
+  background: linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-wood-mid));
+}
+.creator-band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.creator-band-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--gold2);
+  letter-spacing: 0.3px;
+}
+.creator-band-right {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+.creator-band > .hint {
+  margin: 4px 0 0;
+}
+
+/* -- Écran Caractéristiques (#393 P3bis, correctif utilisateur — « ni de près, ni de loin, la
+   maquette ») : gabarit DEUX ZONES (panneau + fiche vivante), MÊME composition que Race/Carrière —
+   plus de rail séparé, tout vit dans le panneau central (bandes ci-dessus). -- */
+.creator-chars-screen,
+.creator-skills-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  gap: 10px;
+  overflow: hidden;
+}
+.creator-chars-shell,
+.creator-skills-shell {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 16px;
+  overflow: hidden;
+}
+.creator-chars-main,
+.creator-skills-main {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.creator-chars-shell > .creator-summary,
+.creator-skills-shell > .creator-summary {
+  border: 0;
+  border-left: 1px solid var(--border);
+  min-height: 0;
+  overflow-y: auto;
+}
+.creator-skills-tabnav {
+  flex: 0 0 auto;
+}
+.creator-skills-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.creator-skills-head .dicewell {
+  max-width: 380px;
+}
+.creator-skills-title {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--gold2);
+  font-size: 19px;
+}
+.creator-skills-sub {
+  margin: 2px 0 12px;
+}
+.creator-skills-card {
+  margin-bottom: 16px;
+}
+.creator-talents-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 6px;
+}
+.skill-row-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.skill-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--text);
+}
+.skill-row-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12.5px;
+}
+.skill-row-label em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--accent2);
+}
+@media (max-width: 1100px) {
+  .creator-chars-shell,
+  .creator-skills-shell {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+}
+@media (max-width: 700px) {
+  .creator-chars-screen,
+  .creator-skills-screen {
+    padding: 12px;
+  }
+  .char-alloc-grid,
+  .skill-row-grid,
+  .creator-talents-cols {
     grid-template-columns: 1fr;
   }
 }

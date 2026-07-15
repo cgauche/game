@@ -23,6 +23,22 @@ je vais valider ca ») — l'étalon de STYLE des lots de transposition, pas de 
   (sélection v4/v5, commits 3c486ded/7cfceda8) précède la peau Atelier — sa transposition
   est un lot de #371/#414, pas de #393.
 
+## OSSATURE CANONIQUE du créateur (croquis user 2026-07-15 — `ossature-croquis-user.png`)
+
+Toutes les étapes (sauf peut-être le Récapitulatif) suivent LE MÊME format de page :
+- **Bande BOUTONS** au-dessus de la zone de choix : les actions de l'étape (« Choisir » /
+  « Lancer les dés »...) TOUJOURS présentes, jamais reléguées au rail.
+- **CHOIX** (zone principale) : la grille/les contrôles de l'étape.
+- **DESC** (panneau droit, pleine hauteur) : la fiche de l'ÉLUE (Race/Carrière) sur les
+  premières étapes, puis la FICHE VIVANTE — et cette fiche vivante est IDENTIQUE à celle
+  du choix des personnages (le détail candidat du lobby : `HeroSheet` COMPLET, bande
+  figurine+identité+rose comprise — user 2026-07-15 : « elle est sensé etre identique a
+  celle utilisé pour le choix des personnages dans la creation »). Pas de variante
+  d'alcôve propre au créateur.
+- **Machine à états** : (1) choix de l'action → (2) si « lancer » : jet de dés, sélection
+  AUTO dans la grille, infos importantes MISES EN VALEUR dans la fiche de droite, boutons
+  toujours présents → (3) si validé : choix SCELLÉ (sceau sur la tuile élue) et Suivant.
+
 ## Gate de validation (tous lots d'écrans — juge vision ET codeur)
 
 Le juge vision compare le STYLE **et la COMPOSITION**. Non-conformité AUTOMATIQUE,
@@ -40,6 +56,13 @@ n'est pas exempte de défaut non plus sur les données affichées ») : valeurs,
 exemples des planches ont été composés à la main pour le rendu — l'app compose depuis les
 datasets réels, et une divergence de DONNÉE avec la maquette n'est jamais un défaut de
 l'app. Un juge vision compare la composition/typo/matières, pas les chiffres.
+
+**Le gabarit partagé n'autorise JAMAIS à déplacer dans le rail ce que la maquette compose
+au CENTRE** (user, 2026-07-15, étape 3 : « ni de près, ni de loin, la maquette » — méthode/
+allocations/Destin&Résilience relégués au rail et centre en parchemin crème, là où mock2
+compose bande méthode + rangées 2 colonnes sombres + bandes d'allocation DANS le panneau
+central). Un juge qui « recadre » un écart de composition au nom du gabarit se trompe :
+le gabarit fournit les zones, la maquette dicte ce qui va dans chacune.
 
 En cas de conflit entre un BRIEF et la maquette ratifiée : **LA MAQUETTE PRIME**, sauf
 pour les écarts listés ci-dessous (seuls arbitrages qui la surclassent). Un brief qui

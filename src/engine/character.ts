@@ -95,7 +95,9 @@ function randomTalentTable() {
 }
 
 /** Motif « N Talent(s) aléatoire(s) » / « Talent aléatoire » des listes d'espèce. */
-const RANDOM_ENTRY_RE = /^(?:(\d+)\s+)?Talents?\s+al[ée]atoires?$/i;
+/** Entrée « N Talent(s) aléatoire(s) » (LDB 05 l.510) — exportée pour la catégorisation UI des
+ *  Talents d'espèce en TROIS lots (fixes / à choisir / tirés au d100, créateur étape 5c). */
+export const RANDOM_ENTRY_RE = /^(?:(\d+)\s+)?Talents?\s+al[ée]atoires?$/i;
 
 /**
  * Tire un Talent sur le Tableau des Talents aléatoires (1d100). Le tirage est FIGÉ : si le

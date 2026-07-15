@@ -134,7 +134,7 @@ export const fr = {
   'present.spells.spells': 'Sorts',
   'present.spells.prayers': 'Miracles',
   'present.spells.both': 'Sorts & Miracles',
-  'present.skills': 'Compétences clés',
+  'present.skills': 'Compétences',
   'present.talents': 'Talents',
   'present.possessions': 'Possessions',
   'present.fullSheet': 'Fiche complète →',

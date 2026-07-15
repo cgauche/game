@@ -8,12 +8,14 @@
  * +5 et Augmentations gratuites inclus), le centre montre l'ÉDITION. Le compteur PX recalcule `xpTotal`
  * à chaque changement du brouillon → un tirage accepté l'incrémente EN DIRECT.
  *
- * Le CORPS de fiche (Caractéristiques/dérivées/Forces/Compétences/Talents/Sorts/Possessions) compose
- * la primitive `HeroSheet` (`../HeroSheet.tsx`, consécration #417 suite — constat utilisateur fondateur
- * « La fiche vivante ce n'est pas une primitive ? », 2026-07-15) dès qu'un héros prévisualisé existe ;
- * l'alcôve (figurine+identité), le compteur PX et la bourse restent des encarts PROPRES au créateur
- * (page blanche pré-héros, apparence de secours sans héros bâti, tirage EN DIRECT) — hors mandat de
- * `HeroSheet` (entrée = un `Combatant`).
+ * La fiche compose la primitive `HeroSheet` (`../HeroSheet.tsx`, consécration #417 suite — constat
+ * utilisateur fondateur « La fiche vivante ce n'est pas une primitive ? », 2026-07-15) EN ENTIER dès
+ * qu'un héros prévisualisé existe — bande d'en-tête COMPRISE (`header` actif) : la fiche du créateur
+ * est IDENTIQUE à celle du détail candidat du lobby (`PartyScreen`, correctif utilisateur 2026-07-15,
+ * « elle est censée être identique à celle utilisée pour le choix des personnages »), plus d'alcôve
+ * propre au créateur. Seuls le compteur PX de création et la page blanche pré-héros (apparence de
+ * secours, tirage EN DIRECT) restent des encarts PROPRES au créateur — hors mandat de `HeroSheet`
+ * (entrée = un `Combatant`).
  */
 import { CSSProperties, useMemo } from 'react';
 import { CHAR_KEYS, CharKey, Combatant } from '../../engine/types';
@@ -24,7 +26,24 @@ import { Icon } from '../Icon';
 import { CharStatsGrid } from '../CharStatsGrid';
 import { HeroSheet, RoadmapChip } from '../HeroSheet';
 import { careerLabelFor, findStarById, rigSpeciesId } from '../../data';
-import { CreatorDraft, StepId, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, hasSpecies, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
+import {
+  CreatorDraft,
+  StepId,
+  buildHero,
+  draftSpecies,
+  draftLevel,
+  draftWealth,
+  draftChars,
+  hasSpecies,
+  xpTotal,
+  speciesXp,
+  careerXp,
+  charsXp,
+  starXp,
+  stepIds,
+  careerSkillsDone,
+  speciesTalentChoicesDone,
+} from './draft';
 
 /** Grisage cérémoniel d'un bloc « non renseigné » (page blanche). */
 const DIM: CSSProperties = { opacity: 0.38 };
@@ -80,21 +99,6 @@ export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number
 
   return (
     <aside className="creator-summary">
-      {hero ? (
-        <CharacterPreview hero={hero} size="fill" ambiance="panel" className="creator-fig" />
-      ) : appearance ? (
-        <CharacterPreview appearance={appearance} career={d.careerId || undefined} size="fill" ambiance="panel" className="creator-fig" />
-      ) : (
-        <div className="creator-fig" style={DIM} aria-hidden />
-      )}
-      <div className="creator-id" style={started ? undefined : DIM}>
-        <strong>{d.name.trim() || 'Aventurier'}</strong>
-        <span className="char-sub">
-          {level ? `${level.label} (${careerLabel})` : careerLabel || 'Carrière à choisir'}
-          {level?.status ? ` · ${level.status}` : ''}
-        </span>
-        <span className="char-sub">{sp?.label ?? 'Race à choisir'}</span>
-      </div>
       {started && (starActive || ahead('details')) && (
         <div className="creator-identity-roadmap row-flex">
           {starActive && (ahead('star')
@@ -105,24 +109,47 @@ export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number
       )}
 
       {hero ? (
+        // Fiche IDENTIQUE au détail candidat du lobby (correctif utilisateur 2026-07-15) : bande
+        // d'en-tête HeroSheet COMPRISE (figurine+nom+statut+rose) — plus d'alcôve propre au créateur.
         <HeroSheet
           hero={hero}
-          header={false}
+          wealth={wealth ?? undefined}
           statAnnotations={statAnnotations}
           className="creator-hero-sheet"
           pending={{
-            skills: ahead('skills') ? <RoadmapChip>à répartir — étape {stepNo('skills')}</RoadmapChip> : undefined,
+            // Résolution EN DIRECT au fil des sous-écrans 5a/5b/5c (#393 P4) : le tout-ou-rien
+            // `ahead('skills')` ne joue qu'AVANT d'atteindre l'étape — une fois dessus, chaque
+            // rubrique se résout à SA propre complétion (`careerSkillsDone`/`speciesTalentChoicesDone`,
+            // draft.ts) plutôt que d'un bloc à l'arrivée sur l'étape.
+            skills: ahead('skills')
+              ? <RoadmapChip>à répartir — étape {stepNo('skills')}</RoadmapChip>
+              : !careerSkillsDone(d) ? <RoadmapChip>carrière — 5b</RoadmapChip> : undefined,
             talents: ahead('skills') ? (
               <>
                 <RoadmapChip>au choix — étape {stepNo('skills')}</RoadmapChip>
                 <RoadmapChip>3 au d100 — étape {stepNo('skills')}</RoadmapChip>
               </>
-            ) : undefined,
+            ) : !speciesTalentChoicesDone(d) ? <RoadmapChip>au choix — 5c</RoadmapChip> : undefined,
             possessions: ahead('trappings') ? <RoadmapChip>dotations — étape {stepNo('trappings')}</RoadmapChip> : undefined,
           }}
         />
       ) : (
         <>
+          {/* Page blanche pré-héros (hors mandat HeroSheet, entrée = un Combatant) : apparence de
+              secours + identité minimale, mêmes rubriques grisées jusqu'au 1ᵉʳ héros constructible. */}
+          {appearance ? (
+            <CharacterPreview appearance={appearance} career={d.careerId || undefined} size="fill" ambiance="panel" className="creator-fig" />
+          ) : (
+            <div className="creator-fig" style={DIM} aria-hidden />
+          )}
+          <div className="creator-id" style={started ? undefined : DIM}>
+            <strong>{d.name.trim() || 'Aventurier'}</strong>
+            <span className="char-sub">
+              {level ? `${level.label} (${careerLabel})` : careerLabel || 'Carrière à choisir'}
+              {level?.status ? ` · ${level.status}` : ''}
+            </span>
+            <span className="char-sub">{sp?.label ?? 'Race à choisir'}</span>
+          </div>
           <div style={started ? undefined : DIM}>
             <CharStatsGrid size="sm" value={(k) => (sp ? baseChars[k] : '—')} />
           </div>
@@ -140,6 +167,11 @@ export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number
               <Icon id="resource/resilience" size="sm" /> Résilience <b>{sp?.fate.resilience ?? '—'}</b> · Déterm. <b>—</b>
             </span>
           </div>
+          <div className="creator-derived" style={started ? undefined : DIM}>
+            <span>
+              <Icon id="resource/gold-purse" size="sm" /> Bourse <b>{wealth ? <Coins money={wealth} /> : '—'}</b>
+            </span>
+          </div>
         </>
       )}
 
@@ -149,11 +181,6 @@ export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number
         title={`Espèce +${speciesXp(d)} · Carrière +${careerXp(d)} · Caractéristiques +${charsXp(d)}${stepIds().includes('star') ? ` · Signe +${starXp(d)}` : ''}`}
       >
         PX bonus de création : <b>+{xpTotal(d)}</b>
-      </div>
-      <div className="creator-derived" style={started ? undefined : DIM}>
-        <span>
-          <Icon id="resource/gold-purse" size="sm" /> Bourse <b>{wealth ? <Coins money={wealth} /> : '—'}</b>
-        </span>
       </div>
     </aside>
   );

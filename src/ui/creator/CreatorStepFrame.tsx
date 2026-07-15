@@ -66,32 +66,19 @@ export function XpBadge({ value }: { value: number }) {
   return value > 0 ? <span className="xp-badge">+{value} PX</span> : null;
 }
 
-/** Stepper +/− avec compteur — l'UNIQUE widget d'allocation du créateur (Augmentations de
- *  Caractéristiques/Compétences de carrière, répartition Destin/Résilience, ET paliers de Compétences
- *  de race). Mode LINÉAIRE par défaut (± 1 entre `min` et `max`) ; mode DISCRET si `up`/`down` sont
- *  fournis (valeur cible résolue par l'appelant, `null` = bouton grisé) — même geste, contraintes RAW
- *  propres à l'étape (ex. paliers 0/3/5 quota-gérés des Compétences de race, LDB 05 l.484). */
-export function Stepper({ value, min = 0, max, onChange, disabled, up, down }: {
-  value: number;
-  min?: number;
-  max: number;
-  onChange: (v: number) => void;
-  disabled?: boolean;
-  up?: number | null;
-  down?: number | null;
-}) {
-  const discrete = up !== undefined || down !== undefined;
-  const canDown = discrete ? down != null : value > min;
-  const canUp = discrete ? up != null : value < max;
+/** Bande titrée pleine largeur (fond bois/laiton, étalon `finale-mock2-caracteristiques.png`) — pour
+ *  les rubriques d'un panneau à plusieurs blocs (« Le tirage », « Augmentations gratuites », « Destin
+ *  & Résilience ») : LA MAQUETTE dicte quel bloc va dans le panneau central plutôt que le rail, ce
+ *  bandeau habille ces blocs quand le panneau (pas `zone-section`, réservé au rail/parchemin) le porte. */
+export function Band({ title, right, children }: { title: ReactNode; right?: ReactNode; children?: ReactNode }) {
   return (
-    <span className="stepper">
-      <button type="button" className="btn small" disabled={disabled || !canDown} onClick={() => onChange(discrete ? (down as number) : value - 1)}>
-        −
-      </button>
-      <b>{value}</b>
-      <button type="button" className="btn small" disabled={disabled || !canUp} onClick={() => onChange(discrete ? (up as number) : value + 1)}>
-        +
-      </button>
-    </span>
+    <div className="creator-band">
+      <div className="creator-band-head">
+        <h3>{title}</h3>
+        {right && <span className="creator-band-right">{right}</span>}
+      </div>
+      {children}
+    </div>
   );
 }
+

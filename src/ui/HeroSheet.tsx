@@ -54,7 +54,10 @@ export function HeroSheet({
   className?: string;
 }) {
   const axes = dominantAxes(hero, axisDataFor(axisIds), 3);
-  const skills = [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances).slice(0, 14);
+  // TOUTES les Compétences avancées (correctif utilisateur 2026-07-15 : « faut virer Compétence clé
+  // et mettre toutes les compétences ayant des points dedans ») — aucun écrémage top-N ici, le plafond
+  // ne survit que sur les CARTES compactes (tuile candidat/carte de contrat, `CharCard.tsx`).
+  const skills = [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances || a.skillId.localeCompare(b.skillId));
   const talents = hero.talents;
   const possessions = (hero.items ?? []).slice(0, 12);
   const spellRefs = (hero.spells ?? []).map((id) => ({ id, data: findSpellById(id) }));
