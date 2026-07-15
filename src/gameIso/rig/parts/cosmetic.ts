@@ -1,18 +1,22 @@
 import type { PartArt } from './types';
 import { baseSpeciesOf } from '../skeletons';
-import { PART_BEHIND_SEP } from '../bones';
+import { PART_BEHIND_SEP, PART_DROP_SEP } from '../bones';
 import { HEADS_BY_KEY } from './heads';
 import { hairstylesForSex, type HairArt } from './hairstyles';
 // Têtes (visage + coiffure défaut) en heads/defs, coiffures en hairstyles/defs — CHAQUE chevelure
-// porte ses 3 vues + composante `behind` éventuelle (HairArt), pliée ici dans la chaîne de vue
-// (dépliée par composeRig au layer −2, cf. splitPartBehind dans bones.ts).
+// porte ses 3 vues + composantes `behind` (masse qui épouse le crâne) et `drop` (chute qui dépasse
+// la tête) éventuelles PAR vue (HairArt), pliées ici dans la chaîne de vue (dépliées par composeRig :
+// behind → layer −2, drop → plan dorsal ; cf. splitPartBehind dans bones.ts).
 // Seul le profil/dos du VISAGE reste un art GÉNÉRIQUE token ci-dessous (PROFILE_FACE / BACK_NAPE).
 
-const foldView = (main: string, behind?: string) => (behind ? `${behind}${PART_BEHIND_SEP}${main}` : main);
+const foldView = (main: string, behind?: string, drop?: string) => {
+  const folded = behind ? `${behind}${PART_BEHIND_SEP}${main}` : main;
+  return drop ? `${drop}${PART_DROP_SEP}${folded}` : folded;
+};
 const foldHair = (h: HairArt): PartArt => ({
-  front: foldView(h.front, h.behind?.front),
-  profile: foldView(h.profile, h.behind?.profile),
-  back: foldView(h.back, h.behind?.back),
+  front: foldView(h.front, h.behind?.front, h.drop?.front),
+  profile: foldView(h.profile, h.behind?.profile, h.drop?.profile),
+  back: foldView(h.back, h.behind?.back, h.drop?.back),
 });
 
 // Œil de secours : blanc + iris @yeux + pupille (PAS le gradient monstre g_eye).

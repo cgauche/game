@@ -119,6 +119,9 @@ export function resolveRig(
 
   const boneParts: Record<BoneId, ResolvedBone['parts']> = {} as Record<BoneId, ResolvedBone['parts']>;
   for (const id of BONE_IDS) boneParts[id] = [];
+  // Calques à PLAN dédié dans le tri du peintre (ailes, chutes de chevelure) : z propre, dans le
+  // repère de l'os hôte — remplis par le dépliage des parts ET par la file d'overlays plus bas.
+  const planeExtras: { bone: BoneId; svg: string; z: number }[] = [];
 
   // Un vampire (monster.cape) garde la robe de carrière mais PAS le couvre-chef de cour
   // (le chapeau de Noble faisait une « couronne » rouge) : on saute le slot `tete` (le
@@ -137,10 +140,12 @@ export function resolveRig(
     if ((slot === 'visage' || slot === 'cheveux') && raceHead) continue;
     const part = parts[slot];
     if (!part || !part.svg) continue;
-    // Composante ARRIÈRE de la part (chevelure : masse qui épouse le crâne, chutes derrière
-    // les épaules) — pliée dans la chaîne par cosmeticPart, peinte au layer −2 : DERRIÈRE la
-    // part de visage, même sémantique que RigOverlay.behind.
-    const { behind, main } = splitPartBehind(part.svg);
+    // Composantes pliées de la part (chevelure, cf. bones.ts) : `behind` = masse qui épouse le
+    // crâne, layer −2 (derrière la part de visage, même sémantique que RigOverlay.behind) ;
+    // `drop` = chute qui DÉPASSE la tête, routée sur le PLAN dorsal (cf. parts/dorsal.ts) :
+    // fond de face (derrière tout le corps), avant de dos (sur le dos), layer −2 de profil
+    // (racine ancrée au crâne, peinte sur le bord du dos).
+    const { drop, behind, main } = splitPartBehind(part.svg);
     // Visage inversé (mutation LDB 19) : le VRAI visage du personnage est retourné tête en bas
     // (flip vertical au centre du visage, y≈7) — cheveux et crâne restent en place.
     const svg = slot === 'visage' && faceFlip
@@ -151,6 +156,10 @@ export function resolveRig(
       // faux : les deux pieds/jambes/bras regardent dans la même direction (pas en miroir)
       // — sinon le pied arrière pointe à l'envers (« chaussures vers l'intérieur »).
       const mirror = idx === 1 && view !== 'profile';
+      if (drop) {
+        if (view === 'profile') boneParts[bid].push({ svg: drop, layer: -2, mirror });
+        else planeExtras.push({ bone: bid, svg: drop, z: view === 'front' ? -10 : 99 });
+      }
       if (behind) boneParts[bid].push({ svg: behind, layer: -2, mirror });
       boneParts[bid].push({ svg, layer: SLOT_LAYER[slot], mirror });
     });
@@ -194,7 +203,6 @@ export function resolveRig(
   // leur os. `view` limite à une vue (groin/langue de face) ; `behind` passe SOUS la part
   // (cornes, halo) ; `replace` substitue la part de l'os (bras → tentacule, svg vide = efface) ;
   // `plane` extrait le calque du z de l'os hôte (ailes : derrière/devant TOUT le corps).
-  const planeExtras: { bone: BoneId; svg: string; z: number }[] = [];
   for (const ov of queue) {
     if (ov.view && ov.view !== view) continue;
     // Appendice (cornes/queue) = art MULTI-VUES du registre, résolu par vue — même mécanisme que

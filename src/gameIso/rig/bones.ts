@@ -56,17 +56,26 @@ export const SLOT_LAYER: Record<Slot, number> = {
   bouclier: 0, arme: 0,
 };
 
-/** Une part de slot peut porter une composante ARRIÈRE : `arrière` + séparateur + `principal`
- *  dans la MÊME chaîne SVG (elle traverse ainsi la résolution par vue sans champ dédié).
- *  Le compositeur la peint au layer −2 — DERRIÈRE la part de visage, même sémantique que
- *  `RigOverlay.behind` — et le principal au `SLOT_LAYER` du slot. Un consommateur qui ne
- *  splitte pas rend les deux composantes d'affilée (dégradation sans trou : le séparateur
- *  est un commentaire SVG légal). Producteur : cosmeticPart (cheveux). */
+/** Une part de slot peut porter DEUX composantes optionnelles pliées dans la MÊME chaîne SVG
+ *  (elles traversent ainsi la résolution par vue sans champ dédié) :
+ *  `chute` + SEP_CHUTE + `arrière` + SEP_BEHIND + `principal`.
+ *  - ARRIÈRE : masse qui épouse le crâne, peinte au layer −2 — DERRIÈRE la part de visage,
+ *    même sémantique que `RigOverlay.behind` ;
+ *  - CHUTE : cheveux qui DÉPASSENT la tête (chute longue, queue, rideau) — routée par le
+ *    compositeur sur le PLAN dorsal (cf. parts/dorsal.ts) : `fond` de face, `avant` de dos,
+ *    layer −2 ancré au crâne de profil.
+ *  Un consommateur qui ne splitte pas rend les composantes d'affilée (dégradation sans trou :
+ *  les séparateurs sont des commentaires SVG légaux). Producteur : cosmeticPart (cheveux). */
 export const PART_BEHIND_SEP = '<!--@behind-->';
-export function splitPartBehind(svg: string): { behind?: string; main: string } {
-  const i = svg.indexOf(PART_BEHIND_SEP);
-  if (i < 0) return { main: svg };
-  return { behind: svg.slice(0, i) || undefined, main: svg.slice(i + PART_BEHIND_SEP.length) };
+export const PART_DROP_SEP = '<!--@chute-->';
+export function splitPartBehind(svg: string): { drop?: string; behind?: string; main: string } {
+  let drop: string | undefined;
+  let rest = svg;
+  const d = rest.indexOf(PART_DROP_SEP);
+  if (d >= 0) { drop = rest.slice(0, d) || undefined; rest = rest.slice(d + PART_DROP_SEP.length); }
+  const i = rest.indexOf(PART_BEHIND_SEP);
+  if (i < 0) return { drop, main: rest };
+  return { drop, behind: rest.slice(0, i) || undefined, main: rest.slice(i + PART_BEHIND_SEP.length) };
 }
 
 /** Calque cosmétique additionnel attaché à un os (mutations, accessoires).
