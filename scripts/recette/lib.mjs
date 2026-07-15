@@ -46,8 +46,16 @@ async function waitForWsUrl(port, timeoutMs = 10000) {
   throw new Error(`Chrome (CDP) indisponible sur le port ${port} après ${timeoutMs}ms.`);
 }
 
-/** Lance Chrome headless et attache une session CDP dédiée (targetId + sessionId propres). */
-export async function launchSession({ chromePath, width = 1280, height = 900, port, mobile = false } = {}) {
+/**
+ * Lance Chrome headless et attache une session CDP dédiée (targetId + sessionId propres).
+ *
+ * Largeur par DÉFAUT = 1600 : c'est la largeur à laquelle les maquettes sont DESSINÉES
+ * (`docs/plans/2026-07-14-maquettes-createur/*.html`, `.mock{width:1600px}`) — donc la seule où une
+ * capture se compare à l'étalon. Le défaut historique de 1280 a fait juger « étriqués » pendant deux
+ * jours des écrans qui rendaient juste à leur largeur de référence (lot « matières & proportions »
+ * #393). Une recette MOBILE passe sa largeur explicitement (`setMobileViewport`, 360×740).
+ */
+export async function launchSession({ chromePath, width = 1600, height = 900, port, mobile = false } = {}) {
   const cdpPort = port ?? 9222 + Math.floor(Math.random() * 2000);
   const profile = join(os.tmpdir(), `recette-cdp-profile-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
   mkdirSync(profile, { recursive: true });

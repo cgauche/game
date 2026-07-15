@@ -5,6 +5,15 @@ exécutée (git porte l'historique). Ratification utilisateur 2026-07-14 (verbat
 je vais valider ca ») — l'étalon de STYLE des lots de transposition, pas de texte
 (délégation : « Je ne demande pas de la fidélité sur le texte, mais au moins sur le style »).
 
+> **L'étalon se juge à 1600.** Chaque mock est dessiné dans une boîte `1600×830`
+> (`.mock{width:1600px;height:830px}`) : c'est la LARGEUR DE RÉFÉRENCE de la planche, et la seule
+> à laquelle une capture de l'app se compare à elle. Une preuve prise à 1280 montre un écran
+> LÉGITIMEMENT plus dense — pas un défaut de transposition : ne jamais conclure « c'est étriqué »
+> d'une capture hors étalon (le kit de recette a shooté à 1280 pendant deux jours, d'où deux jours
+> de faux verdicts — lot « matières & proportions » #393). `scripts/recette/lib.mjs` shoote
+> désormais à 1600 par défaut (cf. `docs/recette-navigateur.md` § Preuve headless) ; le responsive
+> se juge à part, à sa propre passe (900/700/560/360).
+
 ## Contenu
 
 - `planche-creator-FINALE.html` — les 10 écrans du créateur (autonome, fonts à lier ou

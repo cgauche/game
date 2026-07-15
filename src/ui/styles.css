@@ -11,6 +11,7 @@
 @import './styles/party.css'; /* écran d'équipe (sélection des héros) : colonne compagnie + étal de candidats */
 @import './styles/city-hub.css'; /* hub de ville (#343) : services + détail (MasterDetail) */
 @import './styles/voyage.css'; /* écran-hub de voyage (#333) : tuiles + chronique + MasterDetail */
+@import './styles/creator-shell.css'; /* coquille « Atelier du scribe » du créateur (.dirC planche) : le SOL de l'écran */
 @import './styles/creator.css'; /* cadre Modal partagé + assistant de création + apparence */
 @import './styles/creator-step.css'; /* ossature 2 zones du créateur (CreatorStepFrame, #393) : slots + dés dorés planche — APRÈS creator.css : prime sur la gemme par défaut */
 @import './styles/frames.css'; /* cadre-figurine UNIQUE (FigTile, #430) — APRÈS creator.css : prime sur l'ancien .fig-tile imbriqué */

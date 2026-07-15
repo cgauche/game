@@ -78,6 +78,23 @@
   }
 }
 
+/* ── MANIVELLES de la planche (`.crank button` : les boutons `[−]`/`[+]`) — la primitive PARTAGÉE
+   `QtyStepper` (`.btn-step`, components.css) est un bouton de PANIER gris (`--panel2` en aplat) :
+   sa peau marchande reste le canon de la table de négoce, et l'Atelier la reteint ICI, scopée au
+   gabarit d'étape — MÊME idiome que les dés dorés ci-dessous (`.rm-die-*`), aucun fork du composant.
+   Matière : dégradé laiton sur bois, liseré `--atelier-brass-hover`, glyphe gravé `--atelier-brass-vif`.
+   La VALEUR au centre garde `--text` : la planche l'écrit #ffe6a8, un ton déjà tenu par la charte. ── */
+.creator-step .btn-step {
+  background: linear-gradient(180deg, var(--atelier-crank-hi), var(--atelier-crank-lo));
+  border-color: var(--atelier-brass-hover);
+  color: var(--atelier-brass-vif);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 217, 122, 0.18);
+}
+.creator-step .btn-step:hover:not(:disabled) {
+  border-color: var(--gold2);
+  color: var(--atelier-brass-light);
+}
+
 /* ── Dés DORÉS de la planche (`.d10` : silhouette sombre à liseré laiton, chiffre ivoire #ffe6a8)
    — DieFace (`DiceRoll.tsx`) recoloré dans TOUT le gabarit d'étape + les plateaux d'encrier
    (`.dicewell-tray`, où qu'ils soient montés : galerie comprise). La gemme ROUGE par défaut

@@ -29,6 +29,14 @@ seul le scratchpad d'un agent l'avait en local) ; le socle reste donc en CDP nu 
 natifs Node ≥ 22), le choix le plus robuste des scripts moissonnés au regard de cette contrainte.
 Le kit ne DÉMARRE **jamais** le serveur de dev — il s'y **attache** (erreur claire si injoignable).
 
+> **L'étalon se juge à 1600.** La largeur par DÉFAUT du kit est **1600×900** — la largeur à laquelle
+> les maquettes sont DESSINÉES (`docs/plans/2026-07-14-maquettes-createur/*.html` : `.mock{width:1600px}`),
+> donc la seule à laquelle une capture se compare à son étalon. Le défaut historique de 1280 a fait
+> juger « étriqués » pendant deux jours des écrans qui rendaient juste à leur largeur de référence
+> (lot « matières & proportions », #393). Une recette **responsive** passe sa largeur explicitement
+> (`setViewport` avec la largeur voulue, `setMobileViewport` pour le mobile canon 360×740) — le
+> défaut ne remplace pas la passe 900/700/560/360 de la charte, il fixe la largeur de RÉFÉRENCE.
+
 ### CLI — `scripts/recette/shot-screen.mjs`
 
 ```
@@ -53,7 +61,7 @@ l'ouverture de l'écran.
 | `emulateReducedMotion` | force `prefers-reduced-motion: reduce` (CDP `Emulation.setEmulatedMedia`) |
 | `setViewport` / `setMobileViewport` | viewport explicite / mobile canon 360×740 (charte-ui.md — testable dès 360px) |
 | `evaluate` / `waitFor` | eval JS dans la page (attend les promesses) / poll jusqu'à condition vraie |
-| `checkServer` / `launchSession` | briques bas niveau d'`openApp` (séparément utilisables) |
+| `checkServer` / `launchSession` | briques bas niveau d'`openApp` (séparément utilisables) — `launchSession` porte le défaut **1600×900** (§ « L'étalon se juge à 1600 » ci-dessus) |
 
 **Capturer un écran** :
 ```js

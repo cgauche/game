@@ -229,6 +229,7 @@ const DOMAIN_CSS_MODULES = [
   'plaque-row',
   'celestial-wheel',
   'creator-presentation',
+  'creator-shell',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -386,13 +387,24 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Consécration StepHeader (#393 amendement 3, clôture étape 7) : +3 (8 → 11) — l'en-tête de pas
   // rejoint le module de SA primitive (`.step-head`/`-title`, + le bornage `.dicewell` de la topbar,
   // classe déjà définie en creator.css : le compte est par-module) ; creator.css paie -3 en regard.
-  'styles/creator-step.css': 11,
+  // +1 (11 → 12) : `.btn-step` — la MANIVELLE laiton de la planche (`.crank button`) reteint la
+  // primitive PARTAGÉE `QtyStepper` DANS le gabarit d'étape, MÊME idiome que les dés dorés
+  // (`.rm-die-*`) déjà scopés ici : la peau marchande (`--panel2` en aplat, components.css) reste le
+  // canon de la table de négoce, aucun fork du composant. Lot « matières & proportions » #393.
+  'styles/creator-step.css': 12,
   // Mise en scène FINALE du créateur (`PresentationScreen`, migration étape 8 du lot ossature) —
   // l'étape EXEMPTÉE du gabarit 2 zones (user 2026-07-15 : « sauf sur le dernier écran ») porte son
   // style dans SON module, jamais dans creator.css (amendement 2 : décrue nette exigée). Valeurs de
   // `planche-creator-FINALE.html` § « Écran final » : `.fin-col` (registre), `.fin-stage` (la scène),
   // `.c-lamp` (la lampe), `.c-main` (gabarit). Contrepartie ASSUMÉE des -9 de creator.css.
   'styles/creator-presentation.css': 8,
+  // Coquille « Atelier du scribe » du créateur (lot « matières & proportions » #393) — `.dirC` de la
+  // planche FINALE : le SOL de l'écran, que `.screen` (base.css) ne pose pas et que le radial
+  // générique du `body` tenait à sa place (mesuré : #1f180f → #100e0b, plus clair et plus froid).
+  // Module DÉDIÉ et non creator.css (cliquet gelé à 107) ni la couche partagée (cliquet xiii —
+  // `.screen.creator` est mono-consommateur, donc du DOMAINE) : idiome `.screen.codex` de
+  // compendium.css. 2 = les deux noms du sélecteur composé `.screen.creator`.
+  'styles/creator-shell.css': 2,
   // Rangée-plaque à rivets d'or (PlaqueRow/PlaqueGrid, #393 amendement 3) — matière `.c-plate` +
   // états `.ck-cell` de la planche FINALE, module primitive dédiée (patron rose.css/frames.css) :
   // `.plaque-(row|grid|prefix|name|meta|value)`, états `.sel`/`.rolling`, dés compacts ET dorés
