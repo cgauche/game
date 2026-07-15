@@ -123,7 +123,7 @@
       "page": 25
     },
     "preview": {
-      "career": "artisan"
+      "career": "repurgateur"
     }
   },
   {
@@ -248,7 +248,7 @@
       "page": 151
     },
     "preview": {
-      "career": "artisan"
+      "career": "repurgateur"
     }
   },
   {
@@ -381,7 +381,7 @@
       "page": 152
     },
     "preview": {
-      "career": "artisan"
+      "career": "repurgateur"
     }
   },
   {
@@ -529,7 +529,7 @@
       "page": 153
     },
     "preview": {
-      "career": "artisan"
+      "career": "repurgateur"
     }
   },
   {
@@ -663,7 +663,7 @@
       "page": 55
     },
     "preview": {
-      "career": "artisan"
+      "career": "repurgateur"
     }
   },
   {
@@ -810,7 +810,7 @@
       "page": 54
     },
     "preview": {
-      "career": "artisan"
+      "career": "marin-cotier"
     }
   },
   {
@@ -958,7 +958,7 @@
       "page": 54
     },
     "preview": {
-      "career": "artisan"
+      "career": "marin-cotier"
     }
   },
   {
@@ -1107,7 +1107,7 @@
       "page": 54
     },
     "preview": {
-      "career": "artisan"
+      "career": "marin-cotier"
     }
   },
   {
@@ -1235,7 +1235,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -1375,7 +1375,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -1513,7 +1513,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -1653,7 +1653,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -1792,7 +1792,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -1930,7 +1930,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -2068,7 +2068,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -2205,7 +2205,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -2347,7 +2347,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -2486,7 +2486,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -2625,7 +2625,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -2768,7 +2768,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -2907,7 +2907,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "colporteur"
     }
   },
   {
@@ -3056,7 +3056,7 @@
     },
     "mutationBodyMax": 5,
     "preview": {
-      "career": "artisan"
+      "career": "tueur"
     }
   },
   {
@@ -3205,7 +3205,7 @@
     },
     "mutationBodyMax": 5,
     "preview": {
-      "career": "artisan"
+      "career": "tueur"
     }
   },
   {
@@ -3374,7 +3374,7 @@
       "page": 86
     },
     "preview": {
-      "career": "artisan"
+      "career": "sorcier"
     }
   },
   {
@@ -3526,7 +3526,7 @@
     },
     "mutationBodyMax": 10,
     "preview": {
-      "career": "artisan"
+      "career": "gladiateur"
     }
   },
   {
@@ -3674,7 +3674,7 @@
     },
     "mutationBodyMax": 0,
     "preview": {
-      "career": "artisan"
+      "career": "noble"
     }
   },
   {
@@ -3823,7 +3823,7 @@
     },
     "mutationBodyMax": 0,
     "preview": {
-      "career": "artisan"
+      "career": "eclaireur"
     }
   }
 ]
