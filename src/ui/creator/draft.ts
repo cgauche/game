@@ -107,6 +107,10 @@ export interface CreatorDraft {
   // 5) Possessions
   /** Id de trapping (catalogue) choisi pour « Arme (Au choix) » — id STABLE, jamais un libellé. */
   weaponChoice?: string;
+  /** Bourse de départ TIRÉE (LDB 05 l.581-583) — geste explicite requis (#393 P5 correctif
+   *  d'agentivité : le montant, bien que déterministe côté `draftWealth`, ne s'affiche PLUS avant
+   *  que le joueur ait pressé « Tirer aux dés » — jamais un résultat pré-rempli au montage). */
+  wealthRoll?: boolean;
   // 6) Détails
   name: string;
   motivation: string;
@@ -313,7 +317,17 @@ export function careerXp(d: CreatorDraft): number {
 }
 export function withCareer(d: CreatorDraft, id: string): CreatorDraft {
   if (id === d.careerId) return d;
-  return { ...d, careerId: id, skillAdvances: {}, specChoices: {}, careerTalent: undefined, pettySpells: [], charAdvancesAlloc: {}, weaponChoice: undefined };
+  return {
+    ...d,
+    careerId: id,
+    skillAdvances: {},
+    specChoices: {},
+    careerTalent: undefined,
+    pettySpells: [],
+    charAdvancesAlloc: {},
+    weaponChoice: undefined,
+    wealthRoll: false,
+  };
 }
 
 // ── 3) Caractéristiques ──
@@ -558,9 +572,17 @@ export function careerTalentOptions(d: CreatorDraft): { entry: string; choices: 
 }
 
 // ── 5) Possessions ──
+/** Montant de la bourse — PUR/déterministe (`d.seed`), jamais une relance (LDB 05 : un seul jet).
+ *  La ceinture d'agentivité (`wealthRoll`, geste requis avant affichage) vit dans l'UI, pas ici. */
 export function draftWealth(d: CreatorDraft): Money {
   const status = parseStatus(draftLevel(d)?.status ?? 'Bronze 0');
   return rollInitialWealth(status, makeRNG(d.seed ^ 0x901d));
+}
+/** Pose le geste « Tirer aux dés » de la bourse — FIGÉ (aucune relance, LDB 05 l.581-583 n'en offre
+ *  aucune) : le montant lui-même est déjà déterminé par `d.seed`, ce geste n'en découvre que
+ *  l'affichage (anti-résultat-pré-rempli, #393 P5). */
+export function rollDraftWealth(d: CreatorDraft): CreatorDraft {
+  return d.wealthRoll ? d : { ...d, wealthRoll: true };
 }
 
 // ── 6) Détails ──
@@ -571,13 +593,14 @@ export function rolledDetails(d: CreatorDraft): { age: number; height: number; e
   return { age: rollAge(sp, rng), height: rollHeight(sp, rng), eyes: rollEyes(sp, rng), hair: rollHair(sp, rng) };
 }
 
-export type StepId = 'species' | 'career' | 'chars' | 'star' | 'skills' | 'trappings' | 'details' | 'recap';
+export type StepId = 'species' | 'career' | 'chars' | 'star' | 'skills' | 'trappings' | 'details' | 'presentation';
 
 /** Étapes du créateur dans l'ordre — `star` insérée après `chars` quand la règle optionnelle ADE2
  *  `creation-signes-astraux` est active. SOURCE UNIQUE de l'ordre ET de la présence des étapes (le
- *  rendu et la validation en dérivent — plus d'index positionnel fragile). */
+ *  rendu et la validation en dérivent — plus d'index positionnel fragile). Étape 8 renommée
+ *  « Présentation » (#393 P5, arbitrage README maquettes : « le personnage se PRÉSENTE »). */
 export function stepIds(): StepId[] {
-  const ids: StepId[] = ['species', 'career', 'chars', 'skills', 'trappings', 'details', 'recap'];
+  const ids: StepId[] = ['species', 'career', 'chars', 'skills', 'trappings', 'details', 'presentation'];
   if (rule('creation-signes-astraux')) ids.splice(3, 0, 'star');
   return ids;
 }
@@ -643,6 +666,10 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
       if (quota && d.pettySpells.length !== quota) {
         return `Choisissez vos ${quota} sorts de Magie mineure (actuel : ${d.pettySpells.length}).`;
       }
+      return null;
+    }
+    case 'trappings': {
+      if (!d.wealthRoll) return 'Tirez la bourse de départ aux dés.';
       return null;
     }
     case 'details': {

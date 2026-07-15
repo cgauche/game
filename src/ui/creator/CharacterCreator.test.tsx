@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator, CareerScreen, CharScreen, SpeciesRaceScreen, SkillsScreen, TalentsPane, StarZones, TrappingZones, DetailZones, PettySpellsSection, careerLevelTalentsTitle } from './CharacterCreator';
+import { CharacterCreator, CareerScreen, CharScreen, SpeciesRaceScreen, SkillsScreen, TalentsPane, StarZones, TrappingsScreen, DetailsScreen, PresentationScreen, PettySpellsSection, careerLevelTalentsTitle } from './CharacterCreator';
 import { CreatorSummary } from './CreatorSummary';
 import {
   newDraft,
@@ -13,6 +13,8 @@ import {
   draftSpecies,
   SPECIES_SKILLS_PLUS5,
   SPECIES_SKILLS_PLUS3,
+  validateStep,
+  rollDraftWealth,
 } from './draft';
 import { species as allSpecies, careersForSpecies, findCareerById, advancementLabel } from '../../data';
 import { CHAR_LABELS } from '../../engine/types';
@@ -28,7 +30,7 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     // Barre d'étapes — le signe astral (ADE2, règle activée par défaut) insère une étape après Caractéristiques.
     expect(html).toContain('1. Race');
     expect(html).toContain('4. Signe astral');
-    expect(html).toContain('8. Récapitulatif');
+    expect(html).toContain('8. Présentation');
     // Étape 1 : coquille DEUX zones (MasterDetail), pas de fiche vivante à ce stade.
     expect(html).toContain('creator-pick-shell');
     expect(html).toContain('master-detail-list');
@@ -234,42 +236,62 @@ describe('CharacterCreator (assistant) — gabarit 3 zones + page blanche', () =
     expect(dHtml).not.toContain('trapping-list'); // classe libérée
   });
 
-  it('étape Possessions (verdict 3) — revue d\'équipement : chips CodexRef + Encombrement total + bourse (plus de liste à puces)', () => {
+  it('étape Possessions (#393 P5, étalon finale-mock7-possessions.png) — gabarit DEUX ZONES (panneau + fiche vivante), chips CodexRef + statut + bourse (plus de liste à puces)', () => {
     const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
-    const { choice, detail } = TrappingZones({ d, setD: () => {} });
-    const cHtml = renderToStaticMarkup(<>{choice}</>);
-    expect(cHtml).toContain('Bourse de départ');
-    const dHtml = renderToStaticMarkup(<>{detail.body}</>);
-    expect(dHtml).toContain('Encombrement total');
-    expect(dHtml).toContain('skill-tags'); // objets en chips
-    expect(dHtml).toContain('Dotation de Classe');
-    expect(dHtml).not.toContain('trapping-list');
-    expect(dHtml).not.toContain('item-meta');
+    const html = renderToStaticMarkup(<TrappingsScreen d={d} setD={() => {}} />);
+    expect(html).toContain('creator-trappings-shell');
+    expect(html).toContain('creator-summary'); // fiche vivante, MÊME composition que Race/Carrière
+    expect(html).toContain('metal-status'); // statut en tête de panneau
+    expect(html).toContain('skill-tags'); // objets en chips
+    expect(html).toContain('De carrière');
+    expect(html).toContain('De classe');
+    expect(html).toContain('La bourse');
+    expect(html).not.toContain('trapping-list');
+    expect(html).not.toContain('item-meta');
   });
 
-  it('étape Détails (verdict 4) — identité fusionnée : nom + physique + motivation en Zone A ; apparence en Zone B', () => {
+  it('étape Possessions — agentivité (#393 P5, directive coordinateur) : la bourse est VIDE au montage, un geste « Tirer aux dés » la révèle, jamais pré-remplie', () => {
     const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
-    const { choice, detail } = DetailZones({ d, setD: () => {} });
-    const cHtml = renderToStaticMarkup(<>{choice}</>);
-    // UNE région identité en Zone A : nom, âge/taille/yeux/cheveux, motivation/ambitions ensemble.
-    expect(cHtml).toContain('Nom du personnage');
-    expect(cHtml).toContain('Âge');
-    expect(cHtml).toContain('Cheveux');
-    expect(cHtml).toContain('Motivation'); // BackgroundFields présent en Zone A
-    // Zone B = apparence seule (le personnalisateur), plus l'identité éclatée.
-    const dHtml = renderToStaticMarkup(<>{detail.body}</>);
-    expect(dHtml).toContain('appear-panel');
-    expect(dHtml).not.toContain('Nom du personnage'); // le nom n'est plus dans le détail
+    expect(d.wealthRoll).toBeFalsy();
+    const before = renderToStaticMarkup(<TrappingsScreen d={d} setD={() => {}} />);
+    expect(before).toContain('Tirer aux dés — la bourse');
+    expect(before).not.toContain('creator-purse-line');
+    expect(validateStep(d, 'trappings')).toBe('Tirez la bourse de départ aux dés.');
+    const rolled = rollDraftWealth(d);
+    expect(rolled.wealthRoll).toBe(true);
+    const after = renderToStaticMarkup(<TrappingsScreen d={rolled} setD={() => {}} />);
+    expect(after).toContain('creator-purse-line');
+    expect(validateStep(rolled, 'trappings')).toBeNull();
+  });
+
+  it('étape Détails (#393 P5, étalon finale-mock8-details.png) — gabarit DEUX ZONES, identité + motivation + apparence dans le panneau', () => {
+    const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const html = renderToStaticMarkup(<DetailsScreen d={d} setD={() => {}} />);
+    expect(html).toContain('creator-details-shell');
+    expect(html).toContain('creator-summary');
+    expect(html).toContain('Nom du personnage');
+    expect(html).toContain('Âge');
+    expect(html).toContain('Cheveux');
+    expect(html).toContain('Motivation'); // BackgroundFields présent dans le panneau
+    expect(html).toContain('appear-panel'); // Apparence (AppearancePanel) dans le même panneau
   });
 
   it('étape Détails — bouton « Visage → Variante » (appSeed) change réellement le rig rendu (#bug visage figé)', () => {
     const d1 = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
-    const { detail: detail1 } = DetailZones({ d: d1, setD: () => {} });
-    const html1 = renderToStaticMarkup(<>{detail1.body}</>);
+    const html1 = renderToStaticMarkup(<DetailsScreen d={d1} setD={() => {}} />);
     const d2 = { ...d1, appSeed: (d1.appSeed ?? 0) + 1 };
-    const { detail: detail2 } = DetailZones({ d: d2, setD: () => {} });
-    const html2 = renderToStaticMarkup(<>{detail2.body}</>);
+    const html2 = renderToStaticMarkup(<DetailsScreen d={d2} setD={() => {}} />);
     expect(html1).not.toBe(html2);
+  });
+
+  it('étape Présentation (#393 P5, étalon finale-mock9-presentation.png, renommage « Récapitulatif » → « Présentation ») — mise en scène finale en 3 colonnes, sans texte nu (chips CodexRef)', () => {
+    const d = ready();
+    const html = renderToStaticMarkup(<PresentationScreen d={d} setD={() => {}} />);
+    expect(html).toContain('creator-presentation-screen');
+    expect(html).toContain('presentation-center');
+    expect(html).toContain('Compétences formées');
+    expect(html).toContain('Les jets qui le définissent');
+    expect(html).toContain('codex-ref');
   });
 
   it('CreatorSummary : caractéristiques EN DIRECT du héros prévisualisé (talents/augmentations inclus)', () => {

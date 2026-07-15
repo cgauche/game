@@ -37,15 +37,16 @@ import {
   celestialHouses,
   spells as allSpells,
   rigSpeciesId,
-  findTalentById,
   specLabel,
   findBookById,
+  skillInstanceLabel,
   SpeciesData,
   CareerData,
 } from '../../data';
-import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics } from '../../engine/types';
+import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
 import { rule } from '../../engine/policy';
 import { damageString } from '../../engine/items';
+import { skillBaseValue } from '../../engine/skills';
 import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
 import { formatSpellRange, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { Coins } from '../Coins';
@@ -73,7 +74,7 @@ import { QtyStepper } from '../QtyStepper';
 import { CreatorDice } from './CreatorDice';
 import { useRollFrisson } from '../useRollFrisson';
 import { DiceRoll, DieFace } from '../DiceRoll';
-import { d10PairFaces, d100Faces } from '../Dice';
+import { d10PairFaces, d100Faces, d10Face } from '../Dice';
 import { CelestialWheel } from './CelestialWheel';
 import { MasterDetail } from '../MasterDetail';
 import { DetailFrame } from '../DetailFrame';
@@ -109,6 +110,7 @@ import {
   specOptionsFor,
   pettySpellQuota,
   draftWealth,
+  rollDraftWealth,
   rolledDetails,
   validateStep,
   stepIds,
@@ -136,11 +138,12 @@ import {
   buildHero,
   draftFromHero,
   probeHero,
+  xpTotal,
   isUnresolvedChoice,
   splitLabel,
   splitTopLevelOu,
 } from './draft';
-import { XP_CAREER_FIRST, XP_CAREER_TOP3 } from '../../engine/creation';
+import { XP_CAREER_FIRST, XP_CAREER_TOP3, parseStatus } from '../../engine/creation';
 
 /** Métadonnées d'étape : libellé FR + fabrique de zones (rail/main) OU écran de plein rendu
  *  (`screen`, gabarit propre — étapes transposées à la charte « Atelier du scribe », #393). SOURCE
@@ -153,9 +156,9 @@ const STEP_META: Record<StepId, { label: string; zone?: (p: StepProps) => StepZo
   chars: { label: 'Caractéristiques', screen: CharScreen },
   star: { label: 'Signe astral', zone: StarZones },
   skills: { label: 'Compétences & Talents', screen: SkillsScreen },
-  trappings: { label: 'Possessions', zone: TrappingZones },
-  details: { label: 'Détails', zone: DetailZones },
-  recap: { label: 'Récapitulatif', zone: ({ d }) => RecapZones({ d }) },
+  trappings: { label: 'Possessions', screen: TrappingsScreen },
+  details: { label: 'Détails', screen: DetailsScreen },
+  presentation: { label: 'Présentation', screen: PresentationScreen },
 };
 
 /** Espèces mises en avant : celles du Livre de base — dérivé des données, les suppléments
@@ -190,6 +193,10 @@ const skillCharKey = (name: string): CharKey | null => findSkill(splitLabel(name
  *  CACHE module-scope (entrées finies, objets immuables) : un objet STABLE par (espèce, sexe), sinon
  *  le `React.memo` de CharacterPreview ne prend jamais et les ~25 lignes du rail re-résolvent le rig
  *  à chaque rendu de l'étape. */
+/** Cadrage des cartes de RACE (grille SERRÉE, #431, verdict user « ça écrase les visages » à 88 %
+ *  plein champ) — comparaison 88/75 tranchée en faveur du plus digne (visage/silhouette respirent). */
+const RACE_CARD_FILL = 0.75;
+
 const PICK_APPEARANCES = new Map<string, Appearance>();
 function pickAppearance(speciesId: string, sex: 'M' | 'F', variantId?: string): Appearance {
   const key = `${speciesId}|${sex}|${variantId ?? ''}`;
@@ -328,7 +335,14 @@ export function CharacterCreator() {
         <span className={`hint wizard-hint${(curId === 'skills' ? !skillsSubDone : !!err) ? ' warn-text' : ''}`}>
           {curId === 'skills'
             ? skillsSubMessage(d, skillsSub)
-            : err ?? (curId === 'species' ? raceFooterSummary() ?? '' : curId === 'career' ? careerFooterSummary() ?? '' : '')}
+            : err ??
+              (curId === 'species'
+                ? raceFooterSummary() ?? ''
+                : curId === 'career'
+                  ? careerFooterSummary() ?? ''
+                  : curId === 'presentation'
+                    ? 'Relisez votre héros — chaque étape reste modifiable avant l\'engagement.'
+                    : '')}
         </span>
         {step < ids.length - 1 ? (
           <button className="btn btn-primary" disabled={!canNext} onClick={() => setStep(step + 1)}>
@@ -336,7 +350,7 @@ export function CharacterCreator() {
           </button>
         ) : (
           <button className="btn btn-primary" disabled={(!editing && party.length >= 4) || !canNext} onClick={create}>
-            {editing ? 'Enregistrer les modifications' : "Créer l'aventurier"}
+            {editing ? 'Enregistrer les modifications' : 'Engager ce héros →'}
           </button>
         )}
       </footer>
@@ -489,7 +503,11 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
           return (
             <FigTile
               key={f.family}
-              preview={{ appearance: pickAppearance(rep.id, d.sex) }}
+              preview={{
+                appearance: pickAppearance(rep.id, d.sex, rep.variant ?? rep.id),
+                career: rep.preview?.career,
+                fillFraction: RACE_CARD_FILL,
+              }}
               label={f.family}
               sub={`${f.list.length} lignée${f.list.length > 1 ? 's' : ''}`}
               selected={selected}
@@ -1496,254 +1514,372 @@ function trappingMeta(id: string): string {
   return bits.join(' · ');
 }
 
-// ════ 5) Possessions (LDB 05 l.559-585) — Zone A : richesse + arme au choix ; Zone B : revue d'équipement ════
-export function TrappingZones({ d, setD }: StepProps): StepZones {
+// ════ 6) Possessions (LDB 05 l.559-585) — charte « Atelier du scribe » (#393 P5, étalon
+//      `finale-mock7-possessions.png`) : gabarit DEUX ZONES (panneau + fiche vivante, MÊME composition
+//      que Caractéristiques/Compétences) — le panneau porte le statut en tête, puis les bandes « De
+//      carrière » / « De classe » (chips d'équipement comptées) / « La bourse » (rappel de la formule +
+//      montant, jet figé sans dés à rejouer) / « La classe » (prose RAW verbatim). Mécanique INCHANGÉE
+//      (draftWealth/weaponChoice, draft.ts) — la fiche vivante RÉSOUT son chip roadmap « dotations » en
+//      arrivant sur cette étape (`CreatorSummary`, `pending.possessions`).
+/** Faces INDIVIDUELLES du jet de bourse — même graine/ordre RNG que `draftWealth`
+ *  (`d.seed ^ 0x901d`, `rollInitialWealth`) : rejoue le MÊME nombre de `rng.int(1,10)` pour figer
+ *  les dés à l'écran (mock7 : faces + total) au lieu du seul total texte (retouche juge vision
+ *  #393 P5). Bronze N : 2N d10 ; Argent N : N d10 ; Or (aucun dé, CO=Standing) : []. */
+function draftWealthDice(d: CreatorDraft): number[] {
+  const status = parseStatus(draftLevel(d)?.status ?? 'Bronze 0');
+  if (status.standing <= 0 || status.tier === 'Or') return [];
+  const n = status.tier === 'Bronze' ? 2 * status.standing : status.standing;
+  const rng = makeRNG(d.seed ^ 0x901d);
+  return Array.from({ length: n }, () => d10Face(rng.int(1, 10)));
+}
+
+export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
   const level = draftLevel(d);
-  const klass = findClassById(findCareerById(d.careerId)?.class);
-  const wealth = draftWealth(d);
-  const careerTrappings = level?.trappings ?? []; // TrappingRef[]
-  const enc = previewHero(d)?.encumbrance;
-  // Chip d'équipement : libellé via trappingRefLabel ; CodexRef par libellé → popover de stats au survol
-  // (Dégâts/PA/Enc…) + fiche au clic. Plus de méta inline recodée.
-  const chip = (ref: import('../../data').TrappingRef, key: number) => {
-    const label = trappingRefLabel(ref);
-    return (
-      <CodexRef key={key} category="trappings" id={'id' in ref ? ref.id : undefined} label={splitLabel(label).name}>{label}</CodexRef>
-    );
-  };
-  const choice = (
-    <>
-      <Section title="Richesse initiale">
-        <p className="hint" style={{ marginTop: 0 }}>
-          Statut <b>{level?.status}</b> — Bronze : 2d10 sous × Standing · Argent : 1d10 pistoles × Standing · Or : 1 CO ×
-          Standing. Le jet est figé.
-        </p>
-        <p style={{ margin: 0 }}>
-          Bourse de départ : <b><Coins money={wealth} /></b> <span className="hint">(créditée au groupe)</span>
-        </p>
-      </Section>
-      {careerTrappings.some((t) => 'text' in t && t.text === 'Arme (Au choix)') && (
-        <Section title="Arme (au choix)">
-          <label>
-            Choisissez votre arme de départ
-            <select
-              value={d.weaponChoice ?? ''}
-              onChange={(e) => setD({ ...d, weaponChoice: e.target.value || undefined })}
-            >
-              <option value="">— choisir —</option>
-              {WEAPON_CHOICES.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          {d.weaponChoice && <p className="hint">{trappingMeta(d.weaponChoice)}</p>}
-        </Section>
-      )}
-    </>
-  );
-  const body = (
-    <>
-      <Section
-        title="Revue d'équipement"
-        right={enc != null ? <span className="hint">Encombrement total <b>{enc}</b></span> : undefined}
-      >
-        <div className="mini-title">Dotation de Classe ({klass?.label ?? '—'})</div>
-        <div className="skill-tags" style={{ marginBottom: 12 }}>{(klass?.trappings ?? []).map(chip)}</div>
-        <div className="mini-title">Dotation de Carrière ({level?.label ?? '—'})</div>
-        <div className="skill-tags">{careerTrappings.filter((t) => !('text' in t && t.text === 'Arme (Au choix)')).map(chip)}</div>
-        <p className="hint" style={{ marginTop: 12 }}>
-          Chaque objet ouvre sa fiche au clic ; l'Encombrement total est reporté dans la fiche vivante.
-        </p>
-      </Section>
-    </>
-  );
-  return { choice, detail: { title: 'Possessions de départ', body } };
-}
-
-// ════ 6) Détails (LDB 05 l.587-744) — Zone A : UNE région identité (nom, physique, motivation) ; Zone B : apparence ════
-export function DetailZones({ d, setD }: StepProps): StepZones {
-  const sp = draftSpecies(d);
-  if (!sp) {
-    return {
-      choice: <p className="hint">Choisissez d'abord une race.</p>,
-      detail: { title: 'Détails', body: <p className="hint">Identité et apparence s'ouvriront une fois votre race choisie.</p> },
-    };
-  }
-  const appearance: Appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
-  // Zone A = UNE seule région identité (nom+dé, physique, motivation/ambitions) — fin de l'identité
-  // coupée en trois. Zone B = l'apparence/personnalisateur.
-  const choice = (
-    <>
-      <Section
-        title="Identité"
-        right={
-          <button
-            className="btn small"
-            onClick={() => {
-              const r = rolledDetails(d);
-              setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair });
-            }}
-          >
-            <Icon id="nav/dice" size="sm" /> Tirer le physique
-          </button>
-        }
-      >
-        <label>
-          Nom
-          <span className="input-dice">
-            <input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />
-            <button
-              type="button"
-              className="btn small"
-              title="Nom aléatoire (race et sexe du personnage)"
-              onClick={() => {
-                const n = generateName(sp.refChar, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
-                if (n) setD({ ...d, name: n });
-              }}
-            >
-              <Icon id="nav/dice" size="sm" />
-            </button>
-          </span>
-        </label>
-        <label>
-          Âge
-          <input type="number" value={d.age ?? ''} onChange={(e) => setD({ ...d, age: Number(e.target.value) || undefined })} />
-        </label>
-        <label>
-          Taille (cm)
-          <input type="number" value={d.height ?? ''} onChange={(e) => setD({ ...d, height: Number(e.target.value) || undefined })} />
-        </label>
-        <label>
-          Yeux
-          <input value={d.eyes ?? ''} onChange={(e) => setD({ ...d, eyes: e.target.value })} />
-        </label>
-        <label>
-          Cheveux
-          <input value={d.hair ?? ''} onChange={(e) => setD({ ...d, hair: e.target.value })} />
-        </label>
-      </Section>
-      <Section title="Motivation & ambitions">
-        <BackgroundFields
-          values={{ motivation: d.motivation, ambitionShort: d.ambitionShort, ambitionLong: d.ambitionLong }}
-          onChange={(patch) => setD({ ...d, ...patch })}
-        />
-      </Section>
-    </>
-  );
-  const body = (
-    <Section title="Apparence">
-      <AppearancePanel
-        value={appearance}
-        equip={{ weapons: [], armour: [] }}
-        career={d.careerId}
-        onChange={(a) => setD({ ...d, sex: a.sex, build: a.build, appSeed: a.seed ?? d.appSeed, colors: a.colors, parts: a.parts })}
-      />
-    </Section>
-  );
-  return { choice, detail: { title: 'Apparence', body } };
-}
-
-// ════ 7) Récapitulatif — la « feuille de personnage » cérémonielle : parchemin, figurine équipée
-//      en double vue, et les descriptions RAW réelles (espèce, carrière, signe, talents) via Prose ════
-export function RecapZones({ d }: { d: CreatorDraft }): StepZones {
-  const hero = previewHero(d);
-  const wealth = draftWealth(d);
-  const sp = findSpeciesById(d.speciesId);
   const career = findCareerById(d.careerId);
-  const speciesLabel = sp?.label ?? d.speciesId;
-  const careerLabel = career?.label ?? d.careerId;
-  const sign = d.star ? starsTable.find((s) => s.id === d.star) : undefined;
-  const choice = (
-    <Section title="PX bonus de création">
-      <ul className="hint" style={{ margin: 0, paddingLeft: 18 }}>
-        <li>Race aléatoire : +{speciesXp(d)} PX</li>
-        <li>Carrière aléatoire : +{careerXp(d)} PX</li>
-        <li>Caractéristiques : +{charsXp(d)} PX</li>
-        {stepIds().includes('star') && <li>Signe astral : +{starXp(d)} PX</li>}
-      </ul>
-      <p className="hint">À dépenser dans la fiche (onglet Avancement), d'abord dans votre Niveau de Carrière.</p>
-    </Section>
-  );
-  const body = (
-    <div className="recap-sheet">
-      <div className="recap-head">
-        {hero && (
-          <div className="recap-figures">
-            <CharacterPreview hero={hero} view="front" size="lg" />
-            <CharacterPreview hero={hero} view="profile" size="lg" />
+  const klass = findClassById(career?.class);
+  const wealth = draftWealth(d);
+  const { rolling, landed, trigger, skip } = useRollFrisson(() => setD(rollDraftWealth(d)));
+  const careerTrappings = level?.trappings ?? []; // TrappingRef[]
+  const weaponChoiceEntry = careerTrappings.some((t) => 'text' in t && t.text === 'Arme (Au choix)');
+
+  if (!level || !career) {
+    return (
+      <div className="creator-trappings-screen">
+        <div className="creator-trappings-shell">
+          <div className="creator-trappings-main">
+            <p className="hint">Choisissez d'abord une race et une carrière.</p>
           </div>
-        )}
-        <div className="recap-id">
-          <h2>{d.name.trim() || 'Aventurier'}</h2>
-          <p>
-            <CodexRef category="races" id={d.speciesId} label={speciesLabel}>{speciesLabel}</CodexRef>, {displayLabelForSex(d.sex, draftLevel(d)?.label ?? '', draftLevel(d)?.labelF)} (
-            <CodexRef category="careers" id={d.careerId} label={careerLabel}>{displayLabelForSex(d.sex, careerLabel, career?.labelF)}</CodexRef>) · {draftLevel(d)?.status}
-          </p>
-          <p className="recap-meta">
-            {hero?.details?.age ? `${hero.details.age} ans · ` : ''}
-            {hero?.details?.height ? `${hero.details.height} cm · ` : ''}
-            {hero?.details?.eyes ? `yeux ${hero.details.eyes} · ` : ''}
-            {hero?.details?.hair ? `cheveux ${hero.details.hair}` : ''}
-          </p>
-          {d.motivation && (
-            <p className="recap-meta">
-              Motivation : <b>{d.motivation}</b>
-            </p>
-          )}
-          {(d.ambitionShort || d.ambitionLong) && (
-            <p className="recap-meta">Ambitions : {d.ambitionShort || '—'} / {d.ambitionLong || '—'}</p>
-          )}
-          <p className="recap-meta">
-            Richesse initiale : <b><Coins money={wealth} /></b> (créditée au groupe).
-          </p>
         </div>
       </div>
+    );
+  }
 
-      <RuleDivider label={speciesLabel} />
-      {sp?.desc && <Prose md={sp.desc} selfLabel={sp.label} />}
+  const chip = (ref: import('../../data').TrappingRef, key: number) => {
+    const label = trappingRefLabel(ref);
+    return <EntityRef key={key} category="trappings" id={'id' in ref ? ref.id : undefined} label={splitLabel(label).name} show={label} />;
+  };
+  const classItems = klass?.trappings ?? [];
+  const careerItems = careerTrappings.filter((t) => !('text' in t && t.text === 'Arme (Au choix)'));
 
-      <RuleDivider label={careerLabel} />
-      {career?.desc && <Prose md={career.desc} selfLabel={career.label} />}
-
-      {sign && (
-        <>
-          <RuleDivider label={sign.label} />
-          <p className="recap-meta">{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
-          {sign.desc && <Prose md={sign.desc} />}
-        </>
-      )}
-
-      <RuleDivider label="Talents" />
-      {(hero?.talents ?? []).map((t) => {
-        const data = findTalentById(t.talentId);
-        return (
-          <div key={`${t.talentId}|${t.spec ?? ''}`} className="recap-talent">
-            <h4>
-              <TalentChip talent={t} />
-            </h4>
-            {data?.desc && <Prose md={data.desc} selfLabel={data.label} />}
+  return (
+    <div className="creator-trappings-screen">
+      <div className="creator-trappings-shell">
+        <div className="detail-frame creator-trappings-main">
+          <div className="creator-skills-head">
+            <div>
+              <h3 className="creator-skills-title">Possessions</h3>
+              <p className="hint creator-skills-sub">Ce que le départ vous met dans les mains</p>
+            </div>
+            <MetalStatus status={level.status} size="chip" />
           </div>
-        );
-      })}
+          <p className="hint" style={{ marginTop: 0 }}>
+            Le statut <b>{level.status}</b> du {career.label} fixe la bourse de départ ({level.status.startsWith('Bronze') ? '2d10 sous de cuivre' : level.status.startsWith('Argent') ? '1d10 pistoles' : '1 couronne d\'or'} × Standing) et le
+            train de vie entre les aventures. Chaque objet reçu s'ouvre sur sa fiche du Codex — encombrement et qualités comprises.
+          </p>
 
-      <RuleDivider label="Compétences formées" />
-      <div className="skill-tags">
-        {(hero?.skills ?? [])
-          .filter((s) => s.advances > 0)
-          .map((s) => (
-            <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />
-          ))}
-      </div>
+          <Band title="De carrière" right={<span className="hint">{level.label} — {careerItems.length} objet{careerItems.length > 1 ? 's' : ''}</span>}>
+            <div className="skill-tags">{careerItems.map(chip)}</div>
+          </Band>
 
-      <RuleDivider label="Équipement" />
-      <div className="skill-tags">
-        {(hero?.items ?? []).map((it) => (
-          <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
-        ))}
+          <Band title="De classe" right={<span className="hint">{klass?.label ?? '—'} — {classItems.length} objet{classItems.length > 1 ? 's' : ''}</span>}>
+            <div className="skill-tags">{classItems.map(chip)}</div>
+          </Band>
+
+          {weaponChoiceEntry && (
+            <Band title="Arme (au choix)">
+              <label>
+                Choisissez votre arme de départ
+                <select value={d.weaponChoice ?? ''} onChange={(e) => setD({ ...d, weaponChoice: e.target.value || undefined })}>
+                  <option value="">— choisir —</option>
+                  {WEAPON_CHOICES.map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}
+                </select>
+              </label>
+              {d.weaponChoice && <p className="hint">{trappingMeta(d.weaponChoice)}</p>}
+            </Band>
+          )}
+
+          <Band
+            title="La bourse"
+            right={<span className="hint">statut <b>{level.status}</b></span>}
+          >
+            {rolling || landed ? (
+              <DiceRoll scene landed={landed} faces={null} onSkip={skip} />
+            ) : !d.wealthRoll ? (
+              <button type="button" className="dicewell act emph" onClick={() => trigger()}>
+                <span className="dicewell-tray">
+                  <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+                  <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+                </span>
+                <span className="dicewell-copy">
+                  <span className="dicewell-txt">Tirer aux dés — la bourse</span>
+                  <span className="dicewell-sub">
+                    {level.status.startsWith('Bronze') ? '2d10 sous de cuivre' : level.status.startsWith('Argent') ? '1d10 pistoles' : '1 couronne d\'or'} × Standing — jet figé, aucune relance
+                  </span>
+                </span>
+              </button>
+            ) : (
+              // Faces RÉELLES figées (draftWealthDice, même graine/ordre RNG que draftWealth) + total (mock7).
+              <div className="row-flex" style={{ marginTop: 4 }}>
+                <span className="dicewell-tray">
+                  {draftWealthDice(d).map((n, i) => (
+                    <span key={i} className="rm-die dicewell-die"><DieFace n={n} landed /></span>
+                  ))}
+                </span>
+                <p className="creator-purse-line">
+                  <Coins money={wealth} /> <span className="hint">— créditée au groupe à l'engagement</span>
+                </p>
+              </div>
+            )}
+          </Band>
+
+          <RuleDivider label="La classe" />
+          <div className="mini-title">{klass?.label ?? '—'}</div>
+          <LoreText md={klass?.desc} />
+        </div>
+        <CreatorSummary d={d} step={stepIds().indexOf('trappings')} />
       </div>
     </div>
   );
-  return { choice, detail: { title: d.name.trim() || 'Aventurier', body } };
+}
+
+/** Champ IDENTITÉ du registre d'état civil (nom/âge/taille/yeux/cheveux) — libellé au-dessus, contrôle
+ *  + bouton d'effacement (`ui/undo`, mineur/réversible) en fin de rangée (étalon `finale-mock8-details.png`). */
+function IdentityField({ label, value, onChange, onClear, type = 'text' }: {
+  label: string;
+  value: string | number;
+  onChange: (v: string) => void;
+  onClear: () => void;
+  type?: 'text' | 'number';
+}) {
+  return (
+    <label className="identity-field">
+      {label}
+      <span className="input-dice">
+        <input type={type} value={value} onChange={(e) => onChange(e.target.value)} />
+        <button type="button" className="btn small" title={`${label} : effacer`} onClick={onClear}>
+          <Icon id="ui/undo" size="sm" />
+        </button>
+      </span>
+    </label>
+  );
+}
+
+// ════ 7) Détails (LDB 05 l.587-744) — charte « Atelier du scribe » (#393 P5, étalon
+//      `finale-mock8-details.png`) : gabarit DEUX ZONES (panneau + fiche vivante) — encrier « Tirer
+//      le physique » en tête (même patron `.dicewell` idle/done que Race/Carrière), grille Nom/Sexe/
+//      Âge/Taille/Yeux/Cheveux, bande Motivation & Ambitions (`BackgroundFields`), bande Apparence
+//      (`AppearancePanel`, personnalisateur INCHANGÉ). Mécanique INCHANGÉE (`rolledDetails`, draft.ts).
+export function DetailsScreen({ d, setD }: StepProps): ReactNode {
+  const sp = draftSpecies(d);
+  if (!sp) {
+    return (
+      <div className="creator-details-screen">
+        <div className="creator-details-shell">
+          <div className="creator-details-main">
+            <p className="hint">Choisissez d'abord une race.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  const appearance: Appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
+  const physiqueRolled = !!(d.age || d.height || d.eyes || d.hair);
+  const { rolling, landed, trigger, skip } = useRollFrisson(() => {
+    const r = rolledDetails(d);
+    setD({ ...d, age: r.age, height: r.height, eyes: r.eyes, hair: r.hair });
+  });
+
+  return (
+    <div className="creator-details-screen">
+      <div className="creator-details-shell">
+        <div className="detail-frame creator-details-main">
+          <h3 className="creator-skills-title">Détails</h3>
+          <p className="hint creator-skills-sub">Le registre d'état civil du héros</p>
+          <p className="hint" style={{ marginTop: 0 }}>
+            Le nom peut se tirer d'un générateur ou s'écrire à la plume ; âge, taille, yeux et cheveux se tirent aux dés,
+            trait par trait — ou tous d'un coup. Motivation et ambitions sont libres — elles guident le jeu de rôle, pas les
+            règles ; la Motivation est la donnée qui recharge la Détermination en jeu.
+          </p>
+
+          <div className="row-flex creator-details-toolbar">
+            <button type="button" className="btn small" onClick={() => { const n = generateName(sp.refChar, d.sex, makeRNG(Math.floor(Math.random() * 1e9))); if (n) setD({ ...d, name: n }); }}>
+              <Icon id="nav/dice" size="sm" /> Tirer le nom
+            </button>
+            {rolling || landed ? (
+              <DiceRoll scene landed={landed} faces={null} onSkip={skip} />
+            ) : (
+              <button type="button" className={`dicewell${physiqueRolled ? ' done' : ' act emph'}`} onClick={() => trigger()}>
+                <span className="dicewell-copy">
+                  <span className="dicewell-txt">{physiqueRolled ? 'Aux dés — tout tiré' : 'Aux dés — tout d\'un coup'}</span>
+                  <span className="dicewell-sub">âge, taille, yeux, cheveux — trait par trait, modifiable ensuite</span>
+                </span>
+              </button>
+            )}
+          </div>
+
+          <div className="identity-grid">
+            <label className="identity-field">
+              Nom
+              <input value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />
+            </label>
+            <label className="identity-field">
+              Sexe
+              <button type="button" className="btn small identity-sex-toggle" onClick={() => setD({ ...d, sex: d.sex === 'M' ? 'F' : 'M' })}>
+                <Icon id="ui/branch" size="sm" /> {d.sex === 'F' ? 'Féminin' : 'Masculin'}
+              </button>
+            </label>
+            <IdentityField label="Âge" type="number" value={d.age ?? ''} onChange={(v) => setD({ ...d, age: Number(v) || undefined })} onClear={() => setD({ ...d, age: undefined })} />
+            <IdentityField label="Taille (cm)" type="number" value={d.height ?? ''} onChange={(v) => setD({ ...d, height: Number(v) || undefined })} onClear={() => setD({ ...d, height: undefined })} />
+            <IdentityField label="Yeux" value={d.eyes ?? ''} onChange={(v) => setD({ ...d, eyes: v })} onClear={() => setD({ ...d, eyes: undefined })} />
+            <IdentityField label="Cheveux" value={d.hair ?? ''} onChange={(v) => setD({ ...d, hair: v })} onClear={() => setD({ ...d, hair: undefined })} />
+          </div>
+
+          <Band title="Motivation & Ambitions" right={<span className="hint">recharge la Détermination · guide le rôle</span>}>
+            <BackgroundFields
+              values={{ motivation: d.motivation, ambitionShort: d.ambitionShort, ambitionLong: d.ambitionLong }}
+              onChange={(patch) => setD({ ...d, ...patch })}
+            />
+          </Band>
+
+          <Band title="Apparence" right={<span className="hint">la silhouette prend les teintes</span>}>
+            <AppearancePanel
+              value={appearance}
+              equip={{ weapons: [], armour: [] }}
+              career={d.careerId}
+              onChange={(a) => setD({ ...d, sex: a.sex, build: a.build, appSeed: a.seed ?? d.appSeed, colors: a.colors, parts: a.parts })}
+            />
+          </Band>
+        </div>
+        <CreatorSummary d={d} step={stepIds().indexOf('details')} />
+      </div>
+    </div>
+  );
+}
+
+/** Top-3 des Compétences par valeur de Test effective (Caractéristique + avances, `skillBaseValue`) —
+ *  « Les jets qui le définissent » (mock9) : les épreuves où le héros excelle le plus. Composé de
+ *  chips CodexRef réels (jamais un libellé de flavor inventé) + la valeur de Test. */
+function topSkillTests(hero: Combatant, max = 3): { skillId: string; spec?: string; label: string; value: number }[] {
+  return [...hero.skills]
+    .filter((s) => s.advances > 0)
+    .map((s) => ({ skillId: s.skillId, spec: s.spec, label: skillInstanceLabel(s), value: skillBaseValue(hero, s.skillId, s.spec) }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, max);
+}
+
+// ════ 8) Présentation (#393 P5, arbitrage README maquettes — renommage « Récapitulatif » →
+//      « Présentation » : le personnage se PRÉSENTE) — étalon `finale-mock9-presentation.png` : mise
+//      en scène finale DÉDIÉE (plus le gabarit 3 zones rail/détail/fiche partagé) — TROIS colonnes :
+//      registre (Profil/dérivées/Identité/Motivation/Évolution) ⇄ grande figurine + nom ⇄ Compétences/
+//      Talents/Possessions/« Les jets qui le définissent ». Aucune mécanique nouvelle — pure mise en
+//      page du héros déjà construit (`previewHero`).
+export function PresentationScreen({ d }: StepProps): ReactNode {
+  const hero = previewHero(d);
+  const sp = findSpeciesById(d.speciesId);
+  const career = findCareerById(d.careerId);
+  const level = draftLevel(d);
+  const speciesLabel = sp?.label ?? d.speciesId;
+  const careerLabel = career?.label ?? d.careerId;
+  const sign = d.star ? starsTable.find((s) => s.id === d.star) : undefined;
+  const levels = levelsForCareer(d.careerId);
+
+  if (!hero) {
+    return (
+      <div className="creator-presentation-screen">
+        <p className="hint">Complétez les étapes précédentes pour découvrir la présentation de votre héros.</p>
+      </div>
+    );
+  }
+
+  const jets = topSkillTests(hero);
+
+  return (
+    <div className="creator-presentation-screen">
+      <div className="presentation-col presentation-left">
+        <div className="mini-title">Profil</div>
+        <CharStatsGrid size="sm" value={(k) => hero.characteristics[k]} />
+        <div className="mini-title">Valeurs dérivées</div>
+        <div className="creator-derived">
+          <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>
+          <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>
+          <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>
+          <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Dét. <b>{hero.resolve ?? '—'}</b></span>
+          <span><Icon id="resource/gold-purse" size="sm" /> Bourse <b><Coins money={draftWealth(d)} /></b></span>
+          <span>PX création <b>+{xpTotal(d)}</b></span>
+        </div>
+        <div className="mini-title">Identité</div>
+        <div className="skill-tags">
+          {sign && <CodexRef category="stars" id={sign.id} label={sign.label}><span className="chip">{sign.label}</span></CodexRef>}
+          <span className="chip">{d.sex === 'F' ? 'Féminin' : 'Masculin'}</span>
+          {hero.details?.age != null && <span className="chip">{hero.details.age} ans</span>}
+          {hero.details?.height != null && <span className="chip">{hero.details.height} cm</span>}
+          {hero.details?.eyes && <span className="chip">Yeux {hero.details.eyes}</span>}
+          {hero.details?.hair && <span className="chip">Cheveux {hero.details.hair}</span>}
+        </div>
+        {(d.motivation || d.ambitionShort || d.ambitionLong) && (
+          <>
+            <div className="mini-title">Motivation &amp; Ambitions</div>
+            <div className="skill-tags">
+              {d.motivation && <span className="chip">Motivation — {d.motivation}</span>}
+              {d.ambitionShort && <span className="chip">Court terme — {d.ambitionShort}</span>}
+              {d.ambitionLong && <span className="chip">Long terme — {d.ambitionLong}</span>}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="presentation-col presentation-center">
+        <div className="presentation-fig">
+          <CharacterPreview hero={hero} view="front" size="fill" ambiance="spotlight" />
+        </div>
+        <h2 className="presentation-name">{hero.name}</h2>
+        <p className="presentation-sub">
+          <CodexRef category="races" id={d.speciesId} label={speciesLabel}>{speciesLabel}</CodexRef> ({displayLabelForSex(d.sex, careerLabel, career?.labelF)}) · {level?.status}
+        </p>
+        <div className="row-flex">
+          {sign && <span className="chip">Signe <CodexRef category="stars" id={sign.id} label={sign.label}>{sign.label}</CodexRef></span>}
+          <span className="chip">PX création <b>+{xpTotal(d)}</b></span>
+        </div>
+      </div>
+
+      <div className="presentation-col presentation-right">
+        <div className="mini-title">Compétences formées</div>
+        <div className="skill-tags">
+          {hero.skills.filter((s) => s.advances > 0).map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />)}
+        </div>
+        <div className="mini-title">Talents</div>
+        <div className="skill-tags">
+          {hero.talents.map((t) => <TalentChip key={`${t.talentId}|${t.spec ?? ''}`} talent={t} />)}
+        </div>
+        <div className="mini-title">Possessions</div>
+        <div className="skill-tags">
+          {(hero.items ?? []).map((it) => (
+            <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
+          ))}
+        </div>
+        {jets.length > 0 && (
+          <>
+            <div className="mini-title">Les jets qui le définissent</div>
+            <div className="skill-tags">
+              {jets.map((j) => (
+                <EntityRef key={`${j.skillId}|${j.spec ?? ''}`} category="skills" id={j.skillId} label={j.label} show={`${j.label} ${j.value}`} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Chemin d'évolution en rangée PLEINE LARGEUR sous les 3 colonnes (`grid-column: 1/-1`, seule
+          couture propre à ce spanning — `.presentation-col` réutilisée pour la mise en page verticale) :
+          `CareerPath` exige la largeur de ses 4 médaillons (2 lignes de nom, jamais d'ellipse), que la
+          seule colonne registre ne peut jamais lui donner (retouche juge vision #393 P5, médaillons
+          écrasés « Pamphl étaire »/« Bronz »). */}
+      {levels.length > 0 && (
+        <div className="presentation-col" style={{ gridColumn: '1 / -1' }}>
+          <div className="mini-title">Évolution — {career?.class ? findClassById(career.class)?.label ?? '' : ''}</div>
+          <CareerPath levels={levels} currentLevel={1} selected={1} />
+        </div>
+      )}
+    </div>
+  );
 }

@@ -121,6 +121,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 25
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -243,6 +246,9 @@
     "source": {
       "book": "middenheim",
       "page": 151
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -373,6 +379,9 @@
     "source": {
       "book": "middenheim",
       "page": 152
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -518,6 +527,9 @@
     "source": {
       "book": "middenheim",
       "page": 153
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -649,6 +661,9 @@
     "source": {
       "book": "aux-armes",
       "page": 55
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -793,6 +808,9 @@
     "source": {
       "book": "mer-des-griffes",
       "page": 54
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -938,6 +956,9 @@
     "source": {
       "book": "mer-des-griffes",
       "page": 54
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -1084,6 +1105,9 @@
     "source": {
       "book": "mer-des-griffes",
       "page": 54
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -1209,7 +1233,10 @@
       "book": "livre-de-base",
       "page": 26
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-cendreplaine",
@@ -1346,7 +1373,10 @@
       "book": "archives-de-l-empire-1",
       "page": 23
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-basseronce",
@@ -1481,7 +1511,10 @@
       "book": "archives-de-l-empire-1",
       "page": 24
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-tuilecaramel",
@@ -1618,7 +1651,10 @@
       "book": "archives-de-l-empire-1",
       "page": 25
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-piedfoin",
@@ -1754,7 +1790,10 @@
       "book": "archives-de-l-empire-1",
       "page": 25
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-piedpaille",
@@ -1889,7 +1928,10 @@
       "book": "archives-de-l-empire-1",
       "page": 26
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-piedfoin-piedpaille",
@@ -2024,7 +2066,10 @@
       "book": "archives-de-l-empire-1",
       "page": 26
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-pochegaree",
@@ -2158,7 +2203,10 @@
       "book": "archives-de-l-empire-1",
       "page": 27
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-havrebas",
@@ -2297,7 +2345,10 @@
       "book": "archives-de-l-empire-1",
       "page": 28
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-rumster",
@@ -2433,7 +2484,10 @@
       "book": "archives-de-l-empire-1",
       "page": 29
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-bordecharde",
@@ -2569,7 +2623,10 @@
       "book": "archives-de-l-empire-1",
       "page": 30
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-pavederonces",
@@ -2709,7 +2766,10 @@
       "book": "archives-de-l-empire-1",
       "page": 31
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "halflings-fraisedebois",
@@ -2845,7 +2905,10 @@
       "book": "archives-de-l-empire-1",
       "page": 32
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "nains",
@@ -2991,7 +3054,10 @@
       "book": "livre-de-base",
       "page": 25
     },
-    "mutationBodyMax": 5
+    "mutationBodyMax": 5,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "nains-norse",
@@ -3137,7 +3203,10 @@
       "book": "mer-des-griffes",
       "page": 54
     },
-    "mutationBodyMax": 5
+    "mutationBodyMax": 5,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "gnomes",
@@ -3303,6 +3372,9 @@
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 86
+    },
+    "preview": {
+      "career": "artisan"
     }
   },
   {
@@ -3452,7 +3524,10 @@
       "book": "archives-de-l-empire-2",
       "page": 15
     },
-    "mutationBodyMax": 10
+    "mutationBodyMax": 10,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "hauts-elfes",
@@ -3597,7 +3672,10 @@
       "book": "livre-de-base",
       "page": 27
     },
-    "mutationBodyMax": 0
+    "mutationBodyMax": 0,
+    "preview": {
+      "career": "artisan"
+    }
   },
   {
     "id": "elfes-sylvains",
@@ -3743,6 +3821,9 @@
       "book": "livre-de-base",
       "page": 28
     },
-    "mutationBodyMax": 0
+    "mutationBodyMax": 0,
+    "preview": {
+      "career": "artisan"
+    }
   }
 ]

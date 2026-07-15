@@ -278,7 +278,15 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // +3 : pastilles de suivi 5a (`.creator-skill-quota-gauges` + descendant `.notch-gauge`, compose
   // `.row-flex` en JSX — LOT clôture pieds étape 5) et séparateur « ou » des talents de race
   // (`.talent-option-ou`, arbitrage doc mémoire game-charte-talents-ou-chips-codex-lisibles).
-  'styles/creator.css': 144,
+  // #393 P5 (Possessions/Détails/Présentation, DERNIER lot du programme #393) : +18 — étend le
+  // gabarit deux-zones aux étapes 6/7 (`.creator-trappings-(screen|shell|main)`,
+  // `.creator-details-(screen|shell|main|toolbar)`) ; identité (`.identity-(grid|field|sex-toggle)`) ;
+  // bourse (`.creator-purse-line`) ; gabarit DÉDIÉ 3 colonnes de l'étape 8, renommée « Présentation »
+  // (`.creator-presentation-screen`, `.presentation-(col|left|center|right|fig|name|sub)`).
+  // Correctif responsive PRÉSENTATION (agent-œil post-livraison, même lot) : +1 —
+  // `.presentation-left .char-stats` (repli 3 colonnes ≤560px, la grille 5 colonnes canonique
+  // débordait la colonne étroite mobile).
+  'styles/creator.css': 163,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,

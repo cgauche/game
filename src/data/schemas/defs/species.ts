@@ -40,6 +40,10 @@ export const schema = z.array(
     group: z.string().optional(),
     /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.87-91). Absent = défaut Humain (50). */
     mutationBodyMax: z.number().optional(),
+    /** Habillage de l'APERÇU (créateur, carte de race #431) — id de carrière ICONIQUE et COMMUNE à
+     *  l'espèce (jamais un choix de RÈGLE, pur flavor de vitrine) : la tuile de famille montre un
+     *  personnage vêtu plutôt qu'une tunique nue. Absent = pas de tenue (repli existant). */
+    preview: z.strictObject({ career: z.string().optional() }).optional(),
   }),
 );
 

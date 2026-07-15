@@ -187,6 +187,10 @@ export interface SpeciesData {
    *  Elfe 0, Nain 5, Halfling 10, Humain 50. Ogre 10 (ADE2 « Ogres et Mutations »). ABSENT = défaut
    *  Humain (50) — le Gnome y est rattaché par NADJ « Gnomes et Corruption » (« mutent comme les humains »). */
   mutationBodyMax?: number;
+  /** Habillage de l'APERÇU (créateur, carte de race #431) — id de carrière ICONIQUE et COMMUNE à
+   *  l'espèce (flavor de vitrine, pas une règle) : la tuile de famille montre un personnage vêtu
+   *  plutôt qu'une tunique nue. Absent = pas de tenue (repli existant). */
+  preview?: { career?: string };
 }
 export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */

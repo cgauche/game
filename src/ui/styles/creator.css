@@ -742,7 +742,9 @@
   }
   .creator-shell > .creator-summary,
   .creator-chars-shell > .creator-summary,
-  .creator-skills-shell > .creator-summary {
+  .creator-skills-shell > .creator-summary,
+  .creator-trappings-shell > .creator-summary,
+  .creator-details-shell > .creator-summary {
     order: -1;
     grid-column: 1 / -1;
     border-left: 0;
@@ -1389,7 +1391,9 @@
    maquette ») : gabarit DEUX ZONES (panneau + fiche vivante), MÊME composition que Race/Carrière —
    plus de rail séparé, tout vit dans le panneau central (bandes ci-dessus). -- */
 .creator-chars-screen,
-.creator-skills-screen {
+.creator-skills-screen,
+.creator-trappings-screen,
+.creator-details-screen {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -1399,7 +1403,9 @@
   overflow: hidden;
 }
 .creator-chars-shell,
-.creator-skills-shell {
+.creator-skills-shell,
+.creator-trappings-shell,
+.creator-details-shell {
   flex: 1;
   min-height: 0;
   display: grid;
@@ -1408,13 +1414,17 @@
   overflow: hidden;
 }
 .creator-chars-main,
-.creator-skills-main {
+.creator-skills-main,
+.creator-trappings-main,
+.creator-details-main {
   min-height: 0;
   overflow-y: auto;
   padding-right: 4px;
 }
 .creator-chars-shell > .creator-summary,
-.creator-skills-shell > .creator-summary {
+.creator-skills-shell > .creator-summary,
+.creator-trappings-shell > .creator-summary,
+.creator-details-shell > .creator-summary {
   border: 0;
   border-left: 1px solid var(--border);
   min-height: 0;
@@ -1481,19 +1491,24 @@
 }
 @media (max-width: 1100px) {
   .creator-chars-shell,
-  .creator-skills-shell {
+  .creator-skills-shell,
+  .creator-trappings-shell,
+  .creator-details-shell {
     grid-template-columns: 1fr;
     grid-auto-rows: auto;
   }
 }
 @media (max-width: 700px) {
   .creator-chars-screen,
-  .creator-skills-screen {
+  .creator-skills-screen,
+  .creator-trappings-screen,
+  .creator-details-screen {
     padding: 12px;
   }
   .char-alloc-grid,
   .skill-row-grid,
-  .creator-talents-cols {
+  .creator-talents-cols,
+  .identity-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -1513,4 +1528,139 @@
   background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
   color: var(--atelier-brass-elu);
   font-weight: 600;
+}
+
+/* -- Étape Possessions (#393 P5, étalon `finale-mock7-possessions.png`) : « La bourse » — les faces
+   RÉELLES du jet figé (`draftWealthDice`, même graine/ordre RNG que `draftWealth` — jamais une face
+   fabriquée) précèdent le montant total (retouche juge vision #393 P5, persiste les dés au lieu du
+   seul texte). -- */
+.creator-purse-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 18px;
+  color: var(--gold2);
+  margin: 0;
+}
+
+/* -- Étape Détails (#393 P5, étalon `finale-mock8-details.png`) : encrier physique en tête + grille
+   d'identité 2 colonnes (Nom/Sexe, Âge/Taille, Yeux/Cheveux). -- */
+.creator-details-toolbar {
+  margin: 10px 0 14px;
+}
+.creator-details-toolbar .dicewell {
+  flex: 1;
+  min-width: 220px;
+}
+.identity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 14px;
+  margin-bottom: 16px;
+}
+.identity-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.identity-field input {
+  flex: 1;
+  min-width: 0;
+}
+.identity-sex-toggle {
+  align-self: flex-start;
+}
+
+/* -- Étape Présentation (#393 P5, renommage « Récapitulatif », étalon
+   `finale-mock9-presentation.png`) : mise en scène FINALE, gabarit DÉDIÉ 3 colonnes — registre gauche
+   / grande figurine centrale / Compétences-Talents-Possessions droite. Plus le rail/détail/fiche
+   partagé (le héros est déjà construit, rien à ÉDITER ici). -- */
+.creator-presentation-screen {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(280px, 420px) minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: 20px;
+  padding: 20px 24px;
+  overflow: hidden auto;
+}
+.presentation-col {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.presentation-col .mini-title {
+  margin-top: 16px;
+}
+.presentation-col .mini-title:first-child {
+  margin-top: 0;
+}
+.presentation-center {
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  overflow: visible;
+  justify-content: center;
+}
+.presentation-fig {
+  width: 100%;
+  max-width: 340px;
+  height: 100%;
+  min-height: 420px;
+  max-height: 560px;
+}
+.presentation-name {
+  font-family: var(--font-display);
+  color: var(--gold2);
+  font-size: 24px;
+  margin: 4px 0 0;
+}
+.presentation-sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+@media (max-width: 1100px) {
+  /* `display:flex` (pas grid) : l'auto-placement grid + `order` a produit un empilement de 3
+     tracks de MÊME hauteur (367px chacune, quel que soit leur contenu réel — la figurine 420px du
+     centre s'y retrouvait TASSÉE et son texte peint par-dessus le panneau suivant, #431 repro CDP)
+     — flexbox respecte `order` sans ce piège d'auto-placement, chaque colonne garde sa hauteur de
+     CONTENU (même patron que `.creator-pick-shell`/`.creator-shell`, empilement mobile canon). */
+  .creator-presentation-screen {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .presentation-center {
+    order: -1;
+  }
+  .presentation-col {
+    overflow: visible;
+    max-height: none;
+    flex: none;
+  }
+  .presentation-fig {
+    max-width: 240px;
+    min-height: 0;
+    max-height: none;
+    height: 300px;
+    margin: 0 auto;
+  }
+}
+@media (max-width: 700px) {
+  .creator-presentation-screen {
+    padding: 12px;
+    gap: 14px;
+  }
+}
+@media (max-width: 560px) {
+  .presentation-left .char-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

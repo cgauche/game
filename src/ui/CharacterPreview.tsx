@@ -34,6 +34,10 @@ interface CommonProps {
   size?: CharacterPreviewSize;
   /** Fond du cadre : `panel` (surface), `parchment`/`spotlight` (textures .tx-* d'ornaments.css). */
   ambiance?: CharacterPreviewAmbiance;
+  /** Fraction de la hauteur du cadre `fill` occupée par le corps de gabarit (défaut `FILL_FRACTION`,
+   *  0.88) — un consommateur en grille SERRÉE (cartes de race #431) peut demander un cadrage plus
+   *  large (valeur plus basse) pour laisser respirer le visage plutôt que l'écraser au plein champ. */
+  fillFraction?: number;
   className?: string;
 }
 interface RawProps extends CommonProps {
@@ -74,7 +78,7 @@ const AMBIANCE_CLASS: Record<CharacterPreviewAmbiance, string> = {
 };
 
 function CharacterPreviewBase(props: CharacterPreviewProps) {
-  const { view = 'front', pose, mirror = false, size = 'md', ambiance = 'none', className, hero } = props;
+  const { view = 'front', pose, mirror = false, size = 'md', ambiance = 'none', fillFraction = FILL_FRACTION, className, hero } = props;
   // Dérivation « héros » = MÊMES briques que le rendu jeu (cf. pickBackend, branche rig).
   const appearance = useMemo(
     () => (hero ? combatantAppearance(hero.appearance ?? defaultAppearance(hero), hero) : props.appearance),
@@ -98,10 +102,10 @@ function CharacterPreviewBase(props: CharacterPreviewProps) {
     const headTopY = bodyHeadTopY(appearance);
     const figureHeight = 150 - headTopY; // pieds toujours ancrés à y=150 (groundSkeleton)
     if (!(figureHeight > 0)) return STATIC_BOX;
-    const boxHeight = figureHeight / FILL_FRACTION;
+    const boxHeight = figureHeight / fillFraction;
     const boxWidth = boxHeight * (120 / 150);
     return `${60 - boxWidth / 2} ${150 - boxHeight} ${boxWidth} ${boxHeight}`;
-  }, [size, appearance]);
+  }, [size, appearance, fillFraction]);
   return (
     <div className={cls}>
       <svg className="charprev-svg" viewBox={viewBox} preserveAspectRatio="xMidYMax meet" aria-hidden="true">
