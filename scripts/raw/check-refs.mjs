@@ -9,7 +9,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, chapterFile } from './_lib.mjs'
+import { ldbRe, otherRe, span, chapterFile, bookOf } from './_lib.mjs'
 
 export const RAWDIR = 'docs/raw'
 export const EXCLUDE = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md'])
@@ -28,7 +28,7 @@ function* refsInLine(ln) {
   while ((m = other.exec(ln))) {
     const nn = m[2]
     if (nn == null) continue // pas de chapitre → hors sujet (réf de livre entier, pas de fichier à borner)
-    const abbr = m[1].replace(/\s+/g, ' ').trim()
+    const abbr = bookOf(m[1].replace(/\s+/g, ' ').trim())
     const [, hi] = span(m[3], '')
     yield { abbr, nn, hi }
   }

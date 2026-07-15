@@ -2,7 +2,7 @@
 // (écrite en parallèle de `LIVRE NN l.X` dans le code) doit être vue au même titre. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ldbRe, otherRe, span } from './_lib.mjs'
+import { ldbRe, otherRe, span, bookOf, chapterFile } from './_lib.mjs'
 
 test('ldbRe : "LDB 17 l.27" matche', () => {
   const m = [...'LDB 17 l.27'.matchAll(ldbRe())]
@@ -111,6 +111,53 @@ test('otherRe : "Midd 02 l.10" matche toujours (préfixe tronqué Middenheim)', 
 test('otherRe : "ch.23 l.75" SANS livre ne matche pas', () => {
   const m = [...'La Difficulté (ch.23 l.75)'.matchAll(otherRe())]
   assert.equal(m.length, 0)
+})
+
+test('bookOf : "ADE2" canonicalise vers "ADE II" (#434 défaut 11)', () => {
+  assert.equal(bookOf('ADE2'), 'ADE II')
+})
+
+test('bookOf : "ADE1" canonicalise vers "ADE I"', () => {
+  assert.equal(bookOf('ADE1'), 'ADE I')
+})
+
+test('bookOf : "ADEII" canonicalise vers "ADE II" (pas ADE I)', () => {
+  assert.equal(bookOf('ADEII'), 'ADE II')
+})
+
+test('bookOf : "ADEI" canonicalise vers "ADE I"', () => {
+  assert.equal(bookOf('ADEI'), 'ADE I')
+})
+
+test('bookOf : "NADJ" canonicalise vers "NADAJ"', () => {
+  assert.equal(bookOf('NADJ'), 'NADAJ')
+})
+
+test('bookOf : "Midd" canonicalise vers "Middenheim"', () => {
+  assert.equal(bookOf('Midd'), 'Middenheim')
+})
+
+test('bookOf : "MDG" (déjà canonique) résout par identité', () => {
+  assert.equal(bookOf('MDG'), 'MDG')
+})
+
+test('bookOf : texte inconnu résout à null', () => {
+  assert.equal(bookOf('Inconnu'), null)
+})
+
+test('chapterFile : résout après canonicalisation de "ADE2"', () => {
+  const cf = chapterFile(bookOf('ADE2'), '03')
+  assert.notEqual(cf, null)
+})
+
+test('chapterFile : résout après canonicalisation de "ADE1"', () => {
+  const cf = chapterFile(bookOf('ADE1'), '6')
+  assert.notEqual(cf, null)
+})
+
+test('chapterFile : résout après canonicalisation de "NADJ"', () => {
+  const cf = chapterFile(bookOf('NADJ'), '16')
+  assert.notEqual(cf, null)
 })
 
 test('ldbRe / otherRe : instances FRAÎCHES à chaque appel (lastIndex non partagé)', () => {

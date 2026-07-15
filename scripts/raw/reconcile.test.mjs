@@ -1,0 +1,176 @@
+// Test du garde `reconcile` (node --test). Lancé par `npm run test:raw`.
+// Non-régression #434 défaut 9 : le Sens A du LDB doit rendre EXACTEMENT le même résultat
+// qu'au commit 1151007b (avant l'extension aux 14 autres livres) — 0 trou dur, 6 chapitres à
+// lignes non pinées (LDB 46/10/15/11/05/12, cf. docs/raw/reconciliation.md figé à ce commit).
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { computeReconciliation } from './reconcile.mjs'
+
+test('non-régression : Sens A LDB sur le vrai repo = 0 trou dur · 6 chapitres à lignes non pinées', () => {
+  const data = computeReconciliation()
+  assert.equal(data.hardA.length, 0)
+  assert.equal(data.softA.length, 6)
+  assert.deepEqual(
+    data.softA.map((s) => s.ch).sort(),
+    ['05', '10', '11', '12', '15', '46'],
+  )
+})
+
+function withFixtures(srcFiles, docFiles, fn) {
+  const root = mkdtempSync(join(tmpdir(), 'reconcile-'))
+  const srcDir = join(root, 'src')
+  const rawDir = join(root, 'raw')
+  mkdirSync(srcDir, { recursive: true })
+  mkdirSync(rawDir, { recursive: true })
+  for (const [name, content] of Object.entries(srcFiles)) {
+    const p = join(srcDir, name)
+    mkdirSync(join(p, '..'), { recursive: true })
+    writeFileSync(p, content, 'utf8')
+  }
+  for (const [name, content] of Object.entries(docFiles)) writeFileSync(join(rawDir, name), content, 'utf8')
+  try { fn({ srcDir, rawDir }) } finally { rmSync(root, { recursive: true, force: true }) }
+}
+
+test('Sens A LDB : chapitre absent de l\'Atlas → trou dur', () => {
+  withFixtures(
+    { 'a.ts': '// règle LDB 6 l.3\n' },
+    { 'fiche.md': 'rien à voir\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardA.length, 1)
+      assert.equal(data.hardA[0].ch, '6')
+    },
+  )
+})
+
+test('Sens A LDB : chapitre cité, ligne hors tolérance → trou fin', () => {
+  withFixtures(
+    { 'a.ts': '// règle LDB 6 l.500\n' },
+    { 'fiche.md': 'LDB 6 l.3\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardA.length, 0)
+      assert.equal(data.softA.length, 1)
+      assert.equal(data.softA[0].missCount, 1)
+    },
+  )
+})
+
+test('Sens A LDB : chapitre cité, ligne dans ±TOL → couvert', () => {
+  withFixtures(
+    { 'a.ts': '// règle LDB 6 l.10\n' },
+    { 'fiche.md': 'LDB 6 l.3\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardA.length, 0)
+      assert.equal(data.softA.length, 0)
+    },
+  )
+})
+
+test('Sens A LDB : chapitre couvert par un catalogue → jamais un trou de ligne', () => {
+  withFixtures(
+    { 'a.ts': '// règle LDB 6 l.500\n' },
+    { 'catalogue-x.md': 'LDB 6 mentionné, données verbatim\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardA.length, 0)
+      assert.equal(data.softA.length, 0)
+    },
+  )
+})
+
+test('Sens A (autres livres) : chapitre absent de l\'Atlas → trou dur PAR LIVRE', () => {
+  withFixtures(
+    { 'a.ts': '// règle AA 07 l.3\n' },
+    { 'fiche.md': 'rien à voir\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardAOther.length, 1)
+      assert.equal(data.hardAOther[0].book, 'AA')
+      assert.equal(data.hardAOther[0].ch, '7')
+      assert.equal(data.bookStats.get('AA').hard, 1)
+    },
+  )
+})
+
+test('Sens A (autres livres) : chapitre zéro-préfixé au CODE, non préfixé à l\'ATLAS → PAS un trou (#434)', () => {
+  withFixtures(
+    { 'a.ts': '// règle AA 02 l.3\n' },
+    { 'fiche.md': '## [AA 2] INTRODUCTION\nAA 2 l.3\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardAOther.length, 0)
+      assert.equal(data.softAOther.length, 0)
+    },
+  )
+})
+
+test('Sens A (autres livres) : chapitre RÉELLEMENT absent (numéro différent) reste un trou dur malgré la normalisation', () => {
+  withFixtures(
+    { 'a.ts': '// règle AA 09 l.3\n' },
+    { 'fiche.md': '## [AA 2] INTRODUCTION\nAA 2 l.3\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardAOther.length, 1)
+      assert.equal(data.hardAOther[0].book, 'AA')
+      assert.equal(data.hardAOther[0].ch, '9')
+    },
+  )
+})
+
+test('Sens A (autres livres) : chapitre cité, ligne hors tolérance → trou fin PAR LIVRE', () => {
+  withFixtures(
+    { 'a.ts': '// règle AA 07 l.500\n' },
+    { 'fiche.md': 'AA 07 l.3\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardAOther.length, 0)
+      assert.equal(data.softAOther.length, 1)
+      assert.equal(data.softAOther[0].book, 'AA')
+      assert.equal(data.bookStats.get('AA').soft, 1)
+    },
+  )
+})
+
+test('Sens A (autres livres) : réf SANS chapitre (`AA l.X`) → comptée à part, jamais un trou', () => {
+  withFixtures(
+    { 'a.ts': '// règle AA l.4395\n' },
+    { 'fiche.md': 'rien à voir\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardAOther.length, 0)
+      assert.equal(data.softAOther.length, 0)
+      assert.equal(data.codeOtherNoCh.get('AA').length, 1)
+      assert.equal(data.bookStats.get('AA').noCh, 1)
+    },
+  )
+})
+
+test('Sens A (autres livres) : chapitre couvert par un catalogue (autre livre) → jamais un trou de ligne', () => {
+  withFixtures(
+    { 'a.ts': '// règle AA 07 l.500\n' },
+    { 'catalogue-x.md': 'AA 07 mentionné, données verbatim\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardAOther.length, 0)
+      assert.equal(data.softAOther.length, 0)
+    },
+  )
+})
+
+test('Sens A (autres livres) : deux livres distincts n\'interfèrent pas l\'un avec l\'autre', () => {
+  withFixtures(
+    { 'a.ts': '// règles AA 07 l.3 et ZI 02 l.9\n' },
+    { 'fiche.md': 'AA 07 l.3 couvert. rien pour ZI.\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardAOther.length, 1)
+      assert.equal(data.hardAOther[0].book, 'ZI')
+      assert.equal(data.softAOther.length, 0)
+    },
+  )
+})

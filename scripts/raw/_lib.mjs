@@ -41,8 +41,10 @@ export const ldbRe = () => /\bLDB (?:ch\.)?(\d+) l\.(\d+)((?:[-+]\d+)*)/g       
 // Graphies tolérées en plus des abréviations canoniques (préfixes tronqués, chiffre arabe pour le
 // chiffre romain…) — chaque entrée référence un livre RÉEL de BOOKS (vérifié ci-dessous, fail-fast).
 const EXTRA_ABBR_VARIANTS = [
-  ['ADE I', 'ADE ?I{1,2}'],   // ADE I / ADEI / ADE II / ADEII
-  ['ADE I', 'ADE ?[12]'],     // ADE1 / ADE2 (chiffre arabe)
+  ['ADE II', 'ADE ?I{2}'],    // ADE II / ADEII
+  ['ADE I', 'ADE ?I(?!I)'],   // ADE I / ADEI (pas suivi d'un second I)
+  ['ADE II', 'ADE ?2'],       // ADE2 (chiffre arabe)
+  ['ADE I', 'ADE ?1'],        // ADE1 (chiffre arabe)
   ['Middenheim', 'Midd\\w*'],
   ['NADAJ', 'NAD\\w+'],
   ['Altdorf', 'Ald\\w+'],     // dossier Source : "Aldorf"
@@ -60,6 +62,17 @@ const OTHER_ABBR_ALT = [
 ].sort((a, b) => b.length - a.length).join('|')
 export const otherRe = () =>
   new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)`, 'g')
+
+// Canonicalise le texte brut matché par otherRe (m[1]) vers l'abréviation BOOKS (#434 défaut 11) :
+// identité si déjà canonique, sinon résolution via EXTRA_ABBR_VARIANTS (MÊME table que l'alternation
+// ci-dessus — source unique). Retourne null si le texte ne correspond à aucun livre connu.
+export function bookOf(text) {
+  if (BOOK_DIR.has(text)) return text
+  for (const [book, pat] of EXTRA_ABBR_VARIANTS) {
+    if (new RegExp(`^(?:${pat})$`).test(text)) return book
+  }
+  return null
+}
 
 // Déplie un suffixe "-285" (intervalle) ou "+217+220" (points) → [lo, hi].
 export function span(line, suffix) {
