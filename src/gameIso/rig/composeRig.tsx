@@ -81,6 +81,18 @@ export function bodyHeadTopY(appearance: Appearance): number {
   return apply(world.tete, { x: 0, y: -sk.tete.length }).y;
 }
 
+/** Sol du repère de corps (`groundSkeleton`, skeletons.ts) — les pieds y sont toujours ancrés. */
+export const GROUND_Y = 150;
+
+/** LA TOISE d'une apparence : hauteur du CORPS de gabarit, des pieds (`GROUND_Y`) au sommet de tête
+ *  (`bodyHeadTopY` — accessoires exclus). Unités du repère de corps, comparables d'une race à
+ *  l'autre : c'est la donnée qui dit qu'un ogre est deux fois plus haut qu'un halfling. Brique de la
+ *  toise COMMUNE d'une grille à échelle vraie (`CharacterPreview.scaleRef`, #431) :
+ *  `Math.max(...apparences.map(bodyHeight))`. PUR, aucune mesure DOM. */
+export function bodyHeight(appearance: Appearance): number {
+  return GROUND_Y - bodyHeadTopY(appearance);
+}
+
 /** (apparence, équipement, pose, tenue?) → os résolus, triés z croissant (peintre). PUR. */
 export function resolveRig(
   appearance: Appearance,

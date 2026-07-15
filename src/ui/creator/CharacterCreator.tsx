@@ -69,6 +69,7 @@ import { raceSkillSection, raceTalentSection, type CodexSection } from '../compe
 import { CharStatsGrid } from '../CharStatsGrid';
 import { opSummary } from '../editor/GameOpEditor';
 import type { Appearance } from '../../gameIso/rig/appearance';
+import { bodyHeight } from '../../gameIso/rig/composeRig';
 import { hash32 } from '../../gameIso/detail/hash';
 import { previewHero } from './CreatorSummary';
 import { CreatorStepFrame, StepHeader, Section, Band, XpBadge, type StepZones } from './CreatorStepFrame';
@@ -147,7 +148,7 @@ import {
   splitLabel,
   splitTopLevelOu,
 } from './draft';
-import { XP_CAREER_FIRST, XP_CAREER_TOP3, parseStatus } from '../../engine/creation';
+import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus } from '../../engine/creation';
 
 /** Métadonnées d'étape : libellé FR + ÉCRAN de plein rendu. Les HUIT pas passent par la MÊME porte —
  *  un pas pose ses propres hooks puis compose `CreatorStepFrame` (seule Présentation garde un
@@ -236,9 +237,6 @@ export function CharacterCreator() {
 
   const [d, setD] = useState<CreatorDraft>(() => editing?.draft ?? newDraft());
   const [step, setStep] = useState(0);
-  // Machine à états de l'ossature (#393) : plus haute étape VALIDÉE (« Suivant » pressé depuis
-  // elle) — en y revenant, la tuile élue porte le sceau (`StepProps.validated` → FigTile.sealed).
-  const [maxStep, setMaxStep] = useState(0);
 
   const ids = stepIds();
   const curId = ids[step] ?? ids[ids.length - 1]; // garde-fou si la règle change le nombre d'étapes
@@ -268,7 +266,7 @@ export function CharacterCreator() {
     closeCreator();
   };
 
-  const stepProps: StepProps = { d, setD, validated: step < maxStep, skillsSub, setSkillsSub };
+  const stepProps: StepProps = { d, setD, skillsSub, setSkillsSub };
 
   // Récap de pied VALIDE — étapes Race/Carrière (#393 P2/P4) : le message d'erreur garde toujours
   // la priorité (cf. footer, `err ?? ...`) ; une fois le choix fait, la barre le redit.
@@ -346,10 +344,7 @@ export function CharacterCreator() {
           <button
             className="btn btn-primary"
             disabled={!canNext}
-            onClick={() => {
-              setMaxStep(Math.max(maxStep, step + 1)); // valide l'étape → sceau sur la tuile élue
-              setStep(step + 1);
-            }}
+            onClick={() => setStep(step + 1)}
           >
             Suivant →
           </button>
@@ -366,10 +361,6 @@ export function CharacterCreator() {
 type StepProps = {
   d: CreatorDraft;
   setD: (d: CreatorDraft) => void;
-  /** L'étape COURANTE a déjà été validée (« Suivant » pressé depuis elle au moins une fois) —
-   *  machine à états de l'ossature (#393) : la grille scelle alors la tuile élue (`FigTile.sealed`,
-   *  sceau `WaxSeal`). Absent (montage isolé, tests) → non scellé. */
-  validated?: boolean;
   /** Sous-onglet actif de l'étape 5 (a/b/c) — levé jusqu'ici pour que le pied de page (footer,
    *  `CharacterCreator`) reflète le volet ACTIF plutôt que le premier blocage toutes-branches. */
   skillsSub?: SkillsSub;
@@ -412,7 +403,7 @@ function LoreText({ md }: { md: string | null | undefined }) {
 //      (`withSpecies`/`rollDraftSpecies` inchangés). Pas de fiche vivante à cette étape (arbitrage
 //      2026-07-14) : mort du call-site Race de `FacetedPickGrid` — Carrière (#393 P2 volet Carrière)
 //      transpose son propre call-site séparément, `FacetedPickGrid` reste son composant jusque-là.
-export function SpeciesRaceScreen({ d, setD, validated }: StepProps): ReactNode {
+export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -432,6 +423,20 @@ export function SpeciesRaceScreen({ d, setD, validated }: StepProps): ReactNode 
   }
   families.sort((a, b) => Number(b.list.some((s) => CORE.includes(s.label))) - Number(a.list.some((s) => CORE.includes(s.label))));
   const totalRaces = families.reduce((n, f) => n + f.list.length, 0);
+
+  /** Apparence de la figurine qui REPRÉSENTE une famille sur sa carte : sa 1ʳᵉ lignée (la canonique
+   *  des données) — source UNIQUE du rendu de la tuile ET de la mesure de la toise ci-dessous. */
+  const famAppearance = (f: { list: SpeciesData[] }) => pickAppearance(f.list[0].id, d.sex, f.list[0].variant ?? f.list[0].id);
+  // TOISE COMMUNE de la grille de RACE (#431, verdict user 2026-07-15 verbatim : « ça ne permet pas
+  // de voir les différences de taille ») : une carte de race se compare aux AUTRES races — chaque
+  // figurine est donc cadrée à son échelle VRAIE contre la plus HAUTE des familles, au lieu d'être
+  // normée à sa propre tuile (où halfling et ogre paraissaient de même taille). La toise est une
+  // DONNÉE (hauteur du gabarit de rig, `bodyHeight`), jamais un cas par race. Mesurée sur TOUTES les
+  // familles, pas sur les seules visibles : la toise des races ne bouge pas quand la recherche filtre
+  // la grille. La normalisation PAR TUILE reste le défaut de `CharacterPreview` — c'est le bon
+  // cadrage aux tuiles de CARRIÈRE, qui comparent des figurines de la MÊME race (verdict user, même
+  // jour : « OK pour la carrière mais ici c'est un souci »).
+  const raceScaleRef = Math.max(...families.map((f) => bodyHeight(famAppearance(f))));
 
   // La recherche filtre les RACES (nom de famille) ET les LIGNÉES (variantes) — une lignée matchée
   // garde/surligne sa carte de race (le filtre agit au niveau famille, jamais en éclatant la grille).
@@ -511,7 +516,10 @@ export function SpeciesRaceScreen({ d, setD, validated }: StepProps): ReactNode 
   );
   const choice = (
     <>
-      <p className="creator-pick-count">{families.length} races — {totalRaces} lignées</p>
+      {/* Vocabulaire de la planche (`.mini-title` : « 7 familles — 27 races ») — une CARTE est une
+          famille, une LIGNÉE est une race. Le compte dit la vérité de la grille RENDUE : sans la
+          règle optionnelle « Gnome jouable » (NADJ), le Gnome n'est ni compté ni affiché. */}
+      <p className="creator-pick-count">{families.length} familles — {totalRaces} races</p>
       <div ref={gridRef} role="listbox" aria-label="Choix de la race" className="creator-race-grid" onKeyDown={onGridKeyDown}>
         {visibleFamilies.map((f, idx) => {
           const rep = f.list[0];
@@ -521,14 +529,15 @@ export function SpeciesRaceScreen({ d, setD, validated }: StepProps): ReactNode 
             <FigTile
               key={f.family}
               preview={{
-                appearance: pickAppearance(rep.id, d.sex, rep.variant ?? rep.id),
+                appearance: famAppearance(f),
                 career: rep.preview?.career,
                 fillFraction: RACE_CARD_FILL,
+                scaleRef: raceScaleRef, // ÉCHELLE VRAIE : toise commune à la grille, pas à la tuile (#431)
               }}
               label={f.family}
               sub={`${f.list.length} lignée${f.list.length > 1 ? 's' : ''}`}
               selected={selected}
-              sealed={!!validated && selected}
+              sealed={selected}
               ambiance="panel"
               tabIndex={idx === activeFamilyIdx ? 0 : -1}
               className={rolled ? 'rolled' : undefined}
@@ -621,7 +630,7 @@ export function SpeciesRaceScreen({ d, setD, validated }: StepProps): ReactNode 
 //      consommateur, #393 P2) : le fichier meurt avec lui. Mécanique INCHANGÉE (`withCareer`/
 //      `rollDraftCareer`, draft.ts) — présentation seule se restructure, patron encrier de Race
 //      (rangée toolbar, résultat vit dans l'encrier plutôt qu'un mur de boutons).
-export function CareerScreen({ d, setD, validated }: StepProps): ReactNode {
+export function CareerScreen({ d, setD }: StepProps): ReactNode {
   const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
   // Table EFFECTIVE (#393 P2 correctif utilisateur) : `careersForSpecies` seule renvoie les DEUX
@@ -757,7 +766,7 @@ export function CareerScreen({ d, setD, validated }: StepProps): ReactNode {
       <GroupedPickGrid
         sections={sections}
         selectedId={d.careerId || undefined}
-        sealedId={validated ? d.careerId || undefined : undefined}
+        sealedId={d.careerId || undefined}
         onSelect={(id) => setD(withCareer(d, id))}
         label="Choix de la carrière"
       />
@@ -1202,28 +1211,39 @@ export function StarScreen({ d, setD }: StepProps) {
     setD({ ...d, star: pos.members.length === 1 ? pos.members[0].id : undefined });
   };
 
-  // Bande d'ACTION (slot requis de l'ossature) : en-tête + note de la planche + encrier d100.
+  // Bande d'ACTION (slot requis de l'ossature) : la TOPBAR de la planche — titre+rubrique à gauche,
+  // encrier d100 borné à droite (`.fam-topbar` : « Aux dés — d100 / le ciel a rendu 15 — <signe> ») —
+  // puis la note. L'encrier ne prend PLUS une section « Aux dés » à lui seul : la carte EST le geste
+  // et son verdict, et la place ainsi rendue revient à l'astrolabe.
+  const rollLabel = starsTable.find((s) => s.id === d.starRoll)?.label;
   const action = (
     <>
-      <StepHeader title="Signe astral" sub={`La roue céleste — ${STAR_POSITIONS.length} signes · Archives de l'Empire II`} />
+      <StepHeader title="Signe astral" sub={`La roue céleste — ${STAR_POSITIONS.length} signes · Archives de l'Empire II`}>
+        <CreatorDice
+          bare
+          label="Tirer aux dés — d100"
+          sub={<>son signe au hasard : <b>+{XP_STAR_ROLLED} PX de création</b> (garder le tirage)</>}
+          rolled={!!d.starRoll}
+          xp={starXp(d)}
+          roll={d.starRollValue}
+          verdict={
+            <>
+              le ciel a rendu <b>{d.starRollValue ?? '—'}</b> — {rollLabel ?? '—'}
+              {' · '}
+              <b>{starXp(d) > 0 ? `+${XP_STAR_ROLLED} PX conservé` : '+0 PX (choix libre)'}</b>
+            </>
+          }
+          onRoll={() => {
+            setPendingKey(null);
+            setD(rollDraftStar(d));
+          }}
+        />
+      </StepHeader>
       <p className="hint" style={{ margin: '0 0 8px' }}>
-        Tourner la roue à la main choisit librement ; le d100 s'arrête sur la fourchette du signe tiré.
+        Tourner la roue à la main choisit librement (+0 PX) ; le d100 s'arrête sur la fourchette du signe tiré, et le
+        garder rapporte +{XP_STAR_ROLLED} PX de création (ADE2 ch.03). L'Étoile du Sorcier ouvre quatre destins — la roue
+        les déplie si l'aiguille s'y pose.
       </p>
-      <CreatorDice
-        label="Tirer aux dés — son signe au hasard : +25 PX"
-        hint="Gardez le tirage : +25 PX (ADE2 ch.03) · Choix libre : +0 PX."
-        rolled={!!d.starRoll}
-        xp={starXp(d)}
-        roll={d.starRollValue}
-        onRoll={() => {
-          setPendingKey(null);
-          setD(rollDraftStar(d));
-        }}
-      >
-        <p className="hint" style={{ marginTop: 0 }}>
-          Signe tiré : <b>{starsTable.find((s) => s.id === d.starRoll)?.label ?? '—'}</b> — gardez-le ou choisissez librement sur la roue.
-        </p>
-      </CreatorDice>
     </>
   );
 
@@ -1285,11 +1305,16 @@ export function StarScreen({ d, setD }: StepProps) {
           <DetailFrame
             name={<CodexRef category="stars" id={sign.id} label={sign.label}>{sign.label}</CodexRef>}
             sub={sourceSub(sign.source)}
+            /* Rangée de chips à la DISCIPLINE de la planche (mock « 4 » : Dates + les modificateurs,
+               rien d'autre) — la colonne ne fait que ~330px : une chip de prose l'éclate en autant de
+               lignes qu'elle a de mots. `signe` (« Signe du Roublard ») est DÉJÀ gravé au moyeu de la
+               roue, à deux doigts d'ici ; `dieux` (« Ranald, Katya (beauté désarmante (Reikland)) »)
+               est de la donnée de RÉFÉRENCE — la fiche du Codex la rend (registry.ts, `fact('Dieu')`),
+               à un clic du nom ci-dessus (`CodexRef`). Aucune donnée perdue : elles vivent où on les
+               consulte, pas en travers du geste de choix. */
             meta={
               <>
-                {sign.signe && <span className="chip">{sign.signe}</span>}
                 {sign.dates && <span className="chip">Dates <b>{sign.dates}</b></span>}
-                {sign.dieux && <span className="chip">Dieu <b>{sign.dieux}</b></span>}
                 {sign.effect?.map((o, i) => <span key={i} className="chip">{opSummary(o)}</span>)}
               </>
             }
@@ -1320,6 +1345,8 @@ export function StarScreen({ d, setD }: StepProps) {
                     Aucun signe
                   </button>
                 )}
+                {/* La rubrique « Description » de la planche, juste au-dessus de l'encadré de prose. */}
+                {sign.desc && <div className="mini-title" style={{ margin: 0 }}>Description</div>}
               </>
             }
             prose={sign.desc ?? undefined}

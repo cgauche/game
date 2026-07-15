@@ -526,6 +526,18 @@
   flex: 0 1 60%;
   min-width: 0;
 }
+/* La DESCRIPTION du signe respire à PLEINE HAUTEUR (planche : `.c-ink-prose{max-height:none;flex:1}`
+   — « description PLEINE hauteur, jamais coupée »). Le plafond de 220px de `DetailFrame` est le canon
+   d'un détail posé DANS la colonne desc, qui scrolle elle-même ; ici le cadre est le seul contenu de
+   sa colonne, à côté de la roue : la prose y coule d'un bloc (les 745px de scroll interne du Flûtiste
+   mesurés à 1280 = un ascenseur DANS un ascenseur, la lecture hachée). Sélecteurs d'ÉLÉMENT sous des
+   classes DÉJÀ définies (cliquet xii : aucun nom neuf) — la portée est la colonne soeur de l'astrolabe,
+   jamais `.detail-frame` en général. */
+.star-wheel-col ~ .appear-controls .detail-frame-prose {
+  max-height: none;
+  overflow: visible;
+  flex: 1;
+}
 /* Ambiance de la constellation (planche : italique atténuée sous le nom) — l'« apparence » d'un
    signe décrit le CIEL, pas le natif : elle ne prend jamais la forme d'une chip de fait. */
 .star-apparence {
@@ -1050,6 +1062,13 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
+  /* Carte BORNÉE à la mesure de la planche (#431, verdict user 2026-07-15 : « la grille ne tient pas
+     sur un écran ») : 4 colonnes de 213px + 3 gouttières de 16 = 900px, les valeurs MESURÉES de
+     `.fam-grid.big` dans son pupitre à 1600 (`planche-creator-FINALE.html` — 7 tuiles en 4+3, sans
+     ascenseur). Sans ce plafond la carte suit `1fr` SANS BORNE : mesurée à 297px de large sur un
+     écran de 1920, ~380 au-delà — deux rangées ne tenaient plus la hauteur et la grille prenait
+     l'ascenseur. Le plafond ne borne QUE le haut : sous 900px la grille rétrécit avec le pupitre. */
+  max-width: calc(4 * 213px + 3 * 16px);
 }
 .creator-race-grid .fig-tile.rolled {
   border-color: var(--accent2);

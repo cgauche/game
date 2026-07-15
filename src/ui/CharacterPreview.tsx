@@ -15,7 +15,7 @@
  */
 import { memo, useMemo } from 'react';
 import type { Combatant } from '../engine/types';
-import { RigSprite, bodyHeadTopY } from '../gameIso/rig/composeRig';
+import { RigSprite, GROUND_Y, bodyHeight } from '../gameIso/rig/composeRig';
 import { defaultAppearance, type Appearance } from '../gameIso/rig/appearance';
 import { equipFromCombatant, type EquipCtx } from '../gameIso/rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/combatantVisuals';
@@ -38,6 +38,16 @@ interface CommonProps {
    *  0.88) — un consommateur en grille SERRÉE (cartes de race #431) peut demander un cadrage plus
    *  large (valeur plus basse) pour laisser respirer le visage plutôt que l'écraser au plein champ. */
   fillFraction?: number;
+  /** TOISE COMMUNE d'une grille (cadre `fill`) : hauteur de corps de RÉFÉRENCE, dans les unités de
+   *  `bodyHeight` — la figurine est alors cadrée à son ÉCHELLE VRAIE relative à cette toise (pieds
+   *  sur la même ligne de sol), au lieu d'être normée à sa propre hauteur. L'appelant fournit la
+   *  toise, typiquement `Math.max(...apparences.map(bodyHeight))` de sa grille : un halfling arrive
+   *  alors à la ceinture de l'humain et l'ogre écrase sa tuile.
+   *  Absent = normalisation PAR TUILE (défaut) — le bon cadrage quand les tuiles comparent des
+   *  figurines de MÊME race (tuiles de carrière) : chacune remplit son cadre.
+   *  Verdict user 2026-07-15 (#431, verbatim) : « ça ne permet pas de voir les différences de
+   *  taille […] OK pour la carrière mais ici c'est un souci ». */
+  scaleRef?: number;
   className?: string;
 }
 interface RawProps extends CommonProps {
@@ -78,7 +88,7 @@ const AMBIANCE_CLASS: Record<CharacterPreviewAmbiance, string> = {
 };
 
 function CharacterPreviewBase(props: CharacterPreviewProps) {
-  const { view = 'front', pose, mirror = false, size = 'md', ambiance = 'none', fillFraction = FILL_FRACTION, className, hero } = props;
+  const { view = 'front', pose, mirror = false, size = 'md', ambiance = 'none', fillFraction = FILL_FRACTION, scaleRef, className, hero } = props;
   // Dérivation « héros » = MÊMES briques que le rendu jeu (cf. pickBackend, branche rig).
   const appearance = useMemo(
     () => (hero ? combatantAppearance(hero.appearance ?? defaultAppearance(hero), hero) : props.appearance),
@@ -93,19 +103,21 @@ function CharacterPreviewBase(props: CharacterPreviewProps) {
     [appearance, equip, pose, career, view, overlays, mirror],
   );
   const cls = ['charprev', `charprev-${size}`, AMBIANCE_CLASS[ambiance], className].filter(Boolean).join(' ');
-  // Cadre `fill` (tuile plein-champ, #430) : viewBox resserré autour du CORPS DE GABARIT (pure,
-  // `bodyHeadTopY` — squelette race/carrure, jamais les accessoires) — pieds toujours ancrés en bas
-  // (`groundSkeleton`, y=150), zoom UNIFORME (même aspect 120/150). Deux humains de gabarit identique
-  // rendent donc à la MÊME hauteur de corps, coiffés d'une plume ou non.
+  // Cadre `fill` (tuile plein-champ, #430) : viewBox resserré autour du CORPS DE GABARIT (pur,
+  // `bodyHeight` — squelette race/carrure, jamais les accessoires) — pieds toujours ancrés en bas
+  // (`groundSkeleton`, `GROUND_Y`), zoom UNIFORME (même aspect 120/150). Deux humains de gabarit
+  // identique rendent donc à la MÊME hauteur de corps, coiffés d'une plume ou non.
+  // La TOISE du cadrage est celle de la figurine (chacune remplit sa tuile) — sauf `scaleRef`, la
+  // toise COMMUNE d'une grille (#431) : le viewBox devient alors le MÊME pour toutes les tuiles, et
+  // chaque figurine n'y occupe que sa part RÉELLE, pieds sur la même ligne de sol.
   const viewBox = useMemo(() => {
     if (size !== 'fill') return STATIC_BOX;
-    const headTopY = bodyHeadTopY(appearance);
-    const figureHeight = 150 - headTopY; // pieds toujours ancrés à y=150 (groundSkeleton)
-    if (!(figureHeight > 0)) return STATIC_BOX;
-    const boxHeight = figureHeight / fillFraction;
+    const toise = scaleRef && scaleRef > 0 ? scaleRef : bodyHeight(appearance);
+    if (!(toise > 0)) return STATIC_BOX;
+    const boxHeight = toise / fillFraction;
     const boxWidth = boxHeight * (120 / 150);
-    return `${60 - boxWidth / 2} ${150 - boxHeight} ${boxWidth} ${boxHeight}`;
-  }, [size, appearance, fillFraction]);
+    return `${60 - boxWidth / 2} ${GROUND_Y - boxHeight} ${boxWidth} ${boxHeight}`;
+  }, [size, appearance, fillFraction, scaleRef]);
   return (
     <div className={cls}>
       <svg className="charprev-svg" viewBox={viewBox} preserveAspectRatio="xMidYMax meet" aria-hidden="true">

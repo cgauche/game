@@ -37,6 +37,13 @@
   color: var(--gold2);
   letter-spacing: 0.6px;
 }
+/* Le NOM du pas ne se BRISE PAS (« Signe astral » cassé en deux lignes sous sa rubrique, mesuré à
+   1280 quand l'encrier de topbar prend sa part) : titre insécable, la rubrique s'enroule à sa place.
+   Sélecteur d'ÉLÉMENT sous une classe déjà définie (idiome `.plaque-name > small` du module voisin) —
+   aucun nom de classe neuf (cliquet xii). */
+.step-head-title > span {
+  white-space: nowrap;
+}
 /* `.c-dhead .sub` : la rubrique gravée du titre. L'écart est porté par la RUBRIQUE (pas un `gap` de
    flex) — il survit ainsi au repli `display:block` du mobile, où la rubrique redevient du texte
    INLINE qui s'enroule sous le titre sans `flex-wrap` (cliquet vii). */
@@ -52,9 +59,13 @@
   font-variant-caps: small-caps;
   letter-spacing: 1.4px;
 }
-/* L'encrier de l'en-tête ne mange pas la largeur du titre (planche : l'encrier de topbar est borné). */
+/* L'encrier de l'en-tête ne mange pas la largeur du titre (planche : l'encrier de topbar est borné).
+   Le plafond est AUSSI proportionnel : 380px est la mesure de la planche dans un pupitre de ~950px
+   (1600px de large) ; sous cette taille, un encrier figé à 380px laissait au titre moins que son
+   contenu et « Signe astral » se cassait en deux lignes sous sa rubrique (mesuré à 1280 : topbar
+   580px → titre 190px). La carte rend la part qu'elle n'a pas — le titre passe d'abord. */
 .step-head .dicewell {
-  max-width: 380px;
+  max-width: min(380px, 46%);
 }
 /* Sous le breakpoint canon 700px, la topbar s'empile : un en-tête à plusieurs gestes (étape Détails)
    déborderait sinon la colonne étroite (encrier rogné à 360px, mesuré). */

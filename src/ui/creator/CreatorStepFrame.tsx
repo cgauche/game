@@ -68,7 +68,9 @@ export function StepHeader({ title, sub, children }: { title: ReactNode; sub?: R
   return (
     <div className="step-head">
       <h3 className="step-head-title">
-        {title}
+        {/* Le NOM du pas dans son propre élément : il ne se coupe jamais en deux (cf. creator-step.css) —
+            c'est la RUBRIQUE qui rend la place quand la topbar se resserre, jamais le titre. */}
+        <span>{title}</span>
         {sub != null && <small>{sub}</small>}
       </h3>
       {children}

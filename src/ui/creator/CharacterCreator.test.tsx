@@ -263,13 +263,21 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(after).not.toContain('à tirer au d100');
   });
 
-  it('machine à états (#393) : étape VALIDÉE revisitée → tuile élue SCELLÉE (WaxSeal via FigTile), jamais avant', () => {
+  // Le sceau de cire marque LE CHOIX, au moment où il se fait (demande user 2026-07-15, verbatim :
+  // « Faudrait un sceau de cire sur la race et la carriere selectionnée je pense ») : il tombe sur la
+  // tuile élue dès le clic, sur l'étape COURANTE, et suit le joueur s'il change d'avis. Aucune
+  // condition de progression ne le gate — sceller n'est pas une récompense de navigation.
+  it('sceau de cire (WaxSeal via FigTile) : la tuile ÉLUE est scellée DÈS LA SÉLECTION — Race et Carrière', () => {
+    // Rien d'élu → aucun cachet (ni sur la grille des races, ni sur celle des carrières).
+    expect(renderToStaticMarkup(<SpeciesRaceScreen d={newDraft(7)} setD={() => {}} />)).not.toContain('fig-tile-seal');
     const d = withSpecies(newDraft(7), SP.id);
-    expect(renderToStaticMarkup(<SpeciesRaceScreen d={d} setD={() => {}} />)).not.toContain('fig-tile-seal');
-    expect(renderToStaticMarkup(<SpeciesRaceScreen d={d} setD={() => {}} validated />)).toContain('fig-tile-seal');
+    expect(renderToStaticMarkup(<CareerScreen d={d} setD={() => {}} />)).not.toContain('fig-tile-seal');
+    // Élue → scellée SUR L'ÉTAPE, sans avoir eu à la valider ni à y revenir.
+    expect(renderToStaticMarkup(<SpeciesRaceScreen d={d} setD={() => {}} />)).toContain('fig-tile-seal');
     const dc = withCareer(d, 'soldat');
-    expect(renderToStaticMarkup(<CareerScreen d={dc} setD={() => {}} validated />)).toContain('fig-tile-seal');
-    expect(renderToStaticMarkup(<CareerScreen d={dc} setD={() => {}} />)).not.toContain('fig-tile-seal');
+    expect(renderToStaticMarkup(<CareerScreen d={dc} setD={() => {}} />)).toContain('fig-tile-seal');
+    // Un seul cachet : celui de l'élue (jamais un par tuile de la grille).
+    expect(renderToStaticMarkup(<CareerScreen d={dc} setD={() => {}} />).split('fig-tile-seal').length - 1).toBe(1);
   });
 
   it('draft — palier de Compétence de race (Stepper) : quotas 3×+5 / 3×+3 respectés, + saute +3 quand son quota est plein', () => {
@@ -300,7 +308,12 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     const html = renderToStaticMarkup(<StarScreen d={rolled} setD={() => {}} />);
     expect(html).toContain('creator-step'); // ossature 2 zones (MÊME gabarit que les 7 autres pas)
     expect(html).toContain('Signe astral'); // en-tête d'étape (absent avant le lot ossature)
-    expect(html).toContain('Aux dés'); // l'encrier vit dans la bande d'action (slot requis)
+    // L'encrier vit dans la bande d'action (slot requis) — la CARTE de la planche (`.c-dicewell` :
+    // plateau de deux faces + libellé d'action à l'impératif), à la topbar du pas, plus une section
+    // « Aux dés » à bandeau. Rien d'élu ici ⇒ l'encrier est à l'ATTENTE (rouge, cliquable).
+    expect(html).toContain('dicewell act');
+    expect(html).toContain('Tirer aux dés — d100');
+    expect(html).toContain('rm-die'); // les DEUX faces de dés, visibles au repos (planche `.tray`)
     expect(html).not.toContain('<select value="la-grande-croix"'); // fin du <select> de signe
     expect(html).toContain('celestial-wheel');
     expect(html).toContain('role="radiogroup"');
@@ -309,6 +322,27 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(html).toContain('La Grande Croix');
     expect(html).toContain("Archives de l&#x27;Empire Vol. II p. 40"); // tagline SOURCÉE (DetailFrame.sub)
     expect(html).toContain('Astrologie (pur roleplay)');
+    // Chips à la DISCIPLINE de la planche (Dates + les modificateurs) : la colonne fait ~330px, une
+    // chip de prose l'éclate. `signe` est gravé au moyeu de la roue, `dieux` vit à la fiche du Codex.
+    expect(html).toContain('Dates');
+    expect(html).not.toContain('>Dieu <'); // plus de chip « Dieu Vallich (forgerons et… (Nordland)) »
+  });
+
+  it('étape Signe astral — encrier RÉSOLU (planche) : « Aux dés — d100 » + les faces du d100 tiré + le verdict PX', () => {
+    // Le d100 a rendu 10 → La Grande Croix (ADE2 ch.03), et le brouillon le GARDE (star === starRoll).
+    const d = { ...newDraft(7), star: 'la-grande-croix', starRoll: 'la-grande-croix', starRollValue: 10 };
+    const html = renderToStaticMarkup(<StarScreen d={d} setD={() => {}} />);
+    expect(html).toContain('dicewell done'); // carte RÉSOLUE (laiton), plus le bouton rouge d'attente
+    expect(html).toContain('Aux dés — d100');
+    expect(html).toContain('le ciel a rendu');
+    expect(html).toContain('+25 PX conservé'); // tirage gardé ⇒ le gain est ACQUIS (XP_STAR_ROLLED)
+    // Les faces gravées sont celles du VRAI score (10 → [1,0]), jamais un chiffre inventé.
+    expect(html).toContain('>1</text>');
+    expect(html).toContain('>0</text>');
+    // Le joueur tourne ensuite la roue à la main : le tirage reste affiché, mais le bonus tombe.
+    const libre = renderToStaticMarkup(<StarScreen d={{ ...d, star: 'le-flutiste' }} setD={() => {}} />);
+    expect(libre).toContain('+0 PX (choix libre)');
+    expect(libre).not.toContain('+25 PX conservé');
   });
 
   it('roue céleste — VINGT positions (les fourchettes d100 du RAW ADE2 ch.03), pas les 23 entrées : les 4 destins de L\'Étoile du Sorcier partagent la borne 100', () => {

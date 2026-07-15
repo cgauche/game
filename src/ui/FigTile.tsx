@@ -15,7 +15,9 @@ export function FigTile({ preview, label, sub, selected, sealed, ambiance = 'spo
   label: string;
   sub?: string;
   selected?: boolean;
-  /** Sceau de cire au coin (candidat/rang « scellé ») — absent = pas de sceau. */
+  /** Sceau de cire au coin (le choix est SCELLÉ) — absent = pas de sceau. Taille et débordement au
+   *  patron de la carte-contrat (`.seat-card-seal`, CharCard) : un cachet se voit ou n'est pas un
+   *  cachet. */
   sealed?: boolean;
   /** Ambiance NOMMÉE de la figurine (jamais le gris `panel` implicite, #430) — `spotlight` par défaut. */
   ambiance?: CharacterPreviewAmbiance;
@@ -36,7 +38,7 @@ export function FigTile({ preview, label, sub, selected, sealed, ambiance = 'spo
       onClick={onClick}
     >
       <CharacterPreview {...preview} size="fill" ambiance={ambiance} />
-      {sealed && <WaxSeal size={26} className="fig-tile-seal" />}
+      {sealed && <WaxSeal size={40} className="fig-tile-seal" />}
       <span className="fig-tile-legend">
         <span className="fig-tile-name">{label}</span>
         {sub && <span className="fig-tile-sub">{sub}</span>}
