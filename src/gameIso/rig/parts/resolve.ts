@@ -128,7 +128,7 @@ export function resolveParts(
 
   // Cosmétique (toujours). overrides priment, sinon variante dérivée du seed.
   out.visage = P(cosmeticPart('visage', species, sex, overrides.visage ?? seed % 2));
-  out.cheveux = P(cosmeticPart('cheveux', species, sex, overrides.cheveux ?? (seed >> 2) % 3));
+  out.cheveux = P(cosmeticPart('cheveux', species, sex, overrides.cheveux ?? (seed >> 2)));
 
   // Corps : override → armure équipée → carrière → générique.
   // art RÉEL par slot (pour gater la substitution profil/dos ci-dessous sur l'art effectif, pas la tenue).
