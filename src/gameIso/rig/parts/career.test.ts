@@ -31,9 +31,13 @@ describe('tenueFor — garde-robe id→id (aucun slugId au milieu)', () => {
     expect(tenueFor('noble')).toBe(TENUE_BY_ID.noble);
     expect(tenueFor('soldat')).toBe(TENUE_BY_ID.soldat);
   });
-  it('carrière SANS tenue dédiée : repli sur la tenue d’archétype de CLASSE (via careerClass)', () => {
-    // 'archer' est une carrière (class 'guerriers') sans def de tenue spécifique.
-    expect(tenueFor('archer')).toBe(tenueForClass('guerriers'));
+  it('carrières SANS def de tenue dédiée (∉ TENUE_BY_ID) NI réutilisation explicite (`CareerData.tenue` absent) : repli sur la tenue d’archétype de CLASSE (via careerClass) — ensemble dérivé de careers.json, VIDE = vague de tenues dédiées achevée', () => {
+    const withoutSpecificTenue = (careers as Array<{ id: string; tenue?: string }>)
+      .filter((c) => !(c.id in TENUE_BY_ID) && !c.tenue)
+      .map((c) => c.id);
+    for (const id of withoutSpecificTenue) {
+      expect(tenueFor(id)).toBe(tenueForClass(careerClass(id)));
+    }
   });
   it('id INCONNU (ni carrière ∪ classe ∪ tenue) → warn BRUYANT + repli citadins (#223)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
