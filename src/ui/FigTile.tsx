@@ -10,7 +10,7 @@ import { WaxSeal } from './WaxSeal';
  * motif « tuile en bois + `charprev-amb-panel` imbriqué » de creator.css #412 est ainsi mort par
  * cascade, sans toucher ce fichier hors périmètre).
  */
-export function FigTile({ preview, label, sub, selected, sealed, ambiance = 'spotlight', onClick, tabIndex = -1 }: {
+export function FigTile({ preview, label, sub, selected, sealed, ambiance = 'spotlight', onClick, tabIndex = -1, className }: {
   preview: CharacterPreviewProps;
   label: string;
   sub?: string;
@@ -22,6 +22,9 @@ export function FigTile({ preview, label, sub, selected, sealed, ambiance = 'spo
   onClick: () => void;
   /** Roving tabindex (posé par `GroupedPickGrid`) — 0 pour la tuile active du groupe, -1 sinon. */
   tabIndex?: number;
+  /** Modificateur d'appelant (ex. liseré de borne « tirée », `.rolled`) — jamais un second cadre,
+   *  une classe ADDITIVE sur l'enceinte UNIQUE. */
+  className?: string;
 }) {
   return (
     <button
@@ -29,7 +32,7 @@ export function FigTile({ preview, label, sub, selected, sealed, ambiance = 'spo
       role="option"
       aria-selected={selected}
       tabIndex={tabIndex}
-      className={`fig-tile${selected ? ' sel' : ''}`}
+      className={`fig-tile${selected ? ' sel' : ''}${className ? ` ${className}` : ''}`}
       onClick={onClick}
     >
       <CharacterPreview {...preview} size="fill" ambiance={ambiance} />

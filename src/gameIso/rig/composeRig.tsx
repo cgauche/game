@@ -4,7 +4,7 @@ import { bipedDef } from './creatures';
 import { gabaritById } from './gabarits';
 import { raceById, racePalette } from './races';
 import type { RaceFeature } from './races';
-import { worldTransforms, toSvg, type Matrix } from './kinematics';
+import { worldTransforms, toSvg, apply, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
@@ -46,16 +46,10 @@ export interface ResolvedBone {
   parts: { svg: string; layer: number; mirror?: boolean }[];
 }
 
-/** (apparence, équipement, pose, tenue?) → os résolus, triés z croissant (peintre). PUR. */
-export function resolveRig(
-  appearance: Appearance,
-  equip: EquipCtx,
-  pose: Pose,
-  tenue?: string,
-  view: View = 'front',
-  overlays: RigOverlay[] = [],
-  mirror = false,
-): ResolvedBone[] {
+/** Squelette de GABARIT ancré au sol (pieds y=150) pour une apparence — race/carrure/carrure morpho,
+ *  AVANT tenue/équipement/accessoires. Facteur commun à `resolveRig` et `bodyHeadTopY` (#430 correctif
+ *  « toise de normalisation = le gabarit, pas la bbox rendue accessoires compris »). PUR. */
+function groundedBodySkeleton(appearance: Appearance) {
   // Race de rendu : le def bipède de l'espèce peut IMPOSER sa race (Vermine de choc → Skaven,
   // Fimir → Fimir…) ; sinon heuristique de nom (variantes régionales → espèce de base).
   const bDef = bipedDef(appearance.species);
@@ -67,7 +61,6 @@ export function resolveRig(
   const fm = featureMorpho(appearance.features ?? []);
   const morphoBuild = Math.min(1, Math.max(0, appearance.build + fm.dBuild));
   const legsMult = (appearance.legs ?? 1) * fm.legsMult;
-  const faceFlip = appearance.faceFlip || fm.faceFlip;
   // appearance.gabarit explicite = remplacement COMPLET de la carrure ; le gabaritOverride
   // de la race (réglé pour son gabarit par défaut) ne s'applique PAS dans ce cas.
   let gDef = appearance.gabarit
@@ -75,7 +68,32 @@ export function resolveRig(
     : { ...gabaritById(race.gabarit), ...(race.gabaritOverride ?? {}) };
   // Mutation morpho « Court sur pattes » : multiplicateur de jambes composé sur le gabarit.
   if (legsMult !== 1) gDef = { ...gDef, legs: gDef.legs * legsMult };
-  let sk = groundSkeleton(applyBuild(baseSkeleton(gDef, appearance.sex), morphoBuild));
+  return { sk: groundSkeleton(applyBuild(baseSkeleton(gDef, appearance.sex), morphoBuild)), race, fm, bDef };
+}
+
+/** Sommet de tête (y le plus petit) du squelette de GABARIT, pieds ancrés à y=150 — indépendant de
+ *  tout accessoire/coiffe/arme (#430 correctif : deux humains rendent à la MÊME hauteur de CORPS,
+ *  qu'ils portent une plume ou non — la toise de normalisation vient du gabarit, jamais de la bbox
+ *  rendue). PUR, aucune mesure DOM. */
+export function bodyHeadTopY(appearance: Appearance): number {
+  const { sk } = groundedBodySkeleton(appearance);
+  const world = worldTransforms(sk, {});
+  return apply(world.tete, { x: 0, y: -sk.tete.length }).y;
+}
+
+/** (apparence, équipement, pose, tenue?) → os résolus, triés z croissant (peintre). PUR. */
+export function resolveRig(
+  appearance: Appearance,
+  equip: EquipCtx,
+  pose: Pose,
+  tenue?: string,
+  view: View = 'front',
+  overlays: RigOverlay[] = [],
+  mirror = false,
+): ResolvedBone[] {
+  const { sk: groundedSk, race, fm, bDef } = groundedBodySkeleton(appearance);
+  const faceFlip = appearance.faceFlip || fm.faceFlip;
+  let sk = groundedSk;
   if (view === 'profile') sk = profileNarrow(sk); // corps étroit de profil (membres sur l'axe)
   // De profil, le swing du bras DROIT (porteur de l'arme) éloigne la main → l'arme barre le
   // torse. Quand une arme de MÊLÉE est tenue, on annule ce swing pour que le bras pende au

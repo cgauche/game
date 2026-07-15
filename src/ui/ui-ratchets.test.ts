@@ -272,7 +272,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `.creator-chars-(screen|shell|main)`, `.creator-skills-(screen|shell|main|head|title|sub|card|tabnav)`,
   // `.creator-talents-cols`, `.skill-row(-grid|-label)` — widgets d'allocation composent `QtyStepper`
   // (canonique, mort du `Stepper` local), aucune classe recodée pour ça.
-  'styles/creator.css': 145,
+  // Migration FigTile (#430 phase 2, même lot) : -21 — purge de l'ancien motif `.creator-race-card*`
+  // (tuile bois + charprev imbriqué, mort par cascade depuis be3fe9e0) au profit du cadre UNIQUE
+  // `FigTile`/`frames.css` ; ne reste qu'un modificateur ADDITIF `.creator-race-grid .fig-tile.rolled`.
+  // +3 : pastilles de suivi 5a (`.creator-skill-quota-gauges` + descendant `.notch-gauge`, compose
+  // `.row-flex` en JSX — LOT clôture pieds étape 5) et séparateur « ou » des talents de race
+  // (`.talent-option-ou`, arbitrage doc mémoire game-charte-talents-ou-chips-codex-lisibles).
+  'styles/creator.css': 144,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,

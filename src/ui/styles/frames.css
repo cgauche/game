@@ -56,17 +56,26 @@
   background: linear-gradient(180deg, transparent, rgba(10, 8, 6, 0.88) 60%);
   pointer-events: none;
 }
+/* Typographie de légende — charte Atelier (jamais de blanc/gris système, jamais alignée à gauche) :
+   titre en famille titrante gothique + or brass (langage `.camp-plate-name`), méta secondaire en
+   small-caps rubric discret (langage `.camp-plate-eyebrow`/`.gpg-heading`), CENTRÉS (#430 addendum). */
 .fig-tile-name {
-  font-size: 12px;
-  line-height: 1.2;
-  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.22;
+  letter-spacing: 0.3px;
+  color: var(--atelier-brass-elu);
   text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
 }
 .fig-tile-sub {
-  font-size: 10.5px;
-  line-height: 1.2;
-  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.25;
+  font-variant-caps: small-caps;
+  letter-spacing: 0.5px;
+  color: var(--atelier-brass-rubric);
   text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 /* Sceau de cire optionnel (candidat/rang « scellé », patron `SealedPlaque`) — déborde au coin
    haut-droit, MÊME langage que `.seat-card-seal` (party.css). */

@@ -434,7 +434,10 @@ button.chip:hover {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 62% 48% at 50% 60%, color-mix(in srgb, var(--gold2) 22%, transparent), transparent 72%);
+  /* Centre du halo ≈ torse de la figure (#430 correctif : la figure `fill` remplit désormais le
+     cadre à ~88 % — tête proche du bord haut, pieds au sol — le halo suit, jamais un centre
+     géométrique du cadre qui retombait dans le vide au-dessus de la tête). */
+  background: radial-gradient(ellipse 62% 48% at 50% 42%, color-mix(in srgb, var(--gold2) 22%, transparent), transparent 72%);
   pointer-events: none;
 }
 

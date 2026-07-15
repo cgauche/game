@@ -15,7 +15,7 @@
  */
 import { memo, useMemo } from 'react';
 import type { Combatant } from '../engine/types';
-import { RigSprite } from '../gameIso/rig/composeRig';
+import { RigSprite, bodyHeadTopY } from '../gameIso/rig/composeRig';
 import { defaultAppearance, type Appearance } from '../gameIso/rig/appearance';
 import { equipFromCombatant, type EquipCtx } from '../gameIso/rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/combatantVisuals';
@@ -56,6 +56,16 @@ export type CharacterPreviewProps = RawProps | HeroProps;
 
 const EMPTY_EQUIP: EquipCtx = { weapons: [], armour: [] };
 
+/** viewBox statique de repli (repère de corps 120×150, pieds ancrés en y=150) — hors mode `fill`. */
+const STATIC_BOX = '0 0 120 150';
+/** Fraction de la hauteur du cadre `fill` occupée par le CORPS de gabarit (tête→pieds, #430 correctif
+ *  « le modèle n'a pas grandi » puis « pourquoi le Ratier est plus petit que le Milicien, ce sont
+ *  pourtant 2 humains » — la toise de normalisation est le GABARIT de la race, jamais la bbox rendue :
+ *  un chapeau à plume ne doit PAS rétrécir le corps entier pour tenir dans le cadre). Le reste (12 %)
+ *  = respiration au-dessus de la tête où les accessoires (plumes, cornes, capes) débordent librement —
+ *  un extrême peut être clippé par l'enceinte (`overflow: hidden`), c'est acceptable. */
+const FILL_FRACTION = 0.88;
+
 const AMBIANCE_CLASS: Record<CharacterPreviewAmbiance, string> = {
   none: '',
   panel: 'charprev-amb-panel',
@@ -79,9 +89,22 @@ function CharacterPreviewBase(props: CharacterPreviewProps) {
     [appearance, equip, pose, career, view, overlays, mirror],
   );
   const cls = ['charprev', `charprev-${size}`, AMBIANCE_CLASS[ambiance], className].filter(Boolean).join(' ');
+  // Cadre `fill` (tuile plein-champ, #430) : viewBox resserré autour du CORPS DE GABARIT (pure,
+  // `bodyHeadTopY` — squelette race/carrure, jamais les accessoires) — pieds toujours ancrés en bas
+  // (`groundSkeleton`, y=150), zoom UNIFORME (même aspect 120/150). Deux humains de gabarit identique
+  // rendent donc à la MÊME hauteur de corps, coiffés d'une plume ou non.
+  const viewBox = useMemo(() => {
+    if (size !== 'fill') return STATIC_BOX;
+    const headTopY = bodyHeadTopY(appearance);
+    const figureHeight = 150 - headTopY; // pieds toujours ancrés à y=150 (groundSkeleton)
+    if (!(figureHeight > 0)) return STATIC_BOX;
+    const boxHeight = figureHeight / FILL_FRACTION;
+    const boxWidth = boxHeight * (120 / 150);
+    return `${60 - boxWidth / 2} ${150 - boxHeight} ${boxWidth} ${boxHeight}`;
+  }, [size, appearance]);
   return (
     <div className={cls}>
-      <svg className="charprev-svg" viewBox="0 0 120 150" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+      <svg className="charprev-svg" viewBox={viewBox} preserveAspectRatio="xMidYMax meet" aria-hidden="true">
         {sprite}
       </svg>
     </div>
