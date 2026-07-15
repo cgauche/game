@@ -8,28 +8,20 @@ import { campaign, builtinCampaigns } from '../scenes/campaign';
 import { publishedProjects } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
-import { itemLabel } from '../engine/items';
-import { axisScore, dominantAxes, AXIS_QUALIFY_MIN } from '../engine/axes';
-import { Coins } from './Coins';
-import {
-  CandidateCard, SeatCard, ActionCard, heroStatusLabel, heroSubtitle,
-  axisDataFor, heroRoseAxes, type RecruitState,
-} from './CharCard';
+import { axisScore, AXIS_QUALIFY_MIN } from '../engine/axes';
+import { CandidateCard, SeatCard, ActionCard, axisDataFor, type RecruitState } from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
 import { HeroPresentation } from './HeroPresentation';
 import { Modal } from './Modal';
 import { ScreenShell } from './ScreenShell';
 import { GatedAction } from './GatedAction';
-import { MetalStatus } from './MetalStatus';
 import { RoseAxes } from './RoseAxes';
-import { CharacterPreview } from './CharacterPreview';
 import { DetailFrame } from './DetailFrame';
+import { HeroSheet } from './HeroSheet';
 import { MasterDetail } from './MasterDetail';
-import { CharStatsGrid } from './CharStatsGrid';
-import { SkillChip, TalentChip, EntityRef } from './EntityChip';
 import { Icon } from './Icon';
 import { Tabs } from './Tabs';
-import { CORE_AXIS_IDS, findSpellById } from '../data';
+import { CORE_AXIS_IDS } from '../data';
 import { resolveActiveAxes } from '../state/worldMap';
 import { t } from '../i18n';
 
@@ -739,26 +731,12 @@ export function CandidatePool({
   );
 }
 
-/** ACTE DE PRÉSENTATION du candidat élu — `DetailFrame` (nom + chips méta + rubriques + prose),
- *  médaillon de rose près de l'en-tête (#417, planche-compagnie.html §B). Un candidat EST un
- *  `Combatant` complet (pregen) : le corps compose les MÊMES primitives que la fiche vivante du
- *  créateur (`CreatorSummary`) — `CharStatsGrid` pour les Caractéristiques, `SkillChip`/`TalentChip`/
- *  `EntityRef` codex-liées pour compétences/talents/possessions/axes — jamais une ligne de texte
- *  (recalage utilisateur 2026-07-14, écho de « composer, jamais de markup brut », 2026-07-12).
- *  Aucun bouton dédié : le recrutement reste sur la carte de la liste (`CandidateCard`), jamais
- *  dupliqué ici. */
+/** ACTE DE PRÉSENTATION du candidat élu — `DetailFrame` (prose sourcée) enveloppant `HeroSheet`
+ *  (#417 → consécration primitive, constat utilisateur 2026-07-15 « La fiche vivante ce n'est pas
+ *  une primitive ? »). Un candidat EST un `Combatant` complet (pregen) : `HeroSheet` porte SA bande
+ *  d'en-tête (figurine+identité+rose) — pas de `topper` `DetailFrame` en double. Aucun bouton dédié :
+ *  le recrutement reste sur la carte de la liste (`CandidateCard`), jamais dupliqué ici. */
 function CandidateDetailPane({ hero, wealth, axisIds }: { hero: Combatant; wealth?: Money; axisIds: string[] }) {
-  const axes = dominantAxes(hero, axisDataFor(axisIds), 3);
-  const skills = [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances).slice(0, 14);
-  const talents = hero.talents;
-  const possessions = (hero.items ?? []).slice(0, 12);
-  // Sorts/prières connus (`hero.spells`, `types.ts:1173` — pregens sorcier/prêtre, `pregens.json`) :
-  // titre distingué par `isPrayer` (`schemas/defs/spells.ts:49`) — Sorts SEULS, Miracles SEULS, ou
-  // les deux (« Sorts & Miracles »), jamais une invention de nature quand le catalogue est mêlé.
-  const spellRefs = (hero.spells ?? []).map((id) => ({ id, data: findSpellById(id) }));
-  const hasSpell = spellRefs.some((s) => s.data && !s.data.isPrayer);
-  const hasPrayer = spellRefs.some((s) => s.data?.isPrayer);
-  const spellsTitle = hasSpell && hasPrayer ? t('present.spells.both') : hasPrayer ? t('present.spells.prayers') : t('present.spells.spells');
   const proseParts: string[] = [];
   if (hero.motivation) proseParts.push(`**${t('present.motivation')} :** ${hero.motivation}`);
   if (hero.details?.ambitionShort) proseParts.push(`« ${hero.details.ambitionShort} »`);
@@ -767,72 +745,10 @@ function CandidateDetailPane({ hero, wealth, axisIds }: { hero: Combatant; wealt
 
   return (
     <div className="candidate-detail-pane">
-    <DetailFrame
-      topper={
-        <div className="candidate-detail-head">
-          <CharacterPreview hero={hero} size="md" ambiance="panel" className="candidate-detail-fig" />
-          <div className="candidate-detail-id">
-            <h3 className="detail-frame-name">{hero.name}</h3>
-            <span className="detail-frame-sub">{heroSubtitle(hero)}</span>
-            <div className="detail-frame-meta row-flex">
-              <MetalStatus status={heroStatusLabel(hero)} size="chip" />
-              {wealth != null && <span className="chip">{t('picker.hero.purse')} <Coins money={wealth} /></span>}
-            </div>
-          </div>
-          <RoseAxes axes={heroRoseAxes(hero, axisIds)} size="medal" title={t('party.rose.title', { name: hero.name })} />
-        </div>
-      }
-      sections={
-        <>
-          <CharStatsGrid size="sm" value={(k) => hero.characteristics[k]} className="candidate-detail-stats" />
-          <div className="creator-derived">
-            <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>
-            <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>
-            <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>
-            <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Déterm. <b>{hero.resolve ?? '—'}</b></span>
-          </div>
-          {axes.length > 0 && (
-            <section className="hero-present-sec">
-              <h4>{t('present.forces')}</h4>
-              <div className="skill-tags">
-                {axes.map((a) => <EntityRef key={a.id} category="axes" id={a.id} label={a.label} />)}
-              </div>
-            </section>
-          )}
-          {spellRefs.length > 0 && (
-            <section className="hero-present-sec">
-              <h4>{spellsTitle}</h4>
-              <div className="skill-tags">
-                {spellRefs.map(({ id, data }) => (
-                  <EntityRef key={id} category="spells" id={id} label={data?.label ?? id} />
-                ))}
-              </div>
-            </section>
-          )}
-          <section className="hero-present-sec">
-            <h4>{t('present.skills')}</h4>
-            <div className="skill-tags">
-              {skills.length ? skills.map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />) : <span className="hint">—</span>}
-            </div>
-          </section>
-          <section className="hero-present-sec">
-            <h4>{t('present.talents')}</h4>
-            <div className="skill-tags">
-              {talents.length ? talents.map((tt) => <TalentChip key={`${tt.talentId}|${tt.spec ?? ''}`} talent={tt} />) : <span className="hint">—</span>}
-            </div>
-          </section>
-          <section className="hero-present-sec">
-            <h4>{t('present.possessions')}</h4>
-            <div className="skill-tags">
-              {possessions.length
-                ? possessions.map((it) => <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={itemLabel(it)} />)
-                : <span className="hint">—</span>}
-            </div>
-          </section>
-        </>
-      }
-      prose={prose}
-    />
+      <DetailFrame
+        sections={<HeroSheet hero={hero} axisIds={axisIds} wealth={wealth} />}
+        prose={prose}
+      />
     </div>
   );
 }

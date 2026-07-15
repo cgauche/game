@@ -25,6 +25,7 @@ import { CareerPath } from '../CareerPath';
 import { FigTile } from '../FigTile';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { DetailFrame } from '../DetailFrame';
+import { HeroSheet } from '../HeroSheet';
 import { InfluenceRow } from '../InfluenceRow';
 import { VsHeader } from '../VsHeader';
 import { MasterDetail } from '../MasterDetail';
@@ -258,6 +259,18 @@ function DetailFrameDemo() {
       proseSelfLabel={SAMPLE_CAREER.label}
       proseSelfCategory="career"
     />
+  );
+}
+
+function HeroSheetDemo() {
+  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <div className="stack">
+      <p className="hint">`header` (bande figurine+identité+rose) : composé tel quel par le détail candidat de l'écran d'équipe.</p>
+      <HeroSheet hero={SAMPLE_HERO} />
+      <p className="hint">`header={false}` : composé par la fiche vivante du créateur (alcôve propre à l'appelant).</p>
+      <HeroSheet hero={SAMPLE_HERO} header={false} />
+    </div>
   );
 }
 
@@ -497,6 +510,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
   { name: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
   { name: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
+  { name: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },
 ];
 
 export const GALLERY_CATEGORIES = [...new Set(GALLERY_SPECIMENS.map((s) => s.category))];

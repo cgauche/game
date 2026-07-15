@@ -214,11 +214,15 @@ const DOMAIN_CSS_MODULES = [
   'voyage',
   'gallery',
   'rose',
+  'hero-sheet',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
   'styles/gauges.css': 27,
-  'styles/party.css': 72, // #417 passe finale : eyebrow .camp-plate-eyebrow (CAMPAGNE) + override scopé .entity-chip sous .card-roles (chips d'axes small-caps inline, jamais une boîte)
+  // #417 suite (consécration HeroSheet) : -6 — .candidate-detail-head/-fig/-id (bande
+  // d'en-tête) + override .candidate-detail-pane .creator-derived (dérivées 2 colonnes) morts,
+  // portés par hero-sheet.css (SOURCE UNIQUE partagée avec la fiche vivante du créateur).
+  'styles/party.css': 66, // #417 passe finale : eyebrow .camp-plate-eyebrow (CAMPAGNE) + override scopé .entity-chip sous .card-roles (chips d'axes small-caps inline, jamais une boîte)
   // +5 : bande d'en-tête figurine+identité+rose du détail candidat (correction de cap 2026-07-14,
   // remplace `.candidate-detail-rose` par `.candidate-detail-head`/`-fig`/`-id`).
   // +6 : grille de sièges « Les contrats d'engagement » (compagnie-mock0.png, correction de cap
@@ -252,7 +256,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // losanges de l'encrier, correctif toolbar P1).
   // +2 : correctifs utilisateur 2026-07-14 (rang CareerPath explorable — `.cc-step.sel`/
   // `.cc-step:focus-visible` ; rangée filtres Carrière — `.creator-pick-filters`).
-  'styles/creator.css': 126,
+  // #417 suite (consécration HeroSheet) : -3 — .creator-summary .stat-val.boost (highlight
+  // d'augmentation, plus rendu par la fiche vivante — HeroSheet ne le porte pas) et
+  // .creator-summary .char-skills (bloc mort, remplacé par le corps HeroSheet) retirés.
+  'styles/creator.css': 123,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -269,6 +276,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Rose des forces (#409) — `.rose`/`.rose text`/`.rose-corner` (`.rose-corner.sm .rose` réutilise
   // le sélecteur `.rose` déjà compté, dédoublonné par module).
   'styles/rose.css': 3,
+  // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
+  // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
+  'styles/hero-sheet.css': 6,
 };
 
 // ── (xiii) FUITE DE DOMAINE dans la COUCHE PARTAGÉE (#371) : le cliquet (xii) ne scanne que les modules

@@ -7,15 +7,22 @@
  * Source de vérité UNIQUE des Caractéristiques : la fiche montre le RÉSULTAT (via buildHero — talents
  * +5 et Augmentations gratuites inclus), le centre montre l'ÉDITION. Le compteur PX recalcule `xpTotal`
  * à chaque changement du brouillon → un tirage accepté l'incrémente EN DIRECT.
+ *
+ * Le CORPS de fiche (Caractéristiques/dérivées/Forces/Compétences/Talents/Sorts/Possessions) compose
+ * la primitive `HeroSheet` (`../HeroSheet.tsx`, consécration #417 suite — constat utilisateur fondateur
+ * « La fiche vivante ce n'est pas une primitive ? », 2026-07-15) dès qu'un héros prévisualisé existe ;
+ * l'alcôve (figurine+identité), le compteur PX et la bourse restent des encarts PROPRES au créateur
+ * (page blanche pré-héros, apparence de secours sans héros bâti, tirage EN DIRECT) — hors mandat de
+ * `HeroSheet` (entrée = un `Combatant`).
  */
 import { CSSProperties, useMemo } from 'react';
-import { Combatant } from '../../engine/types';
+import { CHAR_KEYS, CharKey, Combatant } from '../../engine/types';
 import { Coins } from '../Coins';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { CharacterPreview } from '../CharacterPreview';
 import { Icon } from '../Icon';
 import { CharStatsGrid } from '../CharStatsGrid';
-import { SkillChip, TalentChip } from '../EntityChip';
+import { HeroSheet } from '../HeroSheet';
 import { careerLabelFor, rigSpeciesId } from '../../data';
 import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, hasSpecies, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
 
@@ -35,6 +42,19 @@ export function CreatorSummary({ d }: { d: CreatorDraft; step?: number }) {
   const sp = draftSpecies(d);
   const level = draftLevel(d);
   const baseChars = draftChars(d);
+  // Surlignage des Caractéristiques AUGMENTÉES (talents +5, Augmentations gratuites) : le héros
+  // prévisualisé porte le RÉSULTAT, `baseChars` l'ÉDITION brute — un écart signale une contribution
+  // externe (`HeroSheet` `statAnnotations`, data-driven, aucun branchement créateur dans la primitive).
+  const statAnnotations = useMemo(() => {
+    if (!hero) return undefined;
+    const out: Partial<Record<CharKey, { valClass?: string; note?: string }>> = {};
+    for (const k of CHAR_KEYS) {
+      if (hero.characteristics[k] > baseChars[k]) {
+        out[k] = { valClass: 'boost', note: `${baseChars[k]} + Augmentations/talents` };
+      }
+    }
+    return out;
+  }, [hero, baseChars]);
   const started = hasSpecies(d); // au moins une race choisie → la fiche commence à vivre
   const careerLabel = d.careerId ? careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } }) : '';
   // Repli si le brouillon ne construit aucun héros valide : apparence du brouillon (race choisie), sans équipement.
@@ -61,32 +81,29 @@ export function CreatorSummary({ d }: { d: CreatorDraft; step?: number }) {
         <span className="char-sub">{sp?.label ?? 'Race à choisir'}</span>
       </div>
 
-      <div style={started ? undefined : DIM}>
-        <CharStatsGrid
-          size="sm"
-          value={(k) => (hero ? hero.characteristics[k] : sp ? baseChars[k] : '—')}
-          valClass={(k) => { const v = hero?.characteristics[k] ?? baseChars[k]; return hero != null && v > baseChars[k] ? 'boost' : ''; }}
-          note={(k) => { const v = hero?.characteristics[k] ?? baseChars[k]; return hero != null && v > baseChars[k] ? `${baseChars[k]} + Augmentations/talents` : undefined; }}
-        />
-      </div>
-
-      <div className="creator-derived" style={started ? undefined : DIM}>
-        <span>
-          <Icon id="resource/wounds" size="sm" /> Blessures <b>{hero?.wounds.max ?? '—'}</b>
-        </span>
-        <span>
-          <Icon id="resource/movement" size="sm" /> Mouvement <b>{hero?.movement ?? sp?.movement ?? '—'}</b>
-        </span>
-        <span>
-          <Icon id="resource/fate" size="sm" /> Destin <b>{hero?.fate ?? sp?.fate.fate ?? '—'}</b> · Chance <b>{hero?.fortune ?? '—'}</b>
-        </span>
-        <span>
-          <Icon id="resource/resilience" size="sm" /> Résilience <b>{hero?.resilience ?? sp?.fate.resilience ?? '—'}</b> · Déterm. <b>{hero?.resolve ?? '—'}</b>
-        </span>
-        <span>
-          <Icon id="resource/gold-purse" size="sm" /> Bourse <b>{wealth ? <Coins money={wealth} /> : '—'}</b>
-        </span>
-      </div>
+      {hero ? (
+        <HeroSheet hero={hero} header={false} statAnnotations={statAnnotations} className="creator-hero-sheet" />
+      ) : (
+        <>
+          <div style={started ? undefined : DIM}>
+            <CharStatsGrid size="sm" value={(k) => (sp ? baseChars[k] : '—')} />
+          </div>
+          <div className="creator-derived" style={started ? undefined : DIM}>
+            <span>
+              <Icon id="resource/wounds" size="sm" /> Blessures <b>—</b>
+            </span>
+            <span>
+              <Icon id="resource/movement" size="sm" /> Mouvement <b>{sp?.movement ?? '—'}</b>
+            </span>
+            <span>
+              <Icon id="resource/fate" size="sm" /> Destin <b>{sp?.fate.fate ?? '—'}</b> · Chance <b>—</b>
+            </span>
+            <span>
+              <Icon id="resource/resilience" size="sm" /> Résilience <b>{sp?.fate.resilience ?? '—'}</b> · Déterm. <b>—</b>
+            </span>
+          </div>
+        </>
+      )}
 
       <div
         className="creator-xp"
@@ -95,22 +112,10 @@ export function CreatorSummary({ d }: { d: CreatorDraft; step?: number }) {
       >
         PX bonus de création : <b>+{xpTotal(d)}</b>
       </div>
-
-      {/* Talents & Compétences : blocs PRÉSENTS dès l'étape 1 (grisés/vides), remplis par les choix —
-          plus d'apparition surprise à l'étape 4 (arbitrage page blanche). */}
-      <div className="char-skills" style={hero ? undefined : DIM}>
-        <div className="mini-title">Talents</div>
-        <div className="skill-tags">
-          {hero?.talents.length
-            ? hero.talents.map((t) => <TalentChip key={`${t.talentId}|${t.spec ?? ''}`} talent={t} />)
-            : <span className="hint">—</span>}
-        </div>
-        <div className="mini-title">Compétences formées</div>
-        <div className="skill-tags">
-          {hero?.skills.filter((s) => s.advances > 0).length
-            ? hero.skills.filter((s) => s.advances > 0).slice(0, 14).map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />)
-            : <span className="hint">—</span>}
-        </div>
+      <div className="creator-derived" style={started ? undefined : DIM}>
+        <span>
+          <Icon id="resource/gold-purse" size="sm" /> Bourse <b>{wealth ? <Coins money={wealth} /> : '—'}</b>
+        </span>
       </div>
     </aside>
   );

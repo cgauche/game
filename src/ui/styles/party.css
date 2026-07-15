@@ -294,8 +294,10 @@
 .seat-card .card-hook {
   color: var(--danger-soft);
 }
-/* Alcôve : colonne PLEINE HAUTEUR de la carte, lampe suspendue au-dessus (.acte-fig/.c-lamp du
-   kit) — la figurine occupe toute la hauteur du siège, jamais une vignette bornée. */
+/* Alcôve : colonne PLEINE HAUTEUR de la carte — la figurine occupe toute la hauteur du siège,
+   jamais une vignette bornée. AMBIANCE lumineuse (halo radial de fond) conservée ; la lampe-OBJET
+   (pendentif+ampoule dessinés en ::before/::after) est PARTIE (verdict utilisateur 2026-07-15,
+   « Faudra vraiment me virer cette lampe sur le portrait »). */
 .seat-card-fig {
   position: relative;
   width: 150px;
@@ -315,31 +317,6 @@
 .seat-card-fig > .charprev {
   position: absolute;
   inset: 0;
-}
-/* Lampe suspendue au-dessus de l'alcôve (.c-lamp du kit) : pendentif + halo radial. */
-.seat-card-fig::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: 22px;
-  background: var(--atelier-wood-hollow);
-  z-index: 1;
-}
-.seat-card-fig::after {
-  content: '';
-  position: absolute;
-  top: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 12px;
-  height: 9px;
-  border-radius: 0 0 6px 6px;
-  background: linear-gradient(180deg, var(--atelier-brass-hover), var(--atelier-wood-hollow));
-  box-shadow: 0 0 22px 9px rgba(255, 196, 110, 0.14);
-  z-index: 1;
 }
 .seat-card-body {
   display: flex;
@@ -631,33 +608,5 @@
     grid-template-columns: 1fr;
   }
 }
-/* Bande d'en-tête de l'acte de présentation (`DetailFrame` `topper`) : figurine (alcôve, esprit
-   `CreatorSummary`) + identité + médaillon de rose, UNE seule rangée dense — plus de bande morte
-   au-dessus du nom (correction de cap 2026-07-14, capture Frère Anselm). */
-.candidate-detail-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.candidate-detail-fig {
-  flex: none;
-}
-.candidate-detail-id {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.candidate-detail-id .detail-frame-name {
-  font-size: 19px;
-}
-
-/* Dérivées (Blessures/Mouvement/Destin·Chance/Résilience·Déterm.) en 2 colonnes dans le contexte du
-   détail candidat — override SCOPÉ de `.creator-derived` (creator.css, partagée avec la fiche vivante
-   du créateur, jamais touchée globalement). */
-.candidate-detail-pane .creator-derived {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 12px;
-}
+/* Bande d'en-tête + dérivées : portées par `HeroSheet` (`hero-sheet.css`, #417 suite consécration
+   primitive) — `.candidate-detail-*` mortes après migration, retirées. */

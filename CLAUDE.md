@@ -225,6 +225,7 @@ fait DANS la primitive, pas dans une nième copie.
 | Tuile-figurine compacte cliquable (compose `CharacterPreview`) | `FigTile` | `src/ui/FigTile.tsx` |
 | Grille de sélection en SECTIONS par famille/classe (roving tabindex, `role=listbox`) | `GroupedPickGrid` | `src/ui/GroupedPickGrid.tsx` |
 | Cadre de détail de l'élue (nom + chips méta + rubriques + prose scrollable, sans slot d'actions) | `DetailFrame` | `src/ui/DetailFrame.tsx` |
+| **Corps de FICHE HÉROS** (bande d'en-tête figurine+identité+statut+rose `header` désactivable, Caractéristiques+dérivées, Forces seuillées, Compétences/Talents/Sorts-Miracles/Possessions en chips codex) — *réflexe avant toute Nᵉ fiche perso recodée* | `HeroSheet` (composé par `creator/CreatorSummary.tsx` et `PartyScreen.tsx`) | `src/ui/HeroSheet.tsx` |
 | **Galerie design system IN-APP** (DEV) : référence de goût pérenne, chaque primitive montée VIVANTE avec des données réelles | `DesignGallery` (`MasterDetail`) | `src/ui/gallery/DesignGallery.tsx` |
 
 > **Frontière orchestrateur · machinerie · data-driven** (cf. `docs/combat-events-coherence.md` §3bis) : un

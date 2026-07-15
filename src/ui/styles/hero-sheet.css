@@ -1,0 +1,39 @@
+/* HeroSheet — corps de fiche héros (consécration #417 suite, `HeroSheet.tsx`) : bande d'en-tête
+   (figurine+identité+statut+rose) + dérivées 2 colonnes + rubriques (Forces/Compétences/Talents/
+   Sorts/Possessions) + scroll interne natif — SOURCE UNIQUE partagée par la fiche vivante du
+   créateur (`creator/CreatorSummary.tsx`) et le détail candidat de l'écran d'équipe (`PartyScreen.tsx`). */
+.hero-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.hero-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-sheet-fig {
+  flex: none;
+}
+.hero-sheet-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.hero-sheet-id .detail-frame-name {
+  font-size: 19px;
+}
+.hero-sheet-derived {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.hero-sheet-derived b {
+  color: var(--text);
+}

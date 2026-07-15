@@ -349,9 +349,6 @@
   font-size: 12px;
   color: var(--muted);
 }
-.creator-summary .stat-val.boost {
-  color: var(--ok);
-}
 .creator-derived {
   display: flex;
   flex-direction: column;
@@ -733,9 +730,6 @@
     flex-direction: row;
     flex-wrap: wrap;
     gap: 4px 12px;
-  }
-  .creator-summary .char-skills {
-    display: none;
   }
   .creator-xp {
     border-top: 0;
