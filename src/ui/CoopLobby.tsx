@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { CoopRoomPanel, CoopSeatList, CoopAssignList } from './CoopPanels';
 import { SaveLoadModal } from './SaveLoadModal';
 import { RuleDivider } from './Ornaments';
+import { MenuCard } from './MenuCard';
 import { Icon } from './Icon';
 import { t } from '../i18n';
 
@@ -15,11 +16,11 @@ import { t } from '../i18n';
  * (créer / roster local / pré-tiré) ; les écrans invités REFLÈTENT le sien (snapshots).
  * INVITÉ : code + nom → connecté. Reconnexion automatique avec reprise de siège.
  *
- * Présentation (Jalon 9) : carte centrée sur la charte (même coquille que le menu principal),
- * sections en `.panel`.
+ * Présentation (Jalon 9) : carte centrée sur la charte, composée de `MenuCard` (même primitive
+ * que le menu principal), sections en `.panel`.
  */
 
-/** Coquille de carte centrée, partagée par les 3 états du lobby (local / invité / hôte). */
+/** Coquille de carte centrée, partagée par les 3 états du lobby (local / invité / hôte) — compose `MenuCard`. */
 function CoopShell({
   title,
   backLabel,
@@ -35,16 +36,20 @@ function CoopShell({
 }) {
   return (
     <div className="menu coop-lobby">
-      <div className={`menu-card coop-card${wide ? ' wide' : ''}`}>
-        <div className="coop-top">
-          <button className="btn small btn-ghost" onClick={onBack}>
-            {backLabel}
-          </button>
-        </div>
-        <h1 className="coop-title">{title}</h1>
-        <RuleDivider />
+      <MenuCard
+        className={`coop-card${wide ? ' wide' : ''}`}
+        header={<>
+          <div className="coop-top">
+            <button className="btn small btn-ghost" onClick={onBack}>
+              {backLabel}
+            </button>
+          </div>
+          <h1 className="coop-title">{title}</h1>
+          <RuleDivider />
+        </>}
+      >
         {children}
-      </div>
+      </MenuCard>
     </div>
   );
 }

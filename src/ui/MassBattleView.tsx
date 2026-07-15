@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { Prose } from './Prose';
 import { RuleDivider } from './Ornaments';
+import { MenuCard } from './MenuCard';
 import { ActiveModal } from './ActiveModal';
 import { StationSheet } from './StationSheet';
 import { AssignRow } from './AssignRow';
@@ -27,19 +28,23 @@ export function MassBattleView() {
   if (!mb) return null;
   return (
     <div className="menu mass-battle">
-      <div className="menu-card mb-card">
-        <h1 className="title">Bataille de masse</h1>
-        <p className="subtitle">
-          {mb.phase === 'over'
-            ? 'La bataille est terminée.'
-            : `Round de bataille ${mb.round} / ${mb.plannedRounds}`}
-        </p>
-        <RuleDivider />
+      <MenuCard
+        className="mb-card"
+        header={<>
+          <h1 className="title">Bataille de masse</h1>
+          <p className="subtitle">
+            {mb.phase === 'over'
+              ? 'La bataille est terminée.'
+              : `Round de bataille ${mb.round} / ${mb.plannedRounds}`}
+          </p>
+          <RuleDivider />
+        </>}
+      >
         <ArmyBars mb={mb} />
         {mb.phase === 'round' && <RoundPanel mb={mb} />}
         {mb.phase === 'over' && <OverPanel mb={mb} />}
         <BattleLog log={mb.log} />
-      </div>
+      </MenuCard>
       {/* Jets de bataille = Activités : la modale unifiée (RollShell) est rendue par l'arbitre R2. */}
       <ActiveModal />
     </div>
