@@ -595,7 +595,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Disponibilité** : Limitée. **Saison** : Hiver, Printemps. **Emplacement** : Forêts mixtes. **Coût** : 15/–.
 
-**Implémente** : non implémenté (aucune herbe n'est modélisée dans le système de maladies).
+**Implémente** : `src/data/trappings.json` id `gesundheit` — `consumable.kind:'test'` (Résistance Accessible) → succès `reduceDiseaseDays` `daysPerSL:{every:1,amount:1}` `disease:'blessure-purulente'` (`src/engine/ops.ts` case `reduceDiseaseDays` l.1385-1391, doc `daysPerSL` l.484-486).
 
 ---
 
@@ -609,7 +609,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Disponibilité** : Rare. **Saison** : Automne, Hiver. **Emplacement** : Clairières, Cimetières. **Coût** : 5 CO.
 
-**Implémente** : non implémenté.
+**Implémente** : `src/data/trappings.json` id `racine-des-tombes` — `consumable.kind:'do'` → `diseaseTestMod` `diseases:['blessure-purulente']` `amount:20` (`src/engine/ops.ts` case `diseaseTestMod` l.1577-1586, sommé par `activeDiseaseTestMod`, `src/engine/disease.ts` l.169-174). **Reste** (#458) : le scoping « uniquement si la Blessure Purulente provient d'une créature Mort-vivante ayant le Trait Infecté » n'est PAS modélisé — `diseaseTestMod` n'a pas de filtre d'origine (`src/engine/disease.ts` l.169-259) ; le bonus s'applique à toute Blessure Purulente.
 
 ---
 
@@ -627,7 +627,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Disponibilité** : Rare. **Saison** : Printemps. **Emplacement** : Collines. **Coût** : 2 CO.
 
-**Implémente** : non implémenté.
+**Implémente** : `src/data/trappings.json` id `rouille-mouchetee` — `consumable.kind:'do'` → `reduceDiseaseDays` `dice:{n:1,sides:10}` `disease:'verole-du-tanneur'` + `diseaseTestMod` `diseases:['verole-du-tanneur']` `amount:10` (`src/engine/ops.ts` l.1385-1391, l.1577-1586). **Reste** (#458) : les deux formes RAW (cru quotidien +10 continu SANS réduction de durée / potion −1d10j SANS +10) sont fusionnées en un seul effet appliqué ensemble, sans choix d'usage ; le surdosage (Nausées si >1 dose/jour) n'est pas modélisé.
 
 ---
 
