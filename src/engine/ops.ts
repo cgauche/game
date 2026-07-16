@@ -1174,6 +1174,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Clause AA Redoutable (MDG 16 l.13) : l'op S'EXÉCUTE ⇒ le garde-fou de la donnée (empetre/
         // inconscient/surpris, dans le nœud `if` englobant) est déjà franchi — l'Indice PLEIN part EN
         // PLUS pour la réserve adverse, indépendamment de si `target.advantage` avait déjà atteint `want`.
+        // Garde HÉRITÉE par le feed de groupe : arbitrage user 2026-07-16 (#536).
         if (o.feedOpposingPool) lines.push(...(ctx.onOpposingAdvantage?.(want) ?? []));
         break;
       }
