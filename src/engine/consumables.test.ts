@@ -101,7 +101,7 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
       { op: 'removeCondition', name: 'hemorragique', all: true },
     ]);
   });
-  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille T2C + sel sacré MDG + boissons alcoolisées LDB 09)', () => {
+  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille T2C + sel sacré MDG + boissons alcoolisées LDB 09 + malepierre LDB 19, #462)', () => {
     const ids = trappings.filter((t) => t.consumable).map((t) => t.id).sort();
     expect(ids).toEqual([
       'bandages',
@@ -116,6 +116,8 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
       'fleur-de-lune',
       'gesundheit',
       'lotus-noir',
+      'malepierre-brute',
+      'malepierre-raffinee',
       'mystracine',
       'necessaire-antipoison',
       'potion-de-guerison',
@@ -128,6 +130,16 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
       'soude-commune',
       'tonique-digestif',
       'vin-spiritueux-verre',
+    ]);
+  });
+  it('malepierre-brute : « Se trouver à proximité d\'une malepierre » (LDB 19 l.40) → corruptionExposure mineure/Résistance', () => {
+    expect(consumableOps(findTrappingById('malepierre-brute')!.consumable)).toEqual([
+      { op: 'corruptionExposure', level: 'mineure', skill: 'resistance' },
+    ]);
+  });
+  it('malepierre-raffinee : « Utiliser une malepierre raffinée » (LDB 19 l.63) → corruptionExposure majeure/Résistance', () => {
+    expect(consumableOps(findTrappingById('malepierre-raffinee')!.consumable)).toEqual([
+      { op: 'corruptionExposure', level: 'majeure', skill: 'resistance' },
     ]);
   });
 });

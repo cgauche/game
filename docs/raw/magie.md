@@ -652,7 +652,7 @@ La **malepierre** est un éclat de magie pure dans le plan matériel — manifes
 - Source d'énergie pour sorts et rituels (utilisée par cultistes du Chaos et skavens malgré les dangers).
 - Utilisation **officiellement interdite** par les pouvoirs en place.
 
-**Implémente :** non-implémenté (objet narratif / arbitrage MJ).
+**Implémente :** `src/data/trappings.json` (`malepierre-brute` mineure, `malepierre-raffinee` majeure) — Exposition à la Corruption au contact/usage (`LDB 19 l.40`/`l.63`), op `corruptionExposure` (`src/engine/ops.ts` l.409). Contact/usage prolongés (modérée, `LDB 19 l.51-53`), consommation en composant de rituel/sort (source RAW mécanique non retrouvée) : hors périmètre #462.
 
 ---
 

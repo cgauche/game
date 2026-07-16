@@ -6392,6 +6392,68 @@
     }
   },
   {
+    "id": "malepierre-brute",
+    "label": "Malepierre (brute)",
+    "type": "trapping",
+    "subType": "drogues-et-poisons",
+    "availability": null,
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Se trouver à proximité d'une malepierre.",
+    "price": null,
+    "source": {
+      "book": "livre-de-base",
+      "page": 182
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "corruptionExposure",
+            "level": "mineure",
+            "skill": "resistance"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "malepierre-raffinee",
+    "label": "Malepierre raffinée",
+    "type": "trapping",
+    "subType": "drogues-et-poisons",
+    "availability": null,
+    "reach": null,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [],
+    "desc": "Utiliser une malepierre raffinée.",
+    "price": null,
+    "source": {
+      "book": "livre-de-base",
+      "page": 183
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "corruptionExposure",
+            "level": "majeure",
+            "skill": "resistance"
+          }
+        ]
+      }
+    }
+  },
+  {
     "id": "mystracine",
     "label": "Mystracine",
     "type": "trapping",
