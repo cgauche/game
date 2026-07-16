@@ -4,7 +4,7 @@
 > par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.
 > Recourir à la source pour un point = un défaut de l'Atlas à corriger ici. Régénéré par
 > `node scripts/raw/coverage.mjs`.
-**Couverture (profondeur) : ✅ 150 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 154 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅3·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 151 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 155 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
 
 
 ## LDB — ✅ 71 · 🟡 2 · ⬜ 0
@@ -58,7 +58,7 @@
 | 44 | L’Aethyr | 🟡 | 2 (magie.md ×2) |
 | 45 | *(artefact OCR)* | ➖ | |
 | 46 | Les règles magiques | ✅ | 108 (magie.md ×56) |
-| 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
+| 47 | Listes des sorts | ✅ | 8 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 16 (magie.md ×16) |
 | 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
 | 50 | Magie noire | ✅ |  |
@@ -88,7 +88,7 @@
 | 74 | Possessions diverses | ✅ | 12 (equipement.md ×12) |
 | 75 | Mercenaires | ✅ |  |
 | 76 | Point d’Impact des Créatures | ✅ | 53 (combat.md ×29) |
-| 77 | Les populations du Reikland | ✅ | 5 (combat.md ×5) |
+| 77 | Les populations du Reikland | ✅ | 9 (combat.md ×5) |
 | 78 | Les Bêtes du Reikland | ✅ |  |
 | 79 | Les bêtes monstrueuses du Reikland | ✅ |  |
 | 80 | Les hordes de peaux-vertes | ✅ |  |
@@ -200,7 +200,7 @@
 | 11 | APPENDICE 2 - Nouvelles règles | ✅ | 19 (combat.md ×19) |
 | 12 | Annexe 3 - Documents et aides de jeux | ➖ hors-règle | |
 
-## EDOC — ✅ 3 · 🟡 1 · ⬜ 0
+## EDOC — ✅ 4 · 🟡 1 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -217,7 +217,7 @@
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
 | 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ |  |
-| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ➖ hors-règle | |
+| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 4 (reconciliation.md ×4) |
 | 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | |
 | 15 | CHAPITRE 11 - L’Affaire du joyau caché - Un mélodrame à l’intrigue complexe | ➖ hors-règle | |
 | 16 | CHAPITRE 12 - LE CARNAVAL DU PANDÉMONIUM | ➖ hors-règle | |
@@ -284,7 +284,7 @@
 | 13 | POINTS D’EXPÉRIENCE | ✅ | 6 (avancement.md ×6) |
 | 14 | CALENDRIER DES ATTRACTIONS PRINCIPALES | ➖ hors-règle | |
 
-## Altdorf — ✅ 3 · 🟡 0 · ⬜ 0
+## ACE — ✅ 3 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -300,7 +300,7 @@
 | 09 | Au-delà des murs | ➖ hors-règle | |
 | 10 | L’Espionnage à Altdorf | ✅ |  |
 | 11 | Cultes interdits et groupes extrémistes | ✅ |  |
-| 12 | Activités | ✅ |  |
+| 12 | Activités | ✅ | 17 (activites.md ×17) |
 
 ## Ubersreik — ✅ 2 · 🟡 0 · ⬜ 0
 

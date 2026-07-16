@@ -49,6 +49,13 @@
 - **Cartographie** — Métier (Cartographe) Complexe (−10), 2 ports ; carte = DR en CO + 2 DR d'Orientation ; option Planque (découverte sur 50 ou moins).
 - **Entraînement d'équipage** — Commandement Difficile (−20) + Compétence Difficile (−20) ; +DR(Commandement) à l'équipage PNJ, plafonné aux Augmentations de l'instructeur ; 2 pistoles d'argent/membre.
 - **Entretien du navire** — au port (mer −20, chantier +20) ; Métier (Charpentier/Constructeur) Intermédiaire pour l'Usure, Difficile (−20) pour les Critiques ; pièces détachées = Taille du navire, 2 Enc/5 Blessures réparées.
+- **Aldorf, la Couronne de l'Empire (ACE)** <!-- ACE-INTEGRATION -->
+- **Activités à Altdorf (ACE Annexe I)** — 5 Activités gate `where: altdorf` (proposables SEULEMENT à Altdorf) : Pénitence, Entraînement avec une arme inhabituelle, Tester des objets magiques, Mécénat, Recherche universitaire.
+- **Pénitence** — Prière Accessible (+20) ; succès −1 Péché (−2 sur Impressionnant/+4 DR ou mieux) ; échec → État Exténué 1er jour prochaine aventure ; Maladresse → Test Colère des dieux à la place.
+- **Entraînement avec une arme inhabituelle** — Corps à corps ou Projectiles Complexe (−10) selon l'arme ; succès = arme maîtrisée, échec = recommencer au prochain interlude.
+- **Tester des objets magiques** — Recherche Complexe (−10) ; DR ≥ +4 = plein potentiel + dangers, DR 0 à +3 = fonction principale, échec = rien, échec ≤ −4 = Exposition mineure à la Corruption.
+- **Mécénat** — variante d'Opérations bancaires, mise ≥ 5 CO, retrait par Évaluation Intermédiaire (+0) ; bandes de DR de +20 % de profit à perte totale + inspecteur/répurgateur.
+- **Recherche universitaire** — Recherche Intermédiaire (+0) ; chaque +DR = −100 PX sur le prix d'un sort (mini 100 PX), achat immédiat requis.
 
 ---
 
@@ -754,4 +761,123 @@ Réparer l'usure du vaisseau (planches pourries, voiles, coque incrustée). **De
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `PendingCascade`, `GameState` — `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, +2 fichiers
+
+---
+
+<!-- ACE-INTEGRATION -->
+
+## Activités à Altdorf — ACE Annexe I
+
+**Source :** ACE 12 l.3-7.
+
+Annexe I de **Aldorf, la Couronne de l'Empire (ACE)** : cinq nouvelles Activités d'interlude, réservées à la capitale impériale. Gate géographique STRICT — contrairement aux Activités Répandues/de Classe (LDB 23), ces cinq-là ne sont proposables qu'au lieu Altdorf de la carte du monde.
+
+> « Elle offre donc aux Personnages tout le loisir de s'adonner à différentes activités entre deux aventures. Dans la section suivante se trouve une liste d'Activités potentielles pour les Personnages. Elles fonctionnent avec les règles de **WFJDR**, p. 195. » — `ACE 12 l.7`
+
+Les cinq Activités : *Pénitence*, *Entraînement avec une arme inhabituelle*, *Tester des objets magiques*, *Mécénat*, *Recherche universitaire* (détail dans les sous-sections ci-dessous).
+
+**Voir aussi** : [Cadre général « Entre deux aventures »](#cadre-général-entre-deux-aventures), [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Opérations Bancaires — Mécénat en est une variante), [Pénitence (LDB 41)](religion.md#pénitence) (renvoi — pénitence MJ-arbitrée en réponse à la Colère des dieux, distincte de l'Activité *Pénitence* ci-dessous), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Corruption & mutation](corruption.md) (Tester des objets magiques — Exposition mineure).
+
+**Implémente :** `src/engine/activities.ts` (`activityAvailableAt`, champ `ActivityDef.where`) + `src/state/interludeFlow.ts` (`currentPlaceId`, `interludeCatalog`) — gate géographique. Confirmé.
+
+---
+
+## Pénitence (ACE)
+
+**Source :** ACE 12 l.9-15.
+
+Pèlerinage à Altdorf (ou parcours des chemins saints si déjà sur place) pour se défaire de Points de Péché accumulés.
+
+> « Après un pèlerinage adéquat, faites un Test de **Prière Accessible (+20)**. Si vous réussissez, enlevez 1 point de Péché, ou 2 sur un Succès Impressionnant (+4 DR) ou mieux. Si vous échouez ce Test, vous subissez 1 État *Exténué* le premier jour de votre prochaine aventure : vous souffrez d'une fatigue physique et spirituelle. Si vous faites une Maladresse sur le jet, réalisez un Test sur le Tableau de la Colère des Dieux (**WFJDR**, p. 218) à la place. » — `ACE 12 l.15`
+
+- Test **Prière Accessible (+20)**.
+- Succès (+4 DR ou mieux) → **−2** Points de Péché ; succès (0 à +3 DR) → **−1** Point de Péché.
+- Échec → 1 État *Exténué* le premier jour de la prochaine aventure.
+- Maladresse → Test sur le Tableau de la Colère des dieux **à la place** du résultat normal.
+
+**Voir aussi** : [Points de Péché — définition et accumulation](religion.md#points-de-péché--définition-et-accumulation), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Table d100 — Colère des dieux (verbatim)](religion.md#table-d100--colère-des-dieux-verbatim).
+
+**Implémente :** `src/data/activities.json` (`id: "penitence"`) + `src/state/interludeFlow.ts` (`case 'wrathOfTheGods'` l.588-591, `applyMiscast`) + `src/engine/miscast.ts` (table Colère). Confirmé.
+
+---
+
+## Entraînement avec une arme inhabituelle (ACE)
+
+**Source :** ACE 12 l.17-21.
+
+Maîtriser une arme trop singulière pour un usage immédiat (ex. l'arme de Harald l'Infâme) exige un entraînement dédié.
+
+> « Après ce difficile entraînement, faites un Test de **Corps à corps** ou de **Projectiles Complexe (−10)** selon la spécialisation de l'arme que vous tentez de maîtriser. Si le Test réussit, vous avez maîtrisé l'arme. Si vous échouez, le Personnage devra attendre le prochain moment de pause après une aventure pour recommencer. » — `ACE 12 l.21`
+
+- Test **Corps à corps** ou **Projectiles Complexe (−10)**, selon la catégorie de l'arme visée.
+- Succès → arme maîtrisée (lève le prérequis `requiresMastery`).
+- Échec → nouvelle tentative reportée au prochain interlude.
+
+**Implémente :** `src/data/activities.json` (`id: "entrainement-arme-inhabituelle"`, `resolver: "masterWeapon"`) + `src/state/interludeFlow.ts` (`resolver === 'masterWeapon'` l.388-396, `case 'masterWeapon'` l.592-597). Confirmé.
+
+---
+
+## Tester des objets magiques (ACE)
+
+**Source :** ACE 12 l.23-42.
+
+Étudier un artefact magique dont l'activation n'est pas évidente (code secret, geste, énigme), via la Compétence Recherche — risqué en cas d'échec sévère.
+
+> « Ce qu'ils apprennent dépend du résultat d'un Test de **Recherche Complexe (−10)**. » — `ACE 12 l.29`
+
+Table des résultats (`ACE 12 l.31-42`) :
+
+| DR | Résultat | Information apprise |
+|---|---|---|
+| +4 ou plus | Succès Impressionnant/Stupéfiant | Étude en profondeur : plein potentiel de l'objet et tous ses dangers éventuels. |
+| +0 à +3 | Succès Minime à Succès | Fonction principale de l'objet et comment l'activer. |
+| −0 à −3 | Échec Minime à Échec | Aucune information utile sur l'artéfact. |
+| −4 ou moins | Échec Impressionnant/Stupéfiant | Rien appris, **et** Test d'Exposition mineure à la Corruption (contamination magique). |
+
+**Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
+
+**Implémente :** `src/data/activities.json` (`id: "tester-objets-magiques"`, `resolver: "identifyByResearch"`) + `src/state/interludeFlow.ts` (`case 'identifyByResearch'` l.598-614). Confirmé.
+
+---
+
+## Mécénat (ACE)
+
+**Source :** ACE 12 l.45-49, ACE 12 l.57-65 (table).
+
+Variante d'Opération Bancaire (ch.23) pratiquée à Altdorf : sponsoriser un dramaturge prometteur plutôt qu'épargner.
+
+> « Comme pour n'importe quel investissement, vous devez réaliser deux Opérations : une première quand vous donnez votre argent (au moins 5 CO) et une seconde quand vous essayez de le récupérer. Quand vous tentez de récupérer votre investissement, faites un Test d'**Évaluation Intermédiaire (+0)** pour voir si vous avez été capable de trouver un auteur de talent, et consultez le tableau ci-contre pour déterminer le résultat. » — `ACE 12 l.49`
+
+Table des résultats (`ACE 12 l.57-65`) :
+
+| DR | Résultat |
+|---|---|
+| +6 ou plus | Classique instantané ; inverse tout Test de Sociabilité (amateur de théâtre) la prochaine aventure ; investissement récupéré avec un profit de 20 %. |
+| +3 à +5 | Succès modéré ; inverse un Test de Sociabilité (amateur d'art) ; investissement récupéré intégralement. |
+| +0 à +2 | Trop moralisatrice mais places vendues ; inverse un Test de Sociabilité (amateur d'art) ; moitié de l'investissement récupérée. |
+| −0 à −2 | Extrêmement ennuyeuse ; investissement perdu. |
+| −3 à −5 | Insultante ; investissement perdu, un noble offensé jure de provoquer en duel les financeurs. |
+| −6 ou moins | Désastre ; investissement perdu, attire un inspecteur fiscal ou un répurgateur (au choix). |
+
+**Voir aussi** : [Opérations Bancaires](#opérations-bancaires) (ch.23, dépôt invest/planque).
+
+**Implémente :** `src/data/activities.json` (`id: "mecenat"`, `resolver: "mecenat"`, `minInvest.gold: 5`) + `src/state/interludeFlow.ts` (`bankDeposit` kind `'mecenat'` l.769-813, `mecenatPayout` l.443-454). Confirmé.
+
+---
+
+## Recherche universitaire (ACE)
+
+**Source :** ACE 12 l.51-55, ACE 12 l.67.
+
+Consultation des bibliothèques/laboratoires d'un Collège de Magie à Altdorf pour mémoriser un sort à moindre coût.
+
+> « Une fois au Collège, réalisez un Test de **Recherche Intermédiaire (+0)**. Chaque +DR vous permet de mémoriser un sort pour 100PX de moins que son prix normal (pour un minimum de 100PX). Pour bénéficier de cette réduction, vous devez acheter le sort immédiatement. » — `ACE 12 l.55`
+
+> « inutile pour les nouveaux sorciers qui n'ont pas encore appris un nombre de sorts égal à leur Bonus d'Intelligence, mais les sorciers plus expérimentés bénéficient grandement de ces visites, qui leur permettent de rafraîchir leurs connaissances. » — `ACE 12 l.67`
+
+- Test **Recherche Intermédiaire (+0)**.
+- Chaque +DR → −100 PX sur le prix du prochain sort mémorisé (plancher 100 PX).
+- Achat du sort **immédiat**, sinon la remise est perdue.
+
+**Implémente :** `src/data/activities.json` (`id: "recherche-universitaire"`, `resolver: "memorizeDiscount"`) + `src/state/interludeFlow.ts` (`case 'memorizeDiscount'` l.615-621) — Confirmé (le seuil « sorts appris ≥ Bonus d'Intelligence » sous lequel l'Activité est inutile n'est pas vérifié en code).
 

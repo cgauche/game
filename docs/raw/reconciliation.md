@@ -7,7 +7,7 @@
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 4 chapitre(s) couverts avec des lignes non pinées.
 **Sens A — code → Atlas (14 autres livres)** : 3 chapitre(s)-livre cités par le code & absents de l'Atlas · 8 chapitre(s)-livre couverts avec des lignes non pinées · 64 réf(s) sans chapitre (non réconciliables par cette mesure).
-**Sens B — Atlas → code (LDB)** : 10 marqueur(s) « (non implémenté) » · 4 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 20 · 16 crédités par une source folio de `src/data`).
+**Sens B — Atlas → code (LDB)** : 5 marqueur(s) « (non implémenté) » · 20 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 20 · 0 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
 
@@ -15,23 +15,23 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ## A2 — Lignes appelées par le CODE (LDB) non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
-### LDB 46 — 10/37 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
-- l.185 — `src/state/combatSlice.ts:3055` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
-- l.188 — `src/data/index.ts:577` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
+### LDB 46 — 10/38 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
+- l.185 — `src/state/combatSlice.ts:3069` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+- l.188 — `src/data/index.ts:582` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
 - l.193 — `src/state/combatFlow.ts:2021` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
-- l.194 — `src/engine/ops.ts:626` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
-- l.199 — `src/engine/magic.ts:165` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
+- l.194 — `src/engine/ops.ts:634` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
+- l.199 — `src/engine/magic.ts:195` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
 - l.201 — `src/engine/engine.test.ts:699` — it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
-- l.202 — `src/engine/magic.ts:547` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
+- l.202 — `src/engine/magic.ts:577` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
 - l.204 — `src/engine/conditions.ts:471` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
 - l.205 — `src/state/extended-test.test.ts:53` — it('Dissipation (LDB 46 l.205) : DR cumulé atteignant le NI retire les effets du sort de ses porteurs', () => {
 - l.207 — `src/engine/tests.ts:218` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 
-### LDB 10 — 6/22 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
-- l.310 — `src/engine/types.ts:858` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
-- l.364 — `src/engine/types.ts:1390` — /** Distraire (LDB 10 l.364 / AA 13 l.51) : distrait par un adversaire → ne peut gagner AUCUN Avantage
-- l.365 — `src/state/combatFlow.ts:4529` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
-- l.569 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
+### LDB 10 — 6/23 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
+- l.310 — `src/engine/types.ts:877` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+- l.364 — `src/engine/types.ts:1409` — /** Distraire (LDB 10 l.364 / AA 13 l.51) : distrait par un adversaire → ne peut gagner AUCUN Avantage
+- l.365 — `src/state/combatFlow.ts:4536` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
+- l.680 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.680-686).
 - l.859 — `src/state/granted-traits.test.ts:122` — it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
 - l.864 — `src/engine/psychology.ts:75` — *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
 
@@ -41,7 +41,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - l.518 — `src/scenes/test-scenarios/95-poursuite-terrestre.ts:44` — // Secours si rattrapés (Distance ≤ 0, LDB 15 l.518) — mêmes brigands, cachés tant que la fuite tient.
 - l.520 — `src/state/pursuitFlow.ts:150` — get().log(p.partyRole === 'fleeing' ? 'Le groupe a semé ses poursuivants — fuite réussie (LDB 15 l.520).' : 'La proie s\'est échappée — la poursuite est perdue 
 
-### LDB 12 — 1/30 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
+### LDB 12 — 1/31 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
 - l.229 — `src/engine/activities.ts:229` — /** Test COMBINÉ (LDB 12 l.229) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+
 
 ## A-AUTRES 0 — Résumé Sens A par livre (14 livres hors LDB)
@@ -56,11 +56,11 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l'Atlas (trous durs)
 
-### EDOC 13 — 15 réf(s) code, 0 dans l'Atlas
+### EDOC 13 — 25 réf(s) code, 0 dans l'Atlas
 - `src/engine/combatFeatures/dispatch.ts:47` (l.264) — *  Chaos → undefined (un Sort d'Arcanes du Chaos est réservé aux porteurs du Talent, EDOC 13 l.264-266). */
-- `src/engine/corruption.ts:167` (l.276) — *  Sort », EDOC 13 l.276-277) ; le chemin CORRUPTION (corruptionFlow → `attachMutation` direct, sans effet
-- `src/engine/ops.ts:670` (l.230) — *  à l'axe Durée (`ctx.overcastDurationSteps`, LDB 47 l.13-17 / EDOC 13 l.230+270-276 : « pour chaque +2 DR
-- `src/engine/ops.ts:678` (l.276) — *  `grantTrait` (EDOC 13 l.276-277 « appliquez […] pour toute la durée du Sort ») : durée du contexte
+- `src/engine/corruption.ts:174` (l.276) — *  Sort », EDOC 13 l.276-277) ; le chemin CORRUPTION (corruptionFlow → `attachMutation` direct, sans effet
+- `src/engine/ops.ts:686` (l.276) — *  `grantTrait` (EDOC 13 l.276-277 « appliquez […] pour toute la durée du Sort ») : durée du contexte
+- `src/engine/ops.ts:978` (l.230) — *  `rollTable.extraRollsPerStep` (LDB 47 l.13-17, EDOC 13 l.230+270-276). */
 
 ### MDG 3 — 5 réf(s) code, 0 dans l'Atlas
 - `src/state/restFlow.ts:65` (l.71) — /** À bord du navire de campagne (hamacs/quartiers, MDG 03 l.71 · 09 l.87) — couchage ABRITÉ (pas
@@ -69,10 +69,10 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - `src/state/seaActivities.ts:233` (l.71) — // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
 
 ### T2C 10 — 41 réf(s) code, 0 dans l'Atlas
-- `src/data/index.ts:1445` (l.54) — /** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C ch.10 l.54-135 tarife par TYPE de navire à
-- `src/data/index.ts:1453` (l.1) — *  Amélioration, l.195-364 ; T2C ch.10 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
-- `src/data/index.ts:1481` (l.85) — *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
-- `src/data/index.ts:1481` (l.111) — *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
+- `src/data/index.ts:1450` (l.54) — /** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C ch.10 l.54-135 tarife par TYPE de navire à
+- `src/data/index.ts:1458` (l.1) — *  Amélioration, l.195-364 ; T2C ch.10 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
+- `src/data/index.ts:1486` (l.85) — *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
+- `src/data/index.ts:1486` (l.111) — *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
 
 ## A2-AUTRES — Lignes appelées par le CODE (autres livres) non pinées par l'Atlas
 
@@ -118,9 +118,9 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - l.142 — `src/data/river-perils.json:64` — "ref": "T2C ch.5 l.142-144",
 
 ### MDG 15 — 8/33 ligne(s) code hors couverture
-- l.243 — `src/state/seaVoyageFlow.ts:2355` — *  mentionnent pas la relâche à terre — vérifié entrée par entrée (MDG 15 l.243-263) — donc non gatées. */
+- l.243 — `src/state/seaVoyageFlow.ts:2367` — *  mentionnent pas la relâche à terre — vérifié entrée par entrée (MDG 15 l.243-263) — donc non gatées. */
 - l.245 — `src/scenes/test-scenarios/14-voyage-maritime.test.ts:55` — if (get().pendingShoreLeave) { get().resolveShoreLeave(true); continue; } // accoste : relâche accordée par défaut (MDG 15 l.245)
-- l.439 — `src/data/index.ts:1497` — /** Index des ports de la Mer des Griffes (#217, MDG ch.15 l.439-506) — catalogue app-owned éditable au
+- l.439 — `src/data/index.ts:1502` — /** Index des ports de la Mer des Griffes (#217, MDG ch.15 l.439-506) — catalogue app-owned éditable au
 - l.452 — `src/data/naval-ports.test.ts:37` — it('Salzenmund : Taille 4, Richesse 4, Surplus produits-de-luxe +1, Demande armes+céréales +1 (MDG 15 l.452, folio 138)', () => {
 - l.456 — `src/data/naval-ports.test.ts:59` — it('Norden : Surplus poisson-salé +1, Demande armes +2/bois/métaux/pièces-détachées-de-navire +1 (MDG 15 l.456, folio 138)', () => {
 - l.461 — `src/data/naval-ports.test.ts:45` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
@@ -146,7 +146,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 ## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
 
 ### ADE II — 12 réf(s) sans chapitre
-- `src/data/index.ts:1235` (l.62) — /** L'Étoile du Sorcier (ADE2 l.62) : fourchette du 1d10 interne `[min, max]` parmi les variantes
+- `src/data/index.ts:1240` (l.62) — /** L'Étoile du Sorcier (ADE2 l.62) : fourchette du 1d10 interne `[min, max]` parmi les variantes
 - `src/data/schemas/defs/stars.ts:24` (l.62) — /** Étoile du Sorcier (ADE2 l.62) : fourchette 1d10 interne `[min, max]` — tuple STRICT (2 éléments,
 - `src/engine/combat-breakdown.test.ts:135` (l.228) — it('De plaies atroces (qualité magique ADE2 l.228) = Dévastatrice : max(DR, dé des unités)', () => {
 - `src/engine/creation.test.ts:57` (l.62) — it('l\'Étoile du Sorcier : le 1d10 interne produit les 4 variantes (ADE2 l.62)', () => {
@@ -177,12 +177,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 - **docs\raw\00-index.md** L16 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
 - **docs\raw\00-index.md** L69 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
-- **docs\raw\activites.md** L441 — **Implémente :** (non implémenté)
-- **docs\raw\activites.md** L457 — **Implémente :** (non implémenté)
-- **docs\raw\activites.md** L473 — **Implémente :** (non implémenté)
-- **docs\raw\activites.md** L491 — **Implémente :** (non implémenté)
-- **docs\raw\activites.md** L537 — **Implémente :** (non implémenté)
-- **docs\raw\bestiaire.md** L314 — **Implémente :** (non implémenté)
+- **docs\raw\activites.md** L548 — **Implémente :** (non implémenté)
 - **docs\raw\bestiaire.md** L384 — **Implémente :** (non implémenté)
 - **docs\raw\competences.md** L1037 — **Implémente :** (non implémenté)
 
@@ -190,12 +185,12 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 _Avant crédit folio (20)_ : LDB 6 · LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 38 · LDB 39 · LDB 44 · LDB 50 · LDB 66 · LDB 68 · LDB 69 · LDB 70 · LDB 80
 
-_Crédités par une source folio de `src/data/*.json` (16, donnée référencée sans réf de ligne)_ : LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 39 · LDB 50 · LDB 66 · LDB 68 · LDB 70 · LDB 80
+_Crédités par une source folio de `src/data/*.json` (0, donnée référencée sans réf de ligne)_ : —
 
 **VRAIS hors-code (après crédit folio) :**
-LDB 6 · LDB 38 · LDB 44 · LDB 69
+LDB 6 · LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB 30 · LDB 31 · LDB 32 · LDB 33 · LDB 34 · LDB 35 · LDB 38 · LDB 39 · LDB 44 · LDB 50 · LDB 66 · LDB 68 · LDB 69 · LDB 70 · LDB 80
 
 ## Autres livres
 
-Code : AA, ADE I, ADE II, EDOC, MDG, NADAJ, T2C, T3
-Atlas : AA, ADE I, ADE II, Altdorf, EDO, EDOC, MDG, Middenheim, NADAJ, T2, T2C, T3, Ubersreik, ZI
+Code : AA, ADE I, ADE II, EDOC, MDG, Middenheim, NADAJ, T2C, T3
+Atlas : AA, ACE, ADE I, ADE II, EDO, EDOC, MDG, Middenheim, NADAJ, T2, T2C, T3, Ubersreik, ZI
