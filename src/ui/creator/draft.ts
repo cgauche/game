@@ -18,7 +18,7 @@
  * `talentsRolled`, `wealthRoll`) ; le geste ne fait que DÉCOUVRIR un résultat déjà déterminé
  * (zéro savescum), et la validation d'étape EXIGE le geste.
  */
-import { CharKey, CHAR_KEYS, Characteristics, Combatant } from '../../engine/types';
+import { CharKey, CHAR_KEYS, Characteristics, Combatant, TalentInstance } from '../../engine/types';
 import { makeRNG } from '../../engine/dice';
 import { Money } from '../../engine/money';
 import {
@@ -42,7 +42,7 @@ import {
 import { rule } from '../../engine/policy';
 import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
-import { careerSkillAdditions, talentCharBonus } from '../../engine/talentEffects';
+import { careerSkillAdditions, baseWithTalents } from '../../engine/talentEffects';
 import { castingKindOf } from '../../engine/combatFeatures/dispatch';
 import { bonus } from '../../engine/characteristics';
 import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData } from '../../data';
@@ -496,17 +496,25 @@ export function speciesTalentChoicesDone(d: CreatorDraft): boolean {
   return speciesTalentChoiceEntries(d).every((e) => !!d.speciesTalentChoices[e]);
 }
 
-/** Probe : héros partiel (caracs + talents d'espèce + talent de carrière) pour Maxi/additions. */
-export function probeHero(d: CreatorDraft, withCareerTalent = true): Combatant {
-  const talents: { name: string; times: number }[] = [];
+/** Probe : héros partiel (caracs + talents d'espèce + talent de carrière) pour Maxi/additions.
+ *  `charsAlloc` compose `charAdvancesAlloc` aux Caractéristiques (BFM final requis par
+ *  `pettySpellQuota`) — n'affecte QUE les Caractéristiques du probe, pas sa sémantique pour les
+ *  autres appelants (Maxi de talent, additions de carrière). */
+export function probeHero(d: CreatorDraft, withCareerTalent = true, charsAlloc = false): Combatant {
+  const talents: TalentInstance[] = [];
   const add = (label: string) => {
-    const e = talents.find((t) => t.name === label);
+    // Libellé d'authoring → id STABLE (couture tolérée à la frontière du draft, doctrine ids).
+    const { name, spec } = splitLabel(label);
+    const talentId = findTalent(name)?.id ?? slugId(name);
+    const e = talents.find((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''));
     if (e) e.times += 1;
-    else talents.push({ name: label, times: 1 });
+    else talents.push({ talentId, spec, times: 1 });
   };
   for (const t of resolvedSpeciesTalents(d)) add(t);
   if (withCareerTalent && d.careerTalent) add(d.careerTalent);
-  return { characteristics: draftChars(d), talents, skills: [], movement: draftSpecies(d)?.movement ?? 0 } as unknown as Combatant;
+  const characteristics = draftChars(d);
+  if (charsAlloc) for (const k of CHAR_KEYS) characteristics[k] += d.charAdvancesAlloc[k] ?? 0;
+  return { characteristics, talents, skills: [], movement: draftSpecies(d)?.movement ?? 0 } as unknown as Combatant;
 }
 
 /** Entrées de compétences de carrière allouables : les 8 du Niveau + ajouts de talents (LDB 10).
@@ -593,16 +601,16 @@ export function talentEntryChoices(entry: string): string[] | null {
   return out;
 }
 
-/** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587 : « vous mémorisez… un nombre de
+/** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.714 : « vous mémorisez… un nombre de
  *  Sorts égal à votre Bonus de Force Mentale ») : quota à choisir = BFM FINAL (Augmentations
- *  gratuites + talents « +5 FM » appliqués, même pipeline que createHero) — 0 sans le Talent. */
+ *  gratuites + talents « +5 FM » appliqués, même pipeline que createHero) — 0 sans le Talent.
+ *  Le BFM passe par `baseWithTalents` (source unique des +5 de talent), jamais une boucle manuelle. */
 export function pettySpellQuota(d: CreatorDraft): number {
   const all = [...resolvedSpeciesTalents(d), ...(d.careerTalent ? [d.careerTalent] : [])];
   // Libellés d'authoring → id stable (la donnée des carrières/espèces porte le libellé) pour le lookup par DONNÉE.
   if (!all.some((t) => castingKindOf(findTalent(splitLabel(t).name)?.id ?? '') === 'mineure')) return 0;
-  let fm = draftChars(d)['force-mentale'] + (d.charAdvancesAlloc['force-mentale'] ?? 0);
-  for (const t of all) if (talentCharBonus(t) === 'force-mentale') fm += 5;
-  return bonus(fm);
+  const probe = probeHero(d, true, true);
+  return bonus(baseWithTalents(probe, 'force-mentale'));
 }
 
 /** Options du talent de carrière (entrées brutes du Niveau 1) : libellé sélectionné + Maxi. */

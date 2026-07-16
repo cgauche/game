@@ -33,10 +33,11 @@ import {
   coastalSwapAvailable,
   careerRollPool,
   withCoastalSwap,
+  speciesTalentChoiceEntries,
 } from './draft';
 import { CHAR_KEYS } from '../../engine/types';
 import { rigSpeciesId } from '../../data';
-import { isUnresolvedChoice, concreteLabel, splitLabel } from '../../engine/careerSlots';
+import { isUnresolvedChoice, concreteLabel, splitLabel, splitTopLevelOu } from '../../engine/careerSlots';
 import { specOptionsFor, pettySpellQuota } from './draft';
 import { spells, advancementLabel, stars, celestialHouses, species as allSpecies, careersForSpecies } from '../../data';
 
@@ -296,7 +297,7 @@ describe('Possessions — « Arme (Au choix) » (LDB 05 l.559-585)', () => {
   });
 });
 
-describe('Magie mineure à la création (LDB 10 l.587) — BFM sorts inclus au Talent', () => {
+describe('Magie mineure à la création (LDB 10 l.714) — BFM sorts inclus au Talent', () => {
   /** Brouillon Sorcier valide (Niveau 1 : talent « Magie mineure » choisissable). */
   function sorcererDraft() {
     const base = withCareer(readyDraft(), 'sorcier');
@@ -336,6 +337,43 @@ describe('Magie mineure à la création (LDB 10 l.587) — BFM sorts inclus au T
   it('sans le Talent : quota 0, aucune exigence à l\'étape 4', () => {
     expect(pettySpellQuota(readyDraft())).toBe(0);
     expect(validateStep(readyDraft(), 'skills')).toBeNull();
+  });
+
+  /** Talent « +5 FM » (Imperturbable, LDB 10) au quota : verrouille la source UNIQUE des +5 de
+   *  talent (`baseWithTalents`, jamais une boucle manuelle re-implémentée dans `pettySpellQuota`).
+   *  Humains (Tiléens) portent le choix « Imperturbable ou Affable » (Affable = Sociabilité, témoin
+   *  neutre) ; BFM figé en `pointBuy` pour franchir la décade sans dépendre du tirage. */
+  it('talent « +5 FM » (Imperturbable) : quota supérieur au témoin sans bonus de FM', () => {
+    const tileenSorcererDraft = (talentPick: 'Imperturbable' | 'Affable') => {
+      const base = withCareer(withSpecies(newDraft(4321), 'humains-tileens'), 'sorcier');
+      const sp = draftSpecies(base)!;
+      const level = draftLevel(base)!;
+      const specChoices: Record<string, string> = {};
+      for (const ref of level.skills) {
+        const raw = advancementLabel('skills', ref);
+        if (isUnresolvedChoice(raw)) specChoices[raw] = concreteLabel(splitLabel(raw).name, specOptionsFor(raw)[0]);
+      }
+      const speciesTalentChoices: Record<string, string> = {};
+      for (const entry of speciesTalentChoiceEntries(base)) {
+        speciesTalentChoices[entry] = entry === 'Imperturbable ou Affable' ? talentPick : splitTopLevelOu(entry)[0];
+      }
+      return {
+        ...base,
+        charMode: 'pointBuy' as const,
+        pointBuy: { ...base.pointBuy, 'force-mentale': 7 }, // base 20 + 7 = 27 (bonus 2), à la frontière de décade
+        charsRolled: true,
+        talentsRolled: true,
+        speciesPlus5: sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a)),
+        speciesPlus3: sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a)),
+        speciesTalentChoices,
+        skillAdvances: Object.fromEntries(level.skills.map((a) => [advancementLabel('skills', a), 5])),
+        specChoices,
+        careerTalent: 'Magie mineure',
+      };
+    };
+    const withImperturbable = pettySpellQuota(tileenSorcererDraft('Imperturbable'));
+    const withoutFmBonus = pettySpellQuota(tileenSorcererDraft('Affable'));
+    expect(withImperturbable).toBe(withoutFmBonus + 1);
   });
 });
 
