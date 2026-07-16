@@ -1,6 +1,6 @@
 ---
 name: game-atlas-raw-doc
-description: "Atlas RAW — doc agent-facing des règles WFRP4 consolidées (docs/raw/), pilote Combat livré, fan-out par domaine"
+description: "Atlas RAW — doc agent-facing des règles WFRP4 (docs/raw/) ; depuis 2026-07-16 les champs Implémente sont GÉNÉRÉS du code (build-implemente.mjs, manifest, gate Sens B), code-map.md supprimé"
 metadata: 
   node_type: memory
   type: project
@@ -9,7 +9,9 @@ metadata:
 
 Nouvelle doc **agent-facing** des règles WFRP4 RAW sous `docs/raw/`. But = répondre vite et sûrement à « est-ce que X est RAW, et que dit la source ? » quand la règle est **éclatée sur plusieurs chapitres ET plusieurs livres**. Pas une doc joueur.
 
-Format : 1 fichier par **domaine**, 1 section `##` = 1 **topic** = synthèse fidèle + **Sources RAW** (TOUTES les refs `LIVRE NN l.X-Y` consolidées, tous livres) + citations verbatim + **Voir aussi** (renvois règle→règle) + **Implémente** (module `src/engine/`). Spine : `00-index.md`, `sources.md` (14 livres + convention de réf identique aux commentaires de code), `code-map.md` (inverse module→topics, pour l'audit de fidélité).
+Format : 1 fichier par **domaine**, 1 section `##` = 1 **topic** = synthèse fidèle + **Sources RAW** (TOUTES les refs `LIVRE NN l.X-Y` consolidées, tous livres) + citations verbatim + **Voir aussi** (renvois règle→règle) + **Implémente**. Spine : `00-index.md`, `sources.md` (14 livres + convention de réf identique aux commentaires de code).
+
+**ÉTAT 2026-07-16 (#487/#434 clos) — le champ `Implémente` est GÉNÉRÉ, plus jamais écrit à la main** : `scripts/raw/build-implemente.mjs` (`npm run raw:implemente`) le dérive des citations du code — lignes `LIVRE NN l.X` des commentaires (matching spans ±10) ET **folio** `source:{book,page}` des `src/data/*.json` (ancres `data-folio` du Source, id d'entrée = symbole ; mapping slug↔abbr dans `books.json.abbr`). Flags `⚠sans-appelant`/`⚠hors-app` (code mort). Surface manuelle UNIQUE : `src/data/raw.manifest.json` (`{topic, ticket|bloque}`) ; **gate Sens B** : topic `(non implémenté)` sans entrée = exit 1 (`--check` chaîné dans `docs:check`, CI + pre-commit). `code-map.md` SUPPRIMÉ. Gardes de graphies `citation-graphy-guard` (chapitre-relatif, cadratins, sans-chapitre, backtick-fichier) à zéro tolérance. ⚠ Piège connu : plages folio LARGES entre ancres espacées → faux « implémenté » sur topics voisins (5 cas connus compensés par puce `dette : #N` ; fix racine = #522 ancrage). Tout commit qui ajoute/déplace des réfs RAW doit relancer `npm run raw:implemente` et committer les fiches (patron « jamais périmée » de docs/systemes.md).
 
 **Corpus RAW = 14 livres** (CLAUDE.md § Sources VF corrigé le 2026-06-20) : LDB, ADE I, ADE II, AA, ZI, Middenheim, EDO, EDOC, T2, T2C, T3, Altdorf, Ubersreik, NADAJ. Les tomes/suppléments sont des **sources de règles** (donnée mécanique = RAW, pas la prose). **Boîte d'Initiation EXCLUE** (Starter Set, ruleset simplifié divergent).
 
