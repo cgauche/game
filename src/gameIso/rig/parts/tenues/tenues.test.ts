@@ -4,6 +4,7 @@ import { TENUE_DEFS } from './_registry.generated';
 import { pickView } from '../types';
 import { tenueFor, tenuePaletteFor } from '../career';
 import { careers } from '../../../../data';
+import { slugId } from '../../../../data/slug';
 
 describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
   it('chaque archétype de classe déclaré expose bien un def torse+jambes chargé', () => {
@@ -13,15 +14,19 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
     }
   });
 
-  it('toute carrière de careers.json résout sa tenue EXPLICITEMENT (def, tenue réutilisée, ou archétype de classe RÉEL) — jamais le repli citadins silencieux', () => {
+  it('toute carrière de careers.json résout une tenue SPÉCIFIQUE (def dédié ou tenue réutilisée) — jamais le repli archétype de classe silencieux', () => {
+    const defSlugs = new Set(TENUE_DEFS.map((d) => slugId(d.name)));
     const fautives = careers
       .filter((c) => {
         const parDef = c.id in TENUE_BY_ID;
         const parTenueReutilisee = !!c.tenue && c.tenue in TENUE_BY_ID;
-        const parArchetypeDeClasse = c.class in CLASS_TENUE_BY_ID;
-        return !parDef && !parTenueReutilisee && !parArchetypeDeClasse;
+        return !parDef && !parTenueReutilisee;
       })
-      .map((c) => `${c.id} (classe ${c.class}) → repli citadins silencieux : lui donner un def, un champ tenue, ou donner un archétype à sa classe`);
+      .map((c) => {
+        if (c.tenue) return `${c.id} (classe ${c.class}) : champ tenue « ${c.tenue} » introuvable en defs/ (slugId(name) dérivé ?)`;
+        if (defSlugs.has(c.id)) return `${c.id} (classe ${c.class}) : un def au slug « ${c.id} » existe hors TENUE_BY_ID — vérifier isClassDef/palette`;
+        return `${c.id} (classe ${c.class}) : aucun def ni champ tenue authoré (slugId(name) attendu « ${c.id} »)`;
+      });
     expect(fautives).toEqual([]);
   });
 
@@ -47,6 +52,12 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
 
   it('tenueFor("nu") renvoie le corps nu', () => {
     expect(tenueFor('nu')).toBe(TENUE_NUE);
+  });
+
+  it("l'archétype « citadins » existe et expose un rendu réel — repli ultime de tenueForClass/tenueFor pour tout vocabulaire inconnu", () => {
+    expect(CLASS_TENUE_BY_ID.citadins).toBeDefined();
+    expect(pickView(CLASS_TENUE_BY_ID.citadins.torse, 'front')).toContain('<');
+    expect(pickView(CLASS_TENUE_BY_ID.citadins.jambes, 'front')).toContain('<');
   });
 
   it("tenueFor(id inconnu) retombe sur l'archétype de classe Citadins", () => {
