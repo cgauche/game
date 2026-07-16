@@ -382,7 +382,7 @@ function doctrineWeights(id: DoctrineId): Weights {
  * - fragilité : (1 + (PBmax − PBcourant)/PBmax) → un héros entamé est ~2× plus « intéressant » (on
  *   sécurise l'élimination, LDB tactique). PUR. NaN-garde sur les dégâts (Caractéristiques absentes).
  */
-function targetThreat(enemy: Combatant, hero: Combatant): number {
+function targetThreat(enemy: Combatant, hero: Combatant, mpt = 2): number {
   const dist = chebyshev(enemy.pos!, hero.pos!);
   const reachability = 1 / (1 + 0.15 * dist); // 1 au contact, décroissance douce
   const maxW = Math.max(1, hero.wounds.max);
@@ -391,7 +391,7 @@ function targetThreat(enemy: Combatant, hero: Combatant): number {
   const meleeW = hero.weapons?.find((w) => w.type === 'melee');
   const rangedW = hero.weapons?.find((w) => w.type === 'ranged');
   const dmgMelee = meleeW ? finite(expectedDamage(hero, enemy, meleeW, 'melee'), NaN) : NaN;
-  const dmgRanged = rangedW ? finite(expectedDamage(hero, enemy, rangedW, 'ranged', dist), NaN) : NaN;
+  const dmgRanged = rangedW ? finite(expectedDamage(hero, enemy, rangedW, 'ranged', dist, undefined, mpt), NaN) : NaN;
   const cand = [dmgMelee, dmgRanged].filter((d) => Number.isFinite(d)) as number[];
   const danger = cand.length ? Math.max(...cand) : 1; // pas de Caractéristiques chiffrables → danger neutre (1)
   return Math.max(1, danger) * reachability * fragility;
@@ -564,7 +564,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const fpDist = (h: Combatant) => footprintChebyshev(pos, footprintN(enemy), h.pos!, footprintN(h));
   const ebf = () => bonus(effectiveChar(enemy, 'force')); // BF du tireur → résout les Portées de jet `{bf}` (paresseux : ignoré pour une portée fixe)
   const maxWeaponRange = enemy.weapons.reduce((m, w) => { const r = w.type === 'ranged' ? effectiveWeaponRange(w, selectedAmmo(enemy, w)?.ammoRangeMod, ebf) : null; return r != null ? Math.max(m, r) : m; }, 0);
-  const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange) != null) : shootableHeroes;
+  const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange, mpt) != null) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = isFrenzied(enemy);
   // LdV vers un point (centre de ZdE) — réutilisé par le gate `canCast` et l'énumération de zone.
@@ -738,9 +738,9 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const dmg = src.kind === 'spell'
       ? src.value
       : src.kind === 'ranged'
-        ? finite(expectedDamage(enemy, target, src.weapon, 'ranged', src.dist), 0)
+        ? finite(expectedDamage(enemy, target, src.weapon, 'ranged', src.dist, undefined, mpt), 0)
         : finite(expectedDamage(enemy, target, src.weapon, 'melee', undefined, outnumberEnvMelee(target)), 0);
-    const threat = finite(targetThreat(enemy, target), 0);
+    const threat = finite(targetThreat(enemy, target, mpt), 0);
     const securesKill = dmg >= target.wounds.current && target.wounds.current > 0 ? Weff.killSecure : 0;
     const overkill = isNeutralized(target) ? Weff.overkill : 0;
     return Weff.damageDealt * dmg + Weff.threat * threat + securesKill - overkill;
@@ -761,7 +761,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
       if (!h.pos) continue;
       const dist = chebyshev(to, h.pos);
       const dm = melee ? finite(expectedDamage(h, here, melee, 'melee'), 0) : 0;
-      const dr = ranged ? finite(expectedDamage(h, here, ranged, 'ranged', dist), 0) : 0;
+      const dr = ranged ? finite(expectedDamage(h, here, ranged, 'ranged', dist, undefined, mpt), 0) : 0;
       total += Math.max(dm, dr); // le héros joue SON meilleur coup contre nous depuis cette case
     }
     return total;
@@ -828,7 +828,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     if (isShooterOrCaster) {
       const inShootRange = canCast
         ? (castRange == null || d <= castRange)
-        : (maxWeaponRange === 0 || rangeBandModifier(d, maxWeaponRange) != null);
+        : (maxWeaponRange === 0 || rangeBandModifier(d, maxWeaponRange, mpt) != null);
       if (d > mr && seesFrom && inShootRange) v += Weff.preferredRange; // garde la distance ET la ligne de tir
     } else if (withinMelee(to, target.pos!)) {
       v += Weff.preferredRange; // mêlée : au contact
@@ -865,7 +865,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Contact). Null si aucun héros visible → bénéfice marginal contre un mannequin neutre (aiSpellValue).
   const HORIZON = 3; // K ≈ 3 Rounds : horizon de bénéfice d'un buff (borne le bénéfice marginal).
   const refEnemy: Combatant | null = shootableHeroes.length
-    ? [...shootableHeroes].sort((a, b) => finite(targetThreat(enemy, b), 0) - finite(targetThreat(enemy, a), 0))[0]
+    ? [...shootableHeroes].sort((a, b) => finite(targetThreat(enemy, b, mpt), 0) - finite(targetThreat(enemy, a, mpt), 0))[0]
     : (heroes[0] ?? null);
   // `committingPrep` : une action de PRÉPARATION (Focalisation/Recharge) est CHOISIE → on ne lui oppose pas
   // une APPROCHE de mêlée (le lanceur/tireur reste en place). MÊLÉE reste possible (un acculé se défend).
@@ -1001,7 +1001,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Estimation d'attaque pour scorer une cible (utilité d'arme de mêlée si on en a une, sinon menace seule
   // — un caster hors de portée qui s'approche n'a pas de dégât d'arme mais score la menace/fragilité).
   const targetUtility = (t: Combatant): number =>
-    meleeWeapon ? attackUtility(t, { kind: 'melee', weapon: meleeWeapon }) : (Weff.threat * finite(targetThreat(enemy, t), 0) - (isNeutralized(t) ? Weff.overkill : 0));
+    meleeWeapon ? attackUtility(t, { kind: 'melee', weapon: meleeWeapon }) : (Weff.threat * finite(targetThreat(enemy, t, mpt), 0) - (isNeutralized(t) ? Weff.overkill : 0));
   for (const t of vivier) {
     if (hasMeleeWeapon && meleeWeapon && inMelee(t)) {
       // Cible déjà au contact → frappe (position déjà acquise, pas de bonus de déplacement).
@@ -1031,7 +1031,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const stSeen = losClear(scene, pos, { ...structureAimCell(pos, st), z: pos.z }, smoke ?? []);
     // TIR (pièce de siège qui brèche la porte) — face visible, en portée, et que l'arme peut ABÎMER.
     if (canFireStruct && stSeen && !structureImmune(rangedW!, st)
-        && (maxWeaponRange <= 0 || rangeBandModifier(fpDist(st), maxWeaponRange) != null)) {
+        && (maxWeaponRange <= 0 || rangeBandModifier(fpDist(st), maxWeaponRange, mpt) != null)) {
       candidates.push({ action: { kind: 'shoot', targetId: st.id }, kind: 'shoot', utility: attackUtility(st, { kind: 'ranged', weapon: rangedW!, dist: fpDist(st) }), targetId: st.id, coord: st.pos! });
     }
     // MÊLÉE / APPROCHE (bélier ou arme abîmant une porte non-Impénétrable) — auto-touche, pas de défense.

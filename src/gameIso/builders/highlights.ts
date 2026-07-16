@@ -7,7 +7,7 @@
  * PUR : les portées/cibles (dérivées du store) arrivent EN DONNÉES (`HighlightsView`), le builder ne
  * fait que les mapper en cases + hauteur MÉTRIQUE (le lift d'étage est projeté par le backend).
  */
-import { heightAt, type Scene } from '../../state/scene';
+import { heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { isOutOfAction } from '../../engine/conditions';
 import { isRider } from '../../state/mount';
 import { footprintN } from '../../state/footprint';
@@ -29,8 +29,8 @@ export type HighlightEl = { key: string; cell: { x: number; y: number; z: number
  *  SIGNE — > 0 (Bout Portant/Courte) → `bonus`, = 0 (Moyenne) → `neutre`, < 0 (Longue/Extrême) → `malus` ;
  *  hors de portée (au-delà de Portée×3) → `null`. Répond directement à « dois-je bouger pour améliorer
  *  mon jet ? », affiché au survol d'un tireur (`combatHighlightObjs`). */
-export function rangeBandTone(distanceTiles: number, rangeMeters: number): 'bonus' | 'neutre' | 'malus' | null {
-  const mod = rangeBandModifier(distanceTiles, rangeMeters);
+export function rangeBandTone(distanceTiles: number, rangeMeters: number, metresPerTile = 2): 'bonus' | 'neutre' | 'malus' | null {
+  const mod = rangeBandModifier(distanceTiles, rangeMeters, metresPerTile);
   if (mod == null) return null;
   return mod > 0 ? 'bonus' : mod < 0 ? 'malus' : 'neutre';
 }
@@ -121,11 +121,12 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
   // de Chebyshev en cases (même métrique que `combatDistance`, 1x1). Rayon = Portée×3 (hors de portée).
   if (view.rangeBandSource) {
     const { pos, rangeM } = view.rangeBandSource;
-    const maxTiles = Math.ceil((rangeM * 3) / 2); // 1 case = 2 m (LDB Déplacement l.55)
+    const mpt = sceneMetresPerTile(scene);
+    const maxTiles = Math.ceil((rangeM * 3) / mpt); // 1 case = mpt m (LDB Déplacement l.55, défaut 2)
     for (let dx = -maxTiles; dx <= maxTiles; dx++)
       for (let dy = -maxTiles; dy <= maxTiles; dy++) {
         const distanceTiles = Math.max(Math.abs(dx), Math.abs(dy));
-        const tone = rangeBandTone(distanceTiles, rangeM);
+        const tone = rangeBandTone(distanceTiles, rangeM, mpt);
         if (!tone) continue;
         const x = pos.x + dx, y = pos.y + dy;
         const z = pos.z ?? 0;

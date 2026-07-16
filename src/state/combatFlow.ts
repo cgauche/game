@@ -605,6 +605,7 @@ export function resolveAttack(
   withhold?: boolean, // « Retenir ses coups » (Aux Armes l.2503-2505) — déclaré avant le jet, mêlée seule
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const battle = get().battle!;
+  const mpt = sceneMetresPerTile(get().scene);
   const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants); // arme choisie + munition + sous-effectif du poste servi
   // Distance de COMBAT PAR L'ARME EFFECTIVEMENT tirée (#BUG-A, suite LDB 14) : géométrie de la MONTURE
   // (cavalier/cible monté — sinon une attaque de charge qui rapproche la MONTURE au contact serait jugée
@@ -618,7 +619,7 @@ export function resolveAttack(
   if (weapon.type === 'ranged') {
     // « Tirer dans le tas » (LDB 14 l.136/146) : un ennemi AU HASARD est touché ; succès dû au seul bonus = 0 DR.
     if (intoCrowd) {
-      const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env);
+      const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env, undefined, mpt);
       if (res.hit && crowd.length) {
         const victim = crowd[battleRng().int(0, crowd.length - 1)]; // « appliqué au hasard parmi les cibles éligibles »
         const ad = res.attackerDetail!;
@@ -632,8 +633,8 @@ export function resolveAttack(
     // Défense RAW contre le tir (Protectrice 2+ / Bout Portant / tireur Engagé) : un défenseur NON-héros
     // oppose AUTOMATIQUEMENT sa meilleure défense (la Ligne de Vue est acquise — `blocked` a déjà rendu
     // null). Un héros défenseur passera par la modale réactive (étape T3) → pas d'auto-défense ici.
-    const rd = target.kind === 'hero' ? undefined : bestRangedDefense(attacker, target, weapon, dist);
-    const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env, rd);
+    const rd = target.kind === 'hero' ? undefined : bestRangedDefense(attacker, target, weapon, dist, true, mpt);
+    const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env, rd, mpt);
     // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
     // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).
     if (inMelee && !res.hit) {
@@ -707,6 +708,7 @@ export function previewAttack(
   opts?: { intoCrowd?: boolean; heldGround?: boolean; weaponUid?: string },
 ): AttackPreview {
   const battle = get().battle;
+  const mpt = sceneMetresPerTile(get().scene);
   const weapon = firedWeapon(attacker, target, opts?.weaponUid, battle?.combatants);
   const kind: 'melee' | 'ranged' = weapon.type === 'ranged' ? 'ranged' : 'melee';
   // Distance de COMBAT PAR L'ARME EFFECTIVEMENT visée (#BUG-A) : géométrie de la MONTURE pour un
@@ -726,10 +728,10 @@ export function previewAttack(
   const { env, blocked } = attackEnv(get, attacker, target, weapon, opts);
   if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, base, mods: [], dmg, soak };
   const distanceTiles = kind === 'ranged' ? dist : undefined;
-  const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env });
+  const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env, metresPerTile: mpt });
   const target0 = base + combineMods(mods);
   const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force'))); // Portée résolue (jet `{bf}` → BF×N) + modificateur de la munition sélectionnée ; null = hors bande
-  const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM) != null) : dist <= reachTiles(weapon);
+  const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM, mpt) != null) : dist <= reachTiles(weapon);
   // Décomposition affichée (issue #202) : sépare de `base` les contributions volatiles étiquetées de la
   // Caractéristique résolue (Bénédiction de Bataille, séquelle…) — `combatValue`/`target` restent identiques
   // (charLines `uncapped`, cf. `combineMods`).
@@ -2084,20 +2086,20 @@ export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon, defende
 /** La cible est-elle dans une bande de tir/portée VALIDE de `weapon` pour `shooter` (LDB 14 l.42-46) ?
  *  Tir → bande de portée non nulle (munition + BF inclus) ; mêlée → Allonge (`reachTiles`). Position
  *  inconnue (tests) → vrai (aucun filtre géométrique). Source UNIQUE du test « à distance de frappe ». */
-export function inFiringBand(shooter: Combatant, target: Combatant, weapon: Weapon): boolean {
+export function inFiringBand(shooter: Combatant, target: Combatant, weapon: Weapon, metresPerTile = 2): boolean {
   if (!shooter.pos || !target.pos) return true;
   const d = combatDistance(shooter, target);
   if (weapon.type === 'ranged') {
     const rm = effectiveWeaponRange(weapon, selectedAmmo(shooter, weapon)?.ammoRangeMod, () => bonus(effectiveChar(shooter, 'force')));
-    return rm != null && rangeBandModifier(d, rm) != null;
+    return rm != null && rangeBandModifier(d, rm, metresPerTile) != null;
   }
   return d <= reachTiles(weapon);
 }
 
 /** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.42-46 : « à distance »).
  *  Sans position connue (tests), on ne filtre pas. */
-function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon): Combatant[] {
-  return battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x) && inFiringBand(c, x, weapon));
+function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon, metresPerTile = 2): Combatant[] {
+  return battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x) && inFiringBand(c, x, weapon, metresPerTile));
 }
 
 /**
@@ -2117,6 +2119,7 @@ export function runPreemptShots(get: Get, set: SetFn): void {
     .filter((s) => aiDriven(get(), s) && canPreemptRanged(s) && canTakeAction(s) && !s.loseNextAction && !isOutOfAction(s) && !!s.pos)
     .sort((a, b) => tirRapideTimes(b) - tirRapideTimes(a)); // le plus « entraîné » tire d'abord (LDB 10)
   const scene = get().scene!;
+  const mpt = sceneMetresPerTile(scene);
   const smoke = smokeOf(battle);
   let changed = false;
   for (const shooter of shooters) {
@@ -2127,7 +2130,7 @@ export function runPreemptShots(get: Get, set: SetFn): void {
     const t0 = battle.combatants
       .filter((f) => f.kind !== shooter.kind && !isOutOfAction(f) && !!f.pos)
       .map((f) => ({ f, weapon: firedWeapon(shooter, f, undefined, battle.combatants) }))
-      .filter((x) => x.weapon.type === 'ranged' && inFiringBand(shooter, x.f, x.weapon))
+      .filter((x) => x.weapon.type === 'ranged' && inFiringBand(shooter, x.f, x.weapon, mpt))
       .sort((a, b) => combatDistance(shooter, a.f) - combatDistance(shooter, b.f))
       .find((x) => losClear(scene, shooter.pos!, isStructure(x.f) ? structureAimCell(shooter.pos!, x.f) : x.f.pos!, smoke))?.f;
     if (!t0) continue; // aucune cible en Ligne de Vue → pas d'interruption
@@ -2211,7 +2214,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       break;
     }
     case 'hitAlly': {
-      const allies = alliesAtRange(battle, c, weapon);
+      const allies = alliesAtRange(battle, c, weapon, sceneMetresPerTile(get().scene));
       if (allies.length) {
         const ally = allies[battleRng().int(0, allies.length - 1)];
         const loc = hitLocationByShape(reverseRoll(r.roll), ally.bodyShape);
@@ -2354,12 +2357,13 @@ export function maybeOpenDefense(
   // Ligne de Vue LDB 62 l.307 / Bout Portant LDB 14 l.62 / tireur Engagé LDB 14 l.70). Vide = tir non
   // opposable → résolution simple (resolveAttack). LoS acquise : l'IA ne tire que si elle voit (doAttack).
   if (weapon?.type === 'ranged') {
+    const mpt = sceneMetresPerTile(get().scene);
     const dist = combatDistance(attacker, target);
-    const modes = rangedDefenseModes(attacker, target, weapon, dist, true);
+    const modes = rangedDefenseModes(attacker, target, weapon, dist, true, mpt);
     if (!modes.length) return false;
     const { env } = attackEnv(get, attacker, target, weapon);
-    const atk = rollRangedAttacker(attacker, target, weapon, battleRng(), dist, undefined, env); // tir figé
-    const best = bestRangedDefense(attacker, target, weapon, dist);
+    const atk = rollRangedAttacker(attacker, target, weapon, battleRng(), dist, undefined, env, mpt); // tir figé
+    const best = bestRangedDefense(attacker, target, weapon, dist, true, mpt);
     set({
       pendingDefense: {
         attackerId: attacker.id, defenderId: target.id, weapon, location: null, atk,

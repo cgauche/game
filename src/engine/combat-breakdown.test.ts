@@ -251,6 +251,32 @@ describe('Bandes de portée (table des Difficultés, 14 - _GoBack.md l.82-118)',
   });
 });
 
+describe('Bandes de portée — échelle métrique de la Scène (#249, metresPerTile) : arme Portée 60 m', () => {
+  // Scène Mer (MDG ch.13, ~10 m/case) : les mêmes seuils EN MÈTRES tombent sur MOINS de cases —
+  // Courte ≤ Portée÷2 = 30 m → 3 cases au lieu de 15 (mpt=2, cf. describe ci-dessus).
+  it('mpt=10 : Courte portée ≤ 3 cases (au lieu de 15 à mpt=2)', () => {
+    expect(rangeBandModifier(3, 60, 10)).toBe(20); // 30 m ≤ 30
+    expect(rangeBandModifier(4, 60, 10)).toBe(0); // 40 m > 30 → Moyenne
+    expect(rangeBandModifier(15, 60, 2)).toBe(20); // même arme, échelle person-scale : Courte à 15 cases
+  });
+  it('mpt=10 : Bout portant/Moyenne/Longue/Extrême dérivent du MÊME seuil métrique', () => {
+    expect(rangeBandModifier(0, 60, 10)).toBe(40); // 0 m ≤ 6
+    expect(rangeBandModifier(1, 60, 10)).toBe(20); // 10 m > 6 (Bout portant) mais ≤ 30 (Courte)
+    expect(rangeBandModifier(6, 60, 10)).toBe(0); // 60 m ≤ 60
+    expect(rangeBandModifier(12, 60, 10)).toBe(-10); // 120 m ≤ 120
+    expect(rangeBandModifier(18, 60, 10)).toBe(-30); // 180 m ≤ 180
+    expect(rangeBandModifier(19, 60, 10)).toBeNull(); // 190 m > 180
+  });
+  it('attackModifiers propage metresPerTile jusqu’au mod de portée affiché', () => {
+    const mods = attackModifiers(mk({ name: 'A' }), mk({ name: 'B' }), bow, { kind: 'ranged', distanceTiles: 3, metresPerTile: 10 });
+    expect(mods).toContainEqual({ label: 'Courte portée', value: 20 });
+  });
+  it('sans metresPerTile (défaut 2, terrestre) : même distanceTiles=3 reste Bout Portant/hors-Courte, comportement BYTE-IDENTIQUE', () => {
+    const mods = attackModifiers(mk({ name: 'A' }), mk({ name: 'B' }), bow, { kind: 'ranged', distanceTiles: 3 });
+    expect(mods).toContainEqual({ label: 'Bout portant', value: 40 }); // 6 m ≤ 6, comme avant le câblage
+  });
+});
+
 describe('attackModifiers — modificateurs étiquetés (source unique)', () => {
   it('tir à courte portée → mod « Courte portée » +20', () => {
     const mods = attackModifiers(mk({ name: 'A' }), mk({ name: 'B' }), bow, { kind: 'ranged', distanceTiles: 10 });

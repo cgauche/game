@@ -440,7 +440,7 @@ export function attackModifiers(
   attacker: Combatant,
   target: Combatant | null,
   weapon: Weapon,
-  opts: { kind: 'melee' | 'ranged'; location?: HitLocation | null; distanceTiles?: number; env?: ModLine[]; flankRear?: boolean },
+  opts: { kind: 'melee' | 'ranged'; location?: HitLocation | null; distanceTiles?: number; env?: ModLine[]; flankRear?: boolean; metresPerTile?: number },
 ): ModLine[] {
   const out: ModLine[] = [];
   const adv = attacker.advantage * 10;
@@ -458,10 +458,10 @@ export function attackModifiers(
     // Portée RÉSOLUE à l'usage (jet `{bf}` → BF×N ; mètres fixes inchangés) + modificateur de la munition tirée.
     const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force')));
     if (opts.distanceTiles != null && rangeM != null) {
-      const m0 = rangeBandModifier(opts.distanceTiles, rangeM);
+      const m0 = rangeBandModifier(opts.distanceTiles, rangeM, opts.metresPerTile);
       // Tireur embusqué (LDB 10) : aucune pénalité à Longue distance, moitié à Portée extrême.
       const m = m0 != null ? sniperRangeAdjust(attacker, m0) : null;
-      const name = rangeBandName(opts.distanceTiles, rangeM);
+      const name = rangeBandName(opts.distanceTiles, rangeM, opts.metresPerTile);
       if (m != null && m !== 0 && name) out.push({ label: name, value: m });
     }
     if (attacker.aiming) out.push({ label: 'Viser', value: 20 }); // action Viser (l.90)
@@ -876,7 +876,8 @@ export function resolveMelee(
 /**
  * Bandes de portée d'un tir (table des Difficultés de Combat, LDB `14 - _GoBack.md` l.82-118) :
  * Bout portant (≤ Portée÷10) +40, Courte (≤ Portée÷2) +20, Moyenne (≤ Portée) +0, Longue (≤ Portée×2)
- * −10, Extrême (≤ Portée×3) −30 ; au-delà = hors de portée. Échelle 1 case = 2 m (LDB Déplacement l.55).
+ * −10, Extrême (≤ Portée×3) −30 ; au-delà = hors de portée. Échelle 1 case = `metresPerTile` (défaut 2 m,
+ * LDB Déplacement l.55 ; une Scène MER en déclare une autre, cf. `sceneMetresPerTile`).
  * SOURCE UNIQUE des seuils : le modificateur ET le nom y lisent. `rangeMeters` = Portée de l'arme en m.
  */
 const RANGE_BANDS: { id: RangeBandId; maxFactor: number; mod: number; name: string }[] = [
@@ -891,33 +892,34 @@ const RANGE_BANDS: { id: RangeBandId; maxFactor: number; mod: number; name: stri
  *  à la PORTÉE MINIMALE d'une arme (`belowMinRangeBand`). */
 const RANGE_BAND_ORDER: RangeBandId[] = RANGE_BANDS.map((b) => b.id);
 
-/** Bande de portée applicable, ou null si hors de portée (au-delà de Portée×3). */
-function rangeBandAt(distanceTiles: number, rangeMeters: number): { id: RangeBandId; mod: number; name: string } | null {
-  const m = distanceTiles * 2; // 1 case = 2 m
+/** Bande de portée applicable, ou null si hors de portée (au-delà de Portée×3). `metresPerTile` = échelle
+ *  de la Scène (défaut 2 m/case, PUR — jamais lu depuis `state`, fourni par l'appelant). */
+function rangeBandAt(distanceTiles: number, rangeMeters: number, metresPerTile = 2): { id: RangeBandId; mod: number; name: string } | null {
+  const m = distanceTiles * metresPerTile;
   return RANGE_BANDS.find((b) => m <= rangeMeters * b.maxFactor) ?? null;
 }
 
 /** Modificateur de portée d'un tir (LDB l.82-118) ; null si hors de portée. */
-export function rangeBandModifier(distanceTiles: number, rangeMeters: number): number | null {
-  return rangeBandAt(distanceTiles, rangeMeters)?.mod ?? null;
+export function rangeBandModifier(distanceTiles: number, rangeMeters: number, metresPerTile = 2): number | null {
+  return rangeBandAt(distanceTiles, rangeMeters, metresPerTile)?.mod ?? null;
 }
 
 /** Nom de la bande de portée — pour l'affichage. */
-export function rangeBandName(distanceTiles: number, rangeMeters: number): string | null {
-  return rangeBandAt(distanceTiles, rangeMeters)?.name ?? null;
+export function rangeBandName(distanceTiles: number, rangeMeters: number, metresPerTile = 2): string | null {
+  return rangeBandAt(distanceTiles, rangeMeters, metresPerTile)?.name ?? null;
 }
 
 /** id STABLE de la bande de portée courante (≠ libellé) ; null si hors de portée. */
-export function rangeBandId(distanceTiles: number, rangeMeters: number): RangeBandId | null {
-  return rangeBandAt(distanceTiles, rangeMeters)?.id ?? null;
+export function rangeBandId(distanceTiles: number, rangeMeters: number, metresPerTile = 2): RangeBandId | null {
+  return rangeBandAt(distanceTiles, rangeMeters, metresPerTile)?.id ?? null;
 }
 
 /** Le tir est-il REFUSÉ car la cible est plus PROCHE que la bande minimale autorisée de l'arme (machines de
  *  siège ADE II ch.08 l.251/253 : « à Bout Portant » / « distance inférieure à leur Portée Courte ») ? C'est
  *  un REFUS, pas un malus. `false` si l'arme n'a pas de minimale, ou si la cible est HORS de portée (autre
  *  gate) — on ne refuse QUE parce qu'elle est trop proche. */
-export function belowMinRangeBand(distanceTiles: number, rangeMeters: number, minBand: RangeBandId): boolean {
-  const cur = rangeBandId(distanceTiles, rangeMeters);
+export function belowMinRangeBand(distanceTiles: number, rangeMeters: number, minBand: RangeBandId, metresPerTile = 2): boolean {
+  const cur = rangeBandId(distanceTiles, rangeMeters, metresPerTile);
   if (cur == null) return false; // hors de portée : géré ailleurs, pas « trop proche »
   return RANGE_BAND_ORDER.indexOf(cur) < RANGE_BAND_ORDER.indexOf(minBand);
 }
@@ -937,13 +939,14 @@ export function rangedDefenseModes(
   weapon: Weapon,
   distanceTiles: number | undefined,
   los: boolean,
+  metresPerTile = 2,
 ): ('parade' | 'esquive')[] {
   if (cannotDefend(defender)) return []; // Surpris / À Terre… : pas de réaction (LDB 16)
   const modes = new Set<'parade' | 'esquive'>();
   if (isEngagedWith(attacker, defender.id)) modes.add('parade'); // tireur Engagé (l.70) : toute Corps à corps
   else if (los && rangedOpposeWeapon(defender.weapons)) modes.add('parade'); // bouclier Protectrice 2+ en Ligne de Vue (l.307)
   const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force')));
-  if (distanceTiles != null && rangeM != null && rangeBandName(distanceTiles, rangeM) === 'Bout portant')
+  if (distanceTiles != null && rangeM != null && rangeBandName(distanceTiles, rangeM, metresPerTile) === 'Bout portant')
     modes.add('esquive'); // Bout Portant (l.62)
   return [...modes];
 }
@@ -957,8 +960,9 @@ export function bestRangedDefense(
   weapon: Weapon,
   distanceTiles: number | undefined,
   los = true,
+  metresPerTile = 2,
 ): { mode: 'parade' | 'esquive'; parryWeapon?: Weapon } | undefined {
-  const modes = rangedDefenseModes(attacker, defender, weapon, distanceTiles, los);
+  const modes = rangedDefenseModes(attacker, defender, weapon, distanceTiles, los, metresPerTile);
   if (!modes.length) return undefined;
   const parryWeapon = rangedOpposeWeapon(defender.weapons) ?? defender.weapons[0];
   const valOf = (m: 'parade' | 'esquive') => defenseValue(defender, m, m === 'parade' ? parryWeapon : undefined);
@@ -976,12 +980,13 @@ export function resolveRanged(
   location?: HitLocation,
   env: ModLine[] = [],
   defense?: { mode: 'parade' | 'esquive'; parryWeapon?: Weapon; dodgeMod?: number },
+  metresPerTile = 2,
 ): AttackResult {
   const atkVal = combatValue(attacker, 'ranged', weapon);
   const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force')));
-  if (distanceTiles != null && rangeM != null && rangeBandModifier(distanceTiles, rangeM) == null)
+  if (distanceTiles != null && rangeM != null && rangeBandModifier(distanceTiles, rangeM, metresPerTile) == null)
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
-  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
+  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
   let atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
   if (isHelplessTarget(defender)) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
   const atkBd = bd(attackTestLabel(weapon, 'ranged'), atkVal, atk, mods);
@@ -1016,8 +1021,9 @@ export function rollRangedAttacker(
   distanceTiles?: number,
   location?: HitLocation,
   env: ModLine[] = [],
+  metresPerTile = 2,
 ): TestResult {
-  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
+  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
   return rollTest(combatValue(attacker, 'ranged', weapon), 'intermediaire', rng, combineMods(mods));
 }
 
@@ -1036,8 +1042,9 @@ export function finishRanged(
   env: ModLine[] = [],
   parryWeapon?: Weapon,
   dodgeMod = 0,
+  metresPerTile = 2,
 ): AttackResult {
-  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
+  const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
   const atkBd = bd(attackTestLabel(weapon, 'ranged'), combatValue(attacker, 'ranged', weapon), atk, mods);
   return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, parryWeapon, dodgeMod });
 }

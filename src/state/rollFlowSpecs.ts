@@ -38,6 +38,7 @@ import { domainEnvironmentBonus } from '../engine/domainAttributes';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
+import { sceneMetresPerTile } from './scene';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
@@ -73,10 +74,10 @@ function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack
 /** Résout le résultat d'une défense réactive : TIR DÉFENDU (`finishRanged`, opposition RAW à distance —
  *  Protectrice 2+/Bout Portant/tireur Engagé) OU mêlée (`finishMelee`), selon le type d'arme FIGÉE de
  *  l'attaquant. `p.distanceTiles` sert au breakdown Projectiles ; `parry` = arme de parade choisie. */
-function finishDefenseResult(attacker: Combatant, defender: Combatant, p: PendingDefense, def: TestResult, dodgeMod = 0, parry?: Weapon): AttackResult {
+function finishDefenseResult(attacker: Combatant, defender: Combatant, p: PendingDefense, def: TestResult, dodgeMod = 0, parry?: Weapon, metresPerTile = 2): AttackResult {
   const sub = defenseSubOf(defender, p);
   return p.weapon.type === 'ranged'
-    ? finishRanged(attacker, defender, p.weapon, p.atk, def, p.mode, p.distanceTiles, p.location ?? undefined, [], parry, dodgeMod)
+    ? finishRanged(attacker, defender, p.weapon, p.atk, def, p.mode, p.distanceTiles, p.location ?? undefined, [], parry, dodgeMod, metresPerTile)
     : finishMelee(attacker, defender, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry, false, sub);
 }
 
@@ -448,6 +449,7 @@ export const FLOWS = {
     resolve: (s, p, actor, _get, forced) => {
       const attacker = actorIn(s, p.attackerId);
       if (!attacker || !actor) return null;
+      const mpt = sceneMetresPerTile(s.scene);
       if (forced) {
         const dd = p.result?.defenderDetail;
         if (!dd || !p.def) return null; // (ancien `force.guard`)
@@ -456,17 +458,17 @@ export const FLOWS = {
           if (forced.roll > maxForcedRoll(p.def.target)) return null;
           const sl = Math.max(evaluateTest(forced.roll, p.def.target).sl, p.atk.sl + 1, 1);
           const def2 = forcedTR(forced.roll, p.def.target, sl);
-          return { def: def2, result: finishDefenseResult(attacker, actor, p, def2) };
+          return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, undefined, mpt) };
         }
         // Dé PAR DÉFAUT : Test opposé « vous l'emportez avec au moins DR +1 » (LDB 17 l.73).
         const def2 = forcedTR(dd.roll, dd.target, Math.max(dd.sl, p.atk.sl + 1, 1));
-        return { def: def2, result: finishDefenseResult(attacker, actor, p, def2) };
+        return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, undefined, mpt) };
       }
       // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
       const dodgeMod = (s.scene ? sceneCombatModifiers(s.scene, s.gameTime).dodgeMod : 0) + mountedDodgePenalty(actor);
       const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
       const def = rollMeleeDefender(actor, p.mode, battleRng(), dodgeMod, parry, p.weapon, defenseSubOf(actor, p));
-      return { def, result: finishDefenseResult(attacker, actor, p, def, dodgeMod, parry) };
+      return { def, result: finishDefenseResult(attacker, actor, p, def, dodgeMod, parry, mpt) };
     },
     outcome: (p) => testOutcome(p.def),
     bonus: {
@@ -477,7 +479,7 @@ export const FLOWS = {
         const dd = p.result!.defenderDetail!;
         const def2 = bumpSL(hydrateTR(dd));
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
-        return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry) };
+        return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry, sceneMetresPerTile(s.scene)) };
       },
     },
   }),

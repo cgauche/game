@@ -1544,7 +1544,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const weapon = firedWeapon(hero, target, undefined, battle.combatants);
       const scene = get().scene;
       const blocked = !!(hero.pos && target.pos && scene) && !losClear(scene, hero.pos, target.pos, smokeOf(battle));
-      if (weapon.type !== 'ranged' || !inFiringBand(hero, target, weapon) || blocked) { get().log(t('cf.noLoSMasked')); return; }
+      if (weapon.type !== 'ranged' || !inFiringBand(hero, target, weapon, sceneMetresPerTile(scene)) || blocked) { get().log(t('cf.noLoSMasked')); return; }
       // Le tir se résout par la modale de jet NORMALE (attackRoll/attackConfirm) ; le tireur n'est PAS actif.
       // `pendingAttack.interrupt` → attackConfirm applique le tir sans avancer le tour + épuise son tour normal.
       // La modale d'attaque est rendue par la CASCADE (CascadeModal → useAttackJetProps), comme TOUTE attaque :

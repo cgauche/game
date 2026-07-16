@@ -40,9 +40,9 @@ export const finite = (n: number, fallback = 0): number => (Number.isFinite(n) ?
  * Probabilité de TOUCHER (0..1) d'une attaque, dérivée de la valeur cible RAW (base + modificateurs
  * plafonnés par `combineMods`, comme la résolution) : `P = clamp(target, 5, 95) / 100`. PUR, sans dé.
  */
-export function hitProbability(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[]): number {
+export function hitProbability(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[], metresPerTile = 2): number {
   const val = combatValue(attacker, kind, weapon);
-  const mods = combineMods(attackModifiers(attacker, target, weapon, { kind, distanceTiles, env }));
+  const mods = combineMods(attackModifiers(attacker, target, weapon, { kind, distanceTiles, env, metresPerTile }));
   const targetVal = finite(val + mods, NaN);
   if (!Number.isFinite(targetVal)) return NaN;
   return Math.max(5, Math.min(95, targetVal)) / 100;
@@ -53,8 +53,8 @@ export function hitProbability(attacker: Combatant, target: Combatant, weapon: W
  * toucher × Blessures d'un coup MOYEN. Les Blessures réelles passent par `woundsFromHit` (BE + PA à
  * la localisation « corps », qualités d'arme) — MÊME résolveur que le combat.
  */
-export function expectedDamage(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[]): number {
-  const p = hitProbability(attacker, target, weapon, kind, distanceTiles, env);
+export function expectedDamage(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[], metresPerTile = 2): number {
+  const p = hitProbability(attacker, target, weapon, kind, distanceTiles, env, metresPerTile);
   if (!Number.isFinite(p)) return NaN;
   const bf = bonus(effectiveChar(attacker, 'force'));
   const totalDamage = finite(effectiveWeaponDamage(weapon, Number.isFinite(bf) ? bf : 0) + AVG_DR, NaN);

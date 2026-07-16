@@ -530,7 +530,8 @@ export interface Scene {
   /** Échelle métrique d'une CASE (m/case) — défaut 2 (person-scale). Une Scène MER (combat naval, MDG ch.13)
    *  vaut ~10 (1 pt de Distance = 10 m, `ch.13 l.362`) → le M des navires et les portées canon (50/75/150 m)
    *  tombent en nombres de cases jouables. Lue via `sceneMetresPerTile` ; consommée par les bandes de portée
-   *  (`rangeBandAt`) et l'avance des navires. N'altère AUCUNE géométrie de rendu — seul le SENS d'une case change. */
+   *  (`rangeBandAt`, engine/combat.ts, #249) et l'avance des navires. N'altère AUCUNE géométrie de rendu —
+   *  seul le SENS d'une case change. */
   metresPerTile?: number;
   /** Décor : 'interieur' (éclairé en permanence, l'horloge ne l'assombrit pas) vs 'exterieur'
    *  (jour/nuit = horloge). Absent = extérieur. */
