@@ -26,6 +26,7 @@ import { setGrapple } from './grapple'; // op `condition {grapple:true}` → rel
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
 import { cureCriticalWounds, receiveMedicalAid } from './trauma';
+import { applyHealWounds } from './healing';
 import { fateSaveOrDie } from './fortune';
 import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString, autoStowNewItem } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
@@ -1101,8 +1102,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'heal': {
         const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.perSL));
-        target.wounds.current = Math.min(target.wounds.max, target.wounds.current + n);
-        lines.push(t('op.heal', { name: target.name, n }));
+        // SOURCE UNIQUE `applyHealWounds` (`healing.ts`) : plafonné par munition Empaleuse logée (LDB
+        // 62 l.250) comme le reste ; ni verrou « soin de rencontre » (Guérison seulement) ni réveil
+        // ici — sort/potion inconscient géré par `receiveMedicalAid`/`releaseConditionLocks` ci-dessous.
+        lines.push(...applyHealWounds(target, n, { skillCheck: false, wake: false, log: (healed) => [t('op.heal', { name: target.name, n: healed })] }));
         lines.push(...receiveMedicalAid(target)); // sort/prière de soin = Aide Médicale (LDB 18 l.311)
         lines.push(...releaseConditionLocks(target, ctx.sourceSpellId != null ? 'magic' : 'medicalAid')); // verrous d'État (LDB 18) : soin d'un sort = magie (⊇ Aide Médicale) ; potion/objet = Aide Médicale
         break;
@@ -1110,8 +1113,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'healCaster': {
         const who = ctx.caster ?? target;
         const n = Math.max(0, resolveFormula(o.amount, ref, rng));
-        who.wounds.current = Math.min(who.wounds.max, who.wounds.current + n);
-        lines.push(t('op.heal', { name: who.name, n }));
+        lines.push(...applyHealWounds(who, n, { skillCheck: false, wake: false, log: (healed) => [t('op.heal', { name: who.name, n: healed })] }));
         lines.push(...receiveMedicalAid(who)); // sort/prière de soin = Aide Médicale (LDB 18 l.311)
         lines.push(...releaseConditionLocks(who, 'magic')); // healCaster = soin d'un sort → magie (lève aussi les verrous Aide Médicale, LDB 18)
         break;
@@ -1822,8 +1824,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           ? Math.ceil((dealt * o.num) / o.den)
           : Math.floor((dealt * o.num) / o.den);
         if (healed > 0) {
-          who.wounds.current = Math.min(who.wounds.max, who.wounds.current + healed);
-          lines.push(t('op.lifeSteal', { name: who.name, n: healed }));
+          // SOURCE UNIQUE `applyHealWounds` — même plafond de munition logée (LDB 62 l.250) que le
+          // reste ; le message ne sort que si le drain rend RÉELLEMENT des PB (post-plafond).
+          lines.push(...applyHealWounds(who, healed, { skillCheck: false, wake: false, log: (h) => (h > 0 ? [t('op.lifeSteal', { name: who.name, n: h })] : []) }));
         }
         break;
       }

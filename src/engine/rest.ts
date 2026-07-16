@@ -33,6 +33,7 @@ import { addCondition, removeCondition, stacks, hasCondition, nightmareCheck } f
 import { tickDisease, activeMalaiseCount, diseaseBlesseCount, DISEASE_DEFS } from './disease';
 import { MINUTES_PER_DAY } from './clock';
 import { isStarving, isThirsty, isDeprived } from './provisions';
+import { applyHealWounds } from './healing';
 
 /** États à dégâts périodiques qui empêchent un repos réparateur (LDB 16 l.105 : on ne « reprend pas ses
  *  esprits » tant qu'un Hémorragique subsiste — on étend à En flammes/Empoisonné, qu'on ne traverse pas
@@ -160,11 +161,14 @@ export function applyRecoveryDay(c: Combatant, recoveryRoll: { sl: number; succe
   const removable = starving ? 0 : Math.max(0, fat - malaise);
   if (removable > 0) removeCondition(c, 'extenue', removable);
   const dayStartPB = c.wounds.current;
-  // volet a : DR + BE sur réussite (une fois par jour).
+  // volet a : DR + BE sur réussite (une fois par jour). SOURCE UNIQUE `applyHealWounds` — plafonné
+  // par munition Empaleuse logée (LDB 62 l.250) comme les autres chemins ; ni verrou « soin de
+  // rencontre » (Guérison seulement) ni réveil ici — le réveil du repos (+ À Terre) reste géré
+  // ci-dessous (`applyHealWounds` ne couvre pas À Terre).
   if (!starving && recoveryRoll?.success && c.wounds.current < c.wounds.max)
-    c.wounds.current = Math.min(c.wounds.max, c.wounds.current + Math.max(0, recoveryRoll.sl) + be);
+    applyHealWounds(c, Math.max(0, recoveryRoll.sl) + be, { skillCheck: false, wake: false, log: () => [] });
   // volet b : +BE INCONDITIONNEL.
-  if (!starving && c.wounds.current < c.wounds.max) c.wounds.current = Math.min(c.wounds.max, c.wounds.current + be);
+  if (!starving && c.wounds.current < c.wounds.max) applyHealWounds(c, be, { skillCheck: false, wake: false, log: () => [] });
   // Symptôme « blessé » : la plaie reste ouverte.
   if (blesse > 0) c.wounds.current = Math.max(dayStartPB, c.wounds.current - blesse);
   // Réveil : > 0 PB lève l'Inconscient et relève l'À Terre (l.28). PAS applyHealWounds (soin de rencontre).

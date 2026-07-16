@@ -107,30 +107,51 @@ export function lodgedAmmoCount(target: Combatant): number {
   return condStacks(target, 'munition-logee');
 }
 
-/** Applique un soin de Blessures (mutation). Lève l'Inconscient et remet l'horloge de mort à zéro
- *  quand on repasse > 0 PB (LDB 18 l.28). Plafonné par les munitions Empaleuses logées : « Chaque
- *  flèche ou balle non retirée vous empêche de guérir 1 de vos Blessures » (LDB 62 l.250). Renvoie
- *  un journal. */
-export function applyHealWounds(target: Combatant, delta: number): string[] {
+/** Options de routage d'`applyHealWounds` — chaque chemin de gain de PB (Guérison, sorts/potions,
+ *  drain, repos) porte ses propres à-côtés sans dupliquer le plafond de munition logée. */
+export interface HealWoundsOptions {
+  /** Verrous « 1 soin de Blessures / rencontre » + matériel stérile (LDB 09 l.233 / 18 l.382) —
+   *  SEUL le chemin compétence Guérison les pose. Défaut `true` (comportement historique de la
+   *  fonction, chemin Guérison). */
+  skillCheck?: boolean;
+  /** Lève l'Inconscient et remet l'horloge de mort à zéro dès qu'on repasse > 0 PB (LDB 18 l.28).
+   *  Défaut `true` (comportement historique). Le repos gère sa PROPRE réanimation (+ À Terre, non
+   *  couvert ici) — `false` pour éviter un double traitement partiel. */
+  wake?: boolean;
+  /** Libellé de journal spécifique au chemin (reçoit le nombre de PB EFFECTIVEMENT rendus, déjà
+   *  plafonné) — sinon le libellé par défaut du chemin Guérison. */
+  log?: (healed: number) => string[];
+}
+
+/** SOURCE UNIQUE de gain de Blessures (mutation) — routée par les 4 chemins qui rendent des PB
+ *  (Guérison, sorts/prières/potions `heal`/`healCaster`, drain `lifeSteal`, repos naturel). Lève
+ *  l'Inconscient et remet l'horloge de mort à zéro quand on repasse > 0 PB (LDB 18 l.28, `wake`).
+ *  Plafonné par les munitions Empaleuses logées, sans exception de chemin : « Chaque flèche ou
+ *  balle non retirée vous empêche de guérir 1 de vos Blessures » (LDB 62 l.250 — formulation
+ *  générale, aucune restriction au Test de Guérison). Renvoie un journal. */
+export function applyHealWounds(target: Combatant, delta: number, opts: HealWoundsOptions = {}): string[] {
+  const { skillCheck = true, wake = true, log: customLog } = opts;
   if (delta < 0) {
     const lost = loseWounds(target, -delta); // perte centralisée (−Avantage + À Terre à 0)
     return [`${target.name} : le soin tourne mal — ${lost} Blessure(s) en plus.`];
   }
-  if (delta === 0) return [`${target.name} : le soin n'apporte rien.`];
+  if (delta === 0) return customLog ? customLog(0) : [`${target.name} : le soin n'apporte rien.`];
   const before = target.wounds.current;
   const cap = Math.max(before, target.wounds.max - lodgedAmmoCount(target));
   target.wounds.current = Math.min(cap, before + delta);
-  target.soinRencontreUtilise = true; // a bénéficié de SON soin de cette rencontre (LDB 09 l.233)
-  target.woundDressed = true; // matériel stérile : « aucune Infection » suite à la blessure (LDB 09 / 18 l.382)
+  if (skillCheck) {
+    target.soinRencontreUtilise = true; // a bénéficié de SON soin de cette rencontre (LDB 09 l.233)
+    target.woundDressed = true; // matériel stérile : « aucune Infection » suite à la blessure (LDB 09 / 18 l.382)
+  }
   const healed = target.wounds.current - before;
-  const log = healed > 0
+  const log = customLog ? customLog(healed) : (healed > 0
     ? [`${target.name} : +${healed} PB (${target.wounds.current}/${target.wounds.max}).`]
-    : [`${target.name} : une munition logée bloque le soin (LDB 62 l.250).`];
-  if (target.wounds.current > 0 && hasCondition(target, 'inconscient')) {
+    : [`${target.name} : une munition logée bloque le soin (LDB 62 l.250).`]);
+  if (wake && target.wounds.current > 0 && hasCondition(target, 'inconscient')) {
     removeCondition(target, 'inconscient', condStacks(target, 'inconscient')); // reprend connaissance (LDB 18 l.28)
     log.push(`${target.name} reprend connaissance.`);
   }
-  if (target.wounds.current > 0) target.roundsAtZero = 0;
+  if (wake && target.wounds.current > 0) target.roundsAtZero = 0;
   return log;
 }
 

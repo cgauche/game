@@ -103,6 +103,12 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     expect(cared.diseases![0].minutesLeft).toBe(alone.diseases![0].minutesLeft - MINUTES_PER_DAY);
   });
 
+  it('munition Empaleuse logée bloque la récupération naturelle (LDB 62 l.250, plafonné SOURCE UNIQUE `applyHealWounds`)', () => {
+    const c = hero({ wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] }); // E 40 → BE 4
+    restRecovery(c, { int: () => 30 }); // Résistance réussie : volet a 7 + volet b 4 = 11 SANS plafond → 19 (>max)
+    expect(c.wounds.current).toBe(11); // plafonné à max(12) − 1 munition logée
+  });
+
   it('maladie : un symptôme « blessé » bloque la guérison d’1 PB (LDB 20 l.110)', () => {
     const base = hero({ wounds: { current: 4, max: 20 } }); // E 40 → BE 4 ; sans maladie
     restRecovery(base, { int: () => 30 });

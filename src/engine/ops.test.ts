@@ -116,6 +116,36 @@ describe('applyOps — opérations unitaires', () => {
     expect(c.wounds.current).toBe(12);
   });
 
+  it('heal : munition Empaleuse logée bloque le soin (LDB 62 l.250, plafonné SOURCE UNIQUE `applyHealWounds`)', () => {
+    const c = hero({ wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const lines = applyOps(c, [{ op: 'heal', amount: 5 }]);
+    expect(c.wounds.current).toBe(11); // 12 − 1 munition logée, pas 13→12
+    expect(lines.join(' ')).toMatch(/regagne 3 Blessure/); // libellé porte le montant EFFECTIF (post-plafond), pas les 5 demandés
+  });
+
+  it('healCaster : munition Empaleuse logée sur le LANCEUR bloque son propre soin', () => {
+    const caster = hero({ id: 'c', wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const target = hero({ id: 't', wounds: { current: 10, max: 12 } });
+    applyOps(target, [{ op: 'healCaster', amount: 5 }], { caster });
+    expect(caster.wounds.current).toBe(11);
+    expect(target.wounds.current).toBe(10); // le lanceur est soigné, pas la cible
+  });
+
+  it('lifeSteal : munition Empaleuse logée sur le drainEUR bloque le PV rendu par le vol de vie', () => {
+    const drainer = hero({ id: 'd', wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const victim = hero({ id: 'v' });
+    const lines = applyOps(victim, [{ op: 'lifeSteal', num: 1, den: 1 }], { caster: drainer, woundsDealt: 6 });
+    expect(drainer.wounds.current).toBe(11); // 8+6=14 → plafonné à 12−1=11
+    expect(lines.join(' ')).toMatch(/draine 3 Blessure/); // 11−8 = 3 réellement rendues, pas les 6 « dealt »
+  });
+
+  it('lifeSteal : sans munition logée, le montant rendu reste inchangé (non-régression)', () => {
+    const drainer = hero({ id: 'd', wounds: { current: 2, max: 12 } });
+    const victim = hero({ id: 'v' });
+    applyOps(victim, [{ op: 'lifeSteal', num: 1, den: 2 }], { caster: drainer, woundsDealt: 6 });
+    expect(drainer.wounds.current).toBe(5); // floor(6/2)=3 rendus, plafond sans effet
+  });
+
   it('giveTrapping : crée l’objet dans l’inventaire (réel → stats, échelle au DR)', () => {
     const c = hero({ items: [] });
     // Générosité de Manann : 1 Ration + 1 par +2 DR → à DR 4, 1 + floor(4/2) = 3 Rations.
