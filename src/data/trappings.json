@@ -11607,6 +11607,9 @@
         "value": 2
       }
     ],
+    "capabilities": {
+      "ropeMode": true
+    },
     "desc": "Utilisé pour chasser des proies, le lance-harpon tire une énorme flèche de la taille d'une lance, attachée à une longue corde. Il n'est pas doté d'un mécanisme permettant de ramener la corde automatiquement, l'ogre doit donc saisir la corde et tirer sa proie à la main. Le lance-harpon peut être utilisé avec les Compétences Projectiles (Arbalète) ou Projectiles (Entraves) sans pénalité. Si la corde est séparée de la flèche, la portée passe à 60 et l'arme ne possède plus l'Atout Immobilisante.",
     "price": {
       "gold": 8,

@@ -23,7 +23,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'spendResolveCondition',
   // attaque (modale différée)
   'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode', 'attackSetIntoCrowd',
-  'attackSetHeldGround', 'attackSetWithhold', 'attackSetGrapple', 'attackSetCritLocation', 'attackSetForcedRoll', 'attackRoll',
+  'attackSetHeldGround', 'attackSetWithhold', 'attackSetHarpoonRopeCut', 'attackSetGrapple', 'attackSetCritLocation', 'attackSetForcedRoll', 'attackRoll',
   'attackReroll', 'attackBonusSL', 'attackDarkPact', 'attackForceSuccess', 'attackConfirm',
   'attackCancel',
   // défense réactive

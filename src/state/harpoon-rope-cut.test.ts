@@ -1,14 +1,13 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
+import type { PendingAttack } from './pendings';
 import { firedWeapon, weaponContextOf } from './combatFlow';
 import * as capabilities from '../engine/capabilities';
 
 // Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : choix joueur AVANT le jet
 // (`PendingAttack.harpoonRopeCut`), GATÉ sur la capacité `ItemCapabilities.ropeMode` de l'arme
-// tirée (jamais un id d'arme en dur, #476). `trappings.json` ne porte pas encore cette capacité
-// sur `lance-harpon` (gel #476, cf. rendu de session) : `itemCapability` est stubbé pour
-// verrouiller le CÂBLAGE (weaponContextOf/firedWeapon) indépendamment de la donnée catalogue —
-// le test « arme réelle sans le flag » ci-dessous, lui, tourne SANS stub contre le catalogue réel.
+// tirée (jamais un id d'arme en dur, #476). `trappings.json` porte cette capacité sur
+// `lance-harpon` — le test « arme réelle » ci-dessous tourne SANS stub contre le catalogue réel.
 afterEach(() => vi.restoreAllMocks());
 
 const CHARS = { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
@@ -47,10 +46,10 @@ describe('Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677, #476
     expect(w.qualities.some((q) => q.id === 'immobilisante')).toBe(true);
   });
 
-  it('arme RÉELLE du catalogue (lance-harpon, sans capacité ropeMode encore posée) → le toggle est ignoré même déclaré', () => {
+  it('arme RÉELLE du catalogue (lance-harpon, capacité ropeMode posée) → le toggle est éligible', () => {
     const atk = mk({ weapons: [harpoon], items: [harpoonItem] });
     const ctx = weaponContextOf(atk, harpoon, target, { harpoonRopeCut: true });
-    expect(ctx.harpoonRopeCut).toBe(false);
+    expect(ctx.harpoonRopeCut).toBe(true);
   });
 
   it('arme SANS aucune capacité ropeMode (trapping inconnu) → le toggle est ignoré même posé', () => {
@@ -58,5 +57,13 @@ describe('Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677, #476
     const atk = mk({ weapons: [harpoon], items: [otherItem] });
     const ctx = weaponContextOf(atk, harpoon, target, { harpoonRopeCut: true });
     expect(ctx.harpoonRopeCut).toBe(false);
+  });
+
+  it('relance (Chance/Résilience) : le profil sans-corde choisi AVANT le jet survit à firedWeapon(p.harpoonRopeCut)', () => {
+    const atk = mk({ weapons: [harpoon], items: [harpoonItem] });
+    const p = { weaponUid: 'hp', harpoonRopeCut: true } as PendingAttack;
+    const w = firedWeapon(atk, target, p.weaponUid, undefined, p.harpoonRopeCut);
+    expect(w.range).toBe(60);
+    expect(w.qualities.some((q) => q.id === 'immobilisante')).toBe(false);
   });
 });

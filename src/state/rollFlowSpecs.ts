@@ -60,7 +60,7 @@ import { findSpellById, findSkillById } from '../data/index';
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
  *  choisi) : Test opposé si un défenseur a joué, attaque passive sinon — partagé attaque/force. */
 function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack, atk2: TestResult, combatants?: Combatant[]): AttackResult {
-  const weapon = firedWeapon(attacker, target, p.weaponUid, combatants); // arme + munition + sous-effectif du poste (le re-jet voit la MÊME arme que la résolution)
+  const weapon = firedWeapon(attacker, target, p.weaponUid, combatants, p.harpoonRopeCut); // arme + munition + sous-effectif du poste (le re-jet voit la MÊME arme que la résolution)
   const r = p.result!;
   if (r.defenderDetail) {
     const dd = r.defenderDetail;
