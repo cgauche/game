@@ -57,6 +57,10 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    passif existait). Exiger dans tout brief la SORTIE BRUTE des portes au rendu (un exit code
    allégué = résultat fabriqué, vécu 2026-07-11). **Tout écart « consigné » dans un rendu
    devient un TICKET dans le même tour** — consigné-sans-ticket = backlog invisible = poison.
+   **Et tout ce qu'un grounding/juge ÉTABLIT sur un ticket ouvert (prémisse corrigée, état
+   mesuré, dépendance découverte) se COMMENTE sur le ticket dans le même tour** (credo :
+   « un ticket porte ses dépendances et son état mesuré ») — le prochain agent lit l'issue,
+   pas mes transcripts.
 7. **Commit** — mes seuls fichiers par pathspec, jamais `--amend` en arbre partagé, git via
    l'outil PowerShell (RTK rend le Bash git lent/compressé).
 8. **Fermeture (rituel OBLIGATOIRE — fermer a ses portes comme committer)** — toute vague qui
