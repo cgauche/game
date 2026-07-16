@@ -79,26 +79,6 @@ describe('effectiveWeapon — bascule Arme improvisée à +0 (LDB 62 l.178)', ()
   });
 });
 
-describe('effectiveWeapon — Lance-harpon, corde séparée (ADE II 02 l.677, mode de tir choisi #476)', () => {
-  const harpoon = (): Weapon => ({
-    name: 'Lance-harpon', type: 'ranged', damage: { plusBF: false, flat: 10 }, range: 20,
-    qualities: [{ id: 'immobilisante' }, { id: 'recharge', value: 2 }],
-  });
-  it('sans ctx.harpoonRopeCut : profil de base inchangé (Portée 20, Immobilisante conservée)', () => {
-    const w = harpoon();
-    const eff = effectiveWeapon(w);
-    expect(eff.range).toBe(20);
-    expect(eff.qualities).toEqual([{ id: 'immobilisante' }, { id: 'recharge', value: 2 }]);
-  });
-  it('ctx.harpoonRopeCut : Portée → 60, Immobilisante perdue, Recharge(2) conservée', () => {
-    const eff = effectiveWeapon(harpoon(), { harpoonRopeCut: true });
-    expect(eff.range).toBe(60);
-    expect(eff.qualities).toEqual([{ id: 'recharge', value: 2 }]);
-  });
-});
-
-describe('Solide (Indice) — absorption des Dégâts d’arme + sauvegarde (LDB 60 l.64-67)', () => {
-
 describe('Solide (Indice) — absorption des Dégâts d’arme + sauvegarde (LDB 60 l.30-32)', () => {
   it('Solide(N) absorbe les N premiers points de damageTaken (pas de pénalité)', () => {
     expect(effectiveWeaponDamage(sword({ damageTaken: 3, qualities: [{ id: 'solide', value: 3 }] }), 3)).toBe(7); // BF3+4 (3 absorbés)
@@ -146,5 +126,23 @@ describe("recomputeLoadout — propagation des Dégâts d'arme", () => {
     recomputeLoadout(c);
     expect(c.weapons.some((w) => w.name === 'Épée')).toBe(false);
     expect(c.weapons.some((w) => w.name === 'Mains nues')).toBe(true);
+  });
+});
+
+describe('effectiveWeapon — Lance-harpon, corde séparée (ADE II 02 l.677, mode de tir choisi #476)', () => {
+  const harpoon = (): Weapon => ({
+    name: 'Lance-harpon', type: 'ranged', damage: { plusBF: false, flat: 10 }, range: 20,
+    qualities: [{ id: 'immobilisante' }, { id: 'recharge', value: 2 }],
+  });
+  it('sans ctx.harpoonRopeCut : profil de base inchangé (Portée 20, Immobilisante conservée)', () => {
+    const w = harpoon();
+    const eff = effectiveWeapon(w);
+    expect(eff.range).toBe(20);
+    expect(eff.qualities).toEqual([{ id: 'immobilisante' }, { id: 'recharge', value: 2 }]);
+  });
+  it('ctx.harpoonRopeCut : Portée → 60, Immobilisante perdue, Recharge(2) conservée', () => {
+    const eff = effectiveWeapon(harpoon(), { harpoonRopeCut: true });
+    expect(eff.range).toBe(60);
+    expect(eff.qualities).toEqual([{ id: 'recharge', value: 2 }]);
   });
 });
