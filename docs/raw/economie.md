@@ -6,6 +6,7 @@
 >
 > Scope : monnaie / achat-vente / Disponibilité / Marchandage / Évaluation / Fabrication / commerce de cargaison (T2C ch.11).
 > Renvoie à **Équipement** pour les prix individuels des objets (armes, armures, trappings — non retranscrits ici).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 

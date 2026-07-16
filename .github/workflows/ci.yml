@@ -31,6 +31,5 @@ jobs:
       - run: npm run raw:check-refs
       - run: npm run raw:check-folio-continuity
       - run: npm run raw:reanchor
-      - run: npm run raw:check-implemente
       - run: npm --prefix server ci
       - run: npm --prefix server run typecheck

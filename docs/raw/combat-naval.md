@@ -9,6 +9,7 @@
 > d'avoir lu le mécanisme COMPLET d'abord (cf. mémoire `feedback-raw-reference-doc-before-impl`). Elle est la
 > **référence** ; on implémente CONTRE elle, plus de mémoire. Abréviation `MDG` = CLAUDE.md (à inscrire dans
 > `sources.md`). Combat à pied / qualités d'arme génériques → [`combat.md`](combat.md).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 

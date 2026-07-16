@@ -20,6 +20,7 @@ export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]/g;
 export function resolveImport(fromFile, spec) {
   if (!spec.startsWith('.')) return null;
   const base = resolve(dirname(fromFile), spec);
+  if (spec.endsWith('.json')) return existsSync(base) ? base.split('\\').join('/') : null;
   for (const ext of EXTS) if (existsSync(base + ext)) return (base + ext).split('\\').join('/');
   if (existsSync(base) && existsSync(join(base, 'index.ts'))) return join(base, 'index.ts').split('\\').join('/');
   for (const ext of EXTS) if (existsSync(join(base, 'index' + ext))) return join(base, 'index' + ext).split('\\').join('/');
@@ -39,6 +40,7 @@ export function closureOf(roots) {
     if (seen.has(rel)) continue;
     if (!existsSync(abs)) continue;
     seen.add(rel);
+    if (rel.endsWith('.json')) continue; // membre de la closure, mais pas de graphe d'imports à lire (#487)
     let text;
     try {
       text = readFileSync(abs, 'utf8');

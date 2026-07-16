@@ -4,12 +4,13 @@
 > (vérifier que le code respecte le RAW). Chaque règle cite sa source `LIVRE NN l.X-Y`
 > (NN = préfixe du fichier de chapitre, l = lignes du `.md` source). **Voir aussi** tisse les renvois
 > entre règles ; **Implémente** pointe le(s) module(s) `src/engine/` correspondant(s).
-> Conventions d'abréviation : voir [`sources.md`](sources.md). Carte code→règle : [`code-map.md`](code-map.md).
+> Conventions d'abréviation : voir [`sources.md`](sources.md).
 >
 > **Périmètre de ce fichier** : Mouvement hors combat (règles générales), voyage entre lieux, montures
 > et véhicules, Encombrement et fatigue de voyage, poursuites.
 > Les règles de Charge, Désengagement, Fuite, Escalade, Saut et Chute *en combat* sont dans
 > [`combat.md`](combat.md) §§ correspondants — ce fichier les renvoie sans les re-transcrire.
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 

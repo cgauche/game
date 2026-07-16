@@ -2,6 +2,7 @@
 
 > Fichier de reference genere le 2026-06-20, complete le 2026-06-20. Source: `src/data/talents.json` (177 entrees) + textes sources lus et verifies.
 > **Corrections apportees** : source `empreint-de-la-magie` = EDOC ch.9 (pas LDB) ; source `empreint-d-ulgu` = NADJ (pas LDB) ; ajout Sang Neuf (ADE I) ; description Vice complete.
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ---
 
@@ -1579,10 +1580,8 @@ Le fichier ne contient pas de refs `LDB N l.N` en annotation inline. Les regles 
 | `src/engine/characteristics.ts` | bonus / maxWounds — dépendances de heroMaxWounds |
 | `src/engine/trauma.ts` | passiveMods(c) — collecteur UNIQUE (talents + traits + mutations + maladies…) |
 
-**Règles à implémenter (non câblées ou partiellement) :**
-- `commandant-d-equipe` (AA) : logique score Projectiles partagé non implémentée (donnée présente, logique absente)
+**Points à vérifier :**
 - `officier-de-siege` (AA) : description inconnue, stub dans talents.json
-- Mises à jour AA (Battement -1 si 6 DR, Cavalier émérite Taille monture, Porte-Bouclier 2 Avantages/2m, Renversement prendre 1 seul Avantage) : le code suit la version LDB — divergences AA non implémentées
 - `empreint-d-ulgu` et `empreint-de-la-magie` : source incorrecte dans talents.json (`"LDB"` → `"NADJ"` et `"EDOC"` respectivement)
 
 ---

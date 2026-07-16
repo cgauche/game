@@ -4,10 +4,11 @@
 > (vérifier que le code respecte le RAW). Chaque règle cite sa source `LIVRE NN l.X-Y`
 > (NN = préfixe du fichier de chapitre, l = lignes du `.md` source). **Voir aussi** tisse les renvois
 > entre règles ; **Implémente** pointe le(s) module(s) `src/engine/` correspondant(s).
-> Conventions d'abréviation : voir [`sources.md`](sources.md). Carte code→règle : [`code-map.md`](code-map.md).
+> Conventions d'abréviation : voir [`sources.md`](sources.md).
 >
 > ⚠️ **Brouillon agent-généré** — fidélité contrôlée par une passe de vérification adversariale (voir
 > § *Bilan de fidélité* en bas). Les entrées marquées y restent à corriger.
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 
@@ -958,6 +959,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 - `LDB 62 l.201` / `l.244-253` — Calcul des fourchettes de portée + exemples (Arc, Arbalète lourde, Fronde, Pistolet).
 - `LDB 62 l.283-284` — Atout **Pistolet** (tirer en Combat rapproché → autorise le tir en étant Engagé).
 - `LDB 62 l.295-296` — Atout **Protectrice (Indice)** : Indice 2+ permet d'**opposer les projectiles** dans la Ligne de Vue (le « bouclier large »).
+- `LDB 16 l.113` — État Sans Défense/Inconscient : Test de Capacité de Combat automatiquement réussi contre une cible ainsi affectée.
 
 **Voir aussi** : Tests opposés et Degrés de Réussite ; Localisation et Dégâts (étapes 2-4 de l'attaque) ; États (_Engagé_, _Inconscient_, _Surpris_, _À Terre_) ; Atouts et Défauts d'arme (Pistolet, Protectrice, Recharge) ; Portées et statistiques des armes à distance ; Psychologie (Peur −10 au tir).
 
@@ -1185,6 +1187,7 @@ Notes mécaniques par arme (`AA 08 l.228-260`) :
 - `LDB 14 l.185-199` — Combat à Mains Nues : Corps à corps (Bagarre) comme un Test de combat normal + option **Empoignade** (déclarée avant le jet ; Test opposé → Empêtré mutuel ; tour suivant : briser gratuit si Avantage supérieur, sinon Test opposé de Force → BF+DR PA-ignorés OU gestion d'Empêtré ; échec → +1 Avantage à l'adversaire ; tiers : +20/+10 pour toucher l'Empoigné).
 - `LDB 14 l.201-202` — Option : Empoignade Grâce aux Compétences (substitut au Test de Force selon le MJ).
 - `AA 08 l.224-261` — Table des Armes de Bagarre (Coup-de-poing, Gaffe, Gantelet à pointes, Gantelet verrouillé, Lacet étrangleur, Mains nues, Matraque) + règle spéciale du **Gantelet verrouillé** (conserve l'objet, −20 transitoire) + coûts de fabrication par Métier.
+- `LDB 10 l.774` — Talent **Maniement de deux armes** (prérequis pour attaquer avec les deux armes).
 
 > « Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main, même lorsque les circonstances l'y obligeraient normalement. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet, y compris les Tests de Corps à Corps, tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). » — `AA 08 l.236`
 
@@ -2483,6 +2486,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 - `ADE II 04 l.280-287` — **tableau d100 des Munitions magiques** : 01-54 Flèche magique (+1 Dégât, blesse l'immunisé), 55-74 Flèche de puissance (+1d10 ignorant Armure/Endurance), 75-91 Flèche de vol infaillible (+30 CT), 92-00 Flèches de grêle funeste (1d10 flèches, cibles secondaires à ≤1,50 m en LdV).
 - `ZI 13 l.759-844` — Dague funeste, Lame à poignée bois de cerf, Trempe au sang de dragon (Atout Solide), Sève de trégara (Perforante), Empennage de griffon, Pointes barbelées (Hémorragique).
 - `NADAJ 08 l.170-171` — Pétard improvisé (Explosion 1, Dangereuse, 5 % En flammes).
+- `ADE II l.70-72` — effet magique « De plaies atroces » (70-72 du tableau d100) = Dévastatrice.
 
 > « causent un Coup Critique sur n'importe quel nombre divisible par 10 (par exemple : 10, 20, 30, etc.), ainsi que sur un double (par exemple : 11, 22, 33) obtenu inférieur ou égal au Test approprié au combat. » — `LDB 62 l.248` (Empaleuse)
 

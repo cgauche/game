@@ -13,7 +13,6 @@ plusieurs chapitres **et** plusieurs livres.
   **Implémente** (module `src/engine/…` correspondant).
 - Convention de réf : `<ABRÉV> <NN> l.<début>-<fin>` — `NN` = préfixe du fichier de chapitre,
   `l.` = numéros de ligne du `.md` source. Table des abréviations → [`sources.md`](sources.md).
-- [`code-map.md`](code-map.md) : carte inverse **module → topics RAW** (audit de fidélité).
 
 > ⚠️ Contenu **agent-généré**, contrôlé par une passe de **vérification adversariale** (chaque ref
 > est reconfrontée à la source ; règle 1 = zéro invention). Chaque fichier de domaine porte en bas un

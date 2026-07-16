@@ -1,6 +1,7 @@
 # Atlas RAW — Psychologie
 
 > Référentiel autosuffisant des règles WFRP4 (RAW). Chaque règle cite `LDB NN l.X-Y` (source = dernier recours). Voir [`sources.md`](sources.md), [`00-index.md`](00-index.md).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 
@@ -129,6 +130,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Sources RAW** :
 - `LDB 21 l.23-27` — définition, Test étendu, effets sous Peur, approche de la source
+- `LDB 21 l.29` — un seul Test de Calme par Tour quand la source de Peur s'approche.
 
 **Voir aussi** : Terreur (Indice), État Brisé (`etats.md`)
 **Implémente** : `src/engine/psychology.ts`

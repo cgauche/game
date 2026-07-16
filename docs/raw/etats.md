@@ -1,6 +1,7 @@
 # Atlas RAW — États
 
 > Référentiel autosuffisant des règles WFRP4 (RAW). Chaque règle cite `LDB NN l.X-Y` (source = dernier recours). Voir [`sources.md`](sources.md), [`00-index.md`](00-index.md).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 
@@ -674,17 +675,15 @@ Points vérifiés contre le source `.md` :
 - Sonné : Test Résistance Intermédiaire (+0), puis Exténué si plus aucun : conforme `l.125-127`.
 - Poison : dégâts **puis** Test de Résistance (maintenant via hook hors `endOfRound` pour les héros) : conforme architecture cadence-aware.
 
-Points **(non implémentés)** identifiés :
+Points identifiés :
 1. **Assourdi** : bonus +10 par le flanc/derrière — l'orientation des combattants n'est pas suivie (`conditions.ts l.163`).
 2. **Sonné** : +1 Avantage pour l'attaquant — non trouvé dans `conditions.ts`/`meleeAttackerBonus` ; à vérifier dans `combatFlow.ts`.
 3. **Brisé** : contrainte comportementale (fuir, se cacher) — gérée par l'IA ennemie/décision joueur, non bloquée mécaniquement par le moteur.
 4. **Durées en heures** (EDO App.2, LDB 46 Imparfaites, LDB 18 Commotion) : États à durée horaire/calendaire et retraits conditionnels atypiques (Aveuglé inamovible, Exténué 1d10h, Exténué 1d10 jours) — à auditer dans `magic.ts`/`miscast.ts`/`upkeep.ts`.
 5. **États verrouillés sur Blessures Critiques** (LDB 18) : verrouillage conditionnel (Aveuglé sur Hémorragique, Aveuglé/Sonné/Inconscient sur Aide Médicale, Hémorragique sur Chirurgie) — non génériques dans `conditions.ts`.
-6. **Variante Hémorragique AA** : non implémentée (règle optionnelle — LDB 16 est conforme).
-7. **Atout Assommante** → Sonné : à vérifier dans `combat.ts` (chercher `assommante` ou `stunningQuality`).
-8. **Filets ZI** : mécanique Empêtré avec DR non cumulatifs — non implémentée (seul Test de Force opposé générique est implémenté).
-9. **Empêtré Force variable** (LDB 46 Imparfaites Tenue indisciplinée, 1d10×5) : Force de source aléatoire — non modélisée.
-10. **Retraits conditionnels narratifs** (Colère des dieux 66-70 Aveuglé/Prière, 131-135 Hémorragique quotidien/Pénitence ; LDB 46 Rébellion intestinale) : conditions de retrait non mécanique — à gérer via effets scène/campagne ou `lockedUntil`.
+6. **Atout Assommante** → Sonné : à vérifier dans `combat.ts` (chercher `assommante` ou `stunningQuality`).
+7. **Empêtré Force variable** (LDB 46 Imparfaites Tenue indisciplinée, 1d10×5) : Force de source aléatoire — non modélisée.
+8. **Retraits conditionnels narratifs** (Colère des dieux 66-70 Aveuglé/Prière, 131-135 Hémorragique quotidien/Pénitence ; LDB 46 Rébellion intestinale) : conditions de retrait non mécanique — à gérer via effets scène/campagne ou `lockedUntil`.
 
 **Couverture complète des livres autorisés :**
 - ADE I VF : armes naines avec États En flammes / Empoisonné (Annexe II, `ADE I l.55, l.63`) — sources d'infliction, pas de règle générale nouvelle.

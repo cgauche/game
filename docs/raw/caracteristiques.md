@@ -4,12 +4,13 @@
 > (vérifier que le code respecte le RAW). Chaque règle cite sa source `LIVRE NN l.X-Y`
 > (NN = préfixe du fichier de chapitre, l = lignes du `.md` source). **Voir aussi** tisse les renvois
 > entre règles ; **Implémente** pointe le(s) module(s) `src/engine/` correspondant(s).
-> Conventions d'abréviation : voir [`sources.md`](sources.md). Carte code→règle : [`code-map.md`](code-map.md).
+> Conventions d'abréviation : voir [`sources.md`](sources.md).
 >
 > **Périmètre de ce fichier** : les 10 Caractéristiques (CC/CT/F/E/I/Ag/Dex/Int/FM/Soc), le
 > Bonus de Caractéristique, et les statistiques dérivées Blessures et Mouvement.
 > Génération des valeurs à la création → voir [`avancement.md`](avancement.md).
 > Taille et variations créature → voir § Blessures par Taille ci-dessous + [`deplacement.md`](deplacement.md).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 

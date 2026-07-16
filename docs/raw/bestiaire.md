@@ -4,10 +4,11 @@
 > (vérifier que le code respecte le RAW). Chaque règle cite sa source `LIVRE NN l.X-Y`
 > (NN = préfixe du fichier de chapitre, l = lignes du `.md` source). **Voir aussi** tisse les renvois
 > entre règles ; **Implémente** pointe le(s) module(s) `src/` correspondant(s).
-> Conventions d'abréviation : voir [`sources.md`](sources.md). Carte code→règle : [`code-map.md`](code-map.md).
+> Conventions d'abréviation : voir [`sources.md`](sources.md).
 >
 > ⚠️ **Brouillon agent-généré** — fidélité contrôlée par une passe de vérification adversariale.
 > Les entrées marquées y restent à corriger.
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 
@@ -301,6 +302,7 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 - `LDB 85 l.377-378` — Force Opposée (autoWin ≥ +2 cat / needCrit +1 cat).
 - `LDB 85 l.382-383` — Peur/Terreur par Taille.
 - `LDB 85 l.386-387` — Piétinement (BF+0, Corps à corps Bagarre, 1 Avantage).
+- `LDB 14 l.142-165` — mod tir −30..+60 par écart de Taille.
 
 **Voir aussi** : [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille-categories-et-modificateurs-de-combat).
 

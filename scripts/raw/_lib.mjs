@@ -60,8 +60,10 @@ const OTHER_ABBR_ALT = [
   ...BOOKS.filter(([a]) => a !== 'LDB' && !VARIANT_COVERED.has(a)).map(([a]) => esc(a)),
   ...EXTRA_ABBR_VARIANTS.map(([, pat]) => pat),
 ].sort((a, b) => b.length - a.length).join('|')
+// m[4] = suffixe de plage `((?:[-+]\d+)*)` (#487), miroir de ldbRe ; consommateurs qui lisent m[1..3]
+// (check-refs, reconcile) ignorent m[4].
 export const otherRe = () =>
-  new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)`, 'g')
+  new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
 
 // Canonicalise le texte brut matché par otherRe (m[1]) vers l'abréviation BOOKS (#434 défaut 11) :
 // identité si déjà canonique, sinon résolution via EXTRA_ABBR_VARIANTS (MÊME table que l'alternation

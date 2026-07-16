@@ -5,6 +5,7 @@
 > (NN = préfixe du fichier de chapitre, l = lignes du `.md` source). **Voir aussi** tisse les renvois
 > entre règles ; **Implémente** pointe le(s) module(s) `src/` correspondant(s).
 > Conventions d'abréviation : voir [`sources.md`](sources.md).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ---
 
@@ -41,7 +42,6 @@
 - [Nouvelle Activité : Convalescence — ADE II Annexe I](#nouvelle-activité--convalescence--ade-ii-annexe-i)
 - [Règles optionnelles connexes](#règles-optionnelles-connexes)
 - [Voir aussi](#voir-aussi)
-- [Implémente](#implémente)
 
 - **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
 - **Activités en mer (MDG ch.15)** — 1 Activité/Personnage par semaine de 8 jours à bord ; règles d'interlude *Argent à gaspiller / Avec le pouvoir / Amélioration elfique* suspendues ; liste LDB/AA réalisable ; *Semer la dissension* contre les officiers = −2d10 Moral.
@@ -600,36 +600,6 @@ Requiert accès à un lieu de repos (hospice, monastère, temple). Contexte : su
 - [`deplacement.md`](deplacement.md) — Étapes de voyage (Activités EDOC).
 
 ---
-
-## Implémente
-
-| Mécanique | Module(s) | État |
-|-----------|-----------|------|
-| Tableau des Événements d100 | `src/data/interludeEvents.json` + `src/data/interludeEvents.ts` | Confirmé — 34 entrées couvrant 01-00 |
-| Artisanat (DR, Difficulté, matériaux) | `src/engine/activities.ts` (`craftTarget`, `craftSpecOf`, `craftCatalog`) | Confirmé |
-| Apprentissage particulier (coût tuteur, bonus échec) | `src/engine/activities.ts` (`apprenticeshipTutorCost`, `tutorCostRange`, `learnableTalents`) + `interludeFlow.ts` | Confirmé |
-| Opérations bancaires (invest/planque, taux, payout) | `src/engine/activities.ts` (`bankWithdrawOutcome`, `bankPayout`) + `interludeFlow.ts` | Confirmé |
-| Revenus (statusIncome par Statut) | `src/engine/activities.ts` (`statusIncome`) | Confirmé |
-| Passer commande (catalogue, livraison) | `src/engine/activities.ts` (`orderCatalog`) + `interludeFlow.ts` | Confirmé |
-| Argent à gaspiller | `src/state/interludeFlow.ts` (clôture) | Confirmé |
-| Avec le pouvoir (Niveaux 3-4, `didRevenus`) | `src/state/interludeFlow.ts` | Confirmé |
-| Prestige elfique (flag, ≥3 semaines) | `src/state/interludeFlow.ts` l.100-103 + `policy.ts` l.342 | Confirmé |
-| Changement de Carrière | `src/state/partyFlow.ts` (avancement) | Confirmé (sans lien Activité explicite) |
-| Consulter un Expert | — | Non implémenté |
-| Dressage (Activité) | — | Non implémenté |
-| Entraînement (hors-Carrière coûts) | — | Non implémenté séparément de l'avancement |
-| Invention ! | — | Non implémenté |
-| Réputation | — | Non implémenté |
-| Semer la Dissension | — | Non implémenté |
-| Dernières Nouvelles | — | Non implémenté |
-| Entraînement au Combat | — | Non implémenté |
-| Observer une Cible | — | Non implémenté |
-| Recherche de Savoir | — | Non implémenté |
-| Convalescence (ADE II) | — | Non implémenté (suppression Trait Psychologique) |
-| Activités de Guerrier (AA) | — | Non implémenté |
-| Activités de Bataille (ADE II) | — | Non implémenté |
-| Activités de Voyage (EDOC) | `src/state/travelFlow.ts` (voyage général) | Partiellement — flux voyage sans Activités EDOC individuelles |
-| Faveurs (Mineure/Majeure/Importante) | — | Non implémenté |
 
 ---
 

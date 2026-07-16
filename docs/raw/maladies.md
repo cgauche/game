@@ -4,10 +4,11 @@
 > (vérifier que le code respecte le RAW). Chaque règle cite sa source `LIVRE NN l.X-Y`
 > (NN = préfixe du fichier de chapitre, l = lignes du `.md` source). **Voir aussi** tisse les renvois
 > entre règles ; **Implémente** pointe le(s) module(s) `src/engine/` correspondant(s).
-> Conventions d'abréviation : voir [`sources.md`](sources.md). Carte code→règle : [`code-map.md`](code-map.md).
+> Conventions d'abréviation : voir [`sources.md`](sources.md).
 >
 > Scope : possède Maladies/Infections. Renvoie à `competences.md § Guérison` pour les soins.
 > **ZÉRO invention** — tout ce qui n'est pas citable est marqué « RAW tronqué » ou absent.
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 
@@ -370,8 +371,6 @@ La créature est porteuse de la maladie *Type*. Les héros blessés doivent test
 
 **Symptômes :** Convulsions, Délire, Fièvre (Grave), Gonflement (Visage et tête), Persistant (Difficile), Toxine.
 
-**Statut app** : maladie NON câblée dans `maladies.json` — à ajouter si le scénario *L'Ennemi dans l'Ombre* est joué.
-
 ---
 
 ### Délire (`EDO App.2 l.117-141`)
@@ -658,41 +657,6 @@ Implémentée dans le store (`rule('disease-mode')`) — contrôle l'activation 
 Source du choix : `LDB 20 l.33-35` (« Utiliser les maladies »).
 
 ---
-
-## Implémente
-
-| Règle | Module(s) | Notes |
-|---|---|---|
-| Cycle de vie (contraction/incubation/durée) | `src/engine/disease.ts` · `contractDisease` · `tickDisease` | Données dans `src/data/maladies.json` |
-| Test de Contraction | `src/engine/disease.ts` · `rollContraction` · `applyContraction` · `contractionDue` | Sert post-critique et post-Infecté |
-| Symptôme blessé (l.110) — test journalier | `disease.ts` · `tickDisease` (defer `diseaseBlesse`) → `applyDiseaseBlesse` | Cascade influençable |
-| Symptôme malaise (l.152) — Exténué collant | `disease.ts` · `activeMalaiseCount` · `rest.ts` · `dailyDiseaseUpkeep` | Reconciliation Exténué |
-| Symptôme fièvre — pénalités (l.135) | `disease.ts` · `diseaseCharPenalties` | Pool « pire pénalité » non-cumulatif |
-| Symptôme bubons — pénalités (l.114) | `disease.ts` · `diseaseCharPenalties` | Même pénalité que fièvre |
-| Symptôme convulsions — pénalités (l.121) | `disease.ts` · `diseaseCharPenalties` | −10 ou −20 selon severity |
-| Symptôme démangeaisons — pénalités (l.126) | `disease.ts` · `diseaseCharPenalties` | −10 Soc |
-| Symptôme gangrène (l.140) | `disease.ts` · `tickDisease` (defer `diseaseGangrene`) → `applyDiseaseGangrene` · `gangreneFails`/`gangreneLost` | Cascade influençable |
-| Symptôme persistant (l.162) | `disease.ts` · `tickDisease` (defer `diseasePersist`) → `applyDiseasePersist` | Cascade influençable ; DR ≤−6 → Infection du Sang ; ≤−2 → BP |
-| Symptôme toxine (l.172) | `disease.ts` · `tickDisease` — journalisé, conséquence laissée au MJ | ⚠️ RAW tronqué — conséquence non imprimée |
-| Symptôme nausée (l.157) — Sonné sur Esquive ratée | `src/state/combatFlow.ts` l.1267-1271 | COND.sonne ajouté |
-| Symptôme toux et éternuements — contagion | `disease.ts` · `contagiousDiseases` | Vérole Urticante |
-| Immunité après guérison (l.97) | `disease.ts` · `diseaseImmunities` · `immuneAfterCure` | Vérole Urticante |
-| Entretien journalier maladie | `src/engine/rest.ts` · `dailyDiseaseUpkeep` | Soins : −1 j supplémentaire si `caredFor` |
-| Purge par miracle | `src/engine/rest.ts` · `cureDiseases` | `cureDisease` GameOp → Amère Catharsis |
-| Bénédiction de Convalescence | `src/engine/rest.ts` · `blessDiseaseDuration` | `reduceDiseaseDays` GameOp |
-| Trait Infecté post-combat | `src/state/combatFlow.ts` l.1251-1265 | Marqueurs `woundedByInfected`/`woundedByRodent` + `diseaseExposure` |
-| Cascade de Contraction fin de combat | `src/state/combatFlow.ts` · `decideCombatEndHeroTests` · `openCombatEndCascade` | Influençable via Résilience/Chance |
-| Infection Mineure post-critique (l.72) | `src/engine/healing.ts` l.119-121 · `combatFlow.ts` · `tookCriticalThisFight` | Conditionné à `disease-mode === 'full'` et blessure non pansée |
-| `disease-mode` règle optionnelle | `src/engine/policy.ts` · `rule('disease-mode')` | off / full / intermédiaire |
-| Résistance (Maladie) Talent | Non implémenté — le reroll Talent est générique (1×/séance auto-succès) | |
-| Symptômes EDO (Délire, Gonflement) | **Non implémentés** — Fièvre Cérébrale Pourpre absente de `maladies.json` | À ajouter si EDO joué |
-| Trait Contagieux (EDO) | **Non implémenté** | |
-| **T2C ch.14 — Tableaux d'exposition aquatique** | **Non implémenté** — ingestion/immersion dans rivière sale (T2C 16 l.10-49) | |
-| **T2C ch.14 — Colique** | **Non implémenté** — absente de `maladies.json` | |
-| **T2C ch.14 — Vers de Carie** | **Non implémenté** — cycle en 3 phases hors modèle générique | |
-| **T2C ch.14 — Vers du Reik** | **Non implémenté** — absents de `maladies.json` (incubation 85+1d10 j) | |
-| **T2C ch.14 — Symptôme Crampes Abdominales** | **Non implémenté** — absent des 12 kinds LDB | |
-| **T2C ch.2 — Herbes médicinales (Gesundheit, Racine des Tombes, Rouille Mouchetée)** | **Non implémenté** — aucune herbe modélisée dans le moteur de maladies | |
 
 ---
 

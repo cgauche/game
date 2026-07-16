@@ -1,6 +1,7 @@
 # Atlas RAW — Avancement (Points d'Expérience)
 
 > Référentiel autosuffisant des règles WFRP4 (RAW). Chaque règle cite `LDB NN l.X` (source = dernier recours). Voir [`sources.md`](sources.md), [`00-index.md`](00-index.md).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 Ce fichier couvre tout ce qui concerne **l'acquisition et la dépense de Points d'Expérience (PX)** : gain par le MJ, coûts d'Augmentation (Caractéristique / Compétence / Talent), complétion de Niveau, changement de Carrière, règles hors carrière. Il renvoie à [`carrieres.md`](carrieres.md) pour la structure des Carrières (niveaux, schéma de progression, liste des compétences/talents disponibles) et à [`competences.md`](competences.md) / [`talents.md`](talents.md) pour les définitions.
 

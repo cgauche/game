@@ -1,6 +1,7 @@
 # Atlas RAW — Création de Personnage
 
 > Référentiel autosuffisant des règles WFRP4 (RAW). Chaque règle cite `LDB NN l.X` (source = dernier recours). Voir [`sources.md`](sources.md), [`00-index.md`](00-index.md).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 Ce fichier couvre le **processus complet de création de Personnage** (étapes 1 à 9 du LDB 04/05) avec toutes les tables verbatim. Il renvoie à [`carrieres.md`](carrieres.md) pour le contenu des Carrières (schémas, compétences/talents par niveau), à [`competences.md`](competences.md) et [`talents.md`](talents.md) pour leurs définitions, et à [`avancement.md`](avancement.md) pour la dépense des PX bonus obtenus à la création.
 

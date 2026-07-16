@@ -4,10 +4,11 @@
 > (vérifier que le code respecte le RAW). Chaque règle cite sa source `LIVRE NN l.X-Y`
 > (NN = préfixe du fichier de chapitre, l = lignes du `.md` source). **Voir aussi** tisse les renvois
 > entre règles ; **Implémente** pointe le(s) module(s) `src/engine/` correspondant(s).
-> Conventions d'abréviation : voir [`sources.md`](sources.md). Carte code→règle : [`code-map.md`](code-map.md).
+> Conventions d'abréviation : voir [`sources.md`](sources.md).
 >
 > ⚠️ **Brouillon agent-généré** — fidélité contrôlée par une passe de vérification adversariale (voir
 > § *Bilan de fidélité* en bas). Les entrées marquées y restent à corriger.
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 >
 > **Catalogue de sorts** (sorts mineurs, arcanes, de domaine, du chaos, magie noire) : à transcrire
 > séparément depuis `LDB 47 - Listes des sorts.md`, `LDB 48 - Magie des Couleurs.md`,
@@ -648,7 +649,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 
 ## Malepierre
 
-**Sources RAW :** `LDB 46 l.3-4`
+**Sources RAW :** `LDB 46 l.3-4` · `LDB 19 l.40` (Exposition à la Corruption au contact/usage) · `LDB 19 l.51-53` (contact/usage prolongés, exposition modérée).
 
 La **malepierre** est un éclat de magie pure dans le plan matériel — manifestation de l'essence du Chaos, très corruptrice. Facettes dures comme du silex, lueur verte désagréable. Propriétés :
 - Contact direct : risque de maladie, folie, mutation.
@@ -791,12 +792,10 @@ Ces sorts manipulent des objets de jeu « navals » (navire, Manœuvre, tourbill
 | Sort de Contact en combat (Corps à corps Bagarre) | LDB 46 l.123-124 | OK |
 | Attributs de Domaine — Bête (Peur 1 post-incantation) | LDB 48 l.7 | OK — `domainAfterCast` |
 | Attributs de Domaine — Cieux (bypass PA métal + AoE 2 m) | LDB 48 l.105 | OK — `domainMissileMods` / `domainOnHitEffects` |
-| Attributs de Domaine — Feu (Enflammé + bonus si états proches) | LDB 48 l.201 | Partiel — rider OK ; bonus +10 par état voisin non implémenté |
 | Attributs de Domaine — Lumière (Aveuglé + frappe BInt vs Démons/Mort-vivants) | LDB 48 l.302 | OK — `domainOnHitEffects` |
 | Attributs de Domaine — Métal (bypass PA métal + bonus = PA ignorés) | LDB 48 l.398 | OK — `domainMissileMods` (bonusFromBypass) |
 | Attributs de Domaine — Mort (Exténué sur vivants, cap 1) | LDB 48 l.497 | OK — `domainOnHitEffects` |
 | Attributs de Domaine — Ombres (bypass tous PA non magiques) | LDB 48 l.582 | OK — `domainMissileMods` |
-| Attributs de Domaine — Vie (purge états + frappe Mort-vivants + +10 rural) | LDB 48 l.679 | Partiel — purge+frappe OK ; +10 rural non implémenté |
 | ZdE = diamètre | LDB 47 l.28 | OK |
 | Surincantation — Sort (×initial Portée/ZdE/Durée/Cible, +2 DR/pas) | LDB 47 l.13-17 | OK — `engine/overcast.ts` |
 | Surincantation — Bénédiction (+6 m / +1 Cible / +6 Rounds FIXE, pas de ZdE) | LDB 41 l.21-27 | OK — `engine/overcast.ts` |
@@ -818,11 +817,7 @@ Toutes les refs `LDB 46 l.XXX` présentes dans `src/engine/magic.ts` et `src/eng
 
 ### Écarts / points à vérifier
 
-1. **Influences Malfaisantes (le « 8 »)** : non implémenté en runtime — la détection du chiffre 8 au dé des unités n'est pas branchée dans `resolveCasting` / `resolveFocus`. À brancher si cette règle doit s'appliquer dans des zones corrompues.
-2. **Dissiper les sorts permanents** : le Test étendu de Langue (Magick) hors combat n'est pas implémenté (laissé au MJ).
-3. **Magie Elfique (Qhaysh)** : hors périmètre joueur actuellement.
-4. **Sorts du Chaos (LDB 51) et Magie noire (LDB 50)** : les règles de Domaine (Démonologie, Nécromancie, Nurgle/Slaanesh/Tzeentch) et leurs sorts ne sont pas couverts par ce fichier — voir catalogue séparé.
-5. **EDO sorts Tzeentch** : intégrés dans `src/data/` mais leur règle de Domaine spécifique (EDO) n'est pas encore documentée ici.
-6. **Attribut Feu — bonus +10 par état Enflammé voisin** (LDB 48 l.201) : non implémenté — nécessiterait un scan de la scène à chaque incantation pour compter les états actifs à ≤ BFM mètres.
-7. **Attribut Vie — +10 en environnement rural/sauvage** (LDB 48 l.679) : non implémenté — pas de classification rurale/urbaine des scènes dans le moteur.
-8. **Propagation latérale Cieux (AoE 2 m)** (LDB 48 l.105) : déclarée en données (`DomainData.effects`) mais sa mécanique précise (BFM dégâts Projectile magique vers toutes cibles à 2 m sauf porteurs du Talent) mérite vérification dans `triggeredEffects`.
+1. **Magie Elfique (Qhaysh)** : hors périmètre joueur actuellement.
+2. **Sorts du Chaos (LDB 51) et Magie noire (LDB 50)** : les règles de Domaine (Démonologie, Nécromancie, Nurgle/Slaanesh/Tzeentch) et leurs sorts ne sont pas couverts par ce fichier — voir catalogue séparé.
+3. **EDO sorts Tzeentch** : intégrés dans `src/data/` mais leur règle de Domaine spécifique (EDO) n'est pas encore documentée ici.
+4. **Propagation latérale Cieux (AoE 2 m)** (LDB 48 l.105) : déclarée en données (`DomainData.effects`) mais sa mécanique précise (BFM dégâts Projectile magique vers toutes cibles à 2 m sauf porteurs du Talent) mérite vérification dans `triggeredEffects`.

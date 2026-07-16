@@ -2,7 +2,8 @@
 // Mécanique partagée : scripts/guards/lib/ (source unique avec les tests Vitest et le hook au stylo).
 // Contrat : BLOQUE (exit 1) sur pierre tombale et logique-par-label (tolérance zéro, arbre à zéro) ;
 // les excuses sans tag ne bloquent que quand EXCUSE_GUARD_ACTIVE est vrai (tri #136 fait) — d'ici là,
-// avertissement stderr. `docs:check` tourne si un docs/*.md (hors plans/ et raw/) est stagé.
+// avertissement stderr. `docs:check` tourne si un docs/*.md à plat est stagé (racine ou docs/raw/, les
+// fiches régénérables — #487).
 // Testabilité : des chemins passés en arguments remplacent la liste stagée (aucun toucher à l'index).
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -100,7 +101,7 @@ try {
   }
 } catch { /* diff illisible → pas de scan */ }
 
-const docsStaged = staged.some((f) => /^docs\/[^/]+\.md$/.test(f.replace(/\\/g, '/')));
+const docsStaged = staged.some((f) => /^docs\/(?:raw\/)?[^/]+\.md$/.test(f.replace(/\\/g, '/')));
 if (docsStaged) {
   try {
     execFileSync(process.execPath, [join(ROOT, 'scripts', 'docs', 'check-doc-refs.mjs')], { cwd: ROOT, stdio: 'inherit' });

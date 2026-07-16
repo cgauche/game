@@ -11,6 +11,7 @@
 > **Hors-scope de ce fichier** : catalogue détaillé des bénédictions par culte (→ *catalogue séparé*),
 > texte de chaque miracle par culte (→ *catalogue séparé*), commandements culte par culte (→ ch. 26-39).  
 > **ZÉRO invention** — tout ce qui n'est pas citable est absent.
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ---
 
@@ -41,7 +42,6 @@
 - **Miracles de Manann (8)** — Apaiser les eaux, Bénédiction de l'albatros (navire incoulable), Bénédiction du marinier (+1 DR Natation/Ramer/Voile), Contre-courants, Malédiction de la mer (+2 Dégâts), Navigation bénie, Repousser une créature marine, Respiration aquatique. + Sel sacré (50 %, 5 usages).
 - **Culte de Stromfels (MDG)** — Dieu Requin / Naufrageur, culte = crime capital (Traité elfe 2150 CI) ; 4 commandements (dont contrainte d'avancement Force-d'abord) ; restriction des Talents par le Péché (Invocation ≥2, Béni ≥5) ; Bénédictions identiques à Manann ; pénitences.
 - **Miracles de Stromfels (7)** — Faire fi de l'Humeur de Manann (table d10), Flairer le sang (Pistage Facile +40), Lame de fond (IC 15), Mal de mer, Malédiction de la maîtresse cruelle (Calme Complexe −10 / Exténué), Sacrifice à Stromfels (double Indice de Voie d'eau), Vents de tempête. Portées indexées sur la **Force** (≠ Sociabilité).
-- **Implémenté vs non implémenté** — effets purement navals (Humeur de Manann, Indice M, Indice de Voie d'eau, vent, IC, ne-peut-couler) hors moteur actuel → (non implémenté) ; effets sur personnages/créatures (Tests, États, +DR, Respiration aquatique) modélisables en Miracle structuré.
 
 ---
 

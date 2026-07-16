@@ -1,6 +1,7 @@
 # Atlas RAW — Classes, Carrières & Statut
 
 > Référentiel autosuffisant des règles WFRP4 (RAW). Chaque règle cite `LDB NN l.X` (source = dernier recours). Voir [`sources.md`](sources.md), [`00-index.md`](00-index.md).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 Ce fichier couvre le **système de Classes et Carrières** (structure, avancement, changement) et le **Statut social** (Échelons, Standing, effets, revenus). L'index de carrières donne les 4 noms de niveau et le Statut de chaque niveau pour toutes les carrières LDB + suppléments.
 

@@ -7,6 +7,7 @@
 > Domaine couvert : Points de Corruption (gains/pertes), seuil, Test de Résistance, dissolution corps/esprit,
 > tables de mutation physique et mentale (verbatim), limites → damnation, Sombre Pacte, absolution,
 > extensions EDO Compagnon (tables par dieu). Hors-scope : apparence visuelle des mutations (rig/couche art).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ## Sommaire
 
@@ -566,21 +567,6 @@ Quand la menace choisie est **Mutation** : réussir automatiquement le premier T
 | Traits psychologiques via mutation (Frénésie) | `attachMutation` → copie `m.psychTraits` | **OK** |
 | Sombres Murmures (LDB 19 l.95-105 — choix OPTIONNEL, refuser garde le PC) | `DialogueChoice.flow` porte `{ op: 'corruption', amount: -1 }` (`src/engine/ops.ts`) ; le choix EST le dialogue d'auteur (accepter/refuser), rien de plus au moteur | **OK** |
 | Absolution (LDB 19 l.167-182 — « limites laissées à l'appréciation du MJ ») | quantité AUTHORABLE : `{ op: 'corruption', amount: -n }` (`applyOps`, `src/engine/ops.ts`) décrémente `corruption`, plancher 0, sans passer par `ctx.onCorruption` (pas de seuil/mutation sur un retrait) ; éditable au GameOpEditor (`src/ui/editor/GameOpEditor.tsx`) | **OK** |
-
-### Non implémenté / delta code↔RAW
-
-| RAW | Statut |
-|---|---|
-| Tables EDOC étendues par dieu (Khorne/Nurgle/Slaanesh/Tzeentch) | **Non implémenté** — `mutationTables.json` ne contient que les 2 tables LDB 19 génériques ; les 3 tables EDOC (physique étendue, Tête bestiale, mentale étendue) ne sont pas en données |
-| Talent Résistance (Mutation) — réussite auto 1×/séance | **Non implémenté** — non géré dans `corruptionThresholdExceeded` |
-| Mauvais œil (mutation EDOC) — sort lancé sans test | **Non implémenté** — cette entrée EDOC n'est pas dans `mutations.json` |
-| Malefrénésie (mutation EDOC) — mutation temporaire en Frénésie | **Non implémenté** |
-| Corruption sublime (mutation mentale EDOC) — État Exténué hebdomadaire si pas de gain de Corruption | **Non implémenté** |
-| Esprit anéanti (mutation mentale EDOC) | **Non implémenté** |
-| Masochisme pressant (mutation mentale EDOC) | **Non implémenté** |
-| Haine sporadique + Tableau des Obsessions (EDOC) | **Non implémenté** |
-| Mutations spécifiques EDO App.2 (Chair Nécrosée, Crétin, Écailles épineuses EDO, Pattes Chèvre, Tête Pointue EDO) | **Non implémenté** dans mutations.json — ces entrées ne sont pas présentes |
-| Arme naturelle Écailles Épineuses EDOC (-10 Dex, -10 Soc) vs LDB (+1 PA seul) | **Divergence** — la version EDOC pénalise Dex et Soc en plus du PA ; `mutations.json` (`ecailles-epineuses`) n'a que `apAll: 1`, pas de malus Dex/Soc |
 
 ### Note : « Écailles Épineuses » — version LDB vs EDOC
 

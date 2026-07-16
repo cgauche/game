@@ -10,6 +10,7 @@
 > Outils à effet mécanique (LDB 67), Possessions diverses à effet (LDB 74).
 > Armes → [`combat.md`](combat.md). Armures → [`combat.md`](combat.md).
 > Encombrement voyage + pénalités Mouvement → [`deplacement.md`](deplacement.md) (table complète là-bas).
+> ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 > Prix / Disponibilité / Fabrication → [`economie.md`](economie.md).
 
 ## Sommaire
