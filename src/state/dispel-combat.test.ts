@@ -65,4 +65,30 @@ describe('Dissipation permanente — Action de combat', () => {
     expect(mage2.dispel).toBeUndefined(); // accumulateur effacé
     void cible;
   });
+
+  // Adjacence du Soutien (LDB 12 l.196, #467) : câblée sur le Soutien « même Domaine » de Dissipation via la
+  // MÊME primitive `combatDistance` que `openSkillTest` (patron `support-adjacency-gate.test.ts`).
+  it('Soutien « même Domaine », adjacent (l.196) : compte', () => {
+    setup();
+    useGame.getState().battleDispelSpell('malefice', 'ennemi');
+    const pd = useGame.getState().pendingDispel!;
+    expect(pd.support?.count).toBe(1);
+    expect(pd.value).toBe(60 + 10);
+  });
+
+  it('Soutien « même Domaine », ÉLOIGNÉ (dispersé en combat) : écarté', () => {
+    const mage = mk('mage', ['forme-bestiale']);
+    const allie = mk('allie', ['incarnation-de-wyssan'], { pos: { x: 20, y: 20 } }); // même Domaine mais hors de portée
+    const cible: Combatant = mk('cible', [], {
+      kind: 'enemy', pos: { x: 5, y: 5 },
+      activeEffects: [{ label: 'Malédiction', char: 'agilite', bonus: -10, duration: { scale: 'rounds', left: 9 },
+        spell: { spellId: 'malefice', ni: 2, casterId: 'ennemi', label: 'Maléfice' } }],
+    } as unknown as Combatant) as Combatant;
+    const battle = { combatants: [mage, allie, cible], order: ['mage', 'allie', 'cible'], turn: 0, round: 1, acted: false, over: false, log: [] } as unknown as BattleState;
+    useGame.setState({ battle });
+    useGame.getState().battleDispelSpell('malefice', 'ennemi');
+    const pd = useGame.getState().pendingDispel!;
+    expect(pd.support).toBeUndefined();
+    expect(pd.value).toBe(60); // Int 40 + 20 avances Langue, pas de Soutien (allie hors de portée)
+  });
 });

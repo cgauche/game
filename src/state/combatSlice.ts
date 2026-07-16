@@ -43,7 +43,7 @@ import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount } from '../engine/magic';
 import { domainSeaFocusCritMiscastMajeure } from '../engine/domainAttributes';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts } from '../engine/overcast';
-import { resolveOpposed, extendedTestStep, assistBonus } from '../engine/tests';
+import { resolveOpposed, extendedTestStep } from '../engine/tests';
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
@@ -1769,7 +1769,12 @@ export function createCombatSlice(get: Get, set: Set) {
       const present = servingCrewPresent(chef, battle.combatants) ?? exposedCrew(servants).length;
       const w = crewedFireWeapon(w0, present); // ×2 recharge si sous-effectif ; arme-d-equipe retirée
       // Soutien (LDB 12, primitive GÉNÉRIQUE) : +10 par AUTRE servant capable (Projectiles Poudre noire), plafonné.
-      const soutien = soutienBonus(servants, chef, 'projectiles', undefined, 'Poudre noire');
+      // DISTINCT du Défaut Arme d'équipe (MDG l.464, `crewedFireWeapon`/`exposedCrew` ci-dessus — headcount
+      // requis pour armer la pièce) : ceci reste le Soutien générique LDB 12, adjacence (l.196) gatée pareil
+      // qu'ailleurs en combat (`combatDistance`) — s'annule d'elle-même si `chef` n'a pas de `pos` propre
+      // (équipage navire PASSAGER hors case, shipPostes.ts l.244-245).
+      const soutien = soutienBonus(servants, chef, 'projectiles', undefined, 'Poudre noire',
+        chef.pos ? (c) => !!c.pos && combatDistance(chef, c) <= 1 : undefined);
       const skillValue = combatValue(chef, 'ranged', w) + soutien;
       set({
         pendingReload: {
@@ -3062,18 +3067,19 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = dispellableSpellsOn(battle.combatants).find((d) => d.spellId === spellId && d.casterId === spellCasterId);
       if (!target) return;
       // SOUTIEN « même Domaine » (LDB 46 l.207) : les AUTRES héros encore en action, possédant Langue (Magick)
-      // ET partageant un Domaine (Vent) avec le meneur, l'assistent (+10 chacun, plafond Bonus d'Int).
+      // ET partageant un Domaine (Vent) avec le meneur, l'assistent (+10 chacun, plafond Bonus d'Int) — même
+      // primitive `soutienBonus` (LDB 12) que les autres sites de combat, gatée par l'adjacence (l.196, les
+      // héros sont dispersés en combat) via le MÊME prédicat `combatDistance` que `openSkillTest`.
       // `Combatant.spells` = ids STABLES au runtime → résolution par id SEULE (pas de repli libellé : interdit).
       const domainsOf = (h: Combatant) => new Set((h.spells ?? []).map((id) => findSpellById(id)?.subType).filter(Boolean) as string[]);
       const mine = domainsOf(active);
-      const supporters = battle.combatants.filter((c) => c.id !== active.id && c.kind === active.kind && !isOutOfAction(c)
-        && actorHasSkill(c, 'langue', 'magick') && [...domainsOf(c)].some((d) => mine.has(d))).length;
-      const cap = bonus(effectiveChar(active, 'intelligence')); // Langue (Magick) = Intelligence ; plafond du Soutien
-      const supBonus = assistBonus(supporters, cap);
+      const supBonus = soutienBonus(battle.combatants, active, 'langue', 'intelligence', 'magick',
+        (c) => c.kind === active.kind && [...domainsOf(c)].some((d) => mine.has(d))
+          && (!active.pos || (!!c.pos && combatDistance(active, c) <= 1)));
       const value = testValue(active, 'langue', undefined, 'magick') + supBonus;
       set({ pendingDispel: {
         casterId: active.id, spellId, spellCasterId, label: target.label, ni: target.ni, value,
-        support: supBonus > 0 ? { count: Math.min(supporters, Math.max(0, cap)), bonus: supBonus } : undefined,
+        support: supBonus > 0 ? { count: supBonus / 10, bonus: supBonus } : undefined,
         result: null,
       } });
     },
