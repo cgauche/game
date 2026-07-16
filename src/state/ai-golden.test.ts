@@ -147,6 +147,13 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
     expect(chooseEnemyAction(input(e, [h]))).toEqual({ kind: 'shoot', targetId: 'h' });
   });
 
+  it('#537 tireur EN PORTÉE sous banRanged (duel judiciaire) → JAMAIS shoot (bascule approche)', () => {
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [RANGED], movement: 3 });
+    const h = mk('h', 'hero', { x: 1, y: 1 });
+    const a = chooseEnemyAction(input(e, [h], { banRanged: true }));
+    expect(a.kind).not.toBe('shoot');
+  });
+
   it('tireur HORS PORTÉE (au-delà de la bande Extrême ×3) → move (approche)', () => {
     // Arc 1 m → Extrême ≤ 3 m = 1,5 case ⇒ une cible à 5 cases est hors de toute bande → on s'approche.
     const e = mk('e', 'enemy', { x: 0, y: 0 }, { weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 1, qualities: [] }] });

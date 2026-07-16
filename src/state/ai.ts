@@ -159,6 +159,12 @@ export interface EnemyTurnInput {
    *  il se défend/attaque normalement DEPUIS sa case (la mêlée sur cible adjacente n'exige aucun Mouvement).
    *  ABSENT/faux = comportement normal (parité golden). */
   holdsFormation?: boolean;
+  /** Restriction d'armes à distance EFFECTIVE de la rencontre (#537, résolue par `banRangedActive(battle)`
+   *  — SOURCE UNIQUE, `ai.ts` reste pur sans `battle`). Sous ban, l'IA ne considère PLUS ses armes à distance
+   *  comme jouables (`hasRanged`) : elle bascule mêlée/approche au lieu de télégraphier un tir no-op
+   *  (`resolveAttack` le refuserait silencieusement, combatFlow.ts:628-631). Ne touche PAS aux sorts offensifs
+   *  (NADAJ 06 l.181 : la restriction ne vise QUE les projectiles). ABSENT = comportement historique inchangé. */
+  banRanged?: boolean;
 }
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -536,7 +542,8 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Possède-t-il un sort OFFENSIF jouable (data-driven : Projectile ou op de dégât/contrôle hostile) ? Si
   // oui, il LANCE plutôt que de tirer (parité avec l'ancien `offensiveSpell == null` du gate de tir).
   const hasAnyOffensiveSpell = spells.some((sp) => !sp.active && spellIsOffensive(sp.data));
-  const hasRanged = !hasAnyOffensiveSpell && enemy.weapons.some((w) => w.type === 'ranged');
+  // #537 : `banRanged` (duel judiciaire, NADAJ 06 l.181) ne vise QUE les armes, jamais les sorts offensifs.
+  const hasRanged = !hasAnyOffensiveSpell && !input.banRanged && enemy.weapons.some((w) => w.type === 'ranged');
   const hasMeleeWeapon = enemy.weapons.some((w) => w.type === 'melee');
   // Rechargement (LDB 62 l.333) : une arme à Recharge DÉCHARGÉE ne peut pas tirer → il faut recharger d'abord
   // (Test étendu de Projectiles). Cycle `loaded` unifié héros/ennemi (spawn chargé, tir → déchargé).

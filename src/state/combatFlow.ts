@@ -2622,17 +2622,6 @@ export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: 
   set({ battle: { ...battle, acted: prevActed, movementUsed: free ? Math.max(battle.movementUsed, mountMovement(battle, attacker)) : battle.movementUsed } }); // …qu'on restaure : le Piétinement est gratuit ; Se cabrer y consomme l'Action de Mouvement
 }
 
-/** L'IA piétine (faible priorité, après l'attaque principale) : action gratuite si l'ennemi a ≥1
- *  Avantage et qu'un adversaire adjacent plus petit est à portée. Instantané (pas de modale IA). */
-export function aiMaybeTrample(get: Get, set: SetFn, enemy: Combatant): void {
-  if (enemy.kind !== 'enemy' || isOutOfAction(enemy) || enemy.advantage < 1) return;
-  const battle = get().battle;
-  if (!battle || battle.over) return;
-  const target = trampleTarget(battle, enemy);
-  if (!target) return;
-  applyTrample(get, set, enemy, target);
-}
-
 /** Résolution IA des attaques d'Arme GRATUITES « disponibles » (`grantFreeAttack {when:'available'}` —
  *  aujourd'hui l'état Frénésie, LDB 21 l.34 : « un Test de CC gratuit chaque Round ») d'un combattant PILOTÉ
  *  PAR L'IA. Gate `!aiDriven` : ennemi OU héros en Auto-combat (un héros MANUEL la déclenche lui-même via
@@ -3595,6 +3584,9 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
     // Tenue de FORMATION (#196) : crew d'un poste d'engin ACTIF (bélier, batterie de siège) → il ne charge
     // pas seul, c'est le poste qui le déplace (naval : le passager suit `shipOfCrew`, cas déjà distinct).
     holdsFormation: !!crewPosteOf(enemy.id, battle.combatants),
+    // Restriction d'armes à distance de la rencontre (#537) — MÊME résolution que le gate joueur (`firedAttackBlock`),
+    // aucune 2ᵉ source : `banRangedActive` reste l'unique point de vérité.
+    banRanged: banRangedActive(battle),
   };
 }
 
@@ -5902,6 +5894,10 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         if (path && path.some((p, i) => i > 0 && climbEdgeBetween(scene, path[i - 1], p)?.climb)) {
           battle.log.push(ev('move', tr('climb.auto', { name: enemy.name }), enemy.id));
         }
+        // #527 : l'approche IA doit se TRACER comme le Mouvement joueur (BFS à pas uniforme, `pathTo` — même
+        // coût que `battleClickTile`/`stepCost`) sinon un gate qui exige `movementUsed === 0` (Se cabrer,
+        // LDB 85 l.314) laisse passer approche + piétinement-gratuit du même tour.
+        battle.movementUsed = (battle.movementUsed ?? 0) + Math.max(0, (path?.length ?? 1) - 1);
         approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.29 : source de Peur qui s'approche → Test de Calme ou Brisé
         set({ battle: { ...battle } });
         bus.emit(EVT.SCENE_DIRTY);

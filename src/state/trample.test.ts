@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { trampleTarget, aiMaybeTrample, aiCreatureFreeAttacks, applyTrample } from './combatFlow';
+import { trampleTarget, aiCreatureFreeAttacks, applyTrample, runEnemyAI } from './combatFlow';
 import { mountMovement } from './mount';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -154,7 +154,9 @@ describe('Piétinement en combat (store)', () => {
     expect(useGame.getState().pendingTrample).toBeNull();
   });
 
-  it('IA : un ennemi plus grand avec de l’Avantage piétine un héros adjacent plus petit', () => {
+  it('IA : un ennemi plus grand avec de l’Avantage piétine un héros adjacent plus petit (via aiCreatureFreeAttacks, #527)', () => {
+    // `aiCreatureFreeAttacks` est le SEUL point de production du Piétinement opportuniste IA — il empile
+    // TOUJOURS 'pietinement' en dernière attaque gratuite (combatFlow.ts:3026), Taille/Avantage permettant.
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.size = 'enorme';
@@ -164,9 +166,11 @@ describe('Piétinement en combat (store)', () => {
     H.size = 'moyenne';
     H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    H.conditions = [{ name: 'surpris', value: 1 }]; // ne se défend pas → résolution instantanée (patron l.250)
     useGame.setState({ battle: { ...useGame.getState().battle! } });
     const before = H.wounds.current;
-    aiMaybeTrample(useGame.getState, useGame.setState, E);
+    const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(suspended).toBe(false);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
   });
 
@@ -300,5 +304,50 @@ describe('Piétinement en combat (store)', () => {
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before); // aucune attaque tentée
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0);
+  });
+
+  // #527 : le chemin ENNEMI RÉEL (`runEnemyAI` case 'move') doit tracer `movementUsed` — sinon la gate
+  // ci-dessus (movementUsed === 0) restait toujours vraie en production, laissant passer approche +
+  // Piétinement gratuit (Se cabrer) du MÊME tour.
+  it('#527 IA Se cabrer : APPROCHER ce tour trace movementUsed (la Marche consommée n’est plus invisible)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.size = 'enorme';
+    E.characteristics['capacite-de-combat'] = 85;
+    E.characteristics.force = 45;
+    E.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    E.advantage = 0; // le Piétinement générique (coût 1) resterait de toute façon hors de portée
+    E.pos = { x: 14, y: 10 }; // hors de portée de mêlée (3 cases) → l'IA DOIT approcher avant d'attaquer
+    E.movement = 4;
+    H.size = 'moyenne';
+    H.pos = { x: 10, y: 10 };
+    H.conditions = [{ name: 'surpris', value: 1 }]; // ne se défend pas → résolution instantanée
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0 } });
+    expect(useGame.getState().battle!.movementUsed).toBe(0);
+    runEnemyAI(useGame.getState, useGame.setState, E.id);
+    vi.advanceTimersByTime(4000); // laisse jouer le télégraphe + la charge
+    const st = useGame.getState();
+    // La Marche consommée par l'approche est désormais TRACÉE — la gate de Se cabrer (l.205 ci-dessus,
+    // `movementUsed > 0`) la voit donc réellement, au lieu de rester 0 en permanence.
+    expect(st.battle!.movementUsed).toBeGreaterThan(0);
+  });
+
+  it('#527 IA Se cabrer : DÉJÀ adjacent (aucune approche) → movementUsed reste à 0, le Piétinement gratuit reste possible', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.size = 'enorme';
+    E.characteristics['capacite-de-combat'] = 85;
+    E.characteristics.force = 45;
+    E.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    E.advantage = 0;
+    E.pos = { x: 11, y: 10 }; // déjà adjacent à H → aucun Mouvement requis
+    H.size = 'moyenne';
+    H.pos = { x: 10, y: 10 };
+    H.conditions = [{ name: 'surpris', value: 1 }];
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0 } });
+    runEnemyAI(useGame.getState, useGame.setState, E.id);
+    vi.advanceTimersByTime(4000);
+    const st = useGame.getState();
+    expect(st.battle!.movementUsed).toBe(0); // aucune approche → l'Action de Mouvement reste entière
   });
 });
