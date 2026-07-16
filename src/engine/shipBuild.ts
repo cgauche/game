@@ -37,6 +37,17 @@ import type { ShipSize, NavalInstall, InstallBand } from '../data';
 
 export type PropulsionKind = 'voile' | 'avirons';
 
+/** Politique UNIQUE « voile si gréée, sinon avirons » (Compétence de Navigation par mode de
+ *  propulsion, MDG 13 l.17-24) — SOURCE UNIQUE du mode/M de conception d'un navire, consommée par
+ *  tout site qui décidait auparavant `sail?.m ?? oars?.m`/`sail ? … : …` chacun dans son coin
+ *  (#524). `null` = ni voile ni avirons (fiche incomplète — la propulsion à vapeur ne passe pas
+ *  par ici, elle a son propre M constant, ch.12 l.311). */
+export function vesselPropulsion(vd: { sail?: { m: number }; oars?: { m: number } } | undefined): { mode: PropulsionKind; m: number } | null {
+  if (vd?.sail) return { mode: 'voile', m: vd.sail.m };
+  if (vd?.oars) return { mode: 'avirons', m: vd.oars.m };
+  return null;
+}
+
 export interface StandardShipRow {
   size: ShipSize;
   costGold: number;

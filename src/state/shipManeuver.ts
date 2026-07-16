@@ -25,6 +25,7 @@ import { crewRoleValue, crewTalentDR, moraleBand } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
 import { inBattleId } from './combatOrParty';
 import { findVehicleById, findCrewRoleById } from '../data';
+import { vesselPropulsion } from '../engine/shipBuild';
 import type { RNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 import type { PairedSense } from '../engine/ops';
@@ -145,8 +146,9 @@ function maneuverTestTypeDR(ship: Combatant): number {
 }
 export function shipManeuverParams(ship: Combatant): ManeuverParams {
   const vd = ship.creatureId ? findVehicleById(ship.creatureId)?.ship : undefined;
-  const baseM = vd?.sail?.m ?? vd?.oars?.m ?? 0;
-  const skillId = vd?.sail ? 'voile' : 'ramer'; // à voile → Voile ; aux avirons → Ramer (MDG ch.13)
+  const propulsion = vesselPropulsion(vd);
+  const baseM = propulsion?.m ?? 0;
+  const skillId = propulsion?.mode === 'voile' ? 'voile' : 'ramer'; // à voile → Voile ; aux avirons → Ramer (MDG ch.13)
   // Répartition des pièces (MDG ch.12 l.432-433) : un bord surchargé pénalise −1/−2 M, Man ET DR de Navigation
   // (trois colonnes RAW DISTINCTES → cumulées). Sans Contenance connue → aucune pénalité.
   const place = vd?.capacity

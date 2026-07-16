@@ -11,13 +11,14 @@ import { belierRam } from '../engine/navalTraits';
 import { findVehicleById } from '../data';
 import { applyOps } from '../engine/ops';
 import { defaultRNG, type RNG } from '../engine/dice';
+import { vesselPropulsion } from '../engine/shipBuild';
 
 /** Mappe une coque-`Combatant` en `CollisionShip` (vue Dégâts) : IC = `collisionIndex` (Bonus d'Endurance +
  *  Bonus de Blessures) ; M = `sail`/`oars` du TYPE (`findVehicleById`, comme `maneuverShip`) ; Bélier lu dans
  *  les Traits du TYPE + Améliorations d'INSTANCE (`belierRam`). PUR. */
 function toCollisionShip(hull: Combatant): CollisionShip {
   const vd = hull.creatureId ? findVehicleById(hull.creatureId)?.ship : undefined;
-  const m = vd?.sail?.m ?? vd?.oars?.m ?? 0;
+  const m = vesselPropulsion(vd)?.m ?? 0;
   return { ic: collisionIndex(hull), m, belier: belierRam([...(vd?.traits ?? []), ...(hull.upgrades ?? [])]) };
 }
 

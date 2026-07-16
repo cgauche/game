@@ -45,7 +45,7 @@ import { registerScene } from './store';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, diseaseLabel, type CrewTestTypeData } from '../data';
-import { installCost, rollSteamBreakdown, steamBreakdownTriggered, shipSizeOfLength, type SteamBreakdownEntry } from '../engine/shipBuild';
+import { installCost, rollSteamBreakdown, steamBreakdownTriggered, shipSizeOfLength, vesselPropulsion, type SteamBreakdownEntry, type PropulsionKind } from '../engine/shipBuild';
 import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
 import { rollTest, isDoubleRoll, extendedTestStep, difficultyFromModifier } from '../engine/tests';
 import { testValue, partyAssisted, partyBest } from '../engine/skills';
@@ -141,6 +141,11 @@ export interface SeaVoyageState {
    *  consomme `eventMMod` de la journée) — SOURCE du Test de survitesse (#443, `buildOverspeedStep`) :
    *  un recalcul APRÈS coup manquerait le bonus d'un jour déjà consommé (« Vents favorables »). */
   effMToday?: number;
+  /** Mode de propulsion (`vesselPropulsion`) ayant servi à `effMToday` — SOURCE du référent M de
+   *  conception du Test de survitesse (#524, `buildOverspeedStep`) : un navire MIXTE (voile ET
+   *  avirons) doit lire le M du mode RÉELLEMENT utilisé ce jour, jamais la voile par défaut. Absent
+   *  = vieux plan en cours (repli sur la politique `vesselPropulsion`). */
+  modeToday?: PropulsionKind;
   /** Dérive mineure déjà vue (Repères : « sans effet la première fois », ch.13 l.318). */
   minorDrift?: boolean;
   /** Phare aperçu aujourd'hui → bonus d'Orientation (ch.13 l.335/351). */
@@ -385,7 +390,7 @@ function hullTraits(hull: Combatant) {
 /** M de VOYAGE du jour (ch.13/15) : M du gréement + Lissage (`navalMoveMod`) + Salissures + événement,
  *  puis EFFET DU VENT (%, Clinfoc — ch.13 l.274/ch.12 l.254). `null` = les voiles n'avancent pas
  *  (Encalminé / Affaler) — Propulsion à vapeur : M 4 constant, insensible au vent (ch.12 l.311). */
-function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: string } {
+function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: PropulsionKind | null; label: string } {
   const plan = get().travelPlan!;
   const sea = plan.sea!;
   const hull = plan.vehicle!;
@@ -393,9 +398,10 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
   const traits = hullTraits(hull);
   const vessel = get().vessel;
   if (shipHasNavalTrait(traits, 'propulsion-a-vapeur')) {
-    return { m: 4, sail: false, label: 'vapeur (M 4, insensible au vent)' }; // MDG ch.12 l.311
+    return { m: 4, sail: false, mode: null, label: 'vapeur (M 4, insensible au vent)' }; // MDG ch.12 l.311
   }
-  const sail = !!vd?.sail;
+  const propulsion = vesselPropulsion(vd);
+  const sail = propulsion?.mode === 'voile';
   const fouling = foulingEffects(vessel?.fouling?.level ?? 0);
   // Forcer le rythme (MDG 13 l.95-107) : le bonus de M du jour n'est acquis que si le Test de
   // Voile/Ramer du jour a été RÉUSSI ('won' — posé par la boucle à l'étape Progression).
@@ -404,7 +410,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
   const overloadM = cargoOverload(cargoTotalEnc(vessel?.cargo ?? []), vd?.capacity ?? 0).mMod;
   // Empêtré dans des Débris marins (MDG ch.13 l.487-489, #444) : pénalité de M tant que non dégagé.
   const entangleM = sea.entangled?.mMod ?? 0;
-  const baseM = (sail ? vd!.sail!.m : vd?.oars?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace + overloadM + entangleM;
+  const baseM = (propulsion?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace + overloadM + entangleM;
   const aspect = windAspect(sea.heading, sea.windFrom);
   // Gréement de course (T2C ch.10 l.137) « inclut un clinfoc … les avantages des deux ne sont pas cumulables »
   // → il PRIME sur le Clinfoc quand les deux sont présents.
@@ -412,7 +418,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
   const cell = windEffect(sea.weather.vent, aspect, rigging);
   const m = windAdjustedM(Math.max(0, baseM), cell, sail);
   const label = cell.encalmine && sail ? 'Encalminé' : cell.affaler && sail ? 'Affaler les voiles !' : `vent ${aspect}`;
-  return { m, sail, label };
+  return { m, sail, mode: propulsion?.mode ?? null, label };
 }
 
 // ── Test d'équipage de VOYAGE (hors combat — l'équipage = les PJ) ────────────────────────────────
@@ -491,7 +497,7 @@ function buildForcePaceStep(get: Get): CascadeStep | null {
   const hull = plan.vehicle!;
   const vd = findVehicleById(hull.creatureId ?? '')?.ship;
   if (shipHasNavalTrait(hullTraits(hull), 'propulsion-a-vapeur') || !(vd?.sail || vd?.oars)) return null;
-  const rig: 'voile' | 'avirons' = vd?.sail ? 'voile' : 'avirons';
+  const rig: PropulsionKind = vesselPropulsion(vd)!.mode;
   const diff = forcePaceDifficulty(sea.forcePace, rig);
   if (!diff) return null;
   const skillId = rig === 'voile' ? 'voile' : 'ramer';
@@ -531,7 +537,11 @@ function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
   if (!sea.milesToday || sea.effMToday == null) return null; // aucune Progression ce jour → rien à sanctionner (Encalminé/Affalé/Échoué)
   const hull = plan.vehicle!;
   const vd = findVehicleById(hull.creatureId ?? '')?.ship;
-  const baseM = vd?.sail?.m ?? vd?.oars?.m ?? 0;
+  // Référent M = le mode PERSISTÉ du jour (`modeToday`, navire mixte) ; repli sur la politique
+  // `vesselPropulsion` si absent (vieux plan en cours, #524).
+  const baseM = sea.modeToday === 'avirons' ? vd?.oars?.m ?? 0
+    : sea.modeToday === 'voile' ? vd?.sail?.m ?? 0
+    : vesselPropulsion(vd)?.m ?? 0;
   const row = overspeedRow(baseM, sea.effMToday);
   if (!row) return null;
   const best = partyAssisted(get().party, 'resistance', 'endurance');
@@ -548,8 +558,10 @@ function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
 /** Cadence infra-journalière du tableau (1 Test par heure/minute/Round selon la bande, l.129-140) mappée
  *  sur le grain JOUR de la boucle de voyage (règle maison éditable `sea-overspeed-tests-per-day`, #443,
  *  même patron que `exposure-night-*-count`). `n − 1` Tests supplémentaires réutilisent le MÊME meneur
- *  (composition figée au début du jour, comme les autres étapes de tronc). */
-function buildOverspeedSteps(get: Get): CascadeStep[] {
+ *  (composition figée au début du jour, comme les autres étapes de tronc). Exportée pour test direct
+ *  (#524) : le référent M lit `sea.modeToday`, jamais recalculable depuis le seul `apply('progression')`
+ *  qui écrase ce champ à sa propre politique. */
+export function buildOverspeedSteps(get: Get): CascadeStep[] {
   const n = Math.max(1, Math.round(Number(rule('sea-overspeed-tests-per-day'))));
   const out: CascadeStep[] = [];
   for (let i = 0; i < n; i++) {
@@ -781,7 +793,7 @@ export function buildSeaPlan(
 function cruiseM(hull: Combatant): number {
   if (shipHasNavalTrait(hullTraits(hull), 'propulsion-a-vapeur')) return 4;
   const vd = findVehicleById(hull.creatureId ?? '')?.ship;
-  return Math.max(1, vd?.sail?.m ?? vd?.oars?.m ?? 1);
+  return Math.max(1, vesselPropulsion(vd)?.m ?? 1);
 }
 
 /** Appareille en TRAVERSÉE RAPIDE (l.21-37) : construit un plan `sea.fast` (jamais la boucle jour par
@@ -1130,7 +1142,7 @@ function applySeaProgress(get: Get, set: Set, progressionDR: number): string[] {
   // `eventMMod` consommé (« Vents favorables » : +1 M sur UNE journée de route) — `effMToday` PERSISTE le
   // M effectif qui a servi à CETTE Progression, pour que le Test de survitesse (#443) le lise sans le
   // recalculer après coup (un recalcul manquerait le bonus déjà consommé de la journée).
-  patchSea(get, set, { milesToday: miles, eventMMod: undefined, effMToday: eff.m });
+  patchSea(get, set, { milesToday: miles, eventMMod: undefined, effMToday: eff.m, modeToday: eff.mode ?? undefined });
   return [`Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`];
 }
 

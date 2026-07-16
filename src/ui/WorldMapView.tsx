@@ -17,6 +17,7 @@ import { Coins } from './Coins';
 import { rule } from '../engine/policy';
 import { forcePaceDifficulty } from '../engine/seaNavigation';
 import { shipHasNavalTrait } from '../engine/navalTraits';
+import { vesselPropulsion } from '../engine/shipBuild';
 import { DIFFICULTY_LABELS } from '../engine/types';
 import { TravelRolesPanel } from './TravelRolesPanel';
 import { ShipRolesPanel } from './ShipRolesPanel';
@@ -171,9 +172,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const vessel = useGame((s) => s.vessel);
   const vesselData = vessel ? findVehicleById(vessel.vehicleId) : undefined;
   const vesselLabel = vessel?.name ?? vesselData?.label ?? ''; // #230 — nom d'instance prioritaire
-  const seaM = (vessel?.wounds == null || vessel.wounds.current > 0) ? (vesselData?.ship?.sail?.m ?? vesselData?.ship?.oars?.m ?? 0) : 0;
+  const seaPropulsion = vesselPropulsion(vesselData?.ship);
+  const seaM = (vessel?.wounds == null || vessel.wounds.current > 0) ? (seaPropulsion?.m ?? 0) : 0;
   // Forcer le rythme (MDG 13 l.95-107) : +1 M voile/avirons, +2 M avirons seulement — rien à la vapeur (ch.12 l.311).
-  const seaRig: 'voile' | 'avirons' = vesselData?.ship?.sail ? 'voile' : 'avirons';
+  const seaRig: 'voile' | 'avirons' = seaPropulsion?.mode ?? 'avirons';
   const seaSteam = !!vessel && shipHasNavalTrait([...(vesselData?.ship?.traits ?? []), ...(vessel.upgrades ?? [])], 'propulsion-a-vapeur');
   const seaPaceChoices = seaSteam || !(vesselData?.ship?.sail || vesselData?.ship?.oars) ? [0] : [0, 1, 2].filter((b) => b === 0 || forcePaceDifficulty(b, seaRig) != null);
   // Surcharge de la cale (MDG 12 l.70-75) : >150 % = « Impossible de prendre la mer » → appareillage bloqué.

@@ -4,6 +4,7 @@ import { makePregens } from '../data/pregens';
 import {
   buildSeaPlan, portRepairVessel, portInstallUpgrade, runSeaDay, continueSeaDayAfterCascade,
   resolvePortArrival, resolveManannPriest, resolveShoreLeave, damageVesselHull, healVesselHull,
+  buildOverspeedSteps,
 } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import { subtract, toBrass, fromBrass } from '../engine/money';
@@ -1446,5 +1447,42 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     planWithSea(5);
     const out = apply('progression', 2, true);
     expect(out?.insert?.filter((s) => s.kind === 'sea-overspeed').length).toBe(2);
+  });
+
+  // Navire MIXTE : Langskip (sail.m 4, oars.m 6, distincts — #524). Le référent M de conception DOIT
+  // suivre le mode PERSISTÉ du jour (`sea.modeToday`), jamais la voile par défaut.
+  function planLangskip(modeToday: 'voile' | 'avirons', effMToday: number) {
+    set({ vessel: { ...get().vessel!, vehicleId: 'langskip' } });
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    const sea = { ...plan.sea!, milesToday: 1, effMToday, modeToday };
+    set({ travelPlan: { ...plan, sea } });
+    return plan;
+  }
+
+  it('navire MIXTE, modeToday=avirons → bande de survitesse calculée sur oars.m (Langskip : sail.m 4, oars.m 6)', () => {
+    planLangskip('avirons', 11); // oars.m 6 → M+5 (safeBonus 4)
+    const [st] = buildOverspeedSteps(get);
+    expect(st).toBeTruthy();
+    expect(st!.label).toContain('M+5');
+    expect(st!.meta?.overspeedDamage).toBe(overspeedRow(6, 11)!.damage);
+  });
+
+  it('navire MIXTE, modeToday=voile → bande de survitesse calculée sur sail.m (Langskip : sail.m 4, oars.m 6)', () => {
+    planLangskip('voile', 11); // sail.m 4 → M+7
+    const [st] = buildOverspeedSteps(get);
+    expect(st).toBeTruthy();
+    expect(st!.label).toContain('M+7');
+    expect(st!.meta?.overspeedDamage).toBe(overspeedRow(4, 11)!.damage);
+  });
+
+  it('navire à AVIRONS SEULS (Chaloupe, sail absent) → référent avirons même sans `modeToday` persisté (repli `vesselPropulsion`)', () => {
+    set({ vessel: { ...get().vessel!, vehicleId: 'chaloupe' } });
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    const sea = { ...plan.sea!, milesToday: 1, effMToday: 9 }; // oars.m 3 → M+6, pas de modeToday
+    set({ travelPlan: { ...plan, sea } });
+    const [st] = buildOverspeedSteps(get);
+    expect(st).toBeTruthy();
+    expect(st!.label).toContain('M+6');
+    expect(st!.meta?.overspeedDamage).toBe(overspeedRow(3, 9)!.damage);
   });
 });
