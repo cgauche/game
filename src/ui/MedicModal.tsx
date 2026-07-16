@@ -16,6 +16,7 @@ import { bestHealerFor } from '../state/medicFlow';
 import { toMoney } from '../engine/money';
 import { DIFFICULTY_LABELS, type Combatant } from '../engine/types';
 import { Icon } from './Icon';
+import { healSubtitleLabel } from './healSubtitle';
 
 const ACT_META: Record<HealMode, { icon: ReactNode; label: string }> = {
   wounds: { icon: <Icon id="journal/heal" size="sm" />, label: 'Soigner les Blessures' },
@@ -104,7 +105,7 @@ function SurgeryRollFlow() {
       subtitle={
         <>
           <strong>{ps.healerName}</strong> {recovery ? 'rééduque' : 'opère'} <strong>{ps.targetName}</strong>{' '}
-          <span className="rm-weapon">(Guérison, {DIFFICULTY_LABELS[ps.difficulty]})</span>
+          <span className="rm-weapon">({healSubtitleLabel(ps.difficulty)})</span>
         </>
       }
       rows={[actorRow]}
