@@ -370,7 +370,7 @@
 | 06 | Kraka Ravnsvake | ➖ hors-règle | |
 | 07 | La côte des Skaelings | ✅ | 24 (carrieres.md ×24) |
 | 08 | La côte des Bjornlings | ➖ hors-règle | |
-| 09 | La classe Côtier | ✅ | 33 (carrieres.md ×32) |
+| 09 | La classe Côtier | ✅ | 32 (carrieres.md ×32) |
 | 10 | Le culte de Manann | ✅ | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | ✅ | 1 (religion.md ×1) |
 | 12 | Navires et construction navale | ✅ | 129 (equipement.md ×60) |

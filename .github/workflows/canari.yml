@@ -36,6 +36,7 @@ jobs:
       - run: npm run test:raw
       - run: npm run raw:check-refs
       - run: npm run raw:reanchor
+      - run: npm run raw:check-implemente
       - run: npm --prefix server ci
       - name: Audit sécurité server (échoue sur high/critical)
         run: npm --prefix server audit --audit-level=high
