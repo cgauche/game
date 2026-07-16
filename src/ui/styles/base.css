@@ -167,6 +167,9 @@
                                     sont pas les mêmes » — le bas reste `--atelier-night`. */
   --atelier-shell-hi: #1a130c; /* haut de la coquille d'atelier (`.dirC` planche) — le SOL de l'écran */
   --atelier-shell-lo: #0a0705; /* bas de la coquille d'atelier */
+  --atelier-modal-lo: #0c0805; /* bas du dégradé de matière MODALE (`.sheet-modal` planche-fiche-perso
+                                  l.108-109, #414) — même haut que `--atelier-shell-hi`, bas distinct
+                                  d'1-2 valeurs 8-bit (authoring), pas un doublon de `--atelier-shell-lo` */
   --atelier-crank-hi: #3a2c15; /* haut de la manivelle laiton `[−]`/`[+]` (`.crank button` planche) */
   --atelier-crank-lo: #1c130b; /* bas de la manivelle laiton (la planche écrit #1c130a pour l'encrier
                                   `--atelier-dicewell-lo` et #1c130b ici : 1/255 d'écart, deux valeurs

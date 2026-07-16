@@ -54,6 +54,9 @@ const PRICE_PA_ARMOR_EXEMPT = new Set([
   'creator/CharacterCreator.tsx',
   'editor/GameOpEditor.tsx',
   'EquipmentPanel.tsx',
+  // #492 Lot 1b : `ActiveEffectsPanel`/`describeEffect` (« PA (toutes Localisations) », Points
+  // d'Armure) déplacés tels quels de CharacterSheet.tsx — même faux positif, même exemption.
+  'EtatPanel.tsx',
 ]);
 const PRICE_BASELINE: Record<string, number> = {};
 
@@ -235,6 +238,7 @@ const DOMAIN_CSS_MODULES = [
   'celestial-wheel',
   'creator-presentation',
   'creator-shell',
+  'test-scenarios',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -382,7 +386,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,
-  'styles/sheet.css': 91,
+  // #492 Lot 1b : -9 (91 → 82) — extraction du bloc `.test-scenarios`/`.ts-*` (SON module dédié,
+  // aucun rapport avec la fiche) ; +5 (82 → 87) — onglet État rédigé, silhouette organisatrice
+  // (`.etat-body`/`-zones`/`-zone`/`-ras`/`.ras-title`, tonalité en attribut `data-tone` — pas de
+  // classe par ton). Net -4.
+  'styles/sheet.css': 87,
+  // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
+  'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
   'styles/world-meta.css': 133,
   'styles/city-hub.css': 18,
@@ -480,7 +490,9 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // `.hero-present-chips` repassent mono-consommateur — le détail candidat compose désormais `SkillChip`/
   // `TalentChip`/`EntityRef` + `.skill-tags` (recalage utilisateur 2026-07-14, primitives de fiche vivante)
   'styles/components.css': 11,
-  'styles/tabs.css': 1,
+  // +1 (#414 lot « matière modale + onglets ») : `.tabq` (ligne-question de l'onglet actif,
+  // prop `question` de `Tabs.tsx`) — mono-consommateur comme `.tabs-trailing` déjà toléré.
+  'styles/tabs.css': 2,
   'styles.css': 6,
 };
 

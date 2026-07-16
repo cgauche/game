@@ -1,6 +1,17 @@
 /* ── Tabs — contrôle HORS tablist ───────────────────────────────────────────
    Le markup/comportement et la présentation UNIQUE (#414 : la prop `variant` a été tuée, arbitrage
    utilisateur — « je ne vois pas l'intérêt d'en avoir plus que 1 ») vivent dans la primitive canonique
-   `components.css` (`.tabs`/`.tab-btn`, à côté de `.chip`/`.count`). Ici : le seul élément composé
-   HORS tablist par `src/ui/Tabs.tsx` (prop `trailing`). */
+   `components.css` (`.tabs`/`.tab-btn`, à côté de `.chip`/`.count`). Ici : les éléments composés
+   HORS tablist par `src/ui/Tabs.tsx` (`trailing` et la ligne-question `question`/`.tabq`, #414). */
 .tabs-trailing { margin-left: auto; }
+
+/* Ligne-question de l'onglet ACTIF (#414, planche-fiche-perso.html l.195, prop `question` de
+   `Tabs.tsx`) : sous-titre italique qui nomme ce que l'onglet répond — posé sous la barre, jamais
+   dans `components.css` (élément composé HORS tablist, même famille que `.tabs-trailing`). */
+.tabq {
+  font-size: 11px;
+  color: var(--atelier-brass-meta);
+  font-style: italic;
+  margin: -2px 0 3px;
+  padding-left: 2px;
+}

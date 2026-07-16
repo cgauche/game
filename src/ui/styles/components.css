@@ -259,6 +259,16 @@ button.chip:hover {
   background: color-mix(in srgb, var(--gold) 16%, transparent);
   color: var(--gold2);
 }
+/* Variantes de TON (#492 bande d'alarmes) : un chip qui SIGNALE prend la gravité, jamais une couleur
+   inline — `.tone-warn` (or) reprend `.warn-text` (creator.css), `.tone-danger` le rouge d'alerte. */
+.chip.tone-warn {
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+.chip.tone-danger {
+  border-color: var(--danger);
+  color: var(--danger-soft);
+}
 .count {
   font-size: 11px;
   min-width: 18px;
@@ -320,15 +330,22 @@ button.chip:hover {
   padding-bottom: 96px;
   background: rgba(0, 0, 0, 0.28);
 }
+/* Matière « Atelier du scribe » (#414, planche-fiche-perso.html l.105-110, `.sheet-modal`) : halo or
+   radial en tête + dégradé bois froid, bandeau or de tête, bordures chaudes, ombre profonde. TOUTE
+   modale hérite du bandeau — `.sheet-modal` (sheet.css) ne le redéclare plus (doublon identique). */
 .modal {
   position: relative; /* ancre la scène centrale du roulis de dés (#396, `.rm-scene`) */
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background:
+    radial-gradient(520px 300px at 50% 0%, rgba(224, 181, 90, 0.07), transparent 62%),
+    linear-gradient(160deg, var(--atelier-shell-hi), var(--atelier-modal-lo));
+  border: 1px solid var(--atelier-wood-liseret);
+  border-top: 4px solid var(--gold);
   border-radius: 14px;
   padding: 22px;
   width: min(520px, 94vw); /* jamais plus large que l'écran (mobile : pas de débord horizontal) */
   max-height: 86vh;
   overflow: auto;
+  box-shadow: 0 40px 110px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.5);
 }
 .modal.wide {
   width: min(760px, 94vw);

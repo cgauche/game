@@ -17,7 +17,9 @@ export interface TabItem<K extends string = string> {
  * WAI-ARIA Tabs). Une seule présentation chartée « Atelier du scribe » [entériné 2026-07-14, #414] :
  * « Disons que je ne vois pas l'intérêt d'en avoir plus que 1 » — la prop `variant` est morte.
  * `trailing` reçoit un contrôle HORS tablist (ex. replier/déplier le dock), rendu après les onglets
- * dans la même rangée.
+ * dans la même rangée. `question` (#414, planche-fiche-perso.html l.183-195, consommateur : fiche
+ * de personnage #492) rend la ligne-question de l'onglet ACTIF (`.tabq`) sous la barre — le sous-titre
+ * en italique qui nomme ce que cet onglet répond (« que sais-je faire ? »…).
  */
 export function Tabs<K extends string>({
   tabs,
@@ -26,6 +28,7 @@ export function Tabs<K extends string>({
   trailing,
   className,
   label,
+  question,
 }: {
   tabs: TabItem<K>[];
   /** Onglet actif ; `null` = aucun sélectionné (ex. dock replié). */
@@ -35,6 +38,8 @@ export function Tabs<K extends string>({
   className?: string;
   /** `aria-label` du tablist — à fournir quand le titre de l'écran ne le porte pas déjà. */
   label?: string;
+  /** Ligne-question de l'onglet actif (`.tabq`), rendue sous la barre — optionnelle. */
+  question?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -52,28 +57,31 @@ export function Tabs<K extends string>({
     ref.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
   };
   return (
-    <div
-      ref={ref}
-      role="tablist"
-      aria-label={label}
-      className={`tabs${className ? ` ${className}` : ''}`}
-      onKeyDown={onKeyDown}
-    >
-      {tabs.map((t, i) => (
-        <button
-          key={t.key}
-          type="button"
-          role="tab"
-          aria-selected={active === t.key}
-          tabIndex={active === t.key || (active == null && i === 0) ? 0 : -1}
-          className={`tab-btn${active === t.key ? ' active' : ''}${t.alert ? ' alert' : ''}`}
-          onClick={() => onChange(t.key)}
-        >
-          {t.label}
-          {t.count != null && <span className="count">{t.count}</span>}
-        </button>
-      ))}
-      {trailing}
-    </div>
+    <>
+      <div
+        ref={ref}
+        role="tablist"
+        aria-label={label}
+        className={`tabs${className ? ` ${className}` : ''}`}
+        onKeyDown={onKeyDown}
+      >
+        {tabs.map((t, i) => (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            aria-selected={active === t.key}
+            tabIndex={active === t.key || (active == null && i === 0) ? 0 : -1}
+            className={`tab-btn${active === t.key ? ' active' : ''}${t.alert ? ' alert' : ''}`}
+            onClick={() => onChange(t.key)}
+          >
+            {t.label}
+            {t.count != null && <span className="count">{t.count}</span>}
+          </button>
+        ))}
+        {trailing}
+      </div>
+      {question && <p className="tabq">{question}</p>}
+    </>
   );
 }
