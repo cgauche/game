@@ -2,10 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { findStructureById } from './index';
 
 /**
- * Catalogue AA « Tableau des Structures Courantes » (AA 10 l.26-92, VERBATIM) — 18 entrées ajoutées
+ * Catalogue AA « Tableau des Structures Courantes » (AA 10 l.26-92, VERBATIM) — 19 entrées ajoutées
  * au catalogue `structures.json` (5 colonnes ENC / Limite d'Encombrement / Endurance / Blessures /
  * Pénalité de Couvert, DISTINCT du profil ADE II ch.08 à 2 colonnes BE/B). `BE` se dérive de
  * l'Endurance BRUTE de la table par troncature à la dizaine (convention Bonus = dizaines).
+ * « Mur de pierre » (AA 10 l.47) coexiste avec « mur-en-pierre » (ADE II, BE 12/B 40, Impénétrable) :
+ * collision de livres à valeurs DIVERGENTES, résolue par coexistence sourcée (#450), pas par tranchage.
  */
 describe('Structures AA (AA 10 l.26-92)', () => {
   it('Mur de château : ENC N/A, Limite 150, Endurance 65 → BE 6, Blessures 100, Couvert Très Difficile', () => {
@@ -46,12 +48,26 @@ describe('Structures AA (AA 10 l.26-92)', () => {
     expect(findStructureById('solide-porte-en-bois')!.couvertPenalty).toBeUndefined();
   });
 
+  it('Mur de pierre (AA) : Limite 100, Endurance 60 → BE 6, Blessures 50, Couvert Difficile — coexiste avec mur-en-pierre (ADE II)', () => {
+    const aa = findStructureById('mur-de-pierre-aa')!;
+    expect(aa.encLimit).toBe(100);
+    expect(aa.char).toEqual({ BE: 6, B: 50 });
+    expect(aa.couvertPenalty).toBe('difficile');
+    expect(aa.kind).toBe('mur');
+    expect(aa.source).toEqual({ book: 'aux-armes', chapter: 10 });
+
+    const adeII = findStructureById('mur-en-pierre')!;
+    expect(adeII.char).toEqual({ BE: 12, B: 40 });
+    expect(adeII.source).toEqual({ book: 'archives-de-l-empire-2', chapter: 8 });
+  });
+
   it("Solide porte en bois : SEULE nouvelle entrée AA de kind 'porte' (Bélier applicable)", () => {
     const ids = ['charrette', 'chariot-leger', 'chariot-moyen', 'chariot-lourd', 'diligence',
       'barge-moyenne', 'bateau-de-patrouille', 'chaloupe', 'cloture-en-clayonnage', 'herse',
       'mantelet-de-bois', 'mur-a-ossature-en-bois', 'mur-de-chateau', 'mur-de-forteresse-naine',
-      'mur-en-pierres-seches', 'palissade-de-pieux', 'solide-porte-en-bois', 'terrassement'];
-    expect(ids).toHaveLength(18);
+      'mur-de-pierre-aa', 'mur-en-pierres-seches', 'palissade-de-pieux', 'solide-porte-en-bois',
+      'terrassement'];
+    expect(ids).toHaveLength(19);
     for (const id of ids) {
       const s = findStructureById(id);
       expect(s, `${id} manquant`).toBeTruthy();
