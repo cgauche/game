@@ -39,10 +39,21 @@ const DEFAULT_VISAGE: string[] = [
 // (Les CHEVEUX, eux, portent leurs vues DANS leur def — HairArt — plus d'art générique partagé.)
 // =========================================================================================
 
-// Nuque/cou vus de dos (le crâne est couvert par les cheveux de la coiffure) — un peu d'oreille.
+// Nuque/cou vus de dos (le crâne est couvert par les cheveux de la coiffure, la base se fond vers
+// le col de la tenue) — cylindre modelé (galbe + ombre portée des cheveux + tendons), PAS un
+// trapèze plat : bande exposée entre le bas des cheveux et le col, qui se lit comme un COU.
 const BACK_NAPE =
-  '<path d="M-3.8 11 Q0 13.4 3.8 11 L3.2 17.5 Q0 19.2 -3.2 17.5Z" fill="@peau"/>' +
-  '<path d="M-3.6 12.4 Q0 14 3.6 12.4" stroke="@peauO" stroke-width="0.5" fill="none" opacity="0.5"/>';
+  // silhouette arrondie (coins galbés, pas de coin droit)
+  '<path d="M-3.6 11.2 Q0 13.2 3.6 11.2 Q4.2 14.4 3.4 17.6 Q0 19.6 -3.4 17.6 Q-4.2 14.4 -3.6 11.2Z" fill="@peau"/>' +
+  // ombre portée par les cheveux, juste sous la ligne d'implantation (fondu, pas un trait net)
+  '<path d="M-3.6 11.2 Q0 13.2 3.6 11.2 Q3.1 12.6 0 13.1 Q-3.1 12.6 -3.6 11.2Z" fill="@peauO" opacity="0.5"/>' +
+  // volume cylindrique : flancs ombrés vers les oreilles
+  '<path d="M-3.6 11.2 Q-4.2 14.4 -3.4 17.6 Q-3.9 14.6 -3 12Z" fill="@peauO" opacity="0.35"/>' +
+  '<path d="M3.6 11.2 Q4.2 14.4 3.4 17.6 Q3.9 14.6 3 12Z" fill="@peauO" opacity="0.35"/>' +
+  // reflet central (galbe de la nuque)
+  '<path d="M-0.9 13.2 Q0 12.8 0.9 13.2 Q1 15.4 0.6 17.4 L-0.6 17.4 Q-1 15.4 -0.9 13.2Z" fill="@peauH" opacity="0.4"/>' +
+  // tendons / creux de la base du crâne (fondu vers le col)
+  '<path d="M-2.4 16.8 Q0 17.8 2.4 16.8" stroke="@peauO" stroke-width="0.4" fill="none" opacity="0.3"/>';
 
 // VISAGE de PROFIL générique (tokens) : silhouette de côté propre — front, arête du nez, lèvres,
 // menton, un œil, une oreille. Remplace l'art headViews profil (hardcodé, déformé). Regarde +x.
