@@ -593,7 +593,11 @@ Les autres règles Hémorragique (dégâts périodiques 1 PB/pion, jet de mort 1
 - `AA l.2451-2460` — variante complète Hémorragique : test Résistance avant inconscience, Test Guérison (+20)
 
 **Voir aussi** : Hémorragique (section principale ci-dessus), Traumatisme
-**Implémente** : `src/engine/conditions.ts` — la variante AA n'est **pas implémentée** ; l'implémentation suit le LDB 16 (inconscience directe à 0 PB si Hémorragique). Le seuil `bleedDeathRoll` est conforme LDB 16.
+**Implémente** : les deux différences sont branchées sur la règle optionnelle `combat-aa-blessures`
+(`src/engine/policy.ts:202-210`, défaut `ldb`). Résistance-avant-Inconscience : `src/state/combat/roundHooks.ts:151-191`
+(`aaBleedUnconsciousDue`/`aaBleedUnconsciousApply`, hook `aa-bleed-unconscious`) +
+`src/engine/conditions.ts:632-646` (`tickDeath` neutralise l'inconscience automatique LDB en mode `aa`).
+Difficulté du Test de Guérison : `src/state/combatSlice.ts` (`healDifficulty`, `battleHeal`/`healSetMode`).
 
 ---
 

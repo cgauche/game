@@ -6,6 +6,7 @@ import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
 import type { HitLocation } from '../engine/types';
 const tk = (k: 'dechirure' | 'fracture', s: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, s, loc), opts, loc);
 import { seedBattleRng } from './battleRng';
+import { setRule, resetRule } from '../engine/policy';
 
 function hero(p: Partial<Combatant>): Combatant {
   return {
@@ -96,6 +97,48 @@ describe('Guérison — flux combat', () => {
     const k = useGame.getState().battle!.combatants.find((c) => c.id === 'ko')!;
     expect(k.wounds.current).toBeGreaterThan(0);
     expect(k.conditions.find((c) => c.name === 'inconscient')).toBeUndefined();
+  });
+
+  it('battleHeal : difficulté du retrait d’Hémorragique — Intermédiaire (+0) en LDB, Accessible (+20) en variante AA (AA 07 l.9)', () => {
+    const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, conditions: [{ name: 'hemorragique', value: 2 }], pos: { x: 2, y: 1 } });
+    setBattle([doc, t], 'doc');
+    useGame.getState().battleHeal('al', 'bleed');
+    expect(useGame.getState().pendingHeal!.difficulty).toBe('intermediaire'); // mode LDB par défaut
+    useGame.setState({ pendingHeal: null });
+
+    try {
+      setRule('combat-aa-blessures', 'aa');
+      useGame.getState().battleHeal('al', 'bleed');
+      expect(useGame.getState().pendingHeal!.difficulty).toBe('accessible');
+      expect(useGame.getState().pendingHeal!.target).toBe(useGame.getState().pendingHeal!.skillValue + 20);
+    } finally { resetRule('combat-aa-blessures'); }
+  });
+
+  it('battleHeal : le soin de Blessures reste Intermédiaire (+0) en variante AA — seul le retrait d’Hémorragique change', () => {
+    const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, pos: { x: 2, y: 1 } });
+    setBattle([doc, t], 'doc');
+    try {
+      setRule('combat-aa-blessures', 'aa');
+      useGame.getState().battleHeal('al', 'wounds');
+      expect(useGame.getState().pendingHeal!.difficulty).toBe('intermediaire');
+    } finally { resetRule('combat-aa-blessures'); }
+  });
+
+  it('healSetMode : recalcule la difficulté au changement de mode (variante AA)', () => {
+    const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, conditions: [{ name: 'hemorragique', value: 2 }], pos: { x: 2, y: 1 } });
+    setBattle([doc, t], 'doc');
+    try {
+      setRule('combat-aa-blessures', 'aa');
+      useGame.getState().battleHeal('al', 'wounds');
+      expect(useGame.getState().pendingHeal!.difficulty).toBe('intermediaire');
+      useGame.getState().healSetMode('bleed');
+      expect(useGame.getState().pendingHeal!.difficulty).toBe('accessible');
+      useGame.getState().healSetMode('wounds');
+      expect(useGame.getState().pendingHeal!.difficulty).toBe('intermediaire');
+    } finally { resetRule('combat-aa-blessures'); }
   });
 
   it('healConfirm (bleed) : arrête l’hémorragie sans consommer la limite de soin', () => {

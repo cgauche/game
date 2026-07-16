@@ -16,7 +16,7 @@ import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
 import { continueRestNights } from './restFlow';
 import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './riverVoyageFlow';
-import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
+import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type Difficulty, type FireArc } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
 import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart } from './combatFlow';
@@ -265,6 +265,13 @@ function advanceCombatJet(get: () => GameState): void {
   const jet = seq?.purpose === 'combat' ? seq.participants[seq.cursor]?.jet : undefined;
   if ((jet === 'attack' || jet === 'trample')
     && !get().pendingAttack && !get().pendingTrample && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
+}
+
+/** Difficulté du Test de Guérison selon le mode de soin. Blessures : Intermédiaire (+0, LDB 09 l.243)
+ *  toujours. Hémorragie : Accessible (+20) en variante `combat-aa-blessures: 'aa'` (Aux Armes 07 l.9),
+ *  Intermédiaire (+0) sinon (LDB, comportement par défaut inchangé). */
+function healDifficulty(mode: HealMode): Difficulty {
+  return mode === 'bleed' && rule('combat-aa-blessures') === 'aa' ? 'accessible' : 'intermediaire';
 }
 
 /** Applique l'issue d'« Au Contact » (LDB 62 l.176) : pose/retire l'état au contact selon le choix du
@@ -2616,6 +2623,9 @@ export function createCombatSlice(get: Get, set: Set) {
     },
 
     // ── Guérison (LDB 09-Compétences l.226-243) — soin de Blessures / arrêt d'Hémorragie ──
+    // Variante AA (Aux Armes 07 l.9) : retirer un État Hémorragique passe par un Test de Guérison
+    // Accessible (+20) au lieu d'Intermédiaire (+0) — le soin de Blessures reste Intermédiaire dans
+    // les deux versions. Gaté par la règle optionnelle `combat-aa-blessures` (policy.ts).
 
     battleHeal: (targetId: string, mode: HealMode) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
@@ -2626,25 +2636,27 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = inBattleId(battle, targetId);
       if (!target || !availableHealModes(target).includes(mode)) return;
       const skillValue = testValue(healer, 'guerison');
+      const difficulty = healDifficulty(mode);
       set({
         pendingHeal: {
           healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
           mode, intBonus: bonus(effectiveChar(healer, 'intelligence')),
-          skillValue, difficulty: 'intermediaire', target: skillValue, roll: null, success: false, sl: 0,
+          skillValue, difficulty, target: skillValue + DIFFICULTY_MODIFIERS[difficulty], roll: null, success: false, sl: 0,
         },
         battle: { ...battle, action: null },
       });
     },
 
     /** Pré-jet : bascule le MODE de soin (Blessures ⇄ Hémorragie) dans la modale, tant que le dé n'a
-     *  pas été lancé. Le Test (Guérison Intermédiaire +0) est identique — seul l'effet appliqué au succès
-     *  change → on ne touche QUE `mode`. */
+     *  pas été lancé. La Difficulté dépend du mode (variante AA, cf. `healDifficulty`) → recalculée avec
+     *  `mode`. */
     healSetMode: (mode: HealMode) => {
       const ph = get().pendingHeal;
       if (!ph || ph.roll != null) return;
       const target = actorIn(get(), ph.targetId);
       if (!target || !availableHealModes(target).includes(mode)) return;
-      set({ pendingHeal: { ...ph, mode } });
+      const difficulty = healDifficulty(mode);
+      set({ pendingHeal: { ...ph, mode, difficulty, target: ph.skillValue + DIFFICULTY_MODIFIERS[difficulty] } });
     },
 
     // ── Infirmerie (hors combat) : modale de soins PERSISTANTE — cf. state/medicFlow ──
