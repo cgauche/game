@@ -38,7 +38,7 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * d'Avantage porté par `applyFreeAttack`, donc son propre `set()`).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 708, totalAdHocResets: 285 }; // +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks)
+const BASELINE = { totalCalls: 709, totalAdHocResets: 286 }; // +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks) ; +1/+1 (#476 : toggle harpoonRopeCut, set + reset du pendingAttack)
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {
