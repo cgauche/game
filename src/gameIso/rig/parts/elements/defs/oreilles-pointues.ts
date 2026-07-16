@@ -1,4 +1,5 @@
 import type { AppearanceElement } from '../types';
+import { LAYER_OVER_CHEVEUX_UNDER_COIFFE } from '../../../bones';
 
 // Oreilles pointues aux tempes (elfes) — tell de l'elfe, couleur @peau.
 // Vues ÉCLATÉES (patron des cornes, cf. docs/creer-une-creature.md §4) : paire de face ET de
@@ -31,8 +32,8 @@ const PROFIL =
 export const element: AppearanceElement = {
   key: 'oreilles-pointues', label: 'Oreilles pointues', category: 'trait',
   overlays: [
-    { bone: 'tete', svg: PAIRE_FACE, scale: 'bone', layer: 3, view: 'front' },
-    { bone: 'tete', svg: PAIRE_DOS, scale: 'bone', layer: 3, view: 'back' },
-    { bone: 'tete', svg: PROFIL, scale: 'bone', layer: 3, view: 'profile' },
+    { bone: 'tete', svg: PAIRE_FACE, scale: 'bone', layer: LAYER_OVER_CHEVEUX_UNDER_COIFFE, view: 'front' },
+    { bone: 'tete', svg: PAIRE_DOS, scale: 'bone', layer: LAYER_OVER_CHEVEUX_UNDER_COIFFE, view: 'back' },
+    { bone: 'tete', svg: PROFIL, scale: 'bone', layer: LAYER_OVER_CHEVEUX_UNDER_COIFFE, view: 'profile' },
   ],
 };

@@ -56,6 +56,12 @@ export const SLOT_LAYER: Record<Slot, number> = {
   bouclier: 0, arme: 0,
 };
 
+/** Calque d'un overlay de tête qui DÉPASSE des cheveux (ex. oreilles pointues d'elfe) mais doit
+ *  rester COUVERT par une coiffe de tenue (heaume/capuche) : entre `cheveux` et `tete` (la coiffe).
+ *  Réel (pas un rang entier) — le tri du peintre (`composeRig.tsx`) compare des `number`, aucune
+ *  contrainte d'entier ; nommé pour éviter le nombre magique qui n'a pas de place entière ici. */
+export const LAYER_OVER_CHEVEUX_UNDER_COIFFE = (SLOT_LAYER.cheveux + SLOT_LAYER.tete) / 2;
+
 /** Une part de slot peut porter DEUX composantes optionnelles pliées dans la MÊME chaîne SVG
  *  (elles traversent ainsi la résolution par vue sans champ dédié) :
  *  `chute` + SEP_CHUTE + `arrière` + SEP_BEHIND + `principal`.
