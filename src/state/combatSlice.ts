@@ -2079,6 +2079,11 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!pa || pa.result) return; // choix avant le jet seulement
       set({ pendingAttack: { ...pa, heldGround: v } });
     },
+    attackSetHarpoonRopeCut: (v: boolean) => {
+      const pa = get().pendingAttack;
+      if (!pa || pa.result) return; // choix avant le jet seulement (mode de tir, ADE II 02 l.677)
+      set({ pendingAttack: { ...pa, harpoonRopeCut: v } });
+    },
     attackSetWithhold: (v: boolean) => {
       const pa = get().pendingAttack;
       if (!pa || pa.result) return; // « Retenir ses coups » se déclare AVANT le jet (Aux Armes l.2503)
@@ -2102,7 +2107,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = inBattleId(battle, pa.targetId);
       if (!attacker || !target) return;
       applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-      const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid, pa.withhold); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223) ; pa.withhold = Retenir ses coups (AA)
+      const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid, pa.withhold, pa.harpoonRopeCut); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223) ; pa.withhold = Retenir ses coups (AA) ; pa.harpoonRopeCut = mode de tir corde séparée (ADE II 02 l.677)
       if (!r) {
         get().log(firedWeapon(attacker, target, pa.weaponUid).type === 'ranged' ? t('cf.noLoSMasked') : t('cs.meleeOutOfRange'));
         set({ pendingAttack: null });

@@ -299,6 +299,11 @@ export interface PendingAttack {
    *  en bougeant » (LDB 14 l.101) MAIS consomme son Mouvement (cf. attackConfirm). Proposé seulement s'il
    *  n'a pas déjà bougé. */
   heldGround?: boolean;
+  /** Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : le joueur choisit de tirer sans la
+   *  corde AVANT le jet — `weaponContextOf` en dérive `WeaponContext.harpoonRopeCut` (Portée 60, perte de
+   *  l'Atout Immobilisante, cf. `effectiveWeapon`). Proposé seulement si l'arme tirée porte la capacité
+   *  `ItemCapabilities.ropeMode` (arbitrage user « mode de tir choisi », #476). */
+  harpoonRopeCut?: boolean;
   /** Réussite FORCÉE via « Je ne faillirai pas ! » (Résilience, LDB 17 l.73) : débloque, sur un Coup
    *  Critique, le choix de la Localisation (cf. `critLocation` du résultat). */
   forced?: boolean;

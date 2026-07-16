@@ -41,6 +41,9 @@ import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 import type { CodexFocus } from './codexFocus';
 
+/** Onglets de la fiche de personnage (`CharacterSheet.tsx`) — id STABLE, jamais un libellé. */
+export type SheetTab = 'etat' | 'possessions' | 'competences' | 'magie' | 'avancement' | 'histoire';
+
 /** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
  *  JSON round-trip écarte les fonctions) + données de la save par-dessus, écran campagne.
  *  Le merge partiel de zustand préserve les actions du store. */
@@ -285,6 +288,17 @@ export interface GameState extends RollFlowActionsMap {
    *  le token sur la carte ouvrent la même inspection (clic non-actionnable). null = panneau fermé. */
   inspectId: string | null;
   setInspectId: (id: string | null) => void;
+  /** Fiche de personnage OUVERTE (`CharacterSheet.tsx`) — héros courant, partagé entre les hôtes
+   *  (CampaignView/PartyScreen) pour que le switch de héros survive à leurs remontages respectifs.
+   *  null = fiche fermée. UI éphémère, non sérialisée (comme `inspectId`). */
+  sheetId: string | null;
+  setSheetId: (id: string | null) => void;
+  /** Onglet courant de la fiche — persiste à travers fermeture/réouverture (dernier onglet consulté). */
+  sheetTab: SheetTab | null;
+  setSheetTab: (tab: SheetTab | null) => void;
+  /** Position de scroll du corps d'onglet (`.sheet-tabbody`), par onglet — restaurée à l'affichage. */
+  sheetScroll: Partial<Record<SheetTab, number>>;
+  setSheetScroll: (tab: SheetTab, top: number) => void;
   /** Combattant SURVOLÉ depuis un PORTRAIT (frise/dock) — pilote, à parité du survol du token,
    *  le réticule de visée sur la carte ET le « peek » caméra (recadrage temporaire). Local (jamais
    *  réseau), read-only : actif même hors de son tour. null = aucun survol de portrait. */
@@ -943,6 +957,9 @@ export interface GameState extends RollFlowActionsMap {
   attackSetIntoCrowd: (v: boolean) => void;
   /** Tir immobile : bascule l'option « je ne bouge pas » (annule le −10 Tir en bougeant, consomme le Mouvement). */
   attackSetHeldGround: (v: boolean) => void;
+  /** Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : bascule le tir sans corde (Portée 60,
+   *  perte de l'Atout Immobilisante) — proposé seulement si l'arme porte `ItemCapabilities.ropeMode`. */
+  attackSetHarpoonRopeCut: (v: boolean) => void;
   /** « Retenir ses coups » (Aux Armes l.2503-2505) : bascule le coup non létal de mêlée (avant le jet). */
   attackSetWithhold: (v: boolean) => void;
   /** « Empoignade » (LDB 14 l.159) : bascule l'initiation d'Empoignade à mains nues (avant le jet). */
@@ -1472,6 +1489,12 @@ export const useGame = create<GameState>((set, get) => ({
   toggleInspectEnabled: () => set((s) => ({ inspectEnabled: !s.inspectEnabled })),
   inspectId: null,
   setInspectId: (id) => set((s) => (s.inspectId === id ? {} : { inspectId: id })),
+  sheetId: null,
+  setSheetId: (id) => set((s) => (s.sheetId === id ? {} : { sheetId: id })),
+  sheetTab: null,
+  setSheetTab: (tab) => set((s) => (s.sheetTab === tab ? {} : { sheetTab: tab })),
+  sheetScroll: {},
+  setSheetScroll: (tab, top) => set((s) => (s.sheetScroll[tab] === top ? {} : { sheetScroll: { ...s.sheetScroll, [tab]: top } })),
   hoverCombatantId: null,
   setHoverCombatant: (id) => set((s) => (s.hoverCombatantId === id ? {} : { hoverCombatantId: id })),
   combatCursor: null,

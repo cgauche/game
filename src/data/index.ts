@@ -438,6 +438,11 @@ export interface ItemCapabilities {
    *  période avec pénalité de -20). Lue par-objet (`itemCapability`), pas gatée sur le port : l'arme est
    *  fixée à la main qui la tient. */
   disarmImmune?: boolean;
+  /** Arme à corde séparable (Lance-harpon, ADE II 02 l.677 : « Si la corde est séparée de la flèche, la
+   *  portée passe à 60 et l'arme ne possède plus l'Atout Immobilisante ») — active le mode de tir
+   *  `WeaponContext.harpoonRopeCut` (`effectiveWeapon`, `state/combatFlow.ts` `weaponContextOf`), choisi
+   *  par le joueur avant le jet (`PendingAttack.harpoonRopeCut`). Lue par-objet (`itemCapability`). */
+  ropeMode?: boolean;
 }
 export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */

@@ -9,6 +9,7 @@ import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatDistance } from '../../state/footprint';
 import { firedWeapon, crowdEligible, previewAttack, previewDefense } from '../../state/combatFlow';
+import { itemCapability } from '../../engine/capabilities';
 import { attackModesFor } from '../../engine/combatFeatures/dispatch';
 import { CritLocationPicker } from '../ForcedRollPicker';
 import { DeterminationButton } from '../DeterminationButton';
@@ -44,6 +45,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const cancel = useGame((s) => s.attackCancel);
   const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
   const setHeldGround = useGame((s) => s.attackSetHeldGround);
+  const setHarpoonRopeCut = useGame((s) => s.attackSetHarpoonRopeCut);
   const setWithhold = useGame((s) => s.attackSetWithhold);
   const setGrapple = useGame((s) => s.attackSetGrapple);
   const setCritLocation = useGame((s) => s.attackSetCritLocation);
@@ -71,6 +73,10 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // déplacer (sinon il est immobile d'office, pas de −10 à annuler) — annule le −10 « Tir en bougeant » au
   // prix de son Mouvement du Tour (Mouvement décomposable : sinon on tirerait puis bougerait).
   const canHoldGround = !res && !pa.interrupt && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
+  // Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : proposé au TIR d'un héros dont l'arme
+  // tirée porte la capacité `ItemCapabilities.ropeMode` — jamais un id d'arme en dur (#476).
+  const weaponItem = weapon ? attacker.items?.find((it) => it.uid === weapon.uid) : undefined;
+  const canHarpoonRopeCut = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && !!weaponItem && itemCapability(weaponItem, 'ropeMode');
   // « Retenir ses coups » (Aux Armes l.2503-2505) : maîtriser sans tuer. Proposé seulement quand c'est légal —
   // attaque de MÊLÉE (jamais tir/sort), arme qui n'inflige PAS *En flammes* (l.2505), avant le jet.
   const canWithhold = !res && weapon?.type === 'melee' && attacker.kind === 'hero' && !weaponInflictsFlames(weapon);
@@ -80,7 +86,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
   // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
   // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
-  const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid }) : null;
+  const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid, harpoonRopeCut: pa.harpoonRopeCut }) : null;
   // Aperçu de la défense ADVERSE dans le panneau pré-jet. À distance, le tir n'est PAS opposé par
   // défaut (LDB 13 l.135) : on n'affiche une ligne de défense QUE si le RAW l'autorise (Parade avec
   // bouclier Protectrice 2+/tireur Engagé, Esquive à Bout Portant — `bestRangedDefense`). Sinon AUCUNE
@@ -226,6 +232,19 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               {pa.heldGround
                 ? <span className="rm-crowd-note">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>
                 : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
+            </div>
+          )}
+          {canHarpoonRopeCut && (
+            <div className="rm-crowd">
+              <button
+                className={`btn small ${pa.harpoonRopeCut ? 'btn-primary' : ''}`}
+                onClick={() => setHarpoonRopeCut(!pa.harpoonRopeCut)}
+              >
+                <Icon id="action/aim" size="sm" /> Tirer sans la corde (60 m, sans Immobilisante)
+              </button>
+              {pa.harpoonRopeCut
+                ? <span className="rm-crowd-note">Corde séparée : Portée 60, mais la cible n'est plus Immobilisée.</span>
+                : <span className="rm-crowd-note">Corde tenue : Immobilisante, Portée 20.</span>}
             </div>
           )}
           {canWithhold && (

@@ -124,7 +124,7 @@ import { followsCharacterRules } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
-import { hasCapability } from '../engine/capabilities';
+import { hasCapability, itemCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
 import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack } from '../engine/creatureAttacks';
@@ -248,7 +248,7 @@ export function applyIncomingMeleeAdvantage(get: Get, attacker: Combatant, targe
 /** Arme effectivement tirée : mêlée au contact, distance sinon (Atout Pistolet pour tirer en Combat
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
-export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: string, combatants?: Combatant[]): Weapon {
+export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: string, combatants?: Combatant[], harpoonRopeCut?: boolean): Weapon {
   // Choix explicite du joueur (uid) sinon auto-choix PAR-ARME (#BUG-A, poule-et-œuf) : chaque candidate de
   // mêlée est évaluée avec SA PROPRE géométrie (`pickAttackWeaponList`) — un cavalier au contact par sa
   // monture choisit la mêlée (LDB 14), un chef de bélier via l'empreinte de LA PIÈCE, mais une arme
@@ -277,7 +277,7 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
   // funnel UNIQUE attaquant ⊕ arme ⊕ contexte — donc la MÊME arme transformée sert la touche/les Dégâts
   // (`resolveAttack` → `applyHit`) ET la Maladresse sur un RATÉ : `attackConfirm` et l'IA RE-DÉRIVENT l'arme
   // par `firedWeapon`, si bien que `dangerousNine` voit la Dangereuse du Fléau sans compétence.
-  return effectiveWeapon(w, weaponContextOf(attacker, w, target));
+  return effectiveWeapon(w, weaponContextOf(attacker, w, target, { harpoonRopeCut }));
 }
 
 /** Contexte d'usage d'une arme (règles d'arme CONTEXTUELLES de Groupe, LDB 62) dérivé de l'attaquant.
@@ -285,7 +285,8 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
  *  Maniement de deux armes) l'appellent — aucune duplication de l'inférence `charged`/`mounted`/`hasGroupSkill`.
  *  `target` (optionnel — rétro-compat) sert le combat « au contact » (LDB 62 l.176) : une arme plus longue
  *  que Courte devient improvisée quand attaquant et cible sont entrés dans la longueur d'arme l'un de l'autre. */
-export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combatant): WeaponContext {
+export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combatant, opts?: { harpoonRopeCut?: boolean }): WeaponContext {
+  const heroItem = (attacker.items ?? []).find((it) => it.uid === w.uid);
   return {
     charged: !!attacker.chargedThisTurn,
     mounted: !!attacker.mountId,
@@ -293,6 +294,9 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
     groupSkillMode: weaponGroupSkillMode(attacker, w, w.type === 'ranged' ? 'ranged' : 'melee'), // LDB 62 l.184/188
     auContact: !!target && areInContact(attacker, target),
     improvised: !!target && ramVsNonDoor(w, target), // Bélier hors-porte → improvisée (ADE II ch.08 l.249)
+    // Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : choix joueur (`opts`, #476) GATÉ sur
+    // la capacité de l'arme (`ItemCapabilities.ropeMode`) — jamais un id d'arme en dur.
+    harpoonRopeCut: !!opts?.harpoonRopeCut && !!heroItem && itemCapability(heroItem, 'ropeMode'),
   };
 }
 
@@ -606,10 +610,11 @@ export function resolveAttack(
   heldGround?: boolean,
   weaponUid?: string,
   withhold?: boolean, // « Retenir ses coups » (Aux Armes l.2503-2505) — déclaré avant le jet, mêlée seule
+  harpoonRopeCut?: boolean, // mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) — déclaré avant le jet, #476
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const battle = get().battle!;
   const mpt = sceneMetresPerTile(get().scene);
-  const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants); // arme choisie + munition + sous-effectif du poste servi
+  const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants, harpoonRopeCut); // arme choisie + munition + sous-effectif du poste servi
   // Restriction d'armes à distance de la rencontre (#471, `EncounterDef.banRanged`, NADAJ 06 l.181) —
   // convergence UNIQUE joueur ET IA (tout tir passe par `resolveAttack`) : refus AVANT le jet, même
   // chemin de refus silencieux que la LdV bloquée ci-dessous (`blocked`).
@@ -712,11 +717,11 @@ export function previewAttack(
   attacker: Combatant,
   target: Combatant,
   location?: HitLocation,
-  opts?: { intoCrowd?: boolean; heldGround?: boolean; weaponUid?: string },
+  opts?: { intoCrowd?: boolean; heldGround?: boolean; weaponUid?: string; harpoonRopeCut?: boolean },
 ): AttackPreview {
   const battle = get().battle;
   const mpt = sceneMetresPerTile(get().scene);
-  const weapon = firedWeapon(attacker, target, opts?.weaponUid, battle?.combatants);
+  const weapon = firedWeapon(attacker, target, opts?.weaponUid, battle?.combatants, opts?.harpoonRopeCut);
   const kind: 'melee' | 'ranged' = weapon.type === 'ranged' ? 'ranged' : 'melee';
   // Distance de COMBAT PAR L'ARME EFFECTIVEMENT visée (#BUG-A) : géométrie de la MONTURE pour un
   // cavalier/cible monté (LDB 14 — le reach/la bande de portée se mesurent du couple, pas du cavalier 1×1),
