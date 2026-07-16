@@ -98,7 +98,10 @@ export function CampaignView() {
   const partyPos = useGame((s) => s.partyPos);
   // Offre de repos LÀ OÙ SE TIENT le groupe (zone d'auteur > scène > camp ; null = interdit).
   const restHere = mode === 'exploration' && scene ? restPlacesHere({ scene, partyPos } as Parameters<typeof restPlacesHere>[0]) : null;
-  const [sheetId, setSheetId] = useState<string | null>(null);
+  // Fiche de personnage/poste : héros au STORE (`sheetId`, patron `inspectId`) — partagé avec
+  // PartyScreen pour que la fiche survive au switch de héros entre les deux hôtes.
+  const sheetId = useGame((s) => s.sheetId);
+  const setSheetId = useGame((s) => s.setSheetId);
   const inspectId = useGame((s) => s.inspectId); // statbloc inspecté (store : frise ET token l'ouvrent)
   const setInspectId = useGame((s) => s.setInspectId);
   const setHoverCombatant = useGame((s) => s.setHoverCombatant);

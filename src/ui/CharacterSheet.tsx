@@ -1,5 +1,5 @@
-import { useRef, useState, type ReactNode } from 'react';
-import { useGame } from '../state/store';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useGame, type SheetTab } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Duration } from '../engine/duration';
@@ -21,7 +21,7 @@ import { actorHasSkill } from '../engine/skills';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { rule } from '../engine/policy';
 import { canAfford, toMoney, formatMoney } from '../engine/money';
-import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
+import { learnableSpells, canCastFromGrimoire, carriedGrimoire, casterTalents } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
 import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, careerLabelFor, findClassById, talentConcrete, symptomLabel, findTrappingById } from '../data';
@@ -43,6 +43,7 @@ import { ItemIcon } from './ItemIcon';
 import { MediaSelect } from './MediaSelect';
 import { BackgroundPanel } from './BackgroundPanel';
 import { Icon } from './Icon';
+import { HERO_RING } from '../gameIso/teamColors';
 import type { Palette } from '../gameIso/rig/palette';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
@@ -122,27 +123,42 @@ function ActiveEffectsPanel({ hero }: { hero: Combatant }) {
   );
 }
 
-type SheetTab = 'combat' | 'competences' | 'sac' | 'sorts' | 'background' | 'avancement';
 const TAB_LABELS: Record<SheetTab, string> = {
-  combat: 'Combat',
-  competences: 'Compétences',
-  sac: 'Sac',
-  sorts: 'Sorts',
-  background: 'Background',
+  etat: 'État',
+  possessions: 'Possessions',
+  competences: 'Compétences & Talents',
+  magie: 'Magie & Foi',
   avancement: 'Avancement',
+  histoire: 'Histoire',
 };
 
 export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: () => void }) {
   // EN COMBAT, lire la copie de bataille (qui porte les effets actifs vivants — buffs, métamorphose,
   // dégâts…) plutôt que l'original du groupe ; hors combat, le groupe. → la fiche reflète l'état réel.
   const hero = useGame((s) => s.battle?.combatants.find((h) => h.id === heroId) ?? s.party.find((h) => h.id === heroId));
-  const [tab, setTab] = useState<SheetTab>('combat');
+  const party = useGame((s) => s.party);
+  const setSheetId = useGame((s) => s.setSheetId);
+  const tab = useGame((s) => s.sheetTab) ?? 'etat';
+  const setSheetTab = useGame((s) => s.setSheetTab);
+  const setSheetScroll = useGame((s) => s.setSheetScroll);
   const boxRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   useModalA11y(boxRef, onClose); // dialogue au markup spécifique (header à onglets) → hook a11y partagé
+
+  // Restaure le scroll mémorisé de CET onglet à chaque affichage (patron ActivityPane : corps
+  // scrollable, un onglet reprend où on l'a laissé plutôt que de rouvrir en haut). Lecture SANS
+  // abonnement (`getState`) : `onScroll` écrit `sheetScroll` à chaque tick — s'y abonner re-rendrait
+  // toute la fiche en boucle pendant le scroll.
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = useGame.getState().sheetScroll[tab] ?? 0;
+  }, [tab]);
+
   if (!hero) return null;
 
-  const isCaster = (hero.spells?.length ?? 0) > 0;
-  const tabs: SheetTab[] = ['combat', 'competences', 'sac', ...(isCaster ? ['sorts' as const] : []), 'background', 'avancement'];
+  // GATE CORRIGÉ (#492 bug 2) : un lanceur de Bénédictions sans sort mémorisé encore (Bienheureux
+  // avant sa 1re Bénédiction) garde son onglet Magie & Foi — `spells.length` seul le privait à tort.
+  const isCaster = (hero.spells?.length ?? 0) > 0 || casterTalents(hero).length > 0;
+  const tabs: SheetTab[] = ['etat', 'possessions', 'competences', ...(isCaster ? ['magie' as const] : []), 'avancement', 'histoire'];
 
   return (
     <div className="modal-overlay sheet-overlay" onClick={onClose}>
@@ -153,6 +169,21 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
             le détail en onglets à droite. */}
         <div className="sheet-layout">
           <aside className="sheet-aside">
+            {/* Rangée de compagnie : switch de héros SANS refermer la fiche, onglet conservé (au store). */}
+            <div className="frame-row">
+              {party.map((m, i) => (
+                <PortraitTile
+                  key={m.id}
+                  c={m}
+                  ring={HERO_RING[i % HERO_RING.length]}
+                  variant="full"
+                  size="sm"
+                  selected={m.id === hero.id}
+                  onClick={() => setSheetId(m.id)}
+                  title={m.name}
+                />
+              ))}
+            </div>
             <div className="sheet-portrait">
               {/* Tuile full xl : jauge + États sur la fiche aussi (anneau or « méta »). */}
               <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" />
@@ -161,16 +192,6 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 <CodexRef category="races" id={hero.species} label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" id={hero.career} label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
-              {hero.star && (() => {
-                const s = findStarById(hero.star); // `hero.star` = id STABLE → libellé à l'affichage
-                const label = s?.label ?? hero.star;
-                return (
-                  <span className="char-sub star-sub">
-                    ★ <CodexRef category="stars" id={hero.star} label={label}>{label}</CodexRef>
-                    {s?.signe ? ` — ${s.signe}` : ''}
-                  </span>
-                );
-              })()}
             </div>
             <FicheBody hero={hero} section="profil" />
           </aside>
@@ -179,15 +200,27 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
               className="sheet-tabnav"
               tabs={tabs.map((t) => ({ key: t, label: TAB_LABELS[t] }))}
               active={tab}
-              onChange={setTab}
+              onChange={setSheetTab}
             />
-            <div className="sheet-tabbody">
+            <div className="sheet-tabbody" ref={bodyRef} onScroll={(e) => setSheetScroll(tab, e.currentTarget.scrollTop)}>
               {tab === 'avancement' ? (
                 <AdvancementPanel hero={hero} />
-              ) : tab === 'sorts' ? (
+              ) : tab === 'magie' ? (
                 <SpellbookSection hero={hero} />
-              ) : tab === 'background' ? (
-                <BackgroundPanel hero={hero} />
+              ) : tab === 'histoire' ? (
+                <>
+                  <BackgroundPanel hero={hero} />
+                  {hero.star && (() => {
+                    const s = findStarById(hero.star); // `hero.star` = id STABLE → libellé à l'affichage
+                    const label = s?.label ?? hero.star;
+                    return (
+                      <span className="char-sub star-sub">
+                        ★ <CodexRef category="stars" id={hero.star} label={label}>{label}</CodexRef>
+                        {s?.signe ? ` — ${s.signe}` : ''}
+                      </span>
+                    );
+                  })()}
+                </>
               ) : (
                 <FicheBody hero={hero} section={tab} />
               )}
@@ -447,7 +480,7 @@ function FormPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
   );
 }
 
-function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'combat' | 'competences' | 'sac' }) {
+function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'etat' | 'possessions' | 'competences' }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const stowItem = useGame((s) => s.stowItem);
   const transferItem = useGame((s) => s.transferItem);
@@ -528,10 +561,9 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           valClass={(k) => { const b = baseWithTalents(hero, k), e = effectiveChar(hero, k); return e > b ? 'ok-text' : e < b ? 'warn-text' : ''; }}
           note={(k) => { const b = baseWithTalents(hero, k), e = effectiveChar(hero, k); return e !== b ? `Base ${b} (${e > b ? '+' : ''}${e - b} de modificateurs actifs)` : undefined; }}
         />
-        <ActiveEffectsPanel hero={hero} />
       </>)}
 
-      {section === 'combat' && <EquipmentPanel hero={hero} />}
+      {section === 'possessions' && <EquipmentPanel hero={hero} />}
 
       {section === 'competences' && (
       <div className="sheet-skills">
@@ -566,7 +598,11 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
       </div>
       )}
 
-      {section === 'profil' && ((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0) && (
+      {section === 'etat' && !((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0 || (hero.activeEffects?.length ?? 0) > 0 || (hero.castPenalties?.length ?? 0) > 0) && (
+        <p className="muted">Rien à signaler.</p>
+      )}
+
+      {section === 'etat' && ((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0) && (
         <div className="sheet-afflictions">
           <div className="mini-title">Afflictions</div>
           <div className="inv-rows">
@@ -610,7 +646,9 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
         </div>
       )}
 
-      {section === 'sac' && (
+      {section === 'etat' && <ActiveEffectsPanel hero={hero} />}
+
+      {section === 'possessions' && (
       <div className="sheet-inventory">
         <div className="mini-title">Inventaire & équipement ({items.length})</div>
         <div className="inv-rows">

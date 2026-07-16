@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Combatant } from '../engine/types';
 import { AdvancementPanel } from './CharacterSheet';
 import { BackgroundPanel } from './BackgroundPanel';
+import { casterTalents } from '../engine/grimoire';
 
 /** Héros « Agitateur » niveau 1 (« Pamphlétaire ») avec 1000 PX, Charme (in-carrière) + Esquive (hors). */
 const hero = (): Combatant =>
@@ -62,6 +63,16 @@ describe('AdvancementPanel (rendu)', () => {
     const broke = { ...hero(), xp: 5 } as Combatant;
     const html = renderToStaticMarkup(<AdvancementPanel hero={broke} />);
     expect(html).toContain('disabled'); // boutons d'achat désactivés (coût > 5 PX)
+  });
+});
+
+describe('Gate Magie & Foi (#492 bug 2)', () => {
+  it('un Béni SANS Bénédiction mémorisée reste un lanceur (casterTalents, pas juste spells.length)', () => {
+    const beni: Combatant = { ...hero(), spells: [], talents: [{ talentId: 'beni', spec: 'sigmar', times: 1 }] } as Combatant;
+    // `isCaster` de CharacterSheet lit CE calcul — un Béni sans sort mémorisé encore ne doit
+    // pas perdre son onglet Magie & Foi ni son compteur de Péché.
+    expect((beni.spells?.length ?? 0) > 0).toBe(false);
+    expect(casterTalents(beni).length).toBeGreaterThan(0);
   });
 });
 

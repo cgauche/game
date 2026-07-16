@@ -339,7 +339,10 @@ export function PartyScreenView({
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Cliquer le portrait/nom d'un héros ouvre sa PRÉSENTATION (récit) ; « Fiche complète » y mène ensuite
   // à CharacterSheet (chiffres) pour un membre du groupe.
-  const [sheetId, setSheetId] = useState<string | null>(null);
+  // Héros au STORE (`sheetId`, patron `inspectId`) — partagé avec CampaignView pour que la fiche
+  // survive au switch de héros entre les deux hôtes.
+  const sheetId = useGame((s) => s.sheetId);
+  const setSheetId = useGame((s) => s.setSheetId);
   const [presentHero, setPresentHero] = useState<Combatant | null>(null);
   // Solo : carte siège→héros STABLE — le siège d'un héros retiré RESTE en place (le trou ne file plus
   // à droite). Réconciliée avec `party`. En coop, on garde `slotViews` (sièges attribués).
