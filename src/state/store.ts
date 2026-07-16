@@ -2187,7 +2187,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Branche choisie PUIS continuation (suite du `seq` parent d'un nœud `test`) — exécutées par runFlow
     // (butin de Test → fenêtre d'attribution ; if/test imbriqués gérés).
     const branch = effSuccess ? pt.onSuccess : pt.onFailure;
-    runFlow(get, set, { kind: 'seq', steps: [branch ?? EMPTY_FLOW, pt.after ?? EMPTY_FLOW] }, pt.label);
+    runFlow(get, set, { kind: 'seq', steps: [branch ?? EMPTY_FLOW, pt.after ?? EMPTY_FLOW] }, pt.label, pt.sl);
     // Avancée de dialogue différée (un `choice.flow` avait suspendu ICI) : appliquée une fois la
     // branche + continuation résolue. Si celles-ci ré-ouvrent un Test, on la reporte sur le nouveau
     // pending (le dialogue n'avance jamais sous une modale de jet).

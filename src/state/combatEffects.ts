@@ -175,10 +175,10 @@ export function gearFromEffects(effects: Effect[]): { gear: LootGear[]; rest: Ef
  *  s'applique à la bourse ET s'affiche ; les textes `journal` du lot deviennent le texte
  *  d'ambiance de la fenêtre. Sans butin (ou en combat : Ramasser/victoire ont leurs flux),
  *  strictement équivalent à applyEffects. Fenêtre déjà ouverte → le butin s'y AJOUTE. */
-export function applyEffectsLoot(get: Get, set: SetFn, effects: Effect[], title: string) {
-  if (get().battle) { applyEffects(get, set, effects); return; }
+export function applyEffectsLoot(get: Get, set: SetFn, effects: Effect[], title: string, sl?: number) {
+  if (get().battle) { applyEffects(get, set, effects, sl); return; }
   const { gear, rest } = gearFromEffects(effects);
-  applyEffects(get, set, rest);
+  applyEffects(get, set, rest, sl);
   const found = effects
     .filter((e): e is Extract<Effect, { type: 'giveMoney' }> => e.type === 'giveMoney')
     .reduce((m, e) => m + toBrass({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 }), 0);
@@ -415,10 +415,10 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
  * vide le lot, ouvre la modale et SUSPEND — la branche choisie + la continuation (reste de la pile)
  * sont reprises par `resolveTest`. Pas de boucle → terminaison garantie.
  */
-export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void {
+export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet', sl?: number): void {
   const stack: Flow[] = [flow];
   const batch: Effect[] = [];
-  const flush = () => { if (batch.length) applyEffectsLoot(get, set, batch.splice(0), label); };
+  const flush = () => { if (batch.length) applyEffectsLoot(get, set, batch.splice(0), label, sl); };
   while (stack.length) {
     const node = stack.shift()!;
     switch (node.kind) {
@@ -436,7 +436,7 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
         flush();
         const after: Flow = { kind: 'seq', steps: stack.splice(0) };
         // Personne ne peut tenter → on saute le Test et on reprend directement la continuation.
-        if (!openSkillTest(get, set, node.test, node.success, node.fail, after)) runFlow(get, set, after, label);
+        if (!openSkillTest(get, set, node.test, node.success, node.fail, after)) runFlow(get, set, after, label, sl);
         return;
       }
     }
@@ -498,6 +498,9 @@ export interface EffectEnv {
   set: SetFn;
   log(line: string): void;
   pushReveal(entry: RevealEntry): void;
+  /** DR (SL) du Test résolu qui a produit ce lot d'Effets (`resolveTest`/`pt.sl`, symétrique de
+   *  `opsCtx.sl` en combat, `triggeredTest.ts:159`) — absent hors Test (déclencheur de scène, etc.). */
+  sl?: number;
   /** Cibles d'un effet `party`/`hero` (héros vivants concernés, bon ensemble) — `effectTargets`. */
   targets(on: 'party' | 'hero', heroId?: string): Combatant[];
   /**
@@ -513,10 +516,11 @@ export interface EffectEnv {
   ): Combatant | null;
 }
 
-function makeEffectEnv(get: Get, set: SetFn): EffectEnv {
+function makeEffectEnv(get: Get, set: SetFn, sl?: number): EffectEnv {
   return {
     get,
     set,
+    sl,
     log: (line) => get().log(line),
     pushReveal: (entry) => pushReveal(set, entry),
     targets: (on, heroId) => effectTargets(get, on, heroId),
@@ -832,7 +836,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (on !== 'party' && on !== 'hero') return;
       const targets = env.targets(on, e.heroId);
       if (!targets.length) return;
-      const lines = targets.flatMap((c) => applyLeafOps(env.get, env.set, c, e, { rng: defaultRNG, onCorruption: (n, align) => gainCorruption(env.get, env.set, c, n, align) }));
+      const lines = targets.flatMap((c) => applyLeafOps(env.get, env.set, c, e, { rng: defaultRNG, sl: env.sl, onCorruption: (n, align) => gainCorruption(env.get, env.set, c, n, align) }));
       env.set(touchActors(env.get()));
       lines.forEach((l) => env.log(l));
     },
@@ -1449,8 +1453,8 @@ registerCascadeApplier('waterExposure', (_get, _set, step, hero) => {
  * renvoie `'suspend'` (extendedTest/forceDoor → modale/pending) STOPPE la boucle, comme l'ancien
  * `return` au milieu du switch — l'ORDRE, les journaux et les révélations restent identiques.
  */
-export function applyEffects(get: Get, set: SetFn, effects: Effect[]) {
-  const env = makeEffectEnv(get, set);
+export function applyEffects(get: Get, set: SetFn, effects: Effect[], sl?: number) {
+  const env = makeEffectEnv(get, set, sl);
   for (const e of effects) {
     const handler = EFFECT_HANDLERS[e.type] as EffectHandler;
     if (handler.apply(e, env) === 'suspend') return;
