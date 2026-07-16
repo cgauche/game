@@ -135,6 +135,7 @@ import { contractionDue, applyContraction, hasActiveCapability, DISEASE_DEFS } f
 import { rollCritical, critWoundLocation, critImmediateSummary, resolvePostEncounterAmputations, type CriticalResolved } from '../engine/critical';
 import { aaCriticalIsTrivial } from '../engine/aaCritical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
+import { rollArtillerySalveMisfire } from '../engine/artilleryMisfire';
 import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon, reinjuryBleed } from '../engine/trauma';
 import { effectiveWeaponDamage, effectiveWeaponRange, isThrownWeapon, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
 import { scatter } from '../engine/scatter';
@@ -2243,6 +2244,32 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
           if (s.wounds.current <= 0) applyZeroWounds(s);
           log.push(tr('cf.fumbleMisfireCrew', { name: s.name, lost: sLost }));
         }
+      }
+      // Table AA « Incidents de Tir d'Artillerie par Salve » (AA l.3940-3946) : une arme à Atout
+      // Salve qui subit un Incident de tir tire EN PLUS sur ce tableau d10 dédié (AA l.3936 : « Si
+      // l'arme subit un Incident de tir à n'importe quel moment du processus, déterminez-en les effets
+      // puis faites un jet dans le tableau suivant. ») — DISTINCT de l'Incident de tir GÉNÉRIQUE d'Arme
+      // d'équipe (MDG ch.12 l.464) déjà résolu ci-dessus.
+      if (hasQuality(weapon, QUALITY_IDS.Salve)) {
+        const salve = rollArtillerySalveMisfire(c.chambered ?? 0, battleRng());
+        log.push(tr('cf.artillerySalveIncident', { entry: salve.name }));
+        if (salve.destroyed) wearActiveWeapon(c, weapon, true); // pièce détruite (idempotent si déjà cassée)
+        const salveCrew = [c, ...(hasQuality(weapon, QUALITY_IDS.ArmeDEquipe) && c.mannedPoste
+          ? exposedCrew((c.mannedPoste.crewIds ?? [])
+              .filter((id) => id !== c.id)
+              .map((id) => inBattleId(battle, id))
+              .filter((x): x is Combatant => !!x))
+          : [])];
+        for (let i = 0; i < salve.hits; i++) {
+          for (const s of salveCrew) {
+            const loc: HitLocation = salve.entry.location === 'brasPrincipal' ? 'brasD' : hitLocationByShape(reverseRoll(battleRng().int(1, 100)), s.bodyShape);
+            const sLost = woundsFromHit(weapon, s, loc, effectiveWeaponDamage(weapon, sb) + battleRng().int(0, 9));
+            s.wounds.current = Math.max(0, s.wounds.current - sLost);
+            if (s.wounds.current <= 0) applyZeroWounds(s);
+            log.push(tr('cf.artillerySalveHit', { name: s.name, lost: sLost, loc: locationLabel(loc, s.bodyShape) }));
+          }
+        }
+        if (salve.entry.strayFire) log.push(tr('cf.artillerySalveStray', { note: salve.note }));
       }
       break;
     }

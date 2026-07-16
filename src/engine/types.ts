@@ -200,12 +200,21 @@ export interface StructureData {
    *  `kind` : une `porte` fortifiée = corps de garde à herse ; un `mur` fortifié = courtine. Route le
    *  rendu du `WallSeg` porteur (`gameIso/walls.ts::structureSeg`) — TOUJOURS destructible/brèchable. */
   fortified?: boolean;
-  /** Profil à PV (calqué sur `VehicleData.hull.char`) — `BE` = Bonus d'Endurance VERBATIM de la table ADE II
-   *  (l'Endurance dérivée vaut `BE × 10`, posée par `structureCombatant`) ; `B` = Blessures (PV de la structure). */
+  /** Profil à PV (calqué sur `VehicleData.hull.char`) — `BE` = Bonus d'Endurance (l'Endurance dérivée vaut
+   *  `BE × 10`, posée par `structureCombatant`) ; `B` = Blessures (PV de la structure). ADE II donne le BE
+   *  verbatim ; AA (« Tableau des Structures Courantes », AA l.3686-3723) donne l'Endurance BRUTE — `BE`
+   *  se dérive alors par troncature à la dizaine (convention Bonus = dizaines de la Caractéristique). */
   char: { BE: number; B: number };
   /** Atouts de structure (Résistant / Impénétrable) — réfs de Trait par id STABLE (JAMAIS le libellé). */
   traits: { id: string; value?: number }[];
-  /** Provenance RAW (ADE II ch.08). */
+  /** ENC de la Structure transportée (AA l.3686-3693) — `undefined` = N/A (Structure fixe, ne se transporte pas). */
+  enc?: number;
+  /** Limite d'Encombrement supportée par la Structure elle-même (AA l.3686-3693) — `undefined` = N/A. */
+  encLimit?: number;
+  /** Pénalité de Couvert par défaut pour un assaillant qui tire sur une cible réfugiée sur/derrière la
+   *  Structure (AA l.3686-3693) — `undefined` = N/A (aucun couvert, ex. Herse/Solide porte en bois). */
+  couvertPenalty?: Difficulty;
+  /** Provenance RAW (ADE II ch.08 ou AA ch.10). */
   source: { book: string; chapter: number };
   desc?: string;
 }

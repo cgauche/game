@@ -41,6 +41,7 @@ const DATA_DIR = fileURLToPath(new URL('../../data/', import.meta.url));
 const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'aa-criticals.json': ['aaCriticalsTete', 'aaCriticalsBras', 'aaCriticalsCorps', 'aaCriticalsJambe'],
   'activities.json': ['activities'],
+  'artillery-misfire.json': ['artilleryMisfire'],
   'astrology.json': ['celestialHouses'],
   'axes.json': ['axes'],
   'books.json': ['books'],

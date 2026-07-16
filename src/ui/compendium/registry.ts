@@ -30,6 +30,7 @@ import type { TravelTableEntry } from '../../engine/travelTables';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { OBSESSIONS } from '../../data/obsessions';
 import { STRUCTURE_CRITICALS } from '../../data/structureCriticals';
+import { ARTILLERY_MISFIRE } from '../../data/artilleryMisfire';
 import { LAND_CARGOES } from '../../engine/landCargo';
 import { CARGOES } from '../../engine/seaVoyage';
 import type { SeaEventDef, ManannFactor } from '../../engine/seaVoyage';
@@ -1753,6 +1754,18 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         c.wounds != null ? fact('Blessures', c.wounds) : null,
         c.trivial ? fact('Type', 'Triviale (« T »)') : null,
         c.destroyed ? fact('Effondrement', 'oui') : null,
+      ),
+    })),
+  },
+  {
+    key: 'artilleryMisfire', label: 'Incidents de Tir par Salve', group: 'Effets',
+    build: () => ARTILLERY_MISFIRE.map((e) => ({
+      id: e.id, label: e.name, sub: `d10 ${e.min}–${e.max}`, desc: e.note,
+      meta: facts(
+        fact('Localisation', e.location === 'brasPrincipal' ? 'Bras principal' : 'Aléatoire'),
+        e.perSalveIndex ? fact('Répétition', 'par Indice de Salve restant') : null,
+        e.destroyed ? fact('Pièce détruite', 'oui') : null,
+        e.strayFire ? fact('Tir perdu', 'oui') : null,
       ),
     })),
   },

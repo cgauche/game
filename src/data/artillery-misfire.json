@@ -1,0 +1,52 @@
+{
+  "id": "artillery-misfire",
+  "label": "Incidents de Tir d'Artillerie par Salve",
+  "die": "d10",
+  "source": {
+    "book": "aux-armes",
+    "page": 126
+  },
+  "entries": [
+    {
+      "min": 1,
+      "max": 4,
+      "id": "bras-principal",
+      "name": "Bras principal",
+      "location": "brasPrincipal",
+      "perSalveIndex": false,
+      "destroyed": true,
+      "note": "Tous les membres de l'équipe subissent les Dégâts à la Localisation de leur bras principal en utilisant le dé des unités comme DR pour toucher. La pièce d'artillerie est détruite."
+    },
+    {
+      "min": 5,
+      "max": 7,
+      "id": "localisation-aleatoire",
+      "name": "Localisation aléatoire",
+      "location": "random",
+      "perSalveIndex": false,
+      "destroyed": true,
+      "note": "Tous les membres de l'équipe subissent les Dégâts à une Localisation tirée au hasard en utilisant le dé des unités comme DR pour toucher. La pièce d'artillerie est détruite."
+    },
+    {
+      "min": 8,
+      "max": 9,
+      "id": "rafale-par-indice",
+      "name": "Rafale par Indice de Salve",
+      "location": "random",
+      "perSalveIndex": true,
+      "destroyed": true,
+      "note": "Pour chaque Indice de Salve restant, tous les membres de l'équipe subissent les Dégâts à une Localisation tirée au hasard en utilisant le dé des unités comme DR pour toucher. La pièce d'artillerie est détruite."
+    },
+    {
+      "min": 10,
+      "max": 10,
+      "id": "tir-perdu",
+      "name": "Tir perdu",
+      "location": "random",
+      "perSalveIndex": true,
+      "destroyed": false,
+      "strayFire": true,
+      "note": "Pour chaque Indice de Salve restant, un tir part dans une direction tirée au hasard sur une distance d'1d100 mètres. Tout Personnage qui se tient entre la machine et les points où les tirs atterrissent doit réussir un Test d'Esquive Très Difficile (–30) pour éviter d'être touché par un projectile."
+    }
+  ]
+}

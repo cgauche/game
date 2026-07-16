@@ -58,6 +58,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | `etats.json` | États / Conditions (À terre, Aveuglé…) |
 | `psychology.json` | États psychologiques (Peur, Terreur, Frénésie…) |
 | `structures.json` · `structure-criticals.json` | Structures/portes (cibles de siège) · leurs critiques |
+| `artillery-misfire.json` | Incidents de Tir d'Artillerie par Salve (AA l.3940-3946) — arme d'équipe à Atout Salve qui subit un Incident de tir |
 | `mass-battle.json` | ⚠ **Objet à sous-catalogues** (`powerEstimate`, `mightModifiers`, **`warMachines`** ← le Bélier de siège ICI, `structures`, `hazards`) : bataille de masse |
 
 ### Santé — blessures, maladies, corruption

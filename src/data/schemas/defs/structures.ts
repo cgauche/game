@@ -1,10 +1,13 @@
 /**
  * Schéma de `structures.json` — structures DESTRUCTIBLES de siège (ADE II ch.08 « Le théâtre de la
- * guerre », table « Barricades et protections typiques »). Dérivé de l'interface `StructureData`
- * (`src/engine/types.ts:170`) et du contenu RÉEL (5 entrées : 3 portes, 2 murs — inventaire exhaustif
- * par script, `char`/`traits`/`source` toujours présents, `fortified` présent sur 2/5 seulement).
+ * guerre », table « Barricades et protections typiques » ; AA « Tableau des Structures Courantes »,
+ * AA l.3686-3723). Dérivé de l'interface `StructureData` (`src/engine/types.ts:191`) et du contenu
+ * RÉEL (23 entrées : 5 ADE II à 2 colonnes BE/B, 18 AA à profil 5 colonnes ENC/Limite d'Encombrement/
+ * Endurance-BE/Blessures/Pénalité de Couvert — `enc`/`encLimit`/`couvertPenalty` optionnels, N/A côté
+ * ADE II ou pour les entrées AA sans cette colonne, ex. Herse/Solide porte en bois sans Couvert).
  */
 import { z } from 'zod';
+import { difficultySchema } from '../common';
 
 export const file = 'structures.json';
 
@@ -24,7 +27,12 @@ export const schema = z.array(
     fortified: z.boolean().optional(),
     char: z.strictObject({ BE: z.number(), B: z.number() }),
     traits: z.array(structureTraitRefSchema),
-    /** Réf de source à granularité CHAPITRE (≠ `sourceRefSchema` commun qui est `{book,page}`) — les 5
+    /** Profil AA (AA l.3686-3693) — absents des 5 entrées ADE II ; N/A pour certaines entrées AA
+     *  elles-mêmes (Herse/Solide porte en bois sans Pénalité de Couvert, Structures fixes sans ENC). */
+    enc: z.number().optional(),
+    encLimit: z.number().optional(),
+    couvertPenalty: difficultySchema.optional(),
+    /** Réf de source à granularité CHAPITRE (≠ `sourceRefSchema` commun qui est `{book,page}`) — les
      *  entrées ne portent qu'un `chapter`, jamais de `page`. Candidat à mutualisation si un 2e dataset
      *  porte la même forme `{book, chapter}`. */
     source: z.strictObject({ book: z.string(), chapter: z.number() }),
