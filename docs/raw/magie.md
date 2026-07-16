@@ -78,7 +78,11 @@ Les Collèges de Magie (comme les elfes) enseignent que la magie se divise en **
 
 Le Talent **Seconde vue** (LDB ch.10) permet de percevoir les Vents de Magie et leur influence sur le monde. Elle affecte tous les sens (manifestation dépend de l'expérience du lanceur). Avec la Seconde vue, on peut utiliser les compétences **Intuition**, **Perception** et **Pistage** avec les sens aethyriques. La Seconde vue ne se désactive pas : le MJ peut demander des Tests spontanés pour percevoir des détails magiques.
 
-**Implémente :** non-implémenté (lore / narration MJ) ; le Talent est dans `src/data/talents.json`.
+**Implémente :** non-implémenté. Facette générale (l.9, utiliser Intuition/Perception/Pistage via les
+sens aethyriques) : décision produit ouverte (#463). Facette chiffrée (Test de Perception Facile +40
+pour repérer les perturbations, l.181) : conditionnée à l'option RAW « Vents Tourbillonnants »
+(l.179-189) — aucun système de force des Vents par scène/round dans le moteur, à créer si cette
+option est activée (#463). Le Talent est dans `src/data/talents.json`.
 
 ---
 
