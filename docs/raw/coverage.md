@@ -30,7 +30,7 @@
 | 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 54 (destin.md ×27) |
 | 18 | Traumatisme | ✅ | 136 (traumatisme.md ×90) |
-| 19 | Corruption | ✅ | 34 (corruption.md ×29) |
+| 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
 | 21 | Psychologie | ✅ | 59 (psychologie.md ×36) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |

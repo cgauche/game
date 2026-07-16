@@ -6,8 +6,8 @@
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 6 chapitre(s) couverts avec des lignes non pinées.
-**Sens A — code → Atlas (14 autres livres)** : 2 chapitre(s)-livre cités par le code & absents de l'Atlas · 9 chapitre(s)-livre couverts avec des lignes non pinées · 254 réf(s) sans chapitre (non réconciliables par cette mesure).
-**Sens B — Atlas → code (LDB)** : 157 marqueur(s) « (non implémenté) » · 23 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
+**Sens A — code → Atlas (14 autres livres)** : 2 chapitre(s)-livre cités par le code & absents de l'Atlas · 9 chapitre(s)-livre couverts avec des lignes non pinées · 257 réf(s) sans chapitre (non réconciliables par cette mesure).
+**Sens B — Atlas → code (LDB)** : 155 marqueur(s) « (non implémenté) » · 23 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
 
@@ -16,21 +16,21 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 ## A2 — Lignes appelées par le CODE (LDB) non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
 ### LDB 46 — 10/30 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
-- l.185 — `src/state/combatSlice.ts:3024` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+- l.185 — `src/state/combatSlice.ts:3034` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
 - l.188 — `src/data/index.ts:566` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
-- l.193 — `src/state/combatFlow.ts:1988` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
-- l.194 — `src/engine/ops.ts:604` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
+- l.193 — `src/state/combatFlow.ts:1990` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
+- l.194 — `src/engine/ops.ts:611` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
 - l.199 — `src/engine/magic.ts:165` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
 - l.201 — `src/engine/engine.test.ts:699` — it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
 - l.202 — `src/engine/magic.ts:547` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
 - l.204 — `src/engine/conditions.ts:464` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
-- l.205 — `src/state/combatSlice.ts:3092` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+- l.205 — `src/state/combatSlice.ts:3103` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
 - l.207 — `src/engine/tests.ts:218` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 
 ### LDB 10 — 6/21 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
 - l.310 — `src/engine/types.ts:844` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
 - l.364 — `src/engine/types.ts:1366` — /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
-- l.365 — `src/state/combatFlow.ts:4445` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
+- l.365 — `src/state/combatFlow.ts:4447` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
 - l.569 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
 - l.859 — `src/state/granted-traits.test.ts:122` — it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
 - l.864 — `src/engine/psychology.ts:74` — *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
@@ -48,18 +48,18 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 ### LDB 05 — 1/35 ligne(s) code hors couverture (propriétaire : docs\raw\creation.md)
 - l.288 — `src/ui/creator/CharacterCreator.test.tsx:174` — it('bug utilisateur 2026-07-15 — le qualificatif « un au choix » (LDB 05 l.288) ne vaut QUE pour le Niveau de départ, jamais un rang exploré supérieur', () => {
 
-### LDB 12 — 1/25 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
+### LDB 12 — 1/27 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
 - l.229 — `src/engine/activities.ts:229` — /** Test COMBINÉ (LDB 12 l.229) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+
 
 ## A-AUTRES 0 — Résumé Sens A par livre (14 livres hors LDB)
 
 | Livre | Trous durs (chapitres) | Chapitres à lignes non pinées | Réfs sans chapitre |
 |---|---|---|---|
-| AA | 0 | 0 | 179 |
+| AA | 0 | 0 | 181 |
 | ADE I | 0 | 1 | 0 |
 | ADE II | 0 | 1 | 24 |
 | EDOC | 0 | 4 | 29 |
-| MDG | 1 | 1 | 5 |
+| MDG | 1 | 1 | 6 |
 | T2C | 1 | 2 | 17 |
 
 ## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l'Atlas (trous durs)
@@ -120,7 +120,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - l.142 — `src/data/river-perils.json:64` — "ref": "T2C ch.5 l.142-144",
 
 ### MDG 15 — 8/32 ligne(s) code hors couverture
-- l.243 — `src/state/seaVoyageFlow.ts:2060` — *  mentionnent pas la relâche à terre — vérifié entrée par entrée (MDG 15 l.243-263) — donc non gatées. */
+- l.243 — `src/state/seaVoyageFlow.ts:2160` — *  mentionnent pas la relâche à terre — vérifié entrée par entrée (MDG 15 l.243-263) — donc non gatées. */
 - l.245 — `src/scenes/test-scenarios/14-voyage-maritime.test.ts:55` — if (get().pendingShoreLeave) { get().resolveShoreLeave(true); continue; } // accoste : relâche accordée par défaut (MDG 15 l.245)
 - l.439 — `src/data/index.ts:1441` — /** Index des ports de la Mer des Griffes (#217, MDG ch.15 l.439-506) — catalogue app-owned éditable au
 - l.452 — `src/data/naval-ports.test.ts:37` — it('Salzenmund : Taille 4, Richesse 4, Surplus produits-de-luxe +1, Demande armes+céréales +1 (MDG 15 l.452, folio 138)', () => {
@@ -150,12 +150,12 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
 
-### AA — 179 réf(s) sans chapitre
+### AA — 181 réf(s) sans chapitre
 - `src/data/criticals.ts:74` (l.125) — /** « Épaule luxée » (AA l.125 / LDB l.120) / « Genou démis » (AA l.179 / LDB l.179) : le membre est
 - `src/data/criticals.ts:74` (l.179) — /** « Épaule luxée » (AA l.125 / LDB l.120) / « Genou démis » (AA l.179 / LDB l.179) : le membre est
 - `src/data/schemas/defs/structure-criticals.ts:4` (l.3690) — * (Structure/Véhicule/Navire, AA l.3690).
 - `src/data/structureCriticals.ts:7` (l.3690) — * Navire suivent le MÊME patron Endurance/Blessures + table de Critiques (AA l.3690).
-- … +175 autres
+- … +177 autres
 
 ### ADE II — 24 réf(s) sans chapitre
 - `src/data/index.ts:1068` (l.653) — *  carac par défaut (ADE II l.653 : la Magie de la Gueule, réservée aux ogres, se lance sur l'Endurance).
@@ -171,12 +171,12 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - `src/engine/activities.ts:208` (l.106) — *  en dur) : Plein air « -10 par degré de temps éloigné de Beau temps » (EDOC l.106), Approvisionnement
 - … +25 autres
 
-### MDG — 5 réf(s) sans chapitre
+### MDG — 6 réf(s) sans chapitre
 - `src/engine/cargo.ts:22` (l.402) — *  MDG l.402-418). PUR. Repli sur la dernière entrée si aucune plage ne matche (tableaux exhaustifs 01-00). */
 - `src/engine/warMachineCrew.ts:23` (l.3900) — *  (headcount brut — le RAW ne pose ICI aucune exigence de Compétence, à la différence d'AA/MDG l.3900),
-- `src/state/combatFlow.ts:263` (l.3900) — // ICI aucune exigence de Compétence pour compter dans l'Équipe (≠ AA/MDG l.3900 ci-dessus) — 3ᵉ courbe,
-- `src/state/ship-maneuver.test.ts:298` (l.304) — it('réussite du VIRAGE = réussite du d100 (RAW MDG l.304), JAMAIS dr≥0 — le Man (−1 DR cogue) n’inverse pas le Test', () => {
-- … +1 autres
+- `src/state/combatFlow.ts:264` (l.3900) — // ICI aucune exigence de Compétence pour compter dans l'Équipe (≠ AA/MDG l.3900 ci-dessus) — 3ᵉ courbe,
+- `src/state/combatSlice.ts:1772` (l.464) — // DISTINCT du Défaut Arme d'équipe (MDG l.464, `crewedFireWeapon`/`exposedCrew` ci-dessus — headcount
+- … +2 autres
 
 ### T2C — 17 réf(s) sans chapitre
 - `src/engine/cargo.ts:21` (l.71) — /** Cargaison ALÉATOIRE de la saison : d100 dans la colonne saisonnière du tableau fourni (T2C l.71-78,
@@ -221,7 +221,6 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\activites.md** L745 — **Implémente** : (non implémenté).
 - **docs\raw\avancement.md** L300 — **Implémente** : non implémenté (attribution de PX = décision MJ dans le store via `xp(n)` dans `src/state/devtools.ts` et `partyFlow.ts`).
 - **docs\raw\bestiaire.md** L437 — - `src/data/traits.json` (`creature-marine`, desc verbatim ; `aquatique` T2C p.90 également porté). Le malus hors-eau (M→1, −2 DR) et la suffocation restent (non implémenté) : pas de notion d'environn
-- **docs\raw\bestiaire.md** L460 — - `src/data/traits.json` (`redoutable`, desc verbatim — la clause AA l.13 y est appendue) : le regain d'Avantage début de tour EST câblé (`effects` `onTurnStart` → op `gainAdvantage`, gardé Empêtré/Su
 - **docs\raw\carrieres.md** L507 — **Implémente** : `src/data/talents.json` (`chanson-de-marin`, `commandant-emerite` — Maxi/Tests/desc ; `commandant-d-equipe` = réimpression du talent AA existant). Flux d'activation du chant + bonus D
 - **docs\raw\carrieres.md** L531 — **Implémente** : `src/data/sea-shanties.json` (7 chansons, desc verbatim ; `crewOps` GameOp pour les 3 exprimables, `pending` pour les 4 autres). Application à l'équipage (non implémenté — lot système
 - **docs\raw\carrieres.md** L625 — **Implémente** : `src/data/traits.json` (`marque-de-khorne` — desc verbatim). Effets mécaniques (Frénésie/Animosité/interdits/achats hors carrière) (non implémenté — même canal que `marque-de-tzeentch
@@ -309,17 +308,17 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\equipement.md** L727 — **Implémente :** (non implémenté) — artillerie navale (Arme d'équipe, Tir de zone, munitions spéciales, Recharge longue) non modélisée ; à rapprocher des armes de siège AA si le combat naval est joué.
 - **docs\raw\etats.md** L384 — - Le +1 Avantage pour l'attaquant ciblant un Sonné : **(non implémenté dans `conditions.ts`)** — à vérifier dans le flux d'attaque (`combatFlow.ts`)
 - **docs\raw\etats.md** L446 — **Implémente** : `src/engine/conditions.ts` — module principal (tous les États sauf cas notés `(non implémenté)`)
-- **docs\raw\etats.md** L639 — **Implémente** : `src/engine/combat.ts` — `assommanteCheck` pour l'Atout Assommante (à vérifier). L'Empêtré FM et la mécanique de filet (DR non cumulatifs) ne sont pas implémentés en variante. L'État 
-- **docs\raw\etats.md** L673 — Points **(non implémentés)** identifiés :
-- **docs\raw\etats.md** L679 — 6. **Variante Hémorragique AA** : non implémentée (règle optionnelle — LDB 16 est conforme).
-- **docs\raw\etats.md** L681 — 8. **Filets ZI** : mécanique Empêtré avec DR non cumulatifs — non implémentée (seul Test de Force opposé générique est implémenté).
-- **docs\raw\magie.md** L538 — **Implémente :** `domainOnHitEffects()` — `DomainData.effects` (condition `relation: hostile` + `not has Magie des Arcanes (Feu)` pour le rider `+1 Enflammé`). Le bonus `+10` par état voisin est **non
-- **docs\raw\magie.md** L599 — **Implémente :** `domainOnHitEffects()` — `DomainData.effects` (deux `TriggeredEffect` : purge états sur cibles vivantes ; frappe supplémentaire sur Mort-vivants). Le bonus `+10` en environnement rura
-- **docs\raw\magie.md** L790 — | Attributs de Domaine — Feu (Enflammé + bonus si états proches) | LDB 48 l.201 | Partiel — rider OK ; bonus +10 par état voisin non implémenté |
-- **docs\raw\magie.md** L795 — | Attributs de Domaine — Vie (purge états + frappe Mort-vivants + +10 rural) | LDB 48 l.679 | Partiel — purge+frappe OK ; +10 rural non implémenté |
-- **docs\raw\magie.md** L817 — 1. **Influences Malfaisantes (le « 8 »)** : non implémenté en runtime — la détection du chiffre 8 au dé des unités n'est pas branchée dans `resolveCasting` / `resolveFocus`. À brancher si cette règle 
-- **docs\raw\magie.md** L822 — 6. **Attribut Feu — bonus +10 par état Enflammé voisin** (LDB 48 l.201) : non implémenté — nécessiterait un scan de la scène à chaque incantation pour compter les états actifs à ≤ BFM mètres.
-- **docs\raw\magie.md** L823 — 7. **Attribut Vie — +10 en environnement rural/sauvage** (LDB 48 l.679) : non implémenté — pas de classification rurale/urbaine des scènes dans le moteur.
+- **docs\raw\etats.md** L643 — **Implémente** : `src/engine/combat.ts` — `assommanteCheck` pour l'Atout Assommante (à vérifier). L'Empêtré FM et la mécanique de filet (DR non cumulatifs) ne sont pas implémentés en variante. L'État 
+- **docs\raw\etats.md** L677 — Points **(non implémentés)** identifiés :
+- **docs\raw\etats.md** L683 — 6. **Variante Hémorragique AA** : non implémentée (règle optionnelle — LDB 16 est conforme).
+- **docs\raw\etats.md** L685 — 8. **Filets ZI** : mécanique Empêtré avec DR non cumulatifs — non implémentée (seul Test de Force opposé générique est implémenté).
+- **docs\raw\magie.md** L542 — **Implémente :** `domainOnHitEffects()` — `DomainData.effects` (condition `relation: hostile` + `not has Magie des Arcanes (Feu)` pour le rider `+1 Enflammé`). Le bonus `+10` par état voisin est **non
+- **docs\raw\magie.md** L603 — **Implémente :** `domainOnHitEffects()` — `DomainData.effects` (deux `TriggeredEffect` : purge états sur cibles vivantes ; frappe supplémentaire sur Mort-vivants). Le bonus `+10` en environnement rura
+- **docs\raw\magie.md** L794 — | Attributs de Domaine — Feu (Enflammé + bonus si états proches) | LDB 48 l.201 | Partiel — rider OK ; bonus +10 par état voisin non implémenté |
+- **docs\raw\magie.md** L799 — | Attributs de Domaine — Vie (purge états + frappe Mort-vivants + +10 rural) | LDB 48 l.679 | Partiel — purge+frappe OK ; +10 rural non implémenté |
+- **docs\raw\magie.md** L821 — 1. **Influences Malfaisantes (le « 8 »)** : non implémenté en runtime — la détection du chiffre 8 au dé des unités n'est pas branchée dans `resolveCasting` / `resolveFocus`. À brancher si cette règle 
+- **docs\raw\magie.md** L826 — 6. **Attribut Feu — bonus +10 par état Enflammé voisin** (LDB 48 l.201) : non implémenté — nécessiterait un scan de la scène à chaque incantation pour compter les états actifs à ≤ BFM mètres.
+- **docs\raw\magie.md** L827 — 7. **Attribut Vie — +10 en environnement rural/sauvage** (LDB 48 l.679) : non implémenté — pas de classification rurale/urbaine des scènes dans le moteur.
 - **docs\raw\maladies.md** L507 — **Implémente** : non implémenté — parasite hors cycle maladie standard (progression en phases distinctes, pas de `tickDisease` générique applicable).
 - **docs\raw\maladies.md** L525 — **Implémente** : non implémenté dans `maladies.json`.
 - **docs\raw\maladies.md** L549 — **Implémente** : non implémenté dans `maladies.json`.
@@ -343,7 +342,6 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\religion.md** L44 — - **Implémenté vs non implémenté** — effets purement navals (Humeur de Manann, Indice M, Indice de Voie d'eau, vent, IC, ne-peut-couler) hors moteur actuel → (non implémenté) ; effets sur personnages/
 - **docs\raw\talents.md** L1583 — - `commandant-d-equipe` (AA) : logique score Projectiles partagé non implémentée (donnée présente, logique absente)
 - **docs\raw\talents.md** L1585 — - Mises à jour AA (Battement -1 si 6 DR, Cavalier émérite Taille monture, Porte-Bouclier 2 Avantages/2m, Renversement prendre 1 seul Avantage) : le code suit la version LDB — divergences AA non implém
-- **docs\raw\tests.md** L358 — **Implémente** : (non implémenté dans `src/engine/` — le bonus de soutien de +10 par participant est une logique à gérer côté état/UI)
 
 ## B2 — Chapitres LDB cités par l'Atlas, jamais référencés dans le code
 
@@ -351,5 +349,5 @@ LDB 06 · LDB 6 · LDB 7 · LDB 8 · LDB 26 · LDB 27 · LDB 28 · LDB 29 · LDB
 
 ## Autres livres
 
-Code : AA, ADE I, ADE II, EDOC, MDG, NADAJ, T2C
+Code : AA, ADE I, ADE II, EDOC, MDG, Middenheim, NADAJ, T2C
 Atlas : AA, ADE I, ADE II, Altdorf, EDO, EDOC, MDG, Middenheim, NADAJ, T2, T2C, T3, Ubersreik, ZI
