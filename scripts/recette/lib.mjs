@@ -1,8 +1,8 @@
 // Socle de preuve navigateur headless (agents) — moissonné de scripts scratchpad ad hoc répétés
 // (des-v5-verify.mjs, gallery-v2-tour.mjs, repro-399.mjs, dice-reduced-motion.mjs) : CDP nu sur
 // Chrome, zéro dépendance nouvelle. Voir docs/recette-navigateur.md § « Preuve headless (agents) ».
-import { spawn } from 'node:child_process';
-import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import os from 'node:os';
 
@@ -14,6 +14,35 @@ const CHROME_CANDIDATES = [
 
 /** Attend `ms` millisecondes. */
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Tue TOUT l'arbre de process Chrome (`chrome.kill()` ne tue que le PID racine — Chrome se
+ * découpe en crashpad-handler/gpu-process/renderer×N/utility×N, tous ENFANTS survivants qui
+ * gardent le profil temp verrouillé sous Windows, vécu 2026-07-16 sur le ticket #424 : la fuite
+ * de handles persistait malgré `chrome.kill()` + retries de `rmSync`). `taskkill /T` (arbre) est
+ * la seule primitive Windows fiable ici ; `proc.kill()` reste le filet hors Windows.
+ */
+function killChromeTree(chrome) {
+  if (process.platform === 'win32' && chrome.pid) {
+    spawnSync('taskkill', ['/PID', String(chrome.pid), '/T', '/F'], { stdio: 'ignore' });
+  } else {
+    try { chrome.kill(); } catch {}
+  }
+}
+
+/**
+ * Filet de sécurité process-wide : tout Chrome spawné par ce module qui survivrait à un chemin
+ * d'échec non couvert (SIGINT, script tiers oubliant son try/finally) est tué + son profil purgé
+ * à la sortie du process — jamais de fuite silencieuse. `process.on('exit')` est SYNCHRONE : on
+ * ne peut pas y `await`, `rmSync` reste best-effort en une passe (pas de retry possible ici).
+ */
+const activeChildren = new Set();
+process.on('exit', () => {
+  for (const { chrome, profile } of activeChildren) {
+    try { killChromeTree(chrome); } catch {}
+    try { rmSync(profile, { recursive: true, force: true }); } catch {}
+  }
+});
 
 function resolveChromePath(explicit) {
   if (explicit) return explicit;
@@ -48,6 +77,21 @@ async function waitForWsUrl(port, timeoutMs = 10000) {
 }
 
 /**
+ * Supprime le profil temporaire CDP — tolérant : Windows peut retenir des handles quelques
+ * instants après `chrome.kill()` (EBUSY/EPERM), on réessaie avant d'abandonner sans jamais lever.
+ */
+async function removeProfileDir(profile, attempts = 5, delayMs = 200) {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      rmSync(profile, { recursive: true, force: true });
+      return;
+    } catch {
+      await sleep(delayMs);
+    }
+  }
+}
+
+/**
  * Lance Chrome headless et attache une session CDP dédiée (targetId + sessionId propres).
  *
  * Largeur par DÉFAUT = 1600 : c'est la largeur à laquelle les maquettes sont DESSINÉES
@@ -64,53 +108,66 @@ export async function launchSession({ chromePath, width = 1600, height = 900, po
     '--headless=new', `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
     `--window-size=${width},${height}`, '--no-first-run', '--no-default-browser-check', 'about:blank',
   ], { stdio: 'ignore' });
+  const childEntry = { chrome, profile };
+  activeChildren.add(childEntry);
 
-  const wsUrl = await waitForWsUrl(cdpPort);
-  const ws = new WebSocket(wsUrl);
-  await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
+  // Tout échec APRÈS le spawn (avant qu'un `session` ne soit rendu à l'appelant, donc avant qu'il
+  // puisse appeler `session.close()`) doit tuer ce Chrome et purger son profil ici — sinon fuite.
+  try {
+    const wsUrl = await waitForWsUrl(cdpPort);
+    const ws = new WebSocket(wsUrl);
+    await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
 
-  let id = 0;
-  const pending = new Map();
-  const listeners = new Set();
-  ws.addEventListener('message', (ev) => {
-    const m = JSON.parse(typeof ev.data === 'string' ? ev.data : ev.data.toString());
-    if (m.id && pending.has(m.id)) {
-      const { resolve, reject } = pending.get(m.id);
-      pending.delete(m.id);
-      if (m.error) reject(new Error(m.error.message)); else resolve(m.result);
-    }
-    for (const fn of listeners) fn(m);
-  });
+    let id = 0;
+    const pending = new Map();
+    const listeners = new Set();
+    ws.addEventListener('message', (ev) => {
+      const m = JSON.parse(typeof ev.data === 'string' ? ev.data : ev.data.toString());
+      if (m.id && pending.has(m.id)) {
+        const { resolve, reject } = pending.get(m.id);
+        pending.delete(m.id);
+        if (m.error) reject(new Error(m.error.message)); else resolve(m.result);
+      }
+      for (const fn of listeners) fn(m);
+    });
 
-  const session = { ws, chrome, listeners, sessionId: null, targetId: null };
+    const session = { ws, chrome, listeners, sessionId: null, targetId: null, profile };
 
-  session.rpc = (method, params = {}) => new Promise((resolve, reject) => {
-    const mid = ++id;
-    const msg = { id: mid, method, params };
-    if (session.sessionId) msg.sessionId = session.sessionId;
-    pending.set(mid, { resolve, reject });
-    ws.send(JSON.stringify(msg));
-  });
+    session.rpc = (method, params = {}) => new Promise((resolve, reject) => {
+      const mid = ++id;
+      const msg = { id: mid, method, params };
+      if (session.sessionId) msg.sessionId = session.sessionId;
+      pending.set(mid, { resolve, reject });
+      ws.send(JSON.stringify(msg));
+    });
 
-  const { targetId } = await session.rpc('Target.createTarget', { url: 'about:blank' });
-  session.targetId = targetId;
-  const { sessionId } = await session.rpc('Target.attachToTarget', { targetId, flatten: true });
-  session.sessionId = sessionId;
+    const { targetId } = await session.rpc('Target.createTarget', { url: 'about:blank' });
+    session.targetId = targetId;
+    const { sessionId } = await session.rpc('Target.attachToTarget', { targetId, flatten: true });
+    session.sessionId = sessionId;
 
-  await session.rpc('Page.enable');
-  await session.rpc('Runtime.enable');
-  await session.rpc('Emulation.setDeviceMetricsOverride', {
-    width, height, deviceScaleFactor: 1, mobile,
-  });
+    await session.rpc('Page.enable');
+    await session.rpc('Runtime.enable');
+    await session.rpc('Emulation.setDeviceMetricsOverride', {
+      width, height, deviceScaleFactor: 1, mobile,
+    });
 
-  /** Ferme le target CDP + tue le process Chrome (toujours appeler en fin de script). */
-  session.close = async () => {
-    try { await session.rpc('Target.closeTarget', { targetId: session.targetId }); } catch {}
-    ws.close();
-    chrome.kill();
-  };
+    /** Ferme le target CDP + tue le process Chrome + purge le profil temp (toujours appeler en fin de script). */
+    session.close = async () => {
+      try { await session.rpc('Target.closeTarget', { targetId: session.targetId }); } catch {}
+      try { ws.close(); } catch {}
+      killChromeTree(chrome);
+      await removeProfileDir(profile);
+      activeChildren.delete(childEntry);
+    };
 
-  return session;
+    return session;
+  } catch (e) {
+    killChromeTree(chrome);
+    await removeProfileDir(profile);
+    activeChildren.delete(childEntry);
+    throw e;
+  }
 }
 
 /** Évalue une expression JS dans la page (attend les promesses) et lève une erreur lisible si ça throw. */
@@ -142,9 +199,14 @@ export async function waitFor(session, expression, { timeoutMs = 8000, intervalM
 export async function openApp(url = DEFAULT_URL, opts = {}) {
   await checkServer(url);
   const session = await launchSession(opts);
-  await session.rpc('Page.navigate', { url });
-  await waitFor(session, `typeof window.__wfrp?.screen === 'function'`, { timeoutMs: 10000 });
-  return session;
+  try {
+    await session.rpc('Page.navigate', { url });
+    await waitFor(session, `typeof window.__wfrp?.screen === 'function'`, { timeoutMs: 10000 });
+    return session;
+  } catch (e) {
+    await session.close();
+    throw e;
+  }
 }
 
 /** Navigue vers un écran via `__wfrp.screen(name)` — id validé côté app (throw si invalide). */
