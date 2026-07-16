@@ -66,7 +66,7 @@ import {
 import {
   seaMilesPerDay, orientationOutcome, rollCourseChange, foulingEffects, rollWeeklyFouling,
   lighthouseSpotDifficulty, lighthouseOrientationDR, savoirOceansBonus, pursuitDistanceGain,
-  pursuitLowMPenalty, forcePaceDifficulty, exhaustionDifficulty, REPARATION,
+  pursuitLowMPenalty, forcePaceDifficulty, exhaustionDifficulty, REPARATION, overspeedRow, overspeedDamage,
 } from '../engine/seaNavigation';
 import { exposureNight, expireExposureEffects } from '../engine/exposure';
 import { pursuitOutcome } from '../engine/pursuit';
@@ -132,6 +132,10 @@ export interface SeaVoyageState {
   entries?: NightEntry[];
   /** Milles parcourus AUJOURD'HUI (fixés par la Progression). */
   milesToday: number;
+  /** M EFFECTIF du jour ayant servi à la Progression (`effectiveSeaM`, avant que `applySeaProgress` ne
+   *  consomme `eventMMod` de la journée) — SOURCE du Test de survitesse (#443, `buildOverspeedStep`) :
+   *  un recalcul APRÈS coup manquerait le bonus d'un jour déjà consommé (« Vents favorables »). */
+  effMToday?: number;
   /** Dérive mineure déjà vue (Repères : « sans effet la première fois », ch.13 l.318). */
   minorDrift?: boolean;
   /** Phare aperçu aujourd'hui → bonus d'Orientation (ch.13 l.335/351). */
@@ -503,6 +507,46 @@ function buildStrandedOrEntangledStep(get: Get, label: string, difficulty: Diffi
   };
 }
 
+/** Étape MONO « Ça va lâcher, capitaine ! » (MDG 13 l.121-142, `sea-overspeed`, applier ci-dessous) : le
+ *  navire a progressé ce jour au-delà de M+4 (M de conception, `overspeedRow`) → Test de Résistance sous
+ *  peine de Dégâts de coque. Le RAW nomme un « Test d'Endurance » sans en désigner l'acteur — arbitrage
+ *  maison « Test de parti » (même patron que le Dégagement #444, `buildStrandedOrEntangledStep`) : le
+ *  meilleur PJ soutenu (LDB 12) en Résistance. `null` = pas de survitesse ce jour, ou aucun PJ éligible. */
+function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
+  const plan = get().travelPlan!;
+  const sea = plan.sea!;
+  if (!sea.milesToday || sea.effMToday == null) return null; // aucune Progression ce jour → rien à sanctionner (Encalminé/Affalé/Échoué)
+  const hull = plan.vehicle!;
+  const vd = findVehicleById(hull.creatureId ?? '')?.ship;
+  const baseM = vd?.sail?.m ?? vd?.oars?.m ?? 0;
+  const row = overspeedRow(baseM, sea.effMToday);
+  if (!row) return null;
+  const best = partyAssisted(get().party, 'resistance', 'endurance');
+  if (!best) return null;
+  const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
+  return {
+    id: `sea-overspeed-${index}`, kind: 'sea-overspeed', actorId: best.actor.id, icon: 'travel/sail-ship',
+    label: composeRollLabel(best.actor, `Ça va lâcher, capitaine ! (M+${sea.effMToday - baseM})`, test, row.difficulty),
+    rollLabel: 'Résistance', base: best.value, target: effectiveTarget(best.actor, test, row.difficulty),
+    result: null, interactive: true, meta: { overspeedDamage: row.damage },
+  };
+}
+
+/** Cadence infra-journalière du tableau (1 Test par heure/minute/Round selon la bande, l.129-140) mappée
+ *  sur le grain JOUR de la boucle de voyage (règle maison éditable `sea-overspeed-tests-per-day`, #443,
+ *  même patron que `exposure-night-*-count`). `n − 1` Tests supplémentaires réutilisent le MÊME meneur
+ *  (composition figée au début du jour, comme les autres étapes de tronc). */
+function buildOverspeedSteps(get: Get): CascadeStep[] {
+  const n = Math.max(1, Math.round(Number(rule('sea-overspeed-tests-per-day'))));
+  const out: CascadeStep[] = [];
+  for (let i = 0; i < n; i++) {
+    const st = buildOverspeedStep(get, i);
+    if (!st) break;
+    out.push(st);
+  }
+  return out;
+}
+
 /**
  * Étapes POST-PROGRESSION du jour (crise → embuscade ancrée → phare → orientation → extermination →
  * entretien), calculées APRÈS que `applySeaProgress` ait posé `sea.milesToday` du jour (dépendance de
@@ -537,6 +581,9 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
     const st = buildStrandedOrEntangledStep(get, sea.entangled.label, sea.entangled.difficulty, 'sea-degagement-debris');
     if (st) out.push(st);
   }
+  // « ÇA VA LÂCHER, CAPITAINE ! » (MDG 13 l.121-142, #443) : la Progression du jour a dépassé M+4
+  // (M de conception) → Test(s) de Résistance sous peine de Dégâts de coque (`sea-overspeed`).
+  out.push(...buildOverspeedSteps(get));
   // #212. Embuscade AUTHORÉE à ancrage déterministe : franchissement de l'ancrage ce jour → Test de
   // Perception PUIS abordage (applier `embuscade`, déjà enregistré).
   if (route?.ambush?.scene && route.ambush.encounter && !sea.ambushFired) {
@@ -1034,7 +1081,10 @@ function applySeaProgress(get: Get, set: Set, progressionDR: number): string[] {
   // `sea-night-sailing` (défaut ON = navire équipé, distance pleine ; OFF = ÷2). #340.
   const nightSailing = rule('sea-night-sailing') === true;
   const miles = Math.round(seaMilesPerDay(eff.m, nightSailing, progressionDR));
-  patchSea(get, set, { milesToday: miles, eventMMod: undefined }); // « Vents favorables » : +1 M consommé sur UNE journée de route
+  // `eventMMod` consommé (« Vents favorables » : +1 M sur UNE journée de route) — `effMToday` PERSISTE le
+  // M effectif qui a servi à CETTE Progression, pour que le Test de survitesse (#443) le lise sans le
+  // recalculer après coup (un recalcul manquerait le bonus déjà consommé de la journée).
+  patchSea(get, set, { milesToday: miles, eventMMod: undefined, effMToday: eff.m });
   return [`Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`];
 }
 
@@ -1245,7 +1295,7 @@ export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: Ca
   patchSea(get, set, {
     daysAtSea, lines: [], entries: [], events: [],
     weather, windFrom, weatherLock: lock, reversedWinds: reversed,
-    milesToday: 0, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, paceToday: undefined,
+    milesToday: 0, effMToday: undefined, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, paceToday: undefined,
   });
   set({ travelPlan: { ...get().travelPlan!, kmDone } });
 
@@ -1301,6 +1351,23 @@ registerCascadeApplier('progression', (get, set, step) => {
   if (get().pendingSteamSave) return { consequences: freeCons(j) }; // le reste de la journée reprendra APRÈS la sauvegarde (`resolveSteamSave` → `runSeaDay`)
   const insert = buildPostProgressionSteps(get, set);
   return { consequences: freeCons(j), insert: insert.length ? insert : undefined };
+});
+
+/** « Ça va lâcher, capitaine ! » (MDG 13 l.121-142, #443) : échec du Test de Résistance de survitesse →
+ *  Dégâts de coque (`overspeedDamage`, X = DR négatifs) routés par `damageVesselHull` (SOURCE UNIQUE). */
+registerCascadeApplier('sea-overspeed', (get, set, step) => {
+  if (!step.result) return;
+  if (step.result.success) {
+    const j = [`${step.label} : le navire tient l'allure.`];
+    noteSeaLine(get, set, j);
+    return { consequences: freeCons(j) };
+  }
+  const dmg = overspeedDamage(Number(step.meta?.overspeedDamage ?? 0), step.result.sl);
+  const hull = get().travelPlan?.vehicle;
+  const j = hull ? damageVesselHull(get, set, hull, dmg) : [];
+  const line = [`${step.label} : la coque encaisse ${dmg} Blessure(s) (MDG ch.13 l.142).`, ...j];
+  noteSeaLine(get, set, line);
+  return { consequences: freeCons(line) };
 });
 
 /** Conséquence PARTAGÉE d'Affaler (ch.13 l.288-294) : échec → Critique au Gréement (MDG 14 l.92-96).

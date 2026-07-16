@@ -113,11 +113,19 @@ export function overspeedRow(baseM: number, m: number): OverspeedRow | null {
   return { difficulty: row.difficulty, per: row.per, damage: row.damage };
 }
 
-/** Test d'Endurance du NAVIRE en survitesse : échec → Dégâts `damage + X`, « X est égal au nombre de
- *  Degrés de Réussite négatifs générés sur un Test de Résistance raté » (l.142). PUR (RNG injecté). */
+/** Dégâts d'un ÉCHEC du Test de survitesse : `damage + X`, « X est égal au nombre de Degrés de
+ *  Réussite négatifs générés sur un Test de Résistance raté » (l.142). PUR — factorisé pour être
+ *  partagé par `rollOverspeedDamage` (jet auto-contenu) et tout appelant qui possède déjà le résultat
+ *  d'un Test résolu ailleurs (ex. couture cascade, `seaVoyageFlow.ts`). */
+export function overspeedDamage(baseDamage: number, sl: number): number {
+  return baseDamage + Math.max(0, -sl);
+}
+
+/** Test d'Endurance du NAVIRE en survitesse : échec → Dégâts `damage + X` (l.142, `overspeedDamage`).
+ *  PUR (RNG injecté). */
 export function rollOverspeedDamage(hull: Combatant, row: OverspeedRow, rng: RNG = defaultRNG): { roll: number; target: number; success: boolean; damage: number } {
   const t = rollTest(effectiveChar(hull, 'endurance'), row.difficulty, rng);
-  return { roll: t.roll, target: t.target, success: t.success, damage: t.success ? 0 : row.damage + Math.max(0, -t.sl) };
+  return { roll: t.roll, target: t.target, success: t.success, damage: t.success ? 0 : overspeedDamage(row.damage, t.sl) };
 }
 
 // ── Salissures (l.144-159) ───────────────────────────────────────────────────────────────────────

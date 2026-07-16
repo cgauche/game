@@ -771,6 +771,21 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Un abordage (MDG ch.14/15) dérivé d’un événement de navire hostile engendre une vague d’assaillants de CE nombre (individus de l’équipage type de la coque), plus le chef éventuel — la coque ennemie entière (25/45 marins) est l’effectif du navire, jamais autant de figurants sur le pont. Le RAW décrit l’assaut sans chiffrer la vague → paramètre maison, éditable.',
   },
   {
+    // #443 — le tableau ÇA VA LÂCHER, CAPITAINE ! (MDG 13 l.121-142) chiffre une CADENCE infra-journalière
+    // (1 Test par heure/minute/Round selon la bande de survitesse) que la boucle de voyage, JOUR par jour,
+    // ne modélise pas. « Test de parti » (acteur non nommé par le RAW, même arbitrage que le Dégagement
+    // #444) résolu à ce grain : ce paramètre borne le nombre de Tests joués par jour de survitesse.
+    id: 'sea-overspeed-tests-per-day',
+    label: 'Survitesse : Tests d’Endurance par jour',
+    ref: 'MDG 13 l.121-142 — cadence infra-journalière, résolution par jour maison (#443)',
+    group: 'Voyage',
+    kind: 'param',
+    default: 1,
+    min: 1,
+    max: 6,
+    hint: '« Ça va lâcher, capitaine ! » chiffre 1 Test par heure/minute/Round selon la bande de survitesse — la boucle de voyage résout un JOUR à la fois. Défaut : 1 Test (le pire des dégâts de la bande) par jour de survitesse ; augmenter pour accentuer le risque des bandes les plus sévères (M+7 et plus).',
+  },
+  {
     id: 'sea-chart-orientation-dr',
     label: 'Carte marine : bonus d’Orientation',
     ref: 'MDG 15 l.290 — 2 ports désignés : toute route = maison',

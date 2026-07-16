@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import {
@@ -25,6 +25,8 @@ import { checkBattleOver } from './combatFlow';
 import { BOARD_EVENTS, seaBoardEventById } from '../engine/seaVoyage';
 import type { RecapEvent } from './recapLine';
 import { SEA_HAZARDS, findSeaHazard } from '../engine/seaPerils';
+import { overspeedRow } from '../engine/seaNavigation';
+import { setRule, resetRule } from '../engine/policy';
 
 /**
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15), pilotée
@@ -1198,5 +1200,81 @@ describe('Échouage/Empêtrement — dégagement par Test de Force (#444, applie
     runSeaDay(get, set);
     expect(get().travelPlan!.sea!.milesToday).toBe(0);
     expect(get().journal.some((l) => l.includes('ÉCHOUÉ'))).toBe(true);
+  });
+});
+
+describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-142)', () => {
+  beforeEach(freshState);
+  afterEach(() => resetRule('sea-overspeed-tests-per-day'));
+
+  // Cogue : sail.m = 5 (M de conception). Légère brise + vent arrière/latéral = pctSail 0 (aucun mod de
+  // vent) → `eff.m` dépend UNIQUEMENT de `eventMMod` (deterministe, aucun bruit de la météo tirée).
+  function planWithSea(eventMMod?: number) {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    const sea = {
+      ...plan.sea!,
+      weather: { ...plan.sea!.weather, vent: 'legere-brise' as const },
+      windFrom: 'ouest' as const, // heading 'est' + vent d'ouest → aspect ARRIÈRE (pctSail 0)
+      ...(eventMMod != null ? { eventMMod } : {}),
+    };
+    set({ travelPlan: { ...plan, sea } });
+    return plan;
+  }
+  function step(kind: string, sl: number, success = sl >= 1, meta?: Record<string, number>): CascadeStep {
+    return { id: kind, kind, label: kind, result: { roll: 0, target: 0, sl, success }, interactive: true, meta };
+  }
+  const apply = (kind: string, sl: number, success = sl >= 1, meta?: Record<string, number>) =>
+    cascadeAppliers[kind].apply(get, set, step(kind, sl, success, meta), undefined, { steps: [], index: 0 });
+
+  it('pas de survitesse (M dans les clous, ≤ M+4) → la Progression n’insère aucun Test de survitesse', () => {
+    planWithSea(); // aucun eventMMod → M 5, sous le seuil M+4 (safeBonus)
+    const out = apply('progression', 2, true);
+    expect(get().travelPlan!.sea!.effMToday).toBeLessThanOrEqual(9); // baseM(5) + safeBonus(4)
+    expect(out?.insert?.some((s) => s.kind === 'sea-overspeed')).toBeFalsy();
+  });
+
+  it('survitesse (eventMMod +5 → M+5) → la Progression insère un Test de survitesse (ligne « ÇA VA LÂCHER, CAPITAINE ! »)', () => {
+    planWithSea(5); // baseM_local 5+5=10, vent neutre (pctSail 0) → eff.m 10 = M+5
+    const out = apply('progression', 2, true);
+    expect(get().travelPlan!.sea!.effMToday).toBe(10);
+    const row = overspeedRow(5, 10)!;
+    expect(row).toMatchObject({ difficulty: 'accessible', per: 'heure', damage: 1 }); // M+5
+    const st = out?.insert?.find((s) => s.kind === 'sea-overspeed');
+    expect(st).toBeTruthy();
+    expect(st!.meta?.overspeedDamage).toBe(row.damage);
+    expect(st!.actorId).toBeTruthy(); // « Test de parti » — arbitrage maison, jamais un jet sans acteur visible
+  });
+
+  it('applier sea-overspeed : échec du Test de Résistance → Dégâts de coque = damage + X (X = DR négatifs), routés par damageVesselHull (#296)', () => {
+    const plan = planWithSea();
+    plan.vehicle!.wounds.current = plan.vehicle!.wounds.max;
+    const before = plan.vehicle!.wounds.current;
+    apply('sea-overspeed', -5, false, { overspeedDamage: 1 }); // ligne M+5 : 1+X, X=5 → 6
+    expect(get().travelPlan!.vehicle!.wounds.current).toBe(before - 6);
+    expect(get().vessel!.wounds!.current).toBe(before - 6); // persisté (#296)
+  });
+
+  it('applier sea-overspeed : succès → aucun Dégât', () => {
+    const plan = planWithSea();
+    plan.vehicle!.wounds.current = plan.vehicle!.wounds.max;
+    const before = plan.vehicle!.wounds.current;
+    apply('sea-overspeed', 3, true, { overspeedDamage: 1 });
+    expect(get().travelPlan!.vehicle!.wounds.current).toBe(before);
+  });
+
+  it('données éditées (`sea-navigation.json` via `overspeedRow`) : le Test de survitesse suit le tableau — bande extrême « M+9 ou plus » → damage 8', () => {
+    planWithSea(20); // baseM_local 5+20=25, vent neutre → eff.m 25 = M+20 (plafonné par la table à « M+9 ou plus »)
+    const row = overspeedRow(5, 25)!;
+    expect(row.damage).toBe(8); // « M+9 ou plus » — le calcul de la ligne suit la DONNÉE, jamais une valeur en dur
+    const out = apply('progression', 2, true);
+    const st = out?.insert?.find((s) => s.kind === 'sea-overspeed');
+    expect(st!.meta?.overspeedDamage).toBe(8);
+  });
+
+  it('règle éditable `sea-overspeed-tests-per-day` (#443, cadence infra-journalière mappée sur le jour) : N=2 → deux Tests de survitesse insérés', () => {
+    setRule('sea-overspeed-tests-per-day', 2);
+    planWithSea(5);
+    const out = apply('progression', 2, true);
+    expect(out?.insert?.filter((s) => s.kind === 'sea-overspeed').length).toBe(2);
   });
 });
