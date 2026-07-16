@@ -60,16 +60,16 @@ function useTumbleDigit(landed: boolean, real: number | null): number | null {
  *  EXPORTÉ (#393 P2) : les encriers « Aux dés » du créateur (Race/Carrière) le montent debout dans
  *  leur plateau (`.dicewell-die`) — idle (dé nu) ET rendu (vraie face gravée), jamais une icône
  *  générique recopiée à côté. */
-export function DieFace({ n, landed }: { n: number | null; landed: boolean }) {
+export function DieFace({ n, landed, tone }: { n: number | null; landed: boolean; /** `'gold'` = matière laiton/bois de l'Atelier du scribe (créateur, galerie) — défaut = gemme rouge canon du combat. */ tone?: 'gold' }) {
   return (
-    <svg viewBox="0 0 24 24" className={`rm-die-svg${landed ? ' rm-die-landed' : ' rm-die-rolling'}`} aria-hidden="true">
+    <svg viewBox="0 0 24 24" className={`rm-die-svg${landed ? ' rm-die-landed' : ' rm-die-rolling'}${tone === 'gold' ? ' rm-die-gold' : ''}`} aria-hidden="true">
       <path className="rm-die-gem" d="M12.1 3.1 L18.9 8.5 L17.1 16.7 L12 20.9 L6.9 16.7 L5.1 8.5 Z" />
       {n != null && <text x="12" y="13.6" textAnchor="middle" className="rm-die-num">{n}</text>}
     </svg>
   );
 }
 
-export function DiceRoll({ onSkip, landed = false, faces, scene = true }: {
+export function DiceRoll({ onSkip, landed = false, faces, scene = true, tone }: {
   onSkip?: () => void;
   /** Phase d'atterrissage : les dés sont FIGÉS sur `faces` (arrêt du défilement). */
   landed?: boolean;
@@ -77,6 +77,8 @@ export function DiceRoll({ onSkip, landed = false, faces, scene = true }: {
   faces?: readonly [number, number] | null;
   /** Présentation « scène » (grands dés centrés, voile sur le contenu) vs inline (petite rangée). */
   scene?: boolean;
+  /** `'gold'` = matière laiton/bois de l'Atelier du scribe (créateur, galerie) — défaut = gemme rouge canon du combat. */
+  tone?: 'gold';
 }) {
   // Deux instances INDÉPENDANTES (règle des hooks : toujours appelées, jamais conditionnelles).
   const d0 = useTumbleDigit(landed, faces?.[0] ?? null);
@@ -90,8 +92,8 @@ export function DiceRoll({ onSkip, landed = false, faces, scene = true }: {
       title={onSkip ? 'Cliquer pour passer le roulis' : undefined}
       onKeyDown={onSkip ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSkip(); } } : undefined}
     >
-      <span className="rm-die"><DieFace n={d0} landed={landed} /></span>
-      <span className="rm-die"><DieFace n={d1} landed={landed} /></span>
+      <span className="rm-die"><DieFace n={d0} landed={landed} tone={tone} /></span>
+      <span className="rm-die"><DieFace n={d1} landed={landed} tone={tone} /></span>
     </div>
   );
 }

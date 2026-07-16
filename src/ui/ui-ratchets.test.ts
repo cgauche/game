@@ -165,6 +165,11 @@ const BARE_BUTTON_CANON = /\b(btn|chip|seg|dicewell|cc-step)\b/;
 const BARE_BUTTON_BASELINE: Record<string, number> = {
   'ActionBar.tsx': 1,
   'CityHubScreen.tsx': 1,
+  // +1 (2026-07-16, #496) : carte-bouton de talent 5c (race « A ou B ») — bouton BESPOKE
+  // `.talent-option` (creator.css), même famille que `.fig-tile`/`.plaque-row` mais sans
+  // fichier-primitive dédié ; migration vers un patron FigTile différée (une entrée porte 2
+  // options, pas 1:1 avec la carte — cf. #496).
+  'creator/CharacterCreator.tsx': 1,
   'compendium/CompendiumScreen.tsx': 1,
   'editor/DialogueDetail.tsx': 1,
   'editor/EditorToolbar.tsx': 1,
@@ -245,7 +250,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `.seat-contract-badge`/`.seat-empty-title`, `.party-actions-summary`/`-buttons`.
   // +6 : scène centrale du roulis + dé SVG au chiffre gravé sur la face (#396 v2-v4) — `.rm-scene`/
   // `.rm-die-landed`/`.rm-die-svg`/`.rm-die-gem`/`.rm-die-num`/`.rm-die-rolling` (primitive DiceRoll).
-  'styles/combat-modals.css': 147,
+  // +1 (2026-07-16, #496) : `.rm-die-gold` — modificateur de matière DORÉE de `DieFace`/`DiceRoll`
+  // (prop `tone`), SOURCE UNIQUE qui remplace les 3 scopes ancêtres dupliqués (creator-step.css/
+  // plaque-row.css, purgés en regard).
+  'styles/combat-modals.css': 148,
   'styles/combat-ui.css': 112,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
@@ -362,7 +370,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `.fig-tile-sub` meurent ICI, frames.css devient la SEULE définition (+1 en regard, cf. plus bas).
   // `fig-tile` et `sel` restent comptés : le modificateur DOMAINE `.creator-race-grid .fig-tile.rolled`
   // et `.cc-step.sel` les gardent vivants dans ce module.
-  'styles/creator.css': 105,
+  // +2 (2026-07-16, #496) : sceau de cire des talents 5c (planche #393, patron `FigTile`) — la carte
+  // EST la cible de clic (`.talent-option` devient tantôt le `<button>`, tantôt son enveloppe
+  // `<div>` quand elle porte un `<select>` non imbricable dans un bouton) : `.talent-option-btn`
+  // (reset de l'enfant cliquable côté carrière) et `.talent-option-seal` (médaillon du sceau) —
+  // les 3 `<input type=radio>` des cartes race/carrière meurent au profit du bouton natif.
+  'styles/creator.css': 107,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -404,7 +417,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // primitive PARTAGÉE `QtyStepper` DANS le gabarit d'étape, MÊME idiome que les dés dorés
   // (`.rm-die-*`) déjà scopés ici : la peau marchande (`--panel2` en aplat, components.css) reste le
   // canon de la table de négoce, aucun fork du composant. Lot « matières & proportions » #393.
-  'styles/creator-step.css': 12,
+  // -4 (2026-07-16, #496) : `.rm-die-gem`/`.rm-die-num`/`.rm-die-rolling` (scopes `.creator-step`/
+  // `.dicewell-tray`) purgés — la matière DORÉE des dés est maintenant la prop `tone="gold"` de
+  // `DieFace`/`DiceRoll` (modificateur `.rm-die-gold`, SOURCE UNIQUE combat-modals.css).
+  'styles/creator-step.css': 8,
   // Mise en scène FINALE du créateur (`PresentationScreen`, migration étape 8 du lot ossature) —
   // l'étape EXEMPTÉE du gabarit 2 zones (user 2026-07-15 : « sauf sur le dernier écran ») porte son
   // style dans SON module, jamais dans creator.css (amendement 2 : décrue nette exigée). Valeurs de
@@ -429,7 +445,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // dans les primitives ») — la plaque ÉDITABLE (`.idf .vl` : trait pointillé) et la plaque
   // CLIQUABLE n'ont, elles, coûté aucune classe (sélecteurs d'élément `.plaque-name > input` /
   // `button.plaque-row`).
-  'styles/plaque-row.css': 13,
+  // -2 (2026-07-16, #496) : `.rm-die-gem`/`.rm-die-rolling` (scope `.plaque-meta`) purgés — même
+  // bascule que creator-step.css vers le modificateur `.rm-die-gold` de combat-modals.css.
+  'styles/plaque-row.css': 11,
   // Astrolabe de la roue céleste (`CelestialWheel`, migration étape 4 du lot ossature) : les MATIÈRES
   // du cadran aux valeurs du `svg` « 4 — Signe astral » de la planche FINALE. 14 pour 3 qui vivaient
   // dans creator.css : contrepartie ASSUMÉE de la fidélité (l'ancienne roue était un croquis à deux

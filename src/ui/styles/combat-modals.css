@@ -104,6 +104,25 @@
 @media (prefers-reduced-motion: reduce) {
   .rm-die-rolling { animation: none; }
 }
+/* Matière DORÉE (`tone="gold"`, DieFace) — Atelier du scribe (créateur, `.dicewell-tray`) et sa
+   plaque (galerie comprise) : silhouette bois `--atelier-wood-top` à liseré laiton, chiffre ivoire
+   `--atelier-brass-elu`. Roulis : liseré POINTILLÉ or clair + chiffre or. SOURCE UNIQUE — remplace
+   les 3 scopes ancêtres dupliqués (creator-step.css/plaque-row.css, valeurs identiques, #496). */
+.rm-die-gold .rm-die-gem {
+  fill: var(--atelier-wood-top);
+  stroke: var(--atelier-brass-hover);
+  stroke-width: 1.1;
+}
+.rm-die-gold .rm-die-num {
+  fill: var(--atelier-brass-elu);
+}
+.rm-die-gold.rm-die-rolling .rm-die-gem {
+  stroke: var(--atelier-brass-light);
+  stroke-dasharray: 3 2;
+}
+.rm-die-gold.rm-die-rolling .rm-die-num {
+  fill: var(--gold2);
+}
 /* Scène centrale (#396 v2, arbitrage user 2026-07-14 « scène plus théâtrale ») : le roulis MONO
    (bouton « Lancer » hissé du `RollShell`, `CreatorDice`) occupe le centre de son ancêtre positionné
    (`.modal`/`.rs-embedded`/`.zone-section`, `position: relative` posé sur chacun) — voile sur le

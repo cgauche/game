@@ -467,15 +467,47 @@
    l'état ÉLU chaud, MÊME dégradé que la plaque élue de `PlaqueRow` (`.c-plate.sel` de la planche).
    Elle ne prend PLUS les `--bg2`/`--border` génériques : la carte était le seul meuble de l'étape 5
    resté hors de la charte. */
-.talent-option {
+/* La CARTE est la cible de clic (#496, patron `FigTile`) : `.talent-option` est tantôt le `<button>`
+   lui-même (race, un bouton par option « A ou B »), tantôt son enveloppe `<div>` (carrière, où le
+   `<select>` de spécialisation — contenu interactif — ne peut pas être imbriqué dans le `<button>`
+   au sens HTML ; le reset ci-dessous vaut aussi dans ce cas pour `.talent-option-btn`, l'enfant
+   cliquable). `position: relative` ancre le sceau de cire en médaillon. */
+.talent-option,
+.talent-option-btn {
   border: 1px solid var(--atelier-wood-etch);
   border-radius: 9px;
   padding: 10px 12px;
   background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
 }
-.talent-option:hover {
+.talent-option-btn {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+.talent-option:hover,
+.talent-option-btn:hover:not(:disabled) {
   border-color: var(--atelier-brass-hover);
+}
+.talent-option:disabled,
+.talent-option-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.talent-option:focus-visible,
+.talent-option-btn:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 1px;
 }
 .talent-option b {
   font-family: var(--font-display);
@@ -490,6 +522,15 @@
 }
 .talent-option.selected b {
   color: var(--atelier-brass-elu);
+}
+/* Sceau de cire en médaillon (« le choix est SCELLÉ ») — déborde au coin haut-droit, patron
+   `.fig-tile-seal` (frames.css). */
+.talent-option-seal {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 2;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
 }
 /* `.cs-tcard .ds` de la planche : la description coule sous le nom, en laiton pâle. */
 .talent-desc {

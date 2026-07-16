@@ -316,6 +316,11 @@ appliers du jour.
   et de cliquer ; vérifier par `elementFromPoint` en cas de clic mort (vécu recette #495, créateur
   étape Caractéristiques).
 
+- **Rect périmé** : sur une liste qui peut se RE-RENDRE entre le `scrollIntoView` et le clic
+  (animation, gain de PX, re-render React), re-mesurer `getBoundingClientRect` JUSTE AVANT le
+  `Input.dispatchMouseEvent` — sinon le clic atterrit sur le voisin sans erreur levée (vécu recette
+  #496 : clic « Humains » atterri sur « Nains »).
+
 - **Mode Pousser (bélier/engin de siège) au clavier — séquence exacte** (#199) : cliquer le slot
   « Pousser » de la barre d'action ouvre le mode-CASE (`battle.action === 'push'`) mais laisse ce
   BOUTON focalisé dans le DOM. `ArrowUp/Down/Left/Right` posent/déplacent `combatCursor` (le **1er

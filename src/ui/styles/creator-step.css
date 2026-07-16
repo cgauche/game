@@ -94,29 +94,3 @@
   border-color: var(--gold2);
   color: var(--atelier-brass-light);
 }
-
-/* ── Dés DORÉS de la planche (`.d10` : silhouette sombre à liseré laiton, chiffre ivoire #ffe6a8)
-   — DieFace (`DiceRoll.tsx`) recoloré dans TOUT le gabarit d'étape + les plateaux d'encrier
-   (`.dicewell-tray`, où qu'ils soient montés : galerie comprise). La gemme ROUGE par défaut
-   (`.rm-die-gem`, combat-modals.css) reste le canon des modales de combat (#396). ── */
-.creator-step .rm-die-gem,
-.dicewell-tray .rm-die-gem {
-  fill: var(--atelier-wood-top);
-  stroke: var(--atelier-brass-hover);
-  stroke-width: 1.1;
-}
-.creator-step .rm-die-num,
-.dicewell-tray .rm-die-num {
-  fill: var(--atelier-brass-elu);
-}
-/* Roulis : liseré POINTILLÉ or clair + chiffre or (`.d10.roll` de la planche — bordure dashed
-   #ffd97a, chiffre #d8b954). */
-.creator-step .rm-die-rolling .rm-die-gem,
-.dicewell-tray .rm-die-rolling .rm-die-gem {
-  stroke: var(--atelier-brass-light);
-  stroke-dasharray: 3 2;
-}
-.creator-step .rm-die-rolling .rm-die-num,
-.dicewell-tray .rm-die-rolling .rm-die-num {
-  fill: var(--gold2);
-}

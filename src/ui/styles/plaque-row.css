@@ -118,29 +118,15 @@ button.plaque-row:hover {
   font-style: normal;
 }
 /* Dés COMPACTS dans la méta d'une plaque (planche : d10 de 22px dans les rangées de tirage) —
-   couvre les faces posées ET le roulis inline de `DiceRoll` (mêmes boîtes `.rm-die`). */
+   couvre les faces posées ET le roulis inline de `DiceRoll` (mêmes boîtes `.rm-die`). La matière
+   DORÉE (`tone="gold"`, DieFace) vit dans combat-modals.css, source unique du modificateur
+   `.rm-die-gold` (#496). */
 .plaque-meta .rm-die {
   width: 22px;
   height: 22px;
 }
 .plaque-meta .rm-die-num {
   font-size: 10px;
-  fill: var(--atelier-brass-elu);
-}
-/* Dés DORÉS de la planche dans la plaque, OÙ QU'ELLE soit montée (galerie comprise) — mêmes
-   valeurs que le scope du gabarit d'étape (creator-step.css) ; la gemme ROUGE par défaut
-   (combat-modals.css) reste le canon des modales de combat. */
-.plaque-meta .rm-die-gem {
-  fill: var(--atelier-wood-top);
-  stroke: var(--atelier-brass-hover);
-  stroke-width: 1.1;
-}
-.plaque-meta .rm-die-rolling .rm-die-gem {
-  stroke: var(--atelier-brass-light);
-  stroke-dasharray: 3 2;
-}
-.plaque-meta .rm-die-rolling .rm-die-num {
-  fill: var(--gold2);
 }
 .plaque-value {
   margin-left: auto;

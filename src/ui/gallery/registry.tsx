@@ -268,8 +268,8 @@ function PlaqueRowDemo() {
           rolling
           meta={
             <span className="row-flex">
-              <span className="rm-die"><DieFace n={5} landed /></span>
-              <span className="rm-die"><DieFace n={6} landed /></span>
+              <span className="rm-die"><DieFace n={5} landed tone="gold" /></span>
+              <span className="rm-die"><DieFace n={6} landed tone="gold" /></span>
             </span>
           }
           value={ch[k3]}
@@ -597,8 +597,8 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
   { name: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
   { name: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
-  { name: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états (#396 WIP non committé — RollRow/useRollFrisson non importés)', render: RollShellStaticMock },
-  { name: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états (#396 WIP non committé)', render: RollRowStaticMock },
+  { name: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états — un spécimen vivant exigerait un flux de jet monté (store + makeRollFlow), hors de portée d’une vignette de galerie', render: RollShellStaticMock },
+  { name: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états — même raison que RollShell (flux de jet monté hors de portée d’une vignette)', render: RollRowStaticMock },
   { name: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
   { name: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
   { name: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },

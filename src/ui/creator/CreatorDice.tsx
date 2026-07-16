@@ -26,7 +26,7 @@ function DiceTray({ faces }: { faces: readonly [number | null, number | null] })
     <span className="dicewell-tray">
       {faces.map((n, i) => (
         <span key={i} className="rm-die dicewell-die">
-          <DieFace n={n} landed />
+          <DieFace n={n} landed tone="gold" />
         </span>
       ))}
     </span>
@@ -70,7 +70,7 @@ export function CreatorDice({ label, sub, verdict, hint, rolled, xp, onRoll, rol
   const faces = roll != null ? d100Faces(roll) : null;
   const body =
     rolling || landed ? (
-      <DiceRoll scene landed={landed} faces={landed ? faces : null} onSkip={skip} />
+      <DiceRoll scene landed={landed} faces={landed ? faces : null} onSkip={skip} tone="gold" />
     ) : !rolled && onRoll ? (
       /* Attente = encrier rouge bordé-teinté « Atelier du scribe » (#414 : composant unique, langue
          « tu peux agir » — ROUGE bordé, en retrait du rempli de navigation). */

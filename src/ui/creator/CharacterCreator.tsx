@@ -81,6 +81,7 @@ import { DiceRoll, DieFace } from '../DiceRoll';
 import { d100Faces, d10Face } from '../Dice';
 import { CelestialWheel } from './CelestialWheel';
 import { DetailFrame } from '../DetailFrame';
+import { WaxSeal } from '../WaxSeal';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { MetalStatus } from '../MetalStatus';
 import { CareerPath } from '../CareerPath';
@@ -476,12 +477,12 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   const faces = landed && d.speciesRoll ? d100Faces(d.speciesRoll.roll) : null;
 
   const diceCell = rolling || landed ? (
-    <DiceRoll scene landed={landed} faces={faces} onSkip={skip} />
+    <DiceRoll scene landed={landed} faces={faces} onSkip={skip} tone="gold" />
   ) : !d.speciesRoll ? (
     <button type="button" className="dicewell act emph" onClick={() => trigger()}>
       <span className="dicewell-tray">
-        <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
-        <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+        <span className="rm-die dicewell-die"><DieFace n={null} landed tone="gold" /></span>
+        <span className="rm-die dicewell-die"><DieFace n={null} landed tone="gold" /></span>
       </span>
       <span className="dicewell-copy">
         <span className="dicewell-txt">Tirer aux dés — d100</span>
@@ -491,8 +492,8 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   ) : (
     <div className="dicewell done">
       <span className="dicewell-tray">
-        <span className="rm-die dicewell-die"><DieFace n={d100Faces(d.speciesRoll.roll)[0]} landed /></span>
-        <span className="rm-die dicewell-die"><DieFace n={d100Faces(d.speciesRoll.roll)[1]} landed /></span>
+        <span className="rm-die dicewell-die"><DieFace n={d100Faces(d.speciesRoll.roll)[0]} landed tone="gold" /></span>
+        <span className="rm-die dicewell-die"><DieFace n={d100Faces(d.speciesRoll.roll)[1]} landed tone="gold" /></span>
       </span>
       <span className="dicewell-copy">
         <span className="dicewell-txt">
@@ -679,12 +680,12 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
   const faces = landed && rolledLast ? d100Faces(rolledLast.roll) : null;
 
   const diceCell = rolling || landed ? (
-    <DiceRoll scene landed={landed} faces={faces} onSkip={skip} />
+    <DiceRoll scene landed={landed} faces={faces} onSkip={skip} tone="gold" />
   ) : d.careerRolls.length === 0 ? (
     <button type="button" className="dicewell act emph" disabled={!sp} onClick={() => trigger()}>
       <span className="dicewell-tray">
-        <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
-        <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+        <span className="rm-die dicewell-die"><DieFace n={null} landed tone="gold" /></span>
+        <span className="rm-die dicewell-die"><DieFace n={null} landed tone="gold" /></span>
       </span>
       <span className="dicewell-copy">
         <span className="dicewell-txt">Tirer aux dés — d100</span>
@@ -696,8 +697,8 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
   ) : (
     <div className="dicewell done">
       <span className="dicewell-tray">
-        <span className="rm-die dicewell-die"><DieFace n={d100Faces(rolledLast.roll)[0]} landed /></span>
-        <span className="rm-die dicewell-die"><DieFace n={d100Faces(rolledLast.roll)[1]} landed /></span>
+        <span className="rm-die dicewell-die"><DieFace n={d100Faces(rolledLast.roll)[0]} landed tone="gold" /></span>
+        <span className="rm-die dicewell-die"><DieFace n={d100Faces(rolledLast.roll)[1]} landed tone="gold" /></span>
       </span>
       <span className="dicewell-copy">
         <span className="dicewell-txt">
@@ -993,19 +994,19 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
                       <>
                         {d.charMode !== 'pointBuy' && rowRolling && (
                           <span className="row-flex">
-                            <DiceRoll scene={false} landed={false} faces={null} onSkip={() => setSeq(null)} />
+                            <DiceRoll scene={false} landed={false} faces={null} onSkip={() => setSeq(null)} tone="gold" />
                           </span>
                         )}
                         {d.charMode !== 'pointBuy' && !rowRolling && !revealed && (
                           <span className="row-flex">
-                            <span className="rm-die"><DieFace n={null} landed /></span>
-                            <span className="rm-die"><DieFace n={null} landed /></span>
+                            <span className="rm-die"><DieFace n={null} landed tone="gold" /></span>
+                            <span className="rm-die"><DieFace n={null} landed tone="gold" /></span>
                           </span>
                         )}
                         {d.charMode === 'rolled' && revealed && (
                           <span className="row-flex">
-                            <span className="rm-die"><DieFace n={pairs[i][0]} landed /></span>
-                            <span className="rm-die"><DieFace n={pairs[i][1]} landed /></span>
+                            <span className="rm-die"><DieFace n={pairs[i][0]} landed tone="gold" /></span>
+                            <span className="rm-die"><DieFace n={pairs[i][1]} landed tone="gold" /></span>
                           </span>
                         )}
                         {d.charMode === 'reassigned' && revealed && (
@@ -1668,22 +1669,26 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
                   const options = splitTopLevelOu(entry);
                   const selected = d.speciesTalentChoices[entry] ?? null;
                   return (
-                    <div key={entry} className={`talent-option ${selected ? 'selected' : ''}`}>
-                      {options.map((opt, i) => (
-                        <span key={opt}>
-                          {i > 0 && <span className="talent-option-ou">ou</span>}
-                          <label className="radio" style={{ display: 'flex', marginBottom: 4 }}>
-                            <input
-                              type="radio"
-                              name={`species-talent-${entry}`}
-                              checked={selected === opt}
-                              onChange={() => setD({ ...d, speciesTalentChoices: { ...d.speciesTalentChoices, [entry]: opt } })}
-                            />
-                            <b>{opt}</b>
-                          </label>
-                        </span>
-                      ))}
-                      <p className="hint talent-desc">{talentTip(selected ?? options[0])}</p>
+                    <div key={entry} role="radiogroup" aria-label={entry}>
+                      {options.map((opt, i) => {
+                        const isSel = selected === opt;
+                        return (
+                          <span key={opt}>
+                            {i > 0 && <span className="talent-option-ou">ou</span>}
+                            <button
+                              type="button"
+                              role="radio"
+                              aria-checked={isSel}
+                              className={`talent-option ${isSel ? 'selected' : ''}`}
+                              onClick={() => setD({ ...d, speciesTalentChoices: { ...d.speciesTalentChoices, [entry]: opt } })}
+                            >
+                              {isSel && <WaxSeal size={26} className="talent-option-seal" />}
+                              <b>{opt}</b>
+                              <p className="hint talent-desc">{talentTip(opt)}</p>
+                            </button>
+                          </span>
+                        );
+                      })}
                     </div>
                   );
                 })}
@@ -1701,41 +1706,49 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
             )}
           </Band>
           <Band title={<>De carrière<small>un au choix</small></>} right={<b className={d.careerTalent ? 'ok-text' : 'warn-text'}>{d.careerTalent ? 1 : 0}/1</b>}>
-            <div className="talent-options-grid">
-            {careerChoices.map(({ entry, choices, selected, maxed }) => (
-              <div key={entry} className={`talent-option ${selected && d.careerTalent === selected ? 'selected' : ''}`}>
-                <label className="radio" style={{ flexWrap: 'wrap' }}>
-                  <input
-                    type="radio"
-                    name="career-talent"
-                    disabled={!selected || maxed}
-                    checked={!!selected && d.careerTalent === selected}
-                    onChange={() => selected && setD({ ...d, careerTalent: selected })}
-                  />
+            <div className="talent-options-grid" role="radiogroup" aria-label="Talent de carrière">
+            {careerChoices.map(({ entry, choices, selected, maxed }) => {
+              const isSel = !!selected && d.careerTalent === selected;
+              return (
+              <div key={entry} className={`talent-option ${isSel ? 'selected' : ''}`}>
+                {isSel && <WaxSeal size={26} className="talent-option-seal" />}
+                {/* Le `<select>` de spécialisation est un contrôle DISTINCT de la carte-bouton (un
+                    `<select>` imbriqué dans un `<button>` est du HTML invalide — contenu interactif
+                    dans du contenu interactif) : bouton = choisir CE talent, menu = préciser la
+                    spécialisation, tous deux dans la même carte. */}
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={isSel}
+                  disabled={!selected || maxed}
+                  className="talent-option-btn"
+                  onClick={() => selected && setD({ ...d, careerTalent: selected })}
+                >
                   <b>{entry}</b>
-                  {choices && (
-                    <select
-                      value={selected ?? ''}
-                      onChange={(e) => {
-                        const specChoices = { ...d.specChoices, [entry]: e.target.value };
-                        const next = { ...d, specChoices };
-                        setD(d.careerTalent && d.careerTalent === selected ? { ...next, careerTalent: e.target.value } : next);
-                      }}
-                    >
-                      <option value="">— choisir —</option>
-                      {choices.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  )}
                   {maxed && <em className="hint">Maxi atteint (déjà possédé)</em>}
                   {!maxed && selected && probe.talents.some((t) => talentConcrete(t) === selected) && <em className="hint">déjà possédé via la race → passera ×2</em>}
-                </label>
-                <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
+                  <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
+                </button>
+                {choices && (
+                  <select
+                    value={selected ?? ''}
+                    onChange={(e) => {
+                      const specChoices = { ...d.specChoices, [entry]: e.target.value };
+                      const next = { ...d, specChoices };
+                      setD(d.careerTalent && d.careerTalent === selected ? { ...next, careerTalent: e.target.value } : next);
+                    }}
+                  >
+                    <option value="">— choisir —</option>
+                    {choices.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
-            ))}
+              );
+            })}
             </div>
           </Band>
         </div>
@@ -1860,12 +1873,12 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
         right={d.wealthRoll && !rolling && !landed ? <b><Coins money={wealth} /></b> : null}
       >
         {rolling || landed ? (
-          <DiceRoll scene landed={landed} faces={null} onSkip={skip} />
+          <DiceRoll scene landed={landed} faces={null} onSkip={skip} tone="gold" />
         ) : !d.wealthRoll ? (
           <button type="button" className="dicewell act emph" onClick={() => trigger()}>
             <span className="dicewell-tray">
-              <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
-              <span className="rm-die dicewell-die"><DieFace n={null} landed /></span>
+              <span className="rm-die dicewell-die"><DieFace n={null} landed tone="gold" /></span>
+              <span className="rm-die dicewell-die"><DieFace n={null} landed tone="gold" /></span>
             </span>
             <span className="dicewell-copy">
               <span className="dicewell-txt">Tirer aux dés — la bourse</span>
@@ -1883,7 +1896,7 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
             <div className="row-flex">
               <span className="dicewell-tray">
                 {draftWealthDice(d).map((n, i) => (
-                  <span key={i} className="rm-die dicewell-die"><DieFace n={n} landed /></span>
+                  <span key={i} className="rm-die dicewell-die"><DieFace n={n} landed tone="gold" /></span>
                 ))}
               </span>
             </div>
@@ -1991,7 +2004,7 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
         meta={<em>au générateur</em>}
       />
       {rolling || landed ? (
-        <DiceRoll scene landed={landed} faces={null} onSkip={skip} />
+        <DiceRoll scene landed={landed} faces={null} onSkip={skip} tone="gold" />
       ) : (
         <button type="button" className={`dicewell${physiqueRolled ? ' done' : ' act emph'}`} onClick={() => trigger()}>
           <span className="dicewell-copy">
