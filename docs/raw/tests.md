@@ -199,7 +199,7 @@ Si aucune Difficulté n'est indiquée pour un test (notamment pour un test oppos
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test), [Tests opposés](#tests-opposés)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.133-139, l.141-150, l.166) → `amazingTestLabel`, `useTestJetProps`, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `ReloadModal`, `evaluateTest`, `bestForcedRoll`, `opposedTest`, `makeRollFlow`, +2 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, +5 fichiers
+- `LDB 12` (l.133-139, l.141-150, l.166) → `useTestJetProps`, `amazingTestLabel`, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `ReloadModal`, `evaluateTest`, `bestForcedRoll`, `opposedTest`, `makeRollFlow`, +2 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, +5 fichiers
 
 ---
 
@@ -316,7 +316,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.152-169) → `amazingTestLabel`, `useTestJetProps`, `OPTIONAL_RULES`, `double-critique-maladresse`, `ReloadModal`, `evaluateTest`, `opposedTest`, `makeRollFlow`, `runActivityResolver`, `createCombatSlice` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, `src/state/interludeFlow.ts`, +3 fichiers
+- `LDB 12` (l.152-169) → `useTestJetProps`, `amazingTestLabel`, `OPTIONAL_RULES`, `double-critique-maladresse`, `ReloadModal`, `evaluateTest`, `opposedTest`, `makeRollFlow`, `runActivityResolver`, `createCombatSlice` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, `src/state/interludeFlow.ts`, +3 fichiers
 
 ---
 

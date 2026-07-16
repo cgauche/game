@@ -355,7 +355,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, +86 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +27 fichiers
+- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, +87 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +27 fichiers
 
 ---
 

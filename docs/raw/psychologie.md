@@ -350,7 +350,7 @@ Applique exactement les mêmes règles que la Frénésie des personnages (sectio
 **Sources RAW** : `LDB 85 l.150` — renvoi LDB 21
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.122, l.150) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `amphibie`, `moveEnv`, `maxWounds`, +24 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, `src/engine/traits/dispatch.ts`, +7 fichiers
+- `LDB 85` (l.122, l.150) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `amphibie`, `moveEnv`, `maxWounds`, +25 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, `src/engine/traits/dispatch.ts`, +7 fichiers
 
 ---
 
@@ -374,7 +374,7 @@ La créature ignore **toutes** les règles de Psychologie sans Test.
 - `LDB 85 l.178-179` — définition
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.166, l.178-180) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `amphibie`, `Formula`, `moveEnv`, +27 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +9 fichiers
+- `LDB 85` (l.166, l.178-180) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `amphibie`, `Formula`, `moveEnv`, +28 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +10 fichiers
 
 ---
 
