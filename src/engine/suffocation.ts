@@ -6,10 +6,12 @@
  * égal à votre Bonus d'Endurance, vous mourez par suffocation ou par noyade. »
  *
  * Le drapeau `suffocates` est porté par un ActiveEffect (sorts : Ombres étrangleuses,
- * Transmutation de Chamon ; environnement futur : noyade). `noBreath` (Bénédiction de Souffle,
- * LDB 41 : « n'a pas besoin de respirer et ignore les règles de suffocation ») immunise.
- * La MORT passe par le canal mort-lente existant (`inDeathCondition` lit `suffocationCountdown`)
- * → un héros à Destin est suspendu (pendingFateSave) comme pour toute mort lente.
+ * Transmutation de Chamon) OU dérivé POSITIONNELLEMENT (`offTerrainSuffocates`, `engine/ops.ts` —
+ * Créature marine hors de l'eau, « sinon elles se mettent à suffoquer », MDG 16 l.19). `noBreath`
+ * (Bénédiction de Souffle, LDB 41 : « n'a pas besoin de respirer et ignore les règles de
+ * suffocation ») immunise. La MORT passe par le canal mort-lente existant (`inDeathCondition` lit
+ * `suffocationCountdown`) → un héros à Destin est suspendu (pendingFateSave) comme pour toute mort
+ * lente.
  *
  * Rétention de souffle (LDB 18 l.345) : « si vous êtes suffisamment préparé, vous pouvez retenir
  * votre souffle pendant un nombre de secondes égal à votre Bonus d'Endurance x 10 sans avoir à
@@ -19,12 +21,20 @@
  * fait perdre aucune Blessure. Le crédit est décompté par Round via la règle `combat-round-seconds`
  * (LDB 13 l.13 — « c'est le MJ qui décide » de la durée d'un Round ; hypothèse de calibrage 10 s,
  * non RAW). Privé d'air brutalement (`breathHoldSeconds` absent) = suffocation immédiate.
+ *
+ * Contre-mesure « aspergée d'eau » (Créature marine, MDG 16 l.19 : « elles doivent être
+ * régulièrement aspergées d'eau, sinon elles se mettent à suffoquer ») — le RAW nomme le geste mais
+ * ne chiffre AUCUNE mécanique (pas de Test, pas de coût, pas de cadence en Rounds) : `c.wateredThisRound`
+ * est un drapeau MAISON (interface Action/consommable à brancher — hors périmètre #477) qui immunise
+ * le Round où il est posé, puis se consomme (« régulièrement » = à reposer chaque Round pour rester
+ * immunisé).
  */
 import type { Combatant } from './types';
 import { hasActiveFlag } from './activeFlags';
 import { addCondition, hasCondition, loseWounds } from './conditions';
 import { bonus, effectiveChar } from './characteristics';
 import { rule } from './policy';
+import { offTerrainSuffocates } from './ops';
 
 /** Durée d'un Round de combat en secondes — LDB 13 l.13 : « c'est le MJ qui décide » ; hypothèse de
  *  calibrage maison (règle `combat-round-seconds`), PAS une certitude canon. Utilisée pour décompter
@@ -46,8 +56,14 @@ export function prepareBreathHold(c: Combatant): void {
 /** Tick de fin de Round d'un combattant qui suffoque. Mute `c`, retourne le journal. */
 export function suffocationTick(c: Combatant): string[] {
   if (c.dead || c.outOfRencontre) return [];
-  if (!hasActiveFlag(c, 'suffocates') || hasActiveFlag(c, 'noBreath')) {
-    // L'air revient (effet expiré / immunité) : on arrête de mourir ET on récupère son souffle.
+  // Contre-mesure MAISON « aspergée d'eau » (MDG 16 l.19) : immunise CE Round, puis se consomme —
+  // à reposer chaque Round pour rester immunisé (« régulièrement »).
+  const wateredThisRound = !!c.wateredThisRound;
+  if (wateredThisRound) delete c.wateredThisRound;
+  const marineSuffocating = offTerrainSuffocates(c) && !wateredThisRound;
+  if ((!hasActiveFlag(c, 'suffocates') && !marineSuffocating) || hasActiveFlag(c, 'noBreath')) {
+    // L'air revient (effet expiré / immunité / de retour dans l'eau / aspergée) : on arrête de mourir
+    // ET on récupère son souffle.
     if (c.suffocationCountdown != null) delete c.suffocationCountdown;
     if (c.breathHoldSeconds != null) delete c.breathHoldSeconds;
     return [];

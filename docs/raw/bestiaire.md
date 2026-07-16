@@ -434,7 +434,11 @@ Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (T2C) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
 **Implémente** :
-- `src/data/traits.json` (`creature-marine`, desc verbatim ; `aquatique` T2C p.90 également porté). Le malus hors-eau (M→1, −2 DR) et la suffocation restent (non implémenté) : pas de notion d'environnement aquatique/terrestre par case ni de hook de suffocation hors-eau → effet narratif côté MJ (lot systèmes naval).
+- `src/data/traits.json` (`creature-marine`, desc verbatim ; passif `offTerrainMod` avec `mSet:1`,
+  `testDR:-2`, `suffocates:true` ; `aquatique` T2C p.90 également porté). Malus hors-eau consommé par
+  `src/engine/ops.ts` (`offTerrainMoveCap`/`offTerrainTestDR`) ; suffocation dérivée par
+  `offTerrainSuffocates` et exécutée par `src/engine/suffocation.ts` (`suffocationTick`, hook
+  `suffocation-tick` de `src/state/combat/roundHooks.ts`) — #477.
 
 ---
 

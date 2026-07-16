@@ -106,6 +106,44 @@ describe('Rétention de souffle (LDB 18 l.345) : BE×10 s avant suffocation si p
   });
 });
 
+describe('Créature marine hors de l’eau — pont offTerrain→suffocation (MDG 16 l.19, #477)', () => {
+  const marine = (over: Partial<Combatant> = {}): Combatant => mk({
+    kind: 'enemy',
+    traits: [{ id: 'creature-marine' }],
+    activeEffects: [],
+    offTerrain: true,
+    wounds: { current: 2, max: 12 },
+    ...over,
+  } as unknown as Partial<Combatant>);
+
+  it('hors de l’eau, sans contre-mesure : entre dans le cycle de suffocation (−1 PB)', () => {
+    const c = marine();
+    suffocationTick(c);
+    expect(c.wounds.current).toBe(1);
+  });
+
+  it('replacée dans l’eau (offTerrain retombe) : aucune suffocation', () => {
+    const c = marine({ offTerrain: false });
+    suffocationTick(c);
+    expect(c.wounds.current).toBe(2);
+  });
+
+  it('contre-mesure « aspergée d’eau » active (wateredThisRound) : le Round est immunisé puis se consomme', () => {
+    const c = marine({ wateredThisRound: true } as unknown as Partial<Combatant>);
+    suffocationTick(c);
+    expect(c.wounds.current).toBe(2); // aspergée ce Round : pas de suffocation
+    expect(c.wateredThisRound).toBeUndefined(); // consommée — « régulièrement » = à reposer
+    suffocationTick(c); // pas reposée au Round suivant → suffoque
+    expect(c.wounds.current).toBe(1);
+  });
+
+  it('créature NON marine hors de l’eau (`c.offTerrain`) : aucune suffocation', () => {
+    const c = marine({ traits: [{ id: 'coriace' }] } as unknown as Partial<Combatant>);
+    suffocationTick(c);
+    expect(c.wounds.current).toBe(2);
+  });
+});
+
 describe('Effets curés — suffocation (lus de SpellData.effects)', () => {
   it('Bénédiction de Souffle porte l’op noBreath', () => {
     expect(opsOf('Bénédiction de Souffle').some((o) => o.op === 'noBreath')).toBe(true);

@@ -232,6 +232,15 @@ export function offTerrainTestDR(c: Combatant): number {
   return offTerrainOps(c).reduce((s, o) => s + (o.testDR ?? 0), 0);
 }
 
+/** Suffocation hors de son terrain (op `offTerrainMod.suffocates` — Créature marine : « doivent être
+ *  immergées pour respirer correctement (…) sinon elles se mettent à suffoquer », MDG 16 l.19), gaté par
+ *  `c.offTerrain`. Consommé par `suffocationTick` (`engine/suffocation.ts`) — SOURCE UNIQUE avec le
+ *  drapeau d'effet `suffocates` (sorts) ; aucun `hasTrait` de créature nommée. PUR. */
+export function offTerrainSuffocates(c: Combatant): boolean {
+  if (!c.offTerrain) return false;
+  return offTerrainOps(c).some((o) => o.suffocates);
+}
+
 /** Somme des bonus de DR aux Tests d'une CARACTÉRISTIQUE (op `charDRBonus` — chanson « Camarades
  *  d'équipage » : +1 DR aux Tests de Sociabilité, MDG 09 l.236) : passifs de trait + auras + effets
  *  actifs. Consommée sur un Test RÉUSSI (même règle d'application que `skillDRBonus`/LDB 10 l.20). */
@@ -766,9 +775,11 @@ export type GameOp =
    *  s'applique à TOUS ses Tests (Créature marine : « tous les Tests qu'elle effectue subissent –2 DR »).
    *  GÉNÉRIQUE (aucun nom de créature) : porté par le `passive` d'un Trait, GATÉ par la POSITION — le
    *  state pose le drapeau dérivé `Combatant.offTerrain` à chaque placement (`placeCombatant`), les
-   *  consommateurs purs (`offTerrainMoveCap`/`offTerrainTestDR`, trauma.ts) lisent le drapeau. Inerte
-   *  dans applyOps (passif pur, jamais « lancé »). */
-  | { op: 'offTerrainMod'; terrain: string; mSet?: number; testDR?: number }
+   *  consommateurs purs (`offTerrainMoveCap`/`offTerrainTestDR`, trauma.ts) lisent le drapeau. `suffocates` :
+   *  hors du terrain, la créature suffoque (Créature marine : « sinon elles se mettent à suffoquer »,
+   *  MDG 16 l.19) — lu par `offTerrainSuffocates`/`suffocationTick`. Inerte dans applyOps (passif pur,
+   *  jamais « lancé »). */
+  | { op: 'offTerrainMod'; terrain: string; mSet?: number; testDR?: number; suffocates?: boolean }
   /** Modif. d'un ATTRIBUT SECONDAIRE À MAXIMUM (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE),
    *  Chance (Chanceux), Détermination (Obstiné). `mod` = Formula (`{bonusOf:'E'}` pour Dur à cuire).
    *  Lu par heroMaxWounds/fortuneMax/resolveMax — data-driven, jamais par libellé. Destin/Résilience

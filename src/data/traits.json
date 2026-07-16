@@ -2382,7 +2382,8 @@
         "op": "offTerrainMod",
         "terrain": "eau",
         "mSet": 1,
-        "testDR": -2
+        "testDR": -2,
+        "suffocates": true
       }
     ]
   },

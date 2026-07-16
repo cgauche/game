@@ -1291,6 +1291,11 @@ export interface Combatant {
    *  privation d'air est ANTICIPÉE (plongée volontaire) : tant que > 0, la suffocation ne fait perdre
    *  aucune Blessure. Absent/0 = privé d'air BRUTALEMENT → suffocation immédiate (l.344). */
   breathHoldSeconds?: number;
+  /** Contre-mesure MAISON à la suffocation « hors terrain » (Créature marine, MDG 16 l.19 : « elles
+   *  doivent être régulièrement aspergées d'eau, sinon elles se mettent à suffoquer » — le RAW nomme le
+   *  geste sans en chiffrer la mécanique). Posé = immunise le Round courant, puis consommé par
+   *  `suffocationTick` (`engine/suffocation.ts`) : à reposer chaque Round pour rester immunisé. */
+  wateredThisRound?: boolean;
   /** Attribut de Shyish (LDB 48 l.400) : « Une cible ne peut avoir qu'un seul État Exténué gagné
    *  de cette façon à la fois » — marqueur posé au premier Exténué d'un Sort de la Mort. */
   shyishExhausted?: boolean;
