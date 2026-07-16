@@ -95,7 +95,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   // slug→abbr de books.json) — jamais une 2e implémentation. Un chapitre-données (carrières LDB 26-35,
   // possessions 66-70…) est « référencé dans le code » via le folio même sans réf de LIGNE.
   const codeFolioLdbCh = new Set()
-  let abbrMap = null
+  let abbrMap
   try { abbrMap = loadAbbrMap() } catch { abbrMap = null }
   if (abbrMap) {
     const folioStats = { byBook: new Map(), noAtlas: 0, noPage: 0 }
