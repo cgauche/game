@@ -11535,6 +11535,9 @@
         "value": 1
       }
     ],
+    "capabilities": {
+      "disarmImmune": true
+    },
     "desc": "Hommage à l'art sacré du combat de fosse, le poing de fer est un énorme gantelet que les ogres utilisent pour écarter les coups et briser des nuques. Le poing de fer est solidement fixé à celui de l'ogre, de sorte qu'il ne pourra pas en être désarmé. La main équipée du poing de fer peut servir à tenir une arme ou à effectuer des actions simples.",
     "price": {
       "gold": 4,

@@ -50,6 +50,7 @@ const itemCapabilitiesSchema = z.strictObject({
   scurvyGuard: z.boolean().optional(),
   sealskin: z.boolean().optional(),
   shipParts: z.boolean().optional(),
+  disarmImmune: z.boolean().optional(),
 });
 
 /** `Weapon` (`src/engine/types.ts:268`) — reflet des seuls champs pertinents en DONNÉE `derivedWeapon`

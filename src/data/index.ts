@@ -432,6 +432,12 @@ export interface ItemCapabilities {
   /** Pièces détachées de navire (MDG 14 l.281-283) : « consommées quand vous entreprenez l'Activité
    *  Entretien du navire » — NON gaté (stock de cale). */
   shipParts?: boolean;
+  /** Arme SOLIDEMENT FIXÉE au porteur (Poing de fer ogre, ADE II 02 l.694-698 : « il ne pourra pas en
+   *  être désarmé ») — immunité PERMANENTE et INCONDITIONNELLE au retrait (`case 'disarm'`, `engine/ops.ts`),
+   *  distincte du Gantelet verrouillé (`preventForcedDrop`, AA folio 94 : protection À USAGE UNIQUE par
+   *  période avec pénalité de -20). Lue par-objet (`itemCapability`), pas gatée sur le port : l'arme est
+   *  fixée à la main qui la tient. */
+  disarmImmune?: boolean;
 }
 export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */

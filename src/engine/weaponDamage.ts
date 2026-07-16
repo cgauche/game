@@ -136,6 +136,10 @@ export interface WeaponContext {
    *  `effectiveWeapon` ne peut pas déduire seul. Posé par le funnel (`weaponContextOf`). Source actuelle :
    *  Bélier (`ram`) hors-porte (ADE II ch.08 l.249, via `ramVsNonDoor`). */
   improvised?: boolean;
+  /** Lance-harpon (ADE II 02 l.677) : la corde a été séparée de la flèche → profil dégradé (Portée 60,
+   *  perte de l'Atout Immobilisante). MODE DE TIR choisi par le joueur au moment de l'attaque (arbitrage
+   *  user #476), pas un événement subi — posé par le funnel (`weaponContextOf`) depuis le choix courant. */
+  harpoonRopeCut?: boolean;
 }
 
 /**
@@ -149,6 +153,8 @@ export interface WeaponContext {
  *  - Arme à distance couverte en mode **`'degraded'`** (`WeaponContext.groupSkillMode`, Arbalète/Lancer
  *    par toute autre Spé de Tir l.184, Ingénierie par Poudre noire l.188) → perd **tous ses Atouts**, ses
  *    Défauts sont conservés.
+ *  - Lance-harpon, corde séparée (`WeaponContext.harpoonRopeCut`, ADE II 02 l.677) → Portée 60, perte de
+ *    l'Atout Immobilisante.
  * À appliquer LÀ où l'arme se lie à l'attaque pour que la transformation atteigne la touche, les Dégâts ET
  * le jet RATÉ (la Dangereuse se déclenche sur un échec). Idempotent : ré-appliquer sur un profil déjà
  * transformé (ex. l'usure recalculée dans `applyHit`) ne le ré-altère pas.
@@ -161,6 +167,8 @@ export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
   // (mains nues / dague) → inchangée. MÊME branche que la Lance hors Charge (profil improvisé partagé).
   if (ctx?.auContact && w.type === 'melee' && reachRank(w.reach) > reachRank('Courte')) return improvisedProfile(w);
   if (ctx?.improvised) return improvisedProfile(w); // improvisation dérivée du contexte par le funnel (ex. Bélier hors-porte, ADE II ch.08 l.249)
+  // Lance-harpon, corde séparée (ADE II 02 l.677) : Portée 60 (au lieu de la Portée de base), perte de l'Atout Immobilisante.
+  if (ctx?.harpoonRopeCut) return { ...w, range: 60, qualities: w.qualities.filter((q) => q.id !== 'immobilisante') };
 
   // Fléau sans la Spécialisation : Défaut Dangereuse + AUCUN autre Atout (l.146-147). Le Test reste sur la
   // Caractéristique brute — déjà assuré par `combatValue` (pas de Spé → pas d'avances), le subType est gardé.

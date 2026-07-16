@@ -349,6 +349,23 @@ describe('applyOps — opérations unitaires', () => {
       applyOps(c, [{ op: 'disarm' }], { location: 'corps', rng: rngMain });
       expect(c.loadouts![0].main).toBeUndefined();
     });
+
+    // #476 — Poing de fer ogre (ADE II 02 l.694-698) : capacité `disarmImmune` (`ItemCapabilities`).
+    it("capacité disarmImmune (Poing de fer, ADE II 02 l.694-698) → refuse le désarmement, l'arme reste tenue", () => {
+      const c = hero({ items: [{ uid: 'w1', trappingId: 'poing-de-fer', name: 'Poing de fer', kind: 'melee', equipped: true, qualities: [], enc: 2 } as never] });
+      c.loadouts = [{ id: 'l1', main: 'w1' }];
+      c.activeLoadoutId = 'l1';
+      const lines = applyOps(c, [{ op: 'disarm' }], { location: 'brasD' });
+      expect(c.loadouts![0].main).toBe('w1'); // toujours tenu
+      expect(lines[0]).toMatch(/impossible de le désarmer/);
+    });
+
+    it('une arme ORDINAIRE (sans disarmImmune) reste désarmable normalement', () => {
+      const c = withWeapon();
+      const lines = applyOps(c, [{ op: 'disarm' }], { location: 'brasD' });
+      expect(c.loadouts![0].main).toBeUndefined();
+      expect(lines[0]).toMatch(/lâche/);
+    });
   });
 
   it('reduceToZero seul : PB à 0, SANS Inconscient automatique (LDB 40)', () => {

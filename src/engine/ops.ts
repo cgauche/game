@@ -30,6 +30,7 @@ import { applyHealWounds } from './healing';
 import { fateSaveOrDie } from './fortune';
 import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString, autoStowNewItem } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
+import { itemCapability } from './capabilities';
 import { suppressPsychTraits, type PsychType } from './psychology';
 import { norm } from '../lib/normalize';
 import { ConjureForm, conjureFormOptions, equipConjuredWeapon } from './conjuredWeapons';
@@ -1928,7 +1929,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const lo = activeLoadout(target);
         const uid = hand === 'main' ? lo?.main : lo?.off;
         const held = uid ? (target.items ?? []).find((i) => i.uid === uid) : undefined;
-        if (held && lo) {
+        if (held && itemCapability(held, 'disarmImmune')) {
+          // Poing de fer ogre (ADE II 02 l.694-698) : « solidement fixé... il ne pourra pas en être désarmé ».
+          lines.push(t('op.disarmImmune', { name: target.name, item: held.name }));
+        } else if (held && lo) {
           if (hand === 'main') lo.main = undefined; else lo.off = undefined;
           recomputeLoadout(target);
           lines.push(t('op.disarm', { name: target.name, item: held.name }));
