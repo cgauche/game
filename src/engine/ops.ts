@@ -466,8 +466,10 @@ export type GameOp =
    *  (Rouille mouchetée : « Chaque dose réduit la durée de la maladie de 1d10 jours », T2C p.14) ;
    *  `disease` = SCOPE par id (Gesundheit → seulement une `blessure-purulente`, T2C p.13 — sans filtre,
    *  n'importe quelle maladie active serait raccourcie) ; `oncePerDisease` = une seule fois par maladie
-   *  (« Cette Prière ne peut être tentée qu'une fois par maladie », LDB 41 — les herbes se reprennent). */
-  | { op: 'reduceDiseaseDays'; days?: number; dice?: DiceSpec; disease?: string; oncePerDisease?: boolean }
+   *  (« Cette Prière ne peut être tentée qu'une fois par maladie », LDB 41 — les herbes se reprennent).
+   *  `daysPerSL` : échelle « +N jours par +M DR » du Test AYANT PRÉCÉDÉ l'op (Gesundheit : « un jour par
+   *  DR obtenu » au Test de Résistance Accessible, T2C 04 l.184-186) — alimentée par `ctx.sl`. */
+  | { op: 'reduceDiseaseDays'; days?: number; dice?: DiceSpec; disease?: string; oncePerDisease?: boolean; daysPerSL?: PerSL }
   /** Les Blessures ne s'infecteront pas (Cautériser, LDB 47 → flag `woundDressed`, LDB 18 l.382). */
   | { op: 'preventInfection' }
   /** EXPOSE la cible à une Maladie (`disease` = id de `maladies.json`) → Test de Contraction au bilan de
@@ -1357,8 +1359,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'reduceDiseaseDays': {
         // `dice` (Rouille mouchetée : 1d10 jours) tiré à l'application ; `disease` = filtre par id ;
-        // `oncePerDisease` = verrou « une fois par maladie » (Bénédiction de Convalescence, LDB 41).
-        const days = o.dice ? rollDice(o.dice, rng) : (o.days ?? 1);
+        // `oncePerDisease` = verrou « une fois par maladie » (Bénédiction de Convalescence, LDB 41) ;
+        // `daysPerSL` = échelle sur le DR du Test précédent (Gesundheit, T2C 04 l.184-186).
+        const days = (o.dice ? rollDice(o.dice, rng) : (o.days ?? 1)) + slBonus(ctx.sl, o.daysPerSL);
         lines.push(...blessDiseaseDuration(target, days, { disease: o.disease, once: o.oncePerDisease }));
         break;
       }

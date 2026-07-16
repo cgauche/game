@@ -67,6 +67,16 @@ describe('reduceDiseaseDays — Bénédiction de Convalescence (LDB 41) + extens
     expect(reduced).toBeGreaterThanOrEqual(1);
     expect(reduced).toBeLessThanOrEqual(10);
   });
+  it("`daysPerSL` échelle sur `ctx.sl` (Gesundheit : « un jour par DR obtenu », T2C 04 l.184-186)", () => {
+    const c = dummy({ diseases: [sick('blessure-purulente', 5)] });
+    applyOps(c, [{ op: 'reduceDiseaseDays', days: 0, daysPerSL: { every: 1, amount: 1 }, disease: 'blessure-purulente' }], { sl: 3 });
+    expect(c.diseases![0].minutesLeft).toBe(2 * MINUTES_PER_DAY); // 5 − 3 DR
+  });
+  it('`daysPerSL` sans `ctx.sl` (Test non joué) → aucune réduction', () => {
+    const c = dummy({ diseases: [sick('blessure-purulente', 5)] });
+    applyOps(c, [{ op: 'reduceDiseaseDays', days: 0, daysPerSL: { every: 1, amount: 1 }, disease: 'blessure-purulente' }], {});
+    expect(c.diseases![0].minutesLeft).toBe(5 * MINUTES_PER_DAY);
+  });
 });
 
 describe('preventInfection — Cautériser (LDB 47) & cureCriticalWound — Larmes de Shallya (LDB 42)', () => {

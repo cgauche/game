@@ -6878,16 +6878,32 @@
       "page": 13
     },
     "consumable": {
-      "kind": "do",
-      "effect": {
-        "type": "ops",
-        "ops": [
-          {
-            "op": "reduceDiseaseDays",
-            "days": 1,
-            "disease": "blessure-purulente"
-          }
-        ]
+      "kind": "test",
+      "test": {
+        "skill": "resistance",
+        "difficulty": "accessible",
+        "label": "Gesundheit"
+      },
+      "success": {
+        "kind": "do",
+        "effect": {
+          "type": "ops",
+          "ops": [
+            {
+              "op": "reduceDiseaseDays",
+              "days": 0,
+              "daysPerSL": {
+                "every": 1,
+                "amount": 1
+              },
+              "disease": "blessure-purulente"
+            }
+          ]
+        }
+      },
+      "fail": {
+        "kind": "seq",
+        "steps": []
       }
     }
   },
@@ -6985,9 +7001,19 @@
                 }
               }
             ]
+          },
+          {
+            "op": "diseaseTestMod",
+            "diseases": [
+              "blessure-purulente"
+            ],
+            "amount": 20
           }
         ]
       }
+    },
+    "consumableDuration": {
+      "days": 1
     }
   },
   {
@@ -7024,9 +7050,19 @@
               "sides": 10
             },
             "disease": "verole-du-tanneur"
+          },
+          {
+            "op": "diseaseTestMod",
+            "diseases": [
+              "verole-du-tanneur"
+            ],
+            "amount": 10
           }
         ]
       }
+    },
+    "consumableDuration": {
+      "days": 1
     }
   },
   {

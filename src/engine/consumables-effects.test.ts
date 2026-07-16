@@ -245,29 +245,26 @@ describe('tonique-digestif (LDB 72 l.32)', () => {
 
 // ── Herbes T2C ch.2 ───────────────────────────────────────────────────────────
 
-describe('gesundheit (T2C p.13) — cataplasme SCOPÉ Blessure Purulente (#46)', () => {
-  it("réduit la durée d'UNE Blessure Purulente de 1 jour — jamais une autre maladie", () => {
-    const other = activeDisease('peste-noire', 5);
-    const target = activeDisease('blessure-purulente', 5);
-    const c = makeTarget({ diseases: [other, target] as Combatant['diseases'] });
-    drinkPure(c, 'gesundheit');
-    expect(other.minutesLeft).toBe(5 * MINUTES_PER_DAY); // non ciblée : intacte
-    expect(target.minutesLeft).toBe(4 * MINUTES_PER_DAY);
+describe('gesundheit (T2C 04 l.184-186) — Test de Résistance Accessible (+20) puis −1 jour PAR DR obtenu (#458)', () => {
+  it('Test de Résistance Accessible (+20) — pas d\'effet inconditionnel (défaut #46 corrigé)', () => {
+    const f = itemFromTrappingById('gesundheit')!.consumable! as Extract<Flow, { kind: 'test' }>;
+    expect(f.kind).toBe('test');
+    expect(f.test.skill).toBe('resistance');
+    expect(f.test.difficulty).toBe('accessible');
   });
-  it('reprise le lendemain possible (« une fois par jour » — pas de verrou 1×/maladie)', () => {
-    const target = activeDisease('blessure-purulente', 5);
-    const c = makeTarget({ diseases: [target] as Combatant['diseases'] });
-    drinkPure(c, 'gesundheit');
-    drinkPure(c, 'gesundheit');
-    expect(target.minutesLeft).toBe(3 * MINUTES_PER_DAY);
+  it('succès → reduceDiseaseDays SCOPÉ blessure-purulente, échelle daysPerSL 1/DR — jamais fixe', () => {
+    const f = itemFromTrappingById('gesundheit')!.consumable! as Extract<Flow, { kind: 'test' }>;
+    expect(consumableOps(f.success)).toEqual([
+      { op: 'reduceDiseaseDays', days: 0, daysPerSL: { every: 1, amount: 1 }, disease: 'blessure-purulente' },
+    ]);
   });
-  it("sans maladie active → inerte, pas d'erreur", () => {
-    const c = makeTarget();
-    expect(() => drinkPure(c, 'gesundheit')).not.toThrow();
+  it('échec → aucune réduction (le Test n\'a pas été réussi)', () => {
+    const f = itemFromTrappingById('gesundheit')!.consumable! as Extract<Flow, { kind: 'test' }>;
+    expect(consumableOps(f.fail)).toEqual([]);
   });
 });
 
-describe('racine-des-tombes (T2C p.14) — enduit anti-mort-vivant', () => {
+describe('racine-des-tombes (T2C p.14 / T2C 04 l.221-229) — enduit anti-mort-vivant + cataplasme', () => {
   it("a un augmentWeapon : « Étalée sur une arme, la sève est nocive pour les Mort-vivants »", () => {
     expect(consumableOps(itemFromTrappingById('racine-des-tombes')!.consumable).some((o) => o.op === 'augmentWeapon')).toBe(true);
   });
@@ -277,9 +274,14 @@ describe('racine-des-tombes (T2C p.14) — enduit anti-mort-vivant', () => {
     expect(then.test.difficulty).toBe('complexe');
     expect(then.test.onlyGroups).toContain('mort-vivant');
   });
+  it('cataplasme : « bonus de +20 à tous les Tests » pour résister à la Blessure Purulente, pendant la journée', () => {
+    const ops = consumableOps(itemFromTrappingById('racine-des-tombes')!.consumable);
+    expect(ops).toContainEqual({ op: 'diseaseTestMod', diseases: ['blessure-purulente'], amount: 20 });
+    expect(itemFromTrappingById('racine-des-tombes')!.consumableDuration).toEqual({ days: 1 });
+  });
 });
 
-describe('rouille-mouchetee (T2C p.14) — « Chaque dose réduit la durée de la maladie de 1d10 jours » (#46)', () => {
+describe('rouille-mouchetee (T2C p.14 / T2C 04 l.239-241) — « Chaque dose réduit la durée de la maladie de 1d10 jours » + bonus continu (#458)', () => {
   it('réduit la Vérole du Tanneur de 1 à 10 jours (dé tiré à l\'application), jamais une autre maladie', () => {
     const other = activeDisease('peste-noire', 15);
     const target = activeDisease('verole-du-tanneur', 15);
@@ -289,5 +291,10 @@ describe('rouille-mouchetee (T2C p.14) — « Chaque dose réduit la durée de l
     const reducedDays = 15 - target.minutesLeft / MINUTES_PER_DAY;
     expect(reducedDays).toBeGreaterThanOrEqual(1);
     expect(reducedDays).toBeLessThanOrEqual(10);
+  });
+  it('« bonus de +10 à tous les Tests en lien avec la maladie » tant que la dose quotidienne est maintenue', () => {
+    const ops = consumableOps(itemFromTrappingById('rouille-mouchetee')!.consumable);
+    expect(ops).toContainEqual({ op: 'diseaseTestMod', diseases: ['verole-du-tanneur'], amount: 10 });
+    expect(itemFromTrappingById('rouille-mouchetee')!.consumableDuration).toEqual({ days: 1 });
   });
 });
