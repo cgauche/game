@@ -218,8 +218,14 @@ describe('Couleur des cheveux — bornes 2d10 PAR RACE (rollHair, #420)', () => 
     d2 <= 2 ? 'Blond blanc' : d2 === 3 ? 'Blond doré' : d2 === 4 ? 'Blond roux' : d2 <= 7 ? 'Brun doré'
     : d2 <= 11 ? 'Brun clair' : d2 <= 14 ? 'Brun foncé' : d2 <= 17 ? 'Noir' : d2 === 18 ? 'Auburn'
     : d2 === 19 ? 'Roux' : 'Gris';
+  // ADE2 « 02 - Les ogres.md » l.305-311 (p.21) : bornes 2/3/4/5-7/8-11 — motif IDENTIQUE au LDB (#423).
+  const ogreHair = (d2: number): string =>
+    d2 <= 2 ? 'Marron' : d2 === 3 ? 'Acajou' : d2 === 4 ? 'Blond cendré' : d2 <= 7 ? 'Marron clair'
+    : d2 <= 11 ? 'Lie de vin' : d2 <= 14 ? 'Marron foncé' : d2 <= 17 ? 'Noir' : d2 === 18 ? 'Charbon'
+    : d2 === 19 ? 'Noir de jais' : 'Bleu nuit';
   const gnome = findSpeciesById('gnomes')!;
   const humain = findSpeciesById('humains-reiklander')!;
+  const ogre = findSpeciesById('ogres')!;
   it('Gnome : chaque 2d10 rend la couleur NADJ — décalée du LDB pour 5,6,8,9,10 (rouge avant #420)', () => {
     for (let seed = 0; seed < 400; seed++) {
       const d2 = roll(2, 10, makeRNG(seed)); // même 1er tirage que rollHair(makeRNG(seed))
@@ -230,6 +236,12 @@ describe('Couleur des cheveux — bornes 2d10 PAR RACE (rollHair, #420)', () => 
     for (let seed = 0; seed < 400; seed++) {
       const d2 = roll(2, 10, makeRNG(seed));
       expect(rollHair(humain, makeRNG(seed)), `seed=${seed} 2d10=${d2}`).toBe(humainHair(d2));
+    }
+  });
+  it('Ogre : chaque 2d10 rend la couleur ADE2 — motif LDB confirmé au livre (#423)', () => {
+    for (let seed = 0; seed < 400; seed++) {
+      const d2 = roll(2, 10, makeRNG(seed));
+      expect(rollHair(ogre, makeRNG(seed)), `seed=${seed} 2d10=${d2}`).toBe(ogreHair(d2));
     }
   });
 });

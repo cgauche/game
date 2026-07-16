@@ -302,14 +302,13 @@ Les cheveux des ogres sont épais, sombres et ternes. Les mâles deviennent souv
 
 #### TABLEAU DE LA COULEUR DES CHEVEUX
 
-| Couleur      | 2d10  | Couleur      |  |  |
-|--------------|-------|--------------|--|--|
-| Marron       | 12–14 | Marron foncé |  |  |
-| Acajou       | 15–17 | Noir         |  |  |
-| Blond cendré | 18    | Charbon      |  |  |
-| Marron clair | 19    | Noir de jais |  |  |
-| Lie de vin   | 20    | Bleu nuit    |  |  |
-|              |       |              |  |  |
+| 2d10  | Couleur      | 2d10  | Couleur      |
+|-------|--------------|-------|--------------|
+| 2     | Marron       | 12–14 | Marron foncé |
+| 3     | Acajou       | 15–17 | Noir         |
+| 4     | Blond cendré | 18    | Charbon      |
+| 5–7   | Marron clair | 19    | Noir de jais |
+| 8–11  | Lie de vin   | 20    | Bleu nuit    |
 
 ### **Taille**
 
