@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { trampleTarget, aiMaybeTrample, aiCreatureFreeAttacks } from './combatFlow';
+import { trampleTarget, aiMaybeTrample, aiCreatureFreeAttacks, applyTrample } from './combatFlow';
+import { mountMovement } from './mount';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -181,7 +182,7 @@ describe('Piétinement en combat (store)', () => {
     expect(useGame.getState().pendingTrample).toBeTruthy();
   });
 
-  it('Se cabrer : le Piétinement ne dépense PAS l’Avantage de l’attaquant', () => {
+  it('Se cabrer : le Piétinement coûte l’Action de Mouvement (movementUsed plein), PAS l’Avantage', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.size = 'grande';
@@ -189,10 +190,26 @@ describe('Piétinement en combat (store)', () => {
     H.characteristics.force = 45;
     H.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
     H.advantage = 2;
+    expect(useGame.getState().battle!.movementUsed).toBe(0); // Action de Mouvement encore entière
     useGame.getState().battleTrample(E.id);
     useGame.getState().trampleRoll();
     useGame.getState().trampleConfirm();
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(2); // inchangé
+    const st = useGame.getState();
+    // Le +1 d'une touche réussie (RAW, victoire au Test) COMPENSAIT jusqu'ici la dépense masquée d'1
+    // Avantage codée en dur côté trampleConfirm — l'Avantage inchangé ne prouvait PAS l'absence de coût.
+    // La preuve réelle du coût « Action de Mouvement » (LDB 85 l.314) est movementUsed porté au plein M.
+    expect(st.battle!.movementUsed).toBe(mountMovement(st.battle!, H));
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(3); // 2 − 0 (coût) + 1 (victoire)
+  });
+
+  it('Se cabrer : refusé si l’Action de Mouvement est DÉJÀ dépensée ce Tour (movementUsed > 0, 0 Avantage)', () => {
+    const { H, E } = setup();
+    H.size = 'grande';
+    H.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    H.advantage = 0;
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: mountMovement(useGame.getState().battle!, H) } });
+    useGame.getState().battleTrample(E.id);
+    expect(useGame.getState().pendingTrample).toBeNull(); // ni Avantage, ni Action de Mouvement disponible
   });
 
   it('Se cabrer : refusé contre une cible de même Taille — la condition RAW (plus grand) reste posée', () => {
@@ -205,7 +222,21 @@ describe('Piétinement en combat (store)', () => {
     expect(useGame.getState().pendingTrample).toBeNull();
   });
 
-  it('IA : Se cabrer piétine même à 0 Avantage (file d’attaques gratuites, coût 0)', () => {
+  it('Se cabrer (applyTrample, résolution instantanée) : consomme le plein Mouvement, préserve l’Avantage', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.size = 'grande';
+    H.characteristics['capacite-de-combat'] = 85;
+    H.characteristics.force = 45;
+    H.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    H.advantage = 0;
+    applyTrample(useGame.getState, useGame.setState, H, E);
+    const st = useGame.getState();
+    expect(st.battle!.movementUsed).toBe(mountMovement(st.battle!, H));
+    expect(st.battle!.acted).toBe(false); // action GRATUITE : n'a pas consommé l'Action
+  });
+
+  it('IA : Se cabrer piétine même à 0 Avantage SI l’Action de Mouvement est encore entière (coût 0 Avantage, movementUsed → plein M)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.size = 'enorme';
@@ -217,14 +248,39 @@ describe('Piétinement en combat (store)', () => {
     H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     H.conditions = [{ name: 'surpris', value: 1 }]; // Surpris → ne se défend pas → résolution instantanée (patron creatureFreeAttacks.test.ts)
-    useGame.setState({ battle: { ...useGame.getState().battle! } });
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0 } });
     const before = H.wounds.current;
     const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     expect(suspended).toBe(false);
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
+    const st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
     // Coût de l'Action de Piétinement = 0 (freeTrample) ; le +1 gagné vient du Test opposé remporté (RAW),
     // pas du coût — sans Se cabrer, `enemy.advantage < 1` aurait sauté l'attaque (0 < 1).
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(1);
+    expect(st.battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(1);
+    // Preuve du VRAI coût (LDB 85 l.314 : « pour une Action de Mouvement ») : le plein Mouvement est dépensé.
+    expect(st.battle!.movementUsed).toBe(mountMovement(st.battle!, E));
+  });
+
+  it('IA : Se cabrer NE piétine PAS gratuitement si l’Action de Mouvement est DÉJÀ dépensée (approche → plus de sacrifice possible)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.size = 'enorme';
+    E.characteristics['capacite-de-combat'] = 85;
+    E.characteristics.force = 45;
+    E.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    E.advantage = 0; // aucun Avantage, et l'Action de Mouvement (ci-dessous) est DÉJÀ dépensée
+    H.size = 'moyenne';
+    H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
+    H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    H.conditions = [{ name: 'surpris', value: 1 }];
+    // L'ennemi a déjà bougé ce Tour (approche vers sa cible, `runEnemyAI` case 'move') → plus d'Action de
+    // Mouvement à sacrifier pour le Piétinement gratuit de Se cabrer.
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: mountMovement(useGame.getState().battle!, E) } });
+    const before = H.wounds.current;
+    const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(suspended).toBe(false);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before); // aucune attaque tentée
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0);
   });
 
   it('IA : SANS Se cabrer, à 0 Avantage le Piétinement générique (coût 1) est SAUTÉ', () => {

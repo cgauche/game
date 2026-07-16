@@ -2571,14 +2571,18 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 export const TRAMPLE_WEAPON: Weapon = buildWeapon({ name: 'Piétinement', attackKind: 'pietinement', damage: { plusBF: true, flat: 0, bare: true } });
 
 /** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite), SAUF Se cabrer (`freeTrample`,
- *  LDB 85 l.314 : payé d'une Action de Mouvement) → 0. Puis applique `resolveTrample` (BF +0, Corps à
- *  corps). Ne consomme PAS l'Action (« action gratuite »). */
+ *  LDB 85 l.314 : payé d'une Action de Mouvement) → 0 Avantage, mais tout le Mouvement restant du Tour
+ *  est dépensé à la place (`movementUsed = M`, précédent `loseNextMovement` l.4928 : « le Tour perd son
+ *  Action de Mouvement » s'encode en portant `movementUsed` au plein Mouvement). Puis applique
+ *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
 export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: Combatant): void {
   const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
-  campSpend(get, attacker, traitCapability(attacker.traits, 'freeTrample') ? 0 : 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA 11 l.30-38)
+  const free = traitCapability(attacker.traits, 'freeTrample');
+  campSpend(get, attacker, free ? 0 : 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA 11 l.30-38)
   const res = resolveTrample(attacker, target, battleRng());
   applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res, false); // pose acted=true (attaque standard)… ; Piétinement = résolution instantanée (pas de modale)
-  set({ battle: { ...get().battle!, acted: prevActed } }); // …qu'on restaure : le Piétinement est gratuit
+  const battle = get().battle!;
+  set({ battle: { ...battle, acted: prevActed, movementUsed: free ? Math.max(battle.movementUsed, mountMovement(battle, attacker)) : battle.movementUsed } }); // …qu'on restaure : le Piétinement est gratuit ; Se cabrer y consomme l'Action de Mouvement
 }
 
 /** L'IA piétine (faible priorité, après l'attaque principale) : action gratuite si l'ennemi a ≥1
@@ -3009,15 +3013,21 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
     }
     // Coût en Avantage PAR TYPE (RAW, lu de creatureAttacks) : Cornes (Charge) et Tentacules = 0 ;
     // Morsure/Caudale = 1 ; Piétinement (Taille) = 1, SAUF Se cabrer (LDB 85 l.314, `freeTrample`) qui
-    // paie l'Action de Piétinement de son Action de Mouvement au lieu d'1 Avantage → coût 0. Une entrée
-    // inabordable est SAUTÉE (pas de break : des Tentacules à coût 0 restent jouables derrière une
-    // Morsure inabordable).
-    const cost = kind === 'pietinement' ? (traitCapability(enemy.traits, 'freeTrample') ? 0 : 1) : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.avantage ?? 1;
+    // paie l'Action de Piétinement de son Action de Mouvement au lieu d'1 Avantage → coût 0 Avantage,
+    // MAIS exige l'Action de Mouvement encore ENTIÈRE ce Tour (`movementUsed === 0`) : une créature qui
+    // a déjà bougé (approche vers sa cible, cf. `runEnemyAI` case 'move') a déjà dépensé la sienne —
+    // le Piétinement gratuit lui est refusé (elle reste éligible au Piétinement normal à 1 Avantage).
+    // Une entrée inabordable est SAUTÉE (pas de break : des Tentacules à coût 0 restent jouables
+    // derrière une Morsure inabordable).
+    const freeTrampleMove = kind === 'pietinement' && traitCapability(enemy.traits, 'freeTrample');
+    if (freeTrampleMove && b2.movementUsed > 0) { enemy.pendingFreeAttacks.shift(); continue; }
+    const cost = kind === 'pietinement' ? (freeTrampleMove ? 0 : 1) : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.avantage ?? 1;
     if (enemy.advantage < cost) { enemy.pendingFreeAttacks.shift(); continue; }
     const target = freeAttackTarget(b2, enemy, kind);
     if (!target) { enemy.pendingFreeAttacks.shift(); continue; }
     const bonus = kind === 'pietinement' ? 0 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.bonus ?? 0;
     enemy.pendingFreeAttacks.shift();
+    if (freeTrampleMove) set({ battle: { ...get().battle!, movementUsed: mountMovement(get().battle!, enemy) } }); // Se cabrer : dépense l'Action de Mouvement (LDB 85 l.314)
     if (applyFreeAttack(get, set, enemy, target, kind, bonus, cost)) return true; // modale ouverte → reprise via defenseConfirm
   }
   enemy.pendingFreeAttacks = undefined; // file épuisée

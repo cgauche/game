@@ -912,8 +912,10 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       // Exige ≥1 Avantage (LDB 85 l.320), SAUF Se cabrer (`freeTrample`, LDB 85 l.314) qui paie
-      // le Piétinement d'une Action de Mouvement au lieu d'un Avantage.
-      if (!active || !controlsCombatant(get(), active) || (active.advantage < 1 && !traitCapability(active.traits, 'freeTrample'))) return;
+      // le Piétinement d'une Action de Mouvement au lieu d'un Avantage — donc SEULEMENT si cette
+      // Action de Mouvement est encore entière (aucun Mouvement dépensé ce Tour, `movementUsed === 0`).
+      const freeMoveAction = traitCapability(active?.traits ?? [], 'freeTrample') && battle.movementUsed === 0;
+      if (!active || !controlsCombatant(get(), active) || (active.advantage < 1 && !freeMoveAction)) return;
       const target = trampleTarget(battle, active, targetId); // adversaire adjacent plus petit
       if (!target) return;
       // Piétinement = étape 0 d'une cascade de COMBAT (comme l'attaque) : le jet ET son Coup Critique
@@ -979,9 +981,13 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingTrample: null });
       if (attacker && target) {
         const prevActed = battle.acted; // action GRATUITE : ne consomme pas l'Action
-        campSpend(get, attacker, 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA 11 l.30-38)
+        // Se cabrer (`freeTrample`, LDB 85 l.314) : 0 Avantage, payé par l'Action de Mouvement à la place
+        // (`movementUsed` porté au plein Mouvement, précédent `loseNextMovement`) — cf. `applyTrample`.
+        const free = traitCapability(attacker.traits, 'freeTrample');
+        campSpend(get, attacker, free ? 0 : 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA 11 l.30-38)
         applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, pt.result); // un Coup Critique s'EMPILE (pushReveal) sur la cascade ouverte
-        set({ battle: { ...get().battle!, acted: prevActed } });
+        const b2 = get().battle!;
+        set({ battle: { ...b2, acted: prevActed, movementUsed: free ? Math.max(b2.movementUsed, mountMovement(b2, attacker)) : b2.movementUsed } });
       }
       // Séquence de combat (jet = étape 0) : enchaîner sur le Coup Critique foldé DANS la même fenêtre,
       // ou clore l'étape (reprise IA) si aucune conséquence — plus de 2ᵉ fenêtre « Conséquences ».

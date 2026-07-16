@@ -33,9 +33,12 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * +1 set() légitime (#351 : `runCascadeImmediate` S'ARRÊTE et SURFACE `pendingCascade` sur un CHOIX sans
  * `defaultChoice` authoré — patron `resolveRemainingCascade`, jamais un `options[0]` silencieux) ; +1 reset
  * ad hoc (même site : pose directe de `pendingCascade`).
+ * +1 set() légitime (#474a Se cabrer : `aiCreatureFreeAttacks` dépense l'Action de Mouvement
+ * (`movementUsed = mountMovement`) AVANT `applyFreeAttack`, LDB 85 l.314 — coût distinct du `campSpend`
+ * d'Avantage porté par `applyFreeAttack`, donc son propre `set()`).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 707, totalAdHocResets: 285 }; // +1 (#352 innFlow.ts : set() du party après Exténué)
+const BASELINE = { totalCalls: 708, totalAdHocResets: 285 }; // +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks)
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {
