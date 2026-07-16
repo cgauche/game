@@ -9,11 +9,12 @@ import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
-import { CRITICAL_TABLES, type Amputation } from '../data/criticals';
+import { CRITICAL_TABLES, type Amputation, type CritEntry } from '../data/criticals';
 import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers, consolidateAmputations, AMPUTATION_WOUND_DESC } from './trauma';
 import { rule } from './policy';
 import { resolveAACritical } from './aaCritical';
 import { applyOps, type GameOp } from './ops';
+import aaCriticalsJson from '../data/aa-criticals.json';
 
 /**
  * Séquelles PERMANENTES d'une amputation (LDB 18 l.233-286) — distinctes de la plaie chirurgicale : elles
@@ -142,6 +143,48 @@ export function critImmediateSummary(ops: GameOp[]): { woundsLost: number; condi
     else if (o.op === 'condition') conditions.push({ name: o.name, value: typeof o.value === 'number' ? o.value : 1 });
   }
   return { woundsLost, conditions };
+}
+
+/** Table de rattachement d'un Coup Critique (bras/jambe couvrent les DEUX côtés — LDB 18 : une SEULE
+ *  table par membre, projetée sur `brasG`/`brasD` et `jambeG`/`jambeD`, cf. `CRITICAL_TABLES`). */
+export type CritTableKey = 'tete' | 'bras' | 'corps' | 'jambe';
+
+const AA_T = aaCriticalsJson as unknown as { tete: CritEntry[]; bras: CritEntry[]; corps: CritEntry[]; jambe: CritEntry[] };
+
+/** Catégorie Codex EXACTE (`registry.ts`) d'un Coup Critique, par table + système actif (LDB/Aux Armes). */
+export function critEntryCodexCategory(table: CritTableKey, kind: 'ldb' | 'aa'): string {
+  const seg = table === 'tete' ? 'Tete' : table === 'bras' ? 'Bras' : table === 'corps' ? 'Corps' : 'Jambe';
+  return `${kind === 'aa' ? 'aaCriticals' : 'criticals'}${seg}`;
+}
+
+/** Retrouve l'entrée de Coup Critique (catalogue LDB ou Aux Armes) portant cet id STABLE — un id de
+ *  `critEntriesSuffered` (`Combatant`) n'a PAS de localisation attachée (compteur d'occurrence pour
+ *  l'escalade `onRepeat` seulement, LDB 18 l.71) : `bras`/`jambe` regroupent les deux côtés, on ne peut
+ *  donc afficher que la TABLE (« Bras »/« Jambe »), pas le côté précis (G/D). SOURCE UNIQUE de lecture
+ *  d'un id de `critEntriesSuffered` — l'onglet État (rendu du journal des Blessures critiques subies)
+ *  et tout futur point d'affichage passent par ici. */
+export function findCritEntrySuffered(id: string): { entry: CritEntry; table: CritTableKey; kind: 'ldb' | 'aa' } | undefined {
+  const ldbTables: [CritTableKey, CritEntry[]][] = [
+    ['tete', CRITICAL_TABLES.tete],
+    ['bras', CRITICAL_TABLES.brasG],
+    ['corps', CRITICAL_TABLES.corps],
+    ['jambe', CRITICAL_TABLES.jambeG],
+  ];
+  for (const [table, entries] of ldbTables) {
+    const entry = entries.find((e) => e.id === id);
+    if (entry) return { entry, table, kind: 'ldb' };
+  }
+  const aaTables: [CritTableKey, CritEntry[]][] = [
+    ['tete', AA_T.tete],
+    ['bras', AA_T.bras],
+    ['corps', AA_T.corps],
+    ['jambe', AA_T.jambe],
+  ];
+  for (const [table, entries] of aaTables) {
+    const entry = entries.find((e) => e.id === id);
+    if (entry) return { entry, table, kind: 'aa' };
+  }
+  return undefined;
 }
 
 /** Localisation d'un Coup Critique : 1d100 lu directement sur le Tableau de Localisation de la forme

@@ -21,6 +21,7 @@
 @import './styles/combat-ui.css'; /* audio, coop, select, campaign, victoire, dialogue, barre d'action */
 @import './styles/combat-modals.css'; /* modales de jet (attaque/défense/incantation/critique…) */
 @import './styles/sheet.css'; /* fiche de personnage + avancement */
+@import './styles/test-scenarios.css'; /* écran-catalogue des scénarios de test (#492 Lot 1b, extrait de sheet.css) */
 @import './styles/merchant.css'; /* marchand (achat/vente/réparation) */
 @import './styles/tavern.css'; /* jeux de taverne (NADJ ch.16) */
 @import './styles/hud.css'; /* HUD plein-champ (frise, dock, journal, menu ☰, monnaie) */

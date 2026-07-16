@@ -97,11 +97,18 @@ export function corruptionGain(level: ExposureLevel, success: boolean, dr: numbe
   return success ? (dr <= 1 ? 2 : dr <= 3 ? 1 : 0) : 3;
 }
 
+/** Seuil « Corrompu » (l.80) : BFM + BE (+ niveau d'Âme pure, LDB 10 — « Vous pouvez gagner un nombre de
+ *  Points de Corruption supplémentaires égal à votre niveau d'Âme pure avant d'avoir à effectuer un Test
+ *  pour savoir si vous êtes corrompu »). SOURCE UNIQUE de la valeur (jauge de fiche + `corruptionThresholdExceeded`). */
+export function corruptionThreshold(c: Combatant): number {
+  return bonus(effectiveChar(c, 'force-mentale')) + bonus(effectiveChar(c, 'endurance')) + talentCorruptionThreshold(c);
+}
+
 /** Seuil « Corrompu » (l.80) : plus de Points de Corruption que BFM + BE. Talent Âme pure (LDB 10) :
  *  « Vous pouvez gagner un nombre de Points de Corruption supplémentaires égal à votre niveau d'Âme
  *  pure avant d'avoir à effectuer un Test pour savoir si vous êtes corrompu » → seuil +niveau. */
 export function corruptionThresholdExceeded(c: Combatant): boolean {
-  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'force-mentale')) + bonus(effectiveChar(c, 'endurance')) + talentCorruptionThreshold(c);
+  return (c.corruption ?? 0) > corruptionThreshold(c);
 }
 
 /** « PROFANE » au sens de la Protection de Phâ (LDB 48 p.249) : créature ayant le Trait Mort-vivant OU

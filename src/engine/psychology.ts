@@ -101,7 +101,7 @@ export function psychResolution(kind: PsychType): { mode?: 'extended' | 'terreur
 
 /** Une affliction psy est-elle ACTIVE ? Ciblé (Animosité/Haine/…) : drapeau `active` ; Peur/Terreur : DR
  *  cumulé encore sous l'Indice (sujet à la Peur). Frénésie/trauma ne sont pas des afflictions surmontables. */
-function isAfflictionActive(p: PsychAffliction): boolean {
+export function isAfflictionActive(p: PsychAffliction): boolean {
   if (CIBLE_TYPES.has(p.type)) return p.active === true;
   if (p.type === 'peur' || p.type === 'terreur') return (p.indice ?? 0) > 0 && (p.calmeDR ?? 0) < (p.indice ?? 0);
   return false;

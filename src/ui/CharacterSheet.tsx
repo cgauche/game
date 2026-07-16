@@ -2,13 +2,11 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useGame, type SheetTab } from '../state/store';
 import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import type { Duration } from '../engine/duration';
 import { useModalA11y } from './Modal';
 import { Tabs } from './Tabs';
-import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLabel, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
+import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
-import { CHAR_LABELS, HitLocation, ItemInstance, Combatant } from '../engine/types';
-import { locationLabel } from '../engine/combat';
+import { HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { baseWithTalents } from '../engine/talentEffects';
 import { refKey, parseRefKey } from '../engine/careerSlots';
@@ -24,10 +22,8 @@ import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire, casterTalents } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, careerLabelFor, findClassById, talentConcrete, symptomLabel, findTrappingById } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, careerLabelFor, findClassById, findTrappingById } from '../data';
 import { weaponFormLabel } from '../gameIso/rig/parts/weaponForms';
-import { formatTrait } from '../engine/traits/dispatch';
-import { formatRemaining } from '../engine/disease';
 import { CodexRef } from './compendium/CodexRef';
 import { CharStatsGrid } from './CharStatsGrid';
 import { CharValue } from './CharValue';
@@ -45,6 +41,8 @@ import { BackgroundPanel } from './BackgroundPanel';
 import { Icon } from './Icon';
 import { HERO_RING } from '../gameIso/teamColors';
 import type { Palette } from '../gameIso/rig/palette';
+import { sheetAlarms, alarmsFingerprint } from './sheetAlarms';
+import { EtatPanel } from './EtatPanel';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
 const WEAPON_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
@@ -67,59 +65,25 @@ const LOC_SHORT: Record<HitLocation, string> = {
   jambeD: 'Jambe D',
 };
 
-/** Description courte d'un effet actif (buff de carac, Trait/Talent accordé, enchantement…). */
-function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): string {
-  if (e.char) return `${e.bonus >= 0 ? '+' : ''}${e.bonus} ${CHAR_LABELS[e.char]}`;
-  if (e.grantedTrait) return `Trait ${formatTrait(e.grantedTrait)}`;
-  if (e.conjuredSet) return `Arme invoquée (${e.label})`;
-  if (e.grantedTalent) return `Talent ${talentConcrete(e.grantedTalent)}`;
-  if (e.apAll) return `+${e.apAll} PA (toutes Localisations)`;
-  if (e.enchantRef) return 'Arme enchantée';
-  if (e.weatherImmune) return 'Immunisé aux intempéries';
-  if (e.suffocates) return 'Suffoque (−1 PB/Round)';
-  if (e.noBreath) return 'Respiration superflue';
-  if (e.ignoreStatePenalties) return 'Ignore les pénalités d’État';
-  if (e.opsPerRound?.length) {
-    const cond = e.opsPerRound.find((o) => o.op === 'condition');
-    if (cond && cond.op === 'condition') return `${cond.name} chaque Round`;
-    const give = e.opsPerRound.find((o) => o.op === 'giveTrapping');
-    if (give && give.op === 'giveTrapping') return `${giveTrappingLabel(give)} chaque Round`;
-    return 'Effet récurrent chaque Round';
-  }
-  if (e.grantedFortune) return `+${e.grantedFortune} Chance (le temps du Sort)`;
-  if (e.grantedFate) return `+${e.grantedFate} Destin (le temps du Sort)`;
-  return e.label;
-}
-
-/** Panneau « Effets actifs » : buffs/débuffs de Sort, Traits accordés, contrecoups d'incantation —
- *  surface tout ce qui modifie la fiche (métamorphose, bénédictions, enchantements…). */
-function ActiveEffectsPanel({ hero }: { hero: Combatant }) {
-  const fx = hero.activeEffects ?? [];
-  const cp = hero.castPenalties ?? [];
-  if (!fx.length && !cp.length) return null;
-  // ActiveEffect porte `duration` (échelle discriminée) ; CastPenalty garde `roundsLeft`/`untilTime`.
-  const dur = (e: { duration?: Duration; roundsLeft?: number; untilTime?: number }) => {
-    if (e.duration) return e.duration.scale === 'rounds' ? ` · ${e.duration.left} R` : e.duration.scale === 'clock' ? ' · durée' : '';
-    return e.roundsLeft != null ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
+/** Bande d'alarmes de la colonne moniteur (§3.1 design v4, #492) : chips-boutons focusables, une
+ *  par alarme de `sheetAlarms` — clic = bascule l'onglet État et ancre vers sa rubrique (dégrade
+ *  proprement tant que le lot 1b n'a pas posé les rubriques). Absente (rien rendu) si RAS. */
+function SheetAlarmsBand({ hero }: { hero: Combatant }) {
+  const setSheetTab = useGame((s) => s.setSheetTab);
+  const alarms = sheetAlarms(hero);
+  if (!alarms.length) return null;
+  const goTo = (anchor: string) => {
+    setSheetTab('etat');
+    requestAnimationFrame(() => document.getElementById(anchor)?.scrollIntoView({ block: 'start' }));
   };
   return (
-    <>
-      <div className="mini-title">Effets actifs</div>
-      <div className="sheet-effects">
-        {fx.map((e, i) => (
-          <div className="skill-line" key={`e${i}`}>
-            <span className="sk-name">{e.label}</span>
-            <span className="sk-val">{describeEffect(e)}{dur(e)}</span>
-          </div>
-        ))}
-        {cp.map((p, i) => (
-          <div className="skill-line" key={`c${i}`}>
-            <span className="sk-name">{p.label}</span>
-            <span className="sk-val warn-text">{p.blocked ? 'Incantation bloquée' : p.maxZeroDR ? 'Prière plafonnée à 0 DR' : `${p.mod} ${p.skill}`}{dur(p)}</span>
-          </div>
-        ))}
-      </div>
-    </>
+    <div className="skill-tags">
+      {alarms.map((a) => (
+        <button key={a.key} type="button" className={`chip tone-${a.tone}`} title={a.label} onClick={() => goTo(a.anchor)}>
+          <Icon id={a.icon} size="sm" /> {a.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -132,6 +96,16 @@ const TAB_LABELS: Record<SheetTab, string> = {
   histoire: 'Histoire',
 };
 
+/** Ligne-question de l'onglet actif (#414/#492, prop `question` de `<Tabs>`) — ce que CET onglet répond. */
+const TAB_QUESTIONS: Record<SheetTab, string> = {
+  etat: "Qu'est-ce qui m'arrive ?",
+  possessions: 'Que je porte, que je transporte ?',
+  competences: 'Que sais-je faire ?',
+  magie: 'Que puis-je lancer ?',
+  avancement: 'Où vont mes PX ?',
+  histoire: 'Qui est-ce ?',
+};
+
 export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: () => void }) {
   // EN COMBAT, lire la copie de bataille (qui porte les effets actifs vivants — buffs, métamorphose,
   // dégâts…) plutôt que l'original du groupe ; hors combat, le groupe. → la fiche reflète l'état réel.
@@ -141,6 +115,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   const tab = useGame((s) => s.sheetTab) ?? 'etat';
   const setSheetTab = useGame((s) => s.setSheetTab);
   const setSheetScroll = useGame((s) => s.setSheetScroll);
+  const setSheetAlarmsSeen = useGame((s) => s.setSheetAlarmsSeen);
   const boxRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   useModalA11y(boxRef, onClose); // dialogue au markup spécifique (header à onglets) → hook a11y partagé
@@ -152,6 +127,25 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = useGame.getState().sheetScroll[tab] ?? 0;
   }, [tab]);
+
+  // Règle d'atterrissage (§3.2) : force l'onglet État seulement à la PREMIÈRE ouverture depuis une
+  // alarme NOUVELLE (empreinte jamais vue pour ce héros) — jamais au switch de héros (deps VIDES :
+  // ne capture que le héros du 1er rendu ; `heroId`/`sheetId` changent ensuite sans remonter la fiche,
+  // cf. `CampaignView.tsx`/`PartyScreen.tsx` qui ne posent pas de `key`).
+  useEffect(() => {
+    if (!hero) return;
+    const alarms = sheetAlarms(hero);
+    if (alarms.length > 0 && alarmsFingerprint(alarms) !== useGame.getState().sheetAlarmsSeen[hero.id]) setSheetTab('etat');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Enregistre l'empreinte VUE dès que l'onglet État est affiché (atterrissage forcé OU visite
+  // manuelle) — les prochaines ouvertures sans alarme nouvelle laissent le dernier onglet consulté.
+  useEffect(() => {
+    if (!hero || tab !== 'etat') return;
+    const fp = alarmsFingerprint(sheetAlarms(hero));
+    if (useGame.getState().sheetAlarmsSeen[hero.id] !== fp) setSheetAlarmsSeen(hero.id, fp);
+  }, [tab, hero?.id, setSheetAlarmsSeen]); // eslint-disable-line react-hooks/exhaustive-deps -- `hero` change lu via getState() (pas de re-render en boucle sur son objet muté)
 
   if (!hero) return null;
 
@@ -201,12 +195,15 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
               tabs={tabs.map((t) => ({ key: t, label: TAB_LABELS[t] }))}
               active={tab}
               onChange={setSheetTab}
+              question={TAB_QUESTIONS[tab]}
             />
             <div className="sheet-tabbody" ref={bodyRef} onScroll={(e) => setSheetScroll(tab, e.currentTarget.scrollTop)}>
               {tab === 'avancement' ? (
                 <AdvancementPanel hero={hero} />
               ) : tab === 'magie' ? (
                 <SpellbookSection hero={hero} />
+              ) : tab === 'etat' ? (
+                <EtatPanel hero={hero} />
               ) : tab === 'histoire' ? (
                 <>
                   <BackgroundPanel hero={hero} />
@@ -480,7 +477,7 @@ function FormPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
   );
 }
 
-function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'etat' | 'possessions' | 'competences' }) {
+function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'possessions' | 'competences' }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const stowItem = useGame((s) => s.stowItem);
   const transferItem = useGame((s) => s.transferItem);
@@ -534,11 +531,11 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'et
             <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
           </div>
           <div className="stat-chip">
-            <span className="sc-label" title="Mouvement"><CodexRef category="characteristics" id="mouvement" label="Mouvement">Mouvement</CodexRef></span>
+            <span className="sc-label" title="Mouvement"><CodexRef category="characteristics" id="mouvement" label="Mouvement">Mouv.</CodexRef></span>
             <span className="sc-value">{hero.movement}</span>
           </div>
           <div className={`stat-chip ${over ? 'enc-over' : ''}`}>
-            <span className="sc-label" title="Encombrement">Encombrement</span>
+            <span className="sc-label" title="Encombrement">Enc.</span>
             <span className="sc-value">{enc}/{maxEnc}{over ? (<> <Icon id="ui/warning" size="sm" /></>) : ''}</span>
           </div>
         </div>
@@ -553,6 +550,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'et
         {hero.fate != null && (
           <div className="sheet-resources"><FateChips c={hero} /></div>
         )}
+        <SheetAlarmsBand hero={hero} />
         <div className="mini-title">Caractéristiques</div>
         <CharStatsGrid
           className="sheet-stats"
@@ -597,56 +595,6 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'et
         )}
       </div>
       )}
-
-      {section === 'etat' && !((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0 || (hero.activeEffects?.length ?? 0) > 0 || (hero.castPenalties?.length ?? 0) > 0) && (
-        <p className="muted">Rien à signaler.</p>
-      )}
-
-      {section === 'etat' && ((hero.diseases?.length ?? 0) > 0 || (hero.traumas?.length ?? 0) > 0 || (hero.corruption ?? 0) > 0 || (hero.mutations?.length ?? 0) > 0) && (
-        <div className="sheet-afflictions">
-          <div className="mini-title">Afflictions</div>
-          <div className="inv-rows">
-            {(hero.corruption ?? 0) > 0 && (
-              <div className="inv-row" style={{ alignItems: 'center' }}>
-                <span className="ir-name"><Icon id="nav/mutation" size="sm" /> <CodexRef category="characteristics" id="corruption" label="Corruption">Corruption</CodexRef></span>
-                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-                  {hero.corruption} point{(hero.corruption ?? 0) > 1 ? 's' : ''}{hero.damned ? ' — DAMNÉ' : ''}
-                </span>
-              </div>
-            )}
-            {(hero.mutations ?? []).map((m, i) => (
-              <div key={`m${i}`} className="inv-row" title={m.note} style={{ alignItems: 'center' }}>
-                <span className="ir-name"><Icon id="nav/mutation" size="sm" /> {m.label}</span>
-                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-                  mutation {m.kind === 'physique' ? 'physique' : 'mentale'}
-                </span>
-              </div>
-            ))}
-            {(hero.traumas ?? []).map((t, i) => (
-              <div key={`t${i}`} className="inv-row" title={t.desc} style={{ alignItems: 'center' }}>
-                <span className="ir-name"><Icon id="medical/crutch" size="sm" /> {t.label}{t.location ? ` (${locationLabel(t.location, hero.bodyShape)})` : ''}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>
-                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-                  {t.recoveryDays != null
-                    ? `convalescence ${t.recoveryDays} j`
-                    : t.needsSurgery
-                    ? 'Chirurgie requise'
-                    : 'permanent'}
-                </span>
-              </div>
-            ))}
-            {(hero.diseases ?? []).map((d, i) => (
-              <div key={`d${i}`} className="inv-row" title={d.symptoms.map((s) => `${symptomLabel(s.symptomId)}${s.spec ? ` (${s.spec})` : ''}`).join(' · ')} style={{ alignItems: 'center' }}>
-                <span className="ir-name"><Icon id="medical/infection" size="sm" /> {d.name}</span>
-                <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-                  {d.phase === 'incubation' ? `incubation : ${formatRemaining(d.minutesLeft)}` : `${formatRemaining(d.minutesLeft)} restants`}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {section === 'etat' && <ActiveEffectsPanel hero={hero} />}
 
       {section === 'possessions' && (
       <div className="sheet-inventory">

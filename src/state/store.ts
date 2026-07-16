@@ -300,6 +300,11 @@ export interface GameState extends RollFlowActionsMap {
   /** Position de scroll du corps d'onglet (`.sheet-tabbody`), par onglet — restaurée à l'affichage. */
   sheetScroll: Partial<Record<SheetTab, number>>;
   setSheetScroll: (tab: SheetTab, top: number) => void;
+  /** Empreinte (`alarmsFingerprint`) des alarmes DÉJÀ vues par héros — la règle d'atterrissage
+   *  (`sheetAlarms.ts`) ne force l'onglet État qu'à la première ouverture depuis une alarme nouvelle.
+   *  UI éphémère, non sérialisée (comme `sheetId`/`sheetTab`). */
+  sheetAlarmsSeen: Record<string, string>;
+  setSheetAlarmsSeen: (heroId: string, fp: string) => void;
   /** Combattant SURVOLÉ depuis un PORTRAIT (frise/dock) — pilote, à parité du survol du token,
    *  le réticule de visée sur la carte ET le « peek » caméra (recadrage temporaire). Local (jamais
    *  réseau), read-only : actif même hors de son tour. null = aucun survol de portrait. */
@@ -1499,6 +1504,8 @@ export const useGame = create<GameState>((set, get) => ({
   setSheetTab: (tab) => set((s) => (s.sheetTab === tab ? {} : { sheetTab: tab })),
   sheetScroll: {},
   setSheetScroll: (tab, top) => set((s) => (s.sheetScroll[tab] === top ? {} : { sheetScroll: { ...s.sheetScroll, [tab]: top } })),
+  sheetAlarmsSeen: {},
+  setSheetAlarmsSeen: (heroId, fp) => set((s) => (s.sheetAlarmsSeen[heroId] === fp ? {} : { sheetAlarmsSeen: { ...s.sheetAlarmsSeen, [heroId]: fp } })),
   hoverCombatantId: null,
   setHoverCombatant: (id) => set((s) => (s.hoverCombatantId === id ? {} : { hoverCombatantId: id })),
   combatCursor: null,

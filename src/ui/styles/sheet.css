@@ -8,8 +8,7 @@
   max-width: 94vw;
   height: 88vh; /* hauteur STABLE : changer d'onglet ne redimensionne plus la fenêtre (L1) — le corps scrolle */
   overflow: hidden;
-  border-top: 4px solid var(--gold);
-  padding-top: 16px;
+  padding-top: 16px; /* bandeau or 4px porté par `.modal` (components.css, #414) */
 }
 /* Overlay de la FICHE : panneau de référence PASSIF → reste SOUS les modales actives (jets, défense…
    z-index 130) pour qu'un jet lancé DEPUIS la fiche s'affiche AU-DESSUS. Au-dessus de la victoire (120). B3. */
@@ -510,18 +509,63 @@
   gap: 8px;
 }
 
-/* Écran-CATALOGUE (grille de cartes) : plafond relevé au-delà de 1440px (politique grand écran,
-   docs/charte-ui.md) — sinon le contenu reste enfermé dans un couloir de 760px sur un moniteur large. */
-.test-scenarios { max-width: 760px; }
-@media (min-width: 1440px) {
-  .test-scenarios { max-width: 1600px; }
+/* ── Onglet « État » (§3.4 design v4, #492 Lot 1b) : silhouette organisatrice (rig réel + zones par
+   groupe de Localisation) en tête de l'onglet, tonalité `data-tone` (attribut, pas une classe — le
+   cliquet de domaine xii ne compte QUE les sélecteurs `.classe`). ── */
+.etat-body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 10px;
 }
-.ts-section { margin-top: 18px; }
-.ts-section > .mini-title { margin-bottom: 8px; }
-.ts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr)); gap: 12px; }
-.ts-card { border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: var(--bg); display: flex; flex-direction: column; gap: 6px; }
-.ts-head { display: flex; align-items: center; gap: 8px; font-size: 15px; }
-.ts-ico { font-size: 20px; }
-.ts-tests { font-size: 12px; color: var(--muted); flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.ts-party { font-size: 12px; color: var(--ok); }
+/* État calme (aucune zone rendue, cf. `EtatSilhouette`) : silhouette centrée seule plutôt que
+   coincée dans la colonne `auto` avec un grand vide à droite (Lot 1 finition, retour juge vision). */
+.etat-body:not(:has(.etat-zones)) {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+.etat-zones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+.etat-zone {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: var(--bg2);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.etat-zone[data-tone='bad'] {
+  border-color: var(--danger);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--danger) 16%, var(--bg2)), var(--bg2));
+}
+.etat-zone b {
+  font-family: var(--font-display);
+  color: var(--gold2);
+}
+.etat-zone[data-tone='bad'] b {
+  color: var(--danger-soft);
+}
+.etat-zone small {
+  opacity: 0.75;
+  font-size: 11px;
+}
+.etat-ras {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 0;
+  text-align: center;
+}
+.etat-ras .ras-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--ok-bright);
+}
+@media (max-width: 700px) {
+  .etat-body { grid-template-columns: 1fr; justify-items: center; }
+}
 

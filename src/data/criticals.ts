@@ -1,5 +1,6 @@
 import type { HitLocation, Difficulty } from '../engine/types';
 import type { GameOp } from '../engine/ops';
+import type { SourceRef } from './schemas/common';
 import criticalsJson from './criticals.json';
 
 /**
@@ -47,6 +48,7 @@ export interface CritEntry {
   maison?: string;
   /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
   desc: string;
+  source?: SourceRef;
 }
 /** Amputation (LDB 18 l.237) — SOURCE UNIQUE de forme (LDB `criticals.json` + Aux Armes `aa-criticals.json`),
  *  résolue par `resolveAmputation` (`src/engine/critical.ts`).
