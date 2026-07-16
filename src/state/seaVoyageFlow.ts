@@ -44,7 +44,7 @@ import type { AuthoredEnemy } from './encounterAuthoring';
 import { registerScene } from './store';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { vehicleCombatant } from '../engine/vehicle';
-import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, type CrewTestTypeData } from '../data';
+import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, diseaseLabel, type CrewTestTypeData } from '../data';
 import { installCost, rollSteamBreakdown, steamBreakdownTriggered, shipSizeOfLength, type SteamBreakdownEntry } from '../engine/shipBuild';
 import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
 import { rollTest, isDoubleRoll, extendedTestStep, difficultyFromModifier } from '../engine/tests';
@@ -59,7 +59,7 @@ import { toDate, MINUTES_PER_DAY, minutesUntilNext, DUSK_MINUTE } from '../engin
 import { seasonOfMonth } from '../engine/travelStages';
 import {
   rollSeaWeather, rollWindDirection, windAspect, tickWindForce, windEffect, windAdjustedM,
-  seaWeatherLabel, dailyWaterLitres, temperatureDef, seaExposureTestsPerDay, AFFALER_RULES,
+  seaWeatherLabel, dailyWaterLitres, temperatureDef, seaExposureTestsPerDay, AFFALER_RULES, WIND_FORCES,
   precipitationSkillMod, precipitationDef,
   type SeaWeather, type WindDirection,
 } from '../engine/seaWeather';
@@ -86,7 +86,7 @@ import type { NightEntry } from './restFlow';
 import { subtract, toMoney, type Money } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
-import { contractDisease } from '../engine/disease';
+import { contractDisease, applyContraction, contractionDue, DISEASE_DEFS } from '../engine/disease';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
@@ -122,6 +122,11 @@ export interface SeaVoyageState {
   daysToEvent: number;
   /** Jours passés en mer (scorbut : Test par mois sans nourriture correcte, MDG 14 l.230). */
   daysAtSea: number;
+  /** TONNEAU D'EAU CONTAMINÉ (MDG 14 l.209) : un porteur de peste noire/flux sanglant/courante galopante/
+   *  vérole urticante a raté son Test de Résistance en buvant au tonneau — devient une SOURCE DE
+   *  CONTAGION pour quiconque y boit ENSUITE (jamais le jour même). Ne concerne QUE `vessel.waterLitres` —
+   *  la petite bière (`tonneau-de-petite-biere`) y échappe (MDG 14 l.209), jamais lue ici. */
+  waterContaminated?: { diseaseId: string };
   /** Lignes du jour (recap de la halte de nuit). */
   lines: string[];
   /** Événements de bord RACONTÉS aujourd'hui (#371 LOT 4) — rendus en `ParchmentCard`, distincts des
@@ -244,6 +249,14 @@ export function noteSeaLine(get: Get, set: Set, lines: string[]): void {
 export function patchSea(get: Get, set: Set, patch: Partial<SeaVoyageState>): void {
   const plan = get().travelPlan!;
   set({ travelPlan: { ...plan, sea: { ...plan.sea!, ...patch } } });
+}
+
+/** Notifie les abonnés d'une mutation IN-PLACE d'un membre de `party` (héros/`diseases`) — les
+ *  appliers de maladie de mer (Scorbut, Mal de mer, Tonneau d'eau) mutent `hero` par référence
+ *  puis appellent CECI pour faire recopier l'array (`set-scan-guard.test.ts` : SOURCE UNIQUE au
+ *  lieu d'un `set({ party: [...get().party] })` littéral dupliqué à chaque applier). */
+export function touchParty(get: Get, set: Set): void {
+  set({ party: [...get().party] });
 }
 
 /** Humeur de Manann du navire de campagne (défaut : registre neuf). */
@@ -1051,11 +1064,44 @@ registerCascadeApplier('sea-scorbut', (get, set, step, hero) => {
   const success = step.result.success;
   // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
   // Succès sans effet (l'exposition « pour cette fois » n'a rien à ajouter) → aucune conséquence.
-  if (success) { set({ party: [...get().party] }); return { consequences: freeCons([]) }; }
+  if (success) { touchParty(get, set); return { consequences: freeCons([]) }; }
   const d = contractDisease('scorbut', battleRng());
   if (d) hero.diseases = [...(hero.diseases ?? []), d];
-  set({ party: [...get().party] });
+  touchParty(get, set);
   return { consequences: freeCons([{ text: `${hero.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : contracté.`, tone: 'bad' }]) };
+});
+
+/** Mal de mer (MDG 14 l.217-220, `klass:'subi'`) : échec → contracté. `applyContraction` dédoublonne si
+ *  DEUX étapes ratées le même jour pour le même héros (premier voyage ET mauvais temps cumulés,
+ *  `buildSeasicknessSteps`). */
+registerCascadeApplier('sea-mal-de-mer', (get, set, step, hero) => {
+  if (!step.result || !hero) return;
+  const j = step.result.success ? [] : applyContraction(hero, 'mal-de-mer', false, battleRng());
+  touchParty(get, set);
+  return { consequences: freeCons(j.length ? [{ text: `${hero.name} — mal de mer : contracté.`, tone: 'bad' }] : []) };
+});
+
+/** Tonneau d'eau — EXPOSITION (MDG 14 l.209, `klass:'subi'`) : boire au tonneau contaminé la veille
+ *  expose au Test de Contraction propre à la maladie qui l'a contaminé (même cycle générique que
+ *  Scorbut ci-dessus, difficulté lue sur `DISEASE_DEFS[…].contractDifficulty`). */
+registerCascadeApplier('sea-tonneau-expose', (get, set, step, hero) => {
+  if (!step.result || !hero) return;
+  const diseaseId = String(step.meta?.diseaseId ?? '');
+  const j = step.result.success ? [] : applyContraction(hero, diseaseId, false, battleRng());
+  touchParty(get, set);
+  return { consequences: freeCons(j.length ? [{ text: `${hero.name} — tonneau d'eau contaminé (${diseaseLabel(diseaseId)}) : contracté.`, tone: 'bad' }] : []) };
+});
+
+/** Tonneau d'eau — CONTAMINATION (MDG 14 l.209, `klass:'subi'`) : un porteur boit au tonneau, échoue son
+ *  Test de Résistance Intermédiaire (+0) → le tonneau devient une source de contagion (effet visible
+ *  dès DEMAIN, jamais le jour même — le garde `!waterContaminated` évite qu'un second porteur en échec
+ *  le même jour n'écrase la maladie déjà posée par le premier). */
+registerCascadeApplier('sea-tonneau-contamine', (get, set, step) => {
+  if (!step.result) return;
+  if (step.result.success) return { consequences: freeCons([]) };
+  const diseaseId = String(step.meta?.diseaseId ?? '');
+  if (!get().travelPlan?.sea?.waterContaminated) patchSea(get, set, { waterContaminated: { diseaseId } });
+  return { consequences: freeCons([{ text: `Le tonneau d'eau est CONTAMINÉ (${diseaseLabel(diseaseId)}) — quiconque y boit s'expose désormais (MDG 14 l.209).`, tone: 'bad' }]) };
 });
 
 /** Épuisement (MDG 13 l.109-111, `klass:'subi'`) : même patron que Scorbut ci-dessus. */
@@ -1088,15 +1134,94 @@ function applySeaProgress(get: Get, set: Set, progressionDR: number): string[] {
   return [`Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`];
 }
 
+/** Maladies transmises par le tonneau d'eau contaminé (MDG 14 l.209) — ids app-owned de `maladies.json`
+ *  (littéraux, comme `contractDisease('scorbut', …)` ci-dessus : hors du registre `DISEASES` scopé LDB). */
+const BARREL_DISEASES = ['peste-noire', 'flux-sanglant', 'courante-galopante', 'verole-urticante'];
+
+/** Étapes du tonneau d'eau contaminé (MDG 14 l.209) — DEUX volets INDÉPENDANTS, dans CET ordre : (a)
+ *  EXPOSITION de qui boit AUJOURD'HUI à un tonneau contaminé la veille (`sea.waterContaminated`, jamais
+ *  le jour même — « pour quiconque y boit ENSUITE ») ; (b) Test de Résistance Intermédiaire (+0) de
+ *  chaque porteur ACTIF d'une des 4 maladies nommées qui boit au tonneau aujourd'hui → échec CONTAMINE
+ *  le tonneau (effet visible dès demain). Ne lit QUE `vessel.waterLitres` — la petite bière
+ *  (`tonneau-de-petite-biere`) y échappe (l.209), jamais lue ici. */
+function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel | null): CascadeStep[] {
+  if (vessel?.waterLitres == null) return [];
+  const out: CascadeStep[] = [];
+  const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
+  if (sea.waterContaminated) {
+    const diseaseId = sea.waterContaminated.diseaseId;
+    const diff: Difficulty = DISEASE_DEFS[diseaseId]?.contractDifficulty ?? 'intermediaire';
+    for (const h of get().party.filter((c) => !c.dead && contractionDue(c, diseaseId))) {
+      out.push({
+        id: `sea-tonneau-expose-${h.id}`, kind: 'sea-tonneau-expose', actorId: h.id,
+        label: composeRollLabel(h, `Tonneau d'eau contaminé (${diseaseLabel(diseaseId)})`, test, diff),
+        rollLabel: 'Tonneau contaminé', base: testValue(h, 'resistance', 'endurance'),
+        target: effectiveTarget(h, test, diff), result: null, interactive: true, meta: { diseaseId },
+      });
+    }
+  } else {
+    for (const h of get().party) {
+      if (h.dead) continue;
+      const dz = (h.diseases ?? []).find((d) => d.phase === 'active' && BARREL_DISEASES.includes(d.name));
+      if (!dz) continue;
+      out.push({
+        id: `sea-tonneau-contamine-${h.id}`, kind: 'sea-tonneau-contamine', actorId: h.id,
+        label: composeRollLabel(h, "Tonneau d'eau (boire)", test, 'intermediaire'),
+        rollLabel: "Tonneau d'eau", base: testValue(h, 'resistance', 'endurance'),
+        target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true, meta: { diseaseId: dz.name },
+      });
+    }
+  }
+  return out;
+}
+
+/** Immunité elfe au mal de mer (MDG 14 l.215) — keyée sur l'id STABLE d'espèce (`hauts-elfes`/
+ *  `elfes-sylvains`, `src/data/species.json`), jamais le libellé. */
+const isElfSpecies = (species: string | undefined): boolean => !!species?.includes('elfes');
+
+/** Mal de mer (MDG 14 l.211-222) — DEUX déclencheurs INDÉPENDANTS, cumulables le même jour : premier
+ *  jour de CETTE traversée (`daysAtSea === 0` — proxy : le moteur ne porte aucun état par-personnage
+ *  « a déjà navigué », le RAW parle de « la première fois qu'ils entreprennent un voyage en mer ») et
+ *  mauvais temps (Vent violent ou plus, l.218, `WIND_FORCES`). Les Personnages elfes sont IMMUNISÉS
+ *  (l.215) : jamais testés, aucune étape posée. */
+function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
+  const firstDay = sea.daysAtSea === 0;
+  const badWeather = WIND_FORCES.indexOf(sea.weather.vent) >= WIND_FORCES.indexOf('vent-violent');
+  if (!firstDay && !badWeather) return [];
+  const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
+  const out: CascadeStep[] = [];
+  for (const h of get().party) {
+    if (h.dead || isElfSpecies(h.species) || !contractionDue(h, 'mal-de-mer')) continue;
+    if (firstDay) {
+      out.push({
+        id: `sea-mal-de-mer-premier-${h.id}`, kind: 'sea-mal-de-mer', actorId: h.id,
+        label: composeRollLabel(h, 'Mal de mer — premier voyage en mer', test, 'complexe'),
+        rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
+        target: effectiveTarget(h, test, 'complexe'), result: null, interactive: true,
+      });
+    }
+    if (badWeather) {
+      out.push({
+        id: `sea-mal-de-mer-tempete-${h.id}`, kind: 'sea-mal-de-mer', actorId: h.id,
+        label: composeRollLabel(h, 'Mal de mer — mauvais temps', test, 'intermediaire'),
+        rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
+        target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true,
+      });
+    }
+  }
+  return out;
+}
+
 /**
  * Clôture de la CASCADE du jour (#275 Ronde 2 cran 3, appelée par le store — `dispatchCascadeDone`
  * `purpose:'travelDay'`) — PHASE 1/3 de l'entretien-survie (#272 résiduel, seam #275 Décision 3) : eau &
- * rats, puis Scorbut (ch.14). Le lot de Tests `subi` du Scorbut passe par `resolveSurface` : un siège MJ
- * présent (`gmSeat`) → cascade SURFACÉE (`purpose:'seaScorbut'`, visible/lançable, jamais silencieuse —
- * la clôture enchaîne `continueSeaDayAfterScorbut` via `dispatchCascadeDone`, `combatSlice.ts`) ; sinon
- * résolu INLINE comme avant (#275 Ronde 1) et la phase 2 s'enchaîne directement. Toute ligne générée ICI
- * passe par `tell()` (journal + `sea.lines`, durable) plutôt qu'un tableau local — une cascade surfacée
- * PAUSE l'exécution (reprise asynchrone par un clic MJ), un accumulateur JS ne survivrait pas la pause.
+ * rats, puis les maladies embarquées (MDG 14 l.209-230 — Tonneau d'eau contaminé, Mal de mer, Scorbut).
+ * Le lot de Tests `subi` des maladies passe par `resolveSurface` : un siège MJ présent (`gmSeat`) →
+ * cascade SURFACÉE (`purpose:'seaScorbut'`, visible/lançable, jamais silencieuse — la clôture enchaîne
+ * `continueSeaDayAfterScorbut` via `dispatchCascadeDone`, `combatSlice.ts`) ; sinon résolu INLINE comme
+ * avant (#275 Ronde 1) et la phase 2 s'enchaîne directement. Toute ligne générée ICI passe par `tell()`
+ * (journal + `sea.lines`, durable) plutôt qu'un tableau local — une cascade surfacée PAUSE l'exécution
+ * (reprise asynchrone par un clic MJ), un accumulateur JS ne survivrait pas la pause.
  */
 export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   const plan = get().travelPlan;
@@ -1131,33 +1256,36 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   // Vivres de l'équipage PNJ (MDG 14 l.238/250) : l'effectif nominal mange sur les rations de mer de la cale.
   tell(get, set, consumeCrewProvisions(get, set, 1));
 
-  // Scorbut (MDG 14 l.230) : « pour chaque mois passé sans nourriture correcte » — Test de Résistance
-  // Intermédiaire (+0), Facile (+40) avec la soupe de chou fermenté. Les rations de bord ne sont pas
-  // de la nourriture fraîche → le mois EN MER compte. UNE cascade à N étapes `subi` (patron `shipwreck.ts`
-  // 22c74b5d) — policy de la PORTE (`resolveSurface`), jamais un `if gmSeat` local (#272 résiduel).
+  // Maladies embarquées (MDG 14 l.209-230) : Tonneau d'eau contaminé (l.209, `buildBarrelSteps`) + Mal de
+  // mer (l.211-222, `buildSeasicknessSteps`) + Scorbut (l.230, « pour chaque mois passé sans nourriture
+  // correcte » — Test de Résistance Intermédiaire (+0), Facile (+40) avec la soupe de chou fermenté ; les
+  // rations de bord ne sont pas de la nourriture fraîche → le mois EN MER compte). UNE cascade à N étapes
+  // `subi` (patron `shipwreck.ts` 22c74b5d) — policy de la PORTE (`resolveSurface`), jamais un `if gmSeat`
+  // local (#272 résiduel).
   const daysAtSea = sea.daysAtSea + 1;
-  if (daysAtSea % 30 === 0) {
-    const patients = get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.name === 'scorbut'));
-    if (patients.length) {
-      const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
-      const steps: CascadeStep[] = patients.map((h) => {
-        const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
-        const diff: Difficulty = soup ? 'facile' : 'intermediaire';
-        return {
-          id: `sea-scorbut-${h.id}`, kind: 'sea-scorbut', actorId: h.id,
-          label: composeRollLabel(h, 'Scorbut', test, diff), rollLabel: 'Scorbut',
-          base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
-          result: null, interactive: true, meta: { soup },
-        };
-      });
-      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Scorbut', test: {}, difficulty: 'intermediaire', klass: 'subi' };
-      if (resolveSurface(get, subiReq, 'sea-scorbut') === 'I') {
-        const resolved = runCascadeImmediate(get, set, steps);
-        tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
-      } else {
-        startCascade(get, set, { title: 'Entretien — Scorbut', icon: 'medical/infection', purpose: 'seaScorbut', steps });
-        return; // clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterScorbut`
-      }
+  const scurvyTest: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
+  const scurvySteps: CascadeStep[] = (daysAtSea % 30 === 0
+    ? get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.name === 'scorbut'))
+    : []
+  ).map((h) => {
+    const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
+    const diff: Difficulty = soup ? 'facile' : 'intermediaire';
+    return {
+      id: `sea-scorbut-${h.id}`, kind: 'sea-scorbut', actorId: h.id,
+      label: composeRollLabel(h, 'Scorbut', scurvyTest, diff), rollLabel: 'Scorbut',
+      base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, scurvyTest, diff),
+      result: null, interactive: true, meta: { soup },
+    };
+  });
+  const diseaseSteps: CascadeStep[] = [...buildBarrelSteps(get, sea, vessel0), ...buildSeasicknessSteps(get, sea), ...scurvySteps];
+  if (diseaseSteps.length) {
+    const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Maladies', test: {}, difficulty: 'intermediaire', klass: 'subi' };
+    if (resolveSurface(get, subiReq, 'sea-scorbut') === 'I') {
+      const resolved = runCascadeImmediate(get, set, diseaseSteps);
+      tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
+    } else {
+      startCascade(get, set, { title: 'Entretien — Maladies', icon: 'medical/infection', purpose: 'seaScorbut', steps: diseaseSteps });
+      return; // clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterScorbut`
     }
   }
   continueSeaDayAfterScorbut(get, set);

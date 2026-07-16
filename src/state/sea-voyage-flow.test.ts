@@ -27,6 +27,8 @@ import type { RecapEvent } from './recapLine';
 import { SEA_HAZARDS, findSeaHazard } from '../engine/seaPerils';
 import { overspeedRow } from '../engine/seaNavigation';
 import { setRule, resetRule } from '../engine/policy';
+import { contractDisease } from '../engine/disease';
+import { makeRNG } from '../engine/dice';
 
 /**
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15), pilotée
@@ -999,7 +1001,9 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     const { setGmSeat } = await import('./netFlow');
     setGmSeat(get, set, 1);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
-    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, milesToday: 5 } } });
+    // daysAtSea non-nul + mer calme : évite le mal de mer (#460, MDG 14 l.211-222 — 1er jour/mauvais
+    // temps) de surfacer AVANT la Désertion, seule étape que ce test veut ici.
+    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, daysAtSea: 5, milesToday: 5, weather: { ...plan.sea!.weather, vent: 'calme-plat' } } } });
     continueSeaDayAfterCascade(get, set);
     resolveShoreLeave(get, set, true);
     expect(get().pendingCascade).toBeTruthy(); // 'V' — surfacé au siège MJ, pas résolu d'office
@@ -1062,6 +1066,172 @@ describe('Entretien-survie maritime — #272 résiduel (Scorbut/Épuisement, pol
     while (get().pendingCascade?.purpose === 'seaExhaustion' && guard++ < 10) stepCascade();
     expect(get().pendingRest).toBeTruthy();
     expect(get().journal.some((l) => l.includes('Épuisement'))).toBe(true);
+  });
+});
+
+describe('Mal de mer — #460 (MDG 14 l.211-222, câblage jamais branché, cycle de maladie réutilisé)', () => {
+  beforeEach(freshState);
+
+  it('applier `sea-mal-de-mer` : échec → contracté (malaise/nausée/persistant)', () => {
+    const hero = get().party[0];
+    hero.diseases = [];
+    cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: 'x', result: { roll: 99, target: 40, sl: -6, success: false }, interactive: true }, hero, { steps: [], index: 0 });
+    const found = get().party.find((h) => h.id === hero.id)!.diseases?.find((d) => d.name === 'mal-de-mer');
+    expect(found).toBeTruthy();
+    expect(found!.symptoms.map((s) => s.symptomId).sort()).toEqual(['malaise', 'nausee', 'persistant']);
+  });
+
+  it('applier `sea-mal-de-mer` : réussite → rien', () => {
+    const hero = get().party[0];
+    hero.diseases = [];
+    cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: 'x', result: { roll: 1, target: 40, sl: 6, success: true }, interactive: true }, hero, { steps: [], index: 0 });
+    expect(get().party.find((h) => h.id === hero.id)!.diseases ?? []).toHaveLength(0);
+  });
+
+  it('1er jour de traversée (`daysAtSea === 0`) → une étape `sea-mal-de-mer` par PJ non-elfe', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 0, weather: { ...plan.sea!.weather, vent: 'calme-plat' } } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeTruthy();
+    expect(get().pendingCascade!.purpose).toBe('seaScorbut'); // MÊME cascade « Entretien — Maladies » (#460)
+    const kinds = get().pendingCascade!.participants.map((s) => s.kind);
+    expect(kinds.filter((k) => k === 'sea-mal-de-mer')).toHaveLength(get().party.length); // 1 par PJ
+  });
+
+  it('mauvais temps (Vent violent ou plus, l.218) → une étape `sea-mal-de-mer`, même hors 1er jour', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 5, weather: { ...plan.sea!.weather, vent: 'vent-violent' } } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeTruthy();
+    const kinds = get().pendingCascade!.participants.map((s) => s.kind);
+    expect(kinds).toContain('sea-mal-de-mer');
+  });
+
+  it('ni 1er jour ni mauvais temps → aucune étape `sea-mal-de-mer` (jour de routine)', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 5, weather: { ...plan.sea!.weather, vent: 'calme-plat' } } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeNull();
+    expect(get().pendingRest).toBeTruthy();
+  });
+
+  it('Personnage elfe (`hauts-elfes`) IMMUNISÉ (l.215) : aucune étape posée, même au 1er jour + mauvais temps', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const party = get().party.map((h) => ({ ...h, species: 'hauts-elfes' }));
+    set({ party });
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 0, weather: { ...plan.sea!.weather, vent: 'vent-violent' } } } });
+    continueSeaDayAfterCascade(get, set);
+    // Aucune maladie déclenchée du tout ce jour (ni tonneau — pas d'eau suivie — ni scorbut) : routine.
+    expect(get().pendingCascade).toBeNull();
+    expect(get().pendingRest).toBeTruthy();
+  });
+
+  it('déjà immunisé (`diseaseImmunities`) → aucune étape reposée', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const party = get().party.map((h) => ({ ...h, diseaseImmunities: ['mal-de-mer'] }));
+    set({ party });
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 0, weather: { ...plan.sea!.weather, vent: 'calme-plat' } } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeNull();
+    expect(get().pendingRest).toBeTruthy();
+  });
+});
+
+describe('Tonneau d\'eau contaminé — #460 (MDG 14 l.209, `vessel.waterLitres` seul — la petite bière y échappe)', () => {
+  beforeEach(freshState);
+
+  it('applier `sea-tonneau-contamine` : échec → `sea.waterContaminated` posé (visible dès demain)', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: plan });
+    const hero = get().party[0];
+    cascadeAppliers['sea-tonneau-contamine'].apply(get, set, { id: 'x', kind: 'sea-tonneau-contamine', label: 'x', result: { roll: 99, target: 40, sl: -6, success: false }, interactive: true, meta: { diseaseId: 'flux-sanglant' } }, hero, { steps: [], index: 0 });
+    expect(get().travelPlan!.sea!.waterContaminated).toEqual({ diseaseId: 'flux-sanglant' });
+  });
+
+  it('applier `sea-tonneau-contamine` : réussite → rien', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: plan });
+    const hero = get().party[0];
+    cascadeAppliers['sea-tonneau-contamine'].apply(get, set, { id: 'x', kind: 'sea-tonneau-contamine', label: 'x', result: { roll: 1, target: 40, sl: 6, success: true }, interactive: true, meta: { diseaseId: 'flux-sanglant' } }, hero, { steps: [], index: 0 });
+    expect(get().travelPlan!.sea!.waterContaminated).toBeUndefined();
+  });
+
+  it('applier `sea-tonneau-expose` : boire au tonneau contaminé, échec → contracté', () => {
+    const hero = get().party[0];
+    hero.diseases = [];
+    cascadeAppliers['sea-tonneau-expose'].apply(get, set, { id: 'x', kind: 'sea-tonneau-expose', label: 'x', result: { roll: 99, target: 20, sl: -8, success: false }, interactive: true, meta: { diseaseId: 'peste-noire' } }, hero, { steps: [], index: 0 });
+    expect(get().party.find((h) => h.id === hero.id)!.diseases?.some((d) => d.name === 'peste-noire')).toBe(true);
+  });
+
+  it('applier `sea-tonneau-expose` : réussite → rien', () => {
+    const hero = get().party[0];
+    hero.diseases = [];
+    cascadeAppliers['sea-tonneau-expose'].apply(get, set, { id: 'x', kind: 'sea-tonneau-expose', label: 'x', result: { roll: 1, target: 20, sl: 8, success: true }, interactive: true, meta: { diseaseId: 'peste-noire' } }, hero, { steps: [], index: 0 });
+    expect(get().party.find((h) => h.id === hero.id)!.diseases ?? []).toHaveLength(0);
+  });
+
+  it('porteur ACTIF de peste noire buvant à `vessel.waterLitres` → une étape `sea-tonneau-contamine`', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const party = [...get().party];
+    party[0] = { ...party[0], diseases: [contractDisease('peste-noire', makeRNG(1), { incubation: 0 })!] };
+    set({ party, vessel: { ...get().vessel!, waterLitres: 1000 } });
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 5, weather: { ...plan.sea!.weather, vent: 'calme-plat' } } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeTruthy();
+    const step = get().pendingCascade!.participants.find((s) => s.kind === 'sea-tonneau-contamine');
+    expect(step).toBeTruthy();
+    expect(step!.actorId).toBe(party[0].id);
+  });
+
+  it('SANS tonneau d\'eau suivi (`vessel.waterLitres` absent) → aucune étape de tonneau, même avec un porteur actif', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const party = [...get().party];
+    party[0] = { ...party[0], diseases: [contractDisease('peste-noire', makeRNG(1), { incubation: 0 })!] };
+    set({ party }); // vessel.waterLitres reste undefined (freshState)
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 5, weather: { ...plan.sea!.weather, vent: 'calme-plat' } } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeNull();
+    expect(get().pendingRest).toBeTruthy();
+  });
+
+  it('tonneau DÉJÀ contaminé la veille → chaque PJ qui boit AUJOURD\'HUI est EXPOSÉ (`sea-tonneau-expose`)', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    set({ vessel: { ...get().vessel!, waterLitres: 1000 } });
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 5, weather: { ...plan.sea!.weather, vent: 'calme-plat' }, waterContaminated: { diseaseId: 'courante-galopante' } } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeTruthy();
+    const kinds = get().pendingCascade!.participants.map((s) => s.kind);
+    expect(kinds.filter((k) => k === 'sea-tonneau-expose')).toHaveLength(get().party.length);
+  });
+
+  it('un PJ DÉJÀ porteur de la maladie du tonneau n\'est PAS re-testé (`contractionDue`)', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const party = [...get().party];
+    party[0] = { ...party[0], diseases: [contractDisease('courante-galopante', makeRNG(1), { incubation: 0 })!] };
+    set({ party, vessel: { ...get().vessel!, waterLitres: 1000 } });
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 5, weather: { ...plan.sea!.weather, vent: 'calme-plat' }, waterContaminated: { diseaseId: 'courante-galopante' } } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeTruthy();
+    const kinds = get().pendingCascade!.participants.map((s) => s.kind);
+    expect(kinds.filter((k) => k === 'sea-tonneau-expose')).toHaveLength(get().party.length - 1); // le porteur déjà malade est écarté
   });
 });
 
