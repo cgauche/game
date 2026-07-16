@@ -3,10 +3,11 @@
  */
 import { CharKey, Characteristics, Combatant } from './types';
 import { traumaCharPenaltiesLabeled, passiveCharSum } from './trauma';
-import { traitCharMods } from './traits/dispatch';
+import { traitCharMods, traitCapability } from './traits/dispatch';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
 import { findTalentById } from '../data';
 import type { ModLine } from './combat';
+import type { TraitList } from './statEntry';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
 export function bonus(value: number): number {
@@ -94,9 +95,12 @@ export function effectiveArmourAt(c: Combatant, location: keyof Combatant['armou
  *
  * Livre de base, Tableau des Attributs : « Points de Blessure = BF+(2×BE)+BFM »
  * (et « (2×BE)+BFM » pour les Halflings, qui ont le talent Petit).
+ *
+ * `traits` : Fabriqué (LDB 85 l.142) substitue le Bonus de Force au Bonus de Force Mentale dans ce calcul.
  */
-export function maxWounds(chars: Characteristics, size: SizeCategory = 'moyenne'): number {
-  return woundsForSize(bonus(chars.force), bonus(chars.endurance), bonus(chars['force-mentale']), size);
+export function maxWounds(chars: Characteristics, size: SizeCategory = 'moyenne', traits?: TraitList): number {
+  const bfm = traitCapability(traits, 'woundsUseForce') ? bonus(chars.force) : bonus(chars['force-mentale']);
+  return woundsForSize(bonus(chars.force), bonus(chars.endurance), bfm, size);
 }
 
 /** Σ des `charMod` passifs de TALENT (× `times`) pour la Caractéristique `key` — lecture LOCALE
@@ -123,13 +127,17 @@ function talentCharModSum(c: Combatant, key: CharKey): number {
 export function effectiveMaxWounds(c: Combatant): number {
   const size = effectiveSize(c.size);
   const base = c.wounds.base ?? c.wounds.max;
-  const eff = woundsForSize(bonus(effectiveChar(c, 'force')), bonus(effectiveChar(c, 'endurance')), bonus(effectiveChar(c, 'force-mentale')), size);
+  // Fabriqué (LDB 85 l.142) : Bonus de Force au lieu du Bonus de Force Mentale, sur `eff` ET `raw` (le
+  // delta doit rester cohérent avec la SUBSTITUTION, pas juste sa valeur BF/BFM de base).
+  const woundsUseForce = traitCapability(c.traits, 'woundsUseForce');
+  const effBFM = woundsUseForce ? bonus(effectiveChar(c, 'force')) : bonus(effectiveChar(c, 'force-mentale'));
+  const eff = woundsForSize(bonus(effectiveChar(c, 'force')), bonus(effectiveChar(c, 'endurance')), effBFM, size);
   // Référence = base au spawn : characteristics + liveTraitCharMods (créatures) + talentCharMods (héros).
   // Les mutations viennent APRÈS la création → elles restent dans le delta pour affecter effectiveMaxWounds.
   const rawF = c.characteristics.force + (traitCharMods(c.liveTraits).force ?? 0) + talentCharModSum(c, 'force');
   const rawE = c.characteristics.endurance + (traitCharMods(c.liveTraits).endurance ?? 0) + talentCharModSum(c, 'endurance');
   const rawFM = c.characteristics['force-mentale'] + (traitCharMods(c.liveTraits)['force-mentale'] ?? 0) + talentCharModSum(c, 'force-mentale');
-  const raw = woundsForSize(bonus(rawF), bonus(rawE), bonus(rawFM), size);
+  const raw = woundsForSize(bonus(rawF), bonus(rawE), woundsUseForce ? bonus(rawF) : bonus(rawFM), size);
   // Modif. de Blessures PLATS d'effets actifs (op `attrMod{wounds}` exécutée — Bonnet de fou « +4
   // Blessures », LDB 71 l.20) : sommés au delta, repris/rendus par `refreshWounds` (pose + expiration).
   const flat = (c.activeEffects ?? []).reduce((s, e) => s + (e.attrMods?.wounds ?? 0), 0);

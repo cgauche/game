@@ -70,6 +70,7 @@ import {
   isStupid,
   magicResistanceOf, flyMeters, runMultiplier,
   isSkittishMount, immuneToSpellDomain,
+  traitCapability,
 } from '../engine/traits/dispatch';
 import {
   isMagicMissile,
@@ -2569,11 +2570,12 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 /** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */
 export const TRAMPLE_WEAPON: Weapon = buildWeapon({ name: 'Piétinement', attackKind: 'pietinement', damage: { plusBF: true, flat: 0, bare: true } });
 
-/** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite) puis applique
- *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
+/** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite), SAUF Se cabrer (`freeTrample`,
+ *  LDB 85 l.314 : payé d'une Action de Mouvement) → 0. Puis applique `resolveTrample` (BF +0, Corps à
+ *  corps). Ne consomme PAS l'Action (« action gratuite »). */
 export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: Combatant): void {
   const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
-  campSpend(get, attacker, 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA l.4142)
+  campSpend(get, attacker, traitCapability(attacker.traits, 'freeTrample') ? 0 : 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA l.4142)
   const res = resolveTrample(attacker, target, battleRng());
   applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res, false); // pose acted=true (attaque standard)… ; Piétinement = résolution instantanée (pas de modale)
   set({ battle: { ...get().battle!, acted: prevActed } }); // …qu'on restaure : le Piétinement est gratuit
@@ -3006,9 +3008,11 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
       continue;
     }
     // Coût en Avantage PAR TYPE (RAW, lu de creatureAttacks) : Cornes (Charge) et Tentacules = 0 ;
-    // Morsure/Caudale = 1 ; Piétinement (Taille) = 1. Une entrée inabordable est SAUTÉE (pas de
-    // break : des Tentacules à coût 0 restent jouables derrière une Morsure inabordable).
-    const cost = kind === 'pietinement' ? 1 : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.avantage ?? 1;
+    // Morsure/Caudale = 1 ; Piétinement (Taille) = 1, SAUF Se cabrer (LDB 85 l.314, `freeTrample`) qui
+    // paie l'Action de Piétinement de son Action de Mouvement au lieu d'1 Avantage → coût 0. Une entrée
+    // inabordable est SAUTÉE (pas de break : des Tentacules à coût 0 restent jouables derrière une
+    // Morsure inabordable).
+    const cost = kind === 'pietinement' ? (traitCapability(enemy.traits, 'freeTrample') ? 0 : 1) : creatureAttacks(enemy.traits ?? []).find((a) => a.kind === kind)?.avantage ?? 1;
     if (enemy.advantage < cost) { enemy.pendingFreeAttacks.shift(); continue; }
     const target = freeAttackTarget(b2, enemy, kind);
     if (!target) { enemy.pendingFreeAttacks.shift(); continue; }

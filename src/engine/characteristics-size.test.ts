@@ -10,6 +10,15 @@ describe('maxWounds par catégorie de Taille (LDB 85 l.332-352)', () => {
   it('Énorme = ×4', () => expect(maxWounds(chars, 'enorme')).toBe(56));
 });
 
+describe('maxWounds — Fabriqué substitue le Bonus de Force au Bonus de Force Mentale (LDB 85 l.142)', () => {
+  // Fabriqué : FM = 0 (« – » du profil, pas de Caractéristique) → BFM=0 sans substitution.
+  const chars = { force: 35, endurance: 40, 'force-mentale': 0 } as Characteristics; // BF3, BE4, BFM0
+  const fabrique = [{ id: 'fabrique' }] as never;
+  it('sans le trait : BFM (0) → Moyenne = 3+8+0 = 11', () => expect(maxWounds(chars, 'moyenne')).toBe(11));
+  it('avec Fabriqué : BF (3) remplace BFM → Moyenne = 3+8+3 = 14', () => expect(maxWounds(chars, 'moyenne', fabrique)).toBe(14));
+  it('avec Fabriqué, Taille Grande : delta ×2 (28)', () => expect(maxWounds(chars, 'grande', fabrique)).toBe(28));
+});
+
 describe('effectiveMaxWounds — base + delta des buffs F/E/FM × Taille', () => {
   const base = (over: Partial<Combatant> = {}): Combatant =>
     ({
@@ -34,6 +43,28 @@ describe('effectiveMaxWounds — base + delta des buffs F/E/FM × Taille', () =>
   it('buff +10 E sur un Énorme → +2×4 = +8 (delta ×Taille)', () => {
     const c = base({ size: 'enorme', wounds: { current: 48, max: 48, base: 48 }, activeEffects: [{ label: 'Soin', char: 'endurance', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
     expect(effectiveMaxWounds(c)).toBe(56); // 48 + (woundsForSize(...,enorme) delta = +8)
+  });
+});
+
+describe('effectiveMaxWounds — Fabriqué : le delta suit le Bonus de Force, pas de Force Mentale', () => {
+  const base = (over: Partial<Combatant> = {}): Combatant =>
+    ({
+      characteristics: { force: 30, endurance: 30, 'force-mentale': 0 } as Characteristics,
+      size: 'moyenne',
+      wounds: { current: 10, max: 12, base: 12 },
+      activeEffects: [],
+      traits: [{ id: 'fabrique' }],
+      ...over,
+    }) as unknown as Combatant;
+
+  it('sans buff : = wounds.base', () => expect(effectiveMaxWounds(base())).toBe(12));
+  it('buff +10 Force Mentale → SANS effet (Fabriqué ignore la FM pour les Blessures)', () => {
+    const c = base({ activeEffects: [{ label: 'Buff', char: 'force-mentale', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
+    expect(effectiveMaxWounds(c)).toBe(12);
+  });
+  it('buff +10 Force → +2 Blessures (BF4 vs BF3, compté sur le terme F ET le terme BFM substitué)', () => {
+    const c = base({ activeEffects: [{ label: 'Buff', char: 'force', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
+    expect(effectiveMaxWounds(c)).toBe(14); // base 12 + delta woundsForSize(4,3,4) − woundsForSize(3,3,3) = 14 − 12 = +2
   });
 });
 

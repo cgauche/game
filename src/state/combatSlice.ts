@@ -21,6 +21,7 @@ import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
 import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
+import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
 import { discreetPrayerDifficulty } from '../engine/prayer';
@@ -910,7 +911,9 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || !controlsCombatant(get(), active) || active.advantage < 1) return; // exige ≥1 Avantage (LDB 85 l.320)
+      // Exige ≥1 Avantage (LDB 85 l.320), SAUF Se cabrer (`freeTrample`, LDB 85 l.314) qui paie
+      // le Piétinement d'une Action de Mouvement au lieu d'un Avantage.
+      if (!active || !controlsCombatant(get(), active) || (active.advantage < 1 && !traitCapability(active.traits, 'freeTrample'))) return;
       const target = trampleTarget(battle, active, targetId); // adversaire adjacent plus petit
       if (!target) return;
       // Piétinement = étape 0 d'une cascade de COMBAT (comme l'attaque) : le jet ET son Coup Critique

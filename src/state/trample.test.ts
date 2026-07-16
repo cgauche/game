@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { trampleTarget, aiMaybeTrample } from './combatFlow';
+import { trampleTarget, aiMaybeTrample, aiCreatureFreeAttacks } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -167,5 +167,82 @@ describe('Piétinement en combat (store)', () => {
     const before = H.wounds.current;
     aiMaybeTrample(useGame.getState, useGame.setState, E);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
+  });
+
+  // Se cabrer (LDB 85 l.314) : « Pour une Action de Mouvement, la créature peut effectuer une Attaque
+  // de Piétinement si elle est plus grande que son adversaire » — SANS le coût d'1 Avantage du
+  // Piétinement générique (l.387). Condition de Taille inchangée (`trampleTarget`).
+  it('Se cabrer : sans Avantage, la modale s’ouvre quand même (coût payé par l’Action de Mouvement)', () => {
+    const { H, E } = setup();
+    H.size = 'grande';
+    H.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    H.advantage = 0;
+    useGame.getState().battleTrample(E.id);
+    expect(useGame.getState().pendingTrample).toBeTruthy();
+  });
+
+  it('Se cabrer : le Piétinement ne dépense PAS l’Avantage de l’attaquant', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.size = 'grande';
+    H.characteristics['capacite-de-combat'] = 85;
+    H.characteristics.force = 45;
+    H.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    H.advantage = 2;
+    useGame.getState().battleTrample(E.id);
+    useGame.getState().trampleRoll();
+    useGame.getState().trampleConfirm();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(2); // inchangé
+  });
+
+  it('Se cabrer : refusé contre une cible de même Taille — la condition RAW (plus grand) reste posée', () => {
+    const { H, E } = setup();
+    H.size = 'moyenne';
+    E.size = 'moyenne';
+    H.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    H.advantage = 0;
+    useGame.getState().battleTrample(E.id);
+    expect(useGame.getState().pendingTrample).toBeNull();
+  });
+
+  it('IA : Se cabrer piétine même à 0 Avantage (file d’attaques gratuites, coût 0)', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.size = 'enorme';
+    E.characteristics['capacite-de-combat'] = 85;
+    E.characteristics.force = 45;
+    E.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    E.advantage = 0;
+    H.size = 'moyenne';
+    H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
+    H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    H.conditions = [{ name: 'surpris', value: 1 }]; // Surpris → ne se défend pas → résolution instantanée (patron creatureFreeAttacks.test.ts)
+    useGame.setState({ battle: { ...useGame.getState().battle! } });
+    const before = H.wounds.current;
+    const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(suspended).toBe(false);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
+    // Coût de l'Action de Piétinement = 0 (freeTrample) ; le +1 gagné vient du Test opposé remporté (RAW),
+    // pas du coût — sans Se cabrer, `enemy.advantage < 1` aurait sauté l'attaque (0 < 1).
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(1);
+  });
+
+  it('IA : SANS Se cabrer, à 0 Avantage le Piétinement générique (coût 1) est SAUTÉ', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    E.size = 'enorme';
+    E.characteristics['capacite-de-combat'] = 85;
+    E.characteristics.force = 45;
+    E.traits = []; // aucun trait Se cabrer → Piétinement générique reste à coût 1 (LDB 85 l.387)
+    E.advantage = 0;
+    H.size = 'moyenne';
+    H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
+    H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
+    H.conditions = [{ name: 'surpris', value: 1 }];
+    useGame.setState({ battle: { ...useGame.getState().battle! } });
+    const before = H.wounds.current;
+    aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBe(before); // aucune attaque tentée
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0);
   });
 });

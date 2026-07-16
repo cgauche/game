@@ -51,6 +51,8 @@ const traitCapabilitiesSchema = z.strictObject({
   psychIndice: z.number().optional(),
   frenzyCapable: z.boolean().optional(),
   mindless: z.boolean().optional(),
+  woundsUseForce: z.boolean().optional(),
+  freeTrample: z.boolean().optional(),
   bestial: z.boolean().optional(),
   coldBlooded: z.boolean().optional(),
   stupid: z.boolean().optional(),

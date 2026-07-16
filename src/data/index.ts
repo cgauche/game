@@ -847,6 +847,12 @@ export interface TraitCapabilities {
   counterRequiresFastParry?: boolean;
   unstable?: boolean;
   painless?: boolean;
+  /** Se cabrer (LDB 85 l.314) : « Pour une Action de Mouvement, la créature peut effectuer une Attaque
+   *  de Piétinement si elle est plus grande que son adversaire » — SANS le coût d'1 Avantage de l'Action
+   *  gratuite générique (LDB 85 l.387, déjà câblée pour toute créature plus grande). Lu par le coût de
+   *  l'attaque gratuite `pietinement` (`aiCreatureFreeAttacks`) : la condition de Taille reste celle du
+   *  Piétinement générique (`trampleTarget`), inchangée. */
+  freeTrample?: boolean;
   // Psychologie / IA
   psychImmuneIfAhead?: boolean;
   /** Psychologie portée par le trait (LDB 21), lue par `parsePsychTraits` (data-driven). L'Indice
@@ -858,6 +864,12 @@ export interface TraitCapabilities {
    *  (une des 3 sources : Trait, Talent « Frénésie », Trait psy octroyé). */
   frenzyCapable?: boolean;
   mindless?: boolean;
+  /** Blessures calculées avec le Bonus de FORCE au lieu du Bonus de Force Mentale (Fabriqué, LDB 85
+   *  l.142 : « au lieu d'utiliser son bonus de Force Mentale, utilisez son bonus de Force »). Lu par
+   *  `maxWounds`/`effectiveMaxWounds` — capacité DISTINCTE de `mindless` (qui porte l'auto-réussite
+   *  des Tests d'Int/FM/Soc et le profil IA « horde »), un autre trait pourrait un jour substituer la
+   *  même formule sans être Fabriqué. */
+  woundsUseForce?: boolean;
   bestial?: boolean;
   coldBlooded?: boolean;
   stupid?: boolean;

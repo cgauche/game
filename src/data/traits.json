@@ -625,7 +625,8 @@
       "page": 339
     },
     "capabilities": {
-      "mindless": true
+      "mindless": true,
+      "woundsUseForce": true
     },
     "passive": [
       {
@@ -1547,13 +1548,13 @@
   {
     "id": "se-cabrer",
     "label": "Se cabrer",
-    "indice": {
-      "label": "Indice"
-    },
     "desc": "Pour une Action de Mouvement, la créature peut effectuer une Attaque de Piétinement si elle est plus grande que son adversaire. Voir Taille pour plus d'informations.",
     "source": {
       "book": "livre-de-base",
       "page": 341
+    },
+    "capabilities": {
+      "freeTrample": true
     }
   },
   {

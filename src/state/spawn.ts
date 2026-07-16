@@ -237,7 +237,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // Blessures IMPOSÉES par une variante « swap » (Vouivre : « réduire ses B à 42 ») — remplace la valeur
   // livre ET la formule par Taille, aucune des deux ne reprend la main.
   const swapWounds = swaps.map((s) => s.wounds).find((w): w is number => w != null);
-  let wounds = swapWounds ?? (typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(charsEff, size));
+  let wounds = swapWounds ?? (typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(charsEff, size, traits));
   if (swapWounds == null && traitBonusWoundsBE(optTraits)) wounds += bonus(charsEff.endurance); // Endurant facultatif : +BE Blessures (LDB 85)
   const skills = [...bookSkills, ...skillsFromBook(swapSkillRefs, chars)]; // swap : dérivée sur le profil FINAL (post-Taille)
   const swarm = isSwarm(traits);
@@ -295,7 +295,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   // La formule reprend la main si les caractéristiques ont été tirées (le B saisi valait pour le profil rond).
   // Blessures sur le profil INCLUANT les traits (Coriace +E…) ; `characteristics` ne garde que la base saisie.
   const charsEff = withTraitChars(chars, traits);
-  let wounds = typeof sb.char.B === 'number' && !sb.randomChars ? (sb.char.B as number) : maxWounds(charsEff, size);
+  let wounds = typeof sb.char.B === 'number' && !sb.randomChars ? (sb.char.B as number) : maxWounds(charsEff, size, traits);
   // Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures (sur la formule — un B explicite du
   // statbloc est réputé final, comme au bestiaire).
   if ((typeof sb.char.B !== 'number' || sb.randomChars) && traitBonusWoundsBE(traits)) wounds += Math.floor(charsEff.endurance / 10);
