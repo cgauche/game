@@ -36,6 +36,7 @@ import { vehicleCombatant, applyVehicleProblem } from '../engine/vehicle';
 import { rollVehicleProblem } from '../engine/travelTables';
 import { applyOps } from '../engine/ops';
 import { applyFall } from './combatEffects';
+import { applyHealWounds } from '../engine/healing';
 import { findVehicleById } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
@@ -785,7 +786,13 @@ registerCascadeApplier('landPeril', (get, set, step) => {
     if (entry.kind === 'reposant') {
       for (const h of party) {
         if (h.dead) continue;
-        if (h.wounds.current < h.wounds.max) { h.wounds.current = h.wounds.max; j.push(`${h.name} récupère toutes ses Blessures.`); }
+        if (h.wounds.current < h.wounds.max) {
+          // SOURCE UNIQUE `applyHealWounds` — plafond munition logée (LDB 62 l.250) même chemin que Guérison/repos.
+          j.push(...applyHealWounds(h, h.wounds.max - h.wounds.current, {
+            skillCheck: false, wake: false,
+            log: () => [h.wounds.current >= h.wounds.max ? `${h.name} récupère toutes ses Blessures.` : `${h.name} récupère des Blessures (munition logée bloque le reste).`],
+          }));
+        }
         const n = stacks(h, 'extenue');
         if (n > 0) { removeCondition(h, 'extenue', n); j.push(`${h.name} n’est plus Exténué.`); }
       }

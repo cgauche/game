@@ -1914,6 +1914,17 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
     expect(c0.wounds.current).toBe(6); // +1 PB
   });
 
+  it('retirer À Terre : munition logée plafonne le regagne de PB (LDB 62 l.250)', () => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
+    h.resolve = 1;
+    h.conditions = [{ name: 'a-terre', value: 1 }, { name: 'munition-logee', value: 1 }];
+    h.wounds = { current: 11, max: 12 };
+    useGame.setState({ mode: 'battle', battle: mkBattle(h) });
+    useGame.getState().battleSpendResolve('a-terre');
+    const c0 = useGame.getState().battle!.combatants[0];
+    expect(c0.wounds.current).toBe(11); // plafonné à max−1 (munition logée) : aucun PB regagné
+  });
+
   it('sans Détermination : aucun effet', () => {
     const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     h.resolve = 0;
@@ -1921,6 +1932,29 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
     useGame.getState().battleSpendResolve('aveugle');
     expect(useGame.getState().battle!.combatants[0].conditions.find((c) => c.name === 'aveugle')).toBeTruthy();
+  });
+
+  it('spendResolveCondition (par id, hors mode actif) : retirer À Terre fait regagner 1 PB (l.66)', () => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
+    h.resolve = 1;
+    h.conditions = [{ name: 'a-terre', value: 1 }];
+    h.wounds = { current: 5, max: 12 };
+    useGame.setState({ mode: 'battle', battle: mkBattle(h) });
+    useGame.getState().spendResolveCondition(h.id, 'a-terre');
+    const c0 = useGame.getState().battle!.combatants[0];
+    expect(c0.conditions.find((c) => c.name === 'a-terre')).toBeUndefined();
+    expect(c0.wounds.current).toBe(6); // +1 PB
+  });
+
+  it('spendResolveCondition : munition logée plafonne le regagne de PB (LDB 62 l.250)', () => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
+    h.resolve = 1;
+    h.conditions = [{ name: 'a-terre', value: 1 }, { name: 'munition-logee', value: 1 }];
+    h.wounds = { current: 11, max: 12 };
+    useGame.setState({ mode: 'battle', battle: mkBattle(h) });
+    useGame.getState().spendResolveCondition(h.id, 'a-terre');
+    const c0 = useGame.getState().battle!.combatants[0];
+    expect(c0.wounds.current).toBe(11); // plafonné à max−1 (munition logée) : aucun PB regagné
   });
 });
 

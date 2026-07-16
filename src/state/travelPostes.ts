@@ -25,6 +25,7 @@ import { refLabel } from '../data';
 import { stageEncounterCategory } from '../engine/travelEncounter';
 import { rollEncounter, type EncounterCategory } from '../engine/travelTables';
 import { applyOps, type GameOp } from '../engine/ops';
+import { applyHealWounds } from '../engine/healing';
 import { removeCondition, stacks } from '../engine/conditions';
 import { extendedTestStep } from '../engine/tests';
 import { registerCascadeApplier } from './cascade';
@@ -355,7 +356,8 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
     j.push(t('out.travelEncounter', { category: ENCOUNTER_LABEL[category], label: enc.label, text: enc.text }));
     if (enc.stageOutcome === 'fullRecovery') {
       for (const h of party.filter((x) => !x.dead)) {
-        h.wounds.current = h.wounds.max;
+        // SOURCE UNIQUE `applyHealWounds` — plafond munition logée (LDB 62 l.250) même chemin que Guérison/repos.
+        if (h.wounds.current < h.wounds.max) applyHealWounds(h, h.wounds.max - h.wounds.current, { skillCheck: false, wake: false, log: () => [] });
         const ex = stacks(h, 'extenue');
         if (ex > 0) removeCondition(h, 'extenue', ex);
       }

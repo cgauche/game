@@ -56,7 +56,7 @@ import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
-import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, resolveExtractLodgedAmmo, healDifficulty, type HealMode } from '../engine/healing';
+import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, resolveExtractLodgedAmmo, healDifficulty, applyHealWounds, type HealMode } from '../engine/healing';
 import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
@@ -1932,7 +1932,7 @@ export function createCombatSlice(get: Get, set: Set) {
       removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
       let extra = '';
       if (conditionName === COND.aTerre) {
-        active.wounds.current = Math.min(active.wounds.max, active.wounds.current + 1); // +1 PB en se relevant (l.66)
+        applyHealWounds(active, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.66), plafond munition-logée
         extra = t('cs.fragGettingUp');
       }
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', t('cs.determinationRemove', { name: active.name, cond: conditionName, extra }), active.id)] } });
@@ -1952,7 +1952,7 @@ export function createCombatSlice(get: Get, set: Set) {
       removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
       let extra = '';
       if (conditionName === COND.aTerre) {
-        hero.wounds.current = Math.min(hero.wounds.max, hero.wounds.current + 1); // +1 PB en se relevant (l.66)
+        applyHealWounds(hero, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.66), plafond munition-logée
         extra = t('cs.fragGettingUp');
       }
       if (s.battle) {

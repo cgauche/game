@@ -171,6 +171,52 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
     expect(j).toContain('Survie en extérieur (+20) : un itinéraire de substitution est trouvé.');
   });
 
+  it('Péripétie seed 3 : « Voyage reposant », soigne toutes les Blessures (routé par applyHealWounds, #473)', () => {
+    seedBattleRng(3);
+    const h = hero({ wounds: { current: 5, max: 12 } });
+    setup(map({ km: 12, perilDie: 8 }), [h]);
+    get().startTravel('r1', 'pied');
+    drainCascade();
+    const st = get();
+    expect(st.scene?.id).toBe('lieu-b-scene');
+    expect(st.party[0].wounds.current).toBe(12); // soin total (non-régression sans munition logée)
+    expect(st.journal.join('\n')).toContain('Hilda récupère toutes ses Blessures.');
+  });
+
+  it('Péripétie seed 3 : « Voyage reposant », munition logée plafonne le soin (LDB 62 l.250)', () => {
+    seedBattleRng(3);
+    const h = hero({ wounds: { current: 5, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    setup(map({ km: 12, perilDie: 8 }), [h]);
+    get().startTravel('r1', 'pied');
+    drainCascade();
+    const st = get();
+    expect(st.party[0].wounds.current).toBe(11); // plafonné à max−1
+    expect(st.journal.join('\n')).toContain('Hilda récupère des Blessures (munition logée bloque le reste).');
+  });
+
+  it('Rencontre seed 7 : Succès Impressionnant → « fullRecovery », soigne toutes les Blessures (routé par applyHealWounds, #473)', () => {
+    setRule('travel-etapes', true);
+    seedBattleRng(7);
+    const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 60 } as any], wounds: { current: 5, max: 12 } });
+    setup(map({ km: 12, perilDie: 0 }), [h]);
+    get().startTravel('r1', 'pied');
+    drainCascade();
+    const st = get();
+    expect(st.party[0].wounds.current).toBe(12); // soin total (non-régression sans munition logée)
+    expect(st.journal.join('\n')).toContain('Voyage tranquille : le groupe récupère toutes ses Blessures et tous ses États Exténué.');
+  });
+
+  it('Rencontre seed 7 : « fullRecovery » avec munition logée → soin plafonné (LDB 62 l.250)', () => {
+    setRule('travel-etapes', true);
+    seedBattleRng(7);
+    const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 60 } as any], wounds: { current: 5, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    setup(map({ km: 12, perilDie: 0 }), [h]);
+    get().startTravel('r1', 'pied');
+    drainCascade();
+    const st = get();
+    expect(st.party[0].wounds.current).toBe(11); // plafonné à max−1
+  });
+
   it('Rencontre seed 2 : échec d’Approvisionnement → Rencontre dangereuse (texte verbatim)', () => {
     setRule('travel-etapes', true);
     seedBattleRng(2);
