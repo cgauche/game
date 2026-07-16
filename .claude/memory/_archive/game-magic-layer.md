@@ -1,0 +1,18 @@
+---
+name: game-magic-layer
+description: "Couche magie WFRP4 — frontière de fidélité délibérée (miscast laissé au MJ), parsing regex des descriptions, source PDF garbled"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: f832bb60-eca5-4b5f-8e94-51bd608fb36f
+---
+
+La couche magie (`src/engine/magic.ts`, `src/engine/miscast.ts`, `store.castSpell/focusSpell`) est posée et auditée (cf. ROADMAP Jalon 0.7). Trois faits non évidents à retenir pour toute reprise :
+
+**1. Frontière de fidélité VOLONTAIRE dans `miscast.ts`.** Les tables d'Incantations Imparfaites (Mineure/Majeure) et Colère des dieux n'auto-appliquent QUE les effets que le moteur modélise (États nommés, Blessures ignorant BE+PA, réduction à 0 + Inconscient). Tout le reste — Points de Corruption, Pénitence, perte des Talents Béni/Invocation, invocation de démons, mutations, Traits psy — est **journalisé et laissé au MJ**. Ce n'est PAS un bug à « finir » : appliquer ces effets exigerait d'inventer des sous-systèmes absents → **violation de la règle 1** (aucune invention de règles, voir [[game-visual-direction]] pour le ton « fidélité d'abord » du projet). Ne « complète » pas les tables en fabriquant ces mécaniques ; modélise d'abord le sous-système, puis branche-le.
+
+**2. Les effets de sort sont CURÉS par `SpellSpec` (ops structurées), le REGEX n'est plus que le repli iso-POC** pour un sort non curé (`fallbackSpec`/`magic.ts` : `parseHeal`, `parseConditionEffect`…). La curation vit dans `src/data/spellspecs/*.ts` (par famille) ; chaque spec compose le vocabulaire `GameOp` (charMod, condition, grantTrait, heal, enchantWeapon, gainFortune/freeReroll, conjureWeapon, perRound, `persistentZone` onCross/perRound, `summon`, `opposed`…) et journalise en `narrative` ce qui n'est pas modélisable.
+
+**4. B4 (mécanisation des sorts) = COMPLET (vérifié 2026-06-15).** 252/252 sorts ont une spec curée (0 sur repli regex — l'audit « 31 non curés » était un artefact : les specs construites par helper, ex. `plus10('Bénédiction de Bataille','CC',…)`, passent le label en arg POSITIONNEL, invisible à un grep `label:`). ~135 specs portent de la mécanique réelle ; ~91 sont `narrative`-only, et CHAQUE op narrative porte une justification « arbitrage MJ » (174 ≥ 167 ops) → triage délibéré, pas un oubli. Catégories vérifiées correctes EN L'ÉTAT (ne pas re-tenter) : **summons** mécanisés via champ `summon` (Sanguinaire, Cheval, Loup×2, Zombie, Squelette, Rat géant ; *Manifestation de Démon mineur* summon déjà + résidu narratif = l'issue obéir/se-retourner d'un Test opposé) ; **zones** via `persistentZone` (Bête/Feu mur+disque/Vie ; *Forêt d'épines* DÉJÀ faite onCross Hémorragique+Empêtré) ; **rerolls** via `gainFortune`/`freeReroll` (Maître du Destin succès, Bénédiction de Chance). Reste narratif = genuinely arbitré : barrières (Protection de Phâ, Octogramme), méta (Pouvoir du Chaos halve NI), auras de relance costées/compulsions (Maudit, Flammes vacillantes, Fureur Vengeresse), *La Gueule* (source ADE II NI 11 relue : +8 réduit −1/DR-d'Esquive non exprimable, perRound seulement aux PIÉGÉS, Empêtré opposé à Force 60, Critique à l'expiration → toute approximation = INVENTER → moins fidèle que le narratif ; sa GÉOMÉTRIE est déjà plaçable via le parser ZdE générique). Prolonge le pt 1.
+
+**3. La source `.md` des tables Majeure/Colère est GARBLED par le reflow PDF** (`Source/Warhammer v4 - Livre de base version corrigée/46 - Les règles magiques.md` et `40 - Les prières.md`) : le texte d'une entrée déborde sur le numéro de la suivante. Les **noms** d'entrées sont fiables, le texte intermédiaire ne l'est pas. Pour enrichir fidèlement les tables, **relire le PDF propre**, pas le `.md`.

@@ -38,6 +38,7 @@ scripts/data/.out/
 !.claude/skills/
 !.claude/agents/
 !.claude/workflows/
+!.claude/memory/
 *.exe
 *.log
 

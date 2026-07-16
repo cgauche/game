@@ -1,0 +1,19 @@
+---
+name: game-codex-editable-json-free
+description: Codex 100% éditable sans JSON ni id tapé — sélecteur de réf unifié + éditeurs structurés + tous datasets + garde-fou
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 333a2452-91f2-47af-a7b3-4b9f7c88b676
+---
+
+Après la migration label→id, l'utilisateur a exigé : **tout le contenu se crée/édite au Codex SANS toucher un `.json`, et TOUTE réf via un sélecteur (jamais d'id tapé)**. Portée validée : complet, partout, zéro exception. Livré en 4 commits (`feat/wfrp4-rpg-foundation`), chacun vert.
+
+- **E1** (`39f4ced`) — `RefField` UNIFIÉ (`src/ui/compendium/RefField.tsx`) : UN composant 3 modes (single `<select>` / liste / vocab `datalist`), config `RefFieldCfg` keyée `<catégorie>.<champ>` (repli global) via `refFieldCfg(cat,key)`. `single` stocke id direct (+ `spec?` optionnel skill/talent), `valueKey:'label'` pour datasets label-keyés (locations), `labelOf:'name'` (maladies), `vocabFrom` pour vocab ouvert. Câblé subType→weaponGroups, careers.class, careerLevels.career, pregens.*, talents.addSkill/addTalent, refChar/refCareer/qualities.subType. Plus aucun id tapé.
+- **E2** (`72760a4`) — `src/ui/compendium/StructFields.tsx` (réutilise RefField + patron de rangées) : `SymptomsField` (maladies.symptoms), `CombatField` (talents.combat, drapeaux booléens DÉRIVÉS des clés), `AdvancementRefField` (skills/talents d'avancement), `TrappingRefField`. skills.characteristic → RefField. Lookup d'entrée CodexEdit `e.label ?? e.name`.
+- **E3a** (`d1d1df2`) — datasets manquants éditables : careerLevels/eyes/hairs/raceAppearance + pregens/oups/interludeEvents/peripeties (ajoutés overrides ARRAYS + catégories registry + CATEGORY_DATASET). Lookup GÉNÉRIQUE `entryKey` (label→name→key→id ; careerLevels composite) débloque gods (keyé `key`)/maladies/raceAppearance. CharKeysField (careerLevels.characteristics), StarSubField (stars.sub), DomainEffectsField (domains.castBonus/missile/afterCast ; grantTrait reste libellé+indice parsé par `parseTraitInstance` — auto-suffisant). `criticals` EXCLU (record keyé Localisation, pas un tableau).
+- **E3b** (`dfd5175`) — bespoke : `TraitListField` EXTRAIT de `StatblockEditor` (primitive partagée, StatblockEditor la consomme → réutilisation, pas de dup) pour creatures.traits/optionals ; HarvestField. `details` (objet unique) + `names` (Record par race) via registre **OBJECTS** dans overrides (`datasetObject`/`setObjectDataset`, mode single/record) ; names normalisé LF + réintégré à serialize.test. **2 primitives GÉNÉRALES** dans `editFields.ts` : kind `recordText` (Record clé→chaîne) + kind `object` (sous-formulaire inféré RÉCURSIF) → fin du repli json pour tout objet plat.
+
+GARDE-FOU central : **`src/ui/compendium/no-json-fields.test.ts`** (33/33) rejoue la décision de rendu exacte de CodexEdit (`dedicatedFieldKeys` ∪ `refFieldCfg` ∪ kind≠json) sur CHAQUE catégorie éditable → prouve qu'AUCUN champ ne retombe en JSON. `dedicatedFieldKeys(cat)`/`editableEntries(cat)` = source unique (filtre composant + test). Plan : `~/.claude/plans/je-te-laisse-me-reflective-kite.md`.
+
+PIÈGES/CONTEXTE : session combat/modal PARALLÈLE très active pendant ce chantier (refactor manœuvres/attaques gratuites/DefenseModal→jetProps) → réécrit des JSON NON-canoniques (talents.json puis traits.json) cassant `serialize.test` ; je les ai re-canonicalisés (content-preserving, `node -e JSON.stringify(x,null,2)`). Reds parallèles à filtrer à la vérif : `tentacle-attack`/`trample`/`skill-dr-bonus`/`netOwnership`/`active-modal`. Commits chirurgicaux (mes fichiers seuls, jamais le WIP modal non commité). Résiduel hors périmètre : renommage des CLÉS de vocab d'un record (careers.rand/eyes.color) — valeurs déjà éditables. Prolonge [[game-codex-compendium]] et [[feedback-editeur-ref-picker-coherent]] ; non poussé sur origin.

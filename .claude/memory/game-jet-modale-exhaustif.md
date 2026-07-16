@@ -1,0 +1,42 @@
+---
+name: game-jet-modale-exhaustif
+description: « Un jet = une modale » rendu exhaustif + garde-fou statique anti-régression (file de révélation témoin)
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 024cd482-0bab-4295-9fab-7d5591050488
+---
+
+## ⛔ PORTE DE CONCEPTION (échec RÉCURRENT — appliquer AVANT de coder)
+
+**Avant d'écrire le MOINDRE `rollTest`/`d10`/`d100`/`makeRNG`/`rng.int`/`Math.random` dans un chemin joueur (cast/attaque/résistance/test/flux), STOP : ce jet DOIT passer par une modale (`pending*` interactif Lancer→Chance→Appliquer) ou une révélation témoin — JAMAIS auto-résolu en ligne dans une fonction de flux.** Je tombe DANS CE PIÈGE de façon répétée : je tire le dé inline parce que c'est plus rapide, et l'utilisateur me reprend. Exemples : résistance d'incantation opposée auto-roulée dans `applyCast` (2026-06-14, reverté) ; « j'ai encore vu des jets cachés » (2026-06-12). **Un jet opposé/réactif (cible qui résiste un sort) = une modale de défense, comme le Contre-sort/Dissipation** (`pendingCounterspell`→`CounterspellModal`, `resolveOpposed`) — pas un `rollTest` dans le résolveur. Gate concret : (1) à la conception, « ce jet est-il montré au joueur ? » sinon le refaire ; (2) lancer `src/state/roll-modal-invariant.test.ts` AVANT de committer tout changement qui ajoute un jet. Prolonge [[feedback-source-user-claims]] / [[game-roll-modal-pattern]].
+
+L'invariante [[game-roll-modal-pattern]] « si y'a un jet, y'a la modale » est désormais **exhaustive et protégée** (livré 2026-06-07, 1012 tests verts, poussé). Plan : `docs/superpowers/plans/2026-06-07-jets-modale-exhaustif.md`.
+
+**Deux familles** :
+- **Différé interactif** (Lancer→Chance→Appliquer, `pending*`) pour les jets que le héros LANCE : **Piétinement** (`pendingTrample`), **Focalisation** (`pendingFocus`). Le `focusSpell` instantané de combatFlow a été supprimé.
+- **File de révélation témoin** (`pendingReveals: RevealEntry[]` + `RevealModal` + `dismissReveal` + helper `pushReveal`, **sans Chance**) pour les jets SUBIS/sur table : **Colère/Incantation Imparfaite** (`applyMiscast`, héros seulement), **Fuite** (coup dans le dos + Calme), **Coup Critique** (`applyCriticalToTarget`), **Assommante**, **entretien de Round groupé** (Initiative au `startCombat` + hémorragie/mort en fin de Round, UNE entrée — pas N modales). La file **gèle l'IA** (`advanceTurn`/`maybeRunEnemyTurn`/`resumeEnemyTurn` court-circuités si `pendingReveals.length`) ; `dismissReveal` reprend : `battle.acted` → fin de tour, sinon début de tour (`maybeRunEnemyTurn`). Choix : révélation **post-hoc** (le dé est tiré puis montré) pour éviter de rendre `applyAttackResult` suspendable.
+
+**Garde-fou** `src/state/roll-modal-invariant.test.ts` (livrable clé) : scanne le **texte source** des actions du store ; échoue si une action **non-whitelistée** appelle une primitive de résolution (`battleRng`/`roll*`/`resolve*`/`apply*`) en ligne. Whitelist = convention de suffixe `*Roll/*Confirm/...` + extras (`disengageFlee`, `dismissReveal`, `startCombat`, `deviationApply`). **Il a piloté le périmètre** (rouge → on corrige jusqu'au vert) et bloque toute future régression. Piège : `reset()` des tests doit inclure `pendingReveals: []` (sinon une révélation fuite et gèle l'IA d'un test suivant) ; idem la révélation d'Initiative gèle le 1er tour → les tests qui pilotent le flux doivent la vider.
+
+**Détecteur v2 (2026-06-12, 5e2246f — demande user « j'ai encore vu des jets cachés »)** : le garde-fou scanne désormais les fonctions EXPORTÉES de 12 modules de flux + les **délégations à un niveau** (action non-résolveur → fonction de flux qui tire) ; primitives élargies (d10/d100/makeRNG/rng.int/Math.random…) ; liste blanche `JUSTIFIED` où chaque exception documente OÙ le jet est montré + test d'hygiène (nom inexistant = échec). **Principe user : le journal, PERSONNE ne le lit** — un jet « journalisé seulement » n'est PAS visible ; utiliser le multijet (NightEntry/MultiRollList du Repos, recap de Voyage) ou les révélations. Appliqué (19f144e) : le **Test de Résistance du seuil de Corruption** (LDB 19 l.80) n'est plus auto-résolu — modale `pendingCorruption kind 'seuil'` (cycle Chance/Pacte complet), échec → « Je te renie ! »/mutation inchangés ; repli auto+révélation pour PNJ et gains en rafale. Reste journal-seulement (candidats multijet futurs) : entretien quotidien via advanceTime hors repos/voyage, effets d'auteur inflictTrauma/contractDisease.
+
+**Corollaire IA (2026-06-10, fix 7b651f0)** : si l'IA OUVRE une modale (incantation ennemie témoin Lancer→Contre-sort→Appliquer), son tour doit SUSPENDRE — jamais de `setTimeout(advanceTurn)` aveugle après l'ouverture (le combat continuait pendant le Contre-sort, et l'Appliquer tardif consommait l'Action du combattant suivant via finishPlayerAction). Pattern = défense : pas de timer si `pendingCast` posé, reprise par castConfirm/castCancel → resumeEnemyTurn ; `pendingCast` est dans les gardes advanceTurn/resumeEnemyTurn/maybeRunEnemyTurn ; le témoin n'a pas de bouton Annuler sur un sort ennemi. Tout futur chemin IA→modale doit suivre ce pattern.
+
+⚠️ **Collision rig** : la session // a construit en parallèle la **Déviation Critique** (`pendingDeviation`, `applyAttackResult` rendu suspendable) dans les MÊMES fonctions — entanglement ingérable au hunk-filtering. Co-commité avec accord utilisateur (« pas grave si tu commit son travail avec ») car COMPLET + suite verte (cf. [[git-commits-propres-wip-parallele]] : committer du WIP rig COMPLET = inoffensif). Recette à faire : Déviation Critique → révélation de Critique (2 modales, même touche).
+
+**Incantation OPPOSÉE livrée (2026-06-14, 19cb3d3)** — nouveau consommateur du **multijet** `makeRollFlow` (`FLOWS.castOpposition`, lentille `multi`) : un Sort `SpellSpec.opposed` (Fauche-démon→FM, Parole de Tzeentch→Int) n'est plus auto-appliqué — chaque cible oppose son Test DANS la modale de cast (`openCastOpposition` garde `pendingCast`, ouvre `pendingCastOpposition` ; IA = rangée TÉMOIN auto-roulée, héros = interactive). `oppositionConfirm` agrège (résisté + marge DR) → `castConfirm` réentrant → `applyCast` n'applique qu'aux non-résistants ET **gate aussi les riders de Domaine** (`domainOnHitRiders` : une cible qui résiste à l'incantation entière n'encaisse pas la frappe d'Hysh). 2 bugs corrigés : la garde `passive` de `makeRollFlow.roll` bloquait le jet INITIAL du témoin (relâchée — `passive` ne concerne que l'INFLUENCE joueur, pas la résolution) ; op `reduceToZero` reçoit `onlyGroups`. Test : `src/state/cast-opposition.test.ts`. Le multijet est désormais la brique pour « plusieurs jets d'une même action dans UNE modale » (contre-sort/opposition/Test étendu/cascade — tous des paramétrages).
+
+**Anti-pattern « 2ᵉ fenêtre » identifié (Conséquences)** : les 4 modales (`RollModal` attaque, `DefenseModal`,
+`CastModal` magie, `CascadeModal` nuit) retournent TOUTES `<RollFlowShell>` — c'est la coquille UNIQUE, et
+`cascade.ts` le séquenceur unique (« on n'est pas censé créer quoi que ce soit, mais réutiliser le système
+qu'on a créé »). J'avais dérivé en routant les conséquences de combat vers un `pending` séparé
+(`pendingCascade` purpose `'combat'`, titre « Conséquences ») rendu par un composant séparé → React
+démonte/remonte la coquille = une 2ᵉ fenêtre pour une seule situation. Cette modale « Conséquences »
+était une aberration qui n'aurait jamais dû exister : une situation de combat = UN `pendingCascade`, jet =
+étape 0 (props attaque/défense/magie actuelles, réutilisées), conséquences = étapes suivantes, rendu par la
+MÊME coquille restée montée. Quand on est tenté de « framework-iser » en se disant « il faut extraire le
+corps riche d'une modale » → red flag : il n'y a pas de « riche », juste des props/slots de `RollFlowShell`.
+Ne pas inventer de composant/pending/mécanisme parallèle ; brancher le flot sur l'existant.
+
+🚫 **PAS pour moi** : le pliage des **critiques/maladresse/déviation côté modale d'ATTAQUE/DÉFENSE** (folder `pendingDeviation`/`pendingFumble`/révélation-de-critique en rangées-conséquence du `RollFlowShell` d'attaque, « sans changer de popin ») = **chantier d'une AUTRE session** (user, 2026-06-15 : « oublie ça, c'était destiné à une autre session »). Ne pas le re-proposer ni l'implémenter. NB : la modale d'attaque actuelle (`RollModal.tsx`, `FLOWS.attack`) montre DÉJÀ le résumé du Critique inline (`res.critical`/`critLocation`/`woundsLost` + `CritLocationPicker`) ; ne restent en popin séparé que déviation/critique-détaillé/Oups/piège-lame/Destin.

@@ -1,0 +1,29 @@
+---
+name: game-ciblage-homogene
+description: "Ciblage combat homogénéisé (mêlée/tir/magie) — LdV des sorts, gate pré-clic, carte de visée + réticule unifiés ; nouveaux outils __wfrp.scenario/hover/aim"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: cc3634e0-b421-4ff6-b3e9-84d42008ab81
+---
+
+Chantier livré 2026-06-12 (commit 4261667, poussé) : ciblage homogène des 3 modes d'attaque.
+
+- **LdV des sorts** (RAW LDB 46 l.170 « vous devez toujours être capable de voir votre cible ») : `castSightBlocked` gate `castSpell`, ZdE (case centre), surincantation (`overcastTargetCandidates(sight)`), IA. **Binaire** — aucun malus de couvert pour un sort (pas de règle RAW). Sorts de contact (1 case) jamais bloqués (`tilesBetween` vide).
+- **Gate PRÉ-clic du tir** : `attackPlan` refuse hors-LdV / hors Portée ×3 AVANT la modale (avant : `resolveRanged` fabriquait un raté synthétique `attackerRoll: 0` qui consommait l'Action).
+- **IA filtrée par portée** (tir bande Extrême + sort `spellRange` passé par l'appelant) — garde-fou : pas de portée chiffrée → pas de gate (stubs).
+- **Source unique du survol** : `src/state/targeting.ts` (`hoverTargeting`) rejoue les prédicats du CLIC (attackPlan/previewAttack/previewCast) → l'affordance ne ment jamais. Rendu : `TargetReticle` partagé (joueur + télégraphe ennemi + pendings), ligne PLEINE mêlée/mouvement, POINTILLÉE tir/sort.
+- **Format carte de visée arbitré par l'utilisateur** : 3 lignes — nom (or) / `Compétence (Spé)  21 (−10)` (valeur EFFECTIVE, mod entre parenthèses coloré) / `Dégâts +7` (jamais « 7 + DR », jamais tout en une ligne).
+- Sol : SEULS marche/course restent (bandes de tir + teinte violette de sort supprimées). Gabarit ZdE réparé (bug dormant : hover verrouillé par `aimWeapon`). Ghost hors-LdV étendu au cast. Caméra cadre `pendingCast`.
+
+**Kit recette `__wfrp` v2 (demandé par l'utilisateur, commit 41a98ef)** : `scenario('id', seed?)` (PRÊT À JOUER : Round 1 acquitté, initiative déterministe), `hover('id'|{x,y}|null)` (survol programmatique → tooltip/réticule sans souris), `aim('id')` (vérité state du ciblage), `battle()` (snapshot combat), `turn('id')`/`place('id',{x,y})` (triches de mise en place — fini d'attendre l'IA), `modal()` + `roll()`/`confirm()`/`cancel()` (pilote LA modale ouverte par convention `<flux>Roll/Confirm/Cancel` ; révélations/Round = verbes propres), `data-cid` sur les tokens SVG. Les événements pointer SYNTHÉTIQUES n'atteignent pas React — vraie souris (`page.mouse.move`) ou `__wfrp.hover`.
+
+Scénario de recette : `19-ciblage` (mur partiel + 3 mannequins M0 : visible/caché/hors-portée). Piège : `itemFromTrapping('Épée')` n'existe pas → `'Arme simple'`.
+
+**Sorts de ZONE — flux « jet PUIS pose » (commit ca36791, arbitré par l'utilisateur)** : sélectionner une ZdE OUVRE la modale (pas de cible ; `pendingCast.zone = {center: null, r0m}` ancre = lanceur) → Lancer (le Contre-sort se résout AU JET — il module les DR donc le budget ; zone non posée → ancre LdV du contre-lanceur = le LANCEUR, RAW muet signalé) → Surincantation **+Zone** (RAW LDB 47 l.29 « ajouter une valeur de Zone d'Effet égale à la valeur initiale », Ø ×(1+n)) → « 📍 Poser la zone » → gabarit FINAL au curseur (remplissage + contour **pointillés rouges animés** `.zde-ants`), gates portée+LdV À LA POSE, zone vide AUTORISÉE (Action consommée). Bug corrigé au passage : token-click avec ZdE sélectionnée partait en sort MONO-cible. **Source unique de pose** : `placingZoneOf`/`commitPlacedZone`/`placedZoneValidAt` (combatFlow) — sorts ET miracles ; Souffle/Vomissement vérifiés RAW = centre IMPOSÉ (pas une pose). **Interludes verrouillés** (l'utilisateur pouvait « passer son tour et tout bugguer ») : la barre d'action SE TRANSFORME en bandeau intégré (`targeting-interlude` — TargetPrompt supprimé) pour Frappe Mortelle / 2ᵉ frappe / +Cible / pose, + garde-fou store `combatBusy` (pickActiveModalKey ∪ cleave ∪ dual ∪ pendingCast) injecté dans les ~22 actions d'intention de la hotbar. Piège tests : un `pendingAttack` qui fuit entre deux `it` gèle la hotbar — purger dans `beforeEach`.
+
+**Survol = aperçu, clic UNIQUE = commit (desktop, commit 983b6e3)** : `ui/pointerCaps.hoverClickCommits()` (hover+pointer fine) → `battleClickEntity/Tile(..., {confirm})` commettent au 1er clic ; tactile garde le deux-taps (le tap-1 EST son aperçu). Survol d'une cible de Charge/rejoindre = CHEMIN réel tracé + note (« Charge (+1 Avantage) ») dans la carte (`hoverTargeting.path/note`) ; survol d'une case = chemin+badge via `movePreviewAt` (state, mêmes sources que le clic) + rendu unique `movePreviewEls` partagé tap-1/survol. **Jauges en direct (bae779f)** : `store.hoverDelta` (posé par IsoStage) alimente le clignotant ActiveFrame via la MÊME `previewResourceDelta` (le survol synthétise un aperçu forme tap-1 — `hoverTargeting.preview`) ; corrigé au passage : Charge = MV PLEIN (mountMovement), Course = 1 Action (LDB 15 l.79).
+
+**Pause de début de Round = PERSONNE n'est actif (commit 3de8ac7, modèle proposé par l'utilisateur)** : pendant `pendingRoundStart` (ouverture ET entre chaque Round), `battle.turn = -1` → toutes les affordances (marche/course, anneaux, visée, clics carte, IA) se taisent d'elles-mêmes — NE PAS gater les affordances une à une (« évite le hacking »). `confirmRoundStart` pose le vrai tour. **Racine du bug** : un `advanceTurn` retardataire (timer IA en vol) ré-incrémentait le tour SOUS la pause → garde `if (get().pendingRoundStart) return;` en tête d'advanceTurn. Les harnais de tests passent par le vrai flux : `confirmRoundStart()` après chaque `startCombat` (36 fichiers balayés). RAPPEL ABSOLU : ne JAMAIS `git stash` dans cet arbre partagé, même un aller-retour « rapide » pour bisecter — le pop peut partiellement échouer ; attribuer un échec en LISANT le test/le code.
+
+Prolonge [[game-difficultes-combat-table]] (LdV/couvert du tir) et [[game-browser-verif-tempo]].
