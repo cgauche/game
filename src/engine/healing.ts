@@ -3,12 +3,13 @@
  * Source : LDB 09-Compétences l.226-243 (skills.json), 16-États l.104-109, 18-Traumatisme l.28.
  * Pur + testé ; ne dépend que de types/conditions (déjà purs).
  */
-import { Combatant } from './types';
+import { Combatant, type Difficulty } from './types';
 import { hasSurgery } from './combatFeatures/dispatch';
 import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks, hasSurgeryLockedCondition } from './conditions';
 import { hasTreatableTrauma, hasSurgeryTrauma, hasRecoverableTrauma, hasLimbAwaitingAid } from './trauma';
 import { contractDisease } from './disease';
 import { isAstoundingFailure } from './tests';
+import { rule } from './policy';
 import type { RNG } from './dice';
 
 /** Pions d'un État (local — `stacks` n'est pas exporté par conditions.ts). */
@@ -51,6 +52,15 @@ export function availableHealModes(target: Combatant): HealMode[] {
   // que l'Aide Médicale n'a pas été reçue (`actBlockReason` : « Aide Médicale d'abord », LDB l.120/179).
   if (hasRecoverableTrauma(target) || hasLimbAwaitingAid(target)) modes.push('recovery');
   return modes;
+}
+
+/** Difficulté du Test de Guérison selon le mode de soin. Blessures : Intermédiaire (+0, LDB 09 l.243)
+ *  toujours. Hémorragie : Accessible (+20) en variante `combat-aa-blessures: 'aa'` (Aux Armes 07 l.9,
+ *  applicable en et hors combat — le texte ne borne pas au combat), Intermédiaire (+0) sinon
+ *  (LDB, comportement par défaut inchangé). SOURCE UNIQUE — combat (`combatSlice`) ET Infirmerie
+ *  (`medicFlow`). */
+export function healDifficulty(mode: HealMode): Difficulty {
+  return mode === 'bleed' && rule('combat-aa-blessures') === 'aa' ? 'accessible' : 'intermediaire';
 }
 
 /** Modes de soin applicables EN COMBAT : Blessures + Hémorragie (allow-list explicite ; `trauma`

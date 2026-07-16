@@ -16,7 +16,7 @@ import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
 import { continueRestNights } from './restFlow';
 import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './riverVoyageFlow';
-import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type Difficulty, type FireArc } from '../engine/types';
+import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
 import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart } from './combatFlow';
@@ -55,7 +55,7 @@ import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
-import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
+import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, healDifficulty, type HealMode } from '../engine/healing';
 import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
@@ -265,13 +265,6 @@ function advanceCombatJet(get: () => GameState): void {
   const jet = seq?.purpose === 'combat' ? seq.participants[seq.cursor]?.jet : undefined;
   if ((jet === 'attack' || jet === 'trample')
     && !get().pendingAttack && !get().pendingTrample && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
-}
-
-/** Difficulté du Test de Guérison selon le mode de soin. Blessures : Intermédiaire (+0, LDB 09 l.243)
- *  toujours. Hémorragie : Accessible (+20) en variante `combat-aa-blessures: 'aa'` (Aux Armes 07 l.9),
- *  Intermédiaire (+0) sinon (LDB, comportement par défaut inchangé). */
-function healDifficulty(mode: HealMode): Difficulty {
-  return mode === 'bleed' && rule('combat-aa-blessures') === 'aa' ? 'accessible' : 'intermediaire';
 }
 
 /** Applique l'issue d'« Au Contact » (LDB 62 l.176) : pose/retire l'état au contact selon le choix du

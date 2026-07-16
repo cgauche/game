@@ -15,7 +15,7 @@
  * débit au clic d'acte ; « Annuler » AVANT le jet rembourse ; arrêter une opération jamais
  * commencée rembourse aussi.
  */
-import type { Combatant, Difficulty } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10 } from '../engine/dice';
 import { applyOps } from '../engine/ops';
@@ -23,7 +23,7 @@ import { extendedTestStep } from '../engine/tests';
 import { partyAssisted } from '../engine/skills';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { addCondition, loseWounds, releaseConditionLocks } from '../engine/conditions';
-import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, type HealMode } from '../engine/healing';
+import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, healDifficulty, type HealMode } from '../engine/healing';
 import { removeSurgicalTrauma, surgeryTraumas, recoverableTraumas, recoverDisabledLimb } from '../engine/trauma';
 import { toMoney, canAfford, subtract as moneySub, add as moneyAdd } from '../engine/money';
 import { touchActors } from './combatOrParty';
@@ -145,11 +145,12 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
     });
     return;
   }
+  const difficulty = healDifficulty(act);
   set({
     pendingHeal: {
       healerId: healer.id ?? 'pnj-soigneur', healerName: healer.name, targetId: patient.id, targetName: patient.name,
       mode: act, intBonus: healer.intBonus, skillValue: healer.skill,
-      difficulty: 'intermediaire', target: healer.skill, roll: null, success: false, sl: 0, paidCost,
+      difficulty, target: healer.skill + DIFFICULTY_MODIFIERS[difficulty], roll: null, success: false, sl: 0, paidCost,
     },
   });
 }

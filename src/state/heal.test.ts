@@ -194,6 +194,22 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(patient.soinRencontreUtilise).toBeUndefined(); // l'arrêt d'Hémorragie ne consomme pas la limite
   });
 
+  it('medicAct(bleed) hors combat : difficulté recalculée sur la variante AA (Aux Armes 07 l.9, hors combat inclus), Intermédiaire en LDB', () => {
+    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const al = hero({ id: 'al', name: 'Saigné', conditions: [{ name: 'hemorragique', value: 2 }], skills: [] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
+    try {
+      setRule('combat-aa-blessures', 'aa');
+      useGame.getState().openMedic({ patientId: 'al' });
+      useGame.getState().medicAct('bleed');
+      expect(useGame.getState().pendingHeal!.difficulty).toBe('accessible');
+      useGame.getState().healCancel();
+      resetRule('combat-aa-blessures');
+      useGame.getState().medicAct('bleed');
+      expect(useGame.getState().pendingHeal!.difficulty).toBe('intermediaire');
+    } finally { resetRule('combat-aa-blessures'); }
+  });
+
   it('patients/sortie verrouillés pendant un jet posé', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', wounds: { current: 4, max: 12 }, skills: [] });
