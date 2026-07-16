@@ -24,6 +24,9 @@ describe('persistence — classement RAW des États', () => {
     expect(PERSISTENT_CONDITIONS.has('extenue')).toBe(true);
     expect(PERSISTENT_CONDITIONS.has('brise')).toBe(true);
     expect(PERSISTENT_CONDITIONS.has('inconscient')).toBe(true);
+    // Munition Empaleuse logée (LDB 62 l.250) : exige un Test de Guérison pour être retirée —
+    // ne disparaît pas d'elle-même au teardown de combat (#473).
+    expect(PERSISTENT_CONDITIONS.has('munition-logee')).toBe(true);
   });
   it('exclut les États transitoires', () => {
     for (const n of ['surpris', 'a-terre', 'sonne', 'aveugle', 'assourdi', 'empetre']) {
@@ -59,6 +62,13 @@ describe('persistence — carryOverState', () => {
   it('reporte soinRencontreUtilise (limite 1 soin/rencontre survit au combat)', () => {
     expect(carryOverState(baseCombatant({ soinRencontreUtilise: true })).soinRencontreUtilise).toBe(true);
     expect(carryOverState(baseCombatant({})).soinRencontreUtilise).toBe(false);
+  });
+  it('persiste la munition Empaleuse logée combat → hors-combat (LDB 62 l.250, #473)', () => {
+    const c = baseCombatant({
+      conditions: [{ name: 'munition-logee', value: 2 }, { name: 'surpris', value: 1 }],
+    });
+    const s = carryOverState(c);
+    expect(s.conditions.find((x) => x.name === 'munition-logee')?.value).toBe(2);
   });
   it('persiste les traumatismes', () => {
     const c = baseCombatant({ traumas: [tk('fracture', 'mineur', 'jambeG')] });

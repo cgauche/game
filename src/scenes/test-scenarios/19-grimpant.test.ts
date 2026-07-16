@@ -48,4 +48,19 @@ describe('Grimpant — l’araignée escalade (grimpant)', () => {
     const after = useGame.getState().battle!.combatants.find((c) => c.id === spider.id)!;
     expect(after.pos!.y).toBeLessThanOrEqual(2); // a grimpé sur le plateau
   });
+
+  it('journalise le franchissement (climb.auto, #504) : le pathing IA n’est pas un jet silencieux', () => {
+    const { spider } = startGrimpant();
+    for (let round = 0; round < 2 && !useGame.getState().battle!.over; round++) {
+      const b = useGame.getState().battle!;
+      const sp = b.combatants.find((c) => c.id === spider.id)!;
+      if (!sp.pos || sp.pos.y <= 2) break;
+      const turnIdx = b.order.indexOf(spider.id);
+      useGame.setState({ battle: { ...b, turn: turnIdx, acted: false, action: null, movementUsed: 0 } });
+      runEnemyAI(useGame.getState, useGame.setState, spider.id);
+      vi.runOnlyPendingTimers();
+    }
+    const log = useGame.getState().battle!.log;
+    expect(log.some((l) => l.text.includes('escalade la paroi sans effort'))).toBe(true);
+  });
 });

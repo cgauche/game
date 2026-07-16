@@ -123,6 +123,16 @@ export interface HealWoundsOptions {
   log?: (healed: number) => string[];
 }
 
+/** Montant de PB effectivement rendus par un `delta` positif (plafond munitions Empaleuses logées,
+ *  LDB 62 l.250) — calcul PUR, SOURCE UNIQUE partagée par `applyHealWounds` (mutation) et la
+ *  PRÉVISUALISATION du jet (`describeHeal`, #473 : la popin annonçait le brut, pas le plafonné). */
+export function cappedHealAmount(target: Combatant, delta: number): number {
+  if (delta <= 0) return delta;
+  const before = target.wounds.current;
+  const cap = Math.max(before, target.wounds.max - lodgedAmmoCount(target));
+  return Math.min(cap, before + delta) - before;
+}
+
 /** SOURCE UNIQUE de gain de Blessures (mutation) — routée par les 4 chemins qui rendent des PB
  *  (Guérison, sorts/prières/potions `heal`/`healCaster`, drain `lifeSteal`, repos naturel). Lève
  *  l'Inconscient et remet l'horloge de mort à zéro quand on repasse > 0 PB (LDB 18 l.15, `wake`).
@@ -137,8 +147,7 @@ export function applyHealWounds(target: Combatant, delta: number, opts: HealWoun
   }
   if (delta === 0) return customLog ? customLog(0) : [`${target.name} : le soin n'apporte rien.`];
   const before = target.wounds.current;
-  const cap = Math.max(before, target.wounds.max - lodgedAmmoCount(target));
-  target.wounds.current = Math.min(cap, before + delta);
+  target.wounds.current = before + cappedHealAmount(target, delta);
   if (skillCheck) {
     target.soinRencontreUtilise = true; // a bénéficié de SON soin de cette rencontre (LDB 09 l.260)
     target.woundDressed = true; // matériel stérile : « aucune Infection » suite à la blessure (LDB 09 l.260 / LDB 18 l.298)

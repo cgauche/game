@@ -31,8 +31,9 @@ import { CIBLE_TYPES, CIBLE_LABEL } from '../engine/psychology';
 import { activityById, matchOutcomes } from '../engine/activities';
 import { isFumble } from '../engine/oups';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingFailure, SL_ASTOUNDING } from '../engine/tests';
-import { healWoundsDelta } from '../engine/healing';
+import { healWoundsDelta, cappedHealAmount } from '../engine/healing';
 import { corruptionGain } from '../engine/corruption';
+import type { Combatant } from '../engine/types';
 import { t } from '../i18n';
 
 /** Test de scène (LDB 12) : réussite / échec / réussite garantie par Résilience. Le DR figure déjà
@@ -74,14 +75,17 @@ export function describeEncounterPsych(pe: PendingEncounterPsych, name: string):
 }
 
 /** Soin de Guérison (LDB 09) : montant PRÉVU (aperçu) — Blessures rendues / Hémorragie stoppée /
- *  convalescence raccourcie. La VALIDATION applique le montant réel (plafonné, via resolveWoundsHeal) :
- *  cette ligne est l'aperçu de la popin, le fil journalise sa conséquence chiffrée à part. */
-export function describeHeal(ph: PendingHeal): string {
+ *  convalescence raccourcie. La VALIDATION applique le montant réel (plafonné, via `applyHealWounds`) :
+ *  cette ligne est l'aperçu de la popin, le fil journalise sa conséquence chiffrée à part. `target` (si
+ *  fourni) plafonne l'aperçu par `cappedHealAmount` — MÊME calcul que l'application (#473 : la popin
+ *  annonçait le brut « +5 PB » quand la munition Empaleuse logée plafonnait le gain réel à +3). */
+export function describeHeal(ph: PendingHeal, target?: Combatant): string {
   if (ph.roll == null) return '';
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
   const ammo = ph.mode === 'ammo';
-  const preview = wounds ? healWoundsDelta(ph.intBonus, ph.sl, ph.success) : 0;
+  const rawPreview = wounds ? healWoundsDelta(ph.intBonus, ph.sl, ph.success) : 0;
+  const preview = wounds && target ? cappedHealAmount(target, rawPreview) : rawPreview;
   if (ph.success) {
     if (wounds) return t('out.healWounds', { name: ph.targetName, n: preview });
     if (trauma) return t('out.healTrauma', { name: ph.targetName, n: 1 + Math.max(0, ph.sl) });

@@ -11,6 +11,7 @@ import { Money } from '../engine/money';
 import { axisScore, AXIS_QUALIFY_MIN } from '../engine/axes';
 import { CandidateCard, SeatCard, ActionCard, axisDataFor, type RecruitState } from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
+import { ActiveModal } from './ActiveModal';
 import { HeroPresentation } from './HeroPresentation';
 import { Modal } from './Modal';
 import { ScreenShell } from './ScreenShell';
@@ -541,6 +542,9 @@ export function PartyScreenView({
         />
       )}
       {sheetId && <CharacterSheet heroId={sheetId} onClose={() => setSheetId(null)} />}
+      {/* Arbitre R2 : CharacterSheet ouvre AUSSI des modales de combat/dissipation (Dissiper, #461)
+          depuis cet écran — même patron que CampaignView/InterludeScreen/MassBattleView. */}
+      <ActiveModal />
     </div>
   );
 }

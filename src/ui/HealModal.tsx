@@ -108,7 +108,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
       ) : undefined}
       rows={[actorRow]}
       rolled={rolled}
-      outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', describeHeal(ph), ph.healerId, ph.targetId)} combatants={pool} />}
+      outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', describeHeal(ph, target), ph.healerId, ph.targetId)} combatants={pool} />}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />
