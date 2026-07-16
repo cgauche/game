@@ -3,6 +3,7 @@
 > Consolidation 2026-07-05 : 211 → 143 fiches (`_archive/`). Credo canonique = `Game/.claude/credo.md` (hook) ; [exemples calibrants](credo-exemples-calibrants.md). Charte UI → `Game/docs/charte-ui.md` ; direction visuelle → `Game/docs/architecture.md` ; « Pas de MJ » → CLAUDE.md règle 7.
 
 ## Règles de travail (feedback user)
+- **[Tickets : dépendances + état mesuré COMMENTÉS](feedback-tickets-dependances-etat-mesure.md)** — « Bloqué par #N » explicite à l'ouverture ; prémisse corrigée/état mesuré → `gh issue comment` dans le même tour (règle au credo, demande user 2026-07-16).
 - **[Lacune RAW : bouton global ≠ champ de contenu](feedback-lacune-raw-bouton-global-vs-champ-de-contenu.md)** — le « cas 1 » du credo recouvre 2 formes ; test : « le RAW nomme-t-il une variable dont ça dépend ? » oui → champ authoré sur l'entité (règle 2), non → `maison` paramétrable. Confondre = modèle faux (2026-07-15).
 - **[JAMAIS de constat silencieux](feedback-jamais-de-constat-silencieux.md)** — « dis-moi si tu veux que j'en fasse quelque chose » = le « plus tard » interdit : dette → ticket DANS LE GESTE (racine, pas règle), puis garde qui ÉCHOUE sur la classe ; une garde qui compte sans gater est un faux ami (reconcile Sens B : 157 dettes, CI verte → #433/#434, 2026-07-15).
 - **[GEL BUDGET rigs 2026-07-12](user-contrainte-cout-rigs-2026-07-12.md)** — plus JAMAIS de vague d'art massive (multi-Fable + juges vision) ; rigs = ciblé-unitaire sur demande ; état du front + biais d'ancrage des re-juges → fiche + #342.
