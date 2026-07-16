@@ -114,6 +114,18 @@ describe('Filet lesté (Aux Armes p.95) — Immobilisante à Force FIGÉE (55), 
   });
 });
 
+describe('Déroutante (ADE II ch.4, atout d\'arme magique) — État Surpris à la touche', () => {
+  it('à la touche : la cible gagne l\'État Surpris', () => {
+    const atk = foe('porteur');
+    const tgt = foe('cible');
+    const get = mountBattle([atk, tgt]);
+    const w: Weapon = { name: 'Lame déroutante', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'deroutante' }] };
+    fireTriggers(get, atk, 'onHit', { victim: tgt, weapon: w, woundsDealt: 0, margin: 1, rng: battleRng() } as never);
+    const live = get().battle!.combatants.find((c) => c.id === tgt.id)!;
+    expect(live.conditions.some((x) => x.name === 'surpris')).toBe(true);
+  });
+});
+
 describe('Non-régression — Immobilisante GÉNÉRIQUE (LDB p.298, fouet/lasso) et Constricteur (trait)', () => {
   it('Immobilisante générique : escapeStrength = Force DU PORTEUR (charOf F), pas figée', () => {
     const atk = foe('archer', { characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 47, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } });

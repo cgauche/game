@@ -350,6 +350,42 @@
     ]
   },
   {
+    "id": "deroutante",
+    "label": "Déroutante",
+    "type": "atout",
+    "subType": "arme",
+    "desc": "Déroutante : de puissants enchantements de confusion et d'inattention sont tissés dans cette arme. Les individus qu'elle blesse subissent l'État Surpris.",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 58,
+      "note": "ch.4 l.230"
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "surpris"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
     "id": "incassable",
     "label": "Incassable",
     "type": "atout",
