@@ -237,7 +237,7 @@ export type Effect =
    *  `lodging`, contexte « maison » (gratuit — prix porté par le choix de dialogue). */
   | { type: 'rest'; days?: number; lodging?: 'auberge' | 'maison' | 'camp'; quality?: 'normale' | 'pietre' }
   /** Repas (#T2 — auberge, hôte généreux…) : nourrit TOUT le groupe pour la journée SANS consommer de
-   *  ration — remet les compteurs/malus de Faim à zéro (LDB 18 l.417-422). Le prix éventuel (« Repas,
+   *  ration — remet les compteurs/malus de Faim à zéro (LDB 18 l.337-343). Le prix éventuel (« Repas,
    *  auberge », LDB p.302) est porté par le CHOIX de dialogue (`DialogueChoice.cost`), pas par l'effet. */
   | { type: 'mealParty' }
   /** Inflige le trauma « Cauchemars » (LDB 21 l.92) à un héros (défaut : le premier) après une scène
@@ -257,11 +257,11 @@ export type Effect =
   /** Inflige une Maladie (LDB 20) à un héros (défaut : le premier) — nourriture avariée, contact infecté,
    *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
   | { type: 'inflictDisease'; disease: string; heroId?: string }
-  /** Impose la Faim (LDB 18 l.417-422) : `days` échecs de Test de Faim déjà encaissés — 1ᵉʳ → −10 F/E ;
+  /** Impose la Faim (LDB 18 l.337-343) : `days` échecs de Test de Faim déjà encaissés — 1ᵉʳ → −10 F/E ;
    *  2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1). Pour scénariser un groupe
    *  affamé (siège, cachot, traversée sans vivres). Cible : `party` ou `hero` (+`heroId`, défaut le premier). */
   | { type: 'inflictHunger'; days?: number; target?: 'party' | 'hero'; heroId?: string }
-  /** Impose la Soif (LDB 18 l.417-422, miroir de la Faim) : `days` échecs de Test de Soif déjà encaissés —
+  /** Impose la Soif (LDB 18 l.340, miroir de la Faim) : `days` échecs de Test de Soif déjà encaissés —
    *  1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1).
    *  Moteur partagé `applySoifTest` (engine/provisions), zéro logique nouvelle. Cible : `party` ou `hero`
    *  (+`heroId`, défaut le premier). */

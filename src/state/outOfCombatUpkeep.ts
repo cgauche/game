@@ -1,14 +1,14 @@
 /**
  * Entretien de fin de Round HORS COMBAT (couture A de l'audit « combat-only »).
  *
- * LDB 13-Combat l.49-50 : « En dehors d'un Combat, la mesure du temps […] est bien plus flexible. Mais
+ * LDB 13 l.45-47 : « En dehors d'un Combat, la mesure du temps […] est bien plus flexible. Mais
  * il est quelquefois utile d'utiliser les Rounds même en dehors d'un Combat. » Les États qui « tickent »
  * (Hémorragique l.105 / Empoisonné l.66 / En flammes l.77) et l'agonie (0 PB → Inconscient après BE
- * Rounds, LDB 18 l.28) ne doivent pas geler dès qu'on sort du combat : on les fait progresser au fil de
+ * Rounds, LDB 18 l.15) ne doivent pas geler dès qu'on sort du combat : on les fait progresser au fil de
  * l'horloge (1 Round ≈ TIME_COST.combatRound minute). En combat, c'est la frontière de Round qui s'en charge.
  *
- * Échapper à l'agonie par Hémorragie hors combat : Test de Guérison réussi retire l'État (LDB 09-Compétences
- * l.261, 16-États l.107-109) — infirmerie hors combat (`openMedic`/`medicAct('bleed')`, `state/medicFlow.ts`,
+ * Échapper à l'agonie par Hémorragie hors combat : Test de Guérison réussi retire l'État (LDB 09
+ * l.261, LDB 16 l.107-109) — infirmerie hors combat (`openMedic`/`medicAct('bleed')`, `state/medicFlow.ts`,
  * bouton « Soins » de `CharacterSheet.tsx`), n'avance pas le temps. Sans soigneur au Talent ni Destin,
  * l'agonie ci-dessus va à son terme.
  */
@@ -47,7 +47,7 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
         log.push(fateSaveOrDie(c) ? t('upkeep.fateSaved', { name: c.name }) : t('upkeep.succumb', { name: c.name }));
         continue;
       }
-      tickDeath(c).forEach((l) => log.push(l)); // 0 PB → Inconscient après BE Rounds (LDB 18 l.28)
+      tickDeath(c).forEach((l) => log.push(l)); // 0 PB → Inconscient après BE Rounds (LDB 18 l.15)
     }
     if (!active) break;
   }

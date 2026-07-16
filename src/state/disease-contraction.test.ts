@@ -57,7 +57,7 @@ describe('Fin de combat — infection post-critique (LDB 20 l.72) & persistance 
     expect(combatant.diseases?.some((d) => d.name === 'infection-mineure')).toBe(true);
   });
 
-  it('blessure PANSÉE pendant le combat (Guérison/bandage) → pas d’Infection post-critique (LDB 18 l.382)', () => {
+  it('blessure PANSÉE pendant le combat (Guérison/bandage) → pas d’Infection post-critique (LDB 18 l.298)', () => {
     seedBattleRng(4); // ce seed ferait ÉCHOUER le Test +60 (E 30) sans pansement
     const combatant = hero({ id: 'a', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, tookCriticalThisFight: true, woundDressed: true });
     setBattle([combatant]);

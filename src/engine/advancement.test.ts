@@ -38,7 +38,7 @@ const hero = (xp: number): Combatant =>
     charAdvances: {},
   }) as unknown as Combatant;
 
-describe('advanceCost — Tableau de Coût (LDB 07-Carrières l.45-62), verbatim', () => {
+describe('advanceCost — Tableau de Coût (LDB 07 l.51-70), verbatim', () => {
   it('Caractéristique : coûts par bande (déjà-achetées → coût de la prochaine)', () => {
     expect(advanceCost(0, 'characteristic')).toBe(25); // bande 0 à 5
     expect(advanceCost(5, 'characteristic')).toBe(25);
@@ -58,14 +58,14 @@ describe('advanceCost — Tableau de Coût (LDB 07-Carrières l.45-62), verbatim
     expect(advanceCost(25, 'skill')).toBe(40);
     expect(advanceCost(71, 'skill')).toBe(440);
   });
-  it('hors carrière : coût DOUBLE (l.95)', () => {
+  it('hors carrière : coût DOUBLE (LDB 07 l.91)', () => {
     expect(advanceCost(0, 'characteristic', false)).toBe(50);
     expect(advanceCost(0, 'skill', false)).toBe(20);
     expect(advanceCost(11, 'characteristic', false)).toBe(80);
   });
 });
 
-describe('Détection in-carrière (LDB 07-Carrières l.95 : hors-carrière → coût ×2)', () => {
+describe('Détection in-carrière (LDB 07 l.91 : hors-carrière → coût ×2)', () => {
   it('inCareerChar : vrai si la clé de la Caractéristique est listée au Niveau', () => {
     const chars: CharKey[] = ['capacite-de-tir', 'intelligence', 'sociabilite']; // Niveau « Pamphlétaire »
     expect(inCareerChar(chars, 'capacite-de-tir')).toBe(true);
@@ -138,7 +138,7 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
   });
 });
 
-describe('Compléter / Changer de Carrière (LDB 07-Carrières l.108-137, LDB 07 l.144)', () => {
+describe('Compléter / Changer de Carrière (LDB 07 l.111-140, LDB 07 l.144)', () => {
   // Carrière factice à 2 niveaux : 9 compétences au Niveau 1 (dont un joker), 2 talents.
   // NB : `A()`/`parseAdvancement` (parseur de TEST) garde la chaîne telle quelle comme `optionId`
   // (pas de résolution vers un id réel) — les fixtures ci-dessous utilisent donc directement les

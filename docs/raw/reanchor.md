@@ -4,7 +4,7 @@
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-**Bilan : ✅ 375 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 42 introuvables · ➖ 2615 synthèses** (⛔ 11 hors-fichier · ⚠️ 0 sans source) sur 3043 réfs · 417 citations · 28 fiches.
+**Bilan : ✅ 375 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 39 introuvables · ➖ 2548 synthèses** (⛔ 11 hors-fichier · ⚠️ 0 sans source) sur 2973 réfs · 414 citations · 28 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
@@ -44,8 +44,6 @@
 
 | Réf | Statut | Détail |
 |---|---|---|
-| `LDB 13 l.47` | ❌ LOW | « relancer l'initiative à chaque round… » — aucune occurrence |
-| `LDB 13 l.118` | ❌ LOW | « combat-defensive-stance - action sur la défens… » — aucune occurrence |
 | `Ubersreik 05 l.24` | ❌ LOW | « frappe mortelle (wfjdr, page 160). en raison d… » — texte trouvé en Ubersreik 4 l.18 |
 | `Ubersreik 05 l.24` | ⛔ PAST-EOF | l.24 > 6 lignes |
 | `Ubersreik 05 l.24` | ⛔ PAST-EOF | l.24 > 6 lignes |
@@ -108,12 +106,6 @@
 | `LDB 18 l.211` | ❌ LOW | « 91-93 cage thoracique perforée : gagnez 1 état… » — aucune occurrence |
 | `LDB 18 l.213` | ❌ LOW | « 97-99 hémorragie interne : gagnez 1 état hémor… » — aucune occurrence |
 | `LDB 18 l.104` | ❌ LOW | « 76-80 commotion cérébrale : gagnez l'état exté… » — aucune occurrence |
-
-## psychologie.md
-
-| Réf | Statut | Détail |
-|---|---|---|
-| `LDB 21 l.29` | ❌ LOW | « un seul test par tour quand la source s'approc… » — aucune occurrence |
 
 ## tests.md
 

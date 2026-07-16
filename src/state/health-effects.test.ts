@@ -19,7 +19,7 @@ beforeEach(() => {
   useGame.getState().seedRng(7);
 });
 
-describe('Effet inflictHunger (LDB 18 l.417-422)', () => {
+describe('Effet inflictHunger (LDB 18 l.337-343)', () => {
   it('1 jour affamé → 1ᵉʳ échec : −10 en Force et en Endurance (via le pool de faim)', () => {
     const party = makePregens().slice(0, 1);
     const baseF = effectiveChar(party[0], 'force');
@@ -148,7 +148,7 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
   });
 });
 
-describe('Effet inflictThirst (LDB 18 l.417-422, miroir de la Faim)', () => {
+describe('Effet inflictThirst (LDB 18 l.340, miroir de la Faim)', () => {
   it('1 jour assoiffé → 1ᵉʳ échec : −10 Intelligence/FM/Sociabilité (via le pool de soif)', () => {
     const party = makePregens().slice(0, 1);
     const baseInt = effectiveChar(party[0], 'intelligence');

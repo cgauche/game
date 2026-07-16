@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:hooks": "node --test scripts/hooks/exception-add-guard.test.mjs scripts/hooks/solde-ticket-guard.test.mjs",
-    "test:raw": "node --test scripts/raw/_lib.test.mjs scripts/raw/check-refs.test.mjs scripts/raw/build-implemente.test.mjs scripts/raw/reanchor.test.mjs scripts/raw/reanchor-split.test.mjs scripts/raw/reconcile.test.mjs scripts/raw/check-folio-continuity.test.mjs",
+    "test:raw": "node --test scripts/raw/_lib.test.mjs scripts/raw/check-refs.test.mjs scripts/raw/build-implemente.test.mjs scripts/raw/reanchor.test.mjs scripts/raw/reanchor-split.test.mjs scripts/raw/reconcile.test.mjs scripts/raw/check-folio-continuity.test.mjs scripts/raw/citation-graphy-guard.test.mjs",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/typecheck.tsbuildinfo",
     "docs:check": "node scripts/docs/check-doc-refs.mjs && node scripts/docs/build-systemes.mjs --check && node scripts/raw/build-implemente.mjs --check",
     "docs:systemes": "node scripts/docs/build-systemes.mjs",

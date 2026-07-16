@@ -1,19 +1,19 @@
 /**
  * Repos / nuit de sommeil — récupération hors combat (Livre de base FR).
  * Sources :
- *  - Exténué retiré par le repos (16-États l.91) ; cadence « une nuit = tout retiré » (choix figé, l.102
+ *  - Exténué retiré par le repos (LDB 16 l.92) ; cadence « une nuit = tout retiré » (choix figé, LDB 16 l.100
  *    laisse la vitesse au MJ ; on prend la nuit complète, cohérente avec « une bonne nuit de sommeil »).
- *  - Soin de Blessures (18-Traumatisme l.380, volet a) : Test de Résistance Accessible (+20) ⇒ DR + Bonus
+ *  - Soin de Blessures (LDB 18 l.296, volet a) : Test de Résistance Accessible (+20) ⇒ DR + Bonus
  *    d'Endurance Points de Blessure regagnés.
- *  - Cauchemars (21-Psychologie l.95, exemple Horst) : héros marqué `nightmares` (auteur-assigné, jamais
+ *  - Cauchemars (LDB 21 l.95, exemple Horst) : héros marqué `nightmares` (auteur-assigné, jamais
  *    systémique) ⇒ Test de Calme Facile (+40).
  * Pur : mute `c`, renvoie le journal. Ne dépend que d'autres modules purs du moteur.
  *
- * Soin de Blessures (18-Traumatisme l.380), DEUX volets cumulés par journée de repos :
+ * Soin de Blessures (LDB 18 l.296), DEUX volets cumulés par journée de repos :
  *  - volet a : « une fois par jour… Test de Résistance Accessible (+20)… DR + Bonus d'Endurance » ;
  *  - volet b : « pour chaque journée de repos, vous guérissez ÉGALEMENT le Bonus d'Endurance » (inconditionnel).
  *
- * Faim & Soif (18-Traumatisme l.418) : « sans nourriture ni boisson… ne peuvent pas récupérer de PB
+ * Faim & Soif (LDB 18 l.338) : « sans nourriture ni boisson… ne peuvent pas récupérer de PB
  * ni se débarrasser de l'Exténué » — un héros AFFAMÉ (`isStarving`, suivi des rations par
  * `engine/provisions.ts`) ne regagne ni PB ni Exténué par le repos (dette levée, #T2).
  *
@@ -124,13 +124,13 @@ export interface RestRoll {
 
 /**
  * Repos de `days` journée(s) pour UN personnage (défaut 1 = « Dormir jusqu'à l'aube »). Par journée :
- * dissipe l'Exténué (sommeil, 16-États l.91/102), soigne les PB (l.380 volet a Résistance +20 → DR+BE,
- * ET volet b +BE inconditionnel), puis les cauchemars (21 l.92) peuvent en regagner un. Réveille un
+ * dissipe l'Exténué (sommeil, LDB 16 l.92/100), soigne les PB (LDB 18 l.296 volet a Résistance +20 → DR+BE,
+ * ET volet b +BE inconditionnel), puis les cauchemars (LDB 21 l.95) peuvent en regagner un. Réveille un
  * Inconscient et relève un héros À Terre dès qu'il repasse > 0 PB (l.28). Mute `c`, renvoie un résumé.
  * `collect` (modale de Repos) reçoit les JETS structurés (récupération, cauchemars) pour le bilan.
  * (Maladies/convalescence : décomptées par l'entretien quotidien — cf. en-tête #T3.)
  */
-/** Cible du Test de récupération d'une nuit (Résistance Accessible +20, LDB 18 l.380 volet a). */
+/** Cible du Test de récupération d'une nuit (Résistance Accessible +20, LDB 18 l.296 volet a). */
 export function recoveryTarget(c: Combatant): number {
   return restResistVal(c) + 20; // Accessible = +20
 }

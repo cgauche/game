@@ -12,12 +12,12 @@ import { testScene } from '../../scenes/test-fixture';
 import type { Combatant } from '../../engine/types';
 
 /**
- * #38 — Aux Armes (l.2449) : en mode AA, à 0 PB un combattant porteur de l'État Hémorragique ne tombe PAS
+ * #38 — Aux Armes (AA 07 l.5) : en mode AA, à 0 PB un combattant porteur de l'État Hémorragique ne tombe PAS
  * Inconscient d'office (le décompte LDB de `tick-death` est neutralisé) — il fait chaque Round un Test de
  * Résistance Intermédiaire (+0) sous peine de subir l'État Inconscient. Le hook `aa-bleed-unconscious` (résolu
  * AVANT `bleed-death`) porte cette règle pour les ENNEMIS/auto ; le héros manuel passe par la cascade.
  */
-describe('#38 — chute Inconscient par perte de sang AA (Aux Armes l.2449)', () => {
+describe('#38 — chute Inconscient par perte de sang AA (Aux Armes AA 07 l.5)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();

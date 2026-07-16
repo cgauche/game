@@ -268,7 +268,7 @@ export function ActionBar() {
   // Déplacement, Attaque, Charge et Course n'ont PLUS de bouton : implicites au clic (sol/ennemi).
   // La Charge se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.74-77) ;
   // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.79-82).
-  // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.28) et Mouvement non entamé.
+  // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.15) et Mouvement non entamé.
   const canStandUp = prone && active.wounds.current > 0 && !moveStarted;
   // Liste d'ATTAQUES activables (« Attaque ▾ ») : l'Arme du Set actif + les attaques gratuites/zone d'un
   // trait de créature (Morsure/Caudale/Tentacule/Souffle…) + Piétinement (Taille) + mutation Tentacule.

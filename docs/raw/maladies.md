@@ -503,7 +503,7 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
-**Implémente** : non implémenté — parasite hors cycle maladie standard (progression en phases distinctes, pas de `tickDisease` générique applicable).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -521,7 +521,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Traitement** (`T2C 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
 
-**Implémente** : non implémenté dans `maladies.json`.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -545,7 +545,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Traitement** : aucun traitement connu. Toute tentative d'extraction chirurgicale fait plus de mal que de bien.
 
-**Implémente** : non implémenté dans `maladies.json`.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -563,7 +563,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Traitement** (`T2C 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
 
-**Implémente** : symptôme non implémenté (absent des 12 kinds LDB).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -594,7 +594,8 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Disponibilité** : Limitée. **Saison** : Hiver, Printemps. **Emplacement** : Forêts mixtes. **Coût** : 15/–.
 
-**Implémente** : `src/data/trappings.json` id `gesundheit` — `consumable.kind:'test'` (Résistance Accessible) → succès `reduceDiseaseDays` `daysPerSL:{every:1,amount:1}` `disease:'blessure-purulente'` (`src/engine/ops.ts` case `reduceDiseaseDays` l.1385-1391, doc `daysPerSL` l.484-486).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `T2C 4` (l.184-245) → `GameOp`, `applyOps` — `src/engine/ops.ts`
 
 ---
 
@@ -608,7 +609,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Disponibilité** : Rare. **Saison** : Automne, Hiver. **Emplacement** : Clairières, Cimetières. **Coût** : 5 CO.
 
-**Implémente** : `src/data/trappings.json` id `racine-des-tombes` — `consumable.kind:'do'` → `diseaseTestMod` `diseases:['blessure-purulente']` `amount:20` (`src/engine/ops.ts` case `diseaseTestMod` l.1577-1586, sommé par `activeDiseaseTestMod`, `src/engine/disease.ts` l.169-174). **Reste** (#458) : le scoping « uniquement si la Blessure Purulente provient d'une créature Mort-vivante ayant le Trait Infecté » n'est PAS modélisé — `diseaseTestMod` n'a pas de filtre d'origine (`src/engine/disease.ts` l.169-259) ; le bonus s'applique à toute Blessure Purulente.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -626,7 +627,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Disponibilité** : Rare. **Saison** : Printemps. **Emplacement** : Collines. **Coût** : 2 CO.
 
-**Implémente** : `src/data/trappings.json` id `rouille-mouchetee` — `consumable.kind:'do'` → `reduceDiseaseDays` `dice:{n:1,sides:10}` `disease:'verole-du-tanneur'` + `diseaseTestMod` `diseases:['verole-du-tanneur']` `amount:10` (`src/engine/ops.ts` l.1385-1391, l.1577-1586). **Reste** (#458) : les deux formes RAW (cru quotidien +10 continu SANS réduction de durée / potion −1d10j SANS +10) sont fusionnées en un seul effet appliqué ensemble, sans choix d'usage ; le surdosage (Nausées si >1 dose/jour) n'est pas modélisé.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -690,7 +691,8 @@ La promiscuité à bord et la mauvaise qualité de la nourriture et de la boisso
 
 **Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Toux et Éternuements) ; [Litanie de la Pestilence — 9 maladies LDB](#litanie-de-la-pestilence--9-maladies-ldb) (peste noire / flux sanglant / courante galopante / vérole urticante) ; [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (petite bière) ; `docs/raw/etats.md`.
 
-**Implémente** : (non implémenté) — contagion « à bord » et contamination de tonneau spécifiques à la vie en mer ; le cycle de maladie générique vit dans `src/engine/disease.ts` (`contagiousDiseases`, `contractDisease`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 14` (l.204-209) → `resolveShoreLeaveDesertion`, `resolveShoreLeave`, `finalizePortArrival` — `src/state/seaVoyageFlow.ts`, `src/state/shipCrew.ts`
 
 ---
 
@@ -720,7 +722,9 @@ Maladie spécifique de la navigation. La plupart des gens en souffrent à leur p
 
 **Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Malaise → Exténué, Nausée → Sonné) ; [Cycle de vie d'une maladie](#cycle-de-vie-dune-maladie) ; `docs/raw/etats.md`.
 
-**Implémente** : (non implémenté) — maladie absente de `maladies.json` ; symptômes *malaise* / *nausée* déjà modélisés (`src/engine/disease.ts` · `diseaseCharPenalties`, `combatFlow.ts`). À ajouter si un scénario maritime est joué (immunité elfe ; contraction par jour/heure ; immunité acquise sur succès).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 14` (l.211-222) → `SeaVoyageState`, `ItemCapabilities`, `resolveShoreLeaveDesertion`, `runSeaDay`, `continueSeaDayAfterCascade`, `PendingCascade`, `resolveShoreLeave`, `finalizePortArrival` — `src/data/index.ts`, `src/state/pendings.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCrew.ts`
+- sans code : `MDG 14` (l.215, l.217)
 
 ---
 
@@ -744,7 +748,8 @@ Maladie de **privation prolongée** qui frappe ceux qui restent longtemps en mer
 
 **Voir aussi** : [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (soupe de chou fermenté ; biscuits de mer ≠ nourriture correcte) ; [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Blessé, Intoxication Alimentaire, Malaise, Nausée) ; `docs/raw/etats.md`.
 
-**Implémente** : (non implémenté) — maladie absente de `maladies.json`. Spécificités à modéliser : Contraction mensuelle liée au régime, mitigation +40 par soupe de chou fermenté, durée gelée tant que le régime reste mauvais, 1 % de perte de dent/jour. Lien avec la Faim/rations : `src/engine/provisions.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 14` (l.224-234) → `SeaVoyageState`, `shipboardSouls`, `ShipDossierView`, `dailyWaterLitres`, `consumeCrewProvisions`, `ProvisioningManifest`, `ItemCapabilities`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, +3 — `src/data/index.ts`, `src/engine/policy.ts`, `src/engine/provisions.ts`, `src/engine/seaWeather.ts`, `src/state/pendings.ts`, `src/state/seaVoyageFlow.ts`, +3 fichiers
 
 ---
 
@@ -778,5 +783,8 @@ Planifier l'approvisionnement est vital pour un long voyage : l'équipage fourni
 
 **Voir aussi** : [Scorbut (maladie de privation MDG)](#scorbut-maladie-de-privation-mdg) (soupe de chou fermenté ; biscuits ≠ nourriture correcte) ; [Maladies à bord — contagion et tonneaux contaminés (MDG)](#maladies-a-bord--contagion-et-tonneaux-contamines-mdg) (tonneau d'eau / petite bière) ; `docs/raw/voyage.md` (le cas échéant). Hors domaine : modificateurs de Moral liés à la nourriture (biscuits seuls / ration insuffisante) — `MDG 14 l.166`, `MDG 14 l.171`.
 
-**Implémente** : (non implémenté pour le contexte maritime) — règle de Faim/rations générique dans `src/engine/provisions.ts` (consommation/jour, Tests, malus). Spécificités MDG à ajouter si un voyage en mer est joué : 2-3 L d'eau/jour, hiérarchie de rations, biscuits = anti-famine mais régime médiocre, avarie « moitié des provisions ».
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 14` (l.166, l.171, l.236-271) → `sealskinDR`, `PAY_CHOICES`, `SeaVoyageState`, `shipboardSouls`, `exposureNight`, `ShipDossierView`, `skillDRBonus`, `dailyWaterLitres`, `FOOD_SHORTAGE_FACTOR`, `consumeCrewProvisions`, +11 — `src/data/index.ts`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +7 fichiers
+- `MDG 15` (l.169-170) → `src/scenes/loup-et-saumure/loup-et-saumure-projet.json`
+- sans code : `MDG 14` (l.263)
 

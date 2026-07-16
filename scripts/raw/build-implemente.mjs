@@ -3,10 +3,10 @@
 // build-systemes.mjs : manifest éditorial (src/data/raw.manifest.json) + calcul + mode --check qui
 // régénère en mémoire, compare au committé, exit 1 sans écrire.
 // Re-run : node scripts/raw/build-implemente.mjs (npm run raw:implemente).
-import { readdirSync, readFileSync, writeFileSync, statSync, existsSync } from 'node:fs'
-import { join, dirname, resolve } from 'node:path'
+import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, bookOf, BOOKS } from './_lib.mjs'
+import { ldbRe, otherRe, span, bookOf, BOOKS, esc } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -146,7 +146,7 @@ export function parseFiche(basename, content) {
       if (h[1].length === 2) pending = []
       continue
     }
-    if (!isHeader[i] && FIELD_ANYWHERE_RE.test(ln)) {
+    if (!isHeader[i] && !/^\s*>/.test(ln) && FIELD_ANYWHERE_RE.test(ln)) {
       anomalies.push({ doc: basename, row: i + 1, text: ln.trim().slice(0, 160) })
     }
     if (isHeader[i]) {
@@ -179,8 +179,8 @@ function walkSrc(dir, acc = []) {
 export function indexCode(srcDir = SRC_DIR) {
   const impl = []
   const tests = []
-  const fileLines = new Map()   // rel -> lines[]  (.ts/.tsx)
-  const nonTestText = new Map() // rel -> texte  (non-test, pour détecter les appelants)
+  const fileLines = new Map()       // rel -> lines[]  (.ts/.tsx)
+  const nonCommentText = new Map()  // rel -> lignes NON-commentaires jointes (non-test, pour les appelants)
   for (const f of walkSrc(srcDir)) {
     const rel = f.replace(/\\/g, '/')
     if (isExcludedSrc(rel)) continue
@@ -189,28 +189,43 @@ export function indexCode(srcDir = SRC_DIR) {
     const lines = content.split('\n')
     const isTs = /\.tsx?$/.test(rel)
     if (isTs) fileLines.set(rel, lines)
-    if (!isTest) nonTestText.set(rel, content)
+    if (!isTest) nonCommentText.set(rel, lines.filter((ln) => !COMMENT_OR_BLANK.test(ln)).join('\n'))
     lines.forEach((ln, i) => {
       for (const r of refsWithSpans(ln)) (isTest ? tests : impl).push({ ...r, file: rel, row: i + 1, isTs })
     })
   }
-  return { impl, tests, fileLines, nonTestText }
+  return { impl, tests, fileLines, nonCommentText }
 }
 
-/** Un symbole a-t-il une occurrence `\b<nom>\b` dans un autre fichier src non-test que sa définition ? */
-function hasCaller(name, defFile, nonTestText) {
-  const re = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
-  for (const [rel, text] of nonTestText) {
-    if (rel === defFile) continue
-    if (re.test(text)) return true
+/** Un symbole EXPORTÉ est « sans appelant » ssi aucune occurrence `\b<nom>\b` HORS commentaire dans
+ *  un autre fichier src non-test, NI dans son propre fichier en dehors de sa déclaration. Un symbole
+ *  non exporté (usage local uniquement) n'est JAMAIS flagué. */
+export function isDeadExport(name, defFile, index) {
+  const defLines = index.fileLines.get(defFile)
+  if (!defLines) return false
+  let declIdx = -1
+  let exported = false
+  for (let i = 0; i < defLines.length; i++) {
+    const dn = declNameOf(defLines[i])
+    if (dn === name) { declIdx = i; exported = /^export\b/.test(defLines[i]); break }
   }
-  return false
+  if (declIdx < 0 || !exported) return false
+  const re = new RegExp(`\\b${esc(name)}\\b`)
+  for (let i = 0; i < defLines.length; i++) {
+    if (i === declIdx || COMMENT_OR_BLANK.test(defLines[i])) continue
+    if (re.test(defLines[i])) return false // appelant local (hors commentaire, hors déclaration)
+  }
+  for (const [rel, text] of index.nonCommentText) {
+    if (rel === defFile) continue
+    if (re.test(text)) return false // appelant dans un autre fichier non-test (hors commentaire)
+  }
+  return true
 }
 
 /** Rend le bloc (lignes) d'un champ pour un topic. Déterministe. */
 export function renderBlock(field, ctx) {
   const { index, closure, manifestByTopic } = ctx
-  const { impl, tests, fileLines, nonTestText } = index
+  const { impl, tests } = index
   const refs = field.refs
 
   const refGroups = new Map() // 'BOOK|CH' -> { book, ch, refs:[] }
@@ -237,7 +252,7 @@ export function renderBlock(field, ctx) {
       }
     }
     if (!matchedSpans.length) continue
-    bullets.push(buildMatchBullet(g, matchedSpans, [...citMap.values()], { fileLines, nonTestText, closure }))
+    bullets.push(buildMatchBullet(g, matchedSpans, [...citMap.values()], { index, closure }))
   }
   bullets.sort((a, b) => (BOOK_ORDER.get(a.book) ?? 99) - (BOOK_ORDER.get(b.book) ?? 99) || a.ch - b.ch)
 
@@ -269,14 +284,14 @@ export function renderBlock(field, ctx) {
   return out
 }
 
-function buildMatchBullet(g, matchedSpans, cits, { fileLines, nonTestText, closure }) {
+function buildMatchBullet(g, matchedSpans, cits, { index, closure }) {
   const spans = mergeSpans(matchedSpans)
   const symFirstRow = new Map()
   const files = new Set()
   for (const c of cits) {
     files.add(c.file)
     if (c.isTs) {
-      const name = symbolFor(fileLines.get(c.file), c.row)
+      const name = symbolFor(index.fileLines.get(c.file), c.row)
       if (name) {
         const cur = symFirstRow.get(name)
         if (cur == null || c.row < cur.row) symFirstRow.set(name, { row: c.row, defFile: c.file })
@@ -286,7 +301,7 @@ function buildMatchBullet(g, matchedSpans, cits, { fileLines, nonTestText, closu
   const symbols = [...symFirstRow.entries()]
     .sort((a, b) => a[1].row - b[1].row || a[0].localeCompare(b[0]))
     .map(([name, info]) => {
-      const dead = !hasCaller(name, info.defFile, nonTestText)
+      const dead = isDeadExport(name, info.defFile, index)
       return `\`${name}\`${dead ? ' ⚠sans-appelant' : ''}`
     })
   const fileToks = [...files].sort().map((f) => `\`${f}\`${closure.has(f) ? '' : ' ⚠hors-app'}`)

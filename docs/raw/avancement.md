@@ -97,7 +97,8 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 
 **Voir aussi** : [`carrieres.md`](carrieres.md) pour la structure du Schéma de Progression par Carrière.
 
-**Implémente** : `src/engine/advancement.ts` — `ADVANCE_COST_TABLE` (tableau verbatim), `advanceCost(advancesAlready, 'characteristic', inCareer)`, `buyCharAdvance(hero, char, inCareer)`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 7` (l.41-72) → `inCareerChar`, `AdvanceCostBand`, `buyCharAdvance`, `buySkillAdvance`, `isCareerLevelComplete`, `buildAdvancementView`, `skillSlots`, `availableChars` — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`
 
 ---
 
@@ -117,7 +118,9 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 
 **Voir aussi** : [`competences.md`](competences.md) pour la définition des Compétences et la règle des Spécialisations.
 
-**Implémente** : `src/engine/advancement.ts` — `advanceCost(advancesAlready, 'skill', inCareer, discount)`, `buySkillAdvance(hero, skillName, spec, inCareer, discount)`. Le paramètre `discount` implémente la réduction de 5 PX accordée par certains Talents (Maître artisan, Oreille absolue, etc.) sur les Compétences de Carrière.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 7` (l.75-84) → `inCareerChar`, `AdvanceCostBand`, `advanceCost`, `buySkillAdvance`, `buyTalent`, `isCareerLevelComplete`, `buildAdvancementView`, `skillSlots`, `availableChars`, `mentorBlocks`, +2 — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, +1 fichiers
+- `LDB 9` (l.44) → `buySkillAdvance`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/advancement.ts`, +3 fichiers
 
 ---
 
@@ -139,7 +142,8 @@ Résumé :
 
 **Sources RAW** : `LDB 07 l.88-93`
 
-**Implémente** : `src/engine/advancement.ts` — paramètre `inCareer = false` dans `advanceCost` → `base * 2`. Détection in-carrière via `inCareerChar(careerChars, char)` + `slotCovers()` de `careerSlots.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 7` (l.88-93) → `inCareerChar`, `advanceCost`, `buySkillAdvance`, `buyTalent`, `buildAdvancementView`, `skillSlots`, `talentSlots`, `mentorBlocks`, `buyCharAdvance`, `OPTIONAL_RULES` — `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
 
 ---
 
@@ -171,7 +175,8 @@ Formule : **coût de la N+1ᵉ acquisition = 100 × (N + 1)** où N = nombre d'a
 
 **Voir aussi** : [`talents.md`](talents.md) pour la liste des Talents et les restrictions de multi-achat.
 
-**Implémente** : `src/engine/advancement.ts` — `talentCost(timesAlready)` → `100 * (timesAlready + 1)` ; `buyTalent(hero, talentName)`. Le vérif du Maxi (plafond d'un Talent selon LDB 10) est délégué à l'appelant via `talentMaxReached`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 7` (l.100-109) → `inCareerChar`, `advanceCost`, `talentCost`, `buyTalent`, `careerCompletionAdvances`, `careerChangeCost`, `talentSlots`, `buildAdvancementView` — `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
 
 ---
 
@@ -199,7 +204,8 @@ Pour compléter un Niveau de Carrière, il faut (`LDB 07 l.124`) :
 
 **Sources RAW** : `LDB 07 l.121-133`
 
-**Implémente** : `src/engine/advancement.ts` — `careerCompletionAdvances(level)` → `5 * level` ; `isCareerLevelComplete(hero, level, opts)` (vérifie les 3 conditions, gère les emplacements « Au choix » via désignations de `careerSlots.ts`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 7` (l.121-133) → `careerCompletionAdvances`, `isCareerLevelComplete`, `careerChangeCost`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `OPTIONAL_RULES`, `changeCareer`, `GameState` — `src/engine/advancement.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
 
 ---
 
@@ -221,7 +227,9 @@ Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 20
 
 **Sources RAW** : `LDB 07 l.136-139`, `LDB 08 l.1-2`
 
-**Implémente** : `src/engine/advancement.ts` — `validateCareerChange(hero, newCareer, newLevel, ctx)` : même carrière + `newLevel === cur + 1` exige `ctx.completed` ; `newLevel < cur` autorisé sans condition ; saut vers `newLevel > cur + 1` rejeté (`'saut de niveau impossible'`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 7` (l.136-139) → `careerCompletionAdvances`, `AdvancementView`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `OPTIONAL_RULES`, `changeCareer`, `GameState` — `src/engine/advancement.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
+- `LDB 8` (l.1-2, l.5) → `changeCareer` — `src/state/partyFlow.ts`
 
 ---
 
@@ -245,7 +253,8 @@ Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 20
 
 **Sources RAW** : `LDB 08 l.2-3`
 
-**Implémente** : `src/engine/advancement.ts` — `validateCareerChange` : `newCareer !== hero.career` → `newLevel !== 1` rejeté ; `!ctx.sameClass` → +100 PX (`base + 100`). `changeCareer(hero, newCareer, newLevel, ctx)` mute le héros si valide et PX suffisants.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 8` (l.2-3, l.9, l.11) → `changeCareer` — `src/state/partyFlow.ts`
 
 ---
 
@@ -262,7 +271,8 @@ Verbatim depuis `LDB 08 l.3-4` (tableau « Coût des Changements de Carrière et
 
 **Sources RAW** : `LDB 08 l.3-4`
 
-**Implémente** : `src/engine/advancement.ts` — `careerChangeCost(completed)` → 100 ou 200 ; `talentCost(timesAlready)` → `100 * (timesAlready + 1)`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 8` (l.3-4) → `changeCareer` — `src/state/partyFlow.ts`
 
 ---
 
@@ -298,7 +308,7 @@ Le **Pouvoir derrière le Trône** (Tome 3) propose en Annexe IV le barème de P
 
 **Sources RAW** : `T3 13 l.1-73`
 
-**Implémente** : non implémenté (attribution de PX = décision MJ dans le store via `xp(n)` dans `src/state/devtools.ts` et `partyFlow.ts`).
+**Implémente :** (non implémenté)
 
 ---
 

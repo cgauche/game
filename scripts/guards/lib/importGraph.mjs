@@ -8,8 +8,9 @@ import { dirname, join, resolve } from 'node:path';
 
 const EXTS = ['.ts', '.tsx', '.mts', '.js'];
 
-/** Capture des imports/réexports nommés OU bare (`from '…'`). @type {RegExp} */
-export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]/g;
+/** Capture les imports/réexports statiques (`from '…'`) ET dynamiques (`import('…')`, ex. `lazy`).
+ *  Spécificateur en m[1] (statique) ou m[2] (dynamique). @type {RegExp} */
+export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 
 /**
  * Résout un spécificateur d'import RELATIF (`./foo`, `../bar`) vers un fichier source réel
@@ -48,7 +49,7 @@ export function closureOf(roots) {
       continue;
     }
     for (const m of text.matchAll(IMPORT_RE)) {
-      const resolved = resolveImport(abs, m[1]);
+      const resolved = resolveImport(abs, m[1] ?? m[2]);
       if (resolved && resolved.includes('/src/')) stack.push(resolved);
     }
   }
@@ -64,7 +65,7 @@ export function directImportsOf(fromFile, contenu) {
   const root = resolve('.').split('\\').join('/');
   const found = new Set();
   for (const m of contenu.matchAll(IMPORT_RE)) {
-    const resolved = resolveImport(fromFile, m[1]);
+    const resolved = resolveImport(fromFile, m[1] ?? m[2]);
     if (resolved && resolved.includes('/src/')) found.add(resolved.slice(root.length + 1));
   }
   return [...found];

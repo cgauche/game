@@ -614,7 +614,7 @@ export function resolveAttack(
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
   const { env, blocked, inMelee, crowd, cm, sc, flankRear } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
-  if (blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13-Combat l.123)
+  if (blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13 l.114)
   if (weapon.type === 'ranged') {
     // « Tirer dans le tas » (LDB 14 l.136/146) : un ennemi AU HASARD est touché ; succès dû au seul bonus = 0 DR.
     if (intoCrowd) {
@@ -895,7 +895,7 @@ export function disengageOutcome(winner: 'attacker' | 'defender' | 'tie'): 'succ
   return winner === 'attacker' ? 'success' : winner === 'tie' ? 'tie' : 'failure';
 }
 
-/** Lance le Désengagement d'un combattant Engagé (LDB 15-Dépl l.84-89) : option A
+/** Lance le Désengagement d'un combattant Engagé (LDB 15 l.43-49) : option A
  *  (Avantage > adversaires → résolue direct) ou option B (Test opposé d'Esquive vs le
  *  foe le plus dangereux). No-op « rouvre le mouvement » si plus aucun foe vivant. */
 export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
@@ -916,7 +916,7 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
     set({ battle: { ...battle, action: null, reachable: moveReachFor(mover, get().scene!, mover.pos!, effectiveMovement(mover), moveEnv(battle, mover)) } });
     return;
   }
-  // Option A du menu de Désengagement : « Sacrifier l'Avantage » (LDB 15-Dépl l.87, Avantage STRICTEMENT
+  // Option A du menu de Désengagement : « Sacrifier l'Avantage » (LDB 15 l.47, Avantage STRICTEMENT
   // supérieur → tombe à 0) OU, en mode « Avantage de groupe », « Retraite stratégique » (AA l.4139 : dépense
   // FIXE de 2 Avantages de la réserve du camp, abaissée à 1 par Impitoyable AA l.4418). Un seul chemin d'UI.
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
@@ -1709,7 +1709,7 @@ export function applyAttackResult(
   attacker.aiming = false; // l'attaque consomme la visée (tir : +20 déjà appliqué ; mêlée : visée gâchée)
   if (attacker.nextActionPenalty) attacker.nextActionPenalty = undefined; // pénalité de Maladresse consommée par ce Test
 
-  if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13-Combat l.174-175) — jamais avec un objet INANIMÉ
+  if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13 l.169-171) — jamais avec un objet INANIMÉ
   const critLog: string[] = [];
   // Empoignade (LDB 14 l.159) : « vous ET votre adversaire êtes Empoignés, et votre adversaire gagne
   // l'État *Empêtré* ». Pose APRÈS l'Engagement (les deux Empoignés) ; le bloc de Dégâts ci-dessous est
@@ -1782,7 +1782,7 @@ export function applyAttackResult(
       if (res.critical && !lethal)
         emitCombatEvent('onCrit', { get, set, battle, self: attacker, sink: (line) => critLog.push(line), triggerCtx: { victim: target, weapon, location: loc, woundsDealt: res.woundsLost, attackType: weapon.type, rng: battleRng() } });
     }
-    // 0 PB → À Terre (LDB 18 l.28) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
+    // 0 PB → À Terre (LDB 18 l.15) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
     // déclenche une Blessure critique mais ne dispense pas de l'État À Terre) ; sauf si déjà KO/mort.
     if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, COND.inconscient)) applyZeroWounds(target);
     // Cible neutralisée → on ne reste pas Engagé avec elle (LDB 13) : on lève ses liens immédiatement
@@ -2927,7 +2927,7 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
     // 7bis (#316) : Subir un Critique OPPOSÉ dévié = Blessure Critique → le bus émet `onCrit` pour l'attaquant.
     emitOpposedCrit(get, set, inBattleId(battle, dev.ctx.attackerId), target, dev.location, dev.ctx.weaponObj, log);
   }
-  // 0 PB → À Terre (LDB 18 l.28) ; cible neutralisée → on lève engagement + effets psy (parité avec la mêlée).
+  // 0 PB → À Terre (LDB 18 l.15) ; cible neutralisée → on lève engagement + effets psy (parité avec la mêlée).
   if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, COND.inconscient)) applyZeroWounds(target);
   if (isOutOfAction(target)) {
     clearEngagementOf(get().battle?.combatants ?? [], target.id);
@@ -3881,7 +3881,7 @@ export function applyCast(
         } else {
           applyCritAndFinalize(get, set, t, loc, critWound, ovk, logLines, c2, currentBefore);
         }
-        // 0 PB → À Terre (LDB 18 l.28) — SAUF si suspendu (le Critique du héros n'est pas encore résolu :
+        // 0 PB → À Terre (LDB 18 l.15) — SAUF si suspendu (le Critique du héros n'est pas encore résolu :
         // resolveDeviation `self` s'en charge). Parité avec la mêlée et resolveDeviation.
         if (!suspended && t.wounds.current <= 0 && !t.dead && !hasCondition(t, COND.inconscient)) applyZeroWounds(t);
       } else if (t.wounds.current <= 0) {
@@ -4304,7 +4304,7 @@ function combatEndResistVal(c: Combatant): number {
 
 /**
  * DÉCIDE et CONSOMME les Tests de fin de combat DUS pour le PERSONNAGE `c` (héros, ou combattant flagué
- * #143 `followsCharacterRules` — LDB 18 l.382/20 l.72/20 l.32-49 + LDB 19 Corruption) — SOURCE UNIQUE de
+ * #143 `followsCharacterRules` — LDB 18 l.298/20 l.72/20 l.32-49 + LDB 19 Corruption) — SOURCE UNIQUE de
  * la décision : les marqueurs (`tookCriticalThisFight`/`woundDressed`/`diseaseExposure`) sont purgés ICI
  * (idempotent). Retourne la LISTE des Tests de Contraction de maladie dus + le NIVEAU d'exposition à la
  * Corruption (worst des créatures affrontées), ou `null` pour la Corruption si aucune. PUR de RNG (aucun
@@ -4316,7 +4316,7 @@ function decideCombatEndHeroTests(
   const dm = rule('disease-mode') as string;
   const diseases: CombatEndDiseaseTest[] = [];
   // Infection Mineure post-critique (LDB 20 l.72) : Résistance Très Facile (+60) — sauf blessure PANSÉE
-  // (LDB 18 l.382). Règle « Utilisation des Maladies » : seul 'full' (RAW) applique l'Infection Mineure.
+  // (LDB 18 l.298). Règle « Utilisation des Maladies » : seul 'full' (RAW) applique l'Infection Mineure.
   if (c.tookCriticalThisFight) {
     const dressed = c.woundDressed;
     if (!c.dead && !dressed && dm === 'full' && contractionDue(c, 'infection-mineure'))
@@ -4970,9 +4970,9 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   if (bleedFateHero) { set({ pendingFateSave: { heroId: bleedFateHero.c.id, source: 'slow' } }); return; }
   for (const d of doomedBleed) { d.c.dead = true; battle.log.push(ev('death', d.line, d.c.id)); for (const line of notifySlain(get, set, d.c)) battle.log.push(ev('death', line, d.c.id)); }
   battle.bleedDoomed = undefined;
-  // (3) Avantage : mode Livre de base → -1 si aucun gagné ce Round (LDB Dépl. l.40) ; mode « Avantage de
+  // (3) Avantage : mode Livre de base → -1 si aucun gagné ce Round (LDB 14 l.219) ; mode « Avantage de
   //     groupe » (AA l.4146) → transfert de domination du camp majoritaire (REMPLACE décroissance +
-  //     Surnombre). Engagé périmé (LDB 13-Combat l.175).
+  //     Surnombre). Engagé périmé (LDB 13 l.171).
   if (groupAdvantage()) roundEndAdvantageTransfer(battle);
   for (const c of battle.combatants) {
     if (!groupAdvantage() && !isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
@@ -5782,7 +5782,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     }
     case 'move': {
       // Simplification IA assumée (sévérité mineure, relevée par la revue de fidélité) :
-      //  • l'IA ne fait JAMAIS de Désengagement (option joueur, LDB 15-Dépl l.84-89) : un
+      //  • l'IA ne fait JAMAIS de Désengagement (option joueur, LDB 15 l.43-49) : un
       //    ennemi Engagé qui se repositionne ne paie pas l'Esquive/le sacrifice d'Avantage.
       // PARITÉ d'approche (LDB 15 l.74-82) : Charge à portée de Course si la Marche ne suffit pas,
       // sinon Course (Test d'Athlétisme instantané, pas d'attaque ce tour) — cf. aiApproachPlan.
@@ -5816,9 +5816,9 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         set({ battle: { ...battle } });
         bus.emit(EVT.SCENE_DIRTY);
         const tgt = targetOf(mv.thenTargetId);
-        // La Course a consommé l'Action (LDB 15 l.79) → pas d'attaque en arrivant.
+        // La Course a consommé l'Action (LDB 15 l.41) → pas d'attaque en arrivant.
         if (!ran && canAct && combatDistance(enemy, tgt) <= meleeReachTiles(enemy.weapons)) {
-          // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15-Dépl l.74-77).
+          // Charge de l'IA : se ruer au contact depuis une position non-Engagée donne l'Avantage (LDB 15 l.35-37).
           if (!wasEngaged) {
             const adv = chargeAdvantage(effectiveMovement(geom), distBefore);
             if (adv) {

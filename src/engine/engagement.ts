@@ -1,7 +1,7 @@
 /**
  * État ENGAGÉ + bonus de Charge — Livre de base, « Combat » (13) et « Déplacement » (15).
  *
- * Engagé (13-Combat l.174-175) : « Quand vous attaquez un adversaire, ou que vous êtes
+ * Engagé (LDB 13 l.169-171) : « Quand vous attaquez un adversaire, ou que vous êtes
  * attaqué, en combat au Corps à corps, vous êtes Engagé. … Si vous n'attaquez pas l'autre
  * pendant un Round complet, vous n'êtes plus Engagé. » → relationnel, symétrique, purgé en
  * fin de Round si aucune attaque échangée. Tout vient de la Source (aucune invention).
@@ -47,8 +47,8 @@ export function isEngagedWith(a: Combatant, bId: string): boolean {
 }
 
 /** Pose Engagé symétriquement ET marque le coup échangé ce Round (les deux côtés).
- *  Idempotent (LDB 13-Combat l.174-175). À appeler sur TOUTE attaque de mêlée résolue
- *  (touche ou non : « ou que vous êtes attaqué » l.174). */
+ *  Idempotent (LDB 13 l.169-171). À appeler sur TOUTE attaque de mêlée résolue
+ *  (touche ou non : « ou que vous êtes attaqué » LDB 13 l.171). */
 export function engage(a: Combatant, b: Combatant): void {
   for (const [x, y] of [
     [a, b],
@@ -107,7 +107,7 @@ export function clearContact(a: Combatant, b: Combatant): void {
 }
 
 /** Fin de Round : lève l'Engagement d'une paire si AUCUNE mêlée n'a été échangée ce Round
- *  (LDB 13-Combat l.175), puis vide meleeThisRound. Engagé étant symétrique, un coup dans
+ *  (LDB 13 l.171), puis vide meleeThisRound. Engagé étant symétrique, un coup dans
  *  UN sens rafraîchit la paire dans les DEUX. Lit un instantané AVANT de muter (sinon la
  *  mutation de A→B casserait la lecture B→A). Purge aussi tout lien vers un combattant
  *  hors d'action (Blessures ≤ 0). */
@@ -131,9 +131,9 @@ export function decayEngagement(all: Combatant[]): void {
 /**
  * Bonus d'Avantage d'une Charge, en CASES (distance chebyshev départ→cible AVANT déplacement).
  * Lecture STRICTE (décision utilisateur 2026-06-10) : +1 UNIQUEMENT si la cible était « au moins à
- * une distance, en mètres, égale à votre caractéristique de Mouvement » (LDB 15-Dépl l.77), dans la
- * portée de Course. 1 case = 2 m (l.55) → seuil = ceil(M/2) cases ; Course = 2M cases (Tableau des
- * Mouvements l.61-72). La charge ARRIVE sur une case ADJACENTE à la cible : la case d'arrivée est à
+ * une distance, en mètres, égale à votre caractéristique de Mouvement » (LDB 15 l.37), dans la
+ * portée de Course. 1 case = 2 m (LDB 15 l.12) → seuil = ceil(M/2) cases ; Course = 2M cases (Tableau des
+ * Mouvements LDB 15 l.18-31). La charge ARRIVE sur une case ADJACENTE à la cible : la case d'arrivée est à
  * 1 de moins que la cible, donc une charge valide va jusqu'à une distance-cible de 2M+1.
  */
 export function chargeAdvantage(movementCases: number, distFromCases: number): 0 | 1 {

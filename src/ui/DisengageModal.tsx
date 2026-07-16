@@ -16,7 +16,7 @@ import { Icon } from './Icon';
 import { testBreakdown } from './breakdown';
 
 /**
- * Modale de Désengagement (LDB 15-Dépl l.84-109). Trois phases, une seule coquille de jet PARTAGÉE :
+ * Modale de Désengagement (LDB 15 l.43-68). Trois phases, une seule coquille de jet PARTAGÉE :
  * - **'choice'** : PAS un jet — le MENU d'options (`OptionChooser`) Sacrifier l'Avantage / Esquiver /
  *   Fuir + Résilience pré-jet, rendu dans un `Modal` simple (RollShell ne fait pas les menus).
  * - **'esquive'** : `RollShell` opposé (2 rangées) — [0] Corps à corps du foe FIGÉ (témoin) vs
@@ -96,7 +96,7 @@ export function DisengageModal() {
   if (pd.phase === 'fuir') {
     const f = pd.fuir;
     const calme = f?.calme;
-    const needCalme = !!f && f.woundsLost > 0; // coup qui touche → Test de Calme (LDB 15-Dépl l.105-107)
+    const needCalme = !!f && f.woundsLost > 0; // coup qui touche → Test de Calme (LDB 15 l.66)
     const calmeRerollable = !!calme && !calme.success && canReroll(true, !!pd.rerolled);
     const fleeOutcome = describeDisengageFlee(pd);
 

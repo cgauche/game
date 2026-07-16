@@ -1,19 +1,19 @@
 /**
- * Avancement par Points d'Expérience (PX) — Livre de base, « Carrières » (07) l.31-102.
+ * Avancement par Points d'Expérience (PX) — Livre de base, « Carrières » (LDB 07) l.35-109.
  *
  * Les Augmentations s'achètent UNE PAR UNE : le coût de la prochaine dépend du nombre déjà
- * acheté pour cette Caractéristique / Compétence (l.69, l.80). Toutes les valeurs sont copiées
- * VERBATIM du Tableau de Coût des Augmentations (l.45-62) — aucune invention.
+ * acheté pour cette Caractéristique / Compétence (LDB 07 l.47/80). Toutes les valeurs sont copiées
+ * VERBATIM du Tableau de Coût des Augmentations (LDB 07 l.51-70) — aucune invention.
  */
 import { Combatant, CharKey } from './types';
 import { CareerSlot, parseRefKey } from './careerSlots';
 import advancementCostsJson from '../data/advancementCosts.json';
 
 /**
- * Détection « in-carrière » (07-Carrières l.95) : une Augmentation est au coût standard si la
+ * Détection « in-carrière » (LDB 07 l.91) : une Augmentation est au coût standard si la
  * Caractéristique / Compétence / Talent est DISPONIBLE pour le héros — Caractéristiques et
- * Compétences des niveaux ≤ courant (l.67/78), Talents du niveau courant seul (l.100) ; sinon
- * le coût est doublé (Caractéristiques/Compétences) ou interdit (Talents, l.97).
+ * Compétences des niveaux ≤ courant (LDB 07 l.41-43/76), Talents du niveau courant seul (LDB 07 l.103) ; sinon
+ * le coût est doublé (Caractéristiques/Compétences) ou interdit (Talents, LDB 07 l.93).
  * Les Compétences/Talents passent par les EMPLACEMENTS de `careerSlots.ts` (spécialisations) ;
  * les Caractéristiques, sans spec, par `inCareerChar`. Libellés longs → clé via CHAR_LABELS.
  */
@@ -22,7 +22,7 @@ export function inCareerChar(careerChars: CharKey[], char: CharKey): boolean {
 }
 
 /**
- * Type d'une bande du Tableau de Coût des Augmentations (07-Carrières l.45-62).
+ * Type d'une bande du Tableau de Coût des Augmentations (LDB 07 l.51-70).
  * La bande = nombre d'Augmentations DÉJÀ achetées ; `max` est la borne haute INCLUSIVE de la bande.
  * `max: null` = bande FINALE « et au-delà » (capte tout excès — JSON n'a pas d'Infinity).
  * La donnée vit dans `src/data/advancementCosts.json` — ne pas éditer ici.
@@ -32,7 +32,7 @@ export interface AdvanceCostBand { max: number | null; char: number; skill: numb
 const ADVANCE_COST_TABLE: AdvanceCostBand[] = advancementCostsJson as AdvanceCostBand[];
 
 /** Coût en PX de la PROCHAINE Augmentation (la N+1ᵉ), `advancesAlready` = N déjà achetées.
- *  Hors carrière, le coût est DOUBLÉ (07-Carrières l.95). `discount` : « 5 PX de moins par
+ *  Hors carrière, le coût est DOUBLÉ (LDB 07 l.91). `discount` : « 5 PX de moins par
  *  Augmentation » des talents Maître artisan / Oreille absolue / etc. (LDB 10) quand la
  *  Compétence ajoutée est déjà incluse dans la Carrière — appliqué in-carrière seulement. */
 export function advanceCost(advancesAlready: number, kind: 'characteristic' | 'skill', inCareer = true, discount = 0): number {
@@ -42,7 +42,7 @@ export function advanceCost(advancesAlready: number, kind: 'characteristic' | 's
 }
 
 /** Coût en PX de la prochaine Augmentation de Talent : 100 + 100 × (Augmentations déjà achetées)
- *  pour ce Talent (07-Carrières l.102). 1ʳᵉ = 100, 2ᵉ = 200, 3ᵉ = 300. */
+ *  pour ce Talent (LDB 07 l.105). 1ʳᵉ = 100, 2ᵉ = 200, 3ᵉ = 300. */
 export function talentCost(timesAlready: number): number {
   return 100 * (timesAlready + 1);
 }
@@ -61,7 +61,7 @@ export function buyCharAdvance(hero: Combatant, char: CharKey, inCareer = true):
   if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
   hero.xp = (hero.xp ?? 0) - cost;
   hero.charAdvances = { ...(hero.charAdvances ?? {}), [char]: already + 1 };
-  hero.characteristics[char] += 1; // chaque Augmentation ajoute +1 (l.71)
+  hero.characteristics[char] += 1; // chaque Augmentation ajoute +1 (LDB 07 l.47)
   return { ok: true, cost };
 }
 
@@ -73,13 +73,13 @@ export function buySkillAdvance(hero: Combatant, skillId: string, spec: string |
   const cost = advanceCost(skill.advances, 'skill', inCareer, discount);
   if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
   hero.xp = (hero.xp ?? 0) - cost;
-  skill.advances += 1; // chaque Augmentation ajoute +1 au niveau de Compétence (l.82)
+  skill.advances += 1; // chaque Augmentation ajoute +1 au niveau de Compétence (LDB 07 l.80)
   return { ok: true, cost };
 }
 
 /** Achète UNE Augmentation de Talent (le crée à `times` 1 s'il est absent, sinon +1) si les PX
  *  suffisent. Identité STABLE par `talentId` + `spec` (déjà résolus par l'appelant ; jamais un
- *  libellé). Les Talents hors carrière ne sont pas achetables (l.97) et le Maxi doit être respecté
+ *  libellé). Les Talents hors carrière ne sont pas achetables (LDB 07 l.93) et le Maxi doit être respecté
  *  (LDB 10) — vérifiés par l'appelant (`talentMaxReached`) ; ici on applique le coût standard. */
 export function buyTalent(hero: Combatant, talentId: string, spec?: string): AdvanceResult {
   const existing = hero.talents.find((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''));
@@ -92,9 +92,9 @@ export function buyTalent(hero: Combatant, talentId: string, spec?: string): Adv
   return { ok: true, cost };
 }
 
-// ── Changer de Carrière (07-Carrières l.108-137) ──
+// ── Changer de Carrière (LDB 07 l.111-140) ──
 
-/** Nombre d'Augmentations requis pour COMPLÉTER un Niveau de Carrière (l.127-132 :
+/** Nombre d'Augmentations requis pour COMPLÉTER un Niveau de Carrière (LDB 07 l.126-131 :
  *  Niveau 1→5, 2→10, 3→15, 4→20). Le LDB de base ne tabule que jusqu'au Niveau 4. */
 export function careerCompletionAdvances(level: number): number {
   return 5 * level;
@@ -114,9 +114,9 @@ function slotRef(slot: CareerSlot, designations: Record<string, string>): { id: 
 }
 
 /**
- * Un Niveau de Carrière est complété si (l.125) : toutes les CARACTÉRISTIQUES DE LA CARRIÈRE
- * disponibles (cumul des niveaux ≤ courant, l.67) ont ≥ req Augmentations, AU MOINS 8 des
- * Compétences disponibles (cumul, l.78) ont ≥ req Augmentations, et le héros possède au moins
+ * Un Niveau de Carrière est complété si (LDB 07 l.124) : toutes les CARACTÉRISTIQUES DE LA CARRIÈRE
+ * disponibles (cumul des niveaux ≤ courant, LDB 07 l.41-43) ont ≥ req Augmentations, AU MOINS 8 des
+ * Compétences disponibles (cumul, LDB 07 l.76) ont ≥ req Augmentations, et le héros possède au moins
  * 1 Talent du Niveau COURANT. Un emplacement « (Au choix) » compte via sa spec DÉSIGNÉE
  * (un slot non désigné n'est pas tenu) — chaque libellé concret ne valide qu'un slot, garanti
  * par l'unicité des désignations (cf. careerSlots.designateSlot).
@@ -155,7 +155,7 @@ export function isCareerLevelComplete(
   });
 }
 
-/** Coût en PX d'un changement de Carrière : 100 si le Niveau actuel est COMPLÉTÉ, 200 sinon (l.120). */
+/** Coût en PX d'un changement de Carrière : 100 si le Niveau actuel est COMPLÉTÉ, 200 sinon (LDB 07 l.118). */
 export function careerChangeCost(completed: boolean): number {
   return completed ? 100 : 200;
 }

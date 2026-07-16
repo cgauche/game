@@ -70,7 +70,7 @@ describe('engine/healing — calculs DR (purs)', () => {
 });
 
 describe('engine/healing — mutateurs', () => {
-  it('applyHealWounds : +PB plafonné max, pose le flag, lève l’Inconscient quand on repasse >0 (LDB 18 l.28)', () => {
+  it('applyHealWounds : +PB plafonné max, pose le flag, lève l’Inconscient quand on repasse >0 (LDB 18 l.15)', () => {
     const t = hero({ id: 't', wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }, { name: 'a-terre', value: 1 }], roundsAtZero: 3 });
     applyHealWounds(t, 5);
     expect(t.wounds.current).toBe(5);

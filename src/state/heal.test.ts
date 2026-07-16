@@ -86,7 +86,7 @@ describe('Guérison — flux combat', () => {
     expect(useGame.getState().pendingHeal!.mode).toBe('bleed');
   });
 
-  it('soigner un allié Inconscient le relève une fois > 0 PB (LDB 18 l.28)', () => {
+  it('soigner un allié Inconscient le relève une fois > 0 PB (LDB 18 l.15)', () => {
     const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
     const ko = hero({ id: 'ko', wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }, { name: 'a-terre', value: 1 }], pos: { x: 2, y: 1 } });
     setBattle([doc, ko], 'doc');
@@ -222,7 +222,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(useGame.getState().medic).toBeNull();
   });
 
-  it('medicAct(bleed) hors combat : panse l’Hémorragie via l’infirmerie — Test de Guérison réussi retire l’État (LDB 09-Compétences l.261 / 16-États l.107-109), sans consommer le soin de Blessures de la rencontre', () => {
+  it('medicAct(bleed) hors combat : panse l’Hémorragie via l’infirmerie — Test de Guérison réussi retire l’État (LDB 09 l.261 / LDB 16 l.107-109), sans consommer le soin de Blessures de la rencontre', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const al = hero({ id: 'al', name: 'Saigné', conditions: [{ name: 'hemorragique', value: 2 }], skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });

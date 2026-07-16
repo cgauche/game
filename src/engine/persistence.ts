@@ -43,7 +43,7 @@ export function carryOverState(c: Combatant): {
     criticalWounds: c.criticalWounds ?? 0,
     dead: c.dead === true,
     outOfRencontre: c.outOfRencontre === true,
-    // Limite « 1 soin de Blessures par patient et par rencontre » (LDB 09-Compétences l.233) : le soin
+    // Limite « 1 soin de Blessures par patient et par rencontre » (LDB 09 l.260) : le soin
     // reçu en combat bloque un re-soin juste après ; remis à zéro au prochain startCombat.
     soinRencontreUtilise: c.soinRencontreUtilise === true,
     traumas: (c.traumas ?? []).map((t) => ({ ...t })),

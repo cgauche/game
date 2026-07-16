@@ -1,6 +1,6 @@
 /**
  * Modale de REPOS (state/restFlow) : offre par lieu/zone, choix PAR HÉROS (couchage + pitance,
- * orthogonaux), coût RAW (LDB ch.66), Exposition d'un campement (LDB 18 l.408-415). UNE NUIT comme
+ * orthogonaux), coût RAW (LDB ch.66), Exposition d'un campement (LDB 18 l.327-334). UNE NUIT comme
  * PLUSIEURS passent par une CHAÎNE de cascades séquentielles influençables (#347, `openRestNight`/
  * `continueRestNights`) — chaque jet = une étape, verrouillée à « Valider » avant le suivant, chaque
  * nuit reconstruite APRÈS que la précédente ait été validée (jamais de jet pré-résolu). Le moteur de

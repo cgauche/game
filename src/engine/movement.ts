@@ -5,7 +5,7 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 
 /**
- * Course (LDB 15-Déplacement l.79-82) : « vous pouvez utiliser votre Action pour courir. Vous avez
+ * Course (LDB 15 l.41) : « vous pouvez utiliser votre Action pour courir. Vous avez
  * besoin d'un Test d'Athlétisme Accessible (+20)… Vous pouvez courir sur une distance équivalente à
  * votre Mouvement de Course + DR ». On parcourt donc sa Marche (Mouvement) PLUS cette distance de course.
  *
@@ -25,7 +25,7 @@ export function resolveRun(
 }
 
 /**
- * Saut (LDB 15-Déplacement l.114-115). « Vous pouvez sauter de votre valeur de Mouvement/3 en mètres
+ * Saut (LDB 15 l.76). « Vous pouvez sauter de votre valeur de Mouvement/3 en mètres
  * SANS avoir à effectuer de Test. » Échelle du jeu = 2 m/case (précédent `resolveRun` : les mètres du
  * livre se convertissent en cases ÷2). Saut libre = `floor((M/3)/2)` = `floor(M/6)` cases.
  */
@@ -48,7 +48,7 @@ export function jumpNeedsTest(movement: number, tiles: number): boolean {
 }
 
 /**
- * Escalade — échelle ou surface facile (LDB 15-Déplacement l.52-55). « Le fait de grimper à une échelle,
+ * Escalade — échelle ou surface facile (LDB 15 l.55). « Le fait de grimper à une échelle,
  * ou sur une autre surface tout aussi facile, ne nécessite pas de Test mais va simplement vous ralentir.
  * Sur de telles surfaces, vous vous déplacez à la moitié de votre vitesse. » La Marche = 2×M mètres/Round →
  * la montée passive (½ vitesse) atteint `M` mètres avec le Mouvement d'un Round (ex. 4 m de Mouvement pour
@@ -81,7 +81,7 @@ export function surfaceClimbImpossible(requiresGrimpeur: boolean, hasGrimpeur: b
 }
 
 /**
- * Coût en CASES de Mouvement pour gravir `metres` de hauteur à la MOITIÉ de la vitesse (LDB 15 l.53 :
+ * Coût en CASES de Mouvement pour gravir `metres` de hauteur à la MOITIÉ de la vitesse (LDB 15 l.55 :
  * « vous vous déplacez à la moitié de votre vitesse »). Une case = `metresPerTile` m ; à ½ vitesse,
  * franchir `metres` de dénivelé dépense `2·metres` de budget de Marche, soit `2·metres/metresPerTile`
  * cases (arrondi supérieur — un dénivelé entamé coûte une case pleine). Pur.
@@ -111,7 +111,7 @@ export function resolveSurfaceClimb(
 }
 
 /**
- * Chute VOLONTAIRE — « à dessein » (LDB 15-Déplacement l.82) : « vous pouvez tenter un Test d'Athlétisme
+ * Chute VOLONTAIRE — « à dessein » (LDB 15 l.82) : « vous pouvez tenter un Test d'Athlétisme
  * Accessible (+20) afin de réduire les Dégâts reçus. Pour chaque DR, considérez que vous tombez de 1 m de
  * moins. Si vous parvenez à réduire votre distance de chute à 0 ou moins, vous ne subissez aucun Dégât de
  * chute. » Renvoie la hauteur EFFECTIVE de chute (à passer à `applyFall`) après réduction ; seul un DR

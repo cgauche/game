@@ -142,12 +142,8 @@ Hors Combat, la mesure du temps des actions est **bien plus flexible**. Mais il 
 
 **Voir aussi** : Surprise et État Surpris ; Effectuer votre Tour (Action + Mouvement) ; Tests et Degrés de Réussite (DR) ; Tests opposés ; Tests étendus ; Talents affectant l'ordre de combat (Combat instinctif).
 
-**Implémente** :
-- `initiativeOrder` (`src/engine/combat.ts`) — tri par Initiative décroissante puis départage par Agilité (`LDB 13 l.31`, 1er niveau). Le **2e niveau de départage (Test opposé d'Agilité)** n'est `(non implémenté)` : en cas d'égalité Initiative + Agilité, l'ordre suit l'ordre de tri stable, sans Test.
-- `rollInitiative` (`src/state/combatSetup.ts`) + règle maison `combat-init-method` (`src/engine/policy.ts`, label « Méthode d'Initiative », `ref: 'LDB 13 l.37'`) — implémente les variantes de tirage : `roll-i` (DÉFAUT) = 1d10 + Initiative (`LDB 13 l.40`) ; `roll-bi` = 1d10 + Bonus d'Initiative + Bonus d'Agilité (`LDB 13 l.42`) ; `fixed-i` = Initiative fixe sans dé (= méthode statique, ordre stable d'un Round à l'autre). La variante **« Test d'Initiative → DR »** (`LDB 13 l.39`) n'a pas de cas dédié `(non implémenté)`. Le talent Combat instinctif (+10 × niveau) est toujours ajouté via `talentInitiativeBonus`.
-- `startCombat` (`src/state/combatSlice.ts`) — fixe `c.initiative = rollInitiative(...)` pour chaque combattant, puis bâtit `BattleState.order` / `baseOrder` via `initiativeOrder` (les armes Lentes frappent toujours en dernier). `BattleState.round` démarre à 1.
-- Système de Round (début/fin, frontières, pré-emption) : `resolveRoundBoundary`, `roundHooks.ts`, `turnHooks.ts`, `pendingRoundStart` / `confirmRoundStart` (`src/state/combatSlice.ts`, `src/state/combat/`). L'option « relancer l'Initiative à chaque Round » (`LDB 13 l.47`) n'est pas exposée : l'ordre est figé au démarrage (`baseOrder`) `(non implémenté)`.
-- Tests étendus (Rounds hors combat) : `useExtendedTestJetProps` (`src/ui/jetProps/`), couverts par `src/state/extended-test.test.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.11-15, l.19-29, l.31, l.33, l.37-42, l.43, l.46-47, l.50) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `OPTIONAL_RULES`, `pickDoctrine`, `applySurprise`, `EncounterDef`, `initiativeOrder`, `applySteamBreakdown`, +2 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSetup.ts`, +5 fichiers
 
 ---
 
@@ -213,7 +209,11 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 
 **Voir aussi** : États (Surpris, À terre, Inconscient, Fatigué), Détermination et Résilience, Tests opposés, Initiative et déroulement d'un Round, Perception / Discrétion, Talent Vigilance.
 
-**Implémenté** : `src/state/combatFlow.ts` — `applySurprise(get, set, surprisedSide)` (Test cadence-aware Perception : Vigilance via `testFlow` puis Test opposé `perception` Intermédiaire ; vaincu → op `condition` `COND.surpris`) ; retrait après la première attaque standard (`removeCondition(target, COND.surpris)` ligne ~1085). `src/engine/conditions.ts` — `meleeAttackerBonus` (+20 si `COND.surpris`, non-cumul), `cannotDefend` (Surpris ⇒ pas de défense en Test opposé), dissipation fin de Round (`COND.surpris`). `src/state/combatSlice.ts` — `startCombat(..., { noSurprise })` déclenche `applySurprise` selon `enc.surprise`. `src/state/scene.ts` — `Encounter.surprise?: 'party' | 'enemies'`. `src/data/etats.json` — entrée `surpris` (source LDB p. 169). Dépense de Détermination « Retirer un État » : voir flux Détermination (`src/state/rollFlows.ts` / `DeterminationButton`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `OPTIONAL_RULES`, `pickDoctrine`, `applySurprise`, `EncounterDef`, `initiativeOrder`, `createCombatSlice`, +2 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSetup.ts`, +5 fichiers
+- `LDB 16` (l.132-139) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `chooseEnemyAction`, `resolveAttack`, `applyAttackResult`, +1 — `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
+- `LDB 17` (l.61) → `RenounceModal`, `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `gainCorruption`, `HouseRuleRow`, `useAttackJetProps`, `EnemyAction`, `useTestJetProps`, +26 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +20 fichiers
+- sans code : `NADAJ 5` (l.117), `NADAJ 6` (l.148)
 
 ---
 
@@ -297,11 +297,9 @@ Pour votre **Action**, vous pouvez vous mettre **Sur la Défensive** : choisisse
 
 **Voir aussi** : Structure d'un Round et Initiative ; Surprise et État Surpris ; Attaquer (toucher, localisation, dégâts) ; Avantage en combat ; Déplacement détaillé (Saut, Escalade, Fuite, Poursuite) ; Engagé et Corps à corps.
 
-**Implémente** :
-- Posture Sur la Défensive : `Combatant.defensiveStance` posée par `battleDefendTotal` (consomme l'Action ; +20 aux Tests de défense), expiration au début du tour suivant dans `src/state/combatFlow.ts` (réinit `newActive.defensiveStance = false`, l.3380) — gardes RAW couvertes par `src/state/combat-optional-rules.test.ts` (« combat-defensive-stance — Action « Sur la Défensive » (LDB 13 l.118) ») et `src/state/l13-gates.test.ts`.
-- Charge / +1 Avantage : `chargeAdvantage()` et `engage`/`isEngaged`/`reachTiles` dans `src/engine/engagement.ts`, consommés par `src/state/combatFlow.ts` (preview `attackPending`, dest de charge via `mountMovement`).
-- Mouvement au Tour (Marche/Course, budget) : `mountMovement` / `movementRemaining` / `canMove` (`src/state/mount.ts`) et le compteur `battle.movementUsed` dans `src/state/combatFlow.ts` (`freeMoveTiles`, charge plein-Mouvement) ; Course / Athlétisme +20 via le flux de jet (`src/state/rollFlows.ts`).
-- Difficulté par défaut : baseline **Intermédiaire (+0)** du moteur de Tests (`src/engine/tests.ts`), aucun bonus de difficulté appliqué tant que la situation n'en précise pas.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.14-15, l.74-88, l.90, l.93-98, l.105-107, l.108-110, l.117-119, l.170-171) → `ClimbPlan`, `useDefenseJetProps`, `secondsPerRound`, `engage`, `entityBlockedAt`, `useHoverTargeting`, `decayEngagement`, `BattleState`, `OPTIONAL_RULES`, `pickDoctrine`, +17 — `src/engine/engagement.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, +11 fichiers
+- `LDB 15` (l.3-4, l.12-16, l.18-32, l.34-42, l.44-54) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `reachTiles`, `RunModal`, `FOOTPRINT_SIDE`, `DisengageModal`, `EntityToken`, `gainAdvantage`, `planClimb`, +31 — `src/data/index.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/movement.ts`, `src/engine/traits/dispatch.ts`, +20 fichiers
 
 ---
 
@@ -443,7 +441,11 @@ Enfoncer une porte (ou fenêtre…) se résout par un **Test de Corps à corps (
 
 **Voir aussi** : Critiques et Maladresses (Tableau des Oups !) ; Avantage et Charge ; Tests opposés et Degrés de Réussite ; États (*À Terre*, *Surpris*, *Engagé*) ; Caractéristiques d'armes (Dégâts d'Arme, traits Pistolet/Inoffensive) ; Armures et Points d'Armure ; Tirer dans un combat au Corps à corps ; Combat monté ; Bestiaire (Tableaux de Localisation par forme).
 
-**Implémente** : `src/engine/combat.ts` — `hitLocation` / `hitLocationByShape` (Tableau de Localisation verbatim, lignes 41-62), `reverseRoll` (inversion du dé, ligne 31), `woundsFromHit` (PB perdus = Dégâts − BE − PA, `Math.max(1, …)` pour le plancher 1, lignes 394-405), `resolveAttack` (Test opposé CC / Test Projectiles, `damage = Dégâts d'Arme + DR`, attribution +1 Avantage, déclenchement Critique + Blessure critique, lignes ~818-876), `canFireWhileEngaged` (trait Pistolet, lignes 408-412). La résolution du Test opposé, l'attribution d'Avantage et l'enchaînement des modales sont pilotés par les flux dans `src/state/combatFlow.ts` et `src/state/rollFlows.ts` (specs `attack`/`defense`). L'exception « objets inanimés / minimum 1 » d'EDO n'est pas un chemin de code distinct (les cibles sont des `Combatant`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.4, l.113-118, l.122-129, l.132-147, l.150-153, l.156-163, l.166-167, l.170-171, l.174-175) → `useDefenseJetProps`, `secondsPerRound`, `engage`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `decayEngagement`, `Condition`, `BattleState`, `OPTIONAL_RULES`, +15 — `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, +12 fichiers
+- `LDB 14` (l.37-53, l.65-115, l.130-140, l.142-165) → `SceneCombatMods`, `schema`, `GrappleModal`, `OupsMisfireEntry`, `isFumble`, `areGrappling`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, +52 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/oups.ts`, +29 fichiers
+- `LDB 16` (l.15-17) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `meleeAttackerBonus`, `StatusData` — `src/data/index.ts`, `src/engine/conditions.ts`
+- sans code : `EDO 11` (l.86-101)
 
 ---
 
@@ -494,7 +496,8 @@ Ce tableau est celui des cibles à **forme humanoïde** (bipède). Les créature
 
 **Voir aussi** : Toucher et Test opposé de Corps à corps · Dégâts et Points de Blessure (BE + PA de la zone) · Localisation visée / attaque Complexe · Tableaux de Localisation alternatifs (Bestiaire : serpentin, arachnéen, monture)
 
-**Implémente** : `src/engine/combat.ts` — `reverseRoll(r)` (inversion dizaines↔unités, « 00 → 100 ») et `hitLocation(reversed)` (`<=9` tete · `<=24` brasG · `<=44` brasD · `<=79` corps · `<=89` jambeG · sinon jambeD), bornes byte-identiques au tableau VF ; `hitLocationByShape(reversed, shape)` ré-route vers `hitLocation` pour les formes `humanoide`/`quadrupede`/`oiseau` et applique des tableaux distincts pour `serpent`/`araignee`. La pénalité de coup ciblé est appliquée dans `attackModifiers` (`{ label: 'Localisation visée', value: -10 }`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.133, l.135, l.137-145, l.147, l.153, l.159) → `useDefenseJetProps`, `engage`, `useHoverTargeting`, `useAttackJetProps`, `Condition`, `FLOWS`, `attackEnv`, `chooseEnemyAction`, `outOfSightTargetIds`, `rangedDefenseModes`, +5 — `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, `src/engine/types.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, +6 fichiers
 
 ---
 
@@ -710,11 +713,13 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 
 **Voir aussi** : Blessures critiques (Tableaux complets) ; Traumatisme (fractures, déchirures, amputations) ; Localisation et Tableau de Localisation ; Test opposé et Degrés de Réussite ; Atouts d'arme (Empaleuse, Percutante, Perforante) ; Armures et PA (Déviation Critique) ; Mort et Destin ; États (Hémorragique, Sonné, Aveuglé, À Terre, Inconscient).
 
-**Implémenté** :
-- `src/engine/combat.ts` — déclenchement du Critique : `const critical = atk.isDouble && atk.success;` puis propagé dans `applyHit` (`isCritical = critical || empale;`) ; sur une touche, `res.cleave` est posé si l'attaquant est plus grand OU `swarm` (`sizeGap(...) >= 1`) — base de la Frappe Mortelle de Taille.
-- `src/engine/critical.ts` + `src/data/criticals.ts` (`CRITICAL_TABLES`, `CritEntry`) — résolution d'un Coup Critique sur les **tables LDB** (localisation par 2ᵉ d100, PB ignorant BE+PA, modificateur −20 d'overkill `LDB 18 l.17`, États/Traumatismes/Amputations). Les **tables alternatives d'*Aux Armes*** ne sont **pas** implémentées (le moteur utilise le système LDB).
-- `src/state/combatFlow.ts` — **Frappe Mortelle** : `autoCleave` / `cleaveTargets` (commentés `LDB 14 l.6-7`), boucle limitée à **BCC** (`bcc = bonus(effectiveChar(attacker, 'CC'))`), déplacement sur la case de la cible tuée, poursuite **uniquement en tuant** pour le mode option (`if (fm && !killed) break;`) vs enchaînement sur simple touche pour la Taille/Nuée. L'option est gardée par la règle maison `rule('combat-frappe-mortelle')`.
-- *Aux Armes* « +10 par Blessure au-delà de 0 » et tables alternatives `(non implémenté)`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.137-145, l.183) → `useAttackJetProps`, `FLOWS`, `rangedDefenseModes`, `applyAttackResult` — `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/rollFlowSpecs.ts`, `src/ui/jetProps/useAttackJetProps.tsx`
+- `LDB 14` (l.3, l.4, l.6-7, l.9) → `OPTIONAL_RULES`, `cleaveAffordance`, `AttackResult`, `PendingCleave`, `PendingBladeTrap`, `GameState`, `applyOpposedCritical`, `applyAttackResult`, `createCombatSlice`, `applyOups`, +3 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, `src/state/store.ts`, +1 fichiers
+- `LDB 18` (l.17, l.41, l.53-55, l.56-187) → `critEscalationSchema`, `isHealable`, `outOfCombatUpkeep`, `CritEscalation`, `HealWoundsOptions`, `applyHealWounds`, `resolveAACritical`, `critWoundLocation`, `aaBleedUnconsciousApply`, `rollCritical`, +24 — `src/data/criticals.ts`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/combat.ts`, +13 fichiers
+- `LDB 63` (l.29-32) → `describeReload`, `firedAttackBlock`, `GameOp`, `ActiveEffect`, `PendingDeviation`, `deviatableArmourAt`, `FLOWS`, `deflectCrit`, `applyOpposedCritical`, `applyAttackResult`, +1 — `src/engine/items.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/flowOutcomes.ts`, `src/state/pendings.ts`, +1 fichiers
+- `AA 7` (l.82-104) → `CritEscalation`, `resolveAACritical` — `src/data/criticals.ts`, `src/engine/aaCritical.ts`
+- sans code : `AA 7` (l.25-79), `EDO 11` (l.237-240), `Ubersreik 5` (l.24), `NADAJ 8` (l.263)
 
 ---
 
@@ -796,7 +801,11 @@ Le « Lancer pour Toucher » de Corps à corps étant un Test opposé, le **déf
 
 **Voir aussi** : Critiques et Blessures critiques (succès + double) ; Tests Opposés et Degrés de Réussite ; Atouts et Défauts d'arme (Dangereuse, Poudre noire, Dévastatrice, Recharge) ; Traumatisme (Déchirure musculaire) ; États (Sonné) ; Incantation Imparfaite et Colère des dieux (la « Maladresse » magique).
 
-**Implemente** : `src/engine/oups.ts` — `isFumble(roll, success)` (échec + `isDoubleRoll`, `src/engine/tests.ts`), `rollOups(weapon, rng)` (priorité Incident de Tir : `isFirearm` + jet pair → `kind:'misfire'`, sinon `findTableEntry` sur `OUPS_TABLE`). Table verbatim en donnée éditable : `src/data/oups.json` (7 entrées, `kind` discriminé) chargée par `src/data/oups.ts` (`OUPS_TABLE`/`OupsKind`). Défaut Dangereuse : `dangerousNine(weapon, roll, success)` dans `src/engine/qualities/dispatch.ts` (cap `fumboOn9`), `isFirearmQuality` (cap `firearm`). Détection en combat : `attackerFumbled`/`defenderFumbled` dans `src/state/combatFlow.ts` (`isFumble(...) || dangerousNine(...)`) ; résolution des conséquences (cas `misfire` → `woundsFromHit` au Bras principal + `wearActiveWeapon(...,true)` destruction ; autres `kind` du Tableau) ; Maladresse d'un héros poussée en étape de cascade `fumbleJet` (`useFumbleJetProps.tsx`, `CascadeModal.tsx`), d'un ennemi résolue d'office (`resolveEnemyFumble`). Tests : `src/engine/oups.test.ts`, `src/engine/qualities/weapon-qualities-lot-a.test.ts` (bloc « Dangereuse … LDB 63 l.3-3 »).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.127, l.178-183, l.184) → `useDefenseJetProps`, `engage`, `useHoverTargeting`, `useAttackJetProps`, `decayEngagement`, `OPTIONAL_RULES`, `FLOWS`, `attackEnv`, `chooseEnemyAction`, `outOfSightTargetIds`, +7 — `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, +6 fichiers
+- `LDB 14` (l.8-15, l.18-19, l.29-34) → `schema`, `OPTIONAL_RULES`, `cleaveAffordance`, `AttackResult`, `PendingCleave`, `PendingBladeTrap`, `GameState`, `applyOpposedCritical`, `applyAttackResult`, `inFiringBand`, +6 — `src/data/oups.json`, `src/data/schemas/defs/oups.ts`, `src/engine/combat.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
+- `LDB 62` (l.98-104) → `src/data/weaponGroups.json`
+- `LDB 63` (l.2-3, l.13-14) → `applyAttackResult` — `src/state/combatFlow.ts`
 
 ---
 
@@ -963,16 +972,11 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 
 **Voir aussi** : Tests opposés et Degrés de Réussite ; Localisation et Dégâts (étapes 2-4 de l'attaque) ; États (_Engagé_, _Inconscient_, _Surpris_, _À Terre_) ; Atouts et Défauts d'arme (Pistolet, Protectrice, Recharge) ; Portées et statistiques des armes à distance ; Psychologie (Peur −10 au tir).
 
-**Implémente** :
-- `src/engine/combat.ts` :
-  - `canFireWhileEngaged(weapon)` — Atout Pistolet : seule arme à distance pouvant tirer en étant Engagé/au contact (`LDB 62 l.283-284`).
-  - `rangedDefenseModes(attacker, defender, weapon, distanceTiles, los)` / `bestRangedDefense(...)` — modes de défense RAW autorisés contre un tir : Parade si **tireur Engagé** (`l.70`, « n'importe quelle Corps à corps ») ou **Protectrice 2+ en Ligne de Vue** (`LDB 62 l.296`), Esquive si **Bout portant** (`l.62`) ; `[]` par défaut (tir non opposé, `LDB 13 l.125`).
-  - `crowdMod(group)` — **Tirer dans le tas** (3-6 → +20, 7-12 → +40, 13+ → +60, `l.81/86/89`).
-  - `rangeBandModifier` / `rangeBandName` + `RANGE_BANDS` — bandes de portée Bout portant +60 / Courte +40 / Moyenne +0 / Longue −10 / Extrême −30 (échelle 1 case = 2 m).
-  - `helplessTest(atk, kind)` — **Cible Sans Défense / Inconscient** : auto-succès + Critique (et tir à bout portant), appelé dans `resolveRanged`/`resolveMelee` (`l.143` ; LDB 16 l.113).
-  - `attackModifiers(...)` — Taille de la cible au tir (`SIZE_RANGED_MOD`, `l.151-170`), Viser +20, Localisation visée −10, Nuée +40.
-  - `resolveRanged(...)` / `rollRangedAttacker` / `finishRanged` — résolution du tir (non opposé par défaut, opposé si défense RAW autorisée) ; rejette « cible hors de portée » au-delà de Portée×3.
-- `(non implémenté)` — l'**Option : Tirer Dans Un Combat au Corps À Corps** (`LDB 14 l.126-129`, pénalité −20 puis redirection du tir vers un adversaire au hasard de la cible) n'est pas modélisée comme telle ; seul *Tirer dans le tas* (`crowdMod`) l'est.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `BattleState`, `OPTIONAL_RULES`, `FLOWS`, `attackEnv`, `chooseEnemyAction`, `ActionBar`, +7 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +7 fichiers
+- `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-113, l.120-124, l.126-129, l.131, l.135, l.137-138, l.142-165, l.181-184) → `SceneCombatMods`, `schema`, `GrappleModal`, `OupsMisfireEntry`, `isFumble`, `areGrappling`, `setGrapple`, `scatter`, `combatOrder`, `effectiveSize`, +55 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/oups.ts`, +32 fichiers
+- `LDB 16` (l.113) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `AttackResult`, `incomingMeleeAdvantage`, +11 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/state/combat/hitModifiers.ts`, +5 fichiers
+- `LDB 62` (l.201, l.204-215, l.283-285, l.295-296) → `reachTiles`, `pushBackTiles`, `BladeTrapHook`, `acceptableSpecs`, `protectriceAP`, `canPushback`, `hasBladeTrap`, `hitModifiers`, `DamageStepCtx`, `OPTIONAL_RULES`, +23 — `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/qualities/dispatch.ts`, +12 fichiers
 
 ---
 
@@ -1081,14 +1085,10 @@ Règle optionnelle pour le tir sur une cible déjà _Engagée_ avec un (ou des) 
 
 **Voir aussi** : Difficultés des Tests (général) — bandes Très Facile +60 → Très Difficile −30, paliers extrêmes EDO −40/−50, Échec / Réussite automatiques (01-05) ; Localisation et calcul des dégâts en combat ; Portées des armes et bandes de distance ; Avantage en combat ; États (À Terre, Surpris, Inconscient) ; Combat monté ; Combat à deux armes (main secondaire −20) ; Psychologie en combat (Calme vs Terreur — cas-type des Difficultés extrêmes EDO).
 
-**Implémente** :
-- `src/engine/combat.ts` — `outnumberMod(attackers)` (2 → +20, ≥3 → +40), `crowdMod(group)` (3-6 → +20, 7-12 → +40, 13+ → +60), `combineMods(mods)` (plafonds bonus/malus via les règles optionnelles `combat-diff-cap-bonus`/`combat-diff-cap-malus`, défauts +60/−30 ; lignes `uncapped` hors plafond), `attackModifiers(...)` (Taille de la cible au tir, Localisation visée −10, main secondaire, flanc/dos via `env`), `weaponReachPenalty(...)` (Allonge supérieure −10, règle `combat-weapon-reach`).
-- `src/engine/size.ts` — `SIZE_RANGED_MOD` (table Minuscule −30 → Monstrueuse +60), `SIZE_LABEL`, `SIZE_ORDER`, `effectiveSize` (défaut Moyenne), `sizeGap`.
-- `src/engine/policy.ts` — règles `combat-diff-cap-bonus` / `combat-diff-cap-malus` (plafonds optionnels de Combinaison des Difficultés ; `ref: 'LDB 14 l.119'`), `combat-ranged-melee-penalty` (`ref: 'LDB 14 l.126'`).
-- `src/engine/types.ts` — `Difficulty` / `DIFFICULTY_MODIFIERS` / `DIFFICULTY_LABELS` couvrent les 7 bandes Très Facile +60 → Très Difficile −30. Les paliers extrêmes EDO **Presque Impossible (−40)** et **Impossible (−50)** ne sont **pas** définis dans ce type `(non implémenté)` ; le plafond de combinaison à −50 et les règles d'Échec / Réussite automatiques associées sont donc également `(non implémenté)`.
-- `src/state/combatFlow.ts` — assemblage de l'environnement d'attaque : `outnumberMod` appliqué selon le nombre d'alliés au contact (≤1 case) de la cible, flanc/dos +20, Taille de la monture, couvert/obscurité/météo/mouvement, « Tir dans la mêlée » −20 (règle optionnelle `combat-ranged-melee-penalty`) remplacé par `crowdMod` si « tir dans le tas ».
-- `src/state/combat/roundHooks.ts` — hook `outnumbered` (`phase: 'roundBoundary'`) : un combattant avec ≥ 2 ennemis Engagés perd 1 Avantage en fin de Round (LDB 14 l.140).
-- `src/engine/outnumber.test.ts`, `src/engine/combat-combine.test.ts`, `src/state/combat-optional-rules.test.ts` — couverture des trois règles.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.117-118) → `useDefenseJetProps`, `entityBlockedAt`, `useHoverTargeting`, `OPTIONAL_RULES`, `FLOWS`, `attackEnv`, `chooseEnemyAction`, `ActionBar`, `resolveAttack`, `outOfSightTargetIds`, +3 — `src/engine/policy.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/rollFlowSpecs.ts`, +4 fichiers
+- `LDB 14` (l.57-115, l.119-124, l.126-129, l.130-131, l.133-138, l.139-140, l.142-165) → `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `isFumble`, `areGrappling`, `schema`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, +50 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/oups.ts`, +29 fichiers
+- sans code : `EDO 11` (l.157-166), `NADAJ 6` (l.148)
 
 ---
 
@@ -1193,14 +1193,9 @@ Notes mécaniques par arme (`AA 08 l.228-260`) :
 
 **Voir aussi** : Maniement de deux armes (talent, LDB 10) ; Armes (Atouts/Défauts : Inoffensive, Déstabilisante, Empaleuse, Déséquilibrée, Assommante, Enchevêtrement) ; États (Empêtré, Engagé) ; Combat à distance (Projectiles/Lancer, portées) ; Désarmer (talent).
 
-**Implemente** :
-- Main secondaire −20 : `src/engine/combat.ts` (`weapon.hand === 'off'` → push `{ label: 'Main secondaire', value: p }`) via `src/engine/combatFeatures/dispatch.ts` (`offHandPenalty`, déclaratif `offHandPenalty:{perLevel,zeroAt}`, Ambidextre → −10/0).
-- Attaquer avec les deux armes : sous-flux « Des deux armes » du talent **Maniement de deux armes** dans `src/state/combatFlow.ts` (`dualStrikeTargets`, jet inversé `reverseRoll(mainRoll)`, `deferAttackerAdvantage`, `dualStrikeDefensePenalty` = −10 défensif jusqu'au prochain Tour) ; scénario de recette `src/scenes/test-scenarios/entrainement.ts` (sandbox). NB le code cite `LDB 10 l.774` (talent) ; l'Atlas cite la règle de base `LDB 14`.
-- Mains nues : `src/engine/items.ts` (`unarmedWeapon`, `builtinId:'mains-nues'`, `isUnarmed`, +BF+0/Personnelle/Inoffensive ; repli si les deux mains sont perdues).
-- Armes de Bagarre (AA) : données dans `src/data/trappings.json` (`coup-de-poing`, `gaffe`, `gantelet-a-pointes`, `gantelet-verrouille`, `lacet-etrangleur`, `matraque`) + rendus rig `src/gameIso/rig/parts/weapons/defs/` (`poing.ts`, `gaffe.ts`, `gantelet_pointes.ts`, `gantelet_verrouille.ts`, `lacet_etrangleur.ts`).
-- **Empoignade** (option déclarée à mains nues, brisure/Test de Force, dommages PA-ignorés) : `(non implémenté)` — seul l'État `empetre` et sa récupération existent (`src/state/combatSlice.ts battleRecoverState`, `src/state/ai.ts`), pas l'action Empoignade joueur.
-- **Dispersion** (1d10 → direction/2d10 m / à vos pieds / aux pieds de la cible sur échec de Lancer) : `(non implémenté)`.
-- Effet spécial du **Gantelet verrouillé** (conserve l'objet, −20 transitoire au lieu de lâcher) : `(non implémenté)` — l'objet existe comme donnée mais sa règle anti-lâcher n'est pas câblée.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 14` (l.101-115, l.139, l.140, l.151, l.159, l.172-180, l.181-184, l.185-199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `ActiveFrame`, `setGrapple`, `scatter`, `combatOrder`, `effectiveSize`, `grappleTierMod`, +46 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, +30 fichiers
+- sans code : `LDB 10` (l.774), `AA 8` (l.224-261)
 
 ---
 
@@ -1278,7 +1273,9 @@ L'Empoignade fonctionne entièrement via l'État _Empêtré_ infligé. Sa défin
 > « Vous ignorez tous les PA car vous ne faites qu'effectuer des clefs de bras tout en tirant sur les muscles. » — `LDB 14 l.163`
 
 **Voir aussi** : Combat à mains nues (Bagarre), État Empêtré, Avantage, Tests opposés et Degrés de Réussite (DR), Localisation (dé inversé), Combat monté, Trait Constriction.
-**Implemente** : sous-système Empoignade `(non implémenté)` — il n'existe ni flux ni manœuvre « grapple/Empoignade » (rien dans `src/state/rollFlows.ts`, `src/data/maneuvers.json`, ni `src/engine/ops.ts` ; aucun symbole grapple/empoign). Seul l'**État résultant** est modélisé : `empetre` dans `src/data/etats.json` (texte canon, dont le retrait par Test opposé de Force +1/DR) et son traitement dans `src/engine/conditions.ts`. Le trait `Constriction` (`src/data/traits.json`) renvoie à l'Empoignade dans sa description mais n'en implémente pas la procédure.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 14` (l.155, l.159, l.161, l.163, l.185-186, l.188-189, l.191, l.193, l.195, l.197, l.199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `ActiveFrame`, `setGrapple`, `scatter`, `combatOrder`, `effectiveSize`, `grappleTierMod`, +33 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, +25 fichiers
+- `LDB 16` (l.62, l.86-87) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `PendingStateRecovery`, `describeStateRecovery`, +20 — `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +12 fichiers
 
 ---
 
@@ -1354,7 +1351,11 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 
 **Voir aussi** : Charge et Mouvement (LDB 15) ; Taille des créatures et Frappe Mortelle (LDB 85) ; Talents de Chevaucher ; Peur et Terreur (Psychologie) ; Compétence Chevaucher.
 
-**Implémente** : module dédié `src/state/mount.ts` — appairage cavalier↔monture (`mountUp`/`dismount`/`canMount`), `mountMovement` (l.215), `mountedAttackMods` (le +20 « cible plus petite que la monture » l.217 et le -10 « cibler le cavalier en mêlée » l.219, via `sizeGap`), `mountedDodgePenalty` (-20 sauf `acrobaties-equestres`, l.225), `sweepDismountDeaths`/`handleMountDeath` (mort de la monture → désarçonnement). La charge montée (l.223) passe par `dmgProxy` (Bonus de Force + Taille de la monture) dans `src/engine/combat.ts` (`resolveAttack`, l.828-833), qui réutilise la règle de Taille (`cleave`/Frappe Mortelle via `sizeGap`). UI : `src/ui/MountTargetModal.tsx`, `src/gameIso/MountedToken.tsx` / `src/gameIso/rig/mountedRig.ts`. Tests : `src/state/mount.test.ts`, `src/state/mount-combat.test.ts`. Le Trait `nerveux` (l.221) est en donnée (`src/data/traits.json`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 10` (l.151-154) → `MedicState`, `surgeryNext`, `MedicModal`, `PendingSurgery`, `FLOWS` — `src/state/medicFlow.ts`, `src/state/pendings.ts`, `src/state/rollFlowSpecs.ts`, `src/ui/MedicModal.tsx`
+- `LDB 14` (l.142-165, l.182, l.183, l.204-205, l.207, l.209, l.211, l.213, l.215, l.217) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `ActiveFrame`, `isControlledMount`, `setGrapple`, `RunModal`, `scatter`, `combatOrder`, +55 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, +31 fichiers
+- `LDB 85` (l.110, l.248-250, l.357-362) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `availableAttacks`, `PendingManeuver`, `ManeuverDef`, `FLOWS`, `GameState`, `ManeuverDefenseFreeze`, `createCombatSlice`, +3 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, +5 fichiers
+- sans code : `LDB 10` (l.72-74), `LDB 15` (l.1)
 
 ---
 
@@ -1428,13 +1429,9 @@ Le **Bras de fer** est un Test opposé **étendu** de **Force Intermédiaire (+0
 
 **Voir aussi** : Charge et déplacement en combat ; Se désengager (Esquive / Fuir) ; Surprise et embuscade ; Tests opposés et Degrés de Réussite ; Psychologie (Peur, Terreur, Calme) ; Traits de créature (Redoutable, Rage, Instable).
 
-**Implémente** :
-- Plafond et gain centralisé : `src/engine/advantage.ts` (`advantageCap`, `advantageCapFor` — plafond fixe via policy `combat-advantage-cap`, ou Bonus d'Initiative via `combat-advantage-cap-bi` ; `gainAdvantage(c, n)` clampe au plafond — source unique de gain héros+ennemis).
-- Règles optionnelles de plafond : `src/engine/policy.ts` (`combat-advantage-cap` réf. `LDB 15 l.2`, défaut 10 ; `combat-advantage-cap-bi` réf. `LDB 15 l.2`).
-- Bonus +10/pion (Combat) : `src/engine/combat.ts` (`attackerMods`/`defenderMods` : `adv = attacker.advantage * 10`, ligne marquée `uncapped: true` ; `combatTestPenalty(c) = c.advantage * 10 + …`). Incantation : `src/state/combatFlow.ts` (`advMod = 10 * (caster.advantage ?? 0)`). Psychologie : champ `advantage` consommé via `src/engine/psychology.ts` / flux psych.
-- Gains : Charge → `src/engine/engagement.ts` (`chargeAdvantage`) ; cible Sonnée → `applySonneMeleeAdvantage` (`combatFlow.ts`) ; Test opposé gagné en mêlée → `combatFlow.ts` (`gainAdvantage(attacker/target)` selon `res.advantageTo`) ; bouclier/Voler l'avantage → `shieldAdvantageLevel`/`hasStealAdvantage` (`combatFeatures/dispatch.ts`).
-- Pertes : perte d'une Blessure → `target.advantage = 0` (`combatFlow.ts:1337`) ; Test opposé échoué → remise à 0 ; **aucun gagné ce Round → −1** (`resolveRoundBoundary`, `combatFlow.ts:3414` via `gainedAdvThisRound`) ; **infériorité numérique → −1** (hook `outnumbered`, `src/state/combat/roundHooks.ts`) ; fin de combat → réinitialisation au spawn (`src/state/spawn.ts`, `advantage: 0`) ; sacrifice au désengagement → `disengageConfirm`/`disengageFlee` (`combatSlice.ts`).
-- Trait **Redoutable** : présent en **donnée** (`src/data/frenchy-traits.json` id `redoutable`, description verbatim ; assigné à de nombreuses créatures de `creatures.json`) mais **le minimum d'Avantage par tour n'est PAS câblé dans le moteur** — `(non implémenté)` (aucun hook `turnStart` ne force l'Avantage à l'Indice de Redoutable).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 15` (l.2, l.3-5, l.10, l.37, l.40) → `METRES_PER_LEVEL`, `resolveRun`, `RunModal`, `DisengageModal`, `gainAdvantage`, `verticalTiles`, `chargeAdvantage`, `describeRun`, `PendingAttack`, `createCombatSlice`, +9 — `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/movement.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +9 fichiers
+- sans code : `ZI 14` (l.1016-1017, l.1024-1026), `NADAJ 16` (l.34)
 
 ---
 
@@ -1511,14 +1508,8 @@ On observe que **Marche = 2 × M mètres** (soit M cases) et **Course = 4 × M m
 
 **Voir aussi** : Avantage (gain/perte, +10/pion) ; Désengagement (Avantage / Esquip-CC) ; Fuite (attaque gratuite, +20 dans le dos, Calme→Brisé) ; Escalade / Saut / Chute ; États (À Terre, Engagé) ; Poursuites (Distance d10) ; Charge montée et Taille de la monture.
 
-**Implémente** :
-- `src/engine/movement.ts` — `resolveRun(athletics, movement, rng)` : Course = Test d'Athlétisme Accessible (+20), distance = `2*movement + round(DR/2)` cases (mètres → cases ÷2), clampé ≥ 0 ; `freeJumpTiles`/`maxJumpTiles`/`jumpNeedsTest` (Saut, hors topic).
-- `src/engine/engagement.ts` — `chargeAdvantage(movementCases, distFromCases)` : +1 Avantage si la cible était à **≥ ⌈M/2⌉ cases** (≈ M mètres) avant la charge et **≤ 2M+1 cases** (portée de Course, case d'arrivée adjacente) ; `reachTiles`/`meleeReachTiles` (Allonge des armes).
-- `src/state/combatFlow.ts` — `computeRunReach(get)` (zone nominale de Course = M×3 cases avant DR), `computeMoveReach`/`displayedReach` (Marche), IA charge/course (budget Marche + Course + DR), `runMultiplier(traits)` appliqué à la portée de Charge/Course (Bond ×2, Foulée ×1,5).
-- `src/state/rollFlows.ts` — flux `run` (`makeRollFlow<PendingRun>`, `key: 'pendingRun'`) : appelle `resolveRun(testValue(actor, 'athletisme'|'chevaucher'), mountMovement + runMovementBonus(actor), battleRng())` ; la Course consomme l'Action.
-- `src/engine/traits/dispatch.ts` — `runMultiplier(traits)` (Bond ×2 prioritaire, Foulée ×1,5) pour la portée de Course/Charge des créatures.
-- `src/engine/combatFeatures/dispatch.ts` — `runMovementBonus(actor)` (talent Sprinter : +1 au Mouvement de Course).
-- Grille 1 case = 2 m : constante implicite (`distanceTiles * 2`) dans `src/engine/combat.ts` (`rangeBandModifier`) et `src/engine/engagement.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 15` (l.3, l.12, l.15-16, l.18-32, l.34-37, l.39-42) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `DisengageModal`, `gainAdvantage`, `verticalTiles`, `chargeAdvantage`, `describeRun`, `PendingAttack`, +11 — `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/movement.ts`, `src/gameIso/stage/ClimbOverlays.tsx`, `src/state/climbMove.ts`, +11 fichiers
 
 ---
 
@@ -1605,7 +1596,8 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 
 **Voir aussi** : Avantage (combat) ; Engagement et portée de mêlée ; Test opposé et DR ; Compétence Esquive ; Psychologie — Terreur ; État Brisé ; Charge ; Course.
 
-**Implemente** : `disengageFrom` / `isEngaged` (`src/engine/engagement.ts`) ; `startDisengage`, `disengageOutcome` (`src/state/combatFlow.ts`) ; option Avantage = `disengageConfirmA`, option Esquive = `disengageRoll` + `disengageConfirm`, Fuite = `disengageFlee` / `disengageFleeAck` (`src/state/combatSlice.ts`, `battleDisengage`) ; spec du jet d'Esquive `FLOWS.disengage` (`src/state/rollFlows.ts`, Test opposé Esquive vs CC, `caps.forced` pour la Résilience) ; coup gratuit dans le dos `resolveBackstabAttack` (`+20` au toucher, `src/engine/combat.ts:471`) ; repli direction opposée `fleeReachable` (`src/state/path.ts:195`), distance Course = `(effectiveMovement + fleeMovementBonus) * 2` ; bonus de Mouvement à la fuite (talent Fuite ! LDB 10) `fleeMovementBonus` (`src/engine/combatFeatures/dispatch.ts:163`) ; modale `src/ui/DisengageModal.tsx` ; tests `src/state/flee.test.ts`, `src/state/disengage-after-attack.test.ts`, `src/state/disengage-size.test.ts`, `src/state/broken-restriction.test.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 15` (l.18-32, l.44-49, l.60-69) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `reachTiles`, `RunModal`, `FOOTPRINT_SIDE`, `DisengageModal`, `EntityToken`, `gainAdvantage`, `planClimb`, +39 — `src/data/index.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/movement.ts`, `src/engine/traits/dispatch.ts`, +22 fichiers
 
 ---
 
@@ -1661,11 +1653,8 @@ Note (LDB 15 l.72) : dans la plupart des cas un simple Test d'**Athlétisme** (o
 
 **Voir aussi** : Mouvement & Course · Désengagement & Fuite · États (À Terre) · Athlétisme / Escalade (compétences) · Talent Grimpeur
 
-**Implémente** :
-- Escalade : `src/engine/movement.ts` — `ladderClimbReach` (échelle = ½ vitesse, l.53), `resolveLadderClimb` (échelle rapide, Escalade Accessible +20, l.55), `resolveSurfaceClimb` (paroi à prises, Test Escalade, gate `surfaceClimbImpossible` = Talent Grimpeur, l.57), `climbMovementCost` (coût de Mouvement à ½ vitesse). Câblage géométrie z : `src/state/climbMove.ts` (`planClimb` : arête `WallSeg.climb` → échelle sans Test / paroi = Effect `test` Escalade dont l'échec déclenche `fall` au pied) ; geste `src/gameIso/stage/ClimbOverlays.tsx` (marqueur d'arête, même famille que les portes) → `store.climbAcross` (exploration = le groupe ; combat = héros actif, Action consommée si Test, LDB 13 l.86-88).
-- Saut : `src/engine/movement.ts` — `freeJumpTiles(movement)` = `floor(M/6)` cases (= M/3 m ÷2), `maxJumpTiles` = saut libre + 1, `jumpNeedsTest`. Pose de saut côté scène : `src/state/jumpMove.ts` (au-delà du saut libre → Effect `test` Athlétisme « Saut » dont l'échec déclenche l'Effect `fall`). NB : l'incrément « +30 cm/DR » du livre n'est pas modélisé (grille discrète : saut réussi = +1 case, sinon `fall`).
-- Chute : `src/state/combatEffects.ts` (effet `fall`) — `3 * m + d10() − BonusEndurance`, plancher 0, PA ignorés ; `loseWounds` ; `addCondition(c, 'a-terre')` si `lost > be`. Réduction de chute volontaire « Athlétisme +20, −1 m/DR » `(non implémenté)` : l'effet tire toujours les Dégâts pleins (chute involontaire).
-- Course (connexe) : `src/engine/movement.ts` — `resolveRun` (Athlétisme Accessible +20, Mouvement de Course + DR).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 15` (l.52-57, l.71-77, l.79-85) → `ClimbPlan`, `scene`, `reachTiles`, `FOOTPRINT_SIDE`, `DisengageModal`, `EntityToken`, `hasMeaningfulOption`, `planClimb`, `occupied`, `freeJumpTiles`, +36 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/movement.ts`, `src/engine/pursuit.ts`, `src/engine/traits/dispatch.ts`, +22 fichiers
 
 ---
 
@@ -1754,7 +1743,9 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 
 **Voir aussi** : Désengagement et fuite (Attaque gratuite, +1 Avantage, Calme / Brisé) ; Mouvement & Course (Tableau des Mouvements, M en mètres) ; Saut et Chute ; Tests opposés & Degrés de Réussite (DR).
 
-**Implemente** : `(non implémenté)` — la procédure de Poursuite de LDB 15 (Distance abstraite, comparaison DR le plus faible des fuyards vs DR le plus haut des poursuivants, modificateur de M en DR bonus, sacrifice du plus lent) n'existe nulle part dans le moteur. Les seules occurrences de « poursuite » dans `src/` sont sans rapport : la mécanique de Frappe Mortelle dans `src/state/combatFlow.ts` / `src/state/pendings.ts` (« la poursuite EXIGE d'avoir tué la cible », LDB 14) et la mention « course-poursuite » dans la description de la Compétence Natation (`src/data/skills.json`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 15` (l.87-89, l.90, l.92, l.93, l.94, l.95, l.96, l.98-102, l.105-106, l.108) → `scene`, `planJump`, `hasMeaningfulOption`, `scenario`, `buildHighlights`, `resolveDeliberateFall` ⚠sans-appelant, `jumpNeighbors`, `BattleState`, `handleMountDeath`, `movementRemaining`, +13 — `src/engine/movement.ts`, `src/engine/pursuit.ts`, `src/gameIso/builders/highlights.ts`, `src/scenes/test-scenarios/95-poursuite-terrestre.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +10 fichiers
+- sans code : `NADAJ 6` (l.150)
 
 ---
 
@@ -1830,7 +1821,9 @@ Les États **Exténué** dus à l'Encombrement sont **accumulés à la fin d'une
 
 **Voir aussi** : Fatigue du voyage et marche forcée ; États (Exténué) ; Armures (pénalités d'Armure cumulables) ; Fabrication (qualités Léger −1 / Volumineux +1) ; Bêtes de Somme et véhicules.
 
-**Implemente** : `src/engine/encumbrance.ts` (`encumbrancePenalties` — paliers tier 0–3 : −1 M / min 3 / −10 Ag / +1 Fat ; −2 M / min 2 / −20 Ag / +2 Fat ; immobilisé au-delà de ×3 ; `effectiveMovement` applique le plancher et l'immobilisation ; `agilityTestPenalty`). `src/engine/items.ts` (`maxEncumbrance` = BF + BE + bonus Costaud ; `totalEncumbrance` applique le **−1 « objet porté »** sur l'armure équipée et les `craftEncDelta` Léger/Volumineux). `travelFatigue` consommé par `src/state/travelFlow.ts` (accumulation des Exténué par journée de voyage, à pied) et `+1 si Encombré` lors de la marche forcée. Objets Surdimensionnés (≥ 4) portés via la donnée `enc` des objets (pas de garde « un seul » dédiée). **Monnaie = 1 Enc / 200 pièces** `(non implémenté)` — l'argent est suivi à part, hors `items`, et ne contribue pas à `totalEncumbrance`. Bêtes de Somme / passager ≈ 10 Enc `(non implémenté)` côté charge des montures.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 61` (l.7-14, l.16-17, l.20-21, l.24-25, l.28-29, l.32-41, l.43-44, l.47-48) → `totalEncumbrance` — `src/data/encumbranceTiers.json`, `src/engine/items.ts`
+- sans code : `LDB 61` (l.5)
 
 ---
 
@@ -2027,12 +2020,9 @@ Synthèse des règles du combat d'honneur (`NADAJ 06 l.176-191`) :
 
 **Voir aussi** : Atouts et Défauts d'arme (LDB) ; Allonge d'arme et fourchettes de portée (LDB) ; Armes à distance (LDB) : groupes et tables ; Le Combat (Test de Corps à corps, Parade, Esquive) ; Résolution d'une attaque (corps à corps / distance) ; Compétences groupées (Corps à corps / Projectiles).
 
-**Implémente** :
-- `src/data/weaponGroups.json` — registre des Groupes d'armes (`armes-d-hast`, `bagarre`, `base`, `cavalerie`, `deux-mains`, `escrime`, `fleau`, `parade`, …) avec `id`/`label`/`kind` (le groupe `bagarre` existe, hébergeur naturel des Griffes de Tigre).
-- `src/data/trappings.json` — fiches d'armes (`subType` = id de Groupe, `damage`, `reach`, `enc`, `availability`, `qualities`, `price`) ; ex. `lance-de-cavalerie` porte la `desc` « Arme improvisée hors Charge ». La **Dague** (`+BF+2`, Enc 0, Très courte, `subType: "base"`) sert de gabarit ; **Griffes de Tigre = entrée non encore présente** dans `trappings.json` `(non implémenté)` — à ajouter avec `subType: "bagarre"` et la `desc` de l'effet félin.
-- `src/engine/combat.ts` — `acceptableSpecs()` / `combatValue()` : matching Groupe d'arme (`weapon.subType`) → Spécialisation *Corps à corps (X)* ; sans la Spé, on teste sur la Caractéristique brute (sous-système des Groupes). `parryPenalty()` / `hasMeleeSpec(defender, 'Parade')` + `offHandPenalty()` : règle Parade (annulation du −20 main gauche pour arme 1M Défensive). Passage en Arme improvisée à +0 Dégâts (`LDB 62 l.134`) géré à l'application des dégâts d'arme.
-- Règle Cavalerie « (2M) → Deux Mains à pied », règle Fléau « sans compétence → Dangereuse + Atouts perdus », et lance-de-cavalerie « improvisée hors charge » au *runtime* `(non implémenté)` — seulement présentes en donnée descriptive (`desc`), pas dans le moteur.
-- Profil du **Duel Judiciaire** (seuil « premier sang > 3 Blessures », fin à 0 Blessure, projectiles interdits) `(non implémenté)` — contenu de scénario/narration, sans support de moteur ; relèverait d'un mode de combat scripté.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 62` (l.19-57, l.59, l.126-127, l.133-136, l.138-139, l.142-143, l.146-147, l.150-151) → `weaponImprovised`, `IMPROVISED_DAMAGE`, `isRepairable`, `itemRepairCostBrass`, `compareEquip`, `repairCost`, `improvisedProfile`, `isCavalryLance`, `effectiveWeapon`, `weaponUnmastered`, +6 — `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/equipCompare.ts`, `src/engine/items.ts`, `src/engine/repair.ts`, `src/engine/weaponDamage.ts`, +4 fichiers
+- sans code : `LDB 62` (l.5-15), `ADE II 2` (l.661-705), `NADAJ 6` (l.176-191), `NADAJ 11` (l.20, l.23-32)
 
 ---
 
@@ -2219,7 +2209,9 @@ La Portée listée est la portée moyenne en mètres ; les fourchettes se calcul
 
 **Voir aussi** : qualites-defauts-armes-tables (Recharge, Dévastatrice, Explosion, Immobilisante, Empaleuse, Perforante, Pointue, Précise, Dangereuse) ; armes-corps-a-corps-tables (groupes de corps à corps, Allonge) ; bandes-portee-modificateurs (Bout portant/Courte/Longue/Extrême) ; etats-table (État Enflammé) ; monnaie-tables (lecture des prix `X/Y` et `XCO`).
 
-**Implémenté** : `src/data/weaponGroups.json` (les 8 groupes à distance : `arbalete`, `arc`, `entraves`, `explosifs`, `fronde`, `lancer`, `ingenierie`, `poudre-noire`, + famille de munitions `poudre-noire-et-ingenierie`) ; `src/engine/items.ts` — `ammoFamily()` (la famille canonique « Poudre noire et ingénierie » regroupe les deux groupes d'armes pour leurs munitions communes), `compatibleAmmo()` (munitions compatibles d'une arme, même famille), `weaponWithAmmo()` (Dégâts/Atouts combinés arme+munition) ; bandes de portée et Recharge : `src/engine/combat.ts` — `rangeBandModifier`/`rangeBandName`/`rangeBandAt` (Bout portant +60 / Courte +40 / Moyenne +0 / Longue −10 / Extrême −30), et le rechargement (Atout Recharge → Test étendu de Projectiles) dans `src/ui/ActionBar.tsx` (`needsReload`, `reloadProgress`) + IA `src/state/ai.ts` (action `reload`). Le filtre « Test hors spécialisation impossible » et les trois exceptions (Tir pour Arbalète/Lancer ; Ingénierie via Poudre noire ; Poudre noire/Explosifs via Ingénierie) avec perte/conservation des Atouts ne sont pas modélisés en tant que tels `(non implémenté)`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 62` (l.65-124, l.130-131, l.179-180, l.183-184, l.187-188, l.191-192, l.195-211) → `reachTiles`, `weaponImprovised`, `AuContactModal`, `isRepairable`, `itemRepairCostBrass`, `COMBAT_INTENTS`, `carryOverState`, `disengageFrom`, `clearEngagementOf`, `MODAL_DEFS`, +38 — `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/items.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, +16 fichiers
+- sans code : `LDB 62` (l.5-15), `AA 8` (l.366-385, l.386-389)
 
 ---
 
@@ -2319,12 +2311,8 @@ Les groupes d'armes à distance et leurs spécialisations conditionnent l'usage 
 
 **Voir aussi** : Bandes de portée et modificateurs de tir (Bout portant +60 / Courte +40 / Moyenne +0 / Longue -10 / Extrême -30) ; Engagement et déplacement (1 case = 2 m) ; Atouts et Défauts d'arme ; Groupes d'armes et spécialisations ; Maladresses au combat.
 
-**Implémente** :
-- Allonge / engagement : `reachTiles`, `meleeReachTiles`, `REACH_ORDER`, `reachRank` (`src/engine/engagement.ts`) — convertit l'Allonge en cases d'engagement (Très longue → 2 cases/4 m, Considérable → 3 cases/6 m, sinon contact = 1 case), champ `Weapon.reach`.
-- Option « Longueur d'arme » (-10) : `weaponReachPenalty` (`src/engine/combat.ts`, règle optionnelle `combat-weapon-reach`). Le sous-système « Au Contact » (Test opposé pour entrer dans l'allonge) `(non implémenté)`.
-- Fourchettes de portée : `RANGE_BANDS`, `rangeBandAt`, `rangeBandModifier`, `rangeBandName` (`src/engine/combat.ts`) — facteurs ÷10, ÷2, ×1, ×2, ×3 et modificateurs +60/+40/+0/-10/-30 ; champ `Weapon.range` (portée moyenne en mètres).
-- Dégradation d'arme : `damageWeapon`, `effectiveDamageTaken`, `effectiveWeaponDamage`, `isImprovised`, `effectiveWeapon` (bascule en +BF+1 / Inoffensive), `destroyWeapon`, `solideSaveThreshold` (`src/engine/weaponDamage.ts`) ; champs `Weapon.damageTaken` / `Weapon.destroyed`.
-- Réparation : `repairCostBrass` (`src/engine/repair.ts`) couvre l'**armure** (LDB 63, 10 %/PA, 30 % si brisée). Le coût de réparation d'**arme** (10 % du prix / point, LDB 62) `(non implémenté)` — `weaponDamage.ts` note « Réparation = hors combat (Jalon 5) ».
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 62` (l.20-102, l.106, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-201, l.203-215, l.297) → `reachTiles`, `weaponImprovised`, `AuContactModal`, `IMPROVISED_DAMAGE`, `isRepairable`, `itemRepairCostBrass`, `COMBAT_INTENTS`, `carryOverState`, `disengageFrom`, `compareEquip`, +63 — `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/equipCompare.ts`, `src/engine/flowCore.ts`, `src/engine/items.ts`, +23 fichiers
 
 ---
 
@@ -2506,7 +2494,10 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 
 **Voir aussi** : Tests et Degrés de Réussite (DR) ; Combat (localisation, dé inversé, Critiques) ; Maladresses ; États (Brisé, Sonné, Empêtré, À Terre, Hémorragique, En flammes, Empoisonné, Surpris, Exténué) ; Psychologie (Peur, Terreur, Frénésie) ; Traits — défense, résilience, créatures (Éthéré, Instable, Bestial) ; Talents (Coup puissant, Frappe assommante, Frappe blessante, Tireur d'élite, Tireur embusqué, Tir rapide) ; Armes (stats : Allonge, Dégâts, Groupes) ; Armures (PA, Dégâts d'armure) ; Qualités et Défauts d'objet (Solide, Incassable, Pratique, Peu Fiable) ; Objets magiques / Enchantements (génération ADE II ch.04).
 
-**Implémente** : `src/data/qualities.json` (donnée RAW de chaque Atout/Défaut : `passive: GameOp[]` + `capabilities` + `effects` Flow, taggée à sa source ; y compris la qualité générique `magique` `caps.magic` et l'effet magique `de-plaies-atroces` (ADE II l.70-72) = Dévastatrice par `weaponDamageMod {mode:'maxUnits'}` confirmé l.819-831) ; `src/engine/qualities/dispatch.ts` (helpers PURS : `parryDRAdjust` À Enroulement/Défensive/Déséquilibrée, `attackDRAdjust` Imprécise, `vsDefenseDRAdjust` Lente, `qualitySum` Précise/Pointue/Perforante, `qualityCritTriggered` Empaleuse multiple de 10, `qualityDamageStep` Dévastatrice/Percutante/Inoffensive-`negateAtouts` + Épuisante `chargeGated`, `canFireWhileEngaged` Pistolet, `protectriceAP`/`rangedOpposeWeapon` Protectrice, `canPushback` Perturbante, `hasBladeTrap` Piège-Lame, `isUnbreakable` Incassable, `isFirearmQuality` Poudre noire/Explosion, `rapideParryMod`/`canStrikeFirst` Rapide, `strikesLast` Lente, `dangerousNine` Dangereuse, `magazineSize` À Répétition/Salve, `reloadDRTarget` Recharge, `isMagicWeapon` arme magique→Éthéré, confirmé l.212) ; `src/engine/qualities/ids.ts` (`QUALITY_IDS`, ids slug stables) ; `src/engine/combat.ts` (`applyHit` : Empaleuse crit + `ignoredArmourAP`, Protectrice PA en opposition `extraAP`, **règle-cadre 1 arme magique** via `incomingDamageNullified(defender, attacker, isMagicWeapon(weapon))` qui annule la touche contre Éthéré si l'arme n'est PAS magique, confirmé l.821, `ADE II 04 l.214` ↔ `LDB 85`) ; flux Assommante (`src/state/combat/assommante-opposed-test.test.ts`), Piège-Lame (`src/state/combat/blade-trap-test.test.ts`), Déstabilisante/Immobilisante (`effects` Flow `onHit` dans `qualities.json`). **Trous d'implémentation** : (1) **Inoffensive** n'a que `negateAtouts` câblé (annule Dévastatrice/Percutante) — les clauses « **tous les PA doublés** » et « **pas de minimum 1 Blessure** » ne sont PAS appliquées (`woundsFromHit` garde `Math.max(1, …)` et ne double pas les PA) `(non implémenté)` ; (2) **Retrait de projectile Empaleuse** (heal-block 1 Blessure tant que la munition n'est pas retirée par Guérison/Chirurgie) `(non implémenté)` — seul le crit-sur-multiple-de-10 est câblé ; (3) le **tableau d100 des Atouts d'armes magiques** d'ADE II est presque entièrement absent de `qualities.json` : seuls la règle-cadre « arme magique blesse l'Éthéré » (`isMagicWeapon`/`incomingDamageNullified`) et l'effet `de-plaies-atroces` (Dévastatrice) sont câblés. Les autres effets hors-taxonomie (Funeste→Peur 1, Taillée dans la rage→Frénésie, Robuste→ignore Exténué+Incassable, Liée au destin→+1 Avantage/Round, De colère implacable→3 Talents, Déroutante→Surpris, D'aplomb→immunité Peur+2 DR Terreur, De crocs et de griffes→Force Mentale Complexe -10, Du bannissement le plus profond→+3 Avantage vs Instable, De mort languissante→Blessures Purulentes, De féau→Blessures doublées vs type, De coupure infinie→+2 Blessures, De blessure grave→inverser le jet de Critique, Lame du givre→Blessures doublées+4, D'apparence évolutive→choix d'Atout/Round) et les **munitions magiques** (Flèche de puissance→+1d10 ignorant Armure/Endurance, Flèche de vol infaillible→+30 CT, Flèches de grêle funeste→1d10 flèches) ne sont PAS des qualités/ops discrètes `(non implémenté)`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 62` (l.218-304) → `reachTiles`, `isShieldItem`, `protectrice`, `availableHealModes`, `opposedCascadeRoll`, `lodgedAmmoCount`, `pushBackTiles`, `BladeTrapHook`, `applyHealWounds`, `applyRecoveryDay`, +36 — `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/equipCompare.ts`, `src/engine/flowCore.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +15 fichiers
+- `LDB 63` (l.2-6, l.11, l.14) → `applyAttackResult` — `src/state/combatFlow.ts`
+- sans code : `ADE II 2` (l.608-658), `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253, l.278, l.280-287) +6
 
 ---
 
@@ -2629,13 +2620,9 @@ Certaines sources naturelles de PA **ne peuvent pas servir à la Déviation Crit
 
 **Voir aussi** : Armes — table, Atouts et Défauts d'arme (Empaleuse, Taille) ; Localisation et Point d'Impact des Créatures (PA des créatures) ; Blessures Critiques (Traumatisme, table par localisation) ; Encombrement et pénalités de port ; Corruption et mutations (PA naturels).
 
-**Implémente** :
-- Table & PA portés : `src/engine/items.ts` — `wornArmourPoints` (PA nette = `pa - damageTaken`, superposition Flexible = cumul rigide+flex via `max` par couche), `effectiveArmourAt` (via `src/engine/characteristics.ts`), `emptyArmour`.
-- Atouts/Défauts (ignorance de PA) : `src/engine/items.ts` — `ignoredArmourAP` (Partielle = roll pair OU critique ; Points faibles = critique + Empaleuse) et `impenetrableAt` (Critique sur jet de toucher impair ignoré) ; appelés dans `src/engine/combat.ts` (`ignoredAP`, autour des l.853-857). IDs des qualités : `src/engine/qualities/ids.ts` (`QUALITY_IDS.Partielle`, `PointsFaibles`, `Impenetrable`, `Flexible`).
-- Dégâts d'armure : `src/engine/items.ts` — `damageArmour(c, loc)` (héros : `damageTaken+1` sur la pièce la plus solide ; ennemi/figurant : décrément direct). Déclenché par l'Atout Taille dans `src/state/combatFlow.ts` (l.1290).
-- Déviation Critique : `src/state/combatFlow.ts` — `deviateArmour` (l.1011, appelle `damageArmour`), `resolveDeviation`, cascade `kind:'deviation'` (l.1119-1161) ; règle optionnelle `combat-critical-deflect` (`src/engine/policy.ts`).
-- Réparation : `src/engine/repair.ts` — `repairCostBrass` (10 %·PA perdus, ou 30 % si brisée) ; UI/flux marchand `src/state/merchantFlow.ts` — `repairArmour`.
-- Écailles Épineuses (PA naturel non déviable) : donnée `src/data/mutations.json` ; PA naturels additifs appliqués dans `src/engine/items.ts` (`recomputeLoadout`, l.372-374). Le verrou « ce PA ne peut servir à la Déviation Critique » côté `deviateArmour` est `(non implémenté — limitation à auditer)`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 63` (l.2, l.7-15, l.18-27, l.29-32, l.38-61, l.63-66, l.73-74, l.77-78, l.85-86, l.89-90) → `itemRepairCostBrass`, `repairCost`, `OPTIONAL_RULES`, `describeReload`, `firedAttackBlock`, `GameOp`, `ActiveEffect`, `repairItem`, `PendingDeviation`, `wornArmourPoints`, +7 — `src/engine/items.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/repair.ts`, `src/engine/types.ts`, `src/engine/wearPenalty.ts`, +6 fichiers
+- sans code : `EDO 11` (l.192-196)
 
 ---
 
@@ -2712,7 +2699,10 @@ Autrement dit, lorsqu'un Coup Critique frappe un membre exotique (tentacule, que
 
 **Voir aussi** : Tableau de Localisation humanoïde ; Coups Critiques et Tableaux de Critiques ; Taille des créatures et catégories ; Localisation visée (coup ciblé / malus −10).
 
-**Implémente** : `src/engine/combat.ts` — `reverseRoll` (inversion du dé), `hitLocation` (tableau humanoïde), `hitLocationByShape(reversed, shape)` (serpent : ≤19 Tête sinon Corps ; araignée : ≤9 Tête, ≤79 Pattes→table des Jambes, sinon Abdomen→table du Corps ; humanoïde/quadrupède/oiseau → tableau humanoïde), `locationLabel` (étiquette FR par forme, ailes/membres). La règle « ≥ 2 catégories → choix gratuit de zone » est dans `attackModifiers` (pas de modificateur `Localisation visée` quand la cible dépasse de 2 catégories ; testée par `src/state/aim-bigger.test.ts`). Le choix de localisation sur Critique forcé est dans `applyCriticalToTarget` / `attackSetCritLocation` (`src/state/combatFlow.ts`, testé `src/state/raw2-crit-location.test.ts`). La règle « critique sur membre sans table → Tableau des Bras » est **documentée mais non câblée distinctement** : `critical.ts` ne route que `brasG/brasD` vers la table des Bras et ne mappe pas explicitement tentacule/queue/aile vers cette table `(non implémenté)`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 13` (l.132, l.137) → `useDefenseJetProps`, `useHoverTargeting`, `useAttackJetProps`, `FLOWS`, `attackEnv`, `chooseEnemyAction`, `outOfSightTargetIds`, `rangedDefenseModes`, `GameState`, `attackPlan`, +1 — `src/engine/combat.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/rollFlowSpecs.ts`, +3 fichiers
+- `LDB 76` (l.19, l.21, l.22, l.40, l.41) → `STANDARD_OPTIONALS`, `SceneEntity`, `SpawnExtras`, `creatureToCombatant`, `TraitData` — `src/data/index.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- sans code : `LDB 76` (l.16, l.17)
 
 ---
 
@@ -3021,13 +3011,10 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 
 **Voir aussi** : Localisation et Tableaux de Critiques (localisation inversée, Tableau des Bras pour membres sans table) ; Taille et combat (Dévastatrice/Percutante, Frappe Mortelle, Piétinement) ; Psychologie (Peur, Terreur, Frénésie, Animosité, Haine, Préjugé) ; États (Empêtré, Sonné, Inconscient, Hémorragique — infligés par les Traits T2C) ; Blessures et Bonus de caractéristique (BF+2×BE+BFM) ; Corruption et Mutations ; Attaques gratuites et Avantage.
 
-**Implémente** :
-- `src/data/traits.json` — registre des **101 Traits** (id stable, `label`, `prefix`/`suffix`, `desc`, `source`, `capabilities`/`effects`/`passive`/`grantsManeuvers`), dont **15** marqués `"standard": true` (= la liste `LDB 76 l.35`). Couvre LDB 85 + ZI (Fouissement/Redoutable) + EDO (Absorption/Amorphe/Contagieux/Décérébré/Dédoublement/Voleur de Chair). **Les 8 Traits du Compagnon T2 (`T2C 15`) — Aquatique, S'accrocher Pour Se Nourrir, Hallucinogène, Rampant, Salive Analgésique, Salive Anticoagulante, Capricieux, Engloutir — ne sont PAS encore dans le registre `(non implémenté)`** : à ajouter (`source: "T2C"`, refs `T2C 15 l.138-163`).
-- `src/engine/traits/types.ts` (`TraitDef`), `src/engine/traits/dispatch.ts` (`traitCapability`, `wardSaves`, `traitLabels`, `parseTraitInstance`, `formatTrait`), `src/engine/traits/registry.ts` — mécanique data-driven lue PAR ID.
-- `src/ui/editor/OptionalTraitsPicker.tsx` — `STANDARD_OPTIONALS = traits.filter(t => t.standard)` + composant `CreatureProfile` (rend la ligne `['M', ...CHAR_KEYS, 'B']`, **–** pour caractéristique inexistante) = schéma `LDB 76`.
-- `src/engine/combat.ts` — `hitLocationByShape` (Localisations Alternatives serpent/araignée, remap quadrupède/oiseau) ; `baseWithTraits` (application des Traits de profil spawn→live).
-- `src/engine/size.ts` + `src/engine/characteristics.ts` — catégories de Taille, modificateurs (+10 F/E, −5 Ag) et Blessures par Taille.
-- `src/engine/types.ts` — `Combatant.traits` / `liveTraits` + `baseWithTraits`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 76` (l.16-28, l.31-37, l.38-45) → `STANDARD_OPTIONALS`, `SceneEntity`, `SpawnExtras`, `creatureToCombatant`, `TraitData` — `src/data/index.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- `LDB 85` (l.8-406) → `scene`, `planClimb`, `STARTLE_CAUSE_LABELS`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, `Formula`, `sizeDamageMultiplier`, `applySwarmBuild`, +63 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/creatureEquip.ts`, +26 fichiers
+- sans code : `LDB 76` (l.9-13), `LDB 77` (l.7-68), `ZI 14` (l.1013-1035, l.1037-1087), `EDO 1` (l.271-290), `EDO 7` (l.320-348), `EDO 9` (l.513-570), `EDO 11` (l.172-243) +3
 
 ---
 
@@ -3150,7 +3137,10 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 
 **Voir aussi** : Souffle (Indice)(Type) ; Regard pétrifiant ; Étreinte glaciale ; Hurlement fantomatique ; Vomissement ; Trait Taille (Piétinement, multiplicateur de Dégâts) ; États Empêtré / Empoisonné / À Terre ; Empoignade ; Charge et Avantage.
 
-**Implémente** : Données — `src/data/traits.json` (entrées `arme`, `a-distance`, `morsure`, `cornes`, `attaque-caudale`, `langue-prehensile`, `tentacules`, `constricteur`, `toile`, `venin`, `vampirique` ; `a-distance` est un pur descripteur, **sans** `grantsManeuvers` ni `effects`) et `src/data/maneuvers.json` (manœuvres `arme`, `morsure`, `caudale`, `cornes`, `tentacules`, `langue-prehensile`, …). Résolution — `src/engine/creatureAttacks.ts` (`creatureAttacks`, `CreatureAttack`, `AttackKind`, `pickGranted` : un Trait octroie une `ManeuverDef`) ; `src/state/combatManeuvers.ts` (`resolveManeuver`) ; effets data-driven via le runtime Flow `src/state/flow.ts` (Conditions `attackKind`, `woundsDealt`, `compare` size) et `src/engine/ops.ts` (op `lifeSteal` pour Vampirique, op `condition` pour Empêtré/Empoisonné/À Terre, `escapeStrength: {charOf:'F'}` pour Toile/Tentacules). Tests — `src/engine/creatureAttacks.test.ts`, `src/state/creatureFreeAttacks.test.ts`, `src/state/tentacle-attack.test.ts`, `src/state/combat/venin-test.test.ts`. Le tir de l'arme **À Distance** comme attaque naturelle distincte (vs Langue/Souffle/Regard) `(non implémenté)` séparément — la créature tire via le mécanisme d'arme à distance standard.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.68-74, l.86-87) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, `fatigueThreshold`, +16 — `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +10 fichiers
+- `LDB 85` (l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389) → `STARTLE_CAUSE_LABELS`, `applySwarmBuild`, `Condition`, `TriggerCtx`, `knowsCastingSkill`, `traitCapability`, `combatTestPenalty`, `PendingManeuver`, `attackModifiers`, `TriggeredEffect`, +11 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +11 fichiers
+- sans code : `LDB 85` (l.8-9, l.405, l.408, l.451), `Ubersreik 4` (l.9, l.12)
 
 ---
 
@@ -3248,7 +3238,9 @@ La créature vomit un flot de corruption corrosive. **Pendant son tour, au prix 
 
 **Voir aussi** : Traits de créature (vue d'ensemble) · États (Sonné, Enflammé, Empoisonné, Brisé, Assourdi, Empêtré) · Tentacules et attaques naturelles · Zones d'effet et Lignes de vue · Avantage en combat · Le sort « Souffle » (Magie des Arcanes)
 
-**Implémente** : données dans `src/data/traits.json` (`souffle`, `etreinte-glaciale`, `hurlement-fantomatique`, `regard-petrifiant`, `vomissement`) et `src/data/maneuvers.json` (manœuvres `souffle-feu`/`souffle-froid`/`souffle-corrosif`/`souffle-electrique`/`souffle-poison`/`souffle-fumee` octroyées par le Trait + `vomissement`, avec leurs `effects` GameOp data-driven par Type : `wounds` `ignoreAP`, `condition`, etc.). Collecte des attaques naturelles depuis les Traits dans `src/engine/creatureAttacks.ts` (`AttackKind`, `kind: 'souffle'|'vomi'|'etreinte'|'regard'|'hurlement'`, `magic`, `type`, désambiguïsation générique par suffixe d'id). Résolution de zone (Souffle/Vomi) via `applyAreaAttack` dans `src/state/combatFlow.ts`, géométrie de zone dans `src/state/zones.ts` (disque de Chebyshev, 1 case = 2 m). Le sort « Souffle » délègue à la même `applyAreaAttack` (`src/engine/spellspec.ts`). Tests : `src/state/l9-souffle.test.ts`, `src/engine/creatureAttacks.test.ts`, scénario de recette `src/scenes/test-scenarios/15-traits-creature.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331) → `scene`, `planClimb`, `scenario`, `TraverseCapability`, `Formula`, `sizeDamageMultiplier`, `moveEnv`, `sizeGrantedQualities`, `maxWounds`, `forceOpposedOutcome` ⚠sans-appelant, +35 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +17 fichiers
+- sans code : `LDB 85` (l.442-447)
 
 ---
 
@@ -3342,17 +3334,9 @@ Les Dégâts dus au **Feu** sont notés à part et **jamais** régénérés. —
 
 **Voir aussi** : Traits d'attaque et d'allonge des créatures (Arme, Morsure, Cornes, Souffle, Étreinte glaciale) · Avantage en combat (Redoutable, Belliqueux) · Blessures critiques et Traumatisme (LDB 18) · Maladies et infections (LDB 20 — Blessure Purulente) · Localisation et Points d'Armure · Attaques magiques et Résistance des sorts (LDB 46) · Psychologie des créatures (Bestial, Immunité Psychologique).
 
-**Implémente** :
-- `src/data/traits.json` — donnée source de chaque Trait (desc verbatim + `source.book/page` + `capabilities`/`passive`/`effects`). Démoniaque/Protection → `capabilities.wardSave` ; Démoniaque → `banishedAtZero` + `passive: attackKeyword "magic"` ; Éthéré → `passive: mitigateIncoming{mode:"nullify", unlessKeyword:"magic"}` ; Immunité → `damageImmunity` ; Résistance à la Magie → `magicResistance` ; Insensible → `painless` ; Régénération → `effects: onRoundStart` flow (`rollThreshold` 1d10 → `heal`/`cureCriticalWound`) ; Sang corrosif → `effects: onWoundLoss` sur `engaged` (`op:"wounds"` 1d10, `min:1`) ; Increvable → desc seule (pas de capacité moteur).
-- `src/engine/traits/dispatch.ts` — helpers PURS de lecture par id : `wardSaves` (Démoniaque/Protection), `banishedAtZero`, `magicResistanceOf`, `immunityTypes`, `isPainless`, `isUnstable`.
-- `src/engine/ops.ts` — `incomingDamageNullified` (Éthéré : nullifie sauf attaque magique) ; `attackHasKeyword`.
-- `src/engine/combat.ts` — applique `incomingDamageNullified` (Éthéré, 0 Blessure) au moment de la touche ; Parasité = `−10` pour toucher (modificateur de combat).
-- `src/state/combat/hitModifiers.ts` + `src/state/combat/hitSaves.golden.test.ts` — suite de sauvegardes post-touche `wardSaves` (1d10 ≥ Indice ignore le coup).
-- `src/state/combatFlow.ts` — Démoniaque à 0 PB → `banishedAtZero` (retrait) ; `magicResistanceOf` appliqué au DR du sort (cumulé avec le Talent *Résistance à la Magie*).
-- `src/state/combat/roundHooks.ts` — hook `unstable` (Instable, fin de Round, perte = écart d'Avantage, mort à 0) ; hook `fire-round-start-triggers` (déclenche les `effects: onRoundStart`, dont Régénération).
-- `src/engine/trauma.ts` — `isPainless` filtre les pénalités de Critiques non-amputants (`isPainlessIgnored`).
-- **Infecté / Increvable / Amorphe** : Infecté = contraction post-combat (`src/engine/disease.ts` — Blessure Purulente, hors boucle de Round) ; **Increvable** = résurrection post-combat NON câblée en moteur, arbitrage MJ (cf. `src/engine/traits/parity.test.ts` `JOURNAL_MJ`) ; **Amorphe** (÷2 hors feu/froid/magie, ignore Critiques, torpeur) `(non implémenté)` comme règle de mitigation — desc affichée à l'inspecteur seulement.
-- **Redoutable (ZI)** : regain d'Avantage début de tour `(non implémenté en règle moteur)` — Trait présent en donnée/statbloc, desc verbatim affichée, pas de hook de regain d'Avantage confirmé.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 85` (l.38-39, l.95-98, l.133-134, l.172-173, l.182-183, l.187, l.195, l.198-199, l.256-257, l.265, l.268, l.277-278, l.293-302) → `scene`, `planClimb`, `STARTLE_CAUSE_LABELS`, `scenario`, `TraverseCapability`, `StatblockEditor`, `Formula`, `sizeDamageMultiplier`, `applySwarmBuild`, `moveEnv`, +36 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, +24 fichiers
+- sans code : `ZI 1` (l.79-80), `ZI 14` (l.1024, l.1025-1026, l.1045), `EDO 11` (l.224-226)
 
 ---
 
@@ -3554,16 +3538,11 @@ La créature est **porteuse de la maladie _Type_**. **Les autres doivent faire u
 
 **Voir aussi** : États (Brisé, Sonné, Inconscient, Exténué) ; Frénésie et Avantage ; Peur, Terreur et Calme ; Corruption et mutations ; Maladies et Contraction ; Taille des créatures (Peur/Terreur par catégorie) ; Test étendu et Degrés de Réussite.
 
-**Implemente** :
-- `src/engine/psychology.ts` — cœur pur : `isPsychImmune` (Belliqueux via `bellicosePsychImmune`, Frénésie, Détermination), `coldBloodedAdjust` (À sang-froid), `resolveFrenzyEntry`, `resolvePeurTest`/`terreurBrise`/`resolveTerreurTest`, `targetedTrigger`/`resolveCalmeSimple` (Animosité/Haine/Préjugé), `fearSourceFor`/`peurTerreurFromSize`, `clearPsychOf`, `calmeValue`.
-- `src/engine/traits/dispatch.ts` — helpers de capacité data-driven : `bellicosePsychImmune`, `isBestial`, `isColdBlooded`, `isStupid`, `hasRage`, `isTerritorial`, `hasChampionDefense`, `hasPerturbingAura`, `isMindless` (Fabriqué), `isSwarm` (Nuée).
-- `src/state/combat/turnHooks.ts` — déclencheurs de tour : Terreur (`resolveTerreurTest`), Peur (`resolvePeurTest`), Rage (Avantages ≥ 3 → Frénésie).
-- `src/state/combat/roundHooks.ts` — Bestial + Enflammé → Brisé ; aura Perturbant (−20 dans le rayon Bonus d'Endurance).
-- `src/state/combatFlow.ts` — Champion (Dégâts en défense, l.1236-1243), Stupide (perte Action/Mouvement, l.3742-3751), Affamé (effet onKill, l.1284), Nerveux (onStartled : coup d'arme / magie → +3 Brisé, l.1351-1355 et 2767).
-- `src/state/combatManeuvers.ts` — Bestial → défense forcée Esquive (l.322).
-- `src/state/ai.ts` — Bestial non-Territorial : fuite à <½ PB (l.143).
-- `src/data/traits.json` + `src/data/creatures.json` — données app-owned (Trait `passive`/`capabilities` ; statblocs porteurs de `nerveux`, `affame`, `causesPeur`/`causesTerreur`, Corruption, Maladie).
-- `src/state/corruptionFlow.ts` — gain de Corruption (seuil → mutation → damnation) consommant le Degré d'Exposition.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 19` (l.34-58) → `CorruptionModal`, `Effect`, `GameOp`, `EffectFields`, `PendingCorruption`, `GameState`, `EFFECT_HANDLERS`, `applyOps`, `FLOWS` — `src/engine/ops.ts`, `src/state/combatEffects.ts`, `src/state/pendings.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`, `src/state/store.ts`, +2 fichiers
+- `LDB 21` (l.9, l.20, l.21, l.23-25, l.27, l.29-35, l.37-39, l.41-51, l.54-57) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `openScriptedPsych`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, +38 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +18 fichiers
+- `LDB 85` (l.59, l.71, l.87, l.92, l.110, l.142, l.150, l.165, l.179, l.185, l.221, l.225, l.249, l.253, l.262, l.264, l.274, l.282, l.334, l.335, l.383) → `scene`, `planClimb`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, `Formula`, `moveEnv`, `maxWounds`, `woundsForSize`, +33 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/characteristics.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +18 fichiers
+- sans code : `LDB 85` (l.5, l.13, l.17, l.25, l.51, l.411)
 
 ---
 
@@ -3674,7 +3653,9 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 
 **Voir aussi** : Taille des créatures et modificateurs de combat · Charge, Course et Désengagement · Bandes de portée (À distance) · Initiative et Avantage · Traits d'attaque de créature (Arme, Morsure, Cornes, Attaque Caudale)
 
-**Implémente** : `src/data/traits.json` (entrées `bond`/`foulee`/`vol`/`grimpant`/`rapide`/`brutal`/`coriace`/`elite`/`endurant`/`grand`/`se-cabrer`/`fabrique` — descriptions verbatim ; modificateurs de carac. en `passive: [{op:'charMod'…}]` pour Brutal/Coriace/Élite/Grand/Rapide, `moveMod` pour le M de Brutal/Rapide ; capacités booléennes `leap`/`stride`/`fly`/`autoClimb`/`climbFullSpeed`/`bonusWoundsBE`/`mindless`/`woundsUseForce`/`freeTrample`). `src/engine/traits/dispatch.ts` : `hasLeap`/`hasStride`/`runMultiplier` (Bond ×2 prime, sinon Foulée ×1,5 — **pas de cumul**), `flyMeters`, `hasAutoClimb`/`hasClimbFullSpeed`, `traitBonusWoundsBE`, `isMindless`, `traitCapability`, `traitCharMods`/`traitMovementMod` (somme des `charMod`/`moveMod`). `src/state/combatFlow.ts` l.808/887/3794 applique `runMultiplier` à la Course/Charge ; l.3797-3798 fait du Vol un budget de mouvement (`flyMeters/2`, 1 case = 2 m). `src/state/spawn.ts` l.186/244 ajoute le Bonus d'Endurance aux Blessures pour **Endurant**, et l.207/265 met `psychImmune` pour **Fabriqué** (Tests Int/FM/Soc auto-réussis). `src/gameIso/usePlanAnim.ts` rend l'animation de Bond. **Fabriqué** — `src/engine/characteristics.ts` (`maxWounds`/`effectiveMaxWounds`) substitue le bonus de Force au bonus de Force Mentale dans le calcul des Blessures quand `woundsUseForce` est porté (#474). **Se Cabrer** — `src/state/combatFlow.ts` (`aiCreatureFreeAttacks`, coût de l'attaque gratuite `pietinement` ; `applyTrample`) et `src/state/combatSlice.ts` (`battleTrample`, gate d'ouverture) lisent `freeTrample` : l'Attaque de Piétinement (déjà câblée pour toute créature plus grande, LDB 85 l.387) devient gratuite (0 Avantage) au lieu d'1, modélisant le paiement par l'Action de Mouvement (#474) — la condition de Taille reste celle du Piétinement générique (`trampleTarget`), inchangée. **Grimpant** (#504) — `src/state/path.ts` (`TraverseCapability`/`MoveEnv.traverse`/`climbTraverseFor`, `neighborsOf` franchit une arête `WallSeg.climb` au pas normal) consommé par `reachable`/`pathTo`/`moveReachFor` ; `src/state/combatGeometry.ts` (`moveEnv`) et `src/state/combatFlow.ts` (`buildAiInput` → `EnemyTurnInput.traverse`, patron de `flying`) l'assemblent depuis les traits du mover — l'IA (`ai.ts` `chooseEnemyAction`) exploite alors les cases par-delà l'arête sans branchement dédié. `src/state/climbMove.ts` (`planClimb`, arg `autoSucceed`) et `src/state/store.ts` (`climbAcross`) résolvent le geste EXPLICITE (créature active) sans Test ni garde `requiresGrimpeur` (arbitrage : cette garde reste propre au Talent Grimpeur du JOUEUR, LDB 15 l.57) ; coût de Mouvement normal si `climbFullSpeed`. **Non implémentés en mécanique** (donnée descriptive seule) : pénalité **−20** au tir et **+1 niveau de Portée** du ciblage de **Vol** ; **Dressé : Guerre** (pas de Compétence Dressage/Nerveux en combat) ; trait **Fouissement** (ZI, la `TraverseCapability` de `path.ts` est conçue pour l'accueillir).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370) → `scene`, `planClimb`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, `moveEnv`, `sizeGrantedQualities`, `maxWounds`, `forceOpposedOutcome` ⚠sans-appelant, +37 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, `src/engine/flowCore.ts`, +19 fichiers
+- sans code : `LDB 85` (l.428-439), `ZI 2` (l.66-70), `ZI 14` (l.1029-1035), `Ubersreik 5` (l.22)
 
 ---
 
@@ -3802,7 +3783,9 @@ Côté inverse, l'adversaire **plus petit** gagne toujours **+10 pour toucher** 
 
 **Voir aussi** : Trait Taille — ajustement de profil et Points de Blessure ; Modificateur d'à-toucher au Tir selon la Taille de la cible ; Atouts d'arme Dévastatrice & Percutante ; règle optionnelle Frappe Mortelle ; Peur & Terreur (psychologie) ; Désengagement ; Tests opposés.
 
-**Implémente** : `src/engine/size.ts` — `SizeCategory`/`SIZE_ORDER` (7 catégories ordinales), `sizeGap`, `sizeGrantedQualities` (Dévastatrice +1 / Percutante +2), `sizeDamageMultiplier` (×N à partir de +2), `forceOpposedOutcome` (`autoWin`/`needCrit`/`normal` — *défini et testé mais non encore consommé par un flux de Force opposé/Empoignade*), `woundsForSize` (table de Blessures), `resizeBySteps`/`stepSize` (+10 F/E, −5 Ag par cran). `src/engine/combat.ts` — pénalité de Parade `parrySizePenalty = 2 × max(0, sizeGap)` (l.518), bonus `Taille (plus petit)` +10 (l.295), Frappe Mortelle/`res.cleave` si plus grand ou Nuée (l.562/593), `sizeGrantedQualities`/`sizeDamageMultiplier` appliqués aux Dégâts (l.842/847), `trampleResolve` Piétinement BF+0 (l.793-799), `SIZE_RANGED_MOD` à-toucher au Tir selon la Taille de la cible. `src/engine/psychology.ts` — `peurTerreurFromSize` (Peur écart ≥ 1 / Terreur écart ≥ 2, Indice = écart). `src/state/combatFlow.ts` — Désengagement gratuit du plus grand `freeDisengage` (l.674-677). `src/state/combatGeometry.ts` — repousse des plus petits (l.87). `src/state/combatManeuvers.ts` — cibles de Piétinement (`sizeGap >= 1`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 85` (l.339-340, l.343-355, l.357-387, l.391-406) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `SpecsSource`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, +6 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +4 fichiers
+- sans code : `ADE II 2` (l.563-589), `ZI 14` (l.1070, l.1075, l.1162)
 
 ---
 
@@ -3880,7 +3863,10 @@ Le profil ci-dessous porte le Trait **Nuée\*** (l'astérisque sur la créature 
 
 **Voir aussi** : Frappe Mortelle (LDB 14) ; Trait de créature Taille ; Psychologie (Peur/Terreur/Frénésie) ; Engagement & Désengagement ; Trait Endurant (calcul de PB) ; Modificateurs de Taille en combat.
 
-**Implemente** : Détection unique du trait via `isSwarm()` (`src/engine/traits/dispatch.ts`, capability `swarm`, source unique remplaçant les regex `/^Nu[eé]e\b/i`). Au spawn, `applySwarmBuild()` (`src/state/spawn.ts`) applique **+10 CC** et **×5 PB** (`wounds * 5`), et pose `swarm: true` + `psychImmune: true` sur le `Combatant`. En combat (`src/engine/combat.ts`) : tir sur nuée → push `{ label: 'Nuée (tir)', value: 40 }` ; `attacker.swarm || target.swarm` désactive les modificateurs de Taille (`noSize`, suppression du +10 « plus petit », de la pénalité de Parade de Taille, des Atouts/multiplicateurs de Taille sur les Dégâts) ; toute touche d'une nuée pose `res.cleave = true` (Frappe Mortelle). Dans `src/state/combatFlow.ts` : désengagement libre de la nuée (`mover.swarm`, l.676-677), enchaînement Frappe Mortelle sur simple touche (`sizeCleave`, l.1696), et perte de **−1 PB en fin de Round** pour chaque opposant Engagé avec une nuée (l.3418-3422). Rendu : gabarit « swarm » (`src/gameIso/rig/plans/defs/swarm.ts`, `composeSwarm.ts`). Données : `src/data/traits.json` (trait Nuée + capability `swarm`), créature `src/data/creatures.json` (squigs ZI via `spellspecs/creatures-zi.ts`). Tests : `src/state/nuee.test.ts`, `src/gameIso/rig/swarm/swarm.test.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 14` (l.5-8) → `OPTIONAL_RULES`, `cleaveAffordance`, `AttackResult`, `PendingCleave`, `PendingBladeTrap`, `GameState`, `applyOpposedCritical`, `applyAttackResult`, `createCombatSlice`, `applyOups`, +3 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, `src/state/store.ts`, +1 fichiers
+- `LDB 85` (l.199-200, l.252-253, l.346-355) → `STARTLE_CAUSE_LABELS`, `cannotStopOn`, `applySwarmBuild`, `weaponFromTrait`, `woundsForSize`, `Condition`, `TriggerCtx`, `availableAttacks`, `SpecsSource`, `combatTestPenalty`, +9 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/creatureEquip.ts`, `src/engine/flowCore.ts`, +11 fichiers
+- sans code : `ZI 1` (l.702-709), `ZI 13` (l.984), `ZI 14` (l.1070)
 
 ---
 
@@ -4066,7 +4052,9 @@ Le système redéfinit l'État _Hémorragique_ :
 
 **Voir aussi** : Critiques & Traumatisme (système du Livre de base, LDB 18) ; Mort & Inconscience (LDB 17/18) ; État _Hémorragique_ et États ; Localisations & coups inversés (LDB 13) ; Amputation et Aide Médicale / Chirurgie ; Atouts & Défauts d'arme (_Empaleuse / Percutante / Perforante / Taille_, LDB 62) ; ADE II — objets magiques (Massue Brise-Tibias).
 
-**Implemente** : `(non implémenté)`. Le jeu utilise le système de Critiques/Mort **du Livre de base**, pas l'alternative d'*Aux Armes*. Les déclencheurs AA (Critique sur double, table relancée non inversée, +10/PB au-delà de 0), les quatre tables AA, « Retenir ses coups », les Blessures Triviales « T » et la mort par accumulation de Critiques **n'existent pas** dans le code (`src/engine/conditions.ts`, `src/engine/combat.ts`). À noter : `usesSuddenDeath` (`src/engine/conditions.ts:347`) implémente la **Mort Subite du LDB 18** (sortie directe à 0 PB pour les figurants) — un mécanisme **distinct** de l'option « Mort Subite » d'AA, et non l'adoption du système alternatif. La table de Critiques codée est `src/data/criticals.ts` (verbatim LDB 18), sans variante AA.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `AA 7` (l.4-10, l.17-21, l.82-104, l.105-131, l.160-185) → `critEscalationSchema`, `healDifficulty`, `amputationSchema`, `CritEscalation`, `resolveAACritical`, `aaBleedUnconsciousDue`, `aaBleedUnconsciousApply`, `collectHeroRoundEndUpkeep`, `stampCriticalEscalation`, `tickDeath`, +2 — `src/data/criticals.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/aaCritical.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/trauma.ts`, +3 fichiers
+- sans code : `ADE II 4` (l.147), `AA 6` (l.554-558), `AA 7` (l.23-25, l.28-32, l.35-36, l.39-42, l.48-57, l.58-61) +4
 
 ---
 
@@ -4195,13 +4183,9 @@ Le **Tableau des Armes de Base** d'*Aux Armes* utilise ces nouveaux Atouts. Extr
 
 **Voir aussi** : LDB — États (Hémorragique, Inconscient, Exténué, À Terre, Empoisonné) ; LDB 13 — Combat & Critiques ; LDB 62 — Atouts/Défauts d'arme (Protectrice/Défensive/Taille version Livre de Base) ; AA — Atouts à distance (Salve, etc.) ; LDB 18 — Traumatisme (Blessures Critiques).
 
-**Implémente** :
-- État *Hémorragique* : `src/engine/conditions.ts` — `endOfRound` (perte de 1 Blessure/point en fin de Round, `bleedIgnoreLevel` pour Endurci), `bleedDeathRoll` (mort 10 %·n, double = coagulation −1 État + *Exténué* quand tous retirés). Données : `src/data/etats.json` (`hemorragique`).
-- *Déséquilibrée* : `src/data/qualities.json` (`desequilibree`, `passive: weaponRollMod phase=parryByDefender drMod=-1`) consommé par `parryDRAdjust` dans `src/engine/qualities/dispatch.ts`.
-- *Déstabilisante* : `src/data/qualities.json` (`destabilisante`, `effects[0]` Flow `onHit` → choix coût 2 Avantages → Test opposé Force/Athlétisme → `condition a-terre`). Note : la **chute de 2 m si monté** n'est pas modélisée (pas de monture).
-- *Taillade* : `src/data/qualities.json` (`taillade`, `capabilities.onCritCondition: "hemorragique"`) consommé dans `src/state/combatFlow.ts` (`caps.onCritCondition` → `addCondition`). Note : la dépense de **X Avantages supplémentaires** pour +1 *Hémorragique* n'est **pas** câblée (seul l'État sur Critique l'est).
-- *Tir de zone* : `src/data/qualities.json` (`tir-de-zone`, `capabilities.areaFire: true`) consommé dans `src/state/combatFlow.ts` (bout portant ≤ 1 case → +Indice Blessures ; sinon gerbe sur Indice cibles ≤ ⌈Indice/2⌉ cases). Note : la **réduction de Dégâts à Portée Extrême** n'est **pas** implémentée.
-- *Protectrice* (mise à jour AA) : `src/engine/qualities/dispatch.ts` — `protectriceAP` (PA partout en opposant, appliqué dans `src/engine/combat.ts`) et `rangedOpposeWeapon` (Protectrice ≥ 2 oppose les projectiles). Données : `src/data/qualities.json` (`protectrice`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `AA 7` (l.4-10) → `healDifficulty`, `aaBleedUnconsciousDue`, `aaBleedUnconsciousApply`, `collectHeroRoundEndUpkeep`, `tickDeath`, `createCombatSlice` — `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatSlice.ts`
+- sans code : `AA 7` (l.31), `AA 8` (l.67-76, l.79-81, l.83-85, l.87, l.89-95, l.98-108, l.131-147)
 
 ---
 
@@ -4369,7 +4353,7 @@ Notes : la **hache d'armes** choisit **Taille OU Empaleuse OU Assommante** (+ *D
 
 **Voir aussi** : Atouts et Défauts d'arme (Taillade, Empaleuse, Précise, Protectrice, Défensive, Piège-lame, À Enroulement, Enchevêtrement, Immobilisante) ; Armes à distance et munitions AA ; Combat à deux armes et main secondaire (LDB 13) ; Allonge et Charge (LDB 13/15) ; Armures et boucliers (LDB 63).
 
-**Implémente** : `src/data/trappings.json` — les armes de mêlée AA sont des objets app-owned tagués `source.book: "AA"` (hallebarde, marteau-à-bec-de-corbin, épée bâtarde, fleuret, rapière, fleau/fleau-a-grain/fleau-d-armes, brise-épée, main-gauche, gaffe, matraque, pavois, filet-leste, sabre, épée-de-cour, gantelet-a-pointes, gantelet-verrouille, ahlspiess, attrape-coquin, pertuisane-fauchard, serpe-de-guerre, zweihander-flamberge, etc.), chacun portant ses `qualities` (Atouts/Défauts) référencées par id depuis `src/data/qualities.json` (`piege-lame`, `protectrice` avec `value`, `defensive`, `taillade`, `a-enroulement`…). L'Atout *Piège-lame* est câblé via `hasBladeTrap` (`src/engine/qualities/dispatch.ts`) et son flux de combat (`src/state/combat/blade-trap-test.test.ts`). Les **règles spéciales conditionnelles** suivantes ne sont **pas** implémentées comme mécanique active : déploiement du Pavois en 2 Actions / Protectrice 5 directionnelle `(non implémenté)` ; lance de cavalerie repassant en arme improvisée hors Charge `(non implémenté)` ; bascule sabre Taillade 1A↔2A selon Base/Escrime `(non implémenté)` ; gantelet verrouillé (−20 / anti-lâcher) `(non implémenté)` ; fléau sans Corps à Corps (Fléau) → +Dangereuse + perte des Atouts `(non implémenté)` ; suppression de la pénalité −20 main secondaire via Corps à Corps (Parade) `(non implémenté)` ; Force d'entrave Cape 25 / Filet 55 `(non implémenté)`.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -4488,11 +4472,7 @@ C'est une **extension de la règle de Maladresse** : la Maladresse standard d'un
 
 **Voir aussi** : Armes à distance et munitions (table LDB) — *armes-distance-munitions-tables* (résolution identique du `— p. N` = Indice) ; Qualités/Défauts d'armes (Recharge, Dangereuse, À répétition/Salve, Tir de zone, Empaleuse, Percutante, Perforante, Imprécise, Précise, Pointue, Explosion) ; États Assourdi / Empêtré / Enflammé ; bandes de portée (LDB 62) ; Maladresse au combat (LDB 13/14) ; Trait Infecté (LDB 85) ; Armes d'équipe maniées en sous-effectif (AA p.124).
 
-**Implémente** :
-- Données : `src/data/trappings.json` — armes présentes par id (`arquebus-a-repetition` l.1364, `arquebuse` l.1451, `arquebuse-a-double-canon` l.8334, `arquebuse-a-meche` l.8370, `hache-arquebuse` l.8402, `hallebarde-arquebuse` l.8437, `Pistolet patte de griffon` l.8508…) et munitions (`cartouche-en-papier` l.8757, `poudre-impregnee-d-aqshy` l.8884…), source `{ book: "AA" }`, avec `qualities` par id (`empaleuse`/`perforante`/`tir-de-zone`/`salve`…) et le champ `reload` portant l'Indice de Recharge.
-- Qualités/Défauts câblés (moteur pur) : `src/engine/qualities/dispatch.ts` — `reloadDRTarget` (Recharge, **doublée** pour arme d'équipe maniée seul, AA p.124), `dangerousNine` (Dangereuse : jet raté incluant un 9 ; Arme d'équipe Indice ≥ 4 maniée seul devient Dangereuse), `magazineSize` (À répétition / Salve → Indice de chargeur), `critOnRoll` (Empaleuse, multiple de 10), `armourPierce`/`weaponDamageMod` (Perforante/Pointue/Percutante) ; `capabilities.areaFire` pour Tir de zone (`src/data/index.ts`, reconnu en donnée).
-- Rechargement runtime : `src/ui/ReloadModal.tsx` + `reloadBonusSL` (store, `src/state/combatSlice.ts`) ; flux `reload` dans `src/state/rollFlows.ts` ; consommé dans `src/state/combatFlow.ts`.
-- **Non câblés** (donnée présente, effet moteur dédié absent) : le **bonus +10 de la cartouche en papier au rechargement** `(non implémenté)` (seul `reloadBonusSL` en DR existe, pas un +10 conféré par la munition) ; la **maladresse étendue *Aqshy* (8 ET 9)** `(non implémenté)` (`dangerousNine` ne teste que le 9 ; pas de chemin distinct pour le seuil 8/9 de la poudre d'*Aqshy*) ; l'**Assourdi à 2 m de la balle de gros calibre**, l'**Empêtré du grappin** et la **durée de mèche des bombes** `(non implémenté)` au niveau munition (non confirmés comme effets de tir automatiques) ; le **+N d'Indice conféré par une munition** (Tir de zone +3, Recharge +2) `(non implémenté)` comme cumul automatique munition→arme.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -4635,7 +4615,7 @@ Le demigriffon décrit dans le Livre de base (p.318) est un **jeune** spécimen 
 
 **Voir aussi** : LDB — Combat monté (règles de base WFJDR p.163) ; LDB 85 — Trait Piétinement / Foulée ; LDB 15 — Mouvement, Course, Chute ; LDB 16 — États (Brisé, Surpris, Sonné, À Terre, Empêtré, Exténué) ; LDB 21 — Peur, Terreur, Calme ; Trait Nerveux ; Talents Cavalier émérite / Acrobaties équestres ; Compétences Chevaucher, Soin aux animaux, Dressage.
 
-**Implémente** : appairage cavalier↔monture et flux Monter/Descendre — `src/state/mount.ts` (`isRider`/`isMount`/`mountOf`/`riderOf`, `canMount`/`mountUp`/`dismount`). Mouvement emprunté à la monture — `mountMovement`/`movementRemaining` (`src/state/mount.ts`). +20 cible plus petite et −10 ciblage cavalier — `mountedAttackMods` (`src/state/mount.ts`, injecté dans l'`env` de `src/engine/combat.ts`). −20 Esquive monté + exception Acrobaties équestres — `mountedDodgePenalty` (`src/state/mount.ts`). Désarçonnement à la mort/HC de la monture — `handleMountDeath`/`sweepDismountDeaths` (`src/state/mount.ts`). Trait Dressé (Guerre/Magie/Monture/Dompté + **Cavalerie de Choc**) en donnée — `src/data/traits.json` (`dresse`, desc incluant la riposte Cavalerie de Choc). Profil Demigriffon adulte dressé — `src/data/creatures.json` (`demigriffon-adulte`, statbloc identique au RAW). Talents — `src/data/talents.json` (`cavalier-emerite`, `acrobaties-equestres`). UI montée — `src/ui/MountTargetModal.tsx`, `src/gameIso/MountedToken.tsx`, scénario de test `src/scenes/test-scenarios/12-monture.ts`. Charge traversante générique — `trampleTarget`/`TrampleModal` couvrent le **Piétinement (LDB 85)** ; le passage-outre **spécifique Cavalerie de Choc** (Esquive Intermédiaire +0 ou 4+BF, −2 m/créature, Taille ≥ stoppe) n'a **pas** de mécanique combat dédiée `(non implémenté)`. Avantages partagés monture↔cavalier (réserve combinée, ÷2) `(non implémenté)`. Test de Dressage d'identification/apprentissage et chute de monture (1d10+6, +1 m/Taille) `(non implémenté)`. Tests de maintien en selle États (Surpris +40 / Sonné +0 / Empêtré) et Test Chevaucher pour calmer le *Brisé* `(non implémenté)`. Table de localisation des Dégâts des Quadrupèdes `(non implémenté)` (la localisation utilise la table bipède).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -4865,7 +4845,7 @@ Si l'arme subit un **Incident de tir** à n'importe quel moment, en résoudre le
 
 **Voir aussi** : AA : Qualités et Défauts d'armes (Imprécise, Dangereuse, Recharge, Salve, Tir de zone, Explosion, Empaleuse, Perforante, Percutante, Dévastatrice, Pointue, Pointe d'arme) ; LDB 13 : Combat (Tir ciblé, DR, doubles/Critiques) ; LDB 18 : Traumatisme (Localisations, Blessures Critiques au bras) ; LDB 16 : États (*Surpris*, *À Terre*, *En flammes*) ; LDB 14 : Taille (catégories, modificateurs de Taille de cible) ; ADE II : Combat de masse (grandes batailles).
 
-**Implémente** : `src/engine/combat.ts` (`attackModifiers`, ligne 274-276) câble l'**Atout Salve** (pénalité −10 cumulative par tir supplémentaire via `attacker.shotsThisTurn`, `Combatant.shotsThisTurn` dans `src/engine/types.ts`). `src/engine/qualities/dispatch.ts` câble le **Défaut Arme d'équipe** en sous-effectif (`crewedSoloIndice` → `attackDRAdjust` *Imprécise* à Indice ≥ 3, `reloadDRTarget` recharge doublée à Indice ≥ 2, `dangerousNine` *Dangereuse* à Indice ≥ 4) et le **chargeur Salve** (`magazineSize` via `caps.salvo`/`caps.magazine`) ; ids Salve dans `src/engine/qualities/ids.ts`. Le **système de Structures** existe : catalogue (`src/data/structures.json`, profils ENC/Limite d'Encombrement/Endurance/Blessures/Pénalité de Couvert — `src/engine/types.ts` `StructureData`) câblé par `src/engine/structures.ts` (`isStructure`/`structureCombatant`/`siegeMultiplier`/`ramVsNonDoor`) ; table des **Critiques sur Structure** (`src/data/structure-criticals.json` + `src/engine/structureCritical.ts::rollStructureCritical`), wirée dans `src/state/combatFlow.ts`. Le **Tableau des Incidents de Tir d'Artillerie par Salve** (`src/data/artillery-misfire.json` + `src/engine/artilleryMisfire.ts::rollArtillerySalveMisfire`) est branché dans `src/state/combatFlow.ts::applyOups` (cas `misfire`, arme à Atout Salve). Les **armes/munitions de siège** existent en donnée (`src/data/trappings.json`, `subType: "armes-de-siege"`). Restent `(non implémenté)` : le tir raté (0 à −2 Degrés d'échec) touchant la Structure derrière la cible ratée, la pénalité de Taille ×N au corps à corps contre une Structure plus grande que l'attaquant, et la réparation par Test de Métier (Charpentier/Maçon).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -5021,7 +5001,7 @@ Si un guerrier rompt le combat mais que son opposant veut **toujours l'engager**
 
 **Voir aussi** : États (_Brisé_, _À Terre_, _Empêtré_, _Exténué_, _Surpris_) ; Avantage ; Engagement et désengagement (LDB) ; Déplacement et Course ; Tests de Calme / Résistance / Athlétisme ; Combat monté et véhicules.
 
-**Implémente** : le **désengagement** est implémenté d'après le LDB (pas le résumé AA) — `src/engine/engagement.ts` (`isEngaged`/`engage`/`disengageFrom`/`decayEngagement`, désengagement gratuit du plus grand / Nuée), `src/state/combatFlow.ts` (`startDisengage`, `disengageOutcome`), flux différé `disengage` dans `src/state/rollFlows.ts` (Test opposé d'Esquive, forçage Résilience), UI `src/ui/DisengageModal.tsx` (menu « Sacrifier l'Avantage / Esquiver / Fuir », **attaque gratuite +20 et Test de Calme → État _Brisé_ inline** sur « Fuir »). En revanche, **le système de Poursuite chiffré d'AA (Distance abstraite 0–N en mètres, seuils d'échappement, table de Progression, Obstacles, Épuisement, conversion Combat→Poursuite) n'est pas implémenté** : `combatDistance` (`src/state/footprint.ts`) est la distance de grille Chebyshev en cases, sans rapport avec la « Distance » de Poursuite — `(non implémenté)`.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -5133,7 +5113,7 @@ Ce système modifie aussi la liste des Actions de combat :
 
 **Voir aussi** : Avantage (système standard LDB, individuel) ; États À Terre / Aveuglé / Empêtré / En flammes ; Tests opposés et Degrés de Réussite (DR) ; Désengagement (remplacé par Retraite stratégique) ; Trait Instable (version LDB) ; Surprise et État Surpris ; Évaluer (Compétence en combat) ; Charge.
 
-**Implemente** : `(non implémenté)` — le code n'a que le système d'Avantage **individuel** du LDB : `src/engine/advantage.ts` (`gainAdvantage`, `advantageCap`, `advantageCapFor`) écrit dans `Combatant.advantage` (par combattant, plafonné). Les deux **réserves mutualisées** (alliés/adversaires), les **dépenses** AA (Battre / Coup tordu / Effort supplémentaire / Retraite stratégique / Action gratuite), le **transfert de fin de Round**, l'**Avantage Initial** situationnel et la variante AA du Trait **Instable** n'existent dans aucun module (aucun état de pool d'équipe : grep `advantagePool`/`allyAdvantage`/`enemyAdvantage` → néant).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -5262,7 +5242,7 @@ Capable de retourner les situations les plus désastreuses à votre avantage. Si
 
 **Voir aussi** : Avantage (réserve, gain/perte, surnombre) ; Manœuvres de combat (Battement, Désengagement, Retraite stratégique) ; Peur / Terreur (Taille) ; Rechargement & Tests étendus ; Armes d'équipe & artillerie (Défaut *Arme d'équipe*) ; Boucliers (défense).
 
-**Implémente** : `src/data/talents.json` (entrées `artilleur`, `battement`, `cavalier-emerite`, `commandant-d-equipe`, `coude-a-coude`, `distraire`, `frappe-blessante`, `fuite`, `impitoyable`, `porte-bouclier`, `rechargement-rapide`, `renversement`). ⚠️ Les fiches portent en majorité le **texte LDB** (la plupart `source.book: "LDB"`, seul `commandant-d-equipe` tagué `AA`), donc les **versions AA mises à jour ci-dessus ne sont PAS reflétées** : Battement (LDB « −1 par DR » au lieu de « −1 à 6 DR »), Distraire/Frappe Blessante/Impitoyable/Porte-Bouclier/Renversement/Coude-à-Coude divergent (cf. encadrés). Mécaniques effectivement **câblées en combat** via `src/engine/combatFeatures/` : `reloadDRBonus` (Artilleur=`reloadDR:"blackpowder"`, Rechargement Rapide=`reloadDR:"all"`), `fleeMovementBonus` (Fuite `fleeBonus`), `shieldAdvantageLevel` (Porte-Bouclier `shieldAdvantage`, **sémantique LDB**), `hasStealAdvantage` (Renversement `stealAdvantage`, **vole TOUS les Avantages — sémantique LDB**), `talentCritExtraWounds` (Frappe Blessante `critExtraWounds`, **+Blessures — sémantique LDB**), consommées par `src/state/combatFlow.ts` et `src/state/combatSlice.ts`. **Battement, Cavalier Émérite, Commandant d'Équipe, Coude-à-Coude, Distraire, Impitoyable n'ont pas de hook de combat** (`(non implémenté)` — données descriptives seulement).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -5453,7 +5433,7 @@ Listée dans la même annexe (le Personnage raconte ses aventures à un imprimeu
 
 **Voir aussi** : Talent Coude-à-coude · Talent Exaltant · Atouts d'armes (*Perforante* / *Dévastatrice* / *Percutante*) · Tableau des Critiques & Localisations · Degrés de Réussite (DR) · Interlude & Activités (Engagements LDB).
 
-**Implemente** : `(non implémenté)` — aucune des cinq Activités de guerrier n'est câblée. Le système d'interlude `src/state/interludeFlow.ts` (+ `src/engine/activities.ts`) ne couvre que les Activités RAW du Livre de base (Revenus/`statusIncome`, Artisanat/`craftTarget`, Apprentissage, banque) ; `PendingActivity`/`craftSpecOf`/`apprenticeshipTutorCost` ne référencent aucune des activités de guerrier (Grep : zéro occurrence de Fanmaris/Leitdorf/Alcatani/Punchausen/Contremaître/Tir parfait dans `src/state` ou `src/engine`).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -5516,7 +5496,7 @@ Ces 9 Miracles forment trois familles : **buffs de groupe** (Dévotion de la Vie
 > « Tant que le Miracle est actif, vous devez Charger et attaquer l'ennemi impénitent le plus proche. Vous pouvez relancer tous les jets de Compétence Corps à Corps que vous effectuez tant que le Miracle est actif. » — `AA 06 l.531`
 
 **Voir aussi** : LDB 42 — Miracles de Myrmidia (les 6 Miracles de base : Appel à la Fureur, Bouclier de Myrmidia, Inspirant, Lance de Myrmidia, Œil de l'aigle, Soleil flamboyant) ; LDB 21 — Psychologie (Terreur, États Brisé) ; LDB 13 — Combat (Charge, attaque gratuite, Désengagement/Fuite) ; Sans peur (Talent) ; AA — Carrière Prêtre de Myrmidia.
-**Implemente** : `src/data/spellspecs/miracles-myrmidia.ts` (les 9 SpellSpec *Aux Armes* curées : `MIRACLES_MYRMIDIA`, chacune `curated: true` avec sa `durationRounds` — `null`/Instantanée pour Commander la Légion et Connais Ton Ennemi, `4` pour Dévotion/Prouesses, `{ bonusOf: 'FM' }` pour En Bon Ordre/En Terrain Dangereux, `3` Frappe Rapide, `6` Fureur Vengeresse, `1` Terrifier l'Ennemi) ; `src/data/spells.json` (entrées « Commander la Légion », « Connais Ton Ennemi », « Dévotion de la Vierge Guerrière », « En Bon Ordre », « En Terrain Dangereux », « Frappe Rapide », « Fureur Vengeresse », « Prouesses Martiales », « Terrifier l'Ennemi »). Note : les effets purement tactiques/narratifs (ordre + bonus de Commandement du prêtre, révélation de profil, compulsion de Charge, attaque gratuite hors-tour conditionnelle, immunité au Brisé, modification du Désengagement) ne sont **pas** modélisés en GameOp — ils sont seulement journalisés/arbitrés MJ ; seules les durées, les buffs de caractéristique/Talent (Terreur 1, Sans peur, +10 CC/CT) et la ZdE sont structurés.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -5671,7 +5651,9 @@ Note spéciale : le **Canon à flammes nain** inflige **2 + DR États *En flamme
 
 **Voir aussi** : aa-structures-sieges (armes de siège *maniables* d'AA, stats distinctes — Baliste +12 / Recharge 3 vs ici +14 / Recharge 2) ; les entrées Combat (Tests spectaculaires, DR, États En flammes/Empoisonné/Empêtré/Surpris/À Terre/Sans défense) ; Corruption (Facteurs Environnementaux, influence corruptrice) ; Psychologie (Peur/Terreur/Animosité/Haine, Horreurs de la Guerre).
 
-**Implemente** : `(non implémenté)` — aucun système de combat de masse / Puissance de Bataille dans `src/` (les machines de guerre présentes dans `src/data/trappings.json`, ex. `baliste`/`mortier`/`batterie-tonnerre-de-feu`/`canon-a-repetition-feu-d-enfer`, sont des **armes maniables source AA p.122 aux stats différentes**, pas le système abstrait d'ADE II ; les nombreux `siege`/`rangee-sieges`/`fauteuil-loge` du décor sont des *sièges* au sens « chaises », sans rapport).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ADE II 8` (l.55-56, l.65-110, l.112-135, l.138-178, l.207-225, l.227-270, l.281-304, l.307-321) → `scene`, `warMachineCrewPenalty`, `MassBattleView`, `RAM_CREW`, `ActivityContext`, `isMeleeWarMachine`, `conditionalDamageNote`, `TestScenario`, `ramVsNonDoor`, `AreaHit`, +42 — `src/data/index.ts`, `src/data/schemas/defs/trappings.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/policy.ts`, +24 fichiers
+- sans code : `ADE II 8` (l.13-19, l.24-33, l.34-47, l.48, l.168-169, l.174-175, l.181-186, l.220-221) +1
 
 ---
 
@@ -5787,7 +5769,7 @@ Un ogre subit **-20 à tous les Tests** lorsqu'il tente d'utiliser des possessio
 
 **Voir aussi** : armes-melee-tables ; armes-distance-munitions-tables ; armures-tables ; atouts-defauts-armes ; ogres-regles-de-taille (Frappe Mortelle / Peur / Désengagement)
 
-**Implemente** : Les Atouts/Défauts cités sont tous présents en donnée (`src/data/qualities.json` : `assommante`, `dangereuse`, `defensive`, `devastatrice`, `empaleuse`, `impenetrable`, `percutante`, `perforante`, `pistolet`, `protectrice`, `taille`, `a-explosion`, et `Entraves`/`Recharge`). En revanche, les **armes et l'armure ogres elles-mêmes** (Massue ogre, Poing de fer, Grande massue ogre, Lance-harpon, Piège à chaînes, Grande lance, Canon crache-plomb, Pistolet ogre, munitions, Pansière ogre) ne sont **pas présentes** dans la base d'objets app-owned (`src/data/items.json`/`trappings`) — il s'agit d'équipement de créature, à ajouter via `giveTrapping`/Codex si nécessaire `(non implémenté)`. Les règles spéciales propres (poing de fer non désarmable, pistolet ogre incassable sauf Maladresse, corde du lance-harpon → portée 60 / perte d'Immobilisante) ne sont **pas câblées** au moteur `(non implémenté)`.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -5870,7 +5852,10 @@ Les Dégâts se réparent **définitivement** sur un Test de **Métier (Construc
 
 **Voir aussi** : Coups Critiques sur un navire (MDG) ; Collisions, Indice de Collision et béliers (MDG) ; Artillerie navale (MDG) ; Taille : catégories et modificateurs de combat ; Tableau de Localisation humanoïde ; Armures : table, PA, dégâts et réparation ; Résolution d'une attaque : les 4 étapes (jet inversé → Localisation).
 
-**Implémente** : `(non implémenté)` — aucun sous-système de Caractéristiques de navire (E/BE/B/BB), de Localisation de bateau, ni de combat naval dans `src/engine`. La résolution d'attaque (`src/engine/combat.ts`) et le BE (`src/engine/characteristics.ts`) ne modélisent que des combattants individuels.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.56-64, l.221, l.232-236) → `CollisionShip`, `cargoTone`, `schema`, `hullArmourBonus`, `resolveCollision`, `scene`, `OverloadPalier`, `ShipDossierView`, `OVERLOAD_HARD_CAP_PCT`, `belierRam`, +11 — `src/data/index.ts`, `src/data/schemas/defs/naval-traits.ts`, `src/engine/collision.ts`, `src/engine/navalTraits.ts`, `src/engine/seaVoyage.ts`, `src/engine/seaWeather.ts`, +9 fichiers
+- `MDG 13` (l.464, l.569-571, l.605-607, l.612-616, l.618-637, l.641-651) → `woundsFromHit`, `meleeVsHullBE`, `resolveCollision`, `isArtilleryWeapon`, `strandingPenalty`, `PortView`, `SeaVoyageState`, `RepairTick`, `isOutOfAction`, `buildSeaDayCascade`, +4 — `src/data/schemas/defs/sea-perils.ts`, `src/engine/collision.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/seaPerils.ts`, `src/engine/shipBuild.ts`, +6 fichiers
+- sans code : `MDG 13` (l.575-584)
 
 ## MDG : Coups Critiques sur un navire (Voie d'eau, Éclats, incendies)
 
@@ -5954,7 +5939,10 @@ Chaque table donne des **Blessures (T = effet temporaire), un effet et une Répa
 
 **Voir aussi** : Combat naval — Endurance, Blessures et Localisation (MDG) ; Artillerie navale (MDG) ; Critiques et Frappe Mortelle ; AA : système alternatif de Blessures et Critiques ; États (En flammes, À terre) ; Escalade, Saut et Chute (chute du gréement).
 
-**Implémente** : `(non implémenté)` — pas de table de Critiques de navire ni d'effets *Voie d'eau* / *Éclats* / propagation d'incendie de bateau dans `src/engine`. Les tables de Critiques existantes (`src/data/criticals.ts`) ne concernent que les Localisations humanoïdes ; l'État *En flammes* (`src/engine/conditions.ts`) ne modélise pas l'intensité/propagation navale.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.313) → `bandValue`, `SteamBreakdownEntry`, `effectiveSeaM`, `continueSeaDayAfterExhaustion`, `engineerOf`, `applySteamBreakdown`, `portInstallUpgrade` — `src/data/schemas/defs/steam-breakdown.ts`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`
+- `MDG 13` (l.596-601, l.656, l.660, l.664, l.668, l.672-676, l.680-688, l.747-756, l.758-766) → `woundsFromHit`, `ShipCritEntry`, `isArtilleryWeapon`, `beginShipwreck`, `RepairTick`, `isOutOfAction`, `OPTIONAL_RULES`, `GameOp`, `finalizeFastVoyage`, `runSeaDay`, +2 — `src/data/shipCriticals.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +4 fichiers
+- sans code : `MDG 13` (l.588-592, l.690-692, l.696-702, l.705-718, l.721-744)
 
 ## MDG : Collisions, Indice de Collision et béliers
 
@@ -6020,7 +6008,9 @@ Pour résoudre les Dégâts d'un choc contre un péril, le RAW donne des IC type
 
 **Voir aussi** : Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Charge (le pendant terrestre de l'éperonnage) ; Taille : catégories et modificateurs de combat.
 
-**Implémente** : `(non implémenté)` — pas de modèle de collision navale ni d'Indice de Collision dans `src/engine`. La Charge en combat (`src/state/combatFlow.ts`) ne couvre que des combattants individuels, sans Dégâts de masse de véhicule.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.221) → `CollisionShip`, `schema`, `resolveCollision`, `belierRam`, `bandValue`, `NavalTraitData`, `portInstallUpgrade` — `src/data/index.ts`, `src/data/schemas/defs/naval-traits.ts`, `src/engine/collision.ts`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`
+- `MDG 13` (l.427-438, l.442-446, l.448-462, l.464, l.479, l.485, l.497-499, l.526, l.533-537, l.560) → `collisionIndex`, `SeaHazardDef`, `resolveCollision`, `pickSeaHazard`, `perilManagement` ⚠sans-appelant, `strandingPenalty`, `rollStranding`, `rollDebrisEntangle`, `WHIRLPOOL_SWIM_TEST` ⚠sans-appelant, `SeaVoyageState`, +9 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/engine/collision.ts`, `src/engine/policy.ts`, `src/engine/seaNavigation.ts`, `src/engine/seaPerils.ts`, +4 fichiers
 
 ## MDG : Artillerie navale — pièces, portées, recharge et munitions
 
@@ -6085,7 +6075,9 @@ Un placement équilibré (ou compensé par du lest) n'impose aucune pénalité d
 
 **Voir aussi** : Atouts et Défauts d'arme (MDG : Arme d'équipe, Tir de zone) ; AA : Structures et armes de Siège (stats d'artillerie jumelles) ; Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Armes à distance et munitions (LDB) : groupes et tables ; Portée, Allonge et dégradation des armes ; Atouts et Défauts d'arme (Recharge, Dangereuse, Explosion, Percutante, Empaleuse, Perforante, Pointue).
 
-**Implémente** : `(non implémenté)` — l'artillerie navale n'est pas modélisée séparément. Les Atouts/Défauts partagés (Recharge, Dangereuse, Explosion, Empaleuse, Perforante, Pointue, Tir de zone) sont câblés dans `src/engine/qualities/dispatch.ts` et peuvent porter ces armes en donnée (`src/data/trappings.json`), mais le placement de pont, les Sabords/couvert et le Groupe d'armes Poudre noire (Ingénierie) ne le sont pas.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.356-364, l.369-379, l.381-395, l.401-407, l.413-426, l.430-435, l.462) → `ammoSeq`, `crewedPenalty`, `canon`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `SHIP_ARC_PREF`, `crewedFireWeapon`, `resolveVolley`, `navalDeckCover` ⚠sans-appelant, +19 — `src/data/index.ts`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, +16 fichiers
+- sans code : `MDG 12` (l.375, l.377, l.379)
 
 ## MDG : nouveaux Atouts et Défauts d'arme (Arme d'équipe, Tir de zone)
 
@@ -6132,7 +6124,8 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 
 **Voir aussi** : Artillerie navale (MDG) ; AA : Structures et armes de Siège (définitions jumelles d'*Arme d'équipe* et de *Salve*) ; Atouts et Défauts d'arme (Recharge, Dangereuse, Imprécise, Tir de zone, Explosion) ; AA : armes à poudre à canon et munitions — tables ; Combat à Distance : restrictions et règles de tir (bandes de portée).
 
-**Implémente** : Atout **Tir de zone** reconnu en donnée (`capabilities.areaFire`, `src/data/index.ts`) et porté par les armes à poudre/artillerie (`src/data/trappings.json`). Défaut **Arme d'équipe** : la pénalité de **recharge doublée en sous-effectif** est gérée par `reloadDRTarget` (`src/engine/qualities/dispatch.ts`) et le passage en **Dangereuse** d'une Arme d'équipe ≥ 4 maniée seul par `dangerousNine` ; le reste de la table (passage en *Imprécise*, cumul *Imprécise* + *Dangereuse*, −10 pour doublon de Défaut, « tous les membres affectés » sur Incident de tir) reste `(non implémenté)`. Le détail par bande de portée de *Tir de zone* (multi-cibles ≤ Indice m / +Indice à bout portant / −Indice à l'Extrême) est `(non implémenté)`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.442, l.444, l.446-456, l.458, l.460, l.462, l.464, l.466-472) → `crewedPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, `GameState`, +2 — `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
 
 ## Bilan de fidélité — passe de vérification adversariale
 

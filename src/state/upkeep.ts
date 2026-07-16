@@ -6,7 +6,7 @@
  * — une journée n'est jamais comptée deux fois, quel que soit le chemin emprunté.
  *
  * Par journée écoulée et par héros (#T3 — cascade RAW) :
- *  1. consommation d'une Ration (LDB p.302) sinon faim (LDB 18 l.417-422) — cf. `engine/provisions` ;
+ *  1. consommation d'une Ration (LDB p.302) sinon faim (LDB 18 l.337-343) — cf. `engine/provisions` ;
  *  2. progression des MALADIES (LDB 20 : incubation/durée en jours CALENDAIRES, repos ou pas) —
  *     `dailyDiseaseUpkeep` (+ soins d'un soignant au repos via `opts.caredFor`) ;
  *  3. CONVALESCENCE des Blessures critiques (LDB 18 l.317 : « un nombre de JOURS égal à 30 − BE »,
@@ -113,7 +113,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
   const party = get().party;
   const lines: string[] = [];
   let rations = 0;
-  // Accès à l'eau (LDB 18 l.420) : abondant au Reikland sauf règle `water-scarcity` ; en mer, suit les
+  // Accès à l'eau (LDB 18 l.340) : abondant au Reikland sauf règle `water-scarcity` ; en mer, suit les
   // tonneaux du navire (`vessel.waterLitres`) — stable sur l'entretien, calculé une fois.
   const waterLitres = get().vessel?.waterLitres;
   const hasWater = waterLitres != null ? waterLitres > 0 : rule('water-scarcity') !== true;
@@ -129,12 +129,12 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       const defer: UpkeepDeferTest | undefined = opts.onDeferTest
         ? (spec) => opts.onDeferTest!({ heroId: h.id, kind: spec.kind, label: spec.label, base: spec.base, target: spec.base + DIFFICULTY_MODIFIERS[spec.difficulty] + (spec.penalty ?? 0), meta: spec.meta })
         : undefined;
-      // 1. Nourriture (LDB 18 l.417-422).
+      // 1. Nourriture (LDB 18 l.337-343).
       const r = dailyFoodUpkeep(h, testValue(h, 'resistance', 'endurance'), bonus(effectiveChar(h, 'endurance')), battleRng(), defer);
       if (r.rationConsumed) rations++;
       if (r.damage > 0) loseWounds(h, r.damage);
       lines.push(...r.log);
-      // 1bis. Eau / Soif (LDB 18 l.420) — accès à l'eau calculé plus haut (`hasWater`).
+      // 1bis. Eau / Soif (LDB 18 l.340) — accès à l'eau calculé plus haut (`hasWater`).
       const w = dailyWaterUpkeep(h, hasWater, testValue(h, 'resistance', 'endurance'), bonus(effectiveChar(h, 'endurance')), battleRng(), defer);
       if (w.damage > 0) loseWounds(h, w.damage);
       lines.push(...w.log);

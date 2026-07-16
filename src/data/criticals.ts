@@ -29,7 +29,7 @@ export interface CritEntry {
   /** Test de Résistance (LDB 18) : ÉCHEC → ses `onFail` ops s'ajoutent à l'effet. Auto-résolu (seedé). */
   resist?: { difficulty: Difficulty; onFail: GameOp[] };
   lethal?: boolean;
-  /** Amputation (LDB 18 l.328-333) déclarée STRUCTURELLEMENT (plus de regex sur `desc`). */
+  /** Amputation (LDB 18 l.237) déclarée STRUCTURELLEMENT (plus de regex sur `desc`). */
   amputation?: Amputation;
   /** Traumatismes ENGENDRÉS (LDB 18) — refs d'id de fiches `traumas.json` ; la localisation vient de la table. */
   traumas?: string[];
@@ -48,7 +48,7 @@ export interface CritEntry {
   /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
   desc: string;
 }
-/** Amputation (LDB 18 l.328-333) — SOURCE UNIQUE de forme (LDB `criticals.json` + Aux Armes `aa-criticals.json`),
+/** Amputation (LDB 18 l.237) — SOURCE UNIQUE de forme (LDB `criticals.json` + Aux Armes `aa-criticals.json`),
  *  résolue par `resolveAmputation` (`src/engine/critical.ts`).
  *  - `difficulty` = Test de Résistance de l'Amputation (échec → À Terre ; DR≤−2 → +Sonné ; DR≤−4 → +Inconscient).
  *  - `sequels` = ids de fiches de séquelle PERMANENTE (`traumas.json`), instanciées par `permanentAmputations`.

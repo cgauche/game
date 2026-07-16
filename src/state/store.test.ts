@@ -860,7 +860,7 @@ describe('Boucle de jeu (store)', () => {
   // ── Couche tactique : Engagé + Charge + Désengagement (LDB 13-Combat / 15-Déplacement) ──
   const mh = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
-  it('Engagé : une attaque de mêlée pose le lien des deux côtés (LDB 13-Combat l.174-175)', () => {
+  it('Engagé : une attaque de mêlée pose le lien des deux côtés (LDB 13 l.169-171)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     hero.characteristics['capacite-de-combat'] = 70;
     useGame.setState({ party: [hero] });
@@ -910,7 +910,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingAttack?.fromCharge).toBe(true); // l'attaque doit suivre (l.75) — modale non annulable
   });
 
-  it('Charge interdite si déjà Engagé (LDB 15-Dépl l.74)', () => {
+  it('Charge interdite si déjà Engagé (LDB 15 l.35)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
@@ -931,7 +931,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingAttack).toBeNull();
   });
 
-  it('attackCancel après le JET d’une Charge est sans effet (charge engagée, LDB 15-Dépl l.75)', () => {
+  it('attackCancel après le JET d’une Charge est sans effet (charge engagée, LDB 15 l.35)', () => {
     // Avant le jet, une charge s'annule (misclic — cf. charge-undo.test.ts) ; une fois le dé lancé
     // (`result` posé), elle est ENGAGÉE : plus d'annulation.
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
@@ -979,7 +979,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingAttack?.targetId).toBe(mount.id);
   });
 
-  it('Désengagement A : Avantage supérieur → partir en le sacrifiant, sans consommer l’Action (LDB 15-Dépl l.87)', () => {
+  it('Désengagement A : Avantage supérieur → partir en le sacrifiant, sans consommer l’Action (LDB 15 l.47)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
@@ -1008,7 +1008,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingDisengage).toBeNull();
   });
 
-  it('Désengagement B échec : l’adversaire gagne +1 Avantage, fuite impossible, Action consommée (LDB 15-Dépl l.89)', () => {
+  it('Désengagement B échec : l’adversaire gagne +1 Avantage, fuite impossible, Action consommée (LDB 15 l.49)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
@@ -1040,7 +1040,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingDisengage).toBeNull();
   });
 
-  it('Désengagement B succès : +1 Avantage, libéré, Mouvement rouvert, Action consommée (LDB 15-Dépl l.89)', () => {
+  it('Désengagement B succès : +1 Avantage, libéré, Mouvement rouvert, Action consommée (LDB 15 l.49)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(3);
@@ -1103,7 +1103,7 @@ describe('Boucle de jeu (store)', () => {
     expect(stx.pendingDisengage!.atk!.roll).toBe(35); // jet du foe NON relancé
   });
 
-  it('Engagé : sélectionner « Déplacer » entre dans le Désengagement (LDB 15-Dépl l.84)', () => {
+  it('Engagé : sélectionner « Déplacer » entre dans le Désengagement (LDB 15 l.43)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(6);
@@ -1209,7 +1209,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.pos).toEqual(posBefore); // ni déplacement libre
   });
 
-  it('Désengagement — Fuir : adversaire +1 Avantage + coup dans le dos SUBI ; Test de Calme DIFFÉRÉ (flux flee) puis libéré et peut courir (LDB 15-Dépl l.98-109)', () => {
+  it('Désengagement — Fuir : adversaire +1 Avantage + coup dans le dos SUBI ; Test de Calme DIFFÉRÉ (flux flee) puis libéré et peut courir (LDB 15 l.59-68)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
@@ -2430,7 +2430,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     expect(useGame.getState().pendingAttack).not.toBeNull();
   });
 
-  it('reloadConfirm : cumul sous 0 → reloadProgress revient à 0 (Test étendu « recommence », 12-Tests l.200)', () => {
+  it('reloadConfirm : cumul sous 0 → reloadProgress revient à 0 (Test étendu « recommence », LDB 12 l.174)', () => {
     const { H } = archer();
     H.loaded = false;
     H.reloadProgress = 1;
@@ -2471,7 +2471,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.aiming).toBeFalsy();
   });
 
-  it('interruption : un héros touché en plein rechargement repart de zéro (63-Armures l.29)', () => {
+  it('interruption : un héros touché en plein rechargement repart de zéro (LDB 62 l.335)', () => {
     const { H, E } = archer();
     H.reloadProgress = 1;
     H.loaded = false;

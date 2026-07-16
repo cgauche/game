@@ -40,7 +40,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     expect(c.wounds.current).toBe(8); // 4 + 4 (volet b uniquement)
   });
 
-  it('repos de plusieurs jours : volet a + volet b cumulés CHAQUE jour (LDB 18 l.380)', () => {
+  it('repos de plusieurs jours : volet a + volet b cumulés CHAQUE jour (LDB 18 l.296)', () => {
     const c = hero({ wounds: { current: 0, max: 100 } }); // E 40 → BE 4 ; pas de plafond
     restRecovery(c, { int: () => 30 }, 3); // 3 jours, chaque jour Résistance réussie (DR 3)
     expect(c.wounds.current).toBe(33); // 3 × (volet a 7 + volet b 4)
@@ -53,7 +53,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
     expect(stacks(c, 'extenue')).toBe(1); // l’ancien dissipé, un nouveau gagné
   });
 
-  it('un héros Inconscient soigné > 0 PB reprend connaissance (LDB 18 l.28)', () => {
+  it('un héros Inconscient soigné > 0 PB reprend connaissance (LDB 18 l.15)', () => {
     const c = hero({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], roundsAtZero: 3 });
     restRecovery(c, { int: () => 30 }); // Résistance réussie → soigne 7 PB (>0)
     expect(c.wounds.current).toBeGreaterThan(0);

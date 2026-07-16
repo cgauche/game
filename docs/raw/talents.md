@@ -1124,7 +1124,7 @@ Vous pouvez voir parfaitement dans les ténèbres naturelles. En présumant que 
 
 **Voir aussi :** `vision.md` — brouillard de guerre, zones éclairées, états lumineux par case ; `equipement.md` § Éclairage — rayons de Bougie (10 m) et Lanterne (20 m), étendus de +20 m / niveau par ce Talent.
 
-**Implémente :** `src/state/vision.ts` — `DARK_SIGHT_RANGE` (20 m / niveau × ½ = 10 cases / niveau) ; `src/data/index.ts` (talent `vision-nocturne` — Nains, Halflings, Hauts Elfes, Elfes Sylvains l'ont à la création).
+**Implémente :** (non implémenté)
 
 ### Visions sacrées
 **Source :** LDB p.147  

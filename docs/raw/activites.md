@@ -113,7 +113,8 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 | 95–97 | **Considération Inattendue** | Récompense d'un PNJ aidé par le passé. Peut être un objet ou une bourse (disponible à la prochaine aventure). |
 | 98–00 | **Mercenaires Particuliers** | Entraînement/Apprentissage particulier : −20 % des coûts. *Entraînement au Combat* : +20 % à tout Test adapté. |
 
-**Implémente :** `src/data/interludeEvents.json` (données verbatim) + `src/data/interludeEvents.ts` (`interludeEventFor(roll)`, `INTERLUDE_EVENTS`) + tests `src/data/interludeEvents.test.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 22` (l.11-135) → `OPTIONAL_RULES`, `EFFECT_HANDLERS` — `src/engine/policy.ts`, `src/state/combatEffects.ts`
 
 ---
 
@@ -127,7 +128,9 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 
 L'argent non sécurisé (voir *Opérations Bancaires*) disparaît avant la prochaine aventure. Les Revenus sont crédités **après** le gaspillage (LDB 23 l.191 : « seulement une fois que vous avez disposé de l'argent de votre dernière aventure »).
 
-**Implémente :** `src/state/interludeFlow.ts` (logique de clôture — argent gaspillé, revenus crédités à la fermeture).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.14-19) → `MassBattleState`, `consumeActivity`, `heroBudget`, `OPTIONAL_RULES`, `confirmActivity` — `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
+- sans code : `LDB 23` (l.191)
 
 ---
 
@@ -148,7 +151,9 @@ Si un Personnage a atteint le **Niveau 3 ou 4** de son Évolution de Carrière e
 
 Le Statut inférieur entraîne des Revenus moindres lors des futures Activités. Pour récupérer le Niveau perdu : payer à nouveau le coût en PX.
 
-**Implémente :** `src/state/interludeFlow.ts` — garde `didRevenus` par héros, descend `careerLevel` si absent (testé `src/state/interlude-flow.test.ts` l.78).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.22-56) → `startInterlude`, `OPTIONAL_RULES` — `src/engine/policy.ts`, `src/state/interludeFlow.ts`
+- sans code : `LDB 23` (l.31-37)
 
 ### Amélioration Elfique / Prestige Elfique
 
@@ -163,7 +168,8 @@ Les Personnages **elfes** doivent entreprendre **1 Activité** supplémentaire p
 
 **Règle optionnelle :** flag `interlude-elf-duty` (`src/engine/policy.ts` l.342-348).
 
-**Implémente :** `src/state/interludeFlow.ts` l.100-103.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.40-56) → `startInterlude`, `OPTIONAL_RULES` — `src/engine/policy.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -192,7 +198,9 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Succès → Talent appris.
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
-**Implémente :** `src/engine/activities.ts` — `apprenticeshipTutorCost(talentXpCost, rng)` (l.46-52), `tutorCostRange(talentXpCost)` (l.128-132), `learnableTalents(hero)` (l.144-163) ; flux `src/state/interludeFlow.ts` ; `learnFails?: Record<string, number>` stocke les bonus d'échec.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.5, l.59-250) → `BankDeposit`, `MassBattleState`, `consumeActivity`, `heroBudget`, `OPTIONAL_RULES`, `numPrice`, `confirmActivity` — `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
+- sans code : `LDB 23` (l.197)
 
 ---
 
@@ -227,7 +235,8 @@ Créer de l'équipement du Guide de l'équipement (LDB ch.11) si le Personnage p
 
 Chaque Activité *Artisanat* = un lancer de Test étendu. Le travail inachevé se conserve.
 
-**Implémente :** `src/engine/activities.ts` — `craftTarget(tier, avail, atouts, defauts)` (l.38-44), `craftSpecOf(t)` (l.82-95), `craftCatalog()` (l.116-125) ; `craft?` dans `InterludeHeroState` (`src/state/interludeFlow.ts` l.46).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.75-103) → `OPTIONAL_RULES`, `numPrice` — `src/engine/activities.ts`, `src/engine/policy.ts`
 
 ---
 
@@ -241,7 +250,8 @@ Avec accord du MJ :
 
 Le temps illustre présentations, pots-de-vin, licences, etc.
 
-**Implémente :** `src/state/partyFlow.ts` (changement de carrière via l'avancement — distinct de l'Activité).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.105-108) → `OPTIONAL_RULES`, `numPrice` — `src/engine/activities.ts`, `src/engine/policy.ts`
 
 ---
 
@@ -258,7 +268,8 @@ Sur succès d'une consultation de savoir : gagne une **Relance Experte** (utilis
 
 Une relation établie avec un expert = consultable gratuitement (sans Activité) lors des futurs interludes.
 
-**Implémente :** non implémenté comme Activité discrète dans le flux — la consultation experte est laissée au MJ (pas de Test automatique dans `src/state/interludeFlow.ts`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.111-126) → `OPTIONAL_RULES`, `numPrice` — `src/engine/activities.ts`, `src/engine/policy.ts`
 
 ---
 
@@ -268,7 +279,7 @@ Une relation établie avec un expert = consultable gratuitement (sans Activité)
 
 Test **Dressage Accessible (+20)**. Succès → ajouter 1 Compétence à un animal, choisie parmi les Traits **Dressé** (LDB p.339).
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -282,7 +293,8 @@ S'entraîner dans une Compétence ou Caractéristique **en dehors de la Carrièr
 - Compétences de Base + Caractéristiques : PX + **1D10 sous de cuivre** (où PX = coût en PX de l'Augmentation).
 - Compétences Avancées : **double** du montant ci-dessus.
 
-**Implémente :** non implémenté comme Activité distincte de l'Avancement (les Tests de Caractéristiques hors carrière ne sont pas séparés dans le flux actuel).
+**Implémente :** (non implémenté)
+- cité par tests seulement : `src/engine/activities.test.ts`
 
 ---
 
@@ -300,7 +312,8 @@ Système transversal aux Activités : une **Faveur** est un engagement futur acc
 | **Majeure** | Entreprise longue et risquée, plusieurs semaines, peut impliquer un voyage | 2+ Activités consécutives |
 | **Importante** | Risque mortel, mois de voyage, violence extrême probable | Joué comme aventure complète (pas via Activités) |
 
-**Implémente :** non implémenté (système de PNJ/MJ — pas de données structurées dans le store actuel).
+**Implémente :** (non implémenté)
+- cité par tests seulement : `src/engine/activities.test.ts`
 
 ---
 
@@ -316,7 +329,8 @@ En deux étapes :
 - *Artisanat* : Test Très difficile (−30) ; matériaux = 2× le prix courant des équipements à combiner ; Disponibilité = celle de l'équipement le plus limité.
 - *Passer commande* : trouver d'abord un expert (*Consulter un expert*) ; coût = 6× le prix courant des équipements à combiner.
 
-**Implémente :** non implémenté.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.154-162) → `BankDeposit` — `src/state/interludeFlow.ts`
 
 ---
 
@@ -338,7 +352,8 @@ Permettent de **sauver des fonds** pour la prochaine aventure (sinon perdus selo
 
 > *Exemple verbatim* — « Gerhard décide de placer son argent dans la prestigieuse banque privée Bent, Crooke & Scarper. Le MJ lance 1d10 avec un résultat de 6. Gerhard gagnera 6 % d'intérêts sur son placement (12 pistoles d'argent), et la banque fera faillite s'il fait 6 ou moins en lançant le d100 quand il tentera d'effectuer un retrait. »
 
-**Implémente :** `src/engine/activities.ts` — `bankWithdrawOutcome(kind, rate, roll)` (l.54-58) + `bankPayout(kind, amountBrass, rate)` (l.60-65) ; `BankDeposit` dans `src/state/interludeFlow.ts` (l.57-65) ; flux dans `src/state/interludeFlow.ts` (gestion invest/stash, Émeutes → faillite immédiate). **Écart code↔RAW** : la restriction Statut Or/Argent pour « Investir » n'est pas vérifiée côté code (arbitrage jeu-sans-MJ acceptant tout Statut).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.165-176) → `BankDeposit` — `src/state/interludeFlow.ts`
 
 ---
 
@@ -354,7 +369,9 @@ Acquérir des objets de rareté **Exotique** (ou très spécialisés, jamais en 
 
 Un seul objet Exotique par Activité *Passer commande*.
 
-**Implémente :** `src/engine/activities.ts` — `orderCatalog()` (l.166-174, filtre Exotique/ND) ; `pendingOrders` dans `src/state/store.ts` (l.351) ; livraison à l'ouverture de l'interlude suivant `src/state/interludeFlow.ts` (l.79-88).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.179-184) → `BankDeposit` — `src/state/interludeFlow.ts`
+- sans code : `LDB 23` (l.182)
 
 ---
 
@@ -381,7 +398,9 @@ Test de Compétence de Carrière :
 
 Les Personnages aux Niveaux 3-4 qui entreprennent *Revenus* **maintiennent automatiquement leur Statut** (voir *Avec le pouvoir*).
 
-**Implémente :** `src/engine/activities.ts` — `statusIncome(tier, standing, rng, outcome)` (l.176-192) ; flux dans `src/state/interludeFlow.ts` ; test compétence via `rollFlows.ts` (`activity` spec).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 8` (l.106-122) → `actorStatus`, `openCatalogActivity`, `runActivityResolver` — `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`
+- sans code : `LDB 23` (l.187-193)
 
 ---
 
@@ -402,7 +421,8 @@ Apprendre des rumeurs de loin. Test **Ragot Intermédiaire (+0)**.
 - Succès → 1 rumeur (chaque DR = 1 rumeur supplémentaire, possiblement liée à la prochaine aventure).
 - Échec Impressionnant → rumeur fausse crue vraie (MJ peut lancer en secret).
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
+- cité par tests seulement : `src/state/interlude-activities.test.ts`
 
 ---
 
@@ -416,7 +436,7 @@ S'entraîner avec les armes connues. Test **Compétence (Corps à corps ou Proje
 
 Peut être entrepris plusieurs fois (une inversion par Activité réussie).
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -431,7 +451,7 @@ Test **Perception Intermédiaire (+0)** (Difficulté modifiée selon la cible).
 - Succès → peut **inverser** un Test concernant la cible **une fois** pendant la prochaine aventure.
 - DR supplémentaires → informations (ou désinformations !) sur la cible.
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -446,7 +466,7 @@ Test **Savoir Accessible (+20)** (spécialisation appropriée). Sans la bonne sp
 - Succès → connaissance intéressante, utile ou cachée (chaque DR = une tranche supplémentaire).
 - Échec Impressionnant → fausse information crue vraie (MJ peut lancer en secret).
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -463,7 +483,7 @@ Dépenser de l'argent pour augmenter son Standing de +1 pour la prochaine aventu
 - Échec → argent perdu (aucun effet).
 - Échec Stupéfiant (−6) → Standing −1 pour la prochaine aventure entière.
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -487,7 +507,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 - Succès Impressionnant/Stupéfiant → lynchage ou incendie possible.
 - Échec → pas de révolte ; Échec de plusieurs DR → la cible apprend vos actions.
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -506,7 +526,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 | **Fabuleuse Vente des Aventures du Comte de Punchausen** | Charme Complexe (−10) **ou** Divertissement (Narration) Intermédiaire (+0) | Reçoit 2d10 pistoles + 1× inversion Test Charme/Narration dans l'aventure |
 | **Remaniement du Contremaître** | Ragot (+0) pour localiser, puis Corps à Corps **ou** Projectiles Complexe (−10) | Reçoit l'objet désiré + Critique sur localisation aléatoire (gravité variable selon résultat) |
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -532,7 +552,7 @@ Contexte : préparation d'une bataille (siège, campagne militaire). Les Activit
 
 **Option coût de la guerre** : entretien = Σ Statuts des soldats/jour (réduction 50 % → −10 à tous les Tests de Puissance ; aucun entretien → armée se disperse en 2 jours).
 
-**Implémente :** non implémenté.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -560,7 +580,7 @@ Les Activités de voyage durent toute une Étape de voyage et restent **fatigant
 
 Note sur les Revenus en voyage : l'Activité *Revenus* (LDB 23) n'est **pas adaptée** pour la plupart des Carrières en voyage — sauf juges/huissiers itinérants, chasseurs, éclaireurs, cochers (EDOC l.125-126).
 
-**Implémente :** `src/state/travelFlow.ts` (voyage jour par jour) — les Activités de voyage spécifiques à l'EDOC ne sont pas implémentées individuellement.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -575,7 +595,7 @@ Requiert accès à un lieu de repos (hospice, monastère, temple). Contexte : su
 - Succès → éliminer **un Trait Psychologique** de son choix.
 - Échec → se sent mieux quand même ; peut **inverser** un Test de **Calme** pour résister aux effets du Trait lors de la prochaine aventure.
 
-**Implémente :** `src/state/restFlow.ts` (repos/infirmerie) — la suppression de Trait Psychologique via Convalescence n'est pas implémentée.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -629,7 +649,8 @@ Le détail : chaque Personnage dispose d'**une Activité par semaine de 8 jours*
 
 **Voir aussi** : [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Apprentissage particulier, Artisanat, Entraînement, Invention !), [Activités de Classe (LDB 23)](#activités-de-classe-ldb-23) (Recherche de savoir, Semer la dissension, Entraînement au combat), [Activités de Guerrier — AA Annexe II](#activités-de-guerrier--aa-annexe-ii), [Commerce d'opportunité (en mer)](#commerce-dopportunité-en-mer), [Cartographie (Activité en mer)](#cartographie-activité-en-mer), [Entraînement d'équipage](#entraînement-déquipage), [Entretien du navire](#entretien-du-navire).
 
-**Implémente** : (non implémenté) — voyage maritime longue durée et Activités à bord absents de `src/state/travelFlow.ts` (voyage terrestre jour par jour uniquement).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 15` (l.17, l.266-272) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `WorldMapView`, `SeaVoyageState`, `SEA_WEEK_DAYS`, `startTravel`, `cruiseM`, `PendingExtendedTest`, `runSeaDay`, `PendingCascade`, +4 — `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, `src/state/store.ts`, `src/state/travelFlow.ts`, `src/ui/SeaActivitiesModal.tsx`, +1 fichiers
 
 ---
 
@@ -652,7 +673,8 @@ Activité de spéculation rapide lors d'une escale appropriée. Le Personnage **
 
 **Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
 
-**Implémente** : (non implémenté).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `bankWithdrawOutcome`, `buildPostProgressionSteps`, `OPTIONAL_RULES`, `bankWithdrawInner`, `PendingExtendedTest`, +4 — `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, +2 fichiers
 
 ---
 
@@ -670,7 +692,8 @@ Dessiner une carte revendable et utile à l'orientation. **Test de Métier (Cart
 
 **Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC ch.5](#activités-de-voyage--edoc-ch5) (Établir des Cartes — équivalent terrestre).
 
-**Implémente** : (non implémenté).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `bankWithdrawOutcome`, `buildPostProgressionSteps`, `OPTIONAL_RULES`, `bankWithdrawInner`, `PendingExtendedTest`, `PendingCascade`, `GameState`, +1 — `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, +2 fichiers
 
 ---
 
@@ -688,7 +711,8 @@ Former l'équipage (PNJ) dans une **Compétence utile à la gestion du bateau**.
 
 **Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
 
-**Implémente** : (non implémenté).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `bankWithdrawOutcome`, `buildPostProgressionSteps`, `OPTIONAL_RULES`, `bankWithdrawInner`, `PendingExtendedTest`, `PendingCascade`, `GameState`, +1 — `src/data/schemas/defs/sea-cargo.ts`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, +3 fichiers
 
 ---
 
@@ -712,5 +736,6 @@ Réparer l'usure du vaisseau (planches pourries, voiles, coque incrustée). **De
 
 **Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Artisanat](#artisanat) (Métier, Test étendu).
 
-**Implémente** : (non implémenté).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `bankWithdrawOutcome`, `bankWithdrawInner`, `PendingCascade`, `GameState` — `src/data/schemas/defs/sea-cargo.ts`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/store.ts`, +1 fichiers
 

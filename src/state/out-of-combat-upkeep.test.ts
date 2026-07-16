@@ -25,7 +25,7 @@ describe('outOfCombatUpkeep — États qui tickent HORS COMBAT (couture A, LDB 1
     const c = mk({ current: 8, advantage: 2, conditions: [{ name: 'empoisonne', value: 1 }] });
     outOfCombatUpkeep([c], 3, fixed(50)); // 3 Rounds ; jet 50 = pas de mort par hémorragie
     expect(c.wounds.current).toBe(5); // 8 − 3×1
-    expect(c.advantage).toBe(0); // perdre des PB → perte de tout l'Avantage (LDB 15 l.40)
+    expect(c.advantage).toBe(0); // perdre des PB → perte de tout l'Avantage (LDB 14 l.219)
   });
 
   it('Empoisonné : le Test de Résistance se résout AUSSI hors combat (RAW l.66-72) — succès → poison retiré + Exténué', () => {
@@ -63,7 +63,7 @@ describe('outOfCombatUpkeep — États qui tickent HORS COMBAT (couture A, LDB 1
     expect(c.dead).toBe(true);
   });
 
-  it('Premiers Secours hors combat (infirmerie, Test de Guérison réussi retire l’État, LDB 09-Compétences l.261 / 16-États l.107-109) évite la mort SANS consommer de Destin', () => {
+  it('Premiers Secours hors combat (infirmerie, Test de Guérison réussi retire l’État, LDB 09 l.261 / LDB 16 l.107-109) évite la mort SANS consommer de Destin', () => {
     const c = mk({ current: 3, conditions: [{ name: 'hemorragique', value: 3 }], fate: 0 });
     applyStopBleed(c, 2); // panse : Test de Guérison réussi, DR 2 → retire 1+2 = 3 pions (tous)
     expect(hasCondition(c, 'hemorragique')).toBe(false);

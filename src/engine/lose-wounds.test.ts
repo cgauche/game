@@ -6,7 +6,7 @@ function mk(current: number, advantage: number, conditions: { name: string; valu
   return { name: 'X', wounds: { current, max: 10 }, advantage, conditions } as unknown as Combatant;
 }
 
-describe('loseWounds — perte de PB centralisée + conséquences (LDB 15 l.40 / 18 l.28)', () => {
+describe('loseWounds — perte de PB centralisée + conséquences (LDB 15 l.40 / 18 l.15)', () => {
   it('perdre ≥1 PB → perd TOUT l’Avantage', () => {
     const c = mk(8, 3);
     expect(loseWounds(c, 5)).toBe(5);

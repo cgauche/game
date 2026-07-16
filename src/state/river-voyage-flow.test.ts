@@ -344,7 +344,7 @@ describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExpos
   });
 });
 
-describe('entretien du jour de voyage — la Faim se résout À LA HALTE, après le repas (LDB 18 l.417-422)', () => {
+describe('entretien du jour de voyage — la Faim se résout À LA HALTE, après le repas (LDB 18 l.337-343)', () => {
   const stripRations = () => set({ party: get().party.map((h) => ({ ...h, items: (h.items ?? []).filter((i) => i.trappingId !== 'ration'), hunger: undefined })) });
 
   it('AUCUN Test de Faim n\'est roulé EAGER pendant le jour de descente (avant la halte)', () => {

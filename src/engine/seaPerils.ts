@@ -1,19 +1,19 @@
 /**
- * PÉRILS EN MER — couche PURE de MDG ch.13 (l.423-564), données verbatim dans `src/data/sea-perils.json`.
+ * PÉRILS EN MER — couche PURE de MDG 13 l.423-564, données verbatim dans `src/data/sea-perils.json`.
  * Les COLLISIONS elles-mêmes (Indice de Collision, facteurs) vivent déjà dans `collision.ts` — ici les
  * périls ENVIRONNEMENTAUX qui les déclenchent et leurs états propres :
- *  - **Échouer** (l.471-473) : le navire s'arrête net ; dégagement = Test de Force avec une pénalité
+ *  - **Échouer** (MDG 13 l.471-473) : le navire s'arrête net ; dégagement = Test de Force avec une pénalité
  *    égale au total d'Encombrement du navire et de sa cargaison.
- *  - **Icebergs / Débris marins / Rochers / Bas-fonds** (l.475-499) : IC moyens, chances d'échouage,
+ *  - **Icebergs / Débris marins / Rochers / Bas-fonds** (MDG 13 l.475-499) : IC moyens, chances d'échouage,
  *    empêtrement dans les débris (pénalité par Taille du bateau + Test étendu de Force pour se dégager).
- *  - **Détroits** (l.501-511) : entraînement au M du courant + pénalité aux Tests de Navigation.
- *  - **Tourbillons** (l.514-537) : M / Zone / Man / IC / Évasion des cinq gabarits.
- *  - **Gestion des périls** (l.429-438) : Perception pour repérer / Manœuvre pour éviter, par distance ;
- *    « Un Test d'Orientation est toujours nécessaire après avoir croisé un péril » (l.438).
+ *  - **Détroits** (MDG 13 l.501-511) : entraînement au M du courant + pénalité aux Tests de Navigation.
+ *  - **Tourbillons** (MDG 13 l.514-537) : M / Zone / Man / IC / Évasion des cinq gabarits.
+ *  - **Gestion des périls** (MDG 13 l.429-438) : Perception pour repérer / Manœuvre pour éviter, par distance ;
+ *    « Un Test d'Orientation est toujours nécessaire après avoir croisé un péril » (MDG 13 l.438).
  * Branché sur l'événement de bord `collision` (#444, `seaVoyageFlow.ts` `case 'collision'`) :
  * `pickSeaHazard` tire le péril, `rollStranding`/`strandingPenalty` l'Échouage (Rocher/Bas-fonds),
  * `rollDebrisEntangle` l'empêtrement (Débris marins) — `damageHull`/`damageVesselHull` seuls écrivent
- * `state.vessel.wounds`. `perilManagement` (Perception/Manœuvre par distance, l.429-438) reste ORPHELIN :
+ * `state.vessel.wounds`. `perilManagement` (Perception/Manœuvre par distance, MDG 13 l.429-438) reste ORPHELIN :
  * aucune simulation de péril approchant à distance décroissante n'existe côté état (le tirage de bord est
  * un jet unique « sans prévenir ») — cf. rapport #444.
  */
@@ -34,7 +34,7 @@ export interface SeaHazardDef {
   entanglePenalties?: { minSize?: ShipSize; maxSize?: ShipSize; manDR: number; mMod: number }[];
   freeTest?: { skillId: string; difficulty: Difficulty; totalDR: number };
   desc: string;
-  /** Poids du TIRAGE parmi les périls d'une collision (#444) — MAISON : le RAW (l.475-499) ne donne
+  /** Poids du TIRAGE parmi les périls d'une collision (#444) — MAISON : le RAW (MDG 13 l.475-499) ne donne
    *  aucune fréquence relative entre Icebergs/Débris marins/Rocher/Bas-fonds. Éditable ; absent = 1
    *  (équiprobable), voir `hazardsWeightNote` en tête de `sea-perils.json`. */
   weight?: number;
@@ -71,7 +71,7 @@ export const findStrait = (id: string): StraitDef | undefined => DATA.detroits.f
 export const findWhirlpool = (id: string): WhirlpoolDef | undefined => DATA.tourbillons.find((w) => w.id === id);
 
 /** Tire le péril RENCONTRÉ lors d'une collision (Iceberg/Débris marins/Rocher/Bas-fonds) — pondéré par
- *  `SeaHazardDef.weight` (#444, MAISON : le RAW l.475-499 ne fixe aucune fréquence relative). PUR. */
+ *  `SeaHazardDef.weight` (#444, MAISON : le RAW MDG 13 l.475-499 ne fixe aucune fréquence relative). PUR. */
 export function pickSeaHazard(rng: RNG = defaultRNG): SeaHazardDef {
   const weights = DATA.hazards.map((h) => Math.max(0, h.weight ?? 1));
   const total = weights.reduce((s, w) => s + w, 0) || 1;
@@ -83,7 +83,7 @@ export function pickSeaHazard(rng: RNG = defaultRNG): SeaHazardDef {
   return DATA.hazards[DATA.hazards.length - 1];
 }
 
-/** Difficultés de GESTION D'UN PÉRIL à `distanceM` (l.429-436) : Perception pour le repérer, Manœuvre
+/** Difficultés de GESTION D'UN PÉRIL à `distanceM` (MDG 13 l.429-436) : Perception pour le repérer, Manœuvre
  *  pour l'éviter — la ligne la plus proche ≥ distance (100 m et plus = la plus permissive). PUR. */
 export function perilManagement(distanceM: number): { spot: Difficulty; avoid: Difficulty } {
   const rows = [...DATA.gestionDesPerils].sort((a, b) => a.distanceM - b.distanceM);
@@ -91,20 +91,20 @@ export function perilManagement(distanceM: number): { spot: Difficulty; avoid: D
   return { spot: rows[rows.length - 1].spot, avoid: rows[rows.length - 1].avoid };
 }
 
-/** Pénalité de dégagement d'un ÉCHOUAGE (l.473) : « un Test de Force avec une pénalité égale au total
+/** Pénalité de dégagement d'un ÉCHOUAGE (MDG 13 l.473) : « un Test de Force avec une pénalité égale au total
  *  de points d'Encombrement du navire et de sa cargaison ». PUR. */
 export function strandingPenalty(shipEnc: number, cargoEnc: number): number {
   return -(Math.max(0, shipEnc) + Math.max(0, cargoEnc));
 }
 
-/** Le navire s'échoue-t-il sur ce péril (Rochers 20 % / Bas-fonds 40 %, l.497/499) ? PUR (RNG injecté). */
+/** Le navire s'échoue-t-il sur ce péril (Rochers 20 % / Bas-fonds 40 %, MDG 13 l.497+499) ? PUR (RNG injecté). */
 export function rollStranding(hazard: SeaHazardDef, rng: RNG = defaultRNG): boolean {
   return hazard.strandChancePct != null && d100(rng) <= hazard.strandChancePct;
 }
 
 export interface EntangleResult { entangled: boolean; manDR: number; mMod: number }
 
-/** Empêtrement dans des DÉBRIS MARINS après collision (l.485-489) : 20 % de chances ; pénalité par
+/** Empêtrement dans des DÉBRIS MARINS après collision (MDG 13 l.485-489) : 20 % de chances ; pénalité par
  *  Taille du bateau (Minuscule-Petite −2 DR Man / −1 M ; Moyenne-Grande −1 DR Man ; au-delà rien). PUR. */
 export function rollDebrisEntangle(hazard: SeaHazardDef, shipSize: ShipSize, rng: RNG = defaultRNG): EntangleResult {
   if (hazard.entangleChancePct == null || d100(rng) > hazard.entangleChancePct) return { entangled: false, manDR: 0, mMod: 0 };
@@ -114,9 +114,9 @@ export function rollDebrisEntangle(hazard: SeaHazardDef, shipSize: ShipSize, rng
     const max = p.maxSize ? SIZE_ORDER.indexOf(p.maxSize) : SIZE_ORDER.length - 1;
     if (idx >= min && idx <= max) return { entangled: true, manDR: p.manDR, mMod: p.mMod };
   }
-  return { entangled: true, manDR: 0, mMod: 0 }; // Taille supérieure à Grande : « aucun effet » (l.489)
+  return { entangled: true, manDR: 0, mMod: 0 }; // Taille supérieure à Grande : « aucun effet » (MDG 13 l.489)
 }
 
-/** Nage dans la Zone d'un Tourbillon (l.522) : « Quiconque nage dans la Zone doit réussir un Test de
+/** Nage dans la Zone d'un Tourbillon (MDG 13 l.522) : « Quiconque nage dans la Zone doit réussir un Test de
  *  Natation Complexe (–10) sous peine de commencer à se noyer. » */
 export const WHIRLPOOL_SWIM_TEST = DATA.tourbillonSwim;

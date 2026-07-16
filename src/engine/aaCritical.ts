@@ -57,7 +57,7 @@ interface AAEntry {
   traumas?: string[];
   /** Amputation (AA « voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — même forme
    *  que `data/criticals.ts` (LDB) : `difficulty` = Test de Résistance (échec → À Terre, +Sonné si
-   *  DR≤−2, +Inconscient si DR≤−4, comme LDB 18 l.328-333), `sequels` = ids de fiches de séquelle
+   *  DR≤−2, +Inconscient si DR≤−4, comme LDB 18 l.237), `sequels` = ids de fiches de séquelle
    *  PERMANENTE (`traumas.json`), instanciées par `permanentAmputations` (SOURCE UNIQUE, réutilisée). */
   amputation?: import('../data/criticals').Amputation;
   /** Escalade GATÉE par les soins (même déclaration que `data/criticals.ts` LDB) : « Main ouverte » (l.127 :

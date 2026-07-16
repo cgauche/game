@@ -150,6 +150,7 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'lieux-services.json': "vocabulaire de routage d'écran (icône/service de lieu — auberge/temple/forgeron…), pas une fiche de contenu.",
   'primitives.manifest.json': 'manifeste TOOLING (#298) des primitives partagées du code — vocabulaire app-interne.',
   'systemes.manifest.json': 'manifeste TOOLING (#298) éditorial des systèmes implémentés — vocabulaire app-interne.',
+  'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (topic/ticket/bloque) — vocabulaire app-interne.",
   // ── AUDIT #422 : contenu de jeu non encore exposé — cliquet décroissant (trouvé 2026-07-14) ──
   'advancementCosts.json': 'AUDIT : à exposer -> ticket — Tableau de Coût des Augmentations (LDB 07 l.45-62), consommé par `engine/advancement.ts`, aucune catégorie Codex.',
   'disponibilite.json': "AUDIT : à exposer -> ticket — % de Disponibilité + ratios de troc (LDB 59 « Faire son marché »), consommé par `engine/disponibilite.ts`, aucune catégorie Codex.",

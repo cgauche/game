@@ -601,7 +601,8 @@ Possessions : arme simple, haillons, respect des autres Frères Loups.
 
 **Voir aussi :** `talents.md` § Vision nocturne (Talent de départ nain) ; `carrieres.md` § Nains.
 
-**Implémente :** `src/data/index.ts` — `dwarfNameSuffixes` (–sson / –sdottir / –snev / –sniz) ; `src/engine/names` (si générateur de nom nain).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 5` (l.622, l.623) → `generateName`, `NamePool`, `DetailsScreen` — `src/data/index.ts`, `src/data/schemas/defs/names.ts`, `src/engine/names.ts`, `src/ui/creator/CharacterCreator.tsx`
 
 ---
 

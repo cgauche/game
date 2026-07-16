@@ -57,7 +57,7 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
     tickDeath(h);
     expect(hasCondition(h, 'inconscient')).toBe(true);
   });
-  it('tickDeath : mode AA (l.2449) — PAS d’Inconscient auto à 0 PB (remplacé par le Test de Résistance Hémorragique)', () => {
+  it('tickDeath : mode AA (AA 07 l.5) — PAS d’Inconscient auto à 0 PB (remplacé par le Test de Résistance Hémorragique)', () => {
     setRule('combat-aa-blessures', 'aa');
     try {
       const h = mk({ wounds: { current: 0, max: 12 }, roundsAtZero: 9 }); // très au-delà de BE : LDB tomberait Inconscient

@@ -592,7 +592,7 @@ export interface ActiveEffect {
   /** Aura « N'écoutez point la Sorcière » (LDB 42) : tout SORT (Langue (Magick)) ciblant quelqu'un
    *  à `radiusMeters` du porteur subit −20 au Test d'incantation. */
   castWard?: { radiusMeters: number };
-  /** Le porteur SUFFOQUE (Noyade et Suffocation, LDB 18 l.424-425 — Ombres étrangleuses,
+  /** Le porteur SUFFOQUE (Noyade et Suffocation, LDB 18 l.345-346 — Ombres étrangleuses,
    *  Transmutation de Chamon) : −1 PB/Round, 0 PB → Inconscient, mort après BE Rounds. */
   suffocates?: boolean;
   /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
@@ -1263,10 +1263,10 @@ export interface Combatant {
   /** Maladies et infections en cours (LDB 20) — incubation/durée décomptées au repos ; symptômes =
    *  donnée (`symptoms.json`) lus par `diseasePassiveOps` (fièvre…) / `rest.ts` (Malaise→Exténué, Blessé). */
   diseases?: import('./disease').Disease[];
-  /** Faim (LDB 18 l.417-422) : jours sans manger, Tests tentés (−10 cumulatif), échecs (malus de
+  /** Faim (LDB 18 l.337-343) : jours sans manger, Tests tentés (−10 cumulatif), échecs (malus de
    *  caracs lus par `hungerCharPenalties`). Absent = nourri. Entretien quotidien : `dailyFoodUpkeep`. */
   hunger?: import('./provisions').HungerState;
-  /** Soif (LDB 18 l.420) : jours sans eau, Tests tentés (−10 cumulatif), échecs (malus de caracs lus
+  /** Soif (LDB 18 l.340) : jours sans eau, Tests tentés (−10 cumulatif), échecs (malus de caracs lus
    *  par `thirstCharPenalties`). Absent = désaltéré. Entretien quotidien : `dailyWaterUpkeep`. */
   thirst?: import('./provisions').ThirstState;
   /** Ivresse (LDB 09 l.471-487) : échecs de Résistance à l'alcool (−10/échec aux CC/CT/Ag/Dex/Int, lus
@@ -1291,7 +1291,7 @@ export interface Combatant {
   actLastNextRound?: boolean;
   /** Rounds consécutifs passés à 0 PB sans soin (→ Inconscient après BE rounds). */
   roundsAtZero?: number;
-  /** Suffocation (LDB 18 l.425) : Rounds restants avant la MORT une fois Inconscient à 0 PB
+  /** Suffocation (LDB 18 l.346) : Rounds restants avant la MORT une fois Inconscient à 0 PB
    *  en suffoquant (posé à BE, décrémenté par Round de suffocation continue ; 0 → mort). */
   suffocationCountdown?: number;
   /** Rétention de souffle (LDB 18 l.345) : « si vous êtes suffisamment préparé, vous pouvez retenir
@@ -1308,7 +1308,7 @@ export interface Combatant {
   /** Attribut de Shyish (LDB 48 l.400) : « Une cible ne peut avoir qu'un seul État Exténué gagné
    *  de cette façon à la fois » — marqueur posé au premier Exténué d'un Sort de la Mort. */
   shyishExhausted?: boolean;
-  /** A déjà bénéficié d'un soin de Blessures (Guérison) cette rencontre (LDB 09-Compétences l.233).
+  /** A déjà bénéficié d'un soin de Blessures (Guérison) cette rencontre (LDB 09 l.260).
    *  Réinitialisé au début de chaque combat (startCombat). N'affecte PAS l'arrêt d'Hémorragie. */
   soinRencontreUtilise?: boolean;
   /** Mort (résultat létal ou mort lente). Hors de combat définitif. */
@@ -1393,7 +1393,7 @@ export interface Combatant {
    *  survenant un jour de voyage (`activeDayWeather`). SEULE source du canal « Tests physiques » (`weatherTestMods`,
    *  lu par attack/defenseModifiers) — jamais recâblée par surface. Transitoire (non persistée hors combat). */
   envWeather?: import('./travelStages').Weather;
-  /** Adversaires avec qui ce combattant est Engagé en mêlée (LDB 13-Combat l.174-175).
+  /** Adversaires avec qui ce combattant est Engagé en mêlée (LDB 13 l.169-171).
    *  Relationnel et symétrique ; purgé par paire en fin de Round si aucune attaque échangée. */
   engagedWith?: string[];
   /** IDs avec qui une attaque de mêlée a été échangée CE Round (upkeep de fin de Round,

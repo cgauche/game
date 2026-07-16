@@ -1,10 +1,10 @@
 /**
- * Traumatismes — Livre de base, « Traumatisme » (18-Traumatisme.md). Factory unique
+ * Traumatismes — Livre de base, « Traumatisme » (LDB 18). Factory unique
  * kind+sévérité+localisation → effets en-combat modélisés, partagée par les Blessures critiques
  * et les Maladresses. On ne modélise que ce qui est quantifié et câblable sans inventer :
- *   - Déchirure musculaire sur Jambe → Mouvement ÷2 (l.315).
- *   - Fracture Torse → Force/Agilité −30 + Mouvement ÷2 (l.298).
- *   - Fracture Jambe → Mouvement ÷2 (règle du Pied, l.298).
+ *   - Déchirure musculaire sur Jambe → Mouvement ÷2 (LDB 18 l.220).
+ *   - Fracture Torse → Force/Agilité −30 + Mouvement ÷2 (LDB 18 l.200).
+ *   - Fracture Jambe → Mouvement ÷2 (règle du Pied, LDB 18 l.285).
  * Fracture/Déchirure de Bras/Tête : latéralité non modélisée (effet journalisé). Amputations de MAIN/DOIGTS :
  * la pénalité (LDB 18 l.251/263) est CONTEXTUELLE À L'ARME — `amputationCombatPenalty`, lue par attack/
  * defenseModifiers — et ne s'applique qu'aux jets d'arme qui IMPLIQUENT la main blessée (jamais un charMod
@@ -132,18 +132,18 @@ export function traumaById(id: string, opts?: { be?: number; d10?: number }, loc
   return out;
 }
 
-/** Une déchirure musculaire MAJEURE de jambe guérit en DEUX temps (LDB 18 l.326) : après la 1ʳᵉ moitié
+/** Une déchirure musculaire MAJEURE de jambe guérit en DEUX temps (LDB 18 l.231) : après la 1ʳᵉ moitié
  *  (recoveryTotal/2), la pénalité de mobilité passe de −20 à −10 ; la 2ᵉ moitié achève la guérison. */
 function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
   const esq = opsOfType(t.ops ?? [], 'skillMod').find((o) => o.skill === 'esquive');
   if (t.kind !== 'dechirure' || t.severity !== 'majeur' || esq?.mod !== -20 || t.recoveryTotal == null) return null;
   if (leftDays > t.recoveryTotal / 2) return null; // pas encore à la mi-durée
-  esq.mod = -10; // rémission partielle (l.326)
+  esq.mod = -10; // rémission partielle (LDB 18 l.231)
   return `la déchirure (${t.location}) entre en rémission partielle (−10).`;
 }
 
 /**
- * Séquelle PERMANENTE d'une fracture mal ressoudée (LDB 18 l.300/309) : à la fin de la convalescence, un
+ * Séquelle PERMANENTE d'une fracture mal ressoudée (LDB 18 l.202/213) : à la fin de la convalescence, un
  * Test de Résistance raté laisse −5 (mineure) / −10 (majeure) en Agilité (Bras/Jambe/Torse) — la Tête
  * (−5/−10 Langue, compétence) est journalisée sans pénalité chiffrée (hors modèle charPenalty).
  */
@@ -153,7 +153,7 @@ function fractureSequela(t: Trauma): Trauma | null {
   return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'agilite', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-membre').desc };
 }
 
-/** Difficulté du Test de fin de fracture (LDB 18 l.300/309) selon la sévérité. */
+/** Difficulté du Test de fin de fracture (LDB 18 l.202/213) selon la sévérité. */
 export function fractureEndDifficulty(severity: string): Difficulty {
   return severity === 'majeur' ? 'intermediaire' : 'accessible';
 }
@@ -363,7 +363,7 @@ export function receiveMedicalAid(c: Combatant): string[] {
 /**
  * Escalade « Main ouverte » (AA l.2571 / LDB « Main ouverte ») : à CHAQUE fin de Round de combat SANS Aide
  * Médicale (`awaitingMedicalAid`), la main perd un doigt de plus. `consolidateAmputations` applique ensuite la
- * règle de la main tranchée (4+ doigts → `main-bras-ampute`, LDB 18 l.341). Mute `c`, renvoie le journal.
+ * règle de la main tranchée (4+ doigts → `main-bras-ampute`, LDB 18 l.251). Mute `c`, renvoie le journal.
  * Appelé par le hook de franchissement de Round (`roundHooks`, machinerie universelle — ne nomme aucune entité).
  */
 export function tickFingerLossEscalation(c: Combatant, _rng: RNG = defaultRNG): string[] {
@@ -552,7 +552,7 @@ export function recoverDisabledLimb(c: Combatant, idx = 0): { penalty: import('.
 }
 
 /**
- * Cumul de pertes sensorielles (LDB 18 l.360/363) : perdre le SECOND œil/oreille agrège une séquelle —
+ * Cumul de pertes sensorielles (LDB 18 l.273/277) : perdre le SECOND œil/oreille agrège une séquelle —
  * Cécité (−30 aux Tests liés à la vue : Arme, Esquive, Chevaucher, compétences NOMMÉES) ou Surdité (−20 aux
  * Tests de Perception basés sur l'ouïe UNIQUEMENT — le `skillMod` de la fiche `surdite` porte `sense:'ouie'`,
  * gaté par `traumaSkillPenalty`/`testValue` contre le sens SOLLICITÉ par le Test, pas toute Perception).
@@ -575,7 +575,7 @@ export function escalateSensoryLoss(c: Combatant): string[] {
   return log;
 }
 
-/** Le personnage ne peut PAS manier d'arme à deux mains (amputation de main/bras, LDB 18 l.352) — sauf
+/** Le personnage ne peut PAS manier d'arme à deux mains (amputation de main/bras, LDB 18 l.263) — sauf
  *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` via `weaponHands`
  *  — le marqueur « (2M) » de la donnée est UNIFORME mêlée ET distance (Arc/Arbalète/Arquebuse/Tromblon),
  *  donc les armes à distance bimanuelles SONT couvertes. */
@@ -889,7 +889,7 @@ export function traumaCharPenaltiesLabeled(c: Combatant, key: CharKey): { kind: 
 }
 
 /** Pénalités de Caractéristique PASSIVES non-`intrinsèque` (valeurs négatives, pour le pool « pire pénalité ») :
- *  traumatismes (LDB 18), maladies (LDB 20) et faim (LDB 18 l.422), toutes sources confondues via le collecteur.
+ *  traumatismes (LDB 18), maladies (LDB 20) et faim (LDB 18 l.343), toutes sources confondues via le collecteur.
  *  Le gating (Détermination/Insensible/prothèse selon le `kind`) est déjà appliqué par `passiveMods`. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
   return traumaCharPenaltiesLabeled(c, key).map((p) => p.mod);
@@ -911,7 +911,7 @@ export function traumaDodgePenalty(c: Combatant): number {
  *  déjà scopée par compétence nommée) → toujours. Restreint mais le sens du Test COURANT est INCONNU
  *  (`testSense` absent — cas d'un appelant qui ne le précise pas) → s'applique par défaut (le sens précis
  *  d'un Test de Perception est une donnée NARRATIVE que seul l'appelant connaît, cf. Talent Sens aiguisé
- *  `manual:true`). Restreint et CONNU mais différent → exempté (surdité, LDB 18 l.363). */
+ *  `manual:true`). Restreint et CONNU mais différent → exempté (surdité, LDB 18 l.277). */
 function senseMatches(opSense: PairedSense | undefined, testSense: PairedSense | undefined): boolean {
   return opSense == null || testSense == null || opSense === testSense;
 }

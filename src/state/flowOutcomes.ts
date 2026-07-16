@@ -200,7 +200,7 @@ export function describeWard(pw: PendingWard, targetName: string): string {
     : t('out.wardBlocked', { target: targetName });
 }
 
-/** Course (LDB 15-Dépl l.79-82) : issue du Test d'Athlétisme/Chevaucher (popin). Le fil journalise le
+/** Course (LDB 15 l.41) : issue du Test d'Athlétisme/Chevaucher (popin). Le fil journalise le
  *  déplacement réel (cases parcourues) à part. */
 export function describeRun(pr: PendingRun): string {
   const r = pr.result;

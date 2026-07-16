@@ -48,7 +48,7 @@ describe('création ↔ règles 2.5 (registre combatFeatures, LDB 10)', () => {
   });
 });
 
-describe('création ↔ Voyage & Nourriture (#T2, LDB 18 l.417-422)', () => {
+describe('création ↔ Voyage & Nourriture (#T2, LDB 18 l.337-343)', () => {
   it('les Rations des trappings de classe sont vues par le système de faim et consommées', () => {
     // Classe « Ruraux » (Villageois…) : « Rations (1 jour) » dans les trappings de classe.
     const h = createHero({ speciesId: 'humains-reiklander', careerId: 'villageois', name: 'V', rng: makeRNG(7) });

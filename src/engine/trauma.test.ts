@@ -218,7 +218,7 @@ describe('traumas — câblage moteur', () => {
     const cc = fullCombatant({ traumas: [tk('fracture', 'mineur', 'brasD')] });
     expect(effectiveMovement(cc)).toBe(4);
   });
-  it('Fracture de jambe réduit l’Esquive de 20 (règle du Pied, LDB 18 l.369)', () => {
+  it('Fracture de jambe réduit l’Esquive de 20 (règle du Pied, LDB 18 l.285)', () => {
     const sain = fullCombatant();
     expect(defenseValue(sain, 'esquive')).toBe(40); // Ag 40, pas de pénalité
     const blesse = fullCombatant({ traumas: [tk('fracture', 'mineur', 'jambeG')] });

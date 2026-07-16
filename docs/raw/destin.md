@@ -92,7 +92,8 @@ Dépenser 1 Point de Chance offre l'une de ces trois options (au choix du joueur
 
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) pour le contexte d'intégration avec les Tests et les Degrés de Réussite.
 
-**Implémente** : `src/engine/fortune.ts` — `canReroll` (option 1 : vérifie échec + pas déjà relancé) ; `src/state/rollFlows.ts` — `InfluenceRow` / caps `forced` (option 2 : +1 DR) ; `src/ui/InfluenceRow.tsx` — bouton Chance dans les modales de jet.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.21-27) → `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ActionBar`, `CampaignView`, `crewRoleFlowSpec`, `bumpSL`, +9 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/keybindings.ts`, +9 fichiers
 
 ---
 
@@ -121,7 +122,8 @@ Le MJ décrit la façon dont le personnage survit après la dépense.
 
 **Voir aussi** : [Personnages Sacrifiés](#personnages-sacrifiés-destin-au-moment-de-la-mort) ci-dessous (usage du Destin face à la mort au Tableau des Critiques).
 
-**Implémente** : `src/state/rollFlows.ts` — résolution des critiques mortels (possibilité de dépenser Destin) ; `src/state/combatFlow.ts` — gestion de l'état « mort / hors-jeu / survie ».
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.29-39) → `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ActionBar`, `CampaignView`, `crewRoleFlowSpec`, +14 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +13 fichiers
 
 ---
 
@@ -136,7 +138,8 @@ La restauration se fait jusqu'à la valeur courante de Destin (pas la valeur de 
 
 **Sources RAW** : `LDB 17 l.41`
 
-**Implémente** : `src/engine/fortune.ts` — `restoreFortune(party)` (remet `fortune` à `fate` pour chaque héros qui possède un Destin ; source unique partagée par l'effet de scène `restoreFortune` et l'action de store `restoreFortuneNow()`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `Effect`, `GameState`, `endSession`, `GameOp`, `EFFECT_HANDLERS`, `Combatant`, `finalizeHeroDeath`, `createCombatSlice`, +1 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
 
 ### Option : Longues Séances de Jeu
 
@@ -147,7 +150,8 @@ Règle optionnelle du MJ : restauration intermédiaire au cours d'une longue ses
 
 **Sources RAW** : `LDB 17 l.46-47`
 
-**Implémente** : `src/engine/fortune.ts` — `restoreFortune` (même fonction, appelée par `restoreFortuneNow()` dans le store comme règle optionnelle).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `HouseRuleRow`, `EnemyAction`, `OPTIONAL_RULES`, `Effect`, `endSession`, `GameOp`, `GameState`, `chooseEnemyAction`, +4 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatEffects.ts`, +5 fichiers
 
 ### Destin
 
@@ -158,7 +162,8 @@ Les Points de Destin se renouvellent très rarement — uniquement sur décision
 
 **Sources RAW** : `LDB 17 l.43`
 
-**Implémente** : `src/state/partyFlow.ts` — modification manuelle de `fate` (pas de restauration automatique).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `HouseRuleRow`, `OPTIONAL_RULES`, `Effect`, `GameState`, `endSession`, `GameOp`, `EFFECT_HANDLERS`, `Combatant`, +4 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +5 fichiers
 
 ---
 
@@ -189,7 +194,8 @@ Dépenser 1 Point de Détermination offre l'une de ces trois options :
 
 **Voir aussi** : [`etats.md`](etats.md) pour la liste des États retirables.
 
-**Implémente** : `src/state/rollFlows.ts` — `DeterminationButton` dans `InfluenceRow` (option 3 principalement) ; `src/ui/InfluenceRow.tsx` — bouton Détermination dans les modales de jet.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.56-63) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `ForcedRollPicker`, `PendingBase`, `ForcedResolve`, `forceCrewRole`, +63 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +34 fichiers
 
 ---
 
@@ -224,7 +230,8 @@ Règles précises :
 
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) — c'est là que le mécanisme est décrit dans son contexte d'intégration au Test ; la présente section n'en donne que la définition.
 
-**Implémente** : `src/state/rollFlows.ts` — mécanisme `forceSuccess` / `setForcedRoll` / `caps: { forced: true }` ; `src/ui/RollFlowShell.tsx` — `ForcedRollPicker` ; `src/ui/InfluenceRow.tsx` — `ResilienceButton`. Convention : un flux qui offre cette option déclare `caps: { forced: true }` ; son `resolve(s, p, actor, get, forced?)` porte les trois cas dans un seul résolveur.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `ForcedRollPicker`, `PendingBase`, `regainDetermination`, `ForcedResolve`, `forceCrewRole`, +58 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/psychology.ts`, `src/engine/session.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +30 fichiers
 
 ---
 
@@ -252,7 +259,8 @@ Encore plus rare que l'octroi de Points de Destin. Uniquement pour des actions d
 
 **Sources RAW** : `LDB 18 l.4-4`
 
-**Implémente** : modification manuelle de `resilience` dans `src/state/partyFlow.ts` ; pas de restauration automatique.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 18` (l.3, l.4, l.10, l.14) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `aaBleedUnconsciousApply`, `rollCritical`, `ActionBar`, `isOutOfAction`, `applyZeroWounds`, +10 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +6 fichiers
 
 ---
 
@@ -275,7 +283,8 @@ Autres exemples listés : Perfectionniste, Protectrice, Homme de paix, Martyr p�
 
 **Sources RAW** : `LDB 05 l.421-445`
 
-**Implémente** : champ `Combatant.motivation` (texte libre) affiché dans la fiche personnage `CharacterSheet.tsx` ; pas de mécanique automatique — la récupération de Détermination est manuelle (action store).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 5` (l.421-445) → `CHAR_SEQ_MS` — `src/ui/creator/CharacterCreator.tsx`
 
 ---
 
@@ -296,7 +305,8 @@ La mort survient sans dépense de Destin dans ces cas :
 
 **Voir aussi** : [`traumatisme.md`](traumatisme.md) pour le fonctionnement complet des Blessures critiques et de la mort.
 
-**Implémente** : `src/state/combatFlow.ts` — détection du coup mortel + déclenchement de la possibilité de dépenser Destin ; `src/state/rollFlows.ts` — résolution du choix A/B.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 18` (l.38, l.40, l.42-43) → `critWoundLocation`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `evaluateMissile`, `PendingDeviation`, `woundsAtCritLocation`, `applyCriticalToTarget`, `applyOpposedCritical`, `applyAttackResult`, +2 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, +1 fichiers
 
 ---
 
@@ -309,4 +319,4 @@ Les PNJ ordinaires n'ont pas de Points de Destin ni de Résilience. C'est une pr
 
 **Sources RAW** : `LDB 17 l.9`
 
-**Implémente** : `Combatant.kind === 'hero'` est la condition de vérification dans `src/engine/fortune.ts` — `restoreFortune` ne touche que les héros (`h.kind === 'hero' && h.fate != null`).
+**Implémente :** (non implémenté)

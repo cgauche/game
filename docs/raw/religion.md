@@ -172,7 +172,8 @@ Règles précises :
 - Le **dé des unités** du jet d100 est comparé au total de Péché. Un résultat 00 compte comme unité = 0.
 - Se cumule avec la Maladresse : une Maladresse déclenche la Colère des dieux **indépendamment** du Péché.
 
-**Implémenté** : `src/engine/magic.ts → prayerWrathTriggered(roll, sinPoints)` + `src/state/combatFlow.ts l.2981-2984`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 40` (l.35-36) → `discreetPrayerDifficulty`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `FLOWS`, `PendingCast`, `GameState`, `EFFECT_HANDLERS`, +4 — `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, +7 fichiers
 
 ---
 
@@ -190,7 +191,9 @@ Le MJ peut aussi utiliser la table ou y piocher des résultats chaque fois qu'un
 
 **Après le jet** : réduire les Points de Péché de 1 (minimum 0). `LDB 40 l.46-50`
 
-**Implémenté** : `src/engine/miscast.ts` (table Colère, `MiscastSeverity = 'colere'`) + `src/state/combatFlow.ts l.2130-2138`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 40` (l.45-50) → `discreetPrayerDifficulty`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `CastPenalty`, `FLOWS`, `PendingCast`, `GameState`, +6 — `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/prayer.ts`, +9 fichiers
+- sans code : `LDB 40` (l.12-13)
 
 ---
 

@@ -485,7 +485,7 @@ export type GameOp =
    *  `daysPerSL` : échelle « +N jours par +M DR » du Test AYANT PRÉCÉDÉ l'op (Gesundheit : « un jour par
    *  DR obtenu » au Test de Résistance Accessible, T2C 04 l.184-186) — alimentée par `ctx.sl`. */
   | { op: 'reduceDiseaseDays'; days?: number; dice?: DiceSpec; disease?: string; oncePerDisease?: boolean; daysPerSL?: PerSL }
-  /** Les Blessures ne s'infecteront pas (Cautériser, LDB 47 → flag `woundDressed`, LDB 18 l.382). */
+  /** Les Blessures ne s'infecteront pas (Cautériser, LDB 47 → flag `woundDressed`, LDB 18 l.298). */
   | { op: 'preventInfection' }
   /** EXPOSE la cible à une Maladie (`disease` = id de `maladies.json`) → Test de Contraction au bilan de
    *  fin de combat (LDB 20 l.32/49). Op GÉNÉRIQUE : Infecté → 'blessure-purulente', trait Maladie →
@@ -538,7 +538,7 @@ export type GameOp =
    *  dans les (BSoc) mètres subissent -20 aux Tests de Langue (Magick) » — aura portée par la cible
    *  (le prêtre), rayon élargi « +BSoc m par +2 DR » via `perSL.radiusFormula`. */
   | { op: 'castWard'; radius: Formula; perSL?: { every: number; radiusFormula: Formula } }
-  /** « Soumis aux règles de la Suffocation » (LDB 18 l.424-425 — Ombres étrangleuses,
+  /** « Soumis aux règles de la Suffocation » (LDB 18 l.345-346 — Ombres étrangleuses,
    *  Transmutation de Chamon) : −1 PB/Round, 0 PB → Inconscient, mort après BE Rounds. */
   | { op: 'suffocate' }
   /** Bouclier anti-flèches (LDB 47 — L11) : « les projectiles constitués de matière organique
@@ -1393,7 +1393,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'preventInfection': {
-        target.woundDressed = true; // pas d'Infection post-critique (LDB 18 l.382)
+        target.woundDressed = true; // pas d'Infection post-critique (LDB 18 l.298)
         lines.push(t('op.preventInfection', { name: target.name, src: ctx.label ?? 'sort' }));
         lines.push(...receiveMedicalAid(target)); // bandage/cataplasme = Aide Médicale (LDB 18 l.310)
         lines.push(...releaseConditionLocks(target, 'medicalAid')); // verrous d'État « par Aide Médicale » (LDB 18)

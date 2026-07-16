@@ -690,7 +690,7 @@ export function rollMeleeDefender(
 }
 
 /** Jet de Corps à corps « brut » d'un combattant pour le Test opposé de Désengagement
- *  (LDB 15-Dépl l.89 « Esquive/Corps à corps »). Inclut l'Avantage×10 et les pénalités
+ *  (LDB 15 l.49 « Esquive/Corps à corps »). Inclut l'Avantage×10 et les pénalités
  *  d'États, mais PAS les Atouts d'arme ni les bonus de cible (ce n'est pas une attaque portée). */
 export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): TestResult {
   return rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat'));
@@ -703,7 +703,7 @@ export function rollGrappleForce(c: Combatant, rng: RNG = defaultRNG): TestResul
   return rollTest(effectiveChar(c, 'force'), 'intermediaire', rng, baseTestMods(c, 'force'));
 }
 
-/** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15-Dépl l.101,107) : Test de Corps
+/** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15 l.63,66) : Test de Corps
  *  à corps NON opposé, +20 au toucher (dos tourné), DR = Dégâts comme d'habitude. */
 export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
   const atk = rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat') + 20);
@@ -1146,7 +1146,7 @@ function applyHit(
   // Dégâts (mathématiquement identique, sans écraser le clamp de PA) — « 3 × BE » ⇔ −2×BE de plus.
   if (hullAdj && 'extraTB' in hullAdj) damage -= hullAdj.extraTB;
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
-  // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18-Traumatisme l.30) est désormais
+  // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18 l.16) est désormais
   // géré par le STORE (pipeline de critique), car il dépend des PB courants de la cible — pas des PB max.
   // Empaleuse déjà retirée du profil si l'on Retient ses coups → `empale` est alors false (pas de Critique
   // « multiple de 10 » ni de bypass d'armure Empaleuse).

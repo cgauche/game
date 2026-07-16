@@ -1,29 +1,29 @@
 /**
- * Provisions & Faim — Livre de base, « Faim et Soif » (18-Traumatisme l.417-422).
+ * Provisions & Faim — Livre de base, « Faim et Soif » (LDB 18 l.337-343).
  *
  * RAW modélisé (rien d'inventé) :
  *  - « Les Tests de Résistance pour supporter la faim … sont de plus en plus difficiles
- *    (-10 % de plus pour chaque Test) » (l.418) → modificateur −10 × (Tests déjà tentés).
+ *    (-10 % de plus pour chaque Test) » (LDB 18 l.338) → modificateur −10 × (Tests déjà tentés).
  *  - « Les Personnages qui n'ont ni nourriture ni boisson ne peuvent pas récupérer de Points
- *    de Blessure ou se débarrasser de l'État Exténué de manière naturelle » (l.418) → `isStarving`
+ *    de Blessure ou se débarrasser de l'État Exténué de manière naturelle » (LDB 18 l.338) → `isStarving`
  *    est lu par `rest.ts` (lève la dette documentée là-bas).
- *  - Nourriture (l.422) : « lorsque vous n'avez plus de nourriture, vous devez effectuer un Test
+ *  - Nourriture (LDB 18 l.343) : « lorsque vous n'avez plus de nourriture, vous devez effectuer un Test
  *    de Résistance tous les deux jours. Sur un premier échec, vous subissez une pénalité de –10 en
  *    Force et Endurance. À partir du deuxième échec, toutes les autres Caractéristiques sont
  *    réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1
  *    Blessure. » Lecture : les Dégâts ignorent les PA mais restent réduits par le Bonus
  *    d'Endurance (le « minimum de 1 » serait sinon sans objet — même formulation que l'Exposition).
- *  - Talent « Brouet » (10-Talents l.108-113) : « subsister avec la moitié de la nourriture
+ *  - Talent « Brouet » (LDB 10 l.139) : « subsister avec la moitié de la nourriture
  *    nécessaire » (1 ration / 2 jours) et « Test concernant la faim tous les 3 jours et pas 2 ».
- *  - SOIF / privation d'eau (l.420) : « chaque jour sans eau nécessite un Test de Résistance. Sur un
+ *  - SOIF / privation d'eau (LDB 18 l.340) : « chaque jour sans eau nécessite un Test de Résistance. Sur un
  *    premier échec, vous subissez une pénalité de −10 en Intelligence, Force Mentale et Sociabilité.
  *    À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de −10 et vous
  *    subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure. » Modélisée par
- *    `dailyWaterUpkeep`, sur le MÊME patron que la Faim (Tests de plus en plus durs l.418, dégâts
+ *    `dailyWaterUpkeep`, sur le MÊME patron que la Faim (Tests de plus en plus durs LDB 18 l.338, dégâts
  *    réduits du BE min 1). L'accès à l'eau est décidé par l'APPELANT (`hasWater`) : abondante par
  *    défaut au Reikland (rivières/puits/auberges) ; à sec en mer (`vessel.waterLitres` épuisé, MDG
  *    ch.14) ou sous la règle optionnelle `water-scarcity` (siège, désert, souterrain). « Ni nourriture
- *    ni boisson … ne peuvent pas récupérer » (l.418) → `isDeprived` = affamé OU assoiffé, lu par `rest.ts`.
+ *    ni boisson … ne peuvent pas récupérer » (LDB 18 l.338) → `isDeprived` = affamé OU assoiffé, lu par `rest.ts`.
  *
  * La nourriture = objets « Ration (1 jour) » (trappings LDB p.302) dans l'inventaire du héros.
  * CHOIX documenté (canon muet sur la résorption) : manger à nouveau remet les compteurs ET les
@@ -45,25 +45,25 @@ import { dailyWaterLitres } from './seaWeather';
 export interface HungerState {
   /** Jours consécutifs sans manger. */
   days: number;
-  /** Tests de faim déjà tentés (le suivant est à −10 × tests, l.418). */
+  /** Tests de faim déjà tentés (le suivant est à −10 × tests, LDB 18 l.338). */
   tests: number;
-  /** Échecs cumulés : 1ᵉʳ → −10 F/E ; 2ᵉ et suivants → −10 autres caracs + 1d10 dégâts (l.422). */
+  /** Échecs cumulés : 1ᵉʳ → −10 F/E ; 2ᵉ et suivants → −10 autres caracs + 1d10 dégâts (LDB 18 l.343). */
   failures: number;
-  /** Journée DÉJÀ couverte : demi-ration de Brouet (l.113) ou repas pris (effet `mealParty`). */
+  /** Journée DÉJÀ couverte : demi-ration de Brouet (LDB 10 l.139) ou repas pris (effet `mealParty`). */
   coveredDay?: boolean;
 }
 
-/** État de soif d'un personnage (absent = désaltéré). Miroir de `HungerState` (l.420). */
+/** État de soif d'un personnage (absent = désaltéré). Miroir de `HungerState` (LDB 18 l.340). */
 export interface ThirstState {
   /** Jours consécutifs sans eau. */
   days: number;
-  /** Tests de soif déjà tentés (le suivant est à −10 × tests, l.418). */
+  /** Tests de soif déjà tentés (le suivant est à −10 × tests, LDB 18 l.338). */
   tests: number;
-  /** Échecs cumulés : 1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ et suivants → −10 autres + 1d10 dégâts (l.420). */
+  /** Échecs cumulés : 1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ et suivants → −10 autres + 1d10 dégâts (LDB 18 l.340). */
   failures: number;
 }
 
-/** Talent Brouet (LDB 10 l.108-113) — lu sur la donnée, sans import. */
+/** Talent Brouet (LDB 10 l.139) — lu sur la donnée, sans import. */
 export function hasBrouet(c: Combatant): boolean {
   return (c.talents ?? []).some((t) => t.talentId === 'brouet' && (t.times ?? 1) >= 1);
 }
@@ -79,22 +79,22 @@ export function rationCount(c: Combatant): number {
   return (c.items ?? []).filter(isRation).length;
 }
 
-/** Sans provisions depuis ≥ 1 jour → pas de récupération naturelle (PB/Exténué), l.418. */
+/** Sans provisions depuis ≥ 1 jour → pas de récupération naturelle (PB/Exténué), LDB 18 l.338. */
 export function isStarving(c: Combatant): boolean {
   return (c.hunger?.days ?? 0) >= 1;
 }
 
-/** Sans eau depuis ≥ 1 jour (l.420). Comme la faim, bloque la récupération naturelle. */
+/** Sans eau depuis ≥ 1 jour (LDB 18 l.340). Comme la faim, bloque la récupération naturelle. */
 export function isThirsty(c: Combatant): boolean {
   return (c.thirst?.days ?? 0) >= 1;
 }
 
-/** « Ni nourriture ni boisson … ne peuvent pas récupérer » (l.418) : affamé OU assoiffé bloque le repos. */
+/** « Ni nourriture ni boisson … ne peuvent pas récupérer » (LDB 18 l.338) : affamé OU assoiffé bloque le repos. */
 export function isDeprived(c: Combatant): boolean {
   return isStarving(c) || isThirsty(c);
 }
 
-/** Pénalités de Caractéristique dues à la SOIF (l.420), injectées dans le pool non-cumul
+/** Pénalités de Caractéristique dues à la SOIF (LDB 18 l.340), injectées dans le pool non-cumul
  *  d'`effectiveChar` (kind `faim`, même privation) : 1ᵉʳ échec → −10 Int/FM/Soc ; dès le 2ᵉ → −10 le reste. */
 export function thirstCharPenalties(c: Combatant, key: CharKey): number[] {
   const f = c.thirst?.failures ?? 0;
@@ -110,7 +110,7 @@ export function feedFromMeal(c: Combatant): void {
   c.hunger = { days: 0, tests: 0, failures: 0, coveredDay: true };
 }
 
-/** Pénalités de Caractéristique dues à la faim (l.422), injectées dans le pool non-cumul
+/** Pénalités de Caractéristique dues à la faim (LDB 18 l.343), injectées dans le pool non-cumul
  *  d'`effectiveChar` : 1ᵉʳ échec → −10 Force et Endurance ; dès le 2ᵉ → −10 toutes les autres. */
 export function hungerCharPenalties(c: Combatant, key: CharKey): number[] {
   const f = c.hunger?.failures ?? 0;
@@ -137,7 +137,7 @@ export interface FoodUpkeepResult {
  */
 /**
  * Applique le RÉSULTAT d'un Test de Faim DIFFÉRÉ (différé/influençable en cascade de nuit) : compte
- * le Test (l.418), et sur un échec applique les pénalités (l.422 : 1ᵉʳ → −10 F/E ; 2ᵉ+ → −10 autres
+ * le Test (LDB 18 l.338), et sur un échec applique les pénalités (LDB 18 l.343 : 1ᵉʳ → −10 F/E ; 2ᵉ+ → −10 autres
  * + 1d10 Dégâts réduits du BE, min 1). Mute `c.hunger` ; renvoie le journal + les Dégâts à appliquer
  * (via `loseWounds` par l'appelant). Partagé avec `dailyFoodUpkeep` (roll eager) — zéro duplication.
  */
@@ -150,7 +150,7 @@ export function applyFaimTest(c: Combatant, success: boolean, be: number, rng: R
     h.failures += 1;
     if (h.failures === 1) log.push(`${c.name} est affamé : −10 en Force et en Endurance.`);
     else {
-      damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (l.422)
+      damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.343)
       log.push(`${c.name} dépérit : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la faim ignore l'armure).`);
     }
   } // réussite : aucune conséquence (le jet a déjà été montré dans l'étape — pas de bruit de journal)
@@ -161,7 +161,7 @@ export function applyFaimTest(c: Combatant, success: boolean, be: number, rng: R
 /**
  * `dailyFoodUpkeep` : mange une ration (ou couvre la journée), sinon installe la faim. `deferTest`
  * (cascade de nuit) : si un Test de Faim TOMBE ce jour, on NE le roule PAS — on appelle `deferTest`
- * avec la pénalité cumulative (−10 × Tests déjà tentés, l.418) pour qu'il devienne une ÉTAPE
+ * avec la pénalité cumulative (−10 × Tests déjà tentés, LDB 18 l.338) pour qu'il devienne une ÉTAPE
  * influençable (résolue par `applyFaimTest`). Sans `deferTest` (contextes eager), le jet est roulé ici.
  */
 export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: RNG = defaultRNG, deferTest?: UpkeepDeferTest): FoodUpkeepResult {
@@ -191,17 +191,17 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
 
   if (res.ate) {
     if (h.days > 0 || h.failures > 0) res.log.push(`${c.name} mange enfin à sa faim — les effets de la faim se dissipent.`);
-    // Brouet : demi-ration → le jour suivant est couvert (l.113). Sinon, plus d'état de faim.
+    // Brouet : demi-ration → le jour suivant est couvert (LDB 10 l.139). Sinon, plus d'état de faim.
     c.hunger = brouet && res.rationConsumed ? { days: 0, tests: 0, failures: 0, coveredDay: true } : undefined;
     return res;
   }
 
-  // 2. Pas de nourriture : la faim s'installe (l.422 — Test tous les 2 jours ; Brouet : 3).
+  // 2. Pas de nourriture : la faim s'installe (LDB 18 l.343 — Test tous les 2 jours ; Brouet : 3).
   h.coveredDay = undefined;
   h.days += 1;
   const interval = brouet ? 3 : 2;
   if (h.days % interval === 0) {
-    const penalty = -10 * h.tests || 0; // l.418 : chaque Test est plus dur (cumulatif ; évite −0)
+    const penalty = -10 * h.tests || 0; // LDB 18 l.338 : chaque Test est plus dur (cumulatif ; évite −0)
     if (deferTest) {
       // Cascade de nuit : le Test devient une ÉTAPE influençable (résolue par `applyFaimTest`).
       c.hunger = h; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
@@ -218,7 +218,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
       if (h.failures === 1) {
         res.log.push(`${c.name} est affamé : −10 en Force et en Endurance.`);
       } else {
-        res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (l.422)
+        res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.343)
         res.log.push(`${c.name} dépérit : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la faim ignore l'armure).`);
       }
     }
@@ -236,8 +236,8 @@ export interface WaterUpkeepResult {
 }
 
 /**
- * Applique le RÉSULTAT d'un Test de Soif DIFFÉRÉ (cascade de nuit) : compte le Test (l.418), et sur un
- * échec applique les pénalités (l.420 : 1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 le reste + 1d10 Dégâts réduits
+ * Applique le RÉSULTAT d'un Test de Soif DIFFÉRÉ (cascade de nuit) : compte le Test (LDB 18 l.338), et sur un
+ * échec applique les pénalités (LDB 18 l.340 : 1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 le reste + 1d10 Dégâts réduits
  * du BE, min 1). Mute `c.thirst` ; renvoie le journal + les Dégâts. Miroir de `applyFaimTest`.
  */
 export function applySoifTest(c: Combatant, success: boolean, be: number, rng: RNG = defaultRNG): { log: string[]; damage: number } {
@@ -249,7 +249,7 @@ export function applySoifTest(c: Combatant, success: boolean, be: number, rng: R
     s.failures += 1;
     if (s.failures === 1) log.push(`${c.name} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
     else {
-      damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (l.420)
+      damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.340)
       log.push(`${c.name} se déshydrate : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la soif ignore l'armure).`);
     }
   }
@@ -258,10 +258,10 @@ export function applySoifTest(c: Combatant, success: boolean, be: number, rng: R
 }
 
 /**
- * Entretien QUOTIDIEN d'eau d'UN personnage (l.420). `hasWater` = l'accès à l'eau ce jour, décidé par
+ * Entretien QUOTIDIEN d'eau d'UN personnage (LDB 18 l.340). `hasWater` = l'accès à l'eau ce jour, décidé par
  * l'appelant (Reikland : toujours vrai sauf règle `water-scarcity` ; mer : `vessel.waterLitres` > 0).
- * A de l'eau → boit, la soif se dissipe. Sinon : Test QUOTIDIEN (l.420), de plus en plus dur (−10 ×
- * Tests, l.418). `deferTest` : le Test devient une ÉTAPE de cascade (résolu par `applySoifTest`).
+ * A de l'eau → boit, la soif se dissipe. Sinon : Test QUOTIDIEN (LDB 18 l.340), de plus en plus dur (−10 ×
+ * Tests, LDB 18 l.338). `deferTest` : le Test devient une ÉTAPE de cascade (résolu par `applySoifTest`).
  * Mute `c.thirst`. `resVal`/`be` passés par l'appelant (cycle d'import, cf. en-tête).
  */
 export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number, be: number, rng: RNG = defaultRNG, deferTest?: UpkeepDeferTest): WaterUpkeepResult {
@@ -276,8 +276,8 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
     return res;
   }
   const s: ThirstState = c.thirst ?? { days: 0, tests: 0, failures: 0 };
-  s.days += 1; // chaque JOUR sans eau nécessite un Test (l.420)
-  const penalty = -10 * s.tests || 0; // l.418 : chaque Test est plus dur (cumulatif ; évite −0)
+  s.days += 1; // chaque JOUR sans eau nécessite un Test (LDB 18 l.340)
+  const penalty = -10 * s.tests || 0; // LDB 18 l.338 : chaque Test est plus dur (cumulatif ; évite −0)
   if (deferTest) {
     c.thirst = s; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
     deferTest({ kind: 'soif', label: 'Soif', base: resVal, difficulty: 'intermediaire', penalty });
@@ -290,7 +290,7 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
     s.failures += 1;
     if (s.failures === 1) res.log.push(`${c.name} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
     else {
-      res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (l.420)
+      res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.340)
       res.log.push(`${c.name} se déshydrate : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la soif ignore l'armure).`);
     }
   }
@@ -305,7 +305,7 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
  *  (`dailyWaterLitres('mediane')`, MDG ch.14 l.242 — la bande de Température réelle n'est tirée qu'en mer).
  *  `crew` (optionnel, #245) = effectif PNJ nominal présent (`count`) et ses vivres de cale (`provisions`,
  *  rations en jours-homme) : l'équipage mange 1 ration/jour (pas de Brouet), les héros suivent Brouet
- *  (l.113 : 1 ration / 2 jours) sur leurs rations portées. Rations disponibles = celles des héros + vivres
+ *  (LDB 10 l.139 : 1 ration / 2 jours) sur leurs rations portées. Rations disponibles = celles des héros + vivres
  *  de cale (le port avitaille les deux). Absent = seuls les héros comptent (rétro-compat). */
 export interface ProvisioningManifest {
   joursEstimes: number;

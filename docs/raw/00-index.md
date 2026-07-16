@@ -10,14 +10,18 @@ plusieurs chapitres **et** plusieurs livres.
 - **1 fichier par domaine** ; dans chaque fichier, **1 section `##` = 1 topic atomique**.
 - Chaque topic = **synthèse fidèle** + **Sources RAW** (toutes les refs `LIVRE NN l.X-Y`, tous livres
   confondus) + **citations verbatim** là où le mot compte + **Voir aussi** (renvois entre règles) +
-  **Implémente** (module `src/engine/…` correspondant).
+  **Implémente** — champ **GÉNÉRÉ** par `npm run raw:implemente` (#487), jamais écrit à la main :
+  code de `src/` citant les réfs du topic (même livre+chapitre, spans à **±10 lignes** — du bruit de
+  voisinage est possible sur les pages denses), symboles remontés, `⚠sans-appelant`/`⚠hors-app` sur
+  le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
+  `src/data/raw.manifest.json` ; fraîcheur gardée par `npm run docs:check` (CI + pre-commit).
 - Convention de réf : `<ABRÉV> <NN> l.<début>-<fin>` — `NN` = préfixe du fichier de chapitre,
   `l.` = numéros de ligne du `.md` source. Table des abréviations → [`sources.md`](sources.md).
 
 > ⚠️ Contenu **agent-généré**, contrôlé par une passe de **vérification adversariale** (chaque ref
-> est reconfrontée à la source ; règle 1 = zéro invention). Chaque fichier de domaine porte en bas un
-> *Bilan de fidélité* listant ce qui reste à corriger. **La passe de vérif peut elle-même produire des
-> faux-positifs** → toute correction passe par une relecture de la source.
+> est reconfrontée à la source ; règle 1 = zéro invention). **La passe de vérif peut elle-même produire
+> des faux-positifs** → toute correction passe par une relecture de la source. Les écarts code↔RAW ne
+> se consignent plus en prose dans les fiches : un vrai trou = un ticket (cf. #502 pour le tri du stock).
 
 ## Domaines
 

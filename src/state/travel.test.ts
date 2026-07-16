@@ -271,7 +271,7 @@ describe('péripéties d’auteur — interruption et reprise', () => {
   });
 });
 
-describe('nourriture en voyage (LDB 18 l.417-422)', () => {
+describe('nourriture en voyage (LDB 18 l.337-343)', () => {
   it('sans rations, un long voyage affame le groupe (compteur de faim) et bloque la récup nocturne', () => {
     setup(map({ km: 72 }), [hero({ items: [], wounds: { current: 5, max: 12 } })]); // 3 jours pleins à M4
     useGame.getState().startTravel('r1', 'pied');

@@ -46,9 +46,9 @@ Le chapitre 76 sert d'introduction au bestiaire WFRP4. Les créatures présenté
 
 Les **Traits Facultatifs** listés à côté de chaque créature représentent certains des Traits les plus courants de l'espèce. On peut cependant appliquer **n'importe quel Trait** à n'importe quelle créature si cela correspond au jeu voulu (`LDB 76 l.16-19`).
 
-**Implémente** :
-- `creatureToCombatant` (`src/state/spawn.ts`) — point d'entrée unique du spawn : lit `CreatureData` (bestiaire) + `SpawnExtras` (traits facultatifs d'auteur), fusionne traits, dérive carac/armes/armure/Blessures/psycho.
-- `findCreatureById` (`src/data/index.ts`) — lookup bestiaire par id stable.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 76` (l.16-19) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- sans code : `LDB 76` (l.4-13)
 
 ---
 
@@ -68,9 +68,8 @@ En principe, déterminer une **Localisation** pour une créature non humaine est
 
 **Voir aussi** : [Tableau de Localisation humanoïde](combat.md#tableau-de-localisation-humanoide) — `combat.md` ; Critiques et Frappe Mortelle — `combat.md`.
 
-**Implémente** :
-- `bodyShapeOf(name)` (`src/state/spawn.ts` l.29-38) — dérive la `BodyShape` (`humanoide`/`quadrupede`/`oiseau`/`serpent`/`araignee`) depuis le gabarit rig (`bodyPlanOf`). Les gabarits sans table canon (`céphalopode`/`amorphe`/`squig`/`spectral`/`jabberslythe`) retombent sur `humanoide` (table par défaut, pas d'invention).
-- `aim-bigger.test.ts` (`src/state/aim-bigger.test.ts`) — teste le choix gratuit de localisation contre une cible ≥ 2 catégories plus grande (`LDB 76 l.40`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 76` (l.19-45) → `STANDARD_OPTIONALS`, `SceneEntity`, `SpawnExtras`, `creatureToCombatant`, `TraitData` — `src/data/index.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
 
 ---
 
@@ -88,8 +87,8 @@ En principe, déterminer une **Localisation** pour une créature non humaine est
 
 Ces deux tables remplacent la table humanoïde standard pour les morphologies concernées. Toutes les autres créatures — quadrupèdes, oiseaux, créatures à tentacules — utilisent le **tableau humanoïde réétiquetté** (membres antérieurs = bras, membres postérieurs = jambes, ailes = bras).
 
-**Implémente** :
-- Type `BodyShape` (`src/engine/types.ts`) : `'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee'`. Le tableau de localisation utilisé en combat est sélectionné par `bodyShapeOf` sur ce type.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 76` (l.28-35) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
 
 ---
 
@@ -107,8 +106,8 @@ Ces Traits dits « standard » peuvent donc être ajoutés à **n'importe quelle
 
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Traits Facultatifs.
 
-**Implémente** :
-- `TraitData.standard?: boolean` (`src/data/index.ts` l.378-380) — flag en donnée (`traits.json`) ; le picker de Traits Facultatifs dans l'éditeur l'utilise pour proposer tous les Traits standard sur n'importe quel bestiaire.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 76` (l.31-35, l.37) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
 
 ---
 
@@ -136,10 +135,8 @@ Les **12 Attributs** = les 10 Caractéristiques standard (CC, CT, F, E, I, Ag, D
 - `LDB 76 l.44-46` — schéma complet des champs d'un profil.
 - `LDB 76 l.46` (spawn.ts l.163-164) — « – » du schéma = caractéristique inexistante → 0.
 
-**Implémente** :
-- `CreatureData` (`src/data/index.ts`) — type de donnée bestiaire : `char` (12 attributs), `traits: TraitInstance[]`, `skills?: SkillRef[]`, `talents?: TalentRef[]`, `appearance?`, `id`, `label`.
-- `charsFrom(src, fallback=0)` (`src/state/spawn.ts` l.40-47) — dérive `Characteristics` en traitant « – » → 0 (fallback 0, pas 30 inventé).
-- `skillsFromBook` / `talentsFromBook` (`src/state/spawn.ts` l.118-137) — PNJ nommés : valeur imprimée → avances = valeur − Carac.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 76` (l.44-46) → `SceneEntity`, `SpawnExtras`, `creatureToCombatant` — `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
 
 ---
 
@@ -157,11 +154,10 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 - `LDB 76 l.45` — « Traits Facultatifs : Traits de créature courants que vous pouvez ajouter si vous créez votre propre version. »
 - `LDB 85 l.339-340` — « Utiliser les Tailles » (si la Taille Facultative change la catégorie → ±10 F/E, ∓5 Ag).
 
-**Implémente** :
-- `SpawnExtras.optionals?: TraitInstance[]` (`src/state/spawn.ts` l.141) — traits facultatifs choisis par l'auteur de scène, fusionnés avant dérivation.
-- `creatureToCombatant` l.158-162 — fusion `[...creature.traits, ...optTraits]` avant tout.
-- `liveTraits` (`Combatant`) — traits facultatifs modificateurs de profil appliqués en direct ; `withTraitChars` + `traitBonusWoundsBE` pour recalculer Blessures avec les facultatifs.
-- `Scene.entities[].combat.optionals` (`src/state/scene.ts` l.141) — champ d'auteur éditable dans l'éditeur.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 76` (l.45) → `SceneEntity`, `SpawnExtras`, `creatureToCombatant` — `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- `LDB 85` (l.339-340) → `woundsForSize`, `SpecsSource`, `bestDefenseMode`, `applyFreeAttackEffects` — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/size.ts`, `src/state/combatFlow.ts`, `src/state/combatManeuvers.ts`
+- sans code : `LDB 76` (l.11-13)
 
 ---
 
@@ -209,13 +205,8 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 
 **Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
-**Implémente** :
-- `SizeCategory` / `SIZE_ORDER` / `SIZE_LABEL` (`src/engine/size.ts` l.9-46) — 7 catégories en ordinal 0..6.
-- `woundsForSize(bf,be,bfm,size)` (`src/engine/size.ts` l.109-128) — formule exacte par catégorie.
-- `effectiveSize(size?)` (l.49) — défaut Moyenne si absent.
-- `maxWounds(chars,size)` (`src/engine/characteristics.ts`) — interface publique.
-- `characteristics-size.test.ts` — 7 cas couvrant chaque catégorie (`LDB 85 l.391-406`).
-- `traitBonusWoundsBE` (`src/engine/traits/dispatch.ts`) — détection du trait Endurant en Facultatif.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 85` (l.343-406) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `SpecsSource`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, +6 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +4 fichiers
 
 ---
 
@@ -232,10 +223,8 @@ Ces modificateurs s'appliquent **par catégorie d'écart**. Ils sont cumulatifs 
 **Sources RAW** :
 - `LDB 85 l.339-340` — règle d'agrandissement/réduction.
 
-**Implémente** :
-- `resizeBySteps(chars, steps, def=30)` (`src/engine/size.ts` l.142-145) — applique ±10 F/E et ∓5 Ag par cran d'écart ; retourne un nouvel objet (immuable). `def=30` = valeur de repli si la carac. est absente (statbloc partiel).
-- `stepSize(size, steps)` (l.131-134) — décale la catégorie de `steps` crans, bornée [0..6].
-- Usage spawn : `creatureToCombatant` (`src/state/spawn.ts` l.174-178) — Taille Facultative prime sur Taille du bestiaire ; si elle diffère, `resizeBySteps` applique l'écart.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 85` (l.276-277, l.339-340) → `StatblockEditor`, `woundsForSize`, `resizeBySteps`, `creatureToCombatant`, `resolvePsychAI`, `SpecsSource`, `bestDefenseMode`, `applyFreeAttackEffects` — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/size.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatManeuvers.ts`, +2 fichiers
 
 ---
 
@@ -306,19 +295,9 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 
 **Voir aussi** : [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille-categories-et-modificateurs-de-combat).
 
-**Implémente** :
-- `sizeGap(a,b)` (`src/engine/size.ts` l.52-53) — écart ordinal.
-- `sizeGrantedQualities(atk,tgt)` (l.92-98) — Dévastatrice à +1 cat, Percutante à +2.
-- `sizeDamageMultiplier(atk,tgt)` (l.85-90) — ×N AVANT soak (`LDB 85 l.361`, confirmé utilisateur) ; ≥ 1.
-- `forceOpposedOutcome(a,b)` (l.100-107) — `autoWin` / `needCrit` / `normal`.
-- `SIZE_RANGED_MOD` (l.28-36) — mod tir −30..+60 (`LDB 14 l.142-165`).
-- `attackModifiers` (`src/engine/combat.ts` l.280-297) — +10 plus petit, pénalité −2 DR/cat en Parade, localisation gratuite vs +2 cat (`LDB 76 l.40`).
-- `applyHit` (combat.ts) + `sizeDamageMultiplier` — ×N Dégâts (après l'application des autres mods, `LDB 85 l.361`).
-- `res.cleave = true` (combat.ts l.565/596) — Frappe Mortelle si attaquant plus grand OU Nuée (`LDB 85 l.362/200`).
-- Piétinement : `trample` (`src/state/combatSlice.ts` l.629/671), `trampleAttack` (`src/state/combatFlow.ts` l.1770).
-- Désengagement gratuit du plus grand : `combatFlow.ts` l.674, `combatGeometry.ts` l.76.
-- Peur/Terreur par Taille : `fearFromSize` / `terrorFromSize` (`src/engine/psychology.ts` l.119-130).
-- Tests : `combat-breakdown.test.ts`, `size.test.ts`, `cleave.test.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 14` (l.142-165) → `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, `COMBAT_INTENTS`, `grappleEnvMod`, `useAttackJetProps`, `clearEngagementOf`, +33 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +22 fichiers
+- `LDB 85` (l.357-387) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, `teleportCommitTile`, +3 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +4 fichiers
 
 ---
 
@@ -332,10 +311,7 @@ Pour les bêtes sauvages, les profils du bestiaire sont **arrondis à des multip
 
 Les Caractéristiques inexistantes (« – » → 0) **ne sont pas tirées**.
 
-**Implémente** :
-- `randomizeChars(chars, id)` (`src/state/spawn.ts` l.91-100) — applique la formule LDB 78 ; graine déterministe dérivée de `id` (rejouable). Cas « valeur 5 → 1d10 » implémenté.
-- `SpawnExtras.randomChars?: boolean` (l.146) — flag d'auteur.
-- Quand `randomChars` est actif, les Blessures sont **recalculées** par la formule (le `B` imprimé est ignoré).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -376,11 +352,10 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 | **Étreinte Glaciale** | Action | 2 Avantages | Test opposé CC/Esquive ; 1d10+DR Blessures sans PA ; Magique (`LDB 85 l.138`) |
 | **Langue Préhensile (Indice)(Portée)** | Attaque gratuite | 1 Avantage | Distance ; Empêtré ; tire la cible si Taille inférieure (`LDB 85 l.211-213`) |
 
-**Implémente** :
-- `creatureAttacks(traits)` (`src/engine/creatureAttacks.ts`) — résout les traits → `CreatureAttack[]` via `TraitData.grantsManeuvers` (dataset `maneuvers`). Chaque trait d'attaque octroie sa/ses manœuvre(s) ; `pickGranted` désambiguïse Souffle (Feu/Froid/…) par suffixe d'id.
-- `AttackKind` (creatureAttacks.ts l.18) : `'arme'|'morsure'|'caudale'|'cornes'|'souffle'|'vomi'|'tentacules'|'etreinte'|'regard'|'langue'|'hurlement'`.
-- `AttackTrigger` (l.21) : `'action'|'free'|'charge'`.
-- Résolution IA/flux : `combatManeuvers.ts`, `combatFlow.ts`, `combatSlice.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- `LDB 85` (l.1-382, l.395) → `scene`, `planClimb`, `STARTLE_CAUSE_LABELS`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, `Formula`, `sizeDamageMultiplier`, `applySwarmBuild`, +63 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/creatureEquip.ts`, +26 fichiers
+- sans code : `LDB 85` (l.408, l.442-447)
 
 ---
 
@@ -406,8 +381,7 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 
 > **Ces chapitres NE sont PAS transcrits dans ce fichier.** Le présent document couvre le **système** ; le catalogue des statblocs individuels est dans `src/data/creatures.json` (source app-owned, éditée dans le Compendium).
 
-**Implémente** :
-- `src/data/creatures.json` — source app-owned commitée ; index via `findCreatureById`, `allCreatures` (`src/data/index.ts`).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -435,12 +409,9 @@ Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de
 
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (T2C) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
-**Implémente** :
-- `src/data/traits.json` (`creature-marine`, desc verbatim ; passif `offTerrainMod` avec `mSet:1`,
-  `testDR:-2`, `suffocates:true` ; `aquatique` T2C p.90 également porté). Malus hors-eau consommé par
-  `src/engine/ops.ts` (`offTerrainMoveCap`/`offTerrainTestDR`) ; suffocation dérivée par
-  `offTerrainSuffocates` et exécutée par `src/engine/suffocation.ts` (`suffocationTick`, hook
-  `suffocation-tick` de `src/state/combat/roundHooks.ts`) — #477.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 16` (l.15-19) → `suffocationTick`, `fireTurnEdgeTriggers`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, `OpsCtx`, `applyOps`, `Combatant` — `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/state/combat/advantagePool.ts`, `src/state/combat/turnHooks.ts`, `src/state/triggeredEffects.ts`
+- sans code : `MDG 16` (l.63)
 
 ---
 
@@ -462,8 +433,9 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 
 **Voir aussi** : [Avantage permanent — Trait *Redoutable* (Grim) (ZI)](combat.md#avantage-permanent--trait-redoutable-grim-zi) — `combat.md` ; Avantage de groupe (AA) — `combat.md`.
 
-**Implémente** :
-- `src/data/traits.json` (`redoutable`, desc verbatim — la clause AA l.13 y est appendue) : le regain d'Avantage début de tour EST câblé (`effects` `onTurnStart` → op `gainAdvantage{feedOpposingPool:true}`, gardé Empêtré/Inconscient/Surpris par le nœud `if` englobant). Clause AA d'Avantage de groupe : `src/engine/ops.ts` (`OpsCtx.onOpposingAdvantage`, case `gainAdvantage`) appelle le callback QUAND l'op s'exécute (le garde-fou de la donnée gate NATURELLEMENT la clause) ; fourni par `src/state/combat/advantagePool.ts` (`creditOpposingAdvantage`, self-gardée `groupAdvantage()`) via `src/state/combat/turnHooks.ts` (`fireTurnEdgeTriggers`, `onTurnStart`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 16` (l.9-13) → `suffocationTick`, `fireTurnEdgeTriggers`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, `OpsCtx`, `applyOps`, `Combatant` — `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/state/combat/advantagePool.ts`, `src/state/combat/turnHooks.ts`, `src/state/triggeredEffects.ts`
+- sans code : `ZI 14` (l.1045), `MDG 16` (l.152)
 
 ## Bilan de fidélité
 

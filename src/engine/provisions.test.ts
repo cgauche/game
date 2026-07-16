@@ -26,7 +26,7 @@ function hero(opts: { endurance?: number; rations?: number; brouet?: boolean } =
 /** RNG forcé : d100 → toujours `roll` (échec/réussite déterministe), d10 → 10. */
 const fixed = (roll: number): RNG => ({ int: (_min, max) => (max === 100 ? roll : max) });
 
-describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () => {
+describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.343)', () => {
   it('consomme 1 ration/jour ; nourri = pas de faim', () => {
     const c = hero({ rations: 2 });
     const r = dailyFoodUpkeep(c, 30, 3, makeRNG(1));
@@ -72,7 +72,7 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
     expect(hungerCharPenalties(c, 'intelligence')).toEqual([-10]);
   });
 
-  it('les Tests sont de plus en plus difficiles : −10 par Test déjà tenté (l.418)', () => {
+  it('les Tests sont de plus en plus difficiles : −10 par Test déjà tenté (LDB 18 l.338)', () => {
     const c = hero({ rations: 0 });
     dailyFoodUpkeep(c, 30, 3, fixed(95));
     const d2 = dailyFoodUpkeep(c, 30, 3, fixed(95)); // 1ᵉʳ Test : cible 30
@@ -131,7 +131,7 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
     expect(c.hunger?.days).toBe(2); // la faim a bien progressé d'un jour
   });
 
-  it('applyFaimTest : verrouiller un échec compte le Test + applique les pénalités (l.422)', () => {
+  it('applyFaimTest : verrouiller un échec compte le Test + applique les pénalités (LDB 18 l.343)', () => {
     const c = hero({ rations: 0, endurance: 30 });
     c.hunger = { days: 2, tests: 0, failures: 0 };
     const r1 = applyFaimTest(c, false, 3, fixed(95)); // 1ᵉʳ échec → −10 F/E
@@ -149,7 +149,7 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
   });
 });
 
-describe('Faim & repos (LDB 18 l.418) : pas de récupération naturelle sans provisions', () => {
+describe('Faim & repos (LDB 18 l.338) : pas de récupération naturelle sans provisions', () => {
   it('affamé : le repos ne rend ni PB ni Exténué (les maladies suivent leur cours)', () => {
     const c = hero({ rations: 0 });
     c.hunger = { days: 2, tests: 1, failures: 0 };
@@ -171,7 +171,7 @@ describe('Faim & repos (LDB 18 l.418) : pas de récupération naturelle sans pro
   });
 });
 
-describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
+describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.340)', () => {
   it('avec eau : boit, pas de soif ; la soif installée se dissipe', () => {
     const c = hero();
     c.thirst = { days: 3, tests: 2, failures: 1 };
@@ -203,7 +203,7 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
     expect(thirstCharPenalties(c, 'capacite-de-combat')).toEqual([-10]);
   });
 
-  it('Tests de plus en plus durs (−10 cumulatif, l.418)', () => {
+  it('Tests de plus en plus durs (−10 cumulatif, LDB 18 l.338)', () => {
     const c = hero();
     const w1 = dailyWaterUpkeep(c, false, 30, 3, fixed(1)); // j1 réussi
     expect(w1.log.join(' ')).not.toContain('−'); // 1ᵉʳ Test : pas de malus

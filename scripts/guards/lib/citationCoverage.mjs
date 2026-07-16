@@ -131,4 +131,5 @@ export const EXEMPT_DATASETS = {
   'systemes.manifest.json': "manifeste TOOLING (#298) éditorial des systèmes implémentés (nom/modules/état/ticket) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
   'lieux-services.json': "vocabulaire des SERVICES de lieu (#343 — auberge/temple/forgeron/guilde) : id/label/icône de routage d'écran (hub de lieu), aucune valeur mécanique propre à sourcer (port/marché portent leur propre schéma sourcé).",
   'axes.json': "axes de forces/faiblesses (#409) — mécanique MAISON tracée par ticket (aucune règle RAW ne stat un axe de forces) : `source: 'maison'` par entrée, pas de folio {book,page} à citer.",
+  'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (topic/ticket/bloque, généré par scripts/raw/build-implemente.mjs) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
 };

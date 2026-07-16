@@ -11,7 +11,7 @@ import { describeRun } from '../state/flowOutcomes';
 import { Icon } from './Icon';
 
 /**
- * Modale de Course (LDB 15-Déplacement l.79-82) : « Lancer » jette le Test d'Athlétisme (+20),
+ * Modale de Course (LDB 15 l.41) : « Lancer » jette le Test d'Athlétisme (+20),
  * « Relancer »/« Réussite garantie » dépensent Chance/Résilience, « Appliquer » ouvre le déplacement
  * étendu (Marche + Course + DR). La Course N'EST PAS binaire : « +1 DR » (Chance, LDB 17 l.26) allonge
  * la distance parcourue (DR en mètres → cases, cf. le flux `run`).

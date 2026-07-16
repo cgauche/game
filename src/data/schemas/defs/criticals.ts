@@ -54,7 +54,7 @@ export const critEscalationSchema = z.strictObject({
   onHealGrant: z.strictObject({ scar: z.string(), whenClear: z.array(z.string()) }).optional(),
 });
 
-/** Amputation (LDB 18 l.328-333) — reflet de `Amputation` (`src/data/criticals.ts`), SOURCE UNIQUE de forme
+/** Amputation (LDB 18 l.237) — reflet de `Amputation` (`src/data/criticals.ts`), SOURCE UNIQUE de forme
  *  partagée LDB (`criticals.json`) et Aux Armes (`aa-criticals.json`, mêmes textes « Une fois la rencontre
  *  terminée… »/« un orteil par DR »). Résolue par `resolveAmputation`. */
 export const amputationSchema = z.strictObject({

@@ -90,7 +90,7 @@ export function ReloadModalView({
  * Rechargement d'une arme à distance = Test étendu de Projectiles (LDB 62 l.335 :
  * « une arme déchargée … nécessite un Test étendu de Projectiles … et nécessite d'obtenir
  * Indice DR pour être rechargée »). « Lancer » fait le jet, une Chance est possible avant
- * d'acquitter, et le DR obtenu se cumule vers l'Indice (12-Tests l.199-211).
+ * d'acquitter, et le DR obtenu se cumule vers l'Indice (LDB 12 l.170-174).
  */
 export function ReloadModal() {
   const pr = useGame((s) => s.pendingReload);

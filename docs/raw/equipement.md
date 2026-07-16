@@ -445,7 +445,7 @@ Le Talent **Vision nocturne** étend le rayon effectif de toute source de lumiè
 
 **Voir aussi :** `talents.md` § Vision nocturne — extension de portée d'éclairage.
 
-**Implémente :** `src/state/vision.ts` — `CANDLE_RADIUS` (10 m / 2 = 5 cases), `LANTERN_RADIUS` (20 m / 2 = 10 cases) ; `lightLevels.json` (éclairage par scène / prop).
+**Implémente :** (non implémenté)
 
 #### Grappin (1 CO, Limitée ; Enc 1)
 > LDB 74 l.45 : « couplé à une corde, il permet de gravir des surfaces inaccessibles. »
@@ -576,7 +576,9 @@ Les objets personnels portés ne comptent pas, sauf très volumineux/lourds : ta
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Exemples de bateaux* et *Caractéristiques de bateau standard*) · § Construction navale (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG) · [`deplacement.md`](deplacement.md) (voyage, vitesses).
 
-**Implémente :** (non implémenté) — schéma de navire (profil E/BE, B/BB, Contenance, Man, Voiles/Avirons) absent du moteur ; à modéliser comme entité combattante distincte si le combat naval est joué.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.58, l.64, l.68, l.81) → `cargoTone`, `OverloadPalier`, `PortState`, `ShipDossierView`, `vesselMaxLoadEnc`, `OVERLOAD_HARD_CAP_PCT`, `CargoOverload`, `cargoOverload`, `overloadMaxEnc`, `shipboardSouls`, +6 — `src/engine/seaVoyage.ts`, `src/engine/types.ts`, `src/gameIso/rig/ship/defs/bateau-de-patrouille.ts`, `src/state/portFlow.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCrew.ts`, +3 fichiers
+- sans code : `MDG 12` (l.5, l.17, l.21, l.35, l.39, l.41, l.45, l.50) +1
 
 ---
 
@@ -614,7 +616,8 @@ Procédure pour qu'un Personnage construise (ou fasse construire) son vaisseau, 
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (table *Caractéristiques de bateau standard*) · § Navires — profil et Caractéristiques (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG).
 
-**Implémente :** (non implémenté) — calcul de coût/profil par assemblage Taille→propulsion→Man→vitesse non modélisé.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.108, l.110, l.116, l.118, l.133, l.137, l.147) → `shipSizeFromLength`, `SHIP_SIZE_LABEL`, `shipConstructionRulesSection`, `ShipSize` — `src/data/index.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, `src/ui/compendium/registry.ts`
 
 ---
 
@@ -636,7 +639,8 @@ Les **Traits** sont intégrés à la construction initiale et, contrairement aux
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Traits dans la colonne *Traits et Améliorations* des exemples) · § Navires — profil et Caractéristiques (MDG) · § Construction navale (MDG).
 
-**Implémente :** (non implémenté) — modificateurs de Trait de navire (E, B, Contenance, DR aux Tests d'équipage) non modélisés.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.167, l.169, l.171, l.177, l.183, l.189) → `navalSkillTestDR`, `bandValue`, `CONSTRUCTION_TRAIT_LABEL`, `portInstallUpgrade` — `src/data/schemas/defs/ship-construction.ts`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`, `src/ui/compendium/registry.ts`
 
 ---
 
@@ -685,7 +689,8 @@ Modifications ajoutables après coup à un vaisseau ; d'autres figurent dans le 
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Coûts/Poids des Améliorations, table *Panne de Vapeur*) · § Navires — profil et Caractéristiques (MDG) · § Pièces d'artillerie navale (MDG) (Sabords & tir).
 
-**Implémente :** (non implémenté) — Améliorations de navire (PA Bélier/Blindage, M +1 Lissage, M 4 vapeur, couvert Sabord, bonus Tests) non modélisées.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.195, l.197, l.203, l.205, l.215, l.223, l.238, l.246, l.266, l.274, l.284, l.287, l.297, l.305, l.315, l.356) → `CollisionShip`, `schema`, `hullArmourBonus`, `resolveCollision`, `scene`, `navalMoveMod`, `belierRam`, `navalDeckCover` ⚠sans-appelant, `SailRigging`, `effectiveDeckPostes` ⚠sans-appelant, +12 — `src/data/index.ts`, `src/data/schemas/defs/naval-traits.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/collision.ts`, +7 fichiers
 
 ---
 
@@ -725,5 +730,7 @@ Si un Défaut ainsi reçu est déjà présent, c'est **–10** supplémentaire �
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Pièces d'artillerie* et *Munitions pour pièces d'artillerie*) · [`combat.md`](combat.md) (armes à distance, Atouts/Défauts, Portée) · § Améliorations de navire (MDG) (Sabords).
 
-**Implémente :** (non implémenté) — artillerie navale (Arme d'équipe, Tir de zone, munitions spéciales, Recharge longue) non modélisée ; à rapprocher des armes de siège AA si le combat naval est joué.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.367, l.373, l.430, l.432, l.433, l.435, l.440, l.458, l.466) → `crewedPenalty`, `canon`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `SHIP_ARC_PREF`, `crewedFireWeapon`, `resolveVolley`, `navalDeckCover` ⚠sans-appelant, `effectiveDeckPostes` ⚠sans-appelant, +13 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, +14 fichiers
+- sans code : `MDG 12` (l.377, l.379, l.381)
 

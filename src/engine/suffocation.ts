@@ -1,5 +1,5 @@
 /**
- * Noyade et Suffocation (LDB 18 l.424-425) : « si vous n'avez pas eu le temps de vous préparer et
+ * Noyade et Suffocation (LDB 18 l.345) : « si vous n'avez pas eu le temps de vous préparer et
  * que vous vous retrouvez brutalement privé d'air, vous suffoquez immédiatement. Vous perdez
  * 1 Point de blessure par Round que vous passez à suffoquer. Si vos Points de blessure passent
  * à 0, gagnez immédiatement l'État Inconscient. Après cela, et au bout d'un nombre de Rounds
@@ -87,7 +87,7 @@ export function suffocationTick(c: Combatant): string[] {
     }
     return lines;
   }
-  // Déjà à 0 PB : décompte vers la mort (BE Rounds après l'Inconscient, LDB 18 l.425).
+  // Déjà à 0 PB : décompte vers la mort (BE Rounds après l'Inconscient, LDB 18 l.346).
   if (c.suffocationCountdown == null) {
     if (!hasCondition(c, 'inconscient')) addCondition(c, 'inconscient');
     c.suffocationCountdown = be;

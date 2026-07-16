@@ -5,7 +5,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { hasCondition } from '../engine/conditions';
 
-describe('À Terre — se relever / pas de Course (LDB 16 l.37, 18 l.28)', () => {
+describe('À Terre — se relever / pas de Course (LDB 16 l.37, 18 l.15)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
@@ -44,7 +44,7 @@ describe('À Terre — se relever / pas de Course (LDB 16 l.37, 18 l.28)', () =>
     expect(st.battle!.acted).toBe(false); // l'Action reste disponible
   });
 
-  it('À Terre + 0 PB → ne peut PAS se relever (LDB 18 l.28)', () => {
+  it('À Terre + 0 PB → ne peut PAS se relever (LDB 18 l.15)', () => {
     const { H } = setup();
     H.conditions = [{ name: 'a-terre', value: 1 }];
     H.wounds = { current: 0, max: 12, base: 12 } as never;

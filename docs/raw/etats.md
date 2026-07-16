@@ -36,7 +36,8 @@ La durée de chaque État est précisée dans sa description ; cependant, certai
 - `LDB 16 l.10-11` — définition des États + perte d'Avantage immédiate
 
 **Voir aussi** : Avantage (`combat.md`), Détermination (`destin.md`)
-**Implémente** : `src/engine/conditions.ts` — `addCondition` (l.50-67) remet `c.advantage = 0` systématiquement
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `meleeAttackerBonus`, `StatusData` — `src/data/index.ts`, `src/engine/conditions.ts`
 
 ---
 
@@ -67,10 +68,8 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.115` — Inconscient ne se cumule pas
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
-**Implémente** : `src/engine/conditions.ts`
-- `addCondition` (l.50-67) : empile sur `existing.value`
-- `combatTestPenalty` (l.111-127) : collecte les candidats, retourne `Math.min(...cand)` (pénalité la plus forte)
-- `testStatePenalty` (l.140-157) : même logique pour tests hors combat
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `addClockCondition`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, +29 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +11 fichiers
 
 ---
 
@@ -82,7 +81,8 @@ Un État peut être annulé en dépensant un Point de Détermination.
 - `LDB 16 l.20-21` — mention générale ; renvoi p. 171
 
 **Voir aussi** : Détermination (`destin.md`)
-**Implémente** : `src/state/rollFlows.ts` (flux `determination`) — (implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `HEARING_SKILL`, `SkillData`, `meleeAttackerBonus`, `AttackOptions`, `StatusData`, `GameOp` — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`
 
 ---
 
@@ -104,9 +104,8 @@ Un État peut être annulé en dépensant un Point de Détermination.
 - `LDB 16 l.29-30` — effets + retrait
 
 **Voir aussi** : Aveuglé (état analogue pour la vue)
-**Implémente** : `src/engine/conditions.ts`
-- `endOfRound` (l.265-270) : dissipe 1 pion Assourdi en fin de Round
-- `meleeAttackerBonus` : **le bonus +10 par le flanc n'est pas modélisé** — l'orientation des combattants n'est pas suivie (commentaire l.163-164)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.29-30) → `PRONE_POSE`, `etatTestMods`, `dropWorst`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `SkillData`, `meleeAttackerBonus`, `AttackOptions`, `StatusData`, +3 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, +3 fichiers
 
 ---
 
@@ -129,11 +128,9 @@ Un État peut être annulé en dépensant un Point de Détermination.
 - `LDB 18 l.15` — gagner l'État À Terre à 0 PB (Traumatisme, renvoi depuis conditions.ts)
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Inconscient
-**Implémente** : `src/engine/conditions.ts`
-- `meleeAttackerBonus` (l.164-170) : +20 si cible À Terre
-- `testStatePenalty` (l.151-155) : -20 aux Tests de déplacement (skillId dans `MOVEMENT_SKILL`)
-- `applyZeroWounds` (l.373-375) : ajoute À Terre à 0 PB
-- `loseWounds` (l.383-391) : appelle `applyZeroWounds`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.33-39) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `SkillData`, `meleeAttackerBonus`, `AttackOptions`, `GameOp`, `GameState`, `createCombatSlice` — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, +3 fichiers
+- `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `aaBleedUnconsciousApply`, `rollCritical`, `ActionBar`, `isOutOfAction`, `applyZeroWounds`, +10 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +6 fichiers
 
 ---
 
@@ -151,10 +148,8 @@ Un État peut être annulé en dépensant un Point de Détermination.
 - `LDB 16 l.43-47` — effets + retrait
 
 **Voir aussi** : Assourdi
-**Implémente** : `src/engine/conditions.ts`
-- `meleeAttackerBonus` (l.168) : +10 si cible Aveuglée
-- `combatTestPenalty` (l.116) : -10 si Aveuglé (pénalité aux Tests de combat)
-- `endOfRound` (l.265-270) : dissipe 1 pion Aveuglé en fin de Round
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.43-47) → `PRONE_POSE`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `ActionBar`, `hasFoeInLoS`, `MOVEMENT_SKILL`, `recoveryGeometry`, `SkillData`, `applyTriggeredEffects`, +5 — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, `src/state/ai.ts`, +7 fichiers
 
 ---
 
@@ -179,9 +174,8 @@ Un État peut être annulé en dépensant un Point de Détermination.
 - `LDB 16 l.51-61` — effets, contraintes de comportement, retrait
 
 **Voir aussi** : Psychologie (`psychologie.md`), Exténué
-**Implémente** : `src/engine/conditions.ts`
-- `combatTestPenalty` (l.117) : -10 si Brisé
-- `testStatePenalty` (l.150) : -10 si Brisé, sauf `athletisme`/`discretion` (`BRISE_EXEMPT`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.51-61) → `addCondition`, `EnemyAction`, `StateRecoveryModal`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, `hasFoeInLoS`, +14 — `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combat/roundHooks.ts`, +10 fichiers
 
 ---
 
@@ -204,10 +198,8 @@ Un État peut être annulé en dépensant un Point de Détermination.
 > « Vous pouvez utiliser votre Action pour retirer l'État _Empêtré_ en réussissant un Test opposé **de Force** contre la source de cet empêtrement, et chaque DR obtenu permet de retirer un État _Empêtré_ supplémentaire. » — `LDB 16 l.66`
 
 **Voir aussi** : Empoignade (`combat.md`)
-**Implémente** : `src/engine/conditions.ts`
-- `testStatePenalty` (l.153-155) : -10 aux Tests de déplacement si Empêtré
-- `recoveredStacks` (l.44-48) : formule « 1 + DR » partagée (utilisée pour le retrait de Force)
-- `addCondition` : `escapeStrength` = valeur de Force de la source (l.55-58)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.66, l.72, l.86-87) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, `fatigueThreshold`, +16 — `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +10 fichiers
 
 ---
 
@@ -233,12 +225,8 @@ Un État peut être annulé en dépensant un Point de Détermination.
 - `LDB 16 l.68-79` — définition, effets, retrait, conséquences à 0 PB et Inconscient
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
-**Implémente** : `src/engine/conditions.ts`
-- `combatTestPenalty` (l.118) et `testStatePenalty` (l.146) : -10 si Empoisonné
-- `endOfRound` (l.225-235) : dégâts périodiques (1 PB × pions)
-- `poisonResistValue` (l.188-190) : valeur du Test de Résistance (source unique)
-- `poisonResistApply` (l.196-204) : application du succès (retire pions, ajoute Exténué si tous retirés)
-- Le Test de Résistance lui-même est géré par hook `roundBoundary` hors de `endOfRound` pour les héros (cascade influençable)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.68-79) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, `recoveryGeometry`, +13 — `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/ai.ts`, +9 fichiers
 
 ---
 
@@ -260,9 +248,8 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.81-84` — condition d'inflammabilité, dégâts, formule, retrait
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
-**Implémente** : `src/engine/conditions.ts`
-- `endOfRound` (l.237-245) : formule `max(1, d10 + (fire-1) - bonus(E) - minPA)` — conforme RAW
-- `recoveredStacks` (l.44-48) : formule « 1 + DR » pour le retrait
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.81-84) → `Formula`, `recoveryTarget`, `ActionBar`, `collectHeroRoundEndUpkeep`, `GameOp`, `endOfRound`, `chooseEnemyAction`, `passiveMods` — `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, `src/state/ai.ts`, `src/state/combat/roundHooks.ts`, +1 fichiers
 
 ---
 
@@ -293,10 +280,9 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 21 l.33` — Frénésie : gain Exténué à la fin de la Frénésie
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
-**Implémente** : `src/engine/conditions.ts`
-- `combatTestPenalty` (l.120-121) : -10 × `stacks(c, extenue)`
-- `testStatePenalty` (l.148-149) : même logique hors combat
-- `nightmareCheck` (l.314-321) : cauchemars → Exténué si Calme +40 raté
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `hitModifiers`, `recoveryTarget`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `fatigueThreshold`, +15 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, +9 fichiers
+- `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `describeApproach`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
 
@@ -324,10 +310,8 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.103-109` — effets, jet de mort, coagulation (double), retrait, transition vers Exténué
 
 **Voir aussi** : Inconscient, Traumatisme (`traumatisme.md`), Maladies (`maladies.md`)
-**Implémente** : `src/engine/conditions.ts`
-- `endOfRound` (l.218-223) : dégâts périodiques (avec `bleedIgnoreLevel` pour le talent Endurci)
-- `bleedDeathRoll` (l.329-341) : jet de mort 10%/pion + coagulation sur double
-- Transition Exténué après dernier pion : dans `bleedDeathRoll` (l.336) et dans la résolution du soin (hors `conditions.ts`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.103-109) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `fatigueThreshold`, `fatigueApply`, `AttackResult`, +8 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/engine/types.ts`, +5 fichiers
 
 ---
 
@@ -350,11 +334,8 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.112-120` — effets, attaque facilité, retrait, transition vers À Terre + Exténué
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Hémorragique, Empoisonné, À Terre, Exténué
-**Implémente** : `src/engine/conditions.ts`
-- `cannotDefend` (l.174-176) : Inconscient ne peut pas se défendre
-- `isOutOfAction` (l.357-359) : Inconscient = hors de combat
-- `inDeathCondition` (l.365-370) : Inconscient + 0 PB + (critiques > BE) → mort
-- `tickDeath` (l.399-413) : après (BE) Rounds à 0 PB → ajoute Inconscient
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.112-120) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, +13 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/state/ai.ts`, +6 fichiers
 
 ---
 
@@ -377,12 +358,8 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.123-130` — effets, langue magick, -10 tests, +1 avantage attaquant, retrait, transition Exténué
 
 **Voir aussi** : Exténué, Magie (`magie.md`)
-**Implémente** : `src/engine/conditions.ts`
-- `canTakeAction` (l.180-182) : Sonné ne peut pas agir
-- `combatTestPenalty` (l.119) : -10 si Sonné
-- `testStatePenalty` (l.147) : -10 hors combat
-- `endOfRound` (l.248-264) : Test Résistance (+0) + dissipation + transition Exténué
-- Le +1 Avantage pour l'attaquant ciblant un Sonné : **(non implémenté dans `conditions.ts`)** — à vérifier dans le flux d'attaque (`combatFlow.ts`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.123-130) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `chooseEnemyAction`, `resolveAttack`, `applyAttackResult`, +1 — `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -405,10 +382,8 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.132-139` — effets, retrait, non-cumul
 
 **Voir aussi** : Initiative et Surprise (`combat.md`)
-**Implémente** : `src/engine/conditions.ts`
-- `cannotDefend` (l.174-176) : Surpris ne peut pas se défendre
-- `meleeAttackerBonus` (l.165-167) : +20 si cible Surprise
-- `endOfRound` (l.265-270) : dissipe 1 pion Surpris en fin de Round
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.132-139) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `chooseEnemyAction`, `resolveAttack`, `applyAttackResult`, +1 — `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -444,7 +419,8 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.16-17` — liste complète des 12 États
 - `LDB 16 l.28-139` — descriptions individuelles
 
-**Implémente** : `src/engine/conditions.ts` — module principal (tous les États sauf cas notés `(non implémenté)`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `unstable`, `addCondition`, `Formula`, `EnemyAction`, `stopBleedOutcome`, `StateRecoveryModal`, `addClockCondition`, `hitModifiers`, `recoveryTarget`, +53 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +20 fichiers
 
 ---
 
@@ -535,7 +511,9 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 - `LDB 40 l.101-101` — Colère des dieux 126-130 : En flammes
 - `LDB 40 l.101-101` — Colère des dieux 131-135 : Hémorragique quotidien jusqu'à Pénitence
 
-**Implémente** : `src/engine/conditions.ts` — les durées en heures (< Round-scope) sont gérées via `untilTime` dans le système `ActiveEffect`/`upkeep.ts`. Les cas à retrait conditionnel narratif (Rébellion intestinale, Cérumen sans Guérison tierce, Aveuglé Prière, Hémorragique quotidien jusqu'à Pénitence) ne sont pas modélisés dans le moteur (à gérer via effets scène/campagne). Non intégrées pour les cas de contrecoup magique (à vérifier dans `magic.ts`/`miscast.ts`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `CastPenalty`, `applyMiscast` — `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`
+- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `followsCharacterRules`, `CastableSpell`, `missileComponent`, `CastModal`, `oppositionDiscount`, `Effect`, `ruleOfEightSeverity`, `buySpell`, `CastPenalty`, `EFFECT_HANDLERS`, +11 — `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +8 fichiers
 
 ---
 
@@ -569,7 +547,9 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 - `LDB 18 l.149` — Hémorragie interne : Hémorragique non retirable sans Chirurgie
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
-**Implémente** : `src/engine/conditions.ts` — le verrouillage « Aveuglé sur Hémorragique » et « Sonné sur Aide Médicale » ne sont pas gérés génériquement ; les blessures critiques portent leurs propres conditions via `CriticalWound.lockedUntil` (si défini). À auditer.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 18` (l.64, l.67, l.74-75, l.104, l.211, l.213) → `critEscalationSchema`, `CritEscalation`, `resolveAACritical`, `fractureSequela`, `fractureEndDifficulty`, `rollCritical`, `stampCriticalEscalation`, `settleHealedCriticals`, `fireCritTriggers`, `usesSuddenDeath`, +6 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +6 fichiers
+- sans code : `LDB 18` (l.123-125, l.148, l.149)
 
 ---
 
@@ -594,11 +574,7 @@ Les autres règles Hémorragique (dégâts périodiques 1 PB/pion, jet de mort 1
 - `AA l.2451-2460` — variante complète Hémorragique : test Résistance avant inconscience, Test Guérison (+20)
 
 **Voir aussi** : Hémorragique (section principale ci-dessus), Traumatisme
-**Implémente** : les deux différences sont branchées sur la règle optionnelle `combat-aa-blessures`
-(`src/engine/policy.ts:202-210`, défaut `ldb`). Résistance-avant-Inconscience : `src/state/combat/roundHooks.ts:151-191`
-(`aaBleedUnconsciousDue`/`aaBleedUnconsciousApply`, hook `aa-bleed-unconscious`) +
-`src/engine/conditions.ts:632-646` (`tickDeath` neutralise l'inconscience automatique LDB en mode `aa`).
-Difficulté du Test de Guérison : `src/state/combatSlice.ts` (`healDifficulty`, `battleHeal`/`healSetMode`).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -618,7 +594,7 @@ Ces tableaux utilisent tous les États standards (Hémorragique, Sonné, Aveugl�
 - `AA l.2520-2729` — tableaux BC par localisation (Tête, Bras, Torse, Jambe) avec États associés
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
-**Implémente** : `src/engine/combat.ts` + `src/state/rollFlows.ts` — le système de BC alternatif d'AA n'est **pas implémenté** ; l'implémentation suit le système LDB 18 (BC à 0 PB uniquement).
+**Implémente :** (non implémenté)
 
 ---
 
@@ -641,7 +617,8 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 - `ZI l.593-596` — Filets : Empêtré avec DR non cumulatifs (≠ LDB Test de Force opposé)
 - `ADE II l.214, l.221, l.342` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
 
-**Implémente** : `src/engine/combat.ts` — `assommanteCheck` pour l'Atout Assommante (à vérifier). L'Empêtré FM et la mécanique de filet (DR non cumulatifs) ne sont pas implémentés en variante. L'État Surpris via arme magique non implémenté.
+**Implémente :** (non implémenté)
+- cité par tests seulement : `src/engine/weapon-spec.test.ts`
 
 ---
 

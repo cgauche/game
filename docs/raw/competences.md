@@ -33,8 +33,8 @@ Augmentations** dans cette Compétence inscrites sur la Feuille de Personnage.
 
 **Sources RAW :** LDB 09 l.12-18
 
-**Implémente :** `src/engine/skills.ts` → `testValue(c, skill, characteristic, spec)` — calcule
-`Caractéristique effective + advances + pénalités d'État + encombrement + traumatisme + passifs`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.12-18) → `possesses` — `src/engine/axes.ts`, `src/engine/skillCombatApps.ts`
 
 **Voir aussi :** [Tests & Degrés de Réussite](tests.md) pour l'utilisation de ce niveau en test.
 
@@ -61,10 +61,8 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 
 **Sources RAW :** LDB 09 l.22-32
 
-**Implémente :** la distinction Base/Avancée est portée par `SkillData.type` (`'base'`/`'avancée'`)
-dans `src/data/skills.json`. Le gate canonique est `possesses` (`src/engine/skillCombatApps.ts`) :
-base = toujours testable sur la caractéristique nue ; avancée = exige au moins une Augmentation
-(consommé par les axes de forces `src/engine/axes.ts` et les applications de combat).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `buySkillAdvance`, `buildAdvancementView`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/healing.ts`, `src/engine/skillCombatApps.ts`, +5 fichiers
 
 ---
 
@@ -88,9 +86,8 @@ la description, ou en crée une avec l'accord du MJ.
 
 **Sources RAW :** LDB 09 l.34-46
 
-**Implémente :** `src/engine/careerSlots.ts` l.4 — « Compétences groupées (LDB 09 l.34-45) :
-chaque Spécialisation est UNE Compétence distincte ». `SkillInstance.spec` porte la spécialisation ;
-`testValue` reçoit `spec?` pour cibler la bonne instance quand le héros en possède plusieurs.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `buySkillAdvance`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, `src/engine/healing.ts`, +6 fichiers
 
 ---
 
@@ -174,9 +171,8 @@ Soin aux animaux, Voile**
 
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
-**Implémente :** `src/data/skills.json` — chaque entrée porte `id`, `label`, `characteristic`
-(CharKey), `advanced` (bool), `grouped` (bool). `skillCharKeyById(skillId)` dans
-`src/engine/skills.ts` résout la Caractéristique par id.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, `healDifficulty`, +29 — `src/data/driving-mishap.json` ⚠hors-app, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/schemas/defs/drunkenness.ts`, +24 fichiers
 
 ---
 
@@ -506,7 +502,9 @@ comme non Groupée pour les non-formés.
 
 **Sources RAW :** LDB 09 l.246-252 ; ADE II l.165, l.177, l.179 (Focalisation sur artefacts magiques).
 
-**Implémente :** `src/engine/magic.ts` (incantation/Focalisation/ZdE).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.65-72, l.86-109, l.121-134, l.137-154, l.157-160, l.163-176, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `carryOverState`, `useDefenseJetProps`, `healDifficulty`, `defenseSubOf`, `healWoundsDelta`, +13 — `src/data/driving-mishap.json` ⚠hors-app, `src/data/index.ts`, `src/data/schemas/defs/driving-mishap.ts`, `src/engine/combat.ts`, `src/engine/drivingMishap.ts` ⚠hors-app, `src/engine/healing.ts`, +12 fichiers
+- sans code : `LDB 9` (l.75-76, l.80-83, l.111-118, l.179-190)
 
 ---
 
@@ -531,8 +529,8 @@ En combat : Tests de Guérison Intermédiaires (+0).
 
 **Sources RAW :** LDB 09 l.255-269
 
-**Implémente :** `src/state/store.ts` (medicFlow / `src/state/combatFlow.ts`). Talent Chirurgie
-requis pour les chirurgies spécifiques.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, `Combatant`, `createCombatSlice` — `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/types.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -551,8 +549,9 @@ autoriser Fm (Répurgateur) ou Int (universitaire face à un étudiant). Voir [R
 
 **Sources RAW :** LDB 09 l.272-294
 
-**Implémente :** `src/engine/skills.ts` → `altCharKey` (policy `test-intimidation-char`) ;
-`src/engine/skills.ts` l.15.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.272-294) → `altCharKey`, `healDifficulty`, `OPTIONAL_RULES`, `createCombatSlice` — `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/state/combatSlice.ts`
+- sans code : `LDB 9` (l.293-294)
 
 ---
 
@@ -615,7 +614,8 @@ Activité Artisanat entre aventures utilise Métier (voir [Activités](activites
 
 **Sources RAW :** LDB 09 l.349-364
 
-**Implémente :** `src/engine/skills.ts` → `altCharKey` (policy `test-metier-int`, LDB 09 l.358).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `OPTIONAL_RULES`, `PendingTest`, `ActionBar`, `GameState`, `useGame`, `createCombatSlice` — `src/engine/policy.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, `src/state/shipwreck.ts`, +2 fichiers
 
 ---
 
@@ -942,9 +942,9 @@ l'Intelligence. (Voir section dédiée.)
 
 **Sources RAW :** LDB 09 l.293-294 ; LDB 09 l.358 ; ADE II l.653
 
-**Implémente :** `src/engine/skills.ts` → `altCharKey(c, skillId, ck)` — politique `test-intimidation-char`
-(F/FM/Int/max) et `test-metier-int`. La Caractéristique alternative par entité (ogre : Langue Magick
-sur Endurance) est portée par `SkillInstance.characteristic` en donnée, pas dans le moteur.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 9` (l.358) → `altCharKey`, `OPTIONAL_RULES` — `src/engine/policy.ts`, `src/engine/skills.ts`
+- sans code : `LDB 9` (l.293-294)
 
 ---
 
@@ -960,9 +960,7 @@ l'Intelligence (Int) pour leur Compétence Langue (Magick).**
 
 **Sources RAW :** ADE II l.653
 
-**Implémente :** portée par `SkillInstance.characteristic = 'E'` sur l'instance possédée par le
-Combatant ogre. `effectiveSkillCharKey` lit la carac d'instance avant la carac par défaut de la data
-(`skills.json`), donc aucun sniff d'espèce dans le moteur.
+**Implémente :** (non implémenté)
 
 ---
 
@@ -1035,7 +1033,7 @@ cible cherche activement à brouiller les pistes : opposé à Discrétion de la 
 > « L'hypnotisme est une Compétence Avancée utilisée par certains Saltimbanques et autres Mystiques. » — `T3 12 l.5`
 
 **Voir aussi** : Tests opposés (`tests.md`), État *Sonné* (`etats.md`), Force Mentale / Calme (`psychologie.md`).
-**Implémente** : `(non implémenté)` — aucune mécanique d'hypnose dans `src/engine` (Compétence de table/MJ).
+**Implémente :** (non implémenté)
 
 ---
 

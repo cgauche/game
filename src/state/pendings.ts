@@ -168,7 +168,7 @@ export interface PendingSteamSave {
   forced?: boolean;
   rerolled?: boolean;
 }
-/** Rechargement en attente (LDB 63-Armures l.28-29 : Test étendu de Projectiles, Indice DR).
+/** Rechargement en attente (LDB 62 l.335 : Test étendu de Projectiles, Indice DR).
  *  La modale affiche « Lancer », le DR, puis Chance avant d'acquitter (cumul vers `reload`). */
 export interface PendingReload {
   actorId: string;
@@ -281,7 +281,7 @@ export interface PendingAttack {
   result: AttackResult | null; // null = pas encore lancé
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
-  fromCharge?: boolean; // issue d'une Charge → l'attaque est engagée dès le 1ᵉʳ jet (LDB 15-Dépl l.75)
+  fromCharge?: boolean; // issue d'une Charge → l'attaque est engagée dès le 1ᵉʳ jet (LDB 15 l.35)
   /** Undo PRÉ-JET d'une Charge (jeu vidéo : annuler un misclic comme on annule un déplacement/une attaque) :
    *  état d'AVANT la charge pour restaurer positions/orientation/Mouvement/Avantage/chargedThisTurn si on
    *  Annule AVANT tout jet (`result === null`). Une fois le dé lancé, la charge est engagée (RAW). Capturé à
@@ -444,7 +444,7 @@ export interface PendingManeuver {
   /** Réussite forcée par Résilience (LDB 17 l.73). */
   forced?: boolean;
 }
-/** Course en attente (LDB 15-Déplacement l.79-82) : Test d'Athlétisme (+20) ; succès → déplacement
+/** Course en attente (LDB 15 l.41) : Test d'Athlétisme (+20) ; succès → déplacement
  *  étendu (Marche + Course + DR). Lancer → Chance/Résilience → Appliquer (ouvre le déplacement étendu). */
 export interface PendingRun {
   combatantId: string;
@@ -752,7 +752,7 @@ export interface PendingDefense {
    *  l'attaquant de 2 m et se désengager. Appliquée à l'Appliquer (`applyShieldReaction`), coût débité alors. */
   shieldReaction?: 'damage' | 'push';
 }
-/** Désengagement en attente (LDB 15-Dépl l.84-109) : un MENU de choix (phase 'choice') —
+/** Désengagement en attente (LDB 15 l.43-68) : un MENU de choix (phase 'choice') —
  *  Sacrifier l'Avantage / Esquiver / Fuir / Renoncer — puis le Test d'Esquive (phase 'esquive'). */
 export interface PendingDisengage {
   moverId: string; // héros qui se désengage (actif)

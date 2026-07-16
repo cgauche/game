@@ -461,7 +461,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   let approachPath: { x: number; y: number }[] | null = null;
   let pa: GameState['pendingAttack'];
   if (plan.kind === 'charge') {
-    // Charge (LDB 15-Dépl l.74-77) : se ruer au contact (portée de Course) puis attaquer — manœuvre
+    // Charge (LDB 15 l.35-37) : se ruer au contact (portée de Course) puis attaquer — manœuvre
     // PLEINE (consomme tout le Mouvement). Combat monté : empreinte/Course de la MONTURE.
     // Undo PRÉ-JET (retour playtest) : capture l'état d'AVANT la charge pour pouvoir Annuler un misclic
     // tant qu'aucun dé n'est lancé (`attackCancel`) — positions, orientation, Mouvement, Avantage, chargé.

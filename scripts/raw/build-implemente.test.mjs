@@ -6,27 +6,30 @@ import assert from 'node:assert/strict'
 import { ldbRe, otherRe } from './_lib.mjs'
 import {
   slugify, refsWithSpans, declNameOf, symbolFor, refMatches, mergeSpans,
-  parseFiche, renderBlock, regenerateFiche, validateManifest, isExcludedSrc, indexCode,
+  parseFiche, renderBlock, regenerateFiche, validateManifest, isExcludedSrc, indexCode, isDeadExport,
   GUARD_LEAK_RE, GEN_TAG, NOT_IMPL,
 } from './build-implemente.mjs'
+import { closureOf } from '../guards/lib/importGraph.mjs'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// --- fabrique d'index depuis des fichiers en mémoire ---
+const COMMENT_OR_BLANK = /^\s*(?:\/\/|\/\*|\*|$)/
+
+// --- fabrique d'index depuis des fichiers en mémoire (miroir de indexCode) ---
 function makeIndex(files) {
   const impl = [], tests = []
-  const fileLines = new Map(), nonTestText = new Map()
+  const fileLines = new Map(), nonCommentText = new Map()
   for (const { rel, content, isTest } of files) {
     const lines = content.split('\n')
     const isTs = /\.tsx?$/.test(rel)
     if (isTs) fileLines.set(rel, lines)
-    if (!isTest) nonTestText.set(rel, content)
+    if (!isTest) nonCommentText.set(rel, lines.filter((ln) => !COMMENT_OR_BLANK.test(ln)).join('\n'))
     lines.forEach((ln, i) => {
       for (const r of refsWithSpans(ln)) (isTest ? tests : impl).push({ ...r, file: rel, row: i + 1, isTs })
     })
   }
-  return { impl, tests, fileLines, nonTestText }
+  return { impl, tests, fileLines, nonCommentText }
 }
 const ctxOf = (index, { closure = new Set(), manifest = new Map() } = {}) => ({ index, closure, manifestByTopic: manifest })
 
@@ -49,6 +52,13 @@ test('parseFiche : occurrence NON en début de ligne → anomalie, PAS un champ'
   assert.equal(fields.length, 0)
   assert.equal(anomalies.length, 1)
   assert.equal(anomalies[0].row, 3)
+})
+
+test('parseFiche : blockquote citant **Implémente** (bannière d\'en-tête) → jamais une anomalie', () => {
+  const doc = '> ⚠️ Les champs **Implémente** sont GÉNÉRÉS — ne pas éditer.\n> entre règles ; **Implémente** pointe le module.\n\n## Sujet\n\n**Implémente :** x\n'
+  const { fields, anomalies } = parseFiche('a.md', doc)
+  assert.equal(anomalies.length, 0)
+  assert.equal(fields.length, 1)
 })
 
 test('parseFiche : tableau de BILAN (`## Implémente` + `| … |`) jamais scanné comme un champ', () => {
@@ -190,6 +200,50 @@ test('renderBlock : symbole sans appelant → ⚠sans-appelant ; fichier hors cl
   const b = block.find((l) => l.startsWith('- `LDB 20`'))
   assert.match(b, /`loneSym` ⚠sans-appelant/)
   assert.match(b, /`src\/engine\/orphan\.ts` ⚠hors-app/)
+})
+
+test('isDeadExport : symbole NON exporté (usage local) → jamais flagué', () => {
+  const index = makeIndex([
+    { rel: 'src/engine/f.ts', content: ['function localSym() {}', 'localSym()'].join('\n') },
+  ])
+  assert.equal(isDeadExport('localSym', 'src/engine/f.ts', index), false)
+})
+
+test('isDeadExport : exporté MAIS appelé localement (hors commentaire, hors déclaration) → pas mort', () => {
+  const index = makeIndex([
+    { rel: 'src/state/v.ts', content: ['export function effectiveSeaM() {}', '// note : effectiveSeaM ancienne', 'const x = effectiveSeaM()'].join('\n') },
+  ])
+  assert.equal(isDeadExport('effectiveSeaM', 'src/state/v.ts', index), false)
+})
+
+test('isDeadExport : exporté avec appelant dans un AUTRE fichier (hors commentaire) → pas mort (cas capriciousMod)', () => {
+  const index = makeIndex([
+    { rel: 'src/engine/social.ts', content: ['export function capriciousMod() {}'].join('\n') },
+    { rel: 'src/state/combatEffects.ts', content: ['import { capriciousMod } from "../engine/social"', 'const m = capriciousMod()'].join('\n') },
+  ])
+  assert.equal(isDeadExport('capriciousMod', 'src/engine/social.ts', index), false)
+})
+
+test('isDeadExport : appelant UNIQUEMENT en commentaire → toujours mort (le commentaire ne compte pas)', () => {
+  const index = makeIndex([
+    { rel: 'src/engine/orphan.ts', content: ['export function ghost() {}'].join('\n') },
+    { rel: 'src/state/other.ts', content: ['// TODO: brancher ghost() un jour', 'export const y = 1'].join('\n') },
+  ])
+  assert.equal(isDeadExport('ghost', 'src/engine/orphan.ts', index), true)
+})
+
+test('closureOf : suit les imports DYNAMIQUES import(\'…\') (lazy) — #487 correctif', () => {
+  const root = mkdtempSync(join(tmpdir(), 'bi-clo-'))
+  mkdirSync(join(root, 'src', 'ui'), { recursive: true })
+  writeFileSync(join(root, 'src', 'main.tsx'), "const App = lazy(() => import('./ui/CampaignView'))\n")
+  writeFileSync(join(root, 'src', 'ui', 'CampaignView.tsx'), "import { WorldMapView } from './WorldMapView'\nexport const CampaignView = 1\n")
+  writeFileSync(join(root, 'src', 'ui', 'WorldMapView.tsx'), 'export const WorldMapView = 1\n')
+  try {
+    const clo = closureOf([join(root, 'src', 'main.tsx')])
+    const rels = [...clo].map((p) => p.split('/').slice(-1)[0])
+    assert.ok(rels.includes('CampaignView.tsx'), 'import dynamique suivi')
+    assert.ok(rels.includes('WorldMapView.tsx'), 'chaîne transitive via l\'import dynamique')
+  } finally { rmSync(root, { recursive: true, force: true }) }
 })
 
 test('renderBlock : topic sans match non-test → (non implémenté) + cité par tests seulement + manifest', () => {

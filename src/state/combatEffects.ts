@@ -925,7 +925,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Afflictions', label: 'Imposer la Faim (LDB 18 — groupe affamé)', icon: 'flag/hungry',
     make: () => ({ type: 'inflictHunger', days: 1, target: 'party' }),
     apply: (e, env) => {
-      // Faim (LDB 18 l.417-422) posée par l'auteur (siège, cachot, traversée sans vivres) : `days`
+      // Faim (LDB 18 l.337-343) posée par l'auteur (siège, cachot, traversée sans vivres) : `days`
       // échecs de Test de Faim encaissés d'affilée, via la fonction PURE `applyFaimTest` (1ᵉʳ → −10 F/E ;
       // 2ᵉ+ → −10 autres + 1d10 Dégâts ignorant les PA, min 1). Réutilise le moteur des provisions.
       const heroes = env.targets(e.target ?? 'party', e.heroId);
@@ -950,7 +950,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Afflictions', label: 'Imposer la Soif (LDB 18 — groupe assoiffé)', icon: 'flag/hungry',
     make: () => ({ type: 'inflictThirst', days: 1, target: 'party' }),
     apply: (e, env) => {
-      // Soif (LDB 18 l.417-422, miroir de la Faim) posée par l'auteur — via la fonction PURE partagée
+      // Soif (LDB 18 l.340, miroir de la Faim) posée par l'auteur — via la fonction PURE partagée
       // `applySoifTest` (1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 autres + 1d10 Dégâts ignorant les PA, min 1).
       const heroes = env.targets(e.target ?? 'party', e.heroId);
       const n = Math.max(1, e.days ?? 1);
@@ -1153,7 +1153,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'mealParty' }),
     apply: (_e, env) => {
       // Repas (#T2) : tout le groupe est nourri pour la journée sans consommer de ration —
-      // compteurs/malus de Faim remis à zéro (LDB 18 l.417-422 ; prix éventuel porté par le choix).
+      // compteurs/malus de Faim remis à zéro (LDB 18 l.337-343 ; prix éventuel porté par le choix).
       const diners = env.get().party;
       for (const h of diners) if (!h.dead) feedFromMeal(h);
       env.set({ party: [...diners] });

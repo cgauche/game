@@ -1,6 +1,6 @@
 /**
  * Guérison — Compétence Avancée (Int). Soin de Blessures et arrêt d'Hémorragie.
- * Source : LDB 09-Compétences l.226-243 (skills.json), 16-États l.104-109, 18-Traumatisme l.28.
+ * Source : LDB 09 l.254-269 (skills.json), LDB 16 l.103-109, LDB 18 l.14.
  * Pur + testé ; ne dépend que de types/conditions (déjà purs).
  */
 import { Combatant, type Difficulty } from './types';
@@ -16,7 +16,7 @@ import type { RNG } from './dice';
 const condStacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
 
 /** Le combattant possède-t-il la Compétence (Avancée) Guérison ? Sans Augmentation, « aucune idée
- *  de comment soigner » (LDB 09-Compétences l.31, l.226). */
+ *  de comment soigner » (LDB 09 l.31, l.33). */
 export function hasHealSkill(c: Combatant): boolean {
   return (c.skills ?? []).some((s) => s.skillId === 'guerison');
 }
@@ -28,7 +28,7 @@ export function hasSurgerySkill(c: Combatant): boolean {
 }
 
 /** Cible soignable : blessée (PB perdus) OU porteuse d'≥1 État Hémorragique OU avec une déchirure traitable ;
- *  ni morte ni éjectée. Les cibles Inconscientes/À Terre sont valides (1 PB lève l'inconscience, LDB 18 l.28). */
+ *  ni morte ni éjectée. Les cibles Inconscientes/À Terre sont valides (1 PB lève l'inconscience, LDB 18 l.15). */
 export function isHealable(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
   return c.wounds.current < c.wounds.max || condStacks(c, 'hemorragique') > 0 || hasTreatableTrauma(c)
@@ -58,8 +58,8 @@ export function availableHealModes(target: Combatant): HealMode[] {
   return modes;
 }
 
-/** Difficulté du Test de Guérison selon le mode de soin. Blessures : Intermédiaire (+0, LDB 09 l.243)
- *  toujours. Hémorragie : Accessible (+20) en variante `combat-aa-blessures: 'aa'` (Aux Armes 07 l.9,
+/** Difficulté du Test de Guérison selon le mode de soin. Blessures : Intermédiaire (+0, LDB 09 l.269)
+ *  toujours. Hémorragie : Accessible (+20) en variante `combat-aa-blessures: 'aa'` (AA 07 l.9,
  *  applicable en et hors combat — le texte ne borne pas au combat), Intermédiaire (+0) sinon
  *  (LDB, comportement par défaut inchangé). Munition logée : Intermédiaire (+0) toujours (LDB 62
  *  l.250 — aucune variante AA ne couvre le retrait). SOURCE UNIQUE — combat (`combatSlice`) ET
@@ -86,7 +86,7 @@ export function healableTargets(healer: Combatant, pool: Combatant[], opts: { ad
   });
 }
 
-/** Soin de Blessures (LDB 09 l.233) : succès ⇒ BI+DR (plancher 0) ; échec ⇒ si BI+DR<0, perte de
+/** Soin de Blessures (LDB 09 l.260) : succès ⇒ BI+DR (plancher 0) ; échec ⇒ si BI+DR<0, perte de
  *  |BI+DR| PB (sinon 0). Renvoie le delta de PB (positif = soin, négatif = dégât). */
 export function healWoundsDelta(intBonus: number, dr: number, success: boolean): number {
   const total = intBonus + dr;
@@ -94,7 +94,7 @@ export function healWoundsDelta(intBonus: number, dr: number, success: boolean):
   return total < 0 ? total : 0;
 }
 
-/** Arrêt d'Hémorragie (LDB 09 l.235 / 16-États l.107-109) : succès ⇒ retire 1+DR pions (borné) ;
+/** Arrêt d'Hémorragie (LDB 09 l.261 / LDB 16 l.107-109) : succès ⇒ retire 1+DR pions (borné) ;
  *  tous retirés ⇒ Exténué. Échec ⇒ rien. */
 export function stopBleedOutcome(dr: number, stacks: number, success: boolean): { removed: number; gainExtenue: boolean } {
   const removed = recoveredStacks(dr, stacks, success); // « 1 + DR » borné, partagé avec Empêtré/En flammes
@@ -110,11 +110,11 @@ export function lodgedAmmoCount(target: Combatant): number {
 /** Options de routage d'`applyHealWounds` — chaque chemin de gain de PB (Guérison, sorts/potions,
  *  drain, repos) porte ses propres à-côtés sans dupliquer le plafond de munition logée. */
 export interface HealWoundsOptions {
-  /** Verrous « 1 soin de Blessures / rencontre » + matériel stérile (LDB 09 l.233 / 18 l.382) —
+  /** Verrous « 1 soin de Blessures / rencontre » + matériel stérile (LDB 09 l.260 / LDB 18 l.298) —
    *  SEUL le chemin compétence Guérison les pose. Défaut `true` (comportement historique de la
    *  fonction, chemin Guérison). */
   skillCheck?: boolean;
-  /** Lève l'Inconscient et remet l'horloge de mort à zéro dès qu'on repasse > 0 PB (LDB 18 l.28).
+  /** Lève l'Inconscient et remet l'horloge de mort à zéro dès qu'on repasse > 0 PB (LDB 18 l.15).
    *  Défaut `true` (comportement historique). Le repos gère sa PROPRE réanimation (+ À Terre, non
    *  couvert ici) — `false` pour éviter un double traitement partiel. */
   wake?: boolean;
@@ -125,7 +125,7 @@ export interface HealWoundsOptions {
 
 /** SOURCE UNIQUE de gain de Blessures (mutation) — routée par les 4 chemins qui rendent des PB
  *  (Guérison, sorts/prières/potions `heal`/`healCaster`, drain `lifeSteal`, repos naturel). Lève
- *  l'Inconscient et remet l'horloge de mort à zéro quand on repasse > 0 PB (LDB 18 l.28, `wake`).
+ *  l'Inconscient et remet l'horloge de mort à zéro quand on repasse > 0 PB (LDB 18 l.15, `wake`).
  *  Plafonné par les munitions Empaleuses logées, sans exception de chemin : « Chaque flèche ou
  *  balle non retirée vous empêche de guérir 1 de vos Blessures » (LDB 62 l.250 — formulation
  *  générale, aucune restriction au Test de Guérison). Renvoie un journal. */
@@ -140,15 +140,15 @@ export function applyHealWounds(target: Combatant, delta: number, opts: HealWoun
   const cap = Math.max(before, target.wounds.max - lodgedAmmoCount(target));
   target.wounds.current = Math.min(cap, before + delta);
   if (skillCheck) {
-    target.soinRencontreUtilise = true; // a bénéficié de SON soin de cette rencontre (LDB 09 l.233)
-    target.woundDressed = true; // matériel stérile : « aucune Infection » suite à la blessure (LDB 09 / 18 l.382)
+    target.soinRencontreUtilise = true; // a bénéficié de SON soin de cette rencontre (LDB 09 l.260)
+    target.woundDressed = true; // matériel stérile : « aucune Infection » suite à la blessure (LDB 09 l.260 / LDB 18 l.298)
   }
   const healed = target.wounds.current - before;
   const log = customLog ? customLog(healed) : (healed > 0
     ? [`${target.name} : +${healed} PB (${target.wounds.current}/${target.wounds.max}).`]
     : [`${target.name} : une munition logée bloque le soin (LDB 62 l.250).`]);
   if (wake && target.wounds.current > 0 && hasCondition(target, 'inconscient')) {
-    removeCondition(target, 'inconscient', condStacks(target, 'inconscient')); // reprend connaissance (LDB 18 l.28)
+    removeCondition(target, 'inconscient', condStacks(target, 'inconscient')); // reprend connaissance (LDB 18 l.15)
     log.push(`${target.name} reprend connaissance.`);
   }
   if (wake && target.wounds.current > 0) target.roundsAtZero = 0;
@@ -173,7 +173,7 @@ export function applyStopBleed(target: Combatant, dr: number): string[] {
  *  médecin payant ET la chirurgie (bandage). Renvoie le journal + le nombre de PB rendus. */
 export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: number, success: boolean, rng: RNG): { log: string[]; healed: number } {
   // « Un patient ne peut bénéficier que d'UN JET de Guérison après chaque rencontre » (LDB 09
-  // l.233) : le jet est consommé même raté — sans MJ, on relancerait gratuitement jusqu'au succès.
+  // l.260) : le jet est consommé même raté — sans MJ, on relancerait gratuitement jusqu'au succès.
   target.soinRencontreUtilise = true;
   const healed = healWoundsDelta(intBonus, sl, success);
   const log = applyHealWounds(target, healed);

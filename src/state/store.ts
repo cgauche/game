@@ -790,7 +790,7 @@ export interface GameState extends RollFlowActionsMap {
   // heal{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
   healConfirm: () => void;
   healCancel: () => void;
-  /** Recharger l'arme à distance (LDB 63-Armures l.28-29) : OUVRE la modale de Test étendu de Projectiles. */
+  /** Recharger l'arme à distance (LDB 62 l.335) : OUVRE la modale de Test étendu de Projectiles. */
   battleReload: () => void;
   // reload{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
   /** « Appliquer » : cumule le DR (Test étendu), recharge si ≥ Indice, consomme l'Action. */
@@ -1046,7 +1046,7 @@ export interface GameState extends RollFlowActionsMap {
   // ward{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   wardConfirm: () => void;
   wardCancel: () => void;
-  /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.28). */
+  /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.15). */
   battleStandUp: () => void;
   /** « Servir cette pièce » (MDG ch.12) : le héros actif devient chef d'un poste de siège NON servi adjacent (arme octroyée) — coûte l'Action. KIND-AGNOSTIQUE. */
   battleManPoste: (target?: { hullId: string; posteUid: string }) => void;
@@ -1110,7 +1110,7 @@ export interface GameState extends RollFlowActionsMap {
   pendingMountTarget: { riderId: string; mountId: string } | null;
   mountTargetSelect: (id: string) => void;
   mountTargetCancel: () => void;
-  /** Désengagement (LDB 15-Dépl l.84-109) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */
+  /** Désengagement (LDB 15 l.43-68) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */
   battleDisengage: () => void;
   disengageConfirmA: () => void; // Sacrifier l'Avantage
   disengageRoll: () => void; // Esquiver (lance le Test opposé)

@@ -7,10 +7,10 @@ import { testScene } from '../scenes/test-fixture';
 /**
  * Bug playtest « pas le droit de bouger après avoir attaqué » : une attaque de mêlée Engage,
  * et le Désengagement était bloqué dès que l'Action était dépensée — y compris l'option A
- * (« Sacrifier l'Avantage ») qui, elle, NE coûte PAS l'Action (LDB 15-Dépl l.87). On vérifie
+ * (« Sacrifier l'Avantage ») qui, elle, NE coûte PAS l'Action (LDB 15 l.47). On vérifie
  * qu'après avoir agi, un héros Engagé avec l'Avantage supérieur peut encore partir via l'option A.
  */
-describe('Désengagement après avoir attaqué (option A — LDB 15 l.87)', () => {
+describe('Désengagement après avoir attaqué (option A — LDB 15 l.47)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingDisengage: null }); });
 
   it('héros Engagé ayant DÉJÀ agi peut se désengager en sacrifiant l’Avantage', () => {

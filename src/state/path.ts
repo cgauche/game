@@ -302,7 +302,7 @@ export function pullToward(
   return { dest: pt(cur.x, cur.y, tz), pulled };
 }
 
-/** Cases atteignables pour une FUITE (LDB 15-Déplacement l.109 : « dans la direction OPPOSÉE à celle de
+/** Cases atteignables pour une FUITE (LDB 15 l.68 : « dans la direction OPPOSÉE à celle de
  *  votre adversaire ») : la portée de Course (`range`) restreinte aux cases qui n'APPROCHENT PAS `foe` —
  *  leur distance de Tchebychev à l'adversaire doit être ≥ à celle de la case de départ. Pur. */
 export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, env: MoveEnv): Map<string, number> {

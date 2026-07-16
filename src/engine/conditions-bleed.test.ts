@@ -8,7 +8,7 @@ function mk(stacks: number): Combatant {
   return { name: 'X', conditions: stacks ? [{ name: 'hemorragique', value: stacks }] : [] } as unknown as Combatant;
 }
 
-describe('bleedDeathRoll — mort par Hémorragique (LDB 16-États l.105)', () => {
+describe('bleedDeathRoll — mort par Hémorragique (LDB 16 l.105)', () => {
   it('aucun Hémorragique → pas de jet, pas de mort', () => {
     expect(bleedDeathRoll(mk(0), fixed(5))).toEqual({ died: false, log: [] });
   });

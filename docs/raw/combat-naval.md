@@ -58,8 +58,8 @@ de 10 % d'équipage manquant**).
 **Voir aussi.** [Tests d'équipage : les types](#tests-dequipage-les-types-et-leur-role-essentiel) · [L'équipage
 comme ressource](#lequipage-comme-ressource--le-round-naval) · [`tests.md`](tests.md) (DR, Succès Minime).
 
-**Implémente.** `src/engine/crewMorale.ts` (`resolveCrewTestByRoles`, `crewRoleValue`, `moraleBand`) ;
-`src/state/shipCrew.ts` (`shipCrewAssignments`, `shipDefaultRoles`, `crewTestContributors`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 14` (l.9, l.13, l.19, l.39, l.53) → `skill`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `maneuverCrewTotal`, `ShipManeuverModal`, `resolveVolley`, `shipCrewAssignments`, `CrewTestModalView`, `deriveManeuverFromCrew`, +33 — `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/state/cascade.ts`, +12 fichiers
 
 **État du code.** ✅ somme des DR, essentiel ×2, Moral, « un jet par poste » (PJ + 1 marin représentant).
 ✅ **Manque de bras** : cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ET sous-effectif d'équipage
@@ -114,8 +114,9 @@ choisit**.
 **Sources RAW.** `MDG 13 l.354-420` (course-poursuite, Test de Navigation par Initiative + tir) · `MDG 14 l.37`
 (rôles parallèles) · `MDG 14 l.53` (cumul = +2 crans).
 
-**Implémente.** `src/state/combatFlow.ts` (ordre d'Initiative, `battle.acted`) ; `src/state/shipCrew.ts`
-(`crewTestContributors`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `LIGHTHOUSE_PERIL_SPOT_BONUS` ⚠sans-appelant, `resolveShipUnits`, `pursuitLowMPenalty`, `pursuitDistanceGain`, `WorldMapEditor`, +4 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/engine/seaNavigation.ts`, `src/engine/seaPerils.ts`, `src/scenes/test-scenarios/duel-naval.ts`, `src/state/seaVoyageFlow.ts`, +4 fichiers
+- `MDG 14` (l.37, l.53) → `skill`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `ShipManeuverModal`, `resolveVolley`, `CrewTestModalView`, `withCrewActed`, `shipboardSouls`, `shipUndercrew`, +24 — `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, `src/state/combatSlice.ts`, +11 fichiers
 
 **État du code.** ✅ (R3) `battle.crewActed` (par navire, reset au round-start `enterRoundStartPause`) recense les
 marins ayant contribué à un Test ce Round. Les rôles Capitaine/Chansonnier/Mousse/Timonier étant dans `manoeuvre`
@@ -140,8 +141,9 @@ M ≤ 3 subit des pénalités de Poursuite (M3 = −1 DR, M2 = −2, M1 = −3, 
 **Sources RAW.** `MDG 13 l.304` (virage = Test réussi) · `MDG 13 l.376` (Test de Navigation pour le Mouvement) ·
 `MDG 13 l.378-399` (Progression) · `MDG 12 l.92/94` (stat-bloc Man −1 DR) · `MDG 13 l.173` (« Peu maniable »).
 
-**Implémente.** `src/engine/shipNavigation.ts` (`resolveShipManeuver`) ; `src/state/shipManeuver.ts` ;
-`src/engine/navalTraits.ts` (`navalMoveMod`, `navalSkillTestDR`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.92) → `shipboardSouls` — `src/gameIso/rig/ship/defs/bateau-de-patrouille.ts`, `src/state/shipCrew.ts`
+- `MDG 13` (l.173, l.304, l.376, l.378-399) → `OrientationOutcome`, `orientationOutcome`, `voyageTiles`, `pursuitLowMPenalty`, `pursuitDistanceGain`, `buildSeaDayCascade`, `startSeaPursuit`, `openPirateHail` — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/engine/seaNavigation.ts`, `src/state/seaVoyageFlow.ts`, `src/ui/VoyageScreen.tsx`
 
 **État du code.** ✅ Test d'équipage (Timonier ★), virage = réussite du d100 (≠ dr≥0), Man en ±DR, Progression,
 placement des pièces (Contenance), « Peu maniable »/« Lissage ». ⬜ Vent (direction/force → M), affaler les voiles.
@@ -188,7 +190,8 @@ proches ; Extrême → −Indice Dégâts.
 
 **Sources RAW.** `MDG 12 l.401-407` (pièces) · `l.410-424` (munitions) · `l.466-472` (Tir de zone).
 
-**Implémente.** `src/data/` (defs des pièces) ; `src/engine/items.ts` (`mannedPosteWeapon`) ; `src/engine/volley.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.401-407, l.410-424) → `ammoSeq`, `canon`, `placementPenalty`, `VolleyShot`, `SHIP_ARC_PREF`, `resolveVolley`, `shipManeuverParams`, `applyNavalSurprisePosition`, `compatibleAmmo`, `AuthoredShipPoste`, +1 — `src/engine/items.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/duel-naval.ts`, `src/state/combatSlice.ts`, `src/state/fireArc.ts`, +4 fichiers
 
 **État du code.** ✅ (R1) `resolveVolley` prépare l'arme de chaque pièce comme le tir individuel : `weaponWithAmmo`
 (munition du chef → Dégâts + **Perforante**/bypass via `woundsFromHit`) puis `crewedFireWeapon` (sous-effectif).
@@ -220,8 +223,8 @@ Arme d'équipe → **tous les servants** sont touchés (`l.464`).
 **Voir aussi.** [Tir de batterie](#tir-de-batterie-la-bordee) · [`combat.md`](combat.md) (Imprécise = −1 DR ;
 Dangereuse = Incident).
 
-**Implémente.** `src/engine/crewedWeapon.ts` (`crewedPenalty`, `crewedFireWeapon`) — **existe, branché au tir
-INDIVIDUEL**.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.440-464) → `crewedPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, `GameState`, +2 — `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
 
 **État du code.** ✅ (R1) `resolveVolley` dérive l'arme effective de chaque pièce via `crewedFireWeapon(item,
 servantsPrésents)` (exposés non-incapacités) AVANT le calcul de Dégâts → un Canon moyen (Arme d'équipe 3) à 1 servant
@@ -252,8 +255,8 @@ les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.** »
 **Voir aussi.** [Arme d'équipe](#artillerie--arme-dequipe-et-sous-effectif) · [Pièces et munitions](#artillerie--pieces-et-munitions)
 · [Dégâts aux navires](#infliger-des-degats-aux-navires) · [L'équipage comme ressource](#lequipage-comme-ressource--le-round-naval).
 
-**Implémente.** `src/engine/volley.ts` (`resolveVolley`) ; `src/state/shipBattery.ts` (`resolveBattery`) ;
-`src/state/combatSlice.ts` (`battleShipBattery`/`shipBatteryConfirm`) ; `src/ui/ShipBatteryModal.tsx`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 14` (l.126-130) → `ShipBatteryModal`, `ActionBar`, `PendingShipBattery`, `buildPostProgressionSteps`, `GameState`, `FLOWS`, `createCombatSlice`, `resolveSeaCrisisRound` — `src/engine/volley.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, `src/state/rollFlowSpecs.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, +4 fichiers
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
 chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
@@ -293,11 +296,8 @@ générique (cible = personnage, distance via `sceneMetresPerTile`) l'attrape. L
 **Voir aussi.** [Critiques de navire (Éclats)](#critiques-de-navire-eclats-voie-deau-en-flammes) ·
 [Tir de batterie](#tir-de-batterie-la-bordee) · [Pièces et munitions](#artillerie--pieces-et-munitions).
 
-**Implémente.** `src/state/combatArea.ts` (`resolveWeaponArea` + stratégie `areaTargets` terre/mer ; module FEUILLE
-ré-exporté par `combatFlow`) ; primitive de géométrie partagée `combatantsWithinRadius` (`src/state/combatGeometry.ts`) ;
-appelé en tir individuel (`combatFlow.applyAttackResult`) et en bordée (`combatSlice.shipBatteryConfirm`, qui fait
-AUSSI passer chaque touche de coque par `fireTriggers('onHit')` → tout Atout `onHit` se déclenche en bordée sans code
-spécifique). Données : `qualities.json` (`a-explosion` `capabilities.explosion`, `tir-de-zone` `capabilities.areaFire`).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 12` (l.466-472) → `crewedPenalty`, `ReloadModalView`, `crewedFireWeapon`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, `GameState`, `createCombatSlice`, `applyOups` — `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
 
 **État du code.** ✅ Tir de zone (3 bandes RAW, corrige l'ancien +Indice Blessures brut → +Indice Dégâts ; ajoute la
 bande Extrême) ; ✅ Explosion (rayon Indice + États propagés) ; ✅ branche navale (équipage exposé) ; ✅ extensibilité
@@ -329,7 +329,8 @@ exposé. Le **corps-à-corps** contre la coque touche auto (Localisation au choi
 **Sources RAW.** `MDG 13 l.567-584` (Dégâts/localisation) · `l.605` (petites armes) · `l.610-637` (corps-à-corps).
 **Citation** `l.571` : « inversez le résultat obtenu sur le jet d'attaque… **ou lancez 1d100.** »
 
-**Implémente.** `src/engine/combat.ts` (`shipHitLocation`, `woundsFromHit`) ; `src/engine/volley.ts`.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 13` (l.567-584, l.616-637) → `meleeVsHullBE`, `PortView`, `RepairTick`, `applyHit`, `GameState` — `src/data/schemas/defs/sea-perils.ts`, `src/engine/combat.ts`, `src/engine/seaPerils.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, `src/state/store.ts`, +1 fichiers
 
 **État du code.** ✅ localisation 1d100 par gréement (bordée), BE déduit, plancher 0 (vs plancher 1 perso).
 ⬜ petites armes vs artillerie (seuil de Dégâts), corps-à-corps contre coque, table Taille.
@@ -353,7 +354,8 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 > ce 1d100 = Critique** (cohérent : un double au jet d'attaque reste un double une fois inversé). C'est une
 > INTERPRÉTATION, pas une ligne RAW littérale — le GM peut préférer « pas de Critique en bordée hors B=0 ».
 
-**Implémente.** `src/engine/shipCritical.ts` (`applyHullCritical`, `rollShipCritical`, états navals via GameOp).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 13` (l.654-674) → `beginShipwreck`, `RepairTick`, `isOutOfAction`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/state/combatFlow.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipwreck.ts`
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques
 de Coque récursifs). ✅ (R1) **« tout coup à B=0 = Critique »** : `resolveVolley` critique sur `wounds.current ≤ 0`.
@@ -367,7 +369,10 @@ de Coque récursifs). ✅ (R1) **« tout coup à B=0 = Critique »** : `resolveV
 collision**. Modificateurs (s'éloigne / milieu de coque ×2 / manœuvre pour limiter ou aggraver via Test de
 Manœuvre / frontale = IC adverse + M total des deux). Sauf précision, **les coups de collision touchent la Coque**.
 
-**Sources RAW.** `MDG 13 l.446-464`. **Implémente.** `src/engine/collision.ts` (`collisionIndex`, `resolveCollision`).
+**Sources RAW** : `MDG 13 l.446-464`.
+
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 13` (l.446-464) → `collisionIndex`, `resolveCollision`, `perilManagement` ⚠sans-appelant, `strandingPenalty`, `SeaVoyageState`, `buildSeaDayCascade`, `resolveSeaCrisisRound`, `resolveBoardEvent` — `src/data/schemas/defs/sea-perils.ts`, `src/engine/collision.ts`, `src/engine/seaPerils.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCollision.ts`
 
 **État du code.** ✅ `resolveCollision` (frontal/milieu/poupe/s'éloigne/manœuvre), localisation Coque.
 
@@ -379,8 +384,10 @@ Manœuvre / frontale = IC adverse + M total des deux). Sauf précision, **les co
 les Tests d'équipage. Inutile à suivre si la majorité de l'équipage est des PJ ou très investie. Les DR négatifs
 d'une **Rude épreuve** réduisent le Moral d'autant.
 
-**Sources RAW.** `MDG 14 l.110` (Rude épreuve → Moral) · `l.133-141` (Moral 75). **Implémente.**
-`src/engine/crewMorale.ts` (`moraleBand`) ; `src/state/shipCrew.ts` (`shipMoraleScore`) ; `CampaignVessel.morale`.
+**Sources RAW** : `MDG 14 l.110` (Rude épreuve → Moral) · `l.133-141` (Moral 75).
+
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 14` (l.110) → `rudeEpreuveMoraleDelta`, `ActionBar`, `buildPostProgressionSteps`, `resolveSeaCrisisRound` — `src/engine/crewMorale.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, `src/ui/ActionBar.tsx`
 
 **État du code.** ✅ Moral 75 par défaut, bande de DR au Test d'équipage, pont campagne→combat. ⬜ évolution du
 Moral en combat (Rude épreuve, mutinerie).

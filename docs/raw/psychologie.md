@@ -54,7 +54,8 @@ Les instincts et émotions influencent fortement la façon dont les personnages 
 - `LDB 21 l.5-11` — introduction générale
 
 **Voir aussi** : État *Brisé* (`etats.md`), Détermination (`destin.md`)
-**Implémente** : `src/engine/psychology.ts` — module central
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.5-11) → `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -69,11 +70,8 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 **Sources RAW** :
 - `LDB 21 l.8-11` — principe général + exemple Animosité d'un nain face à des elfes
 
-**Implémente** : `src/engine/psychology.ts`
-- `calmeValue(c)` : FM effective + avances Calme
-- `resolveCalmeSimple(calme, rng)` : Test Intermédiaire (+0) binaire (traits ciblés)
-- `resolvePeurTest(...)` : Test étendu pour Peur (cumul de DR vers l'Indice)
-- `resolveTerreurTest(...)` : Test Intermédiaire unique pour Terreur
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.8-11) → `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -105,9 +103,8 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.18-21` — définition complète d'Animosité, effets actifs, conditions de fin
 
 **Voir aussi** : Haine (Cible), Préjugé (Cible)
-**Implémente** : `src/engine/psychology.ts`
-- `PsychType` inclut `'animosite'`
-- `targetedTrigger(self, visible)` : détecte le déclenchement
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `EffectFlags`, `describeApproach`, `BattleState`, `extendedTestStep`, `isFrenzyCapable`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +9 fichiers
 
 ---
 
@@ -133,11 +130,8 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.29` — un seul Test de Calme par Tour quand la source de Peur s'approche.
 
 **Voir aussi** : Terreur (Indice), État Brisé (`etats.md`)
-**Implémente** : `src/engine/psychology.ts`
-- `resolvePeurTest(calme, indice, prevDR, rng, coldBlooded, sansPeur)` : `LDB 21 l.23`
-- `fearSourceFor(self, foe)` : combine Taille et `causesPeur`/`causesTerreur`
-- `PsychAffliction.calmeDR` : DR cumulé vers l'Indice
-- `PsychAffliction.lastApproachKey` : garde-fou « un seul Test par Tour quand la source s'approche » (`LDB 21 l.29`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.23-28, l.29) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `describeApproach`, +34 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
 
@@ -161,9 +155,8 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.54-57` — déclencheur, test unique, calcul des États Brisé, transition vers Peur
 
 **Voir aussi** : Peur (Indice), État Brisé (`etats.md`)
-**Implémente** : `src/engine/psychology.ts`
-- `terreurBrise(indice, success, sl)` : `Indice + max(0, -sl)` — `LDB 21 l.57` (**source unique du calcul**)
-- `resolveTerreurTest(calme, indice, rng, coldBlooded, sansPeur)` : retourne `{success, brise, devientPeur, …}` — `LDB 21 l.54-57`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.54-57) → `openScriptedPsych`, `failConditionAmount`, `resolveTerreurTest`, `PsychologyData`, `collectHeroRoundStartPsych`, `openRoundEndCascade` — `src/data/index.ts`, `src/engine/psychology.ts`, `src/state/combatFlow.ts`, `src/state/encounterPsychFlow.ts`
 
 ---
 
@@ -193,11 +186,8 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.28-33` — déclencheur, Test de FM, effets complets, conditions de fin, gain Exténué
 
 **Voir aussi** : Talent Frénésie, Talent Contrôle de la Frénésie, État Exténué (`etats.md`)
-**Implémente** : `src/engine/psychology.ts`
-- `isFrenzyCapable(c)` : trait de créature OU talent `frenesie` — `LDB 21 l.29`
-- `resolveFrenzyEntry(fm, rng)` : Test de FM Intermédiaire (+0) — `LDB 21 l.29`
-- `isPsychImmune(c)` : `!!c.frenzied` — `LDB 21 l.31`
-- Exténué en fin de Frénésie : `etats.md` → `conditions.ts`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.28-33, l.35) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `describeApproach`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
 
@@ -222,7 +212,8 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.37-39` — définition, déclencheur, Test, effets, immunités partielles, conditions de fin
 
 **Voir aussi** : Talent Haine (Groupe)
-**Implémente** : `src/engine/psychology.ts` — `PsychType` inclut `'haine'`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.37-39, l.41) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `describeApproach`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
 
@@ -241,7 +232,8 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 **Sources RAW** :
 - `LDB 21 l.41-51` — définition, succès/échec, comportement obligatoire, conditions de fin
 
-**Implémente** : `src/engine/psychology.ts` — `PsychType` inclut `'prejuge'`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.41-51) → `FrenzyModal`, `hasMeaningfulOption`, `openScriptedPsych`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `isFrenzyCapable`, `describeFrenzy`, `isFrenzied`, +24 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/state/ai.ts`, +14 fichiers
 
 ---
 
@@ -262,7 +254,8 @@ Reflète une très forte relation émotionnelle (romantique, familiale, amitié 
 **Sources RAW** :
 - `LDB 21 l.74-77` — définition et effets
 
-**Implémente** : `src/engine/psychology.ts` — `PsychType` inclut `'amour'` ; `TARGETS_ALLY` identifie qu'Amour cible des alliés
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.74-77) → `gainPhobieIfThreshold`, `PsychologyData` — `src/data/index.ts`, `src/engine/psychology.ts`
 
 ---
 
@@ -277,7 +270,8 @@ Sentiments positifs envers un groupe d'individus.
 **Sources RAW** :
 - `LDB 21 l.80-83` — définition et effets
 
-**Implémente** : `src/engine/psychology.ts` — `PsychType` inclut `'camaraderie'`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.80-83) → `Effect`, `buildExposureSteps`, `gainPhobieIfThreshold`, `nightmareCheck`, `PsychologyData`, `EFFECT_HANDLERS`, `Combatant` — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/restFlow.ts`, +1 fichiers
 
 ---
 
@@ -290,7 +284,8 @@ Peur spécifique envers un Type de créature, un objet ou une situation.
 **Sources RAW** :
 - `LDB 21 l.85-89` — définition ; traitement comme Peur 1
 
-**Implémente** : `src/engine/psychology.ts` — `PsychType` inclut `'phobie'` ; `PsychTrait.indice` porte l'Indice de Peur
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.85-89) → `recoveryTarget`, `Effect`, `buildExposureSteps`, `gainPhobieIfThreshold`, `nightmareCheck`, `PsychologyData`, `EFFECT_HANDLERS`, `Combatant` — `src/data/index.ts`, `src/data/night-stakes.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, `src/engine/rest.ts`, `src/engine/types.ts`, +3 fichiers
 
 ---
 
@@ -306,7 +301,8 @@ Conséquence d'une expérience traumatisante. Peut se manifester de diverses fa�
 - `LDB 21 l.91-96` — description + exemple de Trauma (incendie, cauchemars)
 
 **Voir aussi** : `src/data/traumatisme.md` (`traumatisme.md` pour les Blessures Critiques)
-**Implémente** : `src/engine/psychology.ts` — `PsychType` inclut `'trauma'`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 21` (l.91-96) → `recoveryTarget`, `Effect`, `buildExposureSteps`, `gainPhobieIfThreshold`, `nightmareCheck`, `EFFECT_HANDLERS`, `Combatant` — `src/data/night-stakes.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, `src/engine/rest.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, +2 fichiers
 
 ---
 
@@ -330,8 +326,7 @@ L'immunité est conditionnelle : elle ne s'applique que si la créature a **plus
 
 **Sources RAW** : `LDB 85 (Belliqueux)` — condition d'immunité
 
-**Implémente** : `src/engine/psychology.ts`
-- `isPsychImmune(c, foesMaxAdvantage)` : délègue à `bellicosePsychImmune(c, foesMaxAdvantage)` — l'Avantage adversaire est requis en contexte de bataille
+**Implémente :** (non implémenté)
 
 ---
 
@@ -353,7 +348,7 @@ Applique exactement les mêmes règles que la Frénésie des personnages (sectio
 
 **Sources RAW** : `LDB 85 (Frénésie)` — renvoi LDB 21
 
-**Implémente** : `src/engine/psychology.ts` — `isFrenzyCapable(c)` : trait de créature `frenesie` OU talent
+**Implémente :** (non implémenté)
 
 ---
 
@@ -376,8 +371,8 @@ La créature ignore **toutes** les règles de Psychologie sans Test.
 **Sources RAW** :
 - `LDB 85 l.178-179` — définition
 
-**Implémente** : `src/engine/psychology.ts`
-- `isPsychImmune(c)` : `!!c.psychImmune` — `LDB 85 l.178`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 85` (l.178-180) → `Formula`, `Condition`, `knowsCastingSkill`, `availableAttacks`, `engagedAdvantageGap`, `applyTriggeredEffects`, `resolveManeuver`, `GameOp`, `TraitCapabilities` — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/state/combatManeuvers.ts`, +1 fichiers
 
 ---
 
@@ -399,7 +394,7 @@ La créature cause la Peur (Indice) aux adversaires. Applique les règles de Peu
 
 **Sources RAW** : `LDB 85 (Peur)` — renvoi LDB 21 + Indice défini dans le statbloc
 
-**Implémente** : `src/engine/psychology.ts` — `Combatant.causesPeur` porte l'Indice ; `fearSourceFor(self, foe)` combine cet Indice avec la Taille
+**Implémente :** (non implémenté)
 
 ---
 
@@ -450,9 +445,8 @@ Les créatures agressives de grande Taille inspirent automatiquement Peur ou Ter
 **Sources RAW** :
 - `LDB 85 l.382-383` — règle Peur/Terreur par Taille
 
-**Implémente** : `src/engine/psychology.ts`
-- `peurTerreurFromSize(foe?, self?)` : calcule l'effet Peur/Terreur issu de la Taille — `LDB 85 l.382` ; repose sur `sizeGap(foe, self)` de `engine/size.ts`
-- `fearSourceFor(self, foe)` : combine `peurTerreurFromSize` + `causesPeur`/`causesTerreur` du statbloc ; Terreur prime, puis l'Indice le plus élevé
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 85` (l.382-384) → `cannotStopOn`, `EnemyTurnInput`, `displaceSmaller`, `MoveEnv`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, `teleportCommitTile`, `TraitCapabilities`, `startDisengage` — `src/data/index.ts`, `src/data/maneuvers.json`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, `src/state/combatManeuvers.ts`, +2 fichiers
 
 ---
 
@@ -464,8 +458,7 @@ Un Test de FM raté est relu avec ses chiffres inversés (ex. 91 → 19) ; si le
 
 **Sources RAW** : `LDB 85 (À Sang-Froid)`
 
-**Implémente** : `src/engine/psychology.ts`
-- `coldBloodedAdjust(t, coldBlooded)` : inversement des chiffres si échec FM (utilisé dans `resolvePeurTest` et `resolveTerreurTest`)
+**Implémente :** (non implémenté)
 
 ---
 
@@ -507,7 +500,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 
 **Sources RAW** : `LDB 10 (Frénésie)`
 
-**Implémente** : `src/engine/psychology.ts` — `isFrenzyCapable(c)` : `c.talents.some(t => t.talentId === 'frenesie')`
+**Implémente :** (non implémenté)
 
 ---
 
@@ -540,11 +533,9 @@ Exemples de groupes : hommes-bêtes, peaux-vertes, monstres, hors-la-loi, sigmar
 **Sources RAW** :
 - `LDB 10 l.1053` — définition, Test Accessible (+20), liste d'ennemis courants
 
-**Implémente** : `src/engine/psychology.ts`
-- `sansPeurVs(self, foe)` : délègue à `fearImmuneVs(self, foe)` (`combatFeatures/dispatch.ts`)
-- `resolvePeurTest(…, sansPeur=true)` : Test à Accessible (+20) ; succès = DR porté à l'Indice directement — `LDB 10 l.1053`
-- `resolveTerreurTest(…, sansPeur=true)` : Test à Accessible (+20) ; succès = `devientPeur: 0` (la Terreur et la Peur subséquente sont ignorées) — `LDB 10 l.1053`
-- Commentaire explicite : « le talent n'accorde pas l'immunité automatique mais "un seul Test de Calme Accessible (+20)" pour l'ignorer » — `psychology.ts l.75`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 10` (l.1051, l.1053) → `fearImmuneVs`, `CombatFeature` — `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
+- `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `describeApproach`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
 
@@ -577,9 +568,8 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 - `LDB 17 l.59` — Détermination vs Psychologie
 
 **Voir aussi** : `destin.md` (Détermination)
-**Implémente** : `src/engine/psychology.ts`
-- `spendResolveForPsychImmunity(c)` : déduit 1 Point de Résilience, pose `c.psychImmuneRoundsLeft = 2`
-- `isPsychImmune(c)` : `(c.psychImmuneRoundsLeft ?? 0) > 0`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `useAttackJetProps`, `EnemyAction`, `useTestJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
 
 ---
 
@@ -614,7 +604,11 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 - `LDB 10 l.1053` — Talent Sans Peur (Ennemi)
 - `LDB 17 l.59` — Détermination vs Psychologie
 
-**Implémente** : `src/engine/psychology.ts` — module central ; voir aussi `engine/size.ts` (`sizeGap`), `engine/traits/dispatch.ts` (`bellicosePsychImmune`, `hasTraitKey`), `engine/combatFeatures/dispatch.ts` (`fearImmuneVs`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature` — `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
+- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `useAttackJetProps`, `EnemyAction`, `useTestJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
+- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `recoveryTarget`, `openScriptedPsych`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, +45 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +25 fichiers
+- `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `knowsCastingSkill`, `availableAttacks`, `engagedAdvantageGap`, `rollManeuverAttacker`, +7 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/state/ai.ts`, +6 fichiers
 
 ---
 

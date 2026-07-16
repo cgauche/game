@@ -80,7 +80,7 @@ describe('reduceDiseaseDays — Bénédiction de Convalescence (LDB 41) + extens
 });
 
 describe('preventInfection — Cautériser (LDB 47) & cureCriticalWound — Larmes de Shallya (LDB 42)', () => {
-  it('preventInfection pose woundDressed (pas d’Infection post-critique, LDB 18 l.382)', () => {
+  it('preventInfection pose woundDressed (pas d’Infection post-critique, LDB 18 l.298)', () => {
     const c = dummy({});
     applyOps(c, [{ op: 'preventInfection' }], { label: 'Cautériser' });
     expect(c.woundDressed).toBe(true);

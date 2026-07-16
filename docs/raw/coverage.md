@@ -20,19 +20,19 @@
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
-| 09 | Compétences | ✅ | 146 (competences.md ×139) |
-| 10 | Talents | ✅ | 63 (tests.md ×36) |
+| 09 | Compétences | ✅ | 144 (competences.md ×137) |
+| 10 | Talents | ✅ | 60 (tests.md ×36) |
 | 11 | *(artefact OCR)* | 🟡 | 4 (reconciliation.md ×2) |
 | 12 | Tests | ✅ | 46 (tests.md ×41) |
-| 13 | Combat | ✅ | 147 (combat.md ×131) |
-| 14 | *(artefact OCR)* | ✅ | 142 (combat.md ×123) |
-| 15 | Déplacement | ✅ | 99 (combat.md ×77) |
-| 16 | États | ✅ | 54 (etats.md ×30) |
-| 17 | Destin et Résistance | ✅ | 54 (destin.md ×27) |
-| 18 | Traumatisme | ✅ | 136 (traumatisme.md ×90) |
+| 13 | Combat | ✅ | 131 (combat.md ×122) |
+| 14 | *(artefact OCR)* | ✅ | 125 (combat.md ×118) |
+| 15 | Déplacement | ✅ | 89 (combat.md ×75) |
+| 16 | États | ✅ | 52 (etats.md ×30) |
+| 17 | Destin et Résistance | ✅ | 51 (destin.md ×27) |
+| 18 | Traumatisme | ✅ | 109 (traumatisme.md ×67) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 59 (psychologie.md ×36) |
+| 21 | Psychologie | ✅ | 52 (psychologie.md ×30) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |
 | 23 | Activités | ✅ | 36 (activites.md ×36) |
 | 24 | Les dieux | ✅ |  |
@@ -59,7 +59,7 @@
 | 45 | *(artefact OCR)* | ➖ | |
 | 46 | Les règles magiques | ✅ | 107 (magie.md ×55) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
-| 48 | Magie des Couleurs | ✅ | 24 (magie.md ×20) |
+| 48 | Magie des Couleurs | ✅ | 16 (magie.md ×16) |
 | 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
 | 50 | Magie noire | ✅ |  |
 | 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
@@ -71,10 +71,10 @@
 | 57 | La monnaie | ✅ | 1 (economie.md ×1) |
 | 58 | *(artefact OCR)* | ➖ | |
 | 59 | Faire son marché | ✅ | 8 (economie.md ×8) |
-| 60 | Fabrication | ✅ | 27 (economie.md ×23) |
+| 60 | Fabrication | ✅ | 26 (economie.md ×23) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 126 (combat.md ×106) |
-| 63 | Armures | ✅ | 44 (combat.md ×36) |
+| 62 | Les armes | ✅ | 110 (combat.md ×103) |
+| 63 | Armures | ✅ | 40 (combat.md ×35) |
 | 64 | Sacs et contenants | ✅ |  |
 | 65 | Vêtements et accessoires | ✅ |  |
 | 66 | Nourriture, boisson et hébergement | ✅ |  |
@@ -87,7 +87,7 @@
 | 73 | Prothèses | ✅ | 5 (equipement.md ×5) |
 | 74 | Possessions diverses | ✅ | 8 (equipement.md ×7) |
 | 75 | Mercenaires | ✅ | 6 (equipement.md ×5) |
-| 76 | Point d’Impact des Créatures | ✅ | 56 (combat.md ×30) |
+| 76 | Point d’Impact des Créatures | ✅ | 53 (combat.md ×29) |
 | 77 | Les populations du Reikland | ✅ | 5 (combat.md ×5) |
 | 78 | Les Bêtes du Reikland | ✅ |  |
 | 79 | Les bêtes monstrueuses du Reikland | ✅ |  |
@@ -96,7 +96,7 @@
 | 82 | Les morts sans repos | ✅ |  |
 | 83 | Esclaves des Ténèbres | ✅ |  |
 | 84 | *(artefact OCR)* | ➖ | |
-| 85 | Traits de créature | ✅ | 292 (combat.md ×203) |
+| 85 | Traits de créature | ✅ | 278 (combat.md ×202) |
 
 ## ADE I — ✅ 2 · 🟡 0 · ⬜ 0
 
@@ -120,7 +120,7 @@
 | 01 | Mercenaires ogres dans le Vieux Monde | ✅ |  |
 | 02 | Les ogres | ✅ | 42 (combat.md ×42) |
 | 03 | Des signes dans le ciel | ✅ |  |
-| 04 | Un peu de magie | ✅ | 26 (combat.md ×23) |
+| 04 | Un peu de magie | ✅ | 25 (combat.md ×22) |
 | 05 | L’hospice | ➖ hors-règle | |
 | 06 | Le personnel | ➖ hors-règle | |
 | 07 | Les patients | ➖ hors-règle | |
@@ -258,8 +258,8 @@
 | 12 | CHAPITRE 10 - Personnalisation | 🟡 | 2 (combat.md ×2) |
 | 13 | CHAPITRE 11 - Règles du commerce | ✅ |  |
 | 14 | CHAPITRE 12 - Naufrageurs, contrebandiers et pirates | ✅ |  |
-| 15 | CHAPITRE 13 - Bestiaire fluvial | ✅ | 15 (combat.md ×15) |
-| 16 | CHAPITRE 14 - Maladies transmises par l’eau | ✅ | 18 (maladies.md ×17) |
+| 15 | CHAPITRE 13 - Bestiaire fluvial | ✅ | 14 (combat.md ×14) |
+| 16 | CHAPITRE 14 - Maladies transmises par l’eau | ✅ | 16 (maladies.md ×16) |
 | 17 | CHAPITRE 15 - La Couronne Rouge Guide du Meneur de Jeu | ➖ hors-règle | |
 | 18 | CHAPITRE 16 - L’Empereur Luitpold | ➖ hors-règle | |
 | 19 | CHAPITRE 17 - La vengeance du Roi des tombes | ➖ hors-règle | |

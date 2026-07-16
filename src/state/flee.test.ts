@@ -7,7 +7,7 @@ import { fleeReachable } from './path';
 import { emptyScene } from './scene';
 import { stacks, COND } from '../engine/conditions';
 
-describe('fleeReachable — Fuite dans la direction OPPOSÉE à l’adversaire (LDB 15-Déplacement l.109)', () => {
+describe('fleeReachable — Fuite dans la direction OPPOSÉE à l’adversaire (LDB 15 l.68)', () => {
   const scene = emptyScene(14, 14);
   const has = (m: Map<string, number>, x: number, y: number) => m.has(`${x},${y}`);
   it('exclut les cases qui RAPPROCHENT de l’adversaire, garde celles qui s’en éloignent', () => {
@@ -24,7 +24,7 @@ describe('fleeReachable — Fuite dans la direction OPPOSÉE à l’adversaire (
   });
 });
 
-// Fuite (LDB 15-Dépl l.101-107) : coup dans le dos SUBI montré INLINE (phase 'fuir') ; le Test de
+// Fuite (LDB 15 l.63-66) : coup dans le dos SUBI montré INLINE (phase 'fuir') ; le Test de
 // Calme du fuyard passe par un jet INFLUENÇABLE (flux `flee`) qui DIFFÈRE la complétion de la fuite.
 describe('Fuite intégrée à la modale (store)', () => {
   beforeEach(() => {

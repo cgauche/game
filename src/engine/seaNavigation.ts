@@ -1,5 +1,5 @@
 /**
- * NAVIGATION MARITIME — couche PURE de MDG ch.13 (l.39-351) + « Longs voyages » ch.15 (l.53-78),
+ * NAVIGATION MARITIME — couche PURE de MDG 13 l.39-351 + « Longs voyages » MDG 15 l.53-78,
  * données verbatim dans `src/data/sea-navigation.json`. Complète `shipNavigation.ts` (Progression /
  * Manœuvre, déjà en place) : ici Périodes de travail, Forcer le rythme, Épuisement, Vitesses maximum
  * (« Ça va lâcher, capitaine ! »), Salissures, Orientation (Repères / Changement de cap), Phares &
@@ -7,28 +7,28 @@
  *
  * RAW :
  *  - Savoir (Océans) : « bonus sur les Tests de Navigation égal au premier chiffre de leur score de
- *    Compétence … Ce bonus ne s'applique que sur l'océan » (l.20) ; idem sur l'Orientation en vue
- *    d'un phare (l.335). NOTE : « ce Test [Forcer le rythme] n'est pas un Test de Navigation et
- *    Savoir (Océans) ne donne donc pas de bonus dessus » (l.97).
- *  - Périodes de travail (l.62) : rameurs 2 h, voiles/barre 8 h ; Épuisement (l.109-111) : fin de
+ *    Compétence … Ce bonus ne s'applique que sur l'océan » (MDG 13 l.20) ; idem sur l'Orientation en vue
+ *    d'un phare (MDG 13 l.335). NOTE : « ce Test [Forcer le rythme] n'est pas un Test de Navigation et
+ *    Savoir (Océans) ne donne donc pas de bonus dessus » (MDG 13 l.97).
+ *  - Périodes de travail (MDG 13 l.62) : rameurs 2 h, voiles/barre 8 h ; Épuisement (MDG 13 l.109-111) : fin de
  *    Période → Test de Résistance Accessible (+20) sous peine d'Exténué ; Complexe (−10) si le
  *    rythme a été forcé.
- *  - Forcer le rythme (l.95-107) : +1 M Voile Très Difficile (−30) / Ramer Difficile (−20) ;
+ *  - Forcer le rythme (MDG 13 l.95-107) : +1 M Voile Très Difficile (−30) / Ramer Difficile (−20) ;
  *    +2 M Ramer Très Difficile (−30) seulement.
- *  - Vitesses maximum (l.121-142) : « jusqu'à M+4 sans risquer de subir des Dégâts » ; au-delà,
+ *  - Vitesses maximum (MDG 13 l.121-142) : « jusqu'à M+4 sans risquer de subir des Dégâts » ; au-delà,
  *    Test d'Endurance du NAVIRE sinon Dégâts « 1+X … 8+X », X = DR négatifs du Test raté.
- *  - Salissures (l.144-159) : « Pour chaque semaine qu'un navire passe en mer sans l'entretien
+ *  - Salissures (MDG 13 l.144-159) : « Pour chaque semaine qu'un navire passe en mer sans l'entretien
  *    approprié, effectuez un Test de Résistance pour le vaisseau. Pour chaque Test raté, ajoutez un
  *    niveau de Salissures » (max 5, tableau verbatim).
- *  - Orientation (l.307-331) : « un Test par jour de voyage » → tableau Repères ; dérive → tableau
+ *  - Orientation (MDG 13 l.307-331) : « un Test par jour de voyage » → tableau Repères ; dérive → tableau
  *    Changement de cap (d10 ; « –5 ou moins » y ajoute 2) ; côté de dérive 1-5 tribord / 6-10 bâbord.
- *  - Phares (l.333-351) : Perception par distance (≤5 milles Facile +40 ; 5-10 Intermédiaire ;
+ *  - Phares (MDG 13 l.333-351) : Perception par distance (≤5 milles Facile +40 ; 5-10 Intermédiaire ;
  *    10-15 Difficile) ; +20 pour repérer un danger proche du phare ; clochers = +2 DR d'Orientation,
  *    distances divisées par 2.
- *  - Longs voyages (ch.15 l.57-78) : 18 milles/jour par point de M ; « voguer de nuit » sinon ÷2 ;
+ *  - Longs voyages (MDG 15 l.57-78) : 18 milles/jour par point de M ; « voguer de nuit » sinon ÷2 ;
  *    Test d'équipage de Progression : « tout DR obtenu peut augmenter la progression du jour
  *    d'environ 10 % ».
- *  - Course-poursuite (l.354-420) : Distance en points de 10 m ; Tests de Navigation → Distance
+ *  - Course-poursuite (MDG 13 l.354-420) : Distance en points de 10 m ; Tests de Navigation → Distance
  *    parcourue = mètres ÷ 10 (min 1) ±1/−2 selon la bande de DR ; M 3/2/1 → −1/−2/−3 DR.
  */
 import seaNavJson from '../data/sea-navigation.json';
@@ -76,7 +76,7 @@ export const LONGS_VOYAGES = DATA.longsVoyages;
 export const REPARATION = DATA.reparation;
 export const ESCAPE_DISTANCES = DATA.poursuite.escapeDistances;
 
-/** Bonus de Savoir (Océans) aux Tests de NAVIGATION en mer (l.20) : « le premier chiffre de leur score
+/** Bonus de Savoir (Océans) aux Tests de NAVIGATION en mer (MDG 13 l.20) : « le premier chiffre de leur score
  *  de Compétence » (36 → +3). 0 si la Compétence n'est pas ACQUISE (le bonus récompense une formation,
  *  pas une Int nue — un score sans avance ne « possède » pas la Compétence). PUR. */
 export function savoirOceansBonus(c: Combatant): number {
@@ -85,27 +85,27 @@ export function savoirOceansBonus(c: Combatant): number {
   return Math.floor(testValue(c, 'savoir', undefined, 'oceans') / 10);
 }
 
-// ── Forcer le rythme & Épuisement (l.95-111) ─────────────────────────────────────────────────────
+// ── Forcer le rythme & Épuisement (MDG 13 l.95-111) ─────────────────────────────────────────────────────
 
-/** Difficulté du Test de Voile/Ramer pour gagner `bonusM` (l.99-105) — `null` si impossible
+/** Difficulté du Test de Voile/Ramer pour gagner `bonusM` (MDG 13 l.99-105) — `null` si impossible
  *  (ex. +2 M à la voile : « n/a »). PUR. */
 export function forcePaceDifficulty(bonusM: number, rig: 'voile' | 'avirons'): Difficulty | null {
   const row = DATA.forcerLeRythme.find((r) => r.bonusM === bonusM);
   return row?.[rig] ?? null;
 }
 
-/** Test d'ÉPUISEMENT de fin de Période de travail (l.109-111) : Résistance Accessible (+20), Complexe
+/** Test d'ÉPUISEMENT de fin de Période de travail (MDG 13 l.109-111) : Résistance Accessible (+20), Complexe
  *  (−10) si le rythme a été forcé ; échec → +1 Exténué (l'appelant pose l'État). PUR. */
 export function exhaustionDifficulty(forced: boolean): Difficulty {
   return forced ? DATA.epuisement.forcedDifficulty : DATA.epuisement.difficulty;
 }
 
-// ── Vitesses maximum — « Ça va lâcher, capitaine ! » (l.121-142) ─────────────────────────────────
+// ── Vitesses maximum — « Ça va lâcher, capitaine ! » (MDG 13 l.121-142) ─────────────────────────────────
 
 export interface OverspeedRow { difficulty: Difficulty; per: Per; damage: number }
 
 /** Ligne du tableau « Ça va lâcher, capitaine ! » pour une vitesse de `m` quand le M de conception est
- *  `baseM` (l.125 : « jusqu'à M+4 sans risquer de subir des Dégâts ») — `null` sous le seuil. PUR. */
+ *  `baseM` (MDG 13 l.125 : « jusqu'à M+4 sans risquer de subir des Dégâts ») — `null` sous le seuil. PUR. */
 export function overspeedRow(baseM: number, m: number): OverspeedRow | null {
   const plus = m - baseM;
   if (plus <= DATA.vitesseMax.safeBonus) return null;
@@ -114,21 +114,21 @@ export function overspeedRow(baseM: number, m: number): OverspeedRow | null {
 }
 
 /** Dégâts d'un ÉCHEC du Test de survitesse : `damage + X`, « X est égal au nombre de Degrés de
- *  Réussite négatifs générés sur un Test de Résistance raté » (l.142). PUR — factorisé pour être
+ *  Réussite négatifs générés sur un Test de Résistance raté » (MDG 13 l.142). PUR — factorisé pour être
  *  partagé par `rollOverspeedDamage` (jet auto-contenu) et tout appelant qui possède déjà le résultat
  *  d'un Test résolu ailleurs (ex. couture cascade, `seaVoyageFlow.ts`). */
 export function overspeedDamage(baseDamage: number, sl: number): number {
   return baseDamage + Math.max(0, -sl);
 }
 
-/** Test d'Endurance du NAVIRE en survitesse : échec → Dégâts `damage + X` (l.142, `overspeedDamage`).
+/** Test d'Endurance du NAVIRE en survitesse : échec → Dégâts `damage + X` (MDG 13 l.142, `overspeedDamage`).
  *  PUR (RNG injecté). */
 export function rollOverspeedDamage(hull: Combatant, row: OverspeedRow, rng: RNG = defaultRNG): { roll: number; target: number; success: boolean; damage: number } {
   const t = rollTest(effectiveChar(hull, 'endurance'), row.difficulty, rng);
   return { roll: t.roll, target: t.target, success: t.success, damage: t.success ? 0 : overspeedDamage(row.damage, t.sl) };
 }
 
-// ── Salissures (l.144-159) ───────────────────────────────────────────────────────────────────────
+// ── Salissures (MDG 13 l.144-159) ───────────────────────────────────────────────────────────────────────
 
 export interface FoulingLevel { level: number; manDR: number; mMod: number; navDR: number; repairPctOfBase: number; desc: string }
 
@@ -139,7 +139,7 @@ export function foulingEffects(level: number): FoulingLevel {
   return DATA.salissures.levels.find((l) => l.level === capped)!;
 }
 
-/** Test HEBDOMADAIRE de Salissures (l.148 : Test de Résistance du VAISSEAU ; raté → +1 niveau, max 5).
+/** Test HEBDOMADAIRE de Salissures (MDG 13 l.148 : Test de Résistance du VAISSEAU ; raté → +1 niveau, max 5).
  *  PUR — renvoie le nouveau niveau + le détail du jet. */
 export function rollWeeklyFouling(hullE: number, level: number, rng: RNG = defaultRNG): { level: number; roll: number; target: number; gained: boolean } {
   const t = rollTest(hullE, 'intermediaire', rng);
@@ -147,7 +147,7 @@ export function rollWeeklyFouling(hullE: number, level: number, rng: RNG = defau
   return { level: gained ? level + 1 : level, roll: t.roll, target: t.target, gained };
 }
 
-// ── Orientation : Repères & Changement de cap (l.307-331) ────────────────────────────────────────
+// ── Orientation : Repères & Changement de cap (MDG 13 l.307-331) ────────────────────────────────────────
 
 export type OrientationOutcome = 'exact' | 'ok' | 'drift-minor' | 'drift' | 'drift-major';
 export type CourseChangeEffect = 'aucun' | 'retard' | 'quart-de-tour' | 'demi-tour';
@@ -157,13 +157,13 @@ export interface OrientationResult {
   desc: string;
   /** Le tableau Changement de cap doit être tiré (dérive avérée — `drift-minor` répété inclus). */
   rollCourseChange: boolean;
-  /** Bonus au d10 de Changement de cap (« –5 ou moins … ajoutez 2 au résultat », l.320). */
+  /** Bonus au d10 de Changement de cap (« –5 ou moins … ajoutez 2 au résultat », MDG 13 l.320). */
   courseChangeBonus: number;
 }
 
-/** Issue du Test d'ORIENTATION quotidien (tableau Repères, l.313-320). `minorDriftBefore` = une dérive
+/** Issue du Test d'ORIENTATION quotidien (tableau Repères, MDG 13 l.313-320). `minorDriftBefore` = une dérive
  *  mineure a DÉJÀ eu lieu (« ce résultat n'a aucun effet la première fois, mais s'il se reproduit,
- *  lancez le dé », l.318). PUR. */
+ *  lancez le dé », MDG 13 l.318). PUR. */
 export function orientationOutcome(dr: number, minorDriftBefore: boolean): OrientationResult {
   const row = findTableEntry(DATA.orientation.reperes, dr);
   const rollCourseChange = row.outcome === 'drift' || row.outcome === 'drift-major' || (row.outcome === 'drift-minor' && minorDriftBefore);
@@ -178,7 +178,7 @@ export interface CourseChangeResult {
   desc: string;
 }
 
-/** Tirage du tableau CHANGEMENT DE CAP (l.324-331) + côté de dérive (l.322 : « 1-5 tribord,
+/** Tirage du tableau CHANGEMENT DE CAP (MDG 13 l.324-331) + côté de dérive (MDG 13 l.322 : « 1-5 tribord,
  *  6-10 bâbord »). `bonus` = +2 d'une dérive majeure. PUR (RNG injecté). */
 export function rollCourseChange(rng: RNG = defaultRNG, bonus = 0): CourseChangeResult {
   const roll = d10(rng) + bonus;
@@ -192,11 +192,11 @@ export function rollCourseChange(rng: RNG = defaultRNG, bonus = 0): CourseChange
   };
 }
 
-// ── Phares & clochers (l.333-351) ────────────────────────────────────────────────────────────────
+// ── Phares & clochers (MDG 13 l.333-351) ────────────────────────────────────────────────────────────────
 
 /** Difficulté du Test de PERCEPTION pour voir la lumière d'un phare à `milles` (tableau VOIR LA
- *  LUMIÈRE, l.339-346) — `null` au-delà de 15 milles (hors tableau : invisible). `clocher` → toutes
- *  les distances divisées par 2 (l.351). PUR. */
+ *  LUMIÈRE, MDG 13 l.339-346) — `null` au-delà de 15 milles (hors tableau : invisible). `clocher` → toutes
+ *  les distances divisées par 2 (MDG 13 l.351). PUR. */
 export function lighthouseSpotDifficulty(milles: number, clocher = false): Difficulty | null {
   const d = clocher ? milles * DATA.phares.clocher.distanceDiviseur : milles;
   const row = findTableEntry(DATA.phares.voirLaLumiere, d);
@@ -204,20 +204,20 @@ export function lighthouseSpotDifficulty(milles: number, clocher = false): Diffi
 }
 
 /** Bonus d'ORIENTATION une fois le repère perçu : phare → « premier chiffre » de Savoir (Océans)
- *  (l.335, via `savoirOceansBonus`) ; clocher → +2 DR forfaitaires (l.351). PUR. */
+ *  (MDG 13 l.335, via `savoirOceansBonus`) ; clocher → +2 DR forfaitaires (MDG 13 l.351). PUR. */
 export function lighthouseOrientationDR(navigator: Combatant, clocher: boolean): number {
   return clocher ? DATA.phares.clocher.orientationDR : savoirOceansBonus(navigator);
 }
 
 /** « Si le phare se trouve près d'un danger, tous les Tests de Perception entrepris pour repérer ce
- *  danger bénéficient d'un bonus de +20 » (l.347). */
+ *  danger bénéficient d'un bonus de +20 » (MDG 13 l.347). */
 export const LIGHTHOUSE_PERIL_SPOT_BONUS: number = DATA.phares.perilSpotBonus;
 
-// ── Longs voyages : milles par jour (ch.15 l.53-78) ──────────────────────────────────────────────
+// ── Longs voyages : milles par jour (MDG 15 l.53-78) ──────────────────────────────────────────────
 
-/** Milles parcourus en un JOUR de long voyage (ch.15 l.57-70 : 18 milles/jour par point de M) ;
- *  « voguer de nuit » impossible → ÷2 (l.76) ; `progressionDR` = total du Test d'équipage de
- *  Progression, ±10 %/DR (l.78). Plancher 0. PUR. */
+/** Milles parcourus en un JOUR de long voyage (MDG 15 l.57-70 : 18 milles/jour par point de M) ;
+ *  « voguer de nuit » impossible → ÷2 (MDG 15 l.76) ; `progressionDR` = total du Test d'équipage de
+ *  Progression, ±10 %/DR (MDG 15 l.78). Plancher 0. PUR. */
 export function seaMilesPerDay(m: number, nightSailing: boolean, progressionDR = 0): number {
   let miles = Math.max(0, m) * DATA.longsVoyages.millesParJourParM;
   if (!nightSailing) miles /= DATA.longsVoyages.sansVoguerDeNuitDiviseur;
@@ -225,19 +225,19 @@ export function seaMilesPerDay(m: number, nightSailing: boolean, progressionDR =
   return Math.max(0, miles);
 }
 
-// ── Course-poursuite (l.354-420) ─────────────────────────────────────────────────────────────────
+// ── Course-poursuite (MDG 13 l.354-420) ─────────────────────────────────────────────────────────────────
 
-/** Pénalité de Poursuite des bateaux lents (l.399 : M 3 → −1 DR ; M 2 → −2 ; M 1 → −3). PUR. */
+/** Pénalité de Poursuite des bateaux lents (MDG 13 l.399 : M 3 → −1 DR ; M 2 → −2 ; M 1 → −3). PUR. */
 export function pursuitLowMPenalty(m: number): number {
   return DATA.poursuite.lowMPenalty.find((r) => r.m === m)?.dr ?? (m >= 4 ? 0 : DATA.poursuite.lowMPenalty[DATA.poursuite.lowMPenalty.length - 1].dr);
 }
 
-/** Distance parcourue ce Round de Poursuite (tableau l.378-397) : mètres normaux du résultat du Test
- *  (Progression du navire × 2 m/M/Round, cf. VITESSES DE MOUVEMENT l.47-60) ÷ 10 arrondi à l'inférieur,
+/** Distance parcourue ce Round de Poursuite (tableau MDG 13 l.378-397) : mètres normaux du résultat du Test
+ *  (Progression du navire × 2 m/M/Round, cf. VITESSES DE MOUVEMENT MDG 13 l.47-60) ÷ 10 arrondi à l'inférieur,
  *  min 1, puis +1 (DR ≥ 4) / −1 (DR −1 à −3) / −2 (DR ≤ −4). Peut être négatif après malus (le bateau
  *  perd du terrain). PUR. */
 export function pursuitDistanceGain(baseM: number, dr: number): number {
-  const metres = progressionMovement(baseM, dr) * 2; // M → mètres par Round (l.47-60 : « Mètres par Round » = 2×M)
+  const metres = progressionMovement(baseM, dr) * 2; // M → mètres par Round (MDG 13 l.47-60 : « Mètres par Round » = 2×M)
   const base = Math.max(1, Math.floor(metres / DATA.poursuite.distanceUnitM));
   return base + findTableEntry(DATA.poursuite.drDeltas, dr).delta;
 }

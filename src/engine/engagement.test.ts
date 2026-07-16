@@ -5,7 +5,7 @@ import { isEngaged, isEngagedWith, engage, disengageFrom, decayEngagement, charg
 const mk = (id: string, wounds = 10): Combatant =>
   ({ id, name: id, kind: 'enemy', wounds: { current: wounds, max: 10 }, conditions: [] }) as unknown as Combatant;
 
-describe('Engagé — pose / levée (LDB 13-Combat l.174-175)', () => {
+describe('Engagé — pose / levée (LDB 13 l.169-171)', () => {
   it('engage() pose le lien des DEUX côtés + marque le coup ce Round ; idempotent', () => {
     const a = mk('a');
     const b = mk('b');
@@ -61,10 +61,10 @@ describe('Engagé — pose / levée (LDB 13-Combat l.174-175)', () => {
   });
 });
 
-describe('chargeAdvantage — +1 UNIQUEMENT si cible à ≥ M mètres (LDB 15-Dépl l.77 ; 1 case = 2 m)', () => {
+describe('chargeAdvantage — +1 UNIQUEMENT si cible à ≥ M mètres (LDB 15 l.37 ; 1 case = 2 m)', () => {
   it('M=4 : seuil ceil(4/2)=2 cases ; portée Course 2M=8 (arrivée adjacente → cible jusqu’à 9)', () => {
     expect(chargeAdvantage(4, 0)).toBe(0); // déjà au contact, pas de charge
-    expect(chargeAdvantage(4, 1)).toBe(0); // contact direct : on n'a pas « foncé » → rien (l.77)
+    expect(chargeAdvantage(4, 1)).toBe(0); // contact direct : on n'a pas « foncé » → rien (LDB 15 l.37)
     expect(chargeAdvantage(4, 2)).toBe(1); // ≥ seuil → +1
     expect(chargeAdvantage(4, 8)).toBe(1); // pleine portée de Course → +1
     expect(chargeAdvantage(4, 9)).toBe(1); // 2M+1 : case d'arrivée (à 2M=8) encore atteignable → +1

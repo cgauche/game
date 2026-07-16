@@ -516,7 +516,7 @@ export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base
 }
 
 /**
- * Mort par Hémorragique (LDB 16-États l.105) : « À la fin du Round, vous avez 10 % de chance de mourir
+ * Mort par Hémorragique (LDB 16 l.105) : « À la fin du Round, vous avez 10 % de chance de mourir
  * par État Hémorragique que vous possédez » (3 pions → mort sur 1-30). « Si vous faites un double sur ce
  * jet, vos blessures coagulent un peu et vous perdez 1 État Hémorragique » — le double prime (pas de mort,
  * mais coagulation). Pur ; renvoie `died` (la finalisation — sauvetage par Destin — revient à l'appelant).
@@ -549,7 +549,7 @@ export function usesSuddenDeath(c: Combatant): boolean {
 }
 
 /** Hors de combat : mort, ou Inconscient, ou figurant tombé à 0 PB (Mort Subite), ou COQUE à 0 PB
- *  (détruite / coulée). Un héros à 0 PB reste actif (À Terre) — pas hors de combat (LDB 18 l.28). */
+ *  (détruite / coulée). Un héros à 0 PB reste actif (À Terre) — pas hors de combat (LDB 18 l.15). */
 export function isOutOfAction(c: Combatant): boolean {
   // Un OBJET INERTE servi (affût d'artillerie) n'est jamais une PERTE par Blessures (il en a 0, immune) :
   // « hors de combat » seulement s'il est explicitement retiré (détruit hors-combat / éjecté de la rencontre).
@@ -580,8 +580,8 @@ export function endState(c: Combatant): EndState | null {
   return null;
 }
 
-/** Condition de mort lente (LDB 18-Traumatisme l.48-49) : Inconscient + 0 PB + (Blessures
- *  critiques > Bonus d'Endurance), et pas déjà mort/éjecté. Suffocation (LDB 18 l.425) :
+/** Condition de mort lente (LDB 18 l.34) : Inconscient + 0 PB + (Blessures
+ *  critiques > Bonus d'Endurance), et pas déjà mort/éjecté. Suffocation (LDB 18 l.346) :
  *  « au bout d'un nombre de Rounds égal à votre BE, vous mourez » — compteur à 0 = mort
  *  (même canal → un héros à Destin est suspendu, pendingFateSave). */
 export function inDeathCondition(c: Combatant): boolean {
@@ -596,7 +596,7 @@ export function inDeathCondition(c: Combatant): boolean {
   return hasCondition(c, COND.inconscient) && c.wounds.current <= 0 && (c.criticalWounds ?? 0) > be;
 }
 
-/** À 0 PB : gagne l'État À Terre (LDB 18 l.28). À appeler quand un coup non-critique amène à 0.
+/** À 0 PB : gagne l'État À Terre (LDB 18 l.15). À appeler quand un coup non-critique amène à 0.
  *  (Une COQUE ne tombe pas « À Terre » : sa mise hors-jeu à 0 PB est gérée par `isOutOfAction`.) */
 export function applyZeroWounds(c: Combatant): void {
   if (c.inert) return; // OBJET INERTE (affût d'artillerie) : en permanence à 0 PB, immune aux Blessures → jamais À Terre (cf. isOutOfAction)
@@ -607,24 +607,24 @@ export function applyZeroWounds(c: Combatant): void {
 /**
  * Perte de Blessures CENTRALISÉE avec ses conséquences RAW — à utiliser partout où l'on retire des PB
  * (hors flux d'attaque principal, qui gère déjà l'Avantage et la nuance Critique pour l'À Terre) :
- *  - perdre ≥1 PB → on perd TOUT l'Avantage (LDB 15-Déplacement l.40) ;
- *  - tomber à 0 PB → État À Terre (LDB 18 l.28), sauf déjà Inconscient/mort.
+ *  - perdre ≥1 PB → on perd TOUT l'Avantage (LDB 14 l.219) ;
+ *  - tomber à 0 PB → État À Terre (LDB 18 l.15), sauf déjà Inconscient/mort.
  * Retourne le nombre de PB réellement perdus.
  */
 export function loseWounds(c: Combatant, amount: number): number {
   if (amount <= 0 || c.wounds.current <= 0) return 0;
   const lost = Math.min(amount, c.wounds.current);
   c.wounds.current -= lost;
-  if (!groupAdvantage()) c.advantage = 0; // perdre une Blessure → perdre tout l'Avantage (LDB 15 l.40) — inerte en mode « Avantage de groupe »
+  if (!groupAdvantage()) c.advantage = 0; // perdre une Blessure → perdre tout l'Avantage (LDB 14 l.219) — inerte en mode « Avantage de groupe »
   if (c.wounds.current <= 0 && !c.dead && !hasCondition(c, COND.inconscient)) applyZeroWounds(c);
   return lost;
 }
 
 /**
- * Upkeep de mort en fin de Round (LDB 18 l.28, l.48-49) — héros/importants seulement :
+ * Upkeep de mort en fin de Round (LDB 18 l.15, l.34) — héros/importants seulement :
  *  - à 0 PB non soigné : roundsAtZero++ ; après (Bonus d'Endurance) Rounds → Inconscient (LDB 18 l.15) ;
  *  - Inconscient + 0 PB + (criticalWounds > BE) → mort.
- * Variante Aux Armes (l.2449) : le système alternatif REMPLACE ce décompte déterministe → à 0 PB, on ne
+ * Variante Aux Armes (AA 07 l.5) : le système alternatif REMPLACE ce décompte déterministe → à 0 PB, on ne
  * tombe PAS automatiquement Inconscient ; la chute Inconscient passe par le Test de Résistance de l'État
  * Hémorragique (hook `aa-bleed-unconscious`). On garde le compteur `roundsAtZero` (info) mais on n'applique
  * pas l'Inconscient en mode AA. Retourne le journal.

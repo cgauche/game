@@ -50,7 +50,9 @@ Un arbre de décision guide le choix du type de test :
 - `LDB 12 l.47-51` — arbre de décision « Résolution des Actions »
 
 **Voir aussi** : [Tests opposés](#tests-opposés), [Tests étendus](#tests-étendus)
-**Implémente** : `src/engine/tests.ts` — `rollTest` (Test simple et spectaculaire au même mécanisme de base) ; `src/engine/testPolicy.ts` — `getTestPolicy` (règles optionnelles)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.47-51) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `PendingTest`, `PendingReload`, +11 — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
+- sans code : `LDB 12` (l.6, l.83-88)
 
 ---
 
@@ -71,7 +73,7 @@ La valeur cible est la Compétence ou la Caractéristique du personnage telle qu
 - `LDB 12 l.7-13` — mécanique fondamentale du 1d100 sous la valeur cible
 
 **Voir aussi** : [Difficulté](#difficulté--table-complète), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
-**Implémente** : `src/engine/tests.ts` — `rollTest`, `evaluateTest` ; `src/engine/dice.ts` — `d100`
+**Implémente :** (non implémenté)
 
 ---
 
@@ -96,7 +98,9 @@ Ces bandes automatiques s'appliquent à *tous* les tests, simples ou spectaculai
 - `LDB 12 l.119-121` — DR minimum/maximum des bandes automatiques dans un test spectaculaire
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
-**Implémente** : `src/engine/tests.ts` — `evaluateTest` (gestion des bandes via `policy.bandsMode` / `policy.autoSuccessMax` / `policy.autoFailMin`) ; `src/engine/testPolicy.ts` — `getTestPolicy`, règle `test-auto-bands`, règle `test-auto-band-width`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.31-32, l.119-121) → `ledgerRerollable` ⚠sans-appelant, `forceCrewRole`, `OPTIONAL_RULES`, `NightEntry`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isImpressiveFailure`, `isAstoundingFailure`, `FicheBody`, +3 — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, `src/state/pendings.ts`, +4 fichiers
+- sans code : `LDB 12` (l.25-28)
 
 ---
 
@@ -119,7 +123,8 @@ Cette règle optionnelle fonctionne particulièrement bien avec les Tests simple
 - `LDB 12 l.124-127` — règle optionnelle Critiques et Maladresses sur tous les tests
 
 **Voir aussi** : chapitre Combat (Critiques et Maladresses en combat)
-**Implémente** : `src/engine/tests.ts` — `isDoubleRoll` (détecte 00 = 100, et `roll % 11 === 0`) ; `evaluateTest` expose `isDouble` dans `TestResult`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.38, l.124-127) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `bestForcedRoll`, +6 — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, `src/state/pendings.ts`, +4 fichiers
 
 ---
 
@@ -140,7 +145,8 @@ Ces deux mécanismes constituent, avec les modificateurs et les doubles, les bri
 - `LDB 12 l.43` — définition de l'Inversion
 
 **Voir aussi** : Chance (Points de Chance permettant la relance), Résilience (dé forcé)
-**Implémente** : l'inversion du dé est utilisée pour la localisation des coups (chapitre Combat) — `src/engine/combat.ts` ; la relance est gérée via les Points de Chance (`src/state/rollFlows.ts`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.40, l.42, l.43) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, `src/ui/MultiRollList.tsx`
 
 ---
 
@@ -163,7 +169,8 @@ Ainsi : **valeur cible = Base + Difficulté + Σ modificateurs circonstanciels**
 - `LDB 12 l.133-137` — application des modificateurs par le MJ
 
 **Voir aussi** : [Difficulté](#difficulté--table-complète), [Combiner les Difficultés](#combiner-les-difficultés--cumul-et-plafonds)
-**Implémente** : `src/engine/tests.ts` — `rollTest` (paramètre `modifier` additionnel + `DIFFICULTY_MODIFIERS[difficulty]`) ; `src/engine/types.ts` — `DIFFICULTY_MODIFIERS`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `bestForcedRoll`, +2 — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, `src/state/rollFlowFactory.ts`, +2 fichiers
 
 ---
 
@@ -191,7 +198,8 @@ Si aucune Difficulté n'est indiquée pour un test (notamment pour un test oppos
 - `LDB 12 l.166` — « Si aucune Difficulté n'est indiquée pour un Test opposé, on considère qu'il est Intermédiaire »
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test), [Tests opposés](#tests-opposés)
-**Implémente** : `src/engine/types.ts` — `Difficulty` (type), `DIFFICULTY_MODIFIERS` (mapping clé→valeur) ; `src/engine/tests.ts` — `DIFFICULTY_LADDER`, `difficultyFromLabel`, `easeDifficulty`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.133-139, l.141-150, l.166) → `amazingTestLabel`, `useTestJetProps`, `forceCrewRole`, `OPTIONAL_RULES`, `ReloadModal`, `evaluateTest`, `bestForcedRoll`, `opposedTest`, `makeRollFlow`, `runActivityResolver`, +1 — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 
@@ -218,7 +226,8 @@ Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modific
 - `EDO App.2 l.157-165` (rappel) — plafond des pénalités cumulées porté à −50
 
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Modificateurs de test](#modificateurs-de-test), [Extensions de Difficulté (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
-**Implémente** : `src/engine/combat.ts` — `combineMods` (somme plafonnée par sens ; lignes `uncapped` — Avantage — hors plafond ; plafonds = règles optionnelles `combat-diff-cap-bonus` / `combat-diff-cap-malus`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 14` (l.91-96) → `useAttackJetProps`, `W`, `isFlankOrRear`, `PendingAttack`, `Scene`, `attackEnv`, `chooseEnemyAction`, `createCombatSlice` — `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, `src/state/scene.ts`, +1 fichiers
 
 ---
 
@@ -249,7 +258,8 @@ Autrement dit, on soustrait le **chiffre des dizaines du résultat obtenu** au *
 - `LDB 12 l.119-121` — DR des bandes automatiques (01-05 → min +1 ; 96-00 → max −1)
 
 **Voir aussi** : [Table des Résultats](#table-des-résultats), [Tests opposés](#tests-opposés), [Succès et échec automatiques](#succès-et-échec-automatiques)
-**Implémente** : `src/engine/tests.ts` — `tens` (chiffre des dizaines, source unique du calcul) ; `evaluateTest` (calcul `baseSL = policy.slMode === 'fast' ? tens(r) : tens(target) - tens(r)`) ; `src/engine/testPolicy.ts` — règle `test-fast-sl`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.90-94, l.96-99, l.101-102, l.119-121) → `bargainBuyFactor`, `getTestPolicy`, `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isImpressiveSuccess`, `isImpressiveFailure`, `isAstoundingSuccess`, +4 — `src/engine/bargain.ts`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
 
 ---
 
@@ -275,7 +285,8 @@ Le niveau de succès ou d'échec est qualifié par la Table des Résultats, qui 
 - `LDB 12 l.116-117` — explication de l'utilisation de la table
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Doubles — Critique et Maladresse](#doubles--critique-et-maladresse)
-**Implémente** : la table est utilisée narrativement ; le champ `sl` de `TestResult` (dans `src/engine/tests.ts`) porte le DR numérique, interprété en libellé côté UI
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.105-114, l.116-117) → `bargainBuyFactor`, `getTestPolicy`, `OPTIONAL_RULES`, `SL_IMPRESSIVE`, `isImpressiveSuccess`, `isImpressiveFailure`, `isAstoundingSuccess`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, +1 — `src/engine/bargain.ts`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +1 fichiers
 
 ---
 
@@ -304,7 +315,8 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 - `LDB 12 l.166` — Difficulté par défaut = Intermédiaire si non indiquée
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
-**Implémente** : `src/engine/tests.ts` — `opposedTest`, `resolveOpposed` (priorité DR → valeur cible → `tie`) ; `OpposedResult.netSL`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.152-169) → `amazingTestLabel`, `useTestJetProps`, `OPTIONAL_RULES`, `ReloadModal`, `evaluateTest`, `opposedTest`, `makeRollFlow`, `runActivityResolver`, `createCombatSlice` — `src/engine/policy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, `src/state/interludeFlow.ts`, `src/state/rollFlowFactory.ts`, +2 fichiers
 
 ---
 
@@ -331,7 +343,8 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 - `LDB 12 l.182-185` — règle optionnelle DR 0 = ±1 minimum
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
-**Implémente** : `src/engine/policy.ts` — règle `test-extended-min-sl` (DR 0 = ±1 minimum) ; le moteur de tests étendus proprement dit (accumulation de DR sur plusieurs rounds) est géré côté flux (`src/state/`) et non dans `src/engine/tests.ts` — **(partiellement implémenté)**
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.171-180, l.182-185) → `ReloadModal`, `assistBonus`, `partyAssisted`, `soutienBonus`, `openSkillTest`, `OPTIONAL_RULES`, `runActivityResolver`, `EFFECT_HANDLERS`, `createCombatSlice` — `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, `src/state/combatSlice.ts`, `src/state/interludeFlow.ts`, +1 fichiers
 
 ---
 
@@ -356,7 +369,8 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 - `LDB 12 l.188-200` — règles du Soutien et de ses limites
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
-**Implémente** : `assistBonus` (`src/engine/tests.ts`, +10/participant plafonné) + `soutienBonus`/`partyAssisted` (`src/engine/skills.ts`, filtre « possède la Compétence », l.195) — consommé dans plus d'une douzaine de flux hors combat et en combat. Adjacence (l.196) : filtre géométrique optionnel de `soutienBonus`/`partyAssisted`, branché côté état sur `openSkillTest`/`extendedTest` (`src/state/combatEffects.ts`) quand une géométrie de combat existe. Exclusions résistance maladie/poison/peur/danger (l.197) : `FlowTest.noSupport` (`src/engine/flowCore.ts`) et `RollRequest.test.noSupport` (`src/state/rollSeam.ts`), non branchés sur un call-site à ce jour faute de Test de résistance utilisant le Soutien.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `MedicState`, `RollRequest`, `OPTIONAL_RULES`, `CascadeBody`, `buildStageSteps`, `Effect`, `surgeryNext`, `resolveMonoSide`, `assistBonus`, +10 — `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, `src/state/medicFlow.ts`, +8 fichiers
 
 ---
 
@@ -376,7 +390,8 @@ Parfois, une situation requiert qu'un personnage réussisse deux Compétences di
 - `LDB 12 l.203-208` — règle optionnelle des Tests Combinés
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire)
-**Implémente** : `src/engine/tests.ts` — `evaluateCombinedTest`, `CombinedTestResult` (avec `level: 'full' | 'partial' | 'fail'`)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.203-208) → `useExtendedTestJetProps`, `MedicState`, `RollRequest`, `OPTIONAL_RULES`, `CascadeBody`, `buildStageSteps`, `Effect`, `surgeryNext`, `resolveMonoSide`, `assistBonus`, +11 — `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +9 fichiers
 
 ---
 
@@ -394,7 +409,8 @@ La mécanique du lancer est strictement identique dans les deux cas.
 - `LDB 12 l.130-131` — définition du Test de Caractéristique
 
 **Voir aussi** : [Lancer le dé — mécanique de base](#lancer-le-dé--mécanique-de-base)
-**Implémente** : `src/engine/tests.ts` — `rollTest` reçoit une valeur numérique unique (`value: number`) quelle que soit son origine (Compétence ou Caractéristique) ; `src/engine/skills.ts` — résolution de la valeur de compétence effective
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.130-131) → `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `bestForcedRoll`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, `src/state/shipManeuver.ts`, +1 fichiers
 
 ---
 
@@ -412,7 +428,7 @@ Sans cette règle optionnelle, la valeur cible est plafonnée à 99 pour les cal
 - `LDB 12 l.74-80` — règle optionnelle « Tests supérieurs à 100 % »
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
-**Implémente** : `src/engine/testPolicy.ts` — règle `test-over-100` (lève le plafond `targetMax` de 99 à 999 dans `getTestPolicy`, permettant à `tens(target)` de refléter les tranches au-delà de 100)
+**Implémente :** (non implémenté)
 
 ---
 
@@ -438,7 +454,8 @@ La campagne **L'Ennemi dans l'Ombre** introduit deux niveaux de Difficulté supp
 - `LDB 12 l.133-137` (rappel) — règle de base sur la combinaison de Difficultés
 
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Succès et échec automatiques](#succès-et-échec-automatiques)
-**Implémente** : `src/engine/types.ts` — `Difficulty` doit inclure `'Presque Impossible'` (−40) et `'Impossible'` (−50) ; `DIFFICULTY_MODIFIERS` à étendre ; `src/engine/tests.ts` — plafond cumulé à −50 à appliquer si plusieurs modificateurs se cumulent
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.133-137) → `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `bestForcedRoll`, `makeRollFlow` — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/rollFlowFactory.ts`, `src/state/shipManeuver.ts`
 
 ---
 
@@ -478,7 +495,8 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 - `LDB 17 l.64-71` — dépense de Résilience : « Je te renie ! » (Corruption) et « Je ne faillirai pas ! » (forcer un succès)
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé), [Tests opposés](#tests-opposés), Destin et Résilience (domaine propre)
-**Implémente** : `src/state/rollFlows.ts` — `caps: { forced: true }` sur les flux qui offrent la Résilience ; `forceSuccess`/`setForcedRoll`/`ForcedRollPicker` ; `src/state/rollFlows.ts` — dépense de Chance via `addSL` (+1 DR post-jet) et relance via `reroll`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71, l.73) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, `ForcedRollPicker`, +80 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, +41 fichiers
 
 ---
 
@@ -521,7 +539,9 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 - `LDB 10 l.787` — Menaçant : +DR Intimidation
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Tests étendus](#tests-étendus)
-**Implémente** : `src/data/talents.json` — champ `combat` et `passive: GameOp[]` portent les effets ; le bonus +1 DR par niveau sur Compétence liée est à appliquer dans `evaluateTest` ou dans le résolveur du flux concerné
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 10` (l.11-20, l.263) → `CrewContributor`, `charDRBonusOf`, `talentTestSLBonus`, `crewTalentDR`, `resolveCasting`, `TriggeredEffect`, `castTestOf`, `resolveFocus`, `combineOpposed` — `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`
+- sans code : `LDB 10` (l.62, l.89, l.123, l.411, l.448, l.520, l.605, l.759) +1
 
 ---
 
@@ -557,7 +577,10 @@ Talents concernés (LDB 10) :
 - `LDB 10 l.966` — Pilote
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
-**Implémente** : ces inversions par Talent sont distinctes de la mécanique générale d'inversion — elles s'appliquent à des contextes précis et requièrent un test raté préalable ; à gérer comme une variante de `reroll` dans les flux concernés
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 10` (l.150, l.634) → `MedicState`, `useAttackJetProps`, `surgeryNext`, `MedicModal`, `PendingAttack`, `dualAffordance`, `PendingDualStrike`, `defenseModifiers`, `resolveDualSecond`, `dualStrikeTargets`, +7 — `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/medicFlow.ts`, `src/state/pendings.ts`, +5 fichiers
+- `LDB 12` (l.43) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, `src/ui/MultiRollList.tsx`
+- sans code : `LDB 10` (l.176, l.834, l.899, l.950, l.966)
 
 ---
 
@@ -594,4 +617,8 @@ Ces trois mécaniques constituent des extensions légitimes du système de DR da
 - `LDB 12 l.124-127` (rappel) — règle optionnelle Critiques/Maladresses sur tous tests
 
 **Voir aussi** : [Doubles — Critique et Maladresse](#doubles--critique-et-maladresse), [Influencer un test — Chance, Résilience, Talents](#influencer-un-test--chance-résilience-talents), [Tests étendus](#tests-étendus)
-**Implémente** : `src/engine/tests.ts` — `isDoubleRoll` est déjà implémenté ; l'interprétation comme Succès Stupéfiant est déjà dans la Table des Résultats via la règle optionnelle existante ; les mécaniques "Bonus Carac au DR" et "lecture des unités/dizaines au choix" ne sont pas implémentées (hors scope jeux de taverne)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, `src/state/shipManeuver.ts`, +1 fichiers
+- `LDB 17` (l.22) → `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ActionBar`, `CampaignView`, `crewRoleFlowSpec`, `bumpSL`, +9 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/keybindings.ts`, +9 fichiers
+- `NADAJ 16` (l.7, l.9-10, l.11, l.19) → `OPTIONAL_RULES` — `src/engine/policy.ts`
+- sans code : `NADAJ 16` (l.24, l.34, l.35, l.97)

@@ -483,7 +483,9 @@ Détails complets par niveau (compétences/talents/possessions) → [`catalogue-
 
 **Sources RAW** : `MDG 09 l.3-30` + `l.57-757`
 **Voir aussi** : [Index des carrières](#index-des-carrières) · [Carrières norses (MDG)](#carrières-norses-mdg) · [`talents.md`](talents.md) (Chanson de marin, Commandant d'équipe, Commandant émérite)
-**Implémente** : `src/data/classes.json` (`cotiers`) + `src/data/careers.json`/`careerLevels.json` (8 carrières × 4 niveaux) + `src/ui/creator/draft.ts` (`careerRollPool` — swap Riverains ↔ Côtiers AVANT le d100)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 9` (l.3-30, l.59) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CreatorDraft`, `CrewContributor`, `CombatFeature`, `QUART_MINUTES`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, +17 — `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +11 fichiers
+- sans code : `MDG 9` (l.134, l.626, l.718)
 
 ---
 
@@ -505,7 +507,8 @@ Une chanson de marin affecte un équipage entier. Le Personnage doit trouver un 
 
 **Sources RAW** : `MDG 09 l.32-54`
 **Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Chansons de marins (MDG)](#chansons-de-marins-mdg) · [`talents.md`](talents.md)
-**Implémente** : `src/data/talents.json` (`chanson-de-marin`, `commandant-emerite` — Maxi/Tests/desc ; `commandant-d-equipe` = réimpression du talent AA existant). Flux d'activation du chant + bonus DR navals (non implémenté — lot systèmes naval)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 9` (l.32-54) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CrewContributor`, `CombatFeature`, `QUART_MINUTES`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, `endShanty`, +13 — `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +9 fichiers
 
 ---
 
@@ -529,7 +532,8 @@ Le **Chansonnier** est inextricablement lié au culte de **Manann** ; d'autres d
 
 **Sources RAW** : `MDG 09 l.206-248`
 **Voir aussi** : [Nouveaux Talents de la Classe Côtier (MDG)](#nouveaux-talents-de-la-classe-côtier-mdg)
-**Implémente** : `src/data/sea-shanties.json` (7 chansons, desc verbatim ; `crewOps` GameOp pour les 3 exprimables, `pending` pour les 4 autres). Application à l'équipage (non implémenté — lot systèmes naval)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 9` (l.206-248) → `CAREER_TENUE_BY_ID`, `schema`, `skillDRBonus`, `CareerData`, `ignoredStatesCount`, `charDRBonusOf`, `crewTestModOf`, `combatTestPenalty`, `testStatePenalty`, `GameOp`, +5 — `src/data/index.ts`, `src/data/schemas/defs/careers.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/crewMorale.ts`, `src/engine/ops.ts`, +3 fichiers
 
 ---
 
@@ -585,7 +589,8 @@ Ces Carrières sont les Carrières **existantes** (LDB + Côtiers), réinterpré
 
 **Sources RAW** : `MDG 07 l.263-311`
 **Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg)
-**Implémente** : `src/data/careers.json` (colonne `Norse` de `rand`, 31 carrières) — `src/engine/creation.ts` (`rollCareer` lit la colonne via `SpeciesData.refCareer = 'Norse'`)
+**Implémente :** (non implémenté)
+- cité par tests seulement : `src/engine/creation-mdg.test.ts`
 
 ---
 
@@ -607,7 +612,8 @@ Trois origines humaines norses (`MDG 07 l.228-246`) :
 
 **Sources RAW** : `MDG 07 l.222-260`
 **Voir aussi** : [Carrières norses (MDG)](#carrières-norses-mdg) · [Trait Marque de Khorne (MDG)](#trait-marque-de-khorne-mdg)
-**Implémente** : `src/data/species.json` (3 origines humaines norses + `nains-norse` : compétences/talents/langue Norse, `refCareer: 'Norse'`) / `src/engine/character.ts` (création)
+**Implémente :** (non implémenté)
+- cité par tests seulement : `src/engine/creation-mdg.test.ts`, `src/engine/traits/parity.test.ts`
 
 ---
 
@@ -623,7 +629,8 @@ De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient 
 
 **Sources RAW** : `MDG 07 l.248-252`
 **Voir aussi** : [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg) · [`talents.md`](talents.md) (Frénésie)
-**Implémente** : `src/data/traits.json` (`marque-de-khorne` — desc verbatim). Effets mécaniques (Frénésie/Animosité/interdits/achats hors carrière) (non implémenté — même canal que `marque-de-tzeentch`)
+**Implémente :** (non implémenté)
+- cité par tests seulement : `src/engine/traits/parity.test.ts`
 
 ## Bilan
 

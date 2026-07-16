@@ -627,11 +627,11 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'water-scarcity',
     label: 'Pénurie d’eau',
-    ref: 'LDB 18 l.420',
+    ref: 'LDB 18 l.340',
     group: 'Voyage',
     kind: 'flag',
     default: false,
-    hint: 'L’eau est réputée abondante au Reikland (rivières, puits, auberges) → aucune Soif par défaut. Activer pour un contexte À SEC (siège, désert, souterrain prolongé) : chaque jour sans eau impose un Test de Résistance (de plus en plus dur) — 1ᵉʳ échec −10 Int/FM/Soc, puis −10 le reste + 1d10 Blessures (LDB 18 l.420). En mer, la Soif suit automatiquement les tonneaux du navire, sans cette règle.',
+    hint: 'L’eau est réputée abondante au Reikland (rivières, puits, auberges) → aucune Soif par défaut. Activer pour un contexte À SEC (siège, désert, souterrain prolongé) : chaque jour sans eau impose un Test de Résistance (de plus en plus dur) — 1ᵉʳ échec −10 Int/FM/Soc, puis −10 le reste + 1d10 Blessures (LDB 18 l.340). En mer, la Soif suit automatiquement les tonneaux du navire, sans cette règle.',
   },
   {
     id: 'sea-water-litres-mediane',

@@ -13,13 +13,13 @@
  * repos de plusieurs jours (chaque nuit est reconstruite APRÈS que la précédente ait été validée).
  *
  * RAW :
- *  - Récupération (LDB 18 l.380) : Résistance +20 après « une bonne nuit de sommeil » → DR+BE PB,
+ *  - Récupération (LDB 18 l.296) : Résistance +20 après « une bonne nuit de sommeil » → DR+BE PB,
  *    + BE/jour inconditionnel — le canon ne module PAS la récupération par la qualité du lit ;
  *  - Prix (LDB ch.66 p.304) : chambre commune 10 sc/pers · privée 10 pa pour 2 (la grande pour 4
  *    coûte le double → regrouper par paires est équivalent, coût auto) · repas 1 pa ; PIÈTRE = ½
  *    prix, et la nourriture piètre expose à la Courante galopante (10 %, ch.66 l.51) ;
- *  - Dehors : Exposition (LDB 18 l.408-415 — engine/exposure) selon la MÉTÉO de la scène ;
- *  - Faim (LDB 18 l.417-422) : un héros sans pitance ne récupère pas (engine/provisions).
+ *  - Dehors : Exposition (LDB 18 l.327-334 — engine/exposure) selon la MÉTÉO de la scène ;
+ *  - Faim (LDB 18 l.337-343) : un héros sans pitance ne récupère pas (engine/provisions).
  */
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';

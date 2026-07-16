@@ -3,7 +3,7 @@ import type { MerchantArchetypeDef } from '../types';
 /**
  * Tavernière (LDB 59 « Faire son marché » / p.302 prix d'auberge) : nourriture, boisson et
  * hébergement. Les RATIONS sont GARANTIES en stock (`curated`) — c'est l'avitaillement du
- * système de voyage (#T2) : sans rations, la Faim (LDB 18 l.417-422) frappe en route.
+ * système de voyage (#T2) : sans rations, la Faim (LDB 18 l.337-343) frappe en route.
  */
 export const merchantArchetype: MerchantArchetypeDef = {
   name: 'taverniere',

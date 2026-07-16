@@ -144,14 +144,14 @@ registerCombatHook({
 // → étape de cascade collectée par `collectRoundEndTestSteps`. La géométrie d'arène est calculée par
 // `recoveryGeometry` (triggeredEffects).
 
-/** Aux Armes (l.2449) : un combattant à 0 PB porteur de l'État Hémorragique (et pas déjà Inconscient / hors
+/** Aux Armes (AA 07 l.5) : un combattant à 0 PB porteur de l'État Hémorragique (et pas déjà Inconscient / hors
  *  d'action) doit tester sa Résistance chaque Round sous peine de tomber Inconscient. Prédicat PARTAGÉ par le
  *  hook (ENNEMIS/auto) et le collecteur de cascade (HÉROS). `isOutOfAction` exclut déjà mort/Inconscient/
  *  figurant en Mort Subite. PUR. */
 function aaBleedUnconsciousDue(c: Combatant): boolean {
   return !isOutOfAction(c) && c.wounds.current <= 0 && stacks(c, COND.hemorragique) > 0;
 }
-/** Conséquence du Test de Résistance AA « perte de sang » (l.2449) : échec → Inconscient ; succès → tient bon.
+/** Conséquence du Test de Résistance AA « perte de sang » (AA 07 l.5) : échec → Inconscient ; succès → tient bon.
  *  Partagée par le hook (ENNEMIS/auto) et l'applier de cascade (HÉROS). Renvoie la ligne d'échec, ou `null`. */
 function aaBleedUnconsciousApply(c: Combatant, success: boolean): string | null {
   if (success) return null; // reste conscient (À Terre)
@@ -168,7 +168,7 @@ registerCombatHook({
   run: ({ battle, sink }) => { for (const c of battle.combatants) tickDeath(c).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
-  // Aux Armes (l.2449) : dans le système ALTERNATIF de Blessures, on ne tombe PAS Inconscient d'office à
+  // Aux Armes (AA 07 l.5) : dans le système ALTERNATIF de Blessures, on ne tombe PAS Inconscient d'office à
   // 0 PB (le décompte LDB de `tick-death` est neutralisé) — c'est l'État Hémorragique qui l'impose : « à
   // la fin de chaque Tour [modélisé au franchissement de Round, comme tout l'entretien de mort], vous devez
   // réussir un Test de Résistance Intermédiaire (+0) sous peine de subir immédiatement l'État Inconscient ».
@@ -226,7 +226,7 @@ registerCombatHook({
   run: ({ battle, sink }) => { for (const c of battle.combatants) tickFingerLossEscalation(c, battleRng()).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
-  // Noyade et Suffocation (LDB 18 l.424-425) : MACHINERIE environnementale UNIVERSELLE — la règle de mort
+  // Noyade et Suffocation (LDB 18 l.345-346) : MACHINERIE environnementale UNIVERSELLE — la règle de mort
   // par manque d'air s'applique à TOUT combattant portant le drapeau d'effet `suffocates` (posé par les
   // sorts d'étouffement / l'environnement — la DONNÉE éditable), `noBreath` immunise. Ne NOMME aucune
   // entité éditable (trait/talent/État) ; comme `tick-death`/`tick-durations`, c'est une règle de l'arène.
@@ -317,7 +317,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   //    (`simpleTriggeredTestStep`). Les DÉGÂTS périodiques ont DÉJÀ été appliqués par le dispatcher (hook
   //    `end-of-round`) ; seul le TEST passe en cascade. En TÊTE (physiologique). Plus de `poisonResist` par-nom.
   steps.push(...collectRoundEndTestSteps(get, c));
-  // 0bis) Perte de sang AA (l.2449) : en mode Aux Armes, à 0 PB avec l'État Hémorragique, Test de Résistance
+  // 0bis) Perte de sang AA (AA 07 l.5) : en mode Aux Armes, à 0 PB avec l'État Hémorragique, Test de Résistance
   //    Intermédiaire chaque Round ou Inconscience — étape INFLUENÇABLE (le hook `aa-bleed-unconscious` saute
   //    le héros manuel). Le résolveur générique de cascade tire le Test sur `target` ; l'applier applique.
   if (rule('combat-aa-blessures') === 'aa' && aaBleedUnconsciousDue(c)) {

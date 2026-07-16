@@ -433,7 +433,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     mountTargetCancel: () => set({ pendingMountTarget: null }),
 
-    // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15-Dépl l.84-89) ──
+    // ── Désengagement (héros Engagé qui veut quitter le combat, LDB 15 l.43-49) ──
     battleDisengage: () => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
@@ -451,7 +451,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const foes = (mover.engagedWith ?? [])
         .map((id) => inBattleId(battle, id))
         .filter((c): c is Combatant => !!c);
-      // « Ramener votre Avantage à 0 » (LDB 15-Dépl l.87) ; en mode « Avantage de groupe » c'est la
+      // « Ramener votre Avantage à 0 » (LDB 15 l.47) ; en mode « Avantage de groupe » c'est la
       // Retraite stratégique (AA l.4139) : dépense FIXE de 2 Avantages de la réserve du camp (1 avec
       // Impitoyable AA l.4418), débitée par `campSpend`. Mode LDB : Impitoyable (LDB 10 l.591) GARDE
       // niveau Avantages au lieu de tomber à 0.
@@ -517,7 +517,7 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // « Fuir » (LDB 15-Dépl l.98-109) : l'adversaire gagne +1 Avantage + une attaque gratuite dans le
+    // « Fuir » (LDB 15 l.59-68) : l'adversaire gagne +1 Avantage + une attaque gratuite dans le
     // dos (+20, SUBIE) ; si elle touche, +1 Avantage de plus et un Test de Calme INFLUENÇABLE (flux
     // `flee`, calqué sur `approach`) → État Brisé sur un échec. La libération de TOUS les Engagements +
     // le budget de Course sont DIFFÉRÉS au confirm du Calme (`fleeConfirm`) quand il y a Test ; immédiats
@@ -534,8 +534,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const res = resolveBackstabAttack(foe, mover, battleRng()); // coup dans le dos SUBI (montré INLINE)
       log.push(ev('flee', t('cs.fleeBackstab', { name: mover.name, foe: foe.name, log: res.log }), mover.id, foe.id));
       if (res.hit && res.woundsLost) {
-        loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 15 l.40 / 18 l.28)
-        campGain(get, foe); // touché → +1 Avantage de plus (l.107)
+        loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 14 l.219 / 18 l.15)
+        campGain(get, foe); // touché → +1 Avantage de plus (LDB 15 l.66)
         // Test de Calme DIFFÉRÉ en jet INFLUENÇABLE : on n'applique NI le Brisé NI la libération/Course
         // ici — `fleeConfirm` le fait après le jet. Phase 'fuir' ouverte avec le coup dans le dos SUBI.
         set({ battle: { ...battle, log }, pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: true, woundsLost: res.woundsLost, detail: res.attackerDetail, calme: null } } });
@@ -553,7 +553,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const foes = (mover.engagedWith ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
       for (const f of foes) disengageFrom(mover, f);
       // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
-      // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
+      // (LDB 15 l.68) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
       // Fuite ! (LDB 10) : Mouvement +1 quand on fuit.
       set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, moveEnv(battle, mover)), log } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -577,7 +577,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const foe = inBattleId(battle, pd.foeId);
       if (!mover || !foe) return set({ pendingDisengage: null, pendingCascade: null });
       const calme = pd.fuir.calme;
-      const broken = calme.success ? 0 : 1 + Math.max(0, -calme.sl); // échec → 1 + DR négatif (LDB 15-Dépl l.107)
+      const broken = calme.success ? 0 : 1 + Math.max(0, -calme.sl); // échec → 1 + DR négatif (LDB 15 l.66)
       const log = [...battle.log];
       if (broken) {
         addCondition(mover, COND.brise, broken);
@@ -1105,7 +1105,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingManeuver: { ...pm, avantageSpent: clamped } });
     },
 
-    // ── Course (LDB 15-Déplacement l.79-82) : utilise l'Action + un Test d'Athlétisme (+20) → déplacement
+    // ── Course (LDB 15 l.41) : utilise l'Action + un Test d'Athlétisme (+20) → déplacement
     //    étendu (Marche + Course + DR) vers la destination cliquée dans la zone de Course. « Un jet = une
     //    modale » : le Test passe par pendingRun. ──
     battleRun: (dest?: Pt) => {
@@ -1401,8 +1401,8 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     wardCancel: () => set({ pendingWard: null }), // renonce avant le jet : aucune trace, re-cliquable
 
-    // ── Se relever d'À Terre (LDB 16-États l.37) : utilise le Mouvement pour se mettre debout. Impossible
-    //    tant qu'on n'a pas regagné ≥1 PB (LDB 18 l.28 : à 0 PB on reste au sol). Ne consomme PAS l'Action. ──
+    // ── Se relever d'À Terre (LDB 16 l.35) : utilise le Mouvement pour se mettre debout. Impossible
+    //    tant qu'on n'a pas regagné ≥1 PB (LDB 18 l.15 : à 0 PB on reste au sol). Ne consomme PAS l'Action. ──
     battleStandUp: () => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
@@ -1719,7 +1719,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle } });
     },
 
-    // ── Rechargement = Test étendu de Projectiles (LDB 63-Armures l.28-29 + 12-Tests l.199-211) — par modale ──
+    // ── Rechargement = Test étendu de Projectiles (LDB 62 l.335 + LDB 12 l.170-174) — par modale ──
     battleReload: () => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
@@ -2414,7 +2414,7 @@ export function createCombatSlice(get: Get, set: Set) {
           meleeThisRound: [],
           roundsAtZero: 0, // l'horloge de mort lente repart à neuf
           soinRencontreUtilise: false, // nouvelle rencontre → droit à un soin de Blessures (LDB 09 l.233)
-          woundDressed: false, // « pansé pendant CE combat » repart à zéro (anti-Infection, LDB 18 l.382)
+          woundDressed: false, // « pansé pendant CE combat » repart à zéro (anti-Infection, LDB 18 l.298)
           tookCriticalThisFight: false, // critique « de ce combat » : repart à zéro
           wounds: { ...h.wounds },
         } as Combatant;
@@ -2618,8 +2618,8 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    // ── Guérison (LDB 09-Compétences l.226-243) — soin de Blessures / arrêt d'Hémorragie ──
-    // Variante AA (Aux Armes 07 l.9) : retirer un État Hémorragique passe par un Test de Guérison
+    // ── Guérison (LDB 09 l.254-269) — soin de Blessures / arrêt d'Hémorragie ──
+    // Variante AA (AA 07 l.9) : retirer un État Hémorragique passe par un Test de Guérison
     // Accessible (+20) au lieu d'Intermédiaire (+0) — le soin de Blessures reste Intermédiaire dans
     // les deux versions. Gaté par la règle optionnelle `combat-aa-blessures` (policy.ts).
 

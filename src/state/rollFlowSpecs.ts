@@ -800,7 +800,7 @@ export const FLOWS = {
   }),
 
   /**
-   * Désengagement — Test opposé d'Esquive (LDB 15-Dépl l.84-109). Le JET INITIAL reste métier
+   * Désengagement — Test opposé d'Esquive (LDB 15 l.43-68). Le JET INITIAL reste métier
    * (`disengageRoll` : transition de phase choice → esquive) ; le jet du foe (`p.atk`) reste figé.
    * Issue BINAIRE (success/tie/fail) → pas de choix du dé.
    */
@@ -810,7 +810,7 @@ export const FLOWS = {
     actorId: (p) => p.moverId,
     rollActor: (actor) => rollMeleeDefender(actor, 'esquive', battleRng()), // Esquive du mover (= « attaquant »)
     actorTR: (p) => p.def, putActorTR: (tr) => ({ def: tr }),
-    foeTR: (p) => p.atk, // jet du foe FIGÉ (LDB 15-Dépl l.84-109)
+    foeTR: (p) => p.atk, // jet du foe FIGÉ (LDB 15 l.43-68)
   }),
 
   /**
@@ -842,7 +842,7 @@ export const FLOWS = {
     foeTR: (p) => p.atk,
   }),
 
-  /** « Fuir » — Test de Calme du fuyard après le coup dans le dos qui touche (LDB 15-Dépl l.105-107) :
+  /** « Fuir » — Test de Calme du fuyard après le coup dans le dos qui touche (LDB 15 l.66) :
    *  échec → État Brisé (1 + DR négatif). Test SEC de Calme Intermédiaire (+0), INFLUENÇABLE comme
    *  `approach` (même patron) ; porté par `pendingDisengage.fuir.calme` (le coup dans le dos reste SUBI,
    *  montré INLINE). `fleeConfirm` applique le Brisé et complète la fuite (libération + Course). */

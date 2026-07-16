@@ -1,5 +1,5 @@
 /**
- * Exposition (LDB 18-Traumatisme l.326-334) — un environnement difficile/extrême (froid OU chaleur).
+ * Exposition (LDB 18 l.327-334) — un environnement difficile/extrême (froid OU chaleur).
  * « Après 4 heures passées dans un environnement difficile – comme lorsque les températures sont
  * négatives, dans un désert brûlant ou une tempête, vous devez effectuer un Test de Résistance.
  * Lorsque vous vous retrouvez dans un environnement aux conditions extrêmes, ce Test doit être

@@ -1,7 +1,7 @@
 /**
- * Résolution des Blessures critiques — Livre de base, « Traumatisme » (18-Traumatisme.md).
+ * Résolution des Blessures critiques — Livre de base, « Traumatisme » (LDB 18).
  * Jet 1d100 sur la table de la localisation ; -20 si l'overkill dépasse le Bonus d'Endurance
- * (l.30, min 01) ; PB perdus en ignorant BE+PA ; États appliqués + Test de Résistance auto-résolu.
+ * (LDB 18 l.16, min 01) ; PB perdus en ignorant BE+PA ; États appliqués + Test de Résistance auto-résolu.
  */
 import { d100, d10, RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
@@ -16,12 +16,12 @@ import { resolveAACritical } from './aaCritical';
 import { applyOps, type GameOp } from './ops';
 
 /**
- * Séquelles PERMANENTES d'une amputation (LDB 18 l.335-370) — distinctes de la plaie chirurgicale : elles
+ * Séquelles PERMANENTES d'une amputation (LDB 18 l.233-286) — distinctes de la plaie chirurgicale : elles
  * survivent à la Chirurgie (le membre reste absent). Instanciées depuis les `sequels` (ids de fiche
  * `traumas.json`) DÉCLARÉS STRUCTURELLEMENT sur le critique (`entry.amputation.sequels`) — plus aucune
  * lecture du texte. La latéralité (brasG/brasD, jambeG/jambeD) provient de la `location` réelle du coup —
  * hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD). Les fiches « par comptage »
- * (doigts l.341, dents l.338) reçoivent leur effet/comptage variable ICI (cumulé ensuite par
+ * (doigts l.251, dents l.247) reçoivent leur effet/comptage variable ICI (cumulé ensuite par
  * `consolidateAmputations`) ; la perte du SECOND œil/oreille est agrégée par `escalateSensoryLoss`.
  */
 export function permanentAmputations(sequels: string[], location: HitLocation, rng: RNG = defaultRNG, toeCount = 1): Trauma[] {
@@ -43,7 +43,7 @@ export function permanentAmputations(sequels: string[], location: HitLocation, r
     } else if (id === 'dents-perdues') {
       const n = location === 'tete' ? d10(rng) : 1; // « 1d10 dents » (la perte structurelle est multiple ; sinon 1).
       t.count = n;
-      const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (l.338) : 1 dent = 0, 3 dents = −1, 4 = −2…
+      const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (LDB 18 l.247) : 1 dent = 0, 3 dents = −1, 4 = −2…
       if (soc < 0) t.ops = [{ op: 'charMod', char: 'sociabilite', mod: soc }];
     }
     return t;
@@ -56,7 +56,7 @@ export function critResistValue(c: Combatant): number {
 }
 
 /**
- * Résout une Amputation (LDB 18 l.328-333) — SOURCE UNIQUE partagée par `rollCritical` (LDB), `resolveAACritical`
+ * Résout une Amputation (LDB 18 l.237) — SOURCE UNIQUE partagée par `rollCritical` (LDB), `resolveAACritical`
  * (Aux Armes) et la résolution post-rencontre. Renvoie l'effet immédiat (`ops` : États À Terre/Sonné/Inconscient)
  * et les `traumas` (plaie chirurgicale `needsSurgery` + séquelles permanentes). RNG consommé :
  *  - `loss.difficulty` présent → 1 Test SÉPARÉ (gate) D'ABORD : sa RÉUSSITE annule TOUT (ni séquelle, ni plaie, ni
@@ -174,7 +174,7 @@ export function rollCritical(
   // `twice` (Sauvagerie) reste au chemin LDB (l'Atout ne coexiste pas avec la variante AA).
   if (!twice && rule('combat-aa-blessures') === 'aa') return resolveAACritical(target, location, rng, overkill);
   const be = bonus(effectiveChar(target, 'endurance'));
-  const reduction = overkill > be ? 20 : 0; // l.30 : overkill > BE → -20 (résultat moins sévère)
+  const reduction = overkill > be ? 20 : 0; // LDB 18 l.16 : overkill > BE → -20 (résultat moins sévère)
   const raw = twice ? Math.max(d100(rng), d100(rng)) : d100(rng);
   const roll = Math.max(1, raw - reduction);
   const entry = findTableEntry(CRITICAL_TABLES[location], roll);
@@ -196,7 +196,7 @@ export function rollCritical(
   // portent leur `kind` → on instancie à la localisation du coup.
   const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
-  // Amputation (LDB 18 l.328-333) : DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`, plus de regex sur le texte).
+  // Amputation (LDB 18 l.237) : DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`, plus de regex sur le texte).
   // Résolue par `resolveAmputation` (SOURCE UNIQUE LDB/AA/post-rencontre). Placée en DERNIER (rien ne tire
   // après) pour ne décaler le flux RNG que des critiques d'amputation. `timing: 'postEncounter'` (« Coupure à
   // l'orteil », l.171 : « Une fois la rencontre terminée… ») → aucun jet ICI : marqueur `pendingAmputation`

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { resolveRun } from './movement';
 import { makeRNG } from './dice';
 
-describe('resolveRun — Course (Athlétisme +20, LDB 15-Déplacement l.79-82)', () => {
+describe('resolveRun — Course (Athlétisme +20, LDB 15 l.41)', () => {
   it('succès (Athlétisme élevé +20) → bonus de Course ≥ 2×Mouvement (DR ≥ 0)', () => {
     const r = resolveRun(90, 4, makeRNG(3));
     expect(r.success).toBe(true);

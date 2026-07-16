@@ -7,7 +7,7 @@ import { testScene } from '../scenes/test-fixture';
 import { hasCondition } from '../engine/conditions';
 import type { AttackResult } from '../engine/combat';
 
-describe('0 PB → État À Terre, MÊME sur overkill/Critique (LDB 18-Traumatisme l.28)', () => {
+describe('0 PB → État À Terre, MÊME sur overkill/Critique (LDB 18 l.14)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
