@@ -2555,6 +2555,7 @@ export function createCombatSlice(get: Get, set: Set) {
         over: null,
         onVictory: onVictory ?? enc.onVictory,
         victoryCondition: enc.victoryCondition,
+        banRanged: enc.banRanged,
         // Pièges/hasards authorés de la scène → zones de bataille PERMANENTES (même runtime que les sorts).
         zones: sceneZonesToBattle(scene.effectZones),
         // Réserves d'Avantage par camp (AA 11 l.53-65) : seulement en mode « Avantage de groupe ».

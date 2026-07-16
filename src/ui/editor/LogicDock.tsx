@@ -501,6 +501,7 @@ function EncountersTab({
                   else if (t === 'surviveRounds') upd({ victoryCondition: { type: 'surviveRounds', rounds: 3 } });
                   else if (t === 'reachZone') upd({ victoryCondition: { type: 'reachZone', rect: { x: 0, y: 0, w: 1, h: 1 } } });
                   else if (t === 'woundsThreshold') upd({ victoryCondition: { type: 'woundsThreshold', targetId: members[0]?.entityId ?? '', belowPercent: 50 } });
+                  else if (t === 'firstBlood') upd({ victoryCondition: { type: 'firstBlood', threshold: 3 } });
                 }}
               >
                 <option value="allEnemiesDead">Tous les ennemis hors d'action</option>
@@ -508,6 +509,7 @@ function EncountersTab({
                 <option value="surviveRounds">Survivre N Rounds</option>
                 <option value="reachZone">Atteindre une zone</option>
                 <option value="woundsThreshold">Reddition à seuil de dommage</option>
+                <option value="firstBlood">Duel judiciaire — premier sang</option>
               </select>
             </label>
           </div>
@@ -588,6 +590,27 @@ function EncountersTab({
               </div>
             );
           })()}
+          {enc.victoryCondition?.type === 'firstBlood' && (() => {
+            const vc = enc.victoryCondition!;
+            return (
+              <div className="enemy-mount">
+                <label title="Le premier coup qui cause une perte de plus de ce nombre de Blessures met fin au duel (NADAJ 06 l.175-177). Défaut 3 Blessures (seule valeur chiffrée par le RAW).">
+                  Seuil{' '}
+                  <input
+                    type="number" min={1} value={vc.threshold ?? 3}
+                    onChange={(e) => upd({ victoryCondition: { type: 'firstBlood', threshold: Math.max(1, Number(e.target.value)) } })}
+                  />
+                  {' '}Blessures en un coup
+                </label>
+              </div>
+            );
+          })()}
+          <div className="enemy-mount">
+            <label title="Duel judiciaire (NADAJ 06 l.181) : « la plupart des lois locales interdisent de faire appel à des projectiles ». Dérogeable (variante locale) — champ indépendant de l'objectif de victoire.">
+              <input type="checkbox" checked={!!enc.banRanged} onChange={(e) => upd({ banRanged: e.target.checked || undefined })} />{' '}
+              Armes à distance interdites
+            </label>
+          </div>
           <div className="mini-title">À la victoire (récompenses : PX, butin, flag…)</div>
           <FlowEditor flow={enc.onVictory ?? EMPTY_FLOW} onChange={(flow) => upd({ onVictory: flow })} ctx={ctx} />
         </div>

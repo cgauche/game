@@ -302,7 +302,7 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
  *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
  *  proposer une attaque qui se solderait par un log silencieux. Mêlée / pas d'arme à distance → `null`
  *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
-export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min'; detail: string; need?: string } | null {
+export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie'; detail: string; need?: string } | null {
   if (active.kind !== 'hero') return null;
   const b = get().battle;
   // Arme effectivement testée + distance PAR CETTE ARME (#BUG-A, poule-et-œuf) : choix EXPLICITE (poste
@@ -321,6 +321,9 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
       return { reason: 'sous-effectif', detail: `${active.name} : Équipe trop réduite pour servir ${w.name}.` };
   }
   if (w.type !== 'ranged') return null;
+  // Restriction d'armes à distance de la rencontre (#471, NADAJ 06 l.181) — même refus AVANT tout autre
+  // gate de ressource (Recharge/munition), pour ne pas dire « recharger » à une arme de toute façon bannie.
+  if (b?.banRanged) return { reason: 'armeBannie', detail: `${w.name} : les armes à distance sont interdites (duel judiciaire).` };
   if ((w.reload ?? 0) > 0 && !active.loaded) return { reason: 'unloaded', detail: `${active.name} doit recharger ${w.name}.` };
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
   // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
@@ -607,6 +610,10 @@ export function resolveAttack(
   const battle = get().battle!;
   const mpt = sceneMetresPerTile(get().scene);
   const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants); // arme choisie + munition + sous-effectif du poste servi
+  // Restriction d'armes à distance de la rencontre (#471, `EncounterDef.banRanged`, NADAJ 06 l.181) —
+  // convergence UNIQUE joueur ET IA (tout tir passe par `resolveAttack`) : refus AVANT le jet, même
+  // chemin de refus silencieux que la LdV bloquée ci-dessous (`blocked`).
+  if (battle.banRanged && weapon.type === 'ranged') return null;
   // Distance de COMBAT PAR L'ARME EFFECTIVEMENT tirée (#BUG-A, suite LDB 14) : géométrie de la MONTURE
   // (cavalier/cible monté — sinon une attaque de charge qui rapproche la MONTURE au contact serait jugée
   // hors d'allonge sur le cavalier 1×1 → `null`, cascade d'attaque ORPHELINE) OU de la COQUE SEULEMENT si
@@ -1748,6 +1755,7 @@ export function applyAttackResult(
     const currentBefore = target.wounds.current;
     const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
+    resolveFirstBlood(target, battle.victoryCondition, currentBefore - target.wounds.current, critLog); // #471
     const loc = res.location ?? 'corps';
     // Réouverture d'une plaie critique (LDB 18 / AA 07) : un nouveau Dégât à CETTE Localisation octroie ses
     // États Hémorragique (la plaie qui l'a posée est stampée APRÈS ce coup, elle ne se déclenche donc pas
@@ -4564,6 +4572,12 @@ function victoryConditionMet(vc: VictoryCondition | undefined, battle: BattleSta
       if (!target?.wounds || target.wounds.max <= 0) return false;
       return target.wounds.current / target.wounds.max < vc.belowPercent / 100;
     }
+    case 'firstBlood':
+      // Les DEUX fins du RAW restent actives en parallèle (NADAJ 06 l.175-177) : premier sang — marqué
+      // PAR-COUP par `resolveFirstBlood` (applyAttackResult, au moment où les Blessures d'UN coup sont
+      // connues), sweep déclaratif ici — OU incapacité standard à 0 Blessure (`!enemiesAlive`, MÊME
+      // prédicat que `allEnemiesDead`, déjà porté par `isOutOfAction`).
+      return !enemiesAlive || battle.combatants.some((c) => c.exitReason === 'firstBlood');
   }
 }
 
@@ -4580,6 +4594,21 @@ function resolveSurrenderThreshold(battle: BattleState, vc: VictoryCondition | u
   target.outOfRencontre = true;
   target.exitReason = 'reddition'; // #237 : pavillon amené, lu « rendu » (endState)
   return [tr('cf.surrender', { name: target.name })];
+}
+
+/** DUEL JUDICIAIRE — premier sang (#471, NADAJ 06 l.175-177) : « le premier sang est la première
+ *  attaque qui cause une perte de plus de [threshold] Blessures » — testé PAR-COUP (`lostThisHit` =
+ *  la perte RÉELLE infligée par CE coup, pas un seuil cumulatif comme `woundsThreshold`) au point où
+ *  `applyAttackResult` connaît les Blessures du coup. La cible TOUCHÉE est la partie vaincue : sortie
+ *  par le MÊME mécanisme que la reddition (`outOfRencontre`/`exitReason`, #215), lue « hors-combat »
+ *  (endState). No-op si la cible est déjà sortie/morte, ou hors `firstBlood`. */
+function resolveFirstBlood(target: Combatant, vc: VictoryCondition | undefined, lostThisHit: number, sink: string[]): void {
+  if (vc?.type !== 'firstBlood' || target.outOfRencontre || target.dead) return;
+  const threshold = vc.threshold ?? 3;
+  if (lostThisHit <= threshold) return;
+  target.outOfRencontre = true;
+  target.exitReason = 'firstBlood';
+  sink.push(tr('cf.firstBlood', { name: target.name }));
 }
 
 export function checkBattleOver(get: Get, set: SetFn): boolean {

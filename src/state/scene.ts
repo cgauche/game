@@ -480,6 +480,13 @@ export interface EncounterDef {
    *  (fortification/couvert léger/hauteur → +1 ; `heavy` : couvert lourd/position décisive type pont
    *  → +2) → crédite sa réserve d'Avantage en mode groupe. Absent = pas de circonstance. */
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
+  /** Restriction d'armes à DISTANCE (#471) — Duel judiciaire (NADAJ 06 l.181) : « les parties concernées
+   *  […] ont normalement le libre choix des armes bien que la plupart des lois locales interdisent de
+   *  faire appel à des projectiles. » DÉROGEABLE (« la plupart », pas toutes) : champ SÉPARÉ de
+   *  `victoryCondition` (un duel judiciaire n'impose pas forcément la restriction, une variante locale
+   *  peut l'appliquer à une rencontre qui n'est pas un `firstBlood`). Absent/false = armes à distance
+   *  autorisées (défaut historique). Gate consommé par `resolveAttack`/`firedAttackBlock` (joueur ET IA). */
+  banRanged?: boolean;
 }
 
 /** Une COUCHE d'empilement de la scène : son index discret `z` (0 = couche de base) — identité
@@ -796,13 +803,21 @@ export function structureIsDown(scene: Pick<Scene, 'flags'>, seg: WallSeg): bool
  *  STABLE d'une entité de scène (`SceneEntity.id` = `Combatant.id` au spawn, identité unifiée).
  *  Le RAW ne chiffre AUCUN seuil de reddition (silence confirmé) ; seul précédent chiffré, la
  *  reddition d'un monstre marin à mi-Blessures (MDG 15 l.143, l.166-168). `belowPercent` reste
- *  une valeur ÉDITABLE par rencontre, sans seuil RAW imposé (CLAUDE.md règle 7). */
+ *  une valeur ÉDITABLE par rencontre, sans seuil RAW imposé (CLAUDE.md règle 7).
+ *  `firstBlood` (#471) : DUEL JUDICIAIRE — « le premier sang est la première attaque qui cause une
+ *  perte de plus de 3 Blessures […] ; un adversaire est incapable de continuer lorsqu'il est réduit
+ *  à 0 Blessure » (NADAJ 06 l.175-177) — les DEUX fins restent actives en parallèle, la seconde étant
+ *  la fin standard (0 Blessure, `isOutOfAction`) déjà couverte hors `VictoryCondition`. `threshold`
+ *  reste ÉDITABLE (défaut 3, seule valeur chiffrée par le RAW) — sévérité de la charge, CLAUDE.md
+ *  règle 7. Testé PAR-COUP (`resolveFirstBlood`, combatFlow.ts) — pas un seuil cumulatif comme
+ *  `woundsThreshold`. */
 export type VictoryCondition =
   | { type: 'allEnemiesDead' }
   | { type: 'destroyStructure'; edge: { x: number; y: number; side: WallSide; z?: number } }
   | { type: 'surviveRounds'; rounds: number }
   | { type: 'reachZone'; rect: { x: number; y: number; w: number; h: number }; camp?: 'party' | 'enemies' }
-  | { type: 'woundsThreshold'; targetId: string; belowPercent: number };
+  | { type: 'woundsThreshold'; targetId: string; belowPercent: number }
+  | { type: 'firstBlood'; threshold?: number };
 
 /** Le segment portant une STRUCTURE sur l'arête (x,y,side,z), ou undefined. */
 export function structureAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {

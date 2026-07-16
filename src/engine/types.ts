@@ -1320,11 +1320,12 @@ export interface Combatant {
   important?: boolean;
   /** « Meurs un autre jour » (Destin) : éjecté de la rencontre — vivant mais hors de combat. */
   outOfRencontre?: boolean;
-  /** MOTIF de sortie de rencontre (#237/#215), pose le langage visuel de fin : `reddition` (seuil de
-   *  dommage franchi), `prise` (coque amenée à l'abordage) → lus « rendu » (pavillon amené) ;
-   *  `destin` (Meurs un autre jour), `naufrage` (passé par-dessus bord) → lus « hors-combat ».
-   *  Absent = sortie générique (hors-combat). Seul champ distinguant `rendu` de `hors-combat`. */
-  exitReason?: 'reddition' | 'prise' | 'destin' | 'naufrage';
+  /** MOTIF de sortie de rencontre (#237/#215/#471), pose le langage visuel de fin : `reddition` (seuil
+   *  de dommage franchi), `prise` (coque amenée à l'abordage) → lus « rendu » (pavillon amené) ;
+   *  `destin` (Meurs un autre jour), `naufrage` (passé par-dessus bord), `firstBlood` (Duel judiciaire,
+   *  premier sang, NADAJ 06 l.175-177) → lus « hors-combat ». Absent = sortie générique (hors-combat).
+   *  Seul champ distinguant `rendu` de `hors-combat`. */
+  exitReason?: 'reddition' | 'prise' | 'destin' | 'naufrage' | 'firstBlood';
   /** Combattant INVOQUÉ par un Sort (champ `SpellSpec.summon` — Nécromancie, Hurlement du loup,
    *  Manifestation de démon…) : `byId` = le lanceur ; `expiresAtRound` = la créature se dissipe au
    *  franchissement de Round une fois ce numéro dépassé ; `despawnIfSummonerDown` = elle s'effondre

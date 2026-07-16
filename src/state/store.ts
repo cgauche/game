@@ -176,6 +176,9 @@ export interface BattleState {
   onVictory?: Flow;
   /** Objectif de victoire authorable (#197). Absent = `allEnemiesDead` (défaut historique, `checkBattleOver`). */
   victoryCondition?: VictoryCondition;
+  /** Restriction d'armes à distance de la rencontre (#471, `EncounterDef.banRanged`) — copiée au
+   *  démarrage du combat, lue par `resolveAttack`/`firedAttackBlock`. Absent/false = autorisées. */
+  banRanged?: boolean;
   /** Zones persistantes (L11 — généralise l'ancienne fumée) : fumée du Souffle (blocksLoS),
    *  Mur de feu (onCross), Grands feux d'U'Zhul (perRound)… TTL décrémenté à chaque frontière
    *  de Round (state/zones.ts). */

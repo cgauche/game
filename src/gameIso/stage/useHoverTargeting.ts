@@ -45,6 +45,7 @@ function hoverErrText(inv: { reason: string; need?: string }): string {
     : reason === 'noammo' ? (need ? `Pas de munitions (${need})` : 'Pas de munitions')
     : reason === 'sous-effectif' ? 'Équipe trop réduite'
     : reason === 'portee-min' ? 'Cible trop proche — Portée minimale'
+    : reason === 'armeBannie' ? 'Armes à distance interdites (duel judiciaire)'
     : 'hors de portée';
 }
 
