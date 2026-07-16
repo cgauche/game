@@ -111,7 +111,7 @@ test('tableau de BILAN (`| Mécanique | Module | État |`) → jamais scanné co
   withFixture(
     { 'activites.md': '## Implémente\n\n| Mécanique | Module | État |\n|---|---|---|\n| X | — | Non implémenté |\n' },
     { 'engine/foo.ts': FIXTURE_SRC_CITES },
-    ({ rawDir, srcDir }) => {
+    ({ rawDir, srcDir: _srcDir }) => {
       assert.equal(scanDeclarations(rawDir).length, 0)
     },
   )

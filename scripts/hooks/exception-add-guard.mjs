@@ -97,7 +97,7 @@ export function readWrite(input) {
     return { file, before: String(input.old_string ?? ''), after: input.new_string, isWrite: false, exists: true }
   }
   if (typeof input.content === 'string') {
-    let before = ''
+    let before
     let exists = true
     try { before = readFileSync(file, 'utf8') } catch { before = ''; exists = false }
     return { file, before, after: input.content, isWrite: true, exists }

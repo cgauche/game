@@ -28,7 +28,8 @@ export async function checkServer(url = DEFAULT_URL) {
   } catch (e) {
     throw new Error(
       `Serveur de dev injoignable sur ${url} — lancer "npm run dev" dans un autre terminal avant ` +
-      `d'utiliser le kit de recette (le kit s'ATTACHE, il ne démarre rien). Détail : ${e.message}`
+      `d'utiliser le kit de recette (le kit s'ATTACHE, il ne démarre rien). Détail : ${e.message}`,
+      { cause: e }
     );
   }
 }
@@ -76,7 +77,7 @@ export async function launchSession({ chromePath, width = 1600, height = 900, po
     if (m.id && pending.has(m.id)) {
       const { resolve, reject } = pending.get(m.id);
       pending.delete(m.id);
-      m.error ? reject(new Error(m.error.message)) : resolve(m.result);
+      if (m.error) reject(new Error(m.error.message)); else resolve(m.result);
     }
     for (const fn of listeners) fn(m);
   });
