@@ -24,6 +24,14 @@ export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', Part
  *
  * `palette` : couleurs par défaut des `@tokens` de l'art (StoredPalette = hex exact) → rendu
  * sans perte + recoloriage cohérent. Résolue par `tenuePaletteFor` (tenue > classe).
+ * Elle pilote aussi les parts SYSTÈME du pied, que la tenue ne dessine pas (`FOOT`/`CLAWFOOT`
+ * de `resolve.ts`, #426) : `botte` (cuir de la botte — TÊTE de famille : `semelle` et `botteDos`
+ * la suivent) et `griffe` (pied nu griffu). Non déclarés → pied système (botte brune / griffes
+ * sombres). Chaque membre se déclare aussi SEUL (`botteDos` sans `botte`) : la base déclarée est
+ * honorée, son ombre se DÉRIVE, les autres restent système — aucune combinaison partielle n'est
+ * interdite ni silencieuse. MÊME contrat pour la palette d'une RACE (`races/`, empilée sous la
+ * tenue) : c'est la palette PORTÉE entière qui pilote le pied. Cf. `footPalette` et l'empilage
+ * unique `rigStoredPalette` (career.ts) ; garde `parts/shared-parts-palette.test.ts`.
  *
  * `bareFoot` : tenue qui ne chausse pas (corps 'Nu', squelette décharné, pagne du Sanguinaire…) —
  * silhouettes dos/profil substituées (jambe sans botte) restent en chair. SOURCE UNIQUE du

@@ -79,8 +79,8 @@ const hasBackView = (p: PartArt | null | undefined): boolean => typeof p === 'ob
 
 // Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
 // par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
-// de face un bout arrondi, de dos un talon. Botte de cuir neutre (couvre la plupart
-// des tenues). C'est ce qui manquait : les pieds changent enfin selon la direction.
+// de face un bout arrondi, de dos un talon. C'est ce qui manquait : les pieds changent
+// enfin selon la direction.
 // Main (poing) directionnelle, repère os `main` (origine = poignet, +y descend).
 // Le raccord à la manche est GÉOMÉTRIQUE (pivot du poignet à 14, cf. skeletons.ts) :
 // le poing chevauche la fin du bras peint, sans pont de chair rapporté.
@@ -89,17 +89,22 @@ const HAND: PartArt = {
   back: `<ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`,
   profile: `<ellipse cx="0.6" cy="2.6" rx="2.6" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`,
 };
+// Botte SYSTÈME : peinte en JETONS de la famille `botte` (cuir `@botte` + contour `@botteO`,
+// `@semelle`, et `@botteDos`/`@botteDosO` pour le cuir dorsal que l'art assombrit à la main) —
+// une tenue pilote donc la couleur de ses bottes par sa `palette` (`botte`, cf. tenues/types.ts).
+// Défauts (art d'origine) et expansion de la famille : `footPalette` (career.ts), empilée sous la
+// palette portée (espèce ∪ tenue) par `rigStoredPalette` — la SEULE construction de cet empilage.
 const FOOT: PartArt = {
-  front: `<path d="M-3.4 -1 Q-4.4 7 0 8 Q4.4 7 3.4 -1 Z" fill="#3a2614" stroke="#1f1408" stroke-width="0.6"/><path d="M-3.6 6.5 Q0 8.6 3.6 6.5 L3.4 8 Q0 9.4 -3.4 8 Z" fill="#241608"/>`,
-  back: `<path d="M-3.2 -1 Q-3.8 6 0 6.5 Q3.8 6 3.2 -1 Z" fill="#2e1f10" stroke="#1a1208" stroke-width="0.5"/>`,
-  profile: `<path d="M-3 -1 L-3 5 Q-3 7.4 0 7.4 L8.6 7.4 Q10.6 7.4 9.4 4 L5.4 1 Z" fill="#3a2614" stroke="#1f1408" stroke-width="0.6"/><path d="M-3 6.4 L9.6 6.4 L9.8 8 Q4 9 -3 8 Z" fill="#241608"/>`,
+  front: `<path d="M-3.4 -1 Q-4.4 7 0 8 Q4.4 7 3.4 -1 Z" fill="@botte" stroke="@botteO" stroke-width="0.6"/><path d="M-3.6 6.5 Q0 8.6 3.6 6.5 L3.4 8 Q0 9.4 -3.4 8 Z" fill="@semelle"/>`,
+  back: `<path d="M-3.2 -1 Q-3.8 6 0 6.5 Q3.8 6 3.2 -1 Z" fill="@botteDos" stroke="@botteDosO" stroke-width="0.5"/>`,
+  profile: `<path d="M-3 -1 L-3 5 Q-3 7.4 0 7.4 L8.6 7.4 Q10.6 7.4 9.4 4 L5.4 1 Z" fill="@botte" stroke="@botteO" stroke-width="0.6"/><path d="M-3 6.4 L9.6 6.4 L9.8 8 Q4 9 -3 8 Z" fill="@semelle"/>`,
 };
 // Pied NU GRIFFU (espèces nues : squelette/goule/troll…) — chair/os/pelage `@peau` + griffes
-// sombres (au lieu de la botte de cuir, incohérente sur un monstre nu).
+// `@griffe` (au lieu de la botte, incohérente sur un monstre nu).
 const CLAWFOOT: PartArt = {
-  front: `<path d="M-3.4 -1 Q-4.2 6 0 7 Q4.2 6 3.4 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-2.4 6 l-0.5 2.7 M0 6.6 l0 2.9 M2.4 6 l0.5 2.7" stroke="#241a12" stroke-width="0.9" stroke-linecap="round"/>`,
+  front: `<path d="M-3.4 -1 Q-4.2 6 0 7 Q4.2 6 3.4 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-2.4 6 l-0.5 2.7 M0 6.6 l0 2.9 M2.4 6 l0.5 2.7" stroke="@griffe" stroke-width="0.9" stroke-linecap="round"/>`,
   back: `<path d="M-3.2 -1 Q-3.7 5 0 5.6 Q3.7 5 3.2 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>`,
-  profile: `<path d="M-3 -1 L-3 4.6 Q-3 6.8 0 6.8 L8 6.8 Q9.8 6.8 8.8 3.6 L5 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M3.6 6.8 l0.3 2.6 M6.2 6.6 l1.4 2.4 M8 6.4 l1.8 2.1" stroke="#241a12" stroke-width="0.9" stroke-linecap="round"/>`,
+  profile: `<path d="M-3 -1 L-3 4.6 Q-3 6.8 0 6.8 L8 6.8 Q9.8 6.8 8.8 3.6 L5 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M3.6 6.8 l0.3 2.6 M6.2 6.6 l1.4 2.4 M8 6.4 l1.8 2.1" stroke="@griffe" stroke-width="0.9" stroke-linecap="round"/>`,
 };
 // Pied NU LISSE (civilisés va-nu-pieds : halfling, humain sans chaussure…) — même géométrie que
 // CLAWFOOT (chair `@peau`), plante + orteils suggérés, SANS griffe (#481 : un civilisé nu-pieds

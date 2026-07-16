@@ -59,6 +59,55 @@ export function tenuePaletteFor(tenue: string | undefined): StoredPalette {
   return TENUE_PALETTE_BY_ID[specificId] ?? CLASS_PALETTE_BY_ID[id] ?? CLASS_PALETTE_BY_ID[careerClass(id)] ?? {};
 }
 
+// Parts SYSTÈME du pied (`FOOT`/`CLAWFOOT` de `resolve.ts`) : le pied n'est dessiné par AUCUNE
+// tenue, mais sa couleur doit suivre celle qui est portée (#426). Valeurs = celles de l'art
+// d'origine, à l'exact (une tenue qui ne déclare rien rend à l'identique).
+const SYSTEM_FOOT: StoredPalette = {
+  botte: '#3a2614', botteO: '#1f1408', // cuir + contour (face/profil)
+  semelle: '#241608',
+  botteDos: '#2e1f10', botteDosO: '#1a1208', // cuir dorsal, assombri à la main par l'art
+  griffe: '#241a12',
+};
+/** Bases de la famille `botte`, dont `botte` est la TÊTE (elle propage aux membres non déclarés). */
+const FOOT_BASES = ['botte', 'semelle', 'botteDos'] as const;
+
+/**
+ * Jetons du pied SYSTÈME pour la palette PORTÉE (espèce ∪ tenue) — à empiler SOUS elle
+ * (`rigStoredPalette`, seul appelant côté rendu) :
+ *   - `botte` déclarée → TOUTE la botte la suit (cuir, semelle, cuir dorsal) ; les contours/ombres
+ *     se dérivent (`buildTokenMap`). Un membre déclaré à part (`semelle`, `botteDos`) garde sa
+ *     teinte propre et DÉRIVE la sienne — l'expansion est donc robuste à la déclaration PARTIELLE
+ *     (`botteDos` sans `botte` : cuir dorsal honoré, son contour suit ; pas de contour d'origine
+ *     survivant sous une base neuve).
+ *   - rien de déclaré → pied système (les 117 tenues actuelles rendent à l'identique).
+ * `griffe` reste indépendante (pied nu griffu, sans rapport avec le cuir de la botte).
+ */
+export function footPalette(pal: StoredPalette): StoredPalette {
+  const cuir = pal.botte;
+  const out: StoredPalette = { griffe: SYSTEM_FOOT.griffe };
+  for (const base of FOOT_BASES) {
+    const declared = pal[base];
+    out[base] = declared ?? cuir ?? SYSTEM_FOOT[base];
+    // Ombre d'ORIGINE (peinte à la main par l'art) servie seulement tant que sa base l'est aussi :
+    // dès que la donnée pilote la base, l'ombre se dérive (buildTokenMap) — sinon un contour brun
+    // survivrait sous un cuir neuf.
+    const shade = SYSTEM_FOOT[`${base}O`];
+    if (shade != null && declared == null && cuir == null) out[`${base}O`] = shade;
+  }
+  return out;
+}
+
+/**
+ * Palette STOCKÉE du rig — SOURCE UNIQUE de l'empilage (composeRig ET ses gardes l'appellent, jamais
+ * une réplique) : jetons du pied SYSTÈME SOUS la palette PORTÉE (espèce → tenue). Le pied est expansé
+ * depuis la palette portée ENTIÈRE : une RACE qui déclare `botte` pilote sa famille comme une tenue
+ * (aucune couche ne tombe entre les deux). Aucune 2e cascade : on lit la sortie de `tenuePaletteFor`.
+ */
+export function rigStoredPalette(species: StoredPalette | undefined, tenue: string | undefined): StoredPalette {
+  const worn = { ...(species ?? {}), ...tenuePaletteFor(tenue) };
+  return { ...footPalette(worn), ...worn };
+}
+
 /**
  * Calques asymétriques (`TenueDef.overlays`) d'une tenue, en miroir EXACT de `tenuePaletteFor` :
  * tenue spécifique par id, sinon id de CLASSE direct, sinon archétype de CLASSE de la carrière.

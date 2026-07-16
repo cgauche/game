@@ -15,7 +15,7 @@ import { appendageArt } from './parts/appendages';
 import { monsterInjection } from './parts/monstrous';
 import { HEADS, ARMS, LEGS } from './parts/monster';
 import { buildTokenMap, applyTokenMap, type Palette } from './palette';
-import { tenuePaletteFor, tenueOverlaysFor } from './parts/career';
+import { tenueOverlaysFor, rigStoredPalette } from './parts/career';
 import type { EquipCtx } from './parts/equipment';
 import { dorsalOverlays } from './parts/dorsal';
 import { CAPES } from './parts/capes';
@@ -298,7 +298,9 @@ export function resolveRig(
   // Défauts empilés : ESPÈCE (peau/cheveux/yeux par espèce:sexe) → TENUE → surcharges.
   // Palette de tenue : tenue dédiée OU archétype de classe en repli (tenuePaletteFor) →
   // les tenues SANS art dédié héritent/recolorent comme les autres (cohérence).
-  const stored = { ...(speciesPalette ?? {}), ...tenuePaletteFor(tenue) };
+  // Sous tout : les jetons des parts SYSTÈME du pied (botte/griffes — dessinées par resolve, pas
+  // par la tenue). `rigStoredPalette` est la SEULE construction de cet empilage (#426).
+  const stored = rigStoredPalette(speciesPalette, tenue);
   const tmap = buildTokenMap(stored, overrides);
   for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap) }));
 
