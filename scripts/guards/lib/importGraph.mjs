@@ -37,7 +37,9 @@ export function closureOf(roots) {
   const stack = [...roots.map((r) => resolve(r).split('\\').join('/'))];
   while (stack.length) {
     const abs = stack.pop();
-    const rel = abs.slice(resolve('.').split('\\').join('/').length + 1);
+    const cwdPosix = resolve('.').split('\\').join('/') + '/';
+    // Racine HORS repo (fixtures de test en tmpdir) : chemin absolu POSIX, jamais tronque a l aveugle.
+    const rel = abs.startsWith(cwdPosix) ? abs.slice(cwdPosix.length) : abs;
     if (seen.has(rel)) continue;
     if (!existsSync(abs)) continue;
     seen.add(rel);
