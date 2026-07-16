@@ -106,6 +106,21 @@ describe('climbAcross — combat', () => {
     expect(b.acted).toBe(false);
   });
 
+  // Grimpant (LDB 85 l.160-162) : résolution automatique — aucun Test (même sur une paroi exigeant
+  // Grimpeur), coût de Mouvement NORMAL (climbFullSpeed), journalisé.
+  it('Grimpant : paroi exigeant Grimpeur — le porteur du trait monte SANS Test, coût normal, journalisé', () => {
+    const { H } = setup({ kind: 'surface', requiresGrimpeur: true });
+    H.traits = [{ id: 'grimpant' }];
+    useGame.setState({ battle: { ...useGame.getState().battle! } });
+    useGame.getState().climbAcross(foot, top);
+    const b = useGame.getState().battle!;
+    const hc = b.combatants.find((c) => c.id === H.id)!;
+    expect(hc.pos).toMatchObject({ x: 2, y: 0 });
+    expect(b.acted).toBe(false); // pas de Test → pas d'Action consommée
+    expect(b.movementUsed).toBe(1); // coût NORMAL (1 case), pas la ½ vitesse du Talent joueur
+    expect(b.log.some((e) => e.text.includes('Grimpant'))).toBe(true);
+  });
+
   it('la chute de combat (échec d’Escalade) ramène le faller nommé au pied et lui coûte des Blessures', () => {
     const { H } = setup({ kind: 'surface' }, top); // héros hissé au sommet (état optimiste)
     const before = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.wounds.current;

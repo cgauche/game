@@ -14,15 +14,22 @@ import { surfaceClimbImpossible } from '../engine/movement';
  * Le Test consomme l'Action en combat (LDB 13 l.86-88) — arbitré au seam (store).
  */
 export type ClimbPlan =
-  | { kind: 'free' }
+  | { kind: 'free'; auto?: boolean }
   | { kind: 'impossible' }
   | { kind: 'test'; flow: Flow };
 
-export function planClimb(scene: Scene, from: Pt, to: Pt, hasGrimpeur: boolean, fallerId?: string): ClimbPlan | null {
+/**
+ * `autoSucceed` (Grimpant, LDB 85 l.160-162 : « réussit automatiquement tous ses Tests d'Escalade ») :
+ * toute arête `climb` — échelle OU surface — se résout `free` (aucun jet, pas un jet silencieux). Le
+ * verbatim ne réserve nulle part `requiresGrimpeur` (garde du TALENT joueur, LDB 15 l.57 : « bien trop
+ * compliquée pour la plupart des Personnages ») aux créatures — arbitrage : `autoSucceed` l'ignore.
+ */
+export function planClimb(scene: Scene, from: Pt, to: Pt, hasGrimpeur: boolean, fallerId?: string, autoSucceed = false): ClimbPlan | null {
   const seg: WallSeg | undefined = climbEdgeBetween(scene, from, to);
   if (!seg?.climb) return null; // arête non grimpable → le geste ne s'applique pas
   const c = seg.climb;
   if (c.kind === 'ladder') return { kind: 'free' }; // LDB 15 l.53 : échelle = pas de Test, ralentit seulement
+  if (autoSucceed) return { kind: 'free', auto: true };
   if (surfaceClimbImpossible(!!c.requiresGrimpeur, hasGrimpeur)) return { kind: 'impossible' };
   // Chute sur échec = vraie hauteur métrique (relief) entre les deux surfaces — retombe au pied (`from`).
   // En combat, le faller NOMMÉ (`fallerId`) chute et regagne le pied ; hors combat, c'est le GROUPE.

@@ -64,6 +64,8 @@ const traitCapabilitiesSchema = z.strictObject({
   fly: z.boolean().optional(),
   leap: z.boolean().optional(),
   stride: z.boolean().optional(),
+  autoClimb: z.boolean().optional(),
+  climbFullSpeed: z.boolean().optional(),
   noRun: z.boolean().optional(),
   seesInDark: z.boolean().optional(),
   darkSightTiles: z.number().optional(),

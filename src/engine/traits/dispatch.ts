@@ -352,6 +352,17 @@ export function hasStride(traits: TraitList | undefined): boolean {
   return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.stride);
 }
 
+/** Grimpant (LDB 85 l.160-162) : réussite automatique de tout Test d'Escalade — aucun jet. */
+export function hasAutoClimb(traits: TraitList | undefined): boolean {
+  return traitCapability(traits, 'autoClimb');
+}
+
+/** Grimpant (LDB 85 l.160-162) : vitesse de Mouvement MAXIMALE (coût normal) sur les surfaces
+ *  d'escalade, au lieu de la ½ vitesse du Talent Grimpeur (LDB 15 l.53, joueur). */
+export function hasClimbFullSpeed(traits: TraitList | undefined): boolean {
+  return traitCapability(traits, 'climbFullSpeed');
+}
+
 /** Rampant (T2C ch.13 p.89) : « Elle ne peut pas réaliser d'Action de Course. » Capacité NON exprimable
  *  en GameOp → drapeau `capabilities.noRun`, interrogé par `runMultiplier`. */
 export function hasNoRun(traits: TraitList | undefined): boolean {

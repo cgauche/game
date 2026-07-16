@@ -171,7 +171,7 @@ import {
   type Weather,
 } from '../engine/travelStages';
 import { weaponGroupKey } from '../engine/weaponGroup';
-import { moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt } from './path';
+import { moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt, climbTraverseFor } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
@@ -3538,7 +3538,7 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
     : undefined;
   return {
     enemy, heroes, scene, blocked, noStop: cannotStopOn(battle, geom), movement, spells,
-    smoke: smokeOf(battle), flying: flyM != null, perceived, facing: get().facing, squad,
+    smoke: smokeOf(battle), flying: flyM != null, traverse: climbTraverseFor(enemy.traits), perceived, facing: get().facing, squad,
     // « Servir cette pièce » (MDG ch.12) : postes de siège NON servis adjacents — KIND-AGNOSTIQUE (l'appelant
     // impur a la liste complète des combattants). Vide en scène sans emplacement → aucun candidat (parité golden).
     servablePostes: servablePostes(enemy, battle.combatants).map(({ hull, poste }) => ({ hullId: hull.id, posteUid: poste.item.uid })),
@@ -5792,7 +5792,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const wasEngaged = isEngaged(enemy);
       const distBefore = combatDistance(enemy, targetOf(mv.thenTargetId)); // distance de combat AVANT le déplacement
       const fromPos = { ...enemy.pos! }; // position AVANT déplacement (déclenchement de Peur à l'approche)
-      const path = pathTo(scene, enemy.pos!, mv.to, { blocked: input.blocked, foot: sizeFootprint(geom.size) });
+      const path = pathTo(scene, enemy.pos!, mv.to, { blocked: input.blocked, foot: sizeFootprint(geom.size), traverse: input.traverse });
       // Télégraphe de DÉPLACEMENT (parité héros) : montrer le chemin + la destination AVANT que l'ennemi
       // bouge (« où il va »), puis il glisse dessus. Le mouvement réel + la suite (attaque/fin de tour)
       // sont DIFFÉRÉS après la tenue (beatHold moveTelegraph) — mêmes effets, juste annoncés d'abord.

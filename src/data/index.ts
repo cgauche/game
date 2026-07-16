@@ -886,6 +886,15 @@ export interface TraitCapabilities {
   fly?: boolean;
   leap?: boolean;
   stride?: boolean;
+  /** Grimpant (LDB 85 l.160-162) : « réussit automatiquement tous ses Tests d'Escalade » — le geste
+   *  d'escalade (échelle/arête `WallSeg.climb`) se résout SANS jet (pas un jet silencieux : aucun jet).
+   *  Lu par `state/climbMove` (`planClimb`) et `state/path` (pathing/IA, `MoveEnv.traverse`). */
+  autoClimb?: boolean;
+  /** Grimpant (LDB 85 l.160-162) : « avance à sa vitesse maximale de Mouvement sur toutes les surfaces
+   *  appropriées » — coût de Mouvement NORMAL (1 case) au lieu de la ½ vitesse du Talent Grimpeur
+   *  (`climbMovementCost`, joueur, LDB 15 l.53). Orthogonal à `autoClimb` (accueille une future capacité
+   *  qui réussirait automatiquement sans pour autant grimper à pleine vitesse). */
+  climbFullSpeed?: boolean;
   /** Rampant (T2C ch.13) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
   noRun?: boolean;
   seesInDark?: boolean;

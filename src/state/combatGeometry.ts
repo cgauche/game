@@ -10,7 +10,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { Combatant } from '../engine/types';
 import type { Dir8 } from './dir8';
 import { Scene, isWalkable } from './scene';
-import { Pt, MoveEnv, tileKey } from './path';
+import { Pt, MoveEnv, tileKey, climbTraverseFor } from './path';
 import { footprintTiles, footprintN, occupiesTile } from './footprint';
 import { inBattleId } from './combatOrParty';
 import { sizeGap } from '../engine/size';
@@ -88,9 +88,12 @@ export function moveEnv(battle: BattleState, mover: Combatant): MoveEnv {
   // `swim` : terrains d'élection du mover (op `offTerrainMod` — `eau` pour Aquatique/Amphibie/Créature
   // marine) qu'il traverse bien que `walkable:false`. Omis si aucun (le sol byte-identique à l'ancien env).
   const swim = requiredTerrains(mover);
+  // `traverse` : Grimpant (LDB 85 l.160-162) — omis si aucune capacité (byte-identique à l'ancien env).
+  const traverse = climbTraverseFor(mover.traits);
   return {
     blocked: occupied(battle, mover), foot: footprintN(mover), noStop: cannotStopOn(battle, mover),
     ...(swim.length ? { swim: new Set(swim) } : {}),
+    ...(traverse ? { traverse } : {}),
   };
 }
 

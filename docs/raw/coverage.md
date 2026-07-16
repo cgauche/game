@@ -96,7 +96,7 @@
 | 82 | Les morts sans repos | ✅ |  |
 | 83 | Esclaves des Ténèbres | ✅ |  |
 | 84 | *(artefact OCR)* | ➖ | |
-| 85 | Traits de créature | ✅ | 291 (combat.md ×202) |
+| 85 | Traits de créature | ✅ | 292 (combat.md ×203) |
 
 ## ADE I — ✅ 2 · 🟡 0 · ⬜ 0
 

@@ -25,7 +25,7 @@
  */
 import { Combatant, Weapon } from '../engine/types';
 import { Scene, sceneMetresPerTile } from './scene';
-import { reachable, flyReachable, manhattan, chebyshev, Pt } from './path';
+import { reachable, flyReachable, manhattan, chebyshev, Pt, type TraverseCapability } from './path';
 import { footprintChebyshev, footprintN, combatDistance } from './footprint';
 import { verticalTiles } from './relief';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
@@ -121,6 +121,10 @@ export interface EnemyTurnInput {
   spells: CastableSpell[];
   /** Vol (LDB 85 p.343) : le déplacement ignore terrains/obstacles/personnages traversés. */
   flying?: boolean;
+  /** Grimpant (LDB 85 l.160-162), patron de `flying` : capacité de traversée dérivée par l'appelant
+   *  (`climbTraverseFor`, ai.ts est pur) — arêtes `WallSeg.climb` franchies au pas normal. ABSENT/undefined
+   *  = aucune capacité (comportement historique, `reachable` inchangé). */
+  traverse?: TraverseCapability;
   /** Cases enfumées (Souffle (Fumée)) qui bloquent la Ligne de Vue. */
   smoke?: Pt[];
   /** Vision RÉCIPROQUE : cases (`"x,y,0"`) que CET ennemi perçoit réellement (Ligne de Vue + lumière,
@@ -493,7 +497,7 @@ function argmax(cands: Candidate[]): Candidate | null {
 
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
-  const { enemy, scene, blocked, smoke, flying, facing } = input;
+  const { enemy, scene, blocked, smoke, flying, facing, traverse } = input;
   // Tenue de formation (#196) : Mouvement effectif plafonné à 0 → tout le reste de la fonction (approche,
   // repositionnement/kiting, fallback anti-immobilisme) n'énumère plus que la case courante — un ennemi déjà
   // adjacent (`inMelee`/`withinMelee`, testés sur `pos` SANS passer par `reach`) reste attaquable normalement.
@@ -583,7 +587,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
-  const reach = (flying ? flyReachable : reachable)(scene, pos, movement, { blocked, foot: footprintN(enemy), noStop: input.noStop });
+  const reach = (flying ? flyReachable : reachable)(scene, pos, movement, { blocked, foot: footprintN(enemy), noStop: input.noStop, traverse });
 
   // ANTI-IMMOBILISME (combat ENGAGÉ, fidélité LDB 13 l.123) : si la perception ne montre AUCUNE cible
   // (lumière/Ligne de Vue) mais que des adversaires EXISTENT, l'ennemi avance d'un cran vers le plus

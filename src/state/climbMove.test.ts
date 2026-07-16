@@ -72,4 +72,15 @@ describe('planClimb', () => {
     if (fail.kind !== 'seq' || fail.steps[0]?.kind !== 'do') throw new Error('attendu seq/do');
     expect(fail.steps[0].effect).toMatchObject({ type: 'fall', target: 'hero', heroId: 'hero-7' });
   });
+
+  // Grimpant (LDB 85 l.160-162) : `autoSucceed` — aucun jet, même sur une paroi exigeant le Talent Grimpeur.
+  it('autoSucceed (Grimpant) : paroi sans Talent → free, marquée `auto`, pas de Test', () => {
+    const plan = planClimb(cliffScene({ kind: 'surface', requiresGrimpeur: true }), from, to, false, undefined, true);
+    expect(plan).toEqual({ kind: 'free', auto: true });
+  });
+
+  it('autoSucceed (Grimpant) : échelle → free SANS le flag `auto` (franchissement d’office générique)', () => {
+    const plan = planClimb(cliffScene({ kind: 'ladder' }), from, to, false, undefined, true);
+    expect(plan).toEqual({ kind: 'free' });
+  });
 });

@@ -15,7 +15,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ## A2 — Lignes appelées par le CODE (LDB) non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
-### LDB 46 — 10/30 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
+### LDB 46 — 10/31 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
 - l.185 — `src/state/combatSlice.ts:3034` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
 - l.188 — `src/data/index.ts:566` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
 - l.193 — `src/state/combatFlow.ts:1990` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
@@ -24,7 +24,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - l.201 — `src/engine/engine.test.ts:699` — it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
 - l.202 — `src/engine/magic.ts:547` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
 - l.204 — `src/engine/conditions.ts:464` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
-- l.205 — `src/state/combatSlice.ts:3103` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+- l.205 — `src/state/extended-test.test.ts:53` — it('Dissipation (LDB 46 l.205) : DR cumulé atteignant le NI retire les effets du sort de ses porteurs', () => {
 - l.207 — `src/engine/tests.ts:218` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 
 ### LDB 10 — 6/21 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)

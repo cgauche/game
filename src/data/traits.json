@@ -745,6 +745,10 @@
     "source": {
       "book": "livre-de-base",
       "page": 339
+    },
+    "capabilities": {
+      "autoClimb": true,
+      "climbFullSpeed": true
     }
   },
   {

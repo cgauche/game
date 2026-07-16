@@ -20,6 +20,7 @@ import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyE
 import { t } from '../i18n';
 import { planClimb } from './climbMove';
 import { climbMovementCost } from '../engine/movement';
+import { hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import { controlsCombatant } from './netOwnership';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { EMPTY_FLOW, type Flow } from './flow';
@@ -1736,10 +1737,13 @@ export const useGame = create<GameState>((set, get) => ({
   climbAcross: (from, to) => {
     const { scene, mode, battle } = get();
     if (!scene) return;
-    // Grimpeur (LDB 15 l.57) : porté par le meneur (exploration) ou le héros actif (combat).
+    // Grimpeur (LDB 15 l.57) : porté par le meneur (exploration) ou le héros actif (combat). Grimpant
+    // (LDB 85 l.160-162, créature, combat seulement) : `autoClimb` dispense de tout Test — et de la garde
+    // `requiresGrimpeur`, réservée au Talent joueur (`planClimb` arbitre `autoSucceed`, réf ci-dessous).
     const mover = mode === 'battle' ? (battle ? activeCombatantOf(battle) : undefined) : get().party.find((h) => !h.dead && h.wounds.current > 0);
     const hasGrimpeur = !!mover?.talents?.some((tl) => tl.talentId === 'grimpeur' && tl.times > 0);
-    const plan = planClimb(scene, from, to, hasGrimpeur, mode === 'battle' ? mover?.id : undefined);
+    const autoClimb = mode === 'battle' && hasAutoClimb(mover?.traits);
+    const plan = planClimb(scene, from, to, hasGrimpeur, mode === 'battle' ? mover?.id : undefined, autoClimb);
     if (!plan) return; // arête non grimpable → refus silencieux (aucun marqueur ne s'y affiche)
     if (plan.kind === 'impossible') {
       get().log(t('climb.tooHard', { name: mover?.name ?? 'Le grimpeur' }));
@@ -1754,11 +1758,17 @@ export const useGame = create<GameState>((set, get) => ({
     if (mode === 'battle') {
       if (!battle || battle.over || !mover || !controlsCombatant(get(), mover)) return;
       const metres = Math.abs(heightAt(scene, to.x, to.y, to.z ?? 0) - heightAt(scene, from.x, from.y, from.z ?? 0));
-      const cost = climbMovementCost(metres, sceneMetresPerTile(scene)); // ½ vitesse (LDB 15 l.53)
+      // Grimpant `climbFullSpeed` (LDB 85 l.161) : coût NORMAL (1 case), pas la ½ vitesse du Talent
+      // Grimpeur joueur (LDB 15 l.53, `climbMovementCost`) — chemin joueur strictement inchangé.
+      const cost = hasClimbFullSpeed(mover.traits) ? 1 : climbMovementCost(metres, sceneMetresPerTile(scene));
       placeCombatant(mover, scene, to); // hisse (optimiste) ; échec du Test → `fall` au pied
-      // `surface` = Test requis → consomme l'Action (LDB 13 l.86-88) ; `ladder` = sans Test → Mouvement seul.
+      // `surface` = Test requis → consomme l'Action (LDB 13 l.86-88) ; `ladder`/`auto` = sans Test → Mouvement seul.
       const acted = plan.kind === 'test' ? true : battle.acted;
-      set({ battle: { ...battle, acted, action: null, movementUsed: (battle.movementUsed ?? 0) + cost, movedPreAction: battle.movedPreAction || !battle.acted, reachable: new Map(), preview: null } });
+      // Résolution directe (Grimpant) : PAS un jet silencieux — il n'y a PAS de jet du tout, journalisé.
+      const log = plan.kind === 'free' && plan.auto
+        ? [...battle.log, ev('move', t('climb.auto', { name: mover.name }), mover.id)]
+        : battle.log;
+      set({ battle: { ...battle, log, acted, action: null, movementUsed: (battle.movementUsed ?? 0) + cost, movedPreAction: battle.movedPreAction || !battle.acted, reachable: new Map(), preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
       if (plan.kind === 'test') runFlow(get, set, plan.flow);
     }

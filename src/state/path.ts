@@ -1,6 +1,6 @@
 /** Déplacement sur grille : BFS pour cases atteignables et chemins. */
-import { Scene, isWalkable, edgeOf, structureIsDown, surfaceLink } from './scene';
-import { hasTrait } from '../engine/traits/dispatch';
+import { Scene, isWalkable, edgeOf, structureIsDown, surfaceLink, climbEdgeBetween } from './scene';
+import { hasTrait, hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import type { Combatant } from '../engine/types';
 
 export interface Pt {
@@ -61,12 +61,26 @@ function walled(edges: Set<string>, ax: number, ay: number, bx: number, by: numb
   return e ? edges.has(`${e.x},${e.y},${e.side},${z}`) : false;
 }
 
+/** Capacités de TRAVERSÉE du mover consommées par le BFS, au-delà du pas normal (petit objet dérivé
+ *  UNE fois par l'appelant — jamais le `Combatant` entier). Grimpant (LDB 85 l.160-162) aujourd'hui
+ *  (`climb`/`climbFullSpeed`) ; conçu pour accueillir plus tard Fouissement (autre flag, un autre
+ *  prédicat géométrique que `climbEdgeBetween`) — SANS l'implémenter ici. */
+export interface TraverseCapability {
+  /** Une arête `WallSeg.climb` devient traversable (mur ET falaise `surfaceLink` bypassés). */
+  climb?: boolean;
+  /** Coût de la traversée = pas NORMAL (1 case), pas la ½ vitesse du Talent Grimpeur joueur (LDB 15
+   *  l.53). Sans ce flag, la traversée n'est PAS activée ici (coût variable non représentable dans ce
+   *  BFS à pas uniforme — aucune capacité actuelle ne combine `climb` sans `climbFullSpeed`). */
+  climbFullSpeed?: boolean;
+}
+
 /** Voisins MARCHABLES d'une case : pour chacune des 4 cases adjacentes, la/les couche(s) où elle forme
  *  une SURFACE réelle reliée à pied — `surfaceLink` flat/ramp (|Δhauteur| ≤ STEP_MAX), une arête murée
  *  (à la couche de départ OU d'arrivée) coupant le passage. C'est l'auto-connexion du relief : un même
  *  pas peut changer de couche là où une rampe rejoint un tablier (hauteurs coïncidentes) — plus aucun
- *  escalier explicite. Une falaise (Δhauteur > STEP_MAX) n'est PAS un voisin à pied (chute/Escalade). */
-function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet<string>): Pt[] {
+ *  escalier explicite. Une falaise (Δhauteur > STEP_MAX) n'est PAS un voisin à pied (chute/Escalade),
+ *  SAUF une arête `WallSeg.climb` que `traverse` (Grimpant) autorise à franchir au pas normal. */
+function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet<string>, traverse?: TraverseCapability): Pt[] {
   const z = pz(p);
   const out: Pt[] = [];
   for (const [dx, dy] of NEIGHBORS) {
@@ -82,7 +96,12 @@ function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet
     for (const layer of scene.layers) {
       const nz = layer.z;
       if (!isWalkable(scene, nx, ny, nz, swim)) continue; // pas de surface réelle sur cette couche ici
-      if (walled(edges, p.x, p.y, nx, ny, z) || (nz !== z && walled(edges, p.x, p.y, nx, ny, nz))) continue;
+      const wallBlocked = walled(edges, p.x, p.y, nx, ny, z) || (nz !== z && walled(edges, p.x, p.y, nx, ny, nz));
+      const climbed = traverse?.climb && traverse?.climbFullSpeed
+        ? climbEdgeBetween(scene, { x: p.x, y: p.y, z }, { x: nx, y: ny, z: nz })
+        : undefined;
+      if (climbed) { out.push(pt(nx, ny, nz)); continue; } // Grimpant : mur ET falaise bypassés, coût normal
+      if (wallBlocked) continue;
       const link = surfaceLink(scene, p, { x: nx, y: ny, z: nz });
       if (link && link.grade !== 'cliff') out.push(pt(nx, ny, nz));
     }
@@ -151,6 +170,8 @@ function footFits(scene: Scene, x: number, y: number, z: number, foot: number, b
  *               marine) qu'il TRAVERSE bien que `walkable:false` (RAW « pleine vitesse dans l'eau ») —
  *               toutes les fonctions de mouvement PROPRE (reachable/fly/pathTo) ; absent = terrain nu.
  *               Assemblé par `moveEnv(battle, mover)` via `requiredTerrains(mover)`.
+ * - `traverse`: capacités de TRAVERSÉE (`TraverseCapability` — Grimpant) — `reachable`/`pathTo` seulement.
+ *               Assemblée par `moveEnv(battle, mover)` via `climbTraverseFor(mover.traits)`.
  */
 export interface MoveEnv {
   blocked: Set<string>;
@@ -158,6 +179,14 @@ export interface MoveEnv {
   noStop?: Set<string>;
   jump?: number;
   swim?: ReadonlySet<string>;
+  traverse?: TraverseCapability;
+}
+
+/** `TraverseCapability` d'un mover, dérivée UNE fois de ses traits (Grimpant) — SOURCE UNIQUE consommée
+ *  par `moveEnv` (combat) ET `buildAiInput` (`EnemyTurnInput.traverse`, ai.ts est pur). undefined = aucune
+ *  capacité de traversée (le sol nu byte-identique à l'ancien `MoveEnv`). */
+export function climbTraverseFor(traits: Combatant['traits']): TraverseCapability | undefined {
+  return hasAutoClimb(traits) ? { climb: true, climbFullSpeed: hasClimbFullSpeed(traits) } : undefined;
 }
 
 /**
@@ -165,7 +194,7 @@ export interface MoveEnv {
  * cases occupées par `env.blocked`. Retourne une map clé→distance.
  */
 export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv): Map<string, number> {
-  const { blocked, foot = 1, noStop, swim } = env;
+  const { blocked, foot = 1, noStop, swim, traverse } = env;
   const edges = wallEdges(scene);
   const dist = new Map<string, number>();
   const sz = pz(start);
@@ -174,7 +203,7 @@ export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv):
   for (let step = 0; step < range; step++) {
     const next: Pt[] = [];
     for (const p of frontier) {
-      for (const n of neighborsOf(scene, p, edges, swim)) {
+      for (const n of neighborsOf(scene, p, edges, swim, traverse)) {
         const nz = pz(n);
         const k = key(n.x, n.y, nz);
         if (dist.has(k)) continue;
@@ -288,7 +317,7 @@ export function fleeReachable(scene: Scene, from: Pt, foe: Pt, range: number, en
 
 /** Plus court chemin (BFS) de `start` à `goal`, ou null. (`env.noStop` ignoré : le but est validé en amont.) */
 export function pathTo(scene: Scene, start: Pt, goal: Pt, env: MoveEnv): Pt[] | null {
-  const { blocked, foot = 1, jump = 0, swim } = env;
+  const { blocked, foot = 1, jump = 0, swim, traverse } = env;
   const edges = wallEdges(scene);
   const gz = pz(goal);
   const came = new Map<string, string | null>();
@@ -306,7 +335,7 @@ export function pathTo(scene: Scene, start: Pt, goal: Pt, env: MoveEnv): Pt[] | 
       }
       return path;
     }
-    for (const n of neighborsOf(scene, p, edges, swim)) {
+    for (const n of neighborsOf(scene, p, edges, swim, traverse)) {
       const nz = pz(n);
       const k = key(n.x, n.y, nz);
       if (came.has(k)) continue;
