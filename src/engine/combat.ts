@@ -191,7 +191,7 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
   // l'arme tenue dans CETTE main (`weaponHand`), jamais l'autre. Inerte si `weapon` absent (créature sans
   // arme, Piétinement…) ou si aucun effet ne porte `testModHand`.
   const base = effectiveChar(c, charKey) + activeCharTestMod(c, charKey, { weaponHand: weapon?.hand });
-  if (weapon && weaponUnmastered(c, weapon)) return base; // arme inhabituelle non maîtrisée : carac brute (ACE p.219)
+  if (weapon && weaponUnmastered(c, weapon)) return base; // arme inhabituelle non maîtrisée : carac brute (ACE 12 l.17-21)
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
   const matching = c.skills.filter((s) => s.skillId === skillId);
   if (matching.length === 0) return base;
@@ -211,7 +211,7 @@ export function attackTestLabel(weapon: Weapon | undefined, kind: 'melee' | 'ran
 }
 
 /**
- * Arme INHABITUELLE non maîtrisée (ACE Annexe I p.219 « Entraînement avec une arme inhabituelle » :
+ * Arme INHABITUELLE non maîtrisée (ACE 12 l.19 « Entraînement avec une arme inhabituelle » :
  * « pour véritablement maîtriser une telle arme, il faut avoir la patience d'échouer et de recommencer
  * indéfiniment ») : tant que le trapping `requiresMastery` de l'arme tenue n'est pas dans
  * `c.masteredWeapons`, le porteur est traité comme SANS la Compétence du Groupe — carac brute
@@ -229,12 +229,12 @@ export function weaponUnmastered(c: Combatant, weapon: Weapon): boolean {
  * MODE de la Spé (de Corps à corps / Projectiles) qui couvre le **Groupe** de l'arme (LDB 62 l.138-139,
  * exceptions l.184-192) — réutilise `matchGroupSpec`/`acceptableSpecs`, SOURCE UNIQUE des Spés autorisées
  * par Groupe (comme `combatValue`). `'none'` si l'arme n'a pas de Groupe (`subType` absent), si elle est
- * INHABITUELLE non maîtrisée (ACE p.219), ou si aucune Augmentation ne la couvre. Consommé par le funnel
+ * INHABITUELLE non maîtrisée (ACE 12 l.17-21), ou si aucune Augmentation ne la couvre. Consommé par le funnel
  * de contexte d'arme (`WeaponContext.groupSkillMode`, lu par `effectiveWeapon`).
  */
 export function weaponGroupSkillMode(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): 'full' | 'degraded' | 'none' {
   if (!weapon.subType) return 'none';
-  if (weaponUnmastered(c, weapon)) return 'none'; // arme inhabituelle non maîtrisée (ACE p.219) : Défauts du Groupe
+  if (weaponUnmastered(c, weapon)) return 'none'; // arme inhabituelle non maîtrisée (ACE 12 l.17-21) : Défauts du Groupe
   return matchGroupSpec(c, weapon, kind)?.mode ?? 'none';
 }
 

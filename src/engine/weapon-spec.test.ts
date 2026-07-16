@@ -149,7 +149,7 @@ describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélie
   });
 });
 
-describe('Arme inhabituelle — maîtrise requise (ACE Annexe I p.219 « Entraînement avec une arme inhabituelle »)', () => {
+describe('Arme inhabituelle — maîtrise requise (ACE 12 l.17 « Entraînement avec une arme inhabituelle »)', () => {
   const sk = (spec: string, advances: number) =>
     ({ skillId: 'corps-a-corps', spec, characteristic: 'capacite-de-combat', advances } as Combatant['skills'][number]);
   const item: ItemInstance = {

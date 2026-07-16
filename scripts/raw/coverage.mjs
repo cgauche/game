@@ -23,7 +23,7 @@ for (const d of DOCS) {
 // sites = direction de jeu, pas des règles PC) + front-matter (index/intro/préface) de tout livre.
 // Conservateur : on ne tague QUE le clairement-non-règle, pour ne jamais masquer un vrai trou de règle.
 // Livres d'AVENTURE purs : leurs chapitres-règles sont couverts (✅/catalogue) ; tout chapitre restant = scénario.
-const SCENARIO_BOOKS = new Set(['EDO', 'T2', 'T3', 'Altdorf', 'Ubersreik', 'NADAJ'])
+const SCENARIO_BOOKS = new Set(['EDO', 'T2', 'T3', 'ACE', 'Ubersreik', 'NADAJ'])
 // Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes).
 const HORS_REGLE = new Set([
   'LDB 52', 'LDB 53', 'LDB 54', 'LDB 55', 'LDB 56',

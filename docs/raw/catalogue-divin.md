@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`religion.md`](religion.md).
 >
-> **Chapitres source :** `LDB 24` · `LDB 25` · `LDB 26` · `LDB 27` · `LDB 28` · `LDB 29` · `LDB 30` · `LDB 31` · `LDB 32` · `LDB 33` · `LDB 34` · `LDB 35` · `LDB 36` · `LDB 37` · `LDB 38` · `LDB 39` · `LDB 40` · `LDB 41` · `LDB 42` · `LDB 43` · `Middenheim 7` · `Altdorf 11` · `MDG 10` · `MDG 11`.
+> **Chapitres source :** `LDB 24` · `LDB 25` · `LDB 26` · `LDB 27` · `LDB 28` · `LDB 29` · `LDB 30` · `LDB 31` · `LDB 32` · `LDB 33` · `LDB 34` · `LDB 35` · `LDB 36` · `LDB 37` · `LDB 38` · `LDB 39` · `LDB 40` · `LDB 41` · `LDB 42` · `LDB 43` · `Middenheim 7` · `ACE 11` · `MDG 10` · `MDG 11`.
 
 ---
 
@@ -1841,7 +1841,7 @@ Les Nouveaux Millénaristes ont récemment lancé une campagne de financement af
 **Traits :** Craintif (créanciers), Préjugés (aristocrates, réactionnaires, miliciens, nantis, utilisateurs de mystracine)
 
 
-## [Altdorf 11] Cultes interdits et groupes extrémistes
+## [ACE 11] Cultes interdits et groupes extrémistes
 
 *Pages PDF 217-221*
 

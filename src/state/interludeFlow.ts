@@ -66,7 +66,7 @@ export interface InterludeHeroState {
   /** « +10 pour chaque tentative ratée » d'Apprentissage particulier (ch.23 l.63), par talent. */
   learnFails?: Record<string, number>;
   /** Issues d'Activité DIFFÉRÉES à la clôture (États « le premier jour de votre prochaine aventure »,
-   *  ACE Annexe I p.219) — appliquées par `interludeEnd` APRÈS le repos de clôture (un État posé
+   *  ACE 12 l.15) — appliquées par `interludeEnd` APRÈS le repos de clôture (un État posé
    *  avant serait dissipé par la récupération des nuits écoulées). */
   closeOps?: GameOp[];
 }
@@ -77,7 +77,7 @@ export interface InterludeState {
   perHero: Record<string, InterludeHeroState>;
 }
 
-/** Dépôt bancaire (Opérations bancaires, ch.23 l.154-165 ; `mecenat` = variante d'ACE Annexe I p.220,
+/** Dépôt bancaire (Opérations bancaires, ch.23 l.154-165 ; `mecenat` = variante d'ACE 12 l.45-49,
  *  retrait résolu par un Test d'Évaluation Intermédiaire) — survit aux interludes et aventures. */
 export interface BankDeposit {
   heroId: string;
@@ -186,9 +186,9 @@ export interface PendingActivity extends PendingBase {
   itemUid?: string;
   /** Activité du CATALOGUE (`kind:'catalog'`) : id de l'`ActivityDef` (`activities.json`). */
   activityId?: string;
-  /** Recherche universitaire (ACE p.220) : sort à mémoriser IMMÉDIATEMENT (remise = DR × 100 PX). */
+  /** Recherche universitaire (ACE 12 l.55) : sort à mémoriser IMMÉDIATEMENT (remise = DR × 100 PX). */
   spellId?: string;
-  /** Retrait de Mécénat (ACE p.220) : index du dépôt `bank` soldé par le Test d'Évaluation. */
+  /** Retrait de Mécénat (ACE 12 l.49) : index du dépôt `bank` soldé par le Test d'Évaluation. */
   depositIndex?: number;
   // ── Activité/Scène de BATAILLE de masse (ADE II ch.8 — contextes 'bataille'/'bataille-round') ──
   /** Activité de bataille : l'issue (delta de Puissance / modificateur de Test) porte sur l'ARMÉE, pas
@@ -328,7 +328,7 @@ export function interludeCatalog(s: Pick<GameState, 'scene' | 'worldMap' | 'mass
 /** Ouvre la modale d'une Activité du CATALOGUE (TOUTES les Activités à jet d'interlude passent ici).
  *  Le Test et ses paramètres viennent de la DONNÉE, dérivés PAR résolveur : compétences « au choix »
  *  → la MEILLEURE de l'acteur ; `masterWeapon` IMPOSE la compétence d'après l'arme visée (« selon la
- *  spécialisation de l'arme », ACE p.219) ; `income` la compétence de carrière ; `craftExtended` le
+ *  spécialisation de l'arme », ACE 12 l.21) ; `income` la compétence de carrière ; `craftExtended` le
  *  Métier (+ DR du Test étendu en cours) ; `learnTalent` la Caractéristique/Compétence du Talent
  *  (+10 par tentative ratée) ; `identify` Savoir (Magie). Cibles éventuelles : objet (`itemUid`),
  *  sort (`spellId` — achat immédiat), dépôt (`depositIndex`), Talent (`talentId`). */
@@ -427,7 +427,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     skillLabel = refLabel('skills', { id: best.ref.skillId });
   }
   if (def.resolver === 'memorizeDiscount') {
-    // Achat IMMÉDIAT obligatoire (ACE p.220) : le sort est choisi AVANT le jet — la remise
+    // Achat IMMÉDIAT obligatoire (ACE 12 l.55) : le sort est choisi AVANT le jet — la remise
     // s'appliquera à CET achat seul, à la validation.
     const sp = opts.spellId ? findSpellById(opts.spellId) : undefined;
     if (!sp || !((spellCost(h, sp) ?? 0) > 0)) return;
@@ -449,7 +449,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
   });
 }
 
-/** Retrait d'un dépôt de Mécénat (ACE p.220) : le dépôt est SOLDÉ, le rendu suit la bande du Test
+/** Retrait d'un dépôt de Mécénat (ACE 12 l.57-65) : le dépôt est SOLDÉ, le rendu suit la bande du Test
  *  d'Évaluation (« profit de 20 % » / investissement / moitié / perte). */
 function mecenatPayout(get: Get, set: Set, h: Combatant, depositIndex: number, payoutPct: number): string[] {
   const dep = (get().bank ?? [])[depositIndex];
@@ -595,7 +595,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       return { lines: [`${h.name} n'identifie pas ${it.name} cette semaine — il en est conscient (l'étude peut reprendre).`] };
     }
     case 'wrathOfTheGods':
-      // « réalisez un Test sur le Tableau de la Colère des Dieux […] à la place » (ACE p.219) —
+      // « réalisez un Test sur le Tableau de la Colère des Dieux […] à la place » (ACE 12 l.15) —
       // point d'entrée hors-Prière sur la table existante (engine/miscast).
       return { lines: applyMiscast(get, set, h, 'colere') };
     case 'masterWeapon': {
@@ -605,7 +605,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       return { lines: [`${h.name} a maîtrisé ${it.name} (ACE p.219).`] };
     }
     case 'identifyByResearch': {
-      // ACE p.219 : ≥ +4 DR = étude en profondeur (plein potentiel + dangers) ; succès ≤ +3 =
+      // ACE 12 l.33-42 : ≥ +4 DR = étude en profondeur (plein potentiel + dangers) ; succès ≤ +3 =
       // fonction principale — mappés sur le modèle EXISTANT identified/magicKnown (comme l'ADE2).
       const it = (h.items ?? []).find((i) => i.uid === pa.itemUid);
       if (!it) return { lines: [] };
@@ -624,7 +624,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
     case 'memorizeDiscount': {
       if (!pa.spellId) return { lines: [] };
       // « Chaque +DR vous permet de mémoriser un sort pour 100PX de moins […] vous devez acheter le
-      // sort immédiatement » (ACE p.220) : remise = DR × 100, appliquée à CET achat seul par buySpell.
+      // sort immédiatement » (ACE 12 l.55) : remise = DR × 100, appliquée à CET achat seul par buySpell.
       const r = partyBuySpell(get, set, h.id, pa.spellId, { discountXp: Math.max(0, pa.sl) * 100 });
       if (r.ok && r.chaos) return { lines: gainCorruption(get, set, h, 1) }; // sort du Chaos : +1 Corruption (LDB 51)
       return { lines: [] };
@@ -721,7 +721,7 @@ export function confirmActivity(get: Get, set: Set): void {
   const closeOps: GameOp[] = [];
   let patch: Partial<InterludeHeroState> = {};
   // Maladresse d'Activité (LDB 12 : double raté) — porte les bandes `on:'fumble'` (Pénitence :
-  // Colère des dieux « à la place », ACE p.219).
+  // Colère des dieux « à la place », ACE 12 l.15).
   const fumble = isFumble(pa.roll, pa.success);
   // Résolveur DIRECT (pas de table d'issues) : Revenus/Artisanat/Apprentissage/Identification —
   // ils agissent/consomment MÊME sur échec (RAW). Les résolveurs de BANDE restent dans la boucle.
@@ -740,7 +740,7 @@ export function confirmActivity(get: Get, set: Set): void {
       // Les ÉTATS d'issue tombent à la CLÔTURE de l'interlude (règle de CLASSE du contexte : les
       // semaines ne s'écoulent qu'à la fermeture, et le repos de clôture dissiperait un État posé
       // maintenant — « vous subissez 1 État Exténué le premier jour de votre prochaine aventure »,
-      // ACE p.219). Le reste (Péché, Exposition, soins…) s'applique tout de suite.
+      // ACE 12 l.15). Le reste (Péché, Exposition, soins…) s'applique tout de suite.
       const immediate = (band.ops ?? []).filter((o) => o.op !== 'condition');
       closeOps.push(...(band.ops ?? []).filter((o) => o.op === 'condition'));
       if (immediate.length) {
@@ -780,7 +780,7 @@ export function confirmActivity(get: Get, set: Set): void {
 }
 
 /** Opérations bancaires (ch.23 l.154-165) — dépôt (1 Activité). Invest : Statut Or/Argent.
- *  `mecenat` (ACE Annexe I p.220) : variante d'Opération bancaire — « au moins 5 CO » (minInvest de
+ *  `mecenat` (ACE 12 l.49) : variante d'Opération bancaire — « au moins 5 CO » (minInvest de
  *  la donnée), gate géographique de l'Activité ; le retrait se résout par un Test d'Évaluation. */
 export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' | 'stash' | 'mecenat', amountBrass: number, rate?: number): void {
   const st = heroState(get(), heroId);
@@ -834,7 +834,7 @@ export function bankWithdraw(get: Get, set: Set, index: number): void {
   const dep = (get().bank ?? [])[index];
   if (!dep) return;
   if (dep.kind === 'mecenat') {
-    // Retrait de Mécénat (ACE p.220) = 1 Activité résolue par un Test d'Évaluation Intermédiaire :
+    // Retrait de Mécénat (ACE 12 l.49) = 1 Activité résolue par un Test d'Évaluation Intermédiaire :
     // la modale d'Activité applique la bande (payoutPct) et consomme l'Activité à la validation.
     const def = ACTIVITIES.find((a) => a.resolver === 'mecenat');
     if (def) openCatalogActivity(get, set, dep.heroId, def.id, { depositIndex: index });
@@ -880,7 +880,7 @@ function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: bo
 export function interludeEnd(get: Get, set: Set): void {
   const itl = get().interlude;
   if (!itl) return;
-  // Issues d'Activité DIFFÉRÉES (« le premier jour de votre prochaine aventure », ACE p.219) —
+  // Issues d'Activité DIFFÉRÉES (« le premier jour de votre prochaine aventure », ACE 12 l.15) —
   // capturées avant de fermer, appliquées APRÈS le repos de clôture (cf. plus bas).
   const deferred = get().party
     .map((h) => ({ h, ops: itl.perHero[h.id]?.closeOps ?? [] }))
@@ -908,7 +908,7 @@ export function interludeEnd(get: Get, set: Set): void {
   // unique). `fedDaily` : la vie en ville (gîte ET couvert) est couverte par l'Argent à
   // gaspiller — la Faim RAW ne s'applique pas à la période (LDB 23, « le coût de la vie »).
   sleepParty(get, set, itl.weeks * 7, { fedDaily: true });
-  // Issues DIFFÉRÉES à la clôture (États « le premier jour de votre prochaine aventure », ACE p.219) :
+  // Issues DIFFÉRÉES à la clôture (États « le premier jour de votre prochaine aventure », ACE 12 l.15) :
   // posées APRÈS le repos de clôture — un État posé avant serait dissipé par la récupération.
   if (deferred.length) {
     const after: string[] = [];

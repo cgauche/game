@@ -409,7 +409,7 @@ export function buySpell(get: Get, set: Set, heroId: string, spellId: string, op
         msg = `${clone.name} ne peut pas apprendre ${sp.label} (déjà connu ou Talent manquant).`;
         return h;
       }
-      // Recherche universitaire (ACE Annexe I p.220) : « mémoriser un sort pour 100PX de moins que
+      // Recherche universitaire (ACE 12 l.55) : « mémoriser un sort pour 100PX de moins que
       // son prix normal (pour un minimum de 100PX) » — remise sur CET achat seul, jamais au-dessus
       // du prix normal (plancher inerte pour les sorts à moins de 100 PX).
       const cost = opts.discountXp && full > 0 ? Math.min(full, Math.max(100, full - opts.discountXp)) : full;

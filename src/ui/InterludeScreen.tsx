@@ -765,7 +765,7 @@ function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
   );
 }
 
-/** Opérations bancaires (ch.23 l.154-165) + Mécénat (ACE p.220) : dépôt sans jet — le pied porte
+/** Opérations bancaires (ch.23 l.154-165) + Mécénat (ACE 12 l.45-49) : dépôt sans jet — le pied porte
  *  les formules (Indice d'intérêts, découverte de planque) et les trois dépôts possibles. */
 function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Combatant; disabled: boolean; bronzeBlocked: boolean; money: Money; mecenat?: ActivityDef }) {
   const bankDeposit = useGame((s) => s.interludeBank);

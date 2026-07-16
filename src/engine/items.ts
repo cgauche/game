@@ -209,7 +209,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     ...(t.indirect ? { indirect: true } : {}), // mortier/catapulte « arc élevé » (AA p.122-123) : tir INDIRECT → viser une case
     ...(t.onHitEffects?.length ? { onHitEffects: t.onHitEffects } : {}), // effets « à la touche » en DONNÉE (Canon à flammes nain → En flammes, ADE II ch.08 l.243)
     ...(t.minRangeBand ? { minRangeBand: t.minRangeBand } : {}), // PORTÉE MINIMALE (machine de siège : pas de Bout Portant / trébuchet-mortier sous Portée Courte, ADE II ch.08 l.251/253)
-    ...(t.requiresMastery ? { requiresMastery: true } : {}), // arme inhabituelle (ACE Annexe I p.219) : maîtrise requise
+    ...(t.requiresMastery ? { requiresMastery: true } : {}), // arme inhabituelle (ACE 12 l.17-21) : maîtrise requise
     hands: kind === 'melee' || kind === 'ranged' ? (t.hands === 2 ? 2 : 1) : undefined, // champ typé (LDB 62)
     qty: kind === 'ammo' ? (t.packSize ?? 1) : undefined, // taille de paquet typée
     ...(t.ammoRangeMod != null ? { ammoRangeMod: t.ammoRangeMod } : {}), // modificateur de Portée de la munition (LDB 62)

@@ -52,7 +52,7 @@ const BOOKS = [
   { ab: 'T2',         dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik" },
   { ab: 'T2C',        dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon" },
   { ab: 'T3',         dir: "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone" },
-  { ab: 'Altdorf',    dir: "Source/Warhammer v4 - Aldorf la Couronne de l'Empire" },
+  { ab: 'ACE',        dir: "Source/Warhammer v4 - Aldorf la Couronne de l'Empire" },
   { ab: 'Ubersreik',  dir: "Source/Warhammer v4 - Aventures a Ubersreik" },
   { ab: 'NADAJ',      dir: "Source/Warhammer v4 - Nuits agitees & dures journées" },
 ]

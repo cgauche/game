@@ -85,7 +85,7 @@ export type StageOutcome =
   | 'suppressExposure' | 'gatherInfo' | 'noSurprise' | 'mapMade' | 'rerollToken' | 'countsAsRest' | 'campCare'
   | 'extraActivity' | 'skipStage' | 'fullRecovery' | 'worsenWeather';
 
-/** Bande d'ISSUE par Degrés de Réussite d'une Activité (tables « DR → résultat », ACE Annexe I p.219-220) :
+/** Bande d'ISSUE par Degrés de Réussite d'une Activité (tables « DR → résultat », ACE 12 l.31-65) :
  *  bornes de DR INCLUSIVES ; `on` distingue ±0 (« +0 à +1 » = succès / « −0 à −1 » = échec, comme les
  *  tables RAW) et porte la Maladresse ; `ops` = effet mécanique (GameOp, langue UNIQUE des effets) ;
  *  `resolver` = logique bespoke nommée (cf. dispatch d'interlude) ; `payoutPct` = rendu monétaire d'un
@@ -116,7 +116,7 @@ export type BattleCond =
   | 'generalDown' | 'intervention' | 'noIntervention' | 'combatWon' | 'combatLost';
 
 /** Bandes d'issue applicables à un jet résolu. Maladresse : les bandes `on:'fumble'` REMPLACENT toute
- *  autre issue (« réalisez un Test sur le Tableau de la Colère des Dieux […] à la place », ACE p.219) ;
+ *  autre issue (« réalisez un Test sur le Tableau de la Colère des Dieux […] à la place », ACE 12 l.15) ;
  *  sans bande de Maladresse déclarée, la Maladresse reste un échec ordinaire. Une bande sans `on`
  *  matche par DR seul. PUR. */
 export function matchOutcomes(def: ActivityDef, res: { success: boolean; sl: number; fumble?: boolean }): OutcomeBand[] {
@@ -219,7 +219,7 @@ export interface ActivityDef extends TestSpec {
   /** Gate GÉOGRAPHIQUE : ids de lieux de la carte du monde (`MapPlace.id`) où l'Activité est proposable
    *  (ACE Annexe I = « à Altdorf »). Absent = partout — résolu par `activityAvailableAt`. */
   where?: string[];
-  /** Mise MINIMALE d'un dépôt bancaire de cette Activité (Mécénat : « au moins 5 CO », ACE p.220). */
+  /** Mise MINIMALE d'un dépôt bancaire de cette Activité (Mécénat : « au moins 5 CO », ACE 12 l.49). */
   minInvest?: { gold: number };
   /** Issue de portée Étape (voyage). */
   stageOutcome?: StageOutcome;

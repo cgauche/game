@@ -53,7 +53,7 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 - **ACE** (Altdorf – Couronne de l'Empire) = `Source/Warhammer v4 - Aldorf la Couronne de l'Empire/` — **UNIQUEMENT
   l'Annexe I « Activités à Altdorf » (ch.12)** : 5 Activités « entre deux aventures » gated par lieu (Pénitence,
   Entraînement à une arme inhabituelle, Tester des objets magiques, Mécénat, Recherche universitaire) — cf. `activities.json`
-  (`source.book: "ACE"`, `where: ["altdorf"]`). Le reste du livre = contenu de campagne (tout passage de
+  (`book: "altdorf-couronne-de-l-empire"`, l'id de `books.json` ; `where: ["altdorf"]`). Le reste du livre = contenu de campagne (tout passage de
   règle supplémentaire s'ajoute au périmètre ici, arbitrage 2026-07-10). Comme AA/ZI/MDG : extraction curée à la main.
 - **MSLRC** (Mort sur le Reik – Compagnon, T2C) = `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/`
   (19 chapitres extraits) — autorisé 2026-07-10 (#277). Périmètre constaté : **ch.5 « Navigation

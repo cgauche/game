@@ -329,7 +329,7 @@ describe('Convalescence — Activité d’interlude (ADE II Annexe I « Les chos
   });
 });
 
-// ── Activités d'Altdorf (ACE Annexe I p.219-220) : bandes d'issue + gate géographique ─────────────
+// ── Activités d'Altdorf (ACE 12 l.9-67) : bandes d'issue + gate géographique ─────────────
 
 describe('matchOutcomes — bandes d’issue par DR (ACE Annexe I)', () => {
   const pen = activityById('penitence')!;

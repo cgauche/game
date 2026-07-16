@@ -501,7 +501,7 @@ export interface TrappingData {
    *  masse/marteau de guerre/demi-lance). Le picker pose le choix sur `ItemInstance.shape` ; défaut =
    *  `shape` du trapping. Absent pour une arme à forme unique. */
   formChoices?: string[];
-  /** Arme INHABITUELLE (ACE Annexe I p.219 « Entraînement avec une arme inhabituelle ») : exige la
+  /** Arme INHABITUELLE (ACE 12 l.17 « Entraînement avec une arme inhabituelle ») : exige la
    *  maîtrise (`Combatant.masteredWeapons`) pour être maniée avec la Compétence du Groupe. Flag
    *  d'AUTEUR (artefacts uniques : « le couteau de lancer de Harald L'Infâme ») — éditable au Codex. */
   requiresMastery?: boolean;

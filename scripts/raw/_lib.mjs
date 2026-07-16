@@ -21,7 +21,7 @@ export const BOOKS = [
   ['T2', 'Source/Warhammer v4 - 2.0 Mort sur le Reik'],
   ['T2C', 'Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon'],
   ['T3', 'Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone'],
-  ['Altdorf', "Source/Warhammer v4 - Aldorf la Couronne de l'Empire"],
+  ['ACE', "Source/Warhammer v4 - Aldorf la Couronne de l'Empire"],
   ['Ubersreik', 'Source/Warhammer v4 - Aventures a Ubersreik'],
   ['NADAJ', 'Source/Warhammer v4 - Nuits agitees & dures journées'],
   ['MDG', 'Source/WH - V4 - La Mer de Griffe'],
@@ -47,8 +47,8 @@ const EXTRA_ABBR_VARIANTS = [
   ['ADE I', 'ADE ?1'],        // ADE1 (chiffre arabe)
   ['Middenheim', 'Midd\\w*'],
   ['NADAJ', 'NAD\\w+'],
-  ['Altdorf', 'Ald\\w+'],     // dossier Source : "Aldorf"
-  ['Altdorf', 'Alt\\w+'],     // abréviation : "Altdorf"
+  ['ACE', 'Ald\\w+'],     // dossier Source : "Aldorf"
+  ['ACE', 'Alt\\w+'],     // abréviation historique : "Altdorf"
   ['Ubersreik', 'Uber\\w+'],
 ]
 const VARIANT_COVERED = new Set(EXTRA_ABBR_VARIANTS.map(([book]) => book))

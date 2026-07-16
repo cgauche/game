@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`00-index.md`](00-index.md).
 >
-> **Chapitres source :** `ADE II 3` · `ADE II 9` · `T2 11` · `T2C 7` · `T2C 9` · `T2C 14` · `Altdorf 10` · `Altdorf 12` · `EDOC 12`.
+> **Chapitres source :** `ADE II 3` · `ADE II 9` · `T2 11` · `T2C 7` · `T2C 9` · `T2C 14` · `ACE 10` · `ACE 12` · `EDOC 12`.
 
 ---
 
@@ -1945,7 +1945,7 @@ Sorte de vilain petit canard de sa famille, Sophie est issue de l'illustre (et e
 <span id="page-84-0" data-folio="85"></span>
 
 
-## [Altdorf 10] L’Espionnage à Altdorf
+## [ACE 10] L’Espionnage à Altdorf
 
 *Pages PDF 212-216*
 
@@ -2247,7 +2247,7 @@ Alors que les Marshalls de la Bannière Secrète soutiennent une campagne d'unif
 Les Personnages sont engagés par un agent de Naggaroth qui se fait passer pour un amateur de livres rares : ils doivent voler le Volume VII du *Nouvel Apocryphe* à un collectionneur privé de Karnevalsplatz. Mais le collectionneur privé est en fait un agent du Untersuchung, qui répand des rumeurs sur le livre pour attirer les personnes intéressées par la littérature hérétique. Malheureusement pour toutes les personnes impliquées, des agents de Cendrus Laeoc ont également pour mission de s'emparer du livre : ils doivent empêcher les informations qu'il contient de tomber dans des mains humaines. Pris pour des agents de Naggaroth par Laeoc et par des hérétiques potentiels par le Untersuchung, les Personnages seront-ils capables de satisfaire leurs poursuivants en détournant leur attention vers leur employeur ? Que feront-ils quand un marchand des Marcheurs de Brume, content de semer la discorde à Altdorf, leur proposera un véritable exemplaire du livre ?
 
 
-## [Altdorf 12] Activités
+## [ACE 12] Activités
 
 *Pages PDF 222-227*
 

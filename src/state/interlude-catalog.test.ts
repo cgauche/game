@@ -1,6 +1,6 @@
 /**
  * Catalogue d'Activités d'interlude data-driven (`activities.json`) — Activités d'Altdorf
- * (ACE Annexe I p.219-220) branchées dans le flux d'interlude :
+ * (ACE 12 l.9-67) branchées dans le flux d'interlude :
  *  - gate géographique `where` résolu contre le lieu courant (carte du monde ↔ scène) ;
  *  - Pénitence : ±Péché (op sinMod), Exténué DIFFÉRÉ à la clôture, Maladresse → Colère des dieux ;
  *  - Tester des objets magiques : identification (voie ACE, coexiste avec l'ADE2) + Exposition ;
