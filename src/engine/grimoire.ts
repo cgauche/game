@@ -1,21 +1,21 @@
 /**
  * Grimoire — apprentissage et mémorisation des sorts (LDB 46 « Mémoriser des
- * Sorts » l.16-20, 47 « Grimoires » l.33-34, et Talents de lanceur, LDB 10) :
+ * Sorts » l.16-20, 47 « Grimoires » l.19-21, et Talents de lanceur, LDB 10) :
  *
  *  - Magie mineure : « mémorise de façon permanente un nombre de Sorts égal à
- *    votre Bonus de Force Mentale » au Talent (LDB 10 l.587) → GRATUITS tant que
+ *    votre Bonus de Force Mentale » au Talent (LDB 10 l.714) → GRATUITS tant que
  *    le héros en connaît moins que BFM ; ensuite par bandes INCLUSIVES
  *    (« Jusqu'à Bonus FM ×1 : 50 PX », ×2 : 100…).
  *  - Magie des Arcanes (Domaine) : sorts du Domaine + Sorts d'Arcane communs,
  *    par bandes de Bonus d'Intelligence à 100/200/300… PX (mêmes bandes
- *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
+ *    inclusives — aucun sort inclus au Talent, LDB 10 l.680-686).
  *  - Invocation (Culte) : « l'un des Miracles de son culte » au Talent (le 1er
  *    est inclus) ; suivants à 100 PX × Miracles connus.
  *  - Béni (Culte) : « reçoit les SIX Bénédictions de son culte » (LDB 41,
  *    Bénédictions par culte — table verbatim ci-dessous), aucun achat.
  *  - Magie du Chaos : chaque sort = reprise du Talent (100 PX + 1 Corruption).
  *
- * Objet grimoire (LDB 47 l.34) : un sort de son Domaine NON mémorisé peut être
+ * Objet grimoire (LDB 46 l.95-97, 47 l.19-21) : un sort de son Domaine NON mémorisé peut être
  * lancé depuis un grimoire porté, à deux mains, au NI DOUBLÉ.
  */
 import { Combatant } from './types';
@@ -82,7 +82,7 @@ export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | u
  * Coût en PX pour APPRENDRE `spell` maintenant (LDB 10 — Talents de lanceur) ;
  * null si inapprenable (déjà connu / aucun Talent éligible).
  *  - Bénédictions : 0 (« reçoit les six Bénédictions de son culte »).
- *  - Magie mineure : BFM sorts INCLUS au Talent (l.587 « vous mémorisez… un
+ *  - Magie mineure : BFM sorts INCLUS au Talent (l.714 « vous mémorisez… un
  *    nombre de Sorts égal à votre Bonus de Force Mentale ») → 0 PX tant que
  *    connus < BFM ; ensuite 50 × bande (« Jusqu'à BFM ×N » — bande INCLUSIVE :
  *    à exactement BFM×N connus, le suivant est encore dans la bande N).
@@ -100,7 +100,7 @@ export function spellCost(c: Combatant, spell: SpellData): number | null {
   const known = knownCount(c, fam);
   if (fam === 'mineure') {
     const band = Math.max(1, bonus(effectiveChar(c, 'force-mentale')));
-    if (known < band) return 0; // inclus au Talent (LDB 10 l.587)
+    if (known < band) return 0; // inclus au Talent (LDB 10 l.714)
     return 50 * Math.ceil(known / band);
   }
   if (fam === 'arcane') {
@@ -121,14 +121,14 @@ export function learnableSpells(c: Combatant): { spell: SpellData; cost: number 
   return out;
 }
 
-/** Un objet-grimoire dans le paquetage (LDB 47 l.34 — lecture à deux mains). Capacité par-OBJET
+/** Un objet-grimoire dans le paquetage (LDB 47 l.19-21 — lecture à deux mains). Capacité par-OBJET
  *  `isGrimoire`, NON gatée sur le port (un grimoire dans le sac reste lisible) — lue PAR ID dans le
  *  catalogue (≠ nom — multilangue-safe). */
 export function carriedGrimoire(c: Combatant): { name: string } | undefined {
   return (c.items ?? []).find((i) => itemCapability(i, 'isGrimoire') && !i.destroyed);
 }
 
-/** Sort lançable DEPUIS le grimoire porté (LDB 47 l.34) : non mémorisé, du Domaine
+/** Sort lançable DEPUIS le grimoire porté (LDB 46 l.95-97, 47 l.19-21) : non mémorisé, du Domaine
  *  d'un Talent Magie des Arcanes du lanceur — le NI est DOUBLÉ à l'incantation. */
 export function canCastFromGrimoire(c: Combatant, spell: SpellData): boolean {
   if ((c.spells ?? []).some((x) => x === spell.id)) return false; // mémorisé : pas besoin du livre
