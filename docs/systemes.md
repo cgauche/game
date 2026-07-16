@@ -62,7 +62,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `baseTestMods` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `actorIn/inBattleId` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `applyOps/GameOp` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
-| `GameOpEditor` |  | U | U |  | U |  | U | U | U | U | U | U |  |  | U | U |
+| `GameOpEditor` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U | U |
 | `passiveMods` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `fireTriggers` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `resolveFreeAttacks` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
@@ -70,7 +70,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `cascade/registerCascadeApplier` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `rule/policy` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `netOwnership` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
-| `RefField` |  | U | U |  | U |  | U | U | U | U | U | U |  |  | U | U |
+| `RefField` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U | U |
 | `Prose` |  | U | U |  | U |  | U | U | U | U | U | U |  |  | U | U |
 | `resolveRender/pickBackend` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `MasterDetail` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  | U |

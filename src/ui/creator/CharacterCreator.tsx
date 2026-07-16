@@ -68,7 +68,7 @@ import { CodexSections } from '../compendium/CodexEntry';
 import { EntityRef, EntityChoice, SkillChip, TalentChip } from '../EntityChip';
 import { raceSkillSection, raceTalentSection, type CodexSection } from '../compendium/registry';
 import { CharStatsGrid } from '../CharStatsGrid';
-import { opSummary } from '../editor/GameOpEditor';
+import { GameOpChips } from '../GameOpChips';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { bodyHeight } from '../../gameIso/rig/composeRig';
 import { hash32 } from '../../gameIso/detail/hash';
@@ -1317,7 +1317,7 @@ export function StarScreen({ d, setD }: StepProps) {
             meta={
               <>
                 {sign.dates && <span className="chip">Dates <b>{sign.dates}</b></span>}
-                {sign.effect?.map((o, i) => <span key={i} className="chip">{opSummary(o)}</span>)}
+                <GameOpChips ops={sign.effect ?? []} />
               </>
             }
             sections={

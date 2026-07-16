@@ -311,6 +311,11 @@ appliers du jour.
   via `getPointAtLength` du `path` + `getScreenCTM()` (coordonnées écran réelles du trait) — requiert
   alors `browser_run_code_unsafe` (chargé via ToolSearch, ABSENT du set d'outils de démarrage).
 
+- **Occlusion par footer fixe (`.bar`)** : un élément visuellement cliquable peut être RECOUVERT au
+  point de clic — toujours `scrollIntoView({block:'center'})` AVANT de lire le `getBoundingClientRect`
+  et de cliquer ; vérifier par `elementFromPoint` en cas de clic mort (vécu recette #495, créateur
+  étape Caractéristiques).
+
 - **Mode Pousser (bélier/engin de siège) au clavier — séquence exacte** (#199) : cliquer le slot
   « Pousser » de la barre d'action ouvre le mode-CASE (`battle.action === 'push'`) mais laisse ce
   BOUTON focalisé dans le DOM. `ArrowUp/Down/Left/Right` posent/déplacent `combatCursor` (le **1er

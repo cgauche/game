@@ -2,18 +2,18 @@
  * Couche `describe` du Codex — projette les données MÉCANIQUES d'une fiche (modificateurs passifs,
  * profil de manœuvre, effets déclenchés) en `CodexSection` lisibles. SOURCE UNIQUE réutilisée par
  * toutes les catégories porteuses (traits, mutations, qualités…) : enrichir une fiche = composer ces
- * sections, pas réécrire un rendu. Réutilise `opSummary` (le formateur d'ops de l'éditeur) et
- * `ATTACK_LABEL` (libellés de manœuvre) — aucun vocabulaire dupliqué.
+ * sections, pas réécrire un rendu. Réutilise `opRows` (ref #495, renderer JOUEUR — chips codex-liées,
+ * jamais le résumeur d'atelier `opSummary`), `humanizeCondition` (ref #495, renderer JOUEUR — jamais
+ * le résumeur d'atelier `condSummary`) et `ATTACK_LABEL` (libellés de manœuvre).
  */
 import type { CodexRow, CodexSection } from './registry';
-import { opSummary } from '../editor/GameOpEditor';
-import { condSummary } from '../editor/ConditionEditor';
+import { opRows } from './opRows';
 import type { GameOp } from '../../engine/ops';
 import type { Flow, TriggeredEffect } from '../../state/flow';
 import { refLabel } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { TRIGGER_LABEL, onLabel } from './triggerLabels';
-import { humanizeFlowSentence } from './humanize';
+import { humanizeFlowSentence, humanizeOp, humanizeCondition } from './humanize';
 
 /** Octrois de carrière (`grantCareerSkill`/`grantCareerTalent`) — affichés à part (cross-réf cliquable),
  *  jamais comme « modificateur continu ». Filtrés ici pour ne pas doublonner avec `careerGrantSection`. */
@@ -24,7 +24,7 @@ const CAREER_GRANT_OPS = new Set<GameOp['op']>(['grantCareerSkill', 'grantCareer
 export function passiveSection(ops: GameOp[] | undefined, title = 'Modificateurs passifs'): CodexSection | null {
   const mods = (ops ?? []).filter((o) => !CAREER_GRANT_OPS.has(o.op));
   if (!mods.length) return null;
-  return { title, layout: 'list', rows: mods.map((o) => ({ t: 'text', text: opSummary(o) }) as CodexRow) };
+  return { title, layout: 'list', rows: opRows(mods) };
 }
 
 /** Compétence/Talent ajouté à « n'importe quelle Carrière » (LDB 10, ops `grantCareerSkill`/
@@ -39,14 +39,14 @@ export function careerGrantSection(ops: GameOp[] | undefined, title = 'Ajouté �
   return rows.length ? { title, layout: 'chips', rows } : null;
 }
 
-/** Résumé LISIBLE d'un Flow d'effet (conditions `if` + ops `do`, jet `test`) — réutilise `condSummary`/
- *  `opSummary`. Le Test (SIMPLE ou OPPOSÉ) n'est PLUS une op : c'est un nœud de STRUCTURE Flow
- *  (`{kind:'test'}`) décrit ci-dessous (zéro vocabulaire dupliqué). */
+/** Résumé LISIBLE d'un Flow d'effet (conditions `if` + ops `do`, jet `test`) — réutilise
+ *  `humanizeCondition`/`humanizeOp` (registre JOUEUR). Le Test (SIMPLE ou OPPOSÉ) n'est PLUS une op :
+ *  c'est un nœud de STRUCTURE Flow (`{kind:'test'}`) décrit ci-dessous (zéro vocabulaire dupliqué). */
 function flowSummary(f: Flow): string {
   switch (f.kind) {
-    case 'do': return f.effect.type === 'ops' ? f.effect.ops.map(opSummary).join(', ') : f.effect.type;
+    case 'do': return f.effect.type === 'ops' ? f.effect.ops.map(humanizeOp).join(', ') : f.effect.type;
     case 'seq': return f.steps.map(flowSummary).filter(Boolean).join(' ; ');
-    case 'if': return `si ${condSummary(f.cond)} → ${flowSummary(f.then)}${f.else ? ` (sinon ${flowSummary(f.else)})` : ''}`;
+    case 'if': return `si ${humanizeCondition(f.cond)} → ${flowSummary(f.then)}${f.else ? ` (sinon ${flowSummary(f.else)})` : ''}`;
     case 'test': {
       const who = f.test.skill ? refLabel('skills', { id: f.test.skill, spec: f.test.spec }) : (f.test.characteristic ?? '');
       const opp = f.test.opposed ? ` opposé (${f.test.opposed.attackerLabel ?? f.test.opposed.attacker})` : '';

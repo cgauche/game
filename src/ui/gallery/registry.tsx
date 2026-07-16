@@ -41,12 +41,13 @@ import { MenuCard, MenuSection, MenuButton, MenuToggle } from '../MenuCard';
 import { CreatorDice } from '../creator/CreatorDice';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
-import { species, careers, levelsForCareer, stars, rigSpeciesId, allAxes, CHAR_ABR } from '../../data';
+import { species, careers, levelsForCareer, stars, mutations, rigSpeciesId, allAxes, CHAR_ABR } from '../../data';
 import { makePregens } from '../../data/pregens';
 import { toMoney } from '../../engine/money';
 import { RoseAxes } from '../RoseAxes';
 import { CharStatsGrid } from '../CharStatsGrid';
 import { axesProfile } from '../../engine/axes';
+import { GameOpChips } from '../GameOpChips';
 
 // ── Données réelles pour les spécimens vivants (aucune donnée inventée) ──
 const HUMAN_SPECIES = species.find((s) => s.id === 'humains-reiklander') ?? species[0];
@@ -523,6 +524,21 @@ function GameOpEditorDemo() {
   return <GameOpEditor ops={ops} onChange={setOps} />;
 }
 
+/** Ops RÉELLES (mutations.json) : charMod (ancré Caractéristiques) + grantTalent (ancré Talents) de
+ *  « Tête bestiale (Chien) », `ap` (sans ancre Codex → repli `humanizeOp` en phrase) de « Tête pointue ». */
+const GAMEOP_CHIPS_DEMO_OPS: GameOp[] = [
+  ...(mutations.find((m) => m.id === 'tete-bestiale-chien')?.passive ?? []),
+  ...(mutations.find((m) => m.id === 'tete-pointue')?.passive?.filter((o) => o.op === 'ap') ?? []),
+];
+
+function GameOpChipsDemo() {
+  return (
+    <div className="row-flex skill-tags">
+      <GameOpChips ops={GAMEOP_CHIPS_DEMO_OPS} />
+    </div>
+  );
+}
+
 /** RollShell/RollRow : #396 (`useRollFrisson.ts`/`DiceRoll.tsx`/`RollRow.tsx`/`RollShell.tsx`) est du
  *  WIP NON committé en cours d'arbitrage — les monter vivants coupleriait la galerie à une forme
  *  instable. Maquette STATIQUE des états (composée des MÊMES classes canon `.modal`/`.rm-vs`/
@@ -596,6 +612,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'ParchmentCard', file: 'src/ui/ParchmentCard.tsx', category: 'Négoce & activités', render: ParchmentCardDemo },
   { name: 'Prose', file: 'src/ui/Prose.tsx', category: 'Texte', render: ProseDemo },
   { name: 'GameOpEditor', file: 'src/ui/editor/GameOpEditor.tsx', category: 'Éditeur', render: GameOpEditorDemo },
+  { name: 'GameOpChips', file: 'src/ui/GameOpChips.tsx', category: 'Texte', render: GameOpChipsDemo },
   { name: 'MetalStatus', file: 'src/ui/MetalStatus.tsx', category: 'Atelier du scribe', render: MetalStatusDemo },
   { name: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
   { name: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={SAMPLE_CAREER_LEVELS} currentLevel={2} /> },

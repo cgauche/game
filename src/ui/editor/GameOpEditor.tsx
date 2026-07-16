@@ -31,8 +31,10 @@ const CHARS = Object.keys(CHAR_LABELS) as CharKey[];
 // Vocabulaire COMPLET — libellé + menu groupé par intention
 // ---------------------------------------------------------------------------
 
-/** Libellé court (texte SEUL, sert aussi de `<option>` natif) de CHAQUE op du vocabulaire `GameOp`. */
-const OP_LABEL: Record<GameOp['op'], string> = {
+/** Libellé court (texte SEUL, sert aussi de `<option>` natif) de CHAQUE op du vocabulaire `GameOp` —
+ *  `Record` EXHAUSTIF (TS force sa complétude) : source runtime de l'énumération des kinds pour les
+ *  tests (`Object.keys(OP_LABEL)`), sans dupliquer la liste. */
+export const OP_LABEL: Record<GameOp['op'], string> = {
   wounds: 'Blessures (ignore BE/PA)',
   heal: 'Soin (Blessures rendues)',
   healCaster: 'Soin au lanceur',
