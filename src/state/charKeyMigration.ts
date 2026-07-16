@@ -26,8 +26,9 @@ const CHARKEY_SCALAR_FIELDS = new Set([
   'characteristic', 'char', 'bonusOf', 'charOf', 'castingChar', 'radiusStat', 'cap', 'attacker',
   'rangeChar', 'stat', 'resolveChar', 'testModChar',
 ]);
-/** Champs dont les CLÉS (pas les valeurs) sont des CharKey : `Combatant.characteristics`/`baseChars`,
- *  `CreatorDraft.charAdvancesAlloc`, `Character.charAdvances`, `CustomStatblock.char`. */
+/** Champs dont les CLÉS (pas les valeurs) sont des CharKey : les caractéristiques brutes du
+ *  `Combatant`/`baseChars`, `CreatorDraft.charAdvancesAlloc`, `Character.charAdvances`,
+ *  `CustomStatblock.char`. */
 const CHARKEY_RECORD_FIELDS = new Set(['characteristics', 'baseChar', 'char', 'charAdvances', 'charAdvancesAlloc', 'chars']);
 
 /** Réécrit récursivement TOUTE occurrence de CharKey (valeur scalaire OU clé de Record) rencontrée sous

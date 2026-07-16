@@ -346,7 +346,7 @@ export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | u
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * 5) careerLevels.characteristics — CharKey[] (vocabulaire FERMÉ) : multi-sélection
+ * 5) characteristics de careerLevels — CharKey[] (vocabulaire FERMÉ) : multi-sélection
  *    de `CHAR_KEYS` (pas de saisie libre — un id de carac ≠ libellé multilangue).
  * ──────────────────────────────────────────────────────────────────────────── */
 

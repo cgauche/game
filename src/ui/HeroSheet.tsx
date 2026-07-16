@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Combatant, CharKey } from '../engine/types';
 import type { Money } from '../engine/money';
 import { dominantAxes } from '../engine/axes';
+import { effectiveChar } from '../engine/characteristics';
 import { itemLabel } from '../engine/items';
 import { CORE_AXIS_IDS, findSpellById } from '../data';
 import { Coins } from './Coins';
@@ -84,7 +85,7 @@ export function HeroSheet({
 
       <CharStatsGrid
         size="sm"
-        value={(k) => hero.characteristics[k]}
+        value={(k) => effectiveChar(hero, k)}
         valClass={(k) => statAnnotations?.[k]?.valClass}
         note={(k) => statAnnotations?.[k]?.note}
         className="hero-sheet-stats"

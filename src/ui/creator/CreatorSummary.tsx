@@ -19,6 +19,7 @@
  */
 import { CSSProperties, useMemo } from 'react';
 import { CHAR_KEYS, CharKey, Combatant } from '../../engine/types';
+import { effectiveChar } from '../../engine/characteristics';
 import { Coins } from '../Coins';
 import type { Appearance } from '../../gameIso/rig/appearance';
 import { CharacterPreview } from '../CharacterPreview';
@@ -77,15 +78,20 @@ export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number
   const sp = draftSpecies(d);
   const level = draftLevel(d);
   const baseChars = draftChars(d);
-  // Surlignage des Caractéristiques AUGMENTÉES (talents +5, Augmentations gratuites) : le héros
-  // prévisualisé porte le RÉSULTAT, `baseChars` l'ÉDITION brute — un écart signale une contribution
-  // externe (`HeroSheet` `statAnnotations`, data-driven, aucun branchement créateur dans la primitive).
+  // Surlignage des Caractéristiques MODIFIÉES (talents +5, Augmentations gratuites, malus) : l'écart
+  // se mesure à la valeur EFFECTIVE (`effectiveChar`, lecteur canonique #498) contre l'ÉDITION brute
+  // du brouillon (`baseChars`) — idiome du site canonique `CharacterSheet.tsx` (`ok-text`/`warn-text`,
+  // `HeroSheet` `statAnnotations`, data-driven, aucun branchement créateur dans la primitive).
   const statAnnotations = useMemo(() => {
     if (!hero) return undefined;
     const out: Partial<Record<CharKey, { valClass?: string; note?: string }>> = {};
     for (const k of CHAR_KEYS) {
-      if (hero.characteristics[k] > baseChars[k]) {
-        out[k] = { valClass: 'boost', note: `${baseChars[k]} + Augmentations/talents` };
+      const e = effectiveChar(hero, k);
+      const b = baseChars[k];
+      if (e > b) {
+        out[k] = { valClass: 'ok-text', note: `${b} + Augmentations/talents` };
+      } else if (e < b) {
+        out[k] = { valClass: 'warn-text', note: `Base ${b} (${e - b} de modificateurs)` };
       }
     }
     return out;

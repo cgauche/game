@@ -9,7 +9,7 @@ import { CodexRef } from './compendium/CodexRef';
 import { QualityChips } from './EntityChip';
 import { ItemIcon } from './ItemIcon';
 import { MediaSelect, type MediaOption } from './MediaSelect';
-import { charBonus } from '../engine/characteristics';
+import { bonus, effectiveChar } from '../engine/characteristics';
 import { qualityRefLabel } from '../data';
 import { weaponStatParts } from './weaponStats';
 import { Icon } from './Icon';
@@ -138,7 +138,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const weapons = items.filter((i) => (i.kind === 'melee' || i.kind === 'ranged') && !i.destroyed);
   // Main SECONDAIRE (LDB 14 l.138) : armes de mêlée à une main OU pistolets seulement (pas d'arc/arbalète ordinaire).
   const offHandWeapons = weapons.filter(isOffHandEligible);
-  const strBonus = charBonus(hero.characteristics, 'force');
+  const strBonus = bonus(effectiveChar(hero, 'force'));
 
   // Mannequin : MÊME recette que le token de jeu (pickBackend) — apparence enrichie des
   // mutations/blessures + équipement dérivé (couche visible déjà triée par equipFromCombatant).

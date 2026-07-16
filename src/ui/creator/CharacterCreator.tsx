@@ -50,6 +50,7 @@ import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../
 import { rule } from '../../engine/policy';
 import { damageString } from '../../engine/items';
 import { skillBaseValue } from '../../engine/skills';
+import { effectiveChar } from '../../engine/characteristics';
 import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
 import { formatSpellRange, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { Coins } from '../Coins';
@@ -1431,13 +1432,17 @@ export function SkillsScreen({ d, setD, skillsSub, setSkillsSub }: StepProps): R
   );
 }
 
-/** Valeurs VIVANTES : caractéristique liée + valeur du héros prévisualisé (talents +5/Augmentations
- *  incluses) — partagé par les trois sous-écrans (rubrique `.rf` gravée sous le nom de la plaque). */
+/** Valeurs VIVANTES : caractéristique liée + valeur EFFECTIVE du héros prévisualisé (`effectiveChar`,
+ *  lecteur canonique #498 — talents +5/Augmentations sont des passifs continus, jamais cuits dans les
+ *  caractéristiques brutes du `Combatant`) — partagé par les trois sous-écrans (rubrique `.rf` gravée
+ *  sous le nom de la plaque). */
 function liveCharOf(d: CreatorDraft) {
-  const liveChars: Characteristics = previewHero(d)?.characteristics ?? draftChars(d);
+  const hero = previewHero(d);
+  const fallback: Characteristics = draftChars(d);
   return (raw: string): { k: CharKey | null; v: number } => {
     const k = skillCharKey(raw);
-    return { k, v: k ? liveChars[k] : 0 };
+    if (!k) return { k, v: 0 };
+    return { k, v: hero ? effectiveChar(hero, k) : fallback[k] };
   };
 }
 
@@ -2108,7 +2113,7 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
     <div className="creator-presentation-screen">
       <div className="presentation-col presentation-left">
         <Rubrique title="Profil">
-          <CharStatsGrid size="sm" value={(k) => hero.characteristics[k]} />
+          <CharStatsGrid size="sm" value={(k) => effectiveChar(hero, k)} />
         </Rubrique>
         <Rubrique title="Valeurs dérivées">
           <div className="creator-derived">

@@ -9,7 +9,7 @@ import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, giveTrappingLa
 import { OptionChooser } from './OptionChooser';
 import { CHAR_LABELS, HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { locationLabel } from '../engine/combat';
-import { effectiveChar, charBonus } from '../engine/characteristics';
+import { effectiveChar, bonus } from '../engine/characteristics';
 import { baseWithTalents } from '../engine/talentEffects';
 import { refKey, parseRefKey } from '../engine/careerSlots';
 import { weaponStatParts } from './weaponStats';
@@ -482,7 +482,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
     if (it.kind === 'melee' || it.kind === 'ranged') {
       // Dégâts résolus (« +BF+4 (7) ») + Allonge/Portée via le composeur partagé `weaponStatParts`
       // (BF du héros injecté, comme au combat) ; les qualités restent gérées ici (masquage non-identifié).
-      const mech = weaponStatParts(it, charBonus(hero.characteristics, 'force')).join(' · ');
+      const mech = weaponStatParts(it, bonus(effectiveChar(hero, 'force'))).join(' · ');
       return <>{mech}{mech && quals ? ' · ' : ''}{quals}</>;
     }
     if (it.kind === 'armor')

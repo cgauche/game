@@ -26,6 +26,7 @@ import { FigTile } from '../FigTile';
 import { PlaqueRow, PlaqueGrid } from '../PlaqueRow';
 import { DieFace } from '../DiceRoll';
 import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
+import { effectiveChar } from '../../engine/characteristics';
 import { GroupedPickGrid, type PickGridSection } from '../GroupedPickGrid';
 import { DetailFrame } from '../DetailFrame';
 import { HeroSheet } from '../HeroSheet';
@@ -252,7 +253,7 @@ function FigTileDemo() {
  *  primitive, aucune rangée recodée. */
 function PlaqueRowDemo() {
   if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
-  const ch = SAMPLE_HERO.characteristics;
+  const ch = Object.fromEntries(CHAR_KEYS.map((k) => [k, effectiveChar(SAMPLE_HERO, k)])) as Record<(typeof CHAR_KEYS)[number], number>;
   const [k1, k2, k3] = CHAR_KEYS;
   return (
     <div className="stack">
@@ -300,13 +301,12 @@ function MetalStatusDemo() {
 }
 
 function CharStatsGridDemo() {
-  const ch = SAMPLE_HERO.characteristics;
   return (
     <div className="stack">
       {(['sm', 'md', 'lg'] as const).map((size) => (
         <div key={size}>
           <span className="hint">size=&quot;{size}&quot;</span>
-          <CharStatsGrid size={size} value={(k) => ch[k]} />
+          <CharStatsGrid size={size} value={(k) => effectiveChar(SAMPLE_HERO, k)} />
         </div>
       ))}
     </div>

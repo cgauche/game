@@ -55,7 +55,8 @@ import type { ActivityContext, OutcomeBand, BattleSide, BattleOutcomeTarget, Bat
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize, woundsForSize } from '../../engine/size';
-import { bonus } from '../../engine/characteristics';
+import { bonus, effectiveChar } from '../../engine/characteristics';
+import { skillBaseValue } from '../../engine/skills';
 import { sizeFromTraits } from '../../state/spawn';
 import { formatDice } from '../../engine/dice';
 import { formatDiseaseTime } from '../../engine/disease';
@@ -1909,11 +1910,11 @@ export function combatantSections(c: Combatant): CodexSection[] {
   const ch = c.characteristics;
   const charRows: CodexRow[] = [
     { t: 'kv', k: 'M', v: String(c.movement), kref: { category: 'characteristics', id: 'mouvement', label: 'Mouvement' } },
-    ...CHAR_KEYS.map((k) => ({ t: 'kv', k: CHAR_ABR[k], v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–', kref: { category: 'characteristics', id: k, label: CHAR_LABELS[k] } } as CodexRow)),
+    ...CHAR_KEYS.map((k) => ({ t: 'kv', k: CHAR_ABR[k], v: ch[k] > 0 || c.kind === 'hero' ? String(effectiveChar(c, k)) : '–', kref: { category: 'characteristics', id: k, label: CHAR_LABELS[k] } } as CodexRow)),
     { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] }, // Taille : pas une caractéristique → pas de lien Codex
   ];
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>
-    refRow('skills', `${skillInstanceLabel(s)} ${(ch[s.characteristic] ?? 0) + s.advances}`),
+    refRow('skills', `${skillInstanceLabel(s)} ${skillBaseValue(c, s.skillId, s.spec)}`),
   );
   // Comme les compétences/talents/sorts : chaque arme est une ENTITÉ (CodexRef vers sa fiche Codex
   // « trappings » — popover au survol + clic — repli gracieux en texte pour une arme naturelle hors
