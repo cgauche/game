@@ -211,11 +211,11 @@ describe('creditOpposingAdvantage — fournisseur ctx.onOpposingAdvantage (Redou
   });
 });
 
-describe('Redoutable — clause AA bout-en-bout (op gainAdvantage{feedOpposingPool} → ctx.onOpposingAdvantage, via fireTurnStartTriggers)', () => {
+describe('Redoutable (MDG) — clause AA bout-en-bout (op gainAdvantage{feedOpposingPool} → ctx.onOpposingAdvantage, via fireTurnStartTriggers)', () => {
   it('début de tour : regain propre jusqu’à l’Indice + génération PLEINE pour la réserve adverse', () => {
     setRule('combat-aa-avantage-groupe', true);
     const a = mk('h1', 'hero');
-    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 0 });
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable-mdg', value: 3 }], advantage: 0 });
     const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 0 });
     fireTurnStartTriggers(get, set, e);
     expect(e.advantage).toBe(3); // regain propre (op gainAdvantage) jusqu'à l'Indice
@@ -227,7 +227,7 @@ describe('Redoutable — clause AA bout-en-bout (op gainAdvantage{feedOpposingPo
     setRule('combat-aa-avantage-groupe', true);
     const a = mk('h1', 'hero');
     // Avantage déjà À l'Indice (le proxy `c.advantage >= indice` aurait crédité la réserve adverse ici).
-    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 3, conditions: [{ name: 'surpris', value: 1 }] });
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable-mdg', value: 3 }], advantage: 3, conditions: [{ name: 'surpris', value: 1 }] });
     const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 3 });
     fireTurnStartTriggers(get, set, e);
     expect(e.advantage).toBe(3); // inchangé (Surpris bloque le regain, déjà à l'Indice de toute façon)
@@ -236,7 +236,7 @@ describe('Redoutable — clause AA bout-en-bout (op gainAdvantage{feedOpposingPo
 
   it('hors mode groupe : aucune réserve créée (non-régression)', () => {
     const a = mk('h1', 'hero');
-    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 0 });
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable-mdg', value: 3 }], advantage: 0 });
     const { get, set, battle } = makeGet([a, e]);
     fireTurnStartTriggers(get, set, e);
     expect(e.advantage).toBe(3); // regain propre per-combattant (LDB), toujours câblé

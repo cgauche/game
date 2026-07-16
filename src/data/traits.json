@@ -2185,10 +2185,76 @@
     "indice": {
       "label": "Indice"
     },
-    "desc": "Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son Indice de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État Empêtré, Inconscient ou Surpris, elle ne gagne pas d'Avantage.\n\nSi vous utilisez les règles d'Avantage de groupe du supplément **Aux Armes !**, la créature génère un nombre d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires.",
+    "desc": "Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État *Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage.",
     "source": {
       "book": "zoo-imperial",
       "page": 11
+    },
+    "effects": [
+      {
+        "trigger": "onTurnStart",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "all",
+            "of": [
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "empetre"
+                },
+                "op": "<",
+                "value": 1
+              },
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "inconscient"
+                },
+                "op": "<",
+                "value": 1
+              },
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
+                  "condition": "surpris"
+                },
+                "op": "<",
+                "value": 1
+              }
+            ]
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "caster",
+              "ops": [
+                {
+                  "op": "gainAdvantage",
+                  "amount": "$indice"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "redoutable-mdg",
+    "label": "Redoutable",
+    "indice": {
+      "label": "Indice"
+    },
+    "desc": "**Redoutable (Indice) :** cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État *Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage.\n\nSi vous utilisez les règles d'Avantage de groupe du supplément **Aux Armes !**, la créature génère un nombre d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 140
     },
     "effects": [
       {
