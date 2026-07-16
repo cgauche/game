@@ -17,6 +17,8 @@ import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
 import { isConsumable } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell } from '../engine/magic';
+import { actorHasSkill } from '../engine/skills';
+import { dispellableSpellsOn } from '../engine/dispel';
 import { rule } from '../engine/policy';
 import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire } from '../engine/grimoire';
@@ -203,6 +205,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   const party = useGame((s) => s.party);
   const oocCastSpell = useGame((s) => s.oocCastSpell);
   const oocFocusSpell = useGame((s) => s.oocFocusSpell);
+  const oocDispelSpell = useGame((s) => s.oocDispelSpell);
   const buySpellComponent = useGame((s) => s.buySpellComponent);
   const removeSpellComponent = useGame((s) => s.removeSpellComponent);
   const money = useGame((s) => s.money);
@@ -291,6 +294,39 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           </div>
         ))}
       </div>
+      {(() => {
+        // Dissipation de sorts permanents HORS COMBAT (LDB 46 l.160-162, #461) : « pour votre
+        // Action » — n'est pas bornée au combat. Visible seulement si le héros a Langue (Magick)
+        // ET qu'au moins un sort permanent est actif dans le groupe (calque le patron `ActionBar`
+        // EN combat : `canDispel && dispellable.length > 0`).
+        if (!actorHasSkill(hero, 'langue', 'magick')) return null;
+        const dispellable = dispellableSpellsOn(party);
+        if (!dispellable.length) return null;
+        return (
+          <div className="sc-block">
+            <span className="mini-title" title="LDB 46 l.160-162">
+              <Icon id="action/dispel" size="sm" /> Dissipation — sorts permanents actifs
+            </span>
+            <div className="spell-list">
+              {dispellable.map((d) => {
+                const prog = hero.dispel?.spellId === d.spellId && hero.dispel.spellCasterId === d.casterId ? hero.dispel.total : 0;
+                return (
+                  <div className="spell-row" key={`dispel-${d.spellId}@${d.casterId}`}>
+                    <span className="spell-name">
+                      {d.label} · NI {d.ni} ({prog}/{d.ni})
+                    </span>
+                    <span className="spell-actions">
+                      <button className="btn small" onClick={() => oocDispelSpell(hero.id, d.spellId, d.casterId)}>
+                        <Icon id="action/dispel" size="sm" /> Dissiper
+                      </button>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
       {rule('magic-composant') === true && (() => {
         // Composants d'incantation (LDB 46 l.158-163) : achetés PAR Sort d'Arcane/Domaine connu,
         // coût = NI pistoles d'argent ; absorbent le contrecoup (Imparfaite Majeure→Mineure,

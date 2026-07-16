@@ -1068,6 +1068,8 @@ export interface GameState extends RollFlowActionsMap {
   dispelCancel: () => void;
   /** Focalisation HORS COMBAT (couture D) : ouvre la modale de Focalisation pour un héros lanceur du groupe. */
   oocFocusSpell: (casterId: string, spellId: string) => void;
+  /** Dissipation de sort permanent HORS COMBAT (couture D, LDB 46 l.160-162, #461). */
+  oocDispelSpell: (casterId: string, spellId: string, spellCasterId: string) => void;
   // (Psychologie de combat (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round — Traits/Terreur au
   //  DÉBUT (openRoundStartPsych), Peur à la FIN (openRoundEndPsych) — résolue par les handlers `cascade*`,
   //  applier 'combatPsych'.)

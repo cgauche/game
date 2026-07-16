@@ -387,7 +387,7 @@ Pour dissiper un sort à **effet durable** déjà en place :
 
 > **Verbatim** (l.204-206) : « Il faut pour cela effectuez un Test étendu de Langue (Magick). Quand votre DR atteint la NI du Sort, vous le dissipez avec succès. »
 
-**Implémente :** non-implémenté (cas hors combat, arbitrage MJ).
+**Implémente :** `dispellableSpellsOn()`/`dissipateSpell()` (`src/engine/dispel.ts`), `battleDispelSpell()`/`dispelConfirm()` (combat, `src/state/combatSlice.ts` l.3065), `oocDispelSpell()` (hors combat, l.3143), `DispelModal` (`src/ui/DispelModal.tsx`), affordance `CharacterSheet.tsx` (bouton « Dissiper »).
 
 ---
 

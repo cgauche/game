@@ -3088,6 +3088,8 @@ export function createCombatSlice(get: Get, set: Set) {
         result: null,
       } });
     },
+    // Dissipation COMMUNE combat/hors-combat (couture D, #461) : acteur via `actorIn`, sortie
+    // journal hors combat (calque `focusConfirm`).
     dispelConfirm: () => {
       const { pendingDispel: pd } = get();
       if (!pd || !pd.result) return;
@@ -3100,10 +3102,12 @@ export function createCombatSlice(get: Get, set: Set) {
       const { total, done } = extendedTestStep(prev, { success: res.success, sl: res.sl }, pd.ni, !!rule('test-extended-min-sl'));
       const logLines = [t('cs.dispelRoll', { name: caster.name, spell: pd.label, roll: res.roll, target: res.target, sl: `${res.sl >= 0 ? '+' : ''}${res.sl}`, total, ni: pd.ni })];
       if (done) {
-        // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+        // Réussite (DR cumulé ≥ NI, LDB 46 l.160) : retire les effets du sort de tous ses porteurs.
+        // Dissipation COMMUNE combat/hors-combat (couture D, #461) : le porteur du sort peut être
+        // hors du `battle.combatants` courant (cible du groupe hors combat) → cible la BONNE liste.
         caster.dispel = undefined;
         const b = get().battle;
-        const n = b ? dissipateSpell(b.combatants, pd.spellId, pd.spellCasterId) : 0;
+        const n = dissipateSpell(b ? b.combatants : get().party, pd.spellId, pd.spellCasterId);
         if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
         logLines.push(t('cs.dispelDone', { spell: pd.label, extra: n > 1 ? ` (${n} cibles libérées)` : '' }));
       } else {
@@ -3129,6 +3133,31 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       set({ pendingFocus: { casterId: caster.id, spellId: spell.id, result: null } });
+    },
+    /** Ouvre une Dissipation HORS COMBAT (couture D, #461) : LDB 46 l.160 « pour votre Action » —
+     *  la règle n'est pas bornée au combat. Calque `oocFocusSpell` ; réutilise `dispellableSpellsOn`/
+     *  `testValue`/`dissipateSpell` de `battleDispelSpell` telles quelles. Soutien « même Domaine »
+     *  (l.162) via la MÊME primitive `soutienBonus` — `!caster.pos` (pas de géométrie hors combat)
+     *  ouvre l'éligibilité à tout le groupe du même Domaine, comme les autres Tests de groupe hors
+     *  combat (le même prédicat couvre déjà ce cas EN combat, cf. `battleDispelSpell`). */
+    oocDispelSpell: (casterId: string, spellId: string, spellCasterId: string) => {
+      const { battle, party } = get();
+      if (battle) return; // en combat : Dissipation = action de combat
+      const caster = party.find((c) => c.id === casterId);
+      if (!caster) return;
+      if (!actorHasSkill(caster, 'langue', 'magick')) { get().log(t('cs.cannotDispel')); return; }
+      const target = dispellableSpellsOn(party).find((d) => d.spellId === spellId && d.casterId === spellCasterId);
+      if (!target) return;
+      const domainsOf = (h: Combatant) => new Set((h.spells ?? []).map((id) => findSpellById(id)?.subType).filter(Boolean) as string[]);
+      const mine = domainsOf(caster);
+      const supBonus = soutienBonus(party, caster, 'langue', 'intelligence', 'magick',
+        (c) => c.kind === caster.kind && [...domainsOf(c)].some((d) => mine.has(d)));
+      const value = testValue(caster, 'langue', undefined, 'magick') + supBonus;
+      set({ pendingDispel: {
+        casterId: caster.id, spellId, spellCasterId, label: target.label, ni: target.ni, value,
+        support: supBonus > 0 ? { count: supBonus / 10, bonus: supBonus } : undefined,
+        result: null,
+      } });
     },
     // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round (Traits/Terreur au
     // DÉBUT via openRoundStartPsych ; Peur — Test étendu — à la FIN via openRoundEndPsych), applier
