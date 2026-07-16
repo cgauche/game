@@ -100,6 +100,16 @@
     }
   },
   {
+    "id": "lecture-au-grimoire",
+    "label": "Lancer un Sort depuis un grimoire",
+    "desc": "Certains lanceurs de Sorts possèdent un livre de Sorts, ou grimoire, dans lequel ils transcrivent leurs Sorts. Les Apprentis copient les Sorts de leurs maîtres, tandis que les Magisters expérimentés rechercheront activement de nouveaux Sorts auprès d'autres Magisters, les échangeant souvent contre des faveurs. Un lanceur de Sorts peut en activer un depuis un grimoire si le Sort appartient au Domaine qu'il possède, mais cela double le Niveau d'Incantation.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 236,
+      "note": "LDB ch.9 « Grimoires »"
+    }
+  },
+  {
     "id": "ragot-au-marche",
     "label": "Ragot au marché (bonus de Disponibilité)",
     "desc": "Les pourcentages de Disponibilité peuvent être augmentés de +10 % ou +20 % si un Personnage est particulièrement assidu, appartient à une Carrière cohérente telle que Marchand ou Receleur, ou passe une journée entière à effectuer des achats et des Tests de Ragot.",

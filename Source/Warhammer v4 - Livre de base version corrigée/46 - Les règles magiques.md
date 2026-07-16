@@ -55,7 +55,7 @@ Si vous obtenez un Critique (voir page 159) à votre lancer d'Incantation, les V
 | 96-00 | Chaos en cascade : effectuez un nouveau lancer sur le Tableau des Incantations Imparfaites Majeures.                                                                                                                               |  |  |  |  |
 
 
-# TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES
+# <span id="page-236-0" data-folio="235"></span>TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES
 
 | 01-05 | Voix fantomatiques : toutes les personnes dans un rayon de (Force Mentale) mètres entendent de sombres murmures<br>envoûtants émanant du Royaume du Chaos. Toutes les créatures douées de conscience doivent réussir un Test de<br>Calme Accessible (+20) ou gagner 1 Point de Corruption.                                                                                                                                                                   |
 |-------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -80,7 +80,7 @@ Si vous obtenez un Critique (voir page 159) à votre lancer d'Incantation, les V
 | 96-00 | Contre-réaction aethyrique : quiconque situé dans un rayon en mètres égal à votre Bonus de Force Mentale – qu'il soit<br>allié ou ennemi – subit 1d10 Points de Blessure qui ignorent le Bonus d'Endurance et les PA, et reçoit 1 État À Terre.<br>S'il n'y a aucune cible à portée, la magie n'a nulle part où aller, donc votre tête explose, vous tuant instantanément.                                                                                   |
 
 
-### **Incantations Imparfaites**
+### <span id="page-237-0" data-folio="236"></span>**Incantations Imparfaites**
 
 Si vous perdez le contrôle de l'énergie magique que vous focalisez, les choses se passent toujours mal. Si vous obtenez une Maladresse à votre Test d'Incantation, vous subissez une Incantation Imparfaite. Lancez 1d100 et consultez le Tableau des Incantations Imparfaites Mineures.
 
