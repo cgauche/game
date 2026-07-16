@@ -48,18 +48,20 @@ export function tenueLabel(id: string | undefined): string { return TENUE_LABEL_
 
 /**
  * Palette STOCKÉE d'une tenue (clé = id STABLE), en miroir EXACT de `tenueFor` : palette par TENUE si
- * dispo, sinon palette de l'archétype de CLASSE. Empilée sous l'espèce.
+ * dispo, sinon par id de CLASSE direct (#533), sinon palette de l'archétype de CLASSE de la carrière.
+ * Empilée sous l'espèce.
  */
 export function tenuePaletteFor(tenue: string | undefined): StoredPalette {
   const id = tenue ?? '';
   const specificId = CAREER_TENUE_BY_ID[id] ?? id;
-  return TENUE_PALETTE_BY_ID[specificId] ?? CLASS_PALETTE_BY_ID[careerClass(id)] ?? {};
+  return TENUE_PALETTE_BY_ID[specificId] ?? CLASS_PALETTE_BY_ID[id] ?? CLASS_PALETTE_BY_ID[careerClass(id)] ?? {};
 }
 
 /** Tenue résolue pour une CLÉ de garde-robe (id STABLE — appearance.tenue = id de tenue, sinon
  *  Combatant.career = id de carrière) : tenue SPÉCIFIQUE si dispo (celle de la carrière, ou celle
- *  réutilisée via `CareerData.tenue` — variants MDG « (Côtier) »), sinon archétype de CLASSE. Id
- *  inconnu (ni carrière ∪ classe ∪ tenue) → repli citadins BRUYANT (#223). */
+ *  réutilisée via `CareerData.tenue` — variants MDG « (Côtier) »), sinon id de CLASSE direct (#533 —
+ *  une donnée peut viser un archétype sans carrière, ex. créature), sinon archétype de CLASSE de la
+ *  carrière. Id inconnu (ni carrière ∪ classe ∪ tenue) → repli citadins BRUYANT (#223). */
 export function tenueFor(tenue: string | undefined): TenueSet {
   const id = tenue ?? '';
   if (id === 'nu') return TENUE_NUE; // corps nu (monstres sans habit)
@@ -67,5 +69,5 @@ export function tenueFor(tenue: string | undefined): TenueSet {
   if (specific) return specific;
   if (id !== '' && !wardrobeKeyResolves(id))
     console.warn(`[tenue] « ${tenue} » introuvable au catalogue (careers ∪ classes ∪ tenues) — repli citadins (#223)`);
-  return tenueForClass(careerClass(id));
+  return tenueForClass(id in CLASS_TENUE_BY_ID ? id : careerClass(id));
 }

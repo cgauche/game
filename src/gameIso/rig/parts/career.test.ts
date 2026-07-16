@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { careerClass, tenueForClass, tenueFor, tenuePaletteFor, wardrobeKeyResolves } from './career';
-import { CLASS_TENUE_BY_ID, TENUE_BY_ID } from './tenues';
+import { CLASS_TENUE_BY_ID, CLASS_PALETTE_BY_ID, TENUE_BY_ID } from './tenues';
 import { pickView } from './types';
 import { careers } from '../../../data';
 
@@ -76,6 +76,15 @@ describe('tenueFor — carrière SANS archétype de classe réutilisant la tenue
       .filter((c) => c.tenue && !(c.tenue in TENUE_BY_ID))
       .map((c) => `${c.id} → ${c.tenue}`);
     expect(orphans, `tenue(s) orpheline(s) : ${orphans.join(', ')}`).toEqual([]);
+  });
+});
+
+describe('tenueFor/tenuePaletteFor — un id de CLASSE direct résout SON archétype (#533, repli vivant)', () => {
+  it('chaque id de CLASS_TENUE_BY_ID est atteignable en garde-robe SANS détour par une carrière', () => {
+    for (const classId of Object.keys(CLASS_TENUE_BY_ID)) {
+      expect(tenueFor(classId)).toBe(CLASS_TENUE_BY_ID[classId]);
+      expect(tenuePaletteFor(classId)).toBe(CLASS_PALETTE_BY_ID[classId]);
+    }
   });
 });
 
