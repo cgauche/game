@@ -3648,7 +3648,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 - Pour se déplacer, la créature peut **creuser dans le sol sur une distance en mètres égale à son *Indice***. En fouissant, elle **ignore tout obstacle, personnage ou terrain difficile**. À la fin, elle choisit **de sortir de terre ou de rester enfouie**. Elle **peut s'en servir pour Charger**. **Si elle commence son tour sous terre, elle doit se déplacer par fouissement.**
 - **Pour attaquer une cible enfouie**, on calcule la distance au sol normalement mais on **augmente la Portée de 2 niveaux** : un tir à Portée Moyenne passe à Extrême, et **un tir à Portée Longue ou Extrême devient impossible**. (ZI 02 l.66-70, l.2952-2958)
 
-> « Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. […] Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. » — `ZI 13 l.954`
+> « Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. […] Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. » — `ZI 2 l.68`
 
 **Sources RAW** :
 - `LDB 85 l.62-63` — **Bond** : double le Mouvement en Charge/Course, ignore terrains et personnages traversés.

@@ -4,7 +4,7 @@
 > par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.
 > Recourir à la source pour un point = un défaut de l'Atlas à corriger ici. Régénéré par
 > `node scripts/raw/coverage.mjs`.
-**Couverture (profondeur) : ✅ 149 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 153 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅3·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 150 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 154 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅3·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
 
 
 ## LDB — ✅ 71 · 🟡 2 · ⬜ 0
@@ -16,7 +16,7 @@
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
 | 04 | *(artefact OCR)* | ✅ | 7 (creation.md ×7) |
-| 05 | *(artefact OCR)* | ✅ | 92 (creation.md ×52) |
+| 05 | *(artefact OCR)* | ✅ | 93 (creation.md ×52) |
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
@@ -28,7 +28,7 @@
 | 14 | *(artefact OCR)* | ✅ | 142 (combat.md ×123) |
 | 15 | Déplacement | ✅ | 99 (combat.md ×77) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
-| 17 | Destin et Résistance | ✅ | 53 (destin.md ×27) |
+| 17 | Destin et Résistance | ✅ | 54 (destin.md ×27) |
 | 18 | Traumatisme | ✅ | 136 (traumatisme.md ×90) |
 | 19 | Corruption | ✅ | 34 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
@@ -132,27 +132,27 @@
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | CRÉDITS | ✅ | 320 (combat.md ×319) |
+| 01 | CRÉDITS | ✅ | 9 (combat.md ×5) |
 | 02 | INTRODUCTION | ✅ |  |
 | 03 | LES CHEVALIERS DE L'EMPIRE | ✅ |  |
 | 04 | LES CHIENS DE GUERRE | ✅ |  |
 | 05 | LA TILÉE ET LES PERSONNAGES TILÉENS | ✅ |  |
-| 06 | LE CULTE DE MYRMIDIA | ✅ |  |
-| 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ |  |
-| 08 | LA RÉSERVE DE L'INTENDANT | ✅ |  |
-| 09 | LE COMBAT MONTÉ | ✅ |  |
-| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ |  |
-| 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ |  |
-| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ |  |
-| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ |  |
+| 06 | LE CULTE DE MYRMIDIA | ✅ | 24 (combat.md ×24) |
+| 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 34 (combat.md ×34) |
+| 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 98 (combat.md ×98) |
+| 09 | LE COMBAT MONTÉ | ✅ | 23 (combat.md ×23) |
+| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 91 (combat.md ×90) |
+| 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
+| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 16 (combat.md ×16) |
+| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 17 (combat.md ×17) |
 
 ## ZI — ✅ 14 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | TROIS EXPÉDITIONS | ✅ | 34 (combat.md ×31) |
-| 02 | Griffon | ✅ |  |
+| 01 | TROIS EXPÉDITIONS | ✅ | 7 (combat.md ×5) |
+| 02 | Griffon | ✅ | 3 (combat.md ×2) |
 | 03 | Dragon | ✅ |  |
 | 04 | « L'abominable » Halagrundsor | ✅ |  |
 | 05 | Amibe | ✅ |  |
@@ -163,8 +163,8 @@
 | 10 | Macareux à bec tranchant | ✅ |  |
 | 11 | Chat sauvage | ✅ |  |
 | 12 | Il Potente Granchio | ✅ |  |
-| 13 | Sirène | ✅ |  |
-| 14 | Expéditions prévues | ✅ |  |
+| 13 | Sirène | ✅ | 5 (combat.md ×3) |
+| 14 | Expéditions prévues | ✅ | 22 (combat.md ×21) |
 
 ## Middenheim — ✅ 5 · 🟡 0 · ⬜ 0
 
@@ -357,24 +357,24 @@
 | 16 | JEUX DE TAVERNE | ✅ | 17 (tests.md ×14) |
 | 17 | *(artefact OCR)* | ➖ | |
 
-## MDG — ✅ 10 · 🟡 0 · ⬜ 0
+## MDG — ✅ 11 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | La Mer des Griffes | ➖ hors-règle | |
 | 02 | La Bretonnie et le Wasteland | ✅ | 4 (magie.md ×4) |
-| 03 | La côte du Nordland | ➖ hors-règle | |
+| 03 | La côte du Nordland | ✅ | 4 (reconciliation.md ×4) |
 | 04 | La côte de l'Ostland | ➖ hors-règle | |
 | 05 | Le Pays des Trolls | ➖ hors-règle | |
 | 06 | Kraka Ravnsvake | ➖ hors-règle | |
 | 07 | La côte des Skaelings | ✅ | 24 (carrieres.md ×24) |
 | 08 | La côte des Bjornlings | ➖ hors-règle | |
-| 09 | La classe Côtier | ✅ | 32 (carrieres.md ×32) |
+| 09 | La classe Côtier | ✅ | 33 (carrieres.md ×32) |
 | 10 | Le culte de Manann | ✅ | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | ✅ | 1 (religion.md ×1) |
 | 12 | Navires et construction navale | ✅ | 129 (equipement.md ×60) |
 | 13 | Navigation maritime | ✅ | 139 (combat.md ×83) |
-| 14 | Navigation à bord de grands vaisseaux | ✅ | 46 (maladies.md ×19) |
-| 15 | Longs voyages | ✅ | 44 (deplacement.md ×22) |
+| 14 | Navigation à bord de grands vaisseaux | ✅ | 47 (maladies.md ×19) |
+| 15 | Longs voyages | ✅ | 53 (deplacement.md ×23) |
 | 16 | Bestiaire | ✅ | 10 (bestiaire.md ×10) |

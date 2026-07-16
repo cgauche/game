@@ -4,7 +4,7 @@
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
-**Bilan : ✅ 373 · 🔧 0 corrigées · 🟡 1 ambigus · ❌ 41 introuvables · ➖ 2639 synthèses** (⛔ 5 hors-fichier · ⚠️ 0 sans source) sur 3059 réfs · 415 citations · 27 fiches.
+**Bilan : ✅ 374 · 🔧 1 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 42 introuvables · ➖ 2613 synthèses** (⛔ 11 hors-fichier · ⚠️ 0 sans source) sur 3041 réfs · 417 citations · 28 fiches.
 
 
 ## activites.md
@@ -38,6 +38,7 @@
 | `LDB 06 l.18-19` | ⛔ PAST-EOF | l.18 > 6 lignes |
 | `LDB 06 l.14-24` | ⛔ PAST-EOF | l.14 > 6 lignes |
 | `LDB 07 l.84` | ❌ LOW | « gagner de l'argent… » — aucune occurrence |
+| `MDG 09 l.220` | 🔧 DRIFT | « les chansons de marins ne sont pas des actes d… » → l.224 |
 
 ## combat.md
 
@@ -59,11 +60,16 @@
 | `ADE II 04 l.215` | ❌ LOW | « funeste : l'arme est imprégnée de magie de mor… » — aucune occurrence |
 | `ADE II 04 l.235` | ❌ LOW | « de coupure infinie : … si un coup de cette arm… » — aucune occurrence |
 | `ADE II 04 l.237` | ❌ LOW | « de blessure grave : … il peut inverser les chi… » — aucune occurrence |
-| `ZI 01 l.2953` | 🟡 MEDIUM | « cette créature peut se déplacer en creusant un… » candidats l.630/4111/4159 → plus proche l.4111 |
 | `Ubersreik 05 l.22` | ⛔ PAST-EOF | l.22 > 6 lignes |
 | `LDB 85 l.199-200` | ❌ LOW | « nuée - les nuées sont constituées d'un grand n… » — aucune occurrence |
-| `ZI 01 l.2993` | ❌ LOW | « nuée - la nuée est considérée comme une seule … » — aucune occurrence |
-| `AA 01 l.3885` | ❌ LOW | « pierrier 20 co 5 rare 30 +14 dangereuse, recha… » — aucune occurrence |
+| `ZI 13 l.984` | ❌ LOW | « nuée - la nuée est considérée comme une seule … » — aucune occurrence |
+| `ZI 01 l.702-709` | ⛔ PAST-EOF | l.702 > 296 lignes |
+| `ZI 01 l.702-709` | ⛔ PAST-EOF | l.702 > 296 lignes |
+| `AA 10 l.215` | ❌ LOW | « pierrier 20 co 5 rare 30 +14 dangereuse, recha… » — aucune occurrence |
+| `AA 01 l.4268-4350` | ⛔ PAST-EOF | l.4268 > 65 lignes |
+| `AA 01 l.4272-4350` | ⛔ PAST-EOF | l.4272 > 65 lignes |
+| `AA 01 l.4202-4205` | ⛔ PAST-EOF | l.4202 > 65 lignes |
+| `AA 01 l.4264-4350` | ⛔ PAST-EOF | l.4264 > 65 lignes |
 
 ## corruption.md
 
@@ -77,6 +83,12 @@
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 05 l.488` | ❌ LOW | « consultez votre carrière. recherchez dans le s… » — aucune occurrence |
+
+## deplacement.md
+
+| Réf | Statut | Détail |
+|---|---|---|
+| `MDG 15 l.76` | ❌ LOW | « distance/jour suppose un équipage permettant d… » — aucune occurrence |
 
 ## destin.md
 
