@@ -24,6 +24,7 @@ import { resultLine } from './rollSeam';
 import { checkBattleOver } from './combatFlow';
 import { BOARD_EVENTS, seaBoardEventById } from '../engine/seaVoyage';
 import type { RecapEvent } from './recapLine';
+import { SEA_HAZARDS, findSeaHazard } from '../engine/seaPerils';
 
 /**
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15), pilotée
@@ -1059,5 +1060,143 @@ describe('Entretien-survie maritime — #272 résiduel (Scorbut/Épuisement, pol
     while (get().pendingCascade?.purpose === 'seaExhaustion' && guard++ < 10) stepCascade();
     expect(get().pendingRest).toBeTruthy();
     expect(get().journal.some((l) => l.includes('Épuisement'))).toBe(true);
+  });
+});
+
+describe('Périls en mer — collision routée par la DONNÉE (#444, MDG ch.13 l.475-499, zéro IC/chance en dur)', () => {
+  beforeEach(freshState);
+
+  /** Force le tirage sur UN péril donné (`pickSeaHazard`, poids MAISON) — mutation RESTAURÉE en `finally`. */
+  function forceHazard(id: string): (number | undefined)[] {
+    const original = SEA_HAZARDS.map((h) => h.weight);
+    for (const h of SEA_HAZARDS) h.weight = h.id === id ? 1 : 0;
+    return original;
+  }
+  function restoreWeights(original: (number | undefined)[]): void {
+    SEA_HAZARDS.forEach((h, i) => { h.weight = original[i]; });
+  }
+
+  it('le dégât suit l’IC ÉDITÉ en donnée (pas 47 figé) — modifier `sea-perils.json` en mémoire change le résultat', () => {
+    const original = forceHazard('rocher');
+    const rocher = findSeaHazard('rocher')!;
+    const originalIc = rocher.ic;
+    try {
+      rocher.ic = 5; // valeur ÉDITÉE, jamais l'ancien magic number 47
+      const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+      set({ travelPlan: { ...plan, sea: { ...plan.sea!, forcedEventId: 'collision-soudaine' } } });
+      runSeaDay(get, set);
+      expect(get().journal.some((l) => l.includes('Rocher IC 5'))).toBe(true);
+      expect(get().journal.some((l) => l.includes('IC 47'))).toBe(false);
+    } finally {
+      rocher.ic = originalIc;
+      restoreWeights(original);
+    }
+  });
+
+  it('Iceberg/Débris marins/Bas-fonds : chacun des 4 périls routés se résout (dégâts de coque encaissés)', () => {
+    for (const id of ['iceberg', 'debris-marins', 'rocher', 'bas-fonds']) {
+      freshState();
+      const original = forceHazard(id);
+      try {
+        const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+        set({ travelPlan: { ...plan, sea: { ...plan.sea!, forcedEventId: 'collision-soudaine' } } });
+        const before = get().travelPlan!.vehicle!.wounds.current;
+        runSeaDay(get, set);
+        const hazard = findSeaHazard(id)!;
+        expect(get().journal.some((l) => l.includes(`${hazard.label} IC ${hazard.ic}`))).toBe(true);
+        expect(get().travelPlan!.vehicle!.wounds.current).toBeLessThanOrEqual(before);
+      } finally {
+        restoreWeights(original);
+      }
+    }
+  });
+
+  it('Rocher/Bas-fonds : Échouage possible (`rollStranding`) → `sea.stranded` posé, dégagement = Test de Force (#444)', () => {
+    const original = forceHazard('rocher');
+    const rocher = findSeaHazard('rocher')!;
+    const originalPct = rocher.strandChancePct;
+    try {
+      rocher.strandChancePct = 100; // force l'Échouage (garantit le branchement, indépendant du hasard)
+      const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+      set({ travelPlan: { ...plan, sea: { ...plan.sea!, forcedEventId: 'collision-soudaine' } } });
+      runSeaDay(get, set);
+      expect(get().travelPlan!.sea!.stranded).toBeTruthy();
+      expect(get().travelPlan!.sea!.stranded!.hazardId).toBe('rocher');
+    } finally {
+      rocher.strandChancePct = originalPct;
+      restoreWeights(original);
+    }
+  });
+
+  it('Débris marins : empêtrement possible (`rollDebrisEntangle`) → `sea.entangled` posé avec manDR/mMod de la donnée', () => {
+    const original = forceHazard('debris-marins');
+    const debris = findSeaHazard('debris-marins')!;
+    const originalPct = debris.entangleChancePct;
+    try {
+      debris.entangleChancePct = 100; // force l'empêtrement
+      const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+      set({ travelPlan: { ...plan, sea: { ...plan.sea!, forcedEventId: 'collision-soudaine' } } });
+      runSeaDay(get, set);
+      const entangled = get().travelPlan!.sea!.entangled;
+      expect(entangled).toBeTruthy();
+      expect(entangled!.hazardId).toBe('debris-marins');
+      expect(entangled!.need).toBe(debris.freeTest!.totalDR); // cogue = Taille moyenne → bande moyenne/grande
+      expect(entangled!.manDR).toBe(-1);
+      expect(entangled!.mMod).toBe(0);
+    } finally {
+      debris.entangleChancePct = originalPct;
+      restoreWeights(original);
+    }
+  });
+});
+
+describe('Échouage/Empêtrement — dégagement par Test de Force (#444, appliers `sea-degagement`/`sea-degagement-debris`)', () => {
+  beforeEach(freshState);
+
+  function planWithSea() {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: plan });
+    return plan;
+  }
+  function step(kind: string, sl: number, success = sl >= 1): CascadeStep {
+    return { id: kind, kind, label: kind, result: { roll: 0, target: 0, sl, success }, interactive: true };
+  }
+  const apply = (kind: string, sl: number, success = sl >= 1) =>
+    cascadeAppliers[kind].apply(get, set, step(kind, sl, success), undefined, { steps: [], index: 0 });
+
+  it('sea-degagement : succès → `sea.stranded` levé', () => {
+    const plan = planWithSea();
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, stranded: { hazardId: 'rocher', label: 'Rocher', difficulty: 'difficile' } } } });
+    apply('sea-degagement', 3, true);
+    expect(get().travelPlan!.sea!.stranded).toBeUndefined();
+  });
+
+  it('sea-degagement : échec → `sea.stranded` PERSISTE (à retenter)', () => {
+    const plan = planWithSea();
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, stranded: { hazardId: 'rocher', label: 'Rocher', difficulty: 'difficile' } } } });
+    apply('sea-degagement', -2, false);
+    expect(get().travelPlan!.sea!.stranded).toBeTruthy();
+  });
+
+  it('sea-degagement-debris : Test ÉTENDU — cumule jusqu’au total DR de `hazard.freeTest`, puis lève `sea.entangled`', () => {
+    const plan = planWithSea();
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, entangled: { hazardId: 'debris-marins', label: 'Débris marins', need: 10, progress: 6, manDR: -1, mMod: 0, difficulty: 'accessible' } } } });
+    apply('sea-degagement-debris', 5, true); // 6 + 5 = 11 ≥ 10 → dégagé
+    expect(get().travelPlan!.sea!.entangled).toBeUndefined();
+  });
+
+  it('sea-degagement-debris : progression insuffisante → `sea.entangled` PERSISTE avec le total cumulé', () => {
+    const plan = planWithSea();
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, entangled: { hazardId: 'debris-marins', label: 'Débris marins', need: 10, progress: 0, manDR: -1, mMod: 0, difficulty: 'accessible' } } } });
+    apply('sea-degagement-debris', 3, true);
+    expect(get().travelPlan!.sea!.entangled?.progress).toBe(3);
+  });
+
+  it('ÉCHOUÉ : aucune Progression le temps du dégagement (`buildSeaDayCascade` route un Test de Force, milesToday reste à 0)', () => {
+    const plan = planWithSea();
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, stranded: { hazardId: 'rocher', label: 'Rocher', difficulty: 'intermediaire' } } } });
+    runSeaDay(get, set);
+    expect(get().travelPlan!.sea!.milesToday).toBe(0);
+    expect(get().journal.some((l) => l.includes('ÉCHOUÉ'))).toBe(true);
   });
 });

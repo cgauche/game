@@ -45,9 +45,9 @@ import { registerScene } from './store';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, type CrewTestTypeData } from '../data';
-import { installCost, rollSteamBreakdown, steamBreakdownTriggered, type SteamBreakdownEntry } from '../engine/shipBuild';
+import { installCost, rollSteamBreakdown, steamBreakdownTriggered, shipSizeOfLength, type SteamBreakdownEntry } from '../engine/shipBuild';
 import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
-import { rollTest, isDoubleRoll, extendedTestStep } from '../engine/tests';
+import { rollTest, isDoubleRoll, extendedTestStep, difficultyFromModifier } from '../engine/tests';
 import { testValue, partyAssisted, partyBest } from '../engine/skills';
 import { buildWeapon } from '../engine/items';
 import { QUALITY_IDS } from '../engine/qualities/ids';
@@ -71,7 +71,7 @@ import {
 import { exposureNight, expireExposureEffects } from '../engine/exposure';
 import { pursuitOutcome } from '../engine/pursuit';
 import { addCondition } from '../engine/conditions';
-import { findWhirlpool } from '../engine/seaPerils';
+import { findWhirlpool, pickSeaHazard, rollStranding, strandingPenalty, rollDebrisEntangle } from '../engine/seaPerils';
 import {
   rollBoardEvent, rollPortEvent, rollDaysToNextEvent, addManann, MANANN_BASE, seaBoardEventById,
   removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
@@ -146,6 +146,12 @@ export interface SeaVoyageState {
   eventMMod?: number;
   /** Infestation de rats ACTIVE (Test étendu d'Extermination, MDG 14 l.98 + événements ch.15). */
   infestation?: { label: string; difficulty: Difficulty; need: number; progress: number; spoilPerNight: string };
+  /** ÉCHOUÉ sur un péril (Rocher/Bas-fonds, MDG ch.13 l.471-473/497/499, #444) : le navire s'arrête net,
+   *  aucune Progression tant qu'un Test de Force (pénalité = `strandingPenalty`) ne l'a pas dégagé. */
+  stranded?: { hazardId: string; label: string; difficulty: Difficulty };
+  /** EMPÊTRÉ dans des Débris marins (MDG ch.13 l.485-491, #444) : pénalité de Man/M tant que le Test
+   *  étendu de Force (`hazard.freeTest`) n'a pas dégagé le navire — n'arrête PAS la Progression. */
+  entangled?: { hazardId: string; label: string; need: number; progress: number; manDR: number; mMod: number; difficulty: Difficulty };
   crisis?: SeaCrisis;
   /** Navire hostile en présence (événement `navire-hostile`/`nemesis`) — source de l'abordage dérivé. */
   boarding?: SeaBoarding;
@@ -379,7 +385,9 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
   const pace = sea.paceToday === 'won' ? sea.forcePace ?? 0 : 0;
   // Surcharge de la cale (MDG 12 l.72-74) : −1/−2/−3 M par palier d'Encombrement supplémentaire.
   const overloadM = cargoOverload(cargoTotalEnc(vessel?.cargo ?? []), vd?.capacity ?? 0).mMod;
-  const baseM = (sail ? vd!.sail!.m : vd?.oars?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace + overloadM;
+  // Empêtré dans des Débris marins (MDG ch.13 l.487-489, #444) : pénalité de M tant que non dégagé.
+  const entangleM = sea.entangled?.mMod ?? 0;
+  const baseM = (sail ? vd!.sail!.m : vd?.oars?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace + overloadM + entangleM;
   const aspect = windAspect(sea.heading, sea.windFrom);
   // Gréement de course (T2C ch.10 l.137) « inclut un clinfoc … les avantages des deux ne sont pas cumulables »
   // → il PRIME sur le Clinfoc quand les deux sont présents.
@@ -481,6 +489,20 @@ function buildForcePaceStep(get: Get): CascadeStep | null {
   };
 }
 
+/** Étape MONO « Dégagement » (Test de Force, #444) — partagée par l'Échouage (`sea-degagement`, MDG
+ *  ch.13 l.471-473 : « N'importe quel nombre de Personnages… peut aider ») et l'empêtrement dans des
+ *  Débris marins (`sea-degagement-debris`, l.491, Test étendu). `null` = aucun PJ éligible à la Force. */
+function buildStrandedOrEntangledStep(get: Get, label: string, difficulty: Difficulty, kind: string): CascadeStep | null {
+  const force = partyAssisted(get().party, undefined, 'force');
+  if (!force) return null;
+  const test = { char: 'force' as const };
+  return {
+    id: kind, kind, actorId: force.actor.id, icon: 'travel/repair',
+    label: composeRollLabel(force.actor, `Dégagement — ${label}`, test, difficulty), rollLabel: 'Force',
+    base: force.value, target: effectiveTarget(force.actor, test, difficulty), result: null, interactive: true,
+  };
+}
+
 /**
  * Étapes POST-PROGRESSION du jour (crise → embuscade ancrée → phare → orientation → extermination →
  * entretien), calculées APRÈS que `applySeaProgress` ait posé `sea.milesToday` du jour (dépendance de
@@ -502,9 +524,18 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
   if (sea.crisis) {
     const kind = sea.crisis.kind === 'poursuite' ? 'poursuite' : 'tourbillon';
     const testTypeId = sea.crisis.kind === 'poursuite' ? 'progression-poursuite' : 'manoeuvre';
-    const st = buildVoyageCrewStep(get, testTypeId, kind);
+    // Empêtré dans des Débris marins (MDG ch.13 l.487-489, #444) : pénalité de Man sur le Test de
+    // Manœuvre tant que non dégagé.
+    const entangleDR = testTypeId === 'manoeuvre' ? (sea.entangled?.manDR ?? 0) : 0;
+    const st = buildVoyageCrewStep(get, testTypeId, kind, entangleDR ? { extraDR: entangleDR } : {});
     if (st) out.push(st);
     else resolveSeaCrisisRound(get, set, capToSuccesMinime(UNDERCREW_DR));
+  }
+  // EMPÊTRÉ dans des Débris marins (MDG ch.13 l.491, #444) : Test étendu de Force pour se dégager —
+  // n'arrête PAS la Progression (contrairement à l'Échouage, `sea.stranded`).
+  if (sea.entangled) {
+    const st = buildStrandedOrEntangledStep(get, sea.entangled.label, sea.entangled.difficulty, 'sea-degagement-debris');
+    if (st) out.push(st);
   }
   // #212. Embuscade AUTHORÉE à ancrage déterministe : franchissement de l'ancrage ce jour → Test de
   // Perception PUIS abordage (applier `embuscade`, déjà enregistré).
@@ -552,6 +583,18 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
  */
 function buildSeaDayCascade(get: Get, set: Set): { steps: CascadeStep[]; log: string[] } {
   const steps: CascadeStep[] = [];
+  // ÉCHOUÉ (MDG ch.13 l.471-473, #444) : « il s'arrête net… ne peut plus bouger jusqu'à ce qu'il soit
+  // dégagé » — AUCUNE Progression tant que le Test de Force n'a pas réussi ; le reste de la journée
+  // (crise/embuscade/entretien…) continue quand même (miroir Encalminé/Affaler ci-dessous).
+  const strandedSea = get().travelPlan!.sea!;
+  if (strandedSea.stranded) {
+    tell(get, set, [`Le navire reste ÉCHOUÉ sur ${strandedSea.stranded.label} — impossible de progresser tant qu'il n'est pas dégagé (MDG ch.13 l.473).`]);
+    patchSea(get, set, { milesToday: 0 });
+    const st = buildStrandedOrEntangledStep(get, strandedSea.stranded.label, strandedSea.stranded.difficulty, 'sea-degagement');
+    if (st) steps.push(st);
+    steps.push(...buildPostProgressionSteps(get, set));
+    return { steps, log: [] };
+  }
   // 2. Vents « Affaler les voiles » (ch.13 l.288) : posé AVANT le jet (le d100 ne décide QUE d'un
   // Critique au gréement, jamais du fait que les voiles soient affalées ce jour — RAW).
   const eff = effectiveSeaM(get);
@@ -1414,6 +1457,41 @@ registerCascadeApplier('extermination', (get, set, step) => {
   return { consequences: freeCons(j) };
 });
 
+/** Renflouage d'un ÉCHOUAGE (MDG ch.13 l.471-473, #444) : Test de Force UNIQUE (pas étendu — RAW muet
+ *  sur une répétition formelle) ; échec → le navire reste échoué, retenté le lendemain (même construction). */
+registerCascadeApplier('sea-degagement', (get, set, step) => {
+  if (!step.result) return;
+  const sea = get().travelPlan?.sea;
+  if (!sea?.stranded) return;
+  const label = sea.stranded.label;
+  const j = step.result.success
+    ? [`Le navire est dégagé de ${label} (Test de Force réussi, MDG ch.13 l.473).`]
+    : [`Le navire reste échoué sur ${label} — il faudra retenter (MDG ch.13 l.473).`];
+  if (step.result.success) patchSea(get, set, { stranded: undefined });
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
+});
+
+/** Dégagement des Débris marins (MDG ch.13 l.491, #444) : Test ÉTENDU de Force (`hazard.freeTest`, total
+ *  DR posé à la collision) — même cumul mutualisé que l'Extermination (`extendedTestStep`) ci-dessus. */
+registerCascadeApplier('sea-degagement-debris', (get, set, step) => {
+  if (!step.result) return;
+  const sea = get().travelPlan?.sea;
+  if (!sea?.entangled) return;
+  const ent = sea.entangled;
+  const { total: progress, done } = extendedTestStep(ent.progress, step.result, ent.need, !!rule('test-extended-min-sl'));
+  let j: string[];
+  if (done) {
+    patchSea(get, set, { entangled: undefined });
+    j = [`${ent.label} : le navire se dégage (${progress}/${ent.need} DR, MDG ch.13 l.491).`];
+  } else {
+    patchSea(get, set, { entangled: { ...ent, progress } });
+    j = [`${ent.label} : le dégagement progresse (${progress}/${ent.need} DR).`];
+  }
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
+});
+
 /** Voyage rapide (MDG 15 l.28) : le DR alimente le palier — calculé/persisté PUIS appliqué (embuscade
  *  ancrée éventuelle d'abord, jamais raconté avant — `finalizeFastVoyage` est RÉ-ENTRANT). */
 registerCascadeApplier('voyage-rapide', (get, set, step) => {
@@ -1874,17 +1952,39 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       if (vessel) set({ vessel: { ...vessel, crabs: true } });
       break;
     case 'collision': {
-      // « le bateau se heurte à un rocher » (Rocher IC 47, ch.13 l.497) : Dégâts = IC + M, − BE de coque.
+      // « Sans prévenir, le bateau se heurte à… » — le péril RENCONTRÉ (Iceberg/Débris marins/Rocher/
+      // Bas-fonds, ch.13 l.475-499, #444) est TIRÉ (`pickSeaHazard`, pondération MAISON) : Dégâts =
+      // IC du péril + M du navire, − BE de coque (formule inchangée, seul l'IC était en dur avant).
       if (!ship) break;
+      const hazard = pickSeaHazard(rng);
       const eff = effectiveSeaM(get);
-      const dmg = Math.max(0, 47 + (eff.m ?? 1) - Math.floor((ship.characteristics?.endurance ?? 0) / 10));
+      const dmg = Math.max(0, hazard.ic + (eff.m ?? 1) - Math.floor((ship.characteristics?.endurance ?? 0) / 10));
       damageVesselHull(get, set, ship, dmg);
-      tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (Rocher IC 47, MDG ch.13 l.446/497).`]);
+      tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (${hazard.label} IC ${hazard.ic}, MDG ch.13 l.446/475-499).`]);
       tell(get, set, spoilVesselCargoOnLeak(get, set)); // avarie de coque → voie d'eau (lot D #327)
-      if (d100(rng) <= 20) { // 20 % d'Échouage (l.497)
-        const plan2 = get().travelPlan!;
-        set({ travelPlan: { ...plan2, km: plan2.km + 0 }, gameTime: get().gameTime + 24 * 60 });
-        tell(get, set, ['Le navire s\'ÉCHOUE sur le rocher — une journée de manœuvres pour le dégager (Test de Force, ch.13 l.473).']);
+      if (hazard.id === 'debris-marins') {
+        // Empêtrement (l.485-491) : pénalité de Man/M par Taille du bateau, Test étendu de Force pour se dégager.
+        const lengthM = findVehicleById(get().vessel?.vehicleId ?? '')?.ship?.lengthM ?? 0;
+        const ent = rollDebrisEntangle(hazard, shipSizeOfLength(lengthM), rng);
+        if (ent.entangled) {
+          patchSea(get, set, {
+            entangled: {
+              hazardId: hazard.id, label: hazard.label,
+              need: hazard.freeTest?.totalDR ?? 10, progress: 0,
+              manDR: ent.manDR, mMod: ent.mMod,
+              difficulty: hazard.freeTest?.difficulty ?? 'accessible',
+            },
+          });
+          tell(get, set, [`Le navire s'empêtre dans les ${hazard.label} — Test étendu de Force pour se dégager (MDG ch.13 l.485-491).`]);
+        }
+      } else if (hazard.strandChancePct != null && rollStranding(hazard, rng)) {
+        // Échouage (l.471-473/497/499) : Test de Force, pénalité = Encombrement navire + cargaison.
+        const vessel = get().vessel;
+        const shipEnc = findVehicleById(vessel?.vehicleId ?? '')?.enc ?? 0;
+        const cargoEnc = (vessel?.cargo ?? []).reduce((s, c) => s + (c.enc ?? 0), 0);
+        const difficulty = difficultyFromModifier(strandingPenalty(shipEnc, cargoEnc));
+        patchSea(get, set, { stranded: { hazardId: hazard.id, label: hazard.label, difficulty } });
+        tell(get, set, [`Le navire s'ÉCHOUE sur ${hazard.label} — Test de Force pour se dégager (MDG ch.13 l.473).`]);
       }
       break;
     }

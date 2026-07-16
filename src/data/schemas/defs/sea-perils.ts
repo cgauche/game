@@ -32,6 +32,8 @@ const seaHazardDef = z.strictObject({
   freeTest: z.strictObject({ skillId: z.string(), difficulty: difficultySchema, totalDR: z.number() }).optional(),
   desc: z.string(),
   source: sourceRefSchema,
+  /** Poids du tirage de collision (#444) — MAISON, cf. `hazardsWeightNote` ci-dessous. */
+  weight: z.number().optional(),
 });
 
 /** `StraitDef` (`src/engine/seaPerils.ts:33`). */
@@ -58,6 +60,8 @@ const whirlpoolDef = z.strictObject({
 
 export const schema = z.strictObject({
   echouer: z.strictObject({ desc: z.string(), source: sourceRefSchema }),
+  /** Pondération MAISON du tirage entre `hazards[]` (#444) — le RAW l.475-499 est muet sur la fréquence. */
+  hazardsWeightNote: z.string(),
   hazards: z.array(seaHazardDef),
   detroits: z.array(straitDef),
   tourbillons: z.array(whirlpoolDef),

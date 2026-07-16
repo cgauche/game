@@ -10,6 +10,12 @@
  *  - **Tourbillons** (l.514-537) : M / Zone / Man / IC / Évasion des cinq gabarits.
  *  - **Gestion des périls** (l.429-438) : Perception pour repérer / Manœuvre pour éviter, par distance ;
  *    « Un Test d'Orientation est toujours nécessaire après avoir croisé un péril » (l.438).
+ * Branché sur l'événement de bord `collision` (#444, `seaVoyageFlow.ts` `case 'collision'`) :
+ * `pickSeaHazard` tire le péril, `rollStranding`/`strandingPenalty` l'Échouage (Rocher/Bas-fonds),
+ * `rollDebrisEntangle` l'empêtrement (Débris marins) — `damageHull`/`damageVesselHull` seuls écrivent
+ * `state.vessel.wounds`. `perilManagement` (Perception/Manœuvre par distance, l.429-438) reste ORPHELIN :
+ * aucune simulation de péril approchant à distance décroissante n'existe côté état (le tirage de bord est
+ * un jet unique « sans prévenir ») — cf. rapport #444.
  */
 import seaPerilsJson from '../data/sea-perils.json';
 import { d100, type RNG, defaultRNG } from './dice';
@@ -28,6 +34,10 @@ export interface SeaHazardDef {
   entanglePenalties?: { minSize?: ShipSize; maxSize?: ShipSize; manDR: number; mMod: number }[];
   freeTest?: { skillId: string; difficulty: Difficulty; totalDR: number };
   desc: string;
+  /** Poids du TIRAGE parmi les périls d'une collision (#444) — MAISON : le RAW (l.475-499) ne donne
+   *  aucune fréquence relative entre Icebergs/Débris marins/Rocher/Bas-fonds. Éditable ; absent = 1
+   *  (équiprobable), voir `hazardsWeightNote` en tête de `sea-perils.json`. */
+  weight?: number;
 }
 
 export interface StraitDef { id: string; label: string; m: number; navDR: number }
@@ -59,6 +69,19 @@ export const ECHOUER_DESC = DATA.echouer.desc;
 export const findSeaHazard = (id: string): SeaHazardDef | undefined => DATA.hazards.find((h) => h.id === id);
 export const findStrait = (id: string): StraitDef | undefined => DATA.detroits.find((s) => s.id === id);
 export const findWhirlpool = (id: string): WhirlpoolDef | undefined => DATA.tourbillons.find((w) => w.id === id);
+
+/** Tire le péril RENCONTRÉ lors d'une collision (Iceberg/Débris marins/Rocher/Bas-fonds) — pondéré par
+ *  `SeaHazardDef.weight` (#444, MAISON : le RAW l.475-499 ne fixe aucune fréquence relative). PUR. */
+export function pickSeaHazard(rng: RNG = defaultRNG): SeaHazardDef {
+  const weights = DATA.hazards.map((h) => Math.max(0, h.weight ?? 1));
+  const total = weights.reduce((s, w) => s + w, 0) || 1;
+  let r = rng.int(1, total);
+  for (let i = 0; i < DATA.hazards.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return DATA.hazards[i];
+  }
+  return DATA.hazards[DATA.hazards.length - 1];
+}
 
 /** Difficultés de GESTION D'UN PÉRIL à `distanceM` (l.429-436) : Perception pour le repérer, Manœuvre
  *  pour l'éviter — la ligne la plus proche ≥ distance (100 m et plus = la plus permissive). PUR. */
