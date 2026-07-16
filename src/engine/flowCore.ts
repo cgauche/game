@@ -386,6 +386,11 @@ export interface FlowTest {
    *  comme `unlessImmune`/`onlyGroups`). Généralise ces gates à l'algèbre de Conditions (Brisé : « pas
    *  Engagé OU Cœur vaillant, ET pions restants »). Évaluée AVANT le jet par `resolveFlowTest`/`resolveInlineFlowTest`. */
   gate?: Condition;
+  /** Test de résistance (maladie/poison/peur/danger…) qu'on ne peut pas SOUTENIR (LDB 12 l.197) —
+   *  marqueur DÉCLARATIF pour éviter qu'un futur nœud de Test câble un Soutien interdit par erreur ;
+   *  coupe le Soutien à la source côté `openSkillTest` (`combatEffects.ts`), jamais une denylist par
+   *  id de Compétence/Caractéristique. */
+  noSupport?: boolean;
   /** MENACE à laquelle ce Test RÉSISTE (tag du talent « Résistance (Menace) », LDB 10 l.1015-1021 :
    *  'Poison' pour Venin/lames empoisonnées…). Copié sur l'étape de cascade du héros → offre
    *  l'auto-succès du talent (verbe `resist`, cf. engine/menace). Absent = Test non couvert. */

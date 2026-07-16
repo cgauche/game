@@ -45,6 +45,7 @@ import { Effect, setDoorOpen } from './scene';
 import { placeCombatant } from './spawn';
 import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, leafOpsCtx, EMPTY_FLOW, spellOps } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
+import { combatDistance } from './footprint';
 import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
@@ -356,11 +357,18 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   // d'environnement dans un Test : même malus pour tout le monde (indépendant du candidat), au même
   // titre que le mod social ou le Soutien. `undefined` hors voyage en mer / Test de Caractéristique.
   const env = seaWeatherTestMod(get().travelPlan?.sea, spec.skill, spec.spec);
-  const living = get().party.filter((c) => !c.dead && (!restrictId || c.id === restrictId));
+  // Pool des héros AVEC leur position à jour si un combat est en cours (`battle.combatants` — `party` seule
+  // ne porte pas `pos`, LDB 12 l.196 « adjacent »). Même patron que `effectTargets` ci-dessus.
+  const battle = get().battle;
+  const pool = battle?.combatants ?? get().party;
+  const living = pool.filter((c) => c.kind === 'hero' && !c.dead && (!restrictId || c.id === restrictId));
   const candidates = living.map((actor) => {
-    // Soutien (LDB 12 l.214-225) : si CET acteur mène, les AUTRES membres capables l'assistent (+10, plafond
-    // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance.
-    const sout = soutienBonus(living, actor, spec.skill, spec.characteristic, spec.spec);
+    // Soutien (LDB 12 l.187-200) : si CET acteur mène, les AUTRES membres capables l'assistent (+10, plafond
+    // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance. `noSupport`
+    // (l.197 : maladie/poison/peur/danger) coupe le Soutien à la source ; adjacence (l.196), gate GÉOMÉTRIQUE
+    // via `combatDistance`, active quand `actor.pos` est posé (combat en cours).
+    const sout = spec.noSupport ? 0 : soutienBonus(living, actor, spec.skill, spec.characteristic, spec.spec,
+      battle && actor.pos ? (c) => !!c.pos && combatDistance(actor, c) <= 1 : undefined);
     // `spec.sense` (vue/ouïe, LDB 18) restreint le malus de Surdité au seul Test de Perception auditif — le
     // Soutien (`sout`, plafonné au Bonus de Carac du meneur) et le mod social ne dépendent pas du sens.
     const value = testValue(actor, spec.skill, spec.characteristic, spec.spec, spec.sense) + (socialMod ? socialMod(actor) : 0) + sout;
@@ -1390,9 +1398,14 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Tests', label: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)', icon: 'ui/key',
     make: () => ({ type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' }),
     apply: (e, env) => {
-      // Test ÉTENDU (LDB 12) : le meilleur du groupe enchaîne les Rounds, SOUTENU par les autres membres
-      // capables (+10 chacun, plafond Bonus de Carac — `partyAssisted`).
-      const best = partyAssisted(env.get().party, e.skill, e.characteristic, undefined, e.spec);
+      // Test ÉTENDU (LDB 12 l.187-200) : le meilleur du groupe enchaîne les Rounds, SOUTENU par les autres
+      // membres capables (+10 chacun, plafond Bonus de Carac — `partyAssisted`). Adjacence (l.196) : même
+      // pool `battle.combatants` (héros positionnés) que `openSkillTest` quand un combat est en cours.
+      const battle = env.get().battle;
+      const pool = battle?.combatants.filter((c) => c.kind === 'hero') ?? env.get().party;
+      const leader = partyBest(pool, e.skill, e.characteristic, undefined, e.spec)?.actor;
+      const eligible = battle && leader?.pos ? (c: Combatant) => !!c.pos && combatDistance(leader, c) <= 1 : undefined;
+      const best = leader ? partyAssisted(pool, e.skill, e.characteristic, undefined, e.spec, eligible) : null;
       if (!best) return;
       const difficulty = e.difficulty ?? 'intermediaire';
       const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));

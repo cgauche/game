@@ -74,7 +74,9 @@ export interface RollRequest {
    *  `testValue`). AUCUN champ de texte ici : le libellé de compétence affiché est TOUJOURS DÉRIVÉ de
    *  `skill`/`char` par `testSkillLabel` (catalogue `findSkillById`/`CHAR_LABELS`) — insurchargeable,
    *  un call-site ne peut plus injecter de texte en position de compétence. */
-  test: { skill?: string; char?: CharKey; spec?: string; sense?: PairedSense; menace?: string };
+  /** `noSupport` : Test de résistance (maladie/poison/peur/danger…) — coupe le Soutien du côté
+   *  `partyBest` (LDB 12 l.197), pour éviter qu'un futur appelant câble un Soutien interdit. */
+  test: { skill?: string; char?: CharKey; spec?: string; sense?: PairedSense; menace?: string; noSupport?: boolean };
   difficulty: Difficulty;
   klass: RollClass;
   /** Requis pour un `batch`/multi ; défaut `summed-dr` (Test d'équipage, MDG ch.14). */
@@ -207,7 +209,11 @@ function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { 
   }
   if ('partyBest' in req.side) {
     const { skill, char, assisted } = req.side.partyBest;
-    const picked = assisted === false ? partyBest(get().party, skill, char) : partyAssisted(get().party, skill, char);
+    // `noSupport` (LDB 12 l.197) : Test de résistance déclaré sur le spec → jamais de Soutien, même si
+    // `assisted` n'a pas été mis à `false` au call-site.
+    const picked = assisted === false || req.test.noSupport
+      ? partyBest(get().party, skill, char)
+      : partyAssisted(get().party, skill, char);
     if (!picked) return {};
     return { actorId: picked.actor.id, actor: picked.actor, baseValue: picked.value };
   }
@@ -341,15 +347,15 @@ export function openRoll(get: Get, set: Set, req: RollRequest, kind: string, met
  */
 export function openPartyTest(
   get: Get, set: Set,
-  spec: { skill: string; char?: CharKey; assisted?: boolean; spec?: string; sense?: PairedSense; menace?: string; actionLabel: string; difficulty: Difficulty },
+  spec: { skill: string; char?: CharKey; assisted?: boolean; spec?: string; sense?: PairedSense; menace?: string; noSupport?: boolean; actionLabel: string; difficulty: Difficulty },
   kind: string,
   meta?: CascadeStepMeta,
 ): void {
-  const { skill, char, assisted, spec: specName, sense, menace, actionLabel, difficulty } = spec;
+  const { skill, char, assisted, spec: specName, sense, menace, noSupport, actionLabel, difficulty } = spec;
   openRoll(get, set, {
     side: { partyBest: { skill, char, assisted } },
     actionLabel,
-    test: { skill, char, spec: specName, sense, menace },
+    test: { skill, char, spec: specName, sense, menace, noSupport },
     difficulty,
     klass: 'hero-test',
   }, kind, meta);

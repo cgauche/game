@@ -72,6 +72,22 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
     expect(r.support.count).toBe(2); // 4 aptes, plafond BDex 2
     expect(r.value).toBe(70); // 50 + 20
   });
+  it('soutienBonus/partyAssisted — filtre `eligible` (adjacence, LDB 12 l.196) exclut un membre capable écarté', () => {
+    const a = { ...mk({ dexterite: 50 }, [{ skillId: 'escamotage', advances: 20 }]), id: 'a' }; // 70, possède
+    const b = { ...mk({ dexterite: 40 }, [{ skillId: 'escamotage', advances: 10 }]), id: 'b' }; // possède, mais écarté (non adjacent)
+    const c = { ...mk({ dexterite: 40 }, [{ skillId: 'escamotage', advances: 5 }]), id: 'c' }; // possède, éligible
+    const eligible = (x: Combatant) => x.id !== 'b';
+    const r = partyAssisted([a, b, c], 'escamotage', undefined, undefined, undefined, eligible)!;
+    expect(r.actor.id).toBe('a');
+    expect(r.support.count).toBe(1); // seul c compte (b écarté par `eligible`)
+    expect(r.value).toBe(80); // 70 + 10
+  });
+  it('soutienBonus — `eligible` absent (défaut) : comportement INCHANGÉ, tous les capables comptent', () => {
+    const a = { ...mk({ dexterite: 50 }, [{ skillId: 'escamotage', advances: 20 }]), id: 'a' };
+    const b = { ...mk({ dexterite: 40 }, [{ skillId: 'escamotage', advances: 10 }]), id: 'b' };
+    const r = partyAssisted([a, b], 'escamotage')!;
+    expect(r.support.count).toBe(1);
+  });
   it('skillCharKeyById : compétence inconnue → undefined', () => {
     expect(skillCharKeyById('competence-totalement-imaginaire')).toBeUndefined();
   });

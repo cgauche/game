@@ -211,9 +211,9 @@ export function hydrateTR(d: { roll: number; target: number; success: boolean; s
   return { roll: d.roll, target: d.target, success: d.success, sl: d.sl, isDouble: isDoubleRoll(d.roll) };
 }
 
-/** Test Soutenu (LDB 12 l.214-225) — BONUS de coopération : chaque soutien octroie +10 au Test, MAIS le
+/** Test Soutenu (LDB 12 l.187-200) — BONUS de coopération : chaque soutien octroie +10 au Test, MAIS le
  *  meneur ne peut être soutenu par plus de Personnages que son propre Bonus de Caractéristique de la carac
- *  testée (`cap`, l.225). Primitive PURE et GÉNÉRALE de la coopération : le « plus compétent lance » est
+ *  testée (`cap`, l.198). Primitive PURE et GÉNÉRALE de la coopération : le « plus compétent lance » est
  *  porté par `partyBest`/`partyAssisted` (engine/skills) qui appelle ceci. Réutilisée PARTOUT où le groupe
  *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 export function assistBonus(supporters: number, cap: number): number {

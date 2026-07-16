@@ -355,7 +355,7 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 - `LDB 12 l.188-200` — règles du Soutien et de ses limites
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
-**Implémente** : (non implémenté dans `src/engine/` — le bonus de soutien de +10 par participant est une logique à gérer côté état/UI)
+**Implémente** : `assistBonus` (`src/engine/tests.ts`, +10/participant plafonné) + `soutienBonus`/`partyAssisted` (`src/engine/skills.ts`, filtre « possède la Compétence », l.195) — consommé dans plus d'une douzaine de flux hors combat et en combat. Adjacence (l.196) : filtre géométrique optionnel de `soutienBonus`/`partyAssisted`, branché côté état sur `openSkillTest`/`extendedTest` (`src/state/combatEffects.ts`) quand une géométrie de combat existe. Exclusions résistance maladie/poison/peur/danger (l.197) : `FlowTest.noSupport` (`src/engine/flowCore.ts`) et `RollRequest.test.noSupport` (`src/state/rollSeam.ts`), non branchés sur un call-site à ce jour faute de Test de résistance utilisant le Soutien.
 
 ---
 

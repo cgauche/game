@@ -265,33 +265,46 @@ export function bestSkilledOption<T extends { skills?: SkillRef[] }>(
   return r ? { option: r.item, value: r.value } : null;
 }
 
-/** Test de GROUPE avec SOUTIEN (LDB 12 l.214-225) — SOURCE UNIQUE de la coopération hors combat : le plus
+/** Test de GROUPE avec SOUTIEN (LDB 12 l.187-200) — SOURCE UNIQUE de la coopération hors combat : le plus
  *  compétent (`partyBest`) lance, et chaque AUTRE membre CAPABLE (qui POSSÈDE la compétence ; Test de pure
  *  Caractéristique → tout le monde) le soutient à +10, plafonné au Bonus de la Caractéristique testée du
  *  meneur (`assistBonus`). À utiliser PARTOUT où le groupe œuvre de concert (Test étendu, Tests de scène,
  *  survie/perception en voyage, fouille, dissipation à plusieurs…). Renvoie le meneur, sa valeur SOUTENUE
- *  (Soutien déjà fondu) et le détail (`support`) pour l'affichage. */
+ *  (Soutien déjà fondu) et le détail (`support`) pour l'affichage. `eligible` : filtre GÉOMÉTRIQUE additionnel
+ *  (adjacence, l.196) — voir `soutienBonus`. */
 export function partyAssisted(
   party: Combatant[],
   skill?: string,
   characteristic?: CharKey,
   extraMod?: (c: Combatant) => number,
   spec?: string,
+  eligible?: (c: Combatant) => boolean,
 ): { actor: Combatant; value: number; support: { count: number; bonus: number } } | null {
   const leader = partyBest(party, skill, characteristic, extraMod, spec);
   if (!leader) return null;
-  const b = soutienBonus(party, leader.actor, skill, characteristic, spec);
+  const b = soutienBonus(party, leader.actor, skill, characteristic, spec, eligible);
   return { actor: leader.actor, value: leader.value + b, support: { count: b / 10, bonus: b } };
 }
 
-/** Bonus de SOUTIEN (LDB 12 l.214-225) pour un meneur DONNÉ — brique partagée par `partyAssisted` ET les
+/** Bonus de SOUTIEN (LDB 12 l.187-200) pour un meneur DONNÉ — brique partagée par `partyAssisted` ET les
  *  Tests à sélecteur de candidat (Tests de scène) où le meneur n'est pas le « meilleur » mais le candidat
  *  considéré : +10 par AUTRE membre VIVANT et CAPABLE (possède la compétence ; Test de pure Caractéristique
- *  → tous), plafonné au Bonus de la Caractéristique testée du meneur (l.225). */
-export function soutienBonus(party: Combatant[], leader: Combatant, skill?: string, characteristic?: CharKey, spec?: string): number {
-  const eligible = party.filter((c) => c.id !== leader.id && !c.dead && (skill ? actorHasSkill(c, skill, spec) : true)).length;
+ *  → tous), plafonné au Bonus de la Caractéristique testée du meneur (l.198). `eligible` (l.196, « doit
+ *  normalement être adjacent ») : prédicat GÉOMÉTRIQUE optionnel fourni par l'appelant (moteur PUR — la
+ *  position/adjacence vit côté état) ; absent = comportement inchangé (aucune géométrie, ex. hors combat). */
+export function soutienBonus(
+  party: Combatant[],
+  leader: Combatant,
+  skill?: string,
+  characteristic?: CharKey,
+  spec?: string,
+  eligible?: (c: Combatant) => boolean,
+): number {
+  const elig = party.filter((c) => c.id !== leader.id && !c.dead
+    && (skill ? actorHasSkill(c, skill, spec) : true)
+    && (eligible ? eligible(c) : true)).length;
   const ck = effectiveSkillCharKey(leader, skill, { explicit: characteristic, spec });
-  return assistBonus(eligible, bonus(effectiveChar(leader, ck)));
+  return assistBonus(elig, bonus(effectiveChar(leader, ck)));
 }
 
 /** Meilleur résultat SOUTENU d'un groupe pour une Scène à compétences AU CHOIX (ADE II ch.8) : pour chaque
