@@ -12,6 +12,7 @@ import { findSpell } from '../data';
 import { testScene } from '../scenes/test-fixture';
 import type { CastResult, MissileResult } from '../engine/magic';
 import type { Combatant, Weapon } from '../engine/types';
+import type { GameOp } from '../engine/ops';
 
 describe('L11 — zones persistantes posées par les sorts', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null, pendingCast: null }); });
@@ -48,6 +49,16 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     expect(wall.tiles).toHaveLength(8);
     expect(wall.tiles.some((t) => t.y === 10)).toBe(true);
     expect(wall.casterId).toBe(caster.id);
+  });
+
+  it('Forêt d’épines : disque centré sur la cible, onCross Empêtré porte escapeStrength = FM du LANCEUR (LDB 48 l.749)', () => {
+    const { caster, T } = setup();
+    const ok: CastResult = { cast: true, roll: 30, target: 70, sl: 0, isCritical: false, isFumble: false, log: 'ok' };
+    applyCast(useGame.getState, useGame.setState, caster, T, findSpell('Forêt d\'épines')!, ok, false, false);
+    const zone = (useGame.getState().battle!.zones ?? []).find((z) => z.label === 'Forêt d\'épines')!;
+    expect(zone).toBeTruthy();
+    const empetreOp = zone.onCross?.find((o): o is Extract<GameOp, { op: 'condition' }> => o.op === 'condition' && o.name === 'empetre');
+    expect(empetreOp?.escapeStrength).toEqual({ charOf: 'force-mentale' });
   });
 
   it('Bouclier anti-flèches / Dôme : auras posées par le cast ; géométrie intérieur/extérieur', () => {

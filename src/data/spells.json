@@ -7057,19 +7057,6 @@
           "kind": "do",
           "effect": {
             "type": "ops",
-            "on": "target",
-            "ops": [
-              {
-                "op": "narrative",
-                "text": "Forêt d’épines : traverser la zone sans le Talent Magie des Arcanes (Vie) impose un Test d’Agilité Difficile (−20) ; l’Empêtré subi utilise votre Force Mentale comme Force d’entrave — arbitrage MJ."
-              }
-            ]
-          }
-        },
-        {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
             "on": "caster",
             "ops": [
               {
@@ -7085,7 +7072,10 @@
                   },
                   {
                     "op": "condition",
-                    "name": "empetre"
+                    "name": "empetre",
+                    "escapeStrength": {
+                      "charOf": "force-mentale"
+                    }
                   }
                 ]
               }
