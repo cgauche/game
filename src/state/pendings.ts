@@ -130,6 +130,9 @@ export interface PendingTest {
   forced?: boolean;
   /** Relance par Chance déjà effectuée (LDB ch.12 l.56 : 1 relance max par Test). */
   rerolled?: boolean;
+  /** Ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de palier 2 des Crampes routé en modale hors
+   *  combat, T2C 16) : sa résolution NE ré-émet PAS le trigger (garde de ré-entrance, `resolveTest`). */
+  noOwnTestFailed?: boolean;
   /** Branches du Test : des FLOWS (le nœud `test` du Flow ; `Effect.test` y est normalisé). */
   onSuccess?: Flow;
   onFailure?: Flow;

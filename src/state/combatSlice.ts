@@ -25,7 +25,7 @@ import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
 import { discreetPrayerDifficulty } from '../engine/prayer';
-import { setTriggeredTestRouter } from './triggeredEffects';
+import { setTriggeredTestRouter, fireOwnTestFailed } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
@@ -101,7 +101,7 @@ import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
-import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, suspendActiveCascade } from './cascade';
+import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, suspendActiveCascade, setOwnTestFailedEmitter } from './cascade';
 import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
 import { checkPartyWiped } from './partyWipe';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
@@ -301,6 +301,9 @@ export function createCombatSlice(get: Get, set: Set) {
   // au RUNTIME (pas au top-level de la brique : `setTriggeredTestRouter` est en amont d'un cycle d'imports).
   setConditionGainedHook((c, name) => handleConditionGained(get, set, c, name));
   setTriggeredTestRouter(routeTriggeredTest);
+  // Émetteur `onOwnTestFailed` du seam central `commitStep` (tests de cascade/entretien ratés → Crampes) —
+  // injecté au runtime (inversion de dépendance, cf. `setOwnTestFailedEmitter`). Sous-Test FM inline.
+  setOwnTestFailedEmitter((g, actor, sl) => fireOwnTestFailed(g, actor, { sl, rng: battleRng() })); // RNG SEEDABLE (battleRng, jamais defaultRNG) — determinisme + coop
   // Hook `grantFreeAttack` (op IMPURE) : pont exécuteur de Flow → vraie frappe — `runCombatFlow` l'appelle
   // sur le `do`/`grantFreeAttack` (Frappe réactive / Assaut féroce / Frénésie). Inversion de dépendance.
   setFreeAttackHook(freeAttackHookImpl);

@@ -30,6 +30,7 @@ import { isFumble } from '../engine/oups';
 import { combatValue } from '../engine/combat';
 import { spellCost } from '../engine/grimoire';
 import { gainCorruption } from './corruptionFlow';
+import { fireOwnTestFailed } from './triggeredEffects';
 import { applyMiscast } from './combatFlow';
 import { buySpell as partyBuySpell } from './partyFlow';
 import { testValue } from '../engine/skills';
@@ -752,6 +753,13 @@ export function confirmActivity(get: Get, set: Set): void {
       }
     }
   }
+  // SEAM `onOwnTestFailed` (chemin JOUEUR hors combat — Activité d'interlude) : un Test d'Activité RATÉ émet
+  // le trigger (Crampes abdominales : rate l'Artisanat → Sonné, T2C 16 l.152). AVANT l'écriture UNIQUE : les
+  // mutations Sonné (palier 1/3) sont captées par l'écriture party ci-dessous, aucun set brut de plus.
+  // CADENCE-AWARE : `set` threadé → le sous-Test de FM (palier 2) d'un héros s'ouvre en MODALE de jet scène
+  // (`routeTriggeredTest` hors combat), jamais inline (« un jet = une modale » vaut hors combat) ; la modale
+  // ouverte ici SURVIT à l'écriture interlude/party finale (clés disjointes). PNJ/auto → inline (early-out sinon).
+  if (!pa.success) lines.push(...fireOwnTestFailed(get, pa.heroId, { sl: pa.sl, rng: battleRng(), set }));
   // Écriture UNIQUE : consomme l'Activité + fusionne closeOps différés + patch des résolveurs.
   itl.perHero[pa.heroId] = {
     ...st,

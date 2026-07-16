@@ -243,6 +243,8 @@ export function humanizeOp(o: GameOp): string {
     case 'chain': return `rebondit sur ${humanizeFormula(o.maxBounces)} ennemi(s) à ${humanizeFormula(o.hopMeters)} m`;
     case 'perRound': return `déclenche à chaque Round : ${o.ops.map(humanizeOp).join(' ; ')}`;
     case 'rollThreshold': return `lance 1d${o.sides} pour un effet à paliers`;
+    case 'rollTable': return `tire sur une table (${o.die}${o.addNegativeSL ? ' + DR négatifs' : ''}) pour un effet selon la fourchette`;
+    case 'charDamage': return `perd ${humanizeFormula(o.amount)} en ${CHAR_LABELS[o.char]} (définitivement)`;
     case 'summon': return `invoque ${humanizeFormula(o.count)}× ${creatureLabel(o.ref)}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
     case 'scheduleRespawn': return `se reconstitue (${creatureLabel(o.ref)}) après ${humanizeFormula(o.delayDays)} jour(s)`;
     case 'zone': return `pose ${o.shape === 'wall' ? `un mur de ${humanizeFormula(o.lengthMeters ?? 2)} m` : `un disque de ${humanizeFormula(o.radiusMeters ?? 2)} m`}`;

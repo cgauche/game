@@ -20,11 +20,17 @@
  *    (Blessé/Gangrène), `amputation` (Gangrène), `stickyExtenue` (Malaise), `contagious` (Toux),
  *    `nausea` (combat), `endTest` (Persistant).
  */
-import { Combatant, Difficulty, UpkeepDeferTest } from './types';
+import { Combatant, Difficulty, UpkeepDeferTest, HitLocation } from './types';
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice, formatDice } from './dice';
 import { MINUTES_PER_DAY } from './clock';
+import { findTableEntry } from './tables';
+import locJson from '../data/localisation.json';
+// Table de Localisation CANONIQUE (`src/data/localisation.json`, humanoïde) via la primitive `findTableEntry`
+// — MÊME source/lookup que `engine/combat.hitLocation`, réutilisée ici sans cycle (json + tables = feuilles).
+const HUMANOID_LOC = (locJson as { personnage: { shapes: Record<string, { min: number; max: number; loc: HitLocation }[]> } }).personnage.shapes.humanoide;
+const rollBlisterLocation = (rng: RNG): HitLocation => findTableEntry(HUMANOID_LOC, roll(1, 100, rng)).loc;
 import { rollTest } from './tests';
-import { maladies, diseaseLabel, findSymptomById, symptomLabel, type SymptomCapabilities } from '../data';
+import { maladies, diseaseLabel, findSymptomById, symptomLabel, conditionLabel, type SymptomCapabilities } from '../data';
 import type { GameOp } from './ops';
 import type { PsychTrait, PsychType } from './psychology';
 import { t } from '../i18n';
@@ -89,6 +95,11 @@ export interface DiseaseDef {
   symptoms: DiseaseSymptom[];
   /** Vérole Urticante (l.97) : « vous ne pouvez pas l'attraper une seconde fois » — immunité après guérison. */
   immuneAfterCure?: boolean;
+  /** Passifs actifs pendant toute l'INFECTION (incubation ET phase active — Vers du Reik : « −5 à tous les
+   *  Tests de Résistance permettant de résister aux maladies » pour chaque période complète de 30 jours
+   *  d'infection, T2C 16 l.138). Un op `diseaseTestMod` y est RAMPÉ par tranche de 30 jours écoulés depuis
+   *  la contraction (`activeDiseaseTestMod`), puis DÉCROÎT de 1/jour après la fin (résidu). Éditable au Codex. */
+  infectionPassive?: GameOp[];
 }
 
 /** Instance de maladie portée par un personnage. */
@@ -113,6 +124,15 @@ export interface Disease {
   /** Cascade de nuit : le Test « persistant » de fin de durée est DIFFÉRÉ (étape influençable) ; la
    *  maladie reste en attente de résolution jusqu'à la validation de l'étape (`applyDiseasePersist`). */
   endTestPending?: boolean;
+  /** Jours pleins écoulés en PHASE ACTIVE — cadence les cycles `onTick.afterDays`/`once` (Vers de carie
+   *  J+7, Vers du Reik éclatement au 7ᵉ jour, T2C 16). Incrémenté à chaque journée pleine active. */
+  activeDaysElapsed?: number;
+  /** MINUTES totales écoulées depuis la CONTRACTION (toutes phases) — base de la rampe « −5 par période
+   *  complète de 30 jours d'infection » des passifs d'infection (Vers du Reik, T2C 16 l.138). */
+  infectedMinutes?: number;
+  /** Localisation de la lésion (cloque du Vers du Reik) TIRÉE à l'entrée en phase active (jet de
+   *  Localisation canonique) — gate les `visiblePassive` d'un symptôme (−10 Soc si visible, T2C 16 l.140). */
+  blisterLocation?: import('./types').HitLocation;
 }
 
 
@@ -170,17 +190,57 @@ export function symptomSuppressed(c: Combatant, symptomId: string): boolean {
  *  Fleur de lune +30 vs Peste noire, Racine de terre +10, Tonique digestif +20) : appliqué aux Tests
  *  de CONTRACTION (`rollContraction`) et de CYCLE/FIN (`tickDisease` — inline ET bases différées). */
 export function activeDiseaseTestMod(c: Combatant, diseaseName: string): number {
-  return (c.activeEffects ?? []).reduce((s, e) => {
+  let n = (c.activeEffects ?? []).reduce((s, e) => {
     const m = e.diseaseTestMod;
     return s + (m && (!m.diseases || m.diseases.includes(diseaseName)) ? m.amount : 0);
   }, 0);
+  // Passifs d'INFECTION (Vers du Reik « −5 aux Tests de Résistance par période complète de 30 jours
+  // d'infection », T2C 16 l.138) : rampés par le nombre de tranches de 30 jours écoulées depuis la
+  // contraction — sur TOUTE l'infection (incubation ET phase active, l.138 « d'infection »).
+  const PERIOD = 30 * MINUTES_PER_DAY; // T2C 16 l.138 (« période complète de 30 jours »)
+  for (const dz of c.diseases ?? []) {
+    const periods = Math.floor((dz.infectedMinutes ?? 0) / PERIOD);
+    if (periods <= 0) continue;
+    for (const op of DISEASE_DEFS[dz.name]?.infectionPassive ?? []) {
+      if (op.op === 'diseaseTestMod' && (!op.diseases || op.diseases.includes(diseaseName))) n += op.amount * periods;
+    }
+  }
+  // Résidu POST-fin qui décroît de 1/jour (Vers du Reik « réduite de 1 point par jour après la mort du
+  // ver », T2C 16 l.138) : magnitude ≥ 0 stockée sur le porteur, retranchée aux Tests (pénalité négative).
+  if (c.residualDiseaseTestMod) n -= c.residualDiseaseTestMod;
+  return n;
 }
-/** GameOp passifs de TOUTES les maladies ACTIVES (collecte unifiée, lue par `passiveMods` kind 'maladie').
- *  Un symptôme SUSPENDU (`suppressSymptom`) n'émet rien. */
-export function diseasePassiveOps(c: Combatant): GameOp[] {
+/** Fige le RÉSIDU post-fin d'une maladie à `infectionPassive` (Vers du Reik) : la pénalité accumulée
+ *  (magnitude × tranches de 30 jours) reste sur le porteur et décroît de 1/jour (T2C 16 l.138). */
+function snapshotInfectionResidual(c: Combatant, dz: Disease): void {
+  const periods = Math.floor((dz.infectedMinutes ?? 0) / (30 * MINUTES_PER_DAY));
+  if (periods <= 0) return;
+  let mag = 0;
+  for (const op of DISEASE_DEFS[dz.name]?.infectionPassive ?? []) if (op.op === 'diseaseTestMod') mag += Math.abs(op.amount) * periods;
+  if (mag > 0) c.residualDiseaseTestMod = (c.residualDiseaseTestMod ?? 0) + mag;
+}
+/** Instances de symptôme ACTIVES et NON suspendues du porteur (maladies en phase `active`, hors
+ *  `suppressSymptom`) — ACCESSEUR CANONIQUE unique. Base commune de `diseasePassiveOps` (canal passif)
+ *  et des `effects` DÉCLENCHÉS des symptômes (source du dispatcher, `state/triggeredEffects`). */
+export function activeSymptoms(c: Combatant): DiseaseSymptom[] {
   return (c.diseases ?? [])
     .filter((d) => d.phase === 'active')
-    .flatMap((d) => d.symptoms.filter((s) => !symptomSuppressed(c, s.symptomId)).flatMap(symptomPassive));
+    .flatMap((d) => d.symptoms.filter((s) => !symptomSuppressed(c, s.symptomId)));
+}
+/** GameOp passifs de TOUTES les maladies ACTIVES (collecte unifiée, lue par `passiveMods` kind 'maladie').
+ *  Un symptôme SUSPENDU (`suppressSymptom`) n'émet rien. Les `visiblePassive` (Vers du Reik −10 Soc) ne
+ *  s'émettent que si la lésion tirée (`blisterLocation`) est dans les `visibleLocations` `maison` du symptôme. */
+export function diseasePassiveOps(c: Combatant): GameOp[] {
+  const out: GameOp[] = [];
+  for (const dz of (c.diseases ?? []).filter((d) => d.phase === 'active')) {
+    for (const inst of dz.symptoms) {
+      if (symptomSuppressed(c, inst.symptomId)) continue;
+      out.push(...symptomPassive(inst));
+      const sd = findSymptomById(inst.symptomId);
+      if (sd?.visiblePassive?.length && dz.blisterLocation && (sd.visibleLocations ?? []).includes(dz.blisterLocation)) out.push(...sd.visiblePassive);
+    }
+  }
+  return out;
 }
 /** Traits PSYCHOLOGIQUES conférés par les symptômes ACTIFS — op `grantPsychTrait` du MÊME canal `passive`
  *  que les pénalités continues (Rage meurtrière → Haine (toutes les choses vivantes) + Frénésie,
@@ -195,15 +255,38 @@ export function diseasePsychTraits(c: Combatant): PsychTrait[] {
   }
   return out;
 }
-/** Test/conséquence de cycle quotidien d'une instance de symptôme (Blessé/Toxine) — donnée. La
+/** Test/conséquence de cycle quotidien d'une instance de symptôme (Blessé/Toxine/Vers) — donnée. La
  *  difficulté est INDEXÉE sur la sévérité PORTÉE PAR L'INSTANCE quand le symptôme le prévoit
- *  (`difficultyBySeverity` — Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible). */
-export function symptomOnTick(inst: DiseaseSymptom): { difficulty: Difficulty; onFail: GameOp[] } | undefined {
+ *  (`difficultyBySeverity` — Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible). `difficulty`
+ *  ABSENTE = conséquence INCONDITIONNELLE (pas de jet). `afterDays`/`once` cadencent le cycle sur la
+ *  phase active (Vers de carie / Vers du Reik, T2C 16). */
+export function symptomOnTick(inst: DiseaseSymptom): { difficulty?: Difficulty; onFail: GameOp[]; afterDays?: number; once?: boolean } | undefined {
   const tick = findSymptomById(inst.symptomId)?.onTick;
   if (!tick) return undefined;
   const bySeverity = inst.severity && tick.difficultyBySeverity?.[inst.severity];
-  return bySeverity ? { difficulty: bySeverity, onFail: tick.onFail } : tick;
+  return bySeverity ? { ...tick, difficulty: bySeverity } : tick;
 }
+/** Interprète INLINE le sous-ensemble d'ops `onFail`/inconditionnelles que le cycle de maladie peut
+ *  appliquer SANS `applyOps` (contrainte sans-cycle ops↔disease de l'en-tête) : contraction, mort (Destin,
+ *  T2C 16 l.101), Blessure directe + État (éclatement du Vers du Reik, l.142). Les ops RICHES à dés/table
+ *  (`rollTable`/`charDamage` — table du Vers de carie, l.90) passent par la voie DIFFÉRÉE (`diseaseTick`
+ *  → `applyOps` côté state, vocabulaire complet) ; elles sont IGNORÉES ici (jamais roulées à l'aveugle). */
+function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: string) => boolean, log: string[]): void {
+  for (const op of onFail) {
+    if (op.op === 'contractDisease') contractOnce(op.disease);
+    else if (op.op === 'kill') log.push(fateSaveOrDie(c) ? t('op.kill.fateSaved', { name: c.name }) : t('op.kill', { name: c.name }));
+    else if (op.op === 'wounds') {
+      const n = typeof op.amount === 'number' ? op.amount : 0; // burst = 1 Blessure directe (littéral) ; formules → voie différée
+      if (n > 0) { c.wounds.current = Math.max(0, c.wounds.current - n); log.push(t('op.wounds', { name: c.name, n, mitig: '' })); }
+    } else if (op.op === 'condition') {
+      const ex = c.conditions.find((x) => x.name === op.name);
+      if (ex) ex.value = (ex.value ?? 1) + 1;
+      else c.conditions.push({ name: op.name, value: typeof op.value === 'number' ? op.value : 1 });
+      log.push(t('op.cond', { name: c.name, v: ex ? (ex.value ?? 1) : 1, cond: conditionLabel(op.name) }));
+    }
+  }
+}
+
 /** Un symptôme (par id) porte-t-il la capacité `cap` (lue sur sa donnée) ? */
 function symptomHasCapability(symptomId: string, cap: keyof SymptomCapabilities): boolean {
   return !!findSymptomById(symptomId)?.capabilities?.[cap];
@@ -337,7 +420,12 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
  * gangrène/persistant par `applyDiseaseGangrene/Persist`.
  */
 export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest, beForGangrene = Math.floor(resistVal / 10)): string[] {
-  if (!c.diseases?.length || minutes <= 0) return [];
+  if (minutes <= 0) return [];
+  // Décroissance du RÉSIDU post-infection : −1 par jour plein (Vers du Reik « réduite de 1 point par jour
+  // après la mort du ver », T2C 16 l.138) — indépendante de toute maladie en cours.
+  const fullDaysAll = Math.floor(minutes / MINUTES_PER_DAY);
+  if (c.residualDiseaseTestMod && fullDaysAll > 0) c.residualDiseaseTestMod = Math.max(0, c.residualDiseaseTestMod - fullDaysAll) || undefined;
+  if (!c.diseases?.length) return [];
   const log: string[] = [];
   // On boucle par PAS (journées pleines + reliquat) ; les nouvelles maladies (Blessure Purulente /
   // Infection du Sang) sont accumulées puis ajoutées en fin de tick (elles n'évoluent qu'aux pas suivants).
@@ -363,6 +451,7 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
     const isFullDay = stepMin === MINUTES_PER_DAY; // Tests de cycle RAW « par jour » : journée pleine uniquement
     const survivors: Disease[] = [];
     for (const dz of c.diseases) {
+      dz.infectedMinutes = (dz.infectedMinutes ?? 0) + stepMin; // temps depuis la contraction (rampe d'incubation, l.138)
       // Résistance EFFECTIVE de CETTE maladie : base + bonus d'effets actifs scopés (op `diseaseTestMod`
       // — Fleur de lune +30 vs Peste noire, Tonique digestif +20). Injectée inline ET dans les bases différées.
       const rv = resistVal + activeDiseaseTestMod(c, dz.name);
@@ -371,6 +460,9 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
         if (dz.minutesLeft <= 0) {
           dz.phase = 'active';
           dz.minutesLeft = dz.durationMinutes;
+          // Localisation de la lésion (cloque du Vers du Reik) tirée à l'entrée en phase active si un
+          // symptôme la gate (`visiblePassive`) — jet de Localisation canonique, T2C 16 l.140.
+          if (dz.symptoms.some((s) => findSymptomById(s.symptomId)?.visiblePassive?.length)) dz.blisterLocation = rollBlisterLocation(rng);
           log.push(`${c.name} : les symptômes de « ${diseaseLabel(dz.name)} » se déclarent.`);
         }
         survivors.push(dz);
@@ -385,17 +477,22 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
       // de l'en-tête du fichier). Cadence RAW « par jour » → uniquement sur une JOURNÉE PLEINE (une
       // durée sous-journalière s'épuise sans Test « quotidien »).
       if (isFullDay) {
+        dz.activeDaysElapsed = (dz.activeDaysElapsed ?? 0) + 1; // Jᵉ jour de phase active (T2C 16 : cadence des Vers)
+        const activeDay = dz.activeDaysElapsed;
         for (const inst of dz.symptoms) {
           if (symptomSuppressed(c, inst.symptomId)) continue; // symptôme suspendu (Racine de terre) : pas de Test de cycle
           const tick = symptomOnTick(inst);
           if (!tick) continue;
-          if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.name)})`, base: rv, difficulty: tick.difficulty, meta: { diseaseName: dz.name, onFail: tick.onFail } });
-          else if (!rollTest(rv, tick.difficulty, rng).success) for (const op of tick.onFail) {
-            if (op.op === 'contractDisease') contractOnce(op.disease);
-            else if (op.op === 'kill') {
-              log.push(fateSaveOrDie(c) ? t('op.kill.fateSaved', { name: c.name }) : t('op.kill', { name: c.name }));
-            }
-          }
+          // Cadence de phase active : `afterDays` = ne démarre qu'au Jᵉ jour ; `once` = uniquement CE jour-là
+          // (Vers du Reik éclate au 7ᵉ ; Vers de carie teste chaque jour ≥ J+7 — T2C 16 l.90/142).
+          if (tick.afterDays != null && activeDay < tick.afterDays) continue;
+          if (tick.once && activeDay !== tick.afterDays) continue;
+          if (tick.difficulty == null) {
+            // Conséquence INCONDITIONNELLE (pas de jet — éclatement du Vers du Reik, issue invariante,
+            // T2C 16 l.142) : appliquée DIRECTEMENT ici (defer ou non), via l'interprète inline restreint.
+            applyOnFailInline(c, tick.onFail, contractOnce, log);
+          } else if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.name)})`, base: rv, difficulty: tick.difficulty, meta: { diseaseName: dz.name, onFail: tick.onFail } });
+          else if (!rollTest(rv, tick.difficulty, rng).success) applyOnFailInline(c, tick.onFail, contractOnce, log);
         }
         // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
         // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.
@@ -412,6 +509,14 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
       }
       dz.minutesLeft -= stepMin;
       if (dz.minutesLeft > 0) {
+        survivors.push(dz);
+        continue;
+      }
+      // Phase active PERSISTANTE (Vers de carie, T2C 16 l.90-101) : la dégénérescence quotidienne ne cesse
+      // JAMAIS de mort naturelle — la maladie ne guérit pas à l'épuisement de la « Durée » (installation),
+      // elle reste active (seule la Mort de la table, ou un retrait joueur, la termine).
+      if (diseaseHasCapability(dz, 'persistentActive')) {
+        dz.minutesLeft = dz.durationMinutes;
         survivors.push(dz);
         continue;
       }
@@ -441,6 +546,7 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
         }
       } else {
         log.push(`${c.name} guérit de : ${diseaseLabel(dz.name)}.`);
+        snapshotInfectionResidual(c, dz); // Vers du Reik : la pénalité de Résistance survit et décroît −1/jour (l.138)
         if (DISEASE_DEFS[dz.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.name]; // Vérole Urticante (l.97)
       }
     }

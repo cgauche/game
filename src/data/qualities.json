@@ -1112,5 +1112,22 @@
       "book": "archives-de-l-empire-2",
       "page": 88
     }
+  },
+  {
+    "id": "poudre-impregnee-d-aqshy",
+    "label": "Poudre imprégnée d'Aqshy",
+    "type": "defaut",
+    "subType": "arme",
+    "desc": "Tout Test raté incluant un 8 ou un 9 sur le dé des dizaines ou celui des unités est considéré comme une Maladresse quand vous utilisez cette poudre.",
+    "source": {
+      "book": "aux-armes",
+      "page": 104
+    },
+    "capabilities": {
+      "fumbleDigits": [
+        8,
+        9
+      ]
+    }
   }
 ]

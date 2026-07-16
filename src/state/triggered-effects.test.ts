@@ -263,3 +263,187 @@ describe('Affamé — Test de trigger onKill routé (cadence-aware)', () => {
     expect(useGame.getState().pendingLogQueue.some((q) => /Force Mentale/.test(q.line))).toBe(true);
   });
 });
+
+// ── Trigger `onOwnTestFailed` (T2C 16 — Crampes abdominales) + symptômes comme SOURCE du dispatcher ──
+import { fireOwnTestFailed, effectSourcesOf } from './triggeredEffects';
+
+const withCrampes = (over: Partial<Combatant> = {}): Combatant => mk({
+  id: 'cr', kind: 'hero',
+  diseases: [{ name: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 100000, durationMinutes: 100000 }],
+  ...over,
+} as Partial<Combatant>);
+const cond = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name);
+
+describe('onOwnTestFailed — Crampes abdominales (T2C 16 l.152-158)', () => {
+  it('symptôme ACTIF = SOURCE du dispatcher (effectSourcesOf) : 3 effets, tous onOwnTestFailed', () => {
+    const c = withCrampes();
+    const src = effectSourcesOf(c).find((s) => s.key === 'symptom:crampes-abdominales');
+    expect(src).toBeTruthy();
+    expect(src!.effects.length).toBe(3);
+    expect(src!.effects.every((e) => e.trigger === 'onOwnTestFailed')).toBe(true);
+  });
+
+  it('EARLY-OUT : un combattant sans source onOwnTestFailed → aucun effet, aucune ligne', () => {
+    const c = mk({ id: 'sain' });
+    expect(fireOwnTestFailed(noBattle(), c, { sl: -6, rng: makeRNG(1) })).toEqual([]);
+    expect(c.conditions).toEqual([]);
+  });
+
+  it('palier « échec normal » (DR ≤ −2) → Sonné seul (ctx.margin lu par slThreshold)', () => {
+    const c = withCrampes();
+    fireOwnTestFailed(noBattle(), c, { sl: -2, rng: makeRNG(1) });
+    expect(cond(c, 'sonne')?.value).toBe(1);
+    expect(cond(c, 'a-terre')).toBeUndefined();
+    expect(cond(c, 'inconscient')).toBeUndefined();
+  });
+
+  it('palier « Impressionnant » (DR ≤ −4) → Sonné + Test de FM raté → À Terre (résolu INLINE)', () => {
+    const c = withCrampes();
+    // rng FM raté (jet haut) : le sous-Test se résout inline, sa branche fail pose À Terre.
+    fireOwnTestFailed(noBattle(), c, { sl: -4, rng: { int: () => 98 } });
+    expect(cond(c, 'sonne')?.value).toBe(1);
+    expect(cond(c, 'a-terre')?.value).toBe(1);
+  });
+
+  it('palier « Impressionnant » — Test de FM RÉUSSI → pas d’À Terre (branche success vide)', () => {
+    const c = withCrampes();
+    fireOwnTestFailed(noBattle(), c, { sl: -4, rng: { int: () => 1 } }); // jet bas → réussite
+    expect(cond(c, 'sonne')?.value).toBe(1);
+    expect(cond(c, 'a-terre')).toBeUndefined();
+  });
+
+  it('palier « Stupéfiant » (DR ≤ −6) : les trois paliers tirent cumulativement (« ou pire »)', () => {
+    const c = withCrampes();
+    fireOwnTestFailed(noBattle(), c, { sl: -6, rng: { int: () => 98 } }); // FM raté
+    expect(cond(c, 'sonne')?.value).toBe(1);
+    expect(cond(c, 'a-terre')?.value).toBe(1);
+    expect(cond(c, 'inconscient')?.value).toBe(1);
+  });
+
+  it('RÉ-ENTRANCE : le Test de FM (palier 2) résolu pendant le traitement NE ré-émet PAS le trigger', () => {
+    const c = withCrampes();
+    // Le FM raté a un DR très négatif (cible basse ≈ FM−20) : sans garde, il ré-émettrait onOwnTestFailed
+    // et empilerait un 2ᵉ Sonné. La garde de ré-entrance le bloque → Sonné reste à 1 pion.
+    fireOwnTestFailed(noBattle(), c, { sl: -4, rng: { int: () => 99 } });
+    expect(cond(c, 'sonne')?.value).toBe(1);
+  });
+});
+
+// ── Correction 1 : cadence-aware (héros → cascade influençable, PNJ → inline) + ré-entrance en cascade ──
+import './restFlow'; // effet de bord : enregistre les appliers d'entretien (diseaseTick…)
+import { hasCondition } from '../engine/conditions';
+
+const addCrampes = (c: Combatant) => { c.diseases = [{ name: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 1e5, durationMinutes: 1e5 }]; };
+
+describe('onOwnTestFailed — cadence-aware + seam central de cascade (corrections coordinateur)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  function combat() {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    const E = b.combatants.filter((c) => c.kind === 'enemy');
+    E.slice(1).forEach((e) => (e.dead = true));
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    return { H, E: E[0] };
+  }
+
+  it('HÉROS en combat : le FM de palier 2 (DR ≤ −4) devient une ÉTAPE de cascade (influençable, tamponnée noOwnTestFailed)', () => {
+    seedBattleRng(1);
+    const { H } = combat();
+    addCrampes(H);
+    fireOwnTestFailed(useGame.getState, H, { sl: -4, set: useGame.setState });
+    expect(hasCondition(H, 'sonne')).toBe(true);   // palier 1 inline
+    expect(hasCondition(H, 'a-terre')).toBe(false); // palier 2 DIFFÉRÉ en cascade (pas résolu inline)
+    const step = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'triggeredTest');
+    expect(step).toBeTruthy();
+    expect(step?.meta?.noOwnTestFailed).toBe(true); // garde de ré-entrance portée par l'étape
+  });
+
+  it('RÉ-ENTRANCE en cascade : résoudre le FM raté n’empile PAS un 2ᵉ Sonné (le sous-Test ne ré-émet pas)', () => {
+    seedBattleRng(1);
+    const { H } = combat();
+    H.characteristics['force-mentale'] = 1; // FM minimale → le Test de FM échoue à coup sûr
+    addCrampes(H);
+    fireOwnTestFailed(useGame.getState, H, { sl: -4, set: useGame.setState });
+    const before = cond(H, 'sonne')?.value ?? 0;
+    useGame.getState().cascadeResolveAll(); // résout le FM (échec) → À Terre, PAS un 2ᵉ Sonné
+    const H2 = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(hasCondition(H2, 'a-terre')).toBe(true);
+    expect(cond(H2, 'sonne')?.value ?? 0).toBe(before); // ré-entrance : aucun nouveau Sonné
+  });
+
+  it('PNJ en combat : le FM de palier 2 est résolu INLINE (jamais une étape de cascade)', () => {
+    seedBattleRng(1);
+    const { E } = combat();
+    E.characteristics['force-mentale'] = 1; // FM minimale → échec inline → À Terre
+    addCrampes(E);
+    fireOwnTestFailed(useGame.getState, E, { sl: -4, set: useGame.setState });
+    expect(useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'triggeredTest')).toBeFalsy();
+    expect(hasCondition(E, 'a-terre')).toBe(true); // résolu inline (PNJ)
+  });
+
+  it('SEAM CENTRAL `commitStep` (cumulard) : un Test d’ENTRETIEN raté déclenche les Crampes du porteur', () => {
+    seedBattleRng(3);
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    addCrampes(hero);
+    useGame.setState({
+      party: [hero], battle: null,
+      pendingCascade: { title: 'Entretien', purpose: 'test', participants: [
+        { id: 'dt', kind: 'diseaseTick', actorId: hero.id, base: 0, target: 5, result: null, interactive: true, meta: { diseaseName: 'x', onFail: [] } },
+      ], cursor: 0, log: [] } as never,
+    });
+    useGame.getState().cascadeResolveAll();
+    expect(hasCondition(useGame.getState().party[0], 'sonne')).toBe(true); // Crampes réagissent au Test d'Endurance raté
+  });
+});
+
+// ── Correction 1 (recette) : seams d'ATTAQUE — attaquant qui rate son jet + défenseur qui rate sa défense ──
+import { applyAttackResult } from './combatFlow';
+import type { AttackResult } from '../engine/combat';
+
+describe('onOwnTestFailed — jets d’ATTAQUE (attaquant ET défenseur, T2C 16)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  function combat() {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    const E = b.combatants.filter((c) => c.kind === 'enemy');
+    E.slice(1).forEach((e) => (e.dead = true));
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    return { H, E: E[0] };
+  }
+  const wpn = (c: Combatant): Weapon => c.weapons?.[0] ?? ({ name: 'Poing', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [] } as Weapon);
+  const missDetail = (sl: number) => ({ label: 'CC', base: 40, modifier: 0, target: 40, roll: 99, success: false, sl });
+
+  it('ATTAQUANT porteur qui RATE son jet d’attaque (CC) → Crampes (Sonné)', () => {
+    seedBattleRng(1);
+    const { H, E } = combat();
+    addCrampes(H);
+    const res: AttackResult = { hit: false, attackerRoll: 99, netSL: -2, critical: false, advantageTo: null, defenderDefeated: false, attackerDetail: missDetail(-2), log: `${H.name} rate.` };
+    applyAttackResult(useGame.getState, useGame.setState, H, E, wpn(H), res);
+    expect(hasCondition(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!, 'sonne')).toBe(true);
+  });
+
+  it('DÉFENSEUR porteur qui RATE sa Parade/Esquive (Test opposé) → Crampes (Sonné)', () => {
+    seedBattleRng(1);
+    const { H, E } = combat();
+    addCrampes(H); // H se défend
+    const res: AttackResult = { hit: true, attackerRoll: 20, defenderRoll: 99, netSL: 3, critical: false, advantageTo: 'attacker', defenderDefeated: false, defenderDetail: { ...missDetail(-2), mode: 'parade' }, woundsLost: 0, log: `${E.name} touche.` };
+    applyAttackResult(useGame.getState, useGame.setState, E, H, wpn(E), res);
+    expect(hasCondition(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!, 'sonne')).toBe(true);
+  });
+});

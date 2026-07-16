@@ -872,6 +872,18 @@ export function passiveTestMod(c: Combatant, charKey: CharKey): number {
   return pmods(c, 'testMod', true).filter((o) => o.char === charKey).reduce((s, o) => s + o.amount, 0);
 }
 
+/** Σ des `testMod` GLOBAUX (sans `char`) portés par les MALADIES actives (kind `maladie`) — pénalité
+ *  « −N à TOUS les Tests » d'un symptôme (Crampes abdominales −20, T2C 16 l.152). NON exprimable en
+ *  `charMod` (qui fausserait les stats DÉRIVÉES — SB/BE/Mouvement/PB max). Additive et CUMULATIVE avec les
+ *  États (les maladies ne sont pas dans le pool non-cumul des États, LDB 16 l.20) ; annulable par
+ *  Détermination via le gate `maladie` déjà appliqué en amont dans `passiveMods`. Consommée par
+ *  `testStatePenalty`/`combatTestPenalty` (conditions.ts), à côté du modificateur de Sort (`effectTestMod`). */
+export function passiveGlobalTestMod(c: Combatant): number {
+  return passiveMods(c)
+    .filter((m) => m.kind === 'maladie' && m.op.op === 'testMod' && (m.op as Extract<GameOp, { op: 'testMod' }>).char == null)
+    .reduce((s, m) => s + (m.op as Extract<GameOp, { op: 'testMod' }>).amount, 0);
+}
+
 /** Libellé FR d'un `kind` de pénalité de Caractéristique volatile, pour l'affichage étiqueté (issue #202). */
 const CHAR_PENALTY_KIND_LABEL: Partial<Record<PassiveKind, string>> = {
   douleur: 'Séquelle', maladie: 'Maladie', faim: 'Faim/Soif', ivresse: 'Ivresse', etat: 'État',

@@ -72,6 +72,7 @@ import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { checkPartyWiped } from './partyWipe';
 import { actorIn, inBattleId, touchActors } from './combatOrParty';
+import { fireOwnTestFailed } from './triggeredEffects';
 import { FLOWS, buildRollFlowActions, type RollFlowActionsMap } from './rollFlowSpecs';
 import { gainCorruption, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
@@ -2206,6 +2207,8 @@ export const useGame = create<GameState>((set, get) => ({
     // réussi le d100 mais manqué le seuil requireSL (jamais un roll > cible → on ne crée pas de réussite).
     const drDelta = tool ? craftTestDRAdjust(tool, pt.success) : 0;
     const effSuccess = drDelta !== 0 ? pt.roll <= pt.target && pt.sl + drDelta >= pt.requireSL : pt.success;
+    // SEAM d'observation pure (recette navigateur, #514) — jamais lu par du code de règles.
+    bus.emit(EVT.TEST_RESOLVED, { actorId: pt.actorId, success: effSuccess, sl: pt.sl, roll: pt.roll, target: pt.target });
     // Bâclé : un outil Bâclé qui Maladresse (échec + double) se brise (LDB 60, généralisé hors combat).
     if (tool && pt.isDouble && !pt.success && hasQuality(tool, QUALITY_IDS.Bacle) && !isUnbreakable(tool)) {
       tool.destroyed = true;
@@ -2226,6 +2229,18 @@ export const useGame = create<GameState>((set, get) => ({
     // (butin de Test → fenêtre d'attribution ; if/test imbriqués gérés).
     const branch = effSuccess ? pt.onSuccess : pt.onFailure;
     runFlow(get, set, { kind: 'seq', steps: [branch ?? EMPTY_FLOW, pt.after ?? EMPTY_FLOW] }, pt.label, pt.sl);
+    // SEAM `onOwnTestFailed` (chemin modal JOUEUR — convergence des Tests de scène/compétence/combat, réf
+    // memory « JAMAIS rollTest inline chemin joueur ») : un Test RATÉ émet le trigger (Crampes abdominales
+    // → Sonné/À Terre/Inconscient par paliers de DR, T2C 16 l.152). Réussite forcée (Résilience) exclue.
+    // RÉ-ENTRANCE : ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de palier 2) → il ne RÉ-ÉMET PAS.
+    // CADENCE-AWARE : sans modale déjà ouverte, on threade `set` → le FM de palier 2 d'un HÉROS devient une
+    // étape de cascade (combat) OU une modale de jet scène (interlude, `routeTriggeredTest`) ; PNJ → inline.
+    if (!effSuccess && !pt.noOwnTestFailed) {
+      const cascadeSet = !get().pendingCascade && !get().pendingTest ? set : undefined;
+      const fired = fireOwnTestFailed(get, pt.actorId, { sl: pt.sl, rng: battleRng(), set: cascadeSet });
+      if (fired.length) fired.forEach((l) => get().log(l));
+      set({ ...touchActors(get()) });
+    }
     // Avancée de dialogue différée (un `choice.flow` avait suspendu ICI) : appliquée une fois la
     // branche + continuation résolue. Si celles-ci ré-ouvrent un Test, on la reporte sur le nouveau
     // pending (le dialogue n'avance jamais sous une modale de jet).

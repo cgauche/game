@@ -37,7 +37,7 @@ import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
 import { freeCons } from '../rollSeam';
-import { recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
+import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatOrParty';
@@ -339,7 +339,10 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     // pour une réaction, le contexte sérialisable `freeAttack`/`bladeTrap`) voyagent dans le meta → rejoués
     // par l'applier. Test OPPOSÉ : squelette construit ICI (base=`testValue`, penalty 0, + `aT` figé dans
     // le meta pour ré-opposer à chaque influence). Test SIMPLE : `simpleTriggeredTestStep` (source unique).
-    const extraMeta = { ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
+    // `noOwnTestFailed` : ce Test est LUI-MÊME un effet d'un `onOwnTestFailed` (FM de palier 2 des Crampes,
+    // T2C 16) — l'étampe empêche `commitStep` de ré-émettre le trigger à sa résolution (garde de ré-entrance
+    // qui survit à la cadence asynchrone du héros).
+    const extraMeta = { ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}), ...(ctx.opsCtx?.noReentryOwnTestFailed ? { noOwnTestFailed: true } : {}) };
     pushCombatStep(ctx.set, aT && attacker
       ? {
           id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
@@ -373,6 +376,8 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
       `${attacker.name} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.name} (${skillLabel}) ${t.roll}/${t.target} (DR ${t.sl}${bonusSL ? `+${bonusSL}` : ''}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
     ], c.id);
     const lines = applyTriggeredTestBranch(c, { success: defenderResists, sl: t.sl }, { onSuccess: node.success, onFail: node.fail }, exec);
+    // SEAM `onOwnTestFailed` (combat, jet inline ennemi/auto — Test OPPOSÉ perdu par le porteur).
+    if (!defenderResists) lines.push(...fireOwnTestFailed(ctx.get, c, { sl: t.sl }));
     syncCombatant(ctx.get, ctx.set);
     queueLines(ctx.get, ctx.set, lines, c.id);
     playAfter(ctx.get, ctx.set, c, after, ctx.label);
@@ -380,6 +385,8 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   }
   queueLines(ctx.get, ctx.set, [describeTestRoll(c.name, skillLabel, difficulty, t)], c.id);
   const lines = applyTriggeredTestBranch(c, t, { onSuccess: node.success, onFail: node.fail }, exec);
+  // SEAM `onOwnTestFailed` (combat, jet inline ennemi/auto — Test SIMPLE raté par le porteur).
+  if (!t.success) lines.push(...fireOwnTestFailed(ctx.get, c, { sl: t.sl }));
   syncCombatant(ctx.get, ctx.set); // les combattants ont muté (États retirés)
   queueLines(ctx.get, ctx.set, lines, c.id);
   playAfter(ctx.get, ctx.set, c, after, ctx.label); // continuation APRÈS la branche (ordre du journal)
@@ -408,6 +415,8 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
     ...(bt && typeof bt === 'object' && 'attackerId' in bt ? { bladeTrap: bt } : {}),
   };
   const journal = applyTriggeredTestBranch(hero, step.result, { onSuccess, onFail }, exec);
+  // (SEAM `onOwnTestFailed` d'une étape de cascade : centralisé dans `commitStep` — jamais ici, sinon
+  //  double-émission ; l'étampe `meta.noOwnTestFailed` y garde la ré-entrance du FM de palier 2.)
   syncCombatant(get, set); // refléter la mutation du héros (États) dans party/battle
   // Continuation `after` (le reste du `seq` qui suivait le `test`) — peut ré-appender une étape
   // `triggeredTest` à la MÊME cascade (commitStep `liveMerge` repart des participants courants).
@@ -503,6 +512,16 @@ registerCascadeApplier('triggeredChoice', (get, set, step, hero) => {
  * (`woundsDealt`/`sl`/`location`/`attackKind`) lu par les Conditions `if` du Flow (Venin sur PB perdus).
  */
 export function routeTriggeredTest(get: Get, set: SetFn, target: Combatant, actor: Combatant, flow: Flow, opsCtx?: OpsCtx): void {
+  // HORS COMBAT (Activité d'interlude — le FM de palier 2 des Crampes, T2C 16 l.156) : un sous-Test d'un
+  // HÉROS passe par la MODALE de jet CANONIQUE (`openSkillTest` → `pendingTest`, Chance/Résilience), jamais
+  // inline (doctrine « un jet = une modale » — vaut aussi hors combat). Gate `slThreshold` évaluée d'abord
+  // (openSkillTest ne la connaît pas) ; `noOwnTestFailed` tamponne la ré-entrance (resolveTest ne ré-émet pas).
+  if (!get().battle && flow.kind === 'test' && target.kind === 'hero') {
+    const cc = combatConditionCtx(target, opsCtx ?? {});
+    if (flowTestGated(flow.test, target, cc)) return; // gate fermée → no-op (identique à la voie inline)
+    openSkillTest(get, set, flow.test, flow.success, flow.fail, EMPTY_FLOW, { actorId: target.id, noOwnTestFailed: opsCtx?.noReentryOwnTestFailed });
+    return;
+  }
   runCombatFlow({ mode: 'combat', get, set, target, caster: actor, label: opsCtx?.label ?? 'Effet', opsCtx }, flow);
 }
 

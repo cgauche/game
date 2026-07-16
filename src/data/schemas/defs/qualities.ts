@@ -17,6 +17,7 @@ const qualityCapabilities = z.strictObject({
   fastStrike: z.boolean().optional(),
   slowStrike: z.boolean().optional(),
   fumbleOn9: z.boolean().optional(),
+  fumbleDigits: z.array(z.number()).optional(),
   pushback: z.boolean().optional(),
   bladeTrap: z.boolean().optional(),
   damagesArmour: z.boolean().optional(),

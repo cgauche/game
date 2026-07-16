@@ -39,7 +39,7 @@ import { SymptomsField, SymptomTickField, TalentTestField, CombatField, Advancem
 import type { TraitInstance, OptionalEntry } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
 import type { CharKey, Difficulty } from '../../engine/types';
-import { CHAR_KEYS, CHAR_LABELS, DIFFICULTY_LABELS } from '../../engine/types';
+import { CHAR_KEYS, CHAR_LABELS, DIFFICULTY_LABELS, HIT_LOCATION_LABELS } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry, WaterExposureData, WaterExposureModifier } from '../../data';
@@ -145,6 +145,7 @@ const CRITICAL_CATEGORIES = [
 const OPS_FIELDS: Record<string, string[]> = {
   traumas: ['ops'],
   activities: ['onSuccess'], // #168 : effet mécanique de réussite (GameOp[]) → GameOpEditor commun
+  maladies: ['infectionPassive'], // T2C 16 l.138 : passifs actifs pendant l'infection (Vers du Reik)
 
   criticalsTete: ['ops'], criticalsBras: ['ops'], criticalsCorps: ['ops'], criticalsJambe: ['ops'],
   aaCriticalsTete: ['ops'], aaCriticalsBras: ['ops'], aaCriticalsCorps: ['ops'], aaCriticalsJambe: ['ops'],
@@ -238,7 +239,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   const k = new Set<string>();
   const add = (...keys: string[]) => keys.forEach((x) => k.add(x));
   if (['creatures', 'traits', 'mutations'].includes(categoryKey)) add('appearance');
-  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats', 'psychologies'].includes(categoryKey)) add('effects');
+  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats', 'psychologies', 'symptoms'].includes(categoryKey)) add('effects');
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
   if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings', 'psychologies', 'navalTraits'].includes(categoryKey)) add('passive');
   if (categoryKey === 'structures') add('traits'); // {id,value?}[] → réutilise TraitListField (comme creatures)
@@ -248,7 +249,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (CRITICAL_CATEGORIES.includes(categoryKey)) add('traumas'); // string[] d'ids → éditeur dédié (TraumaListField, #173)
   if (categoryKey === 'steamBreakdowns') add('restart'); // {skillId,spec?,difficulty,extendedDR?}[] → éditeur dédié
   add(...opsFieldsOf(categoryKey)); // ops/occupantOps/crewOps/captainOps → GameOpEditor (#157)
-  if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick'); // GameOp[] + test de cycle → éditeurs dédiés (capabilities = sous-form générique)
+  if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick', 'visiblePassive', 'visibleLocations'); // GameOp[] + test de cycle + gate visibilité → éditeurs dédiés (capabilities = sous-form générique)
   if (categoryKey === 'stars') add('effect', 'sub');
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
@@ -360,7 +361,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // (riders « à la touche »…) ET Talents (Assaut féroce onHit, Frappe réactive onCharged…).
   // États psychologiques (`psychologies`, LDB 21, #157) ÉTENDENT le même `StatusData` que les États
   // (`passive`/`effects` mutualisés) — même patron de rendu.
-  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains' || categoryKey === 'talents' || categoryKey === 'etats' || categoryKey === 'psychologies';
+  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains' || categoryKey === 'talents' || categoryKey === 'etats' || categoryKey === 'psychologies' || categoryKey === 'symptoms';
   // Manœuvre = ENTITÉ de 1ʳᵉ classe : profil dédié + ses effets AUTHORÉS (Dégâts + États) en GameOp.
   const isManeuver = categoryKey === 'maneuvers';
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
@@ -519,7 +520,26 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
             <GameOpEditor ops={(entry.severePassive as GameOp[] | undefined) ?? []} onChange={(ops) => edit('severePassive', ops.length ? ops : undefined)} />
           </div>
         )}
-        {isSymptom && <SymptomTickField value={entry.onTick as { difficulty: Difficulty; onFail: GameOp[] } | undefined} onChange={(v) => edit('onTick', v)} />}
+        {isSymptom && (
+          <div className="ed-field">
+            <span>passifs conditionnés à la VISIBILITÉ de la lésion (Vers du Reik −10 Soc si visible, T2C 16 l.140) — actifs seulement si la localisation tirée est cochée ci-dessous</span>
+            <GameOpEditor ops={(entry.visiblePassive as GameOp[] | undefined) ?? []} onChange={(ops) => edit('visiblePassive', ops.length ? ops : undefined)} />
+            <div className="de-reflrow">
+              {(['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD'] as const).map((loc) => {
+                const cur = (entry.visibleLocations as string[] | undefined) ?? [];
+                return (
+                  <label key={loc}>
+                    <input type="checkbox" checked={cur.includes(loc)} onChange={(e) => {
+                      const next = e.target.checked ? [...cur, loc] : cur.filter((l) => l !== loc);
+                      edit('visibleLocations', next.length ? next : undefined);
+                    }} /> {HIT_LOCATION_LABELS[loc]}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {isSymptom && <SymptomTickField value={entry.onTick as import('./StructFields').SymptomTick | undefined} onChange={(v) => edit('onTick', v)} />}
         {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
         {hasConsumable && <TriggeredEffectsField label="effets à la touche de l’arme (onHit → Flow d’ops, ADE II)" value={entry.onHitEffects as TriggeredEffect[] | undefined} onChange={(v) => edit('onHitEffects', v.length ? v : undefined)} />}
         {isManeuver && <ManeuverDefField entry={entry} edit={edit} />}
@@ -1395,6 +1415,22 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
         ))}
         <button className="btn small" onClick={() => set([...list, ''])}>+ Ajouter</button>
         {refDs && <RefDatalist ds={refDs} />}
+      </div>
+    );
+  }
+  if (kind === 'numberList') {
+    const list = (value as number[]) ?? [];
+    const set = (next: number[]) => onChange(next);
+    return (
+      <div className="ed-field">
+        <span>{key}</span>
+        {list.map((item, i) => (
+          <div key={i} className="de-reflrow">
+            <input type="number" value={item} onChange={(e) => set(list.map((x, j) => (j === i ? Number(e.target.value) : x)))} />
+            <button className="btn small danger" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+          </div>
+        ))}
+        <button className="btn small" onClick={() => set([...list, 0])}>+ Ajouter</button>
       </div>
     );
   }

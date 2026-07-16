@@ -46,4 +46,8 @@ export const EVT = {
   DICE_ROLL: 'dice_roll',
   /** store → * : fin de combat {victory:boolean} — gong de victoire, hooks futurs. */
   BATTLE_OVER: 'battle_over',
+  /** store → * : un Test s'est résolu (`resolveTest`) {actorId, success, sl, roll, target} — SEAM
+   *  unique consommé par `devtools.ts` (`__wfrp.lastRoll()`, recette navigateur, #514), jamais lu par
+   *  du code de règles (observation pure, aucun état persisté). */
+  TEST_RESOLVED: 'test_resolved',
 } as const;

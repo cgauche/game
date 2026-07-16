@@ -14,11 +14,18 @@ import type { EffectTrigger } from './flow';
  *
  * Un site d'émission = `emitCombatEvent('<trigger>'` (l'unique porte) OU, pour les événements de
  * CYCLE, la boucle `fireTriggers`/`fireTurnEdgeTriggers` interne aux modules BUS-OWNED
- * (roundHooks/turnHooks) — la machinerie du bus, whitelistée par la quarantaine d'import.
+ * (roundHooks/turnHooks) — la machinerie du bus, whitelistée par la quarantaine d'import — OU, pour un
+ * trigger CADENCE-AGNOSTIQUE fié aux seams HORS cycle de combat (`onOwnTestFailed` : le porteur échoue un
+ * Test — combat OU scène OU entretien, T2C 16), sa PORTE DÉDIÉE `fireTriggers(…, '<trigger>'` dans le
+ * module ÉMETTEUR whitelisté (`triggeredEffects.ts` porte `fireOwnTestFailed`, l'unique point d'émission).
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const BUS_OWNED = ['src/state/combat/roundHooks.ts', 'src/state/combat/turnHooks.ts'];
+// Portes DÉDIÉES hors cycle de combat : un émetteur nommé (`fireOwnTestFailed`) fié aux seams de
+// résolution de Test (chemin modal joueur, cascade d'entretien, jets inline) — pas un événement du bus
+// de combat (pas d'`emitCombatEvent`, il tire aussi hors combat), mais un point d'émission RÉEL et unique.
+const DEDICATED_EMITTERS = ['src/state/triggeredEffects.ts'];
 
 const isTest = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
@@ -46,9 +53,10 @@ function emittedTriggers(): Set<string> {
   for (const { src } of files) {
     for (const m of src.matchAll(/emitCombatEvent\(\s*'(\w+)'/g)) emitted.add(m[1]);
   }
-  // (b) boucles de cycle bus-owned : `fireTriggers(…, '<trigger>'` / `fireTurnEdgeTriggers(…, '<trigger>'`.
+  // (b) boucles de cycle bus-owned + (c) portes DÉDIÉES hors cycle : `fireTriggers(…, '<trigger>'` /
+  //     `fireTurnEdgeTriggers(…, '<trigger>'` dans un module whitelisté (bus OU émetteur dédié nommé).
   for (const { rel, src } of files) {
-    if (!BUS_OWNED.includes(rel)) continue;
+    if (!BUS_OWNED.includes(rel) && !DEDICATED_EMITTERS.includes(rel)) continue;
     for (const m of src.matchAll(/(?:fireTriggers|fireTurnEdgeTriggers)\([^;)]*?'(\w+)'/g)) emitted.add(m[1]);
   }
   return emitted;

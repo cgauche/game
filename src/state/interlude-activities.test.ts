@@ -269,4 +269,42 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(artefact().identified).toBe(true);
     expect(artefact().suspectedQualities).toBeUndefined();
   });
+
+  // Correction coordinateur (2b) : seam `onOwnTestFailed` du chemin JOUEUR HORS combat (Activité d'interlude).
+  it('Crampes abdominales : rater une Activité d’interlude → État Sonné (T2C 16 l.152, cas RAW cardinal)', () => {
+    const h = hero();
+    h.diseases = [{ name: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 1e5, durationMinutes: 1e5 }];
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 2 }; // neutralise un éventuel blocage d'événement
+    useGame.setState({ interlude: { ...itl }, party: [...useGame.getState().party] });
+    useGame.getState().interludeActivity(h.id, 'revenus');
+    useGame.getState().activityRoll();
+    // Force un échec « normal ou pire » (DR ≤ −2) → palier 1 des Crampes = Sonné.
+    useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 99, success: false, sl: -2 } });
+    useGame.getState().activityConfirm();
+    const after = useGame.getState().party.find((c) => c.id === h.id)!;
+    expect(after.conditions.some((c) => c.name === 'sonne')).toBe(true);
+  });
+
+  // Correction coordinateur (6) : « un jet = une modale » vaut HORS combat — le FM de palier 2 d'un héros
+  // s'ouvre en MODALE de jet scène (pendingTest), jamais inline. Ré-entrance tamponnée (noOwnTestFailed).
+  it('Crampes DR ≤ −4 : le sous-Test de FM (palier 2) d’un HÉROS ouvre une MODALE de jet, pas un jet inline', () => {
+    const h = hero();
+    h.characteristics['force-mentale'] = 40;
+    h.diseases = [{ name: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 1e5, durationMinutes: 1e5 }];
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 2 };
+    useGame.setState({ interlude: { ...itl }, party: [...useGame.getState().party], pendingTest: null });
+    useGame.getState().interludeActivity(h.id, 'revenus');
+    useGame.getState().activityRoll();
+    useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 99, success: false, sl: -4 } });
+    useGame.getState().activityConfirm();
+    const pt = useGame.getState().pendingTest;
+    expect(pt).toBeTruthy(); // le FM s'ouvre en MODALE (openSkillTest), pas résolu inline
+    expect(pt!.skillId ?? pt!.char).toBe('force-mentale');
+    expect(pt!.noOwnTestFailed).toBe(true); // garde de ré-entrance portée par la modale
+    const h2 = useGame.getState().party.find((c) => c.id === h.id)!;
+    expect(h2.conditions.some((c) => c.name === 'sonne')).toBe(true); // palier 1 (Sonné) inline
+    expect(h2.conditions.some((c) => c.name === 'a-terre')).toBe(false); // palier 2 DIFFÉRÉ en modale (pas encore résolu)
+  });
 });

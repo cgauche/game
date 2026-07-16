@@ -383,7 +383,7 @@ export const triggeredEffectSchema = z.strictObject({
   trigger: z.enum([
     'onHit', 'onCrit', 'onWoundLoss', 'onSlain', 'onRoundStart', 'onStartled', 'onKill', 'onCharged', 'onGainCondition',
     'onCombatStart', 'onCombatEnd', 'onRoundEnd', 'onTurnStart', 'onTurnEnd',
-    'onAttackResolved', 'onCastResolved', 'onMiscast',
+    'onAttackResolved', 'onCastResolved', 'onMiscast', 'onOwnTestFailed',
   ]),
   on: effectTargetingSchema,
   flow: flowSchema,

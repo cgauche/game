@@ -11,6 +11,12 @@ dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 
 ## Preuve headless (agents)
 
+> **Le socle `lib.mjs` est TOUJOURS la première option, avant tout `playwright-MCP`** — le profil
+> Chrome partagé (piloté par `playwright-MCP`) peut être VERROUILLÉ par une autre session en cours
+> (lock Chrome mort/vivant d'une autre recette) ; `lib.mjs` lance SON propre Chrome headless avec un
+> profil temporaire dédié (`launchSession`), donc jamais ce conflit. N'invoquer `playwright-MCP` que
+> si le besoin dépasse ce que `lib.mjs`/`shot-screen.mjs` couvrent (vécu diagnostic #506).
+
 Kit **committé** `scripts/recette/` — capture d'écran + console sans réinventer un script CDP par
 agent (constat 2026-07-14 : plusieurs dizaines de scripts scratchpad ad hoc, un par session, pour
 faire la même chose). Deux niveaux :
@@ -60,6 +66,8 @@ l'ouverture de l'écran.
 | `freezeTimeout` / `unfreezeTimeout` | monkey-patch `setTimeout` pour figer/dégeler une durée d'animation avant capture |
 | `emulateReducedMotion` | force `prefers-reduced-motion: reduce` (CDP `Emulation.setEmulatedMedia`) |
 | `setViewport` / `setMobileViewport` | viewport explicite / mobile canon 360×740 (charte-ui.md — testable dès 360px) |
+| `clickButtonByText` | trouve un `<button>`/`[role="button"]` par son TEXTE (`session, texte, {exact?}`), `scrollIntoView`, PUIS lit son rect et clique via un VRAI clic CDP (`Input.dispatchMouseEvent` pressed+released) — SCROLL-AWARE : lire le rect AVANT le scroll fait rater le clic SILENCIEUSEMENT (aucune erreur, aucun effet) |
+| `realKey` | frappe RÉELLE (`session, key`, `Input.dispatchKeyEvent` : `rawKeyDown`/`char`/`keyUp`) — traverse les MÊMES handlers que le clavier physique (`keybindings.ts`), contrairement à un `KeyboardEvent` JS synthétique souvent ignoré |
 | `evaluate` / `waitFor` | eval JS dans la page (attend les promesses) / poll jusqu'à condition vraie |
 | `checkServer` / `launchSession` | briques bas niveau d'`openApp` (séparément utilisables) — `launchSession` porte le défaut **1600×900** (§ « L'étalon se juge à 1600 » ci-dessus) |
 
@@ -155,6 +163,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `charge('enemyId', heroId?)` | simule une charge (déclenche `onCharged`, Frappe réactive) | héros cible = le plus proche par défaut |
 | `quality('id', label?, advantage?)` | ajoute un Atout/Défaut à l'arme ACTIVE + Avantages | ne touche que `weapons[0]` |
 | `condition('id', name?, n?)` | applique un État via le VRAI `addCondition` (déclenche les triggers) | — |
+| `disease(heroId, maladieId, { phase? })` | contracte une maladie via le VRAI cycle (`contractDisease` + `tickDisease` de l'incubation) ; `phase:'active'` la déclare en avançant son horloge — jamais un état forgé (localisation de cloque, transitions, `infectedMinutes` réels) | `maladieId` inconnu → `✗` ; défaut = phase d'incubation. Ex. `disease('hero-1','crampes-abdominales')` n'existe pas (crampes = SYMPTÔME) → passer par la maladie porteuse (`colique`, `vers-de-carie`, `vers-du-reik`) |
 | `bladeTrap(defenderId, attackerId, defSL?)` | ouvre l'étape « Piège-lame » sans forcer un Critique défensif | assigne un `uid` factice à l'arme de l'attaquant si absent |
 | `focus('id', spell?, dr?)` | met un combattant en Focalisation (test d'interruption au coup suivant) | — |
 | `fear(heroId, enemyId, indice?)` | pose une Peur + simule l'approche de la source | positions requises (`✗` sinon) |
@@ -250,6 +259,29 @@ n'ait eu l'occasion de s'exécuter — la preuve écran #269 est donc mécanique
 seul enchaînement. `forceShipwreck()` bypass ce piège en appelant `beginShipwreck` DIRECTEMENT
 (MÊME fonction que `runSeaDay`/`checkBattleOver` sur un naufrage réel), sans course contre les
 appliers du jour.
+
+## Maladies réactives — trigger `onOwnTestFailed` (Crampes abdominales, T2C 16)
+
+Les Crampes abdominales (symptôme de `colique` / des Vers) réagissent à **tout Test RATÉ du porteur** :
+DR ≤ −2 → *Sonné* ; DR ≤ −4 → Test de **Force Mentale** (palier 2) ou *À Terre* ; DR ≤ −6 → *Inconscient*
+(cumulatifs, « ou pire »). Pour recetter : `__wfrp.disease('hero-1','colique',{phase:'active'})` puis faire
+échouer un Test (Activité d'interlude, attaque, Parade/Esquive, Test de scène…).
+
+**Cadence-aware** : le sous-Test de FM du palier 2 d'un **HÉROS** s'ouvre en **modale de jet** (cascade en
+combat, `pendingTest` de scène en interlude) — pilotable Chance/Résilience, jamais inline ; un **PNJ/auto**
+le résout inline. Garde de ré-entrance : ce FM ne ré-émet jamais le trigger (`noOwnTestFailed`).
+
+**Points d'émission de `onOwnTestFailed`** (pour ne pas chercher à l'aveugle) :
+- `store.resolveTest` — Test de scène/compétence/combat (chemin modal joueur) ;
+- `interludeFlow.confirmActivity` — Activité d'interlude ratée ;
+- `combatFlow.applyAttackResult` — l'**ATTAQUANT** rate son jet d'attaque (CC/CT) **et** le **DÉFENSEUR**
+  rate sa Parade/Esquive (Test opposé) — le porteur uniquement, pas la défense d'un non-porteur ;
+- `triggeredEffects.resolveInlineFlowTest` + `combat/triggeredTest` (inline ennemi/auto) ;
+- `cascade.commitStep` (seam CENTRAL des Tests différés d'entretien : `faim`/`recovery`/`diseaseTick`/… ).
+
+**Cadence observée en recette** : après *Lancer*, compter **~2,5 s** avant que *Appliquer* soit stable
+(résolution de la défense adverse + animation d'attaque) — attendre cette tempo avant de lire le résultat
+(cf. `game-browser-verif-tempo`, closure-sync ci-dessous).
 
 ## Pièges vécus (corrections d'expérience)
 

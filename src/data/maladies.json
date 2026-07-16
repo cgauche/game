@@ -493,10 +493,14 @@
       },
       "unit": "days"
     },
-    "symptoms": [],
+    "symptoms": [
+      {
+        "symptomId": "vers-de-carie"
+      }
+    ],
     "source": {
       "book": "mort-sur-le-reik-compagnon",
-      "page": 91
+      "page": 92
     }
   },
   {
@@ -520,10 +524,20 @@
       },
       "unit": "days"
     },
-    "symptoms": [],
+    "symptoms": [
+      {
+        "symptomId": "vers-du-reik"
+      }
+    ],
+    "infectionPassive": [
+      {
+        "op": "diseaseTestMod",
+        "amount": -5
+      }
+    ],
     "source": {
       "book": "mort-sur-le-reik-compagnon",
-      "page": 92
+      "page": 93
     }
   },
   {

@@ -444,7 +444,7 @@ Enfoncer une porte (ou fenêtre…) se résout par un **Test de Corps à corps (
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.4, l.113-118, l.122-129, l.132-147, l.150-153, l.156-163, l.166-167, l.170-171, l.174-175) → `useDefenseJetProps`, `secondsPerRound`, `engage`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `decayEngagement`, `Condition`, `BattleState`, `OPTIONAL_RULES`, +15 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, +13 fichiers
 - `LDB 14` (l.37-53, l.65-115, l.130-140, l.142-165) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `SceneCombatMods`, `schema`, `GrappleModal`, `OupsMisfireEntry`, `combat-deux-armes`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `areGrappling`, `main-secondaire`, +66 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, +30 fichiers
-- `LDB 16` (l.15-17) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `meleeAttackerBonus`, `StatusData` — `src/data/index.ts`, `src/engine/conditions.ts`
+- `LDB 16` (l.15-17) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `meleeAttackerBonus`, `StatusData`, `passiveGlobalTestMod` — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`
 - `EDO 11` (l.86-101) → `delire`, `gonflement`, `fievre-cerebrale-pourpre` — `src/data/maladies.json`, `src/data/symptoms.json`
 
 ---
@@ -3249,7 +3249,7 @@ La créature vomit un flot de corruption corrosive. **Pendant son tour, au prix 
 **Voir aussi** : Traits de créature (vue d'ensemble) · États (Sonné, Enflammé, Empoisonné, Brisé, Assourdi, Empêtré) · Tentacules et attaques naturelles · Zones d'effet et Lignes de vue · Avantage en combat · Le sort « Souffle » (Magie des Arcanes)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `amphibie`, `Formula`, `sizeDamageMultiplier`, +55 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +18 fichiers
+- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `amphibie`, `sizeDamageMultiplier`, `Formula`, +55 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +18 fichiers
 
 ---
 
@@ -3550,7 +3550,7 @@ La créature est **porteuse de la maladie _Type_**. **Les autres doivent faire u
 **Voir aussi** : États (Brisé, Sonné, Inconscient, Exténué) ; Frénésie et Avantage ; Peur, Terreur et Calme ; Corruption et mutations ; Maladies et Contraction ; Taille des créatures (Peur/Terreur par catégorie) ; Test étendu et Degrés de Réussite.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 19` (l.34-58) → `sombre-pacte`, `CorruptionModal`, `physique`, `corruption`, `mentale`, `Effect`, `GameOp`, `EffectFields`, `PendingCorruption`, `GameState`, +5 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/trappings.json`, `src/engine/ops.ts`, `src/state/combatEffects.ts`, +6 fichiers
+- `LDB 19` (l.34-58) → `sombre-pacte`, `CorruptionModal`, `physique`, `corruption`, `mentale`, `Effect`, `EffectFields`, `GameOp`, `PendingCorruption`, `GameState`, +5 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/trappings.json`, `src/engine/ops.ts`, `src/state/combatEffects.ts`, +6 fichiers
 - `LDB 21` (l.9, l.20, l.21, l.23-25, l.27, l.29-35, l.37-39, l.41-51, l.54-57) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `calme-d-approche`, `openScriptedPsych`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, +39 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +20 fichiers
 - `LDB 85` (l.5, l.13, l.17, l.25, l.51, l.59, l.71, l.87, l.92, l.110, l.142, l.150, l.165, l.179, l.185, l.221, l.225, l.249, l.253, l.262, l.264, l.274, l.282, l.334, l.335, l.383, l.411) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, `fearSourceFor`, +57 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +19 fichiers
 
@@ -4487,9 +4487,8 @@ C'est une **extension de la règle de Maladresse** : la Maladresse standard d'un
 **Voir aussi** : Armes à distance et munitions (table LDB) — *armes-distance-munitions-tables* (résolution identique du `— p. N` = Indice) ; Qualités/Défauts d'armes (Recharge, Dangereuse, À répétition/Salve, Tir de zone, Empaleuse, Percutante, Perforante, Imprécise, Précise, Pointue, Explosion) ; États Assourdi / Empêtré / Enflammé ; bandes de portée (LDB 62) ; Maladresse au combat (LDB 13/14) ; Trait Infecté (LDB 85) ; Armes d'équipe maniées en sous-effectif (AA p.124).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 8` (l.421-425, l.428-431, l.440, l.442, l.445-468, l.472, l.480, l.485-500, l.505, l.506, l.507, l.509) → `infecte`, `recharge`, `tir-de-zone`, `perforante`, `percutante`, `precise` — `src/data/qualities.json`, `src/data/trappings.json`
-- sans code : `AA 8` (l.386-389, l.446-454, l.516, l.528, l.544, l.545)
-- dette : #512
+- `AA 8` (l.421-425, l.428-431, l.440, l.442, l.445-468, l.472, l.480, l.485-500, l.505, l.506, l.507, l.509, l.516, l.528, l.544, l.545) → `dangerousNine`, `QualityCapabilities`, `infecte`, `poudre-impregnee-d-aqshy`, `recharge`, `tir-de-zone`, `perforante`, `percutante`, `precise` — `src/data/index.ts`, `src/data/qualities.json`, `src/data/trappings.json`, `src/engine/qualities/dispatch.ts`
+- sans code : `AA 8` (l.386-389, l.446-454)
 
 ---
 

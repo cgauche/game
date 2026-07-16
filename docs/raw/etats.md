@@ -37,7 +37,7 @@ La durée de chaque État est précisée dans sa description ; cependant, certai
 
 **Voir aussi** : Avantage (`combat.md`), Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `meleeAttackerBonus`, `StatusData` — `src/data/index.ts`, `src/engine/conditions.ts`
+- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `meleeAttackerBonus`, `StatusData`, `passiveGlobalTestMod` — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`
 
 ---
 
@@ -69,7 +69,7 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `addClockCondition`, `hitModifiers`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `OPTIONAL_RULES`, +29 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +11 fichiers
+- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `addClockCondition`, `hitModifiers`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `OPTIONAL_RULES`, +31 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +12 fichiers
 
 ---
 
@@ -82,7 +82,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `HEARING_SKILL`, `SkillData`, `meleeAttackerBonus`, `AttackOptions`, `StatusData`, `GameOp` — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`
+- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `HEARING_SKILL`, `SkillData`, `meleeAttackerBonus`, `AttackOptions`, `StatusData`, +2 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`
 
 ---
 
@@ -105,7 +105,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Aveuglé (état analogue pour la vue)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.29-30) → `PRONE_POSE`, `etatTestMods`, `dropWorst`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `SkillData`, `meleeAttackerBonus`, `AttackOptions`, `StatusData`, +3 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, +3 fichiers
+- `LDB 16` (l.29-30) → `PRONE_POSE`, `etatTestMods`, `dropWorst`, `ActionBar`, `combatTestPenalty`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `SkillData`, `meleeAttackerBonus`, `AttackOptions`, +5 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/gameIso/RigToken.tsx`, +4 fichiers
 
 ---
 
@@ -149,7 +149,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Assourdi
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.43-47) → `PRONE_POSE`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `ActionBar`, `hasFoeInLoS`, `MOVEMENT_SKILL`, `recoveryGeometry`, `SkillData`, `applyTriggeredEffects`, +5 — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, `src/state/ai.ts`, +7 fichiers
+- `LDB 16` (l.43-47) → `PRONE_POSE`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `ActionBar`, `MOVEMENT_SKILL`, `hasFoeInLoS`, `recoveryGeometry`, `SkillData`, `applyTriggeredEffects`, +5 — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, `src/state/ai.ts`, +7 fichiers
 
 ---
 
@@ -420,7 +420,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.28-139` — descriptions individuelles
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `unstable`, `addCondition`, `Formula`, `EnemyAction`, `stopBleedOutcome`, `StateRecoveryModal`, `addClockCondition`, `hitModifiers`, `recoveryTarget`, +53 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +20 fichiers
+- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `unstable`, `addCondition`, `Formula`, `EnemyAction`, `stopBleedOutcome`, `StateRecoveryModal`, `addClockCondition`, `hitModifiers`, `recoveryTarget`, +55 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +20 fichiers
 
 ---
 
@@ -638,11 +638,11 @@ Le même terme apparaît dans ADE II (sort ogre du Domaine de la Gueule, `ADE II
 
 ### « État Fatigué »
 
-Nuits agitées & dures journées utilise une fois le terme « **État Fatigué** » (`NADJ l.106`) pour les personnages endormis se réveillant en sursaut. Ce terme **n'existe pas** dans la liste officielle des 12 États.
+Nuits agitées & dures journées utilise une fois le terme « **État Fatigué** » (`NADAJ 05 l.117`) pour les personnages endormis se réveillant en sursaut. Ce terme **n'existe pas** dans la liste officielle des 12 États.
 
 Interprétation probable : traduction alternative de **Exténué** (État officiel). À traiter comme Exténué. Le contexte textuel (personnage pas reposé, réveil brutal) est cohérent avec Exténué.
 
-> « Les Personnages endormis peuvent tenter un Test de _Perception Très Difficile (-30)_ pour se réveiller en sursaut avec un État _Fatigué_. » — `NADJ l.106`
+> « Les Personnages endormis peuvent tenter un Test de _Perception Très Difficile (-30)_ pour se réveiller en sursaut avec un État _Fatigué_. » — `NADAJ 05 l.117`
 
 ---
 

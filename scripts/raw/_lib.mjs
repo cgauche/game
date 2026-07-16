@@ -65,6 +65,11 @@ const OTHER_ABBR_ALT = [
 export const otherRe = () =>
   new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
 
+// Expose l'alternation hors-LDB (triée par longueur décroissante, source unique) à tout consommateur
+// qui a besoin de matcher un livre SANS composer le reste d'otherRe (#434 défaut 10 : citation-graphy-guard
+// écrivait sa propre alternation à la main, désynchronisée si BOOKS gagne un livre).
+export const otherAbbrAlternation = () => OTHER_ABBR_ALT
+
 // Canonicalise le texte brut matché par otherRe (m[1]) vers l'abréviation BOOKS (#434 défaut 11) :
 // identité si déjà canonique, sinon résolution via EXTRA_ABBR_VARIANTS (MÊME table que l'alternation
 // ci-dessus — source unique). Retourne null si le texte ne correspond à aucun livre connu.

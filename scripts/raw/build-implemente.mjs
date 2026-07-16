@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange } from './_lib.mjs'
+import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange, otherAbbrAlternation } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -45,7 +45,9 @@ const COMMENT_OR_BLANK = /^\s*(?:\/\/|\/\*|\*|$)/
 // Marqueur généré (SEULE graphie du non-implémenté) — et sa contre-épreuve d'invisibilité des gardes.
 export const GEN_TAG = '_(généré — `npm run raw:implemente`)_'
 export const NOT_IMPL = '(non implémenté)'
-export const GUARD_LEAK_RE = /\b(?:LDB|MDG|AA|ZI|EDO|EDOC|T2C?|T3|ADE ?I{1,2}|Midd\w*|NAD\w+|Ald\w+|Alt\w+|Uber\w+|Middenheim) ?\d* l\./
+// Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation écrite à la main ici se
+// désynchronisait dès qu'un livre s'ajoutait à BOOKS — cf. otherAbbrAlternation, source unique).
+export const GUARD_LEAK_RE = new RegExp(`\\b(?:LDB|${otherAbbrAlternation()}) ?\\d* l\\.`)
 
 export function slugify(s) {
   return s

@@ -65,7 +65,7 @@ describe('GameOpEditor — menu « + op » COMPLET', () => {
       'augmentWeapon', 'cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound',
       'reduceToZero', 'ignoreStatePenalties', 'freeReroll', 'critTwice', 'damageArmour', 'suppressPsych',
       'castWard', 'suffocate', 'arrowWard', 'domeWard', 'attackWardFM', 'martyr', 'noBreath', 'noHunger',
-      'testMod', 'weatherWard', 'giveTrapping', 'grantWeapon', 'grantNaturalWeapon', 'perRound', 'narrative',
+      'testMod', 'weatherWard', 'giveTrapping', 'grantWeapon', 'grantNaturalWeapon', 'perRound', 'narrative', 'rollTable',
     ];
     for (const k of OPS) {
       const o = newOp(k);
@@ -94,4 +94,18 @@ describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () =
 
   // (Un Test imbriqué est un nœud de la STRUCTURE Flow `{kind:'test'}` (édité par le FlowEditor, pas
   //  le GameOpEditor), résolu cadence-aware.)
+
+  it('rollTable a un éditeur STRUCTURÉ (dé + rangées récursives), jamais de repli JSON (#514)', () => {
+    const ops: GameOp[] = [{
+      op: 'rollTable', die: 'd10', addNegativeSL: true,
+      rows: [{ min: 1, max: 2, ops: [{ op: 'wounds', amount: 3 }] }],
+    }];
+    const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
+    expect(html).not.toContain('(JSON)'); // plus de repli JSON pour cette op
+    expect(html).toContain('value="d10"'); // sélecteur de dé
+    expect(html).toContain('value="1"'); // min de la rangée
+    expect(html).toContain('value="2"'); // max de la rangée
+    expect(html).toContain('3 Blessure'); // ops de la rangée rendus par le MÊME GameOpEditor (récursif)
+    expect(opSummary(ops[0])).toContain('1 rangée');
+  });
 });

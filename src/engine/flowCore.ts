@@ -458,7 +458,13 @@ export const EMPTY_FLOW: Flow = { kind: 'seq', steps: [] };
 export type EffectTrigger =
   | 'onHit' | 'onCrit' | 'onWoundLoss' | 'onSlain' | 'onRoundStart' | 'onStartled' | 'onKill' | 'onCharged' | 'onGainCondition'
   | 'onCombatStart' | 'onCombatEnd' | 'onRoundEnd' | 'onTurnStart' | 'onTurnEnd'
-  | 'onAttackResolved' | 'onCastResolved' | 'onMiscast';
+  | 'onAttackResolved' | 'onCastResolved' | 'onMiscast'
+  /** Le PORTEUR vient d'ÉCHOUER un Test (n'importe lequel : combat, scène, entretien) — `ctx.margin` = le
+   *  DR de l'échec (négatif). Les paliers de gravité s'expriment en DONNÉE via la Condition `slThreshold`
+   *  (jamais de bande codée en dur au moteur) : Crampes abdominales (T2C 16 l.152-158) réagissent à
+   *  `slThreshold(≤-2)`/`(≤-4)`/`(≤-6)`. Émis par `fireOwnTestFailed` (state/triggeredEffects), qui garde
+   *  la RÉ-ENTRANCE (un Test résolu PENDANT le traitement ne ré-émet jamais). */
+  | 'onOwnTestFailed';
 
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`

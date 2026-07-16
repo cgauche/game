@@ -130,6 +130,8 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   critOnRoll: 'Atout d’arme — Critique sur jet (passif)',
   spendAdvantage: 'Dépenser de l’Avantage',
   rollThreshold: 'Jet à paliers (un dé → ops par seuil)',
+  rollTable: 'Tirage sur table (dé → ops par fourchette)',
+  charDamage: 'Perte permanente de Caractéristique',
   intoxicate: 'Boisson alcoolisée (échec de Résistance à l’alcool)',
   narrative: 'Effet narratif (texte libre)',
 };
@@ -166,6 +168,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   moveScale: 'resource/movement', moveMod: 'resource/movement', maxWeaponHands: 'item/weapon', disarm: 'item/weapon', handGate: 'condition/bleeding',
   senseLoss: 'ui/eye', loseTurn: 'ui/wait', weaponRollMod: 'item/weapon', weaponDamageMod: 'item/weapon',
   armourPierce: 'item/weapon', critOnRoll: 'journal/critical', spendAdvantage: 'flag/focus', rollThreshold: 'nav/dice',
+  rollTable: 'nav/dice', charDamage: 'mechanic/stat-mod',
   intoxicate: 'item/consumable', narrative: 'journal/detail',
 };
 
@@ -184,7 +187,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
   ['Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'handGate', 'senseLoss']],
   ['Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
-  ['Contrôle', ['rollThreshold', 'spendAdvantage']],
+  ['Contrôle', ['rollThreshold', 'rollTable', 'spendAdvantage']],
   ['Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
   ['Narration', ['narrative']],
 ];
@@ -383,6 +386,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'critOnRoll': return { op: 'critOnRoll', mod: 10, equals: 0 };
     case 'spendAdvantage': return { op: 'spendAdvantage', amount: 1 };
     case 'rollThreshold': return { op: 'rollThreshold', sides: 10, thresholds: [] };
+    case 'rollTable': return { op: 'rollTable', die: 'd10', rows: [] };
     case 'narrative': return { op: 'narrative', text: '' };
     default: return { op: 'wounds', amount: 5 };
   }
@@ -463,6 +467,7 @@ export function opSummary(o: GameOp): string {
     case 'loseTurn': return 'saute le tour';
     case 'removeShipPoste': return 'retire un poste de navire';
     case 'rollThreshold': return `1d${o.sides} → ${o.thresholds.length} palier(s)`;
+    case 'rollTable': return `${o.die === 'd100' ? '1d100' : '1d10'} → ${o.rows.length} rangée(s) de table${o.addNegativeSL ? ' (+|DR néga.|)' : ''}`;
     case 'narrative': return `${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
     default: return `${(o as GameOp).op}`;
   }
@@ -476,8 +481,39 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
-  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain',
+  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable',
 ]);
+
+/** Rangées d'une op `rollTable` (Vers de carie, T2C 16 l.90) : `[min,max]` (source unique de fourchette,
+ *  cf. `OutcomeBandsField`/`MutationRange`) → `ops` de la rangée, éditées par le MÊME `GameOpEditor`
+ *  (récursif) que toute autre liste de `GameOp[]` — jamais un widget parallèle. */
+function RollTableRowsField({ rows, onChange }: { rows: { min: number; max: number; ops: GameOp[] }[]; onChange: (rows: { min: number; max: number; ops: GameOp[] }[]) => void }) {
+  const set = (i: number, patch: Partial<{ min: number; max: number; ops: GameOp[] }>) => onChange(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const swap = (i: number, j: number) => {
+    if (j < 0 || j >= rows.length) return;
+    const next = [...rows];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  return (
+    <div className="ed-field">
+      <span>rangées de la table (fourchette du jet → ops)</span>
+      {rows.map((r, i) => (
+        <div className="ed-subfield" key={i}>
+          <div className="tf-row">
+            <label className="dr">min<input type="number" style={{ width: 64 }} value={r.min} onChange={(e) => set(i, { min: Number(e.target.value) || 0 })} /></label>
+            <label className="dr">max<input type="number" style={{ width: 64 }} value={r.max} onChange={(e) => set(i, { max: Number(e.target.value) || 0 })} /></label>
+            <button className="btn small" title="Monter" disabled={i === 0} onClick={() => swap(i, i - 1)}>↑</button>
+            <button className="btn small" title="Descendre" disabled={i === rows.length - 1} onClick={() => swap(i, i + 1)}>↓</button>
+            <button className="btn small danger" title="Supprimer la rangée" onClick={() => onChange(rows.filter((_, j) => j !== i))}>✕</button>
+          </div>
+          <GameOpEditor ops={r.ops} onChange={(ops) => set(i, { ops })} />
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange([...rows, { min: 1, max: 1, ops: [] }])}>+ Rangée</button>
+    </div>
+  );
+}
 
 function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void }) {
   const o = op as any;
@@ -690,6 +726,18 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'narrative' && (
           <textarea placeholder="Texte journalisé (arbitrage MJ)" value={o.text ?? ''} onChange={(e) => upd({ text: e.target.value })} />
+        )}
+        {op.op === 'rollTable' && (
+          <>
+            <label className="dr">Dé
+              <select value={o.die ?? 'd10'} onChange={(e) => upd({ die: e.target.value as 'd10' | 'd100' })}>
+                <option value="d10">1d10</option>
+                <option value="d100">1d100</option>
+              </select>
+            </label>
+            <label className="dr"><input type="checkbox" checked={!!o.addNegativeSL} onChange={(e) => upd({ addNegativeSL: e.target.checked || undefined })} /> + |DR négatif| au jet (échec)</label>
+            <RollTableRowsField rows={o.rows ?? []} onChange={(rows) => upd({ rows })} />
+          </>
         )}
         {/* Un Test imbriqué n'est PLUS une op (`{op:'test'}` supprimé, Lot 4d) mais un nœud de la STRUCTURE
             Flow `{kind:'test'}` (édité par le FlowEditor, succès/échec cadence-aware). */}

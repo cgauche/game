@@ -980,6 +980,7 @@ export interface QualityCapabilities {
   fastStrike?: boolean;   // Rapide : pré-emption d'initiative + −10 parade adverse non-Rapide
   slowStrike?: boolean;   // Lente : frappe en dernier
   fumbleOn9?: boolean;    // Dangereuse : Maladresse sur tout Test raté incluant un 9
+  fumbleDigits?: number[]; // Seuil de Maladresse paramétrable (chiffre en dizaines OU unités) — AA 08 l.544
   pushback?: boolean;     // Perturbante : repousse au lieu de blesser
   bladeTrap?: boolean;    // Piège-lame : piéger/briser une lame sur un Critique défensif
   damagesArmour?: boolean;// Taille : endommage l'armure/le bouclier frappé
@@ -1036,6 +1037,7 @@ export interface SymptomCapabilities {
   contagious?: boolean;      // Toux & éternuements : expose l'entourage (l.206)
   nausea?: boolean;          // Nausée : Sonné sur Test de déplacement raté en combat (l.194)
   endTest?: boolean;         // Persistant : Test de fin de Durée (difficulté portée par l'instance, l.200)
+  persistentActive?: boolean; // Vers de carie : la phase active NE guérit JAMAIS naturellement (dégénérescence quotidienne jusqu'à la Mort, T2C 16 l.90-101)
 }
 /** Symptôme de maladie (LDB 20) — entité de DONNÉE éditable au Codex, mécaniques en GameOp / 3 canaux
  *  (comme un trait/qualité). `passive` = pénalités continues (charMod) ; `severePassive` = variante
@@ -1049,14 +1051,33 @@ export interface SymptomData {
   source?: SourceRef;
   passive?: import('../engine/ops').GameOp[];
   severePassive?: import('../engine/ops').GameOp[];
+  /** Effets DÉCLENCHÉS du symptôme (MÊME `TriggeredEffect` que Traits/Atouts/États) — dispatchés par
+   *  `fireTriggers` quand le porteur est actif (Crampes abdominales : `onOwnTestFailed` → Sonné/FM/
+   *  Inconscient par paliers de `slThreshold`, T2C 16 l.152-158). Source du dispatcher via
+   *  `effectSourcesOf` (les symptômes ACTIFS deviennent une source, comme les États). */
+  effects?: import('../state/flow').TriggeredEffect[];
   /** `difficultyBySeverity` : la difficulté du Test de cycle est INDEXÉE sur la sévérité de l'instance
    *  (Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible) — clé absente pour la sévérité portée
-   *  = `difficulty` de base inchangée. Lu par `symptomOnTick`. */
+   *  = `difficulty` de base inchangée. Lu par `symptomOnTick`. `afterDays`/`once` cadencent le cycle sur
+   *  la phase ACTIVE (Vers de carie : Test d'Endurance quotidien À PARTIR de J+7, T2C 16 l.90 ; Vers du
+   *  Reik : éclatement UNE fois au 7ᵉ jour, T2C 16 l.142). `difficulty` ABSENTE = conséquence
+   *  INCONDITIONNELLE (pas de jet — l'éclatement du Vers du Reik est d'issue invariante). */
   onTick?: {
-    difficulty: import('../engine/types').Difficulty;
+    difficulty?: import('../engine/types').Difficulty;
     difficultyBySeverity?: Partial<Record<'moderee' | 'grave', import('../engine/types').Difficulty>>;
     onFail: import('../engine/ops').GameOp[];
+    /** Ne se déclenche qu'à partir du Nᵉ jour de PHASE ACTIVE (1 = premier jour actif). Absent = dès le 1ᵉʳ. */
+    afterDays?: number;
+    /** UNE seule fois, au jour `afterDays` exact (Vers du Reik) ; absent/false = quotidien (Vers de carie). */
+    once?: boolean;
   };
+  /** Passifs conditionnés à la VISIBILITÉ de la lésion (Vers du Reik : « si l'ampoule se trouve à un endroit
+   *  visible… −10 Sociabilité », T2C 16 l.140) — appliqués SEULEMENT si la localisation tirée à l'entrée en
+   *  phase active (`Disease.blisterLocation`) ∈ `visibleLocations`. Jet de Localisation canonique (`hitLocation`). */
+  visiblePassive?: import('../engine/ops').GameOp[];
+  /** Localisations comptées comme VISIBLES (arbitrage `maison` : tête/bras visibles, corps/jambes couverts) —
+   *  gate de `visiblePassive`. Éditable au Codex. */
+  visibleLocations?: import('../engine/types').HitLocation[];
   capabilities?: SymptomCapabilities;
 }
 /** Domaine de magie (Couleur, LDB 48) : ses ATTRIBUTS éditables au Codex — riders « à la touche »

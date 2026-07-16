@@ -183,57 +183,99 @@
   {
     "id": "crampes-abdominales",
     "label": "Crampes abdominales",
-    "desc": "De violentes crampes abdominales saisissent le patient par intermittence, l'obligeant à se tordre de douleur. Ce dernier subit une pénalité de –20 à tous les Tests en raison de la perturbation provoquée par ces crampes douloureuses. Lorsqu'un Test se solde par un échec normal ou pire, il se plie en deux de douleur, incapable de bouger ou d'agir pendant le prochain Round, et gagne l'État *Sonné*. Sur un Échec Impressionnant ou pire, il doit effectuer un Test de **Force Mentale** ou tomber au sol, gagnant l'État *À Terre*. Sur un Échec Stupéfiant, il s'évanouit de douleur, gagnant l'État *Inconscient*.",
+    "desc": "De violentes crampes abdominales saisissent le patient par intermittence, l'obligeant à se tordre de douleur.\n\nCe dernier subit une pénalité de –20 à tous les Tests en raison de la perturbation provoquée par ces crampes douloureuses.\n\nLorsqu'un Test se solde par un échec normal ou pire, il se plie en deux de douleur, incapable de bouger ou d'agir pendant le prochain Round, et gagne l'État *Sonné*.\n\nSur un Échec Impressionnant ou pire, il doit effectuer un Test de **Force Mentale** ou tomber au sol, gagnant l'État *À Terre*.\n\nSur un Échec Stupéfiant, il s'évanouit de douleur, gagnant l'État *Inconscient*.",
     "passive": [
       {
-        "op": "charMod",
-        "char": "capacite-de-combat",
-        "mod": -20
+        "op": "testMod",
+        "amount": -20
+      }
+    ],
+    "effects": [
+      {
+        "trigger": "onOwnTestFailed",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": -2
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "sonne"
+                }
+              ]
+            }
+          }
+        }
       },
       {
-        "op": "charMod",
-        "char": "capacite-de-tir",
-        "mod": -20
+        "trigger": "onOwnTestFailed",
+        "on": "self",
+        "flow": {
+          "kind": "test",
+          "test": {
+            "characteristic": "force-mentale",
+            "difficulty": "intermediaire",
+            "label": "Force Mentale (crampes)",
+            "gate": {
+              "kind": "slThreshold",
+              "op": "<=",
+              "value": -4
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "a-terre"
+                }
+              ]
+            }
+          }
+        }
       },
       {
-        "op": "charMod",
-        "char": "force",
-        "mod": -20
-      },
-      {
-        "op": "charMod",
-        "char": "endurance",
-        "mod": -20
-      },
-      {
-        "op": "charMod",
-        "char": "agilite",
-        "mod": -20
-      },
-      {
-        "op": "charMod",
-        "char": "dexterite",
-        "mod": -20
-      },
-      {
-        "op": "charMod",
-        "char": "intelligence",
-        "mod": -20
-      },
-      {
-        "op": "charMod",
-        "char": "force-mentale",
-        "mod": -20
-      },
-      {
-        "op": "charMod",
-        "char": "sociabilite",
-        "mod": -20
+        "trigger": "onOwnTestFailed",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": -6
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "name": "inconscient"
+                }
+              ]
+            }
+          }
+        }
       }
     ],
     "source": {
       "book": "mort-sur-le-reik-compagnon",
-      "page": 92
+      "page": 93
     }
   },
   {
@@ -391,6 +433,184 @@
     "source": {
       "book": "middenheim",
       "page": 131
+    }
+  },
+  {
+    "id": "vers-de-carie",
+    "label": "Vers de carie",
+    "desc": "Une fois installé dans la bouche de sa victime, le ver de carie se nourrit de son souffle : l'essence de l'esprit. Tant que ce parasite demeure, son hôte subit une pénalité de –10 à tous les Tests.\n\nSi le ver de carie n'est pas éliminé dans les trois jours qui suivent, il n'est plus possible de le retirer sans tuer l'hôte. À mesure que le ver s'enfonce dans le cerveau et se prépare à pondre ses œufs, la victime doit effectuer un Test d'**Endurance Accessible (+20)** chaque jour. Chaque jour où le Test est raté, lancez 1d10, ajoutez le nombre de DR négatifs et consultez le tableau suivant :\n\n| Lancer modifié 1d10 | Résultat |\n| --- | --- |\n| 1–2 | –1d10 Initiative |\n| 3–4 | –1d10 Intelligence |\n| 5–6 | –1d10 Force Mentale |\n| 7–8 | –1d10 Sociabilité |\n| 9 | Gain du Trait Nerveux |\n| 10 | Gain du Trait Stupide |\n| 11–12 | Gain du Trait Bestial |\n| 13 | Mort |",
+    "passive": [
+      {
+        "op": "testMod",
+        "amount": -10
+      }
+    ],
+    "onTick": {
+      "difficulty": "accessible",
+      "afterDays": 7,
+      "onFail": [
+        {
+          "op": "rollTable",
+          "die": "d10",
+          "addNegativeSL": true,
+          "rows": [
+            {
+              "min": 1,
+              "max": 2,
+              "ops": [
+                {
+                  "op": "charDamage",
+                  "char": "initiative",
+                  "amount": {
+                    "dice": {
+                      "n": 1,
+                      "sides": 10
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "min": 3,
+              "max": 4,
+              "ops": [
+                {
+                  "op": "charDamage",
+                  "char": "intelligence",
+                  "amount": {
+                    "dice": {
+                      "n": 1,
+                      "sides": 10
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "min": 5,
+              "max": 6,
+              "ops": [
+                {
+                  "op": "charDamage",
+                  "char": "force-mentale",
+                  "amount": {
+                    "dice": {
+                      "n": 1,
+                      "sides": 10
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "min": 7,
+              "max": 8,
+              "ops": [
+                {
+                  "op": "charDamage",
+                  "char": "sociabilite",
+                  "amount": {
+                    "dice": {
+                      "n": 1,
+                      "sides": 10
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "min": 9,
+              "max": 9,
+              "ops": [
+                {
+                  "op": "grantTrait",
+                  "traitId": "nerveux"
+                }
+              ]
+            },
+            {
+              "min": 10,
+              "max": 10,
+              "ops": [
+                {
+                  "op": "grantTrait",
+                  "traitId": "stupide"
+                }
+              ]
+            },
+            {
+              "min": 11,
+              "max": 12,
+              "ops": [
+                {
+                  "op": "grantTrait",
+                  "traitId": "bestial"
+                }
+              ]
+            },
+            {
+              "min": 13,
+              "max": 99,
+              "ops": [
+                {
+                  "op": "kill"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "capabilities": {
+      "persistentActive": true
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 92
+    }
+  },
+  {
+    "id": "vers-du-reik",
+    "label": "Vers du Reik",
+    "desc": "Pour chaque période complète de 30 jours d'infection, le Personnage subit une pénalité de –5 à tous les Tests de **Résistance** permettant de résister aux maladies. Cette pénalité est réduite de 1 point par jour après la mort du ver.\n\nPour déterminer où le ver fait surface, effectuez un lancer de Localisation comme lors d'un combat normal. Lorsque l'ampoule se forme, le patient subit une pénalité de –5 % à tous les Tests d'Agilité en raison de l'irritation constante. De plus, si l'ampoule se trouve à un endroit visible, le Personnage subit également une pénalité de –10 aux Tests de Sociabilité.\n\nLe septième jour suivant l'apparition de la cloque, la personne atteinte doit effectuer un Test de Résistance toutes les heures. Au premier échec, ou à la dernière heure du jour si tous les Tests sont réussis, la cloque éclate, infligeant 1 Blessure et provoquant un État *Sonné* en raison de la sensation de brûlure presque insupportable qui en résulte.",
+    "passive": [
+      {
+        "op": "charMod",
+        "char": "agilite",
+        "mod": -5
+      }
+    ],
+    "visiblePassive": [
+      {
+        "op": "charMod",
+        "char": "sociabilite",
+        "mod": -10
+      }
+    ],
+    "visibleLocations": [
+      "tete",
+      "brasG",
+      "brasD"
+    ],
+    "onTick": {
+      "afterDays": 7,
+      "once": true,
+      "onFail": [
+        {
+          "op": "wounds",
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
+          "name": "sonne"
+        }
+      ]
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 93
     }
   }
 ]

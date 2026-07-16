@@ -13,6 +13,9 @@ import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction, addCondition } from '../engine/conditions';
+import { contractDisease, tickDisease } from '../engine/disease';
+import { effectiveChar } from '../engine/characteristics';
+import { battleRng } from './battleRng';
 import { applyOps } from '../engine/ops';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
@@ -28,6 +31,13 @@ import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
 import { willAutoResolve } from './combatAuto';
 import { aiDriven } from './combatGate';
 import type { Combatant } from '../engine/types';
+
+/** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
+ *  recette navigateur (`__wfrp.lastRoll()`), JAMAIS dans l'état de jeu persisté (module DEV seul,
+ *  chargé dynamiquement, #514). Abonnement au scope module = une SEULE souscription (`installDevtools`
+ *  n'est appelé qu'une fois, `main.tsx`). */
+let lastRollTrace: { actorId: string; success: boolean; sl: number; roll: number | null; target: number } | null = null;
+bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastRollTrace; });
 
 /**
  * Outils de recette navigateur (DEV uniquement) — exposés sur `window.__wfrp`.
@@ -59,6 +69,8 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.pad('A'|'B'|…) → simule un BOUTON de manette (Playwright n'a pas l'API Gamepad) — MÊME chemin
  *                           que le pad réel ; __wfrp.padDir('up'|'down'|'left'|'right') → croix/stick
  *   __wfrp.battle()       → snapshot combat (round, actif, modales, combattants en une ligne chacun)
+ *   __wfrp.lastRoll()     → DERNIER Test résolu {actorId,success,sl,roll,target} (observation pure,
+ *                           lecture seule, `null` si aucun depuis le chargement) — plus de regex sur `innerText`
  *   __wfrp.log(n)         → queue lisible des journaux (exploration + feed de combat)
  *   __wfrp.aiLog(n)       → DIAGNOSTIC IA : action choisie + classement des candidats (intention) par tour
  *   __wfrp.turn('id')     → TRICHE : donne le tour à un combattant ; __wfrp.place('id',{x,y}) → téléporte
@@ -75,6 +87,9 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.give(co)       → crédite la bourse (couronnes d'or) ; __wfrp.xp(n) → +PX au groupe
  *   __wfrp.giveTrapping(heroId, trappingId, qty?) → donne un objet de catalogue à un héros (VRAI
  *                           pipeline giveTrapping : item bien formé, qualités comprises)
+ *   __wfrp.disease(heroId, maladieId, { phase? }) → contracte une maladie via le VRAI cycle
+ *                           (contractDisease + tickDisease de l'incubation) ; `phase:'active'` la déclare
+ *                           en avançant son horloge (jamais un état forgé)
  *   __wfrp.flags()        → drapeaux de scénario ; __wfrp.flag('id', true) → force un drapeau
  *   __wfrp.go('scene-id') → saute vers une scène du projet ; __wfrp.fight() → liste/lance une rencontre
  *   __wfrp.fear(h,e,i?)   → pose une Peur (Indice) de h envers e puis simule l'approche (Test de Calme ou Brisé)
@@ -559,6 +574,11 @@ export function buildApi() {
       };
     },
 
+    /** DERNIER Test résolu (`resolveTest`, en/hors combat) — lecture SEULE de la trace posée par le
+     *  SEAM `EVT.TEST_RESOLVED` (`store.ts`), pour lire le DR sans parser `innerText` (recette #514).
+     *  `null` si aucun Test résolu depuis le chargement de la page. */
+    lastRoll: () => (lastRollTrace ? { ...lastRollTrace } : null),
+
     /** TRICHE de recette : donne le TOUR à un combattant (réinitialise Action/Mouvement du tour).
      *  Saute les bornes de Round (pas de cascade de fin de Round) — pour mettre en place une
      *  situation, pas pour simuler une partie. */
@@ -923,6 +943,26 @@ export function buildApi() {
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
       }));
       return `✓ ${c.name} : +${n} ${name}`;
+    },
+
+    /** RECETTE : contracte une MALADIE sur un héros via le VRAI cycle (`contractDisease`) — jamais un état
+     *  forgé. `disease('hero-1','vers-de-carie', { phase:'active' })` fait AVANCER l'horloge de la maladie
+     *  (`tickDisease` sur son incubation) pour la déclarer, avec le vrai jet de Localisation / transitions.
+     *  Défaut : phase d'incubation (comme à la contraction réelle). */
+    disease: (heroId: string, maladieId: string, opts?: { phase?: 'incubation' | 'active' }) => {
+      const c = actorIn(g(), heroId);
+      if (!c) return `✗ combattant ${heroId} introuvable`;
+      const dz = contractDisease(maladieId, battleRng());
+      if (!dz) return `✗ maladie inconnue : ${maladieId}`;
+      c.diseases = [...(c.diseases ?? []), dz];
+      // `phase:'active'` : on AVANCE le cycle réel de l'incubation (jamais `phase='active'` posé à la main)
+      // → transition, jet de Localisation de la cloque, infectedMinutes… exactement comme le temps qui passe.
+      if (opts?.phase === 'active' && dz.phase === 'incubation') tickDisease(c, dz.minutesLeft, battleRng(), effectiveChar(c, 'endurance'));
+      useGame.setState((st) => ({
+        party: [...st.party],
+        battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
+      }));
+      return `✓ ${c.name} : ${maladieId} (${c.diseases[c.diseases.length - 1].phase})`;
     },
 
     /** RECETTE : ouvre l'étape de CHOIX « Piège-lame » (LDB 62 l.292-295) — `bladeTrap('hero-1','enemy-1', 2)`.

@@ -5,7 +5,7 @@
  * (les maladies hors-LDB — Mort sur le Reik Compagnon, EDO, Middenheim) → optionnel, fidèle aux DEUX.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema, gameOpSchema } from '../common';
 
 export const file = 'maladies.json';
 
@@ -38,6 +38,8 @@ export const schema = z.array(
     symptoms: z.array(diseaseSymptomSchema),
     /** Vérole Urticante (LDB 20 l.97) : immunité après guérison — absent ailleurs. */
     immuneAfterCure: z.boolean().optional(),
+    /** Passifs actifs pendant toute l'INFECTION (Vers du Reik −5 Résistance/30 j, T2C 16 l.138). */
+    infectionPassive: z.array(gameOpSchema).optional(),
     source: sourceRefSchema.optional(),
   }),
 );

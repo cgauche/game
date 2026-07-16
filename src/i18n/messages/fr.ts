@@ -286,6 +286,7 @@ export const fr = {
   'op.noCritToCure': "{name} n'a aucune Blessure critique guérissable (les amputations sont hors d'atteinte).",
   'op.grantTalent': '{name} gagne le Talent {talent} ({src}).',
   'op.reduceToZero': '{name} : Blessures réduites à 0.',
+  'op.charDamage': '{name} : −{n} {char} (perte permanente).',
   'op.kill': '{name} succombe.',
   'op.kill.fateSaved': '{name} est sauvé in extremis (Point de Destin) — la mort recule.',
   'op.banish': '{name} est bannie — son essence retourne aux Royaumes du Chaos !',

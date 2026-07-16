@@ -4,7 +4,7 @@
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-**Bilan : ✅ 391 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 39 introuvables · ➖ 2620 synthèses** (⛔ 11 hors-fichier · ⚠️ 0 sans source) sur 3061 réfs · 430 citations · 28 fiches.
+**Bilan : ✅ 392 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 40 introuvables · ➖ 2622 synthèses** (⛔ 11 hors-fichier · ⚠️ 0 sans source) sur 3065 réfs · 432 citations · 28 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
@@ -106,6 +106,7 @@
 | `LDB 18 l.211` | ❌ LOW | « 91-93 cage thoracique perforée : gagnez 1 état… » — aucune occurrence |
 | `LDB 18 l.213` | ❌ LOW | « 97-99 hémorragie interne : gagnez 1 état hémor… » — aucune occurrence |
 | `LDB 18 l.104` | ❌ LOW | « 76-80 commotion cérébrale : gagnez l'état exté… » — aucune occurrence |
+| `NADAJ 05 l.117` | ❌ LOW | « état fatigué… » — aucune occurrence |
 
 ## tests.md
 

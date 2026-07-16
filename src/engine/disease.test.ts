@@ -241,3 +241,137 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     });
   });
 });
+
+// ── Maladies transmises par l'eau (T2C ch.14, Mort sur le Reik Compagnon) ──────────────────────────
+import { testStatePenalty, combatTestPenalty } from './conditions';
+import { passiveGlobalTestMod, passiveMods } from './trauma';
+import { applyOps } from './ops';
+
+const fullSick = (over: Partial<Combatant> = {}): Combatant =>
+  ({
+    id: 'p', name: 'Cobaye', kind: 'hero',
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 35 },
+    wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [], items: [],
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, weapons: [], diseases: [],
+    ...over,
+  }) as Combatant;
+
+const activeDisease = (symptomId: string, extra: Partial<import('./disease').Disease> = {}) => ({
+  name: `dz-${symptomId}`, phase: 'active' as const, symptoms: [{ symptomId }],
+  minutesLeft: 40 * MINUTES_PER_DAY, durationMinutes: 40 * MINUTES_PER_DAY, ...extra,
+});
+
+describe('T2C 16 — Crampes abdominales : pénalité GLOBALE de Test (testMod, pas charMod)', () => {
+  it('−20 à TOUS les Tests via testMod global (sans fausser les stats dérivées)', () => {
+    const c = fullSick({ diseases: [activeDisease('crampes-abdominales')] });
+    // Le passif est un testMod global : consommé par testStatePenalty/combatTestPenalty, JAMAIS un charMod.
+    expect(diseasePassiveOps(c)).toEqual([{ op: 'testMod', amount: -20 }]);
+    expect(passiveGlobalTestMod(c)).toBe(-20);
+    expect(testStatePenalty(c)).toBe(-20);
+    expect(combatTestPenalty(c)).toBe(-20);
+    // La Caractéristique de BASE n'est PAS touchée (≠ charMod) → stats dérivées intactes.
+    expect(c.characteristics.force).toBe(30);
+    // Aucun charMod émis par la maladie (pool non-cumul de caractéristiques vide).
+    expect(passiveMods(c).filter((m) => m.op.op === 'charMod')).toEqual([]);
+  });
+});
+
+describe('T2C 16 — Vers de carie : phase active PERSISTANTE (dégénérescence quotidienne jusqu’à la Mort, l.90-103)', () => {
+  it('DONNÉE RÉELLE : « Durée : 1 semaine » n’END PAS la maladie — elle reste active et dégénère chaque jour ≥ J+7', () => {
+    const c = fullSick({ diseases: [contractDisease('vers-de-carie', seq([]), { incubation: 0 })!] });
+    expect(c.diseases![0].durationMinutes).toBe(7 * MINUTES_PER_DAY); // installation = 1 semaine
+    const steps: { kind: string }[] = [];
+    const defer = (s: { kind: string }) => steps.push(s);
+    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40, defer as never);
+    expect(steps.filter((s) => s.kind === 'diseaseTick').length).toBe(0); // < J+7 : aucun Test de cycle
+    for (let d = 0; d < 5; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40, defer as never); // J+7 → J+11
+    expect(c.diseases?.length).toBe(1); // TOUJOURS active (persistentActive — pas de guérison à l'épuisement de la Durée)
+    expect(steps.filter((s) => s.kind === 'diseaseTick').length).toBeGreaterThanOrEqual(5); // dégénérescence CHAQUE jour ≥ J+7
+  });
+
+  it('rollTable du symptôme (échec + DR négatif) : Initiative rongée … jusqu’à la Mort', () => {
+    const c = fullSick({ diseases: [contractDisease('vers-de-carie', seq([]), { incubation: 0 })!] });
+    const steps: { meta?: Record<string, unknown> }[] = [];
+    const defer = (s: { meta?: Record<string, unknown> }) => steps.push(s);
+    for (let d = 0; d < 7; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40, defer as never);
+    const table = steps.map((s) => s.meta?.onFail).find((o): o is import('./ops').GameOp[] => Array.isArray(o) && o[0]?.op === 'rollTable')!;
+    const dead = fullSick();
+    applyOps(dead, table, { rng: { int: () => 10 }, sl: -3 }); // d10=10 + |DR −3| = 13 → Mort
+    expect(dead.dead).toBe(true);
+    const dizzy = fullSick();
+    applyOps(dizzy, table, { rng: (() => { const v = [1, 6]; let i = 0; return { int: () => v[i++] }; })(), sl: 0 }); // 1-2 → −1d10 Initiative
+    expect(dizzy.characteristics.initiative).toBe(24);
+  });
+});
+
+describe('T2C 16 — Vers du Reik : −10 Soc GATÉ visibilité (l.140) + éclatement au 7ᵉ jour', () => {
+  it('−5 Agilité toujours ; −10 Sociabilité SEULEMENT si la cloque est à un endroit VISIBLE (jet de Localisation)', () => {
+    const vis = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 1 })!] });
+    tickDisease(vis, MINUTES_PER_DAY, seq([5]), 40); // transition → localisation 5 = Tête (VISIBLE)
+    expect(vis.diseases![0].blisterLocation).toBe('tete');
+    expect(diseasePassiveOps(vis)).toContainEqual({ op: 'charMod', char: 'agilite', mod: -5 });
+    expect(diseasePassiveOps(vis)).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -10 });
+    const cov = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 1 })!] });
+    tickDisease(cov, MINUTES_PER_DAY, seq([50]), 40); // transition → localisation 50 = Corps (COUVERT)
+    expect(cov.diseases![0].blisterLocation).toBe('corps');
+    expect(diseasePassiveOps(cov)).toContainEqual({ op: 'charMod', char: 'agilite', mod: -5 });
+    expect(diseasePassiveOps(cov).some((o) => o.op === 'charMod' && o.char === 'sociabilite')).toBe(false);
+  });
+
+  it('éclatement au 7ᵉ jour actif (inconditionnel) : 1 Blessure + État Sonné', () => {
+    const c = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 0 })!] });
+    for (let d = 0; d < 6; d++) tickDisease(c, MINUTES_PER_DAY, seq([]), 40);
+    expect(c.wounds.current).toBe(12);
+    tickDisease(c, MINUTES_PER_DAY, seq([]), 40); // 7ᵉ jour actif → cloque éclate
+    expect(c.wounds.current).toBe(11);
+    expect(c.conditions.find((x) => x.name === 'sonne')?.value).toBe(1);
+  });
+});
+
+// ── Corrections coordinateur : permanence des Traits de table (l.103) + rampe d'incubation (l.138) ──
+import { activeDiseaseTestMod } from './disease';
+import { dropExpiredGrantedTraits } from './grantedTraits';
+
+describe('T2C 16 — Vers de carie : Traits de table PERMANENTS (l.103)', () => {
+  it('grantTrait SANS durée = effet permanent → survit à la guérison + à un balayage d’effets expirés', () => {
+    const c = fullSick();
+    applyOps(c, [{ op: 'grantTrait', traitId: 'nerveux' }], { rng: seq([]) }); // rangée 9 de la table
+    expect((c.traits ?? []).some((t) => t.id === 'nerveux')).toBe(true);
+    const eff = (c.activeEffects ?? []).find((e) => e.grantedTrait?.id === 'nerveux');
+    expect(eff?.duration.scale).toBe('permanent'); // ni horloge ni Rounds → jamais purgé (l.103)
+    c.diseases = []; // la maladie se termine…
+    dropExpiredGrantedTraits(c, []); // …aucun effet EXPIRÉ → le Trait demeure
+    expect((c.traits ?? []).some((t) => t.id === 'nerveux')).toBe(true);
+  });
+});
+
+describe('T2C 16 — Vers du Reik : rampe −5/30j sur TOUTE l’infection + décroissance −1/j après la fin (l.138)', () => {
+  it('rampe pendant l’incubation (0 → −5 à 30 j → −10 à 60 j)', () => {
+    const c = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 200, duration: 7 })!] });
+    expect(c.diseases![0].phase).toBe('incubation');
+    expect(activeDiseaseTestMod(c, 'peste-noire')).toBe(0); // < 30 j : aucune tranche complète
+    tickDisease(c, 30 * MINUTES_PER_DAY, seq([]), 40);
+    expect(activeDiseaseTestMod(c, 'peste-noire')).toBe(-5); // 1 période
+    tickDisease(c, 30 * MINUTES_PER_DAY, seq([]), 40);
+    expect(activeDiseaseTestMod(c, 'peste-noire')).toBe(-10); // 2 périodes
+  });
+
+  it('la rampe NE tombe PAS à 0 en phase active (scope = infection, pas incubation seule)', () => {
+    const c = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 0, duration: 7 })!] });
+    c.diseases![0].infectedMinutes = 60 * MINUTES_PER_DAY; // 2 périodes accumulées, DÉJÀ en phase active
+    expect(c.diseases![0].phase).toBe('active');
+    expect(activeDiseaseTestMod(c, 'peste-noire')).toBe(-10);
+  });
+
+  it('décroissance résiduelle −1/jour jusqu’à 0 après la mort du ver', () => {
+    const c = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 0, duration: 7 })!] });
+    c.diseases![0].infectedMinutes = 60 * MINUTES_PER_DAY; // 2 périodes déjà courues
+    tickDisease(c, 7 * MINUTES_PER_DAY, seq([]), 40); // épuise la durée active → guérison → résidu figé
+    expect(c.diseases?.length ?? 0).toBe(0);
+    expect(c.residualDiseaseTestMod).toBe(10); // 2 × 5, survit à la mort du ver
+    tickDisease(c, 3 * MINUTES_PER_DAY, seq([]), 40); // −1/jour × 3
+    expect(c.residualDiseaseTestMod).toBe(7);
+    tickDisease(c, 7 * MINUTES_PER_DAY, seq([]), 40); // −7 → 0 → nettoyé
+    expect(c.residualDiseaseTestMod).toBeUndefined();
+  });
+});

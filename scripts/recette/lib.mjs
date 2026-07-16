@@ -231,3 +231,49 @@ export async function setViewport(session, width, height) {
 export async function setMobileViewport(session) {
   await setViewport(session, 360, 740);
 }
+
+/**
+ * Clique un `<button>`/`[role="button"]` par son TEXTE (sous-chaîne, espaces normalisés) via un
+ * VRAI clic CDP (`Input.dispatchMouseEvent`, pas `.click()` JS) — le SEUL pilotage qui traverse les
+ * mêmes gestionnaires que la souris (delegation, `pointerdown`…). SCROLL-AWARE : un bouton hors
+ * viewport a un rect `{x,y}` qui ne correspond à RIEN de cliquable tant qu'on ne l'a pas fait défiler
+ * dans le viewport — lire le rect AVANT `scrollIntoView` fait rater le clic SILENCIEUSEMENT (aucune
+ * erreur, juste aucun effet), piège vécu en recette (#514).
+ */
+export async function clickButtonByText(session, texte, { exact = false } = {}) {
+  const rect = await evaluate(session, `(() => {
+    const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+    const target = norm(${JSON.stringify(texte)});
+    const els = Array.from(document.querySelectorAll('button, [role="button"]'));
+    const el = els.find((b) => ${exact} ? norm(b.textContent) === target : norm(b.textContent).includes(target));
+    if (!el) return null;
+    el.scrollIntoView({ block: 'center', inline: 'center' });
+    const r = el.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  })()`);
+  if (!rect) throw new Error(`clickButtonByText : aucun bouton ne matche « ${texte} »`);
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
+  return rect;
+}
+
+/** Table des touches courantes non imprimables (`key` DOM → code virtuel Windows CDP). */
+const KEY_CODES = {
+  Enter: 13, Escape: 27, Tab: 9, Backspace: 8, Delete: 46, ' ': 32, Space: 32,
+  ArrowUp: 38, ArrowDown: 40, ArrowLeft: 37, ArrowRight: 39, Home: 36, End: 35,
+  PageUp: 33, PageDown: 34,
+};
+
+/**
+ * Envoie une frappe RÉELLE (`Input.dispatchKeyEvent`, keyDown puis keyUp) — traverse les mêmes
+ * handlers que le clavier physique (`keybindings.ts`), contrairement à un `KeyboardEvent` JS
+ * synthétique (souvent ignoré par les listeners posés en natif sur `window`).
+ */
+export async function realKey(session, key) {
+  const code = KEY_CODES[key] ?? (key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0);
+  const common = { key, code: key.length === 1 ? `Key${key.toUpperCase()}` : key, windowsVirtualKeyCode: code, nativeVirtualKeyCode: code };
+  await session.rpc('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...common });
+  if (key.length === 1) await session.rpc('Input.dispatchKeyEvent', { type: 'char', text: key, ...common });
+  await session.rpc('Input.dispatchKeyEvent', { type: 'keyUp', ...common });
+}

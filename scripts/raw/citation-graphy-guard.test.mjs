@@ -7,7 +7,8 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations } from './citation-graphy-guard.mjs'
+import { scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations, BOOK_NO_CHAPTER_RE } from './citation-graphy-guard.mjs'
+import { otherAbbrAlternation } from './_lib.mjs'
 
 function withTempSrcDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-guard-'))
@@ -135,6 +136,21 @@ test('docs/raw (c) : nom de fichier de chapitre en backticks (`08 - Titre.md` l.
   })
 })
 
+test('docs/raw (b) : BOOK_NO_CHAPTER_RE DÉRIVE de otherAbbrAlternation (_lib.mjs), pas un duplicata (#434 défaut 10)', () => {
+  assert.equal(BOOK_NO_CHAPTER_RE().source, `\\b(${otherAbbrAlternation()}) l\\.\\d`)
+})
+
+test('docs/raw (b) : variantes tolérantes MDG / ADE II / Middenheim (ADEII, Midd) → détectées', () => {
+  withTempRawDir({
+    'mdg.md': 'Requins-taureaux (MDG l.812)\n',
+    'adeii.md': 'ogres : Langue Magick (ADEII l.653)\n',
+    'midd.md': 'Loup Blanc (Midd l.3)\n',
+  }, (raw) => {
+    const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter')
+    assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['adeii.md', 'mdg.md', 'midd.md'])
+  })
+})
+
 test('docs/raw : rapports (coverage/reconciliation/reanchor) et épreuves exclus des scans', () => {
   withTempRawDir({
     'coverage.md': 'AA l.4395\n',
@@ -225,6 +241,15 @@ test('non-régression : le VRAI docs/raw/ du repo est à ZÉRO prose d\'état d\
     v.map((x) => `${x.file}:${x.row}`),
     [],
     `prose(s) d'état d'implémentation survivante(s) :\n${v.map((x) => `  ${x.file}:${x.row}  ${x.text}`).join('\n')}`,
+  )
+})
+
+test('non-régression : le VRAI docs/raw/ du repo est à ZÉRO graphie de fiche (#434 défaut 10)', () => {
+  const v = scanDocsRawViolations()
+  assert.deepEqual(
+    v.map((x) => `${x.file}:${x.row}`),
+    [],
+    `graphie(s) de fiche survivante(s) :\n${v.map((x) => `  ${x.file}:${x.row}  [${x.kind}]  ${x.text}`).join('\n')}`,
   )
 })
 

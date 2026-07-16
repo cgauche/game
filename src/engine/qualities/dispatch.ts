@@ -171,12 +171,19 @@ export function canStrikeFirst(weapons: QualityCarrier[] | undefined): boolean {
   return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.caps?.fastStrike));
 }
 
-/** Dangereuse (LDB 62 l.315) : ce jet RATÉ avec cette arme inclut-il un 9 (dizaines ou unités) ?
- *  Une Arme d'équipe d'Indice ≥ 4 maniée en sous-effectif devient Dangereuse (Aux Armes p.124). */
+/** Dangereuse (LDB 62 l.315) : ce jet RATÉ avec cette arme inclut-il un chiffre de Maladresse
+ *  (dizaines ou unités) ? Une Arme d'équipe d'Indice ≥ 4 maniée en sous-effectif devient Dangereuse
+ *  (Aux Armes p.124) — seuil {9}. La Poudre imprégnée d'Aqshy (AA 08 l.544) élargit le seuil à {8,9}
+ *  via `fumbleDigits` ; le seuil effectif est l'UNION des digits de toutes les qualités résolues. */
 export function dangerousNine(w: QualityCarrier | undefined, roll: number, success: boolean): boolean {
-  const dangerous = resolveQualities(w).some((r) => r.caps?.fumbleOn9) || crewedTeamIndice(w) >= 4;
-  if (success || !dangerous) return false;
-  return roll % 10 === 9 || Math.floor(roll / 10) % 10 === 9;
+  const digits = new Set<number>();
+  for (const r of resolveQualities(w)) {
+    if (r.caps?.fumbleOn9) digits.add(9);
+    for (const d of r.caps?.fumbleDigits ?? []) digits.add(d);
+  }
+  if (crewedTeamIndice(w) >= 4) digits.add(9);
+  if (success || digits.size === 0) return false;
+  return digits.has(roll % 10) || digits.has(Math.floor(roll / 10) % 10);
 }
 
 /** Chargeur (Indice) avant rechargement complet : À Répétition (LDB 62 l.264) ou Salve (Aux Armes

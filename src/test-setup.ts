@@ -36,6 +36,7 @@ import { useGame, type GameState } from './state/store';
 import { loadRuleOverrides } from './engine/policy';
 import { cascadeAppliers } from './state/cascade';
 import { clearTrackedTimers } from './state/combatTimers';
+import { resetOwnTestFailedGuard } from './state/triggeredEffects';
 
 // État initial figé UNE fois (le `stringify` est la moitié coûteuse, et le geler à l'init le rend
 // immunisé à toute mutation du gabarit) ; chaque test n'en `parse` qu'une copie fraîche.
@@ -45,6 +46,7 @@ let cascadeSnapshot: Record<string, (typeof cascadeAppliers)[string]> = {};
 beforeEach(() => {
   useGame.setState(JSON.parse(PRISTINE_STATE) as Partial<GameState>);
   loadRuleOverrides({});
+  resetOwnTestFailedGuard(); // drapeau de re-entrance onOwnTestFailed (auto-reset par try/finally ; filet doctrinal)
   cascadeSnapshot = { ...cascadeAppliers };
 });
 

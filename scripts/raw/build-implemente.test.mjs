@@ -3,7 +3,7 @@
 // tableau de bilan jamais scanné, exclusion de l'art de rig) + les nouveaux (#487). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ldbRe, otherRe, buildFolioMap, folioRangeIn } from './_lib.mjs'
+import { ldbRe, otherRe, buildFolioMap, folioRangeIn, otherAbbrAlternation } from './_lib.mjs'
 import {
   slugify, refsWithSpans, declNameOf, symbolFor, refMatches, mergeSpans,
   parseFiche, renderBlock, regenerateFiche, validateManifest, isExcludedSrc, indexCode, isDeadExport,
@@ -290,6 +290,10 @@ test('rendu déterministe : deux appels renvoient les mêmes octets', () => {
   const field = parseFiche('a.md', FICHE_IMPL).fields[0]
   const ctx = implCtx()
   assert.deepEqual(renderBlock(field, ctx), renderBlock(field, ctx))
+})
+
+test('GUARD_LEAK_RE DÉRIVE de otherAbbrAlternation (_lib.mjs), pas un duplicata (#434 défaut 10)', () => {
+  assert.equal(GUARD_LEAK_RE.source, `\\b(?:LDB|${otherAbbrAlternation()}) ?\\d* l\\.`)
 })
 
 test('invisibilité des gardes : aucune ligne générée ne matche ldbRe/otherRe/GUARD_LEAK_RE', () => {

@@ -63,6 +63,13 @@ export function registerCascadeApplier(kind: string, apply: CascadeApplier): voi
   cascadeAppliers[kind] = { apply };
 }
 
+/** ÉMETTEUR `onOwnTestFailed` INJECTÉ (inversion de dépendance, patron `testRouter`) : `commitStep` déclenche
+ *  le trigger pour l'acteur d'une étape à jet raté SANS importer `triggeredEffects` (qui rebouclerait
+ *  cascade↔triggeredEffects→combatFlow→cascade). Câblé par `combatFlow` (effet de bord au chargement). */
+type OwnTestFailedEmitter = (get: Get, actor: Combatant, sl: number) => string[];
+let ownTestFailedEmitter: OwnTestFailedEmitter | undefined;
+export function setOwnTestFailedEmitter(fn: OwnTestFailedEmitter): void { ownTestFailedEmitter = fn; }
+
 /**
  * Conséquence d'une ISSUE de TEST ÉTENDU (`PendingExtendedTest.outcome`, #273 Étape 1) — calque exact
  * de `CascadeApplier` ci-dessus (mute get/set, renvoie des `Consequence[]`), appliquée à la CLÔTURE du
@@ -215,6 +222,15 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   // dénouement. Le journal texte (`get().log`) reste alimenté depuis le même texte (`l.text`).
   const lines = out?.consequences ? resultLines(out.consequences) : [];
   for (const l of lines) get().log(l.text);
+  // SEAM CENTRAL `onOwnTestFailed` (tests DIFFÉRÉS d'entretien + tests déclenchés de combat en cascade) :
+  // toute étape à JET RATÉ (`faim`/`recovery`/`diseaseTick`/`diseasePersist`/`traumaFracture`/`contagion`/
+  // `triggeredTest`… — TOUS passent par ce `commitStep`) émet le trigger pour son acteur. L'étampe
+  // `meta.noOwnTestFailed` (posée sur le FM de palier 2 des Crampes) coupe la ré-entrance. Émetteur INJECTÉ
+  // (`setOwnTestFailedEmitter`, patron `testRouter`) pour éviter le cycle cascade↔triggeredEffects. Sous-Test
+  // du FM résolu INLINE (pas de `set` threadé : ouvrir une cascade IMBRIQUÉE dans un commitStep serait fragile).
+  const ownTestFailedLines = (stepInteraction(step) === 'jet' && step.result && !step.result.success && hero && !step.meta?.noOwnTestFailed)
+    ? (ownTestFailedEmitter?.(get, hero, step.result.sl) ?? []) : [];
+  for (const l of ownTestFailedLines) get().log(l);
   // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran. Une
   // étape d'AFFICHAGE porte son contenu d'avance (`outcome` pré-rempli) avec un applier muet → on le
   // PRÉSERVE (sinon le journal vide l'effacerait à la validation).
@@ -234,7 +250,7 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   // (une conséquence FOLDÉE re-déclenchée APPEND au pending, `pendingCascade` reste NON-null — pas une
   // suspension) : seul `null` signe la suspension, jamais une simple différence de référence.
   const suspended = before !== null && get().pendingCascade === null;
-  return { steps: next, journal: lines.map((l) => l.text), suspended };
+  return { steps: next, journal: [...lines.map((l) => l.text), ...ownTestFailedLines], suspended };
 }
 
 /** Cascade EN COURS de résolution suspendue EN PLEIN VOL (`commitStep` a détecté `suspended`) : replace

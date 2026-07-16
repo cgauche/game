@@ -19,6 +19,7 @@ import { addCondition, addTimedCondition, addClockCondition, removeCondition, lo
 import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel, findTrappingById } from '../data';
 import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
+import { findTableEntry } from './tables';
 import { bypassedAP } from './armourBypass';
 import { grantTrait, grantPsychTrait, dropExpiredGrantedTraits } from './grantedTraits';
 import { rollObsession } from '../data/obsessions';
@@ -657,6 +658,16 @@ export type GameOp =
    *  1d`sides` UNE fois, applique les `ops` de CHAQUE palier dont `atLeast` est atteint (cumulatif).
    *  Les ops de palier voient `{rolled}` = la valeur du dé. UN seul jet partagé (≠ jets indépendants). */
   | { op: 'rollThreshold'; sides: number; thresholds: { atLeast: number; ops: GameOp[] }[] }
+  /** Tirage sur TABLE (`die` = d10/d100) : lookup par fourchette `[min,max]` (`findTableEntry`, source
+   *  unique), les `ops` de la rangée touchée sont appliquées avec le MÊME ctx. `addNegativeSL` ajoute
+   *  |ctx.sl| au jet quand le contexte porte un DR négatif (Vers de carie « ajoutez le nombre de DR
+   *  négatifs », T2C 16 l.90). Généralise tout « lancez 1dN [+ modif], consultez le tableau ». */
+  | { op: 'rollTable'; die: 'd10' | 'd100'; addNegativeSL?: boolean; rows: { min: number; max: number; ops: GameOp[] }[] }
+  /** Perte PERMANENTE de Caractéristique (Vers de carie « −1d10 Initiative… », T2C 16 l.94-97) : décrémente
+   *  la Caractéristique de BASE (`c.characteristics`), jamais sous 0 — irréversible « sauf par des moyens
+   *  magiques ou miraculeux » (l.103). `amount` = Formula (1d10). Distincte de `charMod` (temporisé, effet
+   *  actif) : ceci ronge le profil lui-même (comme les mutations `passive`, mais soustractif direct). */
+  | { op: 'charDamage'; char: CharKey; amount: Formula }
   /** INVOCATION de créature(s) (Nécromancie « Réanimation/Relever les morts », Ulric « Hurlement du
    *  loup », Démonologie « Manifestation », Taal « Roi de la Nature »…). Effet IMPUR (grille +
    *  initiative) RÉSOLU par la couche state (`state/summonFlow.applySummon`) ; `applyOps` (moteur pur)
@@ -937,6 +948,11 @@ export interface OpsCtx {
   now?: number;
   /** DR du jet d'incantation — alimente les échelles « par +N DR » (`PerSL`) des ops. */
   sl?: number;
+  /** Marqueur de RÉ-ENTRANCE `onOwnTestFailed` : posé sur le flowCtx des effets déclenchés par ce trigger
+   *  (T2C 16 — Crampes). Threadé jusqu'à un nœud Flow `test` (le FM de palier 2) routé en cascade : son
+   *  étape est tamponnée `meta.noOwnTestFailed` pour que sa résolution NE ré-émette JAMAIS le trigger
+   *  (garde de ré-entrance qui survit à la cadence asynchrone du héros). */
+  noReentryOwnTestFailed?: boolean;
   /** Blessures RÉELLEMENT infligées par le lancement courant (Projectile magique) — base du Vol de
    *  vie (op `lifeSteal`). Posé par la résolution missile avant d'appliquer les ops du lanceur. */
   woundsDealt?: number;
@@ -1652,6 +1668,25 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const rolled = roll(1, o.sides, rng);
         for (const th of o.thresholds) {
           if (rolled >= th.atLeast) lines.push(...applyOps(target, th.ops, { ...ctx, rolled }));
+        }
+        break;
+      }
+      case 'rollTable': {
+        // Jet + |DR négatif| (Vers de carie, T2C 16 l.90) → lookup `[min,max]` (source unique) → ops de la rangée.
+        const die = o.die === 'd100' ? roll(1, 100, rng) : roll(1, 10, rng);
+        const modifier = o.addNegativeSL ? Math.max(0, -(ctx.sl ?? 0)) : 0;
+        const entry = findTableEntry(o.rows, die + modifier);
+        lines.push(...applyOps(target, entry.ops, { ...ctx, rolled: die }));
+        break;
+      }
+      case 'charDamage': {
+        // Perte PERMANENTE de Caractéristique de BASE (Vers de carie, T2C 16 l.94-103) — jamais sous 0.
+        const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks));
+        if (n > 0) {
+          const before = target.characteristics[o.char];
+          target.characteristics[o.char] = Math.max(0, before - n);
+          refreshWounds(target); // E/F rongées → le max de PB suit (comme un charMod permanent du profil)
+          lines.push(t('op.charDamage', { name: target.name, n: before - target.characteristics[o.char], char: CHAR_LABELS[o.char] }));
         }
         break;
       }

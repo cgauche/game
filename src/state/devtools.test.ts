@@ -8,6 +8,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { itemFromTrappingById } from '../engine/items';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
+import { EMPTY_FLOW } from './flow';
 import type { BattleState } from './store';
 import type { Combatant, ShipPoste } from '../engine/types';
 import type { WorldMap } from './worldMap';
@@ -98,6 +99,20 @@ describe('__wfrp — autres commandes de recette', () => {
     expect(buildApi().flags().zone3_clear).toBe(true);
     buildApi().flag('zone3_clear', false);
     expect(buildApi().flags().zone3_clear).toBe(false);
+  });
+
+  it('lastRoll : trace le DERNIER Test résolu (observation pure, #514)', () => {
+    expect(buildApi().lastRoll()).toBeNull();
+    const hero = useGame.getState().party[0];
+    useGame.setState({
+      pendingTest: {
+        actorId: hero.id, actorName: hero.name, label: 'Test', skillValue: 50, difficulty: 'intermediaire',
+        requireSL: 0, target: 50, roll: 42, success: true, sl: 1,
+        onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW,
+      },
+    });
+    useGame.getState().resolveTest();
+    expect(buildApi().lastRoll()).toEqual({ actorId: hero.id, success: true, sl: 1, roll: 42, target: 50 });
   });
 
   it('fight : sans argument liste les rencontres de la scène, avec id lance le combat', () => {

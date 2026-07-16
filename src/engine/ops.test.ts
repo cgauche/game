@@ -515,3 +515,61 @@ describe("op:'corruption' amount négatif — Absolution (LDB 19 l.167-182, #97 
     expect(c.corruption ?? 0).toBe(0); // le hook gère le total lui-même (store) — non simulé ici
   });
 });
+
+describe("op:'rollTable' — tirage sur table par fourchette (findTableEntry, source unique)", () => {
+  // Table jouet : d10 → ops de la rangée touchée (min/max), avec ops IMBRIQUÉES appliquées au même ctx.
+  const table = (extra: Partial<Extract<import('./ops').GameOp, { op: 'rollTable' }>> = {}) => ({
+    op: 'rollTable' as const, die: 'd10' as const,
+    rows: [
+      { min: 1, max: 2, ops: [{ op: 'charDamage' as const, char: 'initiative' as const, amount: { dice: { n: 1, sides: 10 } } }] },
+      { min: 3, max: 8, ops: [{ op: 'condition' as const, name: 'sonne' }] },
+      { min: 9, max: 9, ops: [{ op: 'grantTrait' as const, traitId: 'nerveux' }] },
+      { min: 10, max: 99, ops: [{ op: 'kill' as const }] },
+    ],
+    ...extra,
+  });
+
+  it('rangée bornée : d10=1 → charDamage Initiative (ops imbriquées appliquées, RNG déterministe)', () => {
+    const c = hero(); // Initiative 30
+    // rng : 1er int = d10 (1 → rangée 1-2), 2e int = dé de charDamage (7).
+    const rng: RNG = { int: (() => { const v = [1, 7]; let i = 0; return () => v[i++]; })() };
+    applyOps(c, [table()], { rng });
+    expect(c.characteristics.initiative).toBe(23); // 30 − 7, perte permanente de la base
+  });
+
+  it('addNegativeSL : |DR négatif| ajouté au jet → décale la rangée touchée', () => {
+    const c = hero();
+    // d10=5, sl=-4 → 5+4=9 → rangée 9 (grantTrait nerveux).
+    const rng: RNG = { int: () => 5 };
+    applyOps(c, [table({ addNegativeSL: true })], { rng, sl: -4 });
+    expect((c.traits ?? []).some((tr) => tr.id === 'nerveux')).toBe(true);
+  });
+
+  it('rangée « Mort » (kill) : au-delà de la table → repli dernière rangée (findTableEntry)', () => {
+    const c = hero(); // pas de Destin → mort sèche
+    const rng: RNG = { int: () => 10 };
+    applyOps(c, [table()], { rng });
+    expect(c.dead).toBe(true);
+  });
+
+  it('rangée « sonne » (État) : d10=5 → condition Sonné posée', () => {
+    const c = hero();
+    const rng: RNG = { int: () => 5 };
+    applyOps(c, [table()], { rng });
+    expect(c.conditions.find((x) => x.name === 'sonne')?.value).toBe(1);
+  });
+});
+
+describe("op:'charDamage' — perte PERMANENTE de Caractéristique (jamais sous 0)", () => {
+  it('décrémente la BASE (pas un effet actif temporisé) et suit les PB max via refreshWounds', () => {
+    const c = hero({ characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 45, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 38, sociabilite: 30 } });
+    applyOps(c, [{ op: 'charDamage', char: 'sociabilite', amount: 5 }], { rng: makeRNG(1) });
+    expect(c.characteristics.sociabilite).toBe(25);
+    expect((c.activeEffects ?? []).length).toBe(0); // permanent, pas d'ActiveEffect
+  });
+  it('plancher 0 : une perte supérieure à la base clampe à 0', () => {
+    const c = hero({ characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 45, initiative: 3, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 38, sociabilite: 30 } });
+    applyOps(c, [{ op: 'charDamage', char: 'initiative', amount: 10 }], { rng: makeRNG(1) });
+    expect(c.characteristics.initiative).toBe(0);
+  });
+});

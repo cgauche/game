@@ -19,13 +19,15 @@ import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
 import { humanControlled } from './netOwnership';
+import { actorIn } from './combatOrParty';
 import { isEngagedWith, isEngaged } from '../engine/engagement';
 import { SIZE_ORDER, effectiveSize } from '../engine/size';
 import { combatDistance } from './footprint';
 import { chebyshev } from './path';
 import { losClear, tileSeenByFoe } from './lineOfSight';
 import { smokeOf, combatantsWithinRadius } from './combatGeometry';
-import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, refLabel } from '../data';
+import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, findSymptomById, refLabel } from '../data';
+import { activeSymptoms } from '../engine/disease';
 import { difficultyFromLabel, rollTest } from '../engine/tests';
 import { rawCombatTestBase } from '../engine/skills';
 import { runPureFlowLines } from './combatEffects';
@@ -83,6 +85,11 @@ export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSourc
   for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg, tr.value), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
   if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
   for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: d.effects, cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
+  // Symptômes ACTIFS des maladies (Crampes abdominales `onOwnTestFailed`, T2C 16) — insérés APRÈS les
+  // Talents et AVANT les États : ils composent comme un Trait/passif du CORPS (source NON-statut, sans
+  // `stacks`), donc dispatchés par la voie `effectsOf`/`applyTriggeredEffects` (≠ pool à pions des États).
+  // Ordre STABLE (accesseur canonique `activeSymptoms`, ordre des maladies) → déroulé RNG déterministe.
+  for (const inst of activeSymptoms(actor)) { const d = findSymptomById(inst.symptomId); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `symptom:${inst.symptomId}`, label: d.label ?? inst.symptomId }); }
   for (const cond of actor.conditions ?? []) {
     const d = findConditionById(cond.name);
     if (!d?.effects?.length) continue;
@@ -229,7 +236,7 @@ export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; 
  *  jumeau store-free de la branche NON-interactive de `resolveFlowTest` : jet du Test (`combatTestPenalty`
  *  comme un Test simple), puis branche `success`/`fail` jouée par `runPureFlowLines` (mêmes ops). Un `test`
  *  ENFOUI (hors top-level) LÈVE — un tel cas exige la voie cadence-aware (jamais de branche succès muette). */
-function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx): string[] {
+function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx, get?: Get): string[] {
   if (flow.kind !== 'test') throw new Error('resolveInlineFlowTest: nœud non-`test` (un test enfoui exige un routeur cadence-aware).');
   const ft = flow.test;
   // GATE (op-level immunité/groupes + Condition générique `gate`) + difficulté DYNAMIQUE (`difficultyBy`) :
@@ -246,7 +253,12 @@ function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx): string[] 
   const rng = ctx.rng ?? defaultRNG;
   const res = rollTest(base, difficulty, rng, combatTestPenalty(c));
   const branch = res.success ? flow.success : flow.fail;
-  return [describeTestRoll(c.name, skillLabel, difficulty, res), ...runPureFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
+  const lines = [describeTestRoll(c.name, skillLabel, difficulty, res), ...runPureFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
+  // SEAM `onOwnTestFailed` (voie inline) : un Test déclenché RATÉ par le porteur émet le trigger (Crampes
+  // abdominales, T2C 16 l.152). La garde de RÉ-ENTRANCE de `fireOwnTestFailed` empêche un sous-Test résolu
+  // ICI pendant le traitement (FM de palier 2) de ré-émettre. `get` absent (appelant sans store) ⇒ inerte.
+  if (!res.success && get) lines.push(...fireOwnTestFailed(get, c, { sl: res.sl, rng }));
+  return lines;
 }
 
 /** Écart d'Avantage de `actor` avec ses adversaires ENGAGÉS : `max(0, meilleur Avantage ennemi engagé −
@@ -342,14 +354,17 @@ export function applyTriggeredEffects(
       // fournit `set` + un routeur installé. Un Flow `test` non routé (pas de `set`) atteindrait
       // `runPureFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
-      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, engagedAdvantageLead: lead, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause, hiddenFromFoes: geom?.hiddenFromFoes, engaged: geom?.engaged, nearestFoeDist: geom?.nearestFoeDist, onOpposingAdvantage: ctx.onOpposingAdvantage };
+      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, engagedAdvantageLead: lead, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause, hiddenFromFoes: geom?.hiddenFromFoes, engaged: geom?.engaged, nearestFoeDist: geom?.nearestFoeDist, onOpposingAdvantage: ctx.onOpposingAdvantage,
+        // Tampon de ré-entrance : un sous-Test (FM de palier 2 des Crampes) routé en cascade ne ré-émettra
+        // pas `onOwnTestFailed` (son étape porte `meta.noOwnTestFailed`, cf. resolveFlowTest/commitStep).
+        ...(trigger === 'onOwnTestFailed' ? { noReentryOwnTestFailed: true } : {}) };
       if (flowHasTest(eff.flow)) {
         // Test de FIN DE ROUND (`deferInteractiveTest`, posé par le hook `end-of-round` : la cascade n'est
         // pas encore ouverte) : un héros MANUEL est COLLECTÉ par `collectHeroRoundEndUpkeep` (on saute ici) ;
         // ennemi / héros auto → résolu INLINE (lignes RENDUES → sinkées dans le journal comme les dégâts).
         if (ctx.deferInteractiveTest) {
           if (humanControlled(get(), t)) continue;
-          lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
+          lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx, get));
           continue;
         }
         // Hors fin de Round : voie cadence-aware si un routeur est branché (onGainCondition / attaques →
@@ -362,7 +377,7 @@ export function applyTriggeredEffects(
           : eff.flow;
         if (ctx.set && testRouter) { testRouter(get, ctx.set, t, actor, flow, flowCtx); continue; }
         if (eff.optional) continue; // opt-in SANS voie de choix (entretien hors combat) → non exercé
-        lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
+        lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx, get));
         continue;
       }
       lines.push(...runPureFlowLines(t, actor, eff.flow, flowCtx));
@@ -385,6 +400,41 @@ export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger,
   lines.push(...fireConditionEffects(get, actor, trigger, ctx)); // États dispatchés EXACTEMENT comme Traits
   lines.push(...firePsychEffects(get, actor, trigger, ctx)); // états PSY (Frénésie…) — MÊME folding générique
   return lines;
+}
+
+/** Garde de RÉ-ENTRANCE du trigger `onOwnTestFailed` : un Test résolu PENDANT le traitement (le FM de
+ *  palier 2 des Crampes, T2C 16 l.156) ne DOIT jamais ré-émettre le trigger (sinon boucle). Drapeau MODULE
+ *  (le traitement est synchrone : pose→fireTriggers→dépose). */
+let firingOwnTestFailed = false;
+
+/** Reset du drapeau de re-entrance `onOwnTestFailed` pour le point de reset CANONIQUE des singletons de test
+ *  (`src/test-setup.ts`, `isolate:false`). Le drapeau s'auto-reinitialise (try/finally) ; ce reset est un FILET
+ *  explicite conforme a la doctrine « tout nouveau singleton module-level se remet a zero entre tests ». */
+export function resetOwnTestFailedGuard(): void { firingOwnTestFailed = false; }
+
+/**
+ * ÉMETTEUR UNIQUE du trigger `onOwnTestFailed` (le porteur vient d'ÉCHOUER un Test — `sl` = DR négatif de
+ * l'échec, alimente `ctx.margin`→`ctx.sl` des paliers `slThreshold`). Câblé à TOUS les points de
+ * convergence de résolution d'un Test d'un combattant (chemin modal joueur, jets inline déclenchés, tests
+ * différés d'entretien). Garde-fous : (a) EARLY-OUT si l'acteur ne porte aucune source `onOwnTestFailed`
+ * (zéro coût pour la quasi-totalité des combattants) ; (b) RÉ-ENTRANCE : inerte si déjà en cours d'émission.
+ * `actor` : le Combatant ou son id (résolu combat-ou-groupe). CADENCE-AWARE : `set` fourni (seam combat à
+ * cascade — chemin modal joueur) ⇒ un sous-Test (FM de palier 2) est routé (héros → modale influençable ;
+ * PNJ → inline) ; `set` absent (hors combat, inline) ⇒ sous-Test inline. La ré-entrance tient dans les deux
+ * cadences (drapeau module pour l'inline synchrone + tampon `noOwnTestFailed` sur l'étape de cascade).
+ */
+export function fireOwnTestFailed(get: Get, actor: Combatant | string, opts: { sl: number; rng?: RNG; set?: SetFn }): string[] {
+  if (firingOwnTestFailed) return []; // ré-entrance SYNCHRONE (sous-Test inline du palier 2) → jamais de ré-émission
+  const a = typeof actor === 'string' ? actorIn(get(), actor) : actor;
+  if (!a) return [];
+  // EARLY-OUT : aucune source (symptôme/trait/état…) ne porte ce trigger → rien à faire (coût quasi nul).
+  if (!effectSourcesOf(a).some((s) => s.effects.some((e) => e.trigger === 'onOwnTestFailed'))) return [];
+  firingOwnTestFailed = true;
+  try {
+    return fireTriggers(get, a, 'onOwnTestFailed', { margin: opts.sl, rng: opts.rng, set: opts.set });
+  } finally {
+    firingOwnTestFailed = false;
+  }
 }
 
 /** CŒUR GÉNÉRIQUE du folding des STATUTS portés (`StatusData` : États OU psy) : applique les `effects` de

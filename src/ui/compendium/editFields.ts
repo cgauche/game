@@ -3,7 +3,7 @@
  * tout seul). Métadonnées de RENDU uniquement : décrit comment afficher un champ, sans introduire de
  * structure intermédiaire — on édite les vrais objets de `src/data`. Consommé par `CodexEdit`.
  */
-export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'source' | 'recordNumber' | 'recordText' | 'object' | 'json';
+export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'recordNumber' | 'recordText' | 'object' | 'json';
 
 export interface FieldDesc {
   key: string;
@@ -21,8 +21,12 @@ function kindOf(key: string, v: unknown): FieldKind {
   if (typeof v === 'string') return v.length > 80 ? 'textarea' : 'text';
   if (typeof v === 'number') return 'number';
   if (typeof v === 'boolean') return 'checkbox';
-  // Tableau d'objets = json (un éditeur dédié le sort du repli ; un tableau de chaînes = stringList).
-  if (Array.isArray(v)) return v.every((x) => typeof x === 'string') ? 'stringList' : 'json';
+  // Tableau d'objets = json (un éditeur dédié le sort du repli ; chaînes = stringList, nombres = numberList).
+  if (Array.isArray(v)) {
+    if (v.every((x) => typeof x === 'string')) return 'stringList';
+    if (v.every((x) => typeof x === 'number')) return 'numberList';
+    return 'json';
+  }
   if (v && typeof v === 'object') {
     if ('book' in (v as object) && 'page' in (v as object)) return 'source';
     const vals = Object.values(v as Record<string, unknown>);

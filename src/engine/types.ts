@@ -1274,6 +1274,10 @@ export interface Combatant {
   drunk?: import('./drunkenness').DrunkState;
   /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.97) : maladies inattrapables à nouveau. */
   diseaseImmunities?: string[];
+  /** Pénalité RÉSIDUELLE (magnitude ≥ 0) aux Tests de Résistance-aux-maladies APRÈS la fin d'une maladie
+   *  à `infectionPassive` (Vers du Reik : « Cette pénalité est réduite de 1 point par jour après la mort
+   *  du ver », T2C 16 l.138) — décroît de 1 par jour (`tickDisease`) jusqu'à 0. Lue par `activeDiseaseTestMod`. */
+  residualDiseaseTestMod?: number;
   /** Maladies auxquelles ce combattant a été EXPOSÉ pendant le combat (blessé par une source porteuse :
    *  Infecté → 'blessure-purulente', Maladie (Type) → l'`arg` (ex. 'fievre-du-rongeur' des rats),
    *  munition Infecté ; touché par Contagieux (Type) — EDO App.2 l.228-230 : Test 2 niveaux plus

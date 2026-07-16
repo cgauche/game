@@ -960,7 +960,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sections: sections(
         passiveSection(s.passive),
         passiveSection(s.severePassive, 'Modificateurs (Modérée / Grave)'),
-        s.onTick ? { title: 'Test de cycle quotidien', layout: 'list', rows: [{ t: 'kv', k: 'Difficulté', v: DIFFICULTY_LABELS[s.onTick.difficulty] } as CodexRow] } : null,
+        s.onTick ? { title: 'Cycle quotidien', layout: 'list', rows: [{ t: 'kv', k: 'Difficulté', v: s.onTick.difficulty ? DIFFICULTY_LABELS[s.onTick.difficulty] : 'inconditionnel' } as CodexRow] } : null,
         capabilitySection(s.capabilities as Record<string, unknown> | undefined, SYMPTOM_CAP_LABEL),
       ),
     })),

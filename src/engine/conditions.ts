@@ -12,7 +12,7 @@ import { rule } from './policy';
 import { groupAdvantage } from './advantagePool';
 import { bonus, effectiveChar } from './characteristics';
 import { d100, RNG, defaultRNG } from './dice';
-import { passiveMods, settleHealedCriticals } from './trauma';
+import { passiveMods, passiveGlobalTestMod, settleHealedCriticals } from './trauma';
 import type { GameOp } from './ops';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
@@ -269,7 +269,9 @@ export function combatTestPenalty(c: Combatant): number {
   // l'anachorète ne l'annule pas, LDB 42). Non-cumul = même pool `min` (« une seule fois », LDB 85 l.208).
   for (const op of c.auraMods ?? []) if (op.op === 'testMod' && op.char == null) cand.push(op.amount);
   const state = cand.length ? Math.min(...cand) : 0;
-  return state + effectTestMod(c); // modificateur de Sort (Malédiction de malchance) : STACKE avec l'État
+  // Modificateur de Sort (Malédiction de malchance) + pénalité GLOBALE de maladie (Crampes abdominales −20,
+  // T2C 16 l.152) : STACKENT tous deux avec l'État (hors pool non-cumul des États, LDB 16 l.20).
+  return state + effectTestMod(c) + passiveGlobalTestMod(c);
 }
 
 /**
@@ -304,7 +306,9 @@ export function activeCharTestMod(c: Combatant, ck: import('./types').CharKey, c
   }, 0);
 }
 export function testStatePenalty(c: Combatant, skill?: string): number {
-  const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
+  // Modificateur de Sort + pénalité GLOBALE de maladie (Crampes abdominales −20, T2C 16 l.152) : STACKENT,
+  // hors du non-cumul des États — présents même sans État et malgré Endurance de l'anachorète (LDB 42).
+  const effMod = effectTestMod(c) + passiveGlobalTestMod(c);
   if (!c.conditions?.length) return effMod;
   // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (le modificateur de Sort reste).
   if (hasActiveFlag(c, 'ignoreStatePenalties')) return effMod;

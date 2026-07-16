@@ -4,6 +4,8 @@
 // Les listes d'exceptions/baselines restent DONNÉES DE POLICY dans le test (ex. EXCUSE_GUARD_ACTIVE) ;
 // ici ne vit QUE la mécanique de détection (extraction de commentaires, familles de regex, matching).
 
+import { otherAbbrAlternation } from '../../raw/_lib.mjs';
+
 /**
  * @typedef {{ text: string, line: number }} Comment
  * Commentaire extrait, délimiteurs inclus. Les lignes `//` consécutives sur des lignes sources
@@ -243,8 +245,17 @@ export const RAW_CLAIM_FAMILIES = [
   { rx: /\b(hors[- ]RAW|non[- ]RAW|pas\s+RAW)\b/i, label: 'hors-RAW nu' },
   { rx: /(laissée?s? au MJ|au choix du MJ|le MJ (décide|tranche|arbitre))/i, label: 'renvoi au MJ' },
 ];
-/** Réf de livre ancrant la thèse au Source (n'importe où dans le MÊME commentaire logique). */
-export const BOOK_REF_RX = /\b(LDB|ADE\s*I{1,2}|EDOC?|MDG|AA|ZI|ACE|NADAJ|T2C?|Middenheim)\b\s*(\d+|ch\.?\s*\d+|l\.\s*\d+|p\.?\s*\d+|§)/i;
+/** Réf de livre ancrant la thèse au Source (n'importe où dans le MÊME commentaire logique).
+ *  Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation écrite à la main ici
+ *  omettait Ubersreik/Altdorf/T3, désynchronisée dès qu'un livre s'ajoutait à BOOKS). `ACE`
+ *  (Altdorf, Annexe I — citée en `p.NNN`, jamais `l.NNN`, cf. mesure #434 lot 3 : ~40 refs
+ *  `ACE p.219`/`p.220` dans src/, zéro dans docs/raw/) reste ABSENTE de `BOOKS`/`otherAbbrAlternation`
+ *  (BOOKS ne modélise que la citation `l.<ligne>` d'un chapitre extrait) — tolérée ici à part,
+ *  décision de rattachement à BOOKS différée à l'orchestrateur. */
+export const BOOK_REF_RX = new RegExp(
+  `\\b(LDB|ACE|${otherAbbrAlternation()})\\b\\s*(\\d+|ch\\.?\\s*\\d+|l\\.\\s*\\d+|p\\.?\\s*\\d+|§)`,
+  'i',
+);
 
 // ---------------------------------------------------------------------------------------------
 // Famille 4 — REVENDICATION D'AUTORITÉ non tracée (credo : « un commentaire-excuse n'est pas une

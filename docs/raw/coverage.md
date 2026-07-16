@@ -96,7 +96,7 @@
 | 82 | Les morts sans repos | ✅ |  |
 | 83 | Esclaves des Ténèbres | ✅ |  |
 | 84 | *(artefact OCR)* | ➖ | |
-| 85 | Traits de créature | ✅ | 297 (combat.md ×202) |
+| 85 | Traits de créature | ✅ | 298 (combat.md ×203) |
 
 ## ADE I — ✅ 2 · 🟡 0 · ⬜ 0
 
@@ -164,7 +164,7 @@
 | 11 | Chat sauvage | ✅ |  |
 | 12 | Il Potente Granchio | ✅ |  |
 | 13 | Sirène | ✅ | 6 (etats.md ×3) |
-| 14 | Expéditions prévues | ✅ | 25 (combat.md ×21) |
+| 14 | Expéditions prévues | ✅ | 26 (combat.md ×22) |
 
 ## Middenheim — ✅ 5 · 🟡 0 · ⬜ 0
 
@@ -343,7 +343,7 @@
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | Une nuit agitée aux Trois Plumes | ➖ hors-règle | |
 | 04 | *(artefact OCR)* | ➖ | |
-| 05 | *(artefact OCR)* | ✅ | 4 (combat.md ×4) |
+| 05 | *(artefact OCR)* | ✅ | 7 (combat.md ×4) |
 | 06 | Une journée au tribunal | ✅ | 13 (combat.md ×13) |
 | 07 | *(artefact OCR)* | ➖ | |
 | 08 | Une nuit à l’Opéra | ✅ | 3 (combat.md ×3) |

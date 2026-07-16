@@ -23,7 +23,9 @@
  *           broyeur-d-os, carreau, flechette.
  *       • divers : effrayant (sort↔talent), pistolet (qualité↔possession), resistance (compétence↔talent),
  *           belier (qualité de siège « Bélier » ADE II ch.08 ↔ sort homonyme « Bélier »), filet (trapping
- *           « Filet » ZI p.31 ↔ qualité « Filet » ZI p.29 — l'arme PORTE la qualité qui pose son Empêtré).
+ *           « Filet » ZI p.31 ↔ qualité « Filet » ZI p.29 — l'arme PORTE la qualité qui pose son Empêtré),
+ *           poudre-impregnee-d-aqshy (trapping ↔ qualité, AA 08 l.544 — la munition PORTE la qualité
+ *           qui pose son seuil de Maladresse élargi {8,9}, même patron que `filet`).
  */
 import { describe, it, expect } from 'vitest';
 import { traits, talents, qualities, maneuvers, spells, trappings, skills } from './index';
@@ -35,9 +37,9 @@ const KNOWN_CROSS = [
   'arme', 'belier', 'beni', 'bouclier', 'broyeur-d-os', 'carreau', 'cornes', 'effrayant', 'etreinte-glaciale',
   'filet', 'flechette', 'frenesie', 'frisson-paralysant', 'haine', 'hurlement-de-la-bete-indomptable',
   'hurlement-fantomatique', 'infecte', 'langue-prehensile', 'magique',
-  'morsure', 'nuee', 'perturbant', 'pistolet', 'protection', 'rapide', 'regard-petrifiant', 'regeneration',
-  'resistance', 'resistance-a-la-magie', 'sang-corrosif', 'souffle', 'taille', 'tentacules',
-  'vision-nocturne', 'vol', 'vomissement',
+  'morsure', 'nuee', 'perturbant', 'pistolet', 'poudre-impregnee-d-aqshy', 'protection', 'rapide',
+  'regard-petrifiant', 'regeneration', 'resistance', 'resistance-a-la-magie', 'sang-corrosif', 'souffle',
+  'taille', 'tentacules', 'vision-nocturne', 'vol', 'vomissement',
 ].sort();
 
 describe('intégrité des ids de données', () => {

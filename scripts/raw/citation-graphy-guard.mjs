@@ -10,6 +10,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
+import { otherAbbrAlternation } from './_lib.mjs'
 
 export const SRC_DIR = 'src'
 export const EXTS = ['.ts', '.tsx', '.json']
@@ -25,9 +26,13 @@ const isImplProseScanned = (name) => isScannedFiche(name) && name !== '00-index.
 // (a) Plage de lignes à tiret CADRATIN/demi-cadratin : `l.417–422` / `l.417—422`. Forme canonique =
 // tiret-moins `l.417-422` (dépliée par `span`) ; en/em-dash est INVISIBLE de `span` → jamais dépliée.
 export const EMDASH_RANGE_RE = () => /l\.\d+[–—]/g
-// (b) Réf de livre SANS chapitre : `<ABRÉV> l.<n>` (AA/ZI/MDG/EDOC?/T2C?/T3/ADE I·II/Middenheim/NADAJ/
-// Altdorf/Ubersreik) — invisible de `otherRe` (qui exige un numéro de chapitre) → jamais comptée.
-export const BOOK_NO_CHAPTER_RE = () => /\b(AA|ZI|MDG|EDOC?|T2C?|T3|ADE ?I{1,2}|Middenheim|NADAJ|Altdorf|Ubersreik) l\.\d/g
+// (b) Réf de livre SANS chapitre : `<ABRÉV> l.<n>` — invisible de `otherRe` (qui exige un numéro de
+// chapitre) → jamais comptée. Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation
+// écrite à la main ici se désynchronisait dès qu'un livre s'ajoutait à BOOKS). LDB hors scan : cf.
+// `ldbRe` (`_lib.mjs`), le groupe livre y est obligatoire — une réf `LDB l.X` sans chapitre n'a pas
+// de forme distincte détectable par cette classe (elle resterait juste hors couverture `ldbRe`/
+// `reconcile`, pas une graphie « livre-sans-chapitre » au sens de cette garde).
+export const BOOK_NO_CHAPTER_RE = () => new RegExp(`\\b(${otherAbbrAlternation()}) l\\.\\d`, 'g')
 // (c) Nom de FICHIER de chapitre en backticks entre le livre et les lignes : `` `NN - Titre.md` l.X ``
 // (ex. `ADE II \`08 - Le théâtre de la guerre.md\` l.89-131`) — invisible d'`otherRe` (numéro de
 // chapitre attendu NU, pas un nom de fichier). Forme canonique : `<ABRÉV> NN l.X`.

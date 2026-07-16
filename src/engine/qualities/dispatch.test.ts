@@ -129,6 +129,37 @@ describe('Aux Armes — qualités d’artillerie câblées', () => {
   });
 });
 
+describe('Poudre imprégnée d’Aqshy (AA 08 l.544) — seuil de Maladresse élargi {8,9}', () => {
+  it('Dangereuse seule (LDB 62 l.315) : Maladresse sur 9 (dizaines OU unités), jamais sur 8 seul', () => {
+    expect(dangerousNine(w(['Dangereuse']), 91, false)).toBe(true);
+    expect(dangerousNine(w(['Dangereuse']), 19, false)).toBe(true);
+    expect(dangerousNine(w(['Dangereuse']), 99, false)).toBe(true);
+    expect(dangerousNine(w(['Dangereuse']), 84, false)).toBe(false);
+  });
+  it('Poudre imprégnée d’Aqshy (via weaponWithAmmo) : Maladresse sur 8 OU 9 (AA 08 l.544)', async () => {
+    const { weaponWithAmmo } = await import('../items');
+    const weapon = w(['Empaleuse']);
+    const ammo = { qualities: q_(["Poudre imprégnée d'Aqshy"]), damage: { plusBF: false, flat: 2 } } as unknown as import('../types').ItemInstance;
+    const armed = weaponWithAmmo(weapon, ammo);
+    expect(dangerousNine(armed, 84, false)).toBe(true); // 8 en dizaines
+    expect(dangerousNine(armed, 48, false)).toBe(true); // 8 en unités
+    expect(dangerousNine(armed, 91, false)).toBe(true); // 9 toujours couvert
+    expect(dangerousNine(armed, 73, false)).toBe(false); // ni 8 ni 9
+  });
+  it('Test RÉUSSI : jamais de Maladresse, même avec un digit du seuil', async () => {
+    const { weaponWithAmmo } = await import('../items');
+    const weapon = w(['Empaleuse']);
+    const ammo = { qualities: q_(["Poudre imprégnée d'Aqshy"]), damage: { plusBF: false, flat: 2 } } as unknown as import('../types').ItemInstance;
+    const armed = weaponWithAmmo(weapon, ammo);
+    expect(dangerousNine(armed, 84, true)).toBe(false);
+  });
+  it('Dangereuse + Poudre d’Aqshy combinées : union des seuils {8,9}', () => {
+    expect(dangerousNine(w(['Dangereuse', "Poudre imprégnée d'Aqshy"]), 84, false)).toBe(true);
+    expect(dangerousNine(w(['Dangereuse', "Poudre imprégnée d'Aqshy"]), 91, false)).toBe(true);
+    expect(dangerousNine(w(['Dangereuse', "Poudre imprégnée d'Aqshy"]), 73, false)).toBe(false);
+  });
+});
+
 describe('registry — entrées attendues', () => {
   it('contient les qualités d’arme implémentées', () => {
     for (const k of ['Précise', 'Perforante', 'Pointue', 'Empaleuse', 'Défensive', 'À Enroulement', 'Pistolet', 'Incassable', 'Inoffensive', 'Dévastatrice', 'Percutante',

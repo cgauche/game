@@ -22,6 +22,7 @@ export const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onAttackResolved: 'Après une attaque résolue',
   onCastResolved: 'Après une incantation résolue',
   onMiscast: 'Sur une Imparfaite',
+  onOwnTestFailed: 'En échouant à un Test',
 };
 
 /** Libellés des CIBLES « simples » d'un effet (les valeurs chaîne éditables dans le `<select>` de l'éditeur). */

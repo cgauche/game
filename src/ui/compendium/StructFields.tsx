@@ -60,17 +60,34 @@ export function SymptomsField({ value, onChange }: { value: DiseaseSymptom[] | u
   );
 }
 
-/** symptoms[].onTick — Test de cycle quotidien d'un symptôme : difficulté + conséquence GameOp `onFail`
- *  (ex. Blessé → contractDisease 'blessure-purulente'). Difficulté vide = pas de Test de cycle. */
-export function SymptomTickField({ value, onChange }: { value: { difficulty: Difficulty; onFail: GameOp[] } | undefined; onChange: (v: { difficulty: Difficulty; onFail: GameOp[] } | undefined) => void }) {
+/** symptoms[].onTick — cycle quotidien de PHASE ACTIVE d'un symptôme : conséquence GameOp `onFail`,
+ *  éventuellement gardée par un Test (`difficulty` — vide = INCONDITIONNEL, Vers du Reik) et cadencée sur
+ *  la phase active (`afterDays` : Vers de carie J+7 ; `once` : éclatement UNE fois). `difficultyBySeverity`
+ *  (Toxine) préservée par fusion — jamais perdue à l'édition. */
+export type SymptomTick = {
+  difficulty?: Difficulty;
+  difficultyBySeverity?: Partial<Record<'moderee' | 'grave', Difficulty>>;
+  onFail: GameOp[];
+  afterDays?: number;
+  once?: boolean;
+};
+export function SymptomTickField({ value, onChange }: { value: SymptomTick | undefined; onChange: (v: SymptomTick | undefined) => void }) {
+  const patch = (p: Partial<SymptomTick>) => onChange({ onFail: [], ...value, ...p });
   return (
     <div className="ed-field">
-      <span>Test de cycle quotidien (Blessé / Toxine) — difficulté + conséquence GameOp en cas d'échec</span>
-      <select value={value?.difficulty ?? ''} onChange={(e) => onChange(e.target.value ? { difficulty: e.target.value as Difficulty, onFail: value?.onFail ?? [] } : undefined)}>
-        <option value="">— aucun Test de cycle —</option>
-        {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
-      </select>
-      {value && <GameOpEditor ops={value.onFail ?? []} onChange={(ops) => onChange({ difficulty: value.difficulty, onFail: ops })} />}
+      <span>Cycle quotidien de phase active (Blessé / Toxine / Vers) — conséquence GameOp `onFail`, gardée par un Test (difficulté) ou inconditionnelle</span>
+      <label><input type="checkbox" checked={value != null} onChange={(e) => onChange(e.target.checked ? { onFail: value?.onFail ?? [] } : undefined)} /> cycle actif</label>
+      {value && (
+        <>
+          <select value={value.difficulty ?? ''} onChange={(e) => patch({ difficulty: e.target.value ? (e.target.value as Difficulty) : undefined })}>
+            <option value="">— inconditionnel (pas de jet) —</option>
+            {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+          </select>
+          <label>à partir du jour de phase active <input type="number" min={1} value={value.afterDays ?? ''} onChange={(e) => patch({ afterDays: e.target.value ? Number(e.target.value) : undefined })} /></label>
+          <label><input type="checkbox" checked={!!value.once} onChange={(e) => patch({ once: e.target.checked || undefined })} /> une seule fois (au jour exact)</label>
+          <GameOpEditor ops={value.onFail ?? []} onChange={(ops) => patch({ onFail: ops })} />
+        </>
+      )}
     </div>
   );
 }
