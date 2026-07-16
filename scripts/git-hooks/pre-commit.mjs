@@ -17,6 +17,7 @@ import { scanRollSeamExclusivity } from '../guards/lib/rollSeamExclusivity.mjs';
 import { rollSeamExcluded } from '../guards/lib/rollSeamWhitelist.mjs';
 import { scanBattleRngEngineLeak } from '../guards/lib/battleRngEngineLeak.mjs';
 import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWhitelist.mjs';
+import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -100,6 +101,19 @@ try {
     process.stderr.write(`pre-commit — tag(s) [entériné] AJOUTÉ(s) par ce commit (mot réservé à l'utilisateur — vérifier que CHAQUE site a reçu sa validation) :\n${addedTags.map((l) => `  ${l.slice(0, 160)}`).join('\n')}\n`);
   }
 } catch { /* diff illisible → pas de scan */ }
+
+// #528 — package-lock.json amputé des entrées hoistées @emnapi/* par une régénération npm 11.
+if (staged.some((f) => f.replace(/\\/g, '/') === 'package-lock.json')) {
+  let lockText;
+  try {
+    lockText = argFiles.length
+      ? readFileSync(join(ROOT, 'package-lock.json'), 'utf8')
+      : execFileSync('git', ['show', ':package-lock.json'], { cwd: ROOT, encoding: 'utf8' });
+  } catch { lockText = undefined; }
+  if (lockText !== undefined) {
+    for (const x of scanNpmLockHoisted(lockText)) offenders.push(`package-lock.json:${x.line} [lock npm amputé] ${x.detail}`);
+  }
+}
 
 const docsStaged = staged.some((f) => /^docs\/(?:raw\/)?[^/]+\.md$/.test(f.replace(/\\/g, '/')));
 if (docsStaged) {

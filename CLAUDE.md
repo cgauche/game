@@ -151,6 +151,7 @@ npm run dev          # serveur de dev (http://localhost:5173) — src/data/*.jso
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit
 npm run galleries              # (re)génère toutes les galeries QC -> public/galeries.html (hub)
+# package-lock.json : régénérer TOUJOURS avec npm 10 (`npx --yes npm@10.9.3 install --package-lock-only`) — npm 11 ampute les hoistées @emnapi/*, garde pre-commit #528
 
 # Coop en ligne (relay WebSocket — Worker Cloudflare, dossier server/)
 npm run relay:dev      # Worker relay en local (wrangler dev, port 8787) ; côté client : VITE_RELAY_URL=http://localhost:8787 npm run dev
