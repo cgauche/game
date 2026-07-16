@@ -7,6 +7,7 @@ import { Scene } from '../state/scene';
 import { WorldMap, emptyWorldMap, parseProject } from '../state/worldMap';
 import areneProjet from './arene/arene-projet.json';
 import loupEtSaumureProjet from './loup-et-saumure/loup-et-saumure-projet.json';
+import bargeDuSelProjet from './barge-du-sel/barge-du-sel-projet.json';
 
 export interface CampaignChapter {
   id: string;
@@ -38,6 +39,7 @@ export interface BuiltinCampaign {
 }
 
 const loupEtSaumure = parseProject(loupEtSaumureProjet);
+const bargeDuSel = parseProject(bargeDuSelProjet);
 
 /** Campagnes BUILT-IN proposées au picker en plus de l'Arène (chemin `pendingCampaign: null`
  *  historique). Ajouter une campagne étalon = un item ICI, jamais un chemin parallèle. */
@@ -49,6 +51,14 @@ export const builtinCampaigns: BuiltinCampaign[] = [
     scenes: loupEtSaumure.scenes,
     startSceneId: loupEtSaumure.scenes[0].id,
     worldMap: loupEtSaumure.worldMap ?? null,
+  },
+  {
+    id: 'barge-du-sel',
+    name: 'La Barge du Sel',
+    icon: 'scenario/naval',
+    scenes: bargeDuSel.scenes,
+    startSceneId: bargeDuSel.scenes[0].id,
+    worldMap: bargeDuSel.worldMap ?? null,
   },
 ];
 
