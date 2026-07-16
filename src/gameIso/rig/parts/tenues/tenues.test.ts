@@ -3,13 +3,26 @@ import { TENUE_NUE, CLASS_TENUE_BY_ID, TENUE_BY_ID, TENUE_BAREFOOT } from './ind
 import { TENUE_DEFS } from './_registry.generated';
 import { pickView } from '../types';
 import { tenueFor, tenuePaletteFor } from '../career';
+import { careers } from '../../../../data';
 
 describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
-  it('8 archétypes de classe dérivés des defs/ (taxonomie careers.json, sans flag)', () => {
-    for (const c of ['guerriers', 'lettres', 'roublards', 'ruraux', 'citadins', 'courtisans', 'itinerants', 'riverains']) {
-      expect(CLASS_TENUE_BY_ID[c], `archétype de classe manquant : ${c}`).toBeDefined();
+  it('chaque archétype de classe déclaré expose bien un def torse+jambes chargé', () => {
+    for (const c of Object.keys(CLASS_TENUE_BY_ID)) {
+      expect(pickView(CLASS_TENUE_BY_ID[c].torse, 'front'), c).toContain('<');
+      expect(pickView(CLASS_TENUE_BY_ID[c].jambes, 'front'), c).toContain('<');
     }
-    expect(Object.keys(CLASS_TENUE_BY_ID).length).toBe(8);
+  });
+
+  it('toute carrière de careers.json résout sa tenue EXPLICITEMENT (def, tenue réutilisée, ou archétype de classe RÉEL) — jamais le repli citadins silencieux', () => {
+    const fautives = careers
+      .filter((c) => {
+        const parDef = c.id in TENUE_BY_ID;
+        const parTenueReutilisee = !!c.tenue && c.tenue in TENUE_BY_ID;
+        const parArchetypeDeClasse = c.class in CLASS_TENUE_BY_ID;
+        return !parDef && !parTenueReutilisee && !parArchetypeDeClasse;
+      })
+      .map((c) => `${c.id} (classe ${c.class}) → repli citadins silencieux : lui donner un def, un champ tenue, ou donner un archétype à sa classe`);
+    expect(fautives).toEqual([]);
   });
 
   it("une tenue SPÉCIFIQUE déposée en defs/ est consommée par tenueFor (par ID) — un fichier, zéro merge", () => {
