@@ -4,7 +4,7 @@ import type { View } from '../facing';
 import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
 import { tenueFor } from './career';
-import { TENUE_BAREFOOT } from './tenues';
+import { TENUE_BAREFOOT, TENUE_FOOT_STYLE } from './tenues';
 import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 
 const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
@@ -101,6 +101,14 @@ const CLAWFOOT: PartArt = {
   back: `<path d="M-3.2 -1 Q-3.7 5 0 5.6 Q3.7 5 3.2 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>`,
   profile: `<path d="M-3 -1 L-3 4.6 Q-3 6.8 0 6.8 L8 6.8 Q9.8 6.8 8.8 3.6 L5 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M3.6 6.8 l0.3 2.6 M6.2 6.6 l1.4 2.4 M8 6.4 l1.8 2.1" stroke="#241a12" stroke-width="0.9" stroke-linecap="round"/>`,
 };
+// Pied NU LISSE (civilisés va-nu-pieds : halfling, humain sans chaussure…) — même géométrie que
+// CLAWFOOT (chair `@peau`), plante + orteils suggérés, SANS griffe (#481 : un civilisé nu-pieds
+// n'est pas un monstre).
+const PLAINFOOT: PartArt = {
+  front: `<path d="M-3.4 -1 Q-4.2 6 0 7 Q4.2 6 3.4 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-2.4 6.4 Q0 7.6 2.4 6.4" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.6"/>`,
+  back: `<path d="M-3.2 -1 Q-3.7 5 0 5.6 Q3.7 5 3.2 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>`,
+  profile: `<path d="M-3 -1 L-3 4.6 Q-3 6.8 0 6.8 L8 6.8 Q9.8 6.8 8.8 3.6 L5 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M3.6 7.2 Q6 7.8 8.4 6.6" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.6"/>`,
+};
 
 /**
  * Choisit une part par slot, par priorité :
@@ -123,6 +131,7 @@ export function resolveParts(
   // du def, clé par ID stable de garde-robe.
   const tenueId = tenueKey ?? '';
   const bareFoot = TENUE_BAREFOOT.has(tenueId);
+  const footStyle = TENUE_FOOT_STYLE.get(tenueId) ?? 'boot';
   const out = {} as Record<Slot, Part | null>;
   const P = (art: PartArt | null | undefined): Part => ({ svg: pickView(art, view) });
 
@@ -171,8 +180,9 @@ export function resolveParts(
     if (!hasBackView(teteArt) && out.tete?.svg) out.tete = { svg: BACK_TETE(dominantCloth(out.tete.svg)) };
   }
 
-  // Pieds : botte de cuir (habillés) ou pied nu griffu (bareFoot, calculé plus haut).
-  out.pied = P(bareFoot ? CLAWFOOT : FOOT);
+  // Pieds : botte de cuir, pied nu griffu (monstre) ou pied nu lisse (civilisé) — footStyle, dérivé
+  // par défaut de bareFoot pour rétro-compat (#481).
+  out.pied = P(footStyle === 'claw' ? CLAWFOOT : footStyle === 'plain' ? PLAINFOOT : FOOT);
 
   // Mains : petit poing à chaque poignet → agrippe l'arme/le bouclier (sinon l'arme
   // « flotte dans le vide » au bout de la manche). Sous l'arme (z) = la main tient.

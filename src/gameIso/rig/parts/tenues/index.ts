@@ -33,9 +33,14 @@ export const CLASS_PALETTE_BY_ID: Record<string, StoredPalette> = Object.fromEnt
 );
 /** Tenue « nue » (corps de chair) — référencée à part par tenueFor pour le cas 'Nu'. */
 export const TENUE_NUE: TenueSet = TENUE_BY_ID.nu;
-/** Tenues qui ne chaussent pas (pied nu griffu), par id — SOURCE UNIQUE (plus de hardcode dans resolve). */
+/** Tenues qui ne chaussent pas (jambe sans botte), par id — SOURCE UNIQUE (plus de hardcode dans resolve). */
 export const TENUE_BAREFOOT: ReadonlySet<string> = new Set(
   TENUE_DEFS.filter((d) => d.bareFoot).map((d) => slugId(d.name)),
+);
+/** Art du pied par id de tenue — `footStyle` explicite prime, sinon dérivé de `bareFoot`
+ *  (rétro-compat : absent → `'boot'`, présent → `'claw'`). SOURCE UNIQUE (#481). */
+export const TENUE_FOOT_STYLE: ReadonlyMap<string, 'boot' | 'claw' | 'plain'> = new Map(
+  TENUE_DEFS.map((d) => [slugId(d.name), d.footStyle ?? (d.bareFoot ? 'claw' : 'boot')]),
 );
 /** Libellés des tenues SPÉCIFIQUES (sélecteur d'éditeur) — les archétypes de classe ne s'assignent pas à la main. */
 export const SPECIFIC_TENUE_NAMES: string[] = TENUE_DEFS.filter((d) => !isClassDef(d.name)).map((d) => d.name);

@@ -25,7 +25,18 @@ export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', Part
  * sans perte + recoloriage cohérent. Résolue par `tenuePaletteFor` (tenue > classe).
  *
  * `bareFoot` : tenue qui ne chausse pas (corps 'Nu', squelette décharné, pagne du Sanguinaire…) —
- * pied nu griffu (CLAWFOOT), silhouettes dos/profil substituées restent en chair. SOURCE UNIQUE
- * du barefoot (plus de hardcode par id dans resolve).
+ * silhouettes dos/profil substituées (jambe sans botte) restent en chair. SOURCE UNIQUE du
+ * barefoot (plus de hardcode par id dans resolve).
+ *
+ * `footStyle` : art du pied — `'boot'` (botte de cuir), `'claw'` (pied nu GRIFFU, espèces
+ * monstrueuses), `'plain'` (pied nu LISSE, civilisé va-nu-pieds). Défaut dérivé de `bareFoot`
+ * pour rétro-compat (absent → `'boot'`, présent → `'claw'`) : ne préciser `footStyle` que pour
+ * s'écarter de ce défaut (#481).
  */
-export type TenueDef = { name: string; set: TenueSet; palette?: StoredPalette; bareFoot?: boolean };
+export type TenueDef = {
+  name: string;
+  set: TenueSet;
+  palette?: StoredPalette;
+  bareFoot?: boolean;
+  footStyle?: 'boot' | 'claw' | 'plain';
+};
