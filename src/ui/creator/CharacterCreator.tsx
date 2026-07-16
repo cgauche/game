@@ -240,6 +240,25 @@ export function CharacterCreator() {
   const curId = ids[step] ?? ids[ids.length - 1]; // garde-fou si la règle change le nombre d'étapes
   const err = validateStep(d, curId);
   const canNext = err == null;
+
+  // Recette (DEV, #518) : couture __wfrp.fillCreatorDefaults — même patron que __wfrpSetHover
+  // (gameIso/stage/useStagePointer.ts) : le composant pose get/set/setStep sur window, le helper
+  // devtools (state/devtools.ts) les consomme. SETUP UNIQUEMENT (jamais le flux joueur réel).
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const w = window as unknown as {
+      __wfrpCreator?: { get: () => CreatorDraft; set: (next: CreatorDraft) => void; setStep: (id: StepId) => void };
+    };
+    w.__wfrpCreator = {
+      get: () => d,
+      set: (next) => setD(next),
+      setStep: (id) => {
+        const idx = stepIds().indexOf(id);
+        if (idx !== -1) setStep(idx);
+      },
+    };
+    return () => { delete w.__wfrpCreator; };
+  }, [d]);
   const [skillsSub, setSkillsSub] = useState<SkillsSub>('race');
   const skillsSubDone =
     skillsSub === 'race' ? speciesSkillsDone(d) : skillsSub === 'career' ? careerSkillsDone(d) : talentsDone(d);

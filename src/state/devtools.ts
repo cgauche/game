@@ -31,6 +31,9 @@ import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
 import { willAutoResolve } from './combatAuto';
 import { aiDriven } from './combatGate';
 import type { Combatant } from '../engine/types';
+import { makeRNG } from '../engine/dice';
+import { fillDraftDefaults } from '../ui/creator/creatorDefaults';
+import { stepIds as creatorStepIds, type StepId as CreatorStepId, type CreatorDraft } from '../ui/creator/draft';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
  *  recette navigateur (`__wfrp.lastRoll()`), JAMAIS dans l'état de jeu persisté (module DEV seul,
@@ -96,6 +99,9 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *   __wfrp.time(min)      → avance l'horloge ; __wfrp.rest(jours) → dort (cascade quotidienne #T3)
  *   __wfrp.quality(id,label,av?) → ajoute un Atout d'arme à l'arme active + Avantages (test renversement…)
  *   __wfrp.seed(n)        → ré-ensemence le RNG de bataille (déterminisme, EN COURS de combat)
+ *   __wfrp.previewRoll(seed, count?) → lecture PURE (`makeRNG(seed)` À PART, ZÉRO mutation) des
+ *                           `count` premiers d100 d'un seed — fidèle au prochain jet réel UNIQUEMENT
+ *                           juste après un `seed(n)`/`scenario(id, seed)` frais (battleRng PARTAGÉ)
  *   __wfrp.fastForward(n?) → avance les tours IA (BORNÉ à `n` scrutations) jusqu'au prochain tour d'un
  *                           combattant piloté HUMAIN ou la fin du combat — MÊME machinerie (advanceTurn/
  *                           maybeRunEnemyTurn), juste sans les délais de lisibilité (chorégraphie)
@@ -127,6 +133,12 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *   __wfrp.gmSeat(bool)  → flip du siège MJ solo (`setGmSeat`) — setup légitime (`scenario()` le reset
  *                           à chaque lancement) ; la VALIDATION du flux reste la checkbox réelle, ce
  *                           helper n'économise que la mise en place
+ *   __wfrp.fillCreatorDefaults(uptoStep?) → remplit le brouillon du CRÉATEUR OUVERT (écran Roster →
+ *                           Créer) avec des défauts VALIDES (`fillDraftDefaults`) jusqu'à `uptoStep`
+ *                           incluse (défaut : dernière étape) puis avance l'étape affichée — SETUP
+ *                           UNIQUEMENT (sauter jusqu'à une étape sans dérouler tirages/choix un par
+ *                           un) ; le flux joueur réel (tirages, choix, allocations) reste testé aux
+ *                           clics, jamais via ce raccourci
  */
 /** Flux « jet différé » pilotable parmi des `pending*` ouverts — convention pending<Flux> ↔
  *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (révélations, pause de Round, victoire)
@@ -1127,6 +1139,17 @@ export function buildApi() {
       return `✓ RNG de bataille re-ensemencé (seed ${n})`;
     },
 
+    /** RECETTE #532 : lecture PURE de la séquence d100 d'un seed — instancie un `makeRNG(seed)` À
+     *  PART (jamais le `battleRng` du store, ZÉRO mutation d'état) et renvoie ses `count` premiers
+     *  tirages `int(1, 100)`. Fidèle au PROCHAIN jet réel du store UNIQUEMENT juste après un
+     *  `seed(n)`/`scenario(id, seed)` frais — `battleRng` est PARTAGÉ (initiative/dégâts/IA
+     *  s'intercalent), donc toute autre consommation entre-temps désynchronise la prédiction. Deux
+     *  previews du même seed renvoient TOUJOURS la même séquence (déterminisme de `makeRNG`). */
+    previewRoll: (seed: number, count = 1) => {
+      const rng = makeRNG(seed);
+      return Array.from({ length: count }, () => rng.int(1, 100));
+    },
+
     /** RECETTE : avance les tours IA jusqu'au prochain tour d'un combattant piloté HUMAIN, ou la fin du
      *  combat — SANS chemin parallèle : passe par la MÊME machinerie que la partie réelle
      *  (`maybeRunEnemyTurn`/`advanceTurn`/`runEnemyAI`), on accélère seulement les délais de lisibilité
@@ -1315,6 +1338,26 @@ export function buildApi() {
       }
       const mid = toScreen(path.getPointAtLength(total / 2));
       return { ...mid, note: 'AUCUNE fraction du tracé ne teste cliquable (elementFromPoint sans cursor:pointer) — la carte est peut-être masquée/hors premier plan ; milieu renvoyé par défaut' };
+    },
+
+    /** RECETTE #518 : remplit le brouillon du créateur de personnage OUVERT avec des défauts VALIDES
+     *  (`fillDraftDefaults`, `ui/creator/creatorDefaults.ts`) jusqu'à `uptoStep` incluse (défaut :
+     *  dernière étape — prêt à créer), puis avance l'étape affichée. SETUP UNIQUEMENT (sauter jusqu'à
+     *  une étape sans dérouler les tirages/choix un par un) — le flux joueur réel se teste aux clics,
+     *  jamais via ce raccourci. Couture `CharacterCreator.tsx` (`window.__wfrpCreator`, même patron que
+     *  `__wfrpSetHover`) : erreur lisible si le créateur n'est pas monté à l'écran. */
+    fillCreatorDefaults: (uptoStep?: CreatorStepId) => {
+      const w = window as unknown as {
+        __wfrpCreator?: { get: () => CreatorDraft; set: (next: CreatorDraft) => void; setStep: (id: CreatorStepId) => void };
+      };
+      const c = w.__wfrpCreator;
+      if (!c) return '✗ créateur non monté — ouvrir l\'écran de création de personnage (__wfrp.screen(\'creator\') ou équivalent)';
+      const ids = creatorStepIds();
+      const target = uptoStep ?? ids[ids.length - 1];
+      if (!ids.includes(target)) return `✗ étape « ${target} » inconnue — ids : ${ids.join(', ')}`;
+      c.set(fillDraftDefaults(c.get(), target));
+      c.setStep(target);
+      return `✓ brouillon rempli jusqu'à « ${target} » (${ids.indexOf(target) + 1}/${ids.length})`;
     },
   };
 }
