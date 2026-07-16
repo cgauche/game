@@ -14,6 +14,8 @@ import {
   analyzeStagedDiff,
   extractMessageSources,
   evaluateAmendInvisible,
+  manifestTickets,
+  evaluateManifestClosure,
 } from './solde-ticket-guard.mjs'
 
 const TODAY = '2026-07-14'
@@ -490,6 +492,69 @@ test('evaluateAmendInvisible : --amend sans -m/-F, diff staged touche src → de
 
 test('evaluateAmendInvisible : --amend sans -m/-F, diff staged ne touche pas src → silence', () => {
   assert.equal(evaluateAmendInvisible({ command: 'git commit --amend', stagedTouchesSrc: false }), null)
+})
+
+// ── manifest RAW (prévention #434/#487) ────────────────────────────────────────────────────────────
+const manifestWith = (...tickets) =>
+  JSON.stringify(tickets.map((n) => ({ topic: `dom#t${n}`, ticket: `#${n}` })), null, 2)
+
+test('manifestTickets : extrait les #N (ticket et bloque), dédupliqués', () => {
+  const content = JSON.stringify([
+    { topic: 'a', ticket: '#508' },
+    { topic: 'b', ticket: '#508' },
+    { topic: 'c', bloque: 'attend #490 avant câblage' },
+  ])
+  assert.deepEqual([...manifestTickets(content)].sort((a, b) => a - b), [490, 508])
+})
+
+test('manifestTickets : null/vide → ensemble vide', () => {
+  assert.equal(manifestTickets(null).size, 0)
+  assert.equal(manifestTickets('').size, 0)
+})
+
+test('evaluateManifestClosure : fermeture avec entrée manifest présente → bloqué', () => {
+  const d = evaluateManifestClosure({
+    command: 'git commit -m "corrige #508"',
+    readStagedManifest: () => manifestWith(508),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /#508/)
+  assert.match(d.reason, /raw\.manifest\.json/)
+  assert.match(d.reason, /raw:implemente/)
+})
+
+test('evaluateManifestClosure : entrée retirée dans le même commit (manifest stagé sans #N) → passe', () => {
+  const d = evaluateManifestClosure({
+    command: 'git commit -m "corrige #508"',
+    readStagedManifest: () => manifestWith(490), // #508 retiré
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateManifestClosure : commit sans fermeture → intact (silence)', () => {
+  const d = evaluateManifestClosure({
+    command: 'git commit -m "wip sur #508"',
+    readStagedManifest: () => manifestWith(508),
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateManifestClosure : #N absent du manifest → intact (silence)', () => {
+  const d = evaluateManifestClosure({
+    command: 'git commit -m "corrige #999"',
+    readStagedManifest: () => manifestWith(508),
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateManifestClosure : multi-fermeture — seuls les tickets encore présents listés', () => {
+  const d = evaluateManifestClosure({
+    command: 'git commit -m "corrige #508, ferme #999"',
+    readStagedManifest: () => manifestWith(508),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /#508/)
+  assert.doesNotMatch(d.reason, /#999/)
 })
 
 test('extractMessageSources : « -F » en PROSE d un message -m n est pas un flag fichier (git refuse -m+-F — faux positif vécu 2026-07-14)', () => {

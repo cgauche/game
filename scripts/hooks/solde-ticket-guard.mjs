@@ -359,6 +359,50 @@ export function readRefFile(n) {
   try { return readFileSync(resolve('.claude/soldes', `ref-${n}.md`), 'utf8') } catch { return null }
 }
 
+// ── Manifest RAW (prévention #434/#487) ────────────────────────────────────────────────────────────
+// Le manifest éditorial `src/data/raw.manifest.json` porte les dettes/blocages des topics `(non
+// implémenté)` (`ticket: "#N"` / `bloque: "…#N…"`). Fermer #N tout en le laissant dans le manifest
+// laisse un topic marqué « dette : #N » dans les fiches générées, et l'issue fermée à tort — la
+// régénération (`raw:implemente`) et le retrait d'entrée doivent aller dans le MÊME commit. Le contrôle
+// lit la version STAGÉE du manifest (celle qui va être committée), pas le disque de travail.
+const RAW_MANIFEST_PATH = 'src/data/raw.manifest.json'
+const MANIFEST_TICKET_RE = /#(\d+)/g
+
+/** Tickets `#N` référencés par le CONTENU (stagé) du manifest RAW. `null`/vide → ensemble vide. */
+export function manifestTickets(manifestContent) {
+  const nums = new Set()
+  if (!manifestContent) return nums
+  for (const m of manifestContent.matchAll(MANIFEST_TICKET_RE)) nums.add(Number(m[1]))
+  return nums
+}
+
+/**
+ * Décision « fermeture d'un ticket encore présent dans le manifest RAW stagé » (PURE, testable).
+ * `readStagedManifest()` renvoie la version STAGÉE de `src/data/raw.manifest.json` (ou `null`).
+ * Une fermeture de #N dont l'entrée manifest n'a PAS été retirée dans le même commit = deny.
+ * @returns {{ reason: string } | null}
+ */
+export function evaluateManifestClosure({ command, readStagedManifest = () => null }) {
+  const issues = extractClosedIssues(command)
+  if (issues.length === 0) return null
+  const tickets = manifestTickets(readStagedManifest())
+  const stuck = issues.filter((n) => tickets.has(n))
+  if (stuck.length === 0) return null
+  const list = stuck.map((n) => `#${n}`).join(', ')
+  return {
+    reason:
+      `⚠ Fermeture de ${list} alors que ce(s) ticket(s) figure(nt) encore dans ${RAW_MANIFEST_PATH} ` +
+      `(version stagée) — un topic resterait marqué « dette : #N » dans les fiches générées, l'issue ` +
+      `fermée à tort. Retirer l'entrée manifest de ${list} et relancer \`npm run raw:implemente\` dans ` +
+      `le MÊME commit (régénère le champ Implémente), puis re-committer.`,
+  }
+}
+
+/** Lecture de la version STAGÉE (index git) de `src/data/raw.manifest.json`. `null` si absente/illisible. */
+export function readStagedManifestFile() {
+  try { return execSync(`git show :${RAW_MANIFEST_PATH}`, { encoding: 'utf8' }) } catch { return null }
+}
+
 /** Analyse du diff STAGED (`git diff --cached --numstat`) : touche-t-il `src/**` ? combien de
  *  lignes (insertions+suppressions) au total ? Fichiers binaires (`-\t-\t<path>`) comptés 0 ligne
  *  mais peuvent toucher `src/**`. `''`/erreur git → aucune touche, 0 ligne (silence, jamais un deny
@@ -422,7 +466,8 @@ if (isMain) {
     readRefFile,
   })
   const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
-  const reasons = [decision, antiEsquive, amendInvisible].filter(Boolean).map((d) => d.reason)
+  const manifestClosure = evaluateManifestClosure({ command: text, readStagedManifest: readStagedManifestFile })
+  const reasons = [decision, antiEsquive, amendInvisible, manifestClosure].filter(Boolean).map((d) => d.reason)
   if (reasons.length > 0) {
     console.log(JSON.stringify({
       hookSpecificOutput: {

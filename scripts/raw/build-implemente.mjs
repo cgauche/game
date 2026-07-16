@@ -222,14 +222,11 @@ export function mergeSpans(spans) {
 }
 const fmtSpan = ([lo, hi]) => (lo === hi ? `l.${lo}` : `l.${lo}-${hi}`)
 
-/** Parse une fiche : champs Implémente (topic, bloc, réfs collectées) + anomalies non-début-de-ligne. */
-export function parseFiche(basename, content) {
-  const lines = content.split('\n')
-  const fields = []
-  const anomalies = []
-  const slugCount = new Map()
-  const stem = basename.replace(/\.md$/, '')
-
+/** Masque des blocs du champ `**Implémente**` d'une fiche : pour `lines`, retourne `isHeader[i]`
+ *  (ligne d'ouverture `FIELD_START_RE`), `inFieldBlock[i]` (dans un bloc), `endIdxOf[i]` (fin
+ *  exclusive du bloc ouvert en `i`). Un bloc court de sa ligne d'en-tête à la première ligne VIDE ou
+ *  HEADING (exclue). Frontière PARTAGÉE — la garde de prose d'état (citation-graphy-guard) l'importe. */
+export function fieldBlockMask(lines) {
   const isHeader = lines.map((ln) => FIELD_START_RE.test(ln))
   const inFieldBlock = new Array(lines.length).fill(false)
   const endIdxOf = new Array(lines.length).fill(-1)
@@ -240,6 +237,18 @@ export function parseFiche(basename, content) {
     endIdxOf[i] = j
     for (let k = i; k < j; k++) inFieldBlock[k] = true
   }
+  return { isHeader, inFieldBlock, endIdxOf }
+}
+
+/** Parse une fiche : champs Implémente (topic, bloc, réfs collectées) + anomalies non-début-de-ligne. */
+export function parseFiche(basename, content) {
+  const lines = content.split('\n')
+  const fields = []
+  const anomalies = []
+  const slugCount = new Map()
+  const stem = basename.replace(/\.md$/, '')
+
+  const { isHeader, inFieldBlock, endIdxOf } = fieldBlockMask(lines)
 
   let nearestHeading = null
   let pending = []

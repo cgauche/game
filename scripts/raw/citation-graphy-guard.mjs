@@ -9,6 +9,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { fieldBlockMask } from './build-implemente.mjs'
 
 export const SRC_DIR = 'src'
 export const EXTS = ['.ts', '.tsx', '.json']
@@ -17,6 +18,9 @@ export const RAWDIR = 'docs/raw'
 // Fiches EXCLUES des scans docs/raw (rapports générés / épreuves de ré-ancrage — graphies libres).
 const DOCS_EXCLUDE = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md'])
 const isScannedFiche = (name) => name.endsWith('.md') && !DOCS_EXCLUDE.has(name) && !name.startsWith('epreuve-')
+// Scan (d) « prose d'état d'implémentation » : mêmes exclusions + `00-index.md` (sa ligne de garde
+// DÉCRIT le marqueur `(non implémenté)`, elle ne l'affirme pas — cf. 00-index.md l.16/69).
+const isImplProseScanned = (name) => isScannedFiche(name) && name !== '00-index.md'
 
 // (a) Plage de lignes à tiret CADRATIN/demi-cadratin : `l.417–422` / `l.417—422`. Forme canonique =
 // tiret-moins `l.417-422` (dépliée par `span`) ; en/em-dash est INVISIBLE de `span` → jamais dépliée.
@@ -36,6 +40,21 @@ export const BACKTICK_FILE_RE = () => /`\d{1,2} - [^`]*\.md` l\.\d/g
 // 1-2 chiffres puis un TIRET puis une LETTRE (jamais un second groupe de chiffres, jamais un id nu
 // sans " l.<n>" collé juste après le nom).
 export const GRAPHY_RE = () => /\b\d{1,2}-[A-Za-zÀ-ÿ]+ l\.\d+/g
+
+// (d) Prose d'état d'implémentation dans une fiche, HORS bloc de champ généré `**Implémente**`
+// (frontière via `fieldBlockMask`, source unique). Verrouille à zéro toute réapparition de « X n'est
+// pas câblé / ne sont pas implémentés » — la graphie PLURIELLE (`ne sont pas implémentés`) échappait
+// à l'ancien NONIMPL_RE. Fabrique FRAÎCHE (état /g non partagé). Insensible à la casse.
+export const NONIMPL_RE = () => new RegExp(
+  '(?:' + [
+    'non[- ]impl[ée]ment[ée]?e?s?',
+    "n['’](?:est|étaient?|était) pas (?:encore )?impl[ée]ment[ée]?e?s?",
+    'ne sont pas (?:encore )?impl[ée]ment[ée]?e?s?',
+    'non c[âa]bl[ée]?e?s?',
+    'pas (?:encore )?c[âa]bl[ée]?e?s?',
+  ].join('|') + ')\\b',
+  'iu',
+)
 
 function walk(dir, exts, acc = []) {
   for (const e of readdirSync(dir)) {
@@ -81,9 +100,28 @@ export function scanDocsRawViolations(rawDir = RAWDIR) {
   return violations
 }
 
+/** Scanne les fiches `docs/raw/*.md` (hors rapports/épreuves + 00-index) pour la prose d'état
+ *  d'implémentation (scan d) : toute ligne HORS bloc de champ `**Implémente**` qui matche `NONIMPL_RE`.
+ *  Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
+export function scanImplProseViolations(rawDir = RAWDIR) {
+  const violations = []
+  let names
+  try { names = readdirSync(rawDir).filter(isImplProseScanned) } catch { names = [] }
+  for (const name of names) {
+    const lines = readFileSync(join(rawDir, name), 'utf8').split('\n')
+    const { inFieldBlock } = fieldBlockMask(lines)
+    lines.forEach((ln, i) => {
+      if (inFieldBlock[i]) return
+      if (NONIMPL_RE().test(ln)) violations.push({ file: `${rawDir}/${name}`, row: i + 1, text: ln.trim().slice(0, 160) })
+    })
+  }
+  return violations
+}
+
 function main() {
   const src = scanGraphyViolations()
   const docs = scanDocsRawViolations()
+  const implProse = scanImplProseViolations()
   if (src.length) {
     console.log(`citation-graphy-guard : ${src.length} graphie(s) chapitre-relative(s) (src/) :`)
     for (const { file, row, text } of src) console.log(`  ${file}:${row}  ${text}`)
@@ -96,7 +134,13 @@ function main() {
   } else {
     console.log('citation-graphy-guard : 0 graphie de fiche (docs/raw/) — deux classes verrouillées à zéro.')
   }
-  if (src.length || docs.length) process.exitCode = 1
+  if (implProse.length) {
+    console.log(`citation-graphy-guard : ${implProse.length} prose(s) d'état d'implémentation (docs/raw/, hors champ généré) :`)
+    for (const { file, row, text } of implProse) console.log(`  ${file}:${row}  ${text}`)
+  } else {
+    console.log('citation-graphy-guard : 0 prose d\'état d\'implémentation (docs/raw/) — classe verrouillée à zéro.')
+  }
+  if (src.length || docs.length || implProse.length) process.exitCode = 1
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

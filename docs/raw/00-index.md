@@ -73,6 +73,13 @@ plusieurs chapitres **et** plusieurs livres.
 
 > **Source = Marker propre pour les 14 livres** (tables intactes, texte exact ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`). L'Atlas remplace la source : 0 trou de règle.
 
+> ⚠️ **Ré-extraction de `Source/` : JAMAIS en masse.** Une re-passe Marker totale décale les numéros de
+> ligne de ~3 000 citations du CODE que `reanchor.mjs --remap` ne couvre pas (il ne remappe que les fiches) —
+> c'est le chantier de ré-ancrage de 2026-07-16 (#434, ~400 réfs corrigées à la main au Source) à refaire en
+> entier. Les trous d'ancrage folio se corrigent par **insertions d'ancres CIBLÉES** (#522), chapitre par
+> chapitre, gardes `raw:*` relancées avant commit. Une ré-extraction totale exige d'ABORD un outil de remap
+> code-side.
+
 > ⚠️ **Limite connue (#323, vérifiée 2026-07-11)** : Marker perd les GLYPHES des schémas de progression
 > (marteau/crâne/bouclier — seule la croix survit en `h`). Les gardes `coverage`/`reconcile` ne peuvent
 > PAS le détecter (absence silencieuse, pas un caractère corrompu) — seule une comparaison au rendu-image

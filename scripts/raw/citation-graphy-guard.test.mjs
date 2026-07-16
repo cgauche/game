@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanGraphyViolations, scanDocsRawViolations } from './citation-graphy-guard.mjs'
+import { scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations } from './citation-graphy-guard.mjs'
 
 function withTempSrcDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-guard-'))
@@ -147,6 +147,85 @@ test('docs/raw : rapports (coverage/reconciliation/reanchor) et épreuves exclus
     assert.equal(v.length, 1)
     assert.equal(v[0].file.split('/').pop(), 'combat.md')
   })
+})
+
+// --- scan (d) : prose d'état d'implémentation hors bloc de champ généré `**Implémente**` ---
+test('docs/raw (d) singulier : « n\'est pas implémenté » / « non implémentée » hors champ → détecté', () => {
+  withTempRawDir({
+    'a.md': '## Sujet\n\nCe passage n\'est pas implémenté dans le moteur.\n',
+    'b.md': '## Autre\n\nLa table n\'est pas encore implémentée côté code.\n',
+  }, (raw) => {
+    const v = scanImplProseViolations(raw)
+    assert.equal(v.length, 2)
+    assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['a.md', 'b.md'])
+  })
+})
+
+test('docs/raw (d) PLURIEL : « ne sont pas implémentés » (graphie qui échappait au regex historique) → détecté', () => {
+  withTempRawDir({ 'a.md': '## Sujet\n\nCes effets ne sont pas implémentés.\n' }, (raw) => {
+    assert.equal(scanImplProseViolations(raw).length, 1)
+  })
+})
+
+test('docs/raw (d) : « non câblé / pas encore câblés » → détecté', () => {
+  withTempRawDir({
+    'a.md': '## X\n\nLe déclencheur est non câblé.\n',
+    'b.md': '## Y\n\nCes triggers sont pas encore câblés.\n',
+  }, (raw) => {
+    assert.equal(scanImplProseViolations(raw).length, 2)
+  })
+})
+
+test('docs/raw (d) : ligne DANS le bloc de champ généré `**Implémente**` → ignorée', () => {
+  withTempRawDir({
+    'a.md': '## Sujet\n\n**Implémente :** (non implémenté)\n- dette : #123\n\nProse RAW sans état.\n',
+  }, (raw) => {
+    assert.equal(scanImplProseViolations(raw).length, 0)
+  })
+})
+
+test('docs/raw (d) : prose d\'état APRÈS la fin du bloc de champ (ligne vide) → détectée', () => {
+  withTempRawDir({
+    'a.md': '## Sujet\n\n**Implémente :** (non implémenté)\n\nCette règle n\'est pas implémentée par ailleurs.\n',
+  }, (raw) => {
+    const v = scanImplProseViolations(raw)
+    assert.equal(v.length, 1)
+    assert.match(v[0].text, /n'est pas implémentée/)
+  })
+})
+
+test('docs/raw (d) : 00-index.md exclu (sa ligne de garde décrit le marqueur)', () => {
+  withTempRawDir({
+    '00-index.md': 'Le champ vaut `(non implémenté)` sinon — description du marqueur.\n',
+    'combat.md': '## X\n\nCe passage n\'est pas implémenté.\n',
+  }, (raw) => {
+    const v = scanImplProseViolations(raw)
+    assert.equal(v.length, 1)
+    assert.equal(v[0].file.split('/').pop(), 'combat.md')
+  })
+})
+
+test('docs/raw (d) : rapports (coverage/reconciliation/reanchor) et épreuves exclus', () => {
+  withTempRawDir({
+    'coverage.md': 'X n\'est pas implémenté\n',
+    'reconciliation.md': 'X n\'est pas implémenté\n',
+    'reanchor.md': 'X n\'est pas implémenté\n',
+    'epreuve-x.md': 'X n\'est pas implémenté\n',
+    'combat.md': '## S\n\nX n\'est pas implémenté\n',
+  }, (raw) => {
+    const v = scanImplProseViolations(raw)
+    assert.equal(v.length, 1)
+    assert.equal(v[0].file.split('/').pop(), 'combat.md')
+  })
+})
+
+test('non-régression : le VRAI docs/raw/ du repo est à ZÉRO prose d\'état d\'implémentation (#487 suite, lot 1)', () => {
+  const v = scanImplProseViolations()
+  assert.deepEqual(
+    v.map((x) => `${x.file}:${x.row}`),
+    [],
+    `prose(s) d'état d'implémentation survivante(s) :\n${v.map((x) => `  ${x.file}:${x.row}  ${x.text}`).join('\n')}`,
+  )
 })
 
 test('non-régression : le VRAI src/ du repo est à ZÉRO graphie chapitre-relative (#487 lot 1+2)', () => {

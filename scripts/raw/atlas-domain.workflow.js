@@ -1,6 +1,6 @@
 export const meta = {
   name: 'atlas-raw-fanout',
-  description: "Atlas RAW AUTONOME. Par domaine : Cadrage (auto-decouverte des chapitres) -> Cartographie -> Taxonomie -> Survey 14 livres -> Synthese (tables verbatim) -> Boucle d'audit completude+dedup (loop-until-dry) -> Verif fidelite -> correction fidelite -> Code-map. Traite un LOT de domaines (liste embarquee BATCH). Zero config par domaine.",
+  description: "Atlas RAW AUTONOME. Par domaine : Cadrage (auto-decouverte des chapitres) -> Cartographie -> Taxonomie -> Survey 14 livres -> Synthese (tables verbatim) -> Boucle d'audit completude+dedup (loop-until-dry) -> Verif fidelite -> correction fidelite. Le champ Implemente des fiches est DERIVE du code par build-implemente (#487) — le workflow ne pose qu'un placeholder. Traite un LOT de domaines (liste embarquee BATCH). Zero config par domaine.",
   phases: [
     { title: 'Cadrage', detail: 'auto-decouverte des chapitres du domaine (index)', model: 'sonnet' },
     { title: 'Cartographie', detail: 'inventaire exhaustif a couvrir', model: 'sonnet' },
@@ -9,7 +9,6 @@ export const meta = {
     { title: 'Synthese', detail: 'entrees autosuffisantes, tables verbatim', model: 'opus' },
     { title: 'Audit', detail: 'completude+dedup en boucle (loop-until-dry)', model: 'opus' },
     { title: 'Verif', detail: 'fidelite + correction', model: 'sonnet/opus' },
-    { title: 'Code-map', detail: 'topics -> modules src/ (existence verifiee)', model: 'sonnet' },
   ],
 }
 
@@ -68,7 +67,6 @@ const SURVEY_SCHEMA = { type: 'object', properties: { hits: { type: 'array', ite
 const SYNTH_SCHEMA = { type: 'object', properties: { topicId: { type: 'string' }, title: { type: 'string' }, markdown: { type: 'string' }, refs: { type: 'array', items: { type: 'string' } }, codeHint: { type: 'string' } }, required: ['topicId', 'title', 'markdown', 'refs'] }
 const AUDIT_SCHEMA = { type: 'object', properties: { dry: { type: 'boolean' }, gaps: { type: 'array', items: { type: 'object', properties: { kind: { type: 'string', enum: ['survole', 'rate', 'doublon'] }, topicId: { type: 'string' }, newTopicTitle: { type: 'string' }, what: { type: 'string' }, ref: { type: 'string' }, fix: { type: 'string' } }, required: ['kind', 'what'] } } }, required: ['dry', 'gaps'] }
 const VERIFY_SCHEMA = { type: 'object', properties: { topicId: { type: 'string' }, faithful: { type: 'boolean' }, issues: { type: 'array', items: { type: 'string' } } }, required: ['topicId', 'faithful', 'issues'] }
-const CODEMAP_SCHEMA = { type: 'object', properties: { modules: { type: 'array', items: { type: 'object', properties: { module: { type: 'string' }, topics: { type: 'array', items: { type: 'string' } }, note: { type: 'string' } }, required: ['module', 'topics'] } } }, required: ['modules'] }
 
 const STRUCT = [
   '## <titre>',
@@ -83,7 +81,9 @@ const STRUCT = [
   '> « citation verbatim quand le mot exact compte » — `<ABBR NN l.X>`',
   '',
   '**Voir aussi** : <topics lies>',
-  '**Implemente** : <module(s) src/ REELS confirmes par Grep/Read ; si non implemente `(non implémenté)`. NE DEVINE PAS.>',
+  // Le champ Implemente est DERIVE du code par build-implemente (#487) : le workflow ne pose qu'un
+  // placeholder nu, jamais un module devine a la main (que la regeneration remplace).
+  '**Implémente :** (non implémenté)',
 ].join('\n')
 
 function cadragePrompt(dom) {
@@ -189,14 +189,6 @@ function verifyPrompt(dom, entry) {
   ].join('\n')
 }
 
-function codeMapPrompt(dom, entries) {
-  return [
-    'Cartographie CODE -> REGLE, domaine "' + dom.title + '" (src/). Pour chaque module implementant une regle du domaine, liste les topics couverts. CONFIRME l existence (Glob/Read) — aucun module fantome.',
-    'Topics : ' + entries.map((e) => e.topicId).join(', ') + '.',
-    'Grep les commentaires de source lies au domaine + lis les en-tetes des modules pertinents. Renvoie { modules:[{module, topics, note}] }.',
-  ].join('\n')
-}
-
 async function applyGaps(dom, entries, gaps) {
   const groups = new Map()
   for (const g of gaps) {
@@ -283,15 +275,11 @@ async function runDomain(domain) {
     reVer.forEach((v) => { if (v) issuesById[v.topicId] = { faithful: v.faithful, issues: v.issues || [] } })
   }
 
-  phase('Code-map')
-  const codeMap = await agent(codeMapPrompt(dom, entries), { label: dom.domain + ':code-map', phase: 'Code-map', model: 'sonnet', schema: CODEMAP_SCHEMA })
-
   return {
     domain: dom.domain,
     title: dom.title,
     topics: entries.map((e) => ({ topicId: e.topicId, title: e.title, markdown: e.markdown, refs: e.refs, codeHint: e.codeHint || '', faithful: issuesById[e.topicId] ? issuesById[e.topicId].faithful : null, issues: issuesById[e.topicId] ? issuesById[e.topicId].issues : [] })),
     autre,
-    codeMap: codeMap || { modules: [] },
     inventoryCount: inventory.length,
     auditLoops: loops,
     lastAuditDry: lastDry,

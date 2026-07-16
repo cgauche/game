@@ -54,11 +54,15 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 
 1. **Aucune invention de règles.** Toute règle/valeur vient des livres autorisés (§ Sources VF).
    Ne pas utiliser tes connaissances WFRP. **Point d'entrée = l'Atlas RAW [`docs/raw/`](docs/raw/00-index.md)** :
-   21 fiches de règles par domaine + 6 catalogues de données mécaniques, consolidant les 15 livres
+   22 fiches de règles par domaine + 6 catalogues de données mécaniques, consolidant les 15 livres
    (couverture **⬜0** ; gardes rejouables `node scripts/raw/coverage.mjs` & `node scripts/raw/reconcile.mjs`).
    **Y chercher d'abord** « est-ce RAW / que dit le RAW ». `Source/` reste la vérité
    **citable** (`LDB <chap> l.<ligne>`) et le recours ultime — **devoir rouvrir `Source/` = un défaut
    de l'Atlas à corriger** (amender la fiche/le catalogue, puis re-vérifier avec les deux gardes).
+   ⚠ Les champs **`Implémente`** des fiches sont **GÉNÉRÉS** (`npm run raw:implemente`, #487/#434) —
+   jamais édités à la main ; un commit qui ajoute/déplace des réfs RAW (code, commentaires, `source:{book,page}`
+   de données) régénère les fiches dans le MÊME commit (`docs:check` le gate en CI et au pre-commit).
+   Dette/blocage d'un topic = entrée `src/data/raw.manifest.json` (topic non implémenté sans entrée = CI rouge).
 2. **Tout le contenu de campagne est éditable** dans l'éditeur (schéma de Scène unique).
    Pas de scène codée « en dur ».
 3. **Le moteur de règles (`src/engine`) reste pur et testé.** Le store, l'UI et le rendu en
