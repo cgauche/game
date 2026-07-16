@@ -482,10 +482,13 @@ export interface EncounterDef {
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
   /** Restriction d'armes à DISTANCE (#471) — Duel judiciaire (NADAJ 06 l.181) : « les parties concernées
    *  […] ont normalement le libre choix des armes bien que la plupart des lois locales interdisent de
-   *  faire appel à des projectiles. » DÉROGEABLE (« la plupart », pas toutes) : champ SÉPARÉ de
-   *  `victoryCondition` (un duel judiciaire n'impose pas forcément la restriction, une variante locale
-   *  peut l'appliquer à une rencontre qui n'est pas un `firstBlood`). Absent/false = armes à distance
-   *  autorisées (défaut historique). Gate consommé par `resolveAttack`/`firedAttackBlock` (joueur ET IA). */
+   *  faire appel à des projectiles. » DÉFAUT SÉMANTIQUE (#471 défaut 1) : « la plupart » = interdit PAR
+   *  DÉFAUT quand `victoryCondition.type === 'firstBlood'` — champ ABSENT sur un duel = armes à distance
+   *  INTERDITES ; l'auteur DÉROGE explicitement en posant `banRanged: false` (« pas toutes »). Champ
+   *  SÉPARÉ de `victoryCondition` (une variante locale peut l'imposer à une rencontre qui n'est pas un
+   *  `firstBlood`, valeur explicite `true`). Hors `firstBlood`, champ absent = armes à distance autorisées
+   *  (défaut historique). Défaut résolu par `banRangedActive` (SEUL point), consommé par
+   *  `resolveAttack`/`firedAttackBlock` (joueur ET IA). */
   banRanged?: boolean;
 }
 

@@ -300,6 +300,16 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
   };
 }
 
+/** Restriction d'armes à distance EFFECTIVE (#471, NADAJ 06 l.181 : « la PLUPART des lois locales
+ *  interdisent de faire appel à des projectiles ») — SEUL point de résolution du défaut, consommé
+ *  par `firedAttackBlock` (gate joueur/IA) ET `resolveAttack` (application). `banRanged` explicite
+ *  PRIME (`true`/`false` = dérogation assumée par l'auteur) ; absent + `firstBlood` = interdit PAR
+ *  DÉFAUT (le duel judiciaire est la seule rencontre où le RAW pose la restriction par défaut) ;
+ *  absent hors `firstBlood` = autorisé (défaut historique, non-régression). */
+export function banRangedActive(battle: BattleState | null | undefined): boolean {
+  return battle?.banRanged ?? (battle?.victoryCondition?.type === 'firstBlood');
+}
+
 /** Tir héros refusé faute de RESSOURCE : arme à défaut Recharge non chargée (LDB 63 l.28-29) ou plus
  *  de munition compatible — `null` si le tir peut partir. Concern ORTHOGONAL à la géométrie (`attackPlan`),
  *  rejoué À L'IDENTIQUE par le clic (`battleClickEntity`) ET le survol (`hoverTargeting`) pour que
@@ -327,7 +337,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   if (w.type !== 'ranged') return null;
   // Restriction d'armes à distance de la rencontre (#471, NADAJ 06 l.181) — même refus AVANT tout autre
   // gate de ressource (Recharge/munition), pour ne pas dire « recharger » à une arme de toute façon bannie.
-  if (b?.banRanged) return { reason: 'armeBannie', detail: `${w.name} : les armes à distance sont interdites (duel judiciaire).` };
+  if (banRangedActive(b)) return { reason: 'armeBannie', detail: `${w.name} : les armes à distance sont interdites (duel judiciaire).` };
   if ((w.reload ?? 0) > 0 && !active.loaded) return { reason: 'unloaded', detail: `${active.name} doit recharger ${w.name}.` };
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
   // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
@@ -617,8 +627,8 @@ export function resolveAttack(
   const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants, harpoonRopeCut); // arme choisie + munition + sous-effectif du poste servi
   // Restriction d'armes à distance de la rencontre (#471, `EncounterDef.banRanged`, NADAJ 06 l.181) —
   // convergence UNIQUE joueur ET IA (tout tir passe par `resolveAttack`) : refus AVANT le jet, même
-  // chemin de refus silencieux que la LdV bloquée ci-dessous (`blocked`).
-  if (battle.banRanged && weapon.type === 'ranged') return null;
+  // chemin de refus silencieux que la LdV bloquée ci-dessous (`blocked`). Défaut effectif : `banRangedActive`.
+  if (banRangedActive(battle) && weapon.type === 'ranged') return null;
   // Distance de COMBAT PAR L'ARME EFFECTIVEMENT tirée (#BUG-A, suite LDB 14) : géométrie de la MONTURE
   // (cavalier/cible monté — sinon une attaque de charge qui rapproche la MONTURE au contact serait jugée
   // hors d'allonge sur le cavalier 1×1 → `null`, cascade d'attaque ORPHELINE) OU de la COQUE SEULEMENT si
@@ -1760,7 +1770,6 @@ export function applyAttackResult(
     const currentBefore = target.wounds.current;
     const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
-    resolveFirstBlood(target, battle.victoryCondition, currentBefore - target.wounds.current, critLog); // #471
     const loc = res.location ?? 'corps';
     // Réouverture d'une plaie critique (LDB 18 / AA 07) : un nouveau Dégât à CETTE Localisation octroie ses
     // États Hémorragique (la plaie qui l'a posée est stampée APRÈS ce coup, elle ne se déclenche donc pas
@@ -1797,6 +1806,11 @@ export function applyAttackResult(
       if (res.critical && !lethal)
         emitCombatEvent('onCrit', { get, set, battle, self: attacker, sink: (line) => critLog.push(line), triggerCtx: { victim: target, weapon, location: loc, woundsDealt: res.woundsLost, attackType: weapon.type, rng: battleRng() } });
     }
+    // Premier sang (#471) mesuré ICI, au point où le COUP est intégralement finalisé (Blessures de base +
+    // Blessure Critique/Déviation ajoutées par `applyCritAndFinalize` + Frappe blessante `fb`) — pas juste
+    // les Blessures de base : un coup 2 base + 2 Critique = 4 doit déclencher le seuil au même titre qu'un
+    // coup non-critique de 4. UN seul appel (celui d'avant, sur la perte de base seule, est supprimé).
+    resolveFirstBlood(target, battle.victoryCondition, currentBefore - target.wounds.current, critLog);
     // 0 PB → À Terre (LDB 18 l.15) : TOUJOURS quand on tombe à 0, EN PLUS du Critique éventuel (l'overkill
     // déclenche une Blessure critique mais ne dispense pas de l'État À Terre) ; sauf si déjà KO/mort.
     if (target.wounds.current <= 0 && !target.dead && !hasCondition(target, COND.inconscient)) applyZeroWounds(target);

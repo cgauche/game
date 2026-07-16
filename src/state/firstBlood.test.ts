@@ -155,4 +155,46 @@ describe('Duel judiciaire — restriction d\'armes à distance (#471, NADAJ 06 l
     const r = resolveAttack(useGame.getState, H, E);
     expect(r).not.toBeNull();
   });
+
+  it("duel firstBlood SANS banRanged posé : interdit PAR DÉFAUT (#471 défaut 1, NADAJ 06 l.181 « la plupart »)", () => {
+    const { H, E } = setup();
+    H.weapons = [RANGED];
+    H.pos = { x: 0, y: 0 };
+    E.pos = { x: 5, y: 0 };
+    useGame.setState({ battle: { ...useGame.getState().battle!, victoryCondition: { type: 'firstBlood' } } });
+    expect(resolveAttack(useGame.getState, H, E)).toBeNull();
+    expect(firedAttackBlock(useGame.getState, H, E)).toMatchObject({ reason: 'armeBannie' });
+  });
+
+  it("duel firstBlood + banRanged:false EXPLICITE : dérogation, le tir passe (« pas toutes » les lois locales)", () => {
+    const { H, E } = setup();
+    H.weapons = [RANGED];
+    H.pos = { x: 0, y: 0 };
+    E.pos = { x: 5, y: 0 };
+    useGame.setState({ battle: { ...useGame.getState().battle!, victoryCondition: { type: 'firstBlood' }, banRanged: false } });
+    expect(resolveAttack(useGame.getState, H, E)).not.toBeNull();
+    expect(firedAttackBlock(useGame.getState, H, E)).toBeNull();
+  });
+});
+
+describe('Duel judiciaire — premier sang mesuré sur le coup FINALISÉ (#471 défaut 2, Blessures ajoutées par un Critique)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('coup base 2 Blessures + Critique qui en ajoute 2 (table LDB 18) = 4 > seuil 3 → premier sang déclenché', () => {
+    const { H, E } = setup();
+    E.wounds = { current: 20, max: 20, base: 20 } as never;
+    E.armour = { corps: 0, testa: 0, brasD: 0, brasG: 0, jambeD: 0, jambeG: 0 } as never;
+    useGame.getState().seedRng(8); // graine calibrée : table de Critique « Coupure profonde » ajoute exactement 2 Blessures
+    useGame.setState({ battle: { ...useGame.getState().battle!, victoryCondition: { type: 'firstBlood' } } });
+    const res: AttackResult = {
+      hit: true, attackerRoll: 33, netSL: 1, location: 'corps', damage: 2, woundsLost: 2,
+      critical: true, advantageTo: 'attacker', defenderDefeated: false, log: '',
+    };
+    applyAttackResult(useGame.getState, useGame.setState, H, E, H.weapons[0], res);
+    const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
+    expect(20 - e.wounds.current).toBe(4); // 2 de base + 2 du Critique — la perte RÉELLE du coup, pas juste `res.woundsLost`
+    expect(e.outOfRencontre).toBe(true);
+    expect(e.exitReason).toBe('firstBlood');
+  });
 });

@@ -605,12 +605,26 @@ function EncountersTab({
               </div>
             );
           })()}
-          <div className="enemy-mount">
-            <label title="Duel judiciaire (NADAJ 06 l.181) : « la plupart des lois locales interdisent de faire appel à des projectiles ». Dérogeable (variante locale) — champ indépendant de l'objectif de victoire.">
-              <input type="checkbox" checked={!!enc.banRanged} onChange={(e) => upd({ banRanged: e.target.checked || undefined })} />{' '}
-              Armes à distance interdites
-            </label>
-          </div>
+          {(() => {
+            // Défaut effectif (#471 défaut 1, `banRangedActive` de combatFlow.ts) : « la plupart » des
+            // duels judiciaires interdisent les projectiles PAR DÉFAUT — champ absent + firstBlood =
+            // coché. Décocher pose `banRanged: false` (dérogation explicite, PAS un simple undefined,
+            // sinon il retomberait sur le défaut interdit) ; re-cocher efface (retour au défaut).
+            const isDuel = enc.victoryCondition?.type === 'firstBlood';
+            const effective = enc.banRanged ?? isDuel;
+            return (
+              <div className="enemy-mount">
+                <label title="Duel judiciaire (NADAJ 06 l.181) : « la plupart des lois locales interdisent de faire appel à des projectiles ». Dérogeable (variante locale) — champ indépendant de l'objectif de victoire.">
+                  <input
+                    type="checkbox"
+                    checked={effective}
+                    onChange={(e) => upd({ banRanged: isDuel ? (e.target.checked ? undefined : false) : (e.target.checked || undefined) })}
+                  />{' '}
+                  Armes à distance interdites
+                </label>
+              </div>
+            );
+          })()}
           <div className="mini-title">À la victoire (récompenses : PX, butin, flag…)</div>
           <FlowEditor flow={enc.onVictory ?? EMPTY_FLOW} onChange={(flow) => upd({ onVictory: flow })} ctx={ctx} />
         </div>
