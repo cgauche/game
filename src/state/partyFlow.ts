@@ -388,7 +388,7 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentId: string, 
   if (msg) get().log(msg);
 }
 
-/** Apprend/mémorise un sort (LDB 46 l.44-47 + Talents LDB 10) : coût en PX selon la
+/** Apprend/mémorise un sort (LDB 46 l.16-20 + Talents LDB 10) : coût en PX selon la
  *  famille (engine/grimoire.spellCost) ; un sort de Magie du Chaos inflige AUSSI
  *  +1 Point de Corruption (« le Sort s'insinue dans votre esprit ») — appliqué par
  *  l'appelant store (seuil → mutation). */

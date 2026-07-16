@@ -39,7 +39,7 @@
 
 ## Encombrement — calcul et seuils
 
-**Source : LDB 61 l.4–17**
+**Source : LDB 61 l.4-17**
 
 > Verbatim LDB 61 l.4 : « Le nombre de Points d'Encombrement que vous pouvez gérer sans pénalité est
 > déterminé par votre Bonus de Force + votre Bonus d'Endurance. »
@@ -48,7 +48,7 @@
 
 *Exemple* : humain moyen (F 30, E 30) → BF 3 + BE 3 = **6 Points d'Enc**.
 
-### Exemples d'Encombrement (LDB 61 l.8–16)
+### Exemples d'Encombrement (LDB 61 l.8-16)
 
 | Enc | Possessions types |
 |---|---|
@@ -61,7 +61,7 @@
 
 ## Encombrement — pénalités (Surchargé)
 
-**Source : LDB 61 l.33–43**
+**Source : LDB 61 l.33-43**
 
 > Verbatim LDB 61 l.33 : « Les Personnages qui dépassent leur capacité d'Encombrement peuvent être
 > ralentis, et seront fatigués par le voyage. La réduction de Mouvement et la Fatigue du voyage
@@ -91,9 +91,9 @@ ne s'annulent qu'avec un long repos (LDB 61 l.47).
 
 ## Encombrement — règles spéciales
 
-**Source : LDB 61 l.16–29**
+**Source : LDB 61 l.16-29**
 
-### Bêtes de somme (LDB 61 l.16–19)
+### Bêtes de somme (LDB 61 l.16-19)
 
 Les animaux de trait (mules, chevaux, charrettes, chariots) **ignorent** la formule
 BF + BE ; leur capacité est listée dans leur description (champ `Contenu`).
@@ -107,13 +107,13 @@ comptant souvent à **0** quand ils sont portés.
 > Exception LDB 60 l.62 (Défaut « Volumineux ») : une armure/vêtement Volumineux compte
 > **Enc 1 même porté** ; ses pénalités de Fatigue sont **×2**. Voir [economie.md §Fabrication](economie.md).
 
-### Objets surdimensionnés (LDB 61 l.24–25)
+### Objets surdimensionnés (LDB 61 l.24-25)
 
 Certains objets valent **4 Enc ou plus** (barils, fontes de selles…).
 - En principe, on ne peut transporter **qu'un seul** objet surdimensionné.
 - Cela nécessite **les deux mains**.
 
-### Petits objets — monnaie (LDB 61 l.28–29)
+### Petits objets — monnaie (LDB 61 l.28-29)
 
 > Verbatim LDB 61 l.29 : « la monnaie vaut 1 Point d'Encombrement pour 200 pièces. »
 
@@ -124,7 +124,7 @@ Le bon sens dicte le nombre de petits objets transportables.
 ## Qualités d'objet — Atouts et Défauts (renvoi)
 
 Les règles de **Fabrication** (Atouts Léger/Pratique/Raffiné/Solide, Défauts Bâclé/Laid/Peu Fiable/
-Volumineux) sont dans **[`economie.md`](economie.md) § Fabrication (LDB 60 l.10–92)**.
+Volumineux) sont dans **[`economie.md`](economie.md) § Fabrication (LDB 60 l.3-62)**.
 
 L'effet Encombrement des Atouts/Défauts est intégré ci-dessus (§ Objets portés et § Objets surdimensionnés).
 
@@ -132,7 +132,7 @@ L'effet Encombrement des Atouts/Défauts est intégré ci-dessus (§ Objets port
 
 ## Drogues et poisons
 
-**Source : LDB 71 l.5–57**
+**Source : LDB 71 l.5-35**
 
 > LDB 71 l.5 : « Les drogues récréatives, bien qu'elles ne soient pas illégales dans la majeure
 > partie de l'Empire, sont fréquemment associées aux rituels douteux et au Culte de Sigmar. »
@@ -216,7 +216,7 @@ mais gagne 1 État *Exténué*.
 
 ## Herbes et potions
 
-**Source : LDB 72 l.3–44**
+**Source : LDB 72 l.3-32**
 
 > LDB 72 l.25 : « Les herbes médicinales peuvent être achetées ou cueillies dans la nature (voir
 > Trouver de la nourriture et des herbes page 131). Une préparation avec des Outils de profession
@@ -226,7 +226,7 @@ mais gagne 1 État *Exténué*.
 
 Toutes ces substances ont **Enc 0**.
 
-### Table (LDB 72 l.26–32)
+### Table (LDB 72 l.26-32)
 
 | Objet | Coût | Disponibilité |
 |---|---|---|
@@ -292,14 +292,14 @@ Branche écrasée maintenue sous le nez.
 
 ## Prothèses
 
-**Source : LDB 73 l.4–32**
+**Source : LDB 73 l.4-29**
 
 > LDB 73 l.4 : « Que ce soit à cause d'une maladie, de la guerre ou de la malchance, il est assez
 > courant dans l'Empire de perdre une partie de son corps. »
 
 > LDB 73 l.5 : « Toutes les prothèses ont un Encombrement de 0 quand elles sont portées. »
 
-### Table (LDB 73 l.7–18)
+### Table (LDB 73 l.7-18)
 
 | Objet | Coût | Enc (non porté) | Disponibilité |
 |---|---|---|---|
@@ -358,7 +358,7 @@ Du bois au verre poli. Pas d'effet mécanique propre (cosmétique).
 
 ## Outils et nécessaires à effet mécanique
 
-**Source : LDB 67 l.3–63**
+**Source : LDB 67 l.3-63**
 
 > LDB 67 l.3 : « La majorité des outils sont considérés comme des armes Improvisées quand ils sont
 > utilisés durant un combat. Cependant les MJ peuvent décider que des outils lourds ou tranchants
@@ -406,7 +406,7 @@ Détail complet → [`activites.md`](activites.md) § Artisanat.
 
 ## Possessions diverses à effet
 
-**Source : LDB 74 l.5–78 (début de section « Possessions Diverses »)**
+**Source : LDB 74 l.5-62 (début de section « Possessions Diverses »)**
 
 Les objets divers sans effet mécanique (affiche, allumette, assiette…) relèvent du catalogue banal.
 Seuls les effets chiffrés sont transcrits ici.
@@ -422,10 +422,10 @@ Seuls les effets chiffrés sont transcrits ici.
 > LDB 74 l.43 : « fournit un éclairage sur **10 mètres** lorsqu'elle est allumée. »
 
 #### Lanterne (2/–, Commune ; Enc 1)
-> LDB 75 l.4 : « fournit un éclairage sur **20 mètres**. »
+> LDB 74 l.58 : « fournit un éclairage sur **20 mètres**. »
 
 #### Lampe tempête (5/–, Peu commune ; Enc 1)
-> LDB 75 l.4 : « des obturateurs protègent la flamme du vent, et permet également de diriger la lumière dans un arc de 90° ou de l'obscurcir complètement. Fournit un éclairage sur 20 mètres, ou 30 quand il est ciblé. »
+> LDB 74 l.56 : « des obturateurs protègent la flamme du vent, et permet également de diriger la lumière dans un arc de 90° ou de l'obscurcir complètement. Fournit un éclairage sur 20 mètres, ou 30 quand il est ciblé. »
 
 ---
 
@@ -434,18 +434,20 @@ Seuls les effets chiffrés sont transcrits ici.
 | Source | Rayon standard | Rayon ciblé | Ref |
 |---|---|---|---|
 | Bougie (ou équivalent) | 10 m | — | `LDB 74 l.43` |
-| Lanterne | 20 m | — | `LDB 75 l.4` |
-| Lampe tempête | 20 m | 30 m (arc 90°) | `LDB 75 l.4` |
+| Lanterne | 20 m | — | `LDB 74 l.58` |
+| Lampe tempête | 20 m | 30 m (arc 90°) | `LDB 74 l.56` |
 
 Échelle moteur : 1 case = 2 m → Bougie = 5 cases, Lanterne = 10 cases, Lampe tempête 10/15 cases.
 
 Le Talent **Vision nocturne** étend le rayon effectif de toute source de lumière de **+20 m / niveau** (`LDB 11 l.176`).
 
-**Sources RAW :** `LDB 74 l.43` (Bougie), `LDB 75 l.4–15` (Lampe tempête, Lanterne)
+**Sources RAW :** `LDB 74 l.43` (Bougie), `LDB 74 l.56-58` (Lampe tempête, Lanterne)
 
 **Voir aussi :** `talents.md` § Vision nocturne — extension de portée d'éclairage.
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 11` (l.176) → `TraitCapabilities` — `src/data/index.ts`, `src/state/vision.ts`
+- `LDB 74` (l.5-62) → `possessions-diverses`, `OPTIONAL_RULES` — `src/data/weaponGroups.json`, `src/engine/policy.ts`, `src/state/vision.ts`
 
 #### Grappin (1 CO, Limitée ; Enc 1)
 > LDB 74 l.45 : « couplé à une corde, il permet de gravir des surfaces inaccessibles. »
@@ -490,11 +492,11 @@ Les chapitres suivants contiennent essentiellement des **listes de prix** sans r
 | `LDB 61 l.4` | `src/engine/items.ts` : `maxEncumbrance` | Capacité = BF + BE + bonus talent Robuste |
 | `LDB 61 l.21` | `src/engine/items.ts` : `totalEncumbrance` l.205 | Objet porté : Enc −1 (armure/vêtement) |
 | `LDB 60 l.18/91` | `src/engine/items.ts` : `totalEncumbrance` l.202 | Léger −1 / Volumineux +1 via `craftEncDelta` |
-| `LDB 61 l.33–43` | `src/engine/encumbrance.ts` : `encumbrancePenalties` | Table seuils 0/1/2/3× → paliers Mouvement/Agilité/Fatigue |
-| `LDB 61 l.43–43` | `src/engine/encumbrance.ts` : commentaires | Mouvement immédiat ; Fatigue = échelle voyage (fin de journée) |
+| `LDB 61 l.33-43` | `src/engine/encumbrance.ts` : `encumbrancePenalties` | Table seuils 0/1/2/3× → paliers Mouvement/Agilité/Fatigue |
+| `LDB 61 l.43-43` | `src/engine/encumbrance.ts` : commentaires | Mouvement immédiat ; Fatigue = échelle voyage (fin de journée) |
 | `LDB 62 l.27` | `src/engine/items.ts` l.269 | Mains nues : +BF+0, Personnelle, Inoffensive |
-| `LDB 63 l.18–55` | `src/engine/items.ts` l.481 / `damageArmour` | PA nette = PA − dégâts pris ; endommagement armure |
-| `LDB 72 l.5–6` (p.307) | `src/engine/consumables.ts` | Parsing desc `récupérer/Blessure` → soin (Bonus d'Endurance) ; parsing `retire … État` → retrait d'État |
+| `LDB 63 l.18-55` | `src/engine/items.ts` l.481 / `damageArmour` | PA nette = PA − dégâts pris ; endommagement armure |
+| `LDB 72 l.5-6` (p.307) | `src/engine/consumables.ts` | Parsing desc `récupérer/Blessure` → soin (Bonus d'Endurance) ; parsing `retire … État` → retrait d'État |
 | `LDB 72 l.24` | `src/engine/consumables.ts` : `parseConsumable` | Potion de guérison : Bonus d'Endurance, garde-fou poison/drogue |
 | `LDB 72 l.28` | `src/engine/consumables.ts` + test | Potion de vitalité : retire tout *Exténué* |
 | `LDB 74 l.41` | `src/engine/consumables.ts` : `removeStacks: 1` (Bandages) | +1 pion *Hémorragique* retiré (pas « tout ») |
@@ -525,7 +527,7 @@ Les chapitres suivants contiennent essentiellement des **listes de prix** sans r
 
 ## Navires — profil et Caractéristiques (MDG)
 
-**Source : MDG 12 l.5–81**
+**Source : MDG 12 l.5-81**
 
 Comme les Personnages, les navires ont des **Caractéristiques** qui décrivent leurs capacités et peuvent porter des **Traits** leur donnant des aptitudes spéciales. Aucun bateau n'est strictement identique à un autre : son profil varie selon l'usure, la qualité de construction, l'aménagement et le style. Le profil canonique d'un navire suit le gabarit : *Nom · Coût · Équipage · Voiles M (É) · Avirons M (É) · Man · Taille · E · B · Contenance · Traits et Améliorations* (tables complètes au catalogue).
 
@@ -572,23 +574,23 @@ Les objets personnels portés ne comptent pas, sauf très volumineux/lourds : ta
 
 **Traits et Améliorations** : les **Traits** sont intégrés à la construction initiale (immuables), les **Améliorations** peuvent être ajoutées/retirées plus tard (`MDG 12 l.81`).
 
-**Sources RAW :** `MDG 12 l.5–81` (intro, Équipage l.21, table espaces l.23–35, Voiles/Avirons l.37–45, Manœuvre l.48–50, Taille l.52–54, E/BE l.56–58, B/BB l.60–64, Contenance + table surcharge l.66–77, Traits/Améliorations l.79–81).
+**Sources RAW :** `MDG 12 l.5-81` (intro, Équipage l.21, table espaces l.23-35, Voiles/Avirons l.37-45, Manœuvre l.48-50, Taille l.52-54, E/BE l.56-58, B/BB l.60-64, Contenance + table surcharge l.66-77, Traits/Améliorations l.79-81).
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Exemples de bateaux* et *Caractéristiques de bateau standard*) · § Construction navale (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG) · [`deplacement.md`](deplacement.md) (voyage, vitesses).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.58, l.64, l.68, l.81) → `cargoTone`, `OverloadPalier`, `PortState`, `ShipDossierView`, `vesselMaxLoadEnc`, `OVERLOAD_HARD_CAP_PCT`, `CargoOverload`, `cargoOverload`, `overloadMaxEnc`, `shipboardSouls`, +6 — `src/engine/seaVoyage.ts`, `src/engine/types.ts`, `src/gameIso/rig/ship/defs/bateau-de-patrouille.ts`, `src/state/portFlow.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCrew.ts`, +3 fichiers
-- sans code : `MDG 12` (l.5, l.17, l.21, l.35, l.39, l.41, l.45, l.50) +1
+- `MDG 12` (l.5-81) → `cargoTone`, `OverloadPalier`, `PortState`, `ShipDossierView`, `vesselMaxLoadEnc`, `OVERLOAD_HARD_CAP_PCT`, `CargoOverload`, `cargoOverload`, `overloadMaxEnc`, `shipboardSouls`, +7 — `src/data/sea-cargo.json`, `src/engine/seaVoyage.ts`, `src/engine/types.ts`, `src/gameIso/rig/ship/defs/bateau-de-patrouille.ts`, `src/state/portFlow.ts`, `src/state/seaVoyageFlow.ts`, +4 fichiers
+- sans code : `MDG 12` (l.5, l.17, l.21, l.35)
 
 ---
 
 ## Construction navale (MDG)
 
-**Source : MDG 12 l.108–164**
+**Source : MDG 12 l.108-164**
 
 Procédure pour qu'un Personnage construise (ou fasse construire) son vaisseau, ou que le MJ en crée un. On fixe successivement : Taille, mode de propulsion, manœuvrabilité, vitesse, puis Traits/Améliorations (`MDG 12 l.110`). Certains exemples de bateaux ne sont pas reproductibles à l'identique par ces règles — la diversité des constructeurs de la Mer des Griffes l'explique ; la table standard sert de guide approximatif (`MDG 12 l.118`).
 
-**Étape 1 – Taille** : choisir une Taille/un type donne des Caractéristiques de base (table *Caractéristiques de bateau standard*, au catalogue), à ajuster ensuite ; le prix indiqué vaut pour un navire de cette Taille sans modificateur ni élément additionnel (`MDG 12 l.116–129`).
+**Étape 1 – Taille** : choisir une Taille/un type donne des Caractéristiques de base (table *Caractéristiques de bateau standard*, au catalogue), à ajuster ensuite ; le prix indiqué vaut pour un navire de cette Taille sans modificateur ni élément additionnel (`MDG 12 l.116-129`).
 
 **Étape 2 – Propulsion principale (voiles ou avirons)** : beaucoup de navires ont les deux Caractéristiques mais comptent surtout sur l'une. Choisir la méthode principale et **réduire de 2 le Mouvement de l'autre** (minimum 3). Les plus grandes catégories ne peuvent pas être propulsées à la rame (`MDG 12 l.133`).
 
@@ -612,53 +614,53 @@ Procédure pour qu'un Personnage construise (ou fasse construire) son vaisseau, 
 | Très rapide | +2 | –50 % de Contenance | – | +10 % |
 | Foudroyant | +3 | –75 % de Contenance | – | +10 % |
 
-**Sources RAW :** `MDG 12 l.108–164` (intro l.108–112, Étape 1 l.114–129, Étape 2 l.131–133, Étape 3 + table l.135–143, Étape 4 + table l.145–164).
+**Sources RAW :** `MDG 12 l.108-164` (intro l.108-112, Étape 1 l.114-129, Étape 2 l.131-133, Étape 3 + table l.135-143, Étape 4 + table l.145-164).
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (table *Caractéristiques de bateau standard*) · § Navires — profil et Caractéristiques (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.108, l.110, l.116, l.118, l.133, l.137, l.147) → `shipSizeFromLength`, `SHIP_SIZE_LABEL`, `shipConstructionRulesSection`, `ShipSize` — `src/data/index.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, `src/ui/compendium/registry.ts`
+- `MDG 12` (l.108-164) → `peu-maniable`, `minuscule`, `shipSizeFromLength`, `renforce`, `robuste`, `tres-petite`, `solide`, `petite`, `navalSkillTestDR`, `ancre`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/navalTraits.ts`, +4 fichiers
 
 ---
 
 ## Traits de navire (MDG)
 
-**Source : MDG 12 l.167–193**
+**Source : MDG 12 l.167-193**
 
 Les **Traits** sont intégrés à la construction initiale et, contrairement aux Améliorations, ne peuvent être ni ajoutés ni modifiés une fois la charpente terminée (`MDG 12 l.169`).
 
-**Peu maniable (Indice)** — jusqu'à **3 niveaux** ; chaque niveau impose **–1 DR** sur tous les Tests de **Ramer** et de **Voile**, et **réduit le coût de base de 10 % par niveau** (`MDG 12 l.171–175`).
+**Peu maniable (Indice)** — jusqu'à **3 niveaux** ; chaque niveau impose **–1 DR** sur tous les Tests de **Ramer** et de **Voile**, et **réduit le coût de base de 10 % par niveau** (`MDG 12 l.171-175`).
 
-**Renforcé (Indice)** — bateau bâti pour le combat ; chaque niveau ajoute **+10 à l'Endurance**, jusqu'à **3 niveaux**. Par niveau : **–10 % de Contenance de base** et **+10 % au coût de base** (`MDG 12 l.177–181`).
+**Renforcé (Indice)** — bateau bâti pour le combat ; chaque niveau ajoute **+10 à l'Endurance**, jusqu'à **3 niveaux**. Par niveau : **–10 % de Contenance de base** et **+10 % au coût de base** (`MDG 12 l.177-181`).
 
-**Robuste** — modèle fiable et bien fabriqué ; **+2 DR** sur les Tests d'équipage d'**Affaler les voiles**. **+10 % au coût de base** (`MDG 12 l.183–187`).
+**Robuste** — modèle fiable et bien fabriqué ; **+2 DR** sur les Tests d'équipage d'**Affaler les voiles**. **+10 % au coût de base** (`MDG 12 l.183-187`).
 
-**Solide (Indice)** — construit pour endurer la guerre ; jusqu'à **3 niveaux**, chaque niveau **augmente les Blessures de 30 %**. Par niveau : **–10 % de Contenance de base** et **+20 % au coût de base** (`MDG 12 l.189–193`).
+**Solide (Indice)** — construit pour endurer la guerre ; jusqu'à **3 niveaux**, chaque niveau **augmente les Blessures de 30 %**. Par niveau : **–10 % de Contenance de base** et **+20 % au coût de base** (`MDG 12 l.189-193`).
 
-**Sources RAW :** `MDG 12 l.167–193` (Peu maniable l.171–175, Renforcé l.177–181, Robuste l.183–187, Solide l.189–193).
+**Sources RAW :** `MDG 12 l.167-193` (Peu maniable l.171-175, Renforcé l.177-181, Robuste l.183-187, Solide l.189-193).
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Traits dans la colonne *Traits et Améliorations* des exemples) · § Navires — profil et Caractéristiques (MDG) · § Construction navale (MDG).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.167, l.169, l.171, l.177, l.183, l.189) → `navalSkillTestDR`, `bandValue`, `CONSTRUCTION_TRAIT_LABEL`, `portInstallUpgrade` — `src/data/schemas/defs/ship-construction.ts`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`, `src/ui/compendium/registry.ts`
+- `MDG 12` (l.167-193) → `peu-maniable`, `minuscule`, `renforce`, `robuste`, `tres-petite`, `solide`, `petite`, `navalSkillTestDR`, `ancre`, `moyenne`, +25 — `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/ship-construction.json`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`, +1 fichiers
 
 ---
 
 ## Améliorations de navire (MDG)
 
-**Source : MDG 12 l.195–364**
+**Source : MDG 12 l.195-364**
 
-Modifications ajoutables après coup à un vaisseau ; d'autres figurent dans le **Compagnon de Mort sur le Reik**, mais MDG ne retient que celles pertinentes pour les navires et navires de guerre **maritimes** (`MDG 12 l.197–199`). Les bateaux Minuscules et Très Petits sont souvent trop courts pour la plupart de ces Améliorations (`MDG 12 l.203`). Coûts et Poids (Enc) au catalogue.
+Modifications ajoutables après coup à un vaisseau ; d'autres figurent dans le **Compagnon de Mort sur le Reik**, mais MDG ne retient que celles pertinentes pour les navires et navires de guerre **maritimes** (`MDG 12 l.197-199`). Les bateaux Minuscules et Très Petits sont souvent trop courts pour la plupart de ces Améliorations (`MDG 12 l.203`). Coûts et Poids (Enc) au catalogue.
 
-**Ancre** — fixe le bateau en place : tant qu'elle est abaissée à un emplacement approprié (l'océan est souvent trop profond), ni vents ni courants n'affectent le navire. La **lever rapidement** demande un **Test étendu de Force** au cabestan, **Complexe (–10)** (Petits/Moyens) ou **Difficile (–20)** (plus grands), DR total fonction de la profondeur (≈15 DR en général) (`MDG 12 l.205–213`).
+**Ancre** — fixe le bateau en place : tant qu'elle est abaissée à un emplacement approprié (l'océan est souvent trop profond), ni vents ni courants n'affectent le navire. La **lever rapidement** demande un **Test étendu de Force** au cabestan, **Complexe (–10)** (Petits/Moyens) ou **Difficile (–20)** (plus grands), DR total fonction de la profondeur (≈15 DR en général) (`MDG 12 l.205-213`).
 
-**Bélier** — éperon métallique fixé à l'avant : fournit **5 PA** contre les Dégâts de collision/attaque venant de l'avant, et ajoute **+5 au Bonus d'Endurance** pour le calcul de l'Indice de Collision quand le navire au Bélier frappe l'autre de sa proue (`MDG 12 l.215–221`).
+**Bélier** — éperon métallique fixé à l'avant : fournit **5 PA** contre les Dégâts de collision/attaque venant de l'avant, et ajoute **+5 au Bonus d'Endurance** pour le calcul de l'Indice de Collision quand le navire au Bélier frappe l'autre de sa proue (`MDG 12 l.215-221`).
 
-**Blindage** — posable uniquement sur chantier spécialisé (2 semaines pour Petits/Moyens, 1 mois au-delà). Fonctionne comme une armure : les coups à la **Coque** voient leurs Dégâts réduits des **PA** puis du **BE** ; contrairement à l'armure personnelle, il **ne peut pas être sacrifié pour éviter une Blessure Critique**. **Bronze : 1 PA** ; **Fer : 2 PA** mais si le navire devient *Sali*, les plaques de fer rouillent et perdent leurs PA (`MDG 12 l.223–236`).
+**Blindage** — posable uniquement sur chantier spécialisé (2 semaines pour Petits/Moyens, 1 mois au-delà). Fonctionne comme une armure : les coups à la **Coque** voient leurs Dégâts réduits des **PA** puis du **BE** ; contrairement à l'armure personnelle, il **ne peut pas être sacrifié pour éviter une Blessure Critique**. **Bronze : 1 PA** ; **Fer : 2 PA** mais si le navire devient *Sali*, les plaques de fer rouillent et perdent leurs PA (`MDG 12 l.223-236`).
 
-**Cabine de luxe** — occupe deux cabines normales ; sur autorisation du MJ, son occupant gagne **+10 aux Tests de Sociabilité** faits à l'intérieur (`MDG 12 l.238–244`).
+**Cabine de luxe** — occupe deux cabines normales ; sur autorisation du MJ, son occupant gagne **+10 aux Tests de Sociabilité** faits à l'intérieur (`MDG 12 l.238-244`).
 
-**Clinfoc** — misaine supplémentaire ; nécessite un beaupré (qui rallonge le navire de 10 %). Un bateau à voiles doté d'un Clinfoc utilise la table *Effet du vent (Clinfoc)* au lieu de la table standard (`MDG 12 l.246–264`).
+**Clinfoc** — misaine supplémentaire ; nécessite un beaupré (qui rallonge le navire de 10 %). Un bateau à voiles doté d'un Clinfoc utilise la table *Effet du vent (Clinfoc)* au lieu de la table standard (`MDG 12 l.246-264`).
 
 | Effet du vent (Clinfoc) — d10 | Vent arrière | Vent latéral | Vent de face |
 |---|---|---|---|
@@ -669,38 +671,38 @@ Modifications ajoutables après coup à un vaisseau ; d'autres figurent dans le 
 | Vent violent | +50 % | Affaler les voiles | Affaler les voiles |
 | Violente tempête | Affaler les voiles | Affaler les voiles | Affaler les voiles |
 
-**Embarcation de bord** — un navire à Contenance suffisante peut embarquer un autre bateau (transbordement cargaison/passagers, canot de sauvetage, voire remorquage du grand navire à **M1 et Man –4 DR**). L'embarcation va de Taille Minuscule à Très Petite ; son Coût et son Poids sont ceux de son modèle (`MDG 12 l.266–272`).
+**Embarcation de bord** — un navire à Contenance suffisante peut embarquer un autre bateau (transbordement cargaison/passagers, canot de sauvetage, voire remorquage du grand navire à **M1 et Man –4 DR**). L'embarcation va de Taille Minuscule à Très Petite ; son Coût et son Poids sont ceux de son modèle (`MDG 12 l.266-272`).
 
-**Figure de proue** — sculpture de proue censée porter chance. Si elle est de très bonne facture (au moins deux Atouts *Raffiné*), elle **ajoute +1 au Moral total** (`MDG 12 l.274–282`).
+**Figure de proue** — sculpture de proue censée porter chance. Si elle est de très bonne facture (au moins deux Atouts *Raffiné*), elle **ajoute +1 au Moral total** (`MDG 12 l.274-282`).
 
 **Freins** — deux ailettes de bois dépliables sur les côtés : ouvrir les freins augmente la résistance et **réduit le M de 1 ou 2** (ouverture à moitié ou totale). Dans un Détroit ou un Tourbillon, ils augmentent d'autant le **M effectif du courant** (`MDG 12 l.284`).
 
-**Lissage** — coque polie pour réduire la résistance ; pose d'1 à 2 semaines en chantier. Confère **M +1**. Réparer une coque lissée coûte **+50 %** ; des réparations moins chères font perdre le bénéfice du Lissage (`MDG 12 l.287–295`).
+**Lissage** — coque polie pour réduire la résistance ; pose d'1 à 2 semaines en chantier. Confère **M +1**. Réparer une coque lissée coûte **+50 %** ; des réparations moins chères font perdre le bénéfice du Lissage (`MDG 12 l.287-295`).
 
-**Nid-de-pie** — plateforme au sommet du mât ; un Personnage qui s'y trouve gagne sur ses Tests de **Perception** pour repérer en mer **+1 DR** (Taille Petite à Moyenne) ou **+2 DR** (Grande à Monstrueuse) (`MDG 12 l.297–303`).
+**Nid-de-pie** — plateforme au sommet du mât ; un Personnage qui s'y trouve gagne sur ses Tests de **Perception** pour repérer en mer **+1 DR** (Taille Petite à Moyenne) ou **+2 DR** (Grande à Monstrueuse) (`MDG 12 l.297-303`).
 
-**Propulsion à vapeur** — confère **M 4** quelle que soit la direction du vent tant qu'il reste du carburant ; entretien par un ingénieur, les Tests de **Navigation** étant remplacés par des Tests de **Métier (Ingénieur)**. Sur un double raté à ce Test, un Échec Stupéfiant ou un Coup Critique à la Coque, on lance dans la table *Panne de Vapeur* (au catalogue) (`MDG 12 l.305–313`).
+**Propulsion à vapeur** — confère **M 4** quelle que soit la direction du vent tant qu'il reste du carburant ; entretien par un ingénieur, les Tests de **Navigation** étant remplacés par des Tests de **Métier (Ingénieur)**. Sur un double raté à ce Test, un Échec Stupéfiant ou un Coup Critique à la Coque, on lance dans la table *Panne de Vapeur* (au catalogue) (`MDG 12 l.305-313`).
 
-**Ralentisseurs latéraux** — Amélioration listée (Coût/Poids par Taille au catalogue) (`MDG 12 l.315–354`).
+**Ralentisseurs latéraux** — Amélioration listée (Coût/Poids par Taille au catalogue) (`MDG 12 l.315-354`).
 
-**Sabord** — trappe refermable permettant de tirer à l'abri d'un couvert (grands Sabords : canons/balistes ; petits : arquebuses, arcs, arbalètes). Sans Sabords, on tire depuis le pont, **sans aucun couvert** ; un Sabord donne une **couverture totale**. L'ouvrir/le fermer est **une seule action** ; ouverts, ils sont un danger si le navire coule (`MDG 12 l.356–364`).
+**Sabord** — trappe refermable permettant de tirer à l'abri d'un couvert (grands Sabords : canons/balistes ; petits : arquebuses, arcs, arbalètes). Sans Sabords, on tire depuis le pont, **sans aucun couvert** ; un Sabord donne une **couverture totale**. L'ouvrir/le fermer est **une seule action** ; ouverts, ils sont un danger si le navire coule (`MDG 12 l.356-364`).
 
-**Sources RAW :** `MDG 12 l.195–364` (Ancre l.205–213, Bélier l.215–221, Blindage l.223–236, Cabine de luxe l.238–244, Clinfoc + table l.246–264, Embarcation de bord l.266–272, Figure de proue l.274–282, Freins l.284, Lissage l.287–295, Nid-de-pie l.297–303, Propulsion à vapeur l.305–313, Ralentisseurs latéraux l.315–354, Sabord l.356–364).
+**Sources RAW :** `MDG 12 l.195-364` (Ancre l.205-213, Bélier l.215-221, Blindage l.223-236, Cabine de luxe l.238-244, Clinfoc + table l.246-264, Embarcation de bord l.266-272, Figure de proue l.274-282, Freins l.284, Lissage l.287-295, Nid-de-pie l.297-303, Propulsion à vapeur l.305-313, Ralentisseurs latéraux l.315-354, Sabord l.356-364).
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Coûts/Poids des Améliorations, table *Panne de Vapeur*) · § Navires — profil et Caractéristiques (MDG) · § Pièces d'artillerie navale (MDG) (Sabords & tir).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.195, l.197, l.203, l.205, l.215, l.223, l.238, l.246, l.266, l.274, l.284, l.287, l.297, l.305, l.315, l.356) → `CollisionShip`, `schema`, `hullArmourBonus`, `resolveCollision`, `scene`, `navalMoveMod`, `belierRam`, `navalDeckCover` ⚠sans-appelant, `SailRigging`, `effectiveDeckPostes` ⚠sans-appelant, +12 — `src/data/index.ts`, `src/data/schemas/defs/naval-traits.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/collision.ts`, +7 fichiers
+- `MDG 12` (l.195-364) → `SteamSaveModal`, `moteur-broute`, `peu-maniable`, `fuite-de-vapeur`, `CollisionShip`, `renforce`, `schema`, `robuste`, `perte-de-pression`, `solide`, +41 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/ship-construction.json`, +14 fichiers
 
 ---
 
 ## Pièces d'artillerie navale (MDG)
 
-**Source : MDG 12 l.367–472**
+**Source : MDG 12 l.367-472**
 
-Même les petits marchands s'arment ; MDG liste les pièces les plus fréquentes sur les navires de l'Empire (liste plus complète dans **Aux Armes !**). Les pièces d'artillerie suivent les **règles des armes à main** : impossible de manier une arme de siège sans la compétence du **Groupe d'armes** approprié — les armes du Groupe **Poudre noire** exigent un équipage doté de **Projectiles (Ingénierie ou Poudre noire)** (`MDG 12 l.373–375`). Pour une **baliste**, n'importe quel Personnage peut tenter un Test de **Projectiles (Arbalète)** avec sa CT, mais l'arme **perd alors tous ses Atouts** tout en conservant ses Défauts (`MDG 12 l.377`). Les munitions sont spécifiques : un canon ne tire pas de balles d'arquebuse, ni une baliste de carreaux d'arbalète (`MDG 12 l.379`).
+Même les petits marchands s'arment ; MDG liste les pièces les plus fréquentes sur les navires de l'Empire (liste plus complète dans **Aux Armes !**). Les pièces d'artillerie suivent les **règles des armes à main** : impossible de manier une arme de siège sans la compétence du **Groupe d'armes** approprié — les armes du Groupe **Poudre noire** exigent un équipage doté de **Projectiles (Ingénierie ou Poudre noire)** (`MDG 12 l.373-375`). Pour une **baliste**, n'importe quel Personnage peut tenter un Test de **Projectiles (Arbalète)** avec sa CT, mais l'arme **perd alors tous ses Atouts** tout en conservant ses Défauts (`MDG 12 l.377`). Les munitions sont spécifiques : un canon ne tire pas de balles d'arquebuse, ni une baliste de carreaux d'arbalète (`MDG 12 l.379`).
 
-Catégories : **Balistes** (grandes arbalètes à torsion, carreaux à pointe de fer), **Canons** (armes de précision, surtout de Nuln), **Mortiers** (tir en cloche, peu efficaces sur la coque mais mortels sur le pont et incendiaires) et **Pierriers** (tromblons géants sur pivot/trépied) (`MDG 12 l.381–395`). Stats, prix, Enc et munitions : tables au catalogue.
+Catégories : **Balistes** (grandes arbalètes à torsion, carreaux à pointe de fer), **Canons** (armes de précision, surtout de Nuln), **Mortiers** (tir en cloche, peu efficaces sur la coque mais mortels sur le pont et incendiaires) et **Pierriers** (tromblons géants sur pivot/trépied) (`MDG 12 l.381-395`). Stats, prix, Enc et munitions : tables au catalogue.
 
 **Placement des canons sur le pont** : concentrer les pièces d'un côté (bordée) ou à la proue donne un avantage tactique mais compromet le déplacement (`MDG 12 l.430`) :
 - poids d'un côté **> 25 % de la Contenance** → **–1** supplémentaire au M et à la Man, et **–1 DR** aux Tests de Navigation (`MDG 12 l.432`) ;
@@ -710,7 +712,7 @@ Un placement équilibré n'impose pas de pénalité ; du lest de compensation (s
 
 **Nouveaux Atouts et Défauts d'arme :**
 
-**Arme d'équipe (Indice)** — Défaut : l'arme n'est efficace qu'avec une équipe entière (tous dotés de la compétence Projectiles requise) ; l'un d'eux est nommé pour faire le Test (`MDG 12 l.440–444`). Un équipage incomplet inflige des pénalités cumulatives :
+**Arme d'équipe (Indice)** — Défaut : l'arme n'est efficace qu'avec une équipe entière (tous dotés de la compétence Projectiles requise) ; l'un d'eux est nommé pour faire le Test (`MDG 12 l.440-444`). Un équipage incomplet inflige des pénalités cumulatives :
 
 | Équipage présent | Arme d'équipe 2 | Arme d'équipe 3 | Arme d'équipe 4 |
 |---|---|---|---|
@@ -719,18 +721,18 @@ Un placement équilibré n'impose pas de pénalité ; du lest de compensation (s
 | 2 | N/A | Temps de recharge doublé | Reçoit le Défaut *Imprécise* |
 | 1 | Temps de recharge doublé | Reçoit le Défaut *Imprécise* | Reçoit le Défaut *Dangereuse* |
 
-Si un Défaut ainsi reçu est déjà présent, c'est **–10** supplémentaire à tous les Tests de Projectiles. Un membre peut apporter son **Soutien** au Test de recharge ; un Incident de tir affecte **tous** les membres de l'équipe (`MDG 12 l.458–464`).
+Si un Défaut ainsi reçu est déjà présent, c'est **–10** supplémentaire à tous les Tests de Projectiles. Un membre peut apporter son **Soutien** au Test de recharge ; un Incident de tir affecte **tous** les membres de l'équipe (`MDG 12 l.458-464`).
 
-**Tir de zone (Indice)** — Atout : nuage de projectiles frappant plusieurs cibles, selon la portée (`MDG 12 l.466–472`) :
+**Tir de zone (Indice)** — Atout : nuage de projectiles frappant plusieurs cibles, selon la portée (`MDG 12 l.466-472`) :
 - **Bout portant** : une seule cible ; **ajoute l'Indice aux Dégâts**.
 - **Courte à Longue** : la cible **plus les (Indice) créatures visibles les plus proches**, deux cibles ne pouvant être à plus de (Indice) mètres l'une de l'autre.
 - **Extrême** : comme Courte à Longue, mais **réduit les Dégâts de (Indice)**.
 
-**Sources RAW :** `MDG 12 l.367–472` (règles d'usage l.367–379, catégories l.381–395, tables pièces & munitions l.397–426, placement l.428–435, Arme d'équipe + table l.440–464, Tir de zone l.466–472).
+**Sources RAW :** `MDG 12 l.367-472` (règles d'usage l.367-379, catégories l.381-395, tables pièces & munitions l.397-426, placement l.428-435, Arme d'équipe + table l.440-464, Tir de zone l.466-472).
 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Pièces d'artillerie* et *Munitions pour pièces d'artillerie*) · [`combat.md`](combat.md) (armes à distance, Atouts/Défauts, Portée) · § Améliorations de navire (MDG) (Sabords).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.367, l.373, l.430, l.432, l.433, l.435, l.440, l.458, l.466) → `crewedPenalty`, `canon`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `SHIP_ARC_PREF`, `crewedFireWeapon`, `resolveVolley`, `navalDeckCover` ⚠sans-appelant, `effectiveDeckPostes` ⚠sans-appelant, +13 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, +14 fichiers
-- sans code : `MDG 12` (l.377, l.379, l.381)
+- `MDG 12` (l.367-472) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `fuite-de-vapeur`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `perte-de-pression`, `SHIP_ARC_PREF`, +21 — `src/data/index.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, `src/engine/navalTraits.ts`, +15 fichiers
+- sans code : `MDG 12` (l.377, l.379)
 

@@ -3,6 +3,7 @@
     "id": "livre-de-base",
     "label": "Livre de base",
     "abr": "LDB",
+    "abbr": "LDB",
     "language": "VF",
     "folder": "Livre de Règle",
     "desc": "*Des aventures sombres et périlleuses dans le Vieux Monde !*\n\nVous ne pouvez pas lâcher l'affaire, hein ? Vous savez pourtant ce que vous allez découvrir. Vous les avez vus, les impitoyables, les arrogants, les damnés. Vous voudriez bien tourner les talons. La vie serait alors si belle. Vous êtes conscient que, tout en essayant de vous convaincre que vous ne convoitez que le butin, ou que vous ne savez pas résister �� un bon combat, vous foncez. Personne n’est dupe. Alors préparez votre épée, nettoyez votre pistolet et prenez garde à ce chien, bien trop féroce pour sa petite taille.\n\nGrâce à **Warhammer Fantasy le jeu de rôle**, vous retrouvez enfin le Vieux Monde. Rassemblez votre groupe, créez vos (anti) héros et préparez-vous à vous frayer un chemin à travers la destruction, engendrée par l’ignoble corruption, les intrigants et les créatures terrifiantes.\n\nCe livre de base de la quatrième édition de **Warhammer Fantasy le jeu de rôle** renferme tout ce dont vous avez besoin pour vivre des aventures sombres et périlleuses dans le Vieux Monde."
@@ -11,6 +12,7 @@
     "id": "aux-armes",
     "label": "Aux Armes !",
     "abr": "AA",
+    "abbr": "AA",
     "language": "VO",
     "folder": "Livre de Règle",
     "desc": null
@@ -27,6 +29,7 @@
     "id": "archives-de-l-empire-1",
     "label": "Archives de l'Empire Vol. I",
     "abr": "ADE1",
+    "abbr": "ADE I",
     "language": "VF",
     "folder": "Cadre de campagne",
     "desc": "ARCHIVES DE L'EMPIRE : VOLUME I\n\nUne exploration sombre et périlleuse de l’Empire\n\nBienvenue dans les Archives de l’Empire : Volume I. Une collection fascinante de rapports concernant tout le Vieux Monde. Le premier volume se concentre sur les autres races, nains, elfes et halflings, dont la présence enrichit (ou fait enrager) le monde de Warhammer Fantasy le Jeu de Rôle. Cet ouvrage couvre en détails de nouveaux lieux, carrières et PNJ, des ajouts parfaits à votre prochaine aventure.\n\n-   **Karak Azgaraz** : l’exploration d’une forteresse naine qui, même si elle a connue des jours meilleurs, s’élève encore fièrement dans les montagnes qui se dessinent au-delà d’Ubersreik, aux limites mêmes de l’Empire. Nains impériaux : même s’ils considèrent les karaks comme leurs véritables foyers, la plupart des nains n’ont jamais posé un pied sur ces terres ancestrales, et vivent au cœur même de l’Empire.\n    \n-   **Clans halflings** : des Bordéchardes aux Pavéderonces, des Rumsters aux Havrebas, apprenez-en plus sur les clans très étendus et les nombreuses familles des halflings de l’Empire.\n    \n-   **Guide du Mootland** : rejoignez les populations aux mœurs simples du Mootland et visitez leur grande province, ses fermes et ses villages, ses rivières et ses forêts. Bon, n’oubliez pas de bien vous badigeonner avec ça ou les Roncefouet vous choperont…\n    \n-   **La Laurelorn** : plongez dans la politique, la culture et les menaces qui hantent cette ancienne colonie d’elfes ayant jusqu’à maintenant survécu, nichée entre le Nordland et les Wastelands."
@@ -35,6 +38,7 @@
     "id": "archives-de-l-empire-2",
     "label": "Archives de l'Empire Vol. II",
     "abr": "ADE2",
+    "abbr": "ADE II",
     "language": "VF",
     "folder": "Cadre de campagne",
     "desc": "ARCHIVES DE L'EMPIRE : VOLUME II\n\nUne exploration sombre et périlleuse de l’Empire\n\nBienvenue dans les Archives de l’Empire : Volume II. Une fascinante série de rapports concernant tout le Vieux Monde. Ce second volume se concentre sur ces montagnes de muscles et de graisse, les ogres, originaires des Montagnes des Larmes, mais qui se sont installés partout dans l’Empire et dans le monde. Le Volume II détaille de nouveaux lieux, carrières et PNJ à inclure dans votre prochaine aventure.\n\n-   **Ogres de l’Empire** : deux chapitres entiers sont dédiés aux ogres, à leur place dans l’Empire mais aussi à votre table de jeu. Cela inclut trois nouvelles Carrières, dont le terrifiant Boucher, qui exerce la magie de la Gueule à des desseins sanglants.\n    \n-   **Signes astraux et astrologie** : certains prétendent que leur destin est écrit dans les étoiles, alors que d’autres le trouvent dans le caniveau. Ce chapitre fournit une description des signes astrologiques qui parsèment les cieux du Vieux Monde, ainsi que les significations que les gens leur attribuent.\n    \n-   **Objets magiques** : bien qu’ils soient rares dans le Vieux Monde, ces objets sont puissants et convoités. Ce chapitre fournit des règles permettant de générer des armes, armures magiques et de plus étranges artefacts.\n    \n-   **Le Grand Hospice** : un abri loin des périls du monde, le Grand Hospice fournit un refuge à ceux qui en ont besoin, et peuvent se le permettre. Situé au nord d’Altdorf, l’Hospice est un lieu détaillé avec des cartes, des PNJ, des accroches de scénarios, etc.\n-   **Théâtre de la Guerre** : bien que le combat soit chose commune dans les parties de WFJDR, la guerre ouverte est rarement abordée. Ce chapitre propose des règles pour des batailles rangées dont l’issue peut être influencée par les Personnages."
@@ -51,6 +55,7 @@
     "id": "middenheim",
     "label": "Middenheim – La Cité du Loup Blanc",
     "abr": "Middenheim",
+    "abbr": "Middenheim",
     "language": "VF",
     "folder": "Cadre de campagne",
     "desc": "*Réputée imprenable, perchée sur le puissant Fauschlag, aplani par le poing d'Ulric, Middenheim domine  tous ceux qui vivent sous son imposante présence. Taillée dans la roche brute par le talent hors pair des nains, elle s’élève, forteresse impressionnante sur laquelle Ulric, dieu de la Guerre, de l’Hiver et des Loups, règne sans partage. La Flamme éternelle sacrée brûle, pure et lumineuse, dans le cœur de la cité célèbre dans le Vieux Monde, déchirée par les sombres cultes, les marchands avides, et les comploteurs. Middenheim offre peu de place aux héros, et encore moins de temps pour les fainéants. Mais qu’en est-il pour des opportunistes malins, ayant les tripes et la volonté de se tailler une petite, mais meilleure part du gâteau ? Eh bien, ils peuvent tenter leur chance.*\n\n**Middenheim : la Cité du Loup Blanc** entraîne les joueurs loin de la familière Grande Province du Reikland, et les dépose au centre de l’influence et du pouvoir ulricain du Vieux Monde. Middenheim se trouve au cœur de l’expansion septentrionale de l’Empire, et constitue un décor parfait pour des aventures périlleuses et illimitées ! Chaque quartier de cette cité immense est soigneusement détaillé, avec ses établissements, ses accroches d’aventures, et une foule de PNJ. Une carte magnifiquement illustrée est fournie en version joueur ou MJ, offrant un merveilleux aperçu de la ville.\n\n**Middenheim : la Cité du Loup Blanc** propose aussi le meilleur de ce qui a déjà été écrit sur la cité d’Ulric, et y ajoute de nouvelles créatures, des PNJ inédits, des établissements et lieux originaux, ainsi que des règles additionnelles pour les groupes désireux de s’aventurer dans Middenheim et ses alentours. D’autres règles permettant de créer des personnages originaires de Middenheim, du Middenland ainsi que du Nordland sont incluses, accompagnant une nouvelle Carrière pour les vrais fidèles d’Ulric."
@@ -59,6 +64,7 @@
     "id": "altdorf-couronne-de-l-empire",
     "label": "Altdorf – Couronne de l'Empire",
     "abr": "ACE",
+    "abbr": "Altdorf",
     "language": "VF",
     "folder": "Cadre de campagne",
     "desc": "Altdorf est la capitale de l'Empire, lieu de naissance de Sigmar Heldenhammer, mais également la ville la plus peuplée du Vieux Monde, ornée de nombreux monuments majestueux et célèbres. Les édifices gigantesques du Palais impérial et la Grande Cathédrale de Sigmar sont plus vastes que des quartiers entiers de villes plus modestes. Les Collèges de Magie dominent les bancs de brouillard qui s’élèvent du Reik, et dispersent les émanations incandescentes des sortilèges. Mais Altdorf dissimule une autre facette. Dans les logements surpeuplés de l’Est et les quais animés au nord, la pression des gangs et la ferveur révolutionnaire se ressentent plus vivement que la parole des prêtres de Sigmar ou les lois de l’Empereur.\n\n**Altdorf : Couronne de l’Empire** est un guide de 224 pages. Se dressant à la confluence de deux des plus grands cours d’eau de l’Empire, la cité est un centre de pouvoir pour le gouvernement, la religion, la magie et l’armée. Chaque quartier de cette ville tentaculaire est soigneusement décrit, proposant une grande variété de lieux, d’accroches de scénarios et de PNJ. Une carte magnifiquement illustrée, offrant une version pour le Meneur de jeu et une autre pour les joueurs, mettant en valeur tous les détails. Que les personnages explorent la Rue aux Cent Tavernes, s’impliquent dans les intrigues du palais impérial, cherchent à renverser l’ordre établi aux côtés des factions révolutionnaires d’Altdorf ou désirent dominer la pègre de la ville en ralliant les gangs rivaux de débardeurs, vous avez absolument besoin de cet ouvrage."
@@ -67,6 +73,7 @@
     "id": "zoo-imperial",
     "label": "Le Zoo Impérial",
     "abr": "ZI",
+    "abbr": "ZI",
     "language": "VF",
     "folder": "Cadre de campagne",
     "desc": "*« Frau Vera Warnicke – C'est avec grand plaisir que je vous écris pour vous informer que j'ai enfin reçu des fonds pour les expéditions dont nous avons parlé récemment. En effet, je m’attends à ce que notre mécène étende ses largesses pour payer, pas un, mais trois voyages dans les régions sauvages de l’Empire et au-delà, à la recherche de la connaissance… »*\n\nLe Zoo Impérial est un bestiaire et le récit de voyage de trois expéditions audacieuses du Vieux Monde, des hauteurs de Karak Kadrin à la ville de Miragliano, dans le sud de la Tilée. Il comprend les caractéristiques de plus de 60 créatures, bêtes et monstres uniques du Vieux Monde, parfaits pour défier les aventuriers les plus doués. Vous y trouverez également six nouveaux personnages prétirés, chacun avec ses Compétences, ses Talents et son passé trouble, parfaits pour se lancer dans une campagne axée sur les terribles menaces qui planent sur le Vieux Monde.\n\n**Le Zoo Impérial comprend :**\n\n-   Un récit palpitant relatant les exploits d’un groupe d’aventuriers traversant le Vieux Monde à la recherche de connaissances et de gloires moins avenantes.\n    \n-   Des dizaines de créatures, dont des bêtes au nom unique qui menacent tous ceux qui croisent leur chemin, de l’insolite mais mortel preyton au dragon dévastateur Caledair, la Faux de Feu.\n    \n-   De nouveaux Traits de créature pour s’assurer que chaque groupe trouve un défi à relever dans ces pages.\n    \n-   Des règles de conservation et de vente des ingrédients alchimiques pris sur les créatures, en particulier celles qui ont été touchées par les Vents de la magie.\n    \n-   Un tableau de référence rapide des caractéristiques des créatures, pour que le jeu demeure fluide pendant les combats.\n    \n-   Six personnages prétirés, vous offrant tout ce dont vous avez besoin pour démarrer sur le champ vos aventures."
@@ -75,6 +82,7 @@
     "id": "mer-des-griffes",
     "label": "La Mer des Griffes",
     "abr": "MDG",
+    "abbr": "MDG",
     "language": "VF",
     "folder": "Cadre de campagne",
     "desc": null
@@ -107,6 +115,7 @@
     "id": "ennemi-dans-l-ombre-compagnon",
     "label": "L'Ennemi dans l'Ombre – Compagnon",
     "abr": "EDOC",
+    "abbr": "EDOC",
     "language": "VF",
     "folder": "Cadre de campagne",
     "desc": "**Le Compagnon de l'Ennemi dans l’Ombre**\n\nPremière partie de la campagne de **L’Ennemi intérieur**\n\n*Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l’Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr’thakh Lzimbarr Tzeentch !*\n\nLe Compagnon de l’Ennemi dans l’Ombre est le guide indispensable pour cette première partie de la campagne épique de L’Ennemi intérieur, l’aventure novatrice qui a inspiré toute une génération de joueurs. Débordant de nouvelles règles optionnelles, de PNJ, d’accroches d’aventures alléchantes, et de conseils avisés pour les nouveaux Meneurs de jeu comme pour les vétérans, cet ouvrage représente une aide parfaite pour améliorer votre expérience de l’Ennemi intérieur, comme de toute autre campagne se déroulant dans l’Empire.\n\nVous y découvrirez de nouvelles règles, la Carrière Magus du culte de Tzeentch, trois adversaires classiques, et l’Affaire du joyau dissimulé, un conte mêlant mélodrame et intrigue."
@@ -115,6 +124,7 @@
     "id": "mort-sur-le-reik-compagnon",
     "label": "Mort sur le Reik – Compagnon",
     "abr": "MSRC",
+    "abbr": "T2C",
     "language": "VF",
     "folder": "Cadre de campagne",
     "desc": "**Le Compagnon de Mort sur le Reik**\n\nDeuxième partie de la campagne de L'Ennemi intérieur\n\n*Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l’Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr’thakh Lzimbarr Tzeentch !*\n\n**Le Compagnon de Mort sur le Reik** est le guide indispensable pour cette deuxième partie de la campagne épique de **L’Ennemi Intérieur**, l’aventure novatrice qui a inspiré toute une génération de joueurs.\n\nDébordant de nouvelles règles optionnelles, de PNJ, d’accroches d’aventures alléchantes, et de conseils avisés pour les nouveaux Meneurs de jeu comme pour les vétérans, cet ouvrage représente une aide parfaite pour améliorer votre expérience de **L’Ennemi Intérieur**, comme de toute autre campagne se déroulant dans l’Empire.\n\nVous y découvrirez également de nouvelles règles, la Carrière de Guerrier de Tzeentch, de nouvelles créatures du fleuve, un bateau magnifique, grouillant de secrets dans sa cale comme dans ses cabines de luxe et L’Empereur Luitpold. **Le Compagnon de Mort sur le Reik** offre une aide idéale aux groupes jouant la campagne de **L’Ennemi intérieur**, ou toute autre aventure se déroulant au bord des fleuves et autres cours d’eau de l’Empire."
@@ -155,6 +165,7 @@
     "id": "aventures-a-ubersreik-1",
     "label": "Aventures à Ubersreik I",
     "abr": "AU1",
+    "abbr": "Ubersreik",
     "language": "VF",
     "folder": "Scénario",
     "desc": "Bienvenue dans le Duché d'Ubersreik, où les bottes des soldats de l’Armée régulière claquent sur le pavé des rues, alors que sont mises à l’épreuve d’anciennes allégeances derrière les portes closes. Et les opportunités abondent à chaque coin de rue.\n\nAventures à Ubersreik propose six aventures sombres et périlleuses dans le Duché d’Ubersreik, le cadre détaillé dans la Boîte d’Initiation de Warhammer Fantasy. Ces scénarios peuvent être joués comme des aventures autonomes, ou liés dans une campagne originale, ou encore insérés dans une déjà existante et explorer le Duché d’Ubersreik.\n\nDes astuces, pièges, et menaces directes sont ajoutées pour aider à relier ces aventures, sans oublier des options pour des Personnages plus expérimentés, rendant encore plus dangereuses ces aventures.\n\nAventures à Ubersreik comprend :\n\n-   Si un regard pouvait tuer : les légendes prétendent que la Bête d’Orschlamm règne sur les marais proches d’Ubersreik, mais bien peu de gens croient à ces contes…\n    \n-   Les fous de Gotheim: le village de Gotheim n’est plus qu’un tas de ruines, et les villageois semblent frappés de folie.\n    \n-   Coeur de verre : une noble dame envoie les PJ sur la piste d’une meurtre mystérieux, d’un culte trompeur et d’un implacable chasseur de sorcier.\n    \n-   Massacre à Spittlefeld : une abominable maladie se propage dans les taudis d’Ubersreik.\n    \n-   D’appâts et de sorciers : Cordélia Wessenlingh a besoin d’une distraction. Heureusement quelques volontaires viennent d’entrer dans son échoppe d’apothicaire.\n    \n-   Les coupables : quelqu’un sabote les diligences et un enquêteur local pense le connaître !"
@@ -179,6 +190,7 @@
     "id": "nuits-agitees-et-dures-journees",
     "label": "Nuits agitées et dures journées",
     "abr": "NADJ",
+    "abbr": "NADAJ",
     "language": "VF",
     "folder": "Scénario",
     "desc": "*Laissez-moi vous parler de la Gravin Maria-Ulrike von Liebwitz d'Ambosstein et de ses querelles avec son ennemi mortel, le baron Otto von Dammenblatz. Un véritable drame épique incomparable suscitant la stupéfaction, et mettant en scène des sorcières maléfiques, des démons blasphématoires, de fourbes assassins et des meurtres immondes. Avec pour point d’orgue, un événement unique : une soirée à l’Opéra en compagnie de la Grande Comtesse de Nuln, avec Detlef Sierck, le meilleur acteur que l’Empire ait jamais connu, pour nous distraire ! Une histoire vraiment digne d’être contée, alors rapprochez-vous un peu et écoutez…*\n\nCe supplément « Nuits agitées et dures journées » propose cinq scénarios épiques pour **Warhammer Fantasy Roleplay**, écrits par Graeme Davis lui-même. Ces aventures excitantes peuvent être jouées individuellement, ou constituer une campagne en cinq parties, dans laquelle nos braves héros se retrouvent impliqués dans une âpre dispute entre deux maisons nobles en lutte dans le Reikland. \n\nCe supplément présente également une nouvelle espèce jouable, les gnomes, et des jeux d’auberge pour amuser même le plus blasé des aventuriers."
@@ -187,6 +199,7 @@
     "id": "ennemi-dans-l-ombre",
     "label": "L'Ennemi dans l'Ombre",
     "abr": "EDO",
+    "abbr": "EDO",
     "language": "VF",
     "folder": "Scénario",
     "desc": "**Campagne**\n\nPremière partie de la campagne de **L'Ennemi intérieur**\n\n*Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l’Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr’thakh Lzimbarr Tzeentch !*\n\n**L’Ennemi dans l’Ombre** est le premier volume de la campagne **L’Ennemi intérieur**,  révisée et mise à jour, en version intégrale ou « Director’s cut », l’une des aventures les plus célèbres et prisées du jeu de rôles.\n\nRassemblez vos héros, arrachez-les à leurs humbles débuts d’aventuriers novices et sans le sou pour les entraîner vers les palais des riches et des puissants, où les apparences sont trompeuses et où la moindre décision peut influer sur le destin de l’Empire.\n\nL’Ennemi dans l’Ombre est la première d’une série d’aventures en cinq volumes, composant cette campagne dans le monde sombre et dangereux de Warhammer Fantasy le Jeu de Rôle, qui a inspiré des générations de joueurs. Cette version intégrale inclut des commentaires pertinents teintés d���humour noir, des suggestions astucieuses sur de nouvelles façons de jouer cette campagne, ainsi qu’un guide complet de Bögenhafen, débordant de lieux intéressants à visiter et explorer."
@@ -195,6 +208,7 @@
     "id": "mort-sur-le-reik",
     "label": "Mort sur le Reik",
     "abr": "MSR",
+    "abbr": "T2",
     "language": "VF",
     "folder": "Scénario",
     "desc": "**Campagne**\n\nDeuxième partie de la campagne de L'Ennemi intérieur\n\n*Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l’Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr’thakh Lzimbarr Tzeentch !*\n\n**Mort sur le Reik** est le second volume de la version intégrale ou « Director’s cut », révisée et mise à jour, de **L’Ennemi Intérieur**, l’une des campagnes de jeu de rôles les plus estimées.\n\n**Mort sur le Reik** reprend l’aventure là où **L’Ennemi dans l’Ombre** s’est achevé, entraînant vos héros improbables dans de grandes aventures sur le Reik, le plus grand fleuve du Vieux Monde, route commerciale menant jusqu’au cœur même de l’Empire.\n\n**Mort sur le Reik** est la deuxième d’une série de cinq aventures dans le monde sombre et périlleux de **Warhammer Fantasy le Jeu de Rôle**, une campagne qui a inspiré toute une génération de joueurs. Cette version intégrale comprend des commentaires pertinents teintés d’humour noir, des suggestions astucieuses sur de nouvelles façons de jouer cette campagne."
@@ -203,6 +217,7 @@
     "id": "pouvoir-derriere-le-trone",
     "label": "Pouvoir derrière le Trône",
     "abr": "PDT",
+    "abbr": "T3",
     "language": "VF",
     "folder": "Scénario",
     "desc": "**Pouvoir derrière le Trône – Campagne**\n\nTroisième partie de la campagne de **L'Ennemi intérieur**\n\n*Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l’Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr’thakh Lzimbarr Tzeentch !*\n\n**Le Pouvoir derrière le Trône** est le troisième volume de la campagne révisée et mise à jour, le Director’s Cut de **L’Ennemi Intérieur**, l’une des plus célèbres campagnes de jeu de rôle. **Le Pouvoir derrière le Trône** débute là où s’achève **Mort sur le Reik**, entraînant vos héros dans les hauts-lieux du pouvoir à Middenheim, la cité d’Ulric. Au beau milieu des distractions et des réjouissances du carnaval de la ville, certains ont décidé que le « moment convenu » était enfin arrivé.\n\n**Le Pouvoir derrière le Trône** est la troisième d’une série de cinq aventures dans le monde sombre et périlleux de **Warhammer Fantasy le Jeu de Rôle**, une campagne qui a inspiré toute une génération de joueurs. Cette version intégrale comprend des commentaires pertinents empreints d’humour noir, des suggestions astucieuses sur de nouvelles façons de la jouer."

@@ -6,15 +6,24 @@
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, bookOf, BOOKS, esc } from './_lib.mjs'
+import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
 export const SRC_DIR = 'src'
 export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture, pas une règle
 export const MANIFEST_PATH = 'src/data/raw.manifest.json'
+export const BOOKS_JSON_PATH = 'src/data/books.json'
 export const APP_ROOT_MODULE = 'src/main.tsx'
-export const TOL = 10 // fenêtre de match ligne (épreuve 2026-07-16)
+// Fenêtre de match ligne (épreuve 2026-07-16). Recalibrage empirique 2026-07-16 (mesure `--dry` TOL
+// 10/5/2/0 → implémentés 286/282/273/264) : TOL n'est PAS le levier des faux « implémenté » des
+// pages-catalogues denses. Les faux `activites#dressage`/`entrainement`/`faites-moi-une-faveur`
+// viennent d'une plage FOLIO large (`activities.json` craft/learn → `LDB 23 l.50-191`) qui CONTIENT
+// déjà le topic → TOL-immune. À l'inverse TOL=0 casse de vrais folio-implémentés (colique : topic
+// `T2C 16 l.109-111` vs plage folio `l.65-105`, décalage folio↔fiche de 4 l. que TOL comble).
+// Tenu à 10 : `renderBlock` accepte un override `ctx.tol` (mesure) ; le remède des pages denses est
+// côté FOLIO (feature #434), pas TOL — écart rapporté à l'orchestrateur.
+export const TOL = 10
 
 const EXCLUDE_DOCS = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md', '00-index.md', 'sources.md', 'code-map.md'])
 export function isFicheDoc(name) {
@@ -67,6 +76,64 @@ export function refsWithSpans(line) {
   return out
 }
 
+// --- Pont FOLIO : source:{book,page} des .json → citation {book, ch, lo, hi} (#434) ---
+const BOOK_ABBRS = new Set(BOOKS.map(([a]) => a))
+
+/** Map slug (`books.json.id`) → abbr canonique (`BOOKS`). Fail-fast : toute `abbr` de `books.json`
+ *  absente de `BOOKS` = erreur (source unique du mapping, jamais une 2e table à la main). */
+export function buildAbbrMap(books) {
+  const bySlug = new Map()
+  const knownIds = new Set()
+  for (const b of books) {
+    if (!b || typeof b.id !== 'string') continue
+    knownIds.add(b.id)
+    if (typeof b.abbr !== 'string') continue
+    if (!BOOK_ABBRS.has(b.abbr)) throw new Error(`books.json: abbr inconnue de BOOKS pour "${b.id}" → "${b.abbr}"`)
+    bySlug.set(b.id, b.abbr)
+  }
+  return { abbrOf: bySlug, knownIds }
+}
+export function loadAbbrMap(path = BOOKS_JSON_PATH) {
+  return buildAbbrMap(JSON.parse(readFileSync(path, 'utf8')))
+}
+
+const JSON_ID_RE = /"id"\s*:\s*"([^"]+)"/
+const JSON_BOOK_RE = /"book"\s*:\s*"([^"]+)"/
+const JSON_PAGE_RE = /"page"\s*:\s*(-?\d+)/
+
+/** Extrait de `content` (.json) les citations FOLIO : chaque `source:{book,page}` est rattachée à
+ *  l'`id` le plus proche AU-DESSUS (le « symbole »), sa citation = {book:abbr, ch, lo, hi} de la plage
+ *  folio (via `resolve(slug, page)`). `stats` (par abbr : resolved/notFound/ambiguous ; globaux :
+ *  noAtlas/noPage) est mut é en place. `slug` inconnu de `knownIds` = fail-fast. */
+export function folioCitationsFromJson(rel, content, { abbrOf, knownIds, stats }) {
+  const out = []
+  const lines = content.split('\n')
+  let lastId = null
+  for (let i = 0; i < lines.length; i++) {
+    const im = JSON_ID_RE.exec(lines[i])
+    if (im) lastId = im[1]
+    const bm = JSON_BOOK_RE.exec(lines[i])
+    if (!bm) continue
+    let page = null
+    const pm = JSON_PAGE_RE.exec(lines[i])
+    if (pm) page = Number(pm[1])
+    else for (let j = i + 1; j < Math.min(lines.length, i + 3); j++) { const p = JSON_PAGE_RE.exec(lines[j]); if (p) { page = Number(p[1]); break } }
+    const slug = bm[1]
+    if (!knownIds.has(slug)) throw new Error(`${rel}:${i + 1} source.book inconnu de books.json : "${slug}"`)
+    if (page == null) { stats.noPage++; continue }
+    const abbr = abbrOf.get(slug)
+    if (!abbr) { stats.noAtlas++; continue }
+    const s = stats.byBook.get(abbr) || { resolved: 0, notFound: 0, ambiguous: 0 }
+    stats.byBook.set(abbr, s)
+    const r = folioRange(abbr, page)
+    if (r === 'ambiguous') { s.ambiguous++; continue }
+    if (r == null) { s.notFound++; continue }
+    s.resolved++
+    out.push({ book: abbr, ch: r.ch, lo: r.lo, hi: r.hi, file: rel, row: i + 1, isTs: false, sym: lastId || null, folio: true })
+  }
+  return out
+}
+
 /** Nom de la déclaration top-level d'une ligne, ou null. */
 export function declNameOf(line) {
   const m = DECL_RE.exec(line)
@@ -94,14 +161,52 @@ export function symbolFor(lines, row) {
 }
 
 /** Une citation de code matche une réf de topic ssi même livre+chapitre ET intersection non vide
- *  entre `[lo-TOL, hi+TOL]` de la réf et `[lo, hi]` de la citation. */
-export function refMatches(topicRef, cit) {
+ *  entre `[lo-tol, hi+tol]` de la réf et `[lo, hi]` de la citation. `tol` par défaut = `TOL`. */
+export function refMatches(topicRef, cit, tol = TOL) {
   return (
     topicRef.book === cit.book &&
     topicRef.ch === cit.ch &&
-    topicRef.lo - TOL <= cit.hi &&
-    cit.lo <= topicRef.hi + TOL
+    topicRef.lo - tol <= cit.hi &&
+    cit.lo <= topicRef.hi + tol
   )
+}
+
+/** Longueur d'intersection (en lignes) entre deux spans `[lo,hi]` (0 si disjoints). */
+function spanOverlap(aLo, aHi, bLo, bHi) {
+  const lo = Math.max(aLo, bLo), hi = Math.min(aHi, bHi)
+  return hi >= lo ? hi - lo + 1 : 0
+}
+
+/** Règle folio-EXCLUSIVE (#434, EXPÉRIENCE — flag `--folio-exclusive`, JAMAIS par défaut) : une
+ *  citation FOLIO n'est attribuée qu'au(x) topic(s) de MEILLEUR RECOUVREMENT — parmi les topics dont
+ *  les réfs (avec `tol`) intersectent la plage folio, seul(s) le(s) recouvrement(s) MAXIMAL(aux)
+ *  (longueur d'intersection brute réfs↔plage) la reçoivent ; égalité = tous les ex æquo la gardent.
+ *  Retourne Map<cit, Set<topic>>. Citations de LIGNE (code) non concernées.
+ *  MESURE 2026-07-16 (`--dry --folio-exclusive`) : NE SÉPARE PAS → non adopté. Le décalage folio↔fiche
+ *  fait que colique (réf fiche `T2C 16 l.109-111`, HORS de sa plage folio `l.65-105`) a un recouvrement
+ *  NUL avec sa propre citation → volée par le voisin `vers-de-carie` (réf l.71-86, recouvre 16 l.) →
+ *  colique RÉGRESSE en non implémenté ; et 2 dettes (dernieres-nouvelles/semer-la-dissension) restent
+ *  implémentées. Gardé en expérience derrière le flag ; le vrai bruit est documenté à part. */
+export function computeFolioWinners(fiches, index, tol = TOL) {
+  const topics = []
+  for (const fi of fiches) for (const f of fi.parsed.fields) topics.push({ topic: f.topic, refs: f.refs })
+  const winners = new Map()
+  for (const c of index.impl) {
+    if (!c.folio) continue
+    let best = -1
+    const scored = []
+    for (const t of topics) {
+      let overlap = 0, matches = false
+      for (const r of t.refs) {
+        if (r.book !== c.book || r.ch !== c.ch) continue
+        if (refMatches(r, c, tol)) matches = true
+        overlap += spanOverlap(r.lo, r.hi, c.lo, c.hi)
+      }
+      if (matches) { scored.push({ topic: t.topic, overlap }); if (overlap > best) best = overlap }
+    }
+    winners.set(c, new Set(scored.filter((s) => s.overlap === best).map((s) => s.topic)))
+  }
+  return winners
 }
 
 /** Fusionne des spans `[lo,hi]` qui se CHEVAUCHENT (pas les adjacents). */
@@ -144,6 +249,11 @@ export function parseFiche(basename, content) {
     if (h) {
       nearestHeading = h[2].trim()
       if (h[1].length === 2) pending = []
+      // Réfs portées par la ligne de heading (`### Racine des Tombes (T2C 04 l.204-229)`) : rattachées
+      // au segment que ce heading OUVRE (dans `pending`, consommé par le prochain champ) — jamais au
+      // topic précédent (son champ a déjà vidé `pending`). Corrige les topics dont la SEULE réf vit
+      // dans leur titre (sinon `refs = []`, « non implémenté » mécanique quel que soit le code).
+      for (const r of refsWithSpans(ln)) pending.push(r)
       continue
     }
     if (!isHeader[i] && !/^\s*>/.test(ln) && FIELD_ANYWHERE_RE.test(ln)) {
@@ -175,12 +285,15 @@ function walkSrc(dir, acc = []) {
   return acc
 }
 
-/** Index du code : citations non-test / test, lignes des .ts(x) (symboles), textes non-test (appelants). */
-export function indexCode(srcDir = SRC_DIR) {
+/** Index du code : citations non-test / test, lignes des .ts(x) (symboles), textes non-test (appelants).
+ *  `abbrMap` (optionnel, `loadAbbrMap()`) active le pont FOLIO des `.json` : chaque `source:{book,page}`
+ *  devient une citation `impl` (id = symbole), stats folio accumulées dans `folioStats`. */
+export function indexCode(srcDir = SRC_DIR, abbrMap = null) {
   const impl = []
   const tests = []
   const fileLines = new Map()       // rel -> lines[]  (.ts/.tsx)
   const nonCommentText = new Map()  // rel -> lignes NON-commentaires jointes (non-test, pour les appelants)
+  const folioStats = { byBook: new Map(), noAtlas: 0, noPage: 0 }
   for (const f of walkSrc(srcDir)) {
     const rel = f.replace(/\\/g, '/')
     if (isExcludedSrc(rel)) continue
@@ -193,8 +306,11 @@ export function indexCode(srcDir = SRC_DIR) {
     lines.forEach((ln, i) => {
       for (const r of refsWithSpans(ln)) (isTest ? tests : impl).push({ ...r, file: rel, row: i + 1, isTs })
     })
+    if (abbrMap && !isTest && rel.endsWith('.json')) {
+      for (const c of folioCitationsFromJson(rel, content, { ...abbrMap, stats: folioStats })) impl.push(c)
+    }
   }
-  return { impl, tests, fileLines, nonCommentText }
+  return { impl, tests, fileLines, nonCommentText, folioStats }
 }
 
 /** Un symbole EXPORTÉ est « sans appelant » ssi aucune occurrence `\b<nom>\b` HORS commentaire dans
@@ -226,7 +342,12 @@ export function isDeadExport(name, defFile, index) {
 export function renderBlock(field, ctx) {
   const { index, closure, manifestByTopic } = ctx
   const { impl, tests } = index
+  const tol = ctx.tol ?? TOL
   const refs = field.refs
+  // Règle folio-exclusive (expérience) : une citation FOLIO ne compte pour CE topic que s'il fait
+  // partie de ses gagnants au meilleur recouvrement (`computeFolioWinners`). OFF → comportement d'origine.
+  const folioOk = (c) =>
+    !c.folio || !ctx.folioExclusive || (ctx.folioWinners && ctx.folioWinners.get(c)?.has(field.topic))
 
   const refGroups = new Map() // 'BOOK|CH' -> { book, ch, refs:[] }
   for (const ref of refs) {
@@ -241,7 +362,7 @@ export function renderBlock(field, ctx) {
     const matchedSpans = []
     const citMap = new Map() // file:row -> cit
     for (const ref of g.refs) {
-      const matched = impl.filter((c) => c.book === g.book && c.ch === g.ch && refMatches(ref, c))
+      const matched = impl.filter((c) => c.book === g.book && c.ch === g.ch && refMatches(ref, c, tol) && folioOk(c))
       if (matched.length) {
         matchedSpans.push([ref.lo, ref.hi])
         for (const c of matched) citMap.set(c.file + ':' + c.row, c)
@@ -272,7 +393,7 @@ export function renderBlock(field, ctx) {
   } else {
     out.push(`**Implémente :** ${NOT_IMPL}`)
     const testFiles = new Set()
-    for (const ref of refs) for (const c of tests) if (refMatches(ref, c)) testFiles.add(c.file)
+    for (const ref of refs) for (const c of tests) if (refMatches(ref, c, tol)) testFiles.add(c.file)
     if (testFiles.size) {
       const list = [...testFiles].sort()
       const shown = list.slice(0, 4).map((f) => `\`${f}\``)
@@ -290,12 +411,11 @@ function buildMatchBullet(g, matchedSpans, cits, { index, closure }) {
   const files = new Set()
   for (const c of cits) {
     files.add(c.file)
-    if (c.isTs) {
-      const name = symbolFor(index.fileLines.get(c.file), c.row)
-      if (name) {
-        const cur = symFirstRow.get(name)
-        if (cur == null || c.row < cur.row) symFirstRow.set(name, { row: c.row, defFile: c.file })
-      }
+    // Symbole : déclaration englobante pour les .ts(x) ; id d'entrée porté par la citation FOLIO des .json.
+    const name = c.isTs ? symbolFor(index.fileLines.get(c.file), c.row) : c.sym
+    if (name) {
+      const cur = symFirstRow.get(name)
+      if (cur == null || c.row < cur.row) symFirstRow.set(name, { row: c.row, defFile: c.file })
     }
   }
   const symbols = [...symFirstRow.entries()]
@@ -368,8 +488,8 @@ export function validateManifest(arr, knownTopics) {
 }
 
 /** Contexte complet (index code + closure + manifest) + parse de toutes les fiches. */
-export function buildContext({ rawDir = RAWDIR, srcDir = SRC_DIR, manifestPath = MANIFEST_PATH } = {}) {
-  const index = indexCode(srcDir)
+export function buildContext({ rawDir = RAWDIR, srcDir = SRC_DIR, manifestPath = MANIFEST_PATH, booksPath = BOOKS_JSON_PATH } = {}) {
+  const index = indexCode(srcDir, loadAbbrMap(booksPath))
   const closure = closureOf([APP_ROOT_MODULE])
   const docs = readdirSync(rawDir).filter(isFicheDoc)
   const fiches = docs.map((doc) => {
@@ -379,7 +499,8 @@ export function buildContext({ rawDir = RAWDIR, srcDir = SRC_DIR, manifestPath =
   const knownTopics = new Set()
   for (const fi of fiches) for (const f of fi.parsed.fields) knownTopics.add(f.topic)
   const manifestByTopic = loadManifest(knownTopics, manifestPath)
-  return { index, closure, manifestByTopic, fiches, rawDir }
+  const folioWinners = computeFolioWinners(fiches, index)
+  return { index, closure, manifestByTopic, fiches, rawDir, folioWinners }
 }
 
 /** Stats + rendu par topic (pour --dry / stdout). */
@@ -404,12 +525,35 @@ export function computeAll(ctx) {
   return { perTopic, anomalies }
 }
 
+/** Garde #434 (Sens B) : tout topic rendu `(non implémenté)` (dette ou blocage RÉEL) DOIT porter une
+ *  entrée de manifest (`ticket` ou `bloque`, garanti par `validateManifest`). Retourne les topics
+ *  ORPHELINS (non implémenté SANS entrée) — un topic implémenté n'est jamais orphelin. */
+export function findManifestOrphans(ctx, all = computeAll(ctx)) {
+  return all.perTopic.filter((t) => !t.implemented && !ctx.manifestByTopic.has(t.topic)).map((t) => t.topic)
+}
+
+function printOrphans(orphans) {
+  console.error(`raw:implemente — ${orphans.length} topic(s) NON IMPLÉMENTÉ(s) sans entrée de manifest :`)
+  for (const t of orphans) console.error(`  ${t}`)
+  console.error('  → ticketer la dette (entrée `ticket`) ou consigner le blocage (entrée `bloque`) dans src/data/raw.manifest.json.')
+}
+
 function printStats(ctx, { perTopic, anomalies }, touched) {
   const impl = perTopic.filter((t) => t.implemented).length
   const testsOnly = perTopic.filter((t) => !t.implemented && t.testsOnly).length
   const notImpl = perTopic.length - impl - testsOnly
   console.log(`fiches : ${touched}/${ctx.fiches.length} · champs : ${perTopic.length} · implémentés : ${impl} · non implémentés : ${notImpl} · tests seulement : ${testsOnly} · anomalies (non-début-de-ligne) : ${anomalies.length}`)
   for (const a of anomalies) console.log(`  anomalie ${a.doc}:${a.row} — ${a.text}`)
+  printFolioStats(ctx.index.folioStats)
+}
+
+function printFolioStats(fs) {
+  if (!fs) return
+  const rows = [...fs.byBook.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+  let R = 0, N = 0, A = 0
+  for (const [, s] of rows) { R += s.resolved; N += s.notFound; A += s.ambiguous }
+  console.log(`folio : ${R} résolus · ${N} introuvables · ${A} ambigus · ${fs.noAtlas} hors-Atlas (slug sans abbr) · ${fs.noPage} sans page`)
+  for (const [book, s] of rows) console.log(`  ${book} : ${s.resolved} résolus · ${s.notFound} introuvables · ${s.ambiguous} ambigus`)
 }
 
 function main() {
@@ -417,24 +561,17 @@ function main() {
   const CHECK = args.includes('--check')
   const DRY = args.includes('--dry')
   const ctx = buildContext()
+  ctx.folioExclusive = args.includes('--folio-exclusive') // expérience #434 (mesure avant adoption)
+
+  const all = computeAll(ctx)
+  const orphans = findManifestOrphans(ctx, all)
 
   const regenerated = ctx.fiches.map((fi) => ({ doc: fi.doc, content: regenerateFiche(fi.doc, fi.content, ctx), orig: fi.content }))
   const touched = regenerated.filter((r) => r.content !== r.orig)
 
-  if (CHECK) {
-    if (touched.length) {
-      console.error(`raw:implemente — ${touched.length} fiche(s) PÉRIMÉE(s) (champ Implémente divergent du code) :`)
-      for (const r of touched) console.error(`  docs/raw/${r.doc}`)
-      console.error('  → relancer `npm run raw:implemente` et committer.')
-      process.exit(1)
-    }
-    console.log('raw:implemente — OK (champs Implémente à jour)')
-    return
-  }
-
-  const all = computeAll(ctx)
   if (DRY) {
     printStats(ctx, all, touched.length)
+    if (orphans.length) printOrphans(orphans)
     console.log('--- topics ---')
     for (const t of all.perTopic) {
       const state = t.implemented ? `implémenté(${t.files} fichiers)` : t.testsOnly ? 'tests seulement' : 'non implémenté'
@@ -443,8 +580,23 @@ function main() {
     return
   }
 
+  if (CHECK) {
+    let failed = false
+    if (touched.length) {
+      console.error(`raw:implemente — ${touched.length} fiche(s) PÉRIMÉE(s) (champ Implémente divergent du code) :`)
+      for (const r of touched) console.error(`  docs/raw/${r.doc}`)
+      console.error('  → relancer `npm run raw:implemente` et committer.')
+      failed = true
+    }
+    if (orphans.length) { printOrphans(orphans); failed = true }
+    if (failed) process.exit(1)
+    console.log('raw:implemente — OK (champs Implémente à jour · tout non-implémenté ticketé)')
+    return
+  }
+
   for (const r of touched) writeFileSync(join(ctx.rawDir, r.doc), r.content)
   printStats(ctx, all, touched.length)
+  if (orphans.length) { printOrphans(orphans); process.exit(1) }
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

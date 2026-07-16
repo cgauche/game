@@ -11,12 +11,12 @@ export interface MerchantArchetypeDef {
   category: { types?: string[]; subTypes?: string[] };
   /** Taille d'agglo par défaut (overridable par l'entité de scène). */
   settlement: Settlement;
-  /** Taux de rachat : ½ du prix listé sur un Marchandage de vente GAGNÉ (LDB 60 l.22) ; sinon ¼ (resaleRate/2). */
+  /** Taux de rachat : ½ du prix listé sur un Marchandage de vente GAGNÉ (LDB 59 l.54) ; sinon ¼ (resaleRate/2). */
   resaleRate: number;
   /** Majoration d'achat : multiplie le prix listé à l'ACHAT (1 = prix listé ; >1 = ce marchand vend plus cher,
    *  ex. village isolé/monopole). Défaut 1 si absent. */
   buyMarkup?: number;
-  /** Valeur de Marchandage du marchand (opposant au Test, LDB 60 l.12). Défaut 40 si absent. */
+  /** Valeur de Marchandage du marchand (opposant au Test, LDB 59 l.43). Défaut 40 si absent. */
   bargainSkill?: number;
   /** Délai de réassort en JOURS (#T3) : le stock est re-tiré (nouvelle Disponibilité) après ce délai
    *  écoulé sur l'horloge ; entre deux, la déplétion persiste. Défaut 1 jour si absent. */

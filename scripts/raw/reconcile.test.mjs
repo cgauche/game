@@ -1,7 +1,8 @@
 // Test du garde `reconcile` (node --test). Lancé par `npm run test:raw`.
-// Non-régression #434 défaut 9 : le Sens A du LDB doit rendre EXACTEMENT le même résultat
-// qu'au commit 1151007b (avant l'extension aux 14 autres livres) — 0 trou dur, 6 chapitres à
-// lignes non pinées (LDB 46/10/15/11/05/12, cf. docs/raw/reconciliation.md figé à ce commit).
+// Non-régression softA (#434 défaut 9) : baseline des chapitres LDB couverts à lignes non pinées.
+// La baseline se met à jour à la BAISSE UNIQUEMENT — un ré-ancrage au Source pine une ligne de plus,
+// jamais de nouveau trou : une HAUSSE = régression réelle (échec attendu). Mesurée à 4 après les
+// ré-ancrages massifs de la session (était 6 : LDB 05/11 pinés depuis). Liste EXACTE (pas un compte).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
@@ -9,14 +10,30 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { computeReconciliation } from './reconcile.mjs'
 
-test('non-régression : Sens A LDB sur le vrai repo = 0 trou dur · 6 chapitres à lignes non pinées', () => {
+test('non-régression : Sens A LDB sur le vrai repo = 0 trou dur · 4 chapitres à lignes non pinées', () => {
   const data = computeReconciliation()
   assert.equal(data.hardA.length, 0)
-  assert.equal(data.softA.length, 6)
   assert.deepEqual(
     data.softA.map((s) => s.ch).sort(),
-    ['05', '10', '11', '12', '15', '46'],
+    ['10', '12', '15', '46'], // baseline à la baisse : si ce test casse par HAUSSE → régression réelle
   )
+})
+
+test('Sens B2 : le crédit FOLIO retire les chapitres-données ; normalisation dédoublonne 06/6', () => {
+  const data = computeReconciliation()
+  // le crédit folio réduit strictement la liste hors-code
+  assert.ok(data.atlasOnly.length < data.atlasOnlyBefore.length)
+  // crédités et résiduels sont DISJOINTS
+  const after = new Set(data.atlasOnly)
+  assert.ok(data.atlasOnlyFolioCredited.every((c) => !after.has(c)))
+  // chapitres de carrières (LDB 26-35) crédités par `source:{book,page}`, jamais résiduels
+  for (const c of ['26', '30', '35']) {
+    assert.ok(data.atlasOnlyFolioCredited.includes(c), `LDB ${c} devrait être crédité par folio`)
+    assert.ok(!after.has(c))
+  }
+  // normalisation `chKey` : pas de doublon, pas de forme zéro-préfixée `06`
+  assert.deepEqual([...new Set(data.atlasOnlyBefore)], data.atlasOnlyBefore)
+  assert.ok(!data.atlasOnlyBefore.includes('06'))
 })
 
 function withFixtures(srcFiles, docFiles, fn) {

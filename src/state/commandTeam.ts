@@ -1,5 +1,5 @@
 /**
- * COMMANDANT D'ÉQUIPE (Talent, AA l.4373-4379) — couche STATE pure (dépend de la GÉOMÉTRIE de combat comme
+ * COMMANDANT D'ÉQUIPE (Talent, AA 13 l.29-35) — couche STATE pure (dépend de la GÉOMÉTRIE de combat comme
  * `shipPostes`/`fireArc` ; le moteur reste pur). Un Personnage doté du Talent peut, par un Test de Commandement
  * Intermédiaire (+0), AIDER une équipe servant une Arme d'équipe « à portée de voix » : sur réussite, l'équipe
  * tire ENSUITE au score de Projectiles DU COMMANDANT.
@@ -18,7 +18,7 @@ import type { Combatant, Weapon } from '../engine/types';
 const ARME_D_EQUIPE = 'arme-d-equipe';
 
 /** Portée de voix de commandement, en mètres (≈ 25 cases à 2 m/case). « À portée de voix » n'ayant aucune
- *  valeur RAW (AA l.4376), c'est un choix produit TUNABLE — pas une invention de règle chiffrée. */
+ *  valeur RAW (AA 13 l.29-35), c'est un choix produit TUNABLE — pas une invention de règle chiffrée. */
 export const VOICE_COMMAND_RANGE_M = 50;
 
 /** Deux combattants sont-ils à portée de voix l'un de l'autre ? (géométrie d'aura : Chebyshev × 2 m/case). */
@@ -69,7 +69,7 @@ export function effectiveCommander(chief: Combatant, combatants: Combatant[]): C
  *  a lapsé (mort / hors portée). `uncapped` : c'est une substitution de SCORE, hors plafond « Combiner les
  *  Difficultés ». PURE — couvre l'aperçu ET la résolution (même `env`). */
 export function teamCommandMod(chief: Combatant, weapon: Weapon, combatants: Combatant[]): ModLine | null {
-  // Seulement quand le chef tire l'ARME D'ÉQUIPE servie (« quand ils tirent avec l'arme », AA l.4378).
+  // Seulement quand le chef tire l'ARME D'ÉQUIPE servie (« quand ils tirent avec l'arme », AA 13 l.35).
   if (!chief.mannedPoste || chief.teamCommanderId == null || weapon.uid !== chief.mannedPoste.item.uid) return null;
   const cmd = effectiveCommander(chief, combatants);
   if (!cmd) return null;

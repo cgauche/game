@@ -49,7 +49,7 @@ const att = () => mk({ name: 'Héros', size: 'moyenne' });
 // de celui d'Empaleuse (l.282), qui ne se déclencherait pas ici de toute façon.
 const dbl = evaluateTest(33, 60); // success, isDouble=true, units=3
 
-describe('Retenir ses coups — Critique supprimé sauf mise à 0 (AA l.2503)', () => {
+describe('Retenir ses coups — Critique supprimé sauf mise à 0 (AA 07 l.59-61)', () => {
   it('double (Critique normalement) sur cible PAS à 0 → critical false, Blessures normales infligées', () => {
     const normal = resolveMeleePassive(att(), mk({ wounds: { current: 12, max: 12 } }), empaleuseSword, dbl, undefined, [], undefined, false);
     const withheld = resolveMeleePassive(att(), mk({ wounds: { current: 12, max: 12 } }), empaleuseSword, dbl, undefined, [], undefined, true);
@@ -68,7 +68,7 @@ describe('Retenir ses coups — Critique supprimé sauf mise à 0 (AA l.2503)', 
   });
 });
 
-describe('Retenir ses coups — Atouts retirés (AA l.2505)', () => {
+describe('Retenir ses coups — Atouts retirés (AA 07 l.61)', () => {
   it('Percutante retirée : les Dégâts ne reçoivent PAS le bonus de l’Atout (même jet)', () => {
     // roll 27 (unités 7) : Percutante = +unités aux Dégâts. Retenir l’annule → −7 Blessures.
     const atk = evaluateTest(27, 60); // success, units=7

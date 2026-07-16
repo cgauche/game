@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanGraphyViolations } from './citation-graphy-guard.mjs'
+import { scanGraphyViolations, scanDocsRawViolations } from './citation-graphy-guard.mjs'
 
 function withTempSrcDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-guard-'))
@@ -79,6 +79,74 @@ test('node_modules ignoré', () => {
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+})
+
+// --- scans docs/raw (#434) : plage à tiret cadratin (a) + réf de livre sans chapitre (b) ---
+function withTempRawDir(files, fn) {
+  const dir = mkdtempSync(join(tmpdir(), 'graphy-docs-'))
+  mkdirSync(join(dir, 'raw'), { recursive: true })
+  for (const [name, content] of Object.entries(files)) writeFileSync(join(dir, 'raw', name), content, 'utf8')
+  try { fn(join(dir, 'raw')) } finally { rmSync(dir, { recursive: true, force: true }) }
+}
+
+test('docs/raw (a) : plage à tiret cadratin (l.417–422 / l.417—422) → détectée, tiret-moins silencieux', () => {
+  withTempRawDir({
+    'en.md': 'Faim (LDB 18 l.417–422) en cadratin\n',   // en-dash U+2013
+    'em.md': 'Soif (LDB 18 l.417—422) em-cadratin\n',    // em-dash U+2014
+    'ok.md': 'Faim (LDB 18 l.417-422) tiret-moins\n',     // hyphen-minus → canonique
+  }, (raw) => {
+    const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'emdash-range')
+    assert.equal(v.length, 2)
+    assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['em.md', 'en.md'])
+  })
+})
+
+test('docs/raw (b) : réf de livre SANS chapitre (AA l.4395, ADE II l.653) → détectée ; avec chapitre → silence', () => {
+  withTempRawDir({
+    'a.md': 'Art (Écriture) (AA l.3574)\n',
+    'b.md': 'ogres : Langue Magick (ADE II l.653)\n',
+    'ok.md': 'forme canonique `AA 13 l.3574` et `T2C 16 l.104-118`\n',
+  }, (raw) => {
+    const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter')
+    assert.equal(v.length, 2)
+    assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['a.md', 'b.md'])
+  })
+})
+
+test('docs/raw : LDB sans chapitre HORS périmètre (b) ; EDO/EDOC & T2/T2C désambiguïsés', () => {
+  withTempRawDir({
+    'x.md': ['LDB l.162 (LDB hors classe b, non listé)', 'EDOC l.101', 'EDO l.5', 'T2C l.71', 'T3 l.9'].join('\n') + '\n',
+  }, (raw) => {
+    const kinds = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter').map((x) => x.text)
+    assert.equal(kinds.length, 4) // EDOC, EDO, T2C, T3 — pas LDB
+    assert.ok(!kinds.some((t) => /^LDB /.test(t)))
+  })
+})
+
+test('docs/raw (c) : nom de fichier de chapitre en backticks (`08 - Titre.md` l.89) → détecté ; réf nue → silence', () => {
+  withTempRawDir({
+    'a.md': '**Source :** ADE II `08 - Le théâtre de la guerre.md` l.89-131.\n',
+    'b.md': '**Source :** ADE II `09 - Annexe I.md` l.32-33.\n',
+    'ok.md': 'forme canonique `ADE II 8 l.89-131`.\n',
+  }, (raw) => {
+    const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'backtick-file')
+    assert.equal(v.length, 2)
+    assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['a.md', 'b.md'])
+  })
+})
+
+test('docs/raw : rapports (coverage/reconciliation/reanchor) et épreuves exclus des scans', () => {
+  withTempRawDir({
+    'coverage.md': 'AA l.4395\n',
+    'reconciliation.md': 'AA l.4395\n',
+    'reanchor.md': 'AA l.4395\n',
+    'epreuve-x.md': 'AA l.4395\n',
+    'combat.md': 'AA l.4395\n',
+  }, (raw) => {
+    const v = scanDocsRawViolations(raw)
+    assert.equal(v.length, 1)
+    assert.equal(v[0].file.split('/').pop(), 'combat.md')
+  })
 })
 
 test('non-régression : le VRAI src/ du repo est à ZÉRO graphie chapitre-relative (#487 lot 1+2)', () => {

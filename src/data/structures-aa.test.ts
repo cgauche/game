@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { findStructureById } from './index';
 
 /**
- * Catalogue AA « Tableau des Structures Courantes » (AA l.3686-3723, VERBATIM) — 18 entrées ajoutées
+ * Catalogue AA « Tableau des Structures Courantes » (AA 10 l.26-92, VERBATIM) — 18 entrées ajoutées
  * au catalogue `structures.json` (5 colonnes ENC / Limite d'Encombrement / Endurance / Blessures /
  * Pénalité de Couvert, DISTINCT du profil ADE II ch.08 à 2 colonnes BE/B). `BE` se dérive de
  * l'Endurance BRUTE de la table par troncature à la dizaine (convention Bonus = dizaines).
  */
-describe('Structures AA (AA l.3686-3723)', () => {
+describe('Structures AA (AA 10 l.26-92)', () => {
   it('Mur de château : ENC N/A, Limite 150, Endurance 65 → BE 6, Blessures 100, Couvert Très Difficile', () => {
     const s = findStructureById('mur-de-chateau')!;
     expect(s.enc).toBeUndefined();

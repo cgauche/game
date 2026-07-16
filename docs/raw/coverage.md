@@ -16,13 +16,13 @@
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
 | 04 | *(artefact OCR)* | ✅ | 7 (creation.md ×7) |
-| 05 | *(artefact OCR)* | ✅ | 93 (creation.md ×52) |
+| 05 | *(artefact OCR)* | ✅ | 92 (creation.md ×52) |
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
 | 09 | Compétences | ✅ | 144 (competences.md ×137) |
-| 10 | Talents | ✅ | 60 (tests.md ×36) |
-| 11 | *(artefact OCR)* | 🟡 | 4 (reconciliation.md ×2) |
+| 10 | Talents | ✅ | 68 (tests.md ×36) |
+| 11 | *(artefact OCR)* | 🟡 | 2 (equipement.md ×1) |
 | 12 | Tests | ✅ | 46 (tests.md ×41) |
 | 13 | Combat | ✅ | 131 (combat.md ×122) |
 | 14 | *(artefact OCR)* | ✅ | 125 (combat.md ×118) |
@@ -57,7 +57,7 @@
 | 43 | Miracles de Rhya | ✅ |  |
 | 44 | L’Aethyr | 🟡 | 2 (magie.md ×2) |
 | 45 | *(artefact OCR)* | ➖ | |
-| 46 | Les règles magiques | ✅ | 107 (magie.md ×55) |
+| 46 | Les règles magiques | ✅ | 108 (magie.md ×56) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 16 (magie.md ×16) |
 | 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
@@ -70,8 +70,8 @@
 | 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | |
 | 57 | La monnaie | ✅ | 1 (economie.md ×1) |
 | 58 | *(artefact OCR)* | ➖ | |
-| 59 | Faire son marché | ✅ | 8 (economie.md ×8) |
-| 60 | Fabrication | ✅ | 26 (economie.md ×23) |
+| 59 | Faire son marché | ✅ | 18 (economie.md ×18) |
+| 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
 | 62 | Les armes | ✅ | 110 (combat.md ×103) |
 | 63 | Armures | ✅ | 40 (combat.md ×35) |
@@ -85,8 +85,8 @@
 | 71 | Drogues et poisons | ✅ | 2 (equipement.md ×2) |
 | 72 | Herbes et potions | ✅ | 8 (equipement.md ×8) |
 | 73 | Prothèses | ✅ | 5 (equipement.md ×5) |
-| 74 | Possessions diverses | ✅ | 8 (equipement.md ×7) |
-| 75 | Mercenaires | ✅ | 6 (equipement.md ×5) |
+| 74 | Possessions diverses | ✅ | 12 (equipement.md ×12) |
+| 75 | Mercenaires | ✅ |  |
 | 76 | Point d’Impact des Créatures | ✅ | 53 (combat.md ×29) |
 | 77 | Les populations du Reikland | ✅ | 5 (combat.md ×5) |
 | 78 | Les Bêtes du Reikland | ✅ |  |
@@ -96,7 +96,7 @@
 | 82 | Les morts sans repos | ✅ |  |
 | 83 | Esclaves des Ténèbres | ✅ |  |
 | 84 | *(artefact OCR)* | ➖ | |
-| 85 | Traits de créature | ✅ | 278 (combat.md ×202) |
+| 85 | Traits de créature | ✅ | 297 (combat.md ×202) |
 
 ## ADE I — ✅ 2 · 🟡 0 · ⬜ 0
 
@@ -109,8 +109,8 @@
 | 04 | Les nains impériaux | ➖ hors-règle | |
 | 05 | Guide de Karak Azgaraz | ➖ hors-règle | |
 | 06 | Guide de la Laurelorn | ➖ hors-règle | |
-| 07 | Annexe I | ✅ |  |
-| 08 | Annexe II | ✅ |  |
+| 07 | Annexe I | ✅ | 2 (competences.md ×2) |
+| 08 | Annexe II | ✅ | 1 (etats.md ×1) |
 
 ## ADE II — ✅ 6 · 🟡 0 · ⬜ 0
 
@@ -118,14 +118,14 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Mercenaires ogres dans le Vieux Monde | ✅ |  |
-| 02 | Les ogres | ✅ | 42 (combat.md ×42) |
+| 02 | Les ogres | ✅ | 50 (combat.md ×43) |
 | 03 | Des signes dans le ciel | ✅ |  |
-| 04 | Un peu de magie | ✅ | 25 (combat.md ×22) |
+| 04 | Un peu de magie | ✅ | 30 (combat.md ×23) |
 | 05 | L’hospice | ➖ hors-règle | |
 | 06 | Le personnel | ➖ hors-règle | |
 | 07 | Les patients | ➖ hors-règle | |
-| 08 | Le théâtre de la guerre | ✅ | 69 (combat.md ×69) |
-| 09 | Annexe I | ✅ |  |
+| 08 | Le théâtre de la guerre | ✅ | 70 (combat.md ×69) |
+| 09 | Annexe I | ✅ | 1 (activites.md ×1) |
 
 ## AA — ✅ 13 · 🟡 0 · ⬜ 0
 
@@ -133,18 +133,18 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | CRÉDITS | ✅ | 9 (combat.md ×5) |
-| 02 | INTRODUCTION | ✅ |  |
-| 03 | LES CHEVALIERS DE L'EMPIRE | ✅ |  |
+| 02 | INTRODUCTION | ✅ | 2 (competences.md ×2) |
+| 03 | LES CHEVALIERS DE L'EMPIRE | ✅ | 3 (competences.md ×3) |
 | 04 | LES CHIENS DE GUERRE | ✅ |  |
-| 05 | LA TILÉE ET LES PERSONNAGES TILÉENS | ✅ |  |
-| 06 | LE CULTE DE MYRMIDIA | ✅ | 24 (combat.md ×24) |
-| 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 34 (combat.md ×34) |
-| 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 98 (combat.md ×98) |
-| 09 | LE COMBAT MONTÉ | ✅ | 23 (combat.md ×23) |
-| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 91 (combat.md ×90) |
+| 05 | LA TILÉE ET LES PERSONNAGES TILÉENS | ✅ | 1 (competences.md ×1) |
+| 06 | LE CULTE DE MYRMIDIA | ✅ | 25 (combat.md ×24) |
+| 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 46 (combat.md ×41) |
+| 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 100 (combat.md ×99) |
+| 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
+| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 96 (combat.md ×90) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
 | 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 16 (combat.md ×16) |
-| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 17 (combat.md ×17) |
+| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 18 (combat.md ×17) |
 
 ## ZI — ✅ 14 · 🟡 0 · ⬜ 0
 
@@ -152,10 +152,10 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | TROIS EXPÉDITIONS | ✅ | 7 (combat.md ×5) |
-| 02 | Griffon | ✅ | 3 (combat.md ×3) |
+| 02 | Griffon | ✅ | 6 (combat.md ×3) |
 | 03 | Dragon | ✅ |  |
-| 04 | « L'abominable » Halagrundsor | ✅ |  |
-| 05 | Amibe | ✅ |  |
+| 04 | « L'abominable » Halagrundsor | ✅ | 1 (etats.md ×1) |
+| 05 | Amibe | ✅ | 1 (etats.md ×1) |
 | 06 | Cockatrice | ✅ |  |
 | 07 | Chimère | ✅ |  |
 | 08 | Grand taurus | ✅ |  |
@@ -163,8 +163,8 @@
 | 10 | Macareux à bec tranchant | ✅ |  |
 | 11 | Chat sauvage | ✅ |  |
 | 12 | Il Potente Granchio | ✅ |  |
-| 13 | Sirène | ✅ | 3 (combat.md ×2) |
-| 14 | Expéditions prévues | ✅ | 22 (combat.md ×21) |
+| 13 | Sirène | ✅ | 6 (etats.md ×3) |
+| 14 | Expéditions prévues | ✅ | 25 (combat.md ×21) |
 
 ## Middenheim — ✅ 5 · 🟡 0 · ⬜ 0
 
@@ -212,7 +212,7 @@
 | 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
-| 08 | CHAPITRE 5 - Voyager | ✅ | 7 (deplacement.md ×7) |
+| 08 | CHAPITRE 5 - Voyager | ✅ | 10 (deplacement.md ×7) |
 | 09 | *(artefact OCR)* | ➖ | |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
@@ -373,7 +373,7 @@
 | 09 | La classe Côtier | ✅ | 32 (carrieres.md ×32) |
 | 10 | Le culte de Manann | ✅ | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | ✅ | 1 (religion.md ×1) |
-| 12 | Navires et construction navale | ✅ | 129 (equipement.md ×60) |
+| 12 | Navires et construction navale | ✅ | 130 (equipement.md ×60) |
 | 13 | Navigation maritime | ✅ | 139 (combat.md ×83) |
 | 14 | Navigation à bord de grands vaisseaux | ✅ | 47 (maladies.md ×19) |
 | 15 | Longs voyages | ✅ | 53 (deplacement.md ×23) |

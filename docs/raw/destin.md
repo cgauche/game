@@ -284,7 +284,7 @@ Autres exemples listés : Perfectionniste, Protectrice, Homme de paix, Martyr p�
 **Sources RAW** : `LDB 05 l.421-445`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 5` (l.421-445) → `CHAR_SEQ_MS` — `src/ui/creator/CharacterCreator.tsx`
+- `LDB 5` (l.421-445) → `capacite-de-combat`, `capacite-de-tir`, `mouvement`, `CHAR_SEQ_MS` — `src/data/characteristics.json`, `src/ui/creator/CharacterCreator.tsx`
 
 ---
 
@@ -319,4 +319,5 @@ Les PNJ ordinaires n'ont pas de Points de Destin ni de Résilience. C'est une pr
 
 **Sources RAW** : `LDB 17 l.9`
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 17` (l.9) → `Combatant` — `src/engine/types.ts`

@@ -12,9 +12,9 @@ import type { RNG } from '../engine/dice';
  * #38 — BRANCHEMENTS runtime du système ALTERNATIF de Blessures d'Aux Armes (`combat-aa-blessures=aa`).
  * Prouve que le toggle change le comportement de bout en bout au SITE DE RÉSOLUTION (`applyCriticalToTarget`)
  * et à la CONDITION DE MORT (`inDeathCondition`) :
- *  - un Critique TRIVIAL (« T », AA l.2521) n'incrémente PAS `criticalWounds` (pas compté pour la mort) ;
- *  - un Coup Critique sur DOUBLE s'applique même s'il RESTE des Blessures (AA l.2473 ≡ LDB 13 l.183) ;
- *  - la mort par accumulation (AA l.2517) route par `aaDeathByCriticalCount` en mode AA.
+ *  - un Critique TRIVIAL (« T », AA 07 l.77-79) n'incrémente PAS `criticalWounds` (pas compté pour la mort) ;
+ *  - un Coup Critique sur DOUBLE s'applique même s'il RESTE des Blessures (AA 07 l.29 ≡ LDB 13 l.183) ;
+ *  - la mort par accumulation (AA 07 l.73) route par `aaDeathByCriticalCount` en mode AA.
  */
 const seq = (...vals: number[]): RNG => {
   let i = 0;

@@ -70,13 +70,14 @@ export const CIBLE_LABEL: Record<string, { icon: string; label: string }> = Obje
 );
 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
- *  inspiré au statbloc (`causesPeur`/`causesTerreur`). Terreur prime ; sinon le plus haut Indice. Pur.
+ *  inspiré au statbloc (`causesPeur`/`causesTerreur`, Trait « Peur (Indice) » LDB 85 l.266). Terreur
+ *  prime ; sinon le plus haut Indice. Pur.
  *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
  *  talent n'accorde pas l'immunité automatique mais « un seul Test de Calme Accessible (+20) » pour
  *  l'ignorer) — la source est donc détectée, et le porteur la teste à +20 (cf. `sansPeurVs`). */
 export function fearSourceFor(self: Combatant, foe: Combatant, selfSizeForSize?: SizeCategory): { kind: 'peur' | 'terreur'; indice: number } | null {
   const cands: { kind: 'peur' | 'terreur'; indice: number }[] = [];
-  // Cavalier émérite (AA l.4369) : la Taille prise en compte pour la Peur/Terreur causée UNIQUEMENT par la
+  // Cavalier émérite (AA 13 l.25) : la Taille prise en compte pour la Peur/Terreur causée UNIQUEMENT par la
   // Taille de l'adversaire est celle de la MONTURE (`selfSizeForSize`, fourni par l'appelant qui connaît la
   // bataille) — les Indices `causesPeur`/`causesTerreur` du statbloc (démon/mort-vivant) restent inchangés.
   const size = peurTerreurFromSize(foe.size, selfSizeForSize ?? self.size);
@@ -183,7 +184,7 @@ export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { 
  * dans les modificateurs purs (attackModifiers). Futurs Talents/effets d'immunité psy : ajouter ICI.
  */
 export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean {
-  // Belliqueux (LDB 85 p.338) : « Tant qu'elle a plus d'Avantages que son adversaire, elle gagne
+  // Belliqueux (LDB 85 l.49) : « Tant qu'elle a plus d'Avantages que son adversaire, elle gagne
   // Immunité Psychologique » — `foesMaxAdvantage` = le meilleur Avantage de ses adversaires ENGAGÉS
   // (fourni par les appelants qui ont le contexte de bataille ; absent ⇒ trait inerte).
   if (foesMaxAdvantage != null && bellicosePsychImmune(c, foesMaxAdvantage)) return true;
@@ -195,7 +196,7 @@ export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean 
     || (c.psychState ?? []).some((p) => findPsychologyById(p.type)?.psychImmune);
 }
 
-/** À sang-froid (LDB 85 p.338) : « Elle peut inverser tous ses Tests de Force Mentale échoués » —
+/** À sang-froid (LDB 85 l.13) : « Elle peut inverser tous ses Tests de Force Mentale échoués » —
  *  un jet RATÉ est relu avec ses chiffres inversés (91 → 19) si cela le rend réussi. Pur. */
 export function coldBloodedAdjust(
   t: { roll: number; target: number; success: boolean; sl: number },
@@ -267,7 +268,7 @@ export function resolvePeurTest(
   indice: number,
   prevDR: number,
   rng: RNG = defaultRNG,
-  coldBlooded = false, // À sang-froid (LDB 85 p.338) : inverse un Test de FM raté
+  coldBlooded = false, // À sang-froid (LDB 85 l.13) : inverse un Test de FM raté
   sansPeur = false,
 ): { dr: number; calmeDR: number; vaincue: boolean; roll: number; target: number; sl: number; success: boolean } {
   const t = coldBloodedAdjust(rollTest(calme, sansPeur ? 'accessible' : 'intermediaire', rng), coldBlooded);
@@ -411,7 +412,7 @@ export function resolveTerreurTest(
   calme: number,
   indice: number,
   rng: RNG = defaultRNG,
-  coldBlooded = false, // À sang-froid (LDB 85 p.338) : inverse un Test de FM raté
+  coldBlooded = false, // À sang-froid (LDB 85 l.13) : inverse un Test de FM raté
   sansPeur = false,
 ): { success: boolean; brise: number; devientPeur: number; roll: number; target: number; sl: number } {
   const t = coldBloodedAdjust(rollTest(calme, sansPeur ? 'accessible' : 'intermediaire', rng), coldBlooded);

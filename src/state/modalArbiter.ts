@@ -148,7 +148,7 @@ export const MODAL_DEFS = [
   //  multi en coop) ; un Sort de HÉROS sans `groupOwner` → owner = `actorId` (le lanceur). Le ciblage
   //  CARTE (pickingTargets / pose de zone) efface la modale via le `return null` du host dans CascadeModal.)
   { key: 'reload', when: (s) => !!s.pendingReload, owner: (s) => s.pendingReload?.actorId, auto: { mode: 'self', drive: ['reloadRoll', 'reloadConfirm'] }, covers: ['pendingReload'] },
-  // Main ensanglantée (AA l.2569) : Test de Dextérité PAR ACTION — jet PROPRE de l'attaquant (`self`) ;
+  // Main ensanglantée (AA 07 l.117) : Test de Dextérité PAR ACTION — jet PROPRE de l'attaquant (`self`) ;
   // en cadence Rapide/Auto le driver le résout (Lancer → Appliquer), comme `reload`.
   { key: 'handGate', when: (s) => !!s.pendingHandGate, owner: (s) => s.pendingHandGate?.attackerId, auto: { mode: 'self', drive: ['handGateRoll', 'handGateConfirm'] }, covers: ['pendingHandGate'] },
   { key: 'stateRecovery', when: (s) => !!s.pendingStateRecovery, owner: (s) => s.pendingStateRecovery?.actorId, auto: { mode: 'self', drive: ['recoverRoll', 'recoverConfirm'] }, covers: ['pendingStateRecovery'] },

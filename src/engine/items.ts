@@ -271,7 +271,7 @@ export function totalEncumbrance(c: Combatant): number {
     const enc = (i.enc || 0) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60)
     if (!!i.equipped && i.subType === 'protheses') return s; // prothèse portée = Enc 0 (LDB 73)
     // Objet PORTÉ sur le corps (armure OU accessoire — PAS une arme, qui se TIENT) : -1 (LDB 61 l.21) ;
-    // armure Volumineux portée = 1 (LDB 60 l.91).
+    // armure Volumineux portée = 1 (LDB 60 l.62).
     const worn = !!i.equipped && isWearable(i);
     const eff = worn ? (i.kind === 'armor' && hasQuality(i, QUALITY_IDS.Volumineux) ? 1 : enc - 1) : enc;
     return s + Math.max(0, eff);

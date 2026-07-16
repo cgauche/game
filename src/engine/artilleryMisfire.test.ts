@@ -4,10 +4,10 @@ import { makeRNG } from './dice';
 import { ARTILLERY_MISFIRE } from '../data/artilleryMisfire';
 
 /**
- * Incident de Tir d'Artillerie par Salve — résolveur PUR (AA l.3940-3946). Déterministe via
+ * Incident de Tir d'Artillerie par Salve — résolveur PUR (AA 10 l.270-277). Déterministe via
  * `forcedRoll` (le d10 imposé), même patron que `structureCritical.test.ts`.
  */
-describe('rollArtillerySalveMisfire (AA l.3940-3946)', () => {
+describe('rollArtillerySalveMisfire (AA 10 l.270-277)', () => {
   it('1-4 : Bras principal, 1 hit, pièce détruite', () => {
     const r = rollArtillerySalveMisfire(5, makeRNG(1), 2);
     expect(r.id).toBe('bras-principal');

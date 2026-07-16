@@ -484,8 +484,8 @@ Détails complets par niveau (compétences/talents/possessions) → [`catalogue-
 **Sources RAW** : `MDG 09 l.3-30` + `l.57-757`
 **Voir aussi** : [Index des carrières](#index-des-carrières) · [Carrières norses (MDG)](#carrières-norses-mdg) · [`talents.md`](talents.md) (Chanson de marin, Commandant d'équipe, Commandant émérite)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 9` (l.3-30, l.59) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CreatorDraft`, `CrewContributor`, `CombatFeature`, `QUART_MINUTES`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, +17 — `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +11 fichiers
-- sans code : `MDG 9` (l.134, l.626, l.718)
+- `MDG 9` (l.3-30, l.59, l.626, l.718) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CreatorDraft`, `CrewContributor`, `CombatFeature`, `QUART_MINUTES`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, +29 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, +13 fichiers
+- sans code : `MDG 9` (l.134)
 
 ---
 
@@ -508,7 +508,7 @@ Une chanson de marin affecte un équipage entier. Le Personnage doit trouver un 
 **Sources RAW** : `MDG 09 l.32-54`
 **Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Chansons de marins (MDG)](#chansons-de-marins-mdg) · [`talents.md`](talents.md)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 9` (l.32-54) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CrewContributor`, `CombatFeature`, `QUART_MINUTES`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, `endShanty`, +13 — `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +9 fichiers
+- `MDG 9` (l.32-54) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CrewContributor`, `CombatFeature`, `QUART_MINUTES`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, `endShanty`, +18 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, +11 fichiers
 
 ---
 
@@ -533,7 +533,7 @@ Le **Chansonnier** est inextricablement lié au culte de **Manann** ; d'autres d
 **Sources RAW** : `MDG 09 l.206-248`
 **Voir aussi** : [Nouveaux Talents de la Classe Côtier (MDG)](#nouveaux-talents-de-la-classe-côtier-mdg)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 9` (l.206-248) → `CAREER_TENUE_BY_ID`, `schema`, `skillDRBonus`, `CareerData`, `ignoredStatesCount`, `charDRBonusOf`, `crewTestModOf`, `combatTestPenalty`, `testStatePenalty`, `GameOp`, +5 — `src/data/index.ts`, `src/data/schemas/defs/careers.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/crewMorale.ts`, `src/engine/ops.ts`, +3 fichiers
+- `MDG 9` (l.206-248) → `naviguons-tous-ensemble`, `CAREER_TENUE_BY_ID`, `jacques-bret-a-rencontre-notre-acier`, `schema`, `de-toutes-les-terreurs-sur-les-mers`, `camarades-d-equipage-rassemblez-vous`, `tous-a-la-vigie`, `les-dames-de-l-anguille`, `suivez-le-capitaine`, `skillDRBonus`, +21 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/data/index.ts`, `src/data/schemas/defs/careers.ts`, `src/data/sea-shanties.json`, `src/engine/combat.ts`, +6 fichiers
 
 ---
 
@@ -589,8 +589,9 @@ Ces Carrières sont les Carrières **existantes** (LDB + Côtiers), réinterpré
 
 **Sources RAW** : `MDG 07 l.263-311`
 **Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg)
-**Implémente :** (non implémenté)
-- cité par tests seulement : `src/engine/creation-mdg.test.ts`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 7` (l.263-311) → `marque-de-khorne` — `src/data/traits.json`
+- sans code : `MDG 7` (l.305-311)
 
 ---
 
@@ -612,8 +613,8 @@ Trois origines humaines norses (`MDG 07 l.228-246`) :
 
 **Sources RAW** : `MDG 07 l.222-260`
 **Voir aussi** : [Carrières norses (MDG)](#carrières-norses-mdg) · [Trait Marque de Khorne (MDG)](#trait-marque-de-khorne-mdg)
-**Implémente :** (non implémenté)
-- cité par tests seulement : `src/engine/creation-mdg.test.ts`, `src/engine/traits/parity.test.ts`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 7` (l.222-260) → `buveur-de-saumure`, `marque-de-khorne`, `veste-de-cuir` — `src/data/creatures.json`, `src/data/mutations.json`, `src/data/traits.json`
 
 ---
 
@@ -629,8 +630,9 @@ De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient 
 
 **Sources RAW** : `MDG 07 l.248-252`
 **Voir aussi** : [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg) · [`talents.md`](talents.md) (Frénésie)
-**Implémente :** (non implémenté)
-- cité par tests seulement : `src/engine/traits/parity.test.ts`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `MDG 7` (l.248-252) → `marque-de-khorne` — `src/data/traits.json`
+- dette : #516
 
 ## Bilan
 

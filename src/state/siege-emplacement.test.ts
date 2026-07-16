@@ -109,7 +109,7 @@ describe('(B) Tir — le chef sert la pièce et touche la cible (resolveAttack, 
 // (C) SOUS-EFFECTIF — équipage < Indice de `arme-d-equipe` → pénalité (recharge ×2 + Imprécise) via
 //     `crewedFireWeapon` (réutilisé par `firedWeapon`), PAS de réimplémentation.
 describe('(C) Sous-effectif — la pénalité d’Arme d’équipe s’applique au sol (crewedFireWeapon)', () => {
-  // Équipage CONFORME au RAW (AA l.3900) : les servants comptés possèdent la Projectiles du Groupe (baliste =
+  // Équipage CONFORME au RAW (AA 10 l.230) : les servants comptés possèdent la Projectiles du Groupe (baliste =
   // Arbalète) — la seule variable testée ici est leur PRÉSENCE physique (vivant/à terre), pas la compétence.
   const arb = () => [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
 

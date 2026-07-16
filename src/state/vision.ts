@@ -8,7 +8,7 @@
  *
  * RÈGLE 1 : la portée de vue de base et le seuil d'éclairement n'ont pas de valeur canon (le LDB ne
  * stat pas la vue) → réglages MAISON injectés en paramètres ; les rayons de lumière (Bougie 10 m,
- * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
+ * Lanterne 20 m — `LDB 74 l.43`, `LDB 74 l.58`) et la Vision nocturne (20 m/niv — `LDB 11 l.176`)
  * sont canon, convertis à l'échelle 1 case = 2 m (`LDB Déplacement l.55`).
  */
 import { Scene, tileAt, heightAt, edgeOf, wallIsOpen } from './scene';

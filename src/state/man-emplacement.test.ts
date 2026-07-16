@@ -370,7 +370,7 @@ describe('(G) Token — `serveTargetPoste` + clic-pièce rejoignent l’équipe 
 //     (Groupe Arbalète) « n'est pas considéré comme un membre de l'équipe » (Exemple 1 l.3923). Les corps
 //     supplémentaires non qualifiés AIDENT (déplacent/compensent) mais NE comptent PAS (l.3902).
 // ───────────────────────────────────────────────────────────────────────────────────────────────
-describe('(H) Qualification — seul l’équipage avec la Projectiles du Groupe de la pièce compte (AA l.3900-3923)', () => {
+describe('(H) Qualification — seul l’équipage avec la Projectiles du Groupe de la pièce compte (AA 10 l.228-247)', () => {
   // `label` = libellé lisible (Arbalète/Arc) → résolu en id de Groupe stable (Phase 3 : la spec EST un id).
   const proj = (label: string) => [{ skillId: 'projectiles', spec: weaponGroupIdByLabel(label), characteristic: 'capacite-de-tir', advances: 10 }] as never;
 

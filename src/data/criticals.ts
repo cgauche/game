@@ -71,7 +71,7 @@ export interface CritEscalation {
   fingerLossPerRound?: boolean;
   amputateAfter1d10Days?: boolean;
   amputateSequel?: string;
-  /** « Épaule luxée » (AA l.125 / LDB l.120) / « Genou démis » (AA l.179 / LDB l.179) : le membre est
+  /** « Épaule luxée » (AA 07 l.125 / LDB l.120) / « Genou démis » (AA 07 l.179 / LDB l.179) : le membre est
    *  DÉSACTIVÉ (séquelle portant `disable` en `ops` passives : bras `maxWeaponHands:1` / jambe `moveScale`),
    *  en attente d'Aide Médicale (`awaitingMedicalAid`). Après l'Aide Médicale, un Test ÉTENDU de Guérison
    *  Accessible (+20) de `restoreDR` DR rend l'usage du membre : la séquelle est retirée et `recoveryPenalty`

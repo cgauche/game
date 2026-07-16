@@ -456,7 +456,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   }
   // Avantage de la manœuvre dépensé UNE fois, à la frappe (après TOUS les portails — aperçu/monture/Peur/
   // ward) : gratuites de mêlée (Morsure/Caudale… coût RAW). L'Arme (cost.advantage 0) ne dépense rien.
-  if (option.cost.advantage) campSpend(get, active, option.cost.advantage); // réserve du camp en mode groupe (AA l.4142) / le combattant (LDB)
+  if (option.cost.advantage) campSpend(get, active, option.cost.advantage); // réserve du camp en mode groupe (AA 11 l.30-38) / le combattant (LDB)
   // === Approche-puis-frappe : DEUX beats explicites ===
   let approachPath: { x: number; y: number }[] | null = null;
   let pa: GameState['pendingAttack'];
@@ -534,7 +534,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   afterApproach(get, approachPath, () => {
     const b = get().battle;
     if (!b || b.over || b.order[b.turn] !== active.id || get().pendingCascade) return;
-    // Point PARTAGÉ : gate « Main ensanglantée » (AA l.2569) puis ouverture de la cascade d'attaque.
+    // Point PARTAGÉ : gate « Main ensanglantée » (AA 07 l.117) puis ouverture de la cascade d'attaque.
     openAttackCascade(get, set, pa, 'Attaque', 'action/attack');
   });
 }

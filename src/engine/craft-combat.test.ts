@@ -15,7 +15,7 @@ const fighter = (cc: number, weapon: Weapon): Combatant =>
 
 const sword = (qualities: string[] = []): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: qualities.map((s) => parseQualityInstance(s)!) });
 
-describe('Pratique / Peu Fiable en mêlée — Test opposé (LDB 60 l.59/88)', () => {
+describe('Pratique / Peu Fiable en mêlée — Test opposé (LDB 60 l.22/58)', () => {
   // atk raté (DR -1) mais def raté pire (DR -2) → l'attaquant GAGNE l'opposé malgré son échec (DR net 1).
   const atk = evaluateTest(63, 50); // 63 > 50 → échec, DR -1
   const def = evaluateTest(72, 50); // 72 > 50 → échec, DR -2

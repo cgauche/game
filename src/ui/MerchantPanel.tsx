@@ -144,7 +144,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
   const damaged = party.flatMap((h) => (h.items ?? []).filter((it) => isRepairable(it)).map((it) => ({ h, it })));
   const sellable = party.flatMap((h) => (h.items ?? []).map((it) => ({ h, it })));
 
-  // Marchandage (LDB 60 l.12) : achat (panier) et vente = négociations distinctes.
+  // Marchandage (LDB 59 l.43) : achat (panier) et vente = négociations distinctes.
   const buyHaggle = merchant.bargainBuy ? bargainBuyFactor(merchant.bargainBuy.won, merchant.bargainBuy.drNet, merchant.bargainBuy.negotiator) : 1;
   const buyFactor = (merchant.buyMarkup ?? 1) * buyHaggle;
   const buyDiscount = Math.round((1 - buyHaggle) * 100);

@@ -860,8 +860,8 @@ export interface TraitCapabilities {
   psychType?: 'peur' | 'terreur' | 'animosite' | 'haine' | 'prejuge' | 'amour' | 'camaraderie' | 'phobie';
   psychImmune?: boolean; // Immunité (Psychologie) — annule Peur/Terreur (LDB 85 l.143-144)
   psychIndice?: number; // Indice FIXE si absent de l'instance (Phobie = 1, Effrayé = 0)
-  /** Peut entrer en Frénésie (LDB 21 l.31 / LDB 85 p.339 Trait « Frénésie »), lu par `isFrenzyCapable`
-   *  (une des 3 sources : Trait, Talent « Frénésie », Trait psy octroyé). */
+  /** Peut entrer en Frénésie (LDB 21 l.31 / LDB 85 l.150 Trait « Frénésie » / LDB 10 l.506 Talent
+   *  « Frénésie »), lu par `isFrenzyCapable` (une des 3 sources : Trait, Talent, Trait psy octroyé). */
   frenzyCapable?: boolean;
   mindless?: boolean;
   /** Blessures calculées avec le Bonus de FORCE au lieu du Bonus de Force Mentale (Fabriqué, LDB 85
@@ -898,7 +898,7 @@ export interface TraitCapabilities {
   /** Rampant (T2C ch.13) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
   noRun?: boolean;
   seesInDark?: boolean;
-  /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
+  /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.176` ;
    *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
   darkSightTiles?: number;
   /** Salive analgésique (T2C ch.13) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
@@ -1086,7 +1086,7 @@ export interface DomainData {
    *  (cf. 3 canaux passive / effects / capabilities). */
   castBonus?: { perCondition: string; radiusStat: import('../engine/types').CharKey; bonus: number };
   /** Caractéristique des Tests d'Incantation (Langue (Magick)) des Sorts de ce Domaine, à la place de la
-   *  carac par défaut (ADE II l.653 : la Magie de la Gueule, réservée aux ogres, se lance sur l'Endurance).
+   *  carac par défaut (ADE II 2 l.728 : la Magie de la Gueule, réservée aux ogres, se lance sur l'Endurance).
    *  Lue par `castingValue` — porté par la DONNÉE du domaine, aucun sniff d'espèce dans le moteur. */
   castingChar?: import('../engine/types').CharKey;
   /** Bonus d'incantation lié à l'ENVIRONNEMENT (LDB 48 l.690, Vie/Ghyran : +10 pour Incanter ou

@@ -248,7 +248,7 @@ describe('buildScene — encounters `hidden` (embuscade : entités invisibles ju
   });
 });
 
-describe('buildScene — encounters : marqueurs d’Avantage initial (Manœuvrabilité/Menace/Terrain, AA l.4149-4167)', () => {
+describe('buildScene — encounters : marqueurs d’Avantage initial (Manœuvrabilité/Menace/Terrain, AA 11 l.53-65)', () => {
   const s = buildScene({
     id: 'adv', nom: 'ADV', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
     encounters: [{

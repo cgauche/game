@@ -15,7 +15,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
 const withTalent = (id: string, kind: Combatant['kind'] = 'hero') =>
   mk({ kind, talents: [{ talentId: id, times: 1 }] as never });
 
-describe('advantagePool — camp & réserves (AA l.4113-4115)', () => {
+describe('advantagePool — camp & réserves (AA 11 l.11-13)', () => {
   it('advantageCampOf : héros/allié → alliés ; enemy/npc → adversaires', () => {
     expect(advantageCampOf({ kind: 'hero' })).toBe('allies');
     expect(advantageCampOf({ kind: 'enemy' })).toBe('foes');
@@ -40,8 +40,8 @@ describe('advantagePool — camp & réserves (AA l.4113-4115)', () => {
   });
 });
 
-describe('initialAdvantagePools — table d’Avantage initial (AA l.4155-4167)', () => {
-  it('paliers de Surnombre (l.4162-4164)', () => {
+describe('initialAdvantagePools — table d’Avantage initial (AA 11 l.53-65)', () => {
+  it('paliers de Surnombre (AA 11 l.60-62)', () => {
     expect(outnumberAdvantage(1)).toBe(0);
     expect(outnumberAdvantage(1.5)).toBe(1);
     expect(outnumberAdvantage(2)).toBe(2);
@@ -49,7 +49,7 @@ describe('initialAdvantagePools — table d’Avantage initial (AA l.4155-4167)'
     expect(outnumberAdvantage(5)).toBe(3);
   });
 
-  it('exemple canon (l.4169) : surprise alliés +2 ; surnombre ×2 foes +2 ; menace manticore foes +3', () => {
+  it('exemple canon (AA 11 l.67) : surprise alliés +2 ; surnombre ×2 foes +2 ; menace manticore foes +3', () => {
     // 5 aventuriers surprennent, mais 10 gobelins (×2) + chamane sur manticore (menace très dangereuse).
     const p = initialAdvantagePools({
       surprise: 'allies',
@@ -67,7 +67,7 @@ describe('initialAdvantagePools — table d’Avantage initial (AA l.4155-4167)'
   });
 });
 
-describe('dominationTransfer — perte d’Avantage (AA l.4146)', () => {
+describe('dominationTransfer — perte d’Avantage (AA 11 l.44)', () => {
   const always = () => true;
   const one = () => 1;
 

@@ -95,7 +95,7 @@ export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'):
   return BODY_SHAPE_LOC_LABELS[shape]?.[loc] ?? HIT_LOCATION_LABELS[loc];
 }
 
-/** Main ensanglantée (AA l.2569) : la main tenant `weaponUid` est-elle « ensanglantée » (marqueur
+/** Main ensanglantée (AA 07 l.117) : la main tenant `weaponUid` est-elle « ensanglantée » (marqueur
  *  `handGates`, op `handGate`) ? Renvoie la main gatée (`'main'`/`'off'`) — qui impose un Test de
  *  Dextérité (+20) AVANT l'Action, Échec → `disarm` — ou `null`. La DURÉE (« tant que vous êtes sous
  *  l'effet de cet État ») est portée par le marqueur lui-même : `removeCondition` le PURGE dès que
@@ -241,7 +241,7 @@ export function weaponGroupSkillMode(c: Combatant, weapon: Weapon, kind: 'melee'
 /**
  * Le combattant possède-t-il la Spécialisation EXACTE (de Corps à corps / Projectiles) du **Groupe** de
  * l'arme (LDB 62 l.138-139), en mode PLEIN uniquement — un accès dégradé (l.184-192, via une AUTRE Spé de
- * Tir) n'est PAS « la Spé du Groupe » : la Qualification d'Arme d'équipe (AA l.3900-3923, `hasCrewSkill`)
+ * Tir) n'est PAS « la Spé du Groupe » : la Qualification d'Arme d'équipe (AA 10 l.228-247, `hasCrewSkill`)
  * distingue ce cas précis (un tireur à l'Arc ne QUALIFIE PAS une pièce d'Arbalète, même si son propre Test
  * de tir dégradé reste possible — `combatValue`). Réutilise `weaponGroupSkillMode`.
  * Sert aussi aux règles de Groupe CONTEXTUELLES (Fléau sans compétence → Dangereuse, LDB 62 l.146-147).

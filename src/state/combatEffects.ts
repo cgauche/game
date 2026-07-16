@@ -758,7 +758,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'learnSpell', spell: '', heroId: '' }),
     apply: (e, env) => {
       // Trouvaille de campagne : le sort est appris SANS PX (l'auteur l'octroie — le coût
-      // en PX ne vaut que pour la mémorisation volontaire, LDB 46 l.44-47).
+      // en PX ne vaut que pour la mémorisation volontaire, LDB 46 l.16-20).
       const sp = findSpellById(e.spell);
       if (!sp) return;
       // `c.spells` = IDS de sort (résolus par findSpellById dans l'ActionBar/IA/grimoire) ; le libellé

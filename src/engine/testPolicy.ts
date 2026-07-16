@@ -38,7 +38,7 @@ export function getTestPolicy(): TestPolicy {
     bandsMode: rule('test-auto-bands') as BandsMode,
     slMode: rule('test-fast-sl') ? 'fast' : 'standard',
     targetMin: 1,
-    // « Tests >100 % » (LDB 12 l.101) : on lève le plafond → tens(valeur) donne +1 DR par 10 % au-delà de 100.
+    // « Tests >100 % » (LDB 12 l.77) : on lève le plafond → tens(valeur) donne +1 DR par 10 % au-delà de 100.
     targetMax: rule('test-over-100') ? 999 : 99,
   };
 }

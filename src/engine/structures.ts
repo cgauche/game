@@ -2,17 +2,17 @@
  * Structures DESTRUCTIBLES de siège (ADE II ch.08 « Le théâtre de la guerre ») comme `Combatant` à PV —
  * module FEUILLE. Calqué sur `engine/vehicle.ts` (coque inerte) : une structure (`structures.json`) devient
  * une cible inanimée à Blessures qui encaisse les Dégâts par la langue UNIQUE `woundsFromHit`/`GameOp`. RAW
- * dit lui-même que Structure / Véhicule / Navire suivent le MÊME modèle Endurance/Blessures (AA l.3690).
+ * dit lui-même que Structure / Véhicule / Navire suivent le MÊME modèle Endurance/Blessures (AA 10 l.13/116).
  *
  * Trois Atouts data-driven greffés sur le résolveur de Blessures (`woundsCalc`) — JAMAIS de code par-nom :
- *  - **Siège** (atout d'ARME, ADE II l.292) : « inflige le double des dégâts aux structures physiques ».
+ *  - **Siège** (atout d'ARME, ADE II 08 l.292) : « inflige le double des dégâts aux structures physiques ».
  *    Lu sur l'arme par sa capacité de qualité `siege` (`qualities.json`).
  *  - **Résistant** (atout de STRUCTURE, l.296) : « ne peuvent pas être abîmées par une Arme à distance sans
  *    l'Atout Siège » — le corps à corps passe. Capacité de trait `structResistant` (`traits.json`).
  *  - **Impénétrable** (atout de STRUCTURE, l.300) : « ne peuvent pas être abîmées par une Arme sans l'Atout
  *    Siège » — toute arme. Capacité de trait `structImpenetrable` (namespace DISTINCT de la qualité d'armure
  *    LDB 63 « Impénétrable » `critImmuneOdd` : ici c'est un Trait `impenetrable-structure`).
- *  - **Bélier** (ADE II l.249) : « n'infligent des dégâts qu'aux portes » — capacité de qualité `ram`.
+ *  - **Bélier** (ADE II 08 l.249) : « n'infligent des dégâts qu'aux portes » — capacité de qualité `ram`.
  *
  * Module FEUILLE : n'importe QUE `qualities/dispatch` (caps de l'arme) + `capabilities` (caps de la cible) +
  * la donnée/`items` (le BUILDER), JAMAIS `combat`/`ops` → aucun cycle (`woundsCalc` peut le greffer).
@@ -68,7 +68,7 @@ export function ramVsNonDoor(weapon: Pick<Weapon, 'qualities'> | undefined, targ
  * La structure `target` est-elle IMPARABLE par cette `weapon` (le coup ne l'abîme pas → 0 Blessure) ?
  *  - **Impénétrable** (`structImpenetrable`, l.300) : imparable par TOUTE arme sans l'Atout Siège.
  *  - **Résistant** (`structResistant`, l.296) : imparable par une Arme À DISTANCE sans Siège (le corps à corps passe).
- * Le Bélier hors-porte est traité en amont (`applyHit`) comme une Arme improvisée (`ramVsNonDoor`, ADE II l.249).
+ * Le Bélier hors-porte est traité en amont (`applyHit`) comme une Arme improvisée (`ramVsNonDoor`, ADE II 08 l.249).
  */
 export function structureImmune(weapon: Weapon | undefined, target: Combatant): boolean {
   const siege = weaponHasCap(weapon, 'siege');
@@ -77,7 +77,7 @@ export function structureImmune(weapon: Weapon | undefined, target: Combatant): 
   return false;
 }
 
-/** Multiplicateur de Dégâts de l'Atout Siège (ADE II l.292) : ×2 pour une arme à Atout Siège frappant une
+/** Multiplicateur de Dégâts de l'Atout Siège (ADE II 08 l.292) : ×2 pour une arme à Atout Siège frappant une
  *  STRUCTURE, ×1 sinon. Appliqué au TOTAL de Dégâts entrant (avant Bonus d'Endurance) par `woundsFromHit`. */
 export function siegeMultiplier(weapon: Weapon | undefined, target: Combatant): number {
   return isStructure(target) && weaponHasCap(weapon, 'siege') ? 2 : 1;

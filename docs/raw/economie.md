@@ -26,7 +26,7 @@
 
 ## Monnaie — conversions et nomenclature
 
-**Source : LDB 57 l.3–26**
+**Source : LDB 57 l.3-26**
 
 ```
 1 couronne d'or (CO)  =  20 pistoles d'argent (/)  =  240 sous de cuivre (sc)
@@ -47,7 +47,7 @@ Pièce habituelle : ~30 g. La valeur est déterminée par le poids — les pièc
 
 ## Disponibilité — tiers et table de stock
 
-**Source : LDB 59 l.1–35**
+**Source : LDB 59 l.1-35**
 
 Chaque Possession possède l'un de quatre tiers :
 
@@ -60,7 +60,7 @@ Chaque Possession possède l'un de quatre tiers :
 
 ### Table de Disponibilité
 
-Verbatim LDB 59 l.25–35 :
+Verbatim LDB 59 l.25-35 :
 
 | | Village | Ville | Cité |
 |---|---|---|---|
@@ -69,7 +69,7 @@ Verbatim LDB 59 l.25–35 :
 | Rare | 15 % | 30 % | 45 % |
 | Exotique | Pas en Stock | Pas en Stock | Pas en Stock |
 
-**Quantité en stock** (LDB 59 l.29–35) :
+**Quantité en stock** (LDB 59 l.29-35) :
 - Village : 1 objet en stock
 - Ville : 1d10 objets
 - Cité : autant que le MJ juge approprié
@@ -81,7 +81,7 @@ Verbatim LDB 59 l.25–35 :
 
 ## Achat — procédure et Disponibilité
 
-**Source : LDB 59 l.1–20**
+**Source : LDB 59 l.1-20**
 
 Les règles d'achat/vente sont **optionnelles** — le MJ peut simplement déclarer ce qui est disponible.
 
@@ -89,19 +89,19 @@ Les règles d'achat/vente sont **optionnelles** — le MJ peut simplement décla
 - Objet coûtant ≤ Statut du personnage (ex. Statut Argent 2 → ≤ 2 pistoles) : achat libre, autant de fois que nécessaire.
 - Objet au-delà du Statut : maximum **1 achat par jour**, avec un Test de **Marchandage** (difficulté fixée par le MJ selon le prix et le marché local).
 
-**Objet Exotique** (LDB 59 l.18–20) : uniquement via :
+**Objet Exotique** (LDB 59 l.18-20) : uniquement via :
 1. Décision du MJ (objet disponible localement)
 2. Commande auprès d'un artisan (Activité *Passer Commande*, LDB p.199)
 3. Fabrication personnelle (Activité *Artisanat*, LDB p.196)
 
-**Modificateurs de recherche active** (LDB 60 l.4–22) :
+**Modificateurs de recherche active** (LDB 59 l.50) :
 - +10 % à +20 % à la Disponibilité si le personnage appartient à une Carrière pertinente (Marchand, Receleur) ou passe **une journée entière** à chercher et à faire des Tests de Ragot.
 
 ---
 
 ## Marchandage — Test opposé, réductions, Négociateur
 
-**Source : LDB 60 l.2–22**
+**Source : LDB 59 l.37-43**
 
 Le **Marchandage** se résout en **Test opposé** (acheteur vs. vendeur).
 
@@ -109,7 +109,7 @@ Le **Marchandage** se résout en **Test opposé** (acheteur vs. vendeur).
 - **Succès Stupéfiant** (DR net ≥ 6) ou talent **Négociateur** : réduction jusqu'à **20 %**.
 - **Défaite grave** : le vendeur se méfie de la monnaie du personnage (botch → commerce bloqué pour la visite).
 
-> Verbatim LDB 60 l.3 : « Marchandage est couramment utilisé par les clients et les vendeurs, généralement avec des Tests opposés. Le Marchandage est prévu et la plupart des prix sont légèrement augmentés pour en tenir compte. Gagner un Test de Marchandage réduit le prix de 10 % (et même jusqu'à 20 % avec un Succès Stupéfiant (+6) ou avec le Talent Négociateur). Rater de beaucoup un Test de Marchandage signifie généralement que le vendeur se méfie de votre monnaie. »
+> Verbatim LDB 59 l.43 : « Marchandage est couramment utilisé par les clients et les vendeurs, généralement avec des Tests opposés. Le Marchandage est prévu et la plupart des prix sont légèrement augmentés pour en tenir compte. Gagner un Test de Marchandage réduit le prix de 10 % (et même jusqu'à 20 % avec un Succès Stupéfiant (+6) ou avec le Talent Négociateur). Rater de beaucoup un Test de Marchandage signifie généralement que le vendeur se méfie de votre monnaie. »
 
 Le MJ peut laisser les achats courants sans Test ; réserver le Marchandage aux achats importants ou aux scènes de PNJ marchands significatifs.
 
@@ -117,31 +117,31 @@ Le MJ peut laisser les achats courants sans Test ; réserver le Marchandage aux 
 
 ## Évaluation — identification qualité et estimation prix
 
-**Source : LDB 60 l.2–12**
+**Source : LDB 59 l.39-41**
 
 La compétence **Évaluation** sert à :
 
 1. **Identifier la qualité d'un objet** (Atouts/Défauts) — permet de détecter un vendeur malhonnête proposant un objet Défectueux comme Standard.
 2. **Estimer la valeur** des pièces étrangères ou repérer des contrefaçons (usage vendeur).
-3. **Estimer le prix** d'objets Rares ou Exotiques **à ±10 %** (LDB 60 l.3).
+3. **Estimer le prix** d'objets Rares ou Exotiques **à ±10 %** (LDB 59 l.41).
 
-> Verbatim LDB 60 l.3 : « Tout le monde peut également utiliser Évaluation pour estimer les prix des objets Rares ou Exotiques à +/-10 %. »
+> Verbatim LDB 59 l.41 : « Tout le monde peut également utiliser Évaluation pour estimer les prix des objets Rares ou Exotiques à +/-10 %. »
 
-**Compétences qui peuvent révéler un Défaut caché** (LDB 60 l.47) : Évaluation, Corps à corps (armes), Métier (outils) — n'importe laquelle fonctionne.
+**Compétences qui peuvent révéler un Défaut caché** (LDB 60 l.42) : Évaluation, Corps à corps (armes), Métier (outils) — n'importe laquelle fonctionne.
 
 **Limitation** : échec NET → pas de nouvelle tentative le même jour (LDB 12 l.94 — règle générale des Tests avancés, appliquée ici). Seul un résultat marginal (*Échec Minime*) permet un nouvel essai.
 
-**Talent Détection d'artefact** (LDB 10 l.332–312) : Test d'Intuition au toucher — une seule tentative par artefact. Révèle l'aura magique et ses règles (par DR).
+**Talent Détection d'artefact** (LDB 10 l.332, 336) : Test d'Intuition au toucher — une seule tentative par artefact. Révèle l'aura magique et ses règles (par DR).
 
 ---
 
 ## Vente — base ½, Marchandage, Baisse des prix, Troc
 
-**Source : LDB 60 l.5–45**
+**Source : LDB 59 l.52-76**
 
 ### Prix de vente de base
 
-> Verbatim LDB 60 l.5 : « le prix de base quand vous vendez est moitié moins cher que le prix listé de l'objet, ce qui signifie que, lors d'une vente d'objets d'occasion, vous gagnez généralement entre un quart et la moitié de la valeur listée de l'objet après le Marchandage. »
+> Verbatim LDB 59 l.54 : « le prix de base quand vous vendez est moitié moins cher que le prix listé de l'objet, ce qui signifie que, lors d'une vente d'objets d'occasion, vous gagnez généralement entre un quart et la moitié de la valeur listée de l'objet après le Marchandage. »
 
 - Base vente : **½ prix listé**
 - Avec Marchandage de vente gagné : jusqu'à **½ prix listé** (plafond normal)
@@ -152,13 +152,13 @@ La compétence **Évaluation** sert à :
 
 ### Baisse des prix
 
-> Verbatim LDB 60 l.7 : « Chaque fois que vous divisez l'argent que vous êtes disposé à accepter par deux, la Disponibilité d'un acheteur augmente d'un cran. »
+> Verbatim LDB 59 l.60 : « Chaque fois que vous divisez l'argent que vous êtes disposé à accepter par deux, la Disponibilité d'un acheteur augmente d'un cran. »
 
 *Exemple LDB* : un long fusil d'Hochland (Exotique, valeur 100 CO) → base vente = 50 CO. En divisant 2× par 2 → 12 CO 10/– (+2 crans de Disponibilité : Exotique → Limitée).
 
 ### Ratios de Troc
 
-**Source : LDB 60 l.9–45**
+**Source : LDB 59 l.64-76**
 
 | Objet échangé ↓ \ Objet acquis → | Commune | Limitée | Rare | Exotique |
 |---|---|---|---|---|
@@ -173,13 +173,13 @@ Les lots sont définis en comparant les prix listés des deux objets pour consti
 
 ## Fabrication (LDB) — Atouts et Défauts d'objet
 
-**Source : LDB 60 l.10–92**
+**Source : LDB 60 l.3-62**
 
 ### Principes
 
 Les objets disponibles varient en qualité. Un objet peut avoir des **Atouts** (meilleur, plus cher, plus rare) et des **Défauts** (moins bon, moins cher, plus commun).
 
-**Classes de qualité** (LDB 60 l.10–46) :
+**Classes de qualité** (LDB 60 l.10-46) :
 - **Haute Qualité** : aucun Défaut ET plus d'Atouts que d'Encombrement
 - **Qualité** : plus d'Atouts que de Défauts
 - **Standard** : équilibre (ni plus d'Atouts ni plus de Défauts)
@@ -207,7 +207,7 @@ Les objets disponibles varient en qualité. Un objet peut avoir des **Atouts** (
 
 > Verbatim LDB 60 l.42 : « Chaque Défaut divise le prix listé par deux et améliore la Disponibilité d'un cran. »
 
-**Exception** : les objets Exotiques restent Exotiques même Défectueux (LDB 60 l.50).
+**Exception** : les objets Exotiques restent Exotiques même Défectueux (LDB 60 l.44).
 
 | Défaut | Effet mécanique |
 |---|---|
@@ -218,13 +218,13 @@ Les objets disponibles varient en qualité. Un objet peut avoir des **Atouts** (
 
 *Exemple LDB* : chemise de mailles Volumineuse+Peu fiable → ¼ du prix listé, dispo Rare → Commune.
 
-**Repérer un Défaut caché** (LDB 60 l.47) : Test réussi d'Évaluation, Corps à corps (armes) ou Métier (outils) — la liste n'est pas exhaustive.
+**Repérer un Défaut caché** (LDB 60 l.42) : Test réussi d'Évaluation, Corps à corps (armes) ou Métier (outils) — la liste n'est pas exhaustive.
 
 ---
 
 ## Option Guildes d'artisans
 
-**Source : LDB 60 l.35–72**
+**Source : LDB 60 l.34-38**
 
 Si le MJ indique une ville avec une Guilde d'artisans pertinente :
 - Les **Défauts ne réduisent plus la Disponibilité** (ils la réduisent au lieu de l'augmenter — l'inverse du régime normal).
@@ -235,7 +235,7 @@ Si le MJ indique une ville avec une Guilde d'artisans pertinente :
 
 ## Commerce de cargaison (T2C Compagnon ch.11)
 
-**Source : T2C Compagnon 13 l.1–350** (Chapitre 11 — Règles du commerce)
+**Source : T2C Compagnon 13 l.1-350** (Chapitre 11 — Règles du commerce)
 
 Ces règles s'appliquent principalement dans le contexte du **voyage en barge sur le Reikland** (Mort sur le Reik). Elles sont une extension optionnelle du commerce LDB pour les **cargaisons en gros**, pas pour les achats d'équipement courant.
 
@@ -382,13 +382,13 @@ Couverture confirmée des refs `LDB XX l.YY` dans le code :
 
 | Ref source | Fichier implémentant | Mécanique |
 |---|---|---|
-| `LDB 59 l.25–35` | `src/engine/disponibilite.ts` | Table de Disponibilité RAW (Commune/Limitée/Rare/Exotique × Village/Ville/Cité) ; `rollAvailability`, `fullStock`, `rollStock` |
+| `LDB 59 l.25-35` | `src/engine/disponibilite.ts` | Table de Disponibilité RAW (Commune/Limitée/Rare/Exotique × Village/Ville/Cité) ; `rollAvailability`, `fullStock`, `rollStock` |
 | `LDB 59 l.18` | `src/engine/disponibilite.ts` + `src/state/merchantFlow.ts` | Règle optionnelle stock sans Test (`fullStock`) ; désactivation Marchandage si `simplifie` |
 | `LDB 60 l.3` | `src/engine/appraisal.ts` | Évaluation : estimation ±10 % Rare/Exotique |
 | `LDB 60 l.3` | `src/engine/bargain.ts` + `src/state/merchantFlow.ts` | Test opposé Marchandage : −10 % achat ; soured sur botch (DR net ≥ 6 en défaite) ; gel du Marchandage cette visite |
 | `LDB 60 l.5` | `src/engine/bargain.ts` + `src/state/merchantFlow.ts` | Vente base = ½ prix listé ; ¼ sans Marchandage gagné, ½ si gagné (`resaleRate`) |
-| `LDB 60 l.10–92` | `src/engine/qualities/craftEconomy.ts` | Facteur prix (`craftPriceFactor` : ×2/Atout, ÷2/Défaut) ; décalage Disponibilité (`shiftAvailability`) ; delta Enc (`craftEncDelta` : Léger −1, Volumineux +1) ; classe de qualité (`qualityClass`) |
-| `LDB 10 l.332–312` | `src/state/merchantFlow.ts` | Talent Détection d'artefact : Test Intuition, 1 tentative/artefact, révèle aura par DR |
+| `LDB 60 l.3-62` | `src/engine/qualities/craftEconomy.ts` | Facteur prix (`craftPriceFactor` : ×2/Atout, ÷2/Défaut) ; décalage Disponibilité (`shiftAvailability`) ; delta Enc (`craftEncDelta` : Léger −1, Volumineux +1) ; classe de qualité (`qualityClass`) |
+| `LDB 10 l.332, 336` | `src/state/merchantFlow.ts` | Talent Détection d'artefact : Test Intuition, 1 tentative/artefact, révèle aura par DR |
 | `LDB 12 l.94` | `src/state/merchantFlow.ts` | Échec net Évaluation : pas de re-tentative le même jour |
 
 **Fichiers engine** : `src/engine/disponibilite.ts`, `src/engine/bargain.ts`, `src/engine/appraisal.ts`, `src/engine/qualities/craftEconomy.ts`

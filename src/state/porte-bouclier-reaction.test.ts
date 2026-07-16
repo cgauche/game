@@ -8,7 +8,7 @@ import type { Combatant, Weapon } from '../engine/types';
 import type { Scene } from './scene';
 
 /**
- * Porte-Bouclier — variante « Avantage de groupe » (AA l.4428, VERBATIM) : « Quand vous utilisez un
+ * Porte-Bouclier — variante « Avantage de groupe » (AA 13 l.84, VERBATIM) : « Quand vous utilisez un
  * bouclier pour vous défendre, une fois par Round, vous pouvez dépenser 2 Avantages soit pour causer des
  * Dégâts quand vous êtes attaqué comme s'il s'agissait de votre Action, soit pour pousser votre adversaire
  * sur 2 mètres dans la direction directement opposée à vous et ne plus être considéré comme Engagé. »
@@ -52,7 +52,7 @@ const S = useGame.setState;
 const alliesPool = () => useGame.getState().battle!.advantagePools!.allies;
 const cur = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!;
 
-describe('Porte-Bouclier — réaction à coût d’Avantages (variante AA l.4428)', () => {
+describe('Porte-Bouclier — réaction à coût d’Avantages (variante AA 13 l.84)', () => {
   beforeEach(() => { useGame.setState({ battle: null }); setRule('combat-aa-avantage-groupe', true); seedBattleRng(7); });
   afterEach(() => resetRule('combat-aa-avantage-groupe'));
 

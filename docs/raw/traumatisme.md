@@ -110,7 +110,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : tables complètes → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) ; Fractures → [§ 7](#7-fractures-mineure--majeure) ; Déchirures → [§ 8](#8-déchirures-musculaires-mineure--majeure) ; Amputations → [§ 9](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.53-55, l.56-187) → `critEscalationSchema`, `CritEscalation`, `resolveAACritical`, `critWoundLocation`, `rollCritical`, `OPTIONAL_RULES`, `stampCriticalEscalation`, `settleHealedCriticals`, `fireCritTriggers`, `usesSuddenDeath`, +9 — `src/data/criticals.ts`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/combat.ts`, +7 fichiers
+- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `dechirure-autre-mineure`, `CritEscalation`, `fracture-torse-mineure`, `fracture-torse-majeure`, `resolveAACritical`, `fracture-jambe-mineure`, `critWoundLocation`, `fracture-jambe-majeure`, +21 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +8 fichiers
 
 ---
 
@@ -181,7 +181,7 @@ L'os est salement fracturé ou a éclaté. Peu probable de guérir correctement 
 **Voir aussi** : [Amputation — Membre amputé](#9-amputation--choc-traitement-et-séquelles-permanentes) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.193-213) → `fractureSequela`, `fractureEndDifficulty` — `src/data/night-stakes.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
+- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `dechirure-autre-mineure`, `fracture-torse-mineure`, `fracture-torse-majeure`, `fractureSequela`, `fracture-jambe-mineure`, `fractureEndDifficulty`, `fracture-jambe-majeure`, `fracture-tete-mineure`, `fracture-tete-majeure`, +4 — `src/data/night-stakes.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
 
 ---
 
@@ -212,7 +212,7 @@ La Compétence Guérison ne raccourcit pas la Majeure (elle informe seulement qu
 **Voir aussi** : [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.215-231) → `permanentAmputations`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `Amputation`, `amputationSchema`, `resolveAmputation`, `AAEntry`, `downgradeTornMuscle`, `rollCritical` — `src/data/criticals.ts`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/engine/trauma.ts`
+- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `dechirure-jambe-majeure`, `Amputation`, `amputationSchema`, `dechirure-autre-mineure`, `resolveAmputation`, `AAEntry`, +25 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, +1 fichiers
 
 ---
 
@@ -258,7 +258,7 @@ Toute amputation nécessite une **Chirurgie** pour être traitée. La blessure n
 **Voir aussi** : [Chirurgie](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; États → [etats.md](etats.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.233-285) → `isFumble`, `permanentAmputations`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `Amputation`, `amputationSchema`, `resolveAmputation`, `AAEntry`, `downgradeTornMuscle`, `rollCritical`, +9 — `src/data/criticals.ts`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/combat.ts`, `src/engine/critical.ts`, +3 fichiers
+- `LDB 18` (l.233-285) → `isFumble`, `permanentAmputations`, `dechirure-jambe-mineure`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `dechirure-jambe-majeure`, `Amputation`, `amputationSchema`, `dechirure-autre-mineure`, `resolveAmputation`, +35 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/combat.ts`, +4 fichiers
 
 ---
 
@@ -283,8 +283,8 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) (LDB 09 l.255-269) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; Faim/Soif → [§ 13](#13-faim-et-soif) (sans provisions : pas de récupération naturelle).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, `Combatant`, `createCombatSlice` — `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/types.ts`, `src/state/combatSlice.ts`
-- `LDB 18` (l.289-300) → `permanentAmputations`, `critEscalationSchema`, `HealWoundsOptions`, `recoveryTarget`, `applyHealWounds`, `removeCondition`, `defenseValue`, `receiveMedicalAid`, `settleHealedCriticals`, `GameOp`, +4 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +8 fichiers
+- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `redaction`, `healDifficulty`, `athletisme`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, +2 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +2 fichiers
+- `LDB 18` (l.289-300) → `permanentAmputations`, `dechirure-jambe-majeure`, `critEscalationSchema`, `dechirure-autre-majeure`, `HealWoundsOptions`, `recoveryTarget`, `applyHealWounds`, `removeCondition`, `amputation-plaie`, `defenseValue`, +18 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +8 fichiers
 
 ---
 

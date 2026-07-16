@@ -50,7 +50,7 @@ describe('conditionalDamageNote — #135 : dégâts CONDITIONNELS dérivés des 
     expect(conditionalDamageNote(belier)).toBe('contre une porte uniquement — sinon Arme improvisée (+BF+1) · ×2 contre une structure');
   });
 
-  it('Atout Siège seul (canon, ADE II l.292) : uniquement la note ×2 — dégâts imprimés valent pour toute autre cible', () => {
+  it('Atout Siège seul (canon, ADE II 08 l.292) : uniquement la note ×2 — dégâts imprimés valent pour toute autre cible', () => {
     const canon = { qualities: [{ id: 'siege' }], damage: { plusBF: false, flat: 20 } };
     expect(conditionalDamageNote(canon)).toBe('×2 contre une structure');
   });

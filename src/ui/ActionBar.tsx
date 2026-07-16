@@ -372,10 +372,10 @@ export function ActionBar() {
   const push = isHero ? pushSlot(active, battle.combatants) : { show: false, undercrew: false };
   // « Diriger l'équipe » (Commandant d'équipe, AA) : le héros porte le Talent ET ≥ 1 équipe d'Arme d'équipe est à portée de voix.
   const canAid = isHero && canAidTeam(active, battle.combatants);
-  // Battement (LDB 10 l.103 / AA l.4361) : Action, Test de CC non opposé. Dispo si le héros porte le
+  // Battement (LDB 10 l.103 / AA 13 l.17) : Action, Test de CC non opposé. Dispo si le héros porte le
   // Talent, l'Action n'est pas dépensée, et ≥ 1 adversaire ARMÉ pas plus grand est Engagé (battementFoes).
   const canBattement = isHero && !frenzied && !battle.acted && hasBattement(active) && battementFoes(active, battle).length > 0;
-  // Distraire (LDB 10 l.364 / AA l.4395) : Mouvement, Test opposé Athlétisme vs Calme. Dispo si le héros
+  // Distraire (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test opposé Athlétisme vs Calme. Dispo si le héros
   // porte le Talent, son Mouvement n'est pas dépensé, et ≥ 1 adversaire est éligible EN LIGNE DE VUE.
   const canDistraire =
     isHero && !frenzied && !moveStarted && !!active.pos && hasDistraire(active) && !!scene &&

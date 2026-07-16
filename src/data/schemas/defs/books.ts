@@ -14,6 +14,11 @@ export const schema = z.array(
     id: z.string(),
     label: z.string(),
     abr: z.string().nullable(),
+    /** Abréviation CANONIQUE de l'Atlas RAW (`BOOKS` de `scripts/raw/_lib.mjs`) — présente sur les
+     *  15 livres extraits par Marker, absente des VO/compagnons hors Atlas. Pont slug→abbr consommé
+     *  par `scripts/raw/build-implemente.mjs` (résolution folio→chapitre, #434), validé fail-fast
+     *  contre `BOOKS`. `abr` reste l'abréviation d'AFFICHAGE libre du Compendium. */
+    abbr: z.string().optional(),
     language: z.string().nullable(),
     folder: z.string().nullable(),
     /** HTML de présentation (bibliographie) — hors du périmètre `<Prose>` (pas un texte de règle

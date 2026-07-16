@@ -20,7 +20,7 @@ export function weaponMatchesFamily(w: { name: string; subType?: string } | unde
 }
 
 /** Dégâts d'arme encaissés EFFECTIFS (pour la pénalité) : l'Atout Solide(N) absorbe les N premiers
- *  Points de Dégâts sans pénalité (LDB 60 l.64). */
+ *  Points de Dégâts sans pénalité (LDB 60 l.30). */
 function effectiveDamageTaken(w: Weapon): number {
   return Math.max(0, (w.damageTaken ?? 0) - (qualityIndice(w, QUALITY_IDS.Solide) ?? 0));
 }
@@ -32,7 +32,7 @@ export function effectiveWeaponDamage(w: Weapon, strengthBonus: number): number 
   const d = w.damage;
   const usesBF = 'plusBF' in d && d.plusBF;
   const flat = 'flat' in d ? d.flat : 0;
-  const dt = effectiveDamageTaken(w); // Solide(N) absorbe les N premiers points (LDB 60 l.64)
+  const dt = effectiveDamageTaken(w); // Solide(N) absorbe les N premiers points (LDB 60 l.30)
   const reduced = flat >= 0 ? Math.max(0, flat - dt) : flat;
   return Math.max(0, (usesBF ? strengthBonus : 0) + reduced);
 }
@@ -185,7 +185,7 @@ export function destroyWeapon(w: Weapon): void {
 }
 
 /** Seuil de Sauvegarde (1d10 ≥ seuil ⇒ l'arme résiste) contre une cassure instantanée pour une arme
- *  Solide(N) : 9+ pour N=1, amélioré de 1 par Indice (8+ pour N=2…), LDB 60 l.64-67. null si non Solide. */
+ *  Solide(N) : 9+ pour N=1, amélioré de 1 par Indice (8+ pour N=2…), LDB 60 l.30-32. null si non Solide. */
 export function solideSaveThreshold(w: Weapon): number | null {
   const n = qualityIndice(w, QUALITY_IDS.Solide);
   return n && n > 0 ? Math.max(2, 10 - n) : null;

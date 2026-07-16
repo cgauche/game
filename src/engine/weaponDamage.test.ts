@@ -79,7 +79,7 @@ describe('effectiveWeapon — bascule Arme improvisée à +0 (LDB 62 l.178)', ()
   });
 });
 
-describe('Solide (Indice) — absorption des Dégâts d’arme + sauvegarde (LDB 60 l.64-67)', () => {
+describe('Solide (Indice) — absorption des Dégâts d’arme + sauvegarde (LDB 60 l.30-32)', () => {
   it('Solide(N) absorbe les N premiers points de damageTaken (pas de pénalité)', () => {
     expect(effectiveWeaponDamage(sword({ damageTaken: 3, qualities: [{ id: 'solide', value: 3 }] }), 3)).toBe(7); // BF3+4 (3 absorbés)
     expect(effectiveWeaponDamage(sword({ damageTaken: 4, qualities: [{ id: 'solide', value: 3 }] }), 3)).toBe(6); // BF3 + (4 - max(0,4-3))

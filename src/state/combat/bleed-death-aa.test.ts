@@ -57,7 +57,7 @@ describe('#38 (d) — gate AA du jet de mort par Hémorragique (Aux Armes l.2451
     setRule('combat-aa-blessures', 'aa');
     const { E } = setup();
     seedBattleRng(21); // double : coagulerait SI le jet avait lieu
-    addCondition(E, COND.hemorragique, 3); // pas d'État Inconscient → gate AA l.2451 l'exclut
+    addCondition(E, COND.hemorragique, 3); // pas d'État Inconscient → gate AA 07 l.7 l'exclut
     const battle = roundEndHooksOnly();
     expect(stacks(E, COND.hemorragique)).toBe(3); // jamais roulé → pas de coagulation
     expect((battle.bleedDoomed ?? []).some((d) => d.id === E.id)).toBe(false);

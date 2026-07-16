@@ -10,7 +10,7 @@ import type { Scene } from './scene';
 import type { GameState } from './store';
 
 /**
- * SIÈGE-B — l'IA ennemie prend les STRUCTURES (porte/mur) pour cible avec ses armes de siège (AA l.3808 :
+ * SIÈGE-B — l'IA ennemie prend les STRUCTURES (porte/mur) pour cible avec ses armes de siège (AA 10 l.138 :
  * « grosses cibles statiques »). L'Atout Siège (×2, `woundsFromHit`) rend la valeur élevée → le canon
  * BRÈCHE la porte ; une arme ordinaire ne l'abîme pas (`structureImmune`). SIÈGE-A — un PNJ allié `aiControlled`
  * est piloté par l'IA (`aiDriven`) en jeu manuel, là où un héros du groupe reste manuel.

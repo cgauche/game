@@ -73,7 +73,7 @@ export interface CombatFeature {
    *  Test opposé (consolation d'une situation désespérée — pas sur une défense gagnée). */
   shieldAdvantage?: boolean;
   /** Réaction défensive à coût d'Avantages de réserve (Porte-Bouclier variante « Avantage de groupe »,
-   *  AA l.4428) : quand on se défend au Bouclier, 1×/Round, dépenser `cost` Avantages soit pour causer des
+   *  AA 13 l.84) : quand on se défend au Bouclier, 1×/Round, dépenser `cost` Avantages soit pour causer des
    *  Dégâts « comme s'il s'agissait de son Action », soit pour repousser l'attaquant de 2 m et se
    *  désengager. Déclarée en DONNÉE (sous `aa` = active en mode Avantage de groupe) ; offerte par le chooser
    *  de défense (`shieldReactionCost`), débitée par `campSpend`, résolue par `applyShieldReaction`. */
@@ -85,20 +85,20 @@ export interface CombatFeature {
   counterRequiresFastParry?: boolean;
   /** Renversement : en gagnant le Test opposé de Corps à corps, prend TOUS les Avantages adverses au lieu de +1. */
   stealAdvantage?: boolean;
-  /** Renversement — variante « Avantage de groupe » (AA l.4442) : prend 1 Avantage dans la réserve
+  /** Renversement — variante « Avantage de groupe » (AA 13 l.92-98) : prend 1 Avantage dans la réserve
    *  ADVERSE (au lieu de tout l'Avantage individuel de l'adversaire), l'ajoute à sa réserve, sans Dégât. */
   stealOne?: boolean;
-  /** Coude-à-coude — variante « Avantage de groupe » (AA l.4387) : « compte comme deux combattants »
+  /** Coude-à-coude — variante « Avantage de groupe » (AA 13 l.43) : « compte comme deux combattants »
    *  au décompte de domination de fin de Round (transfert d'Avantage). Poids par défaut 1. */
   transferWeight?: number;
-  /** Artilleur / Rechargement rapide — variante « Avantage de groupe » (AA l.4353/4434) : recharger une
+  /** Artilleur / Rechargement rapide — variante « Avantage de groupe » (AA 13 l.9/90) : recharger une
    *  arme pendant un combat compte comme une Action Évaluer → +1 Avantage supplémentaire au rechargement. */
   reloadAssessAdvantage?: boolean;
-  /** Cavalier émérite — variante « Avantage de groupe » (AA l.4369) : Taille considérée égale à celle de
+  /** Cavalier émérite — variante « Avantage de groupe » (AA 13 l.25) : Taille considérée égale à celle de
    *  la monture pour résister à la Peur/Terreur causée UNIQUEMENT par la Taille de l'adversaire. */
   fearSizeAsMount?: boolean;
-  /** Impitoyable — variante « Avantage de groupe » (AA l.4418) : le coût d'Avantage d'une Retraite
-   *  stratégique (Désengagement, défaut 2 Avantages, AA l.4139) tombe à cette valeur pour le porteur. */
+  /** Impitoyable — variante « Avantage de groupe » (AA 13 l.74) : le coût d'Avantage d'une Retraite
+   *  stratégique (Désengagement, défaut 2 Avantages, AA 11 l.37) tombe à cette valeur pour le porteur. */
   retreatCost?: number;
   /** Impitoyable (LDB 10 l.591) : au Désengagement « Sacrifier l'Avantage », GARDE niveau Avantages au
    *  lieu de tomber à 0 (× niveau). */
@@ -106,10 +106,10 @@ export interface CombatFeature {
   /** Impitoyable (LDB 10 l.591) : peut Sacrifier l'Avantage pour se Désengager MÊME avec moins d'Avantage
    *  que ses adversaires (relâche la garde de supériorité stricte). */
   disengageWithLessAdvantage?: boolean;
-  /** Battement — variante « Avantage de groupe » (AA l.4361) : manœuvre d'Action retirant de l'Avantage
+  /** Battement — variante « Avantage de groupe » (AA 13 l.17) : manœuvre d'Action retirant de l'Avantage
    *  à la réserve ADVERSE (−1 sur Succès de Corps à corps, −1 de plus à 6 DR). Le porteur peut la déclarer. */
   battement?: boolean;
-  /** Distraire (LDB 10 / AA l.4395) : manœuvre de Mouvement — Test opposé Athlétisme/Calme ; sur Succès,
+  /** Distraire (LDB 10 / AA 13 l.51) : manœuvre de Mouvement — Test opposé Athlétisme/Calme ; sur Succès,
    *  la cible (mode groupe : sa réserve) ne gagne aucun Avantage jusqu'à la fin du prochain Round. */
   distraire?: boolean;
   /** Maîtrise du combat : compte pour 1+niveau personnes au calcul du surnombre. */
@@ -141,7 +141,7 @@ export interface CombatFeature {
    *  Recherche…). Réf STRUCTURÉE par id (plus de match par libellé) ; `capDR` plafonne le DR (Pansement +1). */
   reverseFailed?: { skill: string; spec?: string; capDR?: number };
   // ── Économie / social ──────────────────────────────────────────────────────
-  /** Négociateur (LDB 60 l.12) : un Marchandage GAGNÉ réduit le prix de 20 % (au lieu de 10 %) même
+  /** Négociateur (LDB 59 l.43) : un Marchandage GAGNÉ réduit le prix de 20 % (au lieu de 10 %) même
    *  sans Succès Stupéfiant (DR net ≥ 6). Lu par merchantFlow lors de la conclusion du Marchandage. */
   bargainBonus?: boolean;
   // ── Capacités diverses (hors combat direct) ──────────────────────────────────
@@ -156,7 +156,7 @@ export interface CombatFeature {
    *  Magie des Arcanes → 'arcane', Invocation → 'invocation', Béni → 'beni', Magie du Chaos → 'chaos').
    *  La spécialisation (Domaine/Culte) est portée par `ctx.spec`. Remplace le name-match de grimoire. */
   castingKind?: CastingKind;
-  /** Commandant d'équipe (AA l.4373-4379) : peut DIRIGER une équipe servant une Arme d'équipe « à portée
+  /** Commandant d'équipe (AA 13 l.29-35) : peut DIRIGER une équipe servant une Arme d'équipe « à portée
    *  de voix » (Test de Commandement Intermédiaire) — sur réussite, l'équipe tire au score de Projectiles
    *  du Personnage. Lu par `hasCommandTeam` (affordance + substitution `state/commandTeam`). */
   commandTeam?: boolean;

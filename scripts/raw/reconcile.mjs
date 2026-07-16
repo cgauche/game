@@ -14,6 +14,7 @@
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { ldbRe, otherRe, span, BOOKS, esc, bookOf } from './_lib.mjs'
+import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
 export const RAWDIR = 'docs/raw'
@@ -87,6 +88,24 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
         }
       }
     })
+  }
+
+  // === crédit FOLIO (#434) : chapitres LDB atteints par une source `{book,page}` d'un src/data/*.json ===
+  // Réutilise l'extraction canonique (`folioCitationsFromJson` → `folioIndexOf`/`folioRange`, mapping
+  // slug→abbr de books.json) — jamais une 2e implémentation. Un chapitre-données (carrières LDB 26-35,
+  // possessions 66-70…) est « référencé dans le code » via le folio même sans réf de LIGNE.
+  const codeFolioLdbCh = new Set()
+  let abbrMap = null
+  try { abbrMap = loadAbbrMap() } catch { abbrMap = null }
+  if (abbrMap) {
+    const folioStats = { byBook: new Map(), noAtlas: 0, noPage: 0 }
+    for (const f of SRC) {
+      const rel = f.replace(/\\/g, '/')
+      if (!rel.endsWith('.json') || /\.(test|spec)\./.test(rel)) continue
+      for (const c of folioCitationsFromJson(rel, readFileSync(f, 'utf8'), { ...abbrMap, stats: folioStats })) {
+        if (c.book === 'LDB') codeFolioLdbCh.add(chKey(c.ch))
+      }
+    }
   }
 
   // === collecte ATLAS ===
@@ -203,13 +222,20 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
       if (/non impl[ée]ment[ée]/i.test(ln)) nonImpl.push({ doc: d.split('/').pop(), row: i + 1, text: ln.trim().slice(0, 200) })
     })
   }
-  const atlasOnly = [...atlasCh].filter((ch) => !codeCh.has(ch)).sort((a, b) => Number(a) - Number(b))
+  // B2 : chapitres LDB cités par l'Atlas jamais référencés dans le code. Normalise au point d'agrégation
+  // (`chKey`, #434 défaut 11) — sinon `LDB 06` ET `LDB 6` cohabitent (doublon). Crédite le FOLIO :
+  // un chapitre atteint par une source `{book,page}` de src/data est référencé (donnée), pas hors-code.
+  const atlasChNorm = new Set([...atlasCh].map(chKey))
+  const codeChNorm = new Set([...codeCh].map(chKey))
+  const atlasOnlyBefore = [...atlasChNorm].filter((ch) => !codeChNorm.has(ch)).sort((a, b) => Number(a) - Number(b))
+  const atlasOnly = atlasOnlyBefore.filter((ch) => !codeFolioLdbCh.has(ch))
+  const atlasOnlyFolioCredited = atlasOnlyBefore.filter((ch) => codeFolioLdbCh.has(ch))
 
   const codeOtherBooks = new Set([...codeOther.keys(), ...codeOtherNoCh.keys()])
   const atlasOtherBooks = new Set([...atlasOther.keys(), ...atlasOtherChLoose.keys()])
 
   return {
-    hardA, softA, docOwnerOfCh, nonImpl, atlasOnly,
+    hardA, softA, docOwnerOfCh, nonImpl, atlasOnly, atlasOnlyBefore, atlasOnlyFolioCredited,
     hardAOther, softAOther, codeOtherNoCh, bookStats,
     codeOtherBooks, atlasOtherBooks,
   }
@@ -217,7 +243,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
 
 /** Rend le Markdown `docs/raw/reconciliation.md` — pur (aucun accès fichier). */
 export function renderReport(data) {
-  const { hardA, softA, docOwnerOfCh, nonImpl, atlasOnly, hardAOther, softAOther, codeOtherNoCh, bookStats, codeOtherBooks, atlasOtherBooks } = data
+  const { hardA, softA, docOwnerOfCh, nonImpl, atlasOnly, atlasOnlyBefore, atlasOnlyFolioCredited, hardAOther, softAOther, codeOtherNoCh, bookStats, codeOtherBooks, atlasOtherBooks } = data
   const noChapterCount = [...codeOtherNoCh.values()].reduce((n, a) => n + a.length, 0)
 
   const L = []
@@ -225,7 +251,7 @@ export function renderReport(data) {
   L.push('> Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l\'app applique', '> (réfs `LDB NN l.X` dans `src/`, et pour les 14 autres livres `<ABRÉV> NN l.X`) absentes de', '> l\'Atlas. **Sens B** = règles que l\'Atlas décrit hors du code (borné au LDB).', `> Tolérance ligne = ±${TOL}.`, '')
   L.push(`**Sens A — code → Atlas (LDB)** : ${hardA.length} chapitre(s) cités par le code & absents de l'Atlas · ${softA.length} chapitre(s) couverts avec des lignes non pinées.`)
   L.push(`**Sens A — code → Atlas (14 autres livres)** : ${hardAOther.length} chapitre(s)-livre cités par le code & absents de l'Atlas · ${softAOther.length} chapitre(s)-livre couverts avec des lignes non pinées · ${noChapterCount} réf(s) sans chapitre (non réconciliables par cette mesure).`)
-  L.push(`**Sens B — Atlas → code (LDB)** : ${nonImpl.length} marqueur(s) « (non implémenté) » · ${atlasOnly.length} chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.`, '')
+  L.push(`**Sens B — Atlas → code (LDB)** : ${nonImpl.length} marqueur(s) « (non implémenté) » · ${atlasOnly.length} chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : ${atlasOnlyBefore.length} · ${atlasOnlyFolioCredited.length} crédités par une source folio de \`src/data\`).`, '')
 
   L.push('## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l\'Atlas (trous durs)', '')
   if (!hardA.length) L.push('_Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une fiche._', '')
@@ -286,6 +312,9 @@ export function renderReport(data) {
   L.push('')
 
   L.push('## B2 — Chapitres LDB cités par l\'Atlas, jamais référencés dans le code', '')
+  L.push(`_Avant crédit folio (${atlasOnlyBefore.length})_ : ${atlasOnlyBefore.length ? atlasOnlyBefore.map((c) => `LDB ${c}`).join(' · ') : '—'}`, '')
+  L.push(`_Crédités par une source folio de \`src/data/*.json\` (${atlasOnlyFolioCredited.length}, donnée référencée sans réf de ligne)_ : ${atlasOnlyFolioCredited.length ? atlasOnlyFolioCredited.map((c) => `LDB ${c}`).join(' · ') : '—'}`, '')
+  L.push('**VRAIS hors-code (après crédit folio) :**')
   if (!atlasOnly.length) L.push('_Aucun._', '')
   else L.push(atlasOnly.map((c) => `LDB ${c}`).join(' · '), '')
 
@@ -304,7 +333,7 @@ function main() {
   console.log(`Sens A (autres livres) : ${data.hardAOther.length} trou(s) dur(s) chapitre-livre · ${data.softAOther.length} chapitre(s)-livre à lignes non pinées · ${noChapterCount} réf(s) sans chapitre (hors mesure)`)
   for (const [book, st] of [...data.bookStats].sort((a, b) => a[0].localeCompare(b[0])))
     console.log(`  ${book} : ${st.hard} trous durs · ${st.soft} chapitres non pinés · ${st.noCh} réfs sans chapitre`)
-  console.log(`Sens B : ${data.nonImpl.length} (non implémenté) · ${data.atlasOnly.length} chapitres Atlas hors-code`)
+  console.log(`Sens B : ${data.nonImpl.length} (non implémenté) · B2 ${data.atlasOnlyBefore.length} → ${data.atlasOnly.length} chapitres Atlas hors-code (${data.atlasOnlyFolioCredited.length} crédités par folio)`)
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith('reconcile.mjs')

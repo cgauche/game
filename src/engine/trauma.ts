@@ -187,7 +187,7 @@ export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaul
   const remaining: Trauma[] = [];
   const fractureTests: { severity: string; location: string; label: string }[] = [];
   for (const t of c.traumas) {
-    // « Pied écrasé » (AA l.2624 / LDB) : perte définitive du membre si la Chirurgie de la plaie n'est pas
+    // « Pied écrasé » (AA 07 l.180 / LDB) : perte définitive du membre si la Chirurgie de la plaie n'est pas
     // faite dans le délai (1d10 jours). L'opération réussie retire la plaie AVANT l'échéance (removeSurgicalTrauma)
     // → ce trauma n'existe plus ici → membre sauvé. Sinon, à l'échéance, la séquelle permanente est posée.
     if (t.amputateAfterDays != null) {
@@ -350,7 +350,7 @@ export function consolidateAmputations(c: Combatant): string[] {
 /**
  * Aide Médicale reçue (LDB 18 l.307-312 : Compétence Guérison réussie, bandage/cataplasme, ou sort/prière de
  * soin) : lève le drapeau `awaitingMedicalAid` de TOUTES les séquelles en attente — le PREMIER acte de soin des
- * 3 formes stoppe leur aggravation (escalade « 1 doigt de plus par Round » de « Main ouverte », AA l.2571 / LDB).
+ * 3 formes stoppe leur aggravation (escalade « 1 doigt de plus par Round » de « Main ouverte », AA 07 l.127 / LDB).
  * Appelé par les 3 formes (ops `heal`/`healCaster`/`preventInfection` ; succès de Guérison en infirmerie). Pur.
  */
 export function receiveMedicalAid(c: Combatant): string[] {
@@ -361,7 +361,7 @@ export function receiveMedicalAid(c: Combatant): string[] {
 }
 
 /**
- * Escalade « Main ouverte » (AA l.2571 / LDB « Main ouverte ») : à CHAQUE fin de Round de combat SANS Aide
+ * Escalade « Main ouverte » (AA 07 l.127 / LDB « Main ouverte ») : à CHAQUE fin de Round de combat SANS Aide
  * Médicale (`awaitingMedicalAid`), la main perd un doigt de plus. `consolidateAmputations` applique ensuite la
  * règle de la main tranchée (4+ doigts → `main-bras-ampute`, LDB 18 l.251). Mute `c`, renvoie le journal.
  * Appelé par le hook de franchissement de Round (`roundHooks`, machinerie universelle — ne nomme aucune entité).
@@ -380,7 +380,7 @@ export function tickFingerLossEscalation(c: Combatant, _rng: RNG = defaultRNG): 
   // Main tranchée (4+ doigts) : la règle « perdez tous vos doigts → vous perdez votre main » est atteinte —
   // la plaie de doigt n'a plus lieu de saigner (le membre est amputé), on retire l'escalade en attente. Vérifié
   // PAR LOCALISATION : une main déjà amputée sur l'AUTRE bras (crit antérieur) ne coupe pas une escalade « Main
-  // ouverte » fraîche — seule la main effectivement tranchée arrête SON escalade (AA l.2571 / LDB « Main ouverte »).
+  // ouverte » fraîche — seule la main effectivement tranchée arrête SON escalade (AA 07 l.127 / LDB « Main ouverte »).
   for (const t of c.traumas ?? []) {
     if (t.fingerLossPerRound && (c.traumas ?? []).some((x) => x.traumaId === 'main-bras-ampute' && x.location === t.location)) {
       t.fingerLossPerRound = false;

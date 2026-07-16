@@ -452,8 +452,8 @@ export function createCombatSlice(get: Get, set: Set) {
         .map((id) => inBattleId(battle, id))
         .filter((c): c is Combatant => !!c);
       // « Ramener votre Avantage à 0 » (LDB 15 l.47) ; en mode « Avantage de groupe » c'est la
-      // Retraite stratégique (AA l.4139) : dépense FIXE de 2 Avantages de la réserve du camp (1 avec
-      // Impitoyable AA l.4418), débitée par `campSpend`. Mode LDB : Impitoyable (LDB 10 l.591) GARDE
+      // Retraite stratégique (AA 11 l.37) : dépense FIXE de 2 Avantages de la réserve du camp (1 avec
+      // Impitoyable AA 13 l.74), débitée par `campSpend`. Mode LDB : Impitoyable (LDB 10 l.591) GARDE
       // niveau Avantages au lieu de tomber à 0.
       if (groupAdvantage()) campSpend(get, mover, retreatAdvantageCost(mover));
       else mover.advantage = Math.min(mover.advantage, keptAdvantageOnDisengage(mover));
@@ -979,7 +979,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingTrample: null });
       if (attacker && target) {
         const prevActed = battle.acted; // action GRATUITE : ne consomme pas l'Action
-        campSpend(get, attacker, 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA l.4142)
+        campSpend(get, attacker, 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA 11 l.30-38)
         applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, pt.result); // un Coup Critique s'EMPILE (pushReveal) sur la cascade ouverte
         set({ battle: { ...get().battle!, acted: prevActed } });
       }
@@ -989,7 +989,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     trampleCancel: () => set({ pendingTrample: null }),
 
-    // ── Battement (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé retirant de
+    // ── Battement (LDB 10 l.103 / AA 13 l.17) : Action, Test de Corps à corps NON opposé retirant de
     //    l'Avantage adverse. Le jet passe par FLOWS.battement (Lancer/Chance/Pacte/Résilience) ;
     //    « Appliquer » (`battementConfirm`) appelle `resolveBattement` et consomme l'Action. ──
     battleBattement: (foeId?: string) => {
@@ -1028,7 +1028,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     battementCancel: () => set({ pendingBattement: null }),
 
-    // ── Distraire (LDB 10 l.364 / AA l.4395) : MOUVEMENT, Test OPPOSÉ Athlétisme vs Calme. Le jet de
+    // ── Distraire (LDB 10 l.364 / AA 13 l.51) : MOUVEMENT, Test OPPOSÉ Athlétisme vs Calme. Le jet de
     //    Calme du foe est figé à l'ouverture (`startDistraire`) ; l'Athlétisme du mover passe par
     //    FLOWS.distraire (Lancer/Chance/Pacte/Résilience) ; « Appliquer » pose `distractedRounds` et
     //    consomme le MOUVEMENT (pas l'Action). ──
@@ -1482,7 +1482,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, action: 'push', reachable: reach, preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // « Diriger l'équipe » (Commandant d'équipe, AA l.4373-4379) : le Personnage doté du Talent aide une équipe
+    // « Diriger l'équipe » (Commandant d'équipe, AA 13 l.29-35) : le Personnage doté du Talent aide une équipe
     // servant une Arme d'équipe à portée de voix — Test de Commandement Intermédiaire (+0) RÉUTILISÉ (openSkillTest/
     // pendingTest, restreint à l'acteur actif). Sur réussite, chaque chef dirigé est lié au commandant (op
     // `teamCommander`) → son équipe tire ensuite au score de Projectiles du commandant (substitution `attackEnv`).
@@ -1766,7 +1766,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const servants = (poste.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
       const w0 = mannedPosteWeapon(chef, poste);
       if (!w0) return;
-      // Effectif EFFECTIF = même décompte que le tir (servants aptes ET à la bonne Projectiles, AA l.3900) : la
+      // Effectif EFFECTIF = même décompte que le tir (servants aptes ET à la bonne Projectiles, AA 10 l.230) : la
       // recharge ×2 du sous-effectif suit la MÊME source que `firedWeapon`. Repli `exposedCrew` si le chef ne
       // « sert » pas formellement le poste (`mannedPoste` absent — état construit sans `applyShipPostes`).
       const present = servingCrewPresent(chef, battle.combatants) ?? exposedCrew(servants).length;
@@ -1804,7 +1804,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const reloadTalent = pr.success ? reloadDRBonus(chef, w) : 0; // Rechargement rapide / Artilleur (LDB 10)
         const step = crewedReloadStep(w ?? ({ reload: pr.reload, qualities: [] } as never), pr.progressBefore, pr.sl + reloadTalent);
         if (step.done) { poste.loaded = true; poste.reloadProgress = 0; } else poste.reloadProgress = step.progress;
-        if (pr.success && reloadGrantsAssessAdvantage(chef)) campGain(get, chef, 1); // AA l.4353/4434 : recharger = Action Évaluer → +1 Avantage (mode groupe)
+        if (pr.success && reloadGrantsAssessAdvantage(chef)) campGain(get, chef, 1); // AA 13 l.9/90 : recharger = Action Évaluer → +1 Avantage (mode groupe)
         set({ battle: { ...battle, action: null,
           crewActed: withCrewActed(battle.crewActed, ship.id, poste.crewIds ?? []), // chef + servants OCCUPÉS ce Round
           log: [...battle.log, ev('reload', describeReload(pr, step.progress, w?.name ?? 'pièce'), chef.id)] } });
@@ -1827,7 +1827,7 @@ export function createCombatSlice(get: Get, set: Set) {
       } else {
         a.reloadProgress = progress;
       }
-      if (pr.success && reloadGrantsAssessAdvantage(a)) campGain(get, a, 1); // AA l.4353/4434 : recharger = Action Évaluer → +1 Avantage (mode groupe)
+      if (pr.success && reloadGrantsAssessAdvantage(a)) campGain(get, a, 1); // AA 13 l.9/90 : recharger = Action Évaluer → +1 Avantage (mode groupe)
       // Issue = source UNIQUE avec la popin (describeReload) — `progress` inclut le bonus de Talent (réalisé à l'application).
       const reloadName = a.weapons.find((w) => w.uid === pr.weaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('reload', describeReload(pr, progress, reloadName), a.id)] } });
@@ -1836,7 +1836,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (aiDriven(get(), a) && get().battle) resumeEnemyTurn(get, set);
     },
     reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
-    // Main ensanglantée (AA l.2569) : « Appliquer » le Test de Dextérité PAR ACTION.
+    // Main ensanglantée (AA 07 l.117) : « Appliquer » le Test de Dextérité PAR ACTION.
     handGateConfirm: () => {
       const { battle, pendingHandGate: pg } = get();
       if (!battle || !pg || pg.roll == null) return;
@@ -2267,7 +2267,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const off = attacker.weapons.find((w) => w.uid === ds.offWeaponUid);
       if (!off) { set({ pendingDualStrike: null }); return; }
       if (!dualStrikeTargets(battle, attacker, off).some((t) => t.id === targetId)) return; // cible invalide (hors d'Allonge)
-      // Main ensanglantée (AA l.2569) : « des deux armes » est UNE Action impliquant les DEUX mains → UN SEUL Test
+      // Main ensanglantée (AA 07 l.117) : « des deux armes » est UNE Action impliquant les DEUX mains → UN SEUL Test
       // avant l'Action. La main directrice est testée à la déclaration (`openAttackCascade`) ; si SEULE la 2nde est
       // gatée (la main directrice a déjà consommé le Test le cas échéant), la 2ᵉ frappe joue le Test ICI. Échec →
       // l'objet de la 2nde main glisse (`disarm`), la 2ᵉ frappe est renoncée. `skipGate` : Test déjà PASSÉ (reprise).
@@ -2318,7 +2318,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!pd || pd.result) return; // choix d'arme de parade avant le jet seulement
       set({ pendingDefense: { ...pd, parryWeaponUid: uid ?? undefined } });
     },
-    // Réaction de Porte-Bouclier (variante AA l.4428) déclarée avant l'Appliquer : 'damage'/'push' ou effacée.
+    // Réaction de Porte-Bouclier (variante AA 13 l.84) déclarée avant l'Appliquer : 'damage'/'push' ou effacée.
     defenseSetShieldReaction: (kind: 'damage' | 'push' | null) => {
       const pd = get().pendingDefense;
       if (!pd) return;
@@ -2336,7 +2336,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
       if (attacker && defender) {
         const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
-        // Réaction de Porte-Bouclier (variante AA l.4428) déclarée pour cette défense : débite la réserve et
+        // Réaction de Porte-Bouclier (variante AA 13 l.84) déclarée pour cette défense : débite la réserve et
         // applique l'effet APRÈS l'attaque (poussée+désengagement ou Dégâts). Cadence 1×/Round vérifiée dans le helper.
         if (pd.shieldReaction && pd.mode === 'parade') applyShieldReaction(get, set, defender, attacker, pd.shieldReaction, (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0]));
         if (suspended) {
@@ -2551,9 +2551,9 @@ export function createCombatSlice(get: Get, set: Set) {
         victoryCondition: enc.victoryCondition,
         // Pièges/hasards authorés de la scène → zones de bataille PERMANENTES (même runtime que les sorts).
         zones: sceneZonesToBattle(scene.effectZones),
-        // Réserves d'Avantage par camp (AA l.4149-4167) : seulement en mode « Avantage de groupe ».
+        // Réserves d'Avantage par camp (AA 11 l.53-65) : seulement en mode « Avantage de groupe ».
         // Positionnement initial AUTO-dérivé : Surnombre + Surprise (calculés) + Manœuvrabilité/Menace/
-        // Terrain (marqueurs éditables de la rencontre, AA l.4149-4167).
+        // Terrain (marqueurs éditables de la rencontre, AA 11 l.53-65).
         advantagePools: groupAdvantage() ? startAdvantagePools(all, doSurprise, enc) : undefined,
       };
       if (battle.advantagePools) mirrorPools(battle.advantagePools, all); // projette la réserve de départ sur chaque combattant

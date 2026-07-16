@@ -1,8 +1,8 @@
 /**
- * Résolveur de l'Incident de Tir d'Artillerie par Salve (Aux Armes, « Salve », AA l.3940-3946) —
+ * Résolveur de l'Incident de Tir d'Artillerie par Salve (Aux Armes, « Salve », AA 10 l.270-277) —
  * CODE GÉNÉRIQUE lisant la DONNÉE verbatim (`artillery-misfire.json` via `data/artilleryMisfire`).
  * Module FRÈRE de `structureCritical.ts` (même patron : `findTableEntry` pour le lookup, issue
- * STRUCTURÉE et PURE — ne mute rien, l'appelant applique). AA l.3936 : « Si l'arme subit un
+ * STRUCTURÉE et PURE — ne mute rien, l'appelant applique). AA 10 l.264 : « Si l'arme subit un
  * Incident de tir à n'importe quel moment du processus, déterminez-en les effets puis faites un jet
  * dans le tableau suivant » — cette table se tire EN PLUS de l'Incident de tir générique (LDB), et
  * UNIQUEMENT pour une arme à Atout *Salve* (branchement : `state/combatFlow.ts::applyOups`).
@@ -25,7 +25,7 @@ export interface ArtillerySalveMisfireResolved {
   note: string;
 }
 
-/** Résout un Incident de Tir d'Artillerie par Salve (AA l.3940-3946) : tire le d10 sur
+/** Résout un Incident de Tir d'Artillerie par Salve (AA 10 l.270-277) : tire le d10 sur
  *  `ARTILLERY_MISFIRE`. `salveRemaining` = Indice de Salve restant au moment de l'Incident (lignes
  *  8-9 et 10, « Pour chaque Indice de Salve restant »). `forcedRoll` = d10 imposé (tests). PUR. */
 export function rollArtillerySalveMisfire(salveRemaining: number, rng: RNG = defaultRNG, forcedRoll?: number): ArtillerySalveMisfireResolved {

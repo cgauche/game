@@ -221,7 +221,7 @@ export interface PendingStateRecovery {
   success: boolean;
   rerolled?: boolean;
 }
-/** Marchandage en attente (LDB 60 l.12) : Test OPPOSÉ Marchandage (joueur) vs Marchandage (marchand).
+/** Marchandage en attente (LDB 59 l.43) : Test OPPOSÉ Marchandage (joueur) vs Marchandage (marchand).
  *  La modale affiche « Lancer » (2 jets), puis le verdict + Chance ; gagner réduit le prix de 10 %
  *  (20 % avec Succès Stupéfiant DR≥6 ou le talent Négociateur). 1 jet verrouillé par visite. */
 export interface PendingBargain {
@@ -242,7 +242,7 @@ export interface PendingBargain {
   /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
 }
-/** Évaluation en attente (LDB 60 l.10 : « estimer les prix … à ±10 % ») — Test d'Évaluation (Int) ;
+/** Évaluation en attente (LDB 59 l.41 : « estimer les prix … à ±10 % ») — Test d'Évaluation (Int) ;
  *  un succès RÉVÈLE l'objet (`identified = true`, ses qualités cachées deviennent visibles) et donne
  *  une fourchette de prix. OU Détection d'artefact (`mode:'detect'`, LDB 10 l.310-312) — Test
  *  d'Intuition au toucher : succès = l'objet est senti MAGIQUE, chaque DR apprend une règle (qualité) ;
@@ -400,7 +400,7 @@ export interface PendingTrample {
   /** Réussite forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
 }
-/** Battement en attente (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé.
+/** Battement en attente (LDB 10 l.103 / AA 13 l.17) : Action, Test de Corps à corps NON opposé.
  *  Modale MONO calquée sur `PendingTrample` — Lancer (jet de CC figé) → Chance/Pacte/Résilience →
  *  Appliquer (`resolveBattement` retire de l'Avantage adverse). Consomme l'Action. */
 export interface PendingBattement {
@@ -411,7 +411,7 @@ export interface PendingBattement {
   /** Réussite forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
 }
-/** Distraire en attente (LDB 10 l.364 / AA l.4395) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs
+/** Distraire en attente (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs
  *  Calme (foe). Modale OPPOSÉE calquée sur `PendingDisengage`/`PendingAuContact` : le jet de Calme du
  *  foe (`defRoll`) est FIGÉ à l'ouverture ; seul le jet d'Athlétisme du mover (`atk`) se (re)joue.
  *  Sur victoire, `resolveDistraire` pose `distractedRounds`. Consomme le MOUVEMENT (pas l'Action). */
@@ -747,7 +747,7 @@ export interface PendingDefense {
   free?: boolean;
   freeKind?: string;
   prevActed?: boolean;
-  /** Réaction de Porte-Bouclier (variante AA l.4428) déclarée par le défenseur pour CETTE défense au
+  /** Réaction de Porte-Bouclier (variante AA 13 l.84) déclarée par le défenseur pour CETTE défense au
    *  Bouclier : 'damage' = causer des Dégâts « comme s'il s'agissait de son Action » ; 'push' = repousser
    *  l'attaquant de 2 m et se désengager. Appliquée à l'Appliquer (`applyShieldReaction`), coût débité alors. */
   shieldReaction?: 'damage' | 'push';

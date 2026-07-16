@@ -512,8 +512,8 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 - `LDB 40 l.101-101` — Colère des dieux 131-135 : Hémorragique quotidien jusqu'à Pénitence
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `CastPenalty`, `applyMiscast` — `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`
-- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `followsCharacterRules`, `CastableSpell`, `missileComponent`, `CastModal`, `oppositionDiscount`, `Effect`, `ruleOfEightSeverity`, `buySpell`, `CastPenalty`, `EFFECT_HANDLERS`, +11 — `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +8 fichiers
+- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `peche`, `CastPenalty`, `applyMiscast` — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`
+- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `followsCharacterRules`, `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `missileComponent`, `CastModal`, `oppositionDiscount`, `Effect`, `ruleOfEightSeverity`, `CastPenalty`, +11 — `src/data/miscast.json`, `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 
@@ -548,7 +548,7 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.64, l.67, l.74-75, l.104, l.211, l.213) → `critEscalationSchema`, `CritEscalation`, `resolveAACritical`, `fractureSequela`, `fractureEndDifficulty`, `rollCritical`, `stampCriticalEscalation`, `settleHealedCriticals`, `fireCritTriggers`, `usesSuddenDeath`, +6 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +6 fichiers
+- `LDB 18` (l.64, l.67, l.74-75, l.104, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `dechirure-autre-mineure`, `CritEscalation`, `fracture-torse-mineure`, `fracture-torse-majeure`, `resolveAACritical`, `fractureSequela`, `fracture-jambe-mineure`, `fractureEndDifficulty`, +18 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +6 fichiers
 - sans code : `LDB 18` (l.123-125, l.148, l.149)
 
 ---
@@ -560,7 +560,7 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 Le chapitre « Une Approche Alternative des Blessures » d'**Aux Armes** (AA) propose une **mise à jour de l'État Hémorragique** visant à réduire la complexité du système de base :
 
 **Différence clé par rapport au LDB 16** : dans la version LDB, tomber à 0 PB avec Hémorragique entraîne une **chute Inconsciente immédiate**. Dans la variante AA, à la place, à la fin de chaque Round à 0 PB :
-> « Vous devez réussir un Test de **Résistance Intermédiaire (+0)** sous peine de subir immédiatement l'État _Inconscient_. » — `AA l.2456`
+> « Vous devez réussir un Test de **Résistance Intermédiaire (+0)** sous peine de subir immédiatement l'État _Inconscient_. » — `AA 7 l.5`
 
 Cette version ajoute donc un Test de Résistance comme étape intermédiaire avant l'inconscience, laissant une chance de survie Round par Round.
 
@@ -568,13 +568,14 @@ Les autres règles Hémorragique (dégâts périodiques 1 PB/pion, jet de mort 1
 
 **Différence dans le retrait** : la difficulté du Test de Guérison passe de Intermédiaire (+0) dans le LDB à **Accessible (+20)** dans la variante AA.
 
-> « On peut retirer un État _Hémorragique_ avec un Test de **Guérison Accessible (+20)** réussi, où chaque DR retire un État _Hémorragique_ supplémentaire. » — `AA l.2460`
+> « On peut retirer un État _Hémorragique_ avec un Test de **Guérison Accessible (+20)** réussi, où chaque DR retire un État _Hémorragique_ supplémentaire. » — `AA 7 l.9`
 
 **Sources RAW** :
-- `AA l.2451-2460` — variante complète Hémorragique : test Résistance avant inconscience, Test Guérison (+20)
+- `AA 7 l.5-11` — variante complète Hémorragique : test Résistance avant inconscience, Test Guérison (+20)
 
 **Voir aussi** : Hémorragique (section principale ci-dessus), Traumatisme
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `AA 7` (l.5-11) → `healDifficulty`, `aaBleedUnconsciousDue`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `collectHeroRoundEndUpkeep`, `tickDeath`, `createCombatSlice` — `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -590,11 +591,12 @@ La variante AA introduit un mécanisme de Coups Critiques déclenché **sur doub
 Ces tableaux utilisent tous les États standards (Hémorragique, Sonné, Aveuglé, Assourdi, À Terre, Inconscient, Exténué, Empêtré) selon des combinaisons différentes.
 
 **Sources RAW** :
-- `AA l.2471-2478` — mécanisme de BC sur double
-- `AA l.2520-2729` — tableaux BC par localisation (Tête, Bras, Torse, Jambe) avec États associés
+- `AA 7 l.27-29` — mécanisme de BC sur double
+- `AA 7 l.82-182` — tableaux BC par localisation (Tête, Bras, Torse, Jambe) avec États associés
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `AA 7` (l.27-29, l.82-182) → `StructureCritEntry`, `critEscalationSchema`, `amputationSchema`, `CritEscalation`, `retenir-ses-coups`, `attackHandGate`, `resolveAACritical`, `MODAL_DEFS`, `tickTraumaRecovery`, `removeCondition`, +15 — `src/data/criticals.ts`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, `src/engine/combat.ts`, +11 fichiers
 
 ---
 
@@ -604,21 +606,23 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 
 - **Atout Assommante** (LDB 62 l.233-234) : sur touche à la Tête, Test opposé Force/Résistance — succès de l'attaquant → gain d'un État Sonné par la cible. Armes concernées : bâton de combat, marteau de guerre, marteau à bec-de-corbin, masse, matraque, bille de plomb (fronde).
 - **Sort Enchevêtrement** (LDB 47) : inflige État Empêtré à la cible. La variante Force Mentale au lieu de Force pour s'en dépêtrer est introduite dans un sort de ZI (Forêt d'épines, voir ci-dessous).
-- **Forêt d'épines** (ZI l.2928, sort chamanique Gobelin) : traverser la zone nécessite un Test d'**Agilité Difficile (-20)** ; en cas d'échec, la victime gagne **1 État Empêtré** (Force Mentale à la place de Force pour résister) **et 1 État Hémorragique** simultanément.
-- **Filets** (ZI l.593-596, groupe d'armes à Entraves) : sur touche réussie, cible gagne 1 État Empêtré. Pour se libérer : Test de **Force Intermédiaire (+0)** avec un nombre de DR **égal à l'Indice du filet** (les DR ne sont pas cumulatifs) ; en cas d'échec, gagne 1 État Empêtré supplémentaire. Filets barbelés : infligent automatiquement des Dégâts ignorant l'armure à chaque tentative d'évasion (réussie ou non).
-- **Chant de la Sirène** (ZI l.1444) : Test de **Force Mentale Complexe (-20)** ou la cible est séduite et compte comme ayant l'État Inconscient sans l'être mécaniquement (elle se rapproche de la source du chant). Si préparé (oreilles bouchées) : test devient Facile (+40). Si victime attaquée : nouveau Test immédiat.
+- **Forêt d'épines** (ZI 14 l.1008, sort chamanique Gobelin) : traverser la zone nécessite un Test d'**Agilité Difficile (-20)** ; en cas d'échec, la victime gagne **1 État Empêtré** (Force Mentale à la place de Force pour résister) **et 1 État Hémorragique** simultanément.
+- **Filets** (ZI 2 l.165, 176, groupe d'armes à Entraves) : sur touche réussie, cible gagne 1 État Empêtré. Pour se libérer : Test de **Force Intermédiaire (+0)** avec un nombre de DR **égal à l'Indice du filet** (les DR ne sont pas cumulatifs) ; en cas d'échec, gagne 1 État Empêtré supplémentaire. Filets barbelés (ZI 2 l.178) : infligent automatiquement des Dégâts ignorant l'armure à chaque tentative d'évasion (réussie ou non).
+- **Chant de la Sirène** (ZI 13 l.25) : Test de **Force Mentale Complexe (-10)** ou la cible est séduite et compte comme ayant l'État Inconscient sans l'être mécaniquement (elle se rapproche de la source du chant). Si préparé (oreilles bouchées) : test devient Facile (+40). Si victime attaquée : nouveau Test immédiat.
 - **Trait Instable** (LDB 85) : les créatures Instables perdent des PB si elles ne parviennent pas à atteindre des points Avantage minimum — indirectement source d'États (via 0 PB → À Terre/Inconscient).
-- **Objets magiques** (ADE II l.214, l.221-222, l.342-343) : arme enflammée inflige État En flammes sur touche ; arme « Déroutante » inflige État Surpris à toute cible blessée ; armure argentée éblouissante force un Test d'Agilité Accessible (+20) en début de Round ou État Aveuglé pour les adversaires en corps à corps.
+- **Objets magiques** (ADE II 4 l.222, l.230, l.367) : arme Embrasée inflige État En flammes sur touche à une cible inflammable ; arme « Déroutante » inflige État Surpris à toute cible blessée ; armure argentée scintillante force un Test d'Agilité Accessible (+20) en début de Round ou État Aveuglé pour les adversaires en corps à corps.
 
 **Sources RAW** :
 - `LDB 62 l.233-234` — Atout Assommante → État Sonné
-- `ZI l.2928` — Forêt d'épines : Empêtré FM + Hémorragique simultané
-- `ZI l.1444` — Chant de la Sirène : pseudo-Inconscient narratif
-- `ZI l.593-596` — Filets : Empêtré avec DR non cumulatifs (≠ LDB Test de Force opposé)
-- `ADE II l.214, l.221, l.342` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
+- `ZI 14 l.1008` — Forêt d'épines : Empêtré FM + Hémorragique simultané
+- `ZI 13 l.25` — Chant de la Sirène : pseudo-Inconscient narratif
+- `ZI 2 l.165, 176, 178` — Filets : Empêtré avec DR non cumulatifs (≠ LDB Test de Force opposé)
+- `ADE II 4 l.222, l.230, l.367` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
 
-**Implémente :** (non implémenté)
-- cité par tests seulement : `src/engine/weapon-spec.test.ts`
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `assommante`, `arbalete`, `arc`, `entraves`, `explosifs`, `fronde`, `lancer`, +3 — `src/data/qualities.json`, `src/data/weaponGroups.json`
+- `ZI 2` (l.165, l.178) → `filet`, `filet-barbele`, `coup-puissant`, `cornes`, `arme` — `src/data/creatures.json`, `src/data/qualities.json`
+- sans code : `ADE II 4` (l.222), `ZI 13` (l.25), `ZI 14` (l.1008)
 
 ---
 
@@ -626,11 +630,11 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 
 ### « État Assommé »
 
-Le Zoo Impérial (ZI) utilise une fois le terme « **État Assommé** » dans la description d'un trait de créature (`ZI l.736`). Ce terme **n'existe pas** dans la liste officielle des 12 États du LDB 16.
+Le Zoo Impérial (ZI) utilise à plusieurs reprises le terme « **État Assommé** » dans la description de traits/attaques de créatures (`ZI 4 l.122`, `ZI 5 l.142`, `ZI 13 l.199`, `ZI 14 l.1157, 1182`). Ce terme **n'existe pas** dans la liste officielle des 12 États du LDB 16.
 
 Interprétation probable : traduction alternative de l'anglais *Stunned* = **Sonné** (État officiel). À traiter comme Sonné si ce trait est importé dans le jeu. Ne pas créer d'état « Assommé » distinct.
 
-Le même terme apparaît dans ADE II (sort ogre « Rivières de sang », `ADE II l.686`) dans le même sens.
+Le même terme apparaît dans ADE II (sort ogre du Domaine de la Gueule, `ADE II 2 l.770`) dans le même sens.
 
 ### « État Fatigué »
 
@@ -663,7 +667,7 @@ Points identifiés :
 8. **Retraits conditionnels narratifs** (Colère des dieux 66-70 Aveuglé/Prière, 131-135 Hémorragique quotidien/Pénitence ; LDB 46 Rébellion intestinale) : conditions de retrait non mécanique — à gérer via effets scène/campagne ou `lockedUntil`.
 
 **Couverture complète des livres autorisés :**
-- ADE I VF : armes naines avec États En flammes / Empoisonné (Annexe II, `ADE I l.55, l.63`) — sources d'infliction, pas de règle générale nouvelle.
+- ADE I VF : armes naines avec États En flammes / Empoisonné (Annexe II, `ADE I 8 l.60, l.78, l.80`) — sources d'infliction, pas de règle générale nouvelle.
 - ADE II VF : objets magiques infligeant États (arme Déroutante = Surpris, arme enflammée = En flammes, armure éblouissante = Aveuglé, Canon à flammes nain = 2+DR En flammes) — documentés ci-dessus ; terme non officiel « Assommé » dans sort ogre.
 - EDO : États avec durées en heures dans le Délire (App.2) — documentés ci-dessus.
 - EDOC : aucune règle d'État (véhicules, sans extension aux États).

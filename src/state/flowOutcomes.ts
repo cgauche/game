@@ -158,18 +158,18 @@ export function describeActivity(pa: PendingActivity): string {
   }
 }
 
-/** Marchandage (LDB 60 l.12) : VERDICT du Test opposé (source unique popin ↔ journal). */
+/** Marchandage (LDB 59 l.43) : VERDICT du Test opposé (source unique popin ↔ journal). */
 export function describeBargain(pb: PendingBargain): string {
   const won = pb.result?.attackerWins ?? false;
   const drNet = pb.result?.netSL ?? 0;
   const discount = won ? (drNet >= SL_ASTOUNDING || pb.negotiator ? t('out.fragDiscount20') : t('out.fragDiscount10')) : '—';
-  // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 → le marchand se méfie.
+  // « Rater de beaucoup » (LDB 59 l.43) = perdre l'opposé par un net DR ≥ 6 → le marchand se méfie.
   if (!won && drNet >= SL_ASTOUNDING) return t('out.bargainSuspicious');
   if (won) return pb.mode === 'buy' ? t('out.bargainWonBuy', { discount }) : t('out.bargainWonSell');
   return pb.mode === 'buy' ? t('out.bargainLostBuy') : t('out.bargainLostSell');
 }
 
-/** Évaluation / Détection d'artefact (LDB 60 l.10 / 10 l.310-312) : issue de la popin. La VALIDATION
+/** Évaluation / Détection d'artefact (LDB 59 l.41 / 10 l.310-312) : issue de la popin. La VALIDATION
  *  applique la révélation + l'estimation chiffrée à part (resolveAppraise). */
 export function describeAppraise(pa: PendingAppraise): string {
   if (pa.roll == null) return '';

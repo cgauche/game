@@ -1,7 +1,7 @@
 /**
  * Schéma de `structure-criticals.json` — Blessures critiques sur une Structure (Aux Armes, p.120).
  * Reflet de `StructureCritEntry` (`src/data/structureCriticals.ts`), 3ᵉ famille du modèle de coque
- * (Structure/Véhicule/Navire, AA l.3690).
+ * (Structure/Véhicule/Navire, AA 10 l.13/116).
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../common';

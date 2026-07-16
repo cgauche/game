@@ -60,7 +60,7 @@ export interface TestResult {
   isDouble: boolean;
 }
 
-/** Effectue un Test simple contre une valeur cible. */
+/** Effectue un Test simple contre une valeur cible (d100 ≤ valeur, LDB 12 l.7-13). */
 export function rollTest(
   value: number,
   difficulty: Difficulty = 'intermediaire',

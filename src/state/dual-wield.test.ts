@@ -198,7 +198,7 @@ describe('bornage : jamais sur une attaque gratuite / enchaînée (LDB 10 l.638 
   });
 });
 
-describe('Main ensanglantée (AA l.2569) — 2ᵉ frappe « des deux armes » : un SEUL Test avant l\'Action', () => {
+describe('Main ensanglantée (AA 07 l.117) — 2ᵉ frappe « des deux armes » : un SEUL Test avant l\'Action', () => {
   // « Des deux armes » = UNE Action impliquant les DEUX mains (main directrice + 2nde). La directrice est testée
   // à la déclaration (`openAttackCascade`) ; si SEULE la 2nde est gatée, la 2ᵉ frappe joue le Test avant de se
   // résoudre. Sur Échec, l'objet de la 2nde main glisse (`disarm`) ; la 2ᵉ frappe est renoncée.

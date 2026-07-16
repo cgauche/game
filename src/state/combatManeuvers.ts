@@ -368,7 +368,7 @@ export function resolveManeuver(
 ): boolean {
   const battle = get().battle;
   if (!battle || battle.over || !attacker.pos) return false;
-  campSpend(get, attacker, spent); // dépense l'Avantage : réserve du camp (mode groupe AA l.4142) / le combattant (LDB)
+  campSpend(get, attacker, spent); // dépense l'Avantage : réserve du camp (mode groupe AA 11 l.30-38) / le combattant (LDB)
   const rng = battleRng();
   // Libellé de feed = celui de la manœuvre (« Souffle (Feu) ») s'il enrichit le geste, sinon le libellé
   // canonique du geste (`ATTACK_LABEL[def.kind]`). Aucune LOGIQUE sur le label — pur affichage.
@@ -552,7 +552,7 @@ export function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
 // Manœuvres de TALENT liées à l'Avantage (Battement / Distraire) — LDB 10 / AA
 // ---------------------------------------------------------------------------
 
-/** Battement (LDB 10 l.103 / AA l.4361) est-il déclarable par `attacker` contre `foe` ? Le porteur du
+/** Battement (LDB 10 l.103 / AA 13 l.17) est-il déclarable par `attacker` contre `foe` ? Le porteur du
  *  Talent doit être Engagé, `foe` doit PORTER une arme et ne pas être d'une Taille SUPÉRIEURE (l.103). */
 export function battementEligible(attacker: Combatant, foe: Combatant): boolean {
   if (foe.kind === attacker.kind || isOutOfAction(foe)) return false;
@@ -561,7 +561,7 @@ export function battementEligible(attacker: Combatant, foe: Combatant): boolean 
 }
 
 /** Avantage retiré à l'adversaire par un Battement RÉUSSI de `dr` DR : LDB (l.103) « −1 et −1 par DR » ;
- *  variante « Avantage de groupe » (AA l.4361) « −1, et −1 de plus si 6 DR ». PUR — SOURCE UNIQUE du barème. */
+ *  variante « Avantage de groupe » (AA 13 l.17) « −1, et −1 de plus si 6 DR ». PUR — SOURCE UNIQUE du barème. */
 export function battementRemoval(dr: number): number {
   return groupAdvantage() ? 1 + (dr >= 6 ? 1 : 0) : 1 + Math.max(0, dr);
 }
@@ -581,7 +581,7 @@ export function resolveBattement(get: Get, attacker: Combatant, foe: Combatant, 
   return t('manv.battement', { name: attacker.name, foe: foe.name, n });
 }
 
-/** Distraire (LDB 10 l.364 / AA l.4395) est-il déclarable par `attacker` contre `foe` ? Un adversaire
+/** Distraire (LDB 10 l.364 / AA 13 l.51) est-il déclarable par `attacker` contre `foe` ? Un adversaire
  *  vivant en Ligne de vue (l'appelant vérifie la LdV) ; ici : camp opposé, actif. */
 export function distraireEligible(attacker: Combatant, foe: Combatant): boolean {
   return foe.kind !== attacker.kind && !isOutOfAction(foe);
@@ -622,13 +622,13 @@ export function distraireFoes(mover: Combatant, battle: BattleState, los: (foe: 
   return battle.combatants.filter((c) => distraireEligible(mover, c) && !!c.pos && los(c));
 }
 
-/** Ouvre la modale de Battement d'un héros (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps
+/** Ouvre la modale de Battement d'un héros (LDB 10 l.103 / AA 13 l.17) : Action, Test de Corps à corps
  *  NON opposé. AUCUN jet ici — il se fait au « Lancer » (`battementRoll`). Calque `battleTrample`. */
 export function startBattement(_get: Get, set: SetFn, attacker: Combatant, foe: Combatant): void {
   set({ pendingBattement: { attackerId: attacker.id, foeId: foe.id, result: null } });
 }
 
-/** Ouvre la modale de Distraire d'un héros (LDB 10 l.364 / AA l.4395) : Mouvement, Test OPPOSÉ
+/** Ouvre la modale de Distraire d'un héros (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test OPPOSÉ
  *  Athlétisme vs Calme. Le jet de Calme du foe est tiré et FIGÉ d'avance (pattern Désengagement/
  *  Au Contact) ; seul l'Athlétisme du mover se (re)joue dans la modale. */
 export function startDistraire(_get: Get, set: SetFn, mover: Combatant, foe: Combatant): void {

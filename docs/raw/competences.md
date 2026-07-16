@@ -62,7 +62,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `buySkillAdvance`, `buildAdvancementView`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/healing.ts`, `src/engine/skillCombatApps.ts`, +5 fichiers
+- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +7 fichiers
 
 ---
 
@@ -87,7 +87,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `buySkillAdvance`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, `src/engine/healing.ts`, +6 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, +2 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +8 fichiers
 
 ---
 
@@ -172,7 +172,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, `healDifficulty`, +29 — `src/data/driving-mishap.json` ⚠hors-app, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/schemas/defs/drunkenness.ts`, +24 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, `redaction`, +31 — `src/data/driving-mishap.json` ⚠hors-app, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/schemas/defs/drunkenness.ts`, +25 fichiers
 
 ---
 
@@ -181,12 +181,12 @@ Soin aux animaux, Voile**
 ### Art (Dex) — Base, Groupée
 **LDB :** Cartographie, Gravure, Mosaïque, Peinture, Sculpture, Tatouage, Tissage
 (LDB 09 l.72)
-**AA :** Art (Écriture) (AA l.3574)
+**AA :** Art (Écriture) (AA 9 l.349)
 
 ### Chevaucher (Ag) — Base, Groupée
 **LDB :** Cheval, Grand Loup, Griffon, Demigriffon, Pégase
 (LDB 09 l.118)
-**ADE I :** Chevaucher (Blaireau) (ADE I l.44)
+**ADE I :** Chevaucher (Blaireau) (ADE I 7 l.44)
 
 ### Corps à corps (CC) — Base, Groupée
 **LDB :** Arme d'hast, Arme à deux mains, Bagarre, Base, Cavalerie, Escrime, Fléau, Parade
@@ -201,7 +201,7 @@ Duellistess des nouvelles Carrières).
 ### Divertissement (Soc) — Base, Groupée
 **LDB :** Chant, Comédie, Interprétation, Narration
 (LDB 09 l.198)
-**AA :** Divertissement (Discours) (AA l.2366)
+**AA :** Divertissement (Discours) (AA 6 l.444)
 
 ### Dressage (Int) — Avancée, Groupée
 **LDB :** Cheval, Chien, Demigriffon, Pégase, Pigeon
@@ -217,7 +217,7 @@ Duellistess des nouvelles Carrières).
 **Langues du Vieux Monde listées par LDB 09 l.319-346 :** Albionais, Bataille, Bretonnien,
 Classique, Elthárin, Estalien, Gospodarin, Grumbarth, Khazalid, Magick, Halfling, Norse, Reikspiel,
 Queekique, Tiléen, Langage des voleurs, Wastelander.
-**AA :** Langue (Arabéen) (AA l.1747)
+**AA :** Langue (Arabéen) (AA 5 l.122)
 **Note :** Langue (Magick) sert à lancer des Sorts (LDB 09 l.300-301) — voir [Magie](magie.md).
 
 ### Métier (Dex) — Avancée, Groupée
@@ -225,25 +225,25 @@ Queekique, Tiléen, Langage des voleurs, Wastelander.
 (LDB 09 l.364)
 **AA (exemples extraits des Carrières) :** Armurier, Barbier, Cartographe, Explosifs, Fabricant de
 flèches, Forgeron, Maçon, Maréchale-ferrant, Mineur, Scribe
-**AA l.3817 :** Métier (Charpentier) ou Métier (Maçon) pour réparer des Structures.
-**AA l.3559 :** Métier (Cartographe) pour utiliser un théodolite.
+**AA 10 l.132 :** Métier (Charpentier) ou Métier (Maçon) pour réparer des Structures.
+**AA 8 l.59 :** Métier (Cartographe) pour utiliser un théodolite.
 
 ### Musicien (Dex) — Avancée, Groupée
 **LDB :** Clavecin, Cor, Cornemuse, Luth, Violon
 (LDB 09 l.370)
-**AA :** Musicien (Flûte), Musicien (Tambour) (AA l.444, l.607)
+**AA :** Musicien (Flûte), Musicien (Tambour) (AA 2 l.237, l.469)
 
 ### Projectiles (Ct) — Avancée, Groupée
 **LDB :** Arbalète, Arc, Entraves, Explosifs, Fronde, Ingénierie, Lancer, Poudre noire
 (LDB 09 l.428)
-**AA :** Catapulte (AA l.496, l.3828 — armes de siège distinctes de Poudre noire et Arbalète).
-Note : Baliste = groupe Arbalète (AA l.3832) ; Canon / Canon feu d'enfer = groupe Ingénierie ;
+**AA :** Catapulte (AA 10 l.142-144 — armes de siège distinctes de Poudre noire et Arbalète).
+Note : Baliste = groupe Arbalète (AA 10 l.148) ; Canon / Canon feu d'enfer = groupe Ingénierie ;
 Catapulte = groupe Catapulte exclusif.
 
 ### Représentation (Ag) — Avancée, Groupée
 **LDB :** Acrobaties, Cracheur de feu, Danser, Funambule, Jonglage, Mime, Pitreries
 (LDB 09 l.465)
-**AA :** Représentation (Parade) — défilé militaire (AA l.607)
+**AA :** Représentation (Parade) — défilé militaire (AA 2 l.469)
 
 ### Savoir (Int) — Avancée, Groupée
 **LDB :** Géologie, Héraldique, Histoire, Ingénierie, Loi, Magick, Métallurgie, Science, Théologie
@@ -251,13 +251,13 @@ Catapulte = groupe Catapulte exclusif.
 **AA (exemples extraits des Carrières) :** Anatomie, Art de la guerre, Artillerie, Bêtes, Empire,
 Géographie, Guerre, Herbes (cité LDB 09 l.565), Ingénierie, Loi, Magie, Nécromancie, Région,
 Remèdes, Théologie
-**ADE II :** Savoir (Magie) pour fabriquer des objets magiques (ADE II l.93, l.99, l.104)
+**ADE II :** Savoir (Magie) pour fabriquer des objets magiques (ADE II 4 l.94, l.98, l.104)
 
 ### Signes secrets (Int) — Avancée, Groupée
 **LDB :** Ordre Gris, Guildes (au choix), Ruraux, Éclaireurs, Voleurs, Vagabonds
 (LDB 09 l.504)
-**AA :** Signes secrets (Ranger) (ADE I l.131) ; Signes secrets (Ulric) (AA l.1077) ;
-Signes secrets (Soleil flamboyant) (AA l.1137) ; Signes secrets (Chevaliers Panthères) (AA l.1198)
+**AA :** Signes secrets (Ranger) (ADE I 7 l.197) ; Signes secrets (Ulric) (AA 3 l.266) ;
+Signes secrets (Soleil flamboyant) (AA 3 l.344) ; Signes secrets (Chevaliers Panthères) (AA 3 l.426)
 
 ### Voile (Ag) — Avancée, Groupée
 **LDB :** Caravelle, Chaland, Cogue, Drakkar, Frégate
@@ -500,11 +500,11 @@ Appeler et contrôler les différents Vents de Magie. Uniquement avec les règle
 [Magie](magie.md)). Particularité : Groupée (Spécialisations par Vent) pour les formés, mais traitée
 comme non Groupée pour les non-formés.
 
-**Sources RAW :** LDB 09 l.246-252 ; ADE II l.165, l.177, l.179 (Focalisation sur artefacts magiques).
+**Sources RAW :** LDB 09 l.246-252 ; ADE II 4 l.162, l.180, l.182 (Focalisation sur artefacts magiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-72, l.86-109, l.121-134, l.137-154, l.157-160, l.163-176, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `carryOverState`, `useDefenseJetProps`, `healDifficulty`, `defenseSubOf`, `healWoundsDelta`, +13 — `src/data/driving-mishap.json` ⚠hors-app, `src/data/index.ts`, `src/data/schemas/defs/driving-mishap.ts`, `src/engine/combat.ts`, `src/engine/drivingMishap.ts` ⚠hors-app, `src/engine/healing.ts`, +12 fichiers
-- sans code : `LDB 9` (l.75-76, l.80-83, l.111-118, l.179-190)
+- `LDB 9` (l.65-72, l.75-76, l.80-83, l.86-109, l.111-118, l.121-134, l.137-154, l.157-160, l.163-176, l.179-190, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `carryOverState`, `useDefenseJetProps`, `redaction`, `healDifficulty`, `athletisme`, +15 — `src/data/driving-mishap.json` ⚠hors-app, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/skills.json`, `src/engine/combat.ts`, +14 fichiers
+- sans code : `ADE II 4` (l.162)
 
 ---
 
@@ -530,7 +530,7 @@ En combat : Tests de Guérison Intermédiaires (+0).
 **Sources RAW :** LDB 09 l.255-269
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, `Combatant`, `createCombatSlice` — `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/types.ts`, `src/state/combatSlice.ts`
+- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `redaction`, `healDifficulty`, `athletisme`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, +2 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +2 fichiers
 
 ---
 
@@ -550,8 +550,7 @@ autoriser Fm (Répurgateur) ou Int (universitaire face à un étudiant). Voir [R
 **Sources RAW :** LDB 09 l.272-294
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.272-294) → `altCharKey`, `healDifficulty`, `OPTIONAL_RULES`, `createCombatSlice` — `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/state/combatSlice.ts`
-- sans code : `LDB 9` (l.293-294)
+- `LDB 9` (l.272-294) → `altCharKey`, `redaction`, `healDifficulty`, `athletisme`, `OPTIONAL_RULES`, `createCombatSlice` — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -583,7 +582,7 @@ d'échec (voir [Magie](magie.md)).
 **Langue (Bataille) :** ordres et gestes simples utilisables en combat sans pénalité pour celui qui
 la possède ; coordination d'attaques et stratégie inaccessibles à ceux qui ne la possèdent pas.
 
-**Sources RAW :** LDB 09 l.311-346 ; ADE II l.653 (ogres : Langue Magick sur Endurance).
+**Sources RAW :** LDB 09 l.311-346 ; ADE II 2 l.728 (ogres : Langue Magick sur Endurance).
 
 ---
 
@@ -615,7 +614,8 @@ Activité Artisanat entre aventures utilise Métier (voir [Activités](activites
 **Sources RAW :** LDB 09 l.349-364
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `OPTIONAL_RULES`, `PendingTest`, `ActionBar`, `GameState`, `useGame`, `createCombatSlice` — `src/engine/policy.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, `src/state/shipwreck.ts`, +2 fichiers
+- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `redaction`, `athletisme`, `OPTIONAL_RULES`, `PendingTest`, `ActionBar`, `GameState`, `useGame`, `createCombatSlice` — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/policy.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/combatSlice.ts`, +4 fichiers
+- `ADE II 2` (l.728) → `altCharKey`, `castingValue`, `gueule`, `DomainData`, `bouf-crane`, `broyeur-d-os`, `festin-des-damnes` — `src/data/domains.json`, `src/data/index.ts`, `src/data/spells.json`, `src/engine/magic.ts`, `src/engine/skills.ts`
 
 ---
 
@@ -737,11 +737,11 @@ Utiliser des armes à distance spécifiques (chaque Spécialisation = un groupe 
 simple pierre sans spécialisation = Capacité de Tir nue. Sans la Spécialisation : pénalités définies
 au Chapitre 11. Voir [Combat](combat.md).
 
-**AA (armes de siège, AA l.3826-3832) :** Arbalète → Baliste ; Catapulte → groupe propre ;
+**AA (armes de siège, AA 10 l.142-148) :** Arbalète → Baliste ; Catapulte → groupe propre ;
 Ingénierie → Poudre noire lourde. Équipe réduite = double temps de recharge + Compétence la plus
 faible de l'équipe.
 
-**Sources RAW :** LDB 09 l.424-428 ; AA l.3826-3833
+**Sources RAW :** LDB 09 l.424-428 ; AA 10 l.142-148
 
 ---
 
@@ -937,14 +937,14 @@ pour ce personnage.
 **LDB 09 l.358 :** Pour Métier utilisé comme Savoir, le MJ peut préférer Int à Dex (souvent ignoré
 pour simplifier).
 
-**ADE II l.653 :** Pour les lanceurs ogres, Langue (Magick) utilise l'Endurance au lieu de
+**ADE II 2 l.728 :** Pour les lanceurs ogres, Langue (Magick) utilise l'Endurance au lieu de
 l'Intelligence. (Voir section dédiée.)
 
-**Sources RAW :** LDB 09 l.293-294 ; LDB 09 l.358 ; ADE II l.653
+**Sources RAW :** LDB 09 l.293-294 ; LDB 09 l.358 ; ADE II 2 l.728
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.358) → `altCharKey`, `OPTIONAL_RULES` — `src/engine/policy.ts`, `src/engine/skills.ts`
-- sans code : `LDB 9` (l.293-294)
+- `LDB 9` (l.293-294, l.358) → `altCharKey`, `redaction`, `athletisme`, `OPTIONAL_RULES` — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/policy.ts`, `src/engine/skills.ts`
+- `ADE II 2` (l.728) → `altCharKey`, `castingValue`, `gueule`, `DomainData`, `bouf-crane`, `broyeur-d-os`, `festin-des-damnes` — `src/data/domains.json`, `src/data/index.ts`, `src/data/spells.json`, `src/engine/magic.ts`, `src/engine/skills.ts`
 
 ---
 
@@ -956,11 +956,12 @@ l'Intelligence (Int) pour leur Compétence Langue (Magick).**
 
 > « Les lanceurs de sorts ogres utilisent l'Endurance au lieu de l'Intelligence pour leur Compétence
 > Langue (Magick). »
-> — ADE II l.653
+> — ADE II 2 l.728
 
-**Sources RAW :** ADE II l.653
+**Sources RAW :** ADE II 2 l.728
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ADE II 2` (l.728) → `altCharKey`, `castingValue`, `gueule`, `DomainData`, `bouf-crane`, `broyeur-d-os`, `festin-des-damnes` — `src/data/domains.json`, `src/data/index.ts`, `src/data/spells.json`, `src/engine/magic.ts`, `src/engine/skills.ts`
 
 ---
 
@@ -1034,6 +1035,7 @@ cible cherche activement à brouiller les pistes : opposé à Discrétion de la 
 
 **Voir aussi** : Tests opposés (`tests.md`), État *Sonné* (`etats.md`), Force Mentale / Calme (`psychologie.md`).
 **Implémente :** (non implémenté)
+- bloqué : implémenté en donnée (skills.json id hypnotisme) — invisible du matcher : T3 sans ancre data-folio, cf. #522
 
 ---
 
@@ -1047,7 +1049,7 @@ cible cherche activement à brouiller les pistes : opposé à Discrétion de la 
 - `LDB 18 l.202` (traumatisme → pénalité Langue) : hors scope de ce fichier (domaine Traumatisme) ;
   mentionné dans `testValue` via `traumaSkillPenalty`. Voir `traumatisme.md`.
 - `LDB 09 l.34-45` (Compétences groupées) : couvert § Compétences Groupées + Implémente.
-- `ADE II l.653` (ogre Langue Magick / Endurance) : couvert § Extension ogre.
+- `ADE II 2 l.728` (ogre Langue Magick / Endurance) : couvert § Extension ogre.
 
 **Écarts code ↔ RAW identifiés :**
 - Aucun écart de règle détecté. La Caractéristique alternative par entité (ogre) est correctement

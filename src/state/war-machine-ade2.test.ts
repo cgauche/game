@@ -32,7 +32,7 @@ const battle = (combatants: Combatant[]): BattleState =>
 const mkGet = (combatants: Combatant[]): (() => GameState) =>
   (() => ({ battle: battle(combatants), facing: {}, gameTime: 0, log: () => {} })) as unknown as () => GameState;
 
-describe('firedAttackBlock — PORTÉE MINIMALE (machines de siège ADE II l.251/253)', () => {
+describe('firedAttackBlock — PORTÉE MINIMALE (machines de siège ADE II 08 l.251/253)', () => {
   it('minimale « courte » : tir REFUSÉ à Bout Portant (raison « portee-min »), AUTORISÉ à Moyenne', () => {
     const g = gunner(rangedMachine('courte'));
     // Portée 120 m : Bout Portant ≤ 12 m (≤6 cases), Courte ≤ 60 m, Moyenne ≤ 120 m.

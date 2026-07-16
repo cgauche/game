@@ -35,7 +35,7 @@ describe('campGain — mode Livre de base (défaut) : per-combattant, INCHANGÉ'
   });
 });
 
-describe('campGain — mode « Avantage de groupe » : réserve du camp (AA l.4113-4115)', () => {
+describe('campGain — mode « Avantage de groupe » : réserve du camp (AA 11 l.11-13)', () => {
   it('un gain d’un héros va dans la réserve des alliés et se projette sur tout le camp', () => {
     setRule('combat-aa-avantage-groupe', true);
     const a = mk('h1', 'hero');
@@ -145,7 +145,7 @@ describe('reconcileAdvantageToPool — bidirectionnel (octroi/dépense par op)',
   });
 });
 
-describe('Renversement (variante AA l.4442) — vole 1 dans la réserve adverse', () => {
+describe('Renversement (variante AA 13 l.92-98) — vole 1 dans la réserve adverse', () => {
   it('déplace 1 Avantage de la réserve adverse vers la sienne, projeté', () => {
     setRule('combat-aa-avantage-groupe', true);
     const thief = mk('h1', 'hero');
@@ -169,7 +169,7 @@ describe('Renversement (variante AA l.4442) — vole 1 dans la réserve adverse'
   });
 });
 
-describe('roundEndAdvantageTransfer — domination de fin de Round (AA l.4146)', () => {
+describe('roundEndAdvantageTransfer — domination de fin de Round (AA 11 l.44)', () => {
   it('le camp majoritaire prend 1 Avantage à l’autre + reprojette', () => {
     setRule('combat-aa-avantage-groupe', true);
     const combatants = [mk('h1', 'hero'), mk('h2', 'hero'), mk('e1', 'enemy')];
@@ -254,7 +254,7 @@ describe('Redoutable — clause AA bout-en-bout (op gainAdvantage{feedOpposingPo
 });
 
 describe('startAdvantagePools — positionnement initial auto-dérivé', () => {
-  it('Surnombre calculé sur les combattants actifs (AA l.4162-4164)', () => {
+  it('Surnombre calculé sur les combattants actifs (AA 11 l.60-62)', () => {
     const all = [mk('h1', 'hero'), mk('h2', 'hero'), mk('h3', 'hero'), mk('e1', 'enemy')];
     expect(startAdvantagePools(all, false)).toEqual({ allies: 3, foes: 0 }); // ×3 → +3 aux alliés
   });
@@ -265,7 +265,7 @@ describe('startAdvantagePools — positionnement initial auto-dérivé', () => {
   });
 });
 
-describe('startAdvantagePools — marqueurs de rencontre (Menace/Manœuvrabilité/Terrain, AA l.4149-4167)', () => {
+describe('startAdvantagePools — marqueurs de rencontre (Menace/Manœuvrabilité/Terrain, AA 11 l.53-65)', () => {
   it('Manœuvrabilité (+2, l.4158) crédite le camp marqué', () => {
     const all = [mk('h1', 'hero'), mk('e1', 'enemy')];
     expect(startAdvantagePools(all, false, { maneuverability: 'party' })).toEqual({ allies: 2, foes: 0 });
@@ -291,7 +291,7 @@ describe('startAdvantagePools — marqueurs de rencontre (Menace/Manœuvrabilit�
     expect(startAdvantagePools(all, false, { terrain: { camp: 'party', heavy: true } })).toEqual({ allies: 2, foes: 0 });
   });
 
-  it('se cumule avec le Surnombre auto-dérivé (circonstances distinctes, AA l.4153)', () => {
+  it('se cumule avec le Surnombre auto-dérivé (circonstances distinctes, AA 11 l.51)', () => {
     const all = [mk('h1', 'hero'), mk('h2', 'hero'), mk('h3', 'hero'), mk('e1', 'enemy')]; // Surnombre ×3 → +3 alliés
     expect(startAdvantagePools(all, false, { threat: { camp: 'enemies', tier: 'dangereuse' } })).toEqual({ allies: 3, foes: 1 });
   });

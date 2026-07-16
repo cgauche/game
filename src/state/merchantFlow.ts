@@ -55,7 +55,7 @@ export interface MerchantState {
   stock: { id: string; qty: number }[];
   bargainBuy?: BargainOutcome | null;
   bargainSell?: BargainOutcome | null;
-  /** Botch (« rater de beaucoup », LDB 60 l.12) : le marchand se méfie — plus de marchandage cette visite. */
+  /** Botch (« rater de beaucoup », LDB 59 l.43) : le marchand se méfie — plus de marchandage cette visite. */
   soured?: boolean;
   cart: { id: string; qty: number }[];
   /** Panier de VENTE (#22b) : instances d'objets sélectionnées chez leur porteur, vendues d'un coup
@@ -497,7 +497,7 @@ export function confirmDistribution(_get: Get, set: Set): void {
 
 /** Gain de revente d'un objet (catalogue × qualité × resaleRate × facteur de Marchandage). SOURCE UNIQUE
  *  du prix de vente — partagée par `confirmSell` ET l'aperçu UI (pas de formule dupliquée).
- *  Option 2 (LDB 60 l.22) : ¼ par défaut (resaleRate/2) ; ½ si le Marchandage de vente est GAGNÉ. */
+ *  Option 2 (LDB 59 l.54) : ¼ par défaut (resaleRate/2) ; ½ si le Marchandage de vente est GAGNÉ. */
 export function sellGain(item: ItemInstance, m: MerchantState): ReturnType<typeof fromBrass> {
   const sellFactor = m.bargainSell ? bargainSellFactor(m.bargainSell.won, m.bargainSell.drNet, m.bargainSell.negotiator) : 0.5;
   // « Baisse des prix » (LDB 59 l.60) : chaque division du prix par deux monte la Disponibilité d'un
@@ -675,7 +675,7 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   const ent = get().scene?.entities.find((e) => e.id === m.entityId);
   const mkt = marketRule(ent, 'marketMode') as string;
   if (mkt === 'sans-marchandage' || mkt === 'simplifie') return; // Marchandage désactivé (règle optionnelle LDB 59 l.15)
-  if (m.soured) return; // botch antérieur : le marchand se méfie, plus de marchandage (LDB 60 l.12)
+  if (m.soured) return; // botch antérieur : le marchand se méfie, plus de marchandage (LDB 59 l.43)
   if (m.bargainLocked) return; // VERROU PARTAGÉ : a refusé/renié un marché (achat OU vente) → plus de négociation jusqu'au réassort
   if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
   const arch = MERCHANTS[m.archetype];
@@ -688,13 +688,13 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   } });
 }
 
-/** « Conclure » le Marchandage : fige l'issue sur la visite (prix modulés) — LDB 60 l.12. */
+/** « Conclure » le Marchandage : fige l'issue sur la visite (prix modulés) — LDB 59 l.43. */
 export function bargainConfirm(get: Get, set: Set): void {
   const pb = get().pendingBargain;
   if (!pb || !pb.result) return; // pas d'acquittement avant le jet
   const won = pb.result.attackerWins; // le joueur est l'attaquant
   const drNet = pb.result.netSL;
-  // « Rater de beaucoup » (LDB 60 l.12) = perdre l'opposé par un net DR ≥ 6 (symétrique du Succès Stupéfiant
+  // « Rater de beaucoup » (LDB 59 l.43) = perdre l'opposé par un net DR ≥ 6 (symétrique du Succès Stupéfiant
   // +6 qui donne −20 %) → le marchand se méfie de votre monnaie : plus aucun marchandage cette visite.
   const botch = !won && drNet >= SL_ASTOUNDING;
   const outcome = { won, drNet, negotiator: pb.negotiator };
@@ -798,7 +798,7 @@ function patchAppraiseTarget(_get: Get, set: Set, pa: { itemUid?: string; gear?:
   }));
 }
 
-/** Acquitte l'Évaluation (révèle `identified` + estimation, LDB 60 l.10) ou la Détection d'artefact
+/** Acquitte l'Évaluation (révèle `identified` + estimation, LDB 59 l.41) ou la Détection d'artefact
  *  (aura sentie + règles apprises par DR, LDB 10 l.310-312 ; tentative unique). */
 export function resolveAppraise(get: Get, set: Set): void {
   const pa = get().pendingAppraise;

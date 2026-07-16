@@ -745,7 +745,7 @@ function EntityPanel({
                   </select>
                 </label>
                 <label className="ed-field">
-                  ↳ Guildes d'Artisans (override, LDB 60 l.69)
+                  ↳ Guildes d'Artisans (override, LDB 60 l.38)
                   <select
                     value={ent.merchant.guild == null ? '' : String(ent.merchant.guild)}
                     onChange={(e) => updateSel({ merchant: { ...ent.merchant!, guild: e.target.value === '' ? undefined : e.target.value === 'true' } })}

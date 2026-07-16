@@ -344,7 +344,7 @@ export interface GameState extends RollFlowActionsMap {
   pendingBargain: PendingBargain | null;
   pendingAppraise: PendingAppraise | null;
   pendingAttack: PendingAttack | null;
-  /** Test de Dextérité PAR ACTION de « Main ensanglantée » (AA l.2569) — interposé AVANT l'attaque quand
+  /** Test de Dextérité PAR ACTION de « Main ensanglantée » (AA 07 l.117) — interposé AVANT l'attaque quand
    *  l'arme employée est tenue dans une main gatée (`attackHandGate`). Modale influençable, calque `reload`. */
   pendingHandGate: PendingHandGate | null;
   /** Pilonnage INDIRECT en cours (« viser une case », AA p.122-123) : pièce indirecte servie en attente du
@@ -501,7 +501,7 @@ export interface GameState extends RollFlowActionsMap {
   assignLootGear: (index: number, heroId: string) => void;
   /** Ferme la fenêtre de loot ; l'équipement non attribué va au 1er héros (comme la victoire). */
   dismissLoot: () => void;
-  /** Évaluation (LDB 60 l.10) ou Détection d'artefact (LDB 10) d'une ligne de butin ENCORE en
+  /** Évaluation (LDB 59 l.41) ou Détection d'artefact (LDB 10) d'une ligne de butin ENCORE en
    *  fenêtre (loot ou victoire) : révéler un objet AVANT de choisir qui l'emporte. */
   appraiseGear: (scope: 'loot' | 'victory', index: number, mode?: 'evaluate' | 'detect') => void;
   /** Coop : ✓ d'un siège sur l'écran de victoire — l'hôte ferme quand tous les requis ont validé. */
@@ -724,12 +724,12 @@ export interface GameState extends RollFlowActionsMap {
   /** Réparation chez l'artisan : remet damageTaken à 0 contre le coût unifié — armure 10 %/PA (LDB 63
    *  l.97-98) ou arme 10 %/point de Dégâts (LDB 62 l.135). Arme improvisée = irréparable. */
   repairItem: (uid: string, heroId: string) => void;
-  /** Marchandage (LDB 60 l.12) : ouvre un Test opposé (1/visite) ; réduit ensuite les prix de 10-20 %. */
+  /** Marchandage (LDB 59 l.43) : ouvre un Test opposé (1/visite) ; réduit ensuite les prix de 10-20 %. */
   startBargain: (mode: 'buy' | 'sell') => void;
   // bargain{Roll,Reroll,BonusSL,DarkPact} : générés (RollFlowActionsMap).
   bargainConfirm: () => void;
   bargainCancel: () => void;
-  /** Évaluation (LDB 60 l.10) : Test d'Évaluation (Int) ; un succès révèle l'objet + estime son prix.
+  /** Évaluation (LDB 59 l.41) : Test d'Évaluation (Int) ; un succès révèle l'objet + estime son prix.
    *  `mode:'detect'` = Détection d'artefact (LDB 10) : Intuition au toucher, une tentative par objet. */
   appraiseItem: (uid: string, heroId: string, mode?: 'evaluate' | 'detect') => void;
   // appraise{Roll,Reroll,BonusSL,DarkPact} : générés (RollFlowActionsMap).
@@ -798,7 +798,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Ferme la modale de rechargement sans coût (avant le jet). */
   reloadCancel: () => void;
   // handGate{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
-  /** « Appliquer » le Test de Dextérité de Main ensanglantée (AA l.2569) : RÉUSSITE → ouvre l'Action figée ;
+  /** « Appliquer » le Test de Dextérité de Main ensanglantée (AA 07 l.117) : RÉUSSITE → ouvre l'Action figée ;
    *  ÉCHEC → l'objet glisse (op `disarm`) et l'Action est consommée. */
   handGateConfirm: () => void;
   /** Annule l'Action avant le jet de Main ensanglantée (défait une charge misclic comme `attackCancel`). */
@@ -984,14 +984,14 @@ export interface GameState extends RollFlowActionsMap {
   // trample{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   trampleConfirm: () => void;
   trampleCancel: () => void;
-  /** Battement (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé retirant de
+  /** Battement (LDB 10 l.103 / AA 13 l.17) : Action, Test de Corps à corps NON opposé retirant de
    *  l'Avantage adverse. `foeId` absent = 1er éligible (picker via `battementSetFoe`). */
   battleBattement: (foeId?: string) => void;
   battementSetFoe: (foeId: string) => void;
   // battement{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   battementConfirm: () => void;
   battementCancel: () => void;
-  /** Distraire (LDB 10 l.364 / AA l.4395) : MOUVEMENT, Test opposé Athlétisme vs Calme. Sur victoire,
+  /** Distraire (LDB 10 l.364 / AA 13 l.51) : MOUVEMENT, Test opposé Athlétisme vs Calme. Sur victoire,
    *  le foe est distrait (ne gagne plus d'Avantage). `foeId` absent = 1er éligible en Ligne de vue
    *  (picker via `distraireSetFoe`). */
   battleDistraire: (foeId?: string) => void;
@@ -1091,7 +1091,7 @@ export interface GameState extends RollFlowActionsMap {
   defenseSetMode: (mode: DefenseMode, subSkillId?: string) => void;
   /** Choisit l'arme de parade (uid d'ItemInstance ; null = main principale) — avant le jet de défense. */
   defenseSetParryWeapon: (uid: string | null) => void;
-  /** Déclare/efface la réaction de Porte-Bouclier (variante AA l.4428) pour cette défense au Bouclier. */
+  /** Déclare/efface la réaction de Porte-Bouclier (variante AA 13 l.84) pour cette défense au Bouclier. */
   defenseSetShieldReaction: (kind: 'damage' | 'push' | null) => void;
   // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   defenseConfirm: () => void;
@@ -2176,7 +2176,7 @@ export const useGame = create<GameState>((set, get) => ({
     get().log(describeTest(pt)); // issue du jet journalisée (source UNIQUE avec la popin), puis la conséquence
     const actor = get().party.find((c) => c.id === pt.actorId);
     const tool = pt.itemUid ? actor?.items?.find((i) => i.uid === pt.itemUid) : undefined;
-    // Pratique/Peu Fiable : ±1 DR sur un Test RATÉ (LDB 60 l.59/88). Ne repêche qu'un échec qui a
+    // Pratique/Peu Fiable : ±1 DR sur un Test RATÉ (LDB 60 l.22/58). Ne repêche qu'un échec qui a
     // réussi le d100 mais manqué le seuil requireSL (jamais un roll > cible → on ne crée pas de réussite).
     const drDelta = tool ? craftTestDRAdjust(tool, pt.success) : 0;
     const effSuccess = drDelta !== 0 ? pt.roll <= pt.target && pt.sl + drDelta >= pt.requireSL : pt.success;

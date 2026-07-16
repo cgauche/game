@@ -104,7 +104,7 @@ describe('testValue + Laid (Sociabilité)', () => {
 });
 
 describe('Volumineux porté (garde — déjà câblé items.ts)', () => {
-  it('une armure Volumineux portée vaut Enc 1 (LDB 60 l.91)', () => {
+  it('une armure Volumineux portée vaut Enc 1 (LDB 60 l.62)', () => {
     const c = { items: [{ uid: 'a', name: 'Plastron lourd', kind: 'armor', qualities: q_(['Volumineux']), enc: 3, equipped: true }] } as unknown as Combatant;
     expect(totalEncumbrance(c)).toBe(1);
   });

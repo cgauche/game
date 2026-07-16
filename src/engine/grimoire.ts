@@ -1,6 +1,6 @@
 /**
  * Grimoire — apprentissage et mémorisation des sorts (LDB 46 « Mémoriser des
- * Sorts » l.44-47, 47 « Grimoires » l.33-34, et Talents de lanceur, LDB 10) :
+ * Sorts » l.16-20, 47 « Grimoires » l.33-34, et Talents de lanceur, LDB 10) :
  *
  *  - Magie mineure : « mémorise de façon permanente un nombre de Sorts égal à
  *    votre Bonus de Force Mentale » au Talent (LDB 10 l.587) → GRATUITS tant que

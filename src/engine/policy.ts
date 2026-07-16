@@ -201,7 +201,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'combat-aa-blessures',
     label: 'Blessures & Critiques (Aux Armes)',
-    ref: 'AA l.2441-2627',
+    ref: 'AA 07 l.1-185',
     group: 'Combat',
     kind: 'mode',
     default: 'ldb',
@@ -211,7 +211,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'combat-aa-avantage-groupe',
     label: 'Avantage de groupe (Aux Armes)',
-    ref: 'AA l.4105-4181',
+    ref: 'AA 11 l.3-100',
     group: 'Combat',
     kind: 'flag',
     default: false,
@@ -371,7 +371,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'market-guild',
     label: 'Guildes d’Artisans',
-    ref: 'LDB 60 l.69',
+    ref: 'LDB 60 l.38',
     group: 'Marché',
     kind: 'flag',
     default: false,

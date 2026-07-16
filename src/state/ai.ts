@@ -146,7 +146,7 @@ export interface EnemyTurnInput {
    *  KIND-AGNOSTIQUE. ABSENT/vide (toute fixture sans emplacement) → aucun candidat (parité golden). */
   servablePostes?: { hullId: string; posteUid: string }[];
   /** Structures destructibles encore debout (porte/mur, `isStructure`), surfacées par l'appelant impur.
-   *  Une arme de SIÈGE les cible (AA l.3808 : armes « conçues pour les formations et les grosses cibles
+   *  Une arme de SIÈGE les cible (AA 10 l.138 : armes « conçues pour les formations et les grosses cibles
    *  statiques, pas les cibles individuelles ») — l'Atout Siège (×2 aux structures, `woundsFromHit`) fait
    *  que la valeur d'une telle attaque est NATURELLEMENT élevée → une pièce de siège PRIORISE la porte,
    *  tandis qu'une arme ordinaire ne l'abîme pas (`structureImmune` → 0 Blessure → utilité ~0, non choisie).
@@ -593,7 +593,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // (lumière/Ligne de Vue) mais que des adversaires EXISTENT, l'ennemi avance d'un cran vers le plus
   // proche NON perçu — il ne tire/lance PAS dessus (pas de vue), il se RAPPROCHE seulement (mouvement
   // seul), au lieu de passer son tour planté. Pur : aucune cible non perçue n'est jamais visée.
-  // EXCEPTION (AA l.3808) : une pièce de siège peut n'avoir QUE la STRUCTURE en vue (défenseurs cachés
+  // EXCEPTION (AA 10 l.138) : une pièce de siège peut n'avoir QUE la STRUCTURE en vue (défenseurs cachés
   // derrière le parapet) — elle a alors un vrai coup jouable (brécher la porte), on ne la fait pas errer.
   const shootableStructureInView = hasRanged && !reloadNeeded
     && (input.structures ?? []).some((st) => st.pos && losClear(scene, pos, { ...structureAimCell(pos, st), z: pos.z }, smoke ?? []));
@@ -1017,7 +1017,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   }
 
   // === SIÈGE : cibler les STRUCTURES destructibles (porte/mur) ======================================
-  // AA l.3808 : les armes de siège sont « conçues pour attaquer des formations ou de grosses cibles
+  // AA 10 l.138 : les armes de siège sont « conçues pour attaquer des formations ou de grosses cibles
   // STATIQUES, et non des cibles individuelles ». L'IA prend donc la porte/le mur pour cible. L'Atout Siège
   // (×2 aux structures, appliqué dans `woundsFromHit`) rend la valeur d'une telle attaque NATURELLEMENT
   // élevée → une PIÈCE DE SIÈGE priorise la porte (son rôle), tandis qu'une arme ordinaire ne l'abîme PAS

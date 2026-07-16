@@ -133,11 +133,11 @@ export interface EncounterSpec {
   /** Rencontre invisible en exploration jusqu'au combat (embuscade visuelle) — pose `combat.hiddenUntilCombat`
    *  sur les entités enrôlées via `enemies`. Défaut false (visibles, RAW). */
   hidden?: boolean;
-  /** Avantage initial — Manœuvrabilité (AA l.4149-4167), cf. `EncounterDef.maneuverability`. */
+  /** Avantage initial — Manœuvrabilité (AA 11 l.53-65), cf. `EncounterDef.maneuverability`. */
   maneuverability?: 'party' | 'enemies';
-  /** Avantage initial — Menace (AA l.4149-4167), cf. `EncounterDef.threat`. */
+  /** Avantage initial — Menace (AA 11 l.53-65), cf. `EncounterDef.threat`. */
   threat?: { camp: 'party' | 'enemies'; tier: ThreatTier };
-  /** Avantage initial — Terrain (AA l.4149-4167), cf. `EncounterDef.terrain`. */
+  /** Avantage initial — Terrain (AA 11 l.53-65), cf. `EncounterDef.terrain`. */
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
   /** Objectif de victoire (#197), cf. `EncounterDef.victoryCondition`. Absent = `allEnemiesDead`. */
   victoryCondition?: VictoryCondition;

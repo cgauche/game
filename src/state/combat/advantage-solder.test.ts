@@ -37,7 +37,7 @@ afterEach(() => {
   resetRule('combat-aa-avantage-groupe');
 });
 
-describe('Battement (LDB 10 l.103 / AA l.4361)', () => {
+describe('Battement (LDB 10 l.103 / AA 13 l.17)', () => {
   it('battementRemoval : LDB = 1 + DR ; mode groupe = 1 (+1 à 6 DR)', () => {
     expect(battementRemoval(0)).toBe(1);
     expect(battementRemoval(3)).toBe(4); // LDB : 1 + 3 DR
@@ -87,7 +87,7 @@ describe('Battement (LDB 10 l.103 / AA l.4361)', () => {
   });
 });
 
-describe('Distraire (LDB 10 l.364 / AA l.4395)', () => {
+describe('Distraire (LDB 10 l.364 / AA 13 l.51)', () => {
   it('éligibilité : adversaire vivant du camp opposé', () => {
     const a = mk('h', 'hero');
     expect(distraireEligible(a, mk('e', 'enemy'))).toBe(true);
@@ -116,7 +116,7 @@ describe('Distraire (LDB 10 l.364 / AA l.4395)', () => {
   });
 });
 
-describe('Cavalier émérite (AA l.4369) — Taille = monture face à la Peur de Taille', () => {
+describe('Cavalier émérite (AA 13 l.25) — Taille = monture face à la Peur de Taille', () => {
   it('riderFearSize : monture (mode groupe, porteur monté) ; undefined à pied ou hors mode groupe', () => {
     setRule('combat-aa-avantage-groupe', true);
     const horse = mk('m', 'hero', { size: 'grande' });
@@ -169,7 +169,7 @@ describe('Empoignade opposée (LDB 14 l.161) — le +1 du vainqueur crédite la 
   });
 });
 
-describe('Retraite stratégique / Impitoyable (AA l.4139/4418, LDB 10 l.591)', () => {
+describe('Retraite stratégique / Impitoyable (AA 11 l.37 / AA 13 l.74, LDB 10 l.591)', () => {
   it('retreatAdvantageCost : 2 par défaut, 1 avec Impitoyable AA', () => {
     setRule('combat-aa-avantage-groupe', true);
     const plain = mk('h', 'hero');

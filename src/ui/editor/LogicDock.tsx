@@ -426,7 +426,7 @@ function EncountersTab({
             <option value="enemies">Les ennemis sont surpris (le groupe embusque)</option>
             <option value="party">Le groupe est surpris (les ennemis embusquent)</option>
           </select>
-          <div className="mini-title">Avantage initial — Manœuvrabilité / Menace / Terrain (AA l.4149-4167)</div>
+          <div className="mini-title">Avantage initial — Manœuvrabilité / Menace / Terrain (AA 11 l.53-65)</div>
           <div className="enemy-mount">
             <label title="Un camp possède un avantage de mouvement (monté, terrain arboricole/aérien favorable…) : +2 à sa réserve d'Avantage.">
               Manœuvrabilité{' '}

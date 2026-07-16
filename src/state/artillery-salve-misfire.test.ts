@@ -4,9 +4,9 @@ import { useGame } from './store';
 import type { Combatant, Weapon } from '../engine/types';
 
 /**
- * #450 — branchement de la Table AA « Incidents de Tir d'Artillerie par Salve » (AA l.3940-3946) :
+ * #450 — branchement de la Table AA « Incidents de Tir d'Artillerie par Salve » (AA 10 l.270-277) :
  * une arme dotée de l'Atout *Salve* (QUALITY_IDS.Salve) qui subit un Incident de tir (`applyOups`,
- * cas `misfire`) tire EN PLUS sur ce tableau d10 dédié — AA l.3936. DISTINCT de l'Incident de tir
+ * cas `misfire`) tire EN PLUS sur ce tableau d10 dédié — AA 10 l.264. DISTINCT de l'Incident de tir
  * GÉNÉRIQUE d'Arme d'équipe (MDG ch.12 l.464) déjà résolu par le même appelant.
  */
 const chars = { 'capacite-de-combat': 30, 'capacite-de-tir': 40, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
@@ -30,7 +30,7 @@ const setup = (chef: Combatant, aide?: Combatant) => {
   return { get: () => useGame.getState(), set: ((patch: never) => useGame.setState(patch)) as never };
 };
 
-describe('Incident de Tir d’Artillerie par Salve (AA l.3940-3946) — branchement `applyOups`', () => {
+describe('Incident de Tir d’Artillerie par Salve (AA 10 l.270-277) — branchement `applyOups`', () => {
   it("arme à Atout Salve : le tireur encaisse ET journalise l'Incident par Salve en plus du misfire générique", () => {
     const chef = mkHero('chef', { chambered: 5 });
     const { get, set } = setup(chef);

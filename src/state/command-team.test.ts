@@ -12,7 +12,7 @@ import type { Scene } from './scene';
 import type { GameState } from './store';
 
 /**
- * COMMANDANT D'ÉQUIPE (Talent, AA l.4373-4379) — un Personnage doté du Talent peut, par un Test de
+ * COMMANDANT D'ÉQUIPE (Talent, AA 13 l.29-35) — un Personnage doté du Talent peut, par un Test de
  * Commandement Intermédiaire (+0), aider une équipe servant une Arme d'équipe « à portée de voix » :
  * l'équipe tire ensuite au score de Projectiles DU COMMANDANT. « Portée de voix » n'a aucune valeur RAW
  * → constante TUNABLE `VOICE_COMMAND_RANGE_M = 50` (≈25 cases à 2 m/case), géométrie d'aura (Chebyshev).

@@ -1,5 +1,5 @@
 /**
- * Couche ÉCONOMIQUE des qualités d'OBJET (artisanat, LDB 60 l.43-92). Pure, sans état :
+ * Couche ÉCONOMIQUE des qualités d'OBJET (artisanat, LDB 60 l.9-62). Pure, sans état :
  * renvoie des FACTEURS / déltas que le Marchand (#2) applique aux prix/disponibilités catalogue.
  * N'agit que sur les qualités `subType: 'objet'` (les qualités d'arme/armure n'altèrent pas le prix).
  */
@@ -20,20 +20,20 @@ export function craftDefautCount(c: QualityCarrier | undefined): number {
   return craftDefs(c).filter((r) => r.data?.type === 'defaut').length;
 }
 
-/** Facteur multiplicatif du prix : chaque Atout ×2, chaque Défaut ÷2 (LDB 60 l.47/75). */
+/** Facteur multiplicatif du prix : chaque Atout ×2, chaque Défaut ÷2 (LDB 60 l.11/42). */
 export function craftPriceFactor(c: QualityCarrier | undefined): number {
   return 2 ** craftAtoutCount(c) * 0.5 ** craftDefautCount(c);
 }
 
-/** Délta d'Encombrement dû à l'artisanat (Léger -1 / Volumineux +1, LDB 60 l.56/91). */
+/** Délta d'Encombrement dû à l'artisanat (Léger -1 / Volumineux +1, LDB 60 l.18/62). */
 export function craftEncDelta(c: QualityCarrier | undefined): number {
   return resolveQualities(c).reduce((s, r) => s + (r.caps?.encDelta ?? 0), 0);
 }
 
 /**
  * Disponibilité après modification par l'artisanat : chaque Atout rend +1 cran plus RARE, chaque
- * Défaut +1 cran plus COURANT (LDB 60 l.47/75). Exception : Exotique n'est pas rendu plus courant
- * par un Défaut (l.77). Option Guilde (l.69-72) : les Défauts RÉDUISENT la dispo et le 1er Atout ne
+ * Défaut +1 cran plus COURANT (LDB 60 l.11/42). Exception : Exotique n'est pas rendu plus courant
+ * par un Défaut (l.44). Option Guilde (l.36-38) : les Défauts RÉDUISENT la dispo et le 1er Atout ne
  * la réduit pas.
  */
 export function shiftAvailability(base: Availability, c: QualityCarrier | undefined, opts: { guild?: boolean } = {}): Availability {
@@ -52,7 +52,7 @@ export function shiftAvailability(base: Availability, c: QualityCarrier | undefi
 }
 
 /**
- * Classe de qualité (LDB 60 l.44/46/74) : **Haute Qualité** = aucun Défaut ET plus d'Atouts que
+ * Classe de qualité (LDB 60 l.7/11/42) : **Haute Qualité** = aucun Défaut ET plus d'Atouts que
  * l'Encombrement ; **Qualité** = plus d'Atouts que de Défauts ; **Défectueuse** = l'inverse ;
  * sinon **Standard**. `enc` = Encombrement de base de l'objet.
  */

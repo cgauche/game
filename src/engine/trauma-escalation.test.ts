@@ -49,7 +49,7 @@ describe('#166/#167 — Aide Médicale reçue (LDB 18 l.307-312) : flag partagé
   });
 });
 
-describe('#167 — « Main ouverte » : 1 doigt de plus par Round sans Aide Médicale (AA l.2571 / LDB)', () => {
+describe('#167 — « Main ouverte » : 1 doigt de plus par Round sans Aide Médicale (AA 07 l.127 / LDB)', () => {
   it('chaque tick perd un doigt ; 4 doigts → main tranchée ; l’escalade se coupe alors', () => {
     const c = C({ traumas: [plaie('brasD', { awaitingMedicalAid: true, fingerLossPerRound: true })] });
     for (let r = 0; r < 3; r++) tickFingerLossEscalation(c);
@@ -90,7 +90,7 @@ describe('#167 — « Main ouverte » : 1 doigt de plus par Round sans Aide Méd
   });
 });
 
-describe('#167 — « Pied écrasé » : perte du pied si pas de Chirurgie sous 1d10 jours (AA l.2624 / LDB)', () => {
+describe('#167 — « Pied écrasé » : perte du pied si pas de Chirurgie sous 1d10 jours (AA 07 l.180 / LDB)', () => {
   it('le décompte expire sans Chirurgie → séquelle permanente du membre inférieur posée', () => {
     const c = C({ traumas: [plaie('jambeD', { amputateAfterDays: 3, amputateSequel: 'membre-inferieur-ampute' })] });
     tickTraumaRecovery(c, 1);
@@ -143,7 +143,7 @@ describe('#166/#167 — câblage DONNÉE→plaie (stampCriticalEscalation) + ent
   });
 });
 
-describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé → Test étendu de Guérison (AA l.125/179 / LDB)', () => {
+describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé → Test étendu de Guérison (AA 07 l.125/179 / LDB)', () => {
   it('stamp `medicalAidGate` POUSSE une séquelle « membre désactivé » (pas de plaie chirurgicale) à la localisation', () => {
     const traumas: Trauma[] = []; // Épaule luxée n’engendre PAS d’amputation → aucune plaie chirurgicale préalable
     stampCriticalEscalation(traumas, {

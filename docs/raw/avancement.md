@@ -119,8 +119,8 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 **Voir aussi** : [`competences.md`](competences.md) pour la définition des Compétences et la règle des Spécialisations.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.75-84) → `inCareerChar`, `AdvanceCostBand`, `advanceCost`, `buySkillAdvance`, `buyTalent`, `isCareerLevelComplete`, `buildAdvancementView`, `skillSlots`, `availableChars`, `mentorBlocks`, +2 — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, +1 fichiers
-- `LDB 9` (l.44) → `buySkillAdvance`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/advancement.ts`, +3 fichiers
+- `LDB 7` (l.75-84) → `feu`, `inCareerChar`, `AdvanceCostBand`, `advanceCost`, `lumiere`, `buySkillAdvance`, `buyTalent`, `isCareerLevelComplete`, `buildAdvancementView`, `mort`, +10 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, +2 fichiers
+- `LDB 9` (l.44) → `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, +5 fichiers
 
 ---
 
@@ -143,7 +143,7 @@ Résumé :
 **Sources RAW** : `LDB 07 l.88-93`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.88-93) → `inCareerChar`, `advanceCost`, `buySkillAdvance`, `buyTalent`, `buildAdvancementView`, `skillSlots`, `talentSlots`, `mentorBlocks`, `buyCharAdvance`, `OPTIONAL_RULES` — `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
+- `LDB 7` (l.88-93) → `feu`, `inCareerChar`, `advanceCost`, `lumiere`, `buySkillAdvance`, `buyTalent`, `buildAdvancementView`, `mort`, `skillSlots`, `talentSlots`, +8 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, +1 fichiers
 
 ---
 
@@ -176,7 +176,7 @@ Formule : **coût de la N+1ᵉ acquisition = 100 × (N + 1)** où N = nombre d'a
 **Voir aussi** : [`talents.md`](talents.md) pour la liste des Talents et les restrictions de multi-achat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.100-109) → `inCareerChar`, `advanceCost`, `talentCost`, `buyTalent`, `careerCompletionAdvances`, `careerChangeCost`, `talentSlots`, `buildAdvancementView` — `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
+- `LDB 7` (l.100-109) → `feu`, `inCareerChar`, `advanceCost`, `talentCost`, `lumiere`, `buyTalent`, `careerCompletionAdvances`, `careerChangeCost`, `mort`, `talentSlots`, +6 — `src/data/domains.json`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
 
 ---
 
@@ -205,7 +205,7 @@ Pour compléter un Niveau de Carrière, il faut (`LDB 07 l.124`) :
 **Sources RAW** : `LDB 07 l.121-133`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.121-133) → `careerCompletionAdvances`, `isCareerLevelComplete`, `careerChangeCost`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `OPTIONAL_RULES`, `changeCareer`, `GameState` — `src/engine/advancement.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
+- `LDB 7` (l.121-133) → `feu`, `lumiere`, `careerCompletionAdvances`, `isCareerLevelComplete`, `careerChangeCost`, `CareerChangeContext`, `mort`, `validateCareerChange`, `buildAdvancementView`, `vie`, +8 — `src/data/domains.json`, `src/engine/advancement.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
 
 ---
 
@@ -228,7 +228,7 @@ Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 20
 **Sources RAW** : `LDB 07 l.136-139`, `LDB 08 l.1-2`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.136-139) → `careerCompletionAdvances`, `AdvancementView`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `OPTIONAL_RULES`, `changeCareer`, `GameState` — `src/engine/advancement.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
+- `LDB 7` (l.136-139) → `feu`, `lumiere`, `careerCompletionAdvances`, `AdvancementView`, `CareerChangeContext`, `mort`, `validateCareerChange`, `buildAdvancementView`, `vie`, `cieux`, +7 — `src/data/domains.json`, `src/engine/advancement.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
 - `LDB 8` (l.1-2, l.5) → `changeCareer` — `src/state/partyFlow.ts`
 
 ---
@@ -254,7 +254,7 @@ Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 20
 **Sources RAW** : `LDB 08 l.2-3`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 8` (l.2-3, l.9, l.11) → `changeCareer` — `src/state/partyFlow.ts`
+- `LDB 8` (l.2-3, l.9, l.11) → `necromancie`, `demonologie`, `changeCareer` — `src/data/domains.json`, `src/state/partyFlow.ts`
 
 ---
 
@@ -308,7 +308,9 @@ Le **Pouvoir derrière le Trône** (Tome 3) propose en Annexe IV le barème de P
 
 **Sources RAW** : `T3 13 l.1-73`
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `T3 13` (l.1-73) → `Effect` — `src/state/scene.ts`
+- sans code : `T3 13` (l.78)
 
 ---
 

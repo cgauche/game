@@ -536,7 +536,7 @@ export function attackEnv(
       const rm = weatherRangedMod(dayW);
       if (rm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: rm });
     }
-    // Commandant d'équipe (AA l.4373-4379) : un chef de pièce dirigé tire au score de Projectiles de son
+    // Commandant d'équipe (AA 13 l.29-35) : un chef de pièce dirigé tire au score de Projectiles de son
     // commandant — re-validé ICI (vivant + à portée de voix) → un delta sur la base du chef (aperçu ET résolution).
     const tcMod = teamCommandMod(attacker, weapon, battle.combatants);
     if (tcMod) env.push(tcMod);
@@ -917,8 +917,8 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
     return;
   }
   // Option A du menu de Désengagement : « Sacrifier l'Avantage » (LDB 15 l.47, Avantage STRICTEMENT
-  // supérieur → tombe à 0) OU, en mode « Avantage de groupe », « Retraite stratégique » (AA l.4139 : dépense
-  // FIXE de 2 Avantages de la réserve du camp, abaissée à 1 par Impitoyable AA l.4418). Un seul chemin d'UI.
+  // supérieur → tombe à 0) OU, en mode « Avantage de groupe », « Retraite stratégique » (AA 11 l.37 : dépense
+  // FIXE de 2 Avantages de la réserve du camp, abaissée à 1 par Impitoyable AA 13 l.74). Un seul chemin d'UI.
   const maxFoeAdv = Math.max(...foes.map((f) => f.advantage));
   // Impitoyable (LDB 10 l.591) : peut Sacrifier l'Avantage même sans supériorité stricte (mais il faut au
   // moins 1 Avantage à dépenser). En mode groupe : Retraite stratégique = dépense FIXE de la réserve du camp.
@@ -999,7 +999,7 @@ export function resolveGrappleOpposed(get: Get, actor: Combatant, foe: Combatant
   const opp = resolveOpposed(actorRoll, foeRoll);
   const result = disengageOutcome(opp.winner);
   if (result === 'success') return resolveGrappleWin(actor, foe, 'damage', Math.max(0, opp.netSL), actorRoll.roll);
-  if (result === 'failure') campGain(get, foe, 1); // l'adversaire l'emporte → +1 Avantage (l.161) — réserve du camp en mode groupe (AA l.4114)
+  if (result === 'failure') campGain(get, foe, 1); // l'adversaire l'emporte → +1 Avantage (l.161) — réserve du camp en mode groupe (AA 11 l.11-13)
   return tr(result === 'failure' ? 'cs.grappleLose' : 'cs.grappleTie', { name: actor.name, foe: foe.name });
 }
 
@@ -1532,7 +1532,7 @@ function pushDeviationStep(set: SetFn, dev: PendingDeviation): void {
   });
 }
 
-/** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.82) — héros (pièces). */
+/** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.50) — héros (pièces). */
 function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): void {
   const piece = (target.items ?? []).find(
     (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && hasQuality(i, QUALITY_IDS.Bacle) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
@@ -1752,7 +1752,7 @@ export function applyAttackResult(
     // elle-même). Point d'application des Dégâts localisés — jumeau du Projectile magique (applyMissileHit).
     const reinj = reinjuryBleed(target, loc);
     if (reinj > 0) { addCondition(target, COND.hemorragique, reinj); critLog.push(tr('cf.reinjuryBleed', { name: target.name, n: reinj, loc: locationLabel(loc, target.bodyShape) })); }
-    if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.82)
+    if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.50)
     // Blessures supplémentaires d'une Déviation (Dégâts recalculés à PA−1, LDB 63 l.30) : la PA n'est pas
     // encore sacrifiée ici (deflectCrit/enemyAutoDeviate le font) → on recompute woundsFromHit à PA−1
     // (`extraAP:-1`) et on isole le DELTA par rapport aux Blessures de base déjà appliquées.
@@ -1910,7 +1910,7 @@ export function applyAttackResult(
   // un Test opposé ou en perdant une Blessure.
   if (res.advantageTo === 'attacker' && !deferAttackerAdvantage) {
     // Renversement : « au lieu de gagner +1, prendre l'Avantage adverse ». LDB 10 → tout l'Avantage
-    // individuel de la cible (quand c'est mieux que +1) ; variante « Avantage de groupe » (AA l.4442) →
+    // individuel de la cible (quand c'est mieux que +1) ; variante « Avantage de groupe » (AA 13 l.92-98) →
     // 1 dans la réserve adverse. Sinon +1 au vainqueur du Test opposé (per-combattant OU réserve du camp).
     if (weapon.type === 'melee' && stealsOneAdvantage(attacker)) {
       if (reversalStealOne(get, attacker, target)) critLog.push(tr('cf.reversal', { name: attacker.name }));
@@ -2131,7 +2131,7 @@ export function runPreemptShots(get: Get, set: SetFn): void {
       .sort((a, b) => combatDistance(shooter, a.f) - combatDistance(shooter, b.f))
       .find((x) => losClear(scene, shooter.pos!, isStructure(x.f) ? structureAimCell(shooter.pos!, x.f) : x.f.pos!, smoke))?.f;
     if (!t0) continue; // aucune cible en Ligne de Vue → pas d'interruption
-    // Main ensanglantée (AA l.2569) : le tireur gaté joue le MÊME Test de Dextérité (+20) AVANT son Tir rapide
+    // Main ensanglantée (AA 07 l.117) : le tireur gaté joue le MÊME Test de Dextérité (+20) AVANT son Tir rapide
     // (point IA UNIQUE `aiHandGate`) ; Échec → l'arme lui glisse (`disarm`) et il renonce à l'interruption.
     if (!aiHandGate(get, set, shooter, firedWeapon(shooter, t0, undefined, battle.combatants).uid)) { changed = true; continue; }
     const r = resolveAttack(get, shooter, t0);
@@ -2153,7 +2153,7 @@ function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void 
   // Mains nues / Crochet n'ont pas d'uid → pas d'item source (usure transient via le `else` ci-dessous).
   const it = weapon.uid ? (c.items ?? []).find((i) => i.uid === weapon.uid) : undefined;
   if (isUnbreakable(it ?? weapon)) return; // Incassable : ni dégât ni destruction (LDB 62 l.310)
-  // Sauvegarde Solide(N) contre une cassure instantanée : 1d10 ≥ seuil → l'arme résiste (LDB 60 l.64-67).
+  // Sauvegarde Solide(N) contre une cassure instantanée : 1d10 ≥ seuil → l'arme résiste (LDB 60 l.30-32).
   if (destroy) {
     const thr = solideSaveThreshold(weapon);
     if (thr != null && d10(battleRng()) >= thr) return;
@@ -2181,7 +2181,7 @@ function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void 
 export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r: OupsResolved): void {
   const battle = get().battle!;
   const log: string[] = [`${c.name} — Maladresse ! ${r.label}`];
-  // Bâclé : l'arme casse sur toute Maladresse (Test raté + double, LDB 60 l.82) — sauvegarde Solide possible.
+  // Bâclé : l'arme casse sur toute Maladresse (Test raté + double, LDB 60 l.50) — sauvegarde Solide possible.
   if (hasQuality(weapon, QUALITY_IDS.Bacle)) wearActiveWeapon(c, weapon, true);
   const sb = bonus(effectiveChar(c, 'force'));
   const units = r.roll % 10;
@@ -2246,8 +2246,8 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
           log.push(tr('cf.fumbleMisfireCrew', { name: s.name, lost: sLost }));
         }
       }
-      // Table AA « Incidents de Tir d'Artillerie par Salve » (AA l.3940-3946) : une arme à Atout
-      // Salve qui subit un Incident de tir tire EN PLUS sur ce tableau d10 dédié (AA l.3936 : « Si
+      // Table AA « Incidents de Tir d'Artillerie par Salve » (AA 10 l.270-277) : une arme à Atout
+      // Salve qui subit un Incident de tir tire EN PLUS sur ce tableau d10 dédié (AA 10 l.264 : « Si
       // l'arme subit un Incident de tir à n'importe quel moment du processus, déterminez-en les effets
       // puis faites un jet dans le tableau suivant. ») — DISTINCT de l'Incident de tir GÉNÉRIQUE d'Arme
       // d'équipe (MDG ch.12 l.464) déjà résolu ci-dessus.
@@ -2287,7 +2287,7 @@ export function resolveEnemyFumble(get: Get, set: SetFn, enemy: Combatant, weapo
 }
 
 /**
- * Réaction de Porte-Bouclier — variante « Avantage de groupe » (AA l.4428, VERBATIM : « une fois par Round,
+ * Réaction de Porte-Bouclier — variante « Avantage de groupe » (AA 13 l.84, VERBATIM : « une fois par Round,
  * vous pouvez dépenser 2 Avantages soit pour causer des Dégâts quand vous êtes attaqué comme s'il s'agissait
  * de votre Action, soit pour pousser votre adversaire sur 2 mètres dans la direction directement opposée à
  * vous et ne plus être considéré comme Engagé »). Brique GÉNÉRALE de réaction à coût d'Avantages : le coût et
@@ -2401,7 +2401,7 @@ export function maybeOpenDefense(
  *  est un héros qui peut se défendre en mêlée ; sinon résout instantanément (→ false). */
 /**
  * OUVRE l'Action d'attaque des sites de déclaration CÔTÉ JOUEUR (flux normal `targetingModes` / Tir rapide /
- * Pilonnage) — point PARTAGÉ du gate « Main ensanglantée » (AA l.2569 ; le balayage/2ᵉ frappe sont des
+ * Pilonnage) — point PARTAGÉ du gate « Main ensanglantée » (AA 07 l.117 ; le balayage/2ᵉ frappe sont des
  * CONTINUATIONS de la MÊME Action déjà gatée, non re-gatées). Si l'arme employée est tenue dans une main
  * gatée (`attackHandGate`), interpose d'abord un Test de Dextérité (+20) INFLUENÇABLE (`pendingHandGate`,
  * calque `reload`) : sur RÉUSSITE `handGateConfirm` RAPPELLE ce helper (le `pa`/`title`/`icon` FIGÉS →
@@ -2423,7 +2423,7 @@ export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title
   startCascade(get, set, { title, icon, purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: pa.attackerId }] });
 }
 
-/** Main ensanglantée (AA l.2569) — Test de Dextérité (+20) JOUÉ INLINE pour un attaquant PILOTÉ PAR L'IA
+/** Main ensanglantée (AA 07 l.117) — Test de Dextérité (+20) JOUÉ INLINE pour un attaquant PILOTÉ PAR L'IA
  *  (jamais de modale, résolution forcée). SOURCE UNIQUE des chemins IA : attaque normale (`doAttack`), Tir
  *  rapide (`runPreemptShots`) et pilonnage servi (même point). Renvoie `true` si le coup peut se poursuivre ;
  *  sur ÉCHEC, l'objet de la main gatée glisse (op `disarm`) et l'on renvoie `false` (l'IA renonce à CE coup).
@@ -2450,7 +2450,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   const b0 = get().battle;
   if (ward.lines.length && b0) set({ battle: { ...b0, log: [...b0.log, ...evLines(ward.lines, 'info', attacker.id)] } });
   if (!ward.allowed) return false;
-  // Main ensanglantée (AA l.2569) : l'attaquant gaté joue le Test de Dextérité (+20) sur l'arme EMPLOYÉE contre
+  // Main ensanglantée (AA 07 l.117) : l'attaquant gaté joue le Test de Dextérité (+20) sur l'arme EMPLOYÉE contre
   // cette cible ; Échec → l'arme glisse et il renonce à CE coup (une pièce servie hors loadout n'est jamais gatée).
   if (!aiHandGate(get, set, attacker, firedWeapon(attacker, target).uid)) return false;
   if (maybeOpenDefense(get, set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
@@ -2575,7 +2575,7 @@ export const TRAMPLE_WEAPON: Weapon = buildWeapon({ name: 'Piétinement', attack
  *  corps). Ne consomme PAS l'Action (« action gratuite »). */
 export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: Combatant): void {
   const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
-  campSpend(get, attacker, traitCapability(attacker.traits, 'freeTrample') ? 0 : 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA l.4142)
+  campSpend(get, attacker, traitCapability(attacker.traits, 'freeTrample') ? 0 : 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA 11 l.30-38)
   const res = resolveTrample(attacker, target, battleRng());
   applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res, false); // pose acted=true (attaque standard)… ; Piétinement = résolution instantanée (pas de modale)
   set({ battle: { ...get().battle!, acted: prevActed } }); // …qu'on restaure : le Piétinement est gratuit
@@ -2633,7 +2633,7 @@ function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extra
   if (op.perChargerOncePerRound && (uses[ck] ?? 0) >= 1) return; // 1 riposte par chargeur (Frappe réactive)
   if (op.cost?.advantage != null && actor.advantage < op.cost.advantage) return; // Avantage insuffisant
   if (op.cost?.advantageOrMovement && actor.advantage <= 0) return; // simplifié : Avantage requis (« ou Mouvement » = raffinement)
-  if (op.cost?.advantage != null) campSpend(get, actor, op.cost.advantage); // réserve du camp en mode groupe (AA l.4142) / le combattant (LDB)
+  if (op.cost?.advantage != null) campSpend(get, actor, op.cost.advantage); // réserve du camp en mode groupe (AA 11 l.30-38) / le combattant (LDB)
   else if (op.cost?.advantageOrMovement) campSpend(get, actor, 1);
   actor.freeAttacksThisTurn = { ...uses, [fa.key]: (uses[fa.key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
   const prevActed = get().battle?.acted ?? false; // gratuite : Action préservée
@@ -2730,7 +2730,7 @@ function freeAttackTarget(battle: BattleState, c: Combatant, kind: string): Comb
  *  Cornes/Tentacules 0, Morsure/Caudale/Piétinement 1). */
 function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Combatant, kind: string, bonus: number, cost = 1): boolean {
   const prevActed = get().battle?.acted ?? false;
-  campSpend(get, attacker, cost); // réserve du camp en mode groupe (AA l.4142) / le combattant (LDB)
+  campSpend(get, attacker, cost); // réserve du camp en mode groupe (AA 11 l.30-38) / le combattant (LDB)
   const weapon = freeAttackWeapon(kind, bonus);
   if (maybeOpenDefense(get, set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
   const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
@@ -2842,14 +2842,14 @@ export function aiMaybeSpecialAction(get: Get, set: SetFn, enemy: Combatant): bo
   const atks = creatureAttacks(enemy.traits ?? []);
   if (atks.some((a) => a.kind === 'regard') && enemy.advantage >= 1) return applyGaze(get, set, enemy);
   if (atks.some((a) => a.kind === 'etreinte') && enemy.advantage >= 2) return applyChillGrasp(get, set, enemy);
-  // Battement (LDB 10 l.103 / AA l.4361) : un PNJ Engagé qui porte le Talent retire de l'Avantage à un
+  // Battement (LDB 10 l.103 / AA 13 l.17) : un PNJ Engagé qui porte le Talent retire de l'Avantage à un
   // adversaire ARMÉ pas plus grand que lui, quand la réserve/l'Avantage adverse est non nul (sinon inutile).
   if (hasBattement(enemy)) {
     const battle = get().battle;
     const foe = battle?.combatants.find((c) => battementEligible(enemy, c) && spendableAdvantage(get, c) > 0);
     if (foe) return aiBattement(get, set, enemy, foe);
   }
-  // Distraire (LDB 10 l.364 / AA l.4395) : à défaut d'attaque productive, un PNJ qui porte le Talent nie
+  // Distraire (LDB 10 l.364 / AA 13 l.51) : à défaut d'attaque productive, un PNJ qui porte le Talent nie
   // l'Avantage d'un adversaire adjacent (Mouvement) — cible non déjà distraite, avec de l'Avantage à nier.
   if (hasDistraire(enemy) && enemy.pos) {
     const battle = get().battle;
@@ -3269,7 +3269,7 @@ export function routeEnemyCast(get: Get, set: SetFn): void {
   const spell = effectiveSpellOf(pc);
   if (!caster || !target || !spell) return;
   // Seul un Sort qui ABOUTIT se dissipe (cast réussi, DR ≥ NI) ; pas une Prière ; pas un Critique
-  // non-Projectile « inéluctable » (défaut IA, LDB 46 l.59) — comme l'ancien bloc CastModal.
+  // non-Projectile « inéluctable » (défaut IA, LDB 46 l.32) — comme l'ancien bloc CastModal.
   const dispellable = pc.result.cast && isDispellableSpell(spell) && !(pc.result.isCritical && !pc.missile);
   const heroes = dispellable ? counterspellCandidates(battle, get().scene, caster, target).filter((c) => c.kind === 'hero') : [];
   if (heroes.length) {
@@ -3408,7 +3408,7 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   const spell = effectiveSpellOf(pc);
   if (!caster?.pos || !spell) return;
   const res = pc.result;
-  // « Puissance totale » (LDB 46 l.57) repêche un DR insuffisant — la pose reste permise (le
+  // « Puissance totale » (LDB 46 l.31) repêche un DR insuffisant — la pose reste permise (le
   // repêchage est appliqué par applyCast) ; tout autre échec ne se pose pas.
   const castable = res.cast || (!!res.isCritical && (pc.critChoice ?? 'puissance') === 'puissance');
   if (!castable) return;
@@ -3530,7 +3530,7 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
       active: isSpellActive(data, enemy, battle),
     });
   }
-  // Structures destructibles (porte/mur) ciblables par les ARMES DE SIÈGE de l'ASSAILLANT (AA l.3808). Réservé
+  // Structures destructibles (porte/mur) ciblables par les ARMES DE SIÈGE de l'ASSAILLANT (AA 10 l.138). Réservé
   // aux ENNEMIS (les assaillants brèchent l'enceinte) : un défenseur allié-IA n'attaque pas sa propre porte —
   // `structureImmune` n'y suffirait pas (une pièce de siège alliée la pourrait). Absent côté allié → aucun candidat.
   const structures = enemy.kind === 'enemy'
@@ -3691,7 +3691,7 @@ export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boo
   return applyCounterspellOutcome(get, set, counter, out);
 }
 
-/** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.52-59). */
+/** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.26-32). */
 export type CastCritChoice = 'critique' | 'puissance' | 'ineluctable';
 
 /**
@@ -3733,7 +3733,7 @@ export function applyCast(
   let teleportReach: Map<string, number> | null = null; // Téléportation (Jalon 2.6) : posé APRÈS finishPlayerAction
   const extraTargets = extras?.extraTargets ?? [];
 
-  // Incantation CRITIQUE (LDB 46 l.52-59) — SORTS seulement (Test de Langue (Magick)) :
+  // Incantation CRITIQUE (LDB 46 l.26-32) — SORTS seulement (Test de Langue (Magick)) :
   // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
   // prix — Imparfaite Mineure, sauf Talent Diction instinctive.
   const isSort = !castInfoIsPrayer(spell);
@@ -3852,7 +3852,7 @@ export function applyCast(
       const mloc = mres.location ?? 'corps';
       const mReinj = reinjuryBleed(t, mloc);
       if (mReinj > 0) { addCondition(t, COND.hemorragique, mReinj); logLines.push(tr('cf.reinjuryBleed', { name: t.name, n: mReinj, loc: locationLabel(mloc, t.bodyShape) })); }
-      // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
+      // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.30), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
         const loc = mres.location ?? 'corps'; // double → loc re-tirée (#80) ; dépassement → loc de touche
@@ -4971,13 +4971,13 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   for (const d of doomedBleed) { d.c.dead = true; battle.log.push(ev('death', d.line, d.c.id)); for (const line of notifySlain(get, set, d.c)) battle.log.push(ev('death', line, d.c.id)); }
   battle.bleedDoomed = undefined;
   // (3) Avantage : mode Livre de base → -1 si aucun gagné ce Round (LDB 14 l.219) ; mode « Avantage de
-  //     groupe » (AA l.4146) → transfert de domination du camp majoritaire (REMPLACE décroissance +
+  //     groupe » (AA 11 l.44) → transfert de domination du camp majoritaire (REMPLACE décroissance +
   //     Surnombre). Engagé périmé (LDB 13 l.171).
   if (groupAdvantage()) roundEndAdvantageTransfer(battle);
   for (const c of battle.combatants) {
     if (!groupAdvantage() && !isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
     c.gainedAdvThisRound = false;
-    c.usedShieldReactionRound = false; // Porte-Bouclier (variante AA l.4428) : « une fois par Round »
+    c.usedShieldReactionRound = false; // Porte-Bouclier (variante AA 13 l.84) : « une fois par Round »
     if (c.distractedRounds) c.distractedRounds = c.distractedRounds > 1 ? c.distractedRounds - 1 : undefined; // Distraire (LDB 10 l.364) : expire en fin de Round
     c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.202)
   }
@@ -5101,7 +5101,7 @@ export function collectHeroRoundStartPsych(get: Get, c: Combatant): HeroPsychDue
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
     if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
-    const src = fearSourceFor(c, foe, riderFearSize(battle, c)); // Cavalier émérite (AA l.4369) : Taille = monture face à la Peur de Taille
+    const src = fearSourceFor(c, foe, riderFearSize(battle, c)); // Cavalier émérite (AA 13 l.25) : Taille = monture face à la Peur de Taille
     if (!src || src.kind !== 'terreur' || state.some((p) => p.sourceId === foe.id)) continue;
     return { kind: 'terreur', sourceId: foe.id, sourceName: foe.name, indice: src.indice, prevDR: 0 };
   }
@@ -5128,7 +5128,7 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
   for (const foe of battle.combatants) {
     if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
     if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
-    const src = fearSourceFor(c, foe, riderFearSize(battle, c)); // Cavalier émérite (AA l.4369) : Taille = monture face à la Peur de Taille
+    const src = fearSourceFor(c, foe, riderFearSize(battle, c)); // Cavalier émérite (AA 13 l.25) : Taille = monture face à la Peur de Taille
     if (!src || src.kind !== 'peur' || state.some((p) => p.sourceId === foe.id)) continue;
     return { kind: 'peur', sourceId: foe.id, sourceName: foe.name, indice: src.indice, prevDR: 0 };
   }

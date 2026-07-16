@@ -43,7 +43,7 @@ import { MasterDetail } from './MasterDetail';
 import { Tabs } from './Tabs';
 import { t } from '../i18n';
 
-/** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — dérivés de la DONNÉE éditable (`qualities.json`,
+/** Atouts/Défauts d'artisanat (LDB 60 l.9-62) — dérivés de la DONNÉE éditable (`qualities.json`,
  *  qualités d'Objet) par `id` ; tooltips/libellés via le registre (`describeQuality`). */
 const ATOUTS = qualities.filter((q) => q.type === 'atout' && q.subType === 'objet').map((q) => q.id);
 const DEFAUTS = qualities.filter((q) => q.type === 'defaut' && q.subType === 'objet').map((q) => q.id);

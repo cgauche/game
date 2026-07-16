@@ -910,7 +910,7 @@ export const FLOWS = {
   }),
 
   /**
-   * Battement (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé. CALQUE de
+   * Battement (LDB 10 l.103 / AA 13 l.17) : Action, Test de Corps à corps NON opposé. CALQUE de
    * `trample` (jet MONO d'attaquant influençable) — la seule différence est l'issue métier
    * (`resolveBattement` dans `battementConfirm`, pas une attaque à Dégâts). Le jet de CC est figé ici ;
    * `caps.forced` autorise la Résilience (dé PAR DÉFAUT = DR max → retire le plus d'Avantage). PAS de
@@ -937,7 +937,7 @@ export const FLOWS = {
   }),
 
   /**
-   * Distraire (LDB 10 l.364 / AA l.4395) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs Calme (foe).
+   * Distraire (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs Calme (foe).
    * CALQUE EXACT du Désengagement/Au Contact : le jet de Calme du foe (`p.defRoll`) reste FIGÉ ; seul le
    * jet d'Athlétisme du mover (`p.atk`) se (re)joue. Issue BINAIRE (success/tie/fail) → la Résilience fait
    * simplement l'emporter. L'issue métier (`resolveDistraire` → `distractedRounds`) vit dans `distraireConfirm`.
@@ -1262,7 +1262,7 @@ export const FLOWS = {
     lens: flatRollLens((p) => p.success ? null : p.target),
   }),
 
-  /** Main ensanglantée (AA l.2569) : Test de Dextérité Accessible (+20) PAR ACTION, AVANT d'ouvrir une
+  /** Main ensanglantée (AA 07 l.117) : Test de Dextérité Accessible (+20) PAR ACTION, AVANT d'ouvrir une
    *  attaque avec l'arme tenue dans la main gatée. Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via
    *  la lentille (`caps.forced` + verbe `forceSuccess`) ; Chance « +1 DR » par `bumpSL`. Calque `reload`.
    *  L'issue (RÉUSSITE → ouvre l'attaque ; ÉCHEC → `disarm` + Action consommée) vit dans `handGateConfirm`. */
@@ -1403,7 +1403,7 @@ export const FLOWS = {
     },
   }),
 
-  /** Évaluation (LDB 60 l.10) : révèle la qualité cachée + estime le prix. */
+  /** Évaluation (LDB 59 l.41) : révèle la qualité cachée + estime le prix. */
   appraise: makeRollFlow<PendingAppraise>({
     key: 'pendingAppraise',
     rolled: (p) => p.roll != null,
@@ -1417,7 +1417,7 @@ export const FLOWS = {
     lens: flatRollLens((p) => p.target),
   }),
 
-  /** Marchandage (LDB 60 l.12) : Test OPPOSÉ joueur vs marchand — le marchand garde son jet figé. */
+  /** Marchandage (LDB 59 l.43) : Test OPPOSÉ joueur vs marchand — le marchand garde son jet figé. */
   bargain: makeRollFlow<PendingBargain>({
     key: 'pendingBargain',
     rolled: (p) => p.roll != null,

@@ -156,7 +156,7 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.45) → `SceneEntity`, `SpawnExtras`, `creatureToCombatant` — `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- `LDB 85` (l.339-340) → `woundsForSize`, `SpecsSource`, `bestDefenseMode`, `applyFreeAttackEffects` — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/size.ts`, `src/state/combatFlow.ts`, `src/state/combatManeuvers.ts`
+- `LDB 85` (l.339-340) → `a-distance`, `a-sang-froid`, `affame`, `amphibie`, `animosite`, `woundsForSize`, `arboricole`, `arme`, `armure`, `attaque-caudale`, +13 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/size.ts`, `src/state/combatFlow.ts`, `src/state/combatManeuvers.ts`
 - sans code : `LDB 76` (l.11-13)
 
 ---
@@ -206,7 +206,7 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 **Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.343-406) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `SpecsSource`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, +6 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +4 fichiers
+- `LDB 85` (l.343-406) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `amphibie`, `animosite`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `arboricole`, +25 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
 
 ---
 
@@ -224,7 +224,7 @@ Ces modificateurs s'appliquent **par catégorie d'écart**. Ils sont cumulatifs 
 - `LDB 85 l.339-340` — règle d'agrandissement/réduction.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.276-277, l.339-340) → `StatblockEditor`, `woundsForSize`, `resizeBySteps`, `creatureToCombatant`, `resolvePsychAI`, `SpecsSource`, `bestDefenseMode`, `applyFreeAttackEffects` — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/size.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatManeuvers.ts`, +2 fichiers
+- `LDB 85` (l.276-277, l.339-340) → `a-distance`, `a-sang-froid`, `affame`, `StatblockEditor`, `fearSourceFor`, `amphibie`, `animosite`, `woundsForSize`, `arboricole`, `arme`, +18 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/combat/turnHooks.ts`, +4 fichiers
 
 ---
 
@@ -296,8 +296,8 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 **Voir aussi** : [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille-categories-et-modificateurs-de-combat).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.142-165) → `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, `COMBAT_INTENTS`, `grappleEnvMod`, `useAttackJetProps`, `clearEngagementOf`, +33 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +22 fichiers
-- `LDB 85` (l.357-387) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, `teleportCommitTile`, +3 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +4 fichiers
+- `LDB 14` (l.142-165) → `GrappleModal`, `combat-deux-armes`, `areGrappling`, `main-secondaire`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, `tirer-dans-le-tas`, `COMBAT_INTENTS`, +37 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +23 fichiers
+- `LDB 85` (l.357-387) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `amphibie`, `animosite`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `arboricole`, +22 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
 
 ---
 
@@ -312,6 +312,7 @@ Pour les bêtes sauvages, les profils du bestiaire sont **arrondis à des multip
 Les Caractéristiques inexistantes (« – » → 0) **ne sont pas tirées**.
 
 **Implémente :** (non implémenté)
+- dette : #515
 
 ---
 
@@ -354,8 +355,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- `LDB 85` (l.1-382, l.395) → `scene`, `planClimb`, `STARTLE_CAUSE_LABELS`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, `Formula`, `sizeDamageMultiplier`, `applySwarmBuild`, +63 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/creatureEquip.ts`, +26 fichiers
-- sans code : `LDB 85` (l.408, l.442-447)
+- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, +86 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +27 fichiers
 
 ---
 
@@ -382,6 +382,7 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 > **Ces chapitres NE sont PAS transcrits dans ce fichier.** Le présent document couvre le **système** ; le catalogue des statblocs individuels est dans `src/data/creatures.json` (source app-owned, éditée dans le Compendium).
 
 **Implémente :** (non implémenté)
+- bloqué : topic documentaire (pointeur vers le catalogue creatures.json), aucune règle à implémenter
 
 ---
 
@@ -410,8 +411,7 @@ Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (T2C) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 16` (l.15-19) → `suffocationTick`, `fireTurnEdgeTriggers`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, `OpsCtx`, `applyOps`, `Combatant` — `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/state/combat/advantagePool.ts`, `src/state/combat/turnHooks.ts`, `src/state/triggeredEffects.ts`
-- sans code : `MDG 16` (l.63)
+- `MDG 16` (l.15-19, l.63) → `suffocationTick`, `fireTurnEdgeTriggers`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, `OpsCtx`, `applyOps`, `Combatant`, +2 — `src/data/creatures.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/state/combat/advantagePool.ts`, `src/state/combat/turnHooks.ts`, +1 fichiers
 
 ---
 
@@ -434,8 +434,8 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 **Voir aussi** : [Avantage permanent — Trait *Redoutable* (Grim) (ZI)](combat.md#avantage-permanent--trait-redoutable-grim-zi) — `combat.md` ; Avantage de groupe (AA) — `combat.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 16` (l.9-13) → `suffocationTick`, `fireTurnEdgeTriggers`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, `OpsCtx`, `applyOps`, `Combatant` — `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/state/combat/advantagePool.ts`, `src/state/combat/turnHooks.ts`, `src/state/triggeredEffects.ts`
-- sans code : `ZI 14` (l.1045), `MDG 16` (l.152)
+- `MDG 16` (l.9-13, l.152) → `suffocationTick`, `fireTurnEdgeTriggers`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, `OpsCtx`, `applyOps`, `Combatant`, +2 — `src/data/creatures.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/state/combat/advantagePool.ts`, `src/state/combat/turnHooks.ts`, +1 fichiers
+- sans code : `ZI 14` (l.1045)
 
 ## Bilan de fidélité
 

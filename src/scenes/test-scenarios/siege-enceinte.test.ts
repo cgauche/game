@@ -232,7 +232,7 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     expect(crew.weapons.find((w) => w.type === 'ranged')?.name).toMatch(/[Bb]aliste/); // SEULE arme à distance = la baliste
   });
 
-  it('ÉQUIPAGE QUALIFIÉ : chaque servant a la Projectiles du Groupe de SA pièce → compte dans l’effectif (AA l.3900)', () => {
+  it('ÉQUIPAGE QUALIFIÉ : chaque servant a la Projectiles du Groupe de SA pièce → compte dans l’effectif (AA 10 l.230)', () => {
     useGame.setState({ party: scenario.makeParty() });
     useGame.getState().startScene(scenario.scene);
     useGame.getState().startCombat('assaut');

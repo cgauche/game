@@ -4,25 +4,25 @@
  * sans subType, n'en bénéficient pas ; le chapitre 47 ne les rattache pas au Domaine du lanceur).
  *
  * Citations (48 - Magie des Couleurs.md) :
- *  - Bête l.9     : « Chaque fois que vous lancez avec succès un Sort du Domaine de la Bête, vous
+ *  - LDB 48 l.11  : « Chaque fois que vous lancez avec succès un Sort du Domaine de la Bête, vous
  *    pouvez aussi gagner le Trait de créature Peur 1 pour les 1d10 prochains Rounds. »
- *  - Cieux l.87   : « Les Sorts infligeant des Dégâts ignorent les PA des armures en métal, et se
+ *  - LDB 48 l.106 : « Les Sorts infligeant des Dégâts ignorent les PA des armures en métal, et se
  *    dirigent vers toutes les autres cibles dans les 2 mètres, à l'exception de ceux possédant le
  *    Talent Magie des Arcanes (Cieux), infligeant un nombre de Dégâts égal à votre BFM […]. »
- *  - Feu l.157    : « Vous pouvez infliger +1 État Enflammé à quiconque ciblé […] à moins qu'il ne
+ *  - LDB 48 l.203 : « Vous pouvez infliger +1 État Enflammé à quiconque ciblé […] à moins qu'il ne
  *    possède le Talent Magie des Arcanes (Feu). Chaque État Enflammé situé à une distance en
  *    mètres égale à votre BFM ajoute +10 aux tentatives de Focalisation ou d'Incantation… »
- *  - Lumière l.240: « Vous pouvez infliger un État Aveuglé aux cibles […] sauf Talent (Lumière).
+ *  - LDB 48 l.302 : « Vous pouvez infliger un État Aveuglé aux cibles […] sauf Talent (Lumière).
  *    Si une cible possède Démoniaque ou Mort-vivant, les Sorts infligent une frappe supplémentaire
  *    de BInt Dégâts qui ignore le Bonus d'Endurance et les PA. »
- *  - Métal l.302  : « Les Sorts infligeant des Dégâts ignorent les PA des armures métalliques, et
+ *  - LDB 48 l.399 : « Les Sorts infligeant des Dégâts ignorent les PA des armures métalliques, et
  *    infligent un bonus de Dégâts égal au nombre de PA de l'armure métallique portée à la
  *    Localisation frappée. »
- *  - Mort l.400   : « Vous pouvez assigner +1 État Exténué à chaque cible vivante affectée […].
+ *  - LDB 48 l.501 : « Vous pouvez assigner +1 État Exténué à chaque cible vivante affectée […].
  *    Une cible peut n'avoir qu'un seul État Exténué gagné de cette façon à la fois. »
- *  - Ombres l.482 : « les Sorts lancés depuis le Domaine des Ombres ignorent tous les PA non
+ *  - LDB 48 l.588 : « les Sorts lancés depuis le Domaine des Ombres ignorent tous les PA non
  *    magiques. »
- *  - Vie l.574    : « +10 pour Incanter ou Focaliser dans un environnement rural […] les créatures
+ *  - LDB 48 l.690 : « +10 pour Incanter ou Focaliser dans un environnement rural […] les créatures
  *    vivantes ciblées se voient retirer tous les États Exténué et Hémorragique, après que tous les
  *    autres effets ont été appliqués […] les Morts-vivants subissent +BFM Dégâts ignorant BE+PA. »
  *
@@ -44,7 +44,8 @@ import { applyOps } from './ops';
  *  (id STABLE, indépendant de la langue) ; absent = Sort sans Domaine (Magie Mineure, Prière…). */
 type SpellDomainRef = { domainId?: string | null };
 
-/** Le combattant possède-t-il le Talent « Magie des Arcanes (Domaine) » (exemption des riders) ? */
+/** Le combattant possède-t-il le Talent « Magie des Arcanes (Domaine) » (exemption des riders) ?
+ *  Taxonomie des 4 types de Sorts (mineurs/Arcane/Domaine/Chaos), LDB 46 l.14. */
 export function hasArcaneTalent(c: Combatant, domain: string): boolean {
   const arc = arcaneDomainOf(c);
   return arc != null && arc.toLowerCase() === domain.toLowerCase();

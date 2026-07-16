@@ -114,7 +114,7 @@ registerCombatHook({
   phase: 'onRoundEnd',
   order: 55,
   run: ({ battle, sink }) => {
-    if (groupAdvantage()) return; // mode « Avantage de groupe » : le Surnombre est absorbé par le transfert de domination (AA l.4146)
+    if (groupAdvantage()) return; // mode « Avantage de groupe » : le Surnombre est absorbé par le transfert de domination (AA 11 l.44)
     for (const c of battle.combatants) {
       if (isOutOfAction(c) || (c.advantage ?? 0) <= 0) continue;
       const foes = (c.engagedWith ?? []).filter((id) => {
@@ -216,7 +216,7 @@ registerCombatHook({
   },
 });
 registerCombatHook({
-  // « Main ouverte » (AA l.2571 / LDB « Main ouverte ») : MACHINERIE UNIVERSELLE — toute séquelle portant
+  // « Main ouverte » (AA 07 l.127 / LDB « Main ouverte ») : MACHINERIE UNIVERSELLE — toute séquelle portant
   // `fingerLossPerRound` encore `awaitingMedicalAid` perd un doigt de plus à chaque fin de Round (4+ doigts →
   // main tranchée). Ne nomme aucune entité éditable ; comme `tick-death`, c'est une règle de l'arène. Inerte
   // (aucune ligne ni RNG) tant qu'aucun combattant ne porte le marqueur → franchissement de Round iso-comportement.

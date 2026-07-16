@@ -186,7 +186,7 @@ export interface VehicleData {
  * protections typiques ») — porte / mur / tour visé par les armes de siège. Même patron type-créature à
  * PV que la facette `hull` de `VehicleData` : la structure devient un `Combatant` qui encaisse les Dégâts
  * via la langue UNIQUE `GameOp`/`woundsFromHit` (cf. `engine/structures.ts`). RAW dit lui-même que
- * Structure / Véhicule / Navire suivent le MÊME modèle Endurance/Blessures + table de Critiques (AA l.3690).
+ * Structure / Véhicule / Navire suivent le MÊME modèle Endurance/Blessures + table de Critiques (AA 10 l.13/116).
  */
 export interface StructureData {
   /** id STABLE (slug) — clé d'instance/lookup. */
@@ -202,17 +202,17 @@ export interface StructureData {
   fortified?: boolean;
   /** Profil à PV (calqué sur `VehicleData.hull.char`) — `BE` = Bonus d'Endurance (l'Endurance dérivée vaut
    *  `BE × 10`, posée par `structureCombatant`) ; `B` = Blessures (PV de la structure). ADE II donne le BE
-   *  verbatim ; AA (« Tableau des Structures Courantes », AA l.3686-3723) donne l'Endurance BRUTE — `BE`
+   *  verbatim ; AA (« Tableau des Structures Courantes », AA 10 l.26-92) donne l'Endurance BRUTE — `BE`
    *  se dérive alors par troncature à la dizaine (convention Bonus = dizaines de la Caractéristique). */
   char: { BE: number; B: number };
   /** Atouts de structure (Résistant / Impénétrable) — réfs de Trait par id STABLE (JAMAIS le libellé). */
   traits: { id: string; value?: number }[];
-  /** ENC de la Structure transportée (AA l.3686-3693) — `undefined` = N/A (Structure fixe, ne se transporte pas). */
+  /** ENC de la Structure transportée (AA 10 l.28-52) — `undefined` = N/A (Structure fixe, ne se transporte pas). */
   enc?: number;
-  /** Limite d'Encombrement supportée par la Structure elle-même (AA l.3686-3693) — `undefined` = N/A. */
+  /** Limite d'Encombrement supportée par la Structure elle-même (AA 10 l.28-52) — `undefined` = N/A. */
   encLimit?: number;
   /** Pénalité de Couvert par défaut pour un assaillant qui tire sur une cible réfugiée sur/derrière la
-   *  Structure (AA l.3686-3693) — `undefined` = N/A (aucun couvert, ex. Herse/Solide porte en bois). */
+   *  Structure (AA 10 l.28-52) — `undefined` = N/A (aucun couvert, ex. Herse/Solide porte en bois). */
   couvertPenalty?: Difficulty;
   /** Provenance RAW (ADE II ch.08 ou AA ch.10). */
   source: { book: string; chapter: number };
@@ -727,18 +727,18 @@ export interface Trauma {
   count?: number;
   /** En attente d'Aide Médicale (LDB 18 l.307-312 : Guérison réussie / bandage-cataplasme / sort-prière de
    *  soin) — levé par le PREMIER acte de soin des 3 formes (`receiveMedicalAid`). Tant qu'il est posé, la
-   *  séquelle S'AGGRAVE : escalade « 1 doigt de plus par Round » de « Main ouverte » (AA l.2571 / LDB). */
+   *  séquelle S'AGGRAVE : escalade « 1 doigt de plus par Round » de « Main ouverte » (AA 07 l.127 / LDB). */
   awaitingMedicalAid?: boolean;
-  /** « Main ouverte » (AA l.2571 / LDB « Main ouverte ») : à chaque fin de Round de combat SANS Aide Médicale
+  /** « Main ouverte » (AA 07 l.127 / LDB « Main ouverte ») : à chaque fin de Round de combat SANS Aide Médicale
    *  (`awaitingMedicalAid`), un doigt de plus est perdu (`tickFingerLossEscalation`) — 4+ doigts → main tranchée. */
   fingerLossPerRound?: boolean;
-  /** « Pied écrasé » (AA l.2624 / LDB) : jours restants avant la perte définitive du membre (`amputateSequel`)
+  /** « Pied écrasé » (AA 07 l.180 / LDB) : jours restants avant la perte définitive du membre (`amputateSequel`)
    *  si la Chirurgie de la plaie (`needsSurgery`) n'intervient pas à temps (1d10 jours). Décompté à l'entretien
    *  (`tickTraumaRecovery`) ; l'opération réussie retire la plaie AVANT l'échéance → membre sauvé. */
   amputateAfterDays?: number;
   /** id STABLE de la fiche de séquelle (`traumas.json`) posée si `amputateAfterDays` expire sans Chirurgie. */
   amputateSequel?: string;
-  /** « Épaule luxée » (AA l.125 / LDB l.120) / « Genou démis » (AA l.179 / LDB l.179) : membre DÉSACTIVÉ
+  /** « Épaule luxée » (AA 07 l.125 / LDB l.120) / « Genou démis » (AA 07 l.179 / LDB l.179) : membre DÉSACTIVÉ
    *  (les `ops` passives — bras `maxWeaponHands:1` / jambe `moveScale` — tiennent tant que la séquelle vit).
    *  Après Aide Médicale (`awaitingMedicalAid` levé), un Test ÉTENDU de Guérison Accessible (+20) de
    *  `restoreDR` DR (acte « Guérison » de l'Infirmerie, `medicFlow`) rend l'usage : la séquelle est retirée et
@@ -1060,7 +1060,7 @@ export interface Combatant {
    *  `mountSide` (comme une morsure/un tentacule : dans `weapons`, HORS inventaire). Le canon reste la pièce
    *  du navire (vérité = la coque) ; ceci n'est que le lien « je suis à cette pièce ». KIND-AGNOSTIQUE. */
   mannedPoste?: ShipPoste;
-  /** Commandant d'équipe (AA l.4373-4379) : `id` du commandant (Talent Commandant d'équipe) qui a RÉUSSI
+  /** Commandant d'équipe (AA 13 l.29-35) : `id` du commandant (Talent Commandant d'équipe) qui a RÉUSSI
    *  à diriger CE chef de pièce. Tant que ce commandant reste vivant ET à portée de voix, l'équipe tire au
    *  score de Projectiles du commandant (substitution re-validée à CHAQUE tir — `state/commandTeam`). */
   teamCommanderId?: string;
@@ -1210,7 +1210,7 @@ export interface Combatant {
   dispel?: { spellId: string; spellCasterId: string; total: number };
   /** Mouvement (cases par tour, dérivé de la table de Mouvement). */
   movement: number;
-  // Destin / Résilience (héros uniquement)
+  // Destin / Résilience (héros uniquement, LDB 17 l.9)
   fate?: number;
   fortune?: number;
   resilience?: number;
@@ -1242,7 +1242,7 @@ export interface Combatant {
   woundDressed?: boolean;
   /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
   traumas?: Trauma[];
-  /** Mains « ensanglantées » par un Critique Main ensanglantée (AA l.2569, op `handGate`) : chaque main
+  /** Mains « ensanglantées » par un Critique Main ensanglantée (AA 07 l.117, op `handGate`) : chaque main
    *  gatée impose un Test de Dextérité (+20) AVANT toute Action employant l'arme qu'elle tient
    *  (`attackHandGate`) ; sur un Échec, l'objet glisse (op `disarm`). Le gate tient TANT QUE l'État
    *  Hémorragique tient — `removeCondition` purge ce marqueur dès que l'Hémorragique tombe à 0. */
@@ -1305,7 +1305,7 @@ export interface Combatant {
    *  geste sans en chiffrer la mécanique). Posé = immunise le Round courant, puis consommé par
    *  `suffocationTick` (`engine/suffocation.ts`) : à reposer chaque Round pour rester immunisé. */
   wateredThisRound?: boolean;
-  /** Attribut de Shyish (LDB 48 l.400) : « Une cible ne peut avoir qu'un seul État Exténué gagné
+  /** Attribut de Shyish (LDB 48 l.501) : « Une cible ne peut avoir qu'un seul État Exténué gagné
    *  de cette façon à la fois » — marqueur posé au premier Exténué d'un Sort de la Mort. */
   shyishExhausted?: boolean;
   /** A déjà bénéficié d'un soin de Blessures (Guérison) cette rencontre (LDB 09 l.260).
@@ -1374,10 +1374,10 @@ export interface Combatant {
   initiative?: number;
   /** A gagné de l'Avantage durant le Round courant (upkeep de fin de Round, LDB Dépl. l.40). */
   gainedAdvThisRound?: boolean;
-  /** Réaction de Porte-Bouclier (variante AA l.4428) déjà employée ce Round : « une fois par Round ».
+  /** Réaction de Porte-Bouclier (variante AA 13 l.84) déjà employée ce Round : « une fois par Round ».
    *  Posé par `applyShieldReaction`, purgé au franchissement de Round. */
   usedShieldReactionRound?: boolean;
-  /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
+  /** Distraire (LDB 10 l.364 / AA 13 l.51) : distrait par un adversaire → ne peut gagner AUCUN Avantage
    *  (mode groupe : sa réserve) jusqu'à la FIN de ce Round de bataille. Compteur de Rounds restants
    *  décrémenté au franchissement de Round (2 = « jusqu'à la fin du PROCHAIN Round » quand posé en cours
    *  de Round courant). `campGain` refuse tout gain tant qu'il est > 0. */

@@ -1,5 +1,5 @@
 /**
- * Marchandage RAW — achat (LDB 60 l.3) et vente (LDB 60 l.5) d'objets du commerce courant.
+ * Marchandage RAW — achat (LDB 59 l.43) et vente (LDB 59 l.54) d'objets du commerce courant.
  *
  * Homonyme `bargainPct` (`state/portFlow.ts`, MDG 15 l.335/385) : NON convergent, VOLONTAIREMENT —
  * source RAW distincte (négoce de cargaison, pas l'achat/vente d'objet du commerce courant), #351.

@@ -845,7 +845,7 @@ export type GameOp =
    *  dans `ctx.crew`) la servait, il est démancipé (`mannedPoste` + arme dérivée retirés). GÉNÉRIQUE — remplace
    *  le flag ad hoc `losePoste`. Inerte si la coque n'a aucun poste. */
   | { op: 'removeShipPoste' }
-  /** Commandant d'équipe (AA l.4373-4379) : lie CE chef de pièce (`target`) au commandant `commanderId` qui
+  /** Commandant d'équipe (AA 13 l.29-35) : lie CE chef de pièce (`target`) au commandant `commanderId` qui
    *  vient de le diriger (Test de Commandement réussi) → l'équipe tire ENSUITE au score de Projectiles du
    *  commandant (substitution re-validée à chaque tir tant qu'il vit et reste à portée de voix). */
   | { op: 'teamCommander'; commanderId: string }

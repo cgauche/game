@@ -120,6 +120,65 @@ export function chapterFile(abbr, nn, range) {
   return { ...res, text: lines.slice(startIdx, endIdx).join('\n').trim() }
 }
 
+// --- Résolution FOLIO imprimé → (chapitre, plage de lignes) (#434) ---
+// Le contenu data-driven de `src/data/*.json` cite sa source en FOLIO imprimé (`source:{book,page}`),
+// invisible du matcher par ligne de build-implemente. La ré-extraction Marker a posé des ancres
+// `<span … data-folio="NN">` : un folio se convertit donc en (chapitre, [ligne de l'ancre → ligne de
+// la prochaine ancre `data-folio`, ou fin de fichier]). Un seul scan par livre (cache).
+// PUR (testable, aucun disque) : `chapters` = [{ ch, lines:[] }] → Map(folio → [{ ch, lo, hi }]).
+// Plage d'un folio = [ligne de l'ancre `data-folio` → ligne de la prochaine ancre, ou fin de fichier].
+export function buildFolioMap(chapters) {
+  const map = new Map()
+  const anchorRe = /data-folio="(-?\d+)"/
+  for (const { ch, lines } of chapters) {
+    const anchors = []
+    lines.forEach((l, i) => {
+      const m = anchorRe.exec(l)
+      if (m) anchors.push({ folio: Number(m[1]), line: i + 1 })
+    })
+    for (let k = 0; k < anchors.length; k++) {
+      const lo = anchors[k].line
+      const hi = k + 1 < anchors.length ? anchors[k + 1].line : lines.length
+      const arr = map.get(anchors[k].folio)
+      if (arr) arr.push({ ch, lo, hi })
+      else map.set(anchors[k].folio, [{ ch, lo, hi }])
+    }
+  }
+  return map
+}
+
+// (map, folio) → { ch, lo, hi } | null (folio absent) | 'ambiguous' (folio dans ≥2 chapitres).
+export function folioRangeIn(map, folio) {
+  const hits = map.get(folio)
+  if (!hits || !hits.length) return null
+  if (new Set(hits.map((h) => h.ch)).size > 1) return 'ambiguous'
+  return hits[0]
+}
+
+const _folioCache = new Map() // abbr -> Map(folio -> [{ ch, lo, hi }])
+export function folioIndexOf(abbr) {
+  if (_folioCache.has(abbr)) return _folioCache.get(abbr)
+  const dir = BOOK_DIR.get(abbr)
+  const chapters = []
+  if (dir) {
+    let files
+    try { files = readdirSync(dir).filter((x) => /^\d+ - .*\.md$/.test(x)).sort() } catch { files = [] }
+    for (const file of files) {
+      const ch = Number(/^(\d+) - /.exec(file)[1])
+      const lines = readFileSync(join(dir, file), 'utf8').split('\n')
+      chapters.push({ ch, lines })
+    }
+  }
+  const map = buildFolioMap(chapters)
+  _folioCache.set(abbr, map)
+  return map
+}
+
+// (abbr, folio) → { ch, lo, hi } | null | 'ambiguous'.
+export function folioRange(abbr, folio) {
+  return folioRangeIn(folioIndexOf(abbr), folio)
+}
+
 // Trouve la ligne d'une ancre `from`/`to` de `chapterFile` (heading Markdown normalisé, ou `folio:NN`).
 function findAnchor(lines, locator) {
   const folio = /^folio:(\d+)$/.exec(locator)

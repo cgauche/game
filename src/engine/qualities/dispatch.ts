@@ -124,14 +124,14 @@ export function isFirearmQuality(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.caps?.firearm);
 }
 
-/** Ajustement de DR d'un Test RATÉ utilisant l'objet : Pratique +1, Peu Fiable -1 (LDB 60 l.59/88).
+/** Ajustement de DR d'un Test RATÉ utilisant l'objet : Pratique +1, Peu Fiable -1 (LDB 60 l.22/58).
  *  Renvoie 0 si le test est RÉUSSI (la règle ne vise que les échecs). */
 export function craftTestDRAdjust(w: QualityCarrier | undefined, success: boolean): number {
   if (success) return 0;
   return rollModSum(w, 'testFail');
 }
 
-/** Somme des modificateurs de Sociabilité (Laid -10, LDB 60 l.85) des qualités du porteur — lus dans la DONNÉE
+/** Somme des modificateurs de Sociabilité (Laid -10, LDB 60 l.54) des qualités du porteur — lus dans la DONNÉE
  *  éditable (`qualities.json` → `QualityData.passive`, op `testMod{Soc}`), extraits comme `traitCharMods`. */
 export function qualitySocMod(w: QualityCarrier | undefined): number {
   let d = 0;

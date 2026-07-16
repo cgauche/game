@@ -98,7 +98,7 @@ describe('combatValue/weaponGroupSkillMode — exceptions Groupes d’Armes à d
     expect(weaponGroupSkillMode(c, wpn('Arbalète', 'ranged'), 'ranged')).toBe('degraded');
     expect(combatValue(c, 'ranged', wpn('Lancer', 'ranged'))).toBe(58);
     expect(weaponGroupSkillMode(c, wpn('Lancer', 'ranged'), 'ranged')).toBe('degraded');
-    // dégradé ≠ « Spé du Groupe » (AA l.3900-3923, Qualification d'Arme d'équipe) : `hasWeaponGroupSkill`
+    // dégradé ≠ « Spé du Groupe » (AA 10 l.228-247, Qualification d'Arme d'équipe) : `hasWeaponGroupSkill`
     // reste strict — seul un match PLEIN qualifie une pièce servie.
     expect(hasWeaponGroupSkill(c, wpn('Arbalète', 'ranged'), 'ranged')).toBe(false);
   });

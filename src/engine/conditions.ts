@@ -189,7 +189,7 @@ export function removeCondition(c: Combatant, name: string, value = 1): void {
   if (isConditionLocked(existing, c)) return; // verrou de Critique (LDB 18) : ne part pas tant que sa Condition n'est pas remplie
   existing.value -= value;
   if (existing.value <= 0) c.conditions = c.conditions.filter((x) => x.name !== name);
-  // Main ensanglantée (AA l.2569) : le Test de Dextérité par Action tient « tant que vous êtes sous
+  // Main ensanglantée (AA 07 l.117) : le Test de Dextérité par Action tient « tant que vous êtes sous
   // l'effet de cet État » → l'Hémorragique épuisé (instance retirée) lève TOUS les gates de main (op
   // `handGate`). LEVER machinerie UNIQUE de la durée du marqueur (l'Hémorragique ne s'empile qu'en 1 instance).
   if (name === COND.hemorragique && existing.value <= 0) delete c.handGates;

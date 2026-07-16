@@ -2750,7 +2750,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
     const m = useGame.getState().merchant!;
     expect(m.entityId).toBe('pnj');
     expect(m.stock.length).toBeGreaterThan(0); // au moins les Communes de la catégorie
-    expect(m.resaleRate).toBe(0.5); // base ½ du prix listé (LDB 60 l.22)
+    expect(m.resaleRate).toBe(0.5); // base ½ du prix listé (LDB 59 l.54)
   });
 
   it('buyItem : débite la Bourse, donne l’objet à stats au héros, décrémente la qty', () => {

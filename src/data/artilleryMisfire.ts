@@ -1,10 +1,10 @@
 import artilleryMisfireJson from './artillery-misfire.json';
 
 /**
- * Incidents de Tir d'Artillerie par Salve — Aux Armes « Salve » (AA l.3940-3946), transcrits
+ * Incidents de Tir d'Artillerie par Salve — Aux Armes « Salve » (AA 10 l.270-277), transcrits
  * verbatim. Table DISTINCTE de l'Incident de tir GÉNÉRIQUE (LDB, `oups.json`/`OUPS_MISFIRE`) et de la
  * table de Critiques de Structure (`structure-criticals.json`) : elle ne se tire QU'EN PLUS, quand une
- * arme dotée de l'Atout *Salve* subit un Incident de tir (AA l.3936).
+ * arme dotée de l'Atout *Salve* subit un Incident de tir (AA 10 l.264).
  *
  * Champs :
  *  - `location` : `brasPrincipal` (lignes 1-4) ou `random` (lignes 5-10).

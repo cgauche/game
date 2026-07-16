@@ -135,7 +135,7 @@ describe('doAttack — l\'IA gatée joue le MÊME Test inline (résolution forc�
     expect(disarmed).toBe(true); // il existe des jets ratés → arme lâchée + coup renoncé
   });
 
-  // Pilonnage IA / pièce servie (AA l.2569 ; parité pilonnage joueur) : le gate suit l'arme RÉELLEMENT employée,
+  // Pilonnage IA / pièce servie (AA 07 l.117 ; parité pilonnage joueur) : le gate suit l'arme RÉELLEMENT employée,
   // pas la main directrice — une arme hors de la main gatée (2nde main, ou pièce servie hors loadout) ne gate pas.
   it('l\'arme EMPLOYÉE hors de la main gatée n\'est pas gatée, même la main directrice ensanglantée', () => {
     // Foe gaté sur la MAIN, mais la seule arme tenue est en OFF (uid 'e', non gaté) → firedWeapon la choisit.
@@ -149,7 +149,7 @@ describe('doAttack — l\'IA gatée joue le MÊME Test inline (résolution forc�
   });
 });
 
-describe('runPreemptShots — le Tir rapide de l\'IA joue le MÊME Test de Main ensanglantée (AA l.2569)', () => {
+describe('runPreemptShots — le Tir rapide de l\'IA joue le MÊME Test de Main ensanglantée (AA 07 l.117)', () => {
   const BOW = (uid: string): Weapon => ({ uid, name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] } as unknown as Weapon);
   const BOW_ITEM = (uid: string): ItemInstance => ({ uid, name: 'Arc', kind: 'ranged', qualities: [] } as unknown as ItemInstance);
   const shooter = (over: Partial<Combatant> = {}): Combatant => mkFoe('f', {

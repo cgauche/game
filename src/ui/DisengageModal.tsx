@@ -52,7 +52,7 @@ export function DisengageModal() {
 
   // ── Phase 'choice' : MENU d'options (pas un jet) — Modal simple + OptionChooser + Résilience pré-jet. ──
   if (pd.phase === 'choice') {
-    // « Avantage de groupe » (AA l.4139) : l'option A devient « Retraite stratégique » à coût FIXE (2 Av,
+    // « Avantage de groupe » (AA 11 l.37) : l'option A devient « Retraite stratégique » à coût FIXE (2 Av,
     // 1 avec Impitoyable) débité de la réserve du camp ; sinon LDB « Sacrifier l'Avantage » (→ 0).
     const groupMode = groupAdvantage();
     const retreatCost = retreatAdvantageCost(mover);

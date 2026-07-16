@@ -1120,11 +1120,12 @@ Vous avez l'habitude d'analyser le champ de bataille pour prendre des décisions
 
 Vous pouvez voir parfaitement dans les ténèbres naturelles. En présumant que vous possédez au moins une faible source de lumière (telle que la lumière des étoiles, le clair de lune, la bioluminescence), vous pouvez voir clairement jusqu'à 20 mètres par Niveau de Vision nocturne. De plus, vous pouvez étendre la distance d'illumination effective de toutes les sources de lumière de 20 mètres par niveau de Vision nocturne.
 
-**Sources RAW :** `LDB 11 l.171–147`
+**Sources RAW :** `LDB 11 l.176`
 
 **Voir aussi :** `vision.md` — brouillard de guerre, zones éclairées, états lumineux par case ; `equipement.md` § Éclairage — rayons de Bougie (10 m) et Lanterne (20 m), étendus de +20 m / niveau par ce Talent.
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 11` (l.176) → `TraitCapabilities` — `src/data/index.ts`, `src/state/vision.ts`
 
 ### Visions sacrées
 **Source :** LDB p.147  
@@ -1214,7 +1215,7 @@ Vous portez l'empreinte du Vent de Magie gris, que les personnes dotées de Seco
 ### AA --- Aux Armes (VF disponible)
 
 > Source VF : `Game/Source/WH - V4 - Aux Armes/01 - WH - V4 - Aux Armes.md` (fichier unique, 4750+ lignes)
-> Annexe III (l.4456–4523) : « Nouveaux Talents et Talents Mis À Jour ».
+> Annexe III (l.4456-4523) : « Nouveaux Talents et Talents Mis À Jour ».
 > Note : une partie des données dans `talents.json` est taguée `source: "frenchy.bzh"` (homebrew Guide v4.5).
 
 #### Artilleur (mise à jour AA)

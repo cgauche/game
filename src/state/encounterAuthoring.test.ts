@@ -49,7 +49,7 @@ describe('buildEncounter — authoring terse → entités + members canoniques',
     expect(encounter.onVictory).toEqual(onV);
   });
 
-  it('maneuverability/threat/terrain (Avantage initial, AA l.4149-4167) passent sur la rencontre — parité avec surprise', () => {
+  it('maneuverability/threat/terrain (Avantage initial, AA 11 l.53-65) passent sur la rencontre — parité avec surprise', () => {
     const { encounter } = buildEncounter({
       id: 'e',
       maneuverability: 'party',

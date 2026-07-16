@@ -65,9 +65,11 @@ plusieurs chapitres **et** plusieurs livres.
 
 ## Gardes déterministes (rejouables)
 
-- **[`coverage.md`](coverage.md)** (`node scripts/raw/coverage.mjs`) — chaque chapitre des 14 livres : ✅ couvert / 🟡 effleuré / ⬜ trou / ➖ hors-règle (scénario, prose ≠ règle). **État : ✅ 114 · 🟡 4 · ⬜ 0.**
-- **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A LDB = 0** (0 trou dur · 6 chapitres à lignes non pinées) ; **Sens A des 14 autres livres (#434 défaut 9) = 9 trous durs · 11 chapitres-livre à lignes non pinées** (détail par livre : `reconciliation.md` § A-AUTRES 0).
-- **[`reanchor.md`](reanchor.md)** (`node scripts/raw/reanchor.mjs` ; `--apply` verbatim + `--remap` synthèse) — ré-ancre les réfs `l.X` contre la Source Marker : citations « … » par **match exact**, réfs de synthèse par **diff `git HEAD`↔arbre** (one-shot à relancer après chaque ré-extraction, avant de committer la Source). **État : ✅ 322 verbatim · 🔧 0 dérive · 🧭 2176 synthèses re-ancrées · ❌ 41 + ⛔ 113 à reprendre à la main.** Voir l'**[épreuve du 2026-06-22](epreuve-2026-06-22.md)**.
+- **[`coverage.md`](coverage.md)** (`node scripts/raw/coverage.mjs`) — chaque chapitre des 14 livres : ✅ couvert / 🟡 effleuré / ⬜ trou / ➖ hors-règle (scénario, prose ≠ règle). **Seuil : ⬜ = 0.**
+- **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non-régression LDB verrouillée par `reconcile.test.mjs`, tous livres couverts, folio compris). **Sens B (#434) : tout topic `(non implémenté)` porte une entrée de manifest (ticket #N ou blocage consigné dans `src/data/raw.manifest.json`) — gardé par `npm run raw:implemente --check` (exit 1 sur orphelin).**
+- **[`reanchor.md`](reanchor.md)** (`node scripts/raw/reanchor.mjs` ; `--apply` verbatim + `--remap` synthèse) — ré-ancre les réfs `l.X` contre la Source Marker : citations « … » par **match exact**, réfs de synthèse par **diff `git HEAD`↔arbre** (one-shot à relancer après chaque ré-extraction, avant de committer la Source). **Seuils : 🔧 = 0 · 🟡 = 0 · ❌ sous cliquet (`reanchor-low-baseline.json`).** Voir l'**[épreuve du 2026-06-22](epreuve-2026-06-22.md)**.
+
+> Les COMPTES courants (✅/🟡/❌, chapitres non pinés, marqueurs, B2) vivent dans les fichiers GÉNÉRÉS ci-dessus, jamais dans cette page — un compte recopié à la main ment dès le commit suivant.
 
 > **Source = Marker propre pour les 14 livres** (tables intactes, texte exact ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`). L'Atlas remplace la source : 0 trou de règle.
 

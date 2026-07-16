@@ -30,7 +30,7 @@ Ce fichier couvre le **processus complet de création de Personnage** (étapes 1
 ## Résumé des 9 étapes
 
 > « Suivez les neuf étapes suivantes pour créer votre Personnage. »
-> — LDB 04 l.63–82
+> — LDB 04 l.63-82
 
 | # | Étape | PX bonus possibles |
 |---|-------|--------------------|
@@ -44,14 +44,14 @@ Ce fichier couvre le **processus complet de création de Personnage** (étapes 1
 | 8 | Insuffler la vie | — |
 | 9 | Progression (dépense PX bonus) | — |
 
-**Sources RAW :** `LDB 04 l.56–82`
+**Sources RAW :** `LDB 04 l.56-82`
 
 ---
 
 ## Étape 1 — Race (Espèce)
 
 > « Votre Personnage sera un humain, un nain, un halfling, un haut elfe ou un elfe sylvain. Sinon, vous pouvez lancer un d100, consulter le Tableau des Races aléatoires, et gagner 20 PX si vous acceptez le premier résultat. »
-> — LDB 04 l.91–87
+> — LDB 04 l.91
 
 ### Tableau des Races aléatoires (verbatim)
 
@@ -72,11 +72,11 @@ Ce fichier couvre le **processus complet de création de Personnage** (étapes 1
 ## Étape 2 — Classe et Carrière
 
 > « Lancez 1d100 sur le Tableau des Classes et Carrières aléatoires. Si le résultat vous satisfait, conservez-le et gagnez +50 PX. Sinon, faites deux lancers de plus (total 3 choix) ; si l'un convient, gagnez +25 PX. Sinon, choisissez librement sans bonus. »
-> — LDB 05 l.210–195
+> — LDB 05 l.210-212
 
 ### Tableau des Classes et Carrières aléatoires (verbatim)
 
-`LDB 05 l.213–349`
+`LDB 05 l.213-349`
 
 | Classe | Carrière | Humain | Nain | Halfling | Haut Elfe | Elfe Sylvain |
 |--------|----------|--------|------|----------|-----------|--------------|
@@ -145,11 +145,11 @@ Ce fichier couvre le **processus complet de création de Personnage** (étapes 1
 | RURAUX | Sorcier de village | 95 | — | — | — | — |
 | RURAUX | Villageois | 96–00 | 00 | 98–00 | — | — |
 
-**Note :** Un résultat de Race ou de Carrière non disponible (—) : relancer ou choisir librement avec accord du MJ. `LDB 05 l.309–363`
+**Note :** Un résultat de Race ou de Carrière non disponible (—) : relancer ou choisir librement avec accord du MJ. `LDB 05 l.309-363`
 
 ### Classes — description courte
 
-`LDB 05 l.253–357`
+`LDB 05 l.253-357`
 
 - **Citadins** : citoyens respectueux des lois, classe moyenne. Carrières : Agitateur, Artisan, Bourgeois, Enquêteur, Marchand, Mendiant, Milicien, Ratier.
 - **Courtisans** : dirigeants et leurs serviteurs spécialisés, statut plus élevé. Carrières : Artiste, Conseiller, Duelliste, Espion, Intendant, Émissaire, Noble, Serviteur.
@@ -177,7 +177,7 @@ Trois options, dans l'ordre :
 
 ### Tableau des Attributs — profils d'espèce (verbatim)
 
-`LDB 05 l.351–413`
+`LDB 05 l.351-413`
 
 | Attribut | Humain | Nain | Halfling | Elfe (Haut + Sylvain) |
 |----------|--------|------|----------|-----------------------|
@@ -201,15 +201,15 @@ Trois options, dans l'ordre :
 
 **Blessures (B) :** `BF + (2 × BE) + BFM` ; les halflings ont automatiquement le Talent **Petit** et débutent avec moins de Points de Blessure. `LDB 05 l.418`
 
-**Bonus de Caractéristique (BC) :** premier chiffre de la dizaine. Exemple : F 39 → BF 3. `LDB 05 l.406–444`
+**Bonus de Caractéristique (BC) :** premier chiffre de la dizaine. Exemple : F 39 → BF 3. `LDB 05 l.406-444`
 
 ### Destin et Résilience
 
 > « Vous commencez avec une valeur de base pour le Destin et la Résilience, puis vous disposez d'un nombre de Points supplémentaires à répartir entre ces Attributs comme bon vous semble. »
-> — LDB 05 l.426–458
+> — LDB 05 l.426-458
 
 - **Chance de départ** = valeur de Destin. **Détermination de départ** = valeur de Résilience. `LDB 05 l.430`
-- **Motivation** : un mot ou une phrase résumant ce pour quoi le Personnage vit. Utilisée pour regagner des Points de Détermination. `LDB 05 l.433–476`
+- **Motivation** : un mot ou une phrase résumant ce pour quoi le Personnage vit. Utilisée pour regagner des Points de Détermination. `LDB 05 l.433-476`
 
 ### Mouvement
 
@@ -219,14 +219,14 @@ Trois options, dans l'ordre :
 | 4 | 8 | 16 |
 | 5 | 10 | 20 |
 
-`LDB 05 l.451–485` — voir [`deplacement.md`](deplacement.md) pour l'usage en jeu.
+`LDB 05 l.451-485` — voir [`deplacement.md`](deplacement.md) pour l'usage en jeu.
 
 ### Augmentations de Caractéristique gratuites (à la création)
 
 > « Consultez votre Carrière. Recherchez dans le Schéma de progression les trois Caractéristiques marquées ☐ sans bordure bronze, argent ou or. Vous pouvez répartir comme bon vous semble un total de 5 Augmentations entre ces Caractéristiques. »
 > — LDB 05 l.488
 
-`LDB 05 l.460–491` — les 5 Augmentations initiales s'ajoutent à la valeur après tirage 2d10+bonus.
+`LDB 05 l.460-491` — les 5 Augmentations initiales s'ajoutent à la valeur après tirage 2d10+bonus.
 
 ---
 
@@ -237,7 +237,7 @@ Trois options, dans l'ordre :
 > « Vous pouvez sélectionner 3 Compétences auxquelles ajouter 5 Augmentations chacune, et 3 Compétences auxquelles ajouter 3 Augmentations chacune. »
 > — LDB 05 l.484
 
-`LDB 05 l.483–553`
+`LDB 05 l.483-553`
 
 #### Humains (Reiklanders)
 **Compétences :** Calme, Charme, Commandement, Corps à corps (Base), Évaluation, Langue (bretonnien), Langue (wastelander), Marchandage, Projectiles (Arc), Ragot, Savoir (Reikland), Soin aux animaux.
@@ -261,7 +261,7 @@ Trois options, dans l'ordre :
 
 ### Tableau des Talents aléatoires (verbatim)
 
-`LDB 05 l.514–543`
+`LDB 05 l.514-543`
 
 | Lancer | Talent | Lancer | Talent |
 |--------|--------|--------|--------|
@@ -287,9 +287,9 @@ Trois options, dans l'ordre :
 ### Compétences et Talents de Carrière
 
 > « Vous commencez au premier niveau de Carrière. Il y a 8 Compétences et 4 Talents répertoriés à ce niveau. Répartissez 40 Points d'Augmentations entre vos huit Compétences de départ, sans dépasser plus de 10 Points alloués à une seule Compétence à ce stade. Vous pouvez choisir un unique Talent. »
-> — LDB 05 l.535–547
+> — LDB 05 l.535-547
 
-`LDB 05 l.534–553`
+`LDB 05 l.534-553`
 
 **Règle Magie mineure à la création :** si le Personnage possède le Talent Magie mineure (Sorcier N1, etc.), il mémorise un nombre de sorts égal à son BFM au départ. `LDB 10 l.714` (voir aussi `src/ui/creator/draft.ts l.88`)
 
@@ -299,7 +299,7 @@ Trois options, dans l'ordre :
 
 ### Possessions par Classe
 
-`LDB 05 l.554–573`
+`LDB 05 l.554-573`
 
 - **Citadins :** cape, vêtements, dague, chapeau, bourse, besace (déjeuner).
 - **Courtisans :** costume luxueux, dague, bourse (pince à épiler, cure-oreilles, peigne).
@@ -312,14 +312,14 @@ Trois options, dans l'ordre :
 
 ### Possessions de Carrière (Niveau 1)
 
-Voir le **Chapitre 3 : Classes et Carrières** pour les possessions spécifiques à chaque Carrière au Niveau 1. `LDB 05 l.569–576`
+Voir le **Chapitre 3 : Classes et Carrières** pour les possessions spécifiques à chaque Carrière au Niveau 1. `LDB 05 l.569-576`
 
 ### Richesse initiale
 
 > « Découvrez le Statut de votre Personnage (Bronze, Argent ou Or, avec un numéro appelé Standing). Multipliez votre Standing par la Richesse initiale. »
-> — LDB 05 l.574–583
+> — LDB 05 l.574-583
 
-`LDB 05 l.578–583`
+`LDB 05 l.578-583`
 
 | Statut | Richesse initiale |
 |--------|-------------------|
@@ -335,7 +335,7 @@ Voir le **Chapitre 3 : Classes et Carrières** pour les possessions spécifiques
 
 ### Âge
 
-`LDB 05 l.707–693`
+`LDB 05 l.705-711`
 
 > « L'espérance de vie moyenne pour un humain est d'environ 60 ans, 120 pour les halflings, et plus de 200 pour un nain. Les elfes ne semblent pas vieillir et sont réputés vivre un millier d'années ou plus. »
 
@@ -348,7 +348,7 @@ Voir le **Chapitre 3 : Classes et Carrières** pour les possessions spécifiques
 
 ### Taille
 
-`LDB 05 l.724–708`
+`LDB 05 l.722-728`
 
 > « Tailles moyennes : nain (1,45 m), elfe (1,90 m), halfling (1 m). Les humains ont des tailles qui varient beaucoup plus, se situant dans une moyenne de 1m75 dans le Reikland. Si l'un des dés obtient un 10, lancez un dé supplémentaire et ajoutez le résultat (humains seulement). »
 
@@ -361,7 +361,7 @@ Voir le **Chapitre 3 : Classes et Carrières** pour les possessions spécifiques
 
 ### Couleur des Yeux (verbatim)
 
-`LDB 05 l.742–731`
+`LDB 05 l.742-754`
 
 > Note : les elfes lancent **deux fois** (yeux bigarrés par leur nature magique).
 
@@ -380,7 +380,7 @@ Voir le **Chapitre 3 : Classes et Carrières** pour les possessions spécifiques
 
 ### Couleur des Cheveux (verbatim)
 
-`LDB 05 l.757–744`
+`LDB 05 l.756-768`
 
 > Toutes les races (sauf elfes) voient leur chevelure grisonner avec l'âge. Les elfes paraissent éternellement jeunes.
 
@@ -400,17 +400,17 @@ Voir le **Chapitre 3 : Classes et Carrières** pour les possessions spécifiques
 ### Ambitions
 
 > « Tous les Personnages ont une Ambition à court terme et une Ambition à long terme. »
-> — LDB 05 l.732–713
+> — LDB 05 l.732
 
-- **Court terme :** objectif en quelques jours ou semaines (≥ 2–3 sessions). Réalisé → **+50 PX**. `LDB 05 l.739–717, 776`
-- **Long terme :** objectif de plusieurs mois ou années. Réalisé → **+500 PX** ou retraite du Personnage. `LDB 05 l.780–757, 778–784`
-- **Ambitions de groupe** : court terme réalisé → **+50 PX chacun** ; long terme réalisé → **+500 PX chacun**. `LDB 05 l.836–815, 825–829`
+- **Court terme :** objectif en quelques jours ou semaines (≥ 2–3 sessions). Réalisé → **+50 PX**. `LDB 05 l.738-740, 795`
+- **Long terme :** objectif de plusieurs mois ou années. Réalisé → **+500 PX** ou retraite du Personnage. `LDB 05 l.779-781, 799-800`
+- **Ambitions de groupe** : court terme réalisé → **+50 PX chacun** ; long terme réalisé → **+500 PX chacun**. `LDB 05 l.810-812, 837, 841`
 
 ---
 
 ## Étape 7 — Groupe
 
-`LDB 05 l.785–810`
+`LDB 05 l.785-810`
 
 Concerter les histoires, raisons de se connaître, ambitions communes. Voir LDB 05 pour les exemples. Pas de mécanique de création propre à cette étape.
 
@@ -418,7 +418,7 @@ Concerter les histoires, raisons de se connaître, ambitions communes. Voir LDB 
 
 ## Étape 8 — Insuffler la Vie
 
-`LDB 05 l.855–867`
+`LDB 05 l.855-867`
 
 Questions de background : origines, famille, enfance, amis, désirs, croyances, loyautés. Pas de mécanique de création ; peut conduire à réviser les choix d'étapes antérieures.
 
@@ -427,9 +427,9 @@ Questions de background : origines, famille, enfance, amis, désirs, croyances, 
 ## Étape 9 — Progression
 
 > « La dernière étape de la création de votre Personnage consiste à dépenser les bonus de PX que vous avez potentiellement gagnés pendant le processus de création. Dans un premier temps, vous pouvez seulement dépenser vos PX pour augmenter les 3 Caractéristiques, 8 Compétences et 4 Talents disponibles dans votre niveau de Carrière. »
-> — LDB 05 l.907–876
+> — LDB 05 l.907
 
-`LDB 05 l.906–900` — voir [`avancement.md`](avancement.md) pour les coûts complets (table verbatim).
+`LDB 05 l.906-907` — voir [`avancement.md`](avancement.md) pour les coûts complets (table verbatim).
 
 ---
 
@@ -444,13 +444,13 @@ Questions de background : origines, famille, enfance, amis, désirs, croyances, 
 
 ## Supplément Middenheim — 3 origines humaines
 
-Source : **Middenheim : la Cité du Loup Blanc**, Annexe II, pages PDF 151–157 (`Middenheim ANNEXE II l.1–311`).
+Source : **Middenheim : la Cité du Loup Blanc**, Annexe II, pages PDF 151–157 (`Middenheim ANNEXE II l.1-311`).
 
 Les personnages originaires du **nord de l'Empire** (Middenheim, Middenland, Nordland) n'ont pas accès aux mêmes Compétences et Talents que les Reiklanders à la création. Même répartition : 3 Compétences +5 Augmentations chacune, 3 Compétences +3 Augmentations chacune. `Middenheim ANNEXE II l.6`
 
 ### Tableau des Classes et Carrières — Origines nordiques (verbatim)
 
-`Middenheim ANNEXE II l.13–164`
+`Middenheim ANNEXE II l.13-164`
 
 | Classe | Carrière | Middenheimer | Middenlander | Nordlander |
 |--------|----------|--------------|--------------|------------|
@@ -523,7 +523,7 @@ Les personnages originaires du **nord de l'Empire** (Middenheim, Middenland, Nor
 
 ### Humains de Middenheim
 
-`Middenheim ANNEXE II l.213–218`
+`Middenheim ANNEXE II l.213-218`
 
 **Compétences :** Calme, Charme, Commandement, Corps à corps (Base), Divertissement, Évaluation, Marchandage, Métier (un au choix), Projectiles (Arc), Ragot, Savoir (Middenheim), Subornation.
 **Talents :** Destinée, Savoir-vivre (au choix) *ou* Infatigable, 3 Talents aléatoires.
@@ -532,21 +532,21 @@ Les personnages originaires du **nord de l'Empire** (Middenheim, Middenland, Nor
 
 ### Humains du Middenland
 
-`Middenheim ANNEXE II l.241–246`
+`Middenheim ANNEXE II l.241-246`
 
 **Compétences :** Calme, Commandement, Corps à corps (Base), Évaluation, Intimidation, Langue (Wastelander), Marchandage, Projectiles (Arc), Ragot, Savoir (Middenland), Soin aux animaux, Survie en extérieur.
 **Talents :** Destinée *ou* Talent aléatoire supplémentaire, Menaçant *ou* Guerrier né, 3 Talents aléatoires.
 
 ### Humains du Nordland
 
-`Middenheim ANNEXE II l.266–271`
+`Middenheim ANNEXE II l.266-271`
 
 **Compétences :** Corps à corps (Base), Évaluation, Langue (Norse), Langue (Wastelander), Marchandage, Métier (un au choix), Natation, Projectiles (Arc), Ragot, Résistance à l'alcool, Savoir (Nordland), Voile.
 **Talents :** Destinée *ou* Talent aléatoire supplémentaire, Pêcheur *ou* Nomade, Cœur vaillant *ou* Très résistant, 2 Talents aléatoires.
 
 ### Carrière : Frère Loup (nordique uniquement)
 
-`Middenheim ANNEXE II l.275–310`
+`Middenheim ANNEXE II l.275-310`
 
 Humain, Bronze 0. Zélotes solitaires d'Ulric, vivent dans la nature, affrontent leurs ennemis en combat individuel. Pas d'uniforme, pas de prédication.
 
@@ -574,13 +574,13 @@ Compétences : Natation, Soin aux animaux.
 Talents : Contrôle de la Frénésie, Effrayant, Ferveur ardente, Sans peur (Hommes-bêtes).
 Possessions : arme simple, haillons, respect des autres Frères Loups.
 
-**Règle Carrières plus longues :** certaines Carrières (dont Frère Loup) proposent plus de 8 Compétences au N1 ; il suffit d'en augmenter 8 pour passer au niveau suivant, dont obligatoirement la Compétence pour Gagner de l'argent (italique). `Middenheim ANNEXE II l.93–94`
+**Règle Carrières plus longues :** certaines Carrières (dont Frère Loup) proposent plus de 8 Compétences au N1 ; il suffit d'en augmenter 8 pour passer au niveau suivant, dont obligatoirement la Compétence pour Gagner de l'argent (italique). `Middenheim ANNEXE II l.93-94`
 
 ---
 
 ## Noms nains — suffixes patronymiques
 
-`LDB 05 l.622–624`
+`LDB 05 l.622-624`
 
 > « Les noms de famille nains sont basés sur ceux des personnes qui les ont élevés, et les suffixes suivants sont les plus courants : »
 
@@ -597,18 +597,18 @@ Possessions : arme simple, haillons, respect des autres Frères Loups.
 
 **Exemples de surnoms :** Porte-hache, Main habile, Barbe fourchue, Tresse d'acier, Masse rouge, Poing de pierre
 
-**Sources RAW :** `LDB 05 l.623–624`
+**Sources RAW :** `LDB 05 l.623-624`
 
 **Voir aussi :** `talents.md` § Vision nocturne (Talent de départ nain) ; `carrieres.md` § Nains.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 5` (l.622, l.623) → `generateName`, `NamePool`, `DetailsScreen` — `src/data/index.ts`, `src/data/schemas/defs/names.ts`, `src/engine/names.ts`, `src/ui/creator/CharacterCreator.tsx`
+- `LDB 5` (l.622-624) → `generateName`, `NamePool`, `DetailsScreen` — `src/data/index.ts`, `src/data/schemas/defs/names.ts`, `src/engine/names.ts`, `src/ui/creator/CharacterCreator.tsx`
 
 ---
 
 ## Supplément ADE I — Nouvelles Carrières de départ
 
-Source : **Les Archives de l'Empire vol. 1**, Annexe I, pages PDF 88–92 (`ADE I ANNEXE I l.1–80`).
+Source : **Les Archives de l'Empire vol. 1**, Annexe I, pages PDF 88–92 (`ADE I ANNEXE I l.1-80`).
 
 Quatre nouvelles Carrières disponibles à la création par remplacement d'un résultat aléatoire du tableau LDB :
 
@@ -619,7 +619,7 @@ Quatre nouvelles Carrières disponibles à la création par remplacement d'un r�
 | Patrouilleur des Karak | Nain | Messager |
 | Rôdeur Fantôme | Elfe sylvain | Chasseur de primes |
 
-Ces Carrières peuvent aussi être choisies librement à la création. `ADE I ANNEXE I l.6–21`
+Ces Carrières peuvent aussi être choisies librement à la création. `ADE I ANNEXE I l.6-21`
 
 ---
 
@@ -651,15 +651,15 @@ Ces Carrières peuvent aussi être choisies librement à la création. `ADE I AN
 | Mécanique | Fichier(s) code |
 |-----------|----------------|
 | Tirage espèce d100 / +20 PX | `src/engine/creation.ts l.25, 33` — `LDB 04 l.91, 90` |
-| Tirage carrière d100 / +50/+25 PX | `src/engine/creation.ts l.26–27, 64` — `LDB 05 l.209–195, 197` |
-| Tirage 2d10 Caractéristiques / +50/+25 PX | `src/engine/creation.ts l.28–29, 81` — `LDB 05 l.337–385` |
+| Tirage carrière d100 / +50/+25 PX | `src/engine/creation.ts l.26-27, 64` — `LDB 05 l.210-211` |
+| Tirage 2d10 Caractéristiques / +50/+25 PX | `src/engine/creation.ts l.28-29, 81` — `LDB 05 l.337-385` |
 | Profils d'espèce (bonus de Caractéristique) | `src/data/species.json` |
 | Blessures = BF+(2×BE)+BFM | `src/engine/characteristics.ts` |
-| Richesse initiale (Bronze/Argent/Or × Standing) | `src/engine/creation.ts l.11, 112` — `LDB 05 l.578–583` |
+| Richesse initiale (Bronze/Argent/Or × Standing) | `src/engine/creation.ts l.11, 112` — `LDB 05 l.578-583` |
 | Âge par espèce (15+d10 / 15+10d10 / …) | `src/engine/creation.ts l.131` — `LDB 05 l.709` |
 | Taille par espèce (145+5d10 cm / …) | `src/engine/creation.ts l.136` — `LDB 05 l.727` |
-| Couleur des yeux (2d10, table par espèce) | `src/engine/creation.ts l.142` — `LDB 05 l.742–731` |
-| Couleur des cheveux (2d10, table par espèce) | `src/engine/creation.ts l.147` — `LDB 05 l.757–744` |
+| Couleur des yeux (2d10, table par espèce) | `src/engine/creation.ts l.142` — `LDB 05 l.742-754` |
+| Couleur des cheveux (2d10, table par espèce) | `src/engine/creation.ts l.147` — `LDB 05 l.756-768` |
 | 5 Augmentations gratuites sur 3 Caractéristiques de carrière | `src/engine/character.ts l.256, 263` — `LDB 05 l.460, 491` |
 | 40 Augmentations de Compétences de carrière (max 10 / Comp.) | `src/ui/creator/draft.ts` |
 | Magie mineure : BFM sorts mémorisés à la création | `src/ui/creator/draft.ts l.88, 505` — `LDB 10 l.714` |

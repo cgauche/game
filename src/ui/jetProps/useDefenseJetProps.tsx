@@ -71,7 +71,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   // `pd.modes` (tir) limite les réactions proposées ; absent = mêlée (Parade + Esquive). Filtre seul.
   const allowMode = (m: 'parade' | 'esquive') => !pd.modes || pd.modes.includes(m);
 
-  // Réaction de Porte-Bouclier (variante « Avantage de groupe », AA l.4428) : offerte quand on se défend
+  // Réaction de Porte-Bouclier (variante « Avantage de groupe », AA 13 l.84) : offerte quand on se défend
   // au Bouclier (parade), 1×/Round, si la réserve du camp (projetée sur `defender.advantage`) couvre le coût.
   // Coût + éligibilité viennent de la DONNÉE (`shieldReactionCost`), jamais d'un nom en dur.
   const reactionCost = pd.mode === 'parade' ? shieldReactionCost(defender, chosenParry) : 0;

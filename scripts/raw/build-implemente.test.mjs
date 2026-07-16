@@ -3,11 +3,12 @@
 // tableau de bilan jamais scanné, exclusion de l'art de rig) + les nouveaux (#487). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ldbRe, otherRe } from './_lib.mjs'
+import { ldbRe, otherRe, buildFolioMap, folioRangeIn } from './_lib.mjs'
 import {
   slugify, refsWithSpans, declNameOf, symbolFor, refMatches, mergeSpans,
   parseFiche, renderBlock, regenerateFiche, validateManifest, isExcludedSrc, indexCode, isDeadExport,
   GUARD_LEAK_RE, GEN_TAG, NOT_IMPL,
+  buildAbbrMap, folioCitationsFromJson, findManifestOrphans, computeAll, computeFolioWinners,
 } from './build-implemente.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
@@ -100,6 +101,26 @@ test('parseFiche : réfs collectées par segment, blocs de champ EXCLUS (pas de 
   assert.deepEqual(fields[0].refs.map((r) => `${r.book} ${r.ch}`), ['LDB 6'])
   // champ B : voit LDB 7 seulement (segment après le bloc de A, dans le même H2)
   assert.deepEqual(fields[1].refs.map((r) => `${r.book} ${r.ch}`), ['LDB 7'])
+})
+
+test('parseFiche : réf portée par la LIGNE DE HEADING → rattachée au topic que ce heading ouvre', () => {
+  const doc = [
+    '## Maladies',
+    '',
+    '### Racine des Tombes (`T2C 04 l.204-229`)',
+    '',
+    '**Implémente :** ancien',       // topic racine → doit voir T2C 04
+    '',
+    '### Rouille Mouchetée (`T2C 04 l.241-252`)',
+    '',
+    '**Implémente :** ancien',       // topic rouille → T2C 04 l.241-252, PAS l.204-229
+    '',
+  ].join('\n')
+  const { fields } = parseFiche('m.md', doc)
+  assert.equal(fields.length, 2)
+  assert.deepEqual(fields[0].refs.map((r) => `${r.book} ${r.ch} l.${r.lo}-${r.hi}`), ['T2C 4 l.204-229'])
+  // le heading du topic SUIVANT ne contamine pas le précédent (son champ a déjà vidé pending)
+  assert.deepEqual(fields[1].refs.map((r) => `${r.book} ${r.ch} l.${r.lo}-${r.hi}`), ['T2C 4 l.241-252'])
 })
 
 test('refsWithSpans : LDB + autre livre avec suffixe de plage déplié', () => {
@@ -296,4 +317,132 @@ test('validateManifest : topic inconnu / doublon / entrée sans ticket ni bloque
   assert.throws(() => validateManifest([{ topic: 'a#s', ticket: '#1' }, { topic: 'a#s', ticket: '#2' }], known), /dupliqué/)
   assert.throws(() => validateManifest([{ topic: 'a#s' }], known), /sans ticket ni bloque/)
   assert.doesNotThrow(() => validateManifest([{ topic: 'a#s', bloque: 'attente RAW' }], known))
+})
+
+// --- Pont FOLIO (#434) ---
+
+test('buildAbbrMap : abbr → slug ; abbr inconnue de BOOKS → fail-fast ; entrée sans abbr → hors map (VO)', () => {
+  assert.throws(() => buildAbbrMap([{ id: 'x', abbr: 'ZZZ' }]), /abbr inconnue de BOOKS/)
+  const { abbrOf, knownIds } = buildAbbrMap([
+    { id: 'aux-armes', abbr: 'AA' },
+    { id: 'mort-sur-le-reik-compagnon', abbr: 'T2C' },
+    { id: 'lustria' }, // VO hors Atlas — connu mais sans abbr
+  ])
+  assert.equal(abbrOf.get('aux-armes'), 'AA')
+  assert.equal(abbrOf.get('mort-sur-le-reik-compagnon'), 'T2C')
+  assert.equal(abbrOf.has('lustria'), false)
+  assert.deepEqual([...knownIds].sort(), ['aux-armes', 'lustria', 'mort-sur-le-reik-compagnon'])
+})
+
+test('buildFolioMap + folioRangeIn : plage jusqu\'à l\'ancre suivante / EOF / introuvable / ambigu', () => {
+  const chapters = [
+    { ch: 9, lines: ['a', '<span data-folio="108"></span>', 'b', '<span data-folio="109"></span>', 'c', 'd'] },
+    { ch: 12, lines: ['e', '<span data-folio="200"></span>', 'f'] },
+    { ch: 13, lines: ['g', '<span data-folio="200"></span>', 'h'] }, // 200 aussi ici → ambigu
+  ]
+  const map = buildFolioMap(chapters)
+  assert.deepEqual(folioRangeIn(map, 108), { ch: 9, lo: 2, hi: 4 })   // jusqu'à l'ancre suivante (ligne 4)
+  assert.deepEqual(folioRangeIn(map, 109), { ch: 9, lo: 4, hi: 6 })   // dernière ancre → EOF (6 lignes)
+  assert.equal(folioRangeIn(map, 999), null)                          // introuvable
+  assert.equal(folioRangeIn(map, 200), 'ambiguous')                   // deux chapitres
+})
+
+const AA_MAP = { abbrOf: new Map([['aux-armes', 'AA']]), knownIds: new Set(['aux-armes']) }
+const freshStats = () => ({ byBook: new Map(), noAtlas: 0, noPage: 0 })
+
+test('folioCitationsFromJson : slug inconnu de books.json → fail-fast', () => {
+  assert.throws(
+    () => folioCitationsFromJson('src/data/x.json', '[{ "id": "a", "source": { "book": "inconnu", "page": 1 } }]\n',
+      { ...AA_MAP, stats: freshStats() }),
+    /inconnu de books\.json/,
+  )
+})
+
+test('folioCitationsFromJson : slug hors Atlas / folio introuvable → 0 match (jamais inventé), compté', () => {
+  const s1 = freshStats()
+  assert.equal(folioCitationsFromJson('src/data/x.json',
+    '[{ "id": "a", "source": { "book": "lustria", "page": 1 } }]\n',
+    { abbrOf: new Map(), knownIds: new Set(['lustria']), stats: s1 }).length, 0)
+  assert.equal(s1.noAtlas, 1) // connu mais sans abbr → hors Atlas
+  const s2 = freshStats()
+  assert.equal(folioCitationsFromJson('src/data/x.json',
+    '[{ "id": "a", "source": { "book": "aux-armes", "page": 999999 } }]\n',
+    { ...AA_MAP, stats: s2 }).length, 0)
+  assert.equal(s2.byBook.get('AA').notFound, 1)
+})
+
+test('folioCitationsFromJson : id le plus proche AU-DESSUS (nested) devient le symbole', () => {
+  // Résolution réelle : AA folio 109 existe (Source/WH - V4 - Aux Armes/09 - LE COMBAT MONTÉ.md → ch 9).
+  const content = [
+    '[',
+    '  { "id": "entree",',
+    '    "levels": [ { "id": "niveau-2" } ],',
+    '    "source": { "book": "aux-armes", "page": 109 } }',
+    ']',
+  ].join('\n')
+  const out = folioCitationsFromJson('src/data/creatures.json', content, { ...AA_MAP, stats: freshStats() })
+  assert.equal(out.length, 1)
+  assert.equal(out[0].book, 'AA')
+  assert.equal(out[0].ch, 9)
+  assert.equal(out[0].isTs, false)
+  assert.equal(out[0].sym, 'niveau-2') // id le plus proche au-dessus de "source", pas "entree"
+})
+
+test('computeFolioWinners : deux topics sur la même plage → meilleur recouvrement seul ; égalité → les deux', () => {
+  // Deux citations folio de MÊME plage LDB 23 l.100-140 ; trois topics candidats.
+  const cA = { book: 'LDB', ch: 23, lo: 100, hi: 140, folio: true, sym: 'a', file: 'src/data/x.json', row: 1, isTs: false }
+  const index = { impl: [cA], tests: [], fileLines: new Map(), nonCommentText: new Map() }
+  const mkFiche = (defs) => ({ parsed: { fields: defs.map(([topic, refs]) => ({ topic, refs })) } })
+  const fiches = [mkFiche([
+    ['big', [{ book: 'LDB', ch: 23, lo: 110, hi: 135 }]],  // recouvre 26 l. → gagne
+    ['small', [{ book: 'LDB', ch: 23, lo: 130, hi: 133 }]], // recouvre 4 l. → perd
+  ])]
+  const w = computeFolioWinners(fiches, index, 10)
+  assert.deepEqual([...w.get(cA)], ['big'])
+  // égalité : deux topics au même recouvrement → les deux gardent
+  const fiches2 = [mkFiche([
+    ['t1', [{ book: 'LDB', ch: 23, lo: 110, hi: 120 }]], // 11 l.
+    ['t2', [{ book: 'LDB', ch: 23, lo: 125, hi: 135 }]], // 11 l.
+  ])]
+  const w2 = computeFolioWinners(fiches2, index, 10)
+  assert.deepEqual([...w2.get(cA)].sort(), ['t1', 't2'])
+})
+
+// --- Garde manifest (Sens B, #434) ---
+
+test('findManifestOrphans : non-impl sans entrée → orphelin ; non-impl AVEC entrée → OK ; impl sans entrée → OK', () => {
+  const index = makeIndex([
+    { rel: 'src/engine/f.ts', content: ['// LDB 6 l.10', 'export const foo = 1'].join('\n') },
+  ])
+  const content = [
+    '## Impl Topic', '', '**Sources RAW :** `LDB 6 l.10`', '', '**Implémente :** x', '',
+    '## Non Tickete', '', '**Sources RAW :** `LDB 99 l.500`', '', '**Implémente :** x', '',
+    '## Orphelin', '', '**Sources RAW :** `LDB 88 l.400`', '', '**Implémente :** x', '',
+  ].join('\n')
+  const fiches = [{ doc: 'a.md', content, parsed: parseFiche('a.md', content) }]
+  const manifestByTopic = new Map([['a#non-tickete', { topic: 'a#non-tickete', ticket: '#1' }]])
+  const ctx = { index, closure: new Set(), manifestByTopic, fiches }
+  // sanity : les 3 états attendus
+  const states = new Map(computeAll(ctx).perTopic.map((t) => [t.topic, t.implemented]))
+  assert.equal(states.get('a#impl-topic'), true)
+  assert.equal(states.get('a#non-tickete'), false)
+  assert.equal(states.get('a#orphelin'), false)
+  // seul l'orphelin (non-impl SANS entrée) est retourné
+  assert.deepEqual(findManifestOrphans(ctx), ['a#orphelin'])
+})
+
+test('renderBlock : topic non matché par lignes mais MATCHÉ par folio → implémenté, id = symbole', () => {
+  const index = {
+    impl: [{ book: 'AA', ch: 9, lo: 146, hi: 160, file: 'src/data/creatures.json', row: 5160, isTs: false, sym: 'demigriffon-adulte-dresse' }],
+    tests: [], fileLines: new Map(), nonCommentText: new Map(),
+  }
+  const ctx = { index, closure: new Set(), manifestByTopic: new Map() }
+  const field = parseFiche('a.md', '## Demigriffon\n\n**Sources RAW :** `AA 9 l.150`\n\n**Implémente :** ancien\n').fields[0]
+  const block = renderBlock(field, ctx)
+  assert.ok(block[0].includes(GEN_TAG))
+  const b = block.find((l) => l.startsWith('- `AA 9`'))
+  assert.match(b, /`demigriffon-adulte-dresse`/) // id d'entrée = symbole
+  assert.match(b, /`src\/data\/creatures\.json`/)
+  // déterminisme : deux rendus identiques
+  assert.deepEqual(renderBlock(field, ctx), renderBlock(field, ctx))
 })

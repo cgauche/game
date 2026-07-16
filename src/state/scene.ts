@@ -171,7 +171,9 @@ export type Effect =
       /** Valeur de marché propre posée sur l'instance (ex. pièces de monstre récoltées, ZI). */
       price?: { gold?: number; silver?: number; brass?: number } }
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
-  /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). */
+  /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). Support
+   *  générique de l'attribution événementielle par scénario (T3 13 l.5) : chaque scénario/campagne
+   *  authore ses propres octrois via cette action, à tout point narratif (victoire, objectif, dialogue…). */
   | { type: 'giveXp'; amount: number }
   | { type: 'startCombat'; encounter: string }
   /** Combat de masse / Puissance de Bataille (ADE II ch.8) : ouvre l'écran de bataille sur le
@@ -466,15 +468,15 @@ export interface EncounterDef {
    *  font un Test opposé de Perception vs la meilleure Discrétion des embusqueurs ; les vaincus gagnent
    *  l'État `Surpris`. Absent = personne n'est surpris. */
   surprise?: 'party' | 'enemies';
-  /** Avantage initial — Manœuvrabilité (AA l.4149-4167) : le camp indiqué possède un avantage de
+  /** Avantage initial — Manœuvrabilité (AA 11 l.53-65) : le camp indiqué possède un avantage de
    *  mouvement au début du combat (monté, terrain arboricole/aérien favorable…) → +2 à sa réserve
    *  d'Avantage en mode « Avantage de groupe » (`startAdvantagePools`). Absent = pas de circonstance. */
   maneuverability?: 'party' | 'enemies';
-  /** Avantage initial — Menace (AA l.4149-4167) : le camp `camp` représente une menace notoire pour
+  /** Avantage initial — Menace (AA 11 l.53-65) : le camp `camp` représente une menace notoire pour
    *  l'autre camp (`tier` : dangereuse +1, très dangereuse +3, extrême +5) → crédite sa réserve
    *  d'Avantage en mode groupe. Absent = pas de circonstance. */
   threat?: { camp: 'party' | 'enemies'; tier: ThreatTier };
-  /** Avantage initial — Terrain (AA l.4149-4167) : le camp `camp` tient une position avantageuse
+  /** Avantage initial — Terrain (AA 11 l.53-65) : le camp `camp` tient une position avantageuse
    *  (fortification/couvert léger/hauteur → +1 ; `heavy` : couvert lourd/position décisive type pont
    *  → +2) → crédite sa réserve d'Avantage en mode groupe. Absent = pas de circonstance. */
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };

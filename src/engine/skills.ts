@@ -21,7 +21,7 @@ import { maxBy } from './pick';
 /** Règles optionnelles « caractéristique alternative » via policy (POINT UNIQUE de la famille) : Métier
  *  comme Savoir → Int (LDB 09 l.352) ; Intimidation → carac réglable F/FM/Int (LDB 09 l.266). Renvoie la
  *  CharKey à utiliser (inchangée si aucune règle ne s'applique). N'opère que sur une COMPÉTENCE nommée.
- *  (Les carac alternatives PAR ENTITÉ — ex. lanceur ogre : Langue (Magick) sur Endurance, ADE II l.653 —
+ *  (Les carac alternatives PAR ENTITÉ — ex. lanceur ogre : Langue (Magick) sur Endurance, ADE II 2 l.728 —
  *  sont portées par la DONNÉE — `SkillInstance.characteristic` — lue par effectiveSkillCharKey en amont,
  *  pas ici : aucun sniff d'espèce dans le moteur.) */
 function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {

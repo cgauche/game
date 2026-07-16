@@ -143,7 +143,7 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
   // Carac de la compétence d'incantation via le POINT UNIQUE (skills.ts) : carac d'instance (data-driven)
   // sinon défaut LDB (Prière→Soc, Focalisation→FM, Langue→Int).
   // Surcharge DATA du Domaine pour Langue (Magick) : la Magie de la Gueule (réservée aux ogres) se lance
-  // sur l'Endurance (ADE II l.653) — attribut `castingChar` du domaine, AUCUN sniff d'espèce.
+  // sur l'Endurance (ADE II 2 l.728) — attribut `castingChar` du domaine, AUCUN sniff d'espèce.
   const domChar = skillName === 'langue' ? findDomainById(arcaneDomainIdOf(c))?.castingChar : undefined;
   const charKey = domChar ?? effectiveSkillCharKey(c, skillName, {
     spec,

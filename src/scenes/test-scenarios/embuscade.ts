@@ -146,9 +146,9 @@ const scene = buildScene({
     {
       id: 'enc-mutants',
       // Embuscade : le groupe est pris par SURPRISE (LDB 13) → la doctrine IA « embuscade » s'auto-sélectionne
-      // (#127, signal État Surpris) et l'Avantage de Surprise remplit la réserve ennemie (AA l.4165).
+      // (#127, signal État Surpris) et l'Avantage de Surprise remplit la réserve ennemie (AA 11 l.63).
       surprise: 'party',
-      // Les mutants surgissent du COUVERT des arbres (AA l.4166, Terrain léger) → Avantage initial ennemi (#115).
+      // Les mutants surgissent du COUVERT des arbres (AA 11 l.64, Terrain léger) → Avantage initial ennemi (#115).
       terrain: { camp: 'enemies' },
       enemies: [
         {

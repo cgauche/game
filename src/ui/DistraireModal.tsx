@@ -12,7 +12,7 @@ import { testBreakdown } from './breakdown';
 import { describeDistraire } from '../state/flowOutcomes';
 
 /**
- * Modale de Distraire (LDB 10 l.364 / AA l.4395) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs Calme
+ * Modale de Distraire (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs Calme
  * (foe), sur `RollShell` (opposé = 2 rangées) :
  * - rangée [0] = TÉMOIN : le jet de Calme du foe, FIGÉ (`interactive:false`) ;
  * - rangée [1] = INTERACTIVE : le jet d'Athlétisme du mover, porteur de son cycle d'influence.

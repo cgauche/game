@@ -181,7 +181,7 @@ export function shieldAdvantageLevel(c: Combatant, parryWeapon: Weapon | undefin
   return levelSum(c, (d) => !!d.shieldAdvantage);
 }
 
-/** Réaction défensive à coût d'Avantages de réserve (Porte-Bouclier variante AA l.4428) : coût en
+/** Réaction défensive à coût d'Avantages de réserve (Porte-Bouclier variante AA 13 l.84) : coût en
  *  Avantages (0 = capacité absente) de la réaction offerte quand on se défend au Bouclier. Bouclier requis
  *  (`isShieldItem`, source UNIQUE du prédicat). GÉNÉRIQUE — tout talent déclarant `advantageDefenseReaction`.
  *  Présent uniquement en mode « Avantage de groupe » (champ sous `aa`, fusionné par `effectiveFeature`). */
@@ -216,13 +216,13 @@ export function outnumberCountBonus(c: Combatant): number {
   return levelSum(c, (d) => !!d.outnumberCount);
 }
 
-/** Renversement — variante « Avantage de groupe » (AA l.4442) : prend 1 Avantage dans la réserve adverse
+/** Renversement — variante « Avantage de groupe » (AA 13 l.92-98) : prend 1 Avantage dans la réserve adverse
  *  (au lieu de tout l'Avantage individuel via `stealAdvantage`, lecture LDB). */
 export function stealsOneAdvantage(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.stealOne);
 }
 
-/** Poids d'un combattant au décompte de domination de fin de Round (AA l.4146) : 1, ou 2 pour un porteur
+/** Poids d'un combattant au décompte de domination de fin de Round (AA 11 l.44) : 1, ou 2 pour un porteur
  *  de Coude-à-coude en mode « Avantage de groupe » (l.4387, « compte comme deux combattants »). */
 export function advantageTransferWeight(c: Combatant): number {
   return featuresOf(c).reduce((m, { def }) => Math.max(m, def.transferWeight ?? 1), 1);
@@ -240,8 +240,8 @@ export function fearSizeAsMount(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.fearSizeAsMount);
 }
 
-/** Coût d'Avantage d'une Retraite stratégique (Désengagement, mode groupe AA l.4139 : 2 Avantages) pour
- *  `c` : abaissé au `retreatCost` déclaré par un Talent (Impitoyable AA l.4418 → 1). Défaut 2. Lu par le
+/** Coût d'Avantage d'une Retraite stratégique (Désengagement, mode groupe AA 11 l.37 : 2 Avantages) pour
+ *  `c` : abaissé au `retreatCost` déclaré par un Talent (Impitoyable AA 13 l.74 → 1). Défaut 2. Lu par le
  *  Désengagement en mode « Avantage de groupe ». */
 export function retreatAdvantageCost(c: Combatant): number {
   return featuresOf(c).reduce((m, { def }) => (def.retreatCost != null ? Math.min(m, def.retreatCost) : m), 2);
@@ -265,7 +265,7 @@ export function hasBattement(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.battement);
 }
 
-/** Distraire (LDB 10 / AA l.4395) : le combattant porte le Talent qui l'autorise à déclarer une manœuvre de
+/** Distraire (LDB 10 / AA 13 l.51) : le combattant porte le Talent qui l'autorise à déclarer une manœuvre de
  *  Distraction (Mouvement, Test opposé Athlétisme/Calme empêchant la cible de gagner de l'Avantage). */
 export function hasDistraire(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.distraire);
@@ -318,7 +318,7 @@ export function talentFearIndice(c: Combatant): number {
   return levelSum(c, (d) => !!d.causesFear);
 }
 
-/** Négociateur (LDB 60 l.12) : un Marchandage gagné réduit le prix de 20 % même sans Succès
+/** Négociateur (LDB 59 l.43) : un Marchandage gagné réduit le prix de 20 % même sans Succès
  *  Stupéfiant. Lu par merchantFlow à la conclusion. */
 export function hasBargainBonus(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.bargainBonus);
@@ -351,7 +351,7 @@ export function hasSurgery(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.surgery);
 }
 
-/** Commandant d'équipe (AA l.4373-4379) : le combattant porte le Talent qui l'autorise à diriger une
+/** Commandant d'équipe (AA 13 l.29-35) : le combattant porte le Talent qui l'autorise à diriger une
  *  équipe d'artillerie (Arme d'équipe) à portée de voix. Lu par l'affordance + la substitution de score. */
 export function hasCommandTeam(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.commandTeam);

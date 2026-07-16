@@ -125,7 +125,7 @@ export function pickAttackWeapon(battle: BattleState, attacker: Combatant, targe
   return pickAttackWeaponList(battle.combatants, attacker, target, weaponUid);
 }
 
-/** Cavalier émérite (AA l.4369) : Taille EFFECTIVE de `self` face à la Peur/Terreur causée par la TAILLE
+/** Cavalier émérite (AA 13 l.25) : Taille EFFECTIVE de `self` face à la Peur/Terreur causée par la TAILLE
  *  de l'adversaire. Le porteur du Talent, une fois monté, compte la Taille de sa MONTURE (« confiant une
  *  fois monté »). `undefined` (→ l'appelant retombe sur `self.size`) s'il n'a pas le Talent ou n'est pas
  *  monté. Passé à `fearSourceFor(self, foe, ⇐)` : seul le versant Taille est concerné, jamais un
