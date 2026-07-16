@@ -94,19 +94,3 @@ export function Section({ title, right, children }: { title: ReactNode; right?: 
 export function XpBadge({ value }: { value: number }) {
   return value > 0 ? <span className="xp-badge">+{value} PX</span> : null;
 }
-
-/** Bande titrée pleine largeur (fond bois/laiton, étalon `finale-mock2-caracteristiques.png`) — pour
- *  les rubriques d'un panneau à plusieurs blocs (« Le tirage », « Augmentations gratuites », « Destin
- *  & Résilience ») : LA MAQUETTE dicte quel bloc va dans quelle zone, ce bandeau habille ces blocs
- *  quand le panneau (pas `zone-section`) le porte. */
-export function Band({ title, right, children }: { title: ReactNode; right?: ReactNode; children?: ReactNode }) {
-  return (
-    <div className="creator-band">
-      <div className="creator-band-head">
-        <h3>{title}</h3>
-        {right && <span className="creator-band-right">{right}</span>}
-      </div>
-      {children}
-    </div>
-  );
-}

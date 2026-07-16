@@ -1,17 +1,17 @@
 /**
- * Onglet ÉTAT (§3.4 design v4, #492 Lot 1b) — « qu'est-ce qui m'arrive ? ». Silhouette organisatrice
- * en tête, puis les rubriques ancrées (`ETAT_ANCHOR_*`, `sheetAlarms.ts`) : une rubrique SANS contenu
- * N'EXISTE PAS (aucune chip morte) — État vide = silhouette calme + « Rien à signaler. » seule.
- * `Un GameOp = une rangée` (doctrine #295) ; toute prose est VERBATIM (`<Prose>`, règle 5).
+ * Onglet ÉTAT — REGISTRE COMPACT (arbitrage user 2026-07-17, verbatim : « Oui : registre compact +
+ * Codex » — une ligne par affliction, détail/prose à UN clic au popover Codex ; la fiche dit MON
+ * état, le Codex dit la règle). Bandes de section ancrées (`ETAT_ANCHOR_*`, `sheetAlarms.ts`) —
+ * une bande SANS contenu N'EXISTE PAS. Chaque ligne = `PlaqueRow` (nom `CodexRef tooltipOnly` — le
+ * détail vit dans le popover, pas au clic-navigation —, méta en `GameOpChips`, valeur = l'horloge/le
+ * cumul) — AUCUNE prose inline dans le registre.
  */
 import type { ReactNode } from 'react';
-import type { Combatant, HitLocation } from '../engine/types';
+import type { Combatant } from '../engine/types';
 import type { Duration } from '../engine/duration';
 import { locationLabel } from '../engine/combat';
-import { effectiveArmourAt } from '../engine/characteristics';
 import { maxEncumbrance, totalEncumbrance, giveTrappingLabel } from '../engine/items';
-import { findCritEntrySuffered, critEntryCodexCategory, type CritTableKey } from '../engine/critical';
-import type { CritEntry } from '../data/criticals';
+import { findCritEntrySuffered, critEntryCodexCategory } from '../engine/critical';
 import { corruptionThreshold } from '../engine/corruption';
 import { formatRemaining } from '../engine/disease';
 import { CHAR_LABELS } from '../engine/types';
@@ -22,55 +22,25 @@ import { isPsychAfflictionActive, ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION,
 import { CodexRef } from './compendium/CodexRef';
 import { EntityRef } from './EntityChip';
 import { GameOpChips } from './GameOpChips';
-import { Prose } from './Prose';
 import { NotchGauge } from './NotchGauge';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import { CharacterPreview } from './CharacterPreview';
+import { PlaqueRow } from './PlaqueRow';
+import { Band } from './Band';
 
-/** Zone de la silhouette organisatrice — regroupe les 6 Localisations en 4 zones affichables (un id
- *  de `critEntriesSuffered` n'a pas de côté attaché, cf. `findCritEntrySuffered` : les tables Bras/
- *  Jambe couvrent LES DEUX côtés au RAW, LDB 18). */
-const ZONES: { key: 'tete' | 'bras' | 'corps' | 'jambe'; label: string; locs: HitLocation[] }[] = [
-  { key: 'tete', label: 'Tête', locs: ['tete'] },
-  { key: 'bras', label: 'Bras', locs: ['brasG', 'brasD'] },
-  { key: 'corps', label: 'Corps', locs: ['corps'] },
-  { key: 'jambe', label: 'Jambes', locs: ['jambeG', 'jambeD'] },
-];
+/** Icône de repli quand aucune icône du registre ne porte la famille (jamais d'emoji), à l'égal de
+ *  `sheetAlarms.ts`. */
+const FALLBACK_ICON: IconIdInput = 'ui/warning';
 
-/** Critique SUFFERT résolu (`findCritEntrySuffered`) + son décompte d'occurrences (id STABLE). */
-export interface CritSuffered { id: string; count: number; entry: CritEntry; table: CritTableKey; kind: 'ldb' | 'aa' }
-
-/** Silhouette organisatrice : le rig réel (`CharacterPreview`) + une zone par groupe de Localisation
- *  (PA + critiques subis rattachables + traumas actifs), tonalité `bad` si la zone porte un signal. */
-function EtatSilhouette({ hero, criticalEntries, traumas }: {
-  hero: Combatant;
-  criticalEntries: CritSuffered[];
-  traumas: NonNullable<Combatant['traumas']>;
-}) {
-  const calm = criticalEntries.length === 0 && traumas.every((t) => t.cosmetic);
+/** Bande de section ancrée : titre + compte en badge sobre (`Band`, primitive partagée). L'appelant
+ *  filtre déjà les rubriques vides — une bande SANS contenu n'apparaît jamais dans l'arbre. */
+function Section({ anchor, title, count, children }: { anchor: string; title: string; count?: number; children: ReactNode }) {
   return (
-    <div className="etat-body">
-      <CharacterPreview hero={hero} size="lg" />
-      {!calm && (
-        <div className="etat-zones">
-          {ZONES.map((z) => {
-            const zoneCrits = criticalEntries.filter((c) => c.table === z.key);
-            const zoneTraumas = traumas.filter((t) => !t.cosmetic && z.locs.includes(t.location));
-            const bad = zoneCrits.length > 0 || zoneTraumas.length > 0;
-            const pas = z.locs.map((l) => effectiveArmourAt(hero, l));
-            const paText = pas.every((p) => p === pas[0]) ? `${pas[0]}` : pas.join(' · ');
-            return (
-              <div key={z.key} className="etat-zone" data-tone={bad ? 'bad' : 'ok'}>
-                <b>{z.label}</b> <small>PA {paText}</small>
-                {zoneCrits.map((c, i) => <div key={`c${i}`}>{c.entry.name}</div>)}
-                {zoneTraumas.map((t, i) => <div key={`t${i}`}>{t.label}</div>)}
-                {!bad && <small className="muted"> · Aucun critique</small>}
-              </div>
-            );
-          })}
-        </div>
-      )}
+    <div id={anchor}>
+      <Band title={title} right={count != null ? <b>{count}</b> : undefined}>
+        {children}
+      </Band>
     </div>
   );
 }
@@ -99,44 +69,37 @@ function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): str
   return e.label;
 }
 
-/** Panneau « Effets actifs » : buffs/débuffs de Sort, Traits accordés, contrecoups d'incantation —
- *  DERNIÈRE rubrique de l'onglet État (§3.4). */
-function ActiveEffectsPanel({ hero }: { hero: Combatant }) {
+/** Durée compacte d'un effet actif/contrecoup, pour la valeur de sa `PlaqueRow`. */
+function effectDuration(e: { duration?: Duration; roundsLeft?: number; untilTime?: number }): string {
+  if (e.duration) return e.duration.scale === 'rounds' ? ` · ${e.duration.left} R` : e.duration.scale === 'clock' ? ' · durée' : '';
+  return e.roundsLeft != null ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
+}
+
+/** Rubrique « Effets en cours » : buffs/débuffs de Sort, Traits accordés, contrecoups d'incantation
+ *  — DERNIÈRE bande du registre. */
+function ActiveEffectsSection({ hero }: { hero: Combatant }) {
   const fx = hero.activeEffects ?? [];
   const cp = hero.castPenalties ?? [];
   if (!fx.length && !cp.length) return null;
-  const dur = (e: { duration?: Duration; roundsLeft?: number; untilTime?: number }) => {
-    if (e.duration) return e.duration.scale === 'rounds' ? ` · ${e.duration.left} R` : e.duration.scale === 'clock' ? ' · durée' : '';
-    return e.roundsLeft != null ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
-  };
   return (
-    <>
-      <div className="mini-title">Effets actifs</div>
-      <div className="sheet-effects">
-        {fx.map((e, i) => (
-          <div className="skill-line" key={`e${i}`}>
-            <span className="sk-name">{e.label}</span>
-            <span className="sk-val">{describeEffect(e)}{dur(e)}</span>
-          </div>
-        ))}
-        {cp.map((p, i) => (
-          <div className="skill-line" key={`c${i}`}>
-            <span className="sk-name">{p.label}</span>
-            <span className="sk-val warn-text">{p.blocked ? 'Incantation bloquée' : p.maxZeroDR ? 'Prière plafonnée à 0 DR' : `${p.mod} ${p.skill}`}{dur(p)}</span>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
-/** En-tête de rubrique (`mini-title` + compte, primitive existante — zéro classe neuve). */
-function Rubric({ anchor, title, count, children }: { anchor: string; title: string; count: number; children: ReactNode }) {
-  return (
-    <div id={anchor}>
-      <div className="mini-title">{title}<span className="count">{count}</span></div>
-      {children}
-    </div>
+    <Section title="Effets en cours" count={fx.length + cp.length} anchor="etat-effets">
+      {fx.map((e, i) => (
+        <PlaqueRow
+          key={`e${i}`}
+          prefix={<Icon id="mechanic/stat-mod" size="sm" />}
+          name={e.label}
+          value={`${describeEffect(e)}${effectDuration(e)}`}
+        />
+      ))}
+      {cp.map((p, i) => (
+        <PlaqueRow
+          key={`c${i}`}
+          prefix={<Icon id="ui/warning" size="sm" />}
+          name={p.label}
+          value={`${p.blocked ? 'Incantation bloquée' : p.maxZeroDR ? 'Prière plafonnée à 0 DR' : `${p.mod} ${p.skill}`}${effectDuration(p)}`}
+        />
+      ))}
+    </Section>
   );
 }
 
@@ -163,169 +126,138 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
   const hasSignal = criticalEntries.length > 0 || conditions.length > 0 || corruption > 0 || diseases.length > 0
     || mutations.length > 0 || traumas.some((t) => !t.cosmetic) || activePsych.length > 0 || overEnc || hasEffects;
 
-  return (
-    <div className="sheet-etat">
-      <EtatSilhouette hero={hero} criticalEntries={criticalEntries} traumas={traumas} />
-
-      {!hasSignal && (
+  if (!hasSignal) {
+    return (
+      <div className="sheet-etat">
         <div className="etat-ras">
+          <CharacterPreview hero={hero} size="lg" />
           <span className="ras-title">Rien à signaler.</span>
         </div>
-      )}
+      </div>
+    );
+  }
 
+  return (
+    <div className="sheet-etat">
       {criticalEntries.length > 0 && (
-        <Rubric anchor={ETAT_ANCHOR_CRITIQUES} title="Blessures critiques" count={criticalEntries.length}>
-          <div className="inv-rows">
-            {criticalEntries.map((c) => (
-              <div key={c.id}>
-                <div className="inv-row">
-                  <span className="ir-name">
-                    <CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.name}>{c.entry.name}</CodexRef>
-                    {c.count > 1 ? ` ×${c.count}` : ''}
-                  </span>
-                  <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-                    {locationLabel(c.table === 'bras' ? 'brasG' : c.table === 'jambe' ? 'jambeG' : c.table, hero.bodyShape)} · d100 {c.entry.min}–{c.entry.max}
-                  </span>
-                </div>
-                {(c.entry.ops?.length ?? 0) > 0 && <div className="skill-tags"><GameOpChips ops={c.entry.ops!} /></div>}
-                <Prose md={c.entry.desc} />
-              </div>
-            ))}
-          </div>
-        </Rubric>
+        <Section anchor={ETAT_ANCHOR_CRITIQUES} title="Blessures critiques" count={criticalEntries.length}>
+          {criticalEntries.map((c) => (
+            <PlaqueRow
+              key={c.id}
+              prefix={<Icon id="medical/scalpel" size="sm" />}
+              name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.name} tooltipOnly>{c.entry.name}</CodexRef>}
+              sub={locationLabel(c.table === 'bras' ? 'brasG' : c.table === 'jambe' ? 'jambeG' : c.table, hero.bodyShape)}
+              meta={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
+              value={c.count > 1 ? `×${c.count}` : undefined}
+            />
+          ))}
+        </Section>
       )}
 
       {conditions.length > 0 && (
-        <Rubric anchor="etat-etats" title="États" count={conditions.length}>
-          <div className="skill-tags">
-            {conditions.map((cond, i) => {
-              const def = findConditionById(cond.name);
-              return (
-                <EntityRef key={i} category="etats" id={cond.name} label={def?.label ?? cond.name} badge={cond.value > 1 ? `×${cond.value}` : undefined} />
-              );
-            })}
-          </div>
+        <Section anchor="etat-etats" title="États actifs" count={conditions.length}>
           {conditions.map((cond, i) => {
             const def = findConditionById(cond.name);
-            if (!def?.passive?.length) return null;
-            return <div className="skill-tags" key={`ops${i}`}><GameOpChips ops={def.passive} /></div>;
+            return (
+              <PlaqueRow
+                key={i}
+                prefix={<Icon id={(def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON} size="sm" />}
+                name={<CodexRef category="etats" id={cond.name} label={def?.label ?? cond.name} tooltipOnly>{def?.label ?? cond.name}</CodexRef>}
+                meta={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
+                value={cond.value > 1 ? `×${cond.value}` : undefined}
+              />
+            );
           })}
-        </Rubric>
-      )}
-
-      {corruption > 0 && (
-        <Rubric anchor={ETAT_ANCHOR_CORRUPTION} title="Corruption" count={corruption}>
-          <NotchGauge
-            value={corruption}
-            max={Math.max(corruptionThreshold(hero), corruption)}
-            tone="danger"
-            icon={<Icon id="nav/mutation" size="sm" />}
-            label="Corruption"
-          />
-          {hero.damned && <span className="chip tone-danger">DAMNÉ</span>}
-        </Rubric>
+        </Section>
       )}
 
       {traumas.length > 0 && (
-        <Rubric anchor={ETAT_ANCHOR_TRAUMAS} title="Traumatismes (séquelles)" count={traumas.length}>
-          <div className="inv-rows">
-            {traumas.map((t, i) => (
-              <div key={i}>
-                <div className="inv-row">
-                  <span className="ir-name">
-                    <CodexRef category="traumas" id={t.traumaId} label={t.label}>{t.label}</CodexRef>
-                    {t.location ? ` (${locationLabel(t.location, hero.bodyShape)})` : ''}
-                    {t.count != null && t.count > 1 ? ` ×${t.count}` : ''}
-                  </span>
-                  <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-                    {t.recoveryDays != null ? `convalescence ${t.recoveryDays} j` : t.needsSurgery ? 'Chirurgie requise' : 'permanent'}
-                  </span>
-                </div>
-                {(t.ops?.length ?? 0) > 0 && <div className="skill-tags"><GameOpChips ops={t.ops!} /></div>}
-                {t.desc && <Prose md={t.desc} />}
-              </div>
-            ))}
-          </div>
-        </Rubric>
+        <Section anchor={ETAT_ANCHOR_TRAUMAS} title="Séquelles" count={traumas.length}>
+          {traumas.map((t, i) => (
+            <PlaqueRow
+              key={i}
+              prefix={<Icon id="medical/crutch" size="sm" />}
+              name={<CodexRef category="traumas" id={t.traumaId} label={t.label} tooltipOnly>{t.label}</CodexRef>}
+              sub={t.location ? locationLabel(t.location, hero.bodyShape) : undefined}
+              meta={(t.ops?.length ?? 0) > 0 ? <GameOpChips ops={t.ops!} /> : undefined}
+              value={`${t.recoveryDays != null ? `${t.recoveryDays} j` : t.needsSurgery ? 'Chirurgie requise' : 'Permanent'}${t.count != null && t.count > 1 ? ` · ×${t.count}` : ''}`}
+            />
+          ))}
+        </Section>
       )}
 
       {diseases.length > 0 && (
-        <Rubric anchor={ETAT_ANCHOR_MALADIES} title="Maladies" count={diseases.length}>
-          <div className="inv-rows">
-            {diseases.map((d, i) => (
-              <div key={i}>
-                <div className="inv-row">
-                  <span className="ir-name">{diseaseLabel(d.name)}</span>
-                  <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-                    {d.phase === 'incubation' ? `incubation : ${formatRemaining(d.minutesLeft)}` : `${formatRemaining(d.minutesLeft)} restants`}
-                  </span>
-                </div>
-                <div className="skill-tags">
+        <Section anchor={ETAT_ANCHOR_MALADIES} title="Maladies" count={diseases.length}>
+          {diseases.map((d, i) => (
+            <PlaqueRow
+              key={i}
+              prefix={<Icon id="medical/infection" size="sm" />}
+              name={<CodexRef category="maladies" id={d.name} label={diseaseLabel(d.name)} tooltipOnly>{diseaseLabel(d.name)}</CodexRef>}
+              meta={d.symptoms.length > 0 ? (
+                <>
                   {d.symptoms.map((s, si) => (
                     <EntityRef key={si} category="symptoms" id={s.symptomId} label={symptomLabel(s.symptomId)} show={s.spec ? `${symptomLabel(s.symptomId)} (${s.spec})` : symptomLabel(s.symptomId)} />
                   ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Rubric>
+                </>
+              ) : undefined}
+              value={d.phase === 'incubation' ? `Incubation · ${formatRemaining(d.minutesLeft)}` : formatRemaining(d.minutesLeft)}
+            />
+          ))}
+        </Section>
       )}
 
       {mutations.length > 0 && (
-        <Rubric anchor={ETAT_ANCHOR_MUTATIONS} title="Mutations" count={mutations.length}>
-          <div className="inv-rows">
-            {mutations.map((m, i) => (
-              <div key={i}>
-                <div className="inv-row">
-                  <span className="ir-name">
-                    <CodexRef category="mutations" id={m.id} label={m.label}>{m.label}</CodexRef>
-                  </span>
-                  <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-                    mutation {m.kind === 'physique' ? 'physique' : 'mentale'}
-                  </span>
-                </div>
-                {(m.passive?.length ?? 0) > 0 && <div className="skill-tags"><GameOpChips ops={m.passive!} /></div>}
-                <Prose md={m.desc} />
-                {m.note && <p className="muted">{m.note}</p>}
-              </div>
-            ))}
-          </div>
-        </Rubric>
+        <Section anchor={ETAT_ANCHOR_MUTATIONS} title="Mutations" count={mutations.length}>
+          {mutations.map((m, i) => (
+            <PlaqueRow
+              key={i}
+              prefix={<Icon id="nav/mutation" size="sm" />}
+              name={<CodexRef category="mutations" id={m.id} label={m.label} tooltipOnly>{m.label}</CodexRef>}
+              sub={m.kind === 'physique' ? 'Mutation physique' : 'Mutation mentale'}
+              meta={(m.passive?.length ?? 0) > 0 ? <GameOpChips ops={m.passive!} /> : undefined}
+            />
+          ))}
+        </Section>
       )}
 
       {activePsych.length > 0 && (
-        <Rubric anchor={ETAT_ANCHOR_PSYCHOLOGIE} title="Psychologie" count={activePsych.length}>
-          <div className="inv-rows">
-            {activePsych.map((p, i) => {
-              const def = findPsychologyById(p.type);
-              return (
-                <div key={i}>
-                  <div className="inv-row">
-                    {def?.icon && <Icon id={def.icon as IconIdInput} size="sm" />}
-                    <span className="ir-name">
-                      <CodexRef category="psychologies" id={p.type} label={def?.label ?? p.type}>{def?.label ?? p.type}</CodexRef>
-                    </span>
-                  </div>
-                  {def?.desc && <Prose md={def.desc} />}
-                </div>
-              );
-            })}
-          </div>
-        </Rubric>
+        <Section anchor={ETAT_ANCHOR_PSYCHOLOGIE} title="Psychologie" count={activePsych.length}>
+          {activePsych.map((p, i) => {
+            const def = findPsychologyById(p.type);
+            return (
+              <PlaqueRow
+                key={i}
+                prefix={<Icon id={(def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON} size="sm" />}
+                name={<CodexRef category="psychologies" id={p.type} label={def?.label ?? p.type} tooltipOnly>{def?.label ?? p.type}</CodexRef>}
+                meta={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
+              />
+            );
+          })}
+        </Section>
+      )}
+
+      {corruption > 0 && (
+        <div id={ETAT_ANCHOR_CORRUPTION}>
+          <PlaqueRow
+            prefix={<Icon id="nav/mutation" size="sm" />}
+            name="Corruption"
+            meta={<NotchGauge value={corruption} max={Math.max(corruptionThreshold(hero), corruption)} tone="danger" />}
+            value={hero.damned ? 'DAMNÉ' : undefined}
+          />
+        </div>
       )}
 
       {overEnc && (
-        <Rubric anchor={ETAT_ANCHOR_ENCOMBREMENT} title="Encombrement" count={totalEncumbrance(hero)}>
-          <div className="inv-row">
-            <span className="ir-name">Surchargé</span>
-            <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
-              {totalEncumbrance(hero)}/{maxEncumbrance(hero)} — Mouvement/Agilité pénalisés (LDB 15)
-            </span>
-          </div>
-        </Rubric>
+        <Section anchor={ETAT_ANCHOR_ENCOMBREMENT} title="Surcharge">
+          <PlaqueRow
+            prefix={<Icon id={FALLBACK_ICON} size="sm" />}
+            name="Surchargé"
+            value={`${totalEncumbrance(hero)}/${maxEncumbrance(hero)}`}
+          />
+        </Section>
       )}
 
-      <ActiveEffectsPanel hero={hero} />
+      <ActiveEffectsSection hero={hero} />
     </div>
   );
 }

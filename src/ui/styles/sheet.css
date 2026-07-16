@@ -509,50 +509,10 @@
   gap: 8px;
 }
 
-/* ── Onglet « État » (§3.4 design v4, #492 Lot 1b) : silhouette organisatrice (rig réel + zones par
-   groupe de Localisation) en tête de l'onglet, tonalité `data-tone` (attribut, pas une classe — le
-   cliquet de domaine xii ne compte QUE les sélecteurs `.classe`). ── */
-.etat-body {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 10px;
-}
-/* État calme (aucune zone rendue, cf. `EtatSilhouette`) : silhouette centrée seule plutôt que
-   coincée dans la colonne `auto` avec un grand vide à droite (Lot 1 finition, retour juge vision). */
-.etat-body:not(:has(.etat-zones)) {
-  grid-template-columns: 1fr;
-  justify-items: center;
-}
-.etat-zones {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
-}
-.etat-zone {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 7px 10px;
-  background: var(--bg2);
-  font-size: 12px;
-  line-height: 1.4;
-}
-.etat-zone[data-tone='bad'] {
-  border-color: var(--danger);
-  background: linear-gradient(160deg, color-mix(in srgb, var(--danger) 16%, var(--bg2)), var(--bg2));
-}
-.etat-zone b {
-  font-family: var(--font-display);
-  color: var(--gold2);
-}
-.etat-zone[data-tone='bad'] b {
-  color: var(--danger-soft);
-}
-.etat-zone small {
-  opacity: 0.75;
-  font-size: 11px;
-}
+/* ── Onglet « État » (registre compact, arbitrage user 2026-07-17) : bandes de section (`Band`) +
+   `PlaqueRow` par affliction — la silhouette organisatrice/zones par Localisation est MORTE (la
+   localisation vit désormais dans chaque ligne, `PlaqueRow.sub`). Ne reste ici que l'état calme
+   (rig + message), composition VALIDÉE inchangée. ── */
 .etat-ras {
   display: flex;
   flex-direction: column;
@@ -564,8 +524,5 @@
   font-family: var(--font-display);
   font-size: 20px;
   color: var(--ok-bright);
-}
-@media (max-width: 700px) {
-  .etat-body { grid-template-columns: 1fr; justify-items: center; }
 }
 

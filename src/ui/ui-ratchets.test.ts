@@ -235,6 +235,7 @@ const DOMAIN_CSS_MODULES = [
   'frames',
   'creator-step',
   'plaque-row',
+  'band',
   'celestial-wheel',
   'creator-presentation',
   'creator-shell',
@@ -379,7 +380,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `<div>` quand elle porte un `<select>` non imbricable dans un bouton) : `.talent-option-btn`
   // (reset de l'enfant cliquable côté carrière) et `.talent-option-seal` (médaillon du sceau) —
   // les 3 `<input type=radio>` des cartes race/carrière meurent au profit du bouton natif.
-  'styles/creator.css': 107,
+  // Onglet État — registre compact (#492 Lot 1c, arbitrage user 2026-07-17) : -4 (107 → 103) — la
+  // bande titrée (`Band`) est EXTRAITE en primitive partagée (`Band.tsx`/`styles/band.css`, patron
+  // plaque-row.css/frames.css) : `.creator-band(-head|-right)` meurent ici, contrepartie ASSUMÉE en
+  // regard (band.css, plus bas).
+  'styles/creator.css': 103,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
@@ -390,7 +395,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // aucun rapport avec la fiche) ; +5 (82 → 87) — onglet État rédigé, silhouette organisatrice
   // (`.etat-body`/`-zones`/`-zone`/`-ras`/`.ras-title`, tonalité en attribut `data-tone` — pas de
   // classe par ton). Net -4.
-  'styles/sheet.css': 87,
+  // #492 Lot 1c (registre compact, arbitrage user 2026-07-17) : -3 (87 → 84) — la silhouette
+  // organisatrice (rig + zones par Localisation, jugée du bruit) MEURT : `.etat-body`/`-zones`/
+  // `-zone` retirés. Ne reste que l'état calme (`.etat-ras`/`.ras-title`, composition validée
+  // inchangée) — le registre affligé compose `Band`/`PlaqueRow`, aucune classe neuve ici.
+  'styles/sheet.css': 84,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -458,6 +467,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // -2 (2026-07-16, #496) : `.rm-die-gem`/`.rm-die-rolling` (scope `.plaque-meta`) purgés — même
   // bascule que creator-step.css vers le modificateur `.rm-die-gold` de combat-modals.css.
   'styles/plaque-row.css': 11,
+  // Bande titrée (`Band`, extraite du créateur #492 Lot 1c) — module primitive dédiée (patron
+  // rose.css/frames.css) : `.creator-band(-head|-right)` + les descendants `.hint`/`.notch-gauge`
+  // (jauge du tirage, complète la primitive `NotchGauge` sans fork).
+  'styles/band.css': 5,
   // Astrolabe de la roue céleste (`CelestialWheel`, migration étape 4 du lot ossature) : les MATIÈRES
   // du cadran aux valeurs du `svg` « 4 — Signe astral » de la planche FINALE. 14 pour 3 qui vivaient
   // dans creator.css : contrepartie ASSUMÉE de la fidélité (l'ancienne roue était un croquis à deux

@@ -172,6 +172,8 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                   ring={HERO_RING[i % HERO_RING.length]}
                   variant="full"
                   size="sm"
+                  maxStates={3}
+                  reserveStates
                   selected={m.id === hero.id}
                   onClick={() => setSheetId(m.id)}
                   title={m.name}
@@ -180,7 +182,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
             </div>
             <div className="sheet-portrait">
               {/* Tuile full xl : jauge + États sur la fiche aussi (anneau or « méta »). */}
-              <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" />
+              <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" reserveStates />
               <h3>{hero.name}</h3>
               <span className="char-sub">
                 <CodexRef category="races" id={hero.species} label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" id={hero.career} label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
