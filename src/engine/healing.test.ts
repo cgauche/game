@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import type { Combatant } from './types';
 import {
   hasHealSkill, isHealable, availableHealModes, healableTargets,
   healWoundsDelta, stopBleedOutcome, applyHealWounds, applyStopBleed,
-  lodgedAmmoCount, resolveExtractLodgedAmmo,
+  lodgedAmmoCount, resolveExtractLodgedAmmo, healDifficulty,
 } from './healing';
+import { setRule, resetRule } from './policy';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {
@@ -94,6 +95,24 @@ describe('engine/healing — mutateurs', () => {
     applyStopBleed(t, 1); // 1+1 = 2 pions retirés
     expect(t.conditions.find((c) => c.name === 'hemorragique')).toBeUndefined();
     expect(t.conditions.find((c) => c.name === 'extenue')).toBeTruthy();
+  });
+});
+
+describe('engine/healing — healDifficulty (mode → Difficulté, variante combat-aa-blessures, AA 07 l.9)', () => {
+  afterEach(() => resetRule('combat-aa-blessures'));
+
+  it('variante LDB (défaut) : wounds/bleed/ammo tous Intermédiaire (+0)', () => {
+    resetRule('combat-aa-blessures');
+    expect(healDifficulty('wounds')).toBe('intermediaire');
+    expect(healDifficulty('bleed')).toBe('intermediaire');
+    expect(healDifficulty('ammo')).toBe('intermediaire');
+  });
+
+  it('variante AA : bleed devient Accessible (+20), wounds/ammo restent Intermédiaire (+0)', () => {
+    setRule('combat-aa-blessures', 'aa');
+    expect(healDifficulty('wounds')).toBe('intermediaire');
+    expect(healDifficulty('bleed')).toBe('accessible');
+    expect(healDifficulty('ammo')).toBe('intermediaire');
   });
 });
 

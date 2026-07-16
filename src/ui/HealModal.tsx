@@ -10,7 +10,7 @@ import { describeHeal } from '../state/flowOutcomes';
 import { ModalSubject } from './ModalSubject';
 import { combatHealModes } from '../engine/healing';
 import { Icon } from './Icon';
-import { healSubtitleLabel } from './healSubtitle';
+import { healSubtitleLabel, healSubtitleVerb } from './healSubtitle';
 
 /**
  * Flux de jet d'un SOIN (Guérison, LDB 09-Compétences) : « Lancer » → Chance (relance / +1 DR) →
@@ -86,7 +86,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
       title={wounds ? <><Icon id="journal/heal" size="sm" /> Soigner les Blessures</> : trauma ? <><Icon id="medical/tear" size="sm" /> Soigner une déchirure</> : ammo ? <><Icon id="item/ammo" size="sm" /> Retirer une munition</> : <><Icon id="condition/bleeding" size="sm" /> Arrêter l’Hémorragie</>}
       subtitle={
         <>
-          <strong>{ph.healerName}</strong> soigne <strong>{ph.targetName}</strong>{' '}
+          <strong>{ph.healerName}</strong> {healSubtitleVerb(ph.mode)} <strong>{ph.targetName}</strong>{' '}
           <span className="rm-weapon">({healSubtitleLabel(ph.difficulty)})</span>
         </>
       }
