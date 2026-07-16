@@ -512,7 +512,7 @@ Une chanson de marin affecte un équipage entier. Le Personnage doit trouver un 
 
 La liste des chansons utilisables via le Talent **Chanson de marin** (`MDG 09 l.218-248`).
 > « Les Chansons de marins ne sont pas des actes de vénération en tant que tels et aucun pouvoir divin ne se manifeste quand quelqu'un les entonne. Elles sont subtiles et nécessitent la participation de l'équipage du navire […] pour fonctionner. »
-> — `MDG 09 l.220`
+> — `MDG 09 l.224`
 
 | Chanson | Effet RAW |
 |---|---|

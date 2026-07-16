@@ -29,5 +29,6 @@ jobs:
       - run: npm run raw:reconcile
       - run: npm run test:raw
       - run: npm run raw:check-refs
+      - run: npm run raw:reanchor
       - run: npm --prefix server ci
       - run: npm --prefix server run typecheck

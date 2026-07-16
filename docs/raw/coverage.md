@@ -152,7 +152,7 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | TROIS EXPÉDITIONS | ✅ | 7 (combat.md ×5) |
-| 02 | Griffon | ✅ | 3 (combat.md ×2) |
+| 02 | Griffon | ✅ | 3 (combat.md ×3) |
 | 03 | Dragon | ✅ |  |
 | 04 | « L'abominable » Halagrundsor | ✅ |  |
 | 05 | Amibe | ✅ |  |
@@ -163,7 +163,7 @@
 | 10 | Macareux à bec tranchant | ✅ |  |
 | 11 | Chat sauvage | ✅ |  |
 | 12 | Il Potente Granchio | ✅ |  |
-| 13 | Sirène | ✅ | 5 (combat.md ×3) |
+| 13 | Sirène | ✅ | 3 (combat.md ×2) |
 | 14 | Expéditions prévues | ✅ | 22 (combat.md ×21) |
 
 ## Middenheim — ✅ 5 · 🟡 0 · ⬜ 0

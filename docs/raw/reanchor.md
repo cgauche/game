@@ -1,11 +1,12 @@
 # Atlas RAW — Ré-ancrage des citations
 
-> Déterministe (`node scripts/raw/reanchor.mjs` ; `--apply` réécrit les dérives HIGH).
+> Déterministe (`node scripts/raw/reanchor.mjs` ; `--apply` réécrit les dérives HIGH). GATE (#434) :
+> exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-> (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
-**Bilan : ✅ 374 · 🔧 1 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 42 introuvables · ➖ 2613 synthèses** (⛔ 11 hors-fichier · ⚠️ 0 sans source) sur 3041 réfs · 417 citations · 28 fiches.
+**Bilan : ✅ 375 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 42 introuvables · ➖ 2613 synthèses** (⛔ 11 hors-fichier · ⚠️ 0 sans source) sur 3041 réfs · 417 citations · 28 fiches.
 
+> (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
 ## activites.md
 
@@ -38,7 +39,6 @@
 | `LDB 06 l.18-19` | ⛔ PAST-EOF | l.18 > 6 lignes |
 | `LDB 06 l.14-24` | ⛔ PAST-EOF | l.14 > 6 lignes |
 | `LDB 07 l.84` | ❌ LOW | « gagner de l'argent… » — aucune occurrence |
-| `MDG 09 l.220` | 🔧 DRIFT | « les chansons de marins ne sont pas des actes d… » → l.224 |
 
 ## combat.md
 
