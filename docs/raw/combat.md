@@ -5681,7 +5681,7 @@ Les ogres forgent et utilisent leurs **propres armes et armures**, distinctes de
 
 Le topic [armes-melee-tables] écarte explicitement ces armes (« relèvent de l'équipement de créature, hors périmètre de cette entrée ») ; cette entrée les transcrit verbatim, à l'instar des tables d'armes d'Aux Armes / Zoo Impérial déjà rattachées au domaine Combat.
 
-> « Attention : il s'agit d'armes réservées aux ogres, les points d'Encombrement n'ont donc pas besoin d'être doublés comme pour les autres Possessions (voir p. 31). Inutile de préciser que ces armes sont pratiquement inutilisables entre les mains des créatures de Taille Moyenne et que la plupart des Petites créatures auront même du mal à les soulever. » — `ADE II 02 l.605`
+> « Attention : il s'agit d'armes réservées aux ogres, les points d'Encombrement n'ont donc pas besoin d'être doublés comme pour les autres Possessions (voir p. 31). Inutile de préciser que ces armes sont pratiquement inutilisables entre les mains des créatures de Taille Moyenne et que la plupart des Petites créatures auront même du mal à les soulever. » — `ADE II 02 l.604`
 
 À noter sur les versions « taille ogre » des armes ordinaires (≠ armes propres ci-dessous) : elles n'ont pas d'effets supplémentaires hormis leur poids, « si ce n'est qu'elles peuvent potentiellement acquérir les Atouts Dévastatrice et Percutante en plus d'augmenter les dégâts contre les Petites créatures » ([ADE II 02 l.602]).
 
@@ -5777,9 +5777,9 @@ Un ogre subit **-20 à tous les Tests** lorsqu'il tente d'utiliser des possessio
 - `ADE II 02 l.698-704` — Description des armures (seule la pansière vise la protection ; anatomie ogre).
 - `ADE II 02 l.707-711` — Un Lourd Fardeau : versions « taille ogre » (Enc. ×2, prix ×2, port ×2, dose poison ×2, -20 hors-taille).
 
-> « Toutefois, il est suffisamment solide pour servir d'arme simple et ne se brise qu'en cas de Maladresse. » — `ADE II 02 l.692` (Pistolet ogre)
+> « Toutefois, il est suffisamment solide pour servir d'arme simple et ne se brise qu'en cas de Maladresse. » — `ADE II 02 l.691` (Pistolet ogre)
 
-> « Le poing de fer est solidement fixé à celui de l'ogre, de sorte qu'il ne pourra pas en être désarmé. » — `ADE II 02 l.696`
+> « Le poing de fer est solidement fixé à celui de l'ogre, de sorte qu'il ne pourra pas en être désarmé. » — `ADE II 02 l.695`
 
 **Voir aussi** : armes-melee-tables ; armes-distance-munitions-tables ; armures-tables ; atouts-defauts-armes ; ogres-regles-de-taille (Frappe Mortelle / Peur / Désengagement)
 
