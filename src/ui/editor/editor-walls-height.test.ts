@@ -92,6 +92,13 @@ describe('editorState — sélection + structure d’une arête-mur', () => {
     expect(s.walls![0]).toEqual({ x: 2, y: 2, side: 'E' });
   });
 
+  it('patchWall : assigne un climb (LDB 15 l.52-57), survit à la normalisation (#505)', () => {
+    let s = patchWall(withWall(), 2, 2, 'E', 0, { climb: { kind: 'surface', difficulty: 'difficile' } });
+    expect(s.walls![0]).toEqual({ x: 2, y: 2, side: 'E', climb: { kind: 'surface', difficulty: 'difficile' } });
+    s = patchWall(s, 2, 2, 'E', 0, { climb: undefined });
+    expect(s.walls![0]).toEqual({ x: 2, y: 2, side: 'E' });
+  });
+
   it('deleteSel : retire l’arête-mur sélectionnée', () => {
     const s = deleteSel(withWall(), { type: 'wall', x: 2, y: 2, side: 'E', z: 0 });
     expect(s.walls ?? []).toHaveLength(0);

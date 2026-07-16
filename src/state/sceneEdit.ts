@@ -117,6 +117,7 @@ function normWall(w: WallSeg): WallSeg {
   if (w.door && w.closed) out.closed = true;
   if (w.structure) out.structure = w.structure;
   if (w.window) out.window = true; // fenêtre décorative (champ significatif : préservé au patch)
+  if (w.climb) out.climb = w.climb;
   return out;
 }
 

@@ -102,12 +102,16 @@ describe('buildScene — murs d’arête explicites', () => {
       { x: 1, y: 1, side: 'N' },
       { x: 1, y: 1, side: 'E', door: true },
       { x: 0, y: 0, side: 'N', structure: 'porte-de-ville' },
+      { x: 2, y: 0, side: 'N', climb: { kind: 'surface', difficulty: 'difficile' } },
     ],
   });
   it('pose cloisons, portes et structures brèchables', () => {
     expect(edgeWallState(s, 1, 1, 'N')).toBe('wall');
     expect(edgeWallState(s, 1, 1, 'E')).toBe('door');
     expect(s.walls!.find((w) => w.x === 0 && w.y === 0 && w.side === 'N')!.structure).toBe('porte-de-ville');
+  });
+  it('pose une arête escaladable (#505)', () => {
+    expect(s.walls!.find((w) => w.x === 2 && w.y === 0 && w.side === 'N')!.climb).toEqual({ kind: 'surface', difficulty: 'difficile' });
   });
 });
 

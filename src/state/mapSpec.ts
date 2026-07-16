@@ -29,6 +29,7 @@ import type {
   EncounterDef,
   SceneStationAnchor,
   VictoryCondition,
+  WallClimb,
 } from './scene';
 import { emptyScene } from './scene';
 import type { Flow } from './flow';
@@ -82,6 +83,9 @@ export interface WallSpec {
   structure?: string;
   /** DÉCORATIF : l'arête porte une fenêtre au rendu (mur plein serti d'une vitre — ne change pas le combat). */
   window?: boolean;
+  /** ESCALADABLE (LDB 15 l.52-57, cf. `WallSeg.climb`) : l'arête sépare deux surfaces de hauteurs
+   *  différentes, franchissable en grimpant plutôt qu'à pied. */
+  climb?: WallClimb;
 }
 
 /** Spec de relief EN COORDONNÉES (repli bas niveau ; préférer `elevate` piloté par l'ASCII) : boîte
@@ -405,9 +409,9 @@ export function buildScene(spec: MapSpec): Scene {
       s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);
     } else {
       s = setEdgeWall(s, wall.x, wall.y, wall.side, z, wall.door ? 'door' : 'wall');
-      if (wall.structure || wall.window) {
+      if (wall.structure || wall.window || wall.climb) {
         const c = canonEdge(wall.x, wall.y, wall.side);
-        s = patchWall(s, c.x, c.y, c.side, z, { ...(wall.structure ? { structure: wall.structure } : {}), ...(wall.window ? { window: true } : {}) });
+        s = patchWall(s, c.x, c.y, c.side, z, { ...(wall.structure ? { structure: wall.structure } : {}), ...(wall.window ? { window: true } : {}), ...(wall.climb ? { climb: wall.climb } : {}) });
       }
     }
   }

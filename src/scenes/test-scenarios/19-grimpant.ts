@@ -23,14 +23,13 @@ const scene = buildScene({
   size: [10, 10],
   terrain: 'herbe',
   relief: [{ rect: [0, 0, 9, 2], height: 4 }], // plateau (rangées y=0..2, 4 m) — reste du sol à 0 m
+  // Arête grimpable (Trait Grimpant, LDB 85 l.160-162) : SEULE l'arête N de (5,3) (pied du plateau).
+  walls: [{ x: 5, y: 3, side: 'N', climb: { kind: 'surface' } }],
   heroStart: [5, 1], // le Chasseur, sur le plateau, hors d'atteinte au sol
   startMessage:
     "Vous tenez le plateau : l'araignée géante, en contrebas, ne peut vous rejoindre qu'en escaladant " +
     "l'unique paroi praticable (Trait Grimpant : elle grimpe sans effort, à pleine vitesse).",
 });
-// Arête grimpable (Trait Grimpant, LDB 85 l.160-162) — posée APRÈS `buildScene` (déclaratif `WallSpec`
-// sans `climb`, cf. `docs/raw/combat.md`) : SEULE l'arête N de (5,3) (pied du plateau) porte la grimpe.
-scene.walls = [...(scene.walls ?? []), { x: 5, y: 3, side: 'N', climb: { kind: 'surface' } }];
 setEncounters(scene, [
   { id: 'enc-grimpant', enemies: [{ ref: 'araignee-geante', pos: { x: 5, y: 8 }, facing: 'N' }] },
 ]);
