@@ -27,7 +27,7 @@ import { describeTestRoll } from '../../engine/ops';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
 import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatOrParty';
-import { reconcileAdvantageToPool, campSpend } from './advantagePool';
+import { reconcileAdvantageToPool, creditOpposingAdvantage, campSpend } from './advantagePool';
 import { mountMovement, riderFearSize } from '../mount';
 import { losClear } from '../lineOfSight';
 import { smokeOf } from '../combatGeometry';
@@ -63,12 +63,15 @@ export function fireTurnEndTriggers(get: Get, set: SetFn, c: Combatant | undefin
 }
 
 /** Point UNIQUE de déclenchement des effets de bord de tour (début/fin) — kind agnostique, journalisé
- *  en `detail`, no-op hors d'action. Inerte tant qu'aucune donnée ne porte l'effet correspondant. */
+ *  en `detail`, no-op hors d'action. Inerte tant qu'aucune donnée ne porte l'effet correspondant.
+ *  `onTurnStart` seul fournit `onOpposingAdvantage` (Redoutable AA, `MDG 16 l.13`) : l'op `gainAdvantage`
+ *  du porteur y appelle `creditOpposingAdvantage`, self-gardée `groupAdvantage()`. */
 function fireTurnEdgeTriggers(get: Get, set: SetFn, c: Combatant | undefined, trigger: 'onTurnStart' | 'onTurnEnd'): void {
   if (!c || isOutOfAction(c)) return;
   const battle = get().battle;
   if (!battle) return;
-  for (const line of fireTriggers(get, c, trigger, { rng: battleRng(), set })) battle.log.push(ev('detail', line, c.id));
+  const onOpposingAdvantage = trigger === 'onTurnStart' ? (n: number) => creditOpposingAdvantage(get, c, n) : undefined;
+  for (const line of fireTriggers(get, c, trigger, { rng: battleRng(), set, onOpposingAdvantage })) battle.log.push(ev('detail', line, c.id));
 }
 
 // ============================================================================================

@@ -2231,7 +2231,8 @@
               "ops": [
                 {
                   "op": "gainAdvantage",
-                  "amount": "$indice"
+                  "amount": "$indice",
+                  "feedOpposingPool": true
                 }
               ]
             }

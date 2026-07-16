@@ -457,7 +457,7 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 **Voir aussi** : [Avantage permanent — Trait *Redoutable* (Grim) (ZI)](combat.md#avantage-permanent--trait-redoutable-grim-zi) — `combat.md` ; Avantage de groupe (AA) — `combat.md`.
 
 **Implémente** :
-- `src/data/traits.json` (`redoutable`, desc verbatim — la clause AA l.13 y est appendue) : le regain d'Avantage début de tour EST câblé (`effects` `onTurnStart` → op `gainAdvantage`, gardé Empêtré/Surpris). La clause AA d'Avantage de groupe n'est pas modélisée (non implémenté).
+- `src/data/traits.json` (`redoutable`, desc verbatim — la clause AA l.13 y est appendue) : le regain d'Avantage début de tour EST câblé (`effects` `onTurnStart` → op `gainAdvantage{feedOpposingPool:true}`, gardé Empêtré/Inconscient/Surpris par le nœud `if` englobant). Clause AA d'Avantage de groupe : `src/engine/ops.ts` (`OpsCtx.onOpposingAdvantage`, case `gainAdvantage`) appelle le callback QUAND l'op s'exécute (le garde-fou de la donnée gate NATURELLEMENT la clause) ; fourni par `src/state/combat/advantagePool.ts` (`creditOpposingAdvantage`, self-gardée `groupAdvantage()`) via `src/state/combat/turnHooks.ts` (`fireTurnEdgeTriggers`, `onTurnStart`).
 
 ## Bilan de fidélité
 

@@ -377,6 +377,7 @@ export const fr = {
   'turn.psychSuperseded': '{name} : {psych} cède devant un effet psychologique plus fort.',
   'turn.rageEnter': '{name} entre dans une rage dévorante (Frénésie) !',
   'turn.rageHate': '{name} enrage : son Avantage devient Haine ({cible}).',
+  'turn.redoutableOpposingFeed': '{name} (Redoutable) génère {n} Avantage(s) pour la réserve adverse.',
   // ── Phase C : narration de manœuvres de créature (state/combatManeuvers). ──
   'manv.trigger': '{name} déclenche {label} !',
   'manv.resists': '{name} résiste.',

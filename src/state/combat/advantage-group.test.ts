@@ -1,17 +1,24 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { campGain, campSpend, spendableAdvantage, reversalStealOne, reconcileAdvantageToPool, roundEndAdvantageTransfer, startAdvantagePools } from './advantagePool';
+import { campGain, campSpend, spendableAdvantage, reversalStealOne, reconcileAdvantageToPool, creditOpposingAdvantage, roundEndAdvantageTransfer, startAdvantagePools } from './advantagePool';
+import { fireTurnStartTriggers } from './turnHooks';
 import { setRule, resetRule } from '../../engine/policy';
 import { baseTestMods } from '../../engine/combat';
 import type { Combatant } from '../../engine/types';
 import type { AdvantagePools } from '../../engine/advantagePool';
 
 const mk = (id: string, kind: Combatant['kind'], over: Partial<Combatant> = {}): Combatant =>
-  ({ id, name: id, kind, advantage: 0, conditions: [], talents: [], activeEffects: [], wounds: { current: 10, max: 10, base: 10 }, ...over }) as unknown as Combatant;
+  ({
+    id, name: id, kind, advantage: 0, conditions: [], talents: [], activeEffects: [], groups: [],
+    wounds: { current: 10, max: 10, base: 10 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 35, agilite: 40, dexterite: 45, intelligence: 40, 'force-mentale': 45, sociabilite: 30 },
+    skills: [], weapons: [], items: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    ...over,
+  }) as unknown as Combatant;
 
-interface FakeBattle { combatants: Combatant[]; advantagePools?: AdvantagePools }
+interface FakeBattle { combatants: Combatant[]; advantagePools?: AdvantagePools; log: unknown[] }
 const makeGet = (combatants: Combatant[], advantagePools?: AdvantagePools) => {
-  const battle: FakeBattle = { combatants, advantagePools };
-  return { get: (() => ({ battle })) as never, battle };
+  const battle: FakeBattle = { combatants, advantagePools, log: [] };
+  return { get: (() => ({ battle })) as never, set: (() => {}) as never, battle };
 };
 
 afterEach(() => resetRule('combat-aa-avantage-groupe'));
@@ -172,6 +179,77 @@ describe('roundEndAdvantageTransfer — domination de fin de Round (AA l.4146)',
     expect(battle.advantagePools).toEqual({ allies: 2, foes: 1 }); // alliés majoritaires (2 c.1)
     expect(combatants[0].advantage).toBe(2); // projection alliés
     expect(combatants[2].advantage).toBe(1); // projection adverses
+  });
+});
+
+describe('creditOpposingAdvantage — fournisseur ctx.onOpposingAdvantage (Redoutable AA, MDG 16 l.13)', () => {
+  it('mode groupe : crédite la réserve ADVERSE de `n` et re-projette', () => {
+    setRule('combat-aa-avantage-groupe', true);
+    const a = mk('h1', 'hero');
+    const e = mk('e1', 'enemy', { advantage: 3 }); // l'op appelante venait d'écrire cette projection AVANT de créditer l'adverse
+    const { get, battle } = makeGet([a, e], { allies: 0, foes: 3 });
+    creditOpposingAdvantage(get, e, 3);
+    expect(battle.advantagePools).toEqual({ allies: 3, foes: 3 }); // + Indice (3) côté alliés (camp OPPOSÉ de la créature)
+    expect(a.advantage).toBe(3);
+  });
+
+  it('hors mode groupe : no-op (pas de réserve — la clause n’existe QUE sous les règles AA)', () => {
+    const a = mk('h1', 'hero');
+    const e = mk('e1', 'enemy');
+    const { get, battle } = makeGet([a, e]);
+    creditOpposingAdvantage(get, e, 3);
+    expect(battle.advantagePools).toBeUndefined();
+    void a;
+  });
+
+  it('n ≤ 0 : no-op', () => {
+    setRule('combat-aa-avantage-groupe', true);
+    const e = mk('e1', 'enemy');
+    const { get, battle } = makeGet([e], { allies: 0, foes: 0 });
+    creditOpposingAdvantage(get, e, 0);
+    expect(battle.advantagePools).toEqual({ allies: 0, foes: 0 });
+  });
+});
+
+describe('Redoutable — clause AA bout-en-bout (op gainAdvantage{feedOpposingPool} → ctx.onOpposingAdvantage, via fireTurnStartTriggers)', () => {
+  it('début de tour : regain propre jusqu’à l’Indice + génération PLEINE pour la réserve adverse', () => {
+    setRule('combat-aa-avantage-groupe', true);
+    const a = mk('h1', 'hero');
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 0 });
+    const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 0 });
+    fireTurnStartTriggers(get, set, e);
+    expect(e.advantage).toBe(3); // regain propre (op gainAdvantage) jusqu'à l'Indice
+    expect(battle.advantagePools).toEqual({ allies: 3, foes: 3 }); // + Indice plein côté alliés (camp OPPOSÉ)
+    expect(a.advantage).toBe(3); // projection
+  });
+
+  it('garde-fou Empêtré/Inconscient/Surpris (MDG 16 l.11) : op gatée par la donnée → RIEN ne part au camp adverse, MÊME avec Avantage déjà plein (le cas que le proxy `c.advantage >= indice` ratait)', () => {
+    setRule('combat-aa-avantage-groupe', true);
+    const a = mk('h1', 'hero');
+    // Avantage déjà À l'Indice (le proxy `c.advantage >= indice` aurait crédité la réserve adverse ici).
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 3, conditions: [{ name: 'surpris', value: 1 }] });
+    const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 3 });
+    fireTurnStartTriggers(get, set, e);
+    expect(e.advantage).toBe(3); // inchangé (Surpris bloque le regain, déjà à l'Indice de toute façon)
+    expect(battle.advantagePools).toEqual({ allies: 0, foes: 3 }); // RIEN n'est parti côté alliés — la garde gate NATURELLEMENT la clause
+  });
+
+  it('hors mode groupe : aucune réserve créée (non-régression)', () => {
+    const a = mk('h1', 'hero');
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 0 });
+    const { get, set, battle } = makeGet([a, e]);
+    fireTurnStartTriggers(get, set, e);
+    expect(e.advantage).toBe(3); // regain propre per-combattant (LDB), toujours câblé
+    expect(battle.advantagePools).toBeUndefined();
+  });
+
+  it('créature sans Trait Redoutable : no-op', () => {
+    setRule('combat-aa-avantage-groupe', true);
+    const a = mk('h1', 'hero');
+    const e = mk('e1', 'enemy', { advantage: 3 });
+    const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 3 });
+    fireTurnStartTriggers(get, set, e);
+    expect(battle.advantagePools).toEqual({ allies: 0, foes: 3 });
   });
 });
 

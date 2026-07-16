@@ -414,8 +414,13 @@ export type GameOp =
    *  par +2 DR ». */
   | { op: 'gainResource'; resource: 'fortune' | 'fate'; amount: number; perSL?: PerSL; temporary?: boolean }
   /** Porte l'Avantage de la cible à AU MOINS `amount` (jamais réduit). Trait Redoutable (ZI) : au début
-   *  de son tour, la créature complète ses Avantages jusqu'à son *Indice* (`amount: '$indice'` baké). */
-  | { op: 'gainAdvantage'; amount: Formula }
+   *  de son tour, la créature complète ses Avantages jusqu'à son *Indice* (`amount: '$indice'` baké).
+   *  `feedOpposingPool` : clause d'Avantage de groupe (AA) du Trait Redoutable (`MDG 16 l.13`) — QUAND
+   *  cette op S'EXÉCUTE (le garde-fou Empêtré/Inconscient/Surpris, MDG 16 l.11, vit dans le nœud `if`
+   *  englobant de la donnée — jamais revérifié ici), la créature génère EN PLUS l'Indice PLEIN (`amount`
+   *  résolu, pas le seul manquant) pour la réserve adverse, via `ctx.onOpposingAdvantage` (même patron que
+   *  `ctx.onCorruption`) — consommé kind-agnostiquement par la couche state (`state/combat/advantagePool.ts`). */
+  | { op: 'gainAdvantage'; amount: Formula; feedOpposingPool?: boolean }
   /** Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
    *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
@@ -956,6 +961,11 @@ export interface OpsCtx {
   /** Gain de Corruption AVEC seuil → mutation (corruptionFlow) ; sans contexte
    *  store, l'op `corruption` incrémente simplement le compteur. */
   onCorruption?: (n: number, align?: ChaosAlign) => string[];
+  /** Clause d'Avantage de groupe (AA) du Trait Redoutable (`MDG 16 l.13`) : branché par le store
+   *  (`state/combat/advantagePool.ts` `creditOpposingAdvantage`, fourni par `turnHooks.fireTurnEdgeTriggers`
+   *  pour `onTurnStart`) sur l'op `gainAdvantage{feedOpposingPool:true}` — crédite `n` (l'Indice PLEIN) à la
+   *  réserve du camp OPPOSÉ. Sans contexte (moteur pur/tests, hors mode groupe), la clause est inerte. */
+  onOpposingAdvantage?: (n: number) => string[];
   /** ARME du coup courant — quand un `op:'wounds' { weaponHit:true }` résout les Blessures comme un coup
    *  d'arme (`woundsFromHit` : qualités + armure à `location` + BE). Posé par le routeur d'attaque (S4) et
    *  par les effets d'AIRE d'une arme (munitions). Absent → l'op reste en mode Formula. */
@@ -1099,6 +1109,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Porte l'Avantage à AU MOINS `amount` (jamais réduit) — Redoutable complète jusqu'à l'Indice.
         const want = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks));
         if ((target.advantage ?? 0) < want) { target.advantage = want; lines.push(t('op.gainAdvantage', { name: target.name, n: want })); }
+        // Clause AA Redoutable (MDG 16 l.13) : l'op S'EXÉCUTE ⇒ le garde-fou de la donnée (empetre/
+        // inconscient/surpris, dans le nœud `if` englobant) est déjà franchi — l'Indice PLEIN part EN
+        // PLUS pour la réserve adverse, indépendamment de si `target.advantage` avait déjà atteint `want`.
+        if (o.feedOpposingPool) lines.push(...(ctx.onOpposingAdvantage?.(want) ?? []));
         break;
       }
       case 'condition': {

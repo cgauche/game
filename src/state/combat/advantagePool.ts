@@ -14,6 +14,7 @@ import {
   initialAdvantagePools, type AdvantageCamp, type AdvantagePools, type InitialAdvantageCircumstances,
 } from '../../engine/advantagePool';
 import { advantageTransferWeight } from '../../engine/combatFeatures/dispatch';
+import { t } from '../../i18n';
 import type { EncounterDef } from '../scene';
 
 /** Réserve courante de la bataille (créée à la volée si absente). */
@@ -106,6 +107,38 @@ export function reconcileAdvantageToPool(get: Get, c: Combatant): void {
     pools[camp] = Math.max(0, c.advantage);
     mirrorPools(pools, battle.combatants);
   }
+}
+
+/**
+ * Fournisseur de `OpsCtx.onOpposingAdvantage` (`engine/ops.ts`, même patron que `onCorruption`) pour la
+ * clause d'Avantage de groupe (AA) du Trait *Redoutable* (`MDG 16 l.13`) : « la créature génère un nombre
+ * d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires. »
+ * Branché par `turnHooks.fireTurnEdgeTriggers` sur le trigger `onTurnStart` ; appelé par l'op
+ * `gainAdvantage{feedOpposingPool:true}` (traits.json `redoutable`) SEULEMENT quand elle S'EXÉCUTE — le
+ * garde-fou Empêtré/Inconscient/Surpris (MDG 16 l.11, même effet) vit dans le nœud `if` englobant de la
+ * donnée, jamais reproduit ici (KIND-AGNOSTIQUE : aucun scan de Traits, aucun proxy sur `c.advantage`).
+ * `n` = l'Indice PLEIN déjà résolu par l'op appelante. Crédite la réserve du camp OPPOSÉ de `c`, re-projette,
+ * et journalise. Self-gardé par `groupAdvantage()` (la clause n'existe QUE sous les règles d'Avantage de
+ * groupe d'AA), comme les autres primitives de ce module (`campGain`/`campSpend`/…).
+ *
+ * ORDRE : appelée PENDANT le même `applyOps` que le regain propre — l'op vient d'écrire `c.advantage`
+ * DIRECTEMENT (projection), AVANT que `reconcileAdvantageToPool` (appelé APRÈS par `turnHooks`) n'ait pu
+ * relever la réserve du CAMP DE `c` en conséquence. Sans ce rattrapage, `mirrorPools` re-projetterait ici
+ * l'ancienne valeur de la réserve du camp de `c` PAR-DESSUS l'écriture directe qui vient d'avoir lieu —
+ * on reconcilie donc la réserve du camp de `c` AVANT de créditer la réserve adverse (même logique que
+ * `reconcileAdvantageToPool`, inlinée pour ne pas dépendre de l'ordre d'appel de l'appelant).
+ */
+export function creditOpposingAdvantage(get: Get, c: Combatant, n: number): string[] {
+  if (n <= 0) return [];
+  const battle = get().battle;
+  if (!groupAdvantage() || !battle) return [];
+  const pools = poolsOf(battle);
+  const own = advantageCampOf(c);
+  if (c.advantage !== pools[own]) pools[own] = Math.max(0, c.advantage ?? 0);
+  const opposing: AdvantageCamp = own === 'allies' ? 'foes' : 'allies';
+  addToPool(pools, opposing, n);
+  mirrorPools(pools, battle.combatants);
+  return [t('turn.redoutableOpposingFeed', { name: c.name, n })];
 }
 
 /**
