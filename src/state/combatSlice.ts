@@ -55,7 +55,7 @@ import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
-import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, healDifficulty, type HealMode } from '../engine/healing';
+import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, resolveExtractLodgedAmmo, healDifficulty, type HealMode } from '../engine/healing';
 import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
@@ -2671,10 +2671,12 @@ export function createCombatSlice(get: Get, set: Set) {
         const r = resolveWoundsHeal(target, ph.intBonus, ph.sl, ph.success, battleRng());
         log = r.log;
         if (r.healed > 0) bus.emit(EVT.ANIM_FLOAT, { to: target.id, text: `+${r.healed}`, kind: 'heal' }); // flottant de soin (R8)
+      } else if (ph.mode === 'bleed') {
+        log = resolveBleedHeal(target, ph.sl, ph.success);
+      } else if (ph.mode === 'ammo') {
+        log = resolveExtractLodgedAmmo(target, ph.success); // LDB 62 l.250 — Test de Guérison Intermédiaire
       } else {
-        log = ph.mode === 'bleed'
-          ? resolveBleedHeal(target, ph.sl, ph.success)
-          : treatTrauma(target, ph.sl, ph.success); // mode 'trauma' — l'échec consomme aussi le jet (LDB 18 l.317)
+        log = treatTrauma(target, ph.sl, ph.success); // mode 'trauma' — l'échec consomme aussi le jet (LDB 18 l.317)
       }
       // Compétence Guérison RÉUSSIE = Aide Médicale (LDB 18 l.308) : lève l'escalade en attente (« Main
       // ouverte » : plus de doigt perdu par Round) ET les verrous d'État « par Aide Médicale » (LDB 18 :

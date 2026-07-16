@@ -10,7 +10,7 @@ import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { isHealable, type HealMode } from '../engine/healing';
+import { isHealable, lodgedAmmoCount, type HealMode } from '../engine/healing';
 import { hasTreatableTrauma, hasSurgeryTrauma, surgeryTraumas, recoverableTraumas, hasLimbAwaitingAid } from '../engine/trauma';
 import { bestHealerFor } from '../state/medicFlow';
 import { toMoney } from '../engine/money';
@@ -23,6 +23,7 @@ const ACT_META: Record<HealMode, { icon: ReactNode; label: string }> = {
   trauma: { icon: <Icon id="medical/tear" size="sm" />, label: 'Soigner la déchirure' },
   surgery: { icon: <Icon id="medical/scalpel" size="sm" />, label: 'Opérer' },
   recovery: { icon: <Icon id="medical/crutch" size="sm" />, label: 'Rééduquer un membre' },
+  ammo: { icon: <Icon id="item/ammo" size="sm" />, label: 'Retirer une munition' },
 };
 
 /** Pourquoi un acte est grisé — affiché en title (info de décision, pas de texte tuto). */
@@ -44,6 +45,8 @@ function actBlockReason(patient: Combatant, act: HealMode, hasSurgeon: boolean):
       if (recoverableTraumas(patient).length) return null;
       if (hasLimbAwaitingAid(patient)) return 'Aide Médicale requise d’abord'; // LDB l.120/179 : « Après application de cette Aide… »
       return 'Aucun membre désactivé à rééduquer';
+    case 'ammo':
+      return lodgedAmmoCount(patient) > 0 ? null : 'Aucune munition logée';
   }
 }
 
@@ -142,7 +145,7 @@ export function MedicModal() {
 
   // Les actes proposés : ceux du PNJ (tarifés) ou les 4 actes du groupe — grisés avec leur raison.
   const offers: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[] =
-    npc ? npc.acts : (['wounds', 'bleed', 'trauma', 'surgery', 'recovery'] as HealMode[]).map((a) => ({ act: a }));
+    npc ? npc.acts : (['wounds', 'bleed', 'ammo', 'trauma', 'surgery', 'recovery'] as HealMode[]).map((a) => ({ act: a }));
 
   return (
     <Modal title={npc ? <><Icon id="journal/heal" size="sm" /> Soins — {npc.name}</> : <><Icon id="journal/heal" size="sm" /> Soins</>} variant="plain" className="medic-modal" onClose={busy ? undefined : close}>
@@ -215,7 +218,8 @@ export function MedicModal() {
               const reason = actBlockReason(patient, a, hasSurgeon);
               const healer = npc ? undefined : bestHealerFor(party, a)?.actor;
               const meta = ACT_META[a];
-              const stacks = a === 'bleed' ? (patient.conditions ?? []).find((c) => c.name === 'hemorragique')?.value ?? 0 : 0;
+              const stacks = a === 'bleed' ? (patient.conditions ?? []).find((c) => c.name === 'hemorragique')?.value ?? 0
+                : a === 'ammo' ? lodgedAmmoCount(patient) : 0;
               return (
                 <button
                   key={a}
@@ -225,7 +229,7 @@ export function MedicModal() {
                   title={reason ?? (npc ? `${npc.name} (Guérison ${npc.skill})` : healer ? `Soigné par ${healer.name}` : 'Aucun soigneur (Compétence Guérison) dans le groupe')}
                 >
                   {meta.icon} {meta.label}
-                  {a === 'bleed' && stacks > 0 ? ` ×${stacks}` : ''}
+                  {(a === 'bleed' || a === 'ammo') && stacks > 0 ? ` ×${stacks}` : ''}
                   {cost && <span className="medic-price"><Coins money={toMoney(cost)} /></span>}
                   {healer && <TeamPortrait combatant={healer} size={20} />}
                 </button>

@@ -3,6 +3,7 @@ import type { Combatant } from './types';
 import {
   hasHealSkill, isHealable, availableHealModes, healableTargets,
   healWoundsDelta, stopBleedOutcome, applyHealWounds, applyStopBleed,
+  lodgedAmmoCount, resolveExtractLodgedAmmo,
 } from './healing';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
@@ -93,5 +94,39 @@ describe('engine/healing — mutateurs', () => {
     applyStopBleed(t, 1); // 1+1 = 2 pions retirés
     expect(t.conditions.find((c) => c.name === 'hemorragique')).toBeUndefined();
     expect(t.conditions.find((c) => c.name === 'extenue')).toBeTruthy();
+  });
+});
+
+describe('engine/healing — Empaleuse : munition logée bloque la Guérison (LDB 62 l.250, #473)', () => {
+  it('lodgedAmmoCount lit le marqueur `munition-logee` (empilable)', () => {
+    expect(lodgedAmmoCount(hero({ conditions: [] }))).toBe(0);
+    expect(lodgedAmmoCount(hero({ conditions: [{ name: 'munition-logee', value: 2 }] }))).toBe(2);
+  });
+
+  it('applyHealWounds : 1 munition logée bloque 1 Blessure de soin (plafond max−1)', () => {
+    const t = hero({ id: 't', wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    applyHealWounds(t, 5); // sans munition : 8+5 → plafonné à 12 ; avec 1 logée : plafonné à 11
+    expect(t.wounds.current).toBe(11);
+  });
+
+  it('applyHealWounds : déjà au plafond (max − munitions logées) → soin bloqué net, message dédié', () => {
+    const t = hero({ id: 't', wounds: { current: 11, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const log = applyHealWounds(t, 5);
+    expect(t.wounds.current).toBe(11); // ne dépasse pas 12 − 1
+    expect(log[0]).toMatch(/munition logée bloque le soin/);
+  });
+
+  it('resolveExtractLodgedAmmo : succès retire 1 munition (Test de Guérison Intermédiaire, LDB 62 l.250)', () => {
+    const t = hero({ id: 't', conditions: [{ name: 'munition-logee', value: 2 }] });
+    resolveExtractLodgedAmmo(t, true);
+    expect(lodgedAmmoCount(t)).toBe(1);
+  });
+
+  it('resolveExtractLodgedAmmo : échec ne retire rien ; aucune munition → message dédié', () => {
+    const t = hero({ id: 't', conditions: [{ name: 'munition-logee', value: 1 }] });
+    resolveExtractLodgedAmmo(t, false);
+    expect(lodgedAmmoCount(t)).toBe(1);
+    const t2 = hero({ id: 't2', conditions: [] });
+    expect(resolveExtractLodgedAmmo(t2, true)[0]).toMatch(/aucune munition/);
   });
 });

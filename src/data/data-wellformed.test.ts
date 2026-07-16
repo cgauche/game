@@ -60,9 +60,10 @@ const TRIGGERED_EFFECT_FIELDS = new Set(
 
 // Fichier DIALECTE compilé (cf. en-tête) : exclu des familles Formule & Refs.
 const MISCAST = 'miscast.json';
-// Marqueur narratif toléré pour `condition.name` : Pétrifié (LDB 85 l.238) n'est PAS un État RAW LDB 16
-// (pas d'entrée `etats.json`, aucun consommateur) — c'est un tag d'arbitrage, pas une ref d'entité.
-const SOFT_CONDITIONS = new Set(['petrifie']);
+// Marqueur narratif toléré pour `condition.name` : Pétrifié (LDB 85 l.238) et Munition logée
+// (Empaleuse, LDB 62 l.250) ne sont PAS des États RAW LDB 16 (pas d'entrée `etats.json`,
+// consommateurs dédiés ailleurs) — ce sont des tags d'arbitrage, pas des refs d'entité.
+const SOFT_CONDITIONS = new Set(['petrifie', 'munition-logee']);
 
 // Champs d'une `GameOp` typés `Formula` (ou `number`, qui passe `isValidFormula`) — au minimum amount/count.
 const FORMULA_FIELDS = [

@@ -80,10 +80,12 @@ export function describeHeal(ph: PendingHeal): string {
   if (ph.roll == null) return '';
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
+  const ammo = ph.mode === 'ammo';
   const preview = wounds ? healWoundsDelta(ph.intBonus, ph.sl, ph.success) : 0;
   if (ph.success) {
     if (wounds) return t('out.healWounds', { name: ph.targetName, n: preview });
     if (trauma) return t('out.healTrauma', { name: ph.targetName, n: 1 + Math.max(0, ph.sl) });
+    if (ammo) return t('out.healAmmo', { name: ph.targetName });
     return t('out.healBleed', { n: 1 + Math.max(0, ph.sl), name: ph.targetName });
   }
   return wounds && ph.intBonus + ph.sl < 0

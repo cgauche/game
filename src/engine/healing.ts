@@ -37,7 +37,7 @@ export function isHealable(c: Combatant): boolean {
 
 /** `recovery` = Test ÉTENDU de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou
  *  démis », LDB l.120/179), après Aide Médicale — hors combat, cf. `medicFlow`. */
-export type HealMode = 'wounds' | 'bleed' | 'trauma' | 'surgery' | 'recovery';
+export type HealMode = 'wounds' | 'bleed' | 'trauma' | 'surgery' | 'recovery' | 'ammo';
 
 /** Modes disponibles pour soigner `target`, compte tenu de la limite « 1 soin de Blessures / rencontre ».
  *  Le mode `trauma` (accélérer la convalescence d'une déchirure, LDB 18 l.317) est hors-combat — les
@@ -51,23 +51,28 @@ export function availableHealModes(target: Combatant): HealMode[] {
   // Récupération d'usage : proposée dès qu'un membre est désactivé (Test étendu de Guérison), MAIS bloquée tant
   // que l'Aide Médicale n'a pas été reçue (`actBlockReason` : « Aide Médicale d'abord », LDB l.120/179).
   if (hasRecoverableTrauma(target) || hasLimbAwaitingAid(target)) modes.push('recovery');
+  // Retrait de munition Empaleuse logée (LDB 62 l.250) : proposé dès qu'au moins une flèche/carreau/balle
+  // reste plantée — même patron que `bleed` (compte de pions → mode). #494 raffinera la distinction
+  // flèches/carreaux (Guérison) vs balles (Chirurgien), non tracée aujourd'hui.
+  if (lodgedAmmoCount(target) > 0) modes.push('ammo');
   return modes;
 }
 
 /** Difficulté du Test de Guérison selon le mode de soin. Blessures : Intermédiaire (+0, LDB 09 l.243)
  *  toujours. Hémorragie : Accessible (+20) en variante `combat-aa-blessures: 'aa'` (Aux Armes 07 l.9,
  *  applicable en et hors combat — le texte ne borne pas au combat), Intermédiaire (+0) sinon
- *  (LDB, comportement par défaut inchangé). SOURCE UNIQUE — combat (`combatSlice`) ET Infirmerie
- *  (`medicFlow`). */
+ *  (LDB, comportement par défaut inchangé). Munition logée : Intermédiaire (+0) toujours (LDB 62
+ *  l.250 — aucune variante AA ne couvre le retrait). SOURCE UNIQUE — combat (`combatSlice`) ET
+ *  Infirmerie (`medicFlow`). */
 export function healDifficulty(mode: HealMode): Difficulty {
   return mode === 'bleed' && rule('combat-aa-blessures') === 'aa' ? 'accessible' : 'intermediaire';
 }
 
-/** Modes de soin applicables EN COMBAT : Blessures + Hémorragie (allow-list explicite ; `trauma`
- *  convalescence et `surgery` chirurgie sont hors-combat). SOURCE UNIQUE — consommée par le ciblage-carte
- *  (mode par défaut) ET le sélecteur de la modale de soin. */
+/** Modes de soin applicables EN COMBAT : Blessures + Hémorragie + retrait de munition logée (allow-list
+ *  explicite ; `trauma` convalescence et `surgery` chirurgie sont hors-combat). SOURCE UNIQUE — consommée
+ *  par le ciblage-carte (mode par défaut) ET le sélecteur de la modale de soin. */
 export function combatHealModes(target: Combatant): HealMode[] {
-  return availableHealModes(target).filter((m) => m === 'wounds' || m === 'bleed');
+  return availableHealModes(target).filter((m) => m === 'wounds' || m === 'bleed' || m === 'ammo');
 }
 
 /** Cibles soignables atteignables par `healer`. En combat : soi + adjacents (Chebyshev ≤ 1).
@@ -96,8 +101,16 @@ export function stopBleedOutcome(dr: number, stacks: number, success: boolean): 
   return { removed, gainExtenue: removed > 0 && removed >= stacks };
 }
 
+/** Munitions Empaleuses logées (LDB 62 l.250, marqueur `munition-logee` posé par l'Atout Empaleuse à
+ *  distance sur Critique — `qualities.json`) : nombre de flèches/carreaux/balles non retirés. */
+export function lodgedAmmoCount(target: Combatant): number {
+  return condStacks(target, 'munition-logee');
+}
+
 /** Applique un soin de Blessures (mutation). Lève l'Inconscient et remet l'horloge de mort à zéro
- *  quand on repasse > 0 PB (LDB 18 l.28). Renvoie un journal. */
+ *  quand on repasse > 0 PB (LDB 18 l.28). Plafonné par les munitions Empaleuses logées : « Chaque
+ *  flèche ou balle non retirée vous empêche de guérir 1 de vos Blessures » (LDB 62 l.250). Renvoie
+ *  un journal. */
 export function applyHealWounds(target: Combatant, delta: number): string[] {
   if (delta < 0) {
     const lost = loseWounds(target, -delta); // perte centralisée (−Avantage + À Terre à 0)
@@ -105,10 +118,14 @@ export function applyHealWounds(target: Combatant, delta: number): string[] {
   }
   if (delta === 0) return [`${target.name} : le soin n'apporte rien.`];
   const before = target.wounds.current;
-  target.wounds.current = Math.min(target.wounds.max, target.wounds.current + delta);
+  const cap = Math.max(before, target.wounds.max - lodgedAmmoCount(target));
+  target.wounds.current = Math.min(cap, before + delta);
   target.soinRencontreUtilise = true; // a bénéficié de SON soin de cette rencontre (LDB 09 l.233)
   target.woundDressed = true; // matériel stérile : « aucune Infection » suite à la blessure (LDB 09 / 18 l.382)
-  const log = [`${target.name} : +${target.wounds.current - before} PB (${target.wounds.current}/${target.wounds.max}).`];
+  const healed = target.wounds.current - before;
+  const log = healed > 0
+    ? [`${target.name} : +${healed} PB (${target.wounds.current}/${target.wounds.max}).`]
+    : [`${target.name} : une munition logée bloque le soin (LDB 62 l.250).`];
   if (target.wounds.current > 0 && hasCondition(target, 'inconscient')) {
     removeCondition(target, 'inconscient', condStacks(target, 'inconscient')); // reprend connaissance (LDB 18 l.28)
     log.push(`${target.name} reprend connaissance.`);
@@ -152,4 +169,15 @@ export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: numbe
 /** SOURCE UNIQUE de l'arrêt d'Hémorragie (Guérison) : applique si réussi, message d'échec sinon. */
 export function resolveBleedHeal(target: Combatant, sl: number, success: boolean): string[] {
   return success ? applyStopBleed(target, sl) : [`${target.name} : l'hémorragie ne cède pas.`];
+}
+
+/** Retrait d'une munition Empaleuse logée (LDB 62 l.250 : « Les flèches et les carreaux nécessitent
+ *  un Test de Guérison Intermédiaire pour être retirés »). Un succès retire 1 munition (`munition-logee`,
+ *  la plus ancienne pion) ; un échec ne retire rien. */
+export function resolveExtractLodgedAmmo(target: Combatant, success: boolean): string[] {
+  const before = lodgedAmmoCount(target);
+  if (before <= 0) return [`${target.name} : aucune munition logée à retirer.`];
+  if (!success) return [`${target.name} : la munition logée résiste au retrait.`];
+  removeCondition(target, 'munition-logee', 1);
+  return [`${target.name} : 1 munition logée retirée (${before - 1} restante(s)).`];
 }

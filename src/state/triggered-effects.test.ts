@@ -58,6 +58,21 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     expect(hemo(foe)?.value).toBe(1);
   });
 
+  it('ATOUT Empaleuse : Critique à DISTANCE pose 1 munition logée (marqueur, LDB 62 l.250, #473) ; PAS en mêlée', () => {
+    const archer = mk({ id: 'ar' });
+    const foe = mk({ id: 'fo' });
+    const logee = (c: Combatant) => c.conditions.find((x) => x.name === 'munition-logee');
+    const arc: Weapon = { name: 'Arc long', type: 'ranged', damage: { plusBF: false, flat: 4 }, qualities: [{ id: 'empaleuse' }] } as Weapon;
+    fireTriggers(noBattle(), archer, 'onCrit', { victim: foe, weapon: arc, attackType: 'ranged' });
+    expect(logee(foe)?.value).toBe(1);
+    fireTriggers(noBattle(), archer, 'onCrit', { victim: foe, weapon: arc, attackType: 'ranged' }); // 2e flèche → empile
+    expect(logee(foe)?.value).toBe(2);
+    const lance: Weapon = { name: 'Lance de Taillade empaleuse', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'empaleuse' }] } as Weapon;
+    const melee = mk({ id: 'me' });
+    fireTriggers(noBattle(), archer, 'onCrit', { victim: melee, weapon: lance, attackType: 'melee' });
+    expect(logee(melee)).toBeUndefined(); // « Si l'empalement vient d'une arme à DISTANCE » — mêlée = rien
+  });
+
   it('déjà Empêtré → pas de re-application (unlessCondition)', () => {
     const spider = mk({ traits: [{ id: 'toile' }] });
     const prey = mk({ conditions: [{ name: 'empetre', value: 2 }] });

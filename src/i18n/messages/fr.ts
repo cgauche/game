@@ -431,6 +431,7 @@ export const fr = {
   'out.healWounds': '{name} récupère {n} PB.',
   'out.healTrauma': 'Convalescence de {name} raccourcie de {n} jour(s).',
   'out.healBleed': "{n} pion(s) d'Hémorragie stoppé(s) sur {name}.",
+  'out.healAmmo': '{name} : une munition logée est retirée.',
   'out.healHarm': 'Le soin blesse {name} ({n} PB).',
   'out.healNone': 'Le soin de {name} reste sans effet.',
 

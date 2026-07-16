@@ -1289,7 +1289,7 @@ export interface PendingHeal {
   healerName: string;
   targetId: string;
   targetName: string;
-  mode: HealMode; // 'wounds' | 'bleed' | 'trauma' (jamais 'surgery' — cf. medicFlow)
+  mode: HealMode; // 'wounds' | 'bleed' | 'trauma' | 'ammo' (jamais 'surgery'/'recovery' — cf. medicFlow)
   intBonus: number; // Bonus d'Intelligence du soigneur
   skillValue: number; // testValue(soigneur, 'Guérison')
   difficulty: Difficulty; // 'intermediaire' (+0, LDB 09 l.243)

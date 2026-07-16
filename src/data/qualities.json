@@ -175,6 +175,26 @@
         "mod": 10,
         "equals": 0
       }
+    ],
+    "effects": [
+      {
+        "trigger": "onCrit",
+        "on": "victim",
+        "attackType": "ranged",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "munition-logee"
+              }
+            ]
+          }
+        }
+      }
     ]
   },
   {

@@ -41,6 +41,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
 
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
+  const ammo = ph.mode === 'ammo';
   // Surface UNIQUE du soin en combat : on a ciblé l'allié sur la carte (mode par défaut) ; si plusieurs
   // soins s'appliquent à lui (Blessures ET Hémorragie), on choisit ICI, avant le jet. L'infirmerie
   // (embedded) garde son propre choix d'acte → pas de seg.
@@ -48,6 +49,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
     ? combatHealModes(target)
     : [];
   const bleed = target?.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
+  const lodged = target?.conditions.find((x) => x.name === 'munition-logee')?.value ?? 0;
 
   const freeReroll = freeRerollOf(healer);
   const actorRow: RollRowData = {
@@ -80,7 +82,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
     <RollShell
       flowKey="heal"
       embedded={embedded}
-      title={wounds ? <><Icon id="journal/heal" size="sm" /> Soigner les Blessures</> : trauma ? <><Icon id="medical/tear" size="sm" /> Soigner une déchirure</> : <><Icon id="condition/bleeding" size="sm" /> Arrêter l’Hémorragie</>}
+      title={wounds ? <><Icon id="journal/heal" size="sm" /> Soigner les Blessures</> : trauma ? <><Icon id="medical/tear" size="sm" /> Soigner une déchirure</> : ammo ? <><Icon id="item/ammo" size="sm" /> Retirer une munition</> : <><Icon id="condition/bleeding" size="sm" /> Arrêter l’Hémorragie</>}
       subtitle={
         <>
           <strong>{ph.healerName}</strong> soigne <strong>{ph.targetName}</strong>{' '}
@@ -94,7 +96,11 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
           groupLabel="Soin"
           options={combatModes.map((m) => ({
             key: m,
-            label: m === 'wounds' ? <><Icon id="journal/heal" size="sm" /> Blessures</> : <><Icon id="condition/bleeding" size="sm" /> Hémorragie ×{bleed}</>,
+            label: m === 'wounds'
+              ? <><Icon id="journal/heal" size="sm" /> Blessures</>
+              : m === 'ammo'
+                ? <><Icon id="item/ammo" size="sm" /> Munition ×{lodged}</>
+                : <><Icon id="condition/bleeding" size="sm" /> Hémorragie ×{bleed}</>,
             selected: ph.mode === m,
             onSelect: () => setMode(m),
           }))}

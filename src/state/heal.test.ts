@@ -141,6 +141,51 @@ describe('Guérison — flux combat', () => {
     } finally { resetRule('combat-aa-blessures'); }
   });
 
+  it('battleHeal : « ammo » proposé seulement si munition logée (LDB 62 l.250, #494)', () => {
+    const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 3, max: 12 }, pos: { x: 2, y: 1 } });
+    setBattle([doc, t], 'doc');
+    useGame.getState().battleHeal('al', 'ammo'); // refusé : aucune munition logée
+    expect(useGame.getState().pendingHeal).toBeNull();
+    useGame.setState({ battle: { ...useGame.getState().battle!, combatants: [doc, { ...t, conditions: [{ name: 'munition-logee', value: 1 }] }] } });
+    useGame.getState().battleHeal('al', 'ammo');
+    expect(useGame.getState().pendingHeal!.mode).toBe('ammo');
+    expect(useGame.getState().pendingHeal!.difficulty).toBe('intermediaire');
+  });
+
+  it('healConfirm (ammo) succès : la munition est retirée et le plafond de soin est relevé', () => {
+    const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 10, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }], pos: { x: 2, y: 1 } });
+    setBattle([doc, t], 'doc');
+    useGame.getState().battleHeal('al', 'ammo');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 0 } });
+    useGame.getState().healConfirm();
+    const al = useGame.getState().battle!.combatants.find((c) => c.id === 'al')!;
+    expect(al.conditions.find((c) => c.name === 'munition-logee')).toBeUndefined();
+    // plafond relevé : un soin de Blessures ultérieur peut désormais atteindre le max complet
+    al.soinRencontreUtilise = false;
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: false, action: null } });
+    useGame.getState().battleHeal('al', 'wounds');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 5 } });
+    useGame.getState().healConfirm();
+    const al2 = useGame.getState().battle!.combatants.find((c) => c.id === 'al')!;
+    expect(al2.wounds.current).toBe(12); // max atteignable (munition retirée)
+  });
+
+  it('healConfirm (ammo) échec : rien n’est retiré', () => {
+    const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
+    const t = hero({ id: 'al', wounds: { current: 10, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }], pos: { x: 2, y: 1 } });
+    setBattle([doc, t], 'doc');
+    useGame.getState().battleHeal('al', 'ammo');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: false, sl: -2 } });
+    useGame.getState().healConfirm();
+    const al = useGame.getState().battle!.combatants.find((c) => c.id === 'al')!;
+    expect(al.conditions.find((c) => c.name === 'munition-logee')?.value).toBe(1);
+  });
+
   it('healConfirm (bleed) : arrête l’hémorragie sans consommer la limite de soin', () => {
     const doc = hero({ id: 'doc', pos: { x: 1, y: 1 } });
     const t = hero({ id: 'al', wounds: { current: 12, max: 12 }, conditions: [{ name: 'hemorragique', value: 3 }], pos: { x: 2, y: 1 } });
@@ -386,6 +431,31 @@ describe('Guérison — infirmerie (hors combat)', () => {
     useGame.getState().openMedic({ patientId: 'p' });
     useGame.getState().medicAct('recovery');
     expect(useGame.getState().medic!.surgery).toBeUndefined(); // ne s’arme pas : Aide Médicale requise d’abord
+  });
+
+  it('medicAct(ammo) hors combat : proposé seulement si munition logée, retire au succès (LDB 62 l.250, #494)', () => {
+    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const al = hero({ id: 'al', name: 'Percé', conditions: [{ name: 'munition-logee', value: 1 }], skills: [] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
+    useGame.getState().openMedic({ patientId: 'al' });
+    useGame.getState().medicAct('ammo');
+    const ph = useGame.getState().pendingHeal!;
+    expect(ph.mode).toBe('ammo');
+    expect(ph.difficulty).toBe('intermediaire');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 0 } });
+    useGame.getState().healConfirm();
+    const patient = useGame.getState().party.find((c) => c.id === 'al')!;
+    expect(patient.conditions.find((c) => c.name === 'munition-logee')).toBeUndefined();
+  });
+
+  it('medicAct(ammo) : indisponible sans munition logée', () => {
+    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
+    const al = hero({ id: 'al', skills: [] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
+    useGame.getState().openMedic({ patientId: 'al' });
+    useGame.getState().medicAct('ammo');
+    expect(useGame.getState().pendingHeal).toBeNull();
   });
 
   it('PNJ payant : débit à l’acte, remboursé si on annule AVANT le jet', () => {
