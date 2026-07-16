@@ -5,7 +5,7 @@
  */
 import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec, AmmoRangeMod } from './types';
 import type { TriggeredEffect } from './flowCore';
-import { isUnbreakable, qualityIndice } from './qualities/dispatch';
+import { isAtoutQuality, isUnbreakable, qualityIndice } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
 import { reachRank } from './engagement';
 import { norm } from '../lib/normalize';
@@ -124,6 +124,11 @@ export interface WeaponContext {
   mounted?: boolean;
   /** L'attaquant possède la Spécialisation de Corps à corps du Groupe de l'arme (`hasWeaponGroupSkill`). */
   hasGroupSkill?: boolean;
+  /** MODE de la Spé de Projectiles qui couvre le Groupe de l'arme (`weaponGroupSkillMode`) : `'degraded'`
+   *  déclenche la perte de tous les Atouts (Défauts conservés) d'une arme à distance utilisée hors de sa
+   *  Spé exacte — Arbalète/Lancer par toute autre Spé de Tir (LDB 62 l.184), Ingénierie par Poudre noire
+   *  (l.188). `'full'`/`'none'` n'altèrent pas le profil ici. */
+  groupSkillMode?: 'full' | 'degraded' | 'none';
   /** Combat « au contact » avec la cible (LDB 62 l.176, Option « Longueur d'arme ») : toute arme plus
    *  longue que Courte y est traitée comme une Arme improvisée. Dérivé de `areInContact(attacker, target)`. */
   auContact?: boolean;
@@ -141,6 +146,9 @@ export interface WeaponContext {
  *  - Lance de cavalerie utilisée hors d'un Round de Charge → **Arme improvisée** (LDB 62 l.59).
  *  - Fléau manié **sans la Spécialisation** appropriée → Défaut **Dangereuse**, et **aucun autre Atout**
  *    n'est utilisé (LDB 62 l.146-147).
+ *  - Arme à distance couverte en mode **`'degraded'`** (`WeaponContext.groupSkillMode`, Arbalète/Lancer
+ *    par toute autre Spé de Tir l.184, Ingénierie par Poudre noire l.188) → perd **tous ses Atouts**, ses
+ *    Défauts sont conservés.
  * À appliquer LÀ où l'arme se lie à l'attaque pour que la transformation atteigne la touche, les Dégâts ET
  * le jet RATÉ (la Dangereuse se déclenche sur un échec). Idempotent : ré-appliquer sur un profil déjà
  * transformé (ex. l'usure recalculée dans `applyHit`) ne le ré-altère pas.
@@ -157,6 +165,10 @@ export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
   // Fléau sans la Spécialisation : Défaut Dangereuse + AUCUN autre Atout (l.146-147). Le Test reste sur la
   // Caractéristique brute — déjà assuré par `combatValue` (pas de Spé → pas d'avances), le subType est gardé.
   if (ctx?.hasGroupSkill === false && w.subType === 'fleau') return { ...w, qualities: [{ id: QUALITY_IDS.Dangereuse }] };
+
+  // Arme à distance couverte en mode dégradé (Arbalète/Lancer par toute autre Spé de Tir l.184,
+  // Ingénierie par Poudre noire l.188) : perd tous ses Atouts, garde ses Défauts.
+  if (ctx?.groupSkillMode === 'degraded') return { ...w, qualities: w.qualities.filter((q) => !isAtoutQuality(q.id)) };
   return w;
 }
 

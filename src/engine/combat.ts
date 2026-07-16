@@ -111,24 +111,67 @@ export function attackHandGate(c: Combatant, weaponUid?: string): 'main' | 'off'
   return hand && c.handGates.includes(hand) ? hand : null;
 }
 
+/** Une Spé acceptée pour couvrir le Groupe d'une arme, et son MODE : `'full'` (bonus intégral, AUCUNE
+ *  perte d'Atout) ou `'degraded'` (bonus intégral MAIS l'arme perd tous ses Atouts en gardant ses
+ *  Défauts — Arbalète/Lancer par toute autre Spé de Tir, LDB 62 l.184 ; Ingénierie par Poudre noire,
+ *  l.188). Consommé par `matchGroupSpec`, SOURCE UNIQUE de `combatValue`/`weaponGroupSkillMode`. */
+interface SpecAcceptance { spec: string; mode: 'full' | 'degraded' }
+
+/** Sentinelle « n'importe quelle Spé de Projectiles » (Arbalète/Lancer utilisés avec une AUTRE Spé de
+ *  Tir que la sienne, « votre Compétence de Tir » sans restriction de Groupe, LDB 62 l.184) — jamais un
+ *  id de Groupe réel (`WeaponGroupData.id`). */
+const ANY_RANGED_SPEC = '*';
+
 /**
- * Ids de Groupe d'arme (`WeaponGroupData.id`) que couvre la Spécialisation de Corps à corps /
- * Projectiles du Groupe donné. RAW : Corps à corps (LDB 09 l.141) et Projectiles (l.409) sont des
- * Compétences *Groupées* — chaque Spécialisation (désormais un `spec` = id de Groupe, cf.
- * `SkillData.specsSource`) couvre une classe d'armes. En distance, Projectiles (Ingénierie) couvre
- * aussi les armes à Poudre noire et les Explosifs (LDB 62 l.234) ; la donnée fusionne parfois les
- * deux Groupes sous « Poudre noire et ingénierie » (62 l.150/174-175).
+ * Spés (`WeaponGroupData.id`) que couvre la Spécialisation de Corps à corps / Projectiles du Groupe
+ * donné, avec leur MODE. RAW : Corps à corps (LDB 09 l.141) et Projectiles (l.409) sont des Compétences
+ * *Groupées* — chaque Spécialisation (désormais un `spec` = id de Groupe, cf. `SkillData.specsSource`)
+ * couvre une classe d'armes ; sans la bonne Spé, aucun Test n'est possible (LDB 62 l.180), sauf les
+ * exceptions listées l.184-192 (Groupes d'Armes à distance) :
+ *  - Arbalète/Lancer utilisés avec N'IMPORTE QUELLE Spé de Tir → bonus intégral, Atouts perdus (l.184).
+ *  - Ingénierie utilisée via Poudre noire → bonus intégral, Atouts perdus (l.188).
+ *  - Poudre noire/Explosifs utilisés via Ingénierie → bonus intégral, SANS pénalité (l.192).
  */
-function acceptableSpecs(weapon: Weapon, _kind: 'melee' | 'ranged'): string[] {
+function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): SpecAcceptance[] {
   // `weaponGroup` PRIME sur `subType` : une arme de siège porte sa catégorie de catalogue (« armes-de-siege »)
   // en `subType` mais son vrai Groupe de Projectiles (Arbalète/Catapulte/Ingénierie/Poudre noire, AA p.122
   // l.3848-3863) en `weaponGroup` → c'est lui qui pilote la Spé de tir ET le décompte d'équipage. Pour toute
   // arme normale, `weaponGroup` est absent → `subType` EST le Groupe (comportement inchangé).
   const gid = weapon.weaponGroup ?? weapon.subType ?? ''; // id de Groupe d'arme (`WeaponGroupData.id`)
   if (!gid) return [];
-  if (gid === 'poudre-noire' || gid === 'poudre-noire-et-ingenierie') return ['poudre-noire', 'ingenierie'];
-  if (gid === 'explosifs') return ['explosifs', 'ingenierie'];
-  return [gid];
+  if (gid === 'poudre-noire' || gid === 'poudre-noire-et-ingenierie')
+    return [{ spec: 'poudre-noire', mode: 'full' }, { spec: 'ingenierie', mode: 'full' }]; // LDB 62 l.192
+  if (gid === 'explosifs')
+    return [{ spec: 'explosifs', mode: 'full' }, { spec: 'ingenierie', mode: 'full' }]; // LDB 62 l.192
+  if (gid === 'ingenierie')
+    return [{ spec: 'ingenierie', mode: 'full' }, { spec: 'poudre-noire', mode: 'degraded' }]; // LDB 62 l.188
+  if (kind === 'ranged' && (gid === 'arbalete' || gid === 'lancer'))
+    return [{ spec: gid, mode: 'full' }, { spec: ANY_RANGED_SPEC, mode: 'degraded' }]; // LDB 62 l.184
+  return [{ spec: gid, mode: 'full' }];
+}
+
+/**
+ * Spé du combattant qui couvre le Groupe de l'arme, avec son MODE (`SpecAcceptance`) — SOURCE UNIQUE
+ * consommée par `combatValue` (le bonus de Test est TOUJOURS intégral, cf. LDB 62 l.184 « votre
+ * Compétence de Tir ») et `weaponGroupSkillMode` (info dégradée transmise à `effectiveWeapon`). Les
+ * entrées EXPLICITES (`spec` réel) priment sur la sentinelle `ANY_RANGED_SPEC`, essayée en dernier
+ * (meilleure Spé de Tir disponible, dégradée). `null` si aucune Spé du `skillId` de `kind` ne matche.
+ */
+function matchGroupSpec(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): { advances: number; mode: 'full' | 'degraded' } | null {
+  const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
+  const matching = c.skills.filter((s) => s.skillId === skillId);
+  if (!matching.length) return null;
+  const wanted = acceptableSpecs(weapon, kind);
+  for (const w of wanted) {
+    if (w.spec === ANY_RANGED_SPEC) continue; // essayée en dernier, cf. plus bas
+    const sk = matching.find((s) => s.spec === w.spec);
+    if (sk) return { advances: sk.advances, mode: w.mode };
+  }
+  if (wanted.some((w) => w.spec === ANY_RANGED_SPEC)) {
+    const best = matching.reduce<Combatant['skills'][number] | undefined>((m, s) => (!m || s.advances > m.advances ? s : m), undefined);
+    if (best) return { advances: best.advances, mode: 'degraded' };
+  }
+  return null;
 }
 
 /**
@@ -153,9 +196,7 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
   const matching = c.skills.filter((s) => s.skillId === skillId);
   if (matching.length === 0) return base;
   if (!weapon || !weapon.subType) return base + Math.max(0, ...matching.map((s) => s.advances));
-  const wanted = acceptableSpecs(weapon, kind);
-  const sk = matching.find((s) => wanted.includes(s.spec ?? ''));
-  return base + (sk?.advances ?? 0);
+  return base + (matchGroupSpec(c, weapon, kind)?.advances ?? 0);
 }
 
 /**
@@ -185,17 +226,28 @@ export function weaponUnmastered(c: Combatant, weapon: Weapon): boolean {
 }
 
 /**
- * Le combattant possède-t-il la Spécialisation (de Corps à corps / Projectiles) du **Groupe** de l'arme
- * (LDB 62 l.138-139) ? Réutilise `acceptableSpecs` — source UNIQUE des Spés autorisées par Groupe (comme
- * `combatValue`). Faux si l'arme n'a pas de Groupe (`subType` absent) ou si aucune Augmentation ne le couvre.
- * Sert aux règles de Groupe CONTEXTUELLES (Fléau sans compétence → Dangereuse, LDB 62 l.146-147).
+ * MODE de la Spé (de Corps à corps / Projectiles) qui couvre le **Groupe** de l'arme (LDB 62 l.138-139,
+ * exceptions l.184-192) — réutilise `matchGroupSpec`/`acceptableSpecs`, SOURCE UNIQUE des Spés autorisées
+ * par Groupe (comme `combatValue`). `'none'` si l'arme n'a pas de Groupe (`subType` absent), si elle est
+ * INHABITUELLE non maîtrisée (ACE p.219), ou si aucune Augmentation ne la couvre. Consommé par le funnel
+ * de contexte d'arme (`WeaponContext.groupSkillMode`, lu par `effectiveWeapon`).
+ */
+export function weaponGroupSkillMode(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): 'full' | 'degraded' | 'none' {
+  if (!weapon.subType) return 'none';
+  if (weaponUnmastered(c, weapon)) return 'none'; // arme inhabituelle non maîtrisée (ACE p.219) : Défauts du Groupe
+  return matchGroupSpec(c, weapon, kind)?.mode ?? 'none';
+}
+
+/**
+ * Le combattant possède-t-il la Spécialisation EXACTE (de Corps à corps / Projectiles) du **Groupe** de
+ * l'arme (LDB 62 l.138-139), en mode PLEIN uniquement — un accès dégradé (l.184-192, via une AUTRE Spé de
+ * Tir) n'est PAS « la Spé du Groupe » : la Qualification d'Arme d'équipe (AA l.3900-3923, `hasCrewSkill`)
+ * distingue ce cas précis (un tireur à l'Arc ne QUALIFIE PAS une pièce d'Arbalète, même si son propre Test
+ * de tir dégradé reste possible — `combatValue`). Réutilise `weaponGroupSkillMode`.
+ * Sert aussi aux règles de Groupe CONTEXTUELLES (Fléau sans compétence → Dangereuse, LDB 62 l.146-147).
  */
 export function hasWeaponGroupSkill(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): boolean {
-  if (!weapon.subType) return false;
-  if (weaponUnmastered(c, weapon)) return false; // arme inhabituelle non maîtrisée (ACE p.219) : Défauts du Groupe
-  const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
-  const wanted = acceptableSpecs(weapon, kind);
-  return c.skills.some((s) => s.skillId === skillId && wanted.includes(s.spec ?? ''));
+  return weaponGroupSkillMode(c, weapon, kind) === 'full';
 }
 
 /** Mode de défense STRUCTUREL. `social` = SUBSTITUTION d'une Compétence sociale à Corps à corps (LDB 09

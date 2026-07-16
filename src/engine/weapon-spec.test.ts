@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { combatValue, defenseValue, hasWeaponGroupSkill, weaponUnmastered } from './combat';
+import { combatValue, defenseValue, hasWeaponGroupSkill, weaponGroupSkillMode, weaponUnmastered } from './combat';
 import { weaponGroupIdByLabel } from '../data';
 import type { Combatant, ItemInstance, Weapon } from './types';
 
@@ -85,6 +85,53 @@ describe('combatValue — Spécialisation de Projectiles (LDB 62 l.225/234)', ()
     expect(combatValue(c, 'ranged', wpn('Poudre noire et ingénierie', 'ranged'))).toBe(62);
     // mais pas un Arc
     expect(combatValue(c, 'ranged', wpn('Arc', 'ranged'))).toBe(40);
+  });
+});
+
+describe('combatValue/weaponGroupSkillMode — exceptions Groupes d’Armes à distance (LDB 62 l.184-192)', () => {
+  const sk = (spec: string, advances: number) =>
+    ({ skillId: 'projectiles', spec, characteristic: 'capacite-de-tir', advances } as Combatant['skills'][number]);
+
+  it('Arbalète/Lancer tirés avec N’IMPORTE QUELLE Spé de Tir → bonus intégral, mode dégradé (l.184)', () => {
+    const c = hero({ skills: [sk('arc', 18)] });
+    expect(combatValue(c, 'ranged', wpn('Arbalète', 'ranged'))).toBe(58); // CT 40 + 18 (Compétence de Tir)
+    expect(weaponGroupSkillMode(c, wpn('Arbalète', 'ranged'), 'ranged')).toBe('degraded');
+    expect(combatValue(c, 'ranged', wpn('Lancer', 'ranged'))).toBe(58);
+    expect(weaponGroupSkillMode(c, wpn('Lancer', 'ranged'), 'ranged')).toBe('degraded');
+    // dégradé ≠ « Spé du Groupe » (AA l.3900-3923, Qualification d'Arme d'équipe) : `hasWeaponGroupSkill`
+    // reste strict — seul un match PLEIN qualifie une pièce servie.
+    expect(hasWeaponGroupSkill(c, wpn('Arbalète', 'ranged'), 'ranged')).toBe(false);
+  });
+
+  it('Arbalète tirée avec la Spé Arbalète elle-même → mode plein (pas de dégradation)', () => {
+    const c = hero({ skills: [sk('arbalete', 25)] });
+    expect(combatValue(c, 'ranged', wpn('Arbalète', 'ranged'))).toBe(65);
+    expect(weaponGroupSkillMode(c, wpn('Arbalète', 'ranged'), 'ranged')).toBe('full');
+  });
+
+  it('sans AUCUNE Spé de Projectiles → mode none, carac brute', () => {
+    const c = hero({ skills: [] });
+    expect(combatValue(c, 'ranged', wpn('Arbalète', 'ranged'))).toBe(40);
+    expect(weaponGroupSkillMode(c, wpn('Arbalète', 'ranged'), 'ranged')).toBe('none');
+    expect(hasWeaponGroupSkill(c, wpn('Arbalète', 'ranged'), 'ranged')).toBe(false);
+  });
+
+  it('Ingénierie utilisée via Poudre noire → bonus intégral, mode dégradé (l.188)', () => {
+    const c = hero({ skills: [sk('poudre-noire', 20)] });
+    expect(combatValue(c, 'ranged', wpn('Ingénierie', 'ranged'))).toBe(60);
+    expect(weaponGroupSkillMode(c, wpn('Ingénierie', 'ranged'), 'ranged')).toBe('degraded');
+  });
+
+  it('Ingénierie utilisée via Ingénierie elle-même → mode plein', () => {
+    const c = hero({ skills: [sk('ingenierie', 12)] });
+    expect(combatValue(c, 'ranged', wpn('Ingénierie', 'ranged'))).toBe(52);
+    expect(weaponGroupSkillMode(c, wpn('Ingénierie', 'ranged'), 'ranged')).toBe('full');
+  });
+
+  it('Poudre noire/Explosifs via Ingénierie reste SANS pénalité (non-régression, l.192)', () => {
+    const c = hero({ skills: [sk('ingenierie', 22)] });
+    expect(weaponGroupSkillMode(c, wpn('Poudre noire', 'ranged'), 'ranged')).toBe('full');
+    expect(weaponGroupSkillMode(c, wpn('Explosifs', 'ranged'), 'ranged')).toBe('full');
   });
 });
 

@@ -87,6 +87,36 @@ describe('43.1b — Fléau sans la Spécialisation → Dangereuse + aucun Atout 
   });
 });
 
+describe('effectiveWeapon — Groupes d’Armes à distance dégradés (LDB 62 l.184/188)', () => {
+  const arbalete = (): Weapon => ({
+    name: 'Arbalète', type: 'ranged', subType: 'arbalete', range: 60,
+    damage: { plusBF: false, flat: 12 }, qualities: [{ id: 'precise' }, { id: 'imprecise' }],
+  });
+
+  it('mode dégradé → tous les Atouts perdus (Précise), Défauts conservés (Imprécise)', () => {
+    const w = effectiveWeapon(arbalete(), { groupSkillMode: 'degraded' });
+    expect(w.qualities).toEqual([{ id: 'imprecise' }]);
+    expect(hasQuality(w, 'precise')).toBe(false);
+    expect(hasQuality(w, 'imprecise')).toBe(true);
+    expect(w.damage).toEqual({ plusBF: false, flat: 12 }); // Dégâts inchangés
+  });
+
+  it('mode plein → profil inchangé (même référence)', () => {
+    const w = arbalete();
+    expect(effectiveWeapon(w, { groupSkillMode: 'full' })).toBe(w);
+  });
+
+  it('mode none (aucune Spé) → profil inchangé', () => {
+    const w = arbalete();
+    expect(effectiveWeapon(w, { groupSkillMode: 'none' })).toBe(w);
+  });
+
+  it('sans ctx.groupSkillMode → profil inchangé (non-régression)', () => {
+    const w = arbalete();
+    expect(effectiveWeapon(w)).toBe(w);
+  });
+});
+
 describe('43.1a — Cavalerie (2M) à pied → Deux Mains (LDB 62 l.142-143)', () => {
   it('weaponHands : cavalerie hands:2 → 2 à pied, 1 monté', () => {
     const it = { subType: 'cavalerie', hands: 2 as const };

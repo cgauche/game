@@ -27,6 +27,7 @@ import {
   rollRangedAttacker,
   combatValue,
   hasWeaponGroupSkill,
+  weaponGroupSkillMode,
   attackModifiers,
   combineMods,
   rollMeleeAttacker,
@@ -287,6 +288,7 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
     charged: !!attacker.chargedThisTurn,
     mounted: !!attacker.mountId,
     hasGroupSkill: hasWeaponGroupSkill(attacker, w, w.type === 'ranged' ? 'ranged' : 'melee'),
+    groupSkillMode: weaponGroupSkillMode(attacker, w, w.type === 'ranged' ? 'ranged' : 'melee'), // LDB 62 l.184/188
     auContact: !!target && areInContact(attacker, target),
     improvised: !!target && ramVsNonDoor(w, target), // Bélier hors-porte → improvisée (ADE II ch.08 l.249)
   };

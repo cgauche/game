@@ -10,6 +10,7 @@ import { structureIsDown, structureDownKey, wallBetween, type Scene } from './sc
 import { testScene } from '../scenes/test-fixture';
 import type { Weapon, Combatant } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
+import { effectiveWeapon } from '../engine/weaponDamage';
 
 /**
  * Structures destructibles JOUABLES en combat (AA p.120-121) : enrôlement depuis les arêtes de mur,
@@ -199,6 +200,32 @@ describe('Structures de siège — CHEMIN DE CLIC joueur (overlay d’arête →
     expect(structureIsDown(after.scene!, seg)).toBe(true);                    // porte abattue par le clic
     expect(after.battle!.combatants.some((c) => c.id === S!.id)).toBe(false); // retirée du combat
     expect(wallBetween(after.scene!, 2, 2, 3, 2)).toBe(false);               // BRÈCHE : passage rouvert
+  });
+});
+
+describe('weaponContextOf — exceptions hors-spécialisation dégradées (LDB 62 l.184/188, #472)', () => {
+  const attacker = (spec: string) => {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    hero.skills = [{ skillId: 'projectiles', spec, characteristic: 'capacite-de-tir', advances: 5 }];
+    return hero;
+  };
+
+  it("Arbalète via une AUTRE Spé de Tir (Arc) → mode 'degraded' : Atouts retirés, Défauts conservés", () => {
+    const h = attacker('arc');
+    const arbalete = mkWeapon({ name: 'Arbalète', type: 'ranged', subType: 'arbalete', damage: { plusBF: false, flat: 10 }, qualities: [{ id: 'siege' }, { id: 'imprecise' }] });
+    const ctx = weaponContextOf(h, arbalete);
+    expect(ctx.groupSkillMode).toBe('degraded');
+    const eff = effectiveWeapon(arbalete, ctx);
+    expect(eff.qualities.map((q) => q.id)).toEqual(['imprecise']); // Atout Siège perdu, Défaut Imprécise gardé
+  });
+
+  it("Poudre noire via Ingénierie (Spé exacte réciproque) → mode 'full' : aucun retrait (LDB 62 l.192)", () => {
+    const h = attacker('ingenierie');
+    const pistolet = mkWeapon({ name: 'Pistolet', type: 'ranged', subType: 'poudre-noire', damage: { plusBF: false, flat: 10 }, qualities: [{ id: 'siege' }, { id: 'imprecise' }] });
+    const ctx = weaponContextOf(h, pistolet);
+    expect(ctx.groupSkillMode).toBe('full');
+    const eff = effectiveWeapon(pistolet, ctx);
+    expect(eff.qualities.map((q) => q.id)).toEqual(['siege', 'imprecise']); // rien de retiré
   });
 });
 
