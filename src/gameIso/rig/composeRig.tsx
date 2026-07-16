@@ -15,7 +15,7 @@ import { appendageArt } from './parts/appendages';
 import { monsterInjection } from './parts/monstrous';
 import { HEADS, ARMS, LEGS } from './parts/monster';
 import { buildTokenMap, applyTokenMap, type Palette } from './palette';
-import { tenuePaletteFor } from './parts/career';
+import { tenuePaletteFor, tenueOverlaysFor } from './parts/career';
 import type { EquipCtx } from './parts/equipment';
 import { dorsalOverlays } from './parts/dorsal';
 import { CAPES } from './parts/capes';
@@ -227,6 +227,9 @@ export function resolveRig(
   // Cape portée (emplacement Cape — cosmétique) : appendice dorsal accroché au torse, mêmes
   // règles de profondeur que les ailes. Suit l'EquipCtx → visible partout (token, portraits…).
   if (equip.cape) queue.push(...dorsalOverlays('torse', CAPES.voyage));
+  // Calques asymétriques DE TENUE (pauldron/fourrure débordant une SEULE épaule) — même file
+  // que cape/monstre/instance, résolus par id de garde-robe (tenueOverlaysFor, career.ts).
+  queue.push(...tenueOverlaysFor(tenue));
   queue.push(...overlays);
 
   // Calques cosmétiques (mutations, blessures, traits, parts monstrueuses…) dans le repère de

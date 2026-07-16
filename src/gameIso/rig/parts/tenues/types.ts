@@ -1,5 +1,6 @@
 import type { PartArt } from '../types';
 import type { StoredPalette } from '../../palette';
+import type { RigOverlay } from '../../bones';
 
 /**
  * Slots habillables d'une tenue. Valeurs = PartArt (SVG dans le repère LOCAL de l'os porteur).
@@ -39,4 +40,9 @@ export type TenueDef = {
   palette?: StoredPalette;
   bareFoot?: boolean;
   footStyle?: 'boot' | 'claw' | 'plain';
+  /** Calques ASYMÉTRIQUES attachés à un os précis (pauldron/fourrure qui déborde une SEULE
+   *  épaule) — même vocabulaire que `dorsalOverlays`/`monsterInjection` (`RigOverlay`, `plane`
+   *  pour échapper au z inégal des bras epauleG/epauleD, `view` pour une vue). Optionnel :
+   *  absent = comportement inchangé (les 117 tenues existantes ne déclarent rien). */
+  overlays?: RigOverlay[];
 };

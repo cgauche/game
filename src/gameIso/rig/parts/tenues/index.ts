@@ -3,6 +3,7 @@ import { slugId } from '../../../../data/slug';
 import { careers } from '../../../../data';
 import type { TenueSet } from './types';
 import type { StoredPalette } from '../../palette';
+import type { RigOverlay } from '../../bones';
 
 export type { TenueSet, TenueDef } from './types';
 
@@ -30,6 +31,15 @@ export const TENUE_PALETTE_BY_ID: Record<string, StoredPalette> = Object.fromEnt
 );
 export const CLASS_PALETTE_BY_ID: Record<string, StoredPalette> = Object.fromEntries(
   TENUE_DEFS.filter((d) => isClassDef(d.name) && d.palette).map((d) => [slugId(d.name), d.palette!]),
+);
+/** Calques asymétriques (`TenueDef.overlays`) par tenue spécifique puis par classe — même
+ *  résolution que la palette (`tenuePaletteFor`). Absent chez la quasi-totalité des tenues
+ *  (canal optionnel, cf. types.ts). */
+export const TENUE_OVERLAYS_BY_ID: Record<string, RigOverlay[]> = Object.fromEntries(
+  TENUE_DEFS.filter((d) => !isClassDef(d.name) && d.overlays).map((d) => [slugId(d.name), d.overlays!]),
+);
+export const CLASS_OVERLAYS_BY_ID: Record<string, RigOverlay[]> = Object.fromEntries(
+  TENUE_DEFS.filter((d) => isClassDef(d.name) && d.overlays).map((d) => [slugId(d.name), d.overlays!]),
 );
 /** Tenue « nue » (corps de chair) — référencée à part par tenueFor pour le cas 'Nu'. */
 export const TENUE_NUE: TenueSet = TENUE_BY_ID.nu;
