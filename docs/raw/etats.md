@@ -69,7 +69,7 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `addClockCondition`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, +29 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +11 fichiers
+- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `addClockCondition`, `hitModifiers`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `OPTIONAL_RULES`, +29 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +11 fichiers
 
 ---
 
@@ -281,7 +281,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `hitModifiers`, `recoveryTarget`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `fatigueThreshold`, +15 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, +9 fichiers
+- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `hitModifiers`, `recoveryTarget`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `OPTIONAL_RULES`, `fatigueThreshold`, +15 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, +9 fichiers
 - `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `describeApproach`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
@@ -311,7 +311,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Inconscient, Traumatisme (`traumatisme.md`), Maladies (`maladies.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.103-109) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `fatigueThreshold`, `fatigueApply`, `AttackResult`, +8 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/engine/types.ts`, +5 fichiers
+- `LDB 16` (l.103-109) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `OPTIONAL_RULES`, `fatigueThreshold`, `fatigueApply`, `AttackResult`, +8 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/engine/types.ts`, +5 fichiers
 
 ---
 
@@ -335,7 +335,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Hémorragique, Empoisonné, À Terre, Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.112-120) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, +13 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/state/ai.ts`, +6 fichiers
+- `LDB 16` (l.112-120) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, +13 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/state/ai.ts`, +6 fichiers
 
 ---
 

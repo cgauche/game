@@ -212,7 +212,7 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `OPTIONAL_RULES`, `pickDoctrine`, `applySurprise`, `EncounterDef`, `initiativeOrder`, `createCombatSlice`, +2 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSetup.ts`, +5 fichiers
 - `LDB 16` (l.132-139) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `chooseEnemyAction`, `resolveAttack`, `applyAttackResult`, +1 — `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
-- `LDB 17` (l.61) → `RenounceModal`, `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `gainCorruption`, `HouseRuleRow`, `useAttackJetProps`, `EnemyAction`, `useTestJetProps`, +26 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +20 fichiers
+- `LDB 17` (l.61) → `RenounceModal`, `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `gainCorruption`, `HouseRuleRow`, `EnemyAction`, `useTestJetProps`, `useAttackJetProps`, +26 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +20 fichiers
 - sans code : `NADAJ 5` (l.117), `NADAJ 6` (l.148)
 
 ---
@@ -976,7 +976,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `BattleState`, `OPTIONAL_RULES`, `FLOWS`, `attackEnv`, `chooseEnemyAction`, `ActionBar`, +7 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/engine/policy.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +8 fichiers
 - `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-113, l.120-124, l.126-129, l.131, l.135, l.137-138, l.142-165, l.181-184) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `SceneCombatMods`, `schema`, `GrappleModal`, `OupsMisfireEntry`, `combat-deux-armes`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `areGrappling`, `main-secondaire`, +69 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, +33 fichiers
-- `LDB 16` (l.113) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `AttackResult`, `incomingMeleeAdvantage`, +11 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/state/combat/hitModifiers.ts`, +5 fichiers
+- `LDB 16` (l.113) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `AttackResult`, `incomingMeleeAdvantage`, +11 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/state/combat/hitModifiers.ts`, +5 fichiers
 - `LDB 62` (l.201, l.204-215, l.283-285, l.295-296) → `a-enroulement`, `reachTiles`, `a-poudre-noire`, `a-repetition`, `assommante`, `arbalete`, `arc`, `pushBackTiles`, `BladeTrapHook`, `entraves`, +45 — `src/data/qualities.json`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +14 fichiers
 
 ---
@@ -1087,7 +1087,7 @@ Règle optionnelle pour le tir sur une cible déjà _Engagée_ avec un (ou des) 
 **Voir aussi** : Difficultés des Tests (général) — bandes Très Facile +60 → Très Difficile −30, paliers extrêmes EDO −40/−50, Échec / Réussite automatiques (01-05) ; Localisation et calcul des dégâts en combat ; Portées des armes et bandes de distance ; Avantage en combat ; États (À Terre, Surpris, Inconscient) ; Combat monté ; Combat à deux armes (main secondaire −20) ; Psychologie en combat (Calme vs Terreur — cas-type des Difficultés extrêmes EDO).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.117-118) → `useDefenseJetProps`, `entityBlockedAt`, `useHoverTargeting`, `OPTIONAL_RULES`, `FLOWS`, `attackEnv`, `chooseEnemyAction`, `ActionBar`, `resolveAttack`, `outOfSightTargetIds`, +3 — `src/data/localisation.json`, `src/engine/policy.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
+- `LDB 13` (l.117-118) → `useDefenseJetProps`, `entityBlockedAt`, `useHoverTargeting`, `OPTIONAL_RULES`, `FLOWS`, `attackEnv`, `chooseEnemyAction`, `ActionBar`, `resolveAttack`, `GameState`, +3 — `src/data/localisation.json`, `src/engine/policy.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
 - `LDB 14` (l.57-115, l.119-124, l.126-129, l.130-131, l.133-138, l.139-140, l.142-165) → `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `combat-deux-armes`, `isFumble`, `areGrappling`, `main-secondaire`, `schema`, `setGrapple`, `scatter`, +56 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, +30 fichiers
 - `EDO 11` (l.157-166) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `absorption`, `amorphe`, `contagieux` — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
 - sans code : `NADAJ 6` (l.148)
@@ -2024,8 +2024,10 @@ Synthèse des règles du combat d'honneur (`NADAJ 06 l.176-191`) :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 62` (l.19-57, l.59, l.126-127, l.133-136, l.138-139, l.142-143, l.146-147, l.150-151) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `bagarre`, `a-poudre-noire`, `IMPROVISED_DAMAGE`, `base`, `isRepairable`, `itemRepairCostBrass`, `a-repetition`, +33 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/equipCompare.ts`, `src/engine/items.ts`, +6 fichiers
+- `ADE II 2` (l.661-705) → `useAttackJetProps`, `WeaponContext`, `effectiveWeapon`, `weaponContextOf`, `PendingAttack`, `ItemCapabilities`, `resolveAttack`, `GameState`, `applyOps`, `createCombatSlice` — `src/data/index.ts`, `src/engine/ops.ts`, `src/engine/weaponDamage.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
+- `NADAJ 6` (l.176-191) → `banRangedActive`, `firedAttackBlock`, `EncounterDef`, `EncountersTab`, `resolveAttack`, `VictoryCondition`, `Combatant`, `victoryConditionMet`, `resolveFirstBlood` — `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/scene.ts`, `src/ui/editor/LogicDock.tsx`
 - `NADAJ 11` (l.20, l.23-32) → `griffe-de-tigre` — `src/data/trappings.json`
-- sans code : `LDB 62` (l.5-15), `ADE II 2` (l.661-705), `NADAJ 6` (l.176-191)
+- sans code : `LDB 62` (l.5-15)
 
 ---
 
@@ -5797,7 +5799,9 @@ Un ogre subit **-20 à tous les Tests** lorsqu'il tente d'utiliser des possessio
 
 **Voir aussi** : armes-melee-tables ; armes-distance-munitions-tables ; armures-tables ; atouts-defauts-armes ; ogres-regles-de-taille (Frappe Mortelle / Peur / Désengagement)
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ADE II 2` (l.663-668, l.669-696, l.698-704, l.707-711) → `useAttackJetProps`, `WeaponContext`, `effectiveWeapon`, `weaponContextOf`, `PendingAttack`, `ItemCapabilities`, `resolveAttack`, `GameState`, `applyOps`, `createCombatSlice` — `src/data/index.ts`, `src/engine/ops.ts`, `src/engine/weaponDamage.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
+- sans code : `ADE II 2` (l.601-605, l.607-618, l.620-634, l.637-646, l.649-656, l.658, l.663-666, l.710-711)
 - dette : #513
 
 ---

@@ -382,7 +382,7 @@ Si un sort **vous cible** ou vise un point **visible** à une distance en mètre
 > **Verbatim** (l.201-202) : « Si un Sort vous cible, ou vise un point que vous pouvez voir à une distance en mètres égale à votre Force Mentale, vous pouvez opposer le Test d'Incantation avec Langue (Magick), car vous chantez un Contre-sort. Effectuez un Test opposé de Langue (Magick). Sur un succès, vous dissipez le Sort ; sur un échec, le Sort utilise le DR du Test opposé pour déterminer si l'incantation a réussi normalement. Vous ne pouvez tenter de dissiper qu'un seul Sort chaque Round. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.154-156) → `focalisation-etendue`, `componentDowngrade`, `SpellbookSection`, `buySpellComponent`, `OPTIONAL_RULES`, `FLOWS`, `GameState`, `fr`, `previewCast`, `Combatant`, +5 — `src/data/regles.json`, `src/engine/miscast.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/i18n/messages/fr.ts`, `src/state/combatFlow.ts`, +5 fichiers
+- `LDB 46` (l.154-156) → `focalisation-etendue`, `componentDowngrade`, `SpellbookSection`, `buySpellComponent`, `OPTIONAL_RULES`, `FLOWS`, `fr`, `GameState`, `previewCast`, `Combatant`, +5 — `src/data/regles.json`, `src/engine/miscast.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/i18n/messages/fr.ts`, `src/state/combatFlow.ts`, +5 fichiers
 
 ---
 
@@ -398,7 +398,7 @@ Pour dissiper un sort à **effet durable** déjà en place :
 > **Verbatim** (l.204-206) : « Il faut pour cela effectuez un Test étendu de Langue (Magick). Quand votre DR atteint la NI du Sort, vous le dissipez avec succès. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.159-162) → `useHoverTargeting`, `focalisation-etendue`, `componentDowngrade`, `SpellbookSection`, `bestAreaCenter`, `buySpellComponent`, `OPTIONAL_RULES`, `FLOWS`, `GameState`, `fr`, +13 — `src/data/regles.json`, `src/engine/miscast.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/i18n/messages/fr.ts`, +7 fichiers
+- `LDB 46` (l.159-162) → `useHoverTargeting`, `focalisation-etendue`, `componentDowngrade`, `SpellbookSection`, `bestAreaCenter`, `buySpellComponent`, `OPTIONAL_RULES`, `FLOWS`, `fr`, `GameState`, +13 — `src/data/regles.json`, `src/engine/miscast.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/i18n/messages/fr.ts`, +7 fichiers
 
 ---
 
@@ -644,7 +644,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 > **Verbatim** (LDB 47 l.28) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de ce DIAMÈTRE ».
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 47` (l.28) → `CastModal`, `carriedGrimoire`, `canCastFromGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `GameState`, `PendingCast`, +8 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +6 fichiers
+- `LDB 47` (l.28) → `CastModal`, `carriedGrimoire`, `canCastFromGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `PendingCast`, `GameState`, +8 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +6 fichiers
 
 ---
 

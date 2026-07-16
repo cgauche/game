@@ -574,7 +574,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Voir aussi** : `destin.md` (Détermination)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `useAttackJetProps`, `EnemyAction`, `useTestJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
+- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `EnemyAction`, `useTestJetProps`, `useAttackJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
 
 ---
 
@@ -611,7 +611,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `fearImmuneVs`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `CombatFeature`, `artilleur`, `tissage`, +2 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
-- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `useAttackJetProps`, `EnemyAction`, `useTestJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
+- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `EnemyAction`, `useTestJetProps`, `useAttackJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
 - `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `peur`, `EffectFlags`, `terreur`, `animosite`, `calme-d-approche`, `recoveryTarget`, +54 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +27 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `amphibie`, `Formula`, `animosite`, `EnemyTurnInput`, `arboricole`, `arme`, +26 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +7 fichiers
 
