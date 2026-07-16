@@ -277,9 +277,20 @@ appliers du jour.
   dernière navigation, jamais en fin de parcours.
 - **Captures d'écran** : le dossier d'atterrissage DÉPEND du serveur Playwright MCP — souvent
   `.playwright-mcp/` (gitignoré), mais la recette 2026-07-11 a constaté l'écriture à la RACINE du repo
-  (fichier non gitignoré → poison potentiel pour un commit/deploy). NE PAS présumer : vérifier où
-  atterrit la 1ʳᵉ capture, et si c'est hors `.playwright-mcp/`, la DÉPLACER hors du repo (ou dans
-  `.playwright-mcp/`) IMMÉDIATEMENT. `%TEMP%` reste rejeté (« outside allowed roots »).
+  (fichier non gitignoré → poison potentiel pour un commit/deploy). Les SEULES racines autorisées en
+  écriture par l'outil sont la RACINE du repo et `.playwright-mcp\` du repo (`%TEMP%` reste rejeté,
+  « outside allowed roots ») ; une capture SANS chemin explicite atterrit donc à la RACINE du repo.
+  NE PAS présumer : vérifier où atterrit la 1ʳᵉ capture, et si c'est hors `.playwright-mcp/`, la
+  DÉPLACER hors du repo IMMÉDIATEMENT — l'arbre git est PARTAGÉ (d'autres sessions y écrivent).
+- **« Browser already in use » / « Target page… has been closed » PERSISTANT (2026-07-16)** : si
+  l'erreur revient après 2 tentatives, ce n'est PAS une contention active mais un lock Chrome MORT
+  (reliquat d'une session Playwright jamais fermée proprement, pipe `--remote-debugging-pipe`
+  orphelin) — signature : les PID `chrome.exe` du profil concerné restent FIGÉS (zéro churn) entre
+  deux vérifications. Récupération : identifier UNIQUEMENT les processus du profil dédié
+  `ms-playwright-mcp\<id>` par leur ligne de commande (ex. `Get-CimInstance Win32_Process -Filter
+  "Name='chrome.exe'" | Where-Object { $_.CommandLine -like '*ms-playwright-mcp*' }`), puis
+  `Stop-Process` sur CES PID uniquement — JAMAIS un kill global par nom d'image (`chrome.exe`
+  seul) : d'autres Chrome tournent sur la machine, dont celui de l'utilisateur.
 - **Jamais de `dispatchEvent`/`MouseEvent` synthétique** pour cliquer un token/bouton — provoque de
   FAUSSES erreurs `setPointerCapture` (l'élément n'a jamais reçu de vrai pointeur). Utiliser les
   VRAIS clics Playwright (`browser_click`, sélecteur `data-cid`/rôle/texte).
