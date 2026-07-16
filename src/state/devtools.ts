@@ -32,8 +32,7 @@ import { willAutoResolve } from './combatAuto';
 import { aiDriven } from './combatGate';
 import type { Combatant } from '../engine/types';
 import { makeRNG } from '../engine/dice';
-import { fillDraftDefaults } from '../ui/creator/creatorDefaults';
-import { stepIds as creatorStepIds, type StepId as CreatorStepId, type CreatorDraft } from '../ui/creator/draft';
+import { t } from '../i18n';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
  *  recette navigateur (`__wfrp.lastRoll()`), JAMAIS dans l'état de jeu persisté (module DEV seul,
@@ -1341,23 +1340,16 @@ export function buildApi() {
     },
 
     /** RECETTE #518 : remplit le brouillon du créateur de personnage OUVERT avec des défauts VALIDES
-     *  (`fillDraftDefaults`, `ui/creator/creatorDefaults.ts`) jusqu'à `uptoStep` incluse (défaut :
-     *  dernière étape — prêt à créer), puis avance l'étape affichée. SETUP UNIQUEMENT (sauter jusqu'à
-     *  une étape sans dérouler les tirages/choix un par un) — le flux joueur réel se teste aux clics,
-     *  jamais via ce raccourci. Couture `CharacterCreator.tsx` (`window.__wfrpCreator`, même patron que
-     *  `__wfrpSetHover`) : erreur lisible si le créateur n'est pas monté à l'écran. */
-    fillCreatorDefaults: (uptoStep?: CreatorStepId) => {
-      const w = window as unknown as {
-        __wfrpCreator?: { get: () => CreatorDraft; set: (next: CreatorDraft) => void; setStep: (id: CreatorStepId) => void };
-      };
+     *  jusqu'à `uptoStep` incluse (défaut : dernière étape — prêt à créer), puis avance l'étape
+     *  affichée. SETUP UNIQUEMENT (sauter jusqu'à une étape sans dérouler les tirages/choix un par un)
+     *  — le flux joueur réel se teste aux clics, jamais via ce raccourci. Couture `CharacterCreator.tsx`
+     *  (`window.__wfrpCreator.fill`, même patron que `__wfrpSetHover`) : devtools n'importe RIEN de
+     *  `src/ui` (règle 3, layering) — la logique de remplissage (`fillDraftDefaults`) et les ids
+     *  d'étape restent côté `ui/creator`. Erreur lisible si le créateur n'est pas monté à l'écran. */
+    fillCreatorDefaults: (uptoStep?: string) => {
+      const w = window as unknown as { __wfrpCreator?: { fill: (upto?: string) => string } };
       const c = w.__wfrpCreator;
-      if (!c) return '✗ créateur non monté — ouvrir l\'écran de création de personnage (__wfrp.screen(\'creator\') ou équivalent)';
-      const ids = creatorStepIds();
-      const target = uptoStep ?? ids[ids.length - 1];
-      if (!ids.includes(target)) return `✗ étape « ${target} » inconnue — ids : ${ids.join(', ')}`;
-      c.set(fillDraftDefaults(c.get(), target));
-      c.setStep(target);
-      return `✓ brouillon rempli jusqu'à « ${target} » (${ids.indexOf(target) + 1}/${ids.length})`;
+      return c ? c.fill(uptoStep) : t('dev.creatorNotMounted');
     },
   };
 }

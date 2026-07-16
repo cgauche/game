@@ -74,6 +74,7 @@ import { bodyHeight } from '../../gameIso/rig/composeRig';
 import { hash32 } from '../../gameIso/detail/hash';
 import { previewHero } from './CreatorSummary';
 import { CreatorStepFrame, StepHeader, Section, Band, XpBadge, type StepZones } from './CreatorStepFrame';
+import { fillDraftDefaults } from './creatorDefaults';
 import { QtyStepper } from '../QtyStepper';
 import { CreatorDice } from './CreatorDice';
 import { useRollFrisson, prefersReducedMotion } from '../useRollFrisson';
@@ -242,12 +243,17 @@ export function CharacterCreator() {
   const canNext = err == null;
 
   // Recette (DEV, #518) : couture __wfrp.fillCreatorDefaults — même patron que __wfrpSetHover
-  // (gameIso/stage/useStagePointer.ts) : le composant pose get/set/setStep sur window, le helper
-  // devtools (state/devtools.ts) les consomme. SETUP UNIQUEMENT (jamais le flux joueur réel).
+  // (gameIso/stage/useStagePointer.ts) : le composant pose get/set/setStep/fill sur window, le
+  // helper devtools (state/devtools.ts) les consomme. SETUP UNIQUEMENT (jamais le flux joueur réel).
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     const w = window as unknown as {
-      __wfrpCreator?: { get: () => CreatorDraft; set: (next: CreatorDraft) => void; setStep: (id: StepId) => void };
+      __wfrpCreator?: {
+        get: () => CreatorDraft;
+        set: (next: CreatorDraft) => void;
+        setStep: (id: StepId) => void;
+        fill: (upto?: string) => string;
+      };
     };
     w.__wfrpCreator = {
       get: () => d,
@@ -255,6 +261,14 @@ export function CharacterCreator() {
       setStep: (id) => {
         const idx = stepIds().indexOf(id);
         if (idx !== -1) setStep(idx);
+      },
+      fill: (upto) => {
+        const ids2 = stepIds();
+        const target = (upto && ids2.includes(upto as StepId) ? upto : ids2[ids2.length - 1]) as StepId;
+        if (upto && !ids2.includes(upto as StepId)) return `✗ étape « ${upto} » inconnue — ids : ${ids2.join(', ')}`;
+        setD((cur) => fillDraftDefaults(cur, target));
+        setStep(ids2.indexOf(target));
+        return `✓ brouillon rempli jusqu'à « ${target} » (${ids2.indexOf(target) + 1}/${ids2.length})`;
       },
     };
     return () => { delete w.__wfrpCreator; };

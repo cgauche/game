@@ -702,4 +702,6 @@ export const fr = {
   'cs.cannotDispel': 'Il faut la compétence Langue (Magick) pour dissiper un sort.',
   'cs.dispelRoll': '{name} — Dissipation de {spell} : {roll}/{target} → DR {sl} (cumul {total}/{ni}).',
   'cs.dispelDone': '{spell} est dissipé{extra}.',
+  // Recette navigateur (DEV, __wfrp) — messages de couture, hors narration de partie.
+  'dev.creatorNotMounted': "✗ créateur non monté — ouvrir l'écran de création de personnage (__wfrp.screen('creator') ou équivalent)",
 } as const;
