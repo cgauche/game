@@ -51,7 +51,6 @@ export const PART_VIEW_RATCHET = new Set([
   'artiste:jambes', // Artiste — manque profile+back ; servi : silhouette generique
   'bailli:jambes', // Bailli — manque profile+back ; servi : silhouette generique
   'boucher-ogre:bras', // Boucher Ogre — manque profile+back ; servi : FRONT PLAQUE
-  'cavalier:bras', // Cavalier — manque profile+back ; servi : FRONT PLAQUE
   'cavalier:jambes', // Cavalier — manque profile+back ; servi : silhouette generique
   'chamane-bray:jambes', // Chamane-Bray — manque profile+back ; servi : silhouette generique
   'charlatan:jambes', // Charlatan — manque profile+back ; servi : silhouette generique
@@ -64,38 +63,25 @@ export const PART_VIEW_RATCHET = new Set([
   'cocher:jambes', // Cocher — manque profile+back ; servi : silhouette generique
   'colporteur:jambes', // Colporteur — manque profile+back ; servi : silhouette generique
   'conseiller:jambes', // Conseiller — manque profile+back ; servi : silhouette generique
-  'contrebandier:bras', // Contrebandier — manque profile+back ; servi : FRONT PLAQUE
   'contrebandier:jambes', // Contrebandier — manque profile+back ; servi : silhouette generique
-  'coureur-d-egout:bras', // Coureur d'égout — manque profile+back ; servi : FRONT PLAQUE
   'coureur-d-egout:jambes', // Coureur d'égout — manque profile+back ; servi : silhouette generique
   'coureur-d-egout:tete', // Coureur d'égout — manque profile+back ; servi : silhouette generique
   'coureur-d-egout:torse', // Coureur d'égout — manque profile+back ; servi : silhouette generique
   'courtisans:jambes', // Courtisans — manque profile+back ; servi : silhouette generique
   'courtisans:torse', // Courtisans — manque profile+back ; servi : silhouette generique
-  'cultiste:bras', // Cultiste — manque profile+back ; servi : FRONT PLAQUE
-  'cultiste:jambes', // Cultiste — manque profile+back ; servi : silhouette generique
-  'cultiste:tete', // Cultiste — manque profile+back ; servi : silhouette generique
-  'debardeur:bras', // Débardeur — manque profile+back ; servi : FRONT PLAQUE
   'debardeur:jambes', // Débardeur — manque profile+back ; servi : silhouette generique
   'demonette:jambes', // Démonette — manque profile+back ; servi : silhouette generique
   'duelliste:jambes', // Duelliste — manque profile+back ; servi : silhouette generique
-  'eclaireur:bras', // Éclaireur — manque profile+back ; servi : FRONT PLAQUE
   'eclaireur:jambes', // Éclaireur — manque profile+back ; servi : silhouette generique
-  'emissaire:bras', // Émissaire — manque profile+back ; servi : FRONT PLAQUE
   'emissaire:jambes', // Émissaire — manque profile+back ; servi : silhouette generique
-  'enqueteur:bras', // Enquêteur — manque profile+back ; servi : FRONT PLAQUE
   'enqueteur:jambes', // Enquêteur — manque profile+back ; servi : silhouette generique
-  'entremetteur:bras', // Entremetteur — manque profile+back ; servi : FRONT PLAQUE
   'entremetteur:jambes', // Entremetteur — manque profile+back ; servi : silhouette generique
   'erudit:jambes', // Érudit — manque profile+back ; servi : silhouette generique
   'esclave-skaven:jambes', // Esclave skaven — manque profile+back ; servi : silhouette generique
   'esclave-skaven:torse', // Esclave skaven — manque profile+back ; servi : silhouette generique
-  'espion:bras', // Espion — manque profile+back ; servi : FRONT PLAQUE
   'espion:jambes', // Espion — manque profile+back ; servi : silhouette generique
-  'femme-du-fleuve:bras', // Femme du fleuve — manque profile+back ; servi : FRONT PLAQUE
   'femme-du-fleuve:jambes', // Femme du fleuve — manque profile+back ; servi : silhouette generique
   'garde:jambes', // Garde — manque profile+back ; servi : silhouette generique
-  'gardechamps:bras', // Gardechamps — manque profile+back ; servi : FRONT PLAQUE
   'gardien-de-troupeaux-de-rhinox:bras', // Gardien de troupeaux de rhinox — manque profile+back ; servi : FRONT PLAQUE
   'geant:jambes', // Géant — manque profile+back ; servi : silhouette generique
   'gladiateur:bras', // Gladiateur — manque profile+back ; servi : FRONT PLAQUE
