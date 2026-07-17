@@ -591,9 +591,9 @@
 
 /* ── Onglet « État » (registre compact, arbitrage user 2026-07-17) : bandes de section (`Band`) +
    `PlaqueRow` par affliction — l'ancienne silhouette organisatrice (rig + zones dessinées) est MORTE.
-   La bande de zones TOUCHÉES en tête (`ZoneBand`, `PlaqueGrid`) l'est AUSSI (lot « corps-index »,
-   #492) : ce résumé par Localisation vit désormais dans le CORPS de la colonne (`FigTile.zoneBadges`,
-   `CharacterSheet.tsx`), pas ici. L'état calme (RAS) n'affiche plus la figurine (colonne aside déjà
+   Le résumé par Localisation vit dans le CORPS de la colonne (`FigTile.zoneBadges`,
+   `CharacterSheet.tsx`), pas ici : ce registre n'affiche pas de bande de zones en tête (#492).
+   L'état calme (RAS) n'affiche plus la figurine (colonne aside déjà
    en pied grand format, doublon) : message + sous-ligne discrète seuls.
 
    Grammaire de carte (lot #492 « chevet », carrière de styles depuis `docs/plans/2026-07-17-
@@ -601,25 +601,9 @@
    elles servent la charte) : liseré de gravité (`data-tone`, déjà posé plus bas), icône + titre
    sobre + sous-ligne petites capitales (`PlaqueRow` inchangée), chips d'effet net SOUS le titre
    (`fx`, `PlaqueRow.tsx`/`plaque-row.css`) — jamais à côté du nom. La valeur de droite (l'horloge/le
-   cumul) devient DISCRÈTE ici (elle restait grasse/16px ailleurs — « ces textes énormes en gras,
-   pourquoi ? », verdict user) : ── */
-.sheet-etat .plaque-value {
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--muted);
-  min-width: 0;
-}
-/* Bande de synthèse DESTIN (`DestinBand`, `EtatPanel.tsx`) — 3 jauges à mots pleins en tête de
-   registre, s'enroulent avant de rétrécir (jamais de scroll horizontal). */
-.etat-destin-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
-}
-.etat-destin-row .notch-gauge {
-  flex: 1 1 200px;
-  min-width: 0;
-}
+   cumul) est DISCRÈTE ici (elle restait grasse/16px ailleurs — « ces textes énormes en gras,
+   pourquoi ? », verdict user) via la variante PARTAGÉE `PlaqueRow.valueMuted` (migrée dans
+   `plaque-row.css`, LOT L addendum pt.5 — zéro règle de valeur ICI). ── */
 .etat-ras {
   display: flex;
   flex-direction: column;
@@ -637,26 +621,48 @@
   font-size: 13px;
   color: var(--muted);
 }
-/* Liserés de gravité du registre (pt.5, #492) : attribut `data-tone` posé sur la bande de section
-   (`Section`, `EtatPanel.tsx`) — jamais une classe par ton (patron déjà tenu par l'ancienne silhouette
-   organisatrice, `data-tone` de `NotchGauge`). Sang = critiques/états, ambre = séquelles/maladies,
-   violet = corruption/mutations. `PlaqueRow` n'expose pas de prop dédiée (hors périmètre du lot) :
-   ciblée en DESCENDANT, la plaque garde son propre rayon de bordure (`border-radius`, plaque-row.css). */
+/* Grammaire de carte par FAMILLE (pt.5, #492 + addendum LOT L pt.4, verdict user sur la planche
+   chevet) : attribut `data-tone` posé sur la bande de section (`Section`, `EtatPanel.tsx`) — jamais
+   une classe par ton (patron déjà tenu par l'ancienne silhouette organisatrice, `data-tone` de
+   `NotchGauge`). Sang = critiques/états, ambre = séquelles/maladies, violet = corruption/mutations.
+   `PlaqueRow` n'expose pas de prop dédiée (hors périmètre du lot) : ciblée en DESCENDANT, la plaque
+   garde son propre rayon de bordure (`border-radius`, plaque-row.css).
+   (a)/(b) Liseré ÉPAIS + fond de carte TEINTÉ par famille — user 2026-07-17, verbatim : « En plus
+   la maquette montre des bandes colorés non ? Pourquoi on ne les as pas ? ».
+   (c) Jauge de Corruption teintée à SA famille via la primitive elle-même (`NotchGauge`
+   `tone="corruption"`, `gauges.css`) — jamais un descendant `.notch-gauge` posé ICI (perdait la
+   bataille de spécificité contre `.creator-band-right .notch-gauge […] span[data-on]`, band.css). */
 [data-tone] .plaque-row {
-  border-left: 3px solid transparent;
+  border-left: 4px solid transparent;
 }
 [data-tone='sang'] .plaque-row {
   border-left-color: var(--blood);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--blood) 8%, var(--atelier-plate-hi)), color-mix(in srgb, var(--blood) 8%, var(--atelier-plate-lo)));
 }
+/* Ambre calibré à l'intensité perçue de sang/violet (2026-07-17, juge vision) : `--gold2` est un or
+   CLAIR (luminance ~0,48) — au même % de mix que `--blood`/`--corruption-violet` (luminance ~0,03),
+   la carte Séquelle se lisait « sélectionnée » (liseré vif + fond saturé) alors que rien ne l'est.
+   `--atelier-bronze-mid` (bronze sourd de la charte statut, luminance ~0,19) rapproche l'ambre du
+   même ordre de grandeur que les deux autres familles, à un % de mix réduit d'autant. */
 [data-tone='ambre'] .plaque-row {
-  border-left-color: var(--gold2);
+  border-left-color: var(--atelier-bronze-mid);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--atelier-bronze-mid) 6%, var(--atelier-plate-hi)), color-mix(in srgb, var(--atelier-bronze-mid) 6%, var(--atelier-plate-lo)));
 }
 [data-tone='violet'] .plaque-row {
   border-left-color: var(--corruption-violet);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--corruption-violet) 10%, var(--atelier-plate-hi)), color-mix(in srgb, var(--corruption-violet) 10%, var(--atelier-plate-lo)));
 }
-/* Compteur de DESTIN (pt.4, #492) : « actives N/BE » (Critiques), « phys N/BE · ment M/BFM »
-   (Mutations) — composent désormais `NotchGauge` (ton `GaugeTone` porté par la primitive), rendues
-   dans le slot droit de la bande (`Band`/`.creator-band-right`, `band.css`) — aucune classe ICI. */
+[data-tone='sang'] .notch-gauge .notch-gauge__notch[data-on] {
+  background: var(--blood);
+  border-color: var(--blood);
+}
+[data-tone='ambre'] .notch-gauge .notch-gauge__notch[data-on] {
+  background: var(--atelier-bronze-mid);
+  border-color: var(--atelier-bronze-mid);
+}
+/* Compteurs de Seuils (bande `Seuils` en tête du registre) : `NotchGauge` (ton `GaugeTone` porté par
+   la primitive), empilées ALIGNÉES via `.notch-gauge-stack` (patron de groupe, `gauges.css`) —
+   aucune classe ICI. */
 /* Gangrène du cadre (pt.6, #492) : l'or du bandeau de tête (`.modal { border-top: 4px solid --gold }`,
    components.css) et le halo se ternissent progressivement de violet-noir depuis un coin, selon la
    Corruption du héros (`data-corruption`, posé par `CharacterSheet.tsx` via `corruptionThresholdExceeded`,

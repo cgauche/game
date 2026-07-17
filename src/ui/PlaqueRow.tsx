@@ -22,6 +22,7 @@ export function PlaqueRow({
   onClick,
   title,
   className,
+  valueMuted,
 }: {
   /** Préfixe : abréviation codex-liée ou icône, colonne fixe en tête de plaque. */
   prefix?: ReactNode;
@@ -58,6 +59,11 @@ export function PlaqueRow({
   onClick?: () => void;
   title?: string;
   className?: string;
+  /** Variante REGISTRE (LOT L, addendum pt.5) : valeur de droite DISCRÈTE (11px, `--muted`) au lieu
+   *  du grand laiton élu — posée en attribut (`data-value-muted`), rien qu'une RÈGLE dans
+   *  `plaque-row.css` (SOURCE UNIQUE, jamais un scope par onglet). Les registres de la fiche (État,
+   *  Possessions) la portent ; le registre de caracs du créateur garde le gros gras canon. */
+  valueMuted?: boolean;
 }) {
   const cls = ['plaque-row', selected ? 'sel' : '', rolling ? 'rolling' : '', className ?? ''].filter(Boolean).join(' ');
   // La rangée ACTIVE (celle qui roule) se ramène dans le viewport du rail scrollable (#535) — un
@@ -85,11 +91,11 @@ export function PlaqueRow({
     </>
   );
   return onClick ? (
-    <button ref={ref} type="button" className={cls} title={title} onClick={onClick}>
+    <button ref={ref} type="button" className={cls} title={title} onClick={onClick} data-value-muted={valueMuted ? '' : undefined}>
       {inner}
     </button>
   ) : (
-    <div ref={ref} className={cls} title={title}>
+    <div ref={ref} className={cls} title={title} data-value-muted={valueMuted ? '' : undefined}>
       {inner}
     </div>
   );

@@ -89,9 +89,10 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/merchant.css': 1,
   // +1 (#492 lot POSSESSIONS B) : `.inv-actionbar` — barre d'actions de la rangée ÉLUE du registre
   // Possessions (motif « contrôles qui s'enroulent », hérité 1:1 de l'ancienne `.inv-row`).
-  // +1 (lot #492 « chevet », grammaire de carte) : `.etat-destin-row` — les 3 jauges de la bande
-  // DESTIN s'enroulent avant de rétrécir (colonne bornée `.sheet-main`, jamais de scroll horizontal).
-  'styles/sheet.css': 4,
+  // -1 (juge vision, correction d'alignement de la bande Seuils) : `.etat-destin-row` MEURT — les 3
+  // jauges composent `.notch-gauge-stack` (grid, patron de groupe de `NotchGauge`, gauges.css) au
+  // lieu du flex qui s'enroulait sans aligner les 3 compteurs entre eux.
+  'styles/sheet.css': 3,
   'styles/world-meta.css': 18,
   'styles/city-hub.css': 1,
   'styles/voyage.css': 3,
@@ -180,6 +181,10 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
 const BARE_BUTTON_CANON = /\b(btn|chip|seg|dicewell|cc-step)\b/;
 const BARE_BUTTON_BASELINE: Record<string, number> = {
   'ActionBar.tsx': 1,
+  // +1 (LOT L, 2026-07-17) : titre de bande CLIQUABLE (`onTitleClick`, registre État → catégorie
+  // Compendium) — bouton de RESET pur (`all: unset`) posé UNE fois dans la primitive PARTAGÉE
+  // elle-même (`Band.tsx`), jamais recopié à l'appel : tout consommateur de `Band` hérite du patron.
+  'Band.tsx': 1,
   'CityHubScreen.tsx': 1,
   // +1 (2026-07-16, #496) : carte-bouton de talent 5c (race « A ou B ») — bouton BESPOKE
   // `.talent-option` (creator.css), même famille que `.fig-tile`/`.plaque-row` mais sans
@@ -259,7 +264,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // LifeBar (#492, arbitrage 2026-07-17 « on sait gérer de vraies barres de blessures ») : +5
   // (27 → 32) — `.life-bar(-label|-track|-fill|-value)`, primitive dédiée (patron NotchGauge, même
   // module « jauges »), remplace `.ptile-gauge`/`.ptile-pv` (morts, contrepartie en hud.css).
-  'styles/gauges.css': 32,
+  // +1 (juge vision, correction d'alignement bande Seuils) : `.notch-gauge-stack` — patron de GROUPE
+  // de la primitive `NotchGauge` (colonnes label/piste/valeur alignées en `subgrid` entre N jauges
+  // empilées), posé ICI (à côté de la primitive) et non dans `sheet.css` (appelant).
+  'styles/gauges.css': 33,
   // #417 suite (consécration HeroSheet) : -6 — .candidate-detail-head/-fig/-id (bande
   // d'en-tête) + override .candidate-detail-pane .creator-derived (dérivées 2 colonnes) morts,
   // portés par hero-sheet.css (SOURCE UNIQUE partagée avec la fiche vivante du créateur).
@@ -276,7 +284,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // plaque-row.css, purgés en regard).
   // Onglet Compétences & Talents composant `HeroSheet` (arbitrage 2026-07-17) : -5 (148 -> 143) -- `.skill-grid`/
   // `.skill-line`/`.sk-name`/`.sk-val`/`.sk-adv` MIGRENT vers hero-sheet.css (module de la primitive
-  // qui rend desormais la table a valeurs), contrepartie ASSUMEE en regard.
+  // qui rend la table à valeurs (source unique), contrepartie ASSUMÉE en regard.
   // Lot POSSESSIONS (A) : -2 (143 -> 141) -- mort du mannequin `.equip-doll`/`.equip-figure`
   // (EquipmentPanel, #492) : le rig grand format vit desormais dans la colonne de la fiche.
   // Lot POSSESSIONS (B) : -12 (141 -> 129) -- mort de l'ancienne rangée `.inv-row`/`.ir-*`
@@ -421,7 +429,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/house-rules.css': 9,
   // LifeBar (#492, arbitrage 2026-07-17) : -2 (145 → 143) — `.ptile-gauge`/`.ptile-pv` MEURENT (le
   // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit
-  // désormais dans `LifeBar` (gauges.css).
+  // dans `LifeBar` (gauges.css).
   'styles/hud.css': 143,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
@@ -484,8 +492,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // registre, « ces textes énormes en gras, pourquoi ? »), `.etat-destin-row`/`.notch-gauge` (bande de
   // synthèse Destin), `.life-bar__label`/`.life-bar__value` (discipline d'alignement gauche/droite de
   // la colonne, patron `.sheet-idrow*` déjà tenu ici).
-  // Fusion vague-2 + fiche : 100 (précédent fusionné) + 6 (lot chevet) = 106.
-  'styles/sheet.css': 106,
+  // LOT L addendum pt.5 (durci, 2026-07-17) : -1 (104 → 103) — `.plaque-value` (valeur discrète)
+  // MIGRE dans la primitive (`plaque-row.css`, variante `[data-value-muted]`) et ne se cite plus ICI.
+  // Fix d'alignement de la bande Seuils (juge vision, 2026-07-17) : -1 (103 → 102) — `.etat-destin-row`
+  // MEURT (règle purgée, cf. FLEX_WRAP_BASELINE ci-dessus) : les 3 jauges composent `.notch-gauge-stack`
+  // (gauges.css, à côté de la primitive `NotchGauge`) au lieu d'un scope local à cet écran.
+  // Fusion vague-2 + fiche : 106 (précédent fusionné) - 2 (LOT L+M) = 104.
+  'styles/sheet.css': 104,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -519,7 +532,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).
   // Onglet Compétences & Talents composant `HeroSheet` (`skillsVariant='valeurs'`, arbitrage 2026-07-17) : +5 —
   // `.skill-grid`/`.skill-line`/`.sk-name`/`.sk-val`/`.sk-adv` migrés depuis combat-modals.css (leur
-  // rendu vit désormais dans la primitive, contrepartie ASSUMÉE en regard).
+  // rendu vit dans la primitive, contrepartie ASSUMÉE en regard).
   'styles/hero-sheet.css': 12,
   // Ossature 2 zones du créateur (CreatorStepFrame, lot « ossature enforcée » #393) — slots
   // `.creator-step-(action|choice|desc)` + dés DORÉS planche (`.rm-die-*` scopés au gabarit et aux
@@ -567,7 +580,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Bande titrée (`Band`, extraite du créateur #492 Lot 1c) — module primitive dédiée (patron
   // rose.css/frames.css) : `.creator-band(-head|-right)` + les descendants `.hint`/`.notch-gauge`
   // (jauge du tirage, complète la primitive `NotchGauge` sans fork).
-  'styles/band.css': 5,
+  // +1 (LOT L, 2026-07-17) : `.creator-band-title-link` — reset du bouton-titre CLIQUABLE
+  // (`onTitleClick`, registre État → catégorie Compendium), posé UNE fois dans la primitive.
+  // +1 (juge vision, 2026-07-17) : `.creator-band-title-affordance` — glyphe d'affordance codex
+  // (discret au repos, plein contraste au survol/focus), posé UNE fois dans la primitive.
+  'styles/band.css': 7,
   // Astrolabe de la roue céleste (`CelestialWheel`, migration étape 4 du lot ossature) : les MATIÈRES
   // du cadran aux valeurs du `svg` « 4 — Signe astral » de la planche FINALE. 14 pour 3 qui vivaient
   // dans creator.css : contrepartie ASSUMÉE de la fidélité (l'ancienne roue était un croquis à deux

@@ -144,6 +144,17 @@ button.plaque-row:hover {
   font-size: 16px;
   color: var(--atelier-brass-elu);
 }
+/* Variante REGISTRE (LOT L, addendum pt.5, durci : « le code est dupliqué ? ») : valeur DISCRÈTE
+   plutôt que le grand laiton élu — migrée ICI depuis `.sheet-etat .plaque-value` (sheet.css, LOT K),
+   qui MEURT. Portée par la primitive (prop `valueMuted` → attribut), pas un scope par onglet : les
+   DEUX registres de la fiche (État, Possessions) passent la prop, le registre de caracs du créateur
+   (canon gros gras) ne la porte pas. */
+[data-value-muted] .plaque-value {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  min-width: 0;
+}
 .plaque-row.sel {
   background: linear-gradient(160deg, var(--atelier-plaque-hi), var(--atelier-plaque-lo));
   border-color: var(--gold);
