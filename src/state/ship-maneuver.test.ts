@@ -132,7 +132,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(lisse.movement).toBe(plain.movement + 1); // … mais +1 au Mouvement de base
   });
 
-  it('« Bouteur » (Amélioration) → +20 au Test de Navigation pour diriger (T2C ch.10 l.66) : +2 DR à la manœuvre', () => {
+  it('« Bouteur » (Amélioration) → +20 au Test de Navigation pour diriger (T2C ch.12 l.66) : +2 DR à la manœuvre', () => {
     // Même barreur/seed → même navDR ; Bouteur ajoute +2 DR (÷10 de +20) au DR final, et son moveMod −1 baisse le M.
     const run = (upgrades?: NavalTraitRef[]) => {
       seedBattleRng(7);
@@ -146,7 +146,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(bouteur.dr).toBe(plain.dr + 2); // +20 au Test → +2 DR d'équipage
   });
 
-  it('« Gréement de course » (Amélioration) → −10 au Test de Navigation (T2C ch.10 l.137) : −1 DR à la manœuvre', () => {
+  it('« Gréement de course » (Amélioration) → −10 au Test de Navigation (T2C ch.12 l.137) : −1 DR à la manœuvre', () => {
     const run = (upgrades?: NavalTraitRef[]) => {
       seedBattleRng(7);
       const s = { ...ship(), upgrades } as Combatant;

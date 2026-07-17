@@ -45,7 +45,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Absorption', 'engloutissement de fin de Round MÉCANISÉ 100% data-driven (`absorption.effects` : onRoundEnd Empêtré×BF + Empoigné + Digéré ; digestion drain BF ignore PA/BE + créature guérit ; redirection onWoundLoss ; un/Round ; purge à la mort) — dispatché par `fireTriggers`, cf. `absorption.test.ts` (EDO p.147)'],
   ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects — gating « kind=morsure » sans Condition Flow)'],
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
-  // Bestiaire fluvial (T2C ch.13) — mécanique AUTHORÉE en `effects` (fireTriggers), comme Constricteur/Venin.
+  // Bestiaire fluvial (T2C ch.15) — mécanique AUTHORÉE en `effects` (fireTriggers), comme Constricteur/Venin.
   ['S\'accrocher pour se nourrir', 'attache post-Morsure + drain 1 PB/Round — `effects` AUTHORÉ (condition empetre grapple onHit + wounds onRoundStart on grappled, fireTriggers)'],
   ['Engloutir', 'engloutit à la touche : Empêtré Force=créature + drain 1 PB/Round — `effects` AUTHORÉ (fireTriggers onHit + onRoundStart)'],
   ['Salive anticoagulante', 'Hémorragique sur Morsure — `effects` AUTHORÉ (condition hemorragique, fireTriggers onHit)'],
@@ -134,10 +134,10 @@ const DISPATCH = new Set<string>([
   'Corruption mentale', 'Démoniaque', 'Élite', 'Endurant', 'Éthéré', 'Fabriqué', 'Foulée', 'Furtif',
   'Grand', 'Immunité', 'Infravision', 'Insensible à la douleur', 'Instable', 'Intelligent', 'Magique',
   'Meneur', 'Mutation', 'Nerveux', 'Nuée', 'Parasité', 'Perturbant', 'Protection', 'Rage', 'Rapide',
-  // Rampant (T2C ch.13) : capability `noRun` (donnée) → `runMultiplier`=0 (budget de Course nul), la Marche
+  // Rampant (T2C ch.15) : capability `noRun` (donnée) → `runMultiplier`=0 (budget de Course nul), la Marche
   // reste intacte. Dispatché (capability lue par hasNoRun).
   'Rampant',
-  // Salive analgésique (T2C ch.13) : capability `wakelessBite` (donnée) → le modifier de touche `wake-sleeper`
+  // Salive analgésique (T2C ch.15) : capability `wakelessBite` (donnée) → le modifier de touche `wake-sleeper`
   // NE réveille PAS une proie endormie (Inconscient magique) quand CETTE créature l'attaque (morsure indolore),
   // là où toute autre attaque la réveille. Dispatché (capability lue par le modifier).
   'Salive analgésique',

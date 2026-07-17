@@ -1,5 +1,5 @@
 /**
- * #46 — Maladies transmises par l'eau (T2C ch.14 p.91) : tables d'exposition hydrique en DONNÉE
+ * #46 — Maladies transmises par l'eau (T2C ch.16 p.91) : tables d'exposition hydrique en DONNÉE
  * (`water-exposure.json`, lookup `findTableEntry`) + Effet de scène `waterExposure` (Test de
  * Résistance Intermédiaire modifié par étape de cascade) + contraction DIRECTE sur échec
  * (« Si le Test de Résistance est raté, lancez un dé … avec un modificateur de +10 pour chaque DR

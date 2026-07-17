@@ -9,7 +9,7 @@ import type { Combatant, SkillInstance } from '../engine/types';
 import type { MapRoute, WorldMap } from './worldMap';
 
 /**
- * VOYAGE FLUVIAL (T2C ch.5) — la descente du Reik en barge JOUÉE jour par jour. Depuis la Phase B, TOUS
+ * VOYAGE FLUVIAL (T2C ch.7) — la descente du Reik en barge JOUÉE jour par jour. Depuis la Phase B, TOUS
  * les jets du JOUR (Agilité de rame, Navigation, Louvoyage, sauvegardes de vent, évitement des périls)
  * passent par la MÊME cascade influençable (Chance/Pacte/Résilience) que la nuit — plus d'auto-résolution
  * inline. La cascade du jour (`purpose:'travelDay'`) se clôt sur le calcul des km (IDENTIQUE à l'ancien
@@ -180,7 +180,7 @@ describe('PARITÉ — km / Dégâts de coque IDENTIQUES à l\'ancien chemin inli
 });
 
 /**
- * BARRAGE de débris (T2C ch.5 l.128) — CHOIX joueur : forcer au bélier (+10 Dégâts à la coque) ou déblayer
+ * BARRAGE de débris (T2C ch.7 l.128) — CHOIX joueur : forcer au bélier (+10 Dégâts à la coque) ou déblayer
  * à la main (3d10 objets × 4d10 Enc, coque intacte, temps perdu). Défaut de cadence commandée = déblayer.
  */
 describe('barrage fluvial (l.128) — forcer au bélier OU déblayer à la main', () => {
@@ -293,7 +293,7 @@ describe('influence effective — Résilience sur un jet du jour fluvial', () =>
   });
 });
 
-describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExposure EXERCÉ après le jour', () => {
+describe('exposition hydrique de la descente (T2C ch.16) — l\'Effet waterExposure EXERCÉ après le jour', () => {
   it('un tirage garanti (chance 100 %) ouvre la cascade de Test de Résistance (Exposition) à la clôture du jour', () => {
     launch(false, 45, { riverExposure: { source: 'aval-grande-ville-8km', mode: 'ingestion', chancePct: 100 } });
     seedBattleRng(4);
@@ -333,7 +333,7 @@ describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExpos
     expect(get().travelPlan?.interrupted).toBe(false);
   });
 
-  it('un héros peut CONTRACTER la maladie sur échec du Test d\'Exposition (contraction directe, T2C ch.14)', () => {
+  it('un héros peut CONTRACTER la maladie sur échec du Test d\'Exposition (contraction directe, T2C ch.16)', () => {
     launch(false, 45, { riverExposure: { source: 'grande-ville-marais', mode: 'ingestion', chancePct: 100 } });
     set({ party: get().party.map((h) => ({ ...h, characteristics: { ...h.characteristics, endurance: 1 } })) });
     seedBattleRng(1);

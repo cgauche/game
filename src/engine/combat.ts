@@ -53,7 +53,7 @@ export function reverseRoll(r: number): number {
 /** Gréement d'un bateau — choisit la colonne de Localisation (MDG ch.13). */
 export type ShipRig = 'avirons' | 'voile' | 'mixte';
 /** Localisation d'un coup sur un bateau — DISTINCTE de la `HitLocation` humaine. `equipements`/`cargaison`
- *  sont navales (MDG ch.13) ; `gouvernail`/`superstructure` sont fluviales (T2C ch.5). `avirons` couvre
+ *  sont navales (MDG ch.13) ; `gouvernail`/`superstructure` sont fluviales (T2C ch.7). `avirons` couvre
  *  aussi les « Rames » du bateau fluvial (mêmes avirons). */
 export type ShipLocation = 'equipage' | 'avirons' | 'greement' | 'coque' | 'equipements' | 'cargaison' | 'gouvernail' | 'superstructure';
 
@@ -61,7 +61,7 @@ interface BodyLocEntry { min: number; max: number; loc: HitLocation }
 interface ShipLocEntry { min: number; max: number; avirons: ShipLocation; voile: ShipLocation; mixte: ShipLocation }
 const BODY_SHAPES = (locJson as { personnage: { shapes: Record<string, BodyLocEntry[]> } }).personnage.shapes;
 const SHIP_LOC_ALL = locJson as unknown as { navire: { entries: ShipLocEntry[] }; 'navire-fluvial': { entries: ShipLocEntry[] } };
-/** Tables de Localisation des coups au bateau, par id : `navire` (MDG ch.13) / `navire-fluvial` (T2C ch.5). */
+/** Tables de Localisation des coups au bateau, par id : `navire` (MDG ch.13) / `navire-fluvial` (T2C ch.7). */
 const SHIP_LOC_TABLES: Record<string, ShipLocEntry[]> = {
   navire: SHIP_LOC_ALL.navire.entries,
   'navire-fluvial': SHIP_LOC_ALL['navire-fluvial'].entries,
@@ -82,7 +82,7 @@ export function hitLocationByShape(reversed: number, shape: BodyShape = 'humanoi
 }
 
 /** Localisation d'un coup (d100) sur un BATEAU du gréement donné — `ShipLocation`. `tableId` choisit la
- *  table : `navire` (MDG ch.13, défaut) ou `navire-fluvial` (T2C ch.5). Table inconnue → `navire`. */
+ *  table : `navire` (MDG ch.13, défaut) ou `navire-fluvial` (T2C ch.7). Table inconnue → `navire`. */
 export function shipHitLocation(rig: ShipRig, roll: number, tableId: string = 'navire'): ShipLocation {
   const table = SHIP_LOC_TABLES[tableId] ?? SHIP_LOC_TABLES.navire;
   return findTableEntry(table, roll)[rig];

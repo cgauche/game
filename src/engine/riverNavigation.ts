@@ -1,15 +1,15 @@
 /**
  * NAVIGATION FLUVIALE — couche PURE de **Mort sur le Reik — Compagnon, ch.5** (« Navigation fluviale »,
- * cité `T2C ch.5 l.<ligne>`), données verbatim dans `src/data/river-navigation.json` + `river-perils.json`.
+ * cité `T2C ch.7 l.<ligne>`), données verbatim dans `src/data/river-navigation.json` + `river-perils.json`.
  * Pendant fluvial de `seaNavigation.ts` (mer, MDG). Les deux couches sont DISTINCTES parce que les tables
  * RAW le sont : la mer (MDG) a 6 forces de vent + rose des vents + Salissures + Orientation ; le fleuve
- * (T2C ch.5) a une table de vent PROPRE (5 forces, direction RELATIVE arrière/côté/contraire — l.21-41),
+ * (T2C ch.7) a une table de vent PROPRE (5 forces, direction RELATIVE arrière/côté/contraire — l.21-41),
  * un Test de Navigation SIMPLE (Voile OU Ramer, un par étape — l.11-15) et ses propres Critiques de bateau
  * (l.72-94). Ce qui est réellement COMMUN (boucle jour/jour, halte de nuit, entretien quotidien, coque
  * persistée) est réutilisé côté flux (`riverVoyageFlow` réutilise `openRest`/`runDailyUpkeep`/
  * `persistHullWounds` de la machinerie de voyage), pas ré-implémenté.
  *
- * RAW modélisé (T2C ch.5) :
+ * RAW modélisé (T2C ch.7) :
  *  - **Test de Navigation** = Voile OU Ramer selon l'embarcation, regroupés sous « Navigation » (l.11) ;
  *    UN par étape de voyage (l.15, renvoi aux règles de voyage EDOC). Barreur (voile) / meilleur rameur
  *    (barque) (l.13). **Savoir (Voies fluviales)** → +1 DR (fleuves/rivières/canaux uniquement, l.13).
@@ -37,7 +37,7 @@ import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from './types';
 // ── Types de la table des vents (l.21-41) ────────────────────────────────────────────────────────
 
 export type RiverWindForceId = 'calme' | 'leger' | 'modere' | 'fort' | 'tres-fort';
-/** Direction du vent RELATIVE au bateau (T2C ch.5 l.25-33) — pas une direction cardinale (≠ mer). */
+/** Direction du vent RELATIVE au bateau (T2C ch.7 l.25-33) — pas une direction cardinale (≠ mer). */
 export type RiverWindDirId = 'arriere' | 'cote' | 'contraire';
 
 /** Cellule d'EFFET DU VENT (l.29-33) : % ajouté à la vitesse, ou un cas particulier (Dérive/Louvoyer/

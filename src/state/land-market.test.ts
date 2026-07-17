@@ -66,7 +66,7 @@ function freshState(carrier: ItemInstance | null = dili()) {
   } as never);
 }
 
-describe('#58 — commerce de cargaison terrestre (T2C ch.11)', () => {
+describe('#58 — commerce de cargaison terrestre (T2C ch.13)', () => {
   beforeEach(() => freshState());
 
   it('openLandMarket génère des offres d’achat (disponibilité 2 temps + Taille de cargaison)', () => {

@@ -11,7 +11,7 @@ import {
 } from './riverNavigation';
 
 /**
- * NAVIGATION FLUVIALE — couche PURE de T2C ch.5 (« Navigation fluviale »). Tables VERBATIM du chapitre,
+ * NAVIGATION FLUVIALE — couche PURE de T2C ch.7 (« Navigation fluviale »). Tables VERBATIM du chapitre,
  * jets déterministes (RNG injecté). Chaque assertion cite la ligne source.
  */
 
@@ -19,7 +19,7 @@ import {
 const hi: RNG = { int: (_min, max) => max };
 const lo: RNG = { int: (min) => min };
 
-describe('Table des vents (T2C ch.5 l.21-33)', () => {
+describe('Table des vents (T2C ch.7 l.21-33)', () => {
   it('force + direction tirées sur 1d10 chacun (bandes VERBATIM)', () => {
     expect(rollRiverWind(lo)).toEqual({ force: 'calme', dir: 'arriere' }); // d10=1 → Calme / Vent arrière
     expect(rollRiverWind(hi)).toEqual({ force: 'tres-fort', dir: 'contraire' }); // d10=10 → Très fort / contraire

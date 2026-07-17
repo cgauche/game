@@ -1,5 +1,5 @@
 /**
- * Schéma de `river-perils.json` — Dangers fluviaux (T2C ch.5 l.119-166 : Débris/Barrage/Rochers/Eaux
+ * Schéma de `river-perils.json` — Dangers fluviaux (T2C ch.7 l.119-166 : Débris/Barrage/Rochers/Eaux
  * peu profondes). Dérivé de `RiverPerilDef` (`src/engine/riverNavigation.ts:258-269`), seul
  * consommateur. `_source` = note de traçabilité libre (non lue par le moteur).
  */
@@ -20,8 +20,8 @@ export const schema = z.strictObject({
       obstacle: z
         .strictObject({ endurance: z.string(), enduranceMult: z.number(), wounds: z.string(), ramDamage: z.number() })
         .optional(),
-      /** Déblayage à la main (T2C ch.5 l.128 : `objects` = 3d10 éléments de `encPerObject` = 4d10 Enc) ;
-       *  `encPerHour` = débit de halage, valeur maison éditable (T2C ch.5 l.128, règle stricte 7). */
+      /** Déblayage à la main (T2C ch.7 l.128 : `objects` = 3d10 éléments de `encPerObject` = 4d10 Enc) ;
+       *  `encPerHour` = débit de halage, valeur maison éditable (T2C ch.7 l.128, règle stricte 7). */
       clear: z
         .strictObject({ objects: z.string(), encPerObject: z.string(), encPerHour: z.number() })
         .optional(),
