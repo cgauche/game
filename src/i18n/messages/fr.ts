@@ -559,6 +559,7 @@ export const fr = {
   'cs.standUp': '{name} se relève.',
   'climb.tooHard': '{name} ne peut escalader cette paroi : elle est bien trop difficile sans le Talent Grimpeur.',
   'climb.auto': '{name} escalade la paroi sans effort (Grimpant).',
+  'fall.jumpSafe': '{name} saute dans le vide et amortit sa chute : aucun Dégât.',
   'cs.manPoste': '{name} prend en main {weapon}.',
   'cs.joinPoste': '{name} rejoint l’équipe de {weapon}.',
   'cs.leavePoste': '{name} quitte {weapon}.',

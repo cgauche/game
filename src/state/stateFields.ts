@@ -83,6 +83,7 @@ const STATE_FIELDS = {
   pendingDistraire: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingManeuver: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingRun: { init: null, resetOn: ['scene', 'combatStart'] },
+  pendingFall: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingShipManeuver: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingShipBattery: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingCrewTest: { init: null, resetOn: ['scene', 'combatStart'] },
