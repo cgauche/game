@@ -11,7 +11,7 @@
  */
 import type {
   GameState,
-  PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingCrewTest, PendingShanty, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
+  PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingFall, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingCrewTest, PendingShanty, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingSteamSave, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
   PendingCorruption, PendingAttack, PendingHandGate, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
@@ -46,7 +46,7 @@ import { consumeReverseToken } from '../engine/reverseToken';
 import { rollTest, resolveOpposed, bumpSL, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR, hydrateTR } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { d100, defaultRNG, type RNG } from '../engine/dice';
-import { resolveRun } from '../engine/movement';
+import { resolveRun, resolveDeliberateFall } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { rollBatchParticipant, forceBatchParticipant } from './cascade';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
@@ -1020,6 +1020,38 @@ export const FLOWS = {
     },
   }),
 
+  /** Chute VOLONTAIRE (LDB 15 l.82) : Athlétisme Accessible (+20) — DR-driven comme `run` (Chance « +1 DR »
+   *  = 1 m de chute en moins, pas binaire). `p.attempt` (choix pré-jet, `fallChoose`) gate le jet : `false`
+   *  = saut direct SANS Test, résolu immédiatement par `fallChoose` (jamais de `roll`) ; ce flux ne roule
+   *  QUE la branche « Tenter » (`attempt===true`). */
+  fall: makeRollFlow<PendingFall>({
+    key: 'pendingFall',
+    rolled: (p) => !!p.result,
+    actor: (s, p) => actorIn(s, p.combatantId),
+    caps: { forced: true },
+    resolve: (_s, p, actor, _get, forced) => {
+      if (!actor || !p.attempt) return null;
+      if (forced) {
+        if (p.result?.success) return null; // (ancien `force.guard : !p.result?.success`)
+        const base = p.result;
+        const dr = Math.max(0, base?.dr ?? 0);
+        return { result: { success: true, roll: base?.roll ?? 1, target: base?.target, dr, effectiveMetres: Math.max(0, p.metres - dr) } };
+      }
+      return { result: resolveDeliberateFall(testValue(actor, 'athletisme'), p.metres, battleRng()) };
+    },
+    outcome: (p) => sealOutcome(!!p.result?.success, p.result?.dr ?? 0, p.result?.roll ?? 0, p.result?.target ?? 0),
+    // Chance « +1 DR » (LDB 17 l.26) réduit la chute d'1 m de plus (LDB 15 l.82 : « pour chaque DR, 1 m
+    // de moins ») — porteur BESPOKE `dr`/`effectiveMetres` (comme `run`/`bonusCases`), pas `sl`.
+    bonus: {
+      guard: (p) => !!p.result,
+      derive: (_s, p) => {
+        if (!p.result) return null;
+        const dr = p.result.dr + 1;
+        return { result: { ...p.result, dr, effectiveMetres: Math.max(0, p.metres - Math.max(0, dr)) } };
+      },
+    },
+  }),
+
   /** Manœuvre navale = TEST D'ÉQUIPAGE (MDG ch.14) : chaque rôle tenu lance SON Test (multi-jets). PJ = interactif
    *  (Chance/+1 DR/Pacte/Résilience sur SON jet) ; marin PNJ = témoin (auto-roulé à l'ouverture). La SOMME des DR
    *  (essentiel ×2) + Moral nourrit la Progression — calculée à la confirmation (`shipManeuverConfirm`). Forced
@@ -1529,6 +1561,9 @@ export const FLOW_VERBS = {
   distraire:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   maneuver:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   run:          { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
+  // Chute VOLONTAIRE (clic `FallOverlays`) : `coop` omis — ses verbes ne sont pas câblés à
+  // `COMBAT_INTENTS` (net/intents.ts), donc pas dérivés en intents invité (cf. `battement`/`distraire`).
+  fall:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   reload:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   handGate:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   recover:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
@@ -1563,7 +1598,7 @@ export const FLOW_VERBS = {
 const FLOW_HANDLERS = {
   attack: FLOWS.attack, defense: FLOWS.defense, cast: FLOWS.cast, disengage: FLOWS.disengage, flee: FLOWS.flee,
   auContact: FLOWS.auContact, grapple: FLOWS.grapple, trample: FLOWS.trample, battement: FLOWS.battement,
-  distraire: FLOWS.distraire, maneuver: FLOWS.maneuver, run: FLOWS.run, reload: FLOWS.reload, handGate: FLOWS.handGate, recover: FLOWS.recover,
+  distraire: FLOWS.distraire, maneuver: FLOWS.maneuver, run: FLOWS.run, fall: FLOWS.fall, reload: FLOWS.reload, handGate: FLOWS.handGate, recover: FLOWS.recover,
   focus: FLOWS.focus, dispel: FLOWS.dispel, frenzy: FLOWS.frenzy, approach: FLOWS.approach, ward: FLOWS.ward,
   heal: FLOWS.heal, surgery: FLOWS.surgery, corruption: FLOWS.corruption, test: FLOWS.test, steamSave: FLOWS.steamSave,
   activity: FLOWS.activity, bargain: FLOWS.bargain, appraise: FLOWS.appraise, shanty: FLOWS.shanty,

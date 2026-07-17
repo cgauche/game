@@ -18,7 +18,9 @@ import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { OvercastAxis } from '../engine/overcast';
 import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal, activeCombatant as activeCombatantOf } from './combatFlow';
 import { t } from '../i18n';
+import type { Get, Set } from './flowTypes';
 import { planClimb } from './climbMove';
+import { planFall } from './fallMove';
 import { climbMovementCost } from '../engine/movement';
 import { hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import { controlsCombatant } from './netOwnership';
@@ -84,7 +86,7 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import * as tavernFlow from './tavernFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingSteamSave, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
+  PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingFall, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition, CascadeStepMeta,
@@ -475,6 +477,8 @@ export interface GameState extends RollFlowActionsMap {
   pendingManeuver: PendingManeuver | null;
   /** Course en cours (modale Test d'Athlétisme → déplacement étendu). */
   pendingRun: PendingRun | null;
+  /** Chute VOLONTAIRE en cours (LDB 15 l.82 — choix Sauter/Tenter, puis modale Test d'Athlétisme → chute). */
+  pendingFall: PendingFall | null;
   /** Manœuvre navale en cours (MDG ch.13 : Test de Navigation du barreur → vire le cap + avance). */
   pendingShipManeuver: PendingShipManeuver | null;
   /** Tir de batterie en cours (MDG ch.14 : Test d'équipage des Artilleurs → volée sur la cible). */
@@ -1076,6 +1080,16 @@ export interface GameState extends RollFlowActionsMap {
   // run{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   runConfirm: () => void;
   runCancel: () => void;
+  /** Chute volontaire (LDB 15 l.82) : depuis `from` (case du sauteur) vers `to` (case cardinale plus
+   *  basse), ouvre le choix pré-jet (Sauter / Tenter le Test d'Athlétisme). Refus silencieux si
+   *  `planFall` ne reconnaît pas le geste (arête non-falaise/murée/grimpable). */
+  fallAcross: (from: Pt, to: Pt) => void;
+  /** Choix RAW pré-jet : `true` ouvre le Test (modale) ; `false` résout IMMÉDIATEMENT le saut direct
+   *  (chute PLEINE, sans Test — LDB 15 l.82 « vous pouvez tenter »). */
+  fallChoose: (attempt: boolean) => void;
+  // fall{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
+  fallConfirm: () => void;
+  fallCancel: () => void;
   /** Approche d'une source de Peur (LDB 21 l.29) : Test de Calme (+0) ; succès → l'intention différée est relancée. */
   // approach{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   approachConfirm: () => void;
@@ -1363,6 +1377,36 @@ function applyDialogueTransition(get: () => GameState, set: (s: Partial<GameStat
     return;
   }
   set({ dialogue: tr });
+}
+
+/**
+ * Atterrissage d'une chute VOLONTAIRE (LDB 15 l.82) : place le sauteur au pied (`p.to`), applique
+ * `applyFall` SAUF si `effectiveMetres <= 0` (« Si vous parvenez à réduire votre distance de chute à 0
+ * ou moins, vous ne subissez aucun Dégât de chute » — bypass EXPLICITE, `applyFall(c,0,rng)` ne
+ * garantit PAS 0 dégât seul, cf. son d10), journalise, ferme `pendingFall`. `actionSpent` = le Test a
+ * été TENTÉ (consomme l'Action, LDB 13 l.86-88, patron `climbAcross` « surface ») ; le saut direct sans
+ * Test ne coûte que le Mouvement (comme un pas normal). */
+function settleFall(get: Get, set: Set, p: PendingFall, effectiveMetres: number, actionSpent: boolean): void {
+  const { scene, mode, battle } = get();
+  set({ pendingFall: null });
+  if (!scene) return;
+  const mover = mode === 'battle' ? (battle ? inBattleId(battle, p.combatantId) : undefined) : get().party.find((h) => h.id === p.combatantId);
+  if (!mover) return;
+  const m = Math.max(0, effectiveMetres);
+  if (m > 0) {
+    applyEffects(get, set, [{ type: 'fall', target: 'hero', heroId: p.combatantId, metres: m, to: p.to }]);
+  } else {
+    // LDB 15 l.82 : réduit à 0 m ou moins ⇒ AUCUN Dégât — bypass EXPLICITE de l'Effet `fall`
+    // (`applyFall(c,0,…)` ne garantit PAS 0 seul, cf. son d10) : simple repositionnement + journal.
+    placeCombatant(mover, scene, p.to);
+    if (mode !== 'battle') set({ partyPos: { ...p.to } });
+    get().log(t('fall.jumpSafe', { name: mover.name }));
+  }
+  if (mode === 'battle' && battle) {
+    const bB = get().battle!;
+    set({ battle: { ...bB, acted: actionSpent ? true : bB.acted, action: null, movementUsed: (bB.movementUsed ?? 0) + 1, movedPreAction: bB.movedPreAction || !bB.acted, reachable: new Map(), preview: null } });
+  }
+  bus.emit(EVT.SCENE_DIRTY);
 }
 
 export const useGame = create<GameState>((set, get) => ({
@@ -1819,6 +1863,36 @@ export const useGame = create<GameState>((set, get) => ({
       if (plan.kind === 'test') runFlow(get, set, plan.flow);
     }
   },
+
+  /** Chute VOLONTAIRE (LDB 15 l.82) : depuis `from` (case du sauteur) vers `to` (case cardinale plus
+   *  basse, `planFall`) — geste JOUEUR seulement (IA hors périmètre : elle ne saute jamais). Ouvre le
+   *  choix pré-jet `pendingFall` (Sauter / Tenter), résolu par `fallChoose`. */
+  fallAcross: (from, to) => {
+    const { scene, mode, battle } = get();
+    if (!scene) return;
+    const mover = mode === 'battle' ? (battle ? activeCombatantOf(battle) : undefined) : get().party.find((h) => !h.dead && h.wounds.current > 0);
+    if (!mover) return;
+    if (mode === 'battle' && (!battle || battle.over || !controlsCombatant(get(), mover))) return;
+    const plan = planFall(scene, from, to);
+    if (plan.kind !== 'fall') return; // pas une falaise DESCENDANTE → refus silencieux (aucun marqueur ne s'y affiche)
+    set({
+      pendingFall: { combatantId: mover.id, to, metres: plan.metres, attempt: null, result: null },
+      ...(mode === 'battle' && battle ? { battle: { ...battle, action: null, preview: null } } : {}),
+    });
+  },
+  fallChoose: (attempt) => {
+    const p = get().pendingFall;
+    if (!p || p.result) return;
+    if (attempt) { set({ pendingFall: { ...p, attempt: true } }); return; }
+    // Saut direct SANS Test (RAW « vous pouvez tenter » — le Test est un CHOIX) : chute PLEINE.
+    settleFall(get, set, p, p.metres, false);
+  },
+  fallConfirm: () => {
+    const p = get().pendingFall;
+    if (!p || !p.result) return;
+    settleFall(get, set, p, p.result.effectiveMetres, true); // Test tenté → consomme l'Action (LDB 13 l.86-88)
+  },
+  fallCancel: () => set({ pendingFall: null }),
 
   stepPartyDir: (dir) => {
     const { scene, mode, partyPos, dialogue, camRot, viewMode, camEdge, party } = get();
