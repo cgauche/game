@@ -1,9 +1,13 @@
-import { describe, it, expect } from 'vitest';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Combatant } from '../engine/types';
-import { AdvancementPanel } from './CharacterSheet';
+import { AdvancementPanel, CharacterSheet } from './CharacterSheet';
 import { BackgroundPanel } from './BackgroundPanel';
 import { casterTalents } from '../engine/grimoire';
+import { useGame } from '../state/store';
 
 /** Héros « Agitateur » niveau 1 (« Pamphlétaire ») avec 1000 PX, Charme (in-carrière) + Esquive (hors). */
 const hero = (): Combatant =>
@@ -73,6 +77,63 @@ describe('Gate Magie & Foi (#492 bug 2)', () => {
     // pas perdre son onglet Magie & Foi ni son compteur de Péché.
     expect((beni.spells?.length ?? 0) > 0).toBe(false);
     expect(casterTalents(beni).length).toBeGreaterThan(0);
+  });
+});
+
+describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () => {
+  // Rendu CLIENT (jsdom + createRoot), pas `renderToStaticMarkup` : la fiche lit `useGame` en
+  // continu (hero courant, onglet…) — la snapshot SERVEUR de `useSyncExternalStore` ne reflète pas
+  // un `useGame.setState` fait juste avant un rendu SSR (le hook lirait l'état INITIAL du store,
+  // pas le nôtre) ; un montage client s'abonne réellement au store, comme en jeu.
+  beforeAll(() => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  });
+  let container: HTMLDivElement;
+  let root: Root;
+  function mount(node: React.ReactElement) {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() => { root.render(node); });
+    return container.innerHTML;
+  }
+  afterEach(() => {
+    act(() => { root.unmount(); });
+    container.remove();
+  });
+
+  it('la colonne rend la figurine en pied + Blessures, sans compagnie/caracs/ressources', () => {
+    const h = hero();
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    const html = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    expect(html).toContain('sheet-portrait');
+    expect(html).toContain('charprev'); // figurine en pied (CharacterPreview), plus de médaillon PortraitTile
+    expect(html).toContain('Blessures');
+    expect(html).not.toContain('frame-row'); // rangée de compagnie MORTE dans la fiche (pt.2)
+    expect(html).not.toContain('Caractéristiques'); // caracs SORTIES de la colonne (déplacées en tête de Compétences)
+    expect(html).not.toContain('Destin'); // ressources (FateChips) SORTIES de la colonne
+  });
+
+  it('tête de l’onglet Compétences & Talents : CharStatsGrid + Mouvement + Destin·Chance/Résilience·Détermination', () => {
+    const h = { ...hero(), fate: 2, fortune: 1, resilience: 1, resolve: 0 } as Combatant;
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'competences' });
+    const html = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    expect(html).toContain('char-stats'); // CharStatsGrid
+    expect(html).toContain('Mouvement');
+    expect(html).toContain('Destin');
+  });
+
+  it('gangrène du cadre : `data-corruption` posé selon le seuil de Corruption', () => {
+    const clean = hero();
+    useGame.setState({ party: [clean], battle: null, sheetId: clean.id, sheetTab: 'etat' });
+    const htmlClean = mount(<CharacterSheet heroId={clean.id} onClose={() => {}} />);
+    expect(htmlClean).toContain('data-corruption="none"');
+
+    // BFM/BE = 30 → bonus 3 chacun, seuil = 6 : 3 Points de Corruption reste SOUS le seuil (« ronge »).
+    const corrupted = { ...hero(), corruption: 3 } as Combatant;
+    useGame.setState({ party: [corrupted], battle: null, sheetId: corrupted.id, sheetTab: 'etat' });
+    const htmlCorrupted = mount(<CharacterSheet heroId={corrupted.id} onClose={() => {}} />);
+    expect(htmlCorrupted).toContain('data-corruption="ronge"');
   });
 });
 

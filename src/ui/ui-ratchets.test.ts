@@ -258,7 +258,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // +1 (2026-07-16, #496) : `.rm-die-gold` — modificateur de matière DORÉE de `DieFace`/`DiceRoll`
   // (prop `tone`), SOURCE UNIQUE qui remplace les 3 scopes ancêtres dupliqués (creator-step.css/
   // plaque-row.css, purgés en regard).
-  'styles/combat-modals.css': 148,
+  // Onglet Compétences & Talents composant `HeroSheet` (arbitrage 2026-07-17) : -5 (148 -> 143) -- `.skill-grid`/
+  // `.skill-line`/`.sk-name`/`.sk-val`/`.sk-adv` MIGRENT vers hero-sheet.css (module de la primitive
+  // qui rend desormais la table a valeurs), contrepartie ASSUMEE en regard.
+  'styles/combat-modals.css': 143,
   'styles/combat-ui.css': 112,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
@@ -405,8 +408,27 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // organisatrice (rig + zones par Localisation, jugée du bruit) MEURT : `.etat-body`/`-zones`/
   // `-zone` retirés. Ne reste que l'état calme (`.etat-ras`/`.ras-title`, composition validée
   // inchangée) — le registre affligé compose `Band`/`PlaqueRow`, aucune classe neuve ici.
-  // +2 (#509 : .bg-favors/.favor-chip — Faveurs dues sur BackgroundPanel).
-  'styles/sheet.css': 86,
+  // +2 (#509 : .bg-favors/.favor-chip — Faveurs dues sur BackgroundPanel) — survivent (BackgroundPanel, hors fiche).
+  // #492 LOT « colonne PRÉSENCE » (arbitrage 2026-07-17, 2e vague) : +1 (84 → 85) — SEULE hausse du
+  // lot, malgré la mort de la rangée de compagnie (`.frame-row`, portée par `party.css`, pas ce
+  // module) et le déplacement pur des blocs `.sheet-vitals`/`.sheet-resources`/`.sheet-stats` DANS
+  // la colonne et les onglets (zéro classe neuve, ils sont RÉUTILISÉS — et restent VIVANTS pour
+  // `ShipSheet.tsx`, qui les partage, donc non retirables). Le `+1` est `.plaque-row`, référencé ICI
+  // pour les liserés de gravité (`[data-tone] .plaque-row`, pt.5) : `PlaqueRow.tsx` est hors périmètre
+  // du lot (pas de prop `tone` à y ajouter, `data-tone` reste posé sur la bande `Section` englobante,
+  // jamais une classe par ton) — cibler le sélecteur en DESCENDANT est le seul geste possible sans
+  // sortir du périmètre. La gangrène du cadre (`data-corruption`, pt.6) et le dock au-dessus de
+  // l'overlay (pt.2, `PartyDock.tsx`) sont à coût NUL ici (attributs / z-index inline contextuel).
+  // Correction de jumeau (2026-07-17) : -3 (86 → 83) — `.sheet-headstats` (bornage 223px, écrit
+  // contre le MAUVAIS jumeau) et `.sheet-stats`/`.sheet-resources` (morts : la tête de l'onglet
+  // Compétences RÉUTILISE désormais `hero-sheet-stats`/`.hero-sheet-derived`, le patron du jumeau
+  // CANONIQUE `HeroSheet` — hero-sheet.css, déjà importé globalement, aucune classe neuve). `.sheet-
+  // vitals` reste (vivant pour Encombrement en Possessions ET pour `ShipSheet.tsx`).
+  // Onglet Compétences & Talents composant `HeroSheet` (arbitrage 2026-07-17) : -1 (83 -> 82) -- `.sheet-skills`
+  // (margin-bottom du wrapper 'competences' recodé a la main) MEURT : la rubrique vit desormais dans
+  // la primitive, dont le flex `.hero-sheet{gap:10px}` espace deja ses sections.
+  // Fusion vague-2 + fiche : baseline recalibrée sur le fichier réel (mon 82 + les 2 classes Faveurs #509 survivantes).
+  'styles/sheet.css': 84,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -432,7 +454,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
   // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
   // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).
-  'styles/hero-sheet.css': 7,
+  // Onglet Compétences & Talents composant `HeroSheet` (`skillsVariant='valeurs'`, arbitrage 2026-07-17) : +5 —
+  // `.skill-grid`/`.skill-line`/`.sk-name`/`.sk-val`/`.sk-adv` migrés depuis combat-modals.css (leur
+  // rendu vit désormais dans la primitive, contrepartie ASSUMÉE en regard).
+  'styles/hero-sheet.css': 12,
   // Ossature 2 zones du créateur (CreatorStepFrame, lot « ossature enforcée » #393) — slots
   // `.creator-step-(action|choice|desc)` + dés DORÉS planche (`.rm-die-*` scopés au gabarit et aux
   // plateaux `.dicewell-tray`) ; le layout `.creator-step` vit dans creator.css (renommage 1:1).

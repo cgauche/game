@@ -5,13 +5,19 @@
  * une bande SANS contenu N'EXISTE PAS. Chaque ligne = `PlaqueRow` (nom `CodexRef tooltipOnly` — le
  * détail vit dans le popover, pas au clic-navigation —, méta en `GameOpChips`, valeur = l'horloge/le
  * cumul) — AUCUNE prose inline dans le registre.
+ *
+ * Bande de ZONES en tête (arbitrage user 2026-07-17, pt.4, #492) : une plaque par Localisation qui
+ * porte au moins un critique ou une séquelle — une zone intacte N'EXISTE PAS à l'écran. Clic = ramène
+ * la PREMIÈRE ligne du registre concernant cette zone en vue (ancre posée sur la première rangée
+ * Critiques/Séquelles de cette Localisation). Liserés de gravité (sang/ambre/violet, pt.5) posés en
+ * attribut `data-tone` sur la bande de section (`Section`) — jamais une classe par ton.
  */
 import type { ReactNode } from 'react';
-import type { Combatant } from '../engine/types';
+import type { Combatant, HitLocation } from '../engine/types';
 import type { Duration } from '../engine/duration';
 import { locationLabel } from '../engine/combat';
 import { maxEncumbrance, totalEncumbrance, giveTrappingLabel } from '../engine/items';
-import { findCritEntrySuffered, critEntryCodexCategory } from '../engine/critical';
+import { findCritEntrySuffered, critEntryCodexCategory, type CritTableKey } from '../engine/critical';
 import { corruptionThreshold } from '../engine/corruption';
 import { formatRemaining } from '../engine/disease';
 import { CHAR_LABELS } from '../engine/types';
@@ -26,22 +32,75 @@ import { NotchGauge } from './NotchGauge';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import { CharacterPreview } from './CharacterPreview';
-import { PlaqueRow } from './PlaqueRow';
+import { PlaqueRow, PlaqueGrid } from './PlaqueRow';
 import { Band } from './Band';
 
 /** Icône de repli quand aucune icône du registre ne porte la famille (jamais d'emoji), à l'égal de
  *  `sheetAlarms.ts`. */
 const FALLBACK_ICON: IconIdInput = 'ui/warning';
 
+/** Tonalité de gravité d'une bande (pt.5, #492) : sang = critiques/états, ambre = séquelles/maladies,
+ *  violet = corruption/mutations — posée en attribut, jamais en classe par ton. */
+type GravityTone = 'sang' | 'ambre' | 'violet';
+
 /** Bande de section ancrée : titre + compte en badge sobre (`Band`, primitive partagée). L'appelant
  *  filtre déjà les rubriques vides — une bande SANS contenu n'apparaît jamais dans l'arbre. */
-function Section({ anchor, title, count, children }: { anchor: string; title: string; count?: number; children: ReactNode }) {
+function Section({ anchor, title, count, tone, children }: { anchor: string; title: string; count?: number; tone?: GravityTone; children: ReactNode }) {
   return (
-    <div id={anchor}>
+    <div id={anchor} data-tone={tone}>
       <Band title={title} right={count != null ? <b>{count}</b> : undefined}>
         {children}
       </Band>
     </div>
+  );
+}
+
+/** Localisation d'un critique suffered (les tables RAW ne distinguent pas le côté — repli G, comme
+ *  la ligne de détail existante du registre). */
+function critLocation(table: CritTableKey): HitLocation {
+  return table === 'bras' ? 'brasG' : table === 'jambe' ? 'jambeG' : table;
+}
+
+/** Ordre canonique des 6 Localisations (`HitLocation`, `engine/types.ts`) — tête → bras → corps → jambes. */
+const ZONE_ORDER: HitLocation[] = ['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD'];
+
+function zoneAnchor(loc: HitLocation): string {
+  return `etat-zone-${loc}`;
+}
+
+/** Bande de zones TOUCHÉES (pt.4) : une plaque par Localisation portant ≥1 critique ou séquelle,
+ *  compte par famille (« 1 critique », « 1 séquelle ») — clic = ramène la première ligne concernée. */
+function ZoneBand({ hero, criticalEntries, traumas }: {
+  hero: Combatant;
+  criticalEntries: { table: CritTableKey; count: number }[];
+  traumas: Combatant['traumas'];
+}) {
+  const critByLoc = new Map<HitLocation, number>();
+  for (const c of criticalEntries) critByLoc.set(critLocation(c.table), (critByLoc.get(critLocation(c.table)) ?? 0) + c.count);
+  const traumaByLoc = new Map<HitLocation, number>();
+  for (const t of traumas ?? []) traumaByLoc.set(t.location, (traumaByLoc.get(t.location) ?? 0) + (t.count ?? 1));
+  const touched = ZONE_ORDER.filter((l) => (critByLoc.get(l) ?? 0) > 0 || (traumaByLoc.get(l) ?? 0) > 0);
+  if (!touched.length) return null;
+  return (
+    <PlaqueGrid>
+      {touched.map((loc) => {
+        const nCrit = critByLoc.get(loc) ?? 0;
+        const nTrauma = traumaByLoc.get(loc) ?? 0;
+        const parts = [
+          nCrit > 0 ? `${nCrit} critique${nCrit > 1 ? 's' : ''}` : null,
+          nTrauma > 0 ? `${nTrauma} séquelle${nTrauma > 1 ? 's' : ''}` : null,
+        ].filter(Boolean);
+        return (
+          <PlaqueRow
+            key={loc}
+            prefix={<Icon id={nCrit > 0 ? 'medical/scalpel' : 'medical/crutch'} size="sm" />}
+            name={locationLabel(loc, hero.bodyShape)}
+            value={parts.join(' · ')}
+            onClick={() => document.getElementById(zoneAnchor(loc))?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
+          />
+        );
+      })}
+    </PlaqueGrid>
   );
 }
 
@@ -137,25 +196,40 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
     );
   }
 
+  // Ancre la PREMIÈRE rangée Critiques/Séquelles de chaque Localisation (une seule fois, dans l'ordre
+  // de rendu du registre) — cible de clic de la `ZoneBand` (pt.4). Pas de coût CSS : un `id`, pas de classe.
+  const seenZoneAnchor = new Set<HitLocation>();
+  const zoneAnchorFor = (loc: HitLocation): string | undefined => {
+    if (seenZoneAnchor.has(loc)) return undefined;
+    seenZoneAnchor.add(loc);
+    return zoneAnchor(loc);
+  };
+
   return (
     <div className="sheet-etat">
+      <ZoneBand hero={hero} criticalEntries={criticalEntries} traumas={traumas} />
+
       {criticalEntries.length > 0 && (
-        <Section anchor={ETAT_ANCHOR_CRITIQUES} title="Blessures critiques" count={criticalEntries.length}>
-          {criticalEntries.map((c) => (
-            <PlaqueRow
-              key={c.id}
-              prefix={<Icon id="medical/scalpel" size="sm" />}
-              name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.name} tooltipOnly>{c.entry.name}</CodexRef>}
-              sub={locationLabel(c.table === 'bras' ? 'brasG' : c.table === 'jambe' ? 'jambeG' : c.table, hero.bodyShape)}
-              meta={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
-              value={c.count > 1 ? `×${c.count}` : undefined}
-            />
-          ))}
+        <Section anchor={ETAT_ANCHOR_CRITIQUES} title="Blessures critiques" count={criticalEntries.length} tone="sang">
+          {criticalEntries.map((c) => {
+            const row = (
+              <PlaqueRow
+                key={c.id}
+                prefix={<Icon id="medical/scalpel" size="sm" />}
+                name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.name} tooltipOnly>{c.entry.name}</CodexRef>}
+                sub={locationLabel(critLocation(c.table), hero.bodyShape)}
+                meta={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
+                value={c.count > 1 ? `×${c.count}` : undefined}
+              />
+            );
+            const anchorId = zoneAnchorFor(critLocation(c.table));
+            return anchorId ? <div key={c.id} id={anchorId}>{row}</div> : row;
+          })}
         </Section>
       )}
 
       {conditions.length > 0 && (
-        <Section anchor="etat-etats" title="États actifs" count={conditions.length}>
+        <Section anchor="etat-etats" title="États actifs" count={conditions.length} tone="sang">
           {conditions.map((cond, i) => {
             const def = findConditionById(cond.name);
             return (
@@ -172,22 +246,26 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
       )}
 
       {traumas.length > 0 && (
-        <Section anchor={ETAT_ANCHOR_TRAUMAS} title="Séquelles" count={traumas.length}>
-          {traumas.map((t, i) => (
-            <PlaqueRow
-              key={i}
-              prefix={<Icon id="medical/crutch" size="sm" />}
-              name={<CodexRef category="traumas" id={t.traumaId} label={t.label} tooltipOnly>{t.label}</CodexRef>}
-              sub={t.location ? locationLabel(t.location, hero.bodyShape) : undefined}
-              meta={(t.ops?.length ?? 0) > 0 ? <GameOpChips ops={t.ops!} /> : undefined}
-              value={`${t.recoveryDays != null ? `${t.recoveryDays} j` : t.needsSurgery ? 'Chirurgie requise' : 'Permanent'}${t.count != null && t.count > 1 ? ` · ×${t.count}` : ''}`}
-            />
-          ))}
+        <Section anchor={ETAT_ANCHOR_TRAUMAS} title="Séquelles" count={traumas.length} tone="ambre">
+          {traumas.map((t, i) => {
+            const row = (
+              <PlaqueRow
+                key={i}
+                prefix={<Icon id="medical/crutch" size="sm" />}
+                name={<CodexRef category="traumas" id={t.traumaId} label={t.label} tooltipOnly>{t.label}</CodexRef>}
+                sub={t.location ? locationLabel(t.location, hero.bodyShape) : undefined}
+                meta={(t.ops?.length ?? 0) > 0 ? <GameOpChips ops={t.ops!} /> : undefined}
+                value={`${t.recoveryDays != null ? `${t.recoveryDays} j` : t.needsSurgery ? 'Chirurgie requise' : 'Permanent'}${t.count != null && t.count > 1 ? ` · ×${t.count}` : ''}`}
+              />
+            );
+            const anchorId = zoneAnchorFor(t.location);
+            return anchorId ? <div key={i} id={anchorId}>{row}</div> : row;
+          })}
         </Section>
       )}
 
       {diseases.length > 0 && (
-        <Section anchor={ETAT_ANCHOR_MALADIES} title="Maladies" count={diseases.length}>
+        <Section anchor={ETAT_ANCHOR_MALADIES} title="Maladies" count={diseases.length} tone="ambre">
           {diseases.map((d, i) => (
             <PlaqueRow
               key={i}
@@ -207,7 +285,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
       )}
 
       {mutations.length > 0 && (
-        <Section anchor={ETAT_ANCHOR_MUTATIONS} title="Mutations" count={mutations.length}>
+        <Section anchor={ETAT_ANCHOR_MUTATIONS} title="Mutations" count={mutations.length} tone="violet">
           {mutations.map((m, i) => (
             <PlaqueRow
               key={i}
@@ -237,7 +315,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
       )}
 
       {corruption > 0 && (
-        <div id={ETAT_ANCHOR_CORRUPTION}>
+        <div id={ETAT_ANCHOR_CORRUPTION} data-tone="violet">
           <PlaqueRow
             prefix={<Icon id="nav/mutation" size="sm" />}
             name="Corruption"
