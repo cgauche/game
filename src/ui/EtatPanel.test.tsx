@@ -80,23 +80,25 @@ describe('EtatPanel', () => {
     expect((html.match(/plaque-row/g) || []).length).toBe(1); // seule ligne du registre : DAMNÉ
   });
 
-  it('compteurs de DESTIN (pt.4) : « actives »/BE (Critiques) et « phys »/BE + « ment »/BFM (Mutations) composent NotchGauge, ton NEUTRAL loin du seuil', () => {
+  it('bande DESTIN (pt.4, arbitrage 2026-07-17) : mots PLEINS « Critiques actives »/« Mutations physiques »/« Mutations mentales » en TÊTE de registre (jamais les micro-libellés « actives/phys/ment »), NotchGauge, ton NEUTRAL loin du seuil', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
     // BE = bonus(Endurance 30) = 3 — `criticalWounds` non posé → 0 actives, `mutations` = 1 physique.
-    // Les 3 compteurs sont des `NotchGauge` (piste `role="meter"`, jamais un texte brut hors gauge).
+    // Les 3 compteurs sont des `NotchGauge` (piste `role="meter"`, jamais un texte brut hors gauge),
+    // groupés dans UNE SEULE bande de synthèse (`DestinBand`) — plus dans le slot droit des bandes.
     expect(html).not.toContain('etat-threshold');
     expect(html).not.toContain('actives 0/3');
     expect(html).not.toContain('phys 1/3 · ment 0/3');
-    expect(html).toContain('notch-gauge__label">actives<');
-    expect(html).toContain('aria-valuemax="3" aria-valuenow="0"');
-    expect(html).toContain('notch-gauge__label">phys<');
-    expect(html).toContain('notch-gauge__label">ment<');
+    // Aucune réf de seuil de mort (livre) à l'écran.
+    expect(html).not.toMatch(/LDB\s*\d/);
+    expect(html).toContain('notch-gauge__label">Critiques actives<');
+    expect(html).toContain('notch-gauge__label">Mutations physiques<');
+    expect(html).toContain('notch-gauge__label">Mutations mentales<');
+    expect(html).toContain('aria-valuemax="3" aria-valuenow="0"'); // actives = 0
     expect(html).toContain('aria-valuemax="3" aria-valuenow="1"'); // phys : 1 mutation physique
-    expect(html).toContain('aria-valuemax="3" aria-valuenow="0"'); // ment : 0 mutation mentale
     expect((html.match(/data-tone="neutral"/g) || []).length).toBe(3); // actives + phys + ment, tous loin du seuil
   });
 
-  it('compteurs de DESTIN : ton WARN à seuil−1, DANGER au seuil atteint/franchi (contrat POSITIF par seuil, sur la NotchGauge)', () => {
+  it('bande DESTIN : ton WARN à seuil−1, DANGER au seuil atteint/franchi (contrat POSITIF par seuil, sur la NotchGauge)', () => {
     const auSeuil = mkHero((c) => {
       c.critEntriesSuffered = ['blessure-spectaculaire'];
       c.criticalWounds = 2; // BE = 3 → seuil−1 (warn)
@@ -110,10 +112,18 @@ describe('EtatPanel', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={auSeuil} />);
     expect(html).toContain('aria-valuemax="3" aria-valuenow="2"'); // actives = 2, seuil−1
     expect(html).toContain('aria-valuemax="3" aria-valuenow="4"'); // phys = 4 > BE 3
-    // Ordre de rendu : actives (warn) avant phys (danger) — le premier data-tone rencontré est "warn".
+    // Ordre de rendu de la bande : Critiques actives (warn) avant Mutations physiques (danger).
     const tones = [...html.matchAll(/data-tone="(neutral|warn|danger)"/g)].map((m) => m[1]);
-    expect(tones[0]).toBe('warn'); // actives 2/3
-    expect(tones).toContain('danger'); // phys 4/3
+    expect(tones[0]).toBe('warn'); // Critiques actives 2/3
+    expect(tones).toContain('danger'); // Mutations physiques 4/3
+  });
+
+  it('bandes de rubrique (pt.4) : le compte reste SOBRE (badge droit) SEUL — la SEULE jauge de crans hors `DestinBand` reste celle de Corruption', () => {
+    const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
+    // 3 jauges de la bande DESTIN (Critiques actives/Mutations physiques/Mutations mentales) + 1 jauge
+    // de progression sur la bande Corruption (`extra`, inchangée) — Blessures critiques/Mutations
+    // n'en portent plus dans leur propre slot droit.
+    expect((html.match(/class="notch-gauge"/g) || []).length).toBe(4);
   });
 
   it('rangée de zones (pt.4) MORTE dans le registre (lot « corps-index », #492) — seules les ancres de la PREMIÈRE rangée concernée subsistent', () => {

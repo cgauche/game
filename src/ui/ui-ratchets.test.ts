@@ -89,10 +89,16 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/merchant.css': 1,
   // +1 (#492 lot POSSESSIONS B) : `.inv-actionbar` — barre d'actions de la rangée ÉLUE du registre
   // Possessions (motif « contrôles qui s'enroulent », hérité 1:1 de l'ancienne `.inv-row`).
-  'styles/sheet.css': 3,
+  // +1 (lot #492 « chevet », grammaire de carte) : `.etat-destin-row` — les 3 jauges de la bande
+  // DESTIN s'enroulent avant de rétrécir (colonne bornée `.sheet-main`, jamais de scroll horizontal).
+  'styles/sheet.css': 4,
   'styles/world-meta.css': 18,
   'styles/city-hub.css': 1,
   'styles/voyage.css': 3,
+  // +1 (lot #492 « chevet ») : `.plaque-fx` (chips d'effet net sous le nom, `PlaqueRow.tsx`) — enroule
+  // en rangée, motif `.bar` non composable ici (le `.bar` du canon porte fond/bordure/padding d'en-tête,
+  // pas d'une puce compacte sous un titre de plaque).
+  'styles/plaque-row.css': 1,
 };
 
 // ── (viii) Couleurs `fill=`/`stroke=` LITTÉRALES dans le JSX de `src/ui` : un fill/stroke codé en dur
@@ -472,8 +478,14 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // (« actives N/BE », « phys N/BE · ment M/BFM »), ton par palier en attribut `data-tone`.
   // Fix de composition (2026-07-17) : -1 (99 → 98) — `.etat-threshold` MEURT, les compteurs
   // composent désormais `NotchGauge` (primitive crantée, `gauges.css`), aucune classe ici.
-  // Fusion vague-2 + fiche : 101 (précédent fusionné) - 1 (etat-threshold mort) = 100.
-  'styles/sheet.css': 100,
+  // Lot « chevet » — grammaire de carte + bande DESTIN (#492, 2026-07-17) : +6 (98 → 104) — noms CITÉS
+  // dans ce module par les nouveaux sélecteurs DESCENDANTS/scopés (aucune n'y est DÉFINIE en propre,
+  // le compte est par nom cité, pas par règle) : `.sheet-etat`/`.plaque-value` (valeur discrète du
+  // registre, « ces textes énormes en gras, pourquoi ? »), `.etat-destin-row`/`.notch-gauge` (bande de
+  // synthèse Destin), `.life-bar__label`/`.life-bar__value` (discipline d'alignement gauche/droite de
+  // la colonne, patron `.sheet-idrow*` déjà tenu ici).
+  // Fusion vague-2 + fiche : 100 (précédent fusionné) + 6 (lot chevet) = 106.
+  'styles/sheet.css': 106,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -549,7 +561,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `button.plaque-row`).
   // -2 (2026-07-16, #496) : `.rm-die-gem`/`.rm-die-rolling` (scope `.plaque-meta`) purgés — même
   // bascule que creator-step.css vers le modificateur `.rm-die-gold` de combat-modals.css.
-  'styles/plaque-row.css': 11,
+  // +1 (lot « chevet », #492) : `.plaque-fx` — bloc de chips d'effet net SOUS le nom (registre État),
+  // additif à `meta` (qui reste latérale pour les autres écrans, ex. badges Possessions).
+  'styles/plaque-row.css': 12,
   // Bande titrée (`Band`, extraite du créateur #492 Lot 1c) — module primitive dédiée (patron
   // rose.css/frames.css) : `.creator-band(-head|-right)` + les descendants `.hint`/`.notch-gauge`
   // (jauge du tirage, complète la primitive `NotchGauge` sans fork).

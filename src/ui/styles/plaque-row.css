@@ -106,6 +106,15 @@ button.plaque-row:hover {
   letter-spacing: 0.2px;
   color: var(--atelier-brass-engrave);
 }
+/* Chips d'effet NET (`fx`, #492 « chevet ») — bloc (comme `<small>`) sous le nom/la sous-ligne,
+   jamais latéral : enroule en rangée, les chips gardent leur matière `.chip`/`.entity-chip`. */
+.plaque-name > .plaque-fx {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
 .plaque-meta {
   display: flex;
   align-items: center;

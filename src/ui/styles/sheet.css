@@ -87,6 +87,17 @@
 .sheet-idrow-value {
   text-align: right;
 }
+/* Discipline d'alignement UNIQUE de la colonne (arbitrage user 2026-07-17 : « le centrage actuel
+   dépareille ») : les jauges empilées (`LifeBar[data-stacked]`, Blessures/Encombrement) reprennent la
+   grille libellé-GAUCHE/valeur-DROITE des rangées Race/Carrière/Statut (`.sheet-idrow*` ci-dessus) —
+   sans ce correctif le `text-align:center` hérité de `.sheet-portrait` centrait le libellé dans sa
+   colonne `1fr`. */
+.sheet-portrait .life-bar__label {
+  text-align: left;
+}
+.sheet-portrait .life-bar__value {
+  text-align: right;
+}
 .sheet-main {
   display: flex;
   flex-direction: column;
@@ -583,7 +594,32 @@
    La bande de zones TOUCHÉES en tête (`ZoneBand`, `PlaqueGrid`) l'est AUSSI (lot « corps-index »,
    #492) : ce résumé par Localisation vit désormais dans le CORPS de la colonne (`FigTile.zoneBadges`,
    `CharacterSheet.tsx`), pas ici. L'état calme (RAS) n'affiche plus la figurine (colonne aside déjà
-   en pied grand format, doublon) : message + sous-ligne discrète seuls. ── */
+   en pied grand format, doublon) : message + sous-ligne discrète seuls.
+
+   Grammaire de carte (lot #492 « chevet », carrière de styles depuis `docs/plans/2026-07-17-
+   planche-etat-chevet.html` — le mock N'EST PAS l'étalon, ses valeurs ne sont reprises QUE quand
+   elles servent la charte) : liseré de gravité (`data-tone`, déjà posé plus bas), icône + titre
+   sobre + sous-ligne petites capitales (`PlaqueRow` inchangée), chips d'effet net SOUS le titre
+   (`fx`, `PlaqueRow.tsx`/`plaque-row.css`) — jamais à côté du nom. La valeur de droite (l'horloge/le
+   cumul) devient DISCRÈTE ici (elle restait grasse/16px ailleurs — « ces textes énormes en gras,
+   pourquoi ? », verdict user) : ── */
+.sheet-etat .plaque-value {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  min-width: 0;
+}
+/* Bande de synthèse DESTIN (`DestinBand`, `EtatPanel.tsx`) — 3 jauges à mots pleins en tête de
+   registre, s'enroulent avant de rétrécir (jamais de scroll horizontal). */
+.etat-destin-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+.etat-destin-row .notch-gauge {
+  flex: 1 1 200px;
+  min-width: 0;
+}
 .etat-ras {
   display: flex;
   flex-direction: column;
