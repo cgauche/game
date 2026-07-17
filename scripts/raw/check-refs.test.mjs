@@ -48,6 +48,15 @@ test('plage l.X-Y : la borne HAUTE est vérifiée', () => {
   })
 })
 
+test('réf « autre livre » en PLAGE (AA 1 l.5-9999) : la borne HAUTE de la plage est vérifiée, pas juste la borne basse (#583 jumeau)', () => {
+  withTempRawDir('Plage AA 1 l.5-9999 qui déborde par le HAUT.\n', (dir) => {
+    const dead = scanDeadRefs(dir, new Set())
+    assert.equal(dead.length, 1)
+    assert.equal(dead[0].ref, 'AA 1')
+    assert.equal(dead[0].hi, 9999)
+  })
+})
+
 test('fichier EXCLU (coverage.md/reconciliation.md/reanchor.md) → jamais scanné', () => {
   withTempRawDir('placeholder\n', (dir) => {
     writeFileSync(join(dir, 'coverage.md'), 'LDB 6 l.999 hors borne, mais exclu.\n', 'utf8')
