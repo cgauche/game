@@ -144,6 +144,14 @@ describe('EtatPanel', () => {
     expect(html).toMatch(/codex-ref[^>]*>Hémorragique</);
   });
 
+  it('Mutations : le nom résolu vient du LOOKUP par id (`mutationLabel`), pas du `label` d’instance — même une instance SANS label affiche le vrai nom', () => {
+    const hero = mkHero((c) => {
+      c.mutations = [{ id: 'pattes-d-animaux', kind: 'physique', roll: 1, passive: [] } as never];
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
+    expect(html).toContain('Pattes d’animaux');
+  });
+
   it('Surchargé : chip codex-liée (catégorie `encumbranceTiers`) affichant le PALIER réel (LDB 61)', () => {
     const hero = mkHero((c) => {
       // Capacité = BF3 + BE3 = 6 (caracs par défaut à 30) ; 8 Enc porté ∈ (6, 12] → Palier 1.
