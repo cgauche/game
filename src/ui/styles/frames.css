@@ -122,6 +122,49 @@
 }
 .fig-tile.hero .fig-tile-fig { height: 320px; }
 .fig-tile.hero:hover { border-color: var(--atelier-wood-etch); }
+/* Badges de zone ANCRÉS (#492 lot « corps-index », arbitrage 2026-07-17) — la colonne devient l'INDEX
+   de la fiche : un badge PAR Localisation, positionné UNE fois ici en attribut `data-loc` (silhouette
+   du chevet, `docs/plans/2026-07-17-planche-etat-chevet.html`) ; le TON en attribut `data-tone`
+   (jamais une classe par ton, patron déjà tenu par `sheet.css`/`NotchGauge`). */
+.fig-zone-badges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.fig-zone-badge {
+  position: absolute;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+button.fig-zone-badge { cursor: pointer; }
+button.fig-zone-badge:hover { border-color: var(--gold2); }
+button.fig-zone-badge:focus-visible { outline: 2px solid var(--gold2); outline-offset: 1px; }
+.fig-zone-badge[data-tone='or'] { border-color: var(--gold); color: var(--gold2); }
+.fig-zone-badge[data-tone='warn'] { border-color: var(--gold2); color: var(--gold2); }
+.fig-zone-badge[data-tone='sang'] { border-color: var(--blood); color: var(--danger-soft); }
+.fig-zone-badge[data-tone='dim'] { border-color: var(--border); color: var(--muted); }
+/* Positions anatomiques (silhouette du chevet) — tête haut-centre, bras aux flancs, corps au centre,
+   jambes en bas. */
+.fig-zone-badge[data-loc='tete'] { top: 4%; left: 50%; transform: translate(-50%, 0); }
+.fig-zone-badge[data-loc='brasG'] { top: 38%; left: 4%; transform: translate(0, -50%); }
+.fig-zone-badge[data-loc='brasD'] { top: 38%; right: 4%; left: auto; transform: translate(0, -50%); }
+.fig-zone-badge[data-loc='corps'] { top: 56%; left: 50%; transform: translate(-50%, -50%); }
+.fig-zone-badge[data-loc='jambeG'] { bottom: 4%; left: 30%; transform: translate(-50%, 0); }
+.fig-zone-badge[data-loc='jambeD'] { bottom: 4%; left: 70%; transform: translate(-50%, 0); }
 /* Sceau de cire optionnel (le choix est SCELLÉ, patron `SealedPlaque`) — déborde au coin haut-droit,
    PAR-DESSUS le rivet (`::after`, z-index auto) : un cachet se voit ou n'est pas un cachet. */
 .fig-tile-seal {

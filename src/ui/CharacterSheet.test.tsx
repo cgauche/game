@@ -187,6 +187,47 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     const htmlCorrupted = mount(<CharacterSheet heroId={corrupted.id} onClose={() => {}} />);
     expect(htmlCorrupted).toContain('data-corruption="ronge"');
   });
+
+  it('badges de zone `FigTile.zoneBadges` : PA d’armure en Possessions (6 Localisations réelles, ton `sang` si l’armure portée est entamée)', () => {
+    const h = {
+      ...hero(),
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 2, jambeG: 0, jambeD: 0 },
+      items: [{ uid: 'a1', name: 'Cotte de mailles', kind: 'armor', qualities: [], enc: 2, equipped: true, pa: 2, locs: ['corps'], damageTaken: 1 } as never],
+    } as unknown as Combatant;
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    const aside = container.querySelector('.sheet-aside')!;
+    const badges = aside.querySelectorAll('.fig-zone-badge');
+    expect(badges.length).toBe(6); // les 6 Localisations réelles, toujours rendues (dim si vides)
+    const corps = aside.querySelector('.fig-zone-badge[data-loc="corps"]')!;
+    expect(corps.getAttribute('data-tone')).toBe('sang'); // armure entamée (damageTaken > 0)
+    expect(corps.textContent).toBe('2');
+    const tete = aside.querySelector('.fig-zone-badge[data-loc="tete"]')!;
+    expect(tete.getAttribute('data-tone')).toBe('dim'); // PA 0
+  });
+
+  it('badges de zone : critiques/séquelles en État (zones TOUCHÉES seulement) — ABSENTS des autres onglets', () => {
+    const h = { ...hero(), critEntriesSuffered: ['blessure-spectaculaire'] } as unknown as Combatant;
+
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'etat' });
+    mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    let aside = container.querySelector('.sheet-aside')!;
+    let badges = aside.querySelectorAll('.fig-zone-badge');
+    expect(badges.length).toBe(1); // seule la Localisation touchée (Tête, `blessure-spectaculaire`)
+    expect(badges[0].getAttribute('data-loc')).toBe('tete');
+    expect(badges[0].getAttribute('data-tone')).toBe('sang');
+
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    aside = container.querySelector('.sheet-aside')!;
+    // Possessions parle PA (6 badges), jamais le compte de critiques.
+    expect(aside.querySelectorAll('.fig-zone-badge').length).toBe(6);
+
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'competences' });
+    mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    aside = container.querySelector('.sheet-aside')!;
+    expect(aside.querySelectorAll('.fig-zone-badge').length).toBe(0); // corps nu ailleurs
+  });
 });
 
 describe('Onglet Possessions — registre `Band`/`PlaqueRow` (#492 lot POSSESSIONS B)', () => {
@@ -222,6 +263,14 @@ describe('Onglet Possessions — registre `Band`/`PlaqueRow` (#492 lot POSSESSIO
       loadouts: [{ id: 'lo1', main: null, off: null }],
       activeLoadoutId: 'lo1',
     }) as unknown as Combatant;
+
+  it('la plaque ENC. de tête MEURT (arbitrage en vol 2026-07-17) — aucun remplaçant dans ce geste', () => {
+    const h = heroWithItems();
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    const html = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />).innerHTML;
+    expect(html).not.toContain('sheet-vitals');
+    expect(html).not.toContain('title="Encombrement"');
+  });
 
   it('groupes comptés (Band) : Armes/Armures & protections/Divers présents avec leur compte', () => {
     const h = heroWithItems();

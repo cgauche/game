@@ -1,5 +1,25 @@
+import type { ReactNode } from 'react';
 import { CharacterPreview, type CharacterPreviewProps } from './CharacterPreview';
 import { WaxSeal } from './WaxSeal';
+import type { HitLocation } from '../engine/types';
+
+/** Tonalité d'un badge de zone (#492 lot « corps-index », arbitrage user 2026-07-17) — postée en
+ *  attribut `data-tone` (jamais une classe par ton, patron déjà tenu par `EtatPanel`/`NotchGauge`) :
+ *  `or` (chargé), `warn` (à surveiller, séquelle seule), `sang` (critique/entamé), `dim` (vide/inerte). */
+export type ZoneBadgeTone = 'or' | 'warn' | 'sang' | 'dim';
+
+/** Badge ANCRÉ à une Localisation autour de la boîte-figurine (silhouette du chevet, `docs/plans/
+ *  2026-07-17-planche-etat-chevet.html`) — la CAPACITÉ de `FigTile` : l'appelant fournit la donnée
+ *  PAR zone, la primitive pose seule la position anatomique. */
+export interface ZoneBadgeSpec {
+  loc: HitLocation;
+  /** Nom de la zone (a11y — `title`/tooltip ; la position ANCRE le sens, jamais affiché en clair). */
+  label: string;
+  value: ReactNode;
+  tone?: ZoneBadgeTone;
+  /** Absent = badge STATIQUE (`<span>`) ; présent = un vrai `<button>` focusable. */
+  onClick?: () => void;
+}
 
 /** Taille de la BOÎTE-FIGURINE de la tuile (`frames.css`, valeurs de la planche) : `compact` = 104px
  *  (rangées de carrière/candidats), `big` = 172px (grille de race, surface principale de son étape),
@@ -21,12 +41,17 @@ export type FigTileSize = 'compact' | 'big' | 'hero';
  * rivets sur lueur de sol, sans le comportement de picker. `label` devient alors optionnel (le nom
  * peut vivre à côté, dans l'appelant) plutôt qu'un doublon forcé sous la boîte.
  *
+ * `zoneBadges` (#492 lot « corps-index », arbitrage 2026-07-17) fait du corps de la tuile L'INDEX
+ * universel de la fiche : un badge PAR Localisation, ancré anatomiquement (positions posées UNE fois
+ * ici, en attribut `data-loc`) — l'appelant (Possessions : PA d'armure ; État : critiques/séquelles)
+ * fournit la donnée, jamais la position.
+ *
  * Aucune ambiance de `CharacterPreview` n'est exposée : la tuile porte SA matière (dégradé + rivets
  * + lueur de sol) et une ambiance de plus y peindrait le « 2e cadre » que l'utilisateur a rejeté —
  * c'est précisément par là que les tuiles divergeaient (la race passait `panel`, la carrière
  * `spotlight` : « la carrière a un fond mais pas la race, c'est pourtant la même primitive ? »).
  */
-export function FigTile({ preview, label, sub, selected, sealed, fig = 'compact', onClick, tabIndex = -1, className }: {
+export function FigTile({ preview, label, sub, selected, sealed, fig = 'compact', onClick, tabIndex = -1, className, zoneBadges }: {
   preview: CharacterPreviewProps;
   label?: string;
   sub?: string;
@@ -44,6 +69,10 @@ export function FigTile({ preview, label, sub, selected, sealed, fig = 'compact'
   /** Modificateur d'appelant (ex. liseré de borne « tirée », `.rolled`) — jamais un second cadre,
    *  une classe ADDITIVE sur l'enceinte UNIQUE. */
   className?: string;
+  /** Badges ancrés par Localisation autour de la figurine (colonne-INDEX de la fiche, #492) — l'un
+   *  des deux langages de zone (PA d'armure, critiques/séquelles) selon ce que l'appelant fournit ;
+   *  absent = corps nu. */
+  zoneBadges?: ZoneBadgeSpec[];
 }) {
   const cls = ['fig-tile', selected && 'sel', fig !== 'compact' && fig, className].filter(Boolean).join(' ');
   const body = (
@@ -51,6 +80,21 @@ export function FigTile({ preview, label, sub, selected, sealed, fig = 'compact'
       <span className="fig-tile-fig">
         <CharacterPreview {...preview} size="fill" ambiance="none" />
       </span>
+      {zoneBadges && zoneBadges.length > 0 && (
+        <span className="fig-zone-badges">
+          {zoneBadges.map((b) =>
+            b.onClick ? (
+              <button key={b.loc} type="button" className="fig-zone-badge" data-loc={b.loc} data-tone={b.tone} title={b.label} onClick={b.onClick}>
+                {b.value}
+              </button>
+            ) : (
+              <span key={b.loc} className="fig-zone-badge" data-loc={b.loc} data-tone={b.tone} title={b.label}>
+                {b.value}
+              </span>
+            ),
+          )}
+        </span>
+      )}
       {sealed && <WaxSeal size={40} className="fig-tile-seal" />}
       {label && <span className="fig-tile-name">{label}</span>}
       {sub && <span className="fig-tile-sub">{sub}</span>}
