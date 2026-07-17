@@ -64,6 +64,10 @@ const PRICE_BASELINE: Record<string, number> = {};
 //    `.bar`/primitives partagées de `components.css` (§charte-ui). Un `flex-wrap` codé en dur dans un
 //    AUTRE module CSS est de la dette gelée (#287) — le cliquet interdit sa hausse, impose la décrue. ──
 const FLEX_WRAP_BASELINE: Record<string, number> = {
+  // +1 : `.creator-band-right:has(.notch-gauge + .notch-gauge)` (registre État, `EtatPanel.tsx`) —
+  // bande à DEUX jauges de quota (Mutations) collisionnant avec son titre dans la colonne bornée
+  // `.sheet-main` (motif `.bar` non composable ici, c'est un slot droit de `Band`, pas un bandeau).
+  'styles/band.css': 1,
   'styles/base.css': 4,
   'styles/codex-edit.css': 1,
   // -1 (#492 lot POSSESSIONS B) : mort de l'ancienne `.inv-row { flex-wrap: wrap }` (registre

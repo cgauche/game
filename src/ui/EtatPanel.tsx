@@ -27,7 +27,7 @@ import { formatRemaining } from '../engine/disease';
 import { CHAR_LABELS, type ConditionInstance } from '../engine/types';
 import { formatTrait } from '../engine/traits/dispatch';
 import { talentConcrete } from '../data';
-import { findConditionById, diseaseLabel, findPsychologyById, symptomLabel } from '../data';
+import { findConditionById, diseaseLabel, findPsychologyById, symptomLabel, mutationLabel } from '../data';
 import { datasetArray } from '../data/overrides';
 import { isPsychAfflictionActive, ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
 import { CodexRef } from './compendium/CodexRef';
@@ -198,6 +198,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
 
   const conditions = hero.conditions ?? [];
   const corruption = hero.corruption ?? 0;
+  const corruptionMax = Math.max(corruptionThreshold(hero), corruption);
   const diseases = hero.diseases ?? [];
   const mutations = hero.mutations ?? [];
   const traumas = hero.traumas ?? [];
@@ -240,7 +241,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
           title="Blessures critiques"
           count={criticalEntries.length}
           tone="sang"
-          extra={<NotchGauge value={activeCriticals} max={be} label="actives" tone={destinTone(activeCriticals, be)} />}
+          extra={<NotchGauge value={activeCriticals} max={be} notches={be} label="actives" tone={destinTone(activeCriticals, be)} />}
         >
           {criticalEntries.map((c) => {
             const row = (
@@ -323,20 +324,23 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
           tone="violet"
           extra={
             <>
-              <NotchGauge value={physMutations} max={be} label="phys" tone={destinTone(physMutations, be)} />
-              <NotchGauge value={mentMutations} max={bfm} label="ment" tone={destinTone(mentMutations, bfm)} />
+              <NotchGauge value={physMutations} max={be} notches={be} label="phys" tone={destinTone(physMutations, be)} />
+              <NotchGauge value={mentMutations} max={bfm} notches={bfm} label="ment" tone={destinTone(mentMutations, bfm)} />
             </>
           }
         >
-          {mutations.map((m, i) => (
-            <PlaqueRow
-              key={i}
-              prefix={<Icon id="nav/mutation" size="sm" />}
-              name={<CodexRef category="mutations" id={m.id} label={m.label} tooltipOnly>{m.label}</CodexRef>}
-              sub={m.kind === 'physique' ? 'Mutation physique' : 'Mutation mentale'}
-              meta={(m.passive?.length ?? 0) > 0 ? <GameOpChips ops={m.passive!} /> : undefined}
-            />
-          ))}
+          {mutations.map((m, i) => {
+            const label = mutationLabel(m.id);
+            return (
+              <PlaqueRow
+                key={i}
+                prefix={<Icon id="nav/mutation" size="sm" />}
+                name={<CodexRef category="mutations" id={m.id} label={label} tooltipOnly>{label}</CodexRef>}
+                sub={m.kind === 'physique' ? 'Mutation physique' : 'Mutation mentale'}
+                meta={(m.passive?.length ?? 0) > 0 ? <GameOpChips ops={m.passive!} /> : undefined}
+              />
+            );
+          })}
         </Section>
       )}
 
@@ -361,7 +365,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
           <PlaqueRow
             prefix={<Icon id="nav/mutation" size="sm" />}
             name="Corruption"
-            meta={<NotchGauge value={corruption} max={Math.max(corruptionThreshold(hero), corruption)} tone="danger" />}
+            meta={<NotchGauge value={corruption} max={corruptionMax} notches={corruptionMax} tone="danger" />}
             value={hero.damned ? 'DAMNÉ' : undefined}
           />
         </div>

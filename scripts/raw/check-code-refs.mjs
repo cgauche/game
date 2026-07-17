@@ -7,7 +7,11 @@
 // est introuvable. Regex de réfs RÉUTILISÉES (`ldbRe`/`otherRe`/`span`/`bookOf`) — jamais réécrites.
 // Cliquet PAR FICHIER (`scripts/raw/dead-code-refs-baseline.json`, patron `assertAgainstBaseline` de
 // check-refs.mjs) : toute HAUSSE échoue ; une baseline devenue trop haute (réfs réparées) doit être
-// ABAISSÉE. Le stock gelé (dérive de ligne post-ré-extraction Marker) se solde par un lot ultérieur.
+// ABAISSÉE. Le stock gelé (dérive de ligne post-ré-extraction Marker) soldé (#583) : le fichier de
+// baseline est ABSENT en régime nominal → tolérance ZÉRO (toute réf morte échoue nominativement,
+// `readBaseline` traite un fichier absent comme `{}`). Si un résidu IRRÉDUCTIBLE réapparaît, la
+// baseline se recrée à sa mesure MINIMALE avec un diagnostic en commentaire — jamais un cliquet
+// tacite qui masque une future régression.
 // Re-run : node scripts/raw/check-code-refs.mjs (npm run raw:check-code-refs).
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
@@ -34,7 +38,7 @@ function* refsInLine(ln) {
     if (nn == null) continue
     const abbr = bookOf(m[1].replace(/\s+/g, ' ').trim())
     if (!abbr) continue
-    const [, hi] = span(m[3], '')
+    const [, hi] = span(m[3], m[4])
     yield { abbr, nn, hi }
   }
 }
@@ -109,10 +113,21 @@ export function assertAgainstBaseline(counts, baseline) {
   return { over, stale }
 }
 
+/** Baseline gelée si `dead-code-refs-baseline.json` existe, sinon `{}` (mode ZÉRO-TOLÉRANCE :
+ *  fichier absent = aucune réf morte tolérée, `assertAgainstBaseline` fait le reste). */
+export function readBaseline(path = BASELINE_PATH) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch (err) {
+    if (err.code === 'ENOENT') return {}
+    throw err
+  }
+}
+
 function main() {
   const dead = scanDeadCodeRefs()
   const counts = countsByFile(dead)
-  const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'))
+  const baseline = readBaseline()
   const { over, stale } = assertAgainstBaseline(counts, baseline)
 
   console.log(`réfs de code mortes (ligne hors borne du chapitre, ou chapitre introuvable) : ${dead.length} sur ${Object.keys(counts).length} fichier(s)`)
