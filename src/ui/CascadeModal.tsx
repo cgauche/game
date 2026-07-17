@@ -4,6 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { VsHeader } from './VsHeader';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
 import { useTrampleJetProps } from './jetProps/useTrampleJetProps';
 import { useDefenseJetProps } from './jetProps/useDefenseJetProps';
@@ -359,6 +360,24 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // cette séance) + issue encore défavorable → auto-succès offert (avant le jet ou après un échec).
   const resistAvail = !!actor && cur.menace != null && availableResistance(actor, cur.menace) != null && (!res || !res.success);
 
+  // Test OPPOSÉ (#579) : le jet ADVERSAIRE FIGÉ (`meta.opposed.aT` — Assommante, Défense de manœuvre de
+  // zone, jeux de taverne) est rendu en rangée TÉMOIN au-dessus de la rangée interactive du défenseur —
+  // « on ne voit jamais le test de l'adversaire » (verbatim user #579) devient FAUX par construction :
+  // les DEUX jets sont visibles, quelle que soit l'influence en cours côté défenseur. `VsHeader` en plus
+  // quand l'adversaire est un Combatant RÉEL (`attackerId` — abstrait pour la table de jeux de taverne).
+  const opp = cur.meta?.opposed;
+  const oppActor = opp?.attackerId ? pool.find((c) => c.id === opp.attackerId) : undefined;
+  const oppRow: RollRowData | null = opp ? {
+    key: 'opposed-attacker',
+    row: {
+      combatant: oppActor,
+      d: { label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'), base: opp.aT.target, modifier: 0, target: opp.aT.target, roll: opp.aT.roll, success: opp.aT.success, sl: opp.aT.sl },
+    },
+    rolled: true,
+    interactive: false,
+  } : null;
+  const oppHeader = opp && oppActor && actor ? <VsHeader actor={oppActor} target={actor} label={opp.attackerLabel} /> : null;
+
   // Rangée INTERACTIVE de l'étape COURANTE : pré-jet en attente puis résultat, porteuse du cycle
   // d'influence (Chance/+1 DR/Pacte/Résilience/forcedRoll/resist/Détermination) — étape MONDIALE
   // (`worldOwner`, `actor` absent) : cycle d'influence NUL (Chance/Pacte/Résilience/Détermination
@@ -417,11 +436,12 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       /* « jet N/M » : N = jets de dé jusqu'ici + celui-ci, M = total des jets RÉELS (arbitrage user
          2026-07-11 — l'agrégation/la météo/les affichages ne comptent pas). */
       subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{totalJets > 1 ? ` · jet ${p.participants.slice(0, p.cursor).reduce((n, s) => n + diceOf(s), 0) + 1}/${totalJets}` : ''}</>}
-      extra={stakeNote ?? undefined}
+      extra={oppHeader || stakeNote ? <>{oppHeader}{stakeNote}</> : undefined}
       rolled={rolled}
-      /* Rangées : validées FIGÉES (témoins) + courante interactive (pré-jet en attente, post-jet résolue).
-         La barre de Test étendu vit désormais SUR la rangée (`curRow.extra`), pas dans le bandeau global. */
-      rows={[...doneWitnessRows, curRow]}
+      /* Rangées : validées FIGÉES (témoins) + rangée de l'adversaire figé (Test opposé, #579) + courante
+         interactive (pré-jet en attente, post-jet résolue). La barre de Test étendu vit désormais SUR la
+         rangée (`curRow.extra`), pas dans le bandeau global. */
+      rows={[...doneWitnessRows, ...(oppRow ? [oppRow] : []), curRow]}
       actions={jetActions}
       disableEscClose
       embedded={embedded}

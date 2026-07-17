@@ -1,15 +1,26 @@
 /**
  * Jeux de taverne (Nuits agitées & dures journées, ch.16) — FLUX de jeu (état + résolution), branché
  * sur le moteur PUR `engine/tavernGame` (variante « jeu rapide », Test opposé Intermédiaire (+0), le
- * plus de DR l'emporte). Le jet du CHALLENGER (joueur) est SURFACÉ par le seam de jet (`openRoll`,
- * `state/rollSeam.ts` — hero-test, modale influençable Chance/Pacte/Résilience, #370) ; l'ADVERSAIRE
- * (compagnon ou table abstraite) roule côté MONDE dans l'applier, POST-COMMIT du jet du joueur, comme
- * le Marchandage de `portFlow.ts` (`rollMerchantOpposition`) — patron RÉUTILISÉ, jamais un jet interne
- * silencieux (avant #370, `resolveTavernGame` roulait ET décidait les DEUX côtés en synchrone, sans
- * jamais passer par la policy de surfaçage M/V/I). Mode `extended` (Bras de fer) : ENCHAÎNE une
- * nouvelle étape `openRoll` par manche jusqu'à ce qu'un camp atteigne `target` DR cumulés (patron
- * Ragot→acheteur→Marchandage de `portFlow.ts`). La mise éventuelle et le résultat (gains/pertes) sont
- * appliqués par l'applier après résolution. Réservé aux tables qui activent l'option `tavern-games`.
+ * plus de DR l'emporte). Test OPPOSÉ RÉEL (#579) : l'ADVERSAIRE (compagnon ou table abstraite) roule
+ * D'ABORD (`rollTavernTest`, `battleRng`), FIGÉ dans `meta.opposed.aT` (`OpposedFreeze`, `pendings.ts`)
+ * — puis le jet du CHALLENGER (joueur) s'ouvre par le seam de jet (`openRoll`, `state/rollSeam.ts` —
+ * hero-test) sur la MÊME machinerie d'opposition que `combat/triggeredTest.ts`/`combatManeuvers.ts`
+ * (`FLOWS.cascade` `resolve`/`bonus.derive`, `rollFlowSpecs.ts:696-765` : chaque influence — Chance
+ * « +1 DR », Résilience, dé forcé — RÉ-OPPOSE contre l'adversaire figé, jamais un second tirage caché).
+ * `CascadeModal` affiche les DEUX jets (rangée témoin de l'adversaire + `VsHeader` quand l'adversaire
+ * est un Combatant réel). Avant #579, l'adversaire roulait côté MONDE dans l'applier, POST-COMMIT du
+ * jet du joueur (le joueur ne voyait qu'un chiffre de DR final) — patron copié du Marchandage de
+ * `portFlow.ts` (`rollMerchantOpposition`), qui porte ENCORE ce travers (migration hors périmètre
+ * #579, ticketée séparément). Mode `extended` (Bras de fer) : ENCHAÎNE une nouvelle étape `openRoll`
+ * par manche — CHAQUE manche fige un NOUVEAU jet adverse avant d'ouvrir celui du joueur, jusqu'à ce
+ * qu'un camp atteigne `target` DR cumulés (patron Ragot→acheteur→Marchandage de `portFlow.ts`). La
+ * mise éventuelle et le résultat (gains/pertes) sont appliqués par l'applier après résolution.
+ * Réservé aux tables qui activent l'option `tavern-games`.
+ *
+ * Attention, parité RNG : le tirage adverse (`battleRng`) a lieu AVANT l'ouverture du jet du joueur — inversion
+ * assumée vs l'ordre pré-#579 (joueur puis adversaire) : même compte de tirages par manche, ORDRE
+ * différent. Les tests seedés du périmètre taverne (`tavernFlow.test.ts`) sont adaptés à ce nouvel
+ * ordre ; aucun autre flux ne partage ce seed.
  */
 import type { CharKey, Combatant } from '../engine/types';
 import type { Get, Set } from './flowTypes';
@@ -22,7 +33,7 @@ import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { battleRng } from './battleRng';
 import { toBrass, fromBrass, formatMoney } from '../engine/money';
-import { openRoll, freeCons, type Consequence } from './rollSeam';
+import { openRoll, freeCons, testSkillLabel, type Consequence } from './rollSeam';
 import { registerCascadeApplier } from './cascade';
 import { actorIn } from './combatOrParty';
 import { scheduleFlowTimer } from './combatTimers';
@@ -75,11 +86,11 @@ export function closeTavernGames(_get: Get, set: Set): void {
 }
 
 /**
- * Joue une partie : OUVRE le jet du challenger par le seam (`openRoll`, hero-test — modale
- * influençable) ; l'adversaire et la mise se résolvent dans l'applier `TAVERN_GAME_KIND` après
- * commit. `stakeBrass` n'est pris en compte que si le jeu porte une mise (`game.stake`) ET que
- * l'adversaire est ABSTRAIT (la maison) — une mise entre deux héros ne bougerait pas la bourse
- * commune. La mise est plafonnée à la bourse.
+ * Joue une partie : fige le jet ADVERSAIRE puis OUVRE le jet du challenger par le seam (`openRoll`,
+ * hero-test — modale influençable, opposée au jet figé) ; la mise se résout dans l'applier
+ * `TAVERN_GAME_KIND` après commit. `stakeBrass` n'est pris en compte que si le jeu porte une mise
+ * (`game.stake`) ET que l'adversaire est ABSTRAIT (la maison) — une mise entre deux héros ne
+ * bougerait pas la bourse commune. La mise est plafonnée à la bourse.
  */
 export function playTavernGame(
   get: Get, set: Set,
@@ -95,27 +106,36 @@ export function playTavernGame(
 
   const opponentValue = opp.kind === 'hero' ? tavernGameValue(opponentHero!, game) : Math.max(1, opp.value);
   const opponentName = opp.kind === 'hero' ? opponentHero!.name : 'un adversaire de la salle';
+  const opponentId = opp.kind === 'hero' ? opponentHero!.id : undefined;
 
   // Mise (Al-zahr, l.7) : seulement contre la maison (compagnon = transfert interne, bourse inchangée).
   const wantStake = !!game.stake && opp.kind === 'abstract' ? Math.max(0, Math.floor(opts.stakeBrass ?? 0)) : 0;
   const stakeBrass = Math.min(wantStake, toBrass(get().money));
 
-  openTavernRound(get, set, game, challenger.id, opponentValue, opponentName, stakeBrass, 1, 0, 0);
+  openTavernRound(get, set, game, challenger.id, opponentValue, opponentName, opponentId, stakeBrass, 1, 0, 0);
 }
 
 /** Ouvre l'étape-jet du challenger pour UNE manche (mono, opposée ou étendue) — SOURCE UNIQUE d'ouverture,
- *  réutilisée par `playTavernGame` (manche 1) et par l'applier (manches suivantes, mode `extended`). */
+ *  réutilisée par `playTavernGame` (manche 1) et par l'applier (manches suivantes, mode `extended`). Test
+ *  OPPOSÉ RÉEL (#579) : l'adversaire est roulé ICI, AVANT l'ouverture — figé dans `meta.opposed` (calque
+ *  `combat/triggeredTest.ts`/`combatManeuvers.ts` : `FLOWS.cascade` ré-oppose à chaque influence héros,
+ *  cf. `rollFlowSpecs.ts:696-765`). */
 function openTavernRound(
   get: Get, set: Set, game: TavernGame, challengerId: string, opponentValue: number, opponentName: string,
-  stakeBrass: number, round: number, cumPlayer: number, cumOpponent: number,
+  opponentId: string | undefined, stakeBrass: number, round: number, cumPlayer: number, cumOpponent: number,
 ): void {
+  const opponentTR = rollTavernTest(opponentValue, battleRng());
+  const attackerLabel = testSkillLabel(tavernTestSpec(game));
   openRoll(get, set, {
     side: { actorId: challengerId },
     actionLabel: game.label,
     test: tavernTestSpec(game),
     difficulty: 'intermediaire', // « Test opposé de Compétence Intermédiaire (+0) » (l.11)
     klass: 'hero-test',
-  }, TAVERN_GAME_KIND, { gameId: game.id, opponentValue, opponentName, stakeBrass, round, cumPlayer, cumOpponent });
+  }, TAVERN_GAME_KIND, {
+    gameId: game.id, opponentValue, opponentName, stakeBrass, round, cumPlayer, cumOpponent,
+    opposed: { aT: opponentTR, ...(opponentId ? { attackerId: opponentId } : {}), attackerName: opponentName, attackerLabel },
+  });
 }
 
 /** Rejoue une cascade différée si la cascade EN COURS n'a pas fini de committer son étape (patron
@@ -157,12 +177,16 @@ registerCascadeApplier(TAVERN_GAME_KIND, (get, set, step) => {
   if (!game || !challenger) return {};
   const opponentValue = Number(step.meta?.opponentValue ?? 0);
   const opponentName = String(step.meta?.opponentName ?? 'un adversaire de la salle');
+  const opponentId = step.meta?.opposed?.attackerId;
   const stakeBrass = Number(step.meta?.stakeBrass ?? 0);
 
-  const playerTR: TestResult = { roll: step.result.roll, target: step.result.target, success: step.result.success, sl: step.result.sl, isDouble: false };
-  // « L'adversaire roule côté monde » (patron `portFlow.ts` PORT_SELL_BARGAIN_KIND : le héros a DÉJÀ
-  // posé son jet via `openRoll`, l'applier roule ensuite l'adversaire, moteur pur POST-COMMIT).
-  const opponentTR = rollTavernTest(opponentValue, battleRng());
+  // Le défenseur (challenger) a joué contre l'adversaire FIGÉ AVANT l'ouverture (`meta.opposed.aT`,
+  // #579) — `success` générique porte l'issue OPPOSÉE (`resolveOpposed`, tie inclus dans « résiste »),
+  // reconstruite ici en succès BRUT (roll ≤ target) pour préserver EXACTEMENT le calcul historique de
+  // `resolveTavernRound`/`roundSL` (tie distinct, plafond `drCap` de Boules), qui ne connaît QUE le
+  // succès propre au jet — jamais l'issue d'opposition déjà tranchée par la machinerie générique.
+  const playerTR: TestResult = { roll: step.result.roll, target: step.result.target, success: step.result.roll <= step.result.target, sl: step.result.sl, isDouble: false };
+  const opponentTR: TestResult = step.meta?.opposed?.aT ?? rollTavernTest(opponentValue, battleRng());
 
   if (game.mode === 'extended') {
     const target = game.target ?? 10;
@@ -170,7 +194,7 @@ registerCascadeApplier(TAVERN_GAME_KIND, (get, set, step) => {
     const cumPlayer = Number(step.meta?.cumPlayer ?? 0) + Math.max(0, roundSL(playerTR, game.drCap));
     const cumOpponent = Number(step.meta?.cumOpponent ?? 0) + Math.max(0, roundSL(opponentTR, game.drCap));
     if (cumPlayer < target && cumOpponent < target && round < 50) {
-      chainRound(get, () => openTavernRound(get, set, game, challenger.id, opponentValue, opponentName, stakeBrass, round + 1, cumPlayer, cumOpponent));
+      chainRound(get, () => openTavernRound(get, set, game, challenger.id, opponentValue, opponentName, opponentId, stakeBrass, round + 1, cumPlayer, cumOpponent));
       return {};
     }
     const winner = cumPlayer > cumOpponent ? 'player' : cumOpponent > cumPlayer ? 'opponent' : 'tie';
