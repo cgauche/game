@@ -18,7 +18,7 @@ import {
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS,
   WATER_EXPOSURE, navalPorts,
   navalProgression, seaNavigation, seaPerils, seaWeather, shipConstruction,
-  disponibilite,
+  disponibilite, riverNavigation,
 } from './index';
 // #157 : catalogues de CONTENU déjà chargés par un module dédié (`src/data/*.ts` ou `src/engine/*.ts`,
 // pas la façade `index.ts`) — importés DIRECTEMENT ici (même patron que `massBattle*` ci-dessus, qui
@@ -166,6 +166,8 @@ const OBJECTS = {
   seaNavigation, seaPerils, seaWeather,
   // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
   disponibilite,
+  // LOT 2 #422 : Navigation fluviale (T2C ch.5) — fiche de règle UNIQUE, même patron.
+  riverNavigation,
 } as const;
 export type ObjectDatasetKey = keyof typeof OBJECTS;
 export const OBJECT_DATASET_KEYS = Object.keys(OBJECTS) as ObjectDatasetKey[];
@@ -188,6 +190,7 @@ const OBJECT_FILE: Partial<Record<ObjectDatasetKey, string>> = {
   seaNavigation: 'sea-navigation.json',
   seaPerils: 'sea-perils.json',
   seaWeather: 'sea-weather.json',
+  riverNavigation: 'river-navigation.json',
 };
 /** Fichier disque d'un dataset-objet (`<clé>.json` par défaut, ou l'override `OBJECT_FILE`). */
 export function datasetObjectFile(key: ObjectDatasetKey): string {

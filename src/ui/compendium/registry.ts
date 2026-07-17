@@ -23,7 +23,7 @@ import {
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
 // importés directement d'`engine/massBattle`).
-import type { RaceKey } from '../../data/schemas/common';
+import type { RaceKey, SourceRef } from '../../data/schemas/common';
 import { MOUNT_PROFILES } from '../../engine/mountTravel';
 import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../../engine/travelTables';
 import type { TravelTableEntry } from '../../engine/travelTables';
@@ -91,10 +91,10 @@ export function entryKey(e: Record<string, unknown>): string {
   return String(e.label ?? e.name ?? e.key ?? e.id ?? '');
 }
 
-export interface CodexSource {
-  book: string;
-  page: number;
-}
+/** Vue de projection Codex de `SourceRef` (`src/data/schemas/common.ts:36` — SEULE forme à importer,
+ *  #563 dette soldée) : `book` y est déjà résolu en ABRÉVIATION affichable (`bookAbr`, cf. `src()`
+ *  ci-dessous), jamais l'id stable — projection d'AFFICHAGE, pas la donnée. */
+export type CodexSource = Pick<SourceRef, 'page'> & { book: string };
 export interface CodexFact {
   label: string;
   value: string;
@@ -855,6 +855,71 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       ),
       source: src(t.source),
     })),
+  },
+  {
+    key: 'riverNavigation', label: 'Navigation fluviale (Vent, Chavirage, Échouage)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'T2C ch.5',
+    build: () => {
+      const n = datasetObject('riverNavigation');
+      const forceLabel = new Map(n.windForces.map((f) => [f.id, f.label]));
+      const dirLabel = new Map(n.windDirections.map((d) => [d.id, d.label]));
+      const effectText = (e: { pct?: number; drift?: boolean; tack?: boolean; capsizeRisk?: boolean; riggingRisk?: boolean } | undefined): string => {
+        if (!e) return '—';
+        const parts: string[] = [];
+        if (e.pct != null) parts.push(`${e.pct > 0 ? '+' : ''}${e.pct} % vitesse`);
+        if (e.drift) parts.push('Dérive (Navigation −10)');
+        if (e.tack) parts.push('Louvoyer (Navigation Accessible +20)');
+        if (e.capsizeRisk) parts.push('Risque de chavirage');
+        if (e.riggingRisk) parts.push('Risque au gréement');
+        return parts.join(' · ') || '—';
+      };
+      return [{
+        id: 'riverNavigation', label: 'Navigation fluviale', source: src(n.source),
+        meta: facts(
+          fact('Savoir (Voies fluviales)', `+${n.savoirVoiesFluvialesDR} DR`),
+          fact('Difficulté de base', DIFFICULTY_LABELS[n.navBaseDifficulty]),
+          fact('Difficulté de Louvoyer', DIFFICULTY_LABELS[n.tackDifficulty]),
+        ),
+        sections: sections(
+          {
+            title: 'Force du vent (1d10)', layout: 'list',
+            rows: n.windForces.map((f) => ({ t: 'kv', k: `1d10 ${f.min}–${f.max}`, v: f.label } as CodexRow)),
+          },
+          {
+            title: 'Direction du vent (1d10, relative au bateau)', layout: 'list',
+            rows: n.windDirections.map((d) => ({ t: 'kv', k: `1d10 ${d.min}–${d.max}`, v: d.label } as CodexRow)),
+          },
+          {
+            title: 'Effet du vent (Force × Direction)', layout: 'list',
+            rows: n.windForces.flatMap((f) => n.windDirections.map((d) => ({
+              t: 'kv', k: `${forceLabel.get(f.id)} · ${dirLabel.get(d.id)}`, v: effectText(n.windEffect[f.id]?.[d.id as 'arriere' | 'cote' | 'contraire']),
+            } as CodexRow))),
+          },
+          {
+            title: 'Agilité de rame (Test quotidien)', layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Difficulté', v: DIFFICULTY_LABELS[n.rowingAgility.difficulty] } as CodexRow,
+              { t: 'kv', k: 'Échec', v: `${n.rowingAgility.failSpeedPct} % vitesse` } as CodexRow,
+              { t: 'kv', k: `Échec spectaculaire (DR ≤ ${n.rowingAgility.spectacularSL})`, v: `×${n.rowingAgility.spectacularSpeedFactor} vitesse` } as CodexRow,
+            ],
+          },
+          {
+            title: 'Chavirage (Très fort de côté)', layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Retirer la voile', v: DIFFICULTY_LABELS[n.capsize.removeSailDifficulty] } as CodexRow,
+              { t: 'kv', k: 'Redresser (par Round)', v: `${DIFFICULTY_LABELS[n.capsize.rightDifficulty]} (−${Math.abs(n.capsize.rightCumulativePenalty)} cumulatif par échec)` } as CodexRow,
+            ],
+          },
+          {
+            title: 'Autres dangers', layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Hors de contrôle', v: `${n.outOfControl.navPenalty} Navigation` } as CodexRow,
+              { t: 'kv', k: 'S’échouer', v: `${n.echouage.hullDamage} Dégâts de coque` } as CodexRow,
+              { t: 'kv', k: 'Réparation temporaire', v: `${DIFFICULTY_LABELS[n.temporaryRepair.difficulty]} (Charpentier ${n.temporaryRepair.charpentierPenalty}, ${n.temporaryRepair.woundsPerRepair} Blessures)` } as CodexRow,
+            ],
+          },
+        ),
+      }];
+    },
   },
 
   {
