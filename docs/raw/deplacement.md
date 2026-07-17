@@ -609,7 +609,7 @@ Autres formes de propulsion : Propulsion à vapeur → **Métier (Ingénieur)** 
 **Voir aussi :** [Progression d'un navire (MDG)](#progression-dun-navire-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg), [`tests.md`](tests.md) (Soutien, Difficulté).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.17-20, l.30-36) → `plus2`, `plus1`, `normal`, `minus1`, `half`, `savoirOceansBonus` — `src/data/naval-progression.json`, `src/data/schemas/defs/sea-navigation.ts`, `src/engine/seaNavigation.ts`
+- `MDG 13` (l.17-20, l.30-36) → `plus2`, `plus1`, `normal`, `vesselPropulsion`, `minus1`, `half`, `savoirOceansBonus` — `src/data/naval-progression.json`, `src/data/schemas/defs/sea-navigation.ts`, `src/engine/seaNavigation.ts`, `src/engine/shipBuild.ts`
 
 ---
 

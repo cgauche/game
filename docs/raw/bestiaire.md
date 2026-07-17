@@ -355,7 +355,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `cannotStopOn`, `TraverseCapability`, `StatblockEditor`, +87 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +27 fichiers
+- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `TraverseCapability`, `cannotStopOn`, `StatblockEditor`, +87 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +27 fichiers
 
 ---
 
@@ -411,7 +411,7 @@ Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (T2C) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 16` (l.15-19, l.63) → `suffocationTick`, `fireTurnEdgeTriggers`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, `OpsCtx`, `applyOps`, `Combatant`, +2 — `src/data/creatures.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/state/combat/advantagePool.ts`, `src/state/combat/turnHooks.ts`, +1 fichiers
+- `MDG 16` (l.15-19, l.63) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `ActionBar`, `GameOp`, +8 — `src/data/creatures.json`, `src/data/index.ts`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/scenes/test-scenarios/20-aspersion.ts`, +6 fichiers
 
 ---
 
@@ -434,8 +434,8 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 **Voir aussi** : [Avantage permanent — Trait *Redoutable* (Grim) (ZI)](combat.md#avantage-permanent--trait-redoutable-grim-zi) — `combat.md` ; Avantage de groupe (AA) — `combat.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 16` (l.9-13, l.152) → `suffocationTick`, `fireTurnEdgeTriggers`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, `OpsCtx`, `applyOps`, `Combatant`, +2 — `src/data/creatures.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/state/combat/advantagePool.ts`, `src/state/combat/turnHooks.ts`, +1 fichiers
-- sans code : `ZI 14` (l.1045)
+- `ZI 14` (l.1045) → `fouissement` — `src/data/traits.json`
+- `MDG 16` (l.9-13, l.152) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `ActionBar`, `GameOp`, +8 — `src/data/creatures.json`, `src/data/index.ts`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/scenes/test-scenarios/20-aspersion.ts`, +6 fichiers
 
 ## Bilan de fidélité
 

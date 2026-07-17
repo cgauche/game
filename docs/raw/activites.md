@@ -778,7 +778,8 @@ Les cinq Activités : *Pénitence*, *Entraînement avec une arme inhabituelle*, 
 
 **Voir aussi** : [Cadre général « Entre deux aventures »](#cadre-général-entre-deux-aventures), [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Opérations Bancaires — Mécénat en est une variante), [Pénitence (LDB 41)](religion.md#pénitence) (renvoi — pénitence MJ-arbitrée en réponse à la Colère des dieux, distincte de l'Activité *Pénitence* ci-dessous), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Corruption & mutation](corruption.md) (Tester des objets magiques — Exposition mineure).
 
-**Implémente :** `src/engine/activities.ts` (`activityAvailableAt`, champ `ActivityDef.where`) + `src/state/interludeFlow.ts` (`currentPlaceId`, `interludeCatalog`) — gate géographique. Confirmé.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ACE 12` (l.3-7) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `TrappingData`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -797,7 +798,8 @@ Pèlerinage à Altdorf (ou parcours des chemins saints si déjà sur place) pour
 
 **Voir aussi** : [Points de Péché — définition et accumulation](religion.md#points-de-péché--définition-et-accumulation), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Table d100 — Colère des dieux (verbatim)](religion.md#table-d100--colère-des-dieux-verbatim).
 
-**Implémente :** `src/data/activities.json` (`id: "penitence"`) + `src/state/interludeFlow.ts` (`case 'wrathOfTheGods'` l.588-591, `applyMiscast`) + `src/engine/miscast.ts` (table Colère). Confirmé.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `openCatalogActivity`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -813,7 +815,8 @@ Maîtriser une arme trop singulière pour un usage immédiat (ex. l'arme de Hara
 - Succès → arme maîtrisée (lève le prérequis `requiresMastery`).
 - Échec → nouvelle tentative reportée au prochain interlude.
 
-**Implémente :** `src/data/activities.json` (`id: "entrainement-arme-inhabituelle"`, `resolver: "masterWeapon"`) + `src/state/interludeFlow.ts` (`resolver === 'masterWeapon'` l.388-396, `case 'masterWeapon'` l.592-597). Confirmé.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `openCatalogActivity`, `entrainement-arme-inhabituelle`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -836,7 +839,8 @@ Table des résultats (`ACE 12 l.31-42`) :
 
 **Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
 
-**Implémente :** `src/data/activities.json` (`id: "tester-objets-magiques"`, `resolver: "identifyByResearch"`) + `src/state/interludeFlow.ts` (`case 'identifyByResearch'` l.598-614). Confirmé.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ACE 12` (l.23-42) → `InterludeHeroState`, `BankDeposit`, `OutcomeBand`, `matchOutcomes`, `PendingActivity`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `ActivityDef`, `weaponGroupSkillMode`, +13 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -861,7 +865,8 @@ Table des résultats (`ACE 12 l.57-65`) :
 
 **Voir aussi** : [Opérations Bancaires](#opérations-bancaires) (ch.23, dépôt invest/planque).
 
-**Implémente :** `src/data/activities.json` (`id: "mecenat"`, `resolver: "mecenat"`, `minInvest.gold: 5`) + `src/state/interludeFlow.ts` (`bankDeposit` kind `'mecenat'` l.769-813, `mecenatPayout` l.443-454). Confirmé.
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ACE 12` (l.45-49, l.57-65) → `BankDeposit`, `OutcomeBand`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `buySpell`, `openCatalogActivity`, `mecenatPayout`, +4 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 
 ---
 
@@ -879,5 +884,6 @@ Consultation des bibliothèques/laboratoires d'un Collège de Magie à Altdorf p
 - Chaque +DR → −100 PX sur le prix du prochain sort mémorisé (plancher 100 PX).
 - Achat du sort **immédiat**, sinon la remise est perdue.
 
-**Implémente :** `src/data/activities.json` (`id: "recherche-universitaire"`, `resolver: "memorizeDiscount"`) + `src/state/interludeFlow.ts` (`case 'memorizeDiscount'` l.615-621) — Confirmé (le seuil « sorts appris ≥ Bonus d'Intelligence » sous lequel l'Activité est inutile n'est pas vérifié en code).
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `ACE 12` (l.51-55, l.67) → `BankDeposit`, `OutcomeBand`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `buySpell`, `openCatalogActivity`, `mecenatPayout`, +4 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 

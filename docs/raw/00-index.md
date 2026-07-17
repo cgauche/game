@@ -1,6 +1,6 @@
 # Atlas RAW — Index
 
-Base de connaissance des **règles WFRP4 (RAW)** du projet, **consolidées** depuis les 14 livres
+Base de connaissance des **règles WFRP4 (RAW)** du projet, **consolidées** depuis les 15 livres
 autorisés (voir [`sources.md`](sources.md)), à **usage d'agent** : répondre vite et sûrement à
 *« est-ce que X est RAW, et que dit exactement la source ? »* quand la réponse est éclatée sur
 plusieurs chapitres **et** plusieurs livres.
@@ -71,7 +71,7 @@ plusieurs chapitres **et** plusieurs livres.
 
 > Les COMPTES courants (✅/🟡/❌, chapitres non pinés, marqueurs, B2) vivent dans les fichiers GÉNÉRÉS ci-dessus, jamais dans cette page — un compte recopié à la main ment dès le commit suivant.
 
-> **Source = Marker propre pour les 14 livres** (tables intactes, texte exact ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`). L'Atlas remplace la source : 0 trou de règle.
+> **Source = Marker propre pour les 15 livres** (tables intactes, texte exact ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`). L'Atlas remplace la source : 0 trou de règle.
 
 > ⚠️ **Ré-extraction de `Source/` : JAMAIS en masse.** Une re-passe Marker totale décale les numéros de
 > ligne de ~3 000 citations du CODE que `reanchor.mjs --remap` ne couvre pas (il ne remappe que les fiches) —

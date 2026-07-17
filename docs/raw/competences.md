@@ -172,7 +172,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, `redaction`, +31 — `src/data/driving-mishap.json` ⚠hors-app, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/schemas/defs/drunkenness.ts`, +25 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, `redaction`, +32 — `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/schemas/defs/drunkenness.ts`, +26 fichiers
 
 ---
 
@@ -503,7 +503,7 @@ comme non Groupée pour les non-formés.
 **Sources RAW :** LDB 09 l.246-252 ; ADE II 4 l.162, l.180, l.182 (Focalisation sur artefacts magiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-72, l.75-76, l.80-83, l.86-109, l.111-118, l.121-134, l.137-154, l.157-160, l.163-176, l.179-190, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `carryOverState`, `useDefenseJetProps`, `redaction`, `healDifficulty`, `athletisme`, +15 — `src/data/driving-mishap.json` ⚠hors-app, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/skills.json`, `src/engine/combat.ts`, +14 fichiers
+- `LDB 9` (l.65-72, l.75-76, l.80-83, l.86-109, l.111-118, l.121-134, l.137-154, l.157-160, l.163-176, l.179-190, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `carryOverState`, `useDefenseJetProps`, `redaction`, `healDifficulty`, `athletisme`, +15 — `src/data/driving-mishap.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/skills.json`, `src/engine/combat.ts`, +14 fichiers
 - sans code : `ADE II 4` (l.162)
 
 ---

@@ -98,7 +98,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 **Voir aussi** : [`carrieres.md`](carrieres.md) pour la structure du Schéma de Progression par Carrière.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.41-72) → `inCareerChar`, `AdvanceCostBand`, `buyCharAdvance`, `buySkillAdvance`, `isCareerLevelComplete`, `buildAdvancementView`, `skillSlots`, `availableChars` — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`
+- `LDB 7` (l.41-72) → `adv-0-5`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `adv-16-20`, `adv-21-25`, `buyCharAdvance`, `adv-26-30`, `buySkillAdvance`, +13 — `src/data/advancementCosts.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/state/advancement.ts`
 
 ---
 
@@ -119,7 +119,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 **Voir aussi** : [`competences.md`](competences.md) pour la définition des Compétences et la règle des Spécialisations.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.75-84) → `feu`, `inCareerChar`, `AdvanceCostBand`, `advanceCost`, `lumiere`, `buySkillAdvance`, `buyTalent`, `isCareerLevelComplete`, `buildAdvancementView`, `mort`, +10 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, +2 fichiers
+- `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `adv-26-30`, +25 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, +2 fichiers
 - `LDB 9` (l.44) → `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, +5 fichiers
 
 ---
@@ -143,7 +143,7 @@ Résumé :
 **Sources RAW** : `LDB 07 l.88-93`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.88-93) → `feu`, `inCareerChar`, `advanceCost`, `lumiere`, `buySkillAdvance`, `buyTalent`, `buildAdvancementView`, `mort`, `skillSlots`, `talentSlots`, +8 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, +1 fichiers
+- `LDB 7` (l.88-93) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `adv-26-30`, `lumiere`, +23 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, +1 fichiers
 
 ---
 

@@ -56,8 +56,12 @@ for (const [book] of EXTRA_ABBR_VARIANTS) {
   if (!BOOK_DIR.has(book)) throw new Error(`otherRe: variante tolérante référence un livre inconnu de BOOKS: ${book}`)
 }
 // Tri par longueur décroissante OBLIGATOIRE : sinon "T2" matcherait avant "T2C", "EDO" avant "EDOC".
+// La forme CANONIQUE de chaque livre est TOUJOURS émise, variantes EN PLUS — exclure un livre
+// « couvert » par ses variantes supposait qu'elles matchent aussi sa forme canonique, hypothèse
+// cassée par ACE (`Ald\w+`/`Alt\w+` ne matchent pas « ACE » → réfs canoniques invisibles de tous
+// les parseurs dérivés, vu au merge du 2026-07-17, ref #529).
 const OTHER_ABBR_ALT = [
-  ...BOOKS.filter(([a]) => a !== 'LDB' && !VARIANT_COVERED.has(a)).map(([a]) => esc(a)),
+  ...BOOKS.filter(([a]) => a !== 'LDB').map(([a]) => esc(a)),
   ...EXTRA_ABBR_VARIANTS.map(([, pat]) => pat),
 ].sort((a, b) => b.length - a.length).join('|')
 // m[4] = suffixe de plage `((?:[-+]\d+)*)` (#487), miroir de ldbRe ; consommateurs qui lisent m[1..3]
