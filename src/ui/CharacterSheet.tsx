@@ -228,11 +228,13 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 fig="hero"
                 zoneBadges={tab === 'possessions' ? possessionsZoneBadges(hero) : tab === 'etat' ? etatZoneBadges(hero) : undefined}
               />
-              <LifeBar label="Blessures" value={hero.wounds.current} max={hero.wounds.max} tone={woundsTone} />
+              <LifeBar stacked label="Blessures" value={hero.wounds.current} max={hero.wounds.max} tone={woundsTone} />
               {/* Encombrement : rouge en remplissage (croquis 2026-07-17) — la surcharge elle-même
                   reste portée par l'alarme existante (`SheetAlarmsBand`/`sheetAlarms.ts`), jamais dupliquée ici.
-                  Le dépassement (Enc > max) est porté par l'état DÉPASSEMENT générique de `LifeBar`. */}
-              <LifeBar label="Encombrement" value={totalEncumbrance(hero)} max={maxEncumbrance(hero)} tone="danger" />
+                  Le dépassement (Enc > max) est porté par l'état DÉPASSEMENT générique de `LifeBar`.
+                  `stacked` (arbitrage 2026-07-17) : valeur au-dessus, piste pleine largeur — les deux
+                  barres de l'aside s'alignent par construction, quelle que soit la longueur du libellé/valeur. */}
+              <LifeBar stacked label="Encombrement" value={totalEncumbrance(hero)} max={maxEncumbrance(hero)} tone="danger" />
               <div className="sheet-idrows">
                 <div className="sheet-idrow">
                   <span className="sheet-idrow-label">Race</span>
