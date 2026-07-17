@@ -45,7 +45,7 @@ import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry, WaterExposureData, WaterExposureModifier } from '../../data';
 import { SPEC_SOURCES, type SpecsSource } from '../../data';
 import type { SecondaryRef, Variant } from '../../data/schemas/common';
-import { OPTIONAL_RULES } from '../../engine/policy';
+import { OPTIONAL_RULES, type RuleKind, type RuleValue } from '../../engine/policy';
 
 /** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -1074,6 +1074,16 @@ function AlsoInField({ value, onChange }: { value: SecondaryRef[] | undefined; o
  *  `when.rule` est un id du registre `OPTIONAL_RULES` (`engine/policy.ts`, SELECT peuplé, jamais une
  *  saisie libre : pas de gate fantôme, doctrine id/label). `combat` réutilise `CombatField` tel quel
  *  (fusionné par-dessus la base par `effectiveFeature`, `combatFeatures/dispatch.ts`). */
+/** Coerce la valeur SAISIE de `when.equals` au type que la règle compare au runtime (`activeVariant`
+ *  fait `rule(id) === equals`, stricte égalité) : `flag`→boolean, `param`→number, `mode`/défaut→string.
+ *  Sans ça une chaîne « true »/« 2 » ne serait jamais `===` au boolean/number réel — gate cassé en silence. */
+function coerceRuleValue(raw: string, kind: RuleKind | undefined): RuleValue | undefined {
+  if (raw === '') return undefined;
+  if (kind === 'flag') return raw === 'true';
+  if (kind === 'param') return Number(raw);
+  return raw;
+}
+
 function VariantsField({ value, allFeatures, onChange }: { value: Variant[] | undefined; allFeatures: (Partial<CombatFeature> | undefined)[]; onChange: (v: Variant[]) => void }) {
   const list = value ?? [];
   const set = (next: Variant[]) => onChange(next);
@@ -1091,7 +1101,7 @@ function VariantsField({ value, allFeatures, onChange }: { value: Variant[] | un
             </label>
             <label className="dr">Valeur attendue
               <input placeholder="défaut : true" value={v.when.equals == null ? '' : String(v.when.equals)}
-                onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, when: { ...x.when, equals: e.target.value === '' ? undefined : e.target.value } } : x)))} />
+                onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, when: { ...x.when, equals: coerceRuleValue(e.target.value, OPTIONAL_RULES.find((r) => r.id === x.when.rule)?.kind) } } : x)))} />
             </label>
             <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
           </div>
