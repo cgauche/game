@@ -40,6 +40,22 @@ export function arcaneDomainIdOf(c: Combatant): string | undefined {
   return arcaneDomainOf(c);
 }
 
+/** Domaine du Chaos du lanceur (EDOC 13) : la spécialisation du talent à `castingKind:'chaos'` (Magie du
+ *  Chaos — Nurgle/Slaanesh/Tzeentch/Indivisible), ou undefined. Miroir d'`arcaneDomainOf` — source DONNÉE
+ *  (`combat.castingKind`), consommée par tout Sort d'Arcanes du Chaos « se manifestant selon le Domaine »
+ *  (Allure démoniaque : sélection de la colonne du Tableau des aspects démoniaques). Sans Talent Magie du
+ *  Chaos → undefined (un Sort d'Arcanes du Chaos est réservé aux porteurs du Talent, EDOC 13 l.264-266). */
+export function chaosDomainOf(c: Combatant): string | undefined {
+  for (const t of c.talents ?? []) if (findTalentById(t.talentId)?.combat?.castingKind === 'chaos') return t.spec;
+  return undefined;
+}
+
+/** `id` STABLE du Domaine du Chaos du lanceur : la spec du Talent Magie du Chaos EST un id de `gods.json`
+ *  (nurgle/slaanesh/tzeentch), ou 'indivisible' (Chaos non divisé, sans dieu unique). undefined si non porteur. */
+export function chaosDomainIdOf(c: Combatant): string | undefined {
+  return chaosDomainOf(c);
+}
+
 /** Capacités de combat présentes sur le combattant, lues de la DONNÉE (`TalentData.combat`) : talents
  *  POSSÉDÉS (niveau = times) + talents ACCORDÉS par un effet actif de sort (op `grantTalent`, niveau 1
  *  tant que l'effet dure — Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant…, Jalon 2.6). */

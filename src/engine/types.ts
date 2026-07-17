@@ -538,6 +538,11 @@ export interface ActiveEffect {
   /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : le
    *  `TraitInstance` exact posé dans `c.traits`, retiré (une instance) à l'expiration (engine/grantedTraits). */
   grantedTrait?: import('./statEntry').TraitInstance;
+  /** Mutation TEMPORISÉE accordée par cet effet (op `rollMutation` à durée — Allure démoniaque, EDOC 13
+   *  l.276-277) : la `Mutation` exacte posée dans `c.mutations`, DÉTACHÉE à l'expiration
+   *  (`dropExpiredGrantedMutations`, engine/corruption). Une mutation de CORRUPTION (permanente) n'a pas
+   *  d'effet porteur — elle vit seule dans `c.mutations`, jamais détachée. */
+  grantedMutation?: import('./corruption').Mutation;
   /** Apparence de REMPLACEMENT le temps de l'effet (op `polymorph`) : id de créature dont la couche rig
    *  rend l'apparence (`combatantAppearance` via `liveMorphRef`). Le moteur ne porte QUE l'id (pureté —
    *  aucune dépendance au rig) ; l'override est auto-restitué à l'expiration (effet retiré → plus de morphRef). */

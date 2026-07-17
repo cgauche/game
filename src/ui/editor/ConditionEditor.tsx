@@ -67,6 +67,7 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['capability', 'Capacité de combat'],
   ['relation', 'Camp / relation'],
   ['has', 'Possède (Groupe/Talent/Trait)'],
+  ['casterChaosDomain', 'Domaine du Chaos du lanceur'],
   ['all', 'TOUS (ET)'],
   ['any', 'AU MOINS UN (OU)'],
   ['not', 'NON'],
@@ -107,6 +108,7 @@ export function condSummary(c: Condition | undefined): string {
     case 'capability': return `${WHO_LABEL[c.who]} : capacité « ${c.id || '?'} » ${c.op ?? '>='} ${c.value ?? 1}`;
     case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
     case 'has': return `${WHO_LABEL[c.who]} a ${WHAT_LABEL[c.what]} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
+    case 'casterChaosDomain': return `Domaine du Chaos du lanceur = ${c.is || '?'}`;
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
     case 'any': return c.of.length ? c.of.map(condSummary).join(' OU ') : 'jamais';
     case 'not': return `NON(${condSummary(c.of)})`;
@@ -138,6 +140,7 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'capability': return cond.kind === 'capability' ? cond : { kind: 'capability', who: 'target', id: 'braveheart', op: '>=', value: 1 };
     case 'relation': return cond.kind === 'relation' ? cond : { kind: 'relation', who: 'target', is: 'opponent' };
     case 'has': return cond.kind === 'has' ? cond : { kind: 'has', who: 'target', what: 'group', value: '' };
+    case 'casterChaosDomain': return cond.kind === 'casterChaosDomain' ? cond : { kind: 'casterChaosDomain', is: 'nurgle' };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'any': return { kind: 'any', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'not': return { kind: 'not', of: cond.kind === 'not' ? cond.of : cond };
@@ -335,6 +338,12 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           {cond.what === 'talent' && (
             <input style={{ width: '6em' }} value={cond.spec ?? ''} placeholder="spéc. (Feu…)" onChange={(e) => onChange({ ...cond, spec: e.target.value || undefined })} />
           )}
+        </span>
+      )}
+      {cond.kind === 'casterChaosDomain' && (
+        <span className="cond-time">
+          Domaine du Chaos du lanceur =
+          <input className="cond-flag" value={cond.is} placeholder="nurgle / slaanesh / tzeentch / indivisible" onChange={(e) => onChange({ ...cond, is: e.target.value })} />
         </span>
       )}
       {(cond.kind === 'all' || cond.kind === 'any') && (

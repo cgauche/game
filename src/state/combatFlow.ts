@@ -126,7 +126,7 @@ import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
 import { hasCapability, itemCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, removeActiveEffects, COND } from '../engine/conditions';
 import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { domainOnHitEffects, domainCasterOps, isSorceryDomain } from '../engine/domainAttributes';
@@ -3489,6 +3489,7 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   applyCast(get, set, caster, first, spell, r1, pc.missile, pc.focused, pc.critChoice, {
     durationMult: ocDur.mult,
     durationBonusRounds: ocDur.bonusRounds,
+    overcastDurationSteps: pc.overcast?.duration ?? 0,
     extraTargets: inZone.slice(1),
   });
   // Avance au-delà de l'étape cast (résolue) : conséquences appendues → jouées ; aucune → ferme.
@@ -3769,7 +3770,7 @@ export function applyCast(
   missile: boolean,
   focusedNI0: boolean,
   critChoice?: CastCritChoice,
-  extras?: { durationMult?: number; durationBonusRounds?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
+  extras?: { durationMult?: number; durationBonusRounds?: number; overcastDurationSteps?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
   // Durée surincantée DÉCOMPOSÉE (engine/overcast) : `rounds = base × mult + bonus`. Arcane/Miracle :
@@ -3777,6 +3778,9 @@ export function applyCast(
   // bonus = 6 Rounds × pas (FIXE, rounds-only — pas de Bénédiction à durée d'horloge).
   const durationMult = Math.max(1, extras?.durationMult ?? 1);
   const durationBonusRounds = Math.max(0, extras?.durationBonusRounds ?? 0);
+  // Jets supplémentaires COUPLÉS au pas de Surincantation alloué à la Durée (EDOC 13 l.270-276) —
+  // jamais au DR total du jet (`rollTable.extraRollsPerStep`, `OpsCtx.overcastDurationSteps`).
+  const overcastDurationSteps = Math.max(0, extras?.overcastDurationSteps ?? 0);
   let teleportReach: Map<string, number> | null = null; // Téléportation (Jalon 2.6) : posé APRÈS finishPlayerAction
   const extraTargets = extras?.extraTargets ?? [];
 
@@ -3941,10 +3945,11 @@ export function applyCast(
         const rounds = missileSpec.duration?.kind === 'rounds' ? resolveFormula(missileSpec.duration.value, caster, battleRng()) : null;
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
         logLines.push(...runCastFlow(get, set, t, caster, spellFlowFor(spell.effects, 'target'), {
-          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
+          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl, overcastDurationSteps,
           ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
+          ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
           onCorruption: followsCharacterRules(t) ? (n, align) => gainCorruption(get, set, t, n, align) : undefined, // #143 : personnage, pas un proxy `kind`
         }));
       }
@@ -4047,6 +4052,7 @@ export function applyCast(
             label: spell.label,
             now: get().gameTime,
             sl: opp ? opp.margin : res.sl,
+            overcastDurationSteps,
             ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
@@ -4168,10 +4174,11 @@ export function applyCast(
       const baseRounds = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
       logLines.push(...runCastFlow(get, set, caster, caster, spellFlowFor(spell.effects, 'caster'), {
-        rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl,
+        rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl, overcastDurationSteps,
         ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
         ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
+        ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
         onCorruption: followsCharacterRules(caster) ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined, // #143 : personnage, pas un proxy `kind`
       }));
     }
@@ -4551,6 +4558,12 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     audience: battle.combatants.filter((c) => !isOutOfAction(c)),
     triggerCtx: { rng: battleRng() },
   });
+  // `activeEffects` (échelle `rounds`) N'EST JAMAIS reporté hors combat (les Rounds ne tickent pas hors
+  // combat) — sans purge ICI, un `grantedMutation`/`grantedTrait` encore actif (Allure démoniaque, EDOC 13
+  // l.270-276) laisserait sa DONNÉE portée (`c.mutations`/`c.traits`, carriées par `carryOverState`) orpheline
+  // et PERMANENTE (plus aucun porteur pour la détacher). Détachement propre AVANT writeback, comme une
+  // expiration normale (`removeActiveEffects` : MÊME couture que `tickDurations`).
+  for (const c of battle.combatants) removeActiveEffects(c, (e) => e.duration.scale === 'rounds');
   const newParty = party.map((h) => {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');
     return c ? { ...h, ...carryOverState(c) } : h;

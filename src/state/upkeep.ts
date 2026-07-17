@@ -37,6 +37,8 @@ import { rule } from '../engine/policy';
 import { dropExpiredGrantedTraits } from '../engine/grantedTraits';
 import { dropExpiredGrantedResources } from '../engine/grantedResources';
 import { dropExpiredGrantedWeapons } from '../engine/conjuredWeapons';
+import { dropExpiredGrantedMutations } from '../engine/corruption';
+import { recomputeLoadout } from '../engine/items';
 import { restoreSuppressedPsych } from '../engine/psychology';
 import { tickTraumaRecovery } from '../engine/trauma';
 import { applyOps } from '../engine/ops';
@@ -71,10 +73,12 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
       dropExpiredGrantedTraits(h, fx); // traits accordés (op grantTrait) retirés avec leur effet
       dropExpiredGrantedResources(h, fx); // Chance/Destin accordés (gainResource) non dépensés
       dropExpiredGrantedWeapons(h, fx); // armes invoquées/naturelles accordées : loadout recomposé
+      const mutDropped = dropExpiredGrantedMutations(h, fx); // mutation TEMPORISÉE (op rollMutation) détachée
+      if (mutDropped) recomputeLoadout(h); // armes/PA naturels de mutation retirés → loadout recomposé
       restoreSuppressedPsych(h, fx); // Traits psy suspendus (Baume, LDB 42) restitués
-      // Blessures max dérivées : un buff F/E/FM ou un `attrMod{wounds}` (Bonnet de fou) expiré recale
-      // max + courants (perte du +4 à la dissipation — « l'utilisateur perd 1d10 PB » est une op `delayed` à part).
-      if (fx.some((e) => e.attrMods?.wounds || e.char === 'force' || e.char === 'endurance' || e.char === 'force-mentale')) refreshWounds(h);
+      // Blessures max dérivées : un buff F/E/FM ou un `attrMod{wounds}` (Bonnet de fou) expiré, OU une
+      // mutation détachée (charMod E/F/FM) recale max + courants.
+      if (mutDropped || fx.some((e) => e.attrMods?.wounds || e.char === 'force' || e.char === 'endurance' || e.char === 'force-mentale')) refreshWounds(h);
     }
     // États à durée d'HORLOGE (op `condition.durationHours` — Belladone : sommeil « 1d10+4 heures ») :
     // dissipés à l'échéance, même canal de purge que les effets actifs (LDB 72 l.18).

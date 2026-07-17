@@ -1371,6 +1371,9 @@ export const symptomLabel = (id: string): string => symptomById.get(id)?.label ?
  *  app-owned éditables au Codex. Le runtime du tirage (`rollMutation`) vit dans `mutations.ts`. */
 export const mutations = mutationsJson as MutationData[];
 export const mutationTables = mutationTablesJson as MutationTable[];
+/** Tables d'EFFETS référençables (`tables.json`, tirées par l'op `rollTable` variante `tableId`) —
+ *  loader + lookup fail-fast dans `data/effectTables.ts` (importe le type `GameOp` du moteur, réservé). */
+export { effectTables, findEffectTableById, type EffectTable, type EffectTableRow } from './effectTables';
 const MUTATION_BY_ID = new Map(mutations.map((m) => [m.id, m]));
 /** Résout une Mutation (entité) par son `id` STABLE — lookup DONNÉE sans cycle (le résolveur de tirage
  *  `mutationById` de `data/mutations` importe le moteur → réservé au runtime de corruption). */

@@ -8363,21 +8363,92 @@
         "bonusOf": "sociabilite"
       }
     },
-    "desc": "Vous canalisez le pouvoir de transformation du Chaos dans votre propre chair, sacrifiant temporairement votre forme mortelle sur l'autel de la volonté de votre dieu. Votre corps est déformé, prenant les aspects d'un démon loyal à votre dieu protecteur. Lancez 1d10 sur le Tableau de la page 78, et appliquez le Trait pertinent pour toute la durée du Sort. Pour chaque +2 DR, vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau. Si vous obtenez le Trait Démoniaque et que vous êtes réduit à 0 Blessure, votre âme est aspirée dans les Royaumes du Chaos, comme décrit dans les règles des Traits de créature.\n\n| 1d10 | Nurgle | Slaanesh | Tzeentch | Indivisible |\n| --- | --- | --- | --- | --- |\n| 1 | Grand | Démoniaque (6) | Souffle +9 (Feu) | Démoniaque (8) |\n| 2 | Souffle +7 (Corrosion et Poison) | Perturbant (Allure étrange) | Démoniaque (9) | Démoniaque (8) |\n| 3 | Démoniaque (7) | Peur (3) | Éthéré | Élite |\n| 4 | Maladie (Pourriture de Nurgle) | Frénésie | Peur (3) | Rapide |\n| 5 | Perturbant (Puanteur) | Immunité Psychologique | Vol (9) | Peur (3) |\n| 6 | Peur (3) | Mutation (jet sous le Tableau) | Magique | Vol (8) |\n| 7 | Parasité | Insensible à la douleur | Résistance à la Magie (2) | Rage |\n| 8 | Mutation (jet sous le Tableau) | Regard pétrifiant | Mutation (jet sous le Tableau) | Cornes +10 |\n| 9 | Régénération | Langue préhensile +6 (6 mètres) | Mutation (jet sous le Tableau) | Magique |\n| 10 | Vomissement | Venin | Lanceur de Sorts (au choix) | Attaque caudale (+10) |",
+    "desc": "Vous canalisez le pouvoir de transformation du Chaos dans votre propre chair, sacrifiant temporairement votre forme mortelle sur l'autel de la volonté de votre dieu. Votre corps est déformé, prenant les aspects d'un démon loyal à votre dieu protecteur. Lancez 1d10 sur le Tableau de la page 78, et appliquez le Trait pertinent pour toute la durée du Sort. Pour chaque +2 DR, vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau. Si vous obtenez le Trait Démoniaque et que vous êtes réduit à 0 Blessure, votre âme est aspirée dans les Royaumes du Chaos, comme décrit dans les règles des Traits de créature.\n\n| 1d10 | Nurgle | Slaanesh | Tzeentch | Indivisible |\n| --- | --- | --- | --- | --- |\n| 1 | Grand | Démoniaque (6) | Souffle +9 (Feu) | Démoniaque (8) |\n| 2 | Souffle +7 (Corrosion et Poison) | Perturbant (Allure étrange) | Démoniaque (9) | Démoniaque (8) |\n| 3 | Démoniaque (7) | Peur (3) | Éthéré | Élite |\n| 4 | Maladie (Pourriture de Nurgle) | Frénésie | Peur (3) | Rapide |\n| 5 | Perturbant (Puanteur) | Immunité Psychologique | Vol (9) | Peur (3) |\n| 6 | Peur (3) | Mutation (jet sous le Tableau) | Magique | Vol (8) |\n| 7 | Infesté | Insensible à la douleur | Résistance à la Magie (2) | Rage |\n| 8 | Mutation (jet sous le Tableau) | Regard pétrifiant | Mutation (jet sous le Tableau) | Cornes +10 |\n| 9 | Régénération | Langue préhensile +6 (6 mètres) | Mutation (jet sous le Tableau) | Magique |\n| 10 | Vomissement | Venin | Lanceur de Sorts (au choix) | Attaque caudale (+10) |",
     "effects": {
       "kind": "seq",
       "steps": [
         {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "target",
-            "ops": [
-              {
-                "op": "narrative",
-                "text": "Allure démoniaque : lancez 1d10 sur le Tableau des aspects démoniaques (selon votre Dieu) et gagnez le Trait obtenu pour la durée ; par +2 DR, prolongez et relancez. Trait Démoniaque + 0 PB = âme aspirée — arbitrage MJ."
-              }
-            ]
+          "kind": "if",
+          "cond": {
+            "kind": "casterChaosDomain",
+            "is": "nurgle"
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "rollTable",
+                  "tableId": "allure-demoniaque-nurgle",
+                  "extraRollsPerStep": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "casterChaosDomain",
+            "is": "slaanesh"
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "rollTable",
+                  "tableId": "allure-demoniaque-slaanesh",
+                  "extraRollsPerStep": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "casterChaosDomain",
+            "is": "tzeentch"
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "rollTable",
+                  "tableId": "allure-demoniaque-tzeentch",
+                  "extraRollsPerStep": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "casterChaosDomain",
+            "is": "indivisible"
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "rollTable",
+                  "tableId": "allure-demoniaque-indivisible",
+                  "extraRollsPerStep": 1
+                }
+              ]
+            }
           }
         }
       ]

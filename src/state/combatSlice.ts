@@ -2845,6 +2845,7 @@ export function createCombatSlice(get: Get, set: Set) {
         applyCast(get, set, caster, target, spell, pc.result, pc.missile, pc.focused, pc.critChoice, {
           durationMult: ocDur.mult,
           durationBonusRounds: ocDur.bonusRounds,
+          overcastDurationSteps: pc.overcast?.duration ?? 0,
           extraTargets: extras,
           conjureForm: pc.conjureForm,
           opposedOutcome: pc.opposedOutcome,

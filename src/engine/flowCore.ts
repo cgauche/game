@@ -107,6 +107,9 @@ export interface ActorView {
   /** Niveau des CAPACITÉS de combat (`CombatFeature` agrégées) — lu par la Condition `capability`
    *  (Cœur vaillant `braveheart`…). Absent → toute capacité vaut 0. */
   capabilities?: Record<string, number>;
+  /** Domaine du Chaos de l'acteur (`chaosDomainOf` — spec du Talent Magie du Chaos, EDOC 13) — lu par la
+   *  Condition `casterChaosDomain`. Absent = non porteur du Talent Magie du Chaos. */
+  chaosDomain?: string;
 }
 
 export type Condition =
@@ -186,6 +189,12 @@ export type Condition =
    *  un **état psychologique** actif (par type — `psych`, ex. 'frenesie' : gate du Contrôle de la
    *  Frénésie, LDB 10). Généralise les gates op-level `onlyGroups`/`unlessImmune`. Acteur absent = false. */
   | { kind: 'has'; who: ActorRef; what: 'group' | 'talent' | 'trait' | 'psych'; value: string; spec?: string }
+  /** Le Domaine du Chaos du LANCEUR (`ctx.caster.chaosDomain`, `chaosDomainOf`) est-il `is` ? Gate
+   *  GÉNÉRIQUE de tout Sort d'Arcanes du Chaos « se manifestant selon le Domaine spécifique » (EDOC 13
+   *  l.264-266) — la branche du Flow sélectionne sa colonne (Allure démoniaque : Nurgle/Slaanesh/Tzeentch/
+   *  Indivisible). Lanceur sans Domaine résolu → toutes les branches sont fausses (bug de données côté
+   *  authoring : un Sort d'Arcanes du Chaos exige le Talent Magie du Chaos). */
+  | { kind: 'casterChaosDomain'; is: string }
   | { kind: 'all'; of: Condition[] }
   | { kind: 'any'; of: Condition[] }
   | { kind: 'not'; of: Condition };
@@ -307,6 +316,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       if (cond.what === 'psych') return (a.psych ?? []).includes(cond.value);
       return a.traits.includes(cond.value);
     }
+    case 'casterChaosDomain': return ctx.caster?.chaosDomain === cond.is;
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
     case 'any': return cond.of.some((c) => evalCondition(c, ctx));
     case 'not': return !evalCondition(cond.of, ctx);

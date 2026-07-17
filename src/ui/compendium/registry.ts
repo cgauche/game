@@ -18,7 +18,7 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
-  CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction,
+  CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
@@ -65,6 +65,7 @@ import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
+import { opRows } from './opRows';
 import { humanizeCastBonus } from './humanize';
 import { reverseGroups, bookContents } from './relations';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL, formatManeuverMeasure } from './maneuverLabels';
@@ -994,6 +995,21 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           const label = (mutations as MutationData[]).find((mu) => mu.id === r.mutation)?.label ?? r.mutation;
           return { t: 'ref', category: 'mutations', id: r.mutation, label, show: label, badge: `${r.min}–${r.max}` } as CodexRow;
         }),
+      }),
+    })),
+  },
+  {
+    key: 'effectTables', label: 'Tables d’effets', group: 'Effets',
+    // Tables `[min,max] → GameOp[]` référencées par l'op `rollTable` (Allure démoniaque : Tableau des
+    // aspects démoniaques par Domaine du Chaos). Chaque rangée = fourchette + ops (chips codex-liées).
+    build: () => effectTables.map((t) => ({
+      id: t.id, label: t.label, sub: `${t.rows.length} rangée(s) · ${t.die}`, source: src(t.source),
+      sections: sections({
+        title: `Tirage (${t.die} → effet)`, layout: 'list',
+        rows: t.rows.flatMap((r) => [
+          { t: 'sub', label: `${r.min === r.max ? r.min : `${r.min}–${r.max}`}${r.label ? ` · ${r.label}` : ''}` } as CodexRow,
+          ...opRows(r.ops),
+        ]),
       }),
     })),
   },

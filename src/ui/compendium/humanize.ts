@@ -166,6 +166,7 @@ export function humanizeCondition(c: Condition, neg = false): string {
       if (c.what === 'psych') return `${who(c.who)} ${v} l'état psychologique ${psychologyLabel(c.value)}`;
       return `${who(c.who)} ${neg ? "n'appartient pas" : 'appartient'} au Groupe ${groupLabel(c.value)}`;
     }
+    case 'casterChaosDomain': return `le Domaine du Chaos du lanceur ${neg ? "n'est pas" : 'est'} ${refLabel('gods', { id: c.is })}`;
     // De Morgan : NON(A ET B) = (NON A) OU (NON B) ; NON(A OU B) = (NON A) ET (NON B).
     case 'all': return c.of.length ? dedupSubjects(c.of.map((x) => humanizeCondition(x, neg))).join(neg ? ' ou ' : ' et ') : (neg ? 'jamais' : 'toujours');
     case 'any': return c.of.length ? dedupSubjects(c.of.map((x) => humanizeCondition(x, neg))).join(neg ? ' et ' : ' ou ') : (neg ? 'toujours' : 'jamais');
@@ -243,7 +244,8 @@ export function humanizeOp(o: GameOp): string {
     case 'chain': return `rebondit sur ${humanizeFormula(o.maxBounces)} ennemi(s) à ${humanizeFormula(o.hopMeters)} m`;
     case 'perRound': return `déclenche à chaque Round : ${o.ops.map(humanizeOp).join(' ; ')}`;
     case 'rollThreshold': return `lance 1d${o.sides} pour un effet à paliers`;
-    case 'rollTable': return `tire sur une table (${o.die}${o.addNegativeSL ? ' + DR négatifs' : ''}) pour un effet selon la fourchette`;
+    case 'rollTable': return `tire sur ${'tableId' in o ? `la table « ${o.tableId} »` : 'une table'} (${'tableId' in o ? 'd10/d100' : o.die}${o.addNegativeSL ? ' + DR négatifs' : ''}${o.extraRollsPerStep ? `, +${o.extraRollsPerStep} jet par pas de Surincantation (Durée)` : ''}) pour un effet selon la fourchette`;
+    case 'rollMutation': return `subit une mutation tirée sur la table « ${o.table} »${o.duration === 'permanent' ? ' (permanente)' : ' (le temps du Sort)'}`;
     case 'charDamage': return `perd ${humanizeFormula(o.amount)} en ${CHAR_LABELS[o.char]} (définitivement)`;
     case 'summon': return `invoque ${humanizeFormula(o.count)}× ${creatureLabel(o.ref)}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
     case 'scheduleRespawn': return `se reconstitue (${creatureLabel(o.ref)}) après ${humanizeFormula(o.delayDays)} jour(s)`;

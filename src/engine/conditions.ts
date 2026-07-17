@@ -18,6 +18,9 @@ import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
 import { dropExpiredGrantedResources } from './grantedResources';
 import { dropExpiredGrantedWeapons } from './conjuredWeapons';
+import { dropExpiredGrantedMutations } from './corruption';
+import { recomputeLoadout } from './items';
+import { refreshWounds } from './characteristics';
 import { restoreSuppressedPsych } from './psychology';
 import { hasActiveFlag } from './activeFlags';
 import { applyOps } from './ops'; // cycle runtime (ops→conditions) : applyOps n'est appelé qu'au tick, jamais à l'init du module
@@ -474,6 +477,7 @@ export function removeActiveEffects(c: Combatant, pred: (e: ActiveEffect) => boo
   dropExpiredGrantedTraits(c, removed); // traits accordés (op grantTrait) retirés avec leur effet
   dropExpiredGrantedResources(c, removed); // Chance/Destin accordés (gainResource) non dépensés
   dropExpiredGrantedWeapons(c, removed); // armes invoquées/naturelles accordées : loadout recomposé
+  if (dropExpiredGrantedMutations(c, removed)) { recomputeLoadout(c); refreshWounds(c); } // mutation TEMPORISÉE (op rollMutation) détachée → loadout/PB dérivés recalculés
   restoreSuppressedPsych(c, removed); // Traits psy suspendus (Baume, LDB 42) restitués
   return removed;
 }

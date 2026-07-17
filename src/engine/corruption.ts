@@ -22,7 +22,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { talentCorruptionThreshold } from './combatFeatures/dispatch';
 import { mutationBodyMaxForSpecies } from '../data';
 import { rollObsession } from '../data/obsessions';
-import { grantTrait, grantPsychTrait } from './grantedTraits';
+import { grantTrait, grantPsychTrait, removeGrantedTrait } from './grantedTraits';
 import type { PsychType } from './psychology';
 import type { GameOp } from './ops';
 
@@ -158,6 +158,43 @@ export function attachMutation(c: Combatant, m: Mutation, rng: RNG = defaultRNG)
       c.talents = [...(c.talents ?? []), { talentId: op.talentId, ...(op.spec ? { spec: op.spec } : {}), times: 1 }];
     }
   }
+}
+
+/** INVERSE structurel d'`attachMutation` : retire l'instance de `c.mutations` (ses passifs charMod/moveMod/
+ *  ap/skillMod/grantNaturalWeapon/apparence — lus EN DIRECT sur `c.mutations` par passiveMods/le rig/le
+ *  loadout — disparaissent avec elle) et RÉVERSE les grants STRUCTURELS posés à l'attache (Trait, Trait psy,
+ *  Talent). Sert la mutation TEMPORISÉE de l'op `rollMutation` (Allure démoniaque « pour toute la durée du
+ *  Sort », EDOC 13 l.276-277) ; le chemin CORRUPTION (corruptionFlow → `attachMutation` direct, sans effet
+ *  actif porteur) reste PERMANENT, jamais détaché. Le loadout/PB dérivés se recalculent chez l'appelant
+ *  (comme pour `attachMutation`). Mute `c`. */
+export function detachMutation(c: Combatant, m: Mutation): void {
+  const list = c.mutations ?? [];
+  let i = -1;
+  for (let k = list.length - 1; k >= 0; k--) if (list[k].id === m.id && (list[k].roll ?? null) === (m.roll ?? null)) { i = k; break; }
+  if (i < 0) return;
+  c.mutations = [...list.slice(0, i), ...list.slice(i + 1)];
+  for (const op of m.passive ?? []) {
+    if (op.op === 'grantTrait') {
+      const value = typeof op.indice === 'number' ? op.indice : undefined;
+      removeGrantedTrait(c, { id: op.traitId, ...(op.arg ? { arg: op.arg } : {}), ...(value != null ? { value } : {}) });
+    } else if (op.op === 'grantPsychTrait') {
+      const j = (c.psychTraits ?? []).findIndex((x) => x.type === op.psychType && (x.cible ?? '') === (op.cible ?? ''));
+      if (j >= 0) c.psychTraits = [...c.psychTraits!.slice(0, j), ...c.psychTraits!.slice(j + 1)];
+      if (c.psychTraits && !c.psychTraits.length) delete c.psychTraits;
+    } else if (op.op === 'grantTalent') {
+      const j = (c.talents ?? []).findIndex((x) => x.talentId === op.talentId && (x.spec ?? '') === (op.spec ?? ''));
+      if (j >= 0) c.talents = [...c.talents!.slice(0, j), ...c.talents!.slice(j + 1)];
+    }
+  }
+}
+
+/** Détache les mutations portées par les ActiveEffect EXPIRÉS (op `rollMutation` temporisée) — MIROIR de
+ *  `dropExpiredGrantedTraits`, appelé aux MÊMES coutures d'expiration (fin de Round / horloge / dissipation).
+ *  Renvoie `true` si au moins une mutation a été détachée (→ l'appelant recalcule loadout/PB dérivés). */
+export function dropExpiredGrantedMutations(c: Combatant, expired: { grantedMutation?: Mutation }[]): boolean {
+  let dropped = false;
+  for (const e of expired) if (e.grantedMutation) { detachMutation(c, e.grantedMutation); dropped = true; }
+  return dropped;
 }
 
 // ---------------------------------------------------------------------------

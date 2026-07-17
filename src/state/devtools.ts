@@ -879,15 +879,20 @@ export function buildApi() {
       return v ? '✓ siège MJ posé (siège 0)' : '✓ siège MJ retiré (IA)';
     },
 
-    /** RECETTE : octroie un Talent à un combattant (par id) — ex. Mâchoires d'acier pour tester son trigger. */
-    talent: (id: string, talentId: string, times = 1) => {
+    /** RECETTE : octroie un Talent à un combattant (par id) — ex. Mâchoires d'acier pour tester son trigger.
+     *  Dernier paramètre : `times` (défaut 1, comportement historique) OU `{ spec?, times? }` pour les talents
+     *  `specsSource` dont la mécanique se lit PAR la spec (ex. Magie du Chaos — `chaosDomainOf`,
+     *  `combatFeatures/dispatch.ts`, lit `talents[].spec` comme l'id du Domaine — `talent('hero-1',
+     *  'magie-du-chaos', { spec: 'tzeentch' })`). */
+    talent: (id: string, talentId: string, opts: number | { spec?: string; times?: number } = 1) => {
+      const { spec, times } = typeof opts === 'number' ? { spec: undefined, times: opts } : { spec: opts.spec, times: opts.times ?? 1 };
       const grant = (c: Combatant): Combatant =>
-        c.id === id ? { ...c, talents: [...(c.talents ?? []), { talentId, times }] } : c;
+        c.id === id ? { ...c, talents: [...(c.talents ?? []), { talentId, times, ...(spec != null ? { spec } : {}) }] } : c;
       useGame.setState((s) => ({
         party: s.party.map(grant),
         battle: s.battle ? { ...s.battle, combatants: s.battle.combatants.map(grant) } : s.battle,
       }));
-      return `✓ ${id} → ${talentId}`;
+      return `✓ ${id} → ${talentId}${spec ? ` (spec ${spec})` : ''}`;
     },
 
     /** RECETTE : simule une CHARGE de `enemyId` sur un héros (défaut : le plus proche) — déclenche le

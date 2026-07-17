@@ -51,6 +51,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | `maneuvers.json` | Manœuvres (attaques spéciales : morsure, souffle…) |
 | `criticals.json` · `aa-criticals.json` | Blessures critiques par localisation (base · variante *Aux Armes*) |
 | `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) |
+| `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos |
 | `grapple.json` | Lutte / empoignade |
 | `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) |
 | `damage-types.json` | Types de dégâts (poison, feu, électrique) |

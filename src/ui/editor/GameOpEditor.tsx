@@ -12,7 +12,7 @@ import { Formula, GameOp } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR } from '../../data';
+import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables } from '../../data';
 import { RefField } from '../compendium/RefField';
 import { slugId } from '../../data/slug';
 import { splitLabel } from '../../engine/statEntry';
@@ -131,6 +131,7 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   spendAdvantage: 'Dépenser de l’Avantage',
   rollThreshold: 'Jet à paliers (un dé → ops par seuil)',
   rollTable: 'Tirage sur table (dé → ops par fourchette)',
+  rollMutation: 'Tirage d’une mutation (durée réglable)',
   charDamage: 'Perte permanente de Caractéristique',
   intoxicate: 'Boisson alcoolisée (échec de Résistance à l’alcool)',
   narrative: 'Effet narratif (texte libre)',
@@ -168,7 +169,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   moveScale: 'resource/movement', moveMod: 'resource/movement', maxWeaponHands: 'item/weapon', disarm: 'item/weapon', handGate: 'condition/bleeding',
   senseLoss: 'ui/eye', loseTurn: 'ui/wait', weaponRollMod: 'item/weapon', weaponDamageMod: 'item/weapon',
   armourPierce: 'item/weapon', critOnRoll: 'journal/critical', spendAdvantage: 'flag/focus', rollThreshold: 'nav/dice',
-  rollTable: 'nav/dice', charDamage: 'mechanic/stat-mod',
+  rollTable: 'nav/dice', rollMutation: 'nav/mutation', charDamage: 'mechanic/stat-mod',
   intoxicate: 'item/consumable', narrative: 'journal/detail',
 };
 
@@ -187,7 +188,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
   ['Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'handGate', 'senseLoss']],
   ['Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
-  ['Contrôle', ['rollThreshold', 'rollTable', 'spendAdvantage']],
+  ['Contrôle', ['rollThreshold', 'rollTable', 'rollMutation', 'spendAdvantage']],
   ['Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
   ['Narration', ['narrative']],
 ];
@@ -387,6 +388,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'spendAdvantage': return { op: 'spendAdvantage', amount: 1 };
     case 'rollThreshold': return { op: 'rollThreshold', sides: 10, thresholds: [] };
     case 'rollTable': return { op: 'rollTable', die: 'd10', rows: [] };
+    case 'rollMutation': return { op: 'rollMutation', table: 'physique' };
     case 'narrative': return { op: 'narrative', text: '' };
     default: return { op: 'wounds', amount: 5 };
   }
@@ -467,7 +469,8 @@ export function opSummary(o: GameOp): string {
     case 'loseTurn': return 'saute le tour';
     case 'removeShipPoste': return 'retire un poste de navire';
     case 'rollThreshold': return `1d${o.sides} → ${o.thresholds.length} palier(s)`;
-    case 'rollTable': return `${o.die === 'd100' ? '1d100' : '1d10'} → ${o.rows.length} rangée(s) de table${o.addNegativeSL ? ' (+|DR néga.|)' : ''}`;
+    case 'rollTable': return `${'tableId' in o ? `table « ${o.tableId} »` : `${o.die === 'd100' ? '1d100' : '1d10'} → ${o.rows.length} rangée(s)`}${o.addNegativeSL ? ' (+|DR néga.|)' : ''}${o.extraRollsPerStep ? ` +${o.extraRollsPerStep} jet/pas Surinc. (Durée)` : ''}`;
+    case 'rollMutation': return `mutation ← « ${o.table} »${o.duration === 'permanent' ? ' (perm.)' : ''}`;
     case 'narrative': return `${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
     default: return `${(o as GameOp).op}`;
   }
@@ -481,7 +484,7 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
-  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable',
+  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation',
 ]);
 
 /** Rangées d'une op `rollTable` (Vers de carie, T2C 16 l.90) : `[min,max]` (source unique de fourchette,
@@ -729,14 +732,44 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'rollTable' && (
           <>
-            <label className="dr">Dé
-              <select value={o.die ?? 'd10'} onChange={(e) => upd({ die: e.target.value as 'd10' | 'd100' })}>
-                <option value="d10">1d10</option>
-                <option value="d100">1d100</option>
+            {/* Deux formes EXCLUSIVES : table RÉFÉRENCÉE (`tableId` → tables.json) ou rangées INLINE. */}
+            <label className="dr">Source de table
+              <select value={'tableId' in o ? 'ref' : 'inline'} onChange={(e) => onChange(e.target.value === 'ref'
+                ? { op: 'rollTable', ...(o.addNegativeSL ? { addNegativeSL: true } : {}), ...(o.extraRollsPerStep ? { extraRollsPerStep: o.extraRollsPerStep } : {}), tableId: effectTables[0]?.id ?? '' }
+                : { op: 'rollTable', die: 'd10', ...(o.addNegativeSL ? { addNegativeSL: true } : {}), ...(o.extraRollsPerStep ? { extraRollsPerStep: o.extraRollsPerStep } : {}), rows: [] })}>
+                <option value="inline">Rangées inline</option>
+                <option value="ref">Table référencée (tables.json)</option>
               </select>
             </label>
             <label className="dr"><input type="checkbox" checked={!!o.addNegativeSL} onChange={(e) => upd({ addNegativeSL: e.target.checked || undefined })} /> + |DR négatif| au jet (échec)</label>
-            <RollTableRowsField rows={o.rows ?? []} onChange={(rows) => upd({ rows })} />
+            <label className="dr">+<input type="number" min={0} style={{ width: 56 }} value={o.extraRollsPerStep ?? 0} onChange={(e) => upd({ extraRollsPerStep: Math.max(0, Number(e.target.value) || 0) || undefined })} /> jet(s) par pas de Surincantation (Durée)</label>
+            {'tableId' in o ? (
+              <label className="dr">Table
+                <select value={o.tableId} onChange={(e) => upd({ tableId: e.target.value })}>
+                  {effectTables.map((t) => (<option key={t.id} value={t.id}>{t.label}</option>))}
+                </select>
+              </label>
+            ) : (
+              <>
+                <label className="dr">Dé
+                  <select value={o.die ?? 'd10'} onChange={(e) => upd({ die: e.target.value as 'd10' | 'd100' })}>
+                    <option value="d10">1d10</option>
+                    <option value="d100">1d100</option>
+                  </select>
+                </label>
+                <RollTableRowsField rows={o.rows ?? []} onChange={(rows) => upd({ rows })} />
+              </>
+            )}
+          </>
+        )}
+        {op.op === 'rollMutation' && (
+          <>
+            <label className="dr">Table de Corruption
+              <select value={o.table} onChange={(e) => upd({ table: e.target.value })}>
+                {mutationTables.map((t) => (<option key={t.id} value={t.id}>{t.label}</option>))}
+              </select>
+            </label>
+            <label className="dr"><input type="checkbox" checked={o.duration === 'permanent'} onChange={(e) => upd({ duration: e.target.checked ? 'permanent' : undefined })} /> permanente (sinon durée du Sort)</label>
           </>
         )}
         {/* Un Test imbriqué n'est PLUS une op (`{op:'test'}` supprimé, Lot 4d) mais un nœud de la STRUCTURE

@@ -119,7 +119,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 
 | Helper | Usage | Limites connues |
 |---|---|---|
-| `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule |
+| `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule ; `party` est une PROJECTION allégée (`{id, name}` seulement, `devtools.ts`) — ni `.skills` ni `.activeEffects` ; pour inspecter le détail d'un héros, lire `store.getState().party` |
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
 | `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du token `[data-cid="id"]` — COMBAT ET EXPLORATION (même canal `data-cid`, #226) | lecture seule ; `null` si le token n'est pas dans le DOM (hors vue) ; pour un clic, **viser `{x: x+width/2, y: y+height}` (le BAS de la bbox, pied du token) plutôt que le centre géométrique** — un token de grande taille (créature haute) a sa bbox étirée vers le haut, et le centre géométrique tombe hors silhouette (retour vécu en recette, résidu #199) |
 | `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand ; ⚠ un marchand-PNJ de scène n'a PAS de bande de décor (`ScreenShell` slot `backdrop`) — cette ambiance n'existe QUE par le chemin service-de-lieu (`openPlaceMerchant`, hub de ville) qui la porte en donnée. Ne pas conclure à une régression de décor en interpellant un PNJ |
@@ -148,6 +148,22 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `aiLog(n=50)` | diagnostic IA : action choisie + classement des candidats par tour | `(forcé)` = garde psychologie/RAW hors scoring |
 | `auto()` | diagnostic auto-cadence (mode, modale active, `willAutoResolve`, `pending*` ouverts) | pour investiguer un soft-lock, pas pour agir |
 
+**Flux HORS convention `<flux>Roll/Confirm/Cancel`** (`devDriveModal`/`roll()`/`confirm()`/`cancel()` ne
+les couvrent PAS — cliquer les VRAIS boutons) : `pendingCorruption` (Exposition/Seuil de Corruption,
+LDB 19) se résout par l'action `resolveCorruption` — bouton **« Continuer »** de la modale
+(`src/ui/CorruptionModal.tsx`), jamais `corruptionConfirm` (n'existe pas) ; `pendingCascade` se
+résout par `cascadeResolveAll` (bouton **« Tout lancer »**, résout d'un coup le reste sans influence)
+puis `cascadeFinish` (bouton **« Terminer »** du bilan) — `cascadeRoll`/`cascadeNext` avancent étape
+par étape (bouton « Continuer »/« Terminer » de la dernière étape), cf. `src/ui/CascadeModal.tsx`.
+
+**Lancer un sort à cible « Vous »** : une fois focalisé (ou prêt à incanter directement), le
+LANCEMENT ne passe PAS par le bouton « Focaliser (X/CN) » — celui-ci (`battleFocusSpell`) ne fait
+QUE (re)poser/empiler de la Focalisation, il ne lance jamais le sort. Le lancement effectif passe
+par un clic sur le **TOKEN DU LANCEUR lui-même** sur la carte (`castClickCommit`,
+`src/state/targetingModes.ts` — le clic-combattant en mode `cast` vise l'allié/ennemi/SOI selon le
+token cliqué). Défaut d'affordance joueur ticketé par ailleurs — cette section décrit l'état ACTUEL,
+pas la cible d'UX.
+
 ### Combat — triche de mise en place
 
 | Helper | Usage | Limites connues |
@@ -165,9 +181,9 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `condition('id', name?, n?)` | applique un État via le VRAI `addCondition` (déclenche les triggers) | — |
 | `disease(heroId, maladieId, { phase? })` | contracte une maladie via le VRAI cycle (`contractDisease` + `tickDisease` de l'incubation) ; `phase:'active'` la déclare en avançant son horloge — jamais un état forgé (localisation de cloque, transitions, `infectedMinutes` réels) | `maladieId` inconnu → `✗` ; défaut = phase d'incubation. Ex. `disease('hero-1','crampes-abdominales')` n'existe pas (crampes = SYMPTÔME) → passer par la maladie porteuse (`colique`, `vers-de-carie`, `vers-du-reik`) |
 | `bladeTrap(defenderId, attackerId, defSL?)` | ouvre l'étape « Piège-lame » sans forcer un Critique défensif | assigne un `uid` factice à l'arme de l'attaquant si absent |
-| `focus('id', spell?, dr?)` | met un combattant en Focalisation (test d'interruption au coup suivant) | — |
+| `focus('id', spell?, dr?)` | met un combattant en Focalisation (test d'interruption au coup suivant) | c'est aussi le raccourci LÉGITIME de SETUP pour poser un DR de Focalisation ARBITRAIRE sur un sort à CN élevé et sauter le grind multi-Rounds du bouton « Focaliser » (ci-dessous) — pas seulement l'éprouve d'interruption |
 | `fear(heroId, enemyId, indice?)` | pose une Peur + simule l'approche de la source | positions requises (`✗` sinon) |
-| `talent('id', talentId, times?)` | octroie un Talent à un combattant | — |
+| `talent('id', talentId, opts?)` | octroie un Talent à un combattant — `opts` = `times` (nombre, défaut 1) OU `{ spec?, times? }` pour un talent `specsSource` (ex. `talent('hero-1','magie-du-chaos',{spec:'tzeentch'})` — la spec posée EST l'id lu par `chaosDomainOf`, `engine/combatFeatures/dispatch.ts`) | sans `spec`, un talent `specsSource` reste sans mécanique lisible |
 
 ### Groupe / campagne / règles
 
@@ -328,6 +344,13 @@ le résout inline. Garde de ré-entrance : ce FM ne ré-émet jamais le trigger 
   VRAIS clics Playwright (`browser_click`, sélecteur `data-cid`/rôle/texte).
 - **Passer des tours** : `turn('id')` (triche, donne le tour) ou `fastForward()` (avance l'IA) —
   jamais de manipulation manuelle de `battle.round`/`battle.turn`/`battle.order` via `store`.
+- **Ordre canonique en combat piloté : DRAINER toute modale AVANT `turn('id')`** — `turn()` réinitialise
+  `battle.acted:false` pour le NOUVEL actif, mais une résolution en vol d'une modale déjà ouverte
+  (`pendingDefense`, cascade d'attaque…) écrit son résultat en fusionnant sur le `battle` COURANT
+  (`{...battle, acted: true, …}`, ex. `src/state/combatSlice.ts`/`combatFlow.ts`), donc APRÈS le
+  `turn()`. Résultat : `battle.acted=true` fantôme posé sur le combattant qui vient de recevoir le
+  tour, qui bloque silencieusement son Action sans message d'erreur. Vider `modal()`/`pendingDefense`/
+  `pendingCascade`/tout `pending*` (`roll()`/`confirm()`/vrais boutons) AVANT tout `turn('id')`.
 - **`aim()` juge l'arme SÉLECTIONNÉE dans la barre**, pas une arme perso du héros. Pour éprouver un
   tir de pièce d'artillerie, ouvrir « Attaque ▾ » et cliquer l'entrée d'arme du CANON avant `aim()` —
   un `range` sur l'arme personnelle du servant ne dit RIEN du canon. `aim()` renvoyant

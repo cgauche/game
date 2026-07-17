@@ -294,6 +294,7 @@ export const conditionSchema: z.ZodType<unknown> = z.lazy(() =>
     z.strictObject({ kind: z.literal('capability'), who: actorRefSchema, id: z.string(), op: compareOpSchema.optional(), value: z.number().optional() }),
     z.strictObject({ kind: z.literal('relation'), who: actorRefSchema, is: relationOrCampSchema }),
     z.strictObject({ kind: z.literal('has'), who: actorRefSchema, what: z.enum(['group', 'talent', 'trait', 'psych']), value: z.string(), spec: z.string().optional() }),
+    z.strictObject({ kind: z.literal('casterChaosDomain'), is: z.string() }),
     z.strictObject({ kind: z.literal('all'), of: z.array(conditionSchema) }),
     z.strictObject({ kind: z.literal('any'), of: z.array(conditionSchema) }),
     z.strictObject({ kind: z.literal('not'), of: conditionSchema }),

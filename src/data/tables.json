@@ -1,0 +1,510 @@
+[
+  {
+    "id": "allure-demoniaque-nurgle",
+    "label": "Allure démoniaque — Nurgle (EDOC)",
+    "die": "d10",
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Grand",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "grand"
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Souffle +7 (Corrosion et Poison)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "souffle",
+            "indice": 7,
+            "arg": "Corrosion et Poison"
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Démoniaque (7)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "demoniaque",
+            "indice": 7
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Maladie (Pourriture de Nurgle)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "maladie",
+            "arg": "Pourriture de Nurgle"
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Perturbant (Puanteur)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "perturbant",
+            "arg": "Puanteur"
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Peur (3)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "peur",
+            "indice": 3
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Infesté",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "parasite"
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Mutation (jet sous le Tableau)",
+        "ops": [
+          {
+            "op": "rollMutation",
+            "table": "edoc-phys-nurgle"
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Régénération",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "regeneration"
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Vomissement",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "vomissement"
+          }
+        ]
+      }
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 78
+    }
+  },
+  {
+    "id": "allure-demoniaque-slaanesh",
+    "label": "Allure démoniaque — Slaanesh (EDOC)",
+    "die": "d10",
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Démoniaque (6)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "demoniaque",
+            "indice": 6
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Perturbant (Allure étrange)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "perturbant",
+            "arg": "Allure étrange"
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Peur (3)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "peur",
+            "indice": 3
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Frénésie",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "frenesie"
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Immunité Psychologique",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "immunite-psychologique"
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Mutation (jet sous le Tableau)",
+        "ops": [
+          {
+            "op": "rollMutation",
+            "table": "edoc-phys-slaanesh"
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Insensible à la douleur",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "insensible-a-la-douleur"
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Regard pétrifiant",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "regard-petrifiant"
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Langue préhensile +6 (6 mètres)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "langue-prehensile",
+            "indice": 6,
+            "arg": "6 mètres"
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Venin",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "venin"
+          }
+        ]
+      }
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 78
+    }
+  },
+  {
+    "id": "allure-demoniaque-tzeentch",
+    "label": "Allure démoniaque — Tzeentch (EDOC)",
+    "die": "d10",
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Souffle +9 (Feu)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "souffle",
+            "indice": 9,
+            "arg": "Feu"
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Démoniaque (9)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "demoniaque",
+            "indice": 9
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Éthéré",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "ethere"
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Peur (3)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "peur",
+            "indice": 3
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Vol (9)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "vol",
+            "indice": 9
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Magique",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "magique"
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Résistance à la Magie (2)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "resistance-a-la-magie",
+            "indice": 2
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Mutation (jet sous le Tableau)",
+        "ops": [
+          {
+            "op": "rollMutation",
+            "table": "edoc-phys-tzeentch"
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Mutation (jet sous le Tableau)",
+        "ops": [
+          {
+            "op": "rollMutation",
+            "table": "edoc-phys-tzeentch"
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Lanceur de Sorts (au choix)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "lanceur-de-sorts",
+            "arg": "au choix"
+          }
+        ]
+      }
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 78
+    }
+  },
+  {
+    "id": "allure-demoniaque-indivisible",
+    "label": "Allure démoniaque — Indivisible (EDOC)",
+    "die": "d10",
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Démoniaque (8)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "demoniaque",
+            "indice": 8
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Démoniaque (8)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "demoniaque",
+            "indice": 8
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Élite",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "elite"
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Rapide",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "rapide"
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Peur (3)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "peur",
+            "indice": 3
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Vol (8)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "vol",
+            "indice": 8
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Rage",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "rage"
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Cornes +10",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "cornes",
+            "indice": 10
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Magique",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "magique"
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Attaque caudale (+10)",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "attaque-caudale",
+            "indice": 10
+          }
+        ]
+      }
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 78
+    }
+  }
+]

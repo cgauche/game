@@ -23,6 +23,9 @@ import { findTableEntry } from './tables';
 import { bypassedAP } from './armourBypass';
 import { grantTrait, grantPsychTrait, dropExpiredGrantedTraits } from './grantedTraits';
 import { rollObsession } from '../data/obsessions';
+import { rollMutation } from '../data/mutations';
+import { attachMutation } from './corruption';
+import { findEffectTableById } from '../data/effectTables';
 import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
@@ -659,10 +662,25 @@ export type GameOp =
    *  Les ops de palier voient `{rolled}` = la valeur du dé. UN seul jet partagé (≠ jets indépendants). */
   | { op: 'rollThreshold'; sides: number; thresholds: { atLeast: number; ops: GameOp[] }[] }
   /** Tirage sur TABLE (`die` = d10/d100) : lookup par fourchette `[min,max]` (`findTableEntry`, source
-   *  unique), les `ops` de la rangée touchée sont appliquées avec le MÊME ctx. `addNegativeSL` ajoute
+   *  unique), les `ops` de la rangée touchée sont appliquées avec le MÊME ctx. DEUX formes exclusives de
+   *  la table : `rows` INLINE (authorées sur l'op) OU `tableId` = référence à `tables.json`
+   *  (`findEffectTableById`, fail-fast) — jamais les deux (garde `data-wellformed`). `addNegativeSL` ajoute
    *  |ctx.sl| au jet quand le contexte porte un DR négatif (Vers de carie « ajoutez le nombre de DR
-   *  négatifs », T2C 16 l.90). Généralise tout « lancez 1dN [+ modif], consultez le tableau ». */
-  | { op: 'rollTable'; die: 'd10' | 'd100'; addNegativeSL?: boolean; rows: { min: number; max: number; ops: GameOp[] }[] }
+   *  négatifs », T2C 16 l.90). `extraRollsPerStep` = un jet SUPPLÉMENTAIRE par PAS de Surincantation alloué
+   *  à l'axe Durée (`ctx.overcastDurationSteps`, LDB 47 l.13-17 / EDOC 13 l.230+270-276 : « pour chaque +2 DR
+   *  […] vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau » — les deux effets sont
+   *  couplés au MÊME pas, jamais au DR total du jet). Généralise tout « lancez 1dN [+ modif], consultez le
+   *  tableau ». */
+  | { op: 'rollTable'; die: 'd10' | 'd100'; addNegativeSL?: boolean; extraRollsPerStep?: number; rows: { min: number; max: number; ops: GameOp[] }[] }
+  | { op: 'rollTable'; die?: 'd10' | 'd100'; addNegativeSL?: boolean; extraRollsPerStep?: number; tableId: string }
+  /** Tirage d'une MUTATION sur une table de Corruption (`mutationTables.json`, par id `table`) —
+   *  réutilise `rollMutation()` + `attachMutation()` (`corruption.ts`/`mutations.ts`). DURÉE identique à
+   *  `grantTrait` (EDOC 13 l.276-277 « appliquez […] pour toute la durée du Sort ») : durée du contexte
+   *  (`durationFromCtx`) par défaut → mutation attachée + ActiveEffect porteur (`grantedMutation`) qui la
+   *  DÉTACHE à l'expiration (`dropExpiredGrantedMutations`) ; PERMANENTE si `duration:'permanent'` OU si le
+   *  ctx ne porte aucune durée (exactement `grantTrait`). Le chemin CORRUPTION (corruptionFlow →
+   *  `attachMutation` direct) reste permanent, intouché. PUR (moteur : profil du personnage). */
+  | { op: 'rollMutation'; table: string; duration?: 'permanent' }
   /** Perte PERMANENTE de Caractéristique (Vers de carie « −1d10 Initiative… », T2C 16 l.94-97) : décrémente
    *  la Caractéristique de BASE (`c.characteristics`), jamais sous 0 — irréversible « sauf par des moyens
    *  magiques ou miraculeux » (l.103). `amount` = Formula (1d10). Distincte de `charMod` (temporisé, effet
@@ -948,6 +966,9 @@ export interface OpsCtx {
   now?: number;
   /** DR du jet d'incantation — alimente les échelles « par +N DR » (`PerSL`) des ops. */
   sl?: number;
+  /** PAS de Surincantation alloués à l'axe Durée (`pendingCast.overcast.duration`) — alimente
+   *  `rollTable.extraRollsPerStep` (LDB 47 l.13-17, EDOC 13 l.230+270-276). */
+  overcastDurationSteps?: number;
   /** Marqueur de RÉ-ENTRANCE `onOwnTestFailed` : posé sur le flowCtx des effets déclenchés par ce trigger
    *  (T2C 16 — Crampes). Threadé jusqu'à un nœud Flow `test` (le FM de palier 2) routé en cascade : son
    *  étape est tamponnée `meta.noOwnTestFailed` pour que sa résolution NE ré-émette JAMAIS le trigger
@@ -1672,11 +1693,40 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'rollTable': {
+        // Table INLINE (`rows`) ou RÉFÉRENCÉE (`tableId` → tables.json, fail-fast) — jamais les deux.
+        const tbl = 'tableId' in o ? findEffectTableById(o.tableId) : null;
+        const rows: { min: number; max: number; ops: GameOp[] }[] = tbl ? tbl.rows : ('rows' in o ? o.rows : []);
+        const sides = (tbl ? tbl.die : o.die) === 'd100' ? 100 : 10;
         // Jet + |DR négatif| (Vers de carie, T2C 16 l.90) → lookup `[min,max]` (source unique) → ops de la rangée.
-        const die = o.die === 'd100' ? roll(1, 100, rng) : roll(1, 10, rng);
         const modifier = o.addNegativeSL ? Math.max(0, -(ctx.sl ?? 0)) : 0;
-        const entry = findTableEntry(o.rows, die + modifier);
-        lines.push(...applyOps(target, entry.ops, { ...ctx, rolled: die }));
+        // Multiplicité : 1 jet + `extraRollsPerStep` par PAS de Surincantation alloué à la Durée
+        // (EDOC 13 l.270-276 : « à la fois prolonger la durée et refaire un jet » — couplé au même pas).
+        const times = 1 + (o.extraRollsPerStep ? Math.max(0, ctx.overcastDurationSteps ?? 0) * o.extraRollsPerStep : 0);
+        for (let i = 0; i < times; i++) {
+          const die = roll(1, sides, rng);
+          const entry = findTableEntry(rows, die + modifier);
+          lines.push(...applyOps(target, entry.ops, { ...ctx, rolled: die }));
+        }
+        break;
+      }
+      case 'rollMutation': {
+        // Mutation à DURÉE du Sort (EDOC 13 l.276-277) — même chemin que la Corruption (rollMutation +
+        // attachMutation), sans reveal ni damnation (moteur pur ; la couche state expose la modale via son
+        // propre flux de mutation). Durée du ctx par défaut → ActiveEffect porteur qui la détache à
+        // l'expiration ; permanente (`duration:'permanent'` OU ctx sans durée) → aucun porteur (comme grantTrait).
+        const dur = o.duration === 'permanent' ? { scale: 'permanent' as const } : durationFromCtx(ctx);
+        const m = rollMutation(o.table, rng);
+        attachMutation(target, m, rng);
+        if (dur.scale !== 'permanent') {
+          target.activeEffects = target.activeEffects ?? [];
+          target.activeEffects.push({ label: ctx.label ?? 'Mutation', bonus: 0, duration: dur, grantedMutation: m });
+        }
+        if (target.items?.length) recomputeLoadout(target); // armes/PA naturels de mutation → loadout
+        refreshWounds(target); // F/E/FM rongés → max de PB suit
+        // Libellé FIDÈLE à la durée RÉELLE (jamais « permanente » en dur pour un octroi temporisé,
+        // même vocabulaire que les autres effets à durée, cf. `op.suppressPsych`/`op.suppressSymptom`
+        // « pour la durée »).
+        lines.push(t('op.rollMutation', { name: target.name, mutation: m.label, durability: dur.scale === 'permanent' ? 'mutation permanente' : 'pour la durée' }));
         break;
       }
       case 'charDamage': {

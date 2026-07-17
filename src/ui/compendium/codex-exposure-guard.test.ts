@@ -106,6 +106,7 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'steam-breakdown.json': ['steamBreakdowns'],
   'structure-criticals.json': ['structureCriticals'],
   'structures.json': ['structures'],
+  'tables.json': ['effectTables'],
   'symptoms.json': ['symptoms'],
   'talents.json': ['talents'],
   'tavernGames.json': ['tavernGames'],
