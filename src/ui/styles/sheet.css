@@ -44,7 +44,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 4px;
+  gap: 10px;
 }
 .sheet-portrait .rig-portrait {
   width: 112px;
@@ -54,10 +54,39 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
 }
 .sheet-portrait h3 {
-  margin: 6px 0 0;
+  margin: 0;
   font-size: 21px;
   color: var(--gold2);
   line-height: 1.05;
+}
+/* Barres de vie/Encombrement (croquis colonne 2026-07-17) : la primitive `NotchGauge` (partagée
+   Coque/Moral/Soute, `docs/architecture.md`) s'étire pleine largeur — sans ça, `align-items: center`
+   du parent la réduirait à son contenu. */
+.sheet-portrait .notch-gauge {
+  align-self: stretch;
+  width: 100%;
+}
+/* Rangées libellé/valeur (race, classe, statut) : bloc à gauche, sous les jauges. */
+.sheet-idrows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: stretch;
+  text-align: left;
+}
+.sheet-idrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+}
+.sheet-idrow-label {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.sheet-idrow-value {
+  text-align: right;
 }
 .sheet-main {
   display: flex;
@@ -98,10 +127,6 @@
   }
   .sheet-portrait .fig-tile.hero .fig-tile-fig {
     height: 168px;
-  }
-  .sheet-portrait .vital-arc svg {
-    width: 130px;
-    height: 34px;
   }
 }
 /* Onglet Combat de la fiche : la surface = primitive .panel.stack (components.css). */

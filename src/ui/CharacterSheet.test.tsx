@@ -114,37 +114,58 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     expect(html).not.toContain('Destin'); // ressources (FateChips) SORTIES de la colonne
   });
 
-  it('boîte-figurine grand format (`FigTile fig="hero"`) + arc de vie intégré, plaque « Blessures » MORTE, colonne à structure figée (#492 lot « colonne présence »)', () => {
+  it('colonne au CROQUIS (arbitrage 2026-07-17) : nom, boîte-figurine, barre de vie, barre d’encombrement, race/classe/statut — contrat POSITIF, structure figée', () => {
     const h = hero();
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
     mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
     const aside = container.querySelector('.sheet-aside')!;
-    expect(aside.querySelector('.fig-tile.hero')).toBeTruthy(); // rig GRAND FORMAT (plus `lg`/`spotlight`)
-    const arc = aside.querySelector('.vital-arc');
-    expect(arc).toBeTruthy(); // arc de vie SOUS la boîte-figurine, remplace la plaque
-    expect(arc?.textContent).toContain('12');
-    expect(arc?.textContent).toContain('Blessures');
-    expect(aside.innerHTML).not.toContain('title="Blessures"'); // ancienne plaque (`.stat-chip.pv`) MORTE
-    // structure figée : SANS alarme ni Soins éligibles, la colonne n'a qu'UN enfant direct (le bloc
-    // portrait figurine+arc+identité) — un enfant de plus signalerait un ajout non voulu (scroll de fait).
+    const portrait = aside.querySelector('.sheet-portrait')!;
+
+    // 1. Nom en tête, AU-DESSUS du cadre-figurine.
+    const h3 = portrait.querySelector('h3')!;
+    expect(h3.textContent).toBe('H');
+    // 2. Cadre-figurine grand format, inchangé.
+    const figTile = portrait.querySelector('.fig-tile.hero')!;
+    expect(figTile).toBeTruthy();
+    expect(h3.compareDocumentPosition(figTile) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy(); // le nom précède le cadre
+    // 3/4. Barre de vie PUIS barre d'encombrement — même primitive `NotchGauge` (Coque/Moral/Soute),
+    // aucun arc SVG (VitalArc mort).
+    expect(aside.querySelector('.vital-arc')).toBeNull();
+    const gauges = portrait.querySelectorAll('.notch-gauge');
+    expect(gauges.length).toBe(2);
+    expect(gauges[0].querySelector('.notch-gauge__label')?.textContent).toBe('Blessures');
+    expect(gauges[0].querySelector('.notch-gauge__value')?.textContent).toBe('12 / 12');
+    expect(gauges[1].querySelector('.notch-gauge__label')?.textContent).toBe('Encombrement');
+    expect(gauges[1].querySelector('.notch-gauge__value')?.textContent).toBe('0 / 6');
+    // 5. Rangées race / classe / statut.
+    const rows = portrait.querySelectorAll('.sheet-idrow');
+    expect(rows.length).toBe(3);
+    expect(rows[0].querySelector('.sheet-idrow-label')?.textContent).toBe('Race');
+    expect(rows[0].textContent).toContain('Humain');
+    expect(rows[1].querySelector('.sheet-idrow-label')?.textContent).toBe('Classe');
+    expect(rows[1].textContent).toContain('niv. 1');
+    expect(rows[2].querySelector('.sheet-idrow-label')?.textContent).toBe('Statut');
+    expect(rows[2].querySelector('.metal-status')).toBeTruthy();
+    // Structure figée : SANS alarme ni Soins éligibles, l'aside n'a qu'UN enfant direct (le bloc
+    // portrait) — un enfant de plus signalerait un ajout non voulu (scroll de fait).
     expect(aside.children.length).toBe(1);
   });
 
-  it('l’arc de vie VIT : re-rend au switch de héros et après un soin (ratio/teinte suivent `hero.wounds`)', () => {
+  it('les jauges VIVENT : re-rendent au switch de héros et après un soin (valeur/teinte suivent `hero.wounds`)', () => {
     const blesse = { ...hero(), wounds: { current: 4, max: 12 } } as Combatant;
     useGame.setState({ party: [blesse], battle: null, sheetId: blesse.id, sheetTab: 'possessions' });
     mount(<CharacterSheet heroId={blesse.id} onClose={() => {}} />);
-    let arc = container.querySelector('.sheet-aside .vital-arc');
-    expect(arc?.textContent).toContain('4');
-    expect(arc?.textContent).toContain('/ 12');
+    let vie = container.querySelector('.sheet-aside .notch-gauge');
+    expect(vie?.querySelector('.notch-gauge__value')?.textContent).toBe('4 / 12');
+    expect(vie?.getAttribute('data-tone')).toBe('danger'); // 4/12 = 33 % <= seuil 34 %
 
-    // Soin (mutation directe du party courant) : la fiche relit `useGame`, l'arc doit suivre.
+    // Soin (mutation directe du party courant) : la fiche relit `useGame`, la jauge doit suivre.
     act(() => {
       useGame.setState((s) => ({ party: s.party.map((c) => (c.id === blesse.id ? { ...c, wounds: { current: 9, max: 12 } } : c)) }));
     });
-    arc = container.querySelector('.sheet-aside .vital-arc');
-    expect(arc?.textContent).toContain('9');
-    expect(arc?.textContent).toContain('/ 12');
+    vie = container.querySelector('.sheet-aside .notch-gauge');
+    expect(vie?.querySelector('.notch-gauge__value')?.textContent).toBe('9 / 12');
+    expect(vie?.getAttribute('data-tone')).toBe('ok'); // 9/12 = 75 % > seuil 67 %
   });
 
   it('tête de l’onglet Compétences & Talents : CharStatsGrid + Mouvement + Destin·Chance/Résilience·Détermination', () => {

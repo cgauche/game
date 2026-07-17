@@ -243,7 +243,6 @@ const DOMAIN_CSS_MODULES = [
   'creator-presentation',
   'creator-shell',
   'test-scenarios',
-  'vital-arc',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -453,7 +452,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Lot « corps-index » (#492, arbitrage 2026-07-17) : -1 (95 -> 94) -- purge de la plaque ENC.
   // (`.stat-chip.enc-over`, seule occurrence dans ce module) : la plaque MEURT sans remplaçant
   // (amendement en vol — l'Encombrement rejoint une barre de la colonne au geste suivant).
-  'styles/sheet.css': 94,
+  // Geste « colonne au croquis » (2026-07-17) : +4 (94 -> 98) -- `VitalArc` MEURT (-1, `.vital-arc`
+  // purgé de `.sheet-portrait .vital-arc svg`) ; la colonne compose désormais `NotchGauge` (Blessures
+  // + Encombrement, jauge PARTAGÉE Coque/Moral/Soute) via `.sheet-portrait .notch-gauge` (+1) et les
+  // rangées race/classe/statut via `.sheet-idrows`/`.sheet-idrow`/`.sheet-idrow-label`/`.sheet-idrow-
+  // value` (+4), aucune classe neuve pour la jauge elle-même (SOURCE UNIQUE `gauges.css`).
+  'styles/sheet.css': 98,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -462,9 +466,6 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/voyage.css': 30,
   // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).
   'styles/gallery.css': 17,
-  // Arc de vie (VitalArc, #492 lot « colonne présence ») — module primitive dedie, MEME patron que
-  // rose.css/plaque-row.css : `.vital-arc`/`-shadow`/`-groove`/`-fill`/`-cap`.
-  'styles/vital-arc.css': 5,
   // Rose des forces (#409) — `.rose`/`.rose text`/`.rose-corner` (`.rose-corner.sm .rose` réutilise
   // le sélecteur `.rose` déjà compté, dédoublonné par module).
   'styles/rose.css': 3,
