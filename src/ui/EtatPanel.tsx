@@ -6,11 +6,13 @@
  * détail vit dans le popover, pas au clic-navigation —, méta en `GameOpChips`, valeur = l'horloge/le
  * cumul) — AUCUNE prose inline dans le registre.
  *
- * Bande de ZONES en tête (arbitrage user 2026-07-17, pt.4, #492) : une plaque par Localisation qui
- * porte au moins un critique ou une séquelle — une zone intacte N'EXISTE PAS à l'écran. Clic = ramène
- * la PREMIÈRE ligne du registre concernant cette zone en vue (ancre posée sur la première rangée
- * Critiques/Séquelles de cette Localisation). Liserés de gravité (sang/ambre/violet, pt.5) posés en
- * attribut `data-tone` sur la bande de section (`Section`) — jamais une classe par ton.
+ * La bande de zones EN TÊTE du registre (`ZoneBand`, pt.4) est MORTE (lot « corps-index », arbitrage
+ * user 2026-07-17) — doublon d'index : le CORPS de la colonne (`FigTile.zoneBadges`, composé par
+ * `CharacterSheet.tsx`) porte désormais ce résumé par Localisation. `zoneAfflictions`/`zoneAnchor`/
+ * `ZONE_ORDER` restent exportés d'ICI (source unique du calcul) et alimentent ce badge ; l'ancre de
+ * la PREMIÈRE rangée Critiques/Séquelles par Localisation (posée dans le registre, `zoneAnchorFor`)
+ * reste la cible de clic du badge. Liserés de gravité (sang/ambre/violet, pt.5) posés en attribut
+ * `data-tone` sur la bande de section (`Section`) — jamais une classe par ton.
  */
 import type { ReactNode } from 'react';
 import type { Combatant, HitLocation } from '../engine/types';
@@ -31,7 +33,7 @@ import { GameOpChips } from './GameOpChips';
 import { NotchGauge } from './NotchGauge';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
-import { PlaqueRow, PlaqueGrid } from './PlaqueRow';
+import { PlaqueRow } from './PlaqueRow';
 import { Band } from './Band';
 
 /** Icône de repli quand aucune icône du registre ne porte la famille (jamais d'emoji), à l'égal de
@@ -60,47 +62,42 @@ function critLocation(table: CritTableKey): HitLocation {
   return table === 'bras' ? 'brasG' : table === 'jambe' ? 'jambeG' : table;
 }
 
-/** Ordre canonique des 6 Localisations (`HitLocation`, `engine/types.ts`) — tête → bras → corps → jambes. */
-const ZONE_ORDER: HitLocation[] = ['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD'];
+/** Ordre canonique des 6 Localisations (`HitLocation`, `engine/types.ts`) — tête → bras → corps →
+ *  jambes. Exporté : source unique de l'ordre, réutilisé par `CharacterSheet.tsx` (badges de la
+ *  colonne). */
+export const ZONE_ORDER: HitLocation[] = ['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD'];
 
-function zoneAnchor(loc: HitLocation): string {
+/** Ancre de la PREMIÈRE rangée Critiques/Séquelles d'une Localisation dans le registre — cible de
+ *  clic du badge de zone de la colonne (`FigTile.zoneBadges`, `CharacterSheet.tsx`). */
+export function zoneAnchor(loc: HitLocation): string {
   return `etat-zone-${loc}`;
 }
 
-/** Bande de zones TOUCHÉES (pt.4) : une plaque par Localisation portant ≥1 critique ou séquelle,
- *  compte par famille (« 1 critique », « 1 séquelle ») — clic = ramène la première ligne concernée. */
-function ZoneBand({ hero, criticalEntries, traumas }: {
-  hero: Combatant;
-  criticalEntries: { table: CritTableKey; count: number }[];
-  traumas: Combatant['traumas'];
-}) {
+/** Critiques subis, dédupliqués/comptés (source unique — alimente le registre ET `zoneAfflictions`). */
+function criticalEntriesOf(hero: Combatant) {
+  const critIds = hero.critEntriesSuffered ?? [];
+  const critCounts = new Map<string, number>();
+  for (const id of critIds) critCounts.set(id, (critCounts.get(id) ?? 0) + 1);
+  return [...critCounts.entries()]
+    .map(([id, count]) => {
+      const found = findCritEntrySuffered(id);
+      return found ? { id, count, ...found } : null;
+    })
+    .filter((x): x is NonNullable<typeof x> => !!x);
+}
+
+/** Localisations TOUCHÉES (pt.4, #492) — ≥1 critique ou séquelle, comptées par famille. Alimente le
+ *  badge de zone de la colonne (`FigTile.zoneBadges`) : une zone intacte n'est jamais retournée. */
+export function zoneAfflictions(hero: Combatant): { loc: HitLocation; crit: number; trauma: number }[] {
   const critByLoc = new Map<HitLocation, number>();
-  for (const c of criticalEntries) critByLoc.set(critLocation(c.table), (critByLoc.get(critLocation(c.table)) ?? 0) + c.count);
+  for (const c of criticalEntriesOf(hero)) critByLoc.set(critLocation(c.table), (critByLoc.get(critLocation(c.table)) ?? 0) + c.count);
   const traumaByLoc = new Map<HitLocation, number>();
-  for (const t of traumas ?? []) traumaByLoc.set(t.location, (traumaByLoc.get(t.location) ?? 0) + (t.count ?? 1));
-  const touched = ZONE_ORDER.filter((l) => (critByLoc.get(l) ?? 0) > 0 || (traumaByLoc.get(l) ?? 0) > 0);
-  if (!touched.length) return null;
-  return (
-    <PlaqueGrid>
-      {touched.map((loc) => {
-        const nCrit = critByLoc.get(loc) ?? 0;
-        const nTrauma = traumaByLoc.get(loc) ?? 0;
-        const parts = [
-          nCrit > 0 ? `${nCrit} critique${nCrit > 1 ? 's' : ''}` : null,
-          nTrauma > 0 ? `${nTrauma} séquelle${nTrauma > 1 ? 's' : ''}` : null,
-        ].filter(Boolean);
-        return (
-          <PlaqueRow
-            key={loc}
-            prefix={<Icon id={nCrit > 0 ? 'medical/scalpel' : 'medical/crutch'} size="sm" />}
-            name={locationLabel(loc, hero.bodyShape)}
-            value={parts.join(' · ')}
-            onClick={() => document.getElementById(zoneAnchor(loc))?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })}
-          />
-        );
-      })}
-    </PlaqueGrid>
-  );
+  for (const t of hero.traumas ?? []) traumaByLoc.set(t.location, (traumaByLoc.get(t.location) ?? 0) + (t.count ?? 1));
+  return ZONE_ORDER.filter((l) => (critByLoc.get(l) ?? 0) > 0 || (traumaByLoc.get(l) ?? 0) > 0).map((loc) => ({
+    loc,
+    crit: critByLoc.get(loc) ?? 0,
+    trauma: traumaByLoc.get(loc) ?? 0,
+  }));
 }
 
 /** Description courte d'un effet actif (buff de carac, Trait/Talent accordé, enchantement…). */
@@ -162,15 +159,7 @@ function ActiveEffectsSection({ hero }: { hero: Combatant }) {
 }
 
 export function EtatPanel({ hero }: { hero: Combatant }) {
-  const critIds = hero.critEntriesSuffered ?? [];
-  const critCounts = new Map<string, number>();
-  for (const id of critIds) critCounts.set(id, (critCounts.get(id) ?? 0) + 1);
-  const criticalEntries = [...critCounts.entries()]
-    .map(([id, count]) => {
-      const found = findCritEntrySuffered(id);
-      return found ? { id, count, ...found } : null;
-    })
-    .filter((x): x is NonNullable<typeof x> => !!x);
+  const criticalEntries = criticalEntriesOf(hero);
 
   const conditions = hero.conditions ?? [];
   const corruption = hero.corruption ?? 0;
@@ -196,7 +185,8 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
   }
 
   // Ancre la PREMIÈRE rangée Critiques/Séquelles de chaque Localisation (une seule fois, dans l'ordre
-  // de rendu du registre) — cible de clic de la `ZoneBand` (pt.4). Pas de coût CSS : un `id`, pas de classe.
+  // de rendu du registre) — cible de clic du badge de zone de la colonne (`FigTile.zoneBadges`, pt.4).
+  // Pas de coût CSS : un `id`, pas de classe.
   const seenZoneAnchor = new Set<HitLocation>();
   const zoneAnchorFor = (loc: HitLocation): string | undefined => {
     if (seenZoneAnchor.has(loc)) return undefined;
@@ -206,8 +196,6 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
 
   return (
     <div className="sheet-etat">
-      <ZoneBand hero={hero} criticalEntries={criticalEntries} traumas={traumas} />
-
       {criticalEntries.length > 0 && (
         <Section anchor={ETAT_ANCHOR_CRITIQUES} title="Blessures critiques" count={criticalEntries.length} tone="sang">
           {criticalEntries.map((c) => {

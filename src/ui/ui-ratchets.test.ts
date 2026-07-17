@@ -451,8 +451,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Fix visuel (registre Possessions rétréci à son contenu vs jumeau État pleine largeur) : +1
   // (94 -> 95) -- `.inv-item` devient flex-column (même mécanisme d'étirement que `creator-band`
   // en État : la `PlaqueRow`/bouton n'est stretch que si elle est enfant direct d'un flex/grid).
-  // Fusion vague-2 + fiche : 82 + 2 (Faveurs) + 4 (présence) + 1 (ras-sub) + 7 (registre) + 1 (inv-item) = 97.
-  'styles/sheet.css': 97,
+  // Lot « corps-index » (#492, arbitrage 2026-07-17) : -1 (95 -> 94) -- purge de la plaque ENC.
+  // (`.stat-chip.enc-over`, seule occurrence dans ce module) : la plaque MEURT sans remplaçant
+  // (amendement en vol — l'Encombrement rejoint une barre de la colonne au geste suivant).
+  // Fusion vague-2 + fiche : 97 (précédent fusionné) - 1 (plaque ENC) = 96.
+  'styles/sheet.css': 96,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -480,7 +483,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // #492 lot « colonne présence » (arbitrage user 2026-07-17, rig grand format) : +1 (8 -> 9) --
   // `.fig-tile.hero` (boite-figurine PLEINE FORME 320px, presence STATIQUE de l'aside de la fiche)
   // rejoint `.big`/`.compact` comme 3e variante de taille de la MEME primitive.
-  'styles/frames.css': 9,
+  // Lot « corps-index » (#492, arbitrage 2026-07-17) : +2 (9 -> 11) -- `.fig-zone-badges`/
+  // `.fig-zone-badge` (badges ANCRÉS par Localisation, position en attribut `data-loc`, ton en
+  // `data-tone` — jamais une classe par zone/ton, patron déjà tenu par sheet.css/NotchGauge).
+  'styles/frames.css': 11,
   // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
   // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
   // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).

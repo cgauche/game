@@ -22,7 +22,7 @@ import { CharacterPreview } from '../CharacterPreview';
 import { MetalStatus } from '../MetalStatus';
 import { WaxSeal, SealedPlaque } from '../WaxSeal';
 import { CareerPath } from '../CareerPath';
-import { FigTile } from '../FigTile';
+import { FigTile, type ZoneBadgeSpec } from '../FigTile';
 import { VitalArc } from '../VitalArc';
 import { PlaqueRow, PlaqueGrid } from '../PlaqueRow';
 import { DieFace } from '../DiceRoll';
@@ -266,9 +266,41 @@ function FigTileDemo() {
           tabIndex={0}
         />
       </div>
+      <div style={{ width: 180 }}>
+        <FigTile
+          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 13 } }}
+          fig="hero"
+          zoneBadges={FIG_ZONE_BADGES_PA}
+        />
+        <p className="hint">Colonne-index (#492) : PA d'armure</p>
+      </div>
+      <div style={{ width: 180 }}>
+        <FigTile
+          preview={{ appearance: { species: rigSpeciesId(HUMAN_SPECIES.id), sex: 'M', build: 0.5, seed: 13 } }}
+          fig="hero"
+          zoneBadges={FIG_ZONE_BADGES_CRIT}
+        />
+        <p className="hint">Colonne-index (#492) : critiques/séquelles</p>
+      </div>
     </div>
   );
 }
+
+/** Langage PA (onglet Possessions) — 6 Localisations, `dim` vide/`or` chargé/`sang` entamée. */
+const FIG_ZONE_BADGES_PA: ZoneBadgeSpec[] = [
+  { loc: 'tete', label: 'Tête', value: 1, tone: 'or' },
+  { loc: 'brasG', label: 'Bras gauche', value: 0, tone: 'dim' },
+  { loc: 'brasD', label: 'Bras droit', value: 1, tone: 'sang' },
+  { loc: 'corps', label: 'Corps', value: 2, tone: 'or' },
+  { loc: 'jambeG', label: 'Jambe gauche', value: 0, tone: 'dim' },
+  { loc: 'jambeD', label: 'Jambe droite', value: 0, tone: 'dim' },
+];
+
+/** Langage critiques/séquelles (onglet État) — seules les zones TOUCHÉES, clic = ancre. */
+const FIG_ZONE_BADGES_CRIT: ZoneBadgeSpec[] = [
+  { loc: 'tete', label: 'Tête', value: 1, tone: 'sang', onClick: () => {} },
+  { loc: 'brasG', label: 'Bras gauche', value: 1, tone: 'warn', onClick: () => {} },
+];
 
 /** Rangée-plaque à rivets d'or (#393) : rangées de registre aux valeurs RÉELLES du pré-tiré
  *  (repos, roulant à dés compacts) + plaques d'option (élue `.sel` chaude, au repos) + rangée

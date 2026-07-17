@@ -81,9 +81,6 @@
 .sheet-vitals .stat-chip.pv .sc-value {
   color: var(--gold2);
 }
-.sheet-vitals .stat-chip.enc-over .sc-value {
-  color: var(--danger-soft); /* #305 : var(--danger) sur .stat-chip (panel2) < 4.5:1 (AA) */
-}
 @media (max-width: 700px) {
   .sheet-layout {
     grid-template-columns: 1fr;
@@ -558,11 +555,11 @@
 }
 
 /* ── Onglet « État » (registre compact, arbitrage user 2026-07-17) : bandes de section (`Band`) +
-   `PlaqueRow` par affliction — l'ancienne silhouette organisatrice (rig + zones dessinées) est MORTE,
-   remplacée par la bande de zones TOUCHÉES en tête (`ZoneBand`, `PlaqueGrid`, pt.4) : une plaque par
-   Localisation qui porte ≥1 critique/séquelle, sinon la zone n'existe pas à l'écran. L'état calme
-   (RAS) n'affiche plus la figurine (colonne aside déjà en pied grand format, doublon) : message +
-   sous-ligne discrète seuls. ── */
+   `PlaqueRow` par affliction — l'ancienne silhouette organisatrice (rig + zones dessinées) est MORTE.
+   La bande de zones TOUCHÉES en tête (`ZoneBand`, `PlaqueGrid`) l'est AUSSI (lot « corps-index »,
+   #492) : ce résumé par Localisation vit désormais dans le CORPS de la colonne (`FigTile.zoneBadges`,
+   `CharacterSheet.tsx`), pas ici. L'état calme (RAS) n'affiche plus la figurine (colonne aside déjà
+   en pied grand format, doublon) : message + sous-ligne discrète seuls. ── */
 .etat-ras {
   display: flex;
   flex-direction: column;

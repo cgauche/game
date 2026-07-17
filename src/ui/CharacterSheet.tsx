@@ -4,7 +4,7 @@ import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
 import { Tabs } from './Tabs';
-import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
+import { isWeaponActive, armourLayer, isCapeItem, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
 import { HitLocation, ItemInstance, Combatant, CharKey, CHAR_KEYS } from '../engine/types';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -40,12 +40,13 @@ import { BackgroundPanel } from './BackgroundPanel';
 import { Icon } from './Icon';
 import type { Palette } from '../gameIso/rig/palette';
 import { sheetAlarms, alarmsFingerprint } from './sheetAlarms';
-import { EtatPanel } from './EtatPanel';
+import { EtatPanel, ZONE_ORDER, zoneAnchor, zoneAfflictions } from './EtatPanel';
 import { PlaqueRow } from './PlaqueRow';
 import { Band } from './Band';
-import { FigTile } from './FigTile';
+import { FigTile, type ZoneBadgeSpec } from './FigTile';
 import { VitalArc } from './VitalArc';
 import { corruptionThresholdExceeded } from '../engine/corruption';
+import { locationLabel } from '../engine/combat';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
 const WEAPON_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
@@ -67,6 +68,35 @@ const LOC_SHORT: Record<HitLocation, string> = {
   jambeG: 'Jambe G',
   jambeD: 'Jambe D',
 };
+
+/** Badges de zone de l'onglet Possessions (lot « corps-index », #492) : PA cumulé des 6 Localisations
+ *  RÉELLES (`hero.armour`, couches rigide+Flexible+mutations déjà cumulées) — `sang` si une pièce
+ *  portée à cette zone est ENTAMÉE (`damageTaken > 0`), `or` si PA > 0, `dim` sinon (vide). */
+function possessionsZoneBadges(hero: Combatant): ZoneBadgeSpec[] {
+  return ZONE_ORDER.map((loc) => {
+    const pa = hero.armour[loc] ?? 0;
+    const entamee = (hero.items ?? []).some((it) => it.kind === 'armor' && it.equipped && (it.locs ?? []).includes(loc) && (it.damageTaken ?? 0) > 0);
+    return {
+      loc,
+      label: locationLabel(loc, hero.bodyShape),
+      value: pa,
+      tone: entamee ? 'sang' : pa > 0 ? 'or' : 'dim',
+    };
+  });
+}
+
+/** Badges de zone de l'onglet État (lot « corps-index », #492) : compte de critiques/séquelles par
+ *  Localisation TOUCHÉE (`zoneAfflictions`, `EtatPanel.tsx` — source unique du calcul), clic = ramène
+ *  la première rangée concernée du registre en vue. */
+function etatZoneBadges(hero: Combatant): ZoneBadgeSpec[] {
+  return zoneAfflictions(hero).map(({ loc, crit, trauma }) => ({
+    loc,
+    label: locationLabel(loc, hero.bodyShape),
+    value: crit + trauma,
+    tone: crit > 0 ? 'sang' : 'warn',
+    onClick: () => document.getElementById(zoneAnchor(loc))?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
+  }));
+}
 
 /** Bande d'alarmes de la colonne moniteur (§3.1 design v4, #492) : chips-boutons focusables, une
  *  par alarme de `sheetAlarms` — clic = bascule l'onglet État et ancre vers sa rubrique (dégrade
@@ -182,7 +212,11 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
         <div className="sheet-layout">
           <aside className="sheet-aside">
             <div className="sheet-portrait">
-              <FigTile preview={{ hero }} fig="hero" />
+              <FigTile
+                preview={{ hero }}
+                fig="hero"
+                zoneBadges={tab === 'possessions' ? possessionsZoneBadges(hero) : tab === 'etat' ? etatZoneBadges(hero) : undefined}
+              />
               <VitalArc current={hero.wounds.current} max={hero.wounds.max} />
               <h3>{hero.name}</h3>
               <span className="char-sub">
@@ -533,9 +567,6 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [skinOpenUid, setSkinOpenUid] = useState<string | null>(null);
   const items = hero.items ?? [];
-  const enc = hero.encumbrance ?? 0;
-  const maxEnc = maxEncumbrance(hero);
-  const over = enc > maxEnc;
   const party = useGame((s) => s.party);
   // Détection d'artefact (LDB 10) : visible seulement si un héros du groupe possède le Talent.
   const canDetect = !!bestDetector(party);
@@ -564,15 +595,6 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
 
   return (
     <>
-      {section === 'possessions' && (
-        <div className="sheet-vitals">
-          <div className={`stat-chip ${over ? 'enc-over' : ''}`}>
-            <span className="sc-label" title="Encombrement">Enc.</span>
-            <span className="sc-value">{enc}/{maxEnc}{over ? (<> <Icon id="ui/warning" size="sm" /></>) : ''}</span>
-          </div>
-        </div>
-      )}
-
       {section === 'possessions' && <EquipmentPanel hero={hero} />}
 
       {section === 'possessions' && (

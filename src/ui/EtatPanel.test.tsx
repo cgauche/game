@@ -46,10 +46,11 @@ describe('EtatPanel', () => {
       expect(html, `ancre manquante : ${anchor}`).toContain(`id="${anchor}"`);
     }
     // Chaque rubrique = une seule PlaqueRow (registre compact, pas les cartes riches rejetées) : 8
-    // rubriques à 1 entrée (critiques/états/traumas/maladies/mutations/psychologie/corruption/surcharge)
-    // + 2 plaques de zone (Tête : critique, Bras G : trauma — bande `ZoneBand`, pt.4).
+    // rubriques à 1 entrée (critiques/états/traumas/maladies/mutations/psychologie/corruption/surcharge).
+    // La bande de zones (`ZoneBand`, pt.4) est MORTE (lot « corps-index », #492) : plus de plaques
+    // résumées ici, le résumé par Localisation vit dans `FigTile.zoneBadges` (`CharacterSheet.tsx`).
     const rowCount = (html.match(/plaque-row/g) || []).length;
-    expect(rowCount).toBe(10);
+    expect(rowCount).toBe(8);
     // Nom de ligne = CodexRef cliquable (popover Codex), sur chaque famille de rubrique.
     expect((html.match(/codex-ref/g) || []).length).toBeGreaterThanOrEqual(6);
     // Un GameOp = une rangée (doctrine #295) : le moveMod de la mutation est rendu en chip.
@@ -63,14 +64,18 @@ describe('EtatPanel', () => {
     expect((html.match(/Corruption/g) || []).length, 'un SEUL « Corruption » — pas de titre de bande redondant').toBe(1);
   });
 
-  it('bande de zones (pt.4) : SEULES les Localisations touchées (critique/séquelle) sont rendues', () => {
+  it('rangée de zones (pt.4) MORTE dans le registre (lot « corps-index », #492) — seules les ancres de la PREMIÈRE rangée concernée subsistent', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
-    // Tête (critique) et Bras G (trauma) : ancres présentes, cibles de la première ligne concernée.
+    // La bande résumée (`ZoneBand`/`PlaqueGrid`) a migré vers `FigTile.zoneBadges` — plus de grille
+    // ni de compte agrégé ("1 critique"/"1 séquelle") dans le registre lui-même.
+    expect(html).not.toContain('plaque-grid');
+    expect(html).not.toContain('1 critique');
+    expect(html).not.toContain('1 séquelle');
+    // Les ancres de scroll (cible du badge de zone de la colonne) restent posées sur la PREMIÈRE
+    // rangée Critiques/Séquelles concernée — Tête (critique) et Bras G (trauma).
     expect(html).toContain('id="etat-zone-tete"');
     expect(html).toContain('id="etat-zone-brasG"');
-    expect(html).toContain('1 critique');
-    expect(html).toContain('1 séquelle');
-    // Corps/Jambes/Bras D : intactes → AUCUNE plaque, aucune ancre (« une zone intacte n'existe pas »).
+    // Corps/Jambes/Bras D : intactes → aucune ancre (« une zone intacte n'existe pas »).
     for (const untouched of ['etat-zone-corps', 'etat-zone-brasD', 'etat-zone-jambeG', 'etat-zone-jambeD']) {
       expect(html, `zone intacte inattendue : ${untouched}`).not.toContain(`id="${untouched}"`);
     }
