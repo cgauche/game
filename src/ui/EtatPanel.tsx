@@ -135,10 +135,16 @@ function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): str
   return e.label;
 }
 
+/** Libellé plein d'un compte de Rounds (vocabulaire du jeu, ex. `humanizeOp`/`opRows.ts` : « Round »
+ *  capitalisé comme un terme RAW, accord réel singulier/pluriel) — jamais l'abréviation muette « R ». */
+function roundsLabel(n: number): string {
+  return `${n} Round${n > 1 ? 's' : ''}`;
+}
+
 /** Durée compacte d'un effet actif/contrecoup, pour la valeur de sa `PlaqueRow`. */
 function effectDuration(e: { duration?: Duration; roundsLeft?: number; untilTime?: number }): string {
-  if (e.duration) return e.duration.scale === 'rounds' ? ` · ${e.duration.left} R` : e.duration.scale === 'clock' ? ' · durée' : '';
-  return e.roundsLeft != null ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
+  if (e.duration) return e.duration.scale === 'rounds' ? ` · ${roundsLabel(e.duration.left)}` : e.duration.scale === 'clock' ? ' · durée' : '';
+  return e.roundsLeft != null ? ` · ${roundsLabel(e.roundsLeft)}` : e.untilTime != null ? ' · durée' : '';
 }
 
 /** Valeur de la `PlaqueRow` d'un État actif : cumul de pions (`ConditionInstance.value`, ex. 10
@@ -149,7 +155,7 @@ function effectDuration(e: { duration?: Duration; roundsLeft?: number; untilTime
 function conditionValue(cond: ConditionInstance): string | undefined {
   const parts: string[] = [];
   if (cond.value > 1) parts.push(`×${cond.value}`);
-  if (cond.roundsLeft != null) parts.push(`${cond.roundsLeft} R`);
+  if (cond.roundsLeft != null) parts.push(roundsLabel(cond.roundsLeft));
   else if (cond.untilTime != null) parts.push('durée');
   return parts.length ? parts.join(' · ') : undefined;
 }
@@ -239,7 +245,6 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
         <Section
           anchor={ETAT_ANCHOR_CRITIQUES}
           title="Blessures critiques"
-          count={criticalEntries.length}
           tone="sang"
           extra={<NotchGauge value={activeCriticals} max={be} notches={be} label="actives" tone={destinTone(activeCriticals, be)} />}
         >
@@ -361,14 +366,18 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
       )}
 
       {corruption > 0 && (
-        <div id={ETAT_ANCHOR_CORRUPTION} data-tone="violet">
-          <PlaqueRow
-            prefix={<Icon id="nav/mutation" size="sm" />}
-            name="Corruption"
-            meta={<NotchGauge value={corruption} max={corruptionMax} notches={corruptionMax} tone="danger" />}
-            value={hero.damned ? 'DAMNÉ' : undefined}
-          />
-        </div>
+        <Section
+          anchor={ETAT_ANCHOR_CORRUPTION}
+          title="Corruption"
+          tone="violet"
+          extra={<NotchGauge value={corruption} max={corruptionMax} notches={corruptionMax} tone="danger" />}
+        >
+          {/* Le chiffre vit dans la jauge de bande (`extra`) — pas de ligne redondante, sauf la
+              mention DAMNÉ (info d'instance qui n'a pas d'autre siège). */}
+          {hero.damned && (
+            <PlaqueRow prefix={<Icon id="flag/anger" size="sm" />} name="Corruption" value="DAMNÉ" />
+          )}
+        </Section>
       )}
 
       {overEnc && (

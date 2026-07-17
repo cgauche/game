@@ -77,7 +77,8 @@ describe('EquipmentPanel (rendu)', () => {
     expect(html).toContain('Sets d’armes'); // Band de droite
     expect(html).toContain('equip-sets');
     expect(html).toContain('set-card');
-    expect(html).toContain('● Actif'); // Set I actif par défaut
+    expect(html).toContain('chip tone-warn'); // Set I actif par défaut — chip d'ÉTAT, pas un bouton
+    expect(html).toContain('Actif</span>');
     expect(html).toContain('Hallebarde (2M)'); // option du picker d'arme
     expect(html).toContain('En main');
     expect(html).toContain('Arme simple');

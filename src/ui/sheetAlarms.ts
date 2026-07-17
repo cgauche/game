@@ -51,7 +51,9 @@ export function sheetAlarms(hero: Combatant): SheetAlarm[] {
     out.push({
       key: 'corruption',
       label: `Corruption ${corruption}${hero.damned ? ' — DAMNÉ' : ''}`,
-      icon: 'nav/mutation',
+      // Icône DISTINCTE de Mutations (`nav/mutation`) — deux alarmes voisines ne partagent plus le
+      // même glyphe (juge vision 2026-07-17).
+      icon: 'flag/anger',
       tone: 'warn',
       anchor: ETAT_ANCHOR_CORRUPTION,
     });
@@ -71,7 +73,7 @@ export function sheetAlarms(hero: Combatant): SheetAlarm[] {
   // Traumas COSMÉTIQUES (cicatrices, `cosmetic:true`) exclus — Blessure d'origine déjà guérie (types.ts:769-772).
   const activeTraumas = (hero.traumas ?? []).filter((t) => !t.cosmetic).length;
   if (activeTraumas > 0) {
-    out.push({ key: 'traumas', label: `Traumas ${activeTraumas}`, icon: 'medical/crutch', tone: 'warn', anchor: ETAT_ANCHOR_TRAUMAS });
+    out.push({ key: 'traumas', label: `Séquelles ${activeTraumas}`, icon: 'medical/crutch', tone: 'warn', anchor: ETAT_ANCHOR_TRAUMAS });
   }
 
   for (const p of hero.psychState ?? []) {

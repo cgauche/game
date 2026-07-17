@@ -35,9 +35,9 @@ const ZONE_OF_LOC: Partial<Record<HitLocation, string>> = { tete: 'Tête', brasG
 /** Couches : `label` plein (tooltip), `short` pour l'en-tête de colonne (cellules étroites). De gauche
  *  (extérieure, visible) à droite (intime). */
 const LAYERS: { key: ArmourLayer; label: string; short: string; hint: string }[] = [
-  { key: 'rigide', label: 'Extérieure', short: 'Ext.', hint: 'Couche rigide (cuir bouilli, plate…) — une seule pièce par zone.' },
-  { key: 'flexible', label: 'Flexible', short: 'Flex.', hint: 'Mailles (Flexible) : portée sous une couche non Flexible, les PA des deux se cumulent (LDB 63).' },
-  { key: 'souple', label: 'Souple', short: 'Soupl.', hint: 'Cuir souple : porté sans pénalité sous n’importe quelle autre armure (LDB 63) — PA non cumulés sous une autre couche.' },
+  { key: 'rigide', label: 'Extérieure', short: 'Rigide', hint: 'Couche rigide (cuir bouilli, plate…) — une seule pièce par zone.' },
+  { key: 'flexible', label: 'Flexible', short: 'Flexible', hint: 'Mailles (Flexible) : portée sous une couche non Flexible, les PA des deux se cumulent (LDB 63).' },
+  { key: 'souple', label: 'Souple', short: 'Souple', hint: 'Cuir souple : porté sans pénalité sous n’importe quelle autre armure (LDB 63) — PA non cumulés sous une autre couche.' },
 ];
 
 /** Zones couvertes par une pièce, pour l'indicateur multi-zones (« Bras+Corps »). */
@@ -247,14 +247,22 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                   </div>
                 </div>
                 <span className="set-card-actions">
-                  <button
-                    className={`btn small ${setActive ? 'btn-primary' : ''}`}
-                    disabled={inBattle}
-                    title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
-                    onClick={() => setActiveLoadout(hero.id, lo.id)}
-                  >
-                    {setActive ? '● Actif' : 'Activer'}
-                  </button>
+                  {/* Actif = un ÉTAT (chip), pas une action à répéter — seul le set INACTIF porte le
+                      bouton « Activer » (juge vision 2026-07-17). */}
+                  {setActive ? (
+                    <span className="chip tone-warn" title="Set actif (armes en main)">
+                      <Icon id="ui/done" size="sm" /> Actif
+                    </span>
+                  ) : (
+                    <button
+                      className="btn small"
+                      disabled={inBattle}
+                      title={lockTitle ?? 'Rendre ce set actif (armes en main)'}
+                      onClick={() => setActiveLoadout(hero.id, lo.id)}
+                    >
+                      Activer
+                    </button>
+                  )}
                   {canDelete && (
                     <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}><Icon id="ui/delete" size="sm" /></button>
                   )}

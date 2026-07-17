@@ -61,6 +61,8 @@
 }
 /* Boîte-figurine : hauteur FIXE, figurine posée au sol (`flex-end`) sur sa lueur chaude. */
 .fig-tile-fig {
+  position: relative; /* ancre `.fig-zone-badges` (inset) À CETTE BOÎTE, jamais à la tuile entière
+                          (qui inclut nom/compte dessous) — sinon chevauchement du cadre (#492). */
   height: 104px;
   width: 100%;
   display: flex;
@@ -128,7 +130,9 @@
    (jamais une classe par ton, patron déjà tenu par `sheet.css`/`NotchGauge`). */
 .fig-zone-badges {
   position: absolute;
-  inset: 0;
+  /* Marge interne (juge vision 2026-07-17) : les badges au bord ne mordent plus sur le cadre — ancré
+     à `.fig-tile-fig` (pas la tuile entière), lui-même sans bordure propre (règle n°1). */
+  inset: 6px;
   pointer-events: none;
 }
 .fig-zone-badge {

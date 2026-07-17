@@ -21,6 +21,10 @@ import {
 
 const textRow = (o: GameOp): CodexRow => ({ t: 'text', text: humanizeOp(o) });
 
+/** Accord réel singulier/pluriel d'un compte — `Formula` non littérale (dé, bonus…) accorde au
+ *  pluriel (jamais garanti « un » à l'affichage). Jamais le pluriel-code « (s) ». */
+const plural = (n: unknown, singular: string, pluralForm: string): string => (n === 1 ? singular : pluralForm);
+
 /** Une op → SA ligne Codex. Ancre nominative quand un id résout dans une catégorie EXISTANTE, sinon
  *  repli `humanizeOp`. */
 export function opRow(o: GameOp): CodexRow {
@@ -41,7 +45,7 @@ export function opRow(o: GameOp): CodexRow {
         o.ignoreAP === false ? undefined : 'ignore les PA',
         o.bypassArmour === 'metal' ? 'perce armure métallique' : o.bypassArmour === 'nonMagic' ? 'perce armure non magique' : undefined,
       ].filter((s): s is string => !!s).join(' · ') || undefined;
-      return { t: 'ref', category: 'characteristics', id: 'blessure', label: 'Blessure', show: `${humanizeFormula(o.amount)} Blessure(s)`, badge };
+      return { t: 'ref', category: 'characteristics', id: 'blessure', label: 'Blessure', show: `${humanizeFormula(o.amount)} ${plural(o.amount, 'Blessure', 'Blessures')}`, badge };
     }
     // PA (Points d'Armure) : aucune entrée Codex glossaire dédiée — repli texte SEC (jamais de lien inventé).
     case 'ap':
@@ -85,7 +89,7 @@ export function opRow(o: GameOp): CodexRow {
     case 'condition': {
       const label = conditionLabel(o.name);
       const show = o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ${label}` : label;
-      const badge = o.durationRounds != null ? `${humanizeFormula(o.durationRounds)} Round(s)` : o.perRound ? 'par Round' : undefined;
+      const badge = o.durationRounds != null ? `${humanizeFormula(o.durationRounds)} ${plural(o.durationRounds, 'Round', 'Rounds')}` : o.perRound ? 'par Round' : undefined;
       return { t: 'ref', category: 'etats', id: o.name, label, show, badge };
     }
     case 'removeCondition': {

@@ -23,6 +23,12 @@ import { t } from '../i18n';
 export const HERO_SHEET_SECTIONS = ['stats', 'derived', 'forces', 'skills', 'talents', 'spells', 'possessions'] as const;
 export type HeroSheetSection = (typeof HERO_SHEET_SECTIONS)[number];
 
+/** Champs de la rubrique `derived` — TOUS par défaut (rétro-compatible). Un appelant qui porte déjà
+ *  l'un d'eux ailleurs (ex. la fiche : Blessures dans la barre de vie de l'aside, arbitrage
+ *  2026-07-17) l'omet plutôt que de dupliquer le chiffre, sans devoir dupliquer tout le markup. */
+export const HERO_SHEET_DERIVED_FIELDS = ['wounds', 'movement', 'fate', 'resilience'] as const;
+export type HeroSheetDerivedField = (typeof HERO_SHEET_DERIVED_FIELDS)[number];
+
 /**
  * HeroSheet — corps de FICHE HÉROS, consécration de la duplication entre la fiche vivante du
  * créateur (`creator/CreatorSummary.tsx`) et le détail candidat de l'écran d'équipe
@@ -41,6 +47,7 @@ export function HeroSheet({
   pending,
   statAnnotations,
   sections = HERO_SHEET_SECTIONS,
+  derivedFields = HERO_SHEET_DERIVED_FIELDS,
   skillsVariant = 'chips',
   className,
 }: {
@@ -66,6 +73,9 @@ export function HeroSheet({
    *  du corps ailleurs (ex. la fiche : Blessures dans l'aside) restreint la liste plutôt que de
    *  dupliquer le markup à la main (arbitrage 2026-07-17). */
   sections?: readonly HeroSheetSection[];
+  /** Champs de la rubrique `derived` — TOUS par défaut ; un appelant qui porte déjà l'un d'eux
+   *  ailleurs (ex. Blessures dans la barre de vie de l'aside de la fiche) l'omet ICI. */
+  derivedFields?: readonly HeroSheetDerivedField[];
   /** Rendu de la rubrique Compétences — `'chips'` (défaut, présentation candidate/créateur) ou
    *  `'valeurs'` (table à deux colonnes nom/valeur+avances, onglet Compétences & Talents de la fiche
    *  vivante — arbitrage 2026-07-17). Les Talents restent en chips dans les DEUX variantes. */
@@ -114,10 +124,10 @@ export function HeroSheet({
 
       {has('derived') && (
         <div className="hero-sheet-derived">
-          <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>
-          <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>
-          <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>
-          <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Déterm. <b>{hero.resolve ?? '—'}</b></span>
+          {derivedFields.includes('wounds') && <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>}
+          {derivedFields.includes('movement') && <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>}
+          {derivedFields.includes('fate') && <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>}
+          {derivedFields.includes('resilience') && <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Déterm. <b>{hero.resolve ?? '—'}</b></span>}
         </div>
       )}
 

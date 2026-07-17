@@ -75,26 +75,29 @@ export function FigTile({ preview, label, sub, selected, sealed, fig = 'compact'
   zoneBadges?: ZoneBadgeSpec[];
 }) {
   const cls = ['fig-tile', selected && 'sel', fig !== 'compact' && fig, className].filter(Boolean).join(' ');
+  // Une zone à valeur NULLE/vide ne dit rien (six « 0 » = bruit, juge vision 2026-07-17) — skip
+  // structurel ICI (niveau primitive) : tout appelant de `zoneBadges` en bénéficie sans y penser.
+  const shownBadges = (zoneBadges ?? []).filter((b) => !!b.value);
   const body = (
     <>
       <span className="fig-tile-fig">
         <CharacterPreview {...preview} size="fill" ambiance="none" />
+        {shownBadges.length > 0 && (
+          <span className="fig-zone-badges">
+            {shownBadges.map((b) =>
+              b.onClick ? (
+                <button key={b.loc} type="button" className="fig-zone-badge" data-loc={b.loc} data-tone={b.tone} title={b.label} onClick={b.onClick}>
+                  {b.value}
+                </button>
+              ) : (
+                <span key={b.loc} className="fig-zone-badge" data-loc={b.loc} data-tone={b.tone} title={b.label}>
+                  {b.value}
+                </span>
+              ),
+            )}
+          </span>
+        )}
       </span>
-      {zoneBadges && zoneBadges.length > 0 && (
-        <span className="fig-zone-badges">
-          {zoneBadges.map((b) =>
-            b.onClick ? (
-              <button key={b.loc} type="button" className="fig-zone-badge" data-loc={b.loc} data-tone={b.tone} title={b.label} onClick={b.onClick}>
-                {b.value}
-              </button>
-            ) : (
-              <span key={b.loc} className="fig-zone-badge" data-loc={b.loc} data-tone={b.tone} title={b.label}>
-                {b.value}
-              </span>
-            ),
-          )}
-        </span>
-      )}
       {sealed && <WaxSeal size={40} className="fig-tile-seal" />}
       {label && <span className="fig-tile-name">{label}</span>}
       {sub && <span className="fig-tile-sub">{sub}</span>}

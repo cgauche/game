@@ -70,6 +70,14 @@ const woundsTone = (cur: number, max: number): GaugeTone => {
   return frac <= 0.34 ? 'danger' : frac <= 0.67 ? 'warn' : 'ok';
 };
 
+/** Encombrement : `neutral` sous ~75 % de la capacité, `warn` proche du max, `danger` au-delà — le
+ *  dépassement (`value > max`) reste porté par l'état DÉPASSEMENT générique de `LifeBar` (toujours
+ *  `danger`, quel que soit ce ton). Le rouge constant mentait à 2/5 de charge (juge vision 2026-07-17). */
+const encumbranceTone = (cur: number, max: number): GaugeTone => {
+  const frac = max > 0 ? cur / max : 0;
+  return frac >= 1 ? 'danger' : frac >= 0.75 ? 'warn' : 'neutral';
+};
+
 const LOC_SHORT: Record<HitLocation, string> = {
   tete: 'Tête',
   brasG: 'Bras G',
@@ -229,12 +237,12 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 zoneBadges={tab === 'possessions' ? possessionsZoneBadges(hero) : tab === 'etat' ? etatZoneBadges(hero) : undefined}
               />
               <LifeBar stacked label="Blessures" value={hero.wounds.current} max={hero.wounds.max} tone={woundsTone} />
-              {/* Encombrement : rouge en remplissage (croquis 2026-07-17) — la surcharge elle-même
-                  reste portée par l'alarme existante (`SheetAlarmsBand`/`sheetAlarms.ts`), jamais dupliquée ici.
+              {/* Encombrement : ton PAR PALIER (`encumbranceTone`, juge vision 2026-07-17) — la surcharge
+                  elle-même reste portée par l'alarme existante (`SheetAlarmsBand`/`sheetAlarms.ts`), jamais dupliquée ici.
                   Le dépassement (Enc > max) est porté par l'état DÉPASSEMENT générique de `LifeBar`.
                   `stacked` (arbitrage 2026-07-17) : valeur au-dessus, piste pleine largeur — les deux
                   barres de l'aside s'alignent par construction, quelle que soit la longueur du libellé/valeur. */}
-              <LifeBar stacked label="Encombrement" value={totalEncumbrance(hero)} max={maxEncumbrance(hero)} tone="danger" />
+              <LifeBar stacked label="Encombrement" value={totalEncumbrance(hero)} max={maxEncumbrance(hero)} tone={encumbranceTone} />
               <div className="sheet-idrows">
                 <div className="sheet-idrow">
                   <span className="sheet-idrow-label">Race</span>
@@ -302,6 +310,9 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                   hero={hero}
                   header={false}
                   sections={['stats', 'derived', 'skills', 'talents']}
+                  // Blessures déjà portées par la barre de vie de l'aside (`LifeBar`, #492) — la
+                  // rubrique dérivée de CETTE composition n'en remontre pas le chiffre en double.
+                  derivedFields={['movement', 'fate', 'resilience']}
                   skillsVariant="valeurs"
                   statAnnotations={statAnnotations}
                 />
@@ -666,7 +677,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
                 </span>,
               );
             }
-            if (skinned) badges.push(<span key="skin" className="chip"><Icon id="action/cast" size="sm" /> Skin</span>);
+            if (skinned) badges.push(<span key="skin" className="chip"><Icon id="action/cast" size="sm" /> Parure</span>);
             if (it.identified === false) {
               badges.push(
                 <span key="unid" className="chip tone-warn" title="Évaluer (ou Détecter l'artefact) pour révéler ses qualités">
@@ -733,10 +744,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
                     {isSkinnable && (
                       <button
                         className={`btn small ${skinOpen ? 'btn-primary' : ''}`}
-                        title="Skin légendaire (recoloriser cet objet)"
+                        title="Parure légendaire — recolorer l'objet"
                         onClick={() => setSkinOpenUid(skinOpen ? null : it.uid)}
                       >
-                        <Icon id="action/cast" size="sm" /> Skin
+                        <Icon id="action/cast" size="sm" /> Parure
                       </button>
                     )}
                     {containers.length > 0 && !inBattleNow && (
@@ -784,7 +795,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
                       />
                       {skinned && (
                         <button className="btn small inv-skin-remove" onClick={() => setItemSkin(hero.id, it.uid, Object.fromEntries(skinSlotsFor(it.kind).map(([, s]) => [s, undefined])))}>
-                          Retirer le skin
+                          Retirer la parure
                         </button>
                       )}
                     </div>
