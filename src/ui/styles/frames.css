@@ -135,11 +135,14 @@
   inset: 6px;
   pointer-events: none;
 }
+/* Taille FIXE (lot #492 « chevet », verdict user 2026-07-17 : badges « de taille variable ») —
+   `width` égal à `height` quelle que soit la valeur (compte à 2 chiffres compris) : plus de
+   `min-width`/`padding` horizontal qui gonflait le badge au contenu. */
 .fig-zone-badge {
   position: absolute;
-  min-width: 20px;
+  width: 20px;
   height: 20px;
-  padding: 0 4px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;

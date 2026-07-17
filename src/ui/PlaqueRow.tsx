@@ -14,6 +14,7 @@ export function PlaqueRow({
   name,
   sub,
   meta,
+  fx,
   value,
   selected,
   rolling,
@@ -37,6 +38,10 @@ export function PlaqueRow({
   sub?: ReactNode;
   /** Méta centrale : base, dés (`.rm-die`), steppers, select — calée à droite du nom. */
   meta?: ReactNode;
+  /** Chips d'effet NET (registre État, #492 « chevet ») — rendues SOUS le nom/la sous-ligne, jamais
+   *  à côté (`meta` reste la colonne latérale des autres écrans, ex. badges Possessions). Enroulent
+   *  en rangée (`GameOpChips`/`EntityRef` — jamais la prose, qui vit au popover Codex). */
+  fx?: ReactNode;
   /** Valeur de droite (total, résultat). */
   value?: ReactNode;
   /** État ÉLU — plaque chaude (`.c-plate.sel` de la planche). */
@@ -73,6 +78,7 @@ export function PlaqueRow({
       <span className="plaque-name">
         {name}
         {sub != null && <small>{sub}</small>}
+        {fx != null && <span className="plaque-fx">{fx}</span>}
       </span>
       {meta != null && <span className="plaque-meta">{meta}</span>}
       {value != null && <b className="plaque-value">{value}</b>}

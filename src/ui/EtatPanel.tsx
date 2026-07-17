@@ -3,8 +3,11 @@
  * Codex » — une ligne par affliction, détail/prose à UN clic au popover Codex ; la fiche dit MON
  * état, le Codex dit la règle). Bandes de section ancrées (`ETAT_ANCHOR_*`, `sheetAlarms.ts`) —
  * une bande SANS contenu N'EXISTE PAS. Chaque ligne = `PlaqueRow` (nom `CodexRef tooltipOnly` — le
- * détail vit dans le popover, pas au clic-navigation —, méta en `GameOpChips`, valeur = l'horloge/le
- * cumul) — AUCUNE prose inline dans le registre.
+ * détail vit dans le popover, pas au clic-navigation —, chips d'effet net en `fx` SOUS le nom via
+ * `GameOpChips`, valeur = l'horloge/le cumul, rendue DISCRÈTE — `sheet.css`) — AUCUNE prose inline
+ * dans le registre. Grammaire de carte (liseré de gravité `data-tone`, icône, sous-ligne petites
+ * capitales) affinée au lot #492 « chevet » (planche `docs/plans/2026-07-17-planche-etat-chevet.html`
+ * — carrière de styles, pas un étalon docile : les tokens/primitives existants restent l'autorité).
  *
  * La bande de zones EN TÊTE du registre (`ZoneBand`, pt.4) est MORTE (lot « corps-index », arbitrage
  * user 2026-07-17) — doublon d'index : le CORPS de la colonne (`FigTile.zoneBadges`, composé par
@@ -49,7 +52,9 @@ type GravityTone = 'sang' | 'ambre' | 'violet';
 
 /** Bande de section ancrée : titre + compte en badge sobre (`Band`, primitive partagée). L'appelant
  *  filtre déjà les rubriques vides — une bande SANS contenu n'apparaît jamais dans l'arbre.
- *  `extra` : compteur de DESTIN additionnel (actives/BE, phys/ment) affiché À CÔTÉ du compte brut. */
+ *  `extra` : jauge ADDITIONNELLE à côté du compte (ex. progression de Corruption) — les compteurs de
+ *  DESTIN (Critiques actives/Mutations vs BE/BFM) ne vivent plus ICI mais dans `DestinBand`, la
+ *  synthèse en tête de registre (arbitrage user 2026-07-17 : « ces textes énormes en gras… »). */
 function Section({ anchor, title, count, tone, extra, children }: { anchor: string; title: string; count?: number; tone?: GravityTone; extra?: ReactNode; children: ReactNode }) {
   return (
     <div id={anchor} data-tone={tone}>
@@ -65,6 +70,24 @@ function Section({ anchor, title, count, tone, extra, children }: { anchor: stri
  *  littérale, pas de 4e famille de ton parallèle). */
 function destinTone(value: number, limit: number): GaugeTone {
   return value >= limit ? 'danger' : value === limit - 1 ? 'warn' : 'neutral';
+}
+
+/** Bande de synthèse DESTIN en tête du registre (arbitrage user 2026-07-17, idée retenue de la
+ *  maquette v3bis) : mots PLEINS — « Critiques actives », « Mutations physiques », « Mutations
+ *  mentales » — jamais les micro-libellés « actives/phys/ment » plantés dans le slot droit de
+ *  chaque bande de rubrique (verdict user : « ces textes énormes en gras, pourquoi ? »). Les bandes
+ *  de rubrique gardent leur compte sobre (badge droit) SEUL — cette synthèse est la SEULE porteuse
+ *  des jauges de crans BE/BFM. Aucune mention de seuil de mort (pas de réf livre à l'écran). */
+function DestinBand({ activeCriticals, be, physMutations, mentMutations, bfm }: { activeCriticals: number; be: number; physMutations: number; mentMutations: number; bfm: number }) {
+  return (
+    <Band title="Destin">
+      <div className="etat-destin-row">
+        <NotchGauge label="Critiques actives" value={activeCriticals} max={be} notches={be} tone={destinTone(activeCriticals, be)} />
+        <NotchGauge label="Mutations physiques" value={physMutations} max={be} notches={be} tone={destinTone(physMutations, be)} />
+        <NotchGauge label="Mutations mentales" value={mentMutations} max={bfm} notches={bfm} tone={destinTone(mentMutations, bfm)} />
+      </div>
+    </Band>
+  );
 }
 
 /** Localisation d'un critique suffered (les tables RAW ne distinguent pas le côté — repli G, comme
@@ -241,12 +264,14 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
 
   return (
     <div className="sheet-etat">
+      <DestinBand activeCriticals={activeCriticals} be={be} physMutations={physMutations} mentMutations={mentMutations} bfm={bfm} />
+
       {criticalEntries.length > 0 && (
         <Section
           anchor={ETAT_ANCHOR_CRITIQUES}
           title="Blessures critiques"
           tone="sang"
-          extra={<NotchGauge value={activeCriticals} max={be} notches={be} label="actives" tone={destinTone(activeCriticals, be)} />}
+          count={criticalEntries.length}
         >
           {criticalEntries.map((c) => {
             const row = (
@@ -255,7 +280,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 prefix={<Icon id="medical/scalpel" size="sm" />}
                 name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.name} tooltipOnly>{c.entry.name}</CodexRef>}
                 sub={locationLabel(critLocation(c.table), hero.bodyShape)}
-                meta={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
+                fx={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
                 value={c.count > 1 ? `×${c.count}` : undefined}
               />
             );
@@ -274,7 +299,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 key={i}
                 prefix={<Icon id={(def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON} size="sm" />}
                 name={<CodexRef category="etats" id={cond.name} label={def?.label ?? cond.name} tooltipOnly>{def?.label ?? cond.name}</CodexRef>}
-                meta={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
+                fx={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
                 value={conditionValue(cond)}
               />
             );
@@ -291,7 +316,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 prefix={<Icon id="medical/crutch" size="sm" />}
                 name={<CodexRef category="traumas" id={t.traumaId} label={t.label} tooltipOnly>{t.label}</CodexRef>}
                 sub={t.location ? locationLabel(t.location, hero.bodyShape) : undefined}
-                meta={(t.ops?.length ?? 0) > 0 ? <GameOpChips ops={t.ops!} /> : undefined}
+                fx={(t.ops?.length ?? 0) > 0 ? <GameOpChips ops={t.ops!} /> : undefined}
                 value={`${t.recoveryDays != null ? `${t.recoveryDays} j` : t.needsSurgery ? 'Chirurgie requise' : 'Permanent'}${t.count != null && t.count > 1 ? ` · ×${t.count}` : ''}`}
               />
             );
@@ -308,7 +333,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               key={i}
               prefix={<Icon id="medical/infection" size="sm" />}
               name={<CodexRef category="maladies" id={d.name} label={diseaseLabel(d.name)} tooltipOnly>{diseaseLabel(d.name)}</CodexRef>}
-              meta={d.symptoms.length > 0 ? (
+              fx={d.symptoms.length > 0 ? (
                 <>
                   {d.symptoms.map((s, si) => (
                     <EntityRef key={si} category="symptoms" id={s.symptomId} label={symptomLabel(s.symptomId)} show={s.spec ? `${symptomLabel(s.symptomId)} (${s.spec})` : symptomLabel(s.symptomId)} />
@@ -327,12 +352,6 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
           title="Mutations"
           count={mutations.length}
           tone="violet"
-          extra={
-            <>
-              <NotchGauge value={physMutations} max={be} notches={be} label="phys" tone={destinTone(physMutations, be)} />
-              <NotchGauge value={mentMutations} max={bfm} notches={bfm} label="ment" tone={destinTone(mentMutations, bfm)} />
-            </>
-          }
         >
           {mutations.map((m, i) => {
             const label = mutationLabel(m.id);
@@ -342,7 +361,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 prefix={<Icon id="nav/mutation" size="sm" />}
                 name={<CodexRef category="mutations" id={m.id} label={label} tooltipOnly>{label}</CodexRef>}
                 sub={m.kind === 'physique' ? 'Mutation physique' : 'Mutation mentale'}
-                meta={(m.passive?.length ?? 0) > 0 ? <GameOpChips ops={m.passive!} /> : undefined}
+                fx={(m.passive?.length ?? 0) > 0 ? <GameOpChips ops={m.passive!} /> : undefined}
               />
             );
           })}
@@ -358,7 +377,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 key={i}
                 prefix={<Icon id={(def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON} size="sm" />}
                 name={<CodexRef category="psychologies" id={p.type} label={def?.label ?? p.type} tooltipOnly>{def?.label ?? p.type}</CodexRef>}
-                meta={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
+                fx={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
               />
             );
           })}
@@ -375,7 +394,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
           {/* Le chiffre vit dans la jauge de bande (`extra`) — pas de ligne redondante, sauf la
               mention DAMNÉ (info d'instance qui n'a pas d'autre siège). */}
           {hero.damned && (
-            <PlaqueRow prefix={<Icon id="flag/anger" size="sm" />} name="Corruption" value="DAMNÉ" />
+            <PlaqueRow prefix={<Icon id="flag/anger" size="sm" />} name="Corruption" fx={<span className="chip tone-danger">DAMNÉ</span>} />
           )}
         </Section>
       )}
