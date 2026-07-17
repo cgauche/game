@@ -938,6 +938,29 @@
   overflow-y: auto;
   padding-right: 6px;
 }
+/* Cue de bord du rail scrollable (#535) : voile dégradé HAUT/BAS collé au viewport de scroll
+   (`position: sticky`, ancré à CE conteneur `overflow-y: auto`) — sa marge négative annule sa
+   propre hauteur dans le flux flex (ne pousse aucun contenu), il se contente de se superposer.
+   `pointer-events: none` : purement indicatif, jamais un obstacle au clic sous le voile. */
+.creator-step > :first-child::before,
+.creator-step > :first-child::after {
+  content: '';
+  position: sticky;
+  z-index: 2;
+  display: block;
+  height: 20px;
+  pointer-events: none;
+}
+.creator-step > :first-child::before {
+  top: 0;
+  margin-bottom: -20px;
+  background: linear-gradient(180deg, var(--atelier-night), transparent);
+}
+.creator-step > :first-child::after {
+  bottom: 0;
+  margin-top: -20px;
+  background: linear-gradient(0deg, var(--atelier-night), transparent);
+}
 .creator-step > :last-child {
   min-height: 0;
   overflow-y: auto;

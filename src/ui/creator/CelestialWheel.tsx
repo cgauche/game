@@ -11,7 +11,7 @@
  * `stars.json` ni les libellés de destin : `signs` + `selectedKey` + `onSelect`, rien d'autre.
  *
  * SVG en tokens (`--atelier-*`), aucune palette littérale. Radiogroup a11y : roving tabindex +
- * flèches/Home/End (selection-follows-focus, patron `<Tabs>`/`GroupedPickGrid`).
+ * flèches/Home/End (selection-follows-focus, `rovingKeyDown` — MÊME primitive que `<Tabs>`/`GroupedPickGrid`).
  *
  * ANTI-TÉLESCOPAGE (acquis du juge vision P3, tenu ICI par la GÉOMÉTRIE de la planche plutôt que par
  * l'escamotage) : les libellés s'ancrent PAR QUADRANT — `start` à droite du cercle (le texte s'étend
@@ -22,7 +22,8 @@
  * besoin — et l'escamotage mentait au repos (sans élu, `activeIdx` retombait à 0 et empilait trois
  * noms au pôle nord, cf. capture `ossature-04-avant`).
  */
-import { useRef, type KeyboardEvent } from 'react';
+import { useRef } from 'react';
+import { rovingKeyDown } from '../rovingFocus';
 
 export interface WheelSign {
   /** Clé de POSITION (l'appelant la choisit stable — jamais un libellé). */
@@ -83,17 +84,14 @@ export function CelestialWheel({ signs, selectedKey, onSelect, hub, placeholder 
   // alors personne (aucun rendu ne s'y accroche : `sel` compare la CLÉ, jamais l'index).
   const activeIdx = selIdx >= 0 ? selIdx : 0;
 
-  const focusNode = (idx: number) => {
-    onSelect(signs[idx].key); // selection-follows-focus (patron Tabs)
-    svgRef.current?.querySelectorAll<SVGGElement>('[role="radio"]')[idx]?.focus();
-  };
-  const onKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) || !n) return;
-    e.preventDefault();
-    const delta = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : 0;
-    const next = e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (activeIdx + delta + n) % n;
-    focusNode(next);
-  };
+  const onKeyDown = rovingKeyDown<SVGSVGElement>({
+    containerRef: svgRef,
+    selector: '[role="radio"]',
+    count: n,
+    activeIndex: activeIdx,
+    onActivate: (idx) => onSelect(signs[idx].key),
+    orientation: 'grid',
+  });
 
   const hubTitle = hub ? wrapWords(hub.title, 12, 2) : [];
   const hubSub = hub?.sub ? wrapWords(hub.sub.toUpperCase(), 20, 3) : [];

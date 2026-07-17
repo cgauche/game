@@ -12,8 +12,9 @@
  * sauf sur le dernier écran »). La logique (tirages figés, bonus de PX, validation, construction)
  * vit dans ./draft.ts (pur).
  */
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useGame } from '../../state/store';
+import { rovingKeyDown } from '../rovingFocus';
 import { rosterAdd, rosterLoad } from '../../state/roster';
 import {
   species as allSpecies,
@@ -475,27 +476,26 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   const visibleFamilies = filterByLabel(families, (f) => `${f.family} ${f.list.map((s) => s.variant ?? s.label).join(' ')}`, search);
   const activeFamilyIdx = Math.max(0, visibleFamilies.findIndex((f) => f.family === sp?.family));
   const selectFamily = (list: SpeciesData[]) => setD(withSpecies(d, sp && list.some((s) => s.id === sp.id) ? sp.id : list[0].id));
-  const onGridKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) || !visibleFamilies.length) return;
-    e.preventDefault();
-    const delta = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : 0;
-    const next = e.key === 'Home' ? 0 : e.key === 'End' ? visibleFamilies.length - 1 : (activeFamilyIdx + delta + visibleFamilies.length) % visibleFamilies.length;
-    selectFamily(visibleFamilies[next].list);
-    gridRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]')[next]?.focus();
-  };
+  const onGridKeyDown = rovingKeyDown<HTMLDivElement>({
+    containerRef: gridRef,
+    selector: '[role="option"]',
+    count: visibleFamilies.length,
+    activeIndex: activeFamilyIdx,
+    onActivate: (idx) => selectFamily(visibleFamilies[idx].list),
+    orientation: 'grid',
+  });
 
   // Lignées de la famille COURANTE (chips en tête du panneau détail) — masquées si la famille n'a
   // qu'une lignée (Gnomes/Hauts elfes/Elfes sylvains/Ogres du LDB) : rien à trancher.
   const famList = sp ? families.find((f) => f.family === sp.family)?.list ?? [] : [];
-  const onLineageKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!sp || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) || !famList.length) return;
-    e.preventDefault();
-    const activeIdx = Math.max(0, famList.findIndex((s) => s.id === sp.id));
-    const delta = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : 0;
-    const next = e.key === 'Home' ? 0 : e.key === 'End' ? famList.length - 1 : (activeIdx + delta + famList.length) % famList.length;
-    setD(withSpecies(d, famList[next].id));
-    lineageRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next]?.focus();
-  };
+  const onLineageKeyDown = rovingKeyDown<HTMLDivElement>({
+    containerRef: lineageRef,
+    selector: '[role="radio"]',
+    count: famList.length,
+    activeIndex: Math.max(0, famList.findIndex((s) => s.id === sp?.id)),
+    onActivate: (idx) => setD(withSpecies(d, famList[idx].id)),
+    orientation: 'grid',
+  });
 
   // Encrier de tirage RACE (#393 P3, correction structurelle du verdict utilisateur 2026-07-14) :
   // rangée UNIQUE avec la recherche (recherche à gauche, encrier remplit le reste — pas de section
@@ -1702,8 +1702,18 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
                 {choiceEntries.map((entry) => {
                   const options = splitTopLevelOu(entry);
                   const selected = d.speciesTalentChoices[entry] ?? null;
+                  const activeOptIdx = Math.max(0, options.findIndex((o) => o === selected));
+                  const groupRef: { current: HTMLDivElement | null } = { current: null };
+                  const onOptKeyDown = rovingKeyDown<HTMLDivElement>({
+                    containerRef: groupRef,
+                    selector: '[role="radio"]',
+                    count: options.length,
+                    activeIndex: activeOptIdx,
+                    onActivate: (idx) => setD({ ...d, speciesTalentChoices: { ...d.speciesTalentChoices, [entry]: options[idx] } }),
+                    orientation: 'grid',
+                  });
                   return (
-                    <div key={entry} role="radiogroup" aria-label={entry}>
+                    <div key={entry} ref={groupRef} role="radiogroup" aria-label={entry} onKeyDown={onOptKeyDown}>
                       {options.map((opt, i) => {
                         const isSel = selected === opt;
                         return (
@@ -1713,6 +1723,7 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
                               type="button"
                               role="radio"
                               aria-checked={isSel}
+                              tabIndex={i === activeOptIdx ? 0 : -1}
                               className={`talent-option ${isSel ? 'selected' : ''}`}
                               onClick={() => setD({ ...d, speciesTalentChoices: { ...d.speciesTalentChoices, [entry]: opt } })}
                             >
@@ -1740,50 +1751,71 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
             )}
           </Band>
           <Band title={<>De carrière<small>un au choix</small></>} right={<b className={d.careerTalent ? 'ok-text' : 'warn-text'}>{d.careerTalent ? 1 : 0}/1</b>}>
-            <div className="talent-options-grid" role="radiogroup" aria-label="Talent de carrière">
-            {careerChoices.map(({ entry, choices, selected, maxed }) => {
-              const isSel = !!selected && d.careerTalent === selected;
+            {(() => {
+              // Roving tabindex : seules les entrées SÉLECTIONNABLES (`selected` non nul et pas
+              // `maxed`) sont focalisables — un bouton `disabled` ne peut de toute façon pas recevoir
+              // le focus (`.focus()` y est un no-op), le cursor roving doit donc les ignorer.
+              const enabledChoices = careerChoices.filter((c) => c.selected && !c.maxed);
+              const activeCareerIdx = Math.max(0, enabledChoices.findIndex((c) => c.selected === d.careerTalent));
+              const careerRef: { current: HTMLDivElement | null } = { current: null };
+              const onCareerKeyDown = rovingKeyDown<HTMLDivElement>({
+                containerRef: careerRef,
+                selector: '[role="radio"]:not(:disabled)',
+                count: enabledChoices.length,
+                activeIndex: activeCareerIdx,
+                onActivate: (idx) => setD({ ...d, careerTalent: enabledChoices[idx].selected! }),
+                orientation: 'grid',
+              });
               return (
-              <div key={entry} className={`talent-option ${isSel ? 'selected' : ''}`}>
-                {isSel && <WaxSeal size={26} className="talent-option-seal" />}
-                {/* Le `<select>` de spécialisation est un contrôle DISTINCT de la carte-bouton (un
-                    `<select>` imbriqué dans un `<button>` est du HTML invalide — contenu interactif
-                    dans du contenu interactif) : bouton = choisir CE talent, menu = préciser la
-                    spécialisation, tous deux dans la même carte. */}
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={isSel}
-                  disabled={!selected || maxed}
-                  className="talent-option-btn"
-                  onClick={() => selected && setD({ ...d, careerTalent: selected })}
-                >
-                  <b>{entry}</b>
-                  {maxed && <em className="hint">Maxi atteint (déjà possédé)</em>}
-                  {!maxed && selected && probe.talents.some((t) => talentConcrete(t) === selected) && <em className="hint">déjà possédé via la race → passera ×2</em>}
-                  <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
-                </button>
-                {choices && (
-                  <select
-                    value={selected ?? ''}
-                    onChange={(e) => {
-                      const specChoices = { ...d.specChoices, [entry]: e.target.value };
-                      const next = { ...d, specChoices };
-                      setD(d.careerTalent && d.careerTalent === selected ? { ...next, careerTalent: e.target.value } : next);
-                    }}
-                  >
-                    <option value="">— choisir —</option>
-                    {choices.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
+                <div ref={careerRef} className="talent-options-grid" role="radiogroup" aria-label="Talent de carrière" onKeyDown={onCareerKeyDown}>
+                {careerChoices.map(({ entry, choices, selected, maxed }) => {
+                  const isSel = !!selected && d.careerTalent === selected;
+                  const enabled = !!selected && !maxed;
+                  const enabledIdx = enabled ? enabledChoices.findIndex((c) => c.entry === entry) : -1;
+                  return (
+                  <div key={entry} className={`talent-option ${isSel ? 'selected' : ''}`}>
+                    {isSel && <WaxSeal size={26} className="talent-option-seal" />}
+                    {/* Le `<select>` de spécialisation est un contrôle DISTINCT de la carte-bouton (un
+                        `<select>` imbriqué dans un `<button>` est du HTML invalide — contenu interactif
+                        dans du contenu interactif) : bouton = choisir CE talent, menu = préciser la
+                        spécialisation, tous deux dans la même carte. */}
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={isSel}
+                      disabled={!selected || maxed}
+                      tabIndex={enabled ? (enabledIdx === activeCareerIdx ? 0 : -1) : undefined}
+                      className="talent-option-btn"
+                      onClick={() => selected && setD({ ...d, careerTalent: selected })}
+                    >
+                      <b>{entry}</b>
+                      {maxed && <em className="hint">Maxi atteint (déjà possédé)</em>}
+                      {!maxed && selected && probe.talents.some((t) => talentConcrete(t) === selected) && <em className="hint">déjà possédé via la race → passera ×2</em>}
+                      <p className="hint talent-desc">{talentTip(selected ?? entry)}</p>
+                    </button>
+                    {choices && (
+                      <select
+                        value={selected ?? ''}
+                        onChange={(e) => {
+                          const specChoices = { ...d.specChoices, [entry]: e.target.value };
+                          const next = { ...d, specChoices };
+                          setD(d.careerTalent && d.careerTalent === selected ? { ...next, careerTalent: e.target.value } : next);
+                        }}
+                      >
+                        <option value="">— choisir —</option>
+                        {choices.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                  );
+                })}
+                </div>
               );
-            })}
-            </div>
+            })()}
           </Band>
         </div>
         <PettySpellsSection d={d} setD={setD} />

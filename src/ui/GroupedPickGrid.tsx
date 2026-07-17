@@ -1,5 +1,6 @@
-import { useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { FigTile } from './FigTile';
+import { rovingKeyDown } from './rovingFocus';
 
 export interface PickGridItem {
   id: string;
@@ -16,8 +17,7 @@ export interface PickGridSection {
 /**
  * GroupedPickGrid — grille de sélection en SECTIONS par famille/classe (en-têtes small-caps +
  * rangées de `FigTile`), motif du kit ratifié « Atelier du scribe » (#412). A11y `listbox`/`option`
- * avec roving tabindex (flèches/Home/End, MÊME patron que `Tabs`/`CelestialWheel`/`FacetedPickGrid`
- * — celui-ci n'est pas modifié, son recâblage éventuel est un chantier ultérieur).
+ * avec roving tabindex (`rovingKeyDown`, MÊME primitive que `Tabs`/`CelestialWheel`/`SpeciesRaceScreen`).
  */
 export function GroupedPickGrid({ sections, selectedId, sealedId, onSelect, label }: {
   sections: PickGridSection[];
@@ -31,18 +31,14 @@ export function GroupedPickGrid({ sections, selectedId, sealedId, onSelect, labe
   const flat = sections.flatMap((s) => s.items);
   const activeIdx = Math.max(0, flat.findIndex((it) => it.id === selectedId));
   const ref = useRef<HTMLDivElement>(null);
-
-  const focusIdx = (idx: number) => {
-    onSelect(flat[idx].id); // selection-follows-focus (patron Tabs/CelestialWheel)
-    ref.current?.querySelectorAll<HTMLButtonElement>('[role="option"]')[idx]?.focus();
-  };
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) || !flat.length) return;
-    e.preventDefault();
-    const delta = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : 0;
-    const next = e.key === 'Home' ? 0 : e.key === 'End' ? flat.length - 1 : (activeIdx + delta + flat.length) % flat.length;
-    focusIdx(next);
-  };
+  const onKeyDown = rovingKeyDown<HTMLDivElement>({
+    containerRef: ref,
+    selector: '[role="option"]',
+    count: flat.length,
+    activeIndex: activeIdx,
+    onActivate: (idx) => onSelect(flat[idx].id),
+    orientation: 'grid',
+  });
 
   let cursor = 0;
   const nodes: ReactNode[] = [];

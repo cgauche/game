@@ -6,7 +6,7 @@
  * fois aux valeurs de la planche (`styles/plaque-row.css`) — un écran COMPOSE cette rangée
  * (caractéristiques de l'étape 3, rangées d'allocation : même meuble), il ne la redessine pas.
  */
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 export function PlaqueRow({
   prefix,
@@ -49,6 +49,15 @@ export function PlaqueRow({
   className?: string;
 }) {
   const cls = ['plaque-row', selected ? 'sel' : '', rolling ? 'rolling' : '', className ?? ''].filter(Boolean).join(' ');
+  // La rangée ACTIVE (celle qui roule) se ramène dans le viewport du rail scrollable (#535) — un
+  // écran à dix rangées (Caractéristiques) fait défiler la cérémonie hors champ sans ce recentrage.
+  // `'nearest'` : ne bouge rien si la rangée est déjà visible, jamais un saut agressif en haut de rail.
+  const ref = useRef<HTMLButtonElement & HTMLDivElement>(null);
+  useEffect(() => {
+    // `scrollIntoView` est absent en jsdom (galerie/tests de fumée) : optional chaining sur la
+    // MÉTHODE, pas seulement sur `ref.current` (sinon TypeError "is not a function").
+    if (rolling) ref.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+  }, [rolling]);
   const inner = (
     <>
       {prefix != null && <span className="plaque-prefix">{prefix}</span>}
@@ -62,11 +71,11 @@ export function PlaqueRow({
     </>
   );
   return onClick ? (
-    <button type="button" className={cls} title={title} onClick={onClick}>
+    <button ref={ref} type="button" className={cls} title={title} onClick={onClick}>
       {inner}
     </button>
   ) : (
-    <div className={cls} title={title}>
+    <div ref={ref} className={cls} title={title}>
       {inner}
     </div>
   );
