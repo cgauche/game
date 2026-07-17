@@ -89,6 +89,7 @@ Pour obtenir l'objet, faites un jet dans le Tableau de lieu pour savoir où vous
 | 86-90 | Un temple de Verena abandonné.                                                               |
 |       |                                                                                              |
 | 91-95 | Une cave utilisée comme lieu de rendez-vous secret.                                          |
+| 96-100 | Un quai pourri à plusieurs endroits.                                                        |
 
 #### **TABLEAU D'OBJECTIF**
 

@@ -36,14 +36,127 @@ export const sourceRefSchema = z.strictObject({
 export type SourceRef = z.infer<typeof sourceRefSchema>;
 
 /**
- * Note de provenance LIBRE `_source` — SURVIT uniquement pour `aa-criticals.json` (#278) : « Aux
- * Armes ! » n'a AUCUNE extraction Markdown avec spans `data-folio` dans `Source/` (seul le PDF brut
- * existe, > 100 Mo, illisible par l'outillage) — impossible de retrouver un folio IMPRIMÉ vérifiable
- * par entrée sans fabriquer la valeur. Migration en `source: sourceRefSchema` par entrée BLOQUÉE tant
- * qu'une extraction Marker de ce livre n'existe pas ; ne pas réutiliser ailleurs (`sourceRefSchema` +
- * `note` couvre tous les autres cas).
+ * Emplacement SECONDAIRE d'une entrée définie à plusieurs endroits (#563 — doctrine user 2026-07-17 :
+ * « jamais 2 talents différents », mais un même Talent/Trait/Qualité peut être réimprimé ailleurs).
+ * L'ANCRE (`source`, scalaire, inchangée) reste seule à porter la `desc` (règle stricte 5,
+ * STRUCTURELLE — jamais `refs[0]` positionnel, indémontable par réordonnancement d'éditeur).
+ * `quote` = auto-attestation authorée (verbatim, prouvable dans le span du folio déclaré) pour les cas
+ * où le `label` de l'entrée n'apparaît pas tel quel dans ce span (ex. une TABLE imprime un nom
+ * différent — `zweihander-flamberge`) : charge de la preuve sur l'auteur, comme `desc` pour l'ancre.
+ */
+export const secondarySourceRefSchema = sourceRefSchema.extend({
+  /** Preuve verbatim authorée que l'entrée est bien à cet emplacement (ligne de stats d'une table,
+   *  phrase distinctive…) — distinct de `note` (display-only, jamais vérifié). */
+  quote: z.string().optional(),
+});
+/** Vue TS de `secondarySourceRefSchema` — porté par le champ `alsoIn?: SecondaryRef[]` de toute
+ *  entrée multi-emplacement. Accesseurs `allLocations`/`sourceBooks` (`src/data/index.ts`). */
+export type SecondaryRef = z.infer<typeof secondarySourceRefSchema>;
+
+/**
+ * Note de provenance LIBRE `_source` — SURVIT uniquement pour `aa-criticals.json` (#278). ⚠ Motif
+ * RÉVISÉ (#563, 2026-07-17) : « Aux Armes n'a AUCUNE extraction Markdown » était PÉRIMÉ — l'extraction
+ * Marker de `Source/WH - V4 - Aux Armes` EXISTE et porte des spans `data-folio` (13 chapitres, ex.
+ * `10 - L'ARTILLERIE…md` en compte 15). Le vrai motif : les tables de Blessures Critiques par
+ * Localisation d'`aa-criticals.json` citent un intervalle APPROXIMATIF (`p.≈118-124`, note libre du
+ * fichier) et n'ont jamais été migrées en `source: sourceRefSchema` PAR ENTRÉE — pas un blocage
+ * d'extraction, une migration non faite. Ne pas réutiliser ailleurs (`sourceRefSchema` + `note`
+ * couvre tous les autres cas).
  */
 export const freeSourceNoteSchema = z.string();
+
+// ============================================================================
+// COMBAT FEATURE (`src/engine/combatFeatures/types.ts`) — sac de flags CLOS conféré par un Talent/Trait,
+// `aa` récursif (variante « Avantage de groupe », Aux Armes Annexe I). Promu ici (ex-dupliqué à
+// l'identique dans `talents.ts`) : SOURCE UNIQUE pour tout schéma qui porte `combat`/`variants[].combat`.
+// Duplication délibérée du TYPE `CombatFeature` (pas un import) : les defs de schéma ne dépendent
+// JAMAIS de `src/engine` (cycle d'imports côté outillage) — patron déjà établi par `talents.ts` avant
+// cette promotion, reflet FIDÈLE de l'interface TS, revérifié au parse des 3544 entrées existantes.
+// ============================================================================
+
+export const castingKindSchema = z.enum(['mineure', 'arcane', 'invocation', 'beni', 'chaos']);
+
+export const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.strictObject({
+    offHandPenalty: z.strictObject({ perLevel: z.number(), zeroAt: z.number() }).optional(),
+    attackModes: z.array(z.string()).optional(),
+    meleeDamageBonus: z.boolean().optional(),
+    rangedDamageBonus: z.boolean().optional(),
+    brawlDamageBonus: z.boolean().optional(),
+    chargeDamageBonus: z.boolean().optional(),
+    slayer: z.boolean().optional(),
+    damageReduction: z.boolean().optional(),
+    critExtraWounds: z.boolean().optional(),
+    rangedAPIgnore: z.boolean().optional(),
+    ignoreCalledShotHead: z.boolean().optional(),
+    ignoreCalledShotRanged: z.boolean().optional(),
+    ignoreSizeRangedMods: z.boolean().optional(),
+    sniper: z.boolean().optional(),
+    initiativeBonus: z.boolean().optional(),
+    strikeFirstRanged: z.boolean().optional(),
+    surpriseSave: z.boolean().optional(),
+    reloadDR: z.enum(['all', 'blackpowder']).optional(),
+    runBonus: z.boolean().optional(),
+    fleeBonus: z.boolean().optional(),
+    shieldAdvantage: z.boolean().optional(),
+    advantageDefenseReaction: z.strictObject({ cost: z.number() }).optional(),
+    counterOnDefenseWin: z.boolean().optional(),
+    counterRequiresFastParry: z.boolean().optional(),
+    stealAdvantage: z.boolean().optional(),
+    stealOne: z.boolean().optional(),
+    transferWeight: z.number().optional(),
+    reloadAssessAdvantage: z.boolean().optional(),
+    fearSizeAsMount: z.boolean().optional(),
+    retreatCost: z.number().optional(),
+    keepAdvantageOnDisengage: z.boolean().optional(),
+    disengageWithLessAdvantage: z.boolean().optional(),
+    battement: z.boolean().optional(),
+    distraire: z.boolean().optional(),
+    outnumberCount: z.boolean().optional(),
+    braveheart: z.boolean().optional(),
+    fearImmune: z.boolean().optional(),
+    bleedIgnore: z.boolean().optional(),
+    magicResistance2: z.boolean().optional(),
+    focusNoMiscastOnDouble: z.boolean().optional(),
+    castNoMiscastOnDouble: z.boolean().optional(),
+    causesFear: z.boolean().optional(),
+    reverseFailed: z.strictObject({ skill: z.string(), spec: z.string().optional(), capDR: z.number().optional() }).optional(),
+    bargainBonus: z.boolean().optional(),
+    encumbranceBonus: z.boolean().optional(),
+    corruptionThreshold: z.boolean().optional(),
+    surgery: z.boolean().optional(),
+    castingKind: castingKindSchema.optional(),
+    commandTeam: z.boolean().optional(),
+    seaShanty: z.boolean().optional(),
+    aa: combatFeatureSchema.optional(),
+  }),
+);
+
+/**
+ * `RuleValue` (`src/engine/policy.ts:44`) — valeur effective d'une règle optionnelle du registre
+ * `OPTIONAL_RULES` (`policy.ts:43`, lue par `rule(id)`). Duplication trivale du type (union fermée,
+ * même patron de cycle que `combatFeatureSchema` ci-dessus — les defs ne dépendent jamais d'`engine`).
+ */
+export const ruleValueSchema = z.union([z.boolean(), z.number(), z.string()]);
+
+/**
+ * Variante RÉGLÉE d'une entrée sous une RÈGLE OPTIONNELLE du registre `OPTIONAL_RULES` (#563/#564 —
+ * ex. « Aux Armes, Annexe I : Avantage de groupe »). `when.rule` DOIT être un id de `OPTIONAL_RULES`
+ * (gardé, jamais un label — `scripts/guards` #564) ; `when.equals` défaut `true` (règle `kind:'flag'`
+ * activée). `desc`/`source` PROPRES portent la règle 5 (verbatim + folio) POUR CETTE variante, comme
+ * l'ancre — `folioIntegrity.mjs` les scanne de façon générique (aucune extension nécessaire, #563 Lot 3
+ * — la desc d'une variante est structurellement identique à celle d'une entrée : mêmes clés `desc`+
+ * `source` sur le même nœud, le walk `citedEntriesOf` la découvre déjà à toute profondeur).
+ */
+export const variantSchema = z.strictObject({
+  when: z.strictObject({ rule: z.string(), equals: ruleValueSchema.optional() }),
+  desc: z.string().optional(),
+  source: sourceRefSchema.optional(),
+  combat: combatFeatureSchema.optional(),
+});
+/** Vue TS de `variantSchema` — porté par le champ `variants?: Variant[]` de toute entrée à variante
+ *  réglée (`activeVariant`, `src/engine/variants.ts`). */
+export type Variant = z.infer<typeof variantSchema>;
 
 /**
  * Recette de détail de surface (`DetailRecipe`, `src/gameIso/detail/types.ts`) — portée par le champ
