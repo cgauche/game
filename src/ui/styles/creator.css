@@ -950,7 +950,13 @@
    à 10 rangées) écrase ce pseudo à hauteur RÉELLE 0 avant de toucher les rangées (qui ont un plancher
    min-content non nul) — un pseudo `content:''` a un plancher `min-height:auto` de 0, donc c'est
    TOUJOURS lui que l'algorithme de rétrécissement sacrifie en premier (mesuré en recette : hauteur
-   calculée 0px malgré `height: 20px` déclaré). */
+   calculée 0px malgré `height: 20px` déclaré).
+   DYNAMIQUE (verdict utilisateur #535) : `data-at-top`/`data-at-bottom` sont stampés par
+   `MasterDetail` (`useScrollEdgeAttrs`, `src/ui/MasterDetail.tsx` — mesure scroll+resize+contenu,
+   UN SEUL mécanisme pour tous ses écrans) ; le voile HAUT s'efface quand le rail est au bord haut,
+   le voile BAS quand il est au bord bas — un vrai indicateur « il reste du contenu », jamais un
+   décor statique. Pas de scroll-driven animation CSS (`animation-timeline`, support inégal) : la
+   mesure vit en JS, seule la transition d'opacité est CSS. */
 .creator-step > .master-detail-list::before,
 .creator-step > .master-detail-list::after {
   content: '';
@@ -960,6 +966,8 @@
   flex-shrink: 0;
   height: 20px;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.15s ease;
 }
 .creator-step > .master-detail-list::before {
   top: 0;
@@ -970,6 +978,12 @@
   bottom: 0;
   margin-top: -20px;
   background: linear-gradient(0deg, var(--atelier-night), transparent);
+}
+.creator-step > .master-detail-list[data-at-top]::before {
+  opacity: 0;
+}
+.creator-step > .master-detail-list[data-at-bottom]::after {
+  opacity: 0;
 }
 .creator-step > :last-child {
   min-height: 0;

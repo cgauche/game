@@ -150,6 +150,21 @@ plancher `min-height: auto` de 0 (rien à mesurer dedans), donc l'algorithme de 
 le sacrifie TOUJOURS en premier. `flex-shrink: 0` est donc une partie NON optionnelle du patron :
 tout futur cue de bord posé sur un rail flex-column overflowing doit le porter.
 
+**DYNAMIQUE** (verdict utilisateur #535 : « le gradient du haut disparaît quand le rail est tout en
+haut, celui du bas quand on atteint le fond ») — un vrai indicateur « il reste du contenu », jamais
+un décor statique. Attributs d'état CANONIQUES `data-at-top`/`data-at-bottom`, posés sur
+`.master-detail-list` par `useScrollEdgeAttrs` (`src/ui/MasterDetail.tsx`, hook interne — UN SEUL
+mécanisme de mesure pour TOUS les écrans `MasterDetail`, coût nul même sans cue consommateur) :
+écoute `scroll` (rAF-throttlé) + `resize` fenêtre + `ResizeObserver` du rail (le CONTENU change de
+hauteur sans `scroll` natif — ex. la cérémonie séquentielle de l'étape Caractéristiques), mesure
+initiale au montage avant peinture (pas de flash). `[data-at-top]::before { opacity: 0 }` /
+`[data-at-bottom]::after { opacity: 0 }` + `transition: opacity` sur le pseudo — **jamais** de
+scroll-driven animation CSS pure (`animation-timeline`, support navigateur inégal) : la mesure de
+bord reste en JS, seule la transition d'opacité est déclarative. Le RENDU du voile reste scopé
+créateur (`.creator-step > .master-detail-list::before/::after`) — les attributs, eux, sont posés
+par la primitive PARTAGÉE et disponibles à tout futur consommateur de `MasterDetail` qui voudrait
+son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de mesure.
+
 ### Négoce (table marchande, #371 LOT 3)
 
 | Classe | Rôle | Quand l'utiliser / anti-patron |

@@ -1,8 +1,54 @@
-import { useCallback, useRef, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 
 /** Breakpoint canon d'empilement — DOIT rester aligné sur `.master-detail` (`components.css`) ; les
  *  deux se modifient ENSEMBLE. */
 export const MASTER_DETAIL_STACK_BREAKPOINT_PX = 700;
+
+/** Marge de tolérance (px) pour « au bord » — évite un flottant de 0,3px (sous-pixel, zoom navigateur)
+ *  qui empêcherait `data-at-top`/`data-at-bottom` de se poser alors que le rail EST au bord. */
+const EDGE_EPSILON_PX = 1;
+
+/**
+ * Stampe `data-at-top`/`data-at-bottom` sur le rail scrollable — SEUL mécanisme de mesure de bord
+ * de scroll de la primitive (verdict utilisateur #535 : le cue de bord doit être DYNAMIQUE, un
+ * gradient disparaît quand son bord est atteint). Posé ICI (`MasterDetail`, coût nul pour tous ses
+ * écrans) plutôt que par consommateur — le RENDU (le cue lui-même) reste scopé créateur en CSS
+ * (`docs/charte-ui.md` § « Cue de bord de rail scrollable »), cette primitive ne sait pas qui
+ * consomme les attributs. rAF-throttlé (scroll haute fréquence) ; `ResizeObserver` guette aussi le
+ * CONTENU (la cérémonie séquentielle de l'étape Caractéristiques change la hauteur du rail en
+ * continu, sans événement `scroll` natif) ; mesuré au montage pour poser l'état initial AVANT
+ * peinture (`useEffect` synchronisé au commit — pas de flash de cue sur un rail déjà à un bord).
+ */
+function useScrollEdgeAttrs(ref: { current: HTMLElement | null }) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf: number | null = null;
+    const measure = () => {
+      raf = null;
+      const atTop = el.scrollTop <= EDGE_EPSILON_PX;
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - EDGE_EPSILON_PX;
+      el.toggleAttribute('data-at-top', atTop);
+      el.toggleAttribute('data-at-bottom', atBottom);
+    };
+    const schedule = () => {
+      if (raf != null) return;
+      raf = requestAnimationFrame(measure);
+    };
+    measure();
+    el.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    // jsdom (tests/galerie) n'implémente pas `ResizeObserver` — dégrade en scroll/resize seuls.
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(schedule) : null;
+    ro?.observe(el);
+    return () => {
+      el.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      ro?.disconnect();
+      if (raf != null) cancelAnimationFrame(raf);
+    };
+  }, [ref]);
+}
 
 /** Un clic dans un champ de recherche/texte de la liste ne doit JAMAIS déclencher le scroll — seule
  *  une activation d'un contrôle de SÉLECTION (bouton, option, lien) compte. */
@@ -39,6 +85,8 @@ export function MasterDetail({
   className?: string;
 }) {
   const detailRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  useScrollEdgeAttrs(listRef);
 
   const handleListInteraction = useCallback((e: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
     if ('key' in e && e.key !== 'Enter' && e.key !== ' ') return;
@@ -54,6 +102,7 @@ export function MasterDetail({
   return (
     <div className={`master-detail${className ? ` ${className}` : ''}`}>
       <div
+        ref={listRef}
         className="master-detail-list"
         aria-label={listLabel}
         onClickCapture={handleListInteraction}
