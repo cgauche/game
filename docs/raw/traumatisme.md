@@ -85,7 +85,7 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 **Sources RAW** : `LDB 18 l.41-41`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.30, l.41) → `EtatPanel`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `PendingDeviation`, `applyCriticalToTarget`, `applyAttackResult`, `overcastTargetCandidates`, `applyCast` — `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/pendings.ts`, `src/ui/EtatPanel.tsx`
+- `LDB 18` (l.30, l.41) → `OPTIONAL_RULES`, `EtatPanel`, `usesSuddenDeath`, `inDeathCondition`, `PendingDeviation`, `applyCriticalToTarget`, `applyAttackResult`, `overcastTargetCandidates`, `applyCast` — `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/pendings.ts`, `src/ui/EtatPanel.tsx`
 
 ---
 
@@ -129,7 +129,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : [Option : Mort Subite](#6-option--mort-subite) ; Destin → [destin.md](destin.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.34, l.38-40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `EtatPanel`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, +81 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
+- `LDB 18` (l.34, l.38-40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, `OPTIONAL_RULES`, +81 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
 
 ---
 
@@ -142,7 +142,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Sources RAW** : `LDB 18 l.44-46`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.44-46) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `EtatPanel`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, +80 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +3 fichiers
+- `LDB 18` (l.44-46) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, `OPTIONAL_RULES`, +80 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +3 fichiers
 
 ---
 

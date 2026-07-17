@@ -359,7 +359,7 @@ Porter les couleurs appropriées au Vent manipulé aide à l'attirer. C'est pour
 > **Verbatim** (l.199) : « tout Lanceur de Sorts portant une armure subit une pénalité de −1 DR à tous ses Tests d'Incantation et de Focalisation, pour chaque PA sur la Localisation la mieux protégée du corps. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.148-151) → `DispelModal`, `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `ActionBar`, `CastModal`, `SpellbookSection`, +31 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +14 fichiers
+- `LDB 46` (l.148-151) → `DispelModal`, `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `ActionBar`, `CastModal`, `buySpellComponent`, +31 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +14 fichiers
 
 ---
 

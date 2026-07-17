@@ -317,7 +317,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 <HeroSheet
                   hero={hero}
                   header={false}
-                  sections={['stats', 'derived', 'skills', 'talents']}
+                  sections={['stats', 'derived', 'traits', 'skills', 'talents']}
                   // Blessures déjà portées par la barre de vie de l'aside (`LifeBar`, #492) — la
                   // rubrique dérivée de CETTE composition n'en remontre pas le chiffre en double.
                   derivedFields={['movement', 'fate', 'resilience']}

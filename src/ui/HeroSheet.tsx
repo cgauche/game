@@ -12,7 +12,7 @@ import { CharacterPreview } from './CharacterPreview';
 import { CharStatsGrid } from './CharStatsGrid';
 import { MetalStatus } from './MetalStatus';
 import { RoseAxes } from './RoseAxes';
-import { SkillChip, TalentChip, EntityRef } from './EntityChip';
+import { SkillChip, TalentChip, TraitChips, EntityRef } from './EntityChip';
 import { CodexRef } from './compendium/CodexRef';
 import { axisDataFor, heroRoseAxes, heroStatusLabel, heroSubtitle } from './CharCard';
 import { t } from '../i18n';
@@ -20,7 +20,7 @@ import { t } from '../i18n';
 /** Rubriques du corps `HeroSheet`, dans l'ordre canonique du détail candidat (#417). Toutes par
  *  défaut — un appelant restreint via `sections` (ex. l'onglet Compétences & Talents de la fiche,
  *  qui porte déjà sa propre bande d'en-tête/Blessures dans son aside, arbitrage 2026-07-17). */
-export const HERO_SHEET_SECTIONS = ['stats', 'derived', 'forces', 'skills', 'talents', 'spells', 'possessions'] as const;
+export const HERO_SHEET_SECTIONS = ['stats', 'derived', 'forces', 'traits', 'skills', 'talents', 'spells', 'possessions'] as const;
 export type HeroSheetSection = (typeof HERO_SHEET_SECTIONS)[number];
 
 /** Champs de la rubrique `derived` — TOUS par défaut (rétro-compatible). Un appelant qui porte déjà
@@ -136,6 +136,15 @@ export function HeroSheet({
           <h4>{t('present.forces')}</h4>
           <div className="skill-tags">
             {axes.length ? axes.map((a) => <EntityRef key={a.id} category="axes" id={a.id} label={a.label} />) : <span className="hint">{t('party.roles.none')}</span>}
+          </div>
+        </section>
+      )}
+
+      {has('traits') && (hero.traits ?? []).length > 0 && (
+        <section className="hero-present-sec">
+          <h4>{t('present.traits')}</h4>
+          <div className="skill-tags">
+            <TraitChips traits={hero.traits!} />
           </div>
         </section>
       )}
