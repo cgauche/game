@@ -495,6 +495,58 @@
   gap: 8px;
 }
 
+/* ── Onglet « Possessions » (registre compact, #492 lot POSSESSIONS B) : chaque groupe (Armes/
+   Armures/Consommables/Divers) est une `Band` comptée, chaque objet une `PlaqueRow` élisable — le
+   langage EXACT de l'onglet État. ZÉRO bouton hors élection : `.inv-actionbar` ne se déplie que
+   sous la rangée élue (`PlaqueRow selected`). ── */
+.inv-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.inv-item-nested {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+/* Barre d'actions dépliée EN PLACE sous la rangée élue — les contrôles existants (boutons `.btn`,
+   `MediaSelect`, `HandPicker`/`FormPicker`) s'enroulent comme l'ancienne rangée `.inv-row`. */
+.inv-actionbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 2px;
+  padding: 6px 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+/* Panneau de recoloriement (skin légendaire), déplié sous l'actionbar de la rangée élue. */
+.inv-skin {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 4px 0 2px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 4px;
+}
+.inv-skin-body {
+  flex: 1;
+}
+.inv-skin-remove {
+  margin-top: 4px;
+}
+/* Contenus d'un contenant (LDB 64) : petite liste indentée sous la rangée du sac. */
+.inv-nested {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 2px 18px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+
 /* ── Onglet « État » (registre compact, arbitrage user 2026-07-17) : bandes de section (`Band`) +
    `PlaqueRow` par affliction — l'ancienne silhouette organisatrice (rig + zones dessinées) est MORTE,
    remplacée par la bande de zones TOUCHÉES en tête (`ZoneBand`, `PlaqueGrid`, pt.4) : une plaque par

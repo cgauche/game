@@ -41,6 +41,8 @@ import { Icon } from './Icon';
 import type { Palette } from '../gameIso/rig/palette';
 import { sheetAlarms, alarmsFingerprint } from './sheetAlarms';
 import { EtatPanel } from './EtatPanel';
+import { PlaqueRow } from './PlaqueRow';
+import { Band } from './Band';
 import { FigTile } from './FigTile';
 import { VitalArc } from './VitalArc';
 import { corruptionThresholdExceeded } from '../engine/corruption';
@@ -522,10 +524,14 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
   const transferItem = useGame((s) => s.transferItem);
   const setItemSkin = useGame((s) => s.setItemSkin);
   const usePartyItem = useGame((s) => s.usePartyItem);
-  const trainProsthesis = useGame((s) => s.trainProsthesis);
   const appraiseItem = useGame((s) => s.appraiseItem);
   const inBattleNow = useGame((s) => !!s.battle);
-  const [skinFor, setSkinFor] = useState<string | null>(null);
+  // Registre (#492 lot POSSESSIONS B, DoD ticket #492) : ZÉRO bouton par rangée — un clic ÉLIT une
+  // seule rangée à la fois (ré-clic désélectionne), qui déplie alors sa barre d'actions EN PLACE.
+  // Le skin (recoloriser) ouvre un second panneau propre, indépendant de l'élection de la rangée
+  // (fermé par défaut à chaque nouvelle élection — pas de fuite d'état entre deux objets skinnables).
+  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [skinOpenUid, setSkinOpenUid] = useState<string | null>(null);
   const items = hero.items ?? [];
   const enc = hero.encumbrance ?? 0;
   const maxEnc = maxEncumbrance(hero);
@@ -571,11 +577,12 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
 
       {section === 'possessions' && (
       <div className="sheet-inventory">
-        <div className="mini-title">Inventaire & équipement ({items.length})</div>
-        <div className="inv-rows">
-          {items.length === 0 && <p className="muted">Aucun objet.</p>}
-          {(() => {
-          const renderRow = (it: ItemInstance) => {
+        {items.length === 0 && <p className="muted">Aucun objet.</p>}
+        {(() => {
+          // Registre (#492 lot POSSESSIONS B) : une `PlaqueRow` par objet, ZÉRO bouton hors élection —
+          // le clic sur la rangée ÉLIT (ré-clic désélectionne), l'élue seule déplie sa barre d'actions
+          // EN PLACE (`.inv-actionbar`, mêmes handlers qu'avant, jamais un volet latéral/une modale).
+          const renderRow = (it: ItemInstance, indent = false) => {
             const isProsthesis = it.subType === 'protheses'; // prothèse (LDB 73, Groupe id) : se PORTE pour annuler un malus d'amputation
             const isCape = isCapeItem(it); // cape/manteau : emplacement Cape (cosmétique, onglet Combat)
             const consumable = isConsumable(it); // bandages / potion : utilisable depuis la fiche
@@ -593,149 +600,137 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
             const highlighted = isWeaponItem ? isWeaponActive(hero, it.uid) : it.equipped;
             const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
             const skinned = !!it.skin && Object.keys(it.skin).length > 0;
-            const open = isSkinnable && skinFor === it.uid;
+            const selected = selectedUid === it.uid;
+            const skinOpen = isSkinnable && skinOpenUid === it.uid;
+
+            // Une vérité, un badge : équipé/en main · skin · non-identifié (méta de la plaque, jamais
+            // un doublon du damier `EquipmentPanel` — celui-ci reste la vue de ce qui est PORTÉ).
+            const badges: ReactNode[] = [];
+            if (highlighted) {
+              badges.push(
+                <span key="eq" className="chip tone-warn">
+                  {isWeaponItem ? (handLabel ?? 'En main') : it.kind === 'armor' ? 'Équipé' : 'Porté'}
+                </span>,
+              );
+            }
+            if (skinned) badges.push(<span key="skin" className="chip"><Icon id="action/cast" size="sm" /> Skin</span>);
+            if (it.identified === false) {
+              badges.push(
+                <span key="unid" className="chip tone-warn" title="Évaluer (ou Détecter l'artefact) pour révéler ses qualités">
+                  {it.magicKnown ? (<><Icon id="action/cast" size="sm" /> Magique — non identifié</>) : (<><Icon id="nav/identify" size="sm" /> Non identifié</>)}
+                </span>,
+              );
+            }
+
             return (
-              <div key={it.uid}>
-                <div className={`inv-row kind-${it.kind} ${highlighted ? 'equipped' : ''}`}>
-                  <ItemIcon item={it} size="sm" />
-                  <div className="ir-main">
-                    <span className="ir-name">
-                      <CodexRef category="trappings" id={it.trappingId} label={itemLabel(it)}>{itemLabel(it)}</CodexRef>{skinned && (<> <Icon id="action/cast" size="sm" /></>)}
-                      {it.identified === false && (
-                        <span className="ir-unid" title="Objet non identifié — Évaluer (ou Détecter l'artefact) pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>
-                          {it.magicKnown ? (<><Icon id="action/cast" size="sm" /> Magique — non identifié</>) : (<><Icon id="nav/identify" size="sm" /> Non identifié</>)}
-                        </span>
-                      )}
-                    </span>
-                    <span className="ir-stats">{itemStats(it)}</span>
-                  </div>
-                  <span className="ir-enc">Enc {it.enc}</span>
-                  {it.container && (
-                    <span className="ir-enc" title="Contenu rangé / capacité (Enc) — LDB 64"><Icon id="item/misc" size="sm" /> {containerFillEnc(hero, it.uid)}/{it.container.capacity}</span>
-                  )}
-                  {it.identified === false && !inBattleNow && (
-                    <>
-                      {it.appraiseTriedDay !== today && (
-                        <button className="btn small" title="Évaluation (Int) : révèle les qualités cachées et estime le prix — un échec verrouille jusqu'à demain" onClick={() => appraiseItem(it.uid, hero.id)}>Évaluer</button>
-                      )}
-                      {canDetect && !it.detectTried && (
-                        <button className="btn small" title="Détection d'artefact (Intuition, au toucher) : sentir l'aura magique — une seule tentative par objet" onClick={() => appraiseItem(it.uid, hero.id, 'detect')}>Détecter</button>
-                      )}
-                    </>
-                  )}
-                  {isSkinnable && (
-                    <button
-                      className={`btn small ${open ? 'btn-primary' : ''}`}
-                      title="Skin légendaire (recoloriser cet objet)"
-                      onClick={() => setSkinFor(open ? null : it.uid)}
-                    >
-                      <Icon id="action/cast" size="sm" />
-                    </button>
-                  )}
-                  {isProsthesis && it.equipped && it.trappingId === 'crochet' && !it.prosthesisTrained && (
-                    <button
-                      className="btn small"
-                      title="Maîtriser le crochet : armes à deux mains de nouveau possibles (400 PX)"
-                      disabled={(hero.xp ?? 0) < 400}
-                      onClick={() => trainProsthesis(hero.id, it.uid)}
-                    >
-                      2 mains (400 PX)
-                    </button>
-                  )}
-                  {isProsthesis && it.equipped && it.trappingId === 'fausse-jambe' && !it.prosthesisMoveTrained && (
-                    <button
-                      className="btn small"
-                      title="S’entraîner à la fausse jambe : Mouvement plein retrouvé (100 PX, LDB 73)"
-                      disabled={(hero.xp ?? 0) < 100}
-                      onClick={() => trainProsthesis(hero.id, it.uid)}
-                    >
-                      Mouvement (100 PX)
-                    </button>
-                  )}
-                  {isProsthesis && it.equipped && it.trappingId === 'fausse-jambe' && it.prosthesisMoveTrained && !it.prosthesisTrained && (
-                    <button
-                      className="btn small"
-                      title="Réapprendre l’Esquive avec la fausse jambe (200 PX)"
-                      disabled={(hero.xp ?? 0) < 200}
-                      onClick={() => trainProsthesis(hero.id, it.uid)}
-                    >
-                      Esquive (200 PX)
-                    </button>
-                  )}
-                  {isWeaponItem && !inBattleNow && <FormPicker hero={hero} it={it} />}
-                  {isWeaponItem && (
-                    inBattleNow ? (
-                      handLabel && (
-                        <span className="ir-loadout on" title="Arme en main (verrouillé en combat — changez de set depuis la barre d’action)">
-                          <Icon id="item/weapon" size="sm" /> {handLabel}
-                        </span>
+              <div key={it.uid} className="inv-item">
+                <PlaqueRow
+                  prefix={<ItemIcon item={it} size="sm" />}
+                  name={<CodexRef category="trappings" id={it.trappingId} label={itemLabel(it)} tooltipOnly>{itemLabel(it)}</CodexRef>}
+                  sub={itemStats(it)}
+                  meta={badges.length ? <>{badges}</> : undefined}
+                  value={it.container ? <>Enc {it.enc} · {containerFillEnc(hero, it.uid)}/{it.container.capacity}</> : <>Enc {it.enc}</>}
+                  selected={selected}
+                  onClick={() => setSelectedUid(selected ? null : it.uid)}
+                  className={indent ? 'inv-item-nested' : undefined}
+                />
+                {selected && (
+                  <div className="inv-actionbar">
+                    {it.identified === false && !inBattleNow && (
+                      <>
+                        {it.appraiseTriedDay !== today && (
+                          <button className="btn small" title="Évaluation (Int) : révèle les qualités cachées et estime le prix — un échec verrouille jusqu'à demain" onClick={() => appraiseItem(it.uid, hero.id)}>Évaluer</button>
+                        )}
+                        {canDetect && !it.detectTried && (
+                          <button className="btn small" title="Détection d'artefact (Intuition, au toucher) : sentir l'aura magique — une seule tentative par objet" onClick={() => appraiseItem(it.uid, hero.id, 'detect')}>Détecter</button>
+                        )}
+                      </>
+                    )}
+                    {isWeaponItem && !inBattleNow && <FormPicker hero={hero} it={it} />}
+                    {isWeaponItem && (
+                      inBattleNow ? (
+                        handLabel && (
+                          <span className="chip" title="Arme en main (verrouillé en combat — changez de set depuis la barre d’action)">
+                            <Icon id="item/weapon" size="sm" /> {handLabel}
+                          </span>
+                        )
+                      ) : (
+                        <HandPicker hero={hero} it={it} />
                       )
-                    ) : (
-                      <HandPicker hero={hero} it={it} />
-                    )
-                  )}
-                  {equipable ? (
-                    <button
-                      className={`btn small ${it.equipped ? 'btn-primary' : ''}`}
-                      disabled={inBattleNow}
-                      title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : isCape ? 'Porter la cape (cosmétique — visible dans le dos du héros)' : it.kind === 'misc' ? 'Porter (−1 Enc)' : undefined}
-                      onClick={() => toggleEquip(hero.id, it.uid)}
-                    >
-                      {it.kind === 'armor' ? (it.equipped ? 'Équipé' : 'Équiper') : it.equipped ? 'Portée' : 'Porter'}
-                    </button>
-                  ) : consumable ? (
-                    <button
-                      className="btn small"
-                      title={inBattleNow ? 'En combat, utilisez l’objet depuis la barre d’action (coûte l’Action).' : 'Utiliser ce consommable (bandages, potion)'}
-                      disabled={inBattleNow}
-                      onClick={() => usePartyItem(hero.id, it.uid)}
-                    >
-                      Utiliser
-                    </button>
-                  ) : (
-                    <span className="ir-kind">{it.kind}</span>
-                  )}
-                  {containers.length > 0 && !inBattleNow && (
-                    <MediaSelect
-                      align="right"
-                      triggerClassName="btn small"
-                      title="Ranger dans un contenant (LDB 64)"
-                      trigger={<Icon id="item/misc" size="sm" />}
-                      options={containers.map((bag) => ({
-                        key: bag.uid,
-                        media: <ItemIcon item={bag} size="sm" />,
-                        label: itemLabel(bag),
-                        sub: `${containerFillEnc(hero, bag.uid)}/${bag.container?.capacity ?? 0}`,
-                      }))}
-                      onSelect={(cid) => stowItem(hero.id, it.uid, cid)}
-                    />
-                  )}
-                  {party.length > 1 && !inBattleNow && (
-                    <MediaSelect
-                      align="right"
-                      triggerClassName="btn small"
-                      title="Donner cet objet à un autre héros"
-                      trigger={<Icon id="action/pick-up" size="sm" />}
-                      options={party.filter((p) => p.id !== hero.id).map((p) => ({
-                        key: p.id,
-                        media: <CharFrame c={p} variant="identity" size="xs" />,
-                        label: p.name,
-                      }))}
-                      onSelect={(pid) => transferItem(it.uid, hero.id, pid)}
-                    />
-                  )}
-                </div>
-                {open && (
-                  <div className="inv-skin" style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '6px 8px', background: 'rgba(0,0,0,0.18)', borderRadius: 4 }}>
+                    )}
+                    {equipable ? (
+                      <button
+                        className={`btn small ${it.equipped ? 'btn-primary' : ''}`}
+                        disabled={inBattleNow}
+                        title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : isCape ? 'Porter la cape (cosmétique — visible dans le dos du héros)' : it.kind === 'misc' ? 'Porter (−1 Enc)' : undefined}
+                        onClick={() => toggleEquip(hero.id, it.uid)}
+                      >
+                        {it.kind === 'armor' ? (it.equipped ? 'Équipé' : 'Équiper') : it.equipped ? 'Portée' : 'Porter'}
+                      </button>
+                    ) : consumable ? (
+                      <button
+                        className="btn small"
+                        title={inBattleNow ? 'En combat, utilisez l’objet depuis la barre d’action (coûte l’Action).' : 'Utiliser ce consommable (bandages, potion)'}
+                        disabled={inBattleNow}
+                        onClick={() => usePartyItem(hero.id, it.uid)}
+                      >
+                        Utiliser
+                      </button>
+                    ) : null}
+                    {isSkinnable && (
+                      <button
+                        className={`btn small ${skinOpen ? 'btn-primary' : ''}`}
+                        title="Skin légendaire (recoloriser cet objet)"
+                        onClick={() => setSkinOpenUid(skinOpen ? null : it.uid)}
+                      >
+                        <Icon id="action/cast" size="sm" /> Skin
+                      </button>
+                    )}
+                    {containers.length > 0 && !inBattleNow && (
+                      <MediaSelect
+                        align="right"
+                        triggerClassName="btn small"
+                        title="Ranger dans un contenant (LDB 64)"
+                        trigger={<><Icon id="item/misc" size="sm" /> Ranger</>}
+                        options={containers.map((bag) => ({
+                          key: bag.uid,
+                          media: <ItemIcon item={bag} size="sm" />,
+                          label: itemLabel(bag),
+                          sub: `${containerFillEnc(hero, bag.uid)}/${bag.container?.capacity ?? 0}`,
+                        }))}
+                        onSelect={(cid) => stowItem(hero.id, it.uid, cid)}
+                      />
+                    )}
+                    {party.length > 1 && !inBattleNow && (
+                      <MediaSelect
+                        align="right"
+                        triggerClassName="btn small"
+                        title="Donner cet objet à un autre héros"
+                        trigger={<><Icon id="action/pick-up" size="sm" /> Donner</>}
+                        options={party.filter((p) => p.id !== hero.id).map((p) => ({
+                          key: p.id,
+                          media: <CharFrame c={p} variant="identity" size="xs" />,
+                          label: p.name,
+                        }))}
+                        onSelect={(pid) => transferItem(it.uid, hero.id, pid)}
+                      />
+                    )}
+                    {it.inside && (
+                      <button className="btn small" disabled={inBattleNow} title="Sortir du contenant" onClick={() => stowItem(hero.id, it.uid, null)}>Sortir</button>
+                    )}
+                  </div>
+                )}
+                {skinOpen && (
+                  <div className="inv-skin">
                     <ItemIcon item={it} size="lg" />
-                    <div style={{ flex: 1 }}>
+                    <div className="inv-skin-body">
                       <ColorPalettePickers
                         colors={it.skin as Palette | undefined}
                         slots={skinSlotsFor(it.kind)}
                         onColors={(patch) => setItemSkin(hero.id, it.uid, patch)}
                       />
                       {skinned && (
-                        <button className="btn small" style={{ marginTop: '4px' }} onClick={() => setItemSkin(hero.id, it.uid, Object.fromEntries(skinSlotsFor(it.kind).map(([, s]) => [s, undefined])))}>
+                        <button className="btn small inv-skin-remove" onClick={() => setItemSkin(hero.id, it.uid, Object.fromEntries(skinSlotsFor(it.kind).map(([, s]) => [s, undefined])))}>
                           Retirer le skin
                         </button>
                       )}
@@ -744,23 +739,13 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
                 )}
                 {it.container && (() => {
                   const stowed = items.filter((i) => i.inside === it.uid);
-                  return stowed.length ? (
-                    <div className="inv-nested">
-                      {stowed.map((s) => (
-                        <div key={s.uid} className={`inv-row kind-${s.kind}`}>
-                          <ItemIcon item={s} size="sm" />
-                          <span className="ir-name">{itemLabel(s)}</span>
-                          <span className="ir-enc" style={{ marginLeft: 'auto' }}>Enc {s.enc}</span>
-                          <button className="btn small" disabled={inBattleNow} title="Sortir du contenant" onClick={() => stowItem(hero.id, s.uid, null)}>Sortir</button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null;
+                  return stowed.length ? <div className="inv-nested">{stowed.map((s) => renderRow(s, true))}</div> : null;
                 })()}
               </div>
             );
           };
-          // E3 : sous-catégories du Sac — chaque objet dans son PREMIER groupe correspondant.
+          // E3 : sous-catégories du Sac — chaque objet dans son PREMIER groupe correspondant, une
+          // `Band` comptée par groupe (langage du registre État, `EtatPanel.tsx`).
           const GROUPS: { label: string; pred: (it: ItemInstance) => boolean }[] = [
             { label: 'Armes', pred: (it) => it.kind === 'melee' || it.kind === 'ranged' },
             { label: 'Armures & protections', pred: (it) => it.kind === 'armor' || isCapeItem(it) },
@@ -776,14 +761,12 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
           return GROUPS.map((g, gi) => {
             const list = partition[gi];
             return list.length ? (
-              <div key={g.label}>
-                <div className="mini-title">{g.label}</div>
-                {list.map(renderRow)}
-              </div>
+              <Band key={g.label} title={g.label} right={<b>{list.length}</b>}>
+                <div className="inv-rows">{list.map((it) => renderRow(it))}</div>
+              </Band>
             ) : null;
           });
-          })()}
-        </div>
+        })()}
       </div>
       )}
     </>
@@ -855,6 +838,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
   const designateCareerSlot = useGame((s) => s.designateCareerSlot);
   const buySpell = useGame((s) => s.buySpell);
   const changeCareer = useGame((s) => s.changeCareer);
+  const trainProsthesis = useGame((s) => s.trainProsthesis);
   const [target, setTarget] = useState('');
 
   const v = buildAdvancementView(hero);
@@ -983,6 +967,41 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
                 </div>
                 );
               })}
+            </div>
+          </AdvSection>
+        );
+      })()}
+
+      {(() => {
+        // Entraînement aux prothèses (LDB 73, #492 lot POSSESSIONS B) : achats PX qui vivaient dans
+        // la barre d'actions du Sac (bouton par prothèse portée) — un ACHAT d'Avancement, pas une
+        // action de possession, rejoint donc ce panneau (patron `AdvSection` déjà tenu ici).
+        const prostheses = (hero.items ?? []).filter((it) => it.subType === 'protheses' && it.equipped);
+        const rows: { key: string; label: string; cost: number; onBuy: () => void }[] = [];
+        for (const it of prostheses) {
+          if (it.trappingId === 'crochet' && !it.prosthesisTrained) {
+            rows.push({ key: `${it.uid}-2mains`, label: 'Crochet — maîtriser (armes à deux mains de nouveau possibles)', cost: 400, onBuy: () => trainProsthesis(hero.id, it.uid) });
+          }
+          if (it.trappingId === 'fausse-jambe' && !it.prosthesisMoveTrained) {
+            rows.push({ key: `${it.uid}-mvt`, label: 'Fausse jambe — s’entraîner (Mouvement plein retrouvé, LDB 73)', cost: 100, onBuy: () => trainProsthesis(hero.id, it.uid) });
+          }
+          if (it.trappingId === 'fausse-jambe' && it.prosthesisMoveTrained && !it.prosthesisTrained) {
+            rows.push({ key: `${it.uid}-esq`, label: 'Fausse jambe — réapprendre l’Esquive', cost: 200, onBuy: () => trainProsthesis(hero.id, it.uid) });
+          }
+        }
+        if (!rows.length) return null;
+        return (
+          <AdvSection title="Prothèses" count={rows.length}>
+            <div className="adv-grid">
+              {rows.map((r) => (
+                <div className="adv-row acquire" key={r.key}>
+                  <span className="adv-name">{r.label}</span>
+                  <span className="adv-meta" />
+                  <button className="btn small" disabled={!afford(r.cost)} onClick={r.onBuy}>
+                    Entraîner · {r.cost} PX
+                  </button>
+                </div>
+              ))}
             </div>
           </AdvSection>
         );
