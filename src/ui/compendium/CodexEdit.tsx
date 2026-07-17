@@ -91,6 +91,10 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   // réécrivent le PARENT entier au save pour les 4 dernières, NICHÉES).
   navalPorts: 'navalPorts', navalProgression: 'navalProgression',
   shipHullSizes: 'shipHullSizes', shipSpeedTraits: 'shipSpeedTraits', shipConstructionTraits: 'shipConstructionTraits',
+  // LOT 1 #422 (suite) : famille RÈGLES LDB — Coût des Augmentations (07), Accidents de Conduite
+  // d'attelage / Ivresse (09, nichés dans `{table,source}`), Surchargé par palier (61).
+  advancementCosts: 'advancementCosts', drivingMishap: 'drivingMishap', drunkenness: 'drunkenness',
+  encumbranceTiers: 'encumbranceTiers',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -106,6 +110,8 @@ const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | '
   seaNavigation: { ds: 'seaNavigation', mode: 'single' },
   seaPerils: { ds: 'seaPerils', mode: 'single' },
   seaWeather: { ds: 'seaWeather', mode: 'single' },
+  // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
+  disponibilite: { ds: 'disponibilite', mode: 'single' },
 };
 export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
@@ -151,6 +157,7 @@ const OPS_FIELDS: Record<string, string[]> = {
   aaCriticalsTete: ['ops'], aaCriticalsBras: ['ops'], aaCriticalsCorps: ['ops'], aaCriticalsJambe: ['ops'],
   incidentsMonture: ['occupantOps'], problemesVehicule: ['occupantOps'],
   seaShanties: ['crewOps', 'captainOps'],
+  drunkenness: ['ops'], // LOT 1 #422 (suite) : effet mécanique optionnel d'un résultat d'Ivresse (LDB 09)
   ...Object.fromEntries(SHIP_CRIT_CATEGORIES.map((k) => [k, ['ops']])),
 };
 const opsFieldsOf = (categoryKey: string): string[] => OPS_FIELDS[categoryKey] ?? [];
@@ -274,6 +281,9 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'seaNavigation') add('forcerLeRythme');
   if (categoryKey === 'seaPerils') add('hazards', 'detroits', 'tourbillons', 'gestionDesPerils');
   if (categoryKey === 'seaWeather') add('table', 'precipitations', 'temperatures', 'visibilites', 'vents', 'roseDesVents');
+  // LOT 1 #422 (suite) : Disponibilité & Troc (`disponibilite`, mode 'single', patron `waterExposure`) —
+  // `dispoPct`/`barterRatios` (tableaux top-level) → éditeur GÉNÉRIQUE commun (`GenericArrayField`).
+  if (categoryKey === 'disponibilite') add('dispoPct', 'barterRatios');
   if (categoryKey === 'shipHullSizes') add('lengthM'); // [minM,maxM] — éditeur dédié (2 nombres, comme StarSubField)
   // #168 : Activité — Test « posté » (contexts/skills « au choix »/char/difficulty) + table d'issues
   // `outcomes` (OutcomeBand[]) → éditeurs dédiés ; `onSuccess` couvert par opsFieldsOf ci-dessus.
@@ -437,6 +447,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isSeaNavigation = categoryKey === 'seaNavigation';
   const isSeaPerils = categoryKey === 'seaPerils';
   const isSeaWeather = categoryKey === 'seaWeather';
+  // LOT 1 #422 (suite) : Disponibilité & Troc (`disponibilite`, mode 'single') — `dispoPct`/`barterRatios`
+  // (tableaux top-level) au MÊME éditeur générique commun que les fiches navales ci-dessus.
+  const isDisponibilite = categoryKey === 'disponibilite';
   const hasHullLength = categoryKey === 'shipHullSizes'; // `lengthM` : [minM,maxM]
   // #168 : Activité (`activities`) — Test « posté » (contexts/skills « au choix »/char/difficulty) +
   // table d'issues `outcomes` (OutcomeBand[]) ; `onSuccess` reste sur le lot GameOpEditor commun.
@@ -605,6 +618,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isSeaWeather && <GenericArrayField label="visibilites" value={entry.visibilites as Record<string, unknown>[] | undefined} onChange={(v) => edit('visibilites', v)} />}
         {isSeaWeather && <GenericArrayField label="vents" value={entry.vents as Record<string, unknown>[] | undefined} onChange={(v) => edit('vents', v)} />}
         {isSeaWeather && <GenericArrayField label="roseDesVents" value={entry.roseDesVents as Record<string, unknown>[] | undefined} onChange={(v) => edit('roseDesVents', v)} />}
+        {isDisponibilite && <GenericArrayField label="dispoPct (% de Disponibilité par taille de colonie)" value={entry.dispoPct as Record<string, unknown>[] | undefined} onChange={(v) => edit('dispoPct', v)} />}
+        {isDisponibilite && <GenericArrayField label="barterRatios (Ratios de Troc)" value={entry.barterRatios as Record<string, unknown>[] | undefined} onChange={(v) => edit('barterRatios', v)} />}
         {hasHullLength && <LengthRangeField value={entry.lengthM as [number, number] | undefined} onChange={(v) => edit('lengthM', v)} />}
         {isActivity && <ActivityTestField entry={entry} edit={edit} />}
         {isActivity && <OutcomeBandsField value={entry.outcomes as OutcomeBand[] | undefined} onChange={(v) => edit('outcomes', v.length ? v : undefined)} />}

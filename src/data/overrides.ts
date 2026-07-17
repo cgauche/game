@@ -18,6 +18,7 @@ import {
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS,
   WATER_EXPOSURE, navalPorts,
   navalProgression, seaNavigation, seaPerils, seaWeather, shipConstruction,
+  disponibilite,
 } from './index';
 // #157 : catalogues de CONTENU déjà chargés par un module dédié (`src/data/*.ts` ou `src/engine/*.ts`,
 // pas la façade `index.ts`) — importés DIRECTEMENT ici (même patron que `massBattle*` ci-dessus, qui
@@ -45,6 +46,15 @@ import shipCriticalsRawJson from './ship-criticals.json';
 import riverCriticalsRawJson from './river-criticals.json';
 import rencontresRawJson from './rencontres-edoc.json';
 import seaEventsRawJson from './sea-events.json';
+// LOT 1 #422 : famille RÈGLES LDB — Coût des Augmentations (07), % de Disponibilité (59), Accidents de
+// Conduite d'attelage (09) et Ivresse (09) NICHÉS dans un objet `{table,source}` (même patron que
+// `incidents-monture.json`/`problemes-vehicule.json`), Surchargé par palier (61).
+import advancementCostsRawJson from './advancementCosts.json';
+import drivingMishapRawJson from './driving-mishap.json';
+import drunkennessRawJson from './drunkenness.json';
+import encumbranceTiersRawJson from './encumbranceTiers.json';
+import type { MishapEntry } from '../engine/drivingMishap';
+import type { DrunkEntry } from '../engine/drunkenness';
 
 /** Fiche de Traumatisme (`traumas.json`, #157) — MÊME schéma que `engine/trauma.ts::TraumaFiche`
  *  (module-privé là-bas, redéclaré ici a minima pour le seam d'édition ; `traumaFicheById` reste la
@@ -133,6 +143,13 @@ const ARRAYS = {
   shipHullSizes: shipConstruction.standard,
   shipSpeedTraits: shipConstruction.speedTraits,
   shipConstructionTraits: shipConstruction.constructionTraits,
+  // LOT 1 #422 : famille RÈGLES LDB — Coût des Augmentations (tableau RACINE) ; Accidents de Conduite
+  // d'attelage / Ivresse (tableaux NICHÉS dans `{table,source}`, MÊME référence que le moteur — accès de
+  // propriété, jamais une copie) ; Surchargé par palier (tableau RACINE).
+  advancementCosts: advancementCostsRawJson,
+  drivingMishap: drivingMishapRawJson.table as MishapEntry[],
+  drunkenness: drunkennessRawJson.table as DrunkEntry[],
+  encumbranceTiers: encumbranceTiersRawJson,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
@@ -147,6 +164,8 @@ const OBJECTS = {
   details, names, waterExposure: WATER_EXPOSURE,
   // LOT 1 #422 : 3 fiches de règle UNIQUES (MDG ch.13) — même patron que `waterExposure` (T2C ch.14).
   seaNavigation, seaPerils, seaWeather,
+  // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
+  disponibilite,
 } as const;
 export type ObjectDatasetKey = keyof typeof OBJECTS;
 export const OBJECT_DATASET_KEYS = Object.keys(OBJECTS) as ObjectDatasetKey[];
@@ -243,6 +262,10 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   shipHullSizes: { file: 'ship-construction.json', root: () => shipConstruction },
   shipSpeedTraits: { file: 'ship-construction.json', root: () => shipConstruction },
   shipConstructionTraits: { file: 'ship-construction.json', root: () => shipConstruction },
+  // LOT 1 #422 : Accidents de Conduite d'attelage / Ivresse — tableau NICHÉ dans `driving-mishap.json`/
+  // `drunkenness.json` (`{table,source}`), réécrire le PARENT entier au save (le `source` de table doit survivre).
+  drivingMishap: { file: 'driving-mishap.json', root: () => drivingMishapRawJson },
+  drunkenness: { file: 'drunkenness.json', root: () => drunkennessRawJson },
 };
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {

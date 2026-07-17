@@ -47,7 +47,9 @@ export interface DrunkState {
   result?: string;
 }
 
-interface DrunkEntry { id: string; min: number; max: number; name: string; effect: string; desc: string; ops?: GameOp[] }
+/** Entrée du Tableau d'Ivresse — MÊME schéma que `drunkenness.json::table` (exportée pour l'exposition
+ *  Codex, #422 : `data/overrides.ts` la réutilise pour typer la table live). */
+export interface DrunkEntry { id: string; min: number; max: number; name: string; effect: string; desc: string; ops?: GameOp[] }
 const DRUNK_TABLE = (drunkennessJson as { table: DrunkEntry[] }).table;
 
 /** Nombre d'échecs de Résistance à l'alcool accumulés. */

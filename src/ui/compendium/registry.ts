@@ -18,7 +18,7 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel, windsOfMagicTable,
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
-  CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables,
+  CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
@@ -50,6 +50,7 @@ import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef, WaterExposureModifier } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
+import { AVAILABILITY_RANK } from '../../engine/disponibilite';
 import { ACTIVITIES } from '../../engine/activities';
 import type { ActivityContext, OutcomeBand, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
@@ -761,7 +762,101 @@ function shipConstructionRulesSection(): CodexSection {
   };
 }
 
+// ── LOT 1 #422 : famille RÈGLES LDB — Coût des Augmentations (07), Disponibilité & Troc (59), Accidents
+//    de Conduite d'attelage / Ivresse (09), Surchargé par palier (61). Coût des Augmentations/Surchargé
+//    restent des CATÉGORIES-tableau (une bande/un palier = une entité, id/label ajoutés en donnée pour
+//    l'exposition, #422) ; Disponibilité & Troc est une FICHE DE RÈGLE UNIQUE (dataset-objet, patron
+//    `waterExposure`) ; Accidents de Conduite / Ivresse restent des CATÉGORIES-tableau (id/name déjà
+//    en donnée, MÊME patron que `incidentsMonture`/`problemesVehicule`). ──
+
+/** Libellés FR des 4 issues de l'Accident de Conduite d'attelage (`driving-mishap.json::effect`, LDB 09
+ *  l.140-149) — vocabulaire machine (`DrivingMishapEffect`) lu par `mishapCausesCrash`. */
+const DRIVING_MISHAP_EFFECT_LABEL: Record<string, string> = {
+  harness: 'Harnais cassé', jolt: 'Cahots de la route', wheel: 'Roue brisée', crash: 'Essieu cassé (Accidenté)',
+};
+
+/** Libellés FR des 5 résultats du Tableau d'Ivresse (`drunkenness.json::effect`, LDB 09 l.475-481) —
+ *  vocabulaire machine lu par `drunkStaggers`/`soberUp`. */
+const DRUNKENNESS_EFFECT_LABEL: Record<string, string> = {
+  bravoure: 'Bravoure du Marienburgher', ami: 'Meilleur ami', staggering: 'La pièce tourne',
+  belligerent: 'Tous, un par un', blackout: 'Trou noir (gueule de bois)',
+};
+
+/** Section « % de Disponibilité » (LDB 59 l.25-30, `disponibilite.json::dispoPct`) — une sous-tête par
+ *  classe (Limitée/Rare), % de réussite du Test (d100 ≤ %) par taille de colonie. */
+function dispoPctSection(rows: (typeof disponibilite)['dispoPct']): CodexSection {
+  const rowsOut: CodexRow[] = [];
+  for (const r of rows) {
+    rowsOut.push({ t: 'sub', label: r.availability } as CodexRow);
+    rowsOut.push({ t: 'kv', k: 'Village', v: `${r.pct.village} %` } as CodexRow);
+    rowsOut.push({ t: 'kv', k: 'Ville', v: `${r.pct.ville} %` } as CodexRow);
+    rowsOut.push({ t: 'kv', k: 'Cité', v: `${r.pct.cite} %` } as CodexRow);
+  }
+  return { title: '% de Disponibilité (Test d100 ≤ %, par taille de colonie)', layout: 'list', rows: rowsOut };
+}
+
+/** Section « Ratios de Troc » (LDB 59 l.68-76, `disponibilite.json::barterRatios`) — pour chaque
+ *  Disponibilité de l'objet DONNÉ, le ratio `give:get` contre chaque Disponibilité de l'objet ACQUIS. */
+function barterRatiosSection(rows: (typeof disponibilite)['barterRatios']): CodexSection {
+  const rowsOut: CodexRow[] = [];
+  for (const r of rows) {
+    rowsOut.push({ t: 'sub', label: `Donné : ${r.give}` } as CodexRow);
+    for (const acquired of AVAILABILITY_RANK) {
+      const ratio = r.ratios[acquired];
+      rowsOut.push({ t: 'kv', k: `Acquis : ${acquired}`, v: `${ratio.give} : ${ratio.get}` } as CodexRow);
+    }
+  }
+  return { title: 'Ratios de Troc (donné : acquis)', layout: 'list', rows: rowsOut };
+}
+
 const CODEX_SPECS: CodexCategorySpec[] = [
+  {
+    key: 'advancementCosts', label: 'Coût des Augmentations', group: 'Tables', cluster: 'Création de personnage', sourceRef: 'LDB 07',
+    build: () => datasetArray('advancementCosts').map((b) => ({
+      id: b.id, label: b.label, sub: 'Augmentations déjà achetées',
+      meta: facts(fact('Coût — Caractéristique', b.char), fact('Coût — Compétence', b.skill)),
+      source: src(b.source),
+    })),
+  },
+  {
+    key: 'disponibilite', label: 'Disponibilité & Troc', group: 'Tables', sourceRef: 'LDB 59',
+    build: () => {
+      const d = datasetObject('disponibilite');
+      return [{
+        id: 'disponibilite', label: 'Disponibilité & Troc (Faire son marché)',
+        source: src(d.dispoPct[0]?.source),
+        sections: sections(dispoPctSection(d.dispoPct), barterRatiosSection(d.barterRatios)),
+      }];
+    },
+  },
+  {
+    key: 'drivingMishap', label: 'Accidents de Conduite d’attelage', group: 'Tables', cluster: 'Voyage terrestre', sourceRef: 'LDB 09',
+    build: () => datasetArray('drivingMishap').map((e) => ({
+      id: e.id, label: e.name, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
+      meta: facts(fact('Type', DRIVING_MISHAP_EFFECT_LABEL[e.effect] ?? e.effect)),
+    })),
+  },
+  {
+    key: 'drunkenness', label: 'Ivresse (Tableau)', group: 'Tables', sourceRef: 'LDB 09',
+    build: () => datasetArray('drunkenness').map((e) => ({
+      id: e.id, label: e.name, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
+      meta: facts(fact('Type', DRUNKENNESS_EFFECT_LABEL[e.effect] ?? e.effect)),
+      sections: sections(passiveSection(e.ops, 'Effet')),
+    })),
+  },
+  {
+    key: 'encumbranceTiers', label: 'Surchargé — Paliers d’Encombrement', group: 'Tables', sourceRef: 'LDB 61',
+    build: () => datasetArray('encumbranceTiers').map((t) => ({
+      id: t.id, label: t.label,
+      meta: facts(
+        fact('Pénalité de Mouvement', t.immobile ? 'Immobilisé' : (t.movePenalty ? `−${t.movePenalty} (plancher ${t.moveFloor})` : 'Aucune')),
+        fact('Pénalité d’Agilité', t.agilityPenalty ? String(t.agilityPenalty) : null),
+        fact('Fatigue de voyage (États Exténué)', t.travelFatigue || null),
+      ),
+      source: src(t.source),
+    })),
+  },
+
   {
     key: 'races', label: 'Races', group: 'Personnage',
     build: () => species.map((s) => ({

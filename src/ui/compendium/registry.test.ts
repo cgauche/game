@@ -386,6 +386,62 @@ describe('Codex registry — LOT 1 #422 (famille NAVALE : Ports, Progression, Na
   });
 });
 
+describe('Codex registry — LOT 1 #422 (famille RÈGLES LDB : Coût des Augmentations, Disponibilité & Troc, Accidents de Conduite, Ivresse, Surchargé)', () => {
+  it('les 5 nouvelles catégories sont exposées, peuplées et ÉDITABLES au Codex', () => {
+    const keys = ['advancementCosts', 'disponibilite', 'drivingMishap', 'drunkenness', 'encumbranceTiers'];
+    for (const key of keys) {
+      const cat = categoryByKey(key);
+      expect(cat, key).toBeTruthy();
+      expect(cat!.items.length, key).toBeGreaterThan(0);
+      expect(isEditableCategory(key), key).toBe(true);
+    }
+  });
+
+  it('le Coût des Augmentations (LDB 07) porte 15 bandes avec leur coût Caractéristique/Compétence', () => {
+    const items = categoryByKey('advancementCosts')!.items;
+    expect(items).toHaveLength(15);
+    const first = items.find((i) => i.label === '0–5')!;
+    expect(first.meta?.find((f) => f.label === 'Coût — Caractéristique')?.value).toBe('25');
+    expect(first.meta?.find((f) => f.label === 'Coût — Compétence')?.value).toBe('10');
+  });
+
+  it('la fiche « Disponibilité & Troc » (dataset-OBJET, LDB 59) projette le % de Disponibilité + les Ratios de Troc', () => {
+    const cat = categoryByKey('disponibilite')!;
+    expect(cat.items).toHaveLength(1);
+    const item = cat.items[0];
+    const pctSec = item.sections?.find((s) => /% de Disponibilité/.test(s.title));
+    expect(pctSec, 'section % de Disponibilité').toBeTruthy();
+    expect(pctSec!.rows.some((r) => r.t === 'sub' && r.label === 'Limitée')).toBe(true);
+    const trocSec = item.sections?.find((s) => s.title === 'Ratios de Troc (donné : acquis)');
+    expect(trocSec, 'section Ratios de Troc').toBeTruthy();
+    expect(trocSec!.rows.some((r) => r.t === 'kv' && r.k === 'Acquis : Exotique')).toBe(true);
+  });
+
+  it('les Accidents de Conduite d’attelage (LDB 09) portent leurs 4 issues avec leur fourchette 1d10', () => {
+    const items = categoryByKey('drivingMishap')!.items;
+    expect(items).toHaveLength(4);
+    const crash = items.find((i) => i.label === 'Essieu cassé')!;
+    expect(crash.sub).toBe('1d10 9–10');
+    expect(crash.meta?.find((f) => f.label === 'Type')?.value).toBe('Essieu cassé (Accidenté)');
+  });
+
+  it('le Tableau d’Ivresse (LDB 09) porte au moins un résultat avec son effet mécanique (GameOp)', () => {
+    const items = categoryByKey('drunkenness')!.items;
+    expect(items).toHaveLength(5);
+    const withOps = items.find((i) => i.sections?.some((s) => s.title === 'Effet'));
+    expect(withOps, 'au moins un résultat d’Ivresse porte un effet').toBeTruthy();
+  });
+
+  it('les Paliers d’Encombrement (LDB 61) portent 4 paliers, du sans-pénalité à l’immobilisé', () => {
+    const items = categoryByKey('encumbranceTiers')!.items;
+    expect(items).toHaveLength(4);
+    const tier0 = items.find((i) => i.label === 'Palier 0')!;
+    expect(tier0.meta?.find((f) => f.label === 'Pénalité de Mouvement')?.value).toBe('Aucune');
+    const tier3 = items.find((i) => i.label === 'Palier 3')!;
+    expect(tier3.meta?.find((f) => f.label === 'Pénalité de Mouvement')?.value).toBe('Immobilisé');
+  });
+});
+
 describe('Codex — facettes', () => {
   it('filterItems : ET entre facettes, OU à l’intérieur, item sans valeur écarté par une facette active', () => {
     const items: CodexItem[] = [

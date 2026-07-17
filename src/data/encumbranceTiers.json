@@ -1,5 +1,7 @@
 [
   {
+    "id": "tier-0",
+    "label": "Palier 0",
     "tier": 0,
     "movePenalty": 0,
     "moveFloor": 0,
@@ -13,6 +15,8 @@
     }
   },
   {
+    "id": "tier-1",
+    "label": "Palier 1",
     "tier": 1,
     "movePenalty": 1,
     "moveFloor": 3,
@@ -26,6 +30,8 @@
     }
   },
   {
+    "id": "tier-2",
+    "label": "Palier 2",
     "tier": 2,
     "movePenalty": 2,
     "moveFloor": 2,
@@ -39,6 +45,8 @@
     }
   },
   {
+    "id": "tier-3",
+    "label": "Palier 3",
     "tier": 3,
     "movePenalty": null,
     "moveFloor": 0,
