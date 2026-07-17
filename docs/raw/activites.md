@@ -121,7 +121,7 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 | 98–00 | **Mercenaires Particuliers** | Entraînement/Apprentissage particulier : −20 % des coûts. *Entraînement au Combat* : +20 % à tout Test adapté. |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 22` (l.11-135) → `OPTIONAL_RULES`, `EFFECT_HANDLERS` — `src/engine/policy.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`
+- `LDB 22` (l.11-135) → `allie-inculpe`, `encheres-esoteriques`, `trahison`, `imprevu`, `eh-tu-as-renverse-ma-pinte`, `repression-du-crime`, `le-prevot-arrive`, `fausse-monnaie`, `profits-abondants`, `un-homme-averti-en-vaut-deux`, +23 — `src/data/interludeEvents.json`, `src/engine/policy.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`
 
 ---
 
@@ -136,7 +136,7 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 L'argent non sécurisé (voir *Opérations Bancaires*) disparaît avant la prochaine aventure. Les Revenus sont crédités **après** le gaspillage (LDB 23 l.191 : « seulement une fois que vous avez disposé de l'argent de votre dernière aventure »).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.14-19, l.191) → `MassBattleState`, `craft`, `learn`, `entrainement`, `ActivityDef`, `consumeActivity`, `everBelongedClasses`, `heroBudget`, `OPTIONAL_RULES`, `openCatalogActivity`, +4 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
+- `LDB 23` (l.14-19, l.191) → `MassBattleState`, `revenus`, `ActivityDef`, `consumeActivity`, `everBelongedClasses`, `heroBudget`, `OPTIONAL_RULES`, `openCatalogActivity`, `confirmActivity`, `Combatant`, +2 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
 
 ---
 
@@ -158,7 +158,7 @@ Si un Personnage a atteint le **Niveau 3 ou 4** de son Évolution de Carrière e
 Le Statut inférieur entraîne des Revenus moindres lors des futures Activités. Pour récupérer le Niveau perdu : payer à nouveau le coût en PX.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.22-56) → `startInterlude`, `craft`, `learn`, `entrainement`, `OPTIONAL_RULES` — `src/data/activities.json`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.22-56) → `startInterlude`, `craft`, `learn`, `OPTIONAL_RULES` — `src/data/activities.json`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`
 - sans code : `LDB 23` (l.31-37)
 
 ### Amélioration Elfique / Prestige Elfique
@@ -175,7 +175,7 @@ Les Personnages **elfes** doivent entreprendre **1 Activité** supplémentaire p
 **Règle optionnelle :** flag `interlude-elf-duty` (`src/engine/policy.ts` l.342-348).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.40-56) → `startInterlude`, `craft`, `learn`, `entrainement`, `OPTIONAL_RULES` — `src/data/activities.json`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.40-56) → `startInterlude`, `craft`, `learn`, `OPTIONAL_RULES` — `src/data/activities.json`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -205,7 +205,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `InterludeHeroState`, `FavorRow`, `purgeAdventureEffects`, `BankDeposit`, +33 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +18 fichiers
+- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `InterludeHeroState`, `FavorRow`, `purgeAdventureEffects`, `BankDeposit`, +40 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +18 fichiers
 
 ---
 
@@ -241,7 +241,7 @@ Créer de l'équipement du Guide de l'équipement (LDB ch.11) si le Personnage p
 Chaque Activité *Artisanat* = un lancer de Test étendu. Le travail inachevé se conserve.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `OPTIONAL_RULES`, `numPrice` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
+- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `OPTIONAL_RULES`, `numPrice`, `dressage` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
 
 ---
 
@@ -256,7 +256,7 @@ Avec accord du MJ :
 Le temps illustre présentations, pots-de-vin, licences, etc.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `OPTIONAL_RULES`, `numPrice` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
+- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `OPTIONAL_RULES`, `numPrice`, `dressage` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
 
 ---
 
@@ -274,7 +274,7 @@ Sur succès d'une consultation de savoir : gagne une **Relance Experte** (utilis
 Une relation établie avec un expert = consultable gratuitement (sans Activité) lors des futurs interludes.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.111-126) → `craft`, `learn`, `entrainement`, `OPTIONAL_RULES`, `numPrice` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
+- `LDB 23` (l.111-126) → `entrainement`, `OPTIONAL_RULES`, `numPrice`, `dressage` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
 
 ---
 
@@ -285,7 +285,7 @@ Une relation établie avec un expert = consultable gratuitement (sans Activité)
 Test **Dressage Accessible (+20)**. Succès → ajouter 1 Compétence à un animal, choisie parmi les Traits **Dressé** (LDB p.339).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.129-130) → `InterludeHeroState`, `craft`, `learn`, `entrainement`, `Effect`, `GameState`, `fr`, `EFFECT_HANDLERS` — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +1 fichiers
+- `LDB 23` (l.129-130) → `InterludeHeroState`, `entrainement`, `Effect`, `GameState`, `fr`, `EFFECT_HANDLERS`, `dressage` — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +1 fichiers
 
 ---
 
@@ -300,7 +300,7 @@ S'entraîner dans une Compétence ou Caractéristique **en dehors de la Carrièr
 - Compétences Avancées : **double** du montant ci-dessus.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.133-153) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `craft`, `learn`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, +4 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `LDB 23` (l.133-153) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `revenus`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, `fr`, +4 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 
@@ -319,7 +319,7 @@ Système transversal aux Activités : une **Faveur** est un engagement futur acc
 | **Importante** | Risque mortel, mois de voyage, violence extrême probable | Joué comme aventure complète (pas via Activités) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.140-151) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `craft`, `learn`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, +4 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `LDB 23` (l.140-151) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, `fr`, `FavorSettlePane`, +3 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 
@@ -336,7 +336,7 @@ En deux étapes :
 - *Passer commande* : trouver d'abord un expert (*Consulter un expert*) ; coût = 6× le prix courant des équipements à combiner.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.154-162) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `BankDeposit`, `craft`, `learn`, `entrainement`, `Effect`, `ActivityList`, `GameState`, +4 — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +3 fichiers
+- `LDB 23` (l.154-162) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `BankDeposit`, `revenus`, `entrainement`, `Effect`, `ActivityList`, `GameState`, `fr`, +4 — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +3 fichiers
 
 ---
 
@@ -359,7 +359,7 @@ Permettent de **sauver des fonds** pour la prochaine aventure (sinon perdus selo
 > *Exemple verbatim* — « Gerhard décide de placer son argent dans la prestigieuse banque privée Bent, Crooke & Scarper. Le MJ lance 1d10 avec un résultat de 6. Gerhard gagnera 6 % d'intérêts sur son placement (12 pistoles d'argent), et la banque fera faillite s'il fait 6 ou moins en lançant le d100 quand il tentera d'effectuer un retrait. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.165-176) → `BankDeposit`, `craft`, `learn`, `entrainement` — `src/data/activities.json`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.165-176) → `BankDeposit`, `revenus` — `src/data/activities.json`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -376,7 +376,7 @@ Acquérir des objets de rareté **Exotique** (ou très spécialisés, jamais en 
 Un seul objet Exotique par Activité *Passer commande*.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.179-184) → `BankDeposit`, `craft`, `learn`, `entrainement`, `dernieres-nouvelles`, `entrainement-au-combat` — `src/data/activities.json`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.179-184) → `BankDeposit`, `revenus`, `dernieres-nouvelles`, `entrainement-au-combat` — `src/data/activities.json`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -405,7 +405,7 @@ Les Personnages aux Niveaux 3-4 qui entreprennent *Revenus* **maintiennent autom
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 8` (l.106-122) → `actorStatus`, `openCatalogActivity`, `runActivityResolver` — `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`
-- `LDB 23` (l.187-193) → `craft`, `learn`, `entrainement`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `Combatant`, `dernieres-nouvelles`, `entrainement-au-combat` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.187-193) → `revenus`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `Combatant`, `dernieres-nouvelles`, `entrainement-au-combat` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -427,7 +427,7 @@ Apprendre des rumeurs de loin. Test **Ragot Intermédiaire (+0)**.
 - Échec Impressionnant → rumeur fausse crue vraie (MJ peut lancer en secret).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.196-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, +17 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, +9 fichiers
+- `LDB 23` (l.196-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, +20 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, +9 fichiers
 
 ---
 
@@ -442,7 +442,7 @@ S'entraîner avec les armes connues. Test **Compétence (Corps à corps ou Proje
 Peut être entrepris plusieurs fois (une inversion par Activité réussie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.206-209) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, `PendingActivity`, +10 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 23` (l.206-209) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, `PendingActivity`, +15 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 
@@ -458,7 +458,7 @@ Test **Perception Intermédiaire (+0)** (Difficulté modifiée selon la cible).
 - DR supplémentaires → informations (ou désinformations !) sur la cible.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.211-221) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, `PendingActivity`, +9 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 23` (l.211-221) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, `PendingActivity`, +14 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 
@@ -474,7 +474,7 @@ Test **Savoir Accessible (+20)** (spécialisation appropriée). Sans la bonne sp
 - Échec Impressionnant → fausse information crue vraie (MJ peut lancer en secret).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.222-227) → `InterludeHeroState`, `PendingActivity`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, `dernieres-nouvelles`, `entrainement-au-combat` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.222-227) → `InterludeHeroState`, `PendingActivity`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, `dernieres-nouvelles`, `entrainement-au-combat`, +5 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -492,7 +492,7 @@ Dépenser de l'argent pour augmenter son Standing de +1 pour la prochaine aventu
 - Échec Stupéfiant (−6) → Standing −1 pour la prochaine aventure entière.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.229-234) → `InterludeHeroState`, `PendingActivity`, `heroStatus`, `ActivityDef`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, `dernieres-nouvelles`, +1 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.229-234) → `InterludeHeroState`, `PendingActivity`, `heroStatus`, `ActivityDef`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, `observer-une-cible`, +4 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -517,7 +517,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 - Échec → pas de révolte ; Échec de plusieurs DR → la cible apprend vos actions.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `PendingActivity`, `heroStatus`, `ActivityDef`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, +2 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `PendingActivity`, `heroStatus`, `ActivityDef`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, +5 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -593,7 +593,7 @@ Les Activités de voyage durent toute une Étape de voyage et restent **fatigant
 Note sur les Revenus en voyage : l'Activité *Revenus* (LDB 23) n'est **pas adaptée** pour la plupart des Carrières en voyage — sauf juges/huissiers itinérants, chasseurs, éclaireurs, cochers (EDOC 8 l.167).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `EDOC 8` (l.129-180) → `plein-air`, `approvisionnement`, `EncounterCategory`, `gatherInnInfo`, `recueillir-informations`, `rester-aux-aguets`, `etablir-cartes`, `pratiquer-competence`, `recuperer`, `monter-camp`, +4 — `src/data/activities.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/travelEncounter.ts`, `src/engine/travelTables.ts`, +1 fichiers
+- `EDOC 8` (l.129-180) → `plein-air`, `printemps`, `approvisionnement`, `EncounterCategory`, `ete`, `gatherInnInfo`, `recueillir-informations`, `rester-aux-aguets`, `automne`, `etablir-cartes`, +13 — `src/data/activities.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/travelEncounter.ts`, `src/engine/travelTables.ts`, +1 fichiers
 
 ---
 
@@ -831,7 +831,7 @@ Table des résultats (`ACE 12 l.31-42`) :
 **Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `itemFromTrappingById`, `weaponUnmastered`, `ActivityDef`, `weaponGroupSkillMode`, +13 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
+- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `itemFromTrappingById`, `weaponUnmastered`, `ActivityDef`, `weaponGroupSkillMode`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -857,7 +857,7 @@ Table des résultats (`ACE 12 l.57-65`) :
 **Voir aussi** : [Opérations Bancaires](#opérations-bancaires) (ch.23, dépôt invest/planque).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.45-49, l.57-65) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `buySpell`, `openCatalogActivity`, `mecenatPayout`, +4 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.45-49, l.57-65) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `buySpell`, `mecenat`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 
 ---
 
@@ -876,5 +876,5 @@ Consultation des bibliothèques/laboratoires d'un Collège de Magie à Altdorf p
 - Achat du sort **immédiat**, sinon la remise est perdue.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.51-55, l.67) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `buySpell`, `openCatalogActivity`, `mecenatPayout`, +4 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.51-55, l.67) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `buySpell`, `mecenat`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 
