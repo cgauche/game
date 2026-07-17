@@ -14,7 +14,7 @@ import type { LandMarketProfile, TradeRumour } from '../engine/landCargo';
 import type { CargoLot } from '../engine/cargo';
 
 /**
- * COMMERCE TERRESTRE/FLUVIAL — rumeur CROSS-LIEU (T2C ch.11 l.180) : la rumeur entendue au marché désigne
+ * COMMERCE TERRESTRE/FLUVIAL — rumeur CROSS-LIEU (T2C 13 l.180) : la rumeur entendue au marché désigne
  * un AUTRE Lieu où le bien se vend au double. Board persistant `store.tradeRumours`, appliqué à la vente
  * au Lieu désigné (#99).
  */

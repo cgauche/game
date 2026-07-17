@@ -350,7 +350,7 @@ export function ActionBar() {
   // adjacent hors de l'eau. Action DIRECTE (aucune modale) — le clic asperge le 1ᵉʳ candidat.
   const canWater = isHero && !battle.acted && !stunned && !frenzied && hasWaterContainer(active);
   const waterTargets = canWater ? waterSprayCandidates(active, battle.combatants.filter((c) => c.kind === active.kind)) : [];
-  // Dissipation (LDB 46 l.204-207) : le héros actif possède Langue (Magick) ET ≥ 1 sort permanent est actif.
+  // Dissipation (LDB 46 l.158-162) : le héros actif possède Langue (Magick) ET ≥ 1 sort permanent est actif.
   const canDispel = isHero && actorHasSkill(active, 'langue', 'magick');
   const dispellable = canDispel ? dispellableSpellsOn(battle.combatants) : [];
   // Cumuler l'Avantage (LDB 09 l.305-308) : Compétences data-driven (`combatAdvantage`) que l'actif peut

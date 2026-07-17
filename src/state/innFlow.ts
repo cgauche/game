@@ -7,7 +7,7 @@
  * Ragot commercial / l'Évaluation du Vin de `landMarketFlow.ts` (#274).
  *
  * Succès → rumeur commerciale via le générateur EXISTANT `generateTradeRumour` (`landMarketFlow.ts`,
- * T2C ch.11 l.180), affichée par le panneau « Rumeurs déjà glanées » (déjà câblé sur `store.tradeRumours`)
+ * T2C 13 l.180), affichée par le panneau « Rumeurs déjà glanées » (déjà câblé sur `store.tradeRumours`)
  * — zéro prose de rumeur inventée ici. Échec → Exténué (EDOC ch.5 l.133, `ActivityDef.failExtenue`),
  * comme la version voyage (`travelPostes.ts`). Durée en POLICY maison (`inn-gather-info-minutes`,
  * `engine/policy.ts`) : l'horloge de campagne avance quelle que soit l'issue — « tout est horodaté ».

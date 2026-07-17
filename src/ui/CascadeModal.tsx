@@ -132,7 +132,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const extendedDrData = (done: number | undefined, target: number | undefined, res: CascadeRoll | null | undefined): { cum: number; target: number } | undefined => {
     if (target == null) return undefined;
     const gain = res?.success ? Math.max(0, res.sl) : 0;
-    // Un Test étendu SE TERMINE à la cible (LDB 12 l.197-211) : le cumul affiché est BORNÉ à la cible — un
+    // Un Test étendu SE TERMINE à la cible (LDB 12 l.170-186) : le cumul affiché est BORNÉ à la cible — un
     // jet de complétion à gros DR ne déborde pas la barre en « 5/2 »/« 6/2 » (F1). Site UNIQUE du datum.
     return { cum: Math.min((done ?? 0) + gain, Number(target)), target: Number(target) };
   };
@@ -414,7 +414,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // la cascade est SUBIE, on ne ferme pas — le bouton est une action explicite, pas une sortie.
     ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
     // Poursuite terrestre (purpose:'pursuite') : renoncer coûte la manche — le groupe qui FUIT se
-    // laisse rattraper (combat si une rencontre est fournie, LDB 15 l.518) ; côté poursuivant, la
+    // laisse rattraper (combat si une rencontre est fournie, LDB 15 l.94) ; côté poursuivant, la
     // proie s'échappe (state/pursuitFlow.pursuitAbandon porte la vraie conséquence).
     ...(p.purpose === 'pursuite' ? [{
       key: 'break',
@@ -423,7 +423,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       title: pursuit?.partyRole === 'pursuing'
         ? 'Le groupe renonce à traquer sa proie — la poursuite est perdue.'
         : pursuit?.encounter
-          ? 'Le groupe cesse de fuir et fait face — les poursuivants fondent sur lui (LDB 15 l.518).'
+          ? 'Le groupe cesse de fuir et fait face — les poursuivants fondent sur lui (LDB 15 l.94).'
           : 'Le groupe cesse de fuir et fait face.',
       when: 'always',
     } as RollAction] : []),

@@ -765,7 +765,7 @@ describe('Flux `activity` — défauts RAW corrigés (combiné partiel · Menace
     useGame.getState().massBattleActivity('reperage');
     const pa0 = pending()!;
     expect(pa0.target2).toBeGreaterThan(0); // vrai Test combiné
-    // skill-1 réussie, skill-2 ratée → `partial` = ÉCHEC GLOBAL RAW (LDB 12 l.229).
+    // skill-1 réussie, skill-2 ratée → `partial` = ÉCHEC GLOBAL RAW (LDB 12 l.202-206).
     useGame.setState({ pendingActivity: { ...pa0, roll: 40, success: true, sl: 1, success2: false, sl2: -1, combinedLevel: 'partial' } });
     grant({ fortune: 1 });
     seedBattleRng(99);

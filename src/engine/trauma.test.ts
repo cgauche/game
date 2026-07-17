@@ -170,7 +170,7 @@ describe('consolidateAmputations — cumul doigts (l.251) & dents (l.338) ; pén
   });
 });
 
-describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.360/363)', () => {
+describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.271-277)', () => {
   const eye = (): Trauma => ({ label: 'Œil perdu', traumaId: 'oeil-perdu', location: 'tete', ops: [{ op: 'charMod', char: 'sociabilite', mod: -5 }, { op: 'senseLoss', sense: 'vue' }] });
   const ear = (): Trauma => ({ label: 'Oreille perdue', traumaId: 'oreille-perdue', location: 'tete', ops: [{ op: 'charMod', char: 'sociabilite', mod: -5 }, { op: 'senseLoss', sense: 'ouie' }] });
   it('un seul œil : pas de cécité', () => {

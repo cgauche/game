@@ -115,7 +115,7 @@ export interface SceneEntity {
    *  enrôlé dans une rencontre (cf. EncounterMember). Porte les choix d'auteur qui DÉCRIVENT la
    *  personne au combat — son profil (ref/statblock) et son apparence vivent déjà sur l'entité. */
   combat?: {
-    /** OPTIONNELS choisis (LDB 76 l.49) : `TraitInstance` fusionnés au spawn OU notes composées
+    /** OPTIONNELS choisis (LDB 76 l.45) : `TraitInstance` fusionnés au spawn OU notes composées
      *  (joker « tous les traits », variante « swap » retirant des Traits + octroyant un bonus, ZI). */
     optionals?: import('../engine/statEntry').OptionalEntry[];
     /** Sorts connus (ids de spells.json, créature `ref`) — choix d'auteur (la donnée bestiaire n'en liste pas). */
@@ -186,7 +186,7 @@ export type Effect =
   | { type: 'startDialogue'; dialogue: string }
   | { type: 'journal'; text: string }
   | { type: 'document'; title: string; text: string }
-  /** Test ÉTENDU (LDB 12 l.197-211) : un acteur cumule des DR Round par Round jusqu'à `targetDR`
+  /** Test ÉTENDU (LDB 12 l.172-174) : un acteur cumule des DR Round par Round jusqu'à `targetDR`
    *  (crocheter une serrure, forcer un mécanisme…). `flag` posé à la réussite (gate la suite). */
   | {
       type: 'extendedTest';
@@ -288,7 +288,7 @@ export type Effect =
    *  unique `GameOp`, appliquées par `applyOps` cible par cible). Bombe, grenade, piège de zone…
    *  Dégâts BRUTS par défaut (`op:'wounds'` ignore BE+PA) ; mitiger = `{ignoreTB:false, ignoreAP:false}`. */
   | { type: 'zoneBlast'; center: { x: number; y: number }; radius: number; ops: import('../engine/ops').GameOp[] }
-  /** Chute (LDB 15 l.117-122) : la cible tombe de `metres` mètres → 3 Dégâts/mètre + 1d10, réduits par
+  /** Chute (LDB 15 l.80-84) : la cible tombe de `metres` mètres → 3 Dégâts/mètre + 1d10, réduits par
    *  le Bonus d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre.
    *  `to` (optionnel) repositionne le GROUPE à l'arrivée (balcon→parterre, plancher de loge effondré). */
   | { type: 'fall'; target: 'party' | 'hero'; heroId?: string; metres: number; to?: { x: number; y: number; z?: number } }

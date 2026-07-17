@@ -6,9 +6,9 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
-/** Dissipation / Contre-sort (LDB 46 l.201-202) : Test opposé de Langue (Magick) contre une
+/** Dissipation / Contre-sort (LDB 46 l.156) : Test opposé de Langue (Magick) contre une
  *  incantation — IA (ennemi → héros) et action joueur (héros → ennemi), un seul par Round. */
-describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
+describe('Contre-sort (Dissipation, LDB 46 l.156)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null, pendingCast: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 

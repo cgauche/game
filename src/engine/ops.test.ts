@@ -375,14 +375,14 @@ describe('applyOps — opérations unitaires', () => {
     expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(false);
   });
 
-  it('reduceToZero + condition inconscient : Châtiment (LDB 40 l.101-105)', () => {
+  it('reduceToZero + condition inconscient : Châtiment (LDB 40 l.79)', () => {
     const c = hero();
     applyOps(c, [{ op: 'reduceToZero' }, { op: 'condition', name: 'inconscient' }]);
     expect(c.wounds.current).toBe(0);
     expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(true);
   });
 
-  it('reduceToZero + condition en-flammes : Tonnerre et foudre (LDB 40 l.126-130)', () => {
+  it('reduceToZero + condition en-flammes : Tonnerre et foudre (LDB 40 l.84)', () => {
     const c = hero();
     applyOps(c, [{ op: 'reduceToZero' }, { op: 'condition', name: 'en-flammes', value: 1 }]);
     expect(c.wounds.current).toBe(0);

@@ -1,5 +1,5 @@
 /**
- * Combat monté (LDB 14 l.212-225) — APPAIRAGE cavalier↔monture, DYNAMIQUE (Monter/Descendre en jeu).
+ * Combat monté (LDB 14 l.175-187) — APPAIRAGE cavalier↔monture, DYNAMIQUE (Monter/Descendre en jeu).
  * Un cavalier (`mountId`) et sa monture (`riderId`) sont deux Combattants distincts ; le couple PARTAGE
  * la position et l'empreinte de la MONTURE (souvent Grande → 2×2). Module-feuille pur (aucun import de
  * combatFlow) : mute les combattants, l'appelant (store) re-set la bataille + émet SCENE_DIRTY.
@@ -199,7 +199,7 @@ export function dismount(battle: BattleState, scene: Scene, rider: Combatant): b
 
 /** Mort/retrait de la monture (LDB 14 l.221, la monture est un combattant à part) : son cavalier est
  *  DÉMONTÉ (à pied, case libre adjacente). Pas de dégâts de chute (le RAW ne définit AUCUNE chute liée à
- *  la mort d'une monture — seul existe le cas générique de la Chute, LDB 15 l.117-122 ; on ne l'invente pas). */
+ *  la mort d'une monture — seul existe le cas générique de la Chute, LDB 15 l.78-84 ; on ne l'invente pas). */
 export function handleMountDeath(battle: BattleState, scene: Scene, mount: Combatant): Combatant | undefined {
   const rider = riderOf(battle, mount);
   if (!rider) return undefined;
@@ -223,7 +223,7 @@ export function sweepDismountDeaths(battle: BattleState, scene: Scene): string[]
   return lines;
 }
 
-// ── Combat monté : Mouvement & modificateurs de combat (LDB 14 l.215-225) ──────────────────────────
+// ── Combat monté : Mouvement & modificateurs de combat (LDB 14 l.179-181) ──────────────────────────
 /** Acrobaties équestres (LDB 10) : annule la pénalité d'Esquive du cavalier (l.225). */
 const hasAcrobatiesEquestres = (c: Combatant): boolean =>
   (c.talents ?? []).some((t) => (t.times ?? 0) > 0 && t.talentId === 'acrobaties-equestres');
@@ -265,7 +265,7 @@ export function mountedAttackMods(battle: BattleState, attacker: Combatant, targ
   return out;
 }
 
-/** Pénalité d'Esquive d'un cavalier (LDB 14 l.225) : −20, sauf Talent Acrobaties équestres. 0 à pied. */
+/** Pénalité d'Esquive d'un cavalier (LDB 14 l.78) : −20, sauf Talent Acrobaties équestres. 0 à pied. */
 export function mountedDodgePenalty(defender: Combatant): number {
   return defender.mountId && !hasAcrobatiesEquestres(defender) ? -20 : 0;
 }

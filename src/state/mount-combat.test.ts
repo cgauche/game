@@ -8,7 +8,7 @@ const mk = (id: string, size: SizeCategory, extra: Partial<Combatant> = {}): Com
   ({ id, name: id, size, movement: 4, characteristics: { force: 30, endurance: 30 }, talents: [], items: [], wounds: { current: 10, max: 10, base: 10 }, conditions: [], ...extra }) as unknown as Combatant;
 const battle = (cs: Combatant[]): BattleState => ({ combatants: cs }) as unknown as BattleState;
 
-describe('mount — modificateurs de Combat monté (LDB 14 l.215-225)', () => {
+describe('mount — modificateurs de Combat monté (LDB 14 l.179-181)', () => {
   it('+20 : un cavalier frappe une cible plus petite que sa monture (l.217), mêlée ET tir', () => {
     const horse = mk('h', 'grande', { movement: 8 });
     const knight = mk('k', 'moyenne');

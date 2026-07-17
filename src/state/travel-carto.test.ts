@@ -73,7 +73,7 @@ describe('Voyage — poste Cartographie (Établir des cartes, test étendu)', ()
     expect(Array.isArray(part.outcome)).toBe(true); // conséquence rendue sur SA rangée
   });
 
-  // F1 (recette 2026-07-11) : un Test étendu SE TERMINE à la cible (LDB 12 l.197-211). Une fois la carte
+  // F1 (recette 2026-07-11) : un Test étendu SE TERMINE à la cible (LDB 12 l.170-186). Une fois la carte
   // ACHEVÉE, le poste NE re-roule plus (affichage « achevée », zéro accumulation) et la progression est
   // FIGÉE à la cible — plus de reset qui recommencerait le Test chaque jour et déborderait « 5/2 »/« 6/2 ».
   it('#F1 : carte ACHEVÉE → progression figée à la cible, poste sans jet à l’Étape suivante', () => {

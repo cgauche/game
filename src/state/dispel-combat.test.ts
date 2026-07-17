@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame, type BattleState } from './store';
 import type { Combatant } from '../engine/types';
 
-/** Action de combat « Dissiper » (LDB 46 l.204-207) : ouverture du pending (Soutien même Domaine),
+/** Action de combat « Dissiper » (LDB 46 l.158-162) : ouverture du pending (Soutien même Domaine),
  *  cumul du DR sur `caster.dispel`, dissipation au NI. Calque la Focalisation. */
 describe('Dissipation permanente — Action de combat', () => {
   beforeEach(() => { vi.clearAllTimers(); useGame.setState({ battle: null, pendingDispel: null }); });

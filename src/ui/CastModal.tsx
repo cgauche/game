@@ -375,7 +375,7 @@ export function CastModal() {
               })}
             </div>
           )}
-          {/* CONTRE-SORT (Dissipation, LDB 46 l.201-202/207) : le Sort ENNEMI est figé (révélé ci-dessus),
+          {/* CONTRE-SORT (Dissipation, LDB 46 l.154-162) : le Sort ENNEMI est figé (révélé ci-dessus),
               chaque héros contre-lanceur oppose son Langue (Magick) — rangées DANS cette même modale
               d'incantation (plus de modale séparée : un contre-sort EST un lancement de sort opposé).
               COOP : on ne pilote QUE ses propres héros (rangées distantes en lecture seule). */}

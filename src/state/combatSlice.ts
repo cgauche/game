@@ -309,7 +309,7 @@ export function createCombatSlice(get: Get, set: Set) {
   // sur le `do`/`grantFreeAttack` (Frappe réactive / Assaut féroce / Frénésie). Inversion de dépendance.
   setFreeAttackHook(freeAttackHookImpl);
   // Hook `interruptFocus` (op IMPURE) : conséquence d'un Test de Calme d'interruption de Focalisation RATÉ
-  // (perte des DR + Imparfaite Mineure, LDB 46 l.194) — appelée par `runCombatFlow` sur le `do`/`interruptFocus`.
+  // (perte des DR + Imparfaite Mineure, LDB 46 l.144) — appelée par `runCombatFlow` sur le `do`/`interruptFocus`.
   setFocusInterruptHook(applyFocusInterruption);
   // Hook `breakBlade` (op IMPURE) : conséquence d'un Test opposé de Piège-lame GAGNÉ (désarme/brise la lame,
   // LDB 62 l.295) — appelée par `runCombatFlow` sur le `do`/`breakBlade`.
@@ -386,8 +386,10 @@ export function createCombatSlice(get: Get, set: Set) {
       const e = inBattleId(get().battle, id);
       return !!e && aiWouldPrepareSpell(e, get);
     },
-    // ── Combat monté : Monter / Descendre (LDB 14 l.212-225) ──
-    // Enfourcher/descendre ne demande AUCUN jet (Chevaucher sans Test si l'on a la Compétence, LDB 09 l.99)
+    // ── Combat monté : Monter / Descendre — MAISON [entériné 2026-07-17] (« Met les en Maison pour le
+    // moment », #526) : aucune clause de coût citable (LDB 14/15/09 + AA ch.9 fouillés en entier) ;
+    // cadre RAW du combat monté : LDB 14 l.175-187. ──
+    // Enfourcher/descendre ne demande AUCUN jet (Chevaucher sans Test si l'on a la Compétence, LDB 09 l.112)
     // → ce n'est PAS une Action (critère : tout jet = une Action) : c'est juste du MOUVEMENT (repositionnement
     // sur/hors la monture). On consomme donc le Mouvement du tour, pas l'Action — on peut enfourcher PUIS attaquer.
     battleMount: () => {
@@ -2114,7 +2116,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = inBattleId(battle, pa.targetId);
       if (!attacker || !target) return;
       applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-      const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid, pa.withhold, pa.harpoonRopeCut); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223) ; pa.withhold = Retenir ses coups (AA) ; pa.harpoonRopeCut = mode de tir corde séparée (ADE II 02 l.677)
+      const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid, pa.withhold, pa.harpoonRopeCut); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.183) ; pa.withhold = Retenir ses coups (AA) ; pa.harpoonRopeCut = mode de tir corde séparée (ADE II 02 l.677)
       if (!r) {
         get().log(firedWeapon(attacker, target, pa.weaponUid).type === 'ranged' ? t('cf.noLoSMasked') : t('cs.meleeOutOfRange'));
         set({ pendingAttack: null });
@@ -2796,20 +2798,20 @@ export function createCombatSlice(get: Get, set: Set) {
         ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused, spellSightOf(get))
         : {};
       set({ pendingCast: { ...pc, result: res, ...auto } });
-      // Dissipation (LDB 46 l.201-202) : un lanceur ENNEMI éligible chante un Contre-sort contre le
+      // Dissipation (LDB 46 l.156) : un lanceur ENNEMI éligible chante un Contre-sort contre le
       // SORT d'un héros — opposé au Test d'Incantation (déclaré pendant l'incantation : l'IA n'attend
       // pas l'issue du jet — il module les DR, donc le budget de Surincantation AVANT la pose), un
       // seul par Round. Un jet CRITIQUE n'est pas contré (« Force inéluctable », LDB 46 l.59).
       // Zone non posée : le Contre-sort oppose le Test d'Incantation, AVANT la pose du point de zone —
       // la recherche de candidats s'ancre donc sur le LANCEUR, seul point disponible à ce stade
-      // (même clause de distance FM mètres, LDB 46 l.201-202).
+      // (même clause de distance FM mètres, LDB 46 l.156).
       if (caster.kind === 'hero' && isDispellableSpell(spell) && !res.isCritical) {
         const best = counterspellCandidates(get().battle, get().scene, caster, unplacedZone ? caster : target)
           .sort((a, b) => castingValue(b, 'langue', 'magick') - castingValue(a, 'langue', 'magick'))[0];
         if (best) applyCounterspell(get, set, best);
       }
     },
-    /** Contre-sort d'un HÉROS contre l'incantation ennemie figée (Dissipation, LDB 46 l.201-202). */
+    /** Contre-sort d'un HÉROS contre l'incantation ennemie figée (Dissipation, LDB 46 l.156). */
     // Cycle Chance/Pacte UNIFIÉ (spec `cast`) — Résilience (forceSuccess/setForcedRoll) plus bas.
     castConfirm: () => {
       const { pendingCast: pc } = get();
@@ -2820,7 +2822,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // déjà ses jets.
       if (pc.zone && !pc.zone.center) {
         const castable = pc.result.cast || (pc.result.isCritical && (pc.critChoice ?? 'puissance') === 'puissance');
-        // Sort qui n'aboutit PAS (raté / DISSIPÉ par Contre-sort, LDB 46 l.207) : aucune zone à poser →
+        // Sort qui n'aboutit PAS (raté / DISSIPÉ par Contre-sort, LDB 46 l.156) : aucune zone à poser →
         // on ferme proprement la situation (data + cascade-hôte) — pas de soft-lock, cibles intactes.
         if (!castable) {
           const caster = actorIn(get(), pc.casterId);
@@ -2997,7 +2999,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const pcs = get().pendingCounterspell;
       if (!pcs) return;
       const rolled = pcs.participants.filter((p): p is CounterParticipant & { result: NonNullable<CounterParticipant['result']> } => !!p.result);
-      // Dissipé si UN héros gagne ; sinon le MEILLEUR DR de Contre-sort réduit l'incantation (LDB 46 l.207).
+      // Dissipé si UN héros gagne ; sinon le MEILLEUR DR de Contre-sort réduit l'incantation (LDB 46 l.156).
       const disp = rolled.find((p) => p.result.dispelled);
       const best = disp ?? (rolled.length ? rolled.reduce((b, p) => (p.result.counter.sl > b.result.counter.sl ? p : b)) : undefined);
       set({ pendingCounterspell: null });
@@ -3122,7 +3124,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     focusCancel: () => set({ pendingFocus: null }),
 
-    /** Dissipe un Sort permanent (LDB 46 l.204-207 : Test étendu de Langue (Magick) → NI). Action de combat
+    /** Dissipe un Sort permanent (LDB 46 l.158-160 : Test étendu de Langue (Magick) → NI). Action de combat
      *  RÉPÉTÉE chaque Round (comme la Focalisation) ; le DR cumule sur `caster.dispel` jusqu'au NI. */
     battleDispelSpell: (spellId: string, spellCasterId: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
@@ -3133,7 +3135,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!actorHasSkill(active, 'langue', 'magick')) { get().log(t('cs.cannotDispel')); return; }
       const target = dispellableSpellsOn(battle.combatants).find((d) => d.spellId === spellId && d.casterId === spellCasterId);
       if (!target) return;
-      // SOUTIEN « même Domaine » (LDB 46 l.207) : les AUTRES héros encore en action, possédant Langue (Magick)
+      // SOUTIEN « même Domaine » (LDB 46 l.162) : les AUTRES héros encore en action, possédant Langue (Magick)
       // ET partageant un Domaine (Vent) avec le meneur, l'assistent (+10 chacun, plafond Bonus d'Int) — même
       // primitive `soutienBonus` (LDB 12) que les autres sites de combat, gatée par l'adjacence (l.196, les
       // héros sont dispersés en combat) via le MÊME prédicat `combatDistance` que `openSkillTest`.

@@ -38,10 +38,10 @@ const LAND = landCargoJson as unknown as {
 };
 
 export const WINE_QUALITY = LAND.wineQuality;
-/** Catalogue des cargaisons terrestres (Tableau des cargaisons, T2C ch.11 l.71-90) — source UNIQUE pour
+/** Catalogue des cargaisons terrestres (Tableau des cargaisons, T2C 13 l.71-90) — source UNIQUE pour
  *  énumérer les Produits d'un Lieu (éditeur de marché). */
 export const LAND_CARGOES: readonly LandCargoDef[] = LAND.cargoes;
-/** Échelons de Richesse et leur Mise à prix (T2C ch.11 l.150-156) — source des libellés (1 Misérable …
+/** Échelons de Richesse et leur Mise à prix (T2C 13 l.150-156) — source des libellés (1 Misérable …
  *  5 Prospère) pour l'éditeur de marché. */
 export const LAND_RICHESSE_ROWS: readonly OfferRow[] = LAND.sell.offerByRichesse;
 export const findLandCargoById = (id: string): LandCargoDef | undefined => LAND.cargoes.find((c) => c.id === id);
@@ -205,7 +205,7 @@ export function rumourMatches(rumour: RumourRow, cargoId: string): boolean {
   return rumour.biens.includes(cargoId);
 }
 
-/** Rumeur commerciale PERSISTANTE (T2C ch.11 l.180) : à l'Emplacement `placeId` (un AUTRE Lieu, tiré via
+/** Rumeur commerciale PERSISTANTE (T2C 13 l.180) : à l'Emplacement `placeId` (un AUTRE Lieu, tiré via
  *  l'index géographique = un Lieu à `market` de la carte du monde), les `biens` sont très demandés et s'y
  *  vendent au `mult` du prix de base. Entendue sur un Test de Ragot Complexe (−10) ; le RAW ne lui donne
  *  aucune échéance (« ils peuvent en vendre autant qu'ils le souhaitent ») → non consommée, sans expiration. */

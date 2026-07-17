@@ -192,7 +192,7 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
 }
 
 /**
- * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
+ * « Repousser les Vents » (LDB 46 l.150) : −1 DR aux Tests d'Incantation et de
  * Focalisation par PA (net) sur la Localisation la mieux protégée par une ARMURE
  * PORTÉE (les PA naturels d'une mutation ne sont pas une armure). Exemptions
  * (l.188) : Magie des Arcanes (Métal) ignore les armures métalliques, (Bêtes)
@@ -439,7 +439,7 @@ export interface CastResult {
   isCritical: boolean;
   /** Maladresse (double raté) → Incantation Imparfaite / Colère des dieux. */
   isFumble: boolean;
-  /** DISSIPÉ par un Contre-sort (LDB 46 l.201-202) — une « Puissance totale » ne le repêche pas. */
+  /** DISSIPÉ par un Contre-sort (LDB 46 l.156) — une « Puissance totale » ne le repêche pas. */
   dispelled?: boolean;
   log: string;
 }
@@ -474,7 +474,7 @@ export function resolveCasting(
   }
   const value = castingValue(caster, info.skill, info.spec) + extraMod;
   const t = rollTest(value, difficulty, rng);
-  // « Repousser les Vents » (LDB 46 l.199) : −1 DR par PA de la localisation la mieux
+  // « Repousser les Vents » (LDB 46 l.150) : −1 DR par PA de la localisation la mieux
   // protégée par une armure portée (Tests d'Incantation ET de Focalisation).
   const pen = armourCastDRPenalty(caster);
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test, sur utilisation RÉUSSIE
@@ -545,7 +545,7 @@ export function evaluateCasting(
   return { cast, roll: t.roll, target: t.target, sl: t.sl, isCritical, isFumble, log };
 }
 
-/** Issue d'un Contre-sort (Dissipation, LDB 46 l.201-202). */
+/** Issue d'un Contre-sort (Dissipation, LDB 46 l.156). */
 export interface CounterspellOutcome {
   /** Le contre-lanceur GAGNE le Test opposé : le Sort est dissipé. */
   dispelled: boolean;
@@ -556,25 +556,25 @@ export interface CounterspellOutcome {
   log: string;
 }
 
-/** Seul un SORT se dissipe (LDB 46 l.201 : « Si un Sort vous cible ») — pas une Prière
+/** Seul un SORT se dissipe (LDB 46 l.156 : « Si un Sort vous cible ») — pas une Prière
  *  (Bénédictions/Miracles relèvent de la Colère des dieux, LDB 40). */
 export function isDispellableSpell(spell: SpellLike): boolean {
   return !spell.isPrayer;
 }
 
 /**
- * Dissipation (LDB 46 l.201-202) : « vous pouvez opposer le Test d'Incantation avec Langue
+ * Dissipation (LDB 46 l.156) : « vous pouvez opposer le Test d'Incantation avec Langue
  * (Magick), car vous chantez un Contre-sort. Effectuez un Test opposé de Langue (Magick). Sur un
  * succès, vous dissipez le Sort ; sur un échec, le Sort utilise le DR du Test opposé pour
  * déterminer si l'incantation a réussi normalement. Vous ne pouvez tenter de dissiper qu'un seul
  * Sort chaque Round. »
  * `castT` = le Test d'Incantation du lanceur, DÉJÀ jeté (DR ajustés : talents, armure). Le jet du
  * contre-lanceur subit les mêmes règles de Test de Langue (Magick) : « Repousser les Vents »
- * (l.199, −1 DR/PA) et +1 DR par Talent lié réussi (LDB 10 l.20 — Diction instinctive).
+ * (l.150, −1 DR/PA) et +1 DR par Talent lié réussi (LDB 10 l.20 — Diction instinctive).
  * Égalité du Test opposé : personne ne gagne → pas de dissipation, DR net 0 appliqué au NI.
  */
 /** Reconstruit le Test d'Incantation FIGÉ d'un résultat d'incantation, pour l'opposition du
- *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
+ *  Contre-sort (LDB 46 l.156). Source unique. */
 export function castTestOf(res: Pick<CastResult, 'roll' | 'target' | 'sl'>): TestResult {
   return { roll: res.roll, target: res.target, success: res.roll <= res.target, sl: res.sl, isDouble: res.roll === 100 || res.roll % 11 === 0 };
 }
@@ -734,7 +734,7 @@ export interface FocusResult {
 }
 
 /** Un Round de Test étendu de Focalisation (FM + spécialisation PAR VENT — le
- *  Domaine du sort exige la Focalisation correspondante, LDB 46 l.180-199).
+ *  Domaine du sort exige la Focalisation correspondante, LDB 46 l.128-132).
  *  `atSea` = Magie des mers (MDG 02 l.178-186, `DomainData.seaModifier`) : contexte navigation
  *  fourni par l'appelant (état — hors du moteur pur). */
 export function resolveFocus(

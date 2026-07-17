@@ -607,7 +607,7 @@ export interface AttackOptions {
   env?: ModLine[];
   /** Pénalité météo à l'esquive (neige épaisse −20, LDB 14 l.115-116), injectée par combatFlow. */
   dodgeMod?: number;
-  /** Combat monté — CHARGE (LDB 14 l.223) : pour le calcul des DÉGÂTS seulement, on substitue la Force
+  /** Combat monté — CHARGE (LDB 14 l.183) : pour le calcul des DÉGÂTS seulement, on substitue la Force
    *  (Bonus `sb`) et la Taille de la MONTURE à celles du cavalier (le toucher reste la CC du cavalier). */
   dmgProxy?: { sb: number; size: Combatant['size'] };
   /** « Retenir ses coups » (Aux Armes l.2503-2505) : maîtriser sans tuer — déclaré AVANT le jet. N'agit
@@ -727,7 +727,7 @@ export function finishMelee(
   location?: HitLocation,
   env: ModLine[] = [],
   dodgeMod = 0,
-  dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
+  dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.183)
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + Atouts + pénalité main 2nde)
   withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505)
   sub?: DefenseSub, // substitution sociale (mode 'social') : base + libellé de la Compétence substituée
@@ -835,7 +835,7 @@ export function resolveMeleePassive(
   atk: TestResult,
   location?: HitLocation,
   env: ModLine[] = [],
-  dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
+  dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.183)
   withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505)
 ): AttackResult {
   const atkBd = bd(attackTestLabel(weapon, 'melee'), combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
@@ -1129,7 +1129,7 @@ function applyHit(
       log: `${attacker.name} touche ${defender.name}… mais le coup passe au travers (Éthéré — seules les attaques magiques la blessent).`,
     };
   }
-  // Charge montée (LDB 14 l.223) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
+  // Charge montée (LDB 14 l.183) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
   let sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'force'))) + damageSBBonus(attacker); // +1 BF en Frénésie via `sbBonus` (psychology.json, LDB 21 l.34)
   // Tueur (LDB 10) : « utilisez le Bonus d'Endurance de votre adversaire comme votre Bonus de Force
   // s'il est plus élevé ; déterminez toujours ce point avant toute autre règle ».

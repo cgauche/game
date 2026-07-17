@@ -132,7 +132,7 @@ export interface VehicleData {
   /** Encombrement de l'objet véhicule (LDB 61) — généralement `null` (on ne porte pas une diligence) ;
    *  un coracle se porte (`enc` chiffré). Lu par `itemFromVehicleById` pour l'`ItemInstance` d'inventaire. */
   enc?: number | null;
-  /** Chargement (EDOC ch.4 l.309-321) : Points d'Enc que la section bagages contient — véhicules
+  /** Chargement (EDOC 07 l.233-244) : Points d'Enc que la section bagages contient — véhicules
    *  TERRESTRES uniquement (charrette 25, chariot 30, diligence 80). Capacité de porteur (`CargoCarrier`,
    *  engine/cargo.ts) ; champ parallèle à `ship.capacity` (Contenance navale), même concept. */
   chargement?: number;
@@ -481,7 +481,7 @@ export interface ConditionInstance {
 export type ConditionUnlock = 'medicalAid' | 'surgery' | 'magic';
 
 /** Pénalité/blocage d'incantation temporisé (contrecoups des tables d'Imparfaites /
- *  Colère des dieux — LDB 46 l.61-136, LDB 40 l.58-138). Une seule des deux durées :
+ *  Colère des dieux — LDB 46 l.61-136, LDB 40 l.55-89). Une seule des deux durées :
  *  `roundsLeft` (échelle tactique) ou `untilTime` (minutes d'horloge `gameTime`). */
 export interface CastPenalty {
   label: string;
@@ -517,7 +517,7 @@ export interface ActiveEffect {
    *  par l'horloge), sans durée = `{scale:'permanent'}`. */
   duration: Duration;
   /** SORT SOURCE de cet effet actif (posé à l'incantation via `OpsCtx.sourceSpell`) : identité + NI, pour
-   *  la DISSIPATION (LDB 46 l.204-207 : Test étendu de Langue (Magick) jusqu'au NI → retrait de TOUS les
+   *  la DISSIPATION (LDB 46 l.158-162 : Test étendu de Langue (Magick) jusqu'au NI → retrait de TOUS les
    *  effets de ce sort). Absent = effet non-magique ou sort instantané (rien à dissiper). */
   spell?: { spellId: string; ni: number; casterId: string; label: string };
   /** id STABLE du sort/prière SOURCE de cet effet actif (posé à l'incantation via `OpsCtx.sourceSpellId`),
@@ -1155,7 +1155,7 @@ export interface Combatant {
   /** Nuée (Trait Essaim, LDB 85 l.199-200) : ignore la Taille et la Psychologie, +40 au tir CONTRE
    *  elle, Frappe Mortelle sur toute touche, 1 PB/Round aux Engagés ; ×5 PB & +10 CC posés au spawn. */
   swarm?: boolean;
-  /** Combat monté (LDB 14 l.212-225). `mountId` = la monture que CE combattant chevauche (→ il est
+  /** Combat monté (LDB 14 l.175-187). `mountId` = la monture que CE combattant chevauche (→ il est
    *  cavalier) ; `riderId` = le cavalier porté (→ il est monture). Appairage DYNAMIQUE (Monter/Descendre).
    *  Le couple partage la position et l'empreinte de la MONTURE. */
   mountId?: string;
@@ -1182,7 +1182,7 @@ export interface Combatant {
    *  la créature peut effectuer UNE Attaque gratuite » → plafond 1/tour ; exception « une Attaque par
    *  tentacule » → `count`/tour). Remplace l'ancien booléen tentacule ; remis à zéro en début de tour. */
   freeAttacksThisTurn?: Partial<Record<string, number>>;
-  /** Dissipation (LDB 46 l.201-202 : « un seul Sort chaque Round ») — Contre-sort déjà tenté ce Round. */
+  /** Dissipation (LDB 46 l.156 : « un seul Sort chaque Round ») — Contre-sort déjà tenté ce Round. */
   dispelledThisRound?: boolean;
   characteristics: Characteristics;
   /** Points de Blessure. `base` = Blessures à vide (snapshot/surcharge au spawn) ; `max` dynamique
@@ -1228,7 +1228,7 @@ export interface Combatant {
   castPenalties?: CastPenalty[];
   /** Accumulateur de Focalisation : DR cumulé pour un sort d'Arcane/Domaine. */
   focus?: { spell: string; dr: number };
-  /** Accumulateur de DISSIPATION permanente (LDB 46 l.204-207) : Test étendu de Langue (Magick) en cours,
+  /** Accumulateur de DISSIPATION permanente (LDB 46 l.158-162) : Test étendu de Langue (Magick) en cours,
    *  DR cumulé vers la NI d'UN sort durable (identifié par sort + lanceur). Persiste entre Rounds de combat
    *  (une Action/Round) ; effacé à la dissipation (DR ≥ NI) ou à la fin du combat. Cf. `caster.focus`. */
   dispel?: { spellId: string; spellCasterId: string; total: number };

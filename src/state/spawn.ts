@@ -158,7 +158,7 @@ export function talentsFromBook(list: TalentRef[] | undefined): TalentInstance[]
 
 /** Personnalisations d'AUTEUR au spawn d'une créature (portées par SceneEntity.combat). */
 export interface SpawnExtras {
-  /** OPTIONNELS choisis (LDB 76 l.49) : `TraitInstance` ordinaires (fusionnés avant dérivation) OU
+  /** OPTIONNELS choisis (LDB 76 l.45) : `TraitInstance` ordinaires (fusionnés avant dérivation) OU
    *  NOTES composées (joker « tous les traits », variante « swap » qui RETIRE des Traits + octroie un bonus). */
   optionals?: OptionalEntry[];
   /** Sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur). */
@@ -189,13 +189,13 @@ function withTraitChars(chars: Characteristics, live: TraitList | undefined): Ch
 
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number; z?: number }, extras?: SpawnExtras): Combatant {
   const optEntries = extras?.optionals ?? [];
-  // Les optionnels choisis (LDB 76 l.49) se répartissent : Traits FACULTATIFS ordinaires (fusionnés)
+  // Les optionnels choisis (LDB 76 l.45) se répartissent : Traits FACULTATIFS ordinaires (fusionnés)
   // vs NOTES composées « swap » (Grand Loup/Griffon ZI). Le joker « all-traits » (Mutant) est une
   // indication au picker (« n'importe quel Trait peut être ajouté ») → aucun effet mécanique au spawn.
   const optTraits = optEntries.filter((e): e is TraitInstance => !isOptionalNote(e));
   const swaps = optEntries.filter((e): e is OptionalSwap => isOptionalNote(e) && e.note === 'swap');
   // Variante « swap » (ZI) : RETIRE les Traits qu'elle nomme (Bestial/Dressé/Territorial) — en échange
-  // d'un bonus (appliqué plus bas). Traits FACULTATIFS (LDB 76 l.49) fusionnés AVANT toutes les
+  // d'un bonus (appliqué plus bas). Traits FACULTATIFS (LDB 76 l.45) fusionnés AVANT toutes les
   // dérivations (armes, armure, psy, nuée…), puis les Traits retirés par les variantes sont ôtés.
   const removedBySwap = new Set(swaps.flatMap((s) => s.remove));
   const traits = [...creature.traits, ...optTraits].filter((t) => !removedBySwap.has(t.id));

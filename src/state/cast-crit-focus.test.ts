@@ -139,12 +139,12 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
 });
 
 /**
- * Interruption de Focalisation (LDB 46 l.194) : le Test de Calme Difficile (−20) du focaliseur est routé
+ * Interruption de Focalisation (LDB 46 l.142-144) : le Test de Calme Difficile (−20) du focaliseur est routé
  * CADENCE-AWARE (comme tout jet héros). Héros MANUEL → étape de cascade `triggeredTest` INFLUENÇABLE
  * (le joueur PEUT dépenser sa Chance pour garder son sort) ; ennemi / cadence auto → jet INLINE. La
  * conséquence d'échec (perte des DR + Imparfaite Mineure, op `interruptFocus`) s'exécute APRÈS le Test.
  */
-describe('Interruption de Focalisation (l.194) — cadence-aware', () => {
+describe('Interruption de Focalisation (l.142-144) — cadence-aware', () => {
   /** Place le focaliseur dans un combat minimal (un ennemi figurant) → le routage cadence s'applique. */
   function inCombat(w: Combatant, foe?: Combatant): Combatant {
     const enemy = foe ?? ({ ...wiz(), id: 'foe', name: 'Brute', kind: 'enemy' } as Combatant);

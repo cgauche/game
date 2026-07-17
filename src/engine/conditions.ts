@@ -468,7 +468,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
 /** Retire d'un combattant les ActiveEffect satisfaisant `pred`, en RÉVERSANT proprement leurs octrois
  *  (traits/ressources/armes accordés, Traits psy suspendus) — EXACTEMENT comme l'expiration naturelle.
  *  SOURCE UNIQUE du retrait d'effets actifs : expiration en Rounds (`tickDurations`), horloge, et
- *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
+ *  DISSIPATION (LDB 46 l.158-162, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
 export function removeActiveEffects(c: Combatant, pred: (e: ActiveEffect) => boolean): ActiveEffect[] {
   if (!c.activeEffects?.length) return [];
   const removed = c.activeEffects.filter(pred);

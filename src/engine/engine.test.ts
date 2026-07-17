@@ -696,7 +696,7 @@ describe('Magie — compétences Avancées (gating)', () => {
     }
   });
 
-  it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
+  it('Dissipation (LDB 46 l.156) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
     const langue = (adv: number) => [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence' as const, advances: adv }];
     // contre-lanceur écrasant (valeur 99 clampée) vs jet d'incantation médiocre figé (DR 1)
     const fort = caster({ intelligence: 89 }, langue(10));

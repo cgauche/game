@@ -1,5 +1,5 @@
 /**
- * DISSIPATION DE SORTS PERMANENTS (LDB 46 l.204-207) — partie PURE.
+ * DISSIPATION DE SORTS PERMANENTS (LDB 46 l.158-162) — partie PURE.
  *
  * « Si un Sort a un effet durable, vous pouvez tenter de le dissiper pour votre Action. Il faut pour cela
  *  effectuer un Test étendu de Langue (Magick). Quand votre DR atteint la NI du Sort, vous le dissipez

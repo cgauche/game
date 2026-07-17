@@ -73,7 +73,7 @@ export function LandMarketView() {
                 const biens = r.biens.map((id) => cargoLabel(id)).join(', ');
                 return (
                   <li key={i}>
-                    {biens} se vendent au double à <b>{dest}</b>{here ? ' — c’est ici : vendez ces biens (T2C ch.11 l.180).' : '.'}
+                    {biens} se vendent au double à <b>{dest}</b>{here ? ' — c’est ici : vendez ces biens (T2C 13 l.180).' : '.'}
                   </li>
                 );
               })}
@@ -84,7 +84,7 @@ export function LandMarketView() {
           <section className="panel port-section">
             <h3>Acheter — offres de l’étape</h3>
             {!target && <p className="port-hint">Aucun porteur de charge : procurez-vous une bête de somme ou un véhicule pour transporter une cargaison (EDOC ch.4).</p>}
-            {market.offers.length === 0 && <p className="port-hint">Aucun marchand n’a de cargaison à céder ici (disponibilité T2C ch.11 l.22-42).</p>}
+            {market.offers.length === 0 && <p className="port-hint">Aucun marchand n’a de cargaison à céder ici (disponibilité T2C 13 l.22-42).</p>}
             {market.offers.length > 0 && (
               <TradeTable
                 columns={[]}
@@ -95,7 +95,7 @@ export function LandMarketView() {
                     {o.label}
                     {o.wine && (o.wineTier
                       ? <span className="port-hint"> — {o.wineTier}{o.wineEvalOk ? '' : ' (?)'}</span>
-                      : <> <button type="button" className="btn small ghost" disabled={isGuest} title="Test d’Évaluation pour révéler la qualité secrète du vin (T2C ch.11 l.95)" onClick={() => evalWine(o.cargoId)}>Évaluer</button></>)}
+                      : <> <button type="button" className="btn small ghost" disabled={isGuest} title="Test d’Évaluation pour révéler la qualité secrète du vin (T2C 13 l.95)" onClick={() => evalWine(o.cargoId)}>Évaluer</button></>)}
                   </span>
                 )}
                 enc={(o) => o.enc}
@@ -152,8 +152,8 @@ export function LandMarketView() {
                 price={(r) => toMoney({ gold: r.lot.basePriceGold })}
                 action={(r) => (
                   <div className="port-sell-actions">
-                    <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (T2C ch.11 l.133-160)" onClick={() => sell(r.carrierId, r.index)}>Vendre</button>
-                    <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à la moitié du prix de base (T2C ch.11 l.160)" onClick={() => dump(r.carrierId, r.index)}>Brader</button>
+                    <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (T2C 13 l.133-160)" onClick={() => sell(r.carrierId, r.index)}>Vendre</button>
+                    <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à la moitié du prix de base (T2C 13 l.160)" onClick={() => dump(r.carrierId, r.index)}>Brader</button>
                   </div>
                 )}
               />

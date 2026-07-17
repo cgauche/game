@@ -1,5 +1,5 @@
 /**
- * engine/dispel — Dissipation de sorts permanents (LDB 46 l.204-207), partie PURE.
+ * engine/dispel — Dissipation de sorts permanents (LDB 46 l.158-162), partie PURE.
  * Énumération (regroupée par sort+lanceur) et retrait propre des effets marqués à l'incantation (Stage 1).
  */
 import { describe, it, expect } from 'vitest';

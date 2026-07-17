@@ -65,7 +65,7 @@ import { sizeGap } from '../engine/size';
 import { combatDistance, sizeFootprint, footprintN, footprintChebyshev } from './footprint';
 import { isUnbreakable, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps, fireOwnTestFailed } from './triggeredEffects';
-import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction, hasCritRollTwiceTalent } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
@@ -130,6 +130,13 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, removeActiveEffects, COND } from '../engine/conditions';
 import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
+
+/** Deux lancers de Blessure Critique, garde le préféré : Bénédiction de Sauvagerie (LDB 41, drapeau
+ *  TEMPORAIRE `hasActiveFlag`) OU Frappe blessante — variante AA (AA 13 l.57, capacité PERMANENTE de
+ *  talent `hasCritRollTwiceTalent`). Point de fusion UNIQUE — `rollCritical` ne connaît que le booléen. */
+function critRollTwiceFor(c: Combatant | undefined | null): boolean {
+  return !!c && (hasActiveFlag(c, 'critRollTwice') || hasCritRollTwiceTalent(c));
+}
 import { domainOnHitEffects, domainCasterOps, isSorceryDomain } from '../engine/domainAttributes';
 import { decayZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
@@ -701,8 +708,8 @@ export function resolveAttack(
     }
     return { res, weapon };
   }
-  // Charge montée (LDB 14 l.223) : pour les DÉGÂTS, on substitue la Force (Bonus) et la Taille de la monture.
-  // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → dodgeMod.
+  // Charge montée (LDB 14 l.183) : pour les DÉGÂTS, on substitue la Force (Bonus) et la Taille de la monture.
+  // Combat monté (l.184) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → dodgeMod.
   const chargeMount = fromCharge ? mountOf(battle, attacker) : undefined;
   const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'force')), size: chargeMount.size } : undefined;
   return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy, withhold, flankRear }), weapon };
@@ -1636,7 +1643,7 @@ export function applyOpposedCritical(
   // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
   const attacker = ctx.attackerId ? inBattleId(get().battle, ctx.attackerId) : undefined;
   const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
-  const c2: DeviationCtx = { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined };
+  const c2: DeviationCtx = { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? critRollTwiceFor(attacker) : undefined };
   if (victim.kind === 'enemy') {
     if (enemyAutoDeviate(set, victim, loc, 0, ctx, roll, log, heroConcerned)) return;
   } else if (rule('combat-critical-deflect') && deviatableArmourAt(victim, loc) > 0) {
@@ -1766,7 +1773,7 @@ export function applyAttackResult(
     if (res.critical) res.critLocation = cloc; // LDB 18 l.55 (#80) : FIGE la loc re-tirée du Coup Critique AVANT la
     // suspension — la reprise (Dévier comme Subir) la réutilise sans RE-tirer ; sinon « Dévier » (qui ne repasse
     // pas `prerolledCrit`) sacrifierait 1 PA à une localisation ≠ de celle montrée au joueur. (Dépassement : pas de re-tirage.)
-    const crit = rollCritical(target, cloc, battleRng(), overkill0, hasActiveFlag(attacker, 'critRollTwice'));
+    const crit = rollCritical(target, cloc, battleRng(), overkill0, critRollTwiceFor(attacker));
     const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.name });
     // Folding P3a : le choix Dévier/Subir devient une ÉTAPE de la séquence (Critique riche + options),
     // au lieu d'une modale `pendingDeviation` séparée. L'applier 'deviation' appelle resolveDeviation.
@@ -1837,7 +1844,7 @@ export function applyAttackResult(
     if (!deviationApplied && (res.critical || overkill > 0)) {
       // « Subir » après déviation proposée : applique LA Blessure Critique déjà montrée (prerolledCrit), sans
       // re-tirer ni re-révéler (la modale l'a affichée). Sinon : tirage + révélation normaux.
-      const lethal = applyCritAndFinalize(get, set, target, loc, !!res.critical, Math.max(0, overkill), critLog, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: hasActiveFlag(attacker, 'critRollTwice') }, currentBefore, prerolledCrit, !!prerolledCrit);
+      const lethal = applyCritAndFinalize(get, set, target, loc, !!res.critical, Math.max(0, overkill), critLog, { attackerId: attacker.id, attackerKind: attacker.kind, weapon: weapon?.name, critTwice: critRollTwiceFor(attacker) }, currentBefore, prerolledCrit, !!prerolledCrit);
       // Frappe blessante (LDB 10) : +niveau Blessures quand on inflige une Blessure Critique.
       const fb = talentCritExtraWounds(attacker);
       if (fb > 0 && !lethal) {
@@ -2062,7 +2069,7 @@ export function applyAttackResult(
     }, battleAreaTargets(get), battleRng());
     log.push(...evLines(area.lines, 'shoot', attacker.id, target.id));
   }
-  // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
+  // Interruption de Focalisation (LDB 46 l.144) : Dégâts subis pendant qu'on focalise
   // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
   if (res.hit && res.woundsLost) log.push(...evLines(checkFocusInterruption(get, set, target), 'detail', target.id));
   if (isOutOfAction(target) && !isStructure(target)) log.push(ev('death', `${target.name} est mis hors de combat !`, target.id)); // structure → ligne d'Effondrement (collapseStructure), pas « hors de combat »
@@ -2096,7 +2103,7 @@ export function applyAttackResult(
 }
 
 /**
- * Interruption de Focalisation (LDB 46 l.194) : « La concentration est vitale pour focaliser. Si vous êtes
+ * Interruption de Focalisation (LDB 46 l.144) : « La concentration est vitale pour focaliser. Si vous êtes
  * perturbé par quelque chose – bruits forts, Dégâts subis… –, vous devrez réussir un Test de Calme Difficile
  * (-20) ou subir une Incantation Imparfaite Mineure et perdre tous les DR accumulés jusque-là au Test étendu
  * de Focalisation. »
@@ -2125,7 +2132,7 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
 /**
  * Conséquence PROCÉDURALE d'un Test de Calme d'interruption RATÉ (op `interruptFocus`, hook `focusInterrupt`) :
  * le focaliseur perd tous les DR accumulés sur son Sort focalisé (couverts par son composant — LDB 46 l.161) et
- * subit une Incantation Imparfaite Mineure (LDB 46 l.194). L'Imparfaite garde son rendu propre (étape de cascade
+ * subit une Incantation Imparfaite Mineure (LDB 46 l.144). L'Imparfaite garde son rendu propre (étape de cascade
  * `miscast` pour un héros / lignes pour un ennemi) : le Test de Calme est l'étape influençable visible,
  * l'Imparfaite est sa conséquence en aval. Les lignes partent dans la file
  * différée (`pendingLogQueue`), drainée par l'appelant qui réécrit `battle.log`.
@@ -2543,7 +2550,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
     if (b0) set({ battle: { ...b0, log: [...b0.log, ev('shoot', tr('cf.aim', { name: attacker.name, target: target.name }), attacker.id, target.id)] } });
   }
   applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
-  // Charge montée (LDB 14 l.223) : si l'attaquant a chargé ce tour, ses dégâts utilisent la Force + la
+  // Charge montée (LDB 14 l.183) : si l'attaquant a chargé ce tour, ses dégâts utilisent la Force + la
   // Taille de sa monture — PARITÉ avec le joueur (le proxy ne s'applique que s'il chevauche réellement).
   const r = resolveAttack(get, attacker, target, undefined, attacker.chargedThisTurn);
   if (!r) {
@@ -3337,7 +3344,7 @@ export function castSpell(
 registerCastSpellEffect(castSpell);
 
 /** Après le jet (figé) d'un Sort ENNEMI : ouvre le Contre-sort à plusieurs si au moins un héros peut
- *  Dissiper (LDB 46 l.201-202 ; cast RÉUSSI, pas une Prière, pas un Critique non-Projectile
+ *  Dissiper (LDB 46 l.156 ; cast RÉUSSI, pas une Prière, pas un Critique non-Projectile
  *  « inéluctable »). Sinon : on laisse `pendingCast` (pré-roulé) — la modale `cast` l'affiche en
  *  révélation. Exporté pour tester le routage de façon DÉTERMINISTE (jet figé contrôlé). */
 export function routeEnemyCast(get: Get, set: SetFn): void {
@@ -3707,7 +3714,7 @@ export function effectiveSpellOf(pc: { spellId: string; grimoire?: boolean }): R
   return { ...spell, cn: spell.cn * 2 };
 }
 
-/** Contre-lanceurs ÉLIGIBLES à la Dissipation (LDB 46 l.201-202) contre un Sort de `caster` visant
+/** Contre-lanceurs ÉLIGIBLES à la Dissipation (LDB 46 l.156) contre un Sort de `caster` visant
  *  `target` : camp opposé, actif, lanceur (Compétence Langue (Magick) ou Trait Lanceur de Sorts),
  *  pas encore de Contre-sort ce Round (« un seul Sort chaque Round »), et le Sort le CIBLE
  *  (« Si un Sort vous cible ») ou vise un point QU'IL PEUT VOIR « à une distance en mètres égale à
@@ -3763,7 +3770,7 @@ export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatan
 }
 
 /** Contre-sort SOLO (IA auto-dissipe le Sort d'un héros) : roule le Test opposé de Langue (Magick)
- *  (LDB 46 l.201-202) puis applique l'issue. Marque l'essai du Round (consommé même raté, l.202). */
+ *  (LDB 46 l.156) puis applique l'issue. Marque l'essai du Round (consommé même raté, l.156). */
 export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boolean {
   const pc = get().pendingCast;
   if (!pc?.result || pc.result.dispelled) return false;
@@ -3771,7 +3778,7 @@ export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boo
   const spell = effectiveSpellOf(pc);
   if (!caster || !spell || !isDispellableSpell(spell)) return false;
   if (counter.kind === caster.kind || counter.dispelledThisRound) return false;
-  counter.dispelledThisRound = true; // l'essai est consommé même s'il échoue (LDB 46 l.202)
+  counter.dispelledThisRound = true; // l'essai est consommé même s'il échoue (LDB 46 l.156)
   const out = resolveCounterspell(counter, castTestOf(pc.result), battleRng());
   return applyCounterspellOutcome(get, set, counter, out);
 }
@@ -3827,7 +3834,7 @@ export function applyCast(
   // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
   // prix — Imparfaite Mineure, sauf Talent Diction instinctive.
   const isSort = !castInfoIsPrayer(spell);
-  // DISSIPATION (LDB 46 l.204-207) : identité du Sort source, marquée sur ses ActiveEffect DURABLES (via
+  // DISSIPATION (LDB 46 l.158-160) : identité du Sort source, marquée sur ses ActiveEffect DURABLES (via
   // `OpsCtx.sourceSpell` → `applyOps`) pour autoriser un Test étendu de Langue (Magick) jusqu'au NI. Sorts
   // seulement (les Prières ne se dissipent pas par Contre-sort). Sort instantané → aucun effet → rien à marquer.
   const sourceSpell = isSort ? { spellId: spell.id, ni: spell.cn ?? 0, casterId: caster.id, label: spell.label } : undefined;
@@ -3835,7 +3842,7 @@ export function applyCast(
   // COMPRISES (≠ `sourceSpell`, réservé à la dissipation arcanique). Une bénédiction durable est ainsi
   // reconnue par `isSpellActive`/`buildAiInput` pour ne pas la re-lancer en boucle (LDB 46 l.116-121).
   const sourceSpellId = spell.id;
-  // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.201-202) n'est pas lancé : pas d'effet Critique
+  // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.156) n'est pas lancé : pas d'effet Critique
   // — « Puissance totale » (l.57) repêche un DR insuffisant, pas une Dissipation.
   const crit = !!res.isCritical && isSort && !res.dispelled;
   let choice = critChoice;
@@ -3947,7 +3954,7 @@ export function applyCast(
       if (critWound || overkill > 0) {
         const loc = mres.location ?? 'corps'; // double → loc re-tirée (#80) ; dépassement → loc de touche
         const ovk = Math.max(0, overkill);
-        const c2: DeviationCtx = { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: hasActiveFlag(caster, 'critRollTwice') };
+        const c2: DeviationCtx = { attackerId: caster.id, attackerKind: caster.kind, weapon: spell.label, critTwice: critRollTwiceFor(caster) };
         const heroConcerned = t.kind === 'hero' || caster.kind === 'hero';
         // Déviation Critique (LDB 63 l.30) : sur double (`critWound`) OU dépassement (`overkill`) — RAW complet,
         // parité avec la mêlée — pourvu que l'armure ABSORBE réellement (`magicDeviationEligible` : PA déviatable,
@@ -4001,7 +4008,7 @@ export function applyCast(
         const lifeStealOps = spellOps(spell.effects, 'caster').filter((o) => o.op === 'lifeSteal');
         if (lifeStealOps.length) logLines.push(...applyOps(caster, lifeStealOps, { rng: battleRng(), caster, label: spell.label, woundsDealt: dealt }));
       }
-      // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.193).
+      // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.144).
       logLines.push(...checkFocusInterruption(get, set, t));
       if (isOutOfAction(t)) logLines.push(tr('cf.outOfAction', { name: t.name }));
     };
@@ -4693,7 +4700,7 @@ function resolveFirstBlood(target: Combatant, vc: VictoryCondition | undefined, 
 export function checkBattleOver(get: Get, set: SetFn): boolean {
   const battle = get().battle;
   if (!battle || battle.over) return true;
-  // Combat monté (LDB 14 l.212-225) : une monture mise hors de combat désarçonne son cavalier (strict
+  // Combat monté (AA 9 l.124) : une monture mise hors de combat désarçonne son cavalier (strict
   // RAW : à pied, pas de chute). Balayage centralisé ici car checkBattleOver suit chaque résolution de combat.
   const scene = get().scene;
   if (scene) {
@@ -5101,7 +5108,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
     c.gainedAdvThisRound = false;
     c.usedShieldReactionRound = false; // Porte-Bouclier (variante AA 13 l.84) : « une fois par Round »
     if (c.distractedRounds) c.distractedRounds = c.distractedRounds > 1 ? c.distractedRounds - 1 : undefined; // Distraire (LDB 10 l.364) : expire en fin de Round
-    c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.202)
+    c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.156)
   }
   // Nuée (LDB 85 l.200) : tout opposant ENGAGÉ avec une nuée perd 1 PB en fin de Round (submergé).
   const swarms = battle.combatants.filter((s) => s.swarm && !isOutOfAction(s));
@@ -5766,7 +5773,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // héros) dans `pendingCast.zone.autoCenter`. Ce centre est l'ÉQUIVALENT du curseur souris d'un héros :
       // le `castConfirm` PARTAGÉ le lira pour poser la zone tout seul (gardé par `aiDriven`), exactement
       // comme l'auto-combat fournit ses jets. PLUS de `castCommitZone` bespoke ici : la pose vit dans le
-      // `castConfirm` UNIQUE. PARITÉ RAW (LDB 46 l.201-202) : la fenêtre de Contre-sort s'intercale AVANT la
+      // `castConfirm` UNIQUE. PARITÉ RAW (LDB 46 l.156) : la fenêtre de Contre-sort s'intercale AVANT la
       // pose (`routeEnemyCast`) ; dissipée → `castConfirm` ne pose RIEN (zone non posée, pending fermé).
       const center = action.center;
       // Télégraphe de ZONE (parité missile) : peint le DISQUE cible (centre + rayon) ~0,7 s avant la

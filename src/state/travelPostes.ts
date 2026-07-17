@@ -144,7 +144,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
     const def = activityById(posting.activityId);
     if (!def) continue;
     const spec = travelActivitySpec(hero, def, { skillMod: weatherModOf(def, weather), stages, freeSkill: posting.freeSkill });
-    // Test étendu DÉJÀ ACHEVÉ (LDB 12 l.197-211 : un Test étendu SE TERMINE à la cible — il ne se relance
+    // Test étendu DÉJÀ ACHEVÉ (LDB 12 l.170-186 : un Test étendu SE TERMINE à la cible — il ne se relance
     // PAS chaque jour, sinon le cumul déborde son plafond « 5/2 », « 6/2 » à chaque re-complétion) : le
     // poste n'a plus d'objet → un pas d'AFFICHAGE « achevée », aucun jet ni accumulation (F1).
     if (spec.drTarget != null && (plan.extendedProgress ?? 0) >= spec.drTarget) {

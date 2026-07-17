@@ -73,7 +73,7 @@ export function ActivityModal() {
 
   const rows: RollRowData[] = [actorRow];
 
-  // Test COMBINÉ (Infiltration/Repérage, l.75/102 — UN jet vs DEUX compétences, LDB 12 l.229) : 2ᵉ rangée
+  // Test COMBINÉ (Infiltration/Repérage, l.75/102 — UN jet vs DEUX compétences, LDB 12 l.202-206) : 2ᵉ rangée
   // TÉMOIN de la seconde compétence (même dé), l'issue lit `combinedLevel` (full/partial/fail) via `describeActivity`.
   if (pa.target2 != null && pa.skill2) {
     const secondMods = situationMod ? [situationMod] : undefined; // le Soutien ne porte que sur la compétence menante
