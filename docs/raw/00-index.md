@@ -1,7 +1,7 @@
 # Atlas RAW — Index
 
-Base de connaissance des **règles WFRP4 (RAW)** du projet, **consolidées** depuis les 15 livres
-autorisés (voir [`sources.md`](sources.md)), à **usage d'agent** : répondre vite et sûrement à
+Base de connaissance des **règles WFRP4 (RAW)** du projet, **consolidées** depuis les livres
+autorisés (table à jour dans [`sources.md`](sources.md)), à **usage d'agent** : répondre vite et sûrement à
 *« est-ce que X est RAW, et que dit exactement la source ? »* quand la réponse est éclatée sur
 plusieurs chapitres **et** plusieurs livres.
 
@@ -65,13 +65,13 @@ plusieurs chapitres **et** plusieurs livres.
 
 ## Gardes déterministes (rejouables)
 
-- **[`coverage.md`](coverage.md)** (`node scripts/raw/coverage.mjs`) — chaque chapitre des 15 livres : ✅ couvert / 🟡 effleuré / ⬜ trou / ➖ hors-règle (scénario, prose ≠ règle). **Seuil : ⬜ = 0.**
+- **[`coverage.md`](coverage.md)** (`node scripts/raw/coverage.mjs`) — chaque chapitre des livres autorisés (table dans [`sources.md`](sources.md)) : ✅ couvert / 🟡 effleuré / ⬜ trou / ➖ hors-règle (scénario, prose ≠ règle). **Seuil : ⬜ = 0.**
 - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non-régression LDB verrouillée par `reconcile.test.mjs`, tous livres couverts, folio compris). **Sens B (#434) : tout topic `(non implémenté)` porte une entrée de manifest (ticket #N ou blocage consigné dans `src/data/raw.manifest.json`) — gardé par `npm run raw:implemente --check` (exit 1 sur orphelin).**
 - **[`reanchor.md`](reanchor.md)** (`node scripts/raw/reanchor.mjs` ; `--apply` verbatim + `--remap` synthèse) — ré-ancre les réfs `l.X` contre la Source Marker : citations « … » par **match exact**, réfs de synthèse par **diff `git HEAD`↔arbre** (one-shot à relancer après chaque ré-extraction, avant de committer la Source). **Seuils : 🔧 = 0 · 🟡 = 0 · ❌ sous cliquet (`reanchor-low-baseline.json`).** Voir l'**[épreuve du 2026-06-22](epreuve-2026-06-22.md)**.
 
 > Les COMPTES courants (✅/🟡/❌, chapitres non pinés, marqueurs, B2) vivent dans les fichiers GÉNÉRÉS ci-dessus, jamais dans cette page — un compte recopié à la main ment dès le commit suivant.
 
-> **Source = Marker propre pour les 15 livres** (tables intactes, texte exact ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`). L'Atlas remplace la source : 0 trou de règle.
+> **Source = Marker propre pour tous les livres autorisés** (table dans [`sources.md`](sources.md) ; tables intactes, texte exact ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`). L'Atlas remplace la source : 0 trou de règle.
 
 > ⚠️ **Ré-extraction de `Source/` : JAMAIS en masse.** Une re-passe Marker totale décale les numéros de
 > ligne de ~3 000 citations du CODE que `reanchor.mjs --remap` ne couvre pas (il ne remappe que les fiches) —

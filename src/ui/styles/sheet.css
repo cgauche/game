@@ -59,10 +59,9 @@
   color: var(--gold2);
   line-height: 1.05;
 }
-/* Barres de vie/Encombrement (croquis colonne 2026-07-17) : la primitive `NotchGauge` (partagée
-   Coque/Moral/Soute, `docs/architecture.md`) s'étire pleine largeur — sans ça, `align-items: center`
-   du parent la réduirait à son contenu. */
-.sheet-portrait .notch-gauge {
+/* Barres de vie/Encombrement (croquis colonne 2026-07-17) : la primitive `LifeBar` s'étire pleine
+   largeur — sans ça, `align-items: center` du parent la réduirait à son contenu. */
+.sheet-portrait .life-bar {
   align-self: stretch;
   width: 100%;
 }
@@ -620,22 +619,8 @@
   border-left-color: var(--corruption-violet);
 }
 /* Compteur de DESTIN (pt.4, #492) : « actives N/BE » (Critiques), « phys N/BE · ment M/BFM »
-   (Mutations) — ton par PALIER (`muted`/`warn`/`danger`, `thresholdTone`), attribut jamais classe. */
-.etat-threshold {
-  font-size: 0.85em;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.etat-threshold[data-tone='muted'] {
-  color: var(--muted);
-  font-weight: 400;
-}
-.etat-threshold[data-tone='warn'] {
-  color: var(--gold2);
-}
-.etat-threshold[data-tone='danger'] {
-  color: var(--danger);
-}
+   (Mutations) — composent désormais `NotchGauge` (ton `GaugeTone` porté par la primitive), rendues
+   dans le slot droit de la bande (`Band`/`.creator-band-right`, `band.css`) — aucune classe ICI. */
 /* Gangrène du cadre (pt.6, #492) : l'or du bandeau de tête (`.modal { border-top: 4px solid --gold }`,
    components.css) et le halo se ternissent progressivement de violet-noir depuis un coin, selon la
    Corruption du héros (`data-corruption`, posé par `CharacterSheet.tsx` via `corruptionThresholdExceeded`,

@@ -68,15 +68,23 @@ describe('EtatPanel', () => {
     expect((html.match(/Corruption/g) || []).length, 'un SEUL « Corruption » — pas de titre de bande redondant').toBe(1);
   });
 
-  it('compteurs de DESTIN (pt.4) : « actives N/BE » (Critiques) et « phys N/BE · ment M/BFM » (Mutations), ton MUTED loin du seuil', () => {
+  it('compteurs de DESTIN (pt.4) : « actives »/BE (Critiques) et « phys »/BE + « ment »/BFM (Mutations) composent NotchGauge, ton NEUTRAL loin du seuil', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
     // BE = bonus(Endurance 30) = 3 — `criticalWounds` non posé → 0 actives, `mutations` = 1 physique.
-    expect(html).toContain('actives 0/3');
-    expect(html).toContain('phys 1/3 · ment 0/3');
-    expect((html.match(/etat-threshold" data-tone="muted"/g) || []).length).toBe(2);
+    // Les 3 compteurs sont des `NotchGauge` (piste `role="meter"`, jamais un texte brut hors gauge).
+    expect(html).not.toContain('etat-threshold');
+    expect(html).not.toContain('actives 0/3');
+    expect(html).not.toContain('phys 1/3 · ment 0/3');
+    expect(html).toContain('notch-gauge__label">actives<');
+    expect(html).toContain('aria-valuemax="3" aria-valuenow="0"');
+    expect(html).toContain('notch-gauge__label">phys<');
+    expect(html).toContain('notch-gauge__label">ment<');
+    expect(html).toContain('aria-valuemax="3" aria-valuenow="1"'); // phys : 1 mutation physique
+    expect(html).toContain('aria-valuemax="3" aria-valuenow="0"'); // ment : 0 mutation mentale
+    expect((html.match(/data-tone="neutral"/g) || []).length).toBe(3); // actives + phys + ment, tous loin du seuil
   });
 
-  it('compteurs de DESTIN : ton WARN à seuil−1, DANGER au seuil atteint/franchi (contrat POSITIF par seuil)', () => {
+  it('compteurs de DESTIN : ton WARN à seuil−1, DANGER au seuil atteint/franchi (contrat POSITIF par seuil, sur la NotchGauge)', () => {
     const auSeuil = mkHero((c) => {
       c.critEntriesSuffered = ['blessure-spectaculaire'];
       c.criticalWounds = 2; // BE = 3 → seuil−1 (warn)
@@ -88,10 +96,12 @@ describe('EtatPanel', () => {
       ]; // phys 4 > BE 3 → danger
     });
     const html = renderToStaticMarkup(<EtatPanel hero={auSeuil} />);
-    expect(html).toContain('actives 2/3');
-    expect(html).toContain('etat-threshold" data-tone="warn">actives 2/3');
-    expect(html).toContain('phys 4/3 · ment 0/3');
-    expect(html).toContain('etat-threshold" data-tone="danger">phys 4/3');
+    expect(html).toContain('aria-valuemax="3" aria-valuenow="2"'); // actives = 2, seuil−1
+    expect(html).toContain('aria-valuemax="3" aria-valuenow="4"'); // phys = 4 > BE 3
+    // Ordre de rendu : actives (warn) avant phys (danger) — le premier data-tone rencontré est "warn".
+    const tones = [...html.matchAll(/data-tone="(neutral|warn|danger)"/g)].map((m) => m[1]);
+    expect(tones[0]).toBe('warn'); // actives 2/3
+    expect(tones).toContain('danger'); // phys 4/3
   });
 
   it('rangée de zones (pt.4) MORTE dans le registre (lot « corps-index », #492) — seules les ancres de la PREMIÈRE rangée concernée subsistent', () => {
