@@ -1,8 +1,14 @@
 // Test du garde `reconcile` (node --test). Lancé par `npm run test:raw`.
 // Non-régression softA (#434 défaut 9) : baseline des chapitres LDB couverts à lignes non pinées.
 // La baseline se met à jour à la BAISSE UNIQUEMENT — un ré-ancrage au Source pine une ligne de plus,
-// jamais de nouveau trou : une HAUSSE = régression réelle (échec attendu). Mesurée à 4 après les
-// ré-ancrages massifs de la session (était 6 : LDB 05/11 pinés depuis). Liste EXACTE (pas un compte).
+// jamais de nouveau trou : une HAUSSE = régression réelle (échec attendu). Ce cliquet ne verrouille
+// QUE la direction (décrue) : toute baisse constatée fait foi si elle est PROUVÉE par de vraies réfs
+// ré-ancrées (jamais un artefact de mesure). Mesurée à 2 après d92d8329/2ed2acff (ref #526/#583) :
+// LDB 12/15 sortent de la liste — les réfs LDB 12 (activities.ts/skills.ts/policy.ts/fortune.test.ts…)
+// et LDB 15 (jump.test.ts/jumpMove.ts/social.ts/combatFlow.ts…) étaient re-pointées sur de MAUVAISES
+// lignes (ex. `LDB 12 l.229` → `l.202-206`, `LDB 15 l.117-122` → `l.78-84`) ; ré-ancrées au texte
+// Source, elles tombent désormais dans les plages pinées de l'Atlas (±TOL=20). Était 4 : LDB 05/11
+// pinés avant ça.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
@@ -10,12 +16,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { computeReconciliation } from './reconcile.mjs'
 
-test('non-régression : Sens A LDB sur le vrai repo = 0 trou dur · 4 chapitres à lignes non pinées', () => {
+test('non-régression : Sens A LDB sur le vrai repo = 0 trou dur · 2 chapitres à lignes non pinées', () => {
   const data = computeReconciliation()
   assert.equal(data.hardA.length, 0)
   assert.deepEqual(
     data.softA.map((s) => s.ch).sort(),
-    ['10', '12', '15', '46'], // baseline à la baisse : si ce test casse par HAUSSE → régression réelle
+    ['10', '46'], // baseline à la baisse : si ce test casse par HAUSSE → régression réelle
   )
 })
 
@@ -171,6 +177,18 @@ test('Sens A (autres livres) : chapitre couvert par un catalogue (autre livre) �
   withFixtures(
     { 'a.ts': '// règle AA 07 l.500\n' },
     { 'catalogue-x.md': 'AA 07 mentionné, données verbatim\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardAOther.length, 0)
+      assert.equal(data.softAOther.length, 0)
+    },
+  )
+})
+
+test('Sens A (autres livres) : Atlas en PLAGE (AA 07 l.3-600) couvre toute la plage, pas juste la borne basse (#586 jumeau)', () => {
+  withFixtures(
+    { 'a.ts': '// règle AA 07 l.500\n' },
+    { 'fiche.md': 'AA 07 l.3-600\n' },
     ({ srcDir, rawDir }) => {
       const data = computeReconciliation({ srcDir, rawDir })
       assert.equal(data.hardAOther.length, 0)

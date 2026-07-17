@@ -153,7 +153,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
       const chMap = atlasOther.get(book)
       const ch = chKey(m[2])
       if (!chMap.has(ch)) chMap.set(ch, [])
-      chMap.get(ch).push(span(m[3], ''))
+      chMap.get(ch).push(span(m[3], m[4]))
     }
   }
 
