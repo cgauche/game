@@ -47,34 +47,22 @@
 
 /** @type {ReadonlySet<string>} */
 export const PART_VIEW_RATCHET = new Set([
-  'apothicaire:bras', // Apothicaire — manque profile+back ; servi : FRONT PLAQUE
   'apothicaire:jambes', // Apothicaire — manque profile+back ; servi : silhouette generique
-  'artiste:bras', // Artiste — manque profile+back ; servi : FRONT PLAQUE
   'artiste:jambes', // Artiste — manque profile+back ; servi : silhouette generique
-  'bailli:bras', // Bailli — manque profile+back ; servi : FRONT PLAQUE
   'bailli:jambes', // Bailli — manque profile+back ; servi : silhouette generique
   'boucher-ogre:bras', // Boucher Ogre — manque profile+back ; servi : FRONT PLAQUE
-  'cavalier-leger:bras', // Cavalier Léger — manque profile+back ; servi : FRONT PLAQUE
   'cavalier:bras', // Cavalier — manque profile+back ; servi : FRONT PLAQUE
   'cavalier:jambes', // Cavalier — manque profile+back ; servi : silhouette generique
   'chamane-bray:jambes', // Chamane-Bray — manque profile+back ; servi : silhouette generique
-  'chansonnier:bras', // Chansonnier — manque profile+back ; servi : FRONT PLAQUE
   'charlatan:jambes', // Charlatan — manque profile+back ; servi : silhouette generique
-  'chasseur-de-primes:bras', // Chasseur de primes — manque profile+back ; servi : FRONT PLAQUE
   'chasseur-de-primes:jambes', // Chasseur de primes — manque profile+back ; servi : silhouette generique
   'chasseur:jambes', // Chasseur — manque profile+back ; servi : silhouette generique
-  'chevalier-du-soleil-flamboyant:bras', // Chevalier du Soleil flamboyant — manque profile+back ; servi : FRONT PLAQUE
-  'chevalier-errant:bras', // Chevalier Errant — manque profile+back ; servi : FRONT PLAQUE
-  'chevalier-panthere:bras', // Chevalier Panthère — manque profile+back ; servi : FRONT PLAQUE
   'chevalier:jambes', // Chevalier — manque profile+back ; servi : silhouette generique
   'chevaucheur-de-blaireau:bras', // Chevaucheur de blaireau — manque profile+back ; servi : FRONT PLAQUE
   'citadins:jambes', // Citadins — manque profile+back ; servi : silhouette generique
   'citadins:torse', // Citadins — manque profile+back ; servi : silhouette generique
-  'cocher:bras', // Cocher — manque profile+back ; servi : FRONT PLAQUE
   'cocher:jambes', // Cocher — manque profile+back ; servi : silhouette generique
-  'colporteur:bras', // Colporteur — manque profile+back ; servi : FRONT PLAQUE
   'colporteur:jambes', // Colporteur — manque profile+back ; servi : silhouette generique
-  'conseiller:bras', // Conseiller — manque profile+back ; servi : FRONT PLAQUE
   'conseiller:jambes', // Conseiller — manque profile+back ; servi : silhouette generique
   'contrebandier:bras', // Contrebandier — manque profile+back ; servi : FRONT PLAQUE
   'contrebandier:jambes', // Contrebandier — manque profile+back ; servi : silhouette generique
