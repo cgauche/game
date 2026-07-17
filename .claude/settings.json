@@ -80,6 +80,17 @@
             "statusMessage": "Garde anti-poison au stylo (tombstone/excuse/label)"
           }
         ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/agent-return-judge-reminder.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Rappel juge adversarial (retour d'agent)"
+          }
+        ]
       }
     ],
     "SessionStart": [
