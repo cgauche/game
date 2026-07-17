@@ -606,21 +606,6 @@ function RollRowStaticMock() {
   );
 }
 
-/** Bande de section (extraite du créateur, #492 Lot 1c) — avec compte en badge (registre État) et
- *  sans compte (rubrique du créateur). */
-function BandDemo() {
-  return (
-    <div className="stack">
-      <Band title="Blessures critiques" right={<b>2</b>}>
-        <p className="hint">Une plaque par localisation touchée.</p>
-      </Band>
-      <Band title="Augmentations gratuites">
-        <p className="hint">Rubrique sans compte — le badge `right` est optionnel.</p>
-      </Band>
-    </div>
-  );
-}
-
 function ScreenShellNote() {
   return (
     <p className="hint">
@@ -653,7 +638,6 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'MenuCard', file: 'src/ui/MenuCard.tsx', category: 'Écrans & layout', render: MenuCardDemo },
   { name: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
   { name: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
-  { name: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
   { name: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
   { name: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
   { name: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
