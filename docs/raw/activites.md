@@ -537,7 +537,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 | **Remaniement du Contremaître** | Ragot (+0) pour localiser, puis Corps à Corps **ou** Projectiles Complexe (−10) | Reçoit l'objet désiré + Critique sur localisation aléatoire (gravité variable selon résultat) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.5-144) → `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `contremaitre-lieu`, `runActivityResolver`, `contremaitre-objectif`, `contremaitre-personnalite`, `commandant-d-equipe`, +6 — `src/data/activities.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/types.ts`, +1 fichiers
+- `AA 12` (l.5-144) → `artilleur`, `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `battement`, `openCatalogActivity`, `cavalier-emerite`, `contremaitre-lieu`, `runActivityResolver`, +12 — `src/data/activities.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 

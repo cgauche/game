@@ -44,6 +44,8 @@ import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry, WaterExposureData, WaterExposureModifier } from '../../data';
 import { SPEC_SOURCES, type SpecsSource } from '../../data';
+import type { SecondaryRef, Variant } from '../../data/schemas/common';
+import { OPTIONAL_RULES } from '../../engine/policy';
 
 /** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -277,7 +279,8 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
   if (categoryKey === 'trappings') add('consumable', 'consumableDuration', 'onHitEffects'); // onHitEffects → TriggeredEffectsField (#175)
   if (categoryKey === 'maladies') add('symptoms');
-  if (categoryKey === 'talents') add('combat', 'test');
+  if (categoryKey === 'talents') add('combat', 'test', 'variants'); // variants → VariantsField (#563 Lot 5)
+  if (['trappings', 'qualities', 'spells', 'traits', 'navalTraits'].includes(categoryKey)) add('alsoIn'); // alsoIn → AlsoInField (#563 Lot 5)
   if (categoryKey === 'skills' || categoryKey === 'talents') add('specs');
   if (categoryKey === 'traits') add('specsSource', 'indice', 'range', 'specsOpen', 'specsMulti'); // schéma d'argument → éditeur dédié
 
@@ -433,6 +436,10 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isDisease = categoryKey === 'maladies';
   // Talent : sa capacité de combat `combat` (CombatFeature : drapeaux + castingKind/attackModes/offHand).
   const hasCombat = categoryKey === 'talents';
+  // Talent : variantes réglées par règle optionnelle (`variants`, #563 Lot 5) — VariantsField.
+  const hasVariants = categoryKey === 'talents';
+  // Emplacement(s) secondaire(s) d'une entrée réimprimée ailleurs (`alsoIn`, #563 Lot 5) — AlsoInField.
+  const hasAlsoIn = ['trappings', 'qualities', 'spells', 'traits', 'navalTraits'].includes(categoryKey);
   // Compétence/Talent : `specs` = SpecEntry[] ({id,label}).
   const hasSpecs = categoryKey === 'skills' || categoryKey === 'talents';
   // Avancement (espèce / niveau de carrière) : `skills`/`talents` = AdvancementRef[] (réf/joker/choix/aléatoire).
@@ -596,6 +603,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
         {hasCombat && <TalentTestField value={entry.test as TalentTest | undefined} onChange={(v) => edit('test', v)} />}
         {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}
+        {hasVariants && <VariantsField value={entry.variants as Variant[] | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('variants', v.length ? v : undefined)} />}
+        {hasAlsoIn && <AlsoInField value={entry.alsoIn as SecondaryRef[] | undefined} onChange={(v) => edit('alsoIn', v.length ? v : undefined)} />}
         {hasSpecs && <SpecsField value={entry.specs as SpecEntry[] | undefined} onChange={(v) => edit('specs', v)} />}
         {hasAdvancement && <AdvancementRefField ds="skills" label="Compétences" value={entry.skills as AdvancementRef[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAdvancement && <AdvancementRefField ds="talents" label="Talents" value={entry.talents as AdvancementRef[] | undefined} onChange={(v) => edit('talents', v)} />}
@@ -1023,6 +1032,80 @@ function TraumaListField({ value, onChange }: { value: string[] | undefined; onC
         </div>
       ))}
       <button className="btn small" onClick={() => set([...list, traumaOpts[0]?.id ?? ''])}>+ Traumatisme</button>
+    </div>
+  );
+}
+
+/** Sous-formulaire `{book,page,note?}` (patron du kind `source` générique, `Field` l.~1486) — réutilisé
+ *  tel quel par `AlsoInField` (+ `quote`) et `VariantsField` (`variant.source`, optionnel). */
+function SourceSubForm({ value, onChange }: { value: { book?: string; page?: number; note?: string }; onChange: (v: { book?: string; page?: number; note?: string }) => void }) {
+  return (
+    <div className="de-source">
+      <input placeholder="livre" value={value.book ?? ''} onChange={(e) => onChange({ ...value, book: e.target.value })} />
+      <input type="number" placeholder="page" value={value.page ?? ''} onChange={(e) => onChange({ ...value, page: Number(e.target.value) || 0 })} />
+      <input placeholder="note (facultatif)" value={value.note ?? ''} onChange={(e) => onChange({ ...value, note: e.target.value || undefined })} />
+    </div>
+  );
+}
+
+/** Emplacements SECONDAIRES d'une entrée réimprimée ailleurs (`alsoIn: SecondaryRef[]`, #563, doctrine
+ *  user 2026-07-17 — « jamais 2 talents différents »). L'ANCRE (`source`) reste seule à porter la
+ *  `desc` (règle stricte 5) ; chaque rangée secondaire = `{book,page,note?}` + `quote` (preuve
+ *  verbatim, obligatoire si le label n'est pas imprimé tel quel dans ce span). */
+function AlsoInField({ value, onChange }: { value: SecondaryRef[] | undefined; onChange: (v: SecondaryRef[]) => void }) {
+  const list = value ?? [];
+  const set = (next: SecondaryRef[]) => onChange(next);
+  return (
+    <div className="ed-field">
+      <span>autres emplacements (`alsoIn`, #563) — l'ancre (`source`) ci-dessus reste seule à porter la desc</span>
+      {list.map((r, i) => (
+        <div className="ed-subfield" key={i}>
+          <SourceSubForm value={r} onChange={(v) => set(list.map((x, j) => (j === i ? { ...x, ...v } : x)))} />
+          <input placeholder="citation verbatim — preuve du span (obligatoire si le label n'y est pas imprimé)" value={r.quote ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, quote: e.target.value || undefined } : x)))} />
+          <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, { book: '', page: 0 }])}>+ Emplacement secondaire</button>
+    </div>
+  );
+}
+
+/** Variantes RÉGLÉES d'un Talent sous une règle optionnelle (`variants: Variant[]`, #563/#564) —
+ *  `when.rule` est un id du registre `OPTIONAL_RULES` (`engine/policy.ts`, SELECT peuplé, jamais une
+ *  saisie libre : pas de gate fantôme, doctrine id/label). `combat` réutilise `CombatField` tel quel
+ *  (fusionné par-dessus la base par `effectiveFeature`, `combatFeatures/dispatch.ts`). */
+function VariantsField({ value, allFeatures, onChange }: { value: Variant[] | undefined; allFeatures: (Partial<CombatFeature> | undefined)[]; onChange: (v: Variant[]) => void }) {
+  const list = value ?? [];
+  const set = (next: Variant[]) => onChange(next);
+  return (
+    <div className="ed-field">
+      <span>variantes réglées par règle optionnelle (#563/#564 — gatées par le MODULE, jamais par la source)</span>
+      {list.map((v, i) => (
+        <div className="ed-subfield" key={i}>
+          <div className="tf-row">
+            <label className="dr">Règle
+              <select value={v.when.rule} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, when: { ...x.when, rule: e.target.value } } : x)))}>
+                <option value="">— (choisir une règle optionnelle) —</option>
+                {OPTIONAL_RULES.map((r) => <option key={r.id} value={r.id}>{r.label} — {r.id}</option>)}
+              </select>
+            </label>
+            <label className="dr">Valeur attendue
+              <input placeholder="défaut : true" value={v.when.equals == null ? '' : String(v.when.equals)}
+                onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, when: { ...x.when, equals: e.target.value === '' ? undefined : e.target.value } } : x)))} />
+            </label>
+            <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+          </div>
+          <label className="ed-subfield">description (facultatif — sinon celle de l'ancre)
+            <textarea rows={2} value={v.desc ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, desc: e.target.value || undefined } : x)))} />
+          </label>
+          <div className="ed-subfield">
+            <span>source (facultatif)</span>
+            <SourceSubForm value={v.source ?? {}} onChange={(s) => set(list.map((x, j) => (j === i ? { ...x, source: (s.book || s.page) ? { book: s.book ?? '', page: s.page ?? 0, note: s.note } : undefined } : x)))} />
+          </div>
+          <CombatField value={v.combat as Partial<CombatFeature> | undefined} allFeatures={allFeatures} onChange={(c) => set(list.map((x, j) => (j === i ? { ...x, combat: c } : x)))} />
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, { when: { rule: OPTIONAL_RULES[0]?.id ?? '' } }])}>+ Variante</button>
     </div>
   );
 }

@@ -145,12 +145,6 @@ export function talentCritExtraWounds(c: Combatant): number {
   return levelSum(c, (d) => !!d.critExtraWounds);
 }
 
-/** Frappe blessante — variante AA (AA Annexe III l.4492-4494) : deux lancers de Blessure Critique,
- *  garde le résultat préféré. */
-export function hasCritRollTwiceTalent(c: Combatant): boolean {
-  return featuresOf(c).some(({ def }) => def.critRollTwice);
-}
-
 /** Tir sûr (LDB 10) : PA de la cible ignorés au tir (niveau). */
 export function talentRangedAPIgnore(c: Combatant): number {
   return levelSum(c, (d) => !!d.rangedAPIgnore);

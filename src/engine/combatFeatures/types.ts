@@ -44,9 +44,6 @@ export interface CombatFeature {
   damageReduction?: boolean;
   /** Frappe blessante : +niveau Blessures quand on inflige une Blessure Critique. */
   critExtraWounds?: boolean;
-  /** Frappe blessante — variante AA (AA Annexe III l.4492-4494) : deux lancers de Blessure Critique,
-   *  garde le résultat préféré (remplace `critExtraWounds` en mode « Avantage de groupe »). */
-  critRollTwice?: boolean;
   /** Tir sûr : ignore niveau PA de la cible au tir. */
   rangedAPIgnore?: boolean;
   // ── Modificateurs de Test d'attaque ────────────────────────────────────────

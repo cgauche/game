@@ -2504,7 +2504,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 - `LDB 63` (l.2-6, l.11, l.14) → `applyAttackResult` — `src/state/combatFlow.ts`
 - `ADE II 2` (l.608-658) → `attackModifiers`, `massue-ogre`, `protectrice`, `devastatrice`, `recharge`, `immobilisante`, `empaleuse`, `a-explosion`, `perforante`, `impenetrable` — `src/data/trappings.json`, `src/engine/combat.ts`
 - `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253) → `deroutante` — `src/data/qualities.json`
-- `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `destabilisante`, `taillade`, `tir-de-zone`, `desequilibree`, `percutante`, `rapide`, `inoffensive`, `empaleuse`, `lente` — `src/data/qualities.json`, `src/data/trappings.json`
+- `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `taillade`, `precise`, `destabilisante`, `tir-de-zone`, `desequilibree`, `percutante`, `rapide`, `inoffensive`, `empaleuse`, `lente` — `src/data/qualities.json`, `src/data/trappings.json`
 - `ZI 13` (l.759-844) → `dague-funeste`, `armure-de-plates-du-leviathan`, `lame-a-poignee-en-bois-de-cerf`, `trempe-au-sang-de-dragon`, `surin-de-l-aigle`, `seve-de-tregara`, `empennage-de-griffon`, `pointes-barbelees` — `src/data/trappings.json`
 - sans code : `ADE II 4` (l.278, l.280-287), `NADAJ 8` (l.170-171)
 
@@ -3023,7 +3023,7 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 - `LDB 76` (l.9-13, l.16-28, l.31-37, l.38-45) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
 - `LDB 77` (l.7-68) → `maladie`, `rage`, `furtif`, `resistance-a-la-magie`, `pisteur` — `src/data/creatures.json`
 - `LDB 85` (l.8-406) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `TraumaFiche`, `TraverseCapability`, `cannotStopOn`, +149 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +29 fichiers
-- `ZI 14` (l.1013-1035, l.1037-1087) → `fouissement` — `src/data/traits.json`
+- `ZI 14` (l.1013-1035, l.1037-1087) → `ethere`, `fouissement` — `src/data/traits.json`
 - `EDO 11` (l.172-243) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
 - `T2C 15` (l.119-128, l.133-135, l.138-163) → `capriciousMod`, `PerSL`, `aquatique`, `s-accrocher-pour-se-nourrir`, `capricieux`, `engloutir`, `hallucinogene`, `rampant`, `salive-analgesique`, `salive-anticoagulante`, +1 — `src/data/creatures.json`, `src/data/traits.json`, `src/engine/ops.ts`, `src/engine/social.ts`
 - sans code : `LDB 76` (l.9), `EDO 1` (l.271-290), `EDO 7` (l.320-348), `EDO 9` (l.513-570)
@@ -3667,8 +3667,9 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `cannotStopOn`, `StatblockEditor`, `amphibie`, +99 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +21 fichiers
+- `ZI 2` (l.66-70) → `fouissement` — `src/data/traits.json`
 - `ZI 14` (l.1029-1035) → `fouissement` — `src/data/traits.json`
-- sans code : `ZI 2` (l.66-70), `Ubersreik 5` (l.22)
+- sans code : `Ubersreik 5` (l.22)
 
 ---
 
@@ -3798,7 +3799,8 @@ Côté inverse, l'adversaire **plus petit** gagne toujours **+10 pour toucher** 
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 85` (l.339-340, l.343-355, l.357-387, l.391-406) → `cannotStopOn`, `woundsForSize`, `EnemyTurnInput`, `weaponFromTrait`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `SpecsSource`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, +22 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
-- sans code : `ADE II 2` (l.563-589), `ZI 14` (l.1070, l.1075, l.1162)
+- `ZI 14` (l.1075, l.1162) → `ethere`, `miracles` — `src/data/traits.json`
+- sans code : `ADE II 2` (l.563-589), `ZI 14` (l.1070)
 
 ---
 
@@ -5269,7 +5271,7 @@ Capable de retourner les situations les plus désastreuses à votre avantage. Si
 **Voir aussi** : Avantage (réserve, gain/perte, surnombre) ; Manœuvres de combat (Battement, Désengagement, Retraite stratégique) ; Peur / Terreur (Taille) ; Rechargement & Tests étendus ; Armes d'équipe & artillerie (Défaut *Arme d'équipe*) ; Boucliers (défense).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 13` (l.7-97, l.98) → `BattementModal`, `DistraireModal`, `VOICE_COMMAND_RANGE_M`, `campGain`, `reversalStealOne`, `teamCommandMod`, `CombatFeature`, `fearSourceFor`, `useDefenseJetProps`, `dominationTransfer`, +31 — `src/engine/advantagePool.ts`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/types.ts`, +14 fichiers
+- `AA 13` (l.7-97, l.98) → `BattementModal`, `DistraireModal`, `VOICE_COMMAND_RANGE_M`, `campGain`, `reversalStealOne`, `teamCommandMod`, `CombatFeature`, `fearSourceFor`, `useDefenseJetProps`, `dominationTransfer`, +36 — `src/data/talents.json`, `src/engine/advantagePool.ts`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +15 fichiers
 
 ---
 
@@ -5461,7 +5463,7 @@ Listée dans la même annexe (le Personnage raconte ses aventures à un imprimeu
 **Voir aussi** : Talent Coude-à-coude · Talent Exaltant · Atouts d'armes (*Perforante* / *Dévastatrice* / *Percutante*) · Tableau des Critiques & Localisations · Degrés de Réussite (DR) · Interlude & Activités (Engagements LDB).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.5, l.8-18, l.21-32, l.36-44, l.46-49, l.52-61, l.64-66, l.72-144) → `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `contremaitre-lieu`, `runActivityResolver`, `contremaitre-objectif`, `contremaitre-personnalite`, `commandant-d-equipe`, +6 — `src/data/activities.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/types.ts`, +1 fichiers
+- `AA 12` (l.5, l.8-18, l.21-32, l.36-44, l.46-49, l.52-61, l.64-66, l.72-144) → `artilleur`, `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `battement`, `openCatalogActivity`, `cavalier-emerite`, `contremaitre-lieu`, `runActivityResolver`, +12 — `src/data/activities.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/types.ts`, +1 fichiers
 - sans code : `AA 1` (l.4202-4205, l.4264-4350)
 
 ---
@@ -5885,7 +5887,7 @@ Les Dégâts se réparent **définitivement** sur un Test de **Métier (Construc
 **Voir aussi** : Coups Critiques sur un navire (MDG) ; Collisions, Indice de Collision et béliers (MDG) ; Artillerie navale (MDG) ; Taille : catégories et modificateurs de combat ; Tableau de Localisation humanoïde ; Armures : table, PA, dégâts et réparation ; Résolution d'une attaque : les 4 étapes (jet inversé → Localisation).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.56-64, l.221, l.232-236) → `peu-maniable`, `CollisionShip`, `renforce`, `cargoTone`, `schema`, `robuste`, `solide`, `hullArmourBonus`, `resolveCollision`, `scene`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/collision.ts`, +12 fichiers
+- `MDG 12` (l.56-64, l.221, l.232-236) → `peu-maniable`, `CollisionShip`, `renforce`, `cargoTone`, `robuste`, `schema`, `solide`, `hullArmourBonus`, `resolveCollision`, `scene`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/collision.ts`, +12 fichiers
 - `MDG 13` (l.464, l.569-571, l.605-607, l.612-616, l.618-637, l.641-651) → `woundsFromHit`, `iceberg`, `meleeVsHullBE`, `debris-marins`, `resolveCollision`, `isArtilleryWeapon`, `rocher`, `bas-fonds`, `faible`, `strandingPenalty`, +13 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/collision.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +8 fichiers
 - sans code : `MDG 13` (l.575-584)
 
@@ -6041,7 +6043,7 @@ Pour résoudre les Dégâts d'un choc contre un péril, le RAW donne des IC type
 **Voir aussi** : Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Charge (le pendant terrestre de l'éperonnage) ; Taille : catégories et modificateurs de combat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.221) → `peu-maniable`, `CollisionShip`, `renforce`, `schema`, `robuste`, `solide`, `resolveCollision`, `ancre`, `belierRam`, `belier`, +14 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/ship-construction.json`, `src/engine/collision.ts`, `src/engine/navalTraits.ts`, +2 fichiers
+- `MDG 12` (l.221) → `peu-maniable`, `CollisionShip`, `renforce`, `robuste`, `schema`, `solide`, `resolveCollision`, `ancre`, `belierRam`, `belier`, +14 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/ship-construction.json`, `src/engine/collision.ts`, `src/engine/navalTraits.ts`, +2 fichiers
 - `MDG 13` (l.427-438, l.442-446, l.448-462, l.464, l.479, l.485, l.497-499, l.526, l.533-537, l.560) → `collisionIndex`, `iceberg`, `SeaHazardDef`, `debris-marins`, `resolveCollision`, `rocher`, `pickSeaHazard`, `bas-fonds`, `perilManagement` ⚠sans-appelant, `faible`, +37 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/engine/collision.ts`, `src/engine/policy.ts`, `src/engine/seaNavigation.ts`, +5 fichiers
 
 ## MDG : Artillerie navale — pièces, portées, recharge et munitions
@@ -6108,7 +6110,7 @@ Un placement équilibré (ou compensé par du lest) n'impose aucune pénalité d
 **Voir aussi** : Atouts et Défauts d'arme (MDG : Arme d'équipe, Tir de zone) ; AA : Structures et armes de Siège (stats d'artillerie jumelles) ; Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Armes à distance et munitions (LDB) : groupes et tables ; Portée, Allonge et dégradation des armes ; Atouts et Défauts d'arme (Recharge, Dangereuse, Explosion, Percutante, Empaleuse, Perforante, Pointue).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.356-364, l.369-379, l.381-395, l.401-407, l.413-426, l.430-435, l.462) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `warMachineCrewPenalty`, `fuite-de-vapeur`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `perte-de-pression`, +26 — `src/data/index.ts`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, +17 fichiers
+- `MDG 12` (l.356-364, l.369-379, l.381-395, l.401-407, l.413-426, l.430-435, l.462) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `warMachineCrewPenalty`, `fuite-de-vapeur`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `perte-de-pression`, +27 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, +18 fichiers
 - sans code : `MDG 12` (l.377, l.379)
 
 ## MDG : nouveaux Atouts et Défauts d'arme (Arme d'équipe, Tir de zone)
@@ -6157,7 +6159,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 **Voir aussi** : Artillerie navale (MDG) ; AA : Structures et armes de Siège (définitions jumelles d'*Arme d'équipe* et de *Salve*) ; Atouts et Défauts d'arme (Recharge, Dangereuse, Imprécise, Tir de zone, Explosion) ; AA : armes à poudre à canon et munitions — tables ; Combat à Distance : restrictions et règles de tir (bandes de portée).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.442, l.444, l.446-456, l.458, l.460, l.462, l.464, l.466-472) → `crewedPenalty`, `warMachineCrewPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, +3 — `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/engine/warMachineCrew.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, +6 fichiers
+- `MDG 12` (l.442, l.444, l.446-456, l.458, l.460, l.462, l.464, l.466-472) → `crewedPenalty`, `warMachineCrewPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, +4 — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/engine/warMachineCrew.ts`, `src/state/combatArea.ts`, +7 fichiers
 
 ## Bilan de fidélité — passe de vérification adversariale
 

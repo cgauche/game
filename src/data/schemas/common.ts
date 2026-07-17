@@ -71,8 +71,8 @@ export const secondarySourceRefSchema = sourceRefSchema.extend({
 export type SecondaryRef = z.infer<typeof secondarySourceRefSchema>;
 
 /**
- * Note de provenance LIBRE `_source` — SURVIT uniquement pour `aa-criticals.json` (#278). ⚠ Motif
- * RÉVISÉ (#563, 2026-07-17) : « Aux Armes n'a AUCUNE extraction Markdown » était PÉRIMÉ — l'extraction
+ * Note de provenance LIBRE `_source` — SURVIT uniquement pour `aa-criticals.json` (#278). ATTENTION —
+ * motif RÉVISÉ (#563, 2026-07-17) : « Aux Armes n'a AUCUNE extraction Markdown » était PÉRIMÉ — l'extraction
  * Marker de `Source/WH - V4 - Aux Armes` EXISTE et porte des spans `data-folio` (13 chapitres, ex.
  * `10 - L'ARTILLERIE…md` en compte 15). Le vrai motif : les tables de Blessures Critiques par
  * Localisation d'`aa-criticals.json` citent un intervalle APPROXIMATIF (`p.≈118-124`, note libre du
@@ -137,7 +137,7 @@ export const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     focusNoMiscastOnDouble: z.boolean().optional(),
     castNoMiscastOnDouble: z.boolean().optional(),
     causesFear: z.boolean().optional(),
-    reverseFailed: z.strictObject({ skill: z.string(), spec: z.string().optional(), capDR: z.number().optional() }).optional(),
+    reverseFailed: z.strictObject({ skill: z.union([z.string(), z.array(z.string())]), spec: z.string().optional(), capDR: z.number().optional() }).optional(),
     bargainBonus: z.boolean().optional(),
     encumbranceBonus: z.boolean().optional(),
     corruptionThreshold: z.boolean().optional(),

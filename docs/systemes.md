@@ -91,7 +91,6 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/engine/axes.ts`
 - `src/engine/names.ts`
 - `src/engine/spellspec.ts`
-- `src/engine/variants.ts`
 - `src/state/advancement.ts`
 - `src/state/attackRelevance.ts`
 - `src/state/cascadeTestKit.ts`

@@ -1595,7 +1595,7 @@
     "rand": null,
     "source": {
       "book": "livre-de-base",
-      "page": 137
+      "page": 138
     },
     "combat": {
       "ignoreCalledShotHead": true
@@ -2180,7 +2180,7 @@
     "rand": null,
     "source": {
       "book": "livre-de-base",
-      "page": 139
+      "page": 140
     },
     "combat": {
       "reverseFailed": {
@@ -3184,7 +3184,8 @@
     "source": {
       "book": "livre-de-base",
       "page": 143
-    }
+    },
+    "size": "petite"
   },
   {
     "id": "pharmacologie",
@@ -3253,6 +3254,15 @@
     "source": {
       "book": "livre-de-base",
       "page": 144
+    },
+    "combat": {
+      "reverseFailed": {
+        "skill": [
+          "ramer",
+          "voile"
+        ],
+        "capDR": 1
+      }
     }
   },
   {
@@ -4873,7 +4883,8 @@
     "source": {
       "book": "archives-de-l-empire-2",
       "page": 20
-    }
+    },
+    "size": "grande"
   },
   {
     "id": "vice",
