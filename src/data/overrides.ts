@@ -19,6 +19,7 @@ import {
   WATER_EXPOSURE, navalPorts,
   navalProgression, seaNavigation, seaPerils, seaWeather, shipConstruction,
   disponibilite, riverNavigation,
+  GRAPPLE, NIGHT_STAKES,
 } from './index';
 // #157 : catalogues de CONTENU déjà chargés par un module dédié (`src/data/*.ts` ou `src/engine/*.ts`,
 // pas la façade `index.ts`) — importés DIRECTEMENT ici (même patron que `massBattle*` ci-dessus, qui
@@ -39,6 +40,7 @@ import { CRITICAL_TABLES } from './criticals';
 import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
 import type { GameOp } from '../engine/ops';
 import type { Difficulty } from '../engine/types';
+import type { SourceRef } from './schemas/common';
 import criticalsRawJson from './criticals.json';
 import aaCriticalsRawJson from './aa-criticals.json';
 import traumasRawJson from './traumas.json';
@@ -55,6 +57,24 @@ import drunkennessRawJson from './drunkenness.json';
 import encumbranceTiersRawJson from './encumbranceTiers.json';
 import type { MishapEntry } from '../engine/drivingMishap';
 import type { DrunkEntry } from '../engine/drunkenness';
+// LOT 3 #422 (FINAL) : dernières 3 exemptions AUDIT — Empoignade (LDB 14, fiche de règle UNIQUE, même
+// patron que `disponibilite`/`riverNavigation`), Incantations Imparfaites/Colère des dieux (LDB 46/40,
+// 3 tables NICHÉES dans `miscast.json`, même patron que `criticalsTete`/`aaCriticalsTete`), enjeux de
+// la cascade de nuit (`night-stakes.json`, tableau RACINE, nom de fichier kebab-case divergent).
+import miscastRawJson from './miscast.json';
+
+/** Entrée d'une table de miscast (`minor`/`major`/`wrath`, `miscast.json`) — DIALECTE compilé (PAS
+ *  des `GameOp` standard, cf. `engine/miscast.ts::JsonRow`) : `ops`/`test` restent au format JSON brut
+ *  du dialecte (sin-paramétrage), projetés par un renderer DÉDIÉ côté Codex (jamais `passiveSection`,
+ *  qui suppose de vrais `GameOp`). */
+export interface MiscastRowEntry {
+  id: string; min: number; max: number; name: string;
+  ops?: Record<string, unknown>[];
+  test?: { skill?: string; characteristic?: string; difficulty: string; onFail: Record<string, unknown>[]; onFailHard?: { dr: number; ops: Record<string, unknown>[] } };
+  reroll?: 'majeure' | 'mineure-x2';
+  source?: SourceRef;
+}
+const miscastRoot = miscastRawJson as unknown as { minor: MiscastRowEntry[]; major: MiscastRowEntry[]; wrath: MiscastRowEntry[] };
 
 /** Fiche de Traumatisme (`traumas.json`, #157) — MÊME schéma que `engine/trauma.ts::TraumaFiche`
  *  (module-privé là-bas, redéclaré ici a minima pour le seam d'édition ; `traumaFicheById` reste la
@@ -150,6 +170,14 @@ const ARRAYS = {
   drivingMishap: drivingMishapRawJson.table as MishapEntry[],
   drunkenness: drunkennessRawJson.table as DrunkEntry[],
   encumbranceTiers: encumbranceTiersRawJson,
+  // LOT 3 #422 (FINAL) : Incantations Imparfaites Mineures/Majeures (LDB 46) + Colère des dieux (LDB 40)
+  // — 3 tables frères NICHÉES dans `miscast.json` (même patron que `criticalsTete`/`aaCriticalsTete`).
+  miscastMinor: miscastRoot.minor,
+  miscastMajor: miscastRoot.major,
+  miscastWrath: miscastRoot.wrath,
+  // LOT 3 #422 (FINAL) : enjeux VERBATIM de la cascade de nuit — tableau RACINE, nom de fichier
+  // kebab-case divergent (même besoin que `navalPorts`).
+  nightStakes: NIGHT_STAKES,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
@@ -168,6 +196,8 @@ const OBJECTS = {
   disponibilite,
   // LOT 2 #422 : Navigation fluviale (T2C ch.5) — fiche de règle UNIQUE, même patron.
   riverNavigation,
+  // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
+  grapple: GRAPPLE,
 } as const;
 export type ObjectDatasetKey = keyof typeof OBJECTS;
 export const OBJECT_DATASET_KEYS = Object.keys(OBJECTS) as ObjectDatasetKey[];
@@ -269,6 +299,12 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   // `drunkenness.json` (`{table,source}`), réécrire le PARENT entier au save (le `source` de table doit survivre).
   drivingMishap: { file: 'driving-mishap.json', root: () => drivingMishapRawJson },
   drunkenness: { file: 'drunkenness.json', root: () => drunkennessRawJson },
+  // LOT 3 #422 (FINAL) : miscast — 3 tables NICHÉES dans `miscast.json`, réécrire le PARENT entier au save.
+  miscastMinor: { file: 'miscast.json', root: () => miscastRoot },
+  miscastMajor: { file: 'miscast.json', root: () => miscastRoot },
+  miscastWrath: { file: 'miscast.json', root: () => miscastRoot },
+  // LOT 3 #422 (FINAL) : `nightStakes` (tableau racine, nom de fichier kebab-case divergent).
+  nightStakes: { file: 'night-stakes.json', root: () => NIGHT_STAKES },
 };
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {

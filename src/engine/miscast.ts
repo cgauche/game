@@ -123,8 +123,10 @@ interface JsonNestedTest {
   onFailHard?: { dr: number; ops: JsonOp[] };
 }
 
-/** A table row as stored in the JSON. */
+/** A table row as stored in the JSON. `id` (#422, Codex exposure) is display/navigation identity —
+ *  never read by this module. */
 interface JsonRow {
+  id: string;
   min: number;
   max: number;
   name: string;

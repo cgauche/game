@@ -68,6 +68,7 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'etats.json': ['etats'],
   'eyes.json': ['eyes'],
   'gods.json': ['gods'],
+  'grapple.json': ['grapple'],
   'groups.json': ['groups'],
   'hairs.json': ['hairs'],
   'incidents-monture.json': ['incidentsMonture'],
@@ -77,6 +78,7 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'maladies.json': ['maladies'],
   'maneuvers.json': ['maneuvers'],
   'mass-battle.json': ['massBattlePowerEstimate', 'massBattleMightModifiers', 'massBattleWarMachines', 'massBattleStructures', 'massBattleHazards'],
+  'miscast.json': ['miscastMinor', 'miscastMajor', 'miscastWrath'],
   'montures.json': ['montures'],
   'mutations.json': ['mutations'],
   'mutationTables.json': ['mutationTables'],
@@ -84,6 +86,7 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'naval-ports.json': ['navalPorts'],
   'naval-progression.json': ['navalProgression'],
   'naval-traits.json': ['navalTraits'],
+  'night-stakes.json': ['nightStakes'],
   'obsessions.json': ['obsessions'],
   'oups.json': ['oups'],
   'peripeties.json': ['peripeties'],
@@ -159,10 +162,8 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'primitives.manifest.json': 'manifeste TOOLING (#298) des primitives partagées du code — vocabulaire app-interne.',
   'systemes.manifest.json': 'manifeste TOOLING (#298) éditorial des systèmes implémentés — vocabulaire app-interne.',
   'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (topic/ticket/bloque) — vocabulaire app-interne.",
-  // ── AUDIT #422 : contenu de jeu non encore exposé — cliquet décroissant (trouvé 2026-07-14) ──
-  'grapple.json': "AUDIT : à exposer -> ticket — mécanique d'Empoignade en GameOp (LDB 14 l.155-169), consommée par `state/pendings.ts`, aucune catégorie Codex (la fiche narrative `empoignade` de `regles.json` est exposée, pas cette mécanique GameOp).",
-  'miscast.json': "AUDIT : à exposer -> ticket — Tableaux d'Incantations Imparfaites (LDB 46) + Colère des dieux (LDB 40), consommés par `engine/miscast.ts`, aucune catégorie Codex.",
-  'night-stakes.json': "AUDIT : à exposer -> ticket — enjeux VERBATIM de la cascade de nuit, consommés par `state/restFlow.ts`, aucune catégorie Codex.",
+  // #422 SOLDÉ (LOT 1+2+3, 2026-07-14 → présent) : plus AUCUNE entrée « AUDIT : à exposer -> ticket » —
+  // les 3 dernières (grapple/miscast/night-stakes) sont exposées par LOT 3, FINAL.
 };
 
 /** Offenses réelles : chaque `.json` de `src/data` doit être exposé (mapping résolu via le VRAI

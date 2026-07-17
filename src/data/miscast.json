@@ -1,6 +1,7 @@
 {
   "minor": [
     {
+      "id": "mineure-signe-de-sorciere",
       "min": 1,
       "max": 5,
       "name": "Signe de Sorcière",
@@ -11,6 +12,7 @@
       }
     },
     {
+      "id": "mineure-lait-caille",
       "min": 6,
       "max": 10,
       "name": "Lait caillé",
@@ -21,6 +23,7 @@
       }
     },
     {
+      "id": "mineure-mildiou",
       "min": 11,
       "max": 15,
       "name": "Mildiou",
@@ -31,6 +34,7 @@
       }
     },
     {
+      "id": "mineure-cerumen",
       "min": 16,
       "max": 20,
       "name": "Cérumen",
@@ -48,6 +52,7 @@
       }
     },
     {
+      "id": "mineure-lueur-occulte",
       "min": 21,
       "max": 25,
       "name": "Lueur occulte",
@@ -58,6 +63,7 @@
       }
     },
     {
+      "id": "mineure-murmures-mortels",
       "min": 26,
       "max": 30,
       "name": "Murmures mortels",
@@ -78,6 +84,7 @@
       }
     },
     {
+      "id": "mineure-rupture",
       "min": 31,
       "max": 35,
       "name": "Rupture",
@@ -100,6 +107,7 @@
       }
     },
     {
+      "id": "mineure-secousse-spirituelle",
       "min": 36,
       "max": 40,
       "name": "Secousse spirituelle",
@@ -117,6 +125,7 @@
       }
     },
     {
+      "id": "mineure-delie",
       "min": 41,
       "max": 45,
       "name": "Délié",
@@ -127,6 +136,7 @@
       }
     },
     {
+      "id": "mineure-tenue-indisciplinee",
       "min": 46,
       "max": 50,
       "name": "Tenue indisciplinée",
@@ -155,6 +165,7 @@
       }
     },
     {
+      "id": "mineure-malediction-de-la-sobriete",
       "min": 51,
       "max": 55,
       "name": "Malédiction de la sobriété",
@@ -165,6 +176,7 @@
       }
     },
     {
+      "id": "mineure-drain-de-l-ame",
       "min": 56,
       "max": 60,
       "name": "Drain de l'âme",
@@ -182,6 +194,7 @@
       }
     },
     {
+      "id": "mineure-distraction",
       "min": 61,
       "max": 65,
       "name": "Distraction",
@@ -199,6 +212,7 @@
       }
     },
     {
+      "id": "mineure-visions-impies",
       "min": 66,
       "max": 70,
       "name": "Visions impies",
@@ -227,6 +241,7 @@
       }
     },
     {
+      "id": "mineure-langue-maladroite",
       "min": 71,
       "max": 75,
       "name": "Langue maladroite",
@@ -250,6 +265,7 @@
       }
     },
     {
+      "id": "mineure-l-horreur",
       "min": 76,
       "max": 80,
       "name": "L'horreur !",
@@ -271,6 +287,7 @@
       }
     },
     {
+      "id": "mineure-malediction-de-corruption",
       "min": 81,
       "max": 85,
       "name": "Malédiction de corruption",
@@ -287,6 +304,7 @@
       }
     },
     {
+      "id": "mineure-double-probleme",
       "min": 86,
       "max": 90,
       "name": "Double problème",
@@ -297,6 +315,7 @@
       }
     },
     {
+      "id": "mineure-multiplication-d-infortune",
       "min": 91,
       "max": 95,
       "name": "Multiplication d'infortune",
@@ -308,6 +327,7 @@
       }
     },
     {
+      "id": "mineure-chaos-en-cascade",
       "min": 96,
       "max": 100,
       "name": "Chaos en cascade",
@@ -321,6 +341,7 @@
   ],
   "major": [
     {
+      "id": "majeure-voix-fantomatiques",
       "min": 1,
       "max": 5,
       "name": "Voix fantomatiques",
@@ -341,6 +362,7 @@
       }
     },
     {
+      "id": "majeure-regard-maudit",
       "min": 6,
       "max": 10,
       "name": "Regard maudit",
@@ -358,6 +380,7 @@
       }
     },
     {
+      "id": "majeure-choc-aethyrique",
       "min": 11,
       "max": 15,
       "name": "Choc aethyrique",
@@ -390,6 +413,7 @@
       }
     },
     {
+      "id": "majeure-marche-de-la-mort",
       "min": 16,
       "max": 20,
       "name": "Marche de la mort",
@@ -400,6 +424,7 @@
       }
     },
     {
+      "id": "majeure-rebellion-intestinale",
       "min": 21,
       "max": 25,
       "name": "Rébellion intestinale",
@@ -417,6 +442,7 @@
       }
     },
     {
+      "id": "majeure-feu-de-l-ame",
       "min": 26,
       "max": 30,
       "name": "Feu de l'âme",
@@ -434,6 +460,7 @@
       }
     },
     {
+      "id": "majeure-propos-esoteriques",
       "min": 31,
       "max": 35,
       "name": "Propos ésotériques",
@@ -457,6 +484,7 @@
       }
     },
     {
+      "id": "majeure-essaim",
       "min": 36,
       "max": 40,
       "name": "Essaim",
@@ -467,6 +495,7 @@
       }
     },
     {
+      "id": "majeure-poupee-de-chiffon",
       "min": 41,
       "max": 45,
       "name": "Poupée de chiffon",
@@ -493,6 +522,7 @@
       }
     },
     {
+      "id": "majeure-membre-gele",
       "min": 46,
       "max": 50,
       "name": "Membre gelé",
@@ -503,6 +533,7 @@
       }
     },
     {
+      "id": "majeure-vue-assombrie",
       "min": 51,
       "max": 55,
       "name": "Vue assombrie",
@@ -526,6 +557,7 @@
       }
     },
     {
+      "id": "majeure-levitation",
       "min": 56,
       "max": 60,
       "name": "Lévitation",
@@ -536,6 +568,7 @@
       }
     },
     {
+      "id": "majeure-levitation-suite",
       "min": 61,
       "max": 65,
       "name": "Lévitation (suite)",
@@ -546,6 +579,7 @@
       }
     },
     {
+      "id": "majeure-regurgitation",
       "min": 66,
       "max": 70,
       "name": "Régurgitation",
@@ -568,6 +602,7 @@
       }
     },
     {
+      "id": "majeure-coeur-de-traitre",
       "min": 71,
       "max": 75,
       "name": "Cœur de traître",
@@ -578,6 +613,7 @@
       }
     },
     {
+      "id": "majeure-coeur-de-traitre-suite",
       "min": 76,
       "max": 80,
       "name": "Cœur de traître (suite)",
@@ -588,6 +624,7 @@
       }
     },
     {
+      "id": "majeure-terrible-affaiblissement",
       "min": 81,
       "max": 85,
       "name": "Terrible affaiblissement",
@@ -614,6 +651,7 @@
       }
     },
     {
+      "id": "majeure-puanteur-infernale",
       "min": 86,
       "max": 90,
       "name": "Puanteur infernale",
@@ -624,6 +662,7 @@
       }
     },
     {
+      "id": "majeure-drain-de-puissance",
       "min": 91,
       "max": 95,
       "name": "Drain de puissance",
@@ -647,6 +686,7 @@
       }
     },
     {
+      "id": "majeure-contre-reaction-aethyrique",
       "min": 96,
       "max": 100,
       "name": "Contre-réaction aethyrique",
@@ -659,6 +699,7 @@
   ],
   "wrath": [
     {
+      "id": "colere-visions-sacrees",
       "min": 1,
       "max": 5,
       "name": "Visions sacrées",
@@ -680,6 +721,7 @@
       }
     },
     {
+      "id": "colere-pensez-a-vos-actes",
       "min": 6,
       "max": 10,
       "name": "Pensez à vos actes",
@@ -698,6 +740,7 @@
       }
     },
     {
+      "id": "colere-tenez-compte-de-mes-enseignements",
       "min": 11,
       "max": 15,
       "name": "Tenez compte de mes enseignements",
@@ -722,6 +765,7 @@
       }
     },
     {
+      "id": "colere-prouvez-votre-devotion",
       "min": 16,
       "max": 20,
       "name": "Prouvez votre dévotion",
@@ -739,6 +783,7 @@
       }
     },
     {
+      "id": "colere-vous-abusez-de-ma-patience",
       "min": 21,
       "max": 25,
       "name": "Vous abusez de ma patience",
@@ -762,6 +807,7 @@
       }
     },
     {
+      "id": "colere-vous-ne-comprenez-pas-ma-volonte",
       "min": 26,
       "max": 30,
       "name": "Vous ne comprenez pas ma volonté",
@@ -772,6 +818,7 @@
       }
     },
     {
+      "id": "colere-je-trouve-inquietant-votre-manque-de-foi",
       "min": 31,
       "max": 35,
       "name": "Je trouve inquiétant votre manque de foi",
@@ -796,6 +843,7 @@
       }
     },
     {
+      "id": "colere-partagez-ma-douleur",
       "min": 36,
       "max": 40,
       "name": "Partagez ma douleur",
@@ -825,6 +873,7 @@
       }
     },
     {
+      "id": "colere-votre-cause-est-indigne",
       "min": 41,
       "max": 45,
       "name": "Votre cause est indigne",
@@ -835,6 +884,7 @@
       }
     },
     {
+      "id": "colere-cessez-vos-babillages",
       "min": 46,
       "max": 50,
       "name": "Cessez vos babillages",
@@ -859,6 +909,7 @@
       }
     },
     {
+      "id": "colere-ressentez-ma-colere",
       "min": 51,
       "max": 55,
       "name": "Ressentez ma colère",
@@ -892,6 +943,7 @@
       }
     },
     {
+      "id": "colere-je-ne-vous-aiderai-pas",
       "min": 56,
       "max": 60,
       "name": "Je ne vous aiderai pas",
@@ -902,6 +954,7 @@
       }
     },
     {
+      "id": "colere-blessures-divines",
       "min": 61,
       "max": 65,
       "name": "Blessures divines",
@@ -919,6 +972,7 @@
       }
     },
     {
+      "id": "colere-frappe-de-cecite",
       "min": 66,
       "max": 70,
       "name": "Frappé de cécité",
@@ -941,6 +995,7 @@
       }
     },
     {
+      "id": "colere-qu-allez-vous-sacrifier",
       "min": 71,
       "max": 75,
       "name": "Qu'allez-vous sacrifier ?",
@@ -974,6 +1029,7 @@
       }
     },
     {
+      "id": "colere-vous-avez-peche-contre-moi",
       "min": 76,
       "max": 80,
       "name": "Vous avez péché contre moi",
@@ -984,6 +1040,7 @@
       }
     },
     {
+      "id": "colere-purifier-la-chair",
       "min": 81,
       "max": 87,
       "name": "Purifier la chair",
@@ -1027,6 +1084,7 @@
       }
     },
     {
+      "id": "colere-interferences-demoniaques",
       "min": 88,
       "max": 88,
       "name": "Interférences démoniaques",
@@ -1037,6 +1095,7 @@
       }
     },
     {
+      "id": "colere-redoutez-ma-colere",
       "min": 89,
       "max": 95,
       "name": "Redoutez ma colère",
@@ -1054,6 +1113,7 @@
       }
     },
     {
+      "id": "colere-faites-penitence",
       "min": 96,
       "max": 100,
       "name": "Faites pénitence",
@@ -1064,6 +1124,7 @@
       }
     },
     {
+      "id": "colere-chatiment",
       "min": 101,
       "max": 105,
       "name": "Châtiment",
@@ -1083,6 +1144,7 @@
       }
     },
     {
+      "id": "colere-ne-prononcez-pas-mon-nom-en-vain",
       "min": 106,
       "max": 110,
       "name": "Ne prononcez pas mon nom en vain",
@@ -1093,6 +1155,7 @@
       }
     },
     {
+      "id": "colere-ne-vous-attachez-pas-aux-futilites",
       "min": 111,
       "max": 115,
       "name": "Ne vous attachez pas aux futilités",
@@ -1103,6 +1166,7 @@
       }
     },
     {
+      "id": "colere-vous-abusez-de-ma-misericorde",
       "min": 116,
       "max": 120,
       "name": "Vous abusez de ma miséricorde",
@@ -1113,6 +1177,7 @@
       }
     },
     {
+      "id": "colere-contemplez-votre-cruaute",
       "min": 121,
       "max": 125,
       "name": "Contemplez votre cruauté",
@@ -1123,6 +1188,7 @@
       }
     },
     {
+      "id": "colere-tonnerre-et-foudre",
       "min": 126,
       "max": 130,
       "name": "Tonnerre et foudre",
@@ -1143,6 +1209,7 @@
       }
     },
     {
+      "id": "colere-souffrez-comme-je-souffre",
       "min": 131,
       "max": 135,
       "name": "Souffrez comme je souffre",
@@ -1153,6 +1220,7 @@
       }
     },
     {
+      "id": "colere-excommunication",
       "min": 136,
       "max": 140,
       "name": "Excommunication",
@@ -1163,6 +1231,7 @@
       }
     },
     {
+      "id": "colere-prouvez-votre-valeur",
       "min": 141,
       "max": 145,
       "name": "Prouvez votre valeur",
@@ -1173,6 +1242,7 @@
       }
     },
     {
+      "id": "colere-je-te-chasse",
       "min": 146,
       "max": 150,
       "name": "Je te chasse",
@@ -1183,6 +1253,7 @@
       }
     },
     {
+      "id": "colere-appele-a-rendre-des-comptes",
       "min": 151,
       "max": 999,
       "name": "Appelé à rendre des comptes",
