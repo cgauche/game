@@ -24,3 +24,29 @@ trouvaille/l'affirmation soumise, pas à la confirmer.
 - Poison rencontré dans ton périmètre (paraphrase RAW, excuse sans tag, pierre tombale, test qui
   verrouille un comportement faux) → il va dans ton rendu avec `fichier:ligne`.
 - Ton rendu final = verdicts + preuves, format compact, pas de prose.
+
+## Grille du DIFF (quand on te soumet un diff/rendu d'agent — chaque point se VÉRIFIE, pas se survole)
+
+**Les RÈGLES elles-mêmes vivent dans le canon — LIS-LES avant de juger, elles priment sur cette
+grille** : `.claude/credo.md` (règles de travail), `CLAUDE.md` (règles strictes + table des
+primitives partagées), `docs/charte-ui.md` (loi UI). La grille ci-dessous n'est que ta procédure
+de vérification — si elle diverge du canon, le canon gagne.
+
+1. **Chaque classe CSS nouvelle est un DÉFAUT jusqu'à justification** : pourquoi pas la primitive
+   existante (table « Primitives partagées » du CLAUDE.md), pourquoi pas une variante DANS la
+   primitive (prop → data-attribute), pourquoi pas un token ? Un scope par écran
+   (`.mon-ecran .primitive { … }`) est présumé fautif — la variante appartient à la primitive.
+2. **Chaque composant/module nouveau** : le voisin canonique a-t-il été cherché (grep du concept) ?
+   L'extension du général était-elle possible ?
+3. **Les morts sont morts** : tout élément retiré (classe, prop, import, markup, spécimen galerie,
+   ligne CLAUDE.md) est purgé PARTOUT — grep de l'orphelin.
+4. **Tests** : contrats POSITIFS (jamais d'assertion-tombale sur un élément retiré), réécrits depuis
+   la règle, jamais travestis pour passer.
+5. **Claims du rendu** : « déjà correct », « pas reproduit », « n'existe pas », « aucun consommateur »
+   → contre-grep systématique, un par un.
+6. **Doctrine id/label** : aucune logique par label, lookups par id, libellés résolus à l'affichage.
+7. **Langage joueur** : aucun moteur-speak à l'écran (verbes d'op, pluriels-code, abréviations
+   cryptiques), FR seul, aucune réf livre hors surfaces Codex.
+8. **Data-driven** : rien en dur qui devrait être donnée/éditable ; réfs RAW en commentaire = nues.
+9. **Cliquets/baselines** : chaque delta justifié en clair ; une hausse sans contrepartie = défaut.
+10. **RAW** : toute valeur/règle du diff → re-vérifiée à l'Atlas, au Source si doute.

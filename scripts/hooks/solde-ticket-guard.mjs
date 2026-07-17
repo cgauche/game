@@ -14,13 +14,14 @@
 //
 // Extension 2026-07-14 (constat utilisateur, verbatim) — « je pensais que tu avais un hook qui te
 // forceait a faire une review reversal, elle ne doit clairement pas marcher » puis « Ou alors
-// seulement sur les tickets ? » : un commit « ref #N » (rattaché SANS fermer) ou sans ticket du
-// tout échappait à tout regard adversarial ET n'avançait jamais le compteur de palier. Deux volets :
-// (1) le compteur (`.claude/soldes/.compteur`, incrémenté par `scripts/git-hooks/post-commit`)
-// avance désormais sur TOUT commit de substance (diff touche `src/**`/`scripts/**`), pas seulement
-// les fermetures ; (2) anti-esquive — un commit `ref #N`/sans ticket qui touche `src/**` (≥10
-// lignes de diff staged) exige lui aussi sa réfutation (ligne `REFUTATION:` dans le message, ou
-// fichier `.claude/soldes/ref-<N>.md`).
+// seulement sur les tickets ? » : un commit « ref #N » (rattaché SANS fermer) échappait à tout
+// regard adversarial ET n'avançait jamais le compteur de palier. Deux volets : (1) le compteur
+// (`.claude/soldes/.compteur`, incrémenté par `scripts/git-hooks/post-commit`) avance désormais sur
+// TOUT commit de substance (diff touche `src/**`/`scripts/**`), pas seulement les fermetures ;
+// (2) anti-esquive — un commit `ref #N` qui touche `src/**` (≥10 lignes de diff staged) exige lui
+// aussi sa réfutation (ligne `REFUTATION:` dans le message, ou fichier `.claude/soldes/ref-<N>.md`).
+// Le déclencheur reste le TICKET explicitement rattaché (fermeture ou `ref #N`) — un commit sans
+// AUCUN ticket n'entre jamais dans ce mécanisme (périmètre tranché #591, 2026-07-17).
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
@@ -67,6 +68,175 @@ export function extractMessageSources(command, { readFile = readFileSync, cwd = 
   }
 }
 
+// ── Parsing STRUCTUREL de la ligne de commande (#591 défaut 3) ───────────────────────────────────
+// « est-ce un `git commit` ? » ne se décide plus par un grep de sous-chaîne sur la ligne entière
+// (un `gh issue create --body "... git commit ..."` la faisait mordre à tort) : on TOKENISE la
+// commande (quotes simples/doubles + here-strings PowerShell `@'…'@`/`@"…"@`), on la découpe en
+// segments aux enchaînements top-level (`&&`, `;`, `||`, `|`), puis on identifie dans CHAQUE segment
+// l'exécutable de tête et sa sous-commande (`git [-C <path>|-c <k=v>|...] commit`).
+function tokenizeCommand(command) {
+  const tokens = []
+  let i = 0
+  const n = command.length
+  while (i < n) {
+    while (i < n && /\s/.test(command[i])) i++
+    if (i >= n) break
+    if (command[i] === '@' && (command[i + 1] === "'" || command[i + 1] === '"')) {
+      const quote = command[i + 1]
+      const closer = `${quote}@`
+      const end = command.indexOf(closer, i + 2)
+      if (end !== -1) {
+        tokens.push({ text: command.slice(i + 2, end), op: null })
+        i = end + closer.length
+        continue
+      }
+    }
+    if (command.startsWith('&&', i)) { tokens.push({ text: '&&', op: '&&' }); i += 2; continue }
+    if (command.startsWith('||', i)) { tokens.push({ text: '||', op: '||' }); i += 2; continue }
+    if (command[i] === ';') { tokens.push({ text: ';', op: ';' }); i += 1; continue }
+    if (command[i] === '|') { tokens.push({ text: '|', op: '|' }); i += 1; continue }
+    // MOT (bareword ± span(s) quoté(s) EMBARQUÉS) : le comportement shell réel colle une quote
+    // rencontrée en PLEIN MILIEU d'un token à ce MÊME token (`-m"a b c"` → un seul token `-ma b c`,
+    // `--message="a b c"` → `--message=a b c`) — jamais une coupure qui laisserait les mots du
+    // message fuir en tokens séparés (les mots d'un message multi-mots devenaient alors autant de
+    // pathspecs parasites, #591 suite : le filtrage src/ui retombait à néant, JUGE silencieux).
+    let buf = ''
+    let j = i
+    while (j < n) {
+      const c = command[j]
+      if (/\s/.test(c) || c === ';' || c === '|' || (c === '&' && command[j + 1] === '&')) break
+      if (c === '"' || c === "'") {
+        const quote = c
+        j++
+        while (j < n && command[j] !== quote) {
+          // Échappement réel `\"`/`\\` seulement — un backslash de chemin Windows (`C:\Program…`)
+          // n'est PAS un échappement shell et reste LITTÉRAL (sinon les chemins perdent leurs
+          // séparateurs, cassant la reconnaissance de `git.exe` au bout d'un chemin absolu, #591 suite).
+          if (quote === '"' && command[j] === '\\' && j + 1 < n && (command[j + 1] === '"' || command[j + 1] === '\\')) {
+            buf += command[j + 1]; j += 2; continue
+          }
+          buf += command[j]; j++
+        }
+        j++ // saute la quote fermante (si absente — quote non refermée — j a déjà atteint n)
+        continue
+      }
+      buf += c
+      j++
+    }
+    tokens.push({ text: buf, op: null })
+    i = j
+  }
+  return tokens
+}
+
+/** Découpe la commande en segments exécutables (aux enchaînements `&&`/`;`/`||`/`|` de premier
+ *  niveau — les mêmes marqueurs À L'INTÉRIEUR d'une quote/here-string ont déjà été consommés comme
+ *  contenu de token par `tokenizeCommand`, jamais comme séparateur). */
+function splitCommandSegments(command) {
+  const segments = []
+  let current = []
+  for (const tok of tokenizeCommand(command)) {
+    if (tok.op) {
+      segments.push(current)
+      current = []
+    } else {
+      current.push(tok.text)
+    }
+  }
+  segments.push(current)
+  return segments.filter((s) => s.length > 0)
+}
+
+const GLOBAL_VALUE_FLAGS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path'])
+
+/** Index du token `commit` dans un segment (`[&] git [flags globales] commit`), `-1` si le segment
+ *  n'exécute pas `git commit` (exécutable ≠ git, ou sous-commande ≠ commit). Un token `&` de tête
+ *  (call-operator PowerShell : `& "C:\Program Files\Git\git.exe" commit …`) est sauté — le contrôle
+ *  d'exécutable porte alors sur le BASENAME (sans extension `.exe`/`.cmd`, insensible à la casse). */
+function gitCommitSubcommandIndex(segment) {
+  const start = segment[0] === '&' ? 1 : 0
+  if (segment.length <= start) return -1
+  const exe = segment[start].replace(/\\/g, '/').split('/').pop().replace(/\.(exe|cmd)$/i, '').toLowerCase()
+  if (exe !== 'git') return -1
+  let idx = start + 1
+  while (idx < segment.length) {
+    const t = segment[idx]
+    if (t.startsWith('-')) {
+      if (GLOBAL_VALUE_FLAGS.has(t)) { idx += 2; continue }
+      idx += 1
+      continue
+    }
+    break
+  }
+  return idx < segment.length && segment[idx] === 'commit' ? idx : -1
+}
+
+/** `true` si la commande exécute STRUCTURELLEMENT un `git commit` (un segment quelconque, entre
+ *  enchaînements) — jamais un grep de sous-chaîne sur la ligne entière (#591 défaut 3). */
+export function isGitCommitCommand(command) {
+  if (!command) return false
+  return splitCommandSegments(command).some((segment) => gitCommitSubcommandIndex(segment) !== -1)
+}
+
+// Longs à valeur SÉPARÉE (`--message truc`, `-c truc`) : le token suivant est la valeur, jamais un
+// pathspec. `-c` reste un flag SIMPLE (config `clé=valeur`) — hors du regroupement court m/F ci-dessous.
+const COMMIT_VALUE_FLAGS = new Set([
+  '-c', '--author', '--date', '--template', '--fixup', '--squash', '--trailer',
+  '--reuse-message', '--reedit-message', '--message', '--file',
+])
+// Longs à valeur COLLÉE par `=` (`--message=texte`, `--file=chemin`) : la valeur est DÉJÀ dans le
+// token, rien à consommer ensuite — et elle n'est jamais elle-même un pathspec.
+const LONG_VALUE_FLAG_EQ_RE = /^--(message|file|author|date|template|fixup|squash|trailer|reuse-message|reedit-message)=/
+// Shorts POSIX groupés (`-am`, `-cam`, `-sm`…) : `git` accepte l'empilement d'options courtes
+// booléennes suivies d'UNE option à valeur — `m` (message) et `F` (file) sont les deux lettres
+// courtes à valeur de `git commit`. Capture (flags avant, lettre m/F, RÉSIDU) : résidu vide → la
+// valeur est le token SUIVANT (`-am "msg"`) ; résidu non vide → la valeur est GLUÉE au token lui-même
+// (`-m"a b c"` tokenisé en un seul token `-ma b c` par `tokenizeCommand` — rien à consommer ensuite).
+// Sans cette reconnaissance, le MESSAGE (ou ses mots, avant la fusion de tokenisation) se prenait
+// pour un pathspec — le filtrage src/ui retombait à néant, JUGE/anti-esquive restaient muets (#591).
+const SHORT_VALUE_FLAG_RE = /^-([a-zA-Z]*)([mF])(.*)$/
+
+/** Glob non résolu (`*`, `?`, `[`) : la garde ne réimplémente pas le matching de pathspec de git —
+ *  un pathspec-glob présent invalide le SCOPING ENTIER de la commande (retombe sur l'index complet,
+ *  jamais un silence par filtrage résolu à tort en « aucun fichier »). */
+const PATHSPEC_GLOB_RE = /[*?[]/
+
+/** Pathspecs (chemins positionnels) portés par un `git commit`, extraits de sa STRUCTURE : tout
+ *  token du segment qui n'est ni un flag connu ni la valeur d'un flag qui en attend une (séparée OU
+ *  collée par `=`/glue court, `--`…) est un pathspec — qu'il précède ou suive le séparateur `--`.
+ *  `[]` si la commande n'est pas un `git commit`, si elle ne porte aucun pathspec, OU si un pathspec
+ *  porte un glob non résolu — dans tous ces cas le diff STAGÉ ENTIER reste la portée (jamais un
+ *  scoping mal résolu qui tairait la garde). */
+export function extractCommitPathspecs(command) {
+  if (!command) return []
+  for (const segment of splitCommandSegments(command)) {
+    const subIdx = gitCommitSubcommandIndex(segment)
+    if (subIdx === -1) continue
+    const paths = []
+    for (let k = subIdx + 1; k < segment.length; k++) {
+      const t = segment[k]
+      if (t === '--') continue
+      if (t.startsWith('--')) {
+        if (LONG_VALUE_FLAG_EQ_RE.test(t)) continue // valeur collée par `=` : rien à consommer
+        if (COMMIT_VALUE_FLAGS.has(t)) k += 1 // valeur séparée (token suivant)
+        continue
+      }
+      if (t.startsWith('-')) {
+        if (COMMIT_VALUE_FLAGS.has(t)) { k += 1; continue } // `-c` : valeur séparée
+        const m = SHORT_VALUE_FLAG_RE.exec(t)
+        if (m) {
+          if (m[3] === '') k += 1 // résidu vide : valeur SÉPARÉE (token suivant)
+          // résidu non vide : valeur GLUÉE, déjà dans le token — rien à consommer
+        }
+        continue
+      }
+      paths.push(t)
+    }
+    return paths.some((p) => PATHSPEC_GLOB_RE.test(p)) ? [] : paths
+  }
+  return []
+}
+
 // Motif de fermeture repris du closer post-commit (`scripts/git-hooks/post-commit`) : mêmes
 // mots-clefs, mais capturés ICI sur le texte ENTIER de la commande (couvre les here-strings/heredocs
 // `git commit -m "$(cat <<EOF ... EOF)"` où le message est packé dans la commande shell elle-même,
@@ -76,7 +246,7 @@ const CLOSE_KEYWORD_RE = /(corrige|fixe?s?|closes?|ferme)\s+#(\d+)/gi
 /** Numéros de ticket que la commande FERME, dédupliqués/triés. `[]` si la commande n'est pas un
  *  `git commit`, ou si aucun mot-clef de fermeture n'apparaît. */
 export function extractClosedIssues(command) {
-  if (!command || !/git\s+commit\b/i.test(command)) return []
+  if (!command || !isGitCommitCommand(command)) return []
   const nums = new Set()
   for (const m of command.matchAll(CLOSE_KEYWORD_RE)) nums.add(Number(m[2]))
   return [...nums].sort((a, b) => a - b)
@@ -255,10 +425,12 @@ export function readRevuePalierFile() {
   try { return readFileSync(resolve('.claude/soldes/revue-palier.md'), 'utf8') } catch { return null }
 }
 
-// ── Anti-esquive (extension 2026-07-14) ─────────────────────────────────────────────────────────
-// Un commit `ref #N`/`refs #N` (rattaché SANS fermer) ou sans aucun ticket, qui touche `src/**`
-// pour un diff STAGED de substance, doit lui aussi porter sa réfutation — sinon la fermeture reste
-// le SEUL chemin regardé et « ref #N » devient l'esquive mécanique.
+// ── Anti-esquive (extension 2026-07-14, périmètre tranché #591) ────────────────────────────────────
+// Un commit `ref #N`/`refs #N` (rattaché SANS fermer), qui touche `src/**` pour un diff STAGED de
+// substance, doit lui aussi porter sa réfutation — sinon la fermeture reste le SEUL chemin regardé
+// et « ref #N » devient l'esquive mécanique. Un commit SANS aucun ticket (ni fermeture, ni `ref #N`)
+// reste hors du déclencheur : le mécanisme REFUTATION ne porte que sur le ticket EXPLICITEMENT
+// rattaché (#591).
 const REF_KEYWORD_RE = /\brefs?\s+#(\d+)/gi
 const REFUTATION_LINE_RE = /REFUTATION\s*:\s*(.+)/i
 const MIN_REFUTATION_LINE_LEN = 40
@@ -266,7 +438,7 @@ const SUBSTANTIVE_MIN_LINES = 10
 
 /** Numéros de ticket que la commande RATTACHE sans fermer (`ref #N`/`refs #N`), dédupliqués/triés. */
 export function extractRefIssues(command) {
-  if (!command || !/git\s+commit\b/i.test(command)) return []
+  if (!command || !isGitCommitCommand(command)) return []
   const nums = new Set()
   for (const m of command.matchAll(REF_KEYWORD_RE)) nums.add(Number(m[1]))
   return [...nums].sort((a, b) => a - b)
@@ -294,7 +466,7 @@ export function validateRefFile(content) {
  * @returns {{ reason: string } | null} — non-null = `deny`, null = silence.
  */
 export function evaluateAntiEsquive({ command, stagedTouchesSrc, stagedTotalLines, readRefFile = () => null }) {
-  if (!command || !/git\s+commit\b/i.test(command)) return null
+  if (!command || !isGitCommitCommand(command)) return null
   if (!stagedTouchesSrc) return null
   if (typeof stagedTotalLines === 'number' && stagedTotalLines < SUBSTANTIVE_MIN_LINES) return null
 
@@ -305,28 +477,129 @@ export function evaluateAntiEsquive({ command, stagedTouchesSrc, stagedTotalLine
   if (hasInlineRefutation(command)) return null
 
   const refIssues = extractRefIssues(command)
-  if (refIssues.length > 0) {
-    const failures = []
-    for (const n of refIssues) {
-      const { ok, problems } = validateRefFile(readRefFile(n))
-      if (!ok) failures.push({ n, problems })
-    }
-    if (failures.length === 0) return null
-    const detail = failures.map(({ n, problems }) => `#${n} (.claude/soldes/ref-${n}.md) — ${problems.join(' ; ')}`).join(' | ')
-    return {
-      reason:
-        `⚠ Commit "ref #N" (src/** touché, ≥${SUBSTANTIVE_MIN_LINES} lignes de diff staged) sans réfutation : ${detail}. ` +
-        `Ajouter une ligne "REFUTATION: <qui a attaqué quoi, ≥${MIN_REFUTATION_LINE_LEN} caractères>" dans le ` +
-        `message de commit, ou écrire .claude/soldes/ref-<N>.md avec une section "## Réfutation" conforme ` +
-        `(verdict + synthèse — extension anti-esquive 2026-07-14).`,
-    }
+  // Aucun ticket rattaché (ni fermeture, ni `ref #N`) : hors du déclencheur (#591).
+  if (refIssues.length === 0) return null
+
+  const failures = []
+  for (const n of refIssues) {
+    const { ok, problems } = validateRefFile(readRefFile(n))
+    if (!ok) failures.push({ n, problems })
+  }
+  if (failures.length === 0) return null
+  const detail = failures.map(({ n, problems }) => `#${n} (.claude/soldes/ref-${n}.md) — ${problems.join(' ; ')}`).join(' | ')
+  return {
+    reason:
+      `⚠ Commit "ref #N" (src/** touché, ≥${SUBSTANTIVE_MIN_LINES} lignes de diff staged) sans réfutation : ${detail}. ` +
+      `Ajouter une ligne "REFUTATION: <qui a attaqué quoi, ≥${MIN_REFUTATION_LINE_LEN} caractères>" dans le ` +
+      `message de commit, ou écrire .claude/soldes/ref-<N>.md avec une section "## Réfutation" conforme ` +
+      `(verdict + synthèse — extension anti-esquive 2026-07-14).`,
+  }
+}
+
+// ── JUGE adversarial (extension du mécanisme REFUTATION, générale à tout domaine) ──────────────────
+// EXACTEMENT le même déclencheur qu'`evaluateAntiEsquive` (#591 : un `ref #N` rattaché sans fermer,
+// jamais un commit sans ticket du tout, jamais une fermeture — déjà couverte par sa propre section
+// "## Réfutation" à verdict) : un `ref #N` qui touche `src/**` en substance doit en plus porter la
+// preuve qu'un agent juge adversarial est passé sur le diff. Si le diff touche `src/ui/**`, une
+// preuve DISTINCTE de jugement sur captures (JUGE-VISION) est exigée en plus.
+const JUGE_LINE_RE = /\bJUGE\s*:\s*(.+)/i
+const MIN_JUGE_LINE_LEN = 40
+const JUGE_VISION_LINE_RE = /\bJUGE-VISION\s*:\s*(.+)/i
+const MIN_JUGE_VISION_LINE_LEN = 40
+const JUGE_SECTION_RE = /##\s*Juge\s*\n([\s\S]*?)(?:\n\s*\n|\n##|$)/i
+const JUGE_VISION_SECTION_RE = /##\s*Juge-Vision\s*\n([\s\S]*?)(?:\n\s*\n|\n##|$)/i
+
+/** `true` si le message porte une ligne "JUGE: <...>" d'au moins `MIN_JUGE_LINE_LEN` caractères
+ *  après le mot-clef (n'accroche jamais "JUGE-VISION:", le tiret casse le motif `JUGE\s*:`). */
+function hasInlineJuge(command) {
+  const m = JUGE_LINE_RE.exec(command)
+  return !!m && m[1].trim().length >= MIN_JUGE_LINE_LEN
+}
+
+/** `true` si le message porte une ligne "JUGE-VISION: <...>" d'au moins `MIN_JUGE_VISION_LINE_LEN`
+ *  caractères après le mot-clef. */
+function hasInlineJugeVision(command) {
+  const m = JUGE_VISION_LINE_RE.exec(command)
+  return !!m && m[1].trim().length >= MIN_JUGE_VISION_LINE_LEN
+}
+
+/** Section nommée générique (`## <label>`) : présence + longueur minimale du corps. */
+function checkNamedSection(content, sectionRe, minLen, label) {
+  const problems = []
+  const m = sectionRe.exec(content ?? '')
+  if (!m) {
+    problems.push(`section "## ${label}" absente`)
+    return { problems }
+  }
+  const body = m[1].trim()
+  if (body.length < minLen) {
+    problems.push(`"## ${label}" trop maigre (${body.length} car., ${minLen} requis)`)
+  }
+  return { problems }
+}
+
+/** Valide un fichier `.claude/soldes/ref-<N>.md` pour sa section "## Juge" (symétrie exacte de
+ *  `validateRefFile`, mécanisme distinct — n'exige pas de "## Réfutation"). */
+export function validateJugeFile(content) {
+  if (!content) return { ok: false, problems: ['fichier absent'] }
+  const { problems } = checkNamedSection(content, JUGE_SECTION_RE, MIN_JUGE_LINE_LEN, 'Juge')
+  return { ok: problems.length === 0, problems }
+}
+
+/** Valide un fichier `.claude/soldes/ref-<N>.md` pour sa section "## Juge-Vision". */
+export function validateJugeVisionFile(content) {
+  if (!content) return { ok: false, problems: ['fichier absent'] }
+  const { problems } = checkNamedSection(content, JUGE_VISION_SECTION_RE, MIN_JUGE_VISION_LINE_LEN, 'Juge-Vision')
+  return { ok: problems.length === 0, problems }
+}
+
+/**
+ * Décision JUGE (PURE, testable). Même périmètre de déclenchement qu'`evaluateAntiEsquive` (silence
+ * sur les fermetures, déjà couvertes par leur propre solde ; silence aussi sur un commit sans AUCUN
+ * ticket rattaché — #591). `stagedTouchesUi` = le diff staged touche `src/ui/**` (tests compris).
+ * @returns {{ reason: string } | null} — non-null = `deny`, null = silence.
+ */
+export function evaluateJuge({ command, stagedTouchesSrc, stagedTotalLines, stagedTouchesUi, readRefFile = () => null }) {
+  if (!command || !isGitCommitCommand(command)) return null
+  if (!stagedTouchesSrc) return null
+  if (typeof stagedTotalLines === 'number' && stagedTotalLines < SUBSTANTIVE_MIN_LINES) return null
+  if (extractClosedIssues(command).length > 0) return null
+
+  const refIssues = extractRefIssues(command)
+  // Aucun ticket rattaché (ni fermeture, ni `ref #N`) : hors du déclencheur (#591).
+  if (refIssues.length === 0) return null
+
+  const needsVision = !!stagedTouchesUi
+
+  const jugeSatisfied =
+    hasInlineJuge(command) ||
+    (refIssues.length > 0 && refIssues.every((n) => validateJugeFile(readRefFile(n)).ok))
+  const visionSatisfied =
+    !needsVision ||
+    hasInlineJugeVision(command) ||
+    (refIssues.length > 0 && refIssues.every((n) => validateJugeVisionFile(readRefFile(n)).ok))
+
+  if (jugeSatisfied && visionSatisfied) return null
+
+  const missing = []
+  if (!jugeSatisfied) {
+    missing.push(
+      `ligne "JUGE: <qui a jugé quoi, verdict — ≥${MIN_JUGE_LINE_LEN} caractères>" (ou section ` +
+      `"## Juge" dans .claude/soldes/ref-<N>.md)`,
+    )
+  }
+  if (!visionSatisfied) {
+    missing.push(
+      `ligne "JUGE-VISION: <captures jugées — ≥${MIN_JUGE_VISION_LINE_LEN} caractères>" (ou section ` +
+      `"## Juge-Vision" dans .claude/soldes/ref-<N>.md) — src/ui/** touché`,
+    )
   }
 
   return {
     reason:
-      `⚠ Commit touchant src/** (≥${SUBSTANTIVE_MIN_LINES} lignes de diff staged, aucun ticket rattaché) sans ` +
-      `réfutation : ajouter une ligne "REFUTATION: <qui a attaqué quoi, ≥${MIN_REFUTATION_LINE_LEN} caractères>" ` +
-      `dans le message de commit (extension anti-esquive 2026-07-14).`,
+      `⚠ Commit touchant src/** (≥${SUBSTANTIVE_MIN_LINES} lignes de diff staged) sans juge ` +
+      `adversarial : ajouter ${missing.join(' et ')} dans le message de commit (extension juge du ` +
+      `garde de solde).`,
   }
 }
 
@@ -342,7 +615,7 @@ const MESSAGE_FLAG_RE = /(?:^|\s)(?:-m\b|--message\b)/
  * @returns {{ reason: string } | null}
  */
 export function evaluateAmendInvisible({ command, stagedTouchesSrc }) {
-  if (!command || !/git\s+commit\b/i.test(command)) return null
+  if (!command || !isGitCommitCommand(command)) return null
   if (!AMEND_RE.test(command)) return null
   if (MESSAGE_FLAG_RE.test(command) || FILE_FLAG_RE.test(command)) return null
   if (!stagedTouchesSrc) return null
@@ -403,21 +676,41 @@ export function readStagedManifestFile() {
   try { return execSync(`git show :${RAW_MANIFEST_PATH}`, { encoding: 'utf8' }) } catch { return null }
 }
 
-/** Analyse du diff STAGED (`git diff --cached --numstat`) : touche-t-il `src/**` ? combien de
- *  lignes (insertions+suppressions) au total ? Fichiers binaires (`-\t-\t<path>`) comptés 0 ligne
- *  mais peuvent toucher `src/**`. `''`/erreur git → aucune touche, 0 ligne (silence, jamais un deny
- *  par accident hors dépôt). */
-export function analyzeStagedDiff(raw) {
+/** `true` si `path` est COUVERT par le pathspec `ps` (chemin identique, ou `path` sous le dossier
+ *  `ps`) — normalise les antislashs Windows et les `./` de tête. */
+function pathMatchesPathspec(path, ps) {
+  const norm = (p) => p.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, '')
+  const np = norm(path)
+  const nps = norm(ps)
+  if (!nps) return false
+  return np === nps || np.startsWith(`${nps}/`)
+}
+
+/** Analyse du diff STAGED (`git diff --cached --numstat`) : touche-t-il `src/**` ? `src/ui/**` ?
+ *  combien de lignes (insertions+suppressions) au total ? Fichiers binaires (`-\t-\t<path>`)
+ *  comptés 0 ligne mais peuvent toucher `src/**`. `''`/erreur git → aucune touche, 0 ligne
+ *  (silence, jamais un deny par accident hors dépôt).
+ *
+ * `pathspecs` (#591 défaut 1, arbre PARTAGÉ) : si la commande `git commit` porte des pathspecs
+ * explicites (`git commit -- <paths>` ou chemins positionnels), seuls les fichiers du diff STAGÉ qui
+ * matchent ces pathspecs sont regardés — jamais l'INDEX GLOBAL, qui peut porter le lot d'une AUTRE
+ * session cohabitant sur le même arbre. `[]` (par défaut, ou commit sans pathspec) = portée
+ * INCHANGÉE : l'index entier. */
+export function analyzeStagedDiff(raw, pathspecs = []) {
   let touchesSrc = false
+  let touchesUi = false
   let totalLines = 0
+  const scoped = pathspecs.length > 0
   for (const line of String(raw ?? '').split('\n')) {
     if (!line.trim()) continue
     const [ins, del, ...pathParts] = line.split('\t')
     const path = pathParts.join('\t')
+    if (scoped && !pathspecs.some((ps) => pathMatchesPathspec(path, ps))) continue
     totalLines += (Number.parseInt(ins, 10) || 0) + (Number.parseInt(del, 10) || 0)
     if (/^src\//.test(path)) touchesSrc = true
+    if (/^src\/ui\//.test(path)) touchesUi = true
   }
-  return { touchesSrc, totalLines }
+  return { touchesSrc, touchesUi, totalLines }
 }
 
 /** Lecture du diff STAGED brut (`git diff --cached --numstat`) depuis le disque/le dépôt courant. */
@@ -436,7 +729,7 @@ if (isMain) {
   // Date LOCALE (pas UTC) : un solde écrit après minuit heure locale porte la date locale.
   const d = new Date()
   const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  const { touchesSrc, totalLines } = analyzeStagedDiff(readStagedDiffStat())
+  const { touchesSrc, touchesUi, totalLines } = analyzeStagedDiff(readStagedDiffStat(), extractCommitPathspecs(command))
 
   const { text, fileError } = extractMessageSources(command)
   if (fileError) {
@@ -465,9 +758,16 @@ if (isMain) {
     stagedTotalLines: totalLines,
     readRefFile,
   })
+  const juge = evaluateJuge({
+    command: text,
+    stagedTouchesSrc: touchesSrc,
+    stagedTotalLines: totalLines,
+    stagedTouchesUi: touchesUi,
+    readRefFile,
+  })
   const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
   const manifestClosure = evaluateManifestClosure({ command: text, readStagedManifest: readStagedManifestFile })
-  const reasons = [decision, antiEsquive, amendInvisible, manifestClosure].filter(Boolean).map((d) => d.reason)
+  const reasons = [decision, antiEsquive, juge, amendInvisible, manifestClosure].filter(Boolean).map((d) => d.reason)
   if (reasons.length > 0) {
     console.log(JSON.stringify({
       hookSpecificOutput: {

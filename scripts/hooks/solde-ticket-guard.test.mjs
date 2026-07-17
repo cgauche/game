@@ -16,6 +16,11 @@ import {
   evaluateAmendInvisible,
   manifestTickets,
   evaluateManifestClosure,
+  validateJugeFile,
+  validateJugeVisionFile,
+  evaluateJuge,
+  isGitCommitCommand,
+  extractCommitPathspecs,
 } from './solde-ticket-guard.mjs'
 
 const TODAY = '2026-07-14'
@@ -290,8 +295,168 @@ test('analyzeStagedDiff : docs-only ne touche pas src', () => {
 })
 
 test('analyzeStagedDiff : vide/absent → aucune touche, 0 ligne', () => {
-  assert.deepEqual(analyzeStagedDiff(''), { touchesSrc: false, totalLines: 0 })
-  assert.deepEqual(analyzeStagedDiff(undefined), { touchesSrc: false, totalLines: 0 })
+  assert.deepEqual(analyzeStagedDiff(''), { touchesSrc: false, touchesUi: false, totalLines: 0 })
+  assert.deepEqual(analyzeStagedDiff(undefined), { touchesSrc: false, touchesUi: false, totalLines: 0 })
+})
+
+test('analyzeStagedDiff : touche src/ui/** → touchesUi', () => {
+  const raw = '3\t1\tsrc/ui/RollShell.tsx\n'
+  const r = analyzeStagedDiff(raw)
+  assert.equal(r.touchesSrc, true)
+  assert.equal(r.touchesUi, true)
+})
+
+test('analyzeStagedDiff : src/** hors src/ui/** → touchesUi false', () => {
+  const raw = '3\t1\tsrc/engine/combat.ts\n'
+  const r = analyzeStagedDiff(raw)
+  assert.equal(r.touchesSrc, true)
+  assert.equal(r.touchesUi, false)
+})
+
+// ── analyzeStagedDiff pathspec-scopé (#591 défaut 1, arbre PARTAGÉ) ────────────────────────────────
+test('analyzeStagedDiff : pathspecs fournis → seuls les fichiers matchés comptent (index d\'une autre session ignoré)', () => {
+  const raw = [
+    '50\t20\tsrc/ui/RollShell.tsx', // fichier ÉTRANGER (autre session), pas dans le pathspec
+    '3\t1\tscripts/hooks/solde-ticket-guard.mjs',
+    '1\t0\t.claude/settings.json',
+  ].join('\n')
+  const r = analyzeStagedDiff(raw, ['scripts/hooks/solde-ticket-guard.mjs', '.claude/settings.json'])
+  assert.equal(r.touchesUi, false)
+  assert.equal(r.touchesSrc, false)
+  assert.equal(r.totalLines, 5)
+})
+
+test('analyzeStagedDiff : pathspec sur un dossier couvre tous ses fichiers', () => {
+  const raw = '3\t1\tsrc/ui/RollShell.tsx\n5\t0\tsrc/engine/combat.ts\n'
+  const r = analyzeStagedDiff(raw, ['src/ui'])
+  assert.equal(r.touchesUi, true)
+  assert.equal(r.touchesSrc, true)
+  assert.equal(r.totalLines, 4)
+})
+
+test('analyzeStagedDiff : pathspecs vide (défaut) → portée INCHANGÉE, index entier', () => {
+  const raw = '3\t1\tsrc/ui/RollShell.tsx\n'
+  assert.deepEqual(analyzeStagedDiff(raw), analyzeStagedDiff(raw, []))
+})
+
+// ── isGitCommitCommand / extractCommitPathspecs (#591 défauts 1 et 3 — parsing STRUCTUREL) ─────────
+test('isGitCommitCommand : git commit simple → true', () => {
+  assert.equal(isGitCommitCommand('git commit -m "corrige #7"'), true)
+})
+
+test('isGitCommitCommand : git -C <path> commit → true (flag global sauté)', () => {
+  assert.equal(isGitCommitCommand('git -C ../autre-repo commit -m "x"'), true)
+})
+
+test('isGitCommitCommand : enchaînement cmd1 && git commit → true', () => {
+  assert.equal(isGitCommitCommand('npm test && git commit -m "x"'), true)
+})
+
+test('isGitCommitCommand : gh issue create citant "git commit" dans le corps → false (jamais un grep de sous-chaîne, #591 défaut 3)', () => {
+  const cmd = 'gh issue create --title "bug" --body "le hook a refusé un git commit légitime"'
+  assert.equal(isGitCommitCommand(cmd), false)
+})
+
+test('isGitCommitCommand : git log --grep "git commit" → false (sous-commande ≠ commit)', () => {
+  assert.equal(isGitCommitCommand('git log --grep "git commit"'), false)
+})
+
+test('isGitCommitCommand : here-string PowerShell git commit -m @\'...\'@ → true', () => {
+  assert.equal(isGitCommitCommand('git commit -m @\'\nfeat: truc\n\'@'), true)
+})
+
+test('extractCommitPathspecs : "git commit -- <paths> -m <msg>" → les 2 chemins, message exclu', () => {
+  const cmd = 'git commit -- scripts/hooks/x.mjs .claude/settings.json -m "corrige #591"'
+  assert.deepEqual(extractCommitPathspecs(cmd), ['scripts/hooks/x.mjs', '.claude/settings.json'])
+})
+
+test('extractCommitPathspecs : pas de pathspec (commit -m seul) → []', () => {
+  assert.deepEqual(extractCommitPathspecs('git commit -m "corrige #7"'), [])
+})
+
+test('extractCommitPathspecs : pas un commit → []', () => {
+  assert.deepEqual(extractCommitPathspecs('gh issue create --body "git commit -- foo"'), [])
+})
+
+test('extractCommitPathspecs : --file=<path> ne devient pas un pathspec', () => {
+  assert.deepEqual(extractCommitPathspecs('git commit --file=commit-415.txt -- src/ui/Foo.tsx'), ['src/ui/Foo.tsx'])
+})
+
+// ── juge adversarial : -am contourne tout (défaut le plus grave, réfuté) ────────────────────────────
+test('extractCommitPathspecs : "-am" (shorts groupés) → le message n\'est PAS un pathspec, [] (index entier)', () => {
+  assert.deepEqual(extractCommitPathspecs('git commit -am "feat: refonte truc"'), [])
+})
+
+test('extractCommitPathspecs : "-am" + pathspec après -- → le pathspec seul, message exclu', () => {
+  const cmd = 'git commit -- src/ui/Foo.tsx -am "feat: refonte truc"'
+  assert.deepEqual(extractCommitPathspecs(cmd), ['src/ui/Foo.tsx'])
+})
+
+test('extractCommitPathspecs : "-cam" (short groupé à 3 lettres) → message exclu, [] (index entier)', () => {
+  assert.deepEqual(extractCommitPathspecs('git commit -cam "feat: refonte truc"'), [])
+})
+
+test('analyzeStagedDiff intégration : "-am" ne filtre PAS le diff à néant (index entier retenu)', () => {
+  const raw = '50\t20\tsrc/ui/RollShell.tsx\n'
+  const pathspecs = extractCommitPathspecs('git commit -am "feat: refonte truc"')
+  const r = analyzeStagedDiff(raw, pathspecs)
+  assert.equal(r.touchesUi, true)
+  assert.equal(r.totalLines, 70)
+})
+
+// ── glob non résolu : jamais un scoping résolu à tort en "aucun fichier" ────────────────────────────
+test('extractCommitPathspecs : pathspec avec glob ("src/**/*.tsx") → [] (index entier, jamais silencé)', () => {
+  assert.deepEqual(extractCommitPathspecs('git commit -- "src/**/*.tsx" -m "x"'), [])
+})
+
+test('extractCommitPathspecs : un seul pathspec glob parmi plusieurs invalide TOUT le scoping', () => {
+  const cmd = 'git commit -- src/ui/Foo.tsx "src/**/*.tsx" -m "x"'
+  assert.deepEqual(extractCommitPathspecs(cmd), [])
+})
+
+// ── call-operator PowerShell (`& "C:\Program Files\Git\git.exe" commit ...`) ────────────────────────
+test('isGitCommitCommand : call-operator PowerShell avec chemin absolu vers git.exe → true', () => {
+  const cmd = '& "C:\\Program Files\\Git\\git.exe" commit -m "corrige #7"'
+  assert.equal(isGitCommitCommand(cmd), true)
+})
+
+test('extractClosedIssues : call-operator PowerShell reconnu → ferme le ticket', () => {
+  const cmd = '& "C:\\Program Files\\Git\\git.exe" commit -m "corrige #7"'
+  assert.deepEqual(extractClosedIssues(cmd), [7])
+})
+
+test('isGitCommitCommand : call-operator sur un exécutable non-git → false', () => {
+  const cmd = '& "C:\\Program Files\\gh\\gh.exe" issue create --body "git commit"'
+  assert.equal(isGitCommitCommand(cmd), false)
+})
+
+// ── résiduel #591 : quote en MILIEU de bareword (`--message="..."`, `-m"..."` collé) ────────────────
+test('tokenizeCommand (via extractCommitPathspecs) : "--message=" multi-mots ne fuit PAS en pathspecs', () => {
+  const cmd = 'git commit --message="feat refonte ref #501"'
+  assert.deepEqual(extractCommitPathspecs(cmd), [])
+})
+
+test('tokenizeCommand (via extractCommitPathspecs) : "-m" valeur COLLÉE (sans espace) ne fuit PAS en pathspecs', () => {
+  const cmd = 'git commit -m"feat refonte ref #501"'
+  assert.deepEqual(extractCommitPathspecs(cmd), [])
+})
+
+test('extractCommitPathspecs : "--message=solo" (mono-mot, déjà vert) reste []', () => {
+  assert.deepEqual(extractCommitPathspecs('git commit --message=solo'), [])
+})
+
+test('extractCommitPathspecs : "--message=" multi-mots + pathspec réel après -- → seul le pathspec', () => {
+  const cmd = 'git commit -- src/ui/Foo.tsx --message="feat refonte ref #501"'
+  assert.deepEqual(extractCommitPathspecs(cmd), ['src/ui/Foo.tsx'])
+})
+
+test('extractCommitPathspecs : "-cam" groupé + valeur COLLÉE ("-cam\\"a b c\\"") reste []', () => {
+  const cmd = 'git commit -cam"a b c"'
+  assert.deepEqual(extractCommitPathspecs(cmd), [])
+})
+
+test('extractClosedIssues : "--message=" multi-mots reconnaît toujours le mot-clef de fermeture', () => {
+  assert.deepEqual(extractClosedIssues('git commit --message="corrige #501 pour de bon"'), [501])
 })
 
 // ── evaluateAntiEsquive ──────────────────────────────────────────────────────────────────────────
@@ -368,21 +533,161 @@ test('evaluateAntiEsquive : "ref #N" avec fichier ref-N.md non conforme → deny
   assert.match(d.reason, /trop maigre/)
 })
 
-test('evaluateAntiEsquive : aucun ticket, src touché, sans réfutation → deny', () => {
+// Scope tranché #591 (2026-07-17) : le déclencheur REFUTATION ne porte QUE sur le ticket
+// explicitement rattaché (fermeture ou `ref #N`) — un commit sans AUCUN ticket, même src/**
+// substantiel, reste hors du mécanisme (ce n'était PAS le déclencheur d'origine, cf. en-tête).
+test('evaluateAntiEsquive : aucun ticket rattaché (ni fermeture, ni ref #N), src touché → silence (#591)', () => {
   const d = evaluateAntiEsquive({
     command: 'git commit -m "feat: refonte truc"',
     stagedTouchesSrc: true,
     stagedTotalLines: 100,
+    readRefFile: () => { throw new Error('ne doit pas être appelé — aucun ticket rattaché') },
   })
-  assert.ok(d)
-  assert.match(d.reason, /aucun ticket rattaché/)
+  assert.equal(d, null)
 })
 
-test('evaluateAntiEsquive : aucun ticket, src touché, avec ligne REFUTATION: → pass', () => {
-  const d = evaluateAntiEsquive({
-    command: `git commit -m "feat: refonte truc\n\n${REFUTATION_LINE_OK}"`,
+// ── validateJugeFile / validateJugeVisionFile ───────────────────────────────────────────────────────
+const JUGE_OK = 'Un agent juge adversarial a rejoué le diff contre le DoD, tenté 2 contournements, aucun ne passe.'
+const jugeFile = ({ desc = JUGE_OK } = {}) => `## Juge\n${desc}\n`
+const jugeVisionFile = ({ desc = JUGE_OK } = {}) => `## Juge-Vision\n${desc}\n`
+
+test('validateJugeFile : conforme', () => {
+  const r = validateJugeFile(jugeFile())
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
+test('validateJugeFile : fichier absent', () => {
+  assert.equal(validateJugeFile(null).ok, false)
+})
+
+test('validateJugeFile : section absente', () => {
+  const r = validateJugeFile('## Réfutation\nverdict: CONFIRMÉ\nblabla suffisamment long pour passer.\n')
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /"## Juge" absente/)
+})
+
+test('validateJugeFile : section trop maigre', () => {
+  const r = validateJugeFile(jugeFile({ desc: 'ok.' }))
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /trop maigre/)
+})
+
+test('validateJugeVisionFile : conforme', () => {
+  const r = validateJugeVisionFile(jugeVisionFile())
+  assert.equal(r.ok, true, r.problems.join(' ; '))
+})
+
+test('validateJugeVisionFile : section absente', () => {
+  const r = validateJugeVisionFile(jugeFile())
+  assert.equal(r.ok, false)
+  assert.match(r.problems.join(' ; '), /"## Juge-Vision" absente/)
+})
+
+// ── evaluateJuge (extension REFUTATION → JUGE adversarial, générale à tout domaine) ────────────────
+const JUGE_LINE_OK = 'JUGE: un agent juge adversarial a rejoué le diff contre le DoD, aucun contournement ne passe.'
+const JUGE_VISION_LINE_OK = 'JUGE-VISION: captures fraîches jugées contre l\'attendu, mécanisme et pixels vérifiés.'
+
+test('evaluateJuge : pas un commit → silence', () => {
+  assert.equal(evaluateJuge({ command: 'git status', stagedTouchesSrc: true, stagedTotalLines: 100 }), null)
+})
+
+test('evaluateJuge : diff ne touche pas src → silence', () => {
+  assert.equal(evaluateJuge({ command: 'git commit -m "ref #371 doc"', stagedTouchesSrc: false, stagedTotalLines: 100 }), null)
+})
+
+test('evaluateJuge : diff < 10 lignes → silence', () => {
+  assert.equal(evaluateJuge({ command: 'git commit -m "fix: typo"', stagedTouchesSrc: true, stagedTotalLines: 9 }), null)
+})
+
+test('evaluateJuge : fermeture de ticket → silence (déjà couverte par le solde)', () => {
+  assert.equal(evaluateJuge({ command: 'git commit -m "corrige #9"', stagedTouchesSrc: true, stagedTotalLines: 100 }), null)
+})
+
+// Scope tranché #591 : évaluateJuge partage EXACTEMENT le déclencheur d'evaluateAntiEsquive — un
+// `ref #N` rattaché, jamais un commit sans ticket du tout.
+test('evaluateJuge : aucun ticket rattaché, src touché → silence (#591)', () => {
+  const d = evaluateJuge({
+    command: 'git commit -m "feat: refonte truc"',
     stagedTouchesSrc: true,
     stagedTotalLines: 100,
+    stagedTouchesUi: false,
+    readRefFile: () => { throw new Error('ne doit pas être appelé — aucun ticket rattaché') },
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateJuge : "ref #N" src touché sans ligne JUGE → deny', () => {
+  const d = evaluateJuge({ command: 'git commit -m "feat: refonte truc, ref #501"', stagedTouchesSrc: true, stagedTotalLines: 100, stagedTouchesUi: false })
+  assert.ok(d)
+  assert.match(d.reason, /JUGE:/)
+})
+
+test('evaluateJuge : "ref #N" src touché avec ligne JUGE: valide, hors UI → pass', () => {
+  const d = evaluateJuge({
+    command: `git commit -m "feat: refonte truc, ref #501\n\n${JUGE_LINE_OK}"`,
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    stagedTouchesUi: false,
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateJuge : "ref #N" ligne JUGE: trop courte → deny', () => {
+  const d = evaluateJuge({ command: 'git commit -m "feat: truc, ref #501\n\nJUGE: vu."', stagedTouchesSrc: true, stagedTotalLines: 100 })
+  assert.ok(d)
+})
+
+test('evaluateJuge : "ref #N" src/ui touché avec JUGE: seul (sans JUGE-VISION) → deny', () => {
+  const d = evaluateJuge({
+    command: `git commit -m "feat: bouton, ref #501\n\n${JUGE_LINE_OK}"`,
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    stagedTouchesUi: true,
+  })
+  assert.ok(d)
+  assert.match(d.reason, /JUGE-VISION/)
+})
+
+test('evaluateJuge : "ref #N" src/ui touché avec JUGE: et JUGE-VISION: → pass', () => {
+  const d = evaluateJuge({
+    command: `git commit -m "feat: bouton, ref #501\n\n${JUGE_LINE_OK}\n${JUGE_VISION_LINE_OK}"`,
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    stagedTouchesUi: true,
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateJuge : "ref #N" avec fichier ref-N.md portant "## Juge" conforme, hors UI → pass', () => {
+  const d = evaluateJuge({
+    command: 'git commit -m "feat: truc, ref #371"',
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    stagedTouchesUi: false,
+    readRefFile: (n) => (n === 371 ? jugeFile() : null),
+  })
+  assert.equal(d, null)
+})
+
+test('evaluateJuge : "ref #N" UI touchée, fichier ref-N.md sans "## Juge-Vision" → deny', () => {
+  const d = evaluateJuge({
+    command: 'git commit -m "feat: truc, ref #371"',
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    stagedTouchesUi: true,
+    readRefFile: (n) => (n === 371 ? jugeFile() : null),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /Juge-Vision/)
+})
+
+test('evaluateJuge : "ref #N" UI touchée, fichier ref-N.md avec "## Juge" ET "## Juge-Vision" → pass', () => {
+  const d = evaluateJuge({
+    command: 'git commit -m "feat: truc, ref #371"',
+    stagedTouchesSrc: true,
+    stagedTotalLines: 100,
+    stagedTouchesUi: true,
+    readRefFile: (n) => (n === 371 ? `${jugeFile()}\n${jugeVisionFile()}` : null),
   })
   assert.equal(d, null)
 })
