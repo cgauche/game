@@ -156,6 +156,25 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     expect(html).toContain('Destin');
   });
 
+  it('premier onglet = Compétences & Talents (ordre + défaut d’ouverture, arbitrage 2026-07-17)', () => {
+    const h = hero();
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: null, sheetAlarmsSeen: {} });
+    const html = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    const tabnav = container.querySelector('.sheet-tabnav')!;
+    const firstTab = tabnav.querySelector('[role="tab"]');
+    expect(firstTab?.textContent).toContain('Compétences & Talents');
+    // Défaut (aucune alarme sur ce héros sain) : l'onglet Compétences & Talents s'affiche, pas État.
+    expect(html).toContain('char-stats');
+    expect(firstTab?.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('règle d’atterrissage inchangée : une alarme NOUVELLE force toujours l’onglet État', () => {
+    const alarme = { ...hero(), corruption: 3 } as Combatant;
+    useGame.setState({ party: [alarme], battle: null, sheetId: alarme.id, sheetTab: null, sheetAlarmsSeen: {} });
+    mount(<CharacterSheet heroId={alarme.id} onClose={() => {}} />);
+    expect(useGame.getState().sheetTab).toBe('etat');
+  });
+
   it('gangrène du cadre : `data-corruption` posé selon le seuil de Corruption', () => {
     const clean = hero();
     useGame.setState({ party: [clean], battle: null, sheetId: clean.id, sheetTab: 'etat' });

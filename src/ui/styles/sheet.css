@@ -498,12 +498,14 @@
 /* ── Onglet « État » (registre compact, arbitrage user 2026-07-17) : bandes de section (`Band`) +
    `PlaqueRow` par affliction — l'ancienne silhouette organisatrice (rig + zones dessinées) est MORTE,
    remplacée par la bande de zones TOUCHÉES en tête (`ZoneBand`, `PlaqueGrid`, pt.4) : une plaque par
-   Localisation qui porte ≥1 critique/séquelle, sinon la zone n'existe pas à l'écran. Ne reste ici que
-   l'état calme (rig + message), composition VALIDÉE inchangée. ── */
+   Localisation qui porte ≥1 critique/séquelle, sinon la zone n'existe pas à l'écran. L'état calme
+   (RAS) n'affiche plus la figurine (colonne aside déjà en pied grand format, doublon) : message +
+   sous-ligne discrète seuls. ── */
 .etat-ras {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 6px;
   padding: 18px 0;
   text-align: center;
 }
@@ -511,6 +513,10 @@
   font-family: var(--font-display);
   font-size: 20px;
   color: var(--ok-bright);
+}
+.etat-ras .ras-sub {
+  font-size: 13px;
+  color: var(--muted);
 }
 /* Liserés de gravité du registre (pt.5, #492) : attribut `data-tone` posé sur la bande de section
    (`Section`, `EtatPanel.tsx`) — jamais une classe par ton (patron déjà tenu par l'ancienne silhouette

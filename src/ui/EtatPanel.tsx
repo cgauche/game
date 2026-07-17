@@ -31,7 +31,6 @@ import { GameOpChips } from './GameOpChips';
 import { NotchGauge } from './NotchGauge';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
-import { CharacterPreview } from './CharacterPreview';
 import { PlaqueRow, PlaqueGrid } from './PlaqueRow';
 import { Band } from './Band';
 
@@ -189,8 +188,8 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
     return (
       <div className="sheet-etat">
         <div className="etat-ras">
-          <CharacterPreview hero={hero} size="lg" />
           <span className="ras-title">Rien à signaler.</span>
+          <span className="ras-sub">Ni blessure, ni affliction — le corps et l'âme tiennent bon.</span>
         </div>
       </div>
     );

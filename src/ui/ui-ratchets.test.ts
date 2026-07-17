@@ -432,8 +432,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // +4 (82 -> 86) -- l'override mobile compose la primitive FigTile/VitalArc en DESCENDANT
   // (`.sheet-portrait .fig-tile.hero`/`.fig-tile-fig`, `.sheet-portrait .vital-arc svg`) : 4
   // classes CITEES ici (fig-tile, hero, fig-tile-fig, vital-arc), aucune definie EN PROPRE.
-  // Fusion vague-2 + fiche : 82 + 2 (Faveurs #509, survivent) + 4 (présence) = 88.
-  'styles/sheet.css': 88,
+  // Onglet État sans figurine au repos (arbitrage user 2026-07-17) : +1 (86 -> 87) -- `.ras-sub`
+  // (sous-ligne discrete du RAS), seule classe neuve ; `CharacterPreview` retiree de l'etat calme.
+  // Fusion vague-2 + fiche : 82 + 2 (Faveurs #509) + 4 (présence) + 1 (ras-sub) = 89.
+  'styles/sheet.css': 89,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
