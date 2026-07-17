@@ -525,6 +525,9 @@ export interface SceneEffectZone {
   blocksLoS?: boolean;
   onCross?: import('../engine/ops').GameOp[];
   perRound?: import('../engine/ops').GameOp[];
+  /** GATE de Test à la traversée (cf. `BattleZone.crossTest`, zones.ts) — même sémantique pour une
+   *  zone authorée (piège/hasard de scène). */
+  crossTest?: import('../engine/flowCore').FlowTest;
   /** BARRIÈRE infranchissable : aucune créature ne peut PÉNÉTRER dans l'aire (mur magique, cercle de
    *  ward). `blockGroups` vide/absent = bloque TOUT le monde ; sinon ne bloque que les créatures dont
    *  un Groupe correspond (ids, ex. `['demon', 'mort-vivant']` = barrière sacrée, profanes tenus à l'écart —

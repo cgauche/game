@@ -44,7 +44,7 @@ import type { Duration } from './duration';
 // Type-only (effacé à la compilation) : la FORME unifiée des effets « à la touche » d'une arme
 // enchantée/invoquée = un `TriggeredEffect` (feuille EffectOp — noyau engine pur, jamais de transition),
 // dispatché par `state/triggeredEffects` (pas ici).
-import type { TriggeredEffect } from './flowCore';
+import type { TriggeredEffect, FlowTest } from './flowCore';
 import {
   ActiveEffect,
   ArmourBypass,
@@ -722,6 +722,9 @@ export type GameOp =
        *  STATIONNE. Un dégât mitigé BE+PA = `op:'wounds' {ignoreTB:false, ignoreAP:false}` ; un État
        *  entretenu = `op:'condition' {unlessCondition: <le même État>}` ; un soin = `op:'heal'`. */
       onCross?: GameOp[]; perRound?: GameOp[];
+      /** GATE de Test à la TRAVERSÉE (Forêt d'épines, LDB 48 l.749) — cf. `BattleZone.crossTest`
+       *  (zones.ts) pour la sémantique complète (résolution cadence-aware, succès saute `onCross`). */
+      crossTest?: FlowTest;
       /** BARRIÈRE infranchissable (Protection de Phâ : « ne peuvent pas entrer ») ; `gate:'profane'`
        *  restreint barrière + `perRound` aux créatures profanes ; `noCorruption` : nul gain de Corruption
        *  pour les occupants tant que la zone dure (LDB 48 p.249). */

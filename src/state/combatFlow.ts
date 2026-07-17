@@ -2347,7 +2347,7 @@ export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, a
         const from = { ...attacker.pos };
         placeCombatant(attacker, get().scene, r.dest);
         bus.emit(EVT.ANIM_MOVE, { id: attacker.id, path: [{ ...r.dest }] });
-        applyZoneCrossings(get, attacker, [...tilesBetween(from, r.dest), { ...r.dest }]);
+        applyZoneCrossings(get, set, attacker, [...tilesBetween(from, r.dest), { ...r.dest }]);
       }
     }
     disengageFrom(defender, attacker); // « ne plus être considéré comme Engagé »
@@ -2806,7 +2806,7 @@ export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: Creatu
  *  `applyManeuverEffects` (hook `maneuverPostHit`) : sur une TOUCHE (un pion *Empêtré* posé ce tour) d'une
  *  proie plus PETITE, elle est tirée vers la créature (pathing impur : `pullToward` + traversées de zone).
  *  Joué à l'IDENTIQUE pour la voie silencieuse (non-héros/Surpris) ET la voie cascade (héros influençable). */
-function maneuverPostHitImpl(get: Get, _set: SetFn, attacker: Combatant, def: ManeuverDef, tgt: Combatant, hadEmpetre: number): string[] {
+function maneuverPostHitImpl(get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, tgt: Combatant, hadEmpetre: number): string[] {
   if (def.kind !== 'langue' || !tgt.pos || !attacker.pos) return [];
   if (!(stacks(tgt, COND.empetre) > hadEmpetre && sizeGap(attacker.size, tgt.size) > 0)) return [];
   const b = get().battle;
@@ -2816,7 +2816,7 @@ function maneuverPostHitImpl(get: Get, _set: SetFn, attacker: Combatant, def: Ma
   const from = { ...tgt.pos };
   placeCombatant(tgt, get().scene, r.dest);
   bus.emit(EVT.ANIM_MOVE, { id: tgt.id, path: [{ ...r.dest }] });
-  applyZoneCrossings(get, tgt, [...tilesBetween(from, r.dest), { ...r.dest }]); // une traction TRAVERSE (Mur de feu, L11)
+  applyZoneCrossings(get, set, tgt, [...tilesBetween(from, r.dest), { ...r.dest }]); // une traction TRAVERSE (Mur de feu, L11)
   return [tr('cs.tonguePull', { name: attacker.name, foe: tgt.name })];
 }
 // Câble la conséquence POST-TOUCHE (entraînement de la Langue) dans le résolveur feuille (inversion de
@@ -4074,7 +4074,7 @@ export function applyCast(
             placeCombatant(t, get().scene, r.dest);
             bus.emit(EVT.ANIM_MOVE, { id: t.id, path: [{ ...r.dest }] });
             logLines.push(tr('cf.pushed', { name: t.name, m: r.pushed * 2 }));
-            applyZoneCrossings(get, t, [...tilesBetween(fromPos, r.dest), { ...r.dest }]); // une poussée TRAVERSE (Mur de feu, L11)
+            applyZoneCrossings(get, set, t, [...tilesBetween(fromPos, r.dest), { ...r.dest }]); // une poussée TRAVERSE (Mur de feu, L11)
           }
           if (r.collided) logLines.push(tr('cf.collided', { name: t.name }));
         }
@@ -4245,6 +4245,7 @@ function placeZoneFromOp(get: Get, caster: Combatant, target: Combatant, pz: Ext
     ...(pz.blocksLoS ? { blocksLoS: true } : {}),
     ...(pz.onCross ? { onCross: pz.onCross } : {}),
     ...(pz.perRound ? { perRound: pz.perRound } : {}),
+    ...(pz.crossTest ? { crossTest: pz.crossTest } : {}),
     ...(pz.barrier ? { barrier: {} } : {}),
     ...(pz.gate ? { gate: pz.gate } : {}),
     ...(pz.noCorruption ? { noCorruption: true } : {}),
@@ -5888,7 +5889,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         if (geom !== enemy) get().faceFromPath(geom.id, path);
         bus.emit(EVT.ANIM_MOVE, { id: enemy.id, path });
         if (geom !== enemy) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path });
-        applyZoneCrossings(get, enemy, path ?? [{ ...mv.to }]); // Mur de feu & co (L11) : traverser coûte
+        applyZoneCrossings(get, set, enemy, path ?? [{ ...mv.to }]); // Mur de feu & co (L11) : traverser coûte
         // Grimpant (LDB 85 l.160-162) : le pathing IA franchit une arête `WallSeg.climb` SANS Test —
         // pas un jet silencieux, journalisé comme le geste joueur `climbAcross` (#504, MÊME clé i18n).
         if (path && path.some((p, i) => i > 0 && climbEdgeBetween(scene, path[i - 1], p)?.climb)) {

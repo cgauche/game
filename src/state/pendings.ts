@@ -1071,6 +1071,12 @@ export interface CascadeStepMeta {
   /** Contexte d'une DÉFENSE de manœuvre de zone (applier `maneuverDefense`) : l'attaquant + la manœuvre +
    *  l'indice/l'Avantage. Le jet d'attaquant FIGÉ voyage à côté dans `opposed.aT`. */
   maneuverDefense?: ManeuverDefenseFreeze;
+  /** RÉFÉRENT des Formules de la branche (« votre Force Mentale » — Forêt d'épines LDB 48 l.749) quand
+   *  il DIFFÈRE du combattant qui jette (`hero`) — le LANCEUR d'un effet posé par un tiers (zone de
+   *  Sort, Trait déclenché d'un attaquant). Id sérialisable, résolu par l'applier (`actorIn`, combat OU
+   *  groupe) → `applyTriggeredTestBranch`. Absent ⇒ référent = `hero` lui-même (Mâchoires/Contrôle de
+   *  la Frénésie : effet auto-porté). */
+  casterId?: string;
 }
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {

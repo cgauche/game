@@ -34,13 +34,13 @@ import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
 import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings';
 import { battleRng } from '../battleRng';
-import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps } from '../combatEffects';
+import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
 import { freeCons } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { humanControlled } from '../netOwnership';
-import { inBattleId } from '../combatOrParty';
+import { inBattleId, actorIn } from '../combatOrParty';
 import { campSpend } from './advantagePool';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour
@@ -149,14 +149,18 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
  *    requis. La continuation `after` est jouée À PART (`playAfter`), APRÈS les lignes de branche → ordre correct. */
 export function applyTriggeredTestBranch(
   c: Combatant, t: Pick<TestResult, 'success' | 'sl'>, branches: { onSuccess: Flow; onFail: Flow },
-  exec?: { get: Get; set: SetFn; freeAttack?: ExecCtx['freeAttack']; bladeTrap?: ExecCtx['bladeTrap'] },
+  exec?: { get: Get; set: SetFn; caster?: Combatant; freeAttack?: ExecCtx['freeAttack']; bladeTrap?: ExecCtx['bladeTrap'] },
 ): string[] {
   const branch = t.success ? branches.onSuccess : branches.onFail;
+  // Référent des Formules (« votre Force Mentale » — Forêt d'épines LDB 48 l.749) : le LANCEUR d'origine
+  // (`exec.caster`) quand il est connu et DIFFÈRE de `c` (zone de Sort posée par un tiers), sinon `c`
+  // lui-même (Mâchoires/Contrôle de la Frénésie : effet auto-porté, comportement inchangé).
+  const caster = exec?.caster ?? c;
   if (exec && flowHasImpureOp(branch)) {
-    runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster: c, label: 'Effet', opsCtx: { sl: t.sl }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
+    runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster, label: 'Effet', opsCtx: { sl: t.sl }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
     return [];
   }
-  return runPureFlowLines(c, c, branch, { rng: battleRng(), caster: c, sl: t.sl });
+  return runPureFlowLines(c, caster, branch, { rng: battleRng(), caster, sl: t.sl });
 }
 
 /** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : convention RAW-correcte
@@ -342,7 +346,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     // `noOwnTestFailed` : ce Test est LUI-MÊME un effet d'un `onOwnTestFailed` (FM de palier 2 des Crampes,
     // T2C 16) — l'étampe empêche `commitStep` de ré-émettre le trigger à sa résolution (garde de ré-entrance
     // qui survit à la cadence asynchrone du héros).
-    const extraMeta = { ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}), ...(ctx.opsCtx?.noReentryOwnTestFailed ? { noOwnTestFailed: true } : {}) };
+    const extraMeta = { ...(ctx.caster && ctx.caster.id !== c.id ? { casterId: ctx.caster.id } : {}), ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}), ...(ctx.opsCtx?.noReentryOwnTestFailed ? { noOwnTestFailed: true } : {}) };
     pushCombatStep(ctx.set, aT && attacker
       ? {
           id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
@@ -357,7 +361,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // la success freeAttack / le breakBlade de Piège-lame) est routée vers `runCombatFlow` par
   // `applyTriggeredTestBranch` (cf. flowHasImpureOp) ; une branche PURE retombe sur `runPureFlowLines`
   // (inchangé). `freeAttack`/`bladeTrap` ne sont joints que s'ils existent.
-  const exec = { get: ctx.get, set: ctx.set, ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
+  const exec = { get: ctx.get, set: ctx.set, ...(ctx.caster ? { caster: ctx.caster } : {}), ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
   // Ennemi OU héros rapide/auto : jet INLINE + branche + continuation ; ligne de parité.
   // `skillLabel` = la Compétence/Caractéristique RÉELLE (cadre de jet), distincte du `label` de situation.
   const t = rollTest(base, difficulty, battleRng(), penalty);
@@ -409,8 +413,15 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
   // `bladeTrap` sérialisé → joint pour cibler la lame de l'attaquant ; absents → branche sur soi.
   const fa = step.meta?.freeAttack;
   const bt = step.meta?.bladeTrap;
+  // Référent des Formules (`casterId`, cf. `CascadeStepMeta`) — combat OU groupe (`actorIn`, pas
+  // `inBattleId` seul) : un lanceur qui a quitté la file de combat (fui/KO retiré) mais reste vivant
+  // dans le groupe garde SON référent (Forêt d'épines LDB 48 l.749 : « qui utilise VOTRE Force
+  // Mentale », pas celle du traverseur) ; absent/introuvable ⇒ `applyTriggeredTestBranch` retombe sur `hero`.
+  const casterId = typeof step.meta?.casterId === 'string' ? step.meta.casterId : undefined;
+  const caster = casterId ? actorIn(get(), casterId) : undefined;
   const exec = {
     get, set,
+    ...(caster ? { caster } : {}),
     ...(fa && typeof fa === 'object' && 'targetId' in fa ? { freeAttack: fa } : {}),
     ...(bt && typeof bt === 'object' && 'attackerId' in bt ? { bladeTrap: bt } : {}),
   };
@@ -523,6 +534,21 @@ export function routeTriggeredTest(get: Get, set: SetFn, target: Combatant, acto
     return;
   }
   runCombatFlow({ mode: 'combat', get, set, target, caster: actor, label: opsCtx?.label ?? 'Effet', opsCtx }, flow);
+}
+
+/** Implémentation du hook `setZoneCrossTestHook` (combatGeometry.ts, #500) — un `crossTest` de zone
+ *  (Forêt d'épines, LDB 48 l.749) EST un `test` de Flow comme un autre : délègue à `routeTriggeredTest`,
+ *  aucune machinerie propre. Injectée par le store (`createCombatSlice`), calque `freeAttackHookImpl`.
+ *  `applyZoneCrossings` (l'appelant, combatGeometry.ts) n'a PAS accès à `drainPendingLog`
+ *  (combatEffects.ts, cycle) : on draine ICI la voie INLINE (ennemi/auto — `resolveFlowTest` y pousse
+ *  ses lignes dans `pendingLogQueue`, SOURCE UNIQUE) — no-op pour la voie cascade (héros manuel, aucune
+ *  ligne encore produite au retour de `routeTriggeredTest`, elle en poussera à la résolution du jet). */
+export function zoneCrossTestHookImpl(get: Get, set: SetFn, mover: Combatant, caster: Combatant, flow: Flow, label: string): void {
+  routeTriggeredTest(get, set, mover, caster, flow, { label });
+  const battle = get().battle;
+  if (!battle) return;
+  const drained = drainPendingLog(get, set);
+  if (drained.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...drained] } });
 }
 
 /** Combattants en cours de notification `onGainCondition` — garde ANTI-RÉCURSION : un `onSuccess` qui

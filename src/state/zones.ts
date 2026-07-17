@@ -13,6 +13,7 @@ import type { Pt } from './path';
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
 import { Formula, GameOp, resolveFormula, applyOps } from '../engine/ops';
+import type { FlowTest } from '../engine/flowCore';
 import type { ZoneArea, SceneEffectZone } from './scene';
 import { isOutOfAction } from '../engine/conditions';
 import { isProfane } from '../engine/corruption';
@@ -30,6 +31,12 @@ export interface BattleZone {
    *  franchissement de Round pour les occupants. Mitigation/État/soin = des `GameOp` (cf. `op:'zone'`). */
   onCross?: GameOp[];
   perRound?: GameOp[];
+  /** GATE de Test à la TRAVERSÉE (Forêt d'épines, LDB 48 l.749 : « quiconque tente de traverser… sans
+   *  posséder le Talent Magie des Arcanes (Vie) doit réussir un Test d'Agilité Difficile »). Résolu
+   *  CADENCE-AWARE (`applyZoneCrossings`/`routeTriggeredTest`) AVANT `onCross` : succès → `onCross`
+   *  sauté ; `gate` de `FlowTest` porte l'exemption (Condition `not/has talent`) ; absent → `onCross`
+   *  inconditionnel (Mur de feu). */
+  crossTest?: FlowTest;
   /** BARRIÈRE : les cases sont infranchissables pour les créatures gatées (cf. `SceneEffectZone.barrier`) —
    *  injectées dans `occupied()`, donc respectées par TOUT déplacement (joueur, IA, poussée, téléport). */
   barrier?: { blockGroups?: string[] };
@@ -82,6 +89,7 @@ export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): Battle
     onCross: z.onCross,
     perRound: z.perRound,
     barrier: z.barrier,
+    crossTest: z.crossTest,
   }));
 }
 
@@ -124,7 +132,9 @@ export function decayZones(zones: BattleZone[] | undefined): { zones: BattleZone
 }
 
 /** Traversée : applique l'`onCross` de chaque zone dont une case du CHEMIN fait partie —
- *  UNE application par zone et par déplacement (« quiconque traverse le mur »). */
+ *  UNE application par zone et par déplacement (« quiconque traverse le mur »). Zones GATÉES par
+ *  un `crossTest` (Forêt d'épines) sont SAUTÉES ici (fonction PURE, sans accès get/set) — résolues
+ *  cadence-aware par `applyZoneCrossings` (combatGeometry.ts), seule couture qui les traite. */
 export function crossZones(
   zones: BattleZone[] | undefined,
   mover: Combatant,
@@ -135,7 +145,7 @@ export function crossZones(
   const lines: string[] = [];
   if (mover.dead || isOutOfAction(mover)) return lines;
   for (const z of zones ?? []) {
-    if (!z.onCross?.length) continue;
+    if (!z.onCross?.length || z.crossTest) continue;
     if (!path.some((p) => zoneCovers(z, p))) continue;
     lines.push(`${mover.name} traverse ${z.label} !`);
     lines.push(...applyOps(mover, z.onCross, { caster: resolveCaster(z.casterId), rng, label: z.label }));

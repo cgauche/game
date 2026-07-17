@@ -479,7 +479,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     if (geom !== active) get().faceFromPath(geom.id, approachPath);
     bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
     if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
-    applyZoneCrossings(get, active, approachPath); // Mur de feu & co (L11) : charger À TRAVERS coûte
+    applyZoneCrossings(get, set, active, approachPath); // Mur de feu & co (L11) : charger À TRAVERS coûte
     campGain(get, active, plan.adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
     if (plan.adv > 0) active.gainedAdvThisRound = true;
     active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 62 l.319) ; consommé en fin de tour
@@ -500,7 +500,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       if (geom !== active) get().faceFromPath(geom.id, approachPath);
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
-      applyZoneCrossings(get, active, approachPath); // Mur de feu & co (L11)
+      applyZoneCrossings(get, set, active, approachPath); // Mur de feu & co (L11)
       set({ battle: { ...b, moveSnapshot: snapshot, movementUsed: (b.movementUsed ?? 0) + plan.cost, movedPreAction: b.movedPreAction || !b.acted, action: null, reachable: new Map(), preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
     }

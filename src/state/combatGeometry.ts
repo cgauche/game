@@ -12,16 +12,22 @@ import type { Dir8 } from './dir8';
 import { Scene, isWalkable } from './scene';
 import { Pt, MoveEnv, tileKey, climbTraverseFor } from './path';
 import { footprintTiles, footprintN, occupiesTile } from './footprint';
-import { inBattleId } from './combatOrParty';
+import { inBattleId, actorIn } from './combatOrParty';
 import { sizeGap } from '../engine/size';
 import { requiredTerrains } from '../engine/ops';
 import { isOutOfAction } from '../engine/conditions';
 import { isStructure } from '../engine/structures';
 import { traitSeesInDark } from '../engine/traits/dispatch';
-import { losBlockingTiles, crossZones, barrierTilesFor } from './zones';
+import { losBlockingTiles, crossZones, barrierTilesFor, zoneCovers } from './zones';
 import { battleRng } from './battleRng';
 import { ev } from './combatLog';
 import { bus, EVT } from './bus';
+// Type-only (effacé à la compilation) : la FORME du Flow gaté posé pour une zone `crossTest` — ce
+// module reste BAS NIVEAU (aucun import de `combat/triggeredTest`/`combatEffects`, qui remonteraient
+// vers lui → cycle) ; la résolution cadence-aware est déléguée au hook `setZoneCrossTestHook`
+// (inversion de dépendance, calque `setFreeAttackHook`/`setBladeTrapHook`, installé par le store).
+import type { Flow as CoreFlow, EffectOp } from '../engine/flowCore';
+import { EMPTY_FLOW } from '../engine/flowCore';
 
 /**
  * Tuiles qui BLOQUENT le déplacement de `mover` : l'empreinte (LDB 15 l.55) de chaque AUTRE
@@ -222,15 +228,48 @@ export function combatantsWithinRadius(
 /** Cases bloquant la Ligne de Vue (zones opaques : Fumée du Souffle…) — L11 : lues de `battle.zones`. */
 export const smokeOf = (battle: BattleState): Pt[] => losBlockingTiles(battle.zones);
 
+/** HOOK de résolution cadence-aware d'une zone `crossTest` (Forêt d'épines, LDB 48 l.749) — injecté par
+ *  le store (`setZoneCrossTestHook`, `createCombatSlice`), pointe sur `routeTriggeredTest`
+ *  (`combat/triggeredTest`). Appelé par `applyZoneCrossings` pour CHAQUE zone gatée croisée : héros
+ *  manuel → étape de cascade influençable ; ennemi/auto → jet inline (journal). Inversion de dépendance
+ *  (ce module reste sans import de `combat/triggeredTest` → pas de cycle, cf. import ci-dessus). Absent
+ *  (hors store, ex. test unitaire de cette seule brique) ⇒ no-op — comme les autres hooks. */
+type ZoneCrossTestHook = (get: Get, set: SetFn, mover: Combatant, caster: Combatant, flow: CoreFlow<EffectOp>, label: string) => void;
+let zoneCrossTestHook: ZoneCrossTestHook | undefined;
+export function setZoneCrossTestHook(fn: ZoneCrossTestHook): void { zoneCrossTestHook = fn; }
+
 /** Traversée de zones persistantes (Mur de feu, LDB 47 — L11) au terme d'un déplacement :
- *  applique l'`onCross` des zones croisées par `path` et journalise. (La Téléportation ne
- *  « traverse » pas — apparition — et n'appelle pas ce helper.) */
-export function applyZoneCrossings(get: Get, mover: Combatant, path: Pt[]): void {
+ *  applique l'`onCross` des zones SANS `crossTest` et journalise (comportement inchangé) ; pour les
+ *  zones GATÉES (Forêt d'épines, LDB 48 l.749 : « doit réussir un Test… sans posséder le Talent… »),
+ *  route un `test` cadence-aware par le hook — succès → `onCross` sauté, échec → identique à `onCross`.
+ *  (La Téléportation ne « traverse » pas — apparition — et n'appelle pas ce helper.)
+ *  `resolveCaster` résout via la primitive PARTAGÉE `actorIn` (CLAUDE.md, table des primitives — combat
+ *  OU groupe) plutôt qu'une fermeture `inBattleId` ad hoc : un lanceur mort/inconscient (`dead`/États)
+ *  RESTE dans `battle.combatants` (aucune purge « morts persistants », #211 — non implémentée) donc
+ *  reste résolvable, gardant SA Force Mentale comme référent des formules (`escapeStrength` de l'op
+ *  `condition` posé par `onCross`, `ref = ctx.caster ?? target` — LDB 48 l.749 : « qui utilise VOTRE
+ *  Force Mentale », pas celle du traverseur) ; le référent EST le mover uniquement quand `casterId` est
+ *  absent/introuvable dans la bataille (cf. `applyTriggeredTestBranch`/`CascadeStepMeta.casterId` pour
+ *  le threading identique côté cascade héros — même fallback, même réf). */
+export function applyZoneCrossings(get: Get, set: SetFn, mover: Combatant, path: Pt[]): void {
   const battle = get().battle;
   if (!battle?.zones?.length || !path.length) return;
-  const lines = crossZones(battle.zones, mover, path, (id) => (id ? inBattleId(battle, id) : undefined), battleRng());
+  const resolveCaster = (id?: string) => (id ? actorIn(get(), id) : undefined);
+  const lines = crossZones(battle.zones, mover, path, resolveCaster, battleRng());
   for (const l of lines) battle.log.push(ev('condition', l, mover.id));
   if (lines.length) bus.emit(EVT.SCENE_DIRTY);
+  if (mover.dead || isOutOfAction(mover)) return;
+  for (const z of battle.zones) {
+    if (!z.crossTest || !path.some((p) => zoneCovers(z, p))) continue;
+    battle.log.push(ev('condition', `${mover.name} traverse ${z.label} !`, mover.id));
+    bus.emit(EVT.SCENE_DIRTY);
+    const caster = resolveCaster(z.casterId) ?? mover;
+    const flow: CoreFlow<EffectOp> = {
+      kind: 'test', test: z.crossTest, success: EMPTY_FLOW,
+      fail: z.onCross?.length ? { kind: 'do', effect: { type: 'ops', ops: z.onCross, on: 'target' } } : EMPTY_FLOW,
+    };
+    zoneCrossTestHook?.(get, set, mover, caster, flow, z.label);
+  }
 }
 
 const DIR8_RING: Dir8[] = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
