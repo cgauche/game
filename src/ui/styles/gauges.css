@@ -144,11 +144,40 @@
   white-space: nowrap;
 }
 
+/* Piste à taille FIXE (`cellSize`) : `notch-gauge__track` se dimensionne à SES crans (grid-column
+   `auto` au lieu de `1fr`), jamais étirée au conteneur (Destin, Corruption — peu de crans). */
+.notch-gauge[data-fixed] { grid-template-columns: auto auto auto; }
+.notch-gauge[data-fixed][data-stacked] { grid-template-columns: auto auto; }
+.notch-gauge[data-fixed] .notch-gauge__notches { flex: 0 0 auto; }
+
+/* Empilement ALIGNÉ de N `NotchGauge` (registre Seuils de la fiche, `EtatPanel.tsx`) : patron de
+   GROUPE de la primitive (pas un scope par écran) — les colonnes libellé/piste/valeur de chaque
+   jauge s'alignent en `subgrid` plutôt que de laisser chaque jauge s'enrouler en rangée flex
+   indépendante (le libellé le plus long, « Mutations mentales », retombait seul sans que rien
+   d'autre ne s'aligne). Libellé borné (ellipsis déjà porté par `.notch-gauge__label`) pour rester
+   lisible à 360px. */
+.notch-gauge-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 150px) max-content max-content;
+  gap: 4px 10px;
+}
+.notch-gauge-stack .notch-gauge {
+  grid-template-columns: subgrid;
+  grid-column: span 3;
+}
+
 /* Tons sémantiques des crans allumés (charte : tokens uniquement). */
 .notch-gauge[data-tone='neutral'] .notch-gauge__notch[data-on] { background: var(--silver); border-color: var(--silver); }
 .notch-gauge[data-tone='ok'] .notch-gauge__notch[data-on] { background: var(--ok-bright); border-color: var(--ok); }
 .notch-gauge[data-tone='warn'] .notch-gauge__notch[data-on] { background: var(--gold2); border-color: var(--gold); }
 .notch-gauge[data-tone='danger'] .notch-gauge__notch[data-on] { background: var(--danger); border-color: var(--danger); }
+/* Remplissage LISIBLE de la famille Corruption (`--magic`) — le token sombre `--corruption-violet`
+   reste réservé au liseré/fond de carte (`sheet.css`), trop terne pour un cran ALLUMÉ. */
+.notch-gauge[data-tone='corruption'] .notch-gauge__notch[data-on] {
+  background: var(--magic);
+  border-color: var(--magic);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--magic) 45%, transparent);
+}
 
 /* ── WindRose ────────────────────────────────────────────────────────────────────────────────── */
 .wind-rose {

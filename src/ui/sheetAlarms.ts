@@ -1,7 +1,9 @@
 import { Combatant } from '../engine/types';
 import { maxEncumbrance, totalEncumbrance } from '../engine/items';
+import { encumbrancePenalties } from '../engine/encumbrance';
 import { findPsychologyById, diseaseLabel } from '../data';
 import { isAfflictionActive, PsychAffliction } from '../engine/psychology';
+import { datasetArray } from '../data/overrides';
 import type { IconIdInput } from './icons';
 
 /** ids STABLES des rubriques de l'onglet État (`CharacterSheet.tsx`) — ancres de la bande d'alarmes
@@ -24,6 +26,13 @@ export interface SheetAlarm {
   icon: IconIdInput;
   tone: 'warn' | 'danger';
   anchor: string;
+  /** Catégorie/id Codex de la famille (LOT L pt.3, `SheetAlarmsBand`) — omis quand la famille n'a
+   *  PAS de catégorie UNIQUE (Critiques : 4+ catégories par table×kind) : popover NON forcé,
+   *  documenté au call-site plutôt qu'inventé. Quand la famille est un agrégat (Mutations/Séquelles)
+   *  sur une catégorie UNIQUE, `codexId` pointe la PREMIÈRE entrée listée (même arbitrage que la
+   *  bande de section, `EtatPanel.tsx`). */
+  codexCategory?: string;
+  codexId?: string;
 }
 
 /** Une affliction psy (`PsychAffliction`) est-elle ACTIVE ? `isAfflictionActive` (`engine/psychology.ts`)
@@ -43,6 +52,9 @@ export function sheetAlarms(hero: Combatant): SheetAlarm[] {
 
   const criticals = hero.criticalWounds ?? 0; // ACTIF (décompté au soin) — pas l'historique `critEntriesSuffered`
   if (criticals > 0) {
+    // Pas de `codexCategory` : les critiques subis se répartissent sur 4+ catégories du Codex
+    // (`criticalsTete`/`Bras`/`Corps`/`Jambe`, doublées en `aaCriticals*`) — aucune catégorie
+    // UNIQUE ne représente l'agrégat (LOT L pt.3, popover NON forcé, verbatim brief).
     out.push({ key: 'critiques', label: `Critiques ${criticals}`, icon: 'medical/scalpel', tone: 'danger', anchor: ETAT_ANCHOR_CRITIQUES });
   }
 
@@ -56,24 +68,31 @@ export function sheetAlarms(hero: Combatant): SheetAlarm[] {
       icon: 'flag/anger',
       tone: 'warn',
       anchor: ETAT_ANCHOR_CORRUPTION,
+      // Entrée Codex UNIQUE : la caractéristique « Corruption » (`characteristics.json`, la jauge
+      // d'âme — cf. `relations.test.ts` B3, jamais le trait homonyme de créature).
+      codexCategory: 'characteristics',
+      codexId: 'corruption',
     });
   }
 
   for (const d of hero.diseases ?? []) {
     // `d.name` = id STABLE (`DISEASE_DEFS`), jamais l'affichage — `diseaseLabel` résout (repli sur l'id
-    // si inconnu, ex. héros de test synthétique).
-    out.push({ key: `maladie-${d.name}`, label: diseaseLabel(d.name), icon: 'medical/infection', tone: 'danger', anchor: ETAT_ANCHOR_MALADIES });
+    // si inconnu, ex. héros de test synthétique). Catégorie UNIQUE + id RÉEL par instance : popover.
+    out.push({ key: `maladie-${d.name}`, label: diseaseLabel(d.name), icon: 'medical/infection', tone: 'danger', anchor: ETAT_ANCHOR_MALADIES, codexCategory: 'maladies', codexId: d.name });
   }
 
-  const mutations = hero.mutations?.length ?? 0;
-  if (mutations > 0) {
-    out.push({ key: 'mutations', label: `Mutations ${mutations}`, icon: 'nav/mutation', tone: 'danger', anchor: ETAT_ANCHOR_MUTATIONS });
+  const mutationList = hero.mutations ?? [];
+  if (mutationList.length > 0) {
+    // Catégorie UNIQUE (`mutations`) : id = la PREMIÈRE mutation listée (agrégat, même arbitrage
+    // que la bande de section `EtatPanel.tsx` — pas d'entrée fédératrice pour « Mutations N »).
+    out.push({ key: 'mutations', label: `Mutations ${mutationList.length}`, icon: 'nav/mutation', tone: 'danger', anchor: ETAT_ANCHOR_MUTATIONS, codexCategory: 'mutations', codexId: mutationList[0].id });
   }
 
   // Traumas COSMÉTIQUES (cicatrices, `cosmetic:true`) exclus — Blessure d'origine déjà guérie (types.ts:769-772).
-  const activeTraumas = (hero.traumas ?? []).filter((t) => !t.cosmetic).length;
-  if (activeTraumas > 0) {
-    out.push({ key: 'traumas', label: `Séquelles ${activeTraumas}`, icon: 'medical/crutch', tone: 'warn', anchor: ETAT_ANCHOR_TRAUMAS });
+  const activeTraumasList = (hero.traumas ?? []).filter((t) => !t.cosmetic);
+  if (activeTraumasList.length > 0) {
+    // Catégorie UNIQUE (`traumas`) : id = la PREMIÈRE séquelle active (même arbitrage que Mutations).
+    out.push({ key: 'traumas', label: `Séquelles ${activeTraumasList.length}`, icon: 'medical/crutch', tone: 'warn', anchor: ETAT_ANCHOR_TRAUMAS, codexCategory: 'traumas', codexId: activeTraumasList[0].traumaId });
   }
 
   for (const p of hero.psychState ?? []) {
@@ -85,11 +104,16 @@ export function sheetAlarms(hero: Combatant): SheetAlarm[] {
       icon: (def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON,
       tone: 'warn',
       anchor: ETAT_ANCHOR_PSYCHOLOGIE,
+      codexCategory: 'psychologies',
+      codexId: p.type,
     });
   }
 
   if (totalEncumbrance(hero) > maxEncumbrance(hero)) {
-    out.push({ key: 'surcharge', label: 'Surchargé', icon: FALLBACK_ICON, tone: 'warn', anchor: ETAT_ANCHOR_ENCOMBREMENT });
+    // Catégorie UNIQUE (`encumbranceTiers`) : id = le PALIER RÉEL atteint (`encumbrancePenalties`,
+    // même calcul que la rubrique Surcharge, `EtatPanel.tsx`) — jamais un palier deviné.
+    const tier = datasetArray('encumbranceTiers').find((t) => t.tier === encumbrancePenalties(hero).tier);
+    out.push({ key: 'surcharge', label: 'Surchargé', icon: FALLBACK_ICON, tone: 'warn', anchor: ETAT_ANCHOR_ENCOMBREMENT, codexCategory: 'encumbranceTiers', codexId: tier?.id });
   }
 
   return out;

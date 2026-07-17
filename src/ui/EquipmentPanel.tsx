@@ -292,7 +292,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                     <CodexRef category="trappings" id={items.find((it) => it.uid === w.uid)?.trappingId} label={w.name}>{w.name}</CodexRef>{' '}
                     <em>{weaponStatParts(w, strBonus).join(' · ')}</em>
                     {w.qualities.length > 0 && <span className="weap-quals"> · <QualityChips qualities={w.qualities} /></span>}
-                    {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · <Icon id="item/ammo" size="sm" /> {ammo}</span>}
+                    {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · <Icon id="item/ammo" size="sm" /> Munitions {ammo}</span>}
                   </span>
                 </div>
               );

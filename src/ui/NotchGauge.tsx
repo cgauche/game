@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
  * Ton dérivable d'un ton fixe OU d'une fonction `(value,max)→ton` (bande de Moral, palier de soute).
  */
 
-export type GaugeTone = 'ok' | 'warn' | 'danger' | 'neutral';
+export type GaugeTone = 'ok' | 'warn' | 'danger' | 'neutral' | 'corruption';
 
 export interface NotchGaugeProps {
   value: number;
@@ -26,6 +26,10 @@ export interface NotchGaugeProps {
   format?: (value: number, max: number) => string;
   /** Variante empilée : label au-dessus de la piste (défaut : une ligne). */
   stacked?: boolean;
+  /** Taille FIXE (px) par cran — la piste se dimensionne à SES crans (`notches × cellSize`), jamais
+   *  étirée au conteneur. Sans cette prop : comportement historique (piste flexible pleine largeur,
+   *  adapté aux jauges à nombreux crans). Réservé aux jauges à PEU de crans (Destin, Corruption). */
+  cellSize?: number;
   className?: string;
 }
 
@@ -42,6 +46,7 @@ export function NotchGauge({
   marks,
   format,
   stacked,
+  cellSize,
   className,
 }: NotchGaugeProps) {
   const span = Math.max(1, max - min);
@@ -56,6 +61,7 @@ export function NotchGauge({
       className={`notch-gauge${className ? ` ${className}` : ''}`}
       data-tone={t}
       data-stacked={stacked ? '' : undefined}
+      data-fixed={cellSize != null ? '' : undefined}
     >
       {(icon != null || label != null) && (
         <div className="notch-gauge__head">
@@ -71,9 +77,17 @@ export function NotchGauge({
         aria-valuemax={max}
         aria-valuenow={value}
       >
-        <div className="notch-gauge__notches">
+        <div
+          className="notch-gauge__notches"
+          style={cellSize != null ? { width: n * cellSize + (n - 1) * 2 } : undefined}
+        >
           {Array.from({ length: n }, (_, i) => (
-            <span key={i} className="notch-gauge__notch" data-on={i < filled ? '' : undefined} />
+            <span
+              key={i}
+              className="notch-gauge__notch"
+              data-on={i < filled ? '' : undefined}
+              style={cellSize != null ? { flex: `0 0 ${cellSize}px` } : undefined}
+            />
           ))}
         </div>
         {marks?.map((m, i) => (

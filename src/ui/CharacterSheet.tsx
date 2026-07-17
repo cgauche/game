@@ -129,7 +129,15 @@ function SheetAlarmsBand({ hero }: { hero: Combatant }) {
     <div className="skill-tags">
       {alarms.map((a) => (
         <button key={a.key} type="button" className={`chip tone-${a.tone}`} title={a.label} onClick={() => goTo(a.anchor)}>
-          <Icon id={a.icon} size="sm" /> {a.label}
+          <Icon id={a.icon} size="sm" />{' '}
+          {a.codexCategory ? (
+            // Popover de FAMILLE (LOT L pt.3) — nesté DANS le bouton de navigation, même patron que
+            // les rangées cliquables du registre (`PlaqueRow` + `CodexRef` imbriqués, ex. Possessions
+            // ci-dessous) : le clic bascule le popover ET remonte navigateur au clic du bouton hôte.
+            <CodexRef category={a.codexCategory} id={a.codexId} label={a.label} tooltipOnly>{a.label}</CodexRef>
+          ) : (
+            a.label
+          )}
         </button>
       ))}
     </div>
@@ -668,6 +676,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
             return (
               <div key={it.uid} className="inv-item">
                 <PlaqueRow
+                  valueMuted
                   prefix={<ItemIcon item={it} size="sm" />}
                   name={<CodexRef category="trappings" id={it.trappingId} label={itemLabel(it)} tooltipOnly>{itemLabel(it)}</CodexRef>}
                   sub={itemStats(it)}

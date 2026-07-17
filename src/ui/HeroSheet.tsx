@@ -126,7 +126,7 @@ export function HeroSheet({
           {derivedFields.includes('wounds') && <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>}
           {derivedFields.includes('movement') && <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>}
           {derivedFields.includes('fate') && <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>}
-          {derivedFields.includes('resilience') && <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Déterm. <b>{hero.resolve ?? '—'}</b></span>}
+          {derivedFields.includes('resilience') && <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Détermination <b>{hero.resolve ?? '—'}</b></span>}
         </div>
       )}
 

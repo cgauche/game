@@ -43,6 +43,35 @@
   letter-spacing: 1.3px;
   margin-left: 10px;
 }
+/* Titre de bande CLIQUABLE (registre État → catégorie Compendium, `Band.tsx` prop `onTitleClick`) —
+   teinte or au survol/focus (jamais de soulignement, le titre est déjà dans un cadre) + glyphe
+   d'affordance après le titre (juge vision 2026-07-17 : la teinte seule est invisible au repos). */
+.creator-band-title-link {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.creator-band-title-link:hover,
+.creator-band-title-link:focus-visible {
+  color: var(--gold2);
+}
+.creator-band-title-link:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 1px;
+}
+/* Glyphe discret au repos (indice de découverte SANS attendre le survol), plein contraste au
+   survol/focus — même id que le bouton Compendium du menu (`nav/compendium`, `MainMenu.tsx`). */
+.creator-band-title-affordance {
+  opacity: 0.45;
+  color: var(--atelier-brass-meta);
+}
+.creator-band-title-link:hover .creator-band-title-affordance,
+.creator-band-title-link:focus-visible .creator-band-title-affordance {
+  opacity: 1;
+  color: var(--gold2);
+}
 .creator-band-right {
   margin-left: auto;
   flex: 0 0 auto;
@@ -59,8 +88,10 @@
 /* Jauge du tirage à la MINIBAR de la planche (`.cu-minibar` : piste 170×14 au liseré bois, encre
    d'or qui monte) — COMPLÈTE la primitive `NotchGauge` dans ce contexte, aucun fork : piste et
    crans ciblés par rôle/état ([role='meter'], [data-on]), jamais une classe interne recopiée. */
-.creator-band-right .notch-gauge [role='meter'] {
+.creator-band-right .notch-gauge:not([data-fixed]) [role='meter'] {
   width: 170px;
+}
+.creator-band-right .notch-gauge [role='meter'] {
   padding: 2px;
   border-radius: 7px;
   border: 1px solid var(--atelier-wood-liseret);
@@ -109,7 +140,7 @@
     display: block;
     margin-left: 0;
   }
-  .creator-band-right .notch-gauge [role='meter'] {
+  .creator-band-right .notch-gauge:not([data-fixed]) [role='meter'] {
     width: 110px;
   }
 }
@@ -126,6 +157,6 @@
   justify-content: flex-end;
   row-gap: 4px;
 }
-.creator-band-right:has(.notch-gauge + .notch-gauge) .notch-gauge [role='meter'] {
+.creator-band-right:has(.notch-gauge + .notch-gauge) .notch-gauge:not([data-fixed]) [role='meter'] {
   width: 110px;
 }
