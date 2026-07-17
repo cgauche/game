@@ -99,8 +99,14 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
     if (t.natural) return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg, natural: true });
     const trapping = catalogWeapon(t.arg, 'weaponsMelee');
     if (trapping) return weaponFromTrapping(trapping, 'melee', dmg, t.range);
-    // Arme manufacturée hors catalogue, ou descripteur naturel non flaggé : générique, mêlée par défaut.
-    return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg });
+    // Arme manufacturée hors catalogue, ou descripteur naturel non flaggé : générique, mêlée par
+    // défaut — REND toujours une silhouette (`weaponFamily` retombe sur le Groupe, ex. « épée »).
+    // `sizeless` (≠ `natural`, qui viderait les mains) : le trait « Arme +N » SANS objet identifié au
+    // catalogue n'est jamais une POSSESSION dont la Taille pourrait ne pas convenir (ADE II ch.02
+    // l.604-710 vise un objet manufacturé réel, ex. une massue-ogre) — sa taille effective EST celle
+    // du porteur (LDB 85 l.33 : « porte une arme… ou utilise ses dents, griffes ou similaires »),
+    // exemptée du mismatch (`combat.ts`) sans toucher au rendu.
+    return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg, sizeless: true });
   }
   // Attaque naturelle TYPÉE (Morsure, Cornes, Tentacules…) : reconnue par la CAPACITÉ du trait
   // (`capabilities.naturalWeapon`, donnée). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur

@@ -92,6 +92,17 @@ await shot(session, 'des-figes', 'mon-dossier');
 await session.close();
 ```
 
+**Cliquer le VRAI bouton « Lancer » fait lire un `roll` NULL le temps du roulis** : le clic déclenche
+`useRollFrisson.trigger` (`src/ui/useRollFrisson.ts`) qui attend le tumble (**750 ms**, `TUMBLE_MS`)
+AVANT d'exécuter le résolveur réel et de committer le jet au store — lire l'état (`pendingTest.roll`,
+`__wfrp.modal()`…) tout de suite après un `Input.dispatchMouseEvent` sur « Lancer » lit donc encore
+`roll: null`. Deux parades : attendre le roulis (`waitFor`, ~800 ms) avant de lire, OU `freezeTimeout`
+(exemple ci-dessus) AVANT le clic — `setTimeout` patché à 0 ms collapse le tumble ET l'atterrissage
+(`LAND_MS`), le résolveur s'exécute quasi immédiatement. **`__wfrp.roll()` n'a PAS ce piège** : il
+appelle l'action du store DIRECTEMENT (`devDriveModal`, `src/state/devtools.ts`), sans passer par le
+bouton ni l'animation — réservé au SETUP/observation (doctrine ci-dessous), jamais pour valider le
+flux visuel que le joueur vit.
+
 Pièges déjà documentés (renvois, pas de doublon) : le buffer console **partagé** entre
 sessions/onglets, le **closure-sync** (lire le DOM dans le même `evaluate` que l'action qui change
 l'état React), le **HMR silencieux** qui ramène au menu en pleine recette — voir « Pièges vécus » et
@@ -156,6 +167,17 @@ résout par `cascadeResolveAll` (bouton **« Tout lancer »**, résout d'un coup
 puis `cascadeFinish` (bouton **« Terminer »** du bilan) — `cascadeRoll`/`cascadeNext` avancent étape
 par étape (bouton « Continuer »/« Terminer » de la dernière étape), cf. `src/ui/CascadeModal.tsx`.
 
+**`pendingTest` seul ne rend RIEN à l'écran** : c'est un slot d'état pur (`store.ts`), consommé en
+LECTURE par `useTestJetProps` (`src/ui/jetProps/useTestJetProps.tsx`) — dont `CascadeModal.tsx` est
+l'UNIQUE point de montage qui l'appelle. Poser `pendingTest` à la main (`store.setState`) sans que
+`CascadeModal` soit monté ne produit donc aucune modale visible (piège du dernier recours de la
+doctrine ci-dessus). Raccourci de démo LÉGITIME pour l'armer EN COMBAT (passe par une vraie action du
+store, pas un `setState` forgé) : `__wfrp.store.getState().battleGainAdvantage(skillId)`
+(`src/state/combatSlice.ts`) — ouvre le `pendingTest` « Avantage — <compétence> » (LDB 09 l.305-308),
+à condition que `skillId` soit une Compétence que le combattant actif POSSÈDE (`hero.skills`) et dont
+la donnée porte `combatAdvantage` (`SkillData`, ex. `intuition`) ; sinon l'action ne fait rien
+(silencieux, cf. gate `skillAdvantageCap`).
+
 **Lancer un sort à cible « Vous »** : une fois focalisé (ou prêt à incanter directement), le
 LANCEMENT ne passe PAS par le bouton « Focaliser (X/CN) » — celui-ci (`battleFocusSpell`) ne fait
 QUE (re)poser/empiler de la Focalisation, il ne lance jamais le sort. Le lancement effectif passe
@@ -168,6 +190,7 @@ pas la cible d'UX.
 
 | Helper | Usage | Limites connues |
 |---|---|---|
+| `spawn(creatureId, pos?, {side?, id?}?)` | instancie une créature du REGISTRE (`creatures.json`) directement EN COMBAT — VRAI pipeline `creatureToCombatant` (`src/state/spawn.ts`, MÊME dérivation que `spawnEnemy`), sans rencontre de scène. `spawn('gobelin')` / `spawn('gobelin', {x:12,y:8}, {side:'hero'})` | `pos` défaut : à côté du combattant ACTIF (sinon 1er combattant positionné) ; `opts.side` (`'enemy'` défaut / `'hero'` / `'npc'`) pose `kind` après coup — `'hero'` marque aussi `aiControlled` (allié PNJ piloté par l'IA, jamais un 5ᵉ héros manuel) ; `creatureId` inconnu → `✗` |
 | `turn('id')` | donne le TOUR à un combattant (réinitialise Action/Mouvement) | saute les bornes de Round — mise en place, pas simulation de partie |
 | `place('id',{x,y})` | téléporte un combattant | **PIÈGE COMPOSITE (corrigé)** : cible une coque à postes (`postes` non vide) ou un membre de `ShipPoste.crewIds` → déplace la FORMATION ENTIÈRE (coque + tout l'équipage des postes) du même delta, MÊME sémantique que la poussée (`pushCommitTile`). Téléporter la coque SEULE désynchronisait aperçu (postes) et portée réelle (équipage resté en arrière) — 30 % du budget d'une recette perdu à débugger ce déphasage avant fix. Retourne `{msg, moved:[ids]}` en cas composite, une chaîne sinon (combattant simple inchangé). |
 | `turnShip('id','tribord'\|'babord'\|crans)` | vire le cap d'un navire (triche, sans jet) | ne déplace QUE le cap (`facing`), jamais la position — vérifier ensuite avec `aim()` |
@@ -447,6 +470,17 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   servant, jamais l'arme de poste (`personalWeaponsOf` exclut explicitly l'arme du poste servi de
   l'auto-choix, `src/state/mount.ts:104-121`) : RE-sélectionner l'arme de poste dans le `<select>`
   « Arme » de la modale (`src/ui/jetProps/useAttackJetProps.tsx:171-184`) avant de lancer le jet.
+
+- **Ouvrir la fiche complète d'un héros (`CharacterSheet`)** : `sheetId` est un `useState` LOCAL au
+  composant écran (`PartyScreen.tsx`/`CampaignView.tsx`) — aucun helper `__wfrp` ne l'arme (le raccourci
+  `sheet()` envisagé a été ÉCARTÉ, cf. `docs/architecture.md`). Chemin RÉEL, roster HORS combat
+  (`PartyScreen`) : cliquer le portrait/nom d'un héros (`.seat-card-main`, `SeatCard`/`PresentHandle`,
+  `src/ui/CharCard.tsx`) ouvre d'abord la PRÉSENTATION (`HeroPresentation`, récit) ; son bouton
+  **« Fiche complète → »** (`present.fullSheet`, seulement si le héros est dans le groupe actif) pose
+  `sheetId` et ferme la présentation. En COMBAT (`CampaignView`, dock du roster), un clic direct sur le
+  portrait (`onDockPortrait`, hors ciblage) pose `sheetId` SANS étape de présentation — deux chemins
+  distincts vers le même `CharacterSheet`. Piloter au clavier/souris réel (doctrine ci-dessus) ;
+  `__wfrp.state()`/`entities()` n'exposent PAS `sheetId` (état de composant, pas du store).
 
 ## Collecteur d'erreurs de playtest (#304)
 

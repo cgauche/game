@@ -8,13 +8,15 @@ import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, itemLabel, wea
 import { OptionChooser } from './OptionChooser';
 import { HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { baseWithTalents } from '../engine/talentEffects';
+import { baseWithTalents, effectiveTalents } from '../engine/talentEffects';
 import { refKey, parseRefKey } from '../engine/careerSlots';
 import { weaponStatParts } from './weaponStats';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
 import { isConsumable } from '../engine/consumables';
-import { isMagicMissile, isArcaneSpell } from '../engine/magic';
+import { isMagicMissile, isArcaneSpell, castBlockedBy } from '../engine/magic';
+import { castInfoIsPrayer } from '../state/combatFlow';
+import { GatedAction } from './GatedAction';
 import { actorHasSkill } from '../engine/skills';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { rule } from '../engine/policy';
@@ -268,6 +270,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         {spells.map((sp) => {
           const offensive = isMagicMissile(sp);
           const support = spellSupport(spellEffectOps(sp.effects), sp, offensive);
+          const castBlocked = castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue');
           return (
             <div className="spell-row" key={sp.label} title={support !== 'mecanique' ? 'Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : undefined}>
               <span className="spell-name">
@@ -283,15 +286,27 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                 <span className="spell-actions">
                   {isArcaneSpell(sp) && (
                     <>
-                      <button className="btn small" onClick={() => oocFocusSpell(hero.id, sp.id)}>
-                        <Icon id="flag/focus" size="sm" /> Focaliser
-                      </button>
+                      <GatedAction
+                        id={`sheet-focus-${hero.id}-${sp.id}`}
+                        label={<><Icon id="flag/focus" size="sm" /> Focaliser</>}
+                        enabled={!castBlockedBy(hero, 'focalisation')}
+                        reason={castBlockedBy(hero, 'focalisation') ?? ''}
+                        primary={false}
+                        btnClassName="small"
+                        onClick={() => oocFocusSpell(hero.id, sp.id)}
+                      />
                       <CodexRef category="regles" id="focalisation-etendue" label="Test de Focalisation (étendu)" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
                     </>
                   )}
-                  <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.id, targetId)}>
-                    <Icon id="nav/dice" size="sm" /> Lancer
-                  </button>
+                  <GatedAction
+                    id={`sheet-cast-${hero.id}-${sp.id}`}
+                    label={<><Icon id="nav/dice" size="sm" /> Lancer</>}
+                    enabled={!castBlocked}
+                    reason={castBlocked ?? ''}
+                    primary={false}
+                    btnClassName="small"
+                    onClick={() => oocCastSpell(hero.id, sp.id, targetId)}
+                  />
                 </span>
               )}
             </div>
@@ -307,9 +322,15 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               <span className="muted">en combat</span>
             ) : (
               <span className="spell-actions">
-                <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.id, targetId, true)}>
-                  <Icon id="nav/compendium" size="sm" /> Lancer (grimoire)
-                </button>
+                <GatedAction
+                  id={`sheet-cast-grimoire-${hero.id}-${sp.id}`}
+                  label={<><Icon id="nav/compendium" size="sm" /> Lancer (grimoire)</>}
+                  enabled={!castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue')}
+                  reason={castBlockedBy(hero, castInfoIsPrayer(sp) ? 'priere' : 'langue') ?? ''}
+                  primary={false}
+                  btnClassName="small"
+                  onClick={() => oocCastSpell(hero.id, sp.id, targetId, true)}
+                />
               </span>
             )}
           </div>
@@ -574,11 +595,11 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'po
             );
           })}
         </div>
-        {hero.talents.length > 0 && (
+        {effectiveTalents(hero).length > 0 && (
           <>
             <div className="mini-title">Talents</div>
             <div className="skill-tags">
-              {hero.talents.map((t, i) => (
+              {effectiveTalents(hero).map((t, i) => (
                 <TalentChip key={i} talent={t} />
               ))}
             </div>

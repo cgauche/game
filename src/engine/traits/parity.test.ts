@@ -113,7 +113,6 @@ const JOURNAL_MJ = new Map<string, string>([
   // Traits ZI sans système support (desc verbatim, MJ).
   ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
   ['Déstabilisant', 'aura ZI : une créature Instable à proximité compte ses Avantages −2 en fin de Round — pas de système d’aura inter-créatures modélisé (MJ ; cf. Feu de Tzeentch)'],
-  ['Marque de Khorne', 'Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh + interdits + achats hors carrière (MDG 07 l.250-252) — même canal que Marque de Tzeentch (auteur/MJ)'],
   // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
   // Aura de Mort : aura de LANCEMENT conditionnelle au DOMAINE (Nécromancie/Shyish + ; Ghyran/Hysh/Azyr −).
   // Le câblage cast↔aura existe (cf. Aura de Dhar, DISPATCH) mais le GATING par Domaine du sort lancé n'est
@@ -164,6 +163,19 @@ const DISPATCH = new Set<string>([
   // Atouts de STRUCTURE de siège (ADE II ch.08) : capabilities `structResistant`/`structImpenetrable`
   // (donnée), lues par `hasCapability` dans `engine/structures` (`structureImmune`) — canal dispatch.
   'Résistant', 'Impénétrable (structure)',
+  // Marque de Khorne (MDG 07 l.250-252) : `capabilities.frenzyCapable` (Frénésie, même canal que le
+  // trait « Frénésie ») + `capabilities.psychType:'animosite'`+`psychCible:'slaanesh'` (Animosité fixe,
+  // parsePsychTraits — la réciproque Slaanesh→porteur est le MÊME canal `targetedTrigger`, posée côté
+  // statblocs Slaanesh) + `passive` : `grantTalent` (Savoir-vivre (Suivants de Khorne), structurel —
+  // `talentEffects.traitGrantedTalents`), `castPenalty{blocked}` ×2 (Langue (Magick)/Focalisation,
+  // exemption dissipation STRUCTURELLE), `grantCareerTalent` ×10 (achats hors-Carrière au tarif normal
+  // — `talentEffects.careerTalentAdditions`, étendu aux Traits).
+  'Marque de Khorne',
+  // Ogre (ADE II ch.02 l.708, folio 31) : `capabilities.encumbranceFactor`/`consumptionFactor` (donnée)
+  // — lus par `talentEffects.traitEncumbranceFactor` (composé max talent/trait dans `items.maxEncumbrance`)
+  // et `provisions.traitConsumptionFactor` (composé dans `dailyFoodUpkeep`/`provisioningManifest`). Canal
+  // dispatch (capability lue par id, MÊME lecture ciblée `c.traits` que Marque de Khorne).
+  'Ogre',
 ]);
 
 function allTraitLabels(): string[] {

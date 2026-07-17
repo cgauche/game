@@ -40,9 +40,7 @@ import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
 import { sceneMetresPerTile } from './scene';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
-import { reverseRoll } from '../engine/combat';
-import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
-import { consumeReverseToken } from '../engine/reverseToken';
+import { runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR, hydrateTR } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { d100, defaultRNG, type RNG } from '../engine/dice';
@@ -117,7 +115,7 @@ function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bon
  *  LDB 10 — exposé par les seuls flux à `caps.resist` (Tests qui « résistent à une menace »).
  *  `cancel` = « Annuler » unifié (cascade-aware + `onCancel` métier) — exposé par les flux annulables ;
  *  sans `pid` (annuler ferme la modale/cascade entière, pas un slot). */
-export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'resist' | 'determine' | 'cancel';
+export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'resist' | 'determine' | 'cancel' | 'reverse';
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
@@ -404,6 +402,27 @@ export const FLOWS = {
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       },
     },
+    // Inversion de Test (LDB 23 l.209 « Entraînement au Combat » : Corps à corps/Projectiles — CHOIX
+    // du joueur, #558). La 2ᵉ frappe du Maniement de deux armes est un jet IMPOSÉ (l.638, comme
+    // ci-dessus « ni relance ni Pacte ») : `dualSecond` exclut aussi l'inversion.
+    reverse: {
+      skillOf: (s, p, actor) => {
+        if (p.dualSecond) return null;
+        const target = actorIn(s, p.targetId); if (!target) return null;
+        const weapon = firedWeapon(actor, target, p.weaponUid, s.battle?.combatants, p.harpoonRopeCut);
+        return { skill: weapon.type === 'ranged' ? 'projectiles' : 'corps-a-corps' };
+      },
+      current: (p) => (p.result?.attackerDetail ? { roll: p.result.attackerDetail.roll, target: p.result.attackerDetail.target } : null),
+      applyRoll: (s, p, actor, _get, tr) => {
+        const target = actorIn(s, p.targetId); if (!target) return null;
+        const ad = p.result!.attackerDetail!;
+        // `tr.success` = issue RÉELLE du dé renversé (le jeton, libre, peut ne PAS convertir un échec
+        // — ni forcer un succès, `forcedTR`) ; seule la voie Talent (gate stricte échec→succès dans
+        // `applyReverse`) garantit `tr.success:true` par construction.
+        const atk2 = hydrateTR({ roll: tr.roll, target: ad.target, success: tr.success, sl: tr.sl });
+        return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
+      },
+    },
     // « Annuler » : défaire la charge misclic AVANT le jet
     // (positions/orientation/Mouvement/Avantage +1 rendu/chargedThisTurn), no-op sur une 2ᵉ frappe
     // imposée, fin de balayage pour un cleave, sinon fermeture (+ cascade combat étape 0).
@@ -479,6 +498,22 @@ export const FLOWS = {
         if (!attacker) return null;
         const dd = p.result!.defenderDetail!;
         const def2 = bumpSL(hydrateTR(dd));
+        const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
+        return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry, sceneMetresPerTile(s.scene)) };
+      },
+    },
+    // Inversion de Test (LDB 23 l.209 « Entraînement au Combat » : Corps à corps/Projectiles — CHOIX
+    // du joueur, #558). Parade → Corps à corps ; Esquive → Esquive (compétence propre, hors périmètre
+    // « Corps à corps/Projectiles » de l'Activité mais couverte par un jeton « tout Test », l.218) ;
+    // substitution sociale (`mode:'social'`) exclue de tout skill spécifique — seul un jeton générique
+    // (sans `skill`) peut s'y appliquer.
+    reverse: {
+      skillOf: (_s, p) => ({ skill: p.mode === 'parade' ? 'corps-a-corps' : p.mode === 'esquive' ? 'esquive' : undefined }),
+      current: (p) => (p.def ? { roll: p.def.roll, target: p.def.target } : null),
+      applyRoll: (s, p, actor, _get, tr) => {
+        const attacker = actorIn(s, p.attackerId); if (!attacker) return null;
+        // `tr.success` = issue RÉELLE du dé renversé (voir attack.reverse.applyRoll — jamais forcé).
+        const def2 = hydrateTR({ roll: tr.roll, target: p.def!.target, success: tr.success, sl: tr.sl });
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
         return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry, sceneMetresPerTile(s.scene)) };
       },
@@ -1385,28 +1420,30 @@ export const FLOWS = {
           forced: true,
         };
       }
-      let res = rollTest(p.skillValue, p.difficulty);
-      // Talents d'INVERSION (LDB 10 — Sociable/Studieux/Lecture rapide/Pharmacologie/Chat de
-      // gouttière/Noctambule/Pansement de fortune) : un Test raté est relu chiffres inversés s'il
-      // devient réussi (Pansement plafonne à +1 DR).
-      if (actor && !res.success) {
-        const rev = talentReverseFailed(actor, { skill: p.skillId, spec: p.spec });
-        if (rev) {
-          const e = evaluateTest(reverseRoll(res.roll), res.target);
-          if (e.success) res = { ...e, isDouble: res.isDouble, sl: rev.capDR != null ? Math.min(e.sl, rev.capDR) : e.sl };
-        }
-      }
-      // Jeton d'inversion CONSOMMABLE « prochaine aventure » (LDB 23 l.209/218) : même mécanisme
-      // (`reverseRoll`), consommé SEULEMENT si ça convertit l'échec en réussite (0 gaspillage).
-      if (actor && !res.success) {
-        const e = evaluateTest(reverseRoll(res.roll), res.target);
-        if (e.success && consumeReverseToken(actor, { skill: p.skillId, spec: p.spec })) res = { ...e, isDouble: res.isDouble };
-      }
+      const res = rollTest(p.skillValue, p.difficulty);
       const sl = res.sl + (res.success ? tDR : 0);
       return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && sl >= p.requireSL };
     },
     outcome: (p) => rollOutcome(p.roll, p.target, p.sl), // d100 propre réussi (LDB ch.12 l.56 + l.29-31)
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },
+    // Inversion de Test (LDB 23 l.209/218 « vous POUVEZ inverser » ; LDB 10 — Talents Sociable/
+    // Studieux/Lecture rapide/Pharmacologie/Chat de gouttière/Noctambule/Pansement de fortune, MÊME
+    // formule « vous pouvez ») : CHOIX du joueur (#558), offert par la rangée d'influence — jamais
+    // automatique. `applyReverse` (engine/reverseToken.ts) tente le Talent (gratuit, illimité) PUIS le
+    // jeton d'Activité (consommé) ; les +DR de Talent/effet actif (`tDR`) s'appliquent PAR-DESSUS,
+    // comme sur un jet naturel.
+    reverse: {
+      skillOf: (_s, p) => ({ skill: p.skillId, spec: p.spec }),
+      current: (p) => (p.roll != null ? { roll: p.roll, target: p.target } : null),
+      applyRoll: (_s, p, actor, _get, tr) => {
+        const tDR = talentTestSLBonus(actor, { skill: p.skillId, char: p.char, spec: p.spec })
+          + (p.skillId ? skillDRBonus(actor, p.skillId, p.spec) : 0)
+          + charDRBonusOf(actor, p.char ?? (p.skillId ? effectiveSkillCharKey(actor, p.skillId, { spec: p.spec }) : undefined))
+          + offTerrainTestDR(actor);
+        const sl = tr.sl + tDR;
+        return { roll: tr.roll, sl, success: sl >= p.requireSL };
+      },
+    },
   }),
 
   /** Sauvegarde d'Initiative d'une PANNE DE VAPEUR « Fuite de vapeur » (MDG 12 l.326-328) : la personne
@@ -1549,8 +1586,8 @@ interface FlowVerbs {
 }
 
 export const FLOW_VERBS = {
-  attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll'], coop: true },
-  defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
+  defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
   cast:         { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   disengage:    { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   flee:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
@@ -1575,7 +1612,7 @@ export const FLOW_VERBS = {
   heal:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   surgery:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist'], coop: true },
-  test:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'cancel'] },
+  test:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'cancel', 'reverse'] },
   steamSave:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   activity:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   bargain:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },

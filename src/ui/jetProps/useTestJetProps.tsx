@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
+import { FLOWS } from '../../state/rollFlowSpecs';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
@@ -31,6 +32,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   const darkPact = useGame((s) => s.testDarkPact);
   const determination = useGame((s) => s.testDetermination);
   const forceSuccess = useGame((s) => s.testForceSuccess);
+  const reverseVerb = useGame((s) => s.testReverse);
   const setActor = useGame((s) => s.testSetActor);
   const resolve = useGame((s) => s.resolveTest);
   const cancel = useGame((s) => s.testCancel);
@@ -46,6 +48,11 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   const pendingLine = testPending(skillLabel, pt.skillValue, pt.target, pt.difficulty, envMods);
   // Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double, pilotée par la règle.
   const amazing = rule('test-critiques-doubles') ? amazingTestLabel(pt) : null;
+  // Inversion de Test (LDB 23 l.209/218, LDB 10 — CHOIX du joueur, #558) : offerte dès qu'une voie
+  // (Talent/jeton) est applicable (`reverseAvailable`, pure) ; `reversePreview` rend l'issue LISIBLE
+  // avant le clic (le jeton, libre, peut dégrader un succès existant — jamais un automatisme).
+  const reverseAvail = rolled && FLOWS.test.reverseAvailable(useGame.getState, useGame.setState);
+  const reversePreview = reverseAvail ? FLOWS.test.reversePreview(useGame.getState, useGame.setState) : null;
   // Barre : « Continuer » post-jet + « Annuler » pré-jet SI le test est annulable (action de COMBAT ;
   // referme la cascade sans dépenser l'Action). Les tests de dialogue/scène n'ont pas `cancellable`.
   const actions: RollAction[] = [{ key: 'confirm', label: 'Continuer', onClick: resolve, when: 'post' }];
@@ -95,6 +102,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
         resilience: actor?.resilience ?? 0,
         onForce: forceSuccess,
         forceShow: rolled && !pt.success,
+        reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
         /* Détermination (LDB 17 l.62) : AVANT le jet, si un malus psy social pèse, la dépense l'ignore. */
         determination: !rolled && pt.psychMod ? { resolve: actor?.resolve ?? 0, onResolve: determination } : undefined,
       },

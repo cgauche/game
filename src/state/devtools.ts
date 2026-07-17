@@ -8,7 +8,8 @@ import { actorIn, inBattleId } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
 import { pushCombatStep, gearFromEffects } from './combatEffects';
-import { trappings } from '../data';
+import { trappings, findCreatureById } from '../data';
+import { creatureToCombatant } from './spawn';
 import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
@@ -979,6 +980,33 @@ export function buildApi() {
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
       }));
       return `✓ ${c.name} : ${maladieId} (${c.diseases[c.diseases.length - 1].phase})`;
+    },
+
+    /** RECETTE : instancie une créature du REGISTRE (`creatures.json`) directement EN COMBAT — VRAI
+     *  pipeline (`creatureToCombatant`, `src/state/spawn.ts` — MÊME dérivation que `spawnEnemy`/le
+     *  peuplement de scène : profil, armes/armure depuis les Traits, Psychologie, Groupes…), sans
+     *  passer par une rencontre de scène. `spawn('gobelin')`, `spawn('gobelin', {x,y}, {side:'hero'})`.
+     *  `pos` défaut : à côté du combattant ACTIF (ou, à défaut, le premier combattant positionné) —
+     *  `opts.side` (`'enemy'` défaut / `'hero'` / `'npc'`) pose `kind` après coup (`'hero'` marque aussi
+     *  `aiControlled` — un allié PNJ du camp héros piloté par l'IA, jamais un 5ᵉ héros manuel). */
+    spawn: (creatureId: string, pos?: { x: number; y: number; z?: number }, opts?: { side?: 'hero' | 'enemy' | 'npc'; id?: string }) => {
+      const b = g().battle;
+      if (!b) return '✗ pas de combat en cours';
+      const creature = findCreatureById(creatureId);
+      if (!creature) return `✗ créature « ${creatureId} » introuvable au registre`;
+      const near = inBattleId(b, b.order[b.turn])?.pos
+        ?? b.combatants.find((c) => c.pos)?.pos;
+      const basePos = pos ?? (near ? { x: near.x + 1, y: near.y, z: near.z } : { x: 0, y: 0 });
+      let id = opts?.id ?? `spawn-${creatureId}`;
+      let n = 0;
+      while (b.combatants.some((c) => c.id === id)) { n += 1; id = `${opts?.id ?? `spawn-${creatureId}`}-${n}`; }
+      const c = creatureToCombatant(creature, id, basePos);
+      const side = opts?.side ?? 'enemy';
+      if (side === 'hero') { c.kind = 'hero'; c.aiControlled = true; }
+      else if (side === 'npc') c.kind = 'npc';
+      useGame.setState({ battle: { ...b, combatants: [...b.combatants, c], order: [...b.order, id] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      return `✓ ${c.name} (${creatureId}) apparu — ${side}, (${basePos.x},${basePos.y})`;
     },
 
     /** RECETTE : ouvre l'étape de CHOIX « Piège-lame » (LDB 62 l.292-295) — `bladeTrap('hero-1','enemy-1', 2)`.

@@ -14,7 +14,7 @@
 import { describe, it, expect } from 'vitest';
 import type { RNG } from './dice';
 import { toBrass } from './money';
-import { craftTarget, apprenticeshipTutorCost, bankWithdrawOutcome, statusIncome, ACTIVITIES, activitiesFor, activityById, resolveTravelActivity,
+import { craftTarget, apprenticeshipTutorCost, entrainementTutorCost, entrainementTutorRange, entrainementOptions, bankWithdrawOutcome, statusIncome, ACTIVITIES, activitiesFor, activityById, resolveTravelActivity,
   resolveStageActivities, aggregateActivityOutcomes, STAGE_OUTCOME_AGG, type TravelActivityResult,
   defaultTravelRole, stageAssignmentFromRoles, matchOutcomes, activityAvailableAt } from './activities';
 import { findSkillById } from '../data';
@@ -400,5 +400,46 @@ describe('activityAvailableAt — gate géographique `where` (ACE = « à Altdor
   it('Mécénat : variante d’Opération bancaire — mise minimale 5 CO portée par la donnée', () => {
     expect(activityById('mecenat')!.minInvest).toEqual({ gold: 5 });
     expect(activityById('mecenat')!.resolver).toBe('mecenat');
+  });
+});
+
+describe('entrainementTutorCost — « PX + 1D10 sous de cuivre » (LDB 23 l.132-136)', () => {
+  it('Compétence de Base / Caractéristique : 1d10 sc simple', () => {
+    expect(toBrass(entrainementTutorCost(false, seq([7])))).toBe(7);
+  });
+  it('Compétence Avancée : le tutorat est DOUBLÉ (l.135)', () => {
+    expect(toBrass(entrainementTutorCost(true, seq([7])))).toBe(14);
+  });
+  it('fourchette affichée AVANT engagement : [1,10] sc / [2,20] sc si Avancée', () => {
+    expect(entrainementTutorRange(false)).toEqual({ minBrass: 1, maxBrass: 10 });
+    expect(entrainementTutorRange(true)).toEqual({ minBrass: 2, maxBrass: 20 });
+  });
+});
+
+describe('entrainementOptions — Compétences/Caractéristiques HORS carrière seulement (LDB 23 l.130-136)', () => {
+  it('exclut les Caractéristiques DE la carrière (Soldat : CC/End/FM), inclut les autres, PX déjà doublé hors carrière (LDB 07 l.91)', () => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const opts = entrainementOptions(h);
+    const chars = opts.filter((o) => o.kind === 'characteristic');
+    expect(chars.every((o) => !o.advanced)).toBe(true);
+    // Capacité de Combat/Endurance/Force Mentale SONT de la carrière du Soldat (careerLevels.json) : absentes ici.
+    expect(chars.some((o) => o.id === 'capacite-de-combat')).toBe(false);
+    expect(chars.some((o) => o.id === 'endurance')).toBe(false);
+    expect(chars.some((o) => o.id === 'force-mentale')).toBe(false);
+    // Sociabilité N'est PAS de la carrière du Soldat : entraînable, coût hors carrière (doublé).
+    const soc = chars.find((o) => o.id === 'sociabilite');
+    expect(soc).toBeTruthy();
+    expect(soc!.xpCost).toBeGreaterThan(0);
+  });
+  it('marque `advanced` pour les Compétences Avancées, jamais pour une Compétence de Base', () => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const opts = entrainementOptions(h);
+    const skillOpts = opts.filter((o) => o.kind === 'skill');
+    expect(skillOpts.length).toBeGreaterThan(0);
+    const advanced = skillOpts.find((o) => o.advanced);
+    expect(advanced).toBeTruthy();
+    expect(advanced!.tutorMaxBrass).toBe(20);
+    const base = skillOpts.find((o) => !o.advanced);
+    expect(base!.tutorMaxBrass).toBe(10);
   });
 });

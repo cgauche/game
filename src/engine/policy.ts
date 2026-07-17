@@ -442,6 +442,18 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Temps passé à papoter et poser des questions dans une auberge (Ragot Intermédiaire, EDOC l.151), en MINUTES — avance l’horloge de campagne quelle que soit l’issue.',
   },
   {
+    // LDB 23 l.141 : « votre Niveau est toujours réduit de 1 […] si la rumeur de la perfidie se
+    // répand » — le canon ne modélise aucune mécanique de propagation de rumeur (silence total sur
+    // la probabilité/le déclencheur) : valeur maison, #509.
+    id: 'favor-rumor-spreads',
+    label: 'Faveur rompue : la rumeur se répand (perte de Niveau)',
+    ref: 'LDB 23 l.141 — silence sur la mécanique de rumeur, valeur maison (#509)',
+    group: 'Activités',
+    kind: 'flag',
+    default: true,
+    hint: 'Rompre une Faveur réduit le Niveau de Carrière de 1 (minimum 0) « si la rumeur de la perfidie se répand » (LDB 23 l.141) — le RAW ne précise aucune condition : par défaut, la rumeur se répand systématiquement. Désactiver retire la pénalité de Niveau (rupture sans conséquence sociale).',
+  },
+  {
     id: 'advancement-career-jump',
     label: 'Sauts de Niveau de Carrière (accord du MJ)',
     ref: 'LDB 07 l.140/148',

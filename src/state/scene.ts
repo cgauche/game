@@ -351,6 +351,11 @@ export type Effect =
    *  min(3, semaines) Activités chacun, puis Argent à gaspiller et le temps passe. À poser en fin
    *  de chapitre par l'auteur de campagne. */
   | { type: 'interlude'; weeks?: number }
+  /** Faveur (LDB 23 l.139-153, #509) : contrepartie future acceptée en échange d'une aide
+   *  immédiate — Faveur de départ de campagne, ou octroi narratif hors flux d'Activité. Cible :
+   *  héros désigné, sinon le premier héros vivant du groupe (la source parle au singulier « vous »,
+   *  l.141 « votre Niveau » : la Faveur est due par UN héros, pas le groupe). */
+  | { type: 'grantFavor'; heroId?: string; level: import('./favorFlow').FavorLevel; owedTo: string; desc: string }
   /** Poursuite TERRESTRE jouable (LDB 15 l.87-109) — à poser sur un trigger/dialogue (« ils prennent la
    *  fuite », « rattrapez-les ! »). `partyRole` : le groupe FUIT (défaut) ou POURSUIT ; l'autre camp est
    *  décrit par `foes` (Mouvement + valeur de Test de Mouvement de chaque adversaire). `distance` de départ

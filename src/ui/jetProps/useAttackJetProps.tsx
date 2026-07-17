@@ -41,6 +41,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const bonusSL = useGame((s) => s.attackBonusSL);
   const darkPact = useGame((s) => s.attackDarkPact);
   const forceSuccess = useGame((s) => s.attackForceSuccess);
+  const reverseVerb = useGame((s) => s.attackReverse);
   const confirm = useGame((s) => s.attackConfirm);
   const cancel = useGame((s) => s.attackCancel);
   const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
@@ -103,6 +104,11 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // plus bas) ; pas de re-choix du dé lui-même (réservé à la Résilience volontaire, `pa.forced` manuel).
   const helplessForced = isHelplessTarget(target);
   const forcedDie = helplessForced ? null : FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
+  // Inversion de Test (LDB 23 l.209, LDB 10 — CHOIX du joueur, #558) : offerte dès qu'une voie
+  // (Talent/jeton) est applicable (`reverseAvailable`, pure) ; `reversePreview` rend l'issue LISIBLE
+  // avant le clic (le jeton, libre, peut dégrader un succès existant).
+  const reverseAvail = rolled && FLOWS.attack.reverseAvailable(useGame.getState, useGame.setState);
+  const reversePreview = reverseAvail ? FLOWS.attack.reversePreview(useGame.getState, useGame.setState) : null;
 
   // Bloqué (pas de ligne de vue / hors de portée) : pas de jet possible → rangée sans ligne, message seul.
   const blocked = preview && (preview.blocked || !preview.inRange);
@@ -138,6 +144,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     forceShow: !!res && !res.hit,
     forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
     onRoll: roll,
+    reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
   };
   // Rangée [1] éventuelle = défense adverse : aperçu pré-jet (compétence + mods, sans valeur) ou résultat témoin.
   const defenderRow: RollRowData | null = res

@@ -3,6 +3,7 @@ import type { Combatant, CharKey } from '../engine/types';
 import type { Money } from '../engine/money';
 import { dominantAxes } from '../engine/axes';
 import { effectiveChar } from '../engine/characteristics';
+import { effectiveTalents } from '../engine/talentEffects';
 import { itemLabel } from '../engine/items';
 import { CORE_AXIS_IDS, findSpellById } from '../data';
 import { Coins } from './Coins';
@@ -59,7 +60,7 @@ export function HeroSheet({
   // et mettre toutes les compétences ayant des points dedans ») — aucun écrémage top-N ici, le plafond
   // ne survit que sur les CARTES compactes (tuile candidat/carte de contrat, `CharCard.tsx`).
   const skills = [...hero.skills].filter((s) => s.advances > 0).sort((a, b) => b.advances - a.advances || a.skillId.localeCompare(b.skillId));
-  const talents = hero.talents;
+  const talents = effectiveTalents(hero);
   const possessions = (hero.items ?? []).slice(0, 12);
   const spellRefs = (hero.spells ?? []).map((id) => ({ id, data: findSpellById(id) }));
   const hasSpell = spellRefs.some((s) => s.data && !s.data.isPrayer);

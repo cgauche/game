@@ -44,7 +44,7 @@ export function parsePsychTraits(traits: TraitList): PsychParse {
     } else if (pt === 'terreur') {
       if (x.value != null) out.causesTerreur = x.value;
     } else if (pt && TARGETED.has(pt)) {
-      for (const cible of splitCibles(x.arg)) {
+      for (const cible of splitCibles(x.arg ?? caps.psychCible)) {
         const trait: PsychTrait = { type: pt as PsychType, cible };
         if (caps.psychIndice != null) trait.indice = caps.psychIndice;
         (out.psychTraits ??= []).push(trait);

@@ -888,6 +888,17 @@ export interface TraitCapabilities {
   psychType?: 'peur' | 'terreur' | 'animosite' | 'haine' | 'prejuge' | 'amour' | 'camaraderie' | 'phobie';
   psychImmune?: boolean; // Immunité (Psychologie) — annule Peur/Terreur (LDB 85 l.143-144)
   psychIndice?: number; // Indice FIXE si absent de l'instance (Phobie = 1, Effrayé = 0)
+  /** Cible FIXE (id de `groups.json`) d'un `psychType` CIBLÉ quand elle est imposée par le RAW du trait
+   *  lui-même, pas choisie à l'instanciation (Marque de Khorne « envers ceux qui sont ouvertement des
+   *  suivants de Slaanesh », MDG 07 l.250 — ≠ Animosité (au choix)). Fallback SEULEMENT si
+   *  l'instance ne porte pas d'`arg` (`parsePsychTraits`). */
+  psychCible?: string;
+  /** Ids de Groupe (`groups.json`) ACCORDÉS au porteur de ce Trait, en plus de sa dérivation
+   *  habituelle (folder/espèce/carrière…) — patron `psychCible` : la Cible d'une Animosité RÉCIPROQUE
+   *  ailleurs sur le bestiaire (« les suivants de Slaanesh éprouvent Animosité envers la créature »,
+   *  Marque de Khorne, MDG 07 l.250) a besoin d'un Groupe à VISER ; sans ce Trait, aucun `groupMatch`
+   *  ne peut cibler le porteur. Lu par `groupsFor` (SOURCE UNIQUE des groupes d'un combattant). */
+  grantGroups?: string[];
   /** Peut entrer en Frénésie (LDB 21 l.31 / LDB 85 l.150 Trait « Frénésie » / LDB 10 l.506 Talent
    *  « Frénésie »), lu par `isFrenzyCapable` (une des 3 sources : Trait, Talent, Trait psy octroyé). */
   frenzyCapable?: boolean;
@@ -932,6 +943,16 @@ export interface TraitCapabilities {
   /** Salive analgésique (T2C ch.13) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
    *  endormie (Inconscient magique) — elle s'y accroche sans être détectée. Lu par le modifier `wake-sleeper`. */
   wakelessBite?: boolean;
+  /** Encombrement portable ×N (ADE II ch.02 l.708, folio 31 : « un ogre peut porter deux fois
+   *  l'Encombrement normal d'un humain : (Bonus de Force + Bonus d'Endurance) × 2 ») — porté par le
+   *  Trait racial ogre, lu par `traitEncumbranceFactor` (`talentEffects.ts`), composé au PLUS GRAND
+   *  facteur avec `talentEncumbranceFactor` (talents, `combatFeatures/dispatch.ts`) dans `maxEncumbrance`
+   *  (`items.ts`) — jamais cumulatif. */
+  encumbranceFactor?: number;
+  /** Consommation de vivres/eau ×N (ADE II ch.02 l.708, folio 31 : « les ogres doivent manger et boire
+   *  au moins deux fois plus qu'un humain en une journée ») — porté par le Trait racial ogre, lu par
+   *  `traitConsumptionFactor` (`engine/provisions.ts`). */
+  consumptionFactor?: number;
 }
 /** Trait de créature (LDB 85) : libellé canonique + desc VERBATIM (affichée à l'inspecteur). */
 export interface TraitData {

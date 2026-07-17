@@ -49,6 +49,8 @@ const traitCapabilitiesSchema = z.strictObject({
   psychType: z.enum(['peur', 'terreur', 'animosite', 'haine', 'prejuge', 'amour', 'camaraderie', 'phobie']).optional(),
   psychImmune: z.boolean().optional(),
   psychIndice: z.number().optional(),
+  psychCible: z.string().optional(),
+  grantGroups: z.array(z.string()).optional(),
   frenzyCapable: z.boolean().optional(),
   mindless: z.boolean().optional(),
   woundsUseForce: z.boolean().optional(),
@@ -70,6 +72,10 @@ const traitCapabilitiesSchema = z.strictObject({
   seesInDark: z.boolean().optional(),
   darkSightTiles: z.number().optional(),
   wakelessBite: z.boolean().optional(),
+  /** ADE II ch.02 l.708 : « un ogre peut porter deux fois l'Encombrement normal d'un humain ». */
+  encumbranceFactor: z.number().optional(),
+  /** ADE II ch.02 l.708 : « les ogres doivent manger et boire au moins deux fois plus qu'un humain ». */
+  consumptionFactor: z.number().optional(),
 });
 
 export const schema = z.array(

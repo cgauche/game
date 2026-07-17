@@ -81,8 +81,15 @@ export interface TraitInstance {
   range?: number;
   /** Le trait d'arme est une attaque NATURELLE de corps (morsure/griffes/cornes…) → aucune arme tenue
    *  n'est dessinée (le membre fait foi). Flag DONNÉE posé à la migration (depuis l'ancienne heuristique
-   *  de libellé), lu au spawn par `weaponFromTrait` → `Weapon.natural`. Absent = arme manufacturée. */
+   *  de libellé), lu au spawn par `weaponFromTrait` → `Weapon.natural`. Absent = arme manufacturée
+   *  (ou trait « Arme » générique SANS objet de catalogue résolu → `Weapon.sizeless`, rendu inchangé). */
   natural?: boolean;
+  /** Dissimulation d'INSTANCE — arbitrage `maison` (MDG 07 l.250, condition « si la Marque de Khorne
+   *  est visible » sans mécanique de dissimulation nulle part ailleurs dans MDG 07) : champ d'instance
+   *  ÉDITABLE, défaut `false` = visible. Gate `targetedTrigger` (psychology.ts) pour la RÉCIPROQUE d'un
+   *  Trait psy porté PAR CAPACITÉ (`capabilities.grantGroups`) — un Trait dissimulé n'expose plus le
+   *  porteur au Groupe qu'il confère. */
+  hidden?: boolean;
 }
 
 /**

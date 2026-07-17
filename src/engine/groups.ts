@@ -7,7 +7,7 @@
  * Cf. spec : docs/superpowers/specs/2026-06-07-psychologie-design.md (§3).
  */
 import { norm } from '../lib/normalize';
-import { findCareerById } from '../data';
+import { findCareerById, findTraitById } from '../data';
 
 /** Folder bestiaire (`creatures.json`) → id de Groupe. Règles ORDONNÉES (la plus spécifique
  *  d'abord : « hommes-bêtes » avant « bêtes »). Mot-clé normalisé (AUTHORING) cherché dans le folder
@@ -117,6 +117,7 @@ export function groupsFor(src: {
   for (const t of src.traits ?? []) {
     const rule = TRAIT_RULES.find((r) => r.traitId === t.id);
     if (rule) push(rule.group);
+    for (const g of findTraitById(t.id)?.capabilities?.grantGroups ?? []) push(g);
   }
   if (src.careerId) {
     push(CAREER_RULES[src.careerId]);
@@ -127,6 +128,19 @@ export function groupsFor(src: {
     if (t.talentId === 'beni' && t.spec) push(CULT_GROUP_RULES[norm(t.spec)]);
   }
   (src.extras ?? []).forEach(push);
+  return out;
+}
+
+/** Ids de Groupe accordés par `capabilities.grantGroups` d'un Trait porté DISSIMULÉ (`TraitInstance.hidden`,
+ *  arbitrage `maison` MDG 07 l.250) — lus EN DIRECT sur `c.traits` (pas le `c.groups` figé au spawn, qui ne
+ *  recalcule pas si le porteur cache/révèle sa marque). Consommé par `targetedTrigger` pour retirer ces ids
+ *  du Groupe effectivement EXPOSÉ à la Cible d'un Trait psy réciproque. */
+export function hiddenGroupsOf(c: { traits?: { id: string; hidden?: boolean }[] }): string[] {
+  const out: string[] = [];
+  for (const t of c.traits ?? []) {
+    if (!t.hidden) continue;
+    for (const g of findTraitById(t.id)?.capabilities?.grantGroups ?? []) if (!out.includes(g)) out.push(g);
+  }
   return out;
 }
 

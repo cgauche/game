@@ -26,11 +26,12 @@
  * Costaud (Encombrement) est déjà appliqué par items.maxEncumbrance ; Petit/Massif (Taille)
  * par l'espèce. Les autres talents (combat, social…) sont hors périmètre.
  */
-import { Combatant, CHAR_KEYS, CharKey } from './types';
+import { Combatant, CHAR_KEYS, CharKey, TalentInstance } from './types';
 import { bonus, maxWounds } from './characteristics';
-import { findTalent, findTalentById, blessingsOf } from '../data';
+import { findTalent, findTalentById, findTraitById, blessingsOf } from '../data';
 import { splitLabel } from './careerSlots';
 import type { PassiveMod } from './ops';
+import { maxEncumbranceFactor } from './combatFeatures/dispatch';
 
 /**
  * Valeur « base + bonus permanents de talents » pour une CharKey, SANS les modificateurs
@@ -172,8 +173,10 @@ export function careerSkillAdditions(hero: Combatant): SkillTalentRef[] {
 
 /**
  * Talents ajoutés aux listes de carrière par les talents possédés (« Le Talent X est ajouté à la
- * liste des Talents de n'importe laquelle de vos Carrières », LDB 10 — Flagellant → Frénésie).
- * Analogue Talent de `careerSkillAdditions` : lit l'op `grantCareerTalent` (data-driven, par id).
+ * liste des Talents de n'importe laquelle de vos Carrières », LDB 10 — Flagellant → Frénésie) OU par
+ * un Trait porté (« peut acheter les Talents suivants comme s'ils étaient des Augmentations de
+ * Carrière au coût en PX normal », MDG 07 l.252 — Marque de Khorne). Analogue Talent de
+ * `careerSkillAdditions` : lit l'op `grantCareerTalent` (data-driven, par id) sur les deux sources.
  */
 export function careerTalentAdditions(hero: Combatant): SkillTalentRef[] {
   const out: SkillTalentRef[] = [];
@@ -183,7 +186,44 @@ export function careerTalentAdditions(hero: Combatant): SkillTalentRef[] {
       out.push({ id: op.talentId, spec: op.spec });
     }
   }
+  for (const tr of hero.traits ?? []) {
+    for (const op of findTraitById(tr.id)?.passive ?? []) {
+      if (op.op !== 'grantCareerTalent') continue;
+      out.push({ id: op.talentId, spec: op.spec });
+    }
+  }
   return out;
+}
+
+/** Talents STRUCTURELLEMENT possédés via un Trait porté (`TraitData.passive` `grantTalent`, ≠
+ *  `grantCareerTalent` qui n'ajoute qu'un DROIT D'ACHAT) — Marque de Khorne « bénéficie du Talent
+ *  Frénésie [et] gagne le Talent Savoir-vivre (Suivants de Khorne) » (MDG 07 l.250). Lu DIRECT sur
+ *  `c.traits` (marche pour un PJ ou une créature, indépendant de `liveTraits`/spawn) — même lecture
+ *  ciblée que `passiveCastPenalties` (magic.ts) pour un op STRUCTUREL, jamais un modificateur numérique
+ *  foldé par `traitPassiveMods`/`passiveMods`. */
+export function traitGrantedTalents(c: Combatant): SkillTalentRef[] {
+  const out: SkillTalentRef[] = [];
+  for (const tr of c.traits ?? []) {
+    for (const op of findTraitById(tr.id)?.passive ?? []) {
+      if (op.op !== 'grantTalent') continue;
+      out.push({ id: op.talentId, spec: op.spec });
+    }
+  }
+  return out;
+}
+
+/** Talents EFFECTIFS d'un combattant : `c.talents` (structurel) + ceux OCTROYÉS par un Trait porté
+ *  (`traitGrantedTalents`, ex. Marque de Khorne → Savoir-vivre (Suivants de Khorne), MDG 07 l.250) —
+ *  COLLECTEUR UNIQUE pour la POSSESSION effective (fiche, chips, `hasTalent`), distinct de `c.talents`
+ *  brut (qui reste la source d'ACQUISITION/achat PX, cf. `advancement.ts`). Dédoublonne par
+ *  `(talentId, spec)` — un porteur qui possède AUSSI le talent en propre n'est compté qu'une fois
+ *  (l'entrée structurelle, `times` réel, prime sur l'octroi). */
+export function effectiveTalents(c: Combatant): TalentInstance[] {
+  const own = c.talents ?? [];
+  const granted = traitGrantedTalents(c).filter(
+    (g) => !own.some((t) => t.talentId === g.id && (t.spec ?? '') === (g.spec ?? ''))
+  );
+  return [...own, ...granted.map((g) => ({ talentId: g.id, spec: g.spec, times: 1 }))];
 }
 
 /** Modificateurs PASSIFS continus des talents POSSÉDÉS (`TalentData.passive` : Coup puissant, Dur à cuire…,
@@ -198,3 +238,12 @@ export function talentPassiveMods(c: Combatant): PassiveMod[] {
   }
   return out;
 }
+
+/** Encombrement portable ×N (ADE II ch.02 l.708, folio 31) porté par un Trait RACIAL (Ogre) — MÊME
+ *  lecture ciblée sur `c.traits` que `traitGrantedTalents`/`passiveCastPenalties` (magic.ts), même
+ *  cœur pur `maxEncumbranceFactor` que le pendant talent (`combatFeatures/dispatch.ts`) : le facteur
+ *  ne se cumule JAMAIS, seul le PLUS GRAND (talents ∪ traits) l'emporte — composé par `items.maxEncumbrance`. */
+export function traitEncumbranceFactor(c: Combatant): number {
+  return maxEncumbranceFactor((c.traits ?? []).map((t) => ({ encumbranceFactor: findTraitById(t.id)?.capabilities?.encumbranceFactor })));
+}
+

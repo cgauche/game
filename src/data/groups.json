@@ -130,5 +130,13 @@
   {
     "id": "demonologue",
     "label": "Démonologue"
+  },
+  {
+    "id": "khorne",
+    "label": "Suivants de Khorne"
+  },
+  {
+    "id": "slaanesh",
+    "label": "Suivants de Slaanesh"
   }
 ]

@@ -218,6 +218,20 @@
     "desc": "C'est une chose d'acquérir une Compétence qui peut être facilement pratiquée, c'en est une autre d'apprendre quelque chose pour laquelle on n'a aucune aptitude. Cette Activité vous permet d'essayer d'apprendre un Talent en dehors de votre Carrière. Il n'y a aucune garantie que cette tentative réussisse, ce qui signifie qu'il y a de bonnes chances pour que vous échouiez dans l'apprentissage du Talent que vous espériez acquérir, dépensant en vain des PX et de l'argent.\n\nVous ne pouvez apprendre un Talent que si vous avez le tuteur approprié. Une fois que vous avez trouvé un tuteur, le prix pour apprendre le Talent est de 2D10 pistoles d'argent par 100PX que coûte l'achat du Talent. Tentez un Test **Difficile (-20)** en utilisant la Caractéristique ou la Compétence la plus pertinente pour le Talent, telle que déterminée par le MJ. Sur un succès, vous avez appris le Talent. Sinon, vous avez échoué cette fois-ci, mais pourrez essayer de nouveau avec une future Activité et gagnez un modificateur de +10 pour chaque tentative ratée."
   },
   {
+    "id": "entrainement",
+    "label": "Entraînement",
+    "icon": "nav/compendium",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 196
+    },
+    "resolver": "entrainement",
+    "desc": "L'Activité *Entraînement* vous permet de vous entraîner dans une Compétence ou une Caractéristique en dehors de votre Carrière, en considérant que vous êtes en formation. En plus du coût en PX normal, vous devez aussi rémunérer votre tuteur.\n\nL'entraînement pour des Compétences de Base et toutes les Caractéristiques coûte PX + 1D10 sous de cuivre, où PX est le coût d'achat en PX de l'Augmentation. Le tutorat pour les Compétences Avancées coûte le double de ce montant. Pour plus d'informations, voir Progrès dans le **Chapitre 3 : Classes et Carrières.**"
+  },
+  {
     "id": "identify",
     "label": "Identifier un artefact",
     "icon": "nav/identify",
@@ -1317,5 +1331,404 @@
     "difficulty": "intermediaire",
     "desc": "Entre deux Rounds de bataille, un Personnage blessé peut se rassembler pour reprendre des forces. En réussissant un Test de Résistance Intermédiaire (+0), il guérit un nombre de Blessures égal au DR obtenu plus son Bonus d'Endurance.",
     "resolver": "battleRally"
+  },
+  {
+    "id": "dressage",
+    "label": "Dressage",
+    "icon": "action/lead",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 197
+    },
+    "skills": [
+      {
+        "skillId": "dressage"
+      }
+    ],
+    "difficulty": "accessible",
+    "desc": "Vous passez du temps à entraîner l'un de vos animaux. Effectuez un Test de **Dressage Accessible (+20)**. En cas de réussite, ajoutez une Compétence à votre animal, choisie parmi les Traits de créature Dressé (voir page 339).",
+    "outcomes": [
+      {
+        "on": "success",
+        "note": "En cas de réussite, ajoutez une Compétence à votre animal, choisie parmi les Traits de créature Dressé (voir page 339) — non appliqué : aucun registre d'animal/compagnon possédé par un héros n'existe dans le moteur (mesure #508)."
+      }
+    ]
+  },
+  {
+    "id": "dernieres-nouvelles",
+    "label": "Dernières nouvelles",
+    "icon": "expedition/rumor",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 200
+    },
+    "skills": [
+      {
+        "skillId": "ragot"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "classGate": {
+      "classes": [
+        "itinerants",
+        "riverains"
+      ],
+      "outsidePenalty": 1
+    },
+    "desc": "Cette Activité vous permet d'apprendre les dernières nouvelles venant de loin. Tentez un Test de **Ragot Intermédiaire (+0)**. Sur un succès, vous apprenez une rumeur intéressante : chaque DR ajoute une autre rumeur, et elles peuvent même être en lien avec votre aventure à venir. Si vous échouez sérieusement (un Échec Impressionnant), vous apprenez quelque chose de faux, mais êtes convaincu que c'est réel ; pour faciliter les choses, le MJ peut effectuer le lancer en secret à votre place.",
+    "outcomes": [
+      {
+        "on": "success",
+        "note": "Sur un succès, vous apprenez une rumeur intéressante : chaque DR ajoute une autre rumeur, et elles peuvent même être en lien avec votre aventure à venir."
+      },
+      {
+        "on": "failure",
+        "maxSL": -4,
+        "note": "Si vous échouez sérieusement (un Échec Impressionnant), vous apprenez quelque chose de faux, mais êtes convaincu que c'est réel."
+      }
+    ]
+  },
+  {
+    "id": "entrainement-au-combat",
+    "label": "Entraînement au Combat",
+    "icon": "expedition/practice",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 200
+    },
+    "skills": [
+      {
+        "skillId": "corps-a-corps"
+      },
+      {
+        "skillId": "projectiles"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "classGate": {
+      "classes": [
+        "guerriers",
+        "itinerants"
+      ],
+      "outsidePenalty": 1
+    },
+    "resolver": "combatTraining",
+    "desc": "Des Guerriers trop longtemps éloignés du champ de bataille peuvent voir leurs Compétences de combat perdre en efficacité. Un entraînement rigoureux et régulier atténue non seulement ce souci, mais peut apporter un avantage supplémentaire au moment opportun. Si vous entreprenez cette Activité, vous passez vos journées à vous entraîner avec les armes que vous connaissez, perfectionnant vos Compétences pour le jour où cela sera crucial. Après avoir entrepris cette Activité, tentez un Test de **Compétence Intermédiaire (+0)** en utilisant une Compétence de Corps à corps ou Projectiles. Sur un succès, vous pouvez inverser un Test de la Compétence associée une fois pendant votre prochaine aventure. Notez-le sur votre Feuille de Personnage. Vous pouvez entreprendre cette Activité plusieurs fois si vous le souhaitez."
+  },
+  {
+    "id": "observer-une-cible",
+    "label": "Observer une cible",
+    "icon": "action/aim",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 201
+    },
+    "skills": [
+      {
+        "skillId": "perception"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "classGate": {
+      "classes": [
+        "roublards"
+      ],
+      "outsidePenalty": 1
+    },
+    "desc": "Vous utilisez cette Activité pour observer une cible potentielle et obtenir des avantages lors de futures entreprises criminelles. Un Charlatan peut étudier un marchand afin d'usurper au mieux son identité lors d'une escroquerie future, ou un Pilleur de Tombes peut rôder autour d'un Temple de Morr, surveillant les allées et venues des prêtres pour avoir une idée de leurs pratiques et de l'agencement des Jardins de Morr.\n\nTentez un Test de **Perception Intermédiaire (+0)**, bien que la Difficulté puisse être modifiée pour une cible particulièrement facile ou difficile. Sur un succès, vous pouvez inverser un Test concernant votre cible une fois pendant votre prochaine aventure. Notez-le sur votre Feuille de Personnage. Vous pouvez entreprendre cette Activité plusieurs fois si vous le souhaitez. En outre, le MJ devrait vous fournir des informations (ou désinformations !) concernant votre cible en fonction des DR que vous obtenez.",
+    "outcomes": [
+      {
+        "on": "success",
+        "ops": [
+          {
+            "op": "grantReverseToken"
+          }
+        ],
+        "note": "Sur un succès, vous pouvez inverser un Test concernant votre cible une fois pendant votre prochaine aventure."
+      }
+    ]
+  },
+  {
+    "id": "recherche-de-savoir",
+    "label": "Recherche de savoir",
+    "icon": "nav/compendium",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 201
+    },
+    "skills": [
+      {
+        "skillId": "savoir"
+      }
+    ],
+    "difficulty": "accessible",
+    "classGate": {
+      "classes": [
+        "lettres"
+      ],
+      "outsidePenalty": 1
+    },
+    "resolver": "knowledgeResearch",
+    "desc": "Cette Activité vous permet d'étendre vos connaissances sur un sujet spécifique, comme le site d'une bataille, un événement historique célèbre ou un individu. Le Personnage doit avoir accès à une mine de savoir, comme une bibliothèque, les archives d'une forteresse naine, les registres d'une Guilde ou un Temple de Verena.\n\nTentez un Test de **Savoir Accessible (+20)**, en utilisant la spécialisation de Savoir appropriée pour la connaissance que vous recherchez. Si nous n'avez pas la bonne spécialisation de Savoir et que vous êtes instruit, vous pouvez toujours tenter d'apprendre quelque chose, mais il faudra pour cela un Test d'**Intelligence Complexe** (-10). Sur un succès, vous apprenez une part de connaissance intéressante, utile ou cachée sur le sujet recherché ; chaque DR ajoute une autre tranche d'informations pertinentes. Si vous échouez sérieusement (un Échec Impressionnant), vous apprenez quelque chose de faux, mais êtes convaincu que c'est vrai ; pour faciliter les choses, le MJ peut effectuer le lancer en secret, à votre place.",
+    "outcomes": [
+      {
+        "on": "success",
+        "note": "Sur un succès, vous apprenez une part de connaissance intéressante, utile ou cachée sur le sujet recherché ; chaque DR ajoute une autre tranche d'informations pertinentes."
+      },
+      {
+        "on": "failure",
+        "maxSL": -4,
+        "note": "Si vous échouez sérieusement (un Échec Impressionnant), vous apprenez quelque chose de faux, mais êtes convaincu que c'est vrai."
+      }
+    ]
+  },
+  {
+    "id": "reputation",
+    "label": "Réputation",
+    "icon": "char/soc",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 201
+    },
+    "skills": [],
+    "difficulty": "intermediaire",
+    "classGate": {
+      "classes": [
+        "citadins",
+        "courtisans",
+        "lettres"
+      ],
+      "outsidePenalty": 1
+    },
+    "resolver": "reputation",
+    "desc": "C'est bien connu, l'argent est roi. Si vous cherchez à exercer votre influence et à élever votre statut social, vous devez être prêt à lâcher un peu de votre fortune. Tout élan donné à votre réputation retombera quand l'argent cessera de couler, alors vous devriez exploiter cet avantage tant que ça dure.\n\nLes Personnages peuvent dépenser de l'argent pour augmenter leur Standing de +1 pour la prochaine aventure, après quoi le bonus disparaît. Cela coûte le maximum de vos revenus standards (p 52). Donc si vos revenus sont de 4D10 sous de cuivre, il vous en coûtera 40sc et nécessite un Test de **Compétence de Carrière Intermédiaire (+0)** (voir Gagner de l'argent grâce au Statut p.51). Sur un succès, votre Standing augmente de +1. Si vous obtenez un Succès Stupéfiant (+6), il augmente de +2. Si vous échouez, vous avez juste gaspillé votre argent. Si vous obtenez un Échec Stupéfiant (-6), votre basse flatterie a tellement exaspéré vos pairs que votre Standing diminue de -1 pour la durée entière de votre prochaine aventure."
+  },
+  {
+    "id": "semer-dissension-reperage",
+    "label": "Semer la dissension — Repérage",
+    "icon": "expedition/rumor",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 202
+    },
+    "skills": [
+      {
+        "skillId": "ragot"
+      }
+    ],
+    "difficulty": "accessible",
+    "classGate": {
+      "classes": [
+        "citadins",
+        "ruraux"
+      ],
+      "outsidePenalty": 1
+    },
+    "resolver": "dissensionScout",
+    "desc": "Si vous cherchez à créer des troubles sociaux, entreprenez l'Activité *Semer la dissension*. En discutant avec les citoyens locaux, en animant des réunions et en vous impliquant, vous pouvez orienter les conversations pour nourrir lentement la colère et le ressentiment envers un individu en particulier, un groupe ou une institution. Mais cela prend du temps, il faut donc deux Activités pour tenter de *Semer la dissension* (et cela sera aussi considéré comme une Activité *Revenus* si vous avez une Carrière d'Agitateur).\n\nPour entreprendre l'Activité, vous devez d'abord tenter un Test de **Ragot Accessible (+20)** pour comprendre qui sont les personnes influentes du coin."
+  },
+  {
+    "id": "semer-dissension-emeute",
+    "label": "Semer la dissension — Émeute",
+    "icon": "flag/anger",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 202
+    },
+    "skills": [
+      {
+        "skillId": "charme"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "classGate": {
+      "classes": [
+        "citadins",
+        "ruraux"
+      ],
+      "outsidePenalty": 1
+    },
+    "resolver": "dissensionEmeute",
+    "maison": "Difficulté « déterminée par la façon dont la cible peut être mal vue » (LDB 23 l.242) — le RAW ne fixe aucune table, seulement deux exemples (Facile/Difficile) : `difficulty:'intermediaire'` est le repli maison, non cité par la source.",
+    "desc": "Sur un succès, tentez un Test de **Charme** dont la Difficulté est déterminée par la façon dont la cible peut être mal vue. Susciter la colère contre un noble oppresseur peut être un Test **Facile (+40)**, alors que soulever une foule pour protester contre les bonnes œuvres d'un hospice de Shallya peut être **Difficile (-20)**. Si vous échouez à l'un de ces Tests, l'Activité n'est pas un succès.\n\nSur un succès, vous trouverez plus facile de déchaîner le courroux des foules sur la cible de votre choix. Pendant votre prochaine aventure, vous pouvez tenter un Test de **Charme** pour rassembler une foule contre la même cible, dont la Difficulté sera déterminée par le MJ en fonction de la constitution de la foule.\n\nUn seul succès signifie que vous rassemblez suffisamment de citadins en colère pour accoster la cible, en criant des insultes, en demandant justice, en lançant des légumes et plus généralement en abordant le point central de leur colère. Un Succès Impressionnant ou Stupéfiant peut mener à des lynchages incontrôlables ou même à des tentatives d'incendies ! Un échec signifie que les gens n'ont pas l'envie de se révolter ; échouer de plusieurs DR peut signifier que la cible, ou ses sympathisants prennent connaissance de vos actions…\n\nUne fois que vous avez l'oreille d'une foule (entreprenant avec succès cette Activité), vous pouvez tenter de mobiliser la foule contre une cible différente pendant une aventure, bien que cela soit plus difficile, et que la Difficulté du Test de **Charme** soit plus élevée de deux niveaux."
+  },
+  {
+    "id": "fanmaris",
+    "label": "Tir parfait de Fanmaris",
+    "icon": "action/aim",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "aux-armes",
+      "page": 138
+    },
+    "skills": [
+      {
+        "skillId": "projectiles",
+        "spec": "arc"
+      }
+    ],
+    "difficulty": "complexe",
+    "classGate": {
+      "classes": [
+        "guerriers"
+      ],
+      "outsidePenalty": 1,
+      "scope": "ever"
+    },
+    "desc": "Tous ceux qui pratiquent le combat à distance connaissent la valeur d'un tir parfait au moment idéal. Une flèche ou une balle bien placée sur la bonne cible peut mettre fin à une bataille aussi sûrement qu'une charge d'un ordre de chevalerie. Le Personnage cherche à améliorer ses capacités de tir en consultant le manuel d'entraînement d'Allavandrel Fanmaris et s'entraîne à tirer dans des conditions distrayantes et sur des cibles compliquées. Après avoir entrepris cette Activité, effectuez un Test de **Projectiles (Arc) Complexe (–10)**. En cas de Succès, une fois au cours de la prochaine aventure, vous pouvez utiliser le bénéfice suivant : après avoir passé un Round de combat à viser votre adversaire, vous pouvez déclarer que vous accomplissez un Tir parfait. Effectuez un Test de **Projectiles** avec les pénalités et les bonus normaux, y compris le +20 de la visée. Votre attaque gagne les effets supplémentaires ci-dessous en fonction du DR total obtenu sur votre Test de Projectiles. Tous les effets sont cumulatifs.\n\n| DR | Effet (cumulatif) |\n|---|---|\n| +1 | Vous pouvez choisir la Localisation des Dégâts. |\n| +2 à +3 | Votre arme gagne l'Atout Perforante (page 298 de WFJDR) pour cette attaque. Si elle est déjà Perforante, augmentez ses Dégâts de 2. |\n| +4 à +5 | Vous infligez automatiquement un Coup Critique. |\n| +6 | Votre arme gagne l'Atout Dévastatrice (page 298 de WFJDR) pour cette attaque. Si elle est déjà Dévastatrice, elle gagne l'Atout Percutante (page 298 de WFJDR). |\n\nVous pouvez entreprendre cette Activité plusieurs fois si vous le désirez.",
+    "outcomes": [
+      {
+        "on": "success",
+        "note": "En cas de Succès, une fois au cours de la prochaine aventure, vous pouvez utiliser le bénéfice suivant : après avoir passé un Round de combat à viser votre adversaire, vous pouvez déclarer que vous accomplissez un Tir parfait — non modélisé : le bénéfice (bande de DR cumulative appliquée à une attaque déclarée, aucun jeton de manœuvre de combat multi-effets consommable n'existe dans le moteur) est mesuré, non fabriqué (#510)."
+      }
+    ]
+  },
+  {
+    "id": "leitdorf",
+    "label": "Défense de Leitdorf",
+    "icon": "melee/grapple",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "aux-armes",
+      "page": 138
+    },
+    "skills": [
+      {
+        "skillId": "corps-a-corps"
+      }
+    ],
+    "difficulty": "complexe",
+    "classGate": {
+      "classes": [
+        "guerriers"
+      ],
+      "outsidePenalty": 1,
+      "scope": "ever"
+    },
+    "desc": "Comme tous les guerriers ne le savent que trop bien, chaque style possède sa méthode pour le contrer. Un épéiste est vaincu par la longue allonge d'une lance et une zweihänder ne parvient pas à toucher un noble agile armé d'une rapière.\n\nCe sont ces expériences frustrantes qui poussent souvent un combattant à explorer de nouvelles approches, par exemple frapper son adversaire avec la garde de son épée, lui donner des coups de tête ou attraper sa lame à mains nues. Ces tactiques sont risquées par nature, mais elles déstabilisent un opposant qui s'attendait à une attaque plus organisée.\n\nLes plus braves consultent le fascicule décrivant la Défense de Leitdorf, censé avoir été rédigé par le comte Marius Leitdorf d'Averland. Paradoxalement, il décrit une série de manœuvres offensives inhabituelles pour contrer les défenses orthodoxes. Après avoir utilisé cette technique, d'abord vous panserez vos blessures et ensuite, vous pourriez décider de ne plus jamais tenter de bravade aussi excessive.\n\nAprès avoir entrepris cette Activité, effectuez un Test de **Corps à Corps Complexe (–10)**. En cas de Succès, une fois au cours de la prochaine aventure, vous pouvez faire appel au bénéfice suivant : après un ou plusieurs Rounds lors desquels vous êtes Engagé contre un adversaire, vous pouvez déclarer que vous employez la Défense de Leitdorf. Portez une attaque en effectuant un Test opposé de **Corps à Corps** avec une pénalité de -10.\n\nVotre adversaire ne peut ni utiliser ses Talents ni ajouter ses Augmentations de Compétence quand il se défend contre cette attaque. Après avoir résolu l'attaque, si vous remportez le Test, vous subissez 1d10 Dégâts qui ignorent l'Armure. Si votre adversaire remporte le Test, il vous inflige un Coup Critique car la manœuvre risquée vous expose et vous rend vulnérable.",
+    "outcomes": [
+      {
+        "on": "success",
+        "note": "En cas de Succès, une fois au cours de la prochaine aventure, vous pouvez employer la Défense de Leitdorf : Test opposé de Corps à Corps à -10, l'adversaire privé de Talents/Augmentations — non modélisé : aucune manœuvre de combat déclarée de ce type (Test opposé spécial, coûts asymétriques des deux côtés) n'existe dans le moteur ; mesuré, non fabriqué (#510)."
+      }
+    ]
+  },
+  {
+    "id": "alcatani",
+    "label": "Méthode Alcatani",
+    "icon": "flag/bond",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "aux-armes",
+      "page": 138
+    },
+    "skills": [
+      {
+        "skillId": "commandement"
+      }
+    ],
+    "difficulty": "complexe",
+    "classGate": {
+      "classes": [
+        "guerriers"
+      ],
+      "outsidePenalty": 1,
+      "scope": "ever"
+    },
+    "desc": "Tous les généraux partent à la guerre avec l'armée qu'ils ont, pas avec celle qu'ils veulent. Mais les canailles des rues et les laboureurs des champs ne servent pas à grand-chose sur un champ de bataille s'ils ne sont pas suffisamment entraînés pour suivre les ordres et bien appliquer les instructions.\n\nLa Méthode Alcatani utilise un mélange de cris, de menaces, de discours, d'alcool et de subornation pour transformer rapidement un groupe de mécréants en quelque chose qui ressemble à une unité militaire fonctionnelle. Cependant, sans une pratique régulière, ces leçons sont vite oubliées.\n\nAprès avoir entrepris cette Activité, effectuez un Test de **Commandement Complexe (–10)**. Pour chaque DR que vous obtenez sur ce Test, vous pouvez donner à un Personnage un seul rang dans le Talent Coude-à-coude (page 135 de **WFJDR**) pendant toute la durée de la prochaine aventure. Les Personnages possédant déjà le Talent Coude-à-coude peuvent augmenter de 1 leur rang de Coude-à-coude, sans dépasser le rang de Coude-àcoude du Personnage qui entreprend l'Activité.\n\nLes Personnages dotés du Talent Exaltant multiplient le nombre de Personnages qui reçoivent Coude-à-coude de la manière indiquée dans le **Livre de Règles** (voir page 137 de **WFJDR**). Par exemple, un Personnage qui a obtenu DR +3 sur son Test de Commandement et possède 2 rangs dans le Talent Exaltant pourrait accorder +1 rang de Coude-à-coude à jusqu'à 30 personnes.\n\n*Guerriers devant posséder au moins deux rangs dans le Talent Coude-à-coude*",
+    "outcomes": [
+      {
+        "on": "success",
+        "note": "Pour chaque DR obtenu, vous pouvez donner à un Personnage un rang temporaire de Coude-à-coude pour la prochaine aventure (plafonné au rang de l'instructeur, multiplié par Exaltant) — non modélisé : le Talent Coude-à-coude n'a aucune mécanique de rang implémentée dans le moteur (aucune couture d'octroi temporaire multi-cibles) ; mesuré, non fabriqué (#510)."
+      }
+    ]
+  },
+  {
+    "id": "punchausen",
+    "label": "Fabuleuse Vente des Aventures du comte de Punchausen",
+    "icon": "merchant/haggle",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "aux-armes",
+      "page": 139
+    },
+    "skills": [
+      {
+        "skillId": "charme"
+      },
+      {
+        "skillId": "divertissement",
+        "spec": "narration"
+      }
+    ],
+    "difficulty": "complexe",
+    "classGate": {
+      "classes": [
+        "guerriers"
+      ],
+      "outsidePenalty": 1,
+      "scope": "ever"
+    },
+    "resolver": "punchausen",
+    "desc": "L'avènement de l'imprimerie a répandu les pamphlets parmi les masses. Certains de ceux qui font imprimer des prospectus se concentrent sur les prêches religieux ou la dénonciation de leurs opposants politiques, mais il en existe toujours qui recherchent des textes susceptibles d'attirer un public plus large, et les histoires sanglantes des aventuriers itinérants sont toujours très demandées. Imprimés sur le papier le moins cher possible et illustrés d'estampes montrant des scènes sensationnelles pour susciter la curiosité des illettrés, ces contes d'épouvante sont populaires dans de nombreuses parties de l'Empire. Les guerriers qui veulent un peu d'argent et de célébrité peuvent tenter de raconter leurs aventures à un imprimeur.\n\nAprès avoir entrepris cette Activité, effectuez un Test de **Charme Complexe (–10)** ou un Test de **Divertissement (Narration) Intermédiaire (+0)**. En cas de Succès, vous recevez 2d10 pistoles et une fois au cours de la prochaine aventure, vous pouvez inverser les dés sur un Test de **Charme** ou de **Divertissement (Narration)** car l'une des personnes qui vous écoutent a récemment lu ou entendu lire à haute voix votre récit."
+  },
+  {
+    "id": "remaniement-contremaitre",
+    "label": "Remaniement du contremaître",
+    "icon": "scenario/trap",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "aux-armes",
+      "page": 139
+    },
+    "skills": [
+      {
+        "skillId": "ragot"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "classGate": {
+      "classes": [
+        "guerriers"
+      ],
+      "outsidePenalty": 1,
+      "scope": "ever"
+    },
+    "resolver": "contremaitre",
+    "desc": "Le bon équipement fait souvent la différence entre le succès et l'échec, la victoire et la défaite, la vie et la mort. Le matériel de première qualité est souvent bien trop cher pour un humble aventurier, mais dans les parties plus ou moins louches du Vieux Monde, quelques pièces et un mot glissés discrètement à un vieux compagnon peuvent révéler une occasion d'acquérir ce que vous désirez. Les missions à accomplir pour cela sont toujours dangereuses et souvent fatales, mais le jeu peut en valoir les cicatrices.\n\nPour entreprendre cette Activité, choisissez une Possession, appliquez-lui les Atouts souhaités et calculez son coût final, en arrondissant à la couronne d'or la plus proche. Le coût devrait normalement être limité à 20 CO, mais le MJ peut lever cette limite s'il le veut.\n\nEnsuite, effectuez un Test de **Ragot Intermédiaire (+0)** pour localiser un ancien associé qui peut vous envoyer sur une mission adéquate. En cas de Succès, ce contact vous détaille un travail lors duquel vous pouvez mettre la main sur l'objet demandé, soit en paiement, soit en vous en emparant pendant la mission elle-même.\n\nLa mission est dangereuse. Effectuez un Test de **Corps à Corps** ou de **Projectiles Complexe (–10)**. En cas de Succès, vous recevez à la fois l'objet désiré et une Blessure Critique sur une Localisation tirée au hasard mais en enlevant 20 sur le jet du Tableau des Critiques (minimum 01). En cas d'Échec, vous recevez l'objet et une Blessure Critique sur une Localisation tirée au hasard, mais en ajoutant au lancer sur le Tableau des Critiques autant que le coût de l'objet en Couronnes d'or. Vous ne pouvez pas dévier ce Critique avec votre armure, mais un point de Destin pourrait vous permettre d'éviter certaines conséquences.\n\nConsultez le tableau en page 139 pour générer les détails d'une mission aléatoire."
   }
 ]

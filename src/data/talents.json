@@ -3175,6 +3175,15 @@
     "source": {
       "book": "livre-de-base",
       "page": 144
+    },
+    "combat": {
+      "reverseFailed": {
+        "skill": [
+          "ramer",
+          "voile"
+        ],
+        "capDR": 1
+      }
     }
   },
   {
@@ -3858,6 +3867,10 @@
       {
         "id": "soldats",
         "label": "Soldats"
+      },
+      {
+        "id": "suivants-de-khorne",
+        "label": "Suivants de Khorne"
       }
     ],
     "rand": null,

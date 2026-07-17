@@ -23,9 +23,12 @@ import type { Combatant, Difficulty, SkillInstance, Availability } from './types
 import type { GameOp } from './ops';
 import { resolveSkillBest, bestSkilledOption, testValue, type SkillRef, type TestSpec } from './skills';
 import { DIFFICULTY_MODIFIERS } from './types';
-import { trappings, talents, levelsForCareer, type TrappingData } from '../data';
-import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached } from './careerSlots';
-import { talentCost } from './advancement';
+import { easeDifficulty } from './tests';
+import { trappings, talents, levelsForCareer, skills, specIdsOf, refLabel, findCareerById, type TrappingData } from '../data';
+import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, skillSlots, availableChars } from './careerSlots';
+import { talentCost, advanceCost, inCareerChar } from './advancement';
+import { careerSkillAdditions } from './talentEffects';
+import { CHAR_KEYS, CHAR_LABELS } from './types';
 import { rule } from './policy';
 import activitiesJson from '../data/activities.json';
 
@@ -259,6 +262,61 @@ export interface ActivityDef extends TestSpec {
    *  simple Succès (Ligne de mire, ADE II ch.08 l.208) ; 'stupefying' = Succès Stupéfiant (DR ≥ 6) requis
    *  pour se rapprocher au Corps à corps (Survol, l.217). Absent = pas de général à faire tomber. */
   generalDownOn?: 'success' | 'stupefying';
+  /** Gate de CLASSE : « N'importe quel Personnage peut entreprendre n'importe quelle Activité […], mais
+   *  si vous n'appartenez pas à la Classe spécifiée […] tous les Tests que vous faites sont plus durs
+   *  d'un Niveau de Difficulté » — `classes` = ids de `ClassData` couvrant l'Activité ; `outsidePenalty`
+   *  = crans (sens `easeDifficulty`, positif = DURCIT). `scope` distingue le VERBE de la source :
+   *  `'current'` (LDB 23 l.197 « appartenez ») = Classe COURANTE du héros ; `'ever'` (AA 12 l.5 « n'a
+   *  JAMAIS appartenu ») = Classe d'une Carrière un jour PORTÉE (`everBelongedClasses`). Défaut
+   *  `'current'`. Appliqué par le chemin UNIQUE `classGatedDifficulty`, jamais par-activité. */
+  classGate?: { classes: string[]; outsidePenalty: number; scope?: 'current' | 'ever' };
+  /** Note MAISON (règle stricte 7 : contextuel/« au MJ » → donnée taguée, jamais un nombre nu
+   *  silencieux) — porte la trace éditable d'une valeur mécanique absente LITTÉRALEMENT du texte RAW.
+   *  Ex. Semer la dissension — Émeute (LDB 23 l.242) : Difficulté « déterminée par la façon dont la
+   *  cible peut être mal vue », sans table de résolution → `difficulty:'intermediaire'` est le repli.
+   *  DISPLAY/DOC only, jamais lu pour de la mécanique (comme `criticals.ts` `maison`, #195). */
+  maison?: string;
+}
+
+/** Carrières JAMAIS PERDUES d'un héros (`Combatant.careerHistory`, cumulé — absent = `[career]`) →
+ *  Classes correspondantes (ids de `ClassData`, via `findCareerById`). PURE. Sert le gate `scope:'ever'`
+ *  (AA 12 l.5 « n'a jamais appartenu »), distinct de la Classe COURANTE (LDB 23 l.197). */
+export function everBelongedClasses(h: Pick<Combatant, 'career' | 'careerHistory'>): Set<string> {
+  const ids = h.careerHistory ?? (h.career ? [h.career] : []);
+  const out = new Set<string>();
+  for (const id of ids) {
+    const cls = findCareerById(id)?.class;
+    if (cls) out.add(cls);
+  }
+  return out;
+}
+
+/** Difficulté EFFECTIVE d'une Activité pour le héros — gate de Classe GÉNÉRIQUE : hors les Classes
+ *  couvertes (au sens du `scope` déclaré, cf. `ActivityDef.classGate`), la Difficulté durcit de
+ *  `classGate.outsidePenalty` crans (sens `easeDifficulty` : négatif = plus dur). Sans `classGate`
+ *  (ou Classe couverte), la Difficulté déclarée (`base`) reste inchangée. PURE. */
+export function classGatedDifficulty(
+  def: { difficulty?: Difficulty; classGate?: { classes: string[]; outsidePenalty: number; scope?: 'current' | 'ever' } },
+  hero: Pick<Combatant, 'career' | 'careerHistory'>,
+): Difficulty {
+  const base = def.difficulty ?? 'intermediaire';
+  const gate = def.classGate;
+  if (!gate) return base;
+  const covered = gate.scope === 'ever'
+    ? [...gate.classes].some((c) => everBelongedClasses(hero).has(c))
+    : gate.classes.includes(findCareerById(hero.career ?? '')?.class ?? '');
+  if (covered) return base;
+  return easeDifficulty(base, -gate.outsidePenalty);
+}
+
+/** Plafond des revenus d'une semaine par Statut (« le maximum de vos revenus standards », Réputation
+ *  LDB 23 l.228-234) — MÊME grille que `statusIncome` (LDB 08 l.135-144), bornes hautes des dés (2d10 →
+ *  20, 1d10 → 10), sans tirage. PURE. */
+export function statusIncomeMax(tier: PriceTier, standing: number): Money {
+  const n = Math.max(0, standing);
+  if (tier === 'bronze') return fromBrass(n * 20);
+  if (tier === 'argent') return fromBrass(n * 10 * PA_PER_SC);
+  return fromBrass(n * PA_PER_CO);
 }
 
 /** Catalogue app-owned des Activités (data-driven, éditable). */
@@ -512,6 +570,83 @@ export function apprenticeshipTutorCost(talentXpCost: number, rng: RNG = default
   let pa = 0;
   for (let i = 0; i < tranches; i++) pa += rollDice(2, 10, rng);
   return fromBrass(pa * PA_PER_SC);
+}
+
+/** Coût du tuteur d'Entraînement (ch.23 l.132-136) : « PX + 1D10 sous de cuivre, où PX est le coût
+ *  d'achat en PX de l'Augmentation. Le tutorat pour les Compétences Avancées coûte le double de ce
+ *  montant. » Le double porte sur la part MONÉTAIRE (« ce montant » = le paiement du tuteur — le
+ *  coût en PX, lui, est le coût normal de l'Augmentation, déjà doublé hors carrière par `advanceCost`). */
+export function entrainementTutorCost(advanced: boolean, rng: RNG = defaultRNG): Money {
+  const sc = rollDice(1, 10, rng) * (advanced ? 2 : 1);
+  return fromBrass(sc);
+}
+
+/** Fourchette du prix du tuteur d'Entraînement (1d10 sc, doublé pour les Compétences Avancées) —
+ *  pour afficher le risque AVANT de s'engager (le tirage réel reste `entrainementTutorCost`). */
+export function entrainementTutorRange(advanced: boolean): { minBrass: number; maxBrass: number } {
+  return advanced ? { minBrass: 2, maxBrass: 20 } : { minBrass: 1, maxBrass: 10 };
+}
+
+export interface EntrainementOption {
+  kind: 'skill' | 'characteristic';
+  /** `id` STABLE de la Compétence ou clé `CharKey` de la Caractéristique. */
+  id: string;
+  spec?: string;
+  label: string;
+  /** Compétence Avancée (ch.23 l.135 : « le tutorat […] coûte le double ») — toujours false pour une Caractéristique. */
+  advanced: boolean;
+  /** Augmentations déjà acquises (0 si la Compétence n'est pas encore connue). */
+  advances: number;
+  /** Coût en PX de la PROCHAINE Augmentation, coût hors carrière (LDB 07 l.91, déjà doublé). */
+  xpCost: number;
+  tutorMinBrass: number;
+  tutorMaxBrass: number;
+}
+
+/** Options d'Entraînement (ch.23 l.130-136) : Compétences et Caractéristiques HORS carrière
+ *  seulement — celles DE carrière s'achètent par l'Avancement normal (`buySkillAdvance`/
+ *  `buyCharAdvance`), sans tuteur à payer. Une Compétence à Spécialisations liste UNE option par
+ *  spec (LDB 09 l.42 : chaque Spécialisation est une Compétence distincte). */
+export function entrainementOptions(hero: Combatant): EntrainementOption[] {
+  const career = hero.career ?? '';
+  const levels = levelsForCareer(career);
+  const level = hero.careerLevel ?? 1;
+  const sSlots = skillSlots(levels, level);
+  const careerChars = availableChars(levels, level);
+  const designations = designationsFor(hero, career);
+  const additions = careerSkillAdditions(hero);
+
+  const chars: EntrainementOption[] = CHAR_KEYS
+    .filter((k) => !inCareerChar(careerChars, k))
+    .map((k) => {
+      const advances = hero.charAdvances?.[k] ?? 0;
+      const range = entrainementTutorRange(false);
+      return {
+        kind: 'characteristic' as const, id: k, label: CHAR_LABELS[k], advanced: false, advances,
+        xpCost: advanceCost(advances, 'characteristic', false),
+        tutorMinBrass: range.minBrass, tutorMaxBrass: range.maxBrass,
+      };
+    });
+
+  const skillOptions: EntrainementOption[] = [];
+  for (const s of skills) {
+    const specs = specIdsOf(s);
+    for (const spec of specs.length ? specs : [undefined]) {
+      if (inCareerStatus(sSlots, designations, s.id, spec) != null) continue; // de carrière → Avancement normal
+      const addedExact = additions.some((a) => a.id === s.id && (!a.spec || /au choix/i.test(a.spec) || (a.spec ?? '') === (spec ?? '')));
+      if (addedExact) continue; // ajoutée « à n'importe quelle Carrière » par un talent (LDB 10) → in-carrière
+      const known = hero.skills.find((k) => k.skillId === s.id && (k.spec ?? '') === (spec ?? ''));
+      const advances = known?.advances ?? 0;
+      const advanced = s.type === 'avancée';
+      const range = entrainementTutorRange(advanced);
+      skillOptions.push({
+        kind: 'skill' as const, id: s.id, spec, label: refLabel('skills', { id: s.id, spec }), advanced, advances,
+        xpCost: advanceCost(advances, 'skill', false),
+        tutorMinBrass: range.minBrass, tutorMaxBrass: range.maxBrass,
+      });
+    }
+  }
+  return [...chars, ...skillOptions.sort((a, b) => a.label.localeCompare(b.label))];
 }
 
 /** Retrait bancaire (ch.23 l.157-159) : `roll` = le 1d100 du retrait. Planque : seuil de découverte

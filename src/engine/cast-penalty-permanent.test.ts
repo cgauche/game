@@ -1,5 +1,5 @@
 /**
- * Interdiction PERMANENTE de compétence magique (MDG ch.07 l.248-250) : « Le Personnage ne peut jamais
+ * Interdiction PERMANENTE de compétence magique (MDG ch.07 l.250) : « Le Personnage ne peut jamais
  * utiliser les Compétences Langue (Magick) et Focalisation, sauf pour dissiper un sort. » — `castPenalty
  * {blocked:true}` posable en PASSIF (Trait/mutation), sans expiration (aucun `rounds`/`minutes`/`hours`/
  * `days`, contrairement au contrecoup temporisé posé par `applyOps`). Le porteur DONNÉE (Trait de créature)
@@ -17,7 +17,7 @@ const banMutation = (skill: 'langue' | 'focalisation' | 'priere' | 'all'): Mutat
   passive: [{ op: 'castPenalty', skill, blocked: true }],
 });
 
-describe('castPenalty passif — interdiction PERMANENTE (MDG 07 l.248-250)', () => {
+describe('castPenalty passif — interdiction PERMANENTE (MDG 07 l.250)', () => {
   it('0 excédent : sans la capacité, rien n’est bloqué', () => {
     const c = { mutations: [] } as unknown as Combatant;
     expect(castBlockedBy(c, 'langue')).toBeNull();
@@ -28,7 +28,7 @@ describe('castPenalty passif — interdiction PERMANENTE (MDG 07 l.248-250)', ()
     const c = { mutations: [banMutation('langue'), banMutation('focalisation')] } as unknown as Combatant;
     expect(castBlockedBy(c, 'langue')).toBe('Interdiction (test)');
     expect(castBlockedBy(c, 'focalisation')).toBe('Interdiction (test)');
-    expect(castBlockedBy(c, 'priere')).toBeNull(); // seules Langue/Focalisation sont visées (l.248)
+    expect(castBlockedBy(c, 'priere')).toBeNull(); // seules Langue/Focalisation sont visées (l.250)
   });
 
   it('scope : ne touche PAS la Prière (portée du RAW = « Langue (Magick) et Focalisation » seules)', () => {

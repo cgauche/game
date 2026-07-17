@@ -13,17 +13,19 @@
  */
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
-import { d100 } from '../engine/dice';
+import { d100, roll as rollDice } from '../engine/dice';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
-import { fromBrass, toBrass, formatMoney, priceToMoney, PA_PER_CO } from '../engine/money';
+import { fromBrass, toBrass, formatMoney, priceToMoney, PA_PER_CO, PA_PER_SC } from '../engine/money';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon, autoStowNewItem } from '../engine/items';
 import { sleepParty } from './restFlow';
 import { purgeAdventureEffects } from './upkeep';
+import { resetInterruptedFavorProgress } from './favorFlow';
 import { confirmBattleActivity, massBattleBegin, battlePrepEntries } from './massBattleFlow';
 import {
-  craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
-  ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt,
+  craftTarget, craftSpecOf, metierOf, statusIncome, statusIncomeMax, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
+  entrainementOptions, entrainementTutorCost,
+  ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt, classGatedDifficulty,
   type PriceTier, type ActivityDef,
 } from '../engine/activities';
 import { applyOps, type GameOp } from '../engine/ops';
@@ -38,11 +40,15 @@ import { testValue } from '../engine/skills';
 import { rule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
 import type { ChaosAlign, ExposureLevel } from '../engine/corruption';
-import { buyTalent as engineBuyTalent, talentCost } from '../engine/advancement';
+import { buyTalent as engineBuyTalent, talentCost, buySkillAdvance as engineBuySkillAdvance, buyCharAdvance as engineBuyCharAdvance } from '../engine/advancement';
+import { skillCharacteristicById } from '../engine/character';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
 import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
-import { CHAR_LABELS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
+import { findEffectTableById } from '../data/effectTables';
+import { findTableEntry } from '../engine/tables';
+import { CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
 import type { PendingBase } from './rollFlowFactory';
+import { t } from '../i18n';
 
 import type { Get, Set } from './flowTypes';
 
@@ -69,6 +75,13 @@ export interface InterludeHeroState {
    *  ACE 12 l.15) — appliquées par `interludeEnd` APRÈS le repos de clôture (un État posé
    *  avant serait dissipé par la récupération des nuits écoulées). */
   closeOps?: GameOp[];
+  /** Semer la dissension (LDB 23 l.236-248) : le Test de Ragot (1ʳᵉ des DEUX Activités requises) a
+   *  identifié les personnalités influentes du coin — débloque la 2ᵉ Activité (Test de Charme) DANS
+   *  CET interlude. Consommé (remis à `false`) à l'issue de la 2ᵉ Activité, succès ou échec. */
+  dissensionReady?: boolean;
+  /** Faveurs (LDB 23 l.139-151, #509) déjà créditées d'une Activité CET interlude — trace la
+   *  « consécutivité » (`Favor.progress`) pour `resetInterruptedFavorProgress` (state/favorFlow). */
+  favorProgress?: string[];
 }
 
 export interface InterludeState {
@@ -218,6 +231,15 @@ export interface PendingActivity extends PendingBase {
   /** DR net de l'ennemi au Test opposé de tenue (positif = l'ennemi l'emporte). */
   enemySL?: number;
   forced?: boolean;
+  /** Coût en sous de cuivre engagé par CETTE Activité (Réputation, LDB 23 l.228-234 : « le maximum de
+   *  vos revenus standards », dépensé MÊME sur échec — calculé à l'ouverture, débité à la résolution). */
+  costBrass?: number;
+  /** Compétence CHOISIE par le résolveur (au-delà du libellé d'affichage) — Entraînement au Combat
+   *  (LDB 23 l.205-209 : Corps à corps OU Projectiles) / Fabuleuse Vente du comte de Punchausen
+   *  (AA 12 l.45-49 : Charme OU Divertissement (Narration)) : le jeton d'inversion octroyé SCOPE
+   *  cette Compétence. */
+  chosenSkill?: string;
+  chosenSkillSpec?: string;
 }
 
 /** Statut « Échelon Standing » d'un héros (CareerLevelData.status, ex. « Argent 2 »), + modificateur
@@ -341,6 +363,10 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     get().log(`${def.label} n'est praticable qu'en un lieu précis — pas ici.`);
     return;
   }
+  if (def.resolver === 'dissensionEmeute' && !st.dissensionReady) {
+    get().log(`${h.name} doit d'abord repérer les personnalités influentes du coin (Semer la dissension — Ragot) avant de soulever la foule.`);
+    return;
+  }
   let skillLabel: string;
   let skillValue: number;
   // Champs de pending dérivés par résolveur (Test étendu, Talent, item…) — annexés à la fin.
@@ -416,6 +442,64 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     skillValue = testValue(h, savoir.skillId, undefined, savoir.spec);
     skillLabel = skillInstanceLabel(savoir);
     extra.label = `${def.label} — ${item.name}`;
+  } else if (def.resolver === 'combatTraining') {
+    // Entraînement au Combat (LDB 23 l.205-209) : « une Compétence de Corps à corps ou Projectiles »
+    // au choix du joueur — approximée par la MEILLEURE de l'acteur (convention partagée avec la
+    // branche « au choix » ci-dessous) ; le jeton d'inversion octroyé SCOPE cette Compétence.
+    const best = (def.skills ?? [])
+      .map((ref) => ({ ref, v: testValue(h, ref.skillId, undefined, ref.spec) }))
+      .sort((a, b) => b.v - a.v)[0];
+    if (!best) return;
+    skillValue = best.v;
+    skillLabel = refLabel('skills', { id: best.ref.skillId });
+    extra.chosenSkill = best.ref.skillId;
+    extra.chosenSkillSpec = best.ref.spec;
+  } else if (def.resolver === 'punchausen') {
+    // Fabuleuse Vente du comte de Punchausen (AA 12 l.45-49) : « Test de Charme Complexe (−10) OU
+    // Divertissement (Narration) Intermédiaire (+0) » — au choix du joueur, approximé par la Cible
+    // effective la plus favorable (compétence + Difficulté propre à chaque chemin, PAS la même
+    // Difficulté partagée que la branche « au choix » générique — chemins hétérogènes).
+    const candidates: { skillId: string; spec?: string; difficulty: Difficulty }[] = [
+      { skillId: 'charme', difficulty: 'complexe' },
+      { skillId: 'divertissement', spec: 'narration', difficulty: 'intermediaire' },
+    ];
+    const best = candidates
+      .map((c) => ({ c, v: testValue(h, c.skillId, undefined, c.spec), target: testValue(h, c.skillId, undefined, c.spec) + DIFFICULTY_MODIFIERS[c.difficulty] }))
+      .sort((a, b) => b.target - a.target)[0];
+    skillValue = best.v;
+    skillLabel = refLabel('skills', { id: best.c.skillId, spec: best.c.spec });
+    extra.difficulty = best.c.difficulty;
+    extra.chosenSkill = best.c.skillId;
+    extra.chosenSkillSpec = best.c.spec;
+  } else if (def.resolver === 'knowledgeResearch') {
+    // Recherche de savoir (LDB 23 l.220-226) : Savoir Accessible (+20) dans la bonne spécialisation ;
+    // « sans la bonne spécialisation […] et que vous êtes instruit » (approximé : possède au moins
+    // une avance de Savoir, quelle que soit la spécialisation) → Intelligence Complexe (−10).
+    const savoirs = h.skills.filter((k) => k.skillId === 'savoir' && (k.advances ?? 0) > 0);
+    if (savoirs.length) {
+      const best = savoirs.map((k) => ({ k, v: testValue(h, 'savoir', undefined, k.spec) })).sort((a, b) => b.v - a.v)[0];
+      skillValue = best.v;
+      skillLabel = skillInstanceLabel(best.k);
+      extra.difficulty = 'accessible';
+    } else {
+      skillValue = effectiveChar(h, 'intelligence');
+      skillLabel = CHAR_LABELS.intelligence;
+      extra.difficulty = 'complexe';
+    }
+  } else if (def.resolver === 'reputation') {
+    // Réputation (LDB 23 l.228-234) : Test de la Compétence de Carrière (comme Revenus) ; coût =
+    // « le maximum de vos revenus standards », dépensé DANS TOUS LES CAS (même sur échec).
+    const skill = incomeSkillOf(h);
+    skillValue = testValue(h, skill);
+    skillLabel = refLabel('skills', { id: skill });
+    const { tier, standing } = heroStatus(h);
+    const cost = toBrass(statusIncomeMax(tier, standing));
+    if (toBrass(get().money) < cost) {
+      get().log(`${h.name} : la bourse ne couvre pas la dépense de Réputation requise (${formatMoney(fromBrass(cost))}).`);
+      return;
+    }
+    extra.costBrass = cost;
+    extra.label = `${def.label} — ${formatMoney(fromBrass(cost))}`;
   } else {
     // « Au choix » parmi les compétences déclarées : la MEILLEURE de l'acteur (convention partagée
     // avec resolveTravelActivity).
@@ -436,15 +520,19 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     const dep = (get().bank ?? [])[opts.depositIndex ?? -1];
     if (dep?.kind !== 'mecenat' || dep.heroId !== heroId) return;
   }
+  // Gate de Classe GÉNÉRIQUE (LDB 23 l.197 / AA 12 l.5) — appliquée EN DERNIER, sur la Difficulté
+  // effectivement retenue (celle du résolveur si elle en a dérivé une, sinon celle de la donnée).
+  const gatedDifficulty = classGatedDifficulty({ difficulty: extra.difficulty ?? def.difficulty, classGate: def.classGate }, h);
   set({
     pendingActivity: {
       heroId, kind: 'catalog', activityId, label: def.label,
-      skillLabel, skillValue, difficulty: def.difficulty ?? 'intermediaire',
+      skillLabel, skillValue,
       roll: null, target: 0, sl: 0, success: false,
       ...(opts.itemUid ? { itemUid: opts.itemUid } : {}),
       ...(opts.spellId ? { spellId: opts.spellId } : {}),
       ...(opts.depositIndex != null ? { depositIndex: opts.depositIndex } : {}),
       ...extra,
+      difficulty: gatedDifficulty,
     },
   });
 }
@@ -629,6 +717,78 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       if (r.ok && r.chaos) return { lines: gainCorruption(get, set, h, 1) }; // sort du Chaos : +1 Corruption (LDB 51)
       return { lines: [] };
     }
+    case 'combatTraining': {
+      // Entraînement au Combat (LDB 23 l.205-209) : « sur un succès, vous pouvez inverser un Test de
+      // la Compétence associée une fois pendant votre prochaine aventure » — jeton d'inversion SCOPÉ
+      // (op existant, MÊME canal que « Observer une cible »).
+      if (!pa.chosenSkill) return { lines: [] };
+      const skillLabel = refLabel('skills', { id: pa.chosenSkill, spec: pa.chosenSkillSpec });
+      if (!pa.success) return { lines: [`${h.name} peine à retrouver ses réflexes de combat (${skillLabel}) cette semaine — aucun bénéfice.`] };
+      return { lines: applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label }) };
+    }
+    case 'punchausen': {
+      // Fabuleuse Vente du comte de Punchausen (AA 12 l.45-49) : « vous recevez 2d10 pistoles et […]
+      // vous pouvez inverser les dés sur un Test de Charme ou de Divertissement (Narration) » — même
+      // canal de jeton que « Entraînement au Combat », SCOPÉ à la Compétence utilisée pour la vente.
+      if (!pa.success || !pa.chosenSkill) return { lines: [`${h.name} ne trouve aucun imprimeur intéressé cette semaine — l'Activité échoue.`] };
+      const pistoles = rollDice(2, 10, battleRng());
+      const gainBrass = pistoles * PA_PER_SC;
+      set({ money: fromBrass(toBrass(get().money) + gainBrass) });
+      const tokenLines = applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label });
+      return { lines: [`${h.name} vend son récit à un imprimeur : ${formatMoney(fromBrass(gainBrass))}.`, ...tokenLines] };
+    }
+    case 'reputation': {
+      // Réputation (LDB 23 l.228-234) : coût dépensé DANS TOUS LES CAS ; +1 Standing sur succès (+2 sur
+      // Succès Stupéfiant, DR ≥ 6), −1 sur Échec Stupéfiant (DR ≤ −6) — op `statusMod` existant,
+      // durée `{scale:'adventure'}` déjà portée par l'op (purgée à l'interlude suivant).
+      set({ money: fromBrass(Math.max(0, toBrass(get().money) - (pa.costBrass ?? 0))) });
+      const lines = [`${h.name} dépense ${formatMoney(fromBrass(pa.costBrass ?? 0))} pour soigner sa Réputation.`];
+      const delta = isAstoundingSuccess(pa.success, pa.sl) ? 2 : pa.success ? 1 : isAstoundingFailure(pa.success, pa.sl) ? -1 : 0;
+      if (delta !== 0) lines.push(...applyOps(h, [{ op: 'statusMod', amount: delta }], { rng: battleRng(), label: pa.label }));
+      else lines.push(`${h.name} a juste gaspillé son argent.`);
+      return { lines };
+    }
+    case 'dissensionScout': {
+      // Semer la dissension (LDB 23 l.236-248), 1ʳᵉ des DEUX Activités requises : Ragot Accessible
+      // pour repérer les personnalités influentes du coin — débloque la 2ᵉ Activité (Charme) CETTE
+      // interlude ; aucun effet mécanique en soi (pas de GameOp : la 2ᵉ Activité seule agit).
+      if (!pa.success) return { lines: [`${h.name} ne repère aucune personnalité influente cette semaine — l'Activité échoue.`] };
+      return { lines: [`${h.name} identifie les personnalités influentes du coin — prêt à tenter de soulever la foule contre une cible.`], patch: { dissensionReady: true } };
+    }
+    case 'dissensionEmeute': {
+      // Semer la dissension, 2ᵉ Activité (Charme) : consomme `dissensionReady` dans TOUS les cas.
+      // « Pendant votre prochaine aventure, vous pouvez tenter un Test de Charme pour rassembler une
+      // foule contre la même cible » (l.244) — capacité NARRATIVE (aucune Difficulté chiffrée, « fixée
+      // par le MJ selon la constitution de la foule ») : AUCUNE Scène de mobilisation de foule n'existe
+      // dans le moteur pour porter cet appel à une future Scène — mesuré, non fabriqué (#508).
+      if (!pa.success) return { lines: [`${h.name} ne parvient pas à attiser la colère de la foule contre sa cible — l'Activité échoue.`], patch: { dissensionReady: false } };
+      return {
+        lines: [
+          `${h.name} déchaîne le courroux des habitants contre sa cible.`,
+          `Pendant la prochaine aventure, ${h.name} pourra tenter de rassembler cette foule contre la même cible (Test de Charme, Difficulté selon la constitution de la foule) — non modélisé : aucune Scène de mobilisation de foule n'existe encore dans le moteur.`,
+        ],
+        patch: { dissensionReady: false },
+      };
+    }
+    case 'contremaitre': {
+      // Remaniement du contremaître (AA 12 l.51-61) : Test de Ragot pour localiser l'ancien associé —
+      // en cas de succès, tire les TROIS tables du Générateur de mission (l.63-144, `tables.json`).
+      // La mission elle-même (Test de Corps à corps/Projectiles Complexe, objet + Blessure Critique
+      // HORS dégâts de combat) exigerait une couture « Blessure Critique isolée » absente du moteur
+      // (les Blessures Critiques sont posées par la résolution de DÉGÂTS de combat, jamais hors
+      // combat) — mesuré, non fabriqué (#510).
+      if (!pa.success) return { lines: [`${h.name} ne trouve aucun ancien associé prêt à l'aiguiller cette semaine — l'Activité échoue.`] };
+      const rng = battleRng();
+      const lieu = findTableEntry(findEffectTableById('contremaitre-lieu').rows, d100(rng));
+      const objectif = findTableEntry(findEffectTableById('contremaitre-objectif').rows, d100(rng));
+      const perso = findTableEntry(findEffectTableById('contremaitre-personnalite').rows, d100(rng));
+      return {
+        lines: [
+          `${h.name} obtient les détails d'une mission : ${lieu.label ?? ''} Objectif : ${objectif.label ?? ''} Commanditaire : ${perso.label ?? ''}`,
+          `La mission elle-même (Test de Corps à corps ou Projectiles Complexe (−10) ; objet convoité + Blessure Critique) exige une résolution de Blessure Critique HORS dégâts de combat — non modélisée (mesure #510).`,
+        ],
+      };
+    }
     default:
       return { lines: [] };
   }
@@ -677,6 +837,55 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl } });
   get().log(`${h.name} passe commande : ${t.label} (${formatMoney(fromBrass(price))}) — livraison après la prochaine aventure.`);
+}
+/** Entraînement (ch.23 l.130-136) : « vous entraîner dans une Compétence ou une Caractéristique en
+ *  dehors de votre Carrière » — PAS de Test (achat direct comme Passer commande/Banque). Coût en PX
+ *  NORMAL (hors carrière, déjà doublé par `advanceCost`/`buyCharAdvance`/`buySkillAdvance`, LDB 07 l.91)
+ *  + tuteur 1D10 sc (doublé pour une Compétence Avancée, l.135). `opt` recalculée ICI depuis les
+ *  données du héros (`entrainementOptions`) — jamais fait confiance à un id client non revérifié.
+ *  Une Compétence de Base hors carrière encore inconnue est ACQUISE à 0 Augmentation puis augmentée
+ *  (même geste que `buySkillAdvance`, LDB 09 l.42). */
+export function entrainementStart(get: Get, set: Set, heroId: string, kind: 'skill' | 'characteristic', id: string, spec?: string): void {
+  const st = heroState(get(), heroId);
+  const h = get().party.find((x) => x.id === heroId);
+  if (!st || !h || st.left <= 0) return;
+  const opt = entrainementOptions(h).find((o) => o.kind === kind && o.id === id && (o.spec ?? '') === (spec ?? ''));
+  if (!opt) {
+    get().log(t('if.entrainementUnknown', { name: h.name }));
+    return;
+  }
+  if ((h.xp ?? 0) < opt.xpCost) {
+    get().log(t('if.entrainementXpKo', { name: h.name, cost: opt.xpCost, label: opt.label }));
+    return;
+  }
+  const tutor = toBrass(entrainementTutorCost(opt.advanced, battleRng()));
+  if (toBrass(get().money) < tutor) {
+    get().log(t('if.entrainementTutorKo', { cost: formatMoney(fromBrass(tutor)) }));
+    return;
+  }
+  const fortuneBefore = fortuneMax(h);
+  const resolveBefore = resolveMax(h);
+  const r = kind === 'characteristic'
+    ? engineBuyCharAdvance(h, id as CharKey, false)
+    : (() => {
+        if (!h.skills.some((k) => k.skillId === id && (k.spec ?? '') === (spec ?? ''))) {
+          h.skills.push({ skillId: id, spec, characteristic: skillCharacteristicById(id), advances: 0 });
+        }
+        return engineBuySkillAdvance(h, id, spec, false);
+      })();
+  if (!r.ok) {
+    get().log(t('if.entrainementRefused', { name: h.name, label: opt.label, reason: r.reason ?? '' }));
+    return;
+  }
+  set({ money: fromBrass(toBrass(get().money) - tutor) });
+  h.wounds.max = heroMaxWounds(h); // Résistance/Endurance : le max de Blessures peut augmenter
+  h.wounds.current = Math.min(h.wounds.current, h.wounds.max);
+  h.fortune = (h.fortune ?? 0) + (fortuneMax(h) - fortuneBefore); // Sociabilité (Chance/Fortune)
+  h.resolve = (h.resolve ?? 0) + (resolveMax(h) - resolveBefore); // Volonté (Résilience/Détermination)
+  const itl = get().interlude!;
+  itl.perHero[heroId] = { ...st, left: st.left - 1 };
+  set({ interlude: { ...itl }, party: [...get().party] });
+  get().log(t('if.entrainementDone', { name: h.name, label: opt.label, cost: r.cost, tutor: formatMoney(fromBrass(tutor)) }));
 }
 
 /** Applique le jet d'Activité confirmé (consomme l'Activité). CHEMIN UNIQUE data-driven :
@@ -902,6 +1111,9 @@ export function interludeEnd(get: Get, set: Set): void {
   for (const h of get().party) revenue += itl.perHero[h.id]?.revenueBrass ?? 0;
   set({ money: fromBrass(revenue) });
   if (revenue > 0) lines.push(`Les Revenus de la période sont disponibles : ${formatMoney(fromBrass(revenue))}.`);
+  // Faveurs (LDB 23 l.149, #509) : la « consécutivité » se mesure à l'interlude (arbitrage
+  // maison, voir favorFlow) — reset AVANT de refermer l'interlude, pendant qu'il est encore lisible.
+  resetInterruptedFavorProgress(get, set);
   set({ interlude: null, screen: 'campaign', party: [...get().party] });
   for (const l of lines) get().log(l);
   // Le temps de l'interlude s'écoule (récupération, convalescence, horloge — moteur de nuit

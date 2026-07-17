@@ -1,55 +1,7 @@
 [
   {
-    "topic": "activites#dressage",
-    "ticket": "#508"
-  },
-  {
-    "topic": "activites#entrainement",
-    "ticket": "#508"
-  },
-  {
-    "topic": "activites#dernieres-nouvelles-itinerants-riverains",
-    "ticket": "#508"
-  },
-  {
-    "topic": "activites#entrainement-au-combat-guerriers-itinerants",
-    "ticket": "#508"
-  },
-  {
-    "topic": "activites#observer-une-cible-roublards",
-    "ticket": "#508"
-  },
-  {
-    "topic": "activites#recherche-de-savoir-lettres",
-    "ticket": "#508"
-  },
-  {
-    "topic": "activites#reputation-citadins-courtisans-lettres",
-    "ticket": "#508"
-  },
-  {
-    "topic": "activites#semer-la-dissension-citadins-ruraux",
-    "ticket": "#508"
-  },
-  {
-    "topic": "activites#faites-moi-une-faveur",
-    "ticket": "#509"
-  },
-  {
-    "topic": "activites#activites-de-guerrier-aa-annexe-ii",
-    "ticket": "#510"
-  },
-  {
-    "topic": "combat#hors-couverture-du-topic-fabuleuse-vente-du-comte-de-punchausen-guerriers",
-    "ticket": "#510"
-  },
-  {
     "topic": "combat#conversion-combat-poursuite",
     "ticket": "#511"
-  },
-  {
-    "topic": "combat#versions-taille-ogre-des-possessions-ordinaires-un-lourd-fardeau",
-    "ticket": "#513"
   },
   {
     "topic": "combat#detail-mecanique-de-chaque-miracle",
@@ -58,10 +10,6 @@
   {
     "topic": "bestiaire#catalogue-du-bestiaire-a-transcrire-separement",
     "bloque": "topic documentaire (pointeur vers le catalogue creatures.json), aucune règle à implémenter"
-  },
-  {
-    "topic": "carrieres#trait-marque-de-khorne-mdg",
-    "ticket": "#516"
   },
   {
     "topic": "competences#extension-t3-hypnotisme-int-avancee",

@@ -40,7 +40,7 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * Tableau est DÉCLINABLE, EDOC 13 l.276 — même patron que `castAllocOvercast` déjà compté).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 712, totalAdHocResets: 287 }; // +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks) ; +1/+1 (#476 : toggle harpoonRopeCut, set + reset du pendingAttack) ; +1/+1 (#558 : castSetChosenTableRolls) ; +1 (#508 : purgeAdventureEffects, upkeep.ts — même patron que purgeClockEffects) ; +1 (#491 : rerollWindsOfMagic, combatFlow.ts)
+const BASELINE = { totalCalls: 722, totalAdHocResets: 287 }; // +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks) ; +1/+1 (#476 : toggle harpoonRopeCut, set + reset du pendingAttack) ; +1/+1 (#558 : castSetChosenTableRolls) ; +1 (#508 : purgeAdventureEffects, upkeep.ts — même patron que purgeClockEffects) ; +1 (#491 : rerollWindsOfMagic, combatFlow.ts) ; +2 (#508/#510 : interludeFlow.ts — débit d'argent des résolveurs Réputation/Punchausen) ; +2 (#508 : interludeFlow.ts entrainementStart — débit du tuteur + application de l'Augmentation) ; +6 (#509 : favorFlow.ts — grantFavor/settleFavorActivity/resetInterruptedFavorProgress/breakFavor, nouveau flux)
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

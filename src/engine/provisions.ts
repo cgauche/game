@@ -40,6 +40,7 @@ import { rollTest } from './tests';
 import { hasActiveFlag } from './activeFlags';
 import { itemCapability } from './capabilities';
 import { dailyWaterLitres } from './seaWeather';
+import { findTraitById } from '../data';
 
 /** État de faim d'un personnage (absent = nourri normalement). */
 export interface HungerState {
@@ -66,6 +67,14 @@ export interface ThirstState {
 /** Talent Brouet (LDB 10 l.139) — lu sur la donnée, sans import. */
 export function hasBrouet(c: Combatant): boolean {
   return (c.talents ?? []).some((t) => t.talentId === 'brouet' && (t.times ?? 1) >= 1);
+}
+
+/** Consommation de vivres/eau ×N (ADE II ch.02 l.708, folio 31 : « les ogres doivent manger et boire
+ *  au moins deux fois plus qu'un humain en une journée ») portée par un Trait RACIAL (Ogre) — MÊME
+ *  lecture ciblée sur `c.traits` que `traitEncumbranceFactor` (`talentEffects.ts`). Le PLUS GRAND
+ *  facteur porté l'emporte (jamais cumulatif). */
+export function traitConsumptionFactor(c: Combatant): number {
+  return (c.traits ?? []).reduce((f, t) => Math.max(f, findTraitById(t.id)?.capabilities?.consumptionFactor ?? 1), 1);
 }
 
 /** L'objet est-il une ration de voyage (« Ration (1 jour) », LDB p.302) ? Capacité par-OBJET `isRations`,
@@ -177,13 +186,16 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
   const brouet = hasBrouet(c);
   const h: HungerState = c.hunger ?? { days: 0, tests: 0, failures: 0 };
 
-  // 1. Manger : journée déjà couverte (demi-ration de Brouet, repas d'auberge), sinon une ration.
+  // 1. Manger : journée déjà couverte (demi-ration de Brouet, repas d'auberge), sinon `traitConsumptionFactor`
+  // ration(s) (ogre ADE II ch.02 l.708 : « les ogres doivent manger … au moins deux fois plus » — 2 rations/jour).
   if (h.coveredDay) {
     res.ate = true;
   } else {
-    const idx = (c.items ?? []).findIndex(isRation);
-    if (idx >= 0) {
-      c.items!.splice(idx, 1);
+    const need = traitConsumptionFactor(c);
+    const idxs: number[] = [];
+    (c.items ?? []).forEach((it, i) => { if (idxs.length < need && isRation(it)) idxs.push(i); });
+    if (idxs.length >= need) {
+      for (const i of [...idxs].reverse()) c.items!.splice(i, 1);
       res.ate = true;
       res.rationConsumed = true;
     }
@@ -327,8 +339,11 @@ export function provisioningManifest(
   const crewCount = Math.max(0, crew.count ?? 0);
   const souls = alive.length + crewCount;
   const rationsDispo = alive.reduce((sum, h) => sum + rationCount(h), 0) + Math.max(0, crew.provisions ?? 0);
-  const rationsRequises = alive.reduce((sum, h) => sum + (hasBrouet(h) ? Math.ceil(days / 2) : days), 0) + crewCount * days;
-  const eauRequiseLitres = souls * days * dailyWaterLitres('mediane');
+  // Ogre (ADE II ch.02 l.708) : facteur ×2 sur les vivres/eau requis, PAR TÊTE — `traitConsumptionFactor`.
+  const rationsRequises =
+    alive.reduce((sum, h) => sum + (hasBrouet(h) ? Math.ceil(days / 2) : days) * traitConsumptionFactor(h), 0) + crewCount * days;
+  const eauRequiseLitres =
+    alive.reduce((sum, h) => sum + traitConsumptionFactor(h) * days * dailyWaterLitres('mediane'), 0) + crewCount * days * dailyWaterLitres('mediane');
   const eauDispoLitres = waterLitres ?? null;
   const suffisant = rationsDispo >= rationsRequises && (eauDispoLitres == null || eauDispoLitres >= eauRequiseLitres);
   return { joursEstimes: days, souls, rationsDispo, rationsRequises, eauDispoLitres, eauRequiseLitres, suffisant };

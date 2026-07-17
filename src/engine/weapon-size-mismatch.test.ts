@@ -6,16 +6,15 @@
  */
 import { describe, it, expect } from 'vitest';
 import { attackModifiers } from './combat';
+import { itemFromTrappingById } from './items';
+import { weaponsFromTraits } from './creatureEquip';
+import { findCreatureById } from '../data';
 import type { Combatant, Weapon } from './types';
 
 const attacker = (size?: Combatant['size']): Combatant => ({ advantage: 0, conditions: [], size } as unknown as Combatant);
 const weapon = (sizeFor?: Weapon['sizeFor']): Weapon => ({ name: 'Massue', type: 'melee', hands: 1, qualities: [], sizeFor }) as unknown as Weapon;
 
 describe('sizeFor — pénalité de Taille (ADE II ch.02 l.710)', () => {
-  it('0 excédent : arme sans `sizeFor` → aucune ligne', () => {
-    const mods = attackModifiers(attacker('grande'), null, weapon(), { kind: 'melee' });
-    expect(mods.find((m) => m.label === 'Possession pas à sa taille')).toBeUndefined();
-  });
   it('0 excédent : `sizeFor` EGAL à la Taille du porteur → aucune ligne', () => {
     const mods = attackModifiers(attacker('grande'), null, weapon('grande'), { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Possession pas à sa taille')).toBeUndefined();
@@ -29,6 +28,42 @@ describe('sizeFor — pénalité de Taille (ADE II ch.02 l.710)', () => {
   });
   it("symétrique : un combattant de Taille Moyenne maniant une arme `sizeFor:'grande'` (taille ogre) subit −20", () => {
     const mods = attackModifiers(attacker('moyenne'), null, weapon('grande'), { kind: 'melee' });
+    expect(mods.find((m) => m.label === 'Possession pas à sa taille')?.value).toBe(-20);
+  });
+  it("catalogue ogre réel (`massue-ogre`) : un ogre la manie SANS −20, une créature Moyenne SUBIT −20 (ADE II ch.02 l.604 : « pratiquement inutilisables entre les mains des créatures de Taille Moyenne »)", () => {
+    const massue = itemFromTrappingById('massue-ogre')! as unknown as Weapon;
+    expect(attackModifiers(attacker('grande'), null, massue, { kind: 'melee' }).find((m) => m.label === 'Possession pas à sa taille')).toBeUndefined();
+    expect(attackModifiers(attacker('moyenne'), null, massue, { kind: 'melee' }).find((m) => m.label === 'Possession pas à sa taille')?.value).toBe(-20);
+  });
+  it("arme SANS `sizeFor` (possession ORDINAIRE du catalogue, implicitement Moyenne) : un ogre (Taille Grande) subit −20 (ADE II ch.02 l.710, ex. « un pistolet à répétition humain »)", () => {
+    const mods = attackModifiers(attacker('grande'), null, weapon(), { kind: 'melee' });
+    expect(mods.find((m) => m.label === 'Possession pas à sa taille')?.value).toBe(-20);
+  });
+  it("arme SANS `sizeFor` maniée par un porteur PLUS PETIT que la Moyenne (halfling, Taille Petite) : aucune ligne — la LDB (Talent Petit, ch.10 l.939-943) est muette sur une pénalité d'équipement ordinaire", () => {
+    const mods = attackModifiers(attacker('petite'), null, weapon(), { kind: 'melee' });
+    expect(mods.find((m) => m.label === 'Possession pas à sa taille')).toBeUndefined();
+  });
+
+  it("arme NATURELLE (`Weapon.natural`, LDB 85 l.33) : jamais de −20 même pour un porteur plus grand que la Moyenne — sa taille effective EST celle du porteur", () => {
+    const w = { name: 'Griffes', type: 'melee', hands: 1, qualities: [], natural: true } as unknown as Weapon;
+    const mods = attackModifiers(attacker('grande'), null, w, { kind: 'melee' });
+    expect(mods.find((m) => m.label === 'Possession pas à sa taille')).toBeUndefined();
+  });
+
+  it("régression #ogre : la créature `ogre` du REGISTRE (trait « Arme » générique, sans arg catalogue) attaque avec son arme innée SANS malus (repro recette — auparavant « 30 −20 »), tout en gardant sa silhouette d'arme au rendu (`sizeless` ≠ `natural`)", () => {
+    const ogre = findCreatureById('ogre')!;
+    const [w] = weaponsFromTraits(ogre.traits);
+    expect(w.sizeless).toBe(true);
+    expect(w.natural).toBeUndefined(); // ne vide PAS les mains au rendu (weaponFamily)
+    const mods = attackModifiers(attacker('grande'), null, w, { kind: 'melee' });
+    expect(mods.find((m) => m.label === 'Possession pas à sa taille')).toBeUndefined();
+  });
+
+  it("l'ogre avec une épée du CATALOGUE (sans `sizeFor`) garde son −20 (objet manufacturé, pas une arme naturelle/sizeless)", () => {
+    const epee = itemFromTrappingById('dague')! as unknown as Weapon;
+    expect(epee.natural).toBeUndefined();
+    expect(epee.sizeless).toBeUndefined();
+    const mods = attackModifiers(attacker('grande'), null, epee, { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Possession pas à sa taille')?.value).toBe(-20);
   });
 });

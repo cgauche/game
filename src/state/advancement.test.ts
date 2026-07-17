@@ -151,3 +151,19 @@ describe('buildAdvancementView — match d\'entité possédée par id+spec (Issu
     expect(empire!.ownedAdvances).toBe(3);
   });
 });
+
+// #516 : câblage bout-en-bout du Trait « Marque de Khorne » (MDG 07 l.250-252) par le chemin
+// AVANCEMENT réel — `careerTalentAdditions` (Trait) → `buildAdvancementView` (état projeté), pas
+// seulement le canal unitaire (cf. `engine/traits/marque-de-khorne.test.ts`).
+describe('buildAdvancementView — Marque de Khorne : 10 Talents achetables hors-carrière (#516)', () => {
+  it('les 10 Talents apparaissent dans les options d\'avancement projetées, achetables au tarif normal', () => {
+    const v = buildAdvancementView(hero({ traits: [{ id: 'marque-de-khorne' }] }));
+    const ids = ['assaut-feroce', 'charge-berserk', 'combat-instinctif', 'coup-puissant', 'determine', 'endurci', 'guerrier-ne', 'resistance', 'resistance-a-la-magie', 'vigilance'];
+    for (const id of ids) {
+      const row = v.talents.find((t) => t.talentId === id);
+      expect(row, `talent ${id} absent des options projetées`).toBeTruthy();
+      expect(row!.times).toBe(0);
+      expect(row!.nextCost).toBe(100); // coût en PX NORMAL d'Augmentation de Carrière (première acquisition)
+    }
+  });
+});

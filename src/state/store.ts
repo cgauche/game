@@ -31,9 +31,11 @@ export { movementRemaining, canMove } from './mount';
 
 import { type BattleZone } from './zones';
 import * as interludeFlow from './interludeFlow';
+import * as favorFlow from './favorFlow';
 import * as netFlow from './netFlow';
 import type { NetState } from './netFlow';
 import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
+import type { Favor } from './favorFlow';
 export type { PendingActivity } from './interludeFlow';
 import * as massBattleFlow from './massBattleFlow';
 import type { MassBattleState, MassBattleSpec } from './massBattleFlow';
@@ -559,6 +561,15 @@ export interface GameState extends RollFlowActionsMap {
   interlude: InterludeState | null;
   bank: BankDeposit[];
   pendingOrders: { heroId: string; trappingId: string }[];
+  /** Système de Faveurs (LDB 23 l.139-151, #509) — contrepartie future acceptée en échange d'une
+   *  aide immédiate ; persistée SOURCE UNIQUE, même patron que `bank`/`pendingOrders`. */
+  favors: Favor[];
+  /** Accorde une Faveur (Activité à contrepartie / événement du Tableau / Effet `grantFavor`). */
+  favorGrant: (heroId: string, level: import('./favorFlow').FavorLevel, owedTo: string, desc: string) => void;
+  /** « Acquitter une Faveur » (LDB 23 l.147/149) : consomme une Activité d'interlude du héros. */
+  favorSettle: (heroId: string, favorId: string) => void;
+  /** Rompt une Faveur — Niveau de Carrière −1 (min 0) si la rumeur se répand (LDB 23 l.141). */
+  favorBreak: (heroId: string, favorId: string) => void;
   /** Ouvre un interlude de N semaines (Effet d'éditeur `interlude` ou appel direct). */
   startInterlude: (weeks?: number) => void;
   /** Clôt l'interlude : « Avec le pouvoir », Argent à gaspiller, Revenus, le temps passe. */
@@ -605,6 +616,8 @@ export interface GameState extends RollFlowActionsMap {
   interludeBank: (heroId: string, kind: 'invest' | 'stash' | 'mecenat', amountBrass: number, rate?: number) => void;
   interludeWithdraw: (index: number) => void;
   interludeOrder: (heroId: string, trappingId: string) => void;
+  /** Entraînement (ch.23 l.130-136) : Compétence/Caractéristique hors carrière, PX + tuteur 1D10 sc — sans jet. */
+  interludeEntrainement: (heroId: string, kind: 'skill' | 'characteristic', id: string, spec?: string) => void;
   /** Activité du CATALOGUE data-driven (`activities.json`, contexte 'interlude' + gate `where`) — LE
    *  CHEMIN UNIQUE de toutes les Activités à jet : Revenus, Artisanat, Apprentissage (`talentId`),
    *  Identification (`itemUid`), Convalescence (ADE2), Activités d'Altdorf (ACE Annexe I). Cibles
@@ -1608,6 +1621,7 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Entre deux aventures (LDB 22-23, Jalon 5) ──
   interlude: null,
   bank: [],
+  favors: [],
   startInterlude: (weeks) => interludeFlow.startInterlude(get, set, weeks),
   interludeEnd: () => interludeFlow.interludeEnd(get, set),
   // Longues Séances de Jeu (LDB 17 l.52) : réutilise l'Effet `restoreFortune` (NE DUPLIQUE PAS la
@@ -1634,7 +1648,11 @@ export const useGame = create<GameState>((set, get) => ({
   interludeBank: (heroId, kind, amountBrass, rate) => interludeFlow.bankDeposit(get, set, heroId, kind, amountBrass, rate),
   interludeWithdraw: (index) => interludeFlow.bankWithdraw(get, set, index),
   interludeOrder: (heroId, trapping) => interludeFlow.orderItem(get, set, heroId, trapping),
+  interludeEntrainement: (heroId, kind, id, spec) => interludeFlow.entrainementStart(get, set, heroId, kind, id, spec),
   interludeActivity: (heroId, activityId, opts) => interludeFlow.openCatalogActivity(get, set, heroId, activityId, opts),
+  favorGrant: (heroId, level, owedTo, desc) => favorFlow.grantFavor(get, set, heroId, level, owedTo, desc),
+  favorSettle: (heroId, favorId) => favorFlow.settleFavorActivity(get, set, heroId, favorId),
+  favorBreak: (heroId, favorId) => favorFlow.breakFavor(get, set, heroId, favorId),
 
   net: netFlow.initialNet(),
   netHostStart: (name) => netFlow.netHostStart(get, set, name),

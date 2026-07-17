@@ -364,6 +364,10 @@ export interface Weapon {
   /** Taille PRÉVUE pour l'arme (ADE II ch.02 l.706-710) — propagée depuis `ItemInstance.sizeFor`. Différente
    *  de la Taille du porteur → −20 à tous les Tests avec cette arme (`attackModifiers`). */
   sizeFor?: import('./size').SizeCategory;
+  /** Trait « Arme +N » générique SANS objet de catalogue identifié (`creatureEquip.weaponFromTrait`) :
+   *  ≠ `natural` (le rendu garde sa silhouette générique, `weaponFamily`) — exempte SEULEMENT du
+   *  mismatch de Taille (`attackModifiers`), n'étant pas une POSSESSION manufacturée réelle. */
+  sizeless?: boolean;
   /** Effets « à la touche » : repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
    *  invoquée) par `recomputeLoadout`, OU portés en DONNÉE par le catalogue (`TrappingData.onHitEffects` —
    *  Canon à flammes nain « 2 + DR En flammes à chaque cible affectée », ADE II ch.08 l.243) → lus par
@@ -1090,6 +1094,12 @@ export interface Combatant {
   teamCommanderId?: string;
   species?: string;
   career?: string;
+  /** Carrières JAMAIS PERDUES (LDB « Carrières » — un changement de Carrière n'efface pas les
+   *  précédentes) : ids CUMULÉS de toute Carrière un jour PORTÉE (courante comprise), sans doublon —
+   *  distingue « appartenez » (LDB 23 l.197, Classe COURANTE) de « n'a jamais appartenu » (AA 12 l.5,
+   *  Classe historique). Écrit par `engine/advancement.ts` `changeCareer` ; absent = `[career]`
+   *  (`everBelongedClasses`, `engine/activities.ts`). */
+  careerHistory?: string[];
   /** Drapeau POSITIONNEL dérivé « hors de son terrain d'élection » (op passive `offTerrainMod` — Créature
    *  marine/Aquatique : la case occupée n'est pas `eau`) : posé par `placeCombatant` à CHAQUE placement,
    *  lu par les consommateurs purs `offTerrainMoveCap`/`offTerrainTestDR` (trauma.ts). Re-dérivé au

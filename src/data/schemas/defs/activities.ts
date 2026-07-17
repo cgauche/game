@@ -82,6 +82,14 @@ export const schema = z.array(
     }).optional(),
     threat: z.strictObject({ penalty: z.number() }).optional(),
     generalDownOn: z.enum(['success', 'stupefying']).optional(),
+    classGate: z.strictObject({
+      classes: z.array(z.string()),
+      outsidePenalty: z.number(),
+      scope: z.enum(['current', 'ever']).optional(),
+    }).optional(),
+    // `maison` = arbitrage NON-verbatim documentant un champ (ex. `difficulty` par défaut quand le
+    // RAW la laisse « variable ») — même convention que `naval-traits.json`/`criticals.json`/`crew-roles.json`.
+    maison: z.string().optional(),
   }),
 );
 

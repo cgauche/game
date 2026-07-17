@@ -526,3 +526,9 @@
   color: var(--ok-bright);
 }
 
+/* Faveurs dues (LDB 23 l.139-153, #509) : cartouche `.stat-chip` réétirée en colonne (plus de
+   contenu qu'un simple label+valeur) — texte aligné à gauche, action de rupture en pied. */
+.bg-favors { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.favor-chip { align-items: flex-start; text-align: left; gap: 4px; }
+.favor-chip > .sc-value { text-align: left; white-space: normal; }
+

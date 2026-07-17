@@ -2399,7 +2399,73 @@
     "source": {
       "book": "mer-des-griffes",
       "page": 56
-    }
+    },
+    "capabilities": {
+      "frenzyCapable": true,
+      "psychType": "animosite",
+      "psychCible": "slaanesh",
+      "grantGroups": [
+        "khorne"
+      ]
+    },
+    "passive": [
+      {
+        "op": "grantTalent",
+        "talentId": "savoir-vivre",
+        "spec": "suivants-de-khorne"
+      },
+      {
+        "op": "castPenalty",
+        "skill": "langue",
+        "blocked": true
+      },
+      {
+        "op": "castPenalty",
+        "skill": "focalisation",
+        "blocked": true
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "assaut-feroce"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "charge-berserk"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "combat-instinctif"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "coup-puissant"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "determine"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "endurci"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "guerrier-ne"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "resistance",
+        "spec": "magie"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "resistance-a-la-magie"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "vigilance"
+      }
+    ]
   },
   {
     "id": "aquatique",
@@ -2697,6 +2763,19 @@
     "source": {
       "book": "livre-de-base",
       "page": 339
+    }
+  },
+  {
+    "id": "ogre",
+    "label": "Ogre",
+    "desc": "Les ogres sont immenses et par extension, leur matériel est bien plus grand que celui des humains. La version ogre de la plupart des possessions vaut deux fois l'Encombrement classique et coûte deux fois plus cher. De plus, les ogres doivent manger et boire au moins deux fois plus qu'un humain en une journée. Cependant, ils ne ressentent aucun effet des drogues et des poisons, à moins qu'on leur administre deux fois la dose standard. En contrepartie, un ogre peut porter deux fois l'Encombrement normal d'un humain : (Bonus de Force + Bonus d'Endurance) × 2.",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 31
+    },
+    "capabilities": {
+      "encumbranceFactor": 2,
+      "consumptionFactor": 2
     }
   }
 ]

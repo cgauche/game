@@ -232,7 +232,9 @@ export function CombatField(
         <label className="dr"><input type="checkbox" checked={!!c.reverseFailed} onChange={(e) => emit({ ...c, reverseFailed: e.target.checked ? { skill: datasetArray('skills')[0]?.id ?? '' } : undefined })} /> Inverse un Test raté (Sociable…)</label>
         {c.reverseFailed && (
           <>
-            <select value={c.reverseFailed.skill} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: e.target.value } })}>
+            {/* `reverseFailed.skill` accepte un tableau (Pilote → Ramer OU Voile) ; ce sélecteur MONO édite
+                la 1ʳᵉ Compétence du tableau. */}
+            <select value={Array.isArray(c.reverseFailed.skill) ? c.reverseFailed.skill[0] : c.reverseFailed.skill} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: e.target.value } })}>
               {datasetArray('skills').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
             <input className="dr" placeholder="spec" value={c.reverseFailed.spec ?? ''} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, spec: e.target.value || undefined } })} />

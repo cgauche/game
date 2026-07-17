@@ -161,6 +161,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'rest': return `Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
     case 'mealParty': return `Repas du groupe`;
     case 'interlude': return `Interlude : ${e.weeks ?? 1} semaine(s)`;
+    case 'grantFavor': return `Faveur ${e.level} envers ${e.owedTo || '?'} (${e.heroId || '1ᵉʳ héros'})`;
     case 'startCombat': return `Combat : ${e.encounter || '?'}`;
     case 'startPursuit': return `Poursuite (${e.partyRole === 'pursuing' ? 'groupe poursuit' : 'groupe fuit'}) — Distance ${e.distance ?? 4}, ${(e.foes ?? []).length} adversaire(s)${e.encounter ? ` → ${e.encounter}` : ''}`;
     case 'startMassBattle': {
@@ -382,6 +383,18 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'interlude' && (
           <label>Semaines d'interlude <input type="number" min={1} max={12} value={e.weeks ?? 1} onChange={(ev) => upd({ weeks: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+        )}
+        {effect.type === 'grantFavor' && (
+          <>
+            <select value={e.level ?? 'mineure'} onChange={(ev) => upd({ level: ev.target.value })}>
+              <option value="mineure">Mineure (1 Activité)</option>
+              <option value="majeure">Majeure (2+ Activités consécutives)</option>
+              <option value="importante">Importante (jamais par Activité — aventure)</option>
+            </select>
+            <input placeholder="Due à… (créancier)" value={e.owedTo ?? ''} onChange={(ev) => upd({ owedTo: ev.target.value })} />
+            <input placeholder="Description (nature de la Faveur)" value={e.desc ?? ''} onChange={(ev) => upd({ desc: ev.target.value })} />
+            <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+          </>
         )}
         {effect.type === 'giveSin' && (
           <>

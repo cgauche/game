@@ -292,6 +292,9 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "ogre"
       }
     ],
     "optionals": [
@@ -4344,6 +4347,10 @@
     },
     "traits": [
       {
+        "id": "animosite",
+        "arg": "khorne"
+      },
+      {
         "id": "arme",
         "value": 9
       },
@@ -4694,6 +4701,10 @@
       "B": 86
     },
     "traits": [
+      {
+        "id": "animosite",
+        "arg": "khorne"
+      },
       {
         "id": "arme",
         "value": 16
@@ -31277,6 +31288,10 @@
     },
     "traits": [
       {
+        "id": "animosite",
+        "arg": "khorne"
+      },
+      {
         "id": "armure",
         "value": 3
       },
@@ -31400,6 +31415,10 @@
       "B": 17
     },
     "traits": [
+      {
+        "id": "animosite",
+        "arg": "khorne"
+      },
       {
         "id": "armure",
         "value": 3
@@ -31550,6 +31569,10 @@
       "B": 21
     },
     "traits": [
+      {
+        "id": "animosite",
+        "arg": "khorne"
+      },
       {
         "id": "armure",
         "value": 3
@@ -31721,6 +31744,10 @@
       "B": 92
     },
     "traits": [
+      {
+        "id": "animosite",
+        "arg": "khorne"
+      },
       {
         "id": "armure",
         "value": 3
@@ -31910,6 +31937,10 @@
       "B": 224
     },
     "traits": [
+      {
+        "id": "animosite",
+        "arg": "khorne"
+      },
       {
         "id": "armure",
         "value": 4

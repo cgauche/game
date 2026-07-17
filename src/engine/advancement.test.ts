@@ -261,6 +261,15 @@ describe('Compléter / Changer de Carrière (LDB 07 l.111-140, LDB 07 l.144)', (
     expect(refused.reason).toBe('PX insuffisants');
   });
 
+  it("changeCareer : la Carrière QUITTÉE rejoint `careerHistory` (AA 12 l.5 « n'a jamais appartenu »), sans doublon sur des changements répétés", () => {
+    const h = completedHero(1000); // career: 'Test'
+    changeCareer(h, 'Érudit', 1, { completed: true, sameClass: true, targetLevelExists: true });
+    expect(h.careerHistory).toEqual(['Test', 'Érudit']);
+    // retour à 'Test' : pas de doublon, l'ordre d'apparition est conservé.
+    changeCareer(h, 'Test', 1, { completed: true, sameClass: true, targetLevelExists: true });
+    expect(h.careerHistory).toEqual(['Test', 'Érudit']);
+  });
+
   it('gmJump : SAUT de Niveau supérieur non-adjacent — refusé sans accord MJ, permis avec (l.140)', () => {
     const h = completedHero(500); // Test niv.1 complété
     expect(validateCareerChange(h, 'Test', 3, { completed: true, sameClass: true, targetLevelExists: true })).toMatchObject({ ok: false });

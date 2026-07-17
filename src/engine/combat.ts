@@ -21,7 +21,7 @@ import locJson from '../data/localisation.json';
 import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition, COND, activeCharTestMod } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './weaponDamage';
 import { traumaDodgePenalty, damageSBBonus, amputationCombatPenalty } from './trauma';
-import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
+import { SIZE_RANGED_MOD, SIZE_LABEL, SIZE_ORDER, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt, selectedAmmo, activeLoadout } from './items';
 import { incomingAttackMod, incomingDamageNullified, skillDRBonus, offTerrainTestDR } from './ops';
@@ -502,9 +502,21 @@ export function attackModifiers(
   if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)
       && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, QUALITY_IDS.Assommante))) out.push({ label: 'Localisation visée', value: -10 });
   // Possession pas prévue pour la Taille du porteur (ADE II ch.02 l.710) : −20 plat, ex. un ogre maniant
-  // une arme de Taille Moyenne. Symétrique par construction (`sizeFor` ≠ Taille effective du porteur) —
-  // seul un objet réellement `sizeFor` (version « taille ogre ») déclenche la pénalité.
-  if (weapon.sizeFor && weapon.sizeFor !== effectiveSize(attacker.size)) out.push({ label: 'Possession pas à sa taille', value: -20 });
+  // une arme de Taille Moyenne. Symétrique quand `sizeFor` est POSÉ (une arme taillée pour une Taille
+  // devient réellement inadaptée à une autre, ADE II ch.02 l.604). Sans `sizeFor` (possession ORDINAIRE
+  // du catalogue) : la LDB ne cite aucune pénalité d'équipement pour un porteur plus PETIT que la
+  // Moyenne (Talent Petit, LDB 10 l.939-943, muet sur l'équipement) — seul un porteur plus GRAND que la
+  // Moyenne (ex. ogre) subit le malus, l'objet ordinaire étant implicitement taillé pour la Moyenne.
+  // Une arme NATURELLE (`Weapon.natural` — dents/griffes/cornes) ou SIZELESS (trait « Arme » générique
+  // sans objet de catalogue résolu, `creatureEquip.weaponFromTrait`) est PAR DÉFINITION à la Taille de
+  // son porteur : jamais de « Possession pas à sa taille », qui vise un OBJET manufacturé réel (ADE II
+  // ch.02 l.604-710).
+  const gearSize = effectiveSize(weapon.sizeFor);
+  const carrierSize = effectiveSize(attacker.size);
+  if (!weapon.natural && !weapon.sizeless && gearSize !== carrierSize
+      && (weapon.sizeFor !== undefined || SIZE_ORDER[carrierSize] > SIZE_ORDER.moyenne)) {
+    out.push({ label: 'Possession pas à sa taille', value: -20 });
+  }
   // Pénalité de main secondaire (LDB 14 l.181) ; Ambidextre la réduit via le registre combatFeatures.
   if (weapon.hand === 'off') {
     const p = offHandPenalty(attacker);

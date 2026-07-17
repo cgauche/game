@@ -12,7 +12,7 @@ import { rule } from './policy';
 import { bonus, effectiveChar } from './characteristics';
 import { findPsychologyById, psychologies } from '../data';
 import { SizeCategory, sizeGap } from './size';
-import { groupMatch } from './groups';
+import { groupMatch, hiddenGroupsOf } from './groups';
 import { bellicosePsychImmune, traitCapability } from './traits/dispatch';
 import { fearImmuneVs } from './combatFeatures/dispatch';
 import { diseasePsychTraits } from './disease';
@@ -317,7 +317,10 @@ export function targetedTrigger(self: Combatant, visible: Combatant[]): { type: 
     if ((self.psychState ?? []).some((p) => p.type === tr.type && p.cible === tr.cible)) continue; // déjà testé/actif
     const wantAlly = TARGETS_ALLY.has(tr.type);
     const m = visible.find(
-      (v) => v.id !== self.id && (wantAlly ? v.kind === self.kind : v.kind !== self.kind) && groupMatch(tr.cible!, v.groups ?? []),
+      (v) =>
+        v.id !== self.id &&
+        (wantAlly ? v.kind === self.kind : v.kind !== self.kind) &&
+        groupMatch(tr.cible!, (v.groups ?? []).filter((g) => !hiddenGroupsOf(v).includes(g))),
     );
     if (m) return { type: tr.type, cible: tr.cible, sourceId: m.id, indice: tr.indice };
   }

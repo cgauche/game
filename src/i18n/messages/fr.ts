@@ -707,4 +707,16 @@ export const fr = {
   'cs.dispelDone': '{spell} est dissipé{extra}.',
   // Recette navigateur (DEV, __wfrp) — messages de couture, hors narration de partie.
   'dev.creatorNotMounted': "✗ créateur non monté — ouvrir l'écran de création de personnage (__wfrp.screen('creator') ou équivalent)",
+  'if.entrainementUnknown': '{name} : rien à entraîner ici — Compétence/Caractéristique de carrière, ou inconnue.',
+  'if.entrainementXpKo': '{name} : PX insuffisants ({cost} requis pour {label}).',
+  'if.entrainementTutorKo': 'Le tuteur demande {cost} — la bourse ne suit pas.',
+  'if.entrainementDone': '{name} s’entraîne hors carrière : {label} (−{cost} PX + {tutor} de tuteur).',
+  'if.entrainementRefused': '{name} : {label} — {reason}.',
+
+  // Système de Faveurs (LDB 23 l.139-151, #509).
+  'favor.granted': '{name} contracte une Faveur {level} envers {owedTo}.',
+  'favor.settled': '{name} s’acquitte de sa Faveur {level} envers {owedTo}.',
+  'favor.progressed': '{name} avance l’acquittement de sa Faveur {level} envers {owedTo} ({progress}/{required} Activités consécutives).',
+  'favor.brokenRumor': '{name} rompt sa Faveur {level} envers {owedTo} — la rumeur de la perfidie se répand : Niveau réduit à {lvl}.',
+  'favor.brokenSilent': '{name} rompt sa Faveur {level} envers {owedTo} — la rumeur ne s’est pas répandue cette fois (règle maison désactivée).',
 } as const;

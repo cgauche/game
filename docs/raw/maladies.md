@@ -730,7 +730,7 @@ Maladie spécifique de la navigation. La plupart des gens en souffrent à leur p
 **Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Malaise → Exténué, Nausée → Sonné) ; [Cycle de vie d'une maladie](#cycle-de-vie-dune-maladie) ; `docs/raw/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.211-222) → `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `ItemCapabilities`, `scorbut`, `resolveShoreLeaveDesertion`, `runSeaDay`, +8 — `src/data/crew-morale.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/state/pendings.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCrew.ts`
+- `MDG 14` (l.211-222) → `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `scorbut`, `ItemCapabilities`, `resolveShoreLeaveDesertion`, `runSeaDay`, +8 — `src/data/crew-morale.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/state/pendings.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCrew.ts`
 
 ---
 
@@ -755,7 +755,7 @@ Maladie de **privation prolongée** qui frappe ceux qui restent longtemps en mer
 **Voir aussi** : [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (soupe de chou fermenté ; biscuits de mer ≠ nourriture correcte) ; [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Blessé, Intoxication Alimentaire, Malaise, Nausée) ; `docs/raw/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.224-234) → `mousse`, `SeaVoyageState`, `shipboardSouls`, `ShipDossierView`, `dailyWaterLitres`, `chirurgien`, `consumeCrewProvisions`, `mene-de-main-de-maitre`, `ProvisioningManifest`, `excellent-equipage`, +13 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +6 fichiers
+- `MDG 14` (l.224-234) → `mousse`, `SeaVoyageState`, `shipboardSouls`, `ShipDossierView`, `dailyWaterLitres`, `chirurgien`, `consumeCrewProvisions`, `mene-de-main-de-maitre`, `excellent-equipage`, `ProvisioningManifest`, +13 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +6 fichiers
 
 ---
 

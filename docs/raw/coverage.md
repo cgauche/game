@@ -4,7 +4,7 @@
 > par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.
 > Recourir à la source pour un point = un défaut de l'Atlas à corriger ici. Régénéré par
 > `node scripts/raw/coverage.mjs`.
-**Couverture (profondeur) : ✅ 151 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 155 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 151 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 155 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
 
 
 ## LDB — ✅ 71 · 🟡 2 · ⬜ 0
@@ -284,7 +284,7 @@
 | 13 | POINTS D’EXPÉRIENCE | ✅ | 6 (avancement.md ×6) |
 | 14 | CALENDRIER DES ATTRACTIONS PRINCIPALES | ➖ hors-règle | |
 
-## ACE — ✅ 3 · 🟡 0 · ⬜ 0
+## Altdorf — ✅ 3 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -300,7 +300,7 @@
 | 09 | Au-delà des murs | ➖ hors-règle | |
 | 10 | L’Espionnage à Altdorf | ✅ |  |
 | 11 | Cultes interdits et groupes extrémistes | ✅ |  |
-| 12 | Activités | ✅ | 17 (activites.md ×17) |
+| 12 | Activités | ✅ |  |
 
 ## Ubersreik — ✅ 2 · 🟡 0 · ⬜ 0
 

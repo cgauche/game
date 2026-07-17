@@ -16,6 +16,7 @@ const traitInstanceSchema = z.strictObject({
   count: z.number().optional(),
   range: z.number().optional(),
   natural: z.boolean().optional(),
+  hidden: z.boolean().optional(),
 });
 
 /** `OptionalEntry` (`src/engine/statEntry.ts`) — un élément d'`optionals` (LDB 76) : soit un

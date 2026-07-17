@@ -29,6 +29,7 @@ import { gainCorruption } from './corruptionFlow';
 
 import type { Get, Set } from './flowTypes';
 import { bumpSL, evaluateTest, maxForcedRoll, forcedTR, bestForcedRoll, type TestResult } from '../engine/tests';
+import { applyReverse, reverseAvailable as engineReverseAvailable, reversePreview as engineReversePreview } from '../engine/reverseToken';
 import { TestOutcome } from '../engine/testOutcome';
 
 /** Champs communs à tous les objets `pending*` gérés par la fabrique. */
@@ -143,6 +144,22 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
   outcome: (slot: Slot) => RollOutcome;
   /** Chance « +1 DR » (absent → le flux ne l'offre pas). `guard` → cas interdits (ex. Test binaire). */
   bonus?: { guard?: (slot: Slot) => boolean; derive: (s: GameState, slot: Slot, actor: Combatant, p?: P) => Partial<Slot> | null };
+  /**
+   * Inversion de Test (LDB 23 l.209/218, jeton d'Activité ; LDB 10, Talents « vous pouvez inverser ») :
+   * un CHOIX du joueur (jamais automatique, #558). Deux gates DISTINCTES (`engine/reverseToken.ts`,
+   * #508 réfutation) : le Talent seulement sur un jet RATÉ qu'elle transformerait en réussite ; le
+   * jeton d'Activité SANS restriction (réussi ou raté — le choix, et son issue possiblement dégradée,
+   * appartiennent au joueur). Absent → le flux n'offre pas l'inversion.
+   */
+  reverse?: {
+    /** Compétence de CE jet (`{skill, spec}`), matchée STRUCTURÉE contre Talent/jeton. `null` → non concerné. */
+    skillOf: (s: GameState, slot: Slot, actor: Combatant, get: Get, p: P) => { skill?: string; spec?: string } | null;
+    /** Dé/cible ACTEUR courants (post-jet, avant inversion). `null` → rien à inverser. */
+    current: (slot: Slot) => { roll: number; target: number } | null;
+    /** Re-dérive le patch du slot depuis le nouveau `{roll, sl, success}` inversé — `success` REFLÈTE
+     *  le jet réel (jeton, libre, n'est PAS forcé réussi ; seule la voie Talent le garantit par sa gate). */
+    applyRoll: (s: GameState, slot: Slot, actor: Combatant, get: Get, tr: { roll: number; sl: number; success: boolean }, p: P) => Partial<Slot> | null;
+  };
   /** Lentille de dérivation des verbes d'influence (cf. `RollFlowLens`). PRÉSENTE ⇒ la fabrique compose
    *  bonusSL/forceSuccess/setForcedRoll/resist depuis elle (le `bonus` et la branche `if(forced)` de
    *  `resolve` deviennent inutiles pour ce flux). ABSENTE ⇒ repli byte-identique sur le chemin actuel. */
@@ -205,6 +222,17 @@ export interface RollFlowHandlers {
   /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
    *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
   darkPact: (get: Get, set: Set, pid?: string) => void;
+  /** Inversion de Test (LDB 23/LDB 10, `spec.reverse`) : CHOIX du joueur. Talent = jet raté qu'elle
+   *  transformerait en réussite ; jeton = libre (réussi ou raté). No-op sans `spec.reverse`, jet non
+   *  lancé, ou aucune voie applicable. */
+  reverse: (get: Get, set: Set, pid?: string) => void;
+  /** Le verbe `reverse` est-il OFFERT (Talent ET/OU jeton applicable) ? Pure (aucune consommation) —
+   *  pilote l'affichage du bouton « Inverser » dans la rangée d'influence. `false` sans `spec.reverse`. */
+  reverseAvailable: (get: Get, set: Set, pid?: string) => boolean;
+  /** Prévisualisation PURE de l'issue de l'inversion (dé renversé, DR, succès) — rend le choix LISIBLE
+   *  avant le clic. `null` sans `spec.reverse`, jet non lancé, ou aucune voie applicable (miroir de
+   *  `reverseAvailable`, jamais appelé sans elle en pratique). */
+  reversePreview: (get: Get, set: Set, pid?: string) => { roll: number; sl: number; success: boolean } | null;
 }
 
 /**
@@ -448,6 +476,38 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const loc = locate(set, get, p, pid); if (!loc) return;
       const actor = spec.actor(s, loc.slot, p);
       opDarkPact(actor, spec.rolled(loc.slot), isFailed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, set, loc.commit);
+    },
+    reverse(get, set, pid) {
+      if (!spec.reverse) return;
+      const s = get(); const p = pendingOf(s); if (!p) return;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
+      if (!spec.rolled(loc.slot)) return;
+      const actor = spec.actor(s, loc.slot, p); if (!actor) return;
+      const cur = spec.reverse.current(loc.slot); if (!cur) return;
+      const q = spec.reverse.skillOf(s, loc.slot, actor, get, p); if (!q) return;
+      const applied = applyReverse(actor, q, cur.roll, cur.target); if (!applied) return;
+      const patch = spec.reverse.applyRoll(s, loc.slot, actor, get, applied, p); if (!patch) return;
+      loc.commit(patch, { touch: true });
+    },
+    reverseAvailable(get, set, pid) {
+      if (!spec.reverse) return false;
+      const s = get(); const p = pendingOf(s); if (!p) return false;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return false;
+      if (!spec.rolled(loc.slot)) return false;
+      const actor = spec.actor(s, loc.slot, p); if (!actor) return false;
+      const cur = spec.reverse.current(loc.slot); if (!cur) return false;
+      const q = spec.reverse.skillOf(s, loc.slot, actor, get, p); if (!q) return false;
+      return engineReverseAvailable(actor, q, cur.roll, cur.target);
+    },
+    reversePreview(get, set, pid) {
+      if (!spec.reverse) return null;
+      const s = get(); const p = pendingOf(s); if (!p) return null;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return null;
+      if (!spec.rolled(loc.slot)) return null;
+      const actor = spec.actor(s, loc.slot, p); if (!actor) return null;
+      const cur = spec.reverse.current(loc.slot); if (!cur) return null;
+      const q = spec.reverse.skillOf(s, loc.slot, actor, get, p); if (!q) return null;
+      return engineReversePreview(actor, q, cur.roll, cur.target);
     },
   };
 }

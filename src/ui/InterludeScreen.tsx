@@ -4,11 +4,13 @@ import { interludeEventFor } from '../data/interludeEvents';
 import { formatMoney, fromBrass, toBrass, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
+import { favorRequiredActivities, type Favor, type FavorLevel } from '../state/favorFlow';
 import { armyMight, battlePrepEntries, type MassBattleState } from '../state/massBattleFlow';
 import { inspireDifficulty } from '../engine/massBattle';
 import {
-  craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout,
-  type ActivityDef, type CraftOption, type LearnOption,
+  craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout, entrainementOptions,
+  classGatedDifficulty,
+  type ActivityDef, type CraftOption, type LearnOption, type EntrainementOption,
 } from '../engine/activities';
 import type { GameOp } from '../engine/ops';
 import { learnableSpells } from '../engine/grimoire';
@@ -62,6 +64,9 @@ const fmt = (brass: number) => formatMoney(fromBrass(brass));
 /** Montant AFFICHÉ : le rendu coloré unique. */
 const CoinsB = ({ brass }: { brass: number }) => <Coins money={fromBrass(brass)} />;
 
+/** Libellés d'affichage des Niveaux de Faveur (LDB 23 l.145-151, #509). */
+const FAVOR_LEVEL_LABELS: Record<FavorLevel, string> = { mineure: 'Faveur Mineure', majeure: 'Faveur Majeure', importante: 'Faveur Importante' };
+
 /** Compétence du pré-jet : chip Codex + Difficulté TOUJOURS lisible — en texte quand son
  *  modificateur est nul (Intermédiaire +0), sinon la chip de mod du pré-jet l'affiche déjà. */
 const skillNode = (chip: ReactNode, diff: Difficulty): ReactNode =>
@@ -87,6 +92,8 @@ export interface InterludeSeam {
   money: Money;
   bank: BankDeposit[];
   pendingOrders: { heroId: string; trappingId: string }[];
+  /** Faveurs dues (LDB 23, #509) — en jeu, dérivé du store ; en SSR, fourni par le seam. */
+  favors?: Favor[];
   /** Phase d'ouverture forcée ('activities' saute l'intro Événements). */
   phase?: 'events' | 'activities' | 'closing';
   /** Volet OUVERT forcé (tests SSR du gabarit : pied pré-jet visible). */
@@ -121,12 +128,14 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
   const storeMoney = useGame((s) => s.money);
   const storeBank = useGame((s) => s.bank);
   const storeOrders = useGame((s) => s.pendingOrders);
+  const storeFavors = useGame((s) => s.favors);
   const storeNet = useGame((s) => s.net);
   const interlude = seam?.interlude ?? storeInterlude;
   const party = seam?.party ?? storeParty;
   const money = seam?.money ?? storeMoney;
   const bank = seam?.bank ?? storeBank;
   const pendingOrders = seam?.pendingOrders ?? storeOrders;
+  const favors = seam?.favors ?? storeFavors ?? [];
   const net: InterludeNet = seam?.net ?? storeNet;
   // Catalogue d'Activités data-driven (`activities.json`) : contexte 'interlude' + gate `where`
   // résolu contre le LIEU courant (place de la carte du monde ↔ scène courante).
@@ -192,6 +201,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
                   money={money}
                   catalog={catalog}
                   mecenat={mecenat}
+                  favors={favors.filter((f) => f.heroId === activeHero.id)}
                   massBattle={massBattle ?? null}
                   canDrive={ownsHero(activeHero.id)}
                   ownerName={ownsHero(activeHero.id) ? undefined : ownerName(activeHero.id)}
@@ -377,7 +387,7 @@ const activityOps = (def: ActivityDef): GameOp[] =>
 /** Résolveurs des Activités du catalogue qui ont un VOLET DÉDIÉ (UX riche : formule de Revenus,
  *  flux 2 étapes de l'Artisanat, sélecteur de Talent, sélecteur d'artefact) ou vivent ailleurs
  *  (`mecenat` = dans la banque). Exclus de la liste GÉNÉRIQUE du catalogue pour ne pas les doubler. */
-const CORE_RESOLVERS = new Set(['income', 'craftExtended', 'learnTalent', 'identify', 'mecenat']);
+const CORE_RESOLVERS = new Set(['income', 'craftExtended', 'learnTalent', 'identify', 'mecenat', 'entrainement']);
 
 /** Icônes des Activités à volet dédié — les Activités du catalogue générique portent la leur
  *  en DONNÉE (`ActivityDef.icon`). */
@@ -388,10 +398,13 @@ const PANE_ICON = {
   order: 'scenario/market',
   bank: 'resource/gold-purse',
   identify: 'nav/identify',
+  entrainement: 'nav/compendium',
 } as const;
 
-function HeroCard({ hero, st, money, catalog, mecenat, massBattle, canDrive, ownerName, pane, onPane }: {
+function HeroCard({ hero, st, money, catalog, mecenat, favors, massBattle, canDrive, ownerName, pane, onPane }: {
   hero: Combatant; st: InterludeHeroState; money: Money;
+  /** Faveurs dues par CE héros (LDB 23, #509) — gate l'affordance « Acquitter une Faveur ». */
+  favors: Favor[];
   /** Activités du catalogue data-driven proposables ICI (contexte + gate `where`) — inclut les Activités de
    *  PRÉPARATION de bataille (contexte 'bataille') quand une bataille est en attente de prépa. */
   catalog: ActivityDef[];
@@ -428,6 +441,8 @@ function HeroCard({ hero, st, money, catalog, mecenat, massBattle, canDrive, own
     : pane === 'order' ? <OrderPane hero={hero} disabled={none} money={money} />
     : pane === 'bank' ? <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} mecenat={mecenat} />
     : pane === 'identify' ? <IdentifyPane hero={hero} disabled={none} desc={coreDesc('identify')} />
+    : pane === 'entrainement' ? <EntrainementPane hero={hero} disabled={none} money={money} desc={coreDesc('entrainement')} />
+    : pane === 'favor-settle' && favors.length ? <FavorSettlePane hero={hero} disabled={none} favors={favors} />
     : def ? (def.contexts.includes('bataille')
         ? <BattlePrepPane hero={hero} def={def} disabled={none} entry={prepState?.get(def.id)} />
         : <CatalogPane hero={hero} def={def} disabled={none} />)
@@ -447,7 +462,7 @@ function HeroCard({ hero, st, money, catalog, mecenat, massBattle, canDrive, own
         className="interlude-master"
         listLabel={`Activités de ${hero.name}`}
         list={
-          <ActivityList st={st} catalog={catalog} pane={pane} onPane={onPane} canDrive={canDrive} none={none} ownerName={ownerName} />
+          <ActivityList st={st} catalog={catalog} favors={favors} pane={pane} onPane={onPane} canDrive={canDrive} none={none} ownerName={ownerName} />
         }
         detail={detail}
       />
@@ -458,8 +473,10 @@ function HeroCard({ hero, st, money, catalog, mecenat, massBattle, canDrive, own
 /** Slot GAUCHE du maître-détail (`MasterDetail`) : liste des Activités du héros — les 6 activités
  *  « socle » (LDB/ADE2, volets dédiés) + les Activités du catalogue SANS volet dédié (Mécénat
  *  exclu : variante du volet Banque). Filtre si la liste est longue (`SearchFilterField`). */
-function ActivityList({ st, catalog, pane, onPane, canDrive, none, ownerName }: {
+function ActivityList({ st, catalog, favors, pane, onPane, canDrive, none, ownerName }: {
   st: InterludeHeroState; catalog: ActivityDef[];
+  /** Faveurs dues par ce héros (LDB 23, #509) — l'entrée « Acquitter une Faveur » n'apparaît que si non-vide. */
+  favors: Favor[];
   pane: string | null; onPane: (pane: string | null) => void;
   canDrive: boolean; none: boolean; ownerName?: string;
 }) {
@@ -490,6 +507,9 @@ function ActivityList({ st, catalog, pane, onPane, canDrive, none, ownerName }: 
     item('order', <><Icon id={PANE_ICON.order} size="sm" /> Commande</>, 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure', 'Commande'),
     item('bank', <><Icon id={PANE_ICON.bank} size="sm" /> Banque</>, 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)', 'Banque'),
     item('identify', <><Icon id={PANE_ICON.identify} size="sm" /> Identifier</>, 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE2)', 'Identifier'),
+    item('entrainement', <><Icon id={PANE_ICON.entrainement} size="sm" /> Entraînement</>, 'S’entraîner à une Compétence ou une Caractéristique hors carrière avec un tuteur (PX + 1d10 sc, sans jet)', 'Entraînement'),
+    // « Acquitter une Faveur » (LDB 23 l.147/149, #509) — visible seulement si une Faveur est en cours.
+    ...(favors.length ? [item('favor-settle', <><Icon id="ui/balance" size="sm" /> Acquitter une Faveur</>, 'Consacrer une Activité à l’acquittement d’une Faveur due (LDB 23)', 'Acquitter une Faveur')] : []),
   ];
   // Activités du catalogue SANS volet dédié : les 4 activités « socle » (Revenus/Artisanat/
   // Apprentissage/Identification, volets riches ci-dessus) et Mécénat (dans la banque) sont
@@ -734,6 +754,94 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
   );
 }
 
+/** Entraînement (ch.23 l.130-136) : Compétence ou Caractéristique HORS carrière, avec un tuteur —
+ *  PAS de jet (achat direct comme Passer commande/Banque). Coût = PX normal (hors carrière, déjà
+ *  doublé) + tuteur 1D10 sc, doublé pour une Compétence Avancée (l.135). */
+function EntrainementPane({ hero, disabled, money, desc }: { hero: Combatant; disabled: boolean; money: Money; desc?: string }) {
+  const entrainement = useGame((s) => s.interludeEntrainement);
+  const options = useMemo(() => entrainementOptions(hero), [hero]);
+  const [key, setKey] = useState('');
+  const keyOf = (o: EntrainementOption) => `${o.kind}|${o.id}|${o.spec ?? ''}`;
+  const { search, setSearch, filtered } = useFilteredList(options, (o) => o.label);
+  const sel = options.find((o) => keyOf(o) === key);
+  const xp = hero.xp ?? 0;
+  const xpOk = !sel || xp >= sel.xpCost;
+  const purseOk = !sel || toBrass(money) >= sel.tutorMinBrass;
+  return (
+    <ActivityPane
+      icon={PANE_ICON.entrainement}
+      title="Entraînement"
+      desc={desc}
+      blocked={sel && !xpOk ? <>PX insuffisants : {xp}/{sel.xpCost}.</> : undefined}
+      cost={sel ? <>{sel.xpCost} PX (il vous en reste {xp}) + tuteur <CoinsB brass={sel.tutorMinBrass} /> à <CoinsB brass={sel.tutorMaxBrass} /></> : undefined}
+      note={sel
+        ? <>{sel.kind === 'skill' ? <SkillChip skillId={sel.id} show={sel.label} /> : sel.label} hors carrière{sel.advanced ? ' (Compétence Avancée — tuteur doublé)' : ''} — 1d10 sc de tuteur{sel.advanced ? ' ×2' : ''}, sans jet.</>
+        : <>Choisir une Compétence ou une Caractéristique hors carrière — tuteur 1d10 sc (×2 pour une Compétence Avancée), sans jet.</>}
+      actions={
+        <button
+          className="btn small btn-primary"
+          disabled={disabled || !sel || !xpOk || !purseOk}
+          title={!xpOk && sel ? `PX insuffisants (${sel.xpCost} requis)` : !purseOk ? 'La bourse ne couvre même pas le tuteur le moins cher' : 'S’entraîner avec un tuteur'}
+          onClick={() => sel && entrainement(hero.id, sel.kind, sel.id, sel.spec)}
+        >
+          Entreprendre
+        </button>
+      }
+    >
+      <SearchFilterField className="interlude-search" value={search} onChange={setSearch} placeholder="Filtrer les Compétences/Caractéristiques…" ariaLabel="Filtrer les Compétences et Caractéristiques" />
+      <select className="interlude-select" value={key} onChange={(e) => setKey(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
+        {filtered.map((o) => (
+          <option key={keyOf(o)} value={keyOf(o)}>
+            {o.label}{o.advanced ? ' (Avancée)' : ''} — {o.xpCost} PX · tuteur {fmt(o.tutorMinBrass)} à {fmt(o.tutorMaxBrass)}
+          </option>
+        ))}
+      </select>
+    </ActivityPane>
+  );
+}
+
+/** « Acquitter une Faveur » (LDB 23 l.147/149, #509) : consacre l'Activité à la progression d'une
+ *  Faveur en cours — sans jet. Mineure : 1 Activité ; Majeure : 2+ CONSÉCUTIVES (la fenêtre se
+ *  mesure à l'interlude, arbitrage maison — voir `state/favorFlow`) ; Importante : jamais par
+ *  Activité (l.151, mention verbatim affichée). */
+function FavorSettlePane({ hero, disabled, favors }: { hero: Combatant; disabled: boolean; favors: Favor[] }) {
+  const settle = useGame((s) => s.favorSettle);
+  const [id, setId] = useState(favors[0]?.id ?? '');
+  const sel = favors.find((f) => f.id === id) ?? favors[0];
+  const required = sel ? favorRequiredActivities(sel.level) : null;
+  const settleable = sel != null && required != null;
+  return (
+    <ActivityPane
+      icon="ui/balance"
+      title="Acquitter une Faveur"
+      blocked={sel && required == null
+        ? <>Une Faveur Importante « ne peut pas être acquittée par le biais d’Activités : elle est jouée comme une aventure complète » (LDB 23 l.151).</>
+        : undefined}
+      note={sel
+        ? <>{FAVOR_LEVEL_LABELS[sel.level]} envers {sel.owedTo}{sel.desc ? ` — ${sel.desc}` : ''}{required != null ? ` (${sel.progress}/${required} Activité${required > 1 ? 's' : ''} consécutive${required > 1 ? 's' : ''})` : ''}</>
+        : undefined}
+      actions={
+        <button
+          className="btn small btn-primary"
+          disabled={disabled || !settleable}
+          title={settleable ? 'Consacrer cette Activité à l’acquittement de la Faveur' : undefined}
+          onClick={() => sel && settleable && settle(hero.id, sel.id)}
+        >
+          Entreprendre
+        </button>
+      }
+    >
+      {favors.length > 1 && (
+        <select className="interlude-select" value={id} onChange={(e) => setId(e.target.value)}>
+          {favors.map((f) => (
+            <option key={f.id} value={f.id}>{FAVOR_LEVEL_LABELS[f.level]} envers {f.owedTo}</option>
+          ))}
+        </select>
+      )}
+    </ActivityPane>
+  );
+}
+
 /** Passer commande (ch.23 l.167-172) : objet Exotique payé MAINTENANT, livré au prochain interlude.
  *  Pas de jet — le pied porte le coût et la formule. */
 function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boolean; money: Money }) {
@@ -909,7 +1017,9 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     : null;
   const uid = targetUid || weapons[0]?.uid || artefacts[0]?.uid || '';
   const spell = spellId || spellOptions[0]?.spell.id || '';
-  const diff = def.difficulty ?? 'intermediaire';
+  // Gate de Classe appliquée EN CATALOGUE — même dérivation que `openCatalogActivity`
+  // (`src/state/interludeFlow.ts`) : source unique `classGatedDifficulty`.
+  const diff = classGatedDifficulty(def, hero);
   // Pré-jet dérivé de la DONNÉE — même dérivation que le flux (`openCatalogActivity`) :
   // `masterWeapon` impose la compétence de l'arme visée ; sinon la MEILLEURE des déclarées.
   let prejet: PendingRoll | undefined;

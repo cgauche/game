@@ -823,6 +823,16 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       env.log(t('eff.restoreFortune'));
     },
   },
+  grantFavor: {
+    group: 'Récompenses', label: 'Accorder une Faveur due (LDB 23 l.139-153)', icon: 'ui/balance',
+    make: () => ({ type: 'grantFavor', level: 'mineure', owedTo: '', desc: '' }),
+    apply: (e, env) => {
+      // Faveur de départ de campagne ou octroi narratif (#509) — cible : héros désigné, sinon le
+      // premier héros vivant (`env.targets` : même défaut que les autres Effets `hero`).
+      const hero = env.targets('hero', e.heroId)[0];
+      if (hero) env.get().favorGrant(hero.id, e.level, e.owedTo, e.desc);
+    },
+  },
 
   // ── Afflictions ────────────────────────────────────────────────────────
   ops: {

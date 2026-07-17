@@ -506,5 +506,398 @@
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 78
     }
+  },
+  {
+    "id": "contremaitre-lieu",
+    "label": "Remaniement du contremaître — Lieu (AA Annexe II)",
+    "die": "d100",
+    "rows": [
+      {
+        "min": 1,
+        "max": 5,
+        "label": "Une cabane sinistre à l'orée des bois.",
+        "ops": []
+      },
+      {
+        "min": 6,
+        "max": 10,
+        "label": "Un abattoir dans les quartiers pauvres.",
+        "ops": []
+      },
+      {
+        "min": 11,
+        "max": 15,
+        "label": "Un rucher rempli d'abeilles très territoriales.",
+        "ops": []
+      },
+      {
+        "min": 16,
+        "max": 20,
+        "label": "Un entrepôt qui sent la poudre noire.",
+        "ops": []
+      },
+      {
+        "min": 21,
+        "max": 25,
+        "label": "Une tour de signalisation impériale.",
+        "ops": []
+      },
+      {
+        "min": 26,
+        "max": 30,
+        "label": "Une auberge-relais ayant un excédent de produits porcins.",
+        "ops": []
+      },
+      {
+        "min": 31,
+        "max": 35,
+        "label": "Une grande maison de ville dans le style du Stirland, aux rideaux inhabituellement épais.",
+        "ops": []
+      },
+      {
+        "min": 36,
+        "max": 40,
+        "label": "Un camp militaire.",
+        "ops": []
+      },
+      {
+        "min": 41,
+        "max": 45,
+        "label": "Une étable luxueuse abritant deux étalons agressifs.",
+        "ops": []
+      },
+      {
+        "min": 46,
+        "max": 50,
+        "label": "Un parc à bestiaux abritant une meute de chiens affamés.",
+        "ops": []
+      },
+      {
+        "min": 51,
+        "max": 55,
+        "label": "Un égout à l'odeur épouvantable.",
+        "ops": []
+      },
+      {
+        "min": 56,
+        "max": 60,
+        "label": "Un bureau rempli de papiers et de lampes à huile.",
+        "ops": []
+      },
+      {
+        "min": 61,
+        "max": 65,
+        "label": "Une clairière sur une colline avec une grande pierre levée.",
+        "ops": []
+      },
+      {
+        "min": 66,
+        "max": 70,
+        "label": "Une fosse de combat où des combats ont actuellement lieu.",
+        "ops": []
+      },
+      {
+        "min": 71,
+        "max": 75,
+        "label": "Une caverne jonchée d'os brisés.",
+        "ops": []
+      },
+      {
+        "min": 76,
+        "max": 80,
+        "label": "Un cimetière dont certaines tombes ont été récemment remuées.",
+        "ops": []
+      },
+      {
+        "min": 81,
+        "max": 85,
+        "label": "Une tour de sorcier dont le rez-de-chaussée est couvert d'une substance inhabituelle.",
+        "ops": []
+      },
+      {
+        "min": 86,
+        "max": 90,
+        "label": "Un temple de Verena abandonné.",
+        "ops": []
+      },
+      {
+        "min": 91,
+        "max": 95,
+        "label": "Une cave utilisée comme lieu de rendez-vous secret.",
+        "ops": []
+      },
+      {
+        "min": 96,
+        "max": 100,
+        "label": "Un quai pourri à plusieurs endroits.",
+        "ops": []
+      }
+    ],
+    "source": {
+      "book": "aux-armes",
+      "page": 139
+    }
+  },
+  {
+    "id": "contremaitre-objectif",
+    "label": "Remaniement du contremaître — Objectif (AA Annexe II)",
+    "die": "d100",
+    "rows": [
+      {
+        "min": 1,
+        "max": 5,
+        "label": "Un coffre verrouillé et incroyablement lourd.",
+        "ops": []
+      },
+      {
+        "min": 6,
+        "max": 10,
+        "label": "Plusieurs sacs d'épices rares d'Ind.",
+        "ops": []
+      },
+      {
+        "min": 11,
+        "max": 15,
+        "label": "Un bocal scellé d'Arabie.",
+        "ops": []
+      },
+      {
+        "min": 16,
+        "max": 20,
+        "label": "Une plaque en or prise dans les Terres du Sud.",
+        "ops": []
+      },
+      {
+        "min": 21,
+        "max": 25,
+        "label": "Une épée brisée en trois morceaux.",
+        "ops": []
+      },
+      {
+        "min": 26,
+        "max": 30,
+        "label": "Un magnifique collier d'obsidienne.",
+        "ops": []
+      },
+      {
+        "min": 31,
+        "max": 35,
+        "label": "Un noble enlevé.",
+        "ops": []
+      },
+      {
+        "min": 36,
+        "max": 40,
+        "label": "Une sacoche de poudre de malepierre.",
+        "ops": []
+      },
+      {
+        "min": 41,
+        "max": 45,
+        "label": "Un titre de propriété.",
+        "ops": []
+      },
+      {
+        "min": 46,
+        "max": 50,
+        "label": "Un colis de décoctions d'apothicaire.",
+        "ops": []
+      },
+      {
+        "min": 51,
+        "max": 55,
+        "label": "Un hors-la-loi emprisonné.",
+        "ops": []
+      },
+      {
+        "min": 56,
+        "max": 60,
+        "label": "Le marteau de guerre ornementé d'un prêtre de Sigmar.",
+        "ops": []
+      },
+      {
+        "min": 61,
+        "max": 65,
+        "label": "Un tome interdit.",
+        "ops": []
+      },
+      {
+        "min": 66,
+        "max": 70,
+        "label": "Une arme à feu naine.",
+        "ops": []
+      },
+      {
+        "min": 71,
+        "max": 75,
+        "label": "Un enfant disparu en pleurs.",
+        "ops": []
+      },
+      {
+        "min": 76,
+        "max": 80,
+        "label": "Un crâne apparemment constitué de cristal.",
+        "ops": []
+      },
+      {
+        "min": 81,
+        "max": 85,
+        "label": "Un talisman de jade long comme le doigt sur lequel sont inscrites des runes étranges.",
+        "ops": []
+      },
+      {
+        "min": 86,
+        "max": 90,
+        "label": "Une pièce d'armure, autrefois portée par un général célèbre.",
+        "ops": []
+      },
+      {
+        "min": 91,
+        "max": 95,
+        "label": "Une carte détaillant certains secrets.",
+        "ops": []
+      },
+      {
+        "min": 96,
+        "max": 100,
+        "label": "Un appareil d'ingénierie naine.",
+        "ops": []
+      }
+    ],
+    "source": {
+      "book": "aux-armes",
+      "page": 139
+    }
+  },
+  {
+    "id": "contremaitre-personnalite",
+    "label": "Remaniement du contremaître — Personnalité (AA Annexe II)",
+    "die": "d100",
+    "rows": [
+      {
+        "min": 1,
+        "max": 5,
+        "label": "Un incorrigible romantique.",
+        "ops": []
+      },
+      {
+        "min": 6,
+        "max": 10,
+        "label": "Un ingénieur nain courroucé.",
+        "ops": []
+      },
+      {
+        "min": 11,
+        "max": 15,
+        "label": "Un noble à la vie dissolue.",
+        "ops": []
+      },
+      {
+        "min": 16,
+        "max": 20,
+        "label": "Un chef cuisinier halfling désespéré.",
+        "ops": []
+      },
+      {
+        "min": 21,
+        "max": 25,
+        "label": "Un chef de culte.",
+        "ops": []
+      },
+      {
+        "min": 26,
+        "max": 30,
+        "label": "Une sentinelle expérimentée.",
+        "ops": []
+      },
+      {
+        "min": 31,
+        "max": 35,
+        "label": "Un diplomate elfe.",
+        "ops": []
+      },
+      {
+        "min": 36,
+        "max": 40,
+        "label": "Un ratier paranoïaque.",
+        "ops": []
+      },
+      {
+        "min": 41,
+        "max": 45,
+        "label": "Un orphelin plaintif.",
+        "ops": []
+      },
+      {
+        "min": 46,
+        "max": 50,
+        "label": "Un noble en exil.",
+        "ops": []
+      },
+      {
+        "min": 51,
+        "max": 55,
+        "label": "Un Tueur de Trolls furieux.",
+        "ops": []
+      },
+      {
+        "min": 56,
+        "max": 60,
+        "label": "Un prêtre important.",
+        "ops": []
+      },
+      {
+        "min": 61,
+        "max": 65,
+        "label": "Un enquêteur halfling.",
+        "ops": []
+      },
+      {
+        "min": 66,
+        "max": 70,
+        "label": "Un elfe encapuchonné et masqué.",
+        "ops": []
+      },
+      {
+        "min": 71,
+        "max": 75,
+        "label": "Un marchand nerveux.",
+        "ops": []
+      },
+      {
+        "min": 76,
+        "max": 80,
+        "label": "Un répurgateur agressif.",
+        "ops": []
+      },
+      {
+        "min": 81,
+        "max": 85,
+        "label": "Un criminel intimidant.",
+        "ops": []
+      },
+      {
+        "min": 86,
+        "max": 90,
+        "label": "Un humble enquêteur.",
+        "ops": []
+      },
+      {
+        "min": 91,
+        "max": 95,
+        "label": "Un général commandant une armée.",
+        "ops": []
+      },
+      {
+        "min": 96,
+        "max": 100,
+        "label": "Un émissaire impérial.",
+        "ops": []
+      }
+    ],
+    "source": {
+      "book": "aux-armes",
+      "page": 140
+    }
   }
 ]

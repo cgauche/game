@@ -12,7 +12,7 @@ const chars = (E = 30): Characteristics => ({
 
 const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
-function hero(opts: { endurance?: number; rations?: number; brouet?: boolean } = {}): Combatant {
+function hero(opts: { endurance?: number; rations?: number; brouet?: boolean; traits?: { id: string }[] } = {}): Combatant {
   return {
     id: 'h', name: 'Gunnar', kind: 'hero',
     characteristics: chars(opts.endurance),
@@ -20,6 +20,7 @@ function hero(opts: { endurance?: number; rations?: number; brouet?: boolean } =
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     items: Array.from({ length: opts.rations ?? 0 }, (_, i) => ration(`r${i}`)),
     skills: [], talents: opts.brouet ? [{ talentId: 'brouet', times: 1 }] : [], movement: 4,
+    ...(opts.traits ? { traits: opts.traits } : {}),
   };
 }
 
@@ -34,6 +35,17 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.343)', () =>
     expect(r.rationConsumed).toBe(true);
     expect(rationCount(c)).toBe(1);
     expect(isStarving(c)).toBe(false);
+  });
+
+  it('#513 — ogre (ADE II ch.02 l.708) : consomme 2 rations/jour, insuffisant si une seule dispo', () => {
+    const c = hero({ rations: 2, traits: [{ id: 'ogre' }] });
+    const r = dailyFoodUpkeep(c, 30, 3, makeRNG(1));
+    expect(r.ate).toBe(true);
+    expect(rationCount(c)).toBe(0); // les 2 rations consommées d'un coup
+    const c2 = hero({ rations: 1, traits: [{ id: 'ogre' }] });
+    const r2 = dailyFoodUpkeep(c2, 30, 3, fixed(95));
+    expect(r2.ate).toBe(false); // 1 ration ne suffit pas à un ogre (facteur ×2)
+    expect(rationCount(c2)).toBe(1); // rien consommé faute du compte
   });
 
   it('Graisse de la terre (noHunger) : exempte de la Faim — aucune ration consommée, faim purgée', () => {
@@ -296,6 +308,13 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.340)', () => {
       expect(m.rationsRequises).toBe(5 + 40);
       expect(m.rationsDispo).toBe(10 + 5); // 15 < 45
       expect(m.suffisant).toBe(false);
+    });
+
+    it('#513 — ogre (ADE II ch.02 l.708) : rations ET eau requises ×2 (Trait racial `ogre`)', () => {
+      const party = [hero({ rations: 10, traits: [{ id: 'ogre' }] }), hero({ rations: 10 })];
+      const m = provisioningManifest(party, 1000, 3);
+      expect(m.rationsRequises).toBe(3 * 2 + 3); // ogre × facteur 2, humain × 1
+      expect(m.eauRequiseLitres).toBe(2 * 3 * 3 + 1 * 3 * 3); // ogre × facteur 2, humain × 1, 3 L/jour (médiane)
     });
   });
 

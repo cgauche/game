@@ -227,6 +227,12 @@ export function changeCareer(hero: Combatant, newCareer: string, newLevel: numbe
   if (!v.ok) return { ok: false, cost: v.cost, reason: v.reason };
   if ((hero.xp ?? 0) < v.cost) return { ok: false, cost: v.cost, reason: 'PX insuffisants' };
   hero.xp = (hero.xp ?? 0) - v.cost;
+  // « N'a jamais appartenu » (AA 12 l.5) : la Carrière QUITTÉE (et la nouvelle) rejoignent l'historique
+  // CUMULÉ, jamais purgé — `everBelongedClasses` (`engine/activities.ts`).
+  const history = hero.careerHistory ? [...hero.careerHistory] : (hero.career ? [hero.career] : []);
+  if (hero.career && !history.includes(hero.career)) history.push(hero.career);
+  if (!history.includes(newCareer)) history.push(newCareer);
+  hero.careerHistory = history;
   hero.career = newCareer;
   hero.careerLevel = newLevel;
   return { ok: true, cost: v.cost };

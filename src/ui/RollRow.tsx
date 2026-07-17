@@ -4,6 +4,7 @@ import { RollPanel, type PanelRowData } from './RollPanel';
 import { InfluenceRow } from './InfluenceRow';
 import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
+import { ReverseButton } from './ReverseButton';
 import { ForcedRollPicker } from './ForcedRollPicker';
 import { useRollFrisson } from './useRollFrisson';
 import { DiceRoll } from './DiceRoll';
@@ -45,6 +46,7 @@ export function RollRow({
   forcedRoll,
   determination,
   resist,
+  reverse,
   rollFrisson = true,
   rollInBar = false,
   winner,
@@ -119,6 +121,7 @@ export function RollRow({
             forceShow={forceShow}
           >
             {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
+            {reverse && <ReverseButton show onReverse={reverse.onReverse} preview={reverse.preview} />}
             {forceShow && determineBtn}
           </InfluenceRow>
         </>
@@ -157,6 +160,10 @@ export interface RollRowProps {
   /** Résistance (Menace) (LDB 10) : auto-succès du talent — fourni quand disponible ET issue encore
    *  défavorable (le parent décide). Affiché AVANT le jet et après un échec. */
   resist?: { menace: string; onResist: () => void };
+  /** Inversion de Test (LDB 23/LDB 10) : fourni SEULEMENT quand une voie (Talent/jeton) est OFFERTE
+   *  (le parent décide via `FLOWS.<flux>.reverseAvailable`). `preview` (`FLOWS.<flux>.reversePreview`) —
+   *  dé renversé + DR/succès — rend l'issue LISIBLE avant le clic. */
+  reverse?: { onReverse: () => void; preview?: { roll: number; sl: number; success: boolean } | null };
   /** Anime le jet (dés qui roulent puis se figent sur les vraies faces) avant de résoudre — DÉFAUT
    *  `true` (#396 : tout jet roule). Honore `prefers-reduced-motion`. Skippable au clic sur le roulis. */
   rollFrisson?: boolean;

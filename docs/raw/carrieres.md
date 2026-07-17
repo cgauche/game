@@ -614,13 +614,13 @@ Trois origines humaines norses (`MDG 07 l.228-246`) :
 **Sources RAW** : `MDG 07 l.222-260`
 **Voir aussi** : [Carrières norses (MDG)](#carrières-norses-mdg) · [Trait Marque de Khorne (MDG)](#trait-marque-de-khorne-mdg)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 7` (l.222-260) → `passiveCastPenalties`, `buveur-de-saumure`, `marque-de-khorne`, `veste-de-cuir` — `src/data/creatures.json`, `src/data/mutations.json`, `src/data/traits.json`, `src/engine/magic.ts`
+- `MDG 7` (l.222-260) → `TraitInstance`, `passiveCastPenalties`, `hiddenGroupsOf`, `careerTalentAdditions`, `traitGrantedTalents`, `effectiveTalents`, `TraitCapabilities`, `buveur-de-saumure`, `marque-de-khorne`, `veste-de-cuir` — `src/data/creatures.json`, `src/data/index.ts`, `src/data/mutations.json`, `src/data/traits.json`, `src/engine/groups.ts`, `src/engine/magic.ts`, +2 fichiers
 
 ---
 
 ## Trait Marque de Khorne (MDG)
 
-Nouveau Trait de créature introduit pour les Personnages skaelings (`MDG 07 l.248-252`).
+Nouveau Trait de créature introduit pour les Personnages skaelings (`MDG 07 l.250-252`).
 > « Khorne a apposé une marque physique sur cette créature pour la proclamer fidèle à sa cause. La créature bénéficie du Talent Frénésie. Elle gagne le Talent Savoir-vivre (Suivants de Khorne) et éprouve de l'Animosité envers ceux qui sont ouvertement des suivants de Slaanesh. »
 > — `MDG 07 l.250`
 
@@ -628,11 +628,10 @@ Les suivants de Slaanesh éprouvent aussi de l'Animosité envers la créature si
 
 De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient des Augmentations de Carrière** au coût en PX normal (`MDG 07 l.252`) : Assaut féroce, Charge berserk, Combat instinctif, Coup puissant, Déterminé, Endurci, Guerrier né, Résistance (Magie), Résistance à la magie, Vigilance.
 
-**Sources RAW** : `MDG 07 l.248-252`
+**Sources RAW** : `MDG 07 l.250-252`
 **Voir aussi** : [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg) · [`talents.md`](talents.md) (Frénésie)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 7` (l.248-252) → `passiveCastPenalties`, `marque-de-khorne` — `src/data/traits.json`, `src/engine/magic.ts`
-- dette : #516
+- `MDG 7` (l.250-252) → `TraitInstance`, `passiveCastPenalties`, `hiddenGroupsOf`, `careerTalentAdditions`, `traitGrantedTalents`, `effectiveTalents`, `TraitCapabilities`, `marque-de-khorne` — `src/data/index.ts`, `src/data/traits.json`, `src/engine/groups.ts`, `src/engine/magic.ts`, `src/engine/statEntry.ts`, `src/engine/talentEffects.ts`
 
 ## Bilan
 

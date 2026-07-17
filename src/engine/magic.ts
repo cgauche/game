@@ -34,6 +34,7 @@ import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty } from './types';
 import { traitById, findTalent, findTalentById, findDomainById, findGodById, type TestMatch } from '../data';
+import { effectiveTalents } from './talentEffects';
 import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -59,10 +60,11 @@ export interface SpellLike {
   ignoreBE?: boolean;
 }
 
-/** Le personnage possède-t-il le Talent nommé ? (Diction instinctive, Harmonisation aethyrique…) */
+/** Le personnage possède-t-il le Talent nommé (structurel OU octroyé par un Trait, `effectiveTalents`) ?
+ *  (Diction instinctive, Harmonisation aethyrique, Savoir-vivre (Suivants de Khorne) via Marque de Khorne…) */
 export function hasTalent(c: Combatant, name: string): boolean {
   const id = findTalent(name)?.id ?? slugId(name);
-  return c.talents.some((t) => t.talentId === id && (t.times ?? 1) >= 1);
+  return effectiveTalents(c).some((t) => t.talentId === id && (t.times ?? 1) >= 1);
 }
 
 /** Branche d'incantation déduite du type de sort. */
@@ -93,7 +95,7 @@ function penaltyMatches(p: { skill: string }, skill: 'priere' | 'langue' | 'foca
   return p.skill === 'all' || p.skill === skill;
 }
 
-/** `castPenalty` PASSIF (interdiction PERMANENTE, MDG 07 l.248-250 : « ne peut jamais utiliser les
+/** `castPenalty` PASSIF (interdiction PERMANENTE, MDG 07 l.250 : « ne peut jamais utiliser les
  *  Compétences Langue (Magick) et Focalisation ») porté par le `passive: GameOp[]` d'un Trait/mutation —
  *  MÊME vocabulaire `{op:'castPenalty', skill, blocked}` que le contrecoup temporisé (`applyOps`), sans
  *  `rounds`/`minutes`/`hours`/`days` → jamais purgé (dure tant que le Trait est porté). L'exception « sauf

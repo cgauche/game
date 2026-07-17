@@ -3,7 +3,7 @@ import { hotbar } from '../state/hotbarBridge';
 import { useGame, activeCombatant, entityPickables, movementRemaining } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpellById, careerLabelFor } from '../data/index';
-import { isArcaneSpell } from '../engine/magic';
+import { isArcaneSpell, castBlockedBy } from '../engine/magic';
 import { actorHasSkill } from '../engine/skills';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../engine/spellRangeFormat';
@@ -30,7 +30,7 @@ import { ownsLocally, controlsCombatant } from '../state/netOwnership';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
-import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, castInfoIsPrayer } from '../state/combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from '../state/lineOfSight';
 import { smokeOf } from '../state/combatGeometry';
@@ -39,6 +39,7 @@ import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
 import { ItemIcon } from './ItemIcon';
 import { Icon } from './Icon';
+import { GatedAction } from './GatedAction';
 
 /** Descripteur d'une capacité de la barre : source du rendu ET du clavier (1-9 = n-ième slot).
  *  `done` = l'action est déjà faite ce tour → état visuel du slot (`.hotbar-done` + coche), pas un
@@ -254,6 +255,14 @@ export function ActionBar() {
   const moveStarted = battle.movementUsed > 0; // au moins un segment de Mouvement déjà parcouru
   const moveMax = isHero ? moveLeft + battle.movementUsed : 0; // budget total de cases ce Tour (barre à crans)
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
+  // Refus d'incantation invisible (#516) : la MÊME dérivation que la journalisation de `castSpell`
+  // (`castBlockedBy`, `state/combatFlow.ts`) surface AVANT le clic — l'affordance porte sa raison,
+  // jamais un refus muet au journal.
+  const castBlockReason = hasSpells
+    ? [...new Set((active.spells ?? []).map((id) => findSpellById(id)).filter((sp): sp is NonNullable<ReturnType<typeof findSpellById>> => !!sp).map((sp) => (castInfoIsPrayer(sp) ? 'priere' : 'langue')))]
+        .map((skill) => castBlockedBy(active, skill))
+        .find((r): r is string => !!r) ?? null
+    : null;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
   // Désengagement GRATUIT (option A, LDB 15 l.87) : Avantage strictement supérieur à tous les foes
@@ -389,7 +398,7 @@ export function ActionBar() {
   const slots: HotbarSlot[] = [];
   if (isHero) {
     if (moveStarted && !battle.acted) slots.push({ id: 'undo-move', cls: 'ab-undo', icon: <Icon id="ui/undo" />, label: 'Annuler dépl.', title: "Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)", run: cancelMove });
-    if (hasSpells && !frenzied) slots.push({ id: 'cast', cls: battle.action === 'cast' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/cast" />, label: 'Incanter', done: battle.acted, title: "Incanter un sort (Test de Langage mystique) — coûte l'Action", run: () => selectAction(battle.action === 'cast' ? null : 'cast') });
+    if (hasSpells && !frenzied) slots.push({ id: 'cast', cls: battle.action === 'cast' ? 'on' : '', disabled: battle.acted || stunned || broken || !!castBlockReason, icon: <Icon id="action/cast" />, label: 'Incanter', done: battle.acted, title: castBlockReason ? `Incantation bloquée : ${castBlockReason}` : "Incanter un sort (Test de Langage mystique) — coûte l'Action", run: () => selectAction(battle.action === 'cast' ? null : 'cast') });
     if (canHeal && healTargets.length > 0) slots.push({ id: 'heal', cls: battle.action === 'heal' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="journal/heal" />, label: 'Soigner', title: "Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action", run: () => selectAction(battle.action === 'heal' ? null : 'heal') });
     if (canWater && waterTargets.length > 0) slots.push({ id: 'water', disabled: battle.acted || stunned || broken, icon: <Icon id="action/water" />, label: 'Asperger d’eau', title: "Asperger d'eau une Créature marine adjacente hors de l'eau : repousse la suffocation pour ce Round — coûte l'Action", run: () => battleWater() });
     if (canDispel && dispellable.length > 0 && !frenzied) slots.push({ id: 'dispel', cls: battle.action === 'dispel' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/dispel" />, label: 'Dissiper', done: battle.acted, title: "Dissiper un sort permanent (Test étendu de Langue (Magick) → NI) — coûte l'Action chaque Round", run: () => selectAction(battle.action === 'dispel' ? null : 'dispel') });
@@ -487,11 +496,20 @@ export function ActionBar() {
                   <span className="ab-spell-meta">{meta}</span>
                 </button>
                 <CodexRef category="spells" id={spell.id} label={label} className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-                {canFocus && (
-                  <button className="btn btn-sm" onClick={() => focusSpell(spell.id)} title="Test étendu de Focalisation">
-                    Focaliser{focusDr != null ? ` (${focusDr}/${spell.cn})` : ''}
-                  </button>
-                )}
+                {canFocus && (() => {
+                  const focusBlocked = castBlockedBy(active, 'focalisation');
+                  return (
+                    <GatedAction
+                      id={`ab-focus-${spell.id}`}
+                      label={`Focaliser${focusDr != null ? ` (${focusDr}/${spell.cn})` : ''}`}
+                      enabled={!focusBlocked}
+                      reason={focusBlocked ?? ''}
+                      primary={false}
+                      btnClassName="btn-sm"
+                      onClick={() => focusSpell(spell.id)}
+                    />
+                  );
+                })()}
               </div>
             );
           })}

@@ -39,6 +39,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const darkPact = useGame((s) => s.defenseDarkPact);
   const forceSuccess = useGame((s) => s.defenseForceSuccess);
   const setForcedRoll = useGame((s) => s.defenseSetForcedRoll);
+  const reverseVerb = useGame((s) => s.defenseReverse);
   const confirm = useGame((s) => s.defenseConfirm);
   const spendResolve = useGame((s) => s.spendResolveCondition);
   if (!pd || !battle) return null;
@@ -68,6 +69,11 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const segVal = (mode: DefenseMode) =>
     optionValue(defenseValue(defender, mode, chosenParry, mode === 'social' ? sub?.value : undefined), defenseModifiers(defender, mode, 0, mode === 'parade' ? chosenParry : undefined));
   const forcedDie = FLOWS.defense.picker?.(pd, defender); // dé choisi (source unique : caps.picker)
+  // Inversion de Test (LDB 23 l.209/218, LDB 10 — CHOIX du joueur, #558) : offerte dès qu'une voie
+  // (Talent/jeton) est applicable (`reverseAvailable`, pure) ; `reversePreview` rend l'issue LISIBLE
+  // avant le clic (le jeton, libre, peut dégrader un succès existant).
+  const reverseAvail = rolled && FLOWS.defense.reverseAvailable(useGame.getState, useGame.setState);
+  const reversePreview = reverseAvail ? FLOWS.defense.reversePreview(useGame.getState, useGame.setState) : null;
   // `pd.modes` (tir) limite les réactions proposées ; absent = mêlée (Parade + Esquive). Filtre seul.
   const allowMode = (m: 'parade' | 'esquive') => !pd.modes || pd.modes.includes(m);
 
@@ -118,6 +124,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && res.hit,
     forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
+    reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
   };
 
   const actions: RollAction[] = [

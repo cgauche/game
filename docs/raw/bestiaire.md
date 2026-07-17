@@ -47,8 +47,7 @@ Le chapitre 76 sert d'introduction au bestiaire WFRP4. Les créatures présenté
 Les **Traits Facultatifs** listés à côté de chaque créature représentent certains des Traits les plus courants de l'espèce. On peut cependant appliquer **n'importe quel Trait** à n'importe quelle créature si cela correspond au jeu voulu (`LDB 76 l.16-19`).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.16-19) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- sans code : `LDB 76` (l.4-13)
+- `LDB 76` (l.4-13, l.16-19) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `criticalTableFor`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
 
 ---
 
@@ -69,7 +68,7 @@ En principe, déterminer une **Localisation** pour une créature non humaine est
 **Voir aussi** : [Tableau de Localisation humanoïde](combat.md#tableau-de-localisation-humanoide) — `combat.md` ; Critiques et Frappe Mortelle — `combat.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.19-45) → `STANDARD_OPTIONALS`, `SceneEntity`, `SpawnExtras`, `creatureToCombatant`, `TraitData` — `src/data/index.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- `LDB 76` (l.19-45) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
 
 ---
 
@@ -88,7 +87,7 @@ En principe, déterminer une **Localisation** pour une créature non humaine est
 Ces deux tables remplacent la table humanoïde standard pour les morphologies concernées. Toutes les autres créatures — quadrupèdes, oiseaux, créatures à tentacules — utilisent le **tableau humanoïde réétiquetté** (membres antérieurs = bras, membres postérieurs = jambes, ailes = bras).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.28-35) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- `LDB 76` (l.28-35) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
 
 ---
 
@@ -107,7 +106,7 @@ Ces Traits dits « standard » peuvent donc être ajoutés à **n'importe quelle
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Traits Facultatifs.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.31-35, l.37) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- `LDB 76` (l.31-35, l.37) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
 
 ---
 
@@ -155,9 +154,8 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 - `LDB 85 l.339-340` — « Utiliser les Tailles » (si la Taille Facultative change la catégorie → ±10 F/E, ∓5 Ag).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.45) → `SceneEntity`, `SpawnExtras`, `creatureToCombatant` — `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- `LDB 76` (l.11-13, l.45) → `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical` — `src/data/criticals.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
 - `LDB 85` (l.339-340) → `a-distance`, `a-sang-froid`, `affame`, `amphibie`, `animosite`, `woundsForSize`, `arboricole`, `arme`, `armure`, `attaque-caudale`, +13 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/size.ts`, `src/state/combatFlow.ts`, `src/state/combatManeuvers.ts`
-- sans code : `LDB 76` (l.11-13)
 
 ---
 
@@ -206,7 +204,7 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 **Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.343-406) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `amphibie`, `animosite`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `arboricole`, +25 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
+- `LDB 85` (l.343-406) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `amphibie`, `animosite`, `woundsForSize`, `EnemyTurnInput`, `weaponFromTrait`, `arboricole`, +25 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
 
 ---
 
@@ -296,8 +294,8 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 **Voir aussi** : [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille-categories-et-modificateurs-de-combat).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.142-165) → `GrappleModal`, `combat-deux-armes`, `areGrappling`, `main-secondaire`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, `tirer-dans-le-tas`, `COMBAT_INTENTS`, +37 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +23 fichiers
-- `LDB 85` (l.357-387) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `amphibie`, `animosite`, `weaponFromTrait`, `woundsForSize`, `EnemyTurnInput`, `arboricole`, +22 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
+- `LDB 14` (l.142-165) → `GrappleModal`, `combat-deux-armes`, `areGrappling`, `main-secondaire`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, `tirer-dans-le-tas`, `COMBAT_INTENTS`, +37 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +24 fichiers
+- `LDB 85` (l.357-387) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `amphibie`, `animosite`, `woundsForSize`, `EnemyTurnInput`, `weaponFromTrait`, `arboricole`, +22 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
 
 ---
 
@@ -354,7 +352,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 | **Langue Préhensile (Indice)(Portée)** | Attaque gratuite | 1 Avantage | Distance ; Empêtré ; tire la cible si Taille inférieure (`LDB 85 l.211-213`) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `TraitData` — `src/data/index.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
+- `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
 - `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `TraverseCapability`, `cannotStopOn`, `StatblockEditor`, +87 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +27 fichiers
 
 ---

@@ -24,11 +24,11 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   // attaque (modale différée)
   'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode', 'attackSetIntoCrowd',
   'attackSetHeldGround', 'attackSetWithhold', 'attackSetHarpoonRopeCut', 'attackSetGrapple', 'attackSetCritLocation', 'attackSetForcedRoll', 'attackRoll',
-  'attackReroll', 'attackBonusSL', 'attackDarkPact', 'attackForceSuccess', 'attackConfirm',
+  'attackReroll', 'attackBonusSL', 'attackDarkPact', 'attackForceSuccess', 'attackReverse', 'attackConfirm',
   'attackCancel',
   // défense réactive
   'defenseSetMode', 'defenseSetParryWeapon', 'defenseRoll', 'defenseReroll', 'defenseBonusSL',
-  'defenseDarkPact', 'defenseForceSuccess', 'defenseSetForcedRoll', 'defenseConfirm',
+  'defenseDarkPact', 'defenseForceSuccess', 'defenseSetForcedRoll', 'defenseReverse', 'defenseConfirm',
   // incantation / prière
   'castRoll', 'castReroll', 'castBonusSL', 'castDarkPact', 'castSetCritChoice', 'castSetForcedRoll',
   'castAllocOvercast', 'castSetChosenTableRolls', 'castToggleExtraTarget', 'castPickTargets', 'castPlaceZone', 'castForceSuccess',

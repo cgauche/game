@@ -405,7 +405,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // organisatrice (rig + zones par Localisation, jugée du bruit) MEURT : `.etat-body`/`-zones`/
   // `-zone` retirés. Ne reste que l'état calme (`.etat-ras`/`.ras-title`, composition validée
   // inchangée) — le registre affligé compose `Band`/`PlaqueRow`, aucune classe neuve ici.
-  'styles/sheet.css': 84,
+  // +2 (#509 : .bg-favors/.favor-chip — Faveurs dues sur BackgroundPanel).
+  'styles/sheet.css': 86,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,

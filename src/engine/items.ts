@@ -7,7 +7,7 @@
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type ShipPoste, type AuthoredShipPoste } from './types';
 import { bonus, baseWithTraits } from './characteristics';
 import { talentEncumbranceBonus, talentEncumbranceFactor } from './combatFeatures/dispatch';
-import { SIZE_ORDER, effectiveSize } from './size';
+import { traitEncumbranceFactor } from './talentEffects';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
@@ -73,6 +73,8 @@ export interface WeaponSpec {
   builtinId?: string;
   /** Taille PRÉVUE pour l'arme (ADE II ch.02 l.706-710) — propagée vers `Weapon.sizeFor`. */
   sizeFor?: import('./size').SizeCategory;
+  /** Propagé vers `Weapon.sizeless` (exemption du mismatch de Taille, ≠ `natural`/rendu). */
+  sizeless?: boolean;
 }
 
 function specUid(uid: WeaponSpec['uid']): string {
@@ -104,6 +106,7 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   if (spec.attackKind !== undefined) w.attackKind = spec.attackKind;
   if (spec.builtinId !== undefined) w.builtinId = spec.builtinId;
   if (spec.sizeFor !== undefined) w.sizeFor = spec.sizeFor;
+  if (spec.sizeless !== undefined) w.sizeless = spec.sizeless;
   return w;
 }
 
@@ -262,9 +265,12 @@ export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'name'>): string
 
 /** Limite d'Encombrement = (Bonus de Force + Bonus d'Endurance) × facteur (ogre ADE II ch.02 l.708 :
  *  ×2), +2 par niveau de Costaud (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de
- *  votre niveau × 2 » — le bonus de Costaud n'est PAS multiplié, il s'ajoute après). */
+ *  votre niveau × 2 » — le bonus de Costaud n'est PAS multiplié, il s'ajoute après). Le facteur JAMAIS
+ *  cumulatif : le PLUS GRAND entre porteur talent (`talentEncumbranceFactor`) et porteur Trait racial
+ *  (`traitEncumbranceFactor`, Ogre) l'emporte. */
 export function maxEncumbrance(c: Combatant): number {
-  return (bonus(baseWithTraits(c, 'force')) + bonus(baseWithTraits(c, 'endurance'))) * talentEncumbranceFactor(c) + talentEncumbranceBonus(c);
+  const factor = Math.max(talentEncumbranceFactor(c), traitEncumbranceFactor(c));
+  return (bonus(baseWithTraits(c, 'force')) + bonus(baseWithTraits(c, 'endurance'))) * factor + talentEncumbranceBonus(c);
 }
 
 /** Encombrement transporté. Les objets PORTÉS sur le corps (armure ET accessoire) voient leur
@@ -274,10 +280,14 @@ export function maxEncumbrance(c: Combatant): number {
 export function totalEncumbrance(c: Combatant): number {
   return (c.items ?? []).reduce((s, i) => {
     if (i.inside) return s; // rangé dans un contenant → absorbé par lui (LDB 64 l.5), ne compte pas
-    // Objet « taille ogre » (ADE II ch.02 l.708) : Enc CLASSIQUE (i.enc) doublé — SAUF le catalogue
-    // nativement ogre (sans `sizeFor`, l.604 : déjà entré à sa valeur pleine).
-    const oversized = !!i.sizeFor && SIZE_ORDER[i.sizeFor] > SIZE_ORDER[effectiveSize()];
-    const enc = (i.enc || 0) * (oversized ? 2 : 1) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60)
+    // Pas de doublement d'Enc à l'exécution (ADE II ch.02 l.708 : « la version ogre… vaut deux fois
+    // l'Encombrement classique »). Vérifié valeur par valeur contre les tables l.609-654 : le
+    // catalogue ogre (`massue-ogre`, `grande-massue-ogre`, `pistolet-ogre`, `pansiere-ogre`…) est
+    // DÉJÀ saisi à son Enc final (l.604 : « les points d'Encombrement n'ont donc pas besoin d'être
+    // doublés »). Toute future « version ogre » d'une possession courante se catalogue de la MÊME
+    // façon : une entrée `trappings.json` dédiée à Enc/prix déjà ×2, pas un multiplicateur ici —
+    // `sizeFor` reste réservé au malus de Taille hors-gabarit (`combat.ts` l.507).
+    const enc = (i.enc || 0) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60)
     if (!!i.equipped && i.subType === 'protheses') return s; // prothèse portée = Enc 0 (LDB 73)
     // Objet PORTÉ sur le corps (armure OU accessoire — PAS une arme, qui se TIENT) : -1 (LDB 61 l.21) ;
     // armure Volumineux portée = 1 (LDB 60 l.62).
