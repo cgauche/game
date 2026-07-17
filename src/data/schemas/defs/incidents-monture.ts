@@ -1,5 +1,5 @@
 /**
- * Schéma de `incidents-monture.json` — Incidents de monte EDOC ch.4 (d100), miroir de la forme
+ * Schéma de `incidents-monture.json` — Incidents de monte EDOC ch.7 (d100), miroir de la forme
  * enveloppe `TravelTable` (`src/engine/travelTables.ts:28`) portant des `TravelTableEntry`
  * (`.../travelTables.ts:15-26`), PROMU dans `common.ts` (`travelTableEntrySchema`/`stageOutcomeSchema`
  * — ex-dupliqué à l'identique dans `rencontres-edoc.ts`/`problemes-vehicule.ts`). Aucune entrée ne

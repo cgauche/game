@@ -1225,7 +1225,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Bascule la CADENCE des ordres de la traversée en cours (couche `voyageCadence`) — « Passer en
    *  jour-par-jour » de l'écran de traversée, ou retour en commandée. */
   setVoyageCadence: (cadence: import('./voyageCadence').VoyageCadence) => void;
-  /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.5),
+  /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.8),
    *  ou le détache (`null` ⇒ rôle inféré). Réutilisé au départ de chaque trajet (0 ré-assignation/jour). */
   setTravelRole: (heroId: string, role: string | null) => void;
   /** Épingle (`role`) ou détache (`null`) le rôle d'ÉQUIPAGE naval d'un marin (`shipRole`) — interface de gestion

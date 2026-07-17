@@ -1,5 +1,5 @@
 /**
- * Tableau des OBSESSIONS (EDOC ch.8, folio 69) — déterminant de Cible des mutations mentales qui
+ * Tableau des OBSESSIONS (EDOC ch.12, folio 69) — déterminant de Cible des mutations mentales qui
  * l'exigent (« Haine sporadique » → Haine (Cible) ; « Terribles phobies » → Effrayé (Cible)).
  */
 import { describe, it, expect } from 'vitest';
@@ -21,7 +21,7 @@ function hero(p: Partial<Combatant> = {}): Combatant {
   } as Combatant;
 }
 
-describe('Tableau des Obsessions (EDOC ch.8 folio 69)', () => {
+describe('Tableau des Obsessions (EDOC ch.12 folio 69)', () => {
   it('couvre exactement 2d10 = 2..20 (19 entrées), source EDOC folio 69', () => {
     expect(OBSESSIONS.length).toBe(19);
     expect(OBSESSIONS[0]).toMatchObject({ min: 2, max: 2 });

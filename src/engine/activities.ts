@@ -31,7 +31,7 @@ import activitiesJson from '../data/activities.json';
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 // CATALOGUE d'ACTIVITÉS data-driven (`src/data/activities.json`) — FOYER UNIQUE des Activités, tous
-// contextes confondus : « Entre deux aventures » (LDB 23), « Activités de voyage » (EDOC ch.5),
+// contextes confondus : « Entre deux aventures » (LDB 23), « Activités de voyage » (EDOC ch.8),
 // « Activités en mer » (MDG ch.15). Remplace l'énumération en dur (union `kind` + `switch`).
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -66,7 +66,7 @@ export interface BattleOutcome {
   amount: number;
 }
 
-/** Issue de PORTÉE ÉTAPE (Activité de voyage EDOC ch.5 OU Rencontre EDOC) — effet qui ne porte PAS sur
+/** Issue de PORTÉE ÉTAPE (Activité de voyage EDOC ch.8 OU Rencontre EDOC) — effet qui ne porte PAS sur
  *  un seul Combatant (donc pas un `GameOp`) mais sur l'Étape/le groupe : interprété par la boucle de
  *  voyage. Vocabulaire ÉTENDU (≠ codé en dur par id). Activités (l.139-180) :
  *   - `suppressExposure` (Plein air, l.141) : pas de Test d'Exposition pour le groupe cette Étape ;
@@ -272,7 +272,7 @@ export function activitiesFor(context: ActivityContext): ActivityDef[] {
 
 /** Issue STRUCTURÉE d'une Activité de voyage résolue — PURE (l'appelant applique `ops`/`stageOutcome`/
  *  `extenue` au state). Le résolveur ne mute rien : pour l'acteur DÉSIGNÉ au poste, il lance le Test et
- *  déclare l'effet. RAW EDOC ch.5 l.131 : « chaque Personnage bénéficie d'une Activité par Étape » →
+ *  déclare l'effet. RAW EDOC ch.8 l.131 : « chaque Personnage bénéficie d'une Activité par Étape » →
  *  un héros par poste ; la boucle appelle ce résolveur PAR héros. */
 export interface TravelActivityResult {
   activityId: string;
@@ -288,7 +288,7 @@ export interface TravelActivityResult {
   ops: GameOp[];
   /** Issue de portée Étape, interprétée par la boucle de voyage. */
   stageOutcome?: StageOutcome;
-  /** Échec du Test d'Activité → État Exténué pour CET acteur (EDOC ch.5 l.133). */
+  /** Échec du Test d'Activité → État Exténué pour CET acteur (EDOC ch.8 l.133). */
   extenue: boolean;
   /** Résolveur BESPOKE à invoquer côté appelant (ex. `'forage'` → `forageYield`). */
   resolver?: string;
@@ -297,7 +297,7 @@ export interface TravelActivityResult {
 }
 
 /**
- * Résout l'Activité tenue par l'acteur DÉSIGNÉ au poste (EDOC ch.5 : un héros par Activité/Étape).
+ * Résout l'Activité tenue par l'acteur DÉSIGNÉ au poste (EDOC ch.8 : un héros par Activité/Étape).
  * Parmi les compétences « au choix » (Cartographe/Dessin ; plus tard Voile/Ramer), prend la MEILLEURE
  * de CET acteur (spec-aware), lance le Test (modifié par `skillMod` — ex. météo) et déclare l'effet :
  * `ops` (GameOp de `onSuccess`) sur réussite, `stageOutcome`, et `extenue` sur échec (l.133). PUR / seedé.
@@ -395,7 +395,7 @@ export function applyTravelActivityResult(
 
 // ── Postes d'une Étape : héros → 1 Activité (jamais deux) ; un poste a 0..N titulaires ──────────
 
-/** Agrégation d'une issue d'Activité quand 0..N héros tiennent le poste (EDOC ch.5 l.131) :
+/** Agrégation d'une issue d'Activité quand 0..N héros tiennent le poste (EDOC ch.8 l.131) :
  *  - `gate` : un SEUL succès suffit à dispenser/protéger tout le groupe (Plein air, Aux aguets) ;
  *  - `stack` : les DR des succès s'ADDITIONNENT (Monter le camp ; carte en Test étendu) ;
  *  - `self` : l'effet revient à CHAQUE titulaire qui réussit (Récupérer, Pratiquer, Recueillir infos). */

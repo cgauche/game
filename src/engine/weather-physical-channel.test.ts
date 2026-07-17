@@ -4,7 +4,7 @@ import { weatherTestMods } from './weatherTestMod';
 import { Combatant, Weapon } from './types';
 
 /**
- * CONFORMANCE TRANSVERSALE du canal météo « Tests physiques » (EDOC ch.5 l.82, #341). LE test qui aurait
+ * CONFORMANCE TRANSVERSALE du canal météo « Tests physiques » (EDOC ch.8 l.82, #341). LE test qui aurait
  * attrapé le trou de la DÉFENSE (et de l'Empoignade) AVANT l'audit : il déroule LA MÊME condition (pluie
  * diluvienne) sur les QUATRE familles de Test physique — ATTAQUE (CC/CT), DÉFENSE (Parade→CC / Esquive→Ag),
  * ACTIVITÉ de voyage (carac de la compétence), FORCE brute (Empoignade) — et exige que le −10 arrive dans

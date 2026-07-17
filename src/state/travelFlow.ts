@@ -84,7 +84,7 @@ export interface TravelRecapDay {
   /** MER (route COMMANDÉE) : instantané du jour pour l'écran de traversée (rose des vents + jauges +
    *  distance restante) — rendu par `SeaVoyageScreen` à la place du corps de recap terrestre. */
   sea?: import('./seaVoyageFlow').SeaRecapChrome;
-  /** MÉTÉO d'Étape (EDOC ch.5 l.42) = CONTEXTE DU JOUR (arbitrage user 2026-07-11 : « elle doit juste
+  /** MÉTÉO d'Étape (EDOC ch.8 l.42) = CONTEXTE DU JOUR (arbitrage user 2026-07-11 : « elle doit juste
    *  s'afficher dans un écart lié à la journée », plus de pas de cascade). `id` = météo affichée
    *  (en-tête « Journée de route — … — {météo} » + tuile Météo, vague 2) ; `roll` = d100 INTERNE (debug/
    *  tests ; « y'a que le MJ qui voit le jet de météo » → jamais montré au joueur). */
@@ -139,7 +139,7 @@ export interface TravelPlan {
   /** ORDRES permanents de la traversée (couche `voyageCadence`) : cadence COMMANDÉE (routine auto-résolue,
    *  PV du jour) ou JOUR-PAR-JOUR (modale par jet). Consommé par la mer ET le fluvial. */
   orders?: import('./voyageCadence').VoyageOrders;
-  /** Postes d'Activité de l'Étape : un héros → ≤1 Activité (EDOC ch.5). Initialisé depuis les rôles
+  /** Postes d'Activité de l'Étape : un héros → ≤1 Activité (EDOC ch.8). Initialisé depuis les rôles
    *  PERSISTANTS (`travelRole`) au départ, réutilisé chaque Étape (0 ré-assignation par jour). */
   postes?: Record<string, StagePosting>;
   /** Cumul du Test ÉTENDU de cartographie (Établir des cartes, EDOC l.161) — cf. `extendedTestStep`. */
@@ -283,7 +283,7 @@ export function startTravel(
   if (!from || !route || (route.a !== from.id && route.b !== from.id)) return;
   if (route.from != null && route.from !== from.id) return; // route à sens unique : pas dans ce sens
   // « En selle » suit les mêmes chemins qu'à pied (mode IMPLICITE des routes `pied`) — règle
-  // `travel-allures` (EDOC ch.4) et chaque héros vivant en selle (EDOC 07 l.140).
+  // `travel-allures` (EDOC ch.7) et chaque héros vivant en selle (EDOC 07 l.140).
   if (mode === 'monture' && (!rule('travel-allures') || !partyFullyMounted(party))) return;
   if (!route.modes.includes(mode === 'monture' ? 'pied' : mode)) return;
   const to = placeById(worldMap, otherEnd(route, from.id));
@@ -371,7 +371,7 @@ export function startTravel(
     routeId, fromPlaceId: from.id, toPlaceId: to.id, mode,
     classKey: opts.classKey, hoursPerDay: hours, km: route.km, kmDone: 0, interrupted: false,
     ...(allure ? { allure } : {}),
-    // Postes initialisés depuis les rôles PERSISTANTS (`travelRole`) — réutilisés chaque Étape (EDOC ch.5).
+    // Postes initialisés depuis les rôles PERSISTANTS (`travelRole`) — réutilisés chaque Étape (EDOC ch.8).
     postes: rule('travel-etapes') ? stageAssignmentFromRoles(party) : undefined,
     ...(vehicle ? { vehicle } : {}),
   };
@@ -544,7 +544,7 @@ function runTravelDays(get: Get, set: Set): void {
     // `prior.mount` = heures DÉJÀ chevauchées aujourd'hui : l'endurance se compte sur le jour, pas le trajet (#340).
     if (plan.mode === 'monture') resolveMountedTravelDay(get, set, hoursToday, plan.allure ?? 'pas', recapDay, prior.mount);
 
-    // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.5, parent `travel-etapes`) + PÉRIPÉTIES du
+    // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.8, parent `travel-etapes`) + PÉRIPÉTIES du
     // jour (d'auteur puis table d10 RAW). TOUS les JETS du jour (Activités d'Étape, Exposition de fin
     // d'Étape, Survie/Perception des péripéties) sont désormais des ÉTAPES d'une CASCADE influençable
     // (`purpose:'travelDay'`, Chance/Pacte/Résilience) — plus d'auto-résolution inline. Ordre RAW (l.10)
@@ -577,7 +577,7 @@ export function continueTravelAfterNight(get: Get, set: Set): void {
   runTravelDays(get, set);
 }
 
-/** Saison courante (table de Météo EDOC ch.5 l.44) depuis l'horloge du jeu. */
+/** Saison courante (table de Météo EDOC ch.8 l.44) depuis l'horloge du jeu. */
 function currentSeason(get: Get): Season {
   return seasonOfMonth(toDate(get().gameTime).month);
 }

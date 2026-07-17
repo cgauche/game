@@ -108,7 +108,7 @@ const aaCriticalsBras = aaCriticalsRoot.bras;
 const aaCriticalsCorps = aaCriticalsRoot.corps;
 const aaCriticalsJambe = aaCriticalsRoot.jambe;
 
-/** 3 catégories de Rencontres de voyage (EDOC ch.5, `rencontres-edoc.json`) — `encounterTable` retourne
+/** 3 catégories de Rencontres de voyage (EDOC ch.8, `rencontres-edoc.json`) — `encounterTable` retourne
  *  la table LIVE (accès de propriété sur le JSON importé par `engine/travelTables.ts`, jamais une copie). */
 const rencontresPositives = encounterTable('positives');
 const rencontresFortuites = encounterTable('fortuites');
@@ -148,7 +148,7 @@ const ARRAYS = {
   riverCriticalsGouvernail: RIVER_CRIT_SET.tables.gouvernail!,
   riverCriticalsCoque: RIVER_CRIT_SET.tables.coque!,
   riverCriticalsSuperstructure: RIVER_CRIT_SET.tables.superstructure!,
-  // Rencontres de voyage (EDOC ch.5) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
+  // Rencontres de voyage (EDOC ch.8) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
   rencontresPositives, rencontresFortuites, rencontresDangereuses,
   // Longs voyages en mer (MDG ch.15) : Humeur de Manann (facteurs) + Événements de bord/de port —
   // 3 tableaux frères NICHÉS dans `sea-events.json`.
@@ -278,7 +278,7 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   riverCriticalsGouvernail: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
   riverCriticalsCoque: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
   riverCriticalsSuperstructure: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
-  // Rencontres de voyage (EDOC ch.5) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
+  // Rencontres de voyage (EDOC ch.8) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
   rencontresPositives: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
   rencontresFortuites: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
   rencontresDangereuses: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },

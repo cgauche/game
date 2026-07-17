@@ -1,5 +1,5 @@
 /**
- * Montures en VOYAGE (EDOC ch.4 « Montures et véhicules ») — moteur PUR, données `src/data/montures.json`
+ * Montures en VOYAGE (EDOC ch.7 « Montures et véhicules ») — moteur PUR, données `src/data/montures.json`
  * (table « Mouvement pour les montures » + Endurance des profils, verbatim EDOC 07 l.17-96 et l.119-130).
  *
  * RAW modélisé :

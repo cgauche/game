@@ -15,7 +15,7 @@ export function nextPinned(pinned: string | undefined, clickedPosteId: string): 
 
 /**
  * ROSTER héros-first UNIQUE (« chaque héros tient un poste ») — surface partagée du Voyage par Étapes
- * (EDOC ch.5) ET des Postes d'équipage (MDG ch.14). Remplace les deux `*View` jumeaux dupliqués
+ * (EDOC ch.8) ET des Postes d'équipage (MDG ch.14). Remplace les deux `*View` jumeaux dupliqués
  * (`TravelRolesPanel`/`ShipRolesPanel`) : mêmes primitives, seule la SOURCE (`postes`) et le câblage
  * store changent, injectés par le wrapper.
  *

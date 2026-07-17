@@ -159,7 +159,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     setSeaPace(0);
   };
 
-  // « En selle » (EDOC ch.4, règle `travel-allures`) : mode IMPLICITE des routes praticables à pied,
+  // « En selle » (EDOC ch.7, règle `travel-allures`) : mode IMPLICITE des routes praticables à pied,
   // quand chaque héros vivant a une monture utilisable.
   const alluresOn = !!rule('travel-allures');
   const mounted = alluresOn && partyFullyMounted(party);

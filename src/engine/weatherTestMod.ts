@@ -1,5 +1,5 @@
 /**
- * CANAL UNIQUE de la pénalité météo « Tests physiques » (EDOC ch.5 l.82, #341). SEUL module autorisé à
+ * CANAL UNIQUE de la pénalité météo « Tests physiques » (EDOC ch.8 l.82, #341). SEUL module autorisé à
  * importer `weatherPhysicalTestMod` : toute autre surface qui voudrait ajouter la météo à un breakdown de
  * Test DOIT passer par ce lecteur — la garde d'import `scripts/guards/lib/weatherTestModQuarantine.mjs`
  * (test `src/engine/weather-test-mod-quarantine-guard.test.ts`) rend tout câblage par-surface INEXPRIMABLE.

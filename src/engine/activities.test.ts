@@ -198,7 +198,7 @@ describe('catalogue d’Activités data-driven (activities.json)', () => {
   });
 });
 
-describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désigné, EDOC ch.5 l.131)', () => {
+describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désigné, EDOC ch.8 l.131)', () => {
   const mk = () => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
 
   it('Activité SANS Test (Récupérer) : succès direct + stageOutcome pour l’acteur désigné', () => {
@@ -246,7 +246,7 @@ describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désign�
   });
 });
 
-describe('postes d’Étape : assignation héros → Activité + agrégation (EDOC ch.5 l.131)', () => {
+describe('postes d’Étape : assignation héros → Activité + agrégation (EDOC ch.8 l.131)', () => {
   const mk = (n: string) => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: n, rng: makeRNG(3) });
 
   it('toute issue d’ACTIVITÉ de voyage a une classification d’agrégation', () => {

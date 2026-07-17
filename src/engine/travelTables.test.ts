@@ -36,13 +36,13 @@ describe('tables de voyage EDOC (data-driven, JSON)', () => {
     expect(rollVehicleProblem(96).vehicleWounds).toBe('2d10');
     expect(rollVehicleProblem(1).vehicleWounds).toBeNull();
     // Dégâts aux OCCUPANTS en GameOp : Cassé = 1 Blessure ignorant BE et PA (défaut de l'op `wounds`) ;
-    // Accident = 2d10 modifiées par BE et PA, min 1 (verbatim EDOC ch.4).
+    // Accident = 2d10 modifiées par BE et PA, min 1 (verbatim EDOC ch.7).
     expect(rollVehicleProblem(80).occupantOps).toEqual([{ op: 'wounds', amount: 1 }]);
     expect(rollVehicleProblem(96).occupantOps).toEqual([{ op: 'wounds', amount: { dice: '2d10' }, ignoreTB: false, ignoreAP: false, min: 1 }]);
     expect(rollVehicleProblem(1).occupantOps).toBeUndefined();
   });
 
-  it('Rencontres : 3 tables d100 contiguës (EDOC ch.5 l.186-233)', () => {
+  it('Rencontres : 3 tables d100 contiguës (EDOC ch.8 l.186-233)', () => {
     for (const cat of ['positives', 'fortuites', 'dangereuses'] as EncounterCategory[]) {
       expectContiguous(encounterTable(cat));
     }

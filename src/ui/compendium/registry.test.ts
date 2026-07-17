@@ -278,7 +278,7 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
     expect(coque.sections?.some((s) => s.title === 'Effet immédiat')).toBe(true);
   });
 
-  it('une Rencontre de voyage (EDOC ch.5) porte sa plage d100 + son texte verbatim', () => {
+  it('une Rencontre de voyage (EDOC ch.8) porte sa plage d100 + son texte verbatim', () => {
     const items = categoryByKey('rencontresPositives')!.items;
     expect(items.length).toBeGreaterThan(0);
     for (const it of items) { expect(it.sub).toMatch(/^d100 \d+–\d+$/); expect(it.desc).toBeTruthy(); }

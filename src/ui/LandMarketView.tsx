@@ -83,7 +83,7 @@ export function LandMarketView() {
         <div className="panel-grid port-trade">
           <section className="panel port-section">
             <h3>Acheter — offres de l’étape</h3>
-            {!target && <p className="port-hint">Aucun porteur de charge : procurez-vous une bête de somme ou un véhicule pour transporter une cargaison (EDOC ch.4).</p>}
+            {!target && <p className="port-hint">Aucun porteur de charge : procurez-vous une bête de somme ou un véhicule pour transporter une cargaison (EDOC ch.7).</p>}
             {market.offers.length === 0 && <p className="port-hint">Aucun marchand n’a de cargaison à céder ici (disponibilité T2C 13 l.22-42).</p>}
             {market.offers.length > 0 && (
               <TradeTable

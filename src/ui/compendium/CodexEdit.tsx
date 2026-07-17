@@ -79,7 +79,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   criticalsTete: 'criticalsTete', criticalsBras: 'criticalsBras', criticalsCorps: 'criticalsCorps', criticalsJambe: 'criticalsJambe',
   aaCriticalsTete: 'aaCriticalsTete', aaCriticalsBras: 'aaCriticalsBras', aaCriticalsCorps: 'aaCriticalsCorps', aaCriticalsJambe: 'aaCriticalsJambe',
   // #157 (suite) : Critiques de coque (MDG ch.13 navire / T2C ch.7 fluvial), Rencontres de voyage
-  // (EDOC ch.5) et Longs voyages en mer (MDG ch.15) — mêmes patrons (nichés) que ci-dessus.
+  // (EDOC ch.8) et Longs voyages en mer (MDG ch.15) — mêmes patrons (nichés) que ci-dessus.
   shipCriticalsCargaison: 'shipCriticalsCargaison', shipCriticalsGreement: 'shipCriticalsGreement',
   shipCriticalsCoque: 'shipCriticalsCoque', shipCriticalsAvirons: 'shipCriticalsAvirons', shipCriticalsEquipements: 'shipCriticalsEquipements',
   riverCriticalsGreement: 'riverCriticalsGreement', riverCriticalsAvirons: 'riverCriticalsAvirons',

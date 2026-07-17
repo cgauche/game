@@ -28,7 +28,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
+        "note": "Tableau Météo par saison, EDOC ch.8 l.52-59"
       }
     },
     {
@@ -55,7 +55,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
+        "note": "Tableau Météo par saison, EDOC ch.8 l.52-59"
       }
     },
     {
@@ -86,7 +86,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
+        "note": "Tableau Météo par saison, EDOC ch.8 l.52-59"
       }
     },
     {
@@ -117,7 +117,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
+        "note": "Tableau Météo par saison, EDOC ch.8 l.52-59"
       }
     }
   ],
@@ -132,7 +132,7 @@
   "physicalTestCharsSource": {
     "book": "ennemi-dans-l-ombre-compagnon",
     "page": 33,
-    "note": "MAISON — EDOC ch.5 l.82 (« -10 à tous les Tests physiques ») ne définit pas « physique » ; liste éditable des Caractéristiques réputées physiques (CC/CT/F/E/Ag/Dex, hors I/FM/Soc)."
+    "note": "MAISON — EDOC ch.8 l.82 (« -10 à tous les Tests physiques ») ne définit pas « physique » ; liste éditable des Caractéristiques réputées physiques (CC/CT/F/E/Ag/Dex, hors I/FM/Soc)."
   },
   "conditions": [
     {
@@ -141,7 +141,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "EDOC ch.5 — Météo, « Temps sec » l.52-59 (aucun effet de combat/mouvement ; -10 Approvisionnement porté par l'Activité)."
+        "note": "EDOC ch.8 — Météo, « Temps sec » l.52-59 (aucun effet de combat/mouvement ; -10 Approvisionnement porté par l'Activité)."
       }
     },
     {
@@ -150,7 +150,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "EDOC ch.5 — Météo, « Beau temps » l.52-59 (aucun effet)."
+        "note": "EDOC ch.8 — Météo, « Beau temps » l.52-59 (aucun effet)."
       }
     },
     {
@@ -162,7 +162,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "EDOC ch.5 « Pluie » l.76"
+        "note": "EDOC ch.8 « Pluie » l.76"
       }
     },
     {
@@ -177,7 +177,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "EDOC ch.5 « Pluie diluvienne » l.82"
+        "note": "EDOC ch.8 « Pluie diluvienne » l.82"
       }
     },
     {
@@ -194,7 +194,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 33,
-        "note": "EDOC ch.5 « Neige » l.86"
+        "note": "EDOC ch.8 « Neige » l.86"
       }
     },
     {
@@ -212,7 +212,7 @@
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
         "page": 34,
-        "note": "EDOC ch.5 « Blizzard » l.127"
+        "note": "EDOC ch.8 « Blizzard » l.127"
       }
     }
   ]
