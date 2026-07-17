@@ -64,9 +64,8 @@ const OTHER_ABBR_ALT = [
   ...BOOKS.filter(([a]) => a !== 'LDB').map(([a]) => esc(a)),
   ...EXTRA_ABBR_VARIANTS.map(([, pat]) => pat),
 ].sort((a, b) => b.length - a.length).join('|')
-// m[4] = suffixe de plage `((?:[-+]\d+)*)` (#487), miroir de ldbRe ; check-refs lit m[4] (#583 jumeau,
-// borne haute de plage) — reconcile.mjs:156 l'ignore encore (span(m[3], '') sur atlasOther, signalé
-// hors périmètre #583, PAS corrigé ici).
+// m[4] = suffixe de plage `((?:[-+]\d+)*)` (#487), miroir de ldbRe ; check-refs et reconcile.mjs
+// (branche atlasOther) le lisent tous deux désormais (#586).
 export const otherRe = () =>
   new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
 
