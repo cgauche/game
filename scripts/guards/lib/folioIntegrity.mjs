@@ -237,10 +237,11 @@ export function auditFolio({ book, page, desc }) {
   if (ranges.length === 0) return { verdict: 'sans-marqueur' }
   // UNE occurrence encadrante suffit — non par confort, mais parce qu'une desc retrouvée SUR le folio
   // déclaré ne peut pas être dite mensongère : le texte y est. La contrepartie est que ce module ne
-  // départage PAS deux occurrences (définition vs récapitulatif d'annexe) : ce choix est une
-  // convention de citation, pas un fait réfutable — `auditFolios` les SIGNALE (`multi`) pour arbitrage
-  // humain. Mesuré sur les 1047 entrées à desc retrouvée : 1 SEULE est multi-occurrence
-  // (`traits.json:fouissement`, folios 23 et 134) — la règle ne pèse donc sur rien d'autre.
+  // départage PAS deux occurrences : ce choix est une convention de citation, pas un fait réfutable —
+  // `auditFolios` les SIGNALE (`multi`) pour arbitrage humain. Mesuré sur les 1047 entrées à desc
+  // retrouvée : 1 SEULE est multi-occurrence (`traits.json:fouissement`, folios 23 et 134 — le ZI y
+  // définit le Trait DEUX fois en toutes lettres ; le schéma ne sait pas écrire « défini à deux
+  // endroits », #563) — la règle ne pèse donc sur rien d'autre.
   const ok = ranges.some(({ lo, hi }) => page >= lo && (hi === OPEN || page <= hi))
   return { verdict: ok ? 'folio-ok' : 'folio-ment', ranges }
 }

@@ -37,9 +37,15 @@
 // Déjà SOLDÉS à la pose, donc absents de la liste : le trio de Psychologie `amour`/`camaraderie`/
 // `phobie` (190 → 191, LDB — attesté par la table de renvoi du LDB lui-même,
 // `85 - Traits de créature.md:511/538/675`), `redoutable` (11 → 134, ZI — folio 11 sans contenu, seule
-// définition en `14 - Expéditions prévues.md:1043`) et `fouissement` (13 → 23, ZI — la DÉFINITION est
-// en folio 23, `02 - Griffon.md:66-70`, encadrée par les marqueurs 23 (l.47) et 24 (l.72) ; le folio
-// 134 porte le RÉCAPITULATIF d'annexe `14 - Expéditions prévues.md:1047-1051`, pas la définition).
+// définition en `14 - Expéditions prévues.md:1043`) et `fouissement` (13 → 134, ZI). Le ZI définit
+// Fouissement DEUX fois, en toutes lettres : folio 23 (`02 - Griffon.md:66-70`, marqueurs 23 l.47 /
+// 24 l.72), amorce « **Fouissement :** cette créature… » ; et folio 134 (`14 - Expéditions
+// prévues.md:1047-1051`, marqueurs 134 l.1010 / 135 l.1053), amorce « Cette créature… », sous la même
+// formule de titre `#### **Nouveau Trait de créature : X**` que `redoutable` (l.1043). Le folio retenu
+// est 134 : c'est ce texte-là que la `desc` stocke VERBATIM (règle stricte 5 — la réf pointe le folio
+// dont le texte est stocké). Le RÉCAPITULATIF, lui, est la table des folios 135-137
+// (`14:1053+`), où Fouissement reparaît ABRÉGÉ en l.1097-1101 (folio 136). Les deux définitions
+// complètes sont hors de portée du schéma (une entrée = une `source`) : #563.
 /** @type {ReadonlySet<string>} */
 export const FOLIO_RATCHET = new Set([
   // activities.json

@@ -81,7 +81,7 @@ if (process.argv.includes('--stock')) {
     console.log(`  ${r.key.padEnd(48)} ${r.book.padEnd(22)} p.${String(r.declare).padEnd(5)} -> ${r.reel.padEnd(30)} ${r.chapitre}${tag}`);
   }
   if (multi.length) {
-    console.log(`\nÀ ARBITRER — desc trouvée sur PLUSIEURS folios (définition vs récapitulatif) : ${multi.length}`);
+    console.log(`\nÀ ARBITRER — desc trouvée sur PLUSIEURS folios (le livre la porte deux fois) : ${multi.length}`);
     for (const m of multi) console.log(`  ${m.key.padEnd(48)} p.${m.declare ?? m.page} vs ${fmt(m.ranges)}`);
   }
 }
