@@ -53,8 +53,12 @@ describe('EtatPanel', () => {
     expect(rowCount).toBe(8);
     // Nom de ligne = CodexRef cliquable (popover Codex), sur chaque famille de rubrique.
     expect((html.match(/codex-ref/g) || []).length).toBeGreaterThanOrEqual(6);
-    // Un GameOp = une rangée (doctrine #295) : le moveMod de la mutation est rendu en chip.
-    expect(html).toContain('gagne +1 en Mouvement');
+    // Un GameOp = une rangée (doctrine #295) : le moveMod de la mutation est rendu en chip codex-liée
+    // sur l'entrée « Mouvement » (catégorie `characteristics`, comme un `charMod`) — jamais la prose
+    // moteur (arbitrage user 2026-07-17).
+    expect(html).toContain('>Mouvement<');
+    expect(html).toContain('class="entity-badge">+1</em>');
+    expect(html).not.toContain('gagne +1 en Mouvement');
     // AUCUNE prose des entrées (règle 5 : le Codex la porte, pas l'onglet État) — le trauma synthétique
     // porte une prose verbatim de test qui ne doit JAMAIS apparaître dans le registre.
     expect(html).not.toContain('Description verbatim du trauma.');

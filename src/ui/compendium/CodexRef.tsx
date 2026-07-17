@@ -9,7 +9,7 @@
  * contexte d'empilement. `pointer-events: none` → pur tooltip, pas de pont de survol ; le clic
  * (déclencheur) ouvre le Codex.
  */
-import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
 import { codexLookup, codexLookupById } from './registry';
@@ -79,8 +79,11 @@ export function CodexRef({
   /** Instance paramétrée portant les Indices (« 8 Tentacules +8 ») — affichée en tête du popover
    *  et transmise au Codex à l'ouverture (le Codex « prend en compte les Indices »). */
   instance?: string;
-  /** POPOVER SEUL : survol → info, mais le clic n'ouvre PAS la fiche Codex (ni rôle bouton). Pour
-   *  un déclencheur déjà cliquable par ailleurs (cellule d'équipement = picker au clic). */
+  /** POPOVER SEUL : survol/clic → info, mais le clic n'ouvre PAS la fiche Codex. Le clic (et
+   *  Entrée/Espace, focus+clic tactile) BASCULE le popover (fermé par Échap, clic ailleurs, ou
+   *  un 2e clic sur le déclencheur) — pour un déclencheur déjà cliquable par ailleurs (cellule
+   *  d'équipement = picker au clic), utiliser `tooltipOnly` empêche l'ouverture concurrente de la
+   *  fiche tout en gardant l'info accessible sans survol (tactile/clavier). */
   tooltipOnly?: boolean;
   /** Contenu de SECOURS quand l'entrée n'est pas au catalogue (arme invoquée/enchantée…) : un popover
    *  est tout de même rendu au survol (sub + body), sans ouverture de fiche. */
@@ -90,12 +93,18 @@ export function CodexRef({
   const item = (id ? codexLookupById(category, id) : undefined) ?? codexLookup(category, label);
   const ref = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<PopoverPlacement | null>(null);
+  // Épinglé (mode `tooltipOnly` : clic/Entrée/Espace) — le popover reste ouvert hors survol, fermé
+  // par Échap, clic ailleurs, ou un 2e déclenchement (toggle). Hors `tooltipOnly` le popover reste
+  // un pur tooltip de survol/focus (le clic ouvre directement la fiche Codex).
+  const [pinned, setPinned] = useState(false);
 
-  const show = useCallback(() => {
+  const showAt = useCallback(() => {
     const el = ref.current;
     if (el) setPos(computePopoverPos(el.getBoundingClientRect(), window.innerWidth, window.innerHeight));
   }, []);
-  const hide = useCallback(() => setPos(null), []);
+  const show = useCallback(() => { if (!pinned) showAt(); }, [pinned, showAt]);
+  const hide = useCallback(() => { if (!pinned) setPos(null); }, [pinned]);
+  const unpin = useCallback(() => { setPinned(false); setPos(null); }, []);
 
   // Sans entrée catalogue NI fallback : icône-déclencheur → rien ; libellé → texte simple.
   if (!item && !fallback) return hideIfUnknown ? null : <span className={className}>{children ?? label}</span>;
@@ -110,20 +119,41 @@ export function CodexRef({
   const inst = instance && instance !== title ? instance : undefined;
   // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul (prop
   // `tooltipOnly`, ex. cellule d'équipement déjà cliquable comme picker).
-  const interactive = !tooltipOnly && !!item;
+  const openFiche = !tooltipOnly && !!item;
+  const togglePopover = tooltipOnly && (!!item || !!fallback);
+  const clickable = openFiche || togglePopover;
   const open = () => { if (item) openCodex({ category, id: item.id, label: item.label, instance: inst }); };
+  const toggle = () => { if (pinned) unpin(); else { showAt(); setPinned(true); } };
+  const activate = openFiche ? open : togglePopover ? toggle : undefined;
+
+  // Épinglé (`tooltipOnly`) : Échap referme, clic HORS du déclencheur referme (le popover porté
+  // est en `pointer-events: none` — un clic dessus retombe naturellement à l'élément dessous).
+  useEffect(() => {
+    if (!pinned) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') unpin(); };
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) unpin();
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onDoc);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onDoc);
+    };
+  }, [pinned, unpin]);
 
   return (
     <span
       ref={ref}
-      className={`codex-ref${inline ? ' codex-inline' : ''}${interactive ? '' : ' codex-static'}${className ? ` ${className}` : ''}`}
-      tabIndex={interactive ? 0 : undefined}
-      role={interactive ? 'button' : undefined}
-      onClick={interactive ? open : undefined}
-      onKeyDown={interactive ? (e) => {
+      className={`codex-ref${inline ? ' codex-inline' : ''}${clickable ? '' : ' codex-static'}${className ? ` ${className}` : ''}`}
+      tabIndex={clickable ? 0 : undefined}
+      role={clickable ? 'button' : undefined}
+      aria-expanded={togglePopover ? pinned : undefined}
+      onClick={activate}
+      onKeyDown={activate ? (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          open();
+          activate();
         }
       } : undefined}
       onMouseEnter={show}
@@ -140,11 +170,11 @@ export function CodexRef({
             {popSub && <span className="codex-pop-sub">{popSub}</span>}
             {metaLine && <span className="codex-pop-meta">{metaLine}</span>}
             {body && <span className="codex-pop-body">{body}</span>}
-            {(src || interactive) && (
+            {(src || openFiche) && (
               <span className="codex-pop-foot">
                 {src && <span className="codex-src">{src.book} p.{src.page}</span>}
                 {/* affordance EXPLICITE : le déclencheur est cliquable → la fiche Codex s'ouvre */}
-                {interactive && <span className="codex-pop-open">Ouvrir la fiche</span>}
+                {openFiche && <span className="codex-pop-open">Ouvrir la fiche</span>}
               </span>
             )}
           </span>,
