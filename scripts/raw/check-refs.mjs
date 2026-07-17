@@ -29,7 +29,7 @@ function* refsInLine(ln) {
     const nn = m[2]
     if (nn == null) continue // pas de chapitre → hors sujet (réf de livre entier, pas de fichier à borner)
     const abbr = bookOf(m[1].replace(/\s+/g, ' ').trim())
-    const [, hi] = span(m[3], '')
+    const [, hi] = span(m[3], m[4])
     yield { abbr, nn, hi }
   }
 }
