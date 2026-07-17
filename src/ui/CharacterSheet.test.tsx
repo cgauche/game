@@ -128,21 +128,21 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     const figTile = portrait.querySelector('.fig-tile.hero')!;
     expect(figTile).toBeTruthy();
     expect(h3.compareDocumentPosition(figTile) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy(); // le nom précède le cadre
-    // 3/4. Barre de vie PUIS barre d'encombrement — même primitive `NotchGauge` (Coque/Moral/Soute),
-    // aucun arc SVG (VitalArc mort).
+    // 3/4. Barre de vie PUIS barre d'encombrement — VRAIES barres lisses `LifeBar` (arbitrage
+    // 2026-07-17 : « pourquoi la version crantée ? »), aucun arc SVG (VitalArc mort).
     expect(aside.querySelector('.vital-arc')).toBeNull();
-    const gauges = portrait.querySelectorAll('.notch-gauge');
-    expect(gauges.length).toBe(2);
-    expect(gauges[0].querySelector('.notch-gauge__label')?.textContent).toBe('Blessures');
-    expect(gauges[0].querySelector('.notch-gauge__value')?.textContent).toBe('12 / 12');
-    expect(gauges[1].querySelector('.notch-gauge__label')?.textContent).toBe('Encombrement');
-    expect(gauges[1].querySelector('.notch-gauge__value')?.textContent).toBe('0 / 6');
-    // 5. Rangées race / classe / statut.
+    const bars = portrait.querySelectorAll('.life-bar');
+    expect(bars.length).toBe(2);
+    expect(bars[0].querySelector('.life-bar__label')?.textContent).toBe('Blessures');
+    expect(bars[0].querySelector('.life-bar__value')?.textContent).toBe('12/12');
+    expect(bars[1].querySelector('.life-bar__label')?.textContent).toBe('Encombrement');
+    expect(bars[1].querySelector('.life-bar__value')?.textContent).toBe('0/6');
+    // 5. Rangées race / carrière / statut.
     const rows = portrait.querySelectorAll('.sheet-idrow');
     expect(rows.length).toBe(3);
     expect(rows[0].querySelector('.sheet-idrow-label')?.textContent).toBe('Race');
     expect(rows[0].textContent).toContain('Humain');
-    expect(rows[1].querySelector('.sheet-idrow-label')?.textContent).toBe('Classe');
+    expect(rows[1].querySelector('.sheet-idrow-label')?.textContent).toBe('Carrière');
     expect(rows[1].textContent).toContain('niv. 1');
     expect(rows[2].querySelector('.sheet-idrow-label')?.textContent).toBe('Statut');
     expect(rows[2].querySelector('.metal-status')).toBeTruthy();
@@ -155,17 +155,32 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     const blesse = { ...hero(), wounds: { current: 4, max: 12 } } as Combatant;
     useGame.setState({ party: [blesse], battle: null, sheetId: blesse.id, sheetTab: 'possessions' });
     mount(<CharacterSheet heroId={blesse.id} onClose={() => {}} />);
-    let vie = container.querySelector('.sheet-aside .notch-gauge');
-    expect(vie?.querySelector('.notch-gauge__value')?.textContent).toBe('4 / 12');
+    let vie = container.querySelector('.sheet-aside .life-bar');
+    expect(vie?.querySelector('.life-bar__value')?.textContent).toBe('4/12');
     expect(vie?.getAttribute('data-tone')).toBe('danger'); // 4/12 = 33 % <= seuil 34 %
 
     // Soin (mutation directe du party courant) : la fiche relit `useGame`, la jauge doit suivre.
     act(() => {
       useGame.setState((s) => ({ party: s.party.map((c) => (c.id === blesse.id ? { ...c, wounds: { current: 9, max: 12 } } : c)) }));
     });
-    vie = container.querySelector('.sheet-aside .notch-gauge');
-    expect(vie?.querySelector('.notch-gauge__value')?.textContent).toBe('9 / 12');
+    vie = container.querySelector('.sheet-aside .life-bar');
+    expect(vie?.querySelector('.life-bar__value')?.textContent).toBe('9/12');
     expect(vie?.getAttribute('data-tone')).toBe('ok'); // 9/12 = 75 % > seuil 67 %
+  });
+
+  it('surcharge qui CRIE (arbitrage 2026-07-17) : Enc. > max → piste pleine, surplus affiché, teinte danger', () => {
+    const h = {
+      ...hero(),
+      items: [{ uid: 'sac', name: 'Fourniment', kind: 'misc', qualities: [], enc: 15, equipped: false }],
+    } as unknown as Combatant;
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    const bars = container.querySelectorAll('.sheet-aside .life-bar');
+    const enc = bars[1];
+    expect(enc.getAttribute('data-overflow')).toBe('');
+    expect(enc.getAttribute('data-tone')).toBe('danger');
+    expect(enc.querySelector('.life-bar__value')?.textContent).toBe('15/6 · +9');
+    expect((enc.querySelector('.life-bar__fill') as HTMLElement).style.width).toBe('100%');
   });
 
   it('tête de l’onglet Compétences & Talents : CharStatsGrid + Mouvement + Destin·Chance/Résilience·Détermination', () => {

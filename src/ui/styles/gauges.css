@@ -1,5 +1,66 @@
-/* Jauges du navire — <NotchGauge> (jauge à crans) + <WindRose> (rose des vents). Sobres, denses,
-   thème sombre, lisibles à 360px. Toutes les couleurs viennent des tokens :root (charte UI). */
+/* Jauges — <LifeBar> (barre lisse) + <NotchGauge> (jauge à crans) + <WindRose> (rose des vents).
+   Sobres, denses, thème sombre, lisibles à 360px. Toutes les couleurs viennent des tokens :root (charte UI). */
+
+/* ── LifeBar ─────────────────────────────────────────────────────────────────────────────────── */
+.life-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.life-bar__label {
+  color: var(--muted);
+  font-size: 0.85em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.life-bar__track {
+  position: relative;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.72);
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 0;
+}
+.life-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.2s ease;
+  background: var(--silver);
+}
+.life-bar[data-tone='ok'] .life-bar__fill { background: var(--ok-bright); }
+.life-bar[data-tone='warn'] .life-bar__fill { background: var(--gold2); }
+.life-bar[data-tone='danger'] .life-bar__fill { background: var(--danger); }
+.life-bar__value {
+  color: var(--text);
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.life-bar[data-overflow] .life-bar__value {
+  color: var(--danger);
+  font-weight: 700;
+}
+/* Superposée (portraits compacts) : plein-largeur, valeur centrée SUR la piste, jamais de label. */
+.life-bar[data-overlay] {
+  display: block;
+  width: 100%;
+  position: relative;
+  pointer-events: none;
+}
+.life-bar[data-overlay] .life-bar__value {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--on-accent);
+  text-shadow: 0 0 3px var(--shadow-ink), 0 1px 2px var(--shadow-ink);
+  line-height: 10px;
+}
 
 /* ── NotchGauge ──────────────────────────────────────────────────────────────────────────────── */
 .notch-gauge {

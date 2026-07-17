@@ -68,6 +68,32 @@ describe('EtatPanel', () => {
     expect((html.match(/Corruption/g) || []).length, 'un SEUL « Corruption » — pas de titre de bande redondant').toBe(1);
   });
 
+  it('compteurs de DESTIN (pt.4) : « actives N/BE » (Critiques) et « phys N/BE · ment M/BFM » (Mutations), ton MUTED loin du seuil', () => {
+    const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
+    // BE = bonus(Endurance 30) = 3 — `criticalWounds` non posé → 0 actives, `mutations` = 1 physique.
+    expect(html).toContain('actives 0/3');
+    expect(html).toContain('phys 1/3 · ment 0/3');
+    expect((html.match(/etat-threshold" data-tone="muted"/g) || []).length).toBe(2);
+  });
+
+  it('compteurs de DESTIN : ton WARN à seuil−1, DANGER au seuil atteint/franchi (contrat POSITIF par seuil)', () => {
+    const auSeuil = mkHero((c) => {
+      c.critEntriesSuffered = ['blessure-spectaculaire'];
+      c.criticalWounds = 2; // BE = 3 → seuil−1 (warn)
+      c.mutations = [
+        { id: 'm1', label: 'Mutation physique 1', desc: '', kind: 'physique', roll: 1, passive: [] } as never,
+        { id: 'm2', label: 'Mutation physique 2', desc: '', kind: 'physique', roll: 1, passive: [] } as never,
+        { id: 'm3', label: 'Mutation physique 3', desc: '', kind: 'physique', roll: 1, passive: [] } as never,
+        { id: 'm4', label: 'Mutation physique 4', desc: '', kind: 'physique', roll: 1, passive: [] } as never,
+      ]; // phys 4 > BE 3 → danger
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={auSeuil} />);
+    expect(html).toContain('actives 2/3');
+    expect(html).toContain('etat-threshold" data-tone="warn">actives 2/3');
+    expect(html).toContain('phys 4/3 · ment 0/3');
+    expect(html).toContain('etat-threshold" data-tone="danger">phys 4/3');
+  });
+
   it('rangée de zones (pt.4) MORTE dans le registre (lot « corps-index », #492) — seules les ancres de la PREMIÈRE rangée concernée subsistent', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
     // La bande résumée (`ZoneBand`/`PlaqueGrid`) a migré vers `FigTile.zoneBadges` — plus de grille

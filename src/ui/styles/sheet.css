@@ -619,6 +619,23 @@
 [data-tone='violet'] .plaque-row {
   border-left-color: var(--corruption-violet);
 }
+/* Compteur de DESTIN (pt.4, #492) : « actives N/BE » (Critiques), « phys N/BE · ment M/BFM »
+   (Mutations) — ton par PALIER (`muted`/`warn`/`danger`, `thresholdTone`), attribut jamais classe. */
+.etat-threshold {
+  font-size: 0.85em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.etat-threshold[data-tone='muted'] {
+  color: var(--muted);
+  font-weight: 400;
+}
+.etat-threshold[data-tone='warn'] {
+  color: var(--gold2);
+}
+.etat-threshold[data-tone='danger'] {
+  color: var(--danger);
+}
 /* Gangrène du cadre (pt.6, #492) : l'or du bandeau de tête (`.modal { border-top: 4px solid --gold }`,
    components.css) et le halo se ternissent progressivement de violet-noir depuis un coin, selon la
    Corruption du héros (`data-corruption`, posé par `CharacterSheet.tsx` via `corruptionThresholdExceeded`,
