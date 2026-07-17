@@ -403,8 +403,8 @@ export interface TalentData {
   combat?: import('../engine/combatFeatures/types').CombatFeature;
   /** `true` = contenu de RÉFÉRENCE (PNJ/campagne scriptée), pas un Talent de progression PJ standard —
    *  le RAW lui-même le dit explicite (« ne sont pas accessibles à d'autres personnes dans des
-   *  circonstances normales », EDOC 9 l.83 ; « Carrière destinée uniquement aux PNJ … avec la
-   *  permission du MJ », EDOC 9 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE1 ch.6 l.185).
+   *  circonstances normales », EDOC 13 l.83 ; « Carrière destinée uniquement aux PNJ … avec la
+   *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE1 ch.6 l.185).
    *  Lu par `computeObtainability` (`scripts/data/lib/obtainabilityGraph.ts`, #326) pour exempter la
    *  garde `obtainability-guard.test.ts` — jamais un silence sur un Talent sans chemin d'octroi PJ. */
   codexOnly?: true;

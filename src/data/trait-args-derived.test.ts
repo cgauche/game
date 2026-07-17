@@ -70,7 +70,7 @@ const scenesToScan: Scene[] = [...testScenarios.map((s) => s.scene), ambushTest,
 /** Statblocs D'AUTEUR des scénarios de test/projets d'éditeur — même schéma d'instance que le
  *  bestiaire (déjà id-based, jamais de `key` legacy), soumis aux mêmes invariants #1/#2/#3. Balaie
  *  `statblock.traits` (profil d'auteur, ex. un statbloc de Nuée/Dragon) ET `combat.optionals` (Traits
- *  FACULTATIFS choisis sur une entité `ref`, LDB 76 l.49, ex. « Lanceur de Sorts » d'un cultiste) —
+ *  FACULTATIFS choisis sur une entité `ref`, LDB 76 l.45, ex. « Lanceur de Sorts » d'un cultiste) —
  *  même schéma `TraitInstance`, même dérive possible dans les deux. */
 function* eachSceneInstance(): Generator<Row> {
   for (const scene of scenesToScan) {

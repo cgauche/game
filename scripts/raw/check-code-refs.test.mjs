@@ -3,10 +3,10 @@
 // cliquet par fichier tient. Le VRAI src/ du repo reste aligné sur sa baseline. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanDeadCodeRefs, countsByFile, assertAgainstBaseline, isExcludedSrc, BASELINE_PATH } from './check-code-refs.mjs'
+import { scanDeadCodeRefs, countsByFile, assertAgainstBaseline, isExcludedSrc, readBaseline, BASELINE_PATH } from './check-code-refs.mjs'
 
 // LDB 06 (Source/…/06 - Classes.md) fait 6 lignes (split('\n').length) — chapitre réel, court, stable :
 // sert d'ancrage pour planter une réf hors borne sans toucher au vrai src/.
@@ -56,6 +56,15 @@ test('réf « autre livre » (T2C 16 l.99999) hors borne → détectée via othe
   })
 })
 
+test('réf « autre livre » en PLAGE (T2C 13 l.5-9999) : la borne HAUTE de la plage est vérifiée, pas juste la borne basse', () => {
+  withTempSrcDir('x.ts', '// T2C 13 l.5-9999 plage qui déborde par le HAUT\n', (dir) => {
+    const dead = scanDeadCodeRefs(dir)
+    assert.equal(dead.length, 1)
+    assert.equal(dead[0].abbr, 'T2C')
+    assert.equal(dead[0].hi, 9999)
+  })
+})
+
 test('.json scanné comme .ts/.tsx', () => {
   withTempSrcDir('data.json', '{ "note": "LDB 6 l.999" }\n', (dir) => {
     assert.equal(scanDeadCodeRefs(dir).length, 1)
@@ -86,10 +95,20 @@ test('conforme à la baseline exacte → ni hausse ni péremption', () => {
   assert.equal(stale.length, 0)
 })
 
-test('non-régression : le VRAI src/ du repo est ALIGNÉ sur dead-code-refs-baseline.json (ni hausse ni péremption)', () => {
+test('readBaseline : fichier absent → {} (mode zéro-tolérance), fichier présent → parsé', () => {
+  assert.deepEqual(readBaseline(join(tmpdir(), 'inexistant-check-code-refs.json')), {})
+  withTempSrcDir('_unused.ts', '', (dir) => {
+    const path = join(dir, 'baseline.json')
+    writeFileSync(path, '{"src/a.ts":2}', 'utf8')
+    assert.deepEqual(readBaseline(path), { 'src/a.ts': 2 })
+  })
+})
+
+test('non-régression : le VRAI src/ du repo est aligné sur le régime ZÉRO-TOLÉRANCE (#583 : baseline soldée)', () => {
+  // Solde #583 : dead-code-refs-baseline.json est ABSENT en régime nominal — toute réf morte échoue.
+  assert.equal(existsSync(BASELINE_PATH), false, 'dead-code-refs-baseline.json doit rester ABSENT (zéro-tolérance) — sa réapparition doit porter un diagnostic de résidu irréductible')
   const counts = countsByFile(scanDeadCodeRefs())
-  const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'))
-  const { over, stale } = assertAgainstBaseline(counts, baseline)
-  assert.deepEqual(over, [], `réfs de code mortes en HAUSSE :\n${over.join('\n')}`)
+  const { over, stale } = assertAgainstBaseline(counts, readBaseline())
+  assert.deepEqual(over, [], `réfs de code mortes détectées (tolérance zéro) :\n${over.join('\n')}`)
   assert.deepEqual(stale, [], `baseline(s) périmée(s) à abaisser :\n${stale.join('\n')}`)
 })
