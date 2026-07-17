@@ -36,9 +36,11 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * +1 set() légitime (#474a Se cabrer : `aiCreatureFreeAttacks` dépense l'Action de Mouvement
  * (`movementUsed = mountMovement`) AVANT `applyFreeAttack`, LDB 85 l.314 — coût distinct du `campSpend`
  * d'Avantage porté par `applyFreeAttack`, donc son propre `set()`).
+ * +1 set() légitime (#558 : `castSetChosenTableRolls` pose `pendingCast.chosenTableRolls` — le jet sur
+ * Tableau est DÉCLINABLE, EDOC 13 l.276 — même patron que `castAllocOvercast` déjà compté).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 709, totalAdHocResets: 286 }; // +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks) ; +1/+1 (#476 : toggle harpoonRopeCut, set + reset du pendingAttack)
+const BASELINE = { totalCalls: 710, totalAdHocResets: 287 }; // +1 (#352 innFlow.ts : set() du party après Exténué) ; +1 (#474a : coût Mouvement Se cabrer, aiCreatureFreeAttacks) ; +1/+1 (#476 : toggle harpoonRopeCut, set + reset du pendingAttack) ; +1/+1 (#558 : castSetChosenTableRolls)
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

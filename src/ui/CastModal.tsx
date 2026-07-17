@@ -8,7 +8,7 @@ import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
 import { castingValue, spellTargetCount } from '../engine/magic';
-import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity } from '../engine/overcast';
+import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, spellHasOvercastTableRoll } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -47,6 +47,7 @@ export function CastModal() {
   const setConjureForm = useGame((s) => s.castSetConjureForm);
   const setDiscreet = useGame((s) => s.castSetDiscreet);
   const allocOvercast = useGame((s) => s.castAllocOvercast);
+  const setChosenTableRolls = useGame((s) => s.castSetChosenTableRolls);
   const toggleExtraTarget = useGame((s) => s.castToggleExtraTarget);
   const pickTargets = useGame((s) => s.castPickTargets);
   const placeZone = useGame((s) => s.castPlaceZone);
@@ -294,6 +295,19 @@ export function CastModal() {
                     ))}
                   </div>
                 ))}
+                {/* Jet sur Tableau DÉCLINABLE (EDOC 13 l.276 : « vous pouvez à la fois prolonger la durée
+                    et refaire un jet ») : la durée se prolonge intégralement quel que soit ce choix,
+                    borné [0, pas Durée alloués]. Défaut = tous les pas (paquet complet, zéro-clic). */}
+                {oc.duration > 0 && spellHasOvercastTableRoll(spellEffectOps(spell.effects)) && (
+                  <div className="rm-stepper-list">
+                    <div className="rm-stepper">
+                      <span className="rm-stepper-label"><Icon id="nav/dice" size="sm" /> Jets sur le Tableau</span>
+                      <button className="btn small" disabled={(pc.chosenTableRolls ?? oc.duration) <= 0} onClick={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) - 1)} title="Décliner un jet sur le Tableau (la durée se prolonge quand même)">−</button>
+                      <strong className="rm-stepper-val">{pc.chosenTableRolls ?? oc.duration}</strong>
+                      <button className="btn small" disabled={(pc.chosenTableRolls ?? oc.duration) >= oc.duration} onClick={() => setChosenTableRolls((pc.chosenTableRolls ?? oc.duration) + 1)} title="Refaire un jet sur le Tableau">+</button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })()}

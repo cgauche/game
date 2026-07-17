@@ -2846,6 +2846,7 @@ export function createCombatSlice(get: Get, set: Set) {
           durationMult: ocDur.mult,
           durationBonusRounds: ocDur.bonusRounds,
           overcastDurationSteps: pc.overcast?.duration ?? 0,
+          chosenTableRolls: pc.chosenTableRolls,
           extraTargets: extras,
           conjureForm: pc.conjureForm,
           opposedOutcome: pc.opposedOutcome,
@@ -2911,7 +2912,20 @@ export function createCombatSlice(get: Get, set: Set) {
       const caster = (get().battle?.combatants ?? get().party).find((c) => c.id === pc.casterId);
       const cap = caster ? extraTargetCapacity(source, next.targets, spellTargetCount(spell, caster)) : 0;
       const extraTargetIds = (pc.extraTargetIds ?? []).length > cap ? (pc.extraTargetIds ?? []).slice(0, cap) : pc.extraTargetIds;
-      set({ pendingCast: { ...pc, overcast: next, ...(zone ? { zone } : {}), ...(extraTargetIds !== pc.extraTargetIds ? { extraTargetIds } : {}) } });
+      // Le choix de jets sur le Tableau (EDOC 13 l.276) reste borné aux pas Durée alloués : si l'axe
+      // Durée redescend, re-clamp (jamais un choix > allocation) ; aucun choix explicite encore posé →
+      // rien à clamper (défaut = tous les pas, résolu à l'application).
+      const chosenTableRolls = axis === 'duration' && pc.chosenTableRolls != null
+        ? Math.min(pc.chosenTableRolls, next.duration)
+        : pc.chosenTableRolls;
+      set({ pendingCast: { ...pc, overcast: next, ...(zone ? { zone } : {}), ...(extraTargetIds !== pc.extraTargetIds ? { extraTargetIds } : {}), ...(chosenTableRolls !== pc.chosenTableRolls ? { chosenTableRolls } : {}) } });
+    },
+    /** Jets sur le Tableau CHOISIS (EDOC 13 l.276, déclinable) : borné [0, pas Durée alloués]. */
+    castSetChosenTableRolls: (n: number) => {
+      const pc = get().pendingCast;
+      if (!pc || !pc.result?.cast) return;
+      const max = pc.overcast?.duration ?? 0;
+      set({ pendingCast: { ...pc, chosenTableRolls: Math.max(0, Math.min(n, max)) } });
     },
     castToggleExtraTarget: (id: string) => {
       const pc = get().pendingCast;

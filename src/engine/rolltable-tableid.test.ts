@@ -54,6 +54,19 @@ describe('op rollTable — variante tableId (tables.json)', () => {
     expect((c.activeEffects ?? []).filter((e) => e.grantedTrait)).toHaveLength(1);
   });
 
+  it('chosenTableRolls DÉCLINE le jet (EDOC 13 l.276 « vous pouvez ») sans jamais dépasser les pas alloués', () => {
+    const roll = (overcastDurationSteps: number, chosenTableRolls: number | undefined) => {
+      const c = dummy();
+      applyOps(c, [{ op: 'rollTable', tableId: 'allure-demoniaque-nurgle', extraRollsPerStep: 1 }], { rng: fixed(3), overcastDurationSteps, chosenTableRolls, defaultDurationRounds: 3 });
+      return (c.activeEffects ?? []).filter((e) => e.grantedTrait).length;
+    };
+    expect(roll(2, undefined)).toBe(3); // chosen absent = tous les pas (comportement actuel/IA)
+    expect(roll(2, 0)).toBe(1); // décliné entièrement → 1 seul jet (le jet de base reste dû)
+    expect(roll(2, 1)).toBe(2); // 1 pas choisi sur 2 alloués
+    expect(roll(2, 2)).toBe(3); // tous choisis = comme absent
+    expect(roll(2, 5)).toBe(3); // clamp : jamais au-delà des pas RÉELLEMENT alloués
+  });
+
   it('addNegativeSL décale le jet vers le bas de |DR| (parité avec la forme inline)', () => {
     // die=3, |DR|=3 → lookup à 6 (Nurgle 6 = Peur (3))
     const c = dummy();

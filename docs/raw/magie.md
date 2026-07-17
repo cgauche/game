@@ -191,9 +191,9 @@ cibles supplémentaires (`LDB 47 l.28`).
 > **Verbatim Bénédiction** (`LDB 41 l.23-25`) : « • Portée : +6 mètres • Cibles : +1 • Durée : +6 Rounds »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 41` (l.21-27) → `OvercastSource`, `BLESSING_STEP`, `effectiveRangeMetres`, `effectiveSpellRangeTiles` — `src/engine/magic.ts`, `src/engine/overcast.ts`
-- `LDB 42` (l.7-13) → `OvercastSource` — `src/engine/overcast.ts`
-- `LDB 47` (l.13-17, l.28) → `OvercastSource`, `CastModal`, `carriedGrimoire`, `canCastFromGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `GameOp`, +11 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +8 fichiers
+- `LDB 41` (l.21-27) → `BLESSING_STEP`, `effectiveRangeMetres`, `effectiveSpellRangeTiles` — `src/engine/magic.ts`, `src/engine/overcast.ts`
+- `LDB 42` (l.7-13) → `src/engine/overcast.ts`
+- `LDB 47` (l.13-17, l.28) → `CastModal`, `carriedGrimoire`, `canCastFromGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `GameOp`, `PendingCast`, +10 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +8 fichiers
 
 ---
 

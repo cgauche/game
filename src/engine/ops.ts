@@ -666,11 +666,11 @@ export type GameOp =
    *  la table : `rows` INLINE (authorées sur l'op) OU `tableId` = référence à `tables.json`
    *  (`findEffectTableById`, fail-fast) — jamais les deux (garde `data-wellformed`). `addNegativeSL` ajoute
    *  |ctx.sl| au jet quand le contexte porte un DR négatif (Vers de carie « ajoutez le nombre de DR
-   *  négatifs », T2C 16 l.90). `extraRollsPerStep` = un jet SUPPLÉMENTAIRE par PAS de Surincantation alloué
-   *  à l'axe Durée (`ctx.overcastDurationSteps`, LDB 47 l.13-17 / EDOC 13 l.230+270-276 : « pour chaque +2 DR
-   *  […] vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau » — les deux effets sont
-   *  couplés au MÊME pas, jamais au DR total du jet). Généralise tout « lancez 1dN [+ modif], consultez le
-   *  tableau ». */
+   *  négatifs », T2C 16 l.90). `extraRollsPerStep` = un jet SUPPLÉMENTAIRE par PAS de Surincantation
+   *  CHOISI (`ctx.chosenTableRolls`, borné à `ctx.overcastDurationSteps` — LDB 47 l.13-17 / EDOC 13
+   *  l.230+270-276 : « pour chaque +2 DR […] vous POUVEZ à la fois prolonger la durée et refaire un jet
+   *  sur le Tableau » — déclinable ; la durée se prolonge sur TOUS les pas alloués quel que soit le
+   *  choix). Généralise tout « lancez 1dN [+ modif], consultez le tableau ». */
   | { op: 'rollTable'; die: 'd10' | 'd100'; addNegativeSL?: boolean; extraRollsPerStep?: number; rows: { min: number; max: number; ops: GameOp[] }[] }
   | { op: 'rollTable'; die?: 'd10' | 'd100'; addNegativeSL?: boolean; extraRollsPerStep?: number; tableId: string }
   /** Tirage d'une MUTATION sur une table de Corruption (`mutationTables.json`, par id `table`) —
@@ -969,6 +969,9 @@ export interface OpsCtx {
   /** PAS de Surincantation alloués à l'axe Durée (`pendingCast.overcast.duration`) — alimente
    *  `rollTable.extraRollsPerStep` (LDB 47 l.13-17, EDOC 13 l.230+270-276). */
   overcastDurationSteps?: number;
+  /** Jets sur le Tableau RÉELLEMENT choisis par le lanceur (EDOC 13 l.276 : « vous POUVEZ » — décidable,
+   *  jamais forcé), borné à `overcastDurationSteps`. Absent = tous les pas alloués (défaut, IA/rétrocompat). */
+  chosenTableRolls?: number;
   /** Marqueur de RÉ-ENTRANCE `onOwnTestFailed` : posé sur le flowCtx des effets déclenchés par ce trigger
    *  (T2C 16 — Crampes). Threadé jusqu'à un nœud Flow `test` (le FM de palier 2) routé en cascade : son
    *  étape est tamponnée `meta.noOwnTestFailed` pour que sa résolution NE ré-émette JAMAIS le trigger
@@ -1699,9 +1702,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const sides = (tbl ? tbl.die : o.die) === 'd100' ? 100 : 10;
         // Jet + |DR négatif| (Vers de carie, T2C 16 l.90) → lookup `[min,max]` (source unique) → ops de la rangée.
         const modifier = o.addNegativeSL ? Math.max(0, -(ctx.sl ?? 0)) : 0;
-        // Multiplicité : 1 jet + `extraRollsPerStep` par PAS de Surincantation alloué à la Durée
-        // (EDOC 13 l.270-276 : « à la fois prolonger la durée et refaire un jet » — couplé au même pas).
-        const times = 1 + (o.extraRollsPerStep ? Math.max(0, ctx.overcastDurationSteps ?? 0) * o.extraRollsPerStep : 0);
+        // Multiplicité : 1 jet + `extraRollsPerStep` par PAS de Surincantation CHOISI (EDOC 13 l.276 :
+        // « vous pouvez » — déclinable, jamais forcé) ; borné aux pas réellement alloués à la Durée
+        // (la durée, elle, se prolonge intégralement sur TOUS les pas alloués — couplage asymétrique).
+        const allocatedSteps = Math.max(0, ctx.overcastDurationSteps ?? 0);
+        const chosenSteps = Math.min(ctx.chosenTableRolls ?? allocatedSteps, allocatedSteps);
+        const times = 1 + (o.extraRollsPerStep ? chosenSteps * o.extraRollsPerStep : 0);
         for (let i = 0; i < times; i++) {
           const die = roll(1, sides, rng);
           const entry = findTableEntry(rows, die + modifier);

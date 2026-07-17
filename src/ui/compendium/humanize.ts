@@ -244,7 +244,7 @@ export function humanizeOp(o: GameOp): string {
     case 'chain': return `rebondit sur ${humanizeFormula(o.maxBounces)} ennemi(s) à ${humanizeFormula(o.hopMeters)} m`;
     case 'perRound': return `déclenche à chaque Round : ${o.ops.map(humanizeOp).join(' ; ')}`;
     case 'rollThreshold': return `lance 1d${o.sides} pour un effet à paliers`;
-    case 'rollTable': return `tire sur ${'tableId' in o ? `la table « ${o.tableId} »` : 'une table'} (${'tableId' in o ? 'd10/d100' : o.die}${o.addNegativeSL ? ' + DR négatifs' : ''}${o.extraRollsPerStep ? `, +${o.extraRollsPerStep} jet par pas de Surincantation (Durée)` : ''}) pour un effet selon la fourchette`;
+    case 'rollTable': return `tire sur ${'tableId' in o ? `la table « ${o.tableId} »` : 'une table'} (${'tableId' in o ? 'd10/d100' : o.die}${o.addNegativeSL ? ' + DR négatifs' : ''}${o.extraRollsPerStep ? `, +${o.extraRollsPerStep} jet par pas de Surincantation (Durée) choisi au lancer` : ''}) pour un effet selon la fourchette`;
     case 'rollMutation': return `subit une mutation tirée sur la table « ${o.table} »${o.duration === 'permanent' ? ' (permanente)' : ' (le temps du Sort)'}`;
     case 'charDamage': return `perd ${humanizeFormula(o.amount)} en ${CHAR_LABELS[o.char]} (définitivement)`;
     case 'summon': return `invoque ${humanizeFormula(o.count)}× ${creatureLabel(o.ref)}${o.allyOfCaster === false ? ' (hostile)' : ''}`;

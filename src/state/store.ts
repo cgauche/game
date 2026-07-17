@@ -866,6 +866,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Surincantation : alloue (`delta` +1) ou rend (`delta` −1, reset) un pas de +2 DR à un axe
    *  (Portée / Zone d'Effet / Durée / Cible) ; l'effet d'un pas est source-aware (`engine/overcast.ts`). */
   castAllocOvercast: (axis: OvercastAxis, delta: number) => void;
+  /** Jets sur le Tableau CHOISIS par le lanceur (EDOC 13 l.276 : « vous pouvez » — déclinable), borné
+   *  [0, pas Durée alloués]. N'apparaît QUE si le sort porte un `rollTable.extraRollsPerStep`. */
+  castSetChosenTableRolls: (n: number) => void;
   /** Surincantation : choisit/retire une cible SUPPLÉMENTAIRE (dans la limite allouée). */
   castToggleExtraTarget: (id: string) => void;
   /** Surincantation « +Cible » : bascule le choix SUR LE CHAMP DE BATAILLE (la modale s'efface,

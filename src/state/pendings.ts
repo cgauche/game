@@ -852,6 +852,10 @@ export interface PendingCast {
    *  l.21-27, pas de ZdE). `range`/`zone`/`duration` étendent Portée/gabarit/durée ; `targets` débloque
    *  des cibles SUPPLÉMENTAIRES (`extraTargetIds`, capacité = `extraTargetCapacity`). */
   overcast?: { range: number; zone: number; duration: number; targets: number };
+  /** Jets sur le Tableau CHOISIS par le lanceur, borné aux pas alloués à `overcast.duration` (EDOC 13
+   *  l.276 : « vous POUVEZ » — le jet sur le Tableau est déclinable, jamais forcé). Absent = tous les pas
+   *  (le paquet complet reste le geste zéro-clic) — clampé par `castAllocOvercast` si la Durée redescend. */
+  chosenTableRolls?: number;
   extraTargetIds?: string[];
   /** Choix des cibles supplémentaires EN COURS sur le champ de bataille : la modale s'efface
    *  (bandeau TargetPrompt + clic carte → castToggleExtraTarget), « Valider » la restaure. */

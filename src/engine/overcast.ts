@@ -13,6 +13,8 @@
  * Pur ; ne dépend de rien (consommé par castAllocOvercast/castConfirm/overcastTargetCandidates + CastModal).
  */
 
+import type { GameOp } from './ops';
+
 export type OvercastSource = 'arcane' | 'blessing' | 'miracle';
 export type OvercastAxis = 'range' | 'zone' | 'duration' | 'targets';
 
@@ -59,4 +61,11 @@ export function effectiveDurationRounds(source: OvercastSource, baseRounds: numb
  *  Bénédiction : base + 6 m × pas (FIXE — étend même une portée Contact, 0 m, LDB 41 l.27). */
 export function effectiveRangeMetres(source: OvercastSource, baseMetres: number, steps: number): number {
   return source === 'blessing' ? baseMetres + BLESSING_STEP * steps : baseMetres * (1 + steps);
+}
+
+/** Le sort porte-t-il un jet sur Tableau COUPLÉ à la Surincantation de Durée (EDOC 13 l.276) ? Détection
+ *  PAR LA DONNÉE (`rollTable.extraRollsPerStep` dans son Flow), jamais par id de sort — pilote l'affichage
+ *  du choix « Jets sur le Tableau » (déclinable) dans la modale d'incantation. */
+export function spellHasOvercastTableRoll(ops: GameOp[]): boolean {
+  return ops.some((o) => o.op === 'rollTable' && !!o.extraRollsPerStep);
 }

@@ -3490,6 +3490,7 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
     durationMult: ocDur.mult,
     durationBonusRounds: ocDur.bonusRounds,
     overcastDurationSteps: pc.overcast?.duration ?? 0,
+    chosenTableRolls: pc.chosenTableRolls,
     extraTargets: inZone.slice(1),
   });
   // Avance au-delà de l'étape cast (résolue) : conséquences appendues → jouées ; aucune → ferme.
@@ -3770,7 +3771,7 @@ export function applyCast(
   missile: boolean,
   focusedNI0: boolean,
   critChoice?: CastCritChoice,
-  extras?: { durationMult?: number; durationBonusRounds?: number; overcastDurationSteps?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
+  extras?: { durationMult?: number; durationBonusRounds?: number; overcastDurationSteps?: number; chosenTableRolls?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
   // Durée surincantée DÉCOMPOSÉE (engine/overcast) : `rounds = base × mult + bonus`. Arcane/Miracle :
@@ -3779,8 +3780,10 @@ export function applyCast(
   const durationMult = Math.max(1, extras?.durationMult ?? 1);
   const durationBonusRounds = Math.max(0, extras?.durationBonusRounds ?? 0);
   // Jets supplémentaires COUPLÉS au pas de Surincantation alloué à la Durée (EDOC 13 l.270-276) —
-  // jamais au DR total du jet (`rollTable.extraRollsPerStep`, `OpsCtx.overcastDurationSteps`).
+  // jamais au DR total du jet (`rollTable.extraRollsPerStep`, `OpsCtx.overcastDurationSteps`). Le jet est
+  // DÉCLINABLE (l.276 « vous pouvez ») : `chosenTableRolls` (absent = tous les pas, IA/rétrocompat).
   const overcastDurationSteps = Math.max(0, extras?.overcastDurationSteps ?? 0);
+  const chosenTableRolls = extras?.chosenTableRolls;
   let teleportReach: Map<string, number> | null = null; // Téléportation (Jalon 2.6) : posé APRÈS finishPlayerAction
   const extraTargets = extras?.extraTargets ?? [];
 
@@ -3945,7 +3948,7 @@ export function applyCast(
         const rounds = missileSpec.duration?.kind === 'rounds' ? resolveFormula(missileSpec.duration.value, caster, battleRng()) : null;
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
         logLines.push(...runCastFlow(get, set, t, caster, spellFlowFor(spell.effects, 'target'), {
-          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl, overcastDurationSteps,
+          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl, overcastDurationSteps, chosenTableRolls,
           ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
@@ -4053,6 +4056,7 @@ export function applyCast(
             now: get().gameTime,
             sl: opp ? opp.margin : res.sl,
             overcastDurationSteps,
+            chosenTableRolls,
             ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
@@ -4174,7 +4178,7 @@ export function applyCast(
       const baseRounds = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
       logLines.push(...runCastFlow(get, set, caster, caster, spellFlowFor(spell.effects, 'caster'), {
-        rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl, overcastDurationSteps,
+        rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl, overcastDurationSteps, chosenTableRolls,
         ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
         ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
