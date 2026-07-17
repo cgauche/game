@@ -6,7 +6,15 @@
  * l'identique, sinon une créature change d'apparence.
  *
  * Rend chaque entrée de `creatures.json` via le chemin de PROD (bipède = entityRigProfile+resolveRig ;
- * non-bipède = planById(bodyPlanById).resolve), en `front` et `profile`, seed fixe.
+ * non-bipède = planById(bodyPlanById).resolve), en `front`, `profile` et `back`, seed fixe.
+ *
+ * CE QUE LES SNAPSHOTS `back` FIGENT — ce n'est PAS une couverture d'art (#559). Sans art `back`
+ * dédié sur une part, `parts/resolve.ts` (~l.185-189) FABRIQUE une silhouette dorsale générique en
+ * tokens (`BACK_TORSE`/`BACK_JAMBE`/`BACK_TETE`). Mesuré sur cette suite : 472 snapshots `back`, dont
+ * 204 (43 %) portent au moins une part dorsale inventée (86 torse, 162 jambe, 5 tête). Ces snapshots
+ * figent donc le REPLI, pas un dos authoré : ils protègent d'une régression de composition, ils
+ * n'attestent d'aucune intention d'artiste. Ils ont vocation à être REMPLACÉS à mesure que #559 vide
+ * son stock de slots front-only (167 mesurés) — un churn de ces snapshots y est ATTENDU, pas suspect.
  */
 import { describe, it, expect } from 'vitest';
 import { creatures } from '../../../data';
@@ -16,7 +24,7 @@ import { bonesToSvg } from '../renderBones';
 import { planById, resolveById } from '../bodyPlan';
 import type { View } from '../facing';
 
-const VIEWS: View[] = ['front', 'profile'];
+const VIEWS: View[] = ['front', 'profile', 'back'];
 const SEED = 7;
 
 function renderSvg(id: string, view: View): string {
@@ -27,7 +35,6 @@ function renderSvg(id: string, view: View): string {
   }
   const plan = planById(r.plan);
   if (!plan) return '∅noplan';
-  if (!plan.hasView(r.species, view)) return `∅noview:${view}`;
   return bonesToSvg(plan.resolve(r.species, view, plan.restPose()));
 }
 

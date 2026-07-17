@@ -9,6 +9,15 @@
  *
  * Non-bipèdes : `enemyRigProfile` renvoie null (rendus par le chemin plan = déjà couvert par
  * `creature-render-golden`) → ignorés ici.
+ *
+ * CE QUE LES SNAPSHOTS `back` FIGENT — ce n'est PAS une couverture d'art (#559). Sans art `back`
+ * dédié sur une part, `parts/resolve.ts` (~l.185-189) FABRIQUE une silhouette dorsale générique en
+ * tokens (`BACK_TORSE`/`BACK_JAMBE`/`BACK_TETE`). Cette suite est la plus exposée (100 % bipèdes,
+ * donc 100 % soumise à ce repli) : 331 snapshots `back`, dont 277 (84 %) portent au moins une part
+ * dorsale inventée (221 torse, 235 jambe, 1 tête). Ces snapshots figent donc le REPLI, pas un dos
+ * authoré : ils protègent d'une régression de composition, ils n'attestent d'aucune intention
+ * d'artiste. Ils ont vocation à être REMPLACÉS à mesure que #559 vide son stock de slots front-only
+ * (167 mesurés) — un churn de ces snapshots y est ATTENDU, pas suspect.
  */
 import { describe, it, expect } from 'vitest';
 import { creatures } from '../../../data';
@@ -19,7 +28,7 @@ import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
 import type { View } from '../facing';
 
-const VIEWS: View[] = ['front', 'profile'];
+const VIEWS: View[] = ['front', 'profile', 'back'];
 
 describe('golden — rendu COMBAT (spawn→enemyRigProfile→visuels d’état) du bestiaire bipède', () => {
   for (const cr of creatures) {
