@@ -504,6 +504,16 @@
   flex-direction: column;
   gap: 5px;
 }
+/* Rangée-conteneur d'un objet (`PlaqueRow` + sa barre d'actions/imbrication dépliées EN PLACE) —
+   même mécanisme d'étirement que l'onglet État (`creator-band`, `.plaque-grid`) : un `<button>`
+   `.plaque-row` ne s'étire QUE s'il est lui-même enfant direct d'un conteneur flex/grid (le
+   flex-item se voit forcé à `align-items:stretch` par défaut) ; en simple `<div>` bloc, le bouton
+   garde sa largeur intrinsèque (bord droit en dents de scie). `.inv-item` devient donc flex-column
+   à son tour, pour que la `PlaqueRow` qu'il porte s'étire pleine largeur comme sa jumelle État. */
+.inv-item {
+  display: flex;
+  flex-direction: column;
+}
 .inv-item-nested {
   padding-top: 5px;
   padding-bottom: 5px;

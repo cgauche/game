@@ -448,8 +448,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // de combat-modals.css) + `.inv-item-nested`/`.inv-actionbar`/`.inv-skin`/`.inv-skin-body`/
   // `.inv-skin-remove`/`.inv-nested` (déplacé aussi) : la rangée-plaque élue déplie sa barre
   // d'actions EN PLACE, contrepartie ASSUMÉE des -12 de combat-modals.css.
-  // Fusion vague-2 + fiche : 82 + 2 (Faveurs #509) + 4 (présence) + 1 (ras-sub) + 7 (registre) = 96.
-  'styles/sheet.css': 96,
+  // Fix visuel (registre Possessions rétréci à son contenu vs jumeau État pleine largeur) : +1
+  // (94 -> 95) -- `.inv-item` devient flex-column (même mécanisme d'étirement que `creator-band`
+  // en État : la `PlaqueRow`/bouton n'est stretch que si elle est enfant direct d'un flex/grid).
+  // Fusion vague-2 + fiche : 82 + 2 (Faveurs) + 4 (présence) + 1 (ras-sub) + 7 (registre) + 1 (inv-item) = 97.
+  'styles/sheet.css': 97,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
