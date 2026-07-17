@@ -92,8 +92,8 @@ export function reversalStealOne(get: Get, thief: Combatant, victim: Combatant):
 
 /**
  * Réconcilie la réserve du camp de `c` avec son Avantage individuel après qu'un OP a écrit DIRECTEMENT sur
- * la projection `c.advantage` sans passer par `campGain`/`campSpend` : `gainAdvantage` (Redoutable, ZI :
- * complète jusqu'à l'Indice) RELÈVE la réserve du camp ; `spendAdvantage` (un futur effet dépensant de
+ * la projection `c.advantage` sans passer par `campGain`/`campSpend` : `gainAdvantage` (Redoutable,
+ * MDG 16 l.11 : complète jusqu'à l'Indice) RELÈVE la réserve du camp ; `spendAdvantage` (un futur effet dépensant de
  * l'Avantage par op) l'ABAISSE. On reporte l'ÉCART (`c.advantage − réserve du camp`) sur la réserve puis on
  * re-projette — la réserve reste la source de vérité. No-op hors mode groupe (l'op a déjà tout fait). Idempotent
  * (après re-projection `c.advantage == réserve`, un 2ᵉ appel ne bouge rien).
@@ -114,7 +114,7 @@ export function reconcileAdvantageToPool(get: Get, c: Combatant): void {
  * clause d'Avantage de groupe (AA) du Trait *Redoutable* (`MDG 16 l.13`) : « la créature génère un nombre
  * d'Avantages égal à son Indice dans le Trait *Redoutable* pour la réserve d'Avantages des adversaires. »
  * Branché par `turnHooks.fireTurnEdgeTriggers` sur le trigger `onTurnStart` ; appelé par l'op
- * `gainAdvantage{feedOpposingPool:true}` (traits.json `redoutable-mdg`) SEULEMENT quand elle S'EXÉCUTE — le
+ * `gainAdvantage{feedOpposingPool:true}` (traits.json `redoutable`) SEULEMENT quand elle S'EXÉCUTE — le
  * garde-fou Empêtré/Inconscient/Surpris (MDG 16 l.11, même effet) vit dans le nœud `if` englobant de la
  * donnée, jamais reproduit ici (KIND-AGNOSTIQUE : aucun scan de Traits, aucun proxy sur `c.advantage`).
  * `n` = l'Indice PLEIN déjà résolu par l'op appelante. Crédite la réserve du camp OPPOSÉ de `c`, re-projette,

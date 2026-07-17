@@ -5,6 +5,7 @@ import { setRule, resetRule } from '../../engine/policy';
 import { baseTestMods } from '../../engine/combat';
 import type { Combatant } from '../../engine/types';
 import type { AdvantagePools } from '../../engine/advantagePool';
+import { creatures } from '../../data';
 
 const mk = (id: string, kind: Combatant['kind'], over: Partial<Combatant> = {}): Combatant =>
   ({
@@ -211,11 +212,11 @@ describe('creditOpposingAdvantage — fournisseur ctx.onOpposingAdvantage (Redou
   });
 });
 
-describe('Redoutable (MDG) — clause AA bout-en-bout (op gainAdvantage{feedOpposingPool} → ctx.onOpposingAdvantage, via fireTurnStartTriggers)', () => {
+describe('Redoutable — clause AA bout-en-bout (op gainAdvantage{feedOpposingPool} → ctx.onOpposingAdvantage, via fireTurnStartTriggers)', () => {
   it('début de tour : regain propre jusqu’à l’Indice + génération PLEINE pour la réserve adverse', () => {
     setRule('combat-aa-avantage-groupe', true);
     const a = mk('h1', 'hero');
-    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable-mdg', value: 3 }], advantage: 0 });
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 0 });
     const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 0 });
     fireTurnStartTriggers(get, set, e);
     expect(e.advantage).toBe(3); // regain propre (op gainAdvantage) jusqu'à l'Indice
@@ -227,7 +228,7 @@ describe('Redoutable (MDG) — clause AA bout-en-bout (op gainAdvantage{feedOppo
     setRule('combat-aa-avantage-groupe', true);
     const a = mk('h1', 'hero');
     // Avantage déjà À l'Indice (le proxy `c.advantage >= indice` aurait crédité la réserve adverse ici).
-    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable-mdg', value: 3 }], advantage: 3, conditions: [{ name: 'surpris', value: 1 }] });
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 3, conditions: [{ name: 'surpris', value: 1 }] });
     const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 3 });
     fireTurnStartTriggers(get, set, e);
     expect(e.advantage).toBe(3); // inchangé (Surpris bloque le regain, déjà à l'Indice de toute façon)
@@ -236,7 +237,7 @@ describe('Redoutable (MDG) — clause AA bout-en-bout (op gainAdvantage{feedOppo
 
   it('hors mode groupe : aucune réserve créée (non-régression)', () => {
     const a = mk('h1', 'hero');
-    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable-mdg', value: 3 }], advantage: 0 });
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 0 });
     const { get, set, battle } = makeGet([a, e]);
     fireTurnStartTriggers(get, set, e);
     expect(e.advantage).toBe(3); // regain propre per-combattant (LDB), toujours câblé
@@ -251,6 +252,52 @@ describe('Redoutable (MDG) — clause AA bout-en-bout (op gainAdvantage{feedOppo
     fireTurnStartTriggers(get, set, e);
     expect(battle.advantagePools).toEqual({ allies: 0, foes: 3 });
   });
+});
+
+// La clause d'Avantage de groupe est conditionnée au MODULE DE RÈGLES (MDG 16 l.13 : « Si vous utilisez
+// les règles d'Avantage de groupe du supplément Aux Armes ! »), jamais au livre d'origine du PORTEUR :
+// l'entrée `redoutable` est UNIQUE et ses porteurs des trois provenances (zoo-imperial, mer-des-griffes,
+// frenchy-bzh) la subissent à l'identique, sous le seul gate `groupAdvantage()`.
+describe('Redoutable — la clause AA suit le MODULE de règles, pas le livre du porteur', () => {
+  const carriersByBook = (book: string) =>
+    creatures.filter((c) => c.source?.book === book && (c.traits ?? []).some((t) => t.id === 'redoutable'));
+
+  it('les porteurs des trois livres pointent tous l’entrée UNIQUE `redoutable` (aucun `redoutable-mdg`)', () => {
+    expect(creatures.some((c) => (c.traits ?? []).some((t) => t.id === 'redoutable-mdg'))).toBe(false);
+    for (const book of ['zoo-imperial', 'mer-des-griffes', 'frenchy-bzh']) {
+      expect(carriersByBook(book).length).toBeGreaterThan(0);
+    }
+  });
+
+  it.each(['zoo-imperial', 'mer-des-griffes', 'frenchy-bzh'])(
+    'un porteur %s nourrit la réserve ADVERSE quand le module AA est actif',
+    (book) => {
+      setRule('combat-aa-avantage-groupe', true);
+      const carrier = carriersByBook(book)[0];
+      const indice = (carrier.traits ?? []).find((t) => t.id === 'redoutable')!.value ?? 1;
+      const a = mk('h1', 'hero');
+      const e = mk(carrier.id, 'enemy', { traits: [{ id: 'redoutable', value: indice }], advantage: 0 });
+      const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 0 });
+      fireTurnStartTriggers(get, set, e);
+      expect(e.advantage).toBe(indice); // regain propre jusqu'à l'Indice
+      expect(battle.advantagePools).toEqual({ allies: indice, foes: indice }); // Indice PLEIN au camp opposé
+    },
+  );
+
+  it.each(['zoo-imperial', 'mer-des-griffes', 'frenchy-bzh'])(
+    'un porteur %s ne nourrit RIEN quand le module AA est inactif (mode Livre de base)',
+    (book) => {
+      const carrier = carriersByBook(book)[0];
+      const indice = (carrier.traits ?? []).find((t) => t.id === 'redoutable')!.value ?? 1;
+      const a = mk('h1', 'hero');
+      const e = mk(carrier.id, 'enemy', { traits: [{ id: 'redoutable', value: indice }], advantage: 0 });
+      const { get, set, battle } = makeGet([a, e]);
+      fireTurnStartTriggers(get, set, e);
+      expect(e.advantage).toBe(indice); // regain propre per-combattant (LDB), toujours câblé
+      expect(battle.advantagePools).toBeUndefined(); // aucune réserve : la clause AA n'existe pas hors module
+      expect(a.advantage).toBe(0);
+    },
+  );
 });
 
 describe('startAdvantagePools — positionnement initial auto-dérivé', () => {
