@@ -94,16 +94,17 @@
     padding-right: 0;
     padding-bottom: 12px;
   }
-  /* Mobile : portrait à gauche, identité à droite (compact, pas de grande zone vide). */
-  .sheet-portrait {
-    flex-direction: row;
-    align-items: center;
-    text-align: left;
-    gap: 12px;
+  /* Mobile : la boîte-figurine `hero` (#492 lot « colonne présence ») reste EMPILÉE (une rangée
+     portrait+texte n'a plus de sens à 320px de haut) — resserrée pour l'espace vertical restreint. */
+  .sheet-portrait .fig-tile.hero {
+    width: 168px;
   }
-  .sheet-portrait .rig-portrait {
-    width: 72px;
-    height: 72px;
+  .sheet-portrait .fig-tile.hero .fig-tile-fig {
+    height: 168px;
+  }
+  .sheet-portrait .vital-arc svg {
+    width: 130px;
+    height: 34px;
   }
 }
 /* Onglet Combat de la fiche : la surface = primitive .panel.stack (components.css). */

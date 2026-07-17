@@ -114,6 +114,39 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     expect(html).not.toContain('Destin'); // ressources (FateChips) SORTIES de la colonne
   });
 
+  it('boîte-figurine grand format (`FigTile fig="hero"`) + arc de vie intégré, plaque « Blessures » MORTE, colonne à structure figée (#492 lot « colonne présence »)', () => {
+    const h = hero();
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    const aside = container.querySelector('.sheet-aside')!;
+    expect(aside.querySelector('.fig-tile.hero')).toBeTruthy(); // rig GRAND FORMAT (plus `lg`/`spotlight`)
+    const arc = aside.querySelector('.vital-arc');
+    expect(arc).toBeTruthy(); // arc de vie SOUS la boîte-figurine, remplace la plaque
+    expect(arc?.textContent).toContain('12');
+    expect(arc?.textContent).toContain('Blessures');
+    expect(aside.innerHTML).not.toContain('title="Blessures"'); // ancienne plaque (`.stat-chip.pv`) MORTE
+    // structure figée : SANS alarme ni Soins éligibles, la colonne n'a qu'UN enfant direct (le bloc
+    // portrait figurine+arc+identité) — un enfant de plus signalerait un ajout non voulu (scroll de fait).
+    expect(aside.children.length).toBe(1);
+  });
+
+  it('l’arc de vie VIT : re-rend au switch de héros et après un soin (ratio/teinte suivent `hero.wounds`)', () => {
+    const blesse = { ...hero(), wounds: { current: 4, max: 12 } } as Combatant;
+    useGame.setState({ party: [blesse], battle: null, sheetId: blesse.id, sheetTab: 'possessions' });
+    mount(<CharacterSheet heroId={blesse.id} onClose={() => {}} />);
+    let arc = container.querySelector('.sheet-aside .vital-arc');
+    expect(arc?.textContent).toContain('4');
+    expect(arc?.textContent).toContain('/ 12');
+
+    // Soin (mutation directe du party courant) : la fiche relit `useGame`, l'arc doit suivre.
+    act(() => {
+      useGame.setState((s) => ({ party: s.party.map((c) => (c.id === blesse.id ? { ...c, wounds: { current: 9, max: 12 } } : c)) }));
+    });
+    arc = container.querySelector('.sheet-aside .vital-arc');
+    expect(arc?.textContent).toContain('9');
+    expect(arc?.textContent).toContain('/ 12');
+  });
+
   it('tête de l’onglet Compétences & Talents : CharStatsGrid + Mouvement + Destin·Chance/Résilience·Détermination', () => {
     const h = { ...hero(), fate: 2, fortune: 1, resilience: 1, resolve: 0 } as Combatant;
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'competences' });

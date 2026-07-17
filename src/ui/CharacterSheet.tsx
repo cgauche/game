@@ -29,7 +29,6 @@ import { CharValue } from './CharValue';
 import { HeroSheet } from './HeroSheet';
 import { Coins } from './Coins';
 import { QualityChips } from './EntityChip';
-import { WoundsBadge } from './WoundsBadge';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { EquipmentPanel } from './EquipmentPanel';
 import { CharFrame } from './CharFrame';
@@ -40,7 +39,8 @@ import { Icon } from './Icon';
 import type { Palette } from '../gameIso/rig/palette';
 import { sheetAlarms, alarmsFingerprint } from './sheetAlarms';
 import { EtatPanel } from './EtatPanel';
-import { CharacterPreview } from './CharacterPreview';
+import { FigTile } from './FigTile';
+import { VitalArc } from './VitalArc';
 import { corruptionThresholdExceeded } from '../engine/corruption';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
@@ -178,18 +178,13 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
         <div className="sheet-layout">
           <aside className="sheet-aside">
             <div className="sheet-portrait">
-              <CharacterPreview hero={hero} size="lg" ambiance="spotlight" />
+              <FigTile preview={{ hero }} fig="hero" />
+              <VitalArc current={hero.wounds.current} max={hero.wounds.max} />
               <h3>{hero.name}</h3>
               <span className="char-sub">
                 <CodexRef category="races" id={hero.species} label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" id={hero.career} label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
-            </div>
-            <div className="sheet-vitals">
-              <div className="stat-chip pv">
-                <span className="sc-label" title="Blessures">Blessures</span>
-                <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
-              </div>
             </div>
             <SheetAlarmsBand hero={hero} />
             {canSoigner && (
