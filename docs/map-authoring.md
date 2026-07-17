@@ -32,7 +32,7 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 | `walled?: {z0, z1, …}` | UNE grille **box-drawing** par étage (arêtes DANS l'ASCII, `parseWalledAscii` (2W+1)×(2H+1)) → tuiles **+ murs d'arête/portes**. Coexiste avec `levels` (étages ≠) ; `wallStructures?: {char→id}` pose une structure brèchable sur une arête |
 | `markerFill?: {char→char}` | char de LÉGENDE laissé SOUS un marqueur nettoyé (ex. `{B:'W'}` : poser une pièce SUR le chemin de ronde sans y percer un trou) |
 | `relief?` | hauteurs **métriques** : `{rect:[x0,y0,x1,y1],height,z?}` / `{cell:[x,y],height,z?}` / `{ramp:[x0,y0,x1,y1],from,to,z?}` |
-| `walls?: WallSpec[]` | murs d'**arête** : `{x,y,side:'N'|'E'|'S'|'O'|'\\'|'/', z?, door?, structure?, window?, climb?}` (`climb` = arête escaladable, LDB 15 l.52-57) |
+| `walls?: WallSpec[]` | murs d'**arête** : `{x,y,side:'N'|'E'|'S'|'O'|'\\'|'/', z?, door?, structure?, window?, climb?}` (`climb` = arête escaladable, LDB 15 l.52-57). Diagonale (`side:'\\'/'/'`) = arête PUREMENT VISUELLE (mouvement/vision/grimpe restent orthogonaux) : `window` (décoratif) s'y propage, `climb`/`structure`/`door` y font échouer `buildScene` (#554) |
 | `rooms?: RoomSpec[]` | bâtiment composé : `{foot:[x,y,w,h], style, door?:{x,y,side}, floor?, wallStructure?, z?}` → toit + périmètre de murs + porte + sol |
 | `bind?: {char→BindSpec}` | ce que devient chaque marqueur ASCII (voir ci-dessous) |
 | `entities?: SceneEntity[]` | entités BRUTES (ids **conservés** — utile quand un `member`/`crew` réfère un id fixe) |
