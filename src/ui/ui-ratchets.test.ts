@@ -246,7 +246,10 @@ const DOMAIN_CSS_MODULES = [
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
-  'styles/gauges.css': 27,
+  // LifeBar (#492, arbitrage 2026-07-17 « on sait gérer de vraies barres de blessures ») : +5
+  // (27 → 32) — `.life-bar(-label|-track|-fill|-value)`, primitive dédiée (patron NotchGauge, même
+  // module « jauges »), remplace `.ptile-gauge`/`.ptile-pv` (morts, contrepartie en hud.css).
+  'styles/gauges.css': 32,
   // #417 suite (consécration HeroSheet) : -6 — .candidate-detail-head/-fig/-id (bande
   // d'en-tête) + override .candidate-detail-pane .creator-derived (dérivées 2 colonnes) morts,
   // portés par hero-sheet.css (SOURCE UNIQUE partagée avec la fiche vivante du créateur).
@@ -406,7 +409,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/creator.css': 104,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
-  'styles/hud.css': 145,
+  // LifeBar (#492, arbitrage 2026-07-17) : -2 (145 → 143) — `.ptile-gauge`/`.ptile-pv` MEURENT (le
+  // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit
+  // désormais dans `LifeBar` (gauges.css).
+  'styles/hud.css': 143,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,
@@ -458,8 +464,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // + Encombrement, jauge PARTAGÉE Coque/Moral/Soute) via `.sheet-portrait .notch-gauge` (+1) et les
   // rangées race/classe/statut via `.sheet-idrows`/`.sheet-idrow`/`.sheet-idrow-label`/`.sheet-idrow-
   // value` (+4), aucune classe neuve pour la jauge elle-même (SOURCE UNIQUE `gauges.css`).
-  // Fusion vague-2 + fiche : 96 (précédent fusionné) + 4 (colonne croquis) = 100.
-  'styles/sheet.css': 100,
+  // Compteurs de DESTIN (pt.4, #492, arbitrage 2026-07-17) : +1 (98 → 99) — `.etat-threshold`
+  // (« actives N/BE », « phys N/BE · ment M/BFM »), ton par palier en attribut `data-tone`.
+  // Fusion vague-2 + fiche : 100 (précédent fusionné) + 1 (etat-threshold) = 101.
+  'styles/sheet.css': 101,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,

@@ -18,6 +18,7 @@ import { ParchmentCard } from '../ParchmentCard';
 import { QtyStepper } from '../QtyStepper';
 import { GatedAction } from '../GatedAction';
 import { PortraitTile } from '../PortraitTile';
+import { LifeBar } from '../LifeBar';
 import { CharacterPreview } from '../CharacterPreview';
 import { MetalStatus } from '../MetalStatus';
 import { WaxSeal, SealedPlaque } from '../WaxSeal';
@@ -411,6 +412,24 @@ function CreatorDiceDemo() {
   );
 }
 
+/** Barre de remplissage lisse (#492, arbitrage 2026-07-17) — ton par palier (Blessures, données réelles
+ *  du pré-tiré), dépassement explicite (Encombrement, valeur illustrative > max). La variante `overlay`
+ *  (portraits compacts) s'observe au spécimen `PortraitTile`, en dessous. */
+function LifeBarDemo() {
+  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  return (
+    <div className="stack">
+      <LifeBar
+        label="Blessures"
+        value={SAMPLE_HERO.wounds.current}
+        max={SAMPLE_HERO.wounds.max}
+        tone={(v, m) => (m > 0 && v / m <= 0.34 ? 'danger' : m > 0 && v / m <= 0.67 ? 'warn' : 'ok')}
+      />
+      <LifeBar label="Encombrement — surchargé" value={9} max={6} tone="danger" />
+    </div>
+  );
+}
+
 function PortraitTileDemo() {
   if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
   return (
@@ -656,6 +675,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états — un spécimen vivant exigerait un flux de jet monté (store + makeRollFlow), hors de portée d’une vignette de galerie', render: RollShellStaticMock },
   { name: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états — même raison que RollShell (flux de jet monté hors de portée d’une vignette)', render: RollRowStaticMock },
   { name: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
+  { name: 'LifeBar', file: 'src/ui/LifeBar.tsx', category: 'Personnages', render: LifeBarDemo },
   { name: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
   { name: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },
   { name: 'CreatorStepFrame', file: 'src/ui/creator/CreatorStepFrame.tsx', category: 'Personnages', note: 'gabarit plein-champ — s’observe sur les 7 pas du créateur, pas en vignette', render: CreatorStepFrameNote },

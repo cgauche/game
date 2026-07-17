@@ -18,6 +18,7 @@ import type { ReactNode } from 'react';
 import type { Combatant, HitLocation } from '../engine/types';
 import type { Duration } from '../engine/duration';
 import { locationLabel } from '../engine/combat';
+import { bonus, effectiveChar } from '../engine/characteristics';
 import { maxEncumbrance, totalEncumbrance, giveTrappingLabel } from '../engine/items';
 import { findCritEntrySuffered, critEntryCodexCategory, type CritTableKey } from '../engine/critical';
 import { corruptionThreshold } from '../engine/corruption';
@@ -45,15 +46,32 @@ const FALLBACK_ICON: IconIdInput = 'ui/warning';
 type GravityTone = 'sang' | 'ambre' | 'violet';
 
 /** Bande de section ancrée : titre + compte en badge sobre (`Band`, primitive partagée). L'appelant
- *  filtre déjà les rubriques vides — une bande SANS contenu n'apparaît jamais dans l'arbre. */
-function Section({ anchor, title, count, tone, children }: { anchor: string; title: string; count?: number; tone?: GravityTone; children: ReactNode }) {
+ *  filtre déjà les rubriques vides — une bande SANS contenu n'apparaît jamais dans l'arbre.
+ *  `extra` : compteur de DESTIN additionnel (actives/BE, phys/ment) affiché À CÔTÉ du compte brut. */
+function Section({ anchor, title, count, tone, extra, children }: { anchor: string; title: string; count?: number; tone?: GravityTone; extra?: ReactNode; children: ReactNode }) {
   return (
     <div id={anchor} data-tone={tone}>
-      <Band title={title} right={count != null ? <b>{count}</b> : undefined}>
+      <Band title={title} right={(count != null || extra) ? <>{count != null && <b>{count}</b>}{extra}</> : undefined}>
         {children}
       </Band>
     </div>
   );
+}
+
+/** Ton d'un compteur de DESTIN par seuil (pt.4, #492) : `muted` loin du seuil, `warn` à seuil−1,
+ *  `danger` au seuil ATTEINT ou FRANCHI — jamais une couleur littérale. */
+function thresholdTone(value: number, limit: number): GravityCounterTone {
+  return value >= limit ? 'danger' : value === limit - 1 ? 'warn' : 'muted';
+}
+type GravityCounterTone = 'muted' | 'warn' | 'danger';
+const COUNTER_TONE_RANK: Record<GravityCounterTone, number> = { muted: 0, warn: 1, danger: 2 };
+/** Pire ton parmi plusieurs seuils indépendants (Mutations : phys ET ment) — un seul compteur combiné. */
+function worstTone(...tones: GravityCounterTone[]): GravityCounterTone {
+  return tones.reduce((a, b) => (COUNTER_TONE_RANK[b] > COUNTER_TONE_RANK[a] ? b : a));
+}
+/** Rendu du compteur de DESTIN — plaque sobre, ton en attribut (jamais une classe par ton). */
+function ThresholdBadge({ tone, children }: { tone: GravityCounterTone; children: ReactNode }) {
+  return <b className="etat-threshold" data-tone={tone}>{children}</b>;
 }
 
 /** Localisation d'un critique suffered (les tables RAW ne distinguent pas le côté — repli G, comme
@@ -161,6 +179,17 @@ function ActiveEffectsSection({ hero }: { hero: Combatant }) {
 export function EtatPanel({ hero }: { hero: Combatant }) {
   const criticalEntries = criticalEntriesOf(hero);
 
+  // Compteurs de DESTIN (pt.4, #492) : ACTIF (décompté au soin) — pas l'historique `critEntriesSuffered`
+  // (`sheetAlarms.ts` porte déjà ce distinguo pour la bande d'alarmes). Mort si actives > BE quand
+  // Inconscient + 0 PB (`inDeathCondition`, engine/conditions.ts:595-605, LDB 18 l.34).
+  const activeCriticals = hero.criticalWounds ?? 0;
+  const be = bonus(effectiveChar(hero, 'endurance'));
+  // Damné si mutations physiques > BE OU mentales > BFM (`mutationLimitExceeded`,
+  // engine/corruption.ts:139-142, LDB 19 l.87) — mêmes filtres par `kind` ici.
+  const bfm = bonus(effectiveChar(hero, 'force-mentale'));
+  const physMutations = (hero.mutations ?? []).filter((m) => m.kind === 'physique').length;
+  const mentMutations = (hero.mutations ?? []).filter((m) => m.kind === 'mentale').length;
+
   const conditions = hero.conditions ?? [];
   const corruption = hero.corruption ?? 0;
   const diseases = hero.diseases ?? [];
@@ -197,7 +226,13 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
   return (
     <div className="sheet-etat">
       {criticalEntries.length > 0 && (
-        <Section anchor={ETAT_ANCHOR_CRITIQUES} title="Blessures critiques" count={criticalEntries.length} tone="sang">
+        <Section
+          anchor={ETAT_ANCHOR_CRITIQUES}
+          title="Blessures critiques"
+          count={criticalEntries.length}
+          tone="sang"
+          extra={<ThresholdBadge tone={thresholdTone(activeCriticals, be)}>actives {activeCriticals}/{be}</ThresholdBadge>}
+        >
           {criticalEntries.map((c) => {
             const row = (
               <PlaqueRow
@@ -272,7 +307,17 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
       )}
 
       {mutations.length > 0 && (
-        <Section anchor={ETAT_ANCHOR_MUTATIONS} title="Mutations" count={mutations.length} tone="violet">
+        <Section
+          anchor={ETAT_ANCHOR_MUTATIONS}
+          title="Mutations"
+          count={mutations.length}
+          tone="violet"
+          extra={
+            <ThresholdBadge tone={worstTone(thresholdTone(physMutations, be), thresholdTone(mentMutations, bfm))}>
+              phys {physMutations}/{be} · ment {mentMutations}/{bfm}
+            </ThresholdBadge>
+          }
+        >
           {mutations.map((m, i) => (
             <PlaqueRow
               key={i}

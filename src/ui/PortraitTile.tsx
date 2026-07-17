@@ -4,6 +4,7 @@ import { StateChips } from './StateChips';
 import { Icon } from './Icon';
 import { endState } from '../engine/conditions';
 import { END_STATE_VISUAL } from './endStateVisual';
+import { LifeBar } from './LifeBar';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -82,10 +83,15 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
           )}
         </span>
         {showGauge && (
-          <span className="ptile-gauge" title={showPv ? `Blessures : ${c.wounds.current}/${c.wounds.max}` : 'Blessures'}>
-            <b style={{ width: `${Math.round(ratio * 100)}%`, background: hpColor(ratio) }} />
-            {showPv && <span className="ptile-pv">{c.dead ? <Icon id="journal/death" size="sm" /> : `${c.wounds.current}/${c.wounds.max}`}</span>}
-          </span>
+          <LifeBar
+            value={c.wounds.current}
+            max={c.wounds.max}
+            color={hpColor(ratio)}
+            overlay
+            className="ptile-gauge"
+            title={showPv ? `Blessures : ${c.wounds.current}/${c.wounds.max}` : 'Blessures'}
+            format={() => (showPv ? (c.dead ? <Icon id="journal/death" size="sm" /> : `${c.wounds.current}/${c.wounds.max}`) : null)}
+          />
         )}
       </button>
       {variant === 'full' && <StateChips c={c} max={maxStates} reserve={reserveStates} />}

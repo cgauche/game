@@ -30,15 +30,15 @@ describe('PortraitTile', () => {
     const c = base();
     c.wounds = { current: 11, max: 11 };
     const heroMd = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" size="md" />);
-    expect(heroMd).toContain('ptile-pv');
+    expect(heroMd).toContain('life-bar__value');
     expect(heroMd).toContain('11/11');
     // sm (frise) : illisible → jauge seule
-    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" size="sm" />)).not.toContain('ptile-pv');
+    expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" size="sm" />)).not.toContain('life-bar__value');
     // ennemi : PB exacts réservés à l'Inspection — ni cartouche, ni fuite par le title
     const foe = { ...base(), kind: 'enemy' } as Combatant;
     foe.wounds = { current: 9, max: 11 };
     const foeMd = renderToStaticMarkup(<PortraitTile c={foe} ring="#c0392b" size="md" />);
-    expect(foeMd).not.toContain('ptile-pv');
+    expect(foeMd).not.toContain('life-bar__value');
     expect(foeMd).not.toContain('9/11');
   });
 

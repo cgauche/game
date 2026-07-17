@@ -190,33 +190,9 @@
   pointer-events: none;
   z-index: 2;
 }
-/* Jauge de vie HORIZONTALE (bas du portrait) — même idiome que tous les autres écrans. */
-.ptile-gauge {
-  position: relative;
-  width: 100%;
-  height: 10px;
-  background: rgba(0, 0, 0, 0.72);
-  border-radius: 3px;
-  overflow: hidden;
-  pointer-events: none;
-}
-.ptile-gauge b {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.2s ease;
-}
-.ptile-pv {
-  position: absolute;
-  inset: 0;
-  text-align: center;
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--on-accent);
-  text-shadow: 0 0 3px var(--shadow-ink), 0 1px 2px var(--shadow-ink);
-  font-variant-numeric: tabular-nums;
-  line-height: 10px;
-}
+/* `ptile-gauge` (jauge de vie horizontale du portrait) : marqueur de compatibilité SANS style
+   propre — le rendu vient désormais de la primitive partagée LifeBar (variante superposée,
+   styles/gauges.css), `pointer-events: none` compris. */
 /* États de FIN (#237) : pastille distincte par état, coin bas-droit du portrait — teinte propre à
    chaque état (langage visuel UNIQUE, cf. src/ui/endStateVisual.ts). */
 .ptile .end-mark {

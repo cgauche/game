@@ -46,7 +46,8 @@ import { EtatPanel, ZONE_ORDER, zoneAnchor, zoneAfflictions } from './EtatPanel'
 import { PlaqueRow } from './PlaqueRow';
 import { Band } from './Band';
 import { FigTile, type ZoneBadgeSpec } from './FigTile';
-import { NotchGauge, type GaugeTone } from './NotchGauge';
+import { LifeBar } from './LifeBar';
+import type { GaugeTone } from './NotchGauge';
 import { corruptionThresholdExceeded } from '../engine/corruption';
 import { locationLabel } from '../engine/combat';
 
@@ -63,7 +64,7 @@ const ARMOUR_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
 const skinSlotsFor = (kind: ItemInstance['kind']) => (kind === 'armor' ? ARMOUR_SKIN_SLOTS : WEAPON_SKIN_SLOTS);
 
 /** Blessures : fraction restante → ton (mêmes seuils que la jauge de portrait `hpColor`,
- *  `gameIso/teamColors.ts` — même langage de sévérité, exprimé pour `NotchGauge`). */
+ *  `gameIso/teamColors.ts` — même langage de sévérité, exprimé pour `LifeBar`). */
 const woundsTone = (cur: number, max: number): GaugeTone => {
   const frac = max > 0 ? cur / max : 0;
   return frac <= 0.34 ? 'danger' : frac <= 0.67 ? 'warn' : 'ok';
@@ -227,10 +228,11 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 fig="hero"
                 zoneBadges={tab === 'possessions' ? possessionsZoneBadges(hero) : tab === 'etat' ? etatZoneBadges(hero) : undefined}
               />
-              <NotchGauge label="Blessures" value={hero.wounds.current} max={hero.wounds.max} stacked tone={woundsTone} />
+              <LifeBar label="Blessures" value={hero.wounds.current} max={hero.wounds.max} tone={woundsTone} />
               {/* Encombrement : rouge en remplissage (croquis 2026-07-17) — la surcharge elle-même
-                  reste portée par l'alarme existante (`SheetAlarmsBand`/`sheetAlarms.ts`), jamais dupliquée ici. */}
-              <NotchGauge label="Encombrement" value={totalEncumbrance(hero)} max={maxEncumbrance(hero)} stacked tone="danger" />
+                  reste portée par l'alarme existante (`SheetAlarmsBand`/`sheetAlarms.ts`), jamais dupliquée ici.
+                  Le dépassement (Enc > max) est porté par l'état DÉPASSEMENT générique de `LifeBar`. */}
+              <LifeBar label="Encombrement" value={totalEncumbrance(hero)} max={maxEncumbrance(hero)} tone="danger" />
               <div className="sheet-idrows">
                 <div className="sheet-idrow">
                   <span className="sheet-idrow-label">Race</span>
@@ -239,7 +241,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                   </span>
                 </div>
                 <div className="sheet-idrow">
-                  <span className="sheet-idrow-label">Classe</span>
+                  <span className="sheet-idrow-label">Carrière</span>
                   <span className="sheet-idrow-value">
                     <CodexRef category="careers" id={hero.career} label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
                     {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
