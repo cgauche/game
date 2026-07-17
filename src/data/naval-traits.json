@@ -722,8 +722,15 @@
     },
     "source": {
       "book": "mort-sur-le-reik-compagnon",
-      "page": 65
+      "page": 66
     },
+    "alsoIn": [
+      {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 65,
+        "quote": "Murs blindés"
+      }
+    ],
     "desc": "Les murs d'une cabine ou de toute autre superstructure sont blindés à l'aide de plaques de fer. Tout Personnage ou PNJ situé derrière un mur blindé bénéficie d'une couverture totale (**WFJDR**, p. 161) rendant les tirs de projectiles contre lui Très Difficile."
   },
   {

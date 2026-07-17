@@ -7,7 +7,7 @@
  * `install` 20/26 ; `ranked` 4/26 ; `passive` 8/26 ; `ram` 1/26 ; `deckCover` 3/26 ; `navTestMod` 2/26 ; `maison` 1/26).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema } from '../common';
+import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema } from '../common';
 
 export const file = 'naval-traits.json';
 
@@ -33,6 +33,9 @@ export const schema = z.array(
     label: z.string(),
     kind: z.enum(['trait', 'amelioration']),
     source: sourceRefSchema.optional(),
+    /** Emplacement SECONDAIRE (#563) — `murs-blindes` prose folio 66 (ancre) ET bloc Coût/Poids
+     *  folio 65 (`alsoIn[0].quote`). */
+    alsoIn: z.array(secondarySourceRefSchema).optional(),
     desc: z.string(),
     install: navalInstallSchema.optional(),
     ranked: z.boolean().optional(),

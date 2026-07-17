@@ -6,7 +6,7 @@
  * `common.ts` (`flowSchema`/`conditionSchema`/`formulaSchema`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, charKeySchema, flowSchema, formulaSchema } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, flowSchema, formulaSchema } from '../common';
 
 export const file = 'spells.json';
 
@@ -66,6 +66,9 @@ export const schema = z.array(
     }).optional(),
     effects: flowSchema.optional(),
     source: sourceRefSchema,
+    /** Emplacement SECONDAIRE (#563) — ex. `maitre-de-la-bete` prose folio 246 (ancre) ET stat-bloc
+     *  (NI/Portée/Cible/Durée) folio 245 (`alsoIn[0].quote`). */
+    alsoIn: z.array(secondarySourceRefSchema).optional(),
   }),
 );
 

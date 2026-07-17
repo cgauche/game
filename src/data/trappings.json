@@ -450,8 +450,15 @@
     },
     "source": {
       "book": "aux-armes",
-      "page": 91
+      "page": 90
     },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 91,
+        "quote": "Cimeterre"
+      }
+    ],
     "shape": "cimeterre"
   },
   {
@@ -487,8 +494,15 @@
     },
     "source": {
       "book": "aux-armes",
-      "page": 91
+      "page": 90
     },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 91,
+        "quote": "Dague ballock"
+      }
+    ],
     "shape": "dague_ballock"
   },
   {
@@ -8348,8 +8362,15 @@
     },
     "source": {
       "book": "aux-armes",
-      "page": 95
+      "page": 96
     },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 95,
+        "quote": "Filet lesté"
+      }
+    ],
     "shape": "filet_leste"
   },
   {
@@ -8579,8 +8600,15 @@
     },
     "source": {
       "book": "aux-armes",
-      "page": 123
-    }
+      "page": 122
+    },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 123,
+        "quote": "Batterie tonnerre"
+      }
+    ]
   },
   {
     "id": "canon-a-repetition",
@@ -9187,8 +9215,15 @@
     },
     "source": {
       "book": "aux-armes",
-      "page": 95
+      "page": 96
     },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 95,
+        "quote": "Cape"
+      }
+    ],
     "shape": "cape"
   },
   {
@@ -9298,8 +9333,15 @@
     },
     "source": {
       "book": "aux-armes",
-      "page": 96
+      "page": 97
     },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 96,
+        "quote": "Hache d'armes"
+      }
+    ],
     "shape": "hache_armes"
   },
   {
@@ -9337,8 +9379,15 @@
     },
     "source": {
       "book": "aux-armes",
-      "page": 96
+      "page": 97
     },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 96,
+        "quote": "Pertuisane/Fauchard"
+      }
+    ],
     "shape": "pertuisane"
   },
   {
@@ -9375,8 +9424,15 @@
     },
     "source": {
       "book": "aux-armes",
-      "page": 96
+      "page": 97
     },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 96,
+        "quote": "Serpe de guerre"
+      }
+    ],
     "shape": "serpe_guerre"
   },
   {

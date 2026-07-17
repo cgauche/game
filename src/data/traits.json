@@ -594,6 +594,12 @@
       "book": "livre-de-base",
       "page": 339
     },
+    "alsoIn": [
+      {
+        "book": "zoo-imperial",
+        "page": 136
+      }
+    ],
     "passive": [
       {
         "op": "mitigateIncoming",
@@ -1093,7 +1099,13 @@
     "source": {
       "book": "livre-de-base",
       "page": 340
-    }
+    },
+    "alsoIn": [
+      {
+        "book": "zoo-imperial",
+        "page": 137
+      }
+    ]
   },
   {
     "id": "morsure",
@@ -2256,7 +2268,13 @@
     "source": {
       "book": "zoo-imperial",
       "page": 134
-    }
+    },
+    "alsoIn": [
+      {
+        "book": "zoo-imperial",
+        "page": 23
+      }
+    ]
   },
   {
     "id": "manifestation-de-ghur",

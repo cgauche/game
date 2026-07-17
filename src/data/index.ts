@@ -5,7 +5,7 @@
  */
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
-import type { SourceRef, RaceKey, RefCareerId } from './schemas/common';
+import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/common';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
 import characteristicsJson from './characteristics.json';
@@ -562,6 +562,10 @@ export interface TrappingData {
    *  improvisée, Rocher, Bijoux, Licence de Guilde, Filet…). */
   price: { gold: number; silver: number; bronze: number } | null;
   source: SourceRef;
+  /** Emplacement SECONDAIRE (#563) — même objet réimprimé/à cheval prose⇄ligne-de-stats ailleurs
+   *  (ex. Cimeterre : prose AA 90, ligne de stats AA 91). Accessors `allLocations`/`sourceBooks`
+   *  (`src/data/sourceRefs.ts`), aucun lecteur n'inline `alsoIn`. */
+  alsoIn?: SecondaryRef[];
   /** Arme DÉRIVÉE conférée tant que l'objet est ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est
    *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
    *  remplir ce champ dans la donnée, plus de name-match `i.name === 'Crochet'`. */
@@ -954,6 +958,9 @@ export interface TraitData {
   specsMulti?: boolean;
   desc: string;
   source: SourceRef;
+  /** Emplacement SECONDAIRE (#563) — même Trait réimprimé/à cheval ailleurs (ex. Fouissement : ZI 23
+   *  ET 134). Accessors `allLocations`/`sourceBooks` (`src/data/sourceRefs.ts`). */
+  alsoIn?: SecondaryRef[];
   /** Effets MÉCANIQUES authorés (déclencheur → ops du Flow) — Traits « effet sur événement » (Toile,
    *  Sang corrosif, Régénération…) appliqués par `state/triggeredEffects`, plus de handler en dur.
    *  Type-only (le moteur reste pur : la donnée référence le Flow sans en dépendre à l'exécution). */
@@ -1036,6 +1043,9 @@ export interface QualityData {
   type: string;
   subType: string | null;
   desc: string;
+  /** Emplacement SECONDAIRE (#563) — même Qualité réimprimée/à cheval ailleurs (ex. Tir de zone :
+   *  AA 89 + MDG 102). Accessors `allLocations`/`sourceBooks` (`src/data/sourceRefs.ts`). */
+  alsoIn?: SecondaryRef[];
   effects?: import('../state/flow').TriggeredEffect[];
   /** Modificateurs PASSIFS continus (objet Laid : −10 aux Tests de Soc ; PASSIFS d'arme : weaponRollMod/
    *  weaponDamageMod/armourPierce/critOnRoll) en `GameOp[]` — MÊME vocab/éditeur (`GameOpEditor`) que les
@@ -1230,6 +1240,10 @@ export interface SpellData {
    */
   effects?: import('../state/flow').Flow;
   source: SourceRef;
+  /** Emplacement SECONDAIRE (#563) — même Sort à cheval prose⇄stat-bloc ailleurs (ex. Maître de la
+   *  bête : prose LDB 246, stat-bloc NI/Portée/Cible/Durée LDB 245). Accessors `allLocations`/
+   *  `sourceBooks` (`src/data/sourceRefs.ts`). */
+  alsoIn?: SecondaryRef[];
 }
 
 /** Signe astral (ADE2) : table d100 (`rand` = borne haute cumulée), flavor + effet de création. */
@@ -1483,6 +1497,10 @@ export interface NavalTraitData {
   label: string;
   kind: 'trait' | 'amelioration';
   source?: SourceRef;
+  /** Emplacement SECONDAIRE (#563) — même Trait/Amélioration à cheval prose⇄bloc Coût/Poids ailleurs
+   *  (ex. Murs blindés : prose T2C 66, bloc Coût/Poids T2C 65). Accessors `allLocations`/
+   *  `sourceBooks` (`src/data/sourceRefs.ts`). */
+  alsoIn?: SecondaryRef[];
   desc: string;
   /** Coût/Poids d'installation (Améliorations seulement) — cf. `NavalInstall`. */
   install?: NavalInstall;

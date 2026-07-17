@@ -260,8 +260,15 @@
     "desc": "Quand vous effectuez un Test pour savoir si un adversaire s'empêtre dans un filet lesté, le filet a une Force de 55.",
     "source": {
       "book": "aux-armes",
-      "page": 95
+      "page": 96
     },
+    "alsoIn": [
+      {
+        "book": "aux-armes",
+        "page": 95,
+        "quote": "Filet lesté"
+      }
+    ],
     "effects": [
       {
         "trigger": "onHit",
@@ -656,6 +663,12 @@
       "book": "aux-armes",
       "page": 89
     },
+    "alsoIn": [
+      {
+        "book": "mer-des-griffes",
+        "page": 102
+      }
+    ],
     "capabilities": {
       "areaFire": true
     }

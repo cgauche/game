@@ -3394,8 +3394,15 @@
     },
     "source": {
       "book": "livre-de-base",
-      "page": 245
+      "page": 246
     },
+    "alsoIn": [
+      {
+        "book": "livre-de-base",
+        "page": 245,
+        "quote": "Maître de la bête"
+      }
+    ],
     "domainId": "bete",
     "family": "arcane",
     "curated": true
