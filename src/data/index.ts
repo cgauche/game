@@ -80,6 +80,7 @@ import seaNavigationJson from './sea-navigation.json';
 import seaPerilsJson from './sea-perils.json';
 import seaWeatherJson from './sea-weather.json';
 import shipConstructionJson from './ship-construction.json';
+import riverNavigationJson from './river-navigation.json';
 import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
@@ -97,6 +98,7 @@ import type { SeaNavigationData } from './schemas/defs/sea-navigation';
 import type { SeaPerilsData } from './schemas/defs/sea-perils';
 import type { SeaWeatherData } from './schemas/defs/sea-weather';
 import type { ShipConstructionData } from './schemas/defs/ship-construction';
+import type { RiverNavigationData } from './schemas/defs/river-navigation';
 
 /** Règle d'EMPOIGNADE en DONNÉE (LDB 14 l.155-169) : `init` = ops à la touche d'une Empoignade déclarée
  *  (Empêtré + relation via le flag `grapple`) ; `win` = les 3 options du Test opposé GAGNÉ (l.161), appliquées
@@ -1542,6 +1544,10 @@ export const seaNavigation = seaNavigationJson as SeaNavigationData;
 export const seaPerils = seaPerilsJson as SeaPerilsData;
 export const seaWeather = seaWeatherJson as SeaWeatherData;
 export const shipConstruction = shipConstructionJson as ShipConstructionData;
+
+/** LOT 2 #422 : Navigation fluviale (T2C ch.5) — pendant fluvial de `seaNavigation`, même patron
+ *  d'export (référence LIVE au même fichier physique relu par `engine/riverNavigation.ts`). */
+export const riverNavigation = riverNavigationJson as RiverNavigationData;
 
 /** Vocabulaire des SERVICES de lieu (#343, `lieux-services.json`) — catalogue EXTENSIBLE consommé par
  *  référence (`MapPlace.services[].kind`) et résolu par `placeServices` (`src/state/worldMap.ts`).

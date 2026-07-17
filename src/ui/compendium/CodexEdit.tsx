@@ -112,6 +112,8 @@ const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | '
   seaWeather: { ds: 'seaWeather', mode: 'single' },
   // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
   disponibilite: { ds: 'disponibilite', mode: 'single' },
+  // LOT 2 #422 : Navigation fluviale (T2C ch.5) — fiche de règle UNIQUE, même patron.
+  riverNavigation: { ds: 'riverNavigation', mode: 'single' },
 };
 export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
@@ -284,6 +286,11 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   // LOT 1 #422 (suite) : Disponibilité & Troc (`disponibilite`, mode 'single', patron `waterExposure`) —
   // `dispoPct`/`barterRatios` (tableaux top-level) → éditeur GÉNÉRIQUE commun (`GenericArrayField`).
   if (categoryKey === 'disponibilite') add('dispoPct', 'barterRatios');
+  // LOT 2 #422 : Navigation fluviale (`riverNavigation`, mode 'single', patron `waterExposure`) —
+  // `windForces`/`windDirections` (tableaux top-level) → éditeur GÉNÉRIQUE commun (`GenericArrayField`).
+  // `windEffect`/`capsize`/`rowingAgility`/`outOfControl`/`echouage`/`temporaryRepair` sont des objets
+  // (hétérogènes ou Record de Record) déjà couverts par le sous-formulaire récursif (`ObjectField`).
+  if (categoryKey === 'riverNavigation') add('windForces', 'windDirections');
   if (categoryKey === 'shipHullSizes') add('lengthM'); // [minM,maxM] — éditeur dédié (2 nombres, comme StarSubField)
   // #168 : Activité — Test « posté » (contexts/skills « au choix »/char/difficulty) + table d'issues
   // `outcomes` (OutcomeBand[]) → éditeurs dédiés ; `onSuccess` couvert par opsFieldsOf ci-dessus.
@@ -450,6 +457,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // LOT 1 #422 (suite) : Disponibilité & Troc (`disponibilite`, mode 'single') — `dispoPct`/`barterRatios`
   // (tableaux top-level) au MÊME éditeur générique commun que les fiches navales ci-dessus.
   const isDisponibilite = categoryKey === 'disponibilite';
+  // LOT 2 #422 : Navigation fluviale (`riverNavigation`, mode 'single') — `windForces`/`windDirections`
+  // (tableaux top-level) au MÊME éditeur générique commun que les fiches ci-dessus.
+  const isRiverNavigation = categoryKey === 'riverNavigation';
   const hasHullLength = categoryKey === 'shipHullSizes'; // `lengthM` : [minM,maxM]
   // #168 : Activité (`activities`) — Test « posté » (contexts/skills « au choix »/char/difficulty) +
   // table d'issues `outcomes` (OutcomeBand[]) ; `onSuccess` reste sur le lot GameOpEditor commun.
@@ -620,6 +630,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isSeaWeather && <GenericArrayField label="roseDesVents" value={entry.roseDesVents as Record<string, unknown>[] | undefined} onChange={(v) => edit('roseDesVents', v)} />}
         {isDisponibilite && <GenericArrayField label="dispoPct (% de Disponibilité par taille de colonie)" value={entry.dispoPct as Record<string, unknown>[] | undefined} onChange={(v) => edit('dispoPct', v)} />}
         {isDisponibilite && <GenericArrayField label="barterRatios (Ratios de Troc)" value={entry.barterRatios as Record<string, unknown>[] | undefined} onChange={(v) => edit('barterRatios', v)} />}
+        {isRiverNavigation && <GenericArrayField label="windForces (Force du vent, 1d10)" value={entry.windForces as Record<string, unknown>[] | undefined} onChange={(v) => edit('windForces', v)} />}
+        {isRiverNavigation && <GenericArrayField label="windDirections (Direction du vent, 1d10)" value={entry.windDirections as Record<string, unknown>[] | undefined} onChange={(v) => edit('windDirections', v)} />}
         {hasHullLength && <LengthRangeField value={entry.lengthM as [number, number] | undefined} onChange={(v) => edit('lengthM', v)} />}
         {isActivity && <ActivityTestField entry={entry} edit={edit} />}
         {isActivity && <OutcomeBandsField value={entry.outcomes as OutcomeBand[] | undefined} onChange={(v) => edit('outcomes', v.length ? v : undefined)} />}

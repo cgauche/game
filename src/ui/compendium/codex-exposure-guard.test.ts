@@ -95,6 +95,7 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'regles.json': ['regles'],
   'rencontres-edoc.json': ['rencontresPositives', 'rencontresFortuites', 'rencontresDangereuses'],
   'river-criticals.json': ['riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure'],
+  'river-navigation.json': ['riverNavigation'],
   'river-perils.json': ['riverPerils'],
   'sea-cargo.json': ['seaCargo'],
   'sea-events.json': ['seaManannFactors', 'seaBoardEvents', 'seaPortEvents'],
@@ -162,7 +163,6 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'grapple.json': "AUDIT : à exposer -> ticket — mécanique d'Empoignade en GameOp (LDB 14 l.155-169), consommée par `state/pendings.ts`, aucune catégorie Codex (la fiche narrative `empoignade` de `regles.json` est exposée, pas cette mécanique GameOp).",
   'miscast.json': "AUDIT : à exposer -> ticket — Tableaux d'Incantations Imparfaites (LDB 46) + Colère des dieux (LDB 40), consommés par `engine/miscast.ts`, aucune catégorie Codex.",
   'night-stakes.json': "AUDIT : à exposer -> ticket — enjeux VERBATIM de la cascade de nuit, consommés par `state/restFlow.ts`, aucune catégorie Codex.",
-  'river-navigation.json': "AUDIT : à exposer -> ticket — table de vent/navigation fluviale (T2C ch.5 l.11-41), consommée par `engine/riverNavigation.ts`, aucune catégorie Codex.",
 };
 
 /** Offenses réelles : chaque `.json` de `src/data` doit être exposé (mapping résolu via le VRAI
