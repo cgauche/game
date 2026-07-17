@@ -3,7 +3,7 @@
  * Bonus d'Endurance) avant l'ajout additif de Costaud (`talentEncumbranceBonus`). Le porteur DONNÉE est le
  * Trait racial `ogre` (`traits.json`, capabilities.encumbranceFactor:2, lu par `traitEncumbranceFactor`,
  * `talentEffects.ts`) — le talent optionnel « Massif » (`archives-de-l-empire-2` l.241-257) est un mécanisme
- * DISTINCT (choix de Taille), pas le porteur de la règle inconditionnelle ADE II l.708. `maxEncumbrance`
+ * DISTINCT (choix de Taille), pas le porteur de la règle inconditionnelle ADE II 2 l.708. `maxEncumbrance`
  * (`items.ts`) compose le PLUS GRAND facteur entre porteur talent (`talentEncumbranceFactor`) et porteur
  * Trait (`traitEncumbranceFactor`) — ce test prouve le cœur PUR `maxEncumbranceFactor` ET l'intégration
  * bout-en-bout sur une créature réelle du registre (`ogre`).

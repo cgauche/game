@@ -372,14 +372,14 @@ export function maxEncumbranceFactor(features: Pick<CombatFeature, 'encumbranceF
   return features.reduce((f, d) => (d.encumbranceFactor ? Math.max(f, d.encumbranceFactor) : f), 1);
 }
 
-/** Encombrement ogre (ADE II ch.02 l.708) : facteur MULTIPLICATIF sur (Bonus de Force + Bonus
+/** Encombrement ogre (ADE II 2 l.708) : facteur MULTIPLICATIF sur (Bonus de Force + Bonus
  *  d'Endurance), porté par une capacité de race/créature (`encumbranceFactor`). 1 = aucune capacité
  *  de ce type (0 excédent = aucun effet sur `maxEncumbrance`). */
 export function talentEncumbranceFactor(c: Combatant): number {
   return maxEncumbranceFactor(featuresOf(c).map(({ def }) => def));
 }
 
-/** Encombrement portable ×N (ADE II ch.02 l.708, folio 31) porté par un Trait RACIAL (Ogre) — MÊME
+/** Encombrement portable ×N (ADE II 2 l.708, folio 31) porté par un Trait RACIAL (Ogre) — MÊME
  *  cœur pur `maxEncumbranceFactor` que le pendant talent (`talentEncumbranceFactor` ci-dessus) : le
  *  facteur ne se cumule JAMAIS, seul le PLUS GRAND (talents ∪ traits) l'emporte — composé par
  *  `items.maxEncumbrance`. */

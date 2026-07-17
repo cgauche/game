@@ -37,7 +37,7 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.343)', () =>
     expect(isStarving(c)).toBe(false);
   });
 
-  it('#513 — ogre (ADE II ch.02 l.708) : consomme 2 rations/jour, insuffisant si une seule dispo', () => {
+  it('#513 — ogre (ADE II 2 l.708) : consomme 2 rations/jour, insuffisant si une seule dispo', () => {
     const c = hero({ rations: 2, traits: [{ id: 'ogre' }] });
     const r = dailyFoodUpkeep(c, 30, 3, makeRNG(1));
     expect(r.ate).toBe(true);
@@ -310,7 +310,7 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.340)', () => {
       expect(m.suffisant).toBe(false);
     });
 
-    it('#513 — ogre (ADE II ch.02 l.708) : rations ET eau requises ×2 (Trait racial `ogre`)', () => {
+    it('#513 — ogre (ADE II 2 l.708) : rations ET eau requises ×2 (Trait racial `ogre`)', () => {
       const party = [hero({ rations: 10, traits: [{ id: 'ogre' }] }), hero({ rations: 10 })];
       const m = provisioningManifest(party, 1000, 3);
       expect(m.rationsRequises).toBe(3 * 2 + 3); // ogre × facteur 2, humain × 1

@@ -69,7 +69,7 @@ export function hasBrouet(c: Combatant): boolean {
   return (c.talents ?? []).some((t) => t.talentId === 'brouet' && (t.times ?? 1) >= 1);
 }
 
-/** Consommation de vivres/eau ×N (ADE II ch.02 l.708, folio 31 : « les ogres doivent manger et boire
+/** Consommation de vivres/eau ×N (ADE II 2 l.708, folio 31 : « les ogres doivent manger et boire
  *  au moins deux fois plus qu'un humain en une journée ») portée par un Trait RACIAL (Ogre) — MÊME
  *  lecture ciblée sur `c.traits` que `traitEncumbranceFactor` (`combatFeatures/dispatch.ts`). Le PLUS GRAND
  *  facteur porté l'emporte (jamais cumulatif). */
@@ -187,7 +187,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
   const h: HungerState = c.hunger ?? { days: 0, tests: 0, failures: 0 };
 
   // 1. Manger : journée déjà couverte (demi-ration de Brouet, repas d'auberge), sinon `traitConsumptionFactor`
-  // ration(s) (ogre ADE II ch.02 l.708 : « les ogres doivent manger … au moins deux fois plus » — 2 rations/jour).
+  // ration(s) (ogre ADE II 2 l.708 : « les ogres doivent manger … au moins deux fois plus » — 2 rations/jour).
   if (h.coveredDay) {
     res.ate = true;
   } else {
@@ -339,7 +339,7 @@ export function provisioningManifest(
   const crewCount = Math.max(0, crew.count ?? 0);
   const souls = alive.length + crewCount;
   const rationsDispo = alive.reduce((sum, h) => sum + rationCount(h), 0) + Math.max(0, crew.provisions ?? 0);
-  // Ogre (ADE II ch.02 l.708) : facteur ×2 sur les vivres/eau requis, PAR TÊTE — `traitConsumptionFactor`.
+  // Ogre (ADE II 2 l.708) : facteur ×2 sur les vivres/eau requis, PAR TÊTE — `traitConsumptionFactor`.
   const rationsRequises =
     alive.reduce((sum, h) => sum + (hasBrouet(h) ? Math.ceil(days / 2) : days) * traitConsumptionFactor(h), 0) + crewCount * days;
   const eauRequiseLitres =

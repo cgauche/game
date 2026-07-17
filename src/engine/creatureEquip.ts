@@ -102,7 +102,7 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
     // Arme manufacturée hors catalogue, ou descripteur naturel non flaggé : générique, mêlée par
     // défaut — REND toujours une silhouette (`weaponFamily` retombe sur le Groupe, ex. « épée »).
     // `sizeless` (≠ `natural`, qui viderait les mains) : le trait « Arme +N » SANS objet identifié au
-    // catalogue n'est jamais une POSSESSION dont la Taille pourrait ne pas convenir (ADE II ch.02
+    // catalogue n'est jamais une POSSESSION dont la Taille pourrait ne pas convenir (ADE II 2
     // l.604-710 vise un objet manufacturé réel, ex. une massue-ogre) — sa taille effective EST celle
     // du porteur (LDB 85 l.33 : « porte une arme… ou utilise ses dents, griffes ou similaires »),
     // exemptée du mismatch (`combat.ts`) sans toucher au rendu.

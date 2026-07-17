@@ -72,9 +72,9 @@ const traitCapabilitiesSchema = z.strictObject({
   seesInDark: z.boolean().optional(),
   darkSightTiles: z.number().optional(),
   wakelessBite: z.boolean().optional(),
-  /** ADE II ch.02 l.708 : « un ogre peut porter deux fois l'Encombrement normal d'un humain ». */
+  /** ADE II 2 l.708 : « un ogre peut porter deux fois l'Encombrement normal d'un humain ». */
   encumbranceFactor: z.number().optional(),
-  /** ADE II ch.02 l.708 : « les ogres doivent manger et boire au moins deux fois plus qu'un humain ». */
+  /** ADE II 2 l.708 : « les ogres doivent manger et boire au moins deux fois plus qu'un humain ». */
   consumptionFactor: z.number().optional(),
 });
 

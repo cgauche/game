@@ -171,7 +171,7 @@ const DISPATCH = new Set<string>([
   // exemption dissipation STRUCTURELLE), `grantCareerTalent` ×10 (achats hors-Carrière au tarif normal
   // — `talentEffects.careerTalentAdditions`, étendu aux Traits).
   'Marque de Khorne',
-  // Ogre (ADE II ch.02 l.708, folio 31) : `capabilities.encumbranceFactor`/`consumptionFactor` (donnée)
+  // Ogre (ADE II 2 l.708, folio 31) : `capabilities.encumbranceFactor`/`consumptionFactor` (donnée)
   // — lus par `combatFeatures/dispatch.traitEncumbranceFactor` (composé max talent/trait dans `items.maxEncumbrance`)
   // et `provisions.traitConsumptionFactor` (composé dans `dailyFoodUpkeep`/`provisioningManifest`). Canal
   // dispatch (capability lue par id, MÊME lecture ciblée `c.traits` que Marque de Khorne).
