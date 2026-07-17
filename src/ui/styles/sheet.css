@@ -84,18 +84,6 @@
 .sheet-vitals .stat-chip.enc-over .sc-value {
   color: var(--danger-soft); /* #305 : var(--danger) sur .stat-chip (panel2) < 4.5:1 (AA) */
 }
-.sheet-resources {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 6px;
-}
-.sheet-resources .stat-chip .sc-value {
-  color: var(--gold);
-  font-size: 14px;
-}
-.sheet-stats {
-  margin-bottom: 4px;
-}
 @media (max-width: 700px) {
   .sheet-layout {
     grid-template-columns: 1fr;
@@ -120,9 +108,6 @@
 }
 /* Onglet Combat de la fiche : la surface = primitive .panel.stack (components.css). */
 .sheet-main > .panel {
-  margin-bottom: 14px;
-}
-.sheet-skills {
   margin-bottom: 14px;
 }
 
@@ -510,9 +495,10 @@
 }
 
 /* ── Onglet « État » (registre compact, arbitrage user 2026-07-17) : bandes de section (`Band`) +
-   `PlaqueRow` par affliction — la silhouette organisatrice/zones par Localisation est MORTE (la
-   localisation vit désormais dans chaque ligne, `PlaqueRow.sub`). Ne reste ici que l'état calme
-   (rig + message), composition VALIDÉE inchangée. ── */
+   `PlaqueRow` par affliction — l'ancienne silhouette organisatrice (rig + zones dessinées) est MORTE,
+   remplacée par la bande de zones TOUCHÉES en tête (`ZoneBand`, `PlaqueGrid`, pt.4) : une plaque par
+   Localisation qui porte ≥1 critique/séquelle, sinon la zone n'existe pas à l'écran. Ne reste ici que
+   l'état calme (rig + message), composition VALIDÉE inchangée. ── */
 .etat-ras {
   display: flex;
   flex-direction: column;
@@ -524,5 +510,39 @@
   font-family: var(--font-display);
   font-size: 20px;
   color: var(--ok-bright);
+}
+/* Liserés de gravité du registre (pt.5, #492) : attribut `data-tone` posé sur la bande de section
+   (`Section`, `EtatPanel.tsx`) — jamais une classe par ton (patron déjà tenu par l'ancienne silhouette
+   organisatrice, `data-tone` de `NotchGauge`). Sang = critiques/états, ambre = séquelles/maladies,
+   violet = corruption/mutations. `PlaqueRow` n'expose pas de prop dédiée (hors périmètre du lot) :
+   ciblée en DESCENDANT, la plaque garde son propre rayon de bordure (`border-radius`, plaque-row.css). */
+[data-tone] .plaque-row {
+  border-left: 3px solid transparent;
+}
+[data-tone='sang'] .plaque-row {
+  border-left-color: var(--blood);
+}
+[data-tone='ambre'] .plaque-row {
+  border-left-color: var(--gold2);
+}
+[data-tone='violet'] .plaque-row {
+  border-left-color: var(--corruption-violet);
+}
+/* Gangrène du cadre (pt.6, #492) : l'or du bandeau de tête (`.modal { border-top: 4px solid --gold }`,
+   components.css) et le halo se ternissent progressivement de violet-noir depuis un coin, selon la
+   Corruption du héros (`data-corruption`, posé par `CharacterSheet.tsx` via `corruptionThresholdExceeded`,
+   `engine/corruption.ts`) — matière SOBRE (dégradé subtil), jamais un filtre criard. `none` = aucune
+   règle (Corruption à 0, cas courant). */
+.sheet-modal[data-corruption='ronge'] {
+  background:
+    radial-gradient(360px 260px at 100% 0%, color-mix(in srgb, var(--corruption-violet) 14%, transparent), transparent 62%),
+    radial-gradient(520px 300px at 50% 0%, rgba(224, 181, 90, 0.07), transparent 62%),
+    linear-gradient(160deg, var(--atelier-shell-hi), var(--atelier-modal-lo));
+}
+.sheet-modal[data-corruption='seuil'] {
+  border-top-color: var(--corruption-violet);
+  background:
+    radial-gradient(420px 320px at 100% 0%, color-mix(in srgb, var(--corruption-violet) 28%, transparent), transparent 66%),
+    linear-gradient(160deg, var(--atelier-shell-hi), var(--atelier-modal-lo));
 }
 

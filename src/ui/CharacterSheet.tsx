@@ -6,7 +6,7 @@ import { useModalA11y } from './Modal';
 import { Tabs } from './Tabs';
 import { maxEncumbrance, isWeaponActive, armourLayer, isCapeItem, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
-import { HitLocation, ItemInstance, Combatant } from '../engine/types';
+import { HitLocation, ItemInstance, Combatant, CharKey, CHAR_KEYS } from '../engine/types';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { baseWithTalents } from '../engine/talentEffects';
 import { refKey, parseRefKey } from '../engine/careerSlots';
@@ -22,27 +22,26 @@ import { canAfford, toMoney, formatMoney } from '../engine/money';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire, casterTalents } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
-import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSkillById, skillInstanceLabel, findSpeciesById, findCareerById, careerLabelFor, findClassById, findTrappingById } from '../data';
+import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSpeciesById, findCareerById, careerLabelFor, findClassById, findTrappingById } from '../data';
 import { weaponFormLabel } from '../gameIso/rig/parts/weaponForms';
 import { CodexRef } from './compendium/CodexRef';
-import { CharStatsGrid } from './CharStatsGrid';
 import { CharValue } from './CharValue';
+import { HeroSheet } from './HeroSheet';
 import { Coins } from './Coins';
-import { TalentChip, QualityChips } from './EntityChip';
+import { QualityChips } from './EntityChip';
 import { WoundsBadge } from './WoundsBadge';
-import { FateChips } from './FateChips';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { EquipmentPanel } from './EquipmentPanel';
 import { CharFrame } from './CharFrame';
-import { PortraitTile } from './PortraitTile';
 import { ItemIcon } from './ItemIcon';
 import { MediaSelect } from './MediaSelect';
 import { BackgroundPanel } from './BackgroundPanel';
 import { Icon } from './Icon';
-import { HERO_RING } from '../gameIso/teamColors';
 import type { Palette } from '../gameIso/rig/palette';
 import { sheetAlarms, alarmsFingerprint } from './sheetAlarms';
 import { EtatPanel } from './EtatPanel';
+import { CharacterPreview } from './CharacterPreview';
+import { corruptionThresholdExceeded } from '../engine/corruption';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
 const WEAPON_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
@@ -101,11 +100,12 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   // dégâts…) plutôt que l'original du groupe ; hors combat, le groupe. → la fiche reflète l'état réel.
   const hero = useGame((s) => s.battle?.combatants.find((h) => h.id === heroId) ?? s.party.find((h) => h.id === heroId));
   const party = useGame((s) => s.party);
-  const setSheetId = useGame((s) => s.setSheetId);
   const tab = useGame((s) => s.sheetTab) ?? 'etat';
   const setSheetTab = useGame((s) => s.setSheetTab);
   const setSheetScroll = useGame((s) => s.setSheetScroll);
   const setSheetAlarmsSeen = useGame((s) => s.setSheetAlarmsSeen);
+  const openMedic = useGame((s) => s.openMedic);
+  const inBattle = useGame((s) => !!s.battle);
   const boxRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   useModalA11y(boxRef, onClose); // dialogue au markup spécifique (header à onglets) → hook a11y partagé
@@ -139,47 +139,67 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
 
   if (!hero) return null;
 
+  // Guérison hors-combat : un soigneur du groupe peut panser ce héros (sans avancer le temps, pour
+  // stopper une hémorragie AVANT que l'horloge ne la fasse ticker — LDB 09-Compétences).
+  const canSoigner = !inBattle && isHealable(hero) && party.some(hasHealSkill);
+
   // GATE CORRIGÉ (#492 bug 2) : un lanceur de Bénédictions sans sort mémorisé encore (Bienheureux
   // avant sa 1re Bénédiction) garde son onglet Magie & Foi — `spells.length` seul le privait à tort.
   const isCaster = (hero.spells?.length ?? 0) > 0 || casterTalents(hero).length > 0;
   const tabs: SheetTab[] = ['etat', 'possessions', 'competences', ...(isCaster ? ['magie' as const] : []), 'avancement', 'histoire'];
 
+  // Gangrène du cadre (§6, #492) : l'or du bandeau/liseré se ternit progressivement de violet-noir
+  // selon la Corruption — `none` (aucune) / `ronge` (sous le seuil) / `seuil` (seuil de Corruption
+  // dépassé, LDB 80). `corruptionThresholdExceeded` = SOURCE UNIQUE du seuil (moteur, `engine/corruption.ts`).
+  const corruption = hero.corruption ?? 0;
+  const dataCorruption = corruption <= 0 ? 'none' : corruptionThresholdExceeded(hero) ? 'seuil' : 'ronge';
+
+  // Annotation par Caractéristique (base+talents vs effective — buffs/malus actifs) pour la table de
+  // Compétences & Talents : composée par `HeroSheet` (`statAnnotations`, data-driven), calculée ICI
+  // (l'appelant fournit ses propres classes/notes, jamais un branchement dans la primitive).
+  const statAnnotations: Partial<Record<CharKey, { valClass?: string; note?: string }>> = {};
+  for (const k of CHAR_KEYS) {
+    const b = baseWithTalents(hero, k), e = effectiveChar(hero, k);
+    statAnnotations[k] = {
+      valClass: e > b ? 'ok-text' : e < b ? 'warn-text' : undefined,
+      note: e !== b ? `Base ${b} (${e > b ? '+' : ''}${e - b} de modificateurs actifs)` : undefined,
+    };
+  }
+
   return (
     <div className="modal-overlay sheet-overlay" onClick={onClose}>
-      <div ref={boxRef} role="dialog" aria-modal="true" className="modal sheet-modal" onClick={(e) => e.stopPropagation()}>
+      <div ref={boxRef} role="dialog" aria-modal="true" className="modal sheet-modal" data-corruption={dataCorruption} onClick={(e) => e.stopPropagation()}>
         <button className="btn small sheet-close" onClick={onClose} aria-label="Fermer">✕</button>
 
-        {/* L'ESSENTIEL à gauche (portrait + identité + vitalité + carac, toujours visible) ;
-            le détail en onglets à droite. */}
+        {/* L'ESSENTIEL à gauche : la colonne est LA PRÉSENCE (figurine en pied + identité + Blessures +
+            alarmes), zéro scroll — arbitrage user 2026-07-17 (« arrête de polluer l'écran de gauche »).
+            Le switch de héros passe par le PartyDock (HUD, au-dessus de cet overlay) ; le détail vit
+            dans les onglets à droite. */}
         <div className="sheet-layout">
           <aside className="sheet-aside">
-            {/* Rangée de compagnie : switch de héros SANS refermer la fiche, onglet conservé (au store). */}
-            <div className="frame-row">
-              {party.map((m, i) => (
-                <PortraitTile
-                  key={m.id}
-                  c={m}
-                  ring={HERO_RING[i % HERO_RING.length]}
-                  variant="full"
-                  size="sm"
-                  maxStates={3}
-                  reserveStates
-                  selected={m.id === hero.id}
-                  onClick={() => setSheetId(m.id)}
-                  title={m.name}
-                />
-              ))}
-            </div>
             <div className="sheet-portrait">
-              {/* Tuile full xl : jauge + États sur la fiche aussi (anneau or « méta »). */}
-              <PortraitTile c={hero} ring="var(--gold)" variant="full" size="xl" reserveStates />
+              <CharacterPreview hero={hero} size="lg" ambiance="spotlight" />
               <h3>{hero.name}</h3>
               <span className="char-sub">
                 <CodexRef category="races" id={hero.species} label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" id={hero.career} label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
                 {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
               </span>
             </div>
-            <FicheBody hero={hero} section="profil" />
+            <div className="sheet-vitals">
+              <div className="stat-chip pv">
+                <span className="sc-label" title="Blessures">Blessures</span>
+                <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
+              </div>
+            </div>
+            <SheetAlarmsBand hero={hero} />
+            {canSoigner && (
+              <div className="row-flex">
+                <button className="btn small" onClick={() => openMedic({ patientId: hero.id })}
+                  title="Soins du groupe (Tests de Guérison) — ouvre l'infirmerie sur ce héros (provisoire — maison PartyDock au lot 6)">
+                  <Icon id="journal/heal" size="sm" /> Soins
+                </button>
+              </div>
+            )}
           </aside>
           <div className="sheet-main">
             <Tabs
@@ -209,6 +229,18 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                     );
                   })()}
                 </>
+              ) : tab === 'competences' ? (
+                // Onglet Compétences & Talents : compose la primitive `HeroSheet` (`header={false}` —
+                // figurine/identité restent dans l'aside de la fiche, patron CreatorSummary.tsx) plutôt
+                // que de réassembler son patron à la main (arbitrage 2026-07-17). Table à VALEURS (deux colonnes,
+                // `skillInstanceLabel` codex-lié) — les Talents restent en chips dans les deux variantes.
+                <HeroSheet
+                  hero={hero}
+                  header={false}
+                  sections={['stats', 'derived', 'skills', 'talents']}
+                  skillsVariant="valeurs"
+                  statAnnotations={statAnnotations}
+                />
               ) : (
                 <FicheBody hero={hero} section={tab} />
               )}
@@ -468,7 +500,7 @@ function FormPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
   );
 }
 
-function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'possessions' | 'competences' }) {
+function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' }) {
   const toggleEquip = useGame((s) => s.toggleEquip);
   const stowItem = useGame((s) => s.stowItem);
   const transferItem = useGame((s) => s.transferItem);
@@ -483,11 +515,6 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'po
   const maxEnc = maxEncumbrance(hero);
   const over = enc > maxEnc;
   const party = useGame((s) => s.party);
-  const openMedic = useGame((s) => s.openMedic);
-  const inBattle = useGame((s) => !!s.battle);
-  // Guérison hors-combat : un soigneur du groupe peut panser ce héros (sans avancer le temps,
-  // pour stopper une hémorragie AVANT que l'horloge ne la fasse ticker — LDB 09-Compétences).
-  const canSoigner = !inBattle && isHealable(hero) && party.some(hasHealSkill);
   // Détection d'artefact (LDB 10) : visible seulement si un héros du groupe possède le Talent.
   const canDetect = !!bestDetector(party);
   // Verrou d'Évaluation : un échec bloque la re-tentative jusqu'au lendemain (LDB 12 l.120).
@@ -515,77 +542,16 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'po
 
   return (
     <>
-      {section === 'profil' && (<>
+      {section === 'possessions' && (
         <div className="sheet-vitals">
-          <div className="stat-chip pv">
-            <span className="sc-label" title="Blessures">Blessures</span>
-            <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
-          </div>
-          <div className="stat-chip">
-            <span className="sc-label" title="Mouvement"><CodexRef category="characteristics" id="mouvement" label="Mouvement">Mouv.</CodexRef></span>
-            <span className="sc-value">{hero.movement}</span>
-          </div>
           <div className={`stat-chip ${over ? 'enc-over' : ''}`}>
             <span className="sc-label" title="Encombrement">Enc.</span>
             <span className="sc-value">{enc}/{maxEnc}{over ? (<> <Icon id="ui/warning" size="sm" /></>) : ''}</span>
           </div>
         </div>
-        {canSoigner && (
-          <div className="row-flex">
-            <button className="btn small" onClick={() => openMedic({ patientId: hero.id })}
-              title="Soins du groupe (Tests de Guérison) — ouvre l'infirmerie sur ce héros">
-              <Icon id="journal/heal" size="sm" /> Soins
-            </button>
-          </div>
-        )}
-        {hero.fate != null && (
-          <div className="sheet-resources"><FateChips c={hero} /></div>
-        )}
-        <SheetAlarmsBand hero={hero} />
-        <div className="mini-title">Caractéristiques</div>
-        <CharStatsGrid
-          className="sheet-stats"
-          size="sm"
-          value={(k) => effectiveChar(hero, k)}
-          valClass={(k) => { const b = baseWithTalents(hero, k), e = effectiveChar(hero, k); return e > b ? 'ok-text' : e < b ? 'warn-text' : ''; }}
-          note={(k) => { const b = baseWithTalents(hero, k), e = effectiveChar(hero, k); return e !== b ? `Base ${b} (${e > b ? '+' : ''}${e - b} de modificateurs actifs)` : undefined; }}
-        />
-      </>)}
+      )}
 
       {section === 'possessions' && <EquipmentPanel hero={hero} />}
-
-      {section === 'competences' && (
-      <div className="sheet-skills">
-        <div className="mini-title">Compétences</div>
-        <div className="skill-grid">
-          {hero.skills.length === 0 && <span className="muted">Aucune.</span>}
-          {hero.skills.map((s, i) => {
-            const val = effectiveChar(hero, s.characteristic) + s.advances;
-            return (
-              <div className="skill-line" key={i} title={`${s.characteristic} ${effectiveChar(hero, s.characteristic)} + ${s.advances}`}>
-                <span className="sk-name">
-                  <CodexRef category="skills" id={s.skillId} label={findSkillById(s.skillId)?.label ?? s.skillId}>
-                    {skillInstanceLabel(s)}
-                  </CodexRef>
-                </span>
-                <span className="sk-val">{val}</span>
-                <span className="sk-adv">+{s.advances}</span>
-              </div>
-            );
-          })}
-        </div>
-        {hero.talents.length > 0 && (
-          <>
-            <div className="mini-title">Talents</div>
-            <div className="skill-tags">
-              {hero.talents.map((t, i) => (
-                <TalentChip key={i} talent={t} />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-      )}
 
       {section === 'possessions' && (
       <div className="sheet-inventory">

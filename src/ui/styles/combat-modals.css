@@ -734,34 +734,6 @@
     min-width: 34px;
   }
 }
-.skill-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px 12px;
-}
-.skill-line {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 12px;
-  border-bottom: 1px dotted var(--border);
-  padding: 2px 0;
-}
-.skill-line .sk-name {
-  flex: 1;
-  color: var(--text);
-}
-.skill-line .sk-val {
-  font-weight: 700;
-  color: var(--gold);
-}
-.skill-line .sk-adv {
-  color: var(--muted);
-  font-size: 10px;
-  width: 28px;
-  text-align: right;
-}
-
 .inv-rows {
   display: flex;
   flex-direction: column;

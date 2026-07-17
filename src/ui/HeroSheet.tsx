@@ -4,7 +4,7 @@ import type { Money } from '../engine/money';
 import { dominantAxes } from '../engine/axes';
 import { effectiveChar } from '../engine/characteristics';
 import { itemLabel } from '../engine/items';
-import { CORE_AXIS_IDS, findSpellById } from '../data';
+import { CORE_AXIS_IDS, findSpellById, findSkillById, skillInstanceLabel } from '../data';
 import { Coins } from './Coins';
 import { Icon } from './Icon';
 import { CharacterPreview } from './CharacterPreview';
@@ -12,8 +12,15 @@ import { CharStatsGrid } from './CharStatsGrid';
 import { MetalStatus } from './MetalStatus';
 import { RoseAxes } from './RoseAxes';
 import { SkillChip, TalentChip, EntityRef } from './EntityChip';
+import { CodexRef } from './compendium/CodexRef';
 import { axisDataFor, heroRoseAxes, heroStatusLabel, heroSubtitle } from './CharCard';
 import { t } from '../i18n';
+
+/** Rubriques du corps `HeroSheet`, dans l'ordre canonique du détail candidat (#417). Toutes par
+ *  défaut — un appelant restreint via `sections` (ex. l'onglet Compétences & Talents de la fiche,
+ *  qui porte déjà sa propre bande d'en-tête/Blessures dans son aside, arbitrage 2026-07-17). */
+export const HERO_SHEET_SECTIONS = ['stats', 'derived', 'forces', 'skills', 'talents', 'spells', 'possessions'] as const;
+export type HeroSheetSection = (typeof HERO_SHEET_SECTIONS)[number];
 
 /**
  * HeroSheet — corps de FICHE HÉROS, consécration de la duplication entre la fiche vivante du
@@ -32,6 +39,8 @@ export function HeroSheet({
   wealth,
   pending,
   statAnnotations,
+  sections = HERO_SHEET_SECTIONS,
+  skillsVariant = 'chips',
   className,
 }: {
   hero: Combatant;
@@ -52,8 +61,17 @@ export function HeroSheet({
    *  aucun branchement créateur ICI : l'appelant (ex. `CreatorSummary`, augmentations/talents)
    *  calcule ses propres classes/notes et les fournit. */
   statAnnotations?: Partial<Record<CharKey, { valClass?: string; note?: string }>>;
+  /** Rubriques rendues — TOUTES par défaut (rétro-compatible). Un appelant qui porte déjà une partie
+   *  du corps ailleurs (ex. la fiche : Blessures dans l'aside) restreint la liste plutôt que de
+   *  dupliquer le markup à la main (arbitrage 2026-07-17). */
+  sections?: readonly HeroSheetSection[];
+  /** Rendu de la rubrique Compétences — `'chips'` (défaut, présentation candidate/créateur) ou
+   *  `'valeurs'` (table à deux colonnes nom/valeur+avances, onglet Compétences & Talents de la fiche
+   *  vivante — arbitrage 2026-07-17). Les Talents restent en chips dans les DEUX variantes. */
+  skillsVariant?: 'chips' | 'valeurs';
   className?: string;
 }) {
+  const has = (s: HeroSheetSection) => sections.includes(s);
   const axes = dominantAxes(hero, axisDataFor(axisIds), 3);
   // TOUTES les Compétences avancées (correctif utilisateur 2026-07-15 : « faut virer Compétence clé
   // et mettre toutes les compétences ayant des points dedans ») — aucun écrémage top-N ici, le plafond
@@ -83,44 +101,75 @@ export function HeroSheet({
         </div>
       )}
 
-      <CharStatsGrid
-        size="sm"
-        value={(k) => effectiveChar(hero, k)}
-        valClass={(k) => statAnnotations?.[k]?.valClass}
-        note={(k) => statAnnotations?.[k]?.note}
-        className="hero-sheet-stats"
-      />
+      {has('stats') && (
+        <CharStatsGrid
+          size="sm"
+          value={(k) => effectiveChar(hero, k)}
+          valClass={(k) => statAnnotations?.[k]?.valClass}
+          note={(k) => statAnnotations?.[k]?.note}
+          className="hero-sheet-stats"
+        />
+      )}
 
-      <div className="hero-sheet-derived">
-        <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>
-        <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>
-        <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>
-        <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Déterm. <b>{hero.resolve ?? '—'}</b></span>
-      </div>
-
-      <section className="hero-present-sec">
-        <h4>{t('present.forces')}</h4>
-        <div className="skill-tags">
-          {axes.length ? axes.map((a) => <EntityRef key={a.id} category="axes" id={a.id} label={a.label} />) : <span className="hint">{t('party.roles.none')}</span>}
+      {has('derived') && (
+        <div className="hero-sheet-derived">
+          <span><Icon id="resource/wounds" size="sm" /> Blessures <b>{hero.wounds.max}</b></span>
+          <span><Icon id="resource/movement" size="sm" /> Mouvement <b>{hero.movement}</b></span>
+          <span><Icon id="resource/fate" size="sm" /> Destin <b>{hero.fate ?? '—'}</b> · Chance <b>{hero.fortune ?? '—'}</b></span>
+          <span><Icon id="resource/resilience" size="sm" /> Résilience <b>{hero.resilience ?? '—'}</b> · Déterm. <b>{hero.resolve ?? '—'}</b></span>
         </div>
-      </section>
+      )}
 
-      <section className="hero-present-sec">
-        <h4>{t('present.skills')}</h4>
-        <div className="skill-tags">
-          {pending?.skills ?? (skills.length ? skills.map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />) : <span className="hint">—</span>)}
-        </div>
-      </section>
+      {has('forces') && (
+        <section className="hero-present-sec">
+          <h4>{t('present.forces')}</h4>
+          <div className="skill-tags">
+            {axes.length ? axes.map((a) => <EntityRef key={a.id} category="axes" id={a.id} label={a.label} />) : <span className="hint">{t('party.roles.none')}</span>}
+          </div>
+        </section>
+      )}
 
-      <section className="hero-present-sec">
-        <h4>{t('present.talents')}</h4>
-        <div className="skill-tags">
-          {talents.length ? talents.map((tt) => <TalentChip key={`${tt.talentId}|${tt.spec ?? ''}`} talent={tt} />) : <span className="hint">—</span>}
-          {pending?.talents}
-        </div>
-      </section>
+      {has('skills') && (skillsVariant === 'valeurs' ? (
+        <>
+          <div className="mini-title">Compétences</div>
+          <div className="skill-grid">
+            {hero.skills.length === 0 && <span className="muted">Aucune.</span>}
+            {hero.skills.map((s, i) => {
+              const val = effectiveChar(hero, s.characteristic) + s.advances;
+              return (
+                <div className="skill-line" key={i} title={`${s.characteristic} ${effectiveChar(hero, s.characteristic)} + ${s.advances}`}>
+                  <span className="sk-name">
+                    <CodexRef category="skills" id={s.skillId} label={findSkillById(s.skillId)?.label ?? s.skillId}>
+                      {skillInstanceLabel(s)}
+                    </CodexRef>
+                  </span>
+                  <span className="sk-val">{val}</span>
+                  <span className="sk-adv">+{s.advances}</span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <section className="hero-present-sec">
+          <h4>{t('present.skills')}</h4>
+          <div className="skill-tags">
+            {pending?.skills ?? (skills.length ? skills.map((s) => <SkillChip key={`${s.skillId}|${s.spec ?? ''}`} skill={s} />) : <span className="hint">—</span>)}
+          </div>
+        </section>
+      ))}
 
-      {spellRefs.length > 0 && (
+      {has('talents') && (
+        <section className="hero-present-sec">
+          <h4>{t('present.talents')}</h4>
+          <div className="skill-tags">
+            {talents.length ? talents.map((tt) => <TalentChip key={`${tt.talentId}|${tt.spec ?? ''}`} talent={tt} />) : <span className="hint">—</span>}
+            {pending?.talents}
+          </div>
+        </section>
+      )}
+
+      {has('spells') && spellRefs.length > 0 && (
         <section className="hero-present-sec">
           <h4>{spellsTitle}</h4>
           <div className="skill-tags">
@@ -129,14 +178,16 @@ export function HeroSheet({
         </section>
       )}
 
-      <section className="hero-present-sec">
-        <h4>{t('present.possessions')}</h4>
-        <div className="skill-tags">
-          {pending?.possessions ?? (possessions.length
-            ? possessions.map((it) => <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={itemLabel(it)} />)
-            : <span className="hint">—</span>)}
-        </div>
-      </section>
+      {has('possessions') && (
+        <section className="hero-present-sec">
+          <h4>{t('present.possessions')}</h4>
+          <div className="skill-tags">
+            {pending?.possessions ?? (possessions.length
+              ? possessions.map((it) => <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={itemLabel(it)} />)
+              : <span className="hint">—</span>)}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

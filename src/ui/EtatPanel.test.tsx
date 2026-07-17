@@ -46,9 +46,10 @@ describe('EtatPanel', () => {
       expect(html, `ancre manquante : ${anchor}`).toContain(`id="${anchor}"`);
     }
     // Chaque rubrique = une seule PlaqueRow (registre compact, pas les cartes riches rejetées) : 8
-    // rubriques à 1 entrée (critiques/états/traumas/maladies/mutations/psychologie/corruption/surcharge).
+    // rubriques à 1 entrée (critiques/états/traumas/maladies/mutations/psychologie/corruption/surcharge)
+    // + 2 plaques de zone (Tête : critique, Bras G : trauma — bande `ZoneBand`, pt.4).
     const rowCount = (html.match(/plaque-row/g) || []).length;
-    expect(rowCount).toBe(8);
+    expect(rowCount).toBe(10);
     // Nom de ligne = CodexRef cliquable (popover Codex), sur chaque famille de rubrique.
     expect((html.match(/codex-ref/g) || []).length).toBeGreaterThanOrEqual(6);
     // Un GameOp = une rangée (doctrine #295) : le moveMod de la mutation est rendu en chip.
@@ -62,12 +63,39 @@ describe('EtatPanel', () => {
     expect((html.match(/Corruption/g) || []).length, 'un SEUL « Corruption » — pas de titre de bande redondant').toBe(1);
   });
 
-  it('héros sain : rig calme centré + « Rien à signaler », aucune ancre de rubrique d’affliction', () => {
+  it('bande de zones (pt.4) : SEULES les Localisations touchées (critique/séquelle) sont rendues', () => {
+    const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
+    // Tête (critique) et Bras G (trauma) : ancres présentes, cibles de la première ligne concernée.
+    expect(html).toContain('id="etat-zone-tete"');
+    expect(html).toContain('id="etat-zone-brasG"');
+    expect(html).toContain('1 critique');
+    expect(html).toContain('1 séquelle');
+    // Corps/Jambes/Bras D : intactes → AUCUNE plaque, aucune ancre (« une zone intacte n'existe pas »).
+    for (const untouched of ['etat-zone-corps', 'etat-zone-brasD', 'etat-zone-jambeG', 'etat-zone-jambeD']) {
+      expect(html, `zone intacte inattendue : ${untouched}`).not.toContain(`id="${untouched}"`);
+    }
+  });
+
+  it('liserés de gravité (pt.5) : `data-tone` sang/ambre/violet posés sur les bandes concernées', () => {
+    const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
+    expect(html).toContain(`id="${ETAT_ANCHOR_CRITIQUES}" data-tone="sang"`);
+    expect(html).toContain('id="etat-etats" data-tone="sang"');
+    expect(html).toContain(`id="${ETAT_ANCHOR_TRAUMAS}" data-tone="ambre"`);
+    expect(html).toContain(`id="${ETAT_ANCHOR_MALADIES}" data-tone="ambre"`);
+    expect(html).toContain(`id="${ETAT_ANCHOR_MUTATIONS}" data-tone="violet"`);
+    expect(html).toContain(`id="${ETAT_ANCHOR_CORRUPTION}" data-tone="violet"`);
+    // Psychologie/Encombrement/Effets ne portent AUCUN ton (hors périmètre pt.5).
+    expect(html).not.toContain(`id="${ETAT_ANCHOR_PSYCHOLOGIE}" data-tone`);
+    expect(html).not.toContain(`id="${ETAT_ANCHOR_ENCOMBREMENT}" data-tone`);
+  });
+
+  it('héros sain : rig calme centré + « Rien à signaler », aucune ancre de rubrique d’affliction ni de zone', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={mkHero()} />);
     expect(html).toContain('Rien à signaler');
     expect(html).toContain('etat-ras');
     for (const anchor of [ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT]) {
       expect(html, `ancre inattendue : ${anchor}`).not.toContain(`id="${anchor}"`);
     }
+    expect(html).not.toContain('etat-zone-');
   });
 });
