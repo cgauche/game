@@ -129,7 +129,7 @@ export const tenue: TenueDef = {
 <path d="M-4.6 41 Q0 40 4.6 41 L4.4 48 Q4.6 50 2 50 L-3 50 Q-5 50 -4.6 47 Z" fill="@cuirO" stroke="@cuirO" stroke-width="0.7"/>
 <path d="M-4.6 41 Q0 40 4.6 41 L4.5 44 Q0 43 -4.6 44 Z" fill="@cuir" opacity="0.6" stroke="none"/>
 <path d="M-3 50 L4.4 50 L4.6 48.5 L-3.2 48.5 Z" fill="@cuirO" stroke="none"/>`,
-    bras: `<!-- Gladiateur : bras nu musclé + brassard de cuir au biceps + manchette/vambrace de cuir à l'avant-bras. Origine (0,0)=épaule, +y vers le poignet -->
+    bras: { front: `<!-- Gladiateur : bras nu musclé + brassard de cuir au biceps + manchette/vambrace de cuir à l'avant-bras. Origine (0,0)=épaule, +y vers le poignet -->
 <!-- chair du bras (épaule -> poignet) -->
 <path d="M-4.6 -2 Q0 -4 4.6 -2 Q5 6 4 16 Q3.4 24 3 30 Q0 31.5 -3 30 Q-3.4 24 -4 16 Q-5 6 -4.6 -2 Z" fill="url(#g_flesh)" stroke="@peauO" stroke-width="0.7"/>
 <!-- volume du biceps -->
@@ -143,7 +143,34 @@ export const tenue: TenueDef = {
 <path d="M-4 18 Q0 17 4 18 L3.8 22 Q0 21 -3.8 22 Z" fill="@cuir" opacity="0.55" stroke="none"/>
 <line x1="0" y1="18" x2="0" y2="30" stroke="@cuirO" stroke-width="0.6"/>
 <g stroke="@cuirO" stroke-width="0.5" fill="none"><path d="M-3.6 21 L3.6 21 M-3.4 25 L3.4 25 M-3.2 28 L3.2 28"/></g>
-<g fill="@peau"><circle cx="-2.2" cy="19.4" r="0.7"/><circle cx="2.2" cy="19.4" r="0.7"/></g>`,
+<g fill="@peau"><circle cx="-2.2" cy="19.4" r="0.7"/><circle cx="2.2" cy="19.4" r="0.7"/></g>`, profile: `<!-- Gladiateur PROFIL (tourné à droite) : bras nu qui plie — biceps bombé, coude marqué à l'arrière, avant-bras porté en avant (+x), vambrace de cuir jusqu'au poignet -->
+<path d="M-4.4 -2 Q0 -4.2 4.4 -2 Q5 4 4.2 10 Q3.9 12.6 3 14.2 L-3 13.6 Q-4.4 7 -4.4 -2 Z" fill="url(#g_flesh)" stroke="@peauO" stroke-width="0.7"/>
+<path d="M-4.2 -1 Q-4.9 6 -3.6 13 L-1.6 12.8 Q-2.6 6 -2.4 -1.4 Z" fill="@peauO" opacity="0.3" stroke="none"/>
+<path d="M1.8 0 Q4.4 5 3.8 10.6 Q2.6 7 1.4 2.8 Z" fill="@peauH" opacity="0.5" stroke="none"/>
+<!-- pli du coude (arrière) -->
+<path d="M-3.2 12.8 Q-1 14.6 1 14.4" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.7"/>
+<!-- brassard de cuir au biceps, de côté -->
+<path d="M-4.4 1 Q0 -0.6 4.5 1 L4.3 4.4 Q0 2.9 -4.3 4.4 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.6"/>
+<circle cx="3.2" cy="2.6" r="0.8" fill="@peau" stroke="@cuirO" stroke-width="0.3"/>
+<!-- avant-bras en avant : vambrace de cuir jusqu'au poignet -->
+<path d="M-2.6 14.8 Q1 13 5 14.8 Q5.8 21 5 28.8 Q1.4 30.6 -1.8 29.4 Q-3.2 21.6 -2.6 14.8 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.7"/>
+<path d="M-2.4 15.2 Q1 13.6 4.8 15.2 L4.7 18.2 Q1 16.8 -2.3 18.2 Z" fill="@cuirH" opacity="0.35" stroke="none"/>
+<g stroke="@cuirO" stroke-width="0.5" fill="none"><path d="M-2.3 18.6 L4.8 18.6 M-2.1 22.4 L4.9 22.4 M-1.9 26 L4.8 26"/></g>
+<path d="M3.9 15.4 Q4.9 21 4.3 28.6" fill="none" stroke="@cuirO" stroke-width="0.6"/>
+<g fill="@peau"><circle cx="3.4" cy="16.9" r="0.7"/><circle cx="3.6" cy="20.5" r="0.7"/></g>`, back: `<!-- Gladiateur DOS : bras nu vu de dos — capsule d'épaule assombrie, ligne de triceps, côté corps (+x) ombré ; brassard sans bouton (couture axiale), vambrace lacée au dos, clous frontaux retirés -->
+<path d="M-4.6 -2 Q0 -4 4.6 -2 Q5 6 4 16 Q3.4 24 3 30 Q0 31.5 -3 30 Q-3.4 24 -4 16 Q-5 6 -4.6 -2 Z" fill="url(#g_flesh)" stroke="@peauO" stroke-width="0.7"/>
+<path d="M1.2 -1.6 Q3 -1.9 4.6 -2 Q5 6 4 16 Q3.4 24 3 30 Q2 30.6 1 30.8 Q1.8 22 2.2 15 Q2.4 5 1.2 -1.6 Z" fill="@peauO" opacity="0.32" stroke="none"/>
+<path d="M-4.6 -2 Q0 -4 4.6 -2 Q4.8 0.6 4.5 2.8 Q0 0.8 -4.5 2.8 Q-4.8 0.6 -4.6 -2 Z" fill="@peauO" opacity="0.25" stroke="none"/>
+<path d="M0 0.4 Q1.2 7 0.6 13.4" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.6"/>
+<!-- brassard au biceps vu de dos : couture axiale, pas de bouton -->
+<rect x="-4.5" y="1" width="9" height="3.4" rx="1" fill="@cuir" stroke="@cuirO" stroke-width="0.6"/>
+<path d="M0 1.2 L0 4.2" stroke="@cuirO" stroke-width="0.6"/>
+<path d="M-1.2 1.8 L1.2 2.6 M1.2 3 L-1.2 3.8" stroke="@cuirO" stroke-width="0.4" fill="none"/>
+<!-- vambrace vue de dos : laçage croisé dorsal, pas de clous -->
+<path d="M-4 18 Q0 17 4 18 L3.4 30 Q0 31.5 -3.4 30 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.7"/>
+<path d="M1.4 17.6 Q2.4 24 1.9 30.4 L3.4 30 Q4 24 4 18 Z" fill="@cuirO" opacity="0.35" stroke="none"/>
+<path d="M0 17.4 L0 30.6" stroke="@cuirO" stroke-width="0.6"/>
+<g stroke="@cuirO" stroke-width="0.5" fill="none"><path d="M-1.6 19.6 L1.6 21 M1.6 22.4 L-1.6 23.8 M-1.6 25.2 L1.6 26.6 M1.6 28 L-1.6 29.2"/></g>` },
     tete: { front: `<!-- Gladiateur : calotte de cuir/fer cloutée, deux cornes recourbées, plumet rouge. Repère tête, calotte sur le crâne (y de -16 à +4) -->
 <!-- calotte de cuir couvrant le haut du crâne -->
 <path d="M-9 -1 Q-10 -13 0 -15.5 Q10 -13 9 -1 Q0 -5 -9 -1 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.9"/>

@@ -84,39 +84,28 @@ export const PART_VIEW_RATCHET = new Set([
   'garde:jambes', // Garde — manque profile+back ; servi : silhouette generique
   'gardien-de-troupeaux-de-rhinox:bras', // Gardien de troupeaux de rhinox — manque profile+back ; servi : FRONT PLAQUE
   'geant:jambes', // Géant — manque profile+back ; servi : silhouette generique
-  'gladiateur:bras', // Gladiateur — manque profile+back ; servi : FRONT PLAQUE
   'gladiateur:jambes', // Gladiateur — manque profile+back ; servi : silhouette generique
   'guerriers:jambes', // Guerriers — manque profile+back ; servi : silhouette generique
   'guerriers:torse', // Guerriers — manque profile+back ; servi : silhouette generique
-  'herboriste:bras', // Herboriste — manque profile+back ; servi : FRONT PLAQUE
   'herboriste:jambes', // Herboriste — manque profile+back ; servi : silhouette generique
   'hors-la-loi:jambes', // Hors-la-loi — manque profile+back ; servi : silhouette generique
-  'ingenieur:bras', // Ingénieur — manque profile+back ; servi : FRONT PLAQUE
   'ingenieur:jambes', // Ingénieur — manque profile+back ; servi : silhouette generique
-  'intendant:bras', // Intendant — manque profile+back ; servi : FRONT PLAQUE
   'intendant:jambes', // Intendant — manque profile+back ; servi : silhouette generique
   'itinerants:jambes', // Itinérants — manque profile+back ; servi : silhouette generique
   'itinerants:torse', // Itinérants — manque profile+back ; servi : silhouette generique
-  'joueur-d-epee:bras', // Joueur d'épée — manque profile+back ; servi : FRONT PLAQUE
-  'juriste:bras', // Juriste — manque profile+back ; servi : FRONT PLAQUE
   'juriste:jambes', // Juriste — manque profile+back ; servi : silhouette generique
   'lettres:jambes', // Lettrés — manque profile+back ; servi : silhouette generique
   'lettres:tete', // Lettrés — manque profile+back ; servi : silhouette generique
   'lettres:torse', // Lettrés — manque profile+back ; servi : silhouette generique
   'mangeur-d-hommes:bras', // Mangeur d'hommes — manque profile+back ; servi : FRONT PLAQUE
-  'marchand:bras', // Marchand — manque profile+back ; servi : FRONT PLAQUE
   'marchand:jambes', // Marchand — manque profile+back ; servi : silhouette generique
   'marin:jambes', // Marin — manque profile+back ; servi : silhouette generique
   'medecin:jambes', // Médecin — manque profile+back ; servi : silhouette generique
-  'messager:bras', // Messager — manque profile+back ; servi : FRONT PLAQUE
   'messager:jambes', // Messager — manque profile+back ; servi : silhouette generique
-  'milicien:bras', // Milicien — manque profile+back ; servi : FRONT PLAQUE
   'milicien:jambes', // Milicien — manque profile+back ; servi : silhouette generique
   'mineur:jambes', // Mineur — manque profile+back ; servi : silhouette generique
   'mystique:jambes', // Mystique — manque profile+back ; servi : silhouette generique
-  'naufrageur:bras', // Naufrageur — manque profile+back ; servi : FRONT PLAQUE
   'naufrageur:jambes', // Naufrageur — manque profile+back ; servi : silhouette generique
-  'nautonier:bras', // Nautonier — manque profile+back ; servi : FRONT PLAQUE
   'nautonier:jambes', // Nautonier — manque profile+back ; servi : silhouette generique
   'nu:jambes', // Nu — manque profile+back ; servi : silhouette generique
   'nu:torse', // Nu — manque profile+back ; servi : silhouette generique
@@ -127,7 +116,6 @@ export const PART_VIEW_RATCHET = new Set([
   'patrouilleur-routier:jambes', // Patrouilleur routier — manque profile+back ; servi : silhouette generique
   'pilleur-de-tombes:bras', // Pilleur de tombes — manque profile+back ; servi : FRONT PLAQUE
   'pilleur-de-tombes:jambes', // Pilleur de tombes — manque profile+back ; servi : silhouette generique
-  'piquier:bras', // Piquier — manque profile+back ; servi : FRONT PLAQUE
   'pretre-de-myrmidia:bras', // Prêtre de Myrmidia — manque profile+back ; servi : FRONT PLAQUE
   'pretre-de-stromfels:bras', // Prêtre de Stromfels — manque profile+back ; servi : FRONT PLAQUE
   'pretre-guerrier:bras', // Prêtre guerrier — manque profile+back ; servi : FRONT PLAQUE

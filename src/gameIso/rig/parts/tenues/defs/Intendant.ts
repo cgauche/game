@@ -88,7 +88,7 @@ export const tenue: TenueDef = {
 <!-- botte brune souple -->
 <path d="M-4 41 Q-5 47 -3 50 L5 50 Q6 46 4 41 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.8"/>
 <path d="M-4 43 Q0 44 4 43" fill="none" stroke="@cuirO" stroke-width="0.6"/>`,
-    bras: `<!-- Intendant: manche creme bouffante matelassee + gant vert. Bras gauche, miroite a droite. -->
+    bras: { front: `<!-- Intendant: manche creme bouffante matelassee + gant vert. Bras gauche, miroite a droite. -->
 <!-- haut de manche bouffant (epaule->coude) -->
 <path d="M-4 -2 Q-9 0 -8 9 Q-9 17 -3 18 Q3 18 4 10 Q5 2 3 -2 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>
 <path d="M-5 1 Q-6 9 -4 16 M1 0 Q2 9 1 16" fill="none" stroke="@vet1O" stroke-width="0.7" stroke-linecap="round"/>
@@ -98,6 +98,23 @@ export const tenue: TenueDef = {
 <path d="M-3 17 Q-4 23 -3 27 L3 27 Q4 22 3 17 Z" fill="@vet1H" stroke="@vet1O" stroke-width="0.6"/>
 <!-- gant vert -->
 <path d="M-3 26 Q-4 31 -2 34 Q1 35 3 33 Q4 29 3 26 Z" fill="@vet2H" stroke="@vet2O" stroke-width="0.7"/>
-<path d="M-2 33 L-2 34 M0 34 L0 35 M2 33 L2 34" stroke="@vet2O" stroke-width="0.6" stroke-linecap="round"/>`,
+<path d="M-2 33 L-2 34 M0 34 L0 35 M2 33 L2 34" stroke="@vet2O" stroke-width="0.6" stroke-linecap="round"/>`, profile: `<!-- Intendant PROFIL (tourne a droite) : manche bouffante de cote, coude qui plie, avant-bras serre porte en avant (+x), gant vert jusqu'a la main -->
+<path d="M-3.8 -2 Q-8.4 0.4 -7.8 9 Q-8.4 15.8 -2.8 17.4 Q2.6 16.9 3.7 10.4 Q4.7 2 2.9 -2 Q-0.5 -3.8 -3.8 -2 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>
+<path d="M-4.6 1 Q-5.7 9 -4 15.6 M0.9 0 Q1.9 9 0.9 15.4" fill="none" stroke="@vet1O" stroke-width="0.7" stroke-linecap="round"/>
+<path d="M-1.6 4 Q-2.6 10 -0.9 14" fill="none" stroke="@vet1H" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M-2.3 16.8 Q0.6 18 3.3 16.8 Q4.4 21 3.9 26.6 L-1.4 26.4 Q-2.9 21.4 -2.3 16.8 Z" fill="@vet1H" stroke="@vet1O" stroke-width="0.6"/>
+<path d="M-1.3 26.2 Q1.4 27.3 4 26.1 Q4.9 29.4 3.8 32.6 Q1 34.4 -1.3 33 Q-2.2 29.4 -1.3 26.2 Z" fill="@vet2H" stroke="@vet2O" stroke-width="0.7"/>
+<path d="M-1.2 27.6 Q1.4 28.7 3.9 27.5" fill="none" stroke="@vet2O" stroke-width="0.5"/>
+<path d="M2.9 32.4 L3 33.4 M1 33.6 L1 34.6" stroke="@vet2O" stroke-width="0.6" stroke-linecap="round"/>`, back: `<!-- Intendant DOS : manche bouffante vue de dos — matelassure en coutures dorsales, capsule d'epaule assombrie, cote corps (+x) ombre ; crevee frontale retiree, gant lisse sans coutures de doigts -->
+<path d="M-4 -2 Q-9 0 -8 9 Q-9 17 -3 18 Q3 18 4 10 Q5 2 3 -2 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>
+<path d="M-4 -2 Q-0.5 -3.6 3 -2 Q3.4 -0.6 3.6 1.2 Q-1 -1 -6.4 1.8 Q-5.4 -1 -4 -2 Z" fill="@vet1O" opacity="0.35" stroke="none"/>
+<path d="M-2.2 -1.6 Q-2.8 8 -2 17.6" fill="none" stroke="@vet1O" stroke-width="0.8" stroke-linecap="round"/>
+<path d="M-5.6 0.4 Q-6.6 9 -5 16" fill="none" stroke="@vet1O" stroke-width="0.7" stroke-linecap="round" opacity="0.8"/>
+<path d="M1.4 -1 Q2.6 8 1.8 17.2 L3.4 16 Q4.4 8 3.6 -1.2 Z" fill="@vet1O" opacity="0.4" stroke="none"/>
+<path d="M-3 17 Q-4 23 -3 27 L3 27 Q4 22 3 17 Z" fill="@vet1H" stroke="@vet1O" stroke-width="0.6"/>
+<path d="M1.2 17.4 Q1.9 22 1.6 26.7 L3 27 Q3.7 22 3.2 17.1 Z" fill="@vet1O" opacity="0.35" stroke="none"/>
+<path d="M-3 26 Q-4 31 -2 34 Q1 35 3 33 Q4 29 3 26 Z" fill="@vet2H" stroke="@vet2O" stroke-width="0.7"/>
+<path d="M-2.5 27.4 Q0.2 28.5 2.8 27.3" fill="none" stroke="@vet2O" stroke-width="0.5" opacity="0.8"/>
+<path d="M1.2 27.5 Q1.9 30 1.6 33.6 L3 33 Q3.7 30 3.35 26.6 Z" fill="@vet2O" opacity="0.3" stroke="none"/>` },
   },
 };
