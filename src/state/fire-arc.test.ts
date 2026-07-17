@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { targetArc, inFireArc } from './fireArc';
 
 /**
- * ARCS DE TIR / BORDÉES (MDG ch.12-13). Le RAW nomme le CÔTÉ relatif au cap (bâbord=gauche, tribord=droite,
+ * ARCS DE TIR / BORDÉES (MDG 12-13). Le RAW nomme le CÔTÉ relatif au cap (bâbord=gauche, tribord=droite,
  * proue=avant, poupe=arrière — l.262-271) + une portée, mais PAS un angle. Modèle BORDÉE retenu : proue/poupe
  * = chasse étroite (1 octant), bâbord/tribord = tout le travers (3 octants), conforme à « masser les pièces
  * d'un bord » (ch.12) et au canon de poupe de l'exemple (l.410). Dir8 horaire ⇒ +2 octants = tribord.

@@ -2,8 +2,8 @@
  * Builder UNIQUE d'un OBJET INANIMÉ comme `Combatant` — module FEUILLE (n'importe QUE `types` + `items`,
  * zéro `ops`/`combat`/`structures`/`vehicle` → aucun cycle). Source de vérité du squelette npc inerte,
  * partagée par les trois saveurs d'objet inanimé (le modèle « OBJET INANIMÉ généralisé ») :
- *  - **structure** de siège (ADE II ch.08, porte/mur) — DESTRUCTIBLE : profil à PV {E,B} ;
- *  - **véhicule**-coque (navire/chariot/barge, MDG ch.12-13) — DESTRUCTIBLE : profil à PV {E,B} ;
+ *  - **structure** de siège (ADE II 8, porte/mur) — DESTRUCTIBLE : profil à PV {E,B} ;
+ *  - **véhicule**-coque (navire/chariot/barge, MDG 12-13) — DESTRUCTIBLE : profil à PV {E,B} ;
  *  - **engin de siège** (affût servi, AA p.122-123) — INERTE NON-DESTRUCTIBLE : aucun profil à PV. Le RAW
  *    ne donne aucune Endurance/Blessures à un engin (c'est une « Arme d'équipe ») → on le neutralise en
  *    tuant son équipage, pas en le détruisant. `hull` ABSENT ⇒ Blessures {0,0,0} (immune via `woundsFromHit`).

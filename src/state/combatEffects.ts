@@ -323,7 +323,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   // tous les candidats de façon cohérente (la réaction de l'interlocuteur ne dépend pas du héros choisi).
   const reactionRoll = tgtStatus && rule('social-status-reaction-roll') ? battleRng().int(1, 10) : undefined;
   const statusMod = tgtStatus ? (c: Combatant) => statusCharmMod(actorStatus(c), tgtStatus, { begging: spec.begging, reactionRoll }) : undefined;
-  // Capricieux (T2C ch.15) : la créature-interlocuteur tire un d10 (UNE fois, seedé, INDÉPENDANT du héros
+  // Capricieux (T2C 15) : la créature-interlocuteur tire un d10 (UNE fois, seedé, INDÉPENDANT du héros
   // choisi — c'est SA réaction) qui module le Test de −2 à +2 DR (`capriciousMod`, ±10/DR, même convention
   // que la réaction de Statut). Constante pour tous les candidats.
   const capriciousRoll = isSocial && spec.vsCapricieux ? battleRng().int(1, 10) : undefined;
@@ -1110,7 +1110,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   waterExposure: {
-    group: 'Afflictions', label: 'Exposition hydrique (eau souillée — T2C ch.16)', icon: 'travel/wave',
+    group: 'Afflictions', label: 'Exposition hydrique (eau souillée — T2C 16)', icon: 'travel/wave',
     make: () => ({ type: 'waterExposure', mode: 'ingestion', target: 'hero' }),
     apply: (e, env) => {
       // « Maladies transmises par l'eau » (T2C p.91) : UN Test de Résistance Intermédiaire (+0) modifié
@@ -1227,7 +1227,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   setVessel: {
-    group: 'Navigation', label: 'Doter le groupe d\'un navire (MDG ch.13-15)', icon: 'travel/anchor',
+    group: 'Navigation', label: 'Doter le groupe d\'un navire (MDG 13-15)', icon: 'travel/anchor',
     make: () => ({ type: 'setVessel', vehicleId: '', morale: MORALE_BASE }),
     apply: (e, env) => {
       // Pose le NAVIRE DE CAMPAGNE (`state.vessel`) — comme le champ de scénario `TestScenario.vessel`,
@@ -1256,7 +1256,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   adjustManann: {
-    group: 'Navigation', label: 'Humeur de Manann (MDG ch.15 l.83-125)', icon: 'travel/anchor',
+    group: 'Navigation', label: 'Humeur de Manann (MDG 15 l.83-125)', icon: 'travel/anchor',
     make: () => ({ type: 'adjustManann', delta: { flat: 5, d10: 0, sign: 1 } }),
     apply: (e, env) => {
       const vessel = env.get().vessel;
@@ -1338,7 +1338,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => { env.get().openMerchant(e.entityId); }, // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
   },
   openPort: {
-    group: 'Navigation', label: 'Ouvrir un port (MDG ch.15 — relâche à terre)', icon: 'travel/anchor',
+    group: 'Navigation', label: 'Ouvrir un port (MDG 15 — relâche à terre)', icon: 'travel/anchor',
     make: () => ({ type: 'openPort', placeId: '' }),
     apply: (e, env) => {
       // SOURCE UNIQUE avec l'accostage en mer (`finishSeaDay`) : `openPortAt` (state/seaVoyageFlow).
@@ -1350,7 +1350,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     refs: (e) => (e.placeId ? [] : [{ level: 'error', message: 'Effet → Ouvrir un port : lieu manquant' }]),
   },
   openTavernGames: {
-    group: 'Combat & social', label: 'Jeux de taverne (NADJ ch.16)', icon: 'nav/dice',
+    group: 'Combat & social', label: 'Jeux de taverne (NADJ 16)', icon: 'nav/dice',
     make: () => ({ type: 'openTavernGames' }),
     apply: (_e, env) => { if (rule('tavern-games')) env.get().openTavernGames(); }, // option facultative : sans effet si éteinte (comme interlude)
   },
@@ -1431,7 +1431,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
 };
 
-/** Étape de cascade `waterExposure` (T2C ch.16 p.91) : Test raté → d100 « avec un modificateur de +10
+/** Étape de cascade `waterExposure` (T2C 16 p.91) : Test raté → d100 « avec un modificateur de +10
  *  pour chaque DR négatif » → maladie CONTRACTÉE directement (`applyContraction`, incubation normale —
  *  le Test d'exposition EST le test, jamais un second Test de Contraction). « Relancez si le Personnage
  *  n'est pas blessé » honoré par `drawWaterDisease`. Déjà porteur → rien de neuf (dédoublonnée). */

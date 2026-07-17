@@ -10,7 +10,7 @@ import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
 
 /**
- * Modale du TIR DE BATTERIE (« bordée », MDG ch.14 l.128) — JUMEAU de `ShipManeuverModal` (flux MULTI,
+ * Modale du TIR DE BATTERIE (« bordée », MDG 14 l.128) — JUMEAU de `ShipManeuverModal` (flux MULTI,
  * `RollShell` + `RollRow`). Chaque Artilleur tenu = une rangée (PJ influençable / marin témoin) ;
  * le bandeau somme les DR (essentiel ×2) + Moral → le **DR PARTAGÉ** qui s'applique à TOUTES les pièces du bord
  * (l.128). Pas de virage : `extra` montre la cible + les pièces qui tirent. « Feu ! » résout la volée (`shipBatteryConfirm`).
@@ -47,7 +47,7 @@ export function ShipBatteryModal() {
       const role = findCrewRoleById(part.roleId);
       const val = role ? crewRoleValue(actor, role).value : 0;
       const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
-      // Manque de bras (MDG ch.14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
+      // Manque de bras (MDG 14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
       const difficulty = part.cumul ? easeDifficulty('intermediaire', -2) : undefined;
       return res
         ? { combatant: actor, d: testBreakdown(label, val, { roll: res.roll, target: res.target, sl: res.sl }, difficulty) }
@@ -67,7 +67,7 @@ export function ShipBatteryModal() {
       flowKey="shipBattery"
       title={<><Icon id="action/aim" size="sm" /> Tir de batterie — Test d’équipage</>}
       variant="test"
-      subtitle={<><strong>{ship.name}</strong> — bordée {p.side} sur <strong>{target.name}</strong> ({postes.length} pièce{plural(postes.length)}, MDG ch.14)</>}
+      subtitle={<><strong>{ship.name}</strong> — bordée {p.side} sur <strong>{target.name}</strong> ({postes.length} pièce{plural(postes.length)}, MDG 14)</>}
       extra={
         <div className="rm-threat">
           <Icon id="action/aim" size="sm" /> {target.name} — Coque {target.wounds.current}/{target.wounds.max}. {postes.length} pièce{plural(postes.length)} : {postes.map((pp) => pp.item.name).join(' · ')}.

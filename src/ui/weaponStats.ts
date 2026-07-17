@@ -39,8 +39,8 @@ const SIEGE_TARGET = { bodyShape: 'structure' } as Combatant;
  * Note de DÉGÂTS CONDITIONNELS d'une arme/pièce dont le champ `damage` imprimé n'est PAS la vérité
  * inconditionnelle (#135 — le Codex affichait le statbloc brut pour des armes dont les dégâts RÉELS
  * dépendent de la cible/du contexte) :
- *  - **Bélier** (cap `ram`, ADE II ch.08 l.249) : ne frappe QUE les portes — Arme improvisée sinon.
- *  - **Siège** (cap `siege`, ADE II ch.08 l.292) : double les dégâts contre une STRUCTURE.
+ *  - **Bélier** (cap `ram`, ADE II 8 l.249) : ne frappe QUE les portes — Arme improvisée sinon.
+ *  - **Siège** (cap `siege`, ADE II 8 l.292) : double les dégâts contre une STRUCTURE.
  * DATA-DRIVEN : capacités lues via `resolveQualities`/`siegeMultiplier` — les MÊMES fonctions que consomme
  * `engine/structures` en combat, zéro id d'arme en dur (toute future qualité à capacité `ram`/`siege` est
  * couverte sans code supplémentaire). Sans dégâts imprimés (`damage` absent) mais un effet À LA TOUCHE

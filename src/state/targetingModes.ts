@@ -231,7 +231,7 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
 /** Mode ATTAQUE : l'`AttackOption` armée (selectedAttack / ancien mode maneuver/tentacle/trample). */
 function attackAffordance(get: Get, active: Combatant, target: Combatant): HoverTargeting {
   const battle = get().battle!;
-  // Pièce de siège SERVABLE (poste, MDG ch.12 / AA p.124) : un poste-porteur qu'on peut REJOINDRE (chef si non
+  // Pièce de siège SERVABLE (poste, MDG 12 / AA p.124) : un poste-porteur qu'on peut REJOINDRE (chef si non
   // servi, renfort sinon) → réticule « Servir » ; le clic rejoint l'équipe (jamais une attaque futile sur l'engin
   // inerte). Prioritaire. SOURCE `serveTargetPoste` (= hotbar/IA). Le tooltip d'ÉQUIPE (IsoStage) montre le détail.
   if (target.postes?.length) {
@@ -244,7 +244,7 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
   if (!option) return { kind: 'none' }; // mode non-attaque (cast/heal/…) ou aucune attaque abordable
   if (target.kind === active.kind || isOutOfAction(target)) return { kind: 'none' };
   // Structure (mur/porte) : cible RÉSERVÉE aux armes de siège — « attaquer un rempart à l'épée » n'a pas de
-  // sens (RAW : Impénétrable imparable sans l'Atout Siège, ADE II ch.08 ; même gate que l'IA, ai.ts). Si
+  // sens (RAW : Impénétrable imparable sans l'Atout Siège, ADE II 8 ; même gate que l'IA, ai.ts). Si
   // AUCUNE arme du porteur ne peut l'abîmer → pas de réticule (none) : le survol retombe sur le déplacement
   // (monter au rempart) au lieu d'un « hors de portée » absurde. Une pièce de siège SERVIE la rend ciblable.
   if (isStructure(target) && active.weapons.every((w) => structureImmune(w, target))) return { kind: 'none' };
@@ -575,7 +575,7 @@ function teleportCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void
   bus.emit(EVT.SCENE_DIRTY);
 }
 
-/** POUSSÉE d'un engin de siège CREWÉ (ADE II ch.08 l.258, Lot 2 #156) : le CHEF choisit sa case
+/** POUSSÉE d'un engin de siège CREWÉ (ADE II 8 l.258, Lot 2 #156) : le CHEF choisit sa case
  *  d'arrivée parmi les cases en surbrillance (`battle.reachable`, posé par `battlePushEngine` — plafonné
  *  à `rule('siege-engine-push-speed')`) — mouvement SIMPLE, aucun jet. Le delta (case cliquée − position
  *  du chef) est appliqué à l'ENGIN et à TOUS les servants du poste (`ShipPoste.crewIds`, chef inclus) :
@@ -703,7 +703,7 @@ const TELEPORT_MODE: TileTargetingMode = {
   commitTile: teleportCommitTile,
   tilePreview: (_get, active, pt) => (active.pos ? { target: pt, path: [active.pos, pt], label: 'Téléporter' } : null),
 };
-/** POUSSÉE d'un engin de siège (ADE II ch.08 l.258, Lot 2 #156) : case-cible parmi `battle.reachable`
+/** POUSSÉE d'un engin de siège (ADE II 8 l.258, Lot 2 #156) : case-cible parmi `battle.reachable`
  *  (posé par `battlePushEngine`), MÊME gabarit que TELEPORT_MODE. */
 const PUSH_MODE: TileTargetingMode = {
   id: 'push',

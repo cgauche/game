@@ -5,7 +5,7 @@
  * exactement comme une créature (langue UNIQUE `GameOp`/`applyOps`). Les montures restent, elles, des
  * créatures (`creatures.json`) ; ce module ne couvre que les coques inertes (chariots, barges, navires).
  *
- * RAW (EDOC ch.7) : un Problème de véhicule « Cassé »/« Accident » inflige « immédiatement Nd10 points
+ * RAW (EDOC 7) : un Problème de véhicule « Cassé »/« Accident » inflige « immédiatement Nd10 points
  * de Dégâts, modifiés avec le Bonus d'Endurance jusqu'à un minimum de 1 » à la coque (l.266-286). Les
  * tables de Localisation/Critiques de la coque (`hull.locationTable`/`criticalTable`) sont posées en
  * données et seront câblées aux dalles fluviale (MoR) et maritime (MDG) — ici, seul le total de PV joue.

@@ -93,9 +93,9 @@ export const schema = z.array(
     weaponGroup: z.string().optional(),
     soloSimple: z.boolean().optional(),
     indirect: z.boolean().optional(),
-    /** Effets « à la touche » en DONNÉE (`TriggeredEffect[]`) — Canon à flammes nain (ADE II ch.08 l.243). */
+    /** Effets « à la touche » en DONNÉE (`TriggeredEffect[]`) — Canon à flammes nain (ADE II 8 l.243). */
     onHitEffects: z.array(triggeredEffectSchema).optional(),
-    /** PORTÉE MINIMALE de tir (bande) — machines de siège à distance (ADE II ch.08 l.251/253). */
+    /** PORTÉE MINIMALE de tir (bande) — machines de siège à distance (ADE II 8 l.251/253). */
     minRangeBand: z.enum(['bout-portant', 'courte', 'moyenne', 'longue', 'extreme']).optional(),
     siegeRig: z.string().optional(),
     siegeFootprint: z.number().optional(),
@@ -108,7 +108,7 @@ export const schema = z.array(
     requiresMastery: z.boolean().optional(),
     /** Absent (pas seulement `null`) sur 5 entrées — reflet du contenu réel. */
     enc: z.union([z.number(), z.literal('ND'), z.literal('Variable'), z.null()]).optional(),
-    /** Taille PRÉVUE (ADE II ch.02 l.706-710) — version « taille ogre » d'une possession ordinaire. */
+    /** Taille PRÉVUE (ADE II 2 l.706-710) — version « taille ogre » d'une possession ordinaire. */
     sizeFor: sizeCategorySchema.optional(),
     availability: z.union([z.string(), z.null()]),
     /** `reach`/`loc`/`pa`/`damage` : présents sur 375/403 entrées (armes/armures) — ABSENTS (pas

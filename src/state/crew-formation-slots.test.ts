@@ -5,7 +5,7 @@ import type { Scene } from './scene';
 
 /**
  * #210 Lot 3 — cases de FORMATION autour de l'empreinte d'un poste terrestre CREWÉ (bélier, batterie de
- * siège…) : `crewFormationSlots` (géométrie pure, ADE II ch.08 l.258 — « on pousse par les flancs/
+ * siège…) : `crewFormationSlots` (géométrie pure, ADE II 8 l.258 — « on pousse par les flancs/
  * l'arrière ») et `assignCrewFormation` (occupation de scène + repli `findFreeTile`).
  */
 const scene = (w = 10, h = 10): Scene =>

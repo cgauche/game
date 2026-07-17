@@ -18,7 +18,7 @@ const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; a
 /** RNG déterministe : renvoie la séquence de d100 fournie. */
 const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i++] }; };
 
-describe('Catalogue des rôles d’équipage + types de Test (MDG ch.14) — données verbatim', () => {
+describe('Catalogue des rôles d’équipage + types de Test (MDG 14) — données verbatim', () => {
   it('9 rôles, chacun {id,label,skills≥1,desc}', () => {
     expect(crewRoles).toHaveLength(9);
     for (const r of crewRoles) {
@@ -34,7 +34,7 @@ describe('Catalogue des rôles d’équipage + types de Test (MDG ch.14) — don
       expect(tt.roles).toContain(tt.essential);
       for (const roleId of tt.roles) expect(findCrewRoleById(roleId)).toBeDefined();
     }
-    // Tir de batterie → Artilleur essentiel (MDG ch.14).
+    // Tir de batterie → Artilleur essentiel (MDG 14).
     const batt = crewTestTypes.find((t) => t.id === 'batterie')!;
     expect(batt.essential).toBe('artilleur');
   });
@@ -90,7 +90,7 @@ describe('crewRoleValue — sens transmis au Test (Surdité, LDB 18 : « Tests d
   });
 });
 
-describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG ch.14)', () => {
+describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 14)', () => {
   it('le rôle ESSENTIEL (Artilleur pour Tir de batterie) voit son DR compté DOUBLE', () => {
     const artilleur = mk({ dexterite: 70 }, [{ skillId: 'projectiles', advances: 10, spec: 'poudre-noire' }]); // 80
     const mousse = mk({ dexterite: 50 }, [{ skillId: 'voile', advances: 0 }]); // 50
@@ -106,14 +106,14 @@ describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 
     expect(r.baseTotal).toBe(r.contributions[0].counted + r.contributions[1].counted);
   });
 
-  it('double-rôle (MDG ch.14 l.53) : le même jet est +2 crans plus DUR → DR plus faible', () => {
+  it('double-rôle (MDG 14 l.53) : le même jet est +2 crans plus DUR → DR plus faible', () => {
     const x = mk({ dexterite: 50 }, [{ skillId: 'orientation', advances: 0 }]); // Navigateur 50
     const normal = resolveCrewTestByRoles([{ crew: x, roleId: 'navigateur' }], 'manoeuvre', 'intermediaire', 80, seq([30]));
     const doubled = resolveCrewTestByRoles([{ crew: x, roleId: 'navigateur', doubleRole: true }], 'manoeuvre', 'intermediaire', 80, seq([30]));
     expect(doubled.contributions[0].sl).toBeLessThan(normal.contributions[0].sl);
   });
 
-  it('Manque de bras (MDG ch.14 l.55) : −2 DR ET jamais meilleur qu’un Succès Minime (DR total ≤ 0)', () => {
+  it('Manque de bras (MDG 14 l.55) : −2 DR ET jamais meilleur qu’un Succès Minime (DR total ≤ 0)', () => {
     const cap = mk({ dexterite: 80 }, [{ skillId: 'voile', advances: 0 }]); // Timonier 80
     const moussse = mk({ dexterite: 80 }, [{ skillId: 'voile', advances: 0 }]); // Mousse 80
     const crew = [{ crew: cap, roleId: 'timonier' }, { crew: moussse, roleId: 'mousse' }];
@@ -125,7 +125,7 @@ describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 
   });
 });
 
-describe('undercrewPenalty — Manque de bras GLOBAL d’un grand vaisseau (MDG ch.14 l.55)', () => {
+describe('undercrewPenalty — Manque de bras GLOBAL d’un grand vaisseau (MDG 14 l.55)', () => {
   it('équipage complet → aucune pénalité', () => {
     expect(undercrewPenalty(50, 50)).toEqual({ tranches: 0, dr: 0, capSuccesMinime: false });
     expect(undercrewPenalty(50, 52)).toEqual({ tranches: 0, dr: 0, capSuccesMinime: false }); // surnuméraire

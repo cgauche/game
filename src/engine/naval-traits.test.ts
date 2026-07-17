@@ -6,7 +6,7 @@ import navalTraitsData from '../data/naval-traits.json';
 import { findVehicleById, findNavalTrait, findCrewTestTypeById } from '../data';
 
 /**
- * EFFETS des Traits & Améliorations de navire (MDG ch.12) — DATA-DRIVEN : les valeurs vivent dans le catalogue
+ * EFFETS des Traits & Améliorations de navire (MDG 12) — DATA-DRIVEN : les valeurs vivent dans le catalogue
  * `naval-traits.json` (éditable au Codex), `navalTraits.ts` ne fait que les LIRE et les exposer là où une brique
  * EXISTANTE les consomme (collision pour le Bélier, pont pour le Sabord, manœuvre/spawn pour Lissage/Blindage).
  * On ne RÉ-applique pas Renforcé/Solide (déjà bakés dans les colonnes E/B des navires nommés → pas de `passive`).
@@ -48,7 +48,7 @@ describe('navalPassiveOps — effets en GameOp (langue unique), répétés ×Ind
   });
 });
 
-describe('navalMoveMod — Lissage → M, op moveMod (MDG ch.12 l.293)', () => {
+describe('navalMoveMod — Lissage → M, op moveMod (MDG 12 l.293)', () => {
   it('Lissage → +1 ; sans Lissage → 0', () => {
     expect(navalMoveMod([{ id: 'lissage' }])).toBe(1);
     expect(navalMoveMod([{ id: 'belier' }, { id: 'sabord' }])).toBe(0);
@@ -56,7 +56,7 @@ describe('navalMoveMod — Lissage → M, op moveMod (MDG ch.12 l.293)', () => {
   });
 });
 
-describe('navalSkillTestDR — Peu maniable → DR de Voile/Ramer, op skillDRBonus (MDG ch.12 l.173)', () => {
+describe('navalSkillTestDR — Peu maniable → DR de Voile/Ramer, op skillDRBonus (MDG 12 l.173)', () => {
   it('−1 DR/niveau aux Tests de Voile ET de Ramer ; autre compétence ou Trait → 0', () => {
     expect(navalSkillTestDR([{ id: 'peu-maniable' }], 'voile')).toBe(-1);
     expect(navalSkillTestDR([{ id: 'peu-maniable' }], 'ramer')).toBe(-1);
@@ -104,7 +104,7 @@ describe('navalTestTypeDR — Proue-idole de Stromfels & vocabulaire `testType` 
   });
 });
 
-describe('Proue-idole de Stromfels (#221) — résout au catalogue, entrée maison sourcée MDG ch.11 (culte)', () => {
+describe('Proue-idole de Stromfels (#221) — résout au catalogue, entrée maison sourcée MDG 11 (culte)', () => {
   it('id trouvable, type de Test d’équipage visé existant dans crew-test-types.json', () => {
     const trait = findNavalTrait('proue-idole-de-stromfels');
     expect(trait).toBeDefined();
@@ -117,7 +117,7 @@ describe('Proue-idole de Stromfels (#221) — résout au catalogue, entrée mais
   });
 });
 
-describe('hullArmourBonus — Blindage → PA de coque, op `ap` (MÊME op qu’une mutation ; MDG ch.12 l.234/236)', () => {
+describe('hullArmourBonus — Blindage → PA de coque, op `ap` (MÊME op qu’une mutation ; MDG 12 l.234/236)', () => {
   it('Fer → 2 PA, Bronze → 1 PA (sommés depuis le `passive`) ; hors catalogue → 0', () => {
     expect(hullArmourBonus([{ id: 'blindage-fer' }])).toBe(2);
     expect(hullArmourBonus([{ id: 'blindage-bronze' }])).toBe(1);
@@ -127,7 +127,7 @@ describe('hullArmourBonus — Blindage → PA de coque, op `ap` (MÊME op qu’u
   });
 });
 
-describe('belierRam — bonus de collision lu en DONNÉE (MDG ch.12 l.221)', () => {
+describe('belierRam — bonus de collision lu en DONNÉE (MDG 12 l.221)', () => {
   it('Bélier → { ic: 5, ap: 5 } depuis le catalogue ; absent → { 0, 0 }', () => {
     expect(belierRam([{ id: 'belier' }])).toEqual({ ic: 5, ap: 5 });
     expect(belierRam([{ id: 'lissage' }])).toEqual({ ic: 0, ap: 0 });
@@ -135,7 +135,7 @@ describe('belierRam — bonus de collision lu en DONNÉE (MDG ch.12 l.221)', () 
   });
 });
 
-describe('Bélier dans la collision — valeurs data-driven (MDG ch.12 l.221)', () => {
+describe('Bélier dans la collision — valeurs data-driven (MDG 12 l.221)', () => {
   const belier = belierRam([{ id: 'belier' }]); // { ic: 5, ap: 5 } depuis naval-traits.json
 
   it('éperonner de sa proue → +ic à l’IC du causeur (la victime encaisse +5) + ap PA frontaux au causeur', () => {
@@ -162,17 +162,17 @@ describe('Bélier dans la collision — valeurs data-driven (MDG ch.12 l.221)', 
   });
 });
 
-describe('Améliorations T2C ch.12 (Personnalisation) — MÊME canal que MDG, entrées PROPRES au T2C', () => {
-  it('Bouteur → moveMod −1 sur le canal navalMoveMod (T2C ch.12 : « réduit la vitesse de Mouvement de –1 »)', () => {
+describe('Améliorations T2C 12 (Personnalisation) — MÊME canal que MDG, entrées PROPRES au T2C', () => {
+  it('Bouteur → moveMod −1 sur le canal navalMoveMod (T2C 12 : « réduit la vitesse de Mouvement de –1 »)', () => {
     expect(navalMoveMod([{ id: 'bouteur' }])).toBe(-1);
     // combiné à Lissage (+1) : les moveMod se somment sur le canal unique.
     expect(navalMoveMod([{ id: 'bouteur' }, { id: 'lissage' }])).toBe(0);
   });
-  it('Bouteur → +20 au Test de Navigation pour diriger (T2C ch.12 l.66) ; converti +2 DR d’équipage', () => {
+  it('Bouteur → +20 au Test de Navigation pour diriger (T2C 12 l.66) ; converti +2 DR d’équipage', () => {
     expect(navalNavTestMod([{ id: 'bouteur' }])).toBe(20);
     expect(navalNavTestDR([{ id: 'bouteur' }])).toBe(2); // ÷10 (LDB : 10 pts = 1 DR)
   });
-  it('Gréement de course → −10 au Test de Navigation (T2C ch.12 l.137) ; converti −1 DR d’équipage', () => {
+  it('Gréement de course → −10 au Test de Navigation (T2C 12 l.137) ; converti −1 DR d’équipage', () => {
     expect(navalNavTestMod([{ id: 'greement-de-course' }])).toBe(-10);
     expect(navalNavTestDR([{ id: 'greement-de-course' }])).toBe(-1);
   });
@@ -188,20 +188,20 @@ describe('Améliorations T2C ch.12 (Personnalisation) — MÊME canal que MDG, e
     expect(effectiveDeckPostes(postes, navalDeckCover([{ id: 'murs-blindes' }])).every((p) => p.cover === 'totale')).toBe(true);
   });
   it('coût d’installation posé sur des PALIERS DE LONGUEUR (#277 — canal installCost EXISTANT) — pas de duplication d’un chantier', () => {
-    // Grande barge (~25 m, bande ouverte) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (T2C ch.12 l.62/64, l.80/82).
+    // Grande barge (~25 m, bande ouverte) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (T2C 12 l.62/64, l.80/82).
     const bouteur = findNavalTrait('bouteur')!.install!;
     const murs = findNavalTrait('murs-blindes')!.install!;
     expect(installCost(bouteur, 25)).toEqual({ gold: 120, enc: 95 });
     expect(installCost(murs, 25)).toEqual({ gold: 300, enc: 160 });
   });
-  it('barque (5 m) vs esquif de pêche (10 m) : MÊME `ShipSize` « minuscule », tarifs DIFFÉRENTS (#277, T2C ch.12 l.62/64)', () => {
+  it('barque (5 m) vs esquif de pêche (10 m) : MÊME `ShipSize` « minuscule », tarifs DIFFÉRENTS (#277, T2C 12 l.62/64)', () => {
     // Le RAW tarife par TYPE de navire à longueurs explicites, pas par bande de Taille — la Taille aurait
     // confondu les deux (10 m ≤ borne « minuscule » = 10 m, cf. shipSizeOfLength).
     const bouteur = findNavalTrait('bouteur')!.install!;
     expect(installCost(bouteur, 5)).toEqual({ gold: 8, enc: 5 }); // barque
     expect(installCost(bouteur, 10)).toEqual({ gold: 30, enc: 35 }); // esquif de pêche
   });
-  it('les 4 paliers RAW des 6 Améliorations T2C ch.12 (barque/esquif/moyenne+patrouille/grande barge)', () => {
+  it('les 4 paliers RAW des 6 Améliorations T2C 12 (barque/esquif/moyenne+patrouille/grande barge)', () => {
     const cases: [string, [number, number][]][] = [
       ['safran', [[5, 5], [25, 20], [50, 40], [120, 80]]], // l.54/56
       ['bouteur', [[8, 5], [30, 35], [60, 55], [120, 95]]], // l.62/64
@@ -220,7 +220,7 @@ describe('Améliorations T2C ch.12 (Personnalisation) — MÊME canal que MDG, e
   });
 });
 
-describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG ch.12 l.362-364, T2C ch.12 l.85/111), data-driven', () => {
+describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG 12 l.362-364, T2C 12 l.85/111), data-driven', () => {
   const postes = findVehicleById('cogue')!.deck!.postes!; // 3 emplacements, aucun couvert par défaut
 
   it('navalDeckCover lit le champ `deckCover` gradué (Sabord → totale ; Plat-bord → moyenne ; autre/absent → none)', () => {
@@ -255,7 +255,7 @@ describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG ch.12 l.362-364, 
   });
 });
 
-describe('navalMoveMult — Coque de course → 2×M, op moveScale (T2C ch.12 l.27)', () => {
+describe('navalMoveMult — Coque de course → 2×M, op moveScale (T2C 12 l.27)', () => {
   it('Coque de course → facteur 2/1 ; sans multiplicateur → neutre 1/1', () => {
     expect(navalMoveMult([{ id: 'coque-de-course' }])).toEqual({ num: 2, den: 1 });
     expect(navalMoveMult([{ id: 'lissage' }, { id: 'sabord' }])).toEqual({ num: 1, den: 1 });
@@ -266,7 +266,7 @@ describe('navalMoveMult — Coque de course → 2×M, op moveScale (T2C ch.12 l.
   });
 });
 
-describe('Nouvelles Améliorations T2C ch.12 — résolvent au catalogue + coût d’installation (canal EXISTANT)', () => {
+describe('Nouvelles Améliorations T2C 12 — résolvent au catalogue + coût d’installation (canal EXISTANT)', () => {
   it.each(['coque-de-course', 'safran', 'plat-bord', 'allegement', 'greement-de-course', 'fourquines'])(
     '%s : entrée présente, kind amelioration, source T2C, install chiffré', (id) => {
       const e = findNavalTrait(id)!;

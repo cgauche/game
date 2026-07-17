@@ -76,7 +76,7 @@ describe('Scène compilée par buildScene — équivalence de map', () => {
 /**
  * Vérification BOUT-EN-BOUT du scénario jouable (sans navigateur) : l'authoring (cogue + équipage) se
  * SPAWN en un navire-Combattant lié à de vrais marins, et un Coup Critique encaissé par la coque produit
- * un effet NAVAL (État sur la coque) ou touche l'équipage — toute la chaîne MDG ch.13-14.
+ * un effet NAVAL (État sur la coque) ou touche l'équipage — toute la chaîne MDG 13-14.
  */
 describe('Scénario Bataille navale — chaîne navale jouable', () => {
   it('la cogue spawn comme COQUE (vehicule, enemy, B50) liée à son ÉQUIPAGE (crewIds → vrais marins)', () => {
@@ -88,7 +88,7 @@ describe('Scénario Bataille navale — chaîne navale jouable', () => {
     expect(ship.crewIds).toEqual(['enemy-enc-naval-1', 'enemy-enc-naval-2', 'enemy-enc-naval-3']);
   });
 
-  it('l’Amélioration d’instance « Blindage (fer) » donne 2 PA de coque au spawn (MDG ch.12 l.236)', () => {
+  it('l’Amélioration d’instance « Blindage (fer) » donne 2 PA de coque au spawn (MDG 12 l.236)', () => {
     const ship = spawnRoster().find((c) => c.id === 'enemy-enc-naval-0')!;
     expect(ship.upgrades).toEqual([{ id: 'blindage-fer' }]); // authoré sur l'instance de la scène (réf par id)
     expect(ship.armour.corps).toBe(2); // mitige les Dégâts navals (applyOps op wounds)
@@ -113,7 +113,7 @@ describe('Scénario Bataille navale — chaîne navale jouable', () => {
 });
 
 /**
- * Artillerie JOUABLE par poste servi (MDG ch.12-13) — remplace l'ancienne triche (pierrier en inventaire).
+ * Artillerie JOUABLE par poste servi (MDG 12-13) — remplace l'ancienne triche (pierrier en inventaire).
  * Au démarrage, `applyShipPostes` sert les pierriers de la barge AMIE à leurs chefs de pièce (le Soldat +
  * le Chasseur) → l'attaque dédiée « Servir le pierrier » apparaît, épinglant le canon du poste.
  */

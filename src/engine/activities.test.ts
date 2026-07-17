@@ -1,5 +1,5 @@
 /**
- * Activités « Entre deux aventures » (LDB ch.23) — moteur PUR :
+ * Activités « Entre deux aventures » (LDB 23) — moteur PUR :
  *  - Artisanat (l.65-92) : Test étendu de Métier, DR cible par gamme de prix (Bronze 5 /
  *    Argent 10 / Or 15+), « chaque Défaut diminue de moitié le nombre de DR requis, et chaque
  *    Atout ajoute +5 (ajouté après avoir appliqué les Défauts) », Difficulté par Disponibilité.
@@ -198,7 +198,7 @@ describe('catalogue d’Activités data-driven (activities.json)', () => {
   });
 });
 
-describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désigné, EDOC ch.8 l.131)', () => {
+describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désigné, EDOC 8 l.131)', () => {
   const mk = () => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
 
   it('Activité SANS Test (Récupérer) : succès direct + stageOutcome pour l’acteur désigné', () => {
@@ -246,7 +246,7 @@ describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désign�
   });
 });
 
-describe('postes d’Étape : assignation héros → Activité + agrégation (EDOC ch.8 l.131)', () => {
+describe('postes d’Étape : assignation héros → Activité + agrégation (EDOC 8 l.131)', () => {
   const mk = (n: string) => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: n, rng: makeRNG(3) });
 
   it('toute issue d’ACTIVITÉ de voyage a une classification d’agrégation', () => {

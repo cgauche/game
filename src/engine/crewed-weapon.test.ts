@@ -4,11 +4,11 @@ import { attackModifiers } from './combat';
 import type { Weapon, Combatant } from './types';
 
 /**
- * ARME D'ÉQUIPE — sous-effectif (MDG ch.12 l.448-460), GÉNÉRAL (sièges au sol comme naval). Pénalités
+ * ARME D'ÉQUIPE — sous-effectif (MDG 12 l.448-460), GÉNÉRAL (sièges au sol comme naval). Pénalités
  * CUMULATIVES selon le déficit (Indice requis − servants présents) : 1 manquant → temps de recharge DOUBLÉ ;
  * 2 → + Défaut *Imprécise* ; 3 → + Défaut *Dangereuse*. Le doublement de recharge ne se cumule pas (×2, pas ×4).
  */
-describe('crewedPenalty — table de sous-effectif d’une Arme d’équipe (MDG ch.12 l.448-460)', () => {
+describe('crewedPenalty — table de sous-effectif d’une Arme d’équipe (MDG 12 l.448-460)', () => {
   it('équipage complet (présents ≥ Indice) → aucune pénalité', () => {
     expect(crewedPenalty(4, 4)).toEqual({ reloadFactor: 1, addFlaws: [] });
     expect(crewedPenalty(5, 3)).toEqual({ reloadFactor: 1, addFlaws: [] });
@@ -35,7 +35,7 @@ const cannon = (over: Partial<Weapon> = {}): Weapon =>
     qualities: [{ id: 'arme-d-equipe', value: 3 }], subType: 'poudre-noire', reload: 3, ...over }) as Weapon;
 const hasQ = (w: Weapon, id: string) => w.qualities.some((q) => q.id === id);
 
-describe('crewedFireWeapon — Défauts de sous-effectif BAKÉS sur l’arme tirée (MDG ch.12 l.448-460)', () => {
+describe('crewedFireWeapon — Défauts de sous-effectif BAKÉS sur l’arme tirée (MDG 12 l.448-460)', () => {
   it('équipage complet (présents ≥ Indice) → arme NETTE : Arme d’équipe retirée, aucun Défaut, recharge normale', () => {
     const w = crewedFireWeapon(cannon(), 3); // Indice 3, 3 servants
     expect(hasQ(w, 'arme-d-equipe')).toBe(false); // retirée → dispatch ne re-pénalise pas en « solo »
@@ -63,7 +63,7 @@ describe('crewedFireWeapon — Défauts de sous-effectif BAKÉS sur l’arme tir
     expect(hasQ(w, 'dangereuse')).toBe(true);
   });
 
-  it('un Défaut DÉJÀ porté n’est pas redoublé → −10 plat au tir au lieu de doubler (MDG ch.12 l.460)', () => {
+  it('un Défaut DÉJÀ porté n’est pas redoublé → −10 plat au tir au lieu de doubler (MDG 12 l.460)', () => {
     const w = crewedFireWeapon(cannon({ qualities: [{ id: 'arme-d-equipe', value: 3 }, { id: 'imprecise' }] }), 1); // déficit 2 → « ajoute » Imprécise, déjà là
     expect(w.qualities.filter((q) => q.id === 'imprecise').length).toBe(1); // pas de doublon (−1 DR ne double pas)
     expect(w.crewedTohitPenalty).toBe(-10); // … mais −10 au Test de tir
@@ -108,7 +108,7 @@ describe('crewedReloadStep — Test étendu de recharge, cumul de DR vers Rechar
   });
 });
 
-describe('attackModifiers — le −10 du Défaut redoublé apparaît sur le Test de tir (MDG ch.12 l.460)', () => {
+describe('attackModifiers — le −10 du Défaut redoublé apparaît sur le Test de tir (MDG 12 l.460)', () => {
   const shooter = (): Combatant =>
     ({ id: 's', name: 'S', kind: 'hero', advantage: 0, conditions: [], size: 3, weapons: [] }) as unknown as Combatant;
   const mark = (): Combatant => ({ id: 't', name: 'T', kind: 'enemy', advantage: 0, conditions: [], size: 3 }) as unknown as Combatant;

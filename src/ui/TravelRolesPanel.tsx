@@ -4,7 +4,7 @@ import { activityAsPoste } from '../state/poste';
 import { PostesRoster } from './PostesRoster';
 
 /**
- * Wrapper store des Rôles de marche (Voyage par Étapes, EDOC ch.8) : projette les Activités de voyage
+ * Wrapper store des Rôles de marche (Voyage par Étapes, EDOC 8) : projette les Activités de voyage
  * en Postes (`activityAsPoste`) et relie le store à la surface roster PARTAGÉE `PostesRoster` (fini le
  * `*View` dupliqué du pendant maritime). Rendu SOUS la règle « Voyage par Étapes » (gating au point
  * d'appel, `WorldMapView`).

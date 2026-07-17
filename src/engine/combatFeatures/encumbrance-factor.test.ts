@@ -1,5 +1,5 @@
 /**
- * `encumbranceFactor` (ADE II ch.02 l.706-710) — capacité de race/créature MULTIPLIANT (Bonus de Force +
+ * `encumbranceFactor` (ADE II 2 l.706-710) — capacité de race/créature MULTIPLIANT (Bonus de Force +
  * Bonus d'Endurance) avant l'ajout additif de Costaud (`talentEncumbranceBonus`). Le porteur DONNÉE (talent
  * de race ogre, posé sur `species.json`/`talents.json` par le lot données) est HORS PÉRIMÈTRE ici : ce test
  * prouve le mécanisme sur `maxEncumbranceFactor`, le cœur PUR du collecteur (`talentEncumbranceFactor`).
@@ -9,7 +9,7 @@ import { maxEncumbranceFactor } from './dispatch';
 import { maxEncumbrance } from '../items';
 import type { Combatant } from '../types';
 
-describe('encumbranceFactor (ADE II ch.02 l.708) — facteur MULTIPLICATIF sur BF+BE', () => {
+describe('encumbranceFactor (ADE II 2 l.708) — facteur MULTIPLICATIF sur BF+BE', () => {
   it('0 excédent : sans capacité, facteur = 1 (aucun effet)', () => {
     expect(maxEncumbranceFactor([])).toBe(1);
     expect(maxEncumbranceFactor([{}])).toBe(1);

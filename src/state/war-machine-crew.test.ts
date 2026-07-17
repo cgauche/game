@@ -7,7 +7,7 @@ import type { Scene } from './scene';
 import type { GameState } from './store';
 
 /**
- * ÉQUIPE des machines de guerre ADE II ch.08 l.233, câblée au point de tir (`firedWeapon`) et au gate
+ * ÉQUIPE des machines de guerre ADE II 8 l.233, câblée au point de tir (`firedWeapon`) et au gate
  * d'affordance (`firedAttackBlock`) — 3ᵉ courbe de sous-effectif, DISTINCTE de celle d'AA (`(C)` de
  * `siege-emplacement.test.ts` : recharge ×2 + Défaut ajouté). Ici : −20 plat si incomplète, INUTILISABLE
  * si < moitié — AUCUNE recharge doublée, AUCUN Défaut ajouté (vérifié explicitement ci-dessous).

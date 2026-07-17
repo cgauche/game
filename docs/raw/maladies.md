@@ -730,7 +730,7 @@ Maladie spécifique de la navigation. La plupart des gens en souffrent à leur p
 **Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Malaise → Exténué, Nausée → Sonné) ; [Cycle de vie d'une maladie](#cycle-de-vie-dune-maladie) ; `docs/raw/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.211-222) → `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `ItemCapabilities`, `scorbut`, `resolveShoreLeaveDesertion`, `runSeaDay`, +8 — `src/data/crew-morale.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/state/pendings.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCrew.ts`
+- `MDG 14` (l.211-222) → `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `scorbut`, `ItemCapabilities`, `resolveShoreLeaveDesertion`, `runSeaDay`, +8 — `src/data/crew-morale.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/state/pendings.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCrew.ts`
 
 ---
 

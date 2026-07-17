@@ -173,9 +173,9 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
     expect(bad).toEqual([]);
   });
 
-  it('l’embuscade tourne à l’échelle MER (10 m/case) — modèle NAVIRE-UNITÉ (MDG ch.13)', () => {
+  it('l’embuscade tourne à l’échelle MER (10 m/case) — modèle NAVIRE-UNITÉ (MDG 13)', () => {
     // Combat naval OPÉRATIONNEL (couche Mer, plan combat-naval-modele §1bis) : 1 case = 10 m = 1 point de Distance
-    // (MDG ch.13 l.362) → portées canon 50/75/150 m = 5/7,5/15 cases. Les coques agissent en UNITÉ (Tests
+    // (MDG 13 l.362) → portées canon 50/75/150 m = 5/7,5/15 cases. Les coques agissent en UNITÉ (Tests
     // d'équipage, équipage passager) ; l'IA de coque manœuvre + fait feu. Les armes PERSO (rangeBandAt 2 m/case) ne
     // tirent PAS ici : leurs porteurs sont passagers (hors ordre) → l'échelle Mer ne les concerne jamais.
     const embuscade = project.find((s) => s.id === 'barge-du-sel-embuscade')! as any;

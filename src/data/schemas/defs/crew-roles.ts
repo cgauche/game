@@ -1,5 +1,5 @@
 /**
- * Schéma de `crew-roles.json` — rôles d'équipage naval (MDG ch.14 « Tests d'équipage »). Consommé par
+ * Schéma de `crew-roles.json` — rôles d'équipage naval (MDG 14 « Tests d'équipage »). Consommé par
  * `src/data/index.ts:1320` (`CrewRoleData`) et `src/engine/crewMorale.ts`/`src/state/shipCrew.ts` (le
  * rôle mappe une ou plusieurs Compétences par `skillId` + `spec` optionnel, ex. Artilleur = Projectiles
  * (Poudre noire), Chansonnier = Divertissement (Chant)).

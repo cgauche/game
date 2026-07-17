@@ -1,5 +1,5 @@
 /**
- * Schéma de `steam-breakdown.json` — Panne de Vapeur (MDG ch.12 l.313-352), `SteamBreakdownEntry`
+ * Schéma de `steam-breakdown.json` — Panne de Vapeur (MDG 12 l.313-352), `SteamBreakdownEntry`
  * (`src/engine/shipBuild.ts:223-237`), tirée par `rollSteamBreakdown` (d100).
  */
 import { z } from 'zod';

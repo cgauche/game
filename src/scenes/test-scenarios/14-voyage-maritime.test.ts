@@ -71,7 +71,7 @@ describe('Scénario Voyage maritime — enregistrement & carte', () => {
     expect(scen.extraScenes?.some((s) => s.id === 'test-mer-arrivee')).toBe(true);
   });
 
-  it('cap EST — vent de dos sur les dominantes d\'ouest (MDG ch.13 l.253), jamais de face permanent (#408)', () => {
+  it('cap EST — vent de dos sur les dominantes d\'ouest (MDG 13 l.253), jamais de face permanent (#408)', () => {
     const route = scen.worldMap!.routes.find((r) => r.id === 'route-marienburg')!;
     expect(route.seaHeading).toBe('est');
   });

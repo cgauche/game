@@ -4,7 +4,7 @@ import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 
 /**
- * RECHARGE D'UN POSTE DE NAVIRE (MDG ch.12 l.462 / LDB 62 l.333) — Test ÉTENDU de Projectiles du CHEF de pièce
+ * RECHARGE D'UN POSTE DE NAVIRE (MDG 12 l.462 / LDB 62 l.333) — Test ÉTENDU de Projectiles du CHEF de pièce
  * (+ Soutien générique des servants), tâche d'équipage PARALLÈLE : occupe l'équipage (`crewActed`) sans consommer
  * le tour du navire (`acted`). L'état de recharge vit sur le POSTE (`loaded`/`reloadProgress`), pas sur le marin.
  */
@@ -27,7 +27,7 @@ const ship = (poste = firedPoste()): Combatant =>
 const setup = (poste = firedPoste()) =>
   useGame.setState({ battle: { combatants: [ship(poste), gunner()], order: ['ship'], turn: 0, round: 1, acted: false, log: [], crewActed: {} } as never, party: [gunner()], facing: { ship: 'N' }, pendingReload: null, scene: null as never });
 
-describe('battleShipReload — Test étendu de recharge d’un poste (MDG ch.12 / LDB 62)', () => {
+describe('battleShipReload — Test étendu de recharge d’un poste (MDG 12 / LDB 62)', () => {
   it('ouvre la modale de recharge sur le CHEF de pièce, cible = Recharge N', () => {
     setup();
     useGame.getState().battleShipReload('ship', 'canon');
@@ -72,7 +72,7 @@ describe('battleShipReload — Test étendu de recharge d’un poste (MDG ch.12 
 /** CYCLE END-TO-END (le scénario réel) : bordée → la pièce est déchargée → on NE peut PAS re-tirer → au Round
  *  SUIVANT, recharge (Test étendu) → la pièce redevient prête → re-bordée. RAW : recharger occupe un Round
  *  (l'Artilleur qui a tiré le fait ensuite), pas d'auto-rechargement. */
-describe('cycle bordée → recharge → re-bordée (MDG ch.12-14)', () => {
+describe('cycle bordée → recharge → re-bordée (MDG 12-14)', () => {
   const gunnerPJ = (): Combatant =>
     ({ id: 'gunner', name: 'Artilleur', kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 80, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },

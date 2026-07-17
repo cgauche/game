@@ -1,5 +1,5 @@
 /**
- * CrewTestModal — Test d'équipage GÉNÉRIQUE de COMBAT uniquement (MDG ch.14) : les Tests d'équipage de
+ * CrewTestModal — Test d'équipage GÉNÉRIQUE de COMBAT uniquement (MDG 14) : les Tests d'équipage de
  * VOYAGE sont désormais des étapes de la cascade du jour (#275 Ronde 2 cran 3, `CascadeModal`) — cette
  * modale ne rend plus jamais un Test de voyage, l'action « Annuler » (undo de misclic) est donc
  * TOUJOURS présente.

@@ -145,7 +145,7 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
   });
 
   it('affirmation-RAW non ancrée détectée (règle 6a — classe « bélier » 2026-07-06, preuve TDD)', () => {
-    // Le verbatim qui a contourné toutes les gardes : thèse sur le RAW, zéro réf, et FAUSSE (ADE II ch.8 exige l'Équipe).
+    // Le verbatim qui a contourné toutes les gardes : thèse sur le RAW, zéro réf, et FAUSSE (ADE II 8 exige l'Équipe).
     expect(scanRawClaims('x.ts', "// mains, via son inventaire/loadout — RAW ne l'exige PAS « servi » en poste pour être manié")).toHaveLength(1);
     expect(scanRawClaims('x.ts', '// arbitrage : laissé au MJ')).toHaveLength(1);
     expect(scanRawClaims('x.ts', '// le RAW est muet sur ce cas')).toHaveLength(1);

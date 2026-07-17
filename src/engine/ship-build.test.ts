@@ -11,7 +11,7 @@ const seq = (...vals: number[]): RNG => {
   return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
 };
 
-describe('buildShip — CONSTRUIRE UN NAVIRE en 4 étapes (MDG ch.12 l.108-164)', () => {
+describe('buildShip — CONSTRUIRE UN NAVIRE en 4 étapes (MDG 12 l.108-164)', () => {
   it('étape 1 : les Caractéristiques de bateau standard (Moyenne : 500 CO, 6(8)/5(20), E 40, B 90, 400)', () => {
     const s = buildShip({ size: 'moyenne', primary: 'voile', secondary: true });
     expect(s.crew).toBe(20);
@@ -62,7 +62,7 @@ describe('buildShip — CONSTRUIRE UN NAVIRE en 4 étapes (MDG ch.12 l.108-164)'
   });
 });
 
-describe('installCost — pose d’une Amélioration par PALIER DE LONGUEUR (MDG ch.12 l.195-364, #277)', () => {
+describe('installCost — pose d’une Amélioration par PALIER DE LONGUEUR (MDG 12 l.195-364, #277)', () => {
   it('Taille dérivée de la longueur (l.120-129) — reste utile hors installation (buildShip)', () => {
     expect(shipSizeOfLength(3)).toBe('minuscule');
     expect(shipSizeOfLength(25)).toBe('moyenne');
@@ -77,7 +77,7 @@ describe('installCost — pose d’une Amélioration par PALIER DE LONGUEUR (MDG
   });
 
   it('#277 — transcription MDG à l’IDENTIQUE : palier de longueur ⟺ ancienne bande de Taille (aucune valeur ne change)', () => {
-    // Bélier (MDG ch.12 l.221) : la bande [min:petite, max:moyenne] devient maxLengthM:35 (borne « moyenne »).
+    // Bélier (MDG 12 l.221) : la bande [min:petite, max:moyenne] devient maxLengthM:35 (borne « moyenne »).
     const belier = findNavalTrait('belier')!.install!;
     expect(installCost(belier, 20)).toEqual({ gold: 30, enc: 60 }); // 20 m = Petite (avant) = ≤35 m (après)
     expect(installCost(belier, 35)).toEqual({ gold: 30, enc: 60 }); // 35 m = Moyenne (avant) = ≤35 m (après)
@@ -100,7 +100,7 @@ describe('installCost — pose d’une Amélioration par PALIER DE LONGUEUR (MDG
   });
 });
 
-describe('Réparations (MDG ch.13 l.639-651)', () => {
+describe('Réparations (MDG 13 l.639-651)', () => {
   it('port : Test réussi → 1d10 h, 1d10 Blessures, 1 CO/Blessure ; Lissage +50 % (ch.12 l.295)', () => {
     // jet 20 (réussite), heures d10=4, blessures d10=6.
     const r = rollPortRepair(60, 20, seq(20, 4, 6));
@@ -120,7 +120,7 @@ describe('Réparations (MDG ch.13 l.639-651)', () => {
   });
 });
 
-describe('Panne de Vapeur (MDG ch.12 l.313-352)', () => {
+describe('Panne de Vapeur (MDG 12 l.313-352)', () => {
   it('déclencheurs : double sur un Test de Métier (Ingénieur) RATÉ, ou Échec Stupéfiant', () => {
     expect(steamBreakdownTriggered({ success: false, sl: -2, isDouble: true })).toBe(true);
     expect(steamBreakdownTriggered({ success: false, sl: -7 })).toBe(true);

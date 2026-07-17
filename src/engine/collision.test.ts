@@ -13,11 +13,11 @@ const mkHull = (E: number, wounds: number): Combatant =>
   }) as unknown as Combatant;
 
 /**
- * COLLISIONS & ÉPERONNAGE (MDG ch.13 l.423-465). Indice de Collision = Bonus d'Endurance + Bonus de
+ * COLLISIONS & ÉPERONNAGE (MDG 13 l.423-465). Indice de Collision = Bonus d'Endurance + Bonus de
  * Blessures restantes (l.444). Chaque navire reçoit l'IC de l'AUTRE + le M du causeur (frontal = +M total).
  * Facteurs : milieu ×2, poupe +2 PA, s'éloigne −M, manœuvre (DR ± l'IC des deux). Coups → Localisation Coque.
  */
-describe('collisionIndex — BE + Bonus de Blessures restantes (MDG ch.13 l.444)', () => {
+describe('collisionIndex — BE + Bonus de Blessures restantes (MDG 13 l.444)', () => {
   it('exemple RAW : E20 (BE 2) + 15 Blessures (BB 1) → IC 3', () => {
     expect(collisionIndex(mkHull(20, 15))).toBe(3);
   });

@@ -220,7 +220,7 @@ describe('AttackResult — détail des jets (breakdown) pour la modale', () => {
 
 describe('attackTestLabel — libellé du Test SUIT combatValue, ne ment jamais (#203)', () => {
   const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], resolveChar: 'force' };
-  it('arme à Résolution alternative (bélier → Force, ADE II ch.08 l.233) → libellé de la Carac', () => {
+  it('arme à Résolution alternative (bélier → Force, ADE II 8 l.233) → libellé de la Carac', () => {
     expect(attackTestLabel(belier, 'melee')).toBe('Force');
   });
   it('arme de mêlée normale (épée) → « Corps à corps »', () => {
@@ -252,7 +252,7 @@ describe('Bandes de portée (table des Difficultés, 14 - _GoBack.md l.82-118)',
 });
 
 describe('Bandes de portée — échelle métrique de la Scène (#249, metresPerTile) : arme Portée 60 m', () => {
-  // Scène Mer (MDG ch.13, ~10 m/case) : les mêmes seuils EN MÈTRES tombent sur MOINS de cases —
+  // Scène Mer (MDG 13, ~10 m/case) : les mêmes seuils EN MÈTRES tombent sur MOINS de cases —
   // Courte ≤ Portée÷2 = 30 m → 3 cases au lieu de 15 (mpt=2, cf. describe ci-dessus).
   it('mpt=10 : Courte portée ≤ 3 cases (au lieu de 15 à mpt=2)', () => {
     expect(rangeBandModifier(3, 60, 10)).toBe(20); // 30 m ≤ 30

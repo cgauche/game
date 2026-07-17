@@ -1,7 +1,7 @@
 import { Icon } from './Icon';
 
 /**
- * Bouton « Je ne faillirai pas ! » (Résilience, LDB ch.17 l.73) : sacrifie un Point de Résilience
+ * Bouton « Je ne faillirai pas ! » (Résilience, LDB 17 l.73) : sacrifie un Point de Résilience
  * pour une réussite garantie (Test opposé : l'emporte avec DR +1). Affiché uniquement quand il
  * reste de la Résilience ET que l'issue est défavorable (`show`).
  */

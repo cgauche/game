@@ -5,7 +5,7 @@ import qualities from './qualities.json';
 const byId = (id: string) => (trappings as any[]).find((x) => x.id === id);
 const qIds = new Set((qualities as any[]).map((q) => q.id));
 
-describe('Artillerie navale — munitions MDG ch.12 (verbatim) + qualité Brise-coque', () => {
+describe('Artillerie navale — munitions MDG 12 (verbatim) + qualité Brise-coque', () => {
   it('8 munitions navales extraites, qualités toutes définies', () => {
     const ids = ['carreau-de-baliste', 'carreau-nain-norse', 'boulet-et-poudre', 'mitraille-et-poudre',
       'bombe-de-mortier', 'bombe-incendiaire-mortier', 'balles-et-poudre-pierrier', 'petites-munitions-et-poudre-pierrier'];

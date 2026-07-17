@@ -40,7 +40,7 @@ const VEHICLE_BY_ID: Map<string, VehicleData> = new Map(VEHICLES_LIST.map((v) =>
 /** Transports payants RAW (l.210-219) = véhicules dotés d'une facette `travel` (passage payant). */
 export const TRAVEL_VEHICLES: VehicleData[] = VEHICLES_LIST.filter((v) => v.travel);
 
-/** Mode de voyage : `'pied'` (Mouvement du groupe), `'monture'` (bêtes possédées, EDOC ch.7 — règle
+/** Mode de voyage : `'pied'` (Mouvement du groupe), `'monture'` (bêtes possédées, EDOC 7 — règle
  *  optionnelle `travel-allures`) OU l'`id` d'un véhicule à passage payant (`vehicles.json`). */
 export type TravelMode = 'pied' | 'monture' | string;
 
@@ -53,12 +53,12 @@ export function vehicleTravel(mode: TravelMode): NonNullable<VehicleData['travel
 export const TRAVEL_MODE_LABEL: Record<string, string> = {
   pied: 'À pied',
   monture: 'En selle',
-  mer: 'En mer', // traversée sur le navire de campagne (route `sea`, MDG ch.13-15)
+  mer: 'En mer', // traversée sur le navire de campagne (route `sea`, MDG 13-15)
   ...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),
 };
 
 /** Unité affichée pour une distance de route : une route `sea` (mode `'mer'`) porte ses
- *  MILLES dans le même champ `km` — les tables RAW de traversée sont en milles (MDG ch.13/15
+ *  MILLES dans le même champ `km` — les tables RAW de traversée sont en milles (MDG 13/15
  *  l.57-78, cf. `src/state/seaVoyageFlow.ts:7`). Source UNIQUE de l'unité, pour ne jamais
  *  ré-écrire « km »/« milles » en dur à un site d'affichage. */
 export function distanceUnit(sea: boolean | undefined): 'milles' | 'km' {
@@ -102,7 +102,7 @@ export function partyWalkSpeed(party: Combatant[]): number {
  *  attelage forcé au galop, M de l'attelage × 3 ; à pied, une bête Boiteuse MENÉE plafonne le groupe
  *  à la moitié de sa vitesse de marche (EDOC 07 l.157). */
 export function travelSpeed(party: Combatant[], mode: TravelMode, movementOverride?: number, allure?: Allure): number {
-  // Traversée MARITIME : la vitesse est en MILLES/JOUR (vents, Tests d'équipage — MDG ch.13/15),
+  // Traversée MARITIME : la vitesse est en MILLES/JOUR (vents, Tests d'équipage — MDG 13/15),
   // résolue par `seaVoyageFlow`, pas en km/h terrestre. 0 = « pas de km/h » (l'UI affiche l'estimation navale).
   if (mode === 'mer') return 0;
   if (mode === 'pied') {

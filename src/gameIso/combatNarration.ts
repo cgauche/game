@@ -43,7 +43,7 @@ const KIND_ICON: Record<CombatEventKind, IconId> = {
   condition: 'condition/bleeding', fear: 'flag/fear', death: 'journal/death', round: 'journal/round', detail: 'journal/detail', info: 'journal/info',
 };
 
-/** États (LDB ch.16) reconnus dans le texte d'un événement `condition`/`detail` → icône via la
+/** États (LDB 16) reconnus dans le texte d'un événement `condition`/`detail` → icône via la
  *  source unique `conditionMeta` (jeu de noms FERMÉ, pas du devinage de verbe libre). Le texte d'un
  *  événement est en FRANÇAIS (journal) → on scanne le LIBELLÉ (`STATE_LABEL_TO_ID`, partagé avec
  *  `state/combatLog.isImportantEvent`), puis on mappe à l'`id` pour l'icône. Data-driven (zéro liste figée). */

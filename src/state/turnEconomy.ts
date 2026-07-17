@@ -36,7 +36,7 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
 }
 
 /**
- * Ce combattant peut-il choisir d'AGIR EN PREMIER ce Round (pré-emption d'initiative, LDB ch.17 l.27 :
+ * Ce combattant peut-il choisir d'AGIR EN PREMIER ce Round (pré-emption d'initiative, LDB 17 l.27 :
  * « Au début du Round, choisissez le moment où vous allez agir, sans tenir compte de l'Ordre
  * d'Initiative ») ? Affiché dans la frise d'initiative (InitiativeStrip) pendant la pause de début de Round.
  *
@@ -50,12 +50,12 @@ export function canActFirst(c: Combatant, battle: BattleState): boolean {
   // CONTRÔLE (qui peut réordonner qui) est appliqué par l'appelant UI (`controlsCombatant`, CampaignView).
   if (isOutOfAction(c)) return false;
   if (battle.order[0] === c.id) return false; // déjà en tête de l'ordre du Round
-  // Réordonnancement d'initiative : Chance (LDB ch.17 l.27) ou arme Rapide (LDB 62 l.318-319).
+  // Réordonnancement d'initiative : Chance (LDB 17 l.27) ou arme Rapide (LDB 62 l.318-319).
   return (c.fortune ?? 0) > 0 || canStrikeFirst(c.weapons);
 }
 
 /** Le RÉORDONNANCEMENT d'initiative est-il gratuit pour `c` ? (arme Rapide LDB 62 l.318-319 ; sinon il coûte
- *  1 point de Chance, LDB ch.17 l.27). Tir rapide (interruption hors de l'ordre, LDB 10) ne réordonne pas. */
+ *  1 point de Chance, LDB 17 l.27). Tir rapide (interruption hors de l'ordre, LDB 10) ne réordonne pas. */
 export function freeActFirst(c: Combatant): boolean {
   return canStrikeFirst(c.weapons); // arme Rapide (LDB 62)
 }

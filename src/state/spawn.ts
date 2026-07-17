@@ -165,12 +165,12 @@ export interface SpawnExtras {
   spells?: string[];
   /** Caractéristiques aléatoires (LDB 77 l.108). */
   randomChars?: boolean;
-  /** Coque/navire : `id`s des Combattants d'ÉQUIPAGE exposés (MDG ch.14) — posés sur le `Combatant`. */
+  /** Coque/navire : `id`s des Combattants d'ÉQUIPAGE exposés (MDG 14) — posés sur le `Combatant`. */
   crewIds?: string[];
-  /** Coque/navire : pièces d'artillerie MONTÉES (postes AUTHORÉS, MDG ch.12-13) — HYDRATÉES (`hydratePoste`)
+  /** Coque/navire : pièces d'artillerie MONTÉES (postes AUTHORÉS, MDG 12-13) — HYDRATÉES (`hydratePoste`)
    *  et posées sur le Combattant-coque au spawn. Réf catalogue → base résolue, jamais une base copiée (#222). */
   postes?: AuthoredShipPoste[];
-  /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, réfs par id) — posées sur le Combattant ;
+  /** Coque/navire : Améliorations d'INSTANCE (MDG 12, réfs par id) — posées sur le Combattant ;
    *  Blindage est appliqué ici même (PA de coque). */
   upgrades?: NavalTraitRef[];
   /** Compétences d'AUTEUR ajoutées (réfs `SkillRef` : id + valeur de Test imprimée) — FUSIONNÉES par-dessus
@@ -317,7 +317,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     armour: emptyArmour(sb.armour ?? 0),
     size,
     bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)
-    ...(sb.inert ? { inert: true } : {}), // affût inerte servi (AA/MDG ch.12) : ciblable, sans réaction de combat ni tour
+    ...(sb.inert ? { inert: true } : {}), // affût inerte servi (AA/MDG 12) : ciblable, sans réaction de combat ni tour
     ...(sb.followsCharacterRules ? { followsCharacterRules: true } : {}), // #143 : PNJ humain hostile MODÉLISÉ (Corruption/composant/maladie de personnage)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
@@ -344,7 +344,7 @@ export function spawnEnemy(
   if (statblock) c = statblockToCombatant(statblock, id, pos);
   else if (ref && findCreatureById(ref)) c = creatureToCombatant(findCreatureById(ref)!, id, pos, opts);
   else if (ref && findVehicleById(ref)?.hull) {
-    // Coque/navire (`vehicles.json` → facette `hull`) comme Combattant à PV (MDG ch.13). 'enemy' pour être
+    // Coque/navire (`vehicles.json` → facette `hull`) comme Combattant à PV (MDG 13). 'enemy' pour être
     // une cible ; inerte (pas d'arme/Mouvement, Psychologie ignorée) — sa destruction passe par ses Blessures.
     c = vehicleCombatant(findVehicleById(ref)!, id)!;
     c.kind = 'enemy';
@@ -372,7 +372,7 @@ export function spawnEnemy(
   if (opts?.crewIds) c.crewIds = opts.crewIds;
   if (opts?.postes) c.postes = opts.postes.map(hydratePoste); // #222 — réf catalogue → base HYDRATÉE (couture unique)
   if (opts?.upgrades) c.upgrades = opts.upgrades;
-  // Blindage (MDG ch.12 l.234/236) : PA de coque depuis les Traits du TYPE (`ship.traits`) + les Améliorations
+  // Blindage (MDG 12 l.234/236) : PA de coque depuis les Traits du TYPE (`ship.traits`) + les Améliorations
   // d'INSTANCE (`upgrades`). Self-contained → posé ici (pas de post-pass type `applyShipPostes`). Consommé par
   // les dégâts navals (`applyOps` op `wounds` déduit `armour.corps`).
   if (c.bodyShape === 'vehicule') {

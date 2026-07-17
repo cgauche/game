@@ -1,5 +1,5 @@
 /**
- * Résolveur de Blessures critiques sur un NAVIRE (MDG ch.13) — CODE GÉNÉRIQUE lisant la DONNÉE verbatim
+ * Résolveur de Blessures critiques sur un NAVIRE (MDG 13) — CODE GÉNÉRIQUE lisant la DONNÉE verbatim
  * (`ship-criticals.json` via `data/shipCriticals`). Module FRÈRE de `critical.ts` : il tire le d10 sur la
  * table de la Localisation et rend une issue STRUCTURÉE et PURE (ne mute rien — l'appelant applique).
  *
@@ -79,14 +79,14 @@ export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, f
  *  Critique de Coque (`crit`). */
 export interface ShipCriticalHit {
   location: ShipLocation;
-  /** Coup sur l'Équipage (MDG ch.13) : la touche revient à un membre d'équipage exposé. */
+  /** Coup sur l'Équipage (MDG 13) : la touche revient à un membre d'équipage exposé. */
   crewHit: boolean;
   /** Critique de coque (Localisation ≠ Équipage). */
   crit?: ShipCriticalResolved;
 }
 
 /**
- * BRAIN du combat naval (MDG ch.13) — un coup CRITIQUE sur un navire : on détermine d'abord la
+ * BRAIN du combat naval (MDG 13) — un coup CRITIQUE sur un navire : on détermine d'abord la
  * Localisation selon le gréement (`shipHitLocation`), puis on résout la table de cette Localisation.
  * Un coup à l'Équipage revient à un marin (Critique de personnage, géré par l'appelant qui connaît
  * l'équipage exposé). PUR — `forcedLocRoll`/`forcedCritRoll` figent les d100/d10 pour les tests.
@@ -105,7 +105,7 @@ export function exposedCrew(crew: Combatant[]): Combatant[] {
   return crew.filter((c) => !c.dead && (c.wounds?.current ?? 0) > 0);
 }
 
-/** Issue d'un Critique encaissé par une COQUE et RÉPERCUTÉ sur son équipage (MDG ch.13-14). */
+/** Issue d'un Critique encaissé par une COQUE et RÉPERCUTÉ sur son équipage (MDG 13-14). */
 export interface HullCriticalOutcome {
   location: ShipLocation;
   /** États NAVALS posés sur la coque (Voie d'eau / En flammes) — déjà appliqués. */
@@ -158,7 +158,7 @@ export function applyCrewHit(hull: Combatant, crew: Combatant[], crewTest: ShipC
 }
 
 /**
- * APPLIQUE un coup critique encaissé par une COQUE à elle-même ET à son ÉQUIPAGE (MDG ch.13-14) — la
+ * APPLIQUE un coup critique encaissé par une COQUE à elle-même ET à son ÉQUIPAGE (MDG 13-14) — la
  * brique qui fait que `crewIds` touche de VRAIS marins. PUR (mute la coque + les marins via `applyOps` /
  * `rollCritical`, RNG injecté) :
  *  - Localisation « Équipage » → un marin EXPOSÉ encaisse un Critique de PERSONNAGE (table LDB/AA via

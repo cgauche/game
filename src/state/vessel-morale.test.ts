@@ -9,7 +9,7 @@ import { setRule, resetRule } from '../engine/policy';
 import { makePregens } from '../data/pregens';
 
 /**
- * Navire de campagne PERSISTANT (MDG ch.14) : le Moral de l'équipage est recalculé une fois par SEMAINE
+ * Navire de campagne PERSISTANT (MDG 14) : le Moral de l'équipage est recalculé une fois par SEMAINE
  * par l'entretien quotidien (`tickShipMorale`), avec la même garde anti-double-comptage que les rations.
  */
 beforeEach(() => {

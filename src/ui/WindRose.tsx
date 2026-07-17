@@ -4,13 +4,13 @@ import { WIND_FORCES, windForceLabel, type SeaWindForceId } from '../engine/seaW
 /**
  * Rose des vents compacte (SVG) — 8 directions (vocabulaire `Dir8` du projet), flèche de PROVENANCE
  * du vent, force affichée, cap du navire en second index optionnel. La force (échelle des 6 vents,
- * MDG ch.13) mappe à une intensité visuelle par token via `data-force`. Lisible dès 48px.
+ * MDG 13) mappe à une intensité visuelle par token via `data-force`. Lisible dès 48px.
  */
 
 export interface WindRoseProps {
-  /** Provenance du vent sur la rose (rose des vents, MDG ch.13) — la flèche pointe vers ce cap. */
+  /** Provenance du vent sur la rose (rose des vents, MDG 13) — la flèche pointe vers ce cap. */
   dir: Dir8;
-  /** Force du vent (`SeaWindForceId`, MDG ch.13). */
+  /** Force du vent (`SeaWindForceId`, MDG 13). */
   force: SeaWindForceId;
   /** Cap du navire (second index optionnel, aiguille dorée). */
   heading?: Dir8;

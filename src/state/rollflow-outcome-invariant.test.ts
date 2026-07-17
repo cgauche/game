@@ -144,7 +144,7 @@ const FIXTURES: Record<string, Fix> = {
 
 /** Flux NON couverts par une fixture minimale — justifiés (leur `outcome` est trivial + partagé). */
 const SKIP: Record<string, string> = {
-  shipManeuver: 'Test d’équipage par rôle (MDG ch.14) — fixture de rôle valide lourde ; `outcome` = `cleanRollOutcome` partagé (crewRoleFlowSpec), déjà exercé par la logique numérique de forceDoor',
+  shipManeuver: 'Test d’équipage par rôle (MDG 14) — fixture de rôle valide lourde ; `outcome` = `cleanRollOutcome` partagé (crewRoleFlowSpec), déjà exercé par la logique numérique de forceDoor',
   shipBattery: 'idem shipManeuver (MÊME crewRoleFlowSpec)',
   crewTest: 'idem shipManeuver (MÊME crewRoleFlowSpec)',
   cascadeBatch: 'batch GÉNÉRIQUE (dé-navalisé #328) — `outcome` = `cleanRollOutcome` partagé, jet `rollBatchParticipant` (Test « +0 » sur la cible bakée) ; issue mono-valeur déjà exercée par la logique numérique de forceDoor',

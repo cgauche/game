@@ -11,7 +11,7 @@ function expectContiguousD10(table: ShipCritTable) {
   for (const x of e) expect(x.id && x.name && x.note).toBeTruthy();
 }
 
-describe('Blessures critiques sur un navire (MDG ch.13)', () => {
+describe('Blessures critiques sur un navire (MDG 13)', () => {
   it('les 5 Localisations ont une table d10 contiguë', () => {
     expect(Object.keys(SHIP_CRITICAL_TABLES).sort()).toEqual(['avirons', 'cargaison', 'coque', 'equipements', 'greement']);
     for (const t of Object.values(SHIP_CRITICAL_TABLES)) expectContiguousD10(t);

@@ -13,7 +13,7 @@ import { testBreakdown, testPending } from './breakdown';
 import { resultLine, freeCons } from '../state/rollSeam';
 
 /**
- * Modale du TEST D'ÉQUIPAGE GÉNÉRIQUE en COMBAT (MDG ch.14, « Types de Test d'équipage ») — JUMEAU de
+ * Modale du TEST D'ÉQUIPAGE GÉNÉRIQUE en COMBAT (MDG 14, « Types de Test d'équipage ») — JUMEAU de
  * `ShipBatteryModal`/`ShipManeuverModal` (flux MULTI, `RollShell` + `RollRow`), paramétrée par le
  * TYPE (`pendingCrewTest.testTypeId`). Chaque rôle tenu = une rangée ; le bandeau somme les DR (essentiel ×2)
  * + Moral + Manque de bras + sabotage. **Rude épreuve** (l.106-114) : un total NÉGATIF réduit le Moral d'autant
@@ -79,7 +79,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       const role = findCrewRoleById(part.roleId);
       const val = role ? crewRoleValue(actor, role, part.sense).value : 0;
       const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
-      // Manque de bras (MDG ch.14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
+      // Manque de bras (MDG 14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
       const difficulty = part.cumul ? easeDifficulty('intermediaire', -2) : undefined;
       return res
         ? { combatant: actor, d: testBreakdown(label, val, { roll: res.roll, target: res.target, sl: res.sl }, difficulty) }
@@ -99,9 +99,9 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       flowKey="crewTest"
       title={<><Icon id="travel/anchor" size="sm" /> {testType.label} — Test d’équipage</>}
       variant="test"
-      subtitle={<><strong>{ship.name}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''} (MDG ch.14)</>}
+      subtitle={<><strong>{ship.name}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''} (MDG 14)</>}
       extra={p.extraDR
-        ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage, MDG ch.14).</div>
+        ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage, MDG 14).</div>
         : undefined}
       rows={rows}
       rolled={allRolled}

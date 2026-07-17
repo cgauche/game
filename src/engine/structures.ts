@@ -1,5 +1,5 @@
 /**
- * Structures DESTRUCTIBLES de siège (ADE II ch.08 « Le théâtre de la guerre ») comme `Combatant` à PV —
+ * Structures DESTRUCTIBLES de siège (ADE II 8 « Le théâtre de la guerre ») comme `Combatant` à PV —
  * module FEUILLE. Calqué sur `engine/vehicle.ts` (coque inerte) : une structure (`structures.json`) devient
  * une cible inanimée à Blessures qui encaisse les Dégâts par la langue UNIQUE `woundsFromHit`/`GameOp`. RAW
  * dit lui-même que Structure / Véhicule / Navire suivent le MÊME modèle Endurance/Blessures (AA 10 l.13/116).
@@ -35,7 +35,7 @@ export function isEngin(c: Pick<Combatant, 'bodyShape'>): boolean {
   return c.bodyShape === 'engin';
 }
 
-/** Cette cible est-elle un OBJET INANIMÉ (pas une créature) — STRUCTURE de siège (ADE II ch.08), VÉHICULE-coque
+/** Cette cible est-elle un OBJET INANIMÉ (pas une créature) — STRUCTURE de siège (ADE II 8), VÉHICULE-coque
  *  (navire/chariot/barge, MDG) ou pièce SERVIE explicitement inerte (`inert`, ex. un affût d'artillerie) ? Source
  *  UNIQUE et NOMMÉE du « c'est un objet » : aucune réaction de combat (ni Parade/Esquive, ni Localisation, ni
  *  Engagement). Le littéral `'vehicule'` est INLINÉ à dessein : importer `isVehicle` créerait un cycle
@@ -58,7 +58,7 @@ function structureKind(target: Combatant): 'porte' | 'mur' | undefined {
   return target.creatureId ? findStructureById(target.creatureId)?.kind : undefined;
 }
 
-/** Le Bélier (cap `ram`) frappe-t-il une cible qui n'est PAS une porte ? (ADE II ch.08 l.249) — hors-porte,
+/** Le Bélier (cap `ram`) frappe-t-il une cible qui n'est PAS une porte ? (ADE II 8 l.249) — hors-porte,
  *  le résolveur de coup (`applyHit`) le transforme alors en Arme improvisée. */
 export function ramVsNonDoor(weapon: Pick<Weapon, 'qualities'> | undefined, target: Combatant): boolean {
   return weaponHasCap(weapon, 'ram') && structureKind(target) !== 'porte';

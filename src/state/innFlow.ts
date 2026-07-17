@@ -1,14 +1,14 @@
 /**
  * RUMEURS D'AUBERGE (#352) — action de collecte HORS voyage, au hub de ville (`CityHubScreen`, panneau
  * « auberge »). PAS un jet neuf : c'est l'Activité de voyage CANONIQUE `recueillir-informations`
- * (`src/data/activities.json`, skillId `ragot`, EDOC ch.8 l.151-153, `stageOutcome: gatherInfo`)
+ * (`src/data/activities.json`, skillId `ragot`, EDOC 8 l.151-153, `stageOutcome: gatherInfo`)
  * étendue au contexte `auberge` (`ActivityContext`, `engine/activities.ts`) et jouée ICI comme un Test
  * INDÉPENDANT (hors cascade de jour) via le seam UNIQUE `openRoll` (`rollSeam.ts`) — même patron que le
  * Ragot commercial / l'Évaluation du Vin de `landMarketFlow.ts` (#274).
  *
  * Succès → rumeur commerciale via le générateur EXISTANT `generateTradeRumour` (`landMarketFlow.ts`,
  * T2C 13 l.180), affichée par le panneau « Rumeurs déjà glanées » (déjà câblé sur `store.tradeRumours`)
- * — zéro prose de rumeur inventée ici. Échec → Exténué (EDOC ch.8 l.133, `ActivityDef.failExtenue`),
+ * — zéro prose de rumeur inventée ici. Échec → Exténué (EDOC 8 l.133, `ActivityDef.failExtenue`),
  * comme la version voyage (`travelPostes.ts`). Durée en POLICY maison (`inn-gather-info-minutes`,
  * `engine/policy.ts`) : l'horloge de campagne avance quelle que soit l'issue — « tout est horodaté ».
  */
@@ -56,7 +56,7 @@ registerCascadeApplier(INN_GOSSIP_KIND, (get, set, step, hero) => {
   // EDOC l.153 : aucune rumeur récoltée — branche d'ÉCHEC (#349, dette 1 : ton dérivé, pas une chaîne muette).
   const cons = freeCons([{ text: 'Personne ne semble savoir grand-chose ce soir-là.', tone: 'bad' }]);
   if (def?.failExtenue && hero) {
-    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC ch.8 l.133
+    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC 8 l.133
     applyOps(hero, [op]);
     set({ party: [...get().party] });
     cons.push({ ops: [op] });

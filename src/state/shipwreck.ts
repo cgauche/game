@@ -76,7 +76,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
   const isAboard = (h: Combatant) => (aboardSet ? aboardSet.has(h.id) : !h.dead);
 
   const journalMark = get().journal.length;
-  const opening: string[] = [`${shipName} sombre corps et biens (MDG ch.13 l.674).`];
+  const opening: string[] = [`${shipName} sombre corps et biens (MDG 13 l.674).`];
   const swimmerIds: string[] = [];
   const party = get().party.map((h) => {
     if (!isAboard(h) || h.dead) return h;

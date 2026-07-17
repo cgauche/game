@@ -50,7 +50,7 @@ describe('hasMeaningfulOption — garde-fou « tour gâché » (R6)', () => {
   });
 });
 
-describe('canActFirst — pré-emption d’initiative en début de Round (LDB ch.17 l.27)', () => {
+describe('canActFirst — pré-emption d’initiative en début de Round (LDB 17 l.27)', () => {
   // Ordre par défaut [E, H] : l'ennemi est en tête, donc le héros peut se placer devant lui.
   const duel = (h: Combatant, e: Combatant, over: Partial<BattleState> = {}): BattleState =>
     ({

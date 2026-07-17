@@ -28,10 +28,10 @@ import { ShipPreview } from './ShipPreview';
  * localisations — arbitrage USER). La fiche de combat `PosteSheet` (postes/manœuvre) reste distincte.
  */
 
-/** Gréement (colonne de Localisation des Dégâts, MDG ch.13) → libellé d'affichage. */
+/** Gréement (colonne de Localisation des Dégâts, MDG 13) → libellé d'affichage. */
 const RIG_LABEL: Record<string, string> = { avirons: 'Avirons', voile: 'Voile', mixte: 'Mixte (voile et avirons)' };
 
-/** Humeur de Manann (MDG ch.15) → ton par SIGNE : favorable = ok, courroucée = danger, neutre = neutral. */
+/** Humeur de Manann (MDG 15) → ton par SIGNE : favorable = ok, courroucée = danger, neutre = neutral. */
 const manannTone = (score: number): GaugeTone => (score > 0 ? 'ok' : score < 0 ? 'danger' : 'neutral');
 
 /** Surcharge de soute (MDG 12 l.70-75) : au-delà de la Contenance = surcharge (danger), proche = warn. */
@@ -177,7 +177,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
                   </ul>
                 </div>
               )}
-              {vessel.saboteurDR ? <p className="port-hint">Sabotage actif : <b>{vessel.saboteurDR} DR</b> aux Tests d’équipage (MDG ch.14).</p> : null}
+              {vessel.saboteurDR ? <p className="port-hint">Sabotage actif : <b>{vessel.saboteurDR} DR</b> aux Tests d’équipage (MDG 14).</p> : null}
               <p className="port-hint">À bord : <b>{party.filter((h) => !h.dead).length} héros + {crewCount} d’équipage</b> (MDG 14 l.238).</p>
               <p className="port-hint">
                 Eau douce : <b>{vessel.waterLitres != null ? `${vessel.waterLitres} L` : 'ravitaillement réputé assuré'}</b>
@@ -192,7 +192,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
 
             <section className="panel port-section">
               <h3>Humeur de Manann</h3>
-              <p className="port-hint">Score courant : <b>{manannScore > 0 ? '+' : ''}{manannScore}</b> (MDG ch.15).</p>
+              <p className="port-hint">Score courant : <b>{manannScore > 0 ? '+' : ''}{manannScore}</b> (MDG 15).</p>
               <details className="ship-dossier-details">
                 <summary>Facteurs appliqués ({manann?.applied.length ?? 0})</summary>
                 {manann?.applied.length ? (
@@ -210,7 +210,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
             <section className="panel port-section">
               <h3>Cale</h3>
               <NotchGauge label="Soute" value={cargoEnc} max={cargoMax} marks={cargoMarks} stacked tone={cargoTone} format={(v) => `${v} / ${capacity} Enc${overload.palierId ? ` — ${overload.label} (${overload.ratioPct} %)` : ''}`} />
-              {overload.palierId && <p className="port-hint">Surcharge : <b>{overload.mMod} M</b>, <b>{overload.manoeuvreDR} DR Manœuvre</b> (MDG ch.12 l.70-75).{!overload.canSail && ' Impossible de prendre la mer.'}</p>}
+              {overload.palierId && <p className="port-hint">Surcharge : <b>{overload.mMod} M</b>, <b>{overload.manoeuvreDR} DR Manœuvre</b> (MDG 12 l.70-75).{!overload.canSail && ' Impossible de prendre la mer.'}</p>}
               {cargo.length === 0 ? (
                 <p className="port-hint">La cale est vide.</p>
               ) : (

@@ -191,7 +191,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
     }
   }
   if (rations > 0) lines.unshift(`Le groupe entame ses provisions (${rations} ration${rations > 1 ? 's' : ''}).`);
-  // Navire de campagne (MDG ch.14) : PAIE hebdomadaire de l'équipage salarié puis recalcul du Moral, une
+  // Navire de campagne (MDG 14) : PAIE hebdomadaire de l'équipage salarié puis recalcul du Moral, une
   // fois par semaine calendaire (garde interne à `tickCampaignVesselWeek` ; un saut de plusieurs jours ne
   // recalcule qu'au franchissement de semaine). #216.
   lines.push(...tickCampaignVesselWeek(get, set, today, battleRng()));

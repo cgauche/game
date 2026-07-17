@@ -30,9 +30,9 @@ export interface MapPlace {
   entry?: string;
   /** Icône du médaillon (id du registre src/ui/icons), défaut `nav/entry-point`. */
   icon?: string;
-  /** Profil COMMERCIAL de port (Index des ports, MDG ch.15 l.439-506) — présent = ce lieu est un port
+  /** Profil COMMERCIAL de port (Index des ports, MDG 15 l.439-506) — présent = ce lieu est un port
    *  maritime (commerce, événements d'escale, chantier). `lighthouse` : un phare veille sur l'approche
-   *  (Test de Perception d'équipage à l'atterrage, MDG ch.13 l.333-351). `ref` (#217) : id de
+   *  (Test de Perception d'équipage à l'atterrage, MDG 13 l.333-351). `ref` (#217) : id de
    *  `naval-ports.json` — les champs `PortProfile` ci-dessous sont alors des SURCHARGES locales
    *  par-dessus le catalogue (sparse en authoring JSON, résolues/complétées au chargement du projet
    *  par `resolvePortRef`, `parseProject`) ; le type reste NON-partiel car tout consommateur aval lit
@@ -123,19 +123,19 @@ export interface MapRoute {
    *  l'auberge (chambres/repas payants, modale de Repos) en plus du campement. Absent = belle
    *  étoile seulement. */
   inns?: boolean;
-  /** Route MARITIME (MDG ch.13-15) : se voyage sur le NAVIRE DE CAMPAGNE (`state.vessel`) ; `km` est
+  /** Route MARITIME (MDG 13-15) : se voyage sur le NAVIRE DE CAMPAGNE (`state.vessel`) ; `km` est
    *  alors en MILLES (les tables RAW — 18 milles/jour par M, distances ch.15 l.40-47 — sont en milles). */
   sea?: boolean;
-  /** Cap DOMINANT du trajet (aspect du vent, MDG ch.13 l.262-270) — défaut 'ouest'. */
+  /** Cap DOMINANT du trajet (aspect du vent, MDG 13 l.262-270) — défaut 'ouest'. */
   seaHeading?: import('../engine/seaWeather').WindDirection;
-  /** Route FLUVIALE JOUÉE (T2C ch.7 « Navigation fluviale ») : en mode `barge`, la descente se joue jour par
+  /** Route FLUVIALE JOUÉE (T2C 7 « Navigation fluviale ») : en mode `barge`, la descente se joue jour par
    *  jour (Test de Navigation, table des vents, périls, chavirage) au lieu d'un transport payant. Repli
    *  payant si aucun batelier/embarcation. Absent = barge en transport payant (comportement historique). */
   river?: boolean;
-  /** Périls de rivière tirés chaque jour sur une route fluviale JOUÉE (T2C ch.7 l.119-166, `river-perils.json`) :
+  /** Périls de rivière tirés chaque jour sur une route fluviale JOUÉE (T2C 7 l.119-166, `river-perils.json`) :
    *  `perilId` (débris/rochers/eaux-peu-profondes/barrage) tiré à `chancePct` %. Data-driven, éditable. */
   riverPerils?: { perilId: string; chancePct: number }[];
-  /** Exposition HYDRIQUE de la descente (T2C ch.16 « Maladies transmises par l'eau », l.5-13) : à chaque
+  /** Exposition HYDRIQUE de la descente (T2C 16 « Maladies transmises par l'eau », l.5-13) : à chaque
    *  étape à flot, un tirage à `chancePct` % déclenche l'Effet EXISTANT `waterExposure` (Test de Résistance
    *  modifié → maladie contractée). `source` = id du tableau 1 « Source d'eau » (choix d'auteur de la
    *  portion de fleuve : `grande-ville-marais`, `aval-grande-ville-8km`…), `mode` = `ingestion` (boire l'eau

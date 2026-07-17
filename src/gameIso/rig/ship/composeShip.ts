@@ -1,5 +1,5 @@
 /**
- * Gabarit NAVIRE / VÉHICULE À COQUE (MDG ch.12) — rendu par le système de plans : une coque ANCRÉE AU
+ * Gabarit NAVIRE / VÉHICULE À COQUE (MDG 12) — rendu par le système de plans : une coque ANCRÉE AU
  * SOL (la quille repose sur l'eau/la case, cf. `groundedBody`) qui roule au repos et gîte à la mort.
  * RÉUTILISE entièrement la fondation `groundedBody`/palette à jetons + le contrat d'art orienté partagé.
  *

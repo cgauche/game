@@ -132,7 +132,7 @@ function acquireAnimositeOnFate(hero: Combatant, foeCible: string | undefined): 
     : `${hero.name} développe une Animosité envers ${foeCible} (frôler la mort a laissé une marque).`;
 }
 
-/** OUVERTURE partagée d'un Test d'équipage MULTI (MDG ch.14) : contributeurs par rôle (`crewTestContributors` —
+/** OUVERTURE partagée d'un Test d'équipage MULTI (MDG 14) : contributeurs par rôle (`crewTestContributors` —
  *  UN jet par poste, PJ interactifs, l.9/39/41), Moral, Manque de bras (l.55) et SABOTAGE (l.45-47) dérivés du
  *  navire. SOURCE UNIQUE des 3 flux jumeaux (manœuvre / bordée / Test d'équipage générique) — le pending
  *  appelant y ajoute ses champs propres (turnSteps, targetId+side, testTypeId). `null` si aucun rôle tenu. */
@@ -158,7 +158,7 @@ function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
     cumul: (battle.crewActed?.[ship.id] ?? []).includes(a.crew.id), // déjà engagé dans un Test ce Round → cumul +2 crans (l.53)
     result: null,
   }));
-  const saboteur = shipSaboteurDR(ship); // MDG ch.14 l.45-47 : −1..−5 DR plats
+  const saboteur = shipSaboteurDR(ship); // MDG 14 l.45-47 : −1..−5 DR plats
   // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`).
   const traits = [...(findVehicleById(ship.creatureId ?? '')?.ship?.traits ?? []), ...(ship.upgrades ?? [])];
   const extraDR = saboteur + navalTestTypeDR(traits, testTypeId);
@@ -170,7 +170,7 @@ function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
   };
 }
 
-/** Ligne de journal des SERVANTS d'une bordée (MDG ch.14 l.39 — l'équipage s'exprime, jamais un poste muet) : un PJ
+/** Ligne de journal des SERVANTS d'une bordée (MDG 14 l.39 — l'équipage s'exprime, jamais un poste muet) : un PJ
  *  tenant le rôle d'Artilleur DIRIGE la batterie (nominé, l.9) ; sinon l'équipage ABSTRAIT du bord fait feu (couche
  *  Mer, l.39). PUR (lit les assignations de rôle du navire pour ce Test). */
 function bordeeGunnersLine(get: Get, ship: Combatant, side: FireArc): string {
@@ -227,7 +227,7 @@ function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combata
 /**
  * SURPRISE NAVALE (couche Mer) traduite en AVANTAGE DE POSITION — PAS de tour gratuit (une coque n'a ni Action ni
  * psychologie ; l'État Surpris LDB 16 ne s'y transpose pas → arbitrage sobre, maison). L'assaillant NON repéré a eu le
- * temps de se PLACER : chaque coque ambusher se rapproche à ~portée MOYENNE du canon (75 m, MDG ch.12 l.401) de sa
+ * temps de se PLACER : chaque coque ambusher se rapproche à ~portée MOYENNE du canon (75 m, MDG 12 l.401) de sa
  * cible et vire pour amener son bord le plus armé EN BATTERIE. Repérés (Perception réussie, `noSurprise`) → non appelée :
  * placement authoré (~150 m, aucun avantage). Mute pos + facing.
  */
@@ -239,7 +239,7 @@ function applyNavalSurprisePosition(get: Get, set: Set, surprisedSide: 'party' |
   const victims = battle.combatants.filter((c) => isVehicle(c) && c.kind === surprisedKind && c.pos);
   if (!ambushers.length || !victims.length) return;
   const mpt = sceneMetresPerTile(scene);
-  const gap = Math.max(1, Math.round(75 / mpt)); // ~portée moyenne du canon (MDG ch.12 l.401)
+  const gap = Math.max(1, Math.round(75 / mpt)); // ~portée moyenne du canon (MDG 12 l.401)
   const facing = { ...get().facing };
   const { w, h } = scene.dimensions;
   for (const amb of ambushers) {
@@ -338,7 +338,7 @@ export function createCombatSlice(get: Get, set: Set) {
       else if (get().travelPlan?.sea) { if (!get().pendingSteamSave) continueSeaDayAfterCascade(get, set); }
       else travelFlow.continueTravelDayAfterCascade(get, set, done);
     }
-    // Exposition hydrique fluviale (T2C ch.16) surfacée APRÈS le jour (#344) : la clôture reprend la fin du
+    // Exposition hydrique fluviale (T2C 16) surfacée APRÈS le jour (#344) : la clôture reprend la fin du
     // jour (halte de nuit / arrivée), DIFFÉRÉE le temps du Test de Résistance — sinon le Repos et l'Exposition
     // se court-circuitent et la journée suivante ne se ré-arme jamais (patron du sibling `seaScorbut`).
     else if (done?.purpose === 'riverExposure') continueRiverDayAfterExposure(get, set);
@@ -387,7 +387,7 @@ export function createCombatSlice(get: Get, set: Set) {
       return !!e && aiWouldPrepareSpell(e, get);
     },
     // ── Combat monté : Monter / Descendre — MAISON [entériné 2026-07-17] (« Met les en Maison pour le
-    // moment », #526) : aucune clause de coût citable (LDB 14/15/09 + AA ch.9 fouillés en entier) ;
+    // moment », #526) : aucune clause de coût citable (LDB 14/15/09 + AA 9 fouillés en entier) ;
     // cadre RAW du combat monté : LDB 14 l.175-187. ──
     // Enfourcher/descendre ne demande AUCUN jet (Chevaucher sans Test si l'on a la Compétence, LDB 09 l.112)
     // → ce n'est PAS une Action (critère : tout jet = une Action) : c'est juste du MOUVEMENT (repositionnement
@@ -1177,7 +1177,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     runCancel: () => set({ pendingRun: null }),
 
-    // ── Manœuvre navale (MDG ch.13) : le barreur (héros ACTIF, à la barre) dépense son Action pour un Test
+    // ── Manœuvre navale (MDG 13) : le barreur (héros ACTIF, à la barre) dépense son Action pour un Test
     //    de Navigation → vire le cap (re-mappe les bordées) + avance la coque. « Un jet = une Action » : le
     //    jet passe par pendingShipManeuver, `acted` consommé au confirm. La direction se choisit au pré-jet. ──
     battleShipManeuver: (id: string) => {
@@ -1219,7 +1219,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     shipManeuverCancel: () => set({ pendingShipManeuver: null }),
 
-    // ── BORDÉE (« Tir de batterie », MDG ch.14 l.128) — JUMEAU de la manœuvre : Test d'équipage MULTI des Artilleurs (★),
+    // ── BORDÉE (« Tir de batterie », MDG 14 l.128) — JUMEAU de la manœuvre : Test d'équipage MULTI des Artilleurs (★),
     //    dont le DR PARTAGÉ remplace le jet de chaque pièce du bord qui porte. `battleShipBattery(shipId, targetId)` ouvre
     //    la modale (le bord est dérivé de la cible via `targetArc`) ; `shipBatteryConfirm` résout la volée (`resolveVolley`). ──
     battleShipBattery: (shipId: string, targetId: string) => {
@@ -1285,7 +1285,7 @@ export function createCombatSlice(get: Get, set: Set) {
       return true;
     },
 
-    // ── TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ jumeau de la manœuvre/bordée,
+    // ── TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG 14, « Types de Test d'équipage ») — 3ᵉ jumeau de la manœuvre/bordée,
     //    paramétré par `testTypeId`. Câblé en COMBAT : **Rude épreuve** (l.106-114 — « les gens ont peur de ce
     //    que pourrait prochainement subir le bateau ») : un total NÉGATIF réduit le Moral d'autant (l.110),
     //    persisté sur le navire de campagne. Les types de NAVIGATION/VOYAGE réutiliseront ce pending (7b). ──
@@ -1315,7 +1315,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
       set({ pendingCrewTest: null });
       const label = findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId;
-      // « Si le total est de 1 DR ou plus, le résultat global est un succès » (MDG ch.14 l.13).
+      // « Si le total est de 1 DR ou plus, le résultat global est un succès » (MDG 14 l.13).
       get().log(t('cs.crewTest', { label, ship: ship.name, dr: total >= 0 ? `+${total}` : `${total}`, outcome: total >= 1 ? t('cs.crewTestOk') : t('cs.crewTestKo') }));
       // ISSUE PAR TYPE — Rude épreuve (l.110) : « Si le total de ce Test donne un ou plusieurs DR négatifs,
       // réduisez le Moral d'un nombre égal au nombre de ces DR. » Persiste sur le navire de campagne.
@@ -1429,7 +1429,7 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    // « Servir cette pièce » (MDG ch.12-13) : le héros ACTIF REJOINT un poste de siège adjacent — CHEF s'il est
+    // « Servir cette pièce » (MDG 12-13) : le héros ACTIF REJOINT un poste de siège adjacent — CHEF s'il est
     // non servi (arme octroyée, taguée mountSide ; tire au tour suivant via l'option 'poste'), sinon SUPPORT (Arme
     // d'équipe : occupe la pièce, compte dans l'Indice contre le sous-effectif, mais ne tire pas). MÊME mutation
     // KIND-AGNOSTIQUE (`serveAtPoste`) que l'IA et l'author-time ; `recomputeLoadout` canonicalise l'arme du chef.
@@ -1472,7 +1472,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('detail', t('cs.leavePoste', { name: active.name, weapon }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // « Pousser » un engin de siège CREWÉ à roues (ADE II ch.08 l.258, Lot 2 #156) : ouvre le mode de
+    // « Pousser » un engin de siège CREWÉ à roues (ADE II 8 l.258, Lot 2 #156) : ouvre le mode de
     // ciblage-CASE 'push' — le clic-sol suivant (PUSH_MODE.commitTile, targetingModes.ts) commet la
     // translation de la formation. Gate : chef d'un poste MOBILE (`pushEligible`), Action dispo, Équipe ≥
     // moitié requise (`pushCrewOk`, sinon no-op — comme un tir sous-effectif refusé, `firedAttackBlock`).
@@ -1525,13 +1525,13 @@ export function createCombatSlice(get: Get, set: Set) {
       advanceTurn(get, set);
     },
 
-    // ── Chance, 3e usage : pré-emption d'initiative en début de Round (LDB ch.17 l.27) ──
+    // ── Chance, 3e usage : pré-emption d'initiative en début de Round (LDB 17 l.27) ──
     roundStartPromote: (heroId: string) => {
       const { battle, pendingRoundStart } = get();
       if (!battle || !pendingRoundStart) return;
       const hero = inBattleId(battle, heroId);
       // Réordonnancement d'initiative : arme Rapide (LDB 62 l.318-319) → gratuit ; sinon 1 point de Chance
-      // (LDB ch.17 l.27). Tir rapide (interruption hors de l'ordre, LDB 10) ne passe PAS par ici (`preemptRangedShot`).
+      // (LDB 17 l.27). Tir rapide (interruption hors de l'ordre, LDB 10) ne passe PAS par ici (`preemptRangedShot`).
       const free = !!hero && canStrikeFirst(hero.weapons);
       if (!hero || !controlsCombatant(get(), hero) || (!free && (hero.fortune ?? 0) <= 0)) return;
       if (battle.order[0] === heroId) return; // déjà en tête
@@ -1638,7 +1638,7 @@ export function createCombatSlice(get: Get, set: Set) {
       maybeRunEnemyTurn(get, set);
     },
 
-    // ── Destin sacrifié (LDB ch.17 l.31-35) — résolution de la suspension pendingFateSave ──
+    // ── Destin sacrifié (LDB 17 l.31-35) — résolution de la suspension pendingFateSave ──
     fateNegate: () => {
       const { battle, pendingFateSave: p } = get();
       if (!battle || !p || p.source !== 'hit') return; // « Comment ça a pu rater ? » : coup létal seulement
@@ -1743,7 +1743,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const w0 = active.weapons.find((x) => x.type === 'ranged');
       if (!w0 || (w0.reload ?? 0) <= 0 || active.loaded) return; // rien à recharger (Arc = pas de défaut, ou déjà chargé)
-      // Pièce SERVIE en sous-effectif : recharge ×2 (MDG ch.12 l.462). Le bake reflète les servants APTES présents
+      // Pièce SERVIE en sous-effectif : recharge ×2 (MDG 12 l.462). Le bake reflète les servants APTES présents
       // (effectif complet → recharge normale) ; pour un chef sans poste → arme inchangée (cas héros qui sert seul).
       const present = servingCrewPresent(active, battle.combatants);
       const w = present != null ? crewedFireWeapon(w0, present) : w0;
@@ -1764,7 +1764,7 @@ export function createCombatSlice(get: Get, set: Set) {
         },
       });
     },
-    // RECHARGE D'UN POSTE DE NAVIRE (MDG ch.12 l.462 / LDB 62 l.333) — Test étendu de Projectiles du CHEF de
+    // RECHARGE D'UN POSTE DE NAVIRE (MDG 12 l.462 / LDB 62 l.333) — Test étendu de Projectiles du CHEF de
     // pièce, avec le SOUTIEN générique des autres servants (`soutienBonus`, LDB 12). Tâche d'équipage PARALLÈLE :
     // elle occupe les servants (`crewActed`) mais NE consomme PAS le tour du navire (≠ `acted`). Réutilise le flux
     // `FLOWS.reload` (mono-jet) ; la branche d'application vit dans `reloadConfirm` (cf. `pr.posteUid`).
@@ -1936,7 +1936,7 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    // ── Détermination (Resolve) : retirer un État de l'actif, +1 PB si À Terre (LDB ch.17 l.62-66) ──
+    // ── Détermination (Resolve) : retirer un État de l'actif, +1 PB si À Terre (LDB 17 l.62-66) ──
     battleSpendResolve: (conditionName: string) => {
       const { battle } = get();
       if (!battle || battle.over) return;
@@ -1944,7 +1944,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
       if (!active.conditions.some((c) => c.name === conditionName)) return;
       active.resolve = (active.resolve ?? 0) - 1;
-      removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
+      removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.66
       let extra = '';
       if (conditionName === COND.aTerre) {
         applyHealWounds(active, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.66), plafond munition-logée
@@ -1964,7 +1964,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!hero || (hero.resolve ?? 0) <= 0) return;
       if (!hero.conditions.some((c) => c.name === conditionName)) return;
       hero.resolve = (hero.resolve ?? 0) - 1;
-      removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
+      removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.66
       let extra = '';
       if (conditionName === COND.aTerre) {
         applyHealWounds(hero, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.66), plafond munition-logée
@@ -2005,7 +2005,7 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    // ── Ramasser un objet au sol pendant un Round (un à la fois, LDB ch.13 l.115-116) ──
+    // ── Ramasser un objet au sol pendant un Round (un à la fois, LDB 13 l.115-116) ──
     battlePickup: (entityId: string, key: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle, scene } = get();
@@ -2463,9 +2463,9 @@ export function createCombatSlice(get: Get, set: Set) {
           appearance: ent.appearance, weapon: ent.weapon,
           optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
           skills: ent.combat?.skills, // compétences d'auteur (servant de pièce : Projectiles du Groupe de l'engin, AA p.122-124)
-          crewIds: ent.crewIds, // navire → équipage exposé (MDG ch.14)
-          postes: ent.postes, // navire → pièces d'artillerie montées (MDG ch.12-13)
-          upgrades: ent.upgrades, // navire → Améliorations d'instance (MDG ch.12 : Blindage, Lissage…)
+          crewIds: ent.crewIds, // navire → équipage exposé (MDG 14)
+          postes: ent.postes, // navire → pièces d'artillerie montées (MDG 12-13)
+          upgrades: ent.upgrades, // navire → Améliorations d'instance (MDG 12 : Blindage, Lissage…)
         }));
       // #30 — Blessures de COQUE persistantes : une coque spawnée qui EST le navire de campagne
       // (creatureId = vehicleId) repart de l'état persisté (writeback symétrique dans finalizeBattle).
@@ -2509,7 +2509,7 @@ export function createCombatSlice(get: Get, set: Set) {
         })
         .filter((c): c is Combatant => !!c);
       const all = [...heroes, ...enemies, ...structures];
-      // COUCHE MER (navire-unité, MDG ch.14) : le groupe EMBARQUE — les PJ tiennent les rôles de leur navire
+      // COUCHE MER (navire-unité, MDG 14) : le groupe EMBARQUE — les PJ tiennent les rôles de leur navire
       // (l.39 « la performance des Personnages représente celle de tout l'équipage »). On les rattache à la coque
       // ALLIÉE (celle de campagne si connue, sinon la 1re coque alliée) → PASSAGERS (hors ordre ET hors rendu),
       // qui s'expriment par les Tests d'équipage (manœuvre / bordée) et n'ont pas de tour individuel person-scale.
@@ -2518,7 +2518,7 @@ export function createCombatSlice(get: Get, set: Set) {
           ?? all.find((c) => isVehicle(c) && c.kind === 'hero');
         if (allyHull) allyHull.crewIds = [...new Set([...(allyHull.crewIds ?? []), ...heroes.map((h) => h.id)])];
       }
-      // Postes d'artillerie (MDG ch.12-13) : sert chaque poste de coque à son chef de pièce (mannedPoste +
+      // Postes d'artillerie (MDG 12-13) : sert chaque poste de coque à son chef de pièce (mannedPoste +
       // octroi du canon dérivé). Après le spawn, sur TOUS les combattants (héros/allié/ennemi indifférent).
       applyShipPostes(all);
       // Formation runtime des servants d'un poste TERRESTRE crewé (#210 résidu) : un servant sans position
@@ -2543,11 +2543,11 @@ export function createCombatSlice(get: Get, set: Set) {
         if (fear > 0) c.causesPeur = Math.max(c.causesPeur ?? 0, fear);
       }
       // Ordre d'initiative (arme « Lente » en dernier, LDB 62 l.331). À l'échelle MER, l'équipage est PASSAGER
-      // (hors `order`) : seules les coques ont un tour (navire-unité, MDG ch.14). Au person-scale, ordre complet.
+      // (hors `order`) : seules les coques ont un tour (navire-unité, MDG 14). Au person-scale, ordre complet.
       // Une STRUCTURE de siège ET un AFFÛT inerte servi (`inert`, ex. baliste/canon de rempart) n'ont PAS de
       // tour (ni pilotés par l'IA ni par le joueur : les laisser dans `order` figerait la boucle de tour). Ils
       // RESTENT dans `combatants` (ciblables / servables) ; seul leur slot d'`order` est retiré — même traitement
-      // que les passagers de coque (MDG ch.14). Les coques-VÉHICULES, elles, GARDENT leur tour (unité navire).
+      // que les passagers de coque (MDG 14). Les coques-VÉHICULES, elles, GARDENT leur tour (unité navire).
       const turnlessIds = new Set([...structures.map((s) => s.id), ...all.filter((c) => c.inert).map((c) => c.id)]);
       const order = combatOrder(all, isMerScene(scene), battleRng()).filter((id) => !turnlessIds.has(id)); // départage RAW des égalités exactes par Test d'Ag (LDB 13 l.31)
       const battle: BattleState = {
@@ -2556,7 +2556,7 @@ export function createCombatSlice(get: Get, set: Set) {
         baseOrder: order,
         // Pause d'ouverture : PERSONNE n'est actif (turn -1) tant qu'on n'a pas « Commencé » —
         // toutes les affordances (marche/course, anneaux, visée, clics, IA) dérivent de l'actif
-        // et se taisent d'elles-mêmes ; confirmRoundStart pose le vrai tour (LDB ch.17 l.27).
+        // et se taisent d'elles-mêmes ; confirmRoundStart pose le vrai tour (LDB 17 l.27).
         turn: -1,
         round: 1,
         action: null,
@@ -2596,7 +2596,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Option « Vents Tourbillonnants » (LDB 46 l.179-190, #491) : tirage 1d10 de la force des Vents
       // + Test de Perception (Seconde vue) des porteurs — AVANT tout jet d'Incantation/Focalisation.
       windsOfMagicAtCombatStart(get, set);
-      // Éclairs de la pluie diluvienne (EDOC ch.8 l.82, #341) : les montures Nerveuses non Dressées (Guerre)
+      // Éclairs de la pluie diluvienne (EDOC 8 l.82, #341) : les montures Nerveuses non Dressées (Guerre)
       // sont effrayées à l'ouverture d'une embuscade sous l'orage — MÊME dispatcher onStartled/'noise'.
       startleOnStormAtCombatStart(get, set);
       // Surprise APRÈS la pose du `battle` : le Test du guetteur est cadence-aware (héros manuel → cascade
@@ -3285,7 +3285,7 @@ export function createCombatSlice(get: Get, set: Set) {
       startCascade(get, set, { title: `Avantage — ${skillLabel}`, icon: 'nav/dice', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: active.id }] });
     },
 
-    // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) du flux `cast` (forceSuccess/dé choisi) —
+    // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) du flux `cast` (forceSuccess/dé choisi) —
     // cycle UNIFIÉ par la fabrique rollFlow. (`attack`/`defense` plus haut ; `test` reste côté store.)
   };
 }

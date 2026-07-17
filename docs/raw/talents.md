@@ -1,7 +1,7 @@
 # Atlas RAW --- Talents WFRP4 VF
 
 > Fichier de reference genere le 2026-06-20, complete le 2026-06-20. Source: `src/data/talents.json` (177 entrees) + textes sources lus et verifies.
-> **Corrections apportees** : source `empreint-de-la-magie` = EDOC ch.9 (pas LDB) ; source `empreint-d-ulgu` = NADJ (pas LDB) ; ajout Sang Neuf (ADE I) ; description Vice complete.
+> **Corrections apportees** : source `empreint-de-la-magie` = EDOC 9 (pas LDB) ; source `empreint-d-ulgu` = NADJ (pas LDB) ; ajout Sang Neuf (ADE I) ; description Vice complete.
 > ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ---
@@ -1163,32 +1163,32 @@ Vous êtes une âme curieuse qui a voyagé partout, et appris toutes sortes d'in
 > Source : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/13 - CHAPITRE 9 - La Main pourpre - Guide du Meneur.md`
 
 #### Bénédiction de Tzeentch
-**Source :** EDOC ch.9 l.76-80  
+**Source :** EDOC 9 l.76-80  
 **id app :** `benediction-de-tzeentch`  
 **Maxi :** 1 (noté « — p.1 » dans le texte source)  
 
 Tzeentch, le Dieu du Chaos de la Magie, vous a béni d'un parasite enfoui dans votre esprit. Lorsque vous achetez ce Talent, un Sort unique se faufile dans votre tête où il s'installe, murmurant de temps en temps pendant votre sommeil. Ce Sort peut être choisi dans n'importe quel savoir de Magie des Couleurs. De plus, vous pouvez acheter un Sort de Magie des Couleurs supplémentaire pour 100 XP pour chaque Sort que vous avez mémorisé provenant du Savoir de Tzeentch.
 
 #### Disciple du changement
-**Source :** EDOC ch.9 l.82-83  
+**Source :** EDOC 9 l.82-83  
 **id app :** `disciple-du-changement`  
 **Maxi :** 1  
 
 Lorsque vous obtenez une Mutation, lancez deux fois les dés et choisissez l'un des deux résultats.
 
 #### Double vie
-**Source :** EDOC ch.9 l.85-93  
+**Source :** EDOC 9 l.85-93  
 **id app :** `double-vie`  
 **Maxi :** 1 (noté « — p.1 »)  
 
 Vous êtes tellement habile à maintenir votre identité secrète que vous êtes capable de mener deux vies complètement séparées. Lorsque vous prenez ce Talent, vous pouvez entamer une deuxième Carrière parallèlement à votre Carrière du Chaos. Vous comptez maintenant comme appartenant aux deux Carrières, et vous pouvez acheter des Compétences avancées et des Talents dans l'une ou l'autre, ainsi que prendre et abandonner de nouvelles Carrières dans l'une ou l'autre. Comme toujours, tout changement de Carrière doit être approuvé par votre MJ afin de s'adapter au mieux aux plans de campagne et de refléter correctement votre Double vie.
 
 #### Empreint de la Magie
-**Source :** EDOC ch.9 l.219-221  
+**Source :** EDOC 9 l.219-221  
 **id app :** `empreint-de-la-magie`  
 **Maxi :** 1  
 
-> Source réelle : EDOC ch.9 (Nouveaux Talents, section « Influence Maléfique de Tzeentch », l.248-258). Accordé comme effet d'Incantation imparfaite dans une zone influencée par Tzeentch — contenu de campagne, tagué `codexOnly` dans talents.json (#326).
+> Source réelle : EDOC 9 (Nouveaux Talents, section « Influence Maléfique de Tzeentch », l.248-258). Accordé comme effet d'Incantation imparfaite dans une zone influencée par Tzeentch — contenu de campagne, tagué `codexOnly` dans talents.json (#326).
 
 Tous les Sorts lancés à votre Bonus de Force Mentale en mètres autour de vous gagnent +1 DR au lancé. Ce Bonus ne peut être appliqué qu'une fois par lancement, quel que soit le nombre de Personnages à proximité possédant ce Talent.
 
@@ -1324,7 +1324,7 @@ Trait Psychologique Vice associé : Vous éprouvez le besoin constant de vous ad
 > Source : `Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md` l.165-170
 
 #### Sang Neuf
-**Source :** ADE I ch.6 Guide de la Laurelorn l.167-170  
+**Source :** ADE I 6 Guide de la Laurelorn l.167-170  
 **id app :** `sang-neuf` (tagué `codexOnly` : l'espèce Éonir n'est pas jouable dans l'app, #326)  
 **Maxi :** 1  
 **Tests :** Tous les Tests de Sociabilité avec un autre Éonir  

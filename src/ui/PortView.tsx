@@ -226,7 +226,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
               <h3>Acheter — offres de l’escale</h3>
               <p className="port-hint">
                 Cale libre : <b>{port.freeEnc} Enc</b>
-                {port.maxLoadEnc > port.freeEnc && <> · surcharge possible jusqu’à <b>+{port.maxLoadEnc - port.freeEnc} Enc</b> (jusqu’à 150 %, MDG ch.12)</>}
+                {port.maxLoadEnc > port.freeEnc && <> · surcharge possible jusqu’à <b>+{port.maxLoadEnc - port.freeEnc} Enc</b> (jusqu’à 150 %, MDG 12)</>}
               </p>
               {port.offers.length === 0 && <p className="port-hint">Aucune cargaison à vendre dans ce port (production « minimum vital » ou stock épuisé).</p>}
               {port.offers.length > 0 && (
@@ -260,7 +260,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                           type="button"
                           className="btn small"
                           disabled={isGuest || port.maxLoadEnc <= 0 || !affordable}
-                          title={!affordable ? 'Bourse insuffisante' : wouldOverload ? 'Embarquer en surcharge (pénalités d’assiette, MDG ch.12)' : 'Estimation avant Marchandage'}
+                          title={!affordable ? 'Bourse insuffisante' : wouldOverload ? 'Embarquer en surcharge (pénalités d’assiette, MDG 12)' : 'Estimation avant Marchandage'}
                           onClick={() => buy(o.cargoId, want)}
                         >
                           {wouldOverload ? 'Surcharger' : 'Acheter'}

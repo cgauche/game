@@ -8,7 +8,7 @@ import { maneuverCrewTotal } from './shipManeuver';
 import type { Combatant, SkillInstance } from '../engine/types';
 
 /**
- * #26/#65 — MORAL D'ÉQUIPAGE EN COMBAT (MDG ch.14) :
+ * #26/#65 — MORAL D'ÉQUIPAGE EN COMBAT (MDG 14) :
  *  - « Rude épreuve » (l.106-114) : Test d'équipage ; « Si le total de ce Test donne un ou plusieurs DR
  *    négatifs, réduisez le Moral d'un nombre égal au nombre de ces DR » (l.110) — persisté sur
  *    `CampaignVessel.morale` quand la coque EST le navire de campagne.
@@ -47,7 +47,7 @@ function forceResult(pid: string, sl: number) {
   });
 }
 
-describe('Rude épreuve en combat (MDG ch.14 l.106-114) — delta de Moral persisté', () => {
+describe('Rude épreuve en combat (MDG 14 l.106-114) — delta de Moral persisté', () => {
   beforeEach(() => useGame.setState({ pendingCrewTest: null, vessel: null }));
 
   it('battleCrewTest ouvre le Test (Cuisinier ★ inféré) ; total NÉGATIF → Moral réduit d’autant sur le vessel (l.110)', () => {
@@ -88,7 +88,7 @@ describe('Rude épreuve en combat (MDG ch.14 l.106-114) — delta de Moral persi
   });
 });
 
-describe('Sabotage des Tests d’équipage (MDG ch.14 l.45-47 : −1..−5 DR)', () => {
+describe('Sabotage des Tests d’équipage (MDG 14 l.45-47 : −1..−5 DR)', () => {
   beforeEach(() => useGame.setState({ pendingCrewTest: null, vessel: null }));
 
   it('shipSaboteurDR clampe à la fourchette RAW [-5, 0]', () => {

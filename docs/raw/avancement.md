@@ -120,7 +120,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `adv-26-30`, +25 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/policy.ts`, +2 fichiers
-- `LDB 9` (l.44) → `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, `AdvancementPanel`, `Combatant` — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, +5 fichiers
+- `LDB 9` (l.44) → `shelter`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `GameState`, `AdvancementPanel`, +1 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, +5 fichiers
 
 ---
 

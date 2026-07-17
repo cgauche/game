@@ -2,7 +2,7 @@
  * Schéma de `localisation.json` — tables de Localisation des coups, FOYER UNIQUE data-driven
  * (`src/engine/combat.ts:48-89`). Deux familles : `personnage` (Localisation humaine/créature par
  * FORME de corps, LDB p.159/312 — `BODY_SHAPES`, clé = `BodyShape`, valeurs = `HitLocation`) et
- * `navire`/`navire-fluvial` (Localisation navale par gréement, MDG ch.13 / T2C ch.7 — `ShipLocation`).
+ * `navire`/`navire-fluvial` (Localisation navale par gréement, MDG 13 / T2C 7 — `ShipLocation`).
  * `HitLocation`/`ShipLocation` : `src/engine/types.ts:37` / `src/engine/combat.ts:58`.
  */
 import { z } from 'zod';

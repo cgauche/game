@@ -4,7 +4,7 @@
  * (convention « baril ») : n'importe RIEN de combatFlow ; combatFlow le ré-exporte (`export * from './combatArea'`).
  *
  * Lit GÉNÉRIQUEMENT les capacités d'arme (`resolveQualities` → `caps`) — aucun id d'arme ni chemin naval bespoke :
- *  - **Tir de zone (Indice)** (Aux Armes p.89 / MDG ch.12 l.466-472) : selon la bande de portée —
+ *  - **Tir de zone (Indice)** (Aux Armes p.89 / MDG 12 l.466-472) : selon la bande de portée —
  *      · Bout portant → la cible seule, **+Indice aux Dégâts** (RAW) ;
  *      · Courte à Longue → la cible **+ les Indice cibles les plus proches** ;
  *      · Extrême → comme Courte-Longue mais **−Indice aux Dégâts** (bande jadis manquante).
@@ -16,8 +16,8 @@
  * cible primaire (composition LITTÉRALE de deux règles RAW, aucune invention) :
  *  - **cible = personnage (terre)** : rayon métrique Chebyshev autour de la cible, converti à l'échelle de la
  *    scène (`metresPerTile`, 2 m person-scale) — PAS le « 2 m » codé en dur ;
- *  - **cible = navire (mer, `bodyShape:'vehicule'`)** : COMPOSITION de MDG ch.13 (un coup à la Localisation
- *    « Équipage » touche un marin EXPOSÉ « comme un combat normal ») × MDG ch.12 l.466-472 / LDB p.298 (Tir de
+ *  - **cible = navire (mer, `bodyShape:'vehicule'`)** : COMPOSITION de MDG 13 (un coup à la Localisation
+ *    « Équipage » touche un marin EXPOSÉ « comme un combat normal ») × MDG 12 l.466-472 / LDB p.298 (Tir de
  *    zone ajoute les Indice plus proches ; Explosion touche tous dans le rayon) → l'aire balaie l'ÉQUIPAGE
  *    EXPOSÉ du navire (`exposedCrew`, MÊME précédent que les Éclats d'un Critique de coque), car à l'échelle
  *    Mer (10 m/case) un rayon métrique < 1 case n'attraperait personne. PAS de cas spécial « navires au
@@ -61,7 +61,7 @@ export interface AreaHit {
    *  (tir direct/bordée — STRICTEMENT inchangé). Présent : l'Explosion frappe tout le rayon autour de la case. */
   center?: Pt;
   /** DR (Degrés de Réussite) du jet de tir — propagé aux effets `onHit` des cibles de zone (`ctx.sl`) pour
-   *  les échelles `valuePerSL` (Canon à flammes nain : « 2 + DR En flammes », ADE II ch.08 l.243). Absent → 0. */
+   *  les échelles `valuePerSL` (Canon à flammes nain : « 2 + DR En flammes », ADE II 8 l.243). Absent → 0. */
   margin?: number;
 }
 
@@ -126,7 +126,7 @@ function hitSecondary(
   lines.push(tr(msgKey, { name: victim.name, wl }));
   // États « infligés par l'arme » via le MÊME dispatcher que le tir individuel (Empêtré, En flammes, Venin…),
   // déclenchés dès la touche — parité avec la cible PRIMAIRE (`applyAttackResult` fire l'onHit sur `res.hit` seul).
-  // Une arme à Dégâts « Spéciaux » (Canon à flammes nain, ADE II ch.08 l.243) applique donc son État à 0 Blessure ;
+  // Une arme à Dégâts « Spéciaux » (Canon à flammes nain, ADE II 8 l.243) applique donc son État à 0 Blessure ;
   // les effets qui EXIGENT une Blessure se gardent EUX-MÊMES (Condition Flow `woundsDealt > 0` : Venin/Empoisonnement).
   if (!isOutOfAction(victim))
     emitCombatEvent('onHit', { get, set, battle: get().battle!, self: hit.attacker, sink: (line) => lines.push(line), triggerCtx: { victim, weapon: hit.weapon, woundsDealt: wl, margin: hit.margin, location: hit.location, attackType: hit.weapon.type, rng } });
@@ -145,7 +145,7 @@ export function resolveWeaponArea(
   const { primaryTarget: target, weapon } = hit;
   const quals = resolveQualities(weapon);
 
-  // ── Tir de zone (Aux Armes p.89 / MDG ch.12) ──────────────────────────────────────────────────────────
+  // ── Tir de zone (Aux Armes p.89 / MDG 12) ──────────────────────────────────────────────────────────
   const tz = quals.find((r) => r.caps?.areaFire);
   if (tz) {
     const indice = tz.indice ?? 1;

@@ -5,8 +5,8 @@ import type { Combatant } from '../engine/types';
 
 /**
  * Affordance UNIQUE « affecter des héros à un slot » — source partagée de la manœuvre navale (rôles
- * d'équipage, MDG ch.14) ET de la bataille de masse (Scène MULTI-PJ résolue en Soutien / Activité SOLO,
- * ADE II ch.8). Rend les héros affectés en portraits (clic = retirer, `.crew-remove`) suivis d'un
+ * d'équipage, MDG 14) ET de la bataille de masse (Scène MULTI-PJ résolue en Soutien / Activité SOLO,
+ * ADE II 8). Rend les héros affectés en portraits (clic = retirer, `.crew-remove`) suivis d'un
  * `PortraitPicker` des candidats.
  *
  * Cardinalité par `max` : `1` = une Scène/Activité (le picker REMPLACE via le `onAssign` de l'appelant,

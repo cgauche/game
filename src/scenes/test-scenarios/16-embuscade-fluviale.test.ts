@@ -43,7 +43,7 @@ describe('Embuscade fluviale — scène compilée + roster', () => {
 
 /**
  * Vérification BOUT-EN-BOUT (sans navigateur) : la barge SPAWN comme coque-véhicule, et un Coup Critique
- * encaissé se résout sur les tables du BATEAU FLUVIAL (T2C ch.7) — un État propre au fleuve (Dérive /
+ * encaissé se résout sur les tables du BATEAU FLUVIAL (T2C 7) — un État propre au fleuve (Dérive /
  * Gouvernail brisé / Voie d'eau) apparaît sur la coque, JAMAIS un effet exclusivement MARITIME (En flammes
  * navire, table Cargaison MDG absente de `navire-fluvial`). C'est la preuve que le routage par données
  * (`hull.locationTable`/`criticalTable`) traverse toute la chaîne de combat.

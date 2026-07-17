@@ -3,7 +3,7 @@ import { applyShipCollision } from './shipCollision';
 import type { Combatant } from '../engine/types';
 
 /**
- * Collision / éperonnage appliqué (MDG ch.13) — `applyShipCollision` mappe chaque coque en `CollisionShip`
+ * Collision / éperonnage appliqué (MDG 13) — `applyShipCollision` mappe chaque coque en `CollisionShip`
  * (IC = Bonus d'Endurance + Bonus de Blessures restantes ; M depuis le TYPE ; Bélier depuis Traits+Améliorations),
  * résout (`resolveCollision`, PUR) et APPLIQUE les Dégâts aux DEUX coques via l'op `wounds` (mitigation BE + PA
  * de coque + `extraAP` = `armorBonus` situationnel — la mitigation reste DANS l'op).
@@ -16,7 +16,7 @@ const hull = (id: string, creatureId: string, E: number, pb: number): Combatant 
     armour: { corps: 0 }, skills: [], talents: [],
   }) as unknown as Combatant;
 
-describe('applyShipCollision — Dégâts aux deux coques (MDG ch.13)', () => {
+describe('applyShipCollision — Dégâts aux deux coques (MDG 13)', () => {
   it('deux coques sans Bélier : IC=bonus(E)+bonus(PB), Dégâts = IC adverse + M causeur, mitigés BE dans l’op', () => {
     const causer = hull('cogue', 'cogue', 45, 50); // IC 4+5=9 ; M 5 (sail)
     const victim = hull('knarr', 'knarr', 40, 30); // IC 4+3=7 ; M 4

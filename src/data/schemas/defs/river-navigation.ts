@@ -1,5 +1,5 @@
 /**
- * Schéma de `river-navigation.json` — Navigation fluviale (T2C ch.7 « Navigation fluviale »), pendant
+ * Schéma de `river-navigation.json` — Navigation fluviale (T2C 7 « Navigation fluviale »), pendant
  * fluvial de `sea-navigation.json`. Dérivé de la vue typée `DATA` (`src/engine/riverNavigation.ts:62-78`),
  * seul consommateur. `source` = réf structurée book+page+note PAR entrée/sous-objet (#278), non lue
  * par le moteur (`DATA as unknown as { ... }` ignore le champ superflu).

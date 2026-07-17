@@ -46,7 +46,7 @@ describe('defaultCrewRole — rôle naval inféré de la meilleure COMPÉTENCE (
   });
 });
 
-describe('shipCrewAssignments — équipage → rôles pour un Test (MDG ch.14)', () => {
+describe('shipCrewAssignments — équipage → rôles pour un Test (MDG 14)', () => {
   it('rôle ÉPINGLÉ respecté ; rôle HORS du type de Test exclu', () => {
     const timonier = mk('t', 50, [{ skillId: 'voile', advances: 30 }], 'timonier');
     const artilleur = mk('g', 50, [{ skillId: 'projectiles', advances: 30, spec: 'poudre-noire' }], 'artilleur');
@@ -56,7 +56,7 @@ describe('shipCrewAssignments — équipage → rôles pour un Test (MDG ch.14)'
     expect(a[0].crew.id).toBe('t');
   });
 
-  it('plusieurs membres au MÊME rôle (MDG ch.14 l.9 « plusieurs Personnages peuvent contribuer ») → tous contribuent', () => {
+  it('plusieurs membres au MÊME rôle (MDG 14 l.9 « plusieurs Personnages peuvent contribuer ») → tous contribuent', () => {
     const c1 = mk('a', 30, [{ skillId: 'voile', advances: 20 }], 'timonier'); // Voile 50
     const c2 = mk('b', 60, [{ skillId: 'voile', advances: 20 }], 'timonier'); // Voile 80
     const ship = hull(['a', 'b']);
@@ -72,7 +72,7 @@ describe('shipCrewAssignments — équipage → rôles pour un Test (MDG ch.14)'
   });
 });
 
-describe('shipDefaultRoles — défaut GLOBAL : essentiel rempli en 1er + PJ étalés (MDG ch.14)', () => {
+describe('shipDefaultRoles — défaut GLOBAL : essentiel rempli en 1er + PJ étalés (MDG 14)', () => {
   it('remplit l’ESSENTIEL d’abord puis étale (pas 2 sur le même poste spécifique)', () => {
     const cap = mk('cap', 50, [{ skillId: 'commandement', advances: 30 }]); // → Capitaine
     const nav = mk('nav', 50, [{ skillId: 'orientation', advances: 30 }]);   // → Navigateur

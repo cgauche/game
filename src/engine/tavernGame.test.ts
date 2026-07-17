@@ -3,7 +3,7 @@ import { makeRNG } from './dice';
 import { rollTest } from './tests';
 import { findTavernGameById, resolveTavernRound, rollTavernTest, roundSL, TAVERN_GAMES, TAVERN_TEST_DIFFICULTY } from './tavernGame';
 
-describe('Jeux de taverne — moteur générique (NADJ ch.16)', () => {
+describe('Jeux de taverne — moteur générique (NADJ 16)', () => {
   it('les 11 jeux sont en données, chacun avec une règle verbatim et une source', () => {
     expect(TAVERN_GAMES.length).toBe(11);
     for (const g of TAVERN_GAMES) {

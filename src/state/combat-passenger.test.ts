@@ -3,7 +3,7 @@ import { combatOrder } from './combatSetup';
 import { isPassengerInBattle } from './shipPostes';
 import type { Combatant } from '../engine/types';
 
-// PASSAGER = membre d'ÉQUIPAGE d'une coque, à l'échelle MER : le navire agit en UNITÉ (MDG ch.14 l.39) → pas de
+// PASSAGER = membre d'ÉQUIPAGE d'une coque, à l'échelle MER : le navire agit en UNITÉ (MDG 14 l.39) → pas de
 // tour propre. Une MONTURE n'est PAS un passager : RAW « Combat monté » (LDB 14 l.182) — « une monture sans le
 // Trait Nerveux est un autre combattant à part entière, et peut effectuer sa propre Action » → elle GARDE son tour
 // (la désynchro monture/cavalier est un bug de synchro de POSITION, pas de tour).

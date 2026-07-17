@@ -11,7 +11,7 @@ import { OptionChooser, type RollOption } from './OptionChooser';
 import { Icon } from './Icon';
 import { resultLine, freeCons } from '../state/rollSeam';
 
-/** Virages proposés (MDG ch.13 — angle abstrait, choix d'UX) : crans d'octant signés (±1 = 45°, ±2 = 90°). */
+/** Virages proposés (MDG 13 — angle abstrait, choix d'UX) : crans d'octant signés (±1 = 45°, ±2 = 90°). */
 const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
   { key: 'b90', label: '⟲ Bâbord 90°', steps: -2 },
   { key: 'b45', label: '↰ Bâbord 45°', steps: -1 },
@@ -21,7 +21,7 @@ const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
 ];
 
 /**
- * Modale de MANŒUVRE navale = TEST D'ÉQUIPAGE (MDG ch.13-14) — flux MULTI, patron `ForceDoorModal`. Pré-jet : choix
+ * Modale de MANŒUVRE navale = TEST D'ÉQUIPAGE (MDG 13-14) — flux MULTI, patron `ForceDoorModal`. Pré-jet : choix
  * du virage (`OptionChooser` → `shipManeuverSetTurn`, ⟂ jet). Chaque rôle tenu = une `RollRow` : un PJ lance
  * SON Test (Chance/+1 DR/Pacte/Résilience sur SON jet, gated `ownsLocally`) ; un marin PNJ est un TÉMOIN auto-roulé.
  * Le bandeau somme les DR (essentiel ×2) + Moral → DR final ; « Manœuvrer » vire le cap + avance (`…Confirm`).
@@ -61,7 +61,7 @@ export function ShipManeuverModal() {
       const role = findCrewRoleById(part.roleId);
       const val = role ? crewRoleValue(actor, role).value : 0;
       const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
-      // Manque de bras (MDG ch.14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
+      // Manque de bras (MDG 14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
       const difficulty = part.cumul ? easeDifficulty('intermediaire', -2) : undefined;
       return res
         ? { combatant: actor, d: testBreakdown(label, val, { roll: res.roll, target: res.target, sl: res.sl }, difficulty) }
@@ -81,7 +81,7 @@ export function ShipManeuverModal() {
       flowKey="shipManeuver"
       title={<><Icon id="action/steer-ship" size="sm" /> Manœuvre — Test d’équipage</>}
       variant="test"
-      subtitle={<><strong>{ship.name}</strong> — {p.participants.length} rôle{plural(p.participants.length)} à la manœuvre (DR sommés, MDG ch.14)</>}
+      subtitle={<><strong>{ship.name}</strong> — {p.participants.length} rôle{plural(p.participants.length)} à la manœuvre (DR sommés, MDG 14)</>}
       extra={<OptionChooser layout="grid" groupLabel="Virage" options={turnOptions} />}
       rows={rows}
       rolled={allRolled}

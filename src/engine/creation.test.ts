@@ -69,7 +69,7 @@ describe('rollStar — signe astral (ADE2, table d100)', () => {
   });
 });
 
-describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 ch.03 l.38)', () => {
+describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 3 l.38)', () => {
   const baseChars = () => Object.fromEntries(CHAR_KEYS.map((k) => [k, 30])) as Record<CharKey, number>;
 
   it('XP_STAR_ROLLED = 25 (l.36)', () => {

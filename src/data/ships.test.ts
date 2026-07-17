@@ -3,8 +3,8 @@ import { VEHICLES_LIST } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
 import { shipHitLocation } from '../engine/combat';
 
-// MDG ch.12 = navires MARITIMES (18). Les bateaux FLUVIAUX T2C (propulsion:'fluvial') ont aussi une
-// facette `ship` mais relèvent de leur propre table (T2C ch.7) — couverts par `16-embuscade-fluviale`.
+// MDG 12 = navires MARITIMES (18). Les bateaux FLUVIAUX T2C (propulsion:'fluvial') ont aussi une
+// facette `ship` mais relèvent de leur propre table (T2C 7) — couverts par `16-embuscade-fluviale`.
 const ships = VEHICLES_LIST.filter((v) => v.ship && v.hull?.propulsion === 'maritime');
 
 describe('Navires MDG (ch.12) — profils en donnée', () => {
@@ -32,7 +32,7 @@ describe('Navires MDG (ch.12) — profils en donnée', () => {
     expect(ships.find((s) => s.id === 'croiseur')!.hull!.char.B).toBe(275);
   });
 
-  it('Bateau-trésor cathayen : ligne verbatim de la table (MDG ch.12 l.103)', () => {
+  it('Bateau-trésor cathayen : ligne verbatim de la table (MDG 12 l.103)', () => {
     const bt = ships.find((s) => s.id === 'bateau-tresor-cathayen')!;
     expect(bt.purchase!.price.gold).toBe(10000);
     expect(bt.hull!.char).toEqual({ endurance: 50, B: 400 });
@@ -46,7 +46,7 @@ describe('Navires MDG (ch.12) — profils en donnée', () => {
     expect(c.bodyShape).toBe('vehicule');
     expect(c.wounds.max).toBe(50);
     expect(c.characteristics.endurance).toBe(45);
-    // un coup à d100=15 sur un voilier touche le Gréement (MDG ch.13)
+    // un coup à d100=15 sur un voilier touche le Gréement (MDG 13)
     expect(shipHitLocation(cogue.hull!.rig!, 15)).toBe('greement');
   });
 });

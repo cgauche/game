@@ -62,7 +62,7 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string>, battle: 
   let hi = 0; // ordinal d'anneau héros — consommé AUSSI par un cavalier non dessiné (couleur stable)
   for (const c of battle.combatants) {
     if (!c.pos) continue;
-    // Échelle MER : l'équipage d'un navire est ABSTRAIT (la coque le représente, MDG ch.14).
+    // Échelle MER : l'équipage d'un navire est ABSTRAIT (la coque le représente, MDG 14).
     if (isPassengerInBattle(c, battle.combatants, isMerScene(scene))) continue;
     // Structure de siège : AUCUN jeton de case — elle se rend sur son ARÊTE (hit-area `data-cid`).
     if (isStructure(c)) continue;

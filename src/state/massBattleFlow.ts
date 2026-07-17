@@ -1,5 +1,5 @@
 /**
- * Combat de masse / Puissance de Bataille — orchestration (ADE II ch.8, l.13-321).
+ * Combat de masse / Puissance de Bataille — orchestration (ADE II 8, l.13-321).
  *
  * Couche STATE au-dessus du moteur PUR `engine/massBattle` : conduit la boucle de bataille.
  *
@@ -132,7 +132,7 @@ export interface MassBattleState {
   // ── Activités de bataille pré-combat (l.79-110) ──
   /** Ids des Activités de préparation déjà réalisées — set ANTI-RÉPÉTITION seul (« Les Activités ratées ne
    *  peuvent être réessayées », l.67). Le BUDGET des 3 Activités est celui, UNIQUE, de l'interlude
-   *  (`interlude.perHero[id].left`, LDB 23 l.6 / ADE II ch.8 l.65). */
+   *  (`interlude.perHero[id].left`, LDB 23 l.6 / ADE II 8 l.65). */
   activitiesDone: string[];
   /** Planification réussie (prérequis de l'Infiltration). */
   planned?: boolean;
@@ -367,7 +367,7 @@ function openBattlePending(_get: Get, set: Set, o: {
 
 const DIFFICULTY_MOD = (d: Difficulty): number => DIFFICULTY_MODIFIERS[d];
 
-/** Budget d'Activités restant d'un héros — le budget UNIQUE de l'interlude (LDB 23 l.6 / ADE II ch.8
+/** Budget d'Activités restant d'un héros — le budget UNIQUE de l'interlude (LDB 23 l.6 / ADE II 8
  *  l.65). Une prépa de bataille EST une Activité d'interlude : sans interlude ouvert, aucun budget. */
 function heroBudget(get: Get, heroId: string): number {
   return get().interlude?.perHero[heroId]?.left ?? 0;
@@ -616,7 +616,7 @@ function activityTestResult(pa: PendingActivity): { success: boolean; sl: number
 
 /** Construit la `BattleResolution` d'un Test (Scène de Test/Activité de préparation). La chute du
  *  général/capitaine (`generalDown`) suit la condition DÉCLARÉE par la Scène (`def.generalDownOn`,
- *  ADE II ch.08 l.208/217) : 'success' (Ligne de mire) ou 'stupefying' = DR ≥ 6 (Survol). */
+ *  ADE II 8 l.208/217) : 'success' (Ligne de mire) ou 'stupefying' = DR ≥ 6 (Survol). */
 function testResolution(success: boolean, sl: number, def?: Pick<ActivityDef, 'generalDownOn'>): BattleResolution {
   const gd = def?.generalDownOn;
   const generalDown = success && (gd === 'stupefying' ? sl >= 6 : gd === 'success');

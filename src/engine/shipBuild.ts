@@ -1,5 +1,5 @@
 /**
- * CONSTRUIRE UN NAVIRE (MDG ch.12 l.108-164) + INSTALLATION D'AMÉLIORATIONS (l.195-364) + RÉPARATIONS
+ * CONSTRUIRE UN NAVIRE (MDG 12 l.108-164) + INSTALLATION D'AMÉLIORATIONS (l.195-364) + RÉPARATIONS
  * (ch.13 l.639-651) — couche PURE, données verbatim dans `ship-construction.json` / `naval-traits.json`
  * (`install`) / `sea-navigation.json` (`reparation`).
  *
@@ -16,7 +16,7 @@
  *  +10 %/niveau), Robuste (+10 %), Solide (+30 % B, −10 % Contenance, +20 %/niveau).
  *
  * Améliorations : coût / poids d'installation par PALIER DE LONGUEUR (`NavalInstall`, verbatim ch.12 ;
- * T2C ch.12 l.54-135 pour les Améliorations propres au T2C — le RAW y tarife par TYPE de navire à
+ * T2C 12 l.54-135 pour les Améliorations propres au T2C — le RAW y tarife par TYPE de navire à
  * longueurs explicites, pas par `ShipSize`, #277) — `per:'5m'` = par tranche de 5 m de Taille (Blindage
  * l.225, Lissage l.289) ; `per:'unite'` = par cabine (l.240) ; `'modele'` = ceux du modèle embarqué
  * (Embarcation de bord, l.268).
@@ -160,7 +160,7 @@ export function buildShip(spec: ShipBuildSpec): ShipBuildResult {
   };
 }
 
-// ── Installation d'Améliorations (MDG ch.12 l.195-364, `NavalInstall`) ───────────────────────────
+// ── Installation d'Améliorations (MDG 12 l.195-364, `NavalInstall`) ───────────────────────────
 
 /** Palier retenu pour `lengthM` : le PREMIER dont `maxLengthM` ≥ `lengthM` (triés croissants), sinon le
  *  DERNIER de la liste (bande ouverte, `maxLengthM: null`, #277). PUR. */
@@ -181,7 +181,7 @@ export function installAmount(
   if (part === 'modele') return null;
   const base = bandValue(part.bands, lengthM);
   if (part.per === '5m') return base * Math.max(1, Math.ceil(lengthM / 5));
-  if (part.per === '10m') return base * Math.max(1, Math.ceil(lengthM / 10)); // T2C ch.12 « pour 10 mètres » (Coque de course l.23)
+  if (part.per === '10m') return base * Math.max(1, Math.ceil(lengthM / 10)); // T2C 12 « pour 10 mètres » (Coque de course l.23)
   if (part.per === 'unite') return base * Math.max(1, units);
   return base;
 }
@@ -194,7 +194,7 @@ export function installCost(install: NavalInstall, lengthM: number, units = 1): 
   };
 }
 
-// ── Réparations (MDG ch.13 l.639-651) ────────────────────────────────────────────────────────────
+// ── Réparations (MDG 13 l.639-651) ────────────────────────────────────────────────────────────
 
 export interface RepairTick { roll: number; target: number; success: boolean; wounds: number; hours: number; costGold: number }
 
@@ -225,7 +225,7 @@ export function temporaryRepairFailureDamage(rng: RNG = defaultRNG): number {
   return Math.max(0, rollDice(1, 10, rng) - 4);
 }
 
-// ── Panne de Vapeur (MDG ch.12 l.313-352) ────────────────────────────────────────────────────────
+// ── Panne de Vapeur (MDG 12 l.313-352) ────────────────────────────────────────────────────────
 
 export interface SteamBreakdownEntry {
   min: number;

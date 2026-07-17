@@ -6,11 +6,11 @@ import { improvisedProfile } from './weaponDamage';
 import type { Weapon, Combatant } from './types';
 
 /**
- * Structures destructibles de siège — modèle de Dégâts (ADE II ch.08). Tests DÉTERMINISTES via
+ * Structures destructibles de siège — modèle de Dégâts (ADE II 8). Tests DÉTERMINISTES via
  * `woundsFromHit` (point d'injection unique) : `totalDamage` est l'entrant déjà calculé par l'appelant,
  * donc on contrôle exactement la valeur et on vérifie le Bonus d'Endurance (BE×10 ⇒ bonus = BE), Siège ×2,
  * et les immunités Résistant/Impénétrable/Bélier. RAW : structures sans PA ⇒ `effectiveArmour` = 0.
- * NB : aucun « easeDifficulty » modélisé — ADE II ch.08 ne facilite PAS le Test de toucher d'une structure.
+ * NB : aucun « easeDifficulty » modélisé — ADE II 8 ne facilite PAS le Test de toucher d'une structure.
  */
 const mkWeapon = (over: Partial<Weapon> = {}): Weapon => ({
   name: 'arme',
@@ -50,7 +50,7 @@ describe('structureCombatant (Combatant à PV calqué sur la coque)', () => {
   });
 });
 
-describe('woundsFromHit — structures (ADE II ch.08)', () => {
+describe('woundsFromHit — structures (ADE II 8)', () => {
   it('Épée (mêlée) vs Porte (Résistant) : SUBIT — total − Bonus d\'Endurance, plancher 0', () => {
     // Porte BE 2 ; 10 Dégâts entrants − 2 = 8.
     expect(woundsFromHit(epee, struct('porte'), 'corps', 10)).toBe(8);
@@ -79,7 +79,7 @@ describe('woundsFromHit — structures (ADE II ch.08)', () => {
     expect(woundsFromHit(belier, struct('porte'), 'corps', 10)).toBe(18);
   });
 
-  it('Bélier hors-porte = Arme improvisée : endommage un Mur, plus de Siège (ADE II ch.08 l.249)', () => {
+  it('Bélier hors-porte = Arme improvisée : endommage un Mur, plus de Siège (ADE II 8 l.249)', () => {
     // Hors-porte, le funnel transforme le Bélier en improvisée (cf. effectiveWeapon/weaponContextOf) ; c'est
     // CE profil qui atteint woundsFromHit — ni immune (≠ 0) ni doublé par Siège.
     expect(woundsFromHit(improvisedProfile(belier), struct('mur-en-bois'), 'corps', 8)).toBe(2); // 8 − BE 6, sans ×2
@@ -106,7 +106,7 @@ describe('structureImmune (unitaire)', () => {
     expect(structureImmune(canon, struct('mur-en-pierre'))).toBe(false); // Siège outrepasse
   });
 
-  it('Bélier hors-porte n\'est PAS une immunité — c\'est une Arme improvisée (ADE II ch.08 l.249)', () => {
+  it('Bélier hors-porte n\'est PAS une immunité — c\'est une Arme improvisée (ADE II 8 l.249)', () => {
     expect(ramVsNonDoor(belier, struct('mur-en-bois'))).toBe(true);
     expect(ramVsNonDoor(belier, struct('mur-en-pierre'))).toBe(true);
     expect(ramVsNonDoor(belier, struct('porte'))).toBe(false); // porte = cible légitime

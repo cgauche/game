@@ -6,8 +6,8 @@ import type { SceneEntity } from '../../state/scene';
 import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 
-// Banc du MODÈLE DEUX-ÉCHELLES couche MER (MDG ch.13-14, plan combat-naval-modele §1bis) : DEUX jetons-coques sur
-// l'eau ouverte à ~150 m (portée LONGUE du canon, MDG ch.12 l.401 → 15 cases à 10 m/case), l'équipage ABSTRAIT
+// Banc du MODÈLE DEUX-ÉCHELLES couche MER (MDG 13-14, plan combat-naval-modele §1bis) : DEUX jetons-coques sur
+// l'eau ouverte à ~150 m (portée LONGUE du canon, MDG 12 l.401 → 15 cases à 10 m/case), l'équipage ABSTRAIT
 // (passager, hors ordre ET hors rendu — il s'exprime par les Tests d'équipage). Le joueur joue LE TOUR DU NAVIRE ;
 // la coque adverse est pilotée par l'IA de coque (`runShipAI` : manœuvre pour aligner sa bordée, puis feu). L'approche
 // se JOUE sur plusieurs Rounds (M du navire en Distance-points/Round, 1 point = 1 case à cette échelle).
@@ -17,7 +17,7 @@ function ammo(trappingId: string, qty: number) {
   const base = itemFromTrappingById(trappingId)!;
   return { ...base, uid: `duel-ammo-${trappingId}-${++ammoSeq}`, qty };
 }
-/** Poste d'artillerie ARMÉ (coffre à boulets, MDG ch.12 l.410-424). L'équipage abstrait le sert d'office à la Mer. */
+/** Poste d'artillerie ARMÉ (coffre à boulets, MDG 12 l.410-424). L'équipage abstrait le sert d'office à la Mer. */
 function canon(side: 'tribord' | 'babord' | 'proue' | 'poupe'): ShipPoste {
   const a = ammo('boulet-et-poudre', 12);
   const m = ammo('mitraille-et-poudre', 4);
@@ -40,7 +40,7 @@ const scene = buildScene({
   description: 'Duel de deux coques en mer ouverte (échelle MER 10 m/case).',
   size: [24, 14],
   terrain: 'eau',
-  metresPerTile: 10, // MDG ch.13 l.362 : 1 point de Distance = 10 m → 1 case ; portées 50/75/150 m = 5/7,5/15 cases
+  metresPerTile: 10, // MDG 13 l.362 : 1 point de Distance = 10 m → 1 case ; portées 50/75/150 m = 5/7,5/15 cases
   heroStart: [2, 7],
   startMessage:
     'Barre à toi ! Tu tiens la barre du navire — manœuvre, puis ordonne la bordée. Ton équipage sert les canons et la ' +
@@ -82,7 +82,7 @@ export const scenario: TestScenario = {
   icon: 'scenario/naval',
   title: 'Duel naval (échelle Mer)',
   tests:
-    'Modèle DEUX-ÉCHELLES couche MER (MDG ch.13-14) : 2 jetons-coques sur l’eau à ~150 m, équipage ABSTRAIT ' +
+    'Modèle DEUX-ÉCHELLES couche MER (MDG 13-14) : 2 jetons-coques sur l’eau à ~150 m, équipage ABSTRAIT ' +
     '(passager, hors ordre/rendu), le joueur joue LE TOUR DU NAVIRE (Manœuvrer / Bordée), l’IA de coque adverse ' +
     'manœuvre pour aligner sa bordée puis fait feu. Reddition à mi-coque. Le combat naval person-scale (abordage) ' +
     'reste le scénario « Combat naval ».',

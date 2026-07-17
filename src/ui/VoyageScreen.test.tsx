@@ -35,7 +35,7 @@ const riverPlan = (): TravelPlan => ({ ...base(), mode: 'barge-du-sel', river: {
 const landPlan = (): TravelPlan => ({ ...base(), mode: 'monture', allure: 'trot' });
 // Transport PAYANT en barge (#333 correctif) : ni `.sea` ni `.river` (pas de descente JOUÉE, un
 // passeur) — le sous-mode se dérive de la donnée `vehicles.json` id `barge` (`travel.medium:'fluvial'`,
-// facette VOYAGE LDB p.306 — INDÉPENDANTE de `hull.propulsion:'maritime'`, table navale MDG ch.12).
+// facette VOYAGE LDB p.306 — INDÉPENDANTE de `hull.propulsion:'maritime'`, table navale MDG 12).
 const bargePassagePlan = (): TravelPlan => ({ ...base(), mode: 'barge' });
 
 describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {

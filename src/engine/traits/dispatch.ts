@@ -363,7 +363,7 @@ export function hasClimbFullSpeed(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'climbFullSpeed');
 }
 
-/** Rampant (T2C ch.15 p.90) : « Elle ne peut pas réaliser d'Action de Course. » Capacité NON exprimable
+/** Rampant (T2C 15 p.90) : « Elle ne peut pas réaliser d'Action de Course. » Capacité NON exprimable
  *  en GameOp → drapeau `capabilities.noRun`, interrogé par `runMultiplier`. */
 export function hasNoRun(traits: TraitList | undefined): boolean {
   return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.noRun);

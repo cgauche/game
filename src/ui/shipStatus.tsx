@@ -5,7 +5,7 @@ import { Coins } from './Coins';
 import type { GaugeTone } from './NotchGauge';
 import type { CampaignVessel } from '../state/store';
 
-/** Bande de Moral d'équipage (MDG ch.14) → ton de jauge : canailles = danger, satisfait = warn,
+/** Bande de Moral d'équipage (MDG 14) → ton de jauge : canailles = danger, satisfait = warn,
  *  excellent/mené de main de maître = ok. Keyé par l'id STABLE de bande, jamais le libellé.
  *  Source UNIQUE du mapping — le dossier de navire et l'écran de port le partagent. */
 export const moraleTone = (score: number): GaugeTone => {

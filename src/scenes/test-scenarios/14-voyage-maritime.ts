@@ -8,7 +8,7 @@ import type { TestScenario } from './_shared';
 import { rigSpeciesId } from '../../data';
 
 /**
- * « Voyage maritime » — la traversée en mer JOUABLE (MDG ch.13/15), pendant naval du « Voyage & temps long »
+ * « Voyage maritime » — la traversée en mer JOUABLE (MDG 13/15), pendant naval du « Voyage & temps long »
  * TERRESTRE. Une route MARITIME (`MapRoute.sea`, distance en MILLES) relie deux ports ; le groupe appareille
  * sur le NAVIRE DE CAMPAGNE (`state.vessel` = une cogue), et chaque jour de mer enchaîne : météo/vent →
  * Test d'équipage de Progression → phare à l'atterrage → Test d'équipage d'Orientation → entretien de la
@@ -24,7 +24,7 @@ function skill(c: Combatant, skillId: string, advances: number, spec?: string): 
   else c.skills.push({ skillId, spec, characteristic, advances } as SkillInstance);
 }
 
-/** Quatre marins couvrant les RÔLES d'équipage essentiels des Tests de voyage (MDG ch.14) : Capitaine
+/** Quatre marins couvrant les RÔLES d'équipage essentiels des Tests de voyage (MDG 14) : Capitaine
  *  (Progression), Timonier/Mousse (Manœuvre/Affaler/Entretien), Navigateur (Orientation), Vigie
  *  (Perception au phare). `shipRole` ÉPINGLE le rôle de chacun pour un défaut d'équipage lisible. */
 function crew(): Combatant[] {
@@ -45,7 +45,7 @@ function crew(): Combatant[] {
   const navi = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Navigateur Ansmann', motivation: 'Test', rng: makeRNG(4803), id: 'mar-navi' });
   navi.shipRole = 'navigateur';
   skill(navi, 'orientation', 55);
-  skill(navi, 'savoir', 40, 'oceans'); // bonus d'Orientation au phare (MDG ch.13 l.335)
+  skill(navi, 'savoir', 40, 'oceans'); // bonus d'Orientation au phare (MDG 13 l.335)
   // Astromancien de bord (Magie des mers, MDG 02 l.176) : lance Bienfait de Bel Shanaar (Domaine des
   // Cieux, MDG 02 l.238) en mer — +2 DR aux Tests d'Orientation qui l'impliquent (Test d'équipage compris).
   skill(navi, 'langue', 40, 'magick');
@@ -116,7 +116,7 @@ const carte: WorldMap = {
       km: 480, // MILLES (route sea) : plusieurs jours de mer à M5 (18×5 = 90 milles/jour, ± vent)
       modes: ['mer'],
       sea: true,
-      // Cap EST : vent de dos sur les vents dominants d'OUEST (MDG ch.13 l.253) — même convention que
+      // Cap EST : vent de dos sur les vents dominants d'OUEST (MDG 13 l.253) — même convention que
       // tous les autres fixtures/scénarios maritimes (`seaHeading: 'est'`, cf. sea-voyage-flow.test.ts
       // et al.). `seaHeading: 'ouest'` mettait ce cap DIRECTEMENT contre les vents dominants (`windAspect`
       // renvoie 'face' quand cap==vent), un vent de face quasi permanent (#408) : la traversée pouvait
@@ -134,7 +134,7 @@ export const scenario: TestScenario = {
   icon: 'scenario/port',
   title: 'Voyage maritime',
   tests:
-    'Traversée en mer JOUABLE (MDG ch.13/15) : route MARITIME (milles) entre 2 ports, appareillage sur le navire ' +
+    'Traversée en mer JOUABLE (MDG 13/15) : route MARITIME (milles) entre 2 ports, appareillage sur le navire ' +
     'de campagne (cogue), journée = météo/vent + Tests d’équipage de Progression & d’Orientation (modales), phare ' +
     'à l’atterrage (Perception), entretien de coque le soir (part endommagée), haltes de nuit, puis ACCOSTAGE au ' +
     'Grand Port (écran Port : réparer/caréner/commerce). Équipage = les PJ, chacun à son rôle (Capitaine/Timonier/' +

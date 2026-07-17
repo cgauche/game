@@ -677,7 +677,7 @@ describe('Boucle de jeu (store)', () => {
     // « Lancer » : le jet se fait.
     useGame.getState().testRoll();
     expect(useGame.getState().pendingTest!.roll).not.toBeNull();
-    // Forcer un jet propre RATÉ (cible 95) pour exercer la relance (gate « jet raté », LDB ch.12 l.29-31).
+    // Forcer un jet propre RATÉ (cible 95) pour exercer la relance (gate « jet raté », LDB 12 l.29-31).
     useGame.setState({ pendingTest: { ...useGame.getState().pendingTest!, roll: 99, success: false } });
     // Chance : relance et consomme un point.
     useGame.getState().testReroll();
@@ -737,7 +737,7 @@ describe('Boucle de jeu (store)', () => {
     let pd = useGame.getState().pendingDefense!;
     expect(pd.result).not.toBeNull();
     expect(pd.def).not.toBeNull();
-    // Forcer une défense propre RATÉE pour exercer la relance (gate « jet raté », LDB ch.12 l.29-31).
+    // Forcer une défense propre RATÉE pour exercer la relance (gate « jet raté », LDB 12 l.29-31).
     useGame.setState({ pendingDefense: { ...pd, def: { ...pd.def!, success: false } } });
     const atkRoll = pd.atk.roll;
     useGame.getState().defenseReroll(); // Chance : relance la DÉFENSE
@@ -1825,7 +1825,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   });
 });
 
-describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12 l.56 + l.29-31)', () => {
+describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB 12 l.56 + l.29-31)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
@@ -1882,7 +1882,7 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB ch.12
   });
 });
 
-describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', () => {
+describe('Détermination (Resolve) — retirer un État (LDB 17 l.62-66)', () => {
   beforeEach(() => reset());
 
   const mkBattle = (h: Combatant, over = {}): BattleState => ({
@@ -1958,7 +1958,7 @@ describe('Détermination (Resolve) — retirer un État (LDB ch.17 l.62-66)', ()
   });
 });
 
-describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116)', () => {
+describe('Ramasser un objet au sol en combat (un à la fois, LDB 13 l.115-116)', () => {
   beforeEach(() => reset());
 
   function setup() {
@@ -2010,7 +2010,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB ch.13 l.115-116
   });
 });
 
-describe('Chance — 3e usage : pré-emption d’initiative en début de Round (LDB ch.17 l.27)', () => {
+describe('Chance — 3e usage : pré-emption d’initiative en début de Round (LDB 17 l.27)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
@@ -2253,7 +2253,7 @@ describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
   });
 });
 
-describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
+describe('Destin sacrifié (LDB 17 l.31-35)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
@@ -2309,7 +2309,7 @@ describe('Destin sacrifié (LDB ch.17 l.31-35)', () => {
   });
 });
 
-describe('Résilience — « Je ne faillirai pas ! » (LDB ch.17 l.73)', () => {
+describe('Résilience — « Je ne faillirai pas ! » (LDB 17 l.73)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 

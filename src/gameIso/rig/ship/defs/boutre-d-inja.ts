@@ -1,5 +1,5 @@
 /**
- * BOUTRE D'INJA (MDG ch.12, ~25 m, voile) — dhow des mers du Sud : étrave RECTILIGNE très rakée
+ * BOUTRE D'INJA (MDG 12, ~25 m, voile) — dhow des mers du Sud : étrave RECTILIGNE très rakée
  * (l'élancement domine la silhouette), tonture creuse remontant en dunette arrière à tableau
  * balustré, UNE immense antenne latine en deux espars amarrés sur mât en quête avant, safran
  * d'étambot à barre franche. 3 vues : profil + proue + poupe.

@@ -5,7 +5,7 @@ import { crewRoleAsPoste } from '../state/poste';
 import { PostesRoster } from './PostesRoster';
 
 /**
- * Wrapper store des Postes d'équipage naval (MDG ch.14) : projette les rôles d'équipage en Postes
+ * Wrapper store des Postes d'équipage naval (MDG 14) : projette les rôles d'équipage en Postes
  * (`crewRoleAsPoste`) et relie le store à la surface roster PARTAGÉE `PostesRoster` (pendant maritime
  * de `TravelRolesPanel`, désormais le MÊME composant). Rendu à l'appareillage (route maritime + navire
  * de campagne, gating au point d'appel, `WorldMapView`). `setShipRole` patche party ET battle.combatants.

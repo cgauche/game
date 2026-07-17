@@ -63,7 +63,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'trampleSetForcedRoll', 'trampleConfirm', 'trampleCancel',
   'maneuverRoll', 'maneuverReroll', 'maneuverBonusSL', 'maneuverDarkPact', 'maneuverForceSuccess',
   'maneuverConfirm', 'maneuverCancel', 'maneuverSetAvantage',
-  // Tour de NAVIRE (couche Mer, MDG ch.13-14) : Test d'équipage MULTI (Manœuvre ★Timonier / Bordée ★Artilleur /
+  // Tour de NAVIRE (couche Mer, MDG 13-14) : Test d'équipage MULTI (Manœuvre ★Timonier / Bordée ★Artilleur /
   // Rude épreuve…). Le contrôleur de la coque OUVRE + confirme ; CHAQUE participant (héros à un rôle) roule SA
   // rangée, routée par la possession de son id (cf. `intentAllowedFor`, primitive multi `RollParticipant`).
   'battleShipManeuver', 'shipManeuverSetTurn', 'shipManeuverRoll', 'shipManeuverReroll', 'shipManeuverBonusSL',

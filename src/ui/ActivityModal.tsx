@@ -8,7 +8,7 @@ import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { describeActivity } from '../state/flowOutcomes';
 
 /**
- * Jet d'Activité (LDB 23 interlude / ADE II ch.8 BATAILLE de masse) : même coquille `RollShell` que
+ * Jet d'Activité (LDB 23 interlude / ADE II 8 BATAILLE de masse) : même coquille `RollShell` que
  * les autres modales de jet. Interlude = Revenus (Test Accessible) ou Artisanat (Test ÉTENDU, barre de
  * DR). BATAILLE = le contexte de la Scène/Activité est RENDU via les primitives de la coquille :
  * modificateur de SITUATION (Menace −20 / Planification) et Soutien multi-PJ en LIGNES de mod du

@@ -1,5 +1,5 @@
 /**
- * MANŒUVRE NAVALE jouable (MDG ch.13 « Navigation maritime ») — couche STATE (dépend du cap/grille, comme
+ * MANŒUVRE NAVALE jouable (MDG 13 « Navigation maritime ») — couche STATE (dépend du cap/grille, comme
  * `fireArc`/`shipPostes` ; le moteur reste pur). Le « Personnage à la barre » jette un Test de Navigation —
  * **Voile** si le navire avance à la voile, **Ramer** s'il avance aux avirons — modifié par le **Man** du
  * navire (`resolveShipManeuver`, moteur pur). Sur réussite, le navire VIRE de `turnSteps` crans (`shipTurn`
@@ -34,15 +34,15 @@ import type { Get } from './flowTypes';
 import type { CrewRoleRoll } from './pendings'; // défini côté pendings (neutre) — cf. quarantaine #328
 export type { CrewRoleRoll };
 
-/** Jet d'UN contributeur à son rôle : Test de la compétence du rôle (MDG ch.14). PUR (RNG injecté). `null` si le
+/** Jet d'UN contributeur à son rôle : Test de la compétence du rôle (MDG 14). PUR (RNG injecté). `null` si le
  *  rôle est inconnu. La valeur suit `crewRoleValue` (meilleure compétence du rôle pour ce marin) ; sur un jet
  *  RÉUSSI s'ajoute le +DR de Talent en contexte Test d'équipage (`crewTalentDR` — Commandant émérite, MDG 09 l.54).
- *  `sense` (optionnel) : sens narratif du Test précis (Vigie du phare, MDG ch.13 l.337) — transmis à `crewRoleValue`. */
+ *  `sense` (optionnel) : sens narratif du Test précis (Vigie du phare, MDG 13 l.337) — transmis à `crewRoleValue`. */
 export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG, cumul = false, sense?: PairedSense): CrewRoleRoll | null {
   const role = findCrewRoleById(roleId);
   if (!role) return null;
   // Cumul de 2 rôles (un marin déjà engagé dans un autre Test d'équipage ce Round) → +2 crans de Difficulté
-  // (Manque de bras, MDG ch.14 l.53).
+  // (Manque de bras, MDG 14 l.53).
   const t = rollTest(crewRoleValue(crew, role, sense).value, cumul ? easeDifficulty('intermediaire', -2) : 'intermediaire', rng);
   return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? crewTalentDR(crew, role) : 0) };
 }
@@ -60,7 +60,7 @@ export function forceCrewRole(crew: Combatant, roleId: string, cumul = false, se
   return { roll: die, target, sl: evaluateTest(die, target).sl + crewTalentDR(crew, role) };
 }
 
-/** Total du Test d'équipage de MANŒUVRE (MDG ch.14 l.13) : Σ des DR des contributeurs, le rôle ESSENTIEL compté
+/** Total du Test d'équipage de MANŒUVRE (MDG 14 l.13) : Σ des DR des contributeurs, le rôle ESSENTIEL compté
  *  DOUBLE (l.19), + la bande de Moral (l.13 « bonus/pénalités… en masse »), + le **Manque de bras** global
  *  (`undercrew` : −2 DR/tranche de 10 % manquant + plafond Succès Minime, l.55), + `extraDR` (SABOTAGE,
  *  l.45-47 : −1..−5 DR imposés au Test d'équipage). Ce total tient lieu de DR de
@@ -87,7 +87,7 @@ export function maneuverCrewTotal(
 }
 
 /** `ManeuverResult` d'un Test d'ÉQUIPAGE : le total d'équipage tient lieu de DR de Navigation ; le virage RÉUSSIT
- *  si le DR FINAL (équipage + Man + extra) ≥ 1 (MDG ch.14 l.13 « si le total est de 1 DR ou plus, succès » — règle
+ *  si le DR FINAL (équipage + Man + extra) ≥ 1 (MDG 14 l.13 « si le total est de 1 DR ou plus, succès » — règle
  *  d'équipage, distincte du `dr ≥ 0` du barreur unique ch.13). Le déplacement suit la Progression. PUR. */
 export function deriveManeuverFromCrew(ship: Combatant, crewTotal: number): ManeuverResult {
   const { baseM, manoeuvre, extraDR } = shipManeuverParams(ship);
@@ -148,19 +148,19 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   const vd = ship.creatureId ? findVehicleById(ship.creatureId)?.ship : undefined;
   const propulsion = vesselPropulsion(vd);
   const baseM = propulsion?.m ?? 0;
-  const skillId = propulsion?.mode === 'voile' ? 'voile' : 'ramer'; // à voile → Voile ; aux avirons → Ramer (MDG ch.13)
-  // Répartition des pièces (MDG ch.12 l.432-433) : un bord surchargé pénalise −1/−2 M, Man ET DR de Navigation
+  const skillId = propulsion?.mode === 'voile' ? 'voile' : 'ramer'; // à voile → Voile ; aux avirons → Ramer (MDG 13)
+  // Répartition des pièces (MDG 12 l.432-433) : un bord surchargé pénalise −1/−2 M, Man ET DR de Navigation
   // (trois colonnes RAW DISTINCTES → cumulées). Sans Contenance connue → aucune pénalité.
   const place = vd?.capacity
     ? placementPenalty((ship.postes ?? []).flatMap((p) => (p.side ? [{ side: p.side, weight: p.item.enc }] : [])), vd.capacity)
     : { m: 0, man: 0, navDR: 0 };
-  // SURCHARGE de la cale (MDG ch.12 l.70-75, DISTINCT du déséquilibre de bord) : −1/−2/−3 M ET DR Manœuvre par
+  // SURCHARGE de la cale (MDG 12 l.70-75, DISTINCT du déséquilibre de bord) : −1/−2/−3 M ET DR Manœuvre par
   // palier d'Encombrement supplémentaire (`ship.cargoEnc` recopié de `CampaignVessel.cargo`). Cumulée aux autres.
   const overload = vd?.capacity ? cargoOverload(ship.cargoEnc ?? 0, vd.capacity) : null;
   // « Lissage » → op `moveMod` (M +1, l.293) ; « Peu maniable » → op `skillDRBonus` (Voile/Ramer, −1/niveau,
   // l.173, DISTINCT du Man) — lus en GameOp (`naval-traits.json`, langue unique) sur Traits+Améliorations.
   // #221 : op `skillDRBonus` ciblée par `testType` (ex. « manoeuvre ») — agnostique de skillId, cumulée.
-  // « Coque de course » → op `moveScale` (2×M, T2C ch.12 l.27) : facteur MULTIPLICATIF appliqué APRÈS les
+  // « Coque de course » → op `moveScale` (2×M, T2C 12 l.27) : facteur MULTIPLICATIF appliqué APRÈS les
   // `moveMod` additifs (ordre canonique d'`effectiveMovement`). Le M de VOYAGE (route.speed/travelSpeed) suit un
   // autre modèle et n'en dépend pas — le 2× ne joue qu'ici, où le M du navire pilote la manœuvre tactique.
   const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
@@ -168,7 +168,7 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   return {
     baseM: Math.round(((baseM + navalMoveMod(navalTraits) + place.m + (overload?.mMod ?? 0)) * mult.num) / mult.den),
     manoeuvre: (vd?.manoeuvre ?? 0) + place.man + (overload?.manoeuvreDR ?? 0),
-    // « Bouteur » (T2C ch.12 l.66) → +20 au Test de Navigation pour diriger ; « Gréement de course » (l.137)
+    // « Bouteur » (T2C 12 l.66) → +20 au Test de Navigation pour diriger ; « Gréement de course » (l.137)
     // → −10. Converti en DR d'équipage (`navalNavTestDR`, ÷10) — injecté ICI UNE fois (deriveManeuver/FromCrew),
     // jamais dans openCrewTestPending, pour ne pas double-compter.
     extraDR: navalSkillTestDR(navalTraits, skillId) + navalNavTestDR(navalTraits) + place.navDR,
@@ -177,7 +177,7 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
 }
 
 /** Construit le `ManeuverResult` pour un Test de Navigation donné (PUR, aucune mutation, aucun RNG).
- *  RAW (MDG ch.13) : le VIRAGE réussit si le **Test réussit** (d100 ≤ cible — l.304 « virement de bord =
+ *  RAW (MDG 13) : le VIRAGE réussit si le **Test réussit** (d100 ≤ cible — l.304 « virement de bord =
  *  Test réussi… en cas d'échec, le bateau se déplace normalement, sans bonus »). Le Man est un modificateur
  *  de **DR** (ch.12 l.48-50, stat-bloc « −1 DR »), PAS de difficulté → il échelonne le DR (mouvement via la
  *  Progression + l'IC de collision), il ne BASCULE PAS la réussite. On prend donc `nav.success` (le d100),
@@ -223,7 +223,7 @@ export function bonusShipManeuver(ship: Combatant, prev: ManeuverResult): Maneuv
 
 /**
  * APPLIQUE une manœuvre résolue (mutation) : sur réussite, vire de `turnSteps` crans (`shipTurn` re-mappe les
- * arcs) ; le navire avance TOUJOURS le long du cap (`shipAdvance`, MDG ch.13 — déplacement INCONDITIONNEL,
+ * arcs) ; le navire avance TOUJOURS le long du cap (`shipAdvance`, MDG 13 — déplacement INCONDITIONNEL,
  * M÷2 plancher). Renvoie les cases avancées. Logue le succès (via `shipTurn`) ou l'échec.
  */
 export function applyShipManeuver(get: Get, shipId: string, result: ManeuverResult, turnSteps: number): number {

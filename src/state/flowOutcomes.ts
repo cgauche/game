@@ -118,7 +118,7 @@ export function describeCorruption(pc: PendingCorruption, name: string): string 
 export function describeActivity(pa: PendingActivity): string {
   if (pa.roll == null || !pa.activityId) return '';
   const def = activityById(pa.activityId);
-  // Activité/Scène de BATAILLE (ADE II ch.8) : l'issue chiffrée (Puissance) est journalisée par
+  // Activité/Scène de BATAILLE (ADE II 8) : l'issue chiffrée (Puissance) est journalisée par
   // `confirmBattleActivity` ; la popin résume Succès/Échec (Test combiné : les deux compétences).
   if (pa.battle) {
     if (pa.combinedLevel) {

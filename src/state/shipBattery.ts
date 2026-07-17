@@ -1,5 +1,5 @@
 /**
- * TIR DE BATTERIE — « lâcher une bordée » (MDG ch.14 l.126-130). Couche STATE (la bordée qui porte dépend du
+ * TIR DE BATTERIE — « lâcher une bordée » (MDG 14 l.126-130). Couche STATE (la bordée qui porte dépend du
  * cap `Dir8` + géométrie, comme `fireArc`/`shipManeuver` ; le moteur reste pur). RAW verbatim (l.128) :
  * « Plutôt que de lancer les dés pour toucher pour chaque canon, le Test d'équipage de Tir de batterie peut
  * être effectué et le total de DR s'applique à toutes les armes à feu tournées vers l'ennemi, pour le meilleur
@@ -22,7 +22,7 @@ export interface BatteryPlan {
   side: FireArc;
   /** Les pièces de CE bord (toutes partagent l'arc du bord → toutes portent, ou aucune). */
   postes: ShipPoste[];
-  /** Le Test d'équipage « Tir de batterie » (Artilleur essentiel, MDG ch.14). */
+  /** Le Test d'équipage « Tir de batterie » (Artilleur essentiel, MDG 14). */
   crewTest: CrewTestResult;
   /** DR total PARTAGÉ par toute la bordée — appliqué à chaque pièce « pour le meilleur et pour le pire » (l.128). */
   dr: number;
@@ -46,7 +46,7 @@ export function resolveBattery(
   return { side, postes, crewTest, dr: crewTest.total };
 }
 
-/** Ordre de préférence des bords pour « le plus armé » : les BORDÉES (travers) massent les pièces (MDG ch.12 l.428),
+/** Ordre de préférence des bords pour « le plus armé » : les BORDÉES (travers) massent les pièces (MDG 12 l.428),
  *  la proue/poupe sont des postes de CHASSE étroits — départage stable à effectif égal. */
 export const SHIP_ARC_PREF: FireArc[] = ['tribord', 'babord', 'proue', 'poupe'];
 
@@ -62,7 +62,7 @@ export function mostArmedSide(ship: Combatant): FireArc | null {
 
 /** Pièces d'un navire sur le bord `side` qui peuvent FAIRE FEU : montées sur ce bord ET **chargées**
  *  (`loaded !== false` ; une pièce qui a tiré reste muette jusqu'à la FIN de son Test étendu de recharge,
- *  MDG ch.12 / LDB 62 l.333 — pas d'auto-rechargement). PUR — source unique du filtre « le bord qui peut
+ *  MDG 12 / LDB 62 l.333 — pas d'auto-rechargement). PUR — source unique du filtre « le bord qui peut
  *  lâcher une bordée ». */
 export function bearingPostes(ship: Combatant, side: FireArc): ShipPoste[] {
   return (ship.postes ?? []).filter((p) => p.side === side && p.loaded !== false);

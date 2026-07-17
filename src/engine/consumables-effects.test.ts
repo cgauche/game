@@ -1,6 +1,6 @@
 /**
  * Effets mécaniques des consommables — suite comportementale sur la DONNÉE RÉELLE (#50).
- * Couvre les drogues (LDB 71), herbes/potions (LDB 72) et herbes T2C ch.2, au format FLOW :
+ * Couvre les drogues (LDB 71), herbes/potions (LDB 72) et herbes T2C 2, au format FLOW :
  *  - flows purement `do` → aplatis (`flattenFlow`) et appliqués par `applyOps` (moteur pur) ;
  *  - flows à nœud `test`/`delayed` → assertions de STRUCTURE (le runtime cadence-aware est couvert
  *    par `state/consumable-flow.test.ts`).
@@ -243,7 +243,7 @@ describe('tonique-digestif (LDB 72 l.32)', () => {
   });
 });
 
-// ── Herbes T2C ch.2 ───────────────────────────────────────────────────────────
+// ── Herbes T2C 2 ───────────────────────────────────────────────────────────
 
 describe('gesundheit (T2C 04 l.184-186) — Test de Résistance Accessible (+20) puis −1 jour PAR DR obtenu (#458)', () => {
   it('Test de Résistance Accessible (+20) — pas d\'effet inconditionnel (défaut #46 corrigé)', () => {

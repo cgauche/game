@@ -34,7 +34,7 @@ plusieurs chapitres **et** plusieurs livres.
 | Déplacement & voyage | [`deplacement.md`](deplacement.md) | ✅ | 15 + EDOC |
 | Destin, Résilience & Détermination | [`destin.md`](destin.md) | ✅ | 17 |
 | Traumatisme & Blessures critiques | `traumatisme.md` | ⏳ | 18 |
-| Corruption & mutation | [`corruption.md`](corruption.md) | ✅ | 19 + EDO App.2 + EDOC ch.8 |
+| Corruption & mutation | [`corruption.md`](corruption.md) | ✅ | 19 + EDO App.2 + EDOC 8 |
 | Maladies & infections | [`maladies.md`](maladies.md) | ✅ | 20 + T2C 14/04 |
 | Psychologie | [`psychologie.md`](psychologie.md) | ✅ | 21 + 85 |
 | Caractéristiques & Blessures | [`caracteristiques.md`](caracteristiques.md) | ✅ | 05 + 85 (Taille) |

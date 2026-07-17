@@ -3,7 +3,7 @@ import { belowMinRangeBand, rangeBandId } from './combat';
 import { trappings } from '../data';
 
 /**
- * PORTÉE MINIMALE d'une machine de siège (ADE II ch.08 l.251/253) — `belowMinRangeBand` est le prédicat
+ * PORTÉE MINIMALE d'une machine de siège (ADE II 8 l.251/253) — `belowMinRangeBand` est le prédicat
  * EXACT que `firedAttackBlock` consulte pour REFUSER (pas un malus) un tir trop proche. On le vérifie en
  * unité PUIS on le DÉRIVE DU CATALOGUE : chaque machine de siège à distance ADE II doit refuser Bout
  * Portant (l.253), et le trébuchet/mortier tout ce qui est sous la Portée Courte (l.251) — sans liste en dur.

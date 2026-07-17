@@ -348,7 +348,7 @@ export const fr = {
   'op.frag.during': ' pendant {dureeTxt}',
   'op.frag.allMagic': 'magie',
   'op.frag.allDiseases': 'toutes les maladies',
-  // ── Exposition hydrique (T2C ch.16 — Maladies transmises par l'eau). ──
+  // ── Exposition hydrique (T2C 16 — Maladies transmises par l'eau). ──
   'eff.waterTitle': 'Eau souillée',
   'eff.waterExposure': 'Exposition hydrique ({mode}){detail}',
   'eff.waterSafe': '{name} ne contracte rien au contact de l’eau souillée.',
@@ -450,9 +450,9 @@ export const fr = {
   // Activité de voyage SANS Test exécutée (EDOC l.131) — le nom est porté en var (la rangée batch/poste
   // n'a pas toujours d'actorId pour l'attribution).
   'out.activityDone': '{name} — {activity} (effectué).',
-  // Rencontre d'Étape (EDOC ch.8) : catégorie + libellé + texte VERBATIM, sans id d'icône dans la prose.
+  // Rencontre d'Étape (EDOC 8) : catégorie + libellé + texte VERBATIM, sans id d'icône dans la prose.
   'out.travelEncounter': '{category} — {label} : {text}',
-  // Météo d'Étape (EDOC ch.8 l.42) : libellé seul — le d100 est un tirage de MONDE, jamais montré au joueur.
+  // Météo d'Étape (EDOC 8 l.42) : libellé seul — le d100 est un tirage de MONDE, jamais montré au joueur.
   'out.stageWeather': 'Météo : {weather}.',
   // Passthrough narratif générique (#295 Lot 1) : `text` est COMPOSÉ par l'applier (jamais un gabarit avec
   // {roll}/{target}/{sl} — la ligne de jet visible au-dessus porte déjà le verdict).
@@ -644,7 +644,7 @@ export const fr = {
   'cf.fumbleHitAlly': '  ↳ Touche {name} ({loc}) : {lost} Blessure(s).',
   'cf.fumbleSelfStun': '  ↳ Personne à portée : se frappe seul → Sonné.',
   'cf.fumbleMisfire': '  ↳ Incident de Tir : {lost} Blessure(s) au Bras principal, arme détruite.',
-  'cf.fumbleMisfireCrew': '  ↳ L’Incident frappe tout l’équipage de la pièce (MDG ch.12) : {name} subit {lost} Blessure(s).',
+  'cf.fumbleMisfireCrew': '  ↳ L’Incident frappe tout l’équipage de la pièce (MDG 12) : {name} subit {lost} Blessure(s).',
   'cf.artillerySalveIncident': '  ↳ Incident de Tir par Salve (AA) : {entry}.',
   'cf.artillerySalveHit': '  ↳ {name} subit {lost} Blessure(s) ({loc}).',
   'cf.artillerySalveStray': '  ↳ Tir perdu (AA) : {note}',

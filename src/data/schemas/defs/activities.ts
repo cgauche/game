@@ -1,6 +1,6 @@
 /**
- * Schéma de `activities.json` — catalogue UNIQUE des Activités (LDB ch.23, EDOC ch.8, MDG ch.15,
- * ADE II ch.8 Bataille de masse), miroir strict de `ActivityDef` (`src/engine/activities.ts:189-256`,
+ * Schéma de `activities.json` — catalogue UNIQUE des Activités (LDB 23, EDOC 8, MDG 15,
+ * ADE II 8 Bataille de masse), miroir strict de `ActivityDef` (`src/engine/activities.ts:189-256`,
  * étend `TestSpec` de `src/engine/skills.ts:173`) + `OutcomeBand`/`BattleOutcome`/`BattleCond`
  * (`.../activities.ts:56-114`). Inventaire réel (40 entrées, script node) : tous les champs déclarés
  * ci-dessous sont observés au moins une fois ; aucun champ de l'interface n'est ABSENT du JSON.
@@ -68,7 +68,7 @@ export const schema = z.array(
     minInvest: z.strictObject({ gold: z.number() }).optional(),
     stageOutcome: stageOutcomeSchema.optional(),
     unavailableIfExtenue: z.boolean().optional(),
-    // ── Bataille de masse (ADE II ch.8) ──
+    // ── Bataille de masse (ADE II 8) ──
     assisted: z.boolean().optional(),
     requires: z.array(z.string()).optional(),
     grantsFlag: z.string().optional(),

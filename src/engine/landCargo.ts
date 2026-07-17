@@ -1,6 +1,6 @@
 /**
  * COMMERCE TERRESTRE & FLUVIAL — couche PURE de Mort sur le Reik Compagnon ch.11 « Règles du commerce »
- * (p.70-78), données verbatim `land-cargo.json`. PARENT terrestre du commerce maritime (MDG ch.15) : il
+ * (p.70-78), données verbatim `land-cargo.json`. PARENT terrestre du commerce maritime (MDG 15) : il
  * réutilise le TRONC COMMUN `cargo.ts` (modèle de lot, tirage saisonnier, prix de base, Marchandage) et
  * n'ajoute QUE ce que le RAW T2C diffère du maritime :
  *  - Disponibilité en DEUX temps (l.22-38) : d'abord une CHANCE de trouver un marchand ((Taille + Richesse)

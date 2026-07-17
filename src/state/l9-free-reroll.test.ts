@@ -34,7 +34,7 @@ function openFailedTest(heroId: string, heroName: string) {
     },
   });
   useGame.getState().testRoll();
-  // Jet propre RATÉ forcé (gate de relance, LDB ch.12 l.29-31).
+  // Jet propre RATÉ forcé (gate de relance, LDB 12 l.29-31).
   useGame.setState({ pendingTest: { ...useGame.getState().pendingTest!, roll: 99, success: false } });
 }
 

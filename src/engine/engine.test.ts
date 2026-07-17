@@ -168,7 +168,7 @@ describe('Sur la défensive (+20 en défense, LDB Combat l.118)', () => {
   });
 });
 
-describe('États en combat (LDB ch.16)', () => {
+describe('États en combat (LDB 16)', () => {
   const mkc = (): Combatant => ({ conditions: [] } as unknown as Combatant);
   it('pénalité de combat non-cumul : la pire pénalité d’un seul État', () => {
     const c = mkc();
@@ -349,7 +349,7 @@ describe('Localisation par forme du corps (LDB « Point d’Impact des Créature
     expect(locationLabel('tete', 'serpent')).toBe('Tête'); // inchangé
     expect(locationLabel('corps')).toBe('Corps'); // défaut humanoïde
   });
-  it('navire : MÊME système (data + findTableEntry), colonne par gréement (MDG ch.13)', () => {
+  it('navire : MÊME système (data + findTableEntry), colonne par gréement (MDG 13)', () => {
     // Un véhicule/navire = un Combattant touché par la même résolution ; seule la table de sortie diffère.
     expect(shipHitLocation('avirons', 15)).toBe('avirons');
     expect(shipHitLocation('voile', 15)).toBe('greement');

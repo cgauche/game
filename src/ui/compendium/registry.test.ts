@@ -137,7 +137,7 @@ describe('Codex registry — références INVERSES (relations.ts → fiches)', (
 describe('Codex registry — dégâts CONDITIONNELS d’une arme à capacité de qualité (#135)', () => {
   it('une pièce à Atout Siège (RÉELLE, ex. Catapulte) affiche le fait « Dégâts » + la note ×2 structure — pas juste le total imprimé', () => {
     // Requête sur la DONNÉE (zéro id en dur) : toute Possession du catalogue portant la qualité `siege`
-    // fait foi — dégâts effectifs contre une structure = double du total imprimé (ADE II ch.08 l.292),
+    // fait foi — dégâts effectifs contre une structure = double du total imprimé (ADE II 8 l.292),
     // le Codex ne doit plus l'occulter.
     const siegeTrapping = trappings.find((t) => t.qualities.some((q) => q.id === 'siege'))!;
     expect(siegeTrapping, 'aucune pièce à Atout Siège dans le catalogue').toBeTruthy();
@@ -169,7 +169,7 @@ describe('Codex registry — statbloc bestiaire compact', () => {
   });
 });
 
-describe('Codex registry — Bataille de masse (ADE II ch.8, #148)', () => {
+describe('Codex registry — Bataille de masse (ADE II 8, #148)', () => {
   it('les 5 sections de mass-battle.json sont exposées, peuplées et ÉDITABLES au Codex', () => {
     const keys = ['massBattlePowerEstimate', 'massBattleMightModifiers', 'massBattleWarMachines', 'massBattleStructures', 'massBattleHazards'];
     for (const key of keys) {
@@ -254,7 +254,7 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
   it('un Critique de navire (Coque) porte son effet immédiat (ops) ET son Test d’équipage (échec) en sections', () => {
     const items = categoryByKey('shipCriticalsCoque')!.items;
     const barreAbimee = items.find((i) => i.label === 'Barre abîmée');
-    expect(barreAbimee, 'Barre abîmée (coque, MDG ch.13)').toBeTruthy();
+    expect(barreAbimee, 'Barre abîmée (coque, MDG 13)').toBeTruthy();
     expect(barreAbimee!.sub).toBe('d10 2–2');
     const coqueDegradee = items.find((i) => i.label === 'Coque dégradée')!;
     expect(coqueDegradee.meta?.find((f) => f.label === 'Éclats (Indice)')?.value).toBe('4');
@@ -263,7 +263,7 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
   it('un Critique fluvial (Gréement) porte son effet immédiat + son Test d’équipage (Compétence/Difficulté/Cible/Conséquence)', () => {
     const items = categoryByKey('riverCriticalsGreement')!.items;
     const g = items.find((i) => i.label === 'Gréement')!;
-    expect(g, 'Gréement (fluvial, T2C ch.7)').toBeTruthy();
+    expect(g, 'Gréement (fluvial, T2C 7)').toBeTruthy();
     expect(g.sections?.some((s) => s.title === 'Effet immédiat')).toBe(true);
     const testSec = g.sections?.find((s) => s.title === 'Test d’équipage');
     expect(testSec, 'section Test d’équipage').toBeTruthy();
@@ -278,20 +278,20 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
     expect(coque.sections?.some((s) => s.title === 'Effet immédiat')).toBe(true);
   });
 
-  it('une Rencontre de voyage (EDOC ch.8) porte sa plage d100 + son texte verbatim', () => {
+  it('une Rencontre de voyage (EDOC 8) porte sa plage d100 + son texte verbatim', () => {
     const items = categoryByKey('rencontresPositives')!.items;
     expect(items.length).toBeGreaterThan(0);
     for (const it of items) { expect(it.sub).toMatch(/^d100 \d+–\d+$/); expect(it.desc).toBeTruthy(); }
   });
 
-  it('un Facteur d’Humeur de Manann (MDG ch.15) affiche son effet signé (Nd10 + constante)', () => {
+  it('un Facteur d’Humeur de Manann (MDG 15) affiche son effet signé (Nd10 + constante)', () => {
     const items = categoryByKey('seaManannFactors')!.items;
     const f = items.find((i) => i.label === 'Vaincre ou contrer des suivants de Stromfels')!;
     expect(f, 'facteur Stromfels').toBeTruthy();
     expect(f.meta?.find((x) => x.label === 'Effet sur l’Humeur de Manann')?.value).toBe('+3d10');
   });
 
-  it('un Événement de bord (MDG ch.15) porte sa plage de jet + son texte verbatim', () => {
+  it('un Événement de bord (MDG 15) porte sa plage de jet + son texte verbatim', () => {
     const items = categoryByKey('seaBoardEvents')!.items;
     const triton = items.find((i) => i.label === 'Triton !')!;
     expect(triton, 'événement Triton').toBeTruthy();
@@ -299,7 +299,7 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
     expect(triton.desc).toMatch(/Manann ne supporte plus/);
   });
 
-  it('la fiche « Exposition à l’eau » (dataset-OBJET, T2C ch.16) est éditable et projette Test + Modificateurs + Maladies (cross-réf)', () => {
+  it('la fiche « Exposition à l’eau » (dataset-OBJET, T2C 16) est éditable et projette Test + Modificateurs + Maladies (cross-réf)', () => {
     const cat = categoryByKey('waterExposure')!;
     expect(isEditableCategory('waterExposure')).toBe(true);
     expect(cat.items).toHaveLength(1); // dataset-objet UNIQUE (mode 'single', comme `details`)
@@ -331,7 +331,7 @@ describe('Codex registry — LOT 1 #422 (famille NAVALE : Ports, Progression, Na
     }
   });
 
-  it('un Port (Index de la Mer des Griffes, MDG ch.15) porte ses faits + sa Production en cross-réf vers la Cargaison maritime', () => {
+  it('un Port (Index de la Mer des Griffes, MDG 15) porte ses faits + sa Production en cross-réf vers la Cargaison maritime', () => {
     const items = categoryByKey('navalPorts')!.items;
     const marienburg = items.find((i) => i.label === 'Marienburg')!;
     expect(marienburg, 'Marienburg').toBeTruthy();
@@ -342,13 +342,13 @@ describe('Codex registry — LOT 1 #422 (famille NAVALE : Ports, Progression, Na
     expect(prodSec!.rows.some((r) => r.t === 'ref' && r.category === 'seaCargo')).toBe(true);
   });
 
-  it('la table de Progression de navire (MDG ch.13) porte ses 5 modes avec leur fourchette de DR', () => {
+  it('la table de Progression de navire (MDG 13) porte ses 5 modes avec leur fourchette de DR', () => {
     const items = categoryByKey('navalProgression')!.items;
     expect(items).toHaveLength(5);
     for (const it of items) expect(it.sub).toMatch(/^DR /);
   });
 
-  it('les gabarits de coque (Construction navale, MDG ch.12) portent Coût/Équipage/Longueur', () => {
+  it('les gabarits de coque (Construction navale, MDG 12) portent Coût/Équipage/Longueur', () => {
     const items = categoryByKey('shipHullSizes')!.items;
     const moyenne = items.find((i) => i.label === 'Moyenne')!;
     expect(moyenne, 'Moyenne').toBeTruthy();
@@ -356,7 +356,7 @@ describe('Codex registry — LOT 1 #422 (famille NAVALE : Ports, Progression, Na
     expect(moyenne.meta?.find((f) => f.label === 'Longueur')?.value).toBe('21–35 m');
   });
 
-  it('la fiche « Navigation maritime » (dataset-OBJET, MDG ch.13/15) projette Salissures + Orientation + Course-poursuite', () => {
+  it('la fiche « Navigation maritime » (dataset-OBJET, MDG 13/15) projette Salissures + Orientation + Course-poursuite', () => {
     const cat = categoryByKey('seaNavigation')!;
     expect(cat.items).toHaveLength(1);
     const item = cat.items[0];
@@ -365,7 +365,7 @@ describe('Codex registry — LOT 1 #422 (famille NAVALE : Ports, Progression, Na
     expect(item.sections?.some((s) => /Course-poursuite/.test(s.title))).toBe(true);
   });
 
-  it('la fiche « Périls en mer » (dataset-OBJET, MDG ch.13) projette Dangers flottants + Détroits + Tourbillons', () => {
+  it('la fiche « Périls en mer » (dataset-OBJET, MDG 13) projette Dangers flottants + Détroits + Tourbillons', () => {
     const cat = categoryByKey('seaPerils')!;
     expect(cat.items).toHaveLength(1);
     const item = cat.items[0];
@@ -375,7 +375,7 @@ describe('Codex registry — LOT 1 #422 (famille NAVALE : Ports, Progression, Na
     expect(item.sections?.some((s) => s.title === 'Tourbillons')).toBe(true);
   });
 
-  it('la fiche « Météo de la Mer des Griffes » (dataset-OBJET, MDG ch.13) projette le tirage quotidien + Vents', () => {
+  it('la fiche « Météo de la Mer des Griffes » (dataset-OBJET, MDG 13) projette le tirage quotidien + Vents', () => {
     const cat = categoryByKey('seaWeather')!;
     expect(cat.items).toHaveLength(1);
     const item = cat.items[0];

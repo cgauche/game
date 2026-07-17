@@ -1,5 +1,5 @@
 /**
- * Schéma de `sea-events.json` — Humeur de Manann + Événements de bord/de port (MDG ch.15 l.83-129).
+ * Schéma de `sea-events.json` — Humeur de Manann + Événements de bord/de port (MDG 15 l.83-129).
  * Dérivé de la vue typée `EVENTS`/`SeaEventDef`/`ManannFactor` (`src/engine/seaVoyage.ts:32-48`), seul
  * consommateur. `params` est un sac hétérogène PAR `kind` (ex. `moraleD10`, `days`, `roll`, `creatures`,
  * `restart`…), lu dynamiquement par clé (`eventParam`, `src/state/seaVoyageFlow.ts:730`) — reflet du

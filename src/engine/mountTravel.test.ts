@@ -1,5 +1,5 @@
 /**
- * Montures en voyage (EDOC ch.7) — moteur PUR : vitesse par allure (EDOC 07 l.140), endurance des
+ * Montures en voyage (EDOC 7) — moteur PUR : vitesse par allure (EDOC 07 l.140), endurance des
  * allures (l.142-144), cascade de sur-endurance + Incidents de monte (l.146-174), données verbatim
  * (`montures.json`).
  */

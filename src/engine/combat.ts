@@ -48,12 +48,12 @@ export function reverseRoll(r: number): number {
 // ── Localisation des coups — FOYER UNIQUE data-driven (`src/data/localisation.json`) ──────────────
 // Un véhicule/navire encaisse un coup comme tout Combattant : MÊME résolution d'attaque, MÊME primitive
 // de lookup (`findTableEntry`), MÊME fichier de tables. Seul l'ENUM de sortie diffère (RAW) — un navire
-// n'a ni armure de Localisation ni Trauma humain → `ShipLocation` (MDG ch.13) ≠ `HitLocation` (LDB).
+// n'a ni armure de Localisation ni Trauma humain → `ShipLocation` (MDG 13) ≠ `HitLocation` (LDB).
 
-/** Gréement d'un bateau — choisit la colonne de Localisation (MDG ch.13). */
+/** Gréement d'un bateau — choisit la colonne de Localisation (MDG 13). */
 export type ShipRig = 'avirons' | 'voile' | 'mixte';
 /** Localisation d'un coup sur un bateau — DISTINCTE de la `HitLocation` humaine. `equipements`/`cargaison`
- *  sont navales (MDG ch.13) ; `gouvernail`/`superstructure` sont fluviales (T2C ch.7). `avirons` couvre
+ *  sont navales (MDG 13) ; `gouvernail`/`superstructure` sont fluviales (T2C 7). `avirons` couvre
  *  aussi les « Rames » du bateau fluvial (mêmes avirons). */
 export type ShipLocation = 'equipage' | 'avirons' | 'greement' | 'coque' | 'equipements' | 'cargaison' | 'gouvernail' | 'superstructure';
 
@@ -61,7 +61,7 @@ interface BodyLocEntry { min: number; max: number; loc: HitLocation }
 interface ShipLocEntry { min: number; max: number; avirons: ShipLocation; voile: ShipLocation; mixte: ShipLocation }
 const BODY_SHAPES = (locJson as { personnage: { shapes: Record<string, BodyLocEntry[]> } }).personnage.shapes;
 const SHIP_LOC_ALL = locJson as unknown as { navire: { entries: ShipLocEntry[] }; 'navire-fluvial': { entries: ShipLocEntry[] } };
-/** Tables de Localisation des coups au bateau, par id : `navire` (MDG ch.13) / `navire-fluvial` (T2C ch.7). */
+/** Tables de Localisation des coups au bateau, par id : `navire` (MDG 13) / `navire-fluvial` (T2C 7). */
 const SHIP_LOC_TABLES: Record<string, ShipLocEntry[]> = {
   navire: SHIP_LOC_ALL.navire.entries,
   'navire-fluvial': SHIP_LOC_ALL['navire-fluvial'].entries,
@@ -82,7 +82,7 @@ export function hitLocationByShape(reversed: number, shape: BodyShape = 'humanoi
 }
 
 /** Localisation d'un coup (d100) sur un BATEAU du gréement donné — `ShipLocation`. `tableId` choisit la
- *  table : `navire` (MDG ch.13, défaut) ou `navire-fluvial` (T2C ch.7). Table inconnue → `navire`. */
+ *  table : `navire` (MDG 13, défaut) ou `navire-fluvial` (T2C 7). Table inconnue → `navire`. */
 export function shipHitLocation(rig: ShipRig, roll: number, tableId: string = 'navire'): ShipLocation {
   const table = SHIP_LOC_TABLES[tableId] ?? SHIP_LOC_TABLES.navire;
   return findTableEntry(table, roll)[rig];
@@ -183,7 +183,7 @@ function matchGroupSpec(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'):
  * affichage générique) → comportement historique : meilleure Spé disponible.
  */
 export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
-  // Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II ch.08 l.233) : Caractéristique BRUTE,
+  // Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II 8 l.233) : Caractéristique BRUTE,
   // aucune Compétence associée (comme l'Empoignade, `rollGrappleForce`) — court-circuite CC/CT et la Spé du Groupe.
   if (weapon?.resolveChar) return effectiveChar(c, weapon.resolveChar);
   const charKey = kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir';
@@ -201,7 +201,7 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
 
 /**
  * Libellé du Test d'attaque affiché (menteur si codé en dur indépendamment de `combatValue`, #203+) :
- * une Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II ch.08 l.233) résout sur la
+ * une Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II 8 l.233) résout sur la
  * Caractéristique nommée, PAS Corps à corps/Projectiles — le libellé doit suivre `combatValue`,
  * SOURCE UNIQUE des deux (jamais un binaire `kind` recalculé séparément).
  */
@@ -489,10 +489,10 @@ export function attackModifiers(
   if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
   const precise = qualitySum(weapon, 'attackMod');
   if (precise) out.push({ label: 'Précise', value: precise });
-  // Arme d'équipe en sous-effectif re-recevant un Défaut déjà porté → −10 plat (MDG ch.12 l.460), baké sur
+  // Arme d'équipe en sous-effectif re-recevant un Défaut déjà porté → −10 plat (MDG 12 l.460), baké sur
   // l'arme tirée par `crewedFireWeapon` (≠ le −1 DR d'Imprécise, qui reste sur la qualité).
   if (weapon.crewedTohitPenalty) out.push({ label: 'Sous-effectif (Défaut redoublé)', value: weapon.crewedTohitPenalty });
-  // Machine de guerre en Équipe incomplète (ADE II ch.08 l.233) : −20 plat, baké par `warMachineFireWeapon`
+  // Machine de guerre en Équipe incomplète (ADE II 8 l.233) : −20 plat, baké par `warMachineFireWeapon`
   // (3ᵉ courbe de sous-effectif, DISTINCTE de celle d'AA ci-dessus).
   if (weapon.crewTeamPenalty) out.push({ label: 'Équipe incomplète', value: weapon.crewTeamPenalty });
   // Localisation visée = Complexe −10 (l.104) — SAUF contre une créature de Taille ≥ 2 catégories
@@ -501,7 +501,7 @@ export function attackModifiers(
   // Frappe assommante (Tête + arme Assommante) / Tir mortel (distance) : pas de −10 (LDB 10).
   if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)
       && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, QUALITY_IDS.Assommante))) out.push({ label: 'Localisation visée', value: -10 });
-  // Possession pas prévue pour la Taille du porteur (ADE II ch.02 l.710) : −20 plat, ex. un ogre maniant
+  // Possession pas prévue pour la Taille du porteur (ADE II 2 l.710) : −20 plat, ex. un ogre maniant
   // une arme de Taille Moyenne. Symétrique par construction (`sizeFor` ≠ Taille effective du porteur) —
   // seul un objet réellement `sizeFor` (version « taille ogre ») déclenche la pénalité.
   if (weapon.sizeFor && weapon.sizeFor !== effectiveSize(attacker.size)) out.push({ label: 'Possession pas à sa taille', value: -20 });
@@ -510,7 +510,7 @@ export function attackModifiers(
     const p = offHandPenalty(attacker);
     if (p) out.push({ label: 'Main secondaire', value: p });
   }
-  // Météo « Tests physiques » (EDOC ch.8 l.82, #341) : CANAL UNIQUE — le Test d'attaque est physique
+  // Météo « Tests physiques » (EDOC 8 l.82, #341) : CANAL UNIQUE — le Test d'attaque est physique
   // (Corps à corps = CC, Projectiles = CT). Lu depuis `attacker.envWeather` (posé à l'ouverture du combat),
   // jamais recâblé côté state (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).
   out.push(...weatherTestMods(attacker.envWeather, opts.kind === 'ranged' ? 'capacite-de-tir' : 'capacite-de-combat'));
@@ -576,7 +576,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
   // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.
   if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10 }); // LDB 10 l.638
-  // Météo « Tests physiques » (EDOC ch.8 l.82, #341) : le CANAL UNIQUE `weatherTestMods` lit `defender.envWeather`
+  // Météo « Tests physiques » (EDOC 8 l.82, #341) : le CANAL UNIQUE `weatherTestMods` lit `defender.envWeather`
   // (posé à l'ouverture du combat), scopé par la carac RÉELLE du mode (Parade = CC, Esquive = Agilité) — jamais
   // recâblé par surface (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).
   out.push(...weatherTestMods(defender.envWeather, defenseTestChar(mode)));
@@ -584,7 +584,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
 }
 
 /** Caractéristique RÉELLE d'un mode de défense (Parade = Test de CC, Esquive = Agilité) — pour le canal météo
- *  « Tests physiques » (EDOC ch.8 l.82). La substitution sociale n'est PAS un Test physique → `null` (aucune). */
+ *  « Tests physiques » (EDOC 8 l.82). La substitution sociale n'est PAS un Test physique → `null` (aucune). */
 function defenseTestChar(mode: DefenseMode): CharKey | null {
   return mode === 'parade' ? 'capacite-de-combat' : mode === 'esquive' ? 'agilite' : null;
 }
@@ -919,7 +919,7 @@ export function rangeBandId(distanceTiles: number, rangeMeters: number, metresPe
 }
 
 /** Le tir est-il REFUSÉ car la cible est plus PROCHE que la bande minimale autorisée de l'arme (machines de
- *  siège ADE II ch.08 l.251/253 : « à Bout Portant » / « distance inférieure à leur Portée Courte ») ? C'est
+ *  siège ADE II 8 l.251/253 : « à Bout Portant » / « distance inférieure à leur Portée Courte ») ? C'est
  *  un REFUS, pas un malus. `false` si l'arme n'a pas de minimale, ou si la cible est HORS de portée (autre
  *  gate) — on ne refuse QUE parce qu'elle est trop proche. */
 export function belowMinRangeBand(distanceTiles: number, rangeMeters: number, minBand: RangeBandId, metresPerTile = 2): boolean {
@@ -1135,7 +1135,7 @@ function applyHit(
   // s'il est plus élevé ; déterminez toujours ce point avant toute autre règle ».
   if (isSlayer(attacker)) sb = Math.max(sb, bonus(effectiveChar(defender, 'endurance')));
   const dmgSize = dmgProxy?.size ?? attacker.size; // Taille servant aux règles de DÉGÂTS (Atouts conférés + ×N)
-  // COQUE de navire (MDG ch.13) : petites armes sans effet sur le vaisseau (l.605) ; corps à corps mitigé
+  // COQUE de navire (MDG 13) : petites armes sans effet sur le vaisseau (l.605) ; corps à corps mitigé
   // par le TABLEAU DE COMPARAISON DES TAILLES (l.618-637), qui « remplace les modificateurs normaux » de
   // Taille (l.616) → `noSize` ; plancher 0 Blessure (un coup trop faible ricoche, comme la bordée).
   const hullAdj = hullHitAdjust(dmgSize, weapon, defender);
@@ -1153,7 +1153,7 @@ function applyHit(
   // (Bagarre), Charge berserk/Déterminé (en Charge) — +niveau, avant le multiplicateur de Taille.
   damage += talentDamageBonus(attacker, weapon, !!attacker.chargedThisTurn);
   if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
-  // Coque (MDG ch.13 l.618-637) : le BE ajusté du tableau (« 3 × BE » / « BE−1 ») est appliqué côté
+  // Coque (MDG 13 l.618-637) : le BE ajusté du tableau (« 3 × BE » / « BE−1 ») est appliqué côté
   // Dégâts (mathématiquement identique, sans écraser le clamp de PA) — « 3 × BE » ⇔ −2×BE de plus.
   if (hullAdj && 'extraTB' in hullAdj) damage -= hullAdj.extraTB;
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
@@ -1174,7 +1174,7 @@ function applyHit(
   const ignoredAP = loc ? ignoredArmourAP(defender, loc, { roll: atkBd.roll, critical: critForArmour, empaleuse: hasQuality(weapon, QUALITY_IDS.Empaleuse) }) : 0;
   // Tir sûr (LDB 10) : ignore niveau PA de la cible au tir.
   const sureShot = weapon.type === 'ranged' ? talentRangedAPIgnore(attacker) : 0;
-  // Coque bloquée (MDG ch.13) : petites armes (l.605) / case « – » du tableau des Tailles (l.614) →
+  // Coque bloquée (MDG 13) : petites armes (l.605) / case « – » du tableau des Tailles (l.614) →
   // AUCUNE Blessure ni Critique de navire ; sinon plancher 0 pour une coque (un coup faible ricoche).
   const hullBlocked = !!hullAdj && 'blocked' in hullAdj;
   if (hullBlocked) isCritical = false;
@@ -1199,7 +1199,7 @@ function applyHit(
     log: hullBlocked
       ? `${attacker.name} touche ${defender.name}, sans effet sur la coque (${hullAdj.blocked === 'petites-armes'
           ? 'les tirs de petites armes n’infligent pas assez de Dégâts pour avoir un effet sur un vaisseau'
-          : 'trop petit pour entamer cette coque'} — MDG ch.13).`
+          : 'trop petit pour entamer cette coque'} — MDG 13).`
       : `${attacker.name} touche ${defender.name}${loc ? ` (${locationLabel(loc, defender.bodyShape)})` : ''} : ` +
         `${damage} dégâts − ${damage - woundsLost} (BE+PA) = ${woundsLost} Blessures` +
         (isCritical ? ' — CRITIQUE !' : '') +

@@ -72,7 +72,7 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 **Voir aussi** : déclenchement du Coup Critique → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) (LDB 13/14) ; tableaux complets → [§ 4](#4-tableaux-des-critiques--renvoi).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.17, l.22-38, l.53) → `isHealable`, `outOfCombatUpkeep`, `CritEscalation`, `HealWoundsOptions`, `applyHealWounds`, `aaBleedUnconsciousApply`, `critWoundLocation`, `rollCritical`, `OPTIONAL_RULES`, `ActionBar`, +21 — `src/data/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +12 fichiers
+- `LDB 18` (l.17, l.22-38, l.53) → `isHealable`, `outOfCombatUpkeep`, `CritEscalation`, `HealWoundsOptions`, `applyHealWounds`, `aaBleedUnconsciousApply`, `critWoundLocation`, `EtatPanel`, `rollCritical`, `OPTIONAL_RULES`, +22 — `src/data/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +13 fichiers
 
 ---
 
@@ -85,7 +85,7 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 **Sources RAW** : `LDB 18 l.41-41`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.30, l.41) → `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `PendingDeviation`, `applyCriticalToTarget`, `applyAttackResult`, `overcastTargetCandidates`, `applyCast` — `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/pendings.ts`
+- `LDB 18` (l.30, l.41) → `EtatPanel`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `PendingDeviation`, `applyCriticalToTarget`, `applyAttackResult`, `overcastTargetCandidates`, `applyCast` — `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/pendings.ts`, `src/ui/EtatPanel.tsx`
 
 ---
 
@@ -110,7 +110,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : tables complètes → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) ; Fractures → [§ 7](#7-fractures-mineure--majeure) ; Déchirures → [§ 8](#8-déchirures-musculaires-mineure--majeure) ; Amputations → [§ 9](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `dechirure-autre-mineure`, `CritEscalation`, `fracture-torse-mineure`, `fracture-torse-majeure`, `resolveAACritical`, `fracture-jambe-mineure`, `findCritEntrySuffered`, `fracture-jambe-majeure`, +22 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +8 fichiers
+- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `dechirure-autre-mineure`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `fracture-torse-majeure`, `resolveAACritical`, `fracture-jambe-mineure`, `findCritEntrySuffered`, +23 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +8 fichiers
 
 ---
 
@@ -129,7 +129,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : [Option : Mort Subite](#6-option--mort-subite) ; Destin → [destin.md](destin.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.34, l.38-40, l.42-43) → `critWoundLocation`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `evaluateMissile`, `PendingDeviation`, `woundsAtCritLocation`, `applyCriticalToTarget`, `applyOpposedCritical`, `applyAttackResult`, +2 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, +1 fichiers
+- `LDB 18` (l.34, l.38-40, l.42-43) → `critWoundLocation`, `EtatPanel`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `evaluateMissile`, `PendingDeviation`, `woundsAtCritLocation`, `applyCriticalToTarget`, `applyOpposedCritical`, +3 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, +2 fichiers
 
 ---
 
@@ -142,7 +142,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Sources RAW** : `LDB 18 l.44-46`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.44-46) → `critWoundLocation`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `evaluateMissile`, `woundsAtCritLocation`, `applyCriticalToTarget`, `applyOpposedCritical`, `applyAttackResult`, `overcastTargetCandidates`, +1 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`
+- `LDB 18` (l.44-46) → `critWoundLocation`, `EtatPanel`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `evaluateMissile`, `woundsAtCritLocation`, `applyCriticalToTarget`, `applyOpposedCritical`, `applyAttackResult`, +2 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, +1 fichiers
 
 ---
 
@@ -181,7 +181,7 @@ L'os est salement fracturé ou a éclaté. Peu probable de guérir correctement 
 **Voir aussi** : [Amputation — Membre amputé](#9-amputation--choc-traitement-et-séquelles-permanentes) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `dechirure-autre-mineure`, `fracture-torse-mineure`, `fracture-torse-majeure`, `fractureSequela`, `fracture-jambe-mineure`, `fractureEndDifficulty`, `fracture-jambe-majeure`, `fracture-tete-mineure`, `fracture-tete-majeure`, +4 — `src/data/night-stakes.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
+- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `dechirure-autre-mineure`, `trauma-fracture`, `fracture-torse-mineure`, `fracture-torse-majeure`, `fractureSequela`, `fracture-jambe-mineure`, `fractureEndDifficulty`, `fracture-jambe-majeure`, `fracture-tete-mineure`, +5 — `src/data/night-stakes.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
 
 ---
 
@@ -212,7 +212,7 @@ La Compétence Guérison ne raccourcit pas la Majeure (elle informe seulement qu
 **Voir aussi** : [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, `amputationSchema`, `dechirure-autre-mineure`, `AAEntry`, `resolveAmputation`, +25 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, +1 fichiers
+- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, `amputationSchema`, `dechirure-autre-mineure`, `AAEntry`, `resolveAmputation`, +26 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, +1 fichiers
 
 ---
 
@@ -258,7 +258,7 @@ Toute amputation nécessite une **Chirurgie** pour être traitée. La blessure n
 **Voir aussi** : [Chirurgie](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; États → [etats.md](etats.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.233-285) → `isFumble`, `permanentAmputations`, `dechirure-jambe-mineure`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, `amputationSchema`, `dechirure-autre-mineure`, `AAEntry`, +35 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/combat.ts`, +4 fichiers
+- `LDB 18` (l.233-285) → `faim`, `isFumble`, `soif`, `permanentAmputations`, `dechirure-jambe-mineure`, `recovery`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, +42 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/combat.ts`, +5 fichiers
 
 ---
 
@@ -283,8 +283,8 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) (LDB 09 l.255-269) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; Faim/Soif → [§ 13](#13-faim-et-soif) (sans provisions : pas de récupération naturelle).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `redaction`, `healDifficulty`, `athletisme`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, +2 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +2 fichiers
-- `LDB 18` (l.289-300) → `permanentAmputations`, `dechirure-jambe-majeure`, `critEscalationSchema`, `dechirure-autre-majeure`, `HealWoundsOptions`, `recoveryTarget`, `applyHealWounds`, `removeCondition`, `amputation-plaie`, `defenseValue`, +18 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +8 fichiers
+- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `shelter`, `redaction`, `healDifficulty`, `athletisme`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, +3 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +2 fichiers
+- `LDB 18` (l.289-300) → `faim`, `soif`, `permanentAmputations`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `exposure`, `dechirure-autre-majeure`, `exposure-heat-drop`, `HealWoundsOptions`, +23 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +8 fichiers
 
 ---
 
@@ -312,7 +312,7 @@ Certaines entrées exigent une **Chirurgie** (indiquée dans le résultat). Les 
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) ; [Fractures](#7-fractures-mineure--majeure) ; [Déchirures](#8-déchirures-musculaires-mineure--majeure) ; [Amputation](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.303-320) → `availableHealModes`, `critEscalationSchema`, `ExposureKind`, `exposureTestCount`, `HealWoundsOptions`, `recoveryTarget`, `applyHealWounds`, `actLifts`, `removeCondition`, `Effect`, +12 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, +12 fichiers
+- `LDB 18` (l.303-320) → `faim`, `soif`, `recovery`, `availableHealModes`, `critEscalationSchema`, `exposure`, `exposure-heat-drop`, `ExposureKind`, `exposureTestCount`, `HealWoundsOptions`, +17 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, +12 fichiers
 
 ---
 
@@ -345,7 +345,7 @@ Se débarrasser d'une Possession lourde annule 1 Test échoué.
 **Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB p.302/309).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.327-334) → `merchantArchetype`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `ExposureKind`, `isStarving`, `beginShipwreck`, `EffectFlags`, `isThirsty`, +20 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +12 fichiers
+- `LDB 18` (l.327-334) → `merchantArchetype`, `faim`, `soif`, `recovery`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `exposure-heat-drop`, +25 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +12 fichiers
 
 ---
 
@@ -378,7 +378,7 @@ Test de Résistance tous les **deux jours** sans nourriture.
 **Voir aussi** : Provisions / rations → [provisions.md](provisions.md) ; [Guérison des PB](#10-guérison-des-points-de-blessure) (sans provisions : pas de récupération).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.337-343) → `merchantArchetype`, `HungerState`, `effectiveChar`, `ThirstState`, `breathHoldSeconds`, `ExposureKind`, `prepareBreathHold` ⚠sans-appelant, `isStarving`, `beginShipwreck`, `EffectFlags`, +26 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/items.ts`, `src/engine/ops.ts`, +15 fichiers
+- `LDB 18` (l.337-343) → `merchantArchetype`, `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, +30 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +14 fichiers
 
 ---
 
@@ -397,4 +397,4 @@ Source : `LDB 18 l.345-346`.
 **Voir aussi** : États → [etats.md](etats.md) ; sorts infligeant Suffocation (Ombres étrangleuses, Transmutation de Chamon).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.345-346) → `merchantArchetype`, `HungerState`, `effectiveChar`, `ThirstState`, `breathHoldSeconds`, `prepareBreathHold` ⚠sans-appelant, `isStarving`, `beginShipwreck`, `EffectFlags`, `isThirsty`, +20 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/items.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +13 fichiers
+- `LDB 18` (l.345-346) → `merchantArchetype`, `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, +24 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +12 fichiers

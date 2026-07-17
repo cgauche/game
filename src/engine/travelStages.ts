@@ -3,11 +3,11 @@
  * (`Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/08 - CHAPITRE 5 - Voyager.md`).
  *
  * Sous-système OPTIONNEL : « Tout comme le chapitre Entre deux aventures, tous ces outils sont
- * optionnels et voués à enrichir les règles présentées à la page 261 de WFJDR » (EDOC ch.8 l.29).
+ * optionnels et voués à enrichir les règles présentées à la page 261 de WFJDR » (EDOC 8 l.29).
  * Il enrichit le déplacement de base du LdB SANS le remplacer — le défaut reste jour-par-jour.
  *
  * Ce module est PUR (RNG injecté, aucun accès store) : il calcule le nombre d'Étapes, tire la
- * Météo par Étape (table verbatim EDOC ch.8 l.44-51), donne la difficulté d'un Test d'Exposition
+ * Météo par Étape (table verbatim EDOC 8 l.44-51), donne la difficulté d'un Test d'Exposition
  * de fin d'Étape (« Attraper Froid », l.73) et le rendement de l'activité d'Approvisionnement
  * (« Trouver de la nourriture et des herbes », LDB 09 l.565-572). Les valeurs RAW sont citées en
  * commentaire ; rien n'est inventé.
@@ -18,7 +18,7 @@ import type { CharKey, Difficulty } from './types';
 import { rule } from './policy';
 import { weather, weatherConditions, weatherPhysicalTestChars } from '../data';
 
-/** Les quatre saisons du tableau de Météo (EDOC ch.8 l.44). */
+/** Les quatre saisons du tableau de Météo (EDOC 8 l.44). */
 export type Season = 'printemps' | 'ete' | 'automne' | 'hiver';
 
 /** Saisons « froides » (rhume après Exposition, l.75 : « En hiver ou au printemps … contracte un rhume »). */
@@ -41,7 +41,7 @@ export function seasonOfMonth(monthIndex: number | null): Season {
   return 'hiver';                           // Ulriczeit(10), Vorhexen(11), Nachhexen(0)
 }
 
-/** Conditions météo (EDOC ch.8 l.44-51), de la plus clémente à la pire — l'ordre fixe le « degré
+/** Conditions météo (EDOC 8 l.44-51), de la plus clémente à la pire — l'ordre fixe le « degré
  *  de temps éloigné de Beau temps » de l'activité Plein Air (l.106). */
 export type Weather = 'sec' | 'beau' | 'pluie' | 'pluie-diluvienne' | 'neige' | 'blizzard';
 
@@ -58,7 +58,7 @@ export const WEATHER_LABEL: Record<Weather, string> = {
 interface WeatherRange { max: number; weather: Weather; }
 
 /**
- * TABLE DE MÉTÉO VERBATIM (EDOC ch.8 l.44-51 — « Le MJ doit effectuer un jet de Météo au début de
+ * TABLE DE MÉTÉO VERBATIM (EDOC 8 l.44-51 — « Le MJ doit effectuer un jet de Météo au début de
  * chaque étape »). Pour chaque saison, la liste ORDONNÉE des plages d100 (`max` = borne haute
  * incluse de la plage ; 00 → 100). Un tiret RAW (« - ») = plage absente cette saison.
  *
@@ -83,14 +83,14 @@ export function weatherFromRoll(roll: number, season: Season): Weather {
   return ranges[ranges.length - 1].weather; // garde-fou : 100 retombe sur la dernière plage
 }
 
-/** Jet de Météo d'une Étape (EDOC ch.8 l.42) : d100 sur la table de la saison. */
+/** Jet de Météo d'une Étape (EDOC 8 l.42) : d100 sur la table de la saison. */
 export function rollStageWeather(rng: RNG, season: Season): { roll: number; weather: Weather } {
   const roll = d100(rng);
   return { roll, weather: weatherFromRoll(roll, season) };
 }
 
 /**
- * Nombre d'Étapes d'un trajet (EDOC ch.8 l.34) : « Un voyage entre deux villages proches comprend
+ * Nombre d'Étapes d'un trajet (EDOC 8 l.34) : « Un voyage entre deux villages proches comprend
  * généralement une seule étape. Les trajets plus longs entre des villes importantes peuvent
  * comprendre entre 2 et 4 étapes. Tout voyage plus long doit être divisé en plusieurs étapes. »
  * Le canon laisse le découpage « à la discrétion du MJ » (l.15) sans formule de distance ; on
@@ -99,13 +99,13 @@ export function rollStageWeather(rng: RNG, season: Season): { roll: number; weat
  * nombre d'Étapes de 2 ou plus ») — lu PAR DÉFAUT sur la règle optionnelle `travel-etapes-count-bonus`
  * (point de lecture UNIQUE ; les tests purs passent le paramètre). Minimum 1 (l.19/22).
  *
- * Modificateur de MOUVEMENT du groupe (EDOC ch.8 l.25) : « Une fois le nombre d'Étapes déterminé, il
+ * Modificateur de MOUVEMENT du groupe (EDOC 8 l.25) : « Une fois le nombre d'Étapes déterminé, il
  * est modifié par le score de Mouvement le plus faible des Personnages, qu'ils soient à pied, à
  * cheval ou dans un véhicule. Si ce chiffre est inférieur ou égal à 3, le voyage doit être augmenté
  * de 1 ou 2 Étapes. Si tous les Personnages ont [...] un Mouvement de 6 ou plus, le nombre total
  * d'Étapes est réduit de moitié pour atteindre un résultat minimum de 1. » `groupMinMovement` (absent
  * par défaut = comportement inchangé) porte ce score ; le choix « 1 ou 2 » est lu sur la règle
- * optionnelle `travel-etapes-low-move-bonus` (EDOC ch.8 l.25 — MJ décide, valeur maison). La division
+ * optionnelle `travel-etapes-low-move-bonus` (EDOC 8 l.25 — MJ décide, valeur maison). La division
  * par deux arrondit à l'inférieur (RAW ne précise pas l'arrondi ; plancher à 1 dans tous les cas).
  */
 export function stageCount(
@@ -130,7 +130,7 @@ export function stageCount(
 }
 
 /**
- * Difficulté du Test d'Exposition de fin d'Étape — option « Attraper Froid » (EDOC ch.8 l.73) :
+ * Difficulté du Test d'Exposition de fin d'Étape — option « Attraper Froid » (EDOC 8 l.73) :
  * « tout Personnage exposé à la pluie ou à la neige sans un bon manteau et une tente … doit faire un
  * Test d'Exposition. Les Personnages exposés à une averse [pluie diluvienne] ou à un blizzard doivent
  * faire le Test même s'ils ont à la fois un manteau et une tente, mais l'absence de l'un ou l'autre
@@ -159,7 +159,7 @@ export function isColdSeason(season: Season): boolean {
   return COLD_SEASONS.includes(season);
 }
 
-// ── EFFETS de la météo (EDOC ch.8) — DONNÉE (`weather.json` conditions), MÊME vocabulaire que
+// ── EFFETS de la météo (EDOC 8) — DONNÉE (`weather.json` conditions), MÊME vocabulaire que
 //    `sea-weather.json`. Lecture par les readers ci-dessous ; aucun `switch (weather)` en code. ──
 
 /** Effets d'une météo terrestre (donnée `weather.json` conditions). Enrichit `Weather` d'un id lisible. */

@@ -3,7 +3,7 @@ import { spawnEnemy } from './spawn';
 import { shipManeuverParams } from './shipManeuver';
 
 /**
- * Améliorations d'INSTANCE (MDG ch.12) appliquées au spawn : un navire-instance = type + `upgrades[]`
+ * Améliorations d'INSTANCE (MDG 12) appliquées au spawn : un navire-instance = type + `upgrades[]`
  * (libellés verbatim). **Blindage** (l.234/236) confère des PA à la coque (`armour.corps`), consommés tels
  * quels par les dégâts navals (`applyOps` op `wounds` déduit `armour.corps`). Comme un `ItemInstance` + qualités.
  */
@@ -28,7 +28,7 @@ describe('spawn — Blindage (Amélioration d’instance) → PA de coque', () =
     expect(hull.armour.corps).toBe(0); // Lissage agit sur le M, pas sur les PA
   });
 
-  it('« Coque de course » → 2×M de manœuvre, op moveScale APPLIQUÉE dans shipManeuverParams (T2C ch.12 l.27)', () => {
+  it('« Coque de course » → 2×M de manœuvre, op moveScale APPLIQUÉE dans shipManeuverParams (T2C 12 l.27)', () => {
     // cogue à voile : M de base 5 ; Coque de course multiplie APRÈS les moveMod additifs → 10.
     expect(shipManeuverParams(spawnEnemy('cogue', undefined, 'h-nue2', at)).baseM).toBe(5);
     const hull = spawnEnemy('cogue', undefined, 'h-course', at, { upgrades: [{ id: 'coque-de-course' }] });

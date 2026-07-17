@@ -134,7 +134,7 @@ export interface WeaponContext {
   auContact?: boolean;
   /** L'arme doit être résolue au profil d'**Arme improvisée** du fait du contexte (cible/situation) que
    *  `effectiveWeapon` ne peut pas déduire seul. Posé par le funnel (`weaponContextOf`). Source actuelle :
-   *  Bélier (`ram`) hors-porte (ADE II ch.08 l.249, via `ramVsNonDoor`). */
+   *  Bélier (`ram`) hors-porte (ADE II 8 l.249, via `ramVsNonDoor`). */
   improvised?: boolean;
   /** Lance-harpon (ADE II 02 l.677) : la corde a été séparée de la flèche → profil dégradé (Portée 60,
    *  perte de l'Atout Immobilisante). MODE DE TIR choisi par le joueur au moment de l'attaque (arbitrage
@@ -166,7 +166,7 @@ export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
   // comme une Arme improvisée » (l'adversaire est entré dans la longueur d'arme). Allonge ≤ Courte
   // (mains nues / dague) → inchangée. MÊME branche que la Lance hors Charge (profil improvisé partagé).
   if (ctx?.auContact && w.type === 'melee' && reachRank(w.reach) > reachRank('Courte')) return improvisedProfile(w);
-  if (ctx?.improvised) return improvisedProfile(w); // improvisation dérivée du contexte par le funnel (ex. Bélier hors-porte, ADE II ch.08 l.249)
+  if (ctx?.improvised) return improvisedProfile(w); // improvisation dérivée du contexte par le funnel (ex. Bélier hors-porte, ADE II 8 l.249)
   // Lance-harpon, corde séparée (ADE II 02 l.677) : Portée 60 (au lieu de la Portée de base), perte de l'Atout Immobilisante.
   if (ctx?.harpoonRopeCut) return { ...w, range: 60, qualities: w.qualities.filter((q) => q.id !== 'immobilisante') };
 

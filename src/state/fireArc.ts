@@ -1,13 +1,13 @@
 /**
- * ARCS DE TIR / BORDÉES d'un navire (MDG ch.12-13). Couche STATE (et non engine) car l'arc dépend du cap
+ * ARCS DE TIR / BORDÉES d'un navire (MDG 12-13). Couche STATE (et non engine) car l'arc dépend du cap
  * `Dir8` et de la géométrie de cases — comme `footprint.ts` / `combatGeometry.ts` ; le moteur reste pur.
  *
  * Le RAW nomme un CÔTÉ relatif au cap du navire (bâbord = gauche, tribord = droite, du point de vue du
- * navire ; proue = avant, poupe = arrière — MDG ch.13 l.262-271) et une portée, mais PAS un angle d'arc.
+ * navire ; proue = avant, poupe = arrière — MDG 13 l.262-271) et une portée, mais PAS un angle d'arc.
  * Convention retenue (DOCUMENTÉE, à valider — règle 1 : on n'enferme que le côté que le RAW énonce) :
  * modèle **BORDÉE** — proue et poupe sont des postes de CHASSE étroits (droit devant / droit derrière,
  * 1 octant) ; bâbord et tribord couvrent toute la **bordée** du travers, avant ET arrière de ce bord
- * (3 octants), conforme à « masser les pièces d'un bord pour lâcher une bordée » (MDG ch.12 l.428) et au
+ * (3 octants), conforme à « masser les pièces d'un bord pour lâcher une bordée » (MDG 12 l.428) et au
  * « canon tourné vers sa poupe » de l'exemple de poursuite (l.410). [Alternative écartée : quadrant 90°.]
  */
 import { facingToward, rotateDir8, DIR8_ORDER, type Dir8 } from './dir8';

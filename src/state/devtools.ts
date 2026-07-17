@@ -509,7 +509,7 @@ export function buildApi() {
       if (sc.autoCombat) g().startCombat(sc.autoCombat);
       if (g().pendingRoundStart) g().confirmRoundStart();
       if (sc.massBattle) {
-        // Interlude AVANT la bataille (ADE II ch.8 l.65) : son budget d'Activités (max 3) est celui dans
+        // Interlude AVANT la bataille (ADE II 8 l.65) : son budget d'Activités (max 3) est celui dans
         // lequel puise la préparation. La préparation se joue DANS le menu d'interlude (« Interlude c'est
         // interlude ») — `startMassBattle` reste donc sur l'écran d'interlude tant qu'un interlude est ouvert.
         if (sc.interludeWeeks) g().startInterlude(sc.interludeWeeks);
@@ -640,7 +640,7 @@ export function buildApi() {
       return { msg: `✓ formation (${hull.name}) → delta (${delta.x},${delta.y}) — ${moved.length} déplacé(s)`, moved };
     },
 
-    /** TRICHE de recette : VIRE le cap d'un NAVIRE (manœuvre, MDG ch.13) → re-mappe ses arcs de bordée.
+    /** TRICHE de recette : VIRE le cap d'un NAVIRE (manœuvre, MDG 13) → re-mappe ses arcs de bordée.
      *  `side` = 'tribord'/'babord' (90°) ou un nombre de crans de 45° (>0 tribord, <0 bâbord). Vérifier
      *  ensuite avec `__wfrp.aim('cible')` qu'elle (re)tombe — ou sort — de l'arc. */
     turnShip: (shipId: string, side: 'tribord' | 'babord' | number = 'tribord') => {
@@ -653,7 +653,7 @@ export function buildApi() {
       return `✓ ${ship.name} : cap ${before} → ${g().facing[shipId]}`;
     },
 
-    /** Recette : MANŒUVRE un navire (MDG ch.13) — le barreur (meilleur en Voile/Ramer de l'équipage, ou
+    /** Recette : MANŒUVRE un navire (MDG 13) — le barreur (meilleur en Voile/Ramer de l'équipage, ou
      *  `helmsmanId`) jette un Test de Navigation → `resolveShipManeuver` → vire SUR RÉUSSITE. `side` =
      *  'tribord'/'babord' (90°) ou crans. Contrairement à `turnShip` (triche), ce virage PEUT échouer. */
     maneuver: (shipId: string, side: 'tribord' | 'babord' | number = 'tribord', helmsmanId?: string) => {
@@ -869,7 +869,7 @@ export function buildApi() {
       return g().flags;
     },
 
-    /** RECETTE #332 : pose le Moral d'équipage (`vessel.morale.score`, MDG ch.14) — setup DIRECT (même
+    /** RECETTE #332 : pose le Moral d'équipage (`vessel.morale.score`, MDG 14) — setup DIRECT (même
      *  patron que `flag()`), pas le pipeline hebdomadaire (`recalcMorale`). Rend la désertion à quai
      *  (`moraleBand(score).desertionRoll`, bande ≤75) observable sans dérouler des semaines de facteurs
      *  en espérant tomber sous le seuil. `n` non borné ici (les bandes du catalogue couvrent 0…100+). */
@@ -1061,7 +1061,7 @@ export function buildApi() {
       return g().battle ? `✓ combat lancé (${encounterId})` : `rien lancé (rencontre vide ?)`;
     },
 
-    /** RECETTE #30 : services du chantier naval au port — réparation (1 CO/Blessure, MDG ch.13
+    /** RECETTE #30 : services du chantier naval au port — réparation (1 CO/Blessure, MDG 13
      *  l.643), carénage (Salissures, l.150-159), pose d'Amélioration (ch.12 l.195-364). */
     chantier: (what: 'reparer' | 'carener' | string = 'reparer', units = 1) => {
       const get = useGame.getState.bind(useGame);

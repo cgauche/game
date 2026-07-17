@@ -16,7 +16,7 @@ const tick = (c: any) => fireConditionEffects(GET, c, 'onRoundEnd', { rng: makeR
 /**
  * EXEMPLE bout-en-bout du modèle naval (sans `resolveAttack` — branché à la dalle combat) : un coup
  * sur un navire suit la MÊME chaîne qu'un Combattant, du gréement au naufrage.
- *   rig (donnée hull) → shipHitLocation (MDG ch.13) → rollShipCritical (data + GameOp) → applyOps
+ *   rig (donnée hull) → shipHitLocation (MDG 13) → rollShipCritical (data + GameOp) → applyOps
  *   → État data-driven (etats.json) → endOfRound (pipeline commun) → cumul → coule à l'Endurance.
  */
 describe('Modèle naval — chaîne complète rig → localisation → Critique → État → naufrage', () => {

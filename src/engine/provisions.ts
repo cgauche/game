@@ -299,10 +299,10 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
 }
 
 /** Manifeste d'avitaillement AU DÉPART (#241/#245) : vivres/eau disponibles vs requis pour couvrir
- *  `joursEstimes` de voyage, sur la POPULATION EMBARQUÉE ENTIÈRE (héros + effectif PNJ, MDG ch.14 l.238).
+ *  `joursEstimes` de voyage, sur la POPULATION EMBARQUÉE ENTIÈRE (héros + effectif PNJ, MDG 14 l.238).
  *  PUR — aucune mutation, aucune consommation. `waterLitres` = tonneaux du navire (`CampaignVessel.waterLitres`,
  *  absent = ravitaillement réputé assuré, cf. en-tête) ; l'eau requise suit le régime de bord médian
- *  (`dailyWaterLitres('mediane')`, MDG ch.14 l.242 — la bande de Température réelle n'est tirée qu'en mer).
+ *  (`dailyWaterLitres('mediane')`, MDG 14 l.242 — la bande de Température réelle n'est tirée qu'en mer).
  *  `crew` (optionnel, #245) = effectif PNJ nominal présent (`count`) et ses vivres de cale (`provisions`,
  *  rations en jours-homme) : l'équipage mange 1 ration/jour (pas de Brouet), les héros suivent Brouet
  *  (LDB 10 l.139 : 1 ration / 2 jours) sur leurs rations portées. Rations disponibles = celles des héros + vivres

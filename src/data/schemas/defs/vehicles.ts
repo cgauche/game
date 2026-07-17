@@ -55,7 +55,7 @@ export const schema = z.array(
     }).optional(),
     /** Facette VOYAGE (passage payant, LDB l.207-219). `medium` : milieu du TRAJET PAYÉ (un véhicule
      *  peut être bi-milieu — ex. la Barge navigue le fleuve LDB p.306 tout en figurant à la table
-     *  navale MDG ch.12 avec `hull.propulsion:'maritime'` — les deux facettes sont INDÉPENDANTES,
+     *  navale MDG 12 avec `hull.propulsion:'maritime'` — les deux facettes sont INDÉPENDANTES,
      *  jamais l'une dérivée de l'autre) ; absent = terrestre implicite (défaut historique). */
     travel: z.strictObject({
       movement: z.number(),
@@ -73,7 +73,7 @@ export const schema = z.array(
       locationTable: z.union([z.string(), z.null()]).optional(),
       criticalTable: z.union([z.string(), z.null()]).optional(),
     }).optional(),
-    /** Facette NAVIRE (profil naval MDG ch.12). */
+    /** Facette NAVIRE (profil naval MDG 12). */
     ship: z.strictObject({
       crew: z.number(),
       manoeuvre: z.number(),

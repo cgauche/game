@@ -96,7 +96,7 @@ export interface InterludeSeam {
    *  l'état initial, comme les autres lectures). */
   catalog?: ActivityDef[];
   net?: InterludeNet;
-  /** Bataille de masse en attente de préparation (ADE II ch.8) — bandeau d'info + Activités de prépa
+  /** Bataille de masse en attente de préparation (ADE II 8) — bandeau d'info + Activités de prépa
    *  dans les volets par-héros. `null`/absent = pas de bataille pendante. */
   massBattle?: MassBattleState | null;
 }
@@ -206,7 +206,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
                 <BankList bank={bank} party={party} interlude={interlude} canDrive={ownsHero} />
               </section>
             )}
-            {/* Jeux de taverne (NADJ ch.16) — délassement entre deux aventures ; affordance montrée
+            {/* Jeux de taverne (NADJ 16) — délassement entre deux aventures ; affordance montrée
                 seulement si l'option `tavern-games` est active. Ne consomme pas d'Activité. */}
             {rule('tavern-games') && <TavernGamesEntry />}
             <div className="interlude-close">
@@ -287,7 +287,7 @@ function SynthBar({ heroes, interlude, money, activeId, ownsHero, ownerName }: {
   );
 }
 
-/** Bandeau d'INFO bataille (non-cliquable, ADE II ch.8) : une bataille est imminente — les deux camps et
+/** Bandeau d'INFO bataille (non-cliquable, ADE II 8) : une bataille est imminente — les deux camps et
  *  leur Puissance. Les Activités de préparation (Discours, Planification, Repérage, Sabotage…) figurent DANS
  *  les volets par-héros, comme toute Activité (budget UNIQUE d'interlude, l.65). Pas d'écran à part. */
 function BattleBanner({ mb }: { mb: MassBattleState }) {
@@ -297,13 +297,13 @@ function BattleBanner({ mb }: { mb: MassBattleState }) {
       <p className="interlude-detail">
         <b>{mb.ally.name}</b> (Puissance {armyMight(mb.ally)}) contre <b>{mb.enemy.name}</b> (Puissance {armyMight(mb.enemy)}).
         Préparez-la depuis vos Activités <em>Entre deux aventures</em> : Discours, Planification, Repérage,
-        Sabotage… (max 3, ADE II ch.8). « Engager la bataille » clôt l'interlude et lance les Rounds.
+        Sabotage… (max 3, ADE II 8). « Engager la bataille » clôt l'interlude et lance les Rounds.
       </p>
     </section>
   );
 }
 
-/** Entrée « Jeux de taverne » (NADJ ch.16) : ouvre la modale de jeu (choix jeu + adversaire). */
+/** Entrée « Jeux de taverne » (NADJ 16) : ouvre la modale de jeu (choix jeu + adversaire). */
 function TavernGamesEntry() {
   const open = useGame((s) => s.openTavernGames);
   return (
@@ -833,7 +833,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
   );
 }
 
-/** Identifier un artefact (ADE2 ch.4) : choisir un objet NON identifié du sac — une semaine
+/** Identifier un artefact (ADE2 4) : choisir un objet NON identifié du sac — une semaine
  *  d'étude par tentative, Test de Savoir (Magie) Intermédiaire (+0). */
 function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boolean; desc?: string }) {
   const activity = useGame((s) => s.interludeActivity);
@@ -970,7 +970,7 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
   );
 }
 
-/** Volet d'une Activité de PRÉPARATION de bataille (ADE II ch.8), rendu DANS le menu d'interlude par le
+/** Volet d'une Activité de PRÉPARATION de bataille (ADE II 8), rendu DANS le menu d'interlude par le
  *  gabarit `ActivityPane` (comme toute Activité). « Entreprendre » DÉSIGNE ce héros comme meneur puis ouvre
  *  le jet par le canal de bataille (`massBattleActivity` / `massBattleInspire`) — l'issue porte sur l'ARMÉE,
  *  le budget d'Activité consommé est celui, UNIQUE, de l'interlude. Le pré-jet montre la compétence du héros ;
@@ -1017,7 +1017,7 @@ function BattlePrepPane({ hero, def, disabled, entry }: {
       desc={def.desc}
       blocked={blocked}
       prejet={prejet}
-      note={<>1 Activité d'interlude — l'issue porte sur l'armée (ADE II ch.8).{def.assisted
+      note={<>1 Activité d'interlude — l'issue porte sur l'armée (ADE II 8).{def.assisted
         ? rule('interlude-assist-costs-activity')
           ? ' Les autres PJ peuvent prêter leur Soutien — chacun y dépense un créneau.'
           : ' Les autres PJ peuvent prêter leur Soutien, gratuitement.'

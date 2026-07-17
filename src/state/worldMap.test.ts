@@ -62,7 +62,7 @@ describe('parseProject — validation du format projet v2', () => {
     expect(() => validateScene(scenes)).not.toThrow();
   });
 
-  it('MapPlace.port (Index des ports, MDG ch.15) survit au round-trip via parseProject', () => {
+  it('MapPlace.port (Index des ports, MDG 15) survit au round-trip via parseProject', () => {
     // Un Lieu-port complet : taille/richesse/production/surplus/demande/cosmopolite/lighthouse — édité
     // par la section « Port » de WorldMapEditor, préservé tel quel par le round-trip du projet.
     const port = {

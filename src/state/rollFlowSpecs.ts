@@ -163,7 +163,7 @@ export function rollFlowActionsMulti<P extends string, const A extends readonly 
 // `RollFlowActionsMap` (surface EXACTE des délégués de jet du store) est DÉRIVÉE de `FLOW_WIRING` —
 // voir sa définition en bas de fichier (après la table). Fin de la recopie à la main des 36 lignes.
 
-/** Spec PARTAGÉE des Tests d'équipage MULTI (MDG ch.14) : un jet PAR RÔLE tenu (`rollCrewRole`), Résilience
+/** Spec PARTAGÉE des Tests d'équipage MULTI (MDG 14) : un jet PAR RÔLE tenu (`rollCrewRole`), Résilience
  *  = DR max du contributeur (`forceCrewRole`), Chance « +1 DR » sur SON jet. Consommée par les 3 flux jumeaux
  *  (manœuvre / bordée / Test d'équipage générique) — la spec n'est écrite qu'UNE fois. */
 function crewRoleFlowSpec<P extends import('./rollFlowFactory').PendingBase & { participants: ShipManeuverParticipant[] }>(
@@ -1052,18 +1052,18 @@ export const FLOWS = {
     },
   }),
 
-  /** Manœuvre navale = TEST D'ÉQUIPAGE (MDG ch.14) : chaque rôle tenu lance SON Test (multi-jets). PJ = interactif
+  /** Manœuvre navale = TEST D'ÉQUIPAGE (MDG 14) : chaque rôle tenu lance SON Test (multi-jets). PJ = interactif
    *  (Chance/+1 DR/Pacte/Résilience sur SON jet) ; marin PNJ = témoin (auto-roulé à l'ouverture). La SOMME des DR
    *  (essentiel ×2) + Moral nourrit la Progression — calculée à la confirmation (`shipManeuverConfirm`). Forced
    *  (Résilience) = DR max du contributeur. Patron `forceDoor`. */
   shipManeuver: makeRollFlow<PendingShipManeuver, ShipManeuverParticipant>(crewRoleFlowSpec('pendingShipManeuver')),
 
-  /** TIR DE BATTERIE = Test d'équipage des Artilleurs (MDG ch.14 l.128) — JUMEAU de `shipManeuver` (mêmes
+  /** TIR DE BATTERIE = Test d'équipage des Artilleurs (MDG 14 l.128) — JUMEAU de `shipManeuver` (mêmes
    *  `rollCrewRole`/`forceCrewRole`) ; le total (`maneuverCrewTotal`) = DR PARTAGÉ de la volée, appliqué par
    *  `shipBatteryConfirm`. Forced (Résilience) = DR max du contributeur. */
   battery: makeRollFlow<PendingShipBattery, ShipBatteryParticipant>(crewRoleFlowSpec('pendingShipBattery')),
 
-  /** TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ consommateur de la MÊME spec
+  /** TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG 14, « Types de Test d'équipage ») — 3ᵉ consommateur de la MÊME spec
    *  de jet par rôle ; l'issue par type (Rude épreuve → Moral, l.110) vit dans `crewTestConfirm`. */
   crewTest: makeRollFlow<PendingCrewTest, ShipManeuverParticipant>(crewRoleFlowSpec('pendingCrewTest')),
 
@@ -1201,7 +1201,7 @@ export const FLOWS = {
     outcome: (p) => testOutcome(p.result),
   }),
 
-  /** Activité (LDB 23 interlude / EDOC voyage / MDG mer / ADE II ch.8 BATAILLE) : Test de Compétence
+  /** Activité (LDB 23 interlude / EDOC voyage / MDG mer / ADE II 8 BATAILLE) : Test de Compétence
    *  dont l'issue est appliquée par `confirmActivity`. Cas SIMPLE (la vaste majorité) = un jet vs une
    *  cible. Cas de BATAILLE : Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences,
    *  LDB 12 l.206) ou Test OPPOSÉ de « Tenez votre position » (l.161, l'ennemi a un jet FIGÉ). Le cycle
@@ -1405,7 +1405,7 @@ export const FLOWS = {
       const sl = res.sl + (res.success ? tDR : 0);
       return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && sl >= p.requireSL };
     },
-    outcome: (p) => rollOutcome(p.roll, p.target, p.sl), // d100 propre réussi (LDB ch.12 l.56 + l.29-31)
+    outcome: (p) => rollOutcome(p.roll, p.target, p.sl), // d100 propre réussi (LDB 12 l.56 + l.29-31)
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },
   }),
 

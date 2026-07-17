@@ -9,7 +9,7 @@ import { testScene } from '../scenes/test-fixture';
 import type { Weapon } from '../engine/types';
 
 /**
- * AFFORDANCE de ciblage joueur — une STRUCTURE de siège (mur Impénétrable, ADE II ch.08) n'est PAS une
+ * AFFORDANCE de ciblage joueur — une STRUCTURE de siège (mur Impénétrable, ADE II 8) n'est PAS une
  * cible d'attaque pour une arme SANS l'Atout Siège : « attaquer un rempart à l'épée » n'a pas de sens
  * (même gate que l'IA). Le survol retombe alors sur le déplacement (monter au rempart) au lieu d'un
  * « hors de portée » fantôme. Une arme à Atout Siège, elle, la rend ciblable.

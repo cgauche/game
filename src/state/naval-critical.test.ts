@@ -8,7 +8,7 @@ import type { Combatant } from '../engine/types';
 
 /**
  * Branchement combat ↔ naval : `applyCriticalToTarget` route une COQUE (`bodyShape:'vehicule'`) vers les
- * tables de NAVIRE (MDG ch.13) au lieu des Traumatismes de PERSONNAGE (LDB 18). Preuve du seam unique :
+ * tables de NAVIRE (MDG 13) au lieu des Traumatismes de PERSONNAGE (LDB 18). Preuve du seam unique :
  * un véhicule encaisse un Coup Critique « comme un Combattant », mais sans Trauma humain — l'effet est un
  * État NAVAL data-driven (Voie d'eau / En flammes) posé par `applyOps`, ou un coup à l'Équipage.
  */
@@ -20,7 +20,7 @@ const sailor = (id: string): Combatant => ({
   armour: { corps: 0 }, wounds: { current: 13, max: 13, base: 13 }, advantage: 0,
 }) as unknown as Combatant;
 
-describe('applyCriticalToTarget — coque/navire (MDG ch.13) au lieu de Trauma humain', () => {
+describe('applyCriticalToTarget — coque/navire (MDG 13) au lieu de Trauma humain', () => {
   beforeEach(() => seedBattleRng(1));
 
   it('un véhicule ne subit JAMAIS de Trauma humain ; le Critique compte et est journalisé', () => {
@@ -53,7 +53,7 @@ describe('applyCriticalToTarget — coque/navire (MDG ch.13) au lieu de Trauma h
   });
 });
 
-describe('applyCriticalToTarget — l’équipage lié (crewIds) encaisse via la bataille (MDG ch.14)', () => {
+describe('applyCriticalToTarget — l’équipage lié (crewIds) encaisse via la bataille (MDG 14)', () => {
   it('crewIds résolus depuis battle.combatants → un marin est réellement touché (balayage de seeds)', () => {
     let crewTouched = false;
     for (let seed = 1; seed <= 60 && !crewTouched; seed++) {

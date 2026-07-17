@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { progressionMovement, resolveShipManeuver } from './shipNavigation';
 
 /**
- * PROGRESSION & MANŒUVRE d'un navire (MDG ch.13 « Navigation maritime ») — couche PURE, book-agnostic
+ * PROGRESSION & MANŒUVRE d'un navire (MDG 13 « Navigation maritime ») — couche PURE, book-agnostic
  * (le « Personnage à la barre » + Test de Navigation Voile/Ramer est partagé avec le Compagnon de Mort
  * sur le Reik ch.5, fluvial). Le Test de Manœuvre = Test de Navigation modifié par la Caractéristique Man
  * du bateau (l.119). La table de Progression (l.68-75) traduit le DR en déplacement effectif.
  */
-describe('progressionMovement — table de Progression (MDG ch.13 l.68-75)', () => {
+describe('progressionMovement — table de Progression (MDG 13 l.68-75)', () => {
   it('DR → déplacement effectif (M+2 / M+1 / M / M−1 / M÷2 arrondi à l’inférieur)', () => {
     expect(progressionMovement(5, 4)).toBe(7); // 4 ou plus → M+2
     expect(progressionMovement(5, 9)).toBe(7);
@@ -22,7 +22,7 @@ describe('progressionMovement — table de Progression (MDG ch.13 l.68-75)', () 
   });
 });
 
-describe('resolveShipManeuver — Test de Manœuvre = Navigation + Man du bateau (MDG ch.13 l.119)', () => {
+describe('resolveShipManeuver — Test de Manœuvre = Navigation + Man du bateau (MDG 13 l.119)', () => {
   it('réussite (DR final ≥ 0) → virage exécuté ; déplacement via la table de Progression', () => {
     const r = resolveShipManeuver(2, 5, 1); // DR nav 2 + Man 1 = 3
     expect(r.dr).toBe(3);

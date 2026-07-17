@@ -1,7 +1,7 @@
 /**
  * Garde-fou des Tables de Corruption (mutationTables.json) : chaque table d100 doit couvrir 1..100
  * SANS trou ni chevauchement, et chaque `mutation` référencée doit exister dans mutations.json (réf
- * par id stable). Protège la transcription des tables (LDB 19 + par Puissance du Chaos, EDOC ch.12).
+ * par id stable). Protège la transcription des tables (LDB 19 + par Puissance du Chaos, EDOC 12).
  */
 import { describe, it, expect } from 'vitest';
 import mutationTables from './mutationTables.json';

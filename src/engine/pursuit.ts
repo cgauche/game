@@ -13,7 +13,7 @@
  *     différence de Mouvement avec le plus lent de la course (M8/M7/M9 → +1 / 0 / +2 relatifs au plus lent).
  *
  * La résolution d'issue (`pursuitOutcome`) est la PRIMITIVE PARTAGÉE terrestre/navale (la poursuite navale
- * MDG ch.13 calcule son « gain » de Distance différemment — en mètres — mais franchit les MÊMES seuils).
+ * MDG 13 calcule son « gain » de Distance différemment — en mètres — mais franchit les MÊMES seuils).
  * PUR : RNG injecté ; ne mute rien.
  */
 import { RNG, defaultRNG } from './dice';

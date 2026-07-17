@@ -32,7 +32,7 @@ export const schema = z.array(
      *  faute de frappe ne doit pas faire échouer le schéma — elle se corrige au JSON, pas ici. */
     status: z.string(),
     /** Dérivé de `CareerData.source` (#309) : chaque niveau appartient à une Carrière déjà citée ;
-     *  ancre retenue = folio de la Carrière parente (LDB ch.07-08, blocs par Carrière). */
+     *  ancre retenue = folio de la Carrière parente (LDB 7-08, blocs par Carrière). */
     source: sourceRefSchema.optional(),
   }),
 );

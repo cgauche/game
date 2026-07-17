@@ -1,5 +1,5 @@
 /**
- * Dérivation ÉQUIPAGE → RÔLES pour un Test d'équipage (MDG ch.14) — couche STATE (lit l'équipage du navire + son
+ * Dérivation ÉQUIPAGE → RÔLES pour un Test d'équipage (MDG 14) — couche STATE (lit l'équipage du navire + son
  * Moral de campagne). PUR (sauf `shipMoraleScore` qui lit le store). La pièce manquante : personne ne construisait le
  * `CrewAssignment[]` que `resolveBattery`/la manœuvre attendent. Partagé par TOUS les Tests d'équipage (manœuvre,
  * batterie, perception…) — un seul endroit assigne les marins aux postes.
@@ -23,7 +23,7 @@ import { battleRng } from './battleRng';
 import type { Get, Set as SetFn } from './flowTypes';
 
 /**
- * Assignation de l'équipage APTE d'un navire aux rôles qui contribuent à `testTypeId` (MDG ch.14). Chaque marin tient
+ * Assignation de l'équipage APTE d'un navire aux rôles qui contribuent à `testTypeId` (MDG 14). Chaque marin tient
  * son rôle ÉPINGLÉ (`shipRole`) ou INFÉRÉ (`defaultCrewRole`), filtré aux rôles du type de Test (`crew-test-types.json`).
  * Au plus UN marin par rôle : en cas de collision, le MEILLEUR pour ce rôle (`crewRoleValue`). PUR.
  */
@@ -38,7 +38,7 @@ function trainedForRole(c: Combatant, roleId: string): boolean {
 }
 
 /**
- * Assignation par DÉFAUT de l'équipage aux rôles d'un Test (MDG ch.14) — GLOBALE (pas marin par marin), pour que le
+ * Assignation par DÉFAUT de l'équipage aux rôles d'un Test (MDG 14) — GLOBALE (pas marin par marin), pour que le
  * défaut soit BON : on remplit d'abord le rôle ESSENTIEL puis les autres rôles SPÉCIFIQUES avec le MEILLEUR marin
  * FORMÉ encore libre (un titulaire par poste → on ÉTALE l'équipage au lieu d'entasser 2 PJ sur le même) ; le reste
  * tombe **Mousse** (rôle par défaut, l.15) s'il sait Voile/Ramer. Les rôles ÉPINGLÉS (`shipRole`) sont respectés —
@@ -73,7 +73,7 @@ export function shipCrewAssignments(ship: Combatant, combatants: Combatant[], te
     .map((id) => combatants.find((c) => c.id === id))
     .filter((c): c is Combatant => !!c);
   // Une entrée PAR titulaire de rôle (le rôle vient du défaut GLOBAL `shipDefaultRoles` : essentiel rempli + PJ étalés).
-  // Filtré aux rôles de CE Test (exclut 'repos' et les rôles d'un autre Test). MULTI possible si épinglé (MDG ch.14 l.9).
+  // Filtré aux rôles de CE Test (exclut 'repos' et les rôles d'un autre Test). MULTI possible si épinglé (MDG 14 l.9).
   const roles = shipDefaultRoles(crew, testTypeId);
   const out: CrewAssignment[] = [];
   for (const c of exposedCrew(crew)) {
@@ -84,7 +84,7 @@ export function shipCrewAssignments(ship: Combatant, combatants: Combatant[], te
 }
 
 /**
- * Contributeurs d'un Test d'équipage (MDG ch.14) — UN jet par POSTE, pas par marin. Par rôle tenu : TOUS les PJ du
+ * Contributeurs d'un Test d'équipage (MDG 14) — UN jet par POSTE, pas par marin. Par rôle tenu : TOUS les PJ du
  * poste lancent (l.9 « plusieurs Personnages peuvent contribuer ») ; sinon UN seul marin REPRÉSENTANT (le meilleur),
  * car « la performance des Personnages représente celle de tout l'équipage » (l.39) — les PNJ ne testent que pour un
  * rôle qu'AUCUN PJ n'occupe (l.41). PARTAGÉ par la manœuvre ET la bordée (`testTypeId`). `partyIds` = les PJ.
@@ -103,14 +103,14 @@ export function crewTestContributors(ship: Combatant, combatants: Combatant[], t
   return out;
 }
 
-/** Ajoute des marins à la liste « ayant agi ce Round » d'un navire (Manque de bras / cumul, MDG ch.14 l.53). PUR
+/** Ajoute des marins à la liste « ayant agi ce Round » d'un navire (Manque de bras / cumul, MDG 14 l.53). PUR
  *  (renvoie un nouveau `crewActed`). Dédupliqué : un marin déjà listé n'y figure qu'une fois. */
 export function withCrewActed(crewActed: Record<string, string[]> | undefined, shipId: string, ids: string[]): Record<string, string[]> {
   return { ...(crewActed ?? {}), [shipId]: [...new Set([...(crewActed?.[shipId] ?? []), ...ids])] };
 }
 
 /**
- * Moral effectif d'un navire pour un Test d'équipage (la bande de Moral pèse en ±DR, MDG ch.14). Pont CAMPAGNE → COMBAT :
+ * Moral effectif d'un navire pour un Test d'équipage (la bande de Moral pèse en ±DR, MDG 14). Pont CAMPAGNE → COMBAT :
  * la coque `Combatant` ne porte AUCUN Moral (il vit sur `CampaignVessel`, recalc hebdomadaire) → on lit `vessel.morale.score`
  * si la coque EST le navire de campagne, sinon `MORALE_BASE` (75, équipage neuf). Dérivé à l'usage, jamais stocké sur la coque.
  */
@@ -120,7 +120,7 @@ export function shipMoraleScore(get: Get, ship: Combatant): number {
 }
 
 /**
- * Manque de bras GLOBAL d'un navire (MDG ch.14 l.55) : `undercrewPenalty(nominal, présent)` où le NOMINAL vient
+ * Manque de bras GLOBAL d'un navire (MDG 14 l.55) : `undercrewPenalty(nominal, présent)` où le NOMINAL vient
  * du type (`vehicles.json` ship.crew) et le PRÉSENT = les `crewIds` encore EN ÉTAT (`exposedCrew`), MOINS les
  * marins déjà retirés de la campagne par Embrigadement (MDG 15 l.245, `CampaignVessel.crewLost`). Les
  * morts/inconscients de combat (Éclats, critiques « Équipage ») alimentent aussi le déficit. Lit l'état persistant
@@ -155,7 +155,7 @@ export function shipUndercrew(get: Get, ship: Combatant, combatants: Combatant[]
   return undercrewPenalty(nominal, Math.max(0, nominal - lost - deadNamed));
 }
 
-/** MDG ch.14 l.45-47 : « de -1 à -5 DR sur le Test d'équipage ». PUR. */
+/** MDG 14 l.45-47 : « de -1 à -5 DR sur le Test d'équipage ». PUR. */
 export function clampSaboteurDR(dr: number): number {
   return Math.max(-5, Math.min(0, dr));
 }
@@ -215,15 +215,15 @@ export function endShanty(get: Get, singer: Combatant): string[] {
 }
 
 /**
- * Résolution d'un NAVIRE comme UNITÉ DE COMBAT — abordage & naufrage (MDG ch.13-14). Un navire au combat =
+ * Résolution d'un NAVIRE comme UNITÉ DE COMBAT — abordage & naufrage (MDG 13-14). Un navire au combat =
  * sa COQUE (`bodyShape:'vehicule'`, à PV) + son ÉQUIPAGE (`crewIds`, de vrais combattants exposés). L'unité
  * sort du combat dès qu'UNE des deux issues RAW est atteinte — dans les DEUX sens, pour que la victoire
  * navale soit gagnable par CHAQUE voie :
- *  - **NAUFRAGE** — la coque tombe à 0 PB (« le navire coule », MDG ch.13 l.117). L'équipage encore en
+ *  - **NAUFRAGE** — la coque tombe à 0 PB (« le navire coule », MDG 13 l.117). L'équipage encore en
  *    état passe par-dessus bord : il QUITTE la rencontre (`outOfRencontre`). Sans ça, couler le navire ne
  *    suffirait pas (l'équipage flotterait, or il est quasi inentamable en mêlée — table des Tailles ch.13
  *    l.618-637), et la voie « naufrage » ne conclurait jamais.
- *  - **PRISE À L'ABORDAGE** — tout l'équipage exposé est hors de combat (MDG ch.13 l.420 : « un abordage
+ *  - **PRISE À L'ABORDAGE** — tout l'équipage exposé est hors de combat (MDG 13 l.420 : « un abordage
  *    déterminé »). Sans personne à bord pour la défendre ou la manœuvrer, la coque sort du combat
  *    (`outOfRencontre`). Sans ça, vaincre l'équipage ne conclurait jamais (la coque, inentamable en mêlée,
  *    resterait un ennemi « vivant »).
@@ -257,7 +257,7 @@ export function resolveShipUnits(combatants: Combatant[]): string[] {
 }
 
 /**
- * Applique un DELTA de Moral au NAVIRE DE CAMPAGNE (MDG ch.14 — Rude épreuve l.110 : le Moral évolue en jeu,
+ * Applique un DELTA de Moral au NAVIRE DE CAMPAGNE (MDG 14 — Rude épreuve l.110 : le Moral évolue en jeu,
  * pas seulement au recalc hebdomadaire) : PERSISTE sur `CampaignVessel.morale.score` quand la coque EST le
  * navire de campagne (sinon no-op : une coque adverse/transitoire ne suit pas de Moral). Renvoie les lignes
  * de journal (delta + changement de bande éventuel — « Des canailles que je ne parviens pas à mater »).

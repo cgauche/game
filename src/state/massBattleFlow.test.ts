@@ -8,7 +8,7 @@ import type { Combatant } from '../engine/types';
 
 /** Amorce une bataille avec un vrai groupe (pré-tirés) et le RNG seedé. Par défaut ouvre AUSSI un
  *  interlude doté du budget d'Activités (3 par héros) : c'est le budget UNIQUE dans lequel puise la
- *  préparation de bataille (ADE II ch.8 l.65 / LDB 23 l.6). `interludeLeft: 0` (ou absence) simule une
+ *  préparation de bataille (ADE II 8 l.65 / LDB 23 l.6). `interludeLeft: 0` (ou absence) simule une
  *  bataille SANS interlude (aucune préparation possible → Round 1 direct). */
 function start(
   spec: Partial<MassBattleSpec> = {},
@@ -559,7 +559,7 @@ describe('Activité SOUTENABLE — Planification (l.81 : « peut aider au Test �
     expect(pa.heroId).toBe(a);
   });
 
-  // #257 — RAW muet (LDB 12 l.188 « aider au Test » / ADE II ch.8 l.81) : le coût d'Activité de
+  // #257 — RAW muet (LDB 12 l.188 « aider au Test » / ADE II 8 l.81) : le coût d'Activité de
   // l'assistant est un arbitrage éditable (flag `interlude-assist-costs-activity`, policy.ts).
   it('assistant GRATUIT par défaut : seul le meneur perd un créneau', () => {
     resetRule('interlude-assist-costs-activity');
@@ -605,7 +605,7 @@ describe('Rassemblement (l.122)', () => {
   });
 });
 
-describe('Budget PARTAGÉ (C2b) — ADE II ch.8 l.65 : « comme à l\'accoutumée, ils ne peuvent participer qu\'à un maximum de trois Activités »', () => {
+describe('Budget PARTAGÉ (C2b) — ADE II 8 l.65 : « comme à l\'accoutumée, ils ne peuvent participer qu\'à un maximum de trois Activités »', () => {
   it('une préparation de bataille DÉCRÉMENTE `interlude.perHero.left` (budget UNIQUE)', () => {
     start();
     const hero = useGame.getState().party[0].id;

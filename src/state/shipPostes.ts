@@ -1,5 +1,5 @@
 /**
- * POSTES D'ARTILLERIE d'un navire — placement & répartition (MDG ch.12 « Navires et construction navale »).
+ * POSTES D'ARTILLERIE d'un navire — placement & répartition (MDG 12 « Navires et construction navale »).
  * Couche STATE (le côté de montage est un `FireArc`, cf. fireArc.ts). RAW vérifié FR + VO (« Boats and
  * Boatbuilding ») : PAS de slots fixes — placement LIBRE, seule limite = le poids (Enc) des pièces sur un
  * « facing » vs la Contenance (`ship.capacity`). Le Sabord (Gun Port) est une Amélioration optionnelle qui
@@ -37,7 +37,7 @@ export interface PlacementPenalty {
 }
 
 /**
- * Pénalité de PLACEMENT des pièces (MDG ch.12 l.432-433 / VO l.315-317). Si le poids (Enc) des pièces sur
+ * Pénalité de PLACEMENT des pièces (MDG 12 l.432-433 / VO l.315-317). Si le poids (Enc) des pièces sur
  * UN seul « facing » (proue/poupe/bâbord/tribord) dépasse 25 % de la Contenance → −1 M / −1 Man / −1 DR aux
  * Tests de Navigation ; >50 % → −2. Seuil STRICT ; la pénalité est le PIRE palier atteint par un seul bord
  * (non cumulatif entre les bords). PUR — `capacity` = `ship.capacity` (Contenance, déjà en donnée). */
@@ -57,7 +57,7 @@ export function shipOfCrew(combatants: Combatant[], crewId: string): Combatant |
 }
 
 /** `c` est-il un PASSAGER au combat — un membre d'ÉQUIPAGE d'une coque présente, à l'échelle MER ? Le NAVIRE agit
- *  alors en UNITÉ : « la performance des Personnages représente celle de tout l'équipage » (MDG ch.14 l.39) →
+ *  alors en UNITÉ : « la performance des Personnages représente celle de tout l'équipage » (MDG 14 l.39) →
  *  l'équipage n'a pas de slot d'initiative. Le passager RESTE dans `battle.combatants` (cible d'Éclats / Critiques
  *  d'équipage, futur combattant de Pont à l'abordage) ; seul son SLOT d'`order` est retiré. PUR.
  *
@@ -178,7 +178,7 @@ export function posteAnchor(
 
 /** Ordre de priorité RELATIF au cap `heading` (pas de Dir8.indexOf, mais l'ÉCART de crans) pour peupler la
  *  formation d'un poste terrestre CREWÉ — droite, gauche, puis les 2 angles arrière, puis l'arrière : jamais
- *  l'avant (crans 0/±1, exclus), l'engin y frappe (#210, ADE II ch.08 l.258 : « on pousse par les flancs/
+ *  l'avant (crans 0/±1, exclus), l'engin y frappe (#210, ADE II 8 l.258 : « on pousse par les flancs/
  *  l'arrière »). */
 const CREW_FORMATION_STEPS = [2, 6, 3, 5, 4] as const;
 
@@ -239,10 +239,10 @@ export function assignCrewFormation(
  * n'importe où sur la carte reçoit sa formation, sans que le scénario/l'éditeur ait à précalculer
  * `crewFormationSlots` à la main comme 42-belier-porte.ts). Un membre de `poste.crewIds` dont la `pos`
  * COÏNCIDE avec celle de la coque (défaut de qui ne pose pas la formation à la main — aucune position
- * PROPRE authorée) est réparti en anneau (`assignCrewFormation`, ADE II ch.08 l.258) autour de l'empreinte
+ * PROPRE authorée) est réparti en anneau (`assignCrewFormation`, ADE II 8 l.258) autour de l'empreinte
  * de la coque. Un servant à une position DISTINCTE de la coque (authorée à la main) n'est JAMAIS touché —
  * le placement d'AUTEUR prime toujours. Ne lit QUE `hull.postes[].crewIds` (postes terrestres, bélier/
- * baliste) — l'équipage de COQUE navale (`Combatant.crewIds`, MDG ch.14) est PASSAGER hors case propre,
+ * baliste) — l'équipage de COQUE navale (`Combatant.crewIds`, MDG 14) est PASSAGER hors case propre,
  * hors du champ de cette fonction. Mute en place ; appelé une fois au spawn (`combatSlice.startCombat`).
  */
 export function autoFormCrews(combatants: Combatant[], scene: Scene, facingOf?: (hull: Combatant) => Dir8 | undefined): void {

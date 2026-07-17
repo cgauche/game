@@ -1,5 +1,5 @@
 /**
- * COLLISIONS & ÉPERONNAGE d'un navire — couche PURE de MDG ch.13 « Navigation maritime » (l.423-465).
+ * COLLISIONS & ÉPERONNAGE d'un navire — couche PURE de MDG 13 « Navigation maritime » (l.423-465).
  *
  * Indice de Collision (l.444) = Bonus d'Endurance + Bonus de Blessures restantes (chiffre des dizaines).
  * Quand un vaisseau en percute un autre, CHACUN des deux reçoit l'IC de L'AUTRE + le M du navire qui a
@@ -10,7 +10,7 @@
 import type { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
 
-/** Indice de Collision (MDG ch.13 l.444) = Bonus d'Endurance + Bonus de Blessures restantes. PUR. */
+/** Indice de Collision (MDG 13 l.444) = Bonus d'Endurance + Bonus de Blessures restantes. PUR. */
 export function collisionIndex(hull: Combatant): number {
   return bonus(effectiveChar(hull, 'endurance')) + bonus(hull.wounds.current);
 }
@@ -27,7 +27,7 @@ export interface CollisionShip {
   movingAway?: boolean;
   /** DR de Manœuvre de CE navire, SIGNÉ : + aggrave, − limite l'IC des DEUX navires (l.458-461). */
   maneuverDR?: number;
-  /** CE navire porte un **Bélier** (Trait/Amélioration, MDG ch.12 l.221) : `ic` ajouté à son Indice de Collision
+  /** CE navire porte un **Bélier** (Trait/Amélioration, MDG 12 l.221) : `ic` ajouté à son Indice de Collision
    *  quand il éperonne de sa proue, `ap` = PA frontaux. VALEURS lues en DONNÉE (catalogue `naval-traits.json`)
    *  via `belierRam(traits)` (`navalTraits.ts`) — rien de codé ici. Absent = pas de Bélier. */
   belier?: { ic: number; ap: number };
@@ -56,8 +56,8 @@ function partyDamage(taker: CollisionShip, otherEffIC: number, mTerm: number, ex
 }
 
 /**
- * Résout une collision/éperonnage (MDG ch.13 l.446-464) entre le `causer` (qui percute) et la `victim`.
- * La manœuvre des DEUX (DR signé) ajuste l'IC des deux avant le calcul. **Bélier** (MDG ch.12 l.221, valeurs en
+ * Résout une collision/éperonnage (MDG 13 l.446-464) entre le `causer` (qui percute) et la `victim`.
+ * La manœuvre des DEUX (DR signé) ajuste l'IC des deux avant le calcul. **Bélier** (MDG 12 l.221, valeurs en
  * DONNÉE) : si le causeur frappe de sa PROUE (`ramProue`, ou collision `frontal`), son Bélier ajoute `ic` à son
  * Indice de Collision (la victime encaisse d'autant) et lui octroie `ap` PA frontaux contre le choc qu'il porte ;
  * une collision frontale frappe aussi la proue de la victime → son éventuel Bélier la protège également. PUR —

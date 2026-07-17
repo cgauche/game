@@ -3,7 +3,7 @@ import { placementPenalty, servingCrewPresent } from './shipPostes';
 import type { Combatant } from '../engine/types';
 
 /**
- * PLACEMENT DES PIÈCES D'ARTILLERIE (MDG ch.12 l.428-435 / VO « Boats and Boatbuilding » l.312-319).
+ * PLACEMENT DES PIÈCES D'ARTILLERIE (MDG 12 l.428-435 / VO « Boats and Boatbuilding » l.312-319).
  * Pas de slots fixes : placement LIBRE, limité par le POIDS (Enc) des pièces sur un bord vs la Contenance.
  * >25 % de la Contenance sur un bord → −1 M/Man et −1 DR aux Tests de Navigation ; >50 % → −2. La VO précise
  * « one facing » (et non « côté ») → on teste les QUATRE facings (proue/poupe/bâbord/tribord). Seuil STRICT,

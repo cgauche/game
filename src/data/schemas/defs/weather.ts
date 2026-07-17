@@ -1,5 +1,5 @@
 /**
- * Schéma de `weather.json` — Météo de voyage TERRESTRE (EDOC ch.8), consommée par
+ * Schéma de `weather.json` — Météo de voyage TERRESTRE (EDOC 8), consommée par
  * `src/data/index.ts` et typée par `engine/travelStages.ts` (`Weather`, `WEATHER_LABEL`,
  * `WEATHER_TABLE`, `WeatherCondition`). Deux volets :
  *  - `seasons` : table de tirage d100 par saison (`ranges.max` = borne haute incluse → `weather`,
@@ -30,7 +30,7 @@ export const schema = z.strictObject({
       source: sourceRefSchema.optional(),
     }),
   ),
-  /** Liste MAISON des Caractéristiques réputées « physiques » (EDOC ch.8 l.82 ne la définit pas). */
+  /** Liste MAISON des Caractéristiques réputées « physiques » (EDOC 8 l.82 ne la définit pas). */
   physicalTestChars: z.array(z.string()),
   physicalTestCharsSource: sourceRefSchema.optional(),
   conditions: z.array(

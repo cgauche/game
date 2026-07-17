@@ -1,5 +1,5 @@
 /**
- * MÉTÉO DE LA MER DES GRIFFES — couche PURE de MDG ch.13 « Navigation maritime » (l.162-306),
+ * MÉTÉO DE LA MER DES GRIFFES — couche PURE de MDG 13 « Navigation maritime » (l.162-306),
  * données verbatim dans `src/data/sea-weather.json`.
  *
  * RAW modélisé :
@@ -18,9 +18,9 @@
  *    (l.288-294 : Test de Navigation Intermédiaire (+0), échec → Critique sur les voiles ; sans
  *    ancre, dérive à 25 % de la vitesse dans le sens du vent), Virement de bord (l.302-304 : le
  *    bonus n'est acquis que sur un Test de Navigation Intermédiaire (+0) réussi).
- *  - **Clinfoc** (MDG ch.12 l.246-264) : un navire à voiles doté de l'Amélioration utilise le
+ *  - **Clinfoc** (MDG 12 l.246-264) : un navire à voiles doté de l'Amélioration utilise le
  *    tableau « EFFET DU VENT (CLINFOC) » à la place — passé par `rigging: 'clinfoc'`.
- *  - **Gréement de course** (T2C ch.12 l.137) : DELTA de % voiles sur le tableau standard (+10 % vent
+ *  - **Gréement de course** (T2C 12 l.137) : DELTA de % voiles sur le tableau standard (+10 % vent
  *    arrière/de côté, malus de vent contraire réduit de 5 %) — passé par `rigging: 'greement'` ; inclut
  *    un clinfoc mais les deux ne se cumulent pas (le Gréement prime).
  *  - Effets des Précipitations (l.187-201), Température (l.203-225 : Tests d'Exposition périodiques
@@ -139,12 +139,12 @@ export function tickWindForce(current: SeaWindForceId, rng: RNG = defaultRNG): S
 }
 
 /** Gréement du navire modulant l'EFFET DU VENT : `clinfoc` = tableau ALTERNATIF de l'Amélioration Clinfoc
- *  (MDG ch.12 l.256-264) ; `greement` = Gréement de course (T2C ch.12 l.137), DELTA sur le tableau STANDARD. */
+ *  (MDG 12 l.256-264) ; `greement` = Gréement de course (T2C 12 l.137), DELTA sur le tableau STANDARD. */
 export type SailRigging = 'none' | 'clinfoc' | 'greement';
 
 /** Cellule d'EFFET DU VENT pour une force × aspect (l.276-286), selon le `rigging` : `clinfoc` → tableau de
- *  l'Amélioration Clinfoc (MDG ch.12 l.256-264 — voiles seulement) ; `greement` → Gréement de course
- *  (T2C ch.12 l.137), qui ajoute un DELTA de % voiles au tableau standard (+10 % vent arrière ou de côté ;
+ *  l'Amélioration Clinfoc (MDG 12 l.256-264 — voiles seulement) ; `greement` → Gréement de course
+ *  (T2C 12 l.137), qui ajoute un DELTA de % voiles au tableau standard (+10 % vent arrière ou de côté ;
  *  vent contraire : malus réduit de 5 %) — sans effet quand les voiles ne portent pas (Encalminé/Affaler). PUR. */
 export function windEffect(force: SeaWindForceId, aspect: WindAspect, rigging: SailRigging = 'none'): WindEffectCell {
   const std = DATA.effetDuVent[force][aspect];
@@ -192,7 +192,7 @@ export function precipitationSkillMod(precip: SeaPrecipitationId, skillId: strin
 }
 
 /** Litres d'eau à boire PAR JOUR et par membre d'équipage : la bande de Température (Caniculaire 4 L,
- *  Chaude 3 L — l.209/213), sinon le régime de bord « 2 à 3 litres d'eau par jour » (MDG ch.14 l.242 —
+ *  Chaude 3 L — l.209/213), sinon le régime de bord « 2 à 3 litres d'eau par jour » (MDG 14 l.242 —
  *  fourchette, valeur maison, règle `sea-water-litres-mediane`). PUR. */
 export function dailyWaterLitres(temp: SeaTemperatureId): number {
   return temperatureDef(temp).litresParJour ?? Number(rule('sea-water-litres-mediane'));

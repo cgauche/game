@@ -1,10 +1,10 @@
 /**
- * ÉQUIPE des machines de guerre (ADE II ch.08 « Le théâtre de la guerre » l.233) : « Une Équipe est un
+ * ÉQUIPE des machines de guerre (ADE II 8 « Le théâtre de la guerre » l.233) : « Une Équipe est un
  * groupe d'individus entraînés requis pour faire fonctionner une machine de guerre correctement. Les
  * armes sans Équipe complète peuvent être utilisées avec une pénalité de –20. Elles ne peuvent être
  * utilisées avec moins de la moitié de l'Équipe nécessaire. » 3ᵉ courbe de sous-effectif, DISTINCTE de
- * `crewedPenalty` (AA/MDG ch.12, `engine/crewedWeapon.ts` : recharge ×2 + Défauts escaladés) et
- * `undercrewPenalty` (MDG ch.14, `engine/crewMorale.ts` : tranches de 10 % → DR navire plafonné) — PAS de
+ * `crewedPenalty` (AA/MDG 12, `engine/crewedWeapon.ts` : recharge ×2 + Défauts escaladés) et
+ * `undercrewPenalty` (MDG 14, `engine/crewMorale.ts` : tranches de 10 % → DR navire plafonné) — PAS de
  * réutilisation de leur mécanique, ni de la Qualité `arme-d-equipe` (qui porterait leur courbe à elles).
  * L'Équipe requise vit en DONNÉE sur l'arme via la Qualité `equipe` (Indice = effectif requis).
  */
@@ -19,7 +19,7 @@ export interface WarMachineCrewPenalty {
   unusable: boolean;
 }
 
-/** Pénalité de sous-effectif d'une machine de guerre (ADE II ch.08 l.233). `present` = effectif présent
+/** Pénalité de sous-effectif d'une machine de guerre (ADE II 8 l.233). `present` = effectif présent
  *  (headcount brut — le RAW ne pose ICI aucune exigence de Compétence, à la différence d'AA/MDG l.3900),
  *  `required` = Équipe requise (Indice de la Qualité `equipe`). PUR. */
 export function warMachineCrewPenalty(present: number, required: number): WarMachineCrewPenalty {

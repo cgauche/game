@@ -1,6 +1,6 @@
 /**
  * VOYAGE FLUVIAL jour par jour (**Mort sur le Reik — Compagnon, ch.5** « Navigation fluviale », cité
- * `T2C ch.7 l.<ligne>`) — la descente d'un fleuve en barge, JOUÉE au lieu d'être un simple transport payant.
+ * `T2C 7 l.<ligne>`) — la descente d'un fleuve en barge, JOUÉE au lieu d'être un simple transport payant.
  *
  * RÉUTILISATION (pas de duplication de la machinerie de voyage) : ce flux est le PENDANT FLUVIAL de
  * `seaVoyageFlow` (mer, MDG). Comme lui, il s'appuie sur la machinerie de voyage EXISTANTE — halte de nuit
@@ -9,7 +9,7 @@
  * (`TravelRecapDay`) — et n'écrit QUE la résolution navale du jour. Il ne réimplémente ni la boucle de
  * nuit, ni l'entretien, ni la persistance.
  *
- * DISTINCT de la mer (choix de fidélité, pas de raccourci) : T2C ch.7 est un système PROPRE, plus simple que
+ * DISTINCT de la mer (choix de fidélité, pas de raccourci) : T2C 7 est un système PROPRE, plus simple que
  * MDG. Le Test de Navigation fluvial est le **barreur seul** (Voile) ou le **meilleur rameur** (Ramer), un par
  * étape (l.11-15) — PAS un Test d'équipage MDG (rôles multiples, Moral, rôle essentiel doublé, manque de bras :
  * rien de tout cela dans T2C). On le résout donc comme le sibling maritime résout SON test de barreur unique
@@ -17,7 +17,7 @@
  * la halte de nuit — la même présentation que les jets de bord du voyage maritime. La table des vents, l'Agilité
  * de rame, le chavirage et les Critiques de bateau sont propres au fleuve (`engine/riverNavigation.ts`).
  *
- * EXPOSITION HYDRIQUE (T2C ch.16) : la descente EXERCE l'Effet EXISTANT `waterExposure` — un tirage d'auteur
+ * EXPOSITION HYDRIQUE (T2C 16) : la descente EXERCE l'Effet EXISTANT `waterExposure` — un tirage d'auteur
  * par étape (`MapRoute.riverExposure`) qui, via `applyEffects`, ouvre la cascade de Test de Résistance →
  * maladie. RÉUTILISE le canal d'Effet (aucune mécanique neuve) : le moteur de tables hydriques et l'Effet
  * étaient déjà là (`engine/waterExposure.ts`), seule leur MISE EN SCÈNE dans le voyage manquait.
@@ -243,7 +243,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   const logs: string[] = [];
 
   const eff = riverWindEffect(river.windForce, river.windDir);
-  logs.push(`Vent du jour : ${river.windForce === 'tres-fort' ? 'Très fort' : river.windForce[0].toUpperCase() + river.windForce.slice(1)}, ${river.windDir === 'arriere' ? 'vent arrière' : river.windDir === 'cote' ? 'vent de côté' : 'vent contraire'} (T2C ch.7 l.21).`);
+  logs.push(`Vent du jour : ${river.windForce === 'tres-fort' ? 'Très fort' : river.windForce[0].toUpperCase() + river.windForce.slice(1)}, ${river.windDir === 'arriere' ? 'vent arrière' : river.windDir === 'cote' ? 'vent de côté' : 'vent contraire'} (T2C 7 l.21).`);
 
   const baseKm = travelSpeed(get().party, plan.mode, route.speed?.[plan.mode]) * baseHoursPerDay(worldMap);
   const skillId = riverPilotSkill(findVehicleById(coque.creatureId ?? '')?.ship?.sail != null);
@@ -357,7 +357,7 @@ export function continueRiverDayAfterCascade(get: Get, set: Set): void {
   // Efface le contexte transitoire du jour (jamais persisté au-delà de la journée).
   set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, day: undefined, dayAgilityFactor: undefined } } });
 
-  // Exposition hydrique du jour (T2C ch.16) — ouvre l'Effet EXISTANT `waterExposure` (cascade influençable).
+  // Exposition hydrique du jour (T2C 16) — ouvre l'Effet EXISTANT `waterExposure` (cascade influençable).
   // Si elle SURFACE, on DIFFÈRE la halte de nuit à sa clôture : sinon la cascade d'Exposition et la modale
   // de Repos coexistent, le Repos reprend la route AVANT la résolution de l'Exposition, et celle-ci
   // (purpose générique `test`) n'a plus de continuation → la journée suivante ne se ré-arme jamais (#344).
@@ -390,7 +390,7 @@ export function continueRiverDayAfterExposure(get: Get, set: Set): void {
   finishRiverDay(get, set, to, fin?.kmDay ?? 0, fin?.dayLines ?? []);
 }
 
-/** EXPOSITION HYDRIQUE d'une étape (T2C ch.16, l.5-13) : tirage d'auteur (`MapRoute.riverExposure`) qui
+/** EXPOSITION HYDRIQUE d'une étape (T2C 16, l.5-13) : tirage d'auteur (`MapRoute.riverExposure`) qui
  *  déclenche l'Effet EXISTANT `waterExposure` sur TOUT le groupe (`applyEffects`) — aucune mécanique neuve.
  *  Sauté si le bateau a coulé (plus de fleuve sous les pieds). L'Effet ouvre la cascade influençable. */
 function maybeRiverExposure(get: Get, set: Set, route: MapRoute, sunk: () => boolean): boolean {
@@ -481,7 +481,7 @@ registerCascadeApplier('riverCapsize', (get, set, step) => {
   // Redressement multi-Round SYNCHRONE (sous-jets internes, hors cascade) : aucune rangée nulle part —
   // le journal est la SEULE surface, il PORTE les jets (#295 Lot 5, gardé nominativement).
   j.push(`Redressement (${be} Round(s), Navigation Accessible +20, −5 cumulatif) : ${r.rounds.map((x) => `${x.roll}/${x.target}${x.success ? '✓' : ''}`).join(' · ')}`);
-  if (r.sank) { sinkBoat(get, set, (l) => j.push(...l), `Le bateau n'est pas redressé et coule en ${be} tours (T2C ch.7 l.40).`); return { consequences: freeCons(j) }; }
+  if (r.sank) { sinkBoat(get, set, (l) => j.push(...l), `Le bateau n'est pas redressé et coule en ${be} tours (T2C 7 l.40).`); return { consequences: freeCons(j) }; }
   j.push(`Le bateau est redressé en ${r.rounds.length} Round(s) — il dérive le temps de reprendre le contrôle.`);
   return { consequences: freeCons(j) };
 });
@@ -532,7 +532,7 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
         { key: 'deblayer', label: 'Déblayer à la main', detail: 'Dégager les débris (3d10 objets) : du temps perdu, mais la coque est épargnée.' },
         { key: 'forcer', label: 'Forcer au bélier', detail: `Enfoncer le barrage : +${peril.obstacle.ramDamage} Dégâts à la coque.` },
       ],
-      // Cadence commandée : défaut = le MOINS destructif (déblayer, coque intacte) — T2C ch.7 l.128.
+      // Cadence commandée : défaut = le MOINS destructif (déblayer, coque intacte) — T2C 7 l.128.
       defaultChoice: 'deblayer', interactive: true, meta: { perilId },
     }] };
   }
@@ -596,7 +596,7 @@ registerCascadeApplier('riverHoleRepair', (get, set, step, hero) => {
     return { consequences: freeCons([{ text: `${name} colmate la voie d'eau : +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`, tone: 'ok' }]) };
   }
   const j: import('./rollSeam').FreeConsLine[] = [{ text: `${name} — le calfatage d'urgence ne tient pas.`, tone: 'bad' }];
-  sinkBoat(get, set, (l) => j.push(...l), 'La coque prend l\'eau plus vite qu\'on ne la vide — le bateau sombre (T2C ch.7 l.103).');
+  sinkBoat(get, set, (l) => j.push(...l), 'La coque prend l\'eau plus vite qu\'on ne la vide — le bateau sombre (T2C 7 l.103).');
   return { consequences: freeCons(j) };
 });
 
@@ -697,7 +697,7 @@ function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => v
       return [];
     }
   } else tell(['Coque percée et personne pour la calfater.']);
-  sinkBoat(get, set, tell, 'La coque prend l\'eau plus vite qu\'on ne la vide — le bateau sombre (T2C ch.7 l.103).');
+  sinkBoat(get, set, tell, 'La coque prend l\'eau plus vite qu\'on ne la vide — le bateau sombre (T2C 7 l.103).');
   return [];
 }
 
@@ -760,7 +760,7 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
 /** S'ÉCHOUER (l.97-99) : le bateau s'arrête, sa coque subit 12 Dégâts ; on le renfloue par un Test de Force
  *  « avec un malus égal au nombre total de Points d'Encombrement du bateau et de sa cargaison » (l.99). Le
  *  malus = Enc PROPRE du bateau (`VehicleData.enc`) + Enc de la CARGAISON des porteurs réels du groupe
- *  (`partyCargoTotalEnc` : bêtes/véhicules/navire, la cale fluviale du commerce T2C ch.13), converti en
+ *  (`partyCargoTotalEnc` : bêtes/véhicules/navire, la cale fluviale du commerce T2C 13), converti en
  *  difficulté (chaque 10 Enc ≈ un cran de −10 via
  *  `difficultyFromModifier`) ; degrade sur Intermédiaire si aucun Enc n'est connu (barge LDB `enc` null +
  *  convoi vide). Le RAW ne prévoit AUCUN délestage pour se renflouer (l.97-105 muets) → non modélisé. */

@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// LUTIN éthéré (Middenheim ch.2 — « Grain d'achillée ») : « créature MINUSCULE d'à peine une
+// LUTIN éthéré (Middenheim 2 — « Grain d'achillée ») : « créature MINUSCULE d'à peine une
 // trentaine de centimètres, recouverte de TOILES D'ARAIGNÉE LUMINESCENTES qui sourdent de tout son
 // corps ; bien que CHÉTIF… » ; il « voletait » (ailé). Pas d'art-ref officiel (livre Middenheim) →
 // dessiné d'après le TEXTE seul :

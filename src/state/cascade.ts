@@ -135,7 +135,7 @@ export function forceBatchParticipant(p: BatchParticipant): CascadeRoll {
 
 /** Agrège les jets d'une étape À PARTICIPANTS PRÊTE en un `CascadeRoll` scalaire — GÉNÉRIQUE (aucun
  *  concept de domaine) : `best` = le meilleur DR l'emporte ; `summed-dr` (défaut) = Σ des DR (les
- *  participants `essential` comptent DOUBLE, MDG ch.14 l.19) + `flatDR` (modificateur plat versé par le
+ *  participants `essential` comptent DOUBLE, MDG 14 l.19) + `flatDR` (modificateur plat versé par le
  *  flux, plafonné à 0 si `capMinime` — Manque de bras l.55) ; `opposed` = ce total net d'`opposeSl`. PUR.
  *  SOURCE UNIQUE pour `CascadeStep.participants` (`BatchParticipant[]`, flag `essential`) — le même
  *  « essentiel ×2 » (l.19) est ré-implémenté sur une forme DISTINCTE par `maneuverCrewTotal`

@@ -110,7 +110,7 @@ export interface GrappleRule {
 }
 export const GRAPPLE = grappleJson as GrappleRule;
 
-/** Mode d'exposition hydrique (T2C ch.16 p.91) : ingestion volontaire (« boit de l'eau de rivière sans
+/** Mode d'exposition hydrique (T2C 16 p.91) : ingestion volontaire (« boit de l'eau de rivière sans
  *  la faire bouillir ») ou immersion (chute/nage — « uniquement à l'immersion » pour le tableau 2). */
 export type WaterExposureMode = 'ingestion' | 'immersion';
 /** Dérivation AUTOMATIQUE d'un modificateur d'exposition depuis le Combatant (tableau 2 « Blessures et
@@ -133,7 +133,7 @@ export interface WaterExposureModifier {
   table: 'source-d-eau' | 'blessures-et-etats';
   auto?: WaterExposureAuto;
 }
-/** Tables d'exposition hydrique (T2C ch.16 p.91) : Test de Résistance Intermédiaire modifié ; raté →
+/** Tables d'exposition hydrique (T2C 16 p.91) : Test de Résistance Intermédiaire modifié ; raté →
  *  d100 « +10 pour chaque DR négatif » → maladie CONTRACTÉE (le Test d'exposition EST le test — pas de
  *  second Test de Contraction). `rerollUnlessWounded` : « Relancez si le Personnage n'est pas blessé ». */
 export interface WaterExposureData {
@@ -403,8 +403,8 @@ export interface TalentData {
   combat?: import('../engine/combatFeatures/types').CombatFeature;
   /** `true` = contenu de RÉFÉRENCE (PNJ/campagne scriptée), pas un Talent de progression PJ standard —
    *  le RAW lui-même le dit explicite (« ne sont pas accessibles à d'autres personnes dans des
-   *  circonstances normales », EDOC ch.13 l.83 ; « Carrière destinée uniquement aux PNJ … avec la
-   *  permission du MJ », EDOC ch.13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE1 ch.6 l.185).
+   *  circonstances normales », EDOC 13 l.83 ; « Carrière destinée uniquement aux PNJ … avec la
+   *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE1 6 l.185).
    *  Lu par `computeObtainability` (`scripts/data/lib/obtainabilityGraph.ts`, #326) pour exempter la
    *  garde `obtainability-guard.test.ts` — jamais un silence sur un Talent sans chemin d'octroi PJ. */
   codexOnly?: true;
@@ -418,7 +418,7 @@ export interface ItemCapabilities {
    *  fois que les circonstances l'y forceraient (désarmement / Piège-lame) — lu par `applyBladeTrap`
    *  (GATÉ sur le port). */
   preventForcedDrop?: boolean;
-  /** Protège des intempéries (Cape/Manteau, LDB ch.65 l.44) — annule le malus de Test d'Exposition au
+  /** Protège des intempéries (Cape/Manteau, LDB 65 l.44) — annule le malus de Test d'Exposition au
    *  froid (GATÉ sur le port). */
   weatherProtection?: boolean;
   /** Abri de campement (Tente, LDB p.308) — annule/atténue l'Exposition d'une nuit dehors (NON gaté). */
@@ -481,11 +481,11 @@ export interface TrappingData {
   indirect?: boolean;
   /** Effets DÉCLENCHÉS « à la touche » portés en DONNÉE (`TriggeredEffect[]`, MÊME vocabulaire que les
    *  enchantements d'arme et les traits) : Canon à flammes nain — « 2 + DR États En flammes à chaque cible
-   *  affectée » (ADE II ch.08 l.243). Propagé Trapping → ItemInstance → Weapon (`onHitEffects`), dispatché
+   *  affectée » (ADE II 8 l.243). Propagé Trapping → ItemInstance → Weapon (`onHitEffects`), dispatché
    *  par `fireTriggers('onHit')` sur la cible primaire ET les cibles de la zone d'Explosion. */
   onHitEffects?: import('../engine/flowCore').TriggeredEffect[];
   /** PORTÉE MINIMALE de tir (bande) : la cible plus proche que cette bande REFUSE le tir (≠ malus). Machines
-   *  de siège à distance = `'courte'` (pas de Bout Portant, ADE II ch.08 l.253) ; trébuchet/mortier =
+   *  de siège à distance = `'courte'` (pas de Bout Portant, ADE II 8 l.253) ; trébuchet/mortier =
    *  `'moyenne'` (« distance inférieure à leur Portée Courte » interdite, l.251). Propagé jusqu'à `Weapon`,
    *  lu par `firedAttackBlock` (`belowMinRangeBand`). Absent = pas de minimale. */
   minRangeBand?: import('../engine/types').RangeBandId;
@@ -495,12 +495,12 @@ export interface TrappingData {
   siegeRig?: string;
   /** `id` de munition REPRÉSENTATIVE (`TrappingData.id`, `type:'ammunition'`) d'une arme de siège — les
    *  familles `armes-de-siege`/`munition-de-siege` (`ammoFamily`) regroupent des munitions non-interchangeables
-   *  (carreau de baliste ≠ boulet de canon ≠ bombe de mortier ≠ balles de pierrier, MDG ch.12 p.106) ; le
+   *  (carreau de baliste ≠ boulet de canon ≠ bombe de mortier ≠ balles de pierrier, MDG 12 p.106) ; le
    *  `subType` seul ne discrimine pas la bonne famille pour le hint joueur. Propagé jusqu'à `Weapon`,
    *  résolu en libellé FR par `ammoFamilyLabel`. Absent = hint générique de la famille (`ammoFamilyLabel`). */
   defaultAmmo?: string;
   /** EMPREINTE de grille (côté N×N) de l'affût POSÉ en combat — recopiée sur `Combatant.footprint`
-   *  (`footprintN`), MÊME champ que `VehicleData.ship.footprint`. ADE II ch.08 l.239/258 (profil + description
+   *  (`footprintN`), MÊME champ que `VehicleData.ship.footprint`. ADE II 8 l.239/258 (profil + description
    *  physique du tronc suspendu sur portique à roues) ne chiffre aucune Taille en cases : la valeur posée
    *  en donnée (2, belier-ade2, #210) reste éditable au Compendium plutôt que codée en dur ailleurs. Absent
    *  = empreinte 1 (affûts compacts type baliste/canon). */
@@ -521,7 +521,7 @@ export interface TrappingData {
    *  NON-ENCOMBRANTS / non chiffrés — `'ND'` (ateliers : on ne les transporte pas) et `'Variable'`
    *  (arme improvisée). Ces strings sont traitées comme 0 au calcul (`itemFromTrappingById`). */
   enc: number | 'ND' | 'Variable' | null;
-  /** Taille PRÉVUE pour l'objet (ADE II ch.02 l.706-710) — présente sur la version « taille ogre » d'une
+  /** Taille PRÉVUE pour l'objet (ADE II 2 l.706-710) — présente sur la version « taille ogre » d'une
    *  possession ordinaire (`enc` reste la valeur CLASSIQUE, doublée au runtime, `totalEncumbrance`). Absente
    *  sur le catalogue NATIVEMENT ogre (massue ogre, pansière ogre… l.604 : Enc déjà entré à sa valeur pleine,
    *  pas de doublement). Propagée à `ItemInstance.sizeFor` / `Weapon.sizeFor`. */
@@ -911,9 +911,9 @@ export interface TraitCapabilities {
    *  propre Action à attaquer (une monture SANS ce drapeau est « un combattant à part entière »). Lu par
    *  l'IA de combat monté — drapeau de donnée, plus de test par-nom du trait. */
   skittishMount?: boolean;
-  // Structure de siège (ADE II ch.08) — Atouts de la table « Barricades et protections typiques »
-  structResistant?: boolean;    // Résistant : imparable par une Arme à DISTANCE sans l'Atout Siège (ADE II ch.08 l.296)
-  structImpenetrable?: boolean; // Impénétrable : imparable par TOUTE Arme sans l'Atout Siège (ADE II ch.08 l.300)
+  // Structure de siège (ADE II 8) — Atouts de la table « Barricades et protections typiques »
+  structResistant?: boolean;    // Résistant : imparable par une Arme à DISTANCE sans l'Atout Siège (ADE II 8 l.296)
+  structImpenetrable?: boolean; // Impénétrable : imparable par TOUTE Arme sans l'Atout Siège (ADE II 8 l.300)
   // Déplacement / vision
   fly?: boolean;
   leap?: boolean;
@@ -927,13 +927,13 @@ export interface TraitCapabilities {
    *  (`climbMovementCost`, joueur, LDB 15 l.53). Orthogonal à `autoClimb` (accueille une future capacité
    *  qui réussirait automatiquement sans pour autant grimper à pleine vitesse). */
   climbFullSpeed?: boolean;
-  /** Rampant (T2C ch.15) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
+  /** Rampant (T2C 15) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
   noRun?: boolean;
   seesInDark?: boolean;
   /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.176` ;
    *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
   darkSightTiles?: number;
-  /** Salive analgésique (T2C ch.15) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
+  /** Salive analgésique (T2C 15) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
    *  endormie (Inconscient magique) — elle s'y accroche sans être détectée. Lu par le modifier `wake-sleeper`. */
   wakelessBite?: boolean;
 }
@@ -1025,9 +1025,9 @@ export interface QualityCapabilities {
   critImmuneOdd?: boolean;      // Impénétrable : Critiques sur jet impair ignorés
   apIgnoredOnEven?: boolean;    // Partielle : PA ignorés sur jet pair ou Critique
   apIgnoredOnImpaleCrit?: boolean; // Points faibles : PA ignorés sur Critique Empaleuse
-  // Siège (ADE II ch.08)
+  // Siège (ADE II 8)
   siege?: boolean;              // Atout Siège : double les Dégâts aux structures, outrepasse Résistant/Impénétrable
-  ram?: boolean;                // Bélier : la pièce n'endommage QUE les portes (ADE II ch.08 l.249) — lu par engine/structures
+  ram?: boolean;                // Bélier : la pièce n'endommage QUE les portes (ADE II 8 l.249) — lu par engine/structures
   // Marqueurs
   unbreakable?: boolean;        // Incassable : insensible aux dégâts/destruction
   magic?: boolean;              // Magique : attaques magiques (blesse l'Éthéré)
@@ -1269,7 +1269,7 @@ export interface StarData {
   desc: string | null;
   source: SourceRef;
 }
-/** Demeure céleste (ADE2 ch.03 l.502-512) : section du ciel gouvernée par un signe — thème astral
+/** Demeure céleste (ADE2 3 l.502-512) : section du ciel gouvernée par un signe — thème astral
  *  facultatif de la création (flavor pur). `desc` = VERBATIM de la source ; `rand` = borne haute 1d10. */
 export interface CelestialHouseData {
   /** id STABLE (slug du libellé) — `HeroDetails.dwellings[].house` stocke cet ID (libellé à l'affichage). */
@@ -1427,7 +1427,7 @@ export const vehicles = vehiclesJson as VehicleData[];
 export const vehicleById: Map<string, VehicleData> = new Map(vehicles.map((v) => [v.id, v]));
 export const findVehicleById = (id: string): VehicleData | undefined => vehicleById.get(id);
 
-/** Structures destructibles de siège (ADE II ch.08) — catalogue app-owned éditable au Codex. Modèle à PV
+/** Structures destructibles de siège (ADE II 8) — catalogue app-owned éditable au Codex. Modèle à PV
  *  calqué sur la facette `hull` des véhicules ; lu par `engine/structures.ts` (`structureCombatant`). */
 export const structures = structuresJson as StructureData[];
 export const structureById: Map<string, StructureData> = new Map(structures.map((s) => [s.id, s]));
@@ -1435,7 +1435,7 @@ export const findStructureById = (id: string): StructureData | undefined => stru
 /** Apparence de RENDU des structures (murs/portes) — donnée pure, découplée des règles ci-dessus. */
 export const structureAppearances = structureAppearanceJson as import('../gameIso/catalog/structures/types').StructureAppearanceDef[];
 
-/** Combat de masse / Puissance de Bataille (ADE II ch.8, l.13-321) — 5 tables verbatim NICHÉES dans
+/** Combat de masse / Puissance de Bataille (ADE II 8, l.13-321) — 5 tables verbatim NICHÉES dans
  *  UN seul fichier (`mass-battle.json`, pas un tableau plat par table) : exposées ICI (facade) pour que
  *  le Codex/l'éditeur DEV les édite comme n'importe quel autre dataset (seam `overrides.ts`) ; le moteur
  *  pur (`engine/massBattle.ts`) les relit d'ICI (types définis là-bas, réimportés en `import type` —
@@ -1461,7 +1461,7 @@ export const roofMaterials = roofMaterialsJson as import('../gameIso/catalog/roo
 /** AMBIANCE de rendu partagée iso ⇄ POV (ciel/brumes/vignette/voile chaud/filtre d'étage) — donnée pure. */
 export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').AmbianceDef;
 
-/** Traits & Améliorations de navire (MDG ch.12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
+/** Traits & Améliorations de navire (MDG 12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
  *  verbatim + effet) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur codée en dur).
  *  `kind` distingue Trait (construction) et Amélioration (ajout/retrait) ; `ranked` = prend un Indice
  *  (« Renforcé 2 », « Peu maniable 1 »). L'EFFET mécanique passe par la langue UNIQUE `GameOp[]` (`passive`,
@@ -1471,17 +1471,17 @@ export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').Am
  *  couvert de pont). Absent = pas d'effet mécanisé (Robuste déféré) ou déjà baké dans les colonnes du véhicule
  *  (Renforcé/Solide → E/B). */
 /** Taille de navire MDG (catégorie dérivée de la LONGUEUR, tableau CARACTÉRISTIQUES DE BATEAU STANDARD,
- *  MDG ch.12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — ids stables des bandes d'installation. */
+ *  MDG 12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — ids stables des bandes d'installation. */
 export type ShipSize = 'minuscule' | 'tres-petite' | 'petite' | 'moyenne' | 'grande' | 'enorme' | 'monstrueuse';
-/** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C ch.12 l.54-135 tarife par TYPE de navire à
+/** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C 12 l.54-135 tarife par TYPE de navire à
  *  longueurs explicites — barque 5 m et esquif 10 m tombent dans la MÊME `ShipSize` « minuscule » avec des
  *  tarifs DIFFÉRENTS, la Taille ne peut donc pas discriminer). `maxLengthM` = borne haute inclusive du
  *  palier (`null` = bande OUVERTE au-delà — le dernier élément du tableau, triés par longueur croissante) ;
  *  `value` = CO (coût) ou Enc (poids) selon le champ porteur ; `maison` = réf nue du tarif au-delà de la
  *  dernière borne chiffrée par le livre porté sur la bande concernée. */
 export interface InstallBand { maxLengthM: number | null; value: number; maison?: string }
-/** Coût / Poids d'INSTALLATION d'une Amélioration navale (MDG ch.12, lignes « Coût : / Poids : » de chaque
- *  Amélioration, l.195-364 ; T2C ch.12 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
+/** Coût / Poids d'INSTALLATION d'une Amélioration navale (MDG 12, lignes « Coût : / Poids : » de chaque
+ *  Amélioration, l.195-364 ; T2C 12 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
  *  « par tranche de 5 m de Taille » (Blindage, Lissage) ; `per: 'unite'` = « par cabine » (Cabine de luxe) ;
  *  `'modele'` = ceux du modèle embarqué (Embarcation de bord). `weightEnc` absent = aucun poids (Lissage).
  *  Donnée consommée par le chantier construction/réparation navale (lot systèmes) — aucune valeur codée en
@@ -1509,14 +1509,14 @@ export interface NavalTraitData {
   /** Effet mécanique en `GameOp[]` (langue unique) — lu par `navalPassiveOps` puis filtré par effet
    *  (`ap`/`moveMod`/`skillDRBonus`), répété ×Indice si `ranked`. MÊME éditeur `GameOpEditor` que les traits. */
   passive?: import('../engine/ops').GameOp[];
-  /** Bélier (MDG ch.12 l.221) : bonus de COLLISION (géométrie proue/frontale) — sous-système navire hors
+  /** Bélier (MDG 12 l.221) : bonus de COLLISION (géométrie proue/frontale) — sous-système navire hors
    *  vocabulaire combattant (≠ `ap` qui mitige TOUT) → injecté dans `resolveCollision` via `belierRam`. */
   ram?: { ic: number; ap: number };
   /** Couvert de pont GRADUÉ (`DeckCoverClass`) offert par l'Amélioration à ses postes — Sabord/Murs blindés
-   *  = `totale` (MDG ch.12 l.364 / T2C ch.12 l.85), Plat-bord = `moyenne` (T2C ch.12 l.111). Géométrie de Pont,
+   *  = `totale` (MDG 12 l.364 / T2C 12 l.85), Plat-bord = `moyenne` (T2C 12 l.111). Géométrie de Pont,
    *  consommée par `effectiveDeckPostes`/le rendu du Pont. Sous-système navire, hors vocabulaire combattant. */
   deckCover?: import('../engine/types').DeckCoverClass;
-  /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau — Bouteur +20 (T2C ch.12 l.66),
+  /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau — Bouteur +20 (T2C 12 l.66),
    *  Gréement de course −10 (l.137). Sous-système manœuvre, converti en DR d'équipage par `navalNavTestDR`. */
   navTestMod?: number;
   /** #221 : même champ `maison` que `TraumaFiche` (`src/data/schemas/defs/traumas.ts:32`). */
@@ -1529,7 +1529,7 @@ const navalTraitById = new Map(NAVAL_TRAITS.map((t) => [t.id, t]));
 export function findNavalTrait(id: string): NavalTraitData | undefined {
   return navalTraitById.get(id);
 }
-/** Index des ports de la Mer des Griffes (#217, MDG ch.15 l.439-506) — catalogue app-owned éditable au
+/** Index des ports de la Mer des Griffes (#217, MDG 15 l.439-506) — catalogue app-owned éditable au
  *  Codex, consommé PAR RÉFÉRENCE depuis un lieu de la carte du monde (`MapPlace.port.ref`,
  *  `state/worldMap.ts`). `production`/`surplus`/`demande` sont keyés par id de `sea-cargo.json`
  *  (+ marqueurs `commerce`/`minimum-vital`), même vocabulaire que `PortProfile` (`engine/seaVoyage.ts`). */
@@ -1557,7 +1557,7 @@ export function findNavalPortById(id: string): NavalPortData | undefined {
   return navalPortById.get(id);
 }
 
-/** LOT 1 #422 : 5 datasets NAVAUX de contenu (tables MDG ch.12/13/15) exposés au Codex — mêmes garanties
+/** LOT 1 #422 : 5 datasets NAVAUX de contenu (tables MDG 12/13/15) exposés au Codex — mêmes garanties
  *  de référence LIVE (singleton ESM, même fichier physique relu par `engine/shipNavigation.ts`,
  *  `engine/seaNavigation.ts`, `engine/seaPerils.ts`, `engine/seaWeather.ts`, `engine/shipBuild.ts`) que
  *  `WATER_EXPOSURE` ci-dessus. Types réutilisés DEPUIS le schéma zod (`schemas/defs/*`, patron
@@ -1568,7 +1568,7 @@ export const seaPerils = seaPerilsJson as SeaPerilsData;
 export const seaWeather = seaWeatherJson as SeaWeatherData;
 export const shipConstruction = shipConstructionJson as ShipConstructionData;
 
-/** LOT 2 #422 : Navigation fluviale (T2C ch.7) — pendant fluvial de `seaNavigation`, même patron
+/** LOT 2 #422 : Navigation fluviale (T2C 7) — pendant fluvial de `seaNavigation`, même patron
  *  d'export (référence LIVE au même fichier physique relu par `engine/riverNavigation.ts`). */
 export const riverNavigation = riverNavigationJson as RiverNavigationData;
 
@@ -1613,7 +1613,7 @@ const seaShantyById = new Map(seaShanties.map((s) => [s.id, s]));
 export function findSeaShantyById(id: string): SeaShantyData | undefined {
   return seaShantyById.get(id);
 }
-/** Rôles d'équipage naval (MDG ch.14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
+/** Rôles d'équipage naval (MDG 14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
  *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE
  *  (+ `spec` pour Artilleur/Cuisinier/Chansonnier). Le `desc` est le verbatim de la colonne « Tâches ». */
 /** Solde d'un rôle (MDG 14 l.293-302 « Exemples de mercenaires ») : coûts quotidien/hebdomadaire
@@ -1631,13 +1631,13 @@ export interface CrewRoleData {
   desc: string;
   wage?: CrewWage;
 }
-/** Type de Test d'équipage (MDG ch.14) : rôles contributeurs + rôle ESSENTIEL (son DR compte double). */
+/** Type de Test d'équipage (MDG 14) : rôles contributeurs + rôle ESSENTIEL (son DR compte double). */
 export interface CrewTestTypeData {
   id: string;
   label: string;
   roles: string[];
   essential: string;
-  /** ENJEU du Test (#331) : ce que l'échec coûte, verbatim MDG ch.14 — surfacé sous le titre d'étape. */
+  /** ENJEU du Test (#331) : ce que l'échec coûte, verbatim MDG 14 — surfacé sous le titre d'étape. */
   enjeu?: string;
 }
 export const crewRoles = crewRolesJson as CrewRoleData[];
@@ -1706,7 +1706,7 @@ export const calendarMonths = calendarMonthsJson as { id: string; name: string; 
 export const calendarIntercalary = calendarIntercalaryJson as { id: string; name: string; afterMonth: number }[];
 export const calendarWeekdays = calendarWeekdaysJson as { id: string; name: string }[];
 export const calendarPhases = calendarPhasesJson as { key: string; start: number; label: string; icon: string }[];
-/** Table de Météo de voyage TERRESTRE (EDOC ch.8). `seasons` = plages d100 → météo par saison ;
+/** Table de Météo de voyage TERRESTRE (EDOC 8). `seasons` = plages d100 → météo par saison ;
  *  `conditions` = EFFETS par météo (mêmes formes de donnée que `sea-weather.json`). Éditable au Codex. */
 const weatherData = weatherJson as {
   seasons: { id: string; label: string; ranges: { max: number; weather: string }[] }[];
@@ -1722,7 +1722,7 @@ const weatherData = weatherJson as {
 export const weather = weatherData.seasons;
 /** Effets par météo (visibilité, mods de tir, poudre, Tests physiques, plafond de mouvement…). */
 export const weatherConditions = weatherData.conditions;
-/** Caractéristiques réputées « physiques » (liste MAISON, EDOC ch.8 l.82 non chiffrée). */
+/** Caractéristiques réputées « physiques » (liste MAISON, EDOC 8 l.82 non chiffrée). */
 export const weatherPhysicalTestChars = weatherData.physicalTestChars;
 /** Tableau des Vents Tourbillonnants (LDB 46 l.183-190, option `vents-tourbillonnants`) — tirage 1d10
  *  (`engine/windsOfMagic.ts`, lecture JSON directe comme `drunkenness.ts`) ; réexporté ICI pour le
@@ -1730,7 +1730,7 @@ export const weatherPhysicalTestChars = weatherData.physicalTestChars;
 export const windsOfMagicTable = (ventsTourbillonnantsJson as { table: { id: string; min: number; max: number; mod: number; label: string }[] }).table;
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
-/** Les 5 demeures célestes (ADE2 ch.03 l.502-512, « Déterminer les demeures célestes ») — ossature
+/** Les 5 demeures célestes (ADE2 3 l.502-512, « Déterminer les demeures célestes ») — ossature
  *  narrative du thème astral (flavor pur, aucun effet mécanique). `rand` = borne haute du 1d10. */
 export const celestialHouses = astrologyJson as CelestialHouseData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */

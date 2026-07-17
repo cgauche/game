@@ -343,7 +343,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'creation-signes-astraux',
     label: 'Signes astraux à la création',
-    ref: 'ADE2 ch.03',
+    ref: 'ADE2 3',
     group: 'Création',
     kind: 'flag',
     default: true,
@@ -380,7 +380,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'tavern-games',
     label: 'Jeux de taverne',
-    ref: 'NADJ ch.16 l.9',
+    ref: 'NADJ 16 l.9',
     group: 'Activités',
     kind: 'flag',
     default: false,
@@ -415,24 +415,24 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Un personnage elfe perd 1 Activité (interlude ≥ 3 semaines) pour son devoir envers les siens. Désactiver lève cette restriction.',
   },
   {
-    // #257 — LDB 23 l.5 / ADE II ch.8 l.65 bornent le budget par « participer à une Activité » ; le
-    // Soutien (LDB 12 l.188-200) et Planification (ADE II ch.8 l.81 « peut aider au Test ») ne chiffrent
+    // #257 — LDB 23 l.5 / ADE II 8 l.65 bornent le budget par « participer à une Activité » ; le
+    // Soutien (LDB 12 l.188-200) et Planification (ADE II 8 l.81 « peut aider au Test ») ne chiffrent
     // aucun coût d'Activité pour l'assistant. Défaut = false : `confirmActivity` ne décompte que le meneur.
     id: 'interlude-assist-costs-activity',
     label: 'Assister une Entreprise coûte un créneau (maison)',
-    ref: 'LDB 12 l.188 / ADE II ch.8 l.81',
+    ref: 'LDB 12 l.188 / ADE II 8 l.81',
     group: 'Activités',
     kind: 'flag',
     default: false,
     hint: 'RAW muet : aucune règle ne dit si prêter son Soutien à l’Entreprise d’un autre (ex. Planification de bataille) consomme l’une des trois Activités de l’assistant. Désactivé (défaut) : seul le meneur dépense un créneau, les assistants aident gratuitement. Activé : chaque assistant qui a encore un créneau en dépense un.',
   },
   {
-    // #352 — EDOC ch.8 l.151-153 chiffre le Test (Ragot Intermédiaire) mais jamais de durée à
+    // #352 — EDOC 8 l.151-153 chiffre le Test (Ragot Intermédiaire) mais jamais de durée à
     // l'Activité « Recueillir des informations » jouée HORS voyage (au comptoir d'une auberge, en
     // dehors d'une Étape) : le canon la borne implicitement à « une Étape » en voyage, muet ailleurs.
     id: 'inn-gather-info-minutes',
     label: 'Recueillir des informations à l’auberge — durée',
-    ref: 'EDOC ch.8 l.151-153 — durée hors voyage non chiffrée, valeur maison (#352)',
+    ref: 'EDOC 8 l.151-153 — durée hors voyage non chiffrée, valeur maison (#352)',
     group: 'Activités',
     kind: 'param',
     default: 120,
@@ -519,7 +519,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'corruption-tables-edoc',
     label: 'Tables de Corruption étendues (EDOC)',
-    ref: 'EDOC ch.12',
+    ref: 'EDOC 12',
     group: 'Corruption',
     kind: 'mode',
     default: 'ldb',
@@ -548,7 +548,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-etapes',
     label: 'Voyage par Étapes',
-    ref: 'EDOC ch.8 l.29',
+    ref: 'EDOC 8 l.29',
     group: 'Voyage',
     kind: 'flag',
     default: false,
@@ -557,7 +557,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-etapes-count-bonus',
     label: 'Étapes supplémentaires',
-    ref: 'EDOC ch.8 l.34',
+    ref: 'EDOC 8 l.34',
     group: 'Voyage',
     kind: 'param',
     default: 0,
@@ -569,7 +569,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-etapes-low-move-bonus',
     label: 'Étapes supplémentaires (groupe lent)',
-    ref: 'EDOC ch.8 l.25 — MJ décide, valeur maison',
+    ref: 'EDOC 8 l.25 — MJ décide, valeur maison',
     group: 'Voyage',
     kind: 'param',
     default: 1,
@@ -628,7 +628,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-attraper-froid',
     label: 'Attraper froid',
-    ref: 'EDOC ch.8 l.73',
+    ref: 'EDOC 8 l.73',
     group: 'Voyage',
     kind: 'flag',
     default: false,
@@ -646,7 +646,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'sea-water-litres-mediane',
     label: 'Eau bue par jour (température Médiane, en mer)',
-    ref: 'MDG ch.14 l.242 — fourchette, valeur maison',
+    ref: 'MDG 14 l.242 — fourchette, valeur maison',
     group: 'Voyage',
     kind: 'param',
     default: 3,
@@ -714,13 +714,13 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'siege-engine-push-speed',
     label: 'Vitesse de poussée d’un engin de siège',
-    ref: 'ADE II ch.08 l.258 — roues, vitesse non chiffrée, valeur maison',
+    ref: 'ADE II 8 l.258 — roues, vitesse non chiffrée, valeur maison',
     group: 'Combat',
     kind: 'param',
     default: 2,
     min: 1,
     max: 6,
-    hint: '« [le bélier/la baliste sont] dotés de roues pour se déplacer sur le champ de bataille » (ADE II ch.08 l.256/258) sans chiffrer de vitesse : plafond MAISON (en cases) d’une poussée d’équipage — mouvement SIMPLE, aucun Test.',
+    hint: '« [le bélier/la baliste sont] dotés de roues pour se déplacer sur le champ de bataille » (ADE II 8 l.256/258) sans chiffrer de vitesse : plafond MAISON (en cases) d’une poussée d’équipage — mouvement SIMPLE, aucun Test.',
   },
   {
     id: 'sea-shipwreck-swim',
@@ -766,7 +766,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     min: 0,
     max: 100,
     step: 5,
-    hint: 'Arbitrage #327 (2026-07-11) : se SOUMETTRE à la Cogue pirate (MDG ch.15) laisse les forbans « fouiller la cale et prendre ce qu’ils veulent » — ce % d’Enc de cargaison du navire est pillé (défaut 100). Le RAW décrit l’extorsion sans la chiffrer → paramètre maison.',
+    hint: 'Arbitrage #327 (2026-07-11) : se SOUMETTRE à la Cogue pirate (MDG 15) laisse les forbans « fouiller la cale et prendre ce qu’ils veulent » — ce % d’Enc de cargaison du navire est pillé (défaut 100). Le RAW décrit l’extorsion sans la chiffrer → paramètre maison.',
   },
   {
     id: 'boardingWaveSize',
@@ -778,7 +778,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     min: 1,
     max: 12,
     step: 1,
-    hint: 'Un abordage (MDG ch.14/15) dérivé d’un événement de navire hostile engendre une vague d’assaillants de CE nombre (individus de l’équipage type de la coque), plus le chef éventuel — la coque ennemie entière (25/45 marins) est l’effectif du navire, jamais autant de figurants sur le pont. Le RAW décrit l’assaut sans chiffrer la vague → paramètre maison, éditable.',
+    hint: 'Un abordage (MDG 14/15) dérivé d’un événement de navire hostile engendre une vague d’assaillants de CE nombre (individus de l’équipage type de la coque), plus le chef éventuel — la coque ennemie entière (25/45 marins) est l’effectif du navire, jamais autant de figurants sur le pont. Le RAW décrit l’assaut sans chiffrer la vague → paramètre maison, éditable.',
   },
   {
     // #443 — le tableau ÇA VA LÂCHER, CAPITAINE ! (MDG 13 l.121-142) chiffre une CADENCE infra-journalière

@@ -1,5 +1,5 @@
 /**
- * « Entre deux aventures » (LDB ch.22-23 — Jalon 5) : flux d'interlude.
+ * « Entre deux aventures » (LDB 22-23 — Jalon 5) : flux d'interlude.
  *
  * Séquence RAW (ch.22 l.12) : Événement d100 par héros → Activités (« un maximum d'une Activité
  * par semaine, et […] un maximum de trois Activités au total », ch.23 l.6) → « Argent à
@@ -160,7 +160,7 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
 // ── Activités (ch.23) — flux de jet par modale (fabrique rollFlow) ────────────────────────────
 
 /** Jet d'Activité en attente (modale) : Revenus / lancer d'Artisanat (Test étendu) / Apprentissage /
- *  Identification d'artefact (ADE2 ch.4) / Activité du CATALOGUE data-driven (`activities.json` —
+ *  Identification d'artefact (ADE2 4) / Activité du CATALOGUE data-driven (`activities.json` —
  *  Convalescence ADE2, Activités d'Altdorf ACE Annexe I). */
 export interface PendingActivity extends PendingBase {
   heroId: string;
@@ -190,7 +190,7 @@ export interface PendingActivity extends PendingBase {
   spellId?: string;
   /** Retrait de Mécénat (ACE 12 l.49) : index du dépôt `bank` soldé par le Test d'Évaluation. */
   depositIndex?: number;
-  // ── Activité/Scène de BATAILLE de masse (ADE II ch.8 — contextes 'bataille'/'bataille-round') ──
+  // ── Activité/Scène de BATAILLE de masse (ADE II 8 — contextes 'bataille'/'bataille-round') ──
   /** Activité de bataille : l'issue (delta de Puissance / modificateur de Test) porte sur l'ARMÉE, pas
    *  sur le héros — routée par `confirmActivity` vers le résolveur de bataille. `prep` = Activité de
    *  préparation ('bataille') ; `round` = Scène cinématique d'un Round ('bataille-round'). */
@@ -251,7 +251,7 @@ export function incomeSkillOf(h: Combatant): string {
 const heroState = (s: GameState, heroId: string) => s.interlude?.perHero[heroId];
 
 /** Décrémente le budget d'Activités d'un héros (`interlude.perHero[id].left`) — SOURCE UNIQUE du budget
- *  de downtime (LDB 23 l.6 / ADE II ch.8 l.65). No-op si aucun interlude / budget épuisé. */
+ *  de downtime (LDB 23 l.6 / ADE II 8 l.65). No-op si aucun interlude / budget épuisé. */
 export function consumeActivity(get: Get, set: Set, heroId: string): void {
   const itl = get().interlude;
   const st = itl?.perHero[heroId];
@@ -315,7 +315,7 @@ export function currentPlaceId(s: Pick<GameState, 'scene' | 'worldMap'>): string
 /** Activités du catalogue proposables ICI (contexte 'interlude' + gate géographique `where`). Quand une
  *  bataille de masse est en attente de préparation (`massBattle.phase === 'prep'`), les Activités de
  *  PRÉPARATION (contexte 'bataille' + Discours) sont AJOUTÉES au catalogue : « Interlude c'est interlude »,
- *  la préparation de bataille se joue DANS le menu d'Activités, pas sur un écran à part (ADE II ch.8 l.65 :
+ *  la préparation de bataille se joue DANS le menu d'Activités, pas sur un écran à part (ADE II 8 l.65 :
  *  budget d'Activités UNIQUE). Le rendu gate les prérequis (Infiltration ⇐ Planification, Sabotage ⇐
  *  Repérage) et l'anti-répétition — cf. `battlePrepEntries`. Sans bataille pendante, catalogue inchangé. */
 export function interludeCatalog(s: Pick<GameState, 'scene' | 'worldMap' | 'massBattle'>): ActivityDef[] {
@@ -686,7 +686,7 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
 export function confirmActivity(get: Get, set: Set): void {
   const pa = get().pendingActivity;
   if (!pa || pa.roll == null || !pa.activityId) return;
-  // Activité/Scène de BATAILLE de masse (ADE II ch.8) : l'issue porte sur l'ARMÉE (application distincte
+  // Activité/Scène de BATAILLE de masse (ADE II 8) : l'issue porte sur l'ARMÉE (application distincte
   // par `confirmBattleActivity`, canal de jet identique). BUDGET UNIQUE (l.65 : « comme à l'accoutumée,
   // ils ne peuvent participer qu'à un maximum de trois Activités ») : une prépa de bataille EST une
   // Activité d'interlude → elle DÉCRÉMENTE `interlude.perHero[id].left` comme toute Activité. Les Scènes
@@ -703,7 +703,7 @@ export function confirmActivity(get: Get, set: Set): void {
     confirmBattleActivity(get, set, pa);
     if (pa.battle === 'prep') {
       consumeActivity(get, set, pa.heroId);
-      // #257 (flag `interlude-assist-costs-activity`, LDB 23 l.5 / ADE II ch.8 l.65/l.81) : les
+      // #257 (flag `interlude-assist-costs-activity`, LDB 23 l.5 / ADE II 8 l.65/l.81) : les
       // assistants d'une Entreprise SOUTENUE dépensent aussi un créneau. `consumeActivity` no-op à 0.
       if (rule('interlude-assist-costs-activity')) {
         for (const hid of pa.heroIds ?? []) if (hid !== pa.heroId) consumeActivity(get, set, hid);
@@ -916,7 +916,7 @@ export function interludeEnd(get: Get, set: Set): void {
     set({ party: [...get().party] });
     for (const l of after) get().log(l);
   }
-  // Bataille en attente de préparation à la clôture de l'interlude (ADE II ch.8) : la fin de l'interlude
+  // Bataille en attente de préparation à la clôture de l'interlude (ADE II 8) : la fin de l'interlude
   // ENGAGE la bataille (transition vers les Rounds avec les bonus de prépa acquis). `massBattleBegin`
   // rebascule sur l'écran de bataille. Une bataille sans prépa faite démarre au Round 1 sans bonus.
   if (get().massBattle?.phase === 'prep') {

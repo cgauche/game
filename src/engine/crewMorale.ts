@@ -1,5 +1,5 @@
 /**
- * MORAL d'un équipage de navire — MDG ch.14 « Navigation à bord de grands vaisseaux ». CODE GÉNÉRIQUE
+ * MORAL d'un équipage de navire — MDG 14 « Navigation à bord de grands vaisseaux ». CODE GÉNÉRIQUE
  * lisant la DONNÉE verbatim (`crew-morale.json`). Système PROPRE à la Mer des Griffes : ni le LDB ni
  * Aux Armes ne définissent de score de Moral numérique (AA n'a qu'une « Loyauté »/« Désertion »
  * narrative) — aucune mécanique parallèle à réutiliser ici.
@@ -8,7 +8,7 @@
  * chaque facteur ACTIF fait monter ou descendre le score. Sa bande détermine les bonus/malus de DR aux
  * Tests d'équipage et de Commandement, et le seuil de désertion en cas de relâche à terre.
  *
- * Le **Test d'équipage** (MDG ch.14) est un mécanisme PROPRE : « le total cumulé de ces Tests individuels »
+ * Le **Test d'équipage** (MDG 14) est un mécanisme PROPRE : « le total cumulé de ces Tests individuels »
  * (somme des DR de chaque contributeur, le DR du rôle ESSENTIEL étant DOUBLÉ) — ce n'est PAS le Test Soutenu
  * du LDB (+10 par soutien à UN seul jet) : on le résout donc avec son propre additionneur, en réutilisant
  * `rollTest` (un jet par contributeur) et la bande de Moral (`crewTestDR`). `rollExpr` évalue les
@@ -26,7 +26,7 @@ import { priceToMoney, toBrass } from './money';
 import type { Combatant, Difficulty } from './types';
 import type { PairedSense } from './ops';
 
-/** Facteur de Moral (MODIFICATEURS DE MORAL, MDG ch.14) — `effect` = dés signés (« +2d10 », « -3d10 »). */
+/** Facteur de Moral (MODIFICATEURS DE MORAL, MDG 14) — `effect` = dés signés (« +2d10 », « -3d10 »). */
 export interface MoraleFactor {
   /** id STABLE (slug) — toute réf passe par lui, jamais le `label`. */
   id: string;
@@ -34,7 +34,7 @@ export interface MoraleFactor {
   effect: string;
 }
 
-/** Bande d'effet du Moral (EFFETS DU MORAL, MDG ch.14). */
+/** Bande d'effet du Moral (EFFETS DU MORAL, MDG 14). */
 export interface MoraleBand {
   min: number;
   max: number;
@@ -49,7 +49,7 @@ export interface MoraleBand {
   desc: string;
 }
 
-/** Moral de départ d'un nouvel équipage / nouveau capitaine (MDG ch.14). */
+/** Moral de départ d'un nouvel équipage / nouveau capitaine (MDG 14). */
 export const MORALE_BASE: number = crewMoraleJson.base;
 export const MORALE_FACTORS: MoraleFactor[] = crewMoraleJson.factors;
 export const MORALE_BANDS: MoraleBand[] = crewMoraleJson.bands as MoraleBand[];
@@ -73,7 +73,7 @@ export interface MoraleRecalc {
 }
 
 /**
- * Recalcul HEBDOMADAIRE du Moral (MDG ch.14) : chaque facteur ACTIF (référencé par `id`) roule son
+ * Recalcul HEBDOMADAIRE du Moral (MDG 14) : chaque facteur ACTIF (référencé par `id`) roule son
  * effet en dés signés et fait MONTER ou DESCENDRE le Moral courant. PUR (RNG injecté pour le déterminisme).
  */
 export function recalcMorale(current: number, activeFactorIds: string[], rng: RNG = defaultRNG): MoraleRecalc {
@@ -127,7 +127,7 @@ export function payChoiceCostBrass(wageBrass: number, factorId: string): number 
 export interface CrewContributor {
   /** Valeur de Compétence effective du contributeur pour ce Test. */
   value: number;
-  /** Rôle ESSENTIEL (MDG ch.14) : « Tout DR, ou DR négatif, qu'il génère est alors doublé. » */
+  /** Rôle ESSENTIEL (MDG 14) : « Tout DR, ou DR négatif, qu'il génère est alors doublé. » */
   essential?: boolean;
   /** Étiquette d'affichage (journal). */
   label?: string;
@@ -143,7 +143,7 @@ export interface CrewTestResult {
   contributions: { label?: string; sl: number; essential: boolean; counted: number }[];
   /** Somme des DR (rôles essentiels doublés). */
   baseTotal: number;
-  /** ±DR de la bande de Moral courante (MDG ch.14, EFFETS DU MORAL). */
+  /** ±DR de la bande de Moral courante (MDG 14, EFFETS DU MORAL). */
   moraleDR: number;
   /** DR final = somme des contributions + DR de Moral + `extraDR` (ex. Manque de bras). */
   total: number;
@@ -151,7 +151,7 @@ export interface CrewTestResult {
 }
 
 /**
- * Résout un TEST D'ÉQUIPAGE (MDG ch.14) : chaque contributeur lance son Test à `difficulty` et son DR
+ * Résout un TEST D'ÉQUIPAGE (MDG 14) : chaque contributeur lance son Test à `difficulty` et son DR
  * s'ajoute au total (DR du rôle ESSENTIEL doublé). Le DR de la bande de Moral courante s'applique au total,
  * ainsi qu'un `extraDR` optionnel (Manque de bras, sabotage…). PUR (RNG injecté). Ce n'est PAS le Test
  * Soutenu du LDB : on additionne des DR de jets distincts, on n'ajoute pas +10 à un jet unique.
@@ -179,7 +179,7 @@ export function resolveCrewTest(
   return { contributions, baseTotal, moraleDR, total, lines };
 }
 
-/** Pénalité de MANQUE DE BRAS d'un grand vaisseau (MDG ch.14 l.55). */
+/** Pénalité de MANQUE DE BRAS d'un grand vaisseau (MDG 14 l.55). */
 export interface UndercrewPenalty {
   /** Nombre de tranches de 10 % d'équipage manquantes. */
   tranches: number;
@@ -190,14 +190,14 @@ export interface UndercrewPenalty {
 }
 
 /**
- * Manque de bras GLOBAL d'un grand vaisseau (MDG ch.14 l.55) : « le modificateur ne s'applique que pour chaque
+ * Manque de bras GLOBAL d'un grand vaisseau (MDG 14 l.55) : « le modificateur ne s'applique que pour chaque
  * tranche de 10 % de l'équipage manquante » → −2 DR par tranche de 10 % manquant (`nominal` = équipage nominal du
  * type ; `present` = membres encore en état). Dès qu'au moins une tranche manque, le Test « ne peut jamais être
  * meilleur qu'un Succès Minime » (plafond du DR total à 0). Aucune pénalité si l'effectif est complet ou si moins
  * de 10 % manque. PUR. */
-/** DR d'un Test d'équipage joué SOUS l'effectif minimal (MDG ch.14 l.55) : −2 DR. */
+/** DR d'un Test d'équipage joué SOUS l'effectif minimal (MDG 14 l.55) : −2 DR. */
 export const UNDERCREW_DR = -2;
-/** Plafonne un total de DR d'équipage au Succès Minime (MDG ch.14 l.55) : jamais > 0. */
+/** Plafonne un total de DR d'équipage au Succès Minime (MDG 14 l.55) : jamais > 0. */
 export function capToSuccesMinime(total: number): number { return Math.min(0, total); }
 
 export function undercrewPenalty(nominal: number, present: number): UndercrewPenalty {
@@ -231,7 +231,7 @@ export interface ShipMoraleState {
 }
 
 /**
- * RECALCUL HEBDOMADAIRE gardé (MDG ch.14) : recalcule le Moral une seule fois par semaine calendaire
+ * RECALCUL HEBDOMADAIRE gardé (MDG 14) : recalcule le Moral une seule fois par semaine calendaire
  * (jour ÷ 7), sur le modèle de `lastUpkeepDay`. PUR — prêt à être appelé par l'entretien quotidien quand
  * un navire vit dans l'état de campagne. Renvoie un nouvel état (jamais muté en place).
  */
@@ -242,20 +242,20 @@ export function tickShipMorale(state: ShipMoraleState, currentDay: number, rng: 
   return { state: { ...state, score: r.score, lastMoraleWeek: week }, recalced: true, lines: r.lines };
 }
 
-/** Delta de MORAL d'un Test d'équipage de RUDE ÉPREUVE (MDG ch.14 l.110 : « Si le total de ce Test donne
+/** Delta de MORAL d'un Test d'équipage de RUDE ÉPREUVE (MDG 14 l.110 : « Si le total de ce Test donne
  *  un ou plusieurs DR négatifs, réduisez le Moral d'un nombre égal au nombre de ces DR ») — un total
  *  négatif RETIRE autant de Moral ; un total ≥ 0 n'en rend PAS. PUR. */
 export function rudeEpreuveMoraleDelta(total: number): number {
   return total < 0 ? total : 0;
 }
 
-/** Assignation d'un membre d'équipage à un rôle, pour un Test d'équipage piloté par les rôles (MDG ch.14). */
+/** Assignation d'un membre d'équipage à un rôle, pour un Test d'équipage piloté par les rôles (MDG 14). */
 export interface CrewAssignment {
   /** Le Combattant d'équipage qui tient le rôle. */
   crew: Combatant;
   /** id du rôle tenu (crew-roles.json). */
   roleId: string;
-  /** Le membre cumule DEUX rôles (Manque de bras, MDG ch.14 l.53) : CE jet subit +2 crans de difficulté. */
+  /** Le membre cumule DEUX rôles (Manque de bras, MDG 14 l.53) : CE jet subit +2 crans de difficulté. */
   doubleRole?: boolean;
 }
 
@@ -270,7 +270,7 @@ export function crewTestModOf(c: Combatant): number {
  *  PLUS le modificateur « Test d'équipage » de ses effets actifs (`crewTestModOf` — chansons de marin).
  *  SEUL point de valeur des Tests d'équipage (manœuvre, bordée, générique, fiche du navire). `sense`
  *  (optionnel) : sens NARRATIVEMENT sollicité par CE Test précis (ex. Vigie qui « voit la lumière d'un
- *  phare », MDG ch.13 l.337 — visuel, transmis par l'appelant) ; restreint les `skillMod` sense-scopés
+ *  phare », MDG 13 l.337 — visuel, transmis par l'appelant) ; restreint les `skillMod` sense-scopés
  *  (Surdité, LDB 18) via `testValue`. Absent = comportement historique. PUR. */
 export function crewRoleValue(crew: Combatant, role: CrewRoleData, sense?: PairedSense): { value: number; used?: { skillId: string; spec?: string } } {
   const b = bestForSkills([crew], role.skills ?? [], undefined, sense);
@@ -290,7 +290,7 @@ export function crewTalentDR(crew: Combatant, role: CrewRoleData): number {
     + skillDRBonus(crew, used.skillId, used.spec);
 }
 
-/** Rôle d'équipage INFÉRÉ d'un membre (MDG ch.14) — sur la COMPÉTENCE, comme le RAW :
+/** Rôle d'équipage INFÉRÉ d'un membre (MDG 14) — sur la COMPÉTENCE, comme le RAW :
  *  - le rôle où sa MEILLEURE compétence POSSÉDÉE est la plus haute (« ou s'il est plus **compétent** », MDG 14
  *    l.38-39) — `testValue` (carac + avances). Le membre ne concourt QUE pour les rôles dont il possède une
  *    compétence (on ne rafle pas un poste sur la seule carac nue).
@@ -309,13 +309,13 @@ export function defaultCrewRole(crew: Combatant): string | null {
 }
 
 /**
- * Test d'équipage PILOTÉ PAR LES RÔLES (MDG ch.14) — système PROPRE à la Mer des Griffes (vérifié ABSENT du
+ * Test d'équipage PILOTÉ PAR LES RÔLES (MDG 14) — système PROPRE à la Mer des Griffes (vérifié ABSENT du
  * Compagnon de Mort sur le Reik, qui s'en tient au Personnage à la barre + Soutien LDB, déjà au moteur via
  * `partyAssisted`, et d'Aux Armes qui n'apporte que l'Atout « Arme d'équipe »). Pour chaque membre assigné à
  * un rôle, on lit sa VRAIE valeur de Compétence (la meilleure du rôle) ; le rôle désigné ESSENTIEL par le type
  * de Test voit son DR doublé ; on additionne via `resolveCrewTest`. Manque de bras : double rôle → +2 crans
  * sur SON jet (l.53) ; sous-effectif (`understaffed`) → −2 DR et jamais mieux qu'un Succès Minime (DR total
- * plafonné à 0, l.55). `extraDR` : modificateur PLAT au total — SABOTAGE (MDG ch.14 l.45-47 : le saboteur
+ * plafonné à 0, l.55). `extraDR` : modificateur PLAT au total — SABOTAGE (MDG 14 l.45-47 : le saboteur
  * « n'effectue pas ce Test… le MJ pourra imposer de -1 à -5 DR sur le Test d'équipage ») et tout « bonus ou
  * pénalité … en masse » (l.13). PUR (RNG injecté). NB : le bonus de chant du Chansonnier (l.32) n'est PAS
  * chiffré par le RAW (« des bonus ») — l'effet mécanisé vient des CHANSONS DE MARIN (MDG 09, `crewTestMod`).
@@ -342,7 +342,7 @@ export function resolveCrewTestByRoles(
   const res = resolveCrewTest(contributors, difficulty, moraleScore, rng, (opts.understaffed ? UNDERCREW_DR : 0) + (opts.extraDR ?? 0));
   const capped = capToSuccesMinime(res.total);
   if (opts.understaffed && res.total > capped) {
-    // MDG ch.14 l.55
+    // MDG 14 l.55
     return { ...res, total: capped, lines: [...res.lines, 'Manque de bras : jamais mieux qu’un Succès Minime (DR total plafonné à 0).'] };
   }
   return res;
