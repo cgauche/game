@@ -71,7 +71,7 @@ export function hasBrouet(c: Combatant): boolean {
 
 /** Consommation de vivres/eau ×N (ADE II ch.02 l.708, folio 31 : « les ogres doivent manger et boire
  *  au moins deux fois plus qu'un humain en une journée ») portée par un Trait RACIAL (Ogre) — MÊME
- *  lecture ciblée sur `c.traits` que `traitEncumbranceFactor` (`talentEffects.ts`). Le PLUS GRAND
+ *  lecture ciblée sur `c.traits` que `traitEncumbranceFactor` (`combatFeatures/dispatch.ts`). Le PLUS GRAND
  *  facteur porté l'emporte (jamais cumulatif). */
 export function traitConsumptionFactor(c: Combatant): number {
   return (c.traits ?? []).reduce((f, t) => Math.max(f, findTraitById(t.id)?.capabilities?.consumptionFactor ?? 1), 1);

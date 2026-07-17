@@ -135,6 +135,12 @@ export function talentCritExtraWounds(c: Combatant): number {
   return levelSum(c, (d) => !!d.critExtraWounds);
 }
 
+/** Frappe blessante — variante AA (AA Annexe III l.4492-4494) : deux lancers de Blessure Critique,
+ *  garde le résultat préféré. */
+export function hasCritRollTwiceTalent(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.critRollTwice);
+}
+
 /** Tir sûr (LDB 10) : PA de la cible ignorés au tir (niveau). */
 export function talentRangedAPIgnore(c: Combatant): number {
   return levelSum(c, (d) => !!d.rangedAPIgnore);
@@ -371,6 +377,14 @@ export function maxEncumbranceFactor(features: Pick<CombatFeature, 'encumbranceF
  *  de ce type (0 excédent = aucun effet sur `maxEncumbrance`). */
 export function talentEncumbranceFactor(c: Combatant): number {
   return maxEncumbranceFactor(featuresOf(c).map(({ def }) => def));
+}
+
+/** Encombrement portable ×N (ADE II ch.02 l.708, folio 31) porté par un Trait RACIAL (Ogre) — MÊME
+ *  cœur pur `maxEncumbranceFactor` que le pendant talent (`talentEncumbranceFactor` ci-dessus) : le
+ *  facteur ne se cumule JAMAIS, seul le PLUS GRAND (talents ∪ traits) l'emporte — composé par
+ *  `items.maxEncumbrance`. */
+export function traitEncumbranceFactor(c: Combatant): number {
+  return maxEncumbranceFactor((c.traits ?? []).map((t) => ({ encumbranceFactor: traitById.get(t.id)?.capabilities?.encumbranceFactor })));
 }
 
 /** Âme pure (LDB 10) : seuil de Corruption relevé de niveau. Remplace le check `talentId === 'ame-pure'`. */

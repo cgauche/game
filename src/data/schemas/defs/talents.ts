@@ -46,6 +46,7 @@ const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     slayer: z.boolean().optional(),
     damageReduction: z.boolean().optional(),
     critExtraWounds: z.boolean().optional(),
+    critRollTwice: z.boolean().optional(),
     rangedAPIgnore: z.boolean().optional(),
     ignoreCalledShotHead: z.boolean().optional(),
     ignoreCalledShotRanged: z.boolean().optional(),

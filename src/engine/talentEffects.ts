@@ -31,7 +31,6 @@ import { bonus, maxWounds } from './characteristics';
 import { findTalent, findTalentById, findTraitById, blessingsOf } from '../data';
 import { splitLabel } from './careerSlots';
 import type { PassiveMod } from './ops';
-import { maxEncumbranceFactor } from './combatFeatures/dispatch';
 
 /**
  * Valeur « base + bonus permanents de talents » pour une CharKey, SANS les modificateurs
@@ -237,13 +236,5 @@ export function talentPassiveMods(c: Combatant): PassiveMod[] {
     if (ops) for (let i = 0; i < (t.times ?? 1); i++) for (const op of ops) out.push({ op, kind: 'intrinsèque' });
   }
   return out;
-}
-
-/** Encombrement portable ×N (ADE II ch.02 l.708, folio 31) porté par un Trait RACIAL (Ogre) — MÊME
- *  lecture ciblée sur `c.traits` que `traitGrantedTalents`/`passiveCastPenalties` (magic.ts), même
- *  cœur pur `maxEncumbranceFactor` que le pendant talent (`combatFeatures/dispatch.ts`) : le facteur
- *  ne se cumule JAMAIS, seul le PLUS GRAND (talents ∪ traits) l'emporte — composé par `items.maxEncumbrance`. */
-export function traitEncumbranceFactor(c: Combatant): number {
-  return maxEncumbranceFactor((c.traits ?? []).map((t) => ({ encumbranceFactor: findTraitById(t.id)?.capabilities?.encumbranceFactor })));
 }
 

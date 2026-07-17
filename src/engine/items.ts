@@ -6,8 +6,7 @@
  */
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type ShipPoste, type AuthoredShipPoste } from './types';
 import { bonus, baseWithTraits } from './characteristics';
-import { talentEncumbranceBonus, talentEncumbranceFactor } from './combatFeatures/dispatch';
-import { traitEncumbranceFactor } from './talentEffects';
+import { talentEncumbranceBonus, talentEncumbranceFactor, traitEncumbranceFactor } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';

@@ -2025,7 +2025,7 @@ Synthèse des règles du combat d'honneur (`NADAJ 06 l.176-191`) :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 62` (l.19-57, l.59, l.126-127, l.133-136, l.138-139, l.142-143, l.146-147, l.150-151) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `bagarre`, `a-poudre-noire`, `IMPROVISED_DAMAGE`, `base`, `isRepairable`, `itemRepairCostBrass`, `a-repetition`, +33 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/equipCompare.ts`, `src/engine/items.ts`, +6 fichiers
-- `ADE II 2` (l.661-705) → `traitConsumptionFactor`, `WeaponSpec`, `traitCapabilitiesSchema`, `useAttackJetProps`, `schema`, `WeaponContext`, `CombatFeature`, `effectiveWeapon`, `dailyFoodUpkeep`, `itemFromTrappingById`, +18 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/dispatch.ts`, +12 fichiers
+- `ADE II 2` (l.661-705) → `traitConsumptionFactor`, `WeaponSpec`, `traitCapabilitiesSchema`, `useAttackJetProps`, `schema`, `WeaponContext`, `CombatFeature`, `effectiveWeapon`, `dailyFoodUpkeep`, `itemFromTrappingById`, +18 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/dispatch.ts`, +11 fichiers
 - `NADAJ 6` (l.176-191) → `EnemyTurnInput`, `banRangedActive`, `firedAttackBlock`, `EncounterDef`, `chooseEnemyAction`, `EncountersTab`, `resolveAttack`, `VictoryCondition`, `Combatant`, `victoryConditionMet`, +1 — `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/scene.ts`, `src/ui/editor/LogicDock.tsx`
 - `NADAJ 11` (l.20, l.23-32) → `griffe-de-tigre` — `src/data/trappings.json`
 - sans code : `LDB 62` (l.5-15)
@@ -5801,7 +5801,7 @@ Un ogre subit **-20 à tous les Tests** lorsqu'il tente d'utiliser des possessio
 **Voir aussi** : armes-melee-tables ; armes-distance-munitions-tables ; armures-tables ; atouts-defauts-armes ; ogres-regles-de-taille (Frappe Mortelle / Peur / Désengagement)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 2` (l.601-605, l.607-618, l.663-668, l.669-696, l.698-704, l.707-711) → `traitConsumptionFactor`, `WeaponSpec`, `traitCapabilitiesSchema`, `useAttackJetProps`, `schema`, `WeaponContext`, `CombatFeature`, `effectiveWeapon`, `dailyFoodUpkeep`, `itemFromTrappingById`, +18 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/dispatch.ts`, +12 fichiers
+- `ADE II 2` (l.601-605, l.607-618, l.663-668, l.669-696, l.698-704, l.707-711) → `traitConsumptionFactor`, `WeaponSpec`, `traitCapabilitiesSchema`, `useAttackJetProps`, `schema`, `WeaponContext`, `CombatFeature`, `effectiveWeapon`, `dailyFoodUpkeep`, `itemFromTrappingById`, +18 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/dispatch.ts`, +11 fichiers
 - sans code : `ADE II 2` (l.616, l.620-634, l.637-646, l.649-656, l.658, l.663-666)
 
 ---

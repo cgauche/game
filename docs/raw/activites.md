@@ -205,7 +205,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `InterludeHeroState`, `FavorRow`, `purgeAdventureEffects`, `BankDeposit`, +35 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +18 fichiers
+- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `InterludeHeroState`, `FavorRow`, `purgeAdventureEffects`, `BankDeposit`, +33 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +18 fichiers
 
 ---
 
@@ -427,7 +427,7 @@ Apprendre des rumeurs de loin. Test **Ragot Intermédiaire (+0)**.
 - Échec Impressionnant → rumeur fausse crue vraie (MJ peut lancer en secret).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.196-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, +19 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, +9 fichiers
+- `LDB 23` (l.196-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, `startInterlude`, `RollFlowSpec`, +17 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, +9 fichiers
 
 ---
 
@@ -517,7 +517,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 - Échec → pas de révolte ; Échec de plusieurs DR → la cible apprend vos actions.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `PendingActivity`, `heroStatus`, `ActivityDef`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `PendingActivity`, `heroStatus`, `ActivityDef`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, +2 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -790,7 +790,7 @@ Pèlerinage à Altdorf (ou parcours des chemins saints si déjà sur place) pour
 **Voir aussi** : [Points de Péché — définition et accumulation](religion.md#points-de-péché--définition-et-accumulation), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Table d100 — Colère des dieux (verbatim)](religion.md#table-d100--colère-des-dieux-verbatim).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `itemFromTrappingById`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -807,7 +807,7 @@ Maîtriser une arme trop singulière pour un usage immédiat (ex. l'arme de Hara
 - Échec → nouvelle tentative reportée au prochain interlude.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `itemFromTrappingById`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -831,7 +831,7 @@ Table des résultats (`ACE 12 l.31-42`) :
 **Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `weaponUnmastered`, `itemFromTrappingById`, `ActivityDef`, `weaponGroupSkillMode`, +13 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
+- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `itemFromTrappingById`, `weaponUnmastered`, `ActivityDef`, `weaponGroupSkillMode`, +13 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 

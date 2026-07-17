@@ -945,7 +945,7 @@ export interface TraitCapabilities {
   wakelessBite?: boolean;
   /** Encombrement portable ×N (ADE II ch.02 l.708, folio 31 : « un ogre peut porter deux fois
    *  l'Encombrement normal d'un humain : (Bonus de Force + Bonus d'Endurance) × 2 ») — porté par le
-   *  Trait racial ogre, lu par `traitEncumbranceFactor` (`talentEffects.ts`), composé au PLUS GRAND
+   *  Trait racial ogre, lu par `traitEncumbranceFactor` (`combatFeatures/dispatch.ts`), composé au PLUS GRAND
    *  facteur avec `talentEncumbranceFactor` (talents, `combatFeatures/dispatch.ts`) dans `maxEncumbrance`
    *  (`items.ts`) — jamais cumulatif. */
   encumbranceFactor?: number;

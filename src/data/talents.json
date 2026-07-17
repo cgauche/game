@@ -1565,7 +1565,10 @@
       "page": 138
     },
     "combat": {
-      "critExtraWounds": true
+      "critExtraWounds": true,
+      "aa": {
+        "critRollTwice": true
+      }
     }
   },
   {
