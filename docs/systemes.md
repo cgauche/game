@@ -86,10 +86,9 @@ Portée : fichiers top-level (hors `*.test.ts`) non atteints par la closure d'im
 manifeste. Informatif — inclut les infra partagées (store, types, helpers transverses) qu'aucun système
 unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec bloquant de ce script.
 
-14 fichier(s) :
+13 fichier(s) :
 
 - `src/engine/axes.ts`
-- `src/engine/drivingMishap.ts`
 - `src/engine/names.ts`
 - `src/engine/spellspec.ts`
 - `src/state/advancement.ts`
