@@ -5,11 +5,20 @@
 .life-bar {
   display: grid;
   grid-template-columns: auto 1fr auto;
+  grid-template-areas: 'label track value';
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
 }
+.life-bar[data-stacked] {
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'label value'
+    'track track';
+  row-gap: 0.25rem;
+}
 .life-bar__label {
+  grid-area: label;
   color: var(--muted);
   font-size: 0.85em;
   white-space: nowrap;
@@ -17,6 +26,7 @@
   text-overflow: ellipsis;
 }
 .life-bar__track {
+  grid-area: track;
   position: relative;
   height: 10px;
   background: rgba(0, 0, 0, 0.72);
@@ -35,6 +45,7 @@
 .life-bar[data-tone='warn'] .life-bar__fill { background: var(--gold2); }
 .life-bar[data-tone='danger'] .life-bar__fill { background: var(--danger); }
 .life-bar__value {
+  grid-area: value;
   color: var(--text);
   font-size: 0.85em;
   font-variant-numeric: tabular-nums;

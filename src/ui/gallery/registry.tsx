@@ -414,7 +414,9 @@ function CreatorDiceDemo() {
 
 /** Barre de remplissage lisse (#492, arbitrage 2026-07-17) — ton par palier (Blessures, données réelles
  *  du pré-tiré), dépassement explicite (Encombrement, valeur illustrative > max). La variante `overlay`
- *  (portraits compacts) s'observe au spécimen `PortraitTile`, en dessous. */
+ *  (portraits compacts) s'observe au spécimen `PortraitTile`, en dessous. `stacked` (arbitrage
+ *  2026-07-17, « ça ne va pas être possible » sur deux `row` désalignées) : valeur au-dessus, piste
+ *  pleine largeur — l'aside de la fiche l'utilise pour Blessures ET Encombrement, mêmes barres. */
 function LifeBarDemo() {
   if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
   return (
@@ -426,6 +428,14 @@ function LifeBarDemo() {
         tone={(v, m) => (m > 0 && v / m <= 0.34 ? 'danger' : m > 0 && v / m <= 0.67 ? 'warn' : 'ok')}
       />
       <LifeBar label="Encombrement — surchargé" value={9} max={6} tone="danger" />
+      <LifeBar
+        stacked
+        label="Blessures (stacked)"
+        value={SAMPLE_HERO.wounds.current}
+        max={SAMPLE_HERO.wounds.max}
+        tone={(v, m) => (m > 0 && v / m <= 0.34 ? 'danger' : m > 0 && v / m <= 0.67 ? 'warn' : 'ok')}
+      />
+      <LifeBar stacked label="Encombrement (stacked) — surchargé" value={9} max={6} tone="danger" />
     </div>
   );
 }
