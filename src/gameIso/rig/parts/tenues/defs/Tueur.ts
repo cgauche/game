@@ -83,7 +83,8 @@ export const tenue: TenueDef = {
 <path d="M-4 43 L4 44" stroke="@vet1O" stroke-width="2.2"/>
 <!-- pied/botte de cuir nu en bas -->
 <path d="M-3.5 48 Q0 47 3.5 48 L3.5 50 L-3.5 50 Z" fill="@vet1O"/>`,
-    bras: `<!-- Tueur: bras nu (chair) musclé, brassard de cuir clouté + lanières au poignet -->
+    bras: {
+      front: `<!-- Tueur: bras nu (chair) musclé, brassard de cuir clouté + lanières au poignet -->
 <rect x="-3.4" y="-2" width="6.8" height="34" rx="3.2" fill="url(#g_flesh)" stroke="@vet1O" stroke-width="0.5"/>
 <!-- relief du biceps -->
 <path d="M-3 2 Q-4.5 8 -2.5 14" fill="none" stroke="@vet1" stroke-width="1" opacity="0.5"/>
@@ -97,5 +98,31 @@ export const tenue: TenueDef = {
 <path d="M-3.4 24 L3.4 24" stroke="@cuir" stroke-width="2"/>
 <path d="M-3.4 28 L3.4 28" stroke="@cuir" stroke-width="2"/>
 <path d="M-3.4 31 L3.4 31" stroke="@cuir" stroke-width="1.8"/>`,
+      profile: `<rect x="-3" y="-2" width="6" height="34" rx="2.9" fill="url(#g_flesh)" stroke="@vet1O" stroke-width="0.5"/>
+<path d="M-3 -1.4 Q-4.4 8 -2.6 18 Q-3 26 -2.4 31.6 L-0.4 31.8 Q-1 20 -0.6 -1.8 Z" fill="@vet1O" opacity="0.5" stroke="none"/>
+<path d="M2.2 0.6 Q3.6 7 2.4 14 Q1.6 9 1.2 4 Z" fill="@vet1H" opacity="0.5" stroke="none"/>
+<path d="M-2.4 14.6 Q-3.4 18 -2.2 21.4" fill="none" stroke="@vet1O" stroke-width="0.6" opacity="0.7"/>
+<rect x="-3.2" y="3" width="6.4" height="6" rx="1.5" fill="@vet1O" stroke="@vet1O" stroke-width="0.5"/>
+<path d="M-3.2 3 L3.2 3 L3.2 4.2 L-3.2 4.2 Z" fill="@cuirH" opacity="0.4" stroke="none"/>
+<circle cx="1.8" cy="6" r="0.7" fill="@metalH"/>
+<path d="M-3 24 L3 24" stroke="@cuir" stroke-width="2"/>
+<path d="M-3 28 L3 28" stroke="@cuir" stroke-width="2"/>
+<path d="M-3 31 L3 31" stroke="@cuir" stroke-width="1.8"/>
+<path d="M-3 23.4 L3 23.4 M-3 27.4 L3 27.4 M-3 30.4 L3 30.4" stroke="@cuirO" stroke-width="0.45" opacity="0.75"/>`,
+      back: `<rect x="-3.4" y="-2" width="6.8" height="34" rx="3.2" fill="url(#g_flesh)" stroke="@vet1O" stroke-width="0.5"/>
+<path d="M0.8 -1.8 Q2 10 1.4 21 Q1.8 27 1.2 31.8 L3 31.6 Q3.6 20 3.2 -1.6 Z" fill="@vet1O" opacity="0.52" stroke="none"/>
+<path d="M-2.8 0.6 Q-4.2 7 -2.8 15 Q-1.8 9 -1.4 3 Z" fill="@vet1H" opacity="0.45" stroke="none"/>
+<path d="M-2.6 11 Q0 12.6 2.6 11" fill="none" stroke="@vet1O" stroke-width="0.5" opacity="0.5"/>
+<path d="M-2.4 16 Q0 17.4 2.4 16 Q0 18.8 -2.4 16 Z" fill="@vet1O" opacity="0.5" stroke="none"/>
+<rect x="-3.6" y="3" width="7.2" height="6" rx="1.5" fill="@vet1O" stroke="@vet1O" stroke-width="0.5"/>
+<path d="M-3.6 3 L3.6 3 L3.6 4.2 L-3.6 4.2 Z" fill="@cuirH" opacity="0.35" stroke="none"/>
+<rect x="-1.4" y="4.2" width="2.8" height="3.6" rx="0.5" fill="@cuir" stroke="@cuirO" stroke-width="0.4"/>
+<circle cx="0" cy="6" r="0.55" fill="@metalH"/>
+<path d="M-3.4 24 L3.4 24" stroke="@cuir" stroke-width="2"/>
+<path d="M-3.4 28 L3.4 28" stroke="@cuir" stroke-width="2"/>
+<path d="M-3.4 31 L3.4 31" stroke="@cuir" stroke-width="1.8"/>
+<path d="M-3.4 23.4 L3.4 23.4 M-3.4 27.4 L3.4 27.4 M-3.4 30.4 L3.4 30.4" stroke="@cuirO" stroke-width="0.45" opacity="0.75"/>
+<path d="M-1.6 22.8 l3.2 2.4 M-1.6 26.8 l3.2 2.4" stroke="@cuirO" stroke-width="0.5" opacity="0.6" fill="none"/>`,
+    },
   },
 };

@@ -783,7 +783,8 @@ export const tenue: TenueDef = {
 <circle cx="-6.5" cy="45.4" r="0.5" fill="@orH" stroke="none" opacity="0.8"/>
 </g>`,
     },
-    bras: `<g stroke="@metalO" stroke-width="0.55" stroke-linejoin="round">
+    bras: {
+      front: `<g stroke="@metalO" stroke-width="0.55" stroke-linejoin="round">
 <path d="M-5.2 -3.4 Q0 -8 5.2 -3.4 Q6.2 0.6 4.8 4 Q0 6.2 -4.8 4 Q-6.2 0.6 -5.2 -3.4 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.75"/>
 <path d="M-5.2 -3.4 Q0 -8 5.2 -3.4 Q6.2 0.6 4.8 4 Q0 6.2 -4.8 4 Q-6.2 0.6 -5.2 -3.4 Z" fill="@metalO" opacity="0.46" stroke="none"/>
 <path d="M-4.9 -3 Q0 -7.4 4.9 -3 Q5.2 -1.8 5.15 -1 Q0 -5.6 -5.15 -1 Q-5.2 -1.8 -4.9 -3 Z" fill="@metalH" opacity="0.9" stroke="none"/>
@@ -817,6 +818,68 @@ export const tenue: TenueDef = {
 <path d="M-4 28 Q0 29.8 4 28 L4.2 31.2 Q0 33 -4.2 31.2 Z" fill="@metalO" opacity="0.44" stroke="none"/>
 <path d="M-4 28.2 Q0 30 4 28.2" stroke="@metalH" stroke-width="0.45" fill="none" opacity="0.8"/>
 </g>`,
+      profile: `<g stroke="@metalO" stroke-width="0.55" stroke-linejoin="round">
+<path d="M-4 -3.2 Q0 -7.8 4 -3.2 Q4.8 0.6 3.6 4 Q0 5.8 -3.6 4 Q-4.8 0.6 -4 -3.2 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.75"/>
+<path d="M-4 -3.2 Q0 -7.8 4 -3.2 Q4.8 0.6 3.6 4 Q0 5.8 -3.6 4 Q-4.8 0.6 -4 -3.2 Z" fill="@metalO" opacity="0.52" stroke="none"/>
+<path d="M0.5 -7.1 Q3.6 -3.5 4.2 0.3 Q3.1 0.7 2.6 0.1 Q2.1 -2.9 -0.5 -5.8 Z" fill="@metalH" opacity="0.9" stroke="none"/>
+<ellipse cx="2" cy="-2.2" rx="1" ry="2" fill="@metalH" opacity="0.26" stroke="none" transform="rotate(18 2 -2.2)"/>
+<path d="M-3.6 4 Q0 5.8 3.6 4 L3.5 8.2 Q0 9.9 -3.5 8.2 Z" fill="url(#g_steelD)"/>
+<path d="M-3.6 4 Q0 5.8 3.6 4 L3.5 8.2 Q0 9.9 -3.5 8.2 Z" fill="@metalO" opacity="0.4" stroke="none"/>
+<path d="M0.4 5.75 Q2.2 5.3 3.6 4.2" stroke="@metalH" stroke-width="0.55" fill="none" opacity="0.95"/>
+<path d="M-3.5 8.2 Q0 9.9 3.5 8.2 L3.4 12 Q0 13.6 -3.4 12 Z" fill="url(#g_steelD)"/>
+<path d="M-3.5 8.2 Q0 9.9 3.5 8.2 L3.4 12 Q0 13.6 -3.4 12 Z" fill="@metalO" opacity="0.56" stroke="none"/>
+<path d="M0.6 9.85 Q2.2 9.4 3.5 8.4" stroke="@metalH" stroke-width="0.42" fill="none" opacity="0.7"/>
+<path d="M-3.4 12 Q0 13.6 3.4 12 L3.3 15.6 Q0 17.2 -3.3 15.6 Z" fill="url(#g_steelD)"/>
+<path d="M-3.4 12 Q0 13.6 3.4 12 L3.3 15.6 Q0 17.2 -3.3 15.6 Z" fill="@metalO" opacity="0.44" stroke="none"/>
+<path d="M0.4 13.55 Q2.1 13.1 3.4 12.2" stroke="@metalH" stroke-width="0.5" fill="none" opacity="0.85"/>
+<path d="M-3.4 15.4 Q0 13.8 3.4 15.4 Q4.2 18 3.2 20.4 Q0 22 -4.8 20.6 Q-5.6 18 -3.4 15.4 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.7"/>
+<path d="M-3.4 15.4 Q0 13.8 3.4 15.4 Q4.2 18 3.2 20.4 Q0 22 -4.8 20.6 Q-5.6 18 -3.4 15.4 Z" fill="@metalO" opacity="0.5" stroke="none"/>
+<path d="M0.4 14.2 Q2.9 15.6 3.5 17.4 Q2.6 17.8 2.1 17.3 Q1.6 16.2 -0.2 15.5 Z" fill="@metalH" opacity="0.8" stroke="none"/>
+<ellipse cx="1.4" cy="18.4" rx="0.5" ry="0.7" fill="@metalH" opacity="0.6" stroke="none"/>
+<path d="M-4.6 20.4 Q0 21.8 3.2 20.4 L3.2 21.7 Q0 23.1 -4.4 21.7 Z" fill="@metalO" opacity="0.5" stroke="none"/>
+<path d="M-3.6 20.6 Q0 22 3.2 20.6 L3.3 24.4 Q0 26 -3.6 24.4 Z" fill="url(#g_steelD)"/>
+<path d="M-3.6 20.6 Q0 22 3.2 20.6 L3.3 24.4 Q0 26 -3.6 24.4 Z" fill="@metalO" opacity="0.4" stroke="none"/>
+<path d="M0.4 21.95 Q2 21.6 3.2 20.8" stroke="@metalH" stroke-width="0.45" fill="none" opacity="0.85"/>
+<path d="M-3.6 24.4 Q0 26 3.3 24.4 L3.4 28.2 Q0 29.8 -3.6 28.2 Z" fill="url(#g_steelD)"/>
+<path d="M-3.6 24.4 Q0 26 3.3 24.4 L3.4 28.2 Q0 29.8 -3.6 28.2 Z" fill="@metalO" opacity="0.56" stroke="none"/>
+<path d="M0.5 25.85 Q2 25.5 3.3 24.6" stroke="@metalH" stroke-width="0.4" fill="none" opacity="0.65"/>
+<path d="M-3.6 28.2 Q0 29.8 3.4 28.2 L3.5 31.2 Q0 32.8 -3.6 31.2 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.6"/>
+<path d="M-3.6 28.2 Q0 29.8 3.4 28.2 L3.5 31.2 Q0 32.8 -3.6 31.2 Z" fill="@metalO" opacity="0.48" stroke="none"/>
+<path d="M0.4 29.65 Q2 29.3 3.4 28.4" stroke="@metalH" stroke-width="0.42" fill="none" opacity="0.75"/>
+<g fill="@metalO" stroke="none"><circle cx="2.6" cy="6.4" r="0.4"/><circle cx="2.5" cy="10.3" r="0.4"/></g>
+<g fill="@metalH" stroke="none" opacity="0.7"><circle cx="2.45" cy="6.2" r="0.16"/><circle cx="2.35" cy="10.1" r="0.16"/></g>
+</g>`,
+      back: `<g stroke="@metalO" stroke-width="0.55" stroke-linejoin="round">
+<path d="M-5.4 -3.2 Q0 -7.6 5.4 -3.2 Q6.2 0.8 4.8 4.2 Q0 6.2 -4.8 4.2 Q-6.2 0.8 -5.4 -3.2 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.75"/>
+<path d="M-5.4 -3.2 Q0 -7.6 5.4 -3.2 Q6.2 0.8 4.8 4.2 Q0 6.2 -4.8 4.2 Q-6.2 0.8 -5.4 -3.2 Z" fill="@metalO" opacity="0.62" stroke="none"/>
+<path d="M-5.1 -2.8 Q0 -6.9 5.1 -2.8 Q5.3 -1.7 5.25 -0.9 Q0 -5.1 -5.25 -0.9 Q-5.3 -1.7 -5.1 -2.8 Z" fill="@metalH" opacity="0.62" stroke="none"/>
+<ellipse cx="-2.6" cy="-1.2" rx="1.5" ry="2.1" fill="@metalH" opacity="0.16" stroke="none" transform="rotate(-16 -2.6 -1.2)"/>
+<path d="M-4.4 1.8 Q0 3.6 4.4 1.8" stroke="@cuir" stroke-width="1.2" fill="none" opacity="0.95"/>
+<path d="M-4.4 2.4 Q0 4.2 4.4 2.4" stroke="@cuirO" stroke-width="0.45" fill="none" opacity="0.85"/>
+<path d="M-4.8 4.2 Q0 6.2 4.8 4.2 L4.4 8.4 Q0 10.4 -4.4 8.4 Z" fill="url(#g_steelD)"/>
+<path d="M-4.8 4.2 Q0 6.2 4.8 4.2 L4.4 8.4 Q0 10.4 -4.4 8.4 Z" fill="@metalO" opacity="0.52" stroke="none"/>
+<path d="M-4.8 4.4 Q-2.4 5.5 -0.6 5.9" stroke="@metalH" stroke-width="0.5" fill="none" opacity="0.8"/>
+<path d="M-4.4 8.4 Q0 10.4 4.4 8.4 L4.1 12.2 Q0 14.1 -4.1 12.2 Z" fill="url(#g_steelD)"/>
+<path d="M-4.4 8.4 Q0 10.4 4.4 8.4 L4.1 12.2 Q0 14.1 -4.1 12.2 Z" fill="@metalO" opacity="0.66" stroke="none"/>
+<path d="M-4.4 8.6 Q-2.2 9.6 -0.8 10" stroke="@metalH" stroke-width="0.36" fill="none" opacity="0.5"/>
+<path d="M-4.1 12.2 Q0 14.1 4.1 12.2 L3.8 15.8 Q0 17.6 -3.8 15.8 Z" fill="url(#g_steelD)"/>
+<path d="M-4.1 12.2 Q0 14.1 4.1 12.2 L3.8 15.8 Q0 17.6 -3.8 15.8 Z" fill="@metalO" opacity="0.54" stroke="none"/>
+<path d="M-4.1 12.4 Q-2 13.4 -0.6 13.8" stroke="@metalH" stroke-width="0.44" fill="none" opacity="0.7"/>
+<g fill="@metalO" stroke="none"><circle cx="-3.5" cy="6.6" r="0.4"/><circle cx="3.5" cy="6.6" r="0.4"/><circle cx="-3.3" cy="10.6" r="0.4"/><circle cx="3.3" cy="10.6" r="0.4"/></g>
+<path d="M-3.8 15.6 Q0 14 3.8 15.6 Q4.6 18.2 3.6 20.4 Q0 22 -3.6 20.4 Q-4.6 18.2 -3.8 15.6 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.7"/>
+<path d="M-3.8 15.6 Q0 14 3.8 15.6 Q4.6 18.2 3.6 20.4 Q0 22 -3.6 20.4 Q-4.6 18.2 -3.8 15.6 Z" fill="@metalO" opacity="0.58" stroke="none"/>
+<path d="M-3.5 16.2 Q0 14.8 3.5 16.2 Q3.7 17 3.65 17.6 Q0 16.1 -3.65 17.6 Q-3.7 17 -3.5 16.2 Z" fill="@metalH" opacity="0.6" stroke="none"/>
+<path d="M-3.6 20.2 Q0 21.8 3.6 20.2 L3.8 24.4 Q0 26.2 -3.8 24.4 Z" fill="url(#g_steelD)"/>
+<path d="M-3.6 20.2 Q0 21.8 3.6 20.2 L3.8 24.4 Q0 26.2 -3.8 24.4 Z" fill="@metalO" opacity="0.46" stroke="none"/>
+<path d="M-3.6 20.4 Q-1.8 21.3 -0.4 21.6" stroke="@metalH" stroke-width="0.42" fill="none" opacity="0.72"/>
+<path d="M-3.8 24.2 Q0 26 3.8 24.2 L3.9 28.4 Q0 30.2 -3.9 28.4 Z" fill="url(#g_steelD)"/>
+<path d="M-3.8 24.2 Q0 26 3.8 24.2 L3.9 28.4 Q0 30.2 -3.9 28.4 Z" fill="@metalO" opacity="0.62" stroke="none"/>
+<path d="M-3.8 24.4 Q-1.9 25.3 -0.6 25.6" stroke="@metalH" stroke-width="0.3" fill="none" opacity="0.45"/>
+<path d="M-3.9 28.2 Q0 30 3.9 28.2 L4.1 31.4 Q0 33.2 -4.1 31.4 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.6"/>
+<path d="M-3.9 28.2 Q0 30 3.9 28.2 L4.1 31.4 Q0 33.2 -4.1 31.4 Z" fill="@metalO" opacity="0.56" stroke="none"/>
+<path d="M-3.9 28.4 Q-2 29.3 -0.6 29.6" stroke="@metalH" stroke-width="0.38" fill="none" opacity="0.6"/>
+</g>`,
+    },
   },
   // Calques ASYMÉTRIQUES (canal RigOverlay, `parts/tenues/types.ts`) — un overlay n'est jamais
   // miroité et peut sortir du z de son os, ce qu'un slot ne sait pas faire. Quatre emplois, chacun

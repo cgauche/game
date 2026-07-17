@@ -63,13 +63,10 @@ export const PART_VIEW_RATCHET = new Set([
   'charlatan:jambes', // Charlatan — manque profile+back ; servi : silhouette generique
   'chasseur-de-primes:bras', // Chasseur de primes — manque profile+back ; servi : FRONT PLAQUE
   'chasseur-de-primes:jambes', // Chasseur de primes — manque profile+back ; servi : silhouette generique
-  'chasseur:bras', // Chasseur — manque profile+back ; servi : FRONT PLAQUE
   'chasseur:jambes', // Chasseur — manque profile+back ; servi : silhouette generique
-  'chevalier-du-loup-blanc:bras', // Chevalier du Loup Blanc — manque profile+back ; servi : FRONT PLAQUE
   'chevalier-du-soleil-flamboyant:bras', // Chevalier du Soleil flamboyant — manque profile+back ; servi : FRONT PLAQUE
   'chevalier-errant:bras', // Chevalier Errant — manque profile+back ; servi : FRONT PLAQUE
   'chevalier-panthere:bras', // Chevalier Panthère — manque profile+back ; servi : FRONT PLAQUE
-  'chevalier:bras', // Chevalier — manque profile+back ; servi : FRONT PLAQUE
   'chevalier:jambes', // Chevalier — manque profile+back ; servi : silhouette generique
   'chevaucheur-de-blaireau:bras', // Chevaucheur de blaireau — manque profile+back ; servi : FRONT PLAQUE
   'citadins:jambes', // Citadins — manque profile+back ; servi : silhouette generique
@@ -151,7 +148,6 @@ export const PART_VIEW_RATCHET = new Set([
   'milicien:jambes', // Milicien — manque profile+back ; servi : silhouette generique
   'mineur:bras', // Mineur — manque profile+back ; servi : FRONT PLAQUE
   'mineur:jambes', // Mineur — manque profile+back ; servi : silhouette generique
-  'mystique:bras', // Mystique — manque profile+back ; servi : FRONT PLAQUE
   'mystique:jambes', // Mystique — manque profile+back ; servi : silhouette generique
   'naufrageur:bras', // Naufrageur — manque profile+back ; servi : FRONT PLAQUE
   'naufrageur:jambes', // Naufrageur — manque profile+back ; servi : silhouette generique
@@ -173,7 +169,6 @@ export const PART_VIEW_RATCHET = new Set([
   'pretre-guerrier:bras', // Prêtre guerrier — manque profile+back ; servi : FRONT PLAQUE
   'pretre-guerrier:jambes', // Prêtre guerrier — manque profile+back ; servi : silhouette generique
   'pretre-marin-de-manann:bras', // Prêtre marin de Manann — manque profile+back ; servi : FRONT PLAQUE
-  'pretre:bras', // Prêtre — manque profile+back ; servi : FRONT PLAQUE
   'pretre:jambes', // Prêtre — manque profile+back ; servi : silhouette generique
   'prophete-gris:bras', // Prophète gris — manque profile+back ; servi : FRONT PLAQUE
   'prophete-gris:jambes', // Prophète gris — manque profile+back ; servi : silhouette generique
@@ -206,7 +201,6 @@ export const PART_VIEW_RATCHET = new Set([
   'spadassin:bras', // Spadassin — manque profile+back ; servi : FRONT PLAQUE
   'spadassin:jambes', // Spadassin — manque profile+back ; servi : silhouette generique
   'specialiste-de-siege:bras', // Spécialiste de Siège — manque profile+back ; servi : FRONT PLAQUE
-  'tueur:bras', // Tueur — manque profile+back ; servi : FRONT PLAQUE
   'tueur:jambes', // Tueur — manque profile+back ; servi : silhouette generique
   'vermine-de-choc:bras', // Vermine de choc — manque profile+back ; servi : FRONT PLAQUE
   'vermine-de-choc:jambes', // Vermine de choc — manque profile+back ; servi : silhouette generique
