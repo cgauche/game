@@ -66,7 +66,9 @@ const PRICE_BASELINE: Record<string, number> = {};
 const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/base.css': 4,
   'styles/codex-edit.css': 1,
-  'styles/combat-modals.css': 7,
+  // -1 (#492 lot POSSESSIONS B) : mort de l'ancienne `.inv-row { flex-wrap: wrap }` (registre
+  // `Band`/`PlaqueRow` désormais, `.inv-actionbar` reprend le motif dans sheet.css, en regard).
+  'styles/combat-modals.css': 6,
   'styles/combat-ui.css': 7,
   'styles/compendium.css': 3,
   // +1 : `.creator-race-lineages` (#393 P2, correction structurelle Race) — rangée de chips de
@@ -81,7 +83,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/hud.css': 6,
   'styles/mass-battle.css': 2,
   'styles/merchant.css': 1,
-  'styles/sheet.css': 2,
+  // +1 (#492 lot POSSESSIONS B) : `.inv-actionbar` — barre d'actions de la rangée ÉLUE du registre
+  // Possessions (motif « contrôles qui s'enroulent », hérité 1:1 de l'ancienne `.inv-row`).
+  'styles/sheet.css': 3,
   'styles/world-meta.css': 18,
   'styles/city-hub.css': 1,
   'styles/voyage.css': 3,
@@ -263,7 +267,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // qui rend desormais la table a valeurs), contrepartie ASSUMEE en regard.
   // Lot POSSESSIONS (A) : -2 (143 -> 141) -- mort du mannequin `.equip-doll`/`.equip-figure`
   // (EquipmentPanel, #492) : le rig grand format vit desormais dans la colonne de la fiche.
-  'styles/combat-modals.css': 141,
+  // Lot POSSESSIONS (B) : -12 (141 -> 129) -- mort de l'ancienne rangée `.inv-row`/`.ir-*`
+  // (Sac de l'onglet Possessions) : `.inv-rows`/`.inv-row`/`.kind-melee`/`.kind-ranged`/
+  // `.kind-armor`/`.equipped`/`.ir-main`/`.ir-name`/`.ir-stats`/`.ir-enc`/`.ir-kind`/`.inv-nested`
+  // migrent au registre `Band`/`PlaqueRow` (module sheet.css, patron EtatPanel) — `.ir-hand` reste
+  // ici (HandPicker, composé DANS la nouvelle barre d'actions, inchangé).
+  'styles/combat-modals.css': 129,
   'styles/combat-ui.css': 112,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
@@ -434,7 +443,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // classes CITEES ici (fig-tile, hero, fig-tile-fig, vital-arc), aucune definie EN PROPRE.
   // Onglet État sans figurine au repos (arbitrage user 2026-07-17) : +1 (86 -> 87) -- `.ras-sub`
   // (sous-ligne discrete du RAS), seule classe neuve ; `CharacterPreview` retiree de l'etat calme.
-  'styles/sheet.css': 87,
+  // Lot POSSESSIONS (B), registre `Band`/`PlaqueRow` (#492) : +7 (87 -> 94) -- `.inv-rows` (déplacé
+  // de combat-modals.css) + `.inv-item-nested`/`.inv-actionbar`/`.inv-skin`/`.inv-skin-body`/
+  // `.inv-skin-remove`/`.inv-nested` (déplacé aussi) : la rangée-plaque élue déplie sa barre
+  // d'actions EN PLACE, contrepartie ASSUMÉE des -12 de combat-modals.css.
+  'styles/sheet.css': 94,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,

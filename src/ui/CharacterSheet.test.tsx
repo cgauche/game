@@ -189,6 +189,103 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
   });
 });
 
+describe('Onglet Possessions — registre `Band`/`PlaqueRow` (#492 lot POSSESSIONS B)', () => {
+  beforeAll(() => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  });
+  let container: HTMLDivElement;
+  let root: Root;
+  function mount(node: React.ReactElement) {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() => { root.render(node); });
+    return container;
+  }
+  afterEach(() => {
+    act(() => { root.unmount(); });
+    container.remove();
+  });
+
+  /** Héros avec un sac (Armes/Armures/Divers), un contenant + objet imbriqué, et une prothèse portée
+   *  (crochet non maîtrisé) — de quoi peupler les 3 groupes ET vérifier le sort des prothèses. */
+  const heroWithItems = (): Combatant =>
+    ({
+      ...hero(),
+      items: [
+        { uid: 'w1', name: 'Épée', kind: 'melee', qualities: [], enc: 1, equipped: false },
+        { uid: 'a1', name: 'Cotte de mailles', kind: 'armor', qualities: [], enc: 2, equipped: true, pa: 2, locs: ['corps'] },
+        { uid: 'bag1', name: 'Sac à dos', kind: 'misc', qualities: [], enc: 1, equipped: false, container: { capacity: 10 } },
+        { uid: 'n1', name: 'Gourde', kind: 'misc', qualities: [], enc: 1, equipped: false, inside: 'bag1' },
+        { uid: 'p1', name: 'Crochet', trappingId: 'crochet', subType: 'protheses', kind: 'misc', qualities: [], enc: 0, equipped: true },
+      ],
+      loadouts: [{ id: 'lo1', main: null, off: null }],
+      activeLoadoutId: 'lo1',
+    }) as unknown as Combatant;
+
+  it('groupes comptés (Band) : Armes/Armures & protections/Divers présents avec leur compte', () => {
+    const h = heroWithItems();
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    const text = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />).textContent ?? '';
+    expect(text).toContain('Armes');
+    expect(text).toContain('Armures & protections');
+    expect(text).toContain('Divers');
+  });
+
+  it('une `PlaqueRow` par objet non rangé, l’objet imbriqué reste visible sous son contenant', () => {
+    const h = heroWithItems();
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    const el = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    const rows = el.querySelectorAll('.plaque-row');
+    // 5 objets déclarés → 5 rangées (le rangé `n1` reste visible, imbriqué sous `bag1`).
+    expect(rows.length).toBe(5);
+    expect(el.innerHTML).toContain('Gourde');
+    expect(el.querySelector('.inv-nested')?.innerHTML).toContain('Gourde');
+  });
+
+  it('ZÉRO `<button>` dans les rangées non élues ; élire une rangée déplie sa barre d’actions EN PLACE', () => {
+    const h = heroWithItems();
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    const el = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    const inventory = el.querySelector('.sheet-inventory')!;
+    // Avant toute élection : chaque `.inv-item` ne porte QUE le bouton de sa propre `PlaqueRow`
+    // (l'élection elle-même), aucune barre d'actions dépliée.
+    expect(inventory.querySelectorAll('.inv-actionbar').length).toBe(0);
+    for (const row of inventory.querySelectorAll('.inv-item')) {
+      expect(row.querySelectorAll(':scope > button:not(.plaque-row)').length).toBe(0);
+    }
+    // Élire la Cotte de mailles (équipée) : SA barre d'actions se déplie, les autres restent fermées.
+    const armorRow = [...inventory.querySelectorAll('.plaque-row')].find((r) => r.textContent?.includes('Cotte de mailles'))!;
+    act(() => { (armorRow as HTMLButtonElement).click(); });
+    expect(inventory.querySelectorAll('.inv-actionbar').length).toBe(1);
+    const actionBar = inventory.querySelector('.inv-actionbar')!;
+    expect(actionBar.textContent).toContain('Équipé');
+    expect(actionBar.querySelectorAll('button').length).toBeGreaterThan(0);
+  });
+
+  it('badge « Équipé » présent une seule fois (pas de doublon damier ⇄ liste, classe du bug « Veste ×2 »)', () => {
+    const h = heroWithItems();
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    const el = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    // La liste ne rend la Cotte de mailles qu'UNE fois (une seule `PlaqueRow` « Cotte de mailles »).
+    const rows = [...el.querySelectorAll('.plaque-row')].filter((r) => r.textContent?.includes('Cotte de mailles'));
+    expect(rows.length).toBe(1);
+  });
+
+  it('les prothèses N’ONT PLUS d’achat PX dans la liste — l’onglet Avancement les porte', () => {
+    const h = { ...heroWithItems(), xp: 1000 } as Combatant;
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
+    const possessionsHtml = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />).innerHTML;
+    expect(possessionsHtml).not.toContain('400 PX');
+
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'avancement' });
+    const advHtml = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />).innerHTML;
+    expect(advHtml).toContain('Prothèses');
+    expect(advHtml).toContain('Crochet');
+    expect(advHtml).toContain('400 PX');
+  });
+});
+
 describe('BackgroundPanel (rendu)', () => {
   it('affiche la bio en lecture seule (âge) et les champs éditables (motivation + ambitions)', () => {
     const html = renderToStaticMarkup(<BackgroundPanel hero={hero()} />);
