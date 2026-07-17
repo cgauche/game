@@ -144,7 +144,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const all = ALL_ENEMIES;
     expect(all.some((e) => (e.spells ?? []).length > 0)).toBe(true); // lanceur de sorts ennemi (IA incante)
     expect(all.some((e) => (e.optionals ?? []).length > 0)).toBe(true); // traits facultatifs (LDB 76)
-    expect(all.some((e) => e.randomChars)).toBe(true); // −10 + 2d10 au spawn (LDB 78)
+    expect(all.some((e) => e.randomChars)).toBe(true); // −10 + 2d10 au spawn (LDB 77 l.108)
     expect(all.some((e) => e.side === 'ally' && !e.mount)).toBe(true); // allié de scène à PIED
   });
 

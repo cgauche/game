@@ -197,13 +197,13 @@ export function Inspector({
                         <CreatureProfile creature={cr} />
                         <OptionalTraitsPicker creature={cr} value={ent.combat?.optionals} onChange={(optionals) => updateSel({ combat: { ...ent.combat, optionals } })} />
                         <SpellsField value={ent.combat?.spells} onChange={(spells) => updateSel({ combat: { ...ent.combat, spells } })} />
-                        <label className="ed-check" title="LDB 78 : « soustrayez -10 et ajoutez 2d10 ». Tirage stable au spawn (rejouable).">
+                        <label className="ed-check" title="LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10 ». Tirage stable au spawn (rejouable).">
                           <input
                             type="checkbox"
                             checked={ent.combat?.randomChars ?? false}
                             onChange={(e) => updateSel({ combat: { ...ent.combat, randomChars: e.target.checked || undefined } })}
                           />{' '}
-                          <Icon id="nav/dice" size="sm" /> Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
+                          <Icon id="nav/dice" size="sm" /> Caractéristiques aléatoires (LDB 77 l.108 : −10 + 2d10)
                         </label>
                       </>
                     );

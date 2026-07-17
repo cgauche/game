@@ -47,7 +47,7 @@ export interface CustomStatblock {
   skills?: import('../data').SkillRef[];
   /** Talents STRUCTURÉS (`TalentRef` : id stable + spécialisation/niveau). */
   talents?: import('../data').TalentRef[];
-  /** Caractéristiques aléatoires au spawn (LDB 78 : « soustrayez -10 et ajoutez 2d10 »). */
+  /** Caractéristiques aléatoires au spawn (LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10 »). */
   randomChars?: boolean;
   /** Objet INERTE servi (affût d'artillerie d'un emplacement, AA/MDG ch.12) : ciblable mais sans réaction de
    *  combat (`isInanimate`) ni tour propre — son arme se sert via `postes`. Se rend par son espèce (engin). */
@@ -120,7 +120,7 @@ export interface SceneEntity {
     optionals?: import('../engine/statEntry').OptionalEntry[];
     /** Sorts connus (ids de spells.json, créature `ref`) — choix d'auteur (la donnée bestiaire n'en liste pas). */
     spells?: string[];
-    /** Caractéristiques aléatoires au spawn (LDB 78 : −10 + 2d10, graine stable par id). */
+    /** Caractéristiques aléatoires au spawn (LDB 77 l.108 : −10 + 2d10, graine stable par id). */
     randomChars?: boolean;
     /** Compétences d'AUTEUR ajoutées (réfs `SkillRef`) — fusionnées par-dessus celles du bestiaire au spawn.
      *  Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ à son engin (AA p.122 l.3900). */

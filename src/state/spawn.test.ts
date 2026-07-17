@@ -106,7 +106,7 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
     expect(c.spells).toEqual(['flechette']); // SpawnExtras.spells = ids de sort (runtime)
   });
 
-  describe('Caractéristiques aléatoires (LDB 78 : « soustrayez -10 et ajoutez 2d10 »)', () => {
+  describe('Caractéristiques aléatoires (LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10 »)', () => {
     const mutant = findCreature('Mutant')!;
     it('chaque caractéristique tirée reste dans [v−8, v+10] ; déterministe par id ; ids ≠ → profils ≠', () => {
       const a = creatureToCombatant(mutant, 'enemy-0', at, { randomChars: true });

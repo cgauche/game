@@ -166,13 +166,13 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         />
       </label>
       <SpellsField value={stat.spells} onChange={(spells) => onChange({ ...stat, spells })} />
-      <label className="ed-field" title="LDB 78 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. » Tirage stable au spawn (rejouable) ; Blessures recalculées par la formule.">
+      <label className="ed-field" title="LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. » Tirage stable au spawn (rejouable) ; Blessures recalculées par la formule.">
         <input
           type="checkbox"
           checked={stat.randomChars ?? false}
           onChange={(e) => onChange({ ...stat, randomChars: e.target.checked || undefined })}
         />{' '}
-        <Icon id="nav/dice" size="sm" /> Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
+        <Icon id="nav/dice" size="sm" /> Caractéristiques aléatoires (LDB 77 l.108 : −10 + 2d10)
       </label>
       <label className="ed-field" title="#143 : un PNJ humain hostile MODÉLISÉ (ex. sorcier ennemi nommé) suit les mécaniques de Personnage — Corruption (LDB 19), composant d'incantation (LDB 46), Tests de fin de combat Maladie/Corruption (LDB 18/20). Une créature générique ne le coche pas.">
         <input

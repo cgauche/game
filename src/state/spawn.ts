@@ -104,7 +104,7 @@ function spawnMutations(traits: TraitList | undefined, id: string) {
   return { mutations };
 }
 
-/** Caractéristiques aléatoires (LDB 78 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30
+/** Caractéristiques aléatoires (LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30
  *  se traduit donc par 2d10+20. Si une Caractéristique vaut 5, lancez juste 1d10 ») — graine STABLE
  *  dérivée de l'id (déterministe, rejouable, même patron que spawnMutations). Les caractéristiques
  *  inexistantes (« – » → 0) ne sont pas tirées. */
@@ -123,7 +123,7 @@ function randomizeChars(chars: Characteristics, id: string): Characteristics {
  *  valeur imprimée est la valeur de TEST FINALE (présentation des statblocs de PNJ — ex. Eusapia
  *  Balacañon, MSR Compagnon p.48) → avances = valeur − Caractéristique de la Compétence (inverse
  *  de LDB 09 : Test = Caractéristique + avances). Les avances se calculent sur le profil IMPRIMÉ —
- *  un profil retouché ensuite (carac. aléatoires LDB 78, Taille) garde les mêmes avances.
+ *  un profil retouché ensuite (carac. aléatoires LDB 77 l.108, Taille) garde les mêmes avances.
  *  Entrée sans valeur chiffrée : ignorée (rien d'inventé). Réf STRUCTURÉE `SkillRef` (id stable +
  *  valeur imprimée) — plus de parsing de chaînes. */
 /** Une `SkillInstance` (id + spec) depuis l'`id` STABLE (pour la Caractéristique) + valeur de Test
@@ -163,7 +163,7 @@ export interface SpawnExtras {
   optionals?: OptionalEntry[];
   /** Sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur). */
   spells?: string[];
-  /** Caractéristiques aléatoires (LDB 78). */
+  /** Caractéristiques aléatoires (LDB 77 l.108). */
   randomChars?: boolean;
   /** Coque/navire : `id`s des Combattants d'ÉQUIPAGE exposés (MDG ch.14) — posés sur le `Combatant`. */
   crewIds?: string[];
@@ -216,7 +216,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // désaccorderait de son propre changement de Taille.
   const swapSkillRefs = swapGrants.flatMap((g) => ('skillId' in g ? [{ id: g.skillId, spec: g.spec, value: g.value }] : []));
   const talents = talentsFromBook(creature.talents);
-  if (extras?.randomChars) chars = randomizeChars(chars, id); // LDB 78 : −10 + 2d10 sur le profil rond
+  if (extras?.randomChars) chars = randomizeChars(chars, id); // LDB 77 l.108 : −10 + 2d10 sur le profil rond
   // Traits facultatifs à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : le profil
   // imprimé est FINAL pour ses traits fixes (déjà cuits) ; un facultatif AJOUTÉ s'applique en DIRECT via
   // `liveTraits` (collecteur passif) → `characteristics` reste la base bestiaire, sans double-compte.
@@ -285,7 +285,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   // Compétences (refs `SkillRef` structurées, avances dérivées du profil SAISI) + talents du statbloc.
   const skills = skillsFromBook(sb.skills, chars);
   const talents = talentsFromBook(sb.talents);
-  // Caractéristiques aléatoires (LDB 78) : le statbloc saisi est le profil ROND → −10 + 2d10 au spawn.
+  // Caractéristiques aléatoires (LDB 77 l.108) : le statbloc saisi est le profil ROND → −10 + 2d10 au spawn.
   if (sb.randomChars) chars = randomizeChars(chars, id);
   // Traits à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : un statbloc d'ÉDITEUR
   // part d'un profil standard et AJOUTE les Traits (LDB 77) → tous appliqués en DIRECT via `liveTraits`

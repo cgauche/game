@@ -56,10 +56,6 @@
     "ticket": "#375"
   },
   {
-    "topic": "bestiaire#caracteristiques-aleatoires",
-    "ticket": "#515"
-  },
-  {
     "topic": "bestiaire#catalogue-du-bestiaire-a-transcrire-separement",
     "bloque": "topic documentaire (pointeur vers le catalogue creatures.json), aucune règle à implémenter"
   },

@@ -21,7 +21,7 @@
 - [Taille : catégories, Blessures et modificateurs](#taille-categories-blessures-et-modificateurs)
 - [Utiliser les Tailles (agrandir/réduire)](#utiliser-les-tailles)
 - [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat)
-- [Caractéristiques aléatoires (LDB 78)](#caracteristiques-aleatoires)
+- [Caractéristiques aléatoires (LDB 77)](#caracteristiques-aleatoires)
 - [Index des Traits de créature (renvois)](#index-des-traits-de-creature)
 - [Catalogue du bestiaire (à transcrire séparément)](#catalogue-du-bestiaire)
 - [Bilan de fidélité](#bilan-de-fidelite)
@@ -303,16 +303,16 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 
 ## Caractéristiques aléatoires
 
-**Source RAW** : `LDB 78` (chapitre Les Bêtes du Reikland)
+**Source RAW** : `LDB 77 l.108` (chapitre Les populations du Reikland)
 
 Pour les bêtes sauvages, les profils du bestiaire sont **arrondis à des multiples de 5 ou 10**. Le MJ peut individualiser une créature :
 
-> « Soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. Si une Caractéristique vaut 5, lancez juste 1d10. » — source `LDB 78`
+> « Soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. Si une Caractéristique vaut 5, lancez juste 1d10. » — source `LDB 77 l.108`
 
 Les Caractéristiques inexistantes (« – » → 0) **ne sont pas tirées**.
 
-**Implémente :** (non implémenté)
-- dette : #515
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `SceneEntity`, `skillInstance`, `SpawnExtras`, `StatblockEditor`, `Inspector`, `creatureToCombatant`, `statblockToCombatant`, `prejuge`, +3 — `src/data/creatures.json`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/Inspector.tsx`, `src/ui/editor/StatblockEditor.tsx`
 
 ---
 
@@ -365,8 +365,8 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 
 | Chapitre | Titre | Contenu |
 |---|---|---|
-| `LDB 77` | Les populations du Reikland | Humains, halflings, nains, elfes — PNJ de civilisation |
-| `LDB 78` | Les Bêtes du Reikland | Faune commune (loup, sanglier, cheval, griffon, etc.) + règle carac. aléatoires |
+| `LDB 77` | Les populations du Reikland | Humains, halflings, nains, elfes — PNJ de civilisation + règle carac. aléatoires |
+| `LDB 78` | Les Bêtes du Reikland | Faune commune (loup, sanglier, cheval, griffon, etc.) |
 | `LDB 79` | Les bêtes monstrueuses du Reikland | Géants, trolls, ogres, araignées géantes… |
 | `LDB 80` | Les hordes de peaux-vertes | Gobelins, orques, trolls verts, chamans |
 | `LDB 82` | Les morts sans repos | Zombies, squelettes, fantômes, vampires, nécromancers |
@@ -452,7 +452,7 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 | Blessures par Taille | `LDB 85 l.391-406` | ✅ table verbatim |
 | Utiliser les Tailles | `LDB 85 l.339-340` | ✅ verbatim |
 | Mods Taille en combat | `LDB 85 l.357-387` | ✅ |
-| Caractéristiques aléatoires | `LDB 78` | ✅ règle citée |
+| Caractéristiques aléatoires | `LDB 77 l.108` | ✅ implémenté (`randomizeChars`) |
 | Index Traits — déclenchement | `LDB 85 l.83-455` | ✅ tableau de synthèse |
 
 ### Catalogue créatures — flagué
@@ -462,7 +462,7 @@ Les chapitres `LDB 77-83`, `ZI`, `frenchy.bzh`, `EDO`, `T2/T2C`, `T3`, `NADAJ`, 
 ### Refs code confirmées
 
 - `src/engine/size.ts` — `LDB 85 l.343-406` (7 catégories, Blessures, mods combat).
-- `src/state/spawn.ts` — `LDB 76 l.45` (Facultatifs), `LDB 78` (carac. aléatoires).
+- `src/state/spawn.ts` — `LDB 76 l.45` (Facultatifs), `LDB 77 l.108` (carac. aléatoires).
 - `src/engine/creatureAttacks.ts` — `LDB 85 traits` (grantsManeuvers par id).
 - `src/engine/creatureEquip.ts` — `LDB 85 l.408` (Tentacules, compte/attaques gratuites).
 - `src/engine/combat.ts` l.280-297, 565, 596 — `LDB 85 l.253/299/301-303/305-306`.
