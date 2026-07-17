@@ -101,7 +101,7 @@ Les scores des principales équipes de Middenheim sont indiqués dans le tableau
 
 ### LE TABLEAU D'ATHLÉTISME
 
-Lancez un d100 et ajoutez le score A de l'équipe à domicile, puis soustrayez le score A de l'équipe visiteuse. Si vous le souhaitez, vous pouvez aussi choisir de déterminer la différence entre les deux scores, puis de l'ajouter ou de la soustraire du résultat du d100, selon le cas.
+<span id="page-147-0" data-folio="145"></span>Lancez un d100 et ajoutez le score A de l'équipe à domicile, puis soustrayez le score A de l'équipe visiteuse. Si vous le souhaitez, vous pouvez aussi choisir de déterminer la différence entre les deux scores, puis de l'ajouter ou de la soustraire du résultat du d100, selon le cas.
 
 | D100  | Résultat                                                                                                                                              |
 |-------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -148,7 +148,7 @@ Lancez un d100 et ajoutez le score B de l'équipe à domicile, puis soustrayez l
 | 99–00 | Un joueur de l'équipe visiteuse souffre d'une blessure<br>critique et quitte le jeu. Soustrayez les scores A et<br>B de ce joueur du total de l'équipe. S'il n'y a pas de<br>remplaçants disponibles, l'un des joueurs de l'équipe à<br>domicile devient un Joueur libre. |
 
 
-| Équipe<br>Issue de…                                   |                                     | Membres de<br>l'équipe              | A  | B  |
+<span id="page-148-0" data-folio="146"></span>| Équipe<br>Issue de…                                   |                                     | Membres de<br>l'équipe              | A  | B  |
 |-------------------------------------------------------|-------------------------------------|-------------------------------------|----|----|
 | AltquEst                                              | Classe ouvrière<br>de l'Altquartier | 8 Brutes,<br>5 Athlètes             | 18 | 21 |
 | Pitbulls                                              | Classe ouvrière<br>de l'Altquartier | 10 Brutes,<br>3 Athlètes            | 16 | 23 |
@@ -194,7 +194,7 @@ Une fois que le mouvement est résolu, les joueurs impliqués décident d'effect
 - **2. Attaquer.** Un joueur peut en attaquer un autre. Cette action est résolue avec un Round de combat à mains nues. Si l'attaquant inflige un État *Empêtré* (voir les règles d'*Empoignade*, **WFJDR** page 163) au joueur en possession de la balle, il peut choisir de libérer le joueur, ce qui a pour effet de mettre fin à l'État *Empêtré*, mais de lui permettre de s'emparer de la balle.
 
 
-- **3. Frapper la balle du pied.** Cette action peut uniquement être effectuée par des joueurs qui ne se sont pas déplacés, ou qui ont dribblé en se déplaçant. Un joueur en possession de la balle peut la frapper vers le but ou vers un autre joueur. Pour déterminer si la frappe est précise, effectuez un Test de Capacité de Tir. La difficulté de ce Test dépend de la distance, comme illustré sur le schéma ci-dessus. Un joueur à la réception de la balle doit réussir un Test d'Athlétisme pour devenir le nouveau joueur en possession de la balle.
+<span id="page-149-0" data-folio="147"></span>- **3. Frapper la balle du pied.** Cette action peut uniquement être effectuée par des joueurs qui ne se sont pas déplacés, ou qui ont dribblé en se déplaçant. Un joueur en possession de la balle peut la frapper vers le but ou vers un autre joueur. Pour déterminer si la frappe est précise, effectuez un Test de Capacité de Tir. La difficulté de ce Test dépend de la distance, comme illustré sur le schéma ci-dessus. Un joueur à la réception de la balle doit réussir un Test d'Athlétisme pour devenir le nouveau joueur en possession de la balle.
 - **4. Tirer.** Si un joueur ayant reçu la balle se trouve dans une bonne position pour tirer selon la table d'Athlétisme, il peut tenter un tir immédiatement. Ce tir est résolu comme une Frappe du pied.
 
 Les Tests de **Capacité de Tir** effectués pour marquer un but bénéficient d'un bonus de +10, étant donné que la cible est grande. Cependant, chaque équipe désigne généralement l'un de ses membres qui joue le rôle de Gardien. Si un Gardien occupe le but, les Tests de **Capacité de Tir** effectués pour marquer un but doivent être opposés à la Compétence **Athlétisme** du Gardien. Si le Gardien gagne le Test de 1 DR ou plus, il devient le joueur en possession de la balle. Si le joueur effectuant le tir réussit par 1 DR ou plus, il marque un but.

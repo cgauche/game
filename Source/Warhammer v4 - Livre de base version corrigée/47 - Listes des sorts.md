@@ -127,7 +127,7 @@ Vous fouillez dans un sac, une poche ou un chapeau, ou sous un rocher, une souch
 Vous touchez vos cibles, drainant leur vie. Ce Sort est considéré comme un *Projectile magique* avec Dégât +0 qui ignore les PA. Puis vous Guérissez 1 Point de Blessure.
 
 
-# **Éblouissant**
+<span id="page-242-0" data-folio="241"></span># **Éblouissant**
 
 **NI :** 0
 
@@ -329,7 +329,7 @@ Vous créez une arme de Corps à corps dont les Dégâts sont égaux à votre Bo
 Vous gagnez +1 PA à toutes les Localisations en vous enveloppant dans un nuage de magie protectrice.
 
 
-#### **Attaques en chaîne**
+<span id="page-244-0" data-folio="243"></span>#### **Attaques en chaîne**
 
 **NI :** 6
 
@@ -420,7 +420,7 @@ Vous créez un dôme d'énergie magique au-dessus des têtes, bloquant les attaq
 En vous recouvrant de magie, vous devenez effrayant et intimidant. Gagnez *Peur 1*. Pour chaque +3 DR, vous pouvez augmenter votre valeur de *Peur* de 1.
 
 
-### **Enchevêtrement**
+<span id="page-245-0" data-folio="244"></span>### **Enchevêtrement**
 
 **NI :** 3
 

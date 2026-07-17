@@ -4,7 +4,7 @@
 
 ### **VERSION COURTE**
 
-Karl Heinz Wasmeier, le très respecté Seigneur des Lois, fait secrètement partie de la secte de la Main Pourpre. Son rôle dans le complot du culte qui vise à déstabiliser l'Empire est de faire de la cité fortifiée de Middenheim une forteresse secrète du Chaos. Pour ce faire, il doit se débarrasser des éléments-clés de la défense de Middenheim.
+<span id="page-39-0" data-folio="37"></span>Karl Heinz Wasmeier, le très respecté Seigneur des Lois, fait secrètement partie de la secte de la Main Pourpre. Son rôle dans le complot du culte qui vise à déstabiliser l'Empire est de faire de la cité fortifiée de Middenheim une forteresse secrète du Chaos. Pour ce faire, il doit se débarrasser des éléments-clés de la défense de Middenheim.
 
 La grande communauté naine de la ville, qui s'y est implantée il y a fort longtemps, a aidé à mettre en place ses défenses et protège encore à ce jour la cité souterraine. Les prêtres et les sorciers y jouent également un rôle majeur, que ce soit dans le renforcement des fortifications de la ville, ou dans l'identification et l'élimination des différentes menaces qui pèsent sur elle. Les nouvelles taxes instaurées par Wasmeier visent ces groupes en particulier, avec pour objectif de les pousser à quitter la ville pour de bon.
 
@@ -41,7 +41,7 @@ Lors de la collecte mensuelle, les particuliers doivent payer soit 10% de la val
 **L'impôt sorcier :** la Grande Guilde des Sorciers se retrouve quant à elle taxée sur tous les équipements magiques qu'elle fait venir en ville : le papier, l'encre, la verrerie, les produits chimiques, etc. Dans les faits, ceci revient à taxer tout ce que reçoit la guilde. Le montant à payer s'élève à 10% de la valeur brute, collecté aux portes de la ville. Puisque la guilde utilise beaucoup de papier, on surnomme également cette taxe « l'impôt-parchemin ».
 
 
-### **Le Graf**
+<span id="page-40-0" data-folio="38"></span>### **Le Graf**
 
 Le graf Boris a été profondément affecté par la mort récente de sa deuxième femme. D'ordinaire énergique et déterminé, le Graf a sombré dans une profonde dépression, qui le rend incapable de prendre la moindre décision ou de discuter des affaires de la ville. Entre son deuil et ses problèmes de succession, (le baron Stefan, son seul héritier légitime, n'est pas apte à monter sur le trône), il ne sait plus quoi faire. Wasmeier a vu cette opportunité s'offrir à lui, et a de suite commencé à faire passer ses taxes.
 
@@ -139,7 +139,7 @@ il se trouve présentement.
 
 Wasmeier contrôle 9 des 17 votes, ce qui lui assure la victoire, même si les autres se prononcent contre les taxes. Il a obtenu le soutien du Chancelier Sparsam (2 voix), des Seigneurs des Lois (3 voix), d'Emmanuelle et d'Ar-Ulric (3 voix) et du Champion (1 voix).
 
-### **Ar-Ulric**
+<span id="page-42-0" data-folio="40"></span>### **Ar-Ulric**
 
 Aucun adepte d'Ulric n'utilise le titre de « Grand Prêtre d'Ulric », sauf quand ils doivent expliquer son rôle à quelqu'un de l'extérieur. En tant que chef de la deuxième plus grande religion de l'Empire, que gardien du sanctuaire le plus sacré de Middenheim, et qu'Électeur à part entière, Ar-Ulric est très respecté par les citoyens. Rares sont ceux qui le connaissent personnellement, mais lorsque son nom est mentionné, tout le monde voit en lui une incarnation des vertus ulricaines.
 
@@ -172,7 +172,7 @@ On les voit rarement hors du Palais ou des quartiers nobles de la ville.
 
 ### POUR LES GROGNARDS : L'ANTAGONISTE
 
-Les Joueurs vétérans savent déjà que Wasmeier est l'antagoniste de l'histoire. Vous pouvez donc décider de corser les choses pour eux et de donner ce rôle à un autre PNJ. Voici quelques possibilités.
+<span id="page-43-0" data-folio="41"></span>Les Joueurs vétérans savent déjà que Wasmeier est l'antagoniste de l'histoire. Vous pouvez donc décider de corser les choses pour eux et de donner ce rôle à un autre PNJ. Voici quelques possibilités.
 
 #### LE CHANCELIER
 
@@ -250,7 +250,7 @@ Notez bien que si vous choisissez Katarina Todbringer ou Ulrich Schutzmann comme
 
 # POUR LES VÉTÉRANS : LE DOPPELGÄNGER
 
-Peut-être que le changeur de forme qui joue le rôle du Seigneur des Lois assassiné n'est finalement pas un doppelgänger, mais un autre genre de créature qui va mettre les Personnages en difficulté d'une toute nouvelle manière, surtout s'ils s'attendent à ce que ce soit un doppelgänger. Seules quelques options sont listées sur cette page. Un MJ créatif saura en trouver de nombreuses autres.
+<span id="page-45-0" data-folio="43"></span>Peut-être que le changeur de forme qui joue le rôle du Seigneur des Lois assassiné n'est finalement pas un doppelgänger, mais un autre genre de créature qui va mettre les Personnages en difficulté d'une toute nouvelle manière, surtout s'ils s'attendent à ce que ce soit un doppelgänger. Seules quelques options sont listées sur cette page. Un MJ créatif saura en trouver de nombreuses autres.
 
 ### **Un serviteur de Tzeentch**
 

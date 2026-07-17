@@ -107,7 +107,7 @@ Si le Standing atteint 0, votre Échelon baisse de 1 et votre Standing remonte �
 Votre Statut a un lien direct avec l'argent que vous gagnez en travaillant. Plus votre Statut est élevé, plus vous êtes susceptible de gagner de l'argent, car la réputation qui entoure votre nom attire la clientèle. Si le MJ est d'accord, vous pouvez, lors d'une session de jeu, passer une semaine à travailler votre Carrière à la condition que vous vous trouviez dans un endroit où c'est possible (il est en effet difficile de jouer son rôle de Milicien au beau milieu de nulle part). C'est ce que l'on appelle Gagner de l'argent.
 
 
-Lorsque vous Gagnez de l'argent, effectuez un Test **Spectaculaire Accessible (+20)** (voir page 152) contre votre Compétence de Carrière vous permettant de Gagner de l'argent (la Compétence indiquée en italique du premier Niveau de Carrière). Sur un succès, vous gagnez l'argent indiqué dans le tableau ci-dessous. Sur un Échec, vous ne gagnez que la moitié de la somme. Sur un Échec Stupéfiant (-6), vous avez passé une très mauvaise semaine et vous n'avez rien gagné (ou alors l'argent vous a été volé, ou vous avez vécu une mésaventure similaire).
+<span id="page-53-0" data-folio="52"></span>Lorsque vous Gagnez de l'argent, effectuez un Test **Spectaculaire Accessible (+20)** (voir page 152) contre votre Compétence de Carrière vous permettant de Gagner de l'argent (la Compétence indiquée en italique du premier Niveau de Carrière). Sur un succès, vous gagnez l'argent indiqué dans le tableau ci-dessous. Sur un Échec, vous ne gagnez que la moitié de la somme. Sur un Échec Stupéfiant (-6), vous avez passé une très mauvaise semaine et vous n'avez rien gagné (ou alors l'argent vous a été volé, ou vous avez vécu une mésaventure similaire).
 
 Ce total ne représente pas strictement l'argent que vous avez gagné, mais plus ce qu'il vous reste à la fin de la semaine, après que toutes vos dépenses ont été prises en compte.
 
@@ -579,7 +579,7 @@ Si vous voulez jouer un Personnage qui sait ce que sont ces « trop gros » ou �
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  | h  |   |   |   |    |     |     | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-61-0" data-folio="60"></span># **Évolution de Carrière**
 
 h **Chasseur de Rat – Bronze 3**
 
@@ -636,7 +636,7 @@ Attirer les mécènes appropriés n'est pas toujours chose facile, et c'est la r
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    | h |   | h |    | h   |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-62-0" data-folio="61"></span># **Évolution de Carrière**
 
 h **Artiste Apprenti – Argent 1**
 
@@ -687,7 +687,7 @@ Si quelque chose d'anormal ou de dangereux se produit sur le domaine de leur emp
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h | h | h  |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-63-0" data-folio="62"></span># **Évolution de Carrière**
 
 h **Assistant – Argent 2**
 
@@ -746,7 +746,7 @@ Les Duellistes, qu'ils soient expérimentés ou novices, parcourent l'Empire à 
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   |   | h | h  |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-64-0" data-folio="63"></span># **Évolution de Carrière**
 
 h **Escrimeur – Argent 3**
 
@@ -805,7 +805,7 @@ Les Émissaires voyagent énormément, croisent le chemin de très nombreuses pe
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h |   | h  |     |     |    | h   |
 
-# **Évolution de Carrière**
+<span id="page-65-0" data-folio="64"></span># **Évolution de Carrière**
 
 h **Héraut – Argent 2**
 
@@ -850,7 +850,7 @@ Les Espions sont des personnes courageuses (ou imprudentes) qui, en secret, part
 
 On trouve, un peu partout dans le Vieux Monde, des Espions au service d'organisations connues. Au cours de leurs enquêtes, les Espions se retrouvent impliqués dans des intrigues qui peuvent être sans risques, ou beaucoup plus sinistres. Ils sont souvent contraints à la fuite lorsque leur identité, ou leurs allégeances sont mises au jour. Ces individus utilisent leurs talents de déguisement pour cacher leur vraie nature et éviter de se faire capturer. Plus d'un Espion s'est retrouvé à partir à l'aventure après avoir rejoint un groupe de héros qui l'auront pris dans leur groupe bien malgré eux lors d'une tentative d'évasion.
 
-#### **Schéma de Progression d'Espion**
+<span id="page-66-0" data-folio="65"></span>#### **Schéma de Progression d'Espion**
 
 | CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
 |----|----|---|---|---|----|-----|-----|----|-----|
@@ -956,7 +956,7 @@ Le MJ doit bien réfléchir avant de permettre à l'un de ses Joueurs de choisir
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   |   | h |    | h   |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-68-0" data-folio="67"></span># **Évolution de Carrière**
 
 h **Héritier – Or 1**
 
@@ -1009,7 +1009,7 @@ Un Serviteur peut être réquisitionné pour accompagner son employeur lorsque c
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    | h | h |   | h  |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-69-0" data-folio="68"></span># **Évolution de Carrière**
 
 h **Domestique – Argent 1**
 
@@ -1062,7 +1062,7 @@ Un Cavalier en service dans l'Armée impériale ne va pas tout laisser tomber su
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    | h |   |   | h  |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-70-0" data-folio="69"></span># **Évolution de Carrière**
 
 h **Apprenti Cavalier – Argent 2**
 
@@ -1170,7 +1170,7 @@ Les Gardes peuvent intégrer l'aventure lorsque leur fonction est compromise. To
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h |   | h  |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-72-0" data-folio="71"></span># **Évolution de Carrière**
 
 h **Sentinelle – Argent 1**
 
@@ -1231,7 +1231,7 @@ Beaucoup de Gladiateurs arrivent dans ce métier parce qu'ils ont du talent ou s
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    | h | h |   |    |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-73-0" data-folio="72"></span># **Évolution de Carrière**
 
 h **Pugiliste – Bronze 4**
 
@@ -1284,7 +1284,7 @@ Bien que beaucoup de Prêtres Guerriers restent dans l'armée, certains servent 
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h |   |    |     |     | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-74-0" data-folio="73"></span># **Évolution de Carrière**
 
 h **Novice – Bronze 2**
 
@@ -1345,7 +1345,7 @@ Les Soldats ont peu de temps libre, mais ont toujours des opportunités d'aventu
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h |   |    |     |     | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-75-0" data-folio="74"></span># **Évolution de Carrière**
 
 h **Recrue – Argent 1**
 
@@ -1396,7 +1396,7 @@ Les Spadassins vivent grâce à leur intelligence et leurs muscles et ne sont g�
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h |   | h  |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-76-0" data-folio="75"></span># **Évolution de Carrière**
 
 h **Matamore – Bronze 2**
 
@@ -1459,7 +1459,7 @@ Jouer un Tueur est une expérience unique, car votre Personnage veut mourir. Acc
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    | h |   |   |    |     |     | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-77-0" data-folio="76"></span># **Évolution de Carrière**
 
 h **Tueur de Trolls – Bronze 2**
 
@@ -1512,7 +1512,7 @@ Les Chasseurs de primes poursuivent les fugitifs, ou les hors-laloi, pour de l'a
 
 Les Chasseurs de primes, en fonction du criminel qu'ils recherchent, doivent quelquefois emprunter les chemins de l'aventure. Comme ils sont parfaitement autonomes, il est facile pour eux, temporairement, de laisser leur objectif de côté et de prendre une autre mission si elle se présente. De plus, comme les compétences qu'ils maîtrisent sont très souvent recherchées, il arrive fréquemment que les Chasseurs de primes se tournent définitivement vers une vie d'aventurier, louant leurs talents contre paiement. La Carrière de Chasseur de primes est une excellente Carrière de départ, car elle mélange parfaitement Compétences sociales et combat, ce qui vous permet d'être utile quelles que soient les circonstances.
 
-#### **Schéma de Progression du Chasseur de primes**
+<span id="page-78-0" data-folio="77"></span>#### **Schéma de Progression du Chasseur de primes**
 
 | CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
 |----|----|---|---|---|----|-----|-----|----|-----|
@@ -1695,7 +1695,7 @@ Il n'est pas compliqué pour un Flagellant de se retrouver embarqué dans une av
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    | h | h |   |    |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-81-0" data-folio="80"></span># **Évolution de Carrière**
 
 h **Zélote – Bronze 0**
 
@@ -1754,7 +1754,7 @@ Les messages peuvent renfermer toutes sortes d'informations, et certains peuvent
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h | h | h  |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-82-0" data-folio="81"></span># **Évolution de Carrière**
 
 h **Coureur – Bronze 3**
 
@@ -1819,7 +1819,7 @@ Les Patrouilleurs routiers n'ont aucune difficulté à trouver de quoi partir à
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    | h  |   | h | h |    |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-83-0" data-folio="82"></span># **Évolution de Carrière**
 
 h **Péager – Bronze 5**
 
@@ -1876,7 +1876,7 @@ L'existence d'un Répurgateur est une aventure permanente au cours de laquelle i
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h |   |    |     |     | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-84-0" data-folio="83"></span># **Évolution de Carrière**
 
 h **Interrogateur – Argent 1**
 
@@ -1925,7 +1925,7 @@ Les Saltimbanques les plus répandus sont les amuseurs de foules, comme les bouf
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   |   |   | h  | h   |     |    | h   |
 
-# **Évolution de Carrière**
+<span id="page-85-0" data-folio="84"></span># **Évolution de Carrière**
 
 h **Musicien de rues – Bronze 3**
 
@@ -1994,7 +1994,7 @@ Les Apothicaires se spécialisent dans la préparation de traitements médicamen
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h |   |    | h   | h   |    |     |
 
-# **Évolution de Carrière**
+<span id="page-86-0" data-folio="85"></span># **Évolution de Carrière**
 
 h **Apprenti Apothicaire – Bronze 3**
 
@@ -2065,7 +2065,7 @@ Les Érudits les plus pauvres qui ne peuvent, ou ne veulent pas enseigner auront
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h |   |    |     | h   | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-87-0" data-folio="86"></span># **Évolution de Carrière**
 
 h **Étudiant – Bronze 3**
 
@@ -2114,7 +2114,7 @@ Les Ingénieurs sont capables de concevoir et de fabriquer des appareils ou des 
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    | h  |   |   |   |    | h   | h   |    |     |
 
-# **Évolution de Carrière**
+<span id="page-88-0" data-folio="87"></span># **Évolution de Carrière**
 
 h **Étudiant Ingénieur – Bronze 4**
 
@@ -2202,7 +2202,7 @@ Il est de notoriété publique que les honoraires de la guilde des Médecins son
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   |   |   |    | h   | h   | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-89-0" data-folio="88"></span><span id="page-90-0" data-folio="89"></span># **Évolution de Carrière**
 
 h **Étudiant en Médecine – Bronze 4**
 
@@ -2257,7 +2257,7 @@ Lorsqu'un ordre religieux découvre de terribles secrets ou une partie d'une pro
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   |   |   |    | h   | h   |    | h   |
 
-# **Évolution de Carrière**
+<span id="page-91-0" data-folio="90"></span># **Évolution de Carrière**
 
 h **Novice – Bronze 1**
 
@@ -2324,7 +2324,7 @@ Certains Prêtres, qui doivent normalement rester en service dans des temples, c
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h |   | h  |     |     | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-92-0" data-folio="91"></span># **Évolution de Carrière**
 
 h **Initié – Bronze 2**
 
@@ -2383,7 +2383,7 @@ Les Sorciers font d'excellents Personnages, car ils ajoutent de la puissance de 
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   |   |   |    |     | h   | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-93-0" data-folio="92"></span># **Évolution de Carrière**
 
 h **Sorcier novice – Bronze 3**
 
@@ -2434,7 +2434,7 @@ Un Batelier n'aura pas besoin d'aller au-devant de l'aventure, car c'est elle qu
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    | h | h |   | h  |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-94-0" data-folio="93"></span># **Évolution de Carrière**
 
 h **Canotier – Argent 1**
 
@@ -2495,7 +2495,7 @@ Bien souvent, les Contrebandiers se retrouvent embarqués dans des aventures mê
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   |   |   | h  | h   |     | h  |     |
 
-# **Évolution de Carrière**
+<span id="page-95-0" data-folio="94"></span># **Évolution de Carrière**
 
 h **Coureur de rivières – Bronze 2**
 
@@ -2550,7 +2550,7 @@ Malgré la monotonie et la répétition qui régissent la vie sur les quais, cer
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    |   | h | h |    |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-96-0" data-folio="95"></span># **Évolution de Carrière**
 
 h **Porteur – Bronze 3**
 
@@ -2601,7 +2601,7 @@ Une Femme du fleuve se sent chez elle lorsqu'elle se trouve à proximité d'une 
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   | h |   | h  | h   |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-97-0" data-folio="96"></span># **Évolution de Carrière**
 
 h **Alevin – Bronze 2**
 
@@ -2668,7 +2668,7 @@ Une fois Marienburg franchie, c'est le monde entier qui attend le Marin : la dan
 |----|----|---|---|---|----|-----|-----|----|-----|
 |    |    |   |   |   | h  | h   |     |    | h   |
 
-# **Évolution de Carrière**
+<span id="page-98-0" data-folio="97"></span># **Évolution de Carrière**
 
 h **Marin d'eau douce – Argent 1**
 
@@ -2733,7 +2733,7 @@ La préparation et l'exécution d'un naufrage est une aventure en elle-même : �
 |----|----|---|---|---|----|-----|-----|----|-----|
 | h  |    | h |   | h |    |     |     |    |     |
 
-# **Évolution de Carrière**
+<span id="page-99-0" data-folio="98"></span># **Évolution de Carrière**
 
 h **Pilleur d'épaves – Bronze 2**
 

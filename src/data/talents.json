@@ -1544,7 +1544,7 @@
     "rand": null,
     "source": {
       "book": "livre-de-base",
-      "page": 137
+      "page": 138
     },
     "combat": {
       "ignoreCalledShotHead": true
@@ -2105,7 +2105,7 @@
     "rand": null,
     "source": {
       "book": "livre-de-base",
-      "page": 139
+      "page": 140
     },
     "combat": {
       "reverseFailed": {

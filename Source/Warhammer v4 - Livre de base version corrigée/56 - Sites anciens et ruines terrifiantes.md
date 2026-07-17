@@ -11,7 +11,7 @@ L'homme sage ne s'aventure pas à proximité du Cercle de Pierres noires. Le che
 Au centre du Cercle de Pierres noires se trouve un bloc monolithique, fait d'une roche non identifiable, recouverte en permanence du sang d'innombrables innocents sacrifiés au fil des millénaires.
 
 
-Malgré la triste réputation du Cercle, les voyageurs semblent attirés vers ses environs malveillants, séduits par les légendes de potentiel mystique et d'artefacts perdus aux terribles pouvoirs arcaniques. Même les apparitions fréquentes d'hommes-bêtes et de cultistes – en particuliers aux alentours de Geheimnisnacht – ne peuvent dissuader ces braves, certains pourraient dire imprudentes, âmes.
+<span id="page-288-0" data-folio="287"></span>Malgré la triste réputation du Cercle, les voyageurs semblent attirés vers ses environs malveillants, séduits par les légendes de potentiel mystique et d'artefacts perdus aux terribles pouvoirs arcaniques. Même les apparitions fréquentes d'hommes-bêtes et de cultistes – en particuliers aux alentours de Geheimnisnacht – ne peuvent dissuader ces braves, certains pourraient dire imprudentes, âmes.
 
 # **Château Drachenfels**
 

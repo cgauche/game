@@ -87,7 +87,7 @@ La créature possède des cornes ou d'autres appendices acérés. Si ses Cornes 
 La créature est corrompue par le Chaos, ou peut-être imprégnée de Magie noire. Le *Degré* de Corruption est indiqué entre parenthèses. Voir page 182.
 
 
-# **Corruption mentale**
+<span id="page-340-0" data-folio="339"></span># **Corruption mentale**
 
 Le Chaos s'est insinué dans l'esprit de la créature… Faites un lancer sur le Tableau de la Corruption Mentale qui se trouve à la p. 185.
 
@@ -174,7 +174,7 @@ Le hurlement de la créature est glaçant, et même capable de tuer ceux qui l'e
 La créature est totalement immunisée à un certain *Type* de Dégâts, comme ceux du poison, magiques ou électriques. Tous les Dégâts de ce *Type*, y compris les Dégâts Critiques, sont ignorés.
 
 
-### **Immunité Psychologique**
+<span id="page-341-0" data-folio="340"></span>### **Immunité Psychologique**
 
 Peu importe que la créature soit téméraire, extrêmement stupide ou juste dans le feu de l'action, elle n'a peur de rien. Elle ignore les règles de la Psychologie. Voir page 190.
 
@@ -257,7 +257,7 @@ Les nuées sont constituées d'un grand nombre de créatures identiques agissant
 La peau de la créature est couverte de puces ou autre vermine similaire. Tous les adversaires subissent une pénalité de -10 pour la toucher en combat au Corps à corps puisque les parasites les perturbent et les submergent.
 
 
-### **Perturbant**
+<span id="page-342-0" data-folio="341"></span>### **Perturbant**
 
 La créature perturbe ou désoriente ses ennemis : peut-être qu'elle dégage un musc soporifique ou une odeur nauséabonde, ou peut-être que son apparence est horrifiante ou étrange. Toute personne se trouvant à un nombre de mètres égal à son Bonus d'Endurance obtient une pénalité de -20 à tous ses Tests. Les créatures touchées ne peuvent subir cette pénalité qu'une seule fois, peu importe le nombre d'ennemis Perturbants.
 
@@ -337,7 +337,7 @@ Bien que n'étant pas entièrement dénuée de lucidité (et ne disposant ainsi 
 
 # UTILISER LES TAILLES
 
-Si vous souhaitez utiliser le Trait Taille pour agrandir une créature – pour transformer, par exemple, une Araignée Géante en Araignée Gigantesque –, augmentez alors **F**  et **E** de +10, et réduisez **Ag** de -5 par catégorie de taille supérieure. Inversez le procédé si vous voulez rendre une créature plus petite.
+<span id="page-343-0" data-folio="342"></span>Si vous souhaitez utiliser le Trait Taille pour agrandir une créature – pour transformer, par exemple, une Araignée Géante en Araignée Gigantesque –, augmentez alors **F**  et **E** de +10, et réduisez **Ag** de -5 par catégorie de taille supérieure. Inversez le procédé si vous voulez rendre une créature plus petite.
 
 # **Taille (Divers)**
 
@@ -447,7 +447,7 @@ La créature effectue un Test opposé de **CT/Esquive** contre toutes les cibles
 Toutes les Armures et les Armes portées par les cibles affectées subissent 1 Dégât à cause de l'acidité corrosive du vomissement.
 
 
-#### EXPÉRIENCE Actuelle Dépensée Totale AMBITIONS **À court terme À long terme** Nom Race Classe Carrière Niveau de Carrière Schéma de Carrière Statut Âge Taille Cheveux Yeux CARACTÉRISTIQUES CC CT F E I Ag Dex Int FM Soc Initiales Augmentation Courantes MOUVEMENT Mouvement Marche Course COMPÉTENCES DE BASE **Nom Caractéristique Aug Comp** Art Dex Athlétisme Ag Calme FM Charme Soc Chevaucher Ag Commandement Soc Conduite d'attelage Ag Corps à corps (base) CC Corps à corps CC Discrétion Ag Divertissement Soc Emprise animaux FM Escalade F COMPÉTENCES DE BASE **Nom Caractéristique Aug Comp** Esquive Ag Intimidation F Intuition I Marchandage Soc Orientation I Pari Int Perception I Ragot Soc Ramer F Résistance E Résistance à l'alcool E Subornation Soc Survie en extérieur Int TALENTS **Nom Nbre pris Description** DESTIN Destin Chance COMP. GROUPÉES ET AVANCÉES **Nom Caractéristique Aug Comp** GROUPE **Nom du groupe À court terme À long terme Membres** RÉSILIENCE Résilience Détermination Motivation
+<span id="page-345-0" data-folio="344"></span>#### EXPÉRIENCE Actuelle Dépensée Totale AMBITIONS **À court terme À long terme** Nom Race Classe Carrière Niveau de Carrière Schéma de Carrière Statut Âge Taille Cheveux Yeux CARACTÉRISTIQUES CC CT F E I Ag Dex Int FM Soc Initiales Augmentation Courantes MOUVEMENT Mouvement Marche Course COMPÉTENCES DE BASE **Nom Caractéristique Aug Comp** Art Dex Athlétisme Ag Calme FM Charme Soc Chevaucher Ag Commandement Soc Conduite d'attelage Ag Corps à corps (base) CC Corps à corps CC Discrétion Ag Divertissement Soc Emprise animaux FM Escalade F COMPÉTENCES DE BASE **Nom Caractéristique Aug Comp** Esquive Ag Intimidation F Intuition I Marchandage Soc Orientation I Pari Int Perception I Ragot Soc Ramer F Résistance E Résistance à l'alcool E Subornation Soc Survie en extérieur Int TALENTS **Nom Nbre pris Description** DESTIN Destin Chance COMP. GROUPÉES ET AVANCÉES **Nom Caractéristique Aug Comp** GROUPE **Nom du groupe À court terme À long terme Membres** RÉSILIENCE Résilience Détermination Motivation
 
 
 | ARMURE      |              |        |             |           |                  |                        |  |                      | POINTS D'ARMURE (PA) |  |
@@ -475,7 +475,7 @@ Toutes les Armures et les Armes portées par les cibles affectées subissent 1 D
 |             |              |        | CO          |           |                  |                        |  |                      |                      |  |
 |             |              |        |             |           | Total            |                        |  | Blessures            |                      |  |
 |             |              |        |             |           | ARMES            |                        |  |                      |                      |  |
-| Nom         |              | Groupe | Enc         |           | Portée/Allonge   | Dégâts                 |  | Atouts/Défauts       |                      |  |
+<span id="page-346-0" data-folio="345"></span>| Nom         |              | Groupe | Enc         |           | Portée/Allonge   | Dégâts                 |  | Atouts/Défauts       |                      |  |
 |             |              |        |             |           |                  |                        |  |                      |                      |  |
 |             |              |        |             |           |                  |                        |  |                      |                      |  |
 |             |              |        |             |           |                  |                        |  |                      |                      |  |
@@ -748,7 +748,7 @@ Toutes les Armures et les Armes portées par les cibles affectées subissent 1 D
 
 
 
-# Des aventures sombres et périlleuses dans le Vieux Monde !
+<span id="page-354-0" data-folio="353"></span># Des aventures sombres et périlleuses dans le Vieux Monde !
 
 *Vous ne pouvez pas lâcher l'affaire, hein ? Vous savez pourtant ce que vous allez découvrir. Vous les avez vus, les impitoyables, les arrogants, les damnés. Vous voudriez bien tourner les talons. La vie serait alors si belle. Vous êtes conscient que, tout en essayant de vous convaincre que vous ne convoitez que le butin, ou que vous ne savez pas résister à un bon combat, vous foncez. Personne n'est dupe. Alors préparez votre épée, nettoyez votre pistolet et prenez garde à ce chien, bien trop féroce pour sa petite taille.* 
 

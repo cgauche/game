@@ -17,7 +17,7 @@ L'entrée dans Middenheim se fait par l'une des quatre grandes portes, en bois c
 Quatre viaducs imposants mènent aux portes de Middenheim. Trois d'entre eux s'élèvent depuis les terres environnantes et serpentent jusqu'aux portes nord, ouest et sud de la cité. Le 
 
 
-quatrième rejoint la cité en suivant une ligne horizontale, depuis les sommets des Monts du Milieu. Ces édifices incroyables sont le fruit d'une collaboration unique entre les compétences d'ingénierie des nains et l'habileté magique des humains.
+<span id="page-33-0" data-folio="31"></span>quatrième rejoint la cité en suivant une ligne horizontale, depuis les sommets des Monts du Milieu. Ces édifices incroyables sont le fruit d'une collaboration unique entre les compétences d'ingénierie des nains et l'habileté magique des humains.
 
 Ils débutent assez loin du rocher Fauschlag, de sorte que l'inclinaison n'est pas trop forte, même pour les chariots de denrées agricoles les plus lourdement chargés, et sont si adroitement conçus qu'ils pourraient, en temps de guerre, être détruits d'un simple mot de commande prononcé par l'un des grands sorciers de Middenheim.
 
@@ -58,7 +58,7 @@ Les piétons qui ont les moyens d'en payer le prix peuvent entrer dans la cité 
 Vingt gardes sont postés à chaque terminus et l'accueil est sensiblement le même ici qu'aux portes. La principale différence est que les gardes ici disposent de plus de temps et peuvent donc effectuer des contrôles encore plus minutieux.
 
 
-### **Sergent Wolfgard Hohmann**
+<span id="page-34-0" data-folio="32"></span>### **Sergent Wolfgard Hohmann**
 
 Wolfgard semble l'exemple type du garde honnête et courageux, arborant les tresses dorées d'un héros Teutogen et les splendides moustaches en forme de guidon chères aux officiers à cheval du Reikland. Soldat comptant de nombreuses années de service, son armure est couverte de médailles qui lui ont été décernées pour son service par les Middenmarshalls. Il polit toujours son armure jusqu'à ce qu'elle soit étincelante et s'adresse à ceux qui passent par la porte ouest avec politesse et en respectant autant que possible la procédure.
 
@@ -133,7 +133,7 @@ Bien que ses méthodes d'entraînement soient strictes, et même un peu sévère
 - 0 Allavandrel Fanmaris, Grand veneur de Middenheim, fait parfois affaire avec Bertha. Elle garde généralement une petite meute de chiens de chasse de côté pour lui, au cas où il lui rendrait visite à l'improviste. Les Personnages reconnus par Bertha comme des experts de la chasse ou de l'archerie peuvent se faire des amis haut placés si elle les apprécie suffisamment pour les recommander comme guides de chasse à Allavandrel.
 
 
-### **Abattoir de Fleischer**
+<span id="page-36-0" data-folio="34"></span>### **Abattoir de Fleischer**
 
 Il s'agit du principal abattoir desservant les marchés, et d'un lieu animé tout au long de la journée de travail. Le bétail arrive ici sur ses sabots en provenance de la cité, et y est abattu et préparé pour la vente. Les bouchers en provenance de tout l'Altmarkt viennent y collecter des pièces de viande et des seaux d'abats frais. L'abattoir vend également des peaux aux tanneries du Neumarkt, ainsi qu'aux trois scriptoriums de Middenheim, qui les utilisent pour produire du vélin. L'abattoir appartient à Bruno Fleischer, un homme grand et robuste proche de la quarantaine.
 
@@ -151,7 +151,7 @@ Tôt chaque matin, Prajit Brahm installe son chariot aux couleurs flamboyantes, 
 0 Bien que Prajit soit une personne aimable, ses croyances religieuses, qui incluent la croyance en la réincarnation, sont assez différentes de celles que l'on trouve dans l'Empire. Prajit a appris à pratiquer sa spiritualité en privé, mais il s'oppose aussi fermement au fait de renier sa foi. Cela le rend vulnérable face aux rançonneurs, qui le menacent actuellement d'appeler à ce qu'il soit jugé pour hérésie. Prajit soupçonne qu'il s'agit d'une escroquerie, mais il préfère perdre un peu de ses revenus que de renoncer à sa foi. Il se montre prudent lorsqu'il s'adresse à des Personnages ouvertement religieux.
 
 
-### **Le Cheval et Palefrenier**
+<span id="page-37-0" data-folio="35"></span>### **Le Cheval et Palefrenier**
 
 Les tavernes de l'Altmarkt sont souvent étroites et très fréquentées, mais le Cheval et Palefrenier est un lieu exclusif et onéreux. Il ressemble aux grandes auberges-relais fortifiées pour diligences que l'on trouve le long des routes de l'Empire, et cela se reflète dans son nom et dans sa décoration. Cependant, les box et les écuries sont plus adaptés aux bœufs qu'aux chevaux, et les murs autour du bâtiment ne sont pas destinés à repousser les raids de gobelins, mais plutôt à offrir un peu de répit à la clientèle face à l'agitation du marché.
 
@@ -180,7 +180,7 @@ Si l'on peut trouver des étals et des points de vente dans tout l'Altmarkt, pou
 La Komission pour les Travaux Publics considère le marché aux fruits et légumes du Marktag comme un site à mettre en avant puisqu'apprécié par tous. Elle s'assure que les meilleurs musiciens et artistes de rues de la cité sont embauchés pour se produire sur un petit kiosque érigé au milieu de la zone.
 
 
-### **Association des fermiers du Middenland**
+<span id="page-38-0" data-folio="36"></span>### **Association des fermiers du Middenland**
 
 Les bureaux de l'Association des fermiers du Middenland se trouvent dans un petit bâtiment en pierre de l'Altmarkt. Vu de l'extérieur, rien ne le distingue des autres résidences de la zone. Cependant, un crâne de cerf a été respectueusement accroché dans une petite alcôve, sur le côté du bâtiment, l'une des rares manifestations publiques de dévotion à Taal à Middenheim.
 
@@ -233,7 +233,7 @@ La Dame Présomptueuse est une grande auberge spacieuse et bien éclairée, et l
 Cependant, la paix, le confort et l'harmonie apparents qui y règnent cachent un bien sombre dessein. Gottfried Vonnegut, le propriétaire de l'auberge, est l'une des figures de proue de la secte de la Couronne Rouge. Il dispose de moyens conséquents et s'assure que ses employés sont à la fois compétents et loyaux. Au sous-sol de l'auberge, une immense cave permet d'accéder à la cité souterraine de Middenheim. Dans ces tunnels, les plus difformes des membres du culte peuvent se réunir sans risque avec ceux dont l'humanité fait moins de doute.
 
 
-### **La Fosse aux appâts**
+<span id="page-40-0" data-folio="38"></span>### **La Fosse aux appâts**
 
 La Fosse aux appâts est un cylindre de pierre peu élevé qui se dresse péniblement entre les immeubles bancals d'une ruelle étroite de l'Altquartier. De la rue, on dirait presque que cette structure délabrée est repoussée vers l'extérieur par ses voisins tumultueux. Plusieurs gros braseros en fer sont installés devant le bâtiment. Leurs grandes flammes étincelantes s'élèvent haut dans le ciel… enfin, du moment que Kled, le nain particulièrement bougon et antipathique qui gère la Fosse, n'oublie pas de les alimenter.
 
@@ -254,7 +254,7 @@ Mais trouver un terrain constructible à Middenheim coûte très cher, et le tem
 Le dirigeant du culte se faisait appeler Frae-Ulric, et ce titre est toujours détenu par le Grand prêtre du temple de Heinrich le Béni. Aujourd'hui, ce temple est considéré comme le deuxième plus important lieu de culte de Middenheim, et Ar-Ulric et Frae-Ulric font tout leur possible pour coopérer et prouver à tous l'unité du clergé d'Ulric.
 
 
-### **À la Maison bretonnienne**
+<span id="page-41-0" data-folio="39"></span>### **À la Maison bretonnienne**
 
 À la Maison bretonnienne est une vieille auberge de petite taille. Sa façade est recouverte d'une épaisse couche de bitume noire à l'odeur âcre. C'est un lieu plutôt sordide, avec ses vitres fissurées et son odeur de légumes trop longtemps bouillis qui s'échappe en permanence de la salle à manger miteuse de l'étage. L'auberge a toujours l'air ouverte, et à part son nom, seules deux de ses caractéristiques rappellent la Bretonnie : sa gestion nonchalante, et les rumeurs constantes de corruption à peine voilée qui courent à son sujet.
 
@@ -326,7 +326,7 @@ La Compagnie dramatique se prépare actuellement pour la représentation d'une p
 La production de « *Derrière le Masque d'Or* » a causé pas mal de grabuge au sein de la société du Serment de la Dévotion de Volans. Les membres les plus récents de ce club estiment que 
 
 
-défendre la réputation des sorciers relève de leur devoir, et ont commencé à manifester devant la Compagnie dramatique. Les membres plus anciens de la société du Serment de la Dévotion de Volans, eux, tentent activement de faire taire leurs confrères, de peur que leur propre pratique clandestine de la magie ne soit observée de plus près.
+<span id="page-43-0" data-folio="41"></span>défendre la réputation des sorciers relève de leur devoir, et ont commencé à manifester devant la Compagnie dramatique. Les membres plus anciens de la société du Serment de la Dévotion de Volans, eux, tentent activement de faire taire leurs confrères, de peur que leur propre pratique clandestine de la magie ne soit observée de plus près.
 
 ### **Résidence de Gotthard Wallenstein**
 
@@ -339,7 +339,7 @@ Tandis que la majorité des marchands de la cité aspire à vivre calmement dans
 Wallenstein se déplace en permanence, et est pratiquement impossible à trouver, le jour comme la nuit. Cependant, on peut éventuellement le rencontrer par hasard en se promenant dans un quartier aisé de la cité, ou dans l'une des auberges ou l'un des cabarets les plus huppés. Quand quelqu'un l'approche, il nie son identité et prétexte qu'il ne s'agit que d'une grossière erreur.
 
 
-### **La Complainte du Ciel**
+<span id="page-44-0" data-folio="42"></span>### **La Complainte du Ciel**
 
 La Complainte du Ciel est un cabaret et un bar renommé. Sa tenancière est Martina Graf, une femme impressionnante, musclée et corpulente. L'entrée coûte cher : l'adhésion s'élève à 6 Couronnes par an. Pendant le Carnaval, cependant, des visiteurs peuvent être admis pour 4 pistoles par soirée et par personne. Les membres ont le droit d'inviter des connaissances, et si les Personnages se rapprochent d'un membre convenable, ils peuvent également être invités.
 
@@ -401,7 +401,7 @@ Au cours de la journée, le secteur grouille de propriétaires et serviteurs en 
 La nuit tombée, le Freiburg reste animé. Des groupes d'étudiants visitent les auberges du secteur. Comme ces derniers transportent rarement des sommes d'argent qui valent la peine d'être volées, les voleurs et autres roublards sont rares. En de rares occasions, des coupejarrets de l'Altquartier peuvent venir chercher les ennuis dans le Freiburg, mais c'est toujours de courte durée.
 
 
-### **Collège de Théologie**
+<span id="page-46-0" data-folio="44"></span>### **Collège de Théologie**
 
 Le collège a été fondé en 1762 CI pour former les jeunes prêtres ulricains et promouvoir l'étude et la diffusion des écrits religieux du culte. Ses activités se sont diversifiées depuis, et il couvre désormais tous les sujets ou presque, de l'histoire de l'art au développement de méthodes de fabrication de poudre à canon plus sûres. Même si le Collège ne dispose pas d'une charte impériale lui accordant le statut officiel d'université, il se considère comme l'égal des universités d'Altdorf et de Nuln.
 
@@ -442,7 +442,7 @@ Le Temple de Sigmar dispose d'une grande annexe consacrée à l'établissement s
 
 ### UN COMPLOT GROTESQUE
 
-0 Bruno est un jeune voleur qui a récemment été engagé pour accomplir une tâche étrange. Les Personnages peuvent l'apercevoir grimper les murs du Grand Temple de Sigmar en pleine nuit. S'ils le prennent en chasse et l'attrapent, ils découvrent qu'il s'affaire à remplacer les plus petites grotesques qui ornent le temple. Les nouvelles statues qu'on lui a données sont des représentations satiriques et laides des Ar-Ulric actuels et passés. Le client mystérieux de Bruno plante sans aucun doute le décor pour une dispute entre les cultes, mais de qui peut-il bien s'agir ?
+<span id="page-47-0" data-folio="45"></span>0 Bruno est un jeune voleur qui a récemment été engagé pour accomplir une tâche étrange. Les Personnages peuvent l'apercevoir grimper les murs du Grand Temple de Sigmar en pleine nuit. S'ils le prennent en chasse et l'attrapent, ils découvrent qu'il s'affaire à remplacer les plus petites grotesques qui ornent le temple. Les nouvelles statues qu'on lui a données sont des représentations satiriques et laides des Ar-Ulric actuels et passés. Le client mystérieux de Bruno plante sans aucun doute le décor pour une dispute entre les cultes, mais de qui peut-il bien s'agir ?
 
 ### **Le théâtre de Königsgarten**
 
@@ -471,7 +471,7 @@ Il s'agit d'un bâtiment à trois étages avec un style majestueux, mais excentr
 Le Grand sorcier et chef de la guilde est Albrecht Helseher. Lui et son acolyte ont installé leur bureau et leurs quartiers au dernier étage. Les autres niveaux accueillent des bureaux, des ateliers et des espaces de rangement. La guilde possède des bibliothèques bien remplies et plusieurs laboratoires de recherche, mais ces endroits ne sont ouverts qu'aux membres. Depuis la Guerre des Sorciers de 1979 CI, elle a fait de son mieux pour garantir qu'aucun nouveau sorcier ne porte préjudice à sa réputation. Des apprentis peuvent être choisis, des composants pour des sorts vendus, des artefacts identifiés, des sorts enseignés, etc. Mais les sorciers qui souhaitent approfondir leur savoir avec l'aide de la guilde sont minutieusement inspectés avant d'être acceptés.
 
 
-Étant donné que Middenheim a la réputation d'être tolérante envers les utilisateurs de magie, un flux constant d'aspirants apprentis se présente à la guilde, mais peu d'entre eux sont admis. Ceux qui le sont reçoivent une formation en sorcellerie dont la qualité n'est surpassée que par les Collèges d'Altdorf. Chacun des huit Vents de Magie est enseigné, mais l'espace pour accueillir de nouveaux apprentis est limité : lorsque quatre apprentis étudient un domaine magique donné, en accueillir davantage ne pourrait s'envisager qu'en circonstances exceptionnelles.
+<span id="page-48-0" data-folio="46"></span>Étant donné que Middenheim a la réputation d'être tolérante envers les utilisateurs de magie, un flux constant d'aspirants apprentis se présente à la guilde, mais peu d'entre eux sont admis. Ceux qui le sont reçoivent une formation en sorcellerie dont la qualité n'est surpassée que par les Collèges d'Altdorf. Chacun des huit Vents de Magie est enseigné, mais l'espace pour accueillir de nouveaux apprentis est limité : lorsque quatre apprentis étudient un domaine magique donné, en accueillir davantage ne pourrait s'envisager qu'en circonstances exceptionnelles.
 
 De nombreux composants pour des sorts peuvent être achetés par les membres de la guilde. Si un Personnage cherche des composants pour des sorts, il les trouvera probablement pour les sorts des domaines de magie suivants : Sorts d'Arcane, Bêtes, Mort, Feu, Cieux, Métal, Vie, Lumière, Ombres. Si le Personnage cherche des composants pour un sort précis à un moment donné, la probabilité que le Grand magasin les possède varie en fonction du NI du sort.
 
@@ -514,7 +514,7 @@ Les Personnages qui tentent d'effectuer des Tests de Focalisation dans Middenhei
 Le Talent Perception de la magie est troublé dans Middenheim. Les Tests visant à utiliser ce Talent ne peuvent pas être plus faciles que **Complexes (–10)** et sont souvent **Très Difficiles (–30)**.
 
 
-Neugierde réserve l'étage supérieur aux objets qu'il met de côté pour ses clients préférés, notamment le chancelier Sparsam et Hugo Schmidt de la taverne À l'Érudit (p. 48). La crème de son stock est conservée ici pour d'autres clients privilégiés, comme la famille du Graf et quelques sorciers de la ville. Il s'affaire à obtenir certains objets précis pour des clients habitués par l'intermédiaire de contacts dans Marienburg, Luccini et bien d'autres endroits. Cela peut prendre des mois, voire des années, mais il ne demande rien en échange de ses services, le soutien d'un client fidèle lui suffit.
+<span id="page-49-0" data-folio="47"></span>Neugierde réserve l'étage supérieur aux objets qu'il met de côté pour ses clients préférés, notamment le chancelier Sparsam et Hugo Schmidt de la taverne À l'Érudit (p. 48). La crème de son stock est conservée ici pour d'autres clients privilégiés, comme la famille du Graf et quelques sorciers de la ville. Il s'affaire à obtenir certains objets précis pour des clients habitués par l'intermédiaire de contacts dans Marienburg, Luccini et bien d'autres endroits. Cela peut prendre des mois, voire des années, mais il ne demande rien en échange de ses services, le soutien d'un client fidèle lui suffit.
 
 Le stock de Neugierde est tellement vaste et diversifié qu'il serait inutile de donner une gamme de prix. Si un Personnage décide d'acheter un objet, une règle générale utile est de prendre le prix de l'objet en vente le plus proche (voir le Chapitre 11 du livre de règles **WFJDR**), le multiplier par dix et le gonfler encore un peu jusqu'à obtenir un prix qui, selon vous, reflète la valeur de l'objet.
 
@@ -531,7 +531,7 @@ La clientèle de la *Lune Rouge* est un échantillon de la haute société et de
 La Lune Rouge accueille plusieurs habitués réputés. Janna Eberhauer, acolyte du Grand sorcier, se rend régulièrement au cabaret et s'entend très bien avec Eva. On raconte dans certains endroits que Janna approvisionne Eva en préparations magiques : certains pensent qu'elle en a besoin pour conserver son apparence, et d'autres qu'elles sont mère et fille. Aucune affirmation n'a été prouvée. Parmi les visiteurs plus occasionnels, on retrouve Emmanuelle Schlagen, une dame de la cour, qui vient parfois passer une soirée à parier. Elle est souvent accompagnée d'une ou plusieurs dames d'honneur ou d'un officier de haut rang des Chevaliers Panthères.
 
 
-### À l'Érudit
+<span id="page-50-0" data-folio="48"></span>### À l'Érudit
 
 Tenue par Hugo et Petra Schmidt et leurs six employés, À l'Érudit est une auberge excellente qui ne propose pas moins de 16 chambres et des écuries pouvant accueillir une douzaine de montures.
 
@@ -591,7 +591,7 @@ Les Seiter se sont considérablement appauvris et espèrent conserver le reste d
 ### LE MONSTRE DE LA FAMINE
 
 
-### **L'ambassade kislevite**
+<span id="page-52-0" data-folio="50"></span>### **L'ambassade kislevite**
 
 L'ambassade kislevite est un beau bâtiment, même si sa taille et sa splendeur sont un peu plus modestes que celles de l'ambassade impériale sur la Grafplatz. Ce bâtiment est réputé pour la frise sculptée détaillant un ours et un loup debout sur leurs pattes arrière de chaque côté de l'entrée principale.
 
@@ -626,7 +626,7 @@ Les armes et l'armure servent uniquement à décorer et ne doivent pas être uti
 les découvrir.
 
 
-### **Le Man O'War**
+<span id="page-53-0" data-folio="51"></span>### **Le Man O'War**
 
 Il s'agit d'un restaurant et bar tenu par le capitaine Johannes Moesenleicher, que tout le monde surnomme « Cap'tain Jan », et ses quatre employés. Cap'tain Jan est un homme bien bâti approchant la cinquantaine, avec des cheveux grisonnants et une barbe courte. Il est l'incarnation de l'hôte chaleureux : un visage joyeux et coloré, une voix retentissante et un comportement affable.
 
@@ -728,7 +728,7 @@ De manière plutôt inhabituelle, toutes les rues qui mènent ici sont séparée
 Un détachement impressionnant de 20 gardes et un sergent issus du régiment personnel des Todbringer est toujours présent ici, en plus d'un détachement de Chevaliers Panthères qui garde les portes du palais.
 
 
-### **Casernes de l'Armée**
+<span id="page-56-0" data-folio="54"></span>### **Casernes de l'Armée**
 
 Une réplique de la bannière de Middenheim flotte au-dessus des casernes. La bannière représente un loup blanc gardant les murs de la forteresse et les portes de la cité, évoquant ainsi Ulric protégeant les siens. Le bâtiment est construit selon une conception similaire aux portes fortifiées massives de la ville. Les casernes sont placées sous le commandement du général Johann Schwermutt, que l'on peut trouver ici lorsque son temps n'est pas accaparé par des affaires plus importantes (ce qui est souvent le cas). Les quartiers généraux de la Garde de la cité se trouvent également ici, et celle-ci partage de nombreuses ressources avec les soldats de l'armée.
 
@@ -779,7 +779,7 @@ Les Eisenhal sont l'une des plus anciennes et des plus influentes familles noble
 0 Le pavillon a été à l'origine d'une controverse, ses membres ayant récemment payé pour l'érection d'une statue massive du graf Rudolf von Kärzburdger sur son terrain. Cela a suscité des commentaires, le graf Rudolf étant célèbre pour un discours datant de 1987 CI au cours duquel il a promis de rabaisser les marchands de Middenheim. La riche famille Tore du Geldmund voit dans la statue un pur affront et cherche secrètement à recruter des Personnages louches pour la profaner.
 
 
-### **L'Oie des Moissons**
+<span id="page-58-0" data-folio="56"></span>### **L'Oie des Moissons**
 
 L'Oie des Moissons est probablement le meilleur restaurant de la cité. La carte est toujours longue et impressionnante, bien que le repas le moins cher soit proposé au tarif phénoménal de 10 pistoles (bouteille de vin maison comprise). Le consensus veut toutefois que la qualité justifie les tarifs pratiqués. Étonnamment, et en dépit de sa réputation, l'Oie des Moissons n'est pas tenue par des halflings. Le propriétaire est un elfe du nom de Fanamis Shassaran, ce qui a donné lieu à des débats passionnés sur les mérites respectifs des cuisines halflings et elfiques.
 
@@ -839,7 +839,7 @@ Le stade Bernabau est renommé dans tout l'Empire. Peu de cités du Vieux Monde 
 Le lieu est géré par Aleksandr Aleksandrovich Yarblinksy, un Kislevite qui occupe la fonction de *Magister Ludi*, ou Maître des Jeux, en remerciement de sa contribution à fournir des hommes-bêtes captifs. Ses jours de chasse sont désormais loin, mais il est capable de s'assurer que les minotaures gardés sous le stade pratiquent suffisamment d'exercice. Lorsqu'il ne travaille pas, on peut généralement trouver Aleksandr à La Tête du Gladiateur.
 
 
-Les quatre entrées du stade sont gardées par des unités de gardes de la cité. Cela a pour but d'empêcher que des spectateurs essaient d'entrer sans payer, mais également de gérer les violents mouvements de foules qui accompagnent souvent les matches inter-secteurs de Middenball (les hooligans des Tôles de la Porte Sud sont tristement célèbres).
+<span id="page-60-0" data-folio="58"></span>Les quatre entrées du stade sont gardées par des unités de gardes de la cité. Cela a pour but d'empêcher que des spectateurs essaient d'entrer sans payer, mais également de gérer les violents mouvements de foules qui accompagnent souvent les matches inter-secteurs de Middenball (les hooligans des Tôles de la Porte Sud sont tristement célèbres).
 
 Selon les fans endurcis, la seule place valable est debout sur les gradins (les sièges en bois sont plutôt inconfortables), bien que la meilleure vue soit assurément réservée à la loge luxueusement agencée proposent Graf. Le prix des billets varie de 1 pistole (place debout à un match de championnat) à 1 CO (siège de loge à un match de finale). Il n'y a cependant pas de réel plafond pour les billets de la finale, la demande étant largement supérieure à l'offre.
 
@@ -854,7 +854,7 @@ Des vendeurs halflings proposent des tourtes chaudes et de la bière lors des é
 0 Le stade requiert un approvisionnement constant d'hommes-bêtes capturés, et les Personnages peuvent gagner une prime de 2 CO par tête. Aleksandr peut fournir aux chasseurs de confiance un document qui peut être présenté aux gardes aux portes de la cité, expliquant pourquoi les ravisseurs sont en possession d'un homme-bête vivant. Les prisonniers doivent être solidement ligotés et réduits à 1 à 3 Blessures. Ils peuvent souffrir de Blessures critiques, mais rien d'aussi grave qu'une Fracture. Si un homme-bête captif venait à s'échapper avant d'atteindre le stade, ses ravisseurs seraient tenus entièrement responsables des dégâts qu'il pourrait causer.
 
 
-### **Le Sombre Bassin**
+<span id="page-61-0" data-folio="59"></span>### **Le Sombre Bassin**
 
 Le Sombre Bassin est la principale caractéristique du parc. Ce lac est le lieu du final spectaculaire du Carnaval de Middenheim, lorsque les sorciers de la cité offrent un étourdissant spectacle de lumière.
 
@@ -924,7 +924,7 @@ Brunhilde a passé des accords avec de nombreux négociants en bois de Middenhei
 Il est déjà arrivé à Brunhilde d'entreposer de la contrebande dans son hangar, mais elle l'a généralement fait pour aider un ami, et pas pour le compte de criminels comme les Petits Rois. Le mur du fond de son hangar est factice, et cache une petite pièce sans 
 
 
-fenêtre d'à peine plus de 3 m² avec un matelas de paille et une paire de menottes en fer. Hettie Pâtebrisée, l'amie de Brunhilde, travaille souvent avec des ogres de visite à Middenheim, et il arrive que l'un d'entre eux fasse illégalement entrer ses serviteurs à peau verte dans la cité. Afin d'éviter toute confrontation entre le visiteur et la Garde, Brunhilde peut enfermer les gnoblars dans son entrepôt le temps du séjour de l'ogre.
+<span id="page-63-0" data-folio="61"></span>fenêtre d'à peine plus de 3 m² avec un matelas de paille et une paire de menottes en fer. Hettie Pâtebrisée, l'amie de Brunhilde, travaille souvent avec des ogres de visite à Middenheim, et il arrive que l'un d'entre eux fasse illégalement entrer ses serviteurs à peau verte dans la cité. Afin d'éviter toute confrontation entre le visiteur et la Garde, Brunhilde peut enfermer les gnoblars dans son entrepôt le temps du séjour de l'ogre.
 
 ### LE PROBLÈME GNOBLAR
 
@@ -954,7 +954,7 @@ Cerithadell travaille dans sa lutherie avec deux apprentis humains. Ils fabrique
 0 La Coupe des Mets a disparu. Ce n'est pas un artefact particulièrement précieux, mais sa valeur sentimentale est considérable pour la guilde. Celle-ci a offert une récompense de 20 CO à quiconque trouvera les coupables. Malheureusement, le trophée est entre les mains des Mangeurs du Monde (voir p. 139), persuadés que le lien de la Coupe avec Middenheim est l'une des clés du retour du monstre mort-vivant Babrakkos.
 
 
-### **La Guilde des Drapiers**
+<span id="page-64-0" data-folio="62"></span>### **La Guilde des Drapiers**
 
 La production de textile est un marché florissant dans l'Empire, et les drapiers, les négociants en tissus, font partie des marchands les plus riches de la nation. Il se dit parfois, et non sans preuve, que sans les maisons de haute couture qui constellent les villes de l'Empire, l'économie de la nation s'effondrerait.
 
@@ -1020,7 +1020,7 @@ L'immense majorité des halflings de Middenheim font plus ou moins partie de l'u
 Les principaux clans de Middenheim sont les Stilburg, qui sont généralement vus comme des gens peu recommandables avec des contacts criminels ; les Vertebutte, qui finissent souvent cuisiniers ou hôtesses ; les Vertvallon, réputés pour la qualité des travaux de leurs artisans et de leurs tailleurs ; les Pâtebrisée, qui n'ont plus besoin de prouver leur capacité à s'immiscer par la flatterie dans les institutions humaines ; et les Gazouillis, qui ont fait leurs preuves dans les métiers d'information et d'enquête.
 
 
-### **L'Oiseau Insolite**
+<span id="page-66-0" data-folio="64"></span>### **L'Oiseau Insolite**
 
 Hettie Vertebutte est une cousine éloignée de Silas. Elle a jadis travaillé avec lui en tant que second de cuisine, mais elle est depuis partie pour ouvrir son propre restaurant. Malheureusement pour Hettie, elle n'a pas le talent de Silas, ni son égard pour l'art de la cuisine. Par conséquent, L'Oiseau Insolite est devenu un exercice de surcompensation, décoré de couleurs criardes et mal assorties, et encombré de grigris tape-à-l'œil. Le restaurant présente l'une des cartes les plus prétentieuses de ce côté de la frontière bretonnienne, et les résidents du Kleinmoot plaisantent que la nourriture y est tellement étrange que les cafards sont partis chez les voisins.
 
@@ -1080,7 +1080,7 @@ La Folie a gagné son nom parce que le Graf l'avait commandée pour rendre homma
 0 En réalité, la Folie a été fabriquée dans un but secret : la colonne est creuse, et comporte une porte secrète au niveau du socle. Les Todbringer en gardent l'unique clé connue, et peuvent accéder à la Folie depuis un passage secret qui part de l'intérieur du Middenpalaz.
 
 
-### **Le Hohain**
+<span id="page-68-0" data-folio="66"></span>### **Le Hohain**
 
 Le Hohain, un bosquet de grands conifères aux racines enveloppées d'un épais tapis de fougères et de champignons, est l'un des rares endroits du plateau où la végétation a pu s'épanouir. Le Hohain est ce qui reste du refuge de verdure originellement découvert par les hommes d'Artur lorsqu'ils ont exploré le Fauschlag il y a plus de 2 500 ans. Il n'est pas assez étendu pour pouvoir être qualifié de bois, mais il est néanmoins touffu et ne comporte pas de chemin. Même si le Hohain démontre une certaine beauté sauvage, la plupart des Middenheimers l'évitent : ils trouvent ses antiques fourrés inquiétants, voire de mauvais augure.
 
@@ -1110,7 +1110,7 @@ Les elfes n'ont pas encore pu confirmer leurs suspicions, mais ils se rendent so
 - 0 Les Personnages qui ont le Talent Sixième sens ont un inquiétant pressentiment dès qu'ils s'approchent de la clairière. Mais pour en découvrir la raison, ils devront se lancer dans des recherches appropriées. Même si certains des sorciers de la cité ont entendu parler de la clairière, seuls les elfes, ou les cultistes du Sceptre de Jade, peuvent réellement apporter des réponses.
 
 
-### **Yanni Weber**
+<span id="page-69-0" data-folio="67"></span>### **Yanni Weber**
 
 La plupart des chamanes de l'Ordre d'Ambre se sentent mal à l'aise dans les cités de l'Empire. D'habitude, ils revêtent des fourrures d'animaux ornées des crocs et des griffes de bêtes féroces pour attirer le Vent d'Ambre jusqu'à eux. Mais à Middenheim, *Ghur* est tellement omniprésent que les sorciers d'Ambre en reçoivent bien plus que nécessaire sans même se servir de leur attirail traditionnel. Certains des chamanes les plus sobres mènent même leurs recherches magiques dans la cité. Ces excentriques ont beaucoup de valeur aux yeux de l'Ordre d'Ambre, pour leur étude des singularités magiques qui imprègnent Middenheim.
 
@@ -1181,7 +1181,7 @@ Des rangées de ceintures, sacs, harnais pour épées et sacs à dos sont suspen
 Un vêtement prend un nombre d'heures à confectionner égal à dix fois le coût de l'habit en CO. Le coût et la valeur d'Encombrement d'un objet en cuir sont deux fois ceux de son équivalent en tissu, et Dunno fabrique toujours des objets qui bénéficient des Atouts d'objet *Raffiné* et *Léger* (**WFJDR**, p. 292). Par conséquent, l'un de ses justaucorps de cuir coûte 2 CO et a une valeur d'Encombrement de zéro.
 
 
-Comme la plupart des artisans de la ville, Dunno travaille douze heures par jour. Sa personnalité flamboyante et son haut niveau d'exigence rendent les essayages particulièrement agréables, et il a toujours une réserve d'infusions, de bières épicées et de biscuits aux fruits sous la main pour ses clients.
+<span id="page-71-0" data-folio="69"></span>Comme la plupart des artisans de la ville, Dunno travaille douze heures par jour. Sa personnalité flamboyante et son haut niveau d'exigence rendent les essayages particulièrement agréables, et il a toujours une réserve d'infusions, de bières épicées et de biscuits aux fruits sous la main pour ses clients.
 
 Dunno est spécialisé dans les chopes de cuir, avec un revêtement solide et des motifs sophistiqués embossés de cuir. Il est convaincu qu'elles font ressortir l'arôme d'une bonne bière, et elles sont également moins chères. Ses chopes de cuir coûtent entre 1 et 4 pistoles, le prix d'un équivalent en étain quelconque. Il fabrique également des bols et des assiettes de cuir, que les halflings apprécient particulièrement pour certains plats. Dunno aime souligner que les objets de cuir ne sont pas aussi fragiles que la poterie, ne rouillent pas comme le métal ou n'ont pas besoin d'entretien comme le bois.
 
@@ -1220,7 +1220,7 @@ Des bougies terminées sont suspendues à des perches sur des étagères le long
 Lorsque les Middenheimers parlent du Neumarkt comme d'un centre commercial, ils font principalement référence aux trois zones particulières du secteur et des industries qu'on y trouve.
 
 
-Les commerces odoriférants de Middenheim sont en grande partie confinés dans le **Gerberbahn**, situé au sud-est de Neumarkt à proximité de l'Altquartier. Cette zone misérable et répugnante est occupée par les tanneurs, teinturiers et fouleurs. Tous les matins, les ramasseurs d'excréments y transportent des brouettes pleines d'urine et de déjections pour les vendre aux tanneries et aux cours de foulage. Ils récupèrent également des déchets, encore plus nocifs, pour une somme modique, et les renversent au bord du Fauschlag.
+<span id="page-72-0" data-folio="70"></span>Les commerces odoriférants de Middenheim sont en grande partie confinés dans le **Gerberbahn**, situé au sud-est de Neumarkt à proximité de l'Altquartier. Cette zone misérable et répugnante est occupée par les tanneurs, teinturiers et fouleurs. Tous les matins, les ramasseurs d'excréments y transportent des brouettes pleines d'urine et de déjections pour les vendre aux tanneries et aux cours de foulage. Ils récupèrent également des déchets, encore plus nocifs, pour une somme modique, et les renversent au bord du Fauschlag.
 
 Un peu plus au nord et à l'ouest se trouve la **Schmiedstrasse**, où les ferronniers sont majoritaires. Middenheim est un bon endroit où travailler pour les ferronniers. Des groupes de condamnés extraient le minerai des mines des Monts du Milieu. Ce minerai est apporté dans la ville et fondu dans l'un des douze bas fourneaux du Gerberbahn. Ils vendent des barres et des plates de fer aux armuriers et forgerons du Schmiedstrasse qui les transforment en objets métalliques.
 
@@ -1257,7 +1257,7 @@ Plusieurs séchoirs sont disposés le long des murs à côté du four à cérami
 Le Pion Vermillon, un énorme bâtiment sans fenêtres avec une voûte de pierre qui ressemble davantage à un fortin militaire qu'à une boutique de prêteur sur gages, est le genre d'établissement étrange qui ne pourrait exister que dans une grande ville comme Middenheim. Ce commerce propose un service très 
 
 
-spécialisé : l'identification d'objets magiques. Elle est tenue par maître Lukas, un nain excentrique d'âge mûr. Personne ne sait comment il est devenu spécialiste en objets magiques, mais son expertise, elle, est indiscutable. Maître Lukas emploie son fils, Josef Lukasson, comme apprenti, et six gardes du corps nains.
+<span id="page-73-0" data-folio="71"></span>spécialisé : l'identification d'objets magiques. Elle est tenue par maître Lukas, un nain excentrique d'âge mûr. Personne ne sait comment il est devenu spécialiste en objets magiques, mais son expertise, elle, est indiscutable. Maître Lukas emploie son fils, Josef Lukasson, comme apprenti, et six gardes du corps nains.
 
 Si un Personnage possède un objet magique, maître Lukas acceptera de l'identifier pour 2 CO, dont une versée à titre d'acompte. Une fois que l'objet a été confié à Lukas, le Personnage doit revenir dans deux semaines pour le récupérer avec un certificat détaillant son origine. Maître Lukas passe alors quelques jours à faire des recherches sur l'objet (faites un **Test de Savoir (Objets magiques)** contre la Compétence de 85 de maître Lukas). Il demande ensuite à Josef de faire les mêmes recherches (faites un **Test de Savoir (Objets magiques)** contre la Compétence de 71 de Josef ). Si le Test d'au moins l'un d'eux réussit, Lukas et Josef tombent d'accord, notent leurs résultats et rendent l'artefact.
 
@@ -1289,7 +1289,7 @@ Plusieurs objets magiques étranges sont actuellement en vente au Pion Vermillon
 Remarquez que l'armure avec la Qualité *Incassable*, comme le Heaume de Gromril, immunise aussi son porteur contre les Coups Critiques à la localisation protégée. Toutefois les Coups Critiques seront de mise sauf si le porteur perd plus de Blessures qu'il ne lui en reste, même les coups portés à la localisation protégée par l'armure *Incassable*.
 
 
-### **Stefan Hochen**
+<span id="page-74-0" data-folio="72"></span>### **Stefan Hochen**
 
 Stefan est arrivé à Middenheim il y a 20 ans alors qu'il n'était qu'un adolescent. Son père, un médecin, l'a pris comme apprenti, et Stefan a hérité de son adhésion à la Guilde des Médecins de Middenheim à sa mort. Stefan s'est entiché d'une artiste qui chantait des airs mélancoliques à la Lune Rouge, avant d'apprendre qu'elle souffrait d'une mutation causée par un éclat de malepierre logée dans sa peau.
 
@@ -1361,7 +1361,7 @@ Toujours à l'affût d'une opportunité d'engendrer des bénéfices, Heidi Klump
 0 Heidi a le flair pour savoir qui fait parler d'elle en ville, et si un Personnage se fait connaître pour ses exploits héroïques, elle peut lui proposer de l'habiller avec ses toutes dernières créations. Cela pourrait causer des soucis entre les Personnages et les zélotes Frères Loups si ces créations venaient à comporter de la fourrure de loup.
 
 
-### **Luigi et Salvatore**
+<span id="page-76-0" data-folio="74"></span>### **Luigi et Salvatore**
 
 Cette branche de Luigi et Salvatore est la boutique la plus importante de Middenheim. Gilbertus et Michael, deux représentants de confiance des magnats du détail originaires de Tilée, tiennent la boutique. Ce duo fait l'objet de nombreux ragots au sein de la ville. Beaucoup de gens pensent qu'ils sont frères, demi-frères ou amants. Gilbertus et Michael ne font rien pour dissiper ou confirmer les rumeurs ; ils ont réalisé qu'entretenir un air de mystère les rend bien plus intéressants. Ils possèdent tous deux un physique typiquement tiléen : leur teint demeure bronzé et rayonnant malgré le climat froid du nord de l'Empire. Ils sont tous deux petits, avec un long nez aquilin et des cheveux bruns bouclés. Tout le monde sait qu'ils sont également pleins aux as.
 
@@ -1372,7 +1372,7 @@ Le secret du succès de la boutique est qu'elle propose une vaste sélection de 
 0 Les Personnages qui connaissent les boutiques Luigi et Salvatore en d'autres endroits de l'Empire se doutent que la boutique est une façade qui cache une activité de contrebande complexe. Dans le cas de la branche de Middenheim, la menace des Petits Rois a jusqu'à maintenant réfréné le côté criminel des activités de la boutique. Gilbertus a été chargé de passer un accord avec les barons du crime de Middenheim, mais ces derniers méprisent Luigi et Salvatore pour leur dévouement envers Ranald, et il n'a pour l'instant fait aucun progrès.
 
 
-### **Bureaux de l'École impériale d'ingénierie**
+<span id="page-77-0" data-folio="75"></span>### **Bureaux de l'École impériale d'ingénierie**
 
 La profession d'ingénieur à Middenheim est principalement occupée par des nains. Des ingénieurs humains vivent en ville, mais ils produisent rarement de travaux importants. La Guilde des Ingénieurs nains s'assure que ses membres obtiennent tous les contrats des projets prestigieux.
 
@@ -1427,7 +1427,7 @@ Les prix des billets varient selon l'événement et la qualité des sièges. Pou
 0 Le culte de Morr s'est montré étrangement réticent à enquêter sur la Geist Haus ou à y effectuer un exorcisme. Si les Personnages tentaient de comprendre pourquoi personne ne semble s'être attaqué au caractère hanté de la maison, ils pourraient découvrir de la corruption au sein du culte, un de ses membres recevant des pots-de-vin pour garantir la continuité de la production de Poudre hilarante.
 
 
-### **Presse Sentinelle**
+<span id="page-79-0" data-folio="77"></span>### **Presse Sentinelle**
 
 La Presse Sentinelle est une presse privée gérée depuis une petite maison propre et à un seul étage. Karl Zimmern en est le propriétaire ; c'est un homme de petite taille, déterminé et à l'apparence soignée proche de la quarantaine. La presse ne produit pas un travail particulièrement professionnel, et si les pratiques commerciales et les tarifs de Karl sont similaires à ceux de la Presse Drucker du Freiburg, les impressions sont plus bâclées et précipitées. La passion de Karl ne consiste pas à gérer une affaire florissante, mais à diffuser ses propres opinions politiques et plutôt radicales.
 
@@ -1463,7 +1463,7 @@ L'orphelinat peut accueillir une dizaine d'enfants, et l'éducation qu'ils reço
 Le culte de Shallya de Middenheim fait parfois remarquer que la vie austère au sein du Refuge de l'Hiver ne convient pas à tous les tempéraments, mais de nombreux enfants élevés ici finissent par rejoindre le clergé du culte d'Ulric ou les Chevaliers du Loup Blanc, et l'institution compte donc de nombreux partisans puissants.
 
 
-### **Waldtraud Blass**
+<span id="page-80-0" data-folio="78"></span>### **Waldtraud Blass**
 
 Waldtraud travaillait jadis dans les tanneries du Neumarkt. Apothicaire talentueuse, sa capacité à reconnaître et à mélanger les composés chimiques s'est avérée inestimable. Femme robuste aux épaules larges et au dos solide, elle s'enorgueillissait de transporter des peaux depuis et vers les fosses alcalines aux côtés des employés de la tannerie.
 
@@ -1537,7 +1537,7 @@ Peu de Strigany résident à Middenheim, et Irinka se retrouve souvent interpell
 0 Karl, de la Presse Sentinelle, veut empoisonner un peu plus encore la vie d'Irinka, en imprimant un pamphlet accusant les immigrés comme elle d'être la cause des malheurs de Middenheim. Lorsqu'il sera publié, la foule de ses soutiens qui manifeste actuellement devant l'ambassade impériale pourrait bien se lasser du manque d'attention que leur accordent les diplomates et se regrouper devant la boutique d'Irinka.
 
 
-### **Apothicairerie de Karbunkel**
+<span id="page-82-0" data-folio="80"></span>### **Apothicairerie de Karbunkel**
 
 Cette apothicairerie de taille modeste mais bien fournie est gérée par une halfling du nom de Velma Karbunkel. La boutique dispose de bouquets d'herbes et ses étagères sont remplies de bouteilles et de bocaux contenant des cataplasmes et des potions. Velma est une apothicaire au succès modéré, mais elle garde un terrible secret : son frère Poppin est un mutant. Elle le garde caché dans la cave depuis des années. Tout allait pour le mieux jusqu'au jour où Gluckstein, de Windhund Transports & Cie et membre supérieur du culte de la Main Pourpre, le découvrit.
 
@@ -1577,7 +1577,7 @@ Les cocktails de La Chute du Templier sont extraordinaires. Vendu à 4 sous de c
 - 0 Les nobles Helstein ont ajouté plus de soldats armés à leur suite que ce que la loi ne les y autorise, et risquent à présent de se voir condamner par le Graf. Aussi longtemps qu'Astrid s'efforce d'apaiser les prêtres d'Ulric, ceux-ci acceptent de fermer les yeux. Cependant, si la Komission continue à autoriser l'École Gragh Mar à décider de son propre programme, un prêtre d'Ulric un peu politicien pourrait envisager de forcer la situation en se servant des activités privées et professionnelles d'Astrid. Bien entendu, ce prêtre ne souhaiterait pas proférer ces menaces en personne, mais pourrait se tourner vers les Personnages pour leur demander d'agir en son nom.
 - 0 L'aide peut parfois venir d'où on l'attend le moins. La Communauté Tinéenne verse régulièrement des donations à la Komission et n'apprécierait guère de voir celle-ci confrontée à des difficultés inacceptables. Après tout, sans leur bonne réputation, le fait que leurs dirigeants vénèrent Nurgle pourrait finir par se savoir. Si un Personnage semble menacer la Komission, il se retrouvera visé par ce culte inhabituel.
 
-incalculable d'alcools infusés dans l'estomac d'un petit chien autrefois féroce mais à présent éviscéré. Si les cocktails sont clairement l'attraction principale en termes de boissons, et si l'on récompense même d'une boisson offerte quiconque invente une nouvelle recette, La Chute du Templier possède également une petite réserve de vins mal entretenue. Quiconque ose demander de la bière ou de l'hydromel ici est immédiatement ostracisé.
+<span id="page-83-0" data-folio="81"></span>incalculable d'alcools infusés dans l'estomac d'un petit chien autrefois féroce mais à présent éviscéré. Si les cocktails sont clairement l'attraction principale en termes de boissons, et si l'on récompense même d'une boisson offerte quiconque invente une nouvelle recette, La Chute du Templier possède également une petite réserve de vins mal entretenue. Quiconque ose demander de la bière ou de l'hydromel ici est immédiatement ostracisé.
 
 ### **Le Trou du Loup**
 
@@ -1618,7 +1618,7 @@ Les Personnages pourraient bien bénéficier d'un traitement au sein de la clini
 
 ### MÉDECINE CLANDESTINE
 
-0 Erich travaille sans l'approbation de la Guilde des Médecins de Middenheim, qu'il considère comme corrompue. Si quelqu'un venait à les en informer, il se ferait des amis au sein de la guilde, mais aussi de nombreux ennemis parmi les citoyens pauvres de Middenheim.
+<span id="page-85-0" data-folio="83"></span>0 Erich travaille sans l'approbation de la Guilde des Médecins de Middenheim, qu'il considère comme corrompue. Si quelqu'un venait à les en informer, il se ferait des amis au sein de la guilde, mais aussi de nombreux ennemis parmi les citoyens pauvres de Middenheim.
 
 ### **Guilde des Apothicaires**
 
@@ -1657,7 +1657,7 @@ La boutique est tenue par Josef Pfandleiher, un homme maigre et hirsute qui para
 0 Josef est également l'un des principaux receleurs d'Ostwald et un dépositaire de « l'Homme ». Il mène ses affaires sous l'apparence d'un prêteur sur gages ordinaire et dispose de contacts, directs ou indirects, dans tout Middenheim, qui lui permettent de se débarrasser facilement des marchandises.
 
 
-### **La Guilde des Ratiers**
+<span id="page-86-0" data-folio="84"></span>### **La Guilde des Ratiers**
 
 Les ratiers sont courants à Middenheim, en particulier dans les zones les plus pauvres, avec leurs perches à rats et leurs chiens petits mais féroces. La Komission pour la Santé, l'Éducation et le Bien-être est également supposée employer un corps de ratiers, mais étant donné que le Chancelier refuse de les financer, ils sont contraints de travailler comme indépendants.
 
@@ -1692,7 +1692,7 @@ L'hospice offre également un lieu où dormir aux sans-abri de Middenheim, bien 
 - 0 La Communauté Tinéenne prend toujours soin de montrer ostensiblement ses efforts pour soutenir l'hospice. Il y a là une certaine ironie puisque, en tant qu'adeptes de Nurgle, ils seraient heureux de saper les efforts des fidèles de Shallya dès qu'ils en ont l'occasion. Pour l'heure, ils acceptent volontiers d'apporter leur soutien aux volontaires, mais il ne s'agit là que d'une ruse temporaire, d'une tentative d'établir la confiance avant d'accomplir leurs buts réels.
 
 
-### **La place**
+<span id="page-87-0" data-folio="85"></span>### **La place**
 
 Bien que l'essentiel du secteur d'Ostwald soit caractérisé par des immeubles surpeuplés, une grande place est située à proximité du centre du secteur. Il s'agit d'une zone pavée entourant un grand socle en granit sur lequel se dressait autrefois une statue d'un Graf depuis longtemps oublié (la statue elle-même s'est désintégrée et a été vendue en tant que rebut il y a de cela des siècles).
 
@@ -1750,7 +1750,7 @@ Les Chevaliers Panthères sont considérés dans tout l'Empire comme les incarna
 
 ### LA DETTE DE L'ORDRE ENVERS LES TODBRINGER
 
-La position particulière des Chevaliers Panthères à Middenheim a deux raisons, toutes deux ayant plus de mille ans. En 1360 CI, lorsque le culte d'Ulric est parti s'installer à Talabheim, tous les membres importants de son clergé s'en sont allés. Middenheim a donc été privée de la plupart de ses chevaliers. Afin de les remplacer, les familles aristocratiques de la région ont mis leurs ressources en commun, y compris leurs forces armées et même leurs propres fils. En particulier, la famille Todbringer, déjà puissante dans la cité et plus grande qu'aujourd'hui, a pris sur elle de former ses propres chevaliers en l'absence des Loups Blancs.
+<span id="page-89-0" data-folio="87"></span>La position particulière des Chevaliers Panthères à Middenheim a deux raisons, toutes deux ayant plus de mille ans. En 1360 CI, lorsque le culte d'Ulric est parti s'installer à Talabheim, tous les membres importants de son clergé s'en sont allés. Middenheim a donc été privée de la plupart de ses chevaliers. Afin de les remplacer, les familles aristocratiques de la région ont mis leurs ressources en commun, y compris leurs forces armées et même leurs propres fils. En particulier, la famille Todbringer, déjà puissante dans la cité et plus grande qu'aujourd'hui, a pris sur elle de former ses propres chevaliers en l'absence des Loups Blancs.
 
 Mais c'est au cours des croisades contre l'Arabie, en 1450 CI, que l'Ordre des Chevaliers Panthères a véritablement été fondé. Des confréries de chevaliers de tout l'Empire sont parties en guerre ensemble. Malheureusement, en dehors de leur opposition au sultan Jaffar, qui cherchait à envahir l'Estalie, bien peu de choses les unissaient. Pourtant, au cours du conflit, de nombreux chevaliers, dont ceux qui étaient venus de Middenheim, ont décidé d'adopter une héraldique et une tradition martiale communes. Pour leur nouveau thème héraldique, ils ont choisi la fourrure de grands félins du désert originaires d'Arabie ; et c'est ainsi que l'Ordre des Chevaliers Panthères a vu le jour.
 
@@ -1777,7 +1777,7 @@ Les sorciers du désert d'Arabie pratiquent une étrange magie, et seraient appa
 Mais les philosophes de comptoir indiquent que les nobles et les chevaliers ont été inséparables depuis plus de mille ans, et que, même si leur destinée les menait à combattre côte à côte au bout du compte, ils n'avaient aucune raison de coopérer en attendant. Ce contre-argument est contré par la possibilité que leur soutien mutuel soit lui-même essentiel à la mise en place des événements. Cette théorie demeure la plus solide de toutes.
 
 
-### **Le Middenpalaz**
+<span id="page-90-0" data-folio="88"></span>### **Le Middenpalaz**
 
 Le Middenpalaz est la résidence permanente de la famille Todbringer, des Seigneurs des Lois, et du Chancelier. C'est un bâtiment colossal dont la façade est agrémentée de sculptures magnifiques, ce qui adoucit ses traits et son volume tout en lui apportant une décoration des plus raffinées. Ses hautes colonnes à volute en marbre donnent au palais une apparence unique au sein des bâtiments de Middenheim. Ses colonnes et sa façade sont les chefs-d'œuvre d'artisans légendaires venus de Tilée et de Bretonnie. Bien que de taille modeste comparé aux palais des autres Comtes Électeurs, le Middenpalaz en reste indéniablement une merveille du monde.
 
@@ -1812,7 +1812,7 @@ Par contraste avec le luxe qui les entoure, les ouvriers de l'Hôtel des Monnaie
 Une fois à l'intérieur de l'Hôtel des Monnaies, ils passent toute la journée à frapper une reproduction des portraits et de l'héraldique des Todbringer sur les matrices vierges d'argent. Afin de dissuader les frappeurs les plus désespérés, voler la propriété de l'Hôtel des Monnaies s'accompagne de sanctions extrêmement lourdes. Ainsi, subtiliser une simple pièce vaudra au frappeur l'amputation de ses deux mains, qui seront ensuite clouées aux portes de l'Hôtel des Monnaies en guise d'avertissement pour ses collègues.
 
 
-### **Wulfrum Viert**
+<span id="page-91-0" data-folio="89"></span>### **Wulfrum Viert**
 
 Du haut de ses 67 ans, Wulfrum est l'un des plus vieux serviteurs du graf Boris. Cela fait plus de quarante ans qu'il est l'intendant du Krallepalaz. Wulfrum est un meneur efficace capable de gérer le personnel permanent du petit palais, et il se débrouille remarquablement bien pour coordonner les cohortes de suivants qui accompagnent les invités importants qu'il doit héberger. Au cours de ses années de service, Wulfrum s'est occupé, et a reçu la gratitude personnelle, de 20 Comtes Électeurs, 2 Grands Théogonistes, et du Roi de Bretonnie.
 
@@ -1874,7 +1874,7 @@ Outre son bar à cocktails particulièrement bien fourni, l'Âne Rieur est aussi
 - 0 L'une des satires jouées au cabaret de l'Âne Rieur sousentend que le Petit Roi connu comme « l'Homme » est en réalité le baron Heinrich en personne. Ceci n'a, bien entendu, aucun sens, mais un Baron étranger s'est récemment rendu incognito à Middenheim, et y a agi en secret dans l'espoir de s'y constituer un réseau d'espionnage. Si les Personnages se penchent sur cette rumeur, ils finiront par découvrir bien plus que ce à quoi ils s'attendaient.
 
 
-### **Le Morrspark**
+<span id="page-93-0" data-folio="91"></span>### **Le Morrspark**
 
 Le Morrspark n'est pas seulement l'un des quatre parcs publics de Middenheim : il renferme aussi l'unique cimetière de la cité. À Middenheim, la surface est une commodité rare, et seuls les plus nantis peuvent s'y offrir une place. Au nord et à l'est, le parc est bordé de mausolées en pierre, propriétés de familles riches et éminentes. Les citoyens moins fortunés, pour leur part, doivent généralement incinérer leurs morts, les enterrer à l'ombre du Fauschlag, ou les jeter du haut de la Falaise des Soupirs.
 
@@ -1902,7 +1902,7 @@ Les pilleurs de tombes voyagent habituellement par deux. Pour les rencontrer, il
 
 ### MORT SUR LE FAUSCHLAG
 
-Au fil des âges, Middenheim a servi de théâtre à de nombreuses activités nécromantiques. Du temps d'Artur, la pestilentielle chose-liche Babrakkos tourmentait les Teutogens ; bien que cette menace n'ait jamais été aussi dangereuse que Nagash ou Drachenfels, elle n'en restait pas moins une entité morte-vivante puissante et dérangeante capable de contrôler des armées de serviteurs squelettiques. Plusieurs siècles plus tard, le Grand imprécateur Dieter Helsnicht a été évincé de Middenheim après que ses activités nécromantiques ont été révélées.
+<span id="page-94-0" data-folio="92"></span>Au fil des âges, Middenheim a servi de théâtre à de nombreuses activités nécromantiques. Du temps d'Artur, la pestilentielle chose-liche Babrakkos tourmentait les Teutogens ; bien que cette menace n'ait jamais été aussi dangereuse que Nagash ou Drachenfels, elle n'en restait pas moins une entité morte-vivante puissante et dérangeante capable de contrôler des armées de serviteurs squelettiques. Plusieurs siècles plus tard, le Grand imprécateur Dieter Helsnicht a été évincé de Middenheim après que ses activités nécromantiques ont été révélées.
 
 Depuis la Guerre des Sorciers de 1979 CI, la pratique de la nécromancie a été rendue d'autant plus dure à Middenheim. Les sorciers de la cité s'y opposent violemment, et sont soutenus dans leur colère par les Frères du Livre et le culte de Morr. Ceci leur a permis de s'assurer qu'aucun nécromancien ne vienne causer des problèmes à l'intérieur de la cité… jusqu'à tout récemment.
 
@@ -1958,7 +1958,7 @@ En effet, les caves des bâtiments en ruines abritent plusieurs entrées vers le
 0 « L'Homme » a fait creuser un très long tunnel entre les Terriers et la Geist Haus du Nordtor (voir page 76) pour transporter des paquets de Poudre hilarante à travers la cité. La séparation de ce tunnel du reste de la Cité souterraine sans alerter les nains a coûté énormément de ressources à « l'Homme ». Des sbires lourdement armés se tiennent prêts à réduire au silence quiconque risquerait de révéler ce secret.
 
 
-### **Aux Sous Rutilants**
+<span id="page-96-0" data-folio="94"></span>### **Aux Sous Rutilants**
 
 Aux Sous Rutilants est une des meilleures tavernes du secteur de Sudtor. Cet établissement est tenu par un nain du nom de Ketri le Trapu, et il est réputé auprès des nains et des manouvriers de la ville pour les bières fortes qu'il y sert. Sa taverne est un des rares établissements de la cité qui propose de la Bugman XXXXXX (au prix légèrement gonflé de 11 sous, car il est bien plus difficile d'acheminer la bière vers Middenheim que de la transporter jusqu'à Altdorf ).
 
@@ -1997,7 +1997,7 @@ Le poste de Sudtor est géré par le capitaine Houschäng Hackett. Il prend les 
 0 Hilberry est l'un des deux alchimistes expérimentés qui travaillent pour « l'Homme », l'autre étant Waldtraud Gerber, qui travaille à la Geist Haus du Nordtor. Waldtraud et Hilberry savent tous les deux qu'ils ont un concurrent, mais ils ne se connaissent pas. « L'Homme » se satisfait de cette situation, car il peut pousser ses alchimistes à se dépasser mutuellement sans craindre qu'ils ne finissent par s'entretuer. Hilberry joue le jeu, mais il envisage de recruter des enquêteurs pour en apprendre plus sur son rival.
 
 
-### **Agna Lottrisdottir**
+<span id="page-97-0" data-folio="95"></span>### **Agna Lottrisdottir**
 
 Agna est un émissaire personnel du Haut Roi des nains, mais son comportement brusque l'a empêchée de se faire une place à la cour de Middenheim au cours des trente dernières années. C'est aujourd'hui une naine malheureuse et sans le sou, que la honte et la peur empêchent de retourner à Karak Kadrin pour faire part de son échec. On la trouve généralement à la taverne des Sous Rutilants, où elle effectue de petits boulots en échange d'une pinte de Bugman XXXXXX.
 
@@ -2071,7 +2071,7 @@ Cependant, contrairement à ses homologues dans le reste de l'Empire, la guilde 
 La Guilde des Médecins est étroitement liée au temple de Shallya et à la Komission pour la Santé, l'Éducation et le Bien-être. Les praticiens potentiels ne peuvent pas recevoir d'autorisation d'exercer sans l'aval de la Komission, et cette dernière n'accorde aucune licence sans l'approbation de la guilde. Les futurs étudiants doivent faire face au même paradoxe, mais ils peuvent généralement recevoir une formation pour la modique somme de 10 Couronnes.
 
 
-### **Les bureaux de la Komission pour les Intérêts des Elfes, Nains et Halflings (KIENH)**
+<span id="page-99-0" data-folio="97"></span>### **Les bureaux de la Komission pour les Intérêts des Elfes, Nains et Halflings (KIENH)**
 
 Ce bâtiment en pierre grise abrite la branche de l'administration civile qui traite les affaires des citoyens non humains. La Komission a été mise en place il y a plus de cent ans, alors que des frictions existaient entre les elfes et les nains et que ces deux communautés avaient le sentiment d'être injustement traitées par la majorité humaine de Middenheim. Le graf Dieter jugea donc nécessaire de créer cette institution officielle afin de défendre leurs intérêts, et il intégra les halflings pour éviter de les offenser. Aujourd'hui, ses services sont moins nécessaires, mais la Komission est aussi responsable de l'organisation d'événements culturels pendant les festivals. Les elfes de la cité surnomment parfois la KIENH la « salle de bal » pour faire un jeu de mots sur le mot eltharin qui désigne une soirée dédiée à la boisson, à la musique et à la danse.
 
@@ -2106,7 +2106,7 @@ Les armes choisies sont placées dans la Flamme éternelle pendant dix heures. C
 Les armes laissées dans la Flamme deviennent magiques et obtiennent un bonus de +1 aux Dégâts. Cet enchantement persiste pendant 1d10 + 10 jours, mais il peut durer plus longtemps si l'utilisateur de l'arme exécute une mission importante aux yeux d'Ulric.
 
 
-### **Les chapelles des Chevaliers**
+<span id="page-100-0" data-folio="98"></span>### **Les chapelles des Chevaliers**
 
 La chapelle dédiée à l'Ordre du Loup Blanc est plus grande que celle des Chevaliers Panthères, comme il sied à leur statut de Templiers d'Ulric. Elle est richement décorée avec un grand nombre d'étendards, de bannières et de trophées, ainsi qu'une rangée d'honneur de plaques commémoratives dédiées à des actions marquantes comme le Siège de 1812 ou les Guerres contre le Chaos de 2302. La plus vieille bannière exhibée, l'Étendard de Vess, est déchirée et maculée de sang. Elle a été brandie par les compagnies de bataille de l'ordre pendant près d'un millénaire.
 
@@ -2125,7 +2125,7 @@ La Lore Haus, une grande bibliothèque de manuscrits religieux, est un autre bâ
 À Middenheim, les locaux de la guilde sont installés dans un petit bâtiment large aux fenêtres étroites. La seule entrée se trouve sous un grand linteau décoré des armoiries de la noble famille von Kärzdburger et de la devise « Un travail honnête pour un homme honnête ».
 
 
-Ce serait une erreur que d'imaginer que la guilde représente les intérêts des mineurs professionnels. Presque tous les mineurs en activité à Middenheim sont des nains représentés par la Guilde des Ingénieurs nains. L'appellation de la Guilde des Mineurs du Middenland est plutôt un euphémisme utilisé pour désigner l'organisme qui envoie des condamnés faire leur peine dans les mines des Monts du Milieu.
+<span id="page-101-0" data-folio="99"></span>Ce serait une erreur que d'imaginer que la guilde représente les intérêts des mineurs professionnels. Presque tous les mineurs en activité à Middenheim sont des nains représentés par la Guilde des Ingénieurs nains. L'appellation de la Guilde des Mineurs du Middenland est plutôt un euphémisme utilisé pour désigner l'organisme qui envoie des condamnés faire leur peine dans les mines des Monts du Milieu.
 
 La fondation de ce pénitencier dans les Monts du Milieu était autrefois considérée comme une grande victoire par les réformistes de Shallya, qui se réjouissaient de la possibilité de réhabiliter les criminels au lieu de les exécuter. Concrètement, les mesures de cette réforme ont donné lieu à une certaine forme d'esclavagisme. Un nain du nom de Yarrick est le maître local de la guilde. Il est normalement occupé à faire la tournée des sites d'excavation, et il n'est que rarement présent dans les locaux. Il se rend cependant à une réunion le premier Marktag de chaque mois avec un représentant de la Mission de la Miséricorde de Shallya, ne serait-ce que pour préserver les apparences.
 
@@ -2155,7 +2155,7 @@ Le temple est fréquenté régulièrement par la plupart des membres de l'Honora
 Comme dans tous les temples dédiés à Verena, quelle que soit leur taille, on y trouve une grande bibliothèque. Celle de Middenheim est installée dans une annexe rectangulaire sur le côté du bâtiment. Elle contient des manuscrits rarissimes issus des quatre coins du Vieux Monde. L'accès accompagné à la bibliothèque est proposé à quiconque dispose d'une lettre d'introduction de l'Honorable Guilde des Législateurs, de la Grande Guilde des Sorciers ou du Collège de Théologie. Il va de soi que les dons pour enrichir la bibliothèque sont acceptés avec gratitude. Il est strictement interdit d'emprunter un livre.
 
 
-### **Walpurga Wurklich**
+<span id="page-102-0" data-folio="100"></span>### **Walpurga Wurklich**
 
 La petite silhouette de Walpurga n'est plus la bienvenue dans la plupart des salles de spectacle de Middenheim. Malgré sa petite taille (elle fait à peine 1,5 m) et sa fine constitution, elle a une voix digne d'une chalemie : fine et intolérablement puissante. Lorsqu'elle hurle directement dans l'oreille de quelqu'un, ce qui arrive assez régulièrement, elle est capable de provoquer des acouphènes.
 
@@ -2237,7 +2237,7 @@ Outre son travail au bénéfice des malades et des pauvres, le temple de Shallya
 
 ### UNE ABSENCE REMARQUÉE
 
-0 Luigi Pavarotti, le médecin de la cour, ne se rend jamais au temple pour rendre hommage à Shallya. Isolde hésite à considérer cela comme une forme de snobisme, mais elle est curieuse de savoir pourquoi il n'est jamais venu pour la moindre visite de courtoisie. Si les Personnages la lancent sur ce sujet, cette prêtresse normalement très diplomate pourra leur faire part de ses doutes au sujet de Luigi.
+<span id="page-104-0" data-folio="102"></span>0 Luigi Pavarotti, le médecin de la cour, ne se rend jamais au temple pour rendre hommage à Shallya. Isolde hésite à considérer cela comme une forme de snobisme, mais elle est curieuse de savoir pourquoi il n'est jamais venu pour la moindre visite de courtoisie. Si les Personnages la lancent sur ce sujet, cette prêtresse normalement très diplomate pourra leur faire part de ses doutes au sujet de Luigi.
 
 ### **La résidence Nikse**
 
@@ -2299,7 +2299,7 @@ Les deux guildes entretiennent une rivalité professionnelle, mais pas de rancœ
 Le siège de guilde est un bâtiment petit, mais impressionnant, à deux étages avec un toit en ardoise grise striée. Des piliers de marbre flanquent les portes d'entrée. En plus d'être le quartier général de la guilde, il s'agit d'une vitrine qui comporte de nombreuses fioritures architecturales impressionnantes afin de mettre en avant les capacités des membres.
 
 
-# **La Komission pour les Travaux Publics**
+<span id="page-106-0" data-folio="104"></span># **La Komission pour les Travaux Publics**
 
 Il s'agit d'un bâtiment morne, gris et quelconque dissimulé d'un côté du Marktweg. Cette Komission est responsable de l'entretien des rues, parcs et espaces publics en extérieur, y compris les monuments et les égouts. Elle emploie plusieurs travailleurs et gardiens du parc, qui sont généralement des membres de la Garde à la retraite.
 
@@ -2348,7 +2348,7 @@ Le culte d'Ulric appelle le solstice d'hiver Hochwinter. Il s'agit d'une fête p
 Le festival le plus important de Middenheim est une période de huit jours de festivités appelée le « Carnaval ». Le Carnaval est organisé selon un roulement afin d'avoir lieu en été une certaine année, puis en automne la suivante, puis en hiver, etc. Pendant la semaine qui précède le Carnaval, tous les habitants de la ville 
 
 
-doivent uniquement manger des aliments qui existaient au temps du siège de 1812 (des mets fins comme le rat frit et le ragoût de cafards). Par conséquent, ils sont rarement aussi prêts à festoyer que la semaine suivante. Le Carnaval est réputé dans tout le Vieux Monde, sans parler de l'Empire. Même lors des années les moins fructueuses, la population de Middenheim fait un bond de plusieurs milliers de visiteurs venus participer aux festivités. Des artistes talentueux de tous les coins du Vieux Monde sont engagés pour rendre le Carnaval mémorable et spectaculaire.
+<span id="page-107-0" data-folio="105"></span>doivent uniquement manger des aliments qui existaient au temps du siège de 1812 (des mets fins comme le rat frit et le ragoût de cafards). Par conséquent, ils sont rarement aussi prêts à festoyer que la semaine suivante. Le Carnaval est réputé dans tout le Vieux Monde, sans parler de l'Empire. Même lors des années les moins fructueuses, la population de Middenheim fait un bond de plusieurs milliers de visiteurs venus participer aux festivités. Des artistes talentueux de tous les coins du Vieux Monde sont engagés pour rendre le Carnaval mémorable et spectaculaire.
 
 ### **Windhund Transports & Cie**
 
@@ -2385,7 +2385,7 @@ Une pièce secrète se trouve à l'arrière de l'imprimerie et abrite une presse
 0 Récemment, Otto a accepté une commande d'impression pour Blurph Vertebutte consistant à produire des menus pour le Compagnon. Ces derniers ont une mise en page magnifique, avec des gravures sur bois de chaque plat, et ont coûté les yeux de la tête. Cependant, suite à une malencontreuse méprise, le paquet contenant les menus a été échangé avec un paquet de tracts réclamant la démission du Graf en faveur d'une Diète populaire. Otto risque la pendaison pour avoir imprimé un tel message, et a besoin d'un groupe d'individus discrets pour récupérer les tracts auprès de Blurph avant l'ouverture du Compagnon le jour suivant.
 
 
-### **Andrea Bruhn**
+<span id="page-108-0" data-folio="106"></span>### **Andrea Bruhn**
 
 Silhouette au regard perçant, Andrea déambule dans Middenheim avec son manteau de cuir noir et un grand chapeau à larges bords. Malgré son physique de répurgateur, Andrea travaille pour la Komission pour les Travaux Publics en tant qu'Officier des Festivités. Il est de sa responsabilité de s'assurer que les événements se déroulent sans incident et de gérer les juges de spectacles, qui arbitrent les spectacles de rue du Carnaval.
 
@@ -2459,7 +2459,7 @@ L'héritage de la roche alvéolée était connu des premiers dirigeants de Midde
 Certains des bâtiments les plus imposants de la ville possèdent des caves qui descendent profondément sous le niveau de la rue, et beaucoup comportent des portes secrètes menant aux tunnels supérieurs. De nombreux manoirs nobles disposent de ces caves, tout comme la Grande Guilde des Sorciers de Middenheim. Les Petits Rois et les cultistes sont toujours à la recherche de ce genre d'endroits, et d'autres individus en ont sans aucun doute déjà trouvé.
 
 
-### **Les tunnels inférieurs**
+<span id="page-110-0" data-folio="108"></span>### **Les tunnels inférieurs**
 
 Les anciennes cartes qui subsistent des tunnels inférieurs abandonnés sont incomplètes et confuses. Les tunnels inférieurs sont composés de plusieurs excavations naines et de nombreuses cavernes naturelles. Les tunnels sont étonnamment secs. Le Fauschlag est principalement composé de granit, et à l'exception des sources chaudes qui alimentent le sauna du Begierbaden, les cours d'eau souterrains ont peu de possibilités de circuler. En outre, des puits profonds s'étendent du niveau de la rue jusque dans l'immensité du Fauschlag.
 
@@ -2492,7 +2492,7 @@ Néanmoins, une quantité croissante de théories et de preuves indiquent qu'une
 Les lettrés de Middenheim savent que leurs idées fonctionnent en théorie, mais qu'ils doivent avancer des preuves pour pouvoir les présenter. Les vieux érudits et les rats de bibliothèque aux doigts tachés d'encre sont mal adaptés aux dangers de la Cité souterraine de Middenheim, mais ils seraient sûrement prêts à soutenir financièrement de courageux aventuriers.
 
 
-### **Sous-Middenheim**
+<span id="page-111-0" data-folio="109"></span>### **Sous-Middenheim**
 
 La présence de skavens dans les provinces du nord de l'Empire a diminué suite à leur défaite causée par Mandred le Tueur de Rats. La société skaven est ensuite entrée dans une période de guerre civile de plusieurs siècles, et elle vient tout juste de retrouver suffisamment de stabilité pour encourager la croissance.
 
@@ -2545,7 +2545,7 @@ Mais le conseil veut des résultats avant tout. Il souhaite que Gnawretch décou
 **Prothèse de main :** on considère toujours que Gnawretch tient un couteau dans la main gauche. Il ne peut pas utiliser d'armes à deux mains.
 
 
-### **Archiprélat Kanker Flett**
+<span id="page-112-0" data-folio="110"></span>### **Archiprélat Kanker Flett**
 
 Kanker Flett du clan Pestilens est le prélat des sous-sols de Middenheim, un rang accordé aux individus chargés d'implanter les Pestilens dans une région où le clan était jusqu'alors inactif (Kanker a ajouté l'« Archi » lui-même et cela ne semble déranger personne).
 

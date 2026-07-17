@@ -69,7 +69,7 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, +31 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +12 fichiers
+- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, +35 — `src/data/etats.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +13 fichiers
 
 ---
 
@@ -149,7 +149,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Assourdi
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.43-47) → `PRONE_POSE`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `ActionBar`, `MOVEMENT_SKILL`, `hasFoeInLoS`, `recoveryGeometry`, `SkillData`, `applyTriggeredEffects`, +5 — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, `src/state/ai.ts`, +7 fichiers
+- `LDB 16` (l.43-47) → `PRONE_POSE`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `ActionBar`, `MOVEMENT_SKILL`, `hasFoeInLoS`, `recoveryGeometry`, `empetre`, +10 — `src/data/etats.json`, `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, +8 fichiers
 
 ---
 
@@ -175,7 +175,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Psychologie (`psychologie.md`), Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.51-61) → `addCondition`, `EnemyAction`, `StateRecoveryModal`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, `hasFoeInLoS`, +14 — `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combat/roundHooks.ts`, +10 fichiers
+- `LDB 16` (l.51-61) → `addCondition`, `EnemyAction`, `StateRecoveryModal`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `tileSeenByFoe`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, +19 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/ai.ts`, +11 fichiers
 
 ---
 
@@ -199,7 +199,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Empoignade (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.66, l.72, l.86-87) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, +16 — `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +10 fichiers
+- `LDB 16` (l.66, l.72, l.86-87) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, +21 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +11 fichiers
 
 ---
 
@@ -226,7 +226,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-79) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, `recoveryGeometry`, +13 — `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/ai.ts`, +9 fichiers
+- `LDB 16` (l.68-79) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, +18 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +10 fichiers
 
 ---
 
@@ -249,7 +249,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.81-84) → `Formula`, `recoveryTarget`, `ActionBar`, `GameOp`, `collectHeroRoundEndUpkeep`, `endOfRound`, `chooseEnemyAction`, `passiveMods` — `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, `src/state/ai.ts`, `src/state/combat/roundHooks.ts`, +1 fichiers
+- `LDB 16` (l.81-84) → `Formula`, `brise`, `recoveryTarget`, `ActionBar`, `empetre`, `GameOp`, `empoisonne`, `collectHeroRoundEndUpkeep`, `endOfRound`, `en-flammes`, +3 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, `src/state/ai.ts`, +2 fichiers
 
 ---
 
@@ -281,7 +281,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `hitModifiers`, `recoveryTarget`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `fatigueThreshold`, +15 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, +9 fichiers
+- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `recoveryTarget`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, +24 — `src/data/etats.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +10 fichiers
 - `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `EffectFlags`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `describeApproach`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
@@ -311,7 +311,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Inconscient, Traumatisme (`traumatisme.md`), Maladies (`maladies.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.103-109) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `fatigueThreshold`, `fatigueApply`, `AttackResult`, +8 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/engine/types.ts`, +5 fichiers
+- `LDB 16` (l.103-109) → `unstable`, `stopBleedOutcome`, `brise`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `fatigueThreshold`, `fatigueApply`, +17 — `src/data/etats.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, +6 fichiers
 
 ---
 
@@ -335,7 +335,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Hémorragique, Empoisonné, À Terre, Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.112-120) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, +13 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, `src/state/ai.ts`, +6 fichiers
+- `LDB 16` (l.112-120) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, +17 — `src/data/etats.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, +7 fichiers
 
 ---
 
@@ -359,7 +359,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Exténué, Magie (`magie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.123-130) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `chooseEnemyAction`, `resolveAttack`, `applyAttackResult`, +1 — `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
+- `LDB 16` (l.123-130) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `hemorragique`, `chooseEnemyAction`, `inconscient`, +5 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -383,7 +383,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Initiative et Surprise (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.132-139) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `chooseEnemyAction`, `resolveAttack`, `applyAttackResult`, +1 — `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
+- `LDB 16` (l.132-139) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `hemorragique`, `chooseEnemyAction`, `inconscient`, +5 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -420,7 +420,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.28-139` — descriptions individuelles
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `unstable`, `addCondition`, `Formula`, `EnemyAction`, `stopBleedOutcome`, `StateRecoveryModal`, `hitModifiers`, `addClockCondition`, `recoveryTarget`, +55 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +20 fichiers
+- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `unstable`, `addCondition`, `Formula`, `EnemyAction`, `stopBleedOutcome`, `StateRecoveryModal`, `brise`, `hitModifiers`, `addClockCondition`, +64 — `src/data/etats.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/healing.ts`, +21 fichiers
 
 ---
 
@@ -548,8 +548,7 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.64, l.67, l.74-75, l.104, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `dechirure-autre-mineure`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `fracture-torse-majeure`, `resolveAACritical`, `fractureSequela`, `fracture-jambe-mineure`, +20 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +6 fichiers
-- sans code : `LDB 18` (l.123-125, l.148, l.149)
+- `LDB 18` (l.64, l.67, l.74-75, l.104, l.123-125, l.148, l.149, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `blessure-spectaculaire`, `coupure-mineure`, `dechirure-autre-mineure`, `coup-a-l-il`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `frappe-a-l-oreille`, +103 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +7 fichiers
 
 ---
 
@@ -620,10 +619,11 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 - `ADE II 4 l.222, l.230, l.367` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `assommante`, `arbalete`, `arc`, `entraves`, `explosifs`, `fronde`, `lancer`, +3 — `src/data/qualities.json`, `src/data/weaponGroups.json`
+- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `assommante`, `arbalete`, `defensive`, `arc`, `entraves`, `devastatrice`, `explosifs`, +18 — `src/data/qualities.json`, `src/data/weaponGroups.json`
+- `ADE II 4` (l.222) → `deroutante` — `src/data/qualities.json`
 - `ZI 2` (l.165, l.178) → `filet`, `filet-barbele`, `coup-puissant`, `cornes`, `arme` — `src/data/creatures.json`, `src/data/qualities.json`
 - `ZI 14` (l.1008) → `fouissement` — `src/data/traits.json`
-- sans code : `ADE II 4` (l.222), `ZI 13` (l.25)
+- sans code : `ZI 13` (l.25)
 
 ---
 

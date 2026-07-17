@@ -284,7 +284,7 @@ Autres exemples listés : Perfectionniste, Protectrice, Homme de paix, Martyr p�
 **Sources RAW** : `LDB 05 l.421-445`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 5` (l.421-445) → `capacite-de-combat`, `capacite-de-tir`, `mouvement`, `CHAR_SEQ_MS` — `src/data/characteristics.json`, `src/ui/creator/CharacterCreator.tsx`
+- `LDB 5` (l.421-445) → `force`, `endurance`, `initiative`, `agilite`, `dexterite`, `intelligence`, `force-mentale`, `sociabilite`, `blessure`, `destin`, +6 — `src/data/characteristics.json`, `src/ui/creator/CharacterCreator.tsx`
 
 ---
 
@@ -306,7 +306,7 @@ La mort survient sans dépense de Destin dans ces cas :
 **Voir aussi** : [`traumatisme.md`](traumatisme.md) pour le fonctionnement complet des Blessures critiques et de la mort.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.38, l.40, l.42-43) → `critWoundLocation`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `evaluateMissile`, `PendingDeviation`, `woundsAtCritLocation`, `applyCriticalToTarget`, `applyOpposedCritical`, `applyAttackResult`, +2 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, +1 fichiers
+- `LDB 18` (l.38, l.40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, `OPTIONAL_RULES`, +80 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +3 fichiers
 
 ---
 

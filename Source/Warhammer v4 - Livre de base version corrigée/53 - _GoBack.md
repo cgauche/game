@@ -56,7 +56,7 @@ Balayées par les vents, au sud du Comté de la Marche de l'Ouest, les tourbièr
 
 # CHRONOLOGIE DU REIKLAND
 
-Aperçu des événements majeurs concernant l'histoire de la Grande Province du Reikland.
+<span id="page-273-0" data-folio="272"></span>Aperçu des événements majeurs concernant l'histoire de la Grande Province du Reikland.
 
 # -500 CI ENV.
 
@@ -125,7 +125,7 @@ Johann Helstrum arrive à Reikdorf et affirme recevoir des visions sacrées conc
 
 ### 73 CI
 
-Johann Helstrum édifie le temple de Sigmar à Reikdorf. L'histoire se souvient à jamais de lui comme du premier Grand Théogoniste du Culte de Sigmar, et le premier homme à reconnaître la divinité de Sigmar.
+<span id="page-274-0" data-folio="273"></span>Johann Helstrum édifie le temple de Sigmar à Reikdorf. L'histoire se souvient à jamais de lui comme du premier Grand Théogoniste du Culte de Sigmar, et le premier homme à reconnaître la divinité de Sigmar.
 
 ### 100 CI ENV.
 
@@ -180,7 +180,7 @@ Le prince du Reikland donne officiellement pouvoir à une flotte, inquiet de l'i
 *L'Âge des Trois Empereurs*. Après la tentative d'assassinat ratée des sigmarites quand les Électeurs ont refusé de revenir sur leur choix du prochain Empereur, le Comte Électeur du Middenland dénonce les élections impériales comme étant un simulacre corrompu, et se déclare *lui-même* empereur légitime. Il a le soutien du Culte d'Ulric, qui s'est récemment brouillé avec l'Impératrice du Talabecland.
 
 
-L'Empire compte à présent trois Empereurs : l'Empereur élu, soutenu par le Culte de Sigmar, l'Impératrice Ottilianne, soutenue par le Culte de Taal, et l'Empereur Loup soutenu par le Culte d'Ulric. Les guerres civiles s'amplifient.
+<span id="page-275-0" data-folio="274"></span>L'Empire compte à présent trois Empereurs : l'Empereur élu, soutenu par le Culte de Sigmar, l'Impératrice Ottilianne, soutenue par le Culte de Taal, et l'Empereur Loup soutenu par le Culte d'Ulric. Les guerres civiles s'amplifient.
 
 # 1450-1550 CI ENV.
 
@@ -235,7 +235,7 @@ Une faille donnant sur les Royaumes du Chaos s'ouvre au Château Drachenfels, en
 *La Troisième Guerre de Parravon*. Le Duché bretonnien de Parravon envahit le Reikland en empruntant la Passe de la Dame Grise, affirmant que l'escalade militaire à Ubersreik causée par le rassemblement de la nouvelle 
 
 
-Armée enfreint un ancien traité. Ils sont rapidement repoussés, et Parravon est assiégée l'année suivante. Finalement, après un an d'escarmouches à l'extérieur des murs exceptionnellement hauts de Parravon, et de beaucoup d'insultes, le Roi de Bretonnie traite au nom de Parravon avec l'Empereur Magnus I, mettant fin à la guerre.
+<span id="page-276-0" data-folio="275"></span>Armée enfreint un ancien traité. Ils sont rapidement repoussés, et Parravon est assiégée l'année suivante. Finalement, après un an d'escarmouches à l'extérieur des murs exceptionnellement hauts de Parravon, et de beaucoup d'insultes, le Roi de Bretonnie traite au nom de Parravon avec l'Empereur Magnus I, mettant fin à la guerre.
 
 # 2402-2405 CI
 

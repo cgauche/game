@@ -121,7 +121,7 @@ Wolmar Rotte est incorrigible. Une crapule de premier ordre. Une véritable et p
 
 ### LES PNJ DE L'OMBRE UN ESPRIT BRILLANT DANS UN MONDE SOMBRE
 
-Pandora peut être utilisée comme un élément pittoresque alternatif ou supplémentaire dans l'auberge la Diligence, où elle fait le bonheur des autres PNJ en jouant du violon ou en jonglant habilement avec des couteaux, à la grande joie des cochers ivres. Elle peut même accompagner les Personnages dans la diligence, car elle « ne prend pas beaucoup de place, hein ? » et elle veut aller, bien sûr, vers Bögenhafen pour la foire.
+<span id="page-47-0" data-folio="47"></span>Pandora peut être utilisée comme un élément pittoresque alternatif ou supplémentaire dans l'auberge la Diligence, où elle fait le bonheur des autres PNJ en jouant du violon ou en jonglant habilement avec des couteaux, à la grande joie des cochers ivres. Elle peut même accompagner les Personnages dans la diligence, car elle « ne prend pas beaucoup de place, hein ? » et elle veut aller, bien sûr, vers Bögenhafen pour la foire.
 
 Pois peut servir d'attraction à la Schaffenfest, et vous pouvez également l'y utiliser pour présenter l'un des aspects les plus sombres du Vieux Monde, si vous le souhaitez : le racisme flagrant. Bien qu'elle soit pleine d'esprit et généralement charmante, certains membres de la foule admirative diront des choses très blessantes sur cette « bruyante demiportion », et l'accuseront de faire les poches. Lorsque les choses tournent mal, Pois demande de l'aide aux Personnages, surtout si elle les a rencontrés un peu plus tôt à la Diligence**.** Puis, elle offre de généreuses tournées avec beaucoup plus d'argent qu'elle ne devrait en avoir. « *Eh bien, oui, je lui ai fait les poches, mais seulement apr*è*s qu'il s'est comport*é *comme un salaud.* »
 
@@ -179,7 +179,7 @@ L'infamie est le pain est le quotidien du bandit de grand chemin. Si les victime
 Les nobles sont presque toujours accompagnés d'au moins un serviteur, et les nobles de haut rang ou importants ne voyagent jamais sans une suite considérable de gardes du corps, de conseillers, d'avocats et d'autres employés de maison, sans compter un chariot à bagages suivant leur carrosse. Certains membres de la noblesse plus jeunes et de rang inférieur, comme 
 
 
-dame Isolde von Strudeldorf (**L'Ennemi dans l'Ombre**, page 21), empruntent parfois des diligences publiques, mais uniquement lorsque la famille ne peut pas, ou ne veut pas, leur fournir un carrosse personnel. Forcés de monter dans un véhicule public, les nobles se montrent généralement assez amers et n'hésitent pas à s'en prendre à leurs compagnons de voyage.
+<span id="page-49-0" data-folio="49"></span>dame Isolde von Strudeldorf (**L'Ennemi dans l'Ombre**, page 21), empruntent parfois des diligences publiques, mais uniquement lorsque la famille ne peut pas, ou ne veut pas, leur fournir un carrosse personnel. Forcés de monter dans un véhicule public, les nobles se montrent généralement assez amers et n'hésitent pas à s'en prendre à leurs compagnons de voyage.
 
 Un noble en voyage réquisitionne toujours la meilleure chambre dans n'importe quelle auberge, et réserve les chambres adjacentes pour ses serviteurs et conseillers les plus proches. Dans la mesure du possible, un groupe d'aristocrates essaiera de mettre la main sur toute l'auberge en interdisant l'accès à tous les autres voyageurs. Ils s'emparent de la meilleure nourriture et des meilleures boissons, se plaignent de tout et de tous, et attendent que tout le monde, même les autres clients, qu'ils refusent de distinguer du personnel de l'auberge, se mette à leur disposition.
 
@@ -265,7 +265,7 @@ Les colporteurs transportent rarement des objets rares ou de grande valeur. Leur
 Les bons colporteurs sont attentifs aux besoins de leurs clients ; ainsi, beaucoup d'entre eux sont très bien informés sur les gens et les activités de tous les établissements situés le long de leur route. Ils sont également les bienvenus presque partout, car ils apportent des nouvelles et des ragots. S'il est abordé de la bonne manière, un colporteur peut raconter aux Personnages qui traficote avec qui, les tractations sournoises d'un seigneur local, si des hommes-bêtes ou d'autres menaces ont été aperçus récemment, et toutes sortes d'autres informations utiles. Ils sont également une source utile d'objets usuels, de vêtements et 
 
 
-de munitions, mais rarement d'armes, d'armures ou de denrées périssables. Ils peuvent acheter des objets aux Personnages, s'ils pensent pouvoir les revendre sur leur route. Les offres de départ seront d'environ 60 % du prix de l'article figurant dans le Guide de l'équipement (**WFJDR**, page 288), mais peuvent être négociées jusqu'à 90 % pour les articles les plus demandés.
+<span id="page-52-0" data-folio="52"></span>de munitions, mais rarement d'armes, d'armures ou de denrées périssables. Ils peuvent acheter des objets aux Personnages, s'ils pensent pouvoir les revendre sur leur route. Les offres de départ seront d'environ 60 % du prix de l'article figurant dans le Guide de l'équipement (**WFJDR**, page 288), mais peuvent être négociées jusqu'à 90 % pour les articles les plus demandés.
 
 | DELBERZ TRÖTTE - COLPORTEUR HUMAIN (BRONZE 4) |
 |-----------------------------------------------|
@@ -631,7 +631,7 @@ Les Doigts Crochus sont dirigés par un prêtre de Ranald, qui essaie clairement
 Même si « la Matraque » n'attaque pas nécessairement les Personnages sur le champ, ses conditions pour les laisser partir sains et saufs seront probablement bien plus inquiétantes que celles de Baumann.
 
 
-#### **Reynald Verstand**
+<span id="page-63-0" data-folio="63"></span>#### **Reynald Verstand**
 
 Ce n'est un secret pour personne que les nantis de l'Empire profitent de leurs serviteurs, et leur causent de grandes souffrances. Cela n'a jamais été aussi vrai que dans le cas de Reynald Verstand, le portier personnel de l'excentrique dame Kirstin Gottlieb. Verstand est un vieil homme, bien que beaucoup plus jeune que sa chevelure grise et son visage ridé ne le laissent penser, et passe ses journées à satisfaire les moindres caprices et désirs de sa maîtresse. C'est ainsi qu'il est devenu un homme compétent et aux multiples contacts, mais à bout de patience.
 

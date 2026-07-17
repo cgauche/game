@@ -29,7 +29,7 @@ Ce quartier semble sombre à cause du cimetière qui domine son ensemble et du s
 - 0 Les prêtres de Morr ne cessent de sanctifier les tombes, mais une menace morte-vivante persiste dans le jardin de Morr malgré leurs efforts. L'empereur Wilhelm I er, qui a régné au troisième siècle, était un monarque vaniteux. Dans son testament, il a demandé à ce que des pièces d'or soient placées sur ses yeux au lieu des traditionnels sous. Morr a refusé d'emmener un homme aussi orgueilleux dans l'au-delà, et depuis, Wilhelm demeure en ces lieux en tant qu'esprit. Sous sa forme de revenant, il semble défier les méthodes des Morriens, pourtant habitués à traquer et détruire ceux qui résistent à la mort.
 
 
-# **Sépulcre de la prophétie**
+<span id="page-58-0" data-folio="56"></span># **Sépulcre de la prophétie**
 
 Alors que le terrain sur lequel repose le cimetière est vaste, le sanctuaire de Morr est une structure compacte en pierre grise, offrant aux prêtres et aux gardiens des tombes un lieu pour se rencontrer et entreposer leurs instruments. Les funérailles des plus nantis se déroulent généralement dans la cathédrale de Sigmar ou dans le temple principal de Morr d'Altdorf, à Toteninsel.
 
@@ -55,7 +55,7 @@ Les grandes cours de justice d'Altdorf sont connues sous le nom de Citadelle du 
 Le palais de justice impérial domine les environs. Ses hauts murs sont ceux d'une forteresse, en blocs de granite des Montagnes Grises et patrouillés par des soldats munis de hallebardes et d'arquebuses. À l'intérieur se trouvent plusieurs salles d'audience et offices judiciaires, ainsi que la salle des archives. Le bâtiment abrite également un petit sanctuaire de Verena, bien que les juges exigent que seuls les prêtres vérénéens les plus sévères et les plus inflexibles y soient en fonction. Les juges n'ont pas de bureaux publics, c'est pourquoi ils n'acceptent les visiteurs que sur rendez-vous. Des juristes se rendent régulièrement dans la salle des archives du palais de justice impérial. C'est là qu'ils recherchent des précédents pour les affaires en cours. Sous le palais de justice se trouve un petit complexe pénitentiaire permettant d'accueillir les accusés entre chaque procès.
 
 
-Si le palais de justice a l'apparence d'une forteresse, la tour d'Altdorf en est une. Son donjon en pierre grise est dépourvu d'ornements, mais il est robuste et a résisté plusieurs fois aux assauts acharnés des émeutiers. Cette tour sert de commanderie pour la Garde de la ville qui opère dans les quartiers voisins et constitue le poste d'une unité spéciale chargée de surveiller la Citadelle du Châtiment. C'est une fonction prestigieuse : de nombreux aspirants commandants de la Garde ont passé du temps dans les rangs de cette unité.
+<span id="page-59-0" data-folio="57"></span>Si le palais de justice a l'apparence d'une forteresse, la tour d'Altdorf en est une. Son donjon en pierre grise est dépourvu d'ornements, mais il est robuste et a résisté plusieurs fois aux assauts acharnés des émeutiers. Cette tour sert de commanderie pour la Garde de la ville qui opère dans les quartiers voisins et constitue le poste d'une unité spéciale chargée de surveiller la Citadelle du Châtiment. C'est une fonction prestigieuse : de nombreux aspirants commandants de la Garde ont passé du temps dans les rangs de cette unité.
 
 # **Place de la potence**
 
@@ -98,7 +98,7 @@ Au nord du Palais Impérial se trouve une place rectangulaire destinée aux déf
 0 Des gardes et des soldats contrôlent les foules lors des festivités, même si Karl Franz ne prend pas part aux événements. Le palais et ses riches quartiers voisins sont des cibles privilégiées pour les espions et les voleurs. La moitié des commerçants qui vendent de la bière et de la nourriture de rue autour de la place sont des informateurs de la Garde, tandis que l'autre moitié travaille pour la Confrérie de Ranald. Certains sont même des agents doubles : si leur secret venait à être découvert, ils seraient prêts à payer une coquette somme pour qu'il ne soit pas divulgué.
 
 
-### **Seymour Taungar**
+<span id="page-61-0" data-folio="59"></span>### **Seymour Taungar**
 
 Seymour a grandi dans le nord-est d'Hexxerbezrik, dans une famille pauvre d'Altdorf. Des nombreux sorciers qu'il a côtoyés chaque jour dans son enfance, il a appris le respect de l'excentricité et une peur justifiée des sorts qui tournent mal. Des nombreux Kislevites qui vivaient dans les immeubles voisins, il a retenu une vision ennuyeuse et lasse du monde, une certaine habileté à la balalaïka et un goût prononcé pour les alcools forts.
 
@@ -132,7 +132,7 @@ Mezzo est arrivé à Altdorf il y a plus de vingt ans et a acheté la propriét�
 - 0 Des composants de sorts rares et même des objets magiques sont échangés entre sorciers derrière les portes closes. Les sorciers aventuriers peuvent faire de gros profits en vendant des crânes, des parties d'animaux et autres babioles qu'ils ont accumulés. Cependant, la prudence est de mise, car la peine de mort attend quiconque apporte son aide à un sorcier du Chaos. De temps en temps, des cultistes de la Couronne rouge obtiennent des ingrédients rituels chez Mezzo en falsifiant des licences de magie.
 
 
-### **Rosanna Ophuls, Mystique et enquêteur**
+<span id="page-62-0" data-folio="60"></span>### **Rosanna Ophuls, Mystique et enquêteur**
 
 La vingtaine, le visage fin et une tignasse de cheveux roux, Rosanna est techniquement une initiée du Culte de Sigmar, mais elle ne subit aucune pression pour progresser dans la prêtrise et n'a pas de conviction religieuse forte. Elle possède le don de psychométrie, la capacité à lire les émotions et à glaner des faits à partir d'objets matériels. Si elle touche quelqu'un, elle peut lire dans ses pensées.
 
@@ -165,7 +165,7 @@ Rosanna vit aux deux étages supérieurs. Des journaux et des souvenirs d'ancien
 
 # NOUVELLE COMPÉTENCE : LA PSYCHOMÉTRIE
 
-La Psychométrie est une capacité innée chez une infime minorité d'humains. Il n'est pas évident de maîtriser cette compétence et nombre de ceux qui la possèdent sont rendus fous par leur don. Grâce à cette capacité, une personne peut expérimenter des visions et des sensations relatives à un événement récent ou aux pensées non exprimées par une autre personne. Cette Compétence est basée sur l'Intelligence et pour l'utiliser, la personne doit soit se trouver dans un lieu associé à un événement, soit toucher un objet associé à un événement ou une personne dont elle cherche à lire les pensées.
+<span id="page-63-0" data-folio="61"></span>La Psychométrie est une capacité innée chez une infime minorité d'humains. Il n'est pas évident de maîtriser cette compétence et nombre de ceux qui la possèdent sont rendus fous par leur don. Grâce à cette capacité, une personne peut expérimenter des visions et des sensations relatives à un événement récent ou aux pensées non exprimées par une autre personne. Cette Compétence est basée sur l'Intelligence et pour l'utiliser, la personne doit soit se trouver dans un lieu associé à un événement, soit toucher un objet associé à un événement ou une personne dont elle cherche à lire les pensées.
 
 Le tableau suivant doit être consulté chaque fois qu'un Test de Compétence en **Psychométrie** est effectué. La colonne « Général » donne des conseils généraux, tandis que la colonne « Scène de crime » donne un exemple concret de réalisation du Test sur le lieu d'un meurtre qui s'est produit récemment. Le meurtre en question a eu lieu la veille au soir et décrit l'assassinat d'un pirate par un marin enragé.
 
@@ -193,7 +193,7 @@ Ainsi, pour en représenter la difficulté, cette Compétence peut être acquise
 Seuls les Personnages humains peuvent acquérir cette Compétence.
 
 
-### **Svenrina Hallovadottir dite « la Grise »**
+<span id="page-64-0" data-folio="62"></span>### **Svenrina Hallovadottir dite « la Grise »**
 
 À première vue, les théâtres d'Altdorf ne semblent pas avoir grand-chose à offrir aux nains. Le métier d'acteur est une profession peu recommandable et les longues tragédies favorisées par les nains ne trouvent pas un public très large (les humains ont souvent du mal à attendre trois heures avant le premier entracte). Pourtant, nombre d'entre eux s'épanouissent dans la création d'accessoires et la construction de décors. Ces activités ne sont pas considérées comme honteuses pour les nains : même si ces objets ne sont que des représentations de véritables bâtiments et artefacts, l'artisanat qui intervient dans leur fabrication est tout aussi ingénieux et complexe. De plus, l'admiration éprouvée par les spectateurs pour les artifices scéniques convaincants est extrêmement gratifiante : peu d'ingénieurs civils peuvent se vanter de faire salle comble, en présentant leurs systèmes de drainage novateurs devant un public ébahi.
 
@@ -239,7 +239,7 @@ Malheureusement, un esprit de complaisance artistique dicte les affaires du thé
 - 0 Des spectateurs du théâtre ont été témoins de l'apparition d'un énorme chat vert rôdant dans des loges inoccupées. Le gérant souhaite engager des enquêteurs afin de confirmer cette apparition. Ce chat est en réalité le familier d'Hannelore Brisz, grande amatrice de théâtre et sorcière de l'Ordre de Jade, qui se vengerait de quiconque oserait maltraiter son animal bien-aimé.
 
 
-# **Temple sud d'Ulric**
+<span id="page-66-0" data-folio="64"></span># **Temple sud d'Ulric**
 
 Ce temple traditionnel ulricain, plus récent, fait partie intégrante du mur de la ville et adopte le style classique d'un temple-forteresse. En l'honneur du dieu, les parties publiques du temple ne sont pas couvertes, exposant les fidèles aux éléments, même en plein hiver. En annexe se trouve un petit château pour les prêtres et les gardes honoraires du temple du Loup blanc issus de la Compagnie rouge locale.
 
@@ -268,7 +268,7 @@ En 2429 CI , le premier empereur Holswig Schliestein, Wilhelm III, a vaincu une 
 0 L'empereur Karl Franz ne peut pas effacer cette amère querelle de lignée, aussi préfère-t-il apaiser les Holzkrug en leur accordant des nominations et des privilèges. En réalité, il les soupçonne de vouloir renverser sa dynastie. La famille Holzkrug a de bonnes relations dans le Reikland : elle entretient notamment des liens matrimoniaux avec les Wallenstein d'Auerswald et est soutenue par de fidèles partisans au sein du conseil municipal de Kemperbad. Par l'intermédiaire de ses maîtres espions, l'Empereur cherche discrètement des preuves de la conspiration des Holzkrug pour justifier la suppression des titres de la famille.
 
 
-### **Gravin Luciana von Eckstein**
+<span id="page-67-0" data-folio="65"></span>### **Gravin Luciana von Eckstein**
 
 Luciana est l'épouse du graf Hildemund von Eckstein. Le nom de jeune fille de la gravin, Quixana, est originaire d'un lointain duché estalien appelé Zaragoz. Il y a vingt ans, le père de Luciana l'a mariée à la hâte avant un coup d'État sanglant de la famille rivale di Avila. Les pas de danse de Luciana sont aussi parfaits que son sourire éclatant. Elle dépense plus d'argent que les Eckstein ne peuvent se permettre pour financer des artistes. Même si la patrie sauvage de Luciana est loin de lui manquer, elle commence à regretter son mariage.
 
@@ -298,7 +298,7 @@ Le territoire ancestral des Eckstein couvre une partie indomptée de la forêt d
 - 0 Le graf Eckstein a engagé un sorcier à sa cour, le magister Hollobach du Collège d'Améthyste. Ce dernier possède une carte menant à une pyramide slann perdue en Lustrie, qui renfermerait des trésors inestimables (ainsi qu'un artefact qu'il souhaite garder pour lui). Si le Graf parvient à trouver un accord avec l'un de ses créanciers de Marienburg pour se rendre en Lustrie, il pourrait sûrement rembourser toutes ses dettes. Le magister Hollobach a seulement besoin d'un petit groupe d'aventuriers pour l'accompagner.
 
 
-# **La Gorgone**
+<span id="page-68-0" data-folio="66"></span># **La Gorgone**
 
 Ce club réservé aux nobles et aux acteurs tire son nom d'un célèbre drame avant-gardiste du dramaturge Tarradasch. Des soirées somptueuses sont organisées à la Gorgone après chaque représentation au théâtre d'Altdorf. Le terrain sur lequel a été bâti le club appartenait autrefois à l'amateur de théâtre et financier Fornier von Eckstein. Lors du décès de ce dernier, il y a plus de cent ans, sa propriété a été léguée à la communauté théâtrale d'Altdorf à perpétuité. Les serviteurs de la famille Eckstein se chargent encore de l'entretien de ce manoir gothique fortifié.
 
@@ -382,7 +382,7 @@ Le Conseil privé se réunit dans la grande chambre d'État. Cette pièce immens
 Le noyau dur de la partie nord du palais est une forteresse construite par les nains. Elle contient l'armurerie et les salles de trophées de l'Empereur. Certains des artefacts sont enchantés ou dangereux, comme le heaume de Morkar, le premier Élu du Chaos. Ghal-Maraz lui-même est entreposé ici lorsque l'Empereur ne s'en sert pas pour une bataille ou une cérémonie. Une puissante magie protège l'armurerie, qui est également surveillée par les Intendants des armements, un ordre fermé d'une douzaine de chevaliers qui se consacrent uniquement à cette tâche.
 
 
-Les bâtiments du nord et la Résidence renferment de nombreux secrets. Des pièces oubliées et des escaliers encombrés mènent à des greniers poussiéreux, des bibliothèques négligées et des chambres vides. Certains domestiques insistent sur le fait qu'il existerait tout un étage perdu, dont l'accès aurait été interdit par Wilhelm III peu après son couronnement.
+<span id="page-71-0" data-folio="69"></span>Les bâtiments du nord et la Résidence renferment de nombreux secrets. Des pièces oubliées et des escaliers encombrés mènent à des greniers poussiéreux, des bibliothèques négligées et des chambres vides. Certains domestiques insistent sur le fait qu'il existerait tout un étage perdu, dont l'accès aurait été interdit par Wilhelm III peu après son couronnement.
 
 Des abeilles ne cessent d'attaquer les résidents du huitième étage, mais aucune ruche n'a été localisée. En réalité, elles pullulent dans un rucher oublié depuis longtemps, un petit plaisir de l'empereur Boris l'Incompétent remontant à il y a plus de 1 000 ans. La sorcière baronne den Linden y a été emmurée, là où les abeilles l'ont tuée. Les insectes continuent d'y prospérer, sans doute possédés par son esprit éternel.
 
@@ -402,7 +402,7 @@ La salle centrale est dédiée à Sigmar Heldenhammer. On y trouve très peu de 
 - 0 Dieter, un jeune chevalier griffon, aborde les Personnages pour leur proposer une mission. La nuit précédente, alors qu'il surveillait la chambre sacrée d'Agnetha I de Nuln, quelqu'un a volé le cerveau argenté de la défunte impératrice. Dieter est terrifié à l'idée que son supérieur l'apprenne et propose de les payer grassement s'ils parviennent à récupérer la relique.
 
 
-### **Quartiers des domestiques**
+<span id="page-72-0" data-folio="70"></span>### **Quartiers des domestiques**
 
 Au rez-de-chaussée et dans les caves se trouvent les blanchisseries, les cuisines et les celliers, dégageant des fumées de cuisson grasses qui se mêlent à la douce odeur du pain et des gâteaux. Des centaines de cuisiniers, de commis, de marmitons, de porteurs, de bouchers, de tourneurs de broche, de garçons de cuisine et de sauciers s'affairent dans la chaleur ardente des foyers ouverts et des fours. Il existe des dizaines de cuisines, chacune dédiée à un type de nourriture différent. Par exemple, le sergent de la Cuisson du porc supervise les cuisiniers dédiés à la préparation du porc, qui s'occupent exclusivement de la viande de porc. Sa grande rivale, la maîtresse du Rôti de bovin à la broche, est chargée de rôtir le bœuf. Sont exclus les sabots, la cervelle et les entrailles, qui ont leur propre cuisine dédiée.
 
@@ -429,7 +429,7 @@ Le Conseil d'État se réunit dans cette salle circulaire lambrissée de chêne.
 
 V
 
-### **Baron Ewald von Laue**
+<span id="page-73-0" data-folio="71"></span>### **Baron Ewald von Laue**
 
 Les domaines de Laue se situent loin au nord, dans une contrée négligée du Nordland, il convient donc de préciser que cet homme n'a que peu d'importance dans la politique de l'Empire. Mais le baron ne laissera pas un détail aussi mineur entraver ses ambitions.
 
@@ -466,7 +466,7 @@ Seize immenses piliers soutiennent le plafond en forme de dôme et une passerell
 0 Greta Holbeck est une scribe au service de l'Électeur du Stirland. Plus tôt dans la journée, à la Volkshalle, elle a vu l'Électeur du Talabecland passer une note à son chambellan, d'un âge avancé, qui a laissé tomber la lettre. Celle-ci a glissé sous le trône de l'Empereur. L'Électeur semblait furieux. À présent, Greta essaie de trouver un moyen de se procurer cette note.
 
 
-### **Helena Bastiat-Hatzburg, Responsable des festivités**
+<span id="page-74-0" data-folio="72"></span>### **Helena Bastiat-Hatzburg, Responsable des festivités**
 
 Lorsque l'Empereur organise un bal, il est essentiel que tout se passe comme prévu. Chaque détail doit être examiné, planifié et exécuté avec une précision militaire. Le décor, la disposition des sièges, le choix des musiciens et l'ordre des cérémonies doivent être soigneusement calibrés pour éviter tout incident diplomatique. Âmes sensibles s'abstenir.
 
@@ -495,7 +495,7 @@ La rumeur veut qu'après le dernier bal d'hiver, l'Empereur ait fait remarquer a
 
 # ÉCHOS DU PALAIS
 
-Le Quartier du Palast est unique. Les Personnages qui entrent en son sein peuvent y découvrir des personnes et des situations qui n'existent nulle part ailleurs. Les exemples suivants peuvent être utilisés pour donner du relief à leur expérience.
+<span id="page-75-0" data-folio="73"></span>Le Quartier du Palast est unique. Les Personnages qui entrent en son sein peuvent y découvrir des personnes et des situations qui n'existent nulle part ailleurs. Les exemples suivants peuvent être utilisés pour donner du relief à leur expérience.
 
 - 0 Un majordome réprimande un jeune valet de pied qui a oublié de mettre ses chaussures de cour. Ce dernier paraît confus et prétend qu'on les lui a volées.
 - 0 Un armurier se plaint bruyamment que personne ne veut accepter sa livraison d'une nouvelle arme de poing pour un capitaine de la Reiksguard. En regardant autour de lui, son regard se pose sur l'un des Personnages.
@@ -566,7 +566,7 @@ Un petit ordre dérivé des Chevaliers Panthères créé par Magnus le Pieux apr
 **Controverses :** les Chevaliers Griffons sont tristement célèbres pour leur suffisance
 
 
-# **Les Chevaliers du Soleil Flamboyant**
+<span id="page-77-0" data-folio="75"></span># **Les Chevaliers du Soleil Flamboyant**
 
 Fondé en 1457 CI, cet ordre était autrefois laïc, mais s'est consacré à Myrmidia après qu'une statue de la déesse se soit effondrée sur leurs ennemis lors de la bataille de Madritta.
 
@@ -658,7 +658,7 @@ L'Untersuchung est mystérieux, en partie parce que ses agents secrets opèrent 
 
 ### ORGANISATION DE LA REIKSGUARD
 
-La structure de la Reiksguard est semblable à celle de tout autre ordre chevaleresque. Au sommet se trouve le grand maître Helborg, aux commandes de l'armée de chevaliers et bras droit de l'Empereur. On trouve ensuite le Cercle intérieur, composé des vingt chevaliers les plus expérimentés. Ces chevaliers-commandants et sous-marshalls supervisent les forces de la Reiksguard à travers l'Empire. Maître de la salle capitulaire, le reikcapitaine Zintler fait partie du Cercle intérieur.
+<span id="page-79-0" data-folio="77"></span>La structure de la Reiksguard est semblable à celle de tout autre ordre chevaleresque. Au sommet se trouve le grand maître Helborg, aux commandes de l'armée de chevaliers et bras droit de l'Empereur. On trouve ensuite le Cercle intérieur, composé des vingt chevaliers les plus expérimentés. Ces chevaliers-commandants et sous-marshalls supervisent les forces de la Reiksguard à travers l'Empire. Maître de la salle capitulaire, le reikcapitaine Zintler fait partie du Cercle intérieur.
 
 En dessous du Cercle intérieur se trouvent les précepteurs, commandant les étendards de leurs frères chevaliers au combat. Ensuite viennent les novices, qui doivent subir une formation intense, se plier à des instructions et à des tests avant d'être considérés comme chevaliers à part entière. Selon les règles de l'ordre, un membre actuel ou ancien de la Reiksguard doit nommer tout novice potentiel en se basant sur son caractère. Dans la pratique, il existe d'autres moyens de négocier son entrée dans l'ordre.
 
@@ -673,7 +673,7 @@ Maître Lehrer a quitté le champ de bataille le jour où il a perdu son pied dr
 Chaque section de la Reiksguard dans l'Empire charge un seul chevalier de rechercher des renseignements sur la situation politique locale et, si nécessaire, d'agir en faveur de l'unité impériale. La plupart des chevaliers considèrent une telle pratique comme déshonorante, mais pour les hommes de Lehrer, rien n'est plus important que la force de l'Empire.
 
 
-### **Kurt Helborg, Grand Seigneur Reikmarshall**
+<span id="page-80-0" data-folio="78"></span>### **Kurt Helborg, Grand Seigneur Reikmarshall**
 
 Ceux qui rencontrent le seigneur Helborg n'ont aucun doute sur le pouvoir qu'il exerce. Il est le Grand Maître de la puissante Reiksguard, le commandant suprême des armées du Reikland et le plus grand général de l'Empire. Bras droit de l'Empereur, il est l'un des conseillers les plus fiables de Karl Franz et prend son rôle très au sérieux.
 
@@ -744,7 +744,7 @@ Le pilier de Sigmar a été commandé en 1416 CI par Hjalmar le Tyrannique, l'un
 0 Le grand théogoniste Kazgar XIV a déclaré que le pilier était un monument religieux inspiré par Sigmar, ce qui le rend sacré. Mais la 89e scène est donc plutôt embarrassante. Elle représente clairement Sigmar accueillant un groupe d'elfes noirs sous la bannière du Roi Sorcier. Aucune version de l'histoire de Sigmar ne relate cette rencontre, alors comment expliquer cette scène ?
 
 
-# **Les fontaines des triomphes**
+<span id="page-82-0" data-folio="80"></span># **Les fontaines des triomphes**
 
 Chacune présente la statue d'un ennemi vaincu , de l'eau jaillissant de perforations, métaphore des effusions de sang lors de la bataille. Au-dessus de chaque statue, se tient en triomphe un héros de l'Empire. L'empereur Dieter IV avait initialement commandé six tableaux, mais le « Triomphe sur les elfes » n'a jamais quitté la planche à dessin.
 
@@ -800,7 +800,7 @@ La marine impériale se sert de cet énorme phare en pierre pour guider les navi
 - 0 Nombreux sont les patrouilleurs fluviaux qui acceptent des potsde-vin de la part de gangs comme les Poissons et les Havrebas en échange de leur silence sur les activités de contrebande. Le marshall du fleuve Reik Marham von Sieblich est consciente de la corruption qui règne au sein de ses troupes, c'est pourquoi elle offre une récompense aux Personnages prêts à se faire passer pour des contrebandiers offrant des pots-de-vin aux patrouilleurs fluviaux.
 
 
-### **Marshall du fleuve Reik Sigfreda Marham von Sieblich**
+<span id="page-84-0" data-folio="82"></span>### **Marshall du fleuve Reik Sigfreda Marham von Sieblich**
 
 Le marshall du fleuve Reik Marham est impitoyable dans sa poursuite de la justice. Quand elle était petite, Sigfreda arrachait la tête de toutes les poupées qui osaient la regarder de travers. Ses nobles parents pensaient que des leçons d'escrime pourraient l'aider à gérer son agressivité, mais ils n'ont fait que la rendre encore plus dangereuse. Alors que les autres jeunes filles s'adonnaient à la couture ou au tricot, Sigfreda embarquait pour collecter les taxes des pêcheurs. Marshall du fleuve Reik à la détermination sans faille, elle manie habilement la rapière et le pistolet et garde un fouet enroulé à sa ceinture.
 
@@ -833,7 +833,7 @@ Douze amiraux relèvent du seigneur des mers Adalmann von Hopfberg, un vétéran
 0 Adalmann von Hopfberg est connu pour favoriser certains de ses amiraux, afin d'encourager une compétition « dans les règles de l'art ». Selon des rumeurs graveleuses, certains officiers auraient même reçu une promotion directement dans la chambre du Seigneur des mers. Ceux qui ne parviennent pas à gravir les échelons sont parfois mécontents et quittent la marine. Plusieurs officiers prévoient aussi de s'en aller dans la Troisième flotte du duc von Bildhofen, fraîchement établie, avec autant de marins valides qu'ils peuvent débaucher. Von Hopfberg considère cet acte comme une quasi-trahison et paiera cher quiconque parvient à ruiner la réputation et l'attrait de la Troisième flotte.
 
 
-# **Temple de Manann**
+<span id="page-85-0" data-folio="83"></span># **Temple de Manann**
 
 Manann est vénéré à Altdorf comme le dieu des mers et des rivières. Son temple est un énorme bâtiment en pierre grise avec deux beffrois. La moitié inférieure du temple est recouverte d'algues sèches jetées par les marins de retour de longs voyages. À l'intérieur, de lourdes chaînes d'ancrage noires ornent l'entrée de la nef, entourant la statue de Manann qui trône en son centre. La nef est fraîche, humide et faiblement éclairée par des lanternes de bateaux.
 
@@ -855,7 +855,7 @@ Un vieux galion désaffecté, *la Duchesse Krieglitz*, s'étend sur les trois ni
 0 100 ans plus tôt, Marienburg accueillait encore les collèges nautiques de l'Empire, avant que la ville-État n'obtienne son indépendance. L'école d'Altdorf était alors largement considérée comme de second ordre. Pour améliorer son attractivité, elle emploie désormais trois navigateurs elfes comme instructeurs. Les navigateurs humains sont en colère, car ils sont payés moins de la moitié de ce que gagnent leurs collègues elfes pour faire le même travail, si bien que les ces derniers font souvent l'objet de rumeurs et d'accusations infondées. Les elfes ont patiemment expliqué que cette différence était simplement due au fait qu'ils valent au moins deux fois plus que n'importe quel instructeur humain, mais leur justification semble avoir aggravé la situation. Ils recherchent à présent un elfe plus expérimenté dans les relations avec les humains pour les conseiller.
 
 
-# **Quais des lignes Hindelin**
+<span id="page-86-0" data-folio="84"></span># **Quais des lignes Hindelin**
 
 La compagnie Hindelin possède trois navires de luxe, tous construits en 2510 CI par les chantiers navals Spee. L'*Empereur Luitpold* navigue sur la rivière Talabec entre Altdorf et Bechafen. L'*Empereur Magnus* emprunte le cours supérieur du Reik entre Altdorf et Nuln. L'*Empereur Wilhelm* dessert le bas Reik entre Altdorf et Marienburg. Malgré leur volume, ces navires se déplacent à une vitesse impressionnante grâce à une combinaison de rames et de voiles, avec une moyenne de 64 km par jour. Les lignes Hindelin sont détenues par un consortium de riches actionnaires, dont l'Empereur lui-même.
 
@@ -866,7 +866,7 @@ Les trois paquebots « impériaux » sont identiques. Bien que leurs cabines et 
 0 Les équipages Hindelin appliquent des règles de conduite très strictes à bord des paquebots de luxe. Les règles limitent notamment le port d'armes et d'armure et interdisent l'utilisation de sorts. Des normes morales élevées sont attendues dans le salon où les nobles et les marchands affichent leur savoir-vivre raffiné autour d'un cocktail. Les passagers nobles jouent à s'inciter les uns les autres à adopter des comportements odieux et se livrent parfois à des duels au premier sang amicaux sur la promenade du toit. Les conflits majeurs doivent attendre que le bateau accoste, c'est pourquoi de nombreux duels sont réglés à même les quais d'Altdorf. Un de ces nobles a eu des paroles déplacées qui l'ont mis dans un pétrin qui le dépasse complètement, l'équipage a donc envoyé son chambellan recruter quelques manants qui sauraient distraire l'attention de son adversaire le temps qu'il quitte discrètement le navire afin qu'il aille trouver refuge à Altdorf.
 
 
-### **Salle capitulaire des Chevaliers Griffons**
+<span id="page-87-0" data-folio="85"></span>### **Salle capitulaire des Chevaliers Griffons**
 
 Surplombant les quais, un donjon fortifié appartient aux templiers sigmarites des Chevaliers Griffons. La porte carrée du donjon fait face à la cathédrale de Sigmar, que Magnus le Pieux a chargé l'ordre de protéger il y a deux siècles. La herse reste fermée pour que les passants ne soient pas dévorés par les demigriffons qui rôdent parfois dans la cour. Ces griffons dépourvus d'ailes sont normalement mis à l'écurie à l'extérieur des murs de la ville, mais il arrive que des chevaliers les chevauchent jusqu'à la salle capitulaire.
 
@@ -888,7 +888,7 @@ La famille Spee est arrivée de Marienburg il y a quatre générations lorsque l
 0 Les ouvriers de chantier naval de Tilée, de Marienburg et du Nordland ont émigré à Altdorf afin de moderniser la Première flotte. L'ingénieur en chef est Herr Arnold Spee, un constructeur naval visionnaire et dynamique dont les conceptions font d'ores et déjà pâlir d'envie les capitaines de navires marchands et de la marine. Les travailleurs de Herr Arnold savent pertinemment qu'il ne se présente pas toujours comme un homme, mais la plupart de ceux qui connaissent ses compétences et les apprécient à leur juste valeur ne voient guère de raison d'en faire toute une histoire. Les autres sont rapidement rappelés à l'ordre par des personnes plus pragmatiques. L'un de ces travailleurs congédiés s'est enfui avec les derniers plans de Herr Arnold. Le charpentier de marine est impatient de récupérer ce qui lui appartient avant que son idée ne puisse être vendue à quelqu'un d'autre.
 
 
-### **Seigneur Tyrkel von Hargenfels, lieutenant de la Première flotte impériale**
+<span id="page-88-0" data-folio="86"></span>### **Seigneur Tyrkel von Hargenfels, lieutenant de la Première flotte impériale**
 
 Le seigneur Tyrkel est un jeune lieutenant séduisant dont le frère aîné, le baron Klement, règne sur la baronnie côtière de Hargenfels dans le Nordland. Après un court passage par la Seconde flotte du Nord, Tyrkel s'est installé à Altdorf pour poursuivre sa carrière. Sa famille n'est pas très haut placée dans la marine, car la famille rivale des Kohler occupe les postes les plus élevés de l'amirauté du Nordland. Le seigneur Tyrkel s'attendait à exceller dans la Première flotte intérieure étant donné qu'il navigue depuis qu'il est enfant.
 
@@ -947,7 +947,7 @@ Le complexe du temple renferme également une petite bibliothèque. Elle abrite 
 - 0 Les prêtres de Myrmidia ont découvert un grand secret : l'emplacement d'une épée légendaire enterrée dans un tombeau oublié accessible par les égouts d'Altdorf. Le culte de Myrmidia a choisi la digne championne Henrietta Finn pour récupérer cette épée. Hélas, aucun entraînement ne l'a préparée à naviguer dans les catacombes nauséabondes. Les prêtres demandent donc aux Personnages de l'aider dans sa quête et de l'escorter jusqu'au lieu de sépulture.
 
 
-# **Geôle militaire**
+<span id="page-90-0" data-folio="88"></span># **Geôle militaire**
 
 L'édifice de pierre noire qu'est la prison militaire est dissimulé dans une ruelle sombre et sinistre, ni vu ni connu. C'est ici que les soldats se retrouvent lorsqu'ils transgressent la loi martiale. Certains malfaiteurs tristement célèbres y finissent même leurs jours, mais la plupart des peines sont courtes et surtout disciplinaires. On raconte que Konrad, l'infâme guerrier, était autrefois emprisonné ici. Bien que le peuple le considère maintenant comme un héros, les soldats d'Altdorf se souviennent que de nombreuses troupes impériales sont tombées sous sa lame au fil de ses exploits.
 
@@ -977,7 +977,7 @@ Le commandant ostermarker, Hermann Röntgen, un vétéran épuisé de plusieurs 
 - 0 Le commandant Röntgen a besoin d'aide. Il soupçonne un ennemi de l'ordre d'avoir envoyé un espion pour séduire l'un de ses chevaliers. Il a besoin des Personnages pour trouver une femme, Maxine Eissler, et apprendre tout ce qu'ils peuvent sur elle et sa liaison avec le chevalier Egon Backhaus. Les amants ont été vus ensemble dans une taverne haut de gamme du quartier, la Plume et le Fanion, lieu de prédilection des chevaliers. Qui se cache derrière tout cela ? Un ordre concurrent, une puissance étrangère ou encore un culte du Chaos ? Ou s'agit-il simplement du véritable amour ?
 
 
-# **Caserne**
+<span id="page-91-0" data-folio="89"></span># **Caserne**
 
 La caserne de Hammerpfad abrite les différentes compagnies de l'armée d'Altdorf. Si leur propension aux défilés et aux exercices spectaculaires fait l'objet de fréquents chahuts, il n'en reste pas moins que ces soldats ont fait preuve d'une grande bravoure pour défendre la capitale en temps de crise. Généreusement équipés et bien armés, ils arborent fièrement les insignes de la couronne, du marteau ou du griffon sur leurs uniformes. Les anciens combattants portent également des sceaux commémoratifs ou des médailles d'honneur. Les couleurs de la compagnie flottent au-dessus des portes de la caserne et leurs bannières de combat occupent une place de choix dans le mess.
 
@@ -992,7 +992,7 @@ De nombreuses compagnies renommées sont stationnées ici. La Compagnie d'honneu
 0 Les ennuis commencent, car des conflits politiques empêchent la nomination du nouveau Grand Marshall. Un mystérieux individu engage les Personnages pour discréditer von Knast et von Lüssen afin d'ouvrir la voie à la réintégration de von Vincke en semant la discorde entre les factions qui les soutiennent.
 
 
-**Reinholdt Waffenkammer** Quartier-maître principal de la caserne de Hammerpfad, Waffenkammer est mêlé à la fois à l'armée, à la fabrication et à l'achat d'armes pour les soldats. Il contrôle secrètement plusieurs forges qui produisent des armes à Altdorf et négocie constamment avec les inventeurs et les ingénieurs, y compris les armuriers elfes et nains d'Altdorf, pour avoir une longueur d'avance sur les nouvelles technologies.
+<span id="page-92-0" data-folio="90"></span>**Reinholdt Waffenkammer** Quartier-maître principal de la caserne de Hammerpfad, Waffenkammer est mêlé à la fois à l'armée, à la fabrication et à l'achat d'armes pour les soldats. Il contrôle secrètement plusieurs forges qui produisent des armes à Altdorf et négocie constamment avec les inventeurs et les ingénieurs, y compris les armuriers elfes et nains d'Altdorf, pour avoir une longueur d'avance sur les nouvelles technologies.
 
 Il fournira de l'or aux aventuriers qui récupèrent des artefacts militaires, et pourra même devenir un mécène fiable pour les Personnages qualifiés ayant fait leurs preuves. Fier mais cupide, il est tout à fait conscient que son influence est due à sa compréhension du marché des armes, et non pas à l'attention que lui portent les nobles. Il se déplace à l'aide d'une canne, ayant été blessé à la jambe lors de sa dernière bataille sur le terrain.
 
@@ -1058,7 +1058,7 @@ Des rumeurs circulent sur le fait que la Maison de l'Empire sert également de r
 
 # V
 
-- 0 Un mystérieux employé de la Maison de l'Empire prend contact avec les Personnages. Une estafette a disparu avec une sacoche qui contenait des informations classifiées. Il était censé partir par la Porte Nord, mais aucune trace de lui n'a été trouvée dans cette zone. La sacoche contient des informations secrètes qui ne doivent en aucun cas tomber entre les mains de puissances étrangères. Le Schattenkabinett veut à tout prix la récupérer.
+<span id="page-94-0" data-folio="92"></span>- 0 Un mystérieux employé de la Maison de l'Empire prend contact avec les Personnages. Une estafette a disparu avec une sacoche qui contenait des informations classifiées. Il était censé partir par la Porte Nord, mais aucune trace de lui n'a été trouvée dans cette zone. La sacoche contient des informations secrètes qui ne doivent en aucun cas tomber entre les mains de puissances étrangères. Le Schattenkabinett veut à tout prix la récupérer.
 - 0 La Maison de l'Empire est toujours à la recherche de nouvelles recrues pour la Garde de la ville. Les Personnages peuvent s'engager de leur plein gré ou être recrutés après avoir prouvé leur valeur aux autorités. Les nouveaux gardes sont affectés à l'un des quartiers, où ils opèrent depuis l'un des postes de garde. Leurs principales tâches consistent à patrouiller dans les rues et les ruelles du quartier, à lutter contre les incendies, à assister les collecteurs de taxes, à escorter les nobles qui font des affaires ou encore à expulser les mendiants et les vagabonds de la ville.
 
 # **Salles fortes**
@@ -1084,7 +1084,7 @@ Les arrivées et les départs des diligences des Lignes Rochet s'effectuent deva
 0 Les diligences Rochet sont en proie à des vols commis sur leurs trajets. Il semblerait que quelqu'un vende des informations sur des passagers transportant des marchandises de valeur, incluant l'heure de passage de la diligence ainsi que l'itinéraire emprunté. Les Lignes Rochet récompenseront généreusement quiconque démasquera les coupables. S'agit-il d'un complot des Quatre Saisons, ou simplement d'un employé avide travaillant avec les bandits ?
 
 
-# **Grand Glockentor**
+<span id="page-95-0" data-folio="93"></span># **Grand Glockentor**
 
 Le Grand Glockentor, qui combine le meilleur de l'art et de la science, résulte d'une collaboration entre le département d'art de l'université d'Altdorf et l'École impériale d'ingénierie. Il s'agit d'un mécanisme fabuleux, un grand arc de triomphe serti de cloches et de mécanismes d'horlogerie. À certains moments de la journée, des mécanismes complexes s'activent et les cloches jouent une version lente et mélancolique de l'hymne de l'Empire, « *Salut à la Maison de Wilhelm III* ».
 
@@ -1176,7 +1176,7 @@ Depuis l'achèvement de la cathédrale en 1000 CI, de nombreux cloîtres, annexe
 La grande salle centrale est octogonale pour symboliser l'alliance originelle des huit tribus de l'Empire sous Sigmar. Elle comprend un haut clocher qui sonne toutes les heures. Les cloches sont accordées sur une octave complète, incarnant le symbolisme du chiffre huit dans un spectacle à la fois visuel et auditif. La grande coupole du clocher est décorée d'un énorme marteau en or, un motif qui revient partout dans la cathédrale. On raconte que si les cloches cessent de sonner, la ville s'effondrera (malgré cela, la guilde des ingénieurs nains les a arrêtées à plusieurs reprises pour les entretenir).
 
 
-### **Pratique religieuse**
+<span id="page-98-0" data-folio="96"></span>### **Pratique religieuse**
 
 Les offices et les cérémonies ont lieu dans la grande salle, qui peut accueillir plusieurs milliers de fidèles. Des Chevaliers du Cœur Ardent portant une armure complète montent la garde deux par deux aux points stratégiques de la salle. Avant d'entrer, les fidèles passent devant une fontaine ornementale. Des fresques aux couleurs vives et des tapisseries somptueuses décorent les murs. Devant le mur est se trouve un grand autel de pierre orné d'objets en or, au-dessus duquel est suspendu un énorme marteau de guerre stylisé, taillé dans le granit des Montagnes Grises.
 
@@ -1210,7 +1210,7 @@ Le culte de Sigmar cherche malgré tout à enrichir cette collection cachée. Le
 
 # V
 
-### **Souterrain**
+<span id="page-99-0" data-folio="97"></span>### **Souterrain**
 
 Les membres de haut rang du culte peuvent être enterrés dans le cimetière situé dans l'enceinte de la cathédrale, mais les cultistes les plus éminents sont enterrés dans les catacombes situées sous la cathédrale. De nos jours, cet honneur n'est accordé qu'à une poignée de Sigmarites. Des personnages encore plus importants, comme les héros de guerre et les Grands Théogonistes, sont enterrés dans des caveaux situés dans les murs de la grande salle elle-même.
 
@@ -1228,7 +1228,7 @@ culte.
 - 0 Siegfried Waltz est convaincu qu'une sombre influence au sein du culte recrute des initiés naïfs pour une fraternité secrète. Afin de l'éradiquer, il a besoin d'agents suffisamment convaincants pour se joindre au prochain groupe d'initiés et feindre la crédulité.
 
 
-### **Palais du Grand Théogoniste**
+<span id="page-100-0" data-folio="98"></span>### **Palais du Grand Théogoniste**
 
 Bien que le siège officiel du Grand Théogoniste soit la cathédrale, celui-ci réside dans le palais voisin. En apparence, il s'agit d'une autre grande construction dans un quartier qui en compte déjà plusieurs, mais vu de l'extérieur, le palais ne suscite pas la même admiration que la cathédrale. Cependant, la présence de Chevaliers du Cœur Ardent devant l'entrée donne un indice sur son importance.
 
@@ -1242,7 +1242,7 @@ C'est également à cet endroit que le Grand Théogoniste reçoit au nom du cult
 - 0 Selon la hiérarchie très stricte du culte, même l'habilleur personnel du Grand Théogoniste occupe une position d'influence et de pouvoir. Un prétendant à cette fonction engage les Personnages pour qu'ils sabotent la garde-robe du Grand Théogoniste dans le but de faire renvoyer l'habilleur actuel. En réalité, il s'agit d'un plan du culte du Brasier vengeur.
 
 
-### **Salle capitulaire de l'Ordre du Cœur Ardent**
+<span id="page-101-0" data-folio="99"></span>### **Salle capitulaire de l'Ordre du Cœur Ardent**
 
 L'Ordre du Cœur Ardent constitue la garde personnelle du Grand Théogoniste, la garde officielle de la cathédrale de Sigmar et le plus ancien de tous les ordres militaires de l'Empire. Il n'est donc pas surprenant que sa salle capitulaire occupe une place de choix sur la Domplatz. Ce bâtiment en pierre grandiose et imposant reflète l'importance de l'ordre pour le culte de Sigmar.
 
@@ -1271,7 +1271,7 @@ Pour accéder à cette bibliothèque, il faut être un membre supérieur du cult
 - 0 Un membre doit rendre plusieurs livres au Librarium et ne répond pas à ses missives. Un prêtre engage les Personnages pour qu'ils se rendent chez ce membre afin de récupérer les ouvrages. L'« universitaire », de son côté, est en réalité une sorcière grise de haut rang. Elle est d'accord pour que les Personnages récupèrent les livres, s'ils arrivent à les trouver.
 
 
-# **Cimetière du temple**
+<span id="page-102-0" data-folio="100"></span># **Cimetière du temple**
 
 Bien que la plupart des plus importants serviteurs de Sigmar soient enterrés dans des caveaux à l'intérieur même de la cathédrale, le cimetière du temple est le lieu de repos final des fidèles les plus modestes. Il est organisé de manière relativement simple. À l'ombre des murs de la cathédrale, le sol est dur et poussiéreux. Les fossoyeurs plaisantent en disant qu'ils ont le travail le plus difficile de la ville. Le complexe de la cathédrale abrite le cimetière, où les fidèles viennent souvent se recueillir. Malgré son austérité, cet endroit est l'un des rares à offrir la paix et la tranquillité au cœur de la ville. Il peut même être d'un calme déconcertant.
 
@@ -1302,7 +1302,7 @@ En raison de leur haute estime pour Sigmar, les nains ne présentent aucune ranc
 Des fenêtres hautes et étroites ornent ce grand bâtiment en pierre. Au-dessus de l'entrée principale se trouve une grande sculpture représentant une enclume, ce qui ne laisse aucun doute sur l'ordre qui occupe ces lieux. La plus fermée de toutes les branches du culte de Sigmar, l'Ordre de l'Enclume est le gardien des règles et des dogmes du culte. Elles impliquent généralement une recherche minutieuse et une interprétation savante des écrits canoniques sur la *Vie de Sigmar* ainsi que des exemples historiques de Grands Théogonistes et d'âmes vénérées. Cet ordre conserve également des dossiers sur les affaires internes du culte, les réunions officielles et les procédures disciplinaires. Bien que sa fonction tende à être discrète, il exerce un grand pouvoir dans l'ombre.
 
 
-### **Freya Husslhaus**
+<span id="page-103-0" data-folio="101"></span>### **Freya Husslhaus**
 
 Prêtresse supérieure de l'Ordre de l'Enclume, Freya est chargée de cataloguer et de classer de nombreux dossiers internes du culte, notamment ceux qui concernent les procédures disciplinaires internes. Dans son petit cercle, elle est connue pour son dévouement et sa méticulosité.
 
@@ -1341,7 +1341,7 @@ En raison du rôle de cet ordre, la bibliothèque et les coffres contiennent des
 - 0 Un petit nombre de Solkanites a infiltré l'Ordre des Templiers de Sigmar. Ils sont, sans le savoir, les pions du culte du Brasier vengeur, qui les couvre aux yeux de la loi pour leurs actions. Le frère répurgateur Marek est inquiet. Quelqu'un lui a suggéré de modifier sa ligne de conduite afin de persécuter davantage les sorciers, les halflings et les Shallyens dans toute la ville. Cette demande a été approuvée par certaines personnalités haut placées religieusement et juridiquement. Il approche les Personnages incognito : pourront-ils l'aider à découvrir pourquoi une telle chose a été ordonnée ?
 
 
-### **Zavant Konniger, Enquêteur, ancien prêtre**
+<span id="page-104-0" data-folio="102"></span>### **Zavant Konniger, Enquêteur, ancien prêtre**
 
 Zavant Konniger est l'un des meilleurs enquêteurs de l'Empire, doté de nombreuses connaissances érudites et d'un esprit vif et déductif. Son réseau de relations, s'étendant du palais à la pègre, garantit des résultats efficaces. C'est un homme étrange : ses longs cheveux blancs évoquent une allure vaguement barbare, mais son front bombé et son nez aquilin rappellent le professeur émérite qu'il était autrefois. Il est souvent accompagné de son assistant, Vido. Konniger tourne en dérision l'approche pratique et inculte de Vido pour résoudre les problèmes, mais en réalité le halfling l'aide bien plus qu'il ne veut l'admettre.
 
@@ -1426,7 +1426,7 @@ Le bâtiment lui-même présente le genre de détails que l'on peut attendre d'u
 - 0 Luitpold von Pfeildorf, un baron vantard, souhaite ajouter un lion à ses armoiries, car il prétend en avoir tué un récemment. Le personnel du Nouveau Collège en doute fortement et pense que les Personnages enquêteurs sont les mieux placés pour lui parler afin de rétablir la vérité. Il faudra peut-être un interrogatoire poussé, et sûrement beaucoup de vin, pour découvrir le fin mot de cette histoire.
 
 
-# **Manoir Siert**
+<span id="page-107-0" data-folio="105"></span># **Manoir Siert**
 
 Ce domaine fortifié est le pied-à-terre de la famille Siert à Altdorf, des nobles du Westerland qui ont perdu une grande partie de leurs biens et de leur richesse lorsque Marienburg a fait sécession de l'Empire. La famille cherche toujours à reconquérir le Wasteland, c'est pourquoi elle soutient la Marine impériale du mieux qu'elle peut. De ce manoir grandiose et inquiétant se dégage l'atmosphère autoritaire et dominatrice que l'on peut attendre d'une noblesse en colère et dépossédée. L'ancien blason du Westerland trône toujours au-dessus de la porte principale. Les pouvoirs en place tolèrent l'obsession des Siert pour la reconquête du Wasteland, mais la prennent rarement au sérieux.
 
@@ -1476,7 +1476,7 @@ Rausch ne vend ses créations qu'à ceux qui ont les moyens de se les offrir : s
 0 Halmut Clausewitz, le grand impresario du Grand Opéra, a demandé à Rausch de créer de nouveaux costumes grandioses pour son couple phare. Malheureusement, l'un des concurrents de Rausch, Franz-Heinz Nadel, fait tout ce qu'il peut pour saboter la création des costumes. Il a engagé des voyous pour brûler la boutique et a acheté tout le stock de taffetas rouge d'Altdorf. Comme si tout cela ne suffisait pas, essayer de plaire aux deux divas de l'opéra, Belladonna Firaglio et Maximillian Schloss, met à rude épreuve le pauvre Rickard. Le groupe pourra-t-il l'aider à traverser cette épreuve ?
 
 
-### **Salle capitulaire des chevaliers du Griffon de Jade**
+<span id="page-109-0" data-folio="107"></span>### **Salle capitulaire des chevaliers du Griffon de Jade**
 
 Les chevaliers du Griffon de Jade sont un ordre templier dédié à Sigmar. Ses membres s'efforcent d'éradiquer un passé honteux pour racheter leur ordre aux yeux de leur dieu et de l'Empereur. De leurs rangs est né l'un des plus grands champions du Chaos que l'Empire ait jamais connu. La tragédie d'Aekold le Miraculeux s'envenime telle une plaie ouverte parmi les fiers guerriers des chevaliers du Griffon de Jade. Un nuage de suspicion plane sur l'Ordre des Templiers : là où un champion du Chaos a émergé, d'autres feront forcément leur apparition.
 
@@ -1493,7 +1493,7 @@ Les chevaliers du Griffon de Jade sont des guerriers redoutables qui s'entraîne
 - 0 En tant qu'ennemi juré de Tzeentch, l'ordre a affronté plusieurs cultes au fil des ans, mais aucun aussi fréquemment que la Main Pourpre. Le culte craint que ces chevaliers zélés ne représentent une menace réelle et immédiate pour son existence, c'est pourquoi il tente activement de discréditer l'ordre pour le renverser de l'intérieur. Les cultistes se tournent vers les Personnages pour qu'ils découvrent, ou qu'ils inventent, des rumeurs sur les chevaliers.
 
 
-# **Maison Haessler**
+<span id="page-110-0" data-folio="108"></span># **Maison Haessler**
 
 Les marchands qui font des affaires à Altdorf doivent faire face à d'autres menaces que leurs concurrents. Les organisations criminelles, comme les Crochets ou les Poissons, les voyous et les voleurs ordinaires gangrènent de nombreux secteurs d'activité. Pour atténuer cette menace, il est courant que les marchands de la ville, tout comme les nobles ne disposant pas de leurs propres compagnies militaires, engagent des groupes de gardes du corps pour protéger leurs employés ou leurs affaires.
 
@@ -1527,7 +1527,7 @@ Halmut Clausewitz fait de son mieux pour monter un opéra élégant, même s'il 
 - 0 Tout le monde fredonne l'aria entraînante de la dernière opérette. Quiconque l'a entendue ne peut se la sortir de la tête. Chacun continue à la chanter. Mais si les paroles s'avéraient être un sort d'invocation slaaneshi, la surprise serait de très mauvais goût.
 
 
-### **Gretchen Schwanz (et l'empereur Nitnit IV)**
+<span id="page-111-0" data-folio="109"></span>### **Gretchen Schwanz (et l'empereur Nitnit IV)**
 
 Gretchen Schwanz et son compagnon petit, mais féroce, l'empereur Nitnit IV, sont l'un des duos de ratiers les plus expérimentés d'Altdorf. On les croise souvent au Fleischmarkt, où Gretchen a passé un contrat avec les marchands pour patrouiller dans les enclos à bétail. Elle empêche les rats de propager des maladies parmi les bêtes ou de consommer leur nourriture.
 
@@ -1595,7 +1595,7 @@ La prêtresse supérieure est mère Jeska Schopf, la Gardienne verte d'Altdorf. 
 0 À la limite ouest du jardin du temple de Rhya, un ogham corrompu se trouve juste sous le sol. Jadis, il était utilisé pour des sacrifices de sang et conserve donc une certaine influence maléfique. Les Personnages entendent parler d'un couple ayant disparu deux jours plus tôt : ils auraient été aperçus pour la dernière fois dans ce jardin.
 
 
-# **Arpent verdoyant**
+<span id="page-113-0" data-folio="111"></span># **Arpent verdoyant**
 
 Un haut mur entoure l'Arpent verdoyant, un jardin privé situé à l'extrémité nord du quartier. On y trouve un verger d'arbres fruitiers, des broussailles de buissons à baies ainsi que des parcelles éparses d'herbes sauvages. Les plantes y sont florissantes et poussent en abondance, ce que beaucoup attribuent aux attentions du Collège de Jade. L'Arpent verdoyant appartient aux sorciers, qui en récoltent la végétation de temps à autre.
 
@@ -1626,7 +1626,7 @@ La salle capitulaire est une enceinte aux murs élevés qui se dresse seule à l
 0 La Confrérie d'Acier est la plus réputée de l'Ordre des chevaliers du Sang de Sigmar. Ses membres éprouvent une forte aversion pour la Reiksguard, qu'ils considèrent comme des parvenus impies qui feraient mieux de rester dans les limites du Reikland. Pour le prochain tournoi, le maître de chapitre Weskar veut que la Confrérie d'Acier triomphe de la Reiksguard. Il est trop respectable pour tricher, mais il saura accueillir, et récompenser, tout renseignement sur les concurrents potentiels de la Reiksguard et leur style de joute.
 
 
-# **Quotidien** *Le Corps céleste*
+<span id="page-114-0" data-folio="112"></span># **Quotidien** *Le Corps céleste*
 
 Chaque matin, un ancien entrepôt de navets situé sur les berges résonne du bruit des presses qui produisent des centaines d'exemplaires du *Corps céleste*, l'un des journaux les plus populaires de la ville. Pour seulement 2 sous de cuivre, les habitants d'Altdorf peuvent lire les scandales de la noblesse, la perfidie des étrangers, la stupidité des habitants du Nord et les descriptions macabres des récentes exécutions.
 
@@ -1668,7 +1668,7 @@ pas commencé avec son
 
 « *Trompez tous les sorciers de la ville, mais vous ne pourrez jamais tromper un couvreur* », a proclamé Herr Brudenheimer. Les événements semblent certainement confirmer cette opinion. Brudenheimer poursuit en exp
 
-112 les hommes-rats ? C'est des pigeons dont nous devons nous méfier. Ils nichent dans toutes les corniches, dès que vous levez la tête, et ne me lancez pas sur leurs excréments. Ils sont aussi gros que des maisons, ces satanés pigeons, et c'est Ludovic Paulet - ludovicmad@wanadoo.fr nous arrive parfois de faire des erreurs
+<span id="page-126-0" data-folio="124"></span>112 les hommes-rats ? C'est des pigeons dont nous devons nous méfier. Ils nichent dans toutes les corniches, dès que vous levez la tête, et ne me lancez pas sur leurs excréments. Ils sont aussi gros que des maisons, ces satanés pigeons, et c'est Ludovic Paulet - ludovicmad@wanadoo.fr nous arrive parfois de faire des erreurs
 
 # **OUPS!**
 
@@ -1701,7 +1701,7 @@ Le musée d'Altdorf peine à exposer tout ce qui a été envoyé à ses conserva
 - 0 Dans la Salle des bêtes vaincues se trouve un curieux squelette. Étant décrit comme un « rat ambulant, géant », les historiens et les zoologistes se demandent donc s'il s'agit simplement d'un spécimen de taille inhabituelle ou d'un rat mutant unique, semblable à un homme-bête dépourvu de cornes. D'autres théories ont eu moins de succès, mais un jour le squelette a disparu. Les traces des voleurs, qui ressemblent curieusement à de grandes empreintes de pattes, mènent au sous-sol du musée et se terminent dans les égouts.
 
 
-### **Palais d'Altdorf des von Königswald**
+<span id="page-116-0" data-folio="114"></span>### **Palais d'Altdorf des von Königswald**
 
 Tel une énorme mouche flottant dans une soupière de bisque, le palais sombre et abandonné des Königswald trône au cœur de Großgrundbesitz. Il abritait autrefois l'une des familles nobles les plus célèbres de l'Empire, les Königswald, Électeurs héréditaires d'Ostland et défenseurs avérés de l'Empereur. Leur demeure reflétait l'influence qu'ils exerçaient à la cour impériale. On raconte même que personne ne pouvait devenir Empereur sans l'approbation de l'Ostland. Leur pouvoir s'est dissipé lorsqu'Oswald von Königswald est tombé sous l'emprise du puissant nécromancien Constant Drachenfels. Les actions d'Oswald ont entraîné la chute des Königswald. Lors d'une nuit mêlant feu et acier, leur maison a été attaquée par des répurgateurs et des chevaliers de la Garde noire de Morr. Après cet événement, le reste de la famille et ses serviteurs ont fui le courroux de l'Empereur, ne laissant derrière eux que des fantômes et des esprits malveillants, errant dans les couloirs déserts du palais.
 
@@ -1720,7 +1720,7 @@ Le Cloître des Sœurs de Sigmar d'Altdorf abrite un ordre malheureux de fervent
 0 Les Sœurs ont été averties qu'un morceau de malepierre était arrivé à Altdorf, rapporté par un groupe d'aventuriers depuis les ruines de Mordheim. À présent, l'ordre a besoin de quelqu'un pour trouver la pierre distordante incriminée. Localiser les coupables devrait être assez simple, étant donné qu'ils se vantent d'avoir réussi leur expédition. Malheureusement, la pierre du chaos n'est plus en la possession des aventuriers, qui l'ont vendue à un alchimiste, se l'étant ensuite fait dérober par un cambrioleur, qui l'a mise en gage contre de l'or dans le quartier de Reikerbahn, où elle se trouve actuellement dans les coffres du prêteur sur gages Ralf Schuld.
 
 
-### **Chambre de réunion des Principaux domaines**
+<span id="page-117-0" data-folio="115"></span>### **Chambre de réunion des Principaux domaines**
 
 Le pouvoir de l'Empereur peut sembler absolu, mais certaines institutions œuvrent pour l'équilibre des forces afin de soidisant garantir que toute manœuvre politique extrémiste puisse être contrée avant de faire des ravages dans l'Empire. Les Principaux domaines sont une de ces institutions, formées à l'époque de Boris l'Incompétent.
 
@@ -1760,7 +1760,7 @@ Sous les ronces se cachent d'innombrables tombes abritant les personnalités les
 ### UN HÉRITAGE ANCESTRAL
 
 
-# **Cimetière sud**
+<span id="page-119-0" data-folio="117"></span># **Cimetière sud**
 
 Le jardin sud de Morr contraste totalement avec celui du Nord. Des balustrades en fer forgé immaculées entourent une étendue ordonnée de pierres tombales, de tombes et de mausolées. La gardienne du cimetière, Wanda Pabst, entretient soigneusement chacun de ces monuments. Bien qu'elle ne soit qu'une modeste initiée de Morr, elle est fière des responsabilités qui lui ont été confiées. C'est elle qui se charge de tailler l'herbe et de débroussailler les ronces, laissant seulement les roses noires de Morr pousser librement sur les monuments aux morts.
 
@@ -1777,7 +1777,7 @@ Sous le mausolée des officiers du 5e régiment du Reikland se trouve un petit r
 Les Cinq Voies est un carrefour où cinq petites rues se rencontrent. Au milieu de la place se trouve un élément inhabituel, un dispositif conçu pour indiquer l'heure de la nuit. Le Cadran lunaire est un disque de marbre monté horizontalement sur un socle en calcaire. Son style est composé de métal gris terne et ne projette aucune ombre pendant la journée. Lorsque Morrslieb et Mannslieb se lèvent par une nuit sans nuages, la lumière de chaque lune projette une ombre qui pointe vers une série de symboles entourant le disque. Ceux-ci correspondent aux heures, mais les icônes sont obscures : un visage renfrogné, une tête de serpent, des spirales entrelacées, etc. L'ombre de Morrslieb pointe vers des symboles différents de ceux projetés par Mannslieb.
 
 
-# **Echt Strasse**
+<span id="page-120-0" data-folio="118"></span># **Echt Strasse**
 
 À la limite est de Zwillingsgrab se trouve Echt Strasse, probablement la seule rue bruyante du quartier. Cette artère est principalement connue pour le nombre impressionnant de prêtres et de charlatans qui vendent des breloques, bénédictions et autres reliques douteuses aux personnes imprudentes et désespérées.
 
@@ -1841,7 +1841,7 @@ Les bains publics Smaragd sont une institution à Krankenfeld. Ils appartiennent
 Les officiers de la Garde de la Rive Sud fréquentent souvent ces bains publics, il s'agit donc de l'endroit idéal pour recueillir des rumeurs plutôt fiables sur ce qui se passe en ville.
 
 
-# **Village de tentes**
+<span id="page-122-0" data-folio="120"></span># **Village de tentes**
 
 L'enceinte du temple de Shallya était autrefois un lieu de convalescence apaisant, avec des pelouses bien entretenues et des terrasses pavées. À présent, les cours de pierre blanche sont remplies de tentes, d'appentis rudimentaires et de lits laissés à l'air libre. Les légions de malades et de blessés qui ont fait de cet endroit leur nouveau foyer ont piétiné les jardins jusqu'à la boue. Leurs logements s'étendent sur le reste du terrain et jusque dans les rues voisines.
 
@@ -1866,7 +1866,7 @@ La Mansarde aux herbes est ouverte à tous, bien que les sœurs de Shallya en so
 0 Stiefel affirme qu'une infusion de fragifeuilles peut guérir à peu près n'importe quoi, surtout lorsqu'elles proviennent de la ferme de sa famille dans les Montages Grises. Après avoir vendu son dernier lot, Stiefel reçoit une lettre de son frère l'avertissant de ne pas vendre ce produit : il est possible qu'il ait été contaminé par des spores de champignons gobelins.
 
 
-# **Herr Doktor Thaddeus Wilden, Chirurgien**
+<span id="page-123-0" data-folio="121"></span># **Herr Doktor Thaddeus Wilden, Chirurgien**
 
 Le cabinet médical du Doktor Wilden est la plus grande attraction de Krankenfeld. Les foules s'y pressent pour assister aux démonstrations « pédagogiques » de chirurgie dans son théâtre de l'anatomie.
 
@@ -1920,7 +1920,7 @@ La Colombe est dirigée par Lena Marks, une sœur de Shallya menue et faroucheme
 - 0 Alors qu'ils en ont assez des voyous qui traînent sur la Schmutzplatz, un prêtre sigmarite et un groupe d'habitants du quartier se présentent pour fermer la Colombe. Les pauvres gens qui attendent leur pitance sont prêts à tout pour les en empêcher. Ils risquent d'en venir aux mains, à moins que les Personnages interviennent.
 
 
-# **L'Aigle de Luccini**
+<span id="page-125-0" data-folio="123"></span># **L'Aigle de Luccini**
 
 Autrefois un repaire de buveurs tapageurs, célèbre pour sa clientèle de mercenaires tiléens, l'Aigle de Luccini est devenu le genre d'établissement tranquille où les hommes d'un certain âge noient leur chagrin en repensant au bon vieux temps.
 
@@ -1955,7 +1955,7 @@ Ce poste gère également le poste de surveillance d'une personne au milieu de l
 
 
 
-# **Tour horloge**
+<span id="page-127-0" data-folio="125"></span># **Tour horloge**
 
 Les habitants affirment que la tour horloge de la Schmutzplatz est la plus ancienne d'Altdorf. Le fait que cette affirmation soit facilement réfutable ne diminue en rien sa popularité. Cette horloge n'en est pas moins très ancienne et son mécanisme, désormais cassé, est d'un grand intérêt pour les horlogers qui souhaitent l'examiner. Les habitants sont si fiers de ce monument que lorsqu'ils se donnent rendez-vous à Ogasse, ils sont presque obligés de se retrouver sous la tour horloge à l'heure convenue, même si celle-ci ne sonne plus.
 
@@ -1978,7 +1978,7 @@ Cet esprit était bien connu de la Foi antique. Aujourd'hui encore, les voyageur
 - 0 Les Personnages sont témoins d'une altercation entre des habitants en colère et des gardiens de la Foi antique venus se baigner dans le ruisseau. Les habitants accusent à tort ces visiteurs d'empoisonner l'eau. Pour les adeptes de la Foi antique, il s'agit d'une accusation de blasphème extrêmement sérieuse !
 
 
-### **Maren Mauer**
+<span id="page-128-0" data-folio="126"></span>### **Maren Mauer**
 
 Mauer est une vendeuse de porte-bonheur qui exerce son métier sur la Schmutzplatz, le long de Klammeringstrasse et dans les rues environnantes. Elle vend des petits bouquets de fleurs pour éloigner les maladies, des colliers de dents de mouton qu'elle fait passer pour des talismans de dents d'ogre, la « balle qui porte votre nom » (pour empêcher la personne qui la porte d'être abattue par balle), etc. Toutefois, ce métier ne représente qu'une infime partie de ses activités.
 
@@ -2017,7 +2017,7 @@ Jadis, quand la colline était encore en dehors de la ville, elle constituait un
 - 0 Il se passe quelque chose d'étrange. Les adeptes de la Foi antique se rassemblent sur la colline au clair de lune. Ils accomplissent d'étranges rituels, chantent des mélopées lancinantes et sacrifient un animal dont le sang se répand sur le sol. Il faut que quelqu'un mette un terme à ce blasphème. Mais les esprits ne sauraient reposer en paix si on leur refusait leur dû.
 
 
-### **Genarro Gastoli**
+<span id="page-129-0" data-folio="127"></span>### **Genarro Gastoli**
 
 Gastoli est un militant tiléen grisonnant dont l'âge est plus avancé qu'il n'y paraît. Il a servi dans l'armée du duc de da Miragliano pendant une douzaine d'années avant d'arriver à Altdorf. Les actions dont il a été témoin autour de da Miragliano l'ont profondément marqué physiquement et mentalement. Il est arrivé à Altdorf il y a quelques années afin de retrouver une vie tranquille. Passer la majeure partie de ses journées à l'Aigle à déguster un bon verre d'alcool est sa vision de la tranquillité.
 

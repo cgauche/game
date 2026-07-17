@@ -30,7 +30,7 @@ Le centre de Neiderwind abrite une merveille d'ingénierie naine. Il s'agit d'un
 Ce district souterrain est distinctement nain. Ses rues étroites (appelée strataz) et ses allées (gatwaz) ont conservé leur nom khazalid. De nombreux cristaux gravés de la *Rune de Lumière* éclairent les rues comme des lanternes.
 
 
-# **L'Archiviste**
+<span id="page-203-0" data-folio="201"></span># **L'Archiviste**
 
 L'Archiviste se situe le long de la rue étroite appelée Sombrallée (Dharkwegaz). Les quelques personnes qui se rendent chez Gramen Davoksson et sa très jeune femme, Jammi Pagreksdottir, y voient une boutique minuscule aux tables jonchées de hautes piles de livres, et aux étagères pleines à craquer de parchemins. La porte verrouillée derrière le comptoir mène aux quartiers privés du couple et à une chambre forte où Gramen stocke l'œuvre de sa vie. La chambre forte contient plusieurs soussections, qui accueillent une gigantesque collection de livres, de parchemins, des cartes, de traités d'histoires, de mythes, de compilations, de compendiums, de thèses, et de dissertations. On y trouve aussi des tomes extrêmement rares de savoirs ésotériques et interdits. Cette accumulation représente une vie de travail pour le curieux maître du savoir qui semble sans âge. Il a un système de rangement qu'il est le seul à le connaître.
 
@@ -61,7 +61,7 @@ Les Coureurs s'occupent aussi d'allumer et d'éteindre plus de la moitié des la
 0 Longazor Kallonsson du clan Marteau-de-Pierre est enfermé dans une cellule, accusé de violence contre un membre du clan Poing-de-fer. Les Poing-de-fer exigent que justice soit faite, et menacent de lancer une vendetta. Comme Logazor fait partie de sa famille, le Capitaine Hergar doit faire appel à des individus compétents externes aux Coureurs pour mener l'enquête.
 
 
-# **Le Palais du Temps**
+<span id="page-204-0" data-folio="202"></span># **Le Palais du Temps**
 
 Le Palais du Temps est une installation souterraine secrète qui s'occupe des calendriers. Son emplacement n'apparaît sur aucune carte. Derrière une entrée gardée dans le Palastfeld, un escalier en spirale donne sur un couloir de pierre au bout duquel on trouve une petite pièce carrée, pas plus grande qu'une chambre dans une pension de famille bon marché. La maçonnerie, simple mais étanche, suggère que la pièce est d'origine naine.
 
@@ -129,7 +129,7 @@ L'Archiprêtre de la Peste Nurglitch prend le parti du Grand Prophète, même si
 Les autres membres du Conseil n'ont pas d'opinion particulière à ce sujet, et se rangent généralement du côté le plus susceptible d'irriter leurs rivaux. Le Seigneur de Guerre Vrisk Grattfer a changé d'avis sur la question à maintes reprises, et à chaque fois, le Général en Chef des Armées Paskrit a adopté la position contraire à la sienne en réaction.
 
 
-### **Chef de guerre Brruxx Chittirr, Commandant de la Garnison**
+<span id="page-206-0" data-folio="204"></span>### **Chef de guerre Brruxx Chittirr, Commandant de la Garnison**
 
 Bruxx n'est pas un chef skaven comme les autres. Sa fourrure parsemée, sa maigre carrure, et son air constamment anxieux sont des signes de faiblesse qui empêcheraient généralement un skaven d'accéder à son statut. Pourtant, cela fait des années qu'il commande les opérations de Sous-Altdorf au nom du clan Mors sans que son autorité ne soit remise en question. Cela est peut-être dû à un mélange de paranoïa maladive et de préparation minutieuse, ou au fait qu'il ait soudoyé des agents secrets des clans Eshin et Scruten. L'explication la plus probable, c'est que personne d'autre ne veut faire son travail.
 

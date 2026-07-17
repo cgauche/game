@@ -169,7 +169,7 @@ Plus grand et plus musclé que la moyenne, même pour un nain, Glugnur a l'air s
 Glugnur se trouve à Middenheim pour participer aux *Combats de minotaures* (p. 67). Cette rencontre peut donc se tenir près du stade Bernabau. Sous l'influence du Délice de Ranald, il sera toujours ravi de croiser le fer avec quiconque se dresse sur sa route, y compris un compatriote nain. Cependant, si le nain en question lui témoigne le respect qui lui est dû et se décale pour le laisser passer, Glugnur le saluera comme un frère et l'invitera à faire la fête comme il se doit. Le stimulant creuse sérieusement l'appétit de Glugnur et il est sur le point de s'empiffrer comme jamais. Après son festin, les effets commenceront à se dissiper, ce qui le forcera à dormir pendant les 12 prochaines heures. Si on lui demande la provenance de sa drogue, Glugnur répondra « La Fosse » et continuera à manger.
 
 
-### **Le racket**
+<span id="page-64-0" data-folio="62"></span>### **Le racket**
 
 Cette rencontre peut se faire dans toute zone commerciale ou tout marché situé non loin des quartiers populaires, des bidonvilles ou d'Altquartier. Alors que les Personnages tournent au coin d'une rue, ils voient un petit étal se faire renverser par deux jeunes brutes en justaucorps de cuir. Le vieux colporteur et sa femme tremblent de peur devant les voyous qui s'approchent d'eux en brandissant leur matraque : ils viennent de refuser de payer pour leur protection, et s'apprêtent à en souffrir les conséquences.
 
@@ -212,7 +212,7 @@ La cinquantaine, les cheveux bruns grisonnants (en chignon) et les yeux marron f
 **Possessions :** sac de couchage, dague, collier en or (2 CO), alliance en or (1 CO), bourse contenant 1 CO et 3d10 pistoles d'argent
 
 
-### **Les brutes**
+<span id="page-65-0" data-folio="63"></span>### **Les brutes**
 
 Antonia et Bruno sont tout aussi banals que leurs victimes. Ils gagnent leur argent en menaçant des marchands peu méfiants, des voyageurs récalcitrants et tous ceux qui leur semblent des cibles toutes trouvées.
 
@@ -350,7 +350,7 @@ Dieter Schmiedehammer (17h – 18h), Janna Eberhauer (16h – 18h), Ar-Ulric (15
 final)
 
 
-#### **La Démonstration de figures aériennes (Bezahltag, de 15h à 16h)**
+<span id="page-68-0" data-folio="66"></span>#### **La Démonstration de figures aériennes (Bezahltag, de 15h à 16h)**
 
 Les sorciers de la ville viennent voler en formation et réaliser d'autres manœuvres complexes. Une partie de l'attrait d'un tel événement repose sur l'éventualité d'une collision en plein vol. Cette année, la rumeur raconte que les sorciers comptent profiter de l'événement pour plaider leur cause et s'opposer aux nouvelles taxes en faisant flotter des bannières décorées de slogans anti-impôts.
 
@@ -385,7 +385,7 @@ Presque tous les sorciers de la ville y mettent du leur, en lançant des sorts p
 **Angestag :** Albrecht Helseher, Janna Eberhauer, Ar-Ulric, Emmanuelle Schlagen.
 
 
-**Festag (Grand Final - Minuit - 2h) :** Dieter Schmiedehammer, Rallane Lafarel, Johann Schwermutt, Maximillian von Genscher, Albrecht Helseher, Janna Eberhauer, Kirsten Jung, Petra Liebkosen, Natasha Sinnlich, Siegfried Prunkvoll, Gotthard Wallenstein, Luigi Pavarotti, Allavandrel Fanmaris.
+<span id="page-69-0" data-folio="67"></span>**Festag (Grand Final - Minuit - 2h) :** Dieter Schmiedehammer, Rallane Lafarel, Johann Schwermutt, Maximillian von Genscher, Albrecht Helseher, Janna Eberhauer, Kirsten Jung, Petra Liebkosen, Natasha Sinnlich, Siegfried Prunkvoll, Gotthard Wallenstein, Luigi Pavarotti, Allavandrel Fanmaris.
 
 de 2 sous de cuivre à 10 pistoles d'argent, selon la qualité, voire la simple présence, d'un siège. Le vainqueur d'un Combat de minotaures gagne le respect du public pendant toute la durée du Carnaval, et se fait remarquer par les Middenmarshalls et par les autres PNJ principaux venus assister au spectacle.
 
@@ -433,7 +433,7 @@ Si le compétiteur perd le combat en tombant à zéro Point de Blessures, une é
 **Marktag :** Ulric Schutzmann, Natasha Sinnlich, Gotthard
 
 
-#### **Les cracheurs de feu de Carroburg (Marktag, Backertag, Bezahltag, de Midi à 13h)**
+<span id="page-70-0" data-folio="68"></span>#### **Les cracheurs de feu de Carroburg (Marktag, Backertag, Bezahltag, de Midi à 13h)**
 
 Plus d'un siècle auparavant, le duc Reiner von Bildhofen, l'arrière-grand-père du souverain actuel de cette ville de Carroburg, voulait organiser un festival sur le thème du feu pour célébrer le centenaire de l'accession d'un parent éloigné, Magnus le Pieux, au trône impérial. Censé se baser sur un ancien rituel teutogen du feu, là où siégeaient autrefois les rois, ce spectacle a été le temps fort de l'année, et depuis lors, des cracheurs de feu viennent en masse à Middenheim. La Guilde des Saltimbanques de Middenheim est alors devenue le plus grand regroupement de cracheurs de feu de tout le Vieux Monde. Où qu'ils aillent, les spectaculaires cracheurs de feu de Carroburg attirent des foules impressionnantes.
 
@@ -464,7 +464,7 @@ On compte environ 2 000 à 3 000 spectateurs pour un match de quarts de finale, 
 
 ### QUI A LA COTE ?
 
-Vous trouverez la cote de chaque équipe dans le tableau cidessous. Il est également possible de parier sur le vainqueur de la finale. Les cotes à cet effet sont listées ci-dessous. Dès qu'un match a été entamé, peu importe la phase de jeu, plus aucun pari ne peut être fait.
+<span id="page-71-0" data-folio="69"></span>Vous trouverez la cote de chaque équipe dans le tableau cidessous. Il est également possible de parier sur le vainqueur de la finale. Les cotes à cet effet sont listées ci-dessous. Dès qu'un match a été entamé, peu importe la phase de jeu, plus aucun pari ne peut être fait.
 
 ### LES QUARTS DE FINALE
 
@@ -555,7 +555,7 @@ Tout comme pour les Combats de minotaures, beaucoup d'argent changera de main au
 | Angestag  | 18h – Minuit | Opéra, « L'Anneau des<br>Unberogens » (Partie 1)                  |  |  |
 | Festag    | 18h – Minuit | Opéra, « L'Anneau des<br>Unberogens »(Partie 2)                   |  |  |
 
-#### **Les Déclamations des Bardes et des Poètes (Wellentag, de 14h à 17h, Aubentag & Marktag, de 16h à 18h)**
+<span id="page-72-0" data-folio="70"></span>#### **Les Déclamations des Bardes et des Poètes (Wellentag, de 14h à 17h, Aubentag & Marktag, de 16h à 18h)**
 
 Les poètes et les chanteurs venus des quatre coins de l'Empire viennent s'affronter pour remporter la Coupe du Graf, un calice d'argent remis en récompense au compétiteur le plus méritant. Cette année, à cause de l'indisposition du Graf, c'est à Katarina, sa fille, que revient la tâche de remettre la coupe au vainqueur. Le récital d'Aubentag accueille un invité surprise : le Ménestrel de la Cour, Rallane Lafarel, qui récite le poème populaire « *Un Homme à un œil se cache au nord de Kammendun.* »
 
@@ -594,7 +594,7 @@ Cet opéra, l'œuvre du compositeur tiléen Giacomo Verdini, est devenu un class
 
 ## V
 
-#### **La Chorale de la Vallée des nains (Marktag, de 14h à 16h, Backertag, de 15h à 17h)**
+<span id="page-73-0" data-folio="71"></span>#### **La Chorale de la Vallée des nains (Marktag, de 14h à 16h, Backertag, de 15h à 17h)**
 
 La communauté naine de Middenheim se targue d'avoir plusieurs chorales, auxquelles se joignent les nains de passage, qui chantent de grands classiques tels que « *Les nains de Rochecolline* », « *Terre de mes ancêtres* », « *Rock de casserole* » et « *À travers le basalte à grain fin exceptionnellement résistant* ».
 
@@ -700,7 +700,7 @@ Dieter Schmiedehammer (18h – 20h), Rallane Lafarel (16h – 19h), Katarina Tod
 
 ### QUELLE BELLE FÊTE NOUS AVONS LÀ
 
-La réception en plein air est l'occasion idéale pour les Joueurs de côtoyer les personnes les plus influentes de Middenheim. C'est également là que se présentent moult opportunités de se couvrir de ridicule, au travers d'incidents, de manquement à l'étiquette, et autres malheurs.
+<span id="page-75-0" data-folio="73"></span>La réception en plein air est l'occasion idéale pour les Joueurs de côtoyer les personnes les plus influentes de Middenheim. C'est également là que se présentent moult opportunités de se couvrir de ridicule, au travers d'incidents, de manquement à l'étiquette, et autres malheurs.
 
 Pas moins de 16 des PNJ principaux de cette aventure seront présents à cette fête. Les Personnages peuvent se procurer une invitation auprès de n'importe lequel d'entre eux qu'ils auraient préalablement rencontré et impressionné. S'ils se comportent bien pendant cette fête, ils peuvent ainsi faire la rencontre de nombreux autres personnages influents, ce qui leur permettra d'accumuler des informations qui se révéleront très utiles dans la résolution de l'intrigue.
 
@@ -760,7 +760,7 @@ Dieter n'a jamais été vaincu en quatre ans, ce qui explique le faible nombre d
 
 très expérimentés et sauront déterminer quand un participant a atteint ses limites. Si une attaque est clairement lancée sous le coup de la colère ou avec l'intention de mutiler ou de tuer l'adversaire, une demi-douzaine de membres de la Garde sépareront les participants et traîneront le coupable dans une cellule.
 
-Quiconque essaie de faire pencher la balance en sa faveur, en soudoyant Dieter, par exemple, s'expose à une déception et à de gros ennuis. Dieter n'acceptera aucun pot-de-vin, et s'offensera mortellement à la moindre suggestion.
+<span id="page-76-0" data-folio="74"></span>Quiconque essaie de faire pencher la balance en sa faveur, en soudoyant Dieter, par exemple, s'expose à une déception et à de gros ennuis. Dieter n'acceptera aucun pot-de-vin, et s'offensera mortellement à la moindre suggestion.
 
 #### **Défaite**
 
@@ -793,7 +793,7 @@ C'est l'occasion pour le Personnage de voir le Graf et de se rendre compte à qu
 Pour plus de conseils sur la façon d'incarner le graf Boris Todbringer, voir p. 32.
 
 
-Ce ne sont pas les occasions de côtoyer les PNJ principaux qui manquent, puisqu'on trouve, lors de cette audience, la « Princesse », un ou plusieurs Marshalls, le Chancelier, et peutêtre un Seigneur des Lois : bon nombre des personnalités importantes de la ville éprouvent une certaine curiosité à l'égard du nouveau champion.
+<span id="page-77-0" data-folio="75"></span>Ce ne sont pas les occasions de côtoyer les PNJ principaux qui manquent, puisqu'on trouve, lors de cette audience, la « Princesse », un ou plusieurs Marshalls, le Chancelier, et peutêtre un Seigneur des Lois : bon nombre des personnalités importantes de la ville éprouvent une certaine curiosité à l'égard du nouveau champion.
 
 #### **Les PNJ suivants assistent à cet événement :**
 
@@ -840,7 +840,7 @@ Allavandrel remarquera les archers raisonnablement compétents (ou particulière
 **Marktag :** Dieter Schmiedehammer (participant), Rallane Lafarel (participant), Kirsten Jung, Siegfried Prunkvoll, Allavandrel Fanmaris (participant)
 
 
-#### **Les Incroyables Éléphants de Barnumbel (Marktag - Backertag de 17h à 19h)**
+<span id="page-78-0" data-folio="76"></span>#### **Les Incroyables Éléphants de Barnumbel (Marktag - Backertag de 17h à 19h)**
 
 La petite taille de Barnumbel le halfling ne fait que rendre ses éléphants plus grands et impressionnants en comparaison. Surius, l'éléphant mâle le plus talentueux et le plus imposant de Barnumbel, est devenu la star du Carnaval. Rares sont les habitants du Vieux Monde qui ont déjà vu un éléphant, mais presque tout le monde a déjà entendu des histoires sur eux, de l'ancien général Hanno le terrible, qui leur a fait traverser les Terres Arides pour attaquer la Tilée, jusqu'aux contes d'explorateurs revenus d'Inja (Ind) et d'au-delà. Surius a l'air immense sur scène. Même son ombre est colossale, et les spectateurs observent avec un émerveillement teinté d'effroi cette créature magnifique, dont les mouvements sont, contre toute attente, très gracieux.
 

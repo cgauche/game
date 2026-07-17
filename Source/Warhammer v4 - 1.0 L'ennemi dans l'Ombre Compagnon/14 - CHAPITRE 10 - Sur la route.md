@@ -34,7 +34,7 @@ Au fil des ans, nombre d'excellentes aventures courtes ont été écrites pour *
 *Sur la route* fut l'une des premières aventures publiées pour **WFJDR**, parue dans White Dwarf 85 en février 1987. Ces deux rencontres sur la route peuvent introduire de courts scénarios, et animer n'importe quel voyage sur les chemins de l'Empire.
 
 
-#### **Le félin-garou**
+<span id="page-87-0" data-folio="87"></span>#### **Le félin-garou**
 
 Au début de la vingtaine, Emmaretta porte court ses cheveux bruns ; elle est mince et de taille moyenne, d'une nature calme et confiante, et elle parle de tout sauf de sa condition. Elle évite le combat, préférant battre en retraite puis revenir, si nécessaire, avec l'avantage de la surprise. Son accent est léger, une sorte de talabeclander rural, pittoresque pour les plus citadins.
 
@@ -95,7 +95,7 @@ Que les Personnages décident ou non de s'abriter dans le sanctuaire, un événe
 **† :** Johann n'est *Instable* que s'il s'éloigne de plus de 100 mètres de ses ossements.
 
 
-Si les Personnages ne fuient pas, le fantôme ne tentera pas de les attaquer. En gémissant, il leur expliquera qu'il était autrefois Johann Gespenst, un marchand de la ville la plus proche. Alors qu'il séjournait dans l'auberge que les Personnages ont récemment quittée, Johann a été assassiné et volé, et son corps a été transporté dans la forêt sur une charrette et jeté au bord de la route, non loin du sanctuaire. Les Personnages peuvent libérer Johann de sa condition misérable en ramassant ses ossements et en les amenant en ville pour qu'ils soient enterrés décemment. Il montrera aux Personnages où son corps a été jeté. Ses ossements ont été éparpillés par des animaux sauvages sur une zone d'environ 10 mètres de diamètre.
+<span id="page-89-0" data-folio="89"></span>Si les Personnages ne fuient pas, le fantôme ne tentera pas de les attaquer. En gémissant, il leur expliquera qu'il était autrefois Johann Gespenst, un marchand de la ville la plus proche. Alors qu'il séjournait dans l'auberge que les Personnages ont récemment quittée, Johann a été assassiné et volé, et son corps a été transporté dans la forêt sur une charrette et jeté au bord de la route, non loin du sanctuaire. Les Personnages peuvent libérer Johann de sa condition misérable en ramassant ses ossements et en les amenant en ville pour qu'ils soient enterrés décemment. Il montrera aux Personnages où son corps a été jeté. Ses ossements ont été éparpillés par des animaux sauvages sur une zone d'environ 10 mètres de diamètre.
 
 La ville la plus proche possède un cimetière, entretenu par un prêtre de Morr. Selon sa taille, elle peut aussi avoir une Guilde des Pleureuses, qui s'occupe de tous les arrangements funéraires. Une tombe individuelle avec sa pierre tombale coûteront 2 CO, tandis que l'inhumation d'un pauvre hère dans une fosse commune non indiquée sera gratuite. La nuit suivant l'enterrement, le fantôme de Johann apparaîtra aux Personnages, avec un aspect toujours aussi effroyable, mais dépourvu de la douleur et du désespoir de sa première apparition.
 

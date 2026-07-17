@@ -88,7 +88,7 @@ Lauengram a 38 ans, maigre, assez grand, ses cheveux bruns sont filasses, et une
 **Possessions :** boîte à amadou, 1d10 bombes, 10 mètres de corde, grande cape noire, dague (caché sous la cape), masque noir, grand chapeau noir à larges bords, 2d10 sous de cuivre.
 
 
-#### **Wolfgang Kellerman, l'homme avec un passé**
+<span id="page-93-0" data-folio="93"></span>#### **Wolfgang Kellerman, l'homme avec un passé**
 
 Wolfgang a 40 ans, grand, musclé, avec des cheveux noirs bouclés et des yeux durs et bruns. Sa caractéristique la plus visible est sa jambe gauche en bois, qu'il gratte occasionnellement, comme si elle le démangeait. Kellerman est un homme sombre et colérique, pas non plus du genre à supporter volontiers les gens, idiots ou non.
 
@@ -307,7 +307,7 @@ Cette pièce est équipée de six cellules à barreaux. Les plier nécessite un 
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
 | 4 | 35 | 40 | 35 | 35 | 30 | 30 | 30  | 30  | 30 | 30  | 12 |
 
-**Compétences :** Athlétisme 35, Calme 35, Corps à corps (Base) 45, Discrétion (rural) 35, Intimidation 40, Pari 35, Projectiles (arc) 50, Résistance 40, Résistance à l'alcool 40, Survie en extérieur 35
+<span id="page-99-0" data-folio="99"></span>**Compétences :** Athlétisme 35, Calme 35, Corps à corps (Base) 45, Discrétion (rural) 35, Intimidation 40, Pari 35, Projectiles (arc) 50, Résistance 40, Résistance à l'alcool 40, Survie en extérieur 35
 
 **Traits :** À distance (Arc) +6 (60), Arme (Hache) +7,
 

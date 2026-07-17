@@ -31,7 +31,7 @@ Ormil Schwartzwasser en est le nouveau propriétaire. Le brochet du Stir tatoué
 - 0 Les chefs de guerre des Poissons préfèrent se débarrasser des indésirables en les jetant dans le Reik. Il n'est pas si rare qu'Ormil doive emmener un malheureux avec lui sur son bateau sans intention de le ramener à terre. Les Personnages qui voient quelqu'un se faire jeter du pont sont traqués par les Poissons, à moins qu'ils promettent le silence absolu.
 
 
-# **Kommission pour la sécurité publique**
+<span id="page-132-0" data-folio="130"></span># **Kommission pour la sécurité publique**
 
 Même au sein d'une société relativement anarchique comme l'Île aux anguilles, on a besoin de lois, d'ordre et de justice. La Kommission pour la sécurité publique est le nom donné au comité qui décide de la législation sur l'île et qui s'assure de son application. Ce comité est presque exclusivement constitué de chefs de guerre Poissons, en plus de quelques poètes klozsowskistes qui donnent à leurs décisions un vernis littéraire. La figure de proue d'un ancien navire est érigée à l'entrée du bâtiment : elle a été sculptée pour ressembler à Verena.
 
@@ -64,7 +64,7 @@ Même parmi des anarchistes, le culte de Sigmar est considéré comme normal et 
 C'est le Frère Belada Vaedecker qui officie. C'est un homme à la peau tannée par le grand air, grand et mince, mais doué d'une grande force physique. C'est l'un des seuls membres de la société d'Altdorf qui peut aller et venir sur l'île sans être accueilli avec suspicion ou violence. Il évolue dans deux mondes diamétralement opposés ; les révolutionnaires et les Poissons de sa congrégation l'incitent à défendre l'indépendance de l'île, alors que les prêtres supérieurs l'encouragent à faire respecter l'ordre établi.
 
 
-# **Les Plaideurs Lachs et Stör**
+<span id="page-133-0" data-folio="131"></span># **Les Plaideurs Lachs et Stör**
 
 Au milieu des cabanes de l'île, on trouve le bureau de Lachs et Stör, une petite maison en bois bien entretenue. Les professionnels d'Altdorf considèrent que l'Île aux anguilles fait tache dans la ville, mais dans un esprit révolution, Lachs et Stör ont voulu y installer leur pratique. Les plaideurs ne proposent aucune nouvelle législation (c'est le rôle de la Kommission pour la sécurité publique), mais ils l'interprètent pour les insulaires.
 
@@ -93,7 +93,7 @@ Fils de pêcheur dans le Quartier Est d'Altdorf, Arnold Schtimmer savait qu'il a
 
 Ce monstre fait maintenant 12 m de long : c'est un hommepoisson tueur qui hante les eaux des Vieux quais. Arnold a conservé un certain contrôle sur son esprit, mais ses émotions bestiales et sa mâchoire de mutant rendent la communication difficile. C'est un adversaire rusé, impitoyable, et mortel ; il attaque de nuit et par surprise. Il comprend toujours le Reikspiel et est capable d'éviter certains pièges et contreattaques en écoutant ce que ses ennemis se crient entre eux. Les Poissons sont terrifiés par cette bête, et offrent une généreuse récompense à la personne qui leur apportera sa tête de poisson.
 
-### LE BROCHET DE REIKERBAHN
+<span id="page-134-0" data-folio="132"></span>### LE BROCHET DE REIKERBAHN
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -144,7 +144,7 @@ Les Vieux quais jouent un rôle majeur dans l'économie parallèle d'Altdorf, po
 - 0 Le noble Jürgen Vasser a fait tomber un bijou de famille dans les eaux qui entourent les Vieux quais. Il est prêt à offrir 50 couronnes d'or pour le retrouver. Mais comment s'y prendre ? Est-ce que les Personnages peuvent utiliser leurs compétences et leur ingéniosité pour repêcher l'objet perdu, ou auront-ils la chance de tomber sur un pêcheur qui vient de trouver une amulette brillante dans l'estomac d'un brochet ?
 
 
-# **La Place des bougies**
+<span id="page-136-0" data-folio="134"></span># **La Place des bougies**
 
 Autour des nombreux ateliers de ciriers, il règne une odeur de bois de santal, de cannelle et de lavande, mélangée à l'odeur amère du suif en train de bouillir. Contrairement à la croyance populaire, les habitants d'Altdorf se lavent assez régulièrement, et les ciriers du Quartier Est produisent une grande partie du savon de la ville. Il est généralement basique, mais à l'approche d'un festival religieux important, des parfums exotiques se font sentir dans l'air.
 
@@ -177,7 +177,7 @@ Des milliers de petits bateaux et de barges transportent des passagers et des bi
 Pentzlerr et ses collègues payent leurs dus aux Poissons pour pouvoir utiliser les Vieux quais. Ils bénéficient donc aussi de la protection du gang : ceux qui se mettent en travers de leur chemin doivent être prêts à faire face à des voyous sans pitié.
 
 
-# **Les Os de Bosco**
+<span id="page-137-0" data-folio="135"></span># **Les Os de Bosco**
 
 Bosco le costaud est un petit malfrat qui se spécialise dans les paris et les jeux d'argent. Son club est une destination de choix pour les parieurs qui ne veulent pas que leurs parties soient gâchées par des concierges coincés qui voudraient les empêcher de fumer la pipe, compter les cartes, ou entonner des chants grivois à leur table. Bosco paye une belle somme pour la protection des Poissons, ce qui fait de son établissement un lieu relativement sûr pour toutes les classes sociales : tout le monde est libre de venir y perdre son argent. Il fournit à ses visiteurs des dés et des cartes, et les laisse jouer à tout ce qu'ils veulent, pourvu qu'ils consomment régulièrement les boissons proposées au bar. Au sous-sol, il a creusé une petite fosse qui accueille des combats d'animaux. D'après la rumeur, elle est parfois utilisée pour des combats entre humains aux mises plus élevées, à la fois en or et en sang.
 
@@ -198,7 +198,7 @@ Au moins une fois par an, mais jamais à la même date, le Tournoi d'Altdorf est
 2503 CI : Cette année-là, il y avait un jeu de chance qui utilisait des dés à 5 faces, une compétition où il fallait insulter le plus de nains possible en une heure, et une bataille navale sur le Reik qui a fini interrompue par la Garde. Le grand prix était une carte et un titre de propriété pour une mine d'or dans les Principautés Frontalières, mais aucun participant n'a survécu pour en profiter.
 
 
-## **Gustav Zasle, l'humble génie**
+<span id="page-138-0" data-folio="136"></span>## **Gustav Zasle, l'humble génie**
 
 Pour obtenir un pourpoint élégant ou un justaucorps parfaitement ajusté, c'est Zasle le tailleur qu'il faut aller voir. Sa boutique discrète au Grandmarkt habille les marchands fortunés d'Altdorf qui veulent des vêtements sur mesure de la meilleure qualité. Zasle parle doucement, et son style est toujours impeccable.
 
@@ -220,7 +220,7 @@ Gustav Zasle fait un bon parrain pour les Personnages criminels, puisqu'il est t
 **Traits :** Arme (Pied-de-biche) +9, Armure (Corps, Bras) 1 **Possessions :** pied-de-biche, vêtements raffinés, licence de guilde (Tailleur), outils professionnels (Tailleur, Voleur), apprenti et atelier, justaucorps de cuir, sac (finement ouvragé)
 
 
-# **Honoria Kohle, la Reine des rats**
+<span id="page-139-0" data-folio="137"></span># **Honoria Kohle, la Reine des rats**
 
 Dans les dédales de Reikerbahn, on ose à peine prononcer le nom de Honoria Kohle. Elle est membre des Crochets depuis qu'elle sait marcher, et aujourd'hui, 40 ans plus tard, sa réputation n'a fait que se solidifier. Elle a survécu à trois maris et a donné naissance à une demi-douzaine de fils, tous prêts à mourir pour leur mère.
 
@@ -274,7 +274,7 @@ Le Quai des Boucher est en territoire Crochet. Les débardeurs et les dresseurs 
 0 La Couronne rouge a l'intention de faire entrer des hommes-bêtes dans la ville en les cachant dans une barge pleine de bétail. À trois kilomètres en aval sur le Talabec, ils ont tué un batelier et dissimulé 29 Gors sous sédatif parmi ses vaches. Une fois au Quai des bouchers, un sort de magie mineure suffira à éveiller les Gors et à les faire semer la terreur et le chaos dans le Quartier Est.
 
 
-# **Le Donjon des indigents**
+<span id="page-141-0" data-folio="139"></span># **Le Donjon des indigents**
 
 Les chefs de la Garde ont peut-être baissé les bras à Reikerbahn, mais ils ne veulent pas admettre leur défaite officiellement en se retirant. Ils peuvent utiliser le Donjon des indigents comme preuve de leurs efforts dans le combat contre le crime et la sédition.
 
@@ -301,7 +301,7 @@ Le propriétaire de cette cantine, Emmanuel D'Artoigne, est un « chevalier des 
 0 Certains bols de bouillie spéciale portent bien leur nom. La semaine dernière, une mendiante a trouvé une oreille coupée dans son bol, ornée d'une boucle d'oreille en argent. Emmanuel gagne aussi de l'argent la nuit en louant le sol de sa cantine pour deux sous de cuivres. Le sol est dur, froid, humide, et les occupants doivent amener leur propre literie. Mais au moins, ils ont un toit au-dessus de la tête, et une porte verrouillée entre eux le Quartier Est. Le matin, on leur sert un bol tout frais de bouillie, mais les plus observateurs remarquent qu'il y a toujours un ou deux lits qui ont perdu leur dormeur.
 
 
-# **Les Gardes de Gudrun**
+<span id="page-142-0" data-folio="140"></span># **Les Gardes de Gudrun**
 
 Le Quartier Est n'est pas un endroit sûr pour les étrangers. Si une personne doit vraiment se rendre à Reikerbahn ou au-delà, elle peut toujours engager des gardes du corps chez Gudrun Cragsdottir.
 
@@ -365,7 +365,7 @@ L'école d'ingénierie est un modèle de coopération entre les commandants mili
 - 0 Un homme de Cathay inconnu se tient devant l'école et clame haut et fort que ses plans de lance-fusées ont été dérobés. Il dit que les ingénieurs impériaux ont volé ses idées et s'en servent dans leurs machines de guerre. Il prévient que s'il n'est pas justement rémunéré, l'Empereur Dragon rendra une visite funeste à Altdorf.
 
 
-# **L'Imprimerie de Dampfplatz**
+<span id="page-144-0" data-folio="142"></span># **L'Imprimerie de Dampfplatz**
 
 Hermann Gotz a un atelier sur la Dampfplatz où il imprime et relie des livres. Il a bien choisi son emplacement : la Dampfplatz accueille de nombreux intellectuels qui aiment les beaux livres, et en plus, il peut acheter le cuir et la colle à bas prix dans le quartier de Fleischmarkt juste à côté.
 
@@ -417,7 +417,7 @@ Les Rumster ne sont pas très regardants quant à la viande qu'ils utilisent. Le
 - 0 Les débandades ne sont pas rares au Fleischmarkt. Mais quand un troupeau de bœufs effrayés tuent le jeune fils d'un cousin du Baron Holzkrug, des questions se posent. Comment leur enclos s'est-il retrouvé ouvert pile au moment où une énorme explosion a détonné à l'école d'ingénieurs ?
 
 
-# **Bureau de la guilde des bouchers**
+<span id="page-146-0" data-folio="144"></span># **Bureau de la guilde des bouchers**
 
 La guilde des bouchers est la plus importante du district. Elle occupe un bâtiment impressionnant, à trois étages, au sol en pierre et aux étages à colombages, signe de son influence. La guilde établit des règles sur les différentes coupes de viande, donne des recommandations sur les prix de vente, et établit le nombre de jours où la viande peut être conservée avant de n'être bonne que pour les prisonniers et les miséreux.
 
@@ -450,7 +450,7 @@ Tous ceux qui travaillent le cuir endurent l'odeur pestilentielle de ce quartier
 0 Paeter fabrique aussi des masques en cuir pour des rituels de guilde ou des bals costumés. Récemment, un nouveau client lui a commandé neuf masques, dans des nuances d'or et de pourpre. Ils seront portés par le Cercle intérieur de la Main Pourpre lors de la prochaine réunion de Geheimnisnacht. Ça, Paeter ne le sait pas. Mais il a quelques suspicions l'étrange personnage qui lui a demandé avec insistance s'il était facile d'enlever des taches « de sang et de substances alchimiques » de son cuir.
 
 
-# **L'épicerie fine de Tripes-Morfales**
+<span id="page-147-0" data-folio="145"></span># **L'épicerie fine de Tripes-Morfales**
 
 Gorrum Tripes-Morfales a une dextérité et une versatilité impressionnante pour un ogre. Il sert non seulement de la viande crue, mais aussi cuite dans du gras à haute température. Sa boucherie se situe dans un bâtiment qui avait deux étages, avant ; mais quand Gorrum a redécoré, il a détruit tous les meubles et la moitié du plafond. C'est désormais un charnier aux murs tachés de sang, où le fracas régulier de son couteau de boucher est accompagné par le bourdonnement des mouches à viande. L'odeur de la putréfaction est écœurante. Bien que Gorrum utilise de la viande fraîche, la seule mesure d'hygiène qu'il applique, c'est de lécher le sang de sa planche à découper régulièrement.
 
@@ -488,7 +488,7 @@ La ville de Khazid Urbaz ne fait pas partie de l'État nain de Karaz Ankor, le �
 Beaucoup de nains de Khazid Urbaz reconnaissent toujours Thorgrim Porte-rancune comme le Haut Roi de leur peuple. Les réfugiés récemment expatriés restent généralement loyaux à leur Karak natal, tout en jurant une fidélité de façade à leur nouvel Empereur humain. Les conseillers de Khazid Urbaz comprennent ces loyautés conflictuelles, et essayent généralement de prendre en compte tous les différents points de vue. Plusieurs des habitants les plus respectés de la ville sont eux-mêmes d'anciens réfugiés. Les nains impériaux de troisième ou quatrième génération, habitués aux us et coutumes des humains, ont tendance à trouver leurs cousins des montagnes guindés et conservateurs.
 
 
-### **La Grande salle de la Guilde des ingénieurs nains**
+<span id="page-149-0" data-folio="147"></span>### **La Grande salle de la Guilde des ingénieurs nains**
 
 Derrière la Porte Est d'Altdorf, on trouve la guilde naine la plus importante en dehors des Karaks. Deux énormes fortins font face à la rue. C'est entre ces deux bâtiments que se situe le seul accès au-dessus de la surface de la guilde, une lourde porte en chêne cloutée. Pour entrer, les membres frappent trois coups secs, et chuchotent un mot de passe dans une trappe discrète. Quand il s'agit de protéger leur savoir-faire, les nains n'épargnent aucune précaution. Au-delà des fortins, on trouve tout un réseau d'ateliers et de studios de conception.
 
@@ -511,7 +511,7 @@ Dalbran Marteau-cruel est arrivé à Altdorf il y a 20 ans pour un travail comma
 - 0 Faire appel aux services de Dalbran peut être une aventure en soi. Le forgeron légendaire a déjà de nombreux clients sur sa liste d'attente, et il n'hésite pas à refuser les commandes qui ne l'intéressent pas. Ses clients nobles viennent le voir quotidiennement à la forge pour lui rappeler les épées qu'ils ont commandées il y a des mois. Dabran est passionné par les armures, et donne la priorité aux projets qui comprennent des matériaux rares ou uniques.
 
 
-# **La Brasserie de Khufer**
+<span id="page-150-0" data-folio="148"></span># **La Brasserie de Khufer**
 
 L'un de bars nains les plus connus appartient au maître brasseur Alvin Khufer. Des bières fortes de qualité sont acheminées directement depuis la brasserie juxtaposée à la taverne. Des clients viennent de toute la ville pour « s'enivrer comme des nains » chez Khufer. La bière est si forte que les non-nains ont souvent du mal à finir une seule pinte. Les habitués les plus chahuteurs taquinent les clients qui ne tiennent pas l'alcool, et sont deux fois plus durs avec les nains. Derrière la brasserie se tient une malterie aux portes verrouillées, qui contient d'énormes citernes où trempent le houblon et l'orge.
 
@@ -540,7 +540,7 @@ Une grande porte et un bastion protègent le mur est d'Altdorf. De là, des nain
 0 La Porte de Grombar (ou « Porte de la défiance ») est la seule fortification de Migdhal Elgidok qui a survécu à l'épreuve du temps. Altdorf est régulièrement prise d'assaut par des morts-vivants et des peaux-vertes depuis sa création, et les nains ont toujours joué un rôle important dans sa défense. Des Maîtres des runes ont protégé la porte de Grombar tant de fois qu'elle n'est quasiment plus affectée par la magie. Le bastion contient une prison capable de retenir des nécromanciens puissants et des sorciers du Chaos. Les Collèges de Magie l'utilisent pour accueillir les magisters accusés de magie noire en attendant leur procès. Aider un mage noir à s'échapper serait dangereux, mais incroyablement lucratif.
 
 
-### **Lunn Yorrisson, Ingénieur**
+<span id="page-151-0" data-folio="149"></span>### **Lunn Yorrisson, Ingénieur**
 
 Par son travail acharné et sa persévérance, Lunn Yorrisson du clan Poing-de-fer a grimpé les échelons de la Guilde des ingénieurs nains. S'il ne fait pas partie des ingénieurs les plus doués, Lunn est néanmoins loyal envers les siens et envers Manfrek Ulthersson, le maître de la guilde. Manfrek a récemment honoré Lunn en le nommant agent de liaison entre la Guilde et l'École impériale d'ingénierie. Son rôle consiste à accompagner et coopérer avec les ingénieurs humains pour des visites de la guilde, répondre à des questions sur des projets en cours, et organiser des réunions entre les dirigeants de l'école et les membres de la guilde. Lunn se sert également de sa position pour observer les humains. Le maître de guilde a exprimé des craintes d'espionnage. Lunn doit déterminer si les humains le pratiquent et comment ils s'y prennent. Peut-être disposent-ils d'un espion dans les rangs des nains. Serait-il possible qu'un ingénieur nain soit victime de chantage ?
 
@@ -597,7 +597,7 @@ Mais contrairement aux autres, elle cache aussi un secret. Son sous-sol petit et
 - 0 « Caramel Mûre » cherche un gros scandale. Une histoire qui mettra le peuple en colère, plutôt que de le faire rire. Si les Personnages lui fournissent une affaire assez juteuse, elle pourra les récompenser avec des informations, en les faisant entrer dans son cercle, et même en leur présentant le prince Kloszowski.
 
 
-# **Le Sanatorium de la Miséricorde**
+<span id="page-153-0" data-folio="151"></span># **Le Sanatorium de la Miséricorde**
 
 Le Sanatorium de la Miséricorde est un ensemble de bâtiments tentaculaires, et une vision incongrue au cœur de Sudwand : une grande présence immanente blanchie à la chaux qui détone parmi les cabanes branlantes des résidents. Très peu savent ce qui se passe derrière ses grilles. Contrairement à l'hospice du temple de Krankenfield, les Shallyens d'ici sont très regardants sur leurs pensionnaires. Les visites sont interdites. Les parents qui veulent des nouvelles d'un patient reçoivent des excuses peu convaincantes, et les pensionnaires qui finissent par sortir ne parlent pas de leur traitement. On entend de nombreuses rumeurs sur le Sanatorium de la Miséricorde, mais tout le monde sait qu'il prodigue les meilleurs soins dans tout Altdorf.
 

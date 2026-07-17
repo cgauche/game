@@ -294,7 +294,7 @@ Les Sorts des dieux du Chaos virevoltent dans l'esprit de ceux qui les ont mémo
 
 En plus des règles normales d'Incantation, tout double au jet sur un Test de **Langue (Magick)** ou de **Focalisation** lors de l'Incantation de Sorts issus d'un Domaine du Chaos entraîne une perte de mémoire, car leur puissance intrinsèque cause des ravages dans votre esprit. Vous perdez 1 Augmentation de votre choix dans n'importe quelle Compétence ne faisant pas partie de votre Carrière actuelle. Si vous n'avez plus d'Augmentation à perdre, vous abandonnez à la place un Talent d'une Carrière non actuelle. Si cela n'est pas possible, le Sort qui vous habite vous blesse profondément, et vous subissez une perte permanente de 1d10 Intelligence.
 
-#### **Décharge de Corruption**
+<span id="page-80-0" data-folio="80"></span>#### **Décharge de Corruption**
 
 **NI :** 8
 
@@ -430,7 +430,7 @@ Si vous faites une erreur en canalisant ou en lançant ce nouveau Sort, le Sort 
 Un éclair pulsant d'une scintillante énergie chaotique déchire l'air. L'Éclair du changement est un *Projectile magique*, et la Cible subit des Dégâts +7. De plus, elle doit effectuer un Test de **Résistance Intermédiaire (+0)**. Une Cible qui échoue gagne +1 Point de Corruption. En cas de Maladresse, la Cible effectue immédiatement un jet de Mutation, et gagne le Talent Magie du Chaos (Tzeentch). Un Personnage affecté par ce sort peut résister à une Mutation en dépensant un Point de Détermination.
 
 
-#### **Feu bleu de Tzeentch**
+<span id="page-82-0" data-folio="82"></span>#### **Feu bleu de Tzeentch**
 
 **NI :** 6
 
@@ -521,7 +521,7 @@ Calculez la réussite du Test de **Langue (Magick)** nécessaire pour lancer le 
 
 #### NOUVEAU TRAIT DE CRÉATURE : MARQUE DE TZEENTCH
 
-Tzeentch, le Seigneur du Changement, a marqué physiquement cette créature, indiquant ainsi son importance dans le grand jeu. Cette créature gagne 1d10/3 Mutations (arrondi à l'entier supérieur), alternant entre Mutations mentales et physiques. Utilisez la colonne Tzeentch de la page 66. Cette créature gagne le Talent Savoir-vivre (Disciples de Tzeentch), et est sujette à l'Animosité envers les disciples déclarés de Nurgle. La créature est sujette à l'Animosité des disciples de Nurgle, tant que la Marque de Tzeentch est visible. De plus, elle peut acheter les Talents suivants comme s'il s'agissait d'un avancement de Carrière : Magie des Arcanes (n'importe laquelle), Diction instinctive, Harmonisation aethyrique, Magie du Chaos (Tzeentch), Mage de guerre, Magie mineure, Mains agiles, Perception de la magie, Seconde vue et Sorcier ! pour les coûts normaux en PX.
+<span id="page-83-0" data-folio="83"></span>Tzeentch, le Seigneur du Changement, a marqué physiquement cette créature, indiquant ainsi son importance dans le grand jeu. Cette créature gagne 1d10/3 Mutations (arrondi à l'entier supérieur), alternant entre Mutations mentales et physiques. Utilisez la colonne Tzeentch de la page 66. Cette créature gagne le Talent Savoir-vivre (Disciples de Tzeentch), et est sujette à l'Animosité envers les disciples déclarés de Nurgle. La créature est sujette à l'Animosité des disciples de Nurgle, tant que la Marque de Tzeentch est visible. De plus, elle peut acheter les Talents suivants comme s'il s'agissait d'un avancement de Carrière : Magie des Arcanes (n'importe laquelle), Diction instinctive, Harmonisation aethyrique, Magie du Chaos (Tzeentch), Mage de guerre, Magie mineure, Mains agiles, Perception de la magie, Seconde vue et Sorcier ! pour les coûts normaux en PX.
 
 La marque de Tzeentch est une bénédiction accordée à certains serviteurs particulièrement favorisés du Changeur de Voies. Quelqu'un qui ne sert pas encore Tzeentch, mais qui, en la portant, y viendra sûrement, peut recevoir cet honneur, mais rarement. Tzeentch favorise ceux qui rejettent la tradition et la stabilité et qui manifestent une fascination pour la magie et la manipulation. Ces personnes peuvent rêver d'un terrible corbeau, au regard retors et complice, qui leur offre le pouvoir. S'ils acceptent trois fois son offre, ils obtiennent la Marque de Tzeentch et entament ainsi un voyage qui ne peut se terminer que par la ruine.
 

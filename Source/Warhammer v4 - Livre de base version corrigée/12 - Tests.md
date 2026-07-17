@@ -48,7 +48,7 @@ Si vous souhaitez ajouter des conséquences spécifiques à certains Tests lors 
 
 # RÈGLES DU JEU
 
-Les règles du jeu établissent une base mutuellement convenue et comprise sur le fonctionnement de **WFJDR**. Importantes car elles permettent que les choses soient justes et démontrent la logique interne du concept. Mais les meilleures expériences de jeu dépendent aussi de vos interactions avec les autres Joueurs. Voici quelques points à considérer pour vous aider à rendre vos parties les meilleures possible :
+<span id="page-152-0" data-folio="151"></span>Les règles du jeu établissent une base mutuellement convenue et comprise sur le fonctionnement de **WFJDR**. Importantes car elles permettent que les choses soient justes et démontrent la logique interne du concept. Mais les meilleures expériences de jeu dépendent aussi de vos interactions avec les autres Joueurs. Voici quelques points à considérer pour vous aider à rendre vos parties les meilleures possible :
 
 **Tout le monde doit s'amuser :** soyez réceptifs aux nouveaux Joueurs comme aux moins expérimentés.
 

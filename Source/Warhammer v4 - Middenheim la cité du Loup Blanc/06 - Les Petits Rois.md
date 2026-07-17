@@ -25,7 +25,7 @@ Aucun lieu, aussi lointain soit-il de son territoire, n'est à l'abri de la main
 - 0 Si un Personnage cherche discrètement un objet ou une affaire illicite, on lui répondra de contacter « l'Homme » ou ses agents. Plus tard, le Personnage sera approché par un inconnu d'apparence respectable qui se révélera particulièrement bien informé sur ses affaires, et dira être capable de l'aider, à condition qu'il paie. Qu'il s'agisse d'acheter ou de vendre une possession volée, d'organiser un assassinat, ou même de se procurer des composants pour un sort, rien n'est hors de question. Mais malheur à quiconque n'honore pas sa part du marché : tous les cadavres jetés de la Falaise des Soupirs ne sont pas forcément morts au début de leur chute.
 
 
-### **Edam Gouda**
+<span id="page-133-0" data-folio="131"></span>### **Edam Gouda**
 
 L'un des plus grands criminels du côté est de la cité est Edam Gouda, venu de Marienburg et connu dans la région comme « la Grosse Meule ». En plus des revenus qu'il extorque aux marchands de l'Altmarkt, il a amassé une petite fortune grâce à ses opérations de contrebande de stupéfiants de grande envergure. Il fait importer des fleurs de lune séchées de la forêt de Laurelorn, qu'il fait passer pour des matériaux de poterie, et trafique de la Poudre hilarante, produite par son frère dans un entrepôt désaffecté. Gouda passe rarement inaperçu parmi les habitants peu élégants de Middenheim : en plus de son style vestimentaire flamboyant et de son énorme moustache cirée, il est constamment accompagné de quatre gardes du corps colossaux.
 

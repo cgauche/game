@@ -12,10 +12,6 @@
     "bloque": "topic documentaire (pointeur vers le catalogue creatures.json), aucune règle à implémenter"
   },
   {
-    "topic": "competences#extension-t3-hypnotisme-int-avancee",
-    "bloque": "implémenté en donnée (skills.json id hypnotisme) — invisible du matcher : T3 sans ancre data-folio, cf. #522"
-  },
-  {
     "topic": "magie#seconde-vue",
     "ticket": "#463"
   },

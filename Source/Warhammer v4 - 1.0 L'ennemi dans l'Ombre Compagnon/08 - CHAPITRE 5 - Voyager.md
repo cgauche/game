@@ -59,7 +59,7 @@ Le mauvais temps est le plus grand ennemi des voyageurs (si l'on omet les vérit
 | Blizzard         | -         | -     | -       | 91-00 |
 
 
-Des conditions météorologiques défavorables peuvent transformer toute rencontre normale en cauchemar. Le tableau peut être utilisé pour le Reikland et les climats tempérés similaires. Pour une météo de régions plus au nord du Reikland, ajoutez entre +10 et +30 au résultat, et pour celle plus au sud,
+<span id="page-33-0" data-folio="33"></span>Des conditions météorologiques défavorables peuvent transformer toute rencontre normale en cauchemar. Le tableau peut être utilisé pour le Reikland et les climats tempérés similaires. Pour une météo de régions plus au nord du Reikland, ajoutez entre +10 et +30 au résultat, et pour celle plus au sud,
 
 **Temps sec**
 
@@ -200,7 +200,7 @@ Les Rencontres positives sont généralement bénéfiques, bien que de nombreux 
 
 ### RENCONTRES FORTUITES
 
-Les Rencontres fortuites ne sont ni préjudiciables ni bénéfiques pour les Personnages, mais indiquent les possibilités offertes par le Vieux Monde. Elles peuvent être utilisées si le Personnage n'a pas obtenu un Succès Impressionnant ou a eu un Échec Impressionnant lors d'une Activité de voyage, ou simplement parce que le MJ souhaite ajouter un peu de couleur locale.
+<span id="page-36-0" data-folio="36"></span>Les Rencontres fortuites ne sont ni préjudiciables ni bénéfiques pour les Personnages, mais indiquent les possibilités offertes par le Vieux Monde. Elles peuvent être utilisées si le Personnage n'a pas obtenu un Succès Impressionnant ou a eu un Échec Impressionnant lors d'une Activité de voyage, ou simplement parce que le MJ souhaite ajouter un peu de couleur locale.
 
 | 1d100 | Rencontre                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |  |  |  |  |  |  |
 |-------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|--|--|--|--|
@@ -218,7 +218,7 @@ Les Rencontres fortuites ne sont ni préjudiciables ni bénéfiques pour les Per
 
 ### RENCONTRES DANGEREUSES
 
-L'Empire grouille de dangers, et un voyageur imprudent ou simplement malchanceux peut tomber sur un grand nombre de pièges. Si l'un des Personnages, ou la majorité des Personnages, échouent dans leur Activité de voyage, l'une des mésaventures suivantes peut advenir.
+<span id="page-37-0" data-folio="37"></span>L'Empire grouille de dangers, et un voyageur imprudent ou simplement malchanceux peut tomber sur un grand nombre de pièges. Si l'un des Personnages, ou la majorité des Personnages, échouent dans leur Activité de voyage, l'une des mésaventures suivantes peut advenir.
 
 | 1d100 | Rencontre                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 |-------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

@@ -2,7 +2,7 @@
 
 # • INTRODUCTION •
 
-# « Que venez-vous donc chercher ici ? De l'aventure ? Sans doute. De l'or ? Probablement. La justice ?
+<span id="page-7-0" data-folio="6"></span># « Que venez-vous donc chercher ici ? De l'aventure ? Sans doute. De l'or ? Probablement. La justice ?
 
 Enfin, tout est relatif ! Est-ce une pieuse lueur que je perçois dans vos yeux ? Oh, vous voulez faire ce qui est juste. Tant que c'est assez bien payé, divertissant et que cela correspond à vos opinions politiques. Eh bien, ça me va, entrez et nous parlerons boulot. »
 

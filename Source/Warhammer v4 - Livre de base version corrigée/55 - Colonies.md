@@ -23,7 +23,7 @@ L'Empereur Karl Franz Ier siège à Altdorf, la capitale du Reikland et de l'Emp
 Aujourd'hui, Altdorf est une cité de ponts à vapeur, d'îles très diverses, d'énormes immeubles et d'un fourmillement infini 
 
 
-de personnes : on ne peut traverser ses rues tortueuses sans devenir familier avec de parfaits étrangers. Comme elle attire des marchands et diplomates issus de tout le monde connu, elle est aussi étonnamment cosmopolite ; non seulement des personnes de tous rangs, de toutes races, de toutes croyances et de toutes origines se côtoient librement, mais même les Sorciers sont monnaie courante, avec pour tout signe d'hostilité, rien de plus qu'un regard méfiant ou une bénédiction murmurée.
+<span id="page-280-0" data-folio="279"></span>de personnes : on ne peut traverser ses rues tortueuses sans devenir familier avec de parfaits étrangers. Comme elle attire des marchands et diplomates issus de tout le monde connu, elle est aussi étonnamment cosmopolite ; non seulement des personnes de tous rangs, de toutes races, de toutes croyances et de toutes origines se côtoient librement, mais même les Sorciers sont monnaie courante, avec pour tout signe d'hostilité, rien de plus qu'un regard méfiant ou une bénédiction murmurée.
 
 Un quartier elfe très peuplé et prospère, à l'étonnement des étrangers, se trouve près du Reiksport – le port en eau profonde et le chantier naval d'Altdorf – fondé par des princes marchands hauts elfes remontant le Reik, il y a plus d'un siècle, depuis Marienburg. L'ancienne alliance entre l'Empire et les nains s'est maintenue depuis l'ère de Sigmar et permet à de nombreux clans nains d'y résider également en communautés soudées. Certains ont travaillé dur à la maçonnerie de la cité durant d'innombrables générations, bien que leur nature obstinée les empêche de considérer Altdorf comme leur foyer. Pas mal de halflings gagnent leur vie en servant de la nourriture raffinée et des bières de qualité dans les auberges d'Altdorf, dont beaucoup sont protégées par l'importante population d'ogres de la cité. Mêmes des créatures des plus étranges se trouvent aussi dans la cité, mais aucune n'est plus fantastique que celles du Zoo Impérial, qui détient une myriade de monstres et d'animaux, y compris l'Abomination de Stirland et l'Engeance de la Drakwald, mises en cage et exposées pour le divertissement de tous.
 
@@ -50,7 +50,7 @@ Le graf dirigeant, Ferdinand von Wallenstein, laisse la gestion d'Auerswald à u
 La plus grande partie d'Auerswald est construite sur de solides pilotis, au-dessus de la plaine inondable de la rivière Teufel, souvent en crue. Dans ce labyrinthe déroutant de rampes, de ponts et d'échelles de cordes, les étrangers peuvent facilement se perdre. Plus d'un noctambule imprudent a trouvé la mort dans la 
 
 
-boue après avoir un peu exagéré dans les tavernes locales. Ces dernières années, des rumeurs ont circulé au sujet de gangs organisés de maîtres-chanteurs et d'arnaqueurs opérant depuis la ville, bien qu'aucun témoin n'ait vécu assez longtemps pour attester de leur existence.
+<span id="page-281-0" data-folio="280"></span>boue après avoir un peu exagéré dans les tavernes locales. Ces dernières années, des rumeurs ont circulé au sujet de gangs organisés de maîtres-chanteurs et d'arnaqueurs opérant depuis la ville, bien qu'aucun témoin n'ait vécu assez longtemps pour attester de leur existence.
 
 # **Bögenhafen**
 
@@ -75,7 +75,7 @@ Depuis, Diesdorf est devenue un lieu de pèlerinage majeur pour les dévots Sigm
 Plus au sud des centres de commerce majeurs du Reikland, la ville marchande de Dunkelberg s'étend sur plusieurs collines le long des rives de la rivière Grissen. Les portions les plus riches et les plus anciennes de la ville siègent haut sur les collines, donnant aux nobles et à la classe marchande en plein essor, assez riches pour s'offrir les plus anciennes maisons de la ville, une vue imprenable sur la campagne environnante. Malgré sa perpétuelle expansion, les voyageurs remarquent l'âme « rustique » de Dunkelberg, avec ses marchés réguliers encombrant les rues sinueuses. Les acheteurs peuvent y trouver du bétail,
 
 
-des produits locaux, plusieurs excellents vins fruités produits dans les villages environnants, et des marchandises artisanales issues de l'autre côté du Vorbergland Sud. De vastes étendues de « blanchiment » s'étendent depuis la ville, car le lin local est blanchi par le soleil inondant les cultures.
+<span id="page-282-0" data-folio="281"></span>des produits locaux, plusieurs excellents vins fruités produits dans les villages environnants, et des marchandises artisanales issues de l'autre côté du Vorbergland Sud. De vastes étendues de « blanchiment » s'étendent depuis la ville, car le lin local est blanchi par le soleil inondant les cultures.
 
 L'emplacement de Dunkelberg, près des menaçantes Montagnes Grises et la forêt sauvage de Graugrissen, prédispose à des attaques régulières de tribus gobelines. Bien que les portions les plus riches de la ville soient fortifiées et bien protégées par un haut mur de pierre, le reste de la ville manque de défenses significatives. Les citoyens les plus pauvres ont donc appris à ne pas s'attacher à leur maison, à leurs biens ni à leurs proches.
 
@@ -112,7 +112,7 @@ Dans une clairière à quelques kilomètres au nord-est d'Holthusen se trouve un
 
 L'endroit a été revendiqué par le Culte d'Ulric, et représente la principale destination de ses dévots en pèlerinage au sud du Reik. Pour ceux qui entretiennent une inclination arcanique, l'écorce perpétuellement gelée possède certaines propriétés magiques – et reste donc précieuse. Mais les Ulricans se réjouissent rarement de voir des Sorciers fureter dans leurs sites sacrés, et obtenir un morceau de l'écorce est donc souvent une entreprise risquée. Par conséquent, le Lord Magister Schlotter de l'Ordre Flamboyant est disposé à payer très cher pour que des hommes braves lui ramènent ce qu'il ne peut obtenir.
 
-Son emplacement privilégié sur la rivière, associé à la capacité d'imposer et de maintenir ses propres taxes, a rendu la ville très riche. Les marchands de Kemperbad sont réputés pour leur vanité, revêtus de tenues si criardes qu'elles feraient rougir de honte un paon, et assez coûteuses pour que les gens aux moyens plus modestes ressemblent à des mendiants. Sans surprise, la noblesse voisine envie la richesse accumulée de Kemperbad, et certains envoient des agents pour déstabiliser la ville.
+<span id="page-283-0" data-folio="282"></span>Son emplacement privilégié sur la rivière, associé à la capacité d'imposer et de maintenir ses propres taxes, a rendu la ville très riche. Les marchands de Kemperbad sont réputés pour leur vanité, revêtus de tenues si criardes qu'elles feraient rougir de honte un paon, et assez coûteuses pour que les gens aux moyens plus modestes ressemblent à des mendiants. Sans surprise, la noblesse voisine envie la richesse accumulée de Kemperbad, et certains envoient des agents pour déstabiliser la ville.
 
 ### **Schädelheim**
 

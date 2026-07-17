@@ -76,7 +76,7 @@ Ne pas avoir accès aux Outils de la profession appropriés entraînera une pén
 Il s'agit de votre capacité à courir, sauter, à vous déplacer avec rapidité et grâce, et à effectuer toute activité physique générale. Référez-vous à **Déplacement** (voir page 164) pour plus de détails sur l'utilisation de l'Athlétisme en mouvement de combat.
 
 
-# **Calme (FM)** *de base*
+<span id="page-120-0" data-folio="119"></span># **Calme (FM)** *de base*
 
 La Compétence Calme vous permet de rester serein sous la pression, de résister à la peur quand vous affrontez l'horreur, et à vous en tenir à vos convictions.
 
@@ -105,7 +105,7 @@ Votre MJ peut vous autoriser à utiliser le Charme en Combat, s'il pense que vos
 Si vous utilisez Charme comme Action, calculez normalement le nombre de cibles potentielles. Si vous vous en servez pour vous défendre, l'Action n'affecte que votre adversaire. Sur un succès, les cibles charmées ne vous attaqueront pas pendant
 
 
-ce Round et vous gagnez +1 Avantage normalement. Vous pouvez répéter l'action sur plusieurs Rounds jusqu'à ce que vous arrêtiez ou échouiez, après quoi vos paroles n'auront plus aucune incidence.
+<span id="page-121-0" data-folio="120"></span>ce Round et vous gagnez +1 Avantage normalement. Vous pouvez répéter l'action sur plusieurs Rounds jusqu'à ce que vous arrêtiez ou échouiez, après quoi vos paroles n'auront plus aucune incidence.
 
 **Chevaucher (Ag)** *de base, groupée*
 
@@ -149,7 +149,7 @@ Dans des circonstances normales, si vous possédez la Compétence Conduite d'att
 **Accident :** Les occupants de véhicules Accidentés subissent généralement 2d10 Points de Blessure modifiées par le Bonus d'Endurance et les PA, sauf si le véhicule roulait doucement (déterminé par le MJ). Les véhicules Accidentés doivent être 
 
 
-réparés par quelqu'un possédant la Compétence de Métier appropriée, comme Métier (Charpentier) ou Métier (Charron). Une roue de secours peut être installée par n'importe qui avec un Test de Conduite d'attelage ou un Test du Métier approprié.
+<span id="page-122-0" data-folio="121"></span>réparés par quelqu'un possédant la Compétence de Métier appropriée, comme Métier (Charpentier) ou Métier (Charron). Une roue de secours peut être installée par n'importe qui avec un Test de Conduite d'attelage ou un Test du Métier approprié.
 
 En combat, la Conduite d'attelage peut être utilisée si les circonstances le permettent – par exemple, si le groupe se trouve dans une diligence attaquée par des hors-la-loi, et que vous souhaitiez percuter un ennemi ou les distancer (voir page 165).
 
@@ -204,7 +204,7 @@ Dressage représente votre compréhension d'un type particulier d'animal, et vot
 En combat, un Test opposé de **Dressage/Force Mentale** réussi vous permet d'intimider un seul animal appartenant à votre Spécialisation ; vous instillez la peur chez l'animal ciblé jusqu'à la fin de votre prochain tour (voir page 190). Quand 
 
 
-vous insufflez de la peur de cette façon, vous pouvez par la suite utiliser votre Compétence Dressage au lieu de Corps à corps quand vous vous défendez contre votre cible ; avec l'accord du MJ, vous pouvez aussi utiliser Dressage pour attaquer votre cible, en donnant des instructions spécifiques.
+<span id="page-123-0" data-folio="122"></span>vous insufflez de la peur de cette façon, vous pouvez par la suite utiliser votre Compétence Dressage au lieu de Corps à corps quand vous vous défendez contre votre cible ; avec l'accord du MJ, vous pouvez aussi utiliser Dressage pour attaquer votre cible, en donnant des instructions spécifiques.
 
 **Exemple :** *affrontant un chien de guerre affamé, Ilse réussit un Test opposé de Dressage (Chien) au premier Round de combat, en faisant peur à la bête et gagnant +1 Avantage. Pendant le Round suivant, elle « attaque » sa cible avec sa Compétence Dressage, contournant la défense du chien. Son MJ lui permet d'ordonner à la bête de fuir, ce qu'elle fait, la queue entre les jambes.*
 
@@ -247,7 +247,7 @@ En combat, l'Esquive est généralement utilisée pour résister aux attaques ou
 La Compétence Focalisation mesure votre capacité à faire appel et à contrôler les différents Vents de la Magie. Elle est uniquement utilisée avec les règles sur la magie. Voir le **Chapitre 8 : Magie** pour plus d'informations.
 
 
-Focalisation est une Compétence très particulière, en cela qu'elle est à la fois Groupée, permettant les Spécialisations, mais aussi non Groupée pour ceux qui ne sont pas correctement formés à focaliser la magie.
+<span id="page-124-0" data-folio="123"></span>Focalisation est une Compétence très particulière, en cela qu'elle est à la fois Groupée, permettant les Spécialisations, mais aussi non Groupée pour ceux qui ne sont pas correctement formés à focaliser la magie.
 
 **Spécialisations :** *Aqshy, Azyr, Chamon, Dhar, Ghur, Ghyran, Hysh, Shyish, Ulgu* (chacune est un Vent de Magie différent, voir **Chapitre 8 : Magie** pour plus d'informations)
 
@@ -291,7 +291,7 @@ En combat, vous provoquez la *Peur* (voir page 190) chez toutes les cibles Intim
 
 ### OPTION : CARACTÉRISTIQUES ALTERNATIVES POUR L'INTIMIDATION
 
-Bien que la Force soit la statistique par défaut pour les Tests d'Intimidation, le MJ peut juger que certaines situations vous permettent d'utiliser une Caractéristique différente : un Répurgateur acharné peut, par exemple, utiliser la Force Mentale pour dissuader un passant indiscret, ou un universitaire peut utiliser l'Intelligence pour intimider un simple étudiant avec ses impressionnantes connaissances.
+<span id="page-125-0" data-folio="124"></span>Bien que la Force soit la statistique par défaut pour les Tests d'Intimidation, le MJ peut juger que certaines situations vous permettent d'utiliser une Caractéristique différente : un Répurgateur acharné peut, par exemple, utiliser la Force Mentale pour dissuader un passant indiscret, ou un universitaire peut utiliser l'Intelligence pour intimider un simple étudiant avec ses impressionnantes connaissances.
 
 maternelle (si votre Personnage en possède une différente du reikspiel), sans avoir besoin de faire de Test. Si votre partie ne se déroule pas dans l'Empire, remplacez le reikspiel par la langue locale.
 
@@ -318,7 +318,7 @@ La Langue (Bataille) comprend une série d'ordres et de gestes simples qui peuve
 
 # LANGUES DU VIEUX MONDE
 
-Voici une liste des principales langues du Vieux Monde, ainsi que des personnes qui les parlent le plus communément. Il y a un nombre considérables d'autres langages parlés, mais ils sont bien moins souvent rencontrés au Reikland.
+<span id="page-126-0" data-folio="125"></span>Voici une liste des principales langues du Vieux Monde, ainsi que des personnes qui les parlent le plus communément. Il y a un nombre considérables d'autres langages parlés, mais ils sont bien moins souvent rencontrés au Reikland.
 
 | Langue              | Parlée par…                                                                                                                                                                                                                                                                                                                                                     |  |  |  |  |
 |---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|--|--|
@@ -341,7 +341,7 @@ Voici une liste des principales langues du Vieux Monde, ainsi que des personnes 
 | Wastelander         | …les habitants ruraux du Wasteland, un territoire battu par les vents, se trouvant à l'ouest du Reikland.<br>La langue officielle de sa capitale, Marienburg, est pourtant le reikspiel, car ce royaume faisait jadis partie<br>de l'Empire.                                                                                                                    |  |  |  |  |
 
 
-# **Marchandage (Soc)** *de base*
+<span id="page-127-0" data-folio="126"></span># **Marchandage (Soc)** *de base*
 
 Marchandage vous permet d'obtenir de meilleures offres lorsque vous négociez avec autrui. En général, Marchandage est utilisé pour savoir si vous faites, ou non, une bonne affaire, la plupart du temps grâce à un Test opposé de **Marchandage**. De façon plus spécifique, cette Compétence peut être utilisée quand vous parcourez les échoppes pour trouver les meilleurs prix. Pour plus d'informations à ce sujet, référez-vous au **Chapitre 11 : Guide de l'équipement**.
 
@@ -376,7 +376,7 @@ C'est votre capacité à nager dans l'eau sans vous noyer. Si vous possédez la 
 Natation est utilisée en combat, uniquement s'il vous arrive de combattre dans l'eau. Alors, elle remplace des Compétences telles que l'Athlétisme pour déterminer le Mouvement. Si une vitesse déterminée est nécessaire, vous nagez à la moitié de votre Caractéristique de Mouvement, en utilisant les règles normales pour se déplacer qui se trouvent à la page 164.
 
 
-### **Orientation (I)** *de base*
+<span id="page-128-0" data-folio="127"></span>### **Orientation (I)** *de base*
 
 L'Orientation vous permet de trouver votre chemin dans la nature en utilisant des repères, des corps stellaires ou des cartes. Posséder la Compétence Orientation signifie que vous savez à peu près où vous vous trouvez, et pouvez déterminer votre chemin grâce à des repères bien connus sans effectuer de Test. Un Test est nécessaire uniquement si vous êtes désorienté ou que vous voyagez loin des sentiers battus. Une réussite vous indique alors la bonne direction ou vous permet d'éviter les mésaventures.
 
@@ -425,7 +425,7 @@ De plus, si vos ennemis comprennent votre langue et connaissent (ou craignent) v
 Bien que tout le monde puisse lancer une simple pierre en utilisant la Capacité de Tir, il faut de l'entraînement et de la pratique pour utiliser des armes comme des arcs et des pistolets. Chaque Spécialisation de Projectiles représente un groupe particulier d'armes à distance. Si vous ne possédez pas la Spécialisation Projectiles pour une arme dont vous souhaitez user, référez-vous au **Chapitre 11 : Guide de l'équipement** pour voir quelles pénalités vous subirez en l'utilisant. Voir le **Chapitre 5 : Règles** pour plus de détails sur le combat à distance.
 
 
-**Exemples de Spécialisations :** Arbalète, Arc, Entraves, Explosifs, Fronde, Ingénierie, Lancer, Poudre noire
+<span id="page-129-0" data-folio="128"></span>**Exemples de Spécialisations :** Arbalète, Arc, Entraves, Explosifs, Fronde, Ingénierie, Lancer, Poudre noire
 
 ### **Ragot (Soc)** *de base*
 
@@ -456,7 +456,7 @@ Les bibliothèques du Vieux Monde vont de petites unités personnelles comprenan
 Effectuer un Test de Recherche dans une petite bibliothèque, peut-être pour trouver un livre en particulier, prendra seulement environ 5 minutes. En comparaison, les Tests de Recherche dans de grandes bibliothèques peuvent facilement prendre une heure ou plus par Test, mais sont plus susceptibles de mener à la découverte de connaissances ésotériques.
 
 
-#### **Représentation (Ag)** *avancée, groupée*
+<span id="page-130-0" data-folio="129"></span>#### **Représentation (Ag)** *avancée, groupée*
 
 Vous avez appris un art physiquement exigeant, probablement pour gagner votre vie, peut-être en tant que saltimbanque ou membre d'un carnaval itinérant. Une utilisation réussie de la Compétence Représentation vous permet de divertir tous les spectateurs suffisamment proches pour vous voir et vous entendre ; le DR indique à quel point vous avez réussi.
 
@@ -499,7 +499,7 @@ En combat, un Test de Savoir réussi peut éventuellement vous accorder +1 Avant
 Vous avez été formé à utiliser des marques clandestines intelligibles pour les membres d'un groupe sélectionné. Les raisons pour lesquelles quelqu'un peut vouloir délivrer un message secret sont nombreuses : les vagabonds peuvent indiquer quels propriétaires sont susceptibles d'offrir la charité, les voleurs peuvent vouloir indiquer des failles, ou des cibles potentielles, alors que les guetteurs peuvent vouloir alerter les autres sur l'emplacement proche d'un monstre dangereux.
 
 
-Cette Compétence ne nécessite généralement pas de Test – vous pouvez déchiffrer n'importe quels signes appropriés que vous pouvez voir si vous possédez cette Compétence. Mais si les signes ont été modifiés, effacés, ou si vous êtes pressé par le temps, un Test sera probablement nécessaire. La plupart des messages sont très simples, et ne comptent pas plus de trois mots.
+<span id="page-131-0" data-folio="130"></span>Cette Compétence ne nécessite généralement pas de Test – vous pouvez déchiffrer n'importe quels signes appropriés que vous pouvez voir si vous possédez cette Compétence. Mais si les signes ont été modifiés, effacés, ou si vous êtes pressé par le temps, un Test sera probablement nécessaire. La plupart des messages sont très simples, et ne comptent pas plus de trois mots.
 
 **Spécialisations :** Ordre Gris, Guildes (au choix), Ruraux, Éclaireurs, Voleurs, Vagabonds
 
@@ -541,7 +541,7 @@ Il s'agit de votre capacité à juger de la probabilité qu'une personne accepte
 Un Test de **Subornation** réussi vous indique si une cible peut être soudoyée. Si oui, votre MJ détermine secrètement le prix de sa coopération en utilisant le Revenu de la cible (voir page 52), en augmentant le montant en fonction de son honnêteté habituelle et du risque encouru en acceptant le pot-de-vin. Puis vous estimez ce montant cible et le MJ vous indiquera 
 
 
-si le prix est supérieur, inférieur ou égal. Chaque DR obtenu lors de votre Test de Subornation vous offre une estimation supplémentaire. À la fin de ce processus, vous déterminez combien d'argent offrir, en vous basant sur les informations obtenues.
+<span id="page-132-0" data-folio="131"></span>si le prix est supérieur, inférieur ou égal. Chaque DR obtenu lors de votre Test de Subornation vous offre une estimation supplémentaire. À la fin de ce processus, vous déterminez combien d'argent offrir, en vous basant sur les informations obtenues.
 
 **Exemple :** *Snorri tente de soudoyer un Garde pour qu'il le laisse passer ; il s'agit d'un Personnage Bronze 2, ce qui signifie qu'il a un Revenu de 4d10 sous de cuivre. Le MJ décide que le garde peut être soudoyé et obtient secrètement 21 sur les 4d10, indiquant que le prix pour soudoyer le garde est de 21 sous de cuivre. Laisser passer Snorri n'est pas trop risqué pour le Garde, il le fait d'ailleurs souvent, le MJ n'augmente donc pas le pot-de-vin nécessaire. Snorri a obtenu 1 DR à son Test de Subornation ; il sait donc que le Garde est réceptif au pot-de-vin, et a 2 estimations pour trouver le prix. La première estimation de Snorri est de 15 sous de cuivre, ce à quoi son MJ répond « Supérieur ». Sa seconde estimation se monte à 40, ce à quoi son MJ répond « Inférieur ». Snorri sait à présent qu'il doit verser un pot-de-vin au garde compris entre 15 et 40 sous de cuivre. Il décide de viser haut et offre 30 sous de cuivre. Le sourire aux lèvres, le Garde fait traverser Snorri.*
 

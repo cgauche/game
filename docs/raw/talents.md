@@ -1125,7 +1125,7 @@ Vous pouvez voir parfaitement dans les ténèbres naturelles. En présumant que 
 **Voir aussi :** `vision.md` — brouillard de guerre, zones éclairées, états lumineux par case ; `equipement.md` § Éclairage — rayons de Bougie (10 m) et Lanterne (20 m), étendus de +20 m / niveau par ce Talent.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 11` (l.176) → `TraitCapabilities` — `src/data/index.ts`, `src/state/vision.ts`
+- `LDB 11` (l.176) → `TraitCapabilities`, `trappeur`, `vigneron`, `tres-fort`, `tres-resistant`, `tricheur`, `tueur`, `veloce`, `vigilance`, `vision-nocturne`, +4 — `src/data/index.ts`, `src/data/talents.json`, `src/state/vision.ts`
 
 ### Visions sacrées
 **Source :** LDB p.147  

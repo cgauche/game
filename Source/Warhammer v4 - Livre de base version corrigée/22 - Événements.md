@@ -7,7 +7,7 @@ Avant de choisir vos Activités, lancez d'abord 1d100 sur le tableau des Événe
 
 # TABLEAU DES ÉVÉNEMENTS
 
-# **01–03 : Allié inculpé**
+<span id="page-194-0" data-folio="193"></span># **01–03 : Allié inculpé**
 
 L'un de vos alliés (au choix du MJ) est impliqué dans un horrible crime. Un Personnage avec une Licence de la Guilde de Droit peut dépenser une Activité pour libérer l'allié en réussissant un Test de **Savoir (Loi) Accessible (+20)**. À défaut, trois Activités dépensées par le groupe le disculperont (ou, s'il est coupable, lui fourniront un alibi). Si l'allié est libéré, gagnez une Faveur Majeure (voir l'Activité *Faites-moi une Faveur* page 198) pour une utilisation future. Dans le cas contraire, l'allié sera pendu !
 
@@ -72,7 +72,7 @@ Le Flux Sanglant sévit en ville. Faites un Test d'**Endurance Facile (+40)**. S
 Un monstre (choisi par le MJ dans le **Chapitre 12** : Bestiaire) sème la panique dans la région. L'Activité *Revenus* ne fournit aucun fonds jusqu'à ce que le problème de la bête soit réglé. Les Personnages peuvent décider chacun de sacrifier une Activité pour régler la menace (et cette rencontre doit être interprétée 
 
 
-en jeu). S'ils réussissent, ils gagnent une Activité *Revenus* gratuite pour représenter leurs récompenses individuelles, et une fête est donnée en leur honneur. S'ils échouent, ou si le groupe préfère ignorer la créature, elle s'en ira ou sera tuée par un rival local.
+<span id="page-195-0" data-folio="194"></span>en jeu). S'ils réussissent, ils gagnent une Activité *Revenus* gratuite pour représenter leurs récompenses individuelles, et une fête est donnée en leur honneur. S'ils échouent, ou si le groupe préfère ignorer la créature, elle s'en ira ou sera tuée par un rival local.
 
 # **61–63 : L'Étreinte de Morr**
 

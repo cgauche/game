@@ -72,7 +72,7 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 **Voir aussi** : déclenchement du Coup Critique → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) (LDB 13/14) ; tableaux complets → [§ 4](#4-tableaux-des-critiques--renvoi).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.17, l.22-38, l.53) → `isHealable`, `outOfCombatUpkeep`, `CritEscalation`, `HealWoundsOptions`, `applyHealWounds`, `aaBleedUnconsciousApply`, `critWoundLocation`, `rollCritical`, `OPTIONAL_RULES`, `ActionBar`, +21 — `src/data/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +12 fichiers
+- `LDB 18` (l.17, l.22-38, l.53) → `blessure-spectaculaire`, `isHealable`, `outOfCombatUpkeep`, `coupure-mineure`, `coup-a-l-il`, `CritEscalation`, `frappe-a-l-oreille`, `HealWoundsOptions`, `coup-percutant`, `applyHealWounds`, +99 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +13 fichiers
 
 ---
 
@@ -110,7 +110,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : tables complètes → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) ; Fractures → [§ 7](#7-fractures-mineure--majeure) ; Déchirures → [§ 8](#8-déchirures-musculaires-mineure--majeure) ; Amputations → [§ 9](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `dechirure-autre-mineure`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `fracture-torse-majeure`, `resolveAACritical`, `fracture-jambe-mineure`, `findCritEntrySuffered`, +23 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +8 fichiers
+- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `blessure-spectaculaire`, `coupure-mineure`, `dechirure-autre-mineure`, `coup-a-l-il`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `frappe-a-l-oreille`, +106 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +9 fichiers
 
 ---
 
@@ -129,7 +129,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : [Option : Mort Subite](#6-option--mort-subite) ; Destin → [destin.md](destin.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.34, l.38-40, l.42-43) → `critWoundLocation`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `evaluateMissile`, `PendingDeviation`, `woundsAtCritLocation`, `applyCriticalToTarget`, `applyOpposedCritical`, `applyAttackResult`, +2 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, +1 fichiers
+- `LDB 18` (l.34, l.38-40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, `OPTIONAL_RULES`, +80 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +3 fichiers
 
 ---
 
@@ -142,7 +142,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Sources RAW** : `LDB 18 l.44-46`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.44-46) → `critWoundLocation`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `evaluateMissile`, `woundsAtCritLocation`, `applyCriticalToTarget`, `applyOpposedCritical`, `applyAttackResult`, `overcastTargetCandidates`, +1 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`
+- `LDB 18` (l.44-46) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, `OPTIONAL_RULES`, +79 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +2 fichiers
 
 ---
 
@@ -283,7 +283,7 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) (LDB 09 l.255-269) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; Faim/Soif → [§ 13](#13-faim-et-soif) (sans provisions : pas de récupération naturelle).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `shelter`, `redaction`, `healDifficulty`, `athletisme`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, +3 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +2 fichiers
+- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, `emprise-sur-les-animaux`, `escamotage`, +6 — `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/types.ts`, +1 fichiers
 - `LDB 18` (l.289-300) → `faim`, `soif`, `permanentAmputations`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `exposure`, `dechirure-autre-majeure`, `exposure-heat-drop`, `HealWoundsOptions`, +23 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +8 fichiers
 
 ---

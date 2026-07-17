@@ -2,7 +2,7 @@
 
 ## **L'HOSPICE**
 
-Le Grand Hospice fut fondé en 2243 sur la base d'un don de terres et d'argent d'Eberhardt le Juste, alors Empereur d'Altdorf. Lui-même prêtre aspirant de Shallya, Eberhardt s'était vu confier la gouvernance de la Maison Holzkrug à la mort soudaine de son père, alors que le comportement de son frère aîné devenait de plus en plus inquiétant.
+<span id="page-70-0" data-folio="69"></span>Le Grand Hospice fut fondé en 2243 sur la base d'un don de terres et d'argent d'Eberhardt le Juste, alors Empereur d'Altdorf. Lui-même prêtre aspirant de Shallya, Eberhardt s'était vu confier la gouvernance de la Maison Holzkrug à la mort soudaine de son père, alors que le comportement de son frère aîné devenait de plus en plus inquiétant.
 
 Pendant son règne en tant qu'empereur, Eberhardt consacra beaucoup de temps et d'argent (le sien, en grande partie) à l'amélioration de la santé publique dans les villes du Reikland. Il espérait que l'étude des maladies mentales permettrait de leur trouver un remède, mais aucun progrès significatif n'a encore été réalisé à ce jour. Cela est principalement dû au fait que les sœurs refusent d'autoriser toute expérimentation violente sur les patients et insistent pour que le bien-être de ces derniers l'emporte sur toute autre priorité.
 
@@ -53,7 +53,7 @@ Au rez-de-chaussée se trouvent les espaces publics du Grand Hospice. En génér
 
 ## SERRURES ET PORTES
 
-La plupart des portes du Grand Hospice sont assez solides **(BE 5, B 12)**, mais peuvent être déverrouillées au moyen d'un Test de **Crochetage Intermédiaire (+0)**. La Grande Prêtresse a un jeu de clés complet à sa ceinture et, à la discrétion du MJ, d'autres membres du personnel peuvent posséder les clés des zones dans lesquelles ils travaillent. Quelques serrures sont toutefois plus difficiles à crocheter.
+<span id="page-72-0" data-folio="71"></span>La plupart des portes du Grand Hospice sont assez solides **(BE 5, B 12)**, mais peuvent être déverrouillées au moyen d'un Test de **Crochetage Intermédiaire (+0)**. La Grande Prêtresse a un jeu de clés complet à sa ceinture et, à la discrétion du MJ, d'autres membres du personnel peuvent posséder les clés des zones dans lesquelles ils travaillent. Quelques serrures sont toutefois plus difficiles à crocheter.
 
 La porte de la chambre forte (voir ci-dessous) est en fer et d'une épaisseur de 5 cm **(BE 12, B 30)** ; elle est dotée d'une serrure qui peut être déverrouillée **(D -20, DR 5)**. Dans la chambre forte se trouvent trois grands coffres en fer **(BE 8, B 20)**, chacun pesant 5 Points d'Encombrement et doté d'une serrure qui peut être déverrouillée **(D -10, DR 3)**.
 

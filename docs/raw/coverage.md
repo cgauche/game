@@ -4,7 +4,7 @@
 > par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.
 > Recourir à la source pour un point = un défaut de l'Atlas à corriger ici. Régénéré par
 > `node scripts/raw/coverage.mjs`.
-**Couverture (profondeur) : ✅ 151 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 155 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 151 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 155 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
 
 
 ## LDB — ✅ 71 · 🟡 2 · ⬜ 0
@@ -23,10 +23,10 @@
 | 09 | Compétences | ✅ | 144 (competences.md ×137) |
 | 10 | Talents | ✅ | 68 (tests.md ×36) |
 | 11 | *(artefact OCR)* | 🟡 | 2 (equipement.md ×1) |
-| 12 | Tests | ✅ | 46 (tests.md ×41) |
+| 12 | Tests | ✅ | 45 (tests.md ×41) |
 | 13 | Combat | ✅ | 131 (combat.md ×122) |
 | 14 | *(artefact OCR)* | ✅ | 125 (combat.md ×118) |
-| 15 | Déplacement | ✅ | 89 (combat.md ×75) |
+| 15 | Déplacement | ✅ | 85 (combat.md ×75) |
 | 16 | États | ✅ | 52 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 51 (destin.md ×27) |
 | 18 | Traumatisme | ✅ | 109 (traumatisme.md ×67) |
@@ -57,7 +57,7 @@
 | 43 | Miracles de Rhya | ✅ |  |
 | 44 | L’Aethyr | 🟡 | 2 (magie.md ×2) |
 | 45 | *(artefact OCR)* | ➖ | |
-| 46 | Les règles magiques | ✅ | 108 (magie.md ×56) |
+| 46 | Les règles magiques | ✅ | 101 (magie.md ×56) |
 | 47 | Listes des sorts | ✅ | 8 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 16 (magie.md ×16) |
 | 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
@@ -143,7 +143,7 @@
 | 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
 | 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 96 (combat.md ×90) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
-| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 16 (combat.md ×16) |
+| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 17 (combat.md ×16) |
 | 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 18 (combat.md ×17) |
 
 ## ZI — ✅ 14 · 🟡 0 · ⬜ 0
@@ -284,7 +284,7 @@
 | 13 | POINTS D’EXPÉRIENCE | ✅ | 6 (avancement.md ×6) |
 | 14 | CALENDRIER DES ATTRACTIONS PRINCIPALES | ➖ hors-règle | |
 
-## Altdorf — ✅ 3 · 🟡 0 · ⬜ 0
+## ACE — ✅ 3 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -300,7 +300,7 @@
 | 09 | Au-delà des murs | ➖ hors-règle | |
 | 10 | L’Espionnage à Altdorf | ✅ |  |
 | 11 | Cultes interdits et groupes extrémistes | ✅ |  |
-| 12 | Activités | ✅ |  |
+| 12 | Activités | ✅ | 17 (activites.md ×17) |
 
 ## Ubersreik — ✅ 2 · 🟡 0 · ⬜ 0
 

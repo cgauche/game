@@ -2,7 +2,7 @@
 
 #### VERSION ORIGINALE
 
-**Design et développement :** Dominic McDowall et Andy Law **Écriture :** Dave Allen, Gary Astleford, Graeme Davis, Jude Hornborg, Andy Law, Lindsay Law, Andrew Leask, TS Luikart, Dominic McDowall, Clive Oldfield
+<span id="page-6-0" data-folio="5"></span>**Design et développement :** Dominic McDowall et Andy Law **Écriture :** Dave Allen, Gary Astleford, Graeme Davis, Jude Hornborg, Andy Law, Lindsay Law, Andrew Leask, TS Luikart, Dominic McDowall, Clive Oldfield
 
 **Révision :** Andy Law, Lindsay Law, Andrew Leask
 

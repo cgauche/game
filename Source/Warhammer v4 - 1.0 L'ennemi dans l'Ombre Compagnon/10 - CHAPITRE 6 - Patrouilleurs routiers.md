@@ -58,7 +58,7 @@ Résistance à l'alcool 46, Subornation 34 **Traits :** À distance (Arbalète) 
 Aleanora Havrebas a finalement réussi à obtenir une affectation de gardienne de péage le long d'une route commerciale, en faisant ce que font tous ceux de sa famille qui veulent se ranger : elle a changé son nom en Basfond, puis a ensuite abandonné toute prétention à rentrer dans le rang. À peine mieux qu'un bandit, Al escroque tous les passants qu'elle peut, au prétexte des « frais » supplémentaires qu'elle pense pouvoir rafler.
 
 
-#### **Une porte de sortie**
+<span id="page-41-0" data-folio="41"></span>#### **Une porte de sortie**
 
 Tous les halflings savent qu'on n'agit jamais contre sa famille. Cette règle compte double pour les Havrebas, ce qui met Aleanora dans une position très difficile, car elle souhaite vraiment se ranger. La plus grande partie de ce qu'elle a obtenu en détroussant des passants a disparu dans les coffres de sa famille, et elle détourne le regard sur leurs marchandises illégales qui transitent régulièrement par son poste de péage. Aleanora paiera bien, avec de l'argent sale, mais ça reste de l'or, quiconque peut l'aider à perturber les affaires de sa famille de telle sorte qu'ils quittent la région, tout en lui permettant de conserver sa position.
 
@@ -101,7 +101,7 @@ Vous pouvez utiliser Basfond dans **L'Ennemi dans l'Ombre** partout et à tout m
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
 | 4 | 55 | 57 | 34 | 42 | 53 | 36 | 37  | 35  | 39 | 41  | 14 |
 
-**Compétences :** Chevaucher (Cheval) 51, Commandement 56, Corps à corps (Base) 70, Intuition 68, Intimidation 49, Marchandage 55, Résistance à l'alcool 47, Pari 40, Perception 58, Projectiles (Poudre noire) 72, Projectiles (Arbalète) 67, Ragot 56, Soin aux animaux 45, Subornation 56, Survie en extérieur 45
+<span id="page-42-0" data-folio="42"></span>**Compétences :** Chevaucher (Cheval) 51, Commandement 56, Corps à corps (Base) 70, Intuition 68, Intimidation 49, Marchandage 55, Résistance à l'alcool 47, Pari 40, Perception 58, Projectiles (Poudre noire) 72, Projectiles (Arbalète) 67, Ragot 56, Soin aux animaux 45, Subornation 56, Survie en extérieur 45
 
 **Traits :** À distance (Pistolet) +8 (20), Arme (Épée et Bouclier) +7, Armure (Veste de cuir et cotte de maille) 2
 

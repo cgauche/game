@@ -1,6 +1,6 @@
 *Pages PDF 24-26*
 
-Les pouvoirs en place
+<span id="page-23-0" data-folio="22"></span>Les pouvoirs en place
 
 « Dans les Principautés frontalières, tout le monde peut accéder au pouvoir et régner ! Dans l'Empire, nous nous enchaînons volontairement ! »
 
@@ -45,7 +45,7 @@ J'ai hâte de vous voir lorsque vous comprendrez. Soyez prudent.
 
 Loyalement,
 
-Magister Alanna Graumann
+<span id="page-24-0" data-folio="23"></span>Magister Alanna Graumann
 
 Votre servante et gardienne.
 

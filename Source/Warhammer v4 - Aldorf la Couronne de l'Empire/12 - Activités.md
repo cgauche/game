@@ -42,7 +42,7 @@ Ce qu'ils apprennent dépend du résultat d'un Test de **Recherche Complexe (−
 | −6 ou moins | Échec Stupéfiant      | contamination magique se produit. Il ne découvre rien sur l'objet, et doit en plus<br>réaliser un Test d'Exposition mineure à la Corruption. |
 
 
-### **Mécénat**
+<span id="page-222-0" data-folio="220"></span>### **Mécénat**
 
 Altdorf accueille de nombreux comédiens, saltimbanques, et charlatans, qui se battent tous pour attirer l'attention d'un mécène fortuné.
 
@@ -69,7 +69,7 @@ inutile pour les nouveaux sorciers qui n'ont pas encore appris un nombre de sort
 
 # **INDEX**
 
-### **Lieux importants d'Altdorf**
+<span id="page-223-0" data-folio="221"></span>### **Lieux importants d'Altdorf**
 
 | A                                       |
 |-----------------------------------------|
@@ -237,7 +237,7 @@ Compagnie commerciale Reik et Talabec 180
 
 | L                                     | P                                           | Q                                               |  |
 |---------------------------------------|---------------------------------------------|-------------------------------------------------|--|
-| Lagon des Contrebandiers, Le202       | Paeter Kohl, Sellier et armurier144         | Quai de la Bien-aimée de Manann, Le180          |  |
+<span id="page-224-0" data-folio="222"></span>| Lagon des Contrebandiers, Le202       | Paeter Kohl, Sellier et armurier144         | Quai de la Bien-aimée de Manann, Le180          |  |
 | Lapie, prêteur sur gages123           | Palais d'Altdorf des Von Königswald, Le114  | Quai de la Fourche, Le179                       |  |
 | Librairie Estlemann, La161            | Palais de la Misère, Le140                  | Quai des Bouchers, Le138                        |  |
 | Librarium Secularum99                 | Palais du Grand Théogoniste, Le98           | Quai des lignes de Hindelin, Le84               |  |
@@ -294,7 +294,7 @@ Société impériale
 
 | T                                            |
 |----------------------------------------------|
-| Tableaux des Fontaines, Les80                |
+<span id="page-225-0" data-folio="223"></span>| Tableaux des Fontaines, Les80                |
 | Taverne L'Haleine du Dragon, La201           |
 | Temple de la Grâce d'Alessa, Le119           |
 | Temple de Manann, Le83                       |

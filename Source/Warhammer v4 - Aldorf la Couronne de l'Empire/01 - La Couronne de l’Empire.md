@@ -29,7 +29,7 @@ Altdorf est réputée pour son université, ses Collèges de Magie, ses biblioth
 Les membres de l'élite impériale aiment à se considérer comme des mécènes et des défenseurs de la nation. Les plus philanthropes parrainent des théâtres entiers, tandis que les moins généreux conservent des loges privées, afin de pouvoir s'afficher loin de la plèbe crasseuse.
 
 
-# **Magie et ingénierie**
+<span id="page-9-0" data-folio="7"></span># **Magie et ingénierie**
 
 *« Oh oui, on croise quelques mages par ici, de temps à autre. Ils sont aimables, dans l'ensemble. Si vous rendez service à ceux qui portent des robes brillantes, ils ne seront pas avares de récompenses. En revanche, je n'aime pas trop l'attitude de ceux en bleu qui observent les étoiles. Ils ont une façon de toiser les gens qui ne me plaît pas vraiment ».*
 
@@ -117,7 +117,7 @@ Fortifiée rapidement, Reikdorf ne tarda pas à prospérer. Les berges boueuses 
 
 I
 
-# **Capitale d'un nouvel empire**
+<span id="page-12-0" data-folio="10"></span># **Capitale d'un nouvel empire**
 
 Au cours des siècles, les Unberogens menèrent plusieurs guerres sanglantes, ou formèrent des alliances fragiles, avec des tribus telles que les Thuringiens et les Teutogens. En -30 CI, l'enfant Sigmar naquit du chef de Reikdorf. Ce garçon, fort et charismatique, parvint à gagner la gratitude du grand roi nain Kurgan Barbe de fer après l'avoir sauvé des griffes des orcs.
 
@@ -150,7 +150,7 @@ Pour empirer cette crise civique, une grande peste ravagea l'Empire en 1111 CI. 
 Même les Altdorfers conservateurs se réjouirent du décès de Boris l'Avide en 1115 CI, mais le pire était à venir. Les skavens, une menace cachée pendant la majeure partie de l'histoire de l'Empire, qui étaient à l'origine de la peste, s'enhardirent de cette réussite. Ces hommes-rat répugnants rôdaient ouvertement dans tout l'Empire. L'anarchie régnait et le peuple privilégiait la survie au jour le jour plutôt que les subtilités sociales et l'élection d'un nouvel Empereur.
 
 
-# **Une influence en baisse**
+<span id="page-13-0" data-folio="11"></span># **Une influence en baisse**
 
 Mandred, le Tueur de Rats, repoussa les skavens sous terre afin d'offrir un sentiment de sécurité et de stabilité à l'Empire. Après son couronnement, il transféra la cour impériale à Middenheim en 1124 CI, ce qui entraîna la diminution de l'importance d'Altdorf. Le centre des échanges migra vers le nord et le Culte de Sigmar fut forcé de reconnaître un Empereur ouvertement ulricain.
 
@@ -175,7 +175,7 @@ Les souverains vampiriques du Comté renégat de Sylvanie assiégèrent Altdorf 
 Pendant les Guerres des Vampires, de nombreuses personnes vinrent trouver refuge à Altdorf. Elles se rassemblèrent dans le Quartier Est et sur les quais, telle une foule malade et affamée entassée dans de minuscules bâtiments. Les guildes n'étant pas en mesure d'offrir aux nouveaux arrivants un travail légitime, une nouvelle force émergea à Altdorf : les gangs des quais. De nombreuses petites bandes firent leur apparition aussi vite qu'elles disparurent, mais les Crochets et les Poissons, encore en activité à ce jour, émergèrent à cette époque. Alors que les vampires Carstein faisaient la guerre à la ville, ces deux bandes rivales se battaient entre elles.
 
 
-Après la défaite de Mannfred von Carstein en 2135 CI, Altdorf entra dans une période de paix relative, connue sous le nom de Grande Reconstruction. Chaque adulte valide devait aider à la reconstruction de la ville sous peine de perdre sa citoyenneté. Nombreux sont ceux qui s'y opposèrent, mais après l'expérience amère de la guerre des gangs, l'esprit n'était pas à l'émeute.
+<span id="page-14-0" data-folio="12"></span>Après la défaite de Mannfred von Carstein en 2135 CI, Altdorf entra dans une période de paix relative, connue sous le nom de Grande Reconstruction. Chaque adulte valide devait aider à la reconstruction de la ville sous peine de perdre sa citoyenneté. Nombreux sont ceux qui s'y opposèrent, mais après l'expérience amère de la guerre des gangs, l'esprit n'était pas à l'émeute.
 
 # **Magnus le Pieux**
 
@@ -212,7 +212,7 @@ Lorsqu'on lui proposa de soutenir le projet d'Oswald von Königswald, qui consis
 
 ### LES NOUVELLES ARMOIRIES DE L'EMPEREUR
 
-Les armoiries adoptées par l'empereur Wilhelm III sont si courantes dans la capitale que de nombreux visiteurs les confondent avec le blason de la ville. Le heaume de chevalier et la couronne sont associés aux Empereurs depuis l'époque de Siegfried I er, un souverain particulièrement belliqueux qui s'est battu jusqu'au bout lors de la Bataille des Destins en 732 CI. L'ajout d'un griffon rampant sur la couronne a été institué par Magnus le Pieux après sa victoire à Kislev. Magnus a également instauré la tradition d'ajouter un bouclier portant l'initiale de l'Empereur régnant. Ce bouclier d'un noir uni rappelle au souverain qu'il devra un jour s'abandonner à Morr.
+<span id="page-15-0" data-folio="13"></span>Les armoiries adoptées par l'empereur Wilhelm III sont si courantes dans la capitale que de nombreux visiteurs les confondent avec le blason de la ville. Le heaume de chevalier et la couronne sont associés aux Empereurs depuis l'époque de Siegfried I er, un souverain particulièrement belliqueux qui s'est battu jusqu'au bout lors de la Bataille des Destins en 732 CI. L'ajout d'un griffon rampant sur la couronne a été institué par Magnus le Pieux après sa victoire à Kislev. Magnus a également instauré la tradition d'ajouter un bouclier portant l'initiale de l'Empereur régnant. Ce bouclier d'un noir uni rappelle au souverain qu'il devra un jour s'abandonner à Morr.
 
 À partir de 2369 CI, les empereurs Unfähiger ont cherché à se distinguer de Magnus en remplaçant le griffon rampant par un pégase. Par la suite, dans une tentative désespérée de séduire les Wastelanders, ils remplacèrent la créature par un triton à queue de poisson.
 
@@ -320,7 +320,7 @@ Pendant une période de troubles civils et de guerre, les Électeurs se réuniss
 
 ### 1416 CI
 
-Le très impopulaire Hjalmar le Tyrannique, seul et unique Empereur originaire du Nordland, tente de redorer son blason en construisant une merveille moderne à Altdorf : le Pilier de Sigmar.
+<span id="page-17-0" data-folio="15"></span>Le très impopulaire Hjalmar le Tyrannique, seul et unique Empereur originaire du Nordland, tente de redorer son blason en construisant une merveille moderne à Altdorf : le Pilier de Sigmar.
 
 ### 1547 CI
 
@@ -389,7 +389,7 @@ Le grand théogoniste Hedrich Lutzenschalger déclare que seules certaines actio
 
 ### 2429 CI
 
-L'empereur Dieter IV, qui a monnayé la sortie de l'Empire de Marienburg, est rapidement remplacé par Wilhelm le Sage, le premier Holswig Schliestein à porter le titre d'Empereur. L'empereur Wilhelm III, nouvellement élu, tente de reprendre le Wasteland. Après la défaite de la *Bataille du marais Grootscher* et la reconnaissance officielle de l'indépendance du Wasteland, Wilhelm III déplace sa capitale de Nuln à Altdorf pour consolider son pouvoir. La Reiksguard, un corps de chevaliers chargés de défendre l'Empereur, est fondée.
+<span id="page-18-0" data-folio="16"></span>L'empereur Dieter IV, qui a monnayé la sortie de l'Empire de Marienburg, est rapidement remplacé par Wilhelm le Sage, le premier Holswig Schliestein à porter le titre d'Empereur. L'empereur Wilhelm III, nouvellement élu, tente de reprendre le Wasteland. Après la défaite de la *Bataille du marais Grootscher* et la reconnaissance officielle de l'indépendance du Wasteland, Wilhelm III déplace sa capitale de Nuln à Altdorf pour consolider son pouvoir. La Reiksguard, un corps de chevaliers chargés de défendre l'Empereur, est fondée.
 
 ### 2430 CI
 

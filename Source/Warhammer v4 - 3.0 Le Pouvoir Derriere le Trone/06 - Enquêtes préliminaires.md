@@ -29,7 +29,7 @@ Après avoir planifié une rencontre, les Personnages doivent être en mesure de
 Même si l'identité de l'antagoniste n'est pas modifiée, et que certains détails restent les mêmes que dans la première édition, il sera donc plus compliqué pour les Personnages de sauter les étapes préliminaires de l'intrigue que les Joueurs vétérans ne l'auront prévu. L'aventure reposerait alors moins sur la quête des Personnages pour révéler la vérité au grand jour (même s'ils devront passer par ce processus malgré tout, sans qu'il ne soit tenu compte des connaissances ou des souvenirs de leur Joueur respectif) et davantage sur leur capacité à se frayer un chemin dans la haute société de Middenheim. Cette perspective offre aux Joueurs un autre type de défi, auquel ils ne s'attendront sans doute pas.
 
 
-Cependant, ces cultistes subalternes ignorent que Wasmeier est un des leurs (un de leurs chefs, même), de même qu'ils n'ont aucune connaissance des détails de son plan, au-delà du fait que les chefs du culte s'intéressent de très près aux nouvelles taxes.
+<span id="page-47-0" data-folio="45"></span>Cependant, ces cultistes subalternes ignorent que Wasmeier est un des leurs (un de leurs chefs, même), de même qu'ils n'ont aucune connaissance des détails de son plan, au-delà du fait que les chefs du culte s'intéressent de très près aux nouvelles taxes.
 
 Les subalternes de la Main Pourpre n'ont jamais entendu parler de Gotthard von Wittgenstein, mais ils savent peutêtre qu'il existe une secte de Slaanesh dans la cité. Un cultiste exceptionnellement bien informé pourra peut-être révéler que ce culte s'appelle le Sceptre de Jade, et qu'il recrute principalement ses membres parmi la jeunesse nantie et indolente de Middenheim. Les deux cultes sont rivaux, mais sans être ennemis, et n'ont mené aucune action manifeste l'un contre l'autre : le Sceptre de Jade ne recherche que le plaisir, tandis que la Main Pourpre est en quête de pouvoir, et compte déjà dans ses rangs des personnes haut placées (bien que leurs identités ne soient pas connues des cultistes subalternes).
 
@@ -158,7 +158,7 @@ Les Fils d'Ulric forment une confédération peu organisée et mal définie, reg
 Plusieurs actions militantes ont été attribuées aux Fils d'Ulric, comme des appels à une prise d'indépendance du nord vis-à-vis du sud sigmarite, ce qui résulterait en une division de l'Empire en deux nations distinctes. Les discriminations à l'égard des adeptes de Sigmar sont en hausse, et vont du simple refus de traiter avec eux, à des attaques perpétrées sur leurs temples, leurs maisons et leur personne. D'autres comportements viennent s'ajouter à ces frictions croissantes, comme la défense des lois et des taxes visant spécifiquement les Sigmarites et la désobéissance civile envers les fonctionnaires envoyés par Altdorf, qui sont tenus responsables du moindre crime, désastre ou bavure publique. Les Fils d'Ulric n'apprécient pas vraiment le culte officiel, affirmant que celui-ci est faible et qu'Ar-Ulric devrait être choisi parmi leurs propres membres.
 
 
-Bien qu'Ar-Ulric ait publiquement appelé au calme et à la tolérance, et que les Fils d'Ulric se soient vus interdits de tenir des assemblées dans Middenheim, le chef du culte ulricain n'a pas réellement critiqué la position anti-sigmarite de ces radicaux, ce que beaucoup d'adeptes de Sigmar considèrent comme un élément révélateur. Le Graf a condamné la recrudescence de la violence et des cas de non-respect de la loi, et a augmenté les impôts afin d'embaucher davantage de gardes, mais il n'a pas désavoué les Fils d'Ulric ou pris de mesure les ciblant spécifiquement.
+<span id="page-51-0" data-folio="49"></span>Bien qu'Ar-Ulric ait publiquement appelé au calme et à la tolérance, et que les Fils d'Ulric se soient vus interdits de tenir des assemblées dans Middenheim, le chef du culte ulricain n'a pas réellement critiqué la position anti-sigmarite de ces radicaux, ce que beaucoup d'adeptes de Sigmar considèrent comme un élément révélateur. Le Graf a condamné la recrudescence de la violence et des cas de non-respect de la loi, et a augmenté les impôts afin d'embaucher davantage de gardes, mais il n'a pas désavoué les Fils d'Ulric ou pris de mesure les ciblant spécifiquement.
 
 ### **Le Grand Théogoniste**
 
@@ -222,7 +222,7 @@ Ceux que les taxes affectent directement ont, eux, une attitude bien différente
 Les sorciers, les alchimistes et les prêtres, bien que fulminant intérieurement, se montrent plus discrets sur le sujet, à moins d'être certains qu'ils sont entourés d'amis. La Guilde des Sorciers et les divers temples de la cité s'occupent de cette affaire, ils en sont sûrs, et le Graf n'est pas un homme déraisonnable : il s'agit clairement d'une erreur, et le problème devrait être rapidement réglé. Bien évidemment, il y a toujours quelques individus qui réagissent de manière plus virulente à la polémique, surtout après quelques verres, et il arrive que des étudiants du Collège de Théologie profitent de la situation 
 
 
-pour abandonner leurs cours le temps d'une journée de manifestations, de beuveries et de charivari général. Ils espèrent peut-être susciter ainsi davantage d'indignation de la part du public, mais ils réussissent surtout à agacer leurs concitoyens.
+<span id="page-53-0" data-folio="51"></span>pour abandonner leurs cours le temps d'une journée de manifestations, de beuveries et de charivari général. Ils espèrent peut-être susciter ainsi davantage d'indignation de la part du public, mais ils réussissent surtout à agacer leurs concitoyens.
 
 Rares sont ceux qui se déclarent ouvertement en faveur des nouvelles taxes. Les elfes sourient d'un air narquois et plaisantent à propos de l'impôt nain, et les personnes ayant des raisons de détester les sorciers ou les prêtres font de même à propos des impôts qui concernent ces derniers ; néanmoins, quasiment personne n'irait jusqu'à prendre fait et cause pour ces trois taxes.
 
@@ -265,7 +265,7 @@ Cette guilde remplit plusieurs fonctions en lien avec la législation. Ce sont b
 Concernant les taxes de la discorde, Hubergreiber, un employé subalterne, est l'homme à qui il faut s'adresser. Il peut fournir 
 
 
-un résumé des informations figurant p. 37 : qui paie l'impôt, à quel moment, à quelle fréquence, et quel est le montant à payer. Il peut expliquer, si on lui pose la question, que ces lois fiscales ont été promulguées il y a moins d'un mois, et que la première collecte mensuelle doit avoir lieu au lendemain de la fin du Carnaval. La Guilde cherche actuellement à employer davantage de scribes, afin de traiter la quantité de paperasse monumentale requise par ces nouvelles taxes. Hubergreiber peut donc proposer un poste à tout Personnage avec le Talent Lire/Écrire, en particulier s'il possède aussi le Talent Art (Écriture) ou Art (Calligraphie).
+<span id="page-54-0" data-folio="52"></span>un résumé des informations figurant p. 37 : qui paie l'impôt, à quel moment, à quelle fréquence, et quel est le montant à payer. Il peut expliquer, si on lui pose la question, que ces lois fiscales ont été promulguées il y a moins d'un mois, et que la première collecte mensuelle doit avoir lieu au lendemain de la fin du Carnaval. La Guilde cherche actuellement à employer davantage de scribes, afin de traiter la quantité de paperasse monumentale requise par ces nouvelles taxes. Hubergreiber peut donc proposer un poste à tout Personnage avec le Talent Lire/Écrire, en particulier s'il possède aussi le Talent Art (Écriture) ou Art (Calligraphie).
 
 ### **Qui met en place les lois fiscales ?**
 
@@ -302,7 +302,7 @@ Si les Personnages interrogent Malondel au sujet du Ménestrel de la Cour Rallan
 S'ils interrogent Thognar, celui-ci essaiera de dissimuler sa fureur. Il leur explique que les nains récoltent actuellement des signatures pour une pétition qu'ils souhaitent présenter au graf Boris, afin de lui faire part de leurs innombrables griefs : *« Et j'imagine que nous pouvons bien évidemment compter sur vos signatures ? »*. Si les Personnages l'emmènent boire un verre à la sortie du bureau, il se lâche un peu (à moins que des elfes ne fassent partie du groupe) et accuse Rallane d'être à l'origine de l'impôt nain : *« Il déteste notre peuple, et puis tous les autres pensent que parce qu'on travaille dur, on est forcément riches. C'est sûrement comme ça qu'il a réussi à faire approuver son idée. »*
 
 
-# **La Kommission pour le Commerce, les Métiers et les Impôts**
+<span id="page-55-0" data-folio="53"></span># **La Kommission pour le Commerce, les Métiers et les Impôts**
 
 Bien qu'il s'agisse d'un endroit évident où chercher des renseignements au sujet des nouvelles lois fiscales, le président de la Kommission, Gotthard Wallenstein, n'est quasiment jamais présent ; de plus, ni lui ni le clerc principal, Franz Christoph Becker, n'accepteront de rencontrer les Personnages. Les Personnages pourront s'adresser à l'employé Udiller, mais celui-ci, suivant les ordres de ses maîtres, leur en dira peu. À la moindre occasion, les employés renverront les Personnages vers une autre Kommission ou guilde, au prétexte que le rôle de la Kommission est simplement de collecter les impôts aussi efficacement que possible. *« Nous n'avons rien à voir avec cela, vraiment. »* Cette Kommission a la réputation grandissante de ne servir que les intérêts des marchands, et de personne d'autre.
 
@@ -333,7 +333,7 @@ Il existe différents moyens d'entrer en contact avec la pègre. Par exemple, un
 Dans le second cas, le PNJ fait un signe de reconnaissance spécifique à la pègre de Middenheim. Si le Personnage échoue à répondre correctement, le PNJ lui glisse discrètement que ce serait peut-être une bonne idée d'aller discuter un peu en privé : après tout, il est beaucoup plus difficile de faire les poches quand on n'a plus de doigts, n'est-ce pas ?
 
 
-Après que les roublards locaux ont mené les vérifications nécessaires pour s'assurer que le Personnage est sincère et n'est pas de mèche avec les autorités, un rendez-vous nocturne est planifié. Le Personnage se voit offrir une adhésion provisoire pour la semaine du Carnaval en échange d'une couronne d'or, puis il apprend le dialecte local du Langage des voleurs (le Personnage doit déjà posséder la Compétence de base concernée) ainsi que la position de plusieurs lieux de contact. Si vous avez assez de temps pour une aventure en solo, le Personnage Voleur pourrait aussi avoir à accomplir une mission afin de prouver son aptitude et sa bonne foi.
+<span id="page-56-0" data-folio="54"></span>Après que les roublards locaux ont mené les vérifications nécessaires pour s'assurer que le Personnage est sincère et n'est pas de mèche avec les autorités, un rendez-vous nocturne est planifié. Le Personnage se voit offrir une adhésion provisoire pour la semaine du Carnaval en échange d'une couronne d'or, puis il apprend le dialecte local du Langage des voleurs (le Personnage doit déjà posséder la Compétence de base concernée) ainsi que la position de plusieurs lieux de contact. Si vous avez assez de temps pour une aventure en solo, le Personnage Voleur pourrait aussi avoir à accomplir une mission afin de prouver son aptitude et sa bonne foi.
 
 Toute question au sujet des taxes ou de la cour suscitera une forme de perplexité, qui pourra cependant être dissipée par quelques précisions raisonnablement évasives : *« Simple curiosité : je trouve juste ça bizarre. »* Le PNJ voleur mentionne en passant qu'il connaît quelqu'un capable d'obtenir toutes sortes d'informations sur toutes sortes de choses, si on est prêt à y mettre le prix. Si le Personnage accepte de rencontrer cet individu, un autre rendez-vous est organisé dans une taverne isolée, environ 12 heures plus tard, en échange de 1d10+3 pistoles de « frais d'arrangement ».
 
@@ -384,7 +384,7 @@ dans la campagne. Ils pourraient actuellement être en poste dans des temples é
 
 promotion qui les ramènera à la Cité du Loup Blanc : un pas de plus vers leur rendez-vous avec l'Histoire.
 
-accuser Ar-Ulric de soutenir les taxes dans le but de chasser les autres religions de la ville ; avec un succès Impressionnant ou plus, il se demande même si le temple d'Ulric paie réellement l'impôt sur les temples.
+<span id="page-57-0" data-folio="55"></span>accuser Ar-Ulric de soutenir les taxes dans le but de chasser les autres religions de la ville ; avec un succès Impressionnant ou plus, il se demande même si le temple d'Ulric paie réellement l'impôt sur les temples.
 
 Les prêtres de Sigmar ont aussi le sentiment que l'impôt nain est un affront délibéré envers leur religion, étant donné les liens historiques qui unissent le culte de Sigmar et le peuple nain.
 
@@ -435,7 +435,7 @@ Liebnitz est un homme trapu, presque un peu gros, mais visiblement doté d'une s
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
 | 4 | 55 | 45 | 45 | 41 | 45 | 38 | 35  | 46  | 54 | 48  | 17 |
 
-**Compétences :** Athlétisme 48, Calme 64, Charme 58, Chevaucher (Cheval) 52, Commandement 58, Corps à corps (Base 65, Cavalerie 65, Parade 61), Divertissement (Discours) 58, Emprise sur les animaux 58, Esquive 48, Guérison 49, Intimidation 55, Langue (Bataille) 56, Métier (Maréchalferrant) 45, Prière 58, Projectiles (Arc) 55, Résistance 51, Savoir (Héraldique 49, Théologie 66), Soin aux animaux 58
+<span id="page-58-0" data-folio="56"></span>**Compétences :** Athlétisme 48, Calme 64, Charme 58, Chevaucher (Cheval) 52, Commandement 58, Corps à corps (Base 65, Cavalerie 65, Parade 61), Divertissement (Discours) 58, Emprise sur les animaux 58, Esquive 48, Guérison 49, Intimidation 55, Langue (Bataille) 56, Métier (Maréchalferrant) 45, Prière 58, Projectiles (Arc) 55, Résistance 51, Savoir (Héraldique 49, Théologie 66), Soin aux animaux 58
 
 **Talents :** Assaut féroce, Béni (Ulric), Coup puissant, Frénésie, Haine sacrée, Invocation (Ulric), Lire/Écrire, Savoir-vivre (Adeptes d'Ulric)
 

@@ -39,7 +39,7 @@ Les Crochets se prétendent différents des Poissons : ils ont beau être des br
 Les Crochets possèdent une hiérarchie plus verticale et structurée que les Poissons. Leur chef, Willi Pick, conserve une influence incontestée sur le groupe : il préside une assemblée constituée de ses lieutenants, où ils discutent leurs projets et leurs stratégies.
 
 
-### **Brème**
+<span id="page-34-0" data-folio="32"></span>### **Brème**
 
 Brème est un étrange poisson, mais avec le temps, elle s'est imposée comme l'une des tueuses les plus en vue des gangs d'Altdorf. Elle a un penchant pour les transformations corporelles : elle s'est coupé l'extrémité du nez, s'est taillé les oreilles, s'est scarifié les lèvres, et a épilé chaque follicule de son crâne pour ressembler à un poisson. Un tatouage complexe d'écailles intercalées lui recouvre la tête. Brème affiche un goût prononcé pour la mode masculine élégante, et porte souvent une tête de poisson à la bouche béante en guise d'accessoire.
 
@@ -109,7 +109,7 @@ Mais la force et la passion de son argumentaire ont trouvé un écho dans la pop
 Maintenant, les révolutionnaires sont considérés avec suspicion par les classes populaires qu'ils voudraient défendre. Les branches principales du mouvement sont hors-la-loi. Les soutenir publiquement revient à s'exposer à de sévères sanctions, pouvant aller jusqu'à la torture et la mort.
 
 
-### **Les Brustellistes**
+<span id="page-36-0" data-folio="34"></span>### **Les Brustellistes**
 
 Les Brustellistes forment la branche intellectuelle du Mouvement révolutionnaire. Ils sont généralement plus âgés, plus calmes, et mieux dotés économiquement et socialement que leurs camarades révolutionnaires. Ils se rassemblent lors de forums informels dans des tavernes pour discuter de la mise en œuvre concrète de leurs théories. Les militants respectent Brustellin comme l'homme à l'origine de ces théories, mais ils ont tendance à trouver qu'il n'est pas assez radical. Les Brustellistes soutiennent des réformes modérées afin d'éviter une révolution sanglante. Certains considèrent même qu'il est souhaitable de conserver quelques aspects du régime actuel : le progrès est souhaitable, mais l'utopie est irréalisable. Cette capacité à compromettre leurs idéaux dégoûte les révolutionnaires radicaux.
 
@@ -187,7 +187,7 @@ Certains contes populaires racontent l'histoire d'âmes nobles, nées dans la pa
 Konrad est un héros, aucun doute là-dessus. L'Empereur luimême l'a publiquement félicité pour ses services à l'Empire, et lui a octroyé un pardon royal. Beaucoup d'habitants d'Altdorf condamnent une telle clémence. Dans la version la plus répandue des événements, Konrad a sauvé la vie de l'Empereur et a fait échouer une machination du Chaos, mais pour ce faire, il a tué des soldats et payé des pirates du Wasteland pour bombarder la ville. D'après certaines rumeurs, c'est un mutant. La Société du Serment de la Dévotion de Konrad s'oppose à toute diffamation de son héros, et considère que ses actions étaient justifiées : c'est un homme sain de corps et d'esprit, qui mérite d'être acclamé. Les membres de cette société sont connus pour intimider et attaquer toute personne qui dénigrerait le grand Konrad. Ils sont suspectés d'avoir fait disparaître bon nombre de pamphlétaires et auteurs de satires qui s'étaient moqués de lui.
 
 
-### **Willi Pick, Maître des quais et Baron du crime**
+<span id="page-38-0" data-folio="36"></span>### **Willi Pick, Maître des quais et Baron du crime**
 
 Malgré sa soixantaine bien tassée, Willi Pick est toujours fort et très puissant ; peu de personnes se souviennent d'un temps où il n'était pas à la tête des Crochets. Il est né dans le Quartier Est d'Altdorf, et travaille pour les Crochets depuis sa jeunesse. Très longtemps, il est resté du bon côté de la loi : plus jeune, il travaillait dur sur les quais, avant d'accéder à la gestion des territoires et des entrepôts des Crochets. Il tenait un journal détaillant les nombreuses blessures et injustices infligées à ses compagnons par les Poissons et la Garde des quais. Willi n'avait pas le pardon facile.
 
@@ -212,7 +212,7 @@ Au début de la guerre, les Crochets étaient dirigés par de nombreux meneurs, 
 **Possessions :** arme simple (crochet de débardeur), couvrechef de porteur, gants de cuir, justaucorps de cuir, loyauté des Crochets, pipe et tabac
 
 
-### **Balthus**
+<span id="page-39-0" data-folio="37"></span>### **Balthus**
 
 On peut généralement trouver Balthus dans les tripots les plus miteux du Reikerbahn. Elle a une trentaine d'années, et de longs cheveux bruns emmêlés comme un nid d'oiseau, laissant à peine entrevoir ses yeux rougis et son air boudeur. Elle porte des vêtements simples qu'elle a tissés elle-même, avec des accessoires tape-à-l'œil. Ses bras nus sont zébrés de cicatrices, symboles de sa dévotion envers les martyrs de la révolution. Depuis peu, elle porte une lourde chaîne autour du cou pour afficher sa solidarité avec les condamnés.
 
@@ -255,7 +255,7 @@ L'attrait des Crochets, c'est qu'ils prétendent être du côté de l'Empire fac
 Les nains, respectueux de la loi, vivant dans le district de Metallschlake n'ont que du mépris pour les organisations criminelles, et préfèrent payer leurs semblables pour assurer leur protection. Connus sous le nom de Marteleurs de saphir (Zaffengrundi) à cause de leur brassard orné d'un marteau bleu, la bande armée de nains cherche à protéger leur quartier des gangs, aussi bien Crochets que Poissons. Les Marteleurs de saphir ne sont pas dupes, ils savent que le Comité de vigilance des citoyens est contrôlé par les Crochets et ne coopèrent pas avec eux.
 
 
-# Habitants d'Altdorf éminents et icônes culturelles
+<span id="page-40-0" data-folio="38"></span># Habitants d'Altdorf éminents et icônes culturelles
 
 Bon nombre de citoyens notables d'Altdorf sont issus de la noblesse, du clergé ou de l'armée, mais d'autres figures importantes ont aussi animé la cité. Leur influence sur la vie quotidienne d'Altdorf se ressent encore aujourd'hui.
 
@@ -282,7 +282,7 @@ Sa renommée n'a fait que grandir. Son travail était intelligent et captivant. 
 Les pièces de Tarradasch sont encore très respectées à ce jour. Elles parlent de ce qui nous rend humains, depuis l'agonie de l'obsession dans Les Amours d'Ottokar et Myrmidia, jusqu'à la perte spirituelle de liberté dans Le Prisonnier désolé de Karak Kadrin. Tarradasch est une source de fierté pour tous les habitants d'Altdorf, peu importe leur classe sociale. Sa tombe à Zwillingsgrab attire des acteurs et des auteurs qui espèrent être inspirés par sa présence. D'après une rumeur, un auteur frustré utilise la nécromancie pour pousser son fantôme à l'aider à écrire.
 
 
-Le temps n'a pas été clément avec l'œuvre de Tarradasch. Peu de personnes persistent à assister à la représentation de ses pièces, et les traits d'humour ont mal vieilli. Seul un excellent acteur peut espérer convaincre le public que ses jeux de mots sont aussi hilarants que les professeurs de théâtre le prétendent.
+<span id="page-41-0" data-folio="39"></span>Le temps n'a pas été clément avec l'œuvre de Tarradasch. Peu de personnes persistent à assister à la représentation de ses pièces, et les traits d'humour ont mal vieilli. Seul un excellent acteur peut espérer convaincre le public que ses jeux de mots sont aussi hilarants que les professeurs de théâtre le prétendent.
 
 Maître Reichardt Schwetz (2301–2402), historien
 
@@ -305,7 +305,7 @@ Baron Viktore von Strom (2425–2502), athlète Le baron von Strom était célè
 Le baron a décliné toutes les propositions de travail comme Champion de Justice ; d'après lui, il était avant tout un athlète, pas un guerrier. Pendant les quarante années qui suivirent, il releva des défis toujours plus impressionnants, pour le plus grand plaisir de son public. Il traversa le Reik à la nage l'hiver de 2465 CI, battit plusieurs nains au porté d'enclume et le record de vitesse du tour de la ville, attrapa vingt-quatre cochons graissés au Grandmarkt, et vainquit Sven dit « l'Éclair » dans une compétition de sciage de bois. D'après le baron von Strom, ses prouesses étaient à mettre sur le compte « d'une bonne éducation, de bonnes manières, et du bon vin de Lustrie ». Il en buvait avant chaque événement sportif, mais il gardait secrète la recette exacte.
 
 
-Bayard Schnappen (2459–2499), Capitaine de la Garde et
+<span id="page-42-0" data-folio="40"></span>Bayard Schnappen (2459–2499), Capitaine de la Garde et
 
 Reinharda Kant (2459–2499), baronne du crime
 
@@ -332,7 +332,7 @@ Toute personne au-dessus d'un certain âge a une histoire à raconter sur Galanz
 Galanz était considéré par beaucoup comme un dandy superficiel, mais son histoire était bien plus complexe. Il était combattant dans l'infanterie du Reikland, et on disait de lui qu'il faisait preuve d'un grand courage sur le champ de bataille. Malheureusement, il a perdu la vie en 2509, lors d'un duel déclenché suite à une dispute sur la longueur adéquate pour un pourpoint.
 
 
-Ormal Bourretripe (2432–), aubergiste
+<span id="page-43-0" data-folio="41"></span>Ormal Bourretripe (2432–), aubergiste
 
 L'Auberge du Carrosse à Quatre chevaux est l'une des plus connues de la Rive Sud, non pas pour son atmosphère, sa clientèle, ou son hospitalité, mais pour le comportement d'Ormal Bourretripe, l'aubergiste le plus désagréable d'Altdorf. Que vous soyez un graf ou un garçon des rues, ce halfling grisonnant vous traitera avec le même mépris.
 

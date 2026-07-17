@@ -541,7 +541,7 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.448, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, `assaut-feroce`, +9 — `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +1 fichiers
+- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.448, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, `assaut-feroce`, +88 — `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +1 fichiers
 
 ---
 
@@ -578,7 +578,7 @@ Talents concernés (LDB 10) :
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `talent-aleatoire`, `acrobaties-equestres`, `MedicState`, `affable`, `useAttackJetProps`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CombatFeature`, +19 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +7 fichiers
+- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `useAttackJetProps`, `CombatFeature`, `surgeryNext`, `MedicModal`, `baratiner`, `PendingAttack`, `battement`, `dualAffordance`, `beni`, +77 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +7 fichiers
 - `LDB 12` (l.43) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +1 fichiers
 
 ---

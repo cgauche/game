@@ -86,7 +86,7 @@ Vos coups se succèdent rapidement et pleuvent sur vos adversaires avec la fureu
 Que ce soit votre regard perçant, votre corps musclé, ou peutêtre l'éclat de vos dents parfaites, vous savez comment utiliser au mieux ce que les dieux vous ont offert. Quand vous réussissez à utiliser Charme pour influencer ceux qui vous trouvent Attirant, 
 
 
-vous pouvez choisir d'utiliser soit le DR de votre lancer, soit le nombre des unités obtenu sur votre dé. Donc, une réussite de 63 peut être utilisée comme un DR de +3.
+<span id="page-134-0" data-folio="133"></span>vous pouvez choisir d'utiliser soit le DR de votre lancer, soit le nombre des unités obtenu sur votre dé. Donc, une réussite de 63 peut être utilisée comme un DR de +3.
 
 # **Baratiner**
 
@@ -139,7 +139,7 @@ réparez des objets cassés.
 Vous avez l'habitude de vous débrouiller avec peu, et savez comment survivre aux périodes de vache maigre. Vous pouvez subsister avec la moitié de la nourriture nécessaire sans pénalités négatives (vous empêchant d'avoir *réellement* faim), et vous avez seulement besoin d'effectuer un Test concernant la faim tous les 3 jours et pas 2 (voir page 181).
 
 
-### **Caïd**
+<span id="page-135-0" data-folio="134"></span>### **Caïd**
 
 **Maxi :** 1
 
@@ -224,7 +224,7 @@ Vous réagissez aussi vite que l'éclair. Votre Initiative est plus élevée de 
 Vous êtes entraîné à vous placer très près d'un adversaire. Vous ne subissez aucune pénalité pour vous battre contre un adversaire 
 
 
-avec une arme plus longue que la vôtre. De plus, si vous utilisez les règles optionnelles de Combat au contact (voir page 297), gagnez un bonus de +10 pour toucher votre adversaire.
+<span id="page-136-0" data-folio="135"></span>avec une arme plus longue que la vôtre. De plus, si vous utilisez les règles optionnelles de Combat au contact (voir page 297), gagnez un bonus de +10 pour toucher votre adversaire.
 
 # **Combattant en espace clos**
 
@@ -308,7 +308,7 @@ Vous êtes un criminel actif qui gagne de l'argent grâce à des sources illéga
 Vous êtes capable de désarmer un adversaire d'un coup de poignet judicieux ou grâce à une frappe bien ciblée à la main. Pour une Action, vous pouvez tenter un Test opposé **Corps à corps/Corps à corps**. Sur un succès, votre adversaire perd une arme tenue, qui atterrit à 1d10 x 30 cm dans une direction aléatoire (avec des effets supplémentaires déterminés par le MJ). Si vous réussissez de 2 DR, vous pouvez déterminer à quelle distance l'arme est projetée au lieu d'effectuer un lancer ; si vous gagnez de 4 DR, vous pouvez également choisir la direction dans laquelle est projetée l'arme ; si vous gagnez de 6 DR ou plus, vous pouvez prendre l'arme de votre adversaire si vous avez une main libre, l'attrapant en l'air avec panache. Ce Talent est inutile si votre adversaire n'a pas d'arme, ou s'il est d'une Taille supérieure à la vôtre (voir page 342).
 
 
-### **Destinée**
+<span id="page-137-0" data-folio="136"></span>### **Destinée**
 
 **Maxi :** 1
 
@@ -404,7 +404,7 @@ Toute personne saine d'esprit réfléchit à deux fois avant de vous approcher. 
 Il en faut beaucoup pour vous achever. Vous pouvez ignorer le Point de Blessure perdu à cause d'un État *Hémorragique*. Chaque niveau dans ce Talent vous permet d'ignorer le Point de Blessure perdu à cause d'un État *Hémorragique* supplémentaire.
 
 
-### **Ergoteur**
+<span id="page-138-0" data-folio="137"></span>### **Ergoteur**
 
 **Maxi :** Bonus de Sociabilité
 
@@ -479,7 +479,7 @@ Le Talent Frénésie est ajouté à la liste des Talents de n'importe laquelle d
 **Tests :** Tests de Corps à corps lorsque vous effectuez une Frappe assommante
 
 
-Vous savez où frapper un adversaire pour le faire tomber rapidement. Vous ignorez la pénalité due à la désignation d'une Localisation pour frapper à la Tête quand vous utilisez une arme de Corps à corps avec l'Atout *Assommante* (voir page 297). De plus, vous considérez toutes les armes improvisées comme ayant l'Atout *Assommante*.
+<span id="page-139-0" data-folio="138"></span>Vous savez où frapper un adversaire pour le faire tomber rapidement. Vous ignorez la pénalité due à la désignation d'une Localisation pour frapper à la Tête quand vous utilisez une arme de Corps à corps avec l'Atout *Assommante* (voir page 297). De plus, vous considérez toutes les armes improvisées comme ayant l'Atout *Assommante*.
 
 ### **Frappe blessante**
 
@@ -570,7 +570,7 @@ Votre expérience, Talent ou entraînement vous permet de manipuler de façon pl
 Vous entretenez une identité secrète qui vous permet de paraître plus riche, ou peut-être plus pauvre, que vous ne l'êtes actuellement. Avec l'accord du MJ, choisissez une Carrière. Tant que vous êtes habillé de façon appropriée, vous pouvez utiliser le Statut Social de la Carrière d'emprunt choisie plutôt que celui de la vôtre, pour modifier les Tests de Sociabilité. Vous pouvez même ignorer le Talent Criminel. Cependant, conserver cette identité nécessitera des Tests de Divertissement (Interprétation) quand vous rencontrez ceux qui pourraient déceler votre supercherie. Vous pouvez créer une nouvelle Identité secrète pour chaque Niveau que vous possédez dans ce Talent.
 
 
-### **Imitation**
+<span id="page-140-0" data-folio="139"></span>### **Imitation**
 
 **Maxi :** Bonus d'Initiative
 
@@ -631,7 +631,7 @@ Vous êtes béni par l'un des dieux, et pouvez donc effectuer l'un des Miracles 
 **Tests :** Recherche et Langue si la vitesse de lecture est importante
 
 
-Vous pouvez inverser un Test de Recherche raté si cela permet de le réussir. Si la vitesse à laquelle vous lisez est importante pendant un combat, un Test de Langue réussi vous permet de lire et de bien comprendre un nombre de pages par Round égal à votre DR plus votre niveau de Lecture rapide (minimum 1, même si vous avez raté le Test).
+<span id="page-141-0" data-folio="140"></span>Vous pouvez inverser un Test de Recherche raté si cela permet de le réussir. Si la vitesse à laquelle vous lisez est importante pendant un combat, un Test de Langue réussi vous permet de lire et de bien comprendre un nombre de pages par Round égal à votre DR plus votre niveau de Lecture rapide (minimum 1, même si vous avez raté le Test).
 
 ### **Linguistique**
 
@@ -722,7 +722,7 @@ Vous portez en vous l'étincelle de la magie et maîtrisez les techniques pour l
 | … et ainsi de suite.              |                                                   |
 
 
-Donc, si votre Bonus de Force Mentale est de 3 et que vous disposez déjà de 3 Sorts mineurs, il vous en coûtera 50 PX pour le premier, puis 100 PX pour les 3 suivants, et ainsi de suite. Les règles complètes pour l'apprentissage de nouveaux Sorts se trouvent au **Chapitre 8 : Magie**.
+<span id="page-142-0" data-folio="141"></span>Donc, si votre Bonus de Force Mentale est de 3 et que vous disposez déjà de 3 Sorts mineurs, il vous en coûtera 50 PX pour le premier, puis 100 PX pour les 3 suivants, et ainsi de suite. Les règles complètes pour l'apprentissage de nouveaux Sorts se trouvent au **Chapitre 8 : Magie**.
 
 # **Magnum opus**
 
@@ -787,7 +787,7 @@ Vous êtes un navigateur expérimenté en eaux douces, habitué aux navires fluv
 Vous bénéficiez d'une stature imposante. Quand vous utilisez la Compétence Intimidation, gagnez un bonus de DR égal à vos Niveaux de Menaçant.
 
 
-#### **Menteur**
+<span id="page-143-0" data-folio="142"></span>#### **Menteur**
 
 **Maxi :** Bonus de Sociabilité
 
@@ -870,7 +870,7 @@ Quand vous voyagez à travers des régions giboyeuses, vous êtes automatiquemen
 Vous êtes un orateur de talent et savez comment galvaniser d'importants groupes de personnes. Référez-vous au tableau suivant pour voir combien de personnes vous pouvez influencer avec votre Compétence Charme (voir page 119) quand vous parlez en public.
 
 
-| Talent pris | Nombre de personnes influencées                    |
+<span id="page-144-0" data-folio="143"></span>| Talent pris | Nombre de personnes influencées                    |
 |-------------|----------------------------------------------------|
 | 1           | Normal x 5                                         |
 | 2           | Normal x 10                                        |
@@ -943,7 +943,7 @@ Vous gagnez un bonus permanent de +5 à votre Caractéristique Intelligence de d
 Vous êtes bien plus petit que la plupart des gens dans le Vieux Monde. Les règles complètes concernant les différentes Tailles se trouvent au **Chapitre 12 : Bestiaire** à la page 342.
 
 
-### **Pharmacologie**
+<span id="page-145-0" data-folio="144"></span>### **Pharmacologie**
 
 **Maxi :** Bonus d'Intelligence **Tests :** Métier (Apothicaire)
 
@@ -1034,7 +1034,7 @@ Vous êtes très résistant à la magie. Le DR de tout Sort vous affectant est r
 La meilleure défense c'est l'attaque, donc vous répondez à une attaque par une contre-attaque rapide comme l'éclair. Si votre 
 
 
-arme possède l'Atout Rapide, vous pouvez infliger des Dégâts quand vous êtes attaqué, comme si c'était votre Action. Vous pouvez Riposter à un nombre d'attaques par Round égal à votre Niveau de Riposte.
+<span id="page-146-0" data-folio="145"></span>arme possède l'Atout Rapide, vous pouvez infliger des Dégâts quand vous êtes attaqué, comme si c'était votre Action. Vous pouvez Riposter à un nombre d'attaques par Round égal à votre Niveau de Riposte.
 
 # **Robuste**
 

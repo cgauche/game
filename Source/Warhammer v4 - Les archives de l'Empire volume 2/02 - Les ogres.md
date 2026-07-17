@@ -58,7 +58,7 @@ Les linguistes de l'Université d'Altdorf ont remarqué que l'apparition d'une n
 — Ezra Brynsdottir, brise-bouclier naine
 
 
-#### **Ce que les ogres pensent des halflings...**
+<span id="page-18-0" data-folio="17"></span>#### **Ce que les ogres pensent des halflings...**
 
 *« Ils sont petits et délicieux si tu dois remplir ton garde-manger vide, mais il vaut mieux s'en servir pour cuisiner... Enfin, c'est eux qui font la cuisine. Ils sont très bavards, mais il y a quelque chose chez eux qui en ferait presque des membres de la famille. Mais c'est pas non plus comme les avortons que tu finis par manger. »*
 
@@ -177,7 +177,7 @@ Bien que résistants aux effets du Chaos, les ogres ne sont pas immunisés contr
 | Esprit | 11–00 |
 
 
-**Débardeur :** on dit qu'un débardeur ogre compense largement le volume de nourriture qu'il consomme par la quantité de marchandises qu'il peut charger sur un navire. Tout marchand astucieux, pour autant qu'il ait prévu un bon surplus de stock pour couvrir les besoins, peut réaliser de belles économies avec une équipe d'ogres volontaires.
+<span id="page-20-0" data-folio="19"></span>**Débardeur :** on dit qu'un débardeur ogre compense largement le volume de nourriture qu'il consomme par la quantité de marchandises qu'il peut charger sur un navire. Tout marchand astucieux, pour autant qu'il ait prévu un bon surplus de stock pour couvrir les besoins, peut réaliser de belles économies avec une équipe d'ogres volontaires.
 
 **Garde :** les ogres sont souvent employés comme gardes du corps par ceux qui peuvent se permettre de prendre en charge leurs frais exorbitants. Ils excellent dans leurs fonctions, car peu de personnes sont disposées à s'en prendre ouvertement à un ogre, si on leur laisse le choix. Cependant, leur corpulence peut souvent poser problème, car ils sont incapables de pénétrer dans de nombreux établissements fréquentés par leurs employeurs.
 
@@ -401,7 +401,7 @@ Les ogres impériaux sont nés dans l'Empire, ils ont donc appris ses us et cout
 D'autres ogres, comme les voyageurs venus des royaumes ogres, portent quelques vestiges de leur culture d'origine, mais ils s'adaptent rapidement. Ils se font aux coutumes locales, mais ont souvent du mal avec les préoccupations plus ésotériques, comme la moralité, la religion ou encore la philosophie, qu'ils imitent plus qu'ils ne les assimilent.
 
 
-### **À quoi ressemble votre famille ?**
+<span id="page-25-0" data-folio="24"></span>### **À quoi ressemble votre famille ?**
 
 Les ogres sont assez stoïques et, bien que leurs préoccupations les plus urgentes concernent généralement leur prochain repas, ils se soucient également de l'éducation de leurs enfants. Certaines pratiques peuvent sembler cruelles aux yeux des étrangers, mais les Montagnes des Larmes offrent un habitat rude dans lequel le plus robuste des ogres doit apprendre à survivre. Cet aspect est quelque peu tempéré par la culture de l'Empire, aussi les parents déconseillent à la plupart des enfants qui y sont nés de dévorer leurs frères et sœurs les plus faibles.
 
@@ -606,7 +606,7 @@ Toutefois, les ogres forgent et utilisent leurs propres armes et armures, notamm
 
 ### ARMES DE CORPS À CORPS DES OGRES
 
-| Arme                    | Prix | Enc. | Disponibilité* | Allonge<br>Dégâts |      | Atouts et Défauts        |
+<span id="page-30-0" data-folio="29"></span>| Arme                    | Prix | Enc. | Disponibilité* | Allonge<br>Dégâts |      | Atouts et Défauts        |
 |-------------------------|------|------|----------------|-------------------|------|--------------------------|
 |                         |      |      |                | BASE              |      |                          |
 | Massue ogre             | 1 CO | 2    | Courante       | Moyenne           | BF+4 | Spéciale**               |
@@ -767,7 +767,7 @@ Vous trempez votre lame favorite dans le sang d'un ennemi fraîchement tombé, c
 Clément Gauche - gauche.c@gmail.com
 
 
-Pendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de **Calme Intermédiaire (+0)** ou gagner l'État *Assommé*. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30.
+<span id="page-34-0" data-folio="33"></span>Pendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de **Calme Intermédiaire (+0)** ou gagner l'État *Assommé*. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30.
 
 ### **Goinfre costaud**
 

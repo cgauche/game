@@ -359,6 +359,35 @@ export function readRefFile(n) {
   try { return readFileSync(resolve('.claude/soldes', `ref-${n}.md`), 'utf8') } catch { return null }
 }
 
+// ── Répertoire CIBLE du commit (fix #587) ──────────────────────────────────────────────────────────
+// Le hook tourne dans le cwd du process (le dépôt de la SESSION) ; une commande qui `cd` dans un
+// AUTRE dépôt (worktree) avant `git commit` doit faire lire ses états git (manifest stagé, diff
+// staged) DANS CE RÉPERTOIRE, pas celui de la session — sinon un manifest propre dans le worktree
+// est jugé contre l'arbre principal encore sale (démontré empiriquement, #587). Seules les lectures
+// d'état GIT du commit sont concernées : les soldes (`.claude/soldes/*.md`) restent lus côté SESSION
+// par design (ils y vivent, pas dans le worktree).
+const CD_RE = /(?:^|&&|;|\|)\s*cd\s+("[^"]*"|'[^']*'|\S+)/i
+const GIT_DASH_C_RE = /git\s+-C\s+("[^"]*"|'[^']*'|\S+)/i
+
+function stripQuotes(s) {
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    return s.slice(1, -1)
+  }
+  return s
+}
+
+/** Répertoire dans lequel le `git commit` de la commande s'exécute réellement : premier `cd <path>`
+ *  du pipeline, ou `git -C <path>`, résolu contre `cwd` (le cwd du process hook). `cwd` inchangé si
+ *  ni l'un ni l'autre n'est présent (comportement d'origine hors worktree). */
+export function extractTargetDir(command, cwd = process.cwd()) {
+  if (!command) return cwd
+  const gitC = GIT_DASH_C_RE.exec(command)
+  if (gitC) return resolve(cwd, stripQuotes(gitC[1]))
+  const cd = CD_RE.exec(command)
+  if (cd) return resolve(cwd, stripQuotes(cd[1]))
+  return cwd
+}
+
 // ── Manifest RAW (prévention #434/#487) ────────────────────────────────────────────────────────────
 // Le manifest éditorial `src/data/raw.manifest.json` porte les dettes/blocages des topics `(non
 // implémenté)` (`ticket: "#N"` / `bloque: "…#N…"`). Fermer #N tout en le laissant dans le manifest
@@ -398,9 +427,11 @@ export function evaluateManifestClosure({ command, readStagedManifest = () => nu
   }
 }
 
-/** Lecture de la version STAGÉE (index git) de `src/data/raw.manifest.json`. `null` si absente/illisible. */
-export function readStagedManifestFile() {
-  try { return execSync(`git show :${RAW_MANIFEST_PATH}`, { encoding: 'utf8' }) } catch { return null }
+/** Lecture de la version STAGÉE (index git) de `src/data/raw.manifest.json`, dans `dir` (répertoire
+ *  cible du commit, fix #587 — défaut `cwd` du process, comportement inchangé hors worktree).
+ *  `null` si absente/illisible. */
+export function readStagedManifestFile(dir = process.cwd()) {
+  try { return execSync(`git show :${RAW_MANIFEST_PATH}`, { encoding: 'utf8', cwd: dir }) } catch { return null }
 }
 
 /** Analyse du diff STAGED (`git diff --cached --numstat`) : touche-t-il `src/**` ? combien de
@@ -420,9 +451,10 @@ export function analyzeStagedDiff(raw) {
   return { touchesSrc, totalLines }
 }
 
-/** Lecture du diff STAGED brut (`git diff --cached --numstat`) depuis le disque/le dépôt courant. */
-export function readStagedDiffStat() {
-  try { return execSync('git diff --cached --numstat', { encoding: 'utf8' }) } catch { return '' }
+/** Lecture du diff STAGED brut (`git diff --cached --numstat`), dans `dir` (répertoire cible du
+ *  commit, fix #587 — défaut `cwd` du process, comportement inchangé hors worktree). */
+export function readStagedDiffStat(dir = process.cwd()) {
+  try { return execSync('git diff --cached --numstat', { encoding: 'utf8', cwd: dir }) } catch { return '' }
 }
 
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
@@ -436,7 +468,8 @@ if (isMain) {
   // Date LOCALE (pas UTC) : un solde écrit après minuit heure locale porte la date locale.
   const d = new Date()
   const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  const { touchesSrc, totalLines } = analyzeStagedDiff(readStagedDiffStat())
+  const targetDir = extractTargetDir(command, process.cwd())
+  const { touchesSrc, totalLines } = analyzeStagedDiff(readStagedDiffStat(targetDir))
 
   const { text, fileError } = extractMessageSources(command)
   if (fileError) {
@@ -466,7 +499,7 @@ if (isMain) {
     readRefFile,
   })
   const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
-  const manifestClosure = evaluateManifestClosure({ command: text, readStagedManifest: readStagedManifestFile })
+  const manifestClosure = evaluateManifestClosure({ command: text, readStagedManifest: () => readStagedManifestFile(targetDir) })
   const reasons = [decision, antiEsquive, amendInvisible, manifestClosure].filter(Boolean).map((d) => d.reason)
   if (reasons.length > 0) {
     console.log(JSON.stringify({

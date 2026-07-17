@@ -3,6 +3,7 @@
 // adversariale (demande 2026-07-14). Lancé par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { resolve } from 'node:path'
 import {
   extractClosedIssues,
   validateSolde,
@@ -16,6 +17,7 @@ import {
   evaluateAmendInvisible,
   manifestTickets,
   evaluateManifestClosure,
+  extractTargetDir,
 } from './solde-ticket-guard.mjs'
 
 const TODAY = '2026-07-14'
@@ -555,6 +557,45 @@ test('evaluateManifestClosure : multi-fermeture — seuls les tickets encore pr�
   assert.ok(d)
   assert.match(d.reason, /#508/)
   assert.doesNotMatch(d.reason, /#999/)
+})
+
+// ── extractTargetDir (répertoire cible du commit, fix #587) ───────────────────────────────────────
+test('extractTargetDir : "cd <path> && git commit" → résolu contre cwd, pas le cwd de la session', () => {
+  const cwd = resolve('C:\\repo\\session')
+  const dir = extractTargetDir('cd ../autre-worktree && git commit -m "corrige #5"', cwd)
+  assert.equal(dir, resolve(cwd, '../autre-worktree'))
+  assert.notEqual(dir, cwd)
+})
+
+test('extractTargetDir : pas de cd → cwd inchangé (comportement d\'origine hors worktree)', () => {
+  const cwd = resolve('C:\\repo\\session')
+  assert.equal(extractTargetDir('git commit -m "corrige #5"', cwd), cwd)
+})
+
+test('extractTargetDir : commande vide → cwd inchangé', () => {
+  const cwd = resolve('C:\\repo\\session')
+  assert.equal(extractTargetDir('', cwd), cwd)
+  assert.equal(extractTargetDir(null, cwd), cwd)
+})
+
+test('extractTargetDir : chemin quoté avec espaces (doubles/simples) dépouillé avant résolution', () => {
+  const cwd = resolve('C:\\repo\\session')
+  const d1 = extractTargetDir('cd "../autre worktree" && git commit -m "corrige #5"', cwd)
+  assert.equal(d1, resolve(cwd, '../autre worktree'))
+  const d2 = extractTargetDir("cd '../autre worktree' && git commit -m \"corrige #5\"", cwd)
+  assert.equal(d2, resolve(cwd, '../autre worktree'))
+})
+
+test('extractTargetDir : "git -C <path> commit" reconnu même sans cd', () => {
+  const cwd = resolve('C:\\repo\\session')
+  const dir = extractTargetDir('git -C ../autre-worktree commit -m "corrige #5"', cwd)
+  assert.equal(dir, resolve(cwd, '../autre-worktree'))
+})
+
+test('extractTargetDir : chemin absolu résolu tel quel', () => {
+  const cwd = resolve('C:\\repo\\session')
+  const dir = extractTargetDir('cd C:\\repo\\autre-worktree && git commit -m "corrige #5"', cwd)
+  assert.equal(dir, resolve('C:\\repo\\autre-worktree'))
 })
 
 test('extractMessageSources : « -F » en PROSE d un message -m n est pas un flag fichier (git refuse -m+-F — faux positif vécu 2026-07-14)', () => {

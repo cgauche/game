@@ -81,7 +81,7 @@ Vous pouvez choisir l'ordre dans lequel vous effectuez votre Action et votre Mou
 Ce sont les descriptions visuelles de ce que vous faites qui insuffleront de la vie au combat. Plutôt que de déclarer votre action comme « je frappe le gobelin », il est bien plus amusant de dire « je mets un coup de pied dans la chaise qui se trouve devant moi en direction des gobelins, et je me jette, épée en avant, visant la gorge de celui qui est le plus proche. » On ne sait jamais, il est possible que le MJ vous accorde une récompense
 
 
-supplémentaire pour votre excellente interprétation. C'est également valable pour le résultat de votre Action – le MJ va la décrire, mais rien ne vous empêche d'embellir l'ensemble !
+<span id="page-159-0" data-folio="158"></span>supplémentaire pour votre excellente interprétation. C'est également valable pour le résultat de votre Action – le MJ va la décrire, mais rien ne vous empêche d'embellir l'ensemble !
 
 # **Mouvement**
 

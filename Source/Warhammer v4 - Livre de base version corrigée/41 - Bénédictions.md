@@ -43,7 +43,7 @@ Si la Bénédiction en question a une Durée « Instantanée », vous ne pouvez 
 
 # MANIFESTATIONS DIVINES
 
-Les Bénédictions sont subtiles, imperceptibles à ceux qui ne possèdent pas le Talent Visions sacrées, leur manifestation ne se distingue généralement pas de la chance. De cette façon, les Prêtres du Vieux Monde qui ne possèdent pas le Talent Béni semblent souvent aussi efficaces que ceux qui le possèdent.
+<span id="page-222-0" data-folio="221"></span>Les Bénédictions sont subtiles, imperceptibles à ceux qui ne possèdent pas le Talent Visions sacrées, leur manifestation ne se distingue généralement pas de la chance. De cette façon, les Prêtres du Vieux Monde qui ne possèdent pas le Talent Béni semblent souvent aussi efficaces que ceux qui le possèdent.
 
 Par contre, les Miracles se manifestent ouvertement, toujours accompagnés de signes ou de présages sacrés, qui devraient refléter la situation et la divinité pertinente. Par exemple, un Miracle d'Ulric peut s'accompagner d'un vent froid et de hurlements spectraux de loups, tandis que ceux qui reçoivent un Miracle de Manann peuvent être trempés d'eau salée.
 

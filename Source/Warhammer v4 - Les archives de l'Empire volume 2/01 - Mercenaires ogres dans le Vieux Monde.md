@@ -2,7 +2,7 @@
 
 ## **MERCENAIRES OGRES DANS LE VIEUX MONDE**
 
-Il n'existe aucun récit historique précis dans l'Empire, faisant état de la première fois où un ogre a été aperçu errant depuis ses terres lointaines de l'est jusque dans le Vieux Monde. Les archives conservées dans les quelques karaks restants des Montagnes du Bord du Monde (et certainement dans les Livres des rancunes des nains) indiquent que les tribus nomades d'ogres ont commencé à attaquer les possessions naines les plus à l'est environ deux mille ans avant la fondation de l'Empire. Au cours des siècles suivants, de nombreux récits ont été consacrés aux ogres errants, à leurs incroyables aptitudes au combat et, surtout, à leur appétit insatiable. Les annales de la genèse de l'Empire indiquent que Sigmar luimême a occasionnellement utilisé, et fréquemment combattu, des ogres au cours de diverses batailles. Les mercenaires ogres ont pris part à la quasi-totalité des combats impériaux majeurs depuis l'époque de Sigmar, se retrouvant souvent des deux côtés des plus grandes batailles, en particulier celles contre les peaux-vertes. Toutes les terres situées à l'ouest des Montagnes du Bord du Monde sans exception ont connu le lourd pas des ogres à un moment donné de leur histoire.
+<span id="page-7-0" data-folio="6"></span>Il n'existe aucun récit historique précis dans l'Empire, faisant état de la première fois où un ogre a été aperçu errant depuis ses terres lointaines de l'est jusque dans le Vieux Monde. Les archives conservées dans les quelques karaks restants des Montagnes du Bord du Monde (et certainement dans les Livres des rancunes des nains) indiquent que les tribus nomades d'ogres ont commencé à attaquer les possessions naines les plus à l'est environ deux mille ans avant la fondation de l'Empire. Au cours des siècles suivants, de nombreux récits ont été consacrés aux ogres errants, à leurs incroyables aptitudes au combat et, surtout, à leur appétit insatiable. Les annales de la genèse de l'Empire indiquent que Sigmar luimême a occasionnellement utilisé, et fréquemment combattu, des ogres au cours de diverses batailles. Les mercenaires ogres ont pris part à la quasi-totalité des combats impériaux majeurs depuis l'époque de Sigmar, se retrouvant souvent des deux côtés des plus grandes batailles, en particulier celles contre les peaux-vertes. Toutes les terres situées à l'ouest des Montagnes du Bord du Monde sans exception ont connu le lourd pas des ogres à un moment donné de leur histoire.
 
 #### Z'ONT PRIS MON HALFLING !
 
@@ -76,7 +76,7 @@ menaçants.
 
 #### CHRONOLOGIE DES ÉVÉNEMENTS MARQUANTS CONCERNANT LES MERCENAIRES OGRES
 
-Toutes les dates indiquées correspondent au calendrier impérial, car les ogres n'ont guère besoin de se situer dans le temps, sauf pour savoir quand aura lieu leur prochain repas. Nombre d'entre eux connaissent plus ou moins ces événements et seraient capables de les remettre dans l'ordre, mais ils considèrent l'histoire comme quelque chose qu'il vaut mieux laisser au passé.
+<span id="page-11-0" data-folio="10"></span>Toutes les dates indiquées correspondent au calendrier impérial, car les ogres n'ont guère besoin de se situer dans le temps, sauf pour savoir quand aura lieu leur prochain repas. Nombre d'entre eux connaissent plus ou moins ces événements et seraient capables de les remettre dans l'ordre, mais ils considèrent l'histoire comme quelque chose qu'il vaut mieux laisser au passé.
 
 #### -1957 CI
 
@@ -214,7 +214,7 @@ Seul ogre à avoir battu Golgfag Mange'homme dans un concours du plus gros mange
 
 I
 
-**Isrogdal l'Empressé**
+<span id="page-15-0" data-folio="14"></span>**Isrogdal l'Empressé**
 
 L'ogre gladiateur devenu mercenaire est bien connu dans toute la Tilée, ainsi que dans les parties les plus à l'est de l'Empire, à la fois pour la rapidité avec laquelle il commet ses meurtres et pour son empressement à manger ses victimes. À plusieurs reprises, il a commencé à dévorer des morceaux de ses adversaires dans la fosse alors que leur combat n'était pas encore terminé. Isrogdal est actuellement très demandé dans le milieu criminel de l'Empire, car en tant que gros bras intimidant, il n'a pas son pareil. Son « enthousiasme » l'a déjà contraint à déménager plusieurs fois, car plus d'un « client » avec qui il devait simplement discuter s'est retrouvé dans son assiette.
 

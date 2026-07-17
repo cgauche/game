@@ -31,7 +31,7 @@ Le bois dur et solide de la Drakwald et la pierre gris foncé du Fauschlag, le g
 
 *R : C'est qu'il durera toujours.*
 
-Les habitants de Middenheim rétorquent que les bâtisseurs d'Altdorf préfèrent la forme au fond, et aiment déclarer d'un ton pince-sans-rire : *« Les nôtres durent plus longtemps ! »*.
+<span id="page-32-0" data-folio="30"></span>Les habitants de Middenheim rétorquent que les bâtisseurs d'Altdorf préfèrent la forme au fond, et aiment déclarer d'un ton pince-sans-rire : *« Les nôtres durent plus longtemps ! »*.
 
 La montagne sur laquelle se dresse Middenheim est criblée de mines et de tunnels creusés par les premières générations de nains. La Cité souterraine est le domaine des nains, qui forment une première ligne de défense contre toute menace qui viendrait d'en bas.
 
@@ -60,7 +60,7 @@ Les fidèles d'Ulric affluent des quatre coins de l'Empire pour venir se recueil
 Les Middenheimers ressemblent à leur cité : fiers, inébranlables et pragmatiques. La cité offre par conséquent un cadre de vie idéal pour les nains, mais aux yeux des étrangers, les habitants de Middenheim passent souvent pour des gens rustres.
 
 
-Un exemple : voici une personne nouvellement arrivée en ville qui tente de demander son chemin.
+<span id="page-33-0" data-folio="31"></span>Un exemple : voici une personne nouvellement arrivée en ville qui tente de demander son chemin.
 
 *Q : Bonjour, excusez-moi de vous déranger, mais j'ai l'impression de m'être égaré. Auriez-vous l'amabilité de m'indiquer où se trouve le Collège royal de Musique, s'il vous plaît ?*
 
@@ -97,7 +97,7 @@ Le baron Stefan était un enfant chétif, et, en grandissant, il est devenu de p
 Heinrich, quant à lui, est un jeune homme habile et vigoureux. Le Graf l'a officiellement reconnu comme son fils, et lui a donné un titre et des terres, mais il ne possède aucun droit à la succession. Il n'est pas en ville actuellement, mais s'intéresse de près à ce qui se passe à Middenheim.
 
 
-La fille du Graf, Katarina, que les Middenheimers surnomment affectueusement « la Princesse », est née d'une autre Dame de la Cour. Le Graf l'a officiellement reconnue, elle aussi, et lui a conféré le titre de baronne. Mais, comme pour Heinrich, les circonstances de la naissance de Katarina lui interdisent de succéder à son père, ce qui fait du baron Stefan le seul héritier légitime d'une des plus hautes fonctions de l'Empire.
+<span id="page-34-0" data-folio="32"></span>La fille du Graf, Katarina, que les Middenheimers surnomment affectueusement « la Princesse », est née d'une autre Dame de la Cour. Le Graf l'a officiellement reconnue, elle aussi, et lui a conféré le titre de baronne. Mais, comme pour Heinrich, les circonstances de la naissance de Katarina lui interdisent de succéder à son père, ce qui fait du baron Stefan le seul héritier légitime d'une des plus hautes fonctions de l'Empire.
 
 C'est pour ces raisons que, dix ans auparavant, le Graf (alors âgé de 37 ans) prit une seconde épouse : la magnifique Anika-Elise Nikse, fille du baron Rudolph von Nikse du Nordland. À l'époque, il était évident que le fruit de cette union serait destiné à devenir le véritable héritier de Middenheim. Malheureusement, aucun enfant ne naquit de ce mariage. Anika-Elise est décédée des suites d'une étrange maladie, il y a quelques mois de cela.
 
@@ -128,7 +128,7 @@ En fonction des divers évènements du Carnaval, de l'éventuelle capacité des 
 Cependant, essayez malgré tout d'en faire un personnage sympathique. En dépit de son affliction, il arrive au Graf d'avoir des moments de grande lucidité et il peut reconnaître la provenance de l'arme, de l'armure ou de l'accent d'un Personnage après un bref instant d'observation. S'il se prend d'affection pour l'un des Personnages, il peut lui accorder un traitement de faveur pendant quelque temps, avant que son esprit ne s'égare à nouveau. Il pourrait, par exemple, demander à quelqu'un d'important, comme le Chancelier, d'aller chercher une bouteille d'eau-de-vie dans sa réserve personnelle, pour en faire cadeau à un Personnage dont il apprécierait le charme ou le respect : il s'agirait d'un épisode mémorable qui pourrait rendre le Graf attachant aux yeux des Joueurs. L'aventure se déroulera de manière plus fluide si le groupe est motivé à protéger le Graf.
 
 
-### **Le baron Stefan Todbringer**
+<span id="page-35-0" data-folio="33"></span>### **Le baron Stefan Todbringer**
 
 Stefan n'a pas hérité de la stature imposante de son père. De taille et de corpulence moyennes, les cheveux et les yeux bruns, Stefan souffre depuis sa naissance d'une pathologie mal comprise et que l'on ne sait comment traiter. Son état a laissé perplexes nombre de médecins au fil des années. Stefan passe le plus clair de son temps assis, à fixer le vide devant lui, sans entrer en contact visuel avec qui que ce soit et quasiment sans cligner des yeux. Son attitude figée et mutique est ponctuée d'accès de frénésie, caractérisés par un comportement hyperactif et déchaîné. Il porte actuellement des bandages et une attelle bien serrée à la main gauche, résultat d'une blessure qu'il s'est lui-même infligée. Cependant, l'état de Stefan s'est amélioré dernièrement, depuis que Luigi Pavarotti est devenu son médecin personnel.
 
@@ -167,7 +167,7 @@ BARON HEINRICH TODBRINGER - EMISSAIRE HUMAIN, ANCIEN CONSEILLER ET INTENDANT (AR
 Lorsqu'il s'attend à ce qu'un conflit éclate, ou qu'il veut faire une forte impression, Heinrich porte une armure de plates complète ainsi qu'une épée à deux mains magique, *Skavenstöter*, dont il apprécie particulièrement l'Atout *Percutante* quand il l'utilise contre des skavens. On dit qu'il a acquis cette arme au cours d'une longue mission diplomatique à la cour de la cité-État tiléenne de Miragliano. C'est pendant son séjour à Miragliano qu'Heinrich entendit pour la première fois parler des incroyables pouvoirs de guérison de Luigi Pavarotti, qu'il invita à devenir médecin à la cour de Middenheim et à s'occuper de son frère Stefan.
 
 
-### **Religion**
+<span id="page-36-0" data-folio="34"></span>### **Religion**
 
 Comme on peut s'y attendre, le principal culte de Middenheim est celui d'Ulric. En plus d'être le Grand Prêtre du temple d'Ulric de Middenheim et d'être à la tête de la deuxième religion la plus répandue dans l'Empire, Ar-Ulric fait partie des Électeurs impériaux. L'immense temple d'Ulric reflète parfaitement le pouvoir et le prestige du culte au sein de la cité. Bien qu'en général, les Middenheimers ne soient pas particulièrement pieux, la quasi-totalité d'entre eux prient régulièrement Ulric pour qu'il veille sur eux, leur famille et leur ville.
 
@@ -184,7 +184,7 @@ Ces différends sociaux et religieux, qui se sont toujours fait sentir de maniè
 Dans les rues et les tavernes de Middenheim, des démagogues prêchent avec virulence contre l'impérialisme du sud, et promettent que l'indépendance détournera des rivières infinies de recettes fiscales des coffres d'Altdorf vers les portefeuilles des Middenlanders ordinaires ; une somme telle que les prêtres d'Ulric
 
 
-et de Shallya seraient alors en mesure de soigner tous les malades et les blessés gratuitement. Le Middenland serait libre de traiter avec Marienburg, Kislev et d'autres nations, ce qui accroîtrait encore davantage son essor. Les marchandises en provenance du reste de l'Empire seraient taxées, et les étrangers des autres provinces seraient bannis des guildes, de manière à ce que tous les véritables Middenlanders aient une chance de prospérer.
+<span id="page-37-0" data-folio="35"></span>et de Shallya seraient alors en mesure de soigner tous les malades et les blessés gratuitement. Le Middenland serait libre de traiter avec Marienburg, Kislev et d'autres nations, ce qui accroîtrait encore davantage son essor. Les marchandises en provenance du reste de l'Empire seraient taxées, et les étrangers des autres provinces seraient bannis des guildes, de manière à ce que tous les véritables Middenlanders aient une chance de prospérer.
 
 *« Le Middenland aux Middenlanders ! »* est devenu le slogan d'un ensemble d'initiatives embrassées avec entrain par les pauvres de Middenheim, qui s'en servent comme d'un prétexte pour attaquer et voler les Altdorfers, les Sigmarites, les étrangers et d'autres groupes de personnes, y compris des Middenlanders modérés qu'ils qualifient de traîtres et de « Sigminus ». Les Fils d'Ulric, autrefois un petit groupe d'extrémistes que personne ne prenait vraiment au sérieux, se sont imposés comme une organisation faîtière regroupant divers groupes, allant des suprémacistes humains aux fondamentalistes ulricains. Leurs dirigeants restent dans l'ombre, mais les démagogues comme les prospectus répandent à travers la ville leur doctrine semicohérente d'indépendance, de haine et de blâme éternels.
 
@@ -213,7 +213,7 @@ La carte au début du livre représente le plan ainsi que quelques détails de l
 Vous trouverez plus d'informations sur ces quartiers et divers autres points d'intérêt dans **Middenheim : La Cité du Loup Blanc.**
 
 
-#### **Le secteur du Palais**
+<span id="page-38-0" data-folio="36"></span>#### **Le secteur du Palais**
 
 Le secteur entourant le Middenpalaz est le mieux entretenu de toute la ville. C'est dans le Palais que vivent le graf Boris ainsi que plusieurs de ses conseillers et courtisans. Les trois Middenmarshalls (p. 124) ont leur résidence près des casernes, autour de la Place des parades.
 

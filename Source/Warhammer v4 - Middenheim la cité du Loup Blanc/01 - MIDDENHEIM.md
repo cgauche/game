@@ -168,7 +168,7 @@ Depuis ce jour, cette armure est transmise de chevalier à chevalier. Certains p
 
 ### –500 CI
 
-La tribu Teutogen s'installe dans les terres à l'ouest des Monts du Milieu. Ils vénèrent Taal, Rhya, Manaan et surtout Ulric, qu'ils prient pour survivre aux hivers rudes et pour être vaillants au combat. Les Chevaliers du Loup Blanc affirment que leurs traditions martiales remontent aux gardes du corps qui protégeaient les prêtres d'Ulric à cette époque.
+<span id="page-14-0" data-folio="12"></span>La tribu Teutogen s'installe dans les terres à l'ouest des Monts du Milieu. Ils vénèrent Taal, Rhya, Manaan et surtout Ulric, qu'ils prient pour survivre aux hivers rudes et pour être vaillants au combat. Les Chevaliers du Loup Blanc affirment que leurs traditions martiales remontent aux gardes du corps qui protégeaient les prêtres d'Ulric à cette époque.
 
 ### –450 CI
 
@@ -227,7 +227,7 @@ Ar-Ulric Wulcan, un descendant d'Artur, déclare officiellement que le Fauschlag
 Alors qu'il était en campagne contre des pillards gobelins, un chef Teutogen tombe gravement malade. Ar-Ulric Wulcan part le secourir, mais il est attaqué par un grand 
 
 
-loup blanc. Wulcan interprète cela comme un signe d'Ulric, et il tue l'animal à mains nues. Lorsqu'il arrive aux côtés du chef souffrant, Wulcan l'enveloppe de la fourrure du loup et affirme que l'esprit d'Ulric lui redonnera des forces. La vie du chef est sauvée, et depuis lors, chaque Ar-Ulric nouvellement nommé cherche à imiter son prédécesseur en remportant la fourrure d'un loup blanc.
+<span id="page-15-0" data-folio="13"></span>loup blanc. Wulcan interprète cela comme un signe d'Ulric, et il tue l'animal à mains nues. Lorsqu'il arrive aux côtés du chef souffrant, Wulcan l'enveloppe de la fourrure du loup et affirme que l'esprit d'Ulric lui redonnera des forces. La vie du chef est sauvée, et depuis lors, chaque Ar-Ulric nouvellement nommé cherche à imiter son prédécesseur en remportant la fourrure d'un loup blanc.
 
 ### 100 CI
 
@@ -292,7 +292,7 @@ Le Middenland et le Nordland divisent la province contestée de la Drakwald en d
 
 ### 1450 CI
 
-Une grande croisade est organisée pour libérer l'Estalie des armées du sultan Jaffar d'Arabie. Plusieurs chapitres des Chevaliers du Loup Blanc et des Chevaliers Panthères acquièrent gloire et fortune dans de lointaines contrées désertiques. À leur retour, un détachement des Chevaliers Panthères se met au service de la famille noble des Todbringer, à Middenheim. Ce serment secret profite grandement aux Chevaliers comme à la famille Todbringer.
+<span id="page-16-0" data-folio="14"></span>Une grande croisade est organisée pour libérer l'Estalie des armées du sultan Jaffar d'Arabie. Plusieurs chapitres des Chevaliers du Loup Blanc et des Chevaliers Panthères acquièrent gloire et fortune dans de lointaines contrées désertiques. À leur retour, un détachement des Chevaliers Panthères se met au service de la famille noble des Todbringer, à Middenheim. Ce serment secret profite grandement aux Chevaliers comme à la famille Todbringer.
 
 ### 1547 CI
 
@@ -341,7 +341,7 @@ Cherchant à consolider sa position d'héritier de Vlad, Fritz von Carstein tent
 
 ### 2100 CI
 
-Face à la menace que représentent les Comtes vampires, les différents prétendants au trône impérial décident de former une alliance militaire. Quand Konrad von Carstein mène ses armées jusqu'à Middenheim, il est attaqué pendant la bataille des Quatre Armées. Le dirigeant du Talabecland profite du combat pour ordonner l'assassinat du seigneur du Stirland, mais ce dernier fait de même. Pendant la confusion qui résulte de cette situation, Konrad parvient à s'échapper avec son armée presque indemne.
+<span id="page-17-0" data-folio="15"></span>Face à la menace que représentent les Comtes vampires, les différents prétendants au trône impérial décident de former une alliance militaire. Quand Konrad von Carstein mène ses armées jusqu'à Middenheim, il est attaqué pendant la bataille des Quatre Armées. Le dirigeant du Talabecland profite du combat pour ordonner l'assassinat du seigneur du Stirland, mais ce dernier fait de même. Pendant la confusion qui résulte de cette situation, Konrad parvient à s'échapper avec son armée presque indemne.
 
 ### 2115 CI
 
@@ -479,7 +479,7 @@ Les personnages suivants sont considérés comme des courtisans à part entière
 Vieran Thugenheim est l'un des favoris du Graf. Ce conseiller discret a participé à de nombreuses campagnes militaires, et c'est l'un des commandants de l'Ordre des Chevaliers Panthères. Le graf Boris apprécie le bon sens et l'humilité dont Vieran fait toujours preuve. Même si ce dernier connait intimement chaque aspect de l'administration de Middenheim, il attache beaucoup d'importance à l'opinion des experts et des comités de conseil. Vieran nourrit en secret de grandes ambitions pour son fils Vorn, qu'il aimerait voir suivre ses pas et monter encore plus haut dans l'échelle sociale. C'est dans ce but qu'il a formé Vorn à toutes les subtilités du pouvoir séculier, tout en l'intronisant dans l'ordre des Chevaliers du Loup Blanc.
 
 
-### **Hausmeister Breugal — Chambellan**
+<span id="page-21-0" data-folio="19"></span>### **Hausmeister Breugal — Chambellan**
 
 Le chambellan du Graf est simplement connu sous le nom de Breugal. C'est un grand homme aux traits émaciés qui cultive un air de détachement approprié pour les aristocrates de son rang. On le voit souvent avancer d'un pas pressé dans les jardins du palais, richement habillé et toujours équipé de sa canne au pommeau en argent. Breugal est un administrateur froid et efficace, dont la mission est d'organiser le travail des innombrables valets et servantes qui s'affairent au Middenpalaz. Les employés qui ne satisfont pas ses exigences draconiennes ne font pas long feu dans son équipe. Son travail est toute sa vie, et on ne l'a jamais vu fraterniser avec qui que ce soit.
 
@@ -663,7 +663,7 @@ Les guildes offrent un service d'intérêt public, car elles veillent à ce que 
 Les guildes de la cité peuvent être divisées en trois grandes catégories : les Guildes de manouvriers, les Guildes d'artisans et les Guildes professionnelles.
 
 
-### **Devenir membre**
+<span id="page-27-0" data-folio="25"></span>### **Devenir membre**
 
 Rejoindre les rangs d'une Guilde de manouvriers est relativement facile. Il y a toujours une forte demande pour des ouvriers non qualifiés, et les Personnages qui ne paraissent pas faibles et délicats peuvent rejoindre n'importe laquelle contre un paiement de 5 CO (ou 10 pistoles par mois). Les Guildes de manouvriers veillent à ce que leurs membres reçoivent un salaire honnête à hauteur de 7 pistoles par jour, mais elles sont absolument inflexibles sur la séparation des métiers. Ainsi, une vendetta entre deux guildes a duré pendant six mois, tout simplement parce qu'un membre de la Guilde des charretiers avait remplacé une roue sur son chariot sans s'adresser d'abord à la Guilde des charrons.
 
@@ -793,7 +793,7 @@ Middenheim abrite actuellement quatre personnes qui revendiquent le titre de Pet
 
 ### SE RENDRE À MIDDENHEIM
 
-Middenheim se trouve à la croisée de deux grandes routes commerciales et accueille de nombreux visiteurs en provenance d'Altdorf, de Marienburg et de Talabheim. Ces routes sont solidement bâties, soigneusement entretenues et sécurisées par de nombreuses patrouilles. Quelques-unes des plus belles aubergesrelais de l'Empire se découvrent sur ces trajets, et les voyageurs ne sont jamais très loin d'un refuge. Cependant, les nombreuses richesses qui sont acheminées le long de ces routes attirent tout de même des bandits de grand chemin, ainsi que des bandes de mutants ou de gobelins désespérés. Malgré la protection offerte par les patrouilleurs routiers et les auberges-relais, il est conseillé aux voyageurs de se déplacer en grand groupe et de se préparer à devoir se défendre.
+<span id="page-31-0" data-folio="29"></span>Middenheim se trouve à la croisée de deux grandes routes commerciales et accueille de nombreux visiteurs en provenance d'Altdorf, de Marienburg et de Talabheim. Ces routes sont solidement bâties, soigneusement entretenues et sécurisées par de nombreuses patrouilles. Quelques-unes des plus belles aubergesrelais de l'Empire se découvrent sur ces trajets, et les voyageurs ne sont jamais très loin d'un refuge. Cependant, les nombreuses richesses qui sont acheminées le long de ces routes attirent tout de même des bandits de grand chemin, ainsi que des bandes de mutants ou de gobelins désespérés. Malgré la protection offerte par les patrouilleurs routiers et les auberges-relais, il est conseillé aux voyageurs de se déplacer en grand groupe et de se préparer à devoir se défendre.
 
 Voici quelques-unes des nombreuses raisons de se rendre à Middenheim :
 

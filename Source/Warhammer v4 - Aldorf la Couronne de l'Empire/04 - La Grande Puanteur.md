@@ -37,7 +37,7 @@ La fête principale de Sigmar tombe le premier jour de l'été, reconnu comme l'
 Ce jour-là, Johann Helstrum est devenu le premier Grand Théogoniste de l'Empire. Les prêtres sigmarites marquent l'occasion en défilant dans Altdorf en portant le crâne doré et la masse sacrée d'Helstrum. Les citoyens irrévérencieux appellent cet événement la « Marche de la Masse et de la Tête ».
 
 
-# **Jour de la Folie (10e jour de Sommerzeit)**
+<span id="page-45-0" data-folio="43"></span># **Jour de la Folie (10e jour de Sommerzeit)**
 
 Pour les Altdorfers, la fête principale de Ranald est plus connue sous le nom de Jour des Farces. Ce jour-là, la coutume veut que l'on fasse des farces que les victimes doivent accueillir avec bonne humeur. Sur la Karnevalsplatz, une célébration de la comédie satirique est mise en scène, avec des bouffons à l'esprit politique et des agitateurs humoristiques. La discrétion est toujours de mise, mais les représentations qui en d'autres circonstances pourraient engendrer une accusation de trahison restent impunies (voire oubliées) le Jour des Farces.
 
@@ -58,7 +58,7 @@ Un droit ancien permet à la population naine d'Altdorf d'organiser la célébra
 Pendant la Semaine de la Tourte, la Karnevalsplatz devient le site d'un grand marché alimentaire en plein air : les habitants de tout Altdorf viennent profiter des dernières soirées d'été, une tourte chaude dans la bouche et une pinte de bière à la main. Avant l'événement, de nombreuses familles halfling bourdonnent d'activité, se consacrant avec passion à la production de denrées pour leur propre étal. Chaque année, le clan Rumster monte une énorme tente bordée de tables à tréteaux recouvertes de tourtes, qu'il s'agisse de créations maison garnies de morceaux de gibier rare spécialement sélectionné ou de préparations bon marché dont le contenu savoureux est bien mystérieux. Des concours portant sur la production ou la consommation de tourtes sont organisés tout au long de la semaine, avec à la clé des trophées surdimensionnés remis aux gagnants en liesse.
 
 
-### **Marche triomphale pour défier l'obscurité (8e jour d'Erntezeit)**
+<span id="page-46-0" data-folio="44"></span>### **Marche triomphale pour défier l'obscurité (8e jour d'Erntezeit)**
 
 Ce jour-là, une grande procession est organisée pour commémorer la victoire de l'empereur Magnus aux portes de Kislev. Une vaste foule de pèlerins venus de tout l'Empire et de Kislev se rend à Altdorf pour participer à la parade. Ils partent de la Porte Nord et font le tour de la ville pour terminer leur procession sur les marches de la Grande Cathédrale, où le Grand Théogoniste exhibe cérémonieusement le Saint Suaire de Magnus.
 
@@ -123,7 +123,7 @@ Vous pouvez également vous servir de ces exemples pour donner des idées à vot
 
 ### ARGENT
 
-Les Personnages de l'Échelon Argent sont des professionnels dont la vie culturelle peut tourner autour de leur guilde ou d'activités plus audacieuses culturellement parlant.
+<span id="page-48-0" data-folio="46"></span>Les Personnages de l'Échelon Argent sont des professionnels dont la vie culturelle peut tourner autour de leur guilde ou d'activités plus audacieuses culturellement parlant.
 
 | d100  | Comment occupent-ils leur temps libre<br>?                                                                                                                                                                                                                                                                                                                                                                                                                  |
 |-------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

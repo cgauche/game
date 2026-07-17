@@ -47,7 +47,7 @@ Vous subissez une pénalité de -10 à tous les Tests qui impliquent la vue, et 
 Un État *Aveuglé* est retiré à la fin de chaque Round, à partir du prochain Round.
 
 
-### **Brisé**
+<span id="page-169-0" data-folio="168"></span>### **Brisé**
 
 Vous êtes terrifié, vaincu, paniqué ou encore convaincu que vous allez mourir. Pendant votre tour, votre Mouvement et votre Action doivent être utilisés pour vous éloigner le plus vite possible jusqu'à ce que vous vous retrouviez à l'abri, hors de vue de l'ennemi ; vous pourrez alors utiliser votre Action sur une Compétence qui vous permettra de vous cacher plus efficacement. Vous subissez également une pénalité de -10 à tous les Tests autres que ceux impliquant la course ou la dissimulation.
 
@@ -98,7 +98,7 @@ Pour les MJ qui estiment que les Personnages subissent de la fatigue lorsqu'ils 
 
 # SE REPOSER COMBIEN DE TEMPS ?
 
-C'est le MJ qui va décider du temps nécessaire pour retirer un État *Exténué*, et ce, bien souvent en fonction du type de partie que vous jouez. Certains groupes préfèrent une approche plutôt réaliste et ne retirer un tel État qu'après une période de repos prolongée. D'autre partiront du principe qu'il ne faut qu'une heure ou deux pour retirer un État *Exténué*, préférant se concentrer sur l'aventure plutôt que de perdre du temps avec des Personnages fatigués. Et d'autres retireront un État par Round de repos, ce qui est une solution simple et rapide. C'est donc à votre groupe et vous de décider de cette vitesse de récupération.
+<span id="page-170-0" data-folio="169"></span>C'est le MJ qui va décider du temps nécessaire pour retirer un État *Exténué*, et ce, bien souvent en fonction du type de partie que vous jouez. Certains groupes préfèrent une approche plutôt réaliste et ne retirer un tel État qu'après une période de repos prolongée. D'autre partiront du principe qu'il ne faut qu'une heure ou deux pour retirer un État *Exténué*, préférant se concentrer sur l'aventure plutôt que de perdre du temps avec des Personnages fatigués. Et d'autres retireront un État par Round de repos, ce qui est une solution simple et rapide. C'est donc à votre groupe et vous de décider de cette vitesse de récupération.
 
 # **Hémorragique**
 

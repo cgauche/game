@@ -350,7 +350,7 @@ Applique exactement les mêmes règles que la Frénésie des personnages (sectio
 **Sources RAW** : `LDB 85 l.150` — renvoi LDB 21
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.122, l.150) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `amphibie`, `moveEnv`, `maxWounds`, +25 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, `src/engine/traits/dispatch.ts`, +7 fichiers
+- `LDB 85` (l.122, l.150) → `scene`, `planClimb`, `scenario`, `TraverseCapability`, `moveEnv`, `maxWounds`, `EnemyTurnInput`, `effectiveMaxWounds`, `isPsychImmune`, `hasAutoClimb`, +32 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, +8 fichiers
 
 ---
 
@@ -374,7 +374,7 @@ La créature ignore **toutes** les règles de Psychologie sans Test.
 - `LDB 85 l.178-179` — définition
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.166, l.178-180) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `amphibie`, `Formula`, `moveEnv`, +28 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +10 fichiers
+- `LDB 85` (l.166, l.178-180) → `scene`, `planClimb`, `scenario`, `TraverseCapability`, `Formula`, `moveEnv`, `EnemyTurnInput`, `Condition`, `availableAttacks`, `knowsCastingSkill`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +11 fichiers
 
 ---
 
@@ -397,7 +397,7 @@ La créature cause la Peur (Indice) aux adversaires. Applique les règles de Peu
 **Sources RAW** : `LDB 85 l.266` — renvoi LDB 21 + Indice défini dans le statbloc
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.253, l.266) → `a-distance`, `a-sang-froid`, `affame`, `StatblockEditor`, `fearSourceFor`, `amphibie`, `animosite`, `arboricole`, `arme`, `resizeBySteps`, +14 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/rollFlowSpecs.ts`, `src/state/spawn.ts`, +1 fichiers
+- `LDB 85` (l.253, l.266) → `StatblockEditor`, `fearSourceFor`, `resizeBySteps`, `creatureToCombatant`, `immunite-psychologique`, `increvable`, `infecte`, `infravision`, `insensible-a-la-douleur`, `instable`, +30 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/rollFlowSpecs.ts`, `src/state/spawn.ts`, +1 fichiers
 
 ---
 
@@ -449,7 +449,7 @@ Les créatures agressives de grande Taille inspirent automatiquement Peur ou Ter
 - `LDB 85 l.382-383` — règle Peur/Terreur par Taille
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.274, l.282, l.382-384) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `amphibie`, `animosite`, `EnemyTurnInput`, `arboricole`, +23 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +8 fichiers
+- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `EnemyTurnInput`, `resizeBySteps`, `displaceSmaller`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, `rollManeuverAttacker`, +20 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +8 fichiers
 
 ---
 
@@ -505,7 +505,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 **Sources RAW** : `LDB 10 l.506`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.255, l.398, l.506) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `tissage`, `assaut-feroce`, `attirant`, +2 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
+- `LDB 10` (l.255, l.398, l.506) → `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `TraitCapabilities`, `costaud`, `coude-a-coude`, `coup-puissant`, +36 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
 
 ---
 
@@ -539,7 +539,7 @@ Exemples de groupes : hommes-bêtes, peaux-vertes, monstres, hors-la-loi, sigmar
 - `LDB 10 l.1053` — définition, Test Accessible (+20), liste d'ennemis courants
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.548, l.1051, l.1053) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `fearImmuneVs`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `CombatFeature`, `artilleur`, `tissage`, +2 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
+- `LDB 10` (l.548, l.1051, l.1053) → `fearImmuneVs`, `CombatFeature`, `frappe-assommante`, `frappe-blessante`, `frappe-precise`, `frappe-reactive`, `frenesie`, `fuite`, `grand-orateur`, `grimpeur`, +14 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
 - `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `EffectFlags`, `calme-d-approche`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, +38 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +20 fichiers
 
 ---
@@ -610,10 +610,10 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 - `LDB 17 l.59` — Détermination vs Psychologie
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.1053) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `fearImmuneVs`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `CombatFeature`, `artilleur`, `tissage`, +2 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
+- `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `suivants-de-khorne`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
 - `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `EnemyAction`, `useAttackJetProps`, `useTestJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
 - `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `EffectFlags`, `terreur`, `animosite`, `calme-d-approche`, +55 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +28 fichiers
-- `LDB 85` (l.178-179, l.382-383) → `a-distance`, `a-sang-froid`, `affame`, `cannotStopOn`, `amphibie`, `Formula`, `animosite`, `EnemyTurnInput`, `arboricole`, `arme`, +26 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +7 fichiers
+- `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `knowsCastingSkill`, `engagedAdvantageGap`, `rollManeuverAttacker`, +53 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +8 fichiers
 
 ---
 

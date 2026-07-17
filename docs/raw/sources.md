@@ -28,7 +28,7 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 | **T2** | T2 — Mort sur le Reik | `Warhammer v4 - 2.0 Mort sur le Reik/` | Créatures, règles spéciales (eau, navires…) |
 | **T2C** | T2 — Compagnon | `Warhammer v4 - 2.0 Mort sur le Reik Compagnon/` | Créatures, PNJ statblockés |
 | **T3** | T3 — Le Pouvoir derrière le Trône | `Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` | Créatures, règles spéciales |
-| **Altdorf** | Aldorf, la Couronne de l'Empire | `Warhammer v4 - Aldorf la Couronne de l'Empire/` | Objets magiques, gangs, règles de cadre |
+| **ACE** | Aldorf, la Couronne de l'Empire | `Warhammer v4 - Aldorf la Couronne de l'Empire/` | Objets magiques, gangs, règles de cadre |
 | **Ubersreik** | Aventures à Ubersreik | `Warhammer v4 - Aventures a Ubersreik/` | Contenu de cadre (peu de règles de combat) |
 | **NADAJ** | Nuits agitées & dures journées (*Rough Nights & Hard Days*) | `Warhammer v4 - Nuits agitees & dures journées/` | Créatures, jeux de taverne, règles spéciales |
 | **MDG** | La Mer des Griffes (*Sea of Claws*) | `WH - V4 - La Mer de Griffe/` | Cadre côtier + règles navales : navires & artillerie, navigation/combat naval, carrières Côtier, cultes Manann/Stromfels, magie des mers, bestiaire marin |
@@ -47,4 +47,4 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 
 Nombre de passages-règles de combat repérés au survey du pilote :
 `LDB ×143 · AA ×75 · ZI ×61 · EDO ×24 · EDOC ×18 · ADE II ×17 · NADAJ ×12 · T2C ×11 · T2 ×6 · ADE I ×4 ·
-Middenheim ×3 · Altdorf ×2 · T3 ×1 · Ubersreik ×0`. (La densité varie selon le domaine.)
+Middenheim ×3 · ACE ×2 · T3 ×1 · Ubersreik ×0`. (La densité varie selon le domaine.)

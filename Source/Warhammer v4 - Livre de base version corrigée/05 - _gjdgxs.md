@@ -1,6 +1,6 @@
 *Pages PDF 27-47*
 
-# **Humains (Reiklanders)**
+<span id="page-26-0" data-folio="25"></span># **Humains (Reiklanders)**
 
 Les humains constituent la race civilisée la plus répandue du Vieux Monde. Depuis les plaines des Royaumes estaliens aux provinces gelées de Kislev, les humains occupent chaque région du continent, et ils y prospèrent. Le plus grand et le plus puissant royaume humain est l'Empire, une mosaïque de provinces puissantes couvertes de forêts apparemment sans fin. Situé au cœur de l'Empire, le Reikland en est la région la plus riche et la plus cosmopolite.
 
@@ -41,7 +41,7 @@ Les nains, ou *Dawi,* le nom qu'ils se donnent – sont légendairement bourrus 
 La culture naine éprouve un profond respect pour les compétences artisanales, comme la maçonnerie, la forge, et l'ingénierie, et les forteresses naines reflètent leurs impressionnantes prouesses. Ils convoitent aussi l'or et les joyaux, minant profondément sous les Montagnes Grises à la recherche de pierres et de métaux précieux. Cependant, bien plus que ces possessions matérielles, les nains vénèrent leurs aînés, et plusieurs de leurs cultes sont centrés sur leurs si importants ancêtres. Les nains n'ont pas d'affinité avec la magie, bien que leurs forgerons de runes gravent sur des artefacts des symboles complexes leur permettant d'exploiter la magie. Cependant, leurs prouesses en ingénierie sont 
 
 
-si impressionnantes, que certains de leurs plus ingénieux mécanismes ou engins à vapeur sont pris à tort pour de la magie par les gens simples.
+<span id="page-27-0" data-folio="26"></span>si impressionnantes, que certains de leurs plus ingénieux mécanismes ou engins à vapeur sont pris à tort pour de la magie par les gens simples.
 
 Les nains sont trapus, musclés, épais avec un large torse. Leurs traits sont rudes et leurs chevelures épaisses. La pilosité faciale est une marque de fierté et de statut parmi les nains, et tresses élaborées et ornements indiquent leur rang : raser un nain entraîne une honte terrible. En effet, l'honneur est un aspect fondamental de leur caractère. Compte tenu de leur longue mémoire et de leur nature fière, ils nourrissent une rancune envers ceux qui les ont offensés ou déshonorés, s'attachant à leurs griefs pendant de nombreuses années, assumant même les rancœurs héritées de leurs ancêtres, sachant que leurs aïeux les surveillent, ruminant leur amertume même après la mort. Bien qu'il puisse être difficile pour les autres de gagner l'amitié d'un nain, une fois acquise, elle est absolue. Même s'ils n'ont pas une espérance de vie aussi longue que celle des elfes presque immortels, les nains peuvent vivre plusieurs siècles. En fait, certains disent qu'aussi longtemps qu'un nain a un but, il ne mourra pas, à moins d'être tué en combat, soutenu par la force de ses convictions.
 
@@ -80,7 +80,7 @@ Compte tenu de l'incroyable mémoire des nains et de leur tendance à nourrir le
 Les halflings se rencontrent partout à travers le Reikland, travaillant au service des commerces dans toutes les villes. Un quartier entier de la capitale du Reikland, Altdorf, connu sous le nom de Haffenstadt, regroupe même des centaines de familles élargies de halflings venant en aide aux restaurants, aux tavernes, aux échoppes de pipes et à un nombre impressionnant de gargotes ambulantes. Les halflings sont aussi très présents dans beaucoup de villages du Reikland, où ils travaillent souvent en tant qu'employés d'une auberge ou d'une ferme. Ce sont des créatures grégaires, qui préfèrent vivre en groupes 
 
 
-familiaux très soudés, partageant maisons, chambres et lits avec des douzaines d'amis et de parents ; tout le monde contribue et tout le monde partage. Ce style de vie interdépendant laisse désemparés nombre de halflings, aux prises avec le concept de propriété et d'espace privés.
+<span id="page-28-0" data-folio="27"></span>familiaux très soudés, partageant maisons, chambres et lits avec des douzaines d'amis et de parents ; tout le monde contribue et tout le monde partage. Ce style de vie interdépendant laisse désemparés nombre de halflings, aux prises avec le concept de propriété et d'espace privés.
 
 Il est de notoriété publique que les halflings se passionnent pour la généalogie de leur famille, et beaucoup de clans halflings peuvent retracer leurs origines sur plusieurs siècles, jusqu'à la fondation même du Moot (leur grande province autogouvernée dans l'Empire). Le doyen du Moot, actuellement Hisme Fiercoeur, est le conservateur du *Haffenlyver*, un ancien rouleau brodé détaillant les principales lignées de leurs clans fondateurs, considéré comme le plus grand trésor des halflings.
 
@@ -123,7 +123,7 @@ Grands et élancés, avec de délicates oreilles pointues, la plupart des elfes 
 Les hauts elfes, qui s'appellent eux-mêmes *Asur*, sont originaires d'Ulthuan, une île magique à l'ouest du Vieux Monde. Race fière, ils se vantent de faire partie des plus anciennes civilisations du monde. Les hauts elfes font preuve d'un mépris considérable pour les nains, avec lesquels ils ont un long passif de conflits. Depuis qu'ils ont abandonné le Vieux Monde au lendemain de la Guerre de la Barbe, les *Asur* se sont déchirés au cours d'une guerre civile, la « guerre fratricide », 
 
 
-même s'ils n'en parlent pas ouvertement avec les étrangers. À cause de ce conflit qui dure depuis des millénaires, les elfes du Nord, déchirés par la guerre d'Ulthuan ont tendance à être des durs à cuire, pragmatiques et impitoyables.
+<span id="page-29-0" data-folio="28"></span>même s'ils n'en parlent pas ouvertement avec les étrangers. À cause de ce conflit qui dure depuis des millénaires, les elfes du Nord, déchirés par la guerre d'Ulthuan ont tendance à être des durs à cuire, pragmatiques et impitoyables.
 
 La société des hauts elfes est étroitement liée aux rituels et à la discipline, pour éviter de se laisser submerger par de trop fortes émotions et de tirer le maximum de leurs intellects si complexes. En même temps, certains *Asur* se délectent d'aventures. Le terme « elfe des mers » est souvent utilisé par les autres races pour désigner les intrépides hauts elfes qui s'aventurent au-delà de la sécurité des côtes d'Ulthuan, en tant que marins, marchands et diplomates, et qui contrastent fortement avec les sombres *Asur* qui les accompagnent et qui suivent un style de vie plus guerrier.
 
@@ -164,7 +164,7 @@ Les impitoyables *Asrai* d'Athel Loren sont xénophobes et énigmatiques, et s'a
 Ces groupes féroces sont parfois dirigés par un enchanteur, qui fait appel aux antiques voies magiques des Racines du Monde pour se transporter entre Athel Loren et les profondeurs des autres forêts depuis longtemps perdues par les elfes, mais pas encore consumées par la civilisation ou le Chaos. Parfois, ces chasseurs sauvages se découvrent une cause commune avec d'autres habitants du Vieux Monde, et un individu peut sortir de l'ombre pour rejoindre ceux qui combattent un mal encore plus grand.
 
 
-La Reine de la Laurelorn, par contre, a choisi une approche très différente de la prédiction rapportée et a récemment envoyé une importante délégation monter un camp dans la profonde forêt des collines d'Ambre, juste au sud d'Altdorf. Ces elfes observent la politique humaine concernant la Laurelorn et au-delà, et interviennent parfois sur des problèmes jugés importants. Ce camp est considéré comme une solution « temporaire » par les elfes, mais la signification de ce mot est très différente pour les races dotées d'une longue espérance de vie. En raison de ce camp, ces elfes sylvains sont de plus en plus présents dans le Reikland, car ils s'aventurent dans la forêt et l'arpentent à des fins mystérieuses, souvent en tant que Chasseurs ou Saltimbanques.
+<span id="page-30-0" data-folio="29"></span>La Reine de la Laurelorn, par contre, a choisi une approche très différente de la prédiction rapportée et a récemment envoyé une importante délégation monter un camp dans la profonde forêt des collines d'Ambre, juste au sud d'Altdorf. Ces elfes observent la politique humaine concernant la Laurelorn et au-delà, et interviennent parfois sur des problèmes jugés importants. Ce camp est considéré comme une solution « temporaire » par les elfes, mais la signification de ce mot est très différente pour les races dotées d'une longue espérance de vie. En raison de ce camp, ces elfes sylvains sont de plus en plus présents dans le Reikland, car ils s'aventurent dans la forêt et l'arpentent à des fins mystérieuses, souvent en tant que Chasseurs ou Saltimbanques.
 
 ### **Points de vue**
 
@@ -247,7 +247,7 @@ Vous pouvez simplement choisir votre Classe et votre Carrière dans les options 
 |            | Saltimbanque         | 44-45                                                 | 62-63 | 53-55    | 46-48     | 51-55        |
 
 
-# **Classes**
+<span id="page-32-0" data-folio="31"></span># **Classes**
 
 **Résumé :** *Choisissez l'une des huit Classes.*
 
@@ -299,7 +299,7 @@ Votre choix de Classe détermine quelles Carrières vous pouvez choisir. Les Car
 |           | Villageois           | 96-100 | 100   | 98-100   | –         | –            |
 
 
-**Riverains :** personnes qui vivent et travaillent sur les rivières et voies navigables à travers le Reikland et au-delà. Les Riverains commencent tous avec un statut inférieur, mais certains ont des opportunités qui peuvent mener à une vie confortable. **Options de Carrière :** Batelier, Contrebandier, Débardeur, Femme du fleuve, Marin, Naufrageur, Nautonier, Patrouilleur fluvial.
+<span id="page-33-0" data-folio="32"></span>**Riverains :** personnes qui vivent et travaillent sur les rivières et voies navigables à travers le Reikland et au-delà. Les Riverains commencent tous avec un statut inférieur, mais certains ont des opportunités qui peuvent mener à une vie confortable. **Options de Carrière :** Batelier, Contrebandier, Débardeur, Femme du fleuve, Marin, Naufrageur, Nautonier, Patrouilleur fluvial.
 
 **Roublards :** principalement habitants de villes et de cités, ces personnes gagnent leur vie grâce à des actes considérés comme illégaux, ou du moins peu recommandables, sur le dos de la plupart des citoyens respectueux de la Loi. Les Roublards appartiennent tous à la classe inférieure, mais certains peuvent gagner beaucoup d'argent, bien qu'ils ne soient pas en mesure d'accéder à un statut élevé. **Options de Carrière :** Charlatan, Entremetteur, Hors-la-loi, Pilleur de tombes, Rançonneur, Receleur, Sorcier dissident, Voleur.
 
@@ -369,7 +369,7 @@ Elle représente votre capacité à atteindre vos cibles avec des armes à dista
 | Mouvement              | 4             | 3             | 3          | 5             |
 
 
-### **Force (F)**
+<span id="page-35-0" data-folio="34"></span>### **Force (F)**
 
 Ceci indique combien de Dégâts vous infligez au Corps à corps, combien vous pouvez soulever et à quel point vous êtes bon en Natation et en Escalade.
 
@@ -477,7 +477,7 @@ Les Compétences sont classées en deux catégories : les Compétences *de Base*
 
 ### AUGMENTATIONS DE COMPÉTENCE ?
 
-Tout comme les Augmentations de Caractéristique, les Augmentations de Compétence représentent un entraînement spécifique dans une Compétence. Toutes les Compétences sont associées à une Caractéristique, et le nombre d'Augmentations que vous avez dans la Compétence est ajouté à cette Caractéristique pour indiquer à quel point vous êtes qualifié. Donc, comme l'Escalade est associée à la Force, si vous avez une Force de 38 et 8 Augmentations d'Escalade, votre Compétence Escalade est de 46. Ceci est expliqué en détail au **Chapitre 4 : Compétences et Talents**.
+<span id="page-37-0" data-folio="36"></span>Tout comme les Augmentations de Caractéristique, les Augmentations de Compétence représentent un entraînement spécifique dans une Compétence. Toutes les Compétences sont associées à une Caractéristique, et le nombre d'Augmentations que vous avez dans la Compétence est ajouté à cette Caractéristique pour indiquer à quel point vous êtes qualifié. Donc, comme l'Escalade est associée à la Force, si vous avez une Force de 38 et 8 Augmentations d'Escalade, votre Compétence Escalade est de 46. Ceci est expliqué en détail au **Chapitre 4 : Compétences et Talents**.
 
 # **Compétences et Talents liés aux Races**
 
@@ -600,7 +600,7 @@ Ils sont généralement constitués d'un prénom et d'un nom de famille.
 
 ### NOMS HUMAINS ET LEURS ORIGINES
 
-Les noms humains dans WFJDR sont souvent issus du monde réel, ce qui facilite les recherches en ligne pour en dénicher un. Le Reikland et une grande partie de l'Empire utilisent des noms germaniques, le Wasteland a des influences hollandaises et belges, et les noms bretonniens reflètent une sorte de français médiéval.
+<span id="page-39-0" data-folio="38"></span>Les noms humains dans WFJDR sont souvent issus du monde réel, ce qui facilite les recherches en ligne pour en dénicher un. Le Reikland et une grande partie de l'Empire utilisent des noms germaniques, le Wasteland a des influences hollandaises et belges, et les noms bretonniens reflètent une sorte de français médiéval.
 
 Dans le Reikland, les noms de famille humains transmis de génération en génération sont les plus courants dans les cités et les villes, tandis que dans les villages, les gens sont plus enclins à adopter un nom de famille lorsqu'ils atteignent l'âge adulte. Il est courant d'utiliser l'endroit où vous êtes né comme nom de famille, par exemple « Wilhelm d'Auerswald ». Les nobles ont souvent deux noms de famille : le nom de leur Maison, et l'autre est précédé de « von » (de) pour indiquer l'endroit où leur famille possède des terres, comme le graf Zenechar Trott von Tahme. Même si les traditions familiales varient considérablement.
 
@@ -674,7 +674,7 @@ Si vous rencontrez des difficultés à trouver un nom approprié pour votre Pers
 | 9    | Mor                 | sor                | ric                   | stra                     |
 | 10   | Ullia               | than               | wing                  | wyth                     |
 
-au monde naturel tant aimé par les proches parents de la forêt. **Exemples hauts elfes :** Lande de braises, Feu naissant, Cœur d'écume, Cheveux d'or, Bruine d'argent, Présage magique
+<span id="page-40-0" data-folio="39"></span>au monde naturel tant aimé par les proches parents de la forêt. **Exemples hauts elfes :** Lande de braises, Feu naissant, Cœur d'écume, Cheveux d'or, Bruine d'argent, Présage magique
 
 **Exemples elfes sylvains :** Onde filante, Harceleur d'ombres, Façonneur d'arbre, Gardien du tissage, Bras de saule, Coureur de vent
 
@@ -741,7 +741,7 @@ Les Ambitions à court terme représentent vos objectifs immédiats. Ceux que vo
 
 | TABLEAU DE COULEUR DES YEUX |                   |              |              |              |               |
 |-----------------------------|-------------------|--------------|--------------|--------------|---------------|
-| 2d10                        | Humain reiklander | Nain         | Halfling     | Haut elfe    | Elfe sylvain  |
+<span id="page-41-0" data-folio="40"></span>| 2d10                        | Humain reiklander | Nain         | Halfling     | Haut elfe    | Elfe sylvain  |
 | 2                           | Au choix          | Houille      | Gris clair   | Jais         | Ivoire        |
 | 3                           | Vert              | Plomb        | Gris         | Améthyste    | Anthracite    |
 | 4                           | Bleu pâle         | Acier        | Bleu pâle    | Aigue-marine | Vert lierre   |
@@ -947,7 +947,7 @@ Maintenant que votre Personnage et votre groupe sont créés, vous êtes prêts 
 
 # **FEUILLE DE PERSONNAGE**
 
-# **Informations personnelles**
+<span id="page-45-0" data-folio="44"></span># **Informations personnelles**
 
 Vous trouverez ici les informations personnelles de votre Personnage, comme le nom, la **Race** (voir page 24) et la **Carrière** (voir page 30), ainsi que les informations concernant son apparence physique.
 
@@ -1000,7 +1000,7 @@ La Richesse de votre Personnage s'exprime en sous de cuivre, pistoles d'argent e
 
 Notez ici vos **Points de Blessure** (voir page 34). Votre score maximum résulte de vos Caractéristiques et Talents. Quand vous êtes blessé en **Combat** (voir page 156), vos Points de Blessure baisseront, alors que **Guérison** (voir page 181) peut les restaurer (mais jamais audelà de votre maximum). Quand vous gagnez des Augmentations dans vos Caractéristiques et Talents, vos Points de Blessure peuvent, à leur tour, augmenter.
 
-#### **Sorts et Prières**
+<span id="page-46-0" data-folio="45"></span>#### **Sorts et Prières**
 
 Si votre Personnage entame une Carrière religieuse ou magique, vous pouvez avoir accès aux Sorts (voir page 238) ou aux Prières (voir page 217). Cela représente les capacités surnaturelles avec lesquelles votre Personnage fait appel aux Vents de la Magie ou à sa divinité favorite pour obtenir de l'aide en cas de besoin.
 

@@ -226,7 +226,7 @@
     ],
     "source": {
       "book": "livre-de-base",
-      "page": 196
+      "page": 197
     },
     "resolver": "entrainement",
     "desc": "L'Activité *Entraînement* vous permet de vous entraîner dans une Compétence ou une Caractéristique en dehors de votre Carrière, en considérant que vous êtes en formation. En plus du coût en PX normal, vous devez aussi rémunérer votre tuteur.\n\nL'entraînement pour des Compétences de Base et toutes les Caractéristiques coûte PX + 1D10 sous de cuivre, où PX est le coût d'achat en PX de l'Augmentation. Le tutorat pour les Compétences Avancées coûte le double de ce montant. Pour plus d'informations, voir Progrès dans le **Chapitre 3 : Classes et Carrières.**"

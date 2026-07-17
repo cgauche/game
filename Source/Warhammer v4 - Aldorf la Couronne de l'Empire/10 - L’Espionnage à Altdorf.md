@@ -46,7 +46,7 @@ Elles comprennent d'autres branches, dont une est chargée de garder des archive
 - 0 Le général Erik Hoffman commande les Palissades. Il n'aime pas la politique et préfère rester au palais, loin des intrigues de l'Île noire
 
 
-### **Le Untersuchung**
+<span id="page-212-0" data-folio="210"></span>### **Le Untersuchung**
 
 Au sein de l'ordre chevaleresque de la Reiksguard, une petite organisation cherche à venir à bout de la corruption à la cour et dans l'armée. Pour plus de détails sur cette bande excentrique de chercheurs et d'agents de terrain, voir p. 76.
 

@@ -23,7 +23,7 @@ La section *Localisation* d'une fiche de PNJ indique où ce dernier vit et comme
 
 ### SUIVRE À LA TRACE
 
-Lorsque vous faites jouer cette aventure, vous (le MJ) devez savoir où se trouve chacun des 22 PNJ principaux à tout moment, et également quels PNJ importants, s'il y en a, se trouvent au même endroit que les Personnages. À la fin de cet ouvrage, vous trouverez les fiches récapitulatives de 15 PNJ, les agendas de 21 PNJ, ainsi qu'un calendrier des attractions principales avec la liste des PNJ présent.
+<span id="page-80-0" data-folio="78"></span>Lorsque vous faites jouer cette aventure, vous (le MJ) devez savoir où se trouve chacun des 22 PNJ principaux à tout moment, et également quels PNJ importants, s'il y en a, se trouvent au même endroit que les Personnages. À la fin de cet ouvrage, vous trouverez les fiches récapitulatives de 15 PNJ, les agendas de 21 PNJ, ainsi qu'un calendrier des attractions principales avec la liste des PNJ présent.
 
 #### FICHES ET AGENDAS DE PNJ
 
@@ -369,7 +369,7 @@ Enfin, un groupe qui s'acquitte correctement de sa tâche lors de cet événemen
 
 Un MJ cruel aime voir les Personnages se fatiguer avec des veilles nocturnes inutiles, mais il peut aussi être amusant de voir des choses inattendues se produire pendant que les Joueurs attendent des skavens qui n'arriveront jamais. Des voleurs pourraient essayer de se faufiler dans leur chambre la nuit, des ennemis puissants pourraient engager des agents pour placer des preuves incriminantes ou embarrassantes dans leurs affaires, des assassins de différents cultes pourraient essayer de les tuer, etc. Une possibilité très embarrassante consiste à faire en sorte que les Personnages entendent les bruits d'une lutte dans une pièce voisine et décident d'enfoncer la porte : ils se retrouvent face à un couple en pleins ébats et découvrent que l'un des deux est un PNJ important avec lequel ils espéraient se lier d'amitié, et à qui ils viennent de faire une très mauvaise première impression.
 
-### **L'ennemi d'en bas**
+<span id="page-92-0" data-folio="90"></span>### **L'ennemi d'en bas**
 
 Des skavens ont été aperçus par intermittence dans la ville souterraine de Middenheim depuis l'époque du comte Mandred. Les combattants des tunnels nains et les égoutiers de Middenheim effectuent des rondes régulières dans les niveaux inférieurs, et les autorités suivent de près toute observation. Afin d'éviter la panique, la politique officielle impose de nier l'existence des skavens et de maintenir que les nains occupent les niveaux les plus bas de la ville souterraine, ne laissant aucun tunnel ou caverne sans surveillance.
 
@@ -390,7 +390,7 @@ Notez bien combien de temps les Personnages mettent à agir. Ils doivent avoir l
 La bande de skavens rassemble tous les occupants de l'auberge et les emmène dans la salle principale, où ils sont attachés. Ceux qui n'offrent aucune résistance ne seront pas (trop) blessés, car les humains vivants ont de la valeur dans la ville souterraine. La plupart 
 
 
-des clients de l'auberge vont préférer la fuite au combat. C'est à vous de décider qui sera capturé et qui parviendra à s'enfuir. Cependant, il est suggéré que Tiasmara, la cuisinière halfling, soit capturée et menacée : cela empêchera Uli et son équipe d'intervenir.
+<span id="page-93-0" data-folio="91"></span>des clients de l'auberge vont préférer la fuite au combat. C'est à vous de décider qui sera capturé et qui parviendra à s'enfuir. Cependant, il est suggéré que Tiasmara, la cuisinière halfling, soit capturée et menacée : cela empêchera Uli et son équipe d'intervenir.
 
 Une fois qu'ils ont attaché quelques clients, Snikkit arrache une vieille carte de campagne montrant les Montagnes du Milieu qui est accrochée au mur du bar, la roule et la glisse dans sa ceinture. Les Personnages ne s'en apercevront probablement qu'après coup et cela n'aura aucun impact sur cette aventure.
 
@@ -511,7 +511,7 @@ Bruno Kohl peut très bien être un fournisseur d'herbes illicites, auquel cas l
 
 Il se peut également que les Personnages soient simplement frappés et jetés hors de La Fosse, pour découvrir bien plus tard que l'endroit qu'ils cherchent se trouve en réalité à l'autre bout de la ville et qu'ils sont à la recherche d'une tout autre personne.
 
-Les Personnages peuvent aussi suivre Brunhilde Klaglich jusqu'à La Fosse après avoir surveillé le Chancelier et l'avoir vue effectuer une livraison. La taverne a un rez-de-chaussée et un étage. Des caves contiennent également quelques barils de bière et beaucoup de toiles d'araignée. Les pièces de l'étage abritent plusieurs des divertissements douteux qui abondent à La Fosse et dans le quartier en général.
+<span id="page-95-0" data-folio="93"></span>Les Personnages peuvent aussi suivre Brunhilde Klaglich jusqu'à La Fosse après avoir surveillé le Chancelier et l'avoir vue effectuer une livraison. La taverne a un rez-de-chaussée et un étage. Des caves contiennent également quelques barils de bière et beaucoup de toiles d'araignée. Les pièces de l'étage abritent plusieurs des divertissements douteux qui abondent à La Fosse et dans le quartier en général.
 
 Le bar est dégoûtant. Les murs et les plafonds sont couverts de crasse et le sol est recouvert de sciure de bois dans laquelle de la bière et d'autres substances s'accumulent en caillots et en flaques. L'air est bleu de fumée et il est préférable d'imaginer l'odeur plutôt que de la décrire. En résumé, La Fosse porte bien son nom.
 
@@ -589,7 +589,7 @@ Grand, prétentieux et incapable de prendre des décisions, Bruno est un habitu�
 **Traits :** Arme (Dague +7, Matraque +9), Préjugé (Gardes) **Possessions :** dague, collier en or ostentatoire (2 CO), 2 anneaux en or (2 CO chacun), 20 doses de Délice de Ranald, 5 doses de racine de mandragore, 20 doses de mystracine et 2 doses de lotus noir. Voir **WFJDR** p. 307
 
 
-### **Marie-Astrid Platini**
+<span id="page-97-0" data-folio="95"></span>### **Marie-Astrid Platini**
 
 Les cheveux de jais, la taille fine et le teint foncé, Marie-Astrid est originaire de la région de Bordeleaux, en Bretonnie, et parle le reikspiel avec un fort accent. Pour une raison inconnue, elle est amoureuse de Bruno, mais cela ne l'empêche pas de flirter avec n'importe quel client séduisant qui croise son chemin.
 

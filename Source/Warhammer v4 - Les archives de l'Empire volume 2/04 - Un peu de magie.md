@@ -58,7 +58,7 @@ Les Personnages peuvent également obtenir des artefacts magiques en passant com
 Commander un artefact n'est jamais chose facile. Les sorciers compétents sont sollicités en permanence, et dans certains cas, se retirent dans les endroits sauvages du Vieux Monde pour échapper à la demande constante des nobles et des gouvernements. Chercher un artisan peut être une aventure en soi, et convaincre celui-ci d'accepter la commande peut représenter un défi supplémentaire (à condition de pouvoir trouver un individu suffisamment compétent). Par exemple, les Personnages à la recherche de quelqu'un pour fabriquer une épée magique doivent trouver un sorcier expérimenté avec des compétences de forgeron.
 
 
-#### **Protéger la réputation des sorciers**
+<span id="page-54-0" data-folio="53"></span>#### **Protéger la réputation des sorciers**
 
 La plupart des sorciers ne risqueraient pas leur réputation en fabriquant des artefacts puissants pour n'importe quelle piétaille. Au sein de l'Empire, la propagation imprudente d'objets enchantés pourrait facilement donner du grain à moudre en faveur du rétablissement de la persécution des sorciers. Chez les zélotes sigmarites, par exemple.
 
@@ -87,7 +87,7 @@ Même s'il est recommandé pour un Personnage de prendre le temps au cours de la
 Une fois que vous avez trouvé un expert et convenu d'un prix, vous pouvez passer à la section *Le produit fini* à la page suivante. Si vous souhaitez fabriquer un objet vous-même, poursuivez la lecture !
 
 
-#### **Très bien, je m'en occuperai moi-même !**
+<span id="page-55-0" data-folio="54"></span>#### **Très bien, je m'en occuperai moi-même !**
 
 Plutôt que de marchander avec des sorciers frivoles et des nains entêtés, les Personnages comptent justement parmi eux un individu frivole ou entêté. Un Personnage avec les Compétences requises peut essayer de créer un artefact magique lui-même à l'aide de l'Activité *Artisanat*. Il peut être bon de rappeler au Personnage que la création d'un artefact nécessite souvent l'utilisation d'ingrédients exotiques, dont l'obtention peut constituer une aventure intéressante pour le groupe. Par exemple, le forgeage de lames puissantes nécessite que l'acier encore chaud soit trempé dans du sang de dragon frais. Bien qu'il s'agisse d'une méthode garantie pour créer une lame aussi tranchante que le rasoir de n'importe quel barbier, les dragons en question ont tendance à ne pas se laisser faire. L'obtention de l'objet final est d'autant plus satisfaisante lorsque les Personnages ont passé du temps à récupérer les ingrédients. Pour plus d'informations sur l'obtention et l'utilisation d'ingrédients récoltés sur des créatures dangereuses, voir **Le Zoo Impérial**.
 
@@ -134,7 +134,7 @@ De nombreux effets magiques s'appliquent uniquement à un type de Créature spé
 
 ## ARTEFACTS MAGIQUES
 
-**Égorgeuse**
+<span id="page-56-0" data-folio="55"></span>**Égorgeuse**
 
 Cette rapière magique est fabriquée avec sa propre soif de sang, guidant la pointe à travers même la meilleure protection. Une Égorgeuse ignore les PA d'une armure ayant le Défaut Points faibles. Sinon, cette arme fonctionne comme une Rapière normale.
 
@@ -149,7 +149,7 @@ Personne ne sait d'où vient cette massue d'aspect brutal. Elle est apparue dans
 
 ## PARTICULARITÉS ET MALÉDICTIONS
 
-En temps normal, les Vents de Magie sont capricieux et difficiles à contrôler, et ils ne semblent pas apprécier être liés à des objets qui les forcent à obéir à leur utilisateur au doigt et à l'œil. Une brève distraction pendant la fabrication d'un objet magique peut à elle seule entraîner un désastre. Même une simple erreur d'inattention peut mener à l'apparition de comportements étranges de l'artefact, qu'on appelle des Particularités. Ces efforts peuvent même mener à un effet catastrophique : une Malédiction.
+<span id="page-57-0" data-folio="56"></span>En temps normal, les Vents de Magie sont capricieux et difficiles à contrôler, et ils ne semblent pas apprécier être liés à des objets qui les forcent à obéir à leur utilisateur au doigt et à l'œil. Une brève distraction pendant la fabrication d'un objet magique peut à elle seule entraîner un désastre. Même une simple erreur d'inattention peut mener à l'apparition de comportements étranges de l'artefact, qu'on appelle des Particularités. Ces efforts peuvent même mener à un effet catastrophique : une Malédiction.
 
 Des sorciers sont connus pour avoir délibérément fabriqué des artefacts maudits, souvent dans un but précis, parfois avec pour seul objectif d'engendrer des souffrances. Lors de la génération aléatoire d'un artefact, le MJ doit lancer discrètement un dé pour savoir si l'objet a une Particularité ou une Malédiction. Les Particularités et les Malédictions ne s'appliquent pas aux parchemins, et, suivant une longue tradition (disons par courtoisie professionnelle), la plupart des bâtons ne sont pas maudits.
 
@@ -205,7 +205,7 @@ Si vous avez besoin de générer une arme magique aléatoirement, effectuez un l
 
 #### ATOUTS D'ARMES MAGIQUES
 
-Vous pouvez utiliser ce tableau pour générer des effets magiques aléatoires pour les armes. Il contient l'effet de l'arme et l'origine probable de ses pouvoirs. Le MJ peut décider d'une origine différente de celle qui est décrite. Par exemple, une Lame du givre peut être fabriquée au cours d'un processus n'impliquant pas les secrets détenus par les Sorcières de glace de Kislev, celles-ci sont juste les artisanes les plus réputées pour ces armes.
+<span id="page-59-0" data-folio="58"></span>Vous pouvez utiliser ce tableau pour générer des effets magiques aléatoires pour les armes. Il contient l'effet de l'arme et l'origine probable de ses pouvoirs. Le MJ peut décider d'une origine différente de celle qui est décrite. Par exemple, une Lame du givre peut être fabriquée au cours d'un processus n'impliquant pas les secrets détenus par les Sorcières de glace de Kislev, celles-ci sont juste les artisanes les plus réputées pour ces armes.
 
 Certains des exemples mentionnent une intervention divine dans la création de l'objet. Même si les artefacts magiques et les reliques divines respectent les mêmes règles, leur méthode de création et leur rôle dans le monde peuvent être très différents, un sujet autour duquel le débat entre les érudits du Vieux Monde fait rage depuis la fondation de l'Empire.
 
@@ -487,7 +487,7 @@ Les talismans et les amulettes sont souvent associés à la magie de protection.
 
 ### OBJETS INSOLITES
 
-Les objets insolites sont des artefacts magiques plus rares fabriqués dans un but qui peut ne pas sembler utile d'emblée aux aventuriers.
+<span id="page-68-0" data-folio="67"></span>Les objets insolites sont des artefacts magiques plus rares fabriqués dans un but qui peut ne pas sembler utile d'emblée aux aventuriers.
 
 | d100  | Capacité                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 |-------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

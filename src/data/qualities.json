@@ -139,7 +139,7 @@
     "desc": "Une arme avec l'Atout Siège inflige le double des dégâts aux structures physiques telles que les murs, les tours et les portes.",
     "source": {
       "book": "archives-de-l-empire-2",
-      "page": 88
+      "page": 89
     },
     "capabilities": {
       "siege": true

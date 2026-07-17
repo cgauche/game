@@ -131,7 +131,7 @@ La compétence **Prière**, **Langue (Magick)** et **Focalisation** sont des **c
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 46` (l.23-25) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `mineure-cerumen`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `mineure-rupture`, `mineure-secousse-spirituelle`, `mineure-delie`, +37 — `src/data/miscast.json`, `src/engine/domainAttributes.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/partyFlow.ts`
-- `LDB 85` (l.206-207) → `a-distance`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `amphibie`, `applySwarmBuild`, `animosite`, `arboricole`, `arme`, `armure`, +19 — `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +5 fichiers
+- `LDB 85` (l.206-207) → `STARTLE_CAUSE_LABELS`, `applySwarmBuild`, `Condition`, `TriggerCtx`, `combatTestPenalty`, `attackModifiers`, `combineOpposed`, `immunite-psychologique`, `increvable`, `infecte`, +20 — `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +5 fichiers
 
 ---
 
@@ -614,7 +614,7 @@ Rider optionnel `+1 État Exténué` sur chaque cible vivante (sans limite par s
 Bypass systématique de **tous les PA non magiques** (cuir, métal ordinaire — seuls les PA magiques résistent).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.582-585) → `caresse-de-laniph`, `dernieres-paroles`, `la-faux-de-shyish`, `le-voile-violet-de-shyish`, `mort-rapide`, `sanctifier`, `vol-de-vie`, `vortex-d-ames` — `src/data/spells.json`, `src/engine/domainAttributes.ts`
+- `LDB 48` (l.582-585) → `caresse-de-laniph`, `dernieres-paroles`, `la-faux-de-shyish`, `le-voile-violet-de-shyish`, `mort-rapide`, `sanctifier`, `vol-de-vie`, `vortex-d-ames`, `peur`, `illusion`, +6 — `src/data/spells.json`, `src/engine/domainAttributes.ts`
 
 ---
 
@@ -627,7 +627,7 @@ Bypass systématique de **tous les PA non magiques** (cuir, métal ordinaire —
 Triple effet : (1) `+10` à Incanter/Focaliser en environnement rural/sauvage (bonus du lanceur) ; (2) toutes les cibles **vivantes** voient retirer leurs états `Exténué` et `Hémorragique` après application des effets ; (3) toutes les cibles `Mort-vivant` subissent `+BFM` dégâts ignorant BE+PA.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.679-689) → `domainEnvironmentBonus`, `Scene`, `FLOWS`, `DomainData`, `caresse-de-laniph`, `dernieres-paroles`, `la-faux-de-shyish`, `le-voile-violet-de-shyish`, `mort-rapide`, `sanctifier`, +7 — `src/data/index.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`
+- `LDB 48` (l.679-689) → `domainEnvironmentBonus`, `Scene`, `FLOWS`, `DomainData`, `peur`, `illusion`, `jumeau-malefique`, `linceul-d-invisibilite`, `miasme-mystifiant`, `ombres-etrangleuses`, +7 — `src/data/index.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`
 
 ---
 

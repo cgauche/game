@@ -36,7 +36,7 @@ Les ânes et les mules possèdent souvent le Trait Entêté, qui augmente leur s
 | M               | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |  |
 | 5               | 25 | -  | 45 | 45 | 17 | 25 | -   | 10  | 10 | 20  | 26 |  |
 
-**Traits :** Arme +7, Dressé (Dompté, Monture, Trait), Foulée (Quadrupède), Nerveux, Taille (Grande)
+<span id="page-23-0" data-folio="23"></span>**Traits :** Arme +7, Dressé (Dompté, Monture, Trait), Foulée (Quadrupède), Nerveux, Taille (Grande)
 
 Ces chevaux de taille moyenne sont appréciés des fermiers qui peuvent se les offrir et profiter de leur polyvalence. Ils tirent des charrues ou des charrettes, une paire de ces animaux peut tirer tous les chariots, sauf les plus lourds, et ils constituent des montures assez dociles pour les déplacements en ville les jours de marché.
 
@@ -94,7 +94,7 @@ Les plus grands chevaux de guerre, parfois appelés « destriers », sont monté
 
 ### COÛT DE L'ANIMAL ET DISPONIBILITÉ
 
-| Animal                            | Coût    | Capacité d'encombrement | Disponibilité |
+<span id="page-24-0" data-folio="24"></span>| Animal                            | Coût    | Capacité d'encombrement | Disponibilité |
 |-----------------------------------|---------|-------------------------|---------------|
 | Poulet                            | 5 sc    | 0                       | Commune       |
 | Mouton                            | 3 /-    | 2                       | Commune       |
@@ -208,7 +208,7 @@ Les diligences commerciales peuvent transporter six passagers à l'intérieur, e
 Inspiré par les histoires des palanquins cathayens et de leurs puissants porteurs, le baronnet Réginald Gruber de Weissbruck a commandé une litière de vingt personnes. Les assistants du baronnet sont assez intelligents pour ne pas engager un groupe d'ogres forts et d'assez bonne humeur pour jouer les porteurs de litière, et cherchent plutôt à soustraiter cette requête de leur seigneur.
 
 
-#### **Charrettes à bras**
+<span id="page-27-0" data-folio="27"></span>#### **Charrettes à bras**
 
 Les charrettes à bras sont des versions plus petites des charrettes à deux roues, poussées par un homme. À la place du siège se trouve un côté ouvert, bien que des rapports indiquent que le pousse-pousse cathayen comporte un siège rembourré pour deux personnes. Comme les charrettes à chevaux, celles à bras possèdent deux arçons en saillie, normalement reliés par une barre transversale afin qu'une ou deux personnes puissent les déplacer.
 
@@ -338,7 +338,7 @@ Les véhicules ont une caractéristique d'Endurance, à partir de laquelle un Bo
 Les brancards sont brisés, les brides coupées, ou les bêtes sont séparées du véhicule d'une autre manière. Traitez cela comme un Problème de véhicule *Incontrôlable*.
 
 
-#### **Roues**
+<span id="page-30-0" data-folio="30"></span>#### **Roues**
 
 Une roue se casse ou tombe, nécessitant des réparations avant que le véhicule ne puisse poursuivre sa route. Un véhicule à deux roues se renverse, se débarrasse de son chargement et projette ses passagers au sol dans une chute d'1 mètre.
 

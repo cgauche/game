@@ -1,6 +1,6 @@
 *Pages PDF 148-150*
 
-#### **Sens de l'orientation**
+<span id="page-147-0" data-folio="146"></span>#### **Sens de l'orientation**
 
 **Maxi :** Bonus d'Initiative
 
@@ -115,7 +115,7 @@ Vous savez comment trouver les points faibles de l'armure d'une cible. Quand vou
 Une technique de mémorisation initiée par le Culte de Verena, d'après ce que l'on prétend, tirée des pratiques elfiques enseignées par les Maîtres du savoir de Hoeth, Tour des souvenirs vous permet de vous rappeler parfaitement une série d'événements en les mémorisant dans une tour imaginaire. Vous pouvez vous 
 
 
-souvenir d'une série d'événements d'une longueur égale à votre Intelligence sans avoir besoin d'effectuer de Test. Pour chaque tranche de 10 éléments supplémentaires que vous tentez de mémoriser, vous devez effectuer un Test d'Intelligence dont la Difficulté augmente pour vous en souvenir correctement, en partant de **Très facile (+60)** pour 10+, **Facile (+40)** pour 20+, **Accessible (+20)** pour 30+, etc. Au-delà de son utilité évidente pour le Pari, car ce Talent ajoute un Bonus de +20 à +60, selon l'utilité de la mémorisation lors du jeu en cours, le MJ peut, si nécessaire, appliquer des Bonus aux autres Tests. Chaque fois que vous prenez ce Talent, vous pouvez vous rappeler une série supplémentaire d'événements, sans avoir à en oublier une précédemment mémorisée.
+<span id="page-148-0" data-folio="147"></span>souvenir d'une série d'événements d'une longueur égale à votre Intelligence sans avoir besoin d'effectuer de Test. Pour chaque tranche de 10 éléments supplémentaires que vous tentez de mémoriser, vous devez effectuer un Test d'Intelligence dont la Difficulté augmente pour vous en souvenir correctement, en partant de **Très facile (+60)** pour 10+, **Facile (+40)** pour 20+, **Accessible (+20)** pour 30+, etc. Au-delà de son utilité évidente pour le Pari, car ce Talent ajoute un Bonus de +20 à +60, selon l'utilité de la mémorisation lors du jeu en cours, le MJ peut, si nécessaire, appliquer des Bonus aux autres Tests. Chaque fois que vous prenez ce Talent, vous pouvez vous rappeler une série supplémentaire d'événements, sans avoir à en oublier une précédemment mémorisée.
 
 # **Trappeur**
 
@@ -206,7 +206,7 @@ Vous êtes indomptable, et vous ne vous inclinerez jamais volontairement devant 
 
 # • RÈGLES •
 
-La partie a commencé ; l'ambiance est lourde et le danger guette. Les Joueurs se penchent en avant, écoutant avec attention le MJ qui décrit les événements, tout en expliquant avec force détails les actions que leurs Personnages effectuent en réaction et dans l'attente, le souffle court, de ce qui arrivera…
+<span id="page-149-0" data-folio="148"></span>La partie a commencé ; l'ambiance est lourde et le danger guette. Les Joueurs se penchent en avant, écoutant avec attention le MJ qui décrit les événements, tout en expliquant avec force détails les actions que leurs Personnages effectuent en réaction et dans l'attente, le souffle court, de ce qui arrivera…
 
 C'est lorsque les interruptions dans la narration sont le moins fréquentes que les jeux de rôle fonctionnent le mieux – plus le déroulement se fait en douceur, plus les participants se sentiront impliqués. Mais alors que l'aventure progresse, des événements vont se produire et l'issue de l'action entreprise par le Personnage sera alors incertaine. Un Personnage va sauter d'un mur afin de découper en rondelles un pillard gobelin – va-t-il atterrir sur ses deux jambes, prêt à agir, ou à plat ventre, le nez dans la poussière ?
 

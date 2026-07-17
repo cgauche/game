@@ -248,12 +248,10 @@ export const RAW_CLAIM_FAMILIES = [
 /** Réf de livre ancrant la thèse au Source (n'importe où dans le MÊME commentaire logique).
  *  Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation écrite à la main ici
  *  omettait Ubersreik/Altdorf/T3, désynchronisée dès qu'un livre s'ajoutait à BOOKS). `ACE`
- *  (Altdorf, Annexe I — citée en `p.NNN`, jamais `l.NNN`, cf. mesure #434 lot 3 : ~40 refs
- *  `ACE p.219`/`p.220` dans src/, zéro dans docs/raw/) reste ABSENTE de `BOOKS`/`otherAbbrAlternation`
- *  (BOOKS ne modélise que la citation `l.<ligne>` d'un chapitre extrait) — tolérée ici à part,
- *  décision de rattachement à BOOKS différée à l'orchestrateur. */
+ *  (Altdorf, Annexe I — citée en `p.NNN`, jamais `l.NNN`) est portée par `BOOKS`/`otherAbbrAlternation`
+ *  (alias `Ald\w+`/`Alt\w+` en plus de la forme canonique `ACE`, ref #529) — aucune entrée en dur ici. */
 export const BOOK_REF_RX = new RegExp(
-  `\\b(LDB|ACE|${otherAbbrAlternation()})\\b\\s*(\\d+|ch\\.?\\s*\\d+|l\\.\\s*\\d+|p\\.?\\s*\\d+|§)`,
+  `\\b(LDB|${otherAbbrAlternation()})\\b\\s*(\\d+|ch\\.?\\s*\\d+|l\\.\\s*\\d+|p\\.?\\s*\\d+|§)`,
   'i',
 );
 

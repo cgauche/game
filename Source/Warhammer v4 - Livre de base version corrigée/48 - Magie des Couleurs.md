@@ -588,7 +588,7 @@ Les Sorts lancés depuis le Domaine des Ombres le sont de manière furtive, tout
 toute discrétion. N'importe lequel des Sorts de protection que vous lancerez vous enveloppera dans les ombres et dans des volutes de fumée, vous rendant immatériel, permettant même parfois que les lames vous traversent sans vous blesser. De plus, les Sorts lancés depuis le Domaine des Ombres ignorent tous les PA non magiques.
 
 
-**Composants :** tout objet utilisé pour se cacher ou se dissimuler peut être un composant gris ; cela comprend entre autres le maquillage, les parfums, les foulards, les lunettes, les miroirs et les perruques. Les objets utilisés par des professions versées dans les intrigues, comme les artefacts diplomatiques, les symboles de rang et, l'expression ultime du pouvoir – l'épée – sont utilisés très fréquemment.
+<span id="page-253-0" data-folio="252"></span>**Composants :** tout objet utilisé pour se cacher ou se dissimuler peut être un composant gris ; cela comprend entre autres le maquillage, les parfums, les foulards, les lunettes, les miroirs et les perruques. Les objets utilisés par des professions versées dans les intrigues, comme les artefacts diplomatiques, les symboles de rang et, l'expression ultime du pouvoir – l'épée – sont utilisés très fréquemment.
 
 # **Destrier d'Ombre**
 

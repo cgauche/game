@@ -51,7 +51,7 @@ La très redoutée *Fièvre du rongeur* est transmise, comme son nom l'indique, 
 **Contraction :** sur un échec d'un Test de **Résistance Accessible (+20)** après un combat où vous avez été blessé par des rongeurs (dont les skavens) possédant le Trait Infecté, ou sur un échec d'un Test de **Résistance Facile (+40)** après qu'une source infectée est entrée en contact avec votre bouche.
 
 
-**Incubation :** 3d10+5 jours **Durée :** 3d10+10 jours
+<span id="page-188-0" data-folio="187"></span>**Incubation :** 3d10+5 jours **Durée :** 3d10+10 jours
 
 **Symptômes :** blessé, convulsion, démangeaisons, fièvre,
 
@@ -165,7 +165,7 @@ Vous êtes recouvert de pustules, de gonflements, d'éruptions cutanées ou de b
 **Traitement :** les démangeaisons sont extrêmement répandues, tout comme leurs remèdes qui se déclinent le plus souvent sous forme d'onguents ou d'huiles. Les temples les plus importants de Shallya ont souvent de la crème qu'ils distribuent gracieusement (même si tous les dons sont les bienvenus), et les apothicaires et les herboristes de toutes sortes vendent des produits similaires à des prix plutôt bas (rarement plus de six ou sept sous de cuivre pour une semaine de traitement, avec 90 % de chance que le remède soit efficace). L'utilisation de crème permet que les Tests de Calme pour réfréner les grattements deviennent Très Facile (+60), mais leur application ne vous rend pas très esthétique.
 
 
-### **Fièvre**
+<span id="page-190-0" data-folio="189"></span>### **Fièvre**
 
 Votre température est haute, vous transpirez abondamment et vous n'avez vraiment pas l'air en forme. Subissez une pénalité de -10 à tous vos Tests Physiques et de Sociabilité. Si la fièvre dont vous souffrez est indiquée comme (Grave), vous vous retrouvez dans un état de faiblesse totale vous obligeant à rester alité. Gagnez l'État *Inconscient*, même si la dépense de Points de Détermination peut vous ramener à la conscience pendant quelques minutes.
 

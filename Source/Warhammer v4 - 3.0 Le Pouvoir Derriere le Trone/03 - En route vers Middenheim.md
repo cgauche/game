@@ -37,7 +37,7 @@ Ce genre de rencontre devient plus fréquent à mesure que les Personnages s'enf
 Plus les Personnages approchent de Middenheim, plus le trafic de réfugiés devient important : il comprend des Sigmarites, des prêtres, des nains, des alchimistes et des sorciers. Des Sigmarites de toutes classes, métiers et professions racontent des histoires de persécution religieuse. Des prêtres, non seulement de Sigmar, mais également d'autres religions, relaient des récits de violence anti-sigmarite et ajoutent que le Graf a approuvé une série de taxes exorbitantes sur les temples, dont le seul but est certainement de chasser toute religion autre que celle d'Ulric. Parmi la foule, on trouve des sorciers et des 
 
 
-alchimistes qui se plaignent d'une « *taxe sur les parchemins* » qui rend Middenheim trop chère pour y vivre. Enfin, des nains de Middenheim maugréent à propos des *« humains ingrats »,* mais admettront seulement en privé avec un autre nain qu'ils ont été taxés au-delà de leurs moyens et qu'ils n'ont pas l'or nécessaire pour demeurer dans la Cité du Loup Blanc.
+<span id="page-17-0" data-folio="15"></span>alchimistes qui se plaignent d'une « *taxe sur les parchemins* » qui rend Middenheim trop chère pour y vivre. Enfin, des nains de Middenheim maugréent à propos des *« humains ingrats »,* mais admettront seulement en privé avec un autre nain qu'ils ont été taxés au-delà de leurs moyens et qu'ils n'ont pas l'or nécessaire pour demeurer dans la Cité du Loup Blanc.
 
 #### **Fils d'Ulric**
 
@@ -86,7 +86,7 @@ Pour les novices, le site de l'Illustre pierre est aussi sacré pour le culte de
 
 Selon les traditions de ces deux religions, le dieu (Ulric ou Sigmar, en fonction des récits) s'est reposé sur ce site après une bataille contre les forces du Chaos. Désarmé (Sigmar n'avait pas encore reçu son marteau Ghal-Maraz et Ulric avait perdu son épée lors de la bataille précédente) il est tombé dans une embuscade et a ramassé un étrange rocher pour parer les coups de ses assaillants. Un coup l'a brisé et a laissé un éclat long et extrêmement tranchant dans la main du dieu : il lui a permis de tuer cinq cents ennemis avant qu'ils ne parviennent à s'enfuir. Un sanctuaire a été construit autour de ce rocher et est devenu un lieu de pèlerinage pour les deux religions, ainsi que le théâtre de disputes régulières pour savoir qui a le plus de droits sur ce rocher.
 
-### **Répurgateurs**
+<span id="page-18-0" data-folio="16"></span>### **Répurgateurs**
 
 Les rapports de violence anti-sigmarite étant en hausse dans le Middenland, les répurgateurs des différents ordres sigmarites sont particulièrement actifs sur la route, interrogeant les réfugiés et chassant les Fils d'Ulric et autres mécréants. Comme les Personnages l'apprennent en cours de route, un groupe de répurgateurs était récemment actif à Middenheim : ils ont brûlé 17 cultistes.
 
@@ -148,7 +148,7 @@ Pendant ce temps, plusieurs habitants à l'esprit d'initiative profitent de l'af
 derniers ne font rien contre ces faux percepteurs.
 
 
-### **De simples formalités**
+<span id="page-20-0" data-folio="18"></span>### **De simples formalités**
 
 Finalement, le groupe atteint la tête de la file d'attente. À la porte ou au télésiège, ils sont soumis à un contrôle fiscal par un sergent de porte qui, remarquent-ils, contrôle également ceux qui quittent la ville. Ce sergent est épaulé par suffisamment de gardes pour que la plupart des personnes réfléchissent à deux fois avant de causer des problèmes.
 
@@ -177,7 +177,7 @@ Les poursuivants peuvent également être des cultistes de la Main Pourpre qui s
 
 ### NOUVELLES ET RUMEURS
 
-Les Personnages peuvent obtenir les informations suivantes dans la ville, soit en discutant avec des Middenheimers, soit en écoutant certaines conversations. Attention à la crédibilité : il faut que les PNJ en question aient pu entendre les informations qu'ils transmettent. Par exemple, les pauvres paysans de la région ne peuvent pas être au courant des lointaines machinations impériales, tandis que les marchands ou les membres de guildes instruits sont peu susceptibles de relayer de simples superstitions.
+<span id="page-21-0" data-folio="19"></span>Les Personnages peuvent obtenir les informations suivantes dans la ville, soit en discutant avec des Middenheimers, soit en écoutant certaines conversations. Attention à la crédibilité : il faut que les PNJ en question aient pu entendre les informations qu'ils transmettent. Par exemple, les pauvres paysans de la région ne peuvent pas être au courant des lointaines machinations impériales, tandis que les marchands ou les membres de guildes instruits sont peu susceptibles de relayer de simples superstitions.
 
 Certaines de ces rumeurs reprennent des histoires que les Personnages ont pu entendre pendant *Mort sur le Reik*. Si nécessaire, le MJ doit compléter les détails des histoires précédentes que les Personnages ont manqués d'une manière ou d'une autre.
 
@@ -202,7 +202,7 @@ Malgré leur attitude parfois austère, les Middenheimers adorent les ragots, no
 
 I
 
-Middenheim est peut-être un endroit inhabituel et quelque peu étrange, mais ses habitants en sont fiers à juste titre et sont toujours heureux de parler de la ville, de son histoire et de ses habitants. Choisissez au hasard ou sélectionnez une rumeur appropriée à entendre concernant Middenheim.
+<span id="page-22-0" data-folio="20"></span>Middenheim est peut-être un endroit inhabituel et quelque peu étrange, mais ses habitants en sont fiers à juste titre et sont toujours heureux de parler de la ville, de son histoire et de ses habitants. Choisissez au hasard ou sélectionnez une rumeur appropriée à entendre concernant Middenheim.
 
 - 0 Les illuminations magiques annuelles pourraient ne pas être aussi grandioses que par le passé. Cette taxe sur les parchemins a été une mesure impopulaire, et Peter Kramer, un sorcier très apprécié qui a dirigé le spectacle aérien annuel des « Flèches rouges » pendant des années, a quitté la ville.
 - 0 Avez-vous remarqué que de plus en plus d'établissements nains semblent fermer leurs portes depuis l'introduction de la taxe pour les nains ? Ce qui est étrange, c'est que peu de nains ont été vus en train de partir, que ce soit par le télésiège ou par les routes principales. Certains disent qu'ils se sont cachés dans les anciens tunnels, sous la ville.
@@ -222,7 +222,7 @@ Middenheim est peut-être un endroit inhabituel et quelque peu étrange, mais se
 
 #### POUR LES AVENTURIERS
 
-Il y a toujours du travail pour ceux qui savent manier l'épée, l'une de ces missions conviendra donc peut-être à un ou plusieurs de vos Personnages. Attention : certaines de ces rumeurs peuvent les éloigner de l'intrigue principale, mais utilisées avec précaution, elles peuvent pousser vos Joueurs dans la bonne direction. Lancez 1d10 et choisissez au hasard si vous le souhaitez, mais il est conseillé de choisir une rumeur adaptée à votre jeu.
+<span id="page-23-0" data-folio="21"></span>Il y a toujours du travail pour ceux qui savent manier l'épée, l'une de ces missions conviendra donc peut-être à un ou plusieurs de vos Personnages. Attention : certaines de ces rumeurs peuvent les éloigner de l'intrigue principale, mais utilisées avec précaution, elles peuvent pousser vos Joueurs dans la bonne direction. Lancez 1d10 et choisissez au hasard si vous le souhaitez, mais il est conseillé de choisir une rumeur adaptée à votre jeu.
 
 - 0 Vous voulez vous faire un peu d'argent en plus ? Eh bien, oubliez l'idée de vous enrôler dans la Garde. Après la quasiémeute de l'année dernière à l'issue de la finale de Snotball, « Tête de fer » Schutzmann a déjà engagé 400 hommes supplémentaires pour aider à surveiller la ville. On raconte qu'il a dépensé presque tout le budget de l'année dans la semaine du Carnaval.
 - 0 Vous êtes au courant ? Tous les nains quittent la ville. Quelqu'un va devoir contrôler tous ces tunnels et ils ont besoin de soldats qui n'ont pas peur de l'obscurité, de préférence de petite taille.
@@ -392,7 +392,7 @@ Quiconque demande à voir les anciens occupants sera soupçonné d'être lui-mê
 Bien évidemment, le capitaine Scharlach n'a jamais existé. Comme expliqué à la page 8, il s'agit d'un des nombreux noms de code utilisés par les membres de la Main Pourpre. Par exemple, si quelqu'un demande Herr Verandern, cela signifie qu'il s'agit d'un membre de la secte qui en cherche d'autres. Demander le capitaine Scharlach équivaut à : « *J'ai été envoyé ici par un autre membre de la secte et je n'ai aucune idée de ce qui se passe* ».
 
 
-### **Une nouvelle direction**
+<span id="page-29-0" data-folio="27"></span>### **Une nouvelle direction**
 
 Alors que les Personnages se tiennent, déconcertés, devant le bâtiment vide, se rappelant peut-être qu'un bâtiment similaire a été utilisé pour leur tendre une embuscade à Bögenhafen, ils remarquent que quelqu'un les observe. Un jeune garçon des rues, assez typique de la région, fixe leur caisse depuis l'autre côté de la rue et semble sur le point de prendre une décision. Dès qu'un Personnage attire son attention, il se dirige tranquillement vers lui.
 

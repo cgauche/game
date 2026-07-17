@@ -40,7 +40,7 @@ Le cimetière abrite d'innombrables tombes et mausolées anciens, dernières dem
 - 0 Le funérarium trône au centre du cimetière : c'est un grand bâtiment rectangulaire, dépouillé et funeste comme une tombe, auquel on accède par un portail de pierre inquiétant. Malgré sa taille qui le rend difficile à ignorer, personne en dehors du Culte de Morr ne sait exactement ce qui se trouve à l'intérieur du funérarium. Les prêtres disent qu'il permet d'atténuer les énergies magiques malfaisantes susceptibles de favoriser les activités nécromantiques, mais certains citoyens méfiants suggèrent qu'il a d'autres fonctions.
 
 
-# **Le Thaumodivinator**
+<span id="page-156-0" data-folio="154"></span># **Le Thaumodivinator**
 
 Cet appareil révolutionnaire est le fruit du labeur de plusieurs sorciers et ingénieurs, qui ont uni leurs talents pour tenter de créer un instrument de pronostication. Les alchimistes de l'Ordre Doré ont conçu le cœur de la machine, qui est constitué de plusieurs coquilles de bronze qui se chevauchent les unes les autres. L'appareil est orné de symboles et d'icônes représentant les forces thématiques qui affectent les évènements à venir, parmi lesquels figurent des symboles religieux et des archétypes tirés des cartes divinatoires.
 
@@ -53,7 +53,7 @@ Les Prophètes du Destin de Morr craignent que la machine n'empiète trop sur le
 0 La création de cet appareil a eu pour conséquence inattendue la formation d'une alliance de devins, de Prophètes du Destin, d'amateurs de liqueur de rêve et autres réfractaires aux progrès de la magie. Il est possible que l'un d'eux approche un Personnage Prêtre ou Mystique pour lui demander son aide afin de saboter la machine.
 
 
-# **Les Tours Arcaniques**
+<span id="page-157-0" data-folio="155"></span># **Les Tours Arcaniques**
 
 Au milieu d'une vaste platz, six tours s'élancent vers le ciel, chacune d'elles orientée dans une direction différente. La plupart des observateurs verront en ces tours un bien étrange spectacle : d'immenses structures effilées surmontées de mystérieux mécanismes. Les experts en histoire de la magie diront qu'il s'agit de structures elfiques qui auraient été mises au jour pendant l'expansion d'Altdorf. Ils vous montreront les instruments spectaculaires au sommet des tours : le Prisme de Pouvoir de Léonardo, qui réfracte les différents vents de magie, et les girouettes en argent météorique, des dispositifs barométriques qui prédisent les fluctuations de l'aethyr.
 
@@ -88,7 +88,7 @@ Les visiteurs inattendus sont rares : les astromanciens ont en effet tendance à
 - 0 Les partisans des duels magiques affirment quant à eux que cette pratique permet de prouver au peuple l'utilité des sorciers. Si le Patriarche Suprême était autre chose qu'un mage de combat accompli, alors la populace traiterait les sorciers avec encore plus de dédain qu'elle ne le fait actuellement. Des parties intéressées pourraient demander aux Personnages d'enquêter sur les rumeurs d'une potentielle conspiration menaçant de discréditer cette tradition ancestrale.
 
 
-# **Le Collège Gris**
+<span id="page-158-0" data-folio="156"></span># **Le Collège Gris**
 
 Dans un coin de l'Hexxerbezrik, un dédale de ruelles exiguës défie toute tentative de cartographie. Les naissances de mutants sont monnaie courante ici, et les rumeurs de manifestations démoniaques persistent, même si leur véracité n'a jamais pu être confirmée. C'est ici que se trouve le Collège Gris. Le bâtiment en lui-même est de taille modeste. Les pierres de ses murs sont anciennes et lézardées. Le collège offre un spectacle bien sinistre : il y a des trous dans les murs, et les fenêtres sont tachées et recouvertes de mousse. Un groupe de chouettes blanches a élu domicile dans l'unique tour du collège, laquelle est penchée comme le mât d'un navire naufragé.
 
@@ -127,7 +127,7 @@ Avant même l'établissement des Collèges de Magie, les alchimistes ordinaires 
 Depuis, une paix précaire s'est installée. Les sorciers de l'Ordre Doré font régulièrement de grandes avancées dans la compréhension de la nature de la matière, et en font des rapports aux alchimistes ordinaires, lesquels essaient alors, à leur tour, de comprendre la réalité matérielle derrière ces hypothèses.
 
 
-# **L'arboretum du Collège de Jade**
+<span id="page-159-0" data-folio="157"></span># **L'arboretum du Collège de Jade**
 
 Le Collège de Jade se trouve au sein d'un magnifique parc arboré, à la végétation toujours verdoyante. À part quelques cercles de terre battue et de pierres dressées, toutes les structures du collège sont faites à partir des arbres eux-mêmes. Le parc est traversé par plusieurs ruisseaux, qui se rejoignent en un vaste bassin argenté. Un mur immense, de près de 20 mètres de hauteur, dépourvu de tours ou de fenêtres, entoure l'arboretum. Des spirales, des triskèles et des feuilles de chêne ornent ses briques émaillées de vert.
 
@@ -172,7 +172,7 @@ Bien que les patriarches et matriarches humains dirigent désormais les Collège
 
 **Mineurs :** Choc, Éblouissant, Flamme magique, Fléchette, Lumière, Purification de l'eau
 
-### **Zofia Miska**
+<span id="page-160-0" data-folio="158"></span>### **Zofia Miska**
 
 Zofia Miska est née dans le coin nord-est de l'Hexxerbezrik, dans une famille d'immigrés kislevites. Elle a la prestance et la présence imposante de ses ancêtres gospodars, mais ses épais cheveux noirs et ses grands yeux bruns suggèrent également un héritage ungol. Les parents de Zofia ont d'ailleurs certainement déjà prétendu qu'ils pouvaient faire remonter leur arbre généalogique jusqu'à la reine-khan Miska ellemême. Cependant, quand bien même ils diraient vrai, alors leur branche familiale serait depuis tombée dans la misère et la pauvreté. Peut-être que l'héritage de la reine-khan Miska a laissé sa marque sur Zofia, car elle semble avoir un véritable don pour la magie.
 
@@ -213,7 +213,7 @@ Un meister représente l'ensemble des professeurs de chaque collège auprès du 
 - 0 Avant la fondation des Collèges de Magie en 2304, l'université d'Altdorf a brièvement abrité un collège de sorciers qui enseignaient les arcanes classiques du sud. La plupart des anciens grimoires relatifs à cette matière sont désormais interdits, mais les sorciers des huit collèges utilisent toujours la grande bibliothèque et donnent des cours de magie théoriques sur le sujet. Les érudits elfes en visite à Altdorf font l'objet d'une vénération presque religieuse. Selon la rumeur, la statue de Clio qui se trouve devant le bureau du Chancelier représentait en fait un elfe, il y a bien longtemps, avant que l'érosion n'émousse ses traits.
 
 
-# **La loge de la Ligue de Karl Franz**
+<span id="page-162-0" data-folio="160"></span># **La loge de la Ligue de Karl Franz**
 
 La plus ancienne loge de l'université est financée par d'anciens élèves aristocrates. Ses quartiers se trouvent dans un bâtiment de pierre à tourelle, décoré de statues de loups et de griffons. La Ligue de Karl Franz est tristement célèbre pour le comportement débauché de ses membres, qui se délectent à la fois de cette réputation et de leur immunité apparente aux conséquences de celle-ci. Selon une vieille tradition, le vénéré buste d'Ulric qui se trouve dans le hall d'entrée est tourné vers le mur entre le crépuscule et l'aube pour qu'il n'ait pas à assister aux dépravations des membres de la Ligue. L'adhésion est limitée aux étudiants nobles, dont peu seraient par ailleurs tolérés en son sein si ce n'était pour leur nom de famille.
 
@@ -230,7 +230,7 @@ Le collège de théologie de l'université fonctionne grâce au financement des 
 0 Von Tasseninck était lui-même professeur et chevalier de Verena. Sa famille a fondé le collège après sa mort. Les membres de la faculté d'études religieuses font l'éloge de von Tasseninck comme un champion de la liberté de conscience qui a dénoncé la corruption de ses pairs nobles. Malheureusement, l'héritage d'Ulli est entaché par la rumeur des crimes dépravés qu'il aurait commis et des mauvais traitements qu'il aurait infligés à ses serviteurs. Plusieurs membres de la faculté sont des cryptobrustellistes qui incitent les étudiants à organiser des manifestations sous la bannière de la LAPIN. La Ligue de Karl Franz affirme que l'école d'études religieuses est un véritable vivier de révolutionnaires violents.
 
 
-# **Le temple-bibliothèque de Verena**
+<span id="page-163-0" data-folio="161"></span># **Le temple-bibliothèque de Verena**
 
 C'est le Culte de Verena qui est responsable de l'impressionnante bibliothèque de l'université d'Altdorf. Les chercheurs ne peuvent entrer dans la bibliothèque qu'en passant par le temple. Quatre hautes flèches surmontent le bâtiment de grès. À l'intérieur du temple se trouvent des chapelles dédiées à Sigmar et aux autres dieux majeurs, mais seuls les prêtres de Verena s'y rendent quotidiennement. La chapelle de Verena est une petite salle de lecture tranquille qui relie le temple à la grande bibliothèque. Manfred Archibald est le Grand Prêtre ; c'est un homme grand et élégant, à l'ambition académique considérable.
 
@@ -261,7 +261,7 @@ Janus Estlemann est le plus célèbre des nombreux libraires de la rue Hoffbahn.
 La Garde de la ville pense qu'Estlemann vend des marchandises volées ; en réalité, il gère un réseau d'échange à l'aveugle : les clients acquièrent des tomes rares en échange de livres issus de leur propre collection susceptibles de plaire à d'autres clients. Estlemann a le don d'inciter les érudits à se vanter du contenu de leur bibliothèque. Son système d'échange complexe consiste à promettre des livres qu'il ne possède pas encore et à acheter des livres dont il n'a pas encore besoin.
 
 
-### **Professeur Frederich « Le Vieux » Weirde**
+<span id="page-164-0" data-folio="162"></span>### **Professeur Frederich « Le Vieux » Weirde**
 
 Ceux qui connaissent le Vieux Weirde diront que c'est un personnage à la fois génial et excentrique, dont la connaissance des nombreuses cultures du monde et de leurs manières de faire la guerre semble proprement inépuisable. On raconte beaucoup d'histoires sur son passé ; qu'il était autrefois un sorcier, qu'il a voyagé sur tous les continents et qu'il a conseillé l'Empereur, la tsarine de Kislev et le roi de Bretonnie sur la meilleure façon de triompher au combat.
 
@@ -344,7 +344,7 @@ Les hauts elfes exercent plus d'influence à Altdorf que dans toute autre ville 
 Politiquement parlant, les elfes de la cité ne sont pas vraiment unis. Les hauts elfes attendent systématiquement de leurs semblables qu'ils aient une très bonne raison d'avoir abandonné la défense d'Ulthuan pour venir vivre parmi les humains. Chaque haut elfe considère donc ses propres affaires comme étant de la plus haute importance. La plupart jurent fidélité au Roi Phénix et occupent des postes temporaires en tant qu'émissaires ou érudits. Les rivalités qui existent entre les différentes provinces d'Ulthuan font l'objet de débats animés au sein des salons elfiques d'Altdorf. Enfin, la petite minorité d'elfes sylvains urbanisés de la ville ne se sent pas particulièrement proche de ses voisins Asur.
 
 
-Les propriétaires du Nouveau Monde, Casadora et Evandrel, sont des Altdorfers de deuxième génération qui sont tombés amoureux et ont décidé de faire leur vie ensemble à Altdorf après que leurs familles s'en sont retournées à Ulthuan. Casadora est le chef, tandis qu'Evandrel s'occupe de la salle et de l'épicerie fine avec leur jeune fille, Ofelia. Les clients ne s'interrogent jamais quant à l'étonnante capacité du restaurant à servir de la viande de calamar et de requin fraîche si loin des côtes d'Ulthuan.
+<span id="page-167-0" data-folio="165"></span>Les propriétaires du Nouveau Monde, Casadora et Evandrel, sont des Altdorfers de deuxième génération qui sont tombés amoureux et ont décidé de faire leur vie ensemble à Altdorf après que leurs familles s'en sont retournées à Ulthuan. Casadora est le chef, tandis qu'Evandrel s'occupe de la salle et de l'épicerie fine avec leur jeune fille, Ofelia. Les clients ne s'interrogent jamais quant à l'étonnante capacité du restaurant à servir de la viande de calamar et de requin fraîche si loin des côtes d'Ulthuan.
 
 ## TRAFIC ELFIQUE
 
@@ -376,7 +376,7 @@ Les partenaires humains de Montevague veulent contester le monopole de Marienbur
 0 Les partenaires cothiquiens de la société ne font pas entièrement confiance à leurs partenaires humains, mais ils n'ont guère la patience de s'occuper eux-mêmes de la paperasse de la compagnie. Ils engagent parfois des aventuriers hauts elfes comme agents commerciaux ou gardes de caravanes, avec la double mission de surveiller les Altdorfers et de les empêcher de commettre des malversations. Lorsque les Cothiquiens sont en mer, ils attendent de leurs employés elfes qu'ils assistent à des réunions aussi somptueuses que fastidieuses en tant que représentants de leur très estimée race.
 
 
-### **Melinda Grisméandre, Veilleuse des veilleurs**
+<span id="page-168-0" data-folio="166"></span>### **Melinda Grisméandre, Veilleuse des veilleurs**
 
 Melinda est venue à Altdorf il y a 200 ans en tant qu'espionne pour la Reine de la Laurelorn. Vivre dans une ville humaine pendant si longtemps a fait des ravages dans son esprit, si bien qu'aujourd'hui, elle erre dans les rues la nuit en se murmurant à elle-même. Melinda porte une robe en lambeaux et se couvre la tête d'un châle élimé. Bien qu'elle ait gardé l'habitude d'éviter tout contact visuel afin de rester anonyme, son visage creusé ne ressemble même plus plus à celui d'un elfe.
 
@@ -413,7 +413,7 @@ Les elfes sylvains aiment prendre leur repas dans le jardin pour se reconnecter 
 0 Les Tours Arcaniques situées non loin de là imprègnent le jardin de magie de vie et de mort. Lorsque Mannslieb est pleine, le jardin converge vers un royaume mystique que les elfes sylvains appellent « la Toile » et que les Bretonniens appellent « l'Autre-Monde ». Ces nuits-là, le fantôme d'un elfe flotte dans les rues d'Altdorf à la recherche de sa famille et de ses proches. Il est déjà arrivé que des humains disparaissent dans le jardin pendant la pleine lune.
 
 
-### **Chylis Portelumière, Meneur rituel de la Tour de Volans**
+<span id="page-169-0" data-folio="167"></span>### **Chylis Portelumière, Meneur rituel de la Tour de Volans**
 
 Chylis est l'un des nombreux sorciers hauts elfes originaires de Saphery qui ont été nommés pour superviser les Collèges de Magie. Cela fait seulement quelques années que le meneur rituel a été envoyé à Altdorf, mais elle a déjà l'impression d'y avoir vécu toute une vie d'elfe. Chylis semble manifestement s'ennuyer pendant les rituels des sorciers humains : en général, elle se tient à l'écart, le nez plongé dans un grimoire. Chylis a de longs cheveux argentés, qui tombent en cascade jusqu'à ses chevilles par-dessus une robe de sorcier turquoise ; elle porte souvent une baguette sur elle.
 
@@ -472,7 +472,7 @@ Sous la forteresse se trouvent des cachots labyrinthiques aux couloirs enchevêt
 0 Le groupe doit se procurer les bons papiers pour entrer dans le donjon et atteindre son objectif. Pourront-ils trouver quelqu'un à soudoyer, ou devront-ils accepter un travail de livraison de ravitaillements au donjon ? Le gouverneur est toujours à la recherche de personnel pour conduire les chariots et charrettes, car la plupart des gens craignent l'aura de folie qui règne sur le donjon.
 
 
-### **Le fanal de l'Empereur**
+<span id="page-171-0" data-folio="169"></span>### **Le fanal de l'Empereur**
 
 La tour centrale du donjon abrite le bureau du gouverneur ainsi que ses appartements. Mensch est tout à fait conscient de la folie qui suinte du donjon et qui hante ses serviteurs, mais étant donné qu'il avait déjà perdu la tête avant de venir ici, cela ne l'affecte pas vraiment. Les membres de son personnel qui ont résidé dans la forteresse pendant de longues périodes ont eux-mêmes tendance à être un peu excentriques. Mais même avec cette poignée de fidèles serviteurs, le gouverneur est constamment à la recherche d'employés qualifiés.
 
@@ -511,7 +511,7 @@ cela ne pourrait signifier qu'une seule chose...
 # CARTOGRAPHE
 
 
-### **La Maison capitulaire des Chevaliers du Soleil Flamboyant**
+<span id="page-173-0" data-folio="171"></span>### **La Maison capitulaire des Chevaliers du Soleil Flamboyant**
 
 Bien que l'Ordre des Chevaliers du Soleil Flamboyant soit probablement le plus riche de l'Empire, leur Maison capitulaire à Altdorf est remarquablement modeste. Le bâtiment ressemble à une grande auberge, avec la fameuse étoile à seize branches suspendue à l'endroit où serait d'ordinaire accrochée une enseigne. Contrairement à bien d'autres maisons capitulaires de l'Empire, celle-ci ne ressemble pas vraiment à une forteresse. Les seuls chevaliers que l'on rencontre ici sont soit de passage, soit chargés d'accueillir les nouvelles recrues et de les mettre à l'épreuve.
 
@@ -525,7 +525,7 @@ Klara Dunkelberg est l'administratrice en chef. Cela fait longtemps qu'elle s'es
 - 0 Klara doit faire acheminer une certaine quantité d'or dans les montagnes près d'Ubersreik, rapidement et sans qu'aucune question ne lui soit posée. Elle a donc besoin d'intermédiaires pour négocier cette offre de travail avec les Poissons : des intermédiaires capables de marcher en funambules sur la fine ligne séparant les honnêtes militaires et la pègre sans scrupules. De plus, elle doit avoir la garantie que l'argent arrivera à bon port.
 
 
-# **Le temple de Wolftor**
+<span id="page-174-0" data-folio="172"></span># **Le temple de Wolftor**
 
 Une grande tête de loup sculptée regarde en direction de la porte de Wolftor, et au-delà. Mises à part quelques fenêtres, il s'agit du seul élément décoratif qui orne la haute tour de pierre, à la fois austère et impressionnante. Le temple de Wolftor est un des deux temples d'Ulric à Altdorf. Celui-ci se targue d'être le temple du peuple, car il est situé au cœur du quartier middenlander de la ville. Ses fidèles plaisantent parfois en disant que le temple rival fait juste partie de « tout le toutim impérial » de l'autre côté du Reik.
 
@@ -558,7 +558,7 @@ Le tripot est la zone la plus populaire du temple, et on y accède généralemen
 - 0 Mia Chanz a une ruse infaillible pour gagner au Whist de Nuln, très semblable au Whist d'Herzig, mais où les six sont des jokers. Tout ce dont elle a besoin, c'est de deux complices : ces derniers devront apprendre une série complexe de coups et de signes qu'ils devront méticuleusement reproduire pendant le grand match, tout en s'assurant que la maison ne se doute de rien.
 
 
-### **Le comte Jäger**
+<span id="page-175-0" data-folio="173"></span>### **Le comte Jäger**
 
 Avec ses yeux fous, son attitude théâtrale, sa tenue ostensiblement dépenaillée et ses apparitions aussi marquantes qu'éphémères, le vieux comte Jäger est considéré comme une célébrité aussi bien dans les taudis d'Altdorf que dans les soirées mondaines de la haute société. Partout où il va, il est une bénédiction, apportant la bonne fortune à ceux qui l'aperçoivent, et la meilleure des chances à ceux qui ont le privilège de lui serrer la main, d'effleurer ses vêtements ou de recevoir ses salutations.
 
@@ -615,7 +615,7 @@ L'auberge haut de gamme est un vrai havre de paix pour les voyageurs fatigués. 
 - 0 Les Quatre Saisons sont à la recherche de gens courageux prêts à conduire leurs diligences ou à manier le tromblon pour les protéger. Les Personnages qui acceptent cette offre de travail seront affectés à des voyages spéciaux qui sortent des itinéraires habituels ou qui font face à des dangers plus importants. Par exemple, une noble dame pourrait louer une diligence pour l'emmener, elle et sa famille, dans leur résidence d'été isolée, ou bien la Garde pourrait vouloir récupérer un bandit particulièrement violent dans un petit village à l'extérieur d'Altdorf et l'amener en ville pour qu'il soit jugé.
 
 
-# **Les statues des Empereurs**
+<span id="page-177-0" data-folio="175"></span># **Les statues des Empereurs**
 
 La tradition veut que chaque Empereur ou Impératrice, lorsqu'il ou elle monte sur le trône, commémore son règne en ajoutant son portrait à ceux de ses prédécesseurs. Ces statues entourent la Königplatz et regardent de haut les roturiers qui passent à leurs pieds, leur rappelant qui détient les pouvoirs qui régissent leur vie. Il est souvent possible de juger du règne d'un Empereur rien qu'en observant la qualité de sa statue.
 
@@ -656,7 +656,7 @@ Au cours de son règne, l'Impératrice commanda une énorme statue en bronze pou
 0 La statue cache un passage peu connu vers la ville souterraine. Il s'agit d'un secret bien gardé par les criminels de la cité, mais les Personnages pourraient apprendre son existence une nuit, alors qu'ils poursuivent une voleuse qu'ils voient soudainement disparaître juste à côté de la statue de l'Impératrice. En fouillant la zone, ils découvrent une entrée dans la ville souterraine, où nombre de possibilités de nouvelles aventures les attendent.
 
 
-### **Béatrice la Sanguinaire, Parangon de cruauté**
+<span id="page-178-0" data-folio="176"></span>### **Béatrice la Sanguinaire, Parangon de cruauté**
 
 Impératrice de l'Âge des guerres, Béatrice est tristement connue pour la manière dont elle persécuta sans relâche ceux qui ne vénéraient pas Sigmar, ainsi que pour les lourds impôts qu'elle édicta et qui affectèrent tant les riches que les pauvres. Sa statue la représente comme une femme féroce brandissant un sac d'or d'une main, tandis que son pied gauche repose sur la tête d'un loup.
 
@@ -710,7 +710,7 @@ pour y rédiger son magnum opus.
 0 Detlef Sierck est le dramaturge le plus célèbre de son temps, mais la rumeur court, sans doute du seul fait de l'envie qu'il suscite chez les autres écrivains, selon laquelle il aurait acquis son talent par des moyens douteux. Peutêtre a-t-il vendu son âme au mécène ultime des arts : le dieu Morr. Qui sait ce que le roi des morts pourrait exiger en retour ? Sans doute plus qu'un simple sonnet.
 
 
-# **Poste de la Garde de Luitpoldstrasse**
+<span id="page-180-0" data-folio="178"></span># **Poste de la Garde de Luitpoldstrasse**
 
 Le plus grand Poste de la Garde du quartier des Quais se trouve sur la Luitpoldstrasse. Situé sur la rive du Reik, il domine une partie des quais les plus fréquentés. Les gardes du coin sont connus pour être les plus durs et les plus implacables de la ville, mais cela va de pair avec la mauvaise réputation du quartier. Ils sont cependant tout aussi susceptibles d'accepter un pot-de-vin ou de fermer les yeux sur la petite délinquance que n'importe quel autre garde d'Altdorf. Les gardes patrouillent régulièrement la zone, estimant que la visibilité de la Garde et les « bottes sur le quai » sont les meilleurs moyens de dissuasion qui soient. Ils jouent les braves en harcelant les délinquants et les débardeurs, en fouillant les cargaisons et les ateliers, et d'une manière générale, en faisant sentir leur présence dans le quartier. En vérité, une grande partie de cette activité a pour but de générer un flot de pots-de-vin régulier.
 
@@ -743,7 +743,7 @@ Comme beaucoup de perruquiers, Brendago a recours à une méthode d'approvisionn
 - 0 Brendago conserve quelques articles des plus étranges dans son bureau, à destination de clients très spéciaux. Il s'agit principalement de perruques en cheveux elfiques et de fausses barbes pour les nains. Pour les nains, la perte d'une barbe est une affaire privée et hautement sensible, et les quelques nains qui se fournissent chez Brendago pour cacher leur honte seraient très contrariés si leur secret venait à être révélé.
 
 
-# **Le Gymnase de Tempelstrasse**
+<span id="page-181-0" data-folio="179"></span># **Le Gymnase de Tempelstrasse**
 
 Le gymnase de Tempelstrasse est un de ces endroits où les petites gens des Quais et les classes supérieures d'Altdorf se côtoient en quelque sorte comme des égaux. Les nobles y envoient leurs enfants pour les endurcir, et les acteurs y viennent pour apprendre à se battre. Là, ils côtoient les voyous des rues et les gangsters. Le propriétaire du gymnase est le célèbre Arne Ostlander, dit « le Corps », qui est connu pour être l'homme le plus musclé de tout l'Empire (à l'exception des ogres et des mutants). Il passe presque toutes ses journées ici, à faire de la musculation et à rouler des mécaniques.
 
@@ -771,7 +771,7 @@ La durée de la punition n'est généralement que de quelques jours, voire parfo
 Le quai de la Fourche est un ponton branlant qui s'avance sur le Reik. On dirait qu'il pourrait s'effondrer à tout moment, et cela fait longtemps que les bateaux n'y accostent plus. En fait, ce ponton est un danger pour la navigation, mais une tradition de longue date veut qu'il soit le site d'une sinistre cage pendue à une potence. Tout garde des Quais pris à enfreindre la loi ou à agir contre les intérêts de la Garde est puni en étant incarcéré un certain temps dans cette cage en métal rouillée.
 
 
-# **Le quai de la Bien-aimée de Manann**
+<span id="page-182-0" data-folio="180"></span># **Le quai de la Bien-aimée de Manann**
 
 C'est l'un des pontons les plus fréquentés du quartier des Quais. Cette construction en bois est manifestement ancienne, et semble grincer et s'affaisser davantage avec chaque marée. Le quai se trouve en plein cœur du territoire des Poissons ; ici, les gangs de débardeurs contrôlés par les Poissons entretiennent une relation étroite avec la Garde. Ils se vantent de pouvoir faire débarquer ou charger n'importe quelle cargaison, moyennant un certain prix.
 
@@ -831,7 +831,7 @@ La propriétaire actuelle, Hilde Flickenschildt, faisait autrefois partie du gan
 - 0 Les Personnages rencontrent un homme à l'auberge de la Chauve-souris noire qui prétend avoir trouvé un grand trésor alors qu'il explorait la ville souterraine. Malheureusement, il a contracté un cas tenace de Pneumonie mousseuse en parcourant les tunnels humides, et ne veut pas y retourner de crainte d'aggraver son état. Cet homme dit-il la vérité ? Ou s'agit-il d'un énième pilier de bar raconteur de bobards ?
 
 
-# **Le Croissant de lune**
+<span id="page-184-0" data-folio="182"></span># **Le Croissant de lune**
 
 Le Croissant de lune est l'auberge la plus mystérieuse de la rue. Elle n'arbore nulle enseigne colorée éclairée par une lanterne, mais un symbole en fer forgé à peine discernable dans la nuit ou le brouillard. L'auberge est située près des quais, mais son emplacement exact semble changer d'une semaine à l'autre. Impossible de dire s'il s'agit d'une autre anomalie géographique causée par l'influence magique de l'Hexxerbezrik sur les quartiers environnants, ou d'un caprice des propriétaires des lieux.
 
@@ -851,7 +851,7 @@ C'est pourquoi les gérants des tavernes et leurs clients n'apprécient guère q
 
 ## TOURNÉE DES BARS DES QUAIS
 
-Les auberges et les bars proches des quais sont généralement animés et abordables. Si la plupart accueillent une foule cosmopolite de débardeurs, d'étudiants, de débauchés, de nains et de criminels, certains lieux attirent une clientèle plus spécifique. Ces auberges et tavernes ne sont pas nécessairement des cercles fermés, mais les clients qui en enfreignent les règles tacites ne sont pas les bienvenus. Par exemple, pour boire à la Barbe d'Ulric, un client est censé tolérer les opinions et les habitudes des Ulricains, même s'il ne les partage pas.
+<span id="page-185-0" data-folio="183"></span>Les auberges et les bars proches des quais sont généralement animés et abordables. Si la plupart accueillent une foule cosmopolite de débardeurs, d'étudiants, de débauchés, de nains et de criminels, certains lieux attirent une clientèle plus spécifique. Ces auberges et tavernes ne sont pas nécessairement des cercles fermés, mais les clients qui en enfreignent les règles tacites ne sont pas les bienvenus. Par exemple, pour boire à la Barbe d'Ulric, un client est censé tolérer les opinions et les habitudes des Ulricains, même s'il ne les partage pas.
 
 | Taverne                     | Clientèle                                                           | Particularités                                                                                                                                        | Chambres                                                                                           |
 |-----------------------------|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
@@ -879,7 +879,7 @@ Les auberges et les bars proches des quais sont généralement animés et aborda
 | Une Couronne pour deux rois |                                                                     | Service de bonne qualité et<br>sert de façade à un tripot et<br>antre du vice                                                                         | 25 chambres privées (2 lits) : 2 CO                                                                |
 
 
-# **Le Saint marteau de Sigmar**
+<span id="page-186-0" data-folio="184"></span># **Le Saint marteau de Sigmar**
 
 Le Saint marteau de Sigmar n'est pas l'auberge la plus tapageuse ou décadente des environs. En fait, c'est l'une des plus calmes et des plus soignées, comme il sied à un club privé réservé aux voleurs et aux assassins professionnels les plus farouches de la ville. Seuls ceux qui possèdent une clef sont admis, et ces clefs sont plus difficiles à obtenir qu'une audience privée avec Karl Franz.
 
@@ -913,7 +913,7 @@ Dès qu'une bagarre éclate, la clientèle a tôt fait de se rassembler autour d
 - 0 Le Temple du drame recouvre rarement les frais des productions qu'il met en scène, et perd ainsi du terrain face à la concurrence de théâtres plus populaires. Un délégué de la LAPIN a approché Machar pour lui proposer de renflouer son établissement en échange de « quelques faveurs ». Machar suppose, à juste titre, que cette contrepartie consiste en l'imposition d'une politique de représentation d'œuvres qui célèbrent l'idéologie radicale de la LAPIN. Il espère pouvoir trouver rapidement une autre source de financement, plutôt que d'avoir à transformer son théâtre en une machine de propagande.
 
 
-# **La liqueur de rêve**
+<span id="page-187-0" data-folio="185"></span># **La liqueur de rêve**
 
 La liqueur de rêve, parfois appelée vin noir, est illégale dans l'Empire (contrairement à Marienburg, où elle est, bien évidemment, vendue en toute légalité). Il est par conséquent difficile de s'en procurer, et elle est très coûteuse. À première vue, cet alcool sombre et sirupeux pourrait avoir l'air d'un vin à dessert sucré des Montagnes Grises orientales. En réalité, il ne s'agit pas du tout d'un vin, mais d'un effroyable nectar de Slaanesh.
 
@@ -955,7 +955,7 @@ Chaque Festag, les étals sont remballés et la place se transforme en terrain p
 0 Bert Macker vend des navets, mais sa femme pense qu'il devrait aspirer à de plus grandes ambitions. Une nuit sombre et orageuse, trois femmes ivres ont dit à Bert qu'il était destiné à diriger les étalagistes. Aujourd'hui, il prévoit de faire tomber Wohnet en engageant quelqu'un pour l'évincer, ou du moins, la dénoncer aux hommes des poids et mesures du marché pour avoir lésé ses clients.
 
 
-# **L'asile municipal d'Altdorf**
+<span id="page-189-0" data-folio="187"></span># **L'asile municipal d'Altdorf**
 
 Comparé au calme relatif du grand asile d'Altdorf, ce sanatorium est un véritable enfer. Le gardien en chef, Klebb, exerce un contrôle fragile sur l'asile, et seul un usage judicieux de la brutalité de ses gardiens empêche les internés de prendre le contrôle de l'établissement. Le personnel n'a aucunement l'intention de soigner les malades.
 
@@ -991,7 +991,7 @@ Le Club du phénix a connu un moment de gloire singulier lorsque le Comte de la 
 0 Chaque soir, la silhouette mélancolique du Seigneur Mandel attend devant l'entrée des artistes du Club du phénix. Après une brève liaison avec la danseuse Cinzia Bianchi, il en est tombé désespérément amoureux. Cependant, elle a récemment mis fin à leur liaison, et Mandel soupçonne qu'elle a trouvé un nouvel amant. Il ignore de qui il s'agit, mais il est bien déterminé à affronter son rival en duel afin de prouver sa dévotion.
 
 
-# **Le Sanglier rouge**
+<span id="page-190-0" data-folio="188"></span># **Le Sanglier rouge**
 
 Du haut de ses trois étages, le Sanglier rouge domine la place du marché au bord de laquelle il est situé. Il s'agit d'une grande taverne très fréquentée, qui a pour principale clientèle les étalagistes, les marchands et les habitants de Fischemarkt, et qui, le Festag, accueille également les foules d'amateurs de Middenball. Le bâtiment est doté de balcons à l'extérieur comme à l'intérieur. Les buveurs peuvent donc soit profiter de la vue sur la place du marché, accoudés sur les balustrades extérieures, soit s'installer dans les galeries surplombant la cour intérieure, qui résonne du vacarme de plus d'une centaine de clients tapageurs.
 
@@ -1039,7 +1039,7 @@ Les nobles d'Altdorf considèrent la maison Briechs comme un tailleur de la clas
 0 L'un des premiers courtiers de l'entreprise, la société des Marchands de laine Jaeger, est désormais son principal concurrent. Usant de la corruption et de marchandages sournois, Gustav Jaeger est parvenu à obtenir le monopole de l'approvisionnement local en laine. Gerold et Anshelm sont prêts à payer grassement quiconque les aidera à obtenir des preuves de la manipulation illégale du marché par la société de Jaeger. Des agents ont été recrutés pour surveiller quotidiennement la Bourse des matières premières afin de s'assurer que Gustav ne tonde la laine sur le dos de personne.
 
 
-# **Le siège de la Guilde des Marchands**
+<span id="page-192-0" data-folio="190"></span># **Le siège de la Guilde des Marchands**
 
 La Guilde des Marchands, Négociants & Courtiers occupe plusieurs bâtiments adjacents, plus ou moins reliés entre eux. Au centre de ce complexe tentaculaire se trouve l'immense bâtiment à colombages de l'Ancienne maison de guilde. Au fil du temps, la guilde a acquis les maisons de ville voisines et les a reliées à son siège par des constructions de fortune. Le rez-de-chaussée de l'Ancienne maison de guilde est une grande salle à colonnades, au mobilier richement orné et aux fauteuils douillets, qui sert à recevoir les marchands et les agents commerciaux en visite. Les trois étages supérieurs contiennent les bureaux des maîtres de guilde de la ville, ainsi que ceux de leurs employés et de leurs scribes.
 
@@ -1099,7 +1099,7 @@ En plus de mettre en relation les acheteurs et les vendeurs, les courtiers d'Alt
 0 Les contrebandiers utilisent le canal du Handelshafen pour faire entrer clandestinement des marchandises illégales dans la ville le Marktag au matin, lorsque les douaniers sont tout simplement trop occupés à gérer le trafic pour inspecter chaque cargaison. Plusieurs des débardeurs du Handelshafen sont membres du gang des Poissons. Les contrebandiers indépendants surpris en train d'utiliser le canal du Handelshafen sans autorisation préalable des Poissons finissent généralement par être retrouvés flottants dans le canal le lendemain matin...
 
 
-# **Le Grand marché**
+<span id="page-194-0" data-folio="192"></span># **Le Grand marché**
 
 La vaste place carrée à laquelle le quartier de Grandmarkt doit son nom est la plus ancienne place du marché de tout Altdorf. Bien que les échanges commerciaux se soient en grande partie déplacés dans la Kaufmanshalle, des échantillons de marchandises sont encore exposés sur des étals à en extérieur afin d'attirer les acheteurs. Les marchands de denrées alimentaires y vendent quotidiennement des produits frais en provenance des fermes alentours. Lorsque les fermiers sont autorisés à vendre leurs produits de manière indépendante, le Marktag, presque toutes les rues de Grandmarkt sont alors bordées de charrettes de fruits et légumes. Les fermiers des environs sont autorisés à entrer dans la ville avec leurs charrettes par la poterne de Haffenstadt.
 
@@ -1129,7 +1129,7 @@ Herr Albrecht (von) Hohenzoll est déterminé à relancer le commerce familial d
 0 En tant que marchand possédant des propriétés foncières, Herr Hohenzoll a droit à un petit bureau sous les combles au siège de la Guilde des Marchands. Il prend ce poste très au sérieux, bien que les maîtres de guilde ne l'invitent jamais aux réunions importantes. Après avoir fait affaire avec eux, Herr Hohenzoll invite souvent les négociants au siège de la guilde pour les présenter à ses collègues (qui le surnomment « von »). Ce n'est généralement qu'après quelques présentations que les invités commencent à se rendre compte qu'Albrecht est la risée de la guilde.
 
 
-### **Riechenfeld–Kuypers, Produits exotiques importés**
+<span id="page-195-0" data-folio="193"></span>### **Riechenfeld–Kuypers, Produits exotiques importés**
 
 L'une des sociétés commerciales les plus célèbres de la ville est une entreprise commune que se partagent les von Riechenfeld d'Altdorf et les van der Kuypers de Marienburg. Leur maison de commerce est un grand bâtiment de pierre doté d'une vitrine au rez-de-chaussée, et dont les étages supérieurs sont occupés par des bureaux et des salles de stockage. Les van der Kuypers importent des produits exotiques de Lustrie grâce à leurs contacts à Ulthuan. Les Riechenfeld, quant à eux, importent des produits de luxe d'Ind et de Cathay par la route d'Argent.
 
@@ -1166,7 +1166,7 @@ C'est dans cette taverne que se retrouve le groupe de mercenaires halflings ratt
 - 0 Pendant que les Personnages boivent un verre au Coq, un groupe de mercenaires halflings leur lance un défi comportant plusieurs épreuves. Si les Personnages gagnent trop souvent, les Coqs se montreront de plus en plus belliqueux. Les épreuves du défi consistent entre autres à faire tenir des plumes en équilibre sur son nez, jouer aux fléchettes les yeux bandés, mettre le maximum de couronnes d'or dans sa bouche, réussir à dissimuler des tourtes sur sa personne et nommer le plus de fromages possible.
 
 
-# **Pivoine Piedfoin**
+<span id="page-197-0" data-folio="195"></span># **Pivoine Piedfoin**
 
 Pivoine Piedfoin tient un petit étal d'herbes et d'épices au marché local. Elle donne l'impression de connaître tout le monde à Haffenstadt, même si ce genre de sociabilité n'est en rien inhabituel chez les halflings. Elle ferait un excellent contact à Haffenstadt pour quiconque ayant besoin de trouver l'halfling qu'il lui faut.
 
@@ -1203,7 +1203,7 @@ Le Manoir est également le siège de la branche locale de la Loge de Quinsberry
 - 0 Siegfried Waltz, de la Chambre noire, a besoin de savoir si la Loge est une menace sérieuse pour l'ordre à Altdorf. Il engage des Personnages capables d'infiltrer une organisation halfling tout en restant fidèles à l'Empire.
 
 
-# **Les Fromages de l'Empire**
+<span id="page-198-0" data-folio="196"></span># **Les Fromages de l'Empire**
 
 Mildred Lester tient la meilleure fromagerie d'Altdorf. Elle est également la matriarche d'une grande famille élargie. De nombreux membres du clan Lester travaillent à la fromagerie de Mildred, mais beaucoup d'autres ont fondé leurs propres branches ailleurs à Haffenstadt et dans le reste de la ville. Les habitants de Haffenstadt plaisantent en disant qu'on reconnaît toujours un Lester à l'odeur de fromage qui l'accompagne.
 
@@ -1218,7 +1218,7 @@ Elle a également écrit un traité exhaustif sur le fromage, portant le même n
 - 0 Mildred a récemment reçu une livraison d'un fromage vraiment délicieux produit par Deiter Käsegeier, un fromager de renom. Cette variété de fromage très spéciale est en réalité aromatisée à la liqueur de rêve, et quiconque en mange un morceau subit les mêmes effets qu'en ayant bu un verre de ce breuvage. Mildred ne s'est pas encore aperçue que ses clients faisaient l'expérience de visions prophétiques incontrôlables.
 
 
-### **Le bourgmestre Carde**
+<span id="page-199-0" data-folio="197"></span>### **Le bourgmestre Carde**
 
 Harpal Carde est un démagogue fauteur de troubles, désireux d'obtenir l'indépendance de Haffenstadt et de libérer le quartier halfling de l'oppression et de la bigoterie de Grandmarkt, et des grands en général. Il ne perd pas son temps à débattre de manière civilisée, à moins que cela ne serve ses intérêts, et préfère de loin jouer les gros bras sur la place du marché ou comploter dans des arrière-salles, enveloppé dans la fumée des pipes. Il donne peut-être l'impression de n'agir qu'en fonction de son instinct et de son bon sens, mais Carde est en réalité beaucoup plus astucieux qu'il ne le laisse paraître.
 
@@ -1264,7 +1264,7 @@ Ce jardin de Morr est entretenu par des acolytes qui effectuent leur dernier ser
 0 Une amie du groupe est morte. Elle avait récemment commencé à travailler pour la Maison de l'argent. La nuit précédant sa disparition, elle a dit à ses amis qu'elle avait été témoin de rites horribles dans cette maison, et qu'elle comptait bien rassembler des preuves de ce qu'il s'y passait. Malheureusement, elle a été surprise en train d'y entrer par effraction. Si les Personnages parviennent à obtenir les preuves que cherchait leur amie et à les présenter aux autorités, ils pourraient être surpris de constater que l'affaire est déjà perdue et oubliée au milieu d'un tas de paperasse.
 
 
-# **Le temple de Morr**
+<span id="page-201-0" data-folio="199"></span># **Le temple de Morr**
 
 Le temple principal de Morr à Altdorf est la plus grande structure de Toteninsel. C'est un bâtiment en pierre massif, situé juste à côté du cimetière. Les murs en eux-
 

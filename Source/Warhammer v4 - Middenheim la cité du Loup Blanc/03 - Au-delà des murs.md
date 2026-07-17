@@ -63,7 +63,7 @@ Le clergé d'Ulric est conscient de cette pratique, mais ne voit aucune raison d
 Ironie du sort, le minuscule autel des Frères Loups se trouve quelques centaines de mètres en dessous de la Kleinekapelle. Ainsi, les deux plus petits autels d'Ulric du monde se trouvent sur la face nord du Fauschlag. L'un, conçu à l'usage des plus nantis, n'est plus que rarement usité ; l'autre, modeste et quasiment inaccessible, est adoré des plus fervents fanatiques du dieu.
 
 
-### **Jacopo Schmidt**
+<span id="page-116-0" data-folio="114"></span>### **Jacopo Schmidt**
 
 On ne voit pas autant de mutants à Middenheim que dans la plupart des autres cités de l'Empire. Cependant, certaines rumeurs indiquent que les enfants difformes peuvent être acceptés au sein des masses grouillantes qui s'entassent à Warrenburg. C'est pourquoi, plutôt que de jeter leur progéniture altérée du haut de la Falaise des Soupirs, certains parents choisissent de rejoindre furtivement Warrenburg. Une fois arrivés, ils y sont accueillis par un homme étrange qui se présente sous le nom de Jacopo Schmidt (très certainement un nom d'emprunt). Jacopo permet aux enfants difformes de survivre en travaillant dans des tavernes délabrées et en délivrant des messages pour lui.
 

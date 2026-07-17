@@ -2,7 +2,7 @@
 
 # INTRODUCTION
 
-Bienvenue dans *Le Pouvoir derrière le Trône*, le troisième volume du « Director's Cut » de *L'Ennemi Intérieur*. Même s'il est possible d'y jouer sans connaître le reste de la campagne, sachez qu'il a été conçu pour être joué après avoir terminé *Mort sur le Reik*, le deuxième volume de cette campagne. Ce livre contient tout ce dont vous avez besoin pour prendre part à l'aventure (à l'exception du livre de règles de la quatrième édition de **WFJDR**), mais le MJ pourra également juger utile de se procurer une copie de **Middenheim : La Cité du Loup Blanc**, qui offre des détails supplémentaires sur la ville de Middenheim et de nombreuses informations sur des lieux et des PNJ fort utiles.
+<span id="page-6-0" data-folio="4"></span>Bienvenue dans *Le Pouvoir derrière le Trône*, le troisième volume du « Director's Cut » de *L'Ennemi Intérieur*. Même s'il est possible d'y jouer sans connaître le reste de la campagne, sachez qu'il a été conçu pour être joué après avoir terminé *Mort sur le Reik*, le deuxième volume de cette campagne. Ce livre contient tout ce dont vous avez besoin pour prendre part à l'aventure (à l'exception du livre de règles de la quatrième édition de **WFJDR**), mais le MJ pourra également juger utile de se procurer une copie de **Middenheim : La Cité du Loup Blanc**, qui offre des détails supplémentaires sur la ville de Middenheim et de nombreuses informations sur des lieux et des PNJ fort utiles.
 
 ### **L'HISTOIRE**
 

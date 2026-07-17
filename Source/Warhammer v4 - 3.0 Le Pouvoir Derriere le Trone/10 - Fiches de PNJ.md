@@ -49,7 +49,7 @@ Sparsam croit que Pavarotti n'exerce aucune influence sur le graf Boris. Il se t
 L'objectif principal de Sparsam est d'optimiser les finances publiques : les taxes lui semblaient être une bonne idée jusqu'à ce qu'il assiste aux réactions des concernés. Il aurait volontiers 
 
 
-abrogé ces nouvelles lois fiscales, s'il n'était pas victime de chantage (voir *Secret mortel : Un problème de poudre*). Il aime aussi collectionner les objets anciens et partager sa passion avec d'autres connaisseurs.
+<span id="page-117-0" data-folio="115"></span>abrogé ces nouvelles lois fiscales, s'il n'était pas victime de chantage (voir *Secret mortel : Un problème de poudre*). Il aime aussi collectionner les objets anciens et partager sa passion avec d'autres connaisseurs.
 
 ### **Les autres PNJ**
 
@@ -139,7 +139,7 @@ Dieter et Kirsten Jung sont fiancés, et parlent régulièrement des gens et des
 Dieter croit que les Middenmarshalls exercent plus d'influence sur le Graf qu'ils n'en ont réellement ; cela est dû au fait que les dernières conversations qu'il a eues avec le Graf avant son déclin portaient principalement sur des sujets militaires.
 
 
-### **Objectifs**
+<span id="page-119-0" data-folio="117"></span>### **Objectifs**
 
 L'objectif principal de Dieter est d'épouser sa fiancée, Kirsten Jung, l'une des Dames de la cour. Il prévoit de s'installer en tant que forgeron et vendeur de chevaux, de fonder une famille et de mener une vie confortable, mais tranquille. La haute société, avec tous ses commérages et ses coups de poignard dans le dos, ne lui manquera pas du tout, c'est pourquoi les Personnages devraient essayer de faire appel à son sens de la justice et sa haine de la corruption s'ils souhaitent l'attirer dans les intrigues de l'aventure.
 
@@ -234,7 +234,7 @@ Les discours de Dieter Schmiedehammer en faveur de l'impôt nain le rendent éga
 Rallane a beaucoup de contacts utiles, et il connaît très bien Middenheim. Son intuition que quelque chose ne va pas à la cour pourrait encourager les Personnages à passer à l'action.
 
 
-### **Idées fausses**
+<span id="page-121-0" data-folio="119"></span>### **Idées fausses**
 
 Il pense, à tort, qu'Allavandrel, le Grand veneur, exerce une influence sur le graf Boris. Un jour, alors que Rallane traversait un épisode de déprime à la suite d'une énième déception amoureuse, il confia à Allavandrel qu'il se consolait en se disant qu'ils étaient tous deux des proches du Graf ; Allavandrel choisit de ne pas lui avouer la vérité, afin de ne pas l'accabler davantage.
 
@@ -314,7 +314,7 @@ Katarina est difficile à approcher. Elle vit dans le Palais avec son chaperon (
 Bien que Katarina ne dispose d'aucune information pertinente en soi, elle est le PNJ exerçant le plus d'influence sur le Graf que les Personnages pourront rallier à leur cause. Elle peut permettre aux Personnages d'accéder au Palais intérieur et elle peut, en théorie, convoquer presque n'importe quel PNJ dans des délais 
 
 
-assez courts ; cependant, elle ne laissera pas les Personnages abuser de son autorité. Pour la persuader de les aider, les Joueurs devront se montrer astucieux dans leur jeu de rôle : une Princesse n'a aucun intérêt à être surprise en train de conspirer avec des étrangers pour influer sur la politique de Middenheim !
+<span id="page-123-0" data-folio="121"></span>assez courts ; cependant, elle ne laissera pas les Personnages abuser de son autorité. Pour la persuader de les aider, les Joueurs devront se montrer astucieux dans leur jeu de rôle : une Princesse n'a aucun intérêt à être surprise en train de conspirer avec des étrangers pour influer sur la politique de Middenheim !
 
 Les Personnages de sexe masculin grands et beaux devront se donner plus de peine qu'ils ne pourraient s'y attendre pour séduire Katarina. En effet, la Princesse exige de la considération, des poèmes, des sérénades, des cadeaux somptueux et attentionnés, et autres gestes romantiques ; toute mention de faveurs politiques apparaîtra comme inopportune et donnera l'impression d'une cour intéressée. En résumé : Katarina exerce une puissante influence sur le Graf, mais les Personnages devront redoubler d'efforts pour s'assurer ses bonnes grâces.
 
@@ -493,7 +493,7 @@ Le général Johann Schwermutt est le commandant de la garnison de Middenheim. S
 **Possessions :** uniforme composé d'une armure de plates ancienne, d'une cape grise en peau de loup portée pardessus, d'une épée de cérémonie au pommeau doré et d'un bouclier orné des armoiries de la cité
 
 
-#### **Le Maréchal Maximillian von Genscher**
+<span id="page-127-0" data-folio="125"></span>#### **Le Maréchal Maximillian von Genscher**
 
 Le maréchal Maximillian von Genscher coordonne les défenses de la ville et dirige toutes les expéditions préparées par l'armée. Maximillian, 43 ans, est le plus jeune des trois Middenmarshalls et il a atteint son rang dans la société grâce à sa bonne naissance. C'est un homme imposant de plus de 1 m 90 et presque à moitié aussi large que ça. Sa personnalité est également hors du commun : son courage et sa magnanimité sont légendaires, de même que sa force de caractère. Il pèse ses mots avec attention et c'est un interrogateur perspicace. Il se distingue par des cheveux et une barbe bien taillée d'un noir profond, par ses yeux marron foncé, ainsi que par une longue et pâle cicatrice qui remonte sur sa joue gauche et fend son sourcil en deux.
 
@@ -529,7 +529,7 @@ Les Marshalls évitent de parler politique, et ne sont pas très au fait des int
 Le devoir des Marshalls est de protéger la ville des menaces militaires. Les menaces d'ordre politique ne rentrent pas dans leur champ d'action. Ils refuseront catégoriquement de s'engager dans une action militaire au sein de la ville, ou de faire quoi que ce soit qui ressemble de près ou de loin à un coup d'État. Cela signifie qu'ils ne prêteront aucun équipement ou personnel militaire aux Personnages, et ne leur accorderont aucun grade ni aucune autorité militaire.
 
 
-### **Les autres PNJ**
+<span id="page-128-0" data-folio="126"></span>### **Les autres PNJ**
 
 Étant donné leur volonté de se tenir à l'écart de la vie politique, les Marshalls ne connaissent que très peu les autres PNJ principaux, et n'entretiennent aucune relation avec eux.
 
@@ -634,7 +634,7 @@ Les sorciers reçoivent un bonus de +10 à tous leurs Tests basés sur la **Soci
 Les sorciers ne sont pas vraiment impliqués dans la sphère politique, bien qu'ils exercent une petite influence sur le Graf. Eberhauer a finalement plus de bouteille qu'Helseher, qui vient tout juste de s'éveiller aux problématiques politiques. Il a fait entendre sa colère auprès du Graf sur la question de l'impôtparchemin. Ils ne savent pas grand-chose qui serait utile pour 
 
 
-les Personnages, mais ils sont persuadés que les Seigneurs des Lois Ehrlich et Hoflich ont voté pour les nouvelles taxes, puisque les espions de la guilde postés au Palais ont reporté la vive opposition de Wasmeier.
+<span id="page-131-0" data-folio="129"></span>les Personnages, mais ils sont persuadés que les Seigneurs des Lois Ehrlich et Hoflich ont voté pour les nouvelles taxes, puisque les espions de la guilde postés au Palais ont reporté la vive opposition de Wasmeier.
 
 ### **Idées fausses**
 
@@ -725,7 +725,7 @@ Ar-Ulric sait qui influence le graf Boris. Il peut organiser des rencontres avec
 Aucune. Ar-Ulric sait de qui le Graf suit les conseils.
 
 
-### **Objectifs**
+<span id="page-133-0" data-folio="131"></span>### **Objectifs**
 
 Ar-Ulric veut désespérément récupérer ses lettres d'amour : si on les lui rend, il mettra un terme à sa relation avec Emmanuelle Schlagen, bien qu'il l'aime encore. Il est très remonté contre l'impôt des Temples, trouve que l'impôt nain crée une division sociale, et pense que l'impôt-parchemin mettra en péril un des éléments cruciaux de la défense de la ville. Forcé de défendre toutes ces taxes, il le fera de manière peu convaincante.
 
@@ -812,7 +812,7 @@ Emmanuelle sait qui a de l'influence auprès du Graf. Elle sait aussi qu'il est 
 Selon elle, Petra Liebkosen est une bonne source de ragots à la cour. Si les Personnages compatissent au sujet du chantage, elle leur suggérera de parler à Petra de manière générale, pour savoir ce qu'elle a entendu. Elle pense qu'une personne ayant accès au Palais intérieur a dû voler les lettres, car il n'y a aucun signe d'effraction.
 
 
-Emmanuelle peut révéler que Luigi Pavarotti lui a fait des avances si cela semble pertinent : cependant, elle n'en a pas parlé à Ar-Ulric. D'après son discours sur les herbes illicites, elle soupçonne le « docteur en médecine » d'être un bon vivant de la pire espèce. Si les Personnages sont au courant ou ont des doutes sur l'addiction du Chancelier, ils pourraient penser à tort que Luigi est son fournisseur.
+<span id="page-135-0" data-folio="133"></span>Emmanuelle peut révéler que Luigi Pavarotti lui a fait des avances si cela semble pertinent : cependant, elle n'en a pas parlé à Ar-Ulric. D'après son discours sur les herbes illicites, elle soupçonne le « docteur en médecine » d'être un bon vivant de la pire espèce. Si les Personnages sont au courant ou ont des doutes sur l'addiction du Chancelier, ils pourraient penser à tort que Luigi est son fournisseur.
 
 Emmanuelle est importante car elle exerce une influence sur le graf Boris et connaît les autres personnes qu'il écoute. Les Personnages doivent travailler avec acharnement et prudence pour gagner sa confiance.
 
@@ -890,7 +890,7 @@ Cette position n'est assortie d'aucune fonction ni d'aucun devoir à la cour, si
 Siegfried vit dans le Palais extérieur, mais assiste à certains événements culturels pendant la semaine du Carnaval. Il ne fréquente pas les événements informels ou bas de gamme, les marchés ou autres lieux « communs ».
 
 
-### **Attitude**
+<span id="page-137-0" data-folio="135"></span>### **Attitude**
 
 Un Personnage de classe sociale élevée (par exemple, avec la Carrière Noble ou le Talent Noblesse) qui est bien habillé et qui s'exprime bien, ou un Personnage de moindre importance qui peut imiter ces qualités de manière convaincante, reçoit un bonus allant jusqu'à +20 pour tous les Tests de **Sociabilité** avec Siegfried. Les individus crasseux, grossiers et simples sont rejetés d'emblée.
 
@@ -976,7 +976,7 @@ Allavandrel possède une petite maison dans le quartier d'Osttor. Il participe �
 **Halflings :** +5 à tous les Tests de **Sociabilité**. Allavandrel emploie une gouvernante halfling talentueuse et sympathique, du nom de Cordelia Vertebutte, et il a développé une tendresse particulière pour ces petites personnes grâce à elle.
 
 
-### **Connaissances**
+<span id="page-139-0" data-folio="137"></span>### **Connaissances**
 
 Allavandrel sait qui influence le graf Boris, rien de plus. Cependant, cet elfe sociable a de bonnes relations et peut présenter les Personnages à Dieter, Rallane, aux Dames de la cour, et peut-être même au Chancelier. Il peut découvrir où quelqu'un (comme le Chancelier) pourrait se procurer des substances plus exotiques (voir *La pharmalcoologie* p. 92). Cependant, il s'inquiétera si les Personnages pointent du doigt le Chancelier à cet égard. Combattant endurant et archer hors pair, il peut aussi apporter une aide directe à l'aventure et aux Personnages, mais seulement en cas d'absolue nécessité.
 
@@ -1053,7 +1053,7 @@ Wallenstein vit dans une maison de ville en apparence modeste dans le quartier d
 Pas de modificateurs spéciaux, mais les pots-de-vin sont très utiles.
 
 
-### **Idées fausses**
+<span id="page-141-0" data-folio="139"></span>### **Idées fausses**
 
 Wallenstein se trompe sur les personnes qui influencent le graf Boris : il pense que seuls le Chancelier et les Seigneurs des Lois ont une réelle influence.
 
@@ -1140,7 +1140,7 @@ Luigi n'a rien d'important à partager, sauf ses impressions sur Ar-Ulric (voir 
 L'attitude désinvolte de Luigi et ses origines étrangères peuvent le rendre suspect au premier abord, et se rapprocher de lui discréditera les Personnages auprès des PNJ principaux 
 
 
-plus respectables (notamment le chaperon). Cependant, si les Personnages arrivent à répondre à ses demandes et ses appétits, une entreprise potentiellement embarrassante, onéreuse et éreintante, et à le convaincre qu'ils ne lui veulent pas de mal, ni à lui, ni à la famille Todbringer, il sera un contact précieux.
+<span id="page-143-0" data-folio="141"></span>plus respectables (notamment le chaperon). Cependant, si les Personnages arrivent à répondre à ses demandes et ses appétits, une entreprise potentiellement embarrassante, onéreuse et éreintante, et à le convaincre qu'ils ne lui veulent pas de mal, ni à lui, ni à la famille Todbringer, il sera un contact précieux.
 
 ### **Idées fausses**
 
@@ -1223,7 +1223,7 @@ Kirsten est une émissaire importante ayant autrefois évolué dans le milieu ma
 **Possessions :** vêtements de cour de qualité, bijoux d'une valeur de 20 CO, sacoche contenant des pièces pour une valeur de 3 CO
 
 
-### **Petra Liebkosen**
+<span id="page-145-0" data-folio="143"></span>### **Petra Liebkosen**
 
 Petra s'implique beaucoup dans la société mondaine et part souvent se promener dans les rues de Middenheim. Elle a environ 25 ans et est de taille et de corpulence moyennes. Ses cheveux bruns et bouclés lui arrivent aux épaules et elle a des yeux marron foncé. Elle possède également une fossette au menton et un grain de beauté sur la joue gauche. Elle préfère des tenues plus travaillées que Kirsten et porte toujours des vêtements extravagants et chics. Très mondaine, elle sait que l'amour et la beauté durent bien moins longtemps que l'or et les diamants. Petra est matérialiste, hédoniste, extravertie et adore les ragots, mais elle fait attention à ce qu'elle dit, et à qui elle le dit.
 
@@ -1269,7 +1269,7 @@ Petra sait des tas de potins fort utiles, mais elle doit être approchée de la 
 - 0 Rallane a le béguin pour la Princesse. Il n'est pas à l'origine de l'impôt nain : ce n'est pas son genre, et il manque d'alliés politiques.
 
 
-### **Idées fausses**
+<span id="page-146-0" data-folio="144"></span>### **Idées fausses**
 
 Petra et Natasha savent toutes les deux qui influence le Graf. Kirsten surestime l'influence d'Ar-Ulric.
 
@@ -1349,7 +1349,7 @@ C'est pour ces raisons que Karl Heinz Wasmeier a décidé qu'il serait trop dang
 **\*Doppelgänger :** un doppelgänger peut prendre la forme de toute créature humanoïde qu'il a rencontrée, d'une taille comprise entre 1 m 20 et 2 m 40. La ressemblance est telle que seuls ceux qui connaissaient très bien l'original peuvent espérer remarquer la supercherie. Il leur faudra même réussir un Test d'**Intuition Difficile (-20)** pour sentir que quelque chose cloche.
 
 
-### **Karl Heinz Wasmeier**
+<span id="page-148-0" data-folio="146"></span>### **Karl Heinz Wasmeier**
 
 Karl Heinz est un homme d'environ 40 ans, grand, de corpulence moyenne, aux cheveux mi-longs châtain et ondulés et aux yeux marron. Personne ne le sait parmi les Seigneurs des Lois (ni même dans le reste de la cour), mais il fait partie du Cercle intérieur du culte de la Main Pourpre. C'est un homme intelligent, cruel et sans pitié, mais rares sont ceux qui l'ont rencontré et qui le décriraient ainsi. Lorsqu'il s'occupe de ses devoirs de Seigneur des Lois, il fait attention à avoir l'air professionnel, raisonnable et humain. C'est le seul des trois Seigneurs des Lois à avoir publiquement émis des doutes sur les nouvelles taxes.
 
@@ -1388,7 +1388,7 @@ Ehrlich se terre dans sa maison, et se fait livrer ses repas et ceux de ses anim
 Les Seigneurs des Lois, réputés impartiaux, sont rarement influencés par des Tests de **Sociabilité**. Vous pouvez leur donner +6 DR dans tous les Tests opposés qu'ils feront pour résister aux Tests de **Charme**, d'**Intimidation**, ou autres.
 
 
-### **Connaissances**
+<span id="page-149-0" data-folio="147"></span>### **Connaissances**
 
 Il y a bientôt deux mois de cela, la nièce d'Ehrlich, Reya, a été kidnappée. Hoflich lui a conseillé de soutenir les propositions de taxes s'il voulait la revoir. Ehrlich a obéi, et les taxes ont été votées. Il s'est immédiatement retiré chez lui en suivant les instructions d'Hoflich de ne voir et de ne parler à personne jusqu'à la fin du Carnaval, où, comme l'a promis Hoflich, on lui rendra Reya indemne.
 

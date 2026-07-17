@@ -70,7 +70,7 @@ Johann Schwermutt, Janna Eberhauer, Emmanuelle Schlagen, Kirsten Jung, Petra Lie
 
 | JOUR 3<br>: MARKTAG         |            |                                           |  |  |  |  |  |
 |-----------------------------|------------|-------------------------------------------|--|--|--|--|--|
-| Lieu                        | Heure      | Spectacle                                 |  |  |  |  |  |
+<span id="page-154-0" data-folio="152"></span>| Lieu                        | Heure      | Spectacle                                 |  |  |  |  |  |
 | Place des parades           | 11h – 13h  | Défis au Champion<br>du Graf              |  |  |  |  |  |
 | Grand Parc                  | Midi – 23h | Festival des Bières                       |  |  |  |  |  |
 | Stade Bernabau              | Midi – 13h | Les Cracheurs de feu<br>de Carroburg      |  |  |  |  |  |
@@ -213,7 +213,7 @@ Rallane Lafarel, Ulrich Schutzmann, Maximillian von Genscher (21h – 22h), Albr
 
 | JOUR 7<br>: ANGESTAG        |              |                                                                      |
 |-----------------------------|--------------|----------------------------------------------------------------------|
-| Lieu                        | Heure        | Spectacle                                                            |
+<span id="page-156-0" data-folio="154"></span>| Lieu                        | Heure        | Spectacle                                                            |
 | Place des parades           | 11h – 12h30  | Tournoi de ballon<br>aquatique                                       |
 | Stade Bernabau              | 14h – 16h    | Finale de Snotball                                                   |
 | Collège royal de<br>Musique | 14h – 16h    | Le chœur liturgique<br>luccinien de castrats de<br>Giuseppe Pastrami |
@@ -375,7 +375,7 @@ Elle sera suivie d'une exposition de minéraux inspirants & d'un récital de vie
 
 POUR KARL
 
-### *Mon cher Karl Heinz,*
+<span id="page-160-0" data-folio="158"></span>### *Mon cher Karl Heinz,*
 
 *Je te remercie de ta sollicitude quant à la santé de Margaretha. Nous avons consulté un médecin non loin du parc. Ses services étaient très chers. Néanmoins, je préfère le dédommager moi-même. Je peux me le permettre, et ainsi je n'ai pas besoin d'aller à l'Hospice. Enn bref, le médecin nous a conseillé une lotion de caire et rouille mouchetée, ce qui s'est avéré efcace. Je suis positivement rempli de joie de la voir à nouveau courir partout, pleine de vie, comme dans sa jeunesse. Elle aime se dégourdir, et c'est elle qui a fait les petits dessins que tu vois sur les marges.*
 

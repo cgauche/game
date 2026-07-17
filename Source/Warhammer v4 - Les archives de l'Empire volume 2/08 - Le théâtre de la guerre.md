@@ -49,7 +49,7 @@ Avant une bataille, le MJ doit décider de la Puissance de chaque armée. Il s'a
 
 ## GARDE À VOUS !
 
-0 Les rumeurs de l'infiltration d'un camp militaire par des cultistes abondent. Le capitaine Ernst Flett pourrait demander à des Personnages respectables d'enquêter pour lui. Flett est convaincu que quelqu'un dans le camp se laisse soudoyer pour assurer la discrétion du culte. Les éventuels candidats devront se montrer très discrets, avoir un comportement exemplaire et être prêts à affronter directement les cultistes, dans le pire des cas. C'est à vous qu'il revient de décider du nombre et des profils des cultistes mineurs. Mais une observation attentive dévoile qu'ils ont tous un regard vide. Si un combat éclate, les cultistes se révèlent être des adversaires de taille.
+<span id="page-84-0" data-folio="83"></span>0 Les rumeurs de l'infiltration d'un camp militaire par des cultistes abondent. Le capitaine Ernst Flett pourrait demander à des Personnages respectables d'enquêter pour lui. Flett est convaincu que quelqu'un dans le camp se laisse soudoyer pour assurer la discrétion du culte. Les éventuels candidats devront se montrer très discrets, avoir un comportement exemplaire et être prêts à affronter directement les cultistes, dans le pire des cas. C'est à vous qu'il revient de décider du nombre et des profils des cultistes mineurs. Mais une observation attentive dévoile qu'ils ont tous un regard vide. Si un combat éclate, les cultistes se révèlent être des adversaires de taille.
 
 # OPTION : LE COÛT DE LA GUERRE
 
@@ -253,7 +253,7 @@ La section suivante comprend les statistiques des machines de guerre pouvant êt
 \*\*\*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.
 
 
-**Baliste :** similaire à une arbalète, mais bien plus grande, une baliste peut tirer de grands carreaux sur de longues distances. Elle est bien trop lourde pour être transportée, et est donc attachée à une surface fixe ou est dotée de roues pour se déplacer sur le champ de bataille.
+<span id="page-90-0" data-folio="89"></span>**Baliste :** similaire à une arbalète, mais bien plus grande, une baliste peut tirer de grands carreaux sur de longues distances. Elle est bien trop lourde pour être transportée, et est donc attachée à une surface fixe ou est dotée de roues pour se déplacer sur le champ de bataille.
 
 **Bélier :** utilisé pour enfoncer les portes, le bélier est constitué d'un tronc d'arbre massif suspendu par des chaînes ou des cordes à une structure en bois avec des roues. Certains ont un bout métallique pointu ou sont forgés pour ressembler à une tête de bélier.
 
@@ -306,7 +306,7 @@ Lorsque vous calculez la Puissance totale d'une armée avant de la réduire, cha
 
 ### OPTION : FACTEURS ENVIRONNEMENTAUX
 
-Si vous souhaitez ajouter un facteur aléatoire à une bataille ou un Round de bataille, vous pouvez faire un jet sur la table ci-dessous, ou simplement choisir l'un des résultats.
+<span id="page-91-0" data-folio="90"></span>Si vous souhaitez ajouter un facteur aléatoire à une bataille ou un Round de bataille, vous pouvez faire un jet sur la table ci-dessous, ou simplement choisir l'un des résultats.
 
 | 1d10 | Facteur environnemental                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 |------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

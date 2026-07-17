@@ -33,7 +33,7 @@ En plus d'être pleine d'esprit et sarcastique, Brunhilde est douée d'un grand 
 
 #### POTION D'IVRESSE
 
-Cette potion rend la personne qui la boit insensible à la douleur et parfaitement incohérente, comme si elle était en état d'ivresse. Cet effet dure entre 1d10+2 heures. Pendant ce temps, la buveuse (Klaglich, en l'occurrence) subit trois États *Sonné* et ne peut réaliser de Tests de **Résistance** pour s'en débarrasser tant que la potion fait effet. Elle gagne également les Traits *Immunité Psychologique* et *Insensible à la douleur*. Elle ne peut ni être interrogée ni torturée.
+<span id="page-99-0" data-folio="97"></span>Cette potion rend la personne qui la boit insensible à la douleur et parfaitement incohérente, comme si elle était en état d'ivresse. Cet effet dure entre 1d10+2 heures. Pendant ce temps, la buveuse (Klaglich, en l'occurrence) subit trois États *Sonné* et ne peut réaliser de Tests de **Résistance** pour s'en débarrasser tant que la potion fait effet. Elle gagne également les Traits *Immunité Psychologique* et *Insensible à la douleur*. Elle ne peut ni être interrogée ni torturée.
 
 ### **Dagmar Mitschuldige, Mercenaire**
 
@@ -127,7 +127,7 @@ Si les aventuriers suivent « Frau Kenner » après son rendezvous avec Sparsam,
 Les quatre vivent dans la cave de la maison en ruines. Il n'y a pas de plan des étages supérieurs de la maison, puisque toute l'action aura lieu dans la cave. Les pièces sont couvertes de poussière, de vieilles planches de bois moisies, de déchets, et sont certaines d'abriter une ou deux araignées ou souris. Les fenêtres sont barrées par des planches, mais un trou de 15 cm a été creusé dans celle du fond pour les pigeons voyageurs. Un Test de **Perception Intermédiaire (+0)** révèle des plumes coincées dans le bois, ainsi que des graines et des fientes sur le sol.
 
 
-La porte principale et la porte du fond sont toutes les deux verrouillées (considérez-les comme un *Loquet* pour les Tests de **Crochetage**). La porte du fond a été piégée avec un assommoir : un énorme sac de briques qui tombe sur quiconque l'ouvre depuis l'extérieur (F 4, lancez un d10 pour déterminer la localisation du coup : 1–3 bras gauche ; 4–6 bras droit ; 7–10 tête).
+<span id="page-101-0" data-folio="99"></span>La porte principale et la porte du fond sont toutes les deux verrouillées (considérez-les comme un *Loquet* pour les Tests de **Crochetage**). La porte du fond a été piégée avec un assommoir : un énorme sac de briques qui tombe sur quiconque l'ouvre depuis l'extérieur (F 4, lancez un d10 pour déterminer la localisation du coup : 1–3 bras gauche ; 4–6 bras droit ; 7–10 tête).
 
 Il y a une trappe (0.3 m²) au rez-de-chaussée, dans une pièce du fond ; elle est barrée par le bas. Le code pour ouvrir la trappe est deux coups de pied, suivis d'une pause de 5 secondes, puis deux nouveaux coups de pied. Seuls les quatre pions connaissent le code, et s'ils sont tous ensemble dans le repaire, ils seront sur leurs gardes en entendant quelqu'un l'utiliser. Sous la trappe, d'étroites marches en bois descendent sur 4,5 m. La cave a une hauteur sous plafond d'un peu moins de 3 m, et est éclairée par des lampes à huile.
 
@@ -211,7 +211,7 @@ Wasmeier va directement dans sa chambre, mais Hoflich se rend dans les apparteme
 De retour dans sa chambre, le doppelgänger boit une Potion d'Invisibilité (fournie par Wasmeier) et, muni d'une corde et d'un grappin, retourne dans la chambre du Graf par la fenêtre ouverte. L'attention des autres gardes du Palais est occupée par les Illuminations.
 
 
-Le doppelgänger prend alors l'apparence du Graf, et après que l'effet d'invisibilité s'est dissipé (ce qui peut prendre jusqu'à une heure), il demande au garde d'aller chercher le seigneur des lois Wasmeier. Les deux hommes fêtent leur succès et admirent la fin des feux d'artifice depuis les fenêtres sud. Wasmeier se rend dans les appartements de Hoflich avant de rentrer dans sa chambre, pour faire comme si Hoflich était toujours au Palais.
+<span id="page-103-0" data-folio="101"></span>Le doppelgänger prend alors l'apparence du Graf, et après que l'effet d'invisibilité s'est dissipé (ce qui peut prendre jusqu'à une heure), il demande au garde d'aller chercher le seigneur des lois Wasmeier. Les deux hommes fêtent leur succès et admirent la fin des feux d'artifice depuis les fenêtres sud. Wasmeier se rend dans les appartements de Hoflich avant de rentrer dans sa chambre, pour faire comme si Hoflich était toujours au Palais.
 
 Le lendemain matin, le Graf provoquera la surprise générale en convoquant tous ses conseillers pour une réunion. Seul Hoflich sera absent. Le Graf n'attendra pas et exigera de savoir qui est à l'origine de la réforme des impôts. Wasmeier s'attend à ce que la plupart des conseillers gardent le silence. Il se lèvera et prononcera le nom de Hoflich.
 
@@ -258,7 +258,7 @@ Le trajet emprunté ne change rien au cours des événements. Le but, c'est de f
 Le groupe arrive au Collège royal de Musique à la fin de la représentation, alors que les spectateurs s'en vont. Après quelques minutes à chercher Hoflich et à poser des questions, ils apprennent que sa calèche est déjà partie. Ils doivent se rendre au Palais sans perdre une minute de plus.
 
 
-#### **Le Middenpalaz**
+<span id="page-104-0" data-folio="102"></span>#### **Le Middenpalaz**
 
 En arrivant au Palais, les Personnages apprennent que Hoflich est rentré vers 00h30. Grâce au rang d'Ehrlich, ils peuvent accéder au Palais intérieur. En arrivant, ils apprennent que Hoflich est parti voir le Graf quelques minutes plus tôt. Si le groupe a un peu de retard, partez du principe que Hoflich s'est attardé dans ses appartements après être revenu de l'opéra.
 
@@ -302,7 +302,7 @@ Les Middenmarshalls exigeront des explications et un récapitulatif complet des 
 
 
 
-#### **Une sinistre découverte**
+<span id="page-106-0" data-folio="104"></span>#### **Une sinistre découverte**
 
 Quand les Middenmarshalls ont fini d'interroger les Personnages, un chevalier apparaît et s'entretient à voix basse avec le commandant Schutzmann. Schutzmann écoute, hoche la tête, avant de se tourner vers le groupe et de leur dire « *Suivezmoi* ». Ils sont conduits dans les appartements de Hoflich, qui ont l'air d'avoir été minutieusement fouillés.
 
@@ -392,7 +392,7 @@ Parmi les armes exposées aux murs, on trouve deux épées à deux mains, une ha
 La bibliothèque est extrêmement bien fournie : elle renferme des livres de droit, d'histoire, de géographie, tout sauf de la fiction. Les portes ont des verrous, mais elles ne sont pas fermées à clé. Le parquet en bois est richement verni, et une délicate odeur de cire embaume la pièce.
 
 
-#### **Salon**
+<span id="page-108-0" data-folio="106"></span>#### **Salon**
 
 Le sol de cette pièce est recouvert d'une épaisse moquette violette, et les murs sont drapés de lourdes tentures. Six fauteuils somptueux occupent presque tout l'espace. Des petites tables sont posées à côté de chacun d'eux. Contre le mur sud, un meuble de rangement contient des spiritueux, des liqueurs et des verres. À côté, dans une petite bibliothèque, on trouve des livres aux sujets plus légers : des romans historiques, des recueils de contes populaires, des bestiaires, etc. Un Test de **Perception Intermédiaire (+0)** révèle que la bibliothèque est montée sur des gonds. Elle cache un passage secret vers l'écurie.
 
@@ -432,7 +432,7 @@ Elle peut aussi allumer une ou plusieurs lampes… avant de déclencher l'explos
 
 
 
-#### **Palier**
+<span id="page-110-0" data-folio="108"></span>#### **Palier**
 
 L'éclairage provient d'une grande fenêtre de toit fermée de l'intérieur. La décoration consiste en plusieurs plantes en pots.
 
@@ -554,7 +554,7 @@ Il comporte deux mâchoires en demi-cercle qui se referment lorsque la plaque au
 |---|----|----|----|----|----|----|-----|-----|----|-----|---|
 | 2 | 55 | –  | 15 | 15 | 35 | 45 | –   | 10  | 20 | 10  | 1 |
 
-**Traits :** Arme +3, Bestial, Dressé (Guerre), Nerveux, Taille (Très Petit), Vol 100
+<span id="page-112-0" data-folio="110"></span>**Traits :** Arme +3, Bestial, Dressé (Guerre), Nerveux, Taille (Très Petit), Vol 100
 
 **Griffeur :** si Sénestre touche son adversaire à la tête, celuici subit un État *Aveuglé*.
 
@@ -619,7 +619,7 @@ L'antagoniste a été démasqué et son plan déjoué. Bien qu'il se soit échap
 C'est avec un sentiment justifié du devoir accompli que les Personnages retournent au Palais faire leur rapport. Le Graf a une dette envers eux, et bien que la gratitude des puissants soit souvent fugace, les aventuriers peuvent s'attendre à être dûment récompensés. Quand les Personnages reviennent après avoir tenté de capturer Wasmeier, Ulrich Schutzmann les accueille, clairement impressionné (s'il a été tué ou compromis au cours de l'aventure, c'est un autre Middenmarshall ou Dieter Schmiedehammer qui s'en occupe). Il semble s'inquiéter de leur bien-être, et fait appeler un médecin si l'un d'entre eux est blessé. Il leur suggère d'aller se reposer et de le rejoindre le lendemain à l'Âne Rieur afin de faire le point sur la situation. Il a l'air de se sentir coupable, et les Personnages peuvent s'en rendre compte grâce à un Test d'**Intuition Complexe (-10)**.
 
 
-### **Le compte rendu**
+<span id="page-114-0" data-folio="112"></span>### **Le compte rendu**
 
 Le lendemain matin, Schutzmann vient les voir pour s'assurer qu'ils ont bien mangé et bien dormi avant de recevoir un interrogatoire détaillé sur leurs activités depuis leur arrivée à Middenheim. Vous pouvez faire un résumé de l'interrogatoire, mais essayez de poser au moins une question à chaque Personnage. Schutzmann comparera leurs histoires entre elles.
 
@@ -659,7 +659,7 @@ Josef Sparsam réussit à rester en poste en tant que Chancelier : il se fait lo
 Dieter Schmiedehammer est autorisé à conserver son titre de Champion pour l'instant, mais le Graf lui fait clairement comprendre qu'il va devoir former un nouvel apprenti pour le remplacer. Le nouveau Champion est choisi parmi ceux qui se sont bien battus contre Dieter pendant le Carnaval : cela peut tout à fait être un des Personnages. Dieter et Kirsten Jung se marient peu de temps après. Si son hypnose n'a pas été traitée, Dieter émet de temps en temps des opinions étranges sur les impôts.
 
 
-Peu de temps après s'être retirée de la cour, Emmanuelle Schlagen quitte Middenheim pour Altdorf. Si quelqu'un la questionne sur cette décision, elle répond qu'elle souhaite faire son retour sur les planches, et que le théâtre d'Altdorf lui semble plus prometteur que celui de Middenheim.
+<span id="page-115-0" data-folio="113"></span>Peu de temps après s'être retirée de la cour, Emmanuelle Schlagen quitte Middenheim pour Altdorf. Si quelqu'un la questionne sur cette décision, elle répond qu'elle souhaite faire son retour sur les planches, et que le théâtre d'Altdorf lui semble plus prometteur que celui de Middenheim.
 
 Le baron Stefan Todbringer aura besoin d'attention médicale régulière pour le reste de sa vie. Luigi Pavarotti reste un courtisan estimé aux yeux d'une grande partie de la haute société de Middenheim.
 
