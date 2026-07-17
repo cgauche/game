@@ -40,7 +40,7 @@ const VEHICLE_BY_ID: Map<string, VehicleData> = new Map(VEHICLES_LIST.map((v) =>
 /** Transports payants RAW (l.210-219) = véhicules dotés d'une facette `travel` (passage payant). */
 export const TRAVEL_VEHICLES: VehicleData[] = VEHICLES_LIST.filter((v) => v.travel);
 
-/** Mode de voyage : `'pied'` (Mouvement du groupe), `'monture'` (bêtes possédées, EDOC ch.4 — règle
+/** Mode de voyage : `'pied'` (Mouvement du groupe), `'monture'` (bêtes possédées, EDOC ch.7 — règle
  *  optionnelle `travel-allures`) OU l'`id` d'un véhicule à passage payant (`vehicles.json`). */
 export type TravelMode = 'pied' | 'monture' | string;
 

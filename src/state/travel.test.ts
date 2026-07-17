@@ -345,11 +345,11 @@ describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interru
 });
 
 /**
- * Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.5). Défaut OFF = voyage jour-par-jour
+ * Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.8). Défaut OFF = voyage jour-par-jour
  * INCHANGÉ (aucune ligne de Météo/Étape) ; ON = jet de Météo par jour, Approvisionnement et
  * Exposition de fin d'Étape optionnels.
  */
-describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
+describe('Voyage par Étapes (EDOC ch.8, règle optionnelle)', () => {
   afterEach(() => {
     resetRule('travel-etapes');
     resetRule('travel-etapes-count-bonus');
@@ -509,11 +509,11 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
 });
 
 /**
- * Montures et attelages en voyage (EDOC ch.4, règle optionnelle `travel-allures`) : voyage en selle
+ * Montures et attelages en voyage (EDOC ch.7, règle optionnelle `travel-allures`) : voyage en selle
  * (vitesse par allure l.140, endurance l.142-146, Incidents de monte l.148-174) et allure forcée
  * d'un attelage (l.229 + Problème de véhicule l.253).
  */
-describe('Montures & attelages (EDOC ch.4, règle optionnelle travel-allures)', () => {
+describe('Montures & attelages (EDOC ch.7, règle optionnelle travel-allures)', () => {
   afterEach(() => {
     resetRule('travel-allures');
   });

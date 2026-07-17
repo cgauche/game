@@ -1,5 +1,5 @@
 /**
- * Tables d100 de VOYAGE (EDOC ch.4-5), en DONNÉE (`src/data/*.json`) — lookup partagé via `findTableEntry`.
+ * Tables d100 de VOYAGE (EDOC ch.7-8), en DONNÉE (`src/data/*.json`) — lookup partagé via `findTableEntry`.
  * Aucune table en dur : incidents de monte, problèmes de véhicule et rencontres vivent en JSON éditable.
  * Le tirage du d100 et l'application des effets restent à l'appelant (boucle de voyage).
  */
@@ -39,7 +39,7 @@ export function rollVehicleProblem(roll: number): TravelTableEntry {
   return findTableEntry(VEHICLE_PROBLEMS, roll);
 }
 
-/** Catégorie de Rencontre de voyage (EDOC ch.5 l.186-233) — déclenchée par la qualité du Test d'Activité. */
+/** Catégorie de Rencontre de voyage (EDOC ch.8 l.186-233) — déclenchée par la qualité du Test d'Activité. */
 export type EncounterCategory = 'positives' | 'fortuites' | 'dangereuses';
 
 const ENCOUNTERS = (rencontresJson as { tables: Record<EncounterCategory, TravelTableEntry[]> }).tables;

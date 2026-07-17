@@ -143,7 +143,7 @@ export function navalDeckCover(traits: NavalTraitRef[] | undefined): DeckCoverCl
 }
 
 /**
- * Couvert des postes selon les Améliorations de la coque (MDG ch.12 l.362-364 / T2C ch.12 l.85,111,727,
+ * Couvert des postes selon les Améliorations de la coque (MDG ch.12 l.362-364 / T2C ch.12 l.85,111,
  * `deckCover` GRADUÉ en donnée) : « Le pont ne fournit aucun couvert, alors qu'un Sabord donne une couverture
  * totale » (Sabord/Murs blindés → `totale`), le **Plat-bord** une « couverture moyenne » (→ `moyenne`, moindre).
  * `cover` = le niveau de pont, `undefined` = aucune Amélioration couvrante. Stampe le MEILLEUR entre le couvert

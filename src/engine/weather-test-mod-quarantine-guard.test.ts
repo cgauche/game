@@ -8,7 +8,7 @@ import {
 } from '../../scripts/guards/lib/weatherTestModQuarantine.mjs';
 
 /**
- * QUARANTAINE du CANAL météo « Tests physiques » (EDOC ch.5 l.82, #341). Le calcul brut
+ * QUARANTAINE du CANAL météo « Tests physiques » (EDOC ch.8 l.82, #341). Le calcul brut
  * `weatherPhysicalTestMod` n'est importable QUE par le lecteur canonique `src/engine/weatherTestMod.ts` ;
  * le lecteur `weatherTestMods` (qui produit la ligne « Météo : … ») QUE par les étages de Test canoniques
  * (`combat.ts` : attack/defenseModifiers/baseTestMods ; `travelPostes.ts` : rangées d'Activité). Garde

@@ -2596,7 +2596,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Option « Vents Tourbillonnants » (LDB 46 l.179-190, #491) : tirage 1d10 de la force des Vents
       // + Test de Perception (Seconde vue) des porteurs — AVANT tout jet d'Incantation/Focalisation.
       windsOfMagicAtCombatStart(get, set);
-      // Éclairs de la pluie diluvienne (EDOC ch.5 l.82, #341) : les montures Nerveuses non Dressées (Guerre)
+      // Éclairs de la pluie diluvienne (EDOC ch.8 l.82, #341) : les montures Nerveuses non Dressées (Guerre)
       // sont effrayées à l'ouverture d'une embuscade sous l'orage — MÊME dispatcher onStartled/'noise'.
       startleOnStormAtCombatStart(get, set);
       // Surprise APRÈS la pose du `battle` : le Test du guetteur est cadence-aware (héros manuel → cascade

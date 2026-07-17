@@ -1,5 +1,5 @@
 /**
- * VOYAGE TERRESTRE (LDB « Voyage » + EDOC ch.5 « Voyage par Étapes ») — la journée de route JOUÉE.
+ * VOYAGE TERRESTRE (LDB « Voyage » + EDOC ch.8 « Voyage par Étapes ») — la journée de route JOUÉE.
  * Depuis la Phase B, TOUS les jets du JOUR terrestre (Activités de l'Étape, Exposition de fin d'Étape,
  * péripéties Survie/Perception) passent par la MÊME cascade influençable (`purpose:'travelDay'`,
  * Chance/Pacte/Résilience) que le voyage fluvial et la nuit — plus d'auto-résolution inline. La cascade

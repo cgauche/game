@@ -482,7 +482,7 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
  *  « Tirer dans le tas », dodge météo) — l'aperçu n'utilise que `env`/`blocked`. */
 // seesInDark → combatGeometry.ts
 
-/** Météo du JOUR de voyage EN COURS (EDOC ch.5) portée par le plan de voyage — contexte de « conditions
+/** Météo du JOUR de voyage EN COURS (EDOC ch.8) portée par le plan de voyage — contexte de « conditions
  *  du jour » COMMUN aux Activités de l'Étape ET au combat qui s'ouvre pendant la journée (embuscade sous
  *  l'orage). `undefined` hors voyage terrestre / règle Étapes éteinte. SOURCE unique de lecture. */
 export function activeDayWeather(get: Get): Weather | undefined {
@@ -504,7 +504,7 @@ export function stampEnvWeatherAtCombatStart(get: Get, set: SetFn): void {
 }
 
 /**
- * Éclairs de la pluie diluvienne (EDOC ch.5 l.82, #341) : à l'OUVERTURE d'un combat pendant un jour de
+ * Éclairs de la pluie diluvienne (EDOC ch.8 l.82, #341) : à l'OUVERTURE d'un combat pendant un jour de
  * voyage sous pluie diluvienne (`lightningNervous` en donnée `weather.json`), chaque créature au Trait
  * Nerveux est effrayée UNE fois (une seule ouverture de combat par embuscade). MÊME dispatcher que le coup
  * d'arme à feu (bruits forts, l.1936) : le tonnerre est un bruit fort → `startleCause:'noise'`, donc une
@@ -587,7 +587,7 @@ export function attackEnv(
     const losTo = isStructure(target) ? structureAimCell(attacker.pos!, target) : target.pos!;
     const los = lineOfSightCover(scene, attacker.pos!, losTo, occupants, smokeOf(battle));
     if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
-    // Météo du JOUR (EDOC ch.5) : le tir sous l'orage encaisse la pénalité de temps (Pluie -10 l.76,
+    // Météo du JOUR (EDOC ch.8) : le tir sous l'orage encaisse la pénalité de temps (Pluie -10 l.76,
     // Pluie diluvienne -20 l.82), la poudre EXPOSÉE meurt (l.82), le Blizzard rend le tir impossible
     // (l.127) — MÊME contexte de « conditions du jour » que les Activités de l'Étape.
     if (dayW) {
@@ -635,7 +635,7 @@ export function attackEnv(
   }
   // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
-  // La pénalité météo « Tests physiques » (EDOC ch.5 l.82) n'est PLUS ajoutée ici : le CANAL UNIQUE
+  // La pénalité météo « Tests physiques » (EDOC ch.8 l.82) n'est PLUS ajoutée ici : le CANAL UNIQUE
   // `weatherTestMods` (attackModifiers, lu depuis `attacker.envWeather`) la porte pour l'attaque ET la défense
   // ET les activités — jamais recâblée par surface (#341). Seuls les mods météo WEAPON-contextuels restent (tir).
   // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —

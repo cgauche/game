@@ -1709,7 +1709,7 @@ export const calendarMonths = calendarMonthsJson as { id: string; name: string; 
 export const calendarIntercalary = calendarIntercalaryJson as { id: string; name: string; afterMonth: number }[];
 export const calendarWeekdays = calendarWeekdaysJson as { id: string; name: string }[];
 export const calendarPhases = calendarPhasesJson as { key: string; start: number; label: string; icon: string }[];
-/** Table de Météo de voyage TERRESTRE (EDOC ch.5). `seasons` = plages d100 → météo par saison ;
+/** Table de Météo de voyage TERRESTRE (EDOC ch.8). `seasons` = plages d100 → météo par saison ;
  *  `conditions` = EFFETS par météo (mêmes formes de donnée que `sea-weather.json`). Éditable au Codex. */
 const weatherData = weatherJson as {
   seasons: { id: string; label: string; ranges: { max: number; weather: string }[] }[];
@@ -1725,7 +1725,7 @@ const weatherData = weatherJson as {
 export const weather = weatherData.seasons;
 /** Effets par météo (visibilité, mods de tir, poudre, Tests physiques, plafond de mouvement…). */
 export const weatherConditions = weatherData.conditions;
-/** Caractéristiques réputées « physiques » (liste MAISON, EDOC ch.5 l.82 non chiffrée). */
+/** Caractéristiques réputées « physiques » (liste MAISON, EDOC ch.8 l.82 non chiffrée). */
 export const weatherPhysicalTestChars = weatherData.physicalTestChars;
 /** Tableau des Vents Tourbillonnants (LDB 46 l.183-190, option `vents-tourbillonnants`) — tirage 1d10
  *  (`engine/windsOfMagic.ts`, lecture JSON directe comme `drunkenness.ts`) ; réexporté ICI pour le

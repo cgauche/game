@@ -427,12 +427,12 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'RAW muet : aucune règle ne dit si prêter son Soutien à l’Entreprise d’un autre (ex. Planification de bataille) consomme l’une des trois Activités de l’assistant. Désactivé (défaut) : seul le meneur dépense un créneau, les assistants aident gratuitement. Activé : chaque assistant qui a encore un créneau en dépense un.',
   },
   {
-    // #352 — EDOC ch.5 l.151-153 chiffre le Test (Ragot Intermédiaire) mais jamais de durée à
+    // #352 — EDOC ch.8 l.151-153 chiffre le Test (Ragot Intermédiaire) mais jamais de durée à
     // l'Activité « Recueillir des informations » jouée HORS voyage (au comptoir d'une auberge, en
     // dehors d'une Étape) : le canon la borne implicitement à « une Étape » en voyage, muet ailleurs.
     id: 'inn-gather-info-minutes',
     label: 'Recueillir des informations à l’auberge — durée',
-    ref: 'EDOC ch.5 l.151-153 — durée hors voyage non chiffrée, valeur maison (#352)',
+    ref: 'EDOC ch.8 l.151-153 — durée hors voyage non chiffrée, valeur maison (#352)',
     group: 'Activités',
     kind: 'param',
     default: 120,
@@ -531,7 +531,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'corruption-tables-edoc',
     label: 'Tables de Corruption étendues (EDOC)',
-    ref: 'EDOC ch.8',
+    ref: 'EDOC ch.12',
     group: 'Corruption',
     kind: 'mode',
     default: 'ldb',
@@ -560,7 +560,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-etapes',
     label: 'Voyage par Étapes',
-    ref: 'EDOC ch.5 l.29',
+    ref: 'EDOC ch.8 l.29',
     group: 'Voyage',
     kind: 'flag',
     default: false,
@@ -569,7 +569,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-etapes-count-bonus',
     label: 'Étapes supplémentaires',
-    ref: 'EDOC ch.5 l.34',
+    ref: 'EDOC ch.8 l.34',
     group: 'Voyage',
     kind: 'param',
     default: 0,
@@ -581,7 +581,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-etapes-low-move-bonus',
     label: 'Étapes supplémentaires (groupe lent)',
-    ref: 'EDOC ch.5 l.25 — MJ décide, valeur maison',
+    ref: 'EDOC ch.8 l.25 — MJ décide, valeur maison',
     group: 'Voyage',
     kind: 'param',
     default: 1,
@@ -640,7 +640,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-attraper-froid',
     label: 'Attraper froid',
-    ref: 'EDOC ch.5 l.73',
+    ref: 'EDOC ch.8 l.73',
     group: 'Voyage',
     kind: 'flag',
     default: false,

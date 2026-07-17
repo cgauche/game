@@ -72,7 +72,7 @@ export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'ara
 export type WallEdgeSide = 'N' | 'E' | '\\' | '/';
 
 /** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312).
- *  `vehicule` (véhicule/embarcation à coque — EDOC ch.4, MoR ch.5, MDG ch.13) : ses localisations
+ *  `vehicule` (véhicule/embarcation à coque — EDOC ch.7, MoR ch.5, MDG ch.13) : ses localisations
  *  (coque/gréement/roues/avirons…) sont PILOTÉES PAR DONNÉES (table par véhicule, branchée plus tard),
  *  donc aucune étiquette en dur ici. */
 export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, string>>> = {
@@ -93,7 +93,7 @@ export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation
 export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
 
 /** Propulsion d'un véhicule/embarcation — pilote la table de localisation des dégâts (terre : roues/
- *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC ch.4 (terrestre), MoR ch.5 (fluvial), MDG ch.13 (maritime). */
+ *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC ch.7 (terrestre), MoR ch.5 (fluvial), MDG ch.13 (maritime). */
 export type Propulsion = 'terrestre' | 'fluvial' | 'maritime';
 
 /** Classe de voyage payant d'un véhicule : prix RAW en sous (PA) par km ET par passager (LDB l.207-219). */
@@ -1172,7 +1172,7 @@ export interface Combatant {
   riderId?: string;
   /** Ce combattant est une MONTURE rideable (peut être enfourché par un allié à pied — LDB 14). */
   mountable?: boolean;
-  /** Rôle de marche PERSISTANT (`id` d'Activité de voyage EDOC ch.5) — « les mêmes tiennent toujours le
+  /** Rôle de marche PERSISTANT (`id` d'Activité de voyage EDOC ch.8) — « les mêmes tiennent toujours le
    *  même poste ». Attaché au personnage (toutes parties de voyage) ; l'assignation d'un trajet en est
    *  initialisée. Absent ⇒ inféré des compétences (`defaultTravelRole`). Le joueur l'épingle/le change. */
   travelRole?: string;
@@ -1429,7 +1429,7 @@ export interface Combatant {
   /** Action Viser engagée : +20 (Accessible) au PROCHAIN tir tant que la dernière action reste « viser »
    *  (LDB table des Difficultés, `14 - _GoBack.md` l.90 ; « pas de Test exigé pour viser »). */
   aiming?: boolean;
-  /** Météo du JOUR sous laquelle ce combattant agit (EDOC ch.5 l.82, #341) : posée à l'ouverture d'un combat
+  /** Météo du JOUR sous laquelle ce combattant agit (EDOC ch.8 l.82, #341) : posée à l'ouverture d'un combat
    *  survenant un jour de voyage (`activeDayWeather`). SEULE source du canal « Tests physiques » (`weatherTestMods`,
    *  lu par attack/defenseModifiers) — jamais recâblée par surface. Transitoire (non persistée hors combat). */
   envWeather?: import('./travelStages').Weather;

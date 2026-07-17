@@ -1,7 +1,7 @@
 /**
  * POSTE — modèle-VUE UNIQUE de l'assignation « affecter des personnes à un poste/rôle », projeté depuis
  * les catalogues de données existants (les `.json` restent séparés, on ne recopie rien). Sert la surface
- * héros-first (`PostesRoster`) : les Activités de voyage (EDOC ch.5) et les rôles d'équipage (MDG ch.14)
+ * héros-first (`PostesRoster`) : les Activités de voyage (EDOC ch.8) et les rôles d'équipage (MDG ch.14)
  * partagent le MÊME type-vue, avec leur seule vraie différence portée en donnée (`cardinality`).
  *
  * FRONTIÈRE : ceci ne décrit QUE l'assignation. La RÉSOLUTION (jets individuels du voyage vs Tests

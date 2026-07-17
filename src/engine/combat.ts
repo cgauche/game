@@ -522,7 +522,7 @@ export function attackModifiers(
     const p = offHandPenalty(attacker);
     if (p) out.push({ label: 'Main secondaire', value: p });
   }
-  // Météo « Tests physiques » (EDOC ch.5 l.82, #341) : CANAL UNIQUE — le Test d'attaque est physique
+  // Météo « Tests physiques » (EDOC ch.8 l.82, #341) : CANAL UNIQUE — le Test d'attaque est physique
   // (Corps à corps = CC, Projectiles = CT). Lu depuis `attacker.envWeather` (posé à l'ouverture du combat),
   // jamais recâblé côté state (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).
   out.push(...weatherTestMods(attacker.envWeather, opts.kind === 'ranged' ? 'capacite-de-tir' : 'capacite-de-combat'));
@@ -588,7 +588,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
   // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.
   if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10 }); // LDB 10 l.638
-  // Météo « Tests physiques » (EDOC ch.5 l.82, #341) : le CANAL UNIQUE `weatherTestMods` lit `defender.envWeather`
+  // Météo « Tests physiques » (EDOC ch.8 l.82, #341) : le CANAL UNIQUE `weatherTestMods` lit `defender.envWeather`
   // (posé à l'ouverture du combat), scopé par la carac RÉELLE du mode (Parade = CC, Esquive = Agilité) — jamais
   // recâblé par surface (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).
   out.push(...weatherTestMods(defender.envWeather, defenseTestChar(mode)));
@@ -596,7 +596,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
 }
 
 /** Caractéristique RÉELLE d'un mode de défense (Parade = Test de CC, Esquive = Agilité) — pour le canal météo
- *  « Tests physiques » (EDOC ch.5 l.82). La substitution sociale n'est PAS un Test physique → `null` (aucune). */
+ *  « Tests physiques » (EDOC ch.8 l.82). La substitution sociale n'est PAS un Test physique → `null` (aucune). */
 function defenseTestChar(mode: DefenseMode): CharKey | null {
   return mode === 'parade' ? 'capacite-de-combat' : mode === 'esquive' ? 'agilite' : null;
 }

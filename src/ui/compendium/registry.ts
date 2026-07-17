@@ -607,8 +607,8 @@ function critEntryItem(e: CritTableEntry): CodexItem {
   };
 }
 
-/** Item Codex d'une entrée de table de voyage d100 (`TravelTableEntry` — Incidents de monte EDOC ch.4,
- *  Problèmes de véhicule EDOC ch.4, Rencontres EDOC ch.5, #157 suite) — MÊME projection pour les 3
+/** Item Codex d'une entrée de table de voyage d100 (`TravelTableEntry` — Incidents de monte EDOC ch.7,
+ *  Problèmes de véhicule EDOC ch.7, Rencontres EDOC ch.8, #157 suite) — MÊME projection pour les 3
  *  familles : plage d100 → texte + Dégâts véhicule éventuels + effet GameOp sur les occupants. */
 function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem {
   return {
@@ -1479,7 +1479,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'weather', label: 'Météo de voyage', group: 'Tables', cluster: 'Voyage terrestre',
-    build: () => weather.map((s) => ({ id: s.id, label: s.label, sub: `${s.ranges.length} plages d100 (EDOC ch.5)` })),
+    build: () => weather.map((s) => ({ id: s.id, label: s.label, sub: `${s.ranges.length} plages d100 (EDOC ch.8)` })),
   },
   {
     key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables', cluster: 'Création de personnage',
@@ -1520,7 +1520,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'activities', label: 'Activités', group: 'Tables',
-    // Catalogue UNIQUE des Activités (interlude LDB 23 / voyage EDOC ch.5 / mer MDG ch.15 / bataille de
+    // Catalogue UNIQUE des Activités (interlude LDB 23 / voyage EDOC ch.8 / mer MDG ch.15 / bataille de
     // masse ADE II ch.8). Un Test « posté » (compétence(s) au choix + Difficulté) dont l'issue s'exprime
     // en `onSuccess` (GameOp) et/ou en bandes `outcomes` (table DR → résultat, verbatim + effets).
     build: () => ACTIVITIES.map((a) => ({

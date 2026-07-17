@@ -24,7 +24,7 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  * - `magie-du-chaos` (LDB 10 p.140 l.702-710 ; carrière concrète EDOC ch.9 l.137 « Magus du Culte de
  *   Tzeentch — destinée uniquement aux PNJ … utilisée par les PJ avec la permission du MJ ») : AUCUNE
  *   carrière/mutation de nos livres ne l'accorde à un PJ (vérifié `careerLevels.json`/mutations table
- *   Physique+Mentale EDOC ch.8 — aucune entrée « Magie du Chaos », seule « Fuite aethyrique » octroie
+ *   Physique+Mentale EDOC ch.12 — aucune entrée « Magie du Chaos », seule « Fuite aethyrique » octroie
  *   le Talent DISTINCT `sorcier`). `codexOnly:true` — cascade sur les 10 Sorts `family:'chaos'` orphelins
  *   (`allure-demoniaque`, `aspect-sublime`, `decharge-de-corruption`, `dechirer-l-aethyr`,
  *   `esclave-des-tenebres`, `explosion-de-corruption`, `obsession`, `odieux-messager`,

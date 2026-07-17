@@ -1,5 +1,5 @@
 /**
- * Schéma de `rencontres-edoc.json` — Rencontres de voyage EDOC ch.5 (d100, 3 tables), miroir de
+ * Schéma de `rencontres-edoc.json` — Rencontres de voyage EDOC ch.8 (d100, 3 tables), miroir de
  * `TravelTableEntry` (`src/engine/travelTables.ts:15-26`) + l'enveloppe `{ id, label, die, source,
  * tables }` (voir `EncounterCategory` de `travelTables.ts:43`).
  *

@@ -43,7 +43,7 @@ function traders(): Combatant[] {
   skill(berta, 'evaluation', 50);
   skill(berta, 'resistance-a-l-alcool', 45);
   // Chariot de convoi (porteur RÉEL de la cargaison, #327) : la contenance devient un plafond réel — le
-  // vrac vit sur `ItemInstance.cargo`, embarqué sur la barge à la descente (Décision 5, EDOC ch.4).
+  // vrac vit sur `ItemInstance.cargo`, embarqué sur la barge à la descente (Décision 5, EDOC ch.7).
   const convoi = { uid: 'com-convoi', name: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as never;
   berta.items = [...(berta.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!, convoi];
   berta.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'F', build: 0.5 };

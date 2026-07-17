@@ -453,12 +453,12 @@ export type GameOp =
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ».
    *  `argFrom` : la Cible (`arg`) est TIRÉE à l'attache plutôt que littérale — `'obsessions'` =
-   *  Tableau des Obsessions (EDOC ch.8 : mutation « Haine sporadique » → Haine (Cible déterminée
+   *  Tableau des Obsessions (EDOC ch.12 : mutation « Haine sporadique » → Haine (Cible déterminée
    *  par les Obsessions)). Résolu par `applyOps` ET `attachMutation` (même tirage, `rollObsession`). */
   | { op: 'grantTrait'; traitId: string; arg?: string; argFrom?: 'obsessions'; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[]; durationRounds?: Formula }
   /** Trait PSYCHOLOGIQUE conféré (Colère impie → Frénésie). PASSIF (mutation/trait) : posé dans
    *  `c.psychTraits` à l'attache. `psychType` = `PsychType` (frenesie, peur…). `argFrom` : la Cible
-   *  (`cible`) est TIRÉE à l'attache (Tableau des Obsessions, EDOC ch.8) plutôt que littérale. */
+   *  (`cible`) est TIRÉE à l'attache (Tableau des Obsessions, EDOC ch.12) plutôt que littérale. */
   | { op: 'grantPsychTrait'; psychType: string; cible?: string; argFrom?: 'obsessions' }
   /** Retire UN Trait psychologique porté (`c.psychTraits` — la DONNÉE persistée, ≠ `endPsych` qui
    *  retire une affliction de combat `psychState`). `psychType` absent = un Trait AU CHOIX (le 1ᵉʳ

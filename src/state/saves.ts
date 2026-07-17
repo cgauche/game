@@ -162,7 +162,7 @@ export const MIGRATIONS: MigrationMap = {
   // premier porteur du groupe : VÉHICULE de convoi (chargement EDOC) s'il existe, sinon BÊTE de bât
   // (encPortee), sinon la cale du navire de campagne. Aucun porteur matérialisable (groupe sans bête/
   // véhicule/navire) : le nouveau modèle n'héberge pas de vrac de groupe sans porteur → les lots sont
-  // abandonnés (arbitrage : « il faut un chariot pour hâler du vrac », EDOC ch.4 ; cas hors des saves réelles).
+  // abandonnés (arbitrage : « il faut un chariot pour hâler du vrac », EDOC ch.7 ; cas hors des saves réelles).
   4: (doc) => {
     const data = { ...(doc.data as Record<string, unknown>) };
     rehomeCaravan(data);

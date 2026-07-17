@@ -1,5 +1,5 @@
 /**
- * Schéma de `activities.json` — catalogue UNIQUE des Activités (LDB ch.23, EDOC ch.5, MDG ch.15,
+ * Schéma de `activities.json` — catalogue UNIQUE des Activités (LDB ch.23, EDOC ch.8, MDG ch.15,
  * ADE II ch.8 Bataille de masse), miroir strict de `ActivityDef` (`src/engine/activities.ts:189-256`,
  * étend `TestSpec` de `src/engine/skills.ts:173`) + `OutcomeBand`/`BattleOutcome`/`BattleCond`
  * (`.../activities.ts:56-114`). Inventaire réel (40 entrées, script node) : tous les champs déclarés

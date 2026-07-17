@@ -1,5 +1,5 @@
 /**
- * Schéma de `obsessions.json` — Tableau des Obsessions (EDOC ch.8, folio 69). Fichier NON-tableau
+ * Schéma de `obsessions.json` — Tableau des Obsessions (EDOC ch.12, folio 69). Fichier NON-tableau
  * (objet `{ source, ref, table }`), dérivé de `ObsessionTableFile`/`ObsessionEntry`
  * (`src/data/obsessions.ts:14-24`). `source` a la MÊME forme que `sourceRefSchema` mais le type
  * consommateur (`{ book: string; page: number }` inline, pas `import(...).SourceRef`) — repris
