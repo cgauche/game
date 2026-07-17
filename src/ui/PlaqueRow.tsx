@@ -17,6 +17,7 @@ export function PlaqueRow({
   value,
   selected,
   rolling,
+  attention,
   onClick,
   title,
   className,
@@ -42,6 +43,11 @@ export function PlaqueRow({
   selected?: boolean;
   /** État ROULANT — liseré or le temps du tirage (`.ck-cell.rolling` de la planche). */
   rolling?: boolean;
+  /** Signal ponctuel « ramène-moi en vue » posé par l'ÉCRAN appelant (#535 DoD : première rangée
+   *  d'allocation NON SOLDÉE à la fin d'un tirage/à l'arrivée sur un volet) — MÊME mécanisme de
+   *  scroll que `rolling` (front montant unique), aucun style dédié : `rolling` porte déjà le liseré
+   *  visuel de « rangée à regarder », `attention` n'ajoute qu'un DEUXIÈME déclencheur au même geste. */
+  attention?: boolean;
   /** Plaque CLIQUABLE (`.c-plate{cursor:pointer}` de la planche : la plaque d'action de la bande
    *  d'ossature) — rend un VRAI bouton, jamais un `div` piégé au clic. */
   onClick?: () => void;
@@ -53,11 +59,13 @@ export function PlaqueRow({
   // écran à dix rangées (Caractéristiques) fait défiler la cérémonie hors champ sans ce recentrage.
   // `'nearest'` : ne bouge rien si la rangée est déjà visible, jamais un saut agressif en haut de rail.
   const ref = useRef<HTMLButtonElement & HTMLDivElement>(null);
+  const bringIntoView = rolling || attention;
   useEffect(() => {
     // `scrollIntoView` est absent en jsdom (galerie/tests de fumée) : optional chaining sur la
-    // MÉTHODE, pas seulement sur `ref.current` (sinon TypeError "is not a function").
-    if (rolling) ref.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
-  }, [rolling]);
+    // MÉTHODE, pas seulement sur `ref.current` (sinon TypeError "is not a function"). Un seul
+    // déclenchement par FRONT MONTANT (`rolling`/`attention` false→true), jamais à chaque render.
+    if (bringIntoView) ref.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+  }, [bringIntoView]);
   const inner = (
     <>
       {prefix != null && <span className="plaque-prefix">{prefix}</span>}

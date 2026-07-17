@@ -434,8 +434,7 @@ function LoreText({ md }: { md: string | null | undefined }) {
 //      lignée élue. Le brouillon reste keyé sur `speciesId` (id de LIGNÉE, ex. `humains-reiklander`)
 //      — seule la PRÉSENTATION du choix se restructure en race→lignée, jamais la mécanique
 //      (`withSpecies`/`rollDraftSpecies` inchangés). Pas de fiche vivante à cette étape (arbitrage
-//      2026-07-14) : mort du call-site Race de `FacetedPickGrid` — Carrière (#393 P2 volet Carrière)
-//      transpose son propre call-site séparément, `FacetedPickGrid` reste son composant jusque-là.
+//      2026-07-14).
 export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
@@ -663,10 +662,9 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
 //      ~6-7 par rangée, maquette ratifiée `finale-mock1-carriere.png`, corrigé 2026-07-14 : le brief
 //      « nominatif sans figurine » venait du croquis initial, la planche RATIFIÉE montre bien de
 //      petites figurines) ⇄ détail = la carrière élue (`DetailFrame` — `MetalStatus`+`CareerPath`,
-//      1ers consommateurs réels, #412). Mort du call-site Carrière de `FacetedPickGrid` (DERNIER
-//      consommateur, #393 P2) : le fichier meurt avec lui. Mécanique INCHANGÉE (`withCareer`/
-//      `rollDraftCareer`, draft.ts) — présentation seule se restructure, patron encrier de Race
-//      (rangée toolbar, résultat vit dans l'encrier plutôt qu'un mur de boutons).
+//      1ers consommateurs réels, #412). Mécanique INCHANGÉE (`withCareer`/`rollDraftCareer`,
+//      draft.ts) — présentation seule se restructure, patron encrier de Race (rangée toolbar,
+//      résultat vit dans l'encrier plutôt qu'un mur de boutons).
 export function CareerScreen({ d, setD }: StepProps): ReactNode {
   const [search, setSearch] = useState('');
   const sp = draftSpecies(d);
@@ -925,6 +923,28 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
     if (!prefersReducedMotion()) setSeq(0);
   };
 
+  // DoD #535 : « la première rangée d'allocation non soldée » se ramène en vue TOUTE SEULE à la
+  // FIN du tirage (jamais pendant — la cérémonie séquentielle porte déjà son propre recentrage via
+  // `PlaqueRow.rolling`). Détecté au FRONT DESCENDANT de `seq` (numérique → `null`, cérémonie finie),
+  // jamais sur le simple `!d.charsRolled` : sinon reviser cette étape (sans re-tirer) redéclencherait
+  // le scroll à chaque montage.
+  const prevSeqRef = useRef<number | null>(null);
+  const [charsAttention, setCharsAttention] = useState<'alloc' | 'fate' | null>(null);
+  useEffect(() => {
+    const justFinished = prevSeqRef.current != null && seq == null;
+    if (justFinished) {
+      setCharsAttention(
+        allocTotal < CAREER_CHAR_ADVANCES && careerKeys.length > 0 ? 'alloc'
+        : sp && splitTotal < sp.fate.extra ? 'fate'
+        : null,
+      );
+    }
+    prevSeqRef.current = seq;
+    // Ancré volontairement sur `seq` SEUL (front descendant) : lit allocTotal/splitTotal/sp/careerKeys
+    // à CET instant plutôt que de les re-suivre en continu — un scroll UNIQUE en fin de cérémonie,
+    // jamais un cursor qui recentre à chaque frappe de stepper ensuite.
+  }, [seq]);
+
   const stepIdx = stepIds().indexOf('chars');
   if (!sp) {
     return (
@@ -1079,9 +1099,10 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
             right={<b className={allocTotal === CAREER_CHAR_ADVANCES ? 'ok-text' : 'warn-text'}>{allocTotal}/{CAREER_CHAR_ADVANCES}</b>}
           >
             <PlaqueGrid>
-              {careerKeys.map((k) => (
+              {careerKeys.map((k, i) => (
                 <PlaqueRow
                   key={k}
+                  attention={charsAttention === 'alloc' && i === 0}
                   name={<CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef>}
                   meta={
                     <AllocStepper
@@ -1106,6 +1127,7 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
             </p>
             <PlaqueGrid>
               <PlaqueRow
+                attention={charsAttention === 'fate'}
                 name={<><Icon id="resource/fate" size="sm" /> Points de Destin</>}
                 meta={
                   <>
@@ -1441,10 +1463,30 @@ export function SkillsScreen({ d, setD, skillsSub, setSkillsSub }: StepProps): R
     { key: 'talents' as const, label: <>c. Talents{talentsDone(d) ? ' ✓' : ''}</> },
   ];
 
+  // DoD #535 (« même comportement pour les volets d'allocation de l'étape 5 ») : à l'ARRIVÉE sur un
+  // volet d'allocation (montage, ou bascule de sous-onglet — pas de « cérémonie » ici, contrairement
+  // à l'étape 3, donc pas de front descendant de `seq` à guetter), la première rangée NON SOLDÉE se
+  // ramène en vue. `talents` n'a pas de rangée d'ALLOCATION (radiogroups « un au choix », #519) :
+  // hors périmètre du DoD, aucune cible.
+  const [skillsAttentionRaw, setSkillsAttentionRaw] = useState<string | null>(null);
+  useEffect(() => {
+    if (sub === 'race') {
+      setSkillsAttentionRaw(
+        speciesSkillsDone(d) ? null : sp.skills.map((a) => advancementLabel('skills', a)).find((raw) => speciesSkillTier(d, raw) === 0) ?? null,
+      );
+    } else if (sub === 'career') {
+      setSkillsAttentionRaw(careerSkillsDone(d) ? null : careerSkillEntries(d).find((raw) => (d.skillAdvances[raw] ?? 0) === 0) ?? null);
+    } else {
+      setSkillsAttentionRaw(null);
+    }
+  }, [sub]);
+
   // Chaque volet livre SES zones (bande d'action + choix) — le gabarit les pose, le volet ne
   // décide pas où son geste atterrit.
   const pane =
-    sub === 'race' ? speciesSkillsZones(d, setD, sp) : sub === 'career' ? careerSkillsZones(d, setD) : talentsZones(d, setD);
+    sub === 'race' ? speciesSkillsZones(d, setD, sp, skillsAttentionRaw)
+    : sub === 'career' ? careerSkillsZones(d, setD, skillsAttentionRaw)
+    : talentsZones(d, setD);
 
   return (
     <CreatorStepFrame
@@ -1482,7 +1524,7 @@ function liveCharOf(d: CreatorDraft) {
 }
 
 // ── 5a) Compétences de race (LDB 05 l.484) ──
-function speciesSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, sp: SpeciesData): StepZones {
+function speciesSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, sp: SpeciesData, attentionRaw: string | null): StepZones {
   const charOf = liveCharOf(d);
   const done = speciesSkillsDone(d);
   return {
@@ -1544,6 +1586,7 @@ function speciesSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, sp
                 <PlaqueRow
                   key={raw}
                   selected={tier > 0}
+                  attention={raw === attentionRaw}
                   name={<CodexRef category="skills" id={skillIdOf(raw)} label={splitLabel(raw).name}>{raw}</CodexRef>}
                   sub={k ? `${CHAR_LABELS[k]} ${v}${tier ? ` → ${v + tier}` : ''}` : undefined}
                   meta={
@@ -1579,7 +1622,7 @@ function speciesSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, sp
 
 // ── 5b) Compétences de carrière (LDB 05 l.535) — « Même gabarit exactement, seule la source
 //      change » (planche mock5) : le MÊME meuble qu'en 5a, alimenté par les points de métier. ──
-function careerSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZones {
+function careerSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, attentionRaw: string | null): StepZones {
   const charOf = liveCharOf(d);
   const entries = careerSkillEntries(d);
   const total = careerAdvTotal(d);
@@ -1621,6 +1664,7 @@ function careerSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): St
                 <PlaqueRow
                   key={raw}
                   selected={adv > 0}
+                  attention={raw === attentionRaw}
                   name={<CodexRef category="skills" id={skillIdOf(raw)} label={splitLabel(raw).name}>{raw}</CodexRef>}
                   // `.rf` de la planche : « Sociabilité 31 · +5 de race » — le cumul se LIT sur la rangée.
                   sub={
