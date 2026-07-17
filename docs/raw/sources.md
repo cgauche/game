@@ -1,6 +1,6 @@
 # Atlas RAW — Sources & conventions
 
-Le **RAW** du projet = ces **15 livres** (VF, convertis en `.md` sous `Source/`). Référence exacte
+Le **RAW** du projet = ces **livres** (VF, convertis en `.md` sous `Source/`, table complète ci-dessous). Référence exacte
 dans [`../../CLAUDE.md`](../../CLAUDE.md) § *Sources VF*.
 
 ## Convention de référence
@@ -13,7 +13,7 @@ dans [`../../CLAUDE.md`](../../CLAUDE.md) § *Sources VF*.
 C'est la même convention que les commentaires de code `// LDB 13 l.142` (1076 occurrences dans `src/`),
 donc une ref de l'Atlas pointe le **même** endroit que le code.
 
-## Les 15 livres
+## Les livres autorisés
 
 | Abrév. | Livre | Dossier `Source/` | Rôle |
 |---|---|---|---|

@@ -31,7 +31,7 @@ import { isPsychAfflictionActive, ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION,
 import { CodexRef } from './compendium/CodexRef';
 import { EntityRef } from './EntityChip';
 import { GameOpChips } from './GameOpChips';
-import { NotchGauge } from './NotchGauge';
+import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import { PlaqueRow } from './PlaqueRow';
@@ -58,20 +58,11 @@ function Section({ anchor, title, count, tone, extra, children }: { anchor: stri
   );
 }
 
-/** Ton d'un compteur de DESTIN par seuil (pt.4, #492) : `muted` loin du seuil, `warn` à seuil−1,
- *  `danger` au seuil ATTEINT ou FRANCHI — jamais une couleur littérale. */
-function thresholdTone(value: number, limit: number): GravityCounterTone {
-  return value >= limit ? 'danger' : value === limit - 1 ? 'warn' : 'muted';
-}
-type GravityCounterTone = 'muted' | 'warn' | 'danger';
-const COUNTER_TONE_RANK: Record<GravityCounterTone, number> = { muted: 0, warn: 1, danger: 2 };
-/** Pire ton parmi plusieurs seuils indépendants (Mutations : phys ET ment) — un seul compteur combiné. */
-function worstTone(...tones: GravityCounterTone[]): GravityCounterTone {
-  return tones.reduce((a, b) => (COUNTER_TONE_RANK[b] > COUNTER_TONE_RANK[a] ? b : a));
-}
-/** Rendu du compteur de DESTIN — plaque sobre, ton en attribut (jamais une classe par ton). */
-function ThresholdBadge({ tone, children }: { tone: GravityCounterTone; children: ReactNode }) {
-  return <b className="etat-threshold" data-tone={tone}>{children}</b>;
+/** Ton d'un compteur de DESTIN par seuil (pt.4, #492) : `neutral` loin du seuil, `warn` à seuil−1,
+ *  `danger` au seuil ATTEINT ou FRANCHI — vocabulaire `GaugeTone` de `NotchGauge` (pas de couleur
+ *  littérale, pas de 4e famille de ton parallèle). */
+function destinTone(value: number, limit: number): GaugeTone {
+  return value >= limit ? 'danger' : value === limit - 1 ? 'warn' : 'neutral';
 }
 
 /** Localisation d'un critique suffered (les tables RAW ne distinguent pas le côté — repli G, comme
@@ -231,7 +222,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
           title="Blessures critiques"
           count={criticalEntries.length}
           tone="sang"
-          extra={<ThresholdBadge tone={thresholdTone(activeCriticals, be)}>actives {activeCriticals}/{be}</ThresholdBadge>}
+          extra={<NotchGauge value={activeCriticals} max={be} label="actives" tone={destinTone(activeCriticals, be)} />}
         >
           {criticalEntries.map((c) => {
             const row = (
@@ -313,9 +304,10 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
           count={mutations.length}
           tone="violet"
           extra={
-            <ThresholdBadge tone={worstTone(thresholdTone(physMutations, be), thresholdTone(mentMutations, bfm))}>
-              phys {physMutations}/{be} · ment {mentMutations}/{bfm}
-            </ThresholdBadge>
+            <>
+              <NotchGauge value={physMutations} max={be} label="phys" tone={destinTone(physMutations, be)} />
+              <NotchGauge value={mentMutations} max={bfm} label="ment" tone={destinTone(mentMutations, bfm)} />
+            </>
           }
         >
           {mutations.map((m, i) => (

@@ -465,7 +465,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // value` (+4), aucune classe neuve pour la jauge elle-même (SOURCE UNIQUE `gauges.css`).
   // Compteurs de DESTIN (pt.4, #492, arbitrage 2026-07-17) : +1 (98 → 99) — `.etat-threshold`
   // (« actives N/BE », « phys N/BE · ment M/BFM »), ton par palier en attribut `data-tone`.
-  'styles/sheet.css': 99,
+  // Fix de composition (2026-07-17) : -1 (99 → 98) — `.etat-threshold` MEURT, les compteurs
+  // composent désormais `NotchGauge` (primitive crantée, `gauges.css`), aucune classe ici.
+  'styles/sheet.css': 98,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
