@@ -471,7 +471,7 @@ export function recomputeLoadout(c: Combatant): void {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
     if (requiresCrewedPoste(it)) return null; // machine de guerre à Équipe (ADE II ch.08 l.233) : pas de loadout solo, doit être SERVIE en poste
     const hands = weaponHands(it, { mounted: !!c.mountId }); // Cavalerie (2M) à pied → vraies 2 mains (LDB 62 l.142-143)
-    if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.352)
+    if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.263)
     const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).

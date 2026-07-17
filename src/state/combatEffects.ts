@@ -605,7 +605,7 @@ type EffectHandlerMap = {
 };
 
 /**
- * Chute (LDB 15 l.117-122) appliquée à UN combattant : 3 Dégâts/mètre + 1d10, réduits par le Bonus
+ * Chute (LDB 15 l.80-84) appliquée à UN combattant : 3 Dégâts/mètre + 1d10, réduits par le Bonus
  * d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre. MUTE `c`.
  * Brique PURE partagée par l'Effet `fall` (repositionnement de groupe) et l'effondrement d'une
  * passerelle en combat (`collapseStructure`) — zéro duplication de la formule.
@@ -877,7 +877,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Afflictions', label: 'Chute (dégâts/m + 1d10, À Terre, repositionne le groupe)', icon: 'journal/fall',
     make: () => ({ type: 'fall', target: 'party', metres: 4 }),
     apply: (e, env) => {
-      // Chute (LDB 15 l.117-122) : 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais
+      // Chute (LDB 15 l.80-84) : 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais
       // PAS par les PA ; si les Blessures subies > BE → État À Terre. `to` repose le groupe (hors
       // combat). Dégâts TIRÉS par cible et révélés au journal (involontaire : pas de Test d'Athlétisme).
       const targets = env.targets(e.target, e.heroId);

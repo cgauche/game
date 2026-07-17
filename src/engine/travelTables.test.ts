@@ -15,7 +15,7 @@ function expectContiguous(entries: TravelTableEntry[]) {
 }
 
 describe('tables de voyage EDOC (data-driven, JSON)', () => {
-  it('Incidents de monte : table d100 contiguë (EDOC ch.4 l.150-155)', () => {
+  it('Incidents de monte : table d100 contiguë (EDOC 07 l.150-155)', () => {
     expectContiguous(MOUNT_INCIDENTS);
     expect(rollMountIncident(1).id).toBe('sangle-cassee');
     expect(rollMountIncident(40).id).toBe('sangle-cassee');
@@ -25,7 +25,7 @@ describe('tables de voyage EDOC (data-driven, JSON)', () => {
     expect(rollMountIncident(100).id).toBe('patte-brisee');
   });
 
-  it('Problèmes de véhicule : table d100 contiguë + Dégâts au véhicule (EDOC ch.4 l.259-264)', () => {
+  it('Problèmes de véhicule : table d100 contiguë + Dégâts au véhicule (EDOC 07 l.259-264)', () => {
     expectContiguous(VEHICLE_PROBLEMS);
     expect(rollVehicleProblem(50).id).toBe('incontrolable');
     expect(rollVehicleProblem(51).id).toBe('endommage');

@@ -41,7 +41,7 @@ const scene = buildScene({
       ]),
     },
   ],
-  // Secours si rattrapés (Distance ≤ 0, LDB 15 l.518) — mêmes brigands, cachés tant que la fuite tient.
+  // Secours si rattrapés (Distance ≤ 0, LDB 15 l.94) — mêmes brigands, cachés tant que la fuite tient.
   encounters: [
     {
       id: 'enc-rattrapage',

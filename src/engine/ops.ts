@@ -631,7 +631,7 @@ export type GameOp =
   | { op: 'grantFreeAttack'; weapon: 'held' | 'mainHand' | 'natural'; when: 'available' | 'immediate';
       cost?: { advantage?: number; movement?: boolean; advantageOrMovement?: boolean };
       activeIf?: 'frenzied'; perChargerOncePerRound?: boolean; label?: string }
-  /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
+  /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.144) :
    *  la cible perd tous les DR focalisés (couverts par son composant) et subit une Incantation Imparfaite
    *  Mineure. Résolu par la couche state (combatFlow : `applyFocusInterruption` via le hook injecté
    *  `focusInterrupt` appelé par `runCombatFlow`), qui détient get/set et le combattant. `applyOps` (moteur
@@ -948,7 +948,7 @@ export interface OpsCtx {
    *  démancipe le chef de pièce. Passé par `applyHullCritical`. */
   crew?: Combatant[];
   /** SORT SOURCE en cours d'incantation : tout `ActiveEffect` POSÉ par cet `applyOps` en est marqué
-   *  (`ActiveEffect.spell`), pour la DISSIPATION (LDB 46 l.204-207). Posé par `applyCast` (Sorts durables). */
+   *  (`ActiveEffect.spell`), pour la DISSIPATION (LDB 46 l.158-162). Posé par `applyCast` (Sorts durables). */
   sourceSpell?: { spellId: string; ni: number; casterId: string; label: string };
   /** id STABLE du sort/prière en cours d'incantation — posé sur TOUT `ActiveEffect` durable de ce lancement
    *  (`ActiveEffect.sourceSpellId`), Prières COMPRISES (≠ `sourceSpell`, arcane-only dissipation). Sert

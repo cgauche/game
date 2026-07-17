@@ -8,7 +8,7 @@ import { Icon } from '../Icon';
 import { resultLine, freeCons } from '../../state/rollSeam';
 
 /**
- * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'un Test ÉTENDU (LDB 12 l.197-211).
+ * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'un Test ÉTENDU (LDB 12 l.170-186).
  * La situation « Test étendu » est une cascade à une étape `jet:'extended'`, rendue par `CascadeModal`
  * via ce hook (une seule fenêtre, comme l'attaque). `pendingExtendedTest` reste le porteur de données
  * (les Rounds y vivent) ; « Round suivant » (`extendedTestNext`) CUMULE le DR et ouvre le Round

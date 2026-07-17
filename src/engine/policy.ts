@@ -580,7 +580,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'travel-allures',
     label: 'Montures et attelages (allures)',
-    ref: 'EDOC ch.4 l.140-146',
+    ref: 'EDOC 07 l.138-146',
     group: 'Voyage',
     kind: 'flag',
     default: false,

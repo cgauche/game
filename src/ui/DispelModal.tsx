@@ -9,7 +9,7 @@ import { ev } from '../state/combatLog';
 import { resultLine, freeCons } from '../state/rollSeam';
 
 /**
- * Modale de Dissipation permanente (LDB 46 l.204-207 : Test étendu de Langue (Magick) → NI). « Lancer »
+ * Modale de Dissipation permanente (LDB 46 l.158-162 : Test étendu de Langue (Magick) → NI). « Lancer »
  * accumule du DR vers le NI du sort visé ; quand le DR cumulé atteint le NI, le sort est dissipé. Action
  * RÉPÉTÉE chaque Round (le DR persiste sur `caster.dispel`). Calque `FocusModal`.
  */

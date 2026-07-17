@@ -6,7 +6,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
-/** Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.201-202/207 : « plusieurs lanceurs … effectuent
+/** Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.154-162 : « plusieurs lanceurs … effectuent
  *  leur lancer SÉPARÉMENT ») — flux MULTI parallèle : le Sort ENNEMI est figé dans `pendingCast`,
  *  chaque héros contre-lanceur a SON jet + influence (`pendingCounterspell.participants`). */
 describe('Contre-sort à plusieurs (flux multi parallèle)', () => {

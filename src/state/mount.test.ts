@@ -12,7 +12,7 @@ const battle = (cs: Combatant[]): BattleState => ({ combatants: cs }) as unknown
 const flatScene = (w: number, h: number): Scene =>
   ({ id: 's', name: 's', dimensions: { w, h }, ambiance: 'jour', layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
-describe('mount — combat monté (LDB 14 l.212-225)', () => {
+describe('mount — combat monté (LDB 14 l.175-187)', () => {
   it('canMount : cavalier à pied adjacent à une monture libre (et pas sinon)', () => {
     const horse = mk('h', 5, 5, 'grande'); // 2×2 (5..6 × 5..6)
     const knight = mk('k', 7, 6); // colle au bord est

@@ -4,7 +4,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { setRule, resetRule } from '../engine/policy';
 
-/** Test Étendu SÉQUENTIEL (LDB 12 l.197-211 : « atteindre un certain DR … les DR obtenus à chaque
+/** Test Étendu SÉQUENTIEL (LDB 12 l.172-174 : « atteindre un certain DR … les DR obtenus à chaque
  *  Round sont additionnés … Si le DR total passe en dessous de 0, recommencer depuis le début »).
  *  2ᵉ consommateur de la fabrique UNIQUE — SÉQUENTIEL (chaque Round dépend du total) là où le
  *  Contre-sort est PARALLÈLE (jets indépendants). Ex. enfoncer une porte renforcée (DR cible). */
@@ -50,7 +50,7 @@ describe('Test Étendu séquentiel (porte DR cumulé)', () => {
     expect(after.rounds).toHaveLength(2); // un nouveau Round s'ouvre (la tâche continue)
   });
 
-  it('Dissipation (LDB 46 l.205) : DR cumulé atteignant le NI retire les effets du sort de ses porteurs', () => {
+  it('Dissipation (LDB 46 l.158-160) : DR cumulé atteignant le NI retire les effets du sort de ses porteurs', () => {
     const h = hero();
     const cible = { id: 'cible', name: 'Cible', kind: 'hero', conditions: [],
       activeEffects: [{ label: 'Écorce', char: 'agilite', bonus: -10, duration: { scale: 'rounds', left: 5 },

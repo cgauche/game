@@ -204,7 +204,7 @@ export interface PendingActivity extends PendingBase {
   /** TOUS les PJ engagés dans une Scène/Activité MULTI-PJ (meneur `heroId` compris, l.116-118) — tous
    *  marqués « ayant agi » à la résolution. */
   heroIds?: string[];
-  // ── Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences, LDB 12 l.229) ──
+  // ── Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences, LDB 12 l.202-206) ──
   skill2?: string;
   skillValue2?: number;
   target2?: number;

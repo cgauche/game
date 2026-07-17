@@ -8,7 +8,7 @@ import { hasCondition } from '../engine/conditions';
 import type { Effect } from './scene';
 
 /**
- * Effet `fall` — Chute (LDB 15 l.117-122) : 3 Dégâts par mètre + 1d10, réduits par le Bonus
+ * Effet `fall` — Chute (LDB 15 l.78-84) : 3 Dégâts par mètre + 1d10, réduits par le Bonus
  * d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre. `to`
  * (optionnel) repositionne le groupe à l'arrivée (balcon → parterre, plancher de loge effondré).
  */

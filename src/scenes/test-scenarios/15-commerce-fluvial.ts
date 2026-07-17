@@ -12,7 +12,7 @@ import { rigSpeciesId } from '../../data';
 /**
  * « Commerce fluvial sur le Reik » — le commerce de cargaison de Mort sur le Reik Compagnon (ch.11
  * « Règles du commerce ») rendu JOUABLE. Une portion du Reikland avec ses VRAIES localités marchandes
- * (Index géographique, T2C ch.11 l.185-270 — cf. `_reik-index.ts`), chacune un Lieu de la carte du monde
+ * (Index géographique, T2C 13 l.185-270 — cf. `_reik-index.ts`), chacune un Lieu de la carte du monde
  * porteur de son `market` (Taille / Richesse / Produits VERBATIM du livre), reliées par des routes de
  * BARGE (voie navigable). La boucle du marchand (l.11-13) : acheter bas en un lieu, descendre le fleuve,
  * revendre plus cher là où la Richesse est plus haute (Mise à prix par Richesse, l.150-156).
@@ -158,7 +158,7 @@ routes.push(grunburgAltdorf);
 
 const carte: WorldMap = {
   id: 'reik-commerce-carte',
-  nom: 'Le Reik marchand (Index géographique, T2C ch.11)',
+  nom: 'Le Reik marchand (Index géographique, T2C 13)',
   params: { perilDie: 0 },
   places,
   routes,
@@ -171,7 +171,7 @@ export const scenario: TestScenario = {
   icon: 'scenario/market',
   title: 'Commerce fluvial (le Reik)',
   tests:
-    'Commerce de cargaison T2C ch.11 JOUABLE : le Reik peuplé de ses VRAIES localités marchandes (Index ' +
+    'Commerce de cargaison T2C 13 JOUABLE : le Reik peuplé de ses VRAIES localités marchandes (Index ' +
     'géographique l.185-270, indices Taille/Richesse/Produits verbatim), reliées par des routes de BARGE. ' +
     'Boucle du marchand : acheter une cargaison à Grünburg (R 2), descendre le fleuve en barge (le convoi ' +
     'persiste sur le chariot de convoi), revendre à Altdorf (Florissant R 5, Mise à prix +10 %, l.156) — profit. ' +

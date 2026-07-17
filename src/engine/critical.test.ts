@@ -103,7 +103,7 @@ describe('rollCritical — amputation (LDB 18 l.328-333)', () => {
   });
 });
 
-describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 18 l.335-370, DROITIER)', () => {
+describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 18 l.233-285, DROITIER)', () => {
   it('jambe : pied (membre-inferieur-ampute) → Mouvement ÷2 + −20 Esquive ; orteil → −1 Ag/CC', () => {
     const [pied] = permanentAmputations(['membre-inferieur-ampute'], 'jambeG');
     expect(pied.ops?.some((o) => o.op === 'moveScale')).toBe(true);

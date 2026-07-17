@@ -187,7 +187,7 @@ function crewRoleFlowSpec<P extends import('./rollFlowFactory').PendingBase & { 
 }
 
 /** Une Activité/Scène de bataille est-elle GAGNÉE ? Test COMBINÉ (l.75/102) : `full` seulement — un
- *  `partial` (skill-1 réussie mais skill-2 ratée) est un ÉCHEC GLOBAL RAW (LDB 12 l.229). Tenue (l.161,
+ *  `partial` (skill-1 réussie mais skill-2 ratée) est un ÉCHEC GLOBAL RAW (LDB 12 l.206). Tenue (l.161,
  *  Test opposé) et cas simple → le `success` du résolveur (opposition `enemySL ≤ 0` / réussite numérique).
  *  Gouverne le GARDE de la Résilience (rien à forcer si déjà gagné), en écho au `failed` du flux `activity`. */
 function activityWon(p: PendingActivity): boolean {
@@ -552,9 +552,9 @@ export const FLOWS = {
   }),
 
   /**
-   * Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.201-202/207) — flux MULTI : le jet d'incantation
+   * Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.156-162) — flux MULTI : le jet d'incantation
    * ENNEMI est figé (`p.cast`) ; chaque héros choisi oppose son Langue (Magick), avec son PROPRE
-   * cycle Chance/+1 DR/Pacte/Résilience. `resolve` consomme l'essai du Round (l.202). L'agrégat
+   * cycle Chance/+1 DR/Pacte/Résilience. `resolve` consomme l'essai du Round (l.156). L'agrégat
    * (dissipé si UN gagne, sinon meilleur DR net) vit dans `counterspellConfirm` (store).
    */
   counterspell: makeRollFlow<PendingCounterspell, CounterParticipant>({
@@ -651,7 +651,7 @@ export const FLOWS = {
   }),
 
   /**
-   * Test Étendu (LDB 12 l.197-211) — flux multi SÉQUENTIEL : un Round à la fois, chacun son cycle
+   * Test Étendu (LDB 12 l.172-174) — flux multi SÉQUENTIEL : un Round à la fois, chacun son cycle
    * Chance/+1 DR/Pacte/Résilience. Ici `resolve` ne fait QUE le jet du Round ; le CUMUL du DR (et la
    * dépendance au total des Rounds précédents) vit dans `extendedTestNext` (store). Même fabrique
    * que le Contre-sort PARALLÈLE — seule la progression (un slot après l'autre) change.
@@ -1138,7 +1138,7 @@ export const FLOWS = {
     },
   }),
 
-  /** Dissipation permanente (LDB 46 l.204-207) : un Round du Test étendu de Langue (Magick). `value` porte
+  /** Dissipation permanente (LDB 46 l.158-160) : un Round du Test étendu de Langue (Magick). `value` porte
    *  déjà le Soutien « même Domaine ». Le DR cumule sur `caster.dispel` au confirm. Calque `focus`. */
   dispel: makeRollFlow<PendingDispel>({
     key: 'pendingDispel',
@@ -1204,7 +1204,7 @@ export const FLOWS = {
   /** Activité (LDB 23 interlude / EDOC voyage / MDG mer / ADE II ch.8 BATAILLE) : Test de Compétence
    *  dont l'issue est appliquée par `confirmActivity`. Cas SIMPLE (la vaste majorité) = un jet vs une
    *  cible. Cas de BATAILLE : Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences,
-   *  LDB 12 l.229) ou Test OPPOSÉ de « Tenez votre position » (l.161, l'ennemi a un jet FIGÉ). Le cycle
+   *  LDB 12 l.206) ou Test OPPOSÉ de « Tenez votre position » (l.161, l'ennemi a un jet FIGÉ). Le cycle
    *  Chance/Pacte/Résilience vit ICI ; l'application (Puissance/héros) vit dans `confirmActivity`. */
   activity: makeRollFlow<PendingActivity>({
     key: 'pendingActivity',
@@ -1237,7 +1237,7 @@ export const FLOWS = {
         if (p.battle === 'round' && p.enemyValue != null) return { ...primary, enemySL: Math.min(-1, (p.enemySL ?? 0)) };
         return primary;
       }
-      // Test COMBINÉ (Infiltration/Repérage, l.75/102) : UN jet confronté aux DEUX valeurs (LDB 12 l.229 ;
+      // Test COMBINÉ (Infiltration/Repérage, l.75/102) : UN jet confronté aux DEUX valeurs (LDB 12 l.206 ;
       // le mod de SITUATION est déjà fondu dans `p.target`/`p.target2` par l'opener de bataille).
       if (p.target2 != null) {
         const c = evaluateCombinedTest(d100(battleRng()), p.target, p.target2);

@@ -38,7 +38,7 @@ export interface MapPlace {
    *  par `resolvePortRef`, `parseProject`) ; le type reste NON-partiel car tout consommateur aval lit
    *  `place.port` APRÈS résolution (jamais la forme sparse brute). */
   port?: { ref?: string } & import('../engine/seaVoyage').PortProfile & { lighthouse?: boolean };
-  /** Indices de COMMERCE TERRESTRE/FLUVIAL (Index géographique, T2C ch.11 l.183-278) — présent = ce Lieu
+  /** Indices de COMMERCE TERRESTRE/FLUVIAL (Index géographique, T2C 13 l.183-278) — présent = ce Lieu
    *  offre des opportunités de commerce de cargaison (achat/vente/rumeurs). Taille + Richesse + colonne
    *  Produits, éditables par l'auteur (aucun index codé en dur). */
   market?: import('../engine/landCargo').LandMarketProfile;

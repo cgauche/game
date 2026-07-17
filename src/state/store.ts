@@ -1153,11 +1153,13 @@ export interface GameState extends RollFlowActionsMap {
    *  est-elle de PRÉPARER un sort (cast/castArea/focus) ? Lu par le hook de Frénésie pour différer l'entrée
    *  en Frénésie tant qu'un sort prime (RAW : entrée = choix, psychologie.md l.170). */
   aiWouldCast: (id: string) => boolean;
-  /** Combat monté (LDB 14 l.212-225) : enfourcher une monture libre adjacente / en descendre. Aucun jet
-   *  (Chevaucher sans Test, LDB 09 l.99) → pas une Action : consomme le MOUVEMENT (on peut ensuite attaquer). */
+  /** Combat monté (cadre : LDB 14 l.175-187) : enfourcher une monture libre adjacente / en descendre.
+   *  Coût = MOUVEMENT sans jet ni Action — MAISON [entériné 2026-07-17] (« Met les en Maison pour le
+   *  moment », #526 ; aucune clause de coût citable, LDB 14/15/09 + AA ch.9 fouillés en entier) ;
+   *  Chevaucher sans Test : LDB 09 l.112. */
   battleMount: () => void;
   battleDismount: () => void;
-  /** Combat monté (LDB 14 l.219) : clic sur un couple cavalier+monture (deux ennemis) → choisir lequel
+  /** Combat monté (AA 9 l.36) : clic sur un couple cavalier+monture (deux ennemis) → choisir lequel
    *  frapper (le cavalier −10 si l'on est plus petit que la monture ; abattre la monture désarçonne). */
   pendingMountTarget: { riderId: string; mountId: string } | null;
   mountTargetSelect: (id: string) => void;
@@ -1274,13 +1276,13 @@ export interface GameState extends RollFlowActionsMap {
   portHireCrew: (roleId: string, count?: number) => void;
   /** Débarque `count` PNJ salariés du rôle `roleId` (#228). */
   portDismissCrew: (roleId: string, count?: number) => void;
-  /** Board de RUMEURS COMMERCIALES persistant (T2C ch.11 l.180) : chaque rumeur désigne un AUTRE Lieu où
+  /** Board de RUMEURS COMMERCIALES persistant (T2C 13 l.180) : chaque rumeur désigne un AUTRE Lieu où
    *  des biens se vendent au double. Entendues aux marchés (Ragot Complexe −10) OU à l'auberge du hub de
    *  ville (#352, Activité `recueillir-informations`, EDOC l.151), consultées dans l'écran Marché/le
    *  panneau auberge, appliquées à la vente au Lieu désigné. Persiste au niveau GROUPE (sauvegardé, remis
    *  à zéro en nouvelle partie via l'état initial). */
   tradeRumours: import('../engine/landCargo').TradeRumour[];
-  /** Écran MARCHÉ TERRESTRE ouvert (commerce de cargaison à un Lieu `market` de la carte — T2C ch.11) :
+  /** Écran MARCHÉ TERRESTRE ouvert (commerce de cargaison à un Lieu `market` de la carte — T2C 13 l.3) :
    *  offres d'achat générées à l'arrivée. `null` = fermé. */
   landMarket: import('./landMarketFlow').LandMarketState | null;
   /** Ouvre l'écran Marché si le groupe est à un Lieu de commerce terrestre de la carte (`MapPlace.market`). */
@@ -2164,7 +2166,7 @@ export const useGame = create<GameState>((set, get) => ({
       set({ pendingExtendedTest: null, pendingCascade: null }); // ferme la cascade-hôte aussi
       get().log(`${p.label} : ${done ? 'réussi' : 'échoué'} (DR cumulé ${total} / ${p.targetDR}).`);
       if (done && p.dispel) {
-        // DISSIPATION réussie (LDB 46 l.205) : retire tous les effets du Sort de tous ses porteurs.
+        // DISSIPATION réussie (LDB 46 l.160) : retire tous les effets du Sort de tous ses porteurs.
         const b = get().battle;
         const n = b ? dissipateSpell(b.combatants, p.dispel.spellId, p.dispel.casterId) : 0;
         if (b) set({ battle: { ...b, combatants: [...b.combatants] } });

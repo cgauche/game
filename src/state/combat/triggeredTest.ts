@@ -103,7 +103,7 @@ export function setFreeAttackHook(fn: FreeAttackHook): void { freeAttackHook = f
  *  — injecté par le store (`setFocusInterruptHook` dans `createCombatSlice`), pointe sur
  *  `applyFocusInterruption` (combatFlow). Appelé par `runCombatFlow` lorsqu'un `do`/`ops` porte un
  *  `interruptFocus` : la cible perd ses DR focalisés (couverts par son composant) + subit une Imparfaite
- *  Mineure (LDB 46 l.194). Inversion de dépendance (cette brique reste sans import de combatFlow → pas de
+ *  Mineure (LDB 46 l.144). Inversion de dépendance (cette brique reste sans import de combatFlow → pas de
  *  cycle). Absent (hors store) ⇒ no-op (l'op reste inerte, comme dans `applyOps`). */
 type FocusInterruptHook = (get: Get, set: SetFn, focuser: Combatant) => void;
 let focusInterruptHook: FocusInterruptHook | undefined;
@@ -251,7 +251,7 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
             // vise le TIERS de `ctx.freeAttack` (chargeur/victime), pas `unit` (le porteur). `applyOps` les
             // laisse inertes → on les passe quand même (no-op) pour garder le journal des autres ops.
             if (freeAttackHook && ctx.freeAttack) for (const op of node.effect.ops) if (op.op === 'grantFreeAttack') freeAttackHook(ctx.get, ctx.set, unit, op, ctx.freeAttack);
-            // Op IMPURE `interruptFocus` (LDB 46 l.194) : le hook injecté (combatFlow) résout l'interruption
+            // Op IMPURE `interruptFocus` (LDB 46 l.144) : le hook injecté (combatFlow) résout l'interruption
             // sur `unit` (le focaliseur) — perte des DR + Imparfaite Mineure (qui peut appender sa propre étape).
             if (focusInterruptHook) for (const op of node.effect.ops) if (op.op === 'interruptFocus') focusInterruptHook(ctx.get, ctx.set, unit);
             // Op IMPURE `breakBlade` (LDB 62 l.295) : le hook injecté (combatFlow) désarme/brise la lame de

@@ -81,7 +81,7 @@ describe('bestForcedRoll — dé PAR DÉFAUT de la Résilience, DR-MAX selon la 
   });
 });
 
-describe('evaluateCombinedTest — Test Combiné (LDB 12 l.229) : un jet vs DEUX valeurs', () => {
+describe('evaluateCombinedTest — Test Combiné (LDB 12 l.202-206) : un jet vs DEUX valeurs', () => {
   it('les deux réussies → succès complet (full) ; DR par compétence', () => {
     const r = evaluateCombinedTest(35, 60, 40, P());
     expect(r.level).toBe('full');
@@ -168,11 +168,11 @@ describe('Tableau des Résultats — paliers de DR (LDB 12 l.103-114, primitive 
   });
 });
 
-describe('assistBonus — Test Soutenu (LDB 12 l.214-225)', () => {
+describe('assistBonus — Test Soutenu (LDB 12 l.191-198)', () => {
   it('chaque soutien octroie +10 (exemple du LDB : 2 soutiens → +20)', () => {
     expect(assistBonus(2, 5)).toBe(20);
   });
-  it('plafonne les soutiens au Bonus de Caractéristique du meneur (LDB 12 l.225)', () => {
+  it('plafonne les soutiens au Bonus de Caractéristique du meneur (LDB 12 l.198)', () => {
     expect(assistBonus(4, 2)).toBe(20); // 4 soutiens possibles, plafond 2 → +20
   });
   it('aucun soutien / valeurs négatives → 0', () => {

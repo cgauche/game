@@ -56,7 +56,7 @@ export interface LandOffer {
 
 /** État MARCHÉ TERRESTRE ouvert (généré une fois à l'arrivée — les d100 de disponibilité ne se re-tirent pas
  *  par rendu, comme l'écran Port). La rumeur commerciale n'est PAS ici : elle vit sur le board persistant
- *  `store.tradeRumours` (T2C ch.11 l.180 : elle vise un AUTRE Lieu), consultée dans l'écran Marché. */
+ *  `store.tradeRumours` (T2C 13 l.180 : elle vise un AUTRE Lieu), consultée dans l'écran Marché. */
 export interface LandMarketState {
   placeId: string;
   label: string;
@@ -110,7 +110,7 @@ export function openLandMarket(get: Get, set: Set): void {
   const hostLine = market.hostLine ?? marcheDef?.hostLine;
   const backdrop = market.backdrop ?? marcheDef?.backdrop;
   set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers, hostLine, backdrop } });
-  // Rumeurs commerciales (T2C ch.11 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, on
+  // Rumeurs commerciales (T2C 13 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, on
   // tire un AUTRE Emplacement puis une rumeur (Tableau des rumeurs) → les biens visés s'y vendent au DOUBLE
   // du prix de base (l.180). L'« index géographique du Reikland » (l.180) est ici la liste des Lieux de la
   // carte porteurs d'un `market` (aucun catalogue neuf). #274 sweep : ce Test était un `rollTest` inline
@@ -129,7 +129,7 @@ registerCascadeApplier(LAND_GOSSIP_KIND, (get, set, step) => {
   return {};
 });
 
-/** Génère une RUMEUR CROSS-LIEU (T2C ch.11 l.180) : tire un AUTRE Lieu à `market` de la carte, puis une
+/** Génère une RUMEUR CROSS-LIEU (T2C 13 l.180) : tire un AUTRE Lieu à `market` de la carte, puis une
  *  rumeur (Tableau des rumeurs) désignant les biens qui s'y vendent au double. Ajoutée au board persistant
  *  `store.tradeRumours` (dédupliquée : même Lieu + mêmes biens ne s'empile pas). Le RAW ne donne aucune
  *  échéance ni consommation par vente (« autant qu'ils le souhaitent ») → elle demeure sur le board.
@@ -152,7 +152,7 @@ export function generateTradeRumour(get: Get, set: Set, currentPlaceId: string, 
   };
   set({ tradeRumours: [...board, rumour] });
   const biensTxt = rumour.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ');
-  log(get, set, [`Rumeur au marché : ${biensTxt} se vendraient le double à ${target.label} (T2C ch.11 l.180).`]);
+  log(get, set, [`Rumeur au marché : ${biensTxt} se vendraient le double à ${target.label} (T2C 13 l.180).`]);
 }
 
 /** ÉVALUATION de la qualité SECRÈTE d'un lot de Vin/Eau-de-vie proposé (l.95) : Test d'Évaluation, difficulté
@@ -223,7 +223,7 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   if (want <= 0) { log(get, set, ['Rien à acheter.']); return; }
   // Lot minimal (l.131) : « Les marchands ne sont pas du tout intéressés par la vente de cargaisons de moins
   // de 10 Points d'Encombrement et orienteront plutôt les Personnages vers un marché. »
-  if (want < minCargoEnc) { log(get, set, [`Les marchands ne cèdent pas de lot de moins de ${minCargoEnc} Points d'Encombrement (T2C ch.11 l.131).`]); return; }
+  if (want < minCargoEnc) { log(get, set, [`Les marchands ne cèdent pas de lot de moins de ${minCargoEnc} Points d'Encombrement (T2C 13 l.131).`]); return; }
   // Contenance = plafond RÉEL (#327) : il faut un porteur, et le lot doit tenir dans sa place libre.
   const carrier = primaryCargoCarrier(get());
   if (!carrier) { log(get, set, ['Aucune bête de somme ni véhicule pour transporter une cargaison — procurez-vous un chariot ou une monture de bât (EDOC ch.4).']); return; }
@@ -325,7 +325,7 @@ export function landDumpCargo(get: Get, set: Set, carrierId: string, cargoIndex:
   if (!lot) return;
   const pct = landDumpingPct(st.market);
   const label = findLandCargoById(lot.cargoId)?.label ?? lot.cargoId;
-  if (pct == null) { log(get, set, [`${label} : ce lieu ne brade pas les cargaisons (pas de Commerce en Produits, T2C ch.11 l.160).`]); return; }
+  if (pct == null) { log(get, set, [`${label} : ce lieu ne brade pas les cargaisons (pas de Commerce en Produits, T2C 13 l.160).`]); return; }
   const gross = Math.max(0, Math.round(lot.enc * lot.basePriceGold * (pct / 100)));
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),

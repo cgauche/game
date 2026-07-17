@@ -226,10 +226,10 @@ export interface ActivityDef extends TestSpec {
   /** Indisponible si le héros porte un État Exténué cette Étape (Récupérer, EDOC l.176). */
   unavailableIfExtenue?: boolean;
   // ── Activités & Scènes de BATAILLE (ADE II ch.8, contextes 'bataille'/'bataille-round') ──
-  /** Test COMBINÉ (LDB 12 l.229) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+
+  /** Test COMBINÉ (LDB 12 l.202-206) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+
    *  Perception l.75 ; Repérage Chevaucher+Perception l.102). RÉUSSIT si les deux cibles sont atteintes. */
   combined?: boolean;
-  /** Test à SOUTIEN multi-PJ (LDB 12 l.214-225) : le meneur lance, les assistants CAPABLES ajoutent +10
+  /** Test à SOUTIEN multi-PJ (LDB 12 l.187-200) : le meneur lance, les assistants CAPABLES ajoutent +10
    *  (plafonné). SEULE Activité de préparation soutenable = Planification (l.81). Les Scènes de Test/Tenue
    *  d'un Round sont AUSSI multi-PJ (l.116-118). Incompatible avec `combined` (le RAW n'octroie d'aide à
    *  aucun Test combiné). */

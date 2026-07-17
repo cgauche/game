@@ -27,9 +27,9 @@ export interface TravelTableEntry {
 
 interface TravelTable { id: string; label: string; die: string; source: { book: string; page: number }; entries: TravelTableEntry[] }
 
-/** Incidents de monte (EDOC ch.4 l.150-155). */
+/** Incidents de monte (EDOC 07 l.150-155). */
 export const MOUNT_INCIDENTS = (incidentsMonteJson as TravelTable).entries;
-/** Problèmes de véhicule (EDOC ch.4 l.259-264). */
+/** Problèmes de véhicule (EDOC 07 l.259-264). */
 export const VEHICLE_PROBLEMS = (problemesVehiculeJson as TravelTable).entries;
 
 export function rollMountIncident(roll: number): TravelTableEntry {

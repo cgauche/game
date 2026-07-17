@@ -588,9 +588,9 @@ export interface PendingFocus {
   result: FocusResult | null;
   rerolled?: boolean;
 }
-/** Dissipation permanente en attente (LDB 46 l.204-207 : Test étendu de Langue (Magick) → NI). Un Round =
+/** Dissipation permanente en attente (LDB 46 l.158-160 : Test étendu de Langue (Magick) → NI). Un Round =
  *  un jet (Lancer → Chance → Appliquer) ; le DR cumule sur `caster.dispel` jusqu'au NI. Le Soutien « même
- *  Domaine » (l.207) est déjà fondu dans `value`. Calque `PendingFocus`. */
+ *  Domaine » (l.162) est déjà fondu dans `value`. Calque `PendingFocus`. */
 export interface PendingDispel {
   casterId: string;
   /** Sort DURABLE visé (id + son lanceur), pour retirer ses effets à la réussite (`dissipateSpell`). */
@@ -902,7 +902,7 @@ export interface CounterParticipant extends RollParticipant {
   /** Résultat du Test opposé de Langue (Magick) de CE héros, ou null = pas encore lancé. */
   result: CounterspellOutcome | null;
 }
-/** Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.201-202/207 : chaque dissipateur lance SÉPARÉMENT)
+/** Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.156-162 : chaque dissipateur lance SÉPARÉMENT)
  *  — flux multi-participants « réaction type défense ». Le jet d'incantation ENNEMI vit dans
  *  `pendingCast` (figé, suspend l'IA) ; ce pending ne porte QUE les héros contre-lanceurs, chacun
  *  opposant son Langue (Magick) avec son propre cycle Chance/+1 DR/Pacte/Résilience. L'application
@@ -957,7 +957,7 @@ export interface PendingForceDoor extends MultiPending<ForceDoorParticipant> {
   flag?: string;
 }
 
-/** Test Étendu (LDB 12 l.197-211 : « atteindre un certain DR … les DR obtenus à chaque Round sont
+/** Test Étendu (LDB 12 l.172-174 : « atteindre un certain DR … les DR obtenus à chaque Round sont
  *  additionnés jusqu'à atteindre une valeur cible … Si le DR total passe en dessous de 0, recommencer
  *  depuis le début »). Flux multi SÉQUENTIEL : un Round à la fois (chacun son cycle Chance/Pacte/
  *  Résilience), le DR de chaque Round CUMULÉ — la réussite d'un Round DÉPEND du total des précédents.
@@ -977,10 +977,10 @@ export interface PendingExtendedTest extends PendingBase {
   maxAttempts?: number;
   /** Flag de scène posé à la RÉUSSITE (DR cumulé ≥ cible) — gate la suite (porte/serrure d'éditeur). */
   flag?: string;
-  /** SOUTIEN (LDB 12 l.214-225) : le meneur (`actorId`) lance, +10 par soutien plafonné au Bonus de
+  /** SOUTIEN (LDB 12 l.187-196) : le meneur (`actorId`) lance, +10 par soutien plafonné au Bonus de
    *  Caractéristique (`assistedTest`). Déjà FONDU dans `target` ; conservé pour l'affichage (« +20, 2 soutiens »). */
   support?: { count: number; bonus: number };
-  /** Issue DISSIPATION (LDB 46 l.204-207) : à la réussite (DR cumulé ≥ NI), retire les effets du Sort
+  /** Issue DISSIPATION (LDB 46 l.158-160) : à la réussite (DR cumulé ≥ NI), retire les effets du Sort
    *  (`dissipateSpell` sur les combattants) au lieu de poser un flag de scène. */
   dispel?: { spellId: string; casterId: string; label: string };
   /** Issue de DOMAINE en donnée (kind-agnostique — Commerce d'opportunité, artisanat futur…) : résolue

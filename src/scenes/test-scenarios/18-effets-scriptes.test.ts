@@ -64,7 +64,7 @@ describe('Scénario « Effets scriptés » : moteurs orphelins câblés à un d�
     expect(h.wounds.current).toBeLessThan(before); // 3 Dégâts/m (3 m) + 1d10, réduits par le BE
     expect(h.traumas?.length ?? 0).toBeGreaterThan(0); // Blessure Critique (déchirure) posée
     expect(h.criticalWounds).toBe(1);
-    expect(useGame.getState().partyPos).toEqual({ x: 9, y: 6 }); // repositionné hors de la trappe (LDB 15 l.117-122)
+    expect(useGame.getState().partyPos).toEqual({ x: 9, y: 6 }); // repositionné hors de la trappe (LDB 15 l.78-84)
   });
 
   it('anti-grind : les quatre déclencheurs sont chacun UNE interaction unique (aucune mécanique à répéter)', () => {

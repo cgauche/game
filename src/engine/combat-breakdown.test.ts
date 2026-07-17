@@ -297,7 +297,7 @@ describe('attackModifiers — modificateurs étiquetés (source unique)', () => 
   });
 });
 
-describe('Charge montée — dégâts à la Force + Taille de la monture (LDB 14 l.223)', () => {
+describe('Charge montée — dégâts à la Force + Taille de la monture (LDB 14 l.183)', () => {
   it('dmgProxy augmente les dégâts (Force de la monture) et déclenche le balayage (Taille de la monture)', () => {
     const att = mk({ name: 'Cavalier', size: 'moyenne' }); // BF 3, Moyenne
     const def = mk({ name: 'Gobelin', size: 'moyenne' });

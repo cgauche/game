@@ -1,5 +1,5 @@
 /**
- * LOT 6 — point A : PARITÉ Contre-sort sur une ZdE ENNEMIE (LDB 46 l.201-202 / 207).
+ * LOT 6 — point A : PARITÉ Contre-sort sur une ZdE ENNEMIE (LDB 46 l.154-162).
  *
  * Une ZdE d'un lanceur IA (`case 'castArea'`) OUVRE la fenêtre de Contre-sort/Dissipation comme le missile
  * (via `routeEnemyCast`/`pendingCounterspell`). La RÉSOLUTION passe par le chemin PARTAGÉ, commun à

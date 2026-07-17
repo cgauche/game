@@ -5,7 +5,7 @@ import type { RNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 
 /**
- * CHUTE MÉTRIQUE (LDB 15 l.117-122) — `applyFall(c, metres, rng)` : dégâts = 3 × mètres + 1d10,
+ * CHUTE MÉTRIQUE (LDB 15 l.78-84) — `applyFall(c, metres, rng)` : dégâts = 3 × mètres + 1d10,
  * réduits par le Bonus d'Endurance mais PAS par les PA ; État À Terre si les Blessures subies
  * DÉPASSENT le BE. Modèle unifié : la chute se mesure en MÈTRES (Δhauteur du relief), plus en
  * « niveaux » forfaitaires. NE PAS changer la formule (RAW).

@@ -22,7 +22,7 @@ export function planJump(scene: Scene, takeoff: Pt, landing: Pt, movement: numbe
   let belowZ = 0; // niveau d'atterrissage en cas d'échec : 1er niveau marchable SOUS le décollage, sinon le sol
   for (let z = tz - 1; z >= 0; z--) if (isWalkable(scene, gap.x, gap.y, z)) { belowZ = z; break; }
   // Chute = vraie hauteur métrique (relief) entre la surface de décollage et celle d'atterrissage en
-  // contrebas (LDB 15 l.117-122 : 3 Dégâts/m) — plus de forfait par niveau, la hauteur du décor fait foi.
+  // contrebas (LDB 15 l.78-84 : 3 Dégâts/m) — plus de forfait par niveau, la hauteur du décor fait foi.
   const metres = Math.abs(heightAt(scene, takeoff.x, takeoff.y, tz) - heightAt(scene, gap.x, gap.y, belowZ));
   const difficulty = runUpCases >= Math.ceil(movement / 2) ? 'accessible' : 'intermediaire';
   const fall: Effect = { type: 'fall', target: 'party', metres, to: { x: gap.x, y: gap.y, z: belowZ } };

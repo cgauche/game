@@ -9,7 +9,7 @@
  * la boucle y reste jusqu'à l'issue. Chaque manche est présentée par la CASCADE influençable (state/cascade,
  * `purpose:'pursuite'`) — chaque héros lance son Test de Mouvement (Athlétisme/Chevaucher/Conduite
  * d'attelages, `skill` en DONNÉE, aucun nom en dur), influençable (Chance/Résilience/Pacte) ; les
- * adversaires (PNJ) roulent en clôture de manche. On compare (LDB 15 l.512-515) le DR le plus BAS des
+ * adversaires (PNJ) roulent en clôture de manche. On compare (LDB 15 l.93) le DR le plus BAS des
  * poursuivis au DR le plus HAUT des poursuivants, la Distance varie de la différence, puis l'issue est
  * jugée par `pursuitOutcome` : rattrapés (Distance ≤ 0 → combat) / semés (≥ escapeAt) / la manche suivante.
  */
@@ -36,7 +36,7 @@ export interface PursuitFoe {
 export interface PursuitSpec {
   /** Le GROUPE fuit (défaut) ou poursuit. */
   partyRole?: 'fleeing' | 'pursuing';
-  /** Distance de départ (LDB 15 l.500-504 : 1 = presque à portée … 8 = presque hors de portée). */
+  /** Distance de départ (LDB 15 l.90 : 1 = presque à portée … 8 = presque hors de portée). */
   distance: number;
   /** Seuil d'évasion (défaut `PURSUIT_ESCAPE_DISTANCE` = 10, l.520). */
   escapeAt?: number;
@@ -115,7 +115,7 @@ export function openPursuitRound(get: Get, set: Set, skillLabel?: string): void 
 }
 
 /** Clôture d'une manche (cascade `purpose:'pursuite'` finalisée) : roule les adversaires, actualise la
- *  Distance (LDB 15 l.512-515) et juge l'issue. Reprend une manche tant que la poursuite continue. */
+ *  Distance (LDB 15 l.93) et juge l'issue. Reprend une manche tant que la poursuite continue. */
 export function continuePursuitRound(get: Get, set: Set, done: PendingCascade): void {
   const p = get().pursuit;
   if (!p) return;
@@ -137,7 +137,7 @@ export function continuePursuitRound(get: Get, set: Set, done: PendingCascade): 
   });
   const fleeingTotals = p.partyRole === 'fleeing' ? partyTotals : foeTotals;
   const pursuerTotals = p.partyRole === 'fleeing' ? foeTotals : partyTotals;
-  // Distance += (DR le plus BAS des poursuivis − DR le plus HAUT des poursuivants) (l.512-515).
+  // Distance += (DR le plus BAS des poursuivis − DR le plus HAUT des poursuivants) (l.93).
   const delta = Math.min(...fleeingTotals) - Math.max(...pursuerTotals);
   const distance = p.distance + delta;
   const outcome = pursuitOutcome(distance, p.escapeAt);
@@ -147,11 +147,11 @@ export function continuePursuitRound(get: Get, set: Set, done: PendingCascade): 
   // Issue TERMINALE : nettoyer l'état PUIS dénouer.
   set({ pursuit: null });
   if (outcome === 'escaped') {
-    get().log(p.partyRole === 'fleeing' ? 'Le groupe a semé ses poursuivants — fuite réussie (LDB 15 l.520).' : 'La proie s\'est échappée — la poursuite est perdue (LDB 15 l.520).');
+    get().log(p.partyRole === 'fleeing' ? 'Le groupe a semé ses poursuivants — fuite réussie (LDB 15 l.94).' : 'La proie s\'est échappée — la poursuite est perdue (LDB 15 l.94).');
     return;
   }
-  // 'caught' (Distance ≤ 0, l.518) : rattrapage → combat si une rencontre est fournie, sinon récit.
-  get().log(p.partyRole === 'fleeing' ? 'Rattrapés ! Les poursuivants fondent sur le groupe (LDB 15 l.518).' : 'Le groupe rejoint sa proie (LDB 15 l.518).');
+  // 'caught' (Distance ≤ 0, l.94) : rattrapage → combat si une rencontre est fournie, sinon récit.
+  get().log(p.partyRole === 'fleeing' ? 'Rattrapés ! Les poursuivants fondent sur le groupe (LDB 15 l.94).' : 'Le groupe rejoint sa proie (LDB 15 l.94).');
   if (p.encounter) get().startCombat(p.encounter);
 }
 
@@ -161,7 +161,7 @@ export function pursuitAbandon(get: Get, set: Set): void {
   if (!p) return;
   set({ pursuit: null, pendingCascade: null });
   if (p.partyRole === 'fleeing') {
-    // Renoncer à fuir = se laisser rattraper (l.518) : combat si une rencontre est fournie.
+    // Renoncer à fuir = se laisser rattraper (l.94) : combat si une rencontre est fournie.
     get().log('Le groupe cesse de fuir et fait face.');
     if (p.encounter) get().startCombat(p.encounter);
   } else {

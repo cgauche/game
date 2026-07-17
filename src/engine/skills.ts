@@ -240,7 +240,7 @@ export function bestForSkills(
   return r ? { actor: r.item.best.actor, value: r.item.best.value, skillId: r.item.sk.skillId, spec: r.item.sk.spec } : null;
 }
 
-/** Meilleur PJ pour un Test COMBINÉ de deux compétences (LDB 12 l.229) : celui dont le PLUS FAIBLE des
+/** Meilleur PJ pour un Test COMBINÉ de deux compétences (LDB 12 l.202-206) : celui dont le PLUS FAIBLE des
  *  deux (le facteur limitant du Test combiné) est le plus élevé. Renvoie l'acteur + ses deux valeurs. */
 export function bestForCombined(
   party: Combatant[],

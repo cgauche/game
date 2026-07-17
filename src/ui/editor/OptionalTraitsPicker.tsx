@@ -1,8 +1,8 @@
 /**
  * Personnalisation d'un ennemi de rencontre référencé au BESTIAIRE (volet spawn de l'Inspector) :
  *  - aperçu du PROFIL (caractéristiques + traits fixes) — l'auteur voit ce qu'il pose ;
- *  - Traits FACULTATIFS (LDB 76 l.49 : « Traits de créature courants que vous pouvez ajouter si
- *    vous créez votre propre version ») + Traits STANDARD (LDB 76 l.28-31 : « ajoutés à la liste
+ *  - Traits FACULTATIFS (LDB 76 l.45 : « Traits de créature courants que vous pouvez ajouter si
+ *    vous créez votre propre version ») + Traits STANDARD (LDB 76 l.31-33 : « ajoutés à la liste
  *    Facultative de toutes les créatures ») — chaque trait choisi reste une chaîne ÉDITABLE
  *    (l'auteur complète l'Indice/la Cible : « Armure 2 », « Haine (Sigmarites) ») ;
  *  - sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur, datalist sur spells.json).

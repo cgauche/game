@@ -119,7 +119,7 @@ export function bestForcedRoll(target: number, policy: TestPolicy = getTestPolic
   return policy.slMode === 'fast' ? maxForcedRoll(target, policy) : 1;
 }
 
-/** Issue d'un Test Combiné (LDB 12 l.229, règle optionnelle) : UN seul d100 confronté à DEUX valeurs. */
+/** Issue d'un Test Combiné (LDB 12 l.202-206, règle optionnelle) : UN seul d100 confronté à DEUX valeurs. */
 export interface CombinedTestResult {
   roll: number;
   /** Résultat vs la 1ʳᵉ valeur (même jet). */
@@ -130,7 +130,7 @@ export interface CombinedTestResult {
   level: 'full' | 'partial' | 'fail';
 }
 
-/** Test Combiné (LDB 12 l.229) : un MÊME jet d100 est évalué contre deux valeurs cibles (deux
+/** Test Combiné (LDB 12 l.202-206) : un MÊME jet d100 est évalué contre deux valeurs cibles (deux
  *  Compétences). Réutilise `evaluateTest` (bandes/DR identiques) pour chaque cible. PUR : la primitive
  *  est neutre ; l'activation (règle `test-combined`) et le branchement des issues vivent côté flux. */
 export function evaluateCombinedTest(roll: number, target1: number, target2: number, policy: TestPolicy = getTestPolicy()): CombinedTestResult {
@@ -215,7 +215,7 @@ export function hydrateTR(d: { roll: number; target: number; success: boolean; s
  *  meneur ne peut être soutenu par plus de Personnages que son propre Bonus de Caractéristique de la carac
  *  testée (`cap`, l.198). Primitive PURE et GÉNÉRALE de la coopération : le « plus compétent lance » est
  *  porté par `partyBest`/`partyAssisted` (engine/skills) qui appelle ceci. Réutilisée PARTOUT où le groupe
- *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
+ *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.162…). */
 export function assistBonus(supporters: number, cap: number): number {
   return Math.min(Math.max(0, supporters), Math.max(0, cap)) * 10;
 }
@@ -224,7 +224,7 @@ function clamp(v: number, policy: TestPolicy): number {
   return Math.max(policy.targetMin, Math.min(policy.targetMax, v));
 }
 
-/** Un Round/passe d'un Test ÉTENDU (LDB 12 l.197-211) : le DR du Round s'AJOUTE au cumul `prev` (planché à
+/** Un Round/passe d'un Test ÉTENDU (LDB 12 l.170-179) : le DR du Round s'AJOUTE au cumul `prev` (planché à
  *  0 — « si le DR total passe sous 0, recommencez depuis le début ») ; `done` quand il atteint `targetDR`.
  *  `minStep` (règle optionnelle l.208) : une réussite compte ≥ +1, un échec ≤ −1 (DR 0 non neutre). SOURCE
  *  UNIQUE du cumul, partagée par crochetage/porte (`extendedTest`), Artisanat (LDB 23), chirurgie (LDB 10)
