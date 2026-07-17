@@ -563,6 +563,7 @@ export const fr = {
   'cs.joinPoste': '{name} rejoint l’équipe de {weapon}.',
   'cs.leavePoste': '{name} quitte {weapon}.',
   'cs.pushEngine': '{name} pousse {weapon} ({n} case{s}).',
+  'cs.waterSpray': '{name} asperge {target} d’eau — la suffocation est repoussée pour ce Round.',
   'cs.actFirst': "{name} choisit d'agir en premier ({reason}).",
   'cs.reasonFast': 'arme Rapide',
   'cs.reasonLuck': 'Chance',

@@ -54,6 +54,7 @@ export type IconIdGenerated =
   | 'action/shoot'
   | 'action/stand-up'
   | 'action/steer-ship'
+  | 'action/water'
   | 'audio/music'
   | 'audio/mute'
   | 'audio/volume'

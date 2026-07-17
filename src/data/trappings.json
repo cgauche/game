@@ -2885,6 +2885,9 @@
   {
     "id": "outre-a-eau",
     "label": "Outre à eau",
+    "capabilities": {
+      "waterContainer": true
+    },
     "type": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 1,
@@ -4763,6 +4766,9 @@
   {
     "id": "seau",
     "label": "Seau",
+    "capabilities": {
+      "waterContainer": true
+    },
     "type": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,

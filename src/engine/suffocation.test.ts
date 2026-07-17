@@ -6,8 +6,8 @@
  * Bénédiction de Souffle (LDB 41) : « n'a pas besoin de respirer et ignore les règles de suffocation ».
  */
 import { describe, expect, it } from 'vitest';
-import type { Combatant } from './types';
-import { suffocationTick, prepareBreathHold, breathHoldSeconds } from './suffocation';
+import type { Combatant, ItemInstance } from './types';
+import { suffocationTick, prepareBreathHold, breathHoldSeconds, hasWaterContainer, isWaterSprayTarget, waterSprayCandidates } from './suffocation';
 import { inDeathCondition, hasCondition } from './conditions';
 import { applyOps } from './ops';
 import { findSpell } from '../data';
@@ -141,6 +141,30 @@ describe('Créature marine hors de l’eau — pont offTerrain→suffocation (MD
     const c = marine({ traits: [{ id: 'coriace' }] } as unknown as Partial<Combatant>);
     suffocationTick(c);
     expect(c.wounds.current).toBe(2);
+  });
+
+  describe('« Asperger d’eau » (#497) — hasWaterContainer / isWaterSprayTarget / waterSprayCandidates', () => {
+    it('hasWaterContainer : vrai avec une Outre à eau/un Seau dans le sac, faux sans', () => {
+      const item = (trappingId: string): ItemInstance => ({ uid: 'i1', trappingId } as unknown as ItemInstance);
+      expect(hasWaterContainer(mk({ items: [item('outre-a-eau')] }))).toBe(true);
+      expect(hasWaterContainer(mk({ items: [] }))).toBe(false);
+      expect(hasWaterContainer(mk({ items: [item('seau')] }))).toBe(true);
+    });
+
+    it('isWaterSprayTarget : MÊME prédicat que la suffocation (offTerrainSuffocates)', () => {
+      expect(isWaterSprayTarget(marine())).toBe(true);
+      expect(isWaterSprayTarget(marine({ offTerrain: false }))).toBe(false);
+      expect(isWaterSprayTarget(marine({ traits: [{ id: 'coriace' }] } as unknown as Partial<Combatant>))).toBe(false);
+    });
+
+    it('waterSprayCandidates : cible adjacente marine hors de l’eau, jamais soi-même ni hors de portée', () => {
+      const aspergeur = mk({ id: 'a', pos: { x: 5, y: 5 } } as unknown as Partial<Combatant>);
+      const adjacente = marine({ id: 'm1', pos: { x: 6, y: 5 } } as unknown as Partial<Combatant>);
+      const loin = marine({ id: 'm2', pos: { x: 9, y: 9 } } as unknown as Partial<Combatant>);
+      const dansLeau = marine({ id: 'm3', pos: { x: 5, y: 6 }, offTerrain: false } as unknown as Partial<Combatant>);
+      const candidats = waterSprayCandidates(aspergeur, [aspergeur, adjacente, loin, dansLeau]);
+      expect(candidats.map((c) => c.id)).toEqual(['m1']);
+    });
   });
 });
 

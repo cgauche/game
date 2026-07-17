@@ -172,6 +172,13 @@ export const icons: IconFamily = [
       `<circle ${F} cx="13.5" cy="15.1" r="0.6"/>`,
   },
   {
+    id: 'action/water',
+    label: 'Asperger d’eau',
+    svg:
+      `<path ${F} d="M12 3.2 C15.3 8 17.8 12 17.8 15 C17.8 18.7 15.2 21 12 21 C8.8 21 6.2 18.7 6.2 15 C6.2 12 8.7 8 12 3.2 Z"/>` +
+      `<path ${KF} d="M9.4 14.6 C9.2 16.6 10.2 17.9 11.9 18.2"/>`,
+  },
+  {
     id: 'action/pick-up',
     label: 'Ramasser',
     svg:

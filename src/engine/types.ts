@@ -1330,7 +1330,8 @@ export interface Combatant {
   breathHoldSeconds?: number;
   /** Contre-mesure MAISON à la suffocation « hors terrain » (Créature marine, MDG 16 l.19 : « elles
    *  doivent être régulièrement aspergées d'eau, sinon elles se mettent à suffoquer » — le RAW nomme le
-   *  geste sans en chiffrer la mécanique). Posé = immunise le Round courant, puis consommé par
+   *  geste sans en chiffrer la mécanique). Posé par l'Action de combat « Asperger d'eau » (#497,
+   *  `battleWater`) sur une cible adjacente, immunise le Round courant, puis consommé par
    *  `suffocationTick` (`engine/suffocation.ts`) : à reposer chaque Round pour rester immunisé. */
   wateredThisRound?: boolean;
   /** Attribut de Shyish (LDB 48 l.501) : « Une cible ne peut avoir qu'un seul État Exténué gagné

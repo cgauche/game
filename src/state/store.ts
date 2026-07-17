@@ -781,6 +781,9 @@ export interface GameState extends RollFlowActionsMap {
   battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
+  /** « Asperger d'eau » (MDG 16 l.19, #497) — Action DIRECTE (aucune modale) : cible explicite ou
+   *  1ᵉʳ candidat éligible adjacent (patron `battleManPoste`). */
+  battleWater: (targetId?: string) => void;
   /** Pré-jet : bascule le mode de soin (Blessures ⇄ Hémorragie) dans la modale ouverte. */
   healSetMode: (mode: HealMode) => void;
   /** INFIRMERIE (hors combat, state/medicFlow) : modale de soins persistante — patients, actes

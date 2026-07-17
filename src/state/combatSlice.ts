@@ -57,6 +57,7 @@ import { battleConsumeItem } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, resolveExtractLodgedAmmo, healDifficulty, applyHealWounds, type HealMode } from '../engine/healing';
+import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
 import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
@@ -2711,6 +2712,25 @@ export function createCombatSlice(get: Get, set: Set) {
       const ph = get().pendingHeal;
       if (ph?.paidCost && ph.roll == null) set((s) => ({ money: moneyAdd(s.money, toMoney(ph.paidCost!)) }));
       set({ pendingHeal: null });
+    },
+
+    // ── Contre-mesure « Asperger d'eau » (MDG 16 l.19, #497) — Créature marine hors de l'eau ──
+
+    /** « Asperger d'eau » : Action DIRECTE (aucun jet, aucune modale) — pose `wateredThisRound` sur
+     *  une Créature marine adjacente hors de l'eau, consomme l'Action. `targetId` explicite (choix
+     *  parmi plusieurs candidats) sinon le 1ᵉʳ candidat éligible (MÊME patron que `battleManPoste`).
+     *  Gate : l'aspergeur PORTE un contenant d'eau (`hasWaterContainer`, trapping `waterContainer`). */
+    battleWater: (targetId?: string) => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      if (!battle || battle.over) return;
+      const active = activeCombatant(battle);
+      if (!active || !controlsCombatant(get(), active) || battle.acted || !canTakeAction(active) || !hasWaterContainer(active)) return;
+      const candidates = waterSprayCandidates(active, battle.combatants.filter((c) => c.kind === active.kind));
+      const target = targetId ? candidates.find((c) => c.id === targetId) : candidates[0];
+      if (!target) return;
+      target.wateredThisRound = true;
+      finishPlayerAction(get, set, [t('cs.waterSpray', { name: active.name, target: target.name })], 'detail');
     },
 
     /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. Un sort de ZONE

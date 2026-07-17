@@ -25,9 +25,12 @@
  * Contre-mesure « aspergée d'eau » (Créature marine, MDG 16 l.19 : « elles doivent être
  * régulièrement aspergées d'eau, sinon elles se mettent à suffoquer ») — le RAW nomme le geste mais
  * ne chiffre AUCUNE mécanique (pas de Test, pas de coût, pas de cadence en Rounds) : `c.wateredThisRound`
- * est un drapeau MAISON (interface Action/consommable à brancher — hors périmètre #477) qui immunise
- * le Round où il est posé, puis se consomme (« régulièrement » = à reposer chaque Round pour rester
- * immunisé).
+ * est un drapeau MAISON qui immunise le Round où il est posé, puis se consomme (« régulièrement » =
+ * à reposer chaque Round pour rester immunisé). Posé par l'Action de combat « Asperger d'eau »
+ * (#497, `battleWater`/`WATER_MODE`, `state/targetingModes.ts`) : une main PORTE un contenant d'eau
+ * (capacité `waterContainer`, `hasWaterContainer` ci-dessous) et cible une Créature marine adjacente
+ * hors de l'eau (`offTerrainSuffocates`) — aucun jet, aucun décompte de doses (l'eau se repuise, le
+ * RAW n'en chiffre aucune).
  */
 import type { Combatant } from './types';
 import { hasActiveFlag } from './activeFlags';
@@ -35,6 +38,32 @@ import { addCondition, hasCondition, loseWounds } from './conditions';
 import { bonus, effectiveChar } from './characteristics';
 import { rule } from './policy';
 import { offTerrainSuffocates } from './ops';
+import { itemCapability } from './capabilities';
+
+/** Une main porte-t-elle un contenant d'eau (Outre à eau/Seau, LDB p.301/303) ? Capacité par-OBJET
+ *  `waterContainer`, NON gatée sur le port — on le sort du sac pour asperger, comme `isRation`
+ *  (`engine/provisions.ts`). Gate de l'Action « Asperger d'eau » (#497). */
+export function hasWaterContainer(c: Combatant): boolean {
+  return (c.items ?? []).some((it) => itemCapability(it, 'waterContainer'));
+}
+
+/** Cible ÉLIGIBLE à « Asperger d'eau » (#497) : Créature marine hors de l'eau et en train de
+ *  suffoquer pour cette raison — MÊME prédicat que `suffocationTick` (`offTerrainSuffocates`),
+ *  jamais une re-dérivation. */
+export function isWaterSprayTarget(target: Combatant): boolean {
+  return offTerrainSuffocates(target);
+}
+
+/** Candidats ADJACENTS éligibles à « Asperger d'eau » (#497) dans le camp de l'aspergeur — MÊME
+ *  filtre d'adjacence (Chebyshev simple) que `healableTargets` (`engine/healing.ts`), cible = une
+ *  Créature marine hors de l'eau (`isWaterSprayTarget`). */
+export function waterSprayCandidates(active: Combatant, pool: Combatant[]): Combatant[] {
+  return pool.filter((t) => {
+    if (t.id === active.id || !isWaterSprayTarget(t)) return false;
+    if (!active.pos || !t.pos) return false;
+    return Math.max(Math.abs(active.pos.x - t.pos.x), Math.abs(active.pos.y - t.pos.y)) <= 1;
+  });
+}
 
 /** Durée d'un Round de combat en secondes — LDB 13 l.13 : « c'est le MJ qui décide » ; hypothèse de
  *  calibrage maison (règle `combat-round-seconds`), PAS une certitude canon. Utilisée pour décompter

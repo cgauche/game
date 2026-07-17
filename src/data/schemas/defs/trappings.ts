@@ -55,6 +55,7 @@ const itemCapabilitiesSchema = z.strictObject({
   shipParts: z.boolean().optional(),
   disarmImmune: z.boolean().optional(),
   ropeMode: z.boolean().optional(),
+  waterContainer: z.boolean().optional(),
 });
 
 /** `Weapon` (`src/engine/types.ts:268`) — reflet des seuls champs pertinents en DONNÉE `derivedWeapon`

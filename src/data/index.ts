@@ -443,6 +443,10 @@ export interface ItemCapabilities {
    *  `WeaponContext.harpoonRopeCut` (`effectiveWeapon`, `state/combatFlow.ts` `weaponContextOf`), choisi
    *  par le joueur avant le jet (`PendingAttack.harpoonRopeCut`). Lue par-objet (`itemCapability`). */
   ropeMode?: boolean;
+  /** Contenant d'eau (Outre à eau/Seau, LDB p.301/303) : consommé par l'action de combat « Asperger
+   *  d'eau » (MDG 16 l.19, #497) qui pose `Combatant.wateredThisRound` sur une Créature marine
+   *  adjacente hors de l'eau — NON gaté sur le port (on le sort du sac, comme `isRations`). */
+  waterContainer?: boolean;
 }
 export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */

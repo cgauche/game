@@ -15,6 +15,7 @@ import { compatibleAmmo, loadoutLabel } from '../engine/items';
 import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets } from '../engine/healing';
+import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
 import { combatAdvantageSkills } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { mountableNear } from '../state/mount';
@@ -80,6 +81,7 @@ export function ActionBar() {
   const battleSingShanty = useGame((s) => s.battleSingShanty);
   const gameTime = useGame((s) => s.gameTime);
   const manPoste = useGame((s) => s.battleManPoste);
+  const battleWater = useGame((s) => s.battleWater);
   const leavePoste = useGame((s) => s.battleLeavePoste);
   const pushEngine = useGame((s) => s.battlePushEngine);
   const aidTeam = useGame((s) => s.battleAidTeam);
@@ -344,6 +346,10 @@ export function ActionBar() {
   // Guérison (LDB 09-Compétences) : soi + alliés (héros) adjacents soignables, si le héros a la Compétence.
   const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned && !frenzied;
   const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === active.kind), { adjacency: true }) : [];
+  // « Asperger d'eau » (MDG 16 l.19, #497) : porte un contenant d'eau, ≥ 1 allié Créature marine
+  // adjacent hors de l'eau. Action DIRECTE (aucune modale) — le clic asperge le 1ᵉʳ candidat.
+  const canWater = isHero && !battle.acted && !stunned && !frenzied && hasWaterContainer(active);
+  const waterTargets = canWater ? waterSprayCandidates(active, battle.combatants.filter((c) => c.kind === active.kind)) : [];
   // Dissipation (LDB 46 l.204-207) : le héros actif possède Langue (Magick) ET ≥ 1 sort permanent est actif.
   const canDispel = isHero && actorHasSkill(active, 'langue', 'magick');
   const dispellable = canDispel ? dispellableSpellsOn(battle.combatants) : [];
@@ -385,6 +391,7 @@ export function ActionBar() {
     if (moveStarted && !battle.acted) slots.push({ id: 'undo-move', cls: 'ab-undo', icon: <Icon id="ui/undo" />, label: 'Annuler dépl.', title: "Annuler tout le déplacement de ce tour et revenir au point de départ (possible tant qu'aucune Action n'est prise)", run: cancelMove });
     if (hasSpells && !frenzied) slots.push({ id: 'cast', cls: battle.action === 'cast' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/cast" />, label: 'Incanter', done: battle.acted, title: "Incanter un sort (Test de Langage mystique) — coûte l'Action", run: () => selectAction(battle.action === 'cast' ? null : 'cast') });
     if (canHeal && healTargets.length > 0) slots.push({ id: 'heal', cls: battle.action === 'heal' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="journal/heal" />, label: 'Soigner', title: "Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action", run: () => selectAction(battle.action === 'heal' ? null : 'heal') });
+    if (canWater && waterTargets.length > 0) slots.push({ id: 'water', disabled: battle.acted || stunned || broken, icon: <Icon id="action/water" />, label: 'Asperger d’eau', title: "Asperger d'eau une Créature marine adjacente hors de l'eau : repousse la suffocation pour ce Round — coûte l'Action", run: () => battleWater() });
     if (canDispel && dispellable.length > 0 && !frenzied) slots.push({ id: 'dispel', cls: battle.action === 'dispel' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/dispel" />, label: 'Dissiper', done: battle.acted, title: "Dissiper un sort permanent (Test étendu de Langue (Magick) → NI) — coûte l'Action chaque Round", run: () => selectAction(battle.action === 'dispel' ? null : 'dispel') });
     if (advSkills.length > 0) slots.push({ id: 'advantage', cls: battle.action === 'advantage' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/aim" />, label: 'Prendre l’Avantage', done: battle.acted, title: 'Évaluer l’environnement / prier pour gagner +1 Avantage (Test d’une Compétence — coûte l’Action, plafonné au Bonus de Caractéristique)', run: () => selectAction(battle.action === 'advantage' ? null : 'advantage') });
     if (!frenzied) slots.push({ id: 'defend', disabled: battle.acted || stunned || broken, icon: <Icon id="action/defend" />, label: 'Défensive', done: battle.acted, title: '+20 à tous vos Tests de défense jusqu’à votre prochain tour', run: defendTotal });
