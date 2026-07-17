@@ -4,7 +4,7 @@ import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
 import { Tabs } from './Tabs';
-import { isWeaponActive, armourLayer, isCapeItem, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow } from '../engine/items';
+import { isWeaponActive, armourLayer, isCapeItem, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow, maxEncumbrance, totalEncumbrance } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
 import { HitLocation, ItemInstance, Combatant, CharKey, CHAR_KEYS } from '../engine/types';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -25,6 +25,8 @@ import { learnableSpells, canCastFromGrimoire, carriedGrimoire, casterTalents } 
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
 import { careers, findSpellById, findStarById, spells as allSpells, speciesSingular, findSpeciesById, findCareerById, careerLabelFor, findClassById, findTrappingById } from '../data';
+import { heroStatusLabel } from './CharCard';
+import { MetalStatus } from './MetalStatus';
 import { weaponFormLabel } from '../gameIso/rig/parts/weaponForms';
 import { CodexRef } from './compendium/CodexRef';
 import { CharValue } from './CharValue';
@@ -44,7 +46,7 @@ import { EtatPanel, ZONE_ORDER, zoneAnchor, zoneAfflictions } from './EtatPanel'
 import { PlaqueRow } from './PlaqueRow';
 import { Band } from './Band';
 import { FigTile, type ZoneBadgeSpec } from './FigTile';
-import { VitalArc } from './VitalArc';
+import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { corruptionThresholdExceeded } from '../engine/corruption';
 import { locationLabel } from '../engine/combat';
 
@@ -59,6 +61,13 @@ const ARMOUR_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
   ['Cuir / rembourrage', 'cuir'],
 ];
 const skinSlotsFor = (kind: ItemInstance['kind']) => (kind === 'armor' ? ARMOUR_SKIN_SLOTS : WEAPON_SKIN_SLOTS);
+
+/** Blessures : fraction restante → ton (mêmes seuils que la jauge de portrait `hpColor`,
+ *  `gameIso/teamColors.ts` — même langage de sévérité, exprimé pour `NotchGauge`). */
+const woundsTone = (cur: number, max: number): GaugeTone => {
+  const frac = max > 0 ? cur / max : 0;
+  return frac <= 0.34 ? 'danger' : frac <= 0.67 ? 'warn' : 'ok';
+};
 
 const LOC_SHORT: Record<HitLocation, string> = {
   tete: 'Tête',
@@ -212,17 +221,35 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
         <div className="sheet-layout">
           <aside className="sheet-aside">
             <div className="sheet-portrait">
+              <h3>{hero.name}</h3>
               <FigTile
                 preview={{ hero }}
                 fig="hero"
                 zoneBadges={tab === 'possessions' ? possessionsZoneBadges(hero) : tab === 'etat' ? etatZoneBadges(hero) : undefined}
               />
-              <VitalArc current={hero.wounds.current} max={hero.wounds.max} />
-              <h3>{hero.name}</h3>
-              <span className="char-sub">
-                <CodexRef category="races" id={hero.species} label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef> · <CodexRef category="careers" id={hero.career} label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
-                {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
-              </span>
+              <NotchGauge label="Blessures" value={hero.wounds.current} max={hero.wounds.max} stacked tone={woundsTone} />
+              {/* Encombrement : rouge en remplissage (croquis 2026-07-17) — la surcharge elle-même
+                  reste portée par l'alarme existante (`SheetAlarmsBand`/`sheetAlarms.ts`), jamais dupliquée ici. */}
+              <NotchGauge label="Encombrement" value={totalEncumbrance(hero)} max={maxEncumbrance(hero)} stacked tone="danger" />
+              <div className="sheet-idrows">
+                <div className="sheet-idrow">
+                  <span className="sheet-idrow-label">Race</span>
+                  <span className="sheet-idrow-value">
+                    <CodexRef category="races" id={hero.species} label={findSpeciesById(hero.species)?.label ?? ''}>{speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)}</CodexRef>
+                  </span>
+                </div>
+                <div className="sheet-idrow">
+                  <span className="sheet-idrow-label">Classe</span>
+                  <span className="sheet-idrow-value">
+                    <CodexRef category="careers" id={hero.career} label={findCareerById(hero.career)?.label ?? ''}>{careerLabelFor(hero)}</CodexRef>
+                    {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
+                  </span>
+                </div>
+                <div className="sheet-idrow">
+                  <span className="sheet-idrow-label">Statut</span>
+                  <span className="sheet-idrow-value"><MetalStatus status={heroStatusLabel(hero)} /></span>
+                </div>
+              </div>
             </div>
             <SheetAlarmsBand hero={hero} />
             {canSoigner && (

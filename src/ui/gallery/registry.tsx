@@ -23,7 +23,6 @@ import { MetalStatus } from '../MetalStatus';
 import { WaxSeal, SealedPlaque } from '../WaxSeal';
 import { CareerPath } from '../CareerPath';
 import { FigTile, type ZoneBadgeSpec } from '../FigTile';
-import { VitalArc } from '../VitalArc';
 import { PlaqueRow, PlaqueGrid } from '../PlaqueRow';
 import { DieFace } from '../DiceRoll';
 import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
@@ -193,25 +192,6 @@ function QtyStepperDemo() {
       decLabel="Diminuer"
       incLabel="Augmenter"
     />
-  );
-}
-
-function VitalArcDemo() {
-  return (
-    <div className="row-flex">
-      <div className="stack" style={{ alignItems: 'center' }}>
-        <VitalArc current={10} max={10} />
-        <span className="hint">Plein (10/10)</span>
-      </div>
-      <div className="stack" style={{ alignItems: 'center' }}>
-        <VitalArc current={4} max={10} />
-        <span className="hint">Entamé (4/10)</span>
-      </div>
-      <div className="stack" style={{ alignItems: 'center' }}>
-        <VitalArc current={1} max={10} />
-        <span className="hint">Critique (1/10)</span>
-      </div>
-    </div>
   );
 }
 
@@ -693,7 +673,6 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
   { name: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={SAMPLE_CAREER_LEVELS} currentLevel={2} /> },
   { name: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
-  { name: 'VitalArc', file: 'src/ui/VitalArc.tsx', category: 'Personnages', render: VitalArcDemo },
   { name: 'PlaqueRow / PlaqueGrid', file: 'src/ui/PlaqueRow.tsx', category: 'Atelier du scribe', render: PlaqueRowDemo },
   { name: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
   { name: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
