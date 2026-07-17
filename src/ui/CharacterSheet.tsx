@@ -96,16 +96,6 @@ const TAB_LABELS: Record<SheetTab, string> = {
   histoire: 'Histoire',
 };
 
-/** Ligne-question de l'onglet actif (#414/#492, prop `question` de `<Tabs>`) — ce que CET onglet répond. */
-const TAB_QUESTIONS: Record<SheetTab, string> = {
-  etat: "Qu'est-ce qui m'arrive ?",
-  possessions: 'Que je porte, que je transporte ?',
-  competences: 'Que sais-je faire ?',
-  magie: 'Que puis-je lancer ?',
-  avancement: 'Où vont mes PX ?',
-  histoire: 'Qui est-ce ?',
-};
-
 export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: () => void }) {
   // EN COMBAT, lire la copie de bataille (qui porte les effets actifs vivants — buffs, métamorphose,
   // dégâts…) plutôt que l'original du groupe ; hors combat, le groupe. → la fiche reflète l'état réel.
@@ -197,7 +187,6 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
               tabs={tabs.map((t) => ({ key: t, label: TAB_LABELS[t] }))}
               active={tab}
               onChange={setSheetTab}
-              question={TAB_QUESTIONS[tab]}
             />
             <div className="sheet-tabbody" ref={bodyRef} onScroll={(e) => setSheetScroll(tab, e.currentTarget.scrollTop)}>
               {tab === 'avancement' ? (

@@ -503,9 +503,7 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // `.hero-present-chips` repassent mono-consommateur — le détail candidat compose désormais `SkillChip`/
   // `TalentChip`/`EntityRef` + `.skill-tags` (recalage utilisateur 2026-07-14, primitives de fiche vivante)
   'styles/components.css': 11,
-  // +1 (#414 lot « matière modale + onglets ») : `.tabq` (ligne-question de l'onglet actif,
-  // prop `question` de `Tabs.tsx`) — mono-consommateur comme `.tabs-trailing` déjà toléré.
-  'styles/tabs.css': 2,
+  'styles/tabs.css': 1,
   'styles.css': 6,
 };
 
