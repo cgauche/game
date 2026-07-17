@@ -523,7 +523,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 
 ## Activités de Guerrier — AA Annexe II
 
-**Source :** AA Annexe II (fichier `Source/WH - V4 - Aux Armes/12 - ANNEXE II ACTIVITÉS DE GUERRIER.md` l.5-144).
+**Source :** AA 12 l.5-144 (Annexe II — Activités de Guerrier).
 
 > « N'importe quel Personnage peut tenter ces Activités, mais s'il n'a jamais appartenu à la Classe des
 > Guerriers, la Difficulté de tous les Tests qu'il effectue monte d'un Niveau. »
@@ -536,7 +536,8 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 | **Fabuleuse Vente des Aventures du Comte de Punchausen** | Charme Complexe (−10) **ou** Divertissement (Narration) Intermédiaire (+0) | Reçoit 2d10 pistoles + 1× inversion Test Charme/Narration dans l'aventure |
 | **Remaniement du Contremaître** | Ragot (+0) pour localiser, puis Corps à Corps **ou** Projectiles Complexe (−10) | Reçoit l'objet désiré + Critique sur localisation aléatoire (gravité variable selon résultat) |
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `AA 12` (l.5-144) → `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `contremaitre-lieu`, `runActivityResolver`, `contremaitre-objectif`, `contremaitre-personnalite`, `commandant-d-equipe`, +6 — `src/data/activities.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
