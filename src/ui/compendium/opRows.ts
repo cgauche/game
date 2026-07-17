@@ -10,7 +10,7 @@
 import type { GameOp } from '../../engine/ops';
 import type { CodexRow } from './registry';
 import { humanizeOp, humanizeFormula } from './humanize';
-import { CHAR_LABELS } from '../../engine/types';
+import { CHAR_LABELS, HIT_LOCATION_LABELS } from '../../engine/types';
 import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
 import { giveTrappingLabel } from '../../engine/items';
 import { statName } from '../../engine/statEntry';
@@ -29,6 +29,23 @@ export function opRow(o: GameOp): CodexRow {
       return { t: 'ref', category: 'characteristics', id: o.char, label: CHAR_LABELS[o.char], show: CHAR_LABELS[o.char], badge: `${o.mod >= 0 ? '+' : ''}${o.mod}` };
     case 'charDRBonus':
       return { t: 'ref', category: 'characteristics', id: o.char, label: CHAR_LABELS[o.char], show: CHAR_LABELS[o.char], badge: `+${humanizeFormula(o.bonus)} DR` };
+    // Mouvement voyage par sa propre famille d'ops (`moveMod`/`moveScale`, hors `CharKey`) mais
+    // s'affiche COMME une Caractéristique (même entrée codex `characteristics/mouvement`, arbitrage
+    // user 2026-07-17) — la sémantique moteur ne change pas, seul l'affichage converge.
+    case 'moveMod':
+      return { t: 'ref', category: 'characteristics', id: 'mouvement', label: 'Mouvement', show: 'Mouvement', badge: `${o.mod >= 0 ? '+' : ''}${o.mod}` };
+    case 'moveScale':
+      return { t: 'ref', category: 'characteristics', id: 'mouvement', label: 'Mouvement', show: 'Mouvement', badge: o.num === 1 && o.den === 2 ? '½' : `×${o.num}/${o.den}` };
+    case 'wounds': {
+      const badge = [
+        o.ignoreAP === false ? undefined : 'ignore les PA',
+        o.bypassArmour === 'metal' ? 'perce armure métallique' : o.bypassArmour === 'nonMagic' ? 'perce armure non magique' : undefined,
+      ].filter((s): s is string => !!s).join(' · ') || undefined;
+      return { t: 'ref', category: 'characteristics', id: 'blessure', label: 'Blessure', show: `${humanizeFormula(o.amount)} Blessure(s)`, badge };
+    }
+    // PA (Points d'Armure) : aucune entrée Codex glossaire dédiée — repli texte SEC (jamais de lien inventé).
+    case 'ap':
+      return { t: 'text', text: `+${humanizeFormula(o.amount)} PA${o.loc ? ` (${HIT_LOCATION_LABELS[o.loc]})` : ' (toutes Localisations)'}` };
     case 'grantTalent':
       return { t: 'ref', category: 'talents', id: o.talentId, label: statName(refLabel('talents', { id: o.talentId, spec: o.spec })), show: refLabel('talents', { id: o.talentId, spec: o.spec }) };
     case 'grantCareerTalent': {

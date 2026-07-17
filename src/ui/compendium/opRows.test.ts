@@ -53,7 +53,7 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
   });
 
   it('opRows(ops) mappe 1:1 et dans l’ordre', () => {
-    const ops: GameOp[] = [newOp('charMod'), newOp('grantTalent'), newOp('wounds')];
+    const ops: GameOp[] = [newOp('charMod'), newOp('grantTalent'), newOp('kill')];
     const rows = opRows(ops);
     expect(rows).toHaveLength(3);
     expect(rows.map((r) => r.t)).toEqual(['ref', 'ref', 'text']);
@@ -83,6 +83,11 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
   const ANCHOR_FIXTURES: { kind: GameOp['op']; category: string; build: () => GameOp }[] = [
     { kind: 'charMod', category: 'characteristics', build: () => ({ op: 'charMod', char: characteristics[0].id as CharKey, mod: -10 }) },
     { kind: 'charDRBonus', category: 'characteristics', build: () => ({ op: 'charDRBonus', char: characteristics[0].id as CharKey, bonus: 1 }) },
+    // Mouvement/Blessure voyagent par leur propre famille d'ops (hors `CharKey`) mais s'affichent
+    // COMME une Caractéristique (arbitrage user 2026-07-17) — même catégorie `characteristics`.
+    { kind: 'moveMod', category: 'characteristics', build: () => ({ op: 'moveMod', mod: -1 }) },
+    { kind: 'moveScale', category: 'characteristics', build: () => ({ op: 'moveScale', num: 1, den: 2 }) },
+    { kind: 'wounds', category: 'characteristics', build: () => ({ op: 'wounds', amount: 1 }) },
     { kind: 'grantTalent', category: 'talents', build: () => ({ op: 'grantTalent', talentId: talents[0].id }) },
     { kind: 'grantCareerTalent', category: 'talents', build: () => ({ op: 'grantCareerTalent', talentId: talents[0].id }) },
     { kind: 'grantCareerSkill', category: 'skills', build: () => ({ op: 'grantCareerSkill', skillId: skills[0].id }) },
