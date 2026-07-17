@@ -6,7 +6,7 @@
  * engine) et d'un inventaire EXHAUSTIF par script (histogramme des 403 entrées, cf. preuve du rendu).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, formulaSchema, flowSchema, triggeredEffectSchema } from '../common';
+import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema, formulaSchema, flowSchema, triggeredEffectSchema } from '../common';
 
 /** `SizeCategory` (`src/engine/size.ts`) — réf par id, jamais un enum parallèle. */
 const sizeCategorySchema = z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
@@ -128,6 +128,10 @@ export const schema = z.array(
     /** `null` = objet sans prix numérique fixe (RAW « ND »/« Variable »/« – »). */
     price: z.union([moneySchema, z.null()]),
     source: sourceRefSchema,
+    /** Emplacements SECONDAIRES (#563) — ex. `cimeterre` prose folio 90 (ancre) ET ligne de stats
+     *  folio 91 (`alsoIn[0].quote`, la table n'imprime pas la desc). NON migré ici (Lot 0 primitive
+     *  only). */
+    alsoIn: z.array(secondarySourceRefSchema).optional(),
     derivedWeapon: weaponSchema.optional(),
     capabilities: itemCapabilitiesSchema.optional(),
     passive: z.array(gameOpSchema).optional(),

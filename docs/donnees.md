@@ -174,6 +174,27 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
   aussi, et sa TAILLE est plafonnée par la garde (`FOLIO_RATCHET_MAX`) pour qu'« ajouter une ligne au stock »
   ne soit jamais le chemin le plus court. `node scripts/data/audit-folios.mjs --stock` re-rend le stock et
   REFUSE de l'agrandir : l'outil ne sait que solder.
+- **`alsoIn?: SecondaryRef[]`** (#563, doctrine user 2026-07-17 : « jamais 2 talents différents ») —
+  un même Talent/Trait/Qualité/objet **réimprimé** dans un AUTRE livre (ou un autre folio du même
+  livre) reste **UNE entrée** : l'ANCRE (`source`, scalaire, porte la `desc`, règle 5, STRUCTURELLE —
+  jamais un tableau positionnel) + `alsoIn` porte les emplacements SECONDAIRES, chacun une paire
+  `(book, page)` pleine + un `quote?` authoré (auto-attestation verbatim, pour le cas où le `label`
+  n'apparaît pas tel quel au folio déclaré — ex. une TABLE imprime un nom différent). Accessors SOURCE
+  UNIQUE : `allLocations(entry)`/`sourceBooks(entry)` (`src/data/sourceRefs.ts`) — aucun futur lecteur
+  n'inline `alsoIn`. **Enforced** par `src/data/secondary-ref-integrity.test.ts` : chaque `alsoIn[i]`
+  doit être **auto-attesté** (le `label` du porteur OU son `quote` retrouvé dans le SPAN du folio
+  déclaré — charge de la preuve sur l'auteur, jamais une réfutation par absence). Champ posé sur
+  `traits.json`/`qualities.json`/`trappings.json` (`traits.ts`/`qualities.ts`/`trappings.ts`) ; aucune
+  entrée n'en porte encore (migration = Lot 2, #563).
+- **`variants?: Variant[]`** (#563/#564) — variante RÉGLÉE d'une entrée sous une **règle optionnelle**
+  du registre `OPTIONAL_RULES` (`src/engine/policy.ts:43`, lue par `rule(id)`) : `when.rule` DOIT être
+  un id du registre (jamais un label, gate fantôme sinon — **enforced** par
+  `src/data/variants-integrity.test.ts`), `when.equals` défaut `true` ; `desc`/`source` PROPRES
+  portent la règle 5 **par variante** (le walk `citedEntriesOf` de `folioIntegrity.mjs` la découvre
+  déjà, structurellement identique à une entrée) ; `combat` réutilise `CombatFeature` tel quel.
+  Résolution : `activeVariant(variants)` (`src/engine/variants.ts`) — première variante active, sinon
+  la forme LDB de base. Champ posé sur `talents.json` (`talents.ts`) ; `descAA`/`combat.aa` restent la
+  forme ACTIVE tant que le Lot 4 (#564) ne les a pas migrés dedans.
 - **`desc`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**
   (`**gras**`, `*ital*`, listes `-`), jamais en HTML, jamais reformulé (règle stricte 5 ; garde
   `src/data/no-html-in-prose.test.ts`).

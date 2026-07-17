@@ -51,3 +51,32 @@ export function auditFolios(dataDir: string): {
   multi: FolioMulti[];
 };
 export function renderStock(violations: FolioViolation[], entete: string): string;
+
+export interface SecondaryEntry {
+  key: string;
+  book: string;
+  page: number;
+  label: string | undefined;
+  quote: string | undefined;
+}
+
+export type SecondaryVerdict = 'attesté' | 'non-attesté' | 'folio-impossible' | 'livre-hors-atlas';
+
+export function secondaryEntriesOf(data: unknown): SecondaryEntry[];
+export function auditSecondaryRef(entry: {
+  book: string;
+  page: number;
+  label: string | undefined;
+  quote: string | undefined;
+}): { verdict: SecondaryVerdict; via?: 'label' | 'quote'; max?: number };
+export function auditSecondaries(dataDir: string): {
+  violations: {
+    key: string;
+    file: string;
+    book: string;
+    page: number;
+    verdict: 'non-attesté' | 'folio-impossible';
+    max?: number;
+  }[];
+  total: number;
+};
