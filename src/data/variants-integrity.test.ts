@@ -4,9 +4,9 @@
  * comme pour l'ancre (item 2 — `folioIntegrity.mjs:citedEntriesOf` la découvre déjà, aucune
  * extension nécessaire : une variante est structurellement `{desc, source}` comme une entrée).
  *
- * ⚠ Lot 0/3 posent la PRIMITIVE et la GARDE seules — la migration `descAA`/`combat.aa` → `variants`
- * (talents.json) est le Lot 4, hors périmètre. Les morsures ci-dessous utilisent des fixtures
- * SYNTHÉTIQUES.
+ * Lot 4 (#564) migre `talents.json` (9 talents `descAA`/`combat.aa` → `variants`) — la garde
+ * EXHAUSTIVE ci-dessous couvre ce fichier réel ; les morsures de la règle 5 restent des fixtures
+ * SYNTHÉTIQUES (patron partagé avec `secondary-ref-integrity.test.ts`).
  */
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -44,9 +44,9 @@ describe('garde-fou « when.rule ∈ OPTIONAL_RULES » (#564 Lot 3 item 1)', () 
     expect(variantRulesOf(data).filter((e) => !KNOWN_RULE_IDS.has(e.rule))).toEqual([]);
   });
 
-  it('EXHAUSTIF : aucun fichier de src/data ne référence encore `variants` en donnée (contrôle croisé texte brut)', () => {
+  it('EXHAUSTIF : seul `talents.json` référence `variants` en donnée (Lot 4 #564 — 9 talents migrés, contrôle croisé texte brut)', () => {
     const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
-    const offenders = files.filter((f) => readFileSync(join(DIR, f), 'utf8').includes('"variants"'));
+    const offenders = files.filter((f) => f !== 'talents.json' && readFileSync(join(DIR, f), 'utf8').includes('"variants"'));
     expect(offenders).toEqual([]);
   });
 });
