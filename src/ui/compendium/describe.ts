@@ -10,6 +10,7 @@ import type { CodexRow, CodexSection } from './registry';
 import { opRows } from './opRows';
 import type { GameOp } from '../../engine/ops';
 import type { Flow, TriggeredEffect } from '../../state/flow';
+import { walkFlow } from '../../engine/flowCore';
 import { refLabel } from '../../data';
 import { statName } from '../../engine/statEntry';
 import { TRIGGER_LABEL, onLabel } from './triggerLabels';
@@ -86,6 +87,56 @@ export function capabilitySection(caps: Record<string, unknown> | undefined, lab
   return present.length ? { title, layout: 'list', rows: [{ t: 'text', text: present.join(' · ') }] } : null;
 }
 
+/** Un `rollTable` se cache-t-il quelque part dans le Flow (n'importe quelle branche `do`) ? Réutilise le
+ *  walker générique `walkFlow` (ref #540) — jauge s'il y a une table à EXPANSER en rangées lisibles. */
+const flowHasRollTable = (f: Flow): boolean => {
+  let found = false;
+  walkFlow(f, (n) => {
+    if (n.kind === 'do' && n.effect.type === 'ops' && n.effect.ops.some((o) => o.op === 'rollTable')) found = true;
+  });
+  return found;
+};
+
+/** Rangées structurées (chips codex-liées, tables `rollTable` EXPANSÉES) d'un Flow, branche par branche —
+ *  ref #540 : seul canal de rendu Flow qui expose le CONTENU d'une table (le reste tient déjà dans la
+ *  phrase humanisée `humanizeFlowSentence`, jamais dupliqué en chips pour les branches sans table). */
+function flowOpRows(f: Flow): CodexRow[] {
+  switch (f.kind) {
+    case 'do':
+      return f.effect.type === 'ops' ? opRows(f.effect.ops) : [];
+    case 'seq':
+      return f.steps.flatMap(flowOpRows);
+    case 'if': {
+      const rows: CodexRow[] = [];
+      const then = flowOpRows(f.then);
+      if (then.length) rows.push({ t: 'sub', label: `Si ${humanizeCondition(f.cond)}` }, ...then);
+      if (f.else) {
+        const els = flowOpRows(f.else);
+        if (els.length) rows.push({ t: 'sub', label: 'Sinon' }, ...els);
+      }
+      return rows;
+    }
+    case 'test': {
+      const rows: CodexRow[] = [];
+      const succ = flowOpRows(f.success);
+      if (succ.length) rows.push({ t: 'sub', label: 'Réussite' }, ...succ);
+      const fail = flowOpRows(f.fail);
+      if (fail.length) rows.push({ t: 'sub', label: 'Échec' }, ...fail);
+      return rows;
+    }
+    case 'choice': {
+      const rows: CodexRow[] = [];
+      const yes = flowOpRows(f.yes);
+      if (yes.length) rows.push({ t: 'sub', label: 'Oui' }, ...yes);
+      if (f.no) {
+        const no = flowOpRows(f.no);
+        if (no.length) rows.push({ t: 'sub', label: 'Non' }, ...no);
+      }
+      return rows;
+    }
+  }
+}
+
 /** Effet MÉCANIQUE d'un Sort (`Flow` éditable : do/if/test) → section lisible (réutilise `flowSummary`).
  *  Source unique de la projection des effets de sort au Codex (≠ desc narrative). Vide → null. */
 export function spellFlowSection(flow: Flow | undefined, title = 'Effet mécanique'): CodexSection | null {
@@ -95,5 +146,6 @@ export function spellFlowSection(flow: Flow | undefined, title = 'Effet mécaniq
   const rows: CodexRow[] = [];
   if (human) rows.push({ t: 'text', text: human });
   if (tech) rows.push({ t: 'fold', summary: 'Détail technique', text: tech });
+  if (flowHasRollTable(flow)) rows.push(...flowOpRows(flow));
   return rows.length ? { title, layout: 'list', rows } : null;
 }

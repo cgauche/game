@@ -48,12 +48,17 @@ const CLOCK_UNIT: Record<'minutes' | 'hours' | 'days', [string, string]> = {
   minutes: ['minute', 'minutes'], hours: ['heure', 'heures'], days: ['jour', 'jours'],
 };
 
+/** Suffixe « + » (LDB 47 l.311) : Test de Force Mentale possible pour prolonger la Durée de +1 Round.
+ *  Titre/tooltip d'accessibilité de la signification — à câbler par le consommateur (Compendium, hors
+ *  périmètre #543, cf. rendu final). Constante (pas de `t(...)` : hors surface JOURNAL, cf. i18n-narration-guard). */
+export const SPELL_DURATION_PLUS_TITLE = 'Vous pouvez effectuer un Test de Force Mentale pour prolonger la Durée de +1 Round (LDB 47 l.311)';
+
 export function formatSpellDuration(d: SpellDuration): string {
   switch (d.kind) {
     case 'instant': return 'Instantané';
-    case 'rounds': return `${fmtMeasure(d.value)} ${d.value === 1 ? 'Round' : 'Rounds'}`;
+    case 'rounds': return `${fmtMeasure(d.value)} ${d.value === 1 ? 'Round' : 'Rounds'}${d.plus ? ' +' : ''}`;
     case 'clock': { const [sg, pl] = CLOCK_UNIT[d.unit]; return `${fmtMeasure(d.value)} ${d.value === 1 ? sg : pl}`; }
     case 'untilDawn': return 'Jusqu\'au lever du soleil';
-    case 'special': return d.text;
+    case 'special': return `${d.text}${d.plus && !/\+\s*$/.test(d.text) ? ' +' : ''}`;
   }
 }

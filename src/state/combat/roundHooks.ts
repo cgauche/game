@@ -13,7 +13,7 @@ import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
 import { bonus, effectiveChar, refreshWounds } from '../../engine/characteristics';
-import { addCondition, isOutOfAction, COND, tickDeath, bleedDeathRoll, stacks, endOfRound, hasCondition } from '../../engine/conditions';
+import { addCondition, isOutOfAction, COND, tickDeath, bleedDeathRoll, stacks, endOfRound, hasCondition, pendingPlusExtensions, resolvePlusExtension } from '../../engine/conditions';
 import { suffocationTick } from '../../engine/suffocation';
 import { tickFingerLossEscalation } from '../../engine/trauma';
 import { clearPsychOf } from '../../engine/psychology';
@@ -21,6 +21,7 @@ import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
 import { collectRoundEndTestSteps } from './triggeredTest';
+import { pushCombatStep } from '../combatEffects';
 import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatOrParty';
 import { traitAuras } from '../../engine/traits/dispatch';
@@ -30,7 +31,7 @@ import { rule } from '../../engine/policy';
 import { rollWindsOfMagic, hasSecondeVue } from '../../engine/windsOfMagic';
 import { groupAdvantage } from '../../engine/advantagePool';
 import { t } from '../../i18n';
-import type { Combatant } from '../../engine/types';
+import type { Combatant, ActiveEffect } from '../../engine/types';
 import type { CascadeStep } from '../pendings';
 import type { Get, Set as SetFn } from '../flowTypes';
 
@@ -57,6 +58,16 @@ registerCombatHook({
       // pour un héros MANUEL n'est PAS poussé ici (la cascade de fin de Round n'est pas encore ouverte) —
       // il est COLLECTÉ par `collectHeroRoundEndUpkeep`. Ennemi/auto : résolu inline par le dispatcher.
       if (!isOutOfAction(c)) fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set, deferInteractiveTest: true }).forEach((l) => sink(l, c));
+      // Durée « + » (LDB 47 l.311) : effets GELÉS par `tickDurations` (spell source marqué). PNJ/auto —
+      // arbitrage d'implémentation : l'IA prolonge SYSTÉMATIQUEMENT ses propres buffs (elle tente le Test
+      // de Force Mentale à chaque offre) — résolu INLINE ici. HÉROS manuel : différé en étape de cascade
+      // influençable (Chance/Résilience), collectée par `collectHeroRoundEndUpkeep`.
+      if (!humanControlled(get(), c)) {
+        for (const e of pendingPlusExtensions(c)) {
+          const res = rollTest(testValue(c, undefined, 'force-mentale'), 'intermediaire', battleRng());
+          resolvePlusExtension(c, e, res.success).forEach((l) => sink(l, c));
+        }
+      }
     }
   },
 });
@@ -355,6 +366,21 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
     const res = testValue(c, 'resistance');
     steps.push({ id: `fatigue-${c.id}`, kind: 'fatigue', actorId: c.id, icon: 'condition/fatigued', rollLabel: 'Résistance', base: res, target: res, label: 'Effort soutenu' });
   }
+  // 4) Durée « + » (LDB 47 l.311) : effets GELÉS (spell source marqué) — « vous POUVEZ effectuer un Test
+  //    de Force Mentale pour prolonger » = décision OPT-IN, étape de CHOIX (Oui/Renoncer) ; sur Oui,
+  //    l'applier `spellPlusChoice` pousse le Test dans la MÊME cascade (`spellPlusTest`). En QUEUE (le
+  //    plus optionnel), comme le reste des effets `optional` ci-dessus.
+  for (const e of pendingPlusExtensions(c)) {
+    const spellId = e.spell?.spellId ?? e.sourceSpellId;
+    if (!spellId) continue; // pas de sort source identifiable — jamais atteint (spellDurationPlusSource l'exige déjà)
+    steps.push({
+      id: `spellPlusChoice-${c.id}-${spellId}`, kind: 'spellPlusChoice', actorId: c.id,
+      icon: 'ui/think', label: `Prolonger ${e.label} ?`,
+      options: [{ key: 'yes', label: `Tenter (Force Mentale) — ${e.label}` }, { key: 'no', label: 'Renoncer' }],
+      defaultChoice: 'no', interactive: true,
+      meta: { sourceSpellId: spellId, effectLabel: e.label },
+    });
+  }
   return steps;
 }
 
@@ -384,4 +410,48 @@ registerCascadeApplier('aaBleedUnconscious', (get, set, step, hero) => {
   const line = aaBleedUnconsciousApply(hero, step.result.success);
   syncCombatant(get, set);
   return { consequences: freeCons([line ?? t('cond.aaBleedHold', { name: hero.name })]) };
+});
+
+/** Retrouve l'effet GELÉ (`awaitingExtension`) visé par une étape « Durée + », par son id STABLE
+ *  (`sourceSpellId`/`spell.spellId`, #142 — jamais le `label`, affichage). */
+function findAwaitingExtension(hero: Combatant, step: CascadeStep): ActiveEffect | undefined {
+  const spellId = typeof step.meta?.sourceSpellId === 'string' ? step.meta.sourceSpellId : undefined;
+  if (!spellId) return undefined;
+  return pendingPlusExtensions(hero).find((e) => (e.spell?.spellId ?? e.sourceSpellId) === spellId);
+}
+
+/** Étape de CHOIX « Durée + » (LDB 47 l.311, #543) — « vous POUVEZ effectuer un Test de Force Mentale » :
+ *  sur Oui, pousse le Test dans la MÊME cascade (`spellPlusTest`, réappendu = `liveMerge`) ; sur Renoncer
+ *  (défaut), l'effet expire NORMALEMENT (`resolvePlusExtension(…, false)` — mêmes réversions que
+ *  `removeActiveEffects`). L'effet est retrouvé par son id STABLE (`sourceSpellId`, #142) parmi les
+ *  effets GELÉS (`awaitingExtension`) du héros — jamais de closure sur l'`ActiveEffect` (coop). */
+registerCascadeApplier('spellPlusChoice', (get, set, step, hero) => {
+  if (!hero) return;
+  const effect = findAwaitingExtension(hero, step);
+  if (!effect) return;
+  const spellId = effect.spell?.spellId ?? effect.sourceSpellId;
+  if (step.chosen === 'yes') {
+    const base = testValue(hero, undefined, 'force-mentale');
+    pushCombatStep(set, {
+      id: `spellPlusTest-${hero.id}-${spellId}`, kind: 'spellPlusTest', actorId: hero.id,
+      icon: 'nav/dice', rollLabel: 'Force Mentale', base, target: base, label: `Prolonger ${effect.label}`,
+      meta: { sourceSpellId: spellId },
+    });
+    return;
+  }
+  const lines = resolvePlusExtension(hero, effect, false);
+  syncCombatant(get, set);
+  return { consequences: freeCons(lines) };
+});
+
+/** Étape-JET « Durée + » (LDB 47 l.311, #543) — Test de Force Mentale poussé par `spellPlusChoice` sur
+ *  « Oui » : succès → +1 Round (dégelé) ; échec → expiration NORMALE. Fonction PARTAGÉE avec la
+ *  résolution PNJ inline (hook `end-of-round`) — `resolvePlusExtension`. */
+registerCascadeApplier('spellPlusTest', (get, set, step, hero) => {
+  if (!hero || !step.result) return;
+  const effect = findAwaitingExtension(hero, step);
+  if (!effect) return;
+  const lines = resolvePlusExtension(hero, effect, step.result.success);
+  syncCombatant(get, set);
+  return { consequences: freeCons(lines) };
 });

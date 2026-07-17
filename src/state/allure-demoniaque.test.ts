@@ -54,8 +54,8 @@ describe('Condition casterChaosDomain — 4 branches', () => {
 });
 
 describe('Allure démoniaque — Flow end-to-end (RNG figé)', () => {
-  it('durée = (Bonus de Sociabilité) Rounds (donnée du sort)', () => {
-    expect(findSpellById('allure-demoniaque')!.duration).toEqual({ kind: 'rounds', value: { bonusOf: 'sociabilite' } });
+  it('durée = (Bonus de Sociabilité) Rounds + (donnée du sort, marqueur « + » LDB 47 l.311/#543)', () => {
+    expect(findSpellById('allure-demoniaque')!.duration).toEqual({ kind: 'rounds', value: { bonusOf: 'sociabilite' }, plus: true });
   });
 
   it('Nurgle : sélectionne la colonne Nurgle, octroie le Trait AVEC Indice pour la durée du Sort', () => {

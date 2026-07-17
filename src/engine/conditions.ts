@@ -5,7 +5,7 @@
 import { Combatant, ActiveEffect, ConditionInstance } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
-import { conditionLabel, findConditionById, findPsychologyById, skills } from '../data';
+import { conditionLabel, findConditionById, findPsychologyById, findSpellById, skills } from '../data';
 import { slugId } from '../data/slug';
 import { t } from '../i18n';
 import { rule } from './policy';
@@ -482,14 +482,51 @@ export function removeActiveEffects(c: Combatant, pred: (e: ActiveEffect) => boo
   return removed;
 }
 
+/** Le SORT source d'un effet actif porte-t-il le marqueur « + » de fin de Durée (LDB 47 l.311) ? Lookup
+ *  PUR par `spell.spellId`/`sourceSpellId` (posés à l'incantation, cf. `OpsCtx.sourceSpell`/`sourceSpellId`).
+ *  Sans sort source (effet non-magique) ou sort introuvable/sans marqueur → false. */
+export function spellDurationPlusSource(e: ActiveEffect): boolean {
+  const spellId = e.spell?.spellId ?? e.sourceSpellId;
+  if (!spellId) return false;
+  const d = findSpellById(spellId)?.duration;
+  return !!d && (d.kind === 'rounds' || d.kind === 'special') && d.plus === true;
+}
+
+/** Effets d'un combattant en attente d'une offre de prolongation (`awaitingExtension`, LDB 47 l.311) —
+ *  requête PURE pour le state layer (collecte de cascade héros / résolution PNJ). */
+export function pendingPlusExtensions(c: Combatant): ActiveEffect[] {
+  return (c.activeEffects ?? []).filter((e) => e.awaitingExtension);
+}
+
+/** Résout l'offre de prolongation (LDB 47 l.311) d'UN effet GELÉ (`awaitingExtension`) : succès (Test de
+ *  Force Mentale réussi) → +1 Round, effet dégelé ; refus/échec → expiration NORMALE (mêmes réversions
+ *  que `removeActiveEffects` — traits/armes/ressources accordés repris). Fonction PARTAGÉE par la
+ *  résolution PNJ (inline, hook `end-of-round`) et l'applier de cascade héros (`spellPlusTest`). */
+export function resolvePlusExtension(c: Combatant, e: ActiveEffect, extended: boolean): string[] {
+  if (extended) {
+    e.awaitingExtension = undefined;
+    e.duration = { scale: 'rounds', left: 1 };
+    return [t('cond.effectExtended', { name: c.name, label: e.label })];
+  }
+  const removed = removeActiveEffects(c, (x) => x === e);
+  return removed.map((x) => t('cond.effectExpire', { name: c.name, label: x.label }));
+}
+
 export function tickDurations(c: Combatant): string[] {
   const log: string[] = [];
   // Effets magiques temporisés (Bénédictions, Sorts de bonus) : décrément des durées en Rounds.
   // `tickRound` n'agit que sur l'échelle `rounds` ; les durées d'horloge/permanentes sont inertes ici
   // (les premières sont purgées par l'horloge `purgeClockEffects`).
   if (c.activeEffects?.length) {
-    for (const e of c.activeEffects) e.duration = tickRound(e.duration);
-    const expired = removeActiveEffects(c, (e) => e.duration.scale === 'rounds' && e.duration.left <= 0);
+    for (const e of c.activeEffects) if (!e.awaitingExtension) e.duration = tickRound(e.duration);
+    // Durée « + » (LDB 47 l.311) : un effet dont le SORT source porte le marqueur est GELÉ à l'expiration
+    // au lieu d'être retiré — l'offre de prolongation (Test de Force Mentale) est résolue par l'appelant
+    // (hors moteur pur : cadence-aware, cf. `resolvePlusExtension`). Répétable : une prolongation réussie
+    // ramène l'effet à 1 Round → la PROCHAINE expiration re-propose naturellement (aucun compteur dédié).
+    for (const e of c.activeEffects) {
+      if (e.duration.scale === 'rounds' && e.duration.left <= 0 && !e.awaitingExtension && spellDurationPlusSource(e)) e.awaitingExtension = true;
+    }
+    const expired = removeActiveEffects(c, (e) => e.duration.scale === 'rounds' && e.duration.left <= 0 && !e.awaitingExtension);
     for (const e of expired) log.push(t('cond.effectExpire', { name: c.name, label: e.label }));
   }
   // États à DURÉE posés par un sort (« qui dure N Rounds ») : décrément, dissipation à 0.

@@ -12,10 +12,10 @@ import { parseFormulaMeasure } from './spellRange';
 
 export type SpellDuration =
   | { kind: 'instant' } // « Instantané »
-  | { kind: 'rounds'; value: Formula } // « (Bonus de FM) Rounds », « 6 rounds » (échelle tactique)
+  | { kind: 'rounds'; value: Formula; plus?: true } // « (Bonus de FM) Rounds », « 6 rounds » (échelle tactique) ; LDB 47 l.311
   | { kind: 'clock'; value: Formula; unit: 'minutes' | 'hours' | 'days' } // « 1 heure », « (FM) minutes »
   | { kind: 'untilDawn' } // « Jusqu'au (prochain) lever du soleil »
-  | { kind: 'special'; text: string }; // « Spécial », « Variable », « 8 Tours » (non chiffrable), homebrew
+  | { kind: 'special'; text: string; plus?: true }; // « Spécial », « Variable », « 8 Tours » (non chiffrable), homebrew ; LDB 47 l.311
 
 /** Normalise la prose de durée : NFC, espaces réduits, « + » de fin, « Instantanée » → « Instantané ».
  *  NE replie PAS « Tours » sur « Rounds » (comportement préservé : « 8 Tours » n'est pas chiffrable). */
@@ -28,19 +28,26 @@ function normalize(raw: string): string {
     .trim();
 }
 
+/** Détecte le marqueur « + » de fin de Durée (LDB 47 l.311 : Test de FM pour +1 Round) —
+ *  distinct du « + » arithmétique interne (ex. « DR Test + 4 Tours », poudre-d-escampette). */
+function hasPlusMarker(raw: string): boolean {
+  return /\+\s*$/.test(raw.normalize('NFC').trim());
+}
+
 /** Prose de durée → `SpellDuration` structuré (authoring/migration uniquement). */
 export function parseSpellDuration(raw: string): SpellDuration {
   const s = normalize(raw);
+  const plus = hasPlusMarker(raw);
   if (/^instantané/i.test(s)) return { kind: 'instant' };
   if (/jusqu.au\s+(prochain\s+)?lever\s+d[eu]\s*soleil/i.test(s)) return { kind: 'untilDawn' };
   if (/rounds?\b/i.test(s)) {
     const v = parseFormulaMeasure(s);
-    if (v != null) return { kind: 'rounds', value: v };
+    if (v != null) return plus ? { kind: 'rounds', value: v, plus: true } : { kind: 'rounds', value: v };
   }
   const unit = /minutes?\b/i.test(s) ? 'minutes' : /heures?\b/i.test(s) ? 'hours' : /jours?\b/i.test(s) ? 'days' : null;
   if (unit) {
     const v = parseFormulaMeasure(s);
     if (v != null) return { kind: 'clock', value: v, unit };
   }
-  return { kind: 'special', text: raw };
+  return plus ? { kind: 'special', text: raw, plus: true } : { kind: 'special', text: raw };
 }

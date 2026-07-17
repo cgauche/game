@@ -16,7 +16,7 @@ import { giveTrappingLabel } from '../../engine/items';
 import { statName } from '../../engine/statEntry';
 import {
   conditionLabel, psychologyLabel, diseaseLabel, symptomLabel, creatureLabel,
-  refLabel, findTrappingById,
+  refLabel, findTrappingById, findEffectTableById, mutationTables,
 } from '../../data';
 
 const textRow = (o: GameOp): CodexRow => ({ t: 'text', text: humanizeOp(o) });
@@ -116,12 +116,55 @@ export function opRow(o: GameOp): CodexRow {
       const label = creatureLabel(o.morphRef);
       return { t: 'ref', category: 'creatures', id: o.morphRef, label, show: label, badge: o.tag };
     }
+    case 'rollMutation': {
+      const label = mutationTables.find((t) => t.id === o.table)?.label ?? o.table;
+      return { t: 'ref', category: 'mutationTables', id: o.table, label, show: label };
+    }
     default:
       return textRow(o);
   }
 }
 
-/** Une liste d'ops → SES lignes Codex, dans l'ordre. */
+/** Fourchette d'une rangée de table (« 1–2 · Perte d'Initiative », « 8 · Mutation »). */
+const tableRowRange = (r: { min: number; max: number; label?: string }): string =>
+  `${r.min === r.max ? r.min : `${r.min}–${r.max}`}${r.label ? ` · ${r.label}` : ''}`;
+
+/** Profondeur d'expansion des tables IMBRIQUÉES (une rangée de table portant elle-même `rollTable`) —
+ *  1 niveau : la table de tête s'expanse en rangées, une table trouvée DANS une rangée déjà expansée
+ *  se rend par son libellé + lien codex (`opRowsForOp`), jamais ré-expansée (borne l'imbrication). */
+const MAX_TABLE_DEPTH = 1;
+
+/** Rangées `[min,max] → ops` d'une table d'effets → lignes Codex (sous-titre de fourchette + ops de la
+ *  rangée passées par la MÊME humanisation récursive). SOURCE UNIQUE, composée par la catégorie Codex
+ *  « Tables d'effets » (`registry.ts`) ET par l'expansion générique de l'op `rollTable` ci-dessous. */
+export function tableRows(rows: { min: number; max: number; label?: string; ops: GameOp[] }[], depth = 0): CodexRow[] {
+  return rows.flatMap((r): CodexRow[] => [
+    { t: 'sub', label: tableRowRange(r) },
+    ...r.ops.flatMap((o) => opRowsForOp(o, depth)),
+  ]);
+}
+
+/** Une op → SES lignes Codex — 1 pour la plupart des kinds, N pour un `rollTable` (rangées EXPANSÉES,
+ *  bornées par `MAX_TABLE_DEPTH`). Réutilisée par `opRows` (liste plate) ET la catégorie « Tables
+ *  d'effets » — jamais une 2e implémentation de la projection table → rangées lisibles. */
+function opRowsForOp(o: GameOp, depth: number): CodexRow[] {
+  if (o.op === 'rollTable') {
+    if (depth >= MAX_TABLE_DEPTH) {
+      // Table imbriquée déjà sous une rangée expansée : libellé + lien codex (tableId), sinon repli texte
+      // (rows inline sans id à lier) — jamais de ré-expansion (borne l'imbrication).
+      if ('tableId' in o) {
+        const t = findEffectTableById(o.tableId);
+        return [{ t: 'ref', category: 'effectTables', id: t.id, label: t.label, show: t.label }];
+      }
+      return [textRow(o)];
+    }
+    const rows = 'tableId' in o ? findEffectTableById(o.tableId).rows : o.rows;
+    return tableRows(rows, depth + 1);
+  }
+  return [opRow(o)];
+}
+
+/** Une liste d'ops → SES lignes Codex, dans l'ordre (un `rollTable` s'expanse en ses rangées). */
 export function opRows(ops: GameOp[]): CodexRow[] {
-  return ops.map(opRow);
+  return ops.flatMap((o) => opRowsForOp(o, 0));
 }

@@ -529,6 +529,11 @@ export interface ActiveEffect {
    *  aux Sorts dissipables). Ne porte AUCUNE sémantique de dissipation : sert l'IDENTITÉ du sort (anti-spam
    *  de buff côté IA : « cet allié porte déjà CE buff »). */
   sourceSpellId?: string;
+  /** GELÉ en attente de l'offre de prolongation (LDB 47 l.311, Durée « + ») : posé par `tickDurations`
+   *  quand la Durée atteint 0 pour un effet dont le SORT source porte `plus:true` — au lieu d'expirer,
+   *  l'effet est figé (aucun décompte supplémentaire) jusqu'à `resolvePlusExtension` (Test de Force
+   *  Mentale réussi → +1 Round ; refusé/raté → expiration normale). Absent = pas d'offre en cours. */
+  awaitingExtension?: true;
   /** Ops RÉCURRENTES re-jouées à CHAQUE fin de Round tant que l'effet dure (op `perRound` — sorts
    *  multi-Rounds : 1 État X par Round, 1 Ration par Round de « Récolte de Rhya », etc.). Les valeurs
    *  sont déjà résolues à l'incantation (littérales) — `endOfRound` les ré-applique via `applyOps`

@@ -2044,7 +2044,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "force-mentale"
-      }
+      },
+      "plus": true
     },
     "desc": "Vous créez une arme de Corps à corps dont les Dégâts sont égaux à votre Bonus de Force Mentale. Elle peut prendre n'importe quelle forme et peut donc utiliser n'importe quelle Compétence de Corps à corps que vous possédez. L'arme est considérée comme Magique.",
     "effects": {
@@ -2106,7 +2107,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "force-mentale"
-      }
+      },
+      "plus": true
     },
     "desc": "Vous gagnez +1 PA à toutes les Localisations en vous enveloppant dans un nuage de magie protectrice.",
     "effects": {
@@ -2252,7 +2254,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "force-mentale"
-      }
+      },
+      "plus": true
     },
     "desc": "Tous les projectiles constitués de matière organique, comme des flèches en bois, sont automatiquement détruits s'ils entrent dans la Zone d'Effet, n'infligeant aucun Dégât à leur cible. Les projectiles constitués uniquement de matière non organique, comme les couteaux de lancer ou les munitions de pistolet, ne sont pas affectés.",
     "effects": {
@@ -2633,7 +2636,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "force-mentale"
-      }
+      },
+      "plus": true
     },
     "desc": "Vous pouvez voler, en vous faisant pousser des ailes, en montant sur une colonne de lumière magique, ou toute autre méthode. Gagnez le Trait de créature Vol (Agilité) (voir page 343).",
     "effects": {
@@ -2768,7 +2772,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "force-mentale"
-      }
+      },
+      "plus": true
     },
     "desc": "Vous créez un pont d'énergie magique, d'une longueur et d'une largeur maximales en mètres égales à votre Bonus de Force Mentale. Pour chaque +2 DR, vous pouvez augmenter la longueur ou la largeur d'un nombre de mètres égal à votre Bonus de Force Mentale.",
     "effects": {
@@ -8376,7 +8381,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "sociabilite"
-      }
+      },
+      "plus": true
     },
     "desc": "Vous canalisez le pouvoir de transformation du Chaos dans votre propre chair, sacrifiant temporairement votre forme mortelle sur l'autel de la volonté de votre dieu. Votre corps est déformé, prenant les aspects d'un démon loyal à votre dieu protecteur. Lancez 1d10 sur le Tableau de la page 78, et appliquez le Trait pertinent pour toute la durée du Sort. Pour chaque +2 DR, vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau. Si vous obtenez le Trait Démoniaque et que vous êtes réduit à 0 Blessure, votre âme est aspirée dans les Royaumes du Chaos, comme décrit dans les règles des Traits de créature.\n\n| 1d10 | Nurgle | Slaanesh | Tzeentch | Indivisible |\n| --- | --- | --- | --- | --- |\n| 1 | Grand | Démoniaque (6) | Souffle +9 (Feu) | Démoniaque (8) |\n| 2 | Souffle +7 (Corrosion et Poison) | Perturbant (Allure étrange) | Démoniaque (9) | Démoniaque (8) |\n| 3 | Démoniaque (7) | Peur (3) | Éthéré | Élite |\n| 4 | Maladie (Pourriture de Nurgle) | Frénésie | Peur (3) | Rapide |\n| 5 | Perturbant (Puanteur) | Immunité Psychologique | Vol (9) | Peur (3) |\n| 6 | Peur (3) | Mutation (jet sous le Tableau) | Magique | Vol (8) |\n| 7 | Infesté | Insensible à la douleur | Résistance à la Magie (2) | Rage |\n| 8 | Mutation (jet sous le Tableau) | Regard pétrifiant | Mutation (jet sous le Tableau) | Cornes +10 |\n| 9 | Régénération | Langue préhensile +6 (6 mètres) | Mutation (jet sous le Tableau) | Magique |\n| 10 | Vomissement | Venin | Lanceur de Sorts (au choix) | Attaque caudale (+10) |",
     "effects": {
@@ -8492,7 +8498,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "sociabilite"
-      }
+      },
+      "plus": true
     },
     "desc": "Le lanceur de sorts imprègne la Cible (peut-être lui-même) avec un vernis corrompu d'Ulgu infusé par Dhar, l'enveloppant dans une aura de dissimulation. Tant que le Sort est en vigueur, la Cible apparaît sans défaut, ni tache. Les cicatrices, les difformités et, surtout, les Mutations sont indétectables, sauf par des moyens divins. Si les vices évidents sont cachés, les Cibles peuvent paraître étranges ou excentriques, trop débordantes de vie ou anormalement séduisantes. La réussite d'un Test de Perception Difficile (-20) révèle que quelque chose ne va pas, mais sans révéler quoi. Pour les Personnages possédant le Talent Seconde vue, le Test est Intermédiaire (+0), et s'ils le réussissent, ils se rendront compte qu'un Sort est en place, mais pas ce qu'il dissimule.",
     "effects": {
@@ -8600,7 +8607,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "force-mentale"
-      }
+      },
+      "plus": true
     },
     "desc": "Vos mots ignobles et profanes déchirent le tissu de la réalité, creusant une brèche dans le monde, au travers de laquelle les serviteurs des Dieux Sombres sont libres de passer. Un portail déchiqueté vers l'Aethyr apparaît.\n\nÀ la fin de chaque round, un démon mineur traverse le portail depuis les Royaumes du Chaos. Ces démons ne sont pas sous votre contrôle, mais sont susceptibles de vous défendre et d’attaquer vos ennemis, si telle est la volonté de votre maître impie. Les démons invoqués dépendent de votre Domaine du Chaos : démonettes de Slaanesh, porte-peste de Nurgle, horreurs de Tzeentch, sanguinaires de Khorne, et, pour les sorciers du Chaos Indivisible, des furies du Chaos. Pendant toute la durée du sort, tous les démons qu’il invoque sont immunisés aux effets du Trait de créature Instable.\n\nPour chaque +5 DR de Surincantation, vous pouvez augmenter le rythme d’arrivée des démons de +1.\n\nLes créatures vivantes doivent réussir un Test de Résistance Accessible (+20) à la fin de chaque Round où elles voient la déchirure, ou gagner +1 Corruption. Toute créature vivante assez stupide ou malchanceuse pour entrer dans la faille choit dans les Royaumes du Chaos et est immédiatement tuée, à moins qu’un Point de Destin ne soit dépensé. Dans ce cas, elle est renvoyée dans la réalité, peut-être sauvée par une Puissance quelconque dans un but encore inachevé.\n\nSi vous ratez l’Incantation de ce Sort, les démons qui traversent les Royaumes du Chaos appartiennent à une divinité rivale et peuvent être immédiatement hostiles à leur invocateur !",
     "effects": {
@@ -9395,7 +9403,8 @@
       "kind": "rounds",
       "value": {
         "bonusOf": "force-mentale"
-      }
+      },
+      "plus": true
     },
     "desc": "Vous invoquez un torrent de feu magique, qui crache, crépite et brûle sans aucun combustible matériel. Ce feu n'a aucune propriété physique et ne brûle pas, n’endommage pas et n’émet pas de chaleur. Toutes les créatures vivantes et les démons qui peuvent le percevoir peuvent choisir de relancer chaque Test une fois, comme s’ils avaient dépensé un Point de Chance, même s’ils ont réussi le Test. Chaque fois, ils doivent réussir un Test de Résistance Intermédiaire (+0) ou gagner +1 Point de Corruption. Les Personnages portant la marque de Tzeentch sont immunisés à cette Corruption. Le Test pour résister au gain de Corruption ne peut pas être relancé en utilisant l’effet de ce Sort.",
     "effects": {
@@ -14145,7 +14154,8 @@
     },
     "duration": {
       "kind": "rounds",
-      "value": 6
+      "value": 6,
+      "plus": true
     },
     "desc": "Tout projectile contenant de la matière organique (flèches ou carreaux en bois) est automatiquement détruit au contact du bouclier. Les balles de plombs ou les billes d’aciers ne sont pas affectées.",
     "effects": {
@@ -14235,7 +14245,8 @@
     },
     "duration": {
       "kind": "special",
-      "text": "7 Tours +"
+      "text": "7 Tours +",
+      "plus": true
     },
     "desc": "Le nuage de la zone contaminée s’élève jusqu’à 12 mètres. Toutes les créatures dans la zone effectue À CHAQUE TOURun Test de Résistance (-10) VS 3 PB (pas d’armure). Si une créature perd plus de 6 PB dans la zone, elle devient « Inconsciente ».",
     "effects": {
@@ -16329,7 +16340,8 @@
     },
     "duration": {
       "kind": "special",
-      "text": "8 Tours +"
+      "text": "8 Tours +",
+      "plus": true
     },
     "desc": "Le démon développe le Trait « Distraction ». Les alliés et ennemis à moins de 3 mètres du démon subissent un Malus de -20 àTOUSleurs Tests.",
     "effects": {
@@ -16769,7 +16781,8 @@
     },
     "duration": {
       "kind": "special",
-      "text": "4 Tours +"
+      "text": "4 Tours +",
+      "plus": true
     },
     "desc": "Les ennemis dans la zone ne peuvent pas voler. Les Tirs des ennemis ont un Malus de -10. Les alliés du sorcier ne sont pas affectés.",
     "effects": {
@@ -16798,7 +16811,8 @@
     },
     "duration": {
       "kind": "special",
-      "text": "4 Tours +"
+      "text": "4 Tours +",
+      "plus": true
     },
     "desc": "La cible du sort gagne l’État « Frénésie ». Une cible récalcitrante peut tenter de résister en réussissant un test de Calme (+0). En ce cas, la cible perd 1 PB.",
     "effects": {

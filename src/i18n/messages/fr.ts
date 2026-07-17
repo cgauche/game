@@ -243,6 +243,7 @@ export const fr = {
   //  `removeCondition`/`condition` ; plus de clés `cond.poison*`/`cond.stun*` dédiées.)
   'cond.dissipate': '{name} : un État {cond} se dissipe.',
   'cond.effectExpire': '{name} : {label} se dissipe.',
+  'cond.effectExtended': '{name} : {label} est prolongé (Test de Force Mentale réussi, +1 Round).',
   'cond.spellCondExpire': "{name} : l'État {cond} (sort) se dissipe.",
   'cond.lockReleased': "{name} : l'État {cond} est levé par le soin (Blessure critique, LDB 18).",
   'cond.lastWoundExhausted': '{name} est Exténué (dernière plaie refermée).',

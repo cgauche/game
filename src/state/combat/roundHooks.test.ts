@@ -3,8 +3,8 @@ import './roundHooks'; // effet de bord : enregistre le hook se-fatiguer
 import { runCombatHooks, type CombatHookCtx } from '../combatHooks';
 import { setRule, resetRule } from '../../engine/policy';
 import { seedBattleRng } from '../battleRng';
-import { hasCondition, COND } from '../../engine/conditions';
-import type { Combatant } from '../../engine/types';
+import { hasCondition, COND, pendingPlusExtensions } from '../../engine/conditions';
+import type { ActiveEffect, Combatant } from '../../engine/types';
 
 const combatant = (over: Partial<Combatant>): Combatant =>
   ({
@@ -57,5 +57,25 @@ describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.97)', () => {
     runCombatHooks('onRoundEnd', ctx([c]));
     expect(hasCondition(c, COND.extenue)).toBe(false);
     expect(c.effortRounds).toBe(2); // 4 (seuil atteint) − DR(2) — PAS 4 − (1+2) = 1
+  });
+});
+
+describe('roundHooks — Durée « + » PNJ (LDB 47 l.311, #543) : arbitrage — l’IA prolonge SYSTÉMATIQUEMENT, résolu INLINE', () => {
+  const plusEffect = (): ActiveEffect => ({ label: 'Arme aethyrique', bonus: 0, duration: { scale: 'rounds', left: 1 }, sourceSpellId: 'arme-aethyrique' });
+
+  it('Test de Force Mentale réussi (FM haute) → +1 Round, aucune offre laissée en attente', () => {
+    seedBattleRng(5); // graine donnant un jet bas
+    const c = combatant({ activeEffects: [plusEffect()], characteristics: { endurance: 1, 'force-mentale': 95 } as never });
+    runCombatHooks('onRoundEnd', ctx([c]));
+    expect(pendingPlusExtensions(c)).toHaveLength(0); // résolu, plus d'offre en attente
+    expect(c.activeEffects).toHaveLength(1);
+    expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 1 });
+  });
+
+  it('Test de Force Mentale raté (FM basse) → expiration NORMALE (retrait effectif)', () => {
+    seedBattleRng(1); // graine donnant un jet élevé
+    const c = combatant({ activeEffects: [plusEffect()], characteristics: { endurance: 1, 'force-mentale': 5 } as never });
+    runCombatHooks('onRoundEnd', ctx([c]));
+    expect(c.activeEffects ?? []).toHaveLength(0);
   });
 });

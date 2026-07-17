@@ -67,7 +67,7 @@ import { formatMoney, priceToMoney } from '../../engine/money';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
-import { opRows } from './opRows';
+import { opRows, tableRows } from './opRows';
 import { humanizeCastBonus } from './humanize';
 import { reverseGroups, bookContents } from './relations';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL, formatManeuverMeasure } from './maneuverLabels';
@@ -1240,7 +1240,17 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sections: sections(
         passiveSection(s.passive),
         passiveSection(s.severePassive, 'Modificateurs (Modérée / Grave)'),
-        s.onTick ? { title: 'Cycle quotidien', layout: 'list', rows: [{ t: 'kv', k: 'Difficulté', v: s.onTick.difficulty ? DIFFICULTY_LABELS[s.onTick.difficulty] : 'inconditionnel' } as CodexRow] } : null,
+        s.onTick
+          ? {
+              title: 'Cycle quotidien', layout: 'list',
+              rows: [
+                { t: 'kv', k: 'Difficulté', v: s.onTick.difficulty ? DIFFICULTY_LABELS[s.onTick.difficulty] : 'inconditionnel' } as CodexRow,
+                s.onTick.afterDays ? ({ t: 'kv', k: 'Déclenchement', v: `${s.onTick.once ? 'une fois, au' : 'à partir du'} ${s.onTick.afterDays}ᵉ jour de phase active` } as CodexRow) : null,
+                // Conséquence de l'échec (ops directes ou `rollTable` : table EXPANSÉE en rangées lisibles).
+                ...opRows(s.onTick.onFail),
+              ].filter((r): r is CodexRow => r != null),
+            }
+          : null,
         capabilitySection(s.capabilities as Record<string, unknown> | undefined, SYMPTOM_CAP_LABEL),
       ),
     })),
@@ -1283,13 +1293,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // aspects démoniaques par Domaine du Chaos). Chaque rangée = fourchette + ops (chips codex-liées).
     build: () => effectTables.map((t) => ({
       id: t.id, label: t.label, sub: `${t.rows.length} rangée(s) · ${t.die}`, source: src(t.source),
-      sections: sections({
-        title: `Tirage (${t.die} → effet)`, layout: 'list',
-        rows: t.rows.flatMap((r) => [
-          { t: 'sub', label: `${r.min === r.max ? r.min : `${r.min}–${r.max}`}${r.label ? ` · ${r.label}` : ''}` } as CodexRow,
-          ...opRows(r.ops),
-        ]),
-      }),
+      sections: sections({ title: `Tirage (${t.die} → effet)`, layout: 'list', rows: tableRows(t.rows) }),
     })),
   },
   {

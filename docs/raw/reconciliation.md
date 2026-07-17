@@ -6,7 +6,7 @@
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 2 chapitre(s) couverts avec des lignes non pinées.
-**Sens A — code → Atlas (14 autres livres)** : 3 chapitre(s)-livre cités par le code & absents de l'Atlas · 7 chapitre(s)-livre couverts avec des lignes non pinées · 65 réf(s) sans chapitre (non réconciliables par cette mesure).
+**Sens A — code → Atlas (14 autres livres)** : 2 chapitre(s)-livre cités par le code & absents de l'Atlas · 5 chapitre(s)-livre couverts avec des lignes non pinées · 65 réf(s) sans chapitre (non réconciliables par cette mesure).
 **Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 4 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 20 · 16 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
@@ -16,8 +16,8 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 ## A2 — Lignes appelées par le CODE (LDB) non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
 ### LDB 10 — 6/26 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
-- l.310 — `src/engine/types.ts:881` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
-- l.364 — `src/engine/types.ts:1420` — /** Distraire (LDB 10 l.364 / AA 13 l.51) : distrait par un adversaire → ne peut gagner AUCUN Avantage
+- l.310 — `src/engine/types.ts:886` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+- l.364 — `src/engine/types.ts:1425` — /** Distraire (LDB 10 l.364 / AA 13 l.51) : distrait par un adversaire → ne peut gagner AUCUN Avantage
 - l.365 — `src/state/combatFlow.ts:4580` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
 - l.680 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.680-686).
 - l.859 — `src/state/granted-traits.test.ts:122` — it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
@@ -34,9 +34,9 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 |---|---|---|---|
 | ADE I | 0 | 1 | 0 |
 | ADE II | 0 | 1 | 13 |
-| EDOC | 1 | 2 | 29 |
+| EDOC | 1 | 1 | 29 |
 | MDG | 1 | 1 | 6 |
-| T2C | 1 | 2 | 17 |
+| T2C | 0 | 1 | 17 |
 
 ## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l'Atlas (trous durs)
 
@@ -52,39 +52,7 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - `src/state/riverVoyageFlow.ts:857` (l.71) — // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
 - `src/state/seaActivities.ts:233` (l.71) — // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
 
-### T2C 10 — 41 réf(s) code, 0 dans l'Atlas
-- `src/data/index.ts:1483` (l.54) — /** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C ch.10 l.54-135 tarife par TYPE de navire à
-- `src/data/index.ts:1491` (l.1) — *  Amélioration, l.195-364 ; T2C ch.10 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
-- `src/data/index.ts:1519` (l.85) — *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
-- `src/data/index.ts:1519` (l.111) — *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
-
 ## A2-AUTRES — Lignes appelées par le CODE (autres livres) non pinées par l'Atlas
-
-### EDOC 5 — 12/14 ligne(s) code hors couverture
-- l.25 — `src/engine/policy.ts:584` — ref: 'EDOC ch.5 l.25 — MJ décide, valeur maison',
-- l.29 — `src/engine/policy.ts:563` — ref: 'EDOC ch.5 l.29',
-- l.34 — `src/engine/policy.ts:572` — ref: 'EDOC ch.5 l.34',
-- l.42 — `src/engine/travelStages.ts:86` — /** Jet de Météo d'une Étape (EDOC ch.5 l.42) : d100 sur la table de la saison. */
-- l.44 — `src/engine/travelStages.test.ts:43` — describe('table de Météo VERBATIM (EDOC ch.5 l.44-51)', () => {
-- l.52 — `src/data/weather.json:31` — "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
-- l.73 — `src/engine/policy.ts:643` — ref: 'EDOC ch.5 l.73',
-- l.131 — `src/engine/activities.test.ts:201` — describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désigné, EDOC ch.5 l.131)', () => {
-- l.133 — `src/engine/activities.ts:349` — /** Échec du Test d'Activité → État Exténué pour CET acteur (EDOC ch.5 l.133). */
-- l.151 — `src/engine/policy.ts:430` — // #352 — EDOC ch.5 l.151-153 chiffre le Test (Ragot Intermédiaire) mais jamais de durée à
-- l.182 — `src/engine/travelEncounter.ts:2` — * Rencontres de voyage (EDOC ch.5 l.182-233) — DÉCLENCHEUR par la qualité des Tests d'Activité de
-- l.186 — `src/engine/travelTables.test.ts:45` — it('Rencontres : 3 tables d100 contiguës (EDOC ch.5 l.186-233)', () => {
-
-### T2C 5 — 10/10 ligne(s) code hors couverture
-- l.21 — `src/engine/river-navigation.test.ts:22` — describe('Table des vents (T2C ch.5 l.21-33)', () => {
-- l.25 — `src/engine/riverNavigation.ts:40` — /** Direction du vent RELATIVE au bateau (T2C ch.5 l.25-33) — pas une direction cardinale (≠ mer). */
-- l.40 — `src/state/riverVoyageFlow.ts:484` — if (r.sank) { sinkBoat(get, set, (l) => j.push(...l), `Le bateau n'est pas redressé et coule en ${be} tours (T2C ch.5 l.40).`); return { consequences: freeCons(
-- l.101 — `src/engine/cargo.ts:81` — *  T2C ch.5 l.101 / MDG ; pillage partiel ; vol gradué) — arrondi à l'entier, lots vidés éliminés.
-- l.103 — `src/state/riverVoyageFlow.ts:599` — sinkBoat(get, set, (l) => j.push(...l), 'La coque prend l\'eau plus vite qu\'on ne la vide — le bateau sombre (T2C ch.5 l.103).');
-- l.119 — `src/data/schemas/defs/river-perils.ts:2` — * Schéma de `river-perils.json` — Dangers fluviaux (T2C ch.5 l.119-166 : Débris/Barrage/Rochers/Eaux
-- l.123 — `src/data/river-perils.json:11` — "ref": "T2C ch.5 l.123-125",
-- l.128 — `src/data/river-perils.json:33` — "ref": "T2C ch.5 l.128",
-- l.130 — `src/data/river-perils.json:49` — "ref": "T2C ch.5 l.130-140",
-- l.142 — `src/data/river-perils.json:64` — "ref": "T2C ch.5 l.142-144",
 
 ### MDG 15 — 8/33 ligne(s) code hors couverture
 - l.243 — `src/state/seaVoyageFlow.ts:2367` — *  mentionnent pas la relâche à terre — vérifié entrée par entrée (MDG 15 l.243-263) — donc non gatées. */
@@ -96,6 +64,14 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - l.468 — `src/data/naval-ports.test.ts:65` — it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
 - l.474 — `src/data/naval-ports.test.ts:72` — it('Fjirgard : production produits-de-luxe, Demande armes +1, sans surplus (MDG 15 l.474, folio 138)', () => {
 
+### T2C 12 — 6/8 ligne(s) code hors couverture
+- l.54 — `src/data/index.ts:1483` — /** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C ch.12 l.54-135 tarife par TYPE de navire à
+- l.62 — `src/engine/naval-traits.test.ts:191` — // Grande barge (~25 m, bande ouverte) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (T2C ch.12 l.62/64, l.80/82).
+- l.66 — `src/data/index.ts:1522` — /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau — Bouteur +20 (T2C ch.12 l.66),
+- l.85 — `src/data/index.ts:1519` — *  = `totale` (MDG ch.12 l.364 / T2C ch.12 l.85), Plat-bord = `moyenne` (T2C ch.12 l.111). Géométrie de Pont,
+- l.111 — `src/data/index.ts:1519` — *  = `totale` (MDG ch.12 l.364 / T2C ch.12 l.85), Plat-bord = `moyenne` (T2C ch.12 l.111). Géométrie de Pont,
+- l.137 — `src/data/schemas/defs/sea-weather.ts:106` — /** Gréement de course (T2C ch.12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
+
 ### ADE I 6 — 1/1 ligne(s) code hors couverture
 - l.185 — `src/data/index.ts:407` — *  permission du MJ », EDOC ch.9 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE1 ch.6 l.185).
 
@@ -104,9 +80,6 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ### EDOC 9 — 1/2 ligne(s) code hors couverture
 - l.137 — `src/data/index.ts:407` — *  permission du MJ », EDOC ch.9 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE1 ch.6 l.185).
-
-### T2C 11 — 1/1 ligne(s) code hors couverture
-- l.44 — `src/ui/editor/WorldMapEditor.tsx:22` — /** Libellés des Tailles de communauté (T2C ch.11 l.44-50, indices 1-4). */
 
 ## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
 

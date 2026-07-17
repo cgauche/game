@@ -30,10 +30,10 @@ const spellTargetSchema = z.discriminatedUnion('kind', [
 /** `SpellDuration` (`engine/spellDuration.ts:13`). */
 const spellDurationSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('instant') }),
-  z.strictObject({ kind: z.literal('rounds'), value: formulaSchema }),
+  z.strictObject({ kind: z.literal('rounds'), value: formulaSchema, plus: z.literal(true).optional() }),
   z.strictObject({ kind: z.literal('clock'), value: formulaSchema, unit: z.enum(['minutes', 'hours', 'days']) }),
   z.strictObject({ kind: z.literal('untilDawn') }),
-  z.strictObject({ kind: z.literal('special'), text: z.string() }),
+  z.strictObject({ kind: z.literal('special'), text: z.string(), plus: z.literal(true).optional() }),
 ]);
 
 // ── SpellData (src/data/index.ts:983) ───────────────────────────────────────────────────────────

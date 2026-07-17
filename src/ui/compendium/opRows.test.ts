@@ -5,9 +5,9 @@ import type { GameOp } from '../../engine/ops';
 // sont hors du scan de `editor-quarantine-guard.test.ts` (la quarantaine porte sur le code applicatif,
 // pas les tests qui vérifient le renderer joueur contre le vocabulaire d'atelier).
 import { newOp, OP_LABEL } from '../editor/GameOpEditor';
-import { opRow, opRows } from './opRows';
+import { opRow, opRows, tableRows } from './opRows';
 import { codexLookupById } from './registry';
-import { characteristics, talents, skills, traits, psychologies, etats, trappings, maladies, symptoms, creatures } from '../../data';
+import { characteristics, talents, skills, traits, psychologies, etats, trappings, maladies, symptoms, creatures, findSymptomById, effectTables } from '../../data';
 import type { CharKey } from '../../engine/types';
 
 const ALL_KINDS = Object.keys(OP_LABEL) as GameOp['op'][];
@@ -117,5 +117,62 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
       const resolved = codexLookupById(row.category, row.id);
       expect(resolved, `kind ${fixture.kind} : id « ${row.id} » (catégorie ${row.category}) ne résout à AUCUN item Codex`).toBeTruthy();
     }
+  });
+
+  /** ref #540 : la vue LECTURE doit montrer les rangées d'un `rollTable` — vérifié sur les données
+   *  RÉELLES (vers-de-carie, `symptoms.json`), jamais un fixture inventé. */
+  describe('rollTable — rangées EXPANSÉES (ref #540)', () => {
+    it('rollTable INLINE (vers-de-carie, T2C 16 l.90-101) : 8 rangées visibles, sous-titre + ops', () => {
+      const s = findSymptomById('vers-de-carie');
+      expect(s?.onTick).toBeTruthy();
+      const rows = opRows(s!.onTick!.onFail);
+      const subs = rows.filter((r) => r.t === 'sub');
+      expect(subs).toHaveLength(8);
+      expect(subs.map((r) => (r as { t: 'sub'; label: string }).label)).toEqual([
+        '1–2', '3–4', '5–6', '7–8', '9', '10', '11–12', '13–99',
+      ]);
+      // chaque rangée porte au moins une ligne d'op (chip ref ou texte) après son sous-titre.
+      const kill = rows[rows.length - 1];
+      expect(kill.t).toBe('text'); // `kill` n'a pas d'ancre nominative → repli texte humanisé
+    });
+
+    it('rollTable par `tableId` (allure-demoniaque-nurgle, EDOC p.78) : rangées de la table référencée, résolue via effectTables', () => {
+      const table = effectTables.find((t) => t.id === 'allure-demoniaque-nurgle');
+      expect(table).toBeTruthy();
+      const rows = opRows([{ op: 'rollTable', tableId: 'allure-demoniaque-nurgle' }]);
+      const subs = rows.filter((r) => r.t === 'sub');
+      expect(subs).toHaveLength(table!.rows.length);
+      // Rangée 1 → Trait « Grand » (grantTrait, ancré catégorie traits).
+      const firstOpRow = rows[1];
+      expect(firstOpRow.t).toBe('ref');
+      if (firstOpRow.t === 'ref') expect(firstOpRow.category).toBe('traits');
+    });
+
+    it('rangée IMBRIQUÉE portant `rollMutation` (allure-demoniaque-nurgle, rangée 8) : lien codex vers la table de Corruption, pas d’expansion', () => {
+      const rows = tableRows(effectTables.find((t) => t.id === 'allure-demoniaque-nurgle')!.rows);
+      const mutationRow = rows.find((r) => r.t === 'ref' && r.category === 'mutationTables');
+      expect(mutationRow, 'aucune ligne « mutationTables » — la rangée Mutation ne se rend pas en lien codex').toBeTruthy();
+      if (mutationRow?.t === 'ref') {
+        expect(mutationRow.id).toBe('edoc-phys-nurgle');
+        const resolved = codexLookupById('mutationTables', mutationRow.id);
+        expect(resolved, `id « ${mutationRow.id} » ne résout à aucune Table de Corruption`).toBeTruthy();
+      }
+    });
+
+    it('table IMBRIQUÉE dans une rangée déjà expansée (rollTable → rollTable) : libellé + lien codex, jamais ré-expansée (borne l’imbrication)', () => {
+      const nested: import('../../engine/ops').GameOp = {
+        op: 'rollTable',
+        die: 'd10',
+        rows: [{ min: 1, max: 10, ops: [{ op: 'rollTable', tableId: 'allure-demoniaque-nurgle' }] }],
+      };
+      const rows = opRows([nested]);
+      // 1 sous-titre (rangée de tête) + 1 chip ref vers la table imbriquée — PAS ses 10 sous-rangées.
+      expect(rows).toHaveLength(2);
+      expect(rows[1].t).toBe('ref');
+      if (rows[1].t === 'ref') {
+        expect(rows[1].category).toBe('effectTables');
+        expect(rows[1].id).toBe('allure-demoniaque-nurgle');
+      }
+    });
   });
 });
