@@ -222,3 +222,16 @@ export function normalize(s) {
     .toLowerCase()
 }
 export const ELLIPSIS_SENTINEL = SENT
+
+// --- Exclusions PARTAGÉES de fiches docs/raw (#454 DoD, #585 lot A) ---
+// Deux ensembles nommés (périmètres RÉELLEMENT différents, pas une fusion aveugle) :
+// - RAWDOC_META_GENERATED : rapports RÉ-GÉNÉRÉS à chaque run (jamais des citations vivantes d'auteur)
+//   — hors sujet pour TOUT scan (bornes de ligne comme prose de citation) : check-refs, check-code-refs
+//   (src uniquement, sans objet), reconcile (Sens A/B), reanchor, citation-graphy-guard (a/b/c/d).
+// - RAWDOC_AUTHOR_META : fiches d'auteur (index, conventions de sourcing) qui PEUVENT citer un chapitre
+//   réel illustrativement (bornes de ligne restent vérifiables par check-refs) mais ne portent PAS de
+//   citation verbatim vivante à ré-ancrer ni de prose d'état à juger — hors sujet pour reanchor et pour
+//   citation-graphy-guard scan (d) seulement, PAS pour check-refs/check-code-refs/reconcile.
+export const RAWDOC_META_GENERATED = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md'])
+export const RAWDOC_AUTHOR_META = new Set(['00-index.md', 'sources.md', 'code-map.md'])
+export const isRawEpreuve = (name) => /^epreuve-/.test(name)

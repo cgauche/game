@@ -108,7 +108,7 @@ créer une nouvelle si le livre introduit un domaine inédit (le combat naval de
 
 `src/data/*.json` est la **source app-owned**, commitée, éditable au Compendium. Toute donnée
 mécanique tirée d'un nouveau livre s'ajoute **à la main** (ou via l'éditeur en jeu), jamais par
-re-seed automatique — c'est le chemin suivi par AA, ZI, MDG, ACE, MSLRC et NADJ (périmètres :
+re-seed automatique — c'est le chemin suivi par AA, ZI, MDG, ACE, T2C et NADAJ (périmètres :
 `docs/sources-vf.md`).
 
 - Chaque entrée mécanique tagge sa provenance avec un champ `source: { book: "<ABRÉV>", page: N }`

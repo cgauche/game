@@ -130,8 +130,8 @@ la **ligne** a dérivé.
 Livres de RÈGLES autorisés (chemins exacts, périmètres, chapitres clés : **`docs/sources-vf.md`**) :
 **LDB** (livre de base) · **ADE I/II** (Archives de l'Empire) · **EDO/EDOC** (T1 + Compagnon) ·
 **Middenheim** · **AA** (Aux Armes) · **ZI** (Zoo Impérial) · **MDG** (Mer des Griffes) ·
-**ACE** (Altdorf, Annexe I) · **MSLRC** (Compagnon T2, navigation fluviale/personnalisation/maladies d'eau) ·
-**NADJ** (gnomes, jeux de taverne) — chacun pour son périmètre. **Arbitrage 2026-07-10 : tout livre FR de
+**ACE** (Altdorf, Annexe I) · **T2C** (Compagnon T2, navigation fluviale/personnalisation/maladies d'eau) ·
+**NADAJ** (gnomes, jeux de taverne) — chacun pour son périmètre. **Arbitrage 2026-07-10 : tout livre FR de
 `Source/` peut fournir des règles** (même ~90 % scénario, il en porte souvent quelques-unes) — le périmètre
 s'établit par PASSAGE, documenté dans `docs/sources-vf.md`, au MÊME standard : verbatim citable, réf
 chap/ligne, extraction FR présente (sans extraction, pas de mécanique). `src/data/*.json` est la **SOURCE

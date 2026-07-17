@@ -123,7 +123,7 @@ import type { PendingBase } from './rollFlowFactory';
  * LE moteur de nuit (sans modale) : avance l'horloge à l'aube (× days), entretien #T3, récupération
  * + cauchemars, contagion. Renvoie le bilan structuré ; écrit aussi le journal.
  * NB : on n'avance PAS l'horloge minute par minute (advanceTime rejouerait l'entretien de Round —
- * hémorragie/poison/feu tueraient le dormeur ; RAW 16 l.105 : le repos suppose des États stabilisés,
+ * hémorragie/poison/feu tueraient le dormeur ; LDB 16 l.105 : le repos suppose des États stabilisés,
  * restRecovery refuse d'ailleurs un héros Hémorragique/En flammes/Empoisonné).
  */
 export function sleepParty(

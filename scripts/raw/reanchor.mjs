@@ -23,7 +23,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT } from './_lib.mjs'
+import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve } from './_lib.mjs'
 import { countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
 
 const APPLY = process.argv.includes('--apply')
@@ -36,9 +36,9 @@ const MIN_QUOTE_LEN = 24   // ancre verbatim < 24 car. → trop générique, on 
 export const RAWDIR = 'docs/raw'
 export const LOW_BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'reanchor-low-baseline.json')
 // On ne traite que les fiches de DOMAINE + catalogues. On saute les rapports générés ET les fichiers
-// MÉTA (index, conventions, rapports d'épreuve) dont les réfs sont ILLUSTRATIVES, pas des citations vivantes.
-const META = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md', '00-index.md', 'sources.md', 'code-map.md'])
-const isMeta = (f) => META.has(f) || /^epreuve-/.test(f)
+// MÉTA (index, conventions, rapports d'épreuve) dont les réfs sont ILLUSTRATIVES, pas des citations
+// vivantes. Deux ensembles PARTAGÉS (#454 DoD, #585 lot A) : source unique `_lib.mjs`.
+const isMeta = (f) => RAWDOC_META_GENERATED.has(f) || RAWDOC_AUTHOR_META.has(f) || isRawEpreuve(f)
 
 // Réf unifiée (abrévs de BOOKS, plus longue d'abord ; capture chapitre + début + suffixe -Y/+n).
 const ABBR_ALT = BOOKS.map(([a]) => esc(a)).sort((a, b) => b.length - a.length).join('|')
