@@ -55,22 +55,27 @@ describe('EquipmentPanel (rendu)', () => {
     expect(html).toContain('eq-slot'); // cellules-emplacements (nom des pièces portées = popover au survol)
   });
 
-  it('mannequin présent (rig SVG) + colonne emplacements en cellules + ligne Cape', () => {
+  it('mannequin MORT (#492, rig grand format = colonne de fiche) + damier 4 localisations + ligne Cape', () => {
     const html = renderToStaticMarkup(<EquipmentPanel hero={mkHero()} />);
-    expect(html).toContain('equip-figure');
+    expect(html).not.toContain('equip-figure');
+    expect(html).not.toContain('equip-doll');
     expect(html).toContain('equip-slots');
     expect(html).toContain('eq-slot'); // cellules-emplacements
+    for (const zone of ['Tête', 'Bras', 'Corps', 'Jambes']) expect(html).toContain(zone);
     expect(html).toContain('Cape');
   });
 
-  it('cape portée → rendue dans le dos du mannequin (data-equip="cape") et retirable', () => {
+  it('cape portée → retirable depuis la ligne Cape', () => {
     const html = renderToStaticMarkup(<EquipmentPanel hero={mkHero((items) => { items.find((i) => i.uid === 'cape')!.equipped = true; })} />);
-    expect(html).toContain('data-equip="cape"');
-    expect(html).not.toContain('aucune cape');
+    expect(html).toContain('eq-loc-cape');
+    expect(html).not.toContain('Aucune cape dans le sac');
   });
 
   it('sets d’armes en cartes-cellules (sans libellé « Set ») ; hallebarde marquée (2M) ; récap en main', () => {
     const html = renderToStaticMarkup(<EquipmentPanel hero={mkHero()} />);
+    expect(html).toContain('Harnois'); // Band de gauche (damier)
+    expect(html).toContain('Sets d’armes'); // Band de droite
+    expect(html).toContain('equip-sets');
     expect(html).toContain('set-card');
     expect(html).toContain('● Actif'); // Set I actif par défaut
     expect(html).toContain('Hallebarde (2M)'); // option du picker d'arme

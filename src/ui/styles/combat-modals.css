@@ -451,27 +451,16 @@
   pointer-events: none;
 }
 .crew-remove:hover::after { display: flex; }
-/* ── Écran d'équipement (onglet Combat) : emplacements en CELLULES (loc × couche) + mannequin + sets ──
-   ≥900px : 3 colonnes (emplacements | mannequin | armes) ; ≤900px : mannequin en haut, emplacements
-   puis armes empilés. Cibles tactiles élargies via pointer: coarse. */
+/* ── Écran d'équipement (onglet Possessions) : emplacements en CELLULES (loc × couche) + sets ──
+   Pas de mannequin (mort, #492 : le rig grand format vit dans la colonne de la fiche). ≥900px :
+   2 colonnes (emplacements | sets d'armes) ; ≤900px : empilées. Cibles tactiles via pointer: coarse. */
 .equip-panel {
   --eq-cell: 46px;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) 150px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   gap: 12px;
   margin-bottom: 14px;
   align-items: start;
-}
-.equip-doll {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.equip-figure {
-  width: 100%;
-  height: auto;
-  border: 1px solid var(--border);
-  border-radius: 8px;
 }
 /* Colonne EMPLACEMENTS : en-tête de couches + une ligne par localisation (libellé+PA | 3 cellules). */
 .equip-slots {
@@ -710,17 +699,6 @@
 @media (max-width: 900px) {
   .equip-panel {
     grid-template-columns: 1fr;
-  }
-  /* Mannequin en haut, centré ; emplacements puis armes empilés dessous. */
-  .equip-doll {
-    order: -1;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-  }
-  .equip-figure {
-    width: 150px;
-    flex: 0 0 auto;
   }
 }
 @media (max-width: 560px) {

@@ -1,10 +1,6 @@
 import { useGame } from '../state/store';
 import type { Combatant, HitLocation, ItemInstance, QualityInstance } from '../engine/types';
 import { armourLayer, isCapeItem, itemLabel, weaponHands, compatibleAmmo, loadoutLabel, isOffHandEligible, isUnarmed, type ArmourLayer } from '../engine/items';
-import { RigSprite } from '../gameIso/rig/composeRig';
-import { defaultAppearance } from '../gameIso/rig/appearance';
-import { equipFromCombatant } from '../gameIso/rig/parts/equipment';
-import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/combatantVisuals';
 import { CodexRef } from './compendium/CodexRef';
 import { QualityChips } from './EntityChip';
 import { ItemIcon } from './ItemIcon';
@@ -13,16 +9,18 @@ import { bonus, effectiveChar } from '../engine/characteristics';
 import { qualityRefLabel } from '../data';
 import { weaponStatParts } from './weaponStats';
 import { Icon } from './Icon';
+import { Band } from './Band';
 
 /**
- * Écran d'EMPLACEMENTS d'équipement (onglet Combat de la fiche) — façon jeu vidéo : colonne
+ * Écran d'EMPLACEMENTS d'équipement (onglet Possessions de la fiche) — façon jeu vidéo : colonne
  * d'emplacements d'armure en CELLULES-ICÔNES à gauche (une ligne par localisation Tête/Bras/
  * Corps/Jambes + Cape, trois cellules = les 3 COUCHES Ext./Flex./Soupl., LDB 63 : cuir souple
- * sous tout ; Flexible sous la couche rigide — les PA rigide+Flexible se cumulent), mannequin
- * (rig live) au CENTRE, et les sets d'armes en cellules à DROITE. Le PA cumulé est affiché EN
- * FACE de chaque localisation. Survol d'une cellule → POPOVER (Codex de l'objet réel, ou stats +
- * qualités pour une arme invoquée via `fallback`) ; le CLIC sur la cellule ouvre le picker
- * changer/retirer (sauf cellule verrouillée : arme invoquée / combat).
+ * sous tout ; Flexible sous la couche rigide — les PA rigide+Flexible se cumulent) et les sets
+ * d'armes en cellules à DROITE (pas de mannequin central : le rig grand format de la colonne de
+ * fiche en tient lieu, #492). Le PA cumulé est affiché EN FACE de chaque localisation. Survol
+ * d'une cellule → POPOVER (Codex de l'objet réel, ou stats + qualités pour une arme invoquée via
+ * `fallback`) ; le CLIC sur la
+ * cellule ouvre le picker changer/retirer (sauf cellule verrouillée : arme invoquée / combat).
  */
 
 /** Zones de la fiche → localisations WFRP4. `apLoc` = localisation représentative pour le PA affiché. */
@@ -140,11 +138,6 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   const offHandWeapons = weapons.filter(isOffHandEligible);
   const strBonus = bonus(effectiveChar(hero, 'force'));
 
-  // Mannequin : MÊME recette que le token de jeu (pickBackend) — apparence enrichie des
-  // mutations/blessures + équipement dérivé (couche visible déjà triée par equipFromCombatant).
-  const appearance = combatantAppearance(hero.appearance ?? defaultAppearance(hero), hero);
-  const equip = equipFromCombatant(hero);
-
   const activeWeapons = hero.weapons.filter((w) => !isUnarmed(w));
 
   /** `fallback` popover d'une arme (stats + qualités) — sert l'invoquée/enchantée hors catalogue. */
@@ -154,6 +147,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
   return (
     <div className="equip-panel">
       {/* COLONNE GAUCHE — emplacements d'armure en cellules, PA cumulé en face de chaque localisation */}
+      <Band title="Harnois">
       <div className="equip-slots">
         <div className="eq-layers-head">
           <span className="eq-loc-spacer">Couche</span>
@@ -190,7 +184,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           );
         })}
 
-        {/* Ligne Cape (cosmétique — rendue dans le dos du mannequin) */}
+        {/* Ligne Cape (cosmétique — rendue sur le rig de la colonne de fiche) */}
         <div className="eq-loc-row eq-loc-cape">
           <span className="eq-loc-head">
             <span className="eq-loc-name">Cape</span>
@@ -206,16 +200,10 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           />
         </div>
       </div>
-
-      {/* COLONNE CENTRE — mannequin (rig live, porte l'armure visible + les armes du set actif) */}
-      <div className="equip-doll" title="Aperçu du héros avec l’équipement porté (la couche du dessus s’affiche : plate sur maille sur cuir)">
-        <svg viewBox="0 0 120 150" className="equip-figure">
-          <rect x={0} y={0} width={120} height={150} fill="#1d2230" rx={6} />
-          <RigSprite appearance={appearance} equip={equip} career={hero.career} overlays={combatantOverlays(hero)} />
-        </svg>
-      </div>
+      </Band>
 
       {/* COLONNE DROITE — sets d'armes auto-étiquetés par leur contenu (façon Dragon Age) + récap */}
+      <Band title="Sets d’armes">
       <div className="equip-sets">
         {(hero.loadouts ?? []).map((lo) => {
           const conjured = !!(hero.items ?? []).find((it) => it.uid === lo.main)?.conjured;
@@ -304,6 +292,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
           )}
         </div>
       </div>
+      </Band>
     </div>
   );
 }

@@ -95,7 +95,6 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
 //    (scan borné aux `.tsx` de `src/ui`). `fill="none"`/`url(#…)`/`currentColor` ne sont pas des littéraux.
 const FILL_LITERAL_BASELINE: Record<string, number> = {
   'AppearancePanel.tsx': 1,
-  'EquipmentPanel.tsx': 1,
   'editor/EditorCanvas.tsx': 9,
   'editor/Inspector.tsx': 1,
 };
@@ -262,7 +261,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Onglet Compétences & Talents composant `HeroSheet` (arbitrage 2026-07-17) : -5 (148 -> 143) -- `.skill-grid`/
   // `.skill-line`/`.sk-name`/`.sk-val`/`.sk-adv` MIGRENT vers hero-sheet.css (module de la primitive
   // qui rend desormais la table a valeurs), contrepartie ASSUMEE en regard.
-  'styles/combat-modals.css': 143,
+  // Lot POSSESSIONS (A) : -2 (143 -> 141) -- mort du mannequin `.equip-doll`/`.equip-figure`
+  // (EquipmentPanel, #492) : le rig grand format vit desormais dans la colonne de la fiche.
+  'styles/combat-modals.css': 141,
   'styles/combat-ui.css': 112,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
