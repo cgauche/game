@@ -3,7 +3,7 @@ import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 
 // Équipage EXPOSÉ de la barge amie = 2 héros du groupe (comme la vitrine navale) : sur un Coup Critique de
-// coque « Gréement » ou « Superstructure » (T2C ch.5), toute personne SUR LE PONT (`crewTarget:'deck'`)
+// coque « Gréement » ou « Superstructure » (T2C ch.7), toute personne SUR LE PONT (`crewTarget:'deck'`)
 // encaisse un Test d'Initiative sous peine de +5 Dégâts (échardes) — ces 2 héros y sont exposés.
 const CREW = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as const;
 
@@ -12,7 +12,7 @@ const CREW = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as const;
  * combat de BATEAU FLUVIAL, distincte de la mer (MDG) par ses DONNÉES :
  *  - chaque bateau est une COQUE à PV (`barge-fluviale`/`barque-fluviale`, `hull.propulsion:'fluvial'` +
  *    `locationTable:'navire-fluvial'` + `criticalTable:'river-criticals'`) → un Coup Critique se résout sur
- *    les tables T2C ch.5 (Localisation Gréement/Rames/Gouvernail/Coque/Superstructure ; effets États
+ *    les tables T2C ch.7 (Localisation Gréement/Rames/Gouvernail/Coque/Superstructure ; effets États
  *    **Dérive** / **Gouvernail brisé** / **Voie d'eau**, Éclats **+5**), et NON sur les tables navales MDG ;
  *  - des PIRATES fluviaux (ch.12) sont l'ÉQUIPAGE EXPOSÉ de leur barque (`crewIds`) : un Critique « Équipage »
  *    ou les Éclats leur reviennent, comme en mer ;
@@ -59,7 +59,7 @@ export const scenario: TestScenario = {
   icon: 'scenario/naval',
   title: 'Embuscade fluviale',
   tests:
-    'Combat de bateau FLUVIAL (T2C ch.5) distinct de la mer par ses DONNÉES : coques `barge-fluviale`/' +
+    'Combat de bateau FLUVIAL (T2C ch.7) distinct de la mer par ses DONNÉES : coques `barge-fluviale`/' +
     '`barque-fluviale` portant `locationTable:navire-fluvial` + `criticalTable:river-criticals` → un Coup ' +
     'Critique tire la Localisation T2C (Gréement/Rames/Gouvernail/Coque/Superstructure) et ses effets ' +
     '(États Dérive / Gouvernail brisé / Voie d’eau, Éclats +5, Test d’Initiative « sur le pont ») via le MÊME ' +

@@ -242,7 +242,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   });
 });
 
-// ── Maladies transmises par l'eau (T2C ch.14, Mort sur le Reik Compagnon) ──────────────────────────
+// ── Maladies transmises par l'eau (T2C ch.16, Mort sur le Reik Compagnon) ──────────────────────────
 import { testStatePenalty, combatTestPenalty } from './conditions';
 import { passiveGlobalTestMod, passiveMods } from './trauma';
 import { applyOps } from './ops';

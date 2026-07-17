@@ -93,7 +93,7 @@ describe('windEffect / windAdjustedM — EFFET DU VENT (MDG ch.13 l.276-286 ; Cl
     expect(windEffect('legere-brise', 'arriere', 'clinfoc').pctOther).toBe(0);
   });
 
-  it('Gréement de course (T2C ch.10 l.137) : +10 % voiles vent arrière/de côté ; vent contraire malus réduit de 5 %', () => {
+  it('Gréement de course (T2C ch.12 l.137) : +10 % voiles vent arrière/de côté ; vent contraire malus réduit de 5 %', () => {
     // Vent arrière : std +25 % → +35 % ; vent de côté : std +25 % (avec Virement conservé) → +35 %.
     expect(windEffect('vent-modere', 'arriere', 'greement').pctSail).toBe(35);
     const lat = windEffect('vent-modere', 'lateral', 'greement');

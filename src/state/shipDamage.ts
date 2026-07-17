@@ -1,5 +1,5 @@
 /**
- * Foyer COQUE — vocabulaire UNIQUE des Dégâts/soins de coque (T2C ch.5, MDG ch.13-15) : les Dégâts de
+ * Foyer COQUE — vocabulaire UNIQUE des Dégâts/soins de coque (T2C ch.7, MDG ch.13-15) : les Dégâts de
  * coque RAW sont des valeurs FINALES (bélier, échouage, collision, réparation temporaire) — jamais
  * mitigées par BE/PA, `ignoreTB`/`ignoreAP` du GameOp `wounds` (LDB 18) l'expriment directement.
  *

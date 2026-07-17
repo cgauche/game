@@ -144,7 +144,7 @@ export interface PerSL {
   /** Quantité ajoutée par palier (peut être négative — retrait de Corruption). */
   amount: number;
   /** Échelle sur l'ÉCHEC (branche `fail` d'un nœud Flow `test`, `ctx.sl` négatif) au lieu de la réussite —
-   *  « gagnant un État X pour chaque niveau d'échec » (ex. Hallucinogène, T2C ch.13 l.167). Magnitude =
+   *  « gagnant un État X pour chaque niveau d'échec » (ex. Hallucinogène, T2C ch.15 l.167). Magnitude =
    *  `|sl|` quand `sl < 0`, 0 sinon (symétrique du défaut qui ignore tout `sl` négatif). */
   onFailure?: boolean;
 }

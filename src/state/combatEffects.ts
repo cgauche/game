@@ -323,7 +323,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   // tous les candidats de façon cohérente (la réaction de l'interlocuteur ne dépend pas du héros choisi).
   const reactionRoll = tgtStatus && rule('social-status-reaction-roll') ? battleRng().int(1, 10) : undefined;
   const statusMod = tgtStatus ? (c: Combatant) => statusCharmMod(actorStatus(c), tgtStatus, { begging: spec.begging, reactionRoll }) : undefined;
-  // Capricieux (T2C ch.13) : la créature-interlocuteur tire un d10 (UNE fois, seedé, INDÉPENDANT du héros
+  // Capricieux (T2C ch.15) : la créature-interlocuteur tire un d10 (UNE fois, seedé, INDÉPENDANT du héros
   // choisi — c'est SA réaction) qui module le Test de −2 à +2 DR (`capriciousMod`, ±10/DR, même convention
   // que la réaction de Statut). Constante pour tous les candidats.
   const capriciousRoll = isSocial && spec.vsCapricieux ? battleRng().int(1, 10) : undefined;
@@ -1110,7 +1110,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   waterExposure: {
-    group: 'Afflictions', label: 'Exposition hydrique (eau souillée — T2C ch.14)', icon: 'travel/wave',
+    group: 'Afflictions', label: 'Exposition hydrique (eau souillée — T2C ch.16)', icon: 'travel/wave',
     make: () => ({ type: 'waterExposure', mode: 'ingestion', target: 'hero' }),
     apply: (e, env) => {
       // « Maladies transmises par l'eau » (T2C p.91) : UN Test de Résistance Intermédiaire (+0) modifié
@@ -1431,7 +1431,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
 };
 
-/** Étape de cascade `waterExposure` (T2C ch.14 p.91) : Test raté → d100 « avec un modificateur de +10
+/** Étape de cascade `waterExposure` (T2C ch.16 p.91) : Test raté → d100 « avec un modificateur de +10
  *  pour chaque DR négatif » → maladie CONTRACTÉE directement (`applyContraction`, incubation normale —
  *  le Test d'exposition EST le test, jamais un second Test de Contraction). « Relancez si le Personnage
  *  n'est pas blessé » honoré par `drawWaterDisease`. Déjà porteur → rien de neuf (dédoublonnée). */

@@ -28,7 +28,7 @@ describe('spawn — Blindage (Amélioration d’instance) → PA de coque', () =
     expect(hull.armour.corps).toBe(0); // Lissage agit sur le M, pas sur les PA
   });
 
-  it('« Coque de course » → 2×M de manœuvre, op moveScale APPLIQUÉE dans shipManeuverParams (T2C ch.10 l.27)', () => {
+  it('« Coque de course » → 2×M de manœuvre, op moveScale APPLIQUÉE dans shipManeuverParams (T2C ch.12 l.27)', () => {
     // cogue à voile : M de base 5 ; Coque de course multiplie APRÈS les moveMod additifs → 10.
     expect(shipManeuverParams(spawnEnemy('cogue', undefined, 'h-nue2', at)).baseM).toBe(5);
     const hull = spawnEnemy('cogue', undefined, 'h-course', at, { upgrades: [{ id: 'coque-de-course' }] });

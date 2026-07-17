@@ -1,5 +1,5 @@
 /**
- * Schéma de `water-exposure.json` — Exposition hydrique (T2C ch.14 p.91). Fichier NON-tableau (objet
+ * Schéma de `water-exposure.json` — Exposition hydrique (T2C ch.16 p.91). Fichier NON-tableau (objet
  * unique), dérivé de `WaterExposureData`/`WaterExposureModifier`/`WaterExposureAuto`
  * (`src/data/index.ts:105-126`). `test.difficulty` = `Difficulty` (moteur) → `difficultySchema` partagé.
  */

@@ -1451,7 +1451,7 @@ function applyHullCriticalToTarget(
   const crew = get && target.crewIds
     ? (target.crewIds.map((id) => actorIn(get(), id)).filter(Boolean) as Combatant[])
     : [];
-  // Réfs data-driven : `navire`/`ship-criticals` (MDG, défaut) ou `navire-fluvial`/`river-criticals` (T2C ch.5).
+  // Réfs data-driven : `navire`/`ship-criticals` (MDG, défaut) ou `navire-fluvial`/`river-criticals` (T2C ch.7).
   const outcome = applyHullCritical(target, crew, rig, battleRng(), undefined, undefined, {
     locationTable: hull?.locationTable, criticalTable: hull?.criticalTable,
   });

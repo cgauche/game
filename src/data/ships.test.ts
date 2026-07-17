@@ -4,7 +4,7 @@ import { vehicleCombatant } from '../engine/vehicle';
 import { shipHitLocation } from '../engine/combat';
 
 // MDG ch.12 = navires MARITIMES (18). Les bateaux FLUVIAUX T2C (propulsion:'fluvial') ont aussi une
-// facette `ship` mais relèvent de leur propre table (T2C ch.5) — couverts par `16-embuscade-fluviale`.
+// facette `ship` mais relèvent de leur propre table (T2C ch.7) — couverts par `16-embuscade-fluviale`.
 const ships = VEHICLES_LIST.filter((v) => v.ship && v.hull?.propulsion === 'maritime');
 
 describe('Navires MDG (ch.12) — profils en donnée', () => {

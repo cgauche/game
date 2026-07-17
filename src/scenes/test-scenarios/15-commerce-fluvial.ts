@@ -145,12 +145,12 @@ for (let i = 0; i < RIVER_ORDER.length - 1; i++) {
 }
 // Route DIRECTE Grünburg → Altdorf (le grand axe du Reik) : ~45 km, une journée de barge (M8 × 6 h = 48 km) —
 // permet la boucle d'arbitrage en un seul saut (achat à Grünburg → vente à Altdorf, l.150-156). Cette descente
-// est JOUÉE (T2C ch.5 « Navigation fluviale ») : Test de Navigation par étape, table des vents, et un péril
+// est JOUÉE (T2C ch.7 « Navigation fluviale ») : Test de Navigation par étape, table des vents, et un péril
 // atteignable (débris flottants, l.123-125). Le chariot de convoi (porteur réel) persiste pendant la descente.
 const grunburgAltdorf = bargeRoute(START_ID, SELL_ID, 45, 'r-grunburg-altdorf');
 grunburgAltdorf.river = true;
 grunburgAltdorf.riverPerils = [{ perilId: 'debris', chancePct: 55 }];
-// Exposition hydrique de la descente (T2C ch.14, l.5) : l'équipage boit l'eau du Reik non bouillie en
+// Exposition hydrique de la descente (T2C ch.16, l.5) : l'équipage boit l'eau du Reik non bouillie en
 // approchant d'Altdorf (grande ville en aval → tableau 1 « Source d'eau », −20, l.23-33). Chaque étape à
 // flot, un tirage déclenche l'Effet EXISTANT `waterExposure` (Test de Résistance → maladie) — data-driven.
 grunburgAltdorf.riverExposure = { source: 'aval-grande-ville-8km', mode: 'ingestion', chancePct: 60 };
@@ -176,7 +176,7 @@ export const scenario: TestScenario = {
     'Boucle du marchand : acheter une cargaison à Grünburg (R 2), descendre le fleuve en barge (le convoi ' +
     'persiste sur le chariot de convoi), revendre à Altdorf (Florissant R 5, Mise à prix +10 %, l.156) — profit. ' +
     'Marché à chaque ville, Marchandage/Évaluation du vin/rumeurs (Berta). La descente EXERCE aussi ' +
-    'l’exposition hydrique (T2C ch.14) : en approchant d’Altdorf, l’équipage risque une maladie de l’eau.',
+    'l’exposition hydrique (T2C ch.16) : en approchant d’Altdorf, l’équipage risque une maladie de l’eau.',
   partyNote: 'Berta (Marchande — Marchandage/Ragot/Évaluation) · Gunnar (batelier) · Otto (garde) · Lise (scribe)',
   makeParty: traders,
   scene: scenes.find((s) => s.id === `quai-${START_ID}`)!,

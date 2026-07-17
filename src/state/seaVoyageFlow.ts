@@ -367,7 +367,7 @@ export function healVesselHull(get: Get, set: Set, hull: Combatant, amount: numb
   return j;
 }
 
-/** VOIE D'EAU (lot D #327) : une coque percée/heurtée « gâte 1d10 Enc » de cargaison (T2C ch.5 l.101 /
+/** VOIE D'EAU (lot D #327) : une coque percée/heurtée « gâte 1d10 Enc » de cargaison (T2C ch.7 l.101 /
  *  MDG, cf. `engine/cargo.ts`). Route sur la SOURCE UNIQUE `vessel.cargo` via le tronc `spoilCargoByEnc`.
  *  Renvoie le journal (vide si rien à gâter). Câblé sur les avaries de coque EXISTANTES (collision maritime,
  *  coque percée fluviale) — jamais un mécanisme neuf. */
@@ -378,7 +378,7 @@ export function spoilVesselCargoOnLeak(get: Get, set: Set): string[] {
   const r = spoilCargoByEnc(vessel.cargo, enc);
   if (!r.removed) return [];
   set({ vessel: { ...vessel, cargo: r.lots } });
-  return [`La voie d'eau gâte ${r.removed} Enc de cargaison (T2C ch.5 l.101 / MDG).`];
+  return [`La voie d'eau gâte ${r.removed} Enc de cargaison (T2C ch.7 l.101 / MDG).`];
 }
 
 /** Traits navals EFFECTIFS de la coque (type + Améliorations d'instance). */
@@ -412,7 +412,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const entangleM = sea.entangled?.mMod ?? 0;
   const baseM = (propulsion?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace + overloadM + entangleM;
   const aspect = windAspect(sea.heading, sea.windFrom);
-  // Gréement de course (T2C ch.10 l.137) « inclut un clinfoc … les avantages des deux ne sont pas cumulables »
+  // Gréement de course (T2C ch.12 l.137) « inclut un clinfoc … les avantages des deux ne sont pas cumulables »
   // → il PRIME sur le Clinfoc quand les deux sont présents.
   const rigging = shipHasNavalTrait(traits, 'greement-de-course') ? 'greement' : shipHasNavalTrait(traits, 'clinfoc') ? 'clinfoc' : 'none';
   const cell = windEffect(sea.weather.vent, aspect, rigging);
@@ -472,7 +472,7 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`,
   // ex. Proue-idole de Stromfels → Poursuite) — agnostique de la compétence tenue par le représentant.
   const traitDR = navalTestTypeDR(hullTraits(ship), testTypeId);
-  // « Bouteur »/« Gréement de course » modifient le Test de Navigation POUR DIRIGER (T2C ch.10 l.66/137) —
+  // « Bouteur »/« Gréement de course » modifient le Test de Navigation POUR DIRIGER (T2C ch.12 l.66/137) —
   // seul le Test d'équipage de manœuvre (steering) le reçoit, converti en DR (`navalNavTestDR`, ÷10).
   const navDirDR = testTypeId === 'manoeuvre' ? navalNavTestDR(hullTraits(ship)) : 0;
   // Le naval verse ses paramètres de formule DÉJÀ chiffrés en `meta` NEUTRE (bande de Moral + sabotage +

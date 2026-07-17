@@ -110,7 +110,7 @@ export interface GrappleRule {
 }
 export const GRAPPLE = grappleJson as GrappleRule;
 
-/** Mode d'exposition hydrique (T2C ch.14 p.91) : ingestion volontaire (« boit de l'eau de rivière sans
+/** Mode d'exposition hydrique (T2C ch.16 p.91) : ingestion volontaire (« boit de l'eau de rivière sans
  *  la faire bouillir ») ou immersion (chute/nage — « uniquement à l'immersion » pour le tableau 2). */
 export type WaterExposureMode = 'ingestion' | 'immersion';
 /** Dérivation AUTOMATIQUE d'un modificateur d'exposition depuis le Combatant (tableau 2 « Blessures et
@@ -133,7 +133,7 @@ export interface WaterExposureModifier {
   table: 'source-d-eau' | 'blessures-et-etats';
   auto?: WaterExposureAuto;
 }
-/** Tables d'exposition hydrique (T2C ch.14 p.91) : Test de Résistance Intermédiaire modifié ; raté →
+/** Tables d'exposition hydrique (T2C ch.16 p.91) : Test de Résistance Intermédiaire modifié ; raté →
  *  d100 « +10 pour chaque DR négatif » → maladie CONTRACTÉE (le Test d'exposition EST le test — pas de
  *  second Test de Contraction). `rerollUnlessWounded` : « Relancez si le Personnage n'est pas blessé ». */
 export interface WaterExposureData {
@@ -923,13 +923,13 @@ export interface TraitCapabilities {
    *  (`climbMovementCost`, joueur, LDB 15 l.53). Orthogonal à `autoClimb` (accueille une future capacité
    *  qui réussirait automatiquement sans pour autant grimper à pleine vitesse). */
   climbFullSpeed?: boolean;
-  /** Rampant (T2C ch.13) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
+  /** Rampant (T2C ch.15) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
   noRun?: boolean;
   seesInDark?: boolean;
   /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.176` ;
    *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
   darkSightTiles?: number;
-  /** Salive analgésique (T2C ch.13) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
+  /** Salive analgésique (T2C ch.15) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
    *  endormie (Inconscient magique) — elle s'y accroche sans être détectée. Lu par le modifier `wake-sleeper`. */
   wakelessBite?: boolean;
 }
@@ -1459,7 +1459,7 @@ export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').Am
 /** Taille de navire MDG (catégorie dérivée de la LONGUEUR, tableau CARACTÉRISTIQUES DE BATEAU STANDARD,
  *  MDG ch.12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — ids stables des bandes d'installation. */
 export type ShipSize = 'minuscule' | 'tres-petite' | 'petite' | 'moyenne' | 'grande' | 'enorme' | 'monstrueuse';
-/** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C ch.10 l.54-135 tarife par TYPE de navire à
+/** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C ch.12 l.54-135 tarife par TYPE de navire à
  *  longueurs explicites — barque 5 m et esquif 10 m tombent dans la MÊME `ShipSize` « minuscule » avec des
  *  tarifs DIFFÉRENTS, la Taille ne peut donc pas discriminer). `maxLengthM` = borne haute inclusive du
  *  palier (`null` = bande OUVERTE au-delà — le dernier élément du tableau, triés par longueur croissante) ;
@@ -1467,7 +1467,7 @@ export type ShipSize = 'minuscule' | 'tres-petite' | 'petite' | 'moyenne' | 'gra
  *  dernière borne chiffrée par le livre porté sur la bande concernée. */
 export interface InstallBand { maxLengthM: number | null; value: number; maison?: string }
 /** Coût / Poids d'INSTALLATION d'une Amélioration navale (MDG ch.12, lignes « Coût : / Poids : » de chaque
- *  Amélioration, l.195-364 ; T2C ch.10 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
+ *  Amélioration, l.195-364 ; T2C ch.12 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
  *  « par tranche de 5 m de Taille » (Blindage, Lissage) ; `per: 'unite'` = « par cabine » (Cabine de luxe) ;
  *  `'modele'` = ceux du modèle embarqué (Embarcation de bord). `weightEnc` absent = aucun poids (Lissage).
  *  Donnée consommée par le chantier construction/réparation navale (lot systèmes) — aucune valeur codée en
@@ -1495,10 +1495,10 @@ export interface NavalTraitData {
    *  vocabulaire combattant (≠ `ap` qui mitige TOUT) → injecté dans `resolveCollision` via `belierRam`. */
   ram?: { ic: number; ap: number };
   /** Couvert de pont GRADUÉ (`DeckCoverClass`) offert par l'Amélioration à ses postes — Sabord/Murs blindés
-   *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
+   *  = `totale` (MDG ch.12 l.364 / T2C ch.12 l.85), Plat-bord = `moyenne` (T2C ch.12 l.111). Géométrie de Pont,
    *  consommée par `effectiveDeckPostes`/le rendu du Pont. Sous-système navire, hors vocabulaire combattant. */
   deckCover?: import('../engine/types').DeckCoverClass;
-  /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau — Bouteur +20 (T2C ch.10 l.66),
+  /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau — Bouteur +20 (T2C ch.12 l.66),
    *  Gréement de course −10 (l.137). Sous-système manœuvre, converti en DR d'équipage par `navalNavTestDR`. */
   navTestMod?: number;
   /** #221 : même champ `maison` que `TraumaFiche` (`src/data/schemas/defs/traumas.ts:32`). */
@@ -1550,7 +1550,7 @@ export const seaPerils = seaPerilsJson as SeaPerilsData;
 export const seaWeather = seaWeatherJson as SeaWeatherData;
 export const shipConstruction = shipConstructionJson as ShipConstructionData;
 
-/** LOT 2 #422 : Navigation fluviale (T2C ch.5) — pendant fluvial de `seaNavigation`, même patron
+/** LOT 2 #422 : Navigation fluviale (T2C ch.7) — pendant fluvial de `seaNavigation`, même patron
  *  d'export (référence LIVE au même fichier physique relu par `engine/riverNavigation.ts`). */
 export const riverNavigation = riverNavigationJson as RiverNavigationData;
 

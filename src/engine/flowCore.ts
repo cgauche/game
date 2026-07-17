@@ -373,7 +373,7 @@ export interface FlowTest {
   vsStatus?: string;
   /** Le Test social est une mendicité (option « Mendicité et Statut », LDB 08 l.92). */
   begging?: boolean;
-  /** L'interlocuteur est une créature CAPRICIEUSE (Trait Capricieux, T2C ch.13) : un d10 tiré UNE fois
+  /** L'interlocuteur est une créature CAPRICIEUSE (Trait Capricieux, T2C ch.15) : un d10 tiré UNE fois
    *  module le Test de Sociabilité de −2 à +2 DR (soit ±10 par DR sur la valeur, comme la réaction de
    *  Statut LDB 08). Authoré sur le Test d'un dialogue mené avec la créature. */
   vsCapricieux?: boolean;

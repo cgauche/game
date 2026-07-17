@@ -8,7 +8,7 @@
  *  3. Les passifs combinés (Convulsions + Fièvre) pénalisent les bonnes caractéristiques.
  *  4. Le Test de fin Persistant (Difficile) résout la guérison sur réussite.
  *
- * NOTE — Tableaux d'exposition hydrique T2C ch.14 : les 3 tableaux (Source d'eau, Blessures/États,
+ * NOTE — Tableaux d'exposition hydrique T2C ch.16 : les 3 tableaux (Source d'eau, Blessures/États,
  * Maladies transmissibles) sont des données purement référentielles (toutes les maladies référencées
  * existent déjà dans maladies.json). Ils n'ont pas été câblés dans le moteur car aucun sous-système
  * d'exposition n'existe encore ; ils sont « not-yet-wired » et ne nécessitent pas de nouvelle entité.

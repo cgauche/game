@@ -38,7 +38,7 @@ export function actorStatus(c: Combatant): Status {
   return parseStatus(lvl?.status ?? 'Bronze 1');
 }
 
-/** Capricieux (Trait de créature, T2C 13 l.151-159) : « Lorsqu'un Personnage effectue un Test de Sociabilité en
+/** Capricieux (Trait de créature, T2C 15 l.151-159) : « Lorsqu'un Personnage effectue un Test de Sociabilité en
  *  traitant avec la créature, lancez un dé selon le Tableau suivant » (1 → −2 DR, 2-3 → −1, 4-7 → 0, 8-9 → +1,
  *  10 → +2). Exprimé en mod de VALEUR (±10 par DR, MÊME convention que la réaction de Statut `statusCharmMod`),
  *  PUR : le `roll` d10 est tiré UNE fois par Test (RNG seedé) par l'appelant, comme `reactionRoll`. */
