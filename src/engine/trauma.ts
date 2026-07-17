@@ -51,6 +51,11 @@ export interface TraumaFiche {
   needsSurgery?: boolean;
   /** Séquelle COSMÉTIQUE (cicatrice) : n'est PAS une Blessure critique comptée (`criticalWounds`) — cf. `Trauma.cosmetic`. */
   cosmetic?: boolean;
+  /** Séquelle d'AMPUTATION/perte de membre-organe (LDB 18 l.239-285) — tag STABLE distinguant les
+   *  pénalités « qui découlent d'amputations » (LDB 85 l.195, cf. `painlessIgnores`) de toute autre
+   *  pénalité de Blessure critique. Porté par la FICHE (`Trauma` n'a pas de champ propre) — relu via
+   *  `t.traumaId` par `isAmputationTrauma`. */
+  amputation?: boolean;
   /** Surcharge du `kind` passif (défaut : `traumaOpKind`) — cf. `Trauma.passiveKind`. */
   passiveKind?: import('./ops').PassiveKind;
   /** Note MAISON (règle stricte 7) — trace éditable d'un arbitrage d'un point que le RAW laisse au contexte
@@ -688,10 +693,17 @@ export function prosthesisMoveRestore(c: Combatant): number {
 }
 
 
+/** La séquelle `t` découle-t-elle d'une AMPUTATION/perte de membre-organe (LDB 18 l.239-285) ? Keyée
+ *  par `traumaId` STABLE (`TraumaFiche.amputation` en donnée) — jamais par le `label` d'affichage. */
+function isAmputationTrauma(t: Trauma): boolean {
+  if (t.traumaId == null) return false;
+  return FICHE_BY_ID.get(t.traumaId)?.amputation === true;
+}
+
 /** Insensible à la douleur (LDB 85 p.340) : les pénalités de Blessures Critiques NE DÉCOULANT PAS
  *  d'amputations sont ignorées (les États restent subis). Pur — lit le trait sur `c.traits`. */
 function painlessIgnores(c: Combatant, t: Trauma): boolean {
-  return isPainless(c.traits) && !/amputation|cécité|surdité/i.test(t.label);
+  return isPainless(c.traits) && !isAmputationTrauma(t);
 }
 
 /** Quels « annulateurs » neutralisent chaque `kind` d'effet passif — TABLE de la fondation unifiée

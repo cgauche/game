@@ -102,7 +102,6 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Dressé (Trait)', 'discipline narrative (animal de trait : tire carrosse/chariot/charrue, LDB 85 l.118) — arbitrage MJ'],
   ['Increvable', 'recousue/ressuscitée post-combat — arbitrage MJ'],
   // Traits des Horreurs de Tzeentch (EDO) — flavor de statbloc sans système support, desc verbatim.
-  ['Marque de Tzeentch', 'Mutations du statbloc — fixées par l’auteur/MJ (l’éditeur pose les Mutations de la créature) ; pas de génération runtime'],
   ['Dédoublement', 'scission en 2 horreurs bleues à la mort/Critique — pas de spawn-on-death dans le moteur (MJ/auteur)'],
   ['Feu de Tzeentch', 'aura de feu entre Horreurs du même type — pas de système d’aura inter-créatures (MJ)'],
   // Traits de créature EDO (Appendice 2) — desc verbatim, mécaniques complexes sans système support.
@@ -171,7 +170,15 @@ const DISPATCH = new Set<string>([
   // exemption dissipation STRUCTURELLE), `grantCareerTalent` ×10 (achats hors-Carrière au tarif normal
   // — `talentEffects.careerTalentAdditions`, étendu aux Traits).
   'Marque de Khorne',
-  // Ogre (ADE II 2 l.708, folio 31) : `capabilities.encumbranceFactor`/`consumptionFactor` (donnée)
+  // Marque de Tzeentch (EDOC 9 l.522-524) : `capabilities.psychType:'animosite'`+`psychCible:'nurgle'`
+  // (Animosité fixe, parsePsychTraits — la réciproque Nurgle→porteur est le MÊME canal `targetedTrigger`,
+  // posée côté statblocs Nurgle) + `grantGroups:['tzeentch']` + `passive` : `grantTalent` (Savoir-vivre
+  // (Disciples de Tzeentch), structurel — `talentEffects.traitGrantedTalents`), `grantCareerTalent` ×10
+  // (achats hors-Carrière au tarif normal — `talentEffects.careerTalentAdditions`) + `capabilities.markMutations`
+  // (tirage 1d10/3 Mutations alternées mental/phys, `state/spawn.spawnMutations` — PLUS LÉGER que Khorne :
+  // ni Frénésie ni blocage d'incantation, non RAW pour Tzeentch).
+  'Marque de Tzeentch',
+  // Ogre (ADE II ch.02 l.708, folio 31) : `capabilities.encumbranceFactor`/`consumptionFactor` (donnée)
   // — lus par `combatFeatures/dispatch.traitEncumbranceFactor` (composé max talent/trait dans `items.maxEncumbrance`)
   // et `provisions.traitConsumptionFactor` (composé dans `dailyFoodUpkeep`/`provisioningManifest`). Canal
   // dispatch (capability lue par id, MÊME lecture ciblée `c.traits` que Marque de Khorne).

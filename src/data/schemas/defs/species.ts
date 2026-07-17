@@ -7,7 +7,7 @@
  * à l'interface.
  */
 import { z } from 'zod';
-import { sourceRefSchema, charKeySchema, advancementRefSchema, raceKeySchema, refCareerIdSchema } from '../common';
+import { sourceRefSchema, charKeySchema, advancementRefSchema, raceKeySchema, refCareerIdSchema, traitInstanceSchema } from '../common';
 
 export const file = 'species.json';
 
@@ -28,7 +28,6 @@ export const schema = z.array(
     desc: z.string(),
     movement: z.number(),
     fate: z.strictObject({ fate: z.number(), resilience: z.number(), extra: z.number() }),
-    small: z.boolean(),
     baseChar: z.record(charKeySchema, z.number()),
     /** Compétences d'espèce (positionnel +5/+3 — lu via `advancementLabel`). */
     skills: z.array(advancementRefSchema),
@@ -44,6 +43,10 @@ export const schema = z.array(
      *  l'espèce (jamais un choix de RÈGLE, pur flavor de vitrine) : la tuile de famille montre un
      *  personnage vêtu plutôt qu'une tunique nue. Absent = pas de tenue (repli existant). */
     preview: z.strictObject({ career: z.string().optional() }).optional(),
+    /** Trait RACIAL de l'espèce (#572) — MÊME `TraitInstance` que le bestiaire (Ogre `{id:'ogre'}`,
+     *  encombrance/consommation ×2 ; la Taille est portée par le TALENT Massif/Petit, pas ici).
+     *  Absent (26/27 observées) = aucun trait racial mécanique. */
+    traits: z.array(traitInstanceSchema).optional(),
   }),
 );
 

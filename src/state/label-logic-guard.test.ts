@@ -8,9 +8,10 @@ import { scanLabelLogic } from '../../scripts/guards/lib/labelLogic.mjs';
  * Garde-fou « logique par LABEL interdite » (#142, doctrine CLAUDE.md bloc agents) : toute LOGIQUE est
  * keyée par `id` STABLE — le `label` est de l'AFFICHAGE (multilangue). Scanne `src/engine` + `src/state`
  * (moteur/store, #142) + `src/gameIso` + `src/ui` (#289, rendu iso + UI) récursif, `.ts`/`.tsx`, HORS
- * `*.test.*` : ÉCHEC si le code (commentaires retirés) porte une carte par label (`XXX_BY_LABEL`/
- * `byLabel`) ou une comparaison D'ÉGALITÉ sur `.label` (`x.label === …` / `… === x.label`) — les deux
- * formes remplacent un `id` STABLE par une identité de libellé.
+ * `*.test.*` : ÉCHEC si le code (commentaires retirés) porte, sur `.label`, l'une de TROIS formes —
+ * une carte par label (`XXX_BY_LABEL`/`byLabel`), une comparaison D'ÉGALITÉ (`x.label === …` /
+ * `… === x.label`), ou un PRÉDICAT (regex `.test(x.label)`, méthode de chaîne `x.label.startsWith(…)`,
+ * `switch (x.label)`) — les trois remplacent un `id` STABLE par une identité de libellé.
  *
  * `src/engine`/`src/state` restent TOLÉRANCE ZÉRO, AUCUNE exception (l'instance de référence,
  * `creatureEquip.ts` SHAPE_BY_LABEL/RELOAD_BY_LABEL, est déjà migrée — rien ne justifie un répit
@@ -100,5 +101,16 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
     const present = new Set(findings.map((f) => `${f.rel.replace(/^src\//, '')}:${f.line}`));
     const stale = Object.keys(RATCHET_EXCEPTIONS).filter((k) => !present.has(k));
     expect(stale, 'Exception(s) PÉRIMÉE(s) (site déplacé ou assaini) — retirer/re-pointer ces entrées de RATCHET_EXCEPTIONS :\n' + stale.join('\n')).toEqual([]);
+  });
+
+  it('scanLabelLogic : détecte les prédicats sur `.label` (regex .test, méthode de chaîne, switch)', () => {
+    const src = [
+      "const isOgre = /ogre/i.test(sp.label);",
+      "const isPermanent = !/amputation|cécité|surdité/i.test(t.label);",
+      "const isAffaler = eff.label.startsWith('Affaler');",
+      "switch (x.label) { case 'A': break; }",
+    ].join('\n');
+    const findings = scanLabelLogic('fixture.ts', src);
+    expect(findings.map((f) => f.line)).toEqual([1, 2, 3, 4]);
   });
 });

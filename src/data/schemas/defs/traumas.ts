@@ -26,6 +26,7 @@ export const schema = z.array(
       .optional(),
     needsSurgery: z.boolean().optional(),
     cosmetic: z.boolean().optional(),
+    amputation: z.boolean().optional(),
     passiveKind: z
       .enum(['douleur', 'mobilité', 'structurel', 'sensoriel', 'maladie', 'faim', 'magique', 'etat', 'ivresse', 'intrinsèque'])
       .optional(),

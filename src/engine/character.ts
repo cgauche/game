@@ -45,6 +45,7 @@ import {
 import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
 import { applyStarEffect } from './creation';
+import { sizeFromTalents } from './size';
 
 /** Caractéristique d'une Compétence (skills.json) par `id` STABLE — LDB 09 : valeur de Test =
  *  Caractéristique + avances. (≠ re-lookup par libellé — multilangue-safe.) */
@@ -371,8 +372,15 @@ export function createHero(opts: CreateHeroOptions): Combatant {
       : rawTrappings,
   );
 
-  // Taille de l'espèce (LDB 85) : Halfling = Petite (talent Petit), Ogre = Grande, sinon Moyenne.
-  const size: import('./size').SizeCategory = sp.small ? 'petite' : /ogre/i.test(sp.label) ? 'grande' : 'moyenne';
+  // Trait RACIAL de l'espèce (#572) — Ogre `{id:'ogre'}` (encombrance/consommation ×2, ADE2 « Ogres
+  // et Mutations » l.708 « Un Lourd Fardeau ») : posé sur `Combatant.traits` (MÊME forme/lecture que
+  // le spawn de créature bestiaire, #513).
+  const speciesTraits: import('./statEntry').TraitList = sp.traits ?? [];
+
+  // Taille (LDB 05 p.342) — portée par `TalentData.size` (DATA-DRIVEN, jamais un id de talent
+  // nommé dans le moteur, #572) : la plus grande catégorie parmi les talents résolus (espèce +
+  // carrière + signe astral) ci-dessus, sinon Moyenne.
+  const size = sizeFromTalents(talents.map((tt) => tt.talentId), (id) => findTalentById(id)?.size);
 
   // Destin / Résilience
   const fateBase = sp.fate;
@@ -387,7 +395,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     kind: 'hero',
     species: opts.speciesId,
     career: opts.careerId,
-    groups: groupsFor({ species: sp.label, careerId: opts.careerId, group: sp.group, traits: [], talents }), // racial (label, ou surcharge `group`) + sous-espèce + carrière + religieux (Talent Béni, LDB 21, P3)
+    groups: groupsFor({ species: sp.label, careerId: opts.careerId, group: sp.group, traits: speciesTraits, talents }), // racial (label, ou surcharge `group`) + sous-espèce + carrière + religieux (Talent Béni, LDB 21, P3)
     size,
     characteristics: chars,
     wounds: { current: 0, max: 0, base: 0 }, // posé après les effets de talents (Dur à cuire)
@@ -398,6 +406,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     items,
     skills,
     talents,
+    traits: speciesTraits.length ? speciesTraits : undefined, // Trait racial d'espèce (#572) — Ogre : encombrance/consommation ×2 + Taille
     movement: sp.movement,
     fate,
     fortune: fate,

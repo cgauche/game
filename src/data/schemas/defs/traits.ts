@@ -33,6 +33,13 @@ const specsSourceSchema = z.enum([
 const traitCapabilitiesSchema = z.strictObject({
   bonusWoundsBE: z.boolean().optional(),
   mutationAtSpawn: z.enum(['physique', 'mentale']).optional(),
+  markMutations: z.strictObject({
+    countDie: z.number(),
+    countDivide: z.number(),
+    first: z.enum(['physique', 'mentale']),
+    mentalTable: z.string(),
+    physTable: z.string(),
+  }).optional(),
   swarm: z.boolean().optional(),
   naturalWeapon: z.strictObject({ ranged: z.boolean().optional() }).optional(),
   spellcaster: z.boolean().optional(),

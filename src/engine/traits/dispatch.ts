@@ -232,6 +232,17 @@ export function mutationsAtSpawn(traits: TraitList | undefined): { kind: 'physiq
     .map((t) => ({ kind: traitById.get(t.id)!.capabilities!.mutationAtSpawn!, mutationId: t.arg ? slugId(t.arg) : undefined }));
 }
 
+/** Marque du Chaos (Marque de Tzeentch, EDOC 9 l.522-524) : tirage PLURIEL et ALTERNÉ de Mutations au
+ *  spawn — `capabilities.markMutations`, DISTINCT de `mutationsAtSpawn` (singulier, table générique).
+ *  Un seul porteur attendu ; le premier trait qui porte la capacité fait foi. */
+export function markMutationsAtSpawn(traits: TraitList | undefined): NonNullable<TraitCapabilities['markMutations']> | undefined {
+  for (const t of traits ?? []) {
+    const spec = traitById.get(t.id)?.capabilities?.markMutations;
+    if (spec) return spec;
+  }
+  return undefined;
+}
+
 // ── Mathématique de combat ────────────────────────────────────────────────────────────────────────
 /** Sauvegardes « 1d10 ≥ Indice → coup ignoré » (Démoniaque 8+, Protection N). Liste des seuils. */
 export function wardSaves(traits: TraitList | undefined): number[] {

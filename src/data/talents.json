@@ -3105,6 +3105,7 @@
     "test": null,
     "desc": "Vous êtes bien plus petit que la plupart des gens dans le Vieux Monde. Les règles complètes concernant les différentes Tailles se trouvent au Chapitre 12 : Bestiaire à la page 342.",
     "specs": [],
+    "size": "petite",
     "rand": null,
     "source": {
       "book": "livre-de-base",
@@ -3874,6 +3875,10 @@
       {
         "id": "suivants-de-khorne",
         "label": "Suivants de Khorne"
+      },
+      {
+        "id": "disciples-de-tzeentch",
+        "label": "Disciples de Tzeentch"
       }
     ],
     "rand": null,
@@ -4774,6 +4779,7 @@
     "test": null,
     "desc": "Vous êtes bien plus massif que la plupart des habitants du Vieux Monde. Les règles complètes à propos des différentes Tailles se trouvent à la page 342 de WFJDR.",
     "specs": [],
+    "size": "grande",
     "rand": null,
     "source": {
       "book": "archives-de-l-empire-2",

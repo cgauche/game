@@ -14,6 +14,23 @@ import { z } from 'zod';
 export const gameOpSchema = z.looseObject({ op: z.string() });
 
 /**
+ * `TraitInstance` (`src/engine/statEntry.ts`) — Trait STRUCTURÉ partagé entre le bestiaire
+ * (`creatures.json` `traits`/`optionals`) et l'espèce jouable (`species.json` `traits`, #572 :
+ * trait RACIAL posé sur `Combatant.traits` à `createHero`, ex. Ogre `{id:'ogre'}` — encombrance/
+ * consommation ×2 ; la Taille, elle, est portée par le TALENT Massif/Petit, pas un Trait). MÊME
+ * forme partout — jamais recopiée.
+ */
+export const traitInstanceSchema = z.strictObject({
+  id: z.string(),
+  value: z.number().optional(),
+  arg: z.string().optional(),
+  count: z.number().optional(),
+  range: z.number().optional(),
+  natural: z.boolean().optional(),
+  hidden: z.boolean().optional(),
+});
+
+/**
  * Réf de source récurrente `{ book, page }` — vue sur 2-3 datasets (`characteristics.json`,
  * `species.json`/`SpeciesData.source`, `careers.json`/`CareerData.source` dans `src/data/index.ts`) :
  * même forme partout. `book` = id de `books.json` (id-pur, cf. commit `21aa4881`) ; `page` = folio

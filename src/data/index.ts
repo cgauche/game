@@ -86,7 +86,7 @@ import type { MutationData, MutationTable } from './mutations'; // type-only (é
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import type { PowerEstimateRow, MightModifierRow, WarMachineRow, StructureRow as MassBattleStructureRow, HazardRow } from '../engine/massBattle'; // type-only (le runtime de massBattle.ts importe ces tableaux d'ici)
 import { type DiceSpec, formatDice } from '../engine/dice';
-import { SIZE_LABEL } from '../engine/size'; // runtime : registre feuille (data/sizes.json + engine/qualities/ids), sans cycle vers data/index
+import { SIZE_LABEL, sizeFromTalents } from '../engine/size'; // runtime : registre feuille (data/sizes.json + engine/qualities/ids), sans cycle vers data/index
 import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la donnée d'ici)
 import type { OupsRow } from './oups';
 import type { InterludeEvent } from './interludeEvents';
@@ -181,7 +181,6 @@ export interface SpeciesData {
   desc: string;
   movement: number;
   fate: { fate: number; resilience: number; extra: number };
-  small: boolean;
   baseChar: Partial<Record<CharKey, number>>;
   /** Compétences d'espèce (`AdvancementRef[]` ; positionnel +5/+3 — lu via `advancementLabel`). */
   skills: AdvancementRef[];
@@ -199,6 +198,14 @@ export interface SpeciesData {
    *  l'espèce (flavor de vitrine, pas une règle) : la tuile de famille montre un personnage vêtu
    *  plutôt qu'une tunique nue. Absent = pas de tenue (repli existant). */
   preview?: { career?: string };
+  /** Trait RACIAL de l'espèce (#572) — MÊME forme structurée que les Traits de créature du bestiaire
+   *  (`import('../engine/statEntry').TraitInstance`, jamais une glose de règle en `desc`) : Ogre porte
+   *  `{id:'ogre'}` (ADE2 « Ogres et Mutations » l.708 « Un Lourd Fardeau », encombrance/consommation
+   *  ×2 lues par `traitEncumbranceFactor`/`traitConsumptionFactor` sur `Combatant.traits`). La Taille
+   *  (LDB 05 p.342) N'EST PAS un trait — elle est portée par le TALENT Massif/Petit (déjà présent
+   *  dans `talents`, lu par `createHero`). Posé sur `Combatant.traits` à `createHero`. Absent = aucun
+   *  trait racial mécanique (espèce sans règle raciale hors talents/skills). */
+  traits?: import('../engine/statEntry').TraitInstance[];
 }
 export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
@@ -378,6 +385,9 @@ export interface TalentData {
    *  MÉCANIQUE correspondant est `combat.aa`. Absent = le Talent ne change pas en mode groupe. */
   descAA?: string;
   specs?: SpecEntry[];
+  /** Catégorie de Taille CONFÉRÉE par le talent (Massif → `grande`, Petit → `petite`, LDB 05 p.342) —
+   *  lue par `createHero` (#572), même vocabulaire que la Taille de créature (`SizeCategory`). */
+  size?: import('../engine/size').SizeCategory;
   /** Source du pool de spéc (via `SPEC_SOURCES`/`specIdsOf`/`specLabel`) : `arcaneDomains` (Magie des
    *  Arcanes → Domaines `arcane` de `domains.json`, AFFICHE le Lore), `cultBlessings`/`cultMiracles`/
    *  `cultChaos` (Béni / Invocation / Magie du Chaos → `gods.id` filtrés, AFFICHE le nom du dieu) ou
@@ -845,6 +855,13 @@ export interface TraitCapabilities {
   // Construction / spawn
   bonusWoundsBE?: boolean;
   mutationAtSpawn?: 'physique' | 'mentale';
+  /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 9 l.522-524 : « gagne
+   *  1d10/3 Mutations (arrondi à l'entier supérieur), alternant entre Mutations mentales et
+   *  physiques » sur la colonne du dieu). `countDie`/`countDivide` = la formule de comptage (⌈1d`countDie`
+   *  / `countDivide`⌉) ; `first` = la nature du 1er tirage (RAW liste « mentales et physiques » en premier) ;
+   *  `mentalTable`/`physTable` = ids de `mutationTables.json` (colonne du dieu). Distinct de `mutationAtSpawn`
+   *  (singulier, table générique 'physique'/'mentale') — les deux capacités coexistent sans collision. */
+  markMutations?: { countDie: number; countDivide: number; first: 'physique' | 'mentale'; mentalTable: string; physTable: string };
   swarm?: boolean;
   /** Attaque NATURELLE (LDB 85) : le trait EST une arme (morsure, cornes, tentacules…) — pas d'objet
    *  tenu par le rig. Remplace l'ancienne reconnaissance par découpe du libellé + Map FR au runtime
@@ -1837,6 +1854,13 @@ const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
 export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
   return id ? SPECIES_BY_ID.get(id) : undefined;
+}
+/** Taille CONFÉRÉE par les talents d'espèce FIXES (`{ref}`, jamais `{choice}`/`{wildcard}`/`{random}`
+ *  résiduels — chip décoratif du créateur avant résolution complète, #572). Même vocabulaire que
+ *  `sizeFromTalents` (engine/character.ts) : la plus grande catégorie parmi `TalentData.size`. */
+export function speciesSize(sp: SpeciesData): import('../engine/size').SizeCategory {
+  const ids = sp.talents.filter((t): t is { ref: Ref } => 'ref' in t).map((t) => t.ref.id);
+  return sizeFromTalents(ids, (id) => findTalentById(id)?.size);
 }
 /** id d'espèce RIG (slug, clé `appearance.species`) dérivé d'un id d'espèce RULES (ou chaîne libre) :
  *  slug du LIBELLÉ d'espèce. Pont UNIQUE rules→rig (pregens/draft/creator/defaultAppearance). Défaut Humain.

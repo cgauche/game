@@ -127,6 +127,19 @@ export function woundsForSize(bf: number, be: number, bfm: number, size: SizeCat
   }
 }
 
+/**
+ * Taille conférée par une liste de talents résolus (LDB 05 p.342, #572) : la plus GRANDE catégorie
+ * portée par `TalentData.size` parmi les talents possédés, sinon `moyenne`. Générique — aucun id de
+ * talent nommé ici, la classe entière (Massif, Petit, tout futur talent de Taille) est couverte.
+ */
+export function sizeFromTalents(talentIds: readonly string[], sizeOf: (talentId: string) => SizeCategory | undefined): SizeCategory {
+  for (const id of talentIds) {
+    const size = sizeOf(id);
+    if (size) return size;
+  }
+  return 'moyenne';
+}
+
 /** Décale une catégorie de Taille de `steps` crans (positif = agrandir), bornée Minuscule..Monstrueuse. */
 export function stepSize(size: SizeCategory | undefined, steps: number): SizeCategory {
   const next = Math.max(0, Math.min(6, SIZE_ORDER[effectiveSize(size)] + steps));

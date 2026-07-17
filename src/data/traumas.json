@@ -254,7 +254,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Membres amputés — nécessité de la chirurgie, LDB 18 l.239."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "orteil-ampute",
@@ -276,7 +277,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "membre-inferieur-ampute",
@@ -308,7 +310,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "doigt-ampute",
@@ -324,7 +327,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "main-bras-ampute",
@@ -346,7 +350,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "langue-amputee",
@@ -363,7 +368,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "nez-ampute",
@@ -386,7 +392,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "oeil-perdu",
@@ -417,7 +424,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "oreille-perdue",
@@ -444,7 +452,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "dents-perdues",
@@ -460,7 +469,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "cecite",
@@ -492,7 +502,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "surdite",
@@ -510,7 +521,8 @@
       "book": "livre-de-base",
       "page": 180,
       "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
-    }
+    },
+    "amputation": true
   },
   {
     "id": "perte-auditive-partielle",

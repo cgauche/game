@@ -390,7 +390,7 @@ function hullTraits(hull: Combatant) {
 /** M de VOYAGE du jour (ch.13/15) : M du gréement + Lissage (`navalMoveMod`) + Salissures + événement,
  *  puis EFFET DU VENT (%, Clinfoc — ch.13 l.274/ch.12 l.254). `null` = les voiles n'avancent pas
  *  (Encalminé / Affaler) — Propulsion à vapeur : M 4 constant, insensible au vent (ch.12 l.311). */
-function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: PropulsionKind | null; label: string } {
+function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: PropulsionKind | null; label: string; affaler: boolean } {
   const plan = get().travelPlan!;
   const sea = plan.sea!;
   const hull = plan.vehicle!;
@@ -398,7 +398,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const traits = hullTraits(hull);
   const vessel = get().vessel;
   if (shipHasNavalTrait(traits, 'propulsion-a-vapeur')) {
-    return { m: 4, sail: false, mode: null, label: 'vapeur (M 4, insensible au vent)' }; // MDG ch.12 l.311
+    return { m: 4, sail: false, mode: null, label: 'vapeur (M 4, insensible au vent)', affaler: false }; // MDG ch.12 l.311
   }
   const propulsion = vesselPropulsion(vd);
   const sail = propulsion?.mode === 'voile';
@@ -417,8 +417,9 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const rigging = shipHasNavalTrait(traits, 'greement-de-course') ? 'greement' : shipHasNavalTrait(traits, 'clinfoc') ? 'clinfoc' : 'none';
   const cell = windEffect(sea.weather.vent, aspect, rigging);
   const m = windAdjustedM(Math.max(0, baseM), cell, sail);
-  const label = cell.encalmine && sail ? 'Encalminé' : cell.affaler && sail ? 'Affaler les voiles !' : `vent ${aspect}`;
-  return { m, sail, mode: propulsion?.mode ?? null, label };
+  const affaler = !!(cell.affaler && sail);
+  const label = cell.encalmine && sail ? 'Encalminé' : affaler ? 'Affaler les voiles !' : `vent ${aspect}`;
+  return { m, sail, mode: propulsion?.mode ?? null, label, affaler };
 }
 
 // ── Test d'équipage de VOYAGE (hors combat — l'équipage = les PJ) ────────────────────────────────
@@ -670,7 +671,7 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: CascadeStep[]; log: st
   // 2. Vents « Affaler les voiles » (ch.13 l.288) : posé AVANT le jet (le d100 ne décide QUE d'un
   // Critique au gréement, jamais du fait que les voiles soient affalées ce jour — RAW).
   const eff = effectiveSeaM(get);
-  if (eff.sail && eff.m === null && eff.label.startsWith('Affaler')) {
+  if (eff.sail && eff.m === null && eff.affaler) {
     patchSea(get, set, { sailsDown: true });
     const st = buildVoyageCrewStep(get, 'affaler', 'affaler');
     if (st) steps.push(st);

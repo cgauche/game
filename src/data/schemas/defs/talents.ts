@@ -101,6 +101,7 @@ export const schema = z.array(
     desc: z.string(),
     descAA: z.string().optional(),
     specs: z.array(specEntrySchema).optional(),
+    size: z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']).optional(),
     specsSource: specsSourceSchema.optional(),
     specsOpen: z.boolean().optional(),
     rand: z.number().nullable(),

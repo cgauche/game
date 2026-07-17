@@ -4,20 +4,9 @@
  * les 472 entrées (histogramme complet, pas d'échantillonnage).
  */
 import { z } from 'zod';
-import { sourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema } from '../common';
+import { sourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
 
 export const file = 'creatures.json';
-
-/** `TraitInstance` (`src/engine/statEntry.ts`) — utilisé pour `traits` et les optionnels ORDINAIRES. */
-const traitInstanceSchema = z.strictObject({
-  id: z.string(),
-  value: z.number().optional(),
-  arg: z.string().optional(),
-  count: z.number().optional(),
-  range: z.number().optional(),
-  natural: z.boolean().optional(),
-  hidden: z.boolean().optional(),
-});
 
 /** `OptionalEntry` (`src/engine/statEntry.ts`) — un élément d'`optionals` (LDB 76) : soit un
  *  `TraitInstance` ordinaire, soit une NOTE composée irréductible à un trait (discriminée par `note`) :

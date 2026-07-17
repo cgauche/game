@@ -449,7 +449,7 @@ Les créatures agressives de grande Taille inspirent automatiquement Peur ou Ter
 - `LDB 85 l.382-383` — règle Peur/Terreur par Taille
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `EnemyTurnInput`, `resizeBySteps`, `displaceSmaller`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, `rollManeuverAttacker`, +20 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +8 fichiers
+- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `EnemyTurnInput`, `displaceSmaller`, `resizeBySteps`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, `rollManeuverAttacker`, +20 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +8 fichiers
 
 ---
 
@@ -610,7 +610,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 - `LDB 17 l.59` — Détermination vs Psychologie
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `suivants-de-khorne`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
+- `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `disciples-de-tzeentch`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
 - `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `EnemyAction`, `useAttackJetProps`, `useTestJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
 - `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `EffectFlags`, `terreur`, `animosite`, `calme-d-approche`, +55 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +28 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `knowsCastingSkill`, `engagedAdvantageGap`, `rollManeuverAttacker`, +53 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +8 fichiers

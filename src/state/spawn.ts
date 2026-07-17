@@ -16,7 +16,7 @@ import { emptyArmour, buildWeapon, hydratePoste } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
-import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwarm, findResolvedTrait } from '../engine/traits/dispatch';
+import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, markMutationsAtSpawn, isSwarm, findResolvedTrait } from '../engine/traits/dispatch';
 import { rollMutation, mutationById } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
@@ -97,10 +97,21 @@ function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Chara
  *  spawn — graine STABLE dérivée de l'id (déterministe, rejouable). */
 function spawnMutations(traits: TraitList | undefined, id: string) {
   const specs = mutationsAtSpawn(traits);
-  if (!specs.length) return {};
+  const mark = markMutationsAtSpawn(traits);
+  if (!specs.length && !mark) return {};
   const rng = makeRNG(hashSeed(`mut:${id}`));
   // Mutation EXPLICITE (id, ex. « cornes-asymetriques » : tell figé en donnée) sinon tirage.
   const mutations = specs.map((s) => (s.mutationId ? mutationById(s.mutationId) : null) ?? rollMutation(s.kind, rng));
+  // Marque du Chaos (EDOC 9 l.522-524) : ⌈1d`countDie`/`countDivide`⌉ tirages, alternant `first` puis
+  // l'autre nature, sur les tables `mentalTable`/`physTable` — MÊME rng seedé (ordre de tirage stable).
+  if (mark) {
+    const count = Math.ceil(rng.int(1, mark.countDie) / mark.countDivide);
+    const other = mark.first === 'mentale' ? 'physique' : 'mentale';
+    for (let i = 0; i < count; i++) {
+      const kind = i % 2 === 0 ? mark.first : other;
+      mutations.push(rollMutation(kind === 'mentale' ? mark.mentalTable : mark.physTable, rng));
+    }
+  }
   return { mutations };
 }
 

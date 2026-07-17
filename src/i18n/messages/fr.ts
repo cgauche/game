@@ -129,6 +129,8 @@ export const fr = {
   'present.ambitionLong': 'Ambition',
   'present.noStory': 'Aucune histoire notée pour ce personnage.',
   'present.forces': 'Forces',
+  // Traits RACIAUX/mécaniques du personnage (#572, LDB 85) — rubrique visible seulement si portée.
+  'present.traits': 'Traits',
   // Rubrique Sorts/Miracles (#417) — titre distingué par nature (`isPrayer`), jamais une invention
   // fragile quand le catalogue mêle les deux.
   'present.spells.spells': 'Sorts',

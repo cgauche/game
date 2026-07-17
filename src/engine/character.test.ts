@@ -8,6 +8,8 @@ import {
   createHero,
 } from './character';
 import { baseWithTalents } from './talentEffects';
+import { traitConsumptionFactor } from './provisions';
+import { traitEncumbranceFactor } from './combatFeatures/dispatch';
 
 const REIK = 'humains-reiklander';
 const sp = () => findSpeciesById(REIK)!;
@@ -176,5 +178,30 @@ describe('createHero — applique compétences et talents raciaux', () => {
     });
     expect(out).not.toContain('Destinée');
     expect(out.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('createHero — Trait racial + Taille par talent (#572)', () => {
+  it('un héros Ogre porte le trait racial `ogre` (encombrance/consommation ×2) et sa Taille est Grande', () => {
+    const hero = createHero({ speciesId: 'ogres', careerId: 'ratier', name: 'Grosminet', rng: makeRNG(3) });
+    expect(hero.traits).toEqual([{ id: 'ogre' }]);
+    expect(hero.talents.some((t) => t.talentId === 'massif')).toBe(true);
+    expect(hero.size).toBe('grande');
+    expect(traitConsumptionFactor(hero)).toBe(2);
+    expect(traitEncumbranceFactor(hero)).toBe(2);
+  });
+
+  it('un héros Halfling (talent Petit) a une Taille Petite, sans trait racial ni facteur ×2', () => {
+    const hero = createHero({ speciesId: 'halflings', careerId: 'marchand', name: 'Bilbon', rng: makeRNG(3) });
+    expect(hero.talents.some((t) => t.talentId === 'petit')).toBe(true);
+    expect(hero.size).toBe('petite');
+    expect(hero.traits ?? []).toEqual([]);
+    expect(traitConsumptionFactor(hero)).toBe(1);
+    expect(traitEncumbranceFactor(hero)).toBe(1);
+  });
+
+  it('un héros humain (ni Massif ni Petit) a une Taille Moyenne', () => {
+    const hero = createHero({ speciesId: REIK, careerId: 'soldat', name: 'T', rng: makeRNG(3) });
+    expect(hero.size).toBe('moyenne');
   });
 });

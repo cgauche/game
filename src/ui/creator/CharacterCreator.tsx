@@ -42,10 +42,12 @@ import {
   specLabel,
   findBookById,
   skillInstanceLabel,
+  speciesSize,
   SpeciesData,
   CareerData,
   StarData,
 } from '../../data';
+import { SIZE_LABEL } from '../../engine/size';
 import type { SourceRef } from '../../data/schemas/common';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
 import { rule } from '../../engine/policy';
@@ -180,7 +182,7 @@ const CORE = allSpecies.filter((s) => s.source.book === 'livre-de-base').map((s)
 
 /** Choix proposés pour le trapping « Arme (Au choix) » : toutes les ARMES des données ({id, label}). */
 const WEAPON_CHOICES = allTrappings
-  .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !/mains nues/i.test(t.label))
+  .filter((t) => (t.type === 'melee' || t.type === 'ranged') && t.id !== 'mains-nues')
   .map((t) => ({ id: t.id, label: t.label }))
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 /** Demeure céleste par ID (ADE2 3 l.504-512) — libellé affiché + desc RAW en tooltip du thème astral. */
@@ -619,9 +621,9 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
           <span className="chip">Destin <b>{sp.fate.fate}</b></span>
           <span className="chip">Résilience <b>{sp.fate.resilience}</b></span>
           <span className="chip"><b>+{sp.fate.extra}</b> à répartir</span>
-          {sp.small && (
-            <span className="chip" title="Talent Petit : Blessures calculées sans le Bonus de Force">
-              Taille <b>Petite</b>
+          {speciesSize(sp) !== 'moyenne' && (
+            <span className="chip" title="Talent de Taille d'espèce (LDB 05 p.342)">
+              Taille <b>{SIZE_LABEL[speciesSize(sp)]}</b>
             </span>
           )}
         </>

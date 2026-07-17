@@ -9,8 +9,10 @@ import { Fragment, type ReactNode } from 'react';
 import { CodexRef } from './compendium/CodexRef';
 import { splitTopLevelOu } from '../engine/careerSlots';
 import { statName } from '../engine/statEntry';
-import { findSkillById, findTalentById, skillInstanceLabel, talentConcrete, qualityRefLabel } from '../data';
+import { findSkillById, findTalentById, findTraitById, skillInstanceLabel, talentConcrete, qualityRefLabel } from '../data';
+import { formatTrait } from '../engine/traits/dispatch';
 import type { SkillInstance, TalentInstance, QualityInstance } from '../engine/types';
+import type { TraitInstance } from '../engine/statEntry';
 
 /** Un chip : boîte `.entity-chip` + déclencheur `CodexRef` (`label` = clé de résolution) + badge
  *  optionnel en fin (carac/valeur, `+avancées`, `×N`…). */
@@ -110,6 +112,28 @@ export function QualityChips({ qualities }: { qualities: QualityInstance[] }) {
         <Fragment key={i}>
           {i > 0 && ' '}
           <QualityChip quality={q} />
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+/** Chip d'un Trait STRUCTURÉ (`TraitInstance`, LDB 85) — porté par une créature OU un Trait RACIAL
+ *  d'espèce (#572, ex. Ogre) — libellé fidèle via `formatTrait`. */
+export function TraitChip({ trait }: { trait: TraitInstance }) {
+  return (
+    <EntityRef category="traits" id={trait.id} label={findTraitById(trait.id)?.label ?? trait.id} show={formatTrait(trait)} />
+  );
+}
+
+/** Suite inline de chips de Traits (même patron que `QualityChips`). */
+export function TraitChips({ traits }: { traits: TraitInstance[] }) {
+  return (
+    <>
+      {traits.map((t, i) => (
+        <Fragment key={i}>
+          {i > 0 && ' '}
+          <TraitChip trait={t} />
         </Fragment>
       ))}
     </>

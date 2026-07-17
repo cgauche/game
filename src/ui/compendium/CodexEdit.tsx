@@ -263,7 +263,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats', 'psychologies', 'symptoms'].includes(categoryKey)) add('effects');
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
   if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings', 'psychologies', 'navalTraits'].includes(categoryKey)) add('passive');
-  if (categoryKey === 'structures') add('traits'); // {id,value?}[] → réutilise TraitListField (comme creatures)
+  if (categoryKey === 'structures' || categoryKey === 'races') add('traits'); // {id,value?}[] → réutilise TraitListField (comme creatures) — Trait racial d'espèce (encombrance/consommation), #572
   if (categoryKey === 'crewRoles') add('skills'); // {skillId,spec?}[] → éditeur dédié (SkillSpecListField)
   if (categoryKey === 'axes') add('skills', 'talents'); // #409 : {skillId,spec?}[]/{talentId,spec?}[] → SkillSpecListField/TalentSpecListField
   if (categoryKey === 'traumas') add('prosthesis'); // {trappingId,cancels}[] → éditeur dédié (ProsthesisField)
@@ -454,6 +454,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Trait : SCHÉMA de son argument (indice/range/specsSource/specsOpen/specsMulti) → éditeur dédié
   // (select des sources DÉRIVÉ de SPEC_SOURCES + booléens + libellé d'indice), sorti du repli générique.
   const isTrait = categoryKey === 'traits';
+  // Espèce : Trait racial (`traits`, #572) → réutilise TraitListField (comme creatures/structures) —
+  // Ogre `{id:'ogre'}` (encombrance/consommation ×2 ; la Taille est portée par le talent Massif/Petit).
+  const isRace = categoryKey === 'races';
   // Critique de coque (10 catégories navire/fluvial, #157 suite) : `crewTest` (skillId?/difficulty?/
   // crewTarget?/onFail) → éditeur dédié (ShipCrewTestField) ; `ops` reste sur le lot GameOpEditor commun.
   const isShipCrit = SHIP_CRIT_CATEGORIES.includes(categoryKey);
@@ -619,6 +622,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isDetails && <DetailsTextsField value={entry.texts as DetailsTexts | undefined} onChange={(v) => edit('texts', v)} />}
         {isTrait && <TraitSchemaField entry={entry} edit={edit} />}
         {isStructure && <TraitListField label="Atouts" hint="(Résistant/Impénétrable — ADE II 8)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
+        {isRace && <TraitListField label="Trait racial" hint="(#572 — Ogre : encombrance/consommation ×2 ; Taille = talent Massif/Petit)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
         {hasCrewSkills && <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <SkillSpecListField hint="compétences contribuant à l'axe (facultatif)" value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <TalentSpecListField value={entry.talents as { talentId: string; spec?: string }[] | undefined} onChange={(v) => edit('talents', v)} />}

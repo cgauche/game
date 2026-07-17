@@ -1881,7 +1881,69 @@
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 83
-    }
+    },
+    "capabilities": {
+      "psychType": "animosite",
+      "psychCible": "nurgle",
+      "grantGroups": [
+        "tzeentch"
+      ],
+      "markMutations": {
+        "countDie": 10,
+        "countDivide": 3,
+        "first": "mentale",
+        "mentalTable": "edoc-mental-tzeentch",
+        "physTable": "edoc-phys-tzeentch"
+      }
+    },
+    "passive": [
+      {
+        "op": "grantTalent",
+        "talentId": "savoir-vivre",
+        "spec": "disciples-de-tzeentch"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "magie-des-arcanes"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "diction-instinctive"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "harmonisation-aethyrique"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "magie-du-chaos",
+        "spec": "tzeentch"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "mage-de-guerre"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "magie-mineure"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "mains-agiles"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "perception-de-la-magie"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "seconde-vue"
+      },
+      {
+        "op": "grantCareerTalent",
+        "talentId": "sorcier"
+      }
+    ]
   },
   {
     "id": "dedoublement",

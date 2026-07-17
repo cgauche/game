@@ -138,5 +138,13 @@
   {
     "id": "slaanesh",
     "label": "Suivants de Slaanesh"
+  },
+  {
+    "id": "nurgle",
+    "label": "Suivants de Nurgle"
+  },
+  {
+    "id": "tzeentch",
+    "label": "Disciples de Tzeentch"
   }
 ]
