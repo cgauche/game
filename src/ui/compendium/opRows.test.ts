@@ -123,4 +123,21 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
       expect(resolved, `kind ${fixture.kind} : id « ${row.id} » (catégorie ${row.category}) ne résout à AUCUN item Codex`).toBeTruthy();
     }
   });
+
+  /** Accord réel singulier/pluriel (juge vision 2026-07-17) — jamais le pluriel-code « (s) ». */
+  it('accorde Blessure(s)/Round(s) au réel — singulier à 1, pluriel sinon', () => {
+    const one = opRow({ op: 'wounds', amount: 1 });
+    const two = opRow({ op: 'wounds', amount: 2 });
+    expect(one.t).toBe('ref');
+    expect(two.t).toBe('ref');
+    if (one.t === 'ref') expect(one.show).toBe('1 Blessure');
+    if (two.t === 'ref') expect(two.show).toBe('2 Blessures');
+
+    const cond1 = opRow({ op: 'condition', name: etats[0].id, durationRounds: 1 });
+    const cond3 = opRow({ op: 'condition', name: etats[0].id, durationRounds: 3 });
+    expect(cond1.t).toBe('ref');
+    expect(cond3.t).toBe('ref');
+    if (cond1.t === 'ref') expect(cond1.badge).toBe('1 Round');
+    if (cond3.t === 'ref') expect(cond3.badge).toBe('3 Rounds');
+  });
 });

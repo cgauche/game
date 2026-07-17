@@ -52,18 +52,18 @@ describe('sheetAlarms', () => {
     expect(byKey['surcharge']).toMatchObject({ label: 'Surchargé', anchor: ETAT_ANCHOR_ENCOMBREMENT, tone: 'warn' });
   });
 
-  it('trauma cosmétique seul (cicatrice) : pas d’alarme Traumas', () => {
+  it('trauma cosmétique seul (cicatrice) : pas d’alarme Séquelles', () => {
     const hero = mkHero((c) => {
       c.traumas = [{ label: 'Cicatrice', location: 'corps', cosmetic: true } as Trauma];
     });
     expect(sheetAlarms(hero).some((a) => a.anchor === ETAT_ANCHOR_TRAUMAS)).toBe(false);
   });
 
-  it('trauma NON cosmétique : alarme Traumas', () => {
+  it('trauma NON cosmétique : alarme Séquelles', () => {
     const hero = mkHero((c) => {
       c.traumas = [{ label: 'Bras cassé', location: 'brasG' } as Trauma];
     });
-    expect(sheetAlarms(hero).find((a) => a.anchor === ETAT_ANCHOR_TRAUMAS)).toMatchObject({ label: 'Traumas 1', tone: 'warn' });
+    expect(sheetAlarms(hero).find((a) => a.anchor === ETAT_ANCHOR_TRAUMAS)).toMatchObject({ label: 'Séquelles 1', tone: 'warn' });
   });
 
   it('fingerprint : stable pour le même relevé, différent si une alarme s’ajoute', () => {

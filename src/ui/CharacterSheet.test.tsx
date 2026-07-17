@@ -224,7 +224,7 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     expect(htmlCorrupted).toContain('data-corruption="ronge"');
   });
 
-  it('badges de zone `FigTile.zoneBadges` : PA d’armure en Possessions (6 Localisations réelles, ton `sang` si l’armure portée est entamée)', () => {
+  it('badges de zone `FigTile.zoneBadges` : PA d’armure en Possessions (seules les zones COUVERTES, ton `sang` si l’armure portée est entamée)', () => {
     const h = {
       ...hero(),
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 2, jambeG: 0, jambeD: 0 },
@@ -234,12 +234,13 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
     const aside = container.querySelector('.sheet-aside')!;
     const badges = aside.querySelectorAll('.fig-zone-badge');
-    expect(badges.length).toBe(6); // les 6 Localisations réelles, toujours rendues (dim si vides)
+    // Une zone à PA 0 ne dit rien (six « 0 » = bruit, #492 juge vision 2026-07-17) — seule la
+    // Localisation RÉELLEMENT couverte (Corps) porte un badge.
+    expect(badges.length).toBe(1);
     const corps = aside.querySelector('.fig-zone-badge[data-loc="corps"]')!;
     expect(corps.getAttribute('data-tone')).toBe('sang'); // armure entamée (damageTaken > 0)
     expect(corps.textContent).toBe('2');
-    const tete = aside.querySelector('.fig-zone-badge[data-loc="tete"]')!;
-    expect(tete.getAttribute('data-tone')).toBe('dim'); // PA 0
+    expect(aside.querySelector('.fig-zone-badge[data-loc="tete"]')).toBeNull(); // PA 0 → aucun badge
   });
 
   it('badges de zone : critiques/séquelles en État (zones TOUCHÉES seulement) — ABSENTS des autres onglets', () => {
@@ -256,8 +257,9 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
     mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
     aside = container.querySelector('.sheet-aside')!;
-    // Possessions parle PA (6 badges), jamais le compte de critiques.
-    expect(aside.querySelectorAll('.fig-zone-badge').length).toBe(6);
+    // Possessions parle PA, jamais le compte de critiques — et ce héros ne porte aucune armure
+    // (PA 0 partout) : zéro badge, pas six « 0 » (#492 juge vision 2026-07-17).
+    expect(aside.querySelectorAll('.fig-zone-badge').length).toBe(0);
 
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'competences' });
     mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);

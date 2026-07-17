@@ -45,12 +45,14 @@ describe('EtatPanel', () => {
     for (const anchor of [ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT]) {
       expect(html, `ancre manquante : ${anchor}`).toContain(`id="${anchor}"`);
     }
-    // Chaque rubrique = une seule PlaqueRow (registre compact, pas les cartes riches rejetées) : 8
-    // rubriques à 1 entrée (critiques/états/traumas/maladies/mutations/psychologie/corruption/surcharge).
+    // Chaque rubrique = une seule PlaqueRow (registre compact, pas les cartes riches rejetées) : 7
+    // rubriques à 1 entrée (critiques/états/traumas/maladies/mutations/psychologie/surcharge) — la
+    // Corruption n'en porte PLUS (son chiffre vit dans la jauge de bande, pas de ligne redondante
+    // hors DAMNÉ, cf. plus bas).
     // La bande de zones (`ZoneBand`, pt.4) est MORTE (lot « corps-index », #492) : plus de plaques
     // résumées ici, le résumé par Localisation vit dans `FigTile.zoneBadges` (`CharacterSheet.tsx`).
     const rowCount = (html.match(/plaque-row/g) || []).length;
-    expect(rowCount).toBe(8);
+    expect(rowCount).toBe(7);
     // Nom de ligne = CodexRef cliquable (popover Codex), sur chaque famille de rubrique.
     expect((html.match(/codex-ref/g) || []).length).toBeGreaterThanOrEqual(6);
     // Un GameOp = une rangée (doctrine #295) : le moveMod de la mutation est rendu en chip codex-liée
@@ -63,9 +65,19 @@ describe('EtatPanel', () => {
     // porte une prose verbatim de test qui ne doit JAMAIS apparaître dans le registre.
     expect(html).not.toContain('Description verbatim du trauma.');
     expect(html).not.toContain('Rien à signaler');
-    // Corruption : UNE ligne (nom + jauge + DAMNÉ), aucun titre de rubrique redondant au-dessus
-    // (pas de bande `Band` avec un second « Corruption » en en-tête).
-    expect((html.match(/Corruption/g) || []).length, 'un SEUL « Corruption » — pas de titre de bande redondant').toBe(1);
+    // Corruption : SA bande (titre + jauge dans le slot droit, #492 juge vision 2026-07-17) —
+    // pas de ligne redondante (le chiffre vit dans la jauge), donc un SEUL « Corruption » (le titre).
+    expect((html.match(/Corruption/g) || []).length, 'un SEUL « Corruption » — pas de ligne redondante sous le titre').toBe(1);
+  });
+
+  it('Corruption DAMNÉ : la mention survit en ligne dédiée sous la bande (info d’instance sans autre siège)', () => {
+    const hero = mkHero((c) => {
+      c.corruption = 8;
+      c.damned = true;
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
+    expect(html).toContain('DAMNÉ');
+    expect((html.match(/plaque-row/g) || []).length).toBe(1); // seule ligne du registre : DAMNÉ
   });
 
   it('compteurs de DESTIN (pt.4) : « actives »/BE (Critiques) et « phys »/BE + « ment »/BFM (Mutations) composent NotchGauge, ton NEUTRAL loin du seuil', () => {
@@ -139,7 +151,7 @@ describe('EtatPanel', () => {
       c.conditions = [{ name: 'hemorragique', value: 3, roundsLeft: 2 } as never];
     });
     const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
-    expect(html).toContain('×3 · 2 R');
+    expect(html).toContain('×3 · 2 Rounds');
     // Résolution CodexRef par id (pas de repli texte simple) : la classe `codex-ref` porte le lien.
     expect(html).toMatch(/codex-ref[^>]*>Hémorragique</);
   });

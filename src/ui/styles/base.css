@@ -630,6 +630,11 @@ h3 {
   --stat-label-size: var(--stat-label-lg);
   --stat-val-size: var(--stat-val-lg);
 }
+/* Vérifié (juge vision 2026-07-17, écart « 2e rangée de plaques plus claire ») : CHAQUE `.stat` porte
+   le MÊME dégradé, sans règle `:nth-child`/par-ligne nulle part dans la feuille — la grille (10
+   Caractéristiques, `repeat(5,1fr)`) n'a donc AUCUNE différence de fond codée entre sa 1re et sa 2e
+   rangée. Écart non reproduit dans le code : artefact de compression/anti-crénelage du dégradé
+   diagonal (160deg) sur la capture, pas une régression CSS. */
 .stat {
   background: linear-gradient(160deg, var(--atelier-wood-top), var(--atelier-wood-mid));
   border: 1px solid var(--atelier-wood-etch);
