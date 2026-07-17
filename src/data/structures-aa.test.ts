@@ -4,7 +4,7 @@ import { findStructureById } from './index';
 /**
  * Catalogue AA « Tableau des Structures Courantes » (AA 10 l.26-92, VERBATIM) — 19 entrées ajoutées
  * au catalogue `structures.json` (5 colonnes ENC / Limite d'Encombrement / Endurance / Blessures /
- * Pénalité de Couvert, DISTINCT du profil ADE II ch.08 à 2 colonnes BE/B). `BE` se dérive de
+ * Pénalité de Couvert, DISTINCT du profil ADE II 8 à 2 colonnes BE/B). `BE` se dérive de
  * l'Endurance BRUTE de la table par troncature à la dizaine (convention Bonus = dizaines).
  * « Mur de pierre » (AA 10 l.47) coexiste avec « mur-en-pierre » (ADE II, BE 12/B 40, Impénétrable) :
  * collision de livres à valeurs DIVERGENTES, résolue par coexistence sourcée (#450), pas par tranchage.

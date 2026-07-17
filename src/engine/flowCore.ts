@@ -86,7 +86,7 @@ export type ActorRef = 'target' | 'caster';
 export type ActorField = 'woundsCurrent' | 'woundsMax' | 'size' | 'advantage';
 /** Référence à UNE Caractéristique EFFECTIVE d'un acteur (`bonus:true` → son Bonus). Toutes les
  *  Caractéristiques sont exposées (pas de champ ad hoc) — lues par les seuils relatifs, ex. Voie d'eau
- *  « coule à Endurance » ⇔ `{who:'target', char:'E'}` (MDG ch.13). */
+ *  « coule à Endurance » ⇔ `{who:'target', char:'E'}` (MDG 13). */
 export type CharRef = { who: ActorRef; char: CharKey; bonus?: boolean };
 /** SUJET d'une comparaison `compare` : `who` (cible/lanceur) × (une donnée fixe, la valeur/stacks d'un
  *  État nommé, ou une Caractéristique — 0 si absent → « la cible a l'État X » ⇔ `{who:'target', condition:X} >= 1`). */
@@ -170,7 +170,7 @@ export type Condition =
   /** L'acteur est-il ENGAGÉ avec un adversaire (LDB 13 l.159) ? Gate de récupération du Brisé (LDB 16 l.57 :
    *  aucun Test si Engagé). Précalculé (`ctx.engaged`). Hors combat = false. */
   | { kind: 'engaged' }
-  /** Le Test courant est-il un TEST D'ÉQUIPAGE à bord (MDG ch.14) ? Gate du bonus « Commandant émérite »
+  /** Le Test courant est-il un TEST D'ÉQUIPAGE à bord (MDG 14) ? Gate du bonus « Commandant émérite »
    *  (MDG 09 l.54 : « à bord de votre bateau ou impliquant votre équipage »). Hors Test d'équipage = false. */
   | { kind: 'crewTest' }
   /** Distance (cases) à l'adversaire VIVANT le plus proche, comparée par `op` à `value` (Brisé : Très
@@ -234,7 +234,7 @@ export interface ConditionCtx {
   engaged?: boolean;
   /** Distance (cases) à l'adversaire vivant le plus proche — lue par `nearestFoe`. +∞ si aucun. */
   nearestFoeDist?: number;
-  /** Le Test courant est-il un TEST D'ÉQUIPAGE à bord (MDG ch.14) — lu par la Condition `crewTest`
+  /** Le Test courant est-il un TEST D'ÉQUIPAGE à bord (MDG 14) — lu par la Condition `crewTest`
    *  (Commandant émérite : « à bord de votre bateau ou impliquant votre équipage », MDG 09 l.54). */
   crewTest?: boolean;
 }
@@ -373,7 +373,7 @@ export interface FlowTest {
   vsStatus?: string;
   /** Le Test social est une mendicité (option « Mendicité et Statut », LDB 08 l.92). */
   begging?: boolean;
-  /** L'interlocuteur est une créature CAPRICIEUSE (Trait Capricieux, T2C ch.15) : un d10 tiré UNE fois
+  /** L'interlocuteur est une créature CAPRICIEUSE (Trait Capricieux, T2C 15) : un d10 tiré UNE fois
    *  module le Test de Sociabilité de −2 à +2 DR (soit ±10 par DR sur la valeur, comme la réaction de
    *  Statut LDB 08). Authoré sur le Test d'un dialogue mené avec la créature. */
   vsCapricieux?: boolean;

@@ -222,7 +222,7 @@ export function wakeSleeper(c: Combatant): void {
 }
 
 /**
- * Pénalité aux Tests de COMBAT due aux États (LDB ch.16). Non-cumul (l.20) : on
+ * Pénalité aux Tests de COMBAT due aux États (LDB 16). Non-cumul (l.20) : on
  * applique la pénalité d'UN SEUL État (la plus forte), mais un même État empile
  * (Exténué×3 = -30). Aveuglé/Brisé/Empoisonné/Sonné = -10 ; Exténué = -10/point.
  * (À Terre/Assourdi/Empêtré ne touchent que les Tests de déplacement/audition.)
@@ -278,7 +278,7 @@ export function combatTestPenalty(c: Combatant): number {
 }
 
 /**
- * Pénalité d'États aux Tests HORS COMBAT (LDB ch.16). Non-cumul (l.20 : la PIRE pénalité seule) ; le
+ * Pénalité d'États aux Tests HORS COMBAT (LDB 16). Non-cumul (l.20 : la PIRE pénalité seule) ; le
  * modificateur de Sort (effectTestMod) s'ajoute par-dessus. Magnitudes/portées en DONNÉES (etats.json
  * passive `testMod` : `combatOnly`/`movementOnly`/`exceptSkills`), lues via passiveMods (kind `etat`).
  * Les États non classables hors combat (Aveuglé=vue, `combatOnly`) sont exclus ici.
@@ -328,7 +328,7 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
 }
 
 /**
- * Bonus pour TOUCHER en mêlée une cible affectée (LDB ch.16). Deux familles, lues en DONNÉES
+ * Bonus pour TOUCHER en mêlée une cible affectée (LDB 16). Deux familles, lues en DONNÉES
  * (`incomingAttackMod` des `passive` d'État, kind `etat`) :
  *  - INCONDITIONNELS (À Terre/Surpris +20, Aveuglé +10) : non-cumul, le MEILLEUR seul (LDB 16 l.13) ;
  *  - flanc/derrière (Assourdi +10, `flankRear:true`) : bonus SUPPLÉMENTAIRE (LDB 16 l.29) ADDITIF, appliqué
@@ -418,7 +418,7 @@ export function isActionLocked(c: Combatant): boolean {
 
 /**
  * Fin de Round : dégâts périodiques (Hémorragique/Empoisonné/En flammes) et
- * dissipation des États temporaires (LDB ch.16). Retourne un journal.
+ * dissipation des États temporaires (LDB 16). Retourne un journal.
  *
  * `opts.skipPoisonResist` : NE roule PAS le Test de Résistance d'Empoisonné (les DÉGÂTS sont
  * appliqués quand même). Posé par le hook `end-of-round` pour un HÉROS → le Test devient une étape
@@ -549,7 +549,7 @@ export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boo
  *  (consommée par `isOutOfAction` et la résolution de Blessure critique). */
 export function usesSuddenDeath(c: Combatant): boolean {
   if (c.kind === 'hero') return false; // jamais pour les PJ (LDB 18 l.54)
-  if (c.bodyShape === 'vehicule') return false; // une COQUE n'est pas un figurant : sa destruction passe par ses Blessures (Naufrage) et les Critiques NAVALS — pas de « Mort Subite » de mook (MDG ch.13)
+  if (c.bodyShape === 'vehicule') return false; // une COQUE n'est pas un figurant : sa destruction passe par ses Blessures (Naufrage) et les Critiques NAVALS — pas de « Mort Subite » de mook (MDG 13)
   const mode = rule('combat-sudden-death');
   if (mode === 'off') return false;
   if (mode === 'tous') return true;
@@ -582,7 +582,7 @@ export function endState(c: Combatant): EndState | null {
   if (c.inert) return null;
   if (c.dead) return 'mort';
   if (c.outOfRencontre) return c.exitReason === 'reddition' || c.exitReason === 'prise' ? 'rendu' : 'hors-combat';
-  if (c.bodyShape === 'vehicule') return c.wounds && c.wounds.current <= 0 ? 'hors-combat' : null; // coque coulée (MDG ch.13)
+  if (c.bodyShape === 'vehicule') return c.wounds && c.wounds.current <= 0 ? 'hors-combat' : null; // coque coulée (MDG 13)
   if (usesSuddenDeath(c) && c.wounds && c.wounds.current <= 0) return 'hors-combat'; // figurant tombé à 0 PB
   if (!c.dead && hasCondition(c, COND.inconscient)) return 'inconscient'; // vivant mais KO (même gate de cycle de vie qu'isOutOfAction)
   return null;

@@ -358,7 +358,7 @@ export function setSceneFlags(scene: Scene, patch: Record<string, boolean>): Sce
 
 /** Patche les champs de HAUT NIVEAU d'une entité (facing/label/crewIds/upgrades/light/statblock/foot…) —
  *  fusion superficielle. No-op si l'entité est absente. Source unique du câblage de données d'entité par
- *  `buildScene` (coque-navire : équipage/upgrades exposés, MDG ch.14 — sans widget d'inspecteur). */
+ *  `buildScene` (coque-navire : équipage/upgrades exposés, MDG 14 — sans widget d'inspecteur). */
 export function patchEntity(scene: Scene, id: string, patch: Partial<SceneEntity>): Scene {
   return { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, ...patch } : e)) };
 }

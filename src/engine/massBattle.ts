@@ -1,5 +1,5 @@
 /**
- * Combat de masse / Puissance de Bataille — ADE II ch.8 « Le théâtre de la guerre » (l.13-321).
+ * Combat de masse / Puissance de Bataille — ADE II 8 « Le théâtre de la guerre » (l.13-321).
  *
  * Règles FACULTATIVES de bataille à grande échelle qui restent centrées sur les Personnages : deux
  * camps opposés portent un Attribut de PUISSANCE (0-100 — « la taille de leur armée entière, et la

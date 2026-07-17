@@ -43,13 +43,13 @@ export interface AuthoredEnemy {
   /** Compétences d'AUTEUR ajoutées (réfs `SkillRef`) — fusionnées au spawn (servant de pièce : Projectiles
    *  du Groupe de son engin, AA p.122-124). */
   skills?: SkillRef[];
-  /** Coque/navire (`ref` = id de `vehicles.json`) : `id`s d'entités d'ÉQUIPAGE exposées (MDG ch.14).
+  /** Coque/navire (`ref` = id de `vehicles.json`) : `id`s d'entités d'ÉQUIPAGE exposées (MDG 14).
    *  Les ids des ennemis de la rencontre sont déterministes : `enemy-<idRencontre>-<index>`. */
   crewIds?: string[];
-  /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13). Chaque poste réfère son équipage par
+  /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG 12-13). Chaque poste réfère son équipage par
    *  `crewIds` (ids déterministes `enemy-<idRencontre>-<index>`) ; `applyShipPostes` sert le poste au chef. */
   postes?: AuthoredShipPoste[];
-  /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, réfs par id ex. `{ id: 'blindage-fer' }`) — posées
+  /** Coque/navire : Améliorations d'INSTANCE (MDG 12, réfs par id ex. `{ id: 'blindage-fer' }`) — posées
    *  sur le Combattant au spawn (Blindage → PA de coque, Lissage → M…). */
   upgrades?: NavalTraitRef[];
   /** Surcharge la visibilité de la rencontre pour CET ennemi. */

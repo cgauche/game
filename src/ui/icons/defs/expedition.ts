@@ -1,6 +1,6 @@
 import type { IconFamily } from '../types';
 
-/* Famille « Activités de voyage » (postes d'Étape EDOC ch.8 — grand air, rumeurs, cartographie,
+/* Famille « Activités de voyage » (postes d'Étape EDOC 8 — grand air, rumeurs, cartographie,
    entraînement, chance en Rencontre). Distincte de `travel.ts` (modes de transport) et `rest.ts`
    (gîte/météo). Charte : voir defs/action.ts. */
 

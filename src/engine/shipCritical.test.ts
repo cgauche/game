@@ -8,7 +8,7 @@ import { makeRNG } from './dice';
 
 const ship = () => vehicleCombatant(findVehicleById('diligence')!)!; // E45 / B50, comme proxy de coque
 
-describe('rollShipCritical (MDG ch.13) — code générique sur ship-criticals.json', () => {
+describe('rollShipCritical (MDG 13) — code générique sur ship-criticals.json', () => {
   it("Coque 8 → Voie d'eau 1 (Éclats 6) : op condition voie-d-eau, posée via applyOps", () => {
     const r = rollShipCritical('coque', makeRNG(1), 8);
     expect(r.id).toBe('voie-d-eau-au-dessus-de-la-ligne-de-flottaison'); // réf par id, jamais le label

@@ -1,5 +1,5 @@
 /**
- * POUSSÉE d'un engin de siège CREWÉ (ADE II ch.08 l.256/258 : la baliste/le bélier sont « dotés de roues
+ * POUSSÉE d'un engin de siège CREWÉ (ADE II 8 l.256/258 : la baliste/le bélier sont « dotés de roues
  * pour se déplacer sur le champ de bataille » — RAW muet sur un Test ou une vitesse chiffrée). Décision de
  * design (#156, Lot 2) : mouvement SIMPLE (aucun jet), effort collectif de l'Équipe — le CHEF de pièce
  * pousse, l'ENGIN et TOUS les servants du poste (`ShipPoste.crewIds`) translatent du MÊME delta (formation
@@ -27,16 +27,16 @@ export function posteHullOf(poste: ShipPoste, combatants: Combatant[]): Combatan
   return combatants.find((h) => h.postes?.some((p) => p.item.uid === poste.item.uid));
 }
 
-/** L'arme dérivée d'un poste est-elle un engin de siège MOBILE (ADE II ch.08) : catalogue « armes de
+/** L'arme dérivée d'un poste est-elle un engin de siège MOBILE (ADE II 8) : catalogue « armes de
  *  siège » (`subType`) portant la Qualité `equipe` (l.233 — l'Équipe requise, réutilisée comme seuil de
- *  poussée). Un poste NAVAL (bordée de navire, MDG ch.12) n'a jamais cette combinaison → jamais poussable
+ *  poussée). Un poste NAVAL (bordée de navire, MDG 12) n'a jamais cette combinaison → jamais poussable
  *  ici — la coque, elle, avance par `shipAdvance` (cap + Manœuvre), mécanisme DISTINCT jamais mêlé à
  *  celui-ci. PUR. */
 export function isPushableEngine(w: Pick<Weapon, 'subType' | 'qualities'>): boolean {
   return w.subType === 'armes-de-siege' && warMachineCrewRequired(w) > 0;
 }
 
-/** L'arme d'un poste servi est-elle une machine de guerre de MÊLÉE (ADE II ch.08 l.233 — « Toutes les
+/** L'arme d'un poste servi est-elle une machine de guerre de MÊLÉE (ADE II 8 l.233 — « Toutes les
  *  machines de guerre... utilisent... Projectiles [Machine de guerre], à l'exception du bélier, qui
  *  utilise Force ») : la SEULE de ce type est le bélier, dérivé du type d'arme + de la Qualité `equipe`,
  *  aucun id en dur. #210 : c'est cette pièce (pas le chef qui la sert) qui doit être adjacente pour
@@ -71,7 +71,7 @@ export function pushEligible(active: Combatant): boolean {
   return !!w && isPushableEngine(w);
 }
 
-/** Effectif de poussée SUFFISANT : ≥ la moitié de l'Équipe requise (ADE II ch.08 l.233 — « [les armes de
+/** Effectif de poussée SUFFISANT : ≥ la moitié de l'Équipe requise (ADE II 8 l.233 — « [les armes de
  *  siège] ne peuvent être utilisées avec moins de la moitié de l'Équipe nécessaire » ; ici étendu à l'EFFORT
  *  de déplacement, pas seulement le tir, MÊME seuil que `firedAttackBlock`, combatFlow.ts:296-310). Effectif
  *  BRUT (`exposedCrew` : vivant + conscient) — le RAW ADE II ne pose ICI aucune exigence de Compétence
@@ -86,7 +86,7 @@ export function pushCrewOk(poste: ShipPoste, weapon: Weapon, combatants: Combata
 
 /** Portée de poussée PLAFONNÉE (cases) — PARALLÈLE à `mountMovement` (state/mount.ts:154-158), sémantique
  *  DISTINCTE : un engin poussé n'emprunte PAS le Mouvement du chef, seulement la valeur maison éditable
- *  (ADE II ch.08 l.258 : roues, aucune vitesse chiffrée). N'altère PAS `mountMovement`. PUR. */
+ *  (ADE II 8 l.258 : roues, aucune vitesse chiffrée). N'altère PAS `mountMovement`. PUR. */
 export function pushMovement(): number {
   return Number(rule('siege-engine-push-speed'));
 }

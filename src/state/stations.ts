@@ -75,7 +75,7 @@ export function postesToStations(
  * chaque `sceneId` présent devient une Station spatiale posée sur le plan du champ de bataille. La position
  * vient de l'ancre AUTHORÉE (`scene.stations`) ; à défaut, un repli DÉTERMINISTE l'étale (la démo reste
  * jouable sans authoring d'ancres). L'AFFECTATION explicite (`assignment[sceneId]` = ids des PJ postés,
- * Scène MULTI-PJ ADE II ch.8) alimente `assignedIds`/`manned` — une Scène postée s'affiche « servie ». Une Scène inconnue du catalogue
+ * Scène MULTI-PJ ADE II 8) alimente `assignedIds`/`manned` — une Scène postée s'affiche « servie ». Une Scène inconnue du catalogue
  * (`battleSceneById` undefined) est ignorée. Faction : `enemy` pour une Scène MENACE (`threat`, elle
  * s'impose au camp allié), `neutral` sinon (l'action se joue au contact, pas un camp fixe). PUR.
  */

@@ -78,7 +78,7 @@ export function removeCargo(lots: CargoLot[], cargoId: string, enc: number): { l
 // ── RISQUE sur la marchandise (lot D #327) — avaries, voie d'eau, pillage ─────────────────────────
 
 /** RETIRE un MONTANT d'Enc au fil des lots SANS égard au type de bien (voie d'eau « gâte 1d10 Enc »
- *  T2C ch.7 l.101 / MDG ; pillage partiel ; vol gradué) — arrondi à l'entier, lots vidés éliminés.
+ *  T2C 7 l.101 / MDG ; pillage partiel ; vol gradué) — arrondi à l'entier, lots vidés éliminés.
  *  PUR (nouvelle liste). */
 export function spoilCargoByEnc(lots: CargoLot[], enc: number): { lots: CargoLot[]; removed: number } {
   let left = Math.max(0, Math.round(enc));
@@ -119,7 +119,7 @@ export function cargoRaidLossPct(outcome: CargoRaidOutcome, fleePct: number, los
 // depuis les objets réels (héros/monture/véhicule/navire) vit dans la couture d'état `state/carriers.ts`,
 // qui assemble ces structures via les constructeurs ci-dessous.
 
-/** Nature physique d'un porteur → table de surcharge RAW (jambes = LDB p.295 ; coque = MDG ch.12). Portée
+/** Nature physique d'un porteur → table de surcharge RAW (jambes = LDB p.295 ; coque = MDG 12). Portée
  *  par la structure pour que la couche de risque (lot D) DISPATCHE sans flag ad hoc — décision 4. */
 export type CarrierHull = 'jambes' | 'coque';
 

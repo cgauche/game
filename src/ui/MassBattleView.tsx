@@ -20,7 +20,7 @@ import type { Combatant } from '../engine/types';
  * l'issue ('over') : la PRÉPARATION (Activités 'bataille') se joue dans le menu d'interlude (« Interlude
  * c'est interlude » — cf. `InterludeScreen`/`interludeCatalog`), pas ici. État des deux armées (Puissance
  * courante vs départ), SITUATION du Round (sous-ensemble de Scènes du moment + menaces imposées), Scènes
- * cinématiques MULTI-PJ (résolues en Soutien, ADE II ch.8 l.116-118), aléa environnemental, Test
+ * cinématiques MULTI-PJ (résolues en Soutien, ADE II 8 l.116-118), aléa environnemental, Test
  * spectaculaire, Rassemblement, issue. Responsive.
  */
 export function MassBattleView() {
@@ -167,7 +167,7 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
 /**
  * Détail d'une Station de Scène (colonne droite du `StationSheet`) : genre, effet chiffré, état de tenue,
  * description VERBATIM, puis résolution. La CARDINALITÉ suit le RAW : une Scène de combat/menace engage
- * TOUT le groupe (pas d'affectation par PJ) ; une Scène de Compétence/Tenue est MULTI-PJ (ADE II ch.8
+ * TOUT le groupe (pas d'affectation par PJ) ; une Scène de Compétence/Tenue est MULTI-PJ (ADE II 8
  * l.116-118 : « les Personnages peuvent choisir de participer à l'une des Scènes ») → `AssignRow`
  * (max Infinity) : le joueur affecte N PJ, résolus en SOUTIEN (l.153/157). La désactivation du Résoudre
  * reste IDENTIQUE à l'ancienne liste plate (résolue / Round figé / plus de PJ pour un Test·Tenue / rompue).

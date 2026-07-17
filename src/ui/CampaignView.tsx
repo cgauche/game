@@ -132,7 +132,7 @@ export function CampaignView() {
     ...(battle?.combatants.filter((c) => (isVehicle(c) || isEngin(c)) && c.kind === 'hero') ?? []),
   ];
   const activeId = battle && !battle.over ? battle.order[battle.turn] : null;
-  // Pré-emption d'initiative (pause de début de Round) : combattants éligibles (LDB ch.17 l.27) que le
+  // Pré-emption d'initiative (pause de début de Round) : combattants éligibles (LDB 17 l.27) que le
   // siège LOCAL CONTRÔLE (héros, ou ennemis conduits par le MJ) — `controlsCombatant` filtre le contrôle.
   const canFirstIds = battle && pendingRoundStart
     ? battle.order.filter((id) => {
@@ -310,7 +310,7 @@ export function CampaignView() {
         {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
-        {/* Jeux de taverne (NADJ ch.16) : la modale se rend seule quand `tavernGames` est ouvert
+        {/* Jeux de taverne (NADJ 16) : la modale se rend seule quand `tavernGames` est ouvert
             (Effet `openTavernGames` d'un dialogue d'aubergiste). Nulle sinon — mont inconditionnel. */}
         <TavernGameModal />
         {worldMapOpen && mode === 'exploration' && <WorldMapView />}

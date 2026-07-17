@@ -19,7 +19,7 @@ import { MapCanvas } from '../MapCanvas';
 import { planChrome } from '../PlanChrome';
 import { VB_W, VB_H } from '../worldMapViewport';
 
-/** Libellés des Tailles de communauté (T2C ch.13 l.44-50, indices 1-4). */
+/** Libellés des Tailles de communauté (T2C 13 l.44-50, indices 1-4). */
 const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
 /** Produits d'un marché : les cargaisons du livre + les MARQUEURS « Commerce » / « Subsistance » (l.24-28). */
 const MARKET_PRODUITS: readonly { id: string; label: string }[] = [
@@ -27,7 +27,7 @@ const MARKET_PRODUITS: readonly { id: string; label: string }[] = [
   { id: 'commerce', label: 'Commerce (plaque tournante)' },
   { id: 'subsistance', label: 'Subsistance (rien à échanger)' },
 ];
-/** Production d'un port (Index des ports, MDG ch.15 l.439-506) : cargaisons maritimes + les MARQUEURS
+/** Production d'un port (Index des ports, MDG 15 l.439-506) : cargaisons maritimes + les MARQUEURS
  *  « Commerce » (plaque tournante) / « Minimum vital » (rien à échanger). */
 const PORT_PRODUITS: readonly { id: string; label: string }[] = [
   ...CARGOES.map((c) => ({ id: c.id, label: c.label })),
@@ -452,7 +452,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                 );
               })()}
 
-              {/* ── Port maritime (Index des ports, MDG ch.15) : Taille + Richesse + Production/Surplus/Demande ── */}
+              {/* ── Port maritime (Index des ports, MDG 15) : Taille + Richesse + Production/Surplus/Demande ── */}
               <div className="mini-title">Port maritime</div>
               <label className="ed-check">
                 <input
@@ -520,7 +520,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                     </label>
                     <label className="ed-check">
                       <input type="checkbox" checked={!!pt.lighthouse} onChange={(e) => updPort({ lighthouse: e.target.checked || undefined })} />
-                      <Icon id="travel/lighthouse" size="sm" /> Phare à l'approche (Test de Perception de vigie à l'atterrage, MDG ch.13 l.333-351)
+                      <Icon id="travel/lighthouse" size="sm" /> Phare à l'approche (Test de Perception de vigie à l'atterrage, MDG 13 l.333-351)
                     </label>
                     <div className="mini-title">Production (colonne Produits de l'Index)</div>
                     {PORT_PRODUITS.map((p) => (
@@ -740,7 +740,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                 />
                 <Icon id="rest/bed" size="sm" /> Relais d'auberges (la halte de nuit propose l'auberge)
               </label>
-              {/* ── Route MARITIME (MDG ch.13-15) : se voyage sur le navire de campagne (mode « mer »), km en milles ── */}
+              {/* ── Route MARITIME (MDG 13-15) : se voyage sur le navire de campagne (mode « mer »), km en milles ── */}
               <label className="ed-check">
                 <input
                   type="checkbox"
@@ -752,7 +752,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                 <Icon id="travel/anchor" size="sm" /> Route maritime (navire de campagne ; distance en milles)
               </label>
               {selRoute.sea && (
-                <label className="ed-field">Cap dominant (aspect du vent, MDG ch.13 l.262-270)
+                <label className="ed-field">Cap dominant (aspect du vent, MDG 13 l.262-270)
                   <select
                     value={selRoute.seaHeading ?? 'est'}
                     onChange={(e) => updRoute(selRoute.id, { seaHeading: e.target.value as MapRoute['seaHeading'] })}

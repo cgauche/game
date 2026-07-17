@@ -135,7 +135,7 @@ describe('combatValue/weaponGroupSkillMode — exceptions Groupes d’Armes à d
   });
 });
 
-describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélier → Force, ADE II ch.08 l.233)', () => {
+describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélier → Force, ADE II 8 l.233)', () => {
   it('weapon.resolveChar court-circuite CC (mêlée) et ignore toute Spé de Corps à corps', () => {
     const c = hero({ skills: [{ skillId: 'corps-a-corps', spec: 'base', characteristic: 'capacite-de-combat', advances: 30 }], characteristics: { ...hero().characteristics, 'capacite-de-combat': 40, force: 55 } });
     const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [], resolveChar: 'force' };

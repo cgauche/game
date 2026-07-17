@@ -152,7 +152,7 @@ export interface BattleState {
   round: number;
   /** Marins ayant déjà contribué à un Test d'équipage CE ROUND, par navire (`shipId → crewId[]`). Réinitialisé au début de
    *  chaque Round (`enterRoundStartPause`) ; un marin déjà listé qui contribue à un 2e Test (manœuvre + bordée) → cumul à
-   *  +2 crans de Difficulté (Manque de bras, MDG ch.14 l.53). */
+   *  +2 crans de Difficulté (Manque de bras, MDG 14 l.53). */
   crewActed?: Record<string, string[]>;
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
    *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
@@ -269,11 +269,11 @@ export interface GameState extends RollFlowActionsMap {
   faceToward: (id: string, from?: Pt, to?: Pt) => void;
   faceFromPath: (id: string, path?: Pt[] | null) => void;
   faceAtCombatStart: () => void;
-  /** Manœuvre NAVALE (MDG ch.13) : vire le cap (`Dir8`) du navire `shipId` de `turnSteps` crans de 45°
+  /** Manœuvre NAVALE (MDG 13) : vire le cap (`Dir8`) du navire `shipId` de `turnSteps` crans de 45°
    *  (>0 = tribord/droite, <0 = bâbord/gauche) → re-mappe d'un coup TOUS ses arcs de bordée. */
   shipTurn: (shipId: string, turnSteps: number) => void;
   /** Avance la coque `shipId` ET son équipage (à bord, formation rigide) de `cases` tuiles le long du cap
-   *  courant `facing[shipId]` (MDG ch.13). Clampe aux bornes de scène. Renvoie les cases réellement parcourues. */
+   *  courant `facing[shipId]` (MDG 13). Clampe aux bornes de scène. Renvoie les cases réellement parcourues. */
   shipAdvance: (shipId: string, cases: number) => number;
   zoom: number; // zoom caméra du JEU (échelle), borné [1, 2.6] — état de vue, non sérialisé
   setZoom: (z: number) => void;
@@ -360,7 +360,7 @@ export interface GameState extends RollFlowActionsMap {
   dialogue: { dialogue: Dialogue; nodeId: string; speakerId?: string } | null;
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
   merchant: MerchantState | null;
-  /** Jeux de taverne ouverts (option `tavern-games`, NADJ ch.16) — null = fermé ; `result` = dernière partie. */
+  /** Jeux de taverne ouverts (option `tavern-games`, NADJ 16) — null = fermé ; `result` = dernière partie. */
   tavernGames: tavernFlow.TavernGamesState | null;
   /** Stock PERSISTANT par marchand (#T3 re-stock) : déplété entre visites, re-tiré seulement après
    *  `restockDays` écoulés. `rolledAt` = gameTime du dernier tirage. `bargainLocked` = le joueur a négocié
@@ -481,11 +481,11 @@ export interface GameState extends RollFlowActionsMap {
   pendingRun: PendingRun | null;
   /** Chute VOLONTAIRE en cours (LDB 15 l.82 — choix Sauter/Tenter, puis modale Test d'Athlétisme → chute). */
   pendingFall: PendingFall | null;
-  /** Manœuvre navale en cours (MDG ch.13 : Test de Navigation du barreur → vire le cap + avance). */
+  /** Manœuvre navale en cours (MDG 13 : Test de Navigation du barreur → vire le cap + avance). */
   pendingShipManeuver: PendingShipManeuver | null;
-  /** Tir de batterie en cours (MDG ch.14 : Test d'équipage des Artilleurs → volée sur la cible). */
+  /** Tir de batterie en cours (MDG 14 : Test d'équipage des Artilleurs → volée sur la cible). */
   pendingShipBattery: PendingShipBattery | null;
-  /** Test d'équipage GÉNÉRIQUE en cours (MDG ch.14 — Rude épreuve : total négatif → perte de Moral, l.110). */
+  /** Test d'équipage GÉNÉRIQUE en cours (MDG 14 — Rude épreuve : total négatif → perte de Moral, l.110). */
   pendingCrewTest: PendingCrewTest | null;
   /** Chanson de marin en cours (Talent, MDG 09 l.32-40 : choix de la chanson + Test de Divertissement (Chant)). */
   pendingShanty: PendingShanty | null;
@@ -508,7 +508,7 @@ export interface GameState extends RollFlowActionsMap {
   armPreempt: (heroId: string | null) => void;
   /** Coop : marque le siège PRÊT au ready-check d'ouverture (round 1) ; l'hôte lance quand tous ✓. */
   roundStartReady: (seat: number) => void;
-  /** Sauvetage par le Destin en attente (LDB ch.17 l.31-35). */
+  /** Sauvetage par le Destin en attente (LDB 17 l.31-35). */
   pendingFateSave: { heroId: string; source: 'hit' | 'slow'; restoreWounds?: number;
     /** Animosité & Haine (ADE II Annexe I, règle facultative) : Groupe (ou nom) de « l'individu ou
      *  l'élément qui l'a presque tué » — Cible de l'Animosité acquise si le héros dépense le Destin. */
@@ -736,7 +736,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Recherche active de Disponibilité (LDB 59 l.50) : passer une journée entière + un Test de Ragot →
    *  réassort frais avec +10 % de Disponibilité si le Ragot réussit (avance l'horloge d'une journée). */
   searchAvailability: () => void;
-  /** Jeux de taverne (option `tavern-games`, NADJ ch.16) : ouvrir la modale / jouer une partie
+  /** Jeux de taverne (option `tavern-games`, NADJ 16) : ouvrir la modale / jouer une partie
    *  (choisir un jeu + un adversaire, résolution par le moteur générique) / fermer. */
   openTavernGames: () => void;
   playTavernGame: (opts: { gameId: string; challengerId: string; opponent: tavernFlow.TavernOpponent; stakeBrass?: number }) => void;
@@ -865,7 +865,7 @@ export interface GameState extends RollFlowActionsMap {
   steamSaveConfirm: () => void;
   /** Sélectionne la munition à tirer (uid d'un item `kind 'ammo'`). */
   battleSelectAmmo: (uid: string) => void;
-  /** Détermination (Resolve, LDB ch.17 l.66) : retire un État de l'actif (+1 PB si À Terre).
+  /** Détermination (Resolve, LDB 17 l.66) : retire un État de l'actif (+1 PB si À Terre).
    *  Ne consomme PAS l'Action. */
   battleSpendResolve: (conditionName: string) => void;
   /** Détermination depuis une MODALE de jet (LDB 17 l.66) : même règle, pour n'importe quel héros
@@ -875,7 +875,7 @@ export interface GameState extends RollFlowActionsMap {
   battleResolvePsychImmune: () => void;
   /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique ce Round. */
   battleResolveIgnoreCrit: () => void;
-  /** Ramasser UN objet au sol pendant un Round (LDB ch.13 l.115-116) : applique au combattant
+  /** Ramasser UN objet au sol pendant un Round (LDB 13 l.115-116) : applique au combattant
    *  actif un item ramassable d'un `prop` interactif adjacent. Consomme l'Action, pas d'auto-équipe.
    *  `key` = `eff:<index dans interact.effects>` (cf. entityPickables). */
   battlePickup: (entityId: string, key: string) => void;
@@ -960,7 +960,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Reprise après un changement de Cadence de combat en plein combat (passage en Auto/Rapide) :
    *  ré-entre la boucle (auto-résolution de modale + tour de l'IA). No-op en manuel / hors combat. */
   resumeCadence: () => void;
-  /** Chance, 3e usage (LDB ch.17 l.27) : en début de Round, place un héros en tête de l'ordre
+  /** Chance, 3e usage (LDB 17 l.27) : en début de Round, place un héros en tête de l'ordre
    *  contre 1 point de Chance (pré-emption d'initiative). */
   roundStartPromote: (heroId: string) => void;
   /** Tir rapide (talent, LDB 10) : INTERRUPTION à distance en début de Round (hors de l'ordre) ; le tir
@@ -1063,22 +1063,22 @@ export interface GameState extends RollFlowActionsMap {
   maneuverSetAvantage: (n: number) => void;
   /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
   battleRun: (dest?: Pt) => void;
-  /** Manœuvre navale (MDG ch.13) : ouvre la modale du Test de Navigation pour le navire que sert `crewId`. */
+  /** Manœuvre navale (MDG 13) : ouvre la modale du Test de Navigation pour le navire que sert `crewId`. */
   battleShipManeuver: (crewId: string) => void;
   /** Choix du virage (pré-jet OptionChooser) : crans d'octant (±1 = 45°, ±2 = 90°, 0 = tout droit). */
   shipManeuverSetTurn: (steps: number) => void;
   shipManeuverConfirm: () => void;
   shipManeuverCancel: () => void;
-  /** Recharge d'un poste (MDG ch.12 l.462) : ouvre la modale du Test étendu de Projectiles du chef de pièce + Soutien. */
+  /** Recharge d'un poste (MDG 12 l.462) : ouvre la modale du Test étendu de Projectiles du chef de pièce + Soutien. */
   battleShipReload: (shipId: string, posteUid: string) => void;
-  /** Bordée (« Tir de batterie », MDG ch.14 l.128) : ouvre la modale du Test d'équipage des Artilleurs sur `targetId`. */
+  /** Bordée (« Tir de batterie », MDG 14 l.128) : ouvre la modale du Test d'équipage des Artilleurs sur `targetId`. */
   battleShipBattery: (shipId: string, targetId: string) => void;
   shipBatteryConfirm: () => void;
   shipBatteryCancel: () => void;
   /** Bordée HEADLESS (auto-pilote navire, couche Mer) : Test d'équipage des Artilleurs résolu sans modale → volée sur `targetId`. */
   shipAutoBattery: (shipId: string, targetId: string) => boolean;
   // shipBattery{Roll,Reroll,BonusSL,ForceSuccess,DarkPact} : générés (RollFlowActionsMap, MULTI).
-  /** Test d'équipage GÉNÉRIQUE (MDG ch.14) : ouvre la modale multi-jets du type `testTypeId` (Rude épreuve…). */
+  /** Test d'équipage GÉNÉRIQUE (MDG 14) : ouvre la modale multi-jets du type `testTypeId` (Rude épreuve…). */
   battleCrewTest: (shipId: string, testTypeId: string) => void;
   crewTestConfirm: () => void;
   crewTestCancel: () => void;
@@ -1113,11 +1113,11 @@ export interface GameState extends RollFlowActionsMap {
   wardCancel: () => void;
   /** Se relever d'À Terre (LDB 16 l.37) : consomme le Mouvement (pas l'Action) ; impossible à 0 PB (LDB 18 l.15). */
   battleStandUp: () => void;
-  /** « Servir cette pièce » (MDG ch.12) : le héros actif devient chef d'un poste de siège NON servi adjacent (arme octroyée) — coûte l'Action. KIND-AGNOSTIQUE. */
+  /** « Servir cette pièce » (MDG 12) : le héros actif devient chef d'un poste de siège NON servi adjacent (arme octroyée) — coûte l'Action. KIND-AGNOSTIQUE. */
   battleManPoste: (target?: { hullId: string; posteUid: string }) => void;
   /** « Quitter la pièce » (release) : libère le poste servi pour un autre — coûte l'Action. */
   battleLeavePoste: () => void;
-  /** « Pousser » un engin de siège CREWÉ à roues (ADE II ch.08 l.258, Lot 2 #156) : ouvre le mode de
+  /** « Pousser » un engin de siège CREWÉ à roues (ADE II 8 l.258, Lot 2 #156) : ouvre le mode de
    *  ciblage-CASE 'push' (le clic-sol suivant commet la translation de formation, `targetingModes.ts`).
    *  Chef d'un poste d'engin MOBILE, Action dispo, Équipe ≥ moitié requise (sinon no-op, comme un tir
    *  sous-effectif refusé). Mouvement SIMPLE, aucun jet ; plafonné à `rule('siege-engine-push-speed')`. */
@@ -1168,7 +1168,7 @@ export interface GameState extends RollFlowActionsMap {
   aiWouldCast: (id: string) => boolean;
   /** Combat monté (cadre : LDB 14 l.175-187) : enfourcher une monture libre adjacente / en descendre.
    *  Coût = MOUVEMENT sans jet ni Action — MAISON [entériné 2026-07-17] (« Met les en Maison pour le
-   *  moment », #526 ; aucune clause de coût citable, LDB 14/15/09 + AA ch.9 fouillés en entier) ;
+   *  moment », #526 ; aucune clause de coût citable, LDB 14/15/09 + AA 9 fouillés en entier) ;
    *  Chevaucher sans Test : LDB 09 l.112. */
   battleMount: () => void;
   battleDismount: () => void;
@@ -1182,7 +1182,7 @@ export interface GameState extends RollFlowActionsMap {
   disengageConfirmA: () => void; // Sacrifier l'Avantage
   disengageRoll: () => void; // Esquiver (lance le Test opposé)
   // disengage{Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
-  // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) + « vous choisissez le résultat » (dé forcé) :
+  // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) + « vous choisissez le résultat » (dé forcé) :
   // {test,attack,defense,cast,disengage}ForceSuccess et {defense,cast,trample}SetForcedRoll sont aussi générés.
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
   disengageFlee: () => void; // Fuir : coup dans le dos SUBI, puis Test de Calme influençable (flux `flee`)
@@ -1238,14 +1238,14 @@ export interface GameState extends RollFlowActionsMap {
   /** Bascule la CADENCE des ordres de la traversée en cours (couche `voyageCadence`) — « Passer en
    *  jour-par-jour » de l'écran de traversée, ou retour en commandée. */
   setVoyageCadence: (cadence: import('./voyageCadence').VoyageCadence) => void;
-  /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.8),
+  /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC 8),
    *  ou le détache (`null` ⇒ rôle inféré). Réutilisé au départ de chaque trajet (0 ré-assignation/jour). */
   setTravelRole: (heroId: string, role: string | null) => void;
   /** Épingle (`role`) ou détache (`null`) le rôle d'ÉQUIPAGE naval d'un marin (`shipRole`) — interface de gestion
    *  du navire. Patche `party` ET `battle.combatants` (l'équipage vit dans la bataille en mer). */
   setShipRole: (crewId: string, role: string | null) => void;
   /** Sélectionne la munition PERSISTANTE d'un poste d'artillerie (`ShipPoste.ammoUid` — boulet/mitraille,
-   *  MDG ch.12 l.410-424), depuis la fiche du navire. `null` → retour au défaut (1re compatible). */
+   *  MDG 12 l.410-424), depuis la fiche du navire. `null` → retour au défaut (1re compatible). */
   setPosteAmmo: (shipId: string, posteUid: string, ammoUid: string | null) => void;
   /** Dernier jour (index d'horloge) traité par l'entretien quotidien (rations/faim) — anti-double-comptage. */
   lastUpkeepDay: number;
@@ -1264,7 +1264,7 @@ export interface GameState extends RollFlowActionsMap {
   departWaitDawn: () => void;
   /** « Annuler » le départ nocturne bloqué par la porte. */
   departCancel: () => void;
-  /** Navire de campagne PERSISTANT (MDG ch.13-14) — porte son `vehicleId` et son MORAL (recalculé chaque
+  /** Navire de campagne PERSISTANT (MDG 13-14) — porte son `vehicleId` et son MORAL (recalculé chaque
    *  semaine par l'entretien quotidien via `tickShipMorale`). `null` hors campagne navale. */
   vessel: CampaignVessel | null;
   /** Écran PORT ouvert (services au navire à quai — MDG 15) : réparation/carénage/Améliorations +
@@ -1344,23 +1344,23 @@ export interface CampaignVessel {
   /** #30 — Blessures de COQUE persistantes (absent = coque intacte). Synchronisées par le voyage
    *  maritime (`persistHullWounds`) et les réparations ; la coque de trajet en repart. */
   wounds?: { current: number; max: number };
-  /** Améliorations d'INSTANCE posées au chantier (MDG ch.12 — Clinfoc, Blindage, Ancre…), recopiées
+  /** Améliorations d'INSTANCE posées au chantier (MDG 12 — Clinfoc, Blindage, Ancre…), recopiées
    *  sur la coque au départ (`voyageShip`). */
   upgrades?: import('../engine/types').NavalTraitRef[];
-  /** Salissures (MDG ch.13 l.144-159) : niveau 0-5 + garde hebdomadaire du Test. */
+  /** Salissures (MDG 13 l.144-159) : niveau 0-5 + garde hebdomadaire du Test. */
   fouling?: { level: number; lastWeek: number };
-  /** Humeur de Manann (MDG ch.15 l.83-125) — par navire, registre des facteurs déjà appliqués. */
+  /** Humeur de Manann (MDG 15 l.83-125) — par navire, registre des facteurs déjà appliqués. */
   manann?: import('../engine/seaVoyage').ManannMood;
-  /** SABOTAGE authoré sur cette coque (MDG ch.14 l.45-47) — clampé [-5,0] par `shipSaboteurDR`,
+  /** SABOTAGE authoré sur cette coque (MDG 14 l.45-47) — clampé [-5,0] par `shipSaboteurDR`,
    *  recopié sur la coque de trajet (`voyageShip`) comme `upgrades`/`wounds`. */
   saboteurDR?: number;
-  /** Cargaison en cale (commerce maritime, MDG ch.15) — perdue avec le navire (abandon/capture). */
+  /** Cargaison en cale (commerce maritime, MDG 15) — perdue avec le navire (abandon/capture). */
   cargo?: import('../engine/seaVoyage').CargoLot[];
-  /** Critiques de navire subis EN VOYAGE (notes verbatim, MDG ch.13) — à purger à la remise en état. */
+  /** Critiques de navire subis EN VOYAGE (notes verbatim, MDG 13) — à purger à la remise en état. */
   criticals?: string[];
   /** Crabes boxeurs (événement ch.15) : M −1 jusqu'à ce que la coque soit raclée. */
   crabs?: boolean;
-  /** Eau douce embarquée (litres — tonneau : 145 L, MDG ch.14 l.242). Absent = ravitaillement réputé
+  /** Eau douce embarquée (litres — tonneau : 145 L, MDG 14 l.242). Absent = ravitaillement réputé
    *  assuré (même décision de périmètre que la Soif, cf. provisions.ts). */
   waterLitres?: number;
   /** VIVRES de l'équipage PNJ embarqués (rations de mer de la cale, en jours-homme — MDG 14 l.238/250).
@@ -1514,7 +1514,7 @@ export const useGame = create<GameState>((set, get) => ({
     const d = DIR8_DELTA[dir];
     const w = scene?.dimensions.w ?? Infinity, h = scene?.dimensions.h ?? Infinity;
     // Autres COQUES (jetons-navires) percutables (≠ self, pos connue) : une tuile occupée par une coque arrête
-    // l'avance ADJACENT (pas de chevauchement) et déclenche la collision (MDG ch.13).
+    // l'avance ADJACENT (pas de chevauchement) et déclenche la collision (MDG 13).
     const otherHulls = battle.combatants.filter((c) => c.id !== shipId && c.bodyShape === 'vehicule' && c.pos);
     const hullAt = (x: number, y: number) => otherHulls.find((c) => footprintTiles(c.pos!, footprintN(c)).some((t) => t.x === x && t.y === y));
     // Avance PAS-À-PAS le long du cap (coque 1×1) : on s'arrête au dernier pas libre — sortie de scène OU coque devant.
@@ -1541,7 +1541,7 @@ export const useGame = create<GameState>((set, get) => ({
       }
       get().log(`${hull.name} avance de ${moved} case${moved > 1 ? 's' : ''} (cap ${dir}).`);
     }
-    // Éperonnage (MDG ch.13) : on percute de la PROUE (avance vers l'avant) ; FRONTAL si la victime tient un cap
+    // Éperonnage (MDG 13) : on percute de la PROUE (avance vers l'avant) ; FRONTAL si la victime tient un cap
     // ~opposé (octant opposé ±1). Dégâts sur les DEUX coques par la langue unique (`applyShipCollision`→`applyOps`).
     if (victim) {
       const opp = rotateDir8(dir, 4);
@@ -2232,7 +2232,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   forceDoorCancel: () => { set({ pendingForceDoor: null, pendingCascade: null }); }, // renonce : ferme data + cascade hôte
 
-  // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) sur un Test de scène (hors combat) — cycle
+  // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) sur un Test de scène (hors combat) — cycle
   // UNIFIÉ par la fabrique rollFlow (les variantes combat attack/defense/cast vivent dans combatSlice).
 
   /** Choix du lanceur (avant le jet) : re-cible le Test sur le candidat `id` du groupe. */

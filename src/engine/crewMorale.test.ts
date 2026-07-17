@@ -5,7 +5,7 @@ import { makeRNG, type RNG } from './dice';
 const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i++] }; };
 
 /**
- * MORAL d'équipage (MDG ch.14) — système PROPRE à la Mer des Griffes (aucun équivalent LDB/AA). Le code
+ * MORAL d'équipage (MDG 14) — système PROPRE à la Mer des Griffes (aucun équivalent LDB/AA). Le code
  * est générique ; la donnée (facteurs + bandes) vit dans `crew-morale.json`. Les « Tests d'équipage »
  * réutilisent la primitive de Soutien (testée ailleurs) — on ne teste ici que le Moral.
  */

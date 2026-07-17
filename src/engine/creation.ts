@@ -28,7 +28,7 @@ export const XP_CAREER_FIRST = 50; // LDB 05 l.191
 export const XP_CAREER_TOP3 = 25; // LDB 05 l.193
 export const XP_CHARS_KEPT = 50; // LDB 05 l.381
 export const XP_CHARS_REASSIGNED = 25; // LDB 05 l.383
-export const XP_STAR_ROLLED = 25; // ADE2 ch.03 l.36 (signe astral tiré et accepté)
+export const XP_STAR_ROLLED = 25; // ADE2 3 l.36 (signe astral tiré et accepté)
 
 /**
  * Tableau des Races aléatoires (LDB 04 l.90) — DÉRIVÉ des données : chaque espèce porte sa
@@ -163,7 +163,7 @@ function rollDetail(
   return entry.color[sp.refChar] ?? entry.color.humain ?? '';
 }
 
-/** Signe astral (Tableau des Signes astrologiques, ADE2 ch.03 l.40) → `id` STABLE du signe (≠ libellé —
+/** Signe astral (Tableau des Signes astrologiques, ADE2 3 l.40) → `id` STABLE du signe (≠ libellé —
  *  multilangue-safe ; `Combatant.star` stocke l'id). `rand` = borne haute cumulée du 1d100. L'Étoile du
  *  Sorcier (l.62) regroupe plusieurs variantes sur la même borne, départagées par un 1d10 interne
  *  (`sub` = [min, max]) → table partagée. */

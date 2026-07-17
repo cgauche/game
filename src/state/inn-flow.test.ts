@@ -10,7 +10,7 @@ import type { WorldMap } from './worldMap';
 import { stacks } from '../engine/conditions';
 
 /**
- * RUMEURS D'AUBERGE (#352) — l'Activité canonique `recueillir-informations` (EDOC ch.8 l.151, skillId
+ * RUMEURS D'AUBERGE (#352) — l'Activité canonique `recueillir-informations` (EDOC 8 l.151, skillId
  * `ragot`) étendue au contexte `auberge`, jouée HORS voyage via le seam `openRoll`. Succès → rumeur
  * commerciale (générateur EXISTANT `generateTradeRumour`) ; échec → Exténué (EDOC l.133). L'horloge
  * avance dans les deux cas.

@@ -107,7 +107,7 @@ describe('Structures de siège — Dégâts par le chemin combat', () => {
     expect(s.wounds.current).toBe(40); // intacte
   });
 
-  it('Bélier sur Porte : ×2 (cible légitime) ; hors-porte le funnel pose ctx.improvised (ADE II ch.08 l.249)', () => {
+  it('Bélier sur Porte : ×2 (cible légitime) ; hors-porte le funnel pose ctx.improvised (ADE II 8 l.249)', () => {
     // Porte B 8 / BE 2 ; 3 × 2 = 6 − 2 = 4 retirés → 8 − 4 = 4 restants (pas de brèche).
     const door = start('porte');
     applyAttackResult(useGame.getState, useGame.setState, door.H, door.S!, belier, hitRes(belier, door.S!, 3));

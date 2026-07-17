@@ -1,5 +1,5 @@
 /**
- * Possession pas prévue pour la Taille du porteur (ADE II ch.02 l.710 : « Un ogre subit une pénalité de
+ * Possession pas prévue pour la Taille du porteur (ADE II 2 l.710 : « Un ogre subit une pénalité de
  * −20 à tous les Tests lorsqu'il tente d'utiliser des possessions qui ne sont pas prévues pour sa Taille »).
  * Portée couverte ICI : le maniement d'armes (`attackModifiers`, Corps à corps/Projectiles). Le lot données
  * pose `sizeFor` sur le catalogue ogre ; les Tests hors combat (compétences/UI) restent hors périmètre.
@@ -14,7 +14,7 @@ import type { Combatant, Weapon } from './types';
 const attacker = (size?: Combatant['size']): Combatant => ({ advantage: 0, conditions: [], size } as unknown as Combatant);
 const weapon = (sizeFor?: Weapon['sizeFor']): Weapon => ({ name: 'Massue', type: 'melee', hands: 1, qualities: [], sizeFor }) as unknown as Weapon;
 
-describe('sizeFor — pénalité de Taille (ADE II ch.02 l.710)', () => {
+describe('sizeFor — pénalité de Taille (ADE II 2 l.710)', () => {
   it('0 excédent : `sizeFor` EGAL à la Taille du porteur → aucune ligne', () => {
     const mods = attackModifiers(attacker('grande'), null, weapon('grande'), { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Possession pas à sa taille')).toBeUndefined();
@@ -30,12 +30,12 @@ describe('sizeFor — pénalité de Taille (ADE II ch.02 l.710)', () => {
     const mods = attackModifiers(attacker('moyenne'), null, weapon('grande'), { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Possession pas à sa taille')?.value).toBe(-20);
   });
-  it("catalogue ogre réel (`massue-ogre`) : un ogre la manie SANS −20, une créature Moyenne SUBIT −20 (ADE II ch.02 l.604 : « pratiquement inutilisables entre les mains des créatures de Taille Moyenne »)", () => {
+  it("catalogue ogre réel (`massue-ogre`) : un ogre la manie SANS −20, une créature Moyenne SUBIT −20 (ADE II 2 l.604 : « pratiquement inutilisables entre les mains des créatures de Taille Moyenne »)", () => {
     const massue = itemFromTrappingById('massue-ogre')! as unknown as Weapon;
     expect(attackModifiers(attacker('grande'), null, massue, { kind: 'melee' }).find((m) => m.label === 'Possession pas à sa taille')).toBeUndefined();
     expect(attackModifiers(attacker('moyenne'), null, massue, { kind: 'melee' }).find((m) => m.label === 'Possession pas à sa taille')?.value).toBe(-20);
   });
-  it("arme SANS `sizeFor` (possession ORDINAIRE du catalogue, implicitement Moyenne) : un ogre (Taille Grande) subit −20 (ADE II ch.02 l.710, ex. « un pistolet à répétition humain »)", () => {
+  it("arme SANS `sizeFor` (possession ORDINAIRE du catalogue, implicitement Moyenne) : un ogre (Taille Grande) subit −20 (ADE II 2 l.710, ex. « un pistolet à répétition humain »)", () => {
     const mods = attackModifiers(attacker('grande'), null, weapon(), { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Possession pas à sa taille')?.value).toBe(-20);
   });

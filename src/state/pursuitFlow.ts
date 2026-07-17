@@ -5,7 +5,7 @@
  * `PURSUIT_ESCAPE_DISTANCE`, primitives PARTAGÉES avec la poursuite NAVALE `seaVoyageFlow`). Ce module
  * n'ajoute que la MISE EN SCÈNE terrestre : la boucle de manches jouée à l'écran.
  *
- * DRAMATURGIE (miroir de la crise « poursuite » du voyage maritime, MDG ch.13) : une MANCHE par MODALE,
+ * DRAMATURGIE (miroir de la crise « poursuite » du voyage maritime, MDG 13) : une MANCHE par MODALE,
  * la boucle y reste jusqu'à l'issue. Chaque manche est présentée par la CASCADE influençable (state/cascade,
  * `purpose:'pursuite'`) — chaque héros lance son Test de Mouvement (Athlétisme/Chevaucher/Conduite
  * d'attelages, `skill` en DONNÉE, aucun nom en dur), influençable (Chance/Résilience/Pacte) ; les

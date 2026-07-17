@@ -1,5 +1,5 @@
 /**
- * `naval-ports.json` — Index des ports de la Mer des Griffes (#217, MDG ch.15 l.439-506). Catalogue
+ * `naval-ports.json` — Index des ports de la Mer des Griffes (#217, MDG 15 l.439-506). Catalogue
  * chargé par référence (`MapPlace.port.ref`, `state/worldMap.ts`).
  */
 import { describe, it, expect } from 'vitest';

@@ -6,7 +6,7 @@ import { setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 /**
- * BÉLIER — PORTE (ADE II ch.08 « Le théâtre de la guerre » l.233) : consommateur LIVE du modèle ENGIN DE
+ * BÉLIER — PORTE (ADE II 8 « Le théâtre de la guerre » l.233) : consommateur LIVE du modèle ENGIN DE
  * SIÈGE CREWÉ — le bélier n'est PAS une arme portée en solo : c'est un EMPLACEMENT (poste `ShipPoste`,
  * `Combatant.mannedPoste`/`postes`) servi par une ÉQUIPE (Qualité `equipe`, Indice 6), exactement comme les
  * autres machines de guerre. Le SOLDAT (héros, id STABLE `pregen-101`) est le CHEF de pièce (`crewIds[0]`,
@@ -17,7 +17,7 @@ import type { TestScenario } from './_shared';
  * de MÊLÉE servie se mesure depuis l'EMPREINTE DE LA COQUE (#210, `meleeWarMachineHullOf`), désormais 2×2
  * (`t.siegeFootprint`) — c'est l'affût qui doit toucher la porte, pas seulement le chef qui le sert.
  *
- * Carte (10×15, pavée) : la formation (chef + bélier 2×2 + 5 servants, `crewFormationSlots`, ADE II ch.08
+ * Carte (10×15, pavée) : la formation (chef + bélier 2×2 + 5 servants, `crewFormationSlots`, ADE II 8
  * l.258 : « on pousse par les flancs/l'arrière ») démarre ALIGNÉE en x avec la porte (arête N de (5,4),
  * colonne x=5 comprise dans l'empreinte 2×2 dès le départ), à 3 cases de la porte — DISTANCE À TRAVERSER
  * (Lot 2 #156, MOBILITÉ) : « roues, se déplace sur le champ de bataille » (l.256/258, vitesse non chiffrée
@@ -31,7 +31,7 @@ import type { TestScenario } from './_shared';
  */
 const RAM_CREW = [
   `pregen-${PREGEN.soldat}`, // chef de pièce (crewIds[0]) : un héros, seul à manier le bélier
-  'enemy-siege-belier-2', 'enemy-siege-belier-3', 'enemy-siege-belier-4', 'enemy-siege-belier-5', 'enemy-siege-belier-6', // 5 servants PNJ (Équipe 6, ADE II ch.08 l.233)
+  'enemy-siege-belier-2', 'enemy-siege-belier-3', 'enemy-siege-belier-4', 'enemy-siege-belier-5', 'enemy-siege-belier-6', // 5 servants PNJ (Équipe 6, ADE II 8 l.233)
 ];
 
 // Affût posé à (4,8), footprint 2×2 (`t.siegeFootprint`) couvrant les colonnes x=4..5 — la colonne x=5 EST

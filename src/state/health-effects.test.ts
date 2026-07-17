@@ -1,6 +1,6 @@
 /**
  * Effets d'éditeur de SANTÉ rendus authorables (audit jouabilité §B) : imposer la Faim (LDB 18),
- * l'Exposition froid/chaleur (LDB 18), et ouvrir les jeux de taverne (NADJ ch.16). Chacun s'applique
+ * l'Exposition froid/chaleur (LDB 18), et ouvrir les jeux de taverne (NADJ 16). Chacun s'applique
  * via `applyEffects` et réutilise son moteur PUR existant (provisions / exposure / tavernFlow).
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -201,7 +201,7 @@ describe('Effet inflictPsychology (Peur/Terreur scénique, LDB 21) — cascade I
   });
 });
 
-describe('Effet setVessel (navire de campagne, MDG ch.13-15)', () => {
+describe('Effet setVessel (navire de campagne, MDG 13-15)', () => {
   beforeEach(() => useGame.setState({ vessel: undefined }));
 
   it('dote le groupe du navire choisi (state.vessel posé, Moral par défaut, coque intacte)', () => {
@@ -319,7 +319,7 @@ describe('Effet adjustVessel (#233 — patch PARTIEL du navire de campagne, ≠ 
   });
 });
 
-describe('Effet adjustManann (#213 — MDG ch.15 l.83-125)', () => {
+describe('Effet adjustManann (#213 — MDG 15 l.83-125)', () => {
   beforeEach(() => {
     useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } } });
     useGame.getState().seedRng(7);
@@ -380,7 +380,7 @@ describe('Effet openPort (#93 — MÊME chemin que l’accostage en mer)', () =>
   });
 });
 
-describe('Effet openTavernGames (NADJ ch.16)', () => {
+describe('Effet openTavernGames (NADJ 16)', () => {
   afterEach(() => resetRule('tavern-games'));
 
   it('option active → ouvre la modale (state tavernGames posé)', () => {

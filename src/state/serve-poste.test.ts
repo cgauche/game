@@ -5,7 +5,7 @@ import type { Combatant, ShipPoste } from '../engine/types';
 import type { BattleState, GameState } from './store';
 
 /**
- * Étape 3 « Servir un poste » (MDG ch.12-13). Un chef de pièce (`mannedPoste`) voit une attaque DÉDIÉE
+ * Étape 3 « Servir un poste » (MDG 12-13). Un chef de pièce (`mannedPoste`) voit une attaque DÉDIÉE
  * « Servir <arme> » dans `availableAttacks`, portant l'arme du poste via `weaponUid` ÉPINGLÉ (même si le
  * servant garde une arme perso de mêlée pour l'abordage). Le tir ne porte que dans l'ARC de la bordée :
  * `firedAttackBlock` honore le `weaponUid` → arc relatif au cap du navire support (parité réticule/clic).
@@ -53,7 +53,7 @@ describe('Étape 3 — Servir un poste (availableAttacks + arc)', () => {
     expect(availableAttacks(g, battle([g, enemyAt('east', 9, 5)])).some((o) => o.id === 'poste')).toBe(false);
   });
 
-  it('le tir du poste ne porte que dans l’ARC de bordée — weaponUid → cap du navire (MDG ch.12-13)', () => {
+  it('le tir du poste ne porte que dans l’ARC de bordée — weaponUid → cap du navire (MDG 12-13)', () => {
     const g = gunner();
     const east = enemyAt('east', 9, 5); // tribord d'un cap Nord
     const west = enemyAt('west', 1, 5); // bâbord

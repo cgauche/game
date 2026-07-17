@@ -12,7 +12,7 @@ const ETUDIANT: CustomStatblock = {
 };
 
 /**
- * « Une nuit à l'Opéra » — le Théâtre Staatsoper, reconstitué d'après le PLAN du scénario (NADJ ch.8,
+ * « Une nuit à l'Opéra » — le Théâtre Staatsoper, reconstitué d'après le PLAN du scénario (NADJ 8,
  * source 08 l.28-41). Carte DÉCLARÉE en `MapSpec` → compilée par `buildScene` (100 % en données, éditable) :
  * la grille reste authorée en ASCII (une par étage, comme l'arène), la logique d'intrigue vit dans les
  * champs `triggers`/`dialogues`/`encounters` du spec.

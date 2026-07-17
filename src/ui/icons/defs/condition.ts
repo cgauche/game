@@ -1,6 +1,6 @@
 import type { IconFamily } from '../types';
 
-/* États (LDB ch.16) — charte : voir defs/action.ts (grille 24×24, trait 1.8 rond, currentColor). */
+/* États (LDB 16) — charte : voir defs/action.ts (grille 24×24, trait 1.8 rond, currentColor). */
 
 /** Trait principal. */
 const K = 'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';

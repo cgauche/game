@@ -314,7 +314,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   }
   if (chosenTalent) addTalent(chosenTalent);
 
-  // Signe astral (ADE2 ch.03) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
+  // Signe astral (ADE2 3) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
   // AVANT heroSoFar (careerSkillAdditions voit un « Maître artisan » du signe) et avant les effets
   // d'acquisition des Talents (l. ~377). Talent « (Au choix) » résolu via specChoices (resolveEntry).
   if (opts.starId) applyStarEffect(opts.starId, chars, (label) => addTalent(resolveEntry(label, opts.specChoices)));

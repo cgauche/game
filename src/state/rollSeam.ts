@@ -79,7 +79,7 @@ export interface RollRequest {
   test: { skill?: string; char?: CharKey; spec?: string; sense?: PairedSense; menace?: string; noSupport?: boolean };
   difficulty: Difficulty;
   klass: RollClass;
-  /** Requis pour un `batch`/multi ; défaut `summed-dr` (Test d'équipage, MDG ch.14). */
+  /** Requis pour un `batch`/multi ; défaut `summed-dr` (Test d'équipage, MDG 14). */
   aggregate?: RollAggregate;
 }
 

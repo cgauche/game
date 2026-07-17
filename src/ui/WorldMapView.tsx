@@ -159,7 +159,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     setSeaPace(0);
   };
 
-  // « En selle » (EDOC ch.7, règle `travel-allures`) : mode IMPLICITE des routes praticables à pied,
+  // « En selle » (EDOC 7, règle `travel-allures`) : mode IMPLICITE des routes praticables à pied,
   // quand chaque héros vivant a une monture utilisable.
   const alluresOn = !!rule('travel-allures');
   const mounted = alluresOn && partyFullyMounted(party);
@@ -168,7 +168,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     ? [...selRoute.modes, ...(mounted && selRoute.modes.includes('pied') ? ['monture'] : [])]
     : [];
 
-  // Traversée MARITIME (routes `sea`, MDG ch.13/15) : sur le navire de campagne — estimation en milles/jour.
+  // Traversée MARITIME (routes `sea`, MDG 13/15) : sur le navire de campagne — estimation en milles/jour.
   const vessel = useGame((s) => s.vessel);
   const vesselData = vessel ? findVehicleById(vessel.vehicleId) : undefined;
   const vesselLabel = vessel?.name ?? vesselData?.label ?? ''; // #230 — nom d'instance prioritaire
@@ -477,7 +477,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 type="button"
                 className={`btn small ${seaFast ? 'btn-primary' : ''}`}
                 onClick={() => { setSeaFast(true); setSeaPace(0); }}
-                title="Tout le trajet se résout en UN Test d'équipage de Rude épreuve, modulé par l'Humeur de Manann et la durée (MDG ch.15)."
+                title="Tout le trajet se résout en UN Test d'équipage de Rude épreuve, modulé par l'Humeur de Manann et la durée (MDG 15)."
               >
                 Traversée rapide (un Test)
               </button>
@@ -494,7 +494,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                     className={`btn small ${seaPace === b ? 'btn-primary' : ''}`}
                     onClick={() => setSeaPace(b)}
                     title={b && diff
-                      ? `Test de ${seaRig === 'voile' ? 'Voile' : 'Ramer'} ${DIFFICULTY_LABELS[diff]} chaque jour — réussi : +${b} M ; le soir, Test de Résistance Complexe (−10) sous peine d'Exténué (MDG ch.13).`
+                      ? `Test de ${seaRig === 'voile' ? 'Voile' : 'Ramer'} ${DIFFICULTY_LABELS[diff]} chaque jour — réussi : +${b} M ; le soir, Test de Résistance Complexe (−10) sous peine d'Exténué (MDG 13).`
                       : 'Allure de conception du navire.'}
                   >
                     {b === 0 ? 'Rythme normal' : `Forcer +${b} M`}
@@ -512,7 +512,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           <p className="wm-est">
             {mode === 'mer' ? (
               vessel && seaM > 0 ? (
-                // 18 milles/jour par point de M (MDG ch.15 l.57-70) — le vent et les Tests d'équipage
+                // 18 milles/jour par point de M (MDG 15 l.57-70) — le vent et les Tests d'équipage
                 // de Progression (±10 %/DR) modulent chaque journée.
                 <><Icon id="scenario/port" size="sm" /> {vesselLabel} · ≈ {18 * seaM} milles/jour (M {seaM}, hors vent{seaPace ? ` · ${18 * (seaM + seaPace)} si le rythme est tenu` : ''}) · ~{Math.max(1, Math.ceil(selRoute.km / (18 * seaM)))} jour(s)</>
               ) : (
@@ -551,7 +551,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               disabled={(mode === 'mer' ? !vessel || seaM <= 0 || (seaOverload != null && !seaOverload.canSail) : kmh <= 0 || !affordable) || isGuest}
               title={isGuest ? 'L’hôte décide des départs.'
                 : mode === 'mer' && (!vessel || seaM <= 0) ? 'Aucun navire de campagne en état de prendre la mer.'
-                : mode === 'mer' && seaOverload != null && !seaOverload.canSail ? `Cale surchargée à ${seaOverload.ratioPct} % — impossible de prendre la mer (MDG ch.12). Allégez la cale.`
+                : mode === 'mer' && seaOverload != null && !seaOverload.canSail ? `Cale surchargée à ${seaOverload.ratioPct} % — impossible de prendre la mer (MDG 12). Allégez la cale.`
                 : mode === 'mer' && provisions && !provisions.suffisant ? 'Le navire appareille sans provisions suffisantes.'
                 : mode !== 'mer' && kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
                 : mode !== 'mer' && !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`

@@ -18,12 +18,12 @@ export interface ShipCrewTest {
 }
 
 /**
- * Tables de Blessures critiques sur un NAVIRE — MDG ch.13 « Critiques sur un navire » (p.124),
+ * Tables de Blessures critiques sur un NAVIRE — MDG 13 « Critiques sur un navire » (p.124),
  * transcrites verbatim. MÊME patron que `criticals.json` (LDB Traumatisme) : la DONNÉE vit dans
  * `ship-criticals.json` (éditable), ce module n'est que le TYPE + le chargement + le mapping des
  * Localisations sur `ShipLocation`.
  *
- * Un Critique de navire est tiré sur un d10 dans la table de la Localisation touchée (MDG ch.13 :
+ * Un Critique de navire est tiré sur un d10 dans la table de la Localisation touchée (MDG 13 :
  * double sur un coup réussi, ou tout coup une fois le score de Blessures tombé à 0). Champs
  * MÉCANISABLES (réutilisent les briques existantes — pas de mécanique parallèle) :
  *  - `shrapnel` : Éclats (Indice) → un nb de membres d'équipage = Indice subissent 9 Dégâts ;
@@ -43,11 +43,11 @@ export interface ShipCritEntry {
   /** Effets « État » immédiats AUTHORÉS en `GameOp` (En flammes / Voie d'eau via op `condition`) —
    *  langue UNIQUE, appliqués par `applyOps` (comme tout effet). */
   ops?: GameOp[];
-  /** Éclats (Indice) — `shrapnel` membres d'équipage subissent 9 Dégâts (MDG ch.13). */
+  /** Éclats (Indice) — `shrapnel` membres d'équipage subissent 9 Dégâts (MDG 13). */
   shrapnel?: number;
   /** Critiques supplémentaires sur la Coque (notation de dés). */
   hullCrits?: string;
-  /** « Canon détaché » (MDG ch.13 l.763-764) : l'équipage du poste tiré au sort encourt ce Test ; un échec
+  /** « Canon détaché » (MDG 13 l.763-764) : l'équipage du poste tiré au sort encourt ce Test ; un échec
    *  applique `onFail` (le canon RESTE à bord — ≠ « Canon perdu » qui utilise l'op `removeShipPoste` dans `ops`). */
   crewTest?: ShipCrewTest;
   note: string;
@@ -58,7 +58,7 @@ export type ShipCritTable = ShipCritEntry[];
  *  personnage ; les Équipements n'ont pas d'enum de coque touchable hors leur propre table). */
 export type ShipCritKey = Exclude<ShipLocation, 'equipage'>;
 
-/** Effet des **Éclats** (MDG ch.13) infligé à CHAQUE marin touché — authoré UNE fois en `GameOp` (langue
+/** Effet des **Éclats** (MDG 13) infligé à CHAQUE marin touché — authoré UNE fois en `GameOp` (langue
  *  unique), plus aucun littéral « 9 Dégâts » en dur dans le moteur. Le NOMBRE de marins touchés = l'Indice
  *  `shrapnel` de l'entrée de Critique (per-entry) ; l'effet, lui, est partagé (per-règle). */
 export const SHRAPNEL_HIT = shipCriticalsJson.shrapnelHit as GameOp[];

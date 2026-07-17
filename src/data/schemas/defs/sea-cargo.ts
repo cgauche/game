@@ -1,5 +1,5 @@
 /**
- * Schéma de `sea-cargo.json` — COMMERCE MARITIME (MDG ch.15 l.309-436). Consommé par
+ * Schéma de `sea-cargo.json` — COMMERCE MARITIME (MDG 15 l.309-436). Consommé par
  * `src/engine/seaVoyage.ts` (`CARGO as unknown as { ... }`, cast inline reflété ICI 1:1) : catalogue
  * de cargaisons (`CargoDef` — `src/engine/cargo.ts`), achat, vente, Commerce d'opportunité. `avail` =
  * plages d100 par saison (`Season`, `src/engine/travelStages.ts`) ; `price` = colonne par saison, ou

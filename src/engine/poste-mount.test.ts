@@ -5,7 +5,7 @@ import type { Combatant, ItemInstance } from './types';
 /**
  * Un poste d'artillerie monte une arme sur un servant via le chemin d'équipement NORMAL : l'`ItemInstance`
  * (base + qualités/enchants par instance) porte un `mountSide`, et `recomputeLoadout` le propage à l'arme
- * active dérivée (`Weapon.mountSide`) — lu ensuite par la validation d'arc de tir. (MDG ch.12-13)
+ * active dérivée (`Weapon.mountSide`) — lu ensuite par la validation d'arc de tir. (MDG 12-13)
  */
 const gunItem: ItemInstance = {
   uid: 'gun1', trappingId: 'pierrier', name: 'Pierrier', kind: 'ranged',

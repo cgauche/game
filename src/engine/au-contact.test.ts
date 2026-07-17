@@ -44,7 +44,7 @@ describe('effectiveWeapon — combat au contact (LDB 62 l.176)', () => {
 });
 
 describe('effectiveWeapon — improvisation par CONTEXTE générique (funnel)', () => {
-  it('ctx.improvised (ex. Bélier hors-porte, ADE II ch.08 l.249) → profil improvisé (+BF+1, Inoffensive, Atouts perdus)', () => {
+  it('ctx.improvised (ex. Bélier hors-porte, ADE II 8 l.249) → profil improvisé (+BF+1, Inoffensive, Atouts perdus)', () => {
     const belier = { name: 'Bélier', type: 'melee', reach: 'Moyenne', damage: { plusBF: true, flat: 10 }, qualities: [{ id: 'siege' }, { id: 'belier' }] } as unknown as Weapon;
     const r = effectiveWeapon(belier, { improvised: true });
     expect(r.damage).toEqual({ plusBF: true, flat: 1 });

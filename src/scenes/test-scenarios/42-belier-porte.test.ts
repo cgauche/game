@@ -12,13 +12,13 @@ import { hoverTargeting } from '../../state/targeting';
 import type { Combatant } from '../../engine/types';
 
 /**
- * BÉLIER — PORTE : consommateur LIVE du modèle ENGIN DE SIÈGE CREWÉ (poste `ShipPoste`, ADE II ch.08
+ * BÉLIER — PORTE : consommateur LIVE du modèle ENGIN DE SIÈGE CREWÉ (poste `ShipPoste`, ADE II 8
  * l.233) sur la Scène PRODUITE par le scénario réel (`42-belier-porte.ts`) — le Soldat SERT le bélier
  * (chef de pièce), 5 servants PNJ complètent l'Équipe de 6. `war-machine-crew.test.ts` couvre déjà la
  * mécanique PURE (`warMachineCrewPenalty`) ; ici on prouve qu'elle est bien CÂBLÉE au scénario : poste
  * authoré, `crewIds` réels (dont un HÉROS chef), résolution par Force contre une vraie porte, les 3
  * courbes d'effectif d'Équipe (complet / 3-6 / sous la moitié) — LOT 1 — et la MOBILITÉ « Pousser »
- * (ADE II ch.08 l.258, Lot 2 #156) : mouvement simple plafonné, formation rigide, seuil de pousseurs.
+ * (ADE II 8 l.258, Lot 2 #156) : mouvement simple plafonné, formation rigide, seuil de pousseurs.
  */
 function startBelier(): { soldat: Combatant; crew: Combatant[]; ram: Combatant; porte: Combatant } {
   useGame.setState({ party: scenario.makeParty() });
@@ -56,7 +56,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     const { soldat, ram, porte } = startBelier();
     expect(soldat.items?.some((i) => i.trappingId === 'belier-ade2')).toBeFalsy(); // jamais dans le loadout du héros
     expect(soldat.mannedPoste?.item.trappingId).toBe('belier-ade2');
-    expect(ram.postes?.[0].crewIds).toHaveLength(6); // Équipe requise (ADE II ch.08 l.233)
+    expect(ram.postes?.[0].crewIds).toHaveLength(6); // Équipe requise (ADE II 8 l.233)
     const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
     expect(belier).toBeTruthy();
     expect(belier.type).toBe('melee');
@@ -67,10 +67,10 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     expect(w.crewTeamPenalty).toBeUndefined(); // Équipe au complet → arme nette
   });
 
-  it("le jet d'attaque du Bélier se résout sur la Force du Soldat — PAS sa CC (ADE II ch.08 l.233)", () => {
+  it("le jet d'attaque du Bélier se résout sur la Force du Soldat — PAS sa CC (ADE II 8 l.233)", () => {
     const { soldat } = startBelier();
     const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
-    // La CC et la Force DIVERGENT volontairement (ADE II ch.08 l.233 : « utilise Force ») pour désambiguïser :
+    // La CC et la Force DIVERGENT volontairement (ADE II 8 l.233 : « utilise Force ») pour désambiguïser :
     // si le moteur résolvait encore sur CC, la valeur de Test observée serait TRÈS différente.
     soldat.characteristics['capacite-de-combat'] = 20;
     soldat.characteristics.force = 65;
@@ -119,7 +119,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     expect(block).toMatchObject({ reason: 'sous-effectif' });
   });
 
-  // ── Lot 2 (#156) : MOBILITÉ — « Pousser » l'engin (ADE II ch.08 l.258, mouvement simple, aucun jet) ──
+  // ── Lot 2 (#156) : MOBILITÉ — « Pousser » l'engin (ADE II 8 l.258, mouvement simple, aucun jet) ──
 
   it("gate du bouton « Pousser » (ActionBar via `pushSlot`, GAP intégration UI) : visible pour le CHEF, absent pour un héros sans poste, désactivé sous-effectif", () => {
     const { soldat, crew } = startBelier();
@@ -184,7 +184,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     expect(useGame.getState().battle!.order).not.toContain(ram.id);
   });
 
-  it('portée de poussée PLAFONNÉE à la vitesse maison (`siege-engine-push-speed`, défaut 2 cases) — RAW muet, ADE II ch.08 l.258', () => {
+  it('portée de poussée PLAFONNÉE à la vitesse maison (`siege-engine-push-speed`, défaut 2 cases) — RAW muet, ADE II 8 l.258', () => {
     const { soldat, ram } = startBelier();
     setActive(soldat.id);
     const cap = Number(rule('siege-engine-push-speed'));
@@ -204,7 +204,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     expect(ram.pos).toEqual({ x: atCap.x + 1, y: atCap.y }); // offset relatif chef↔engin préservé
   });
 
-  it('seuil de pousseurs (ADE II ch.08 l.233, MÊME seuil que le tir) : 3/6 (≥ moitié) autorise, 2/6 (sous la moitié) refuse', () => {
+  it('seuil de pousseurs (ADE II 8 l.233, MÊME seuil que le tir) : 3/6 (≥ moitié) autorise, 2/6 (sous la moitié) refuse', () => {
     const { soldat: soldatA, crew: crewA } = startBelier();
     setActive(soldatA.id);
     for (const c of crewA.filter((x) => x.id !== soldatA.id).slice(0, 3)) c.wounds = { current: 0, max: c.wounds.max }; // 3/6 restants

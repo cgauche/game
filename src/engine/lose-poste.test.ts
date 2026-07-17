@@ -12,11 +12,11 @@ const sailor = (id: string, over: Partial<Combatant> = {}): Combatant => ({
 }) as unknown as Combatant;
 
 /**
- * « Canon perdu » (MDG ch.13 l.765) : une pièce passe par-dessus bord. Mécanisé par l'op GÉNÉRIQUE
+ * « Canon perdu » (MDG 13 l.765) : une pièce passe par-dessus bord. Mécanisé par l'op GÉNÉRIQUE
  * `removeShipPoste` (authoré en DONNÉE — `ops` du Critique dans `ship-criticals.json`), plus aucun flag/branche
  * en dur. Le `target` est la coque ; l'équipage vient de `ctx.crew` (pour démanciper le chef).
  */
-describe('op removeShipPoste — Canon perdu (MDG ch.13 l.765)', () => {
+describe('op removeShipPoste — Canon perdu (MDG 13 l.765)', () => {
   const setup = () => {
     const poste: ShipPoste = { item: { uid: 'p1', name: 'Pierrier' } as never, side: 'tribord', crewIds: ['chef'] };
     const hull = { id: 'hull', name: 'Cogue', postes: [poste] } as unknown as Combatant;
@@ -56,10 +56,10 @@ const detachTest: ShipCrewTest = {
 };
 
 /**
- * « Canon détaché » (MDG ch.13 l.763-764) : l'équipage du poste encourt `crewTest` (data-driven) ; un échec
+ * « Canon détaché » (MDG 13 l.763-764) : l'équipage du poste encourt `crewTest` (data-driven) ; un échec
  * applique `onFail`. Le canon RESTE à bord (≠ « Canon perdu »). Plus aucune valeur (12 / Athlétisme) en dur.
  */
-describe('applyCrewHit — Canon détaché (data-driven, MDG ch.13 l.763-764)', () => {
+describe('applyCrewHit — Canon détaché (data-driven, MDG 13 l.763-764)', () => {
   const hullWith = (crewIds: string[]) => {
     const poste: ShipPoste = { item: { uid: 'p1', name: 'Canon' } as never, side: 'tribord', crewIds };
     return { hull: { id: 'hull', postes: [poste] } as unknown as Combatant, poste };

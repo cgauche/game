@@ -1,5 +1,5 @@
 /**
- * Schéma de `naval-progression.json` — table PROGRESSION D'UN NAVIRE (MDG ch.13 l.68-75) : bande de DR
+ * Schéma de `naval-progression.json` — table PROGRESSION D'UN NAVIRE (MDG 13 l.68-75) : bande de DR
  * du Test de Navigation → mode de déplacement (M+2 / M+1 / M / M−1 / M÷2). Consommé par
  * `src/engine/shipNavigation.ts` (`ProgressionEntry`, `findTableEntry`).
  */

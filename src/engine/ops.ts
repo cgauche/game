@@ -144,7 +144,7 @@ export interface PerSL {
   /** Quantité ajoutée par palier (peut être négative — retrait de Corruption). */
   amount: number;
   /** Échelle sur l'ÉCHEC (branche `fail` d'un nœud Flow `test`, `ctx.sl` négatif) au lieu de la réussite —
-   *  « gagnant un État X pour chaque niveau d'échec » (ex. Hallucinogène, T2C ch.15 l.167). Magnitude =
+   *  « gagnant un État X pour chaque niveau d'échec » (ex. Hallucinogène, T2C 15 l.167). Magnitude =
    *  `|sl|` quand `sl < 0`, 0 sinon (symétrique du défaut qui ignore tout `sl` négatif). */
   onFailure?: boolean;
 }
@@ -453,12 +453,12 @@ export type GameOp =
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ».
    *  `argFrom` : la Cible (`arg`) est TIRÉE à l'attache plutôt que littérale — `'obsessions'` =
-   *  Tableau des Obsessions (EDOC ch.12 : mutation « Haine sporadique » → Haine (Cible déterminée
+   *  Tableau des Obsessions (EDOC 12 : mutation « Haine sporadique » → Haine (Cible déterminée
    *  par les Obsessions)). Résolu par `applyOps` ET `attachMutation` (même tirage, `rollObsession`). */
   | { op: 'grantTrait'; traitId: string; arg?: string; argFrom?: 'obsessions'; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[]; durationRounds?: Formula }
   /** Trait PSYCHOLOGIQUE conféré (Colère impie → Frénésie). PASSIF (mutation/trait) : posé dans
    *  `c.psychTraits` à l'attache. `psychType` = `PsychType` (frenesie, peur…). `argFrom` : la Cible
-   *  (`cible`) est TIRÉE à l'attache (Tableau des Obsessions, EDOC ch.12) plutôt que littérale. */
+   *  (`cible`) est TIRÉE à l'attache (Tableau des Obsessions, EDOC 12) plutôt que littérale. */
   | { op: 'grantPsychTrait'; psychType: string; cible?: string; argFrom?: 'obsessions' }
   /** Retire UN Trait psychologique porté (`c.psychTraits` — la DONNÉE persistée, ≠ `endPsych` qui
    *  retire une affliction de combat `psychState`). `psychType` absent = un Trait AU CHOIX (le 1ᵉʳ
@@ -772,7 +772,7 @@ export type GameOp =
    *  Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. Exécutée → `ActiveEffect.drBonus`
    *  temporisé ; lisible aussi en PASSIF (trait/aura). Consommée par `charDRBonusOf` sur un Test RÉUSSI. */
   | { op: 'charDRBonus'; char: CharKey; bonus: Formula }
-  /** Modificateur aux Tests INDIVIDUELS composant un TEST D'ÉQUIPAGE (MDG ch.14) — chanson « Naviguons
+  /** Modificateur aux Tests INDIVIDUELS composant un TEST D'ÉQUIPAGE (MDG 14) — chanson « Naviguons
    *  tous ensemble » : « +10 sur les Tests individuels de chaque membre d'équipage impliqué dans un Test
    *  d'équipage » (MDG 09 l.224). Exécutée → `ActiveEffect.crewTestMod`, lu par `crewRoleValue`
    *  (engine/crewMorale) — le SEUL point de valeur des Tests d'équipage. */
@@ -881,7 +881,7 @@ export type GameOp =
    *  (Délice de Ranald : pénalité pendant le reste du jour, LDB 71 l.24). */
   | { op: 'delayed'; afterMinutes?: Formula; afterHours?: Formula; afterDays?: Formula; afterDuration?: true;
       forMinutes?: Formula; forHours?: Formula; forDays?: Formula; ops: GameOp[] }
-  /** Retire une pièce d'artillerie d'une COQUE (« Canon perdu », MDG ch.13 l.765 : la pièce passe par-dessus
+  /** Retire une pièce d'artillerie d'une COQUE (« Canon perdu », MDG 13 l.765 : la pièce passe par-dessus
    *  bord) : `target.postes` perd UN poste au hasard (`ctx.rng`) ; si son chef de pièce (`crewIds[0]`, résolu
    *  dans `ctx.crew`) la servait, il est démancipé (`mannedPoste` + arme dérivée retirés). GÉNÉRIQUE — remplace
    *  le flag ad hoc `losePoste`. Inerte si la coque n'a aucun poste. */
@@ -1523,7 +1523,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'removeShipPoste': {
-        // « Canon perdu » (MDG ch.13 l.765) : une pièce passe par-dessus bord — retirée de la coque + son
+        // « Canon perdu » (MDG 13 l.765) : une pièce passe par-dessus bord — retirée de la coque + son
         // chef démancipé. La coque (`target`) est la source de vérité ; l'équipage vient de `ctx.crew`.
         const postes = target.postes;
         if (postes?.length) {

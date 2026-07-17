@@ -1,5 +1,5 @@
 /**
- * Jeux de taverne (NADJ ch.16) — câblage store : le jet du challenger est une CASCADE (`openRoll`,
+ * Jeux de taverne (NADJ 16) — câblage store : le jet du challenger est une CASCADE (`openRoll`,
  * `state/tavernFlow.ts`, #370) — une partie se joue de bout en bout via `drain()` (patron
  * `port-sell-cargo.test.ts`) : choix jeu + adversaire → cascade. Test OPPOSÉ RÉEL (#579) : l'adversaire
  * est roulé et FIGÉ dans `meta.opposed.aT` AVANT que le jet du joueur ne s'ouvre — la ré-opposition sous

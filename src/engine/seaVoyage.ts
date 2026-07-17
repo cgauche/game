@@ -1,5 +1,5 @@
 /**
- * LONGS VOYAGES — couche PURE de MDG ch.15 (l.3-436), données verbatim `sea-events.json` /
+ * LONGS VOYAGES — couche PURE de MDG 15 (l.3-436), données verbatim `sea-events.json` /
  * `sea-cargo.json`. Le rythme du voyage (milles/jour, Progression) vit dans `seaNavigation.ts` ; ici
  * l'HUMEUR DE MANANN, les ÉVÉNEMENTS de bord/de port et le COMMERCE MARITIME.
  *
@@ -62,7 +62,7 @@ const EVENTS = seaEventsJson as unknown as {
   fastVoyage: { paliers: FastVoyagePalier[] };
 };
 
-/** Palier de SURCHARGE de la cale (MDG ch.12 l.70-75) : `fromPct` = seuil strict (>) en % de la Contenance,
+/** Palier de SURCHARGE de la cale (MDG 12 l.70-75) : `fromPct` = seuil strict (>) en % de la Contenance,
  *  `mMod`/`manoeuvreDR` = −M et −DR Manœuvre appliqués au navire. */
 export interface OverloadPalier { id: string; fromPct: number; label: string; mMod: number; manoeuvreDR: number }
 
@@ -94,7 +94,7 @@ export const OPPORTUNITE = CARGO.opportunite;
 export const findCargoById = (id: string): CargoDef | undefined => CARGO.cargoes.find((c) => c.id === id);
 export const findManannFactor = (id: string): ManannFactor | undefined => EVENTS.manann.factors.find((f) => f.id === id);
 
-// ── Surcharge de la cale (MDG ch.12 l.70-75) ──────────────────────────────────────────────────────
+// ── Surcharge de la cale (MDG 12 l.70-75) ──────────────────────────────────────────────────────
 
 /** Plafond DUR de charge (% de la Contenance) : au-delà « Impossible de prendre la mer » (MDG 12 l.75). */
 export const OVERLOAD_HARD_CAP_PCT: number = CARGO.overload.hardCapPct;

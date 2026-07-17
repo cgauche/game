@@ -3,7 +3,7 @@ import { makeRNG } from './dice';
 import { SEA_HAZARDS, findSeaHazard, pickSeaHazard, strandingPenalty, rollStranding, rollDebrisEntangle, perilManagement } from './seaPerils';
 
 /**
- * PÉRILS EN MER — couche pure (MDG ch.13 l.423-564), ORPHELINE avant le câblage #444 (`seaVoyageFlow.ts`
+ * PÉRILS EN MER — couche pure (MDG 13 l.423-564), ORPHELINE avant le câblage #444 (`seaVoyageFlow.ts`
  * `case 'collision'`). Verbatim re-vérifié `Source/WH - V4 - La Mer de Griffe/13 - Navigation
  * maritime.md` l.471-499.
  */

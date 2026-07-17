@@ -1,6 +1,6 @@
 /**
  * ÉCRAN MARCHÉ TERRESTRE / FLUVIAL (Mort sur le Reik Compagnon ch.11 « Règles du commerce ») — le PENDANT
- * TERRESTRE de `portFlow` (commerce maritime, MDG ch.15). Même SHAPE « acheter bas / transporter / revendre »
+ * TERRESTRE de `portFlow` (commerce maritime, MDG 15). Même SHAPE « acheter bas / transporter / revendre »
  * orchestrée côté state contre le moteur PUR `engine/landCargo` (déjà testé) ; SEULES les formules du RAW T2C
  * diffèrent du maritime (disponibilité en 2 temps, qualité secrète du Vin, Demande/Mise à prix, bradage à ½) →
  * elles vivent dans `landCargo.ts`, ce flux ne fait que les jouer.
@@ -226,7 +226,7 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   if (want < minCargoEnc) { log(get, set, [`Les marchands ne cèdent pas de lot de moins de ${minCargoEnc} Points d'Encombrement (T2C 13 l.131).`]); return; }
   // Contenance = plafond RÉEL (#327) : il faut un porteur, et le lot doit tenir dans sa place libre.
   const carrier = primaryCargoCarrier(get());
-  if (!carrier) { log(get, set, ['Aucune bête de somme ni véhicule pour transporter une cargaison — procurez-vous un chariot ou une monture de bât (EDOC ch.7).']); return; }
+  if (!carrier) { log(get, set, ['Aucune bête de somme ni véhicule pour transporter une cargaison — procurez-vous un chariot ou une monture de bât (EDOC 7).']); return; }
   if (!carrierCanLoad(carrier, want)) { log(get, set, [`${carrier.label} ne peut plus charger que ${carrierFreeEnc(carrier)} Enc (Contenance ${carrier.capacity}) — réduisez le lot ou ajoutez un porteur.`]); return; }
   const rng = battleRng();
   const best = partyAssisted(get().party, 'marchandage');

@@ -3,12 +3,12 @@ import { warMachineCrewPenalty, warMachineCrewRequired, warMachineFireWeapon } f
 import type { Weapon } from './types';
 
 /**
- * Équipe des machines de guerre ADE II ch.08 l.233 : « Les armes sans Équipe complète peuvent être
+ * Équipe des machines de guerre ADE II 8 l.233 : « Les armes sans Équipe complète peuvent être
  * utilisées avec une pénalité de –20. Elles ne peuvent être utilisées avec moins de la moitié de
  * l'Équipe nécessaire. » 3ᵉ courbe de sous-effectif — DISTINCTE de `crewedPenalty` (AA) et
  * `undercrewPenalty` (MDG) : PAS de recharge doublée, PAS de Défaut ajouté, PAS de tranches de 10 %.
  */
-describe('warMachineCrewPenalty — ADE II ch.08 l.233', () => {
+describe('warMachineCrewPenalty — ADE II 8 l.233', () => {
   it('Équipe au complet : aucune pénalité', () => {
     expect(warMachineCrewPenalty(4, 4)).toEqual({ toHitMod: 0, unusable: false });
     expect(warMachineCrewPenalty(6, 4)).toEqual({ toHitMod: 0, unusable: false }); // surnombre : toujours net

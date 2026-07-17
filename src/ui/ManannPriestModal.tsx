@@ -6,7 +6,7 @@ import { canAfford } from '../engine/money';
 import { Icon } from './Icon';
 
 /**
- * Prêtre de Manann (MDG ch.15 l.246, événement de port) : « Vous pouvez soit payer 1d10 CO plus la
+ * Prêtre de Manann (MDG 15 l.246, événement de port) : « Vous pouvez soit payer 1d10 CO plus la
  * Taille du navire en pistoles pour une bénédiction, soit réduire l'Humeur de Manann de 4d10. »
  * CHOIX du joueur — `resolveManannPriest` tranche.
  *

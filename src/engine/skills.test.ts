@@ -140,7 +140,7 @@ describe('bestForSkills — meilleur PJ pour des compétences AU CHOIX', () => {
   });
 });
 
-describe('bestAssistedOption — Scène à compétences AU CHOIX résolue en Soutien (ADE II ch.8)', () => {
+describe('bestAssistedOption — Scène à compétences AU CHOIX résolue en Soutien (ADE II 8)', () => {
   it('un seul PJ (pas de soutien) → valeur == bestForSkills (aucun +10)', () => {
     const a = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 50 }]), id: 'a' }; // discr 80
     const solo = bestAssistedOption([a], [{ skillId: 'discretion' }, { skillId: 'perception' }], undefined)!;

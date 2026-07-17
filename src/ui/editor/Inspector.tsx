@@ -929,7 +929,7 @@ function CrewPicker({ ent, scene, setScene }: { ent: SceneEntity; scene: Scene; 
       ) : null}
       {crew.length > 0 && (
         <p className="hint">
-          Un servant affecté ici GARDE sa position sur la carte : la formation en anneau (ADE II ch.08 l.258)
+          Un servant affecté ici GARDE sa position sur la carte : la formation en anneau (ADE II 8 l.258)
           ne se pose automatiquement qu'au spawn de combat, et seulement si sa position COÏNCIDE encore avec
           celle de la pièce (un placement d'auteur distinct n'est jamais déplacé, #255). Pour une formation
           visible dès l'éditeur, posez le servant sur la case de la pièce avant de l'affecter, ou déplacez-le

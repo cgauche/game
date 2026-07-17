@@ -22,7 +22,7 @@
  *       • sort↔possession : un sort et l'objet homonyme (Bouclier le sort vs le bouclier) — bouclier,
  *           broyeur-d-os, carreau, flechette.
  *       • divers : effrayant (sort↔talent), pistolet (qualité↔possession), resistance (compétence↔talent),
- *           belier (qualité de siège « Bélier » ADE II ch.08 ↔ sort homonyme « Bélier »), filet (trapping
+ *           belier (qualité de siège « Bélier » ADE II 8 ↔ sort homonyme « Bélier »), filet (trapping
  *           « Filet » ZI p.31 ↔ qualité « Filet » ZI p.29 — l'arme PORTE la qualité qui pose son Empêtré),
  *           poudre-impregnee-d-aqshy (trapping ↔ qualité, AA 08 l.544 — la munition PORTE la qualité
  *           qui pose son seuil de Maladresse élargi {8,9}, même patron que `filet`).

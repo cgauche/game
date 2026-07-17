@@ -45,7 +45,7 @@ describe('weaponStatParts (composeur partagé des stats d’arme)', () => {
 });
 
 describe('conditionalDamageNote — #135 : dégâts CONDITIONNELS dérivés des capacités de qualité (ram/siège)', () => {
-  it('Bélier (qualities siege+belier, ADE II ch.08 l.249/292) : porte-uniquement + ×2 structure, repli Arme improvisée DÉRIVÉ (pas un littéral)', () => {
+  it('Bélier (qualities siege+belier, ADE II 8 l.249/292) : porte-uniquement + ×2 structure, repli Arme improvisée DÉRIVÉ (pas un littéral)', () => {
     const belier = { qualities: [{ id: 'siege' }, { id: 'belier' }], damage: { plusBF: true, flat: 10 } };
     expect(conditionalDamageNote(belier)).toBe('contre une porte uniquement — sinon Arme improvisée (+BF+1) · ×2 contre une structure');
   });

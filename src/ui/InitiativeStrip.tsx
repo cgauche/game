@@ -29,7 +29,7 @@ function initiativeTitle(c: Combatant): string {
  * du Round (`battle.order`), cadre = teinte d'ÉQUIPE (vert allié / rouge ennemi — la forme
  * pleine/tirets du cadre vient de RigPortrait, R9 daltonisme), actif = or + marqueur, KO grisé.
  * Badge de score d'Initiative (LDB 13) en coin de chaque tuile (héros + ennemis), sablier si arme
- * Lente — visible UNIQUEMENT pendant la pause d'ouverture/de Round (`turn === -1`, LDB ch.17 l.27),
+ * Lente — visible UNIQUEMENT pendant la pause d'ouverture/de Round (`turn === -1`, LDB 17 l.27),
  * masqué une fois le tour engagé (retour playtest #205). Pendant cette pause, badge de pré-emption (Icon ui/preempt)
  * sous les héros éligibles — gratuit (arme Rapide) =
  * classe `.free`, sinon coût en Chance affiché. Toggle d'inspection au bout. Pur à props — câblé

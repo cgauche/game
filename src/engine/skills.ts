@@ -307,11 +307,11 @@ export function soutienBonus(
   return assistBonus(elig, bonus(effectiveChar(leader, ck)));
 }
 
-/** Meilleur résultat SOUTENU d'un groupe pour une Scène à compétences AU CHOIX (ADE II ch.8) : pour chaque
+/** Meilleur résultat SOUTENU d'un groupe pour une Scène à compétences AU CHOIX (ADE II 8) : pour chaque
  *  option, `partyAssisted(crew, skill…)` (meneur + Soutien LDB 12) ; on garde l'option au plus haut score
  *  soutenu (argmax `maxBy`). `crew` vide ⇒ null. Réutilise `partyAssisted` + `maxBy`. Miroir SOUTENU de
  *  `bestForSkills` : là où celle-ci prend le meilleur PJ SEUL, celle-ci fait coopérer TOUT l'équipage
- *  affecté (les Personnages engagés dans la Scène, ADE II ch.8 l.153/157) — le meneur lance, les assistants
+ *  affecté (les Personnages engagés dans la Scène, ADE II 8 l.153/157) — le meneur lance, les assistants
  *  capables ajoutent +10 chacun (plafonné). L'option de PURE Caractéristique (`skills` vide) reste possible. */
 export function bestAssistedOption(
   crew: Combatant[],

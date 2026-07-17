@@ -32,7 +32,7 @@ export function sizeFootprint(size?: SizeCategory): number {
 }
 
 /** Côté N de l'empreinte d'une ENTITÉ — accesseur UNIQUE qui DÉCOUPLE l'empreinte de grille de la Taille
- *  créature : `footprint` explicite (objet à empreinte propre — un NAVIRE, MDG ch.12, qui occupe N cases sans
+ *  créature : `footprint` explicite (objet à empreinte propre — un NAVIRE, MDG 12, qui occupe N cases sans
  *  être une créature) prime ; sinon dérivée de la Taille créature (`size`). Un navire n'a donc PAS de `size`
  *  (→ aucune Peur de Taille / Piétinement / ×Dégâts) tout en occupant ses cases. */
 export function footprintN(c: { size?: SizeCategory; footprint?: number }): number {

@@ -178,7 +178,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     else expect(journal).toMatch(/découverte|perdus/);
   });
 
-  // ── Identifier un artefact magique (ADE2 ch.4 l.46-59) ─────────────────────────────────────
+  // ── Identifier un artefact magique (ADE2 4 l.46-59) ─────────────────────────────────────
   function armArtefact(withSavoir = true) {
     const h = hero();
     if (withSavoir) h.skills.push({ skillId: 'savoir', spec: 'magie', characteristic: 'intelligence', advances: 10 });

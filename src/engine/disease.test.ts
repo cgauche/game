@@ -64,7 +64,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(c.diseases![0].minutesLeft).toBe(5 * MINUTES_PER_DAY);
   });
 
-  it('durée en HEURES (Mal de mer « par heure », MDG ch.14) : la maladie s’achève DANS la journée', () => {
+  it('durée en HEURES (Mal de mer « par heure », MDG 14) : la maladie s’achève DANS la journée', () => {
     const dz = contractDisease('mal-de-mer', seq([]))!; // incubation instantanée (0) ; durée fixe 1 heure
     expect(dz.phase).toBe('active');
     expect(dz.minutesLeft).toBe(60);
@@ -242,7 +242,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   });
 });
 
-// ── Maladies transmises par l'eau (T2C ch.16, Mort sur le Reik Compagnon) ──────────────────────────
+// ── Maladies transmises par l'eau (T2C 16, Mort sur le Reik Compagnon) ──────────────────────────
 import { testStatePenalty, combatTestPenalty } from './conditions';
 import { passiveGlobalTestMod, passiveMods } from './trauma';
 import { applyOps } from './ops';

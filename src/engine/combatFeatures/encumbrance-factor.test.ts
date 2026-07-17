@@ -1,5 +1,5 @@
 /**
- * `encumbranceFactor` (ADE II ch.02 l.706-710) — capacité de race/créature MULTIPLIANT (Bonus de Force +
+ * `encumbranceFactor` (ADE II 2 l.706-710) — capacité de race/créature MULTIPLIANT (Bonus de Force +
  * Bonus d'Endurance) avant l'ajout additif de Costaud (`talentEncumbranceBonus`). Le porteur DONNÉE est le
  * Trait racial `ogre` (`traits.json`, capabilities.encumbranceFactor:2, lu par `traitEncumbranceFactor`,
  * `talentEffects.ts`) — le talent optionnel « Massif » (`archives-de-l-empire-2` l.241-257) est un mécanisme
@@ -15,7 +15,7 @@ import { findCreatureById } from '../../data';
 import { bonus } from '../characteristics';
 import type { Combatant } from '../types';
 
-describe('encumbranceFactor (ADE II ch.02 l.708) — facteur MULTIPLICATIF sur BF+BE', () => {
+describe('encumbranceFactor (ADE II 2 l.708) — facteur MULTIPLICATIF sur BF+BE', () => {
   it('0 excédent : sans capacité, facteur = 1 (aucun effet)', () => {
     expect(maxEncumbranceFactor([])).toBe(1);
     expect(maxEncumbranceFactor([{}])).toBe(1);

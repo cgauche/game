@@ -57,7 +57,7 @@ describe('Activités de préparation de bataille (ADE II 08 l.79-110) — donné
     expect(inf.combined).toBe(true);
     expect(inf.skills).toEqual([{ skillId: 'discretion' }, { skillId: 'perception' }]);
     expect(inf.requires).toEqual(['planned']);
-    // RAW ADE II ch.8 l.75 : « En cas de Succès, le Personnage obtient un bonus de +20 à l'Activité Planification. »
+    // RAW ADE II 8 l.75 : « En cas de Succès, le Personnage obtient un bonus de +20 à l'Activité Planification. »
     expect(matchBattleOutcomes(inf, testRes(true, 1)).flatMap((b) => b.battle!)).toEqual([{ target: 'planningBonus', scale: 'fixed', amount: 20 }]);
   });
 

@@ -706,7 +706,7 @@
       "book": "mer-des-griffes",
       "page": 124
     },
-    "desc": "Un navire en flammes subit 1 Blessure par Tour et par État En flammes (MDG ch.13). Un seul État En flammes ne peut affecter qu'une seule Localisation du vaisseau à la fois ; le feu peut se répandre ou s'intensifier (tableau Intensité du feu).",
+    "desc": "Un navire en flammes subit 1 Blessure par Tour et par État En flammes (MDG 13). Un seul État En flammes ne peut affecter qu'une seule Localisation du vaisseau à la fois ; le feu peut se répandre ou s'intensifier (tableau Intensité du feu).",
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -737,7 +737,7 @@
       "book": "mer-des-griffes",
       "page": 124
     },
-    "desc": "Un vaisseau percé d'une Voie d'eau prend l'eau : à chaque Round, l'Indice (le nombre de pions de cet État) s'ajoute au cumul d'Inondation du navire (MDG ch.13). L'équipage peut écoper — un Test de Force Intermédiaire (+0) retire 1 au cumul par DR positif.",
+    "desc": "Un vaisseau percé d'une Voie d'eau prend l'eau : à chaque Round, l'Indice (le nombre de pions de cet État) s'ajoute au cumul d'Inondation du navire (MDG 13). L'équipage peut écoper — un Test de Force Intermédiaire (+0) retire 1 au cumul par DR positif.",
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -768,7 +768,7 @@
       "book": "mer-des-griffes",
       "page": 124
     },
-    "desc": "Cumul d'eau embarquée d'un navire (MDG ch.13). Quand il atteint la MOITIÉ de l'Endurance du vaisseau, celui-ci est alourdi par l'eau (−1 M, −1 DR aux Tests de Navigation) ; quand il atteint l'Endurance du vaisseau, il COULE.",
+    "desc": "Cumul d'eau embarquée d'un navire (MDG 13). Quand il atteint la MOITIÉ de l'Endurance du vaisseau, celui-ci est alourdi par l'eau (−1 M, −1 DR aux Tests de Navigation) ; quand il atteint l'Endurance du vaisseau, il COULE.",
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -873,7 +873,7 @@
       "book": "mer-des-griffes",
       "page": 124
     },
-    "desc": "Le navire est alourdi par l'eau embarquée (Inondation ≥ moitié de l'Endurance, MDG ch.13) : −1 M et −1 DR à tous les Tests de Navigation, jusqu'à ce que la voie d'eau soit réparée et la cale écopée."
+    "desc": "Le navire est alourdi par l'eau embarquée (Inondation ≥ moitié de l'Endurance, MDG 13) : −1 M et −1 DR à tous les Tests de Navigation, jusqu'à ce que la voie d'eau soit réparée et la cale écopée."
   },
   {
     "id": "naufrage",
@@ -882,7 +882,7 @@
       "book": "mer-des-griffes",
       "page": 124
     },
-    "desc": "L'Inondation a atteint l'Endurance du navire : le vaisseau COULE (MDG ch.13)."
+    "desc": "L'Inondation a atteint l'Endurance du navire : le vaisseau COULE (MDG 13)."
   },
   {
     "id": "derive",
@@ -891,7 +891,7 @@
       "book": "mort-sur-le-reik-compagnon",
       "page": 29
     },
-    "desc": "Le gréement ou les rames sont hors d'usage (Critique de bateau fluvial, T2C ch.7) : tant qu'ils ne sont pas réparés ou remplacés, le bateau ne peut que se laisser dériver."
+    "desc": "Le gréement ou les rames sont hors d'usage (Critique de bateau fluvial, T2C 7) : tant qu'ils ne sont pas réparés ou remplacés, le bateau ne peut que se laisser dériver."
   },
   {
     "id": "gouvernail-brise",
@@ -900,7 +900,7 @@
       "book": "mort-sur-le-reik-compagnon",
       "page": 29
     },
-    "desc": "Le gouvernail a volé en éclat (Critique de bateau fluvial, T2C ch.7) : tant qu'il n'est pas réparé, tous les Tests de Navigation pour diriger le bateau sont Très Difficiles (–30)."
+    "desc": "Le gouvernail a volé en éclat (Critique de bateau fluvial, T2C 7) : tant qu'il n'est pas réparé, tous les Tests de Navigation pour diriger le bateau sont Très Difficiles (–30)."
   },
   {
     "id": "digere",

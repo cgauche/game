@@ -1,5 +1,5 @@
 /**
- * Activités « Entre deux aventures » (LDB ch.23 + LDB 08) — calculs PURS, cités à la source :
+ * Activités « Entre deux aventures » (LDB 23 + LDB 08) — calculs PURS, cités à la source :
  *
  *  - **Artisanat** (ch.23 l.65-92) : « Pour créer l'équipement, effectuez un Test étendu de
  *    Métier, dont la Difficulté est [fixée par] la Disponibilité de l'Équipement » (Commune
@@ -34,23 +34,23 @@ import activitiesJson from '../data/activities.json';
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 // CATALOGUE d'ACTIVITÉS data-driven (`src/data/activities.json`) — FOYER UNIQUE des Activités, tous
-// contextes confondus : « Entre deux aventures » (LDB 23), « Activités de voyage » (EDOC ch.8),
-// « Activités en mer » (MDG ch.15). Remplace l'énumération en dur (union `kind` + `switch`).
+// contextes confondus : « Entre deux aventures » (LDB 23), « Activités de voyage » (EDOC 8),
+// « Activités en mer » (MDG 15). Remplace l'énumération en dur (union `kind` + `switch`).
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 
 /** Contexte où une Activité est proposable. `bataille` = Activité de PRÉPARATION avant la bataille de
- *  masse (ADE II ch.8 l.71-110 : Discours/Planification/Infiltration/Repérage/Sabotage/Rassembler des
+ *  masse (ADE II 8 l.71-110 : Discours/Planification/Infiltration/Repérage/Sabotage/Rassembler des
  *  forces) ; `bataille-round` = Scène cinématique d'un Round de bataille (l.137-225 : Charge/Motivation/
  *  Ligne de mire/Survol/Duel/Tenez votre position/… + Rassemblement l.122) ; `auberge` = Activité jouée
  *  HORS voyage, au comptoir d'une auberge du hub de ville (#352 : `recueillir-informations` s'y ouvre
  *  à la demande, un jet indépendant d'une Étape). */
 export type ActivityContext = 'interlude' | 'voyage' | 'mer' | 'bataille' | 'bataille-round' | 'auberge';
 
-/** Camp visé par une issue de bataille (ADE II ch.8) : `ally` = l'armée des Personnages, `enemy` = l'armée
+/** Camp visé par une issue de bataille (ADE II 8) : `ally` = l'armée des Personnages, `enemy` = l'armée
  *  adverse. */
 export type BattleSide = 'ally' | 'enemy';
 
-/** Cible d'une issue d'Activité/Scène de bataille (ADE II ch.8) qui porte sur l'ARMÉE, non sur le héros
+/** Cible d'une issue d'Activité/Scène de bataille (ADE II 8) qui porte sur l'ARMÉE, non sur le héros
  *  acteur : `might` = delta de Puissance COURANTE (heal/wounds sur le Combattant-armée, plafonné au
  *  départ, l.135) ; `startMight` = delta de Puissance de DÉPART (`wounds.max`, Rassembler l.96 / Sabotage
  *  l.106 : renfort/affaiblissement avant la bataille) ; `allyTestMod` = modificateur PERMANENT aux Tests
@@ -69,7 +69,7 @@ export interface BattleOutcome {
   amount: number;
 }
 
-/** Issue de PORTÉE ÉTAPE (Activité de voyage EDOC ch.8 OU Rencontre EDOC) — effet qui ne porte PAS sur
+/** Issue de PORTÉE ÉTAPE (Activité de voyage EDOC 8 OU Rencontre EDOC) — effet qui ne porte PAS sur
  *  un seul Combatant (donc pas un `GameOp`) mais sur l'Étape/le groupe : interprété par la boucle de
  *  voyage. Vocabulaire ÉTENDU (≠ codé en dur par id). Activités (l.139-180) :
  *   - `suppressExposure` (Plein air, l.141) : pas de Test d'Exposition pour le groupe cette Étape ;
@@ -101,7 +101,7 @@ export interface OutcomeBand {
   resolver?: string;
   payoutPct?: number;
   note?: string;
-  /** Issue(s) de BATAILLE (ADE II ch.8) portant sur l'ARMÉE (delta de Puissance / modificateur de Test),
+  /** Issue(s) de BATAILLE (ADE II 8) portant sur l'ARMÉE (delta de Puissance / modificateur de Test),
    *  gated par `when` — appliquées par le résolveur `battle` de `runActivityResolver`. */
   battle?: BattleOutcome[];
   /** Condition SUPPLÉMENTAIRE (au-delà de `on`/`minSL`/`maxSL`) évaluée sur les compteurs de la résolution
@@ -133,7 +133,7 @@ export function matchOutcomes(def: ActivityDef, res: { success: boolean; sl: num
     && (b.minSL == null || res.sl >= b.minSL) && (b.maxSL == null || res.sl <= b.maxSL));
 }
 
-/** Résolution d'une Scène/Activité de BATAILLE (ADE II ch.8) : issue du Test/Combat + compteurs qui
+/** Résolution d'une Scène/Activité de BATAILLE (ADE II 8) : issue du Test/Combat + compteurs qui
  *  alimentent les échelles (`perHit`/`perKill`/`perDR`) et les conditions (`when`). `hits`/`kills` =
  *  touches portées / ennemis neutralisés d'une Scène de COMBAT (l.139/145) ; `generalDown` = le
  *  capitaine/général ennemi est tombé (l.208/217) ; `intervention` = un AUTRE PJ a frappé (Duel l.225) ;
@@ -228,7 +228,7 @@ export interface ActivityDef extends TestSpec {
   stageOutcome?: StageOutcome;
   /** Indisponible si le héros porte un État Exténué cette Étape (Récupérer, EDOC l.176). */
   unavailableIfExtenue?: boolean;
-  // ── Activités & Scènes de BATAILLE (ADE II ch.8, contextes 'bataille'/'bataille-round') ──
+  // ── Activités & Scènes de BATAILLE (ADE II 8, contextes 'bataille'/'bataille-round') ──
   /** Test COMBINÉ (LDB 12 l.202-206) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+
    *  Perception l.75 ; Repérage Chevaucher+Perception l.102). RÉUSSIT si les deux cibles sont atteintes. */
   combined?: boolean;
@@ -259,7 +259,7 @@ export interface ActivityDef extends TestSpec {
   /** Pénalité d'une Scène MENACE (sceneKind 'threat', Intrus l.219) infligée aux Tests des autres Scènes. */
   threat?: { penalty: number };
   /** Condition de chute du général/capitaine ennemi (`generalDown`) pour CETTE Scène : 'success' = sur un
-   *  simple Succès (Ligne de mire, ADE II ch.08 l.208) ; 'stupefying' = Succès Stupéfiant (DR ≥ 6) requis
+   *  simple Succès (Ligne de mire, ADE II 8 l.208) ; 'stupefying' = Succès Stupéfiant (DR ≥ 6) requis
    *  pour se rapprocher au Corps à corps (Survol, l.217). Absent = pas de général à faire tomber. */
   generalDownOn?: 'success' | 'stupefying';
   /** Gate de CLASSE : « N'importe quel Personnage peut entreprendre n'importe quelle Activité […], mais
@@ -330,7 +330,7 @@ export function activitiesFor(context: ActivityContext): ActivityDef[] {
 
 /** Issue STRUCTURÉE d'une Activité de voyage résolue — PURE (l'appelant applique `ops`/`stageOutcome`/
  *  `extenue` au state). Le résolveur ne mute rien : pour l'acteur DÉSIGNÉ au poste, il lance le Test et
- *  déclare l'effet. RAW EDOC ch.8 l.131 : « chaque Personnage bénéficie d'une Activité par Étape » →
+ *  déclare l'effet. RAW EDOC 8 l.131 : « chaque Personnage bénéficie d'une Activité par Étape » →
  *  un héros par poste ; la boucle appelle ce résolveur PAR héros. */
 export interface TravelActivityResult {
   activityId: string;
@@ -346,7 +346,7 @@ export interface TravelActivityResult {
   ops: GameOp[];
   /** Issue de portée Étape, interprétée par la boucle de voyage. */
   stageOutcome?: StageOutcome;
-  /** Échec du Test d'Activité → État Exténué pour CET acteur (EDOC ch.8 l.133). */
+  /** Échec du Test d'Activité → État Exténué pour CET acteur (EDOC 8 l.133). */
   extenue: boolean;
   /** Résolveur BESPOKE à invoquer côté appelant (ex. `'forage'` → `forageYield`). */
   resolver?: string;
@@ -355,7 +355,7 @@ export interface TravelActivityResult {
 }
 
 /**
- * Résout l'Activité tenue par l'acteur DÉSIGNÉ au poste (EDOC ch.8 : un héros par Activité/Étape).
+ * Résout l'Activité tenue par l'acteur DÉSIGNÉ au poste (EDOC 8 : un héros par Activité/Étape).
  * Parmi les compétences « au choix » (Cartographe/Dessin ; plus tard Voile/Ramer), prend la MEILLEURE
  * de CET acteur (spec-aware), lance le Test (modifié par `skillMod` — ex. météo) et déclare l'effet :
  * `ops` (GameOp de `onSuccess`) sur réussite, `stageOutcome`, et `extenue` sur échec (l.133). PUR / seedé.
@@ -453,7 +453,7 @@ export function applyTravelActivityResult(
 
 // ── Postes d'une Étape : héros → 1 Activité (jamais deux) ; un poste a 0..N titulaires ──────────
 
-/** Agrégation d'une issue d'Activité quand 0..N héros tiennent le poste (EDOC ch.8 l.131) :
+/** Agrégation d'une issue d'Activité quand 0..N héros tiennent le poste (EDOC 8 l.131) :
  *  - `gate` : un SEUL succès suffit à dispenser/protéger tout le groupe (Plein air, Aux aguets) ;
  *  - `stack` : les DR des succès s'ADDITIONNENT (Monter le camp ; carte en Test étendu) ;
  *  - `self` : l'effet revient à CHAQUE titulaire qui réussit (Récupérer, Pratiquer, Recueillir infos). */

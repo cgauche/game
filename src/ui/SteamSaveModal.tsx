@@ -54,7 +54,7 @@ export function SteamSaveModal() {
       flowKey="steamSave"
       variant="test"
       title="Fuite de vapeur — Initiative"
-      subtitle={<>panne de vapeur · MDG ch.12</>}
+      subtitle={<>panne de vapeur · MDG 12</>}
       rows={[actorRow]}
       rolled={rolled}
       outcome={<JournalLine className="rm-journal" event={ev(p.success ? 'info' : 'condition', text, p.actorId)} combatants={party} />}

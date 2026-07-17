@@ -1,7 +1,7 @@
 /**
  * Tableau des OBSESSIONS — Compagnon T1 (EDOC), chapitre 8, folio 69 (« ### OBSESSIONS », 2d10).
  *
- * Sert de DÉTERMINATION de Cible aux mutations mentales qui l'exigent (EDOC ch.12) : « Haine sporadique »
+ * Sert de DÉTERMINATION de Cible aux mutations mentales qui l'exigent (EDOC 12) : « Haine sporadique »
  * (→ Trait Haine (Cible)) et « Terribles phobies » (→ Trait Effrayé (Cible)) renvoient toutes deux au
  * « Tableau des Obsessions » pour fixer leur Cible. Données dans `obsessions.json` (taguées source +
  * folio) ; tirage 2d10 (`rollExpr`) + lookup partagé `findTableEntry`.
@@ -28,7 +28,7 @@ const FILE = obsessionsJson as ObsessionTableFile;
 
 /** Le Tableau des Obsessions (19 entrées, 2d10 = 2..20). */
 export const OBSESSIONS: readonly ObsessionEntry[] = FILE.table;
-/** Provenance (livre + folio) — traçabilité (EDOC ch.12 folio 69). */
+/** Provenance (livre + folio) — traçabilité (EDOC 12 folio 69). */
 export const OBSESSIONS_SOURCE = FILE.source;
 
 /** Tire une Cible sur le Tableau des Obsessions (2d10), RNG seedable. Renvoie le libellé. */

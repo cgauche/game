@@ -129,7 +129,7 @@ export function isProfane(c: Combatant): boolean {
  * Corps ou esprit, selon l'espèce (`id` STABLE) et le d100 (Tableau l.87-91) — le seuil par espèce
  * vit en DONNÉE (`SpeciesData.mutationBodyMax`, lu par `mutationBodyMaxForSpecies`), plus de match sur
  * le nom : Corps si d100 ≤ seuil, sinon Esprit. Seuils SOURCÉS : Elfe 0, Nain 5, Halfling 10, Humain 50
- * (LDB ch.19) ; Ogre 10 (ADE2 « Ogres et Mutations ») ; Gnome 50 = Humain (NADJ « Gnomes et Corruption »).
+ * (LDB 19) ; Ogre 10 (ADE2 « Ogres et Mutations ») ; Gnome 50 = Humain (NADJ « Gnomes et Corruption »).
  */
 export function mutationKindFor(species: string | undefined, roll: number): 'physique' | 'mentale' {
   return roll <= mutationBodyMaxForSpecies(species) ? 'physique' : 'mentale';
@@ -143,7 +143,7 @@ export function mutationLimitExceeded(c: Combatant): boolean {
 }
 
 /** Attache une mutation au personnage : donnée + traits dérivés (créature/psychologie). RNG seedable
- *  pour les Cibles TIRÉES (`argFrom:'obsessions'` — Haine sporadique / Terribles phobies, EDOC ch.12).
+ *  pour les Cibles TIRÉES (`argFrom:'obsessions'` — Haine sporadique / Terribles phobies, EDOC 12).
  *  `grantTrait`/`grantPsychTrait` (noyau PARTAGÉ `grantedTraits.ts`, ci-dessus importé) : MÊME chemin
  *  que l'op homonyme de `applyOps`, permanent (aucun `ActiveEffect` porteur — une mutation n'expire
  *  jamais). `grantTalent` reste local : structurel PERMANENT (`c.talents`), distinct par construction
@@ -155,7 +155,7 @@ export function attachMutation(c: Combatant, m: Mutation, rng: RNG = defaultRNG)
       // Valeur LITTÉRALE (les mutations RAW ont des indices fixes : Peur 3, Morsure +5).
       const value = typeof op.indice === 'number' ? op.indice : undefined;
       // Cible : littérale (`arg`), ou TIRÉE sur le Tableau des Obsessions (`argFrom:'obsessions'`,
-      // « Haine sporadique » → Haine (Cible) déterminée par les Obsessions, EDOC ch.12).
+      // « Haine sporadique » → Haine (Cible) déterminée par les Obsessions, EDOC 12).
       const arg = op.arg ?? (op.argFrom === 'obsessions' ? rollObsession(rng) : undefined);
       grantTrait(c, { id: op.traitId, ...(arg ? { arg } : {}), ...(value != null ? { value } : {}) });
     } else if (op.op === 'grantPsychTrait') {

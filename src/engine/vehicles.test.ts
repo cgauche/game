@@ -81,7 +81,7 @@ describe('dédup trappings ⊥ vehicles + résolution unifiée', () => {
     }
   });
 
-  it('hull (E/Blessures) posé là où le RAW EDOC ch.7 correspond sans ambiguïté', () => {
+  it('hull (E/Blessures) posé là où le RAW EDOC 7 correspond sans ambiguïté', () => {
     expect(vehicles.find((v) => v.id === 'diligence')!.hull!.char).toEqual({ endurance: 45, B: 50 });
     expect(vehicles.find((v) => v.id === 'charrette')!.hull!.char).toEqual({ endurance: 25, B: 10 });
     expect(vehicles.find((v) => v.id === 'chariot')!.hull).toBeUndefined(); // 3 variantes EDOC → pas d'attribution

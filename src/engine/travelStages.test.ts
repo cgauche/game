@@ -1,5 +1,5 @@
 /**
- * Voyage par Étapes (EDOC ch.8) — fonctions PURES.
+ * Voyage par Étapes (EDOC 8) — fonctions PURES.
  * Vérifie : nombre d'Étapes (l.34) ± bonus, table de Météo VERBATIM seedée (l.44-51), difficulté
  * d'Exposition selon l'équipement (l.73), rendement d'Approvisionnement (LDB 09 l.568-572), saisons.
  */
@@ -40,7 +40,7 @@ describe('seasonOfMonth (calendrier impérial → table de Météo)', () => {
   });
 });
 
-describe('table de Météo VERBATIM (EDOC ch.8 l.44-51)', () => {
+describe('table de Météo VERBATIM (EDOC 8 l.44-51)', () => {
   // Plages bornes (max inclus) — lit la table telle que transcrite.
   it('printemps : 01-10 sec, 11-30 beau, 31-90 pluie, 91-95 diluvienne, 96-00 neige', () => {
     expect(weatherFromRoll(1, 'printemps')).toBe('sec');
@@ -106,7 +106,7 @@ describe('table de Météo VERBATIM (EDOC ch.8 l.44-51)', () => {
   });
 });
 
-describe('stageCount (EDOC ch.8 l.34) — distance → Étapes ± bonus', () => {
+describe('stageCount (EDOC 8 l.34) — distance → Étapes ± bonus', () => {
   it('village proche (≤ 25 km) = 1 Étape', () => {
     expect(stageCount(10)).toBe(1);
     expect(stageCount(25)).toBe(1);
@@ -134,13 +134,13 @@ describe('stageCount (EDOC ch.8 l.34) — distance → Étapes ± bonus', () => 
   it('sans paramètre, le bonus est LU sur la règle optionnelle `travel-etapes-count-bonus`', () => {
     expect(stageCount(10)).toBe(1); // défaut de la règle = 0
     setRule('travel-etapes-count-bonus', 2);
-    expect(stageCount(10)).toBe(3); // 1 + 2 (EDOC ch.8 l.34 « augmentez le nombre d'Étapes de 2 ou plus »)
+    expect(stageCount(10)).toBe(3); // 1 + 2 (EDOC 8 l.34 « augmentez le nombre d'Étapes de 2 ou plus »)
     resetRule('travel-etapes-count-bonus');
     expect(stageCount(10)).toBe(1);
   });
 });
 
-describe('stageCount — modificateur de Mouvement du groupe (EDOC ch.8 l.25)', () => {
+describe('stageCount — modificateur de Mouvement du groupe (EDOC 8 l.25)', () => {
   it('sans Mouvement de groupe fourni : aucun modificateur (comportement inchangé)', () => {
     expect(stageCount(75)).toBe(3);
   });
@@ -169,7 +169,7 @@ describe('stageCount — modificateur de Mouvement du groupe (EDOC ch.8 l.25)', 
   });
 });
 
-describe('stageExposureDifficulty (EDOC ch.8 l.73) — difficulté du Test selon équipement', () => {
+describe('stageExposureDifficulty (EDOC 8 l.73) — difficulté du Test selon équipement', () => {
   it('beau temps / sec : aucun Test', () => {
     expect(stageExposureDifficulty('beau', false, false)).toBeNull();
     expect(stageExposureDifficulty('sec', false, false)).toBeNull();
@@ -207,7 +207,7 @@ describe('modificateurs météo d’Activité — DONNÉE (ActivityDef.weatherMo
   });
 });
 
-describe('effets météo TERRESTRES en DONNÉE (EDOC ch.8 « conditions »)', () => {
+describe('effets météo TERRESTRES en DONNÉE (EDOC 8 « conditions »)', () => {
   it('Pluie : visibilité 25 m, tir -10, aucune poudre/mouvement/Résistance', () => {
     expect(weatherVisibiliteM('pluie')).toBe(25);
     expect(weatherRangedMod('pluie')).toBe(-10);

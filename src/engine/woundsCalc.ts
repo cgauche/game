@@ -16,9 +16,9 @@ import { isStructure, structureImmune, siegeMultiplier } from './structures';
  * Blessures infligées par un coup : `totalDamage` (Dégâts d'arme + DR + qualités) moins le Bonus
  * d'Endurance et les PA EFFECTIFS à la `location` (armure portée/naturelle + `extraAP` − Perforante,
  * puis ignorance de PA de l'arme `weapon.bypass`). `minWounds` = plancher (1 pour un PERSONNAGE — garantit
- * Robuste LDB 10 ; 0 pour un NAVIRE, MDG ch.13 l.605 : un coup trop faible peut ricocher sur la coque).
+ * Robuste LDB 10 ; 0 pour un NAVIRE, MDG 13 l.605 : un coup trop faible peut ricocher sur la coque).
  *
- * STRUCTURE de siège (ADE II ch.08) : on greffe l'Atout Siège data-driven (cf. `engine/structures`). Une arme
+ * STRUCTURE de siège (ADE II 8) : on greffe l'Atout Siège data-driven (cf. `engine/structures`). Une arme
  * IMPARABLE (Résistant/Impénétrable/Bélier hors-porte) inflige 0 ; sinon le TOTAL de Dégâts est doublé par
  * Siège AVANT le Bonus d'Endurance (RAW « le double des dégâts »), et le plancher passe à 0 (un coup trop
  * faible ne raye pas la structure — comme une coque). Sans PA, l'`effectiveArmour` d'une structure vaut 0.
@@ -40,7 +40,7 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   totalDamage -= talentDamageReduction(target);
   const tb = bonus(effectiveChar(target, 'endurance'));
   // PA effectifs = armure portée/naturelle + PA temporisés de sort + PA conférés par l'arme d'opposition
-  // (`extraAP`), Perforante déduite. `location` ABSENTE (STRUCTURE inanimée, ADE II ch.08 : pas de
+  // (`extraAP`), Perforante déduite. `location` ABSENTE (STRUCTURE inanimée, ADE II 8 : pas de
   // Localisation) → aucune armure de pièce (une structure a 0 PA partout) : le terme d'armure vaut 0.
   const baseAP = Math.max(0, (location ? effectiveArmourAt(target, location) : 0) + extraAP - qualitySum(weapon, 'armourReduction'));
   // Ignorance de PA de l'arme (Épée de justice → 'all', etc.) via le moteur GÉNÉRAL (engine/armourBypass).

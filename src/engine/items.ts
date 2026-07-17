@@ -70,7 +70,7 @@ export interface WeaponSpec {
   attackKind?: string;
   /** id de trapping source d'une arme built-in (Mains nues) — porté sur `Weapon.builtinId`. */
   builtinId?: string;
-  /** Taille PRÉVUE pour l'arme (ADE II ch.02 l.706-710) — propagée vers `Weapon.sizeFor`. */
+  /** Taille PRÉVUE pour l'arme (ADE II 2 l.706-710) — propagée vers `Weapon.sizeFor`. */
   sizeFor?: import('./size').SizeCategory;
   /** Propagé vers `Weapon.sizeless` (exemption du mismatch de Taille, ≠ `natural`/rendu). */
   sizeless?: boolean;
@@ -198,7 +198,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     pa: t.pa ?? undefined,
     locs: locs && locs.length ? locs : undefined,
     enc: typeof t.enc === 'number' ? t.enc : 0, // 'ND' (ateliers) / 'Variable' (arme improvisée) → non-encombrant (0), jamais NaN
-    ...(t.sizeFor ? { sizeFor: t.sizeFor } : {}), // taille prévue (ADE II ch.02 l.706-710) — version « taille ogre » d'une possession ordinaire
+    ...(t.sizeFor ? { sizeFor: t.sizeFor } : {}), // taille prévue (ADE II 2 l.706-710) — version « taille ogre » d'une possession ordinaire
     equipped: false,
     ...(t.shape ? { shape: t.shape } : {}), // slug de FORME (routage de l'art rig) — absent pour munitions/siège/Mains nues
     desc: t.desc,
@@ -209,8 +209,8 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     ...(t.defaultAmmo ? { defaultAmmo: t.defaultAmmo } : {}), // munition REPRÉSENTATIVE (hint joueur, ammoFamilyLabel)
     ...(t.soloSimple ? { soloSimple: true } : {}), // baliste « relativement simple » : tir solo perd les Atouts (l.3818)
     ...(t.indirect ? { indirect: true } : {}), // mortier/catapulte « arc élevé » (AA p.122-123) : tir INDIRECT → viser une case
-    ...(t.onHitEffects?.length ? { onHitEffects: t.onHitEffects } : {}), // effets « à la touche » en DONNÉE (Canon à flammes nain → En flammes, ADE II ch.08 l.243)
-    ...(t.minRangeBand ? { minRangeBand: t.minRangeBand } : {}), // PORTÉE MINIMALE (machine de siège : pas de Bout Portant / trébuchet-mortier sous Portée Courte, ADE II ch.08 l.251/253)
+    ...(t.onHitEffects?.length ? { onHitEffects: t.onHitEffects } : {}), // effets « à la touche » en DONNÉE (Canon à flammes nain → En flammes, ADE II 8 l.243)
+    ...(t.minRangeBand ? { minRangeBand: t.minRangeBand } : {}), // PORTÉE MINIMALE (machine de siège : pas de Bout Portant / trébuchet-mortier sous Portée Courte, ADE II 8 l.251/253)
     ...(t.requiresMastery ? { requiresMastery: true } : {}), // arme inhabituelle (ACE 12 l.17-21) : maîtrise requise
     hands: kind === 'melee' || kind === 'ranged' ? (t.hands === 2 ? 2 : 1) : undefined, // champ typé (LDB 62)
     qty: kind === 'ammo' ? (t.packSize ?? 1) : undefined, // taille de paquet typée
@@ -262,7 +262,7 @@ export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'name'>): string
   return it.trappingId ? refLabel('trappings', { id: it.trappingId }) : it.name;
 }
 
-/** Limite d'Encombrement = (Bonus de Force + Bonus d'Endurance) × facteur (ogre ADE II ch.02 l.708 :
+/** Limite d'Encombrement = (Bonus de Force + Bonus d'Endurance) × facteur (ogre ADE II 2 l.708 :
  *  ×2), +2 par niveau de Costaud (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de
  *  votre niveau × 2 » — le bonus de Costaud n'est PAS multiplié, il s'ajoute après). Le facteur JAMAIS
  *  cumulatif : le PLUS GRAND entre porteur talent (`talentEncumbranceFactor`) et porteur Trait racial
@@ -279,7 +279,7 @@ export function maxEncumbrance(c: Combatant): number {
 export function totalEncumbrance(c: Combatant): number {
   return (c.items ?? []).reduce((s, i) => {
     if (i.inside) return s; // rangé dans un contenant → absorbé par lui (LDB 64 l.5), ne compte pas
-    // Pas de doublement d'Enc à l'exécution (ADE II ch.02 l.708 : « la version ogre… vaut deux fois
+    // Pas de doublement d'Enc à l'exécution (ADE II 2 l.708 : « la version ogre… vaut deux fois
     // l'Encombrement classique »). Vérifié valeur par valeur contre les tables l.609-654 : le
     // catalogue ogre (`massue-ogre`, `grande-massue-ogre`, `pistolet-ogre`, `pansiere-ogre`…) est
     // DÉJÀ saisi à son Enc final (l.604 : « les points d'Encombrement n'ont donc pas besoin d'être
@@ -448,7 +448,7 @@ export function isWeaponActive(c: Combatant, uid?: string): boolean {
   return uid != null && (c.weapons ?? []).some((w) => w.uid === uid);
 }
 
-/** Résolution ALTERNATIVE d'attaque DÉRIVÉE (ADE II ch.08 l.233 : « Toutes les machines de guerre...
+/** Résolution ALTERNATIVE d'attaque DÉRIVÉE (ADE II 8 l.233 : « Toutes les machines de guerre...
  *  utilisent... Projectiles [Machine de guerre], à l'exception du bélier, qui utilise Force ») — la SEULE
  *  arme de MÊLÉE du Groupe `machine-de-guerre` est le bélier : aucun id en dur, dérivé du Groupe + du type
  *  (comme le décompte d'équipage dérive du Groupe). Lu par `combatValue` (`Weapon.resolveChar`). */
@@ -456,7 +456,7 @@ function warMachineResolveChar(it: Pick<ItemInstance, 'kind' | 'weaponGroup'>): 
   return it.weaponGroup === 'machine-de-guerre' && it.kind === 'melee' ? 'force' : undefined;
 }
 
-/** Machine de guerre nécessitant une ÉQUIPE (ADE II ch.08 l.233, Qualité `equipe` ; catégorie `armes-de-siege`) :
+/** Machine de guerre nécessitant une ÉQUIPE (ADE II 8 l.233, Qualité `equipe` ; catégorie `armes-de-siege`) :
  *  ne se manie JAMAIS en loadout solo — elle doit être SERVIE en poste (`mannedPosteWeapon`/`serveAtPoste`, qui
  *  dérivent la même arme SANS passer par `toWeapon`). Même famille de veto que `cannotWieldTwoHanded`
  *  (amputation) : un item qui ne devient PAS une arme de loadout normal. */
@@ -478,7 +478,7 @@ export function recomputeLoadout(c: Combatant): void {
   }
   const toWeapon = (it: ItemInstance, hand: 'main' | 'off'): Weapon | null => {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
-    if (requiresCrewedPoste(it)) return null; // machine de guerre à Équipe (ADE II ch.08 l.233) : pas de loadout solo, doit être SERVIE en poste
+    if (requiresCrewedPoste(it)) return null; // machine de guerre à Équipe (ADE II 8 l.233) : pas de loadout solo, doit être SERVIE en poste
     const hands = weaponHands(it, { mounted: !!c.mountId }); // Cavalerie (2M) à pied → vraies 2 mains (LDB 62 l.142-143)
     if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.263)
     const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
@@ -546,7 +546,7 @@ export function recomputeLoadout(c: Combatant): void {
     if (e.naturalWeapon) weapons.push({ ...e.naturalWeapon, hand: 'main' });
   }
 
-  // Pièce d'artillerie SERVIE (`mannedPoste`, MDG ch.12-13) : SEUL le CHEF (`crewIds[0]`) DÉRIVE l'arme du poste
+  // Pièce d'artillerie SERVIE (`mannedPoste`, MDG 12-13) : SEUL le CHEF (`crewIds[0]`) DÉRIVE l'arme du poste
   // comme arme active taguée `mountSide` — comme un Tentacule/une Morsure (dans `weapons`, HORS inventaire). Les
   // membres SUPPORT (`crewIds[1..]`, Arme d'équipe) occupent la pièce (lien `mannedPoste`, comptés dans l'Indice)
   // mais ne TIRENT pas → pas d'arme. Le canon reste la pièce de la coque (vérité = la coque). KIND-AGNOSTIQUE.
@@ -569,7 +569,7 @@ export function recomputeLoadout(c: Combatant): void {
 }
 
 /**
- * Arme dérivée d'un poste d'artillerie SERVI (`mannedPoste`, MDG ch.12-13) — taguée `mountSide = poste.side`,
+ * Arme dérivée d'un poste d'artillerie SERVI (`mannedPoste`, MDG 12-13) — taguée `mountSide = poste.side`,
  * enchants/qualités de l'instance repliés (comme `toWeapon`, mais à partir du poste). Builder PARTAGÉ par
  * `recomputeLoadout` (chefs héros) ET `applyShipPostes` (octroi DIRECT aux chefs à statbloc qui ne recomputent
  * pas) → le canon apparaît de la MÊME façon quel que soit le `kind`. PUR.
@@ -845,7 +845,7 @@ export function ammoFamily(subType?: string): string {
 /** Libellé JOUEUR de la munition attendue par une arme à distance (hint d'achat/chargement quand le
  *  carquois du tireur ET le coffre du poste sont vides) : la munition REPRÉSENTATIVE de l'ARME
  *  (`defaultAmmo`, résolu au catalogue) si connue, sinon celle de la famille générique (`ammoFamily`) —
- *  `armes-de-siege` seul ne discrimine pas pierrier/canon/baliste/mortier (MDG ch.12 p.106), d'où le
+ *  `armes-de-siege` seul ne discrimine pas pierrier/canon/baliste/mortier (MDG 12 p.106), d'où le
  *  besoin du `defaultAmmo` par arme. Affichage FR pur (aide de saisie), jamais un id de logique. */
 export function ammoFamilyLabel(subType?: string, defaultAmmo?: string): string {
   if (defaultAmmo) {
@@ -863,7 +863,7 @@ export function ammoFamilyLabel(subType?: string, defaultAmmo?: string): string 
 }
 
 /** Munitions compatibles avec une arme à distance (même famille canonique, qty>0) : l'inventaire du
- *  porteur, PLUS — s'il SERT cette pièce (`mannedPoste`) — le STOCK DU POSTE (MDG ch.12 l.410-424 :
+ *  porteur, PLUS — s'il SERT cette pièce (`mannedPoste`) — le STOCK DU POSTE (MDG 12 l.410-424 :
  *  le coffre à boulets de la pièce), en tête (le stock de bord prime sur la besace du servant). */
 export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
   if (weapon.type !== 'ranged') return [];
@@ -876,7 +876,7 @@ export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
 }
 
 /** Munition que le porteur tirera : son choix ponctuel (`c.ammoUid`, hotbar) s'il est compatible, sinon la
- *  sélection PERSISTANTE du poste servi (`poste.ammoUid`, fiche du navire — MDG ch.12 : boulet/mitraille),
+ *  sélection PERSISTANTE du poste servi (`poste.ammoUid`, fiche du navire — MDG 12 : boulet/mitraille),
  *  sinon la 1re compatible. PUR (inventaire/famille) — vit ici (≠ état) pour servir AUSSI les sites combat
  *  MOTEUR (bandes de portée modifiées par la munition, `effectiveWeaponRange`). `undefined` = pas de munition. */
 export function selectedAmmo(c: Combatant, weapon: Weapon): ItemInstance | undefined {

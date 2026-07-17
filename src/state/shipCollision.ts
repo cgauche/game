@@ -1,5 +1,5 @@
 /**
- * COLLISION / ÉPERONNAGE appliqué (MDG ch.13 l.423-465) — couche STATE mince au-dessus du résolveur PUR
+ * COLLISION / ÉPERONNAGE appliqué (MDG 13 l.423-465) — couche STATE mince au-dessus du résolveur PUR
  * `engine/collision.ts`. La RÉSOLUTION (Indice de Collision, frontal/poupe, Bélier) reste du DOMAINE ; ce
  * module ne fait que (1) mapper une coque-`Combatant` en `CollisionShip`, (2) appeler `resolveCollision`,
  * (3) APPLIQUER les Dégâts à chaque coque via la langue UNIQUE `applyOps` (op `wounds` : la mitigation BE +

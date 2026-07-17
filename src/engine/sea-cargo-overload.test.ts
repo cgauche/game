@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { cargoOverload, overloadMaxEnc, OVERLOAD_HARD_CAP_PCT } from './seaVoyage';
 
 /**
- * SURCHARGE de la cale (MDG ch.12 l.70-75, Contenance) : paliers d'assiette au-delà de la Contenance —
+ * SURCHARGE de la cale (MDG 12 l.70-75, Contenance) : paliers d'assiette au-delà de la Contenance —
  * >100 % : −1 M / −1 DR Manœuvre ; >120 % : −2 ; >140 % : −3 ; >150 % : « Impossible de prendre la mer ».
  */
 describe('cargoOverload — paliers d’assiette (MDG 12 l.70-75)', () => {

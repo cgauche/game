@@ -236,7 +236,7 @@ describe('recomputeLoadout piloté par loadout', () => {
   });
 });
 
-describe('warMachineResolveChar (DÉRIVÉ, via recomputeLoadout) — bélier → Force (ADE II ch.08 l.233)', () => {
+describe('warMachineResolveChar (DÉRIVÉ, via recomputeLoadout) — bélier → Force (ADE II 8 l.233)', () => {
   const heroWith = (items: ItemInstance[], lo?: { loadouts: any[]; activeLoadoutId: string }): Combatant =>
     ({ id: 'h', name: 'H', kind: 'hero', characteristics: { force: 30, endurance: 30 } as any, items,
        talents: [], skills: [], conditions: [], wounds: { current: 10, max: 10 }, advantage: 0, ...lo } as unknown as Combatant);
@@ -265,7 +265,7 @@ describe('warMachineResolveChar (DÉRIVÉ, via recomputeLoadout) — bélier →
   });
 });
 
-describe('machine de guerre (Qualité `equipe` — ADE II ch.08 l.233) : jamais en loadout SOLO', () => {
+describe('machine de guerre (Qualité `equipe` — ADE II 8 l.233) : jamais en loadout SOLO', () => {
   const heroWith = (items: ItemInstance[], lo?: { loadouts: any[]; activeLoadoutId: string }): Combatant =>
     ({ id: 'h', name: 'H', kind: 'hero', characteristics: { force: 30, endurance: 30 } as any, items,
        talents: [], skills: [], conditions: [], wounds: { current: 10, max: 10 }, advantage: 0, ...lo } as unknown as Combatant);
@@ -279,7 +279,7 @@ describe('machine de guerre (Qualité `equipe` — ADE II ch.08 l.233) : jamais 
     expect(c.weapons.map((w) => w.name)).toEqual(['Mains nues']); // repli seul, aucune arme de siège tenue
   });
 
-  it('belier-ade2 : art d’affût `belier` (PAS l’affût de baliste recyclé) + empreinte 2 (#210, ADE II ch.08 l.239/258)', () => {
+  it('belier-ade2 : art d’affût `belier` (PAS l’affût de baliste recyclé) + empreinte 2 (#210, ADE II 8 l.239/258)', () => {
     const t = trappings.find((x) => x.id === 'belier-ade2')!;
     expect(t.siegeRig).toBe('belier');
     expect(t.siegeFootprint).toBe(2);
@@ -538,7 +538,7 @@ describe('items — recomputeLoadout / encombrement', () => {
     const c = { characteristics: { force: 30, endurance: 30 }, talents: [{ talentId: 'costaud', times: 1 }] } as unknown as Combatant;
     expect(maxEncumbrance(c)).toBe(3 + 3 + 2); // BF+BE + Costaud×2
   });
-  it("totalEncumbrance : `sizeFor` ne double JAMAIS l'Enc à l'exécution — le catalogue ogre est déjà saisi à son Enc final (ADE II ch.02 l.604/l.708, valeurs vérifiées contre les tables l.609-654)", () => {
+  it("totalEncumbrance : `sizeFor` ne double JAMAIS l'Enc à l'exécution — le catalogue ogre est déjà saisi à son Enc final (ADE II 2 l.604/l.708, valeurs vérifiées contre les tables l.609-654)", () => {
     const native = { items: [item({ name: 'Massue ogre', enc: 2, sizeFor: 'grande' })] } as unknown as Combatant;
     expect(totalEncumbrance(native)).toBe(2);
     const noSizeFor = { items: [item({ name: 'Épée', enc: 1 })] } as unknown as Combatant;

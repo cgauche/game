@@ -12,7 +12,7 @@ const tick = (c: any) => fireConditionEffects(GET, c, 'onRoundEnd', { rng: makeR
 /** Coque de Diligence (E45 / B50) — un Combattant comme un autre (le navire suivra le même patron). */
 const ship = () => vehicleCombatant(findVehicleById('diligence')!)!;
 
-describe('États navals — data-driven, tickés par fireConditionEffects (MDG ch.13)', () => {
+describe('États navals — data-driven, tickés par fireConditionEffects (MDG 13)', () => {
   it('En flammes (navire) : 1 Blessure par Tour et par pion, à plat', () => {
     const c = ship(); // 50 PB, BE 4
     addCondition(c, 'en-flammes-navire', 3);

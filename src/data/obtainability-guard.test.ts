@@ -14,17 +14,17 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  *   Harioth (« si un Joueur souhaite relever le défi, il peut… ajouter à son Personnage Harioth un
  *   Talent spécial »/« traitée avec condescendance par les Éonirs des autres lignages ») — l'espèce
  *   Éonir n'est PAS jouable dans `species.json` (0 entrée). Contenu de référence, `codexOnly:true`.
- * - `benediction-de-tzeentch`/`disciple-du-changement`/`double-vie` (EDOC ch.9 « La Main pourpre »
+ * - `benediction-de-tzeentch`/`disciple-du-changement`/`double-vie` (EDOC 9 « La Main pourpre »
  *   l.81-101) : « Les Talents suivants sont parfois accordés aux cultistes de Tzeentch, mais ne sont
  *   pas accessibles à d'autres personnes dans des circonstances normales » (l.83) — RAW lui-même les
  *   déclare hors progression PJ standard. `codexOnly:true`.
- * - `empreint-de-la-magie` (EDOC ch.9 « Influence Maléfique de Tzeentch » l.248-258) : octroyé comme
+ * - `empreint-de-la-magie` (EDOC 9 « Influence Maléfique de Tzeentch » l.248-258) : octroyé comme
  *   effet d'Incantation imparfaite dans une zone influencée par Tzeentch — mécanique de scène de
  *   campagne (« Main pourpre ») non authorée dans `src/scenes/`. `codexOnly:true`.
- * - `magie-du-chaos` (LDB 10 p.140 l.702-710 ; carrière concrète EDOC ch.9 l.137 « Magus du Culte de
+ * - `magie-du-chaos` (LDB 10 p.140 l.702-710 ; carrière concrète EDOC 9 l.137 « Magus du Culte de
  *   Tzeentch — destinée uniquement aux PNJ … utilisée par les PJ avec la permission du MJ ») : AUCUNE
  *   carrière/mutation de nos livres ne l'accorde à un PJ (vérifié `careerLevels.json`/mutations table
- *   Physique+Mentale EDOC ch.12 — aucune entrée « Magie du Chaos », seule « Fuite aethyrique » octroie
+ *   Physique+Mentale EDOC 12 — aucune entrée « Magie du Chaos », seule « Fuite aethyrique » octroie
  *   le Talent DISTINCT `sorcier`). `codexOnly:true` — cascade sur les 10 Sorts `family:'chaos'` orphelins
  *   (`allure-demoniaque`, `aspect-sublime`, `decharge-de-corruption`, `dechirer-l-aethyr`,
  *   `esclave-des-tenebres`, `explosion-de-corruption`, `obsession`, `odieux-messager`,

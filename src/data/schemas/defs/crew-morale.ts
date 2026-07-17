@@ -1,5 +1,5 @@
 /**
- * Schéma de `crew-morale.json` — MORAL d'un équipage (MDG ch.14). Consommé par
+ * Schéma de `crew-morale.json` — MORAL d'un équipage (MDG 14). Consommé par
  * `src/engine/crewMorale.ts` : `base` (score de départ), `factors` (MODIFICATEURS DE MORAL — `effect`
  * = dés signés texte, ex. « +2d10 », « -3d10 », lus par `rollExpr`), `bands` (EFFETS DU MORAL — bornes
  * de bande, ±DR de Commandement/Tests d'équipage, seuil de désertion optionnel).

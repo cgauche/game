@@ -21,7 +21,7 @@ import type { PsychType } from '../engine/psychology';
 import type { RecapLine } from './recapLine';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlowFactory';
 import type { Money } from '../engine/money';
-/** Résultat du jet d'UN contributeur à un Test d'équipage par rôle (MDG ch.14). Défini ICI (neutre,
+/** Résultat du jet d'UN contributeur à un Test d'équipage par rôle (MDG 14). Défini ICI (neutre,
  *  avec les autres types de pending) pour que ce module ne dépende de RIEN du domaine naval —
  *  `shipManeuver.ts` le RÉ-IMPORTE (quarantaine d'import #328). */
 export interface CrewRoleRoll { roll: number; target: number; sl: number }
@@ -128,7 +128,7 @@ export interface PendingTest {
   sl: number;
   /** Réussite forcée par Résilience AVANT le jet (LDB 17 l.73) : affichage « garanti », sans dé. */
   forced?: boolean;
-  /** Relance par Chance déjà effectuée (LDB ch.12 l.56 : 1 relance max par Test). */
+  /** Relance par Chance déjà effectuée (LDB 12 l.56 : 1 relance max par Test). */
   rerolled?: boolean;
   /** Ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de palier 2 des Crampes routé en modale hors
    *  combat, T2C 16) : sa résolution NE ré-émet PAS le trigger (garde de ré-entrance, `resolveTest`). */
@@ -186,9 +186,9 @@ export interface PendingReload {
   target: number; // cible effective après difficulté
   sl: number; // DR du jet
   success: boolean;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
-  /** Recharge d'un POSTE de navire (MDG ch.12) : la pièce visée (`ShipPoste.item.uid`) + sa coque (`shipId`).
+  /** Recharge d'un POSTE de navire (MDG 12) : la pièce visée (`ShipPoste.item.uid`) + sa coque (`shipId`).
    *  Présents → l'application écrit le DR cumulé sur le POSTE (pas le champ `loaded` du marin) et occupe son équipage. */
   posteUid?: string;
   shipId?: string;
@@ -242,7 +242,7 @@ export interface PendingBargain {
   merchantRoll: TestResult | null;
   /** Résultat opposé (joueur = attaquant). */
   result: OpposedResult | null;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
 }
 /** Évaluation en attente (LDB 59 l.41 : « estimer les prix … à ±10 % ») — Test d'Évaluation (Int) ;
@@ -271,7 +271,7 @@ export interface PendingAppraise {
   roll: number | null;
   success: boolean;
   sl: number;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
 }
 /** Attaque en attente : la modale affiche « Lancer », puis le résultat + Chance. */
@@ -282,7 +282,7 @@ export interface PendingAttack {
   /** Arme choisie pour cette attaque (uid d'ItemInstance du loadout actif) ; absent = auto-choix. */
   weaponUid?: string;
   result: AttackResult | null; // null = pas encore lancé
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
   fromCharge?: boolean; // issue d'une Charge → l'attaque est engagée dès le 1ᵉʳ jet (LDB 15 l.35)
   /** Undo PRÉ-JET d'une Charge (jeu vidéo : annuler un misclic comme on annule un déplacement/une attaque) :
@@ -429,7 +429,7 @@ export interface PendingDistraire {
   atk: TestResult | null; // jet d'Athlétisme du mover (mover = « attaquant » du Test opposé) — null = pas lancé
   defRoll: TestResult; // jet de Calme du foe, figé à l'ouverture (jamais relancé)
   result: 'success' | 'failure' | 'tie' | null; // 'success' = le mover l'emporte ; 'tie' = statu quo
-  /** Relance par Chance de l'Athlétisme déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance de l'Athlétisme déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
   /** Réussite forcée par Résilience (LDB 17 l.73) → l'emporte simplement (issue binaire). */
   forced?: boolean;
@@ -478,16 +478,16 @@ export interface PendingFall {
   result: { success: boolean; roll: number; target?: number; dr: number; effectiveMetres: number } | null;
   rerolled?: boolean;
 }
-/** Un contributeur au Test d'équipage de MANŒUVRE (MDG ch.14) : un marin à un rôle, son jet propre. PJ →
+/** Un contributeur au Test d'équipage de MANŒUVRE (MDG 14) : un marin à un rôle, son jet propre. PJ →
  *  interactif (Chance/Résilience sur SON jet) ; marin PNJ → témoin (`interactive:false`, auto-roulé à l'ouverture). */
 export interface ShipManeuverParticipant extends RollParticipant {
   /** Rôle tenu (crew-roles.json) — sa meilleure compétence décide la valeur du jet. */
   roleId: string;
-  /** Rôle ESSENTIEL du Test (son DR compte double, MDG ch.14 l.19). */
+  /** Rôle ESSENTIEL du Test (son DR compte double, MDG 14 l.19). */
   essential: boolean;
   /** Marin déjà engagé dans un AUTRE Test d'équipage ce Round → cumul à +2 crans de Difficulté (Manque de bras, l.53). */
   cumul?: boolean;
-  /** Sens NARRATIVEMENT sollicité par CE Test précis (ex. Vigie du phare, MDG ch.13 l.337 — visuel), posé
+  /** Sens NARRATIVEMENT sollicité par CE Test précis (ex. Vigie du phare, MDG 13 l.337 — visuel), posé
    *  À LA CONSTRUCTION de l'étape par l'appelant qui connaît le contexte (`buildVoyageCrewStep`, kind
    *  `'phare'`, `seaVoyageFlow.ts`). Restreint les `skillMod` sense-scopés (Surdité, LDB 18) via
    *  `crewRoleValue`/`testValue`. Absent pour les Tests d'équipage sans sens narratif dédié
@@ -495,10 +495,10 @@ export interface ShipManeuverParticipant extends RollParticipant {
   sense?: PairedSense;
   result: CrewRoleRoll | null;
 }
-/** Contributeur ARTILLEUR d'un Tir de batterie (MDG ch.14) — MÊME forme qu'un rôle de manœuvre (un rôle,
+/** Contributeur ARTILLEUR d'un Tir de batterie (MDG 14) — MÊME forme qu'un rôle de manœuvre (un rôle,
  *  son DR) : alias du contributeur de Test d'équipage (une seule structure pour les 3 flux jumeaux). */
 export type ShipBatteryParticipant = ShipManeuverParticipant;
-/** TIR DE BATTERIE en Test d'équipage (MDG ch.14 l.128) : les Artilleurs lancent, DR sommés (essentiel ×2) + Moral →
+/** TIR DE BATTERIE en Test d'équipage (MDG 14 l.128) : les Artilleurs lancent, DR sommés (essentiel ×2) + Moral →
  *  un **DR PARTAGÉ** qui remplace le jet de touche de chaque pièce du bord `side` qui porte sur `targetId`. */
 export interface PendingShipBattery extends MultiPending<ShipBatteryParticipant> {
   shipId: string;
@@ -507,12 +507,12 @@ export interface PendingShipBattery extends MultiPending<ShipBatteryParticipant>
   side: FireArc;
   essentialRoleId?: string;
   moraleScore: number;
-  /** Manque de bras global (MDG ch.14 l.55) : −2 DR/tranche de 10 % manquant + plafond Succès Minime. */
+  /** Manque de bras global (MDG 14 l.55) : −2 DR/tranche de 10 % manquant + plafond Succès Minime. */
   undercrew?: { dr: number; capSuccesMinime: boolean };
-  /** Sabotage (MDG ch.14 l.45-47) : −1..−5 DR plats au total du Test d'équipage (`shipSaboteurDR`). */
+  /** Sabotage (MDG 14 l.45-47) : −1..−5 DR plats au total du Test d'équipage (`shipSaboteurDR`). */
   extraDR?: number;
 }
-/** Manœuvre navale en TEST D'ÉQUIPAGE (MDG ch.13-14) : chaque rôle tenu lance son Test, les DR sont sommés (rôle
+/** Manœuvre navale en TEST D'ÉQUIPAGE (MDG 13-14) : chaque rôle tenu lance son Test, les DR sont sommés (rôle
  *  essentiel ×2) + la bande de Moral ; le total tient lieu de DR de Navigation. La direction (`turnSteps`, choisie
  *  au pré-jet OptionChooser) s'applique à la confirmation (`shipManeuverConfirm`). */
 export interface PendingShipManeuver extends MultiPending<ShipManeuverParticipant> {
@@ -521,14 +521,14 @@ export interface PendingShipManeuver extends MultiPending<ShipManeuverParticipan
   turnSteps: number;
   /** id du rôle essentiel (DR ×2) — lu du type de Test 'manoeuvre'. */
   essentialRoleId?: string;
-  /** Moral du navire → bande ±DR au total (MDG ch.14). */
+  /** Moral du navire → bande ±DR au total (MDG 14). */
   moraleScore: number;
-  /** Manque de bras global (MDG ch.14 l.55) : −2 DR/tranche de 10 % manquant + plafond Succès Minime. */
+  /** Manque de bras global (MDG 14 l.55) : −2 DR/tranche de 10 % manquant + plafond Succès Minime. */
   undercrew?: { dr: number; capSuccesMinime: boolean };
-  /** Sabotage (MDG ch.14 l.45-47) : −1..−5 DR plats au total du Test d'équipage (`shipSaboteurDR`). */
+  /** Sabotage (MDG 14 l.45-47) : −1..−5 DR plats au total du Test d'équipage (`shipSaboteurDR`). */
   extraDR?: number;
 }
-/** TEST D'ÉQUIPAGE GÉNÉRIQUE en COMBAT (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ jumeau de la
+/** TEST D'ÉQUIPAGE GÉNÉRIQUE en COMBAT (MDG 14, « Types de Test d'équipage ») — 3ᵉ jumeau de la
  *  manœuvre/bordée : chaque rôle tenu lance SON Test (multi-jets), DR sommés (essentiel ×2) + Moral +
  *  Manque de bras + sabotage. L'ISSUE dépend du type (`crewTestConfirm`) : **Rude épreuve** (l.106-114)
  *  → un total NÉGATIF réduit le Moral d'autant (l.110), PERSISTÉ sur `CampaignVessel.morale`. Les Tests
@@ -761,7 +761,7 @@ export interface PendingDefense {
   distanceTiles?: number;
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
   /** Défense forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
@@ -795,7 +795,7 @@ export interface PendingDisengage {
    *  = breakdown COMPLET du coup dans le dos (`AttackResult.attackerDetail`) → rangée témoin `RollRow`
    *  (portrait + cible/dé/DR), homogène à l'Esquive (fini la ligne compacte `TableRollLine`). */
   fuir?: { attackerRoll: number; hit: boolean; woundsLost: number; detail?: RollBreakdown; calme: { success: boolean; roll: number; target?: number; sl: number } | null };
-  /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
 }
 
@@ -812,7 +812,7 @@ export interface PendingAuContact {
   atk: TestResult | null; // jet de Corps à corps du foe, figé (jamais relancé)
   def: TestResult | null; // jet de Corps à corps du mover (influençable)
   result: 'success' | 'failure' | 'tie' | null; // 'success' = le mover (héros) l'emporte ; 'tie' = statu quo
-  /** Relance par Chance du jet du mover déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance du jet du mover déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
 }
 
@@ -829,7 +829,7 @@ export interface PendingGrapple {
   atk: TestResult | null; // jet de Force du foe, figé (jamais relancé)
   def: TestResult | null; // jet de Force de l'acteur (influençable)
   result: 'success' | 'failure' | 'tie' | null; // 'success' = l'acteur l'emporte ; 'tie' = statu quo
-  /** Relance par Chance du jet de l'acteur déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance du jet de l'acteur déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
 }
 
@@ -845,7 +845,7 @@ export interface PendingCast {
   focused: boolean;
   /** Résultat figé du jet d'incantation (null = pas encore lancé). */
   result: (CastResult & Partial<MissileResult>) | null;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB ch.12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
   /** Incantation forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
@@ -1052,9 +1052,9 @@ export interface BladeTrapFreeze {
 export interface CascadeStepMeta {
   [key: string]: number | string | boolean | Flow | GameOp[] | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | ManeuverDefenseFreeze | undefined;
   /** Modificateur PLAT au total d'une étape batch sommée — NEUTRE : le flux propriétaire y verse ses
-   *  paramètres DÉJÀ chiffrés (le naval : bande de Moral + Manque de bras + sabotage, MDG ch.14). */
+   *  paramètres DÉJÀ chiffrés (le naval : bande de Moral + Manque de bras + sabotage, MDG 14). */
   aggregateFlatDR?: number;
-  /** Plafonne le total sommé à 0 (« jamais mieux qu'un Succès Minime », Manque de bras MDG ch.14 l.55). */
+  /** Plafonne le total sommé à 0 (« jamais mieux qu'un Succès Minime », Manque de bras MDG 14 l.55). */
   aggregateCapMinime?: boolean;
   /** Marge adverse soustraite du total (`aggregate:'opposed'` — contresort). */
   aggregateOpposeSl?: number;
@@ -1139,7 +1139,7 @@ export interface BatchParticipant extends RollParticipant {
   target: number;
   /** Détail additif de la rangée (affichage). */
   mods?: { label: string; value: number }[];
-  /** Contribue DOUBLE à l'agrégat sommé (rôle essentiel MDG ch.14 l.19 — « compte double », générique). */
+  /** Contribue DOUBLE à l'agrégat sommé (rôle essentiel MDG 14 l.19 — « compte double », générique). */
   essential?: boolean;
   /** +DR ajouté au DR d'un jet RÉUSSI (Talent baké à la construction — Commandant émérite MDG 09 l.54). */
   bonusSlOnSuccess?: number;
@@ -1247,7 +1247,7 @@ export interface CascadeStep extends RollParticipant {
    *  (`aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`) sont posés en `meta` NEUTRE à la
    *  construction par le flux propriétaire (le naval y verse Moral/Manque de bras/sabotage déjà chiffrés). */
   participants?: BatchParticipant[];
-  /** Agrégation de `participants` (défaut `summed-dr`, Test d'équipage MDG ch.14 l.13 ; `'none'` = jets
+  /** Agrégation de `participants` (défaut `summed-dr`, Test d'équipage MDG 14 l.13 ; `'none'` = jets
    *  indépendants, #351). */
   aggregate?: CascadeAggregate;
 }
@@ -1279,7 +1279,7 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  phase suivante de la journée (`continueSeaDayAfterScorbut`/`continueSeaDayAfterExhaustion`) ;
    *  'seaActivities' (#273 Étape 2 : Activités en mer hebdomadaires, MDG 15 l.266-306, `klass:'hero-test'`)
    *  — à la clôture, le store enchaîne `continueSeaActivitiesAfterCascade` (Commerce d'opportunité
-   *  séquencé puis halte de nuit, `seaActivities.ts`) ; 'riverExposure' (T2C ch.16 : Exposition hydrique de
+   *  séquencé puis halte de nuit, `seaActivities.ts`) ; 'riverExposure' (T2C 16 : Exposition hydrique de
    *  la descente fluviale surfacée APRÈS le jour, avant la halte — la clôture enchaîne
    *  `continueRiverDayAfterExposure`, `riverVoyageFlow.ts`, pour DIFFÉRER la halte de nuit le temps du
    *  Test de Résistance, cf. #344). 'upkeep' (entretien quotidien d'une AVANCE D'HORLOGE hors repos/voyage

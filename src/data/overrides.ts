@@ -108,7 +108,7 @@ const aaCriticalsBras = aaCriticalsRoot.bras;
 const aaCriticalsCorps = aaCriticalsRoot.corps;
 const aaCriticalsJambe = aaCriticalsRoot.jambe;
 
-/** 3 catégories de Rencontres de voyage (EDOC ch.8, `rencontres-edoc.json`) — `encounterTable` retourne
+/** 3 catégories de Rencontres de voyage (EDOC 8, `rencontres-edoc.json`) — `encounterTable` retourne
  *  la table LIVE (accès de propriété sur le JSON importé par `engine/travelTables.ts`, jamais une copie). */
 const rencontresPositives = encounterTable('positives');
 const rencontresFortuites = encounterTable('fortuites');
@@ -136,7 +136,7 @@ const ARRAYS = {
   crewMoraleFactors: MORALE_FACTORS, crewMoraleBands: MORALE_BANDS, steamBreakdowns: STEAM_BREAKDOWNS,
   criticalsTete, criticalsBras, criticalsCorps, criticalsJambe,
   aaCriticalsTete, aaCriticalsBras, aaCriticalsCorps, aaCriticalsJambe,
-  // #157 (suite) : jeux de Critiques de coque — MDG ch.13 (navire) / T2C ch.7 (fluvial) — nichés PAR
+  // #157 (suite) : jeux de Critiques de coque — MDG 13 (navire) / T2C 7 (fluvial) — nichés PAR
   // Localisation dans LEUR fichier (même patron que criticals.json/aa-criticals.json ci-dessus).
   shipCriticalsCargaison: SHIP_CRITICAL_TABLES.cargaison,
   shipCriticalsGreement: SHIP_CRITICAL_TABLES.greement,
@@ -148,13 +148,13 @@ const ARRAYS = {
   riverCriticalsGouvernail: RIVER_CRIT_SET.tables.gouvernail!,
   riverCriticalsCoque: RIVER_CRIT_SET.tables.coque!,
   riverCriticalsSuperstructure: RIVER_CRIT_SET.tables.superstructure!,
-  // Rencontres de voyage (EDOC ch.8) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
+  // Rencontres de voyage (EDOC 8) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
   rencontresPositives, rencontresFortuites, rencontresDangereuses,
-  // Longs voyages en mer (MDG ch.15) : Humeur de Manann (facteurs) + Événements de bord/de port —
+  // Longs voyages en mer (MDG 15) : Humeur de Manann (facteurs) + Événements de bord/de port —
   // 3 tableaux frères NICHÉS dans `sea-events.json`.
   seaManannFactors: MANANN_FACTORS, seaBoardEvents: BOARD_EVENTS, seaPortEvents: PORT_EVENTS,
-  // LOT 1 #422 : Ports (MDG ch.15), Progression de navire (MDG ch.13) et 3 sous-tableaux de
-  // Construction navale (MDG ch.12) — `navalPorts` est DÉJÀ un tableau racine ; les 4 autres sont des
+  // LOT 1 #422 : Ports (MDG 15), Progression de navire (MDG 13) et 3 sous-tableaux de
+  // Construction navale (MDG 12) — `navalPorts` est DÉJÀ un tableau racine ; les 4 autres sont des
   // sous-tableaux NICHÉS dans un objet-config parent (`navalProgression.table`, `shipConstruction.*`,
   // même patron que `seaManannFactors`/`seaBoardEvents`/`seaPortEvents` ci-dessus) — `NESTED_ARRAY_FILE`
   // réécrit le PARENT entier au save.
@@ -184,17 +184,17 @@ export type DatasetKey = keyof typeof ARRAYS;
 export const DATASET_KEYS = Object.keys(ARRAYS) as DatasetKey[];
 
 /** Datasets-OBJETS uniques (E3b) : pas un tableau d'entités mais UN objet de config (`details`), un
- *  Record keyé (`names`), ou une fiche de règle UNIQUE (`waterExposure`, T2C ch.16 — #157 suite). Mutés
+ *  Record keyé (`names`), ou une fiche de règle UNIQUE (`waterExposure`, T2C 16 — #157 suite). Mutés
  *  EN PLACE (mêmes garanties que les tableaux) → preview live + écriture disque par l'éditeur du Codex.
  *  Le fichier disque est `<clé>.json` par défaut (`details.json`, `names.json`) ou l'override
  *  `OBJECT_FILE` pour une clé dont le nom diverge du fichier (`waterExposure` → `water-exposure.json`). */
 const OBJECTS = {
   details, names, waterExposure: WATER_EXPOSURE,
-  // LOT 1 #422 : 3 fiches de règle UNIQUES (MDG ch.13) — même patron que `waterExposure` (T2C ch.16).
+  // LOT 1 #422 : 3 fiches de règle UNIQUES (MDG 13) — même patron que `waterExposure` (T2C 16).
   seaNavigation, seaPerils, seaWeather,
   // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
   disponibilite,
-  // LOT 2 #422 : Navigation fluviale (T2C ch.7) — fiche de règle UNIQUE, même patron.
+  // LOT 2 #422 : Navigation fluviale (T2C 7) — fiche de règle UNIQUE, même patron.
   riverNavigation,
   // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
   grapple: GRAPPLE,
@@ -266,23 +266,23 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   aaCriticalsBras: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
   aaCriticalsCorps: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
   aaCriticalsJambe: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
-  // Critiques de coque (MDG ch.13, navire) : 5 Localisations NICHÉES dans `ship-criticals.json`.
+  // Critiques de coque (MDG 13, navire) : 5 Localisations NICHÉES dans `ship-criticals.json`.
   shipCriticalsCargaison: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
   shipCriticalsGreement: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
   shipCriticalsCoque: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
   shipCriticalsAvirons: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
   shipCriticalsEquipements: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
-  // Critiques de coque (T2C ch.7, fluvial) : 5 Localisations NICHÉES dans `river-criticals.json`.
+  // Critiques de coque (T2C 7, fluvial) : 5 Localisations NICHÉES dans `river-criticals.json`.
   riverCriticalsGreement: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
   riverCriticalsAvirons: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
   riverCriticalsGouvernail: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
   riverCriticalsCoque: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
   riverCriticalsSuperstructure: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
-  // Rencontres de voyage (EDOC ch.8) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
+  // Rencontres de voyage (EDOC 8) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
   rencontresPositives: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
   rencontresFortuites: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
   rencontresDangereuses: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
-  // Longs voyages en mer (MDG ch.15) : 3 tableaux frères NICHÉS dans `sea-events.json`.
+  // Longs voyages en mer (MDG 15) : 3 tableaux frères NICHÉS dans `sea-events.json`.
   seaManannFactors: { file: 'sea-events.json', root: () => seaEventsRawJson },
   seaBoardEvents: { file: 'sea-events.json', root: () => seaEventsRawJson },
   seaPortEvents: { file: 'sea-events.json', root: () => seaEventsRawJson },

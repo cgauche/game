@@ -9,10 +9,10 @@ const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i
 const sick = (over: Partial<Combatant> = {}): Combatant => ({ name: 'Marin', diseases: [], ...over }) as Combatant;
 
 /**
- * Maladies marines (MDG ch.14) — réutilisent le CYCLE de maladie EXISTANT (`disease.ts` + `maladies.json`),
+ * Maladies marines (MDG 14) — réutilisent le CYCLE de maladie EXISTANT (`disease.ts` + `maladies.json`),
  * pas de mécanique parallèle : mêmes incubation/durée/symptômes/Test de fin que les maladies du LDB 20.
  */
-describe('Mal de mer (MDG ch.14) — cycle de maladie réutilisé', () => {
+describe('Mal de mer (MDG 14) — cycle de maladie réutilisé', () => {
   it("onset immédiat (incubation 0) ; symptômes malaise/nausée + Test de fin Intermédiaire ; immunité après guérison", () => {
     const dz = contractDisease('mal-de-mer', seq([]))!;
     expect(dz.phase).toBe('active'); // incubation {n:0} → symptômes immédiats
@@ -28,7 +28,7 @@ describe('Mal de mer (MDG ch.14) — cycle de maladie réutilisé', () => {
   });
 });
 
-describe('Scorbut (MDG ch.14) — cycle de maladie réutilisé', () => {
+describe('Scorbut (MDG 14) — cycle de maladie réutilisé', () => {
   it('symptômes blessé/intoxication/malaise/nausée ; durée 1d10 (après reprise de nourriture fraîche)', () => {
     const dz = contractDisease('scorbut', makeRNG(1), { incubation: 0 })!;
     expect(dz.phase).toBe('active');

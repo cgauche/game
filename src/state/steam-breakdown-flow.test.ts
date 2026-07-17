@@ -8,7 +8,7 @@ import type { WorldMap } from './worldMap';
 import type { PendingSteamSave } from './pendings';
 
 /**
- * PANNE DE VAPEUR (MDG ch.12 l.313-352) résolue au voyage (#184) : la table Panne de Vapeur ne se narre
+ * PANNE DE VAPEUR (MDG 12 l.313-352) résolue au voyage (#184) : la table Panne de Vapeur ne se narre
  * plus — chaque champ first-class est EXÉCUTÉ. « Fuite de vapeur » → sauvegarde d'Initiative INFLUENÇABLE ;
  * « Explosion » → dégâts Perforante à la personne au moteur + moteur détruit + Coup Critique Coque ; les
  * pannes à redémarrage roulent leurs Tests et perdent la fraction de journée immobilisée.
@@ -46,7 +46,7 @@ function steamAtSea(milesToday = 80) {
   set({ travelPlan: plan });
 }
 
-describe('Panne de Vapeur — résolution first-class (MDG ch.12 l.313-352)', () => {
+describe('Panne de Vapeur — résolution first-class (MDG 12 l.313-352)', () => {
   beforeEach(() => steamAtSea());
 
   it('« Fuite de vapeur » (failDamage) : ouvre une sauvegarde d’Initiative INFLUENÇABLE sur la personne au moteur, sans toucher les milles', () => {

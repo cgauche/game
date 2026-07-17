@@ -114,7 +114,7 @@ describe('Filet lesté (Aux Armes p.95) — Immobilisante à Force FIGÉE (55), 
   });
 });
 
-describe('Déroutante (ADE II ch.4, atout d\'arme magique) — État Surpris à la touche', () => {
+describe('Déroutante (ADE II 4, atout d\'arme magique) — État Surpris à la touche', () => {
   it('à la touche : la cible gagne l\'État Surpris', () => {
     const atk = foe('porteur');
     const tgt = foe('cible');

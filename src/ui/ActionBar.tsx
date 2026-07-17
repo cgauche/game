@@ -121,7 +121,7 @@ export function ActionBar() {
   const [showManeuvers, setShowManeuvers] = useState(false);
   useEffect(() => { setConfirmEnd(false); setShowManeuvers(false); }, [battle?.turn, battle?.round]);
   if (!battle || battle.over) return null;
-  // Début de Round (LDB ch.17 l.27) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
+  // Début de Round (LDB 17 l.27) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
   // un seul bouton. On voit l'ordre (frise) et le champ, et on peut dépenser sa Chance pour agir en premier
   // (canActFirst) avant de lancer. Au Round 1 c'est l'ouverture du combat (« Commencer le combat »).
   if (pendingRoundStart) {
@@ -320,7 +320,7 @@ export function ActionBar() {
     }, {}),
   );
 
-  // Détermination (Resolve) : États retirables de l'actif (LDB ch.17 l.62-66).
+  // Détermination (Resolve) : États retirables de l'actif (LDB 17 l.62-66).
   const resolve = isHero ? active.resolve ?? 0 : 0;
   const removableConditions = isHero && resolve > 0 ? active.conditions : [];
   // Économie du tour (R6) : reste-t-il une option utile ? sinon « Fin du tour » pulse (nudge). Finir avec
@@ -371,9 +371,9 @@ export function ActionBar() {
 
   // ── Capacités de la barre, DATA-DRIVEN : UNE liste de descripteurs, source du rendu ET des
   // raccourcis clavier 1-9 (positionnels, rien en dur). Construite au tour d'un héros, publiée au pont. ──
-  // Manœuvre navale (MDG ch.13) : un héros membre de l'équipage d'un navire peut prendre la barre (Test de Navigation).
+  // Manœuvre navale (MDG 13) : un héros membre de l'équipage d'un navire peut prendre la barre (Test de Navigation).
   const shipSupport = isHero ? shipOfCrew(battle.combatants, active.id) : undefined;
-  // « Servir cette pièce » (MDG ch.12) : pièce de siège adjacente que le héros peut REJOINDRE — chef si non servie,
+  // « Servir cette pièce » (MDG 12) : pièce de siège adjacente que le héros peut REJOINDRE — chef si non servie,
   // sinon support d'équipe (KIND-AGNOSTIQUE — même source que l'IA). On n'offre « Servir » que s'il ne sert pas DÉJÀ.
   const canServePoste = isHero && !active.mannedPoste && servablePostes(active, battle.combatants).length > 0;
   // SOUTIEN d'une pièce (MDG 12) : membre d'équipe qui n'est PAS le chef (`crewIds[0]`) — il occupe la pièce
@@ -381,7 +381,7 @@ export function ActionBar() {
   // un chip STATIQUE pour que le rôle ne soit pas muet. (Bascule de chef = hors périmètre : passerait par un
   // ré-ordonnancement de `crewIds`, non exposé aujourd'hui.)
   const isRenfort = isHero && !!active.mannedPoste && active.mannedPoste.crewIds?.[0] !== active.id;
-  // « Pousser » (ADE II ch.08 l.258) : chef d'un engin de siège MOBILE à roues → il peut le déplacer (mouvement
+  // « Pousser » (ADE II 8 l.258) : chef d'un engin de siège MOBILE à roues → il peut le déplacer (mouvement
   // simple, aucun jet). Gate d'affordance = SOURCE UNIQUE `pushSlot` (visible/sous-effectif) ; DÉSACTIVÉ si
   // l'Équipe présente est sous la moitié requise, MÊME seuil que le tir sous-effectif (parité bouton de tir).
   const push = isHero ? pushSlot(active, battle.combatants) : { show: false, undercrew: false };
@@ -440,24 +440,24 @@ export function ActionBar() {
     // Tour du NAVIRE (couche Mer) : Action = Test d'ÉQUIPAGE. Manœuvrer = le barreur vire le cap (Test de
     // Navigation) puis le navire avance le long du cap (l'éperonnage se résout si une coque est devant).
     // Bordée = Test d'équipage des Artilleurs : on désigne un navire ennemi, le bord qui porte est dérivé de la
-    // cible (`targetArc`) et toutes ses pièces font feu au DR partagé (MDG ch.14 l.128). (IA navire → `runShipAI`.)
+    // cible (`targetArc`) et toutes ses pièces font feu au DR partagé (MDG 14 l.128). (IA navire → `runShipAI`.)
     slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Manœuvrer ${active.name} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
     if ((active.postes ?? []).length > 0)
-      slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: <Icon id="action/aim" />, label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte (MDG ch.14)`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });
-    // Rude épreuve (MDG ch.14 l.106-114) : Test d'équipage quand « les gens ont peur de ce que pourrait
+      slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: <Icon id="action/aim" />, label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte (MDG 14)`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });
+    // Rude épreuve (MDG 14 l.106-114) : Test d'équipage quand « les gens ont peur de ce que pourrait
     // prochainement subir le bateau » — un total NÉGATIF réduit le Moral d'autant (l.110). Coûte l'Action du navire.
-    slots.push({ id: 'crew-test-rude-epreuve', disabled: battle.acted, icon: <Icon id="scenario/naval" />, label: 'Rude épreuve', title: `Test d'équipage de Rude épreuve (MDG ch.14) : Cuisinier ★, Chansonnier, Navigateur, Mousse, Chirurgien — un total négatif fait dégringoler le Moral d'autant`, run: () => battleCrewTest(active.id, 'rude-epreuve') });
+    slots.push({ id: 'crew-test-rude-epreuve', disabled: battle.acted, icon: <Icon id="scenario/naval" />, label: 'Rude épreuve', title: `Test d'équipage de Rude épreuve (MDG 14) : Cuisinier ★, Chansonnier, Navigateur, Mousse, Chirurgien — un total négatif fait dégringoler le Moral d'autant`, run: () => battleCrewTest(active.id, 'rude-epreuve') });
     // Chanson de marin (Talent, MDG 09 l.32-40) : tâche PARALLÈLE (le chant occupe le chanteur, pas l'Action
     // du navire) — visible si un marin apte connaît une chanson ET que le quart n'a pas déjà eu la sienne (l.40).
     const shipCrew = (active.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
     const canSing = active.lastShantyQuart !== quartIndex(gameTime) && shipCrew.some((c) => !isOutOfAction(c) && knownShanties(c).length > 0 && !c.singingShanty);
     if (canSing)
       slots.push({ id: 'sing-shanty', icon: <Icon id="scenario/opera" />, label: 'Chanson de marin', title: `Entonner une chanson de marin (Talent, MDG 09) : Test de Divertissement (Chant), effet sur tout l'équipage 3 min + DR — une chanson par quart`, run: () => battleSingShanty(active.id) });
-    // Recharge (MDG ch.12 l.462 / LDB 62) : pièces DÉCHARGÉES dont le chef n'a pas encore agi ce Round → Test
+    // Recharge (MDG 12 l.462 / LDB 62) : pièces DÉCHARGÉES dont le chef n'a pas encore agi ce Round → Test
     // étendu de Projectiles du chef + Soutien. Tâche d'équipage PARALLÈLE (occupe l'équipage, pas le tour du navire).
     const reloadable = (active.postes ?? []).filter((p) => p.loaded === false && p.crewIds?.[0] && !(battle.crewActed?.[active.id] ?? []).includes(p.crewIds[0]));
     if (reloadable.length)
-      slots.push({ id: 'ship-reload', cls: 'ab-alert', icon: <Icon id="journal/reload" />, label: `Recharger${reloadable.length > 1 ? ` (${reloadable.length})` : ''}`, title: `Recharger une pièce déchargée : Test étendu de Projectiles du chef de pièce + Soutien des servants (MDG ch.12 l.462)`, run: () => battleShipReload(active.id, reloadable[0].item.uid) });
+      slots.push({ id: 'ship-reload', cls: 'ab-alert', icon: <Icon id="journal/reload" />, label: `Recharger${reloadable.length > 1 ? ` (${reloadable.length})` : ''}`, title: `Recharger une pièce déchargée : Test étendu de Projectiles du chef de pièce + Soutien des servants (MDG 12 l.462)`, run: () => battleShipReload(active.id, reloadable[0].item.uid) });
     slots.push({ id: 'end-turn', cls: 'ab-end', icon: <Icon id="ui/turn-end" />, label: 'Fin du tour', title: `Finir le tour de ${active.name}`, run: onEndTurn });
   }
   hotbar.slots = slots.map((s) => ({ run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge

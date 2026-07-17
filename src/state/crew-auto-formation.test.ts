@@ -10,7 +10,7 @@ import type { Scene } from './scene';
  * Verrouillage #210 résidu — `autoFormCrews` (shipPostes.ts) câblé au spawn (`combatSlice.startCombat`) :
  * un servant de poste terrestre CREWÉ dont la SceneEntity n'a reçu AUCUNE position propre (pos == celle de
  * la coque, défaut de qui ne place pas la formation à la main) atterrit sur une case de `crewFormationSlots`
- * (ADE II ch.08 l.258 — jamais l'avant, jamais sous l'empreinte). Une position AUTHORÉE distincte de la
+ * (ADE II 8 l.258 — jamais l'avant, jamais sous l'empreinte). Une position AUTHORÉE distincte de la
  * coque (comme les 5 servants de `42-belier-porte.ts`) reste INCHANGÉE — le placement d'auteur prime.
  */
 const ENC_ID = 'crew-auto-fx';

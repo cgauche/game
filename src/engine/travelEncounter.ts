@@ -1,5 +1,5 @@
 /**
- * Rencontres de voyage (EDOC ch.8 l.182-233) — DÉCLENCHEUR par la qualité des Tests d'Activité de
+ * Rencontres de voyage (EDOC 8 l.182-233) — DÉCLENCHEUR par la qualité des Tests d'Activité de
  * l'Étape. Module FEUILLE pur (testable) : il ne tire pas le d100 ni n'applique d'effet ; il rend la
  * CATÉGORIE de la table de Rencontres à consulter (l'appelant tire et applique).
  *

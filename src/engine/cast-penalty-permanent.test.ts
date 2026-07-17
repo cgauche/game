@@ -1,5 +1,5 @@
 /**
- * Interdiction PERMANENTE de compétence magique (MDG ch.07 l.250) : « Le Personnage ne peut jamais
+ * Interdiction PERMANENTE de compétence magique (MDG 7 l.250) : « Le Personnage ne peut jamais
  * utiliser les Compétences Langue (Magick) et Focalisation, sauf pour dissiper un sort. » — `castPenalty
  * {blocked:true}` posable en PASSIF (Trait/mutation), sans expiration (aucun `rounds`/`minutes`/`hours`/
  * `days`, contrairement au contrecoup temporisé posé par `applyOps`). Le porteur DONNÉE (Trait de créature)

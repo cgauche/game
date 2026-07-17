@@ -7,7 +7,7 @@
       "note": "ch.13 « Navigation maritime » — Échouer (l.471-473)."
     }
   },
-  "hazardsWeightNote": "MAISON (#444) — le RAW (MDG ch.13 l.475-499) ne donne aucune fréquence relative entre Icebergs/Débris marins/Rocher/Bas-fonds lors d'une collision : pondération du tirage éditable via hazards[].weight (défaut 1 = équiprobable).",
+  "hazardsWeightNote": "MAISON (#444) — le RAW (MDG 13 l.475-499) ne donne aucune fréquence relative entre Icebergs/Débris marins/Rocher/Bas-fonds lors d'une collision : pondération du tirage éditable via hazards[].weight (défaut 1 = équiprobable).",
   "hazards": [
     {
       "id": "iceberg",

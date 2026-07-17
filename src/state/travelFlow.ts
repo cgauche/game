@@ -84,7 +84,7 @@ export interface TravelRecapDay {
   /** MER (route COMMANDÉE) : instantané du jour pour l'écran de traversée (rose des vents + jauges +
    *  distance restante) — rendu par `SeaVoyageScreen` à la place du corps de recap terrestre. */
   sea?: import('./seaVoyageFlow').SeaRecapChrome;
-  /** MÉTÉO d'Étape (EDOC ch.8 l.42) = CONTEXTE DU JOUR (arbitrage user 2026-07-11 : « elle doit juste
+  /** MÉTÉO d'Étape (EDOC 8 l.42) = CONTEXTE DU JOUR (arbitrage user 2026-07-11 : « elle doit juste
    *  s'afficher dans un écart lié à la journée », plus de pas de cascade). `id` = météo affichée
    *  (en-tête « Journée de route — … — {météo} » + tuile Météo, vague 2) ; `roll` = d100 INTERNE (debug/
    *  tests ; « y'a que le MJ qui voit le jet de météo » → jamais montré au joueur). */
@@ -139,7 +139,7 @@ export interface TravelPlan {
   /** ORDRES permanents de la traversée (couche `voyageCadence`) : cadence COMMANDÉE (routine auto-résolue,
    *  PV du jour) ou JOUR-PAR-JOUR (modale par jet). Consommé par la mer ET le fluvial. */
   orders?: import('./voyageCadence').VoyageOrders;
-  /** Postes d'Activité de l'Étape : un héros → ≤1 Activité (EDOC ch.8). Initialisé depuis les rôles
+  /** Postes d'Activité de l'Étape : un héros → ≤1 Activité (EDOC 8). Initialisé depuis les rôles
    *  PERSISTANTS (`travelRole`) au départ, réutilisé chaque Étape (0 ré-assignation par jour). */
   postes?: Record<string, StagePosting>;
   /** Cumul du Test ÉTENDU de cartographie (Établir des cartes, EDOC l.161) — cf. `extendedTestStep`. */
@@ -148,10 +148,10 @@ export interface TravelPlan {
    *  incidents (`vehicleWounds`). Présente seulement si le trajet utilise un véhicule à coque.
    *  Route MARITIME : la coque du NAVIRE DE CAMPAGNE (Blessures persistées sur `vessel.wounds`, #30). */
   vehicle?: Combatant;
-  /** État NAVAL du trajet (route `sea` — MDG ch.13/15) : météo/vent, événements, crises, étape du jour.
+  /** État NAVAL du trajet (route `sea` — MDG 13/15) : météo/vent, événements, crises, étape du jour.
    *  Présent = la résolution du jour est déléguée à `seaVoyageFlow.runSeaDay` (cascade-jour). */
   sea?: import('./seaVoyageFlow').SeaVoyageState;
-  /** État FLUVIAL du trajet (route `river`, mode barge — T2C ch.7) : vent, dérive/chavirage, jours à flot.
+  /** État FLUVIAL du trajet (route `river`, mode barge — T2C 7) : vent, dérive/chavirage, jours à flot.
    *  Présent = la résolution du jour est déléguée à `riverVoyageFlow.runRiverDays`. */
   river?: import('./riverVoyageFlow').RiverVoyageState;
   /** CONTEXTE TRANSITOIRE de l'Étape EDOC en cours (météo/saison/postes accumulés) — posé par
@@ -283,7 +283,7 @@ export function startTravel(
   if (!from || !route || (route.a !== from.id && route.b !== from.id)) return;
   if (route.from != null && route.from !== from.id) return; // route à sens unique : pas dans ce sens
   // « En selle » suit les mêmes chemins qu'à pied (mode IMPLICITE des routes `pied`) — règle
-  // `travel-allures` (EDOC ch.7) et chaque héros vivant en selle (EDOC 07 l.140).
+  // `travel-allures` (EDOC 7) et chaque héros vivant en selle (EDOC 07 l.140).
   if (mode === 'monture' && (!rule('travel-allures') || !partyFullyMounted(party))) return;
   if (!route.modes.includes(mode === 'monture' ? 'pied' : mode)) return;
   const to = placeById(worldMap, otherEnd(route, from.id));
@@ -298,7 +298,7 @@ export function startTravel(
     return;
   }
 
-  // Route MARITIME (MDG ch.13-15) : se voyage sur le NAVIRE DE CAMPAGNE — mode 'mer', distance en
+  // Route MARITIME (MDG 13-15) : se voyage sur le NAVIRE DE CAMPAGNE — mode 'mer', distance en
   // MILLES, résolution du jour déléguée à `seaVoyageFlow` (météo/vent, Tests d'équipage, événements).
   if (mode === 'mer') {
     if (!route.sea) return;
@@ -321,7 +321,7 @@ export function startTravel(
   }
   if (route.sea) return; // une route maritime ne s'emprunte qu'en mode 'mer'
 
-  // Route FLUVIALE JOUÉE (T2C ch.7 « Navigation fluviale ») : sur une embarcation (barge…), la descente
+  // Route FLUVIALE JOUÉE (T2C 7 « Navigation fluviale ») : sur une embarcation (barge…), la descente
   // se JOUE jour par jour (Test de Navigation, table des vents, périls, chavirage) au lieu d'un transport
   // payant. Repli sur le transport payant (« on paie un passeur ») si aucun batelier/embarcation.
   if (route.river && mode !== 'pied' && mode !== 'monture' && findVehicleById(mode)?.ship) {
@@ -371,7 +371,7 @@ export function startTravel(
     routeId, fromPlaceId: from.id, toPlaceId: to.id, mode,
     classKey: opts.classKey, hoursPerDay: hours, km: route.km, kmDone: 0, interrupted: false,
     ...(allure ? { allure } : {}),
-    // Postes initialisés depuis les rôles PERSISTANTS (`travelRole`) — réutilisés chaque Étape (EDOC ch.8).
+    // Postes initialisés depuis les rôles PERSISTANTS (`travelRole`) — réutilisés chaque Étape (EDOC 8).
     postes: rule('travel-etapes') ? stageAssignmentFromRoles(party) : undefined,
     ...(vehicle ? { vehicle } : {}),
   };
@@ -544,7 +544,7 @@ function runTravelDays(get: Get, set: Set): void {
     // `prior.mount` = heures DÉJÀ chevauchées aujourd'hui : l'endurance se compte sur le jour, pas le trajet (#340).
     if (plan.mode === 'monture') resolveMountedTravelDay(get, set, hoursToday, plan.allure ?? 'pas', recapDay, prior.mount);
 
-    // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.8, parent `travel-etapes`) + PÉRIPÉTIES du
+    // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC 8, parent `travel-etapes`) + PÉRIPÉTIES du
     // jour (d'auteur puis table d10 RAW). TOUS les JETS du jour (Activités d'Étape, Exposition de fin
     // d'Étape, Survie/Perception des péripéties) sont désormais des ÉTAPES d'une CASCADE influençable
     // (`purpose:'travelDay'`, Chance/Pacte/Résilience) — plus d'auto-résolution inline. Ordre RAW (l.10)
@@ -577,7 +577,7 @@ export function continueTravelAfterNight(get: Get, set: Set): void {
   runTravelDays(get, set);
 }
 
-/** Saison courante (table de Météo EDOC ch.8 l.44) depuis l'horloge du jeu. */
+/** Saison courante (table de Météo EDOC 8 l.44) depuis l'horloge du jeu. */
 function currentSeason(get: Get): Season {
   return seasonOfMonth(toDate(get().gameTime).month);
 }

@@ -19,7 +19,7 @@ const salzenmund: PortProfile = {
   demande: { armes: 1, cereales: 1 },
 };
 
-describe('Humeur de Manann (MDG ch.15 l.83-125)', () => {
+describe('Humeur de Manann (MDG 15 l.83-125)', () => {
   it('chaque facteur ne s’applique qu’UNE fois par navire (l.85)', () => {
     // Grand sacrifice : +5+2d10 → dés 3 et 4 → +12.
     const a = applyManannFactor(MANANN_BASE, 'grand-sacrifice', seq(3, 4));
@@ -37,7 +37,7 @@ describe('Humeur de Manann (MDG ch.15 l.83-125)', () => {
   });
 });
 
-describe('événements de bord & de port (MDG ch.15 l.89 + l.127-129)', () => {
+describe('événements de bord & de port (MDG 15 l.89 + l.127-129)', () => {
   it('tous les 1d10 jours ; le d100 est modifié par l’Humeur — Humeur −40 + jet 20 → bande négative', () => {
     expect(rollDaysToNextEvent(seq(7))).toBe(7);
     const bad = rollBoardEvent(-40, seq(20));
@@ -59,7 +59,7 @@ describe('événements de bord & de port (MDG ch.15 l.89 + l.127-129)', () => {
   });
 });
 
-describe('longs voyages très rapides (MDG ch.15 l.21-37)', () => {
+describe('longs voyages très rapides (MDG 15 l.21-37)', () => {
   it('d10 seul → le palier suit la table (6-9 = sans encombre, ≥10 = parfait)', () => {
     expect(resolveFastVoyage(0, 0, 0, seq(7)).palier.id).toBe('sans-encombre'); // 7 ∈ [6,9]
     expect(resolveFastVoyage(0, 0, 0, seq(10)).palier.id).toBe('parfait'); // 10 ∈ [10,+]
@@ -88,7 +88,7 @@ describe('longs voyages très rapides (MDG ch.15 l.21-37)', () => {
   });
 });
 
-describe('commerce maritime (MDG ch.15 l.309-436)', () => {
+describe('commerce maritime (MDG 15 l.309-436)', () => {
   it('cargaison aléatoire par SAISON (l.402-418) : d100 50 → Laine au printemps, Vin en été', () => {
     expect(rollRandomCargo('printemps', seq(50)).id).toBe('laine');
     expect(rollRandomCargo('ete', seq(50)).id).toBe('vin');

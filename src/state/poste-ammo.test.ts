@@ -9,7 +9,7 @@ import { makeRNG } from '../engine/dice';
 import type { Combatant, ItemInstance, ShipPoste, Weapon } from '../engine/types';
 
 /**
- * #25 — MUNITIONS PAR POSTE (MDG ch.12 l.410-424 « Munitions pour pièces d'artillerie ») : le poste porte
+ * #25 — MUNITIONS PAR POSTE (MDG 12 l.410-424 « Munitions pour pièces d'artillerie ») : le poste porte
  * son STOCK (`ShipPoste.ammo`) et sa SÉLECTION persistante (`ShipPoste.ammoUid`) ; le pool du chef =
  * stock du poste ∪ sa besace (`compatibleAmmo`, source unique), consommé au tir (`consumeAmmo`).
  * + INCIDENT D'ARME D'ÉQUIPE (ch.12 l.464) : « Si une arme dotée du Défaut Arme d'équipe subit un
@@ -38,7 +38,7 @@ const foeHull = (): Combatant =>
     characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 40, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
     wounds: { current: 60, max: 60 }, advantage: 0, conditions: [], weapons: [], skills: [], talents: [], armour: { corps: 0 }, crewIds: [] }) as unknown as Combatant;
 
-describe('Stock de munitions du poste (MDG ch.12 l.410-424)', () => {
+describe('Stock de munitions du poste (MDG 12 l.410-424)', () => {
   it('compatibleAmmo du chef = stock du POSTE (en tête) ∪ sa besace ; selectedAmmo suit poste.ammoUid', () => {
     const boulet = ammoItem('boulet', 'Boulet et poudre', 5);
     const mitraille = ammoItem('mitraille', 'Mitraille et poudre', 3);
@@ -97,7 +97,7 @@ describe('Stock de munitions du poste (MDG ch.12 l.410-424)', () => {
   });
 });
 
-describe('Incident de tir d’une Arme d’équipe (MDG ch.12 l.464) — tous les servants affectés', () => {
+describe('Incident de tir d’une Arme d’équipe (MDG 12 l.464) — tous les servants affectés', () => {
   it('applyOups misfire sur le chef d’une pièce Arme d’équipe → l’AIDE encaisse aussi', () => {
     const poste = mkPoste([]);
     const chef = mkCrew('chef');

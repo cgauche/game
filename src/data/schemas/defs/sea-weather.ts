@@ -1,5 +1,5 @@
 /**
- * Schéma de `sea-weather.json` — MÉTÉO DE LA MER DES GRIFFES (MDG ch.13 l.162-306). Consommé par
+ * Schéma de `sea-weather.json` — MÉTÉO DE LA MER DES GRIFFES (MDG 13 l.162-306). Consommé par
  * `src/engine/seaWeather.ts` (`DATA as unknown as { ... }`, cast inline reflété ICI 1:1) : tirage
  * quotidien (table 4 aspects), modificateur saisonnier, catalogues d'aspect (Précipitations /
  * Température / Visibilité / Vents), rose des vents, effet du vent (standard + Clinfoc), Affaler les
@@ -103,7 +103,7 @@ export const schema = z.strictObject({
   ),
   effetDuVent: windEffectTable,
   effetDuVentClinfoc: windEffectTable,
-  /** Gréement de course (T2C ch.12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
+  /** Gréement de course (T2C 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
   effetDuVentGreementDelta: z.record(windAspect, z.number()),
   affaler: z.strictObject({
     difficulty: difficultySchema,

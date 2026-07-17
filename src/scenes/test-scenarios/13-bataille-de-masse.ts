@@ -9,7 +9,7 @@ import type { TestScenario } from './_shared';
  * Avant la bataille : jusqu'à 3 Activités pré-combat (Discours, Planification, Repérage, Sabotage…).
  * Chaque Round présente une SITUATION — un SOUS-ENSEMBLE de Scènes du moment (pas tout le catalogue),
  * dont des Scènes ENNEMIES qui s'imposent (Intrus = menace −20 aux autres Scènes ; enchaînements). Scènes
- * MULTI-PJ (ADE II ch.8 l.116-118) : plusieurs PJ peuvent s'engager dans une Scène de Test/Tenue, résolue
+ * MULTI-PJ (ADE II 8 l.116-118) : plusieurs PJ peuvent s'engager dans une Scène de Test/Tenue, résolue
  * en Soutien (LDB 12) ; les combats engagent tout le groupe. Les deltas se cumulent, puis le Test
  * spectaculaire de Puissance résout l'affrontement, et le Rassemblement soigne entre les Rounds.
  */
@@ -91,7 +91,7 @@ export const scenario: TestScenario = {
   makeParty: () => pregenParty(PREGEN.soldat, PREGEN.chasseur, PREGEN.sorcier, PREGEN.tueur),
   scene,
   // Interlude de 3 semaines AVANT la bataille : ses Activités (max 3 par héros, LDB 23) sont le budget
-  // UNIQUE dans lequel puise la préparation de bataille (ADE II ch.8 l.65). Sans lui : Round 1 direct.
+  // UNIQUE dans lequel puise la préparation de bataille (ADE II 8 l.65). Sans lui : Round 1 direct.
   interludeWeeks: 3,
   massBattle: {
     allyName: 'Armée des Personnages',

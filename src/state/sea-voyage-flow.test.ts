@@ -32,7 +32,7 @@ import { contractDisease } from '../engine/disease';
 import { makeRNG } from '../engine/dice';
 
 /**
- * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15), pilotée
+ * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG 13/15), pilotée
  * par le pipeline CASCADE (#275 Ronde 2 cran 3) : un jour = `pendingCascade` `purpose:'travelDay'`,
  * Blessures de coque persistées sur `CampaignVessel` (#30), services portuaires. L'équipage hors
  * combat = les PJ (MDG 14 l.39). `pendingCrewTest` ne sert plus qu'au combat (`crewTestModal` seul).
@@ -153,7 +153,7 @@ describe('journée en mer — la journée est UNE cascade `purpose:travelDay` (#
       stepCascade();
     }
     expect(kinds).toContain('progression'); // Test quotidien de Progression (MDG 14 l.61, ch.15 l.78)
-    expect(kinds).toContain('orientation'); // « un Test par jour de voyage » (MDG ch.13 l.311)
+    expect(kinds).toContain('orientation'); // « un Test par jour de voyage » (MDG 13 l.311)
     expect(get().pendingRest).toBeTruthy(); // halte de nuit — machinerie de repos EXISTANTE
     expect(get().travelPlan!.sea!.daysAtSea).toBe(1);
     // La journée de mer s'arrête au CRÉPUSCULE (18:00) : la nuit de sommeil (halte) enjambe minuit —
@@ -222,7 +222,7 @@ describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
   });
 });
 
-describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG ch.13 l.337) : la Surdité ne pénalise pas', () => {
+describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG 13 l.337) : la Surdité ne pénalise pas', () => {
   const lighthouseMap: WorldMap = {
     id: 'm2', nom: 'Mer des Griffes',
     places: [
@@ -826,7 +826,7 @@ describe('Clôture du jour de mer — le récap porte les events, `sea.events` s
 describe('services portuaires (#30)', () => {
   beforeEach(freshState);
 
-  it('réparation au port : 1 CO par Blessure restaurée (MDG ch.13 l.643), le temps de chantier passe', () => {
+  it('réparation au port : 1 CO par Blessure restaurée (MDG 13 l.643), le temps de chantier passe', () => {
     set({ vessel: { ...get().vessel!, wounds: { current: 40, max: 50 } }, money: { gold: 20, silver: 0, brass: 0 } });
     const t0 = get().gameTime;
     const lines = portRepairVessel(get, set);
@@ -839,7 +839,7 @@ describe('services portuaires (#30)', () => {
     expect(portRepairVessel(get, set)[0]).toContain('bourse');
   });
 
-  it('pose d’une Amélioration : coût par bande de Taille (MDG ch.12) — Nid-de-pie sur une cogue (25 m, Moyenne) = 5 CO', () => {
+  it('pose d’une Amélioration : coût par bande de Taille (MDG 12) — Nid-de-pie sur une cogue (25 m, Moyenne) = 5 CO', () => {
     set({ money: { gold: 10, silver: 0, brass: 0 } });
     const lines = portInstallUpgrade(get, set, 'nid-de-pie');
     expect(lines[0]).toContain('Nid-de-pie');
@@ -1236,7 +1236,7 @@ describe('Tonneau d\'eau contaminé — #460 (MDG 14 l.209, `vessel.waterLitres`
   });
 });
 
-describe('Périls en mer — collision routée par la DONNÉE (#444, MDG ch.13 l.475-499, zéro IC/chance en dur)', () => {
+describe('Périls en mer — collision routée par la DONNÉE (#444, MDG 13 l.475-499, zéro IC/chance en dur)', () => {
   beforeEach(freshState);
 
   /** Force le tirage sur UN péril donné (`pickSeaHazard`, poids MAISON) — mutation RESTAURÉE en `finally`. */

@@ -1,5 +1,5 @@
 /**
- * Schéma de `sea-navigation.json` — NAVIGATION MARITIME (MDG ch.13 l.39-351 + « Longs voyages »
+ * Schéma de `sea-navigation.json` — NAVIGATION MARITIME (MDG 13 l.39-351 + « Longs voyages »
  * ch.15 l.53-78). Consommé par `src/engine/seaNavigation.ts` (`DATA as unknown as { ... }`, cast
  * inline reflété ICI 1:1) : Périodes de travail, Forcer le rythme, Épuisement, Vitesses maximum,
  * Salissures, Orientation (Repères / Changement de cap), Phares & clochers, Longs voyages,

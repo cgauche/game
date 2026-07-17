@@ -8,8 +8,8 @@ import type { Weapon } from './types';
 
 /**
  * Builder UNIQUE des OBJETS INANIMÉS (`inanimateCombatant`) et ses trois saveurs :
- *  - STRUCTURE de siège (ADE II ch.08) — DESTRUCTIBLE, profil {E,B} ;
- *  - VÉHICULE-coque (MDG ch.12-13) — DESTRUCTIBLE, profil {E,B} (+ empreinte de navire) ;
+ *  - STRUCTURE de siège (ADE II 8) — DESTRUCTIBLE, profil {E,B} ;
+ *  - VÉHICULE-coque (MDG 12-13) — DESTRUCTIBLE, profil {E,B} (+ empreinte de navire) ;
  *  - ENGIN de siège INERTE (AA p.122-123) — NON-DESTRUCTIBLE : 0 Blessure, immune via `woundsFromHit`.
  */
 
@@ -21,7 +21,7 @@ const mkWeapon = (over: Partial<Weapon> = {}): Weapon => ({
   ...over,
 });
 
-describe('structureCombatant (adaptateur destructible — ADE II ch.08)', () => {
+describe('structureCombatant (adaptateur destructible — ADE II 8)', () => {
   it('Porte : BE 2 → E 20, Blessures 8, Atout Résistant, forme structure', () => {
     const c = structureCombatant(findStructureById('porte')!);
     expect(c.bodyShape).toBe('structure');
@@ -31,7 +31,7 @@ describe('structureCombatant (adaptateur destructible — ADE II ch.08)', () => 
   });
 });
 
-describe('vehicleCombatant (adaptateur destructible — MDG ch.12-13)', () => {
+describe('vehicleCombatant (adaptateur destructible — MDG 12-13)', () => {
   it('Barge : coque {E,B} + empreinte de navire reportée', () => {
     const v = findVehicleById('barge')!;
     const c = vehicleCombatant(v)!;

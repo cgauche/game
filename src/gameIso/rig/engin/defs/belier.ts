@@ -1,6 +1,6 @@
 /**
  * BÉLIER DE SIÈGE (`belier`) — tronc d'arbre massif suspendu par des chaînes à un portique en bois à
- * roues (ADE II ch.08 l.258). Silhouette canonique : galerie roulante à toit de protection (planches
+ * roues (ADE II 8 l.258). Silhouette canonique : galerie roulante à toit de protection (planches
  * + peaux clouées), tronc ferré battant sous la faîtière, roues PLEINES. Tête ferrée hérissée de
  * pointes d'après l'illustration AA (art-ref/aa-siege/page146_img1_448x496.png, « tête de bélier »).
  * Art de l'engin (3 vues), routé par l'id d'espèce `belier`.

@@ -1,5 +1,5 @@
 /**
- * Schéma de `sea-perils.json` — Périls environnementaux en mer (MDG ch.13 l.423-564) : échouage,
+ * Schéma de `sea-perils.json` — Périls environnementaux en mer (MDG 13 l.423-564) : échouage,
  * dangers (Iceberg/Débris/Rocher/Bas-fonds), détroits, tourbillons, gestion à distance. Dérivé de la
  * vue typée `DATA` (`src/engine/seaPerils.ts:46-53`), seul consommateur.
  */

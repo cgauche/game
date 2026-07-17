@@ -1,5 +1,5 @@
 /**
- * VOLÉE DE BORDÉE — « Tir de batterie » (MDG ch.14 l.128), résolution PURE. Module FRÈRE de `shipCritical.ts` : ne mute
+ * VOLÉE DE BORDÉE — « Tir de batterie » (MDG 14 l.128), résolution PURE. Module FRÈRE de `shipCritical.ts` : ne mute
  * RIEN (l'appelant applique les Blessures + un `applyHullCritical` par pièce critique). RAW : un seul Test d'équipage
  * (Artilleur ★) produit un DR PARTAGÉ qui REMPLACE le jet de touche de chaque pièce, « pour le meilleur et pour le pire »
  * (l.128) → le DR (POSITIF OU NÉGATIF) s'ajoute aux Dégâts de chaque pièce.
@@ -38,7 +38,7 @@ export interface VolleyShot {
   /** uid de la pièce (`item.uid`) — pour poser la Recharge sur le bon poste après le tir. */
   posteUid: string;
   /** Munition TIRÉE (l'instance du stock du poste / de l'inventaire du chef) — consommée par l'appelant
-   *  (`consumeAmmo`, MDG ch.12 l.410-424) : le résolveur reste PUR, aucune mutation ici. */
+   *  (`consumeAmmo`, MDG 12 l.410-424) : le résolveur reste PUR, aucune mutation ici. */
   ammo?: ItemInstance;
   /** Recharge effective de la pièce (Recharge N, ×2 si sous-effectif via `crewedFireWeapon`) — Rounds avant de re-tirer. */
   reload: number;
@@ -54,7 +54,7 @@ export interface VolleyResult {
 
 // (La sélection de munition passe par `selectedAmmo` — SOURCE UNIQUE partagée avec le tir individuel :
 //  choix ponctuel du chef `c.ammoUid` > sélection persistante du poste `poste.ammoUid` > 1re compatible,
-//  pool = stock du poste (MDG ch.12 l.410-424) ∪ inventaire du chef. Pas de gate `kind:'hero'` : un
+//  pool = stock du poste (MDG 12 l.410-424) ∪ inventaire du chef. Pas de gate `kind:'hero'` : un
 //  équipage PNJ charge aussi sa munition.)
 
 /**
@@ -62,7 +62,7 @@ export interface VolleyResult {
  * cible ; `rig` = gréement de la CIBLE (colonne de localisation) ; `dr` = DR partagé du Test d'équipage Artilleur ;
  * `crew` = combattants de l'équipage tireur (pour résoudre chef + effectif de chaque pièce). PUR (RNG injecté).
  *
- * `opts.merScale` (couche MER, MDG ch.14 l.39 « la performance des Personnages représente celle de tout l'équipage ») :
+ * `opts.merScale` (couche MER, MDG 14 l.39 « la performance des Personnages représente celle de tout l'équipage ») :
  * l'équipage est ABSTRAIT — une pièce du bord qui porte est réputée SERVIE par l'équipage du navire, même sans `crewIds`
  * posés dessus (le Manque de bras s'exprime au DR du Test d'équipage — `shipUndercrew` —, jamais par une pièce muette).
  * L'effectif par pièce vaut alors l'Indice PLEIN (aucun sous-effectif par-pièce, déjà porté par le DR d'équipage). Au

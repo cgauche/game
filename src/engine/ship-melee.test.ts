@@ -5,12 +5,12 @@ import type { Combatant, Weapon } from './types';
 import type { SizeCategory } from './size';
 
 /**
- * #25 — COQUE EN COMBAT PERSONNEL (MDG ch.13 « Infliger des Dégâts aux navires ») :
- *  - Taille du navire dérivée de la longueur (MDG ch.12 l.123-129) ;
+ * #25 — COQUE EN COMBAT PERSONNEL (MDG 13 « Infliger des Dégâts aux navires ») :
+ *  - Taille du navire dérivée de la longueur (MDG 12 l.123-129) ;
  *  - corps à corps : TABLEAU DE COMPARAISON DES TAILLES (ch.13 l.618-637) — BE ajusté, « – » = aucun Dégât ;
  *  - « les tirs de petites armes […] n'infligent pas assez de Dégâts pour avoir un effet sur un vaisseau » (l.605).
  */
-describe('shipSizeFromLength — Taille par longueur (MDG ch.12 l.123-129)', () => {
+describe('shipSizeFromLength — Taille par longueur (MDG 12 l.123-129)', () => {
   it('bandes RAW : 1-10 Minuscule · 11-15 Très Petite · 16-20 Petite · 21-35 Moyenne · 36-50 Grande · 51-80 Énorme · 81+ Monstrueuse', () => {
     expect(shipSizeFromLength(3)).toBe('minuscule');
     expect(shipSizeFromLength(10)).toBe('minuscule');
@@ -24,7 +24,7 @@ describe('shipSizeFromLength — Taille par longueur (MDG ch.12 l.123-129)', () 
   });
 });
 
-describe('meleeVsHullBE — Tableau de comparaison des Tailles (MDG ch.13 l.618-637)', () => {
+describe('meleeVsHullBE — Tableau de comparaison des Tailles (MDG 13 l.618-637)', () => {
   it('exemple VERBATIM (l.614) : halfling (Petite) vs chaloupe (Minuscule) → « le bateau triple son BE »', () => {
     expect(meleeVsHullBE('minuscule', 'petite')).toEqual({ mult: 3 });
   });

@@ -49,7 +49,7 @@ export interface CustomStatblock {
   talents?: import('../data').TalentRef[];
   /** Caractéristiques aléatoires au spawn (LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10 »). */
   randomChars?: boolean;
-  /** Objet INERTE servi (affût d'artillerie d'un emplacement, AA/MDG ch.12) : ciblable mais sans réaction de
+  /** Objet INERTE servi (affût d'artillerie d'un emplacement, AA/MDG 12) : ciblable mais sans réaction de
    *  combat (`isInanimate`) ni tour propre — son arme se sert via `postes`. Se rend par son espèce (engin). */
   inert?: boolean;
   /** Ce PNJ suit-il les règles de PERSONNAGE (#143 — Corruption LDB 19, composant d'incantation LDB 46,
@@ -73,13 +73,13 @@ export interface SceneEntity {
   ref?: string;
   /** Profil personnalisé (sinon on utilise `ref`). */
   statblock?: CustomStatblock;
-  /** Coque/navire : `id`s des entités d'ÉQUIPAGE exposées à bord (MDG ch.14) — posés sur le Combattant au spawn. */
+  /** Coque/navire : `id`s des entités d'ÉQUIPAGE exposées à bord (MDG 14) — posés sur le Combattant au spawn. */
   crewIds?: string[];
-  /** Coque/navire : pièces d'artillerie MONTÉES (postes AUTHORÉS par réf catalogue, MDG ch.12-13) —
+  /** Coque/navire : pièces d'artillerie MONTÉES (postes AUTHORÉS par réf catalogue, MDG 12-13) —
    *  HYDRATÉES au spawn (`hydratePoste`) sur le Combattant-coque, puis `applyShipPostes` sert chaque poste
    *  à son chef de pièce. La base n'est PAS matérialisée dans la scène (#222). */
   postes?: AuthoredShipPoste[];
-  /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12, réfs par id ex. `{ id: 'blindage-fer' }`) —
+  /** Coque/navire : **Améliorations d'INSTANCE** (MDG 12, réfs par id ex. `{ id: 'blindage-fer' }`) —
    *  s'ajoutent aux Traits du TYPE et modifient ce navire-ci (PA de coque, M, couvert…). Posées au spawn. */
   upgrades?: NavalTraitRef[];
   dialogueId?: string;
@@ -176,7 +176,7 @@ export type Effect =
    *  authore ses propres octrois via cette action, à tout point narratif (victoire, objectif, dialogue…). */
   | { type: 'giveXp'; amount: number }
   | { type: 'startCombat'; encounter: string }
-  /** Combat de masse / Puissance de Bataille (ADE II ch.8) : ouvre l'écran de bataille sur le
+  /** Combat de masse / Puissance de Bataille (ADE II 8) : ouvre l'écran de bataille sur le
    *  `MassBattleSpec` AUTHORÉ (armées, Rounds prévus, situations de Scènes par Round, rencontres des
    *  Scènes de combat, modificateur permanent). Appliqué par le store `startMassBattle` (state/massBattleFlow). */
   | { type: 'startMassBattle'; battle: import('./massBattleFlow').MassBattleSpec }
@@ -215,7 +215,7 @@ export type Effect =
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
    *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
   | { type: 'openMerchant'; entityId: string }
-  /** Ouvre le PORT d'un lieu de la carte du monde (MDG ch.15) — SCRIPTÉ (arrivée mise en scène, cinématique
+  /** Ouvre le PORT d'un lieu de la carte du monde (MDG 15) — SCRIPTÉ (arrivée mise en scène, cinématique
    *  de quête) sur le MÊME chemin que l'accostage en mer (`openPortAt`, state/seaVoyageFlow) : avec profil
    *  de port → relâche à terre en attente de décision (`pendingShoreLeave`) ; sans profil → transition
    *  directe. `placeId` = id d'un `MapPlace` de `state.worldMap`. */
@@ -232,7 +232,7 @@ export type Effect =
    *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
   | { type: 'restoreFortune' }
   /** Repos (LDB 16/18/21) : ouvre la MODALE DE NUIT (state/restFlow) — par héros : couchage +
-   *  pitance, prix RAW calculés (LDB ch.66 : commune 10 sc, privée 10 pa pour 2, repas 1 pa —
+   *  pitance, prix RAW calculés (LDB 66 : commune 10 sc, privée 10 pa pour 2, repas 1 pa —
    *  débit dans la modale), puis bilan globalisé (Exposition dehors, récupération, cauchemars,
    *  contagion). `lodging` : contexte du lieu (auberge/chez soi/campement) ; `quality: 'pietre'`
    *  = ½ prix mais nourriture à risque (Courante galopante 10 %, ch.66 l.51). LEGACY : sans
@@ -312,7 +312,7 @@ export type Effect =
   // `align` (Puissance du Chaos) facultatif : si la mutation survient, force la table EDOC alignée
   // (sinon la règle globale décide). C'est à l'éditeur de niveau de le poser quand la source est dédiée.
   | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill?: 'resistance' | 'calme'; align?: import('../engine/corruption').ChaosAlign; heroId?: string }
-  /** Exposition HYDRIQUE (T2C ch.16 p.91 — « Maladies transmises par l'eau ») : Test de **Résistance
+  /** Exposition HYDRIQUE (T2C 16 p.91 — « Maladies transmises par l'eau ») : Test de **Résistance
    *  Intermédiaire (+0)** modifié (tableau 1 « Source d'eau » = `source`, choix d'auteur de la zone
    *  d'eau ; tableau 2 « Blessures et États » DÉRIVÉ du héros, immersion seule) ; raté → d100 « +10
    *  pour chaque DR négatif » → maladie CONTRACTÉE directement (le Test d'exposition EST le test —
@@ -362,20 +362,20 @@ export type Effect =
    *  (1-8, l.500-504), `escapeAt` = seuil d'évasion (défaut 10, l.520). `skill` = Compétence de Mouvement
    *  testée (id : Athlétisme à pied / Chevaucher / Conduite d'attelages). `encounter` = rencontre ouverte au
    *  RATTRAPAGE (Distance ≤ 0 → combat). Jouée manche par manche par la cascade influençable (state/pursuitFlow),
-   *  MÊME dramaturgie que la poursuite navale (MDG ch.13). */
+   *  MÊME dramaturgie que la poursuite navale (MDG 13). */
   | { type: 'startPursuit'; partyRole?: 'fleeing' | 'pursuing'; distance: number; escapeAt?: number; skill: string; foes: import('./pursuitFlow').PursuitFoe[]; encounter?: string }
-  /** Ouvre les JEUX DE TAVERNE (NADJ ch.16, option `tavern-games`) — à poser sur un choix de dialogue
+  /** Ouvre les JEUX DE TAVERNE (NADJ 16, option `tavern-games`) — à poser sur un choix de dialogue
    *  d'aubergiste (« Une partie ? ») ou une entité de taverne. Sans effet si l'option est éteinte. */
   | { type: 'openTavernGames' }
   /** Ouvre la CARTE DU MONDE (#T2) — à poser sur la porte/route d'un lieu (« partir en voyage »).
    *  Sans effet si le projet n'a pas de carte ou en combat. */
   | { type: 'openWorldMap' }
-  /** Dote le groupe d'un NAVIRE DE CAMPAGNE (`state.vessel`, MDG ch.13-15) — à poser quand le groupe
+  /** Dote le groupe d'un NAVIRE DE CAMPAGNE (`state.vessel`, MDG 13-15) — à poser quand le groupe
    *  reçoit/achète un bateau (don d'un patron, chantier). `vehicleId` = un navire de `vehicles.json`
    *  (facette `ship`) ; Moral et Blessures de coque INITIAUX authorés (coque neuve = pas de `wounds`).
    *  Le navire survit aux jours et aux combats (le voyage maritime et le Port en repartent). */
   | { type: 'setVessel'; vehicleId: string; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; provisions?: number; crew?: import('../engine/crewMorale').CrewHire[] }
-  /** Fait varier l'HUMEUR DE MANANN du navire de campagne (MDG ch.15 l.83-125) — à poser sur une
+  /** Fait varier l'HUMEUR DE MANANN du navire de campagne (MDG 15 l.83-125) — à poser sur une
    *  bénédiction de prêtre, un sacrifice ou tout événement narratif d'auteur. `factorId` = un facteur
    *  du tableau « EFFET SUR L'HUMEUR DE MANANN » (`sea-events.json`, appliqué UNE SEULE FOIS par
    *  navire — `applyManannFactor`, l.85) ; `delta` = un ajustement chiffré libre hors-tableau (ex.
@@ -545,7 +545,7 @@ export interface Scene {
   nom: string;
   description: string;
   dimensions: { w: number; h: number };
-  /** Échelle métrique d'une CASE (m/case) — défaut 2 (person-scale). Une Scène MER (combat naval, MDG ch.13)
+  /** Échelle métrique d'une CASE (m/case) — défaut 2 (person-scale). Une Scène MER (combat naval, MDG 13)
    *  vaut ~10 (1 pt de Distance = 10 m, `ch.13 l.362`) → le M des navires et les portées canon (50/75/150 m)
    *  tombent en nombres de cases jouables. Lue via `sceneMetresPerTile` ; consommée par les bandes de portée
    *  (`rangeBandAt`, engine/combat.ts, #249) et l'avance des navires. N'altère AUCUNE géométrie de rendu —

@@ -56,7 +56,7 @@ export const propIsSolid = (ref: string | undefined): boolean => !!ref && !!find
 /** La case (x,y) est-elle couverte par l'empreinte (`foot {w,h}`) d'un décor ? Pour la walkability.
  *  Un décor 1×1 (sans `foot`) ne bloque PAS — SAUF s'il est :
  *   • INTERACTIF (coffre, stèle, dépouille fouillable…) : on ne se tient pas SUR lui, on l'aborde en
- *     case adjacente (exploration P5 comme combat « Ramasser », LDB ch.13 l.115-116) ; ou
+ *     case adjacente (exploration P5 comme combat « Ramasser », LDB 13 l.115-116) ; ou
  *   • SOLIDE par son TYPE (`props.json` `solid` : feu de camp, brasero, statue, tonneau…) : objet
  *     plein infranchissable. */
 export function entityBlockedAt(scene: Scene, x: number, y: number): boolean {

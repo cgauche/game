@@ -7,7 +7,7 @@ import { enginArt as canonPetit } from './defs/canon-petit';
 /**
  * #210 Lot 1 — le bélier ADE II a son PROPRE art (`defs/belier.ts`), plus un affût de baliste recyclé.
  */
-describe('art de l’engin `belier` (ADE II ch.08 l.258 : tronc suspendu à un portique à roues)', () => {
+describe('art de l’engin `belier` (ADE II 8 l.258 : tronc suspendu à un portique à roues)', () => {
   it('registre auto-chargé : `belier` présent aux côtés des autres engins (vague d’art complète)', () => {
     expect(ENGIN_ARTS.map((a) => a.id).sort()).toEqual([
       'baliste',

@@ -13,7 +13,7 @@ import type { Scene } from './scene';
 import type { GameState } from './store';
 
 /**
- * EMPLACEMENT DE SIÈGE AU SOL (AA / MDG ch.12) — une pièce d'artillerie d'équipe (`armes-de-siege`, qualité
+ * EMPLACEMENT DE SIÈGE AU SOL (AA / MDG 12) — une pièce d'artillerie d'équipe (`armes-de-siege`, qualité
  * `arme-d-equipe`) PORTÉE par une SceneEntity NON-navire et SERVIE par son équipage tire/recharge/fait de l'AoE
  * à l'échelle tactique au sol, en RÉUTILISANT la machinerie d'« arme d'équipe » navale SANS couplage navire
  * (pas de merScale, pas de footprint, pas de bordée). Kind-agnostique : héros / PNJ / ennemi peuvent servir.

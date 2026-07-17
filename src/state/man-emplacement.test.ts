@@ -14,7 +14,7 @@ import type { GameState } from './store';
 import { weaponGroupIdByLabel } from '../data';
 
 /**
- * « SERVIR CETTE PIÈCE » (manning runtime, MDG ch.12-13) — l'action de combat KIND-AGNOSTIQUE par laquelle
+ * « SERVIR CETTE PIÈCE » (manning runtime, MDG 12-13) — l'action de combat KIND-AGNOSTIQUE par laquelle
  * tout combattant (héros / PNJ / ennemi) ADJACENT à un emplacement portant un poste NON servi en devient le
  * chef : il prend la tête de l'équipage (`crewIds[0]`), pose le lien `mannedPoste`, et l'arme de siège dérivée
  * apparaît dans ses `weapons` (taguée `mountSide`). RÉUTILISE la logique de service d'`applyShipPostes`

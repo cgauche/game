@@ -48,13 +48,13 @@ function shipAct(shipId: string, targetId: string): 'fire' | 'maneuver' {
   return 'maneuver';
 }
 
-describe('Duel naval (échelle Mer) — modèle DEUX-ÉCHELLES jouable (MDG ch.13-14)', () => {
+describe('Duel naval (échelle Mer) — modèle DEUX-ÉCHELLES jouable (MDG 13-14)', () => {
   beforeEach(() => launch(7));
 
   it('scène MER : les COQUES ont un tour, l’équipage + les héros sont PASSAGERS (hors ordre)', () => {
     const b = useGame.getState().battle!;
     expect(isMerScene(useGame.getState().scene)).toBe(true);
-    // Seules les 2 coques sont dans l'ordre d'Initiative (navire-unité, MDG ch.14 l.39).
+    // Seules les 2 coques sont dans l'ordre d'Initiative (navire-unité, MDG 14 l.39).
     expect([...b.order].sort()).toEqual(['cogue-duel', 'grimm-duel']);
     // Les marins d'équipage sont hors ordre (passagers).
     for (const id of ['grimm-helm', 'grimm-gun', 'cogue-helm', 'cogue-gun']) expect(b.order).not.toContain(id);
@@ -65,7 +65,7 @@ describe('Duel naval (échelle Mer) — modèle DEUX-ÉCHELLES jouable (MDG ch.1
     for (const h of heroesAboard) expect(b.order).not.toContain(h.id);
   });
 
-  it('APPROCHE : les coques s’ouvrent à ~150 m (portée LONGUE, MDG ch.12 l.401) — plusieurs Rounds avant contact', () => {
+  it('APPROCHE : les coques s’ouvrent à ~150 m (portée LONGUE, MDG 12 l.401) — plusieurs Rounds avant contact', () => {
     const mpt = sceneMetresPerTile(useGame.getState().scene);
     const dist0 = chebyshev(ship('grimm-duel').pos!, ship('cogue-duel').pos!) * mpt;
     expect(dist0).toBeGreaterThanOrEqual(140); // ~150 m

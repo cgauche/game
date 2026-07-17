@@ -1,5 +1,5 @@
 /**
- * MALADIES TRANSMISES PAR L'EAU (T2C ch.16 p.91) — moteur PUR des tables d'exposition hydrique :
+ * MALADIES TRANSMISES PAR L'EAU (T2C 16 p.91) — moteur PUR des tables d'exposition hydrique :
  * « Chaque fois qu'un Personnage risque d'être exposé à une maladie provenant de l'eau d'une rivière,
  * il est possible qu'il doive réaliser un Test de **Résistance Intermédiaire (+0)**, modifié selon les
  * circonstances. […] tous les modificateurs peuvent être cumulés. Si le Test de Résistance est raté,

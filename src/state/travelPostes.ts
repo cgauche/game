@@ -1,5 +1,5 @@
 /**
- * POSTES d'Activité d'une Étape de voyage (EDOC ch.8) — module FEUILLE (convention « baril ») :
+ * POSTES d'Activité d'une Étape de voyage (EDOC 8) — module FEUILLE (convention « baril ») :
  * n'importe RIEN de `travelFlow` (ré-exporté par lui). Chaque héros tient ≤1 Activité ; depuis la
  * Phase B (voyage terrestre), TOUS les jets de l'Étape (Activités + Exposition de fin d'Étape) passent
  * par la CASCADE influençable du JOUR (`purpose:'travelDay'`) au lieu d'être auto-résolus inline —
@@ -53,7 +53,7 @@ const POSTE_ICON: Record<string, string> = {
   'etablir-cartes': 'expedition/cartography', 'pratiquer-competence': 'expedition/practice', recuperer: 'rest/bed', 'monter-camp': 'rest/camp',
 };
 
-/** Libellé d'une catégorie de Rencontre (EDOC ch.8). */
+/** Libellé d'une catégorie de Rencontre (EDOC 8). */
 const ENCOUNTER_LABEL: Record<EncounterCategory, string> = {
   positives: 'Rencontre positive',
   fortuites: 'Rencontre fortuite',
@@ -103,13 +103,13 @@ function stageActivityMods(difficulty: Difficulty, weather: Weather, wMod: numbe
 }
 
 /**
- * Construit les ÉTAPES influençables de l'Étape (EDOC ch.8) : un jet par poste TESTÉ (Activité à
+ * Construit les ÉTAPES influençables de l'Étape (EDOC 8) : un jet par poste TESTÉ (Activité à
  * compétence), un pas d'AFFICHAGE par poste sans Test (Récupérer), puis UN pas d'agrégation
  * `stageAggregate` (fourrage cumulé, camp, cartes, Rencontre → INSÈRE les jets d'Exposition). Pose le
  * contexte transitoire (`travelPlan.stage`). Ne consomme AUCUN RNG (les jets vivent dans les étapes /
  * l'agrégation). RENVOIE `[]` s'il n'y a aucun poste (l'appelant finalise directement).
  */
-/** Mouvement le plus faible du groupe pour le mode de voyage courant (EDOC ch.8 l.25, modificateur du
+/** Mouvement le plus faible du groupe pour le mode de voyage courant (EDOC 8 l.25, modificateur du
  *  nombre d'Étapes) : à pied = Mouvement effectif le plus lent (`partyWalkSpeed`) ; en selle = M le
  *  plus faible des montures possédées ; en véhicule = Déplacement du véhicule. `undefined` si non
  *  déterminable (ex. mode `monture` sans aucune bête) — `stageCount` n'applique alors aucun modificateur. */
@@ -286,7 +286,7 @@ registerCascadeApplier('weatherResistance', (get, set, step) => {
     const hero = get().party.find((h) => h.id === part.id);
     const res = part.result;
     if (!hero || !res || res.success) { part.outcome = []; continue; }
-    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC ch.8 l.86/127
+    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC 8 l.86/127
     applyOps(hero, [op]);
     const lines = resultLines([{ ops: [op] }]);
     part.outcome = lines;

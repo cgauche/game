@@ -1,6 +1,6 @@
 /**
  * CORPS STATIQUE mono-os — fondation PARTAGÉE des objets inertes rendus par le système de plans
- * (coque de navire MDG ch.12, engin de siège ADE II ch.08). Pas de squelette anatomique : une seule
+ * (coque de navire MDG 12, engin de siège ADE II 8). Pas de squelette anatomique : une seule
  * silhouette dessinée, recoloriée par la palette à jetons, ANCRÉE BASE-AU-SOL (corrige la lévitation).
  *
  * Repère du corps (boîte 120×150) : `BodyToken` pose le point (60, GROUND_Y) au CENTRE de la tuile

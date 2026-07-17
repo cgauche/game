@@ -60,7 +60,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   calendarMonths: 'calendarMonths', calendarIntercalary: 'calendarIntercalary',
   calendarWeekdays: 'calendarWeekdays', calendarPhases: 'calendarPhases', weather: 'weather',
   symptoms: 'symptoms',
-  // Combat de masse (ADE II ch.8, #148) — 5 tableaux NICHÉS dans UN fichier (`mass-battle.json`) :
+  // Combat de masse (ADE II 8, #148) — 5 tableaux NICHÉS dans UN fichier (`mass-battle.json`) :
   // `datasetFile`/`datasetSerializeRoot` (overrides.ts) réécrivent le fichier PARENT entier au save,
   // pas juste le tableau touché (sinon les 4 autres sections seraient perdues).
   massBattleWarMachines: 'massBattleWarMachines', massBattleStructures: 'massBattleStructures',
@@ -78,16 +78,16 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   crewMoraleFactors: 'crewMoraleFactors', crewMoraleBands: 'crewMoraleBands', steamBreakdowns: 'steamBreakdowns',
   criticalsTete: 'criticalsTete', criticalsBras: 'criticalsBras', criticalsCorps: 'criticalsCorps', criticalsJambe: 'criticalsJambe',
   aaCriticalsTete: 'aaCriticalsTete', aaCriticalsBras: 'aaCriticalsBras', aaCriticalsCorps: 'aaCriticalsCorps', aaCriticalsJambe: 'aaCriticalsJambe',
-  // #157 (suite) : Critiques de coque (MDG ch.13 navire / T2C ch.7 fluvial), Rencontres de voyage
-  // (EDOC ch.8) et Longs voyages en mer (MDG ch.15) — mêmes patrons (nichés) que ci-dessus.
+  // #157 (suite) : Critiques de coque (MDG 13 navire / T2C 7 fluvial), Rencontres de voyage
+  // (EDOC 8) et Longs voyages en mer (MDG 15) — mêmes patrons (nichés) que ci-dessus.
   shipCriticalsCargaison: 'shipCriticalsCargaison', shipCriticalsGreement: 'shipCriticalsGreement',
   shipCriticalsCoque: 'shipCriticalsCoque', shipCriticalsAvirons: 'shipCriticalsAvirons', shipCriticalsEquipements: 'shipCriticalsEquipements',
   riverCriticalsGreement: 'riverCriticalsGreement', riverCriticalsAvirons: 'riverCriticalsAvirons',
   riverCriticalsGouvernail: 'riverCriticalsGouvernail', riverCriticalsCoque: 'riverCriticalsCoque', riverCriticalsSuperstructure: 'riverCriticalsSuperstructure',
   rencontresPositives: 'rencontresPositives', rencontresFortuites: 'rencontresFortuites', rencontresDangereuses: 'rencontresDangereuses',
   seaManannFactors: 'seaManannFactors', seaBoardEvents: 'seaBoardEvents', seaPortEvents: 'seaPortEvents',
-  // LOT 1 #422 : Ports (MDG ch.15), Progression de navire (MDG ch.13) et 3 sous-tableaux de
-  // Construction navale (MDG ch.12) — mêmes garanties (édition tableau, `datasetFile`/`datasetSerializeRoot`
+  // LOT 1 #422 : Ports (MDG 15), Progression de navire (MDG 13) et 3 sous-tableaux de
+  // Construction navale (MDG 12) — mêmes garanties (édition tableau, `datasetFile`/`datasetSerializeRoot`
   // réécrivent le PARENT entier au save pour les 4 dernières, NICHÉES).
   navalPorts: 'navalPorts', navalProgression: 'navalProgression',
   shipHullSizes: 'shipHullSizes', shipSpeedTraits: 'shipSpeedTraits', shipConstructionTraits: 'shipConstructionTraits',
@@ -107,16 +107,16 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
 const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | 'record' }> = {
   details: { ds: 'details', mode: 'single' },
   names: { ds: 'names', mode: 'record' },
-  // Exposition à l'eau (T2C ch.16, #157 suite) : UNE seule fiche de règle (fichier `water-exposure.json`,
+  // Exposition à l'eau (T2C 16, #157 suite) : UNE seule fiche de règle (fichier `water-exposure.json`,
   // clé JS `waterExposure` — `datasetObjectFile` gère la divergence de nom).
   waterExposure: { ds: 'waterExposure', mode: 'single' },
-  // LOT 1 #422 : 3 fiches de règle UNIQUES navales (MDG ch.13) — même patron que `waterExposure`.
+  // LOT 1 #422 : 3 fiches de règle UNIQUES navales (MDG 13) — même patron que `waterExposure`.
   seaNavigation: { ds: 'seaNavigation', mode: 'single' },
   seaPerils: { ds: 'seaPerils', mode: 'single' },
   seaWeather: { ds: 'seaWeather', mode: 'single' },
   // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
   disponibilite: { ds: 'disponibilite', mode: 'single' },
-  // LOT 2 #422 : Navigation fluviale (T2C ch.7) — fiche de règle UNIQUE, même patron.
+  // LOT 2 #422 : Navigation fluviale (T2C 7) — fiche de règle UNIQUE, même patron.
   riverNavigation: { ds: 'riverNavigation', mode: 'single' },
   // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
   grapple: { ds: 'grapple', mode: 'single' },
@@ -139,14 +139,14 @@ const REF_LIST_DATASET: Record<string, DatasetKey> = {
  *  `occupantOps` (subi par un tiers — cavalier/passager), `crewOps`/`captainOps` (Chant de marin).
  *  Généralise l'idée d'`isPassive` (qui ne couvre QUE `passive`) sans dupliquer l'éditeur : ajouter une
  *  source = ajouter SA/SES clé(s) ici (lu par `dedicatedFieldKeys` ET le rendu). */
-/** Les 10 catégories de Critiques de coque (MDG ch.13 navire + T2C ch.7 fluvial, #157 suite) —
+/** Les 10 catégories de Critiques de coque (MDG 13 navire + T2C 7 fluvial, #157 suite) —
  *  MÊME forme `ShipCritEntry` (`ops` + `crewTest` structuré), partagée par `OPS_FIELDS` et le rendu. */
 const SHIP_CRIT_CATEGORIES = [
   'shipCriticalsCargaison', 'shipCriticalsGreement', 'shipCriticalsCoque', 'shipCriticalsAvirons', 'shipCriticalsEquipements',
   'riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure',
 ];
 
-/** Les 8 catégories de Critiques localisés (LDB ch.6 + AA, #173) partageant `traumas: string[]` — DES
+/** Les 8 catégories de Critiques localisés (LDB 6 + AA, #173) partageant `traumas: string[]` — DES
  *  IDS de fiches de traumatisme (`traumas.json`), résolus PAR ID (`traumaFicheById`/`traumaById`,
  *  `engine/critical.ts:120`/`engine/aaCritical.ts`). Éditeur dédié (`TraumaListField`, sélecteurs
  *  id→label) plutôt que le datalist générique : les fiches partagent des labels NON uniques (deux
@@ -288,7 +288,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
   if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}
-  if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (T2C ch.16)
+  if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (T2C 16)
   // LOT 1 #422 : seules les tables NICHÉES en TABLEAU top-level d'une fiche-objet navale retombent en
   // json (repli générique) — chaque sous-objet HÉTÉROGÈNE (vitesseMax/salissures/orientation/phares/
   // poursuite/reparation…) recourt déjà au sous-formulaire récursif (`ObjectField`), hors guard.
@@ -407,7 +407,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const hasAxes = categoryKey === 'axes';
   // Traumatisme (`traumas`, #157) : `prosthesis` (prothèses annulatrices, LDB 73) = {trappingId,cancels}[].
   const hasProsthesis = categoryKey === 'traumas';
-  // Critique localisé (LDB ch.6/AA, #173) : `traumas` = string[] d'ids de fiche (`traumas.json`) →
+  // Critique localisé (LDB 6/AA, #173) : `traumas` = string[] d'ids de fiche (`traumas.json`) →
   // éditeur dédié (TraumaListField, sélecteurs id→label) au lieu du datalist générique par-label.
   const hasTraumaList = CRITICAL_CATEGORIES.includes(categoryKey);
   // Panne de Vapeur (`steamBreakdowns`, #157) : `restart` (Test de redémarrage) = {skillId,spec?,difficulty,extendedDR?}[].
@@ -457,7 +457,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Critique de coque (10 catégories navire/fluvial, #157 suite) : `crewTest` (skillId?/difficulty?/
   // crewTarget?/onFail) → éditeur dédié (ShipCrewTestField) ; `ops` reste sur le lot GameOpEditor commun.
   const isShipCrit = SHIP_CRIT_CATEGORIES.includes(categoryKey);
-  // Exposition à l'eau (`waterExposure`, #157 suite, T2C ch.16) : `test` (Compétence+Difficulté),
+  // Exposition à l'eau (`waterExposure`, #157 suite, T2C 16) : `test` (Compétence+Difficulté),
   // `modifiers` (WaterExposureModifier[]) et `diseases` (plages d100 → maladie) ont chacun leur éditeur.
   const isWaterExposure = categoryKey === 'waterExposure';
   // LOT 1 #422 : fiches de règle navales UNIQUES (mode 'single', patron `waterExposure`) — leurs
@@ -618,7 +618,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         )}
         {isDetails && <DetailsTextsField value={entry.texts as DetailsTexts | undefined} onChange={(v) => edit('texts', v)} />}
         {isTrait && <TraitSchemaField entry={entry} edit={edit} />}
-        {isStructure && <TraitListField label="Atouts" hint="(Résistant/Impénétrable — ADE II ch.08)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
+        {isStructure && <TraitListField label="Atouts" hint="(Résistant/Impénétrable — ADE II 8)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
         {hasCrewSkills && <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <SkillSpecListField hint="compétences contribuant à l'axe (facultatif)" value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <TalentSpecListField value={entry.talents as { talentId: string; spec?: string }[] | undefined} onChange={(v) => edit('talents', v)} />}
@@ -922,7 +922,7 @@ function TraitSchemaField({ entry, edit }: { entry: Entry; edit: (key: string, v
   );
 }
 
-/** Compétences d'un Rôle d'équipage (`crewRoles.skills`, MDG ch.14, #157) OU d'un axe de forces
+/** Compétences d'un Rôle d'équipage (`crewRoles.skills`, MDG 14, #157) OU d'un axe de forces
  *  (`axes.skills`, #409) : `{skillId,spec?}[]` — plusieurs Compétences candidates possibles (`hint`
  *  précise la sémantique par appelant : « la meilleure retenue » pour un rôle, dérivation pour un axe). */
 function SkillSpecListField({ value, onChange, hint = 'compétences du rôle (au moins une ; « au choix » si plusieurs — la meilleure est retenue)' }: { value: { skillId: string; spec?: string }[] | undefined; onChange: (v: { skillId: string; spec?: string }[]) => void; hint?: string }) {
@@ -997,7 +997,7 @@ function ProsthesisField({ value, onChange }: { value: { trappingId: string; can
 }
 
 /** Traumatismes STRUCTURELS infligés par un Critique localisé (`criticals[Tete|Bras|Corps|Jambe].traumas`,
- *  `aaCriticals*`, LDB ch.6/AA, #173) : `string[]` d'ids de fiche (`traumas.json`), lus PAR ID
+ *  `aaCriticals*`, LDB 6/AA, #173) : `string[]` d'ids de fiche (`traumas.json`), lus PAR ID
  *  (`traumaFicheById`/`traumaById`). Sélecteurs id→label (comme `SkillSpecListField`/`ProsthesisField`),
  *  PAS le motif `<datalist>` par label : plusieurs fiches partagent le même libellé (« Fracture » mineure
  *  ET majeure) — un datalist par label ne pourrait même pas les distinguer, et écrirait un libellé au lieu
@@ -1025,7 +1025,7 @@ function TraumaListField({ value, onChange }: { value: string[] | undefined; onC
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
-/** Test de REDÉMARRAGE d'un moteur à vapeur (`steamBreakdowns.restart`, MDG ch.12, #157) :
+/** Test de REDÉMARRAGE d'un moteur à vapeur (`steamBreakdowns.restart`, MDG 12, #157) :
  *  `{skillId,spec?,difficulty,extendedDR?}[]` — Compétence + Difficulté (+ DR cumulés si Test étendu). */
 function RestartTestField({ value, onChange }: { value: { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined; onChange: (v: { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[]) => void }) {
   const list = value ?? [];
@@ -1052,7 +1052,7 @@ function RestartTestField({ value, onChange }: { value: { skillId: string; spec?
   );
 }
 
-/** Test d'ÉQUIPAGE (échec) d'un Critique de coque (`ShipCritEntry.crewTest`, MDG ch.13 / T2C ch.7,
+/** Test d'ÉQUIPAGE (échec) d'un Critique de coque (`ShipCritEntry.crewTest`, MDG 13 / T2C 7,
  *  #157 suite) : Compétence + Difficulté (vide = dégâts AUTOMATIQUES, aucun Test) + cible (poste tiré
  *  au sort ou tout le pont) + conséquence en `GameOp[]` (même éditeur que les modificateurs passifs). */
 function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefined; onChange: (v: ShipCrewTest | undefined) => void }) {
@@ -1091,7 +1091,7 @@ function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefine
   );
 }
 
-/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, T2C ch.16 p.91, #157 suite) :
+/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, T2C 16 p.91, #157 suite) :
  *  Compétence + Difficulté — sorti du repli générique (le repli traiterait ce couple {skillId,difficulty}
  *  en `recordText` renommable, ce qui autoriserait de corrompre les clés d'un objet à forme FIXE). */
 function WaterTestField({ value, onChange }: { value: { skillId: string; difficulty: Difficulty } | undefined; onChange: (v: { skillId: string; difficulty: Difficulty }) => void }) {
@@ -1099,7 +1099,7 @@ function WaterTestField({ value, onChange }: { value: { skillId: string; difficu
   const v = value ?? { skillId: skillOpts[0]?.id ?? '', difficulty: DIFFICULTIES[0] };
   return (
     <div className="ed-field">
-      <span>Test de Résistance (T2C ch.16 p.91) — Compétence + Difficulté</span>
+      <span>Test de Résistance (T2C 16 p.91) — Compétence + Difficulté</span>
       <div className="tf-row">
         <select value={v.skillId} onChange={(e) => onChange({ ...v, skillId: e.target.value })}>
           {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
@@ -1112,7 +1112,7 @@ function WaterTestField({ value, onChange }: { value: { skillId: string; difficu
   );
 }
 
-/** Contextes d'application d'un modificateur d'Exposition hydrique (T2C ch.16 p.91). */
+/** Contextes d'application d'un modificateur d'Exposition hydrique (T2C 16 p.91). */
 const WATER_APPLIES_TO: { id: 'ingestion' | 'immersion'; label: string }[] = [
   { id: 'ingestion', label: 'Ingestion' }, { id: 'immersion', label: 'Immersion' },
 ];
@@ -1120,7 +1120,7 @@ const WATER_TABLE_OPTS: { id: 'source-d-eau' | 'blessures-et-etats'; label: stri
   { id: 'source-d-eau', label: 'Source d’eau' }, { id: 'blessures-et-etats', label: 'Blessures et États' },
 ];
 
-/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, T2C ch.16 p.91) :
+/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, T2C 16 p.91) :
  *  id/libellé/valeur + contexte (Ingestion/Immersion, cumulables) + table d'origine. `auto` (dérivation
  *  automatique depuis le Combatant — PB restants/perdus, État) reste en JSON : union à 5 formes, rare
  *  (6/12 entrées), pas assez structurante pour justifier un 2ᵉ éditeur dédié. */
@@ -1133,7 +1133,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
   };
   return (
     <div className="ed-field">
-      <span>modificateurs du Test de Résistance (T2C ch.16 p.91) — cumulables</span>
+      <span>modificateurs du Test de Résistance (T2C 16 p.91) — cumulables</span>
       {list.map((m, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
@@ -1158,7 +1158,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
   );
 }
 
-/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, T2C ch.16 p.91) : plage d100
+/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, T2C 16 p.91) : plage d100
  *  (jet APRÈS échec du Test) → maladie référencée par ID (sélecteur, comme `SkillSpecListField`/
  *  `ProsthesisField`/`MutationTableField` — la donnée est un id, jamais un label). */
 function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['diseases'] | undefined; onChange: (v: WaterExposureData['diseases']) => void }) {
@@ -1168,7 +1168,7 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
   const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
   return (
     <div className="ed-field">
-      <span>maladies contractées — jet d100 après échec du Test de Résistance (T2C ch.16 p.91)</span>
+      <span>maladies contractées — jet d100 après échec du Test de Résistance (T2C 16 p.91)</span>
       {list.map((r, i) => (
         <div className="tf-row" key={i}>
           <label className="dr">d100&nbsp;<input type="number" min={1} max={100} value={r.min} onChange={(e) => set(i, { min: clampD100(e.target.value) })} />–<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>
@@ -1227,14 +1227,14 @@ function ActivityTestField({ entry, edit }: { entry: Entry; edit: (key: string, 
   );
 }
 
-/** Issues de BATAILLE (ADE II ch.8) d'une bande — portent sur l'ARMÉE (delta de Puissance / mod de Test),
+/** Issues de BATAILLE (ADE II 8) d'une bande — portent sur l'ARMÉE (delta de Puissance / mod de Test),
  *  échelle `scale` (plat / × DR / × touches / × ennemis tués), montant SIGNÉ, camp éventuel. */
 function BattleOutcomeListField({ value, onChange }: { value: BattleOutcome[] | undefined; onChange: (v: BattleOutcome[]) => void }) {
   const list = value ?? [];
   const set = (i: number, patch: Partial<BattleOutcome>) => onChange(list.map((o, j) => (j === i ? { ...o, ...patch } : o)));
   return (
     <div className="ed-subfield">
-      <span>issues de BATAILLE (ADE II ch.8) — portent sur l’ARMÉE, pas sur le héros</span>
+      <span>issues de BATAILLE (ADE II 8) — portent sur l’ARMÉE, pas sur le héros</span>
       {list.map((o, i) => (
         <div className="tf-row" key={i}>
           <select value={o.target} onChange={(e) => set(i, { target: e.target.value as BattleOutcomeTarget })}>
@@ -1273,7 +1273,7 @@ function ChainsField({ value, onChange }: { value: string[] | undefined; onChang
   );
 }
 
-/** Table d'ISSUES d'une Activité (`OutcomeBand[]`, ACE Annexe I / ADE II ch.8) : chaque bande = une
+/** Table d'ISSUES d'une Activité (`OutcomeBand[]`, ACE Annexe I / ADE II 8) : chaque bande = une
  *  fourchette de DR (`minSL`/`maxSL`, primitive de PLAGE comme mutationTables/weather) filtrée par issue
  *  (`on`) et gate de bataille (`when`), portant sa note VERBATIM, son effet `ops` (GameOpEditor commun),
  *  ses issues de bataille et ses enchaînements. Maladresse (`on:'fumble'`) REMPLACE toute autre issue. */

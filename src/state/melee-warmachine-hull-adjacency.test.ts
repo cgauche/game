@@ -7,7 +7,7 @@ import type { GameState } from './store';
 import type { Scene } from './scene';
 
 /**
- * #210 Lot 2 — l'attaque d'une pièce de MÊLÉE servie (bélier, ADE II ch.08 l.233) est ancrée à la
+ * #210 Lot 2 — l'attaque d'une pièce de MÊLÉE servie (bélier, ADE II 8 l.233) est ancrée à la
  * COQUE/l'affût, pas au chef qui la sert : `meleeWarMachineHullOf`/`combatGeomOf` (mount.ts, siegePush.ts)
  * remplacent l'adjacence du CHEF par celle de la PIÈCE dans `attackPlan`/`firedAttackBlock`/`firedWeapon`.
  * Les pièces à DISTANCE (baliste/canon) gardent la géométrie du chef — inchangé.

@@ -56,7 +56,7 @@ export const combatGeomOfList = (combatants: Combatant[], c: Combatant): Combata
 
 /** Géométrie de COMBAT d'un combattant : sa MONTURE s'il est cavalier (le couple partage pos+empreinte,
  *  LDB 14), la COQUE de la pièce de mêlée qu'il sert s'il est chef d'un engin de siège de mêlée servi
- *  (#210 — bélier ADE II ch.08 : c'est la pièce qui frappe, pas le chef qui la sert), sinon lui-même.
+ *  (#210 — bélier ADE II 8 : c'est la pièce qui frappe, pas le chef qui la sert), sinon lui-même.
  *  Substitution PAR-ACTEUR (indépendante de toute arme) : réservée au côté DÉFENSEUR/cible d'une attaque
  *  (l'arme employée par l'attaquant est hors-sujet pour la géométrie de SA cible) et aux usages hors attaque
  *  (mouvement, Peur, `mountedCombatDistance` générique). Côté ATTAQUANT d'une attaque → `attackGeomOf`
@@ -83,7 +83,7 @@ export const attackGeomOf = (battle: BattleState, c: Combatant, weapon: Weapon |
 
 /** Arme de MÊLÉE de `attacker` la plus UTILE contre `target` — chaque candidate évaluée avec SA PROPRE
  *  géométrie (`attackGeomOfList`, #BUG-A) et parmi celles À PORTÉE, celle qui peut effectivement BLESSER
- *  `target` gagne sur celle qui ne le peut pas (`structureImmune`, ADE II ch.08 l.249 : seul un Bélier
+ *  `target` gagne sur celle qui ne le peut pas (`structureImmune`, ADE II 8 l.249 : seul un Bélier
  *  abîme une porte) — jamais un `if` bélier : règle GÉNÉRALE « utile bat inutile », qui rejoue pour toute
  *  future immunité d'arme/cible. Repli sur la 1ʳᵉ candidate à portée (même immunisée) si aucune n'est utile
  *  — mieux vaut un choix cohérent qu'aucun. `undefined` si aucune arme de mêlée n'atteint la cible. */

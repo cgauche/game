@@ -16,7 +16,7 @@ const sailor = (id: string, over: Partial<Combatant> = {}): Combatant => ({
 const hull = () => vehicleCombatant(findVehicleById('cogue')!)!; // rig 'voile'
 
 /**
- * Liaison ÉQUIPAGE↔COQUE (MDG ch.13-14) : un Critique encaissé par un navire RÉPERCUTE sur de VRAIS marins —
+ * Liaison ÉQUIPAGE↔COQUE (MDG 13-14) : un Critique encaissé par un navire RÉPERCUTE sur de VRAIS marins —
  * coup à l'Équipage = Critique de PERSONNAGE sur un marin exposé ; Éclats = 9 Dégâts à autant de marins.
  */
 describe('applyHullCritical — l’équipage encaisse réellement (pas qu’un journal)', () => {
@@ -65,7 +65,7 @@ describe('applyHullCritical — l’équipage encaisse réellement (pas qu’un 
 });
 
 /**
- * Modèle de MORT d'une coque (MDG ch.13) : une coque N'EST PAS un figurant — pas de « Mort Subite » de
+ * Modèle de MORT d'une coque (MDG 13) : une coque N'EST PAS un figurant — pas de « Mort Subite » de
  * mook, pas d'« À Terre »/« Inconscient » ; elle est détruite (hors-jeu) quand ses Blessures tombent à 0.
  */
 describe('Coque — mise hors de combat à 0 PB (ni figurant, ni Inconscient)', () => {

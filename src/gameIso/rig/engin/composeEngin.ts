@@ -1,5 +1,5 @@
 /**
- * Gabarit ENGIN DE SIÈGE (ADE II ch.08 « Le théâtre de la guerre ») — pièce d'artillerie INERTE servie
+ * Gabarit ENGIN DE SIÈGE (ADE II 8 « Le théâtre de la guerre ») — pièce d'artillerie INERTE servie
  * par un équipage, rendue par le système de plans (comme la coque de navire) : une silhouette statique
  * recoloriée par la palette à jetons, ANCRÉE BASE-AU-SOL via `groundedBody` (pas de lévitation).
  *

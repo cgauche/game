@@ -1,5 +1,5 @@
 /**
- * COQUE DE NAVIRE sous les coups PERSONNELS (MDG ch.13 « Infliger des Dégâts aux navires ») — module
+ * COQUE DE NAVIRE sous les coups PERSONNELS (MDG 13 « Infliger des Dégâts aux navires ») — module
  * FEUILLE pur, consommé par `applyHit` (combat.ts) :
  *
  *  - **Tirs de petites armes** (l.603-605) : « les tirs de petites armes, c'est-à-dire d'armes à
@@ -15,7 +15,7 @@
  *    conférés + ×N) sont REMPLACÉES par cet ajustement de BE.
  *
  * La Taille du navire est DÉRIVÉE de sa longueur (`ship.lengthM`, tableau CARACTÉRISTIQUES DE BATEAU
- * STANDARD, MDG ch.12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — aucun champ de donnée redondant.
+ * STANDARD, MDG 12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — aucun champ de donnée redondant.
  */
 import type { Combatant, Weapon } from './types';
 import type { ShipSize } from '../data';
@@ -24,7 +24,7 @@ import { ammoFamily } from './items';
 import { bonus, effectiveChar } from './characteristics';
 import { SIZE_ORDER, effectiveSize, type SizeCategory } from './size';
 
-/** Taille de navire par LONGUEUR (MDG ch.12 l.123-129, colonne « Taille » du tableau standard). */
+/** Taille de navire par LONGUEUR (MDG 12 l.123-129, colonne « Taille » du tableau standard). */
 export function shipSizeFromLength(lengthM: number): ShipSize {
   if (lengthM <= 10) return 'minuscule';
   if (lengthM <= 15) return 'tres-petite';
@@ -39,7 +39,7 @@ const SHIP_SIZE_ORDER: Record<ShipSize, number> = {
   minuscule: 0, 'tres-petite': 1, petite: 2, moyenne: 3, grande: 4, enorme: 5, monstrueuse: 6,
 };
 
-/** Ajustement de BE du TABLEAU DE COMPARAISON DES TAILLES (MDG ch.13 l.618-637) : `null` = case « – »
+/** Ajustement de BE du TABLEAU DE COMPARAISON DES TAILLES (MDG 13 l.618-637) : `null` = case « – »
  *  (aucun Dégât possible) ; `{ mult }` = « N × BE » ; `{ flat }` = « BE−N » (0 = « BE » tel quel).
  *  Le tableau suit l'ÉCART de catégories (personnage − navire) : +1 → 4×BE, +2 → 3×BE, +3 → 2×BE,
  *  +4 → BE, +5 → BE−1, +6 → BE−2 ; écart ≤ 0 → « – » (vérifié case à case contre le verbatim :
@@ -57,7 +57,7 @@ export function meleeVsHullBE(shipSize: ShipSize, attackerSize: SizeCategory): {
   }
 }
 
-/** Pièce d'ARTILLERIE (MDG ch.13 l.605 : ce qui n'en est pas est une « petite arme ») — même famille
+/** Pièce d'ARTILLERIE (MDG 13 l.605 : ce qui n'en est pas est une « petite arme ») — même famille
  *  canonique que les munitions de siège (`ammoFamily`), donc balistes/canons/mortiers/pierriers. */
 export function isArtilleryWeapon(w: Weapon): boolean {
   return ammoFamily(w.subType) === 'artillerie';
@@ -72,7 +72,7 @@ export function shipHull(target: Combatant): { size: ShipSize; tb: number } | nu
   return { size: shipSizeFromLength(lengthM), tb: bonus(effectiveChar(target, 'endurance')) };
 }
 
-/** Ajustement d'un COUP PERSONNEL contre une coque (MDG ch.13) — consommé par `applyHit` :
+/** Ajustement d'un COUP PERSONNEL contre une coque (MDG 13) — consommé par `applyHit` :
  *  - `null` : la cible n'est pas une coque → chemin normal ;
  *  - `{ blocked }` : AUCUNE Blessure à la coque (petites armes l.605 / case « – » du tableau l.614) ;
  *  - `{ extraTB }` : BE SUPPLÉMENTAIRE soustrait des Dégâts (mult/flat du tableau déjà résolu :

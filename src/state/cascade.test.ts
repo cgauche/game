@@ -237,7 +237,7 @@ describe('Cascade séquentielle influençable', () => {
     expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(false); // h2 pas encore lancé
     useGame.getState().cascadeBatchRoll(h2.id);
     expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(true);
-    useGame.getState().cascadeNext(); // agrège (essentiel ×2, MDG ch.14 l.19) puis applique
+    useGame.getState().cascadeNext(); // agrège (essentiel ×2, MDG 14 l.19) puis applique
     expect(applied).toHaveLength(1);
     expect(useGame.getState().pendingCascade).toBeNull();
     expect(useGame.getState().journal.some((l) => l.startsWith('Progression → DR'))).toBe(true);

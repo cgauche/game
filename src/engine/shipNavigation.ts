@@ -1,5 +1,5 @@
 /**
- * PROGRESSION & MANŒUVRE d'un navire — couche PURE de MDG ch.13 « Navigation maritime ». BOOK-AGNOSTIC :
+ * PROGRESSION & MANŒUVRE d'un navire — couche PURE de MDG 13 « Navigation maritime ». BOOK-AGNOSTIC :
  * le « Personnage à la barre » et le Test de Navigation (Voile / Ramer) sont PARTAGÉS avec le Compagnon de
  * Mort sur le Reik ch.5 (fluvial) — on ne modélise donc rien de spécifiquement maritime ici, juste la
  * traduction RAW d'un DR de Test en déplacement / réussite de manœuvre. Les modificateurs propres à un
@@ -18,7 +18,7 @@ interface ProgressionEntry {
 }
 const PROGRESSION = (navalProgressionJson as { table: ProgressionEntry[] }).table;
 
-/** Déplacement effectif d'un navire de Mouvement `baseM` selon le DR du Test de Navigation (MDG ch.13
+/** Déplacement effectif d'un navire de Mouvement `baseM` selon le DR du Test de Navigation (MDG 13
  *  l.68-75 : 4+ → M+2 ; 1 à 3 → M+1 ; −2 à 0 → M ; −3 à −4 → M−1 ; −5 ou moins → M÷2 arrondi inférieur). PUR. */
 export function progressionMovement(baseM: number, dr: number): number {
   switch (findTableEntry(PROGRESSION, dr).mode) {
@@ -38,12 +38,12 @@ export interface ShipManeuverOutcome {
   success: boolean;
   /** Déplacement effectif (cases) via la table de Progression. */
   movement: number;
-  /** Libellé de progression verbatim (MDG ch.13). */
+  /** Libellé de progression verbatim (MDG 13). */
   label: string;
 }
 
 /**
- * Test de Manœuvre (MDG ch.13 l.117-119) = Test de Navigation (Voile / Ramer du Personnage à la barre)
+ * Test de Manœuvre (MDG 13 l.117-119) = Test de Navigation (Voile / Ramer du Personnage à la barre)
  * MODIFIÉ par la Caractéristique Man du bateau, plus tout modificateur situationnel (`extraDR` : Salissures,
  * météo, Détroit…). Réussite (DR final ≥ 0) → la manœuvre est exécutée ; le déplacement suit la table de
  * Progression. `navTestDR` est le DR brut du Test de Navigation déjà résolu (RNG en amont). PUR.

@@ -6,7 +6,7 @@ import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
 
 /**
- * #341 — Éclairs de la pluie diluvienne (EDOC ch.8 l.82). À l'OUVERTURE d'un combat pendant un jour de
+ * #341 — Éclairs de la pluie diluvienne (EDOC 8 l.82). À l'OUVERTURE d'un combat pendant un jour de
  * voyage sous pluie diluvienne (`weather.json` `lightningNervous`), chaque monture au Trait Nerveux est
  * effrayée UNE fois — +3 Brisé. La cause est un BRUIT FORT (tonnerre → `startleCause:'noise'`), donc une
  * monture Dressée (Guerre) est exemptée par la donnée du Trait Nerveux (aucune branche par-nom).

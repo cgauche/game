@@ -5,7 +5,7 @@ import type { TravelActivityResult } from './activities';
 const r = (p: Partial<TravelActivityResult>): TravelActivityResult =>
   ({ activityId: 'x', actorId: 'h', sl: 0, success: true, ops: [], extenue: false, roll: 50, ...p });
 
-describe('stageEncounterCategory (EDOC ch.8 — déclencheur par qualité de DR)', () => {
+describe('stageEncounterCategory (EDOC 8 — déclencheur par qualité de DR)', () => {
   it('aucun testeur (Activités sans Test) → aucune Rencontre', () => {
     expect(stageEncounterCategory([r({ roll: undefined })])).toBeNull();
     expect(stageEncounterCategory([])).toBeNull();

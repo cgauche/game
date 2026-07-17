@@ -134,10 +134,10 @@ export const scenario: TestScenario = {
     'deux archétypes (armurier direct + herboriste via dialogue, Effet openMerchant) ; écran d’EMPLACEMENTS (couches ' +
     'd’armure LDB 63 souple/Flexible/rigide avec échange auto, cape cosmétique, 2 sets d’armes) ; Troc (onglet du ' +
     'panneau marchand : ratio de Disponibilité, échange objet↔objet sans argent) ; Aubergiste → jeux de taverne ' +
-    '(Effet openTavernGames, option `tavern-games` pré-activée, NADJ ch.16).',
+    '(Effet openTavernGames, option `tavern-games` pré-activée, NADJ 16).',
   partyNote: 'Négociant (épée non identifiée + maille endommagée + dague) + Maître d’armes (sac garni)',
   makeParty: () => [negociant(), maitreArmes()],
-  // Jeux de taverne pré-activés (NADJ ch.16) — modifiable au panneau Règles maison, comme le Voyage par Étapes.
+  // Jeux de taverne pré-activés (NADJ 16) — modifiable au panneau Règles maison, comme le Voyage par Étapes.
   rules: { 'tavern-games': true },
   scene,
 };

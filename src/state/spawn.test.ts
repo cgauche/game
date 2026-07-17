@@ -248,7 +248,7 @@ describe('spawnEnemy — branche engin de siège (`ref` à `siegeRig`, #210)', (
     expect(c.inert).toBe(true);
   });
 
-  it('belier-ade2 : empreinte 2 recopiée sur le Combatant (`footprintN`, ADE II ch.08 l.239/258)', () => {
+  it('belier-ade2 : empreinte 2 recopiée sur le Combatant (`footprintN`, ADE II 8 l.239/258)', () => {
     const c = spawnEnemy('belier-ade2', undefined, 'ram2', at);
     expect(c.footprint).toBe(2);
   });

@@ -1,5 +1,5 @@
 /**
- * ARME D'ÉQUIPE (Atout/Défaut *Arme d'équipe (Indice)*, AA / MDG ch.12 l.440-464) — mécanique PURE et
+ * ARME D'ÉQUIPE (Atout/Défaut *Arme d'équipe (Indice)*, AA / MDG 12 l.440-464) — mécanique PURE et
  * GÉNÉRALE : une pièce d'artillerie servie par une équipe, qu'elle soit emplacée au SOL (sièges) ou montée
  * sur un navire (poste). L'Indice (équipage requis) est lu sur la qualité `arme-d-equipe` de l'arme ; les
  * servants au-delà de l'Indice n'améliorent pas le tir mais compensent les pertes (l.444).
@@ -16,7 +16,7 @@ export interface CrewedPenalty {
 }
 
 /**
- * Pénalité de sous-effectif d'une Arme d'équipe (MDG ch.12 l.448-460). `present` = nombre de servants,
+ * Pénalité de sous-effectif d'une Arme d'équipe (MDG 12 l.448-460). `present` = nombre de servants,
  * `indice` = équipage requis (Indice de la qualité). CUMULATIF selon le déficit = max(0, indice − présents) :
  * ≥1 manquant → temps de recharge DOUBLÉ ; ≥2 → + Défaut *Imprécise* ; ≥3 → + Défaut *Dangereuse*. PUR.
  * (Le −10 supplémentaire si l'arme possède DÉJÀ le Défaut ajouté — l.460 — est appliqué à la résolution du
@@ -54,7 +54,7 @@ export function crewedReloadStep(weapon: Weapon, progressBefore: number, testDR:
 
 /**
  * Arme effectivement TIRÉE par une pièce servie, Défauts de sous-effectif BAKÉS selon le nombre de servants
- * `present` (MDG ch.12 l.448-460) : recharge ×`reloadFactor`, + Défaut *Imprécise*, + Défaut *Dangereuse*.
+ * `present` (MDG 12 l.448-460) : recharge ×`reloadFactor`, + Défaut *Imprécise*, + Défaut *Dangereuse*.
  * RETIRE la qualité `arme-d-equipe` — l'équipage RÉEL étant désormais résolu, l'hypothèse « maniée en solo »
  * de `dispatch.ts` (`crewedTeamIndice`) ne doit plus se cumuler ; un poste à effectif COMPLET tire donc net.
  * Un Défaut déjà porté par l'arme n'est PAS redoublé : il vaut alors **−10 au Test de tir** (l.460), baké en

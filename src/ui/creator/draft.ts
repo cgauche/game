@@ -134,7 +134,7 @@ export interface CreatorDraft {
   height?: number;
   eyes?: string;
   hair?: string;
-  // 3bis) Signe astral (ADE2 ch.03 — étape optionnelle, gated par la règle creation-signes-astraux)
+  // 3bis) Signe astral (ADE2 3 — étape optionnelle, gated par la règle creation-signes-astraux)
   /** Signe astral choisi — `id` STABLE (≠ libellé) ; son `effect` est appliqué aux attributs de départ. */
   star?: string;
   /** Signe TIRÉ (1d100 figé, `id`) : si `star` lui reste égal → +25 PX (RAW l.36) ; un choix libre l'écarte. */
@@ -387,12 +387,12 @@ export function charsXp(d: CreatorDraft): number {
   return d.charMode === 'rolled' ? XP_CHARS_KEPT : XP_CHARS_REASSIGNED;
 }
 
-/** PX du signe astral : +25 si le signe choisi reste celui qui a été TIRÉ (ADE2 ch.03 l.36), sinon 0. */
+/** PX du signe astral : +25 si le signe choisi reste celui qui a été TIRÉ (ADE2 3 l.36), sinon 0. */
 export const starXp = (d: CreatorDraft): number => (d.starRoll && d.star === d.starRoll ? XP_STAR_ROLLED : 0);
 
 export const xpTotal = (d: CreatorDraft): number => speciesXp(d) + careerXp(d) + charsXp(d) + starXp(d);
 
-// ── 3bis) Signe astral (ADE2 ch.03) ──
+// ── 3bis) Signe astral (ADE2 3) ──
 /** Tirage 1d100 FIGÉ du signe (anti-savescum, comme l'espèce) : on le garde (+25 PX) ou on choisit
  *  librement ensuite (+0 PX, RAW l.36). Pas de relance — RAW n'en offre aucune. */
 export function rollDraftStar(d: CreatorDraft): CreatorDraft {
@@ -400,7 +400,7 @@ export function rollDraftStar(d: CreatorDraft): CreatorDraft {
   return { ...d, starRoll: id, starRollValue: r, star: id };
 }
 
-/** Ascendant (ADE2 ch.03 l.496) + un signe par demeure céleste (l.514, la donnée `celestialHouses`
+/** Ascendant (ADE2 3 l.496) + un signe par demeure céleste (l.514, la donnée `celestialHouses`
  *  ADE2 l.504-512) — flavor pur, tirages figés par le seed. `dwellings[].house` = ID de la demeure
  *  (ids internes, libellés à l'affichage) ; `sign` reste un libellé lisible (flavor stocké sur la
  *  fiche, aucune mécanique n'y référence un signe). */

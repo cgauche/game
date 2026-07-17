@@ -42,7 +42,7 @@ export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; c
 
 type Poste = NonNullable<Combatant['postes']>[number];
 
-/** Détail du poste SÉLECTIONNÉ (MDG ch.12) : son bord, son STOCK DE MUNITIONS (l.410-424, sélecteur qui persiste
+/** Détail du poste SÉLECTIONNÉ (MDG 12) : son bord, son STOCK DE MUNITIONS (l.410-424, sélecteur qui persiste
  *  `ShipPoste.ammoUid`) et son équipage de pièce (PLUSIEURS servants possibles, ch.14 l.9) en portraits. */
 export function PosteDetail({ hull, poste, combatants, readOnly }: { hull: Combatant; poste: Poste; combatants: Combatant[]; readOnly?: boolean }) {
   const setPosteAmmo = useGame((s) => s.setPosteAmmo);
@@ -61,7 +61,7 @@ export function PosteDetail({ hull, poste, combatants, readOnly }: { hull: Comba
           <select
             value={poste.ammoUid ?? stock[0].uid}
             onChange={(e) => setPosteAmmo(hull.id, poste.item.uid, e.target.value)}
-            title="Munition chargée par la pièce (MDG ch.12) — stock du poste"
+            title="Munition chargée par la pièce (MDG 12) — stock du poste"
           >
             {stock.map((a) => <option key={a.uid} value={a.uid}>{a.name} × {a.qty ?? 0}</option>)}
           </select>
@@ -122,7 +122,7 @@ export function ShipInspectBody({ hull, crew, cap }: { hull: Combatant; crew: Co
   );
 }
 
-/** Bloc « Rôles · manœuvre » (MDG ch.14) : par RÔLE, l'équipage qui le tient (PLUSIEURS possible, l.9 « plusieurs
+/** Bloc « Rôles · manœuvre » (MDG 14) : par RÔLE, l'équipage qui le tient (PLUSIEURS possible, l.9 « plusieurs
  *  Personnages peuvent contribuer ») via l'`AssignRow` PARTAGÉ (max = Infinity) — portraits + picker des marins
  *  éligibles ; l'assigner épingle son `shipRole`. Le rôle ESSENTIEL (DR ×2, l.19) est marqué d'une étoile. */
 export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (crewId: string, role: string | null) => void }) {
@@ -152,7 +152,7 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
         return (
           <div className="ship-role" key={roleId}>
             <div className="ship-role-head">
-              <span className="ship-role-name">{role.label}{essential && <span className="ess" title="Rôle essentiel — son DR compte double (MDG ch.14)"> ★</span>}</span>
+              <span className="ship-role-name">{role.label}{essential && <span className="ess" title="Rôle essentiel — son DR compte double (MDG 14)"> ★</span>}</span>
               <button className="btn small" onClick={() => setEditing(open ? null : roleId)}>{open ? 'Fermer' : '+ assigner'}</button>
             </div>
             <AssignRow

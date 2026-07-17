@@ -354,7 +354,7 @@ Ces mutations sont associées aux créatures de la campagne (mutants du Chapitre
 Le Compagnon de *L'Ennemi dans l'Ombre* (Chapitre 8 : Les mutants dans l'Empire) introduit des tables complètes de mutations **par Puissance de la Ruine** (Khorne / Nurgle / Slaanesh / Tzeentch / Toute Puissance). Ces tables remplacent ou complètent les tables LDB 19 pour les créations de PNJ mutants contextualisés.
 
 > « Le tableau ci-après introduit de nombreuses nouvelles mutations simples, et propose cinq colonnes pour un jet de dés aléatoire : une pour chacune des Puissances de la Ruine, et une cinquième si l'identité de la Puissance n'est pas cruciale. »
-> — EDOC ch.8
+> — EDOC 8
 
 **Note importante** : les notes de bas de tableau indiquent trois niveaux de dissimulation :
 1. Mutation dissimulable seulement par des vêtements.
@@ -433,7 +433,7 @@ Le Compagnon de *L'Ennemi dans l'Ombre* (Chapitre 8 : Les mutants dans l'Empire)
 2. Test d'**Athlétisme Complexe (-10)** pour marcher à allure normale (Pattes).
 3. Mutation **non dissimulable**.
 
-**Sources RAW** : `EDOC ch.8 p.65-72`
+**Sources RAW** : `EDOC 8 p.65-72`
 
 ### Tableau Tête Bestiale (d100, sous-table)
 
@@ -452,7 +452,7 @@ Utilisée quand la table physique étendue indique « Tête bestiale ». Lance s
 | 81–90 | 81–95 | 81–99 | — | 76–80 | Loup | +1 PA à la tête ; gagne le Trait de créature Morsure +6 ; gagne le Talent Sens aiguisé (Odorat) |
 | 91–00 | 96–00 | 00 | 96–00 | 81–00 | Serpent | +1 PA à la tête ; gagne les Traits de créature Morsure +3 et Venin (Accessible) |
 
-**Sources RAW** : `EDOC ch.8 p.69`
+**Sources RAW** : `EDOC 8 p.69`
 
 ### Table Mentale étendue (d100, par dieu)
 
@@ -508,7 +508,7 @@ Utilisée quand la table physique étendue indique « Tête bestiale ». Lance s
 | 10 | Halflings | 20 | Bonheur |
 | 11 | Humains | | |
 
-**Sources RAW** : `EDOC ch.8 p.65-72`
+**Sources RAW** : `EDOC 8 p.65-72`
 
 ---
 

@@ -139,7 +139,7 @@ const AGENDA_GLYPH: Record<DayAgendaItem['state'], string> = { done: '✓', curr
  *  jouée), le milieu réel du VÉHICULE (`plan.mode`, `vehicles.json`) tranche — jamais un repli « terre »
  *  deviné pour une embarcation affrétée (#333 correctif). `travel.medium` (facette VOYAGE, LDB l.207-219)
  *  est la donnée du TRAJET PAYÉ elle-même — prioritaire, un véhicule pouvant être bi-milieu (la Barge
- *  navigue le fleuve, LDB p.306, tout en figurant à la table navale MDG ch.12 avec
+ *  navigue le fleuve, LDB p.306, tout en figurant à la table navale MDG 12 avec
  *  `hull.propulsion:'maritime'` — les deux facettes sont INDÉPENDANTES). Repli sur `hull.propulsion` si
  *  `travel.medium` est absent. Aucun id de véhicule nommé ici. */
 export function voyageMode(plan: TravelPlan): 'mer' | 'fleuve' | 'terre' {
@@ -179,7 +179,7 @@ export function voyageTiles(
     const sea = plan.sea;
     // Vent (direction + force) — la tuile Météo (ci-dessous) porte les 3 AUTRES aspects MDG du jour.
     tiles.push({ key: 'vent', icon: 'nautical/wind', label: 'Vent', value: `${windForceLabel(sea.weather.vent)} — vent de ${windDirectionLabel(sea.windFrom)}` });
-    // Météo du jour (MDG ch.13 l.164) : Précipitations/Température/Visibilité — 4e aspect (Vent) déjà sa tuile.
+    // Météo du jour (MDG 13 l.164) : Précipitations/Température/Visibilité — 4e aspect (Vent) déjà sa tuile.
     tiles.push({
       key: 'meteo',
       icon: 'rest/rain',
@@ -221,7 +221,7 @@ export function voyageTiles(
         : plan.mode === 'pied' ? 'À pied'
           : TRAVEL_MODE_LABEL[plan.mode] ?? plan.mode,
   });
-  // Météo du jour EN COURS (règle `travel-etapes`, EDOC ch.8) — absente si la règle est éteinte ou
+  // Météo du jour EN COURS (règle `travel-etapes`, EDOC 8) — absente si la règle est éteinte ou
   // qu'aucun jour n'est encore engagé.
   if (dayWeather) tiles.push({ key: 'meteo', icon: 'rest/rain', label: 'Météo', value: WEATHER_LABEL[dayWeather.id] });
   const mounts = partyMounts(party);

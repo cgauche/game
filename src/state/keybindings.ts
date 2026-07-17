@@ -82,7 +82,7 @@ export const KEYBINDINGS: KeyBinding[] = [
   { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', section: 'camera', when: () => true, run: (g) => g().rotateCam(-1) },
   { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', section: 'camera', when: () => true, run: (g) => g().rotateCam(1) },
   { id: 'cam-recenter', codes: ['KeyC'], label: 'Caméra : recentrer sur l’actif', section: 'camera', when: inBattle, run: (g) => g().resetCamPan() },
-  // Pause d'initiative de début de Round (LDB ch.17 l.27) : Espace/Entrée = « Commencer le round » (le SEUL
+  // Pause d'initiative de début de Round (LDB 17 l.27) : Espace/Entrée = « Commencer le round » (le SEUL
   // geste possible) → passage de Round jouable SANS souris. AVANT les bindings curseur/fin-de-tour (mêmes
   // touches) : sa garde `pendingRoundStart` arbitre. notWhenControlFocused : si le bouton « Commencer » est
   // focalisé, son activation native suffit (pas de double appel). Solo = confirmRoundStart ; coop = ready du siège.

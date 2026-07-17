@@ -17,7 +17,7 @@ const hull = (E: number, armourCorps = 0, wounds = 90): Combatant =>
 
 const fixed = (n: number): RNG => ({ int: () => n }) as unknown as RNG;
 
-describe('resolveVolley — la bordée RÉUTILISE le pipeline de tir (MDG ch.14 l.128)', () => {
+describe('resolveVolley — la bordée RÉUTILISE le pipeline de tir (MDG 14 l.128)', () => {
   const firing = ship();
   const target = () => hull(40); // BE 4
 

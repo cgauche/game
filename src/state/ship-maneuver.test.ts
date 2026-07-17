@@ -9,7 +9,7 @@ import * as navalTraitsMod from '../engine/navalTraits';
 import type { Combatant, NavalTraitRef, ShipPoste } from '../engine/types';
 
 /**
- * Phase 2 « Manœuvre du navire » (MDG ch.13). Le cœur PUR : tourner le cap (`rotateDir8`) RE-MAPPE d'un coup
+ * Phase 2 « Manœuvre du navire » (MDG 13). Le cœur PUR : tourner le cap (`rotateDir8`) RE-MAPPE d'un coup
  * tous les arcs de bordée (la cible change de côté), et `resolveShipManeuver` dit si le virage réussit.
  */
 describe('rotateDir8 — rotation du cap', () => {
@@ -48,7 +48,7 @@ describe('Manœuvre → re-mapping des bordées (aligner / désaligner sa bordé
   });
 });
 
-describe('resolveShipManeuver — réussite & DR final (MDG ch.13 l.117-119)', () => {
+describe('resolveShipManeuver — réussite & DR final (MDG 13 l.117-119)', () => {
   it('DR final = DR du Test de Navigation + Man + extra ; réussite si ≥ 0', () => {
     expect(resolveShipManeuver(2, 5, -1).dr).toBe(1); // 2 + (-1) + 0
     expect(resolveShipManeuver(2, 5, -1).success).toBe(true);
@@ -79,7 +79,7 @@ describe('shipTurn (action store) — vire le cap, branché aux arcs', () => {
   });
 });
 
-describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG ch.13)', () => {
+describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG 13)', () => {
   const helmsman = (): Combatant =>
     ({
       id: 'helm', name: 'Timonier', kind: 'hero',
@@ -108,7 +108,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(maneuverShip(() => useGame.getState(), 'ship', 2)).toBeNull();
   });
 
-  it('« Peu maniable » pénalise la manœuvre (−1 DR/niveau, MDG ch.12 l.173) — cumulé au Man de la colonne', () => {
+  it('« Peu maniable » pénalise la manœuvre (−1 DR/niveau, MDG 12 l.173) — cumulé au Man de la colonne', () => {
     // La cogue : Man −1 (colonne) ET Trait « Peu maniable » (−1 DR) → DR final = DR brut − 2 (colonnes distinctes).
     const cogue = { ...ship(), creatureId: 'cogue' } as Combatant;
     seedBattleRng(7);
@@ -117,7 +117,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(r.dr).toBe(r.navDR - 2); // Man (−1) + Peu maniable (−1)
   });
 
-  it('« Lissage » (Amélioration d’instance) → M +1 : +1 au déplacement, DR inchangé (MDG ch.12 l.293)', () => {
+  it('« Lissage » (Amélioration d’instance) → M +1 : +1 au déplacement, DR inchangé (MDG 12 l.293)', () => {
     // Même barreur/seed → même DR ; seul le M de base change. testValue ≥ −2 DR (helmsman habile) → jamais la
     // bande M−1/M÷2 → +1 M ⇒ exactement +1 case de déplacement.
     const run = (upgrades?: NavalTraitRef[]) => {
@@ -132,7 +132,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(lisse.movement).toBe(plain.movement + 1); // … mais +1 au Mouvement de base
   });
 
-  it('« Bouteur » (Amélioration) → +20 au Test de Navigation pour diriger (T2C ch.12 l.66) : +2 DR à la manœuvre', () => {
+  it('« Bouteur » (Amélioration) → +20 au Test de Navigation pour diriger (T2C 12 l.66) : +2 DR à la manœuvre', () => {
     // Même barreur/seed → même navDR ; Bouteur ajoute +2 DR (÷10 de +20) au DR final, et son moveMod −1 baisse le M.
     const run = (upgrades?: NavalTraitRef[]) => {
       seedBattleRng(7);
@@ -146,7 +146,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(bouteur.dr).toBe(plain.dr + 2); // +20 au Test → +2 DR d'équipage
   });
 
-  it('« Gréement de course » (Amélioration) → −10 au Test de Navigation (T2C ch.12 l.137) : −1 DR à la manœuvre', () => {
+  it('« Gréement de course » (Amélioration) → −10 au Test de Navigation (T2C 12 l.137) : −1 DR à la manœuvre', () => {
     const run = (upgrades?: NavalTraitRef[]) => {
       seedBattleRng(7);
       const s = { ...ship(), upgrades } as Combatant;
@@ -186,7 +186,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(r.helmsman).toBe('Timonier'); // pas « As » malgré sa meilleure Voile : il est hors-combat
   });
 
-  it('pièces massées sur un bord (poids > 50 % de la Contenance) → −2 M / −2 Man / −2 DR de Navigation (MDG ch.12 l.432-433)', () => {
+  it('pièces massées sur un bord (poids > 50 % de la Contenance) → −2 M / −2 Man / −2 DR de Navigation (MDG 12 l.432-433)', () => {
     const heavyTribord = { side: 'tribord', item: { enc: 100000 }, crewIds: [] } as unknown as ShipPoste;
     const run = (postes?: ShipPoste[]) => {
       seedBattleRng(7);
@@ -216,7 +216,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
   });
 });
 
-describe('shipAdvance (action store) — avance coque + équipage le long du cap (MDG ch.13)', () => {
+describe('shipAdvance (action store) — avance coque + équipage le long du cap (MDG 13)', () => {
   const hull = (over: Partial<Combatant> = {}): Combatant =>
     ({ id: 'ship', name: 'Cogue', kind: 'npc', pos: { x: 5, y: 5 }, crewIds: ['m1', 'm2'], conditions: [], weapons: [], ...over }) as unknown as Combatant;
   const sailor = (id: string, pos: { x: number; y: number }): Combatant =>
@@ -335,7 +335,7 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
   });
 });
 
-describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG ch.13)', () => {
+describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG 13)', () => {
   const helm = (): Combatant =>
     ({ id: 'helm', name: 'Timonier', kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
