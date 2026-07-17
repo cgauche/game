@@ -23,6 +23,7 @@ import { MetalStatus } from '../MetalStatus';
 import { WaxSeal, SealedPlaque } from '../WaxSeal';
 import { CareerPath } from '../CareerPath';
 import { FigTile } from '../FigTile';
+import { VitalArc } from '../VitalArc';
 import { PlaqueRow, PlaqueGrid } from '../PlaqueRow';
 import { DieFace } from '../DiceRoll';
 import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
@@ -192,6 +193,25 @@ function QtyStepperDemo() {
       decLabel="Diminuer"
       incLabel="Augmenter"
     />
+  );
+}
+
+function VitalArcDemo() {
+  return (
+    <div className="row-flex">
+      <div className="stack" style={{ alignItems: 'center' }}>
+        <VitalArc current={10} max={10} />
+        <span className="hint">Plein (10/10)</span>
+      </div>
+      <div className="stack" style={{ alignItems: 'center' }}>
+        <VitalArc current={4} max={10} />
+        <span className="hint">Entamé (4/10)</span>
+      </div>
+      <div className="stack" style={{ alignItems: 'center' }}>
+        <VitalArc current={1} max={10} />
+        <span className="hint">Critique (1/10)</span>
+      </div>
+    </div>
   );
 }
 
@@ -586,6 +606,21 @@ function RollRowStaticMock() {
   );
 }
 
+/** Bande de section (extraite du créateur, #492 Lot 1c) — avec compte en badge (registre État) et
+ *  sans compte (rubrique du créateur). */
+function BandDemo() {
+  return (
+    <div className="stack">
+      <Band title="Blessures critiques" right={<b>2</b>}>
+        <p className="hint">Une plaque par localisation touchée.</p>
+      </Band>
+      <Band title="Augmentations gratuites">
+        <p className="hint">Rubrique sans compte — le badge `right` est optionnel.</p>
+      </Band>
+    </div>
+  );
+}
+
 function ScreenShellNote() {
   return (
     <p className="hint">
@@ -618,6 +653,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'MenuCard', file: 'src/ui/MenuCard.tsx', category: 'Écrans & layout', render: MenuCardDemo },
   { name: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
   { name: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
+  { name: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
   { name: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
   { name: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
   { name: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
@@ -641,6 +677,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
   { name: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={SAMPLE_CAREER_LEVELS} currentLevel={2} /> },
   { name: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
+  { name: 'VitalArc', file: 'src/ui/VitalArc.tsx', category: 'Personnages', render: VitalArcDemo },
   { name: 'PlaqueRow / PlaqueGrid', file: 'src/ui/PlaqueRow.tsx', category: 'Atelier du scribe', render: PlaqueRowDemo },
   { name: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
   { name: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },

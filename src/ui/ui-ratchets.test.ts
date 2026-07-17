@@ -240,6 +240,7 @@ const DOMAIN_CSS_MODULES = [
   'creator-presentation',
   'creator-shell',
   'test-scenarios',
+  'vital-arc',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -427,8 +428,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Onglet Compétences & Talents composant `HeroSheet` (arbitrage 2026-07-17) : -1 (83 -> 82) -- `.sheet-skills`
   // (margin-bottom du wrapper 'competences' recodé a la main) MEURT : la rubrique vit desormais dans
   // la primitive, dont le flex `.hero-sheet{gap:10px}` espace deja ses sections.
-  // Fusion vague-2 + fiche : baseline recalibrée sur le fichier réel (mon 82 + les 2 classes Faveurs #509 survivantes).
-  'styles/sheet.css': 84,
+  // #492 lot « colonne présence » (arbitrage user 2026-07-17, rig grand format + arc integre) :
+  // +4 (82 -> 86) -- l'override mobile compose la primitive FigTile/VitalArc en DESCENDANT
+  // (`.sheet-portrait .fig-tile.hero`/`.fig-tile-fig`, `.sheet-portrait .vital-arc svg`) : 4
+  // classes CITEES ici (fig-tile, hero, fig-tile-fig, vital-arc), aucune definie EN PROPRE.
+  // Fusion vague-2 + fiche : 82 + 2 (Faveurs #509, survivent) + 4 (présence) = 88.
+  'styles/sheet.css': 88,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -437,6 +442,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/voyage.css': 30,
   // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).
   'styles/gallery.css': 17,
+  // Arc de vie (VitalArc, #492 lot « colonne présence ») — module primitive dedie, MEME patron que
+  // rose.css/plaque-row.css : `.vital-arc`/`-shadow`/`-groove`/`-fill`/`-cap`.
+  'styles/vital-arc.css': 5,
   // Rose des forces (#409) — `.rose`/`.rose text`/`.rose-corner` (`.rose-corner.sm .rose` réutilise
   // le sélecteur `.rose` déjà compté, dédoublonné par module).
   'styles/rose.css': 3,
@@ -450,7 +458,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `.fig-tile-fig` (boîte-figurine à hauteur FIXE, patron `.fam-tile` de la planche) et de la
   // variante par PROP `.big` (172px pleine zone vs 104 compacte) — l'appelant choisit une taille,
   // jamais une classe par écran. Contrepartie : creator.css paie -2 en regard.
-  'styles/frames.css': 8,
+  // #492 lot « colonne présence » (arbitrage user 2026-07-17, rig grand format) : +1 (8 -> 9) --
+  // `.fig-tile.hero` (boite-figurine PLEINE FORME 320px, presence STATIQUE de l'aside de la fiche)
+  // rejoint `.big`/`.compact` comme 3e variante de taille de la MEME primitive.
+  'styles/frames.css': 9,
   // Corps de fiche héros (HeroSheet.tsx, #417 suite) — bande d'en-tête + dérivées 2 colonnes,
   // SOURCE UNIQUE partagée par la fiche vivante du créateur et le détail candidat.
   // Lot P3 final (retouches juge vision) : +1 — `.chip-roadmap` (chips prospectives par rubrique).

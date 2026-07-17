@@ -111,6 +111,17 @@
   min-height: 0;
 }
 .fig-tile.big .fig-tile-sub { font-size: 12px; }
+/* Variante PRÉSENCE PLEIN FORMAT (`fig="hero"`) — colonne aside de la fiche (#492 lot « colonne
+   présence »), rig grand format sur sa lueur (verdict user 2026-07-17). Boîte plus haute, STATIQUE
+   (l'appelant compose la tuile sans `onClick`) : ni nom ni sceau, l'identité vit à côté (`h3`/
+   `char-sub` de `CharacterSheet.tsx`). */
+.fig-tile.hero {
+  padding: 10px 8px 8px;
+  gap: 0;
+  cursor: default;
+}
+.fig-tile.hero .fig-tile-fig { height: 320px; }
+.fig-tile.hero:hover { border-color: var(--atelier-wood-etch); }
 /* Sceau de cire optionnel (le choix est SCELLÉ, patron `SealedPlaque`) — déborde au coin haut-droit,
    PAR-DESSUS le rivet (`::after`, z-index auto) : un cachet se voit ou n'est pas un cachet. */
 .fig-tile-seal {
