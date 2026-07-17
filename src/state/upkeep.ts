@@ -92,6 +92,22 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
   return expiredLog;
 }
 
+/** Purge les effets « pour la prochaine aventure » (`ActiveEffect.duration.scale === 'adventure'` —
+ *  LDB 23 l.209/218/234 : Entraînement au Combat, Observer une cible, Réputation) : la borne « fin
+ *  d'aventure » n'a pas d'échéance chiffrable à la pose — elle est la PROCHAINE ouverture d'interlude
+ *  (`startInterlude`, seul appelant). RENVOIE les dissipations (journalisées par l'appelant). */
+export function purgeAdventureEffects(get: Get, set: Set): string[] {
+  const expiredLog: string[] = [];
+  for (const h of get().party) {
+    const fx = (h.activeEffects ?? []).filter((e) => e.duration.scale === 'adventure');
+    if (!fx.length) continue;
+    for (const e of fx) expiredLog.push(`${h.name} : ${e.label} se dissipe (fin de l'aventure).`);
+    h.activeEffects = (h.activeEffects ?? []).filter((e) => e.duration.scale !== 'adventure');
+  }
+  if (expiredLog.length) { set({ party: [...get().party] }); get().log(expiredLog); }
+  return expiredLog;
+}
+
 /** Traite les journées écoulées depuis le dernier entretien (rations/faim, maladies, convalescence)
  *  + purge des effets d'horloge. No-op (hors purge) si aucun franchissement de jour. Appelé par
  *  advanceTime, le repos (`opts.caredFor` = un soignant Guérison veille le groupe) et le voyage.

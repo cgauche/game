@@ -538,6 +538,16 @@ describe('items — recomputeLoadout / encombrement', () => {
     const c = { characteristics: { force: 30, endurance: 30 }, talents: [{ talentId: 'costaud', times: 1 }] } as unknown as Combatant;
     expect(maxEncumbrance(c)).toBe(3 + 3 + 2); // BF+BE + Costaud×2
   });
+  it("totalEncumbrance : un objet `sizeFor` plus grand que Moyenne compte l'Enc ×2 (ADE II ch.02 l.708 — « la version ogre… vaut deux fois l'Encombrement classique »)", () => {
+    const oversized = { items: [item({ name: 'Grande massue', enc: 3, sizeFor: 'grande' })] } as unknown as Combatant;
+    expect(totalEncumbrance(oversized)).toBe(6);
+  });
+  it("totalEncumbrance : `sizeFor` Moyenne (ou absent) ne double PAS — catalogue nativement ogre (ADE II ch.02 l.604)", () => {
+    const native = { items: [item({ name: 'Massue ogre', enc: 2, sizeFor: 'moyenne' })] } as unknown as Combatant;
+    expect(totalEncumbrance(native)).toBe(2);
+    const noSizeFor = { items: [item({ name: 'Épée', enc: 1 })] } as unknown as Combatant;
+    expect(totalEncumbrance(noSizeFor)).toBe(1);
+  });
   it('totalEncumbrance : une armure ÉQUIPÉE (portée) compte −1 ; arme tenue et armure rangée non (LDB Enc. l.22)', () => {
     const c = {
       items: [

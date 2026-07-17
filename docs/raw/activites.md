@@ -198,7 +198,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `BankDeposit`, `MassBattleState`, `craft`, `handrich`, `learn`, `consumeActivity`, `heroBudget`, `OPTIONAL_RULES`, `numPrice`, `confirmActivity` — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
+- `LDB 23` (l.5, l.59-250) → `Duration`, `BankDeposit`, `purgeAdventureEffects`, `startInterlude`, `MassBattleState`, `craft`, `handrich`, `learn`, `heroStatus`, `consumeActivity`, +7 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +6 fichiers
 
 ---
 
@@ -423,7 +423,7 @@ Apprendre des rumeurs de loin. Test **Ragot Intermédiaire (+0)**.
 - Échec Impressionnant → rumeur fausse crue vraie (MJ peut lancer en secret).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.196-250) → `craft`, `handrich`, `learn` — `src/data/activities.json`, `src/data/gods.json`
+- `LDB 23` (l.196-250) → `Duration`, `purgeAdventureEffects`, `startInterlude`, `craft`, `handrich`, `learn`, `heroStatus`, `GameOp`, `ActiveEffect`, `FLOWS` — `src/data/activities.json`, `src/data/gods.json`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +3 fichiers
 - dette : #508
 
 ---
@@ -438,7 +438,8 @@ S'entraîner avec les armes connues. Test **Compétence (Corps à corps ou Proje
 
 Peut être entrepris plusieurs fois (une inversion par Activité réussie).
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.206-209) → `Duration`, `purgeAdventureEffects`, `startInterlude`, `GameOp`, `ActiveEffect`, `FLOWS` — `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
 - dette : #508
 
 ---
@@ -454,7 +455,8 @@ Test **Perception Intermédiaire (+0)** (Difficulté modifiée selon la cible).
 - Succès → peut **inverser** un Test concernant la cible **une fois** pendant la prochaine aventure.
 - DR supplémentaires → informations (ou désinformations !) sur la cible.
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.211-221) → `Duration`, `purgeAdventureEffects`, `startInterlude`, `heroStatus`, `GameOp`, `ActiveEffect`, `FLOWS` — `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
 - dette : #508
 
 ---
@@ -470,7 +472,8 @@ Test **Savoir Accessible (+20)** (spécialisation appropriée). Sans la bonne sp
 - Succès → connaissance intéressante, utile ou cachée (chaque DR = une tranche supplémentaire).
 - Échec Impressionnant → fausse information crue vraie (MJ peut lancer en secret).
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.222-227) → `heroStatus`, `GameOp`, `ActiveEffect` — `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 - dette : #508
 
 ---
@@ -488,7 +491,8 @@ Dépenser de l'argent pour augmenter son Standing de +1 pour la prochaine aventu
 - Échec → argent perdu (aucun effet).
 - Échec Stupéfiant (−6) → Standing −1 pour la prochaine aventure entière.
 
-**Implémente :** (non implémenté)
+**Implémente :** _(généré — `npm run raw:implemente`)_
+- `LDB 23` (l.229-234) → `heroStatus`, `GameOp`, `ActiveEffect` — `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 - dette : #508
 
 ---
@@ -514,7 +518,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 - Échec → pas de révolte ; Échec de plusieurs DR → la cible apprend vos actions.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.237-249) → `handrich` — `src/data/gods.json`
+- `LDB 23` (l.237-249) → `handrich`, `heroStatus`, `GameOp`, `ActiveEffect` — `src/data/gods.json`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 - dette : #508
 
 ---

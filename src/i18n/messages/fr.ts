@@ -278,6 +278,8 @@ export const fr = {
   'op.corruptionExposure': "{name} doit réaliser un Test d'Exposition {level} à la Corruption (LDB 19).",
   'op.gainResource': '{name} : +{n} Point{s} de {res}{temp} (total {total}).',
   'op.castPenalty': '{name} : {what}{duree} ({label}).',
+  'op.statusMod': '{name} : {sign}{n} Standing pour la prochaine aventure.',
+  'op.grantReverseToken': '{name} peut inverser {skill} une fois pendant sa prochaine aventure.',
   'op.grantTrait': '{name} gagne le Trait {trait} ({src}).',
   'op.noWeaponToEnchant': '{name} : aucune arme en main à enchanter ({src}).',
   'op.enchantWeapon': '{name} : {item} est enchantée — {parts} ({src}).',

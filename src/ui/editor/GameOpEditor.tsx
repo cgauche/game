@@ -68,6 +68,8 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   sinMod: 'Points de Péché (±)',
   corruptionExposure: 'Exposition corruptrice (Test différé)',
   castPenalty: 'Contrecoup d’incantation',
+  statusMod: 'Standing temporaire (prochaine aventure)',
+  grantReverseToken: 'Jeton d’inversion (prochaine aventure)',
   castWard: 'Aura anti-Sort (−20 Langue)',
   arrowWard: 'Bouclier anti-projectiles',
   domeWard: 'Dôme protecteur',
@@ -152,7 +154,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   mitigateIncoming: 'mechanic/ward', ignoreStatePenalties: 'ui/done', freeReroll: 'resource/fortune',
   critTwice: 'journal/critical', gainResource: 'resource/fortune', gainAdvantage: 'flag/focus',
   attrMod: 'resource/fortune', corruption: 'nav/mutation', sinMod: 'ui/balance', corruptionExposure: 'nav/mutation',
-  castPenalty: 'mechanic/ward', castWard: 'mechanic/ward', arrowWard: 'mechanic/ward', domeWard: 'mechanic/ward',
+  castPenalty: 'mechanic/ward', statusMod: 'ui/balance', grantReverseToken: 'resource/fortune', castWard: 'mechanic/ward', arrowWard: 'mechanic/ward', domeWard: 'mechanic/ward',
   attackWardFM: 'mechanic/ward', grantWeapon: 'mechanic/invoke', grantNaturalWeapon: 'mechanic/invoke',
   grantFreeAttack: 'action/free-attack', interruptFocus: 'mechanic/mind', breakBlade: 'item/weapon',
   push: 'mechanic/chain', teleport: 'mechanic/chain', chain: 'mechanic/chain',
@@ -323,6 +325,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'sinMod': return { op: 'sinMod', amount: 1 };
     case 'corruptionExposure': return { op: 'corruptionExposure', level: 'mineure' };
     case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
+    case 'statusMod': return { op: 'statusMod', amount: 1 };
+    case 'grantReverseToken': return { op: 'grantReverseToken', skill: 'corps-a-corps' };
     case 'castWard': return { op: 'castWard', radius: 5 };
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
     case 'domeWard': return { op: 'domeWard', radius: 5 };
@@ -425,6 +429,8 @@ export function opSummary(o: GameOp): string {
     case 'sinMod': return `${o.amount >= 0 ? '+' : ''}${o.amount}`;
     case 'corruptionExposure': return `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', { id: o.skill })})` : ''}`;
     case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
+    case 'statusMod': return `Standing ${formulaSummary(o.amount)} (prochaine aventure)`;
+    case 'grantReverseToken': return `inverser ${o.skill ? refLabel('skills', { id: o.skill }) : 'un Test (cible)'}`;
     case 'castWard': return `−20 Langue, rayon ${formulaSummary(o.radius)} m`;
     case 'arrowWard': return `rayon ${formulaSummary(o.radius)} m`;
     case 'domeWard': return `rayon ${formulaSummary(o.radius)} m`;

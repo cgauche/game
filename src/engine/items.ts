@@ -6,7 +6,8 @@
  */
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type ShipPoste, type AuthoredShipPoste } from './types';
 import { bonus, baseWithTraits } from './characteristics';
-import { talentEncumbranceBonus } from './combatFeatures/dispatch';
+import { talentEncumbranceBonus, talentEncumbranceFactor } from './combatFeatures/dispatch';
+import { SIZE_ORDER, effectiveSize } from './size';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
@@ -70,6 +71,8 @@ export interface WeaponSpec {
   attackKind?: string;
   /** id de trapping source d'une arme built-in (Mains nues) — porté sur `Weapon.builtinId`. */
   builtinId?: string;
+  /** Taille PRÉVUE pour l'arme (ADE II ch.02 l.706-710) — propagée vers `Weapon.sizeFor`. */
+  sizeFor?: import('./size').SizeCategory;
 }
 
 function specUid(uid: WeaponSpec['uid']): string {
@@ -100,6 +103,7 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   if (spec.natural !== undefined) w.natural = spec.natural;
   if (spec.attackKind !== undefined) w.attackKind = spec.attackKind;
   if (spec.builtinId !== undefined) w.builtinId = spec.builtinId;
+  if (spec.sizeFor !== undefined) w.sizeFor = spec.sizeFor;
   return w;
 }
 
@@ -192,6 +196,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     pa: t.pa ?? undefined,
     locs: locs && locs.length ? locs : undefined,
     enc: typeof t.enc === 'number' ? t.enc : 0, // 'ND' (ateliers) / 'Variable' (arme improvisée) → non-encombrant (0), jamais NaN
+    ...(t.sizeFor ? { sizeFor: t.sizeFor } : {}), // taille prévue (ADE II ch.02 l.706-710) — version « taille ogre » d'une possession ordinaire
     equipped: false,
     ...(t.shape ? { shape: t.shape } : {}), // slug de FORME (routage de l'art rig) — absent pour munitions/siège/Mains nues
     desc: t.desc,
@@ -255,10 +260,11 @@ export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'name'>): string
   return it.trappingId ? refLabel('trappings', { id: it.trappingId }) : it.name;
 }
 
-/** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance, +2 par niveau de Costaud
- *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
+/** Limite d'Encombrement = (Bonus de Force + Bonus d'Endurance) × facteur (ogre ADE II ch.02 l.708 :
+ *  ×2), +2 par niveau de Costaud (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de
+ *  votre niveau × 2 » — le bonus de Costaud n'est PAS multiplié, il s'ajoute après). */
 export function maxEncumbrance(c: Combatant): number {
-  return bonus(baseWithTraits(c, 'force')) + bonus(baseWithTraits(c, 'endurance')) + talentEncumbranceBonus(c);
+  return (bonus(baseWithTraits(c, 'force')) + bonus(baseWithTraits(c, 'endurance'))) * talentEncumbranceFactor(c) + talentEncumbranceBonus(c);
 }
 
 /** Encombrement transporté. Les objets PORTÉS sur le corps (armure ET accessoire) voient leur
@@ -268,7 +274,10 @@ export function maxEncumbrance(c: Combatant): number {
 export function totalEncumbrance(c: Combatant): number {
   return (c.items ?? []).reduce((s, i) => {
     if (i.inside) return s; // rangé dans un contenant → absorbé par lui (LDB 64 l.5), ne compte pas
-    const enc = (i.enc || 0) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60)
+    // Objet « taille ogre » (ADE II ch.02 l.708) : Enc CLASSIQUE (i.enc) doublé — SAUF le catalogue
+    // nativement ogre (sans `sizeFor`, l.604 : déjà entré à sa valeur pleine).
+    const oversized = !!i.sizeFor && SIZE_ORDER[i.sizeFor] > SIZE_ORDER[effectiveSize()];
+    const enc = (i.enc || 0) * (oversized ? 2 : 1) + craftEncDelta(i); // Léger -1 / Volumineux +1 (LDB 60)
     if (!!i.equipped && i.subType === 'protheses') return s; // prothèse portée = Enc 0 (LDB 73)
     // Objet PORTÉ sur le corps (armure OU accessoire — PAS une arme, qui se TIENT) : -1 (LDB 61 l.21) ;
     // armure Volumineux portée = 1 (LDB 60 l.62).
@@ -468,7 +477,7 @@ export function recomputeLoadout(c: Combatant): void {
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
     return applyEnchants({ name: itemLabel(it), type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
-      skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
+      skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it), sizeFor: it.sizeFor }, it.enchants ?? []);
   };
 
   // UN SEUL modèle : tout combattant porteur d'armes passe par un loadout (auto-généré si absent — plus de
@@ -564,7 +573,7 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
   const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
   return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
     range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
-    skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
+    skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it), sizeFor: it.sizeFor }, it.enchants ?? []);
 }
 
 /**

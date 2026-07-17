@@ -614,7 +614,7 @@ Trois origines humaines norses (`MDG 07 l.228-246`) :
 **Sources RAW** : `MDG 07 l.222-260`
 **Voir aussi** : [Carrières norses (MDG)](#carrières-norses-mdg) · [Trait Marque de Khorne (MDG)](#trait-marque-de-khorne-mdg)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 7` (l.222-260) → `buveur-de-saumure`, `marque-de-khorne`, `veste-de-cuir` — `src/data/creatures.json`, `src/data/mutations.json`, `src/data/traits.json`
+- `MDG 7` (l.222-260) → `passiveCastPenalties`, `buveur-de-saumure`, `marque-de-khorne`, `veste-de-cuir` — `src/data/creatures.json`, `src/data/mutations.json`, `src/data/traits.json`, `src/engine/magic.ts`
 
 ---
 
@@ -631,7 +631,7 @@ De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient 
 **Sources RAW** : `MDG 07 l.248-252`
 **Voir aussi** : [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg) · [`talents.md`](talents.md) (Frénésie)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 7` (l.248-252) → `marque-de-khorne` — `src/data/traits.json`
+- `MDG 7` (l.248-252) → `passiveCastPenalties`, `marque-de-khorne` — `src/data/traits.json`, `src/engine/magic.ts`
 - dette : #516
 
 ## Bilan

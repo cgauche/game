@@ -201,6 +201,8 @@ export function humanizeOp(o: GameOp): string {
     case 'gainResource': return `gagne ${o.amount} point(s) de ${RESOURCE_LABEL[o.resource]}${o.temporary ? ' (temporaire)' : ''}`;
     case 'gainAdvantage': return `voit son Avantage porté à au moins ${humanizeFormula(o.amount)}`;
     case 'castPenalty': return o.blocked ? "ne peut plus lancer de magie" : o.maxZeroDR ? 'ne peut plus obtenir de DR en Prière' : `subit ${o.mod ?? 0} aux Tests de magie`;
+    case 'statusMod': return `${typeof o.amount === 'number' && o.amount < 0 ? 'perd' : 'gagne'} ${humanizeFormula(o.amount)} Standing pour la prochaine aventure`;
+    case 'grantReverseToken': return `peut inverser ${o.skill ? refLabel('skills', { id: o.skill }) : 'un Test concernant sa cible'} une fois pendant sa prochaine aventure`;
     case 'grantTrait': return `gagne le Trait ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${humanizeFormula(o.indice)}` : ''}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}`;
     case 'grantPsychTrait': return `gagne l'état psychologique ${psychologyLabel(o.psychType)}${o.cible ? ` (${o.cible})` : ''}`;
     case 'removePsychTrait': return `perd ${o.psychType ? `l'état psychologique ${psychologyLabel(o.psychType)}` : 'un état psychologique au choix'}`;

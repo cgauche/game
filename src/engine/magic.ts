@@ -32,8 +32,8 @@ import { arcaneDomainIdOf, featuresOf } from './combatFeatures/dispatch';
 import { domainMissileMods, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaIncantationDR, domainSeaWidensCritFumble } from './domainAttributes';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty, CharKey } from './types';
-import { findTalent, findTalentById, findDomainById, findGodById, type TestMatch } from '../data';
+import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty } from './types';
+import { traitById, findTalent, findTalentById, findDomainById, findGodById, type TestMatch } from '../data';
 import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -93,22 +93,52 @@ function penaltyMatches(p: { skill: string }, skill: 'priere' | 'langue' | 'foca
   return p.skill === 'all' || p.skill === skill;
 }
 
+/** `castPenalty` PASSIF (interdiction PERMANENTE, MDG 07 l.248-250 : « ne peut jamais utiliser les
+ *  Compétences Langue (Magick) et Focalisation ») porté par le `passive: GameOp[]` d'un Trait/mutation —
+ *  MÊME vocabulaire `{op:'castPenalty', skill, blocked}` que le contrecoup temporisé (`applyOps`), sans
+ *  `rounds`/`minutes`/`hours`/`days` → jamais purgé (dure tant que le Trait est porté). L'exception « sauf
+ *  pour dissiper » (l.250) est satisfaite STRUCTURELLEMENT : la Dissipation (`battleDispelSpell`/
+ *  `oocDispelSpell`, `dispel.ts`) est une Action DISTINCTE de l'incantation qui ne consulte JAMAIS
+ *  `castBlockedBy` — aucun champ d'exception à porter en donnée. */
+function passiveCastPenalties(c: Combatant): CastPenalty[] {
+  const sources: { label: string; ops: import('./ops').GameOp[] }[] = [
+    ...(c.traits ?? []).map((t) => ({ label: traitById.get(t.id)?.label ?? t.id, ops: traitById.get(t.id)?.passive ?? [] })),
+    ...(c.mutations ?? []).map((m) => ({ label: m.label, ops: m.passive ?? [] })),
+  ];
+  const out: CastPenalty[] = [];
+  for (const { label, ops } of sources) {
+    for (const op of ops) {
+      if (op.op !== 'castPenalty') continue;
+      out.push({ label, skill: op.skill, ...(op.mod != null ? { mod: op.mod } : {}), ...(op.blocked ? { blocked: true } : {}), ...(op.maxZeroDR ? { maxZeroDR: true } : {}) });
+    }
+  }
+  return out;
+}
+
+/** TOUTES les pénalités d'incantation actives : temporisées (`c.castPenalties`, contrecoups `applyOps`)
+ *  + PASSIVES permanentes (Traits/mutations, `passiveCastPenalties`). SOURCE UNIQUE lue par
+ *  `castPenaltyMod`/`castBlockedBy`/`prayerMaxZeroDR`. */
+function allCastPenalties(c: Combatant): CastPenalty[] {
+  return [...(c.castPenalties ?? []), ...passiveCastPenalties(c)];
+}
+
 /** Somme des modificateurs d'incantation actifs (contrecoups : « Langue maladroite −10 »…). */
 export function castPenaltyMod(c: Combatant, skill: 'priere' | 'langue' | 'focalisation'): number {
   let m = 0;
-  for (const p of c.castPenalties ?? []) if (penaltyMatches(p, skill) && p.mod != null) m += p.mod;
+  for (const p of allCastPenalties(c)) if (penaltyMatches(p, skill) && p.mod != null) m += p.mod;
   return m;
 }
 
-/** Libellé du contrecoup qui INTERDIT les Tests de `skill`, ou null si rien ne bloque.
- *  (Les pénalités expirées sont purgées par l'entretien — fin de Round / horloge.) */
+/** Libellé du contrecoup/de la capacité qui INTERDIT les Tests de `skill`, ou null si rien ne bloque.
+ *  (Les pénalités TEMPORISÉES expirées sont purgées par l'entretien — fin de Round / horloge ; les
+ *  PASSIVES durent tant que le Trait est porté.) */
 export function castBlockedBy(c: Combatant, skill: 'priere' | 'langue' | 'focalisation'): string | null {
-  return (c.castPenalties ?? []).find((p) => penaltyMatches(p, skill) && p.blocked)?.label ?? null;
+  return allCastPenalties(c).find((p) => penaltyMatches(p, skill) && p.blocked)?.label ?? null;
 }
 
 /** « Pensez à vos actes » (Colère, LDB 40) : tout Test de Prière réussi plafonné à 0 DR. */
 export function prayerMaxZeroDR(c: Combatant): boolean {
-  return (c.castPenalties ?? []).some((p) => penaltyMatches(p, 'priere') && p.maxZeroDR);
+  return allCastPenalties(c).some((p) => penaltyMatches(p, 'priere') && p.maxZeroDR);
 }
 
 /** CULTE du prêtre : la spécialisation de son Talent de Prière (Béni (Sigmar) / Invocation (Sigmar)),

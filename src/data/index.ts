@@ -509,6 +509,11 @@ export interface TrappingData {
    *  NON-ENCOMBRANTS / non chiffrés — `'ND'` (ateliers : on ne les transporte pas) et `'Variable'`
    *  (arme improvisée). Ces strings sont traitées comme 0 au calcul (`itemFromTrappingById`). */
   enc: number | 'ND' | 'Variable' | null;
+  /** Taille PRÉVUE pour l'objet (ADE II ch.02 l.706-710) — présente sur la version « taille ogre » d'une
+   *  possession ordinaire (`enc` reste la valeur CLASSIQUE, doublée au runtime, `totalEncumbrance`). Absente
+   *  sur le catalogue NATIVEMENT ogre (massue ogre, pansière ogre… l.604 : Enc déjà entré à sa valeur pleine,
+   *  pas de doublement). Propagée à `ItemInstance.sizeFor` / `Weapon.sizeFor`. */
+  sizeFor?: import('../engine/size').SizeCategory;
   availability: string | null;
   /** Allonge de MÊLÉE — UNIQUEMENT un libellé d'ordre de portée whitelisté (Personnelle / Très courte /
    *  Courte / Moyenne / Longue / Très longue / Considérable / Variable) ou null. NE conflate PLUS aucune

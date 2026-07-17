@@ -42,6 +42,7 @@ import { sceneMetresPerTile } from './scene';
 import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
 import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
+import { consumeReverseToken } from '../engine/reverseToken';
 import { rollTest, resolveOpposed, bumpSL, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR, hydrateTR } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { d100, defaultRNG, type RNG } from '../engine/dice';
@@ -1362,6 +1363,12 @@ export const FLOWS = {
           const e = evaluateTest(reverseRoll(res.roll), res.target);
           if (e.success) res = { ...e, isDouble: res.isDouble, sl: rev.capDR != null ? Math.min(e.sl, rev.capDR) : e.sl };
         }
+      }
+      // Jeton d'inversion CONSOMMABLE « prochaine aventure » (LDB 23 l.209/218) : même mécanisme
+      // (`reverseRoll`), consommé SEULEMENT si ça convertit l'échec en réussite (0 gaspillage).
+      if (actor && !res.success) {
+        const e = evaluateTest(reverseRoll(res.roll), res.target);
+        if (e.success && consumeReverseToken(actor, { skill: p.skillId, spec: p.spec })) res = { ...e, isDouble: res.isDouble };
       }
       const sl = res.sl + (res.success ? tDR : 0);
       return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && sl >= p.requireSL };

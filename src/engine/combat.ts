@@ -501,6 +501,10 @@ export function attackModifiers(
   // Frappe assommante (Tête + arme Assommante) / Tir mortel (distance) : pas de −10 (LDB 10).
   if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)
       && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, QUALITY_IDS.Assommante))) out.push({ label: 'Localisation visée', value: -10 });
+  // Possession pas prévue pour la Taille du porteur (ADE II ch.02 l.710) : −20 plat, ex. un ogre maniant
+  // une arme de Taille Moyenne. Symétrique par construction (`sizeFor` ≠ Taille effective du porteur) —
+  // seul un objet réellement `sizeFor` (version « taille ogre ») déclenche la pénalité.
+  if (weapon.sizeFor && weapon.sizeFor !== effectiveSize(attacker.size)) out.push({ label: 'Possession pas à sa taille', value: -20 });
   // Pénalité de main secondaire (LDB 14 l.181) ; Ambidextre la réduit via le registre combatFeatures.
   if (weapon.hand === 'off') {
     const p = offHandPenalty(attacker);

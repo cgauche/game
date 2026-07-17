@@ -19,6 +19,7 @@ import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvent
 import { fromBrass, toBrass, formatMoney, priceToMoney, PA_PER_CO } from '../engine/money';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon, autoStowNewItem } from '../engine/items';
 import { sleepParty } from './restFlow';
+import { purgeAdventureEffects } from './upkeep';
 import { confirmBattleActivity, massBattleBegin, battlePrepEntries } from './massBattleFlow';
 import {
   craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
@@ -101,6 +102,10 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   if (!party.length) return;
   const w = Math.max(1, Math.floor(weeks));
   const lines: string[] = [`— Entre deux aventures : ${w} semaine${w > 1 ? 's' : ''} —`];
+  // L'aventure qui vient de s'achever purge ses effets « pour la prochaine aventure » (LDB 23 l.209/
+  // 218/234 — statusMod de Réputation, jetons d'inversion) : cet interlude EST la borne de fin.
+  // (Journalise ses propres lignes — pas de double comptage dans `lines`.)
+  purgeAdventureEffects(get, set);
   // Passer commande (ch.23 l.170) : « L'objet sera achevé après votre prochaine aventure » —
   // les commandes du cycle précédent sont livrées à l'ouverture de CET interlude.
   for (const o of get().pendingOrders ?? []) {
@@ -215,13 +220,16 @@ export interface PendingActivity extends PendingBase {
   forced?: boolean;
 }
 
-/** Statut « Échelon Standing » d'un héros (CareerLevelData.status, ex. « Argent 2 »). */
+/** Statut « Échelon Standing » d'un héros (CareerLevelData.status, ex. « Argent 2 »), + modificateur
+ *  TEMPORAIRE « pour la prochaine aventure » (LDB 23 l.228-234 « Réputation » : op `statusMod`,
+ *  `ActiveEffect.duration.scale === 'adventure'`) — plancher 1 (jamais sous Bronze 1). */
 export function heroStatus(h: Combatant): { tier: PriceTier; standing: number } {
   const levels = levelsForCareer(h.career ?? '');
   const lvl = levels[Math.max(0, (h.careerLevel ?? 1) - 1)];
   const m = (lvl?.status ?? 'Bronze 1').match(/^(Bronze|Argent|Or)\s+(\d+)/i);
   const tier = (m?.[1] ?? 'Bronze').toLowerCase() as PriceTier;
-  return { tier, standing: Math.max(1, Number(m?.[2] ?? 1)) };
+  const tempMod = (h.activeEffects ?? []).reduce((s, e) => s + (e.statusMod ?? 0), 0);
+  return { tier, standing: Math.max(1, Number(m?.[2] ?? 1) + tempMod) };
 }
 
 /** Classe du héros, `id` STABLE (`ClassData.id`) — les événements visent une Classe par id

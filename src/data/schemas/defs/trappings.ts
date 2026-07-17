@@ -8,6 +8,9 @@
 import { z } from 'zod';
 import { gameOpSchema, sourceRefSchema, formulaSchema, flowSchema, triggeredEffectSchema } from '../common';
 
+/** `SizeCategory` (`src/engine/size.ts`) — réf par id, jamais un enum parallèle. */
+const sizeCategorySchema = z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
+
 export const file = 'trappings.json';
 
 /** Prix (LDB 74/etc., colonne « Coût ») — `{gold,silver,bronze}` tous `number`. Objet sans prix
@@ -104,6 +107,8 @@ export const schema = z.array(
     requiresMastery: z.boolean().optional(),
     /** Absent (pas seulement `null`) sur 5 entrées — reflet du contenu réel. */
     enc: z.union([z.number(), z.literal('ND'), z.literal('Variable'), z.null()]).optional(),
+    /** Taille PRÉVUE (ADE II ch.02 l.706-710) — version « taille ogre » d'une possession ordinaire. */
+    sizeFor: sizeCategorySchema.optional(),
     availability: z.union([z.string(), z.null()]),
     /** `reach`/`loc`/`pa`/`damage` : présents sur 375/403 entrées (armes/armures) — ABSENTS (pas
      *  seulement `null`) sur les 28 consommables/potions sans profil d'arme (`optional()` en plus de

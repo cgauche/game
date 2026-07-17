@@ -147,6 +147,10 @@ export interface CombatFeature {
   // ── Capacités diverses (hors combat direct) ──────────────────────────────────
   /** Costaud (LDB 10) : limite d'Encombrement +2 × niveau (items.maxEncumbrance). */
   encumbranceBonus?: boolean;
+  /** Encombrement ogre (ADE II ch.02 l.708) : multiplie (Bonus de Force + Bonus d'Endurance) par ce
+   *  facteur AVANT le +2×niveau de Costaud (items.maxEncumbrance/talentEncumbranceFactor). Le plus
+   *  grand facteur porté par le combattant l'emporte (jamais cumulatif — une seule Taille à la fois). */
+  encumbranceFactor?: number;
   /** Âme pure (LDB 10) : seuil de Corruption +niveau (corruption.corruptionThresholdExceeded). */
   corruptionThreshold?: boolean;
   /** Chirurgie (LDB 10) : débloque le mode de soin chirurgical (healing/partyFlow : fracture/amputation). */

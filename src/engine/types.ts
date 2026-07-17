@@ -361,6 +361,9 @@ export interface Weapon {
   /** Attaque NATURELLE de corps (morsure/griffes/cornes…) : aucune arme tenue n'est dessinée (le rig
    *  rend le membre). Stampé au spawn depuis `TraitInstance.natural` / la capacité `naturalWeapon`. */
   natural?: boolean;
+  /** Taille PRÉVUE pour l'arme (ADE II ch.02 l.706-710) — propagée depuis `ItemInstance.sizeFor`. Différente
+   *  de la Taille du porteur → −20 à tous les Tests avec cette arme (`attackModifiers`). */
+  sizeFor?: import('./size').SizeCategory;
   /** Effets « à la touche » : repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
    *  invoquée) par `recomputeLoadout`, OU portés en DONNÉE par le catalogue (`TrappingData.onHitEffects` —
    *  Canon à flammes nain « 2 + DR En flammes à chaque cible affectée », ADE II ch.08 l.243) → lus par
@@ -533,6 +536,16 @@ export interface ActiveEffect {
   apAll?: number;
   /** PA temporisés à une Localisation précise (op `ap` avec `loc`) — lus par effectiveArmourAt. */
   apAt?: Partial<Record<HitLocation, number>>;
+  /** Modificateur TEMPORAIRE de Standing (op `statusMod` — LDB 23 l.228-234 « Réputation » : +1/+2/−1
+   *  « pour la prochaine aventure »). Composé par `heroStatus` (interludeFlow.ts). `duration` porte
+   *  presque toujours `{scale:'adventure'}` (purgé à l'interlude SUIVANT). */
+  statusMod?: number;
+  /** Jeton d'INVERSION de Test CONSOMMABLE « pour votre prochaine aventure » (op `grantReverseToken` —
+   *  LDB 23 l.209 « Entraînement au Combat »/l.218 « Observer une cible ») : une UTILISATION, retirée à
+   *  la consommation (`consumeReverseToken`) — sinon expire à l'interlude suivant comme `statusMod`
+   *  (MÊME canal `duration:{scale:'adventure'}`, `purgeAdventureEffects`). `skill` absent = tout Test
+   *  (scope « concernant votre cible », l.218 — le lot données/UI arbitre le filtrage par cible). */
+  reverseToken?: { skill?: string; spec?: string };
   /** Ce PA (apAll/apAt) ne peut pas servir à la Déviation Critique (op ap avec noDeviation — LDB 63 l.30 + EDO App.2 l.196). Le PA de sort (couche magique) n'entre de toute façon pas dans le PA déviatable. */
   noDeviation?: boolean;
   /** Trait de créature ACCORDÉ par cet effet (op `grantTrait` — Envol, Effrayant…) : le
@@ -808,6 +821,12 @@ export interface ItemInstance {
   pa?: number; // armures : Points d'Armure
   locs?: HitLocation[]; // armures : localisations couvertes
   enc: number; // encombrement
+  /** Taille PRÉVUE pour l'objet (ADE II ch.02 l.706-710 : « la version ogre de la plupart des possessions
+   *  vaut deux fois l'Encombrement classique ») — copiée du catalogue (`TrappingData.sizeFor`), propagée
+   *  à `Weapon.sizeFor`. Absent = taille Moyenne (le standard implicite, `effectiveSize`). Plus grande que
+   *  Moyenne → Enc effectif ×2 (`totalEncumbrance`) ; manié/porté par un combattant d'une AUTRE taille →
+   *  −20 à tous les Tests avec cet objet (l.710, `attackModifiers`). */
+  sizeFor?: import('./size').SizeCategory;
   equipped: boolean;
   desc?: string | null;
   /** Effet d'un CONSOMMABLE (potion/drogue/bandage) en **Flow** (noyau `engine/flowCore`, feuilles

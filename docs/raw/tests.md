@@ -51,7 +51,7 @@ Un arbre de décision guide le choix du type de test :
 
 **Voir aussi** : [Tests opposés](#tests-opposés), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.6, l.47-51, l.83-88) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `rollTest`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `PendingTest`, +12 — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
+- `LDB 12` (l.6, l.47-51, l.83-88) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `rollTest`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `PendingTest`, +12 — `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +2 fichiers
 
 ---
 
@@ -99,7 +99,7 @@ Ces bandes automatiques s'appliquent à *tous* les tests, simples ou spectaculai
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.31-32, l.119-121) → `ledgerRerollable` ⚠sans-appelant, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `NightEntry`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isImpressiveFailure`, `isAstoundingFailure`, +4 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +5 fichiers
+- `LDB 12` (l.31-32, l.119-121) → `ledgerRerollable` ⚠sans-appelant, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `NightEntry`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isImpressiveFailure`, `isAstoundingFailure`, +4 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +6 fichiers
 - sans code : `LDB 12` (l.25-28)
 
 ---
@@ -124,7 +124,7 @@ Cette règle optionnelle fonctionne particulièrement bien avec les Tests simple
 
 **Voir aussi** : chapitre Combat (Critiques et Maladresses en combat)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.38, l.124-127) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `double-critique-maladresse`, `NightEntry`, `maxForcedRoll`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +5 fichiers
+- `LDB 12` (l.38, l.124-127) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `double-critique-maladresse`, `NightEntry`, `maxForcedRoll`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +6 fichiers
 
 ---
 
@@ -146,7 +146,7 @@ Ces deux mécanismes constituent, avec les modificateurs et les doubles, les bri
 
 **Voir aussi** : Chance (Points de Chance permettant la relance), Résilience (dé forcé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.40, l.42, l.43) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, `src/ui/MultiRollList.tsx`
+- `LDB 12` (l.40, l.42, l.43) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +1 fichiers
 
 ---
 
@@ -170,7 +170,7 @@ Ainsi : **valeur cible = Base + Difficulté + Σ modificateurs circonstanciels**
 
 **Voir aussi** : [Difficulté](#difficulté--table-complète), [Combiner les Difficultés](#combiner-les-difficultés--cumul-et-plafonds)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `double-critique-maladresse`, `NightEntry`, `maxForcedRoll`, +3 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +3 fichiers
+- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `double-critique-maladresse`, `NightEntry`, `maxForcedRoll`, +3 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +4 fichiers
 
 ---
 
@@ -579,7 +579,7 @@ Talents concernés (LDB 10) :
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `talent-aleatoire`, `acrobaties-equestres`, `MedicState`, `affable`, `useAttackJetProps`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `surgeryNext`, +17 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/medicFlow.ts`, +6 fichiers
-- `LDB 12` (l.43) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, `src/ui/MultiRollList.tsx`
+- `LDB 12` (l.43) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +1 fichiers
 
 ---
 

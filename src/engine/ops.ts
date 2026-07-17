@@ -440,6 +440,14 @@ export type GameOp =
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
    *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge. */
   | { op: 'castPenalty'; skill: 'priere' | 'langue' | 'focalisation' | 'all'; mod?: number; blocked?: boolean; maxZeroDR?: boolean; rounds?: Formula; minutes?: Formula; hours?: Formula; days?: Formula }
+  /** Modificateur TEMPORAIRE de Standing (LDB 23 l.228-234 « Réputation » : +1 sur succès, +2 sur Succès
+   *  Stupéfiant, −1 sur Échec Stupéfiant) — durée `{scale:'adventure'}` (« pour la prochaine aventure »),
+   *  composé par `heroStatus` (interludeFlow.ts), purgé à l'interlude SUIVANT (`purgeAdventureEffects`). */
+  | { op: 'statusMod'; amount: Formula }
+  /** Jeton d'INVERSION de Test CONSOMMABLE « pour la prochaine aventure » (LDB 23 l.209/218) — durée
+   *  `{scale:'adventure'}`, consommé par `consumeReverseToken` (rollFlowSpecs). `skill` absent = tout
+   *  Test (« concernant votre cible », l.218). */
+  | { op: 'grantReverseToken'; skill?: string; spec?: string }
   /** Trait de créature TEMPORISÉ (Jalon 2.6 — « vous gagnez le Trait X tant que le Sort est
    *  actif ») : posé dans `c.traits` (vu par TOUS les consommateurs — dispatch, psy, IA,
    *  déplacement), retiré à l'expiration de l'ActiveEffect porteur. `indice` : Indice du trait
@@ -1363,6 +1371,20 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             ? t('op.castPenalty.maxZeroDR')
             : t('op.castPenalty.mod', { mod: String(cp.mod), skill: skillTxt });
         lines.push(t('op.castPenalty', { name: target.name, what, duree: dureeTxt ? t('op.frag.during', { dureeTxt }) : '', label: cp.label }));
+        break;
+      }
+      case 'statusMod': {
+        const n = resolveFormula(o.amount, ref, rng);
+        if (n === 0) break;
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({ label: ctx.label ?? 'Effet', bonus: 0, duration: { scale: 'adventure' }, statusMod: n });
+        lines.push(t('op.statusMod', { name: target.name, sign: n >= 0 ? '+' : '', n }));
+        break;
+      }
+      case 'grantReverseToken': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({ label: ctx.label ?? 'Effet', bonus: 0, duration: { scale: 'adventure' }, reverseToken: { skill: o.skill, spec: o.spec } });
+        lines.push(t('op.grantReverseToken', { name: target.name, skill: o.skill ? refLabel('skills', { id: o.skill }) : 'un Test concernant sa cible' }));
         break;
       }
       case 'grantTrait': {

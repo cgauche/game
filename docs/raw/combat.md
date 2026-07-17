@@ -2024,7 +2024,7 @@ Synthèse des règles du combat d'honneur (`NADAJ 06 l.176-191`) :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 62` (l.19-57, l.59, l.126-127, l.133-136, l.138-139, l.142-143, l.146-147, l.150-151) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `bagarre`, `a-poudre-noire`, `IMPROVISED_DAMAGE`, `base`, `isRepairable`, `itemRepairCostBrass`, `a-repetition`, +33 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/equipCompare.ts`, `src/engine/items.ts`, +6 fichiers
-- `ADE II 2` (l.661-705) → `useAttackJetProps`, `WeaponContext`, `effectiveWeapon`, `weaponContextOf`, `PendingAttack`, `ItemCapabilities`, `resolveAttack`, `GameState`, `applyOps`, `createCombatSlice` — `src/data/index.ts`, `src/engine/ops.ts`, `src/engine/weaponDamage.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
+- `ADE II 2` (l.661-705) → `WeaponSpec`, `useAttackJetProps`, `schema`, `WeaponContext`, `CombatFeature`, `effectiveWeapon`, `itemFromTrappingById`, `maxEncumbrance`, `totalEncumbrance`, `weaponContextOf`, +11 — `src/data/index.ts`, `src/data/schemas/defs/trappings.ts`, `src/engine/combat.ts`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/items.ts`, +8 fichiers
 - `NADAJ 6` (l.176-191) → `banRangedActive`, `firedAttackBlock`, `EncounterDef`, `EncountersTab`, `resolveAttack`, `VictoryCondition`, `Combatant`, `victoryConditionMet`, `resolveFirstBlood` — `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/scene.ts`, `src/ui/editor/LogicDock.tsx`
 - `NADAJ 11` (l.20, l.23-32) → `griffe-de-tigre` — `src/data/trappings.json`
 - sans code : `LDB 62` (l.5-15)
@@ -5799,8 +5799,8 @@ Un ogre subit **-20 à tous les Tests** lorsqu'il tente d'utiliser des possessio
 **Voir aussi** : armes-melee-tables ; armes-distance-munitions-tables ; armures-tables ; atouts-defauts-armes ; ogres-regles-de-taille (Frappe Mortelle / Peur / Désengagement)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 2` (l.663-668, l.669-696, l.698-704, l.707-711) → `useAttackJetProps`, `WeaponContext`, `effectiveWeapon`, `weaponContextOf`, `PendingAttack`, `ItemCapabilities`, `resolveAttack`, `GameState`, `applyOps`, `createCombatSlice` — `src/data/index.ts`, `src/engine/ops.ts`, `src/engine/weaponDamage.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
-- sans code : `ADE II 2` (l.601-605, l.607-618, l.620-634, l.637-646, l.649-656, l.658, l.663-666, l.710-711)
+- `ADE II 2` (l.663-668, l.669-696, l.698-704, l.707-711) → `WeaponSpec`, `useAttackJetProps`, `schema`, `WeaponContext`, `CombatFeature`, `effectiveWeapon`, `itemFromTrappingById`, `maxEncumbrance`, `totalEncumbrance`, `weaponContextOf`, +11 — `src/data/index.ts`, `src/data/schemas/defs/trappings.ts`, `src/engine/combat.ts`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/items.ts`, +8 fichiers
+- sans code : `ADE II 2` (l.601-605, l.607-618, l.620-634, l.637-646, l.649-656, l.658, l.663-666)
 - dette : #513
 
 ---
