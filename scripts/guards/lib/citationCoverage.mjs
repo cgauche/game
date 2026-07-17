@@ -11,8 +11,13 @@
 
 /** Une entrée cite sa source si `source.book` (forme `sourceRefSchema`, `common.ts:23`), `_source`
  *  non vide (forme `freeSourceNoteSchema`, `common.ts:46` — seule survivance documentée pour
- *  `aa-criticals.json`), ou `maison` non vide top-level : un arbitrage MAISON documenté (rationale +
- *  réfs dans le texte même, ex. `proue-idole-de-stromfels` #221) EST la source de l'entrée.
+ *  `aa-criticals.json`), `maison` non vide top-level (un arbitrage MAISON documenté, rationale +
+ *  réfs dans le texte même, ex. `proue-idole-de-stromfels` #221, EST la source de l'entrée), ou
+ *  `alsoIn` porte au moins un emplacement bien formé (forme `secondarySourceRefSchema`, `common.ts:47`
+ *  — #563 : l'ancre `source` reste la forme retenue, mais un `alsoIn` seul ne doit JAMAIS compter
+ *  « non cité » si un futur schéma le rend co-porteur ; réfuté par `!Array.isArray(rec.source)` qui
+ *  ne voit QUE l'ancre — trou permissif inverse : une entrée sans ancre valide mais avec des
+ *  emplacements `alsoIn` complets serait comptée non citée à tort). Morsure : #563 Lot 1 item 1.
  *  @param {unknown} item @returns {boolean} */
 export function isCitedItem(item) {
   if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
@@ -20,6 +25,7 @@ export function isCitedItem(item) {
   if (rec.source && typeof rec.source === 'object' && !Array.isArray(rec.source) && typeof (/** @type {Record<string, unknown>} */ (rec.source)).book === 'string') return true;
   if (typeof rec._source === 'string' && rec._source.length > 0) return true;
   if (typeof rec.maison === 'string' && rec.maison.length > 0) return true;
+  if (Array.isArray(rec.alsoIn) && rec.alsoIn.some((ref) => isPlainObject(ref) && typeof (/** @type {Record<string, unknown>} */ (ref)).book === 'string' && typeof (/** @type {Record<string, unknown>} */ (ref)).page === 'number')) return true;
   return false;
 }
 
@@ -104,7 +110,7 @@ export function auditDataset(data) {
  * @type {Record<string, string>}
  */
 export const EXEMPT_DATASETS = {
-  'aa-criticals.json': "note libre `_source` au niveau du fichier (seule survivance documentée, common.ts:38-45) — Aux Armes n'a aucune extraction Marker exploitable par entrée (PDF brut only).",
+  'aa-criticals.json': "note libre `_source` au niveau du fichier (seule survivance documentée, common.ts:56-65) — l'extraction Marker d'Aux Armes EXISTE (motif RÉVISÉ #563 : la table de Blessures Critiques cite un intervalle APPROXIMATIF `p.≈118-124`, jamais migrée en `source: sourceRefSchema` PAR ENTRÉE — dette de migration, pas un blocage d'extraction).",
   'books.json': 'catalogue des LIVRES eux-mêmes — pas de "source" au sens où un livre se cite lui-même.',
   'characteristics.json': "vocabulaire des 10 Caractéristiques (clés/labels), pas une table de valeurs RAW à citer par entrée (base SUPPRIMÉE #310, table morte).",
   'decorPalette.json': 'palette de couleurs de RENDU (hex), pas une donnée RAW.',

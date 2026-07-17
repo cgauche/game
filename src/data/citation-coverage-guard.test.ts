@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { auditDataset, EXEMPT_DATASETS } from '../../scripts/guards/lib/citationCoverage.mjs';
+import { auditDataset, EXEMPT_DATASETS, isCitedItem } from '../../scripts/guards/lib/citationCoverage.mjs';
 
 /**
  * Garde-fou « citation par ENTRÉE » (#309, phase 1 — suite #278/#281). #278/#281 gardent la FORME
@@ -85,6 +85,23 @@ describe('garde-fou « citation par entrée » — couverture source:{book,page}
     const retired = contaminated.filter((e: { id: string }) => e.id !== 'test-fictif');
     const green = auditDataset(retired);
     expect(green.total - green.cited).toBe(baseline); // VERT : retirée, retour à la baseline
+  });
+
+  it('MORSURE (#563 Lot 1 item 1) : une entrée avec `alsoIn` compte CITÉE ; l\'ancien guard la ratait', () => {
+    const withAlsoIn = { id: 'fixture', label: 'Fixture', alsoIn: [{ book: 'zoo-imperial', page: 23 }] };
+    expect(isCitedItem(withAlsoIn)).toBe(true);
+
+    // Ancien guard (trou permissif décrit #563 : ne voit QUE `source`, ignore `alsoIn`) — rétabli
+    // ICI en local pour la preuve de morsure, jamais réintroduit dans citationCoverage.mjs.
+    const ancienGuard = (item: unknown): boolean => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+      const rec = item as Record<string, unknown>;
+      if (rec.source && typeof rec.source === 'object' && !Array.isArray(rec.source) && typeof (rec.source as Record<string, unknown>).book === 'string') return true;
+      if (typeof rec._source === 'string' && rec._source.length > 0) return true;
+      if (typeof rec.maison === 'string' && rec.maison.length > 0) return true;
+      return false;
+    };
+    expect(ancienGuard(withAlsoIn)).toBe(false); // ROUGE avec l'ancien guard : bascule non-citée
   });
 
   it('EXEMPT_DATASETS ne cible que des fichiers réellement présents', () => {

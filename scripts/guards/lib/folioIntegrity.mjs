@@ -285,6 +285,117 @@ export function citedEntriesOf(data) {
 }
 
 /**
+ * Emplacements SECONDAIRES (`alsoIn[]`, #563 Lot 1 item 2) d'un dataset, à TOUTE profondeur — même
+ * patron de walk que `citedEntriesOf`. Chaque item porte `label` (celui de l'entrée PORTEUSE, pour
+ * l'attestation POSITIVE) et `quote` (auto-attestation authorée propre à CET emplacement).
+ * @param {unknown} data @returns {{ key: string, book: string, page: number, label: string | undefined, quote: string | undefined }[]} */
+export function secondaryEntriesOf(data) {
+  /** @type {{ key: string, book: string, page: number, label: string | undefined, quote: string | undefined }[]} */
+  const out = []
+  /** @param {unknown} node @param {string} path */
+  const walk = (node, path) => {
+    if (!node || typeof node !== 'object') return
+    if (Array.isArray(node)) {
+      node.forEach((x, i) => walk(x, `${path}[${i}]`))
+      return
+    }
+    const rec = /** @type {Record<string, unknown>} */ (node)
+    const also = rec.alsoIn
+    if (Array.isArray(also)) {
+      const ownerId = typeof rec.id === 'string' ? rec.id : path || '?'
+      const ownerLabel = typeof rec.label === 'string' ? rec.label : undefined
+      also.forEach((ref, i) => {
+        if (!ref || typeof ref !== 'object' || Array.isArray(ref)) return
+        const r = /** @type {Record<string, unknown>} */ (ref)
+        if (typeof r.book === 'string' && typeof r.page === 'number') {
+          out.push({
+            key: `${ownerId}.alsoIn[${i}]`,
+            book: r.book,
+            page: r.page,
+            label: ownerLabel,
+            quote: typeof r.quote === 'string' ? r.quote : undefined,
+          })
+        }
+      })
+    }
+    for (const [k, v] of Object.entries(rec)) {
+      if (k === 'source' || k === 'alsoIn') continue
+      walk(v, path ? `${path}.${k}` : k)
+    }
+  }
+  walk(data, '')
+  return out
+}
+
+/**
+ * Verdict d'attestation POSITIVE d'un emplacement SECONDAIRE (#563 Lot 1 item 2) : la CHARGE de la
+ * preuve est sur l'auteur (comme la règle 5 pour `desc`) — pas d'attestation = REFUSÉ, jamais une
+ * réfutation par absence. Deux preuves possibles, cherchées dans le SPAN du folio DÉCLARÉ (jamais
+ * n'importe où dans le livre, contrairement à `auditFolio` qui cherche la desc PUIS vérifie le
+ * folio) : le `label` de l'entrée porteuse, ou le `quote` authoré (cas d'une table qui n'imprime pas
+ * le `label` — ex. `zweihander-flamberge`).
+ * @param {{ book: string, page: number, label: string | undefined, quote: string | undefined }} entry
+ * @returns {{ verdict: 'attesté'|'non-attesté'|'folio-impossible'|'livre-hors-atlas', via?: 'label'|'quote', max?: number }}
+ */
+export function auditSecondaryRef({ book, page, label, quote }) {
+  const abbr = BOOK_ABBR_BY_ID[book]
+  if (!abbr) return { verdict: 'livre-hors-atlas' }
+  const docs = bookDocs(abbr)
+  if (docs.length === 0) return { verdict: 'livre-hors-atlas' }
+  const max = bookMaxFolio(abbr)
+  if (max > 0 && page > max) return { verdict: 'folio-impossible', max }
+  /** @type {[string, 'label'|'quote'][]} */
+  const candidates = []
+  if (typeof quote === 'string' && quote.trim().length > 0) candidates.push([quote, 'quote'])
+  if (typeof label === 'string' && label.trim().length > 0) candidates.push([label, 'label'])
+  for (const [needle, via] of candidates) {
+    const nd = normMap(needle).text
+    if (!nd) continue
+    for (const doc of docs) {
+      let from = 0
+      for (;;) {
+        const i = doc.text.indexOf(nd, from)
+        if (i < 0) break
+        const a = doc.idx[i]
+        const b = doc.idx[Math.min(i + nd.length - 1, doc.idx.length - 1)]
+        const r = folioRange(doc.folios, a, b)
+        if (r && page >= r.lo && (r.hi === OPEN || page <= r.hi)) return { verdict: 'attesté', via }
+        from = i + 1
+      }
+    }
+  }
+  return { verdict: 'non-attesté' }
+}
+
+/**
+ * Scanne `src/data/*.json` pour les emplacements SECONDAIRES (`alsoIn[]`) et rend ceux REFUSÉS
+ * (folio hors livre, ou ni label ni quote attesté dans le span déclaré).
+ * @param {string} dataDir
+ * @returns {{ violations: {key:string,file:string,book:string,page:number,verdict:'non-attesté'|'folio-impossible',max?:number}[], total: number }}
+ */
+export function auditSecondaries(dataDir) {
+  const violations = []
+  let total = 0
+  const files = readdirSync(dataDir).filter((f) => f.endsWith('.json') && f !== 'books.json').sort()
+  for (const f of files) {
+    let data
+    try {
+      data = JSON.parse(readFileSync(join(dataDir, f), 'utf8'))
+    } catch {
+      continue
+    }
+    for (const e of secondaryEntriesOf(data)) {
+      total++
+      const r = auditSecondaryRef(e)
+      if (r.verdict === 'non-attesté' || r.verdict === 'folio-impossible') {
+        violations.push({ key: `${f}:${e.key}`, file: f, book: e.book, page: e.page, verdict: r.verdict, max: r.max })
+      }
+    }
+  }
+  return { violations, total }
+}
+
+/**
  * Scanne `src/data/*.json` et rend les entrées dont le folio est RÉFUTÉ (par l'une ou l'autre voie),
  * le décompte par verdict, le TOTAL scanné (`stats` en somme — aucune catégorie n'est retranchée du
  * rapport), et les entrées MULTI-occurrences à arbitrer.

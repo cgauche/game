@@ -6,7 +6,7 @@
  * — ex-dupliqués à l'identique dans `maneuvers.ts`).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, triggeredEffectSchema } from '../common';
+import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema, triggeredEffectSchema } from '../common';
 
 export const file = 'qualities.json';
 
@@ -52,6 +52,9 @@ export const schema = z.array(
     subType: z.enum(['arme', 'armure', 'objet']).nullable(),
     desc: z.string(),
     source: sourceRefSchema,
+    /** Emplacements SECONDAIRES (#563) — ex. `tir-de-zone` AA folio 89 ET MDG folio 102 (réimprime
+     *  AA verbatim). NON migré ici (Lot 0 primitive only). */
+    alsoIn: z.array(secondarySourceRefSchema).optional(),
     effects: z.array(triggeredEffectSchema).optional(),
     passive: z.array(gameOpSchema).optional(),
     capabilities: qualityCapabilities.optional(),

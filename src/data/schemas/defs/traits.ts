@@ -3,7 +3,7 @@
  * `TraitData` (`src/data/index.ts:792-844`) + `TraitCapabilities` (`:730-790`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, gameOpSchema, refSchema, entityAppearanceSchema, triggeredEffectSchema, charKeySchema } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema, gameOpSchema, refSchema, entityAppearanceSchema, triggeredEffectSchema, charKeySchema } from '../common';
 
 export const file = 'traits.json';
 
@@ -96,6 +96,10 @@ export const schema = z.array(
     specsMulti: z.boolean().optional(),
     desc: z.string(),
     source: sourceRefSchema,
+    /** Emplacements SECONDAIRES (#563, doctrine « jamais 2 talents différents ») — ex. `fouissement`
+     *  ZI folio 23 ET 134, deux définitions complètes du même Trait. NON migré ici (Lot 0 primitive
+     *  only) : `allLocations`/`sourceBooks` (`src/data/sourceRefs.ts`). */
+    alsoIn: z.array(secondarySourceRefSchema).optional(),
     effects: z.array(triggeredEffectSchema).optional(),
     grantsManeuvers: z.array(refSchema).optional(),
     passive: z.array(gameOpSchema).optional(),
