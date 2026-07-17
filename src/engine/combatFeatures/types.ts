@@ -78,8 +78,9 @@ export interface CombatFeature {
   /** Réaction défensive à coût d'Avantages de réserve (Porte-Bouclier variante « Avantage de groupe »,
    *  AA 13 l.84) : quand on se défend au Bouclier, 1×/Round, dépenser `cost` Avantages soit pour causer des
    *  Dégâts « comme s'il s'agissait de son Action », soit pour repousser l'attaquant de 2 m et se
-   *  désengager. Déclarée en DONNÉE (sous `aa` = active en mode Avantage de groupe) ; offerte par le chooser
-   *  de défense (`shieldReactionCost`), débitée par `campSpend`, résolue par `applyShieldReaction`. */
+   *  désengager. Déclarée en DONNÉE (variante `variants[].combat`, active en mode Avantage de groupe) ;
+   *  offerte par le chooser de défense (`shieldReactionCost`), débitée par `campSpend`, résolue par
+   *  `applyShieldReaction`. */
   advantageDefenseReaction?: { cost: number };
   /** Contre-attaque en gagnant un Test opposé de défense en mêlée (Champion LDB 85 sans condition d'arme ;
    *  Riposte LDB 10 avec `counterRequiresFastParry`). GÉNÉRIQUE : tout talent/trait qui le déclare contre. */
@@ -173,8 +174,9 @@ export interface CombatFeature {
    *  une chanson apprise, l.36) — Test de Divertissement (Chant), effet 3 min + DR sur tout l'équipage,
    *  une seule chanson par quart. Lu par `shantySingers` (affordance) + `battleSingShanty` (state). */
   seaShanty?: boolean;
-  /** Variante « Avantage de groupe » (Aux Armes, Annexe I) de cette capacité : FUSIONNÉE par-dessus les
-   *  champs de base quand la règle `combat-aa-avantage-groupe` est active (`featuresOf`). Le bon champ est
-   *  ainsi lu selon le toggle — AUCUN code ne nomme un Talent. LDB (défaut) : les champs de base seuls. */
-  aa?: Partial<CombatFeature>;
+  /** Frappe blessante — variante « Nouveaux talents et talents mis à jour » (AA 13 l.57) : au lieu de
+   *  Blessures supplémentaires (`critExtraWounds`), lance deux fois le tableau de Blessures Critiques et
+   *  garde le résultat préféré. Lu par la résolution de Critique (kind-agnostique, même primitive que le
+   *  drapeau temporaire `critRollTwice` de Bénédiction de Sauvagerie, `engine/activeFlags.ts`). */
+  critRollTwice?: boolean;
 }

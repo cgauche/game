@@ -205,8 +205,9 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
   portent la règle 5 **par variante** (le walk `citedEntriesOf` de `folioIntegrity.mjs` la découvre
   déjà, structurellement identique à une entrée) ; `combat` réutilise `CombatFeature` tel quel.
   Résolution : `activeVariant(variants)` (`src/engine/variants.ts`) — première variante active, sinon
-  la forme LDB de base. Champ posé sur `talents.json` (`talents.ts`) ; `descAA`/`combat.aa` restent la
-  forme ACTIVE tant que le Lot 4 (#564) ne les a pas migrés dedans.
+  la forme LDB de base ; `effectiveFeature` (`src/engine/combatFeatures/dispatch.ts`) fusionne
+  `activeVariant(variants)?.combat` par-dessus les champs de base. Champ posé sur `talents.json` —
+  9 talents migrés (Lot 4, #564) : `descAA`/`combat.aa` n'existent plus nulle part.
 - **`desc`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**
   (`**gras**`, `*ital*`, listes `-`), jamais en HTML, jamais reformulé (règle stricte 5 ; garde
   `src/data/no-html-in-prose.test.ts`).

@@ -265,7 +265,7 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
   const ammo = base.type === 'ranged' && attacker.kind === 'hero' ? selectedAmmo(attacker, base) : undefined;
   let w = ammo ? weaponWithAmmo(base, ammo) : base;
   // Pièce SERVIE en sous-effectif (poste) : bake les Défauts d'Arme d'équipe selon les servants APTES présents
-  // (MDG ch.12 l.448-460) — recharge ×2 / Imprécise / Dangereuse, effectif COMPLET → tir net. `combatants` n'est
+  // (MDG 12 l.448-460) — recharge ×2 / Imprécise / Dangereuse, effectif COMPLET → tir net. `combatants` n'est
   // fourni QUE par les chemins de tir réels (résolution / aperçu / modale / re-jet) ; un chef sans poste → inchangé.
   if (combatants && attacker.mannedPoste) {
     const present = servingCrewPresent(attacker, combatants);
@@ -301,7 +301,7 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
     hasGroupSkill: hasWeaponGroupSkill(attacker, w, w.type === 'ranged' ? 'ranged' : 'melee'),
     groupSkillMode: weaponGroupSkillMode(attacker, w, w.type === 'ranged' ? 'ranged' : 'melee'), // LDB 62 l.184/188
     auContact: !!target && areInContact(attacker, target),
-    improvised: !!target && ramVsNonDoor(w, target), // Bélier hors-porte → improvisée (ADE II ch.08 l.249)
+    improvised: !!target && ramVsNonDoor(w, target), // Bélier hors-porte → improvisée (ADE II 8 l.249)
     // Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : choix joueur (`opts`, #476) GATÉ sur
     // la capacité de l'arme (`ItemCapabilities.ropeMode`) — jamais un id d'arme en dur.
     harpoonRopeCut: !!opts?.harpoonRopeCut && !!heroItem && itemCapability(heroItem, 'ropeMode'),
@@ -353,7 +353,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
     const need = ammoFamilyLabel(w.subType, w.defaultAmmo);
     return { reason: 'noammo', detail: `Pas de munitions (${need}) pour ${w.name}.`, need };
   }
-  // PORTÉE MINIMALE d'une machine de siège (ADE II ch.08 l.251/253) : REFUS (pas un malus) si la cible est
+  // PORTÉE MINIMALE d'une machine de siège (ADE II 8 l.251/253) : REFUS (pas un malus) si la cible est
   // plus PROCHE que la bande minimale de l'arme — machines à distance : pas de Bout Portant (l.253) ;
   // trébuchet/mortier : rien sous la Portée Courte (l.251). DONNÉE générique `w.minRangeBand` (pas un flag par-machine).
   if (w.minRangeBand) {
@@ -482,7 +482,7 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
  *  « Tirer dans le tas », dodge météo) — l'aperçu n'utilise que `env`/`blocked`. */
 // seesInDark → combatGeometry.ts
 
-/** Météo du JOUR de voyage EN COURS (EDOC ch.8) portée par le plan de voyage — contexte de « conditions
+/** Météo du JOUR de voyage EN COURS (EDOC 8) portée par le plan de voyage — contexte de « conditions
  *  du jour » COMMUN aux Activités de l'Étape ET au combat qui s'ouvre pendant la journée (embuscade sous
  *  l'orage). `undefined` hors voyage terrestre / règle Étapes éteinte. SOURCE unique de lecture. */
 export function activeDayWeather(get: Get): Weather | undefined {
@@ -504,7 +504,7 @@ export function stampEnvWeatherAtCombatStart(get: Get, set: SetFn): void {
 }
 
 /**
- * Éclairs de la pluie diluvienne (EDOC ch.8 l.82, #341) : à l'OUVERTURE d'un combat pendant un jour de
+ * Éclairs de la pluie diluvienne (EDOC 8 l.82, #341) : à l'OUVERTURE d'un combat pendant un jour de
  * voyage sous pluie diluvienne (`lightningNervous` en donnée `weather.json`), chaque créature au Trait
  * Nerveux est effrayée UNE fois (une seule ouverture de combat par embuscade). MÊME dispatcher que le coup
  * d'arme à feu (bruits forts, l.1936) : le tonnerre est un bruit fort → `startleCause:'noise'`, donc une
@@ -587,7 +587,7 @@ export function attackEnv(
     const losTo = isStructure(target) ? structureAimCell(attacker.pos!, target) : target.pos!;
     const los = lineOfSightCover(scene, attacker.pos!, losTo, occupants, smokeOf(battle));
     if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
-    // Météo du JOUR (EDOC ch.8) : le tir sous l'orage encaisse la pénalité de temps (Pluie -10 l.76,
+    // Météo du JOUR (EDOC 8) : le tir sous l'orage encaisse la pénalité de temps (Pluie -10 l.76,
     // Pluie diluvienne -20 l.82), la poudre EXPOSÉE meurt (l.82), le Blizzard rend le tir impossible
     // (l.127) — MÊME contexte de « conditions du jour » que les Activités de l'Étape.
     if (dayW) {
@@ -635,7 +635,7 @@ export function attackEnv(
   }
   // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
-  // La pénalité météo « Tests physiques » (EDOC ch.8 l.82) n'est PLUS ajoutée ici : le CANAL UNIQUE
+  // La pénalité météo « Tests physiques » (EDOC 8 l.82) n'est PLUS ajoutée ici : le CANAL UNIQUE
   // `weatherTestMods` (attackModifiers, lu depuis `attacker.envWeather`) la porte pour l'attaque ET la défense
   // ET les activités — jamais recâblée par surface (#341). Seuls les mods météo WEAPON-contextuels restent (tir).
   // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
@@ -1274,7 +1274,7 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
     return { kind: 'attack' };
   }
   // Mêlée hors d'Allonge :
-  // Une STRUCTURE (ADE II ch.08) est inanimée : pas de Charge ni d'approche-puis-frappe implicite (la
+  // Une STRUCTURE (ADE II 8) est inanimée : pas de Charge ni d'approche-puis-frappe implicite (la
   // frapper est une ACTION délibérée, sans +1 Avantage ni `fromCharge` qui bloquerait « Renoncer »).
   // On refuse → le joueur s'approche par un clic-sol normal (undoable), puis frappe une fois au contact.
   if (isInanimate(target)) return { kind: 'blocked', reason: 'Approche-toi pour la frapper.' };
@@ -1297,7 +1297,7 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
 }
 
 /** Mort d'un combattant : pour un héros à Destin, suspend (pendingFateSave) au lieu de mourir
- *  (LDB ch.17 l.31-35) ; sinon finalise la mort. `restoreWounds` = PB d'avant le coup létal.
+ *  (LDB 17 l.31-35) ; sinon finalise la mort. `restoreWounds` = PB d'avant le coup létal.
  *  `foe` = « l'individu ou l'élément qui l'a presque tué » (coup direct) → Cible d'une éventuelle
  *  Animosité si le Destin est dépensé (ADE II Annexe I, règle facultative) ; absent pour la mort lente. */
 export function finalizeHeroDeath(_get: Get, set: SetFn, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number, foe?: Pick<Combatant, 'name' | 'groups'>): void {
@@ -1359,7 +1359,7 @@ export function applyCriticalToTarget(
     return false;
   }
   // Coque inerte (véhicule / navire) : aucun Trauma humain. Le coup se résout sur les tables de NAVIRE
-  // (MDG ch.13) via le module FRÈRE `shipCritical` — localisation par gréement (Coque/Gréement/Avirons/…
+  // (MDG 13) via le module FRÈRE `shipCritical` — localisation par gréement (Coque/Gréement/Avirons/…
   // vs Équipage), effets en `GameOp` (Voie d'eau / En flammes) posés par `applyOps`. (Le `rollCritical` de
   // personnage indexerait des Traumatismes humains, hors-sujet pour une coque.)
   if (target.bodyShape === 'vehicule') {
@@ -1431,7 +1431,7 @@ export function applyCriticalToTarget(
 }
 
 /**
- * Critique encaissé par une COQUE (véhicule/navire, `bodyShape:'vehicule'`) — MDG ch.13-14. On lit le gréement
+ * Critique encaissé par une COQUE (véhicule/navire, `bodyShape:'vehicule'`) — MDG 13-14. On lit le gréement
  * de la coque (`vehicles.json` → `hull.rig`) pour la colonne de Localisation, puis on DÉLÈGUE au résolveur engine
  * PUR `applyHullCritical`, qui pose les États NAVALS sur la coque (`GameOp`) ET répercute sur l'ÉQUIPAGE : un coup
  * « Équipage » devient un Critique de PERSONNAGE sur un marin exposé, les Éclats infligent 9 Dégâts à autant de
@@ -1451,7 +1451,7 @@ function applyHullCriticalToTarget(
   const crew = get && target.crewIds
     ? (target.crewIds.map((id) => actorIn(get(), id)).filter(Boolean) as Combatant[])
     : [];
-  // Réfs data-driven : `navire`/`ship-criticals` (MDG, défaut) ou `navire-fluvial`/`river-criticals` (T2C ch.7).
+  // Réfs data-driven : `navire`/`ship-criticals` (MDG, défaut) ou `navire-fluvial`/`river-criticals` (T2C 7).
   const outcome = applyHullCritical(target, crew, rig, battleRng(), undefined, undefined, {
     locationTable: hull?.locationTable, criticalTable: hull?.criticalTable,
   });
@@ -2318,7 +2318,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       if (c.wounds.current <= 0) applyZeroWounds(c);
       wearActiveWeapon(c, weapon, true); // arme détruite, persistée sur l'ItemInstance source
       log.push(tr('cf.fumbleMisfire', { lost }));
-      // Arme d'équipe (MDG ch.12 l.464) : « Si une arme dotée du Défaut Arme d'équipe subit un Incident de
+      // Arme d'équipe (MDG 12 l.464) : « Si une arme dotée du Défaut Arme d'équipe subit un Incident de
       // tir, tous les membres de son équipage sont affectés. » → CHAQUE servant APTE du poste (hors le
       // tireur, déjà frappé ci-dessus) subit le même coup (Dégâts au Bras principal, mitigés à SA fiche).
       if (hasQuality(weapon, QUALITY_IDS.ArmeDEquipe) && c.mannedPoste) {
@@ -2337,7 +2337,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       // Salve qui subit un Incident de tir tire EN PLUS sur ce tableau d10 dédié (AA 10 l.264 : « Si
       // l'arme subit un Incident de tir à n'importe quel moment du processus, déterminez-en les effets
       // puis faites un jet dans le tableau suivant. ») — DISTINCT de l'Incident de tir GÉNÉRIQUE d'Arme
-      // d'équipe (MDG ch.12 l.464) déjà résolu ci-dessus.
+      // d'équipe (MDG 12 l.464) déjà résolu ci-dessus.
       if (hasQuality(weapon, QUALITY_IDS.Salve)) {
         const salve = rollArtillerySalveMisfire(c.chambered ?? 0, battleRng());
         log.push(tr('cf.artillerySalveIncident', { entry: salve.name }));
@@ -3628,7 +3628,7 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
   return {
     enemy, heroes, scene, blocked, noStop: cannotStopOn(battle, geom), movement, spells,
     smoke: smokeOf(battle), flying: flyM != null, traverse: climbTraverseFor(enemy.traits), perceived, facing: get().facing, squad,
-    // « Servir cette pièce » (MDG ch.12) : postes de siège NON servis adjacents — KIND-AGNOSTIQUE (l'appelant
+    // « Servir cette pièce » (MDG 12) : postes de siège NON servis adjacents — KIND-AGNOSTIQUE (l'appelant
     // impur a la liste complète des combattants). Vide en scène sans emplacement → aucun candidat (parité golden).
     servablePostes: servablePostes(enemy, battle.combatants).map(({ hull, poste }) => ({ hullId: hull.id, posteUid: poste.item.uid })),
     structures,
@@ -4710,7 +4710,7 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
       bus.emit(EVT.SCENE_DIRTY);
     }
   }
-  // Navires comme UNITÉS (MDG ch.13-14) : une coque COULÉE emporte son équipage par-dessus bord, une coque
+  // Navires comme UNITÉS (MDG 13-14) : une coque COULÉE emporte son équipage par-dessus bord, une coque
   // sans équipage en état est PRISE et sort du combat — les deux voies de victoire navale (naufrage OU
   // abordage) convergent ici (kind-agnostique, sweep centralisé comme le désarçonnement ci-dessus).
   const navalResolved = resolveShipUnits(battle.combatants);
@@ -5081,7 +5081,7 @@ export function advanceTurn(get: Get, set: SetFn) {
 export function resolveRoundBoundary(get: Get, set: SetFn): void {
   const battle = get().battle;
   if (!battle || battle.over) return;
-  // (1) Un héros mourant à Destin non résolu → suspend (LDB ch.17 l.31-35).
+  // (1) Un héros mourant à Destin non résolu → suspend (LDB 17 l.31-35).
   const dying = battle.combatants.find((c) => c.kind === 'hero' && (c.fate ?? 0) > 0 && inDeathCondition(c));
   if (dying) {
     set({ pendingFateSave: { heroId: dying.id, source: 'slow' } });
@@ -5142,7 +5142,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   enterRoundStartPause(get, set);
 }
 
-/** Pause de DÉBUT DE ROUND (LDB ch.17 l.27) : on s'arrête à CHAQUE début de Round pour montrer
+/** Pause de DÉBUT DE ROUND (LDB 17 l.27) : on s'arrête à CHAQUE début de Round pour montrer
  *  l'initiative (frise d'initiative (InitiativeStrip)) et permettre la pré-emption (Chance, 3e usage ;
  *  futurs Atouts/talents). L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart) — cf.
  *  garde de maybeRunEnemyTurn. EN COOP (arbitrage 2026-06-11) : seul le round 1 est gaté (ready-check
@@ -5515,7 +5515,7 @@ function aiSelectLoadout(set: SetFn, enemy: Combatant, battle: BattleState): voi
   set({ battle: { ...battle } });
 }
 
-// ── IA DE COQUE (couche MER, navire-unité — MDG ch.13-14) ─────────────────────────────────────────────
+// ── IA DE COQUE (couche MER, navire-unité — MDG 13-14) ─────────────────────────────────────────────
 /** Cap le plus court (crans signés d'octant) de `from` vers `to`, BORNÉ à ±2 (90°/manœuvre — RAW-sober : un navire
  *  ne pivote pas de 180° en un seul Test ; parité avec les options de `ShipManeuverModal`). PUR. */
 function shipTurnToward(from: Dir8, to: Dir8): number {
@@ -5545,7 +5545,7 @@ function endShipTurn(get: Get, set: SetFn, delay?: number): void {
  *     d'équipage des Artilleurs résolu sans modale, mêmes fns pures que le joueur) ;
  *  2. sinon MANŒUVRE (`maneuverShip`, barreur = meilleur de l'équipage APTE) : virer pour amener le bord le plus
  *     armé en batterie quand la cible est déjà à portée, sinon fermer la distance cap sur elle (la coque avance
- *     TOUJOURS le long du cap, MDG ch.13) — l'approche se joue donc sur plusieurs Rounds ;
+ *     TOUJOURS le long du cap, MDG 13) — l'approche se joue donc sur plusieurs Rounds ;
  *  3. à défaut de barreur apte → la coque dérive le long de son cap (`shipAdvance`).
  * Les Tests d'équipage adverses sont auto-résolus par ces mêmes flux ; tout est journalisé (aucun jet silencieux).
  */
@@ -5577,7 +5577,7 @@ function runShipAI(get: Get, set: SetFn, ship: Combatant): void {
     maneuverShip(get, ship.id, shipTurnToward(heading, desired), helm.id); // vire (si Test réussi) + avance ; journalise
     return endShipTurn(get, set);
   }
-  // 3) Aucun barreur apte : la coque dérive le long de son cap (approche minimale, MDG ch.13 M÷2 plancher).
+  // 3) Aucun barreur apte : la coque dérive le long de son cap (approche minimale, MDG 13 M÷2 plancher).
   get().shipAdvance(ship.id, Math.max(1, Math.round(shipMaxPosteRange(ship) / mpt) || 1));
   endShipTurn(get, set);
 }
@@ -5896,7 +5896,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       return;
     }
     case 'manPoste': {
-      // « Servir cette pièce » (MDG ch.12) : rejoindre un poste de siège adjacent (chef si non servi, sinon support) —
+      // « Servir cette pièce » (MDG 12) : rejoindre un poste de siège adjacent (chef si non servi, sinon support) —
       // MÊME mutation KIND-AGNOSTIQUE (`serveAtPoste`) que l'action joueur et l'author-time. Coûte l'Action. Re-garde
       // la staleness : disparu, ou déjà rejoint pendant la décision → passe la main (pas de double-ajout).
       if (!canAct) return advanceTurn(get, set);

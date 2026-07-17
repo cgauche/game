@@ -42,7 +42,7 @@ import { traumaFicheById } from '../../engine/trauma';
 import type { ShipCritEntry } from '../../data/shipCriticals';
 import { datasetArray, datasetObject } from '../../data/overrides';
 import type { CritTableEntry, MiscastRowEntry } from '../../data/overrides';
-import { groupAdvantage } from '../../engine/advantagePool';
+import { activeVariant } from '../../engine/variants';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
 import { rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from '../weaponStats';
@@ -1121,9 +1121,13 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'talents', label: 'Talents', group: 'Compétences',
-    build: () => talents.map((t) => ({
-      id: t.id, label: t.label, desc: groupAdvantage() && t.descAA ? t.descAA : t.desc, source: src(t.source), // lecture « Avantage de groupe » (AA) selon le toggle
-
+    build: () => talents.map((t) => {
+      // `TalentData` (`data/index.ts`) n'expose que `desc`/`source` de base ; le SCHÉMA zod porte aussi
+      // `variants` (`schemas/defs/talents.ts`). Cast local ciblé (#564 Lot 4, même patron que `dispatch.ts`).
+      const td = t as unknown as { variants?: import('../../data/schemas/common').Variant[] };
+      const v = activeVariant(td.variants);
+      return {
+      id: t.id, label: t.label, desc: v?.desc ?? t.desc, source: src(v?.source ?? t.source), // variante réglée (#563/#564) selon la règle optionnelle active
       meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test?.raw ?? null), fact('Spécialisations', specsFact('talents', t))),
       sections: sections(
         careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
@@ -1131,7 +1135,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         effectsSection(t.effects, 'Effets déclenchés'),
         ...reverseSections('talents', t.id), // Races · Carrières (rang) · Créatures · Talents le conférant
       ),
-    })),
+      };
+    }),
   },
   {
     key: 'axes', label: 'Axes de forces', group: 'Compétences',

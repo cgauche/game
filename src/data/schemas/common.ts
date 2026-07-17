@@ -145,7 +145,7 @@ export const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     castingKind: castingKindSchema.optional(),
     commandTeam: z.boolean().optional(),
     seaShanty: z.boolean().optional(),
-    aa: combatFeatureSchema.optional(),
+    critRollTwice: z.boolean().optional(),
   }),
 );
 

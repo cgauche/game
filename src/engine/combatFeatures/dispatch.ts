@@ -8,15 +8,21 @@ import { groupMatch } from '../groups';
 import { isShieldItem } from '../equipCompare';
 import { findTalentById, traitById } from '../../data';
 import { canStrikeFirst } from '../qualities/dispatch';
-import { groupAdvantage } from '../advantagePool';
+import { activeVariant } from '../variants';
+import type { Variant } from '../../data/schemas/common';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
-/** Lecture EFFECTIVE d'une capacité de talent : en mode « Avantage de groupe » (AA), la variante `aa`
- *  est fusionnée par-dessus les champs de base (le bon champ selon le toggle) ; sinon les champs de base
- *  seuls (LDB, byte-pour-byte). Fonction UNIQUE — aucun code ne nomme un Talent. */
-function effectiveFeature(raw: CombatFeature | undefined): CombatFeature | undefined {
-  if (!raw) return raw;
-  return groupAdvantage() && raw.aa ? { ...raw, ...raw.aa } : raw;
+/** Lecture EFFECTIVE d'une capacité de talent : la variante RÉGLÉE active (#563/#564, `activeVariant`)
+ *  est fusionnée par-dessus les champs de base (le bon champ selon la règle optionnelle active) ; sinon
+ *  les champs de base seuls (LDB, byte-pour-byte). Fonction UNIQUE — aucun code ne nomme un Talent. */
+function effectiveFeature(raw: CombatFeature | undefined, variants: Variant[] | undefined): CombatFeature | undefined {
+  // `Variant.combat` (schémas `data/`) est typé `unknown` par construction — la couche schémas ne dépend
+  // jamais d'`engine` (même cycle que `combatFeatureSchema`, `schemas/common.ts:79`). Le pont vers le type
+  // RÉEL se fait ICI côté `engine`, même patron que `TalentData.combat` (`data/index.ts:403`, import direct
+  // de `CombatFeature` sur une interface manuscrite plutôt que sur l'inférence zod).
+  const v = activeVariant(variants)?.combat as CombatFeature | undefined;
+  if (!raw) return v; // ex. Cavalier émérite : aucune mécanique LDB, la variante AA en introduit une
+  return v ? { ...raw, ...v } : raw;
 }
 
 /** Famille d'incantation d'un Talent par son `id` STABLE (« magie-mineure », « beni ») via sa DONNÉE
@@ -62,12 +68,16 @@ export function chaosDomainIdOf(c: Combatant): string | undefined {
 export function featuresOf(c: Combatant): { def: CombatFeature; ctx: CombatFeatureCtx }[] {
   const out: { def: CombatFeature; ctx: CombatFeatureCtx }[] = [];
   for (const t of c.talents ?? []) {
-    const def = effectiveFeature(findTalentById(t.talentId)?.combat);
+    // `TalentData` (`data/index.ts`) n'expose que `combat` dans son interface manuscrite ; le SCHÉMA zod
+    // porte aussi `variants` (`schemas/defs/talents.ts`). Cast local ciblé sur ces 2 champs (#564 Lot 4).
+    const data = findTalentById(t.talentId) as ({ combat?: CombatFeature; variants?: Variant[] } | undefined);
+    const def = effectiveFeature(data?.combat, data?.variants);
     if (def) out.push({ def, ctx: { combatant: c, level: t.times ?? 1, spec: t.spec } });
   }
   for (const e of c.activeEffects ?? []) {
     if (!e.grantedTalent) continue;
-    const def = effectiveFeature(findTalentById(e.grantedTalent.talentId)?.combat);
+    const data = findTalentById(e.grantedTalent.talentId) as ({ combat?: CombatFeature; variants?: Variant[] } | undefined);
+    const def = effectiveFeature(data?.combat, data?.variants);
     if (def) out.push({ def, ctx: { combatant: c, level: 1, spec: e.grantedTalent.spec } });
   }
   return out;
@@ -231,6 +241,14 @@ export function canCounterOnDefenseWin(c: Combatant, parryWeapon: Weapon | undef
 /** Renversement (LDB 10) : vole TOUS les Avantages adverses au lieu de +1 sur un opposé gagné. */
 export function hasStealAdvantage(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.stealAdvantage);
+}
+
+/** Frappe blessante — variante « Nouveaux talents et talents mis à jour » (AA 13 l.57) : porte-t-il la
+ *  capacité PERMANENTE « deux lancers, garde le préféré » sur le tableau de Blessures Critiques ? Même
+ *  drapeau conceptuel que `hasActiveFlag(c, 'critRollTwice')` (Bénédiction de Sauvagerie, LDB 41,
+ *  temporaire) — les deux sources s'ORent au point de résolution du Critique (`combatFlow.ts`). */
+export function hasCritRollTwiceTalent(c: Combatant): boolean {
+  return featuresOf(c).some(({ def }) => def.critRollTwice);
 }
 
 /** Maîtrise du combat (LDB 10) : compte pour 1+niveau personnes au calcul du surnombre. */

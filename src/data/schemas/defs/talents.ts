@@ -46,7 +46,6 @@ export const schema = z.array(
     max: z.union([z.number(), z.strictObject({ bonusOf: charKeySchema }), z.null()]),
     test: talentTestSchema.nullable(),
     desc: z.string(),
-    descAA: z.string().optional(),
     specs: z.array(specEntrySchema).optional(),
     specsSource: specsSourceSchema.optional(),
     specsOpen: z.boolean().optional(),
@@ -55,9 +54,9 @@ export const schema = z.array(
     effects: z.array(triggeredEffectSchema).optional(),
     passive: z.array(gameOpSchema).optional(),
     combat: combatFeatureSchema.optional(),
-    /** Variantes réglées (#563/#564 — ex. Aux Armes Annexe I « Avantage de groupe »). NON migré ici
-     *  (Lot 0 primitive only) : `descAA`/`combat.aa` restent la forme active tant que le Lot 4 ne les
-     *  a pas portés dans `variants`. */
+    /** Variantes réglées (#563/#564 — ex. Aux Armes Annexe III, gatées `combat-aa-avantage-groupe`) :
+     *  9 talents migrés (Lot 4) — `activeVariant` (`engine/variants.ts`) résout la variante active,
+     *  `effectiveFeature` (`combatFeatures/dispatch.ts`) fusionne son `combat` par-dessus la base. */
     variants: z.array(variantSchema).optional(),
     // Contenu de RÉFÉRENCE (PNJ/campagne, RAW cité par entrée) : hors graphe d'obtenabilité (#326).
     codexOnly: z.literal(true).optional(),
