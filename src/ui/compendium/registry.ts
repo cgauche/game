@@ -714,7 +714,7 @@ export function extractEpigraph(desc: string): { epigraph?: string; body: string
 
 /** Libellé FR d'une entrée de `production`/`surplus`/`demande` d'un Port (`naval-ports.json`) : id réel
  *  de `sea-cargo.json` → lien cross-réf ; marqueur `commerce`/`minimum-vital` (hors catalogue de
- *  cargaison, LDB/MDG l.343-349) → texte simple non cliquable. */
+ *  cargaison, LDB/MDG 15 l.343-349) → texte simple non cliquable. */
 function portCargoRow(id: string, qty?: number): CodexRow {
   const cargo = CARGOES.find((c) => c.id === id);
   const label = cargo?.label ?? (id === 'commerce' ? 'Commerce (marqueur)' : id === 'minimum-vital' ? 'Minimum vital (marqueur)' : id);

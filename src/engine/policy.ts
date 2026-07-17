@@ -439,7 +439,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     min: 30,
     max: 480,
     step: 30,
-    hint: 'Temps passé à papoter et poser des questions dans une auberge (Ragot Intermédiaire, EDOC l.151), en MINUTES — avance l’horloge de campagne quelle que soit l’issue.',
+    hint: 'Temps passé à papoter et poser des questions dans une auberge (Ragot Intermédiaire, EDOC 8 l.151), en MINUTES — avance l’horloge de campagne quelle que soit l’issue.',
   },
   {
     // LDB 23 l.141 : « votre Niveau est toujours réduit de 1 […] si la rumeur de la perfidie se

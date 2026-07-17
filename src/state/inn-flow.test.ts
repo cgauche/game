@@ -12,7 +12,7 @@ import { stacks } from '../engine/conditions';
 /**
  * RUMEURS D'AUBERGE (#352) — l'Activité canonique `recueillir-informations` (EDOC 8 l.151, skillId
  * `ragot`) étendue au contexte `auberge`, jouée HORS voyage via le seam `openRoll`. Succès → rumeur
- * commerciale (générateur EXISTANT `generateTradeRumour`) ; échec → Exténué (EDOC l.133). L'horloge
+ * commerciale (générateur EXISTANT `generateTradeRumour`) ; échec → Exténué (EDOC 8 l.133). L'horloge
  * avance dans les deux cas.
  */
 const get = useGame.getState.bind(useGame);
@@ -74,7 +74,7 @@ describe('#352 — Recueillir des informations à l’auberge (activité canoniq
     expect(get().gameTime).toBe(before + innGatherInfoMinutes());
   });
 
-  it('échec (aucune Compétence Ragot) : aucune rumeur, Exténué octroyé (EDOC l.133), l’horloge avance quand même', () => {
+  it('échec (aucune Compétence Ragot) : aucune rumeur, Exténué octroyé (EDOC 8 l.133), l’horloge avance quand même', () => {
     launch(0, 42);
     const before = get().gameTime;
     gatherInnInfo(get, set);

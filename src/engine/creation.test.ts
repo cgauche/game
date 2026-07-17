@@ -54,7 +54,7 @@ describe('rollStar — signe astral (ADE2, table d100)', () => {
     expect(stars.some((s) => s.label === 'TEST' || s.rand > 100)).toBe(false);
   });
 
-  it('l\'Étoile du Sorcier : le 1d10 interne produit les 4 variantes (ADE2 l.62)', () => {
+  it('l\'Étoile du Sorcier : le 1d10 interne produit les 4 variantes (ADE2 3 l.63)', () => {
     const variants = stars.filter((s) => /Étoile du Sorcier/.test(s.label)).map((s) => s.id);
     expect(variants.length).toBe(4);
     const seen = new Set<string>();

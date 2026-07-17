@@ -1291,7 +1291,7 @@ export interface GameState extends RollFlowActionsMap {
   portDismissCrew: (roleId: string, count?: number) => void;
   /** Board de RUMEURS COMMERCIALES persistant (T2C 13 l.180) : chaque rumeur désigne un AUTRE Lieu où
    *  des biens se vendent au double. Entendues aux marchés (Ragot Complexe −10) OU à l'auberge du hub de
-   *  ville (#352, Activité `recueillir-informations`, EDOC l.151), consultées dans l'écran Marché/le
+   *  ville (#352, Activité `recueillir-informations`, EDOC 8 l.151), consultées dans l'écran Marché/le
    *  panneau auberge, appliquées à la vente au Lieu désigné. Persiste au niveau GROUPE (sauvegardé, remis
    *  à zéro en nouvelle partie via l'état initial). */
   tradeRumours: import('../engine/landCargo').TradeRumour[];
@@ -1301,20 +1301,20 @@ export interface GameState extends RollFlowActionsMap {
   /** Ouvre l'écran Marché si le groupe est à un Lieu de commerce terrestre de la carte (`MapPlace.market`). */
   openLandMarket: () => void;
   closeLandMarket: () => void;
-  /** Achète `enc` d'une cargaison de l'étape (disponibilité 2 temps/Marchandage/lot partiel, T2C l.129-131) —
+  /** Achète `enc` d'une cargaison de l'étape (disponibilité 2 temps/Marchandage/lot partiel, T2C 13 l.129-131) —
    *  chargée sur le porteur de défaut du groupe dans la limite de sa Contenance (#327). */
   landBuyCargo: (cargoId: string, enc: number) => void;
-  /** Vend un lot d'un porteur (Demande/Mise à prix/Marchandage, T2C l.133-160). */
+  /** Vend un lot d'un porteur (Demande/Mise à prix/Marchandage, T2C 13 l.133-160). */
   landSellCargo: (carrierId: string, cargoIndex: number) => void;
-  /** Brade un lot invendable (½ du prix de base dans un Lieu de Commerce, T2C l.160). */
+  /** Brade un lot invendable (½ du prix de base dans un Lieu de Commerce, T2C 13 l.160). */
   landDumpCargo: (carrierId: string, cargoIndex: number) => void;
   /** Transfère `enc` d'une cargaison entre deux porteurs CO-LOCALISÉS (bête/véhicule/navire, #327). */
   moveCargo: (fromId: string, toId: string, cargoId: string, enc: number) => void;
-  /** Évalue la qualité secrète d'un lot de Vin proposé (Test d'Évaluation, T2C l.95). */
+  /** Évalue la qualité secrète d'un lot de Vin proposé (Test d'Évaluation, T2C 13 l.95). */
   landEvalWine: (cargoId: string) => void;
   /** Ouvre le Test de Ragot de l'auberge du hub de ville (#352, Activité `recueillir-informations`
    *  étendue au contexte `auberge`) : succès → rumeur commerciale (`generateTradeRumour`), échec →
-   *  Exténué (EDOC l.133). Avance l'horloge (`inn-gather-info-minutes`) quelle que soit l'issue. */
+   *  Exténué (EDOC 8 l.133). Avance l'horloge (`inn-gather-info-minutes`) quelle que soit l'issue. */
   gatherInnInfo: () => void;
   /** ACTIVITÉS EN MER en attente (semaine de 8 jours, MDG 15 l.266-306) — modale de choix par héros. */
   pendingSeaActivities: import('./seaActivities').PendingSeaActivities | null;

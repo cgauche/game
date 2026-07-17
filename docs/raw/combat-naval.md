@@ -224,7 +224,7 @@ Arme d'équipe → **tous les servants** sont touchés (`l.464`).
 Dangereuse = Incident).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.440-464) → `crewedPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, `GameState`, +2 — `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
+- `MDG 12` (l.440-464) → `crewedPenalty`, `warMachineCrewPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, +3 — `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/engine/warMachineCrew.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, +6 fichiers
 
 **État du code.** ✅ (R1) `resolveVolley` dérive l'arme effective de chaque pièce via `crewedFireWeapon(item,
 servantsPrésents)` (exposés non-incapacités) AVANT le calcul de Dégâts → un Canon moyen (Arme d'équipe 3) à 1 servant

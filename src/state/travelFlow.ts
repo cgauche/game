@@ -142,7 +142,7 @@ export interface TravelPlan {
   /** Postes d'Activité de l'Étape : un héros → ≤1 Activité (EDOC 8). Initialisé depuis les rôles
    *  PERSISTANTS (`travelRole`) au départ, réutilisé chaque Étape (0 ré-assignation par jour). */
   postes?: Record<string, StagePosting>;
-  /** Cumul du Test ÉTENDU de cartographie (Établir des cartes, EDOC l.161) — cf. `extendedTestStep`. */
+  /** Cumul du Test ÉTENDU de cartographie (Établir des cartes, EDOC 8 l.161) — cf. `extendedTestStep`. */
   extendedProgress?: number;
   /** Coque transitoire du véhicule du trajet (`Combatant`, depuis `vehicles.json` hull) — encaisse les
    *  incidents (`vehicleWounds`). Présente seulement si le trajet utilise un véhicule à coque.

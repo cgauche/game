@@ -105,7 +105,7 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
     get().landSellCargo(carrierId, 0);
     const earned = toBrass(get().money) - purseBeforeSell;
     expect(earned).toBeGreaterThan(0);
-    // La cargaison a rapporté PLUS qu'elle n'a coûté à l'achat → profit prouvé (boucle T2C l.11-13).
+    // La cargaison a rapporté PLUS qu'elle n'a coûté à l'achat → profit prouvé (boucle T2C 13 l.11-13).
     expect(earned).toBeGreaterThan(spent);
     expect(primaryCargoCarrier(get())!.cargo.length ?? 0).toBe(0); // lot vendu en entier
   });

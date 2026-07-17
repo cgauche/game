@@ -13,7 +13,7 @@ import type { ActivityDef } from '../engine/activities';
 import type { CrewRoleData } from '../data';
 
 /** Cardinalité d'assignation d'un poste : `heroExclusive` = chaque héros en tient exactement un (Activité
- *  de voyage, EDOC l.131) ; `slotFilling` = un poste accueille 0..N héros (rôle d'équipage). */
+ *  de voyage, EDOC 8 l.131) ; `slotFilling` = un poste accueille 0..N héros (rôle d'équipage). */
 export type PosteCardinality = 'heroExclusive' | 'slotFilling';
 
 /** Identité assignable commune (héros-first). L'`icon` est optionnelle (absente pour un rôle d'équipage).
@@ -27,7 +27,7 @@ export interface Poste {
   cardinality: PosteCardinality;
 }
 
-/** Activité de voyage (`activitiesFor('voyage')`) → Poste. Chaque héros en tient un (EDOC l.131). */
+/** Activité de voyage (`activitiesFor('voyage')`) → Poste. Chaque héros en tient un (EDOC 8 l.131). */
 export function activityAsPoste(def: ActivityDef): Poste {
   return {
     id: def.id,

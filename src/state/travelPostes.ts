@@ -159,7 +159,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
       steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass', label: def.label, interactive: true, meta });
     } else {
       // label = Compétence RÉELLEMENT utilisée, résolue AVEC sa spec (« Métier (Cartographe) ») via
-      // `refLabel` ; base/cible déjà influençables. Test ÉTENDU (Établir des cartes, EDOC l.161) : la
+      // `refLabel` ; base/cible déjà influençables. Test ÉTENDU (Établir des cartes, EDOC 8 l.161) : la
       // rangée porte sa progression cumulée (drDone AVANT ce jet, drTarget = 2 × Étapes) → barre de DR
       // sur SA rangée, persistante (arbitrage user). L'accumulation réelle vit dans `stageAggregate`.
       // Mods de rangée : Difficulté + Météo (déjà dans `spec.target`) + « Tests physiques » de la pluie
@@ -198,7 +198,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
  *  enregistrée dans le contexte d'Étape (l'agrégation `stageAggregate` la relira), et RENDUE en
  *  `Consequence[]` STRUCTURÉES (#295) — jamais une chaîne composée à la main :
  *   - Activité SANS Test → `out.activityDone` (nom en var : la rangée batch peut n'avoir pas d'actorId) ;
- *   - Exténué (EDOC l.133) → op `condition` APPLIQUÉ par `applyOps`, ligne DÉRIVÉE via `opConsequenceLine` ;
+ *   - Exténué (EDOC 8 l.133) → op `condition` APPLIQUÉ par `applyOps`, ligne DÉRIVÉE via `opConsequenceLine` ;
  *   - issues individuelles (Récupérer/Pratiquer/Recueillir infos) → notes narratives.
  *  Partagé par le pas d'affichage (`stagePoste`, sans Test) et le pas BATCH (`stagePosteBatch`, avec Test). */
 function applyPoste(get: Get, set: Set, hero: Combatant, def: ActivityDef, freeSkill: SkillRef | undefined, roll: { roll: number; target: number; sl: number; success: boolean } | null): Consequence[] {
@@ -210,7 +210,7 @@ function applyPoste(get: Get, set: Set, hero: Combatant, def: ActivityDef, freeS
   if (r.roll == null) cons.push({ say: 'out.activityDone', vars: { name: hero.name, activity: def.label } });
   if (r.ops.length) cons.push(...freeCons(applyOps(hero, r.ops)));
   if (r.extenue) {
-    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC l.133
+    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC 8 l.133
     applyOps(hero, [op]);
     cons.push({ ops: [op] });
   }

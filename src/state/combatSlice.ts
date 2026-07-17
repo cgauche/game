@@ -1787,7 +1787,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const present = servingCrewPresent(chef, battle.combatants) ?? exposedCrew(servants).length;
       const w = crewedFireWeapon(w0, present); // ×2 recharge si sous-effectif ; arme-d-equipe retirée
       // Soutien (LDB 12, primitive GÉNÉRIQUE) : +10 par AUTRE servant capable (Projectiles Poudre noire), plafonné.
-      // DISTINCT du Défaut Arme d'équipe (MDG l.464, `crewedFireWeapon`/`exposedCrew` ci-dessus — headcount
+      // DISTINCT du Défaut Arme d'équipe (MDG 12 l.464, `crewedFireWeapon`/`exposedCrew` ci-dessus — headcount
       // requis pour armer la pièce) : ceci reste le Soutien générique LDB 12, adjacence (l.196) gatée pareil
       // qu'ailleurs en combat (`combatDistance`) — s'annule d'elle-même si `chef` n'a pas de `pos` propre
       // (équipage navire PASSAGER hors case, shipPostes.ts l.244-245).

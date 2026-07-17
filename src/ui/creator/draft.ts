@@ -143,7 +143,8 @@ export interface CreatorDraft {
    *  seule donnée qui permet à `CreatorDice` d'animer les VRAIES faces (#396 v5) ; `starRoll` ne
    *  conserve que l'id résolu, insuffisant pour `d100Faces`. */
   starRollValue?: number;
-  /** Ascendant + 5 demeures célestes (ADE2 l.331-360) — flavor pur, aucun effet mécanique. */
+  /** Ascendant (ADE2 3 l.492-498) + 5 demeures célestes (ADE2 3 l.500-514) — flavor pur, aucun
+   *  effet mécanique (l.492 : « pas directement liés aux mécaniques de jeu »). */
   ascendant?: string;
   dwellings?: { house: string; sign: string }[];
   sex: 'M' | 'F';
@@ -401,7 +402,7 @@ export function rollDraftStar(d: CreatorDraft): CreatorDraft {
 }
 
 /** Ascendant (ADE2 3 l.496) + un signe par demeure céleste (l.514, la donnée `celestialHouses`
- *  ADE2 l.504-512) — flavor pur, tirages figés par le seed. `dwellings[].house` = ID de la demeure
+ *  ADE2 3 l.504-512) — flavor pur, tirages figés par le seed. `dwellings[].house` = ID de la demeure
  *  (ids internes, libellés à l'affichage) ; `sign` reste un libellé lisible (flavor stocké sur la
  *  fiche, aucune mécanique n'y référence un signe). */
 export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {

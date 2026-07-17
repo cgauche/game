@@ -733,6 +733,6 @@ Si un Défaut ainsi reçu est déjà présent, c'est **–10** supplémentaire �
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Pièces d'artillerie* et *Munitions pour pièces d'artillerie*) · [`combat.md`](combat.md) (armes à distance, Atouts/Défauts, Portée) · § Améliorations de navire (MDG) (Sabords).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.367-472) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `fuite-de-vapeur`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `perte-de-pression`, `SHIP_ARC_PREF`, +21 — `src/data/index.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, `src/engine/navalTraits.ts`, +15 fichiers
+- `MDG 12` (l.367-472) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `warMachineCrewPenalty`, `fuite-de-vapeur`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `perte-de-pression`, +22 — `src/data/index.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, `src/engine/navalTraits.ts`, +16 fichiers
 - sans code : `MDG 12` (l.377, l.379)
 

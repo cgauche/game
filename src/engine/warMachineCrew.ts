@@ -20,7 +20,7 @@ export interface WarMachineCrewPenalty {
 }
 
 /** Pénalité de sous-effectif d'une machine de guerre (ADE II 8 l.233). `present` = effectif présent
- *  (headcount brut — le RAW ne pose ICI aucune exigence de Compétence, à la différence d'AA/MDG l.3900),
+ *  (headcount brut — le RAW ne pose ICI aucune exigence de Compétence, à la différence d'AA 10 l.230/MDG 12 l.442),
  *  `required` = Équipe requise (Indice de la Qualité `equipe`). PUR. */
 export function warMachineCrewPenalty(present: number, required: number): WarMachineCrewPenalty {
   if (required <= 0) return { toHitMod: 0, unusable: false };

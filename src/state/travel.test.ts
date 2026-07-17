@@ -393,11 +393,11 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     drainCascade(); // cascade travelDay (poste Récupérer) → drainer
     const st = useGame.getState();
     expect(st.journal.some((l) => l.includes("Exposition de fin d'Étape"))).toBe(false);
-    // Le poste assigné (Récupérer) a bien été résolu pour l'Étape (EDOC l.131 : un héros = une Activité).
+    // Le poste assigné (Récupérer) a bien été résolu pour l'Étape (EDOC 8 l.131 : un héros = une Activité).
     expect(st.journal.some((l) => l.includes('Récupérer'))).toBe(true);
   });
 
-  it('ON : un héros au poste Approvisionnement fourrage (Test de Survie en extérieur, EDOC l.108)', () => {
+  it('ON : un héros au poste Approvisionnement fourrage (Test de Survie en extérieur, EDOC 8 l.145)', () => {
     setRule('travel-etapes', true);
     const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 20 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
@@ -431,7 +431,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     expect(exposed).toBe(true);
   });
 
-  it('porte « Plein air » : un héros réussit Plein air → le groupe SAUTE le Test d’Exposition (EDOC l.141)', () => {
+  it('porte « Plein air » : un héros réussit Plein air → le groupe SAUTE le Test d’Exposition (EDOC 8 l.141)', () => {
     setRule('travel-etapes', true);
     setRule('travel-attraper-froid', true);
     // Héros expert en Survie au poste Plein air : sa réussite dispense tout le groupe de l'Exposition.
@@ -453,7 +453,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     expect(suppressed).toBe(true);
   });
 
-  it('poste Établir des cartes : Test ÉTENDU de cartographie cumulé via extendedTestStep (EDOC l.161)', () => {
+  it('poste Établir des cartes : Test ÉTENDU de cartographie cumulé via extendedTestStep (EDOC 8 l.161)', () => {
     setRule('travel-etapes', true);
     const h = hero({ travelRole: 'etablir-cartes', skills: [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);

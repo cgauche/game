@@ -1,5 +1,5 @@
 /**
- * Voyage — poste « Établir des cartes » (EDOC l.161) : Test ÉTENDU inter-Étapes, désormais UNE RANGÉE
+ * Voyage — poste « Établir des cartes » (EDOC 8 l.161) : Test ÉTENDU inter-Étapes, désormais UNE RANGÉE
  * du pas BATCH des postes du jour (arbitrage user 2026-07-11). Gardes de non-régression :
  *  - le libellé de la rangée = la Compétence RÉELLEMENT utilisée, LABEL résolu AVEC sa spec
  *    (« Métier (Cartographe) »), jamais l'id brut (`metier`) ni `def.skills[0]` sans spec ;

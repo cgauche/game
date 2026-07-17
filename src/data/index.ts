@@ -1270,7 +1270,7 @@ export interface StarData {
    *  (`GameOpEditor`) : `charMod` (±carac) et/ou `grantTalent` (talent octroyé). Appliqué une
    *  fois à la création (cf. `applyStarEffect`), pas collecté en passif continu. */
   effect?: import('../engine/ops').GameOp[];
-  /** L'Étoile du Sorcier (ADE2 l.62) : fourchette du 1d10 interne `[min, max]` parmi les variantes
+  /** L'Étoile du Sorcier (ADE2 3 l.63) : fourchette du 1d10 interne `[min, max]` parmi les variantes
    *  partageant `rand:100`. Absent = pas de sous-tirage (signe simple). */
   sub?: [number, number];
   desc: string | null;

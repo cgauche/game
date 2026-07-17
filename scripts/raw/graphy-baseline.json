@@ -181,37 +181,6 @@
     "src/ui/compendium/registry.ts": 1
   },
   "bookNoChapterSrc": {
-    "src/data/index.ts": 1,
-    "src/data/schemas/defs/stars.ts": 1,
-    "src/engine/activities.ts": 5,
-    "src/engine/cargo.ts": 4,
-    "src/engine/combat-breakdown.test.ts": 1,
-    "src/engine/combatFeatures/encumbrance-factor.test.ts": 1,
-    "src/engine/creation.test.ts": 1,
-    "src/engine/land-cargo.test.ts": 1,
-    "src/engine/naval-traits.test.ts": 4,
-    "src/engine/policy.ts": 1,
-    "src/engine/travelStages.test.ts": 3,
-    "src/engine/travelStages.ts": 1,
-    "src/engine/warMachineCrew.ts": 1,
-    "src/i18n/messages/fr.ts": 1,
-    "src/scenes/test-scenarios/15-commerce-fluvial.test.ts": 1,
-    "src/state/combatFlow.ts": 2,
-    "src/state/combatSlice.ts": 1,
-    "src/state/inn-flow.test.ts": 2,
-    "src/state/innFlow.ts": 1,
-    "src/state/interlude-activities.test.ts": 4,
-    "src/state/interludeFlow.ts": 2,
-    "src/state/landMarketFlow.ts": 4,
-    "src/state/pendings.ts": 1,
-    "src/state/poste.ts": 2,
-    "src/state/ship-maneuver.test.ts": 1,
-    "src/state/store.ts": 6,
-    "src/state/travel-carto.test.ts": 1,
-    "src/state/travel.test.ts": 4,
-    "src/state/travelFlow.ts": 1,
-    "src/state/travelPostes.ts": 3,
-    "src/ui/compendium/registry.ts": 1,
-    "src/ui/creator/draft.ts": 2
+    "src/engine/combatFeatures/encumbrance-factor.test.ts": 1
   }
 }

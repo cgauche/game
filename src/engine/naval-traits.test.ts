@@ -231,7 +231,7 @@ describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG 12 l.362-364, T2C
   });
 
   it('couvert PARTIEL (Plat-bord, moyenne) distinct du couvert TOTAL (Sabord/Murs, totale) — bonus moindre', () => {
-    // T2C l.111 « couverture moyenne … Difficiles » (−20) ≠ l.85/l.727 « couverture totale … Très Difficile » (−30).
+    // T2C 12 l.111 « couverture moyenne … Difficiles » (−20) ≠ l.85/l.727 « couverture totale … Très Difficile » (−30).
     expect(navalDeckCover([{ id: 'plat-bord' }])).not.toBe(navalDeckCover([{ id: 'sabord' }]));
     // Cumul : le MEILLEUR couvert l'emporte (Plat-bord + Sabord → totale).
     expect(navalDeckCover([{ id: 'plat-bord' }, { id: 'sabord' }])).toBe('totale');
@@ -276,16 +276,16 @@ describe('Nouvelles Améliorations T2C 12 — résolvent au catalogue + coût d�
       expect(e.install).toBeDefined();
     });
   it('Coque de course : coût per:10m (T2C « 220 CO pour 10 mètres ») — 20 m de coque → 440 CO, −100 Enc', () => {
-    // per:'10m' → ×ceil(20/10)=2 (T2C l.23/25) ; bande unique (uniforme, aucun palier de longueur).
+    // per:'10m' → ×ceil(20/10)=2 (T2C 12 l.23/25) ; bande unique (uniforme, aucun palier de longueur).
     expect(installCost(findNavalTrait('coque-de-course')!.install!, 20)).toEqual({ gold: 440, enc: -100 });
   });
   it('Fourquines : coût à l’unité (T2C « 1 CO la pièce, +1 Enc ») — 3 pièces → 3 CO / 3 Enc', () => {
     expect(installCost(findNavalTrait('fourquines')!.install!, 15, 3)).toEqual({ gold: 3, enc: 3 });
   });
-  it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (T2C l.107/109)', () => {
+  it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (T2C 12 l.107/109)', () => {
     expect(installCost(findNavalTrait('plat-bord')!.install!, 30)).toEqual({ gold: 45, enc: 60 });
   });
-  it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, T2C l.117)', () => {
+  it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, T2C 12 l.117)', () => {
     expect(installCost(findNavalTrait('allegement')!.install!, 30)).toEqual({ gold: 250, enc: -80 });
   });
 });

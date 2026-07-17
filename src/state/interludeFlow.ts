@@ -430,7 +430,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     skillValue = combatValue(h, kind, buildWeapon({ name: item.name, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
     skillLabel = refLabel('skills', { id: kind === 'melee' ? 'corps-a-corps' : 'projectiles' });
   } else if (def.resolver === 'identify') {
-    // Identifier un artefact (ADE2 l.41) : « Pour d'autres sorciers » (sans le Talent Détection
+    // Identifier un artefact (ADE2 4 l.41) : « Pour d'autres sorciers » (sans le Talent Détection
     // d'artefact) → Test de Savoir (Magie) Intermédiaire (+0). Savoir est AVANCÉE : il faut l'avoir.
     const item = (h.items ?? []).find((i) => i.uid === opts.itemUid);
     if (!item || item.identified !== false) return; // rien à identifier
@@ -635,7 +635,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       };
     }
     case 'identify': {
-      // Identifier un artefact magique (ADE2 l.43-52) — table de DR complète, mappée sur le modèle
+      // Identifier un artefact magique (ADE2 4 l.43-52) — table de DR complète, mappée sur le modèle
       // `identified`/`magicKnown`/`suspectedQualities` :
       //   +6 ou plus (Stupéfiant) : identifie parfaitement + TOUTES ses Particularités.
       //   +4 à +5 (Impressionnant) : identifie l'objet et sait s'il a des Particularités.

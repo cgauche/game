@@ -271,7 +271,7 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
     const present = servingCrewPresent(attacker, combatants);
     if (present != null) w = crewedFireWeapon(w, present);
     // Machine de guerre ADE II (Qualité `equipe`, ch.08 l.233) : effectif BRUT du poste — le RAW ne pose
-    // ICI aucune exigence de Compétence pour compter dans l'Équipe (≠ AA/MDG l.3900 ci-dessus) — 3ᵉ courbe,
+    // ICI aucune exigence de Compétence pour compter dans l'Équipe (≠ AA 10 l.230/MDG 12 l.442 ci-dessus) — 3ᵉ courbe,
     // jamais mêlée à celle d'AA (`warMachineFireWeapon` ne touche QUE `crewTeamPenalty`, pas la Recharge).
     if (warMachineCrewRequired(w) > 0) {
       const crew = (attacker.mannedPoste.crewIds ?? [])
@@ -555,7 +555,7 @@ export function windsOfMagicAtCombatStart(get: Get, set: SetFn): void {
   rerollWindsOfMagic(get, set);
 }
 
-/** Une arme tire-t-elle à la POUDRE noire (poudre exposée inutilisable sous la pluie diluvienne, EDOC l.82) ? */
+/** Une arme tire-t-elle à la POUDRE noire (poudre exposée inutilisable sous la pluie diluvienne, EDOC 8 l.82) ? */
 function isBlackPowderWeapon(w: Weapon): boolean {
   const k = weaponGroupKey(w);
   return k === 'poudre' || k === 'ingenierie';

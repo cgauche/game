@@ -4867,7 +4867,7 @@ Si l'arme subit un **Incident de tir** à n'importe quel moment, en résoudre le
 **Voir aussi** : AA : Qualités et Défauts d'armes (Imprécise, Dangereuse, Recharge, Salve, Tir de zone, Explosion, Empaleuse, Perforante, Percutante, Dévastatrice, Pointue, Pointe d'arme) ; LDB 13 : Combat (Tir ciblé, DR, doubles/Critiques) ; LDB 18 : Traumatisme (Localisations, Blessures Critiques au bras) ; LDB 16 : États (*Surpris*, *À Terre*, *En flammes*) ; LDB 14 : Taille (catégories, modificateurs de Taille de cible) ; ADE II : Combat de masse (grandes batailles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 10` (l.3-25, l.28-53, l.55-92, l.94-98, l.101-111, l.113-128, l.131-134, l.136-150, l.152-173, l.175-196, l.198-224, l.227-249, l.254-276) → `ArtilleryMisfireEntry`, `artillery-misfire`, `structure-criticals`, `StructureCritEntry`, `rollArtillerySalveMisfire`, `schema`, `EnemyTurnInput`, `StructureData`, `hasWeaponGroupSkill`, `armes-de-siege`, +9 — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/qualities.json`, `src/data/schemas/defs/structure-criticals.ts`, `src/data/schemas/defs/structures.ts`, `src/data/structure-criticals.json`, +10 fichiers
+- `AA 10` (l.3-25, l.28-53, l.55-92, l.94-98, l.101-111, l.113-128, l.131-134, l.136-150, l.152-173, l.175-196, l.198-224, l.227-249, l.254-276) → `ArtilleryMisfireEntry`, `artillery-misfire`, `structure-criticals`, `StructureCritEntry`, `warMachineCrewPenalty`, `rollArtillerySalveMisfire`, `schema`, `EnemyTurnInput`, `StructureData`, `hasWeaponGroupSkill`, +11 — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/qualities.json`, `src/data/schemas/defs/structure-criticals.ts`, `src/data/schemas/defs/structures.ts`, `src/data/structure-criticals.json`, +11 fichiers
 
 ---
 
@@ -6108,7 +6108,7 @@ Un placement équilibré (ou compensé par du lest) n'impose aucune pénalité d
 **Voir aussi** : Atouts et Défauts d'arme (MDG : Arme d'équipe, Tir de zone) ; AA : Structures et armes de Siège (stats d'artillerie jumelles) ; Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Armes à distance et munitions (LDB) : groupes et tables ; Portée, Allonge et dégradation des armes ; Atouts et Défauts d'arme (Recharge, Dangereuse, Explosion, Percutante, Empaleuse, Perforante, Pointue).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.356-364, l.369-379, l.381-395, l.401-407, l.413-426, l.430-435, l.462) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `fuite-de-vapeur`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `perte-de-pression`, `SHIP_ARC_PREF`, +25 — `src/data/index.ts`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, +16 fichiers
+- `MDG 12` (l.356-364, l.369-379, l.381-395, l.401-407, l.413-426, l.430-435, l.462) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `warMachineCrewPenalty`, `fuite-de-vapeur`, `ReloadModalView`, `placementPenalty`, `VolleyShot`, `perte-de-pression`, +26 — `src/data/index.ts`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/items.ts`, +17 fichiers
 - sans code : `MDG 12` (l.377, l.379)
 
 ## MDG : nouveaux Atouts et Défauts d'arme (Arme d'équipe, Tir de zone)
@@ -6157,7 +6157,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 **Voir aussi** : Artillerie navale (MDG) ; AA : Structures et armes de Siège (définitions jumelles d'*Arme d'équipe* et de *Salve*) ; Atouts et Défauts d'arme (Recharge, Dangereuse, Imprécise, Tir de zone, Explosion) ; AA : armes à poudre à canon et munitions — tables ; Combat à Distance : restrictions et règles de tir (bandes de portée).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.442, l.444, l.446-456, l.458, l.460, l.462, l.464, l.466-472) → `crewedPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, `GameState`, +2 — `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
+- `MDG 12` (l.442, l.444, l.446-456, l.458, l.460, l.462, l.464, l.466-472) → `crewedPenalty`, `warMachineCrewPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, +3 — `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/engine/warMachineCrew.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, +6 fichiers
 
 ## Bilan de fidélité — passe de vérification adversariale
 

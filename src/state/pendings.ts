@@ -1143,7 +1143,7 @@ export interface BatchParticipant extends RollParticipant {
   essential?: boolean;
   /** +DR ajouté au DR d'un jet RÉUSSI (Talent baké à la construction — Commandant émérite MDG 09 l.54). */
   bonusSlOnSuccess?: number;
-  /** Test ÉTENDU inter-Étapes porté PAR CETTE rangée (cartographie de voyage, EDOC l.161) : progression
+  /** Test ÉTENDU inter-Étapes porté PAR CETTE rangée (cartographie de voyage, EDOC 8 l.161) : progression
    *  cumulée AVANT ce jet (`extendedDrDone`) vers la cible (`extendedDrTarget`) — la barre de DR
    *  (`DrBar`) s'attache à la rangée et PERSISTE après validation (arbitrage user 2026-07-11). L'accumulation
    *  RÉELLE reste au pas d'agrégation (`stageAggregate`), ceci n'est que l'affichage. */

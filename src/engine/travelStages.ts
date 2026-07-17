@@ -223,7 +223,7 @@ export function weatherLightningNervous(w: Weather): boolean {
   return !!weatherCondition(w).lightningNervous;
 }
 
-/** Une caractéristique est-elle « physique » au sens EDOC l.82 (liste MAISON éditable) ? */
+/** Une caractéristique est-elle « physique » au sens EDOC 8 l.82 (liste MAISON éditable) ? */
 export function isPhysicalTestChar(char: CharKey): boolean {
   return (weatherPhysicalTestChars as string[]).includes(char);
 }

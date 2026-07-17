@@ -201,14 +201,14 @@ export interface ActivityDef extends TestSpec {
   contexts: ActivityContext[];
   source: { book: string; page: number };
   /** `skills?` (au choix), `char?`, `difficulty?` viennent de `TestSpec`. Absent = Activité SANS Test. */
-  /** Compétence LIBRE choisie par le joueur (Pratiquer une Compétence, EDOC l.172). */
+  /** Compétence LIBRE choisie par le joueur (Pratiquer une Compétence, EDOC 8 l.172). */
   freeSkill?: boolean;
-  /** Test ÉTENDU (LDB 12) : DR requis = `drPerStage` × nombre d'Étapes (Établir des cartes, EDOC l.161). */
+  /** Test ÉTENDU (LDB 12) : DR requis = `drPerStage` × nombre d'Étapes (Établir des cartes, EDOC 8 l.161). */
   extended?: { drPerStage: number };
-  /** RAW EDOC l.133 : échouer le Test d'une Activité octroie un État Exténué. */
+  /** RAW EDOC 8 l.133 : échouer le Test d'une Activité octroie un État Exténué. */
   failExtenue?: boolean;
   /** Modificateur météo PAR météo (id de `Weather`) au Test de l'Activité — DONNÉE (fini le `def.id ===`
-   *  en dur) : Plein air « -10 par degré de temps éloigné de Beau temps » (EDOC l.106), Approvisionnement
+   *  en dur) : Plein air « -10 par degré de temps éloigné de Beau temps » (EDOC 8 l.141), Approvisionnement
    *  « -10 par temps sec » (l.56). Absent/météo non listée = 0. */
   weatherMod?: Record<string, number>;
   /** Résolveur BESPOKE nommé (réutilise une logique existante plutôt que de la dupliquer). */
@@ -226,7 +226,7 @@ export interface ActivityDef extends TestSpec {
   minInvest?: { gold: number };
   /** Issue de portée Étape (voyage). */
   stageOutcome?: StageOutcome;
-  /** Indisponible si le héros porte un État Exténué cette Étape (Récupérer, EDOC l.176). */
+  /** Indisponible si le héros porte un État Exténué cette Étape (Récupérer, EDOC 8 l.176). */
   unavailableIfExtenue?: boolean;
   // ── Activités & Scènes de BATAILLE (ADE II 8, contextes 'bataille'/'bataille-round') ──
   /** Test COMBINÉ (LDB 12 l.202-206) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+

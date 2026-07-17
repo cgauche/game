@@ -295,7 +295,7 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
     expect(bonusShipManeuver(ship2(), failed).success).toBe(false); // un échec ne devient pas un succès via +1 DR
   });
 
-  it('réussite du VIRAGE = réussite du d100 (RAW MDG l.304), JAMAIS dr≥0 — le Man (−1 DR cogue) n’inverse pas le Test', () => {
+  it('réussite du VIRAGE = réussite du d100 (RAW MDG 13 l.304), JAMAIS dr≥0 — le Man (−1 DR cogue) n’inverse pas le Test', () => {
     // Sur la cogue (Man −1 + Peu maniable −1 = −2 au DR), un d100 réussi de justesse (DR bas) donne dr<0 :
     // l’ancien `success = dr≥0` aurait raté le virage. Le RAW gate sur la RÉUSSITE du Test (roll ≤ cible).
     let diverged = false;

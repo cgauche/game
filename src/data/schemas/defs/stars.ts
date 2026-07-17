@@ -21,7 +21,7 @@ export const schema = z.array(
     dieux: z.string().nullable(),
     apparence: z.string().nullable(),
     effect: z.array(gameOpSchema).optional(),
-    /** Étoile du Sorcier (ADE2 l.62) : fourchette 1d10 interne `[min, max]` — tuple STRICT (2 éléments,
+    /** Étoile du Sorcier (ADE2 3 l.63) : fourchette 1d10 interne `[min, max]` — tuple STRICT (2 éléments,
      *  observé `[1,3]` sur les variantes `rand:100`). */
     sub: z.tuple([z.number(), z.number()]).optional(),
     desc: z.string().nullable(),

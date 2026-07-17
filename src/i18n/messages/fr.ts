@@ -447,7 +447,7 @@ export const fr = {
   // État gagné, DÉRIVÉ de l'op `condition` réellement appliqué (opConsequenceLine, comme wounds/heal) —
   // sans nom d'acteur (le portrait de la rangée porte l'attribution).
   'out.consCondition': 'État {cond} subi.',
-  // Activité de voyage SANS Test exécutée (EDOC l.131) — le nom est porté en var (la rangée batch/poste
+  // Activité de voyage SANS Test exécutée (EDOC 8 l.131) — le nom est porté en var (la rangée batch/poste
   // n'a pas toujours d'actorId pour l'attribution).
   'out.activityDone': '{name} — {activity} (effectué).',
   // Rencontre d'Étape (EDOC 8) : catégorie + libellé + texte VERBATIM, sans id d'icône dans la prose.

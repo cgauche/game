@@ -13,7 +13,7 @@ const seq = (...vals: number[]): RNG => {
   return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
 };
 
-// Exemples canoniques de l'Index géographique du Reikland (T2C l.164-174).
+// Exemples canoniques de l'Index géographique du Reikland (T2C 13 l.164-174).
 const grunburg: LandMarketProfile = { taille: 3, richesse: 2, produits: ['commerce'] };      // Ville, Richesse Moyenne
 const kemperbad: LandMarketProfile = { taille: 3, richesse: 4, produits: ['armement', 'commerce', 'metal', 'vin'], wineBonusEchelons: 2 };
 const hameau: LandMarketProfile = { taille: 1, richesse: 1, produits: ['subsistance'] };

@@ -82,7 +82,7 @@ export function currentMarket(get: Get): { placeId: string; label: string; marke
   return { placeId: place.id, label: place.label, market: place.market };
 }
 
-/** Génère les offres d'ACHAT à l'arrivée (T2C l.22-42) : disponibilité en 2 temps — d'abord une CHANCE de
+/** Génère les offres d'ACHAT à l'arrivée (T2C 13 l.22-42) : disponibilité en 2 temps — d'abord une CHANCE de
  *  trouver un marchand ((Taille+Richesse)×10 %, `rollFindMerchant`), puis la TAILLE de chaque cargaison
  *  (`rollCargoQuantity`). Un Emplacement « Commerce » ajoute une cargaison ALÉATOIRE de la table saisonnière. */
 export function openLandMarket(get: Get, set: Set): void {
@@ -206,12 +206,12 @@ export function moveCargo(get: Get, set: Set, fromId: string, toId: string, carg
   log(get, set, [`${res.moved} Enc de ${label} transférés de ${from.label} vers ${to.label}.`]);
 }
 
-/** Magnitude d'un Marchandage gagné (LDB 60, cité T2C l.127) : ±10 %, ±20 % si Négociateur ou DR net Stupéfiant. */
+/** Magnitude d'un Marchandage gagné (LDB 60, cité T2C 13 l.127) : ±10 %, ±20 % si Négociateur ou DR net Stupéfiant. */
 function bargainPct(winnerNegotiator: boolean, netSL: number): number {
   return winnerNegotiator || netSL >= SL_ASTOUNDING ? 20 : 10;
 }
 
-/** ACHAT d'une cargaison (T2C l.129-131) : prix = Enc × prix de base, modulé par le Marchandage opposé et
+/** ACHAT d'une cargaison (T2C 13 l.129-131) : prix = Enc × prix de base, modulé par le Marchandage opposé et
  *  majoré de +10 % si LOT PARTIEL (l.131). Débité, CHARGÉ sur le porteur de défaut du groupe (navire /
  *  véhicule / bête, `primaryCargoCarrier`) dans la limite de sa Contenance (plafond DUR, #327). */
 export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): void {
@@ -259,7 +259,7 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   log(get, set, [`${want} Enc de ${offer.label} chargés sur ${carrier.label} — ${bargainLine}${partial ? ' Lot partiel : +10 % (l.131).' : ''} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
 }
 
-/** VENTE d'un lot du convoi (T2C l.133-160) : trouver un acheteur (Demande = Taille×10, +30 si Commerce),
+/** VENTE d'un lot du convoi (T2C 13 l.133-160) : trouver un acheteur (Demande = Taille×10, +30 si Commerce),
  *  Mise à prix (% du prix de base par Richesse), Marchandage opposé. Un échec autorise une 2ᵉ tentative sur
  *  la moitié du lot (l.146). Retire le lot vendu, crédite la bourse. */
 export function landSellCargo(get: Get, set: Set, carrierId: string, cargoIndex: number): void {
