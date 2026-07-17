@@ -154,6 +154,26 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
   baké et les ancres nues (sans folio) retirées — étiquetés (LDB, ADE I/II, EDOC, Middenheim, NADJ, ACE,
   PDT) comme scans (AA, ZI, MDG, EDO, MSR, MSRC) ; le `00 - Index.md` de chaque livre liste ses chapitres
   avec leur folio de début.
+  **Enforced** (#536) par `src/data/book-source-integrity.test.ts`, volet « intégrité du folio », par DEUX
+  voies : (A) **hors-livre** — le folio dépasse le dernier folio ATTESTÉ du livre (`bookMaxFolio` : dernier
+  marqueur `data-folio` et dernière page citée par `00 - Index.md`), réfutation qui se passe de la `desc` ;
+  (B) **encadrement** — la `desc` étant verbatim (règle 5), elle LOCALISE l'entrée dans le `Source/` du livre
+  déclaré, et l'encadrement `data-folio` de l'occurrence réfute le folio qui ment. Défauts fondateurs :
+  `redoutable` (ZI) déclarait `page: 11` pour un texte en folio 134 ; `activities.json:duel` déclarait
+  `page: 223` dans un ADE II qui compte 98 pages. Mécanique : `scripts/guards/lib/folioIntegrity.mjs` ;
+  rapport de solde (donne le folio RÉEL) : `node scripts/data/audit-folios.mjs`.
+  ⚠ **Ce que la garde NE voit PAS** — elle ne réfute que ce qu'elle PROUVE et se tait sur le reste : sur les
+  2082 entrées citées scannées, 1135 échappent à tout verdict d'encadrement (desc reformulée donc
+  introuvable, desc trop courte pour localiser, chapitre sans marqueur, livre sans extraction FR). Une entrée
+  neuve à desc NON verbatim et à folio faux mais PLAUSIBLE passe encore : seule la règle 5 la rattrape. Le
+  stock n'est donc pas « les défauts du dépôt », c'est « les défauts que ces deux voies prouvent ».
+  Si une desc se retrouve sur PLUSIEURS folios (définition ET récapitulatif d'annexe), cite la **DÉFINITION** ;
+  le rapport les signale (rubrique « À ARBITRER ») car la garde ne les départage pas.
+  **Mode CLIQUET** : le stock de 140 entrées déjà fausses est gelé dans `scripts/guards/lib/folioRatchetStock.mjs`
+  et ne peut que DÉCROÎTRE — toute entrée NEUVE au folio réfuté échoue la CI, toute clé soldée qui y traîne
+  aussi, et sa TAILLE est plafonnée par la garde (`FOLIO_RATCHET_MAX`) pour qu'« ajouter une ligne au stock »
+  ne soit jamais le chemin le plus court. `node scripts/data/audit-folios.mjs --stock` re-rend le stock et
+  REFUSE de l'agrandir : l'outil ne sait que solder.
 - **`desc`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**
   (`**gras**`, `*ital*`, listes `-`), jamais en HTML, jamais reformulé (règle stricte 5 ; garde
   `src/data/no-html-in-prose.test.ts`).
