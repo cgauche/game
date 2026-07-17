@@ -13,7 +13,7 @@
 // Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { ldbRe, otherRe, span, BOOKS, esc, bookOf } from './_lib.mjs'
+import { ldbRe, otherRe, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED } from './_lib.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
@@ -47,7 +47,9 @@ const chKey = (n) => String(Number(n))
 export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) {
   const SRC = walk(srcDir, ['.ts', '.tsx', '.json'])
   const DOCS = readdirSync(rawDir)
-    .filter((f) => f.endsWith('.md') && !['coverage.md', 'reconciliation.md'].includes(f))
+    // (#454 DoD, #585 lot A) source unique _lib.mjs — corrige un manque : reanchor.md (rapport
+    // généré, réfs illustratives de diagnostic) n'était PAS exclu, seul script des 4 gardes dans ce cas.
+    .filter((f) => f.endsWith('.md') && !RAWDOC_META_GENERATED.has(f))
     .map((f) => join(rawDir, f))
 
   // --- regex de réfs (source unique : _lib.mjs ; instances stateful /g locales) ---

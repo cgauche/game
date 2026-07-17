@@ -1,4 +1,6 @@
-// Garde de graphie des citations RAW (#487 lot 3) — verrouille à ZÉRO la classe « chapitre-relative »
+// Garde de graphie des citations RAW (#487 lot 3, étendue #585 lot A) — verrouille la classe
+// « chapitre-relative » (zéro tolérance) et CLIQUETTE les dérives de graphie cosmétique (`ch.`,
+// folio nu, réf sans chapitre en src) le temps de leur strip mécanique (lot B).
 // `NN-Nom l.X` (ex. `18-Traumatisme l.417-422`) : cette forme est INVISIBLE de `ldbRe`/`otherRe`
 // (_lib.mjs — les deux exigent le livre AVANT le numéro de chapitre, jamais un nom de chapitre
 // collé au numéro), donc jamais comptée par `reconcile.mjs`, jamais ré-ancrée. Forme canonique :
@@ -7,21 +9,24 @@
 // nouvelle ou survivante fait échouer le test avec la liste `fichier:ligne`.
 // Re-run : node scripts/raw/citation-graphy-guard.mjs
 import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
-import { otherAbbrAlternation } from './_lib.mjs'
+import { otherAbbrAlternation, bookOf, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve } from './_lib.mjs'
+import { countsByFile, assertAgainstBaseline, readBaseline as readBaselineFile } from './check-code-refs.mjs'
 
 export const SRC_DIR = 'src'
 export const EXTS = ['.ts', '.tsx', '.json']
 export const RAWDIR = 'docs/raw'
+export const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'graphy-baseline.json')
 
 // Fiches EXCLUES des scans docs/raw (rapports générés / épreuves de ré-ancrage — graphies libres).
-const DOCS_EXCLUDE = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md'])
-const isScannedFiche = (name) => name.endsWith('.md') && !DOCS_EXCLUDE.has(name) && !name.startsWith('epreuve-')
-// Scan (d) « prose d'état d'implémentation » : mêmes exclusions + `00-index.md` (sa ligne de garde
-// DÉCRIT le marqueur `(non implémenté)`, elle ne l'affirme pas — cf. 00-index.md l.16/69).
-const isImplProseScanned = (name) => isScannedFiche(name) && name !== '00-index.md'
+// Source UNIQUE _lib.mjs (#454 DoD, #585 lot A) — jamais un Set dupliqué à la main ici.
+const DOCS_EXCLUDE = RAWDOC_META_GENERATED
+const isScannedFiche = (name) => name.endsWith('.md') && !DOCS_EXCLUDE.has(name) && !isRawEpreuve(name)
+// Scan (d) « prose d'état d'implémentation » : mêmes exclusions + fiches d'auteur (index, conventions
+// de sourcing) dont les réfs sont illustratives, pas de la prose d'état à juger (RAWDOC_AUTHOR_META).
+const isImplProseScanned = (name) => isScannedFiche(name) && !RAWDOC_AUTHOR_META.has(name)
 
 // (a) Plage de lignes à tiret CADRATIN/demi-cadratin : `l.417–422` / `l.417—422`. Forme canonique =
 // tiret-moins `l.417-422` (dépliée par `span`) ; en/em-dash est INVISIBLE de `span` → jamais dépliée.
@@ -61,6 +66,30 @@ export const NONIMPL_RE = () => new RegExp(
   'iu',
 )
 
+// --- (#585 lot A) extension : cosmétique `ch.` (e), folio nu (f), abréviation INCONNUE (g) ---
+// Alternation TOUS livres (LDB compris) — dérivée de `_lib.mjs` (LDB ne préfixe-collisionne AUCUNE
+// autre abréviation, l'ordre de longueur d'`otherAbbrAlternation` reste valide en lui ajoutant LDB
+// en tête, sans recomposer le tri).
+const ALL_ABBR_ALT = () => `LDB|${otherAbbrAlternation()}`
+// (e) `ch.` cosmétique devant un numéro de chapitre — TOLÉRÉ par `ldbRe`/`otherRe` (#434 défaut 3),
+// mais graphie DÉVIANTE au sens de #585 (le numéro de fichier n'a plus besoin du préfixe `ch.` depuis
+// la convention 2ed2acff/a5eddf80) : cliqueté par fichier, strip mécanique = lot B.
+export const CH_DOT_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) ch\\.\\d+`, 'g')
+// (f) Folio NU sans chapitre : `<ABRÉV> p.<n>` (chapitre absent → invérifiable contre les data-folio
+// bakés). Classification par TYPE de champ : en `.ts`/`.tsx` seule une ligne de COMMENTAIRE compte
+// (une citation dans un titre de test `describe`/`it` reste hors périmètre, ce n'est pas un
+// commentaire) ; en `.json` seul un champ `"ref": …` compte (les champs `desc`/prose sont verbatim
+// source — règle 5, jamais réécrits — et `source:{book,page}` est la convention folio-imprimé, hors
+// périmètre de cette garde, cf. #585).
+export const BARE_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) p\\.\\d+`, 'g')
+const isCommentLine = (ln) => { const t = ln.trim(); return t.startsWith('//') || t.startsWith('*') || t.startsWith('/*') }
+const isRefFieldLine = (ln) => /^\s*"ref"\s*:/.test(ln)
+// (g) Réf `ABRÉV NN l.X` / `ABRÉV NN p.X` dont l'abréviation N'EST PAS un livre connu de `_lib.mjs`
+// (`bookOf` couvre BOOKS + les variantes tolérantes) — inversion : l'inconnu échoue NOMINATIVEMENT,
+// zéro tolérance, PAS de baseline (une abréviation inconnue est toujours un typo/une invention, jamais
+// un stock à geler).
+export const UNKNOWN_ABBR_RE = () => /\b[A-Z]{2,6}(?:\s+I{1,2})? \d+ [lp]\.\d+/g
+
 function walk(dir, exts, acc = []) {
   for (const e of readdirSync(dir)) {
     const p = join(dir, e)
@@ -70,6 +99,12 @@ function walk(dir, exts, acc = []) {
     else if (exts.some((x) => e.endsWith(x))) acc.push(p)
   }
   return acc
+}
+
+function rawFiles(rawDir, filter) {
+  let names
+  try { names = readdirSync(rawDir).filter(filter) } catch { names = [] }
+  return names.map((n) => join(rawDir, n))
 }
 
 /** Scanne `srcDir` (défaut `src/`) pour la graphie chapitre-relative. Retourne
@@ -123,10 +158,102 @@ export function scanImplProseViolations(rawDir = RAWDIR) {
   return violations
 }
 
+/** Scan (e) : `ch.` cosmétique — src/** (.ts/.tsx/.json) ET docs/raw/*.md (mêmes fiches que (b)/(c)).
+ *  Retourne `{ file, row, text }[]`, UNE entrée par occurrence (cliqueté par fichier, cf. `countsByFile`). */
+export function scanChDotViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
+  const violations = []
+  const files = [...walk(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
+  for (const f of files) {
+    const rel = f.replace(/\\/g, '/')
+    const lines = readFileSync(f, 'utf8').split('\n')
+    lines.forEach((ln, i) => {
+      const re = CH_DOT_RE()
+      let m
+      while ((m = re.exec(ln))) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
+    })
+  }
+  return violations
+}
+
+/** Scan (f) : folio NU `<ABRÉV> p.X` sans chapitre — seulement les lignes en SCOPE : commentaire
+ *  `.ts`/`.tsx`, champ `"ref"` en `.json` (desc/prose et `source:{book,page}` HORS scope, #585).
+ *  Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
+export function scanBareFolioViolations(srcDir = SRC_DIR, exts = EXTS) {
+  const violations = []
+  for (const f of walk(srcDir, exts)) {
+    const rel = f.replace(/\\/g, '/')
+    const isJson = f.endsWith('.json')
+    const lines = readFileSync(f, 'utf8').split('\n')
+    lines.forEach((ln, i) => {
+      const inScope = isJson ? isRefFieldLine(ln) : isCommentLine(ln)
+      if (!inScope) return
+      const re = BARE_FOLIO_RE()
+      let m
+      while ((m = re.exec(ln))) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
+    })
+  }
+  return violations
+}
+
+/** Scan (b) étendu à src/** — réf de livre sans chapitre `<ABRÉV> l.<n>` (même regex que (b) docs/raw,
+ *  `BOOK_NO_CHAPTER_RE`). Retourne `{ file, row, text }[]`. Pur (aucune écriture). */
+export function scanBookNoChapterSrcViolations(srcDir = SRC_DIR, exts = EXTS) {
+  const violations = []
+  for (const f of walk(srcDir, exts)) {
+    const rel = f.replace(/\\/g, '/')
+    const lines = readFileSync(f, 'utf8').split('\n')
+    lines.forEach((ln, i) => {
+      const re = BOOK_NO_CHAPTER_RE()
+      let m
+      while ((m = re.exec(ln))) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
+    })
+  }
+  return violations
+}
+
+/** Scan (g) : réf `ABRÉV NN l.X`/`ABRÉV NN p.X` dont l'abréviation est INCONNUE de `_lib.mjs`
+ *  (`bookOf` retourne null). Zéro tolérance, PAS de baseline. Retourne `{ file, row, abbr, text }[]`. */
+export function scanUnknownAbbrViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWDIR) {
+  const violations = []
+  const files = [...walk(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
+  for (const f of files) {
+    const rel = f.replace(/\\/g, '/')
+    const lines = readFileSync(f, 'utf8').split('\n')
+    lines.forEach((ln, i) => {
+      const re = UNKNOWN_ABBR_RE()
+      let m
+      while ((m = re.exec(ln))) {
+        const abbr = m[0].replace(/ \d+ [lp]\.\d+$/, '')
+        if (!bookOf(abbr)) violations.push({ file: rel, row: i + 1, abbr, text: ln.trim().slice(0, 160) })
+      }
+    })
+  }
+  return violations
+}
+
+/** Baseline gelée si `graphy-baseline.json` existe, sinon `{}` (une famille absente = `{}`). */
+export function readBaseline(path = BASELINE_PATH) {
+  return readBaselineFile(path)
+}
+
+// Compare une famille de violations à sa baseline — mêmes sémantiques que check-code-refs.mjs
+// (hausse ET péremption sont des anomalies). `family` = clé de premier niveau de graphy-baseline.json.
+function checkFamily(label, family, violations, baseline) {
+  const counts = countsByFile(violations)
+  const { over, stale } = assertAgainstBaseline(counts, baseline[family] ?? {})
+  return { label, family, violations, counts, over, stale }
+}
+
 function main() {
   const src = scanGraphyViolations()
   const docs = scanDocsRawViolations()
   const implProse = scanImplProseViolations()
+  const baseline = readBaseline()
+  const chDot = checkFamily('ch. cosmétique', 'chDot', scanChDotViolations(), baseline)
+  const bareFolio = checkFamily('folio nu', 'bareFolio', scanBareFolioViolations(), baseline)
+  const bookNoChapterSrc = checkFamily('réf sans chapitre (src)', 'bookNoChapterSrc', scanBookNoChapterSrcViolations(), baseline)
+  const unknownAbbr = scanUnknownAbbrViolations()
+
   if (src.length) {
     console.log(`citation-graphy-guard : ${src.length} graphie(s) chapitre-relative(s) (src/) :`)
     for (const { file, row, text } of src) console.log(`  ${file}:${row}  ${text}`)
@@ -145,7 +272,30 @@ function main() {
   } else {
     console.log('citation-graphy-guard : 0 prose d\'état d\'implémentation (docs/raw/) — classe verrouillée à zéro.')
   }
-  if (src.length || docs.length || implProse.length) process.exitCode = 1
+
+  let baselineFail = false
+  for (const { label, violations, over, stale } of [chDot, bareFolio, bookNoChapterSrc]) {
+    console.log(`citation-graphy-guard (#585) : ${label} — ${violations.length} occurrence(s) mesurée(s).`)
+    if (over.length) {
+      baselineFail = true
+      console.log(`  RÉGRESSION — hausse par fichier :`)
+      for (const o of over) console.log(`    ${o}`)
+    }
+    if (stale.length) {
+      baselineFail = true
+      console.log(`  Baseline(s) PÉRIMÉE(s) (à ABAISSER dans graphy-baseline.json) :`)
+      for (const s of stale) console.log(`    ${s}`)
+    }
+  }
+
+  if (unknownAbbr.length) {
+    console.log(`citation-graphy-guard (#585) : ${unknownAbbr.length} abréviation(s) INCONNUE(S) (zéro tolérance) :`)
+    for (const { file, row, abbr, text } of unknownAbbr) console.log(`  ${file}:${row}  [${abbr}]  ${text}`)
+  } else {
+    console.log('citation-graphy-guard (#585) : 0 abréviation inconnue — classe verrouillée à zéro.')
+  }
+
+  if (src.length || docs.length || implProse.length || baselineFail || unknownAbbr.length) process.exitCode = 1
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

@@ -9,10 +9,10 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, chapterFile, bookOf } from './_lib.mjs'
+import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED } from './_lib.mjs'
 
 export const RAWDIR = 'docs/raw'
-export const EXCLUDE = new Set(['coverage.md', 'reconciliation.md', 'reanchor.md'])
+export const EXCLUDE = RAWDOC_META_GENERATED // (#454 DoD, #585 lot A) — source unique _lib.mjs
 export const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'dead-refs-baseline.json')
 
 // Réfs `LDB NN l.X…` et réfs « autres livres » (AA/ZI/EDO…) d'une ligne — génère

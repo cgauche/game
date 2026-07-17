@@ -4,11 +4,16 @@
 // Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations, BOOK_NO_CHAPTER_RE } from './citation-graphy-guard.mjs'
+import {
+  scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations, BOOK_NO_CHAPTER_RE,
+  scanChDotViolations, scanBareFolioViolations, scanBookNoChapterSrcViolations, scanUnknownAbbrViolations,
+  readBaseline, BASELINE_PATH,
+} from './citation-graphy-guard.mjs'
 import { otherAbbrAlternation } from './_lib.mjs'
+import { countsByFile, assertAgainstBaseline } from './check-code-refs.mjs'
 
 function withTempSrcDir(content, fn) {
   const dir = mkdtempSync(join(tmpdir(), 'graphy-guard-'))
@@ -260,4 +265,128 @@ test('non-régression : le VRAI src/ du repo est à ZÉRO graphie chapitre-relat
     [],
     `graphie(s) chapitre-relative(s) survivante(s) :\n${v.map((x) => `  ${x.file}:${x.row}  ${x.text}`).join('\n')}`,
   )
+})
+
+
+// --- (#585 lot A) scan (e) : ch. cosmétique ---
+function withTempSrcAndRawDir(srcFiles, rawFiles, fn) {
+  const dir = mkdtempSync(join(tmpdir(), 'graphy-585-'))
+  mkdirSync(join(dir, 'src'), { recursive: true })
+  mkdirSync(join(dir, 'raw'), { recursive: true })
+  for (const [name, content] of Object.entries(srcFiles)) writeFileSync(join(dir, 'src', name), content, 'utf8')
+  for (const [name, content] of Object.entries(rawFiles)) writeFileSync(join(dir, 'raw', name), content, 'utf8')
+  try { fn(join(dir, 'src'), join(dir, 'raw')) } finally { rmSync(dir, { recursive: true, force: true }) }
+}
+
+test('(e) ch. cosmétique : détecté en src (LDB ch.6) et en docs/raw (AA ch.7), forme sans ch. silencieuse', () => {
+  withTempSrcAndRawDir(
+    { 'x.ts': '// LDB ch.6 l.2 : forme déviante\n// LDB 6 l.2 : forme canonique, silence\n' },
+    { 'combat.md': 'AA ch.7 l.4 déviant\nAA 7 l.4 canonique, silence\n' },
+    (srcDir, rawDir) => {
+      const v = scanChDotViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir)
+      assert.equal(v.length, 2)
+      assert.deepEqual(v.map((x) => x.row).sort(), [1, 1])
+    },
+  )
+})
+
+test('(e) ch. cosmétique : rapports générés (coverage/reconciliation/reanchor) exclus des docs/raw', () => {
+  withTempSrcAndRawDir({}, { 'coverage.md': 'AA ch.7 l.4\n' }, (srcDir, rawDir) => {
+    assert.equal(scanChDotViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir).length, 0)
+  })
+})
+
+// --- (#585 lot A) scan (f) : folio NU ---
+test('(f) folio nu : commentaire .ts détecté, titre de test (describe/it) hors périmètre (pas un commentaire)', () => {
+  withTempSrcAndRawDir(
+    {
+      'x.ts': '// Amphibie (LDB p.338) : bonus au DR\n',
+      'y.test.ts': "describe('Amphibie (LDB p.338)', () => {})\n",
+    },
+    {},
+    (srcDir) => {
+      const v = scanBareFolioViolations(srcDir, ['.ts', '.tsx', '.json'])
+      assert.equal(v.length, 1)
+      assert.equal(v[0].file.endsWith('x.ts'), true)
+    },
+  )
+})
+
+test('(f) folio nu : champ JSON "ref" détecté, "desc"/"source.note" hors périmètre (verbatim / convention folio-imprimé)', () => {
+  withTempSrcAndRawDir({}, {}, (srcDir) => {
+    const content = [
+      '{',
+      '  "ref": "LDB p.174",',
+      '  "desc": "Une citation verbatim qui mentionne LDB p.174 dans le texte.",',
+      '  "source": { "book": "livre-de-base", "page": 174, "note": "section continue LDB p.174-179" }',
+      '}',
+    ].join('\n') + '\n'
+    writeFileSync(join(srcDir, 'a.json'), content, 'utf8')
+    const v = scanBareFolioViolations(srcDir, ['.ts', '.tsx', '.json'])
+    assert.equal(v.length, 1)
+    assert.equal(v[0].row, 2)
+  })
+})
+
+// --- (#585 lot A) scan (b) étendu à src ---
+test('(b) étendu à src : réf de livre SANS chapitre détectée en .ts, forme avec chapitre silencieuse', () => {
+  withTempSrcAndRawDir(
+    { 'x.ts': '// EDOC l.172 : règle libre\n// EDOC 8 l.172 : forme canonique, silence\n' },
+    {},
+    (srcDir) => {
+      const v = scanBookNoChapterSrcViolations(srcDir, ['.ts', '.tsx', '.json'])
+      assert.equal(v.length, 1)
+      assert.equal(v[0].row, 1)
+    },
+  )
+})
+
+// --- (#585 lot A) scan (g) : abréviation INCONNUE (zéro tolérance, pas de baseline) ---
+test('(g) abréviation inconnue : détectée nominativement, abréviation connue (LDB) silencieuse', () => {
+  withTempSrcAndRawDir(
+    { 'x.ts': '// RAW 16 l.105 : abréviation inventée\n// LDB 16 l.105 : abréviation connue, silence\n' },
+    {},
+    (srcDir, rawDir) => {
+      const v = scanUnknownAbbrViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir)
+      assert.equal(v.length, 1)
+      assert.equal(v[0].abbr, 'RAW')
+    },
+  )
+})
+
+test('(g) abréviation inconnue : variantes tolérantes de _lib.mjs (ADEII, Midd) ne sont PAS des inconnues', () => {
+  withTempSrcAndRawDir(
+    { 'x.ts': '// ADEII 5 l.10, Midd 3 l.4 : variantes tolérantes connues\n' },
+    {},
+    (srcDir, rawDir) => {
+      assert.equal(scanUnknownAbbrViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir).length, 0)
+    },
+  )
+})
+
+// --- (#585 lot A) baseline PAR FICHIER, cliquetée (patron check-code-refs.mjs) ---
+test('baseline graphy : hausse détectée, baisse détectée comme périmée (assertAgainstBaseline réutilisé)', () => {
+  const counts = countsByFile([{ file: 'src/a.ts' }, { file: 'src/a.ts' }, { file: 'src/b.ts' }])
+  const { over, stale } = assertAgainstBaseline(counts, { 'src/a.ts': 1, 'src/b.ts': 1, 'src/c.ts': 5 })
+  assert.equal(over.length, 1)
+  assert.equal(stale.length, 1)
+})
+
+test('non-régression : les 3 familles cliquetées (#585) du VRAI repo sont alignées sur graphy-baseline.json', () => {
+  const baseline = readBaseline()
+  const families = [
+    ['chDot', scanChDotViolations()],
+    ['bareFolio', scanBareFolioViolations()],
+    ['bookNoChapterSrc', scanBookNoChapterSrcViolations()],
+  ]
+  for (const [family, violations] of families) {
+    const counts = countsByFile(violations)
+    const { over, stale } = assertAgainstBaseline(counts, baseline[family] ?? {})
+    assert.deepEqual(over, [], `${family} — hausse par fichier :\n${over.join('\n')}`)
+    assert.deepEqual(stale, [], `${family} — baseline(s) périmée(s) :\n${stale.join('\n')}`)
+  }
+})
+
+test('graphy-baseline.json existe (#585 lot A)', () => {
+  assert.equal(existsSync(BASELINE_PATH), true)
 })
