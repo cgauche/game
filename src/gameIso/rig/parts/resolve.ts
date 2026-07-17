@@ -74,8 +74,12 @@ function dominantCloth(svg: string): string {
   }
   return best;
 }
-const hasProfileView = (p: PartArt | null | undefined): boolean => typeof p === 'object' && p != null && !!p.profile;
-const hasBackView = (p: PartArt | null | undefined): boolean => typeof p === 'object' && p != null && !!p.back;
+/** Une part fournit-elle sa vue de PROFIL / de DOS ? Discriminant du FORMAT de part : `string` =
+ *  front-only (le rendu substitue une silhouette générique, ou plaque le front sur `bras`).
+ *  Exporté : la garde de format (`tenues/part-view-format.test.ts`) l'IMPORTE au lieu de
+ *  répliquer sa propre vue de l'empilage — une garde qui remodélise le pipeline diverge de lui. */
+export const hasProfileView = (p: PartArt | null | undefined): boolean => typeof p === 'object' && p != null && !!p.profile;
+export const hasBackView = (p: PartArt | null | undefined): boolean => typeof p === 'object' && p != null && !!p.back;
 
 // Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
 // par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),

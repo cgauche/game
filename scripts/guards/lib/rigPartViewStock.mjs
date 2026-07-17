@@ -1,0 +1,234 @@
+// STOCK CLIQUETÉ du FORMAT DE PART du rig (#551) — consommé par
+// `src/gameIso/rig/parts/tenues/part-view-format.test.ts`. Patron whitelist-en-lib du dépôt
+// (`folioRatchetStock.mjs`, `rollSeamWhitelist.mjs`).
+//
+// FORMAT : un slot de CORPS se fournit en TROIS vues `{front, profile, back}`.
+// Le discriminant est celui du PIPELINE lui-même (`hasProfileView`/`hasBackView`, `parts/resolve.ts`) —
+// la garde l'importe, elle n'en réplique pas la définition.
+//
+// PÉRIMÈTRE : les DEUX registres qui alimentent les slots de corps de `resolveParts` — les TENUES
+// (clé `<tenueId>:<slot>`) et les ARMURES (clé `armure:<materiau>:<slot>`). L'armure PRIME sur la
+// tenue (`resolve.ts`, `armed ?? tenuePart`) : hors périmètre, elle laissait le format vert sur une
+// tenue conforme pendant qu'un personnage en plaque recevait un bras de face plaqué.
+//
+// --- PART_VIEW_RATCHET : slots fournis en `string` FRONT-ONLY ---
+// Corps du Set GÉNÉRÉ par `npx tsx scripts/rig/regen-part-view-stock.mts` (DÉCROISSANT-SEULEMENT :
+// il refuse d'écrire un stock plus grand). Toute prose posée ENTRE les clés est mangée à la
+// régénération — l'explication vit dans cet en-tête. Le générateur rabaisse aussi `MAX_FORMAT`.
+// Le commentaire de fin de ligne porte le dégât MESURÉ par `resolveParts` (le chemin réel), pas supposé.
+// Deux mécanismes distincts, selon le slot :
+//   - `bras` (78 clés) : `resolve.ts` ne substitue RIEN sur ce slot — `pickView` retombe sur `front`,
+//     donc l'art de FACE est servi VERBATIM de profil et de dos (« FRONT PLAQUE »).
+//   - `torse`/`jambes`/`tete` (89 clés) : `resolve.ts` invente une silhouette générique
+//     (`PROFILE_TORSE`/`BACK_JAMBE`…) teintée par `dominantCloth` — l'art de la tenue est IGNORÉ.
+//
+// --- PART_VIEW_ALIAS_RATCHET : vues DÉCLARÉES mais ALIASÉES sur le front ---
+// Une vue dont le DESSIN est celui du front satisfait le format tout en produisant EXACTEMENT le
+// défaut que le format vise à tuer (art de face plaqué). Sans ce second cliquet, la vague d'art
+// solderait le stock ci-dessus en aliasant — garde verte, rendu inchangé. Clé `<porteur>:<slot>:<vue>`.
+// La comparaison porte sur la GÉOMÉTRIE (`geometry`, dans la garde), pas sur la chaîne servie : une
+// égalité de chaînes se contourne par un espace, un commentaire ou un `<g>` inerte, et rate le front
+// simplement RECOLORÉ (cf. `nonne:jambes:back`, trouvé par le passage à la géométrie).
+//
+// CLIQUET, pas absolution : la garde échoue (a) sur toute violation ABSENTE de ces listes — une
+// tenue neuve fournit ses 3 vues ; (b) sur toute clé qui ne viole PLUS ; (c) si la TAILLE d'un stock
+// dépasse son plafond — `MAX_FORMAT`/`MAX_ALIAS`, gelés dans la GARDE (`part-view-format.test.ts`)
+// et non ici : un stock qui porte son propre plafond le relève d'une ligne. Un slot se solde en
+// DESSINANT la vue puis en BAISSANT le plafond, jamais en allongeant la liste.
+//
+// Ampleur à la pose (2026-07-17) : 171 slots front-only / 426 fournis (40,1 %) sur 121 porteurs
+// (117 tenues + 4 armures). Tenues : 167/410 (40,7 %) ; 93 des 117 defs (79,5 %) portent au moins un
+// slot au stock — bras 78/101 (77,2 %), jambes 72/117 (61,5 %), torse 13/117 (11,1 %), tete 4/75
+// (5,3 %). Armures : 4/16 — les 4 matériaux (cuir/maille/plaque/rembourre) servent leurs 3 vues sur
+// tete/torse/jambes et sont front-only sur le SEUL slot `bras`. Ces 171 slots sont TOUS des strings
+// pures : aucun def ne fournit une vue partielle (profil sans dos ou l'inverse) — population bimodale.
+// Clé = `<id de tenue>:<slot>` (id STABLE `slugId(def.name)`, jamais le libellé) ou
+// `armure:<materiau>:<slot>` ; le libellé est en commentaire.
+
+/** @type {ReadonlySet<string>} */
+export const PART_VIEW_RATCHET = new Set([
+  'apothicaire:bras', // Apothicaire — manque profile+back ; servi : FRONT PLAQUE
+  'apothicaire:jambes', // Apothicaire — manque profile+back ; servi : silhouette generique
+  'artiste:bras', // Artiste — manque profile+back ; servi : FRONT PLAQUE
+  'artiste:jambes', // Artiste — manque profile+back ; servi : silhouette generique
+  'bailli:bras', // Bailli — manque profile+back ; servi : FRONT PLAQUE
+  'bailli:jambes', // Bailli — manque profile+back ; servi : silhouette generique
+  'boucher-ogre:bras', // Boucher Ogre — manque profile+back ; servi : FRONT PLAQUE
+  'cavalier-leger:bras', // Cavalier Léger — manque profile+back ; servi : FRONT PLAQUE
+  'cavalier:bras', // Cavalier — manque profile+back ; servi : FRONT PLAQUE
+  'cavalier:jambes', // Cavalier — manque profile+back ; servi : silhouette generique
+  'chamane-bray:jambes', // Chamane-Bray — manque profile+back ; servi : silhouette generique
+  'chansonnier:bras', // Chansonnier — manque profile+back ; servi : FRONT PLAQUE
+  'charlatan:bras', // Charlatan — manque profile+back ; servi : FRONT PLAQUE
+  'charlatan:jambes', // Charlatan — manque profile+back ; servi : silhouette generique
+  'chasseur-de-primes:bras', // Chasseur de primes — manque profile+back ; servi : FRONT PLAQUE
+  'chasseur-de-primes:jambes', // Chasseur de primes — manque profile+back ; servi : silhouette generique
+  'chasseur:bras', // Chasseur — manque profile+back ; servi : FRONT PLAQUE
+  'chasseur:jambes', // Chasseur — manque profile+back ; servi : silhouette generique
+  'chevalier-du-loup-blanc:bras', // Chevalier du Loup Blanc — manque profile+back ; servi : FRONT PLAQUE
+  'chevalier-du-soleil-flamboyant:bras', // Chevalier du Soleil flamboyant — manque profile+back ; servi : FRONT PLAQUE
+  'chevalier-errant:bras', // Chevalier Errant — manque profile+back ; servi : FRONT PLAQUE
+  'chevalier-panthere:bras', // Chevalier Panthère — manque profile+back ; servi : FRONT PLAQUE
+  'chevalier:bras', // Chevalier — manque profile+back ; servi : FRONT PLAQUE
+  'chevalier:jambes', // Chevalier — manque profile+back ; servi : silhouette generique
+  'chevaucheur-de-blaireau:bras', // Chevaucheur de blaireau — manque profile+back ; servi : FRONT PLAQUE
+  'citadins:jambes', // Citadins — manque profile+back ; servi : silhouette generique
+  'citadins:torse', // Citadins — manque profile+back ; servi : silhouette generique
+  'cocher:bras', // Cocher — manque profile+back ; servi : FRONT PLAQUE
+  'cocher:jambes', // Cocher — manque profile+back ; servi : silhouette generique
+  'colporteur:bras', // Colporteur — manque profile+back ; servi : FRONT PLAQUE
+  'colporteur:jambes', // Colporteur — manque profile+back ; servi : silhouette generique
+  'conseiller:bras', // Conseiller — manque profile+back ; servi : FRONT PLAQUE
+  'conseiller:jambes', // Conseiller — manque profile+back ; servi : silhouette generique
+  'contrebandier:bras', // Contrebandier — manque profile+back ; servi : FRONT PLAQUE
+  'contrebandier:jambes', // Contrebandier — manque profile+back ; servi : silhouette generique
+  'coureur-d-egout:bras', // Coureur d'égout — manque profile+back ; servi : FRONT PLAQUE
+  'coureur-d-egout:jambes', // Coureur d'égout — manque profile+back ; servi : silhouette generique
+  'coureur-d-egout:tete', // Coureur d'égout — manque profile+back ; servi : silhouette generique
+  'coureur-d-egout:torse', // Coureur d'égout — manque profile+back ; servi : silhouette generique
+  'courtisans:jambes', // Courtisans — manque profile+back ; servi : silhouette generique
+  'courtisans:torse', // Courtisans — manque profile+back ; servi : silhouette generique
+  'cultiste:bras', // Cultiste — manque profile+back ; servi : FRONT PLAQUE
+  'cultiste:jambes', // Cultiste — manque profile+back ; servi : silhouette generique
+  'cultiste:tete', // Cultiste — manque profile+back ; servi : silhouette generique
+  'debardeur:bras', // Débardeur — manque profile+back ; servi : FRONT PLAQUE
+  'debardeur:jambes', // Débardeur — manque profile+back ; servi : silhouette generique
+  'demonette:jambes', // Démonette — manque profile+back ; servi : silhouette generique
+  'duelliste:bras', // Duelliste — manque profile+back ; servi : FRONT PLAQUE
+  'duelliste:jambes', // Duelliste — manque profile+back ; servi : silhouette generique
+  'eclaireur:bras', // Éclaireur — manque profile+back ; servi : FRONT PLAQUE
+  'eclaireur:jambes', // Éclaireur — manque profile+back ; servi : silhouette generique
+  'emissaire:bras', // Émissaire — manque profile+back ; servi : FRONT PLAQUE
+  'emissaire:jambes', // Émissaire — manque profile+back ; servi : silhouette generique
+  'enqueteur:bras', // Enquêteur — manque profile+back ; servi : FRONT PLAQUE
+  'enqueteur:jambes', // Enquêteur — manque profile+back ; servi : silhouette generique
+  'entremetteur:bras', // Entremetteur — manque profile+back ; servi : FRONT PLAQUE
+  'entremetteur:jambes', // Entremetteur — manque profile+back ; servi : silhouette generique
+  'erudit:bras', // Érudit — manque profile+back ; servi : FRONT PLAQUE
+  'erudit:jambes', // Érudit — manque profile+back ; servi : silhouette generique
+  'esclave-skaven:jambes', // Esclave skaven — manque profile+back ; servi : silhouette generique
+  'esclave-skaven:torse', // Esclave skaven — manque profile+back ; servi : silhouette generique
+  'espion:bras', // Espion — manque profile+back ; servi : FRONT PLAQUE
+  'espion:jambes', // Espion — manque profile+back ; servi : silhouette generique
+  'femme-du-fleuve:bras', // Femme du fleuve — manque profile+back ; servi : FRONT PLAQUE
+  'femme-du-fleuve:jambes', // Femme du fleuve — manque profile+back ; servi : silhouette generique
+  'garde:bras', // Garde — manque profile+back ; servi : FRONT PLAQUE
+  'garde:jambes', // Garde — manque profile+back ; servi : silhouette generique
+  'gardechamps:bras', // Gardechamps — manque profile+back ; servi : FRONT PLAQUE
+  'gardien-de-troupeaux-de-rhinox:bras', // Gardien de troupeaux de rhinox — manque profile+back ; servi : FRONT PLAQUE
+  'geant:jambes', // Géant — manque profile+back ; servi : silhouette generique
+  'gladiateur:bras', // Gladiateur — manque profile+back ; servi : FRONT PLAQUE
+  'gladiateur:jambes', // Gladiateur — manque profile+back ; servi : silhouette generique
+  'guerriers:jambes', // Guerriers — manque profile+back ; servi : silhouette generique
+  'guerriers:torse', // Guerriers — manque profile+back ; servi : silhouette generique
+  'hallebardier:bras', // Hallebardier — manque profile+back ; servi : FRONT PLAQUE
+  'herboriste:bras', // Herboriste — manque profile+back ; servi : FRONT PLAQUE
+  'herboriste:jambes', // Herboriste — manque profile+back ; servi : silhouette generique
+  'hors-la-loi:bras', // Hors-la-loi — manque profile+back ; servi : FRONT PLAQUE
+  'hors-la-loi:jambes', // Hors-la-loi — manque profile+back ; servi : silhouette generique
+  'ingenieur:bras', // Ingénieur — manque profile+back ; servi : FRONT PLAQUE
+  'ingenieur:jambes', // Ingénieur — manque profile+back ; servi : silhouette generique
+  'intendant:bras', // Intendant — manque profile+back ; servi : FRONT PLAQUE
+  'intendant:jambes', // Intendant — manque profile+back ; servi : silhouette generique
+  'itinerants:jambes', // Itinérants — manque profile+back ; servi : silhouette generique
+  'itinerants:torse', // Itinérants — manque profile+back ; servi : silhouette generique
+  'joueur-d-epee:bras', // Joueur d'épée — manque profile+back ; servi : FRONT PLAQUE
+  'juriste:bras', // Juriste — manque profile+back ; servi : FRONT PLAQUE
+  'juriste:jambes', // Juriste — manque profile+back ; servi : silhouette generique
+  'lettres:jambes', // Lettrés — manque profile+back ; servi : silhouette generique
+  'lettres:tete', // Lettrés — manque profile+back ; servi : silhouette generique
+  'lettres:torse', // Lettrés — manque profile+back ; servi : silhouette generique
+  'mangeur-d-hommes:bras', // Mangeur d'hommes — manque profile+back ; servi : FRONT PLAQUE
+  'marchand:bras', // Marchand — manque profile+back ; servi : FRONT PLAQUE
+  'marchand:jambes', // Marchand — manque profile+back ; servi : silhouette generique
+  'marin:bras', // Marin — manque profile+back ; servi : FRONT PLAQUE
+  'marin:jambes', // Marin — manque profile+back ; servi : silhouette generique
+  'medecin:bras', // Médecin — manque profile+back ; servi : FRONT PLAQUE
+  'medecin:jambes', // Médecin — manque profile+back ; servi : silhouette generique
+  'messager:bras', // Messager — manque profile+back ; servi : FRONT PLAQUE
+  'messager:jambes', // Messager — manque profile+back ; servi : silhouette generique
+  'milicien:bras', // Milicien — manque profile+back ; servi : FRONT PLAQUE
+  'milicien:jambes', // Milicien — manque profile+back ; servi : silhouette generique
+  'mineur:bras', // Mineur — manque profile+back ; servi : FRONT PLAQUE
+  'mineur:jambes', // Mineur — manque profile+back ; servi : silhouette generique
+  'mystique:bras', // Mystique — manque profile+back ; servi : FRONT PLAQUE
+  'mystique:jambes', // Mystique — manque profile+back ; servi : silhouette generique
+  'naufrageur:bras', // Naufrageur — manque profile+back ; servi : FRONT PLAQUE
+  'naufrageur:jambes', // Naufrageur — manque profile+back ; servi : silhouette generique
+  'nautonier:bras', // Nautonier — manque profile+back ; servi : FRONT PLAQUE
+  'nautonier:jambes', // Nautonier — manque profile+back ; servi : silhouette generique
+  'nu:jambes', // Nu — manque profile+back ; servi : silhouette generique
+  'nu:torse', // Nu — manque profile+back ; servi : silhouette generique
+  'officier:bras', // Officier — manque profile+back ; servi : FRONT PLAQUE
+  'ogre:bras', // Ogre — manque profile+back ; servi : FRONT PLAQUE
+  'patrouilleur-fluvial:bras', // Patrouilleur fluvial — manque profile+back ; servi : FRONT PLAQUE
+  'patrouilleur-fluvial:jambes', // Patrouilleur fluvial — manque profile+back ; servi : silhouette generique
+  'patrouilleur-routier:bras', // Patrouilleur routier — manque profile+back ; servi : FRONT PLAQUE
+  'patrouilleur-routier:jambes', // Patrouilleur routier — manque profile+back ; servi : silhouette generique
+  'pilleur-de-tombes:bras', // Pilleur de tombes — manque profile+back ; servi : FRONT PLAQUE
+  'pilleur-de-tombes:jambes', // Pilleur de tombes — manque profile+back ; servi : silhouette generique
+  'piquier:bras', // Piquier — manque profile+back ; servi : FRONT PLAQUE
+  'pretre-de-myrmidia:bras', // Prêtre de Myrmidia — manque profile+back ; servi : FRONT PLAQUE
+  'pretre-de-stromfels:bras', // Prêtre de Stromfels — manque profile+back ; servi : FRONT PLAQUE
+  'pretre-guerrier:bras', // Prêtre guerrier — manque profile+back ; servi : FRONT PLAQUE
+  'pretre-guerrier:jambes', // Prêtre guerrier — manque profile+back ; servi : silhouette generique
+  'pretre-marin-de-manann:bras', // Prêtre marin de Manann — manque profile+back ; servi : FRONT PLAQUE
+  'pretre:bras', // Prêtre — manque profile+back ; servi : FRONT PLAQUE
+  'pretre:jambes', // Prêtre — manque profile+back ; servi : silhouette generique
+  'prophete-gris:bras', // Prophète gris — manque profile+back ; servi : FRONT PLAQUE
+  'prophete-gris:jambes', // Prophète gris — manque profile+back ; servi : silhouette generique
+  'prophete-gris:torse', // Prophète gris — manque profile+back ; servi : silhouette generique
+  'ranconneur:bras', // Rançonneur — manque profile+back ; servi : FRONT PLAQUE
+  'ranconneur:jambes', // Rançonneur — manque profile+back ; servi : silhouette generique
+  'rat-ogre:jambes', // Rat ogre — manque profile+back ; servi : silhouette generique
+  'ratier:bras', // Ratier — manque profile+back ; servi : FRONT PLAQUE
+  'ratier:jambes', // Ratier — manque profile+back ; servi : silhouette generique
+  'receleur:bras', // Receleur — manque profile+back ; servi : FRONT PLAQUE
+  'receleur:jambes', // Receleur — manque profile+back ; servi : silhouette generique
+  'repurgateur:bras', // Répurgateur — manque profile+back ; servi : FRONT PLAQUE
+  'repurgateur:jambes', // Répurgateur — manque profile+back ; servi : silhouette generique
+  'riverains:jambes', // Riverains — manque profile+back ; servi : silhouette generique
+  'riverains:torse', // Riverains — manque profile+back ; servi : silhouette generique
+  'rodeur-fantome:bras', // Rôdeur fantôme — manque profile+back ; servi : FRONT PLAQUE
+  'roublards:jambes', // Roublards — manque profile+back ; servi : silhouette generique
+  'roublards:torse', // Roublards — manque profile+back ; servi : silhouette generique
+  'ruraux:jambes', // Ruraux — manque profile+back ; servi : silhouette generique
+  'ruraux:torse', // Ruraux — manque profile+back ; servi : silhouette generique
+  'saltimbanque:bras', // Saltimbanque — manque profile+back ; servi : FRONT PLAQUE
+  'saltimbanque:jambes', // Saltimbanque — manque profile+back ; servi : silhouette generique
+  'sanguinaire:jambes', // Sanguinaire — manque profile+back ; servi : silhouette generique
+  'serviteur:bras', // Serviteur — manque profile+back ; servi : FRONT PLAQUE
+  'serviteur:jambes', // Serviteur — manque profile+back ; servi : silhouette generique
+  'sorcier-de-village:bras', // Sorcier de village — manque profile+back ; servi : FRONT PLAQUE
+  'sorcier-de-village:jambes', // Sorcier de village — manque profile+back ; servi : silhouette generique
+  'sorcier-dissident:bras', // Sorcier dissident — manque profile+back ; servi : FRONT PLAQUE
+  'sorcier-dissident:jambes', // Sorcier dissident — manque profile+back ; servi : silhouette generique
+  'spadassin:bras', // Spadassin — manque profile+back ; servi : FRONT PLAQUE
+  'spadassin:jambes', // Spadassin — manque profile+back ; servi : silhouette generique
+  'specialiste-de-siege:bras', // Spécialiste de Siège — manque profile+back ; servi : FRONT PLAQUE
+  'tueur:bras', // Tueur — manque profile+back ; servi : FRONT PLAQUE
+  'tueur:jambes', // Tueur — manque profile+back ; servi : silhouette generique
+  'vermine-de-choc:bras', // Vermine de choc — manque profile+back ; servi : FRONT PLAQUE
+  'vermine-de-choc:jambes', // Vermine de choc — manque profile+back ; servi : silhouette generique
+  'vermine-de-choc:tete', // Vermine de choc — manque profile+back ; servi : silhouette generique
+  'vermine-de-choc:torse', // Vermine de choc — manque profile+back ; servi : silhouette generique
+  'villageois:bras', // Villageois — manque profile+back ; servi : FRONT PLAQUE
+  'villageois:jambes', // Villageois — manque profile+back ; servi : silhouette generique
+  'armure:cuir:bras', // Cuir — manque profile+back ; servi : FRONT PLAQUE
+  'armure:maille:bras', // Maille — manque profile+back ; servi : FRONT PLAQUE
+  'armure:plaque:bras', // Plaque — manque profile+back ; servi : FRONT PLAQUE
+  'armure:rembourre:bras', // Rembourre — manque profile+back ; servi : FRONT PLAQUE
+])
+
+/** @type {ReadonlySet<string>} */
+export const PART_VIEW_ALIAS_RATCHET = new Set([
+  // L'ogre a reçu ses 3 vues de jambe au fix des jambes olive (`394f2b29`, #538) : le MÊME fragment
+  // `JAMBE` est servi aux 3 vues. La chair cesse d'être olive (le défaut visé est bien mort), mais le
+  // profil garde la largeur et la lanière de la vue de face — genou et botte de côté restent à dessiner.
+  'ogre:jambes:profile', // Ogre
+  'ogre:jambes:back', // Ogre
+  // Le dos de la Nonne est son art de FACE au trait près, repeint `@cuir` -> `@cuirO` (assombri) :
+  // géométrie identique (paths byte-pour-byte), seul le remplissage change. La comparaison de
+  // CHAÎNES le tenait pour un vrai dos ; la géométrie le voit. Genou/talon de dos restent à dessiner.
+  'nonne:jambes:back', // Nonne
+])

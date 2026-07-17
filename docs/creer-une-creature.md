@@ -95,20 +95,44 @@ export const tenue: TenueDef = {
 
 ## 4. Pièges de dessin codifiés (récidives connues)
 
+> **Ce qui est GARDÉ vs ce qui repose sur l'auteur.** Un contrat qui n'est qu'un document ne tient
+> pas : la règle du format (3 vues) a été violée 167 fois sur 410 slots avant d'être gardée. Ci-dessous,
+> chaque piège porte son état réel. Un piège **non gardé** n'est pas moins impératif — il est moins
+> protégé : c'est à la relecture d'art de le tenir.
+
+- **FORMAT : trois vues par slot** — GARDÉ (`parts/tenues/part-view-format.test.ts`, cliquet).
+  `{ front, profile, back }` ; une `string` fait fabriquer la vue par le moteur (silhouette
+  générique, ou front plaqué sur `bras`), et une vue recopiée sur le front est refusée de même
+  (comparaison de **géométries** : espace, commentaire, `<g>` inerte et recoloriage ne sauvent
+  rien). Gardé sur les tenues ET les armures ; **armes et boucliers restent hors garde**.
+  Périmètre exact, stocks et plafonds : `rig/PART-CONTRACT.md`.
 - **Éléments latéraux pairs de PROFIL** (cornes, pointes d'épaule) : jamais l'art de face
   plaqué (→ « anses »). Cornes **par-vue** : paire front/back, et de profil UNE corne balayée
   en arrière + `lateralPair(art, {dx})` (`parts/parallax.ts`) pour l'exemplaire lointain.
+  *Clause « jamais l'art de face plaqué » : GARDÉE (anti-alias du cliquet de format). Clause
+  « exemplaire lointain visible » : NON gardée — par CHOIX, pas par nature. Le chemin est connu
+  et nommé ici même : que le def déclare sa paire latérale en DONNÉE (appel `lateralPair`) la
+  rendrait mécaniquement vérifiable. Ce qu'on refuse est de changer la forme de la donnée pour
+  ça ; tant que ce refus tient, la relecture d'art en répond.*
 - **Rien de décollé** : oreilles/cheveux/cornes ancrés DANS la silhouette du crâne (base qui
-  rentre sous la part de tête, peinte derrière).
+  rentre sous la part de tête, peinte derrière). *NON gardable : « ancré dans le crâne » est une
+  relation géométrique entre deux fragments SVG libres — la mesurer suppose de rastériser et de
+  juger un recouvrement. Relecture d'art.*
 - **Tête de race + coiffe** : la tête (rat, orc…) passe SOUS le casque/capuche de la tenue —
-  géré par composeRig, ne pas re-dessiner le crâne dans la coiffe.
-- **Dents de face** : gueule AU BOUT du museau + crocs aux commissures (un rictus à
-  mi-museau lit « dents de lapin »). Yeux : `goatEye` (caprin), `emberEye` (braise démon),
-  `ratEye` (rouge skaven), `beastEye` (prédateur) — `parts/monster/eyes.ts`.
+  géré par composeRig, ne pas re-dessiner le crâne dans la coiffe. *NON gardable : rien ne
+  distingue un crâne re-dessiné d'un décor de coiffe. Relecture d'art.*
 - **Pas de token vif dans un détail front-only** : `dominantCloth` prend le token le plus
   fréquent pour les silhouettes dos/profil substituées (des fioles `@metal` vertes ont déjà
-  repeint un torse entier). Détails en couleurs littérales.
-- Un bras monstrueux (pince/tentacule) efface son poing automatiquement.
+  repeint un torse entier). Détails en couleurs littérales. *NON gardable en l'état (distinguer
+  un token « de détail » d'un token « de tissu » suppose l'intention), mais ce piège est un pur
+  EFFET du format : `dominantCloth` n'est appelé que sur un slot front-only. Il s'éteint tout
+  seul à mesure que `PART_VIEW_RATCHET` se vide — et disparaît à stock nul.*
+- **Dents de face** : gueule AU BOUT du museau + crocs aux commissures (un rictus à
+  mi-museau lit « dents de lapin »). Yeux : `goatEye` (caprin), `emberEye` (braise démon),
+  `ratEye` (rouge skaven), `beastEye` (prédateur) — `parts/monster/eyes.ts`. *NON gardable :
+  jugement d'art pur. Relecture.*
+- Un bras monstrueux (pince/tentacule) efface son poing automatiquement — GARDÉ
+  (`parts/traitVisuals.test.ts`, `parts/mutations.test.ts`).
 
 ## 5. Workflow complet
 

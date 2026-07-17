@@ -1,8 +1,56 @@
 # Contrat de part du rig — repère et gabarit par slot
 
 Spec à respecter pour dessiner une **part** SVG du rig (cosmétique, tenue, armure, arme).
+Le § FORMAT ci-dessous ne couvre pas tous ces registres : il dit son périmètre exact.
 Toute part est un fragment SVG (sans `<svg>` wrapper) attaché à un **os** ; le rendu la place
 via la matrice monde de l'os puis l'échelonne par `(sx, sy) = thickness/réf, length/réf`.
+
+## FORMAT — trois vues par slot (gardé)
+
+Un slot de **corps** se fournit en **TROIS vues** : `{ front, profile, back }`. Une `string` vaut
+« front seulement » et **n'est pas un format valide** : le rendu ne dessine alors pas la part, il
+la **fabrique** — et de deux façons distinctes selon le slot :
+
+| Slot fourni en `string` | Ce que `resolveParts` sert de profil/dos |
+|---|---|
+| `torse` / `jambes` / `tete` | une **silhouette générique inventée** (`PROFILE_TORSE`, `BACK_JAMBE`…) teintée par `dominantCloth` — **l'art de la part est ignoré** |
+| `bras` | **rien n'est substitué** : `pickView` retombe sur `front` → l'art de FACE est servi **verbatim** de profil et de dos |
+
+Une vue **recopiée** sur le front satisfait la lettre du format et produit **exactement** le défaut
+qu'il vise à tuer : elle est refusée au même titre. Recopie ≠ chaîne identique — la garde compare
+les **géométries**, donc l'espace ajouté, le commentaire, le `<g>` enveloppant et le simple
+**recoloriage** du front sont refusés eux aussi.
+
+### Périmètre GARDÉ (et ce qui ne l'est pas)
+
+Le format est gardé sur les **deux** registres qui alimentent les slots de corps de `resolveParts` :
+
+| Registre | Clé de stock | Gardé |
+|---|---|---|
+| **Tenues** (`parts/tenues/defs/`) | `<tenueId>:<slot>` | oui |
+| **Armures** (`parts/armour/defs/`) | `armure:<materiau>:<slot>` | oui — elles **priment** sur la tenue (`resolve.ts`, `armed ?? tenuePart`) : hors garde, un bras de plaque front-only battait une tenue conforme |
+
+Registres **hors** garde, à connaître avant de croire le format clos :
+
+- **Armes** (`parts/weapons/defs/`) et **boucliers** (`parts/shields/defs/`) — slots `arme`/`bouclier`,
+  qu'aucune substitution de `resolveParts` ne couvre : un art front-only y est **plaqué verbatim**
+  de profil et de dos, exactement comme `bras`. Mesuré 2026-07-17 : **89 des 90** formes d'arme et
+  **4 des 4** boucliers sont front-only. C'est le même défaut, non cliqueté — décision de périmètre à
+  rendre, pas une propriété du format.
+- **Visages** (`parts/heads/`) — non concernés : `cosmeticPart` (`parts/cosmetic.ts`) enveloppe
+  TOUJOURS le visage en `{ front, back: BACK_NAPE, profile: PROFILE_FACE }` avant `resolveParts`.
+  Un `visage` front-only en def ne peut donc pas être plaqué (il tombe dans la classe « silhouette
+  générique »). Les chevelures portent leurs 3 vues par type (`HairArt`).
+
+Garde : `parts/tenues/part-view-format.test.ts` — **cliquet** à deux stocks gelés dans
+`scripts/guards/lib/rigPartViewStock.mjs` (`PART_VIEW_RATCHET` = slots front-only,
+`PART_VIEW_ALIAS_RATCHET` = vues recopiées). Toute entrée NEUVE échoue ; une clé soldée qui y traîne
+échoue aussi ; et la **taille** de chaque stock est plafonnée (`MAX_FORMAT`/`MAX_ALIAS`, gelés dans
+la garde et non dans le stock — une donnée qui porte son propre plafond le relève d'une ligne), donc
+un stock **ne peut que décroître**. La garde exerce le chemin RÉEL (`resolveParts` + le discriminant
+`hasProfileView`/`hasBackView` de `parts/resolve.ts`), jamais une réplique, et ses propres évasions
+connues sont testées (`describe('morsure')`). **Se solde en DESSINANT la vue, jamais en allongeant
+la liste.**
 
 ## Règles générales
 
