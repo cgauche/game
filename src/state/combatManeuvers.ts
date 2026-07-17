@@ -495,7 +495,7 @@ function openManeuverDefenseCascade(
       target: base, // Test opposé Intermédiaire (+0) → cible = valeur nue ; l'issue vient de resolveOpposed(aT)
       label: attackerLabel,
       meta: {
-        opposed: { aT: atk, attackerName: attacker.name, attackerLabel },
+        opposed: { aT: atk, attackerId: attacker.id, attackerName: attacker.name, attackerLabel },
         maneuverDefense: { attackerId: attacker.id, maneuverId: def.id, indice, spent },
       },
     };
