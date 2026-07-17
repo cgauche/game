@@ -130,6 +130,26 @@ chips, panneaux, carte-parchemin) s'ALIGNE sur le canon déjà existant ci-dessu
 | `.gpg-grid` (+ `.gpg-heading`, `.gpg-row`, `.gpg-section`) | Grille de sélection en sections par famille/classe | Composée par `GroupedPickGrid` (`src/ui/GroupedPickGrid.tsx`, CLAUDE.md) — `role=listbox`/`option`, roving tabindex. Préfixe `gpg-` DÉLIBÉRÉ : nom distinct hérité de l'époque où `.pick-grid` était pris par `FacetedPickGrid` (créateur, MORT #393 P2 — Race puis Carrière ont migré vers `GroupedPickGrid`/`MasterDetail`, dernier consommateur parti). |
 | `.detail-frame` (+ `.detail-frame-name`/`-meta`/`-prose`) | Cadre de détail de l'élue (nom + chips + rubriques + prose scrollable) | Composé par `DetailFrame` (`src/ui/DetailFrame.tsx`, CLAUDE.md) — aucun slot d'actions (« Suivant » fait déjà ça). |
 
+### Cue de bord de rail scrollable (#535)
+
+Convention (pas un composant : CSS pur, aucune classe ajoutée en JSX) — un rail long qui déborde
+(`overflow-y: auto`) porte un voile dégradé HAUT/BAS collé au bord du viewport de scroll, pour
+signaler visuellement qu'il y a plus de contenu au-delà du cadre. Sélecteur CANONIQUE (à chercher
+en diagnostic navigateur, plutôt qu'un `:first-child` structurel opaque) :
+`.creator-step > .master-detail-list::before` / `::after` (`src/ui/styles/creator.css`) — scopé au
+créateur (ancêtre `.creator-step`), PAS universel sur tout `MasterDetail` (les autres consommateurs
+— Compendium, pickers marchands — n'ont pas été jugés sur ce cue ; l'étendre est une décision de
+goût séparée, pas un effet de bord de #535).
+
+Mécanique : `position: sticky` (haut/bas) + `margin-bottom`/`margin-top` négatif égal à sa propre
+`height` (annule sa contribution au flux flex, ne pousse aucun contenu), `pointer-events: none`
+(purement indicatif). **Piège vécu (#535 recette)** : sans `flex-shrink: 0`, un rail flex-column
+très en overflow (ex. étape Caractéristiques, ~1050px de contenu pour ~750px visibles) écrase le
+pseudo à hauteur RÉELLE 0 avant de toucher les rangées voisines — un pseudo `content: ''` a un
+plancher `min-height: auto` de 0 (rien à mesurer dedans), donc l'algorithme de rétrécissement flex
+le sacrifie TOUJOURS en premier. `flex-shrink: 0` est donc une partie NON optionnelle du patron :
+tout futur cue de bord posé sur un rail flex-column overflowing doit le porter.
+
 ### Négoce (table marchande, #371 LOT 3)
 
 | Classe | Rôle | Quand l'utiliser / anti-patron |

@@ -384,7 +384,13 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // bande titrée (`Band`) est EXTRAITE en primitive partagée (`Band.tsx`/`styles/band.css`, patron
   // plaque-row.css/frames.css) : `.creator-band(-head|-right)` meurent ici, contrepartie ASSUMÉE en
   // regard (band.css, plus bas).
-  'styles/creator.css': 103,
+  // Cue de bord de rail scrollable (#535, recette navigateur) : +1 (103 → 104) — `.master-detail-list`
+  // (déjà comptée en couche partagée, `components.css`) réapparaît ICI comme fragment de sélecteur
+  // `.creator-step > .master-detail-list::before/::after` (`docs/charte-ui.md` § « Cue de bord de
+  // rail scrollable ») : nommer le RAIL RÉEL plutôt qu'un `:first-child` structurel opaque — la
+  // recette a mesuré que l'ancien sélecteur, correct mais anonyme, ralentissait le diagnostic
+  // navigateur (identification du conteneur ciblé). Coût assumé pour la diagnosticabilité.
+  'styles/creator.css': 104,
   'styles/editor.css': 112,
   'styles/house-rules.css': 9,
   'styles/hud.css': 145,
