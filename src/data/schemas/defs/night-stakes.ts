@@ -10,6 +10,11 @@ export const file = 'night-stakes.json';
 
 export const schema = z.array(
   z.strictObject({
+    /** Identité STABLE (#422, exposition Codex) — distincte de `kind` (le vocabulaire consommé par
+     *  `nightStake`), ajoutée pour la navigation/l'édition. */
+    id: z.string(),
+    /** Libellé FR d'affichage (#422). */
+    label: z.string(),
     kind: z.string(),
     stake: z.string(),
     source: sourceRefSchema,

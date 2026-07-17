@@ -19,6 +19,7 @@ import {
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
+  conditionLabel,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
@@ -40,7 +41,7 @@ import { STEAM_BREAKDOWNS } from '../../engine/shipBuild';
 import { traumaFicheById } from '../../engine/trauma';
 import type { ShipCritEntry } from '../../data/shipCriticals';
 import { datasetArray, datasetObject } from '../../data/overrides';
-import type { CritTableEntry } from '../../data/overrides';
+import type { CritTableEntry, MiscastRowEntry } from '../../data/overrides';
 import { groupAdvantage } from '../../engine/advantagePool';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
@@ -809,6 +810,88 @@ function barterRatiosSection(rows: (typeof disponibilite)['barterRatios']): Code
   return { title: 'Ratios de Troc (donné : acquis)', layout: 'list', rows: rowsOut };
 }
 
+// ── LOT 3 #422 (FINAL) : les 3 dernières exemptions AUDIT — Empoignade (LDB 14, fiche de règle
+//    UNIQUE), Incantations Imparfaites/Colère des dieux (LDB 46/40, DIALECTE compilé — PAS de vrais
+//    `GameOp`, cf. `MiscastRowEntry`/`engine/miscast.ts::JsonRow` — renderer DÉDIÉ ci-dessous, jamais
+//    `passiveSection`), enjeux de la cascade de nuit (`night-stakes.json`, catégorie-tableau simple). ──
+
+/** Libellé lisible d'un montant du DIALECTE miscast (nombre / dé, éventuellement sin-paramétré / 1+Péché
+ *  — `JsonFormula`, `engine/miscast.ts`). Le sin-paramétrage n'est résolu qu'à l'exécution (Points de
+ *  Péché du lanceur) : ici, affichage d'AUTEUR (« 1d10 + Points de Péché »), jamais une valeur bakée. */
+function miscastAmountLabel(a: unknown): string {
+  if (typeof a === 'number') return String(a);
+  if (a && typeof a === 'object') {
+    if ('sinPlus1' in a) return '1 + Points de Péché';
+    if ('dice' in a) {
+      const d = (a as { dice: { n: number; sides: number; sinPlus?: boolean } }).dice;
+      return `${d.n}d${d.sides}${d.sinPlus ? ' + Points de Péché' : ''}`;
+    }
+  }
+  return String(a);
+}
+
+/** Une op du DIALECTE miscast (`JsonOp`) → sa ligne Codex — sous-ensemble des `op` réellement présents
+ *  dans `miscast.json` (`condition`/`wounds`/`corruption`/`reduceToZero`/`castPenalty`, cf.
+ *  `engine/miscast.ts::expandOp`). Chip cross-réf pour l'État ; texte structuré pour le reste. */
+function miscastOpRow(o: Record<string, unknown>): CodexRow {
+  switch (o.op) {
+    case 'condition': {
+      const name = String(o.name ?? '');
+      const label = conditionLabel(name);
+      const value = o.sinPlus1Value ? '1 + Points de Péché' : o.value != null ? miscastAmountLabel(o.value) : null;
+      const dur = o.durationRounds != null ? `${miscastAmountLabel(o.durationRounds)} Round(s)` : undefined;
+      const show = value && value !== '1' ? `${value} × ${label}` : label;
+      return { t: 'ref', category: 'etats', id: name, label, show, badge: dur };
+    }
+    case 'wounds':
+      return { t: 'kv', k: 'Blessures', v: `${miscastAmountLabel(o.amount)} (ignorant les PA)` };
+    case 'corruption':
+      return { t: 'kv', k: 'Corruption', v: `+${o.amount as number} point(s)` };
+    case 'reduceToZero':
+      return { t: 'text', text: 'Points de Blessure réduits à 0' };
+    case 'castPenalty': {
+      const skillId = o.skill ? String(o.skill) : undefined;
+      const dur = o.rounds != null ? `${miscastAmountLabel(o.rounds)} Round(s)`
+        : o.hours != null ? `${miscastAmountLabel(o.hours)} heure(s)`
+        : o.minutes != null ? `${miscastAmountLabel(o.minutes)} minute(s)`
+        : o.days != null ? `${o.days as number} jour(s)` : undefined;
+      const eff = o.blocked ? 'Bloqué' : o.maxZeroDR ? 'DR plafonné à 0' : `${(o.mod as number | undefined) ?? 0}`;
+      return skillId
+        ? { t: 'ref', category: 'skills', id: skillId, label: refLabel('skills', { id: skillId }), show: `${eff}${dur ? ` (${dur})` : ''}` }
+        : { t: 'kv', k: 'Magie', v: `${eff}${dur ? ` (${dur})` : ''}` };
+    }
+    default:
+      return { t: 'text', text: String(o.op) };
+  }
+}
+
+/** Section « Test imbriqué » d'une entrée miscast (« Résistance Accessible ou Sonné »), palier
+ *  `onFailHard` inclus (« si vous échouez avec DR ≤ N → EN PLUS »). */
+function miscastTestSection(t: NonNullable<MiscastRowEntry['test']>): CodexSection {
+  const who = t.skill ? refLabel('skills', { id: t.skill }) : t.characteristic ? CHAR_LABELS[t.characteristic as keyof typeof CHAR_LABELS] : 'Test';
+  const rows: CodexRow[] = [
+    { t: 'kv', k: 'Test', v: `${who} ${DIFFICULTY_LABELS[t.difficulty as keyof typeof DIFFICULTY_LABELS]}` },
+    { t: 'sub', label: 'Échec' },
+    ...t.onFail.map(miscastOpRow),
+  ];
+  if (t.onFailHard) rows.push({ t: 'sub', label: `Échec ≤ DR ${t.onFailHard.dr}` }, ...t.onFailHard.ops.map(miscastOpRow));
+  return { title: 'Test imbriqué', layout: 'list', rows };
+}
+
+/** Item Codex d'une entrée de table miscast (Incantation Imparfaite / Colère des dieux) — plage d100 →
+ *  nom, effet immédiat (`ops`, dialecte) + Test imbriqué éventuel + relance (cascade/multiplication). */
+function miscastRowItem(e: MiscastRowEntry): CodexItem {
+  return {
+    id: e.id, label: e.name, sub: `d100 ${e.min}–${e.max}`,
+    source: src(e.source),
+    meta: facts(e.reroll ? fact('Relance', e.reroll === 'majeure' ? 'Cascade → Tableau Majeur' : 'Multiplication (2 tirages Mineurs)') : null),
+    sections: sections(
+      e.ops?.length ? { title: 'Effet immédiat', layout: 'list', rows: e.ops.map(miscastOpRow) } : null,
+      e.test ? miscastTestSection(e.test) : null,
+    ),
+  };
+}
+
 const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'advancementCosts', label: 'Coût des Augmentations', group: 'Tables', cluster: 'Création de personnage', sourceRef: 'LDB 07',
@@ -920,6 +1003,42 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         ),
       }];
     },
+  },
+
+  // ── LOT 3 #422 (FINAL) : les 3 dernières exemptions AUDIT ──
+  {
+    key: 'grapple', label: 'Empoignade — mécanique', group: 'Tables', sourceRef: 'LDB 14',
+    build: () => {
+      const g = datasetObject('grapple');
+      return [{
+        id: 'grapple', label: 'Empoignade — mécanique (GameOp)',
+        source: src(g.source),
+        sections: sections(
+          passiveSection(g.init, 'À la touche (Empêtré)'),
+          passiveSection(g.win.damage, 'Test opposé gagné — Infliger des Dégâts'),
+          passiveSection(g.win.entangle, 'Test opposé gagné — Empêtrer davantage'),
+          passiveSection(g.win.free, 'Test opposé gagné — Se libérer'),
+        ),
+      }];
+    },
+  },
+  {
+    key: 'miscastMinor', label: 'Incantations Imparfaites — Mineures', group: 'Magie', sourceRef: 'LDB 46',
+    build: () => datasetArray('miscastMinor').map(miscastRowItem),
+  },
+  {
+    key: 'miscastMajor', label: 'Incantations Imparfaites — Majeures', group: 'Magie', sourceRef: 'LDB 46',
+    build: () => datasetArray('miscastMajor').map(miscastRowItem),
+  },
+  {
+    key: 'miscastWrath', label: 'Colère des dieux', group: 'Magie', sourceRef: 'LDB 40',
+    build: () => datasetArray('miscastWrath').map(miscastRowItem),
+  },
+  {
+    key: 'nightStakes', label: 'Enjeux — cascade de repos', group: 'Tables', sourceRef: 'LDB 18/09/20/21',
+    build: () => datasetArray('nightStakes').map((e) => ({
+      id: e.id, label: e.label, desc: e.stake, source: src(e.source),
+    })),
   },
 
   {

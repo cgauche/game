@@ -95,6 +95,10 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   // d'attelage / Ivresse (09, nichés dans `{table,source}`), Surchargé par palier (61).
   advancementCosts: 'advancementCosts', drivingMishap: 'drivingMishap', drunkenness: 'drunkenness',
   encumbranceTiers: 'encumbranceTiers',
+  // LOT 3 #422 (FINAL) : Incantations Imparfaites/Colère des dieux (3 tables NICHÉES dans `miscast.json`)
+  // + enjeux de la cascade de repos (`nightStakes`, tableau racine kebab-case divergent).
+  miscastMinor: 'miscastMinor', miscastMajor: 'miscastMajor', miscastWrath: 'miscastWrath',
+  nightStakes: 'nightStakes',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -114,6 +118,8 @@ const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | '
   disponibilite: { ds: 'disponibilite', mode: 'single' },
   // LOT 2 #422 : Navigation fluviale (T2C ch.5) — fiche de règle UNIQUE, même patron.
   riverNavigation: { ds: 'riverNavigation', mode: 'single' },
+  // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
+  grapple: { ds: 'grapple', mode: 'single' },
 };
 export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
@@ -160,6 +166,12 @@ const OPS_FIELDS: Record<string, string[]> = {
   incidentsMonture: ['occupantOps'], problemesVehicule: ['occupantOps'],
   seaShanties: ['crewOps', 'captainOps'],
   drunkenness: ['ops'], // LOT 1 #422 (suite) : effet mécanique optionnel d'un résultat d'Ivresse (LDB 09)
+  // LOT 3 #422 (FINAL) : Empoignade — `init` (à la touche) en `GameOp[]` top-level (`win.damage/entangle/
+  // free`, sous `win`, retombent en sous-formulaire récursif `object`, hors guard — même patron `windEffect`
+  // de `riverNavigation`). Incantations Imparfaites/Colère des dieux — `ops` (dialecte compilé, mais MÊMES
+  // kinds `condition`/`wounds`/`corruption`/`reduceToZero`/`castPenalty` que le vocabulaire `GameOp` réel).
+  grapple: ['init'],
+  miscastMinor: ['ops'], miscastMajor: ['ops'], miscastWrath: ['ops'],
   ...Object.fromEntries(SHIP_CRIT_CATEGORIES.map((k) => [k, ['ops']])),
 };
 const opsFieldsOf = (categoryKey: string): string[] => OPS_FIELDS[categoryKey] ?? [];

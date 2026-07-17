@@ -90,6 +90,9 @@ const jsonNestedTestSchema = z.strictObject({
 
 /** `JsonRow` (`engine/miscast.ts:124`) — entrée de table d100 (`min`/`max` inclusifs). */
 const jsonRowSchema = z.strictObject({
+  /** Identité STABLE (#422, exposition Codex) — slug préfixé par table (`mineure-`/`majeure-`/`colere-`)
+   *  pour éviter toute collision inter-tables ; consommée par le Codex, jamais par `engine/miscast.ts`. */
+  id: z.string(),
   min: z.number(),
   max: z.number(),
   name: z.string(),

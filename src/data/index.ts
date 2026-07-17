@@ -106,6 +106,7 @@ import type { RiverNavigationData } from './schemas/defs/river-navigation';
 export interface GrappleRule {
   init: import('../engine/ops').GameOp[];
   win: { damage: import('../engine/ops').GameOp[]; entangle: import('../engine/ops').GameOp[]; free: import('../engine/ops').GameOp[] };
+  source?: SourceRef;
 }
 export const GRAPPLE = grappleJson as GrappleRule;
 
@@ -150,6 +151,10 @@ export const WATER_EXPOSURE = waterExposureJson as WaterExposureData;
 /** Enjeu VERBATIM (règle 5, #331) d'un `kind` d'étape de la cascade de nuit (`src/state/restFlow.ts`
  *  `nightStake`) — un `kind` absent du catalogue n'affiche rien (surfaçage progressif). */
 export interface NightStakeEntry {
+  /** Identité STABLE + libellé FR (#422, exposition Codex) — distincts de `kind` (vocabulaire lu par
+   *  `nightStake`), ajoutés pour la navigation/l'édition. */
+  id: string;
+  label: string;
   kind: string;
   stake: string;
   source: SourceRef;
