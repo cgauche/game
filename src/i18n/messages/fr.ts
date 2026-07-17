@@ -584,6 +584,7 @@ export const fr = {
   'cs.useConsumable': '{name} utilise : {item}.',
   'cs.sigmarWard': "{name} : −20 en Langue (Magick) — la cible est sous la protection de Sigmar (N'écoutez point la Sorcière).",
   'cs.aqshyBonus': '{name} : +{n} en Langue (Magick) — Aqshy se nourrit des flammes proches.',
+  'cs.windsOfMagicSeen': '{name} perçoit les Vents Tourbillonnants (Seconde vue, Perception réussie).',
   'cs.cannotFocus': 'Ce sort ne peut pas être focalisé.',
   'cs.focusBlocked': '{name} ne peut pas focaliser : {reason}.',
   'cs.magicMissileNeedsTarget': '{spell} est un Projectile magique — il faut une cible ennemie (en combat).',

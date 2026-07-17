@@ -41,6 +41,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | `gods.json` | Dieux (bénédictions/miracles rattachés) |
 | `miscast.json` | Tables d'Incident magique (`minor`/`major`/`wrath`) |
 | `breath-types.json` | Types de Souffle (feu, froid, corrosif…) |
+| `vents-tourbillonnants.json` | Table d10 de force des Vents (option `vents-tourbillonnants`, LDB 46 l.179-190) |
 
 ### Combat & résolution
 | Fichier | Contient |

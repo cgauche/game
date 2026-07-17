@@ -26,7 +26,7 @@ import { makeRollFlow, type RollFlowHandlers, type RollFlowLens, type PendingBas
 import { TestOutcome } from '../engine/testOutcome';
 import type { RollBreakdown } from '../engine/combat';
 import { battleRng } from './battleRng';
-import { actorIn, inBattleId, touchActors, seaMagicContext } from './combatOrParty';
+import { actorIn, inBattleId, touchActors, seaMagicContext, windsMagicModOf } from './combatOrParty';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
@@ -528,7 +528,7 @@ export const FLOWS = {
       // — Jet NORMAL (relance Chance/Pacte) : re-jet complet — wards recalculés (Sorcière LDB 42 + Aqshy LDB 48). —
       // Ward = pénalité « Sorcière » (LDB 42) + bonus conditionnel de Domaine (Aqshy près des flammes,
       // LDB 48) + bonus d'ENVIRONNEMENT (Vie/Ghyran +10 en zone rurale/sauvage, LDB 48 l.690).
-      const ward = castWardPenalty(s, target, spell) + domainCastBonus(s, actor, spell) + domainEnvironmentBonus(spell, s.scene?.environment);
+      const ward = castWardPenalty(s, target, spell) + domainCastBonus(s, actor, spell) + domainEnvironmentBonus(spell, s.scene?.environment) + windsMagicModOf(s.battle);
       // « Prêchez, ma sœur ! » (LDB 40 l.40-42, option `prayer-conviction`) : une Prière murmurée
       // subit une Difficulté d'un cran plus dure. Ne concerne QUE les Prières (`castInfoIsPrayer`).
       const discreet = !!p.discreet && castInfoIsPrayer(spell) && !!rule('prayer-conviction');
@@ -1098,7 +1098,7 @@ export const FLOWS = {
       }
       const spell = findSpellById(p.spellId);
       if (!spell) return null;
-      return { result: resolveFocus(actor, spell, battleRng(), 'intermediaire', seaMagicContext(s).atSea) };
+      return { result: resolveFocus(actor, spell, battleRng(), 'intermediaire', seaMagicContext(s).atSea, windsMagicModOf(s.battle)) };
     },
     outcome: (p) => sealOutcome((p.result?.dr ?? -1) > 0, p.result?.dr ?? 0, p.result?.roll ?? 0, p.result?.target ?? 0), // DR nul = raté (aucun DR gagné → rejouable)
     bonus: {

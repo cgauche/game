@@ -54,6 +54,7 @@ import calendarIntercalaryJson from './calendarIntercalary.json';
 import calendarWeekdaysJson from './calendarWeekdays.json';
 import calendarPhasesJson from './calendarPhases.json';
 import weatherJson from './weather.json';
+import ventsTourbillonnantsJson from './vents-tourbillonnants.json';
 import symptomsJson from './symptoms.json';
 import detailsJson from './details.json';
 import starsJson from './stars.json';
@@ -1694,6 +1695,10 @@ export const weather = weatherData.seasons;
 export const weatherConditions = weatherData.conditions;
 /** Caractéristiques réputées « physiques » (liste MAISON, EDOC ch.5 l.82 non chiffrée). */
 export const weatherPhysicalTestChars = weatherData.physicalTestChars;
+/** Tableau des Vents Tourbillonnants (LDB 46 l.183-190, option `vents-tourbillonnants`) — tirage 1d10
+ *  (`engine/windsOfMagic.ts`, lecture JSON directe comme `drunkenness.ts`) ; réexporté ICI pour le
+ *  Codex (`ventsTourbillonnants`, `ui/compendium/registry.ts`). */
+export const windsOfMagicTable = (ventsTourbillonnantsJson as { table: { id: string; min: number; max: number; mod: number; label: string }[] }).table;
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
 /** Les 5 demeures célestes (ADE2 ch.03 l.502-512, « Déterminer les demeures célestes ») — ossature

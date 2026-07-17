@@ -13,6 +13,7 @@ import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { rule } from '../engine/policy';
+import { windsMagicModOf } from '../state/combatOrParty';
 import { CharFrame } from './CharFrame';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
@@ -119,12 +120,15 @@ export function CastModal() {
   // +1 DR/Pacte/Résilience → Appliquer). Pré-jet : ligne en attente (base+mods=cible, dé/DR vides) via
   // `testPending`, dérivée du même `previewCast` que le panneau (parité Attaque/Défense). Post-jet :
   // `testBreakdown` (base = cible du Test, aucun mod post-hoc — parité avec l'ancien littéral inline).
-  const preview = previewCast(caster, spell, { missile: pc.missile, focused: pc.focused });
+  // Vents Tourbillonnants (LDB 46 l.179-190) : le mod n'entre dans l'APERÇU pré-jet que RÉVÉLÉ
+  // (Seconde vue) — sinon on subit les Vents sans les avoir repérés, révélés au breakdown POST-jet.
+  const windsMod = windsMagicModOf(battle);
+  const preview = previewCast(caster, spell, { missile: pc.missile, focused: pc.focused, windsMod: battle?.windsOfMagic?.revealed ? windsMod : 0 });
   const castLabel = isPrayer ? 'Prière' : `Incantation / NI ${ni}`; // le jet reste Langue (Magick) ; un Projectile magique ne change que Localisation/Dégâts post-réussite
   const castRow: RollRowData = {
     actor: caster,
     row: res
-      ? { combatant: caster, d: testBreakdown(castLabel, res.target, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }) }
+      ? { combatant: caster, d: testBreakdown(castLabel, res.target - windsMod, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }, undefined, windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : undefined) }
       : { combatant: caster, pending: testPending(castLabel, preview.base, preview.target, undefined, preview.mods) },
     rolled: !!res,
     onRoll: roll,

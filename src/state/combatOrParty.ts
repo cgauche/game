@@ -72,6 +72,13 @@ export function seaMagicContext(state: GameState): { atSea: boolean; wind: SeaWi
   return { atSea, wind: atSea ? state.travelPlan?.sea?.weather.vent : undefined };
 }
 
+/** Modificateur COURANT des Vents Tourbillonnants (LDB 46 l.179-190, option `vents-tourbillonnants`)
+ *  — SOURCE UNIQUE lue par `resolveCasting`/`resolveFocus` (`extraMod`) ET l'aperçu pré-jet des
+ *  modales (Cast/Focus). 0 hors combat ou option inactive (`battle.windsOfMagic` absent). */
+export function windsMagicModOf(battle: GameState['battle']): number {
+  return battle?.windsOfMagic?.mod ?? 0;
+}
+
 export function combatantClickActs(get: Get, combatant: Pick<Combatant, 'id'>): boolean {
   const battle = get().battle;
   if (!battle || battle.over) return false;

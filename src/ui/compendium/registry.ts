@@ -15,7 +15,7 @@ import {
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names, RACE_KEY_LABEL,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
-  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
+  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel, windsOfMagicTable,
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables,
@@ -1074,6 +1074,15 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         chips('Miracles', 'spells', c.miracles.map((m) => refLabel('spells', m))),
         chips('Sorts du Chaos', 'spells', (c.chaosSpells ?? []).map((s) => refLabel('spells', s))),
       ),
+    })),
+  },
+  {
+    key: 'ventsTourbillonnants', label: 'Vents Tourbillonnants', group: 'Magie',
+    // Option `vents-tourbillonnants` (LDB 46 l.179-190) : table 1d10 de force des Vents, ajoutée
+    // aux Tests d'Incantation/Focalisation (`engine/windsOfMagic.ts`).
+    build: () => windsOfMagicTable.map((e) => ({
+      id: e.id, label: e.label, sub: `1d10 ${e.min}${e.max > e.min ? `–${e.max}` : ''}`,
+      meta: facts(fact('Modificateur', e.mod >= 0 ? `+${e.mod}` : `${e.mod}`)),
     })),
   },
   {

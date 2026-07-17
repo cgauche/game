@@ -190,6 +190,12 @@ export interface BattleState {
   /** « Avantages et Magie » (LDB 46 l.176) : cibles déjà visées par un Sort d'un Domaine CE Round —
    *  re-viser la même cible avec le même Vent donne +1 Avantage au lanceur. Purgé chaque Round. */
   domainCasts?: { targetId: string; domain: string }[];
+  /** Option « Vents Tourbillonnants » (LDB 46 l.179-190) : force des Vents tirée pour LE combat (ou
+   *  re-tirée à chaque Round en grain `round`, `state/combat/roundHooks.ts`) — `mod` s'ajoute aux
+   *  Tests d'Incantation ET de Focalisation (`windsMagicModOf`). `revealed` = un porteur de Seconde
+   *  vue a réussi le Test de Perception Facile (+40, l.181) : le HUD peut afficher la force. Le `mod`
+   *  reste appliqué (visible au breakdown du jet) même non révélé. Absent = règle inactive. */
+  windsOfMagic?: { roll: number; mod: number; revealed: boolean } | null;
   /** Réserves d'Avantage par CAMP (Aux Armes, Annexe I — mode « Avantage de groupe ») : présentes
    *  seulement quand la règle `combat-aa-avantage-groupe` est active. SOURCE DE VÉRITÉ de l'Avantage ;
    *  chaque `Combatant.advantage` en est la PROJECTION du camp (`mirrorPools`). Absent en mode Livre de base. */

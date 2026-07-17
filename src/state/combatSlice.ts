@@ -19,7 +19,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -85,7 +85,7 @@ import { crewedFireWeapon, crewedReloadStep } from '../engine/crewedWeapon';
 import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
-import { actorIn, inBattleId, seaMagicContext } from './combatOrParty';
+import { actorIn, inBattleId, seaMagicContext, windsMagicModOf } from './combatOrParty';
 import { controlsCombatant, pilotedByHuman } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
@@ -2591,6 +2591,9 @@ export function createCombatSlice(get: Get, set: Set) {
       // Météo du JOUR estampillée sur chaque combattant (#341) : SOURCE du canal « Tests physiques »
       // (`weatherTestMods`, lu par attack/defenseModifiers/baseTestMods) — AVANT tout jet de ce combat.
       stampEnvWeatherAtCombatStart(get, set);
+      // Option « Vents Tourbillonnants » (LDB 46 l.179-190, #491) : tirage 1d10 de la force des Vents
+      // + Test de Perception (Seconde vue) des porteurs — AVANT tout jet d'Incantation/Focalisation.
+      windsOfMagicAtCombatStart(get, set);
       // Éclairs de la pluie diluvienne (EDOC ch.5 l.82, #341) : les montures Nerveuses non Dressées (Guerre)
       // sont effrayées à l'ouverture d'une embuscade sous l'orage — MÊME dispatcher onStartled/'noise'.
       startleOnStormAtCombatStart(get, set);
@@ -2776,7 +2779,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const unplacedZone = !!pc.zone && !pc.zone.center;
       const sigmar = unplacedZone ? 0 : castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière »
       const aqshy = domainCastBonus(get(), caster, spell); // attribut d'Aqshy : +10/En flammes proche
-      const ward = sigmar + aqshy;
+      const winds = windsMagicModOf(get().battle); // Vents Tourbillonnants (LDB 46 l.179-190, option)
+      const ward = sigmar + aqshy + winds;
       // « Prêchez, ma sœur ! » (LDB 40 l.40-42, option `prayer-conviction`) : une Prière murmurée
       // (`pc.discreet`) subit une Difficulté d'un cran plus dure. Ne concerne QUE les Prières.
       const discreet = !!pc.discreet && castInfoIsPrayer(spell) && !!rule('prayer-conviction');

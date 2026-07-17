@@ -469,6 +469,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: "Un lanceur peut focaliser sa magie via un composant adapté à un Sort d'Arcane/Domaine (acheté pour ce Sort, coût = NI pistoles d'argent). Sur une Incantation Imparfaite, le composant l'absorbe : Majeure → Mineure, Mineure → annulée. Consumé à l'incantation, même sans Imparfaite. Composants gérés sur la fiche du personnage. Désactivé par défaut.",
   },
   {
+    id: 'vents-tourbillonnants',
+    label: 'Vents Tourbillonnants',
+    ref: 'LDB 46 l.179-190',
+    group: 'Magie',
+    kind: 'mode',
+    default: 'off',
+    options: ['off', 'scene', 'round'],
+    hint: "Avant chaque scène — ou à chaque Round dans une zone de turbulences — tirage 1d10 de la force des Vents (−30 à +30), appliqué aux Tests d'Incantation ET de Focalisation. Un porteur du Talent Seconde vue peut le repérer (Test de Perception Facile +40). off = désactivé (défaut) ; scene = tirage à l'ouverture du combat ; round = re-tirage à chaque Round (« zones de turbulences magiques »).",
+  },
+  {
     id: 'prayer-conviction',
     label: 'Prêchez ma sœur !',
     ref: 'LDB 40 l.42',

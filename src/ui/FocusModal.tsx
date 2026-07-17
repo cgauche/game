@@ -3,6 +3,7 @@ import { findSpellById } from '../data/index';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
+import { windsMagicModOf } from '../state/combatOrParty';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
@@ -33,13 +34,17 @@ export function FocusModal() {
   const prev = caster.focus?.spell === pf.spellId ? caster.focus.dr : 0;
   const r = pf.result;
   const rolled = !!r;
+  // Vents Tourbillonnants (LDB 46 l.179-190) : mod visible au pré-jet SEULEMENT si révélés (Seconde
+  // vue), toujours visible au breakdown post-jet (déjà appliqué au Test — cf. `resolveFocus`).
+  const windsMod = windsMagicModOf(battle);
+  const windsMods = windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : undefined;
 
   const actorRow: RollRowData = {
     actor: caster,
     row: {
       combatant: caster,
-      d: r ? testBreakdown('Focalisation', castingValue(caster, 'focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }) : undefined,
-      pending: testPending('Focalisation', castingValue(caster, 'focalisation')),
+      d: r ? testBreakdown('Focalisation', castingValue(caster, 'focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }, undefined, windsMods) : undefined,
+      pending: testPending('Focalisation', castingValue(caster, 'focalisation'), undefined, undefined, battle?.windsOfMagic?.revealed ? windsMods : undefined),
     },
     rolled,
     freeReroll: freeRerollOf(caster),

@@ -18,6 +18,7 @@ import { beatHold, approachMs, afterApproach } from './combatDirector';
 import { scheduleCombatTimer } from './combatTimers';
 import { facingToward, DIR8_ORDER, type Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
+import { rollWindsOfMagic, hasSecondeVue } from '../engine/windsOfMagic';
 import { setVesselHull } from './seaVoyageFlow';
 import {
   resolveMelee,
@@ -512,6 +513,41 @@ export function startleOnStormAtCombatStart(get: Get, set: SetFn): void {
   }
 }
 
+/**
+ * Option « Vents Tourbillonnants » (LDB 46 l.179-190) : tirage 1d10 de la force des Vents — à
+ * l'OUVERTURE du combat (grain `scene`, défaut), et re-tirable au Round (`state/combat/roundHooks.ts`,
+ * grain `round`, « zones de turbulences magiques »). Un héros porteur du Talent Seconde vue tente un
+ * Test de Perception Facile (+40, l.181) : succès → force RÉVÉLÉE (HUD) ; sans détection, le
+ * modificateur reste appliqué (Vents subis sans être repérés) mais invisible tant qu'il n'a pas été
+ * révélé — la modale de jet le montre au moment du jet (breakdown post-jet). Inerte hors combat (le
+ * moteur ne modélise le grain « scène » qu'au niveau du combat, cf. grounding #491) et si l'option est
+ * 'off' (aucun tirage RNG → golden préservé).
+ */
+export function rerollWindsOfMagic(get: Get, set: SetFn): void {
+  const battle = get().battle;
+  if (!battle || rule('vents-tourbillonnants') === 'off') return;
+  const { roll, mod } = rollWindsOfMagic(battleRng());
+  let revealed = false;
+  const lines: { line: string; id: string }[] = [];
+  for (const c of battle.combatants) {
+    if (c.kind !== 'hero' || isOutOfAction(c) || !hasSecondeVue(c)) continue;
+    const res = rollTest(testValue(c, 'perception'), 'facile', battleRng());
+    if (res.success) {
+      revealed = true;
+      lines.push({ line: tr('cs.windsOfMagicSeen', { name: c.name }), id: c.id });
+    }
+  }
+  battle.windsOfMagic = { roll, mod, revealed };
+  for (const { line, id } of lines) battle.log.push(ev('condition', line, id));
+  set({ battle: { ...battle } });
+}
+
+/** Tirage d'OUVERTURE de combat des Vents Tourbillonnants (grain `scene`, défaut RAW). */
+export function windsOfMagicAtCombatStart(get: Get, set: SetFn): void {
+  if (!get().battle) return;
+  rerollWindsOfMagic(get, set);
+}
+
 /** Une arme tire-t-elle à la POUDRE noire (poudre exposée inutilisable sous la pluie diluvienne, EDOC l.82) ? */
 function isBlackPowderWeapon(w: Weapon): boolean {
   const k = weaponGroupKey(w);
@@ -779,22 +815,30 @@ export function previewDefense(defender: Combatant): { label: string; mods: ModL
 export function previewCast(
   caster: Combatant,
   spell: NonNullable<ReturnType<typeof findSpell>>,
-  opts?: { missile?: boolean; focused?: boolean },
+  opts?: {
+    missile?: boolean; focused?: boolean;
+    /** Vents Tourbillonnants (LDB 46 l.179-190) : n'entre dans l'APERÇU pré-jet que si RÉVÉLÉS
+     *  (Seconde vue) — sinon on subit les Vents sans les avoir repérés (le mod reste appliqué au
+     *  jet, cf. `castRoll`/`resolveCasting`, mais n'apparaît qu'au breakdown POST-jet). */
+    windsMod?: number;
+  },
 ): { label: string; base: number; target: number; mods: ModLine[] } {
   const ci = castInfo(spell);
   const target = castingValue(caster, ci.skill, ci.spec);
   const advMod = 10 * (caster.advantage ?? 0); // l'Avantage s'applique aux Tests d'Incantation
   const penMod = castPenaltyMod(caster, ci.skill); // contrecoups actifs (Imparfaite/Colère)
+  const windsMod = opts?.windsMod ?? 0;
   const isPrayer = spell.cn == null;
   const ni = opts?.focused ? 0 : spell.cn ?? 0;
   const mods: ModLine[] = [
     ...(advMod ? [{ label: 'Avantage', value: advMod }] : []),
     ...(penMod ? [{ label: 'Contrecoup', value: penMod }] : []),
+    ...(windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : []),
   ];
   return {
     label: isPrayer ? tr('cf.prayerLabel') : tr('cf.castLabel', { ni }), // le test reste Langue (Magick) — « Projectile magique » ne change QUE Localisation/Dégâts après réussite (LDB 46 l.155-156)
     base: target - advMod - penMod,
-    target,
+    target: target + windsMod,
     mods,
   };
 }

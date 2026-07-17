@@ -457,6 +457,11 @@ export function ActionBar() {
     <div className="action-bar">
       {hasSpells && battle.action === 'cast' && !pendingCast && (
         <div className="ab-spells">
+          {battle.windsOfMagic?.revealed && (
+            <span className="chip" title="Vents Tourbillonnants (LDB 46) — révélés par la Seconde vue : modificateur aux Tests d'Incantation et de Focalisation">
+              <Icon id="magic/gust" size="sm" /> Vents de Magie {battle.windsOfMagic.mod >= 0 ? '+' : ''}{battle.windsOfMagic.mod}
+            </span>
+          )}
           {active.spells!.map((spellId) => {
             const spell = findSpellById(spellId);
             if (!spell) return null;

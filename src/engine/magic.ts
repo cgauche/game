@@ -743,6 +743,9 @@ export function resolveFocus(
   rng: RNG = defaultRNG,
   difficulty: Difficulty = 'intermediaire',
   atSea = false,
+  /** Vents Tourbillonnants (LDB 46 l.179-190, option `vents-tourbillonnants`) : modificateur de la
+   *  force des Vents CE Round, calculé par l'ÉTAT (`windsMagicModOf`, hors du moteur pur). */
+  extraMod = 0,
 ): FocusResult {
   const sk = focusSkillFor(caster, spell);
   if (!sk) {
@@ -754,7 +757,7 @@ export function resolveFocus(
       log: `${caster.name} ne maîtrise pas Focalisation${wind ? ` (${wind})` : ''}.`,
     };
   }
-  const value = castingValue(caster, 'focalisation', sk.spec);
+  const value = castingValue(caster, 'focalisation', sk.spec) + extraMod;
   const t = rollTest(value, difficulty, rng);
   // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).

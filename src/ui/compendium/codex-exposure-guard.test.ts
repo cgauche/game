@@ -114,6 +114,7 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'trappings.json': ['trappings', 'siegeEngines'],
   'traumas.json': ['traumas'],
   'vehicles.json': ['vehicles'],
+  'vents-tourbillonnants.json': ['ventsTourbillonnants'],
   'water-exposure.json': ['waterExposure'],
   'weaponGroups.json': ['weaponGroups'],
   'weather.json': ['weather'],

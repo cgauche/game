@@ -1,0 +1,44 @@
+{
+  "table": [
+    {
+      "id": "vents-tres-faibles",
+      "min": 1,
+      "max": 1,
+      "mod": -30,
+      "label": "Vents très faibles"
+    },
+    {
+      "id": "vents-faibles",
+      "min": 2,
+      "max": 3,
+      "mod": -10,
+      "label": "Vents faibles"
+    },
+    {
+      "id": "vents-stables",
+      "min": 4,
+      "max": 7,
+      "mod": 0,
+      "label": "Vents stables"
+    },
+    {
+      "id": "vents-forts",
+      "min": 8,
+      "max": 9,
+      "mod": 10,
+      "label": "Vents forts"
+    },
+    {
+      "id": "vents-tres-forts",
+      "min": 10,
+      "max": 10,
+      "mod": 30,
+      "label": "Vents très forts"
+    }
+  ],
+  "source": {
+    "book": "livre-de-base",
+    "page": 238,
+    "note": "Option : Vents Tourbillonnants, LDB 46 l.183-190"
+  }
+}
