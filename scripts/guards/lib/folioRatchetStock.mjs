@@ -55,19 +55,13 @@ export const FOLIO_RATCHET = new Set([
   'activities.json:compte-a-rebours', // p.167 -> hors livre (dernier folio 98)
   'activities.json:duel', // p.223 -> hors livre (dernier folio 98)
   'activities.json:entrainement-equipage', // p.130 -> 134
-  'activities.json:infiltration', // p.73 -> 84
-  'activities.json:inspire', // p.71 -> 84
   'activities.json:intrus', // p.219 -> hors livre (dernier folio 98)
   'activities.json:ligne-de-mire', // p.206 -> hors livre (dernier folio 98)
   'activities.json:motivation', // p.149 -> hors livre (dernier folio 98)
   'activities.json:percee', // p.173 -> hors livre (dernier folio 98)
-  'activities.json:planification', // p.79 -> 84
   'activities.json:pluie-de-fleches', // p.143 -> hors livre (dernier folio 98)
   'activities.json:protection', // p.155 -> hors livre (dernier folio 98)
   'activities.json:rassemblement', // p.122 -> hors livre (dernier folio 98)
-  'activities.json:rassembler-des-forces', // p.94 -> 85
-  'activities.json:reperage', // p.100 -> hors livre (dernier folio 98)
-  'activities.json:sabotage', // p.104 -> hors livre (dernier folio 98)
   'activities.json:survol', // p.215 -> hors livre (dernier folio 98)
   'activities.json:tenez-votre-position', // p.161 -> hors livre (dernier folio 98)
   'activities.json:tuez-la-bete', // p.211 -> hors livre (dernier folio 98)
@@ -123,7 +117,6 @@ export const FOLIO_RATCHET = new Set([
   'spells.json:maitre-de-la-bete', // p.245 -> 246
   'spells.json:nuee-d-escampette', // p.10 -> 15
   // symptoms.json
-  'symptoms.json:crampes-abdominales', // p.92 -> 93
   'symptoms.json:malaise', // p.190 -> 188-189
   'symptoms.json:nausee', // p.190 -> 188-189
   'symptoms.json:persistant', // p.190 -> 188-189

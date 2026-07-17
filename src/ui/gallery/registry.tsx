@@ -48,6 +48,8 @@ import { RoseAxes } from '../RoseAxes';
 import { CharStatsGrid } from '../CharStatsGrid';
 import { axesProfile } from '../../engine/axes';
 import { GameOpChips } from '../GameOpChips';
+import { Band } from '../Band';
+import { CAREER_CHAR_ADVANCES } from '../creator/draft';
 
 // ── Données réelles pour les spécimens vivants (aucune donnée inventée) ──
 const HUMAN_SPECIES = species.find((s) => s.id === 'humains-reiklander') ?? species[0];
@@ -519,6 +521,27 @@ function RoseAxesDemo() {
   );
 }
 
+/** Bande titrée de rubrique (#492 Lot 0) — même patron « Augmentations gratuites » que le créateur
+ *  (`CharacterCreator.tsx`) : titre + sous-titre, compteur d'allocation à droite, contenu réel
+ *  (rangées de caractéristiques de carrière du pré-tiré). */
+function BandDemo() {
+  if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
+  const careerKeys = CHAR_KEYS.slice(0, 3);
+  const alloc = CAREER_CHAR_ADVANCES - 2;
+  return (
+    <Band
+      title={<>Augmentations gratuites<small>{CAREER_CHAR_ADVANCES} sur les Caractéristiques de carrière</small></>}
+      right={<b className={alloc === CAREER_CHAR_ADVANCES ? 'ok-text' : 'warn-text'}>{alloc}/{CAREER_CHAR_ADVANCES}</b>}
+    >
+      <PlaqueGrid>
+        {careerKeys.map((k) => (
+          <PlaqueRow key={k} prefix={CHAR_ABR[k]} name={CHAR_LABELS[k]} value={effectiveChar(SAMPLE_HERO, k)} />
+        ))}
+      </PlaqueGrid>
+    </Band>
+  );
+}
+
 function GameOpEditorDemo() {
   const [ops, setOps] = useState<GameOp[]>([]);
   return <GameOpEditor ops={ops} onChange={setOps} />;
@@ -593,6 +616,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { name: 'MasterDetail', file: 'src/ui/MasterDetail.tsx', category: 'Écrans & layout', render: MasterDetailDemo },
   { name: 'Tabs', file: 'src/ui/Tabs.tsx', category: 'Écrans & layout', render: TabsDemo },
   { name: 'MenuCard', file: 'src/ui/MenuCard.tsx', category: 'Écrans & layout', render: MenuCardDemo },
+  { name: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
   { name: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
   { name: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
   { name: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
