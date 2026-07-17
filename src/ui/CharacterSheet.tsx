@@ -100,7 +100,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   // dégâts…) plutôt que l'original du groupe ; hors combat, le groupe. → la fiche reflète l'état réel.
   const hero = useGame((s) => s.battle?.combatants.find((h) => h.id === heroId) ?? s.party.find((h) => h.id === heroId));
   const party = useGame((s) => s.party);
-  const tab = useGame((s) => s.sheetTab) ?? 'etat';
+  const tab = useGame((s) => s.sheetTab) ?? 'competences';
   const setSheetTab = useGame((s) => s.setSheetTab);
   const setSheetScroll = useGame((s) => s.setSheetScroll);
   const setSheetAlarmsSeen = useGame((s) => s.setSheetAlarmsSeen);
@@ -146,7 +146,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   // GATE CORRIGÉ (#492 bug 2) : un lanceur de Bénédictions sans sort mémorisé encore (Bienheureux
   // avant sa 1re Bénédiction) garde son onglet Magie & Foi — `spells.length` seul le privait à tort.
   const isCaster = (hero.spells?.length ?? 0) > 0 || casterTalents(hero).length > 0;
-  const tabs: SheetTab[] = ['etat', 'possessions', 'competences', ...(isCaster ? ['magie' as const] : []), 'avancement', 'histoire'];
+  const tabs: SheetTab[] = ['competences', 'etat', 'possessions', ...(isCaster ? ['magie' as const] : []), 'avancement', 'histoire'];
 
   // Gangrène du cadre (§6, #492) : l'or du bandeau/liseré se ternit progressivement de violet-noir
   // selon la Corruption — `none` (aucune) / `ronge` (sous le seuil) / `seuil` (seuil de Corruption

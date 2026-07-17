@@ -89,10 +89,12 @@ describe('EtatPanel', () => {
     expect(html).not.toContain(`id="${ETAT_ANCHOR_ENCOMBREMENT}" data-tone`);
   });
 
-  it('héros sain : rig calme centré + « Rien à signaler », aucune ancre de rubrique d’affliction ni de zone', () => {
+  it('héros sain : « Rien à signaler » + sous-ligne, SANS figurine (colonne aside déjà en pied), aucune ancre de rubrique d’affliction ni de zone', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={mkHero()} />);
     expect(html).toContain('Rien à signaler');
     expect(html).toContain('etat-ras');
+    expect(html).toContain('Ni blessure, ni affliction');
+    expect(html).not.toContain('charprev-svg');
     for (const anchor of [ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT]) {
       expect(html, `ancre inattendue : ${anchor}`).not.toContain(`id="${anchor}"`);
     }
