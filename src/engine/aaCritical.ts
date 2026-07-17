@@ -75,6 +75,18 @@ const AA_TABLES: Record<HitLocation, AAEntry[]> = {
   tete: T.tete, brasG: T.bras, brasD: T.bras, corps: T.corps, jambeG: T.jambe, jambeD: T.jambe,
 };
 
+/**
+ * Table de Critiques AA d'une Localisation — REPLI sur le Tableau AA des BRAS pour toute Localisation
+ * SANS Tableau dédié (tentacule, queue, aile isolée…), résultat décrit pour la loc réelle touchée
+ * (LDB 76 l.21). MÊME patron que `criticalTableFor` (`data/criticals.ts`) — SOURCE UNIQUE du chemin AA,
+ * calée sur la table AA du bras (pas celle du LDB, systèmes non mélangés). Aujourd'hui les 6 `HitLocation`
+ * sont toutes couvertes par une table AA dédiée (le repli n'y est jamais exercé) — invariant gardé par
+ * `aa-critical.test.ts`.
+ */
+export function aaTableFor(location: HitLocation): AAEntry[] {
+  return AA_TABLES[location] ?? T.bras;
+}
+
 /** Décalage AA du jet de Critique (l.2480) : +10 par Blessure au-delà de 0. PUR. */
 export function aaCriticalOffset(overkill: number): number {
   return 10 * Math.max(0, overkill);
@@ -90,7 +102,7 @@ export function resolveAACritical(
 ): CriticalResolved {
   const be = bonus(effectiveChar(target, 'endurance'));
   const roll = Math.max(1, d100(rng) + aaCriticalOffset(overkill));
-  const entry = findTableEntry(AA_TABLES[location], roll);
+  const entry = findTableEntry(aaTableFor(location), roll); // repli Bras AA (LDB 76 l.21) si loc sans table dédiée
   const resistVal = effectiveChar(target, 'endurance') + (target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
   const ops: GameOp[] = [];
   // Blessures supplémentaires (colonne Blessures, l.2482) : PB perdus, sans re-déclencher de Critique.
@@ -149,7 +161,7 @@ export function resolveAACritical(
 /** Une Blessure Critique AA est-elle TRIVIALE (« T », l.2521) — non comptée pour la mort par accumulation ?
  *  Lue par la couche combat pour ne pas incrémenter `criticalWounds` sur un résultat trivial. PUR. */
 export function aaCriticalIsTrivial(location: HitLocation, roll: number): boolean {
-  return !!findTableEntry(AA_TABLES[location], Math.max(1, roll)).trivial;
+  return !!findTableEntry(aaTableFor(location), Math.max(1, roll)).trivial;
 }
 
 /** Mort par accumulation de Blessures Critiques (l.2517) : un combattant Inconscient à 0 PB dont le nombre

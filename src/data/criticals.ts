@@ -123,3 +123,14 @@ export const CRITICAL_TABLES: Record<HitLocation, CritTable> = {
   jambeG: T.jambe,
   jambeD: T.jambe,
 };
+
+/**
+ * Table de Critiques d'une Localisation — REPLI sur le Tableau des BRAS pour toute Localisation SANS
+ * Tableau dédié (tentacule, queue, aile isolée…), résultat décrit pour la loc réelle touchée (LDB 76 l.21).
+ * SOURCE UNIQUE de la résolution loc→table : `rollCritical`/`resolveAACritical` passent TOUJOURS par ici,
+ * jamais un cas par-nom dispersé. Aujourd'hui les 6 `HitLocation` sont toutes couvertes par une table
+ * dédiée (le repli n'y est jamais exercé) — invariant gardé par `criticals.test.ts`.
+ */
+export function criticalTableFor(location: HitLocation): CritTable {
+  return CRITICAL_TABLES[location] ?? T.bras;
+}

@@ -1,9 +1,10 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { resolveAACritical, aaCriticalOffset, aaCriticalIsTrivial, aaDeathByCriticalCount } from './aaCritical';
+import { resolveAACritical, aaCriticalOffset, aaCriticalIsTrivial, aaDeathByCriticalCount, aaTableFor } from './aaCritical';
 import { rollCritical, resolvePostEncounterAmputations } from './critical';
 import { setRule, resetRule } from './policy';
 import aaJson from '../data/aa-criticals.json';
-import type { Combatant } from './types';
+import locJson from '../data/localisation.json';
+import type { Combatant, HitLocation } from './types';
 import type { RNG } from './dice';
 
 const seq = (...vals: number[]): RNG => {
@@ -203,6 +204,40 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
       expect(r.name).toBe('Pied écrasé');
       expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
       expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
+    });
+  });
+
+  /**
+   * Repli « Tableau des Bras » AA (même patron que `criticalTableFor` LDB, `data/criticals.test.ts`) —
+   * LDB 76 l.21 : « Si un animal possède une Localisation sans Tableau de Critiques, comme un tentacule,
+   * une queue ou une aile, faites un jet sur le Tableau des Bras et décrivez le résultat de façon
+   * appropriée. » Garde EXHAUSTIVE (la classe, pas les cas) sur le chemin AA.
+   */
+  describe('aaTableFor — repli Tableau des Bras AA (LDB 76 l.21)', () => {
+    const shapes = (locJson as { personnage: { shapes: Record<string, { loc: HitLocation }[]> } }).personnage.shapes;
+    const producedLocs = new Set<HitLocation>();
+    for (const entries of Object.values(shapes)) for (const e of entries) producedLocs.add(e.loc);
+
+    it('localisation.json (humanoide/serpent/araignee) ne produit que des locs déjà couvertes côté AA', () => {
+      expect(producedLocs.size).toBeGreaterThan(0);
+      for (const loc of producedLocs) {
+        expect(aaTableFor(loc).length, `loc ${loc}`).toBeGreaterThan(0);
+      }
+    });
+
+    it("les 6 HitLocation résolvent TOUTES sur une table AA dédiée DISTINCTE (aucun trou ni repli silencieux aujourd'hui)", () => {
+      expect(aaTableFor('brasG')).toBe(aaTableFor('brasD')); // même table (LDB : un seul Tableau des Bras)
+      expect(aaTableFor('jambeG')).toBe(aaTableFor('jambeD'));
+      expect(aaTableFor('tete')).not.toBe(aaTableFor('brasD'));
+      expect(aaTableFor('corps')).not.toBe(aaTableFor('brasD'));
+      expect(aaTableFor('jambeG')).not.toBe(aaTableFor('brasD'));
+    });
+
+    it('une loc SANS table AA dédiée (tentacule/queue/aile future) retombe réellement sur la table AA des Bras', () => {
+      const brasTable = aaTableFor('brasD');
+      for (const exotic of ['tentacule', 'queue', 'aile'] as unknown as HitLocation[]) {
+        expect(aaTableFor(exotic)).toBe(brasTable);
+      }
     });
   });
 });

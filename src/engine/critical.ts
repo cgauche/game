@@ -9,7 +9,7 @@ import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
-import { CRITICAL_TABLES, type Amputation, type CritEntry } from '../data/criticals';
+import { CRITICAL_TABLES, criticalTableFor, type Amputation, type CritEntry } from '../data/criticals';
 import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers, consolidateAmputations, AMPUTATION_WOUND_DESC } from './trauma';
 import { rule } from './policy';
 import { resolveAACritical } from './aaCritical';
@@ -220,7 +220,7 @@ export function rollCritical(
   const reduction = overkill > be ? 20 : 0; // LDB 18 l.16 : overkill > BE → -20 (résultat moins sévère)
   const raw = twice ? Math.max(d100(rng), d100(rng)) : d100(rng);
   const roll = Math.max(1, raw - reduction);
-  const entry = findTableEntry(CRITICAL_TABLES[location], roll);
+  const entry = findTableEntry(criticalTableFor(location), roll); // repli Bras (LDB 76 l.21) si loc sans table dédiée
   const resistVal = critResistValue(target);
   const ops: GameOp[] = [...(entry.ops ?? [])];
   if (entry.resist) {
