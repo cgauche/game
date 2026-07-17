@@ -300,11 +300,14 @@ export async function setMobileViewport(session) {
  * mêmes gestionnaires que la souris (delegation, `pointerdown`…). SCROLL-AWARE : un bouton hors
  * viewport a un rect `{x,y}` qui ne correspond à RIEN de cliquable tant qu'on ne l'a pas fait défiler
  * dans le viewport — lire le rect AVANT `scrollIntoView` fait rater le clic SILENCIEUSEMENT (aucune
- * erreur, juste aucun effet), piège vécu en recette (#514).
+ * erreur, juste aucun effet), piège vécu en recette (#514). L'apostrophe est MIXTE selon l'écran
+ * (typographique U+2019 ou droite U+0027) — les deux formes sont normalisées vers une seule avant
+ * comparaison, texte cherché ET texte DOM (piège vécu, écrans « Tenter un Test d'Athlétisme » vs
+ * « Dormir jusqu'à l'aube »).
  */
 export async function clickButtonByText(session, texte, { exact = false } = {}) {
   const rect = await evaluate(session, `(() => {
-    const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+    const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
     const target = norm(${JSON.stringify(texte)});
     const els = Array.from(document.querySelectorAll('button, [role="button"]'));
     const el = els.find((b) => ${exact} ? norm(b.textContent) === target : norm(b.textContent).includes(target));

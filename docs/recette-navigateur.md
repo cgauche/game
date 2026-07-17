@@ -298,7 +298,10 @@ le résout inline. Garde de ré-entrance : ce FM ne ré-émet jamais le trigger 
 - `cascade.commitStep` (seam CENTRAL des Tests différés d'entretien : `faim`/`recovery`/`diseaseTick`/… ).
 
 **Cadence observée en recette** : après *Lancer*, compter **~2,5 s** avant que *Appliquer* soit stable
-(résolution de la défense adverse + animation d'attaque) — attendre cette tempo avant de lire le résultat
+(résolution de la défense adverse + animation d'attaque) — attendre cette tempo avant de lire le résultat.
+Cette cadence n'est PAS spécifique au combat : **toute résolution de dés animée** (`RollShell` et ses
+modales — Test de scène, Activité d'interlude, jet composite…) tourne sur la même animation de dés ;
+attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUELLE modale de jet
 (cf. `game-browser-verif-tempo`, closure-sync ci-dessous).
 
 ## Pièges vécus (corrections d'expérience)
@@ -409,10 +412,12 @@ le résout inline. Garde de ré-entrance : ce FM ne ré-émet jamais le trigger 
   l'écran : `aim('cible')` → `{invalid, reason:'arc'}` = géométrie, pas munition/portée ; re-vérifier
   après un `turnShip`/`maneuver` du navire.
 
-- **Apostrophe TYPOGRAPHIQUE dans les libellés** (`’`, U+2019) ≠ apostrophe droite (`'`, U+0027) : un
-  sélecteur Playwright écrit avec `'` (« Dormir jusqu'à l'aube ») NE MATCHE PAS le texte réellement
-  rendu (l'UI utilise systématiquement `’`) — copier le libellé DEPUIS un snapshot/`__wfrp` plutôt que
-  le retaper.
+- **Apostrophe TYPOGRAPHIQUE dans les libellés** (`’`, U+2019) ≠ apostrophe droite (`'`, U+0027) :
+  l'UI est MIXTE selon l'écran (mesuré : « Tenter un Test d'Athlétisme » = droite, « Dormir jusqu'à
+  l'aube » = typographique) — pas de convention unique à copier. `clickButtonByText` (`lib.mjs`)
+  normalise désormais LES DEUX formes vers une seule avant comparaison, côté texte cherché ET côté
+  texte DOM ; un sélecteur Playwright `has-text`/`:text-is` écrit à la main reste exposé au piège et
+  doit copier le libellé DEPUIS un snapshot/`__wfrp` plutôt que le retaper.
 - **`button:has-text("Lancer")` matche aussi « Tout lancer »** (sous-chaîne) : un clic visant LE bouton
   « Lancer » peut résoudre le mauvais élément si « Tout lancer » est aussi à l'écran — utiliser
   `:text-is("Lancer")` (correspondance EXACTE) pour lever l'ambiguïté.
