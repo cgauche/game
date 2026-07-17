@@ -463,6 +463,21 @@ export interface PendingRun {
   result: { success: boolean; roll: number; target?: number; dr: number; bonusCases: number } | null;
   rerolled?: boolean;
 }
+/** Chute VOLONTAIRE en attente (LDB 15 l.82) : posée par `fallAcross` (case de départ en bordure d'une
+ *  falaise, `state/fallMove.planFall`) vers `to` (case d'arrivée, au pied), hauteur RÉELLE `metres`
+ *  (relief). `attempt` = choix RAW (« vous pouvez TENTER un Test d'Athlétisme ») : `null` = pas encore
+ *  choisi (deux boutons pré-jet), `false` = saut direct → chute PLEINE (résolue IMMÉDIATEMENT par
+ *  `fallChoose`, jamais de `result`), `true` = Test d'Athlétisme Accessible (+20) ouvert (Lancer →
+ *  Chance/Pacte/Résilience → Appliquer, patron `pendingRun`). */
+export interface PendingFall {
+  combatantId: string;
+  to: Pt;
+  metres: number;
+  attempt: boolean | null;
+  /** `target` absent sur un résultat synthétique (Résilience pré-jet) — la RollLine retombe sur la base. */
+  result: { success: boolean; roll: number; target?: number; dr: number; effectiveMetres: number } | null;
+  rerolled?: boolean;
+}
 /** Un contributeur au Test d'équipage de MANŒUVRE (MDG ch.14) : un marin à un rôle, son jet propre. PJ →
  *  interactif (Chance/Résilience sur SON jet) ; marin PNJ → témoin (`interactive:false`, auto-roulé à l'ouverture). */
 export interface ShipManeuverParticipant extends RollParticipant {
