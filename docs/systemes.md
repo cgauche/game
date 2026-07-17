@@ -30,7 +30,7 @@
 - **Corruption & mutation** (`corruption`) : docs/systeme-passifs.md.
 - **Voyage terrestre** (`voyage-terre`) : cf. docs/plans/2026-07-11-matrice-primitives-systemes.md §openRoll.
 - **Voyage maritime** (`voyage-maritime`) : Chantier naval GELÉ (pause structurelle #276) — reprend après le programme #269-#275.
-- **Combat naval tactique** (`combat-naval`) : MDG ch.12-14.
+- **Combat naval tactique** (`combat-naval`) : MDG 12-14.
 - **Bataille de masse / siège** (`bataille-masse`) : Activités partagées avec interlude (budget max 3 RAW commun).
 - **Interlude / entre-deux** (`interlude`) : Refonte UX différée (session dédiée) — backend fini, RAW « assister coûte-t-il un créneau ? » à trancher.
 - **Équipage / paie / postes** (`equipage`) : Station+AssignRow (stations.ts) — patron top-down slot+affectation.
