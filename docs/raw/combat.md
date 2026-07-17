@@ -3025,7 +3025,7 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 - `LDB 85` (l.8-406) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `TraverseCapability`, `cannotStopOn`, `StatblockEditor`, +87 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +27 fichiers
 - `ZI 14` (l.1013-1035, l.1037-1087) → `fouissement` — `src/data/traits.json`
 - `EDO 11` (l.172-243) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
-- `T2C 15` (l.119-128, l.133-135, l.138-163) → `aquatique`, `s-accrocher-pour-se-nourrir`, `capricieux`, `engloutir`, `hallucinogene`, `rampant`, `salive-analgesique`, `salive-anticoagulante`, `dur-a-cuire` — `src/data/creatures.json`, `src/data/traits.json`
+- `T2C 15` (l.119-128, l.133-135, l.138-163) → `capriciousMod`, `PerSL`, `aquatique`, `s-accrocher-pour-se-nourrir`, `capricieux`, `engloutir`, `hallucinogene`, `rampant`, `salive-analgesique`, `salive-anticoagulante`, +1 — `src/data/creatures.json`, `src/data/traits.json`, `src/engine/ops.ts`, `src/engine/social.ts`
 - sans code : `LDB 76` (l.9), `EDO 1` (l.271-290), `EDO 7` (l.320-348), `EDO 9` (l.513-570)
 
 ---
