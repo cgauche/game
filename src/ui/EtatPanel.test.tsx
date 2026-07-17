@@ -134,6 +134,26 @@ describe('EtatPanel', () => {
     expect(html).not.toContain(`id="${ETAT_ANCHOR_ENCOMBREMENT}" data-tone`);
   });
 
+  it('État cumulé + temporisé (données d’instance) : la ligne porte ×N ET sa durée, popover codex-lié résolu (LDB 16)', () => {
+    const hero = mkHero((c) => {
+      c.conditions = [{ name: 'hemorragique', value: 3, roundsLeft: 2 } as never];
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
+    expect(html).toContain('×3 · 2 R');
+    // Résolution CodexRef par id (pas de repli texte simple) : la classe `codex-ref` porte le lien.
+    expect(html).toMatch(/codex-ref[^>]*>Hémorragique</);
+  });
+
+  it('Surchargé : chip codex-liée (catégorie `encumbranceTiers`) affichant le PALIER réel (LDB 61)', () => {
+    const hero = mkHero((c) => {
+      // Capacité = BF3 + BE3 = 6 (caracs par défaut à 30) ; 8 Enc porté ∈ (6, 12] → Palier 1.
+      c.items = [{ uid: 'x', kind: 'misc', enc: 8, qualities: [] } as never];
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
+    expect(html).toContain('Palier 1');
+    expect(html).toMatch(/codex-ref[^>]*>Surchargé</);
+  });
+
   it('héros sain : « Rien à signaler » + sous-ligne, SANS figurine (colonne aside déjà en pied), aucune ancre de rubrique d’affliction ni de zone', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={mkHero()} />);
     expect(html).toContain('Rien à signaler');

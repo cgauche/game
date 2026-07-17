@@ -20,13 +20,15 @@ import type { Duration } from '../engine/duration';
 import { locationLabel } from '../engine/combat';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { maxEncumbrance, totalEncumbrance, giveTrappingLabel } from '../engine/items';
+import { encumbrancePenalties } from '../engine/encumbrance';
 import { findCritEntrySuffered, critEntryCodexCategory, type CritTableKey } from '../engine/critical';
 import { corruptionThreshold } from '../engine/corruption';
 import { formatRemaining } from '../engine/disease';
-import { CHAR_LABELS } from '../engine/types';
+import { CHAR_LABELS, type ConditionInstance } from '../engine/types';
 import { formatTrait } from '../engine/traits/dispatch';
 import { talentConcrete } from '../data';
 import { findConditionById, diseaseLabel, findPsychologyById, symptomLabel } from '../data';
+import { datasetArray } from '../data/overrides';
 import { isPsychAfflictionActive, ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
 import { CodexRef } from './compendium/CodexRef';
 import { EntityRef } from './EntityChip';
@@ -139,6 +141,19 @@ function effectDuration(e: { duration?: Duration; roundsLeft?: number; untilTime
   return e.roundsLeft != null ? ` · ${e.roundsLeft} R` : e.untilTime != null ? ' · durée' : '';
 }
 
+/** Valeur de la `PlaqueRow` d'un État actif : cumul de pions (`ConditionInstance.value`, ex. 10
+ *  Hémorragique) + durée d'instance temporisée (`roundsLeft`/`untilTime` — État posé par un Sort,
+ *  ex. Sonné « N Rounds ») — MÊME vocabulaire que `effectDuration` (` · N R` / ` · durée`), sans
+ *  quoi ces données d'instance restent invisibles hors popover Codex (qui ne porte que la règle
+ *  générique, pas l'état vécu du Personnage). `undefined` si l'instance est nue (1 pion, permanente). */
+function conditionValue(cond: ConditionInstance): string | undefined {
+  const parts: string[] = [];
+  if (cond.value > 1) parts.push(`×${cond.value}`);
+  if (cond.roundsLeft != null) parts.push(`${cond.roundsLeft} R`);
+  else if (cond.untilTime != null) parts.push('durée');
+  return parts.length ? parts.join(' · ') : undefined;
+}
+
 /** Rubrique « Effets en cours » : buffs/débuffs de Sort, Traits accordés, contrecoups d'incantation
  *  — DERNIÈRE bande du registre. */
 function ActiveEffectsSection({ hero }: { hero: Combatant }) {
@@ -188,6 +203,9 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
   const traumas = hero.traumas ?? [];
   const activePsych = (hero.psychState ?? []).filter(isPsychAfflictionActive);
   const overEnc = totalEncumbrance(hero) > maxEncumbrance(hero);
+  // Palier de Surcharge (0 sans signal ici, puisque `overEnc` filtre déjà) — l'id/label CODEX (#422)
+  // vit dans `encumbranceTiers.json`, résolu par `tier` (le moteur n'expose que la valeur numérique).
+  const encTier = overEnc ? datasetArray('encumbranceTiers').find((t) => t.tier === encumbrancePenalties(hero).tier) : undefined;
   const hasEffects = (hero.activeEffects?.length ?? 0) > 0 || (hero.castPenalties?.length ?? 0) > 0;
 
   const hasSignal = criticalEntries.length > 0 || conditions.length > 0 || corruption > 0 || diseases.length > 0
@@ -251,7 +269,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 prefix={<Icon id={(def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON} size="sm" />}
                 name={<CodexRef category="etats" id={cond.name} label={def?.label ?? cond.name} tooltipOnly>{def?.label ?? cond.name}</CodexRef>}
                 meta={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
-                value={cond.value > 1 ? `×${cond.value}` : undefined}
+                value={conditionValue(cond)}
               />
             );
           })}
@@ -353,8 +371,10 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
         <Section anchor={ETAT_ANCHOR_ENCOMBREMENT} title="Surcharge">
           <PlaqueRow
             prefix={<Icon id={FALLBACK_ICON} size="sm" />}
-            name="Surchargé"
-            value={`${totalEncumbrance(hero)}/${maxEncumbrance(hero)}`}
+            // Palier RÉEL (`encumbrancePenalties`, LDB 61) — le moteur applique déjà ces paliers
+            // (Mouvement/Agilité, `engine/encumbrance.ts`), la ligne ne peut pas en montrer moins.
+            name={<CodexRef category="encumbranceTiers" id={encTier?.id ?? ''} label={encTier?.label ?? 'Surchargé'} tooltipOnly>Surchargé</CodexRef>}
+            value={`${encTier?.label ?? ''} · ${totalEncumbrance(hero)}/${maxEncumbrance(hero)}`}
           />
         </Section>
       )}
