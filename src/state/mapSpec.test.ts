@@ -115,6 +115,44 @@ describe('buildScene — murs d’arête explicites', () => {
   });
 });
 
+describe('buildScene — diagonales (side \\\\/\\/) : attributs riches (#554)', () => {
+  it('`window` (décoratif pur) est PROPAGÉ sur une diagonale (patchWall après toggleDiagonalWall)', () => {
+    const s = buildScene({
+      id: 'diag', nom: 'Diag', size: [3, 3], terrain: 'pave',
+      walls: [{ x: 1, y: 1, side: '\\', window: true }],
+    });
+    const seg = s.walls!.find((w) => w.x === 1 && w.y === 1 && w.side === '\\');
+    expect(seg?.window).toBe(true);
+  });
+
+  it('`climb` sur une diagonale REFUSE explicitement (arête oblique purement visuelle, jamais résolue par `edgeOf`)', () => {
+    expect(() =>
+      buildScene({
+        id: 'diag2', nom: 'Diag2', size: [3, 3], terrain: 'pave',
+        walls: [{ x: 1, y: 1, side: '\\', climb: { kind: 'ladder' } }],
+      }),
+    ).toThrow(/WallSpec diagonal \(1,1\) ne peut pas porter climb\/structure/);
+  });
+
+  it('`structure` sur une diagonale REFUSE explicitement (jamais bloquante : `wallBetween`/`vision` ignorent \\\\/\\/)', () => {
+    expect(() =>
+      buildScene({
+        id: 'diag3', nom: 'Diag3', size: [3, 3], terrain: 'pave',
+        walls: [{ x: 1, y: 1, side: '/', structure: 'porte-de-ville' }],
+      }),
+    ).toThrow(/WallSpec diagonal \(1,1\) ne peut pas porter climb\/structure\/door/);
+  });
+
+  it('`door` sur une diagonale REFUSE explicitement (une porte qui ne barre jamais le passage = donnée mensongère)', () => {
+    expect(() =>
+      buildScene({
+        id: 'diag4', nom: 'Diag4', size: [3, 3], terrain: 'pave',
+        walls: [{ x: 1, y: 1, side: '\\', door: true }],
+      }),
+    ).toThrow(/WallSpec diagonal \(1,1\) ne peut pas porter climb\/structure\/door/);
+  });
+});
+
 describe('buildScene — `cells` (recette par LETTRE de case : enceinte pleine + tunnel + départ)', () => {
   // ENCEINTE de 2 cases d'épaisseur (rows 2-3) percée d'une PORTE au col 2, sur une carte 5×6.
   //   .....  (row 0 = champ)   ##D##  (row 2 = bande, gate col 2)   .....  (row 4 = cour)

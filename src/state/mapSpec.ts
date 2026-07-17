@@ -406,7 +406,17 @@ export function buildScene(spec: MapSpec): Scene {
   for (const wall of [...walledWalls, ...asciiWalls, ...cellWalls, ...(spec.walls ?? [])]) {
     const z = wall.z ?? 0;
     if (wall.side === '\\' || wall.side === '/') {
+      // Diagonale = arête PUREMENT VISUELLE (scene.ts:698-700) : déplacement/vision/grimpe restent
+      // orthogonaux (`edgeOf`/`wallBetween`/`vision.ts` ne résolvent QUE N/E) → `climb`/`structure`/`door`
+      // ne bloqueraient/ouvriraient jamais rien : les poser mentirait silencieusement sur leur effet.
+      // `window` reste décoratif pur (aucune règle mécanique ne le lit) → seul attribut propageable.
+      if (wall.climb || wall.structure || wall.door) {
+        throw new Error(
+          `buildScene: WallSpec diagonal (${wall.x},${wall.y}) ne peut pas porter climb/structure/door — arête oblique purement visuelle (mouvement/vision/grimpe restent orthogonaux, cf. scene.ts WallSide)`,
+        );
+      }
       s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);
+      if (wall.window) s = patchWall(s, wall.x, wall.y, wall.side, z, { window: true });
     } else {
       s = setEdgeWall(s, wall.x, wall.y, wall.side, z, wall.door ? 'door' : 'wall');
       if (wall.structure || wall.window || wall.climb) {
