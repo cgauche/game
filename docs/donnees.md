@@ -146,7 +146,8 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
   voisine du même livre (`grep '"book"' <fichier>`), ou le lire dans `books.json`. Contenu fan
   communautaire = livre `frenchy-bzh`.
 - **`source.page`** = la **page IMPRIMÉE du livre** (le folio), comme la donnée existante (ex. LDB « À
-  Enroulement » = folio 297, AA « Cimeterre » = folio 91). Pour l'obtenir : trouve ton contenu dans le
+  Enroulement » = folio 297, AA « Cimeterre » = folio 90 — sa `desc`, règle 5 ; la ligne de stats
+  du Cimeterre, folio 91, va en `alsoIn`, cf. plus bas). Pour l'obtenir : trouve ton contenu dans le
   `.md` du livre (`docs/sources-vf.md` → dossier `Source/`), puis lis le **`data-folio="N"`** de l'ancre
   `<span id="page-… data-folio="N">` la plus proche AU-DESSUS de ton contenu — **`N` = la valeur de
   `source.page`**. ⚠ Le NUMÉRO du span-id seul (`page-89`) est l'**index PDF**, PAS le folio (c'est le
@@ -184,8 +185,19 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
   n'inline `alsoIn`. **Enforced** par `src/data/secondary-ref-integrity.test.ts` : chaque `alsoIn[i]`
   doit être **auto-attesté** (le `label` du porteur OU son `quote` retrouvé dans le SPAN du folio
   déclaré — charge de la preuve sur l'auteur, jamais une réfutation par absence). Champ posé sur
-  `traits.json`/`qualities.json`/`trappings.json` (`traits.ts`/`qualities.ts`/`trappings.ts`) ; aucune
-  entrée n'en porte encore (migration = Lot 2, #563).
+  `traits.json`/`qualities.json`/`trappings.json`/`spells.json`/`naval-traits.json`
+  (`traits.ts`/`qualities.ts`/`trappings.ts`/`spells.ts`/`naval-traits.ts`). Exemple réel — le
+  Cimeterre (AA) a sa `desc` en prose folio 90 et sa ligne de stats (tableau des armes) folio 91,
+  où le `label` seul ne suffirait pas à distinguer la ligne dans le span sans un `quote` :
+  ```json
+  {
+    "id": "cimeterre",
+    "label": "Cimeterre",
+    "source": { "book": "aux-armes", "page": 90 },
+    "alsoIn": [{ "book": "aux-armes", "page": 91, "quote": "Cimeterre" }]
+  }
+  ```
+  (Lot 2, #563 : 15 entrées migrées — republications identiques et scissions prose/ligne-de-stats.)
 - **`variants?: Variant[]`** (#563/#564) — variante RÉGLÉE d'une entrée sous une **règle optionnelle**
   du registre `OPTIONAL_RULES` (`src/engine/policy.ts:43`, lue par `rule(id)`) : `when.rule` DOIT être
   un id du registre (jamais un label, gate fantôme sinon — **enforced** par

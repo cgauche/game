@@ -98,13 +98,11 @@ export const FOLIO_RATCHET = new Set([
   'naval-traits.json:embarcation-de-bord', // p.97 -> 98
   'naval-traits.json:figure-de-proue', // p.97 -> 98
   'naval-traits.json:lissage', // p.97 -> 99
-  'naval-traits.json:murs-blindes', // p.65 -> 66
   'naval-traits.json:propulsion-a-vapeur', // p.97 -> 99
   'naval-traits.json:ralentisseurs-lateraux', // p.97 -> 98
   'naval-traits.json:sabord', // p.97 -> 99
   // qualities.json
   'qualities.json:brise-coque', // p.48 -> 44
-  'qualities.json:immobilisante-fixe', // p.95 -> 96
   // skills.json
   'skills.json:escalade', // p.12 -> 118+
   // species.json
@@ -114,7 +112,6 @@ export const FOLIO_RATCHET = new Set([
   'species.json:nains-norse', // p.54 -> 41
   // spells.json
   'spells.json:bon-baiser-d-la-fosse-noire', // p.10 -> 15
-  'spells.json:maitre-de-la-bete', // p.245 -> 246
   'spells.json:nuee-d-escampette', // p.10 -> 15
   // symptoms.json
   'symptoms.json:malaise', // p.190 -> 188-189
@@ -144,29 +141,23 @@ export const FOLIO_RATCHET = new Set([
   'trappings.json:arquebuse-a-double-canon', // p.100 -> 101
   'trappings.json:arquebuse-a-meche', // p.100 -> 101
   'trappings.json:balle-de-gros-calibre-et-poudre', // p.102 -> 103
-  'trappings.json:batterie-tonnerre-de-feu', // p.123 -> 122
   'trappings.json:bombe-incendiaire-mortier', // p.106 -> 101
   'trappings.json:boussole', // p.127 -> 126
   'trappings.json:canne-pistolet', // p.100 -> 103
   'trappings.json:canon-crache-plomb', // p.29 -> 30
-  'trappings.json:cape-2', // p.95 -> 96
   'trappings.json:cartouche-en-papier', // p.102 -> 104
   'trappings.json:cartouche-et-poudre-de-precision', // p.102 -> 104
   'trappings.json:catapulte-grande', // p.122 -> 123
   'trappings.json:catapulte-moyenne', // p.122 -> 123
   'trappings.json:catapulte-petite', // p.122 -> 123
-  'trappings.json:cimeterre', // p.91 -> 90
-  'trappings.json:dague-ballock', // p.91 -> 90
   'trappings.json:epee-de-cour', // p.90 -> 93
   'trappings.json:filet', // p.31 -> 29
-  'trappings.json:filet-leste', // p.95 -> 96
   'trappings.json:gaffe-2', // p.90 -> 94
   'trappings.json:gantelet-a-pointes', // p.90 -> 94
   'trappings.json:grande-lance', // p.29 -> 30
   'trappings.json:grande-massue-ogre', // p.29 -> 30
   'trappings.json:grappin-munition', // p.102 -> 104
   'trappings.json:hache-arquebuse', // p.100 -> 101
-  'trappings.json:hache-d-armes', // p.96 -> 97
   'trappings.json:hallebarde-arquebuse', // p.100 -> 102
   'trappings.json:haquebute', // p.100 -> 102
   'trappings.json:huile-de-lampe', // p.308 -> 309+
@@ -179,7 +170,6 @@ export const FOLIO_RATCHET = new Set([
   'trappings.json:necessaire-de-deguisement', // p.303 -> 304+
   'trappings.json:outils-de-crochetage', // p.303 -> 304+
   'trappings.json:peau-de-phoque', // p.127 -> 126
-  'trappings.json:pertuisane-fauchard', // p.96 -> 97
   'trappings.json:pieces-detachees-de-navire', // p.127 -> 126
   'trappings.json:piege-a-animaux', // p.303 -> 304+
   'trappings.json:piege-a-chaines', // p.29 -> 30
@@ -193,7 +183,6 @@ export const FOLIO_RATCHET = new Set([
   'trappings.json:ration-soupe-chou-fermente', // p.127 -> 126
   'trappings.json:sabre', // p.90 -> 93
   'trappings.json:sac-de-couchage', // p.308 -> 309+
-  'trappings.json:serpe-de-guerre', // p.96 -> 97
   'trappings.json:tente', // p.308 -> 309+
   'trappings.json:tonneau-d-eau-douce', // p.127 -> 125
   'trappings.json:tonneau-de-petite-biere', // p.127 -> 126

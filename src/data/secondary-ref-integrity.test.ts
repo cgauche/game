@@ -6,10 +6,10 @@
  * par absence (doctrine `folioIntegrity.mjs` — un folio de TABLE ne porte pas la desc, `quote`
  * couvre ce cas, ex. `zweihander-flamberge`/`cimeterre`).
  *
- * ⚠ Lot 0/1 posent la PRIMITIVE et la GARDE seules — 0 entrée de `src/data/*.json` ne porte `alsoIn`
- * (migration = Lot 2, hors périmètre). Les morsures ci-dessous utilisent donc des fixtures
- * SYNTHÉTIQUES, contre le VRAI corpus `Source/` (jamais des livres inventés) — patron déjà établi
- * par `book-source-integrity.test.ts` pour l'ancre.
+ * Lot 2 (#563) a migré 15 entrées réelles (`traits.json`/`qualities.json`/`trappings.json`/
+ * `spells.json`/`naval-traits.json`) — les morsures ci-dessous gardent des fixtures SYNTHÉTIQUES
+ * pour isoler chaque cas, contre le VRAI corpus `Source/` (jamais des livres inventés), patron déjà
+ * établi par `book-source-integrity.test.ts` pour l'ancre.
  */
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -87,16 +87,16 @@ describe('auditSecondaryRef — attestation POSITIVE (#563 Lot 1 item 2, morsure
   });
 });
 
-describe('auditSecondaries — 0 entrée `alsoIn` réelle sur src/data/*.json (Lot 0/1, aucune migration)', () => {
-  it('aucun dataset réel ne porte encore `alsoIn` (la migration est le Lot 2, hors périmètre)', () => {
+describe('auditSecondaries — 15 entrées `alsoIn` réelles sur src/data/*.json (Lot 2, #563)', () => {
+  it('toutes les entrées `alsoIn` réelles sont ATTESTÉES (aucune violation)', () => {
     const { violations, total } = auditSecondaries(DIR);
-    expect(total).toBe(0);
+    expect(total).toBe(15);
     expect(violations).toEqual([]);
   });
 
-  it('EXHAUSTIF : aucun fichier de src/data ne référence `alsoIn` (contrôle croisé texte brut)', () => {
+  it('EXHAUSTIF : les fichiers portant `alsoIn` sont exactement les 5 datasets migrés (Lot 2)', () => {
     const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
-    const offenders = files.filter((f) => readFileSync(join(DIR, f), 'utf8').includes('"alsoIn"'));
-    expect(offenders).toEqual([]);
+    const offenders = files.filter((f) => readFileSync(join(DIR, f), 'utf8').includes('"alsoIn"')).sort();
+    expect(offenders).toEqual(['naval-traits.json', 'qualities.json', 'spells.json', 'traits.json', 'trappings.json']);
   });
 });
