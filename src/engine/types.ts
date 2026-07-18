@@ -501,6 +501,21 @@ export interface CastPenalty {
   untilTime?: number;
 }
 
+/** Nature de l'ENTITÉ qui a produit un effet — vocabulaire fermé, chaque valeur adossée à une
+ *  catégorie du Codex (routage d'affichage : `chipCodex`, `src/gameIso/effectIcons.ts`). */
+export type EffectSourceKind =
+  | 'spell' | 'prayer' | 'talent' | 'trait' | 'trapping' | 'quality' | 'disease' | 'symptom'
+  | 'mutation' | 'condition' | 'psychology' | 'maneuver' | 'creature' | 'activity' | 'rule';
+
+/** IDENTITÉ de ce qui a produit un effet — « les GameOps sont rattachés à quelque chose » (arbitrage
+ *  user 2026-07-18). Portée par l'`OpsCtx` du déclencheur et stampée par `applyOps` sur tout
+ *  `ActiveEffect` posé : c'est ELLE qui relie une pastille à sa règle, par id STABLE (jamais le label). */
+export interface EffectSource {
+  kind: EffectSourceKind;
+  /** id STABLE de l'entité source, tel qu'il vit dans son catalogue (`src/data/*.json`). */
+  id: string;
+}
+
 /**
  * Effet magique actif et temporisé (Bénédiction, Sort de bonus…).
  * Les bonus ne se cumulent pas : le meilleur l'emporte par caractéristique
@@ -508,6 +523,11 @@ export interface CastPenalty {
  */
 export interface ActiveEffect {
   label: string;
+  /** Entité SOURCE de cet effet (sort, talent, trait, objet, maladie…) — ancrage de règle GÉNÉRAL,
+   *  au-delà du seul cas des sorts (`sourceSpellId`). Absent = source non propagée par le déclencheur :
+   *  la pastille s'affiche alors nue (cf. `chipCodex`), régime RÉSIDUEL gardé par
+   *  `src/engine/effect-rule-anchor.test.ts`. */
+  source?: EffectSource;
   /** id STABLE de l'effet (langue-indépendant) pour les effets que le moteur reconnaît par identité
    *  (« Exposition (froid) » → 'exposition-froid') plutôt que par libellé. Le `label` reste l'affichage. */
   effectId?: string;

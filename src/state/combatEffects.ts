@@ -1383,7 +1383,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (e.mode === 'forceSuccess') {
         // Arbitrage D'AUTEUR explicite (rituel garanti) : le RAW ne prévoit aucun lancer scripté SANS jet —
         // applique directement les effets du sort (Critique/Imparfaite n'ont pas de sens hors d'un vrai jet).
-        const ctx: OpsCtx = { rng: battleRng(), caster, label: spell.label, sl: spell.cn ?? 0 };
+        const ctx: OpsCtx = { rng: battleRng(), caster, label: spell.label, sl: spell.cn ?? 0, source: { kind: 'spell', id: spell.id } };
         for (const line of applyOps(target, spellOps(spell.effects, 'target'), ctx)) env.log(line);
         for (const line of applyOps(caster, spellOps(spell.effects, 'caster'), ctx)) env.log(line);
         env.log(`${caster.name} incante ${spell.label} (rituel garanti).`);

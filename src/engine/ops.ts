@@ -47,6 +47,7 @@ import type { Duration } from './duration';
 import type { TriggeredEffect, FlowTest } from './flowCore';
 import {
   ActiveEffect,
+  EffectSource,
   ArmourBypass,
   CHAR_LABELS,
   CharKey,
@@ -962,6 +963,12 @@ export interface OpsCtx {
   onCorruptionExposure?: (level: ExposureLevel, skill?: 'resistance' | 'calme') => string[];
   /** Libellé de la source (sort/table) — ActiveEffect.label + journal. */
   label?: string;
+  /** ENTITÉ SOURCE des ops en cours (sort, talent, trait, objet, maladie, mutation…) — marquée sur TOUT
+   *  `ActiveEffect` posé par cet `applyOps` (`ActiveEffect.source`). Ancrage de règle GÉNÉRAL : c'est
+   *  elle qui donne sa fiche Codex à une pastille d'effet, quel que soit le TYPE de source (arbitrage
+   *  user 2026-07-18 — « les GameOps sont rattachés à quelque chose »). `sourceSpellId` reste le canal
+   *  SPÉCIFIQUE des sorts (anti-spam de buff côté IA) : les deux cohabitent, aucun n'est redondant. */
+  source?: EffectSource;
   /** id STABLE de l'effet en cours (langue-indépendant) — marqué sur TOUT `ActiveEffect` posé par cet
    *  `applyOps` (`ActiveEffect.effectId`), même mécanisme que `sourceSpell`/`sourceSpellId` ci-dessus.
    *  Sert l'identité de retrait/détection (`transform`/`endTransform`, chansons de marin…) — JAMAIS le `label`
@@ -1102,7 +1109,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   const lines: string[] = [];
   // DISSIPATION (LDB 46) : on retient les ActiveEffect PRÉ-EXISTANTS (par référence) pour ne marquer,
   // en fin d'op, QUE ceux posés par CE sort source (robuste au dédoublonnage en place de `applyActiveEffect`).
-  const preEffects = (ctx.sourceSpell || ctx.sourceSpellId || ctx.effectId) ? new Set(target.activeEffects ?? []) : null;
+  const preEffects = (ctx.sourceSpell || ctx.sourceSpellId || ctx.effectId || ctx.source) ? new Set(target.activeEffects ?? []) : null;
   // Agrégation des charMod (une ligne par source, façon « Écorce (-10 Ag, -10 Dex, 6 rounds) »).
   const charParts: string[] = [];
   let charRounds: number | null = null;
@@ -2125,12 +2132,13 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   // Marque les effets actifs POSÉS par ce sort source (durables) : identité + NI → Dissipation (Sorts
   // seulement, `sourceSpell`) ET id du sort → anti-spam IA (TOUT lancement, Prières comprises, `sourceSpellId`)
   // ET id STABLE de l'effet en cours (`effectId` — transform/chansons de marin…, retrait par IDENTITÉ).
-  if ((ctx.sourceSpell || ctx.sourceSpellId || ctx.effectId) && target.activeEffects) {
+  if ((ctx.sourceSpell || ctx.sourceSpellId || ctx.effectId || ctx.source) && target.activeEffects) {
     for (const e of target.activeEffects) {
       if (preEffects!.has(e)) continue;
       if (ctx.sourceSpell && !e.spell) e.spell = ctx.sourceSpell;
       if (ctx.sourceSpellId && !e.sourceSpellId) e.sourceSpellId = ctx.sourceSpellId;
       if (ctx.effectId && !e.effectId) e.effectId = ctx.effectId;
+      if (ctx.source && !e.source) e.source = ctx.source;
     }
   }
   return lines;

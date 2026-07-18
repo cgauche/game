@@ -9,7 +9,7 @@
  * place et renvoie le journal. Le référent des formules « (X) » est le PORTEUR (`caster` = la créature
  * qui frappe) — donc « Force de la source » = sa Force.
  */
-import { type Combatant, type Weapon, type HitLocation, type Difficulty, CHAR_LABELS } from '../engine/types';
+import { type Combatant, type Weapon, type HitLocation, type Difficulty, type EffectSource, CHAR_LABELS } from '../engine/types';
 import type { Get, Set as SetFn } from './flowTypes';
 import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest, spellEffectOps, EMPTY_FLOW } from './flow';
 import type { OpsCtx, GameOp } from '../engine/ops';
@@ -34,6 +34,14 @@ import { runPureFlowLines } from './combatEffects';
 import { combatConditionCtx, flowTestGated } from './combat/flowEval';
 import { resolveTestDifficulty } from './flow';
 import { RNG, defaultRNG } from '../engine/dice';
+
+/** TAGUE des effets authorés de l'ENTITÉ dont ils sont tirés — « les GameOps sont rattachés à quelque
+ *  chose » (arbitrage user 2026-07-18). Cette identité voyage jusqu'à l'`OpsCtx` du dispatch, où
+ *  `applyOps` la stampe sur les `ActiveEffect` posés : une pastille d'effet ouvre alors la fiche de son
+ *  trait/talent/qualité/symptôme/État. Immuable (clone partiel), jamais authoré en JSON. */
+function withSource(effects: TriggeredEffect[], source: EffectSource): TriggeredEffect[] {
+  return effects.map((e) => (e.source ? e : { ...e, source }));
+}
 
 /** PARAMÈTRE un effet de trait par l'ARGUMENT d'instance du porteur : substitue la difficulté d'un Test
  *  `argDifficulty` par celle dérivée de l'arg (« Venin (Difficile) » → difficile). Rend les effets
@@ -82,21 +90,21 @@ function withArg(effects: TriggeredEffect[], arg?: string, value?: number): Trig
 export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
   const out: TriggerSource[] = [];
   if (weapon?.onHitEffects?.length) out.push({ effects: weapon.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });
-  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg, tr.value), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
-  if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
-  for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: d.effects, cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
+  for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, tr.arg, tr.value), { kind: 'trait', id: tr.id }), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
+  if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'quality', id }), cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
+  for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'talent', id: t.talentId }), cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
   // Symptômes ACTIFS des maladies (Crampes abdominales `onOwnTestFailed`, MSRC 16) — insérés APRÈS les
   // Talents et AVANT les États : ils composent comme un Trait/passif du CORPS (source NON-statut, sans
   // `stacks`), donc dispatchés par la voie `effectsOf`/`applyTriggeredEffects` (≠ pool à pions des États).
   // Ordre STABLE (accesseur canonique `activeSymptoms`, ordre des maladies) → déroulé RNG déterministe.
-  for (const inst of activeSymptoms(actor)) { const d = findSymptomById(inst.symptomId); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `symptom:${inst.symptomId}`, label: d.label ?? inst.symptomId }); }
+  for (const inst of activeSymptoms(actor)) { const d = findSymptomById(inst.symptomId); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'symptom', id: inst.symptomId }), cap: 1, key: `symptom:${inst.symptomId}`, label: d.label ?? inst.symptomId }); }
   for (const cond of actor.conditions ?? []) {
     const d = findConditionById(cond.name);
     if (!d?.effects?.length) continue;
     const reduce = d.stacksReducedBy ? featureLevel(actor, d.stacksReducedBy as keyof CombatFeature) : 0; // Hémorragique − Endurci…
-    out.push({ effects: d.effects, cap: 1, key: `cond:${cond.name}`, label: d.label ?? cond.name, stacks: Math.max(0, (cond.value ?? 1) - reduce) });
+    out.push({ effects: withSource(d.effects, { kind: 'condition', id: cond.name }), cap: 1, key: `cond:${cond.name}`, label: d.label ?? cond.name, stacks: Math.max(0, (cond.value ?? 1) - reduce) });
   }
-  for (const p of actor.psychState ?? []) { const d = findPsychologyById(p.type); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `psy:${p.type}`, label: d.label ?? p.type, stacks: 1 }); }
+  for (const p of actor.psychState ?? []) { const d = findPsychologyById(p.type); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'psychology', id: p.type }), cap: 1, key: `psy:${p.type}`, label: d.label ?? p.type, stacks: 1 }); }
   return out;
 }
 
@@ -354,7 +362,7 @@ export function applyTriggeredEffects(
       // fournit `set` + un routeur installé. Un Flow `test` non routé (pas de `set`) atteindrait
       // `runPureFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
-      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, engagedAdvantageLead: lead, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause, hiddenFromFoes: geom?.hiddenFromFoes, engaged: geom?.engaged, nearestFoeDist: geom?.nearestFoeDist, onOpposingAdvantage: ctx.onOpposingAdvantage,
+      const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, source: eff.source, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, engagedAdvantageLead: lead, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause, hiddenFromFoes: geom?.hiddenFromFoes, engaged: geom?.engaged, nearestFoeDist: geom?.nearestFoeDist, onOpposingAdvantage: ctx.onOpposingAdvantage,
         // Tampon de ré-entrance : un sous-Test (FM de palier 2 des Crampes) routé en cascade ne ré-émettra
         // pas `onOwnTestFailed` (son étape porte `meta.noOwnTestFailed`, cf. resolveFlowTest/commitStep).
         ...(trigger === 'onOwnTestFailed' ? { noReentryOwnTestFailed: true } : {}) };

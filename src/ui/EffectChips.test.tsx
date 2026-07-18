@@ -7,7 +7,7 @@ import { EffectChips } from './EffectChips';
 
 const cond = (name: string, value = 1): ConditionInstance => ({ name, value } as ConditionInstance);
 const buff = (over: Partial<ActiveEffect> = {}): ActiveEffect => ({
-  label: 'Bénédiction du courage',
+  label: 'Bénédiction de courage',
   bonus: 10,
   char: 'capacite-de-combat',
   duration: { scale: 'rounds', left: 3 },
@@ -21,14 +21,34 @@ describe('chipCodex — routage d’information UNIQUE de la famille des pastill
   });
 
   it('un buff route vers SON sort source (Codex Sorts) quand il est résolvable', () => {
-    const chip = summarizeEffects([], [buff({ sourceSpellId: 'benediction-du-courage' })]).visible[0];
-    expect(chipCodex(chip)).toMatchObject({ category: 'spells', id: 'benediction-du-courage' });
+    const chip = summarizeEffects([], [buff({ sourceSpellId: 'benediction-de-courage' })]).visible[0];
+    expect(chipCodex(chip)).toMatchObject({ category: 'spells', id: 'benediction-de-courage' });
   });
 
-  it('un buff sans sort source porte tout de même un popover de secours', () => {
-    const ref = chipCodex(summarizeEffects([], [buff()]).visible[0]);
-    expect(ref.id).toBeUndefined();
-    expect(ref.fallback).toBeDefined(); // CodexRef rend un popover dès qu'un fallback est fourni
+  it('un buff dont l’effectId nomme une règle route vers CETTE règle (2ᵉ ancrage, hors lancement)', () => {
+    const chip = summarizeEffects([], [buff({ effectId: 'faim-et-soif' })]).visible[0];
+    expect(chipCodex(chip)).toMatchObject({ category: 'regles', id: 'faim-et-soif' });
+  });
+
+  /** « les effets viennent forcément d’un sort, d’un talent, d’un trait de créature, ou autre »
+   *  (user 2026-07-18) : l'entité SOURCE ouvre SA fiche, quel que soit son type. */
+  it.each([
+    ['talent', 'chanceux', 'talents'],
+    ['trait', 'peur', 'traits'],
+    ['condition', 'assourdi', 'etats'],
+    ['psychology', 'frenesie', 'psychologies'],
+  ] as const)('un effet de source %s ouvre la fiche de SON entité (id stable)', (kind, id, category) => {
+    const chip = summarizeEffects([], [buff({ source: { kind, id } })]).visible[0];
+    expect(chipCodex(chip)).toMatchObject({ category, id });
+  });
+
+  it('un buff sans ancrage de règle N’A PAS de cible : la pastille reste nue (aucun repli)', () => {
+    expect(chipCodex(summarizeEffects([], [buff()]).visible[0])).toBeNull();
+  });
+
+  it('un ancrage qui ne résout à AUCUNE entrée catalogue ne fabrique pas de cible', () => {
+    const chip = summarizeEffects([], [buff({ sourceSpellId: 'sort-fantome', effectId: 'effet-fantome' })]).visible[0];
+    expect(chipCodex(chip)).toBeNull();
   });
 
   /** TOUS les états-drapeaux : chacun est adossé à une règle citable, donc chacun ouvre SA fiche —
@@ -45,16 +65,15 @@ describe('chipCodex — routage d’information UNIQUE de la famille des pastill
   it.each(FLAG_CASES)('le drapeau %s ouvre SA fiche catalogue, routée par id stable', (flagId, flags, category, id) => {
     const chip = summarizeEffects([], [], Infinity, flags).visible[0];
     expect(chip.flagId).toBe(flagId); // identité STABLE, jamais le libellé
-    const ref = chipCodex(chip);
-    expect(ref).toMatchObject({ category, id });
-    expect(ref.fallback).toBeDefined(); // aucune pastille muette, même routée
+    expect(chipCodex(chip)).toMatchObject({ category, id });
   });
 
   it('chaque cible de drapeau EXISTE au catalogue (le routage ne pointe pas dans le vide)', () => {
     for (const [, flags] of FLAG_CASES) {
       const ref = chipCodex(summarizeEffects([], [], Infinity, flags).visible[0]);
-      const catalogue = ref.category === 'psychologies' ? psychologies : regles;
-      expect(catalogue.map((e) => e.id)).toContain(ref.id);
+      expect(ref, 'un drapeau résout TOUJOURS sa fiche').not.toBeNull();
+      const catalogue = ref!.category === 'psychologies' ? psychologies : regles;
+      expect(catalogue.map((e) => e.id)).toContain(ref!.id);
     }
   });
 
@@ -66,18 +85,29 @@ describe('chipCodex — routage d’information UNIQUE de la famille des pastill
   });
 
   it('le libellé paramétré coiffe le libellé catalogue (instance du popover)', () => {
-    const b = summarizeEffects([], [buff()]).visible[0];
-    expect(chipCodex(b).instance).toBe('Bénédiction du courage — +10 Capacité de Combat · 3 Rounds restants');
+    const b = summarizeEffects([], [buff({ sourceSpellId: 'benediction-de-courage' })]).visible[0];
+    expect(chipCodex(b)?.instance).toBe('Bénédiction de courage — +10 Capacité de Combat · 3 Rounds restants');
   });
 });
 
 describe('EffectChips', () => {
-  it('toute pastille — État, buff, drapeau — expose le mécanisme Codex (jamais une infobulle native)', () => {
+  it('toute pastille ANCRÉE — État, buff, drapeau — expose le mécanisme Codex (jamais une infobulle native)', () => {
     const html = renderToStaticMarkup(
-      <EffectChips conditions={[cond('assourdi')]} effects={[buff()]} flags={{ aiming: true }} />,
+      <EffectChips
+        conditions={[cond('assourdi')]}
+        effects={[buff({ sourceSpellId: 'benediction-de-courage' })]}
+        flags={{ aiming: true }}
+      />,
     );
     expect(html).not.toContain('title=');
     expect((html.match(/codex-ref/g) ?? []).length).toBe(3); // 1 État + 1 drapeau + 1 buff
+  });
+
+  it('une pastille SANS règle reste affichée mais NUE : son icône, et aucune promesse d’information', () => {
+    const html = renderToStaticMarkup(<EffectChips effects={[buff()]} />);
+    expect(html).toContain('fx-chip buff'); // l'état mécanique actif reste visible au joueur
+    expect(html).not.toContain('codex-ref'); // ni popover, ni clic vers une fiche
+    expect(html).not.toContain('title=');
   });
 
   it('la pastille COMPACTE abrège la durée en « N R » — même unité Round, jamais un « t » de tour', () => {

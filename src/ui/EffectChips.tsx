@@ -9,7 +9,9 @@ import { Icon } from './Icon';
  * cartes, etc.). Malus en rouge, buffs en vert avec leur durée. Au-delà de `max`, « +N ».
  *
  * Toutes les pastilles informent par le MÊME mécanisme : `CodexRef` (popover desc + source, clic
- * vers la fiche quand l'entrée existe), routage en donnée par `chipCodex`.
+ * vers la fiche), routage en donnée par `chipCodex`. Une pastille dont `chipCodex` ne résout AUCUNE
+ * règle reste affichée — l'état mécanique est réel — mais nue : ni popover, ni `title`, aucune
+ * promesse d'information (arbitrage user 2026-07-18).
  */
 export function EffectChips({
   conditions,
@@ -28,6 +30,14 @@ export function EffectChips({
     <div className="fx-chips">
       {visible.map((c) => {
         const ref = chipCodex(c);
+        const face = (
+          <>
+            <Icon id={c.icon} size="sm" />
+            {c.count && c.count > 1 ? <b>{c.count}</b> : null}
+            {c.rounds != null ? <em>{roundsLabel(c.rounds, { short: true })}</em> : null}
+          </>
+        );
+        if (!ref) return <span key={c.key} className={`fx-chip ${c.kind}`}>{face}</span>;
         return (
           <CodexRef
             key={c.key}
@@ -35,12 +45,9 @@ export function EffectChips({
             id={ref.id}
             label={ref.label}
             instance={ref.instance}
-            fallback={ref.fallback}
             className={`fx-chip ${c.kind}`}
           >
-            <Icon id={c.icon} size="sm" />
-            {c.count && c.count > 1 ? <b>{c.count}</b> : null}
-            {c.rounds != null ? <em>{roundsLabel(c.rounds, { short: true })}</em> : null}
+            {face}
           </CodexRef>
         );
       })}

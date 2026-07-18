@@ -23,7 +23,7 @@ describe('StateChips — pastilles de portrait', () => {
   it('État et buff informent par le MÊME mécanisme Codex que EffectChips', () => {
     const hero = mkHero((c) => {
       c.conditions = [cond('assourdi')];
-      c.activeEffects = [{ label: 'Bénédiction du courage', bonus: 10, char: 'capacite-de-combat', duration: { scale: 'rounds', left: 3 }, sourceSpellId: 'benediction-du-courage' } as ActiveEffect];
+      c.activeEffects = [{ label: 'Bénédiction de courage', bonus: 10, char: 'capacite-de-combat', duration: { scale: 'rounds', left: 3 }, sourceSpellId: 'benediction-de-courage' } as ActiveEffect];
     });
     const html = renderToStaticMarkup(<StateChips c={hero} />);
     expect(html).not.toContain('title=');

@@ -23,7 +23,7 @@
  * vit dans le store (`runFlow`) — comme `applyEffects` aujourd'hui.
  */
 import { toDate } from './clock';
-import type { CharKey, Difficulty, HitLocation } from './types';
+import type { CharKey, Difficulty, EffectSource, HitLocation } from './types';
 import { relationBetween, type Camp, type Relation } from './relations';
 import { groupMatch } from './groups';
 import type { GameOp, PairedSense } from './ops';
@@ -510,6 +510,10 @@ export interface TriggeredEffect<E = EffectOp> {
    *  IA / cadence auto → JAMAIS exercé (défaut conservateur : pas de décision silencieuse ni de jet caché
    *  — la sortie rationnelle de l'IA, « plus d'ennemi en vue », est déjà l'effet auto de psychology.json). */
   optional?: boolean;
+  /** ENTITÉ SOURCE — JAMAIS authorée : posée à l'ÉNUMÉRATION par `effectSourcesOf`
+   *  (`src/state/triggeredEffects.ts`), qui seule sait de quelle entité l'effet est tiré. Voyage
+   *  jusqu'à l'`OpsCtx` du dispatch → ancre les `ActiveEffect` posés sur leur fiche de règle. */
+  source?: EffectSource;
 }
 
 /** Enveloppe une liste d'effets-feuilles (ancien format `Effect[]`) en un Flow `seq` de `do` — pont de

@@ -4006,7 +4006,7 @@ export function applyCast(
       if (mres.woundsLost) {
         const dealt = Math.min(mres.woundsLost, currentBefore);
         const lifeStealOps = spellOps(spell.effects, 'caster').filter((o) => o.op === 'lifeSteal');
-        if (lifeStealOps.length) logLines.push(...applyOps(caster, lifeStealOps, { rng: battleRng(), caster, label: spell.label, woundsDealt: dealt }));
+        if (lifeStealOps.length) logLines.push(...applyOps(caster, lifeStealOps, { rng: battleRng(), caster, label: spell.label, woundsDealt: dealt, source: { kind: 'spell', id: spell.id } }));
       }
       // Interruption de Focalisation : un Projectile magique blesse aussi un focaliseur (LDB 46 l.144).
       logLines.push(...checkFocusInterruption(get, set, t));

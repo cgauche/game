@@ -3,9 +3,13 @@
  * (pion sur le terrain, panneau Perso, ordre de bataille, fiche express au survol).
  * Aucune règle ici : on lit `conditions[]` et `activeEffects[]` déjà gérés par le moteur.
  */
-import { CHAR_LABELS, type ConditionInstance, type ActiveEffect, type CharKey, type Combatant } from '../engine/types';
+import { CHAR_LABELS, type ConditionInstance, type ActiveEffect, type CharKey, type Combatant, type EffectSource, type EffectSourceKind } from '../engine/types';
 import type { IconId } from '../ui/icons';
-import { conditionLabel, findConditionById } from '../data';
+import {
+  conditionLabel, findConditionById, findPsychologyById, findSpellById,
+  creatures, maladies, maneuvers, mutations, qualities, regles, symptoms, talents, trappings, traits,
+} from '../data';
+import { ACTIVITIES } from '../engine/activities';
 import { slugId } from '../data/slug';
 import { isFrenzied } from '../engine/psychology';
 import { conditionSeverity } from '../engine/conditions';
@@ -27,6 +31,11 @@ export interface EffectChip {
   condId?: string;
   /** id STABLE du sort/prière SOURCE d'un buff (`ActiveEffect.sourceSpellId`) — résolution Codex Sorts. */
   sourceSpellId?: string;
+  /** id STABLE de l'effet lui-même (`ActiveEffect.effectId`) — 2ᵉ ancrage de règle d'un buff, quand il
+   *  n'est pas issu d'un lancement (ivresse, exposition, chanson de marin…). */
+  effectId?: string;
+  /** Entité SOURCE de l'effet (`ActiveEffect.source`) — ancrage de règle GÉNÉRAL, tous types confondus. */
+  source?: EffectSource;
   /** id STABLE de l'état-drapeau (clé d'`EffectFlags`) — SEUL moyen d'identifier un drapeau en aval
    *  (routage Codex de `chipCodex`) : le `label` est de l'affichage, jamais une clé de logique. */
   flagId?: FlagId;
@@ -85,6 +94,8 @@ function buffChips(effects: ActiveEffect[]): EffectChip[] {
     bonus: e.bonus,
     char: e.char,
     sourceSpellId: e.sourceSpellId,
+    effectId: e.effectId,
+    source: e.source,
   }));
 }
 
@@ -104,17 +115,49 @@ export function chipDetail(c: EffectChip): string {
  *  d'infobulle native (`title`), qui concurrencerait le popover. Pur. */
 export interface ChipCodex {
   category: string;
-  /** id STABLE de l'entrée catalogue, quand la pastille en a une. */
-  id?: string;
+  /** id STABLE de l'entrée catalogue — toujours présent : sans lui il n'y a pas de cible. */
+  id: string;
   label: string;
   /** Libellé paramétré (détail inclus) — en tête du popover, le libellé catalogue en sous-titre. */
   instance?: string;
-  /** Toujours fourni : garantit un popover même hors catalogue (drapeau, buff sans sort source). */
-  fallback: { body?: string };
 }
+
+/** Existence d'une entrée par id STABLE, par catégorie Codex — une cible ne se PRÉSUME pas.
+ *  Arbitrage user 2026-07-18 : « une chips de ce genre n'a de sens que si elle est reliée à une règle ». */
+const byId = (list: readonly { id: string }[]) => (id: string) => list.some((e) => e.id === id);
+const CATALOGUE_HAS: Record<string, (id: string) => boolean> = {
+  etats: (id) => !!findConditionById(id),
+  spells: (id) => !!findSpellById(id),
+  psychologies: (id) => !!findPsychologyById(id),
+  regles: byId(regles),
+  talents: byId(talents),
+  traits: byId(traits),
+  trappings: byId(trappings),
+  qualities: byId(qualities),
+  maladies: byId(maladies),
+  symptoms: byId(symptoms),
+  mutations: byId(mutations),
+  maneuvers: byId(maneuvers),
+  creatures: byId(creatures),
+  activities: byId(ACTIVITIES),
+};
+
+/** Catégories fouillées pour un `ActiveEffect.effectId` (ivresse, exposition, chanson de marin…), dans
+ *  cet ordre — l'effet n'étant pas issu d'un lancement, sa règle vit hors du catalogue Sorts. */
+const EFFECT_ID_CATEGORIES = ['regles', 'etats', 'psychologies'] as const;
+
+/** Catégorie Codex d'une `EffectSource` — TOTALE sur `EffectSourceKind` : une source nommée ouvre sa
+ *  fiche, quel que soit son TYPE (sort, talent, trait, objet…). Prières et bénédictions vivent au
+ *  catalogue Sorts (`spells.json`) comme les sorts. */
+const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
+  spell: 'spells', prayer: 'spells', talent: 'talents', trait: 'traits', trapping: 'trappings',
+  quality: 'qualities', disease: 'maladies', symptom: 'symptoms', mutation: 'mutations',
+  condition: 'etats', psychology: 'psychologies', maneuver: 'maneuvers', creature: 'creatures',
+  activity: 'activities', rule: 'regles',
+};
 /** Entrée CATALOGUE d'un état-drapeau — routage par id STABLE (`FlagId`), jamais par libellé. La table
  *  est TOTALE : un état affiché sans règle derrière lui serait un défaut d'affichage, pas une donnée
- *  manquante (arbitrage user 2026-07-18). Le `fallback` reste néanmoins fourni par `chipCodex`. */
+ *  manquante (arbitrage user 2026-07-18). */
 const FLAG_CODEX: Record<FlagId, { category: string; id: string }> = {
   frenzied: { category: 'psychologies', id: 'frenesie' },
   fear: { category: 'psychologies', id: 'peur' },
@@ -124,26 +167,31 @@ const FLAG_CODEX: Record<FlagId, { category: string; id: string }> = {
   aiming: { category: 'regles', id: 'viser' },
 };
 
-export function chipCodex(c: EffectChip): ChipCodex {
+/** Règle ADOSSÉE à une pastille, ou `null` quand la pastille n'en a aucune. Priorité, toujours par id
+ *  STABLE : drapeau (table totale) → État par `condId` → ENTITÉ SOURCE de l'effet (`source` : sort,
+ *  talent, trait, objet, maladie…) → sort source (`sourceSpellId`) → `effectId`. `null` = pastille
+ *  NON RÉSOLUE : elle reste affichée (masquer un état
+ *  mécanique actif serait pire) mais SANS aucune affordance d'information — pas de `CodexRef`, pas de
+ *  popover, pas de `title`. Aucun repli : une pastille est reliée à une règle, ou elle ne promet rien
+ *  (arbitrage user 2026-07-18, « j'aime pas ta fallback »). Pur. */
+export function chipCodex(c: EffectChip): ChipCodex | null {
   const detail = chipDetail(c);
-  const buff = c.kind === 'buff';
+  const at = (category: string, id: string | undefined, instance: string | undefined): ChipCodex | null =>
+    id && CATALOGUE_HAS[category]?.(id) ? { category, id, label: c.label, instance } : null;
+  const withDetail = detail ? `${c.label} — ${detail}` : undefined;
+
   const flag = c.flagId ? FLAG_CODEX[c.flagId] : undefined;
-  if (flag) {
-    return {
-      category: flag.category,
-      id: flag.id,
-      label: c.label,
-      instance: detail ? `${c.label} — ${detail}` : c.label,
-      fallback: { body: detail || undefined },
-    };
+  if (flag) return at(flag.category, flag.id, withDetail ?? c.label);
+  if (c.kind !== 'buff') return at('etats', c.condId, withDetail);
+  const bySource = c.source ? at(CATEGORY_BY_SOURCE_KIND[c.source.kind], c.source.id, withDetail) : null;
+  if (bySource) return bySource;
+  const bySpell = at('spells', c.sourceSpellId, withDetail);
+  if (bySpell) return bySpell;
+  for (const cat of EFFECT_ID_CATEGORIES) {
+    const byEffect = at(cat, c.effectId, withDetail);
+    if (byEffect) return byEffect;
   }
-  return {
-    category: buff ? 'spells' : 'etats',
-    id: buff ? c.sourceSpellId : c.condId,
-    label: c.label,
-    instance: detail ? `${c.label} — ${detail}` : undefined,
-    fallback: { body: detail || undefined },
-  };
+  return null;
 }
 
 /** États-drapeaux (hors `conditions[]`) : postures/actions vivant sur le Combatant. */

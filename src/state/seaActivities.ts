@@ -132,7 +132,7 @@ function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: ActivityD
   if (spec.target == null) {
     const out = applyTravelActivityResult(spec, def, null);
     if (out.ops.length) {
-      const opLines = applyOps(hero, out.ops, { label: def.label, rng: battleRng(), now: get().gameTime });
+      const opLines = applyOps(hero, out.ops, { label: def.label, rng: battleRng(), now: get().gameTime, source: { kind: 'activity', id: def.id } });
       set({ party: [...get().party] });
       noteSeaLine(get, set, opLines);
     }
@@ -279,7 +279,7 @@ registerCascadeApplier('sea-activity-generic', (get, set, step, hero) => {
   const spec = travelActivitySpec(hero, def);
   const out = applyTravelActivityResult(spec, def, step.result);
   if (!out.ops.length) return { consequences: freeCons([]) };
-  const opLines = applyOps(hero, out.ops, { label: def.label, rng: battleRng(), now: get().gameTime });
+  const opLines = applyOps(hero, out.ops, { label: def.label, rng: battleRng(), now: get().gameTime, source: { kind: 'activity', id: def.id } });
   set({ party: [...get().party] });
   return { consequences: freeCons(opLines) };
 });

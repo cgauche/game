@@ -11,7 +11,8 @@ import { Icon } from './Icon';
  * Pure (testable en SSR).
  *
  * Elles informent par le MÊME mécanisme que `EffectChips` : `CodexRef` (routage `chipCodex`), jamais
- * une infobulle native.
+ * une infobulle native — et une pastille sans règle résolue reste nue (aucun popover de consolation,
+ * arbitrage user 2026-07-18).
  *
  * `reserve` : la cellule garde une EMPREINTE STABLE même sans État (arbitrage user 2026-07-11) — les
  * listes de rangées-personnages (nuit, batch) alignent ainsi leurs colonnes, un État ne décale plus
@@ -26,6 +27,7 @@ export function StateChips({ c, max = 4, reserve = false }: { c: Combatant; max?
     <span className="ptile-states" data-reserve={reserve ? '' : undefined}>
       {shown.map((v) => {
         const ref = chipCodex(v);
+        if (!ref) return <span key={v.key} className="pt-state"><Icon id={v.icon} size="sm" /></span>;
         return (
           <CodexRef
             key={v.key}
@@ -33,7 +35,6 @@ export function StateChips({ c, max = 4, reserve = false }: { c: Combatant; max?
             id={ref.id}
             label={ref.label}
             instance={ref.instance}
-            fallback={ref.fallback}
             className="pt-state"
           >
             <Icon id={v.icon} size="sm" />
