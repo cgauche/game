@@ -269,6 +269,12 @@ button.chip:hover {
   border-color: var(--danger);
   color: var(--danger-soft);
 }
+/* `.tone-ok` (vert) : buff/effet bénéfique — même famille que `.tone-warn`/`.tone-danger`
+   (registre État, #492 tableau de bord). */
+.chip.tone-ok {
+  border-color: var(--ok);
+  color: var(--ok-bright);
+}
 .count {
   font-size: 11px;
   min-width: 18px;

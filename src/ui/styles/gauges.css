@@ -165,12 +165,23 @@
   grid-template-columns: subgrid;
   grid-column: span 3;
 }
+/* Colonne de valeur NETTE : la piste de valeur (`max-content`) est dimensionnée à la plus large ;
+   sans cet ancrage à droite les valeurs courtes flotteraient à gauche de leur piste. */
+.notch-gauge-stack .notch-gauge__value {
+  justify-self: end;
+}
 
 /* Tons sémantiques des crans allumés (charte : tokens uniquement). */
 .notch-gauge[data-tone='neutral'] .notch-gauge__notch[data-on] { background: var(--silver); border-color: var(--silver); }
 .notch-gauge[data-tone='ok'] .notch-gauge__notch[data-on] { background: var(--ok-bright); border-color: var(--ok); }
 .notch-gauge[data-tone='warn'] .notch-gauge__notch[data-on] { background: var(--gold2); border-color: var(--gold); }
 .notch-gauge[data-tone='danger'] .notch-gauge__notch[data-on] { background: var(--danger); border-color: var(--danger); }
+/* Ton RESSOURCE (réserves Chance/Détermination, `EtatPanel.tsx`) : plein = bon, JAMAIS danger — cran
+   allumé OR (comme un pécule), distinct des seuils d'affliction qui virent au rouge en s'emplissant. */
+.notch-gauge[data-tone='resource'] .notch-gauge__notch[data-on] {
+  background: var(--gold2);
+  border-color: var(--gold);
+}
 /* Remplissage LISIBLE de la famille Corruption (`--magic`) — le token sombre `--corruption-violet`
    reste réservé au liseré/fond de carte (`sheet.css`), trop terne pour un cran ALLUMÉ. */
 .notch-gauge[data-tone='corruption'] .notch-gauge__notch[data-on] {

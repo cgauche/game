@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Combatant } from '../engine/types';
 import { EtatPanel } from './EtatPanel';
-import { ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
+import { ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
 
 /** Héros minimal, patron `sheetAlarms.test.ts`/`CharacterSheet.test.tsx` (mkHero). */
 const mkHero = (mut?: (c: Combatant) => void): Combatant => {
@@ -26,7 +26,7 @@ const mkHero = (mut?: (c: Combatant) => void): Combatant => {
 };
 
 /** Héros AFFLIGÉ : 1 critique subi (Tête, LDB), 1 État, Corruption, 1 trauma, 1 maladie, 1 mutation,
- *  1 affliction psy (Peur active) et une Surcharge — les 7 rubriques ancrées. */
+ *  1 affliction psy (Peur active) et une Surcharge — les rubriques d'affliction ancrées. */
 const afflictedHero = (): Combatant =>
   mkHero((c) => {
     c.critEntriesSuffered = ['blessure-spectaculaire'];
@@ -40,51 +40,53 @@ const afflictedHero = (): Combatant =>
   });
 
 describe('EtatPanel', () => {
-  it('héros affligé : registre compact — bandes ancrées, une PlaqueRow codex-liée par affliction, ZÉRO prose', () => {
+  it('héros affligé : tableau de bord — bandes ancrées, une PlaqueRow codex-liée par affliction lourde, États en chips, ZÉRO prose', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
-    for (const anchor of [ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT]) {
+    // La Corruption est une jauge de la bande Constitution (arbitrage user 2026-07-17), pas une
+    // bande-catégorie : ces 6 rubriques d'affliction lourde restent ancrées.
+    for (const anchor of [ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT]) {
       expect(html, `ancre manquante : ${anchor}`).toContain(`id="${anchor}"`);
     }
-    // Chaque rubrique = une seule PlaqueRow (registre compact, pas les cartes riches rejetées) : 7
-    // rubriques à 1 entrée (critiques/états/traumas/maladies/mutations/psychologie/surcharge) — la
-    // Corruption n'en porte PLUS (son chiffre vit dans la jauge de bande, pas de ligne redondante
-    // hors DAMNÉ, cf. plus bas).
+    // Chaque affliction LOURDE = une seule PlaqueRow : 6 (critiques/traumas/maladies/mutations/
+    // psychologie/surcharge). Les États actifs sont désormais des CHIPS compactes (0 PlaqueRow), et la
+    // Corruption vit dans la Constitution.
     // La bande de zones (`ZoneBand`, pt.4) est MORTE (lot « corps-index », #492) : plus de plaques
     // résumées ici, le résumé par Localisation vit dans `FigTile.zoneBadges` (`CharacterSheet.tsx`).
     const rowCount = (html.match(/plaque-row/g) || []).length;
-    expect(rowCount).toBe(7);
-    // Nom de ligne = CodexRef cliquable (popover Codex), sur chaque famille de rubrique.
+    expect(rowCount).toBe(6);
+    // Chip codex-liée par État actif + nom codex-lié de chaque PlaqueRow → au moins 6 refs Codex.
     expect((html.match(/codex-ref/g) || []).length).toBeGreaterThanOrEqual(6);
+    // L'État actif (Assourdi) est rendu en chip codex-liée, pas en PlaqueRow.
+    expect(html).toContain('class="etat-chips"');
     // Un GameOp = une rangée (doctrine #295) : le moveMod de la mutation est rendu en chip codex-liée
     // sur l'entrée « Mouvement » (catégorie `characteristics`, comme un `charMod`) — jamais la prose
     // moteur (arbitrage user 2026-07-17).
     expect(html).toContain('>Mouvement<');
     expect(html).toContain('class="entity-badge">+1</em>');
-    expect(html).not.toContain('gagne +1 en Mouvement');
     // AUCUNE prose des entrées (règle 5 : le Codex la porte, pas l'onglet État) — le trauma synthétique
     // porte une prose verbatim de test qui ne doit JAMAIS apparaître dans le registre.
     expect(html).not.toContain('Description verbatim du trauma.');
-    expect(html).not.toContain('Rien à signaler');
-    // Corruption : SA bande (titre + jauge dans le slot droit, #492 juge vision 2026-07-17) —
-    // pas de ligne redondante (le chiffre vit dans la jauge), donc un SEUL « Corruption » (le titre).
-    expect((html.match(/Corruption/g) || []).length, 'un SEUL « Corruption » — pas de ligne redondante sous le titre').toBe(1);
+    // Corruption : jauge de la bande Constitution — son libellé de jauge est présent.
+    expect(html).toContain('notch-gauge__label">Corruption<');
   });
 
-  it('Corruption DAMNÉ : la mention survit en ligne dédiée sous la bande (info d’instance sans autre siège)', () => {
+  it('Corruption DAMNÉ : indicateur DAMNÉ dans le slot droit de la bande Constitution, jamais une ligne dédiée', () => {
     const hero = mkHero((c) => {
       c.corruption = 8;
       c.damned = true;
     });
     const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
     expect(html).toContain('DAMNÉ');
-    expect((html.match(/plaque-row/g) || []).length).toBe(1); // seule ligne du registre : DAMNÉ
+    // DAMNÉ vit dans le slot droit de la Band Constitution (chip), pas en PlaqueRow — héros sans
+    // affliction lourde → zéro PlaqueRow.
+    expect((html.match(/plaque-row/g) || []).length).toBe(0);
   });
 
-  it('bande DESTIN (pt.4, arbitrage 2026-07-17) : mots PLEINS « Critiques actives »/« Mutations physiques »/« Mutations mentales » en TÊTE de registre (jamais les micro-libellés « actives/phys/ment »), NotchGauge, ton NEUTRAL loin du seuil', () => {
+  it('bande Constitution (arbitrage 2026-07-17) : mots PLEINS « Critiques actives »/« Mutations physiques »/« Mutations mentales »/« Corruption », NotchGauge, ton NEUTRAL loin du seuil', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
     // BE = bonus(Endurance 30) = 3 — `criticalWounds` non posé → 0 actives, `mutations` = 1 physique.
-    // Les 3 compteurs sont des `NotchGauge` (piste `role="meter"`, jamais un texte brut hors gauge),
-    // groupés dans UNE SEULE bande de synthèse (`DestinBand`) — plus dans le slot droit des bandes.
+    // Les 4 seuils sont des `NotchGauge` (piste `role="meter"`, jamais un texte brut hors gauge),
+    // groupés dans la bande UNIQUE `ConstitutionBand`.
     expect(html).not.toContain('etat-threshold');
     expect(html).not.toContain('actives 0/3');
     expect(html).not.toContain('phys 1/3 · ment 0/3');
@@ -93,12 +95,15 @@ describe('EtatPanel', () => {
     expect(html).toContain('notch-gauge__label">Critiques actives<');
     expect(html).toContain('notch-gauge__label">Mutations physiques<');
     expect(html).toContain('notch-gauge__label">Mutations mentales<');
+    expect(html).toContain('notch-gauge__label">Corruption<');
     expect(html).toContain('aria-valuemax="3" aria-valuenow="0"'); // actives = 0
     expect(html).toContain('aria-valuemax="3" aria-valuenow="1"'); // phys : 1 mutation physique
-    expect((html.match(/data-tone="neutral"/g) || []).length).toBe(3); // actives + phys + ment, tous loin du seuil
+    // 3 seuils d'affliction loin du seuil = neutral ; la Corruption a SON ton (`corruption`), non neutral.
+    expect((html.match(/data-tone="neutral"/g) || []).length).toBe(3);
+    expect(html).toContain('data-tone="corruption"');
   });
 
-  it('bande DESTIN : ton WARN à seuil−1, DANGER au seuil atteint/franchi (contrat POSITIF par seuil, sur la NotchGauge)', () => {
+  it('bande Constitution : ton WARN à seuil−1, DANGER au seuil atteint/franchi (contrat POSITIF par seuil, sur la NotchGauge)', () => {
     const auSeuil = mkHero((c) => {
       c.critEntriesSuffered = ['blessure-spectaculaire'];
       c.criticalWounds = 2; // BE = 3 → seuil−1 (warn)
@@ -112,18 +117,33 @@ describe('EtatPanel', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={auSeuil} />);
     expect(html).toContain('aria-valuemax="3" aria-valuenow="2"'); // actives = 2, seuil−1
     expect(html).toContain('aria-valuemax="3" aria-valuenow="4"'); // phys = 4 > BE 3
-    // Ordre de rendu de la bande : Critiques actives (warn) avant Mutations physiques (danger).
+    // Ordre de rendu : sans réserve (ni Destin ni Résilience), le 1er seuil est Critiques actives (warn)
+    // avant Mutations physiques (danger).
     const tones = [...html.matchAll(/data-tone="(neutral|warn|danger)"/g)].map((m) => m[1]);
     expect(tones[0]).toBe('warn'); // Critiques actives 2/3
     expect(tones).toContain('danger'); // Mutations physiques 4/3
   });
 
-  it('bandes de rubrique (pt.4) : le compte reste SOBRE (badge droit) SEUL — la SEULE jauge de crans hors `DestinBand` reste celle de Corruption', () => {
+  it('bandes de rubrique : le compte reste SOBRE (badge droit) SEUL — toutes les jauges de crans vivent dans `ConstitutionBand`', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
-    // 3 jauges de la bande DESTIN (Critiques actives/Mutations physiques/Mutations mentales) + 1 jauge
-    // de progression sur la bande Corruption (`extra`, inchangée) — Blessures critiques/Mutations
-    // n'en portent plus dans leur propre slot droit.
+    // 4 jauges de seuil dans la bande Constitution (Critiques actives/Mutations physiques/Mutations
+    // mentales/Corruption) — les bandes de rubrique n'en portent aucune. `afflictedHero` n'a ni Destin
+    // ni Résilience → pas de jauge de réserve ici.
     expect((html.match(/class="notch-gauge"/g) || []).length).toBe(4);
+  });
+
+  it('bande Constitution : DEUX colonnes MIROIR (piles alignées `.notch-gauge-stack`), seuils réordonnés — Critiques actives→Mutations physiques à GAUCHE, Corruption→Mutations mentales à DROITE', () => {
+    const html = renderToStaticMarkup(<EtatPanel hero={afflictedHero()} />);
+    // Chaque colonne est une pile alignée subgrid (primitive `NotchGauge`) : exactement 2.
+    expect((html.match(/class="notch-gauge-stack"/g) || []).length).toBe(2);
+    // Ordre de rendu row-major (arbitrage user 2026-07-17) : colonne GAUCHE = Critiques actives puis
+    // Mutations physiques ; colonne DROITE = Corruption puis Mutations mentales.
+    const iCrit = html.indexOf('notch-gauge__label">Critiques actives<');
+    const iPhys = html.indexOf('notch-gauge__label">Mutations physiques<');
+    const iCorr = html.indexOf('notch-gauge__label">Corruption<');
+    const iMent = html.indexOf('notch-gauge__label">Mutations mentales<');
+    expect(iCrit).toBeLessThan(iPhys); // pile gauche
+    expect(iCorr).toBeLessThan(iMent); // pile droite
   });
 
   it('rangée de zones (pt.4) MORTE dans le registre (lot « corps-index », #492) — seules les ancres de la PREMIÈRE rangée concernée subsistent', () => {
@@ -150,20 +170,21 @@ describe('EtatPanel', () => {
     expect(html).toContain(`id="${ETAT_ANCHOR_TRAUMAS}" data-tone="ambre"`);
     expect(html).toContain(`id="${ETAT_ANCHOR_MALADIES}" data-tone="ambre"`);
     expect(html).toContain(`id="${ETAT_ANCHOR_MUTATIONS}" data-tone="violet"`);
-    expect(html).toContain(`id="${ETAT_ANCHOR_CORRUPTION}" data-tone="violet"`);
     // Psychologie/Encombrement/Effets ne portent AUCUN ton (hors périmètre pt.5).
     expect(html).not.toContain(`id="${ETAT_ANCHOR_PSYCHOLOGIE}" data-tone`);
     expect(html).not.toContain(`id="${ETAT_ANCHOR_ENCOMBREMENT}" data-tone`);
   });
 
-  it('État cumulé + temporisé (données d’instance) : la ligne porte ×N ET sa durée, popover codex-lié résolu (LDB 16)', () => {
+  it('État cumulé + temporisé (données d’instance) : la chip porte ×N ET sa durée, popover codex-lié résolu (LDB 16)', () => {
     const hero = mkHero((c) => {
       c.conditions = [{ name: 'hemorragique', value: 3, roundsLeft: 2 } as never];
     });
     const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
+    // Cumul + durée inline dans la chip (`.entity-badge`, même idiome que `EntityChip`) — visibles hors popover.
     expect(html).toContain('×3 · 2 Rounds');
-    // Résolution CodexRef par id (pas de repli texte simple) : la classe `codex-ref` porte le lien.
-    expect(html).toMatch(/codex-ref[^>]*>Hémorragique</);
+    expect(html).toContain('entity-badge');
+    // Chip codex-liée (résolution par id) : la classe `codex-ref` porte le lien, le libellé résolu suit.
+    expect(html).toMatch(/codex-ref[\s\S]*?Hémorragique/);
   });
 
   it('Mutations : le nom résolu vient du LOOKUP par id (`mutationLabel`), pas du `label` d’instance — même une instance SANS label affiche le vrai nom', () => {
@@ -184,15 +205,60 @@ describe('EtatPanel', () => {
     expect(html).toMatch(/codex-ref[^>]*>Surchargé</);
   });
 
-  it('héros sain : « Rien à signaler » + sous-ligne, SANS figurine (colonne aside déjà en pied), aucune ancre de rubrique d’affliction ni de zone', () => {
+  it('héros sain : l’en-tête de CAPACITÉ (bande Constitution) reste TOUJOURS visible, note discrète au lieu du grand vide, aucune ancre d’affliction ni de zone', () => {
     const html = renderToStaticMarkup(<EtatPanel hero={mkHero()} />);
-    expect(html).toContain('Rien à signaler');
-    expect(html).toContain('etat-ras');
-    expect(html).toContain('Ni blessure, ni affliction');
-    expect(html).not.toContain('charprev-svg');
-    for (const anchor of [ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT]) {
+    // Tableau de bord toujours utile (arbitrage user 2026-07-17) : la Constitution s'affiche même sain.
+    expect(html).toContain('>Constitution<');
+    expect(html).toContain('notch-gauge__label">Critiques actives<');
+    expect(html).toContain('notch-gauge__label">Corruption<');
+    // Note « Aucune affliction » retirée (v2.3) : héros sain = juste la bande Constitution.
+    expect(html).not.toContain('etat-none');
+    // mkHero n'a ni Destin ni Résilience → pas de jauge de réserve.
+    expect(html).not.toContain('notch-gauge__label">Chance<');
+    for (const anchor of [ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT]) {
       expect(html, `ancre inattendue : ${anchor}`).not.toContain(`id="${anchor}"`);
     }
     expect(html).not.toContain('etat-zone-');
+  });
+
+  it('RÉSERVES dans la bande Constitution (LDB 17) : Chance/Destin (`fortune`/`fate`) et Détermination/Résilience (`resolve`/`resilience`) EN TÊTE des seuils, ton RESSOURCE (jamais danger)', () => {
+    const hero = mkHero((c) => {
+      c.fate = 3;
+      c.fortune = 2;
+      c.resilience = 2;
+      c.resolve = 1;
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
+    expect(html).toContain('>Constitution<');
+    expect(html).toContain('notch-gauge__label">Chance<');
+    expect(html).toContain('notch-gauge__label">Détermination<');
+    // Destin/Résilience = Indice PERMANENT en valeur simple, AU-DESSUS de leur réserve.
+    expect(html).toContain('>Destin<');
+    expect(html).toContain('>Résilience<');
+    expect(html.indexOf('>Destin<')).toBeLessThan(html.indexOf('>Chance<'));
+    // Réserves d'abord (ce qu'on a), seuils ensuite : Chance précède Critiques actives.
+    expect(html.indexOf('>Chance<')).toBeLessThan(html.indexOf('>Critiques actives<'));
+    // Chance = réserve courante (fortune 2) plafonnée par le plafond RÉEL `fortuneMax` (= Destin 3
+    // sans talent Chanceux) ; Détermination (resolve 1) par `resolveMax` (= Résilience 2).
+    expect(html).toContain('aria-valuemax="3" aria-valuenow="2"');
+    // Détermination = réserve courante (resolve 1) plafonnée par la Résilience (resilience 2).
+    expect(html).toContain('aria-valuemax="2" aria-valuenow="1"');
+    // Ton RESSOURCE : plein = bon — les réserves ne virent jamais au rouge (héros sain : aucun danger).
+    expect(html).toContain('data-tone="resource"');
+    expect(html).not.toContain('data-tone="danger"');
+  });
+
+  it('RÉSERVES masquées quand Destin ET Résilience valent 0 (Elfe, LDB 05 l.53) : aucune cellule fantôme, la Constitution garde ses seuils', () => {
+    const hero = mkHero((c) => {
+      c.fate = 0;
+      c.fortune = 0;
+      c.resilience = 0;
+      c.resolve = 0;
+    });
+    const html = renderToStaticMarkup(<EtatPanel hero={hero} />);
+    expect(html).toContain('>Constitution<');
+    expect(html).toContain('notch-gauge__label">Critiques actives<');
+    expect(html).not.toContain('notch-gauge__label">Chance<');
+    expect(html).not.toContain('notch-gauge__label">Détermination<');
   });
 });

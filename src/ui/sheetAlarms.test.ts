@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sheetAlarms, alarmsFingerprint, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_ENCOMBREMENT, ETAT_ANCHOR_TRAUMAS } from './sheetAlarms';
+import { sheetAlarms, alarmsFingerprint } from './sheetAlarms';
 import type { Combatant, Trauma, ItemInstance } from '../engine/types';
 import type { Disease } from '../engine/disease';
 import type { Mutation } from '../engine/corruption';
@@ -34,39 +34,56 @@ const mkDisease = (name: string): Disease => ({
 
 const mkItem = (uid: string, enc: number): ItemInstance => ({ uid, kind: 'misc', enc, qualities: [] } as unknown as ItemInstance);
 
+/** `sheetAlarms` sert UNIQUEMENT la règle d'atterrissage (auto-ouverture de l'onglet État à
+ *  l'apparition d'une affliction NOUVELLE, `CharacterSheet.tsx`) — plus l'affichage de l'aside
+ *  (désormais `EffectChips`). Contrat : détecter les afflictions par `key` d'identité + `label`
+ *  porteur du compte/degré (les deux seuls champs lus par `alarmsFingerprint`). */
 describe('sheetAlarms', () => {
-  it('héros sain : aucune alarme', () => {
+  it('héros sain : aucune affliction', () => {
     expect(sheetAlarms(mkHero())).toEqual([]);
   });
 
-  it('héros corrompu + malade + surchargé : alarmes attendues avec leurs ancres', () => {
+  it('héros corrompu + malade + surchargé : afflictions détectées avec leur libellé porteur de degré', () => {
     const hero = mkHero((c) => {
       c.corruption = 3;
       c.diseases = [mkDisease('Fièvre Sanguinaire')];
       c.items = [mkItem('x', 999)];
     });
-    const alarms = sheetAlarms(hero);
-    const byKey = Object.fromEntries(alarms.map((a) => [a.key, a]));
-    expect(byKey['corruption']).toMatchObject({ label: 'Corruption 3', anchor: ETAT_ANCHOR_CORRUPTION, tone: 'warn' });
-    expect(byKey['maladie-Fièvre Sanguinaire']).toMatchObject({ label: 'Fièvre Sanguinaire', anchor: ETAT_ANCHOR_MALADIES, tone: 'danger' });
-    expect(byKey['surcharge']).toMatchObject({ label: 'Surchargé', anchor: ETAT_ANCHOR_ENCOMBREMENT, tone: 'warn' });
+    const byKey = Object.fromEntries(sheetAlarms(hero).map((a) => [a.key, a.label]));
+    expect(byKey['corruption']).toBe('Corruption 3');
+    expect(byKey['maladie-Fièvre Sanguinaire']).toBe('Fièvre Sanguinaire');
+    expect(byKey['surcharge']).toBe('Surchargé');
   });
 
-  it('trauma cosmétique seul (cicatrice) : pas d’alarme Séquelles', () => {
+  it('Corruption + DAMNÉ : le libellé porte la mention DAMNÉ (affliction distincte pour l’atterrissage)', () => {
+    const hero = mkHero((c) => {
+      c.corruption = 5;
+      c.damned = true;
+    });
+    const corr = sheetAlarms(hero).find((a) => a.key === 'corruption');
+    expect(corr?.label).toBe('Corruption 5 — DAMNÉ');
+  });
+
+  it('critiques ACTIVES : affliction « Critiques N » (compte décompté au soin, pas l’historique)', () => {
+    const hero = mkHero((c) => { c.criticalWounds = 2; });
+    expect(sheetAlarms(hero).find((a) => a.key === 'critiques')?.label).toBe('Critiques 2');
+  });
+
+  it('trauma cosmétique seul (cicatrice) : pas d’affliction Séquelles', () => {
     const hero = mkHero((c) => {
       c.traumas = [{ label: 'Cicatrice', location: 'corps', cosmetic: true } as Trauma];
     });
-    expect(sheetAlarms(hero).some((a) => a.anchor === ETAT_ANCHOR_TRAUMAS)).toBe(false);
+    expect(sheetAlarms(hero).some((a) => a.key === 'traumas')).toBe(false);
   });
 
-  it('trauma NON cosmétique : alarme Séquelles', () => {
+  it('trauma NON cosmétique : affliction « Séquelles N »', () => {
     const hero = mkHero((c) => {
       c.traumas = [{ label: 'Bras cassé', location: 'brasG' } as Trauma];
     });
-    expect(sheetAlarms(hero).find((a) => a.anchor === ETAT_ANCHOR_TRAUMAS)).toMatchObject({ label: 'Séquelles 1', tone: 'warn' });
+    expect(sheetAlarms(hero).find((a) => a.key === 'traumas')?.label).toBe('Séquelles 1');
   });
 
-  it('fingerprint : stable pour le même relevé, différent si une alarme s’ajoute', () => {
+  it('fingerprint : stable pour le même relevé, différent si une affliction s’ajoute', () => {
     const hero = mkHero((c) => { c.corruption = 1; });
     const fp1 = alarmsFingerprint(sheetAlarms(hero));
     const fp2 = alarmsFingerprint(sheetAlarms(hero));

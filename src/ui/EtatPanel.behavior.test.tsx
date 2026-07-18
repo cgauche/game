@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 /**
- * Comportement RÉEL (clic) du registre État, en complément des tests SSR (`EtatPanel.test.tsx`,
- * `renderToStaticMarkup` — aucun clic). LOT L pt.3(b) : le clic-épingle du popover `CodexRef`
- * (`tooltipOnly`, geste D) fonctionne-t-il TOUJOURS sur les lignes du registre après la refonte
- * LOT K ? Patron réel du repo pour les tests clic/clavier interactifs (`createRoot`/`act`/
- * `dispatchEvent` — `@testing-library` n'est PAS une dépendance, cf. `career-talent-roving.test.tsx`).
+ * Comportement RÉEL (clic) du tableau de bord État, en complément des tests SSR (`EtatPanel.test.tsx`,
+ * `renderToStaticMarkup` — aucun clic). Contrats : le clic sur une affliction codex-liée OUVRE la
+ * fiche Codex (les afflictions ne sont plus `tooltipOnly` — bug récurrent user : le clic ne rouvrait
+ * pas le Codex), et le titre de bande ouvre la CATÉGORIE. Patron réel du repo pour les tests
+ * clic/clavier interactifs (`createRoot`/`act`/`dispatchEvent` — `@testing-library` n'est PAS une
+ * dépendance, cf. `career-talent-roving.test.tsx`).
  */
 import { describe, it, expect, afterEach, beforeAll } from 'vitest';
 import { act } from 'react';
@@ -64,28 +65,27 @@ describe('EtatPanel — comportement clic (LOT L pt.3)', () => {
     expect(document.getElementById('etat-etats')).not.toBeNull();
   });
 
-  it('3(b) — clic-épingle du popover CodexRef (tooltipOnly) sur une ligne du registre : bascule aria-expanded + montre le popover', () => {
+  it('3(b) — clic sur une chip d’État OUVRE la fiche Codex sur SON entrée (bug récurrent : le clic ne rouvrait pas le Codex, corrigé en retirant tooltipOnly des afflictions)', () => {
     mount();
     const trigger = container.querySelector('#etat-etats .codex-ref') as HTMLElement;
     expect(trigger).not.toBeNull();
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    // Affliction NON tooltipOnly : c'est l'élément interactif (role button), pas une épingle de popover.
+    expect(trigger.getAttribute('role')).toBe('button');
+    expect(trigger.getAttribute('aria-expanded')).toBeNull();
+    expect(useGame.getState().codexOverlay).toBeNull();
     act(() => { trigger.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    expect(trigger.getAttribute('aria-expanded')).toBe('true');
-    expect(document.querySelector('.codex-pop')).not.toBeNull();
-    // Un 2e clic (toggle) referme.
-    act(() => { trigger.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    // Store OBSERVÉ : le clic pose `codexOverlay` sur l'entrée `etats`/`assourdi` (fiche réelle).
+    const ov = useGame.getState().codexOverlay;
+    expect(ov?.category).toBe('etats');
+    expect(ov?.id).toBe('assourdi');
   });
 
-  it('2 — bande cliquable : le titre de section (États actifs) ouvre RÉELLEMENT le Codex sur SA catégorie', () => {
+  it('2 — « Effets actifs » est une bande MIXTE (États + buffs de sort + contrecoups) : son TITRE n’est PAS un lien Codex (catégorie unique fausse) — seules les chips portent leur lien codex individuel (3(b))', () => {
     mount();
-    const titleBtn = container.querySelector('#etat-etats .creator-band-title-link') as HTMLButtonElement;
-    expect(titleBtn).not.toBeNull();
-    expect(titleBtn.tagName).toBe('BUTTON');
-    expect(useGame.getState().codexOverlay).toBeNull();
-    act(() => { titleBtn.click(); });
-    // Store OBSERVÉ (pas seulement l'affordance) : le clic pose bien `codexOverlay` sur la catégorie
-    // « etats », id vide (liste de catégorie, pas d'entrée présélectionnée).
-    expect(useGame.getState().codexOverlay).toEqual({ category: 'etats', id: '' });
+    // Section hétérogène : aucune catégorie unique ne décrit un buff de sort → pas de titre-lien
+    // (`codexCategory` omis, cf. doc de `Section`). Le titre reste un libellé simple, pas un bouton.
+    const titleBtn = container.querySelector('#etat-etats .creator-band-title-link');
+    expect(titleBtn).toBeNull();
+    expect(container.querySelector('#etat-etats')?.textContent).toContain('Effets actifs');
   });
 });

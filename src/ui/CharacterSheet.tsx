@@ -40,6 +40,8 @@ import { ItemIcon } from './ItemIcon';
 import { MediaSelect } from './MediaSelect';
 import { BackgroundPanel } from './BackgroundPanel';
 import { Icon } from './Icon';
+import { EffectChips } from './EffectChips';
+import { combatantFlags } from '../gameIso/effectIcons';
 import type { Palette } from '../gameIso/rig/palette';
 import { sheetAlarms, alarmsFingerprint } from './sheetAlarms';
 import { EtatPanel, ZONE_ORDER, zoneAnchor, zoneAfflictions } from './EtatPanel';
@@ -116,34 +118,14 @@ function etatZoneBadges(hero: Combatant): ZoneBadgeSpec[] {
   }));
 }
 
-/** Bande d'alarmes de la colonne moniteur (§3.1 design v4, #492) : chips-boutons focusables, une
- *  par alarme de `sheetAlarms` — clic = bascule l'onglet État et ancre vers sa rubrique (dégrade
- *  proprement tant que le lot 1b n'a pas posé les rubriques). Absente (rien rendu) si RAS. */
-function SheetAlarmsBand({ hero }: { hero: Combatant }) {
-  const setSheetTab = useGame((s) => s.setSheetTab);
-  const alarms = sheetAlarms(hero);
-  if (!alarms.length) return null;
-  const goTo = (anchor: string) => {
-    setSheetTab('etat');
-    requestAnimationFrame(() => document.getElementById(anchor)?.scrollIntoView({ block: 'start' }));
-  };
-  return (
-    <div className="skill-tags">
-      {alarms.map((a) => (
-        <button key={a.key} type="button" className={`chip tone-${a.tone}`} title={a.label} onClick={() => goTo(a.anchor)}>
-          <Icon id={a.icon} size="sm" />{' '}
-          {a.codexCategory ? (
-            // Popover de FAMILLE (LOT L pt.3) — nesté DANS le bouton de navigation, même patron que
-            // les rangées cliquables du registre (`PlaqueRow` + `CodexRef` imbriqués, ex. Possessions
-            // ci-dessous) : le clic bascule le popover ET remonte navigateur au clic du bouton hôte.
-            <CodexRef category={a.codexCategory} id={a.codexId} label={a.label} tooltipOnly>{a.label}</CodexRef>
-          ) : (
-            a.label
-          )}
-        </button>
-      ))}
-    </div>
-  );
+/** Rangée d'EFFETS ACTIFS de la colonne aside (directive user 2026-07-17 : « dans les alertes je ne
+ *  veux que les états et les buffs, comme sur les portraits ») — MÊME primitive que les portraits
+ *  (`EffectChips`/`summarizeEffects`) : États/malus en rouge, buffs en vert + durée. Ce sont les EFFETS
+ *  ACTIFS du personnage, à ne pas confondre avec le Statut SOCIAL (rangée d'identité). Les afflictions
+ *  et seuils (critiques, corruption, mutations, séquelles, maladies, psycho, surcharge) vivent dans le
+ *  tableau de bord de l'onglet État — plus jamais dupliqués ici. Rien rendu si aucun effet actif. */
+function SheetActiveEffects({ hero }: { hero: Combatant }) {
+  return <EffectChips conditions={hero.conditions} effects={hero.activeEffects} flags={combatantFlags(hero)} />;
 }
 
 const TAB_LABELS: Record<SheetTab, string> = {
@@ -245,8 +227,8 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 zoneBadges={tab === 'possessions' ? possessionsZoneBadges(hero) : tab === 'etat' ? etatZoneBadges(hero) : undefined}
               />
               <LifeBar stacked label="Blessures" value={hero.wounds.current} max={hero.wounds.max} tone={woundsTone} />
-              {/* Encombrement : ton PAR PALIER (`encumbranceTone`, juge vision 2026-07-17) — la surcharge
-                  elle-même reste portée par l'alarme existante (`SheetAlarmsBand`/`sheetAlarms.ts`), jamais dupliquée ici.
+              {/* Encombrement : ton PAR PALIER (`encumbranceTone`, juge vision 2026-07-17) — le palier de
+                  Surcharge lui-même vit dans le tableau de bord de l'onglet État (`EtatPanel.tsx`), jamais dupliqué ici.
                   Le dépassement (Enc > max) est porté par l'état DÉPASSEMENT générique de `LifeBar`.
                   `stacked` (arbitrage 2026-07-17) : valeur au-dessus, piste pleine largeur — les deux
                   barres de l'aside s'alignent par construction, quelle que soit la longueur du libellé/valeur. */}
@@ -271,7 +253,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 </div>
               </div>
             </div>
-            <SheetAlarmsBand hero={hero} />
+            <SheetActiveEffects hero={hero} />
             {canSoigner && (
               <div className="row-flex">
                 <button className="btn small" onClick={() => openMedic({ patientId: hero.id })}

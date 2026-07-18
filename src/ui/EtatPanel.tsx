@@ -1,13 +1,17 @@
 /**
- * Onglet ÉTAT — REGISTRE COMPACT (arbitrage user 2026-07-17, verbatim : « Oui : registre compact +
- * Codex » — une ligne par affliction, détail/prose à UN clic au popover Codex ; la fiche dit MON
- * état, le Codex dit la règle). Bandes de section ancrées (`ETAT_ANCHOR_*`, `sheetAlarms.ts`) —
- * une bande SANS contenu N'EXISTE PAS. Chaque ligne = `PlaqueRow` (nom `CodexRef tooltipOnly` — le
- * détail vit dans le popover, pas au clic-navigation —, chips d'effet net en `fx` SOUS le nom via
- * `GameOpChips`, valeur = l'horloge/le cumul, rendue DISCRÈTE — `sheet.css`) — AUCUNE prose inline
- * dans le registre. Grammaire de carte (liseré de gravité `data-tone`, icône, sous-ligne petites
- * capitales) affinée au lot #492 « chevet » (planche `docs/plans/2026-07-17-planche-etat-chevet.html`
- * — carrière de styles, pas un étalon docile : les tokens/primitives existants restent l'autorité).
+ * Onglet ÉTAT — TABLEAU DE BORD toujours utile (arbitrage user 2026-07-17). L'en-tête de CAPACITÉ est
+ * TOUJOURS visible, même héros sain : la bande UNIQUE `ConstitutionBand` empile RÉSERVES (Chance,
+ * Détermination — tone ressource) puis SEUILS avant inaptitude (Critiques actives, Mutations
+ * physiques, Mutations mentales, Corruption) + indicateur DAMNÉ.
+ * Les États actifs sont des CHIPS codex-liées compactes (`.chip` + `CodexRef`, s'enroulent) juste sous
+ * la Constitution. Les AFFLICTIONS lourdes (Blessures critiques, Séquelles, Maladies, Mutations,
+ * Psychologie, Surcharge, Effets) restent conditionnelles à leur présence, en `PlaqueRow` (nom
+ * `CodexRef` — survol = aperçu popover, CLIC = ouverture de la fiche Codex ; la `PlaqueRow` hôte reste
+ * NON cliquable pour ne pas nicher deux actions —, chips d'effet net en `fx` SOUS le nom via
+ * `GameOpChips`, valeur DISCRÈTE — `sheet.css`) ; AUCUNE prose inline. Bandes de section
+ * ancrées (`ETAT_ANCHOR_*`, `sheetAlarms.ts`) — une bande SANS contenu N'EXISTE PAS. Grammaire de
+ * carte (liseré de gravité `data-tone`, icône, sous-ligne petites capitales) affinée au lot #492
+ * « chevet » — les tokens/primitives existants restent l'autorité.
  *
  * La bande de zones EN TÊTE du registre (`ZoneBand`, pt.4) est MORTE (lot « corps-index », arbitrage
  * user 2026-07-17) — doublon d'index : le CORPS de la colonne (`FigTile.zoneBadges`, composé par
@@ -22,17 +26,17 @@ import type { Combatant, HitLocation } from '../engine/types';
 import type { Duration } from '../engine/duration';
 import { locationLabel } from '../engine/combat';
 import { bonus, effectiveChar } from '../engine/characteristics';
-import { maxEncumbrance, totalEncumbrance, giveTrappingLabel } from '../engine/items';
+import { maxEncumbrance, totalEncumbrance } from '../engine/items';
 import { encumbrancePenalties } from '../engine/encumbrance';
 import { findCritEntrySuffered, critEntryCodexCategory, type CritTableKey } from '../engine/critical';
 import { corruptionThreshold } from '../engine/corruption';
 import { formatRemaining } from '../engine/disease';
 import { CHAR_LABELS, type ConditionInstance } from '../engine/types';
-import { formatTrait } from '../engine/traits/dispatch';
-import { talentConcrete } from '../data';
-import { findConditionById, diseaseLabel, findPsychologyById, symptomLabel, mutationLabel } from '../data';
+import { summarizeEffects } from '../gameIso/effectIcons';
+import { fortuneMax, resolveMax } from '../engine/talentEffects';
+import { diseaseLabel, findPsychologyById, symptomLabel, mutationLabel } from '../data';
 import { datasetArray } from '../data/overrides';
-import { isPsychAfflictionActive, ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_CORRUPTION, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
+import { isPsychAfflictionActive, ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
 import { useGame } from '../state/store';
 import { CodexRef } from './compendium/CodexRef';
 import { EntityRef } from './EntityChip';
@@ -56,16 +60,14 @@ const GAUGE_CELL_PX = 16;
 type GravityTone = 'sang' | 'ambre' | 'violet';
 
 /** Bande de section ancrée : titre + compte en badge sobre (`Band`, primitive partagée). L'appelant
- *  filtre déjà les rubriques vides — une bande SANS contenu n'apparaît jamais dans l'arbre.
- *  `extra` : jauge ADDITIONNELLE à côté du compte (ex. progression de Corruption) — les compteurs de
- *  SEUILS (Critiques actives/Mutations vs BE/BFM) ne vivent plus ICI mais dans `SeuilsBand`, la
- *  synthèse en tête de registre (arbitrage user 2026-07-17 : « ces textes énormes en gras… »). */
+ *  filtre déjà les rubriques vides — une bande SANS contenu n'apparaît jamais dans l'arbre. Les
+ *  compteurs de SEUILS (Critiques actives/Mutations vs BE/BFM, Corruption) vivent dans `ConstitutionBand`,
+ *  la synthèse en tête de registre (arbitrage user 2026-07-17). */
 function Section({
   anchor,
   title,
   count,
   tone,
-  extra,
   children,
   codexCategory,
 }: {
@@ -73,12 +75,11 @@ function Section({
   title: string;
   count?: number;
   tone?: GravityTone;
-  extra?: ReactNode;
   children: ReactNode;
   /** Catégorie Compendium de la bande (arbitrage user 2026-07-17, LOT L pt.2) — le titre devient
-   *  cliquable, ouvre le Codex sur SA catégorie (pas d'id : aucune entrée n'est présélectionnée,
-   *  seule la liste de la catégorie s'affiche). Omis pour les bandes SANS catégorie unique (Effets
-   *  en cours : mélange hétérogène Trait/Talent/enchantement — cf. commentaire du call-site). */
+   *  cliquable, ouvre le Codex sur SA catégorie (la LISTE : ces bandes sont des COLLECTIONS
+   *  d'entrées). Omis pour les bandes SANS catégorie unique (Effets en cours : mélange hétérogène
+   *  Trait/Talent/enchantement — cf. commentaire du call-site). */
   codexCategory?: string;
 }) {
   const openCodex = useGame((s) => s.openCodex);
@@ -86,7 +87,7 @@ function Section({
     <div id={anchor} data-tone={tone}>
       <Band
         title={title}
-        right={(count != null || extra) ? <>{count != null && <b>{count}</b>}{extra}</> : undefined}
+        right={count != null ? <b>{count}</b> : undefined}
         onTitleClick={codexCategory ? () => openCodex({ category: codexCategory, id: '' }) : undefined}
         titleAriaLabel={codexCategory ? 'Ouvrir cette catégorie au Codex' : undefined}
       >
@@ -103,25 +104,44 @@ function seuilTone(value: number, limit: number): GaugeTone {
   return value >= limit ? 'danger' : value === limit - 1 ? 'warn' : 'neutral';
 }
 
-/** Bande de synthèse des SEUILS avant inaptitude, en tête du registre (arbitrage user 2026-07-17,
- *  idée retenue de la maquette v3bis) : mots PLEINS — « Critiques actives », « Mutations physiques »,
- *  « Mutations mentales » — jamais les micro-libellés « actives/phys/ment » plantés dans le slot
- *  droit de chaque bande de rubrique (verdict user : « ces textes énormes en gras, pourquoi ? »).
- *  Titre « Seuils » (et non « Destin », qui collisionne avec la VRAIE stat Destin/points de Chance
- *  de l'onglet Compétences) : ces 3 jauges sont les seuils AVANT inaptitude — critiques actives ≤ BE,
- *  mutations physiques ≤ BE, mutations mentales ≤ BFM. Les bandes de rubrique gardent leur compte
- *  sobre (badge droit) SEUL — cette synthèse est la SEULE porteuse des jauges de crans BE/BFM.
- *  Aucune mention de seuil de mort (pas de réf livre à l'écran). Empilement ALIGNÉ des 3 jauges
- *  (`.notch-gauge-stack`, patron de groupe de la primitive `NotchGauge`, `gauges.css`) — le flex qui
- *  s'enroulait en rangée laissait le libellé le plus long (« Mutations mentales ») retomber seul,
- *  sans que rien ne s'aligne entre les 3 compteurs. */
-function SeuilsBand({ activeCriticals, be, physMutations, mentMutations, bfm }: { activeCriticals: number; be: number; physMutations: number; mentMutations: number; bfm: number }) {
+/** Bande « Constitution » — en-tête de capacité UNIQUE du tableau de bord (fusion Réserves + Seuils,
+ *  directive user 2026-07-17), en GRILLE 2 colonnes (`.constitution-grid`, → 1 colonne ≤700px).
+ *  Réserves en 2×2 : Destin et Résilience = l'Indice PERMANENT (valeur simple affichée telle quelle),
+ *  Chance et Détermination = la réserve courante (`NotchGauge` tone `resource`, plafond RÉEL
+ *  `fortuneMax`/`resolveMax` = Indice + talents/effets — Chanceux/Obstiné compris, JAMAIS l'Indice
+ *  seul). Puis les 4 seuils avant inaptitude, 2 par ligne (Critiques actives ≤ BE, Mutations physiques
+ *  ≤ BE, Mutations mentales ≤ BFM, Corruption vers son seuil). Réf réserves : `LDB 17 l.4-9`,
+ *  `LDB 17 l.12-17`, `LDB 17 l.21-27`. Bloc réserves masqué si Destin ET Résilience valent 0
+ *  (`LDB 05 l.53`). DAMNÉ (`LDB 19 l.87`) : indicateur du slot droit. Aucune réf livre à l'écran. */
+function ConstitutionBand({ hero, activeCriticals, be, physMutations, mentMutations, bfm, corruption, corruptionMax }: { hero: Combatant; activeCriticals: number; be: number; physMutations: number; mentMutations: number; bfm: number; corruption: number; corruptionMax: number }) {
+  const fate = hero.fate ?? 0;
+  const resilience = hero.resilience ?? 0;
+  const showReserves = fate > 0 || resilience > 0;
+  const fMax = fortuneMax(hero);
+  const rMax = resolveMax(hero);
   return (
-    <Band title="Seuils">
-      <div className="notch-gauge-stack">
-        <NotchGauge label="Critiques actives" value={activeCriticals} max={be} notches={be} tone={seuilTone(activeCriticals, be)} cellSize={GAUGE_CELL_PX} />
-        <NotchGauge label="Mutations physiques" value={physMutations} max={be} notches={be} tone={seuilTone(physMutations, be)} cellSize={GAUGE_CELL_PX} />
-        <NotchGauge label="Mutations mentales" value={mentMutations} max={bfm} notches={bfm} tone={seuilTone(mentMutations, bfm)} cellSize={GAUGE_CELL_PX} />
+    <Band title="Constitution" right={hero.damned ? <span className="chip tone-danger">DAMNÉ</span> : undefined}>
+      <div className="constitution-grid">
+        <div className="notch-gauge-stack">
+          {showReserves && (
+            <>
+              <div className="sheet-idrow"><span className="sheet-idrow-label">Destin</span><span className="sheet-idrow-value">{fate}</span></div>
+              <NotchGauge label="Chance" value={hero.fortune ?? 0} max={fMax} notches={fMax} tone="resource" cellSize={GAUGE_CELL_PX} />
+            </>
+          )}
+          <NotchGauge label="Critiques actives" value={activeCriticals} max={be} notches={be} tone={seuilTone(activeCriticals, be)} cellSize={GAUGE_CELL_PX} />
+          <NotchGauge label="Mutations physiques" value={physMutations} max={be} notches={be} tone={seuilTone(physMutations, be)} cellSize={GAUGE_CELL_PX} />
+        </div>
+        <div className="notch-gauge-stack">
+          {showReserves && (
+            <>
+              <div className="sheet-idrow"><span className="sheet-idrow-label">Résilience</span><span className="sheet-idrow-value">{resilience}</span></div>
+              <NotchGauge label="Détermination" value={hero.resolve ?? 0} max={rMax} notches={rMax} tone="resource" cellSize={GAUGE_CELL_PX} />
+            </>
+          )}
+          <NotchGauge label="Corruption" value={corruption} max={corruptionMax} notches={corruptionMax} tone="corruption" cellSize={GAUGE_CELL_PX} />
+          <NotchGauge label="Mutations mentales" value={mentMutations} max={bfm} notches={bfm} tone={seuilTone(mentMutations, bfm)} cellSize={GAUGE_CELL_PX} />
+        </div>
       </div>
     </Band>
   );
@@ -171,30 +191,6 @@ export function zoneAfflictions(hero: Combatant): { loc: HitLocation; crit: numb
   }));
 }
 
-/** Description courte d'un effet actif (buff de carac, Trait/Talent accordé, enchantement…). */
-function describeEffect(e: NonNullable<Combatant['activeEffects']>[number]): string {
-  if (e.char) return `${e.bonus >= 0 ? '+' : ''}${e.bonus} ${CHAR_LABELS[e.char]}`;
-  if (e.grantedTrait) return `Trait ${formatTrait(e.grantedTrait)}`;
-  if (e.conjuredSet) return `Arme invoquée (${e.label})`;
-  if (e.grantedTalent) return `Talent ${talentConcrete(e.grantedTalent)}`;
-  if (e.apAll) return `+${e.apAll} PA (toutes Localisations)`;
-  if (e.enchantRef) return 'Arme enchantée';
-  if (e.weatherImmune) return 'Immunisé aux intempéries';
-  if (e.suffocates) return 'Suffoque (−1 PB/Round)';
-  if (e.noBreath) return 'Respiration superflue';
-  if (e.ignoreStatePenalties) return 'Ignore les pénalités d’État';
-  if (e.opsPerRound?.length) {
-    const cond = e.opsPerRound.find((o) => o.op === 'condition');
-    if (cond && cond.op === 'condition') return `${cond.name} chaque Round`;
-    const give = e.opsPerRound.find((o) => o.op === 'giveTrapping');
-    if (give && give.op === 'giveTrapping') return `${giveTrappingLabel(give)} chaque Round`;
-    return 'Effet récurrent chaque Round';
-  }
-  if (e.grantedFortune) return `+${e.grantedFortune} Chance (le temps du Sort)`;
-  if (e.grantedFate) return `+${e.grantedFate} Destin (le temps du Sort)`;
-  return e.label;
-}
-
 /** Libellé plein d'un compte de Rounds (vocabulaire du jeu, ex. `humanizeOp`/`opRows.ts` : « Round »
  *  capitalisé comme un terme RAW, accord réel singulier/pluriel) — jamais l'abréviation muette « R ». */
 function roundsLabel(n: number): string {
@@ -218,37 +214,6 @@ function conditionValue(cond: ConditionInstance): string | undefined {
   if (cond.roundsLeft != null) parts.push(roundsLabel(cond.roundsLeft));
   else if (cond.untilTime != null) parts.push('durée');
   return parts.length ? parts.join(' · ') : undefined;
-}
-
-/** Rubrique « Effets en cours » : buffs/débuffs de Sort, Traits accordés, contrecoups d'incantation
- *  — DERNIÈRE bande du registre. */
-function ActiveEffectsSection({ hero }: { hero: Combatant }) {
-  const fx = hero.activeEffects ?? [];
-  const cp = hero.castPenalties ?? [];
-  if (!fx.length && !cp.length) return null;
-  return (
-    // Pas de `codexCategory` (LOT L pt.2) : rubrique hétérogène (Traits accordés, Talents
-    // accordés, bonus de Sort, contrecoups d'incantation — chaque ligne référence SA propre
-    // catégorie via `describeEffect`/le sous-texte, aucune catégorie fédératrice au Compendium).
-    <Section title="Effets en cours" count={fx.length + cp.length} anchor="etat-effets">
-      {fx.map((e, i) => (
-        <PlaqueRow valueMuted
-          key={`e${i}`}
-          prefix={<Icon id="mechanic/stat-mod" size="sm" />}
-          name={e.label}
-          value={`${describeEffect(e)}${effectDuration(e)}`}
-        />
-      ))}
-      {cp.map((p, i) => (
-        <PlaqueRow valueMuted
-          key={`c${i}`}
-          prefix={<Icon id="ui/warning" size="sm" />}
-          name={p.label}
-          value={`${p.blocked ? 'Incantation bloquée' : p.maxZeroDR ? 'Prière plafonnée à 0 DR' : `${p.mod} ${p.skill}`}${effectDuration(p)}`}
-        />
-      ))}
-    </Section>
-  );
 }
 
 export function EtatPanel({ hero }: { hero: Combatant }) {
@@ -276,21 +241,6 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
   // Palier de Surcharge (0 sans signal ici, puisque `overEnc` filtre déjà) — l'id/label CODEX (#422)
   // vit dans `encumbranceTiers.json`, résolu par `tier` (le moteur n'expose que la valeur numérique).
   const encTier = overEnc ? datasetArray('encumbranceTiers').find((t) => t.tier === encumbrancePenalties(hero).tier) : undefined;
-  const hasEffects = (hero.activeEffects?.length ?? 0) > 0 || (hero.castPenalties?.length ?? 0) > 0;
-
-  const hasSignal = criticalEntries.length > 0 || conditions.length > 0 || corruption > 0 || diseases.length > 0
-    || mutations.length > 0 || traumas.some((t) => !t.cosmetic) || activePsych.length > 0 || overEnc || hasEffects;
-
-  if (!hasSignal) {
-    return (
-      <div className="sheet-etat">
-        <div className="etat-ras">
-          <span className="ras-title">Rien à signaler.</span>
-          <span className="ras-sub">Ni blessure, ni affliction — le corps et l'âme tiennent bon.</span>
-        </div>
-      </div>
-    );
-  }
 
   // Ancre la PREMIÈRE rangée Critiques/Séquelles de chaque Localisation (une seule fois, dans l'ordre
   // de rendu du registre) — cible de clic du badge de zone de la colonne (`FigTile.zoneBadges`, pt.4).
@@ -304,7 +254,74 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
 
   return (
     <div className="sheet-etat">
-      <SeuilsBand activeCriticals={activeCriticals} be={be} physMutations={physMutations} mentMutations={mentMutations} bfm={bfm} />
+      <ConstitutionBand hero={hero} activeCriticals={activeCriticals} be={be} physMutations={physMutations} mentMutations={mentMutations} bfm={bfm} corruption={corruption} corruptionMax={corruptionMax} />
+
+      {(conditions.length > 0 || (hero.activeEffects?.length ?? 0) > 0 || (hero.castPenalties?.length ?? 0) > 0) && (() => {
+        // « Effets actifs » (retour recette 2026-07-17) : États/malus ET buffs de sorts sont des effets
+        // actifs de MÊME nature → une seule section de chips codex-liées (`.etat-chips`). Source unique
+        // de « ce qui est actif » : `summarizeEffects(conditions, activeEffects)` (la fonction des
+        // portraits/`EffectChips`), SANS les états-drapeaux psy (leur section Psychologie les porte).
+        // Ordre : malus (par gravité) puis buffs ; les contrecoups d'incantation ferment la liste.
+        const active = summarizeEffects(conditions, hero.activeEffects ?? []).visible;
+        const castPen = hero.castPenalties ?? [];
+        const buffs = hero.activeEffects ?? [];
+        const condByName = new Map(conditions.map((c) => [c.name, c]));
+        let buffIdx = 0;
+        return (
+          <Section anchor="etat-etats" title="Effets actifs" count={active.length + castPen.length} tone="sang">
+            <div className="etat-chips">
+              {active.map((chip) => {
+                if (chip.kind === 'malus') {
+                  const cond = chip.condId ? condByName.get(chip.condId) : undefined;
+                  const clock = cond ? conditionValue(cond) : undefined;
+                  return (
+                    <CodexRef key={chip.key} category="etats" id={chip.condId} label={chip.label} className="chip">
+                      <Icon id={chip.icon as IconIdInput} size="sm" />
+                      {chip.label}
+                      {clock ? <em className="entity-badge">{clock}</em> : null}
+                    </CodexRef>
+                  );
+                }
+                // Buff de sort : chip VERTE (`.tone-ok`, même famille que `.tone-warn`/`.tone-danger`,
+                // `components.css`), liée à SON sort source si résolvable (`sourceSpellId` -> Codex
+                // Sorts) ; sinon chip simple (info visible, sans lien).
+                const eff = buffs[buffIdx++];
+                const meta: string[] = [];
+                if (chip.char != null) meta.push(`${(chip.bonus ?? 0) >= 0 ? '+' : ''}${chip.bonus ?? 0} ${CHAR_LABELS[chip.char]}`);
+                const dur = eff ? effectDuration(eff).replace(/^ · /, '') : '';
+                if (dur) meta.push(dur);
+                const metaNode = meta.length ? <em className="entity-badge">{meta.join(' · ')}</em> : null;
+                const spellId = eff?.sourceSpellId;
+                return spellId ? (
+                  <CodexRef key={chip.key} category="spells" id={spellId} label={chip.label} className="chip tone-ok">
+                    <Icon id={chip.icon as IconIdInput} size="sm" />
+                    {chip.label}
+                    {metaNode}
+                  </CodexRef>
+                ) : (
+                  <span key={chip.key} className="chip tone-ok" title={chip.label}>
+                    <Icon id={chip.icon as IconIdInput} size="sm" />
+                    {chip.label}
+                    {metaNode}
+                  </span>
+                );
+              })}
+              {castPen.map((p, i) => {
+                const val = p.blocked ? 'Incantation bloquée' : p.maxZeroDR ? 'Prière plafonnée à 0 DR' : p.mod != null ? `${p.mod}` : '';
+                const dur = effectDuration(p).replace(/^ · /, '');
+                const parts = [val, dur].filter(Boolean).join(' · ');
+                return (
+                  <span key={`cp${i}`} className="chip tone-warn" title={p.label}>
+                    <Icon id="ui/warning" size="sm" />
+                    {p.label}
+                    {parts ? <em className="entity-badge">{parts}</em> : null}
+                  </span>
+                );
+              })}
+            </div>
+          </Section>
+        );
+      })()}
 
       {criticalEntries.length > 0 && (
         <Section
@@ -323,7 +340,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={c.id}
                 prefix={<Icon id="medical/scalpel" size="sm" />}
-                name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.name} tooltipOnly>{c.entry.name}</CodexRef>}
+                name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.name}>{c.entry.name}</CodexRef>}
                 sub={locationLabel(critLocation(c.table), hero.bodyShape)}
                 fx={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
                 value={c.count > 1 ? `×${c.count}` : undefined}
@@ -335,23 +352,6 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
         </Section>
       )}
 
-      {conditions.length > 0 && (
-        <Section anchor="etat-etats" title="États actifs" count={conditions.length} tone="sang" codexCategory="etats">
-          {conditions.map((cond, i) => {
-            const def = findConditionById(cond.name);
-            return (
-              <PlaqueRow valueMuted
-                key={i}
-                prefix={<Icon id={(def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON} size="sm" />}
-                name={<CodexRef category="etats" id={cond.name} label={def?.label ?? cond.name} tooltipOnly>{def?.label ?? cond.name}</CodexRef>}
-                fx={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
-                value={conditionValue(cond)}
-              />
-            );
-          })}
-        </Section>
-      )}
-
       {traumas.length > 0 && (
         <Section anchor={ETAT_ANCHOR_TRAUMAS} title="Séquelles" count={traumas.length} tone="ambre" codexCategory="traumas">
           {traumas.map((t, i) => {
@@ -359,7 +359,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={i}
                 prefix={<Icon id="medical/crutch" size="sm" />}
-                name={<CodexRef category="traumas" id={t.traumaId} label={t.label} tooltipOnly>{t.label}</CodexRef>}
+                name={<CodexRef category="traumas" id={t.traumaId} label={t.label}>{t.label}</CodexRef>}
                 sub={t.location ? locationLabel(t.location, hero.bodyShape) : undefined}
                 fx={(t.ops?.length ?? 0) > 0 ? <GameOpChips ops={t.ops!} /> : undefined}
                 value={`${t.recoveryDays != null ? `${t.recoveryDays} j` : t.needsSurgery ? 'Chirurgie requise' : 'Permanent'}${t.count != null && t.count > 1 ? ` · ×${t.count}` : ''}`}
@@ -377,7 +377,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
             <PlaqueRow valueMuted
               key={i}
               prefix={<Icon id="medical/infection" size="sm" />}
-              name={<CodexRef category="maladies" id={d.name} label={diseaseLabel(d.name)} tooltipOnly>{diseaseLabel(d.name)}</CodexRef>}
+              name={<CodexRef category="maladies" id={d.name} label={diseaseLabel(d.name)}>{diseaseLabel(d.name)}</CodexRef>}
               fx={d.symptoms.length > 0 ? (
                 <>
                   {d.symptoms.map((s, si) => (
@@ -405,7 +405,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={i}
                 prefix={<Icon id="nav/mutation" size="sm" />}
-                name={<CodexRef category="mutations" id={m.id} label={label} tooltipOnly>{label}</CodexRef>}
+                name={<CodexRef category="mutations" id={m.id} label={label}>{label}</CodexRef>}
                 sub={m.kind === 'physique' ? 'Mutation physique' : 'Mutation mentale'}
                 fx={(m.passive?.length ?? 0) > 0 ? <GameOpChips ops={m.passive!} /> : undefined}
               />
@@ -422,27 +422,11 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={i}
                 prefix={<Icon id={(def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON} size="sm" />}
-                name={<CodexRef category="psychologies" id={p.type} label={def?.label ?? p.type} tooltipOnly>{def?.label ?? p.type}</CodexRef>}
+                name={<CodexRef category="psychologies" id={p.type} label={def?.label ?? p.type}>{def?.label ?? p.type}</CodexRef>}
                 fx={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
               />
             );
           })}
-        </Section>
-      )}
-
-      {corruption > 0 && (
-        <Section
-          anchor={ETAT_ANCHOR_CORRUPTION}
-          title="Corruption"
-          tone="violet"
-          extra={<NotchGauge value={corruption} max={corruptionMax} notches={corruptionMax} tone="corruption" cellSize={GAUGE_CELL_PX} />}
-          codexCategory="characteristics"
-        >
-          {/* Le chiffre vit dans la jauge de bande (`extra`) — pas de ligne redondante, sauf la
-              mention DAMNÉ (info d'instance qui n'a pas d'autre siège). */}
-          {hero.damned && (
-            <PlaqueRow valueMuted prefix={<Icon id="flag/anger" size="sm" />} name="Corruption" fx={<span className="chip tone-danger">DAMNÉ</span>} />
-          )}
         </Section>
       )}
 
@@ -452,13 +436,12 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
             prefix={<Icon id={FALLBACK_ICON} size="sm" />}
             // Palier RÉEL (`encumbrancePenalties`, LDB 61) — le moteur applique déjà ces paliers
             // (Mouvement/Agilité, `engine/encumbrance.ts`), la ligne ne peut pas en montrer moins.
-            name={<CodexRef category="encumbranceTiers" id={encTier?.id ?? ''} label={encTier?.label ?? 'Surchargé'} tooltipOnly>Surchargé</CodexRef>}
+            name={<CodexRef category="encumbranceTiers" id={encTier?.id ?? ''} label={encTier?.label ?? 'Surchargé'}>Surchargé</CodexRef>}
             value={`${encTier?.label ?? ''} · ${totalEncumbrance(hero)}/${maxEncumbrance(hero)}`}
           />
         </Section>
       )}
 
-      <ActiveEffectsSection hero={hero} />
     </div>
   );
 }

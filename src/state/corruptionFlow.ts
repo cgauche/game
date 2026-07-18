@@ -5,7 +5,7 @@
  *    de BFM+BE (+ niveau d'Âme pure, LDB 10), Test de Résistance Intermédiaire en MODALE
  *    différée (pendingCorruption kind 'seuil' — Lancer/Chance/Pacte ; repli auto-résolu +
  *    révélation pour les PNJ et les gains en rafale) ; échec → MUTATION (−BFM Points, d100
- *    corps/esprit par espèce, tirage sur le Tableau physique/mentale) ; puis LIMITES (l.95)
+ *    corps/esprit par espèce, tirage sur le Tableau physique/mentale) ; puis LIMITES (l.87)
  *    → damné (hors-jeu définitif).
  *  - « Je te renie ! » (LDB 17 l.71) : un HÉROS avec de la Résilience peut REFUSER la mutation
  *    (1 Point de Résilience ; « comme vous ne mutez pas, vous ne perdez aucun Point de
@@ -94,7 +94,7 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
 }
 
 /** Applique la MUTATION (l.82-91) : −BFM Points, d100 corps/esprit par espèce, tirage sur le
- *  Tableau de Corruption physique/mentale, effets dérivés, puis LIMITES (l.95) → damné. */
+ *  Tableau de Corruption physique/mentale, effets dérivés, puis LIMITES (l.87) → damné. */
 export function applyMutation(get: Get, set: Set, hero: Combatant, _test?: { roll: number; target: number }, align?: ChaosAlign): string[] {
   const rng = battleRng();
   const lines: string[] = [];
@@ -121,7 +121,7 @@ export function applyMutation(get: Get, set: Set, hero: Combatant, _test?: { rol
   ])));
   if (m.note) lines.push(`${m.label} : ${m.note}`);
 
-  // Limites de Corruption (l.95) : plus de mutations physiques que BE ou mentales que
+  // Limites de Corruption (l.87) : plus de mutations physiques que BE ou mentales que
   // BFM → l'âme appartient aux Dieux Sombres. Hors-jeu définitif (traité comme mort).
   if (mutationLimitExceeded(hero)) {
     hero.damned = true;

@@ -1293,7 +1293,7 @@ export interface Combatant {
   /** Mutations subies (LDB 19, Tableaux p.184-185) — DONNÉE persistée ; les effets (caracs
    *  permanentes, Mouvement, PA naturels, mods de Tests, Traits) sont lus à la volée. */
   mutations?: import('./corruption').Mutation[];
-  /** Damné (LDB 19 l.95) : plus de mutations physiques que BE ou mentales que BFM — l'âme
+  /** Damné (LDB 19 l.87) : plus de mutations physiques que BE ou mentales que BFM — l'âme
    *  appartient aux Dieux Sombres. Hors-jeu définitif (traité comme mort, affiché « Damné »). */
   damned?: boolean;
   /** Trauma psychologique « Cauchemars » (LDB 21 l.92) : chaque nuit, Test de Calme Facile (+40) ou

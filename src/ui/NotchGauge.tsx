@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
  * Ton dérivable d'un ton fixe OU d'une fonction `(value,max)→ton` (bande de Moral, palier de soute).
  */
 
-export type GaugeTone = 'ok' | 'warn' | 'danger' | 'neutral' | 'corruption';
+export type GaugeTone = 'ok' | 'warn' | 'danger' | 'neutral' | 'corruption' | 'resource';
 
 export interface NotchGaugeProps {
   value: number;

@@ -13,7 +13,7 @@
  *    à CHAQUE nouveau gain ; échec → mutation.
  *  - Mutation (l.85-91) : −BFM Points, d100 corps/esprit PAR ESPÈCE, tirage sur le
  *    Tableau de Corruption physique ou mentale (src/data/mutations.ts, verbatim).
- *  - Limites (l.95) : mutations physiques > BE ou mentales > BFM → DAMNÉ (le
+ *  - Limites (l.87) : mutations physiques > BE ou mentales > BFM → DAMNÉ (le
  *    personnage bascule dans le Chaos — hors-jeu définitif).
  */
 import { Combatant, HitLocation } from './types';
@@ -135,7 +135,7 @@ export function mutationKindFor(species: string | undefined, roll: number): 'phy
   return roll <= mutationBodyMaxForSpecies(species) ? 'physique' : 'mentale';
 }
 
-/** Limites de Corruption (l.95) : mutations physiques > BE OU mentales > BFM → damné. */
+/** Limites de Corruption (l.87) : mutations physiques > BE OU mentales > BFM → damné. */
 export function mutationLimitExceeded(c: Combatant): boolean {
   const phys = (c.mutations ?? []).filter((m) => m.kind === 'physique').length;
   const ment = (c.mutations ?? []).filter((m) => m.kind === 'mentale').length;

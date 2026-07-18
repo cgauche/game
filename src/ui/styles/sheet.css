@@ -589,37 +589,57 @@
   border-left: 2px solid var(--border);
 }
 
-/* ── Onglet « État » (registre compact, arbitrage user 2026-07-17) : bandes de section (`Band`) +
-   `PlaqueRow` par affliction — l'ancienne silhouette organisatrice (rig + zones dessinées) est MORTE.
-   Le résumé par Localisation vit dans le CORPS de la colonne (`FigTile.zoneBadges`,
-   `CharacterSheet.tsx`), pas ici : ce registre n'affiche pas de bande de zones en tête (#492).
-   L'état calme (RAS) n'affiche plus la figurine (colonne aside déjà
-   en pied grand format, doublon) : message + sous-ligne discrète seuls.
+/* ── Onglet « État » (tableau de bord, arbitrage user 2026-07-17) : en-tête de CAPACITÉ toujours
+   visible (bande `ConstitutionBand`), Effets actifs en CHIPS compactes, afflictions lourdes
+   en `PlaqueRow` conditionnelles — l'ancienne silhouette organisatrice (rig + zones dessinées) est
+   MORTE. Le résumé par Localisation vit dans le CORPS de la colonne (`FigTile.zoneBadges`,
+   `CharacterSheet.tsx`), pas ici.
 
-   Grammaire de carte (lot #492 « chevet », carrière de styles depuis `docs/plans/2026-07-17-
-   planche-etat-chevet.html` — le mock N'EST PAS l'étalon, ses valeurs ne sont reprises QUE quand
-   elles servent la charte) : liseré de gravité (`data-tone`, déjà posé plus bas), icône + titre
-   sobre + sous-ligne petites capitales (`PlaqueRow` inchangée), chips d'effet net SOUS le titre
-   (`fx`, `PlaqueRow.tsx`/`plaque-row.css`) — jamais à côté du nom. La valeur de droite (l'horloge/le
-   cumul) est DISCRÈTE ici (elle restait grasse/16px ailleurs — « ces textes énormes en gras,
-   pourquoi ? », verdict user) via la variante PARTAGÉE `PlaqueRow.valueMuted` (migrée dans
-   `plaque-row.css`, LOT L addendum pt.5 — zéro règle de valeur ICI). ── */
-.etat-ras {
+   Effets actifs COMPACTS : rangée de chips codex-liées (`.chip` + `CodexRef`, `EtatPanel.tsx`) qui
+   s'enroule — États/malus (neutre) ET buffs de sorts (`.chip.tone-ok`, vert, `components.css` —
+   même famille que `.tone-warn`/`.tone-danger`, aucune classe neuve), cumul/durée inline
+   (`.entity-badge`, `base.css` — même idiome « badge discret de fin de chip » que `EntityChip`),
+   clic → Codex. La bande Constitution est en grille 2 colonnes (`.constitution-grid`, → 1 colonne
+   ≤700px).
+
+   Grammaire de carte (lot #492 « chevet ») : liseré de gravité (`data-tone`, posé plus bas), icône +
+   titre sobre + sous-ligne petites capitales (`PlaqueRow`), chips d'effet net SOUS le titre (`fx`,
+   `plaque-row.css`) ; valeur de droite DISCRÈTE via `PlaqueRow.valueMuted`. ── */
+.etat-chips {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  padding: 18px 0;
-  text-align: center;
+  margin-top: 2px;
 }
-.etat-ras .ras-title {
-  font-family: var(--font-display);
-  font-size: 20px;
-  color: var(--ok-bright);
+/* Bande Constitution : DEUX colonnes MIROIR, chacune une pile ALIGNÉE `.notch-gauge-stack`
+   (gauges.css) — libellé/piste/valeur d'une même colonne tombent dans les mêmes pistes (subgrid),
+   la valeur suit la piste (plus de « trou » libellé↔valeur). Largeur de libellé FIXE (et non
+   max-content) pour que les pistes des DEUX colonnes démarrent au MÊME x. Se replie en 1 colonne
+   ≤700px (charte règle 4). */
+.constitution-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 18px;
+  align-items: start;
 }
-.etat-ras .ras-sub {
-  font-size: 13px;
-  color: var(--muted);
+.constitution-grid .notch-gauge-stack {
+  grid-template-columns: 9.5rem max-content max-content;
+}
+/* Réserves permanentes SANS piste (Destin/Résilience) : participent au subgrid — libellé en piste 1,
+   valeur en piste 3 (colonne de valeur commune aux jauges), piste médiane vide. */
+.constitution-grid .sheet-idrow {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: baseline;
+}
+.constitution-grid .sheet-idrow-value {
+  grid-column: 3;
+  justify-self: end;
+}
+@media (max-width: 700px) {
+  .constitution-grid { grid-template-columns: 1fr; }
 }
 /* Grammaire de carte par FAMILLE (pt.5, #492 + addendum LOT L pt.4, verdict user sur la planche
    chevet) : attribut `data-tone` posé sur la bande de section (`Section`, `EtatPanel.tsx`) — jamais
@@ -629,9 +649,8 @@
    garde son propre rayon de bordure (`border-radius`, plaque-row.css).
    (a)/(b) Liseré ÉPAIS + fond de carte TEINTÉ par famille — user 2026-07-17, verbatim : « En plus
    la maquette montre des bandes colorés non ? Pourquoi on ne les as pas ? ».
-   (c) Jauge de Corruption teintée à SA famille via la primitive elle-même (`NotchGauge`
-   `tone="corruption"`, `gauges.css`) — jamais un descendant `.notch-gauge` posé ICI (perdait la
-   bataille de spécificité contre `.creator-band-right .notch-gauge […] span[data-on]`, band.css). */
+   (c) Jauge de Corruption (4e seuil de `ConstitutionBand`) teintée à SA famille via la primitive elle-même
+   (`NotchGauge` `tone="corruption"`, `gauges.css`) — jamais un descendant `.notch-gauge` posé ICI. */
 [data-tone] .plaque-row {
   border-left: 4px solid transparent;
 }
