@@ -1,5 +1,5 @@
 /**
- * VOYAGE MARITIME jour par jour (MDG ch.13 « Navigation maritime » + ch.15 « Longs voyages ») —
+ * VOYAGE MARITIME jour par jour (MDG 13 « Navigation maritime » + ch.15 « Longs voyages ») —
  * EXTENSION de la machinerie de voyage (`travelFlow`) : mêmes briques (TravelPlan, halte de nuit
  * `openRest`, entretien quotidien `runDailyUpkeep`, recap), la RÉSOLUTION du jour est navale.
  *
@@ -94,7 +94,7 @@ import type { CampaignVessel } from './store';
 import { openPartyTest, openWorldTest, composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest, type Consequence } from './rollSeam';
 import { registerCascadeApplier, startCascade, runCascadeImmediate } from './cascade';
 
-/** Navire hostile de l'événement en cours (MDG ch.15 « Cogue pirate » / « Langskip skaeling ») — porté
+/** Navire hostile de l'événement en cours (MDG 15 « Cogue pirate » / « Langskip skaeling ») — porté
  *  sur l'état NAVAL le temps de la confrontation, il DÉRIVE l'abordage GÉNÉRIQUE (`startChaseBoarding`)
  *  quel que soit le chemin (combat direct, poursuite rattrapée, tribut refusé) et quelle que soit la
  *  route : `shipRef`/`crewRef`/`chefRef` = ids de `vehicles.json`/`creatures.json` de l'événement. */
@@ -160,10 +160,10 @@ export interface SeaVoyageState {
   eventMMod?: number;
   /** Infestation de rats ACTIVE (Test étendu d'Extermination, MDG 14 l.98 + événements ch.15). */
   infestation?: { label: string; difficulty: Difficulty; need: number; progress: number; spoilPerNight: string };
-  /** ÉCHOUÉ sur un péril (Rocher/Bas-fonds, MDG ch.13 l.471-473/497/499, #444) : le navire s'arrête net,
+  /** ÉCHOUÉ sur un péril (Rocher/Bas-fonds, MDG 13 l.471-473/497/499, #444) : le navire s'arrête net,
    *  aucune Progression tant qu'un Test de Force (pénalité = `strandingPenalty`) ne l'a pas dégagé. */
   stranded?: { hazardId: string; label: string; difficulty: Difficulty };
-  /** EMPÊTRÉ dans des Débris marins (MDG ch.13 l.485-491, #444) : pénalité de Man/M tant que le Test
+  /** EMPÊTRÉ dans des Débris marins (MDG 13 l.485-491, #444) : pénalité de Man/M tant que le Test
    *  étendu de Force (`hazard.freeTest`) n'a pas dégagé le navire — n'arrête PAS la Progression. */
   entangled?: { hazardId: string; label: string; need: number; progress: number; manDR: number; mMod: number; difficulty: Difficulty };
   crisis?: SeaCrisis;
@@ -367,7 +367,7 @@ export function healVesselHull(get: Get, set: Set, hull: Combatant, amount: numb
   return j;
 }
 
-/** VOIE D'EAU (lot D #327) : une coque percée/heurtée « gâte 1d10 Enc » de cargaison (MSRC ch.7 l.101 /
+/** VOIE D'EAU (lot D #327) : une coque percée/heurtée « gâte 1d10 Enc » de cargaison (MSRC 7 l.101 /
  *  MDG, cf. `engine/cargo.ts`). Route sur la SOURCE UNIQUE `vessel.cargo` via le tronc `spoilCargoByEnc`.
  *  Renvoie le journal (vide si rien à gâter). Câblé sur les avaries de coque EXISTANTES (collision maritime,
  *  coque percée fluviale) — jamais un mécanisme neuf. */
@@ -378,7 +378,7 @@ export function spoilVesselCargoOnLeak(get: Get, set: Set): string[] {
   const r = spoilCargoByEnc(vessel.cargo, enc);
   if (!r.removed) return [];
   set({ vessel: { ...vessel, cargo: r.lots } });
-  return [`La voie d'eau gâte ${r.removed} Enc de cargaison (MSRC ch.7 l.101 / MDG).`];
+  return [`La voie d'eau gâte ${r.removed} Enc de cargaison (MSRC 7 l.101 / MDG).`];
 }
 
 /** Traits navals EFFECTIFS de la coque (type + Améliorations d'instance). */
@@ -398,7 +398,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const traits = hullTraits(hull);
   const vessel = get().vessel;
   if (shipHasNavalTrait(traits, 'propulsion-a-vapeur')) {
-    return { m: 4, sail: false, mode: null, label: 'vapeur (M 4, insensible au vent)', affaler: false }; // MDG ch.12 l.311
+    return { m: 4, sail: false, mode: null, label: 'vapeur (M 4, insensible au vent)', affaler: false }; // MDG 12 l.311
   }
   const propulsion = vesselPropulsion(vd);
   const sail = propulsion?.mode === 'voile';
@@ -408,11 +408,11 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const pace = sea.paceToday === 'won' ? sea.forcePace ?? 0 : 0;
   // Surcharge de la cale (MDG 12 l.72-74) : −1/−2/−3 M par palier d'Encombrement supplémentaire.
   const overloadM = cargoOverload(cargoTotalEnc(vessel?.cargo ?? []), vd?.capacity ?? 0).mMod;
-  // Empêtré dans des Débris marins (MDG ch.13 l.487-489, #444) : pénalité de M tant que non dégagé.
+  // Empêtré dans des Débris marins (MDG 13 l.487-489, #444) : pénalité de M tant que non dégagé.
   const entangleM = sea.entangled?.mMod ?? 0;
   const baseM = (propulsion?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace + overloadM + entangleM;
   const aspect = windAspect(sea.heading, sea.windFrom);
-  // Gréement de course (MSRC ch.12 l.137) « inclut un clinfoc … les avantages des deux ne sont pas cumulables »
+  // Gréement de course (MSRC 12 l.137) « inclut un clinfoc … les avantages des deux ne sont pas cumulables »
   // → il PRIME sur le Clinfoc quand les deux sont présents.
   const rigging = shipHasNavalTrait(traits, 'greement-de-course') ? 'greement' : shipHasNavalTrait(traits, 'clinfoc') ? 'clinfoc' : 'none';
   const cell = windEffect(sea.weather.vent, aspect, rigging);
@@ -425,7 +425,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
 // ── Test d'équipage de VOYAGE (hors combat — l'équipage = les PJ) ────────────────────────────────
 
 /** Étape À PARTICIPANTS (batch, seam de jet #275 Décision 4 cran 1/2) d'un Test d'équipage de VOYAGE
- *  (MDG ch.14, hors combat — l'équipage = les PJ, l.39) — construit les contributeurs
+ *  (MDG 14, hors combat — l'équipage = les PJ, l.39) — construit les contributeurs
  *  (`crewTestContributors`) et pose Moral/sabotage/traits navals en `meta` (agrégés à la validation par
  *  `cascade.aggregateBatchStep`, MÊME formule que `maneuverCrewTotal`). `null` = aucun PJ n'a de rôle
  *  utile (aucun jet à jouer ce Test-là, l'appelant applique son chemin sans-jet). `kind` = la clé du
@@ -434,7 +434,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
  *  cf. `sea-ouragan-affaler`) pour ne jamais retomber dans la routine auto-résolue (`SEA_ROUTINE_KINDS`
  *  est indexée par `kind`, pas `testTypeId`). */
 /** ENJEU surfaçable (#331) d'un Test d'équipage de voyage : l'échec de CE Test précis coûte quelque
- *  chose de DÉJÀ implémenté dans l'applier — on l'ÉNONCE (verbatim MDG ch.14, porté par
+ *  chose de DÉJÀ implémenté dans l'applier — on l'ÉNONCE (verbatim MDG 14, porté par
  *  `crew-test-types.json`). Un ÉVÉNEMENT peut réutiliser un `testTypeId` sous un autre `kind` (Ouragan →
  *  Affaler) : l'enjeu reste celui du TYPE de Test. `undefined` = aucun enjeu documenté (rien à afficher). */
 function crewTestStake(testType: CrewTestTypeData | undefined, _kind: string): string | undefined {
@@ -469,11 +469,11 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
       result: null,
     };
   });
-  const saboteur = shipSaboteurDR(ship); // MDG ch.14 l.45-47 : −1..−5 DR plats, aussi en voyage (#214)
+  const saboteur = shipSaboteurDR(ship); // MDG 14 l.45-47 : −1..−5 DR plats, aussi en voyage (#214)
   // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`,
   // ex. Proue-idole de Stromfels → Poursuite) — agnostique de la compétence tenue par le représentant.
   const traitDR = navalTestTypeDR(hullTraits(ship), testTypeId);
-  // « Bouteur »/« Gréement de course » modifient le Test de Navigation POUR DIRIGER (MSRC ch.12 l.66/137) —
+  // « Bouteur »/« Gréement de course » modifient le Test de Navigation POUR DIRIGER (MSRC 12 l.66/137) —
   // seul le Test d'équipage de manœuvre (steering) le reçoit, converti en DR (`navalNavTestDR`, ÷10).
   const navDirDR = testTypeId === 'manoeuvre' ? navalNavTestDR(hullTraits(ship)) : 0;
   // Le naval verse ses paramètres de formule DÉJÀ chiffrés en `meta` NEUTRE (bande de Moral + sabotage +
@@ -594,14 +594,14 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
   if (sea.crisis) {
     const kind = sea.crisis.kind === 'poursuite' ? 'poursuite' : 'tourbillon';
     const testTypeId = sea.crisis.kind === 'poursuite' ? 'progression-poursuite' : 'manoeuvre';
-    // Empêtré dans des Débris marins (MDG ch.13 l.487-489, #444) : pénalité de Man sur le Test de
+    // Empêtré dans des Débris marins (MDG 13 l.487-489, #444) : pénalité de Man sur le Test de
     // Manœuvre tant que non dégagé.
     const entangleDR = testTypeId === 'manoeuvre' ? (sea.entangled?.manDR ?? 0) : 0;
     const st = buildVoyageCrewStep(get, testTypeId, kind, entangleDR ? { extraDR: entangleDR } : {});
     if (st) out.push(st);
     else resolveSeaCrisisRound(get, set, capToSuccesMinime(UNDERCREW_DR));
   }
-  // EMPÊTRÉ dans des Débris marins (MDG ch.13 l.491, #444) : Test étendu de Force pour se dégager —
+  // EMPÊTRÉ dans des Débris marins (MDG 13 l.491, #444) : Test étendu de Force pour se dégager —
   // n'arrête PAS la Progression (contrairement à l'Échouage, `sea.stranded`).
   if (sea.entangled) {
     const st = buildStrandedOrEntangledStep(get, sea.entangled.label, sea.entangled.difficulty, 'sea-degagement-debris');
@@ -620,7 +620,7 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
       else openAuthoredSeaAmbush(get, set, route, false); // aucun équipage pour tester → surpris directement
     }
   }
-  // 4. Phare du port d'arrivée en vue (dernier jour de mer) → Test de Perception VISUEL (MDG ch.13 l.337).
+  // 4. Phare du port d'arrivée en vue (dernier jour de mer) → Test de Perception VISUEL (MDG 13 l.337).
   const dest = worldMap ? placeById(worldMap, plan.toPlaceId) : undefined;
   const lighthouse = dest?.port?.lighthouse;
   const milesLeft = plan.km - plan.kmDone - sea.milesToday;
@@ -656,12 +656,12 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
  */
 function buildSeaDayCascade(get: Get, set: Set): { steps: CascadeStep[]; log: string[] } {
   const steps: CascadeStep[] = [];
-  // ÉCHOUÉ (MDG ch.13 l.471-473, #444) : « il s'arrête net… ne peut plus bouger jusqu'à ce qu'il soit
+  // ÉCHOUÉ (MDG 13 l.471-473, #444) : « il s'arrête net… ne peut plus bouger jusqu'à ce qu'il soit
   // dégagé » — AUCUNE Progression tant que le Test de Force n'a pas réussi ; le reste de la journée
   // (crise/embuscade/entretien…) continue quand même (miroir Encalminé/Affaler ci-dessous).
   const strandedSea = get().travelPlan!.sea!;
   if (strandedSea.stranded) {
-    tell(get, set, [`Le navire reste ÉCHOUÉ sur ${strandedSea.stranded.label} — impossible de progresser tant qu'il n'est pas dégagé (MDG ch.13 l.473).`]);
+    tell(get, set, [`Le navire reste ÉCHOUÉ sur ${strandedSea.stranded.label} — impossible de progresser tant qu'il n'est pas dégagé (MDG 13 l.473).`]);
     patchSea(get, set, { milesToday: 0 });
     const st = buildStrandedOrEntangledStep(get, strandedSea.stranded.label, strandedSea.stranded.difficulty, 'sea-degagement');
     if (st) steps.push(st);
@@ -686,7 +686,7 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: CascadeStep[]; log: st
     const anchored = shipHasNavalTrait(hullTraits(plan.vehicle!), 'ancre');
     const drift = anchored ? 0 : Math.round(seaMilesPerDay(4, true) * (AFFALER_RULES.driftPctOfSpeed / 100));
     tell(get, set, [!sea.sailsDown
-      ? `Encalminé — le bateau ne peut pas se déplacer grâce à ses voiles (MDG ch.13 l.296).${anchored ? ' L\'ancre est jetée.' : ` Le courant l'entraîne (${drift} milles).`}`
+      ? `Encalminé — le bateau ne peut pas se déplacer grâce à ses voiles (MDG 13 l.296).${anchored ? ' L\'ancre est jetée.' : ` Le courant l'entraîne (${drift} milles).`}`
       : `Voiles affalées — ${anchored ? 'ancre jetée en attendant l\'accalmie.' : `le vent pousse le navire (${drift} milles, 25 % de la vitesse — l.294).`}`]);
     patchSea(get, set, { milesToday: 0 });
     steps.push(...buildPostProgressionSteps(get, set));
@@ -1264,7 +1264,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
     const need = souls * dailyWaterLitres(sea.weather.temperature);
     const left = Math.max(0, vessel0.waterLitres - need);
     set({ vessel: { ...vessel0, waterLitres: left } });
-    tell(get, set, [left > 0 ? `Eau douce : −${need} L (${souls} à bord, reste ${left} L).` : 'Les tonneaux d\'eau douce sont À SEC — trouvez de l\'eau (MDG ch.14).']);
+    tell(get, set, [left > 0 ? `Eau douce : −${need} L (${souls} à bord, reste ${left} L).` : 'Les tonneaux d\'eau douce sont À SEC — trouvez de l\'eau (MDG 14).']);
   }
   // Vivres de l'équipage PNJ (MDG 14 l.238/250) : l'effectif nominal mange sur les rations de mer de la cale.
   tell(get, set, consumeCrewProvisions(get, set, 1));
@@ -1468,7 +1468,7 @@ export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: Ca
 // ── Registre `cascadeAppliers` des Tests d'équipage de VOYAGE (#275 Ronde 2 cran 3 — PILOTE RÉEL,
 //    câblé par `buildSeaDayCascade`/`buildPostProgressionSteps`/`runSeaDay`) ────────────────────
 
-/** Progression du jour (MDG 14 l.61-65 ; ±10 %/DR ch.15 l.78) + PANNE DE VAPEUR (MDG ch.12 l.313) sur un
+/** Progression du jour (MDG 14 l.61-65 ; ±10 %/DR ch.15 l.78) + PANNE DE VAPEUR (MDG 12 l.313) sur un
  *  navire à Propulsion à vapeur (Test de Métier lu sur les jets INDIVIDUELS des contributeurs). INSÈRE
  *  le reste de la journée (crise/embuscade/phare/orientation/extermination/entretien) une fois
  *  `sea.milesToday` connu (`buildPostProgressionSteps`, #275 Ronde 2 cran 3 Décision 2). */
@@ -1484,7 +1484,7 @@ registerCascadeApplier('progression', (get, set, step) => {
       && steamBreakdownTriggered({ success: x.result.roll <= x.result.target, sl: x.result.sl, isDouble: isDoubleRoll(x.result.roll) }));
     if (triggered) {
       const b = rollSteamBreakdown(rng);
-      j.push(`PANNE DE VAPEUR — ${b.label} (MDG ch.12 l.313).`, b.desc);
+      j.push(`PANNE DE VAPEUR — ${b.label} (MDG 12 l.313).`, b.desc);
       applySteamBreakdown(get, set, b, rng); // « Fuite de vapeur » → `pendingSteamSave` (sauvegarde d'Initiative) suspend AVANT le reste du jour
     }
   }
@@ -1506,7 +1506,7 @@ registerCascadeApplier('sea-overspeed', (get, set, step) => {
   const dmg = overspeedDamage(Number(step.meta?.overspeedDamage ?? 0), step.result.sl);
   const hull = get().travelPlan?.vehicle;
   const j = hull ? damageVesselHull(get, set, hull, dmg) : [];
-  const line = [`${step.label} : la coque encaisse ${dmg} Blessure(s) (MDG ch.13 l.142).`, ...j];
+  const line = [`${step.label} : la coque encaisse ${dmg} Blessure(s) (MDG 13 l.142).`, ...j];
   noteSeaLine(get, set, line);
   return { consequences: freeCons(line) };
 });
@@ -1516,7 +1516,7 @@ registerCascadeApplier('sea-overspeed', (get, set, step) => {
  *  (`'sea-ouragan-affaler'`, jamais routine, extraDR −2) — MÊME conséquence RAW, deux déclencheurs. */
 function affalerConsequence(get: Get, set: Set, step: CascadeStep): Consequence[] {
   if (!step.result) return [];
-  if (step.result.success) { const j = ['Les voiles sont affalées à temps (MDG ch.13 l.292).']; noteSeaLine(get, set, j); return freeCons(j); }
+  if (step.result.success) { const j = ['Les voiles sont affalées à temps (MDG 13 l.292).']; noteSeaLine(get, set, j); return freeCons(j); }
   const rng = battleRng();
   const crit = rollShipCritical(AFFALER_RULES.failCritLocation as ShipCritKey, rng);
   applyVesselCritical(get, set, crit.log, crit.note);
@@ -1561,7 +1561,7 @@ registerCascadeApplier('phare', (get, set, step) => {
   const best = partyAssisted(get().party, 'orientation');
   const dr = success && best ? Math.max(1, lighthouseOrientationDR(best.actor, false), savoirOceansBonus(best.actor)) : 0;
   patchSea(get, set, { lighthouseDR: dr });
-  const j = [success ? `La lumière du phare est en vue — l'atterrage se précise (+${dr} DR d'Orientation, MDG ch.13 l.335).` : 'Aucune lumière à l\'horizon — brume ou distance.'];
+  const j = [success ? `La lumière du phare est en vue — l'atterrage se précise (+${dr} DR d'Orientation, MDG 13 l.335).` : 'Aucune lumière à l\'horizon — brume ou distance.'];
   noteSeaLine(get, set, j);
   return { consequences: freeCons(j) };
 });
@@ -1605,10 +1605,10 @@ function resolveSeaCrisisRound(get: Get, set: Set, total: number): string[] {
     const outcome = pursuitOutcome(distance, c.escapeAt);
     if (outcome === 'escaped') {
       patchSea(get, set, { crisis: undefined, boarding: undefined });
-      j.push('Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).');
+      j.push('Le poursuivant abandonne : le navire s\'est échappé (MDG 13 l.362).');
     } else if (outcome === 'caught') {
       patchSea(get, set, { crisis: undefined });
-      j.push('Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG ch.13 l.420).');
+      j.push('Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG 13 l.420).');
       startChaseBoarding(get, set);
     } else {
       patchSea(get, set, { crisis: { ...c, distance } });
@@ -1625,7 +1625,7 @@ function resolveSeaCrisisRound(get: Get, set: Set, total: number): string[] {
   const j = [`${w.label} : l'eau tournoyante broie la coque (${dmg} Blessures) — évasion ${progress}/${c.need} DR.`];
   if (progress >= c.need) {
     patchSea(get, set, { crisis: undefined });
-    j.push('Le navire s\'arrache du Tourbillon (Test étendu d\'Évasion accompli, MDG ch.13 l.528).');
+    j.push('Le navire s\'arrache du Tourbillon (Test étendu d\'Évasion accompli, MDG 13 l.528).');
   } else patchSea(get, set, { crisis: { ...c, progress } });
   noteSeaLine(get, set, j);
   return j;
@@ -1665,7 +1665,7 @@ registerCascadeApplier('extermination', (get, set, step) => {
   return { consequences: freeCons(j) };
 });
 
-/** Renflouage d'un ÉCHOUAGE (MDG ch.13 l.471-473, #444) : Test de Force UNIQUE (pas étendu — RAW muet
+/** Renflouage d'un ÉCHOUAGE (MDG 13 l.471-473, #444) : Test de Force UNIQUE (pas étendu — RAW muet
  *  sur une répétition formelle) ; échec → le navire reste échoué, retenté le lendemain (même construction). */
 registerCascadeApplier('sea-degagement', (get, set, step) => {
   if (!step.result) return;
@@ -1673,14 +1673,14 @@ registerCascadeApplier('sea-degagement', (get, set, step) => {
   if (!sea?.stranded) return;
   const label = sea.stranded.label;
   const j = step.result.success
-    ? [`Le navire est dégagé de ${label} (Test de Force réussi, MDG ch.13 l.473).`]
-    : [`Le navire reste échoué sur ${label} — il faudra retenter (MDG ch.13 l.473).`];
+    ? [`Le navire est dégagé de ${label} (Test de Force réussi, MDG 13 l.473).`]
+    : [`Le navire reste échoué sur ${label} — il faudra retenter (MDG 13 l.473).`];
   if (step.result.success) patchSea(get, set, { stranded: undefined });
   noteSeaLine(get, set, j);
   return { consequences: freeCons(j) };
 });
 
-/** Dégagement des Débris marins (MDG ch.13 l.491, #444) : Test ÉTENDU de Force (`hazard.freeTest`, total
+/** Dégagement des Débris marins (MDG 13 l.491, #444) : Test ÉTENDU de Force (`hazard.freeTest`, total
  *  DR posé à la collision) — même cumul mutualisé que l'Extermination (`extendedTestStep`) ci-dessus. */
 registerCascadeApplier('sea-degagement-debris', (get, set, step) => {
   if (!step.result) return;
@@ -1691,7 +1691,7 @@ registerCascadeApplier('sea-degagement-debris', (get, set, step) => {
   let j: string[];
   if (done) {
     patchSea(get, set, { entangled: undefined });
-    j = [`${ent.label} : le navire se dégage (${progress}/${ent.need} DR, MDG ch.13 l.491).`];
+    j = [`${ent.label} : le navire se dégage (${progress}/${ent.need} DR, MDG 13 l.491).`];
   } else {
     patchSea(get, set, { entangled: { ...ent, progress } });
     j = [`${ent.label} : le dégagement progresse (${progress}/${ent.need} DR).`];
@@ -1725,7 +1725,7 @@ registerCascadeApplier('entretien', (get, set, step) => {
   return { consequences: freeCons(j) };
 });
 
-// ── PANNE DE VAPEUR (MDG ch.12 l.313-352) — résolution first-class au voyage ─────────────────────
+// ── PANNE DE VAPEUR (MDG 12 l.313-352) — résolution first-class au voyage ─────────────────────
 
 /** La personne qui « s'occupe du moteur » (MDG 12 l.326) à l'échelle voyage (équipage = les PJ, MDG 14
  *  l.39) : le meilleur au Métier (Ingénieur), sinon le premier PJ en état. */
@@ -1767,7 +1767,7 @@ function runRestart(get: Get, set: Set, eng: Combatant, restart: NonNullable<Ste
   return lastDR;
 }
 
-/** Applique une PANNE DE VAPEUR (MDG ch.12 l.313-352) au voyage — CHAQUE champ first-class consommé :
+/** Applique une PANNE DE VAPEUR (MDG 12 l.313-352) au voyage — CHAQUE champ first-class consommé :
  *  « Fuite de vapeur » (`failDamage`) ouvre la sauvegarde d'Initiative INFLUENÇABLE ; l'« Explosion »
  *  (`compartmentDamage`) frappe la personne au moteur (Perforante) ; le moteur détruit (`engineDestroyed`)
  *  ôte la propulsion à vapeur du navire ; le Coup Critique à la Coque (`hullCritical`) est roulé. Les
@@ -1887,7 +1887,7 @@ const BOARDING_SCENE_ID = 'sea-boarding-generic';
  *  et de la coque de campagne — MÊME machinerie navale que les scènes authorées (`buildScene` + `enemies`
  *  terse : coque à PV + équipage exposé `crewIds`, cf. `16-embuscade-fluviale`/`ls-abordage-cogue`). La
  *  coque ennemie porte sa vague d'abordage (`boardingWaveSize` × `crewRef` + `chefRef`) comme équipage
- *  exposé (MDG ch.14) ; la coque de campagne est le camp allié (le groupe y EMBARQUE au `startCombat`). */
+ *  exposé (MDG 14) ; la coque de campagne est le camp allié (le groupe y EMBARQUE au `startCombat`). */
 function buildBoardingScene(playerHullRef: string, playerHullName: string, b: SeaBoarding): Scene {
   const wave = Math.max(1, Math.round(Number(rule('boardingWaveSize'))));
   const chef = b.chefRef ? 1 : 0;
@@ -1930,7 +1930,7 @@ function openGenericBoarding(get: Get, set: Set, b: SeaBoarding, noSurprise = tr
   return true;
 }
 
-/** Rattrapé par un navire hostile → ABORDAGE (MDG ch.13 l.420). Priorité : embuscade AUTHORÉE de la route
+/** Rattrapé par un navire hostile → ABORDAGE (MDG 13 l.420). Priorité : embuscade AUTHORÉE de la route
  *  (SURCHARGE d'auteur, jamais une condition d'existence) ; à défaut, l'abordage se DÉRIVE de l'événement
  *  lui-même (le navire hostile `sea.boarding` engendre la rencontre GÉNÉRIQUE bord à bord). En dernier
  *  recours SEULEMENT — événement sans navire nommé (Némésis authorée manquante) ou coque de campagne
@@ -1952,13 +1952,13 @@ function startSeaPursuit(get: Get, set: Set, info: { label: string; desc: string
   patchSea(get, set, {
     crisis: { kind: 'poursuite', label: info.label, distance: Math.floor(escapeAt / 2), escapeAt, foeM, foeSkill: 50, desc: info.desc },
   });
-  tell(get, set, [`Le navire prend la fuite — Poursuite (Distance de départ ${Math.floor(escapeAt / 2)}, évasion à ${escapeAt} — MDG ch.13 l.362-370).`]);
+  tell(get, set, [`Le navire prend la fuite — Poursuite (Distance de départ ${Math.floor(escapeAt / 2)}, évasion à ${escapeAt} — MDG 13 l.362-370).`]);
 }
 
 /** Interpellation de la Cogue pirate (A5.3 #327) : cascade AUTONOME (patron Ouragan `resolveSeaDayEvent`)
  *  d'une SEULE étape de CHOIX — fuir / combattre / se soumettre. L'applier `sea-pirate-hail` reprend
  *  `runSeaDay` à la fermeture. Le pillage (`piratePillagePct`) et le tribut à Stromfels sont RAW-mués
- *  (MDG ch.15 p.131 décrit l'extorsion sans la chiffrer) → paramètre maison + choix joueur. */
+ *  (MDG 15 p.131 décrit l'extorsion sans la chiffrer) → paramètre maison + choix joueur. */
 /** Descripteur d'abordage DÉRIVÉ d'un événement de navire hostile — `undefined` si l'événement ne nomme
  *  ni coque (`ship`) ni équipage type (`crewRef`) : la Némésis (bateau fétiche d'un boss) est authorée,
  *  pas simulable (retour `undefined` = repli honnête de `startChaseBoarding`). */
@@ -1979,7 +1979,7 @@ function openPirateHail(get: Get, set: Set, event: SeaEventDef): void {
       id: 'sea-pirate-hail', kind: 'sea-pirate-hail', icon: 'nautical/wind', label: event.label,
       interactive: true, defaultChoice: 'fuir', meta: { crisisLabel: event.label, crisisDesc: event.desc },
       options: [
-        { key: 'fuir', label: 'Prendre la fuite', detail: 'Course-poursuite : distancer la cogue (MDG ch.13 l.362-370).' },
+        { key: 'fuir', label: 'Prendre la fuite', detail: 'Course-poursuite : distancer la cogue (MDG 13 l.362-370).' },
         { key: 'combattre', label: 'Combattre', detail: 'Refuser l’abordage et se défendre — abordage immédiat.' },
         { key: 'soumettre', label: 'Se soumettre', detail: `Laisser fouiller la cale (${pillage} % de la cargaison pillée) puis livrer un tribut à Stromfels.` },
       ],
@@ -1999,7 +1999,7 @@ registerCascadeApplier('sea-pirate-hail', (get, set, step) => {
     if (vessel?.cargo?.length) {
       const r = spoilCargoByPct(vessel.cargo, pct);
       if (r.removed) set({ vessel: { ...get().vessel!, cargo: r.lots } });
-      j.push(`Les forbans fouillent la cale et emportent ${r.removed} Enc de cargaison (${pct} %, MDG ch.15 p.131).`);
+      j.push(`Les forbans fouillent la cale et emportent ${r.removed} Enc de cargaison (${pct} %, MDG 15 p.131).`);
     } else j.push('Les forbans fouillent une cale vide — rien à prendre.');
     return { consequences: freeCons(j), insert: [{
       id: 'sea-pirate-tribute', kind: 'sea-pirate-tribute', icon: 'nautical/wind',
@@ -2018,7 +2018,7 @@ registerCascadeApplier('sea-pirate-hail', (get, set, step) => {
 });
 
 /** TRIBUT à Stromfels (A5.3 #327) : livrer un marin = perte réelle d'équipage (`applyVesselCrewLoss`) +
- *  déplaisir de Manann (facteur de Moral RAW −2d10, MDG ch.14 : sacrifier une âme à Stromfels, ennemi de
+ *  déplaisir de Manann (facteur de Moral RAW −2d10, MDG 14 : sacrifier une âme à Stromfels, ennemi de
  *  Manann) ; refuser = abordage immédiat. AUCUNE perte silencieuse (tout dénoué au journal/à l'écran). */
 registerCascadeApplier('sea-pirate-tribute', (get, set, step) => {
   const j: string[] = [];
@@ -2029,7 +2029,7 @@ registerCascadeApplier('sea-pirate-tribute', (get, set, step) => {
     for (const l of applyVesselCrewLoss(get, set, 1)) j.push(l);
     j.push('Un marin est livré aux pirates, sacrifié à Stromfels.');
     const ship = get().travelPlan?.vehicle;
-    if (ship) for (const l of applyShipMoraleDelta(get, set, ship, -rollDice(2, 10, battleRng()))) j.push(l); // déplaisir de Manann (MDG ch.14)
+    if (ship) for (const l of applyShipMoraleDelta(get, set, ship, -rollDice(2, 10, battleRng()))) j.push(l); // déplaisir de Manann (MDG 14)
   }
   return { consequences: freeCons(j) };
 });
@@ -2168,7 +2168,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       const eff = effectiveSeaM(get);
       const dmg = Math.max(0, hazard.ic + (eff.m ?? 1) - Math.floor((ship.characteristics?.endurance ?? 0) / 10));
       damageVesselHull(get, set, ship, dmg);
-      tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (${hazard.label} IC ${hazard.ic}, MDG ch.13 l.446/475-499).`]);
+      tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (${hazard.label} IC ${hazard.ic}, MDG 13 l.446/475-499).`]);
       tell(get, set, spoilVesselCargoOnLeak(get, set)); // avarie de coque → voie d'eau (lot D #327)
       if (hazard.id === 'debris-marins') {
         // Empêtrement (l.485-491) : pénalité de Man/M par Taille du bateau, Test étendu de Force pour se dégager.
@@ -2183,7 +2183,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
               difficulty: hazard.freeTest?.difficulty ?? 'accessible',
             },
           });
-          tell(get, set, [`Le navire s'empêtre dans les ${hazard.label} — Test étendu de Force pour se dégager (MDG ch.13 l.485-491).`]);
+          tell(get, set, [`Le navire s'empêtre dans les ${hazard.label} — Test étendu de Force pour se dégager (MDG 13 l.485-491).`]);
         }
       } else if (hazard.strandChancePct != null && rollStranding(hazard, rng)) {
         // Échouage (l.471-473/497/499) : Test de Force, pénalité = Encombrement navire + cargaison.
@@ -2192,7 +2192,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
         const cargoEnc = (vessel?.cargo ?? []).reduce((s, c) => s + (c.enc ?? 0), 0);
         const difficulty = difficultyFromModifier(strandingPenalty(shipEnc, cargoEnc));
         patchSea(get, set, { stranded: { hazardId: hazard.id, label: hazard.label, difficulty } });
-        tell(get, set, [`Le navire s'ÉCHOUE sur ${hazard.label} — Test de Force pour se dégager (MDG ch.13 l.473).`]);
+        tell(get, set, [`Le navire s'ÉCHOUE sur ${hazard.label} — Test de Force pour se dégager (MDG 13 l.473).`]);
       }
       break;
     }
@@ -2200,7 +2200,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
     case 'vortex': {
       const w = findWhirlpool(event.kind === 'maelstrom' ? 'maelstrom' : 'puissant-vortex')!;
       patchSea(get, set, { crisis: { kind: 'tourbillon', label: event.label, whirlpoolId: w.id, need: w.evasion.totalDR, progress: 0 } });
-      tell(get, set, [`${w.label} : Évasion = Test étendu de Manœuvre pour ${w.evasion.totalDR} DR (MDG ch.13 l.528).`]);
+      tell(get, set, [`${w.label} : Évasion = Test étendu de Manœuvre pour ${w.evasion.totalDR} DR (MDG 13 l.528).`]);
       break;
     }
     case 'nemesis':
@@ -2210,7 +2210,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       startSeaPursuit(get, set, event, 6);
       break;
     case 'navire-hostile':
-      // Cogue pirate (MDG ch.15 p.131) : les forbans exigent de fouiller la cale — CHOIX joueur
+      // Cogue pirate (MDG 15 p.131) : les forbans exigent de fouiller la cale — CHOIX joueur
       // fuir / combattre / se soumettre (A5.3 #327), en cascade interactive avant la journée.
       openPirateHail(get, set, event);
       break;
@@ -2311,7 +2311,7 @@ export function portCareenVessel(get: Get, set: Set): string[] {
   return [`Coque raclée en cale sèche${cost ? ` (${cost} CO — ${pct} % du coût de base, ch.13 l.152)` : ''}.`];
 }
 
-/** POSE d'une Amélioration navale (MDG ch.12 l.195-364) : coût par bande de Taille (`installCost` —
+/** POSE d'une Amélioration navale (MDG 12 l.195-364) : coût par bande de Taille (`installCost` —
  *  `per '5m'`/`unite` inclus), payé au chantier ; la réf rejoint `vessel.upgrades` (recopiée sur la
  *  coque à chaque départ). `units` = cabines multiples, etc. */
 export function portInstallUpgrade(get: Get, set: Set, traitId: string, units = 1): string[] {
@@ -2319,14 +2319,14 @@ export function portInstallUpgrade(get: Get, set: Set, traitId: string, units = 
   const v = vessel ? findVehicleById(vessel.vehicleId) : undefined;
   const entry = findNavalTrait(traitId);
   if (!vessel || !v?.ship || !entry) return ['Amélioration ou navire introuvable.'];
-  if (entry.kind !== 'amelioration') return [`${entry.label} est un Trait de construction — il ne se pose pas après coup (MDG ch.12 l.169).`];
+  if (entry.kind !== 'amelioration') return [`${entry.label} est un Trait de construction — il ne se pose pas après coup (MDG 12 l.169).`];
   if (!entry.install) return [`${entry.label} : pas de tarif d'installation connu.`];
   const { gold, enc } = installCost(entry.install, v.ship.lengthM, units);
   if (gold == null) return [`${entry.label} : coût « du modèle embarqué » — passez par l'achat du bateau embarqué (ch.12 l.268).`];
   const rest = subtract(get().money, toMoney({ gold }));
   if (!rest) return [`${entry.label} coûte ${gold} CO — la bourse ne suit pas.`];
   set({ money: rest, vessel: { ...vessel, upgrades: [...(vessel.upgrades ?? []), { id: traitId, ...(units > 1 ? { value: units } : {}) }] } });
-  return [`${entry.label} installé (${gold} CO${enc ? `, ${enc} Enc` : ''}, MDG ch.12).`];
+  return [`${entry.label} installé (${gold} CO${enc ? `, ${enc} Enc` : ''}, MDG 12).`];
 }
 
 // ── Événements de PORT (ch.15 l.127-129 + l.239-263) ─────────────────────────────────────────────

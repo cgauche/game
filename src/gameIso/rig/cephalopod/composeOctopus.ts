@@ -1,5 +1,5 @@
 /**
- * Gabarit CÉPHALOPODE (pieuvre des tourbières — artwork LDB p.325). Masse charnue BASSE et
+ * Gabarit CÉPHALOPODE (pieuvre des tourbières — artwork LDB 79 p.325). Masse charnue BASSE et
  * grumeleuse posée au sol (verrues, marbrures @cheveux), petit œil discret noyé dans les replis
  * (iris @cuir), forêt de tentacules FINS et sinueux dressés en volutes étagées bien au-dessus du
  * corps (la plus haute frôle le haut du cadre 120×150) — les bras avant

@@ -380,7 +380,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Test de Dextérité PAR ACTION de « Main ensanglantée » (AA 07 l.117) — interposé AVANT l'attaque quand
    *  l'arme employée est tenue dans une main gatée (`attackHandGate`). Modale influençable, calque `reload`. */
   pendingHandGate: PendingHandGate | null;
-  /** Pilonnage INDIRECT en cours (« viser une case », AA p.122-123) : pièce indirecte servie en attente du
+  /** Pilonnage INDIRECT en cours (« viser une case », AA 10 p.122-123) : pièce indirecte servie en attente du
    *  point d'impact (placeur de zone source 'siege'). Clic-case → `siegeAimCommit`. */
   pendingSiegeAim: PendingSiegeAim | null;
   pendingReload: PendingReload | null;

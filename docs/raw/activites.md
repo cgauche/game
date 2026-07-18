@@ -37,14 +37,14 @@
   - [Réputation (Citadins, Courtisans, Lettrés)](#réputation-citadins-courtisans-lettrés)
   - [Semer la Dissension (Citadins, Ruraux)](#semer-la-dissension-citadins-ruraux)
 - [Activités de Guerrier — AA Annexe II](#activités-de-guerrier--aa-annexe-ii)
-- [Activités de Bataille — ADE II ch.8](#activités-de-bataille--ade-ii-ch8)
-- [Activités de Voyage — EDOC ch.5](#activités-de-voyage--edoc-ch5)
+- [Activités de Bataille — ADE II 8](#activités-de-bataille--ade-ii-ch8)
+- [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-ch5)
 - [Nouvelle Activité : Convalescence — ADE II Annexe I](#nouvelle-activité--convalescence--ade-ii-annexe-i)
 - [Règles optionnelles connexes](#règles-optionnelles-connexes)
 - [Voir aussi](#voir-aussi)
 
 - **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
-- **Activités en mer (MDG ch.15)** — 1 Activité/Personnage par semaine de 8 jours à bord ; règles d'interlude *Argent à gaspiller / Avec le pouvoir / Amélioration elfique* suspendues ; liste LDB/AA réalisable ; *Semer la dissension* contre les officiers = −2d10 Moral.
+- **Activités en mer (MDG 15)** — 1 Activité/Personnage par semaine de 8 jours à bord ; règles d'interlude *Argent à gaspiller / Avec le pouvoir / Amélioration elfique* suspendues ; liste LDB/AA réalisable ; *Semer la dissension* contre les officiers = −2d10 Moral.
 - **Commerce d'opportunité** — investir jusqu'à la valeur d'Encombrement libre en CO ; Test étendu de Marchandage Complexe (−10), 10 DR, 3 tentatives ; gains −tout / −moitié / +10 % / +20 %.
 - **Cartographie** — Métier (Cartographe) Complexe (−10), 2 ports ; carte = DR en CO + 2 DR d'Orientation ; option Planque (découverte sur 50 ou moins).
 - **Entraînement d'équipage** — Commandement Difficile (−20) + Compétence Difficile (−20) ; +DR(Commandement) à l'équipage PNJ, plafonné aux Augmentations de l'instructeur ; 2 pistoles d'argent/membre.
@@ -213,7 +213,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 
 **Source :** LDB 23 l.75-103.
 
-Créer de l'équipement du Guide de l'équipement (LDB ch.11) si le Personnage possède la Compétence Métier appropriée, avec outils et atelier adéquats.
+Créer de l'équipement du Guide de l'équipement (LDB 11) si le Personnage possède la Compétence Métier appropriée, avec outils et atelier adéquats.
 
 **Matériaux :** coûtent **un quart du prix** de l'équipement (à acheter avant l'Activité — LDB 23 l.76).
 
@@ -541,7 +541,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 
 ---
 
-## Activités de Bataille — ADE II ch.8
+## Activités de Bataille — ADE II 8
 
 **Source :** ADE II 08 l.89-131.
 
@@ -568,7 +568,7 @@ Contexte : préparation d'une bataille (siège, campagne militaire). Les Activit
 
 ---
 
-## Activités de Voyage — EDOC ch.5
+## Activités de Voyage — EDOC 5
 
 **Source :** EDOC 8 l.129-180.
 
@@ -577,7 +577,7 @@ Contexte : préparation d'une bataille (siège, campagne militaire). Les Activit
 
 Les Activités de voyage durent toute une Étape de voyage et restent **fatigantes** : un Test raté → État *Exténué*.
 
-À la discrétion du MJ, les Activités LDB ch.6 peuvent s'effectuer en voyage (EDOC 8 l.135).
+À la discrétion du MJ, les Activités LDB 6 peuvent s'effectuer en voyage (EDOC 8 l.135).
 
 | Activité | Test | Effet |
 |----------|------|-------|
@@ -620,7 +620,7 @@ Requiert accès à un lieu de repos (hospice, monastère, temple). Contexte : su
 | Tout le chapitre est optionnel | LDB 22 l.4 | flag `interlude-enabled` (`policy.ts`) |
 | Prestige Elfique / Devoir elfique | LDB 23 l.54-56 | flag `interlude-elf-duty` (`policy.ts`) |
 | Revenus : restriction Investir aux Statuts Or/Argent | LDB 23 l.168 | Non vérifiée côté code (arbitrage jeu-sans-MJ) |
-| Activités LDB ch.6 pendant un voyage | EDOC ch.5 l.101 | À discrétion du MJ |
+| Activités LDB 6 pendant un voyage | EDOC 5 l.101 | À discrétion du MJ |
 
 ---
 
@@ -639,7 +639,7 @@ Requiert accès à un lieu de repos (hospice, monastère, temple). Contexte : su
 
 <!-- MDG-INTEGRATION -->
 
-## Activités en mer — MDG ch.15
+## Activités en mer — MDG 15
 
 **Source :** MDG 15 l.17, MDG 15 l.266-272.
 
@@ -685,7 +685,7 @@ Activité de spéculation rapide lors d'une escale appropriée. Le Personnage **
 
 *Exemple verbatim* : « vous disposez de 200 points d'Encombrement disponibles sur votre bateau, donc vous investissez 200 couronnes d'or, puis vous effectuez vos 3 tentatives et vous réussissez. Vous gagnez 220 couronnes d'or. » (`MDG 15 l.286`)
 
-**Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
+**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `surcharge-3`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, `PendingExtendedTest`, +23 — `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, +4 fichiers
@@ -704,7 +704,7 @@ Dessiner une carte revendable et utile à l'orientation. **Test de Métier (Cart
 
 > « si quelqu'un met la main dessus, il est découvert sur un 50 ou moins plutôt que le 10 ou moins habituel sur le lancer d'1d100. » — `MDG 15 l.292`
 
-**Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC ch.5](#activités-de-voyage--edoc-ch5) (Établir des Cartes — équivalent terrestre).
+**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-ch5) (Établir des Cartes — équivalent terrestre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `surcharge-3`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, `PendingExtendedTest`, `bankWithdrawInner`, `PendingCascade`, +2 — `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, +3 fichiers
@@ -723,7 +723,7 @@ Former l'équipage (PNJ) dans une **Compétence utile à la gestion du bateau**.
 
 *Exemple verbatim* : « un Personnage possédant 9 Augmentations dans Projectiles (Poudre noire) pourrait servir d'instructeur à un équipage de 30 personnes. Il obtient 5 DR sur son Test de Commandement et réussit son Test de Projectiles (Poudre noire), ce qui fait grimper la Compétence Projectiles (Poudre noire) de l'équipage de 5 Augmentations et lui fait payer 60 pistoles d'argent. » (`MDG 15 l.298`)
 
-**Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
+**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, `PendingExtendedTest`, `bankWithdrawInner`, +3 — `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, +4 fichiers
@@ -748,7 +748,7 @@ Réparer l'usure du vaisseau (planches pourries, voiles, coque incrustée). **De
 
 > « Si votre navire a subi des Blessures Critiques, vous pouvez les réparer en effectuant un Test de **Métier (Charpentier** *ou* **Constructeur de navires) Difficile (–20)**. » — `MDG 15 l.306`
 
-**Voir aussi** : [Activités en mer — MDG ch.15](#activités-en-mer--mdg-ch15), [Artisanat](#artisanat) (Métier, Test étendu).
+**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Artisanat](#artisanat) (Métier, Test étendu).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `PendingCascade`, `GameState` — `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, +2 fichiers

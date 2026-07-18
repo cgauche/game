@@ -2,7 +2,7 @@
  * LANGSKIP (MDG, ~25 m, mixte) — navire LONG norse : carène basse mais VOLUMINEUSE (quille filée,
  * bordé à clins), étrave et étambot montant en col — tête de dragon en proue, queue-volute en
  * poupe — pavois de boucliers sur le plat-bord, long rang d'avirons, gouvernail LATÉRAL de poupe,
- * mât unique trapu à grande voile carrée à laizes. Réf : planches MDG p.098 (centre) et p.114.
+ * mât unique trapu à grande voile carrée à laizes. Réf : planches MDG 12 p.098 (centre) et p.114.
  */
 import type { ShipArtDef } from '../artkit';
 import { oarBank, pennant, shieldRow, spar, squareSail, stay } from '../artkit';

@@ -45,7 +45,7 @@ function mountBattle(combatants: Combatant[], metresPerTile = 2) {
 const mkHit = (attacker: Combatant, primaryTarget: Combatant, weapon: Weapon, damage: number, distanceTiles: number): AreaHit =>
   ({ attacker, primaryTarget, weapon, damage, location: 'corps', distanceTiles });
 
-// ── Tir de zone (Aux Armes p.89 / MDG ch.12) ─────────────────────────────────────────────────────────────
+// ── Tir de zone (Aux Armes p.89 / MDG 12) ─────────────────────────────────────────────────────────────
 describe('resolveWeaponArea — Tir de zone (bandes RAW)', () => {
   it('Bout portant → +Indice aux DÉGÂTS de la cible seule (pas +Indice Blessures brut)', () => {
     const atk = shooter('tireur', 0, 0);
@@ -91,7 +91,7 @@ describe('resolveWeaponArea — Tir de zone (bandes RAW)', () => {
   });
 });
 
-// ── Explosion (LDB p.298) ────────────────────────────────────────────────────────────────────────────────
+// ── Explosion (LDB 62 p.298) ────────────────────────────────────────────────────────────────────────────────
 describe('resolveWeaponArea — Explosion (rayon Indice m, États propagés)', () => {
   it('toutes les cibles à ≤ Indice mètres subissent DR+Dégâts ; hors rayon = épargné', () => {
     const atk = shooter('tireur', 0, 0);
@@ -130,7 +130,7 @@ describe('resolveWeaponArea — Explosion (rayon Indice m, États propagés)', (
   });
 });
 
-// ── Branche NAVALE : cible = navire → équipage exposé (composition MDG ch.13 × ch.12) ──────────────────────
+// ── Branche NAVALE : cible = navire → équipage exposé (composition MDG 13 × ch.12) ──────────────────────
 describe('resolveWeaponArea — cible NAVIRE → équipage exposé (Éclats-like)', () => {
   const ship = (id: string): Combatant =>
     ({ id, name: id, kind: 'enemy', bodyShape: 'vehicule', pos: { x: 9, y: 5 }, crewIds: ['m1', 'm2', 'm3'],

@@ -44,7 +44,7 @@ describe('creatures.json — backfill `named`', () => {
     'walpurga-wurklich', 'andrea-bruhn', 'jacopo-schmidt', 'traudl-bauer',
     'beate-moser', 'le-vieil-otto', 'brigitte-schleigel',
     'gerdon-salzwed', 'hasso-schroeter', 'kat-sperber', 'theresia-kleist',
-    // MDG ch.16 (+ ch.7) : individus uniques du bestiaire marin — le Gargantuan (« il n'existe qu'un seul
+    // MDG 16 (+ ch.7) : individus uniques du bestiaire marin — le Gargantuan (« il n'existe qu'un seul
     // Gargantuan »), Triton (demi-dieu unique) et les capitaines nommés.
     'gargantuan', 'triton', 'jaego-roth', 'long-drong-silver', 'wulfrik', 'vrisk-gratte-le-fer', 'olg-blodsalt',
   ];

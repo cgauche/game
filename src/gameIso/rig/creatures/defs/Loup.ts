@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Loup — fidélité à l'artwork officiel (art-ref/ldb/page317_img7353.png, LDB p.317) : pelage
+// Loup — fidélité à l'artwork officiel (art-ref/ldb/page317_img7353.png, LDB 78 p.317) : pelage
 // brun/fauve/gris MÊLÉ (taches sombres + poitrail/ventre beige, plus la robe grise monochrome),
 // gueule GRANDE OUVERTE babines retroussées à crocs multiples (tête 'loup-feroce' dédiée — les
 // félins qui empruntent 'loup' gardent la gueule fermée), queue fournie portée BASSE derrière le

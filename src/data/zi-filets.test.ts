@@ -11,7 +11,7 @@ import type { Combatant, Weapon } from '../engine/types';
  * Filets (Le Zoo Impérial p.29, issue #84) : « Si un gobelin réussit une attaque avec son filet, sa
  * cible gagne un État Empêtré. Pour s'en débarrasser, elle doit effectuer un Test de Force Intermédiaire
  * (+0) et obtenir un nombre de DR égal à l'Indice du filet » — Test NON opposé à SEUIL (`escapeThreshold`),
- * ≠ l'Immobilisante générique (LDB p.298, Test OPPOSÉ contre la Force de l'attaquant). Filet lesté (Aux
+ * ≠ l'Immobilisante générique (LDB 62 p.298, Test OPPOSÉ contre la Force de l'attaquant). Filet lesté (Aux
  * Armes p.95) : même Atout Immobilisante, mais « le filet a une Force de 55 » FIGÉE (≠ Force du porteur).
  */
 

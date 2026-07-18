@@ -2,7 +2,7 @@ import { parterreSeatCells } from './floorplan';
 import type { SceneEntity } from '../../state/scene';
 
 /**
- * Meublage FIDÈLE du Théâtre Staatsoper d'après le plan officiel (NADJ p.40 rez / p.41 étage) — la
+ * Meublage FIDÈLE du Théâtre Staatsoper d'après le plan officiel (NADJ 8 p.40 rez / p.41 étage) — la
  * géométrie vit dans `opera/floorplan.ts`, ce module ne porte que le MOBILIER posé pièce par pièce.
  * Donnée de QC (rendu/comparaison au plan) consommée par les scripts `scripts/qc/opera-*.mts` ; la
  * LOGIQUE de la soirée vit, elle, dans le scénario jouable « Opéra » (`test-scenarios/opera`).

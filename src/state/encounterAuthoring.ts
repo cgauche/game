@@ -41,7 +41,7 @@ export interface AuthoredEnemy {
   spells?: string[];
   randomChars?: boolean;
   /** Compétences d'AUTEUR ajoutées (réfs `SkillRef`) — fusionnées au spawn (servant de pièce : Projectiles
-   *  du Groupe de son engin, AA p.122-124). */
+   *  du Groupe de son engin, AA 10 p.122-124). */
   skills?: SkillRef[];
   /** Coque/navire (`ref` = id de `vehicles.json`) : `id`s d'entités d'ÉQUIPAGE exposées (MDG 14).
    *  Les ids des ennemis de la rencontre sont déterministes : `enemy-<idRencontre>-<index>`. */

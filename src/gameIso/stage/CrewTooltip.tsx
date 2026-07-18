@@ -26,7 +26,7 @@ export function CrewTooltip({ battle, hoveredId, myTurn, anchor }: {
     const manned = isPosteManned(p, battle.combatants);
     const chefId = p.crewIds?.[0];
     const chef = manned ? battle.combatants.find((c) => c.id === chefId) : undefined;
-    // Équipage réparti par QUALIFICATION (AA p.122 l.3900-3902) : qualifiés = comptent dans l'effectif ;
+    // Équipage réparti par QUALIFICATION (AA 10 p.122 l.3900-3902) : qualifiés = comptent dans l'effectif ;
     // aides = présents mais non qualifiés (déplacent/compensent, ne comptent pas). Chef listé à part.
     const { qualified, aides } = posteCrewSplit(p, battle.combatants);
     const renforts = qualified.filter((c) => c.id !== chefId).map((c) => c.name);

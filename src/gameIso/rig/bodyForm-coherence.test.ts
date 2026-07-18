@@ -8,7 +8,7 @@ import type { CreatureDef } from './creatures/types';
  * GARDE DE COHÉRENCE couche-de-rendu ↔ couche-de-règles (#187). Deux taxonomies coexistent :
  *  - le PLAN CORPOREL FIN de rendu (`CreatureDef.plan` : biped/quadruped/serpentine/arachnid/avian/
  *    winged/cephalopod/squig/…) — squelette + poses, dans `gameIso/rig` ;
- *  - la FORME DE CORPS grossière de règles (`BodyShape`, Tableau de Localisation LDB p.312) —
+ *  - la FORME DE CORPS grossière de règles (`BodyShape`, Tableau de Localisation LDB 76 p.312) —
  *    SOURCE DE VÉRITÉ neutre `engine/bodyForm.SPECIES_BODY_SHAPE`, lue par `state/spawn.bodyShapeOf`.
  *
  * Le plan fin PROJETTE sur la forme grossière (many-to-one : tous les gabarits humanoïdes-like →
@@ -17,7 +17,7 @@ import type { CreatureDef } from './creatures/types';
  * C'est ce qui autorise `bodyShapeOf` à ne PLUS router par le registre de rendu sans risque de dérive.
  */
 
-/** Projection PLAN de rendu (fin) → FORME de corps de règles (grossier), LDB p.312. */
+/** Projection PLAN de rendu (fin) → FORME de corps de règles (grossier), LDB 76 p.312. */
 function planToBodyShape(c: CreatureDef): BodyShape {
   switch (c.plan) {
     case 'quadruped': return 'quadrupede';

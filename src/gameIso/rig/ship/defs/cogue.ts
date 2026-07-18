@@ -3,7 +3,7 @@
  * inclinés (la charpente signature du type — pas de croissant lisse), bordé à clins, safran
  * suspendu à l'étambot, château arrière crénelé PORTÉ par la muraille (assise = la tonture,
  * dos = l'étambot), petit gaillard en surplomb de l'étrave, UN mât central à grande voile
- * carrée avec hune. Trait de famille : planches MDG p.098/114.
+ * carrée avec hune. Trait de famille : planches MDG 12 p.098 / MDG 13 p.114.
  */
 import type { ShipArtDef } from '../artkit';
 import { flag, hune, pennant, spar, squareSail, stay } from '../artkit';

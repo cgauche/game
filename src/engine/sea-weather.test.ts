@@ -13,7 +13,7 @@ const seq = (...vals: number[]): RNG => {
   return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
 };
 
-describe('rollSeaWeather — MÉTÉO DE LA MER DES GRIFFES (MDG ch.13 l.164-181)', () => {
+describe('rollSeaWeather — MÉTÉO DE LA MER DES GRIFFES (MDG 13 l.164-181)', () => {
   it('1d10 par aspect, été sans modificateur : 1 → Aucune/Caniculaire/Dégagé/Calme plat', () => {
     const w = rollSeaWeather('ete', seq(1, 1, 1, 1));
     expect(w).toEqual({ precipitations: 'aucune', temperature: 'caniculaire', visibilite: 'degage', vent: 'calme-plat' });
@@ -38,7 +38,7 @@ describe('rollSeaWeather — MÉTÉO DE LA MER DES GRIFFES (MDG ch.13 l.164-181)
   });
 });
 
-describe('vents — rose, aspect, mise à jour (MDG ch.13 l.250-272)', () => {
+describe('vents — rose, aspect, mise à jour (MDG 13 l.250-272)', () => {
   it('rose des vents : 1-6 = dominant (ouest sur la Mer des Griffes), 7 nord, 8 sud, 9 ouest, 10 est', () => {
     expect(rollWindDirection(seq(3))).toBe('ouest');
     expect(rollWindDirection(seq(7))).toBe('nord');
@@ -63,7 +63,7 @@ describe('vents — rose, aspect, mise à jour (MDG ch.13 l.250-272)', () => {
   });
 });
 
-describe('windEffect / windAdjustedM — EFFET DU VENT (MDG ch.13 l.276-286 ; Clinfoc ch.12 l.256-264)', () => {
+describe('windEffect / windAdjustedM — EFFET DU VENT (MDG 13 l.276-286 ; Clinfoc ch.12 l.256-264)', () => {
   it('vent modéré arrière : +25 % voiles / +0 % autres ; de face : −50 % / −10 %', () => {
     expect(windEffect('vent-modere', 'arriere')).toMatchObject({ pctSail: 25, pctOther: 0 });
     expect(windEffect('vent-modere', 'face')).toMatchObject({ pctSail: -50, pctOther: -10 });
@@ -93,7 +93,7 @@ describe('windEffect / windAdjustedM — EFFET DU VENT (MDG ch.13 l.276-286 ; Cl
     expect(windEffect('legere-brise', 'arriere', 'clinfoc').pctOther).toBe(0);
   });
 
-  it('Gréement de course (MSRC ch.12 l.137) : +10 % voiles vent arrière/de côté ; vent contraire malus réduit de 5 %', () => {
+  it('Gréement de course (MSRC 12 l.137) : +10 % voiles vent arrière/de côté ; vent contraire malus réduit de 5 %', () => {
     // Vent arrière : std +25 % → +35 % ; vent de côté : std +25 % (avec Virement conservé) → +35 %.
     expect(windEffect('vent-modere', 'arriere', 'greement').pctSail).toBe(35);
     const lat = windEffect('vent-modere', 'lateral', 'greement');
@@ -110,7 +110,7 @@ describe('windEffect / windAdjustedM — EFFET DU VENT (MDG ch.13 l.276-286 ; Cl
   });
 });
 
-describe('effets d’ambiance — Précipitations / Température / Visibilité (MDG ch.13 l.187-243)', () => {
+describe('effets d’ambiance — Précipitations / Température / Visibilité (MDG 13 l.187-243)', () => {
   it('Visibilité : Brume −1 DR au-delà de 20 m ; Purée de pois −3 DR au-delà de 5 m ; rien en deçà', () => {
     expect(visibilityDRPenalty('brume', 25)).toBe(-1);
     expect(visibilityDRPenalty('brume', 15)).toBe(0);
@@ -142,7 +142,7 @@ describe('effets d’ambiance — Précipitations / Température / Visibilité (
     expect(temperatureDef('mediane').testEveryHours).toBeUndefined();
     expect(dailyWaterLitres('caniculaire')).toBe(4);
     expect(dailyWaterLitres('chaude')).toBe(3);
-    expect(dailyWaterLitres('mediane')).toBe(3); // régime de bord « 2 à 3 litres » (MDG ch.14 l.242)
+    expect(dailyWaterLitres('mediane')).toBe(3); // régime de bord « 2 à 3 litres » (MDG 14 l.242)
   });
   it('règle `sea-water-litres-mediane` surchargée (borne basse 2 L) : suit la surcharge', () => {
     setRule('sea-water-litres-mediane', 2);

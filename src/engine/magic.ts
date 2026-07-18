@@ -319,7 +319,7 @@ export function talentTestSLBonus(
  *  PLUS les auras de +DR (Aura de Dhar via `skillDRBonus`, [[game-traits-trigger-aura-mechanisms]]). Le
  *  casting n'a pas de vue de combat → les `when` ne s'appliquent pas (aucun talent d'incantation n'en a). */
 export function castTestTalentDR(c: Combatant, skill: 'langue' | 'focalisation' | 'priere', spec?: string): number {
-  // + hors de son terrain : −DR à TOUS les Tests, l'incantation comprise (Créature marine, MDG p.140).
+  // + hors de son terrain : −DR à TOUS les Tests, l'incantation comprise (Créature marine, MDG 16 p.140).
   return talentTestSLBonus(c, { skill, spec }) + skillDRBonus(c, skill, spec) + offTerrainTestDR(c);
 }
 

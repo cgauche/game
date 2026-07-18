@@ -275,7 +275,7 @@ function engagedAdvantageGap(get: Get, actor: Combatant): number {
 /** AVANCE d'Avantage de `actor` sur TOUS ses adversaires ENGAGÉS : `son Avantage − le meilleur Avantage
  *  ennemi engagé`, SIGNÉE et non bornée (≠ `engagedAdvantageGap` qui clampe à ≥ 0 l'excès ENNEMI). `> 0` =
  *  Avantage STRICTEMENT supérieur à tous (Absorption « si la créature a un Avantage plus élevé que tous les
- *  adversaires engagés », EDO p.147). Hors combat / sans foe engagé = 0. Valeur RELATIONNELLE de l'arène. */
+ *  adversaires engagés », EDO 11 p.147). Hors combat / sans foe engagé = 0. Valeur RELATIONNELLE de l'arène. */
 function engagedAdvantageLead(get: Get, actor: Combatant): number {
   const battle = get().battle;
   if (!battle) return 0;

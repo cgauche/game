@@ -1344,7 +1344,7 @@ export function applyCriticalToTarget(
   },
 ): boolean {
   const { ctx, prerolled, suppressReveal, get } = opts ?? {};
-  // Structure de siège (AA p.121) : modèle de Critique DISTINCT du personnage — table propre (pas de Trauma
+  // Structure de siège (AA 10 p.121) : modèle de Critique DISTINCT du personnage — table propre (pas de Trauma
   // humain) et pas de « Mort » de personnage. Filet de sécurité pour TOUT appelant (opposé/magie) ; le chemin
   // d'attaque normal passe déjà par `applyStructureCriticalToTarget` (cf. `applyAttackResult`).
   if (target.bodyShape === 'structure') {
@@ -1469,7 +1469,7 @@ function applyHullCriticalToTarget(
 }
 
 /**
- * Critique de Structure (AA p.120-121) — calqué sur `applyHullCriticalToTarget`. Tire la table propre aux
+ * Critique de Structure (AA 10 p.120-121) — calqué sur `applyHullCriticalToTarget`. Tire la table propre aux
  * Structures (`rollStructureCritical`), applique les Blessures supplémentaires (langue `GameOp`, ignore BE/PA)
  * et, sur un Effondrement (96+), met la Structure à 0 Blessure (la destruction se matérialise en BRÈCHE par
  * `collapseStructure`, à la clôture de la résolution). Pousse la révélation « Critique de Structure » si un
@@ -1497,7 +1497,7 @@ export function applyStructureCriticalToTarget(
   return outcome;
 }
 
-/** Effondrement d'une STRUCTURE de siège tombée à 0 Blessure (AA p.121) → BRÈCHE franchissable : pose le flag
+/** Effondrement d'une STRUCTURE de siège tombée à 0 Blessure (AA 10 p.121) → BRÈCHE franchissable : pose le flag
  *  `structureDown` sur l'arête (`structureEdge`), RETIRE le Combattant inerte de la bataille et re-render
  *  (SCENE_DIRTY). Appelée à la CLÔTURE de la résolution (APRÈS le `set` qui réécrit `battle` depuis sa capture)
  *  → pas de clobber. No-op (réf inchangée pour la scène) si la cible n'a pas d'arête (structure hors scène). */
@@ -1796,7 +1796,7 @@ export function applyAttackResult(
     critLog.push(tr('cf.grappleInit', { name: attacker.name, foe: target.name }));
   }
   if (res.hit && res.woundsLost && isStructure(target)) {
-    // STRUCTURE de siège (AA p.121) : modèle DISTINCT du personnage — pas de Localisation, d'À Terre, de
+    // STRUCTURE de siège (AA 10 p.121) : modèle DISTINCT du personnage — pas de Localisation, d'À Terre, de
     // Déviation d'armure ni de Trauma humain. Les Blessures sont déjà mitigées par `woundsFromHit` (Siège
     // ×2 / Résistant-Impénétrable-Bélier → 0). Un double qui retire AUSSI ≥25 % des Blessures RESTANTES
     // déclenche un Critique de Structure ; la chute à 0 Blessure devient une BRÈCHE (posée par
@@ -3459,7 +3459,7 @@ export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'pendingSiegeAi
       rangeTiles: spell && caster ? spellRangeTiles(spell.range, caster) : null,
     };
   }
-  // Pilonnage INDIRECT (« viser une case », AA p.122-123) : pièce indirecte servie en attente du point
+  // Pilonnage INDIRECT (« viser une case », AA 10 p.122-123) : pièce indirecte servie en attente du point
   // d'impact — MÊME gabarit/curseur/clic que les sorts de zone (l'ancre = le servant, `casterId`).
   const sa = s.pendingSiegeAim;
   if (sa) return { source: 'siege', label: 'Pilonnage', casterId: sa.gunnerId, radius: sa.radius, rangeTiles: sa.rangeTiles };

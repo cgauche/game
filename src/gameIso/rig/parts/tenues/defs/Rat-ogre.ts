@@ -1,7 +1,7 @@
 import type { TenueDef } from '../types';
 import { BODIES } from '../../bodies';
 
-// Tenue du RAT OGRE (illustration LDB p.339) : pagne-tablier loqueteux sanglé par ses
+// Tenue du RAT OGRE (illustration LDB 85 p.339) : pagne-tablier loqueteux sanglé par ses
 // maîtres Molder. ÉQUIPEMENT séparé du corps nu (chair cousue, fourrure, épines = def).
 // bareFoot : pattes griffues, pas de bottes.
 export const tenue: TenueDef = {

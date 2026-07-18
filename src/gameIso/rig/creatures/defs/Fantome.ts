@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Fantôme — gabarit spectral calé sur l'artwork LDB p.330 : crâne DÉCHARNÉ hurlant (orbites
+// Fantôme — gabarit spectral calé sur l'artwork LDB 82 p.330 : crâne DÉCHARNÉ hurlant (orbites
 // creuses, gouffre denté — LDB 82 « esprits d'âmes tourmentées… répandent la peur »), longues
 // mèches vaporeuses pâles flottant autour de la tête, mains squelettiques griffues vert livide
 // au bout des manches, linceul blanc-vert spectral translucide qui se dissout en brume vers le

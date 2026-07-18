@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Amibe (« diable gluant ») — gabarit amorphe, forme `gel`, fidèle à l'artwork ZI p.48 : masse
+// Amibe (« diable gluant ») — gabarit amorphe, forme `gel`, fidèle à l'artwork ZI 5 p.48 : masse
 // GÉLATINEUSE TRANSLUCIDE gris-turquoise dressée (plus haute que large), fine membrane rosâtre,
 // SANS visage — son identité = les proies englouties visibles par transparence (squelette, épée,
 // débris) au-dessus d'un socle de vase sombre où la digestion s'achève. « Sorte de gelée

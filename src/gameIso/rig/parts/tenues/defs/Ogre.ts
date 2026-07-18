@@ -1,7 +1,7 @@
 import type { TenueDef } from '../types';
 import { BODIES } from '../../bodies';
 
-// Tenue d'OGRE (illustration LDB p.314) : plaque-bedaine rivetée sur le torse nu, épaulières
+// Tenue d'OGRE (illustration LDB 77 p.314) : plaque-bedaine rivetée sur le torse nu, épaulières
 // de cuir, jambières de peaux. C'est de l'ÉQUIPEMENT — le corps de CHAIR est composé depuis
 // `BODIES['nu-ogre']` (panse tombante, 3 vues dédiées), jamais redessiné ici : la tenue ne pose
 // que la ferraille par-dessus. Un PNJ ogre peut porter autre chose sur le même corps.

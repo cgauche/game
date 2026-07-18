@@ -13,7 +13,7 @@ import type { AttackResult } from '../engine/combat';
 import { effectiveWeapon } from '../engine/weaponDamage';
 
 /**
- * Structures destructibles JOUABLES en combat (AA p.120-121) : enrôlement depuis les arêtes de mur,
+ * Structures destructibles JOUABLES en combat (AA 10 p.120-121) : enrôlement depuis les arêtes de mur,
  * Dégâts par le CHEMIN combat (`applyAttackResult`), BRÈCHE à 0 Blessure et Critique de Structure.
  * Déterministe (RNG seedé, `forcedRoll` pour les Critiques) — on dépose un `WallSeg.structure` dans la
  * scène de fixture puis on `startCombat`, et la structure devient un Combattant inerte ciblable.

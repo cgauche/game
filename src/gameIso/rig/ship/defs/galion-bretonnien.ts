@@ -1,6 +1,6 @@
 /**
  * GALION BRETONNIEN (MDG, ~60 m, voile) — vaisseau d'apparat CONSTRUIT en galion (réf planche
- * MDG p.114 : caraque/galion, châteaux en GRADINS pris dans la muraille — pas un croissant à
+ * MDG 13 p.114 : caraque/galion, châteaux en GRADINS pris dans la muraille — pas un croissant à
  * boîtes) : quille presque droite, étambot raqué portant un TABLEAU arrière haut à fanal et
  * galerie de poupe, étrave à GUIBRE sculptée sous le beaupré, préceintes dorées continues,
  * sabords, quatre mâts, emblème trèfle-de-lys. Trois vues (contrat `ViewArt`) : profil (proue

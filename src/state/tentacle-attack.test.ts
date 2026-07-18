@@ -13,7 +13,7 @@ import type { Combatant } from '../engine/types';
 // ---------------------------------------------------------------------------
 // Tentacule épais (LDB 19) → trait Tentacules (LDB 85 l.354) : arme naturelle +
 // Attaque GRATUITE 1/tour (Empêtré sur Dégâts). Cornes asymétriques → Arme de
-// Créature (Dégâts = Bonus de Force, LDB p.338).
+// Créature (Dégâts = Bonus de Force, LDB 85 p.338).
 // ---------------------------------------------------------------------------
 
 const mutTentacule = () => rollMutation('physique', { int: () => 38 }); // Tentacule épais

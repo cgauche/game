@@ -10,7 +10,7 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  * Baseline gelée au recensement (2026-07-11) : 6 Talents / 11 Sorts.
  *
  * Triage RAW #326 (2026-07-11) — DESCEND à 1 Talent / 0 Sort, verdict par entrée :
- * - `sang-neuf` (ADE I ch.6 « Guide de la Laurelorn » l.185-193) : Talent réservé au lignage Éonir
+ * - `sang-neuf` (ADE I 6 « Guide de la Laurelorn » l.185-193) : Talent réservé au lignage Éonir
  *   Harioth (« si un Joueur souhaite relever le défi, il peut… ajouter à son Personnage Harioth un
  *   Talent spécial »/« traitée avec condescendance par les Éonirs des autres lignages ») — l'espèce
  *   Éonir n'est PAS jouable dans `species.json` (0 entrée). Contenu de référence, `codexOnly:true`.
@@ -31,7 +31,7 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  *   `pouvoir-du-chaos`, `flot-de-corruption`) + `consentement` : exemptés via le même flag
  *   (`obtainabilityGraph.ts` exclut la famille `chaos` de `spellNever` quand `magie-du-chaos` est
  *   `codexOnly`), pas un silence par-sort.
- * - `talent-aleatoire` (LDB p.132) reste seul : FAUX POSITIF STRUCTUREL (entrée MÉTA de la Table des
+ * - `talent-aleatoire` (LDB 10 p.132) reste seul : FAUX POSITIF STRUCTUREL (entrée MÉTA de la Table des
  *   Talents aléatoires elle-même, `RANDOM_ENTRY_RE`/`engine/character.ts` — pas un Talent possédable).
  *   Follow-up P3 (marqueur de table dédié) hors périmètre #326.
  *

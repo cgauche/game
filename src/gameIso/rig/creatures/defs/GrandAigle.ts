@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Grand Aigle (ZI) — rapace géant (Taille Énorme au record → ×2.7 au spawn). Artwork ZI p.65 :
+// Grand Aigle (ZI) — rapace géant (Taille Énorme au record → ×2.7 au spawn). Artwork ZI 6 p.65 :
 // aigle en PIQUÉ, ailes déployées immenses en V, serres tendues en avant → mode `raptor` du
 // gabarit aviaire (dessin `avian/raptorParts.ts`). Palette de la réf : tête/poitrail brun doré
 // (@corpsH), ailes brun très sombre presque noir (@corps), aile lointaine brun pâle (@cheveux),

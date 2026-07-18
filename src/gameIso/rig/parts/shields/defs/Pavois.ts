@@ -1,7 +1,7 @@
 import type { ShieldDef } from '../types';
 
 // Pavois : grand mantelet rectangulaire de bois cerclé de métal, arête centrale verticale (signature),
-// rivets le long du cadre. Couvre presque tout le corps (arbalétriers). Cf. AA p.92.
+// rivets le long du cadre. Couvre presque tout le corps (arbalétriers). Cf. AA 8 p.92.
 export const shield: ShieldDef = {
   slug: 'pavois',
   label: 'Pavois',

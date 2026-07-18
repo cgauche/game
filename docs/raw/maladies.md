@@ -19,8 +19,8 @@
 - [Créer une maladie (Remuer le Chaudron de Nurgle)](#creer-une-maladie-remuer-le-chaudron-de-nurgle)
 - [Traits de créature liés aux maladies](#traits-de-creature-lies-aux-maladies)
 - [Suppléments — EDO : Fièvre Cérébrale Pourpre + 2 symptômes + Contagieux](#supplements--edo--fievre-cerebrale-pourpre--2-symptomes--contagieux)
-- [Maladies et parasites aquatiques — MSRC ch.14](#maladies-et-parasites-aquatiques--t2c-ch14)
-- [Remèdes à base de plantes — MSRC ch.2 (volet maladies)](#remedes-a-base-de-plantes--t2c-ch2-volet-maladies)
+- [Maladies et parasites aquatiques — MSRC 14](#maladies-et-parasites-aquatiques--t2c-ch14)
+- [Remèdes à base de plantes — MSRC 2 (volet maladies)](#remedes-a-base-de-plantes--t2c-ch2-volet-maladies)
 - [Guérison et soins (renvoi)](#guerison-et-soins-renvoi)
 - [Règle optionnelle « disease-mode »](#regle-optionnelle-disease-mode)
 - [Implémente](#implemente)
@@ -415,7 +415,7 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 
 ---
 
-## Maladies et parasites aquatiques — MSRC ch.14
+## Maladies et parasites aquatiques — MSRC 14
 
 **Sources RAW** : `MSRC 16 l.4-160` (fichier `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/16 - CHAPITRE 14 - Maladies transmises par l'eau.md`)
 
@@ -459,11 +459,11 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 | 1d100 | Maladie |
 |---|---|
 | 01–40 | Courante Galopante *(LDB 20)* |
-| 41–60 | Colique *(MSRC ch.14)* |
+| 41–60 | Colique *(MSRC 14)* |
 | 61–70 | Infection Mineure *(LDB 20)* [1] |
 | 71–75 | Blessure Purulente *(LDB 20)* [1] |
-| 76–80 | Vers de Carie *(MSRC ch.14)* |
-| 81–90 | Vers du Reik *(MSRC ch.14)* |
+| 76–80 | Vers de Carie *(MSRC 14)* |
+| 81–90 | Vers du Reik *(MSRC 14)* |
 | 91–00 | Flux Sanglant *(LDB 20)* |
 
 [1] Relancez si le Personnage n'est pas blessé.
@@ -572,7 +572,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 ---
 
-## Remèdes à base de plantes — MSRC ch.2 (volet maladies)
+## Remèdes à base de plantes — MSRC 2 (volet maladies)
 
 **Sources RAW** : `MSRC 04 l.184-245` (fichier `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/04 - CHAPITRE 2 - Les herbes et leurs usages.md`)
 

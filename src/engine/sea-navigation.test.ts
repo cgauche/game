@@ -18,7 +18,7 @@ const hull = (E: number): Combatant => ({
   movement: 0, wounds: { current: 50, max: 50 }, weapons: [], skills: [], talents: [],
 } as unknown as Combatant);
 
-describe('Forcer le rythme & Épuisement (MDG ch.13 l.95-111)', () => {
+describe('Forcer le rythme & Épuisement (MDG 13 l.95-111)', () => {
   it('+1 M : Voile Très Difficile (−30) / Ramer Difficile (−20) ; +2 M : Ramer Très Difficile seulement', () => {
     expect(forcePaceDifficulty(1, 'voile')).toBe('tresDifficile');
     expect(forcePaceDifficulty(1, 'avirons')).toBe('difficile');
@@ -33,7 +33,7 @@ describe('Forcer le rythme & Épuisement (MDG ch.13 l.95-111)', () => {
   });
 });
 
-describe('« Ça va lâcher, capitaine ! » (MDG ch.13 l.121-142)', () => {
+describe('« Ça va lâcher, capitaine ! » (MDG 13 l.121-142)', () => {
   it('jusqu’à M+4 : aucun risque ; M+5 → Accessible/heure/1+X ; M+9 ou plus → Très Difficile/Round/8+X', () => {
     expect(overspeedRow(5, 9)).toBeNull(); // M+4
     expect(overspeedRow(5, 10)).toMatchObject({ difficulty: 'accessible', per: 'heure', damage: 1 });
@@ -52,7 +52,7 @@ describe('« Ça va lâcher, capitaine ! » (MDG ch.13 l.121-142)', () => {
   });
 });
 
-describe('Salissures (MDG ch.13 l.144-159)', () => {
+describe('Salissures (MDG 13 l.144-159)', () => {
   it('effets par niveau (tableau verbatim) ; niveau 0 = coque propre ; plafond au niveau 5', () => {
     expect(foulingEffects(0)).toMatchObject({ manDR: 0, mMod: 0, navDR: 0 });
     expect(foulingEffects(1)).toMatchObject({ manDR: -1, mMod: 0, repairPctOfBase: 5 });
@@ -68,7 +68,7 @@ describe('Salissures (MDG ch.13 l.144-159)', () => {
   });
 });
 
-describe('Orientation — Repères & Changement de cap (MDG ch.13 l.307-331)', () => {
+describe('Orientation — Repères & Changement de cap (MDG 13 l.307-331)', () => {
   it('bandes de Repères : 4+ exact ; 0-3 ok ; −1/−2 mineur (sans effet la 1ʳᵉ fois) ; −3/−4 dérive ; ≤−5 dérive majeure (+2)', () => {
     expect(orientationOutcome(4, false)).toMatchObject({ outcome: 'exact', rollCourseChange: false });
     expect(orientationOutcome(2, false)).toMatchObject({ outcome: 'ok', rollCourseChange: false });
@@ -87,7 +87,7 @@ describe('Orientation — Repères & Changement de cap (MDG ch.13 l.307-331)', (
   });
 });
 
-describe('Phares & clochers (MDG ch.13 l.333-351)', () => {
+describe('Phares & clochers (MDG 13 l.333-351)', () => {
   it('Voir la lumière : ≤5 milles Facile (+40) ; 5-10 Intermédiaire ; 10-15 Difficile ; au-delà : invisible', () => {
     expect(lighthouseSpotDifficulty(3)).toBe('facile');
     expect(lighthouseSpotDifficulty(8)).toBe('intermediaire');
@@ -126,7 +126,7 @@ describe('Boussole — +1 DR aux Tests d’Orientation (MDG 14 l.275, passif d�
   });
 });
 
-describe('Longs voyages & Poursuite (MDG ch.15 l.53-78 ; ch.13 l.354-420)', () => {
+describe('Longs voyages & Poursuite (MDG 15 l.53-78 ; ch.13 l.354-420)', () => {
   it('milles/jour = 18 × M ; ÷2 sans voguer de nuit ; ±10 % par DR de Progression', () => {
     expect(seaMilesPerDay(5, true)).toBe(90);
     expect(seaMilesPerDay(5, false)).toBe(45);

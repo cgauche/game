@@ -364,7 +364,7 @@ export function patchEntity(scene: Scene, id: string, patch: Partial<SceneEntity
 }
 
 /** Patche le sous-objet `combat` d'une entité SANS écraser l'existant (fusionne skills/spells/optionals/
- *  hiddenUntilCombat). Qualifie p.ex. un servant-ref au bon Groupe de Projectiles (AA p.122). No-op si absente. */
+ *  hiddenUntilCombat). Qualifie p.ex. un servant-ref au bon Groupe de Projectiles (AA 10 p.122). No-op si absente. */
 export function patchEntityCombat(scene: Scene, id: string, patch: Partial<NonNullable<SceneEntity['combat']>>): Scene {
   return { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, combat: { ...e.combat, ...patch } } : e)) };
 }

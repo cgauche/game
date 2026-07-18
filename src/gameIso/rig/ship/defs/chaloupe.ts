@@ -1,7 +1,7 @@
 /**
  * CHALOUPE (MDG 113, ~10 m, avirons) — grand canot de bord OUVERT : quille presque droite à léger
  * rocker, étrave RAKÉE, poupe à TABLEAU (safran de tableau + barre franche), bordé à clins, trois
- * bancs de nage et trois avirons (réf planche MDG p.098, construction du Knarr en plus court).
+ * bancs de nage et trois avirons (réf planche MDG 12 p.098, construction du Knarr en plus court).
  */
 import type { ShipArtDef } from '../artkit';
 import { oarBank, rudder, spar } from '../artkit';

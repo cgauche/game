@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Manticore (LDB 79 l.108, artwork LDB p.324) : gueule FÉLINE cerclée d'une crinière rousse
+// Manticore (LDB 79 l.108, artwork LDB 79 p.324) : gueule FÉLINE cerclée d'une crinière rousse
 // flamboyante (@cheveux) à grands crocs (tête 'felin'), paire de CORNES SOMBRES qui percent la
 // crinière (deco tete — trait de l'artwork), avant-train écailleux bleu-gris à dorsale d'épines
 // (build 'draconic'), grandes ailes de chauve-souris VIOLET POURPRE dressées à demi-ouvertes

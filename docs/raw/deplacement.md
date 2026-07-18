@@ -116,7 +116,7 @@ Ces règles s'appliquent en et hors combat.
 
 - **Vitesse (km/h) = M du personnage le plus lent du groupe.**
 - M est le **M effectif** (après pénalités d'Encombrement, voir § Encombrement).
-- EDOC ch.5 l.479 (EDOC 08) confirme : « combien de kilomètres par heure vous pouvez aisément
+- EDOC 5 l.479 (EDOC 08) confirme : « combien de kilomètres par heure vous pouvez aisément
   parcourir ».
 
 ### Heures de marche par jour sans Test
@@ -564,7 +564,7 @@ Si un participant a un **M supérieur** aux autres, il gagne autant de **DR bonu
 | Module | Ce qu'il couvre |
 |---|---|
 | `src/engine/travel.ts` | Vitesse de groupe (`partyWalkSpeed`), `travelSpeed` (dont allures EDOC en selle / attelage forcé), `travelPlanCalc`, `transportCost`, `forcedMarchTest`/`applyForcedMarch`, `applyTravelFatigue`. Transports payants lus depuis `src/data/vehicles.json`. |
-| `src/engine/mountTravel.ts` | Montures en voyage (EDOC ch.4, règle optionnelle `travel-allures`) : profils/allures en donnée (`src/data/montures.json`), vitesse M × 1,5/2,5/3 km/h (l.140), endurance des allures 12 h / BE / ½ BE (l.142-144), cascade de sur-endurance (+Exténué, Test de Résistance, effondrement/mort, l.146) et Incidents de monte (l.148-174, `resolveMountIncident`/`resolveMountedDay`). |
+| `src/engine/mountTravel.ts` | Montures en voyage (EDOC 4, règle optionnelle `travel-allures`) : profils/allures en donnée (`src/data/montures.json`), vitesse M × 1,5/2,5/3 km/h (l.140), endurance des allures 12 h / BE / ½ BE (l.142-144), cascade de sur-endurance (+Exténué, Test de Résistance, effondrement/mort, l.146) et Incidents de monte (l.148-174, `resolveMountIncident`/`resolveMountedDay`). |
 | `src/engine/travelStages.ts` | Système par Étapes EDOC : `stageCount` (bonus lu sur la règle `travel-etapes-count-bonus`), météo (`WEATHER_TABLE`), `stageExposureDifficulty`, `forageYield`, saisons (calendrier impérial). EFFETS météo en DONNÉE (`weather.json` `conditions`) : `WeatherCondition`, `weatherRangedMod`, `weatherRangedUseless`, `weatherPowderUseless`, `weatherPhysicalTestMod`, `weatherMovementWalkOnly`, `weatherResistanceTest`, `weatherVisibiliteM`, `weatherLightningNervous`. Le modificateur météo par Activité est désormais DONNÉE (`ActivityDef.weatherMod`). |
 | `src/engine/provisions.ts` | Faim (LDB 18 l.337-343) : consommation/jour, Test Résistance, malus, Brouet. |
 | `src/engine/encumbrance.ts` | `effectiveMovement(c)` (M après pénalités Enc), `encumbrancePenalties()` (tiers + travelFatigue). |
@@ -579,7 +579,7 @@ Si un participant a un **M supérieur** aux autres, il gagne autant de **DR bonu
 |---|---|---|---|
 | Budget d'heures PAR JOUR CALENDAIRE | « 6 heures **par jour** sans Test » (l.224) — PAR JOUR, pas par trajet | `store.travelDayHours` (accumulateur UNIQUE keyé sur `dayIndex`, remis à zéro au franchissement de jour) : les trajets à pied/en selle ENCHAÎNÉS le même jour cumulent leur budget → marche forcée dès que le cumul dépasse 6 h (un seul Test/jour, drapeau `marched`), plafond dur au-delà de `forcedMaxHours` (halte forcée) ; endurance de monture comptée sur le jour (`resolveMountedDay(priorHours)`) | **Corrigé #340** (avant : `startTravel` repartait à neuf par trajet — 3×4 h ne déclenchaient jamais la marche forcée). |
 | Heure de départ (terre & fleuve) | Canon muet (le budget/jour ne dit pas quand la journée commence) | Porte maison `travel-departure-gate` (défaut ON) : départ à pied/en selle/fluvial JOUÉ de l'aube au crépuscule ; de nuit → « Attendre l'aube » (nuit jouée) ou annuler (`pendingDeparture`). Mer exemptée. | Valeur maison éditable (#340). |
-| Navigation fluviale de nuit (halte au crépuscule) | Canon muet (MSRC ch.5) | La descente JOUÉE s'arrête au crépuscule (`finishRiverDay`) et reprend à l'aube — même cadence maison que la porte de départ | Re-tag sincérité #340 : valeur maison (ne se croit plus RAW). |
+| Navigation fluviale de nuit (halte au crépuscule) | Canon muet (MSRC 5) | La descente JOUÉE s'arrête au crépuscule (`finishRiverDay`) et reprend à l'aube — même cadence maison que la porte de départ | Re-tag sincérité #340 : valeur maison (ne se croit plus RAW). |
 | Privation de sommeil | Canon muet (LDB 18 : Exténué non lié au sommeil manqué) | Règle maison OPT-IN `travel-sleep-forced` : chaque jour calendaire franchi sans nuit jouée (`lastNightDay`) → +1 Exténué « privation de sommeil » (via `applyOps` condition, retiré au prochain vrai repos) | Valeur maison éditable, désactivée par défaut (#340). |
 | Voguer de nuit en mer (÷2) | « distance/jour suppose un équipage permettant de voguer de nuit ; sinon ÷2 » (MDG 15 l.76) | `applySeaProgress` lit la règle maison `sea-night-sailing` (équipage abstrait, MDG 14 l.39) : ON (défaut) = distance pleine ; OFF = `seaMilesPerDay(m, false)` → ÷2 | **Câblé #340** (avant : `nightSailing` codé en dur à `true` → le ÷2 n'était jamais appliqué). |
 | Plafond marche forcée | Canon muet | 10 h/j par défaut (paramétrable) | Choix documenté dans `TRAVEL_DEFAULTS.forcedMaxHours`. |

@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Chimère (ZI p.66) — trois têtes DISTINCTES (léonine à crinière rayonnante + grand rapace à
+// Chimère (ZI 6 p.66) — trois têtes DISTINCTES (léonine à crinière rayonnante + grand rapace à
 // bec crochu + dragon-crocodile cornu à long museau), cluster `head: 'chimere'` sur le mécanisme
 // de l'hydre. Corps « d'énorme chat difforme » massif (build ursine, girth fort), larges pattes
 // à griffes incurvées ('patte'), GRANDES ailes membraneuses DRESSÉES à nervures

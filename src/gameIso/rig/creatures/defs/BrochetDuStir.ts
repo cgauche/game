@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Brochet du Stir (ZI p.36-38) — brochet géant (vrai poisson fusiforme, ~3,5 m, Taille Grande),
+// Brochet du Stir (ZI 4 p.36-38) — brochet géant (vrai poisson fusiforme, ~3,5 m, Taille Grande),
 // « Queue mortelle » (grande caudale) + Morsure. Gabarit poisson (squelette DÉDIÉ fish/composeFish,
 // seule espèce du plan) : LONG museau plat en bec de canard, gueule entrouverte hérissée de dents,
 // robe gris-vert MOUCHETÉE de taches claires (corpsH), dorsale reculée face à l'anale.

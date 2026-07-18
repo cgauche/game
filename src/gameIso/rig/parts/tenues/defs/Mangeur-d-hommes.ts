@@ -1,7 +1,7 @@
 import type { TenueDef } from '../types';
 
 // Mangeur d'hommes (ADE II 02 l.855-901) — ogre mercenaire errant : « ils conservent toujours
-// leur massue et leur PANSIÈRE bien-aimées » (l.861). D'après l'illustration ADE II p.35 : grosse
+// leur massue et leur PANSIÈRE bien-aimées » (l.861). D'après l'illustration ADE II 2 p.35 : grosse
 // PANSIÈRE RONDE bombée (jante de bronze, champ d'acier, bosse-museau de bête au centre, rivets),
 // épaulière d'or cannelée + dôme clouté, baudrier de cuir en travers, pendentif-clochette d'or,
 // pagne en loques bordeaux + jambières rayées or/vert criardes. Le corps (panse, tête d'ogre) vit

@@ -1,5 +1,5 @@
 /**
- * Boîte à outils PARTAGÉE des arts de COQUE (vague A1 du front art naval — réf planche MDG p.098 :
+ * Boîte à outils PARTAGÉE des arts de COQUE (vague A1 du front art naval — réf planche MDG 12 p.098 :
  * Knarr / Langskip / Loup impérial / Croiseur). Un art de coque = 1 fichier `ship/defs/<id>.ts`
  * (registre auto-chargé par `scripts/gen-registry.mjs`, MÊME pattern que les engins de siège) —
  * routé par l'ID de véhicule (`vehicles.json`), le repli procédural par gréement reste dans

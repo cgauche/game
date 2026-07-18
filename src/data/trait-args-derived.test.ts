@@ -22,7 +22,7 @@
  * est une SOURCE de données comme le bestiaire, la même dérive (libellé tapé à la main au lieu de l'id)
  * s'y produit (#145, #146). TOUTES sont id-based `{ id, value?, arg?, range?, count? }` — la liste
  * `optionals[]` du bestiaire peut AUSSI porter des OPTIONNELS COMPOSÉS (`OptionalEntry`, #174) : une
- * NOTE discriminée par `note` (« all-traits » = joker Mutant LDB p.333 ; « swap » = variante « remplacer
+ * NOTE discriminée par `note` (« all-traits » = joker Mutant LDB 83 p.333 ; « swap » = variante « remplacer
  * des Traits par un bonus », Grand Loup/Griffon ZI). Ces notes n'ont ni `id` ni `value` de premier niveau
  * (le bonus vit sous `grant`) → naturellement hors des invariants #1/#2/#3, sans exclusion ad hoc.
  *

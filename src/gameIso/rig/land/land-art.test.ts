@@ -18,7 +18,7 @@ describe('arts de véhicule terrestre par id (LAND_ARTS, patron ENGIN_ARTS)', ()
   });
 
   it('chaque id du registre est un véhicule réel (FK vers vehicles.json) ; aucun repli générique en donnée', () => {
-    // LDB p.306 : la table de voyage ne donne aucun profil de coque (E/B) pour certains véhicules
+    // LDB 70 p.306 : la table de voyage ne donne aucun profil de coque (E/B) pour certains véhicules
     // (ex. `chariot`) — l'art par id reste légitime (affichage hub/marché/scène) sans `hull`, mais
     // l'entrée ne doit alors pas porter de facette `ship` (ce n'est pas un bateau).
     for (const a of LAND_ARTS) {

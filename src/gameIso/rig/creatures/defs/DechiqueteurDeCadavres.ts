@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Le Déchiqueteur de Cadavres (artwork ZI p.58) : quadrupède ACCROUPI aux écailles gris-bleuté,
+// Le Déchiqueteur de Cadavres (artwork ZI 5 p.58) : quadrupède ACCROUPI aux écailles gris-bleuté,
 // CINQ têtes serpentines rouge vif sur longs cous gris (cluster `dechiqueteur`, cf. quadParts —
 // même mécanisme que l'hydre/chimère), dos hérissé de piquants noirs, pieds griffus.
 // Robe = @corps gris-bleu (+@corpsH reflet lavande) ; têtes = @cheveux rouge/@cheveuxO sombre.

@@ -36,7 +36,7 @@ function body(p: FishProps): string {
   const fish = `<path d="M-30 0 Q-22 ${H(-9)} -6 ${H(-11)} Q12 ${H(-12)} 26 ${H(-7)} Q33 ${H(-3)} 34 0 Q33 ${H(3)} 26 ${H(7)} Q12 ${H(12)} -6 ${H(11)} Q-22 ${H(9)} -30 0 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>`;
   const belly = `<path d="M-24 ${H(5)} Q0 ${H(11)} 24 ${H(5)} Q12 ${H(8)} -6 ${H(8)} Z" fill="@corpsH" opacity="0.4"/>`;
   const lateral = `<path d="M-26 ${H(-2)} Q0 ${H(-3)} 28 ${H(-1)}" stroke="@corpsO" stroke-width="0.7" fill="none" opacity="0.5"/>`;
-  // robe MOUCHETÉE (art ZI p.36) : rangées de taches claires ovales sur tout le flanc gris-vert
+  // robe MOUCHETÉE (art ZI 4 p.36) : rangées de taches claires ovales sur tout le flanc gris-vert
   let sd = '';
   const spots: [number, number, number][] = [
     [-25, -3, 0.9], [-20, -6, 1.0], [-17, 1, 1.1], [-12, -4, 1.2], [-9, 4, 1.0], [-4, -7, 1.1],
@@ -45,7 +45,7 @@ function body(p: FishProps): string {
   ];
   for (const [x, y, s] of spots) sd += `M${x - 1.4 * s} ${H(y)} a${(1.4 * s).toFixed(1)} ${(0.9 * s).toFixed(1)} 0 1 0 ${(2.8 * s).toFixed(1)} 0 a${(1.4 * s).toFixed(1)} ${(0.9 * s).toFixed(1)} 0 1 0 ${(-2.8 * s).toFixed(1)} 0 `;
   const mottling = `<path d="${sd}" fill="@corpsH" opacity="0.7"/>`;
-  // museau de brochet (signature, art ZI p.36) : LONG bec plat en « bec de canard », gueule
+  // museau de brochet (signature, art ZI 4 p.36) : LONG bec plat en « bec de canard », gueule
   // entrouverte hérissée de rangées de dents pointues
   const gape = `<path d="M27 ${H(-1.3)} Q44 ${H(-1.7)} 56.5 ${H(-1.3)} Q50 ${H(1.4)} 53.5 ${H(3)} Q42 ${H(2.1)} 27 ${H(2)} Z" fill="#231a10"/>`;
   const lower = `<path d="M27 ${H(2)} L40 ${H(2.2)} Q49 ${H(2.4)} 53.5 ${H(3.1)} Q49 ${H(5)} 40 ${H(5.6)} Q32 ${H(6)} 27 ${H(5.2)} Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>`;

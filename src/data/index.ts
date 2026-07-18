@@ -114,7 +114,7 @@ export const GRAPPLE = grappleJson as GrappleRule;
  *  la faire bouillir ») ou immersion (chute/nage — « uniquement à l'immersion » pour le tableau 2). */
 export type WaterExposureMode = 'ingestion' | 'immersion';
 /** Dérivation AUTOMATIQUE d'un modificateur d'exposition depuis le Combatant (tableau 2 « Blessures et
- *  États », MSRC p.91) : PB restants/perdus, PAR pion d'un État, présence d'un État. */
+ *  États », MSRC 16 p.91) : PB restants/perdus, PAR pion d'un État, présence d'un État. */
 export type WaterExposureAuto =
   | { kind: 'woundsRemaining'; op: '<='; value: number }
   | { kind: 'woundsLost'; op: '>='; value: number }
@@ -123,7 +123,7 @@ export type WaterExposureAuto =
   | { kind: 'hasCondition'; condition: string };
 /** Un modificateur d'exposition hydrique : tableau 1 « Source d'eau » (choix d'AUTEUR de la zone d'eau)
  *  ou tableau 2 « Blessures et États » (dérivé du Combatant via `auto`). « Tous les modificateurs
- *  peuvent être cumulés » (MSRC p.91). NB : « Par État Assommé » (MSRC) → id LDB `sonne` (le LDB 16 n'a
+ *  peuvent être cumulés » (MSRC 16 p.91). NB : « Par État Assommé » (MSRC) → id LDB `sonne` (le LDB 16 n'a
  *  pas d'État « Assommé » ; le même chapitre écrit « État *Sonné* » p.92 — glissement de traduction). */
 export interface WaterExposureModifier {
   id: string;
@@ -414,7 +414,7 @@ export interface TalentData {
   /** `true` = contenu de RÉFÉRENCE (PNJ/campagne scriptée), pas un Talent de progression PJ standard —
    *  le RAW lui-même le dit explicite (« ne sont pas accessibles à d'autres personnes dans des
    *  circonstances normales », EDOC 13 l.83 ; « Carrière destinée uniquement aux PNJ … avec la
-   *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I ch.6 l.185).
+   *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
    *  Lu par `computeObtainability` (`scripts/data/lib/obtainabilityGraph.ts`, #326) pour exempter la
    *  garde `obtainability-guard.test.ts` — jamais un silence sur un Talent sans chemin d'octroi PJ. */
   codexOnly?: true;
@@ -431,9 +431,9 @@ export interface ItemCapabilities {
   /** Protège des intempéries (Cape/Manteau, LDB 65 l.44) — annule le malus de Test d'Exposition au
    *  froid (GATÉ sur le port). */
   weatherProtection?: boolean;
-  /** Abri de campement (Tente, LDB p.308) — annule/atténue l'Exposition d'une nuit dehors (NON gaté). */
+  /** Abri de campement (Tente, LDB 74 p.308) — annule/atténue l'Exposition d'une nuit dehors (NON gaté). */
   isShelter?: boolean;
-  /** Ration de voyage (« Ration (1 jour) », LDB p.302) — consommée par l'entretien de Faim (NON gaté). */
+  /** Ration de voyage (« Ration (1 jour) », LDB 66 p.302) — consommée par l'entretien de Faim (NON gaté). */
   isRations?: boolean;
   /** Grimoire / livre de Sorts (LDB 47 l.34) — un Sort non mémorisé du Domaine peut y être lu (NON gaté). */
   isGrimoire?: boolean;
@@ -461,7 +461,7 @@ export interface ItemCapabilities {
    *  `WeaponContext.harpoonRopeCut` (`effectiveWeapon`, `state/combatFlow.ts` `weaponContextOf`), choisi
    *  par le joueur avant le jet (`PendingAttack.harpoonRopeCut`). Lue par-objet (`itemCapability`). */
   ropeMode?: boolean;
-  /** Contenant d'eau (Outre à eau/Seau, LDB p.301/303) : consommé par l'action de combat « Asperger
+  /** Contenant d'eau (Outre à eau, LDB 64 p.301 / Seau, LDB 67 p.303) : consommé par l'action de combat « Asperger
    *  d'eau » (MDG 16 l.19, #497) qui pose `Combatant.wateredThisRound` sur une Créature marine
    *  adjacente hors de l'eau — NON gaté sur le port (on le sort du sac, comme `isRations`). */
   waterContainer?: boolean;
@@ -480,13 +480,13 @@ export interface TrappingData {
    *  (Arc/Poudre noire…), type d'armure (Plate/Mailles…) ou catégorie d'inventaire — réf d'entité, ≠ libellé. */
   subType: string | null;
   /** Groupe de Projectiles qui OPÈRE une arme de siège (`WeaponGroupData.id` : arbalete/catapulte/ingenierie/
-   *  poudre-noire, AA p.122 l.3848-3863) quand `subType` = catégorie de catalogue (« armes-de-siege »). Pilote
+   *  poudre-noire, AA 10 p.122 l.3848-3863) quand `subType` = catégorie de catalogue (« armes-de-siege »). Pilote
    *  la Spé de tir (`acceptableSpecs`) et le décompte d'équipage (Projectiles appropriée, l.3900). */
   weaponGroup?: string;
-  /** Pièce d'artillerie « relativement simple » (la baliste, AA p.122 l.3818) : tirée par UN seul servant
+  /** Pièce d'artillerie « relativement simple » (la baliste, AA 10 p.122 l.3818) : tirée par UN seul servant
    *  valide → perd tous ses Atouts (garde ses Défauts). Lu par `crewedFireWeapon`. */
   soloSimple?: boolean;
-  /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA p.122-123) : peut viser une CASE au sol.
+  /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA 10 p.122-123) : peut viser une CASE au sol.
    *  Propagé Trapping → ItemInstance → Weapon (`indirect`) ; lu par `availableAttacks`. Canon/baliste = direct. */
   indirect?: boolean;
   /** Effets DÉCLENCHÉS « à la touche » portés en DONNÉE (`TriggeredEffect[]`, MÊME vocabulaire que les
@@ -590,7 +590,7 @@ export interface TrappingData {
    *  appliqués tant que l'objet est PORTÉ ou TENU (collecteur `passiveMods`). Ex. Bésicles → `skillMod`
    *  +20 Langue/Perception (LDB 67). */
   passive?: import('../engine/ops').GameOp[];
-  /** Tarif d'un SERVICE (LDB p.302 : chambre/écurie…), pas un objet possédable — Enc « – » dans la
+  /** Tarif d'un SERVICE (LDB 66 p.302 : chambre/écurie…), pas un objet possédable — Enc « – » dans la
    *  source (≠ 0, RAW ne le compte même pas comme non-encombrant). N'entre JAMAIS en stock marchand
    *  (`computeFreshStockLines`), ni en inventaire (`itemFromTrappingById` refuse bruyamment) ; reste
    *  la source de PRIX pour son consommateur (référencée par id) et visible au Codex/Compendium. */
@@ -1307,7 +1307,7 @@ export interface StarData {
   desc: string | null;
   source: SourceRef;
 }
-/** Demeure céleste (ADE II ch.03 l.502-512) : section du ciel gouvernée par un signe — thème astral
+/** Demeure céleste (ADE II 3 l.502-512) : section du ciel gouvernée par un signe — thème astral
  *  facultatif de la création (flavor pur). `desc` = VERBATIM de la source ; `rand` = borne haute 1d10. */
 export interface CelestialHouseData {
   /** id STABLE (slug du libellé) — `HeroDetails.dwellings[].house` stocke cet ID (libellé à l'affichage). */
@@ -1769,7 +1769,7 @@ export const weatherPhysicalTestChars = weatherData.physicalTestChars;
 export const windsOfMagicTable = (ventsTourbillonnantsJson as { table: { id: string; min: number; max: number; mod: number; label: string }[] }).table;
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
-/** Les 5 demeures célestes (ADE II ch.03 l.502-512, « Déterminer les demeures célestes ») — ossature
+/** Les 5 demeures célestes (ADE II 3 l.502-512, « Déterminer les demeures célestes ») — ossature
  *  narrative du thème astral (flavor pur, aucun effet mécanique). `rand` = borne haute du 1d10. */
 export const celestialHouses = astrologyJson as CelestialHouseData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */

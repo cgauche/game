@@ -30,7 +30,7 @@ function buildSkeleton(): Record<SpiderBoneId, SBone> {
 }
 
 // une patte ARTICULÉE d'un côté (sx=±1) : coxa au corps → GENOU HAUT marqué → tibia qui plonge
-// au pied. Fidélité artwork (LDB p.316) : SEGMENTÉE (fémur épais / tibia plus fin + bandes pâles
+// au pied. Fidélité artwork (LDB 78 p.316) : SEGMENTÉE (fémur épais / tibia plus fin + bandes pâles
 // aux articulations), VELUE (soies dressées le long des segments), GRIFFE sombre marquée au tarse.
 // dx = biais directionnel (profil).
 function leg(sx: number, ay: number, kneeX: number, footX: number, footY: number, dx = 0): string {
@@ -77,7 +77,7 @@ function cephalo(view: View): string {
   const chelicerae = `<path d="M-3.2 14 Q-5 18 -2.8 20.6 M3.2 14 Q5 18 2.8 20.6" fill="none" stroke="@corpsO" stroke-width="2.7" stroke-linecap="round"/>` +
     `<path d="M-2.8 20 Q-3.6 23.4 -0.8 24.6 Q-2.8 22.8 -1.7 20.2 Z" fill="#e8e0c8" stroke="#9a8f78" stroke-width="0.3"/>` +
     `<path d="M2.8 20 Q3.6 23.4 0.8 24.6 Q2.8 22.8 1.7 20.2 Z" fill="#e8e0c8" stroke="#9a8f78" stroke-width="0.3"/>`;
-  // cluster de 8 yeux BIEN VISIBLES (artwork LDB p.316) : plaque oculaire pâle, globes noirs
+  // cluster de 8 yeux BIEN VISIBLES (artwork LDB 78 p.316) : plaque oculaire pâle, globes noirs
   // vernissés cerclés de crème, reflet clair — paire médiane dominante + rangées latérales.
   const eye = (x: number, y: number, r: number) =>
     `<circle cx="${x}" cy="${y}" r="${r}" fill="#171d12" stroke="#e6d8b4" stroke-width="${(r * 0.28).toFixed(2)}"/>` +

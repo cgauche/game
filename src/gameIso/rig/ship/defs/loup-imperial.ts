@@ -3,7 +3,7 @@
  * quasi droite (jamais un croissant), château arrière ÉTAGÉ taillé dans la muraille et coiffé
  * de tourelles en poivrière, galerie d'apostis ARCADÉE au-dessus d'une pleine batterie
  * d'avirons, guibre portant l'ÉPERON à tête de LOUP, trois mâts à hunes carrées et voiles
- * RAYÉES. Réf : planche MDG p.098 (en bas à gauche — bandes des voiles + tête de loup font
+ * RAYÉES. Réf : planche MDG 12 p.098 (en bas à gauche — bandes des voiles + tête de loup font
  * la signature).
  */
 import type { ShipArtDef } from '../artkit';

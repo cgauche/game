@@ -35,8 +35,8 @@ export function placeCombatant(c: { pos?: { x: number; y: number; z?: number; h?
   const z = p.z ?? 0;
   const h = scene ? heightAt(scene, p.x, p.y, z) : 0;
   c.pos = { x: p.x, y: p.y, ...(z ? { z } : {}), ...(h ? { h } : {}) };
-  // Drapeau POSITIONNEL « hors de son terrain » (op passive `offTerrainMod` — Créature marine MDG p.140 /
-  // Aquatique MSRC p.90) : re-dérivé à CHAQUE placement (chokepoint UNIQUE du positionnement). Un porteur
+  // Drapeau POSITIONNEL « hors de son terrain » (op passive `offTerrainMod` — Créature marine MDG 16 p.140 /
+  // Aquatique MSRC 15 p.90) : re-dérivé à CHAQUE placement (chokepoint UNIQUE du positionnement). Un porteur
   // dont la case n'est pas de son terrain d'élection (`eau`) subit mSet/testDR ; sans passif, no-op.
   const req = c.traits ? requiredTerrains(c as Combatant) : [];
   if (req.length) c.offTerrain = !req.includes(tileAt2(scene ?? null, p.x, p.y, z));
@@ -48,7 +48,7 @@ function tileAt2(scene: Scene | null, x: number, y: number, z: number): string {
   return scene ? tileAt(scene, x, y, z) : 'sol';
 }
 
-/** Forme du corps d'un Combattant (Tableau de Localisation, LDB p.312) : dérivée de l'ESPÈCE du record
+/** Forme du corps d'un Combattant (Tableau de Localisation, LDB 76 p.312) : dérivée de l'ESPÈCE du record
  *  (donnée neutre `bodyShapeForSpecies`), plus du registre de rendu du rig (#187). Une Nuée retombe sur
  *  la table par défaut. Une créature sans espèce, un statbloc (nom hors bestiaire) → humanoïde. */
 export function bodyShapeOf(id: string): BodyShape {
@@ -186,7 +186,7 @@ export interface SpawnExtras {
   upgrades?: NavalTraitRef[];
   /** Compétences d'AUTEUR ajoutées (réfs `SkillRef` : id + valeur de Test imprimée) — FUSIONNÉES par-dessus
    *  celles du bestiaire au spawn. Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ
-   *  à son engin (AA p.122 l.3900 : sans cette Compétence, il n'est « pas un membre de l'équipe », l.3923). */
+   *  à son engin (AA 10 p.122 l.3900 : sans cette Compétence, il n'est « pas un membre de l'équipe », l.3923). */
   skills?: SkillRef[];
 }
 
@@ -219,7 +219,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   for (const g of swapGrants) if ('char' in g) chars[g.char] += g.value;
   // Compétences/talents de la donnée (PNJ nommés : Eusapia, Horreurs…) — avances dérivées du profil IMPRIMÉ.
   // + compétences d'AUTEUR ajoutées (extras.skills : qualifier un servant de pièce pour le Groupe de
-  // Projectiles de son engin, AA p.122-124).
+  // Projectiles de son engin, AA 10 p.122-124).
   const bookSkills = [...skillsFromBook(creature.skills, chars), ...skillsFromBook(extras?.skills, chars)];
   // Compétences octroyées par une variante « swap » (ZI, Vouivre : Discrétion (Rurale) 65) — dérivées
   // PLUS BAS, sur le profil FINAL (après Taille facultative éventuelle) : la valeur de Test IMPRIMÉE par
@@ -361,7 +361,7 @@ export function spawnEnemy(
     c.kind = 'enemy';
     c.pos = { ...pos };
   } else if (ref && findTrappingById(ref)?.siegeRig) {
-    // Engin de siège (AA p.122-123) : affût INERTE non-destructible (RAW : pas de Blessures), servi par son
+    // Engin de siège (AA 10 p.122-123) : affût INERTE non-destructible (RAW : pas de Blessures), servi par son
     // équipage. Neutralisé en tuant l'équipage, pas en le détruisant. Son espèce de rendu est DÉRIVÉE de la
     // `ref` (l'art d'affût `siegeRig` du trapping) → plus aucun `appearance.species` forcé à l'authoring.
     const t = findTrappingById(ref)!;

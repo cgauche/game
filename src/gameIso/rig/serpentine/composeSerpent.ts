@@ -49,7 +49,7 @@ function coil(p: SerpentProps): string {
   // (verdict des juges aveugles, lot 4).
   const bands = p.markings === 'bandes';
   // bandes transversales par boucle (suivent la courbure de chaque anneau), dessinées SUR la
-  // boucle concernée avant que la suivante la recouvre — motif de l'artwork LDB p.319.
+  // boucle concernée avant que la suivante la recouvre — motif de l'artwork LDB 79 p.319.
   const bandsBottom = bands ? `<path d="M${(-23 * g).toFixed(1)} 10 q4 8 1 16 M${(-9 * g).toFixed(1)} 6.5 q4 9 0.5 19 M${(8 * g).toFixed(1)} 6.5 q4 9 0.5 19 M${(22 * g).toFixed(1)} 9 q4 8 1 16" stroke="@corpsO" stroke-width="3.2" fill="none" opacity="0.55" stroke-linecap="round"/>` : '';
   const bandsMid = bands ? `<path d="M${(-8 * g).toFixed(1)} -0.5 q3.5 7 0 15 M${(6 * g).toFixed(1)} -1.5 q3.5 7.5 0 16.5 M${(19 * g).toFixed(1)} 0.5 q3 6.5 0 13.5" stroke="@corpsO" stroke-width="2.9" fill="none" opacity="0.55" stroke-linecap="round"/>` : '';
   const bandsTop = bands ? `<path d="M${(-8 * g).toFixed(1)} -5.5 q2.5 5 0 10.5 M${(4 * g).toFixed(1)} -6.5 q2.5 5.5 0 11.5" stroke="@corpsO" stroke-width="2.4" fill="none" opacity="0.55" stroke-linecap="round"/>` : '';

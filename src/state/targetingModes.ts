@@ -231,7 +231,7 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
 /** Mode ATTAQUE : l'`AttackOption` armée (selectedAttack / ancien mode maneuver/tentacle/trample). */
 function attackAffordance(get: Get, active: Combatant, target: Combatant): HoverTargeting {
   const battle = get().battle!;
-  // Pièce de siège SERVABLE (poste, MDG 12 / AA p.124) : un poste-porteur qu'on peut REJOINDRE (chef si non
+  // Pièce de siège SERVABLE (poste, MDG 12 / AA 10 p.124) : un poste-porteur qu'on peut REJOINDRE (chef si non
   // servi, renfort sinon) → réticule « Servir » ; le clic rejoint l'équipe (jamais une attaque futile sur l'engin
   // inerte). Prioritaire. SOURCE `serveTargetPoste` (= hotbar/IA). Le tooltip d'ÉQUIPE (IsoStage) montre le détail.
   if (target.postes?.length) {

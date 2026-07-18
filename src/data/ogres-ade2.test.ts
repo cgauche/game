@@ -1,5 +1,5 @@
 /**
- * #61 — Équipement des ogres (ADE II p.29-30) + fidélité des 4 PNJ ogres nommés (ADE II p.14/26).
+ * #61 — Équipement des ogres (ADE II 2 p.29-30) + fidélité des 4 PNJ ogres nommés (ADE II 1 p.14 / ADE II 2 p.26).
  * La table « Armes à distance des ogres » du .md étant mutilée par l'extraction, les valeurs ont été
  * reconstituées depuis le PDF (p.29) — ce test fige les stats imprimées.
  */
@@ -101,7 +101,7 @@ describe('#61 — munitions & armure des ogres (ADE II p.29)', () => {
   });
 });
 
-describe('#61 — les 4 PNJ ogres nommés (ADE II p.14/26)', () => {
+describe('#61 — les 4 PNJ ogres nommés (ADE II 1 p.14 / ADE II 2 p.26)', () => {
   it('Isrogdal : « Combat déloyal 2 » (l.227) porté par TalentRef.times', () => {
     const tal = findCreatureById('isrogdal-lempresse')!.talents!.find((t) => t.id === 'combat-deloyal') as { id: string; times?: number };
     expect(tal.times).toBe(2);

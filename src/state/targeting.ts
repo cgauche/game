@@ -28,7 +28,7 @@ export { spellAffinity } from './targetingModes';
 export function hoverTargeting(get: () => GameState, active: Combatant, target: Combatant): HoverTargeting {
   const battle = get().battle;
   if (!battle || battle.over || !active.pos || !target.pos) return { kind: 'none' };
-  // Un engin de siège INERTE (immune, RAW AA p.122-123) n'est JAMAIS une cible d'attaque/sort/soin : pas de
+  // Un engin de siège INERTE (immune, RAW AA 10 p.122-123) n'est JAMAIS une cible d'attaque/sort/soin : pas de
   // réticule — on vise son équipage (combattants ordinaires), pas la pièce. (Structures/véhicules NE sont pas `inert`.)
   if (target.inert) return { kind: 'none' };
   return currentTargetingMode(get).affordance?.(get, active, target) ?? { kind: 'none' };

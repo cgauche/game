@@ -1,5 +1,5 @@
 /**
- * Tarifs de SERVICE (LDB p.302 « Nourriture, boisson et hébergement » : chambre/écurie) ≠ objets
+ * Tarifs de SERVICE (LDB 66 p.302 « Nourriture, boisson et hébergement » : chambre/écurie) ≠ objets
  * possédables — trouvaille playtest « l'aubergiste vend des choses qui ne sont pas des objets ».
  * `TrappingData.service` exclut ces entrées du stock marchand ET de l'octroi en inventaire, tout en
  * les gardant comme SOURCE de prix (référencées par id) et visibles au Codex/Compendium.

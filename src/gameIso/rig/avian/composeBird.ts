@@ -27,10 +27,10 @@ export interface BirdProps {
   theropod?: boolean;
   /** longueur de la queue du théropode (×, défaut 1). */
   tailLen?: number;
-  /** Mode PIGEON VOYAGEUR (réf. art LDB p.318) : message roulé sanglé sur le dos,
+  /** Mode PIGEON VOYAGEUR (réf. art LDB 79 p.318) : message roulé sanglé sur le dos,
    *  clochette dorée pendue à une patte, gorge irisée vert/violet. */
   messenger?: boolean;
-  /** Mode RAPACE GÉANT (Grand Aigle, réf. art ZI p.65) : aigle en piqué, ailes déployées
+  /** Mode RAPACE GÉANT (Grand Aigle, réf. art ZI 6 p.65) : aigle en piqué, ailes déployées
    *  immenses en V à rémiges digitées, serres tendues en avant, bec crochu massif.
    *  Dessin dans `raptorParts.ts` ; mêmes 2 os (le dodelinement/coup de bec restent valides). */
   raptor?: boolean;
@@ -49,7 +49,7 @@ function legs(): string { // 2 pattes fines + doigts (couleur cuir)
     `<path d="M3 9 L4 26 M4 26 l-3 2 M4 26 l-1 4 M4 26 l3 3" stroke="@cuir" stroke-width="1.6" fill="none" stroke-linecap="round"/>` +
     `</g>`;
 }
-// --- PIGEON VOYAGEUR (accessoires, réf. art LDB p.318) ---------------------
+// --- PIGEON VOYAGEUR (accessoires, réf. art LDB 79 p.318) ---------------------
 const MSG = { paper: '#d9cda6', paperO: '#8a7a4e', gold: '#c9a23a', goldO: '#7a5c1a' };
 /** Message roulé sanglé sur le dos (profil) : cylindre de parchemin, bout en spirale, sangle dorée. */
 function scrollProfile(): string {

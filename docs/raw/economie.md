@@ -4,7 +4,7 @@
 > d'agent (répondre + auditer le code sans rouvrir les livres). Chaque règle cite `LIVRE NN l.X-Y`
 > (last-recours = la source). Abréviations : [`sources.md`](sources.md). Index : [`00-index.md`](00-index.md).
 >
-> Scope : monnaie / achat-vente / Disponibilité / Marchandage / Évaluation / Fabrication / commerce de cargaison (MSRC ch.11).
+> Scope : monnaie / achat-vente / Disponibilité / Marchandage / Évaluation / Fabrication / commerce de cargaison (MSRC 11).
 > Renvoie à **Équipement** pour les prix individuels des objets (armes, armures, trappings — non retranscrits ici).
 > ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
@@ -367,12 +367,12 @@ Test de **Ragot Complexe (−10)** dans une auberge → lancer d100 sur l'Index 
 
 ## Voir aussi
 
-- **Équipement** (`docs/raw/` à venir) — prix individuels des armes, armures, trappings (LDB ch.62–63 + AA)
+- **Équipement** (`docs/raw/` à venir) — prix individuels des armes, armures, trappings (LDB 62–63 + AA)
 - **Compétences** (`competences.md`) — fiches Évaluation, Marchandage, Ragot, Métier
 - **Activités** (LDB p.196/199) — *Artisanat* et *Passer Commande* pour les objets Exotiques
-- **Statut social** (LDB ch.8) — simplification des achats par Statut
+- **Statut social** (LDB 8) — simplification des achats par Statut
 - **Voyage** (`deplacement.md`) — coûts diligence/barge, frais d'écluse (MSRC Compagnon ch.10)
-- **Fabrication magique** (ADE II ch.4) — règles de création d'artefacts magiques (hors scope économie commune ; voir ADE II directement)
+- **Fabrication magique** (ADE II 4) — règles de création d'artefacts magiques (hors scope économie commune ; voir ADE II directement)
 
 ---
 

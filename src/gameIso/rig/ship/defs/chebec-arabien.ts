@@ -2,7 +2,7 @@
  * CHÉBEC ARABIEN (MDG, ~40 m, mixte) — corsaire d'Arabie : coque LONGUE et basse à tonture presque
  * plate (jamais un croissant), étrave en quête prolongée d'une GUIBRE pleine (éperon habillé),
  * VOÛTE arrière en surplomb à grille + balustrade de dunette intégrée, sabords d'avirons,
- * trois mâts réels en quête à voiles latines. Réf planche MDG p.098/114 (trait Loup impérial).
+ * trois mâts réels en quête à voiles latines. Réf planche MDG 12 p.098 / MDG 13 p.114 (trait Loup impérial).
  */
 import type { ShipArtDef } from '../artkit';
 import { gunports, lateenSail, oarBank, pennant, rudder, spar, stay } from '../artkit';

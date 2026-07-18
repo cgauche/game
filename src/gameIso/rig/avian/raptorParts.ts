@@ -1,5 +1,5 @@
 /**
- * Parts RAPACE GÉANT (Grand Aigle, artwork ZI p.65 : aigle en PIQUÉ, ailes déployées immenses
+ * Parts RAPACE GÉANT (Grand Aigle, artwork ZI 6 p.65 : aigle en PIQUÉ, ailes déployées immenses
  * en V, serres tendues en avant, bec crochu massif ouvert). Mode du gabarit aviaire (2 os
  * corps/tete, machinerie composeBird) — seul le dessin change : corps en diagonale de piqué,
  * deux ailes levées à rémiges digitées (aile lointaine claire @cheveux, aile proche brun très

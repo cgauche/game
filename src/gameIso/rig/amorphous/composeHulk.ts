@@ -2,12 +2,12 @@
  * Gabarit AMORPHE / HULK, trois formes par props :
  * - `blob` (défaut — oozes, golems de boue) : masse BOURSOUFLÉE irrégulière qui tremblote,
  *   visage à plusieurs yeux asymétriques + gueule, deux moignons de bras, bas qui dégouline.
- * - `gel` (Amibe, fidèle à l'artwork ZI p.48) : masse GÉLATINEUSE TRANSLUCIDE dressée (plus haute
+ * - `gel` (Amibe, fidèle à l'artwork ZI 5 p.48) : masse GÉLATINEUSE TRANSLUCIDE dressée (plus haute
  *   que large), fill semi-transparent gris-turquoise à fine membrane rosâtre — SANS visage ; son
  *   identité = les proies ENGLOUTIES visibles par transparence (squelette : crâne, cage
  *   thoracique, os épars ; épée, anneau, débris), bulles internes, socle de vase sombre opaque
  *   où la digestion s'achève + gouttelette satellite.
- * - `brute` (Bête des marais, fidèle à l'artwork LDB p.320) : colosse VOÛTÉ de mousse et de
+ * - `brute` (Bête des marais, fidèle à l'artwork LDB 79 p.320) : colosse VOÛTÉ de mousse et de
  *   racines, silhouette humanoïde asymétrique — épaules énormes, tête basse fondue dans la masse
  *   (masque végétal à lueurs pâles + alvéoles), bras-troncs évasés dont les doigts-racines
  *   touchent terre, PAS de jambes : le bas fond en jupe de vase qui dégouline dans une flaque.

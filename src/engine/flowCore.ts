@@ -156,7 +156,7 @@ export type Condition =
    *  meilleur Avantage ennemi engagé), SIGNÉE et non bornée, comparée par `op` à `value`. C'est l'INVERSE
    *  non-clampé de `engagedAdvantageGap` (qui mesure de combien un ennemi DÉPASSE le porteur, ≥ 0) : `> 0`
    *  = le porteur a un Avantage STRICTEMENT supérieur à TOUS ses adversaires engagés (Absorption « si la
-   *  créature a un Avantage plus élevé que tous les adversaires engagés », EDO p.147). Hors combat / sans
+   *  créature a un Avantage plus élevé que tous les adversaires engagés », EDO 11 p.147). Hors combat / sans
    *  foe engagé = 0. */
   | { kind: 'engagedAdvantageLead'; op: CompareOp; value: number }
   /** Y a-t-il un adversaire VIVANT dans la Ligne de Vue de `target` (`ctx.foeInLoS`) ? Géométrie d'arène
@@ -488,7 +488,7 @@ export type EffectTrigger =
  *  `{ near: 'victim', radiusMeters: 2 }`). Le centre lui-même et le porteur sont exclus.
  *  `{ pick: 'engaged', ... }` : SÉLECTIONNE jusqu'à `max` adversaires Engagés non encore empoignés, les
  *  plus PROCHES d'abord, de Taille ≤ la sienne si `sizeAtMost:'self'` — la capacité restante tient compte
- *  des `grapplingWith` déjà tenus (engloutir « un adversaire à la fois », Absorption EDO p.147). Réutilisable
+ *  des `grapplingWith` déjà tenus (engloutir « un adversaire à la fois », Absorption EDO 11 p.147). Réutilisable
  *  par tout effet « happe le plus proche petit ennemi engagé ». */
 export type EffectTargeting = 'self' | 'victim' | 'engaged' | 'grappled'
   | { near: 'victim' | 'self'; radiusMeters: number }

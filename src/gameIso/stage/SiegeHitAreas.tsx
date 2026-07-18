@@ -1,5 +1,5 @@
 /**
- * Structures de siège (AA p.120) : la fortification d'arête est une CIBLE de combat. Hit-area
+ * Structures de siège (AA 10 p.120) : la fortification d'arête est une CIBLE de combat. Hit-area
  * TRANSPARENTE posée sur l'arête, portant le `data-cid` du Combattant-structure → survol (réticule de
  * visée) + clic-attaque (`battleClickEntity`, comme un token ; `stopPropagation` court-circuite le
  * clic-sol du SVG, comme l'overlay porte). Présente tant que la structure TIENT (Combattant présent)

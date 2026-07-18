@@ -1,5 +1,5 @@
 /**
- * Trait de créature ABSORPTION (EDO p.147) — mécanique 100 % DONNÉES (traits.json `absorption.effects`),
+ * Trait de créature ABSORPTION (EDO 11 p.147) — mécanique 100 % DONNÉES (traits.json `absorption.effects`),
  * dispatchée par le système générique d'effets déclenchés (`fireTriggers`). Aucune branche par-nom dans le
  * moteur : tout passe par les extensions GÉNÉRALES de vocabulaire (Condition `engagedAdvantageLead`,
  * Formula `{woundsDealt}`, EffectTargeting `grappled` / `{pick}`).

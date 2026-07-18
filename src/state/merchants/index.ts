@@ -11,7 +11,7 @@ export const MERCHANTS: Record<string, MerchantArchetypeDef> = Object.fromEntrie
 );
 
 /** Garde CHOKE-POINT (échec fail-fast au chargement du module, pas un grep) : un `curated` qui
- *  pointe un tarif de SERVICE (LDB p.302) le forcerait en stock (`curated` ignore la Disponibilité
+ *  pointe un tarif de SERVICE (LDB 66 p.302) le forcerait en stock (`curated` ignore la Disponibilité
  *  ET n'entre pas dans le filtre `!t.service` de `computeFreshStockLines`) — contradiction de donnée. */
 for (const arch of MERCHANT_ARCHETYPES) {
   for (const id of arch.curated ?? []) {

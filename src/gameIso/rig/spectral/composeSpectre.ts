@@ -25,7 +25,7 @@ export interface SpectreProps {
   cheveux?: boolean;
   /** Mains squelettiques aux longs doigts-griffes émergeant des manches (@cuir) — remplace la pointe fondue. */
   griffes?: boolean;
-  /** Bas du linceul en volutes de BRUME (boucles arrondies + nappes flottantes détachées, LDB p.330
+  /** Bas du linceul en volutes de BRUME (boucles arrondies + nappes flottantes détachées, LDB 82 p.330
    *  fantôme) — remplace la frange en langues pointues rigides. Opt-in : défaut = art existant. */
   brume?: boolean;
   /** Arme brandie — `epee` : bras D levé (banshee) ; `faux` : faux de faucheuse tenue à deux
@@ -87,7 +87,7 @@ function head(p: SpectreProps, view: View): string {
   if (p.hood) { // capuche : voile sombre cerclé d'un liseré rivé (@cuir) + cavité noire ; avec
     // face:'crane', un crâne osseux (@cuir) émerge de l'ombre — sinon seul le regard luisant.
     if (prof) { // de profil : bec de capuche LARGEMENT ouvert vers l'avant (+x) — le crâne s'y
-      // lit ENTIER en 3/4 (deux orbites, mâchoire dentée), pas en tranche (LDB p.331)
+      // lit ENTIER en 3/4 (deux orbites, mâchoire dentée), pas en tranche (LDB 82 p.331)
       const inner = p.face === 'crane'
         ? `<path d="M-1.6 1.6 Q-2.8 -6.4 2.8 -7 Q8.2 -6.2 7.6 1.6 Q6.7 4.2 4.8 4.7 L4.8 6.6 Q3.2 8 1.7 6.6 L1.7 4.7 Q-0.7 4.3 -1.6 1.6 Z" fill="@cuir" stroke="#0a0e14" stroke-width="0.4"/>` +
           `<ellipse cx="0.8" cy="-1.4" rx="1.3" ry="1.8" fill="#0a0e14"/><ellipse cx="5" cy="-1.4" rx="1.7" ry="2" fill="#0a0e14"/>` +

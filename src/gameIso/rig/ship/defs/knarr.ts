@@ -2,7 +2,7 @@
  * KNARR (MDG, ~15 m, mixte) — cargo norse à clins : coque PROFONDE et ventrue (vrai franc-bord,
  * pas un croissant), étrave et étambot en timbres montants terminés en pointe, virures à clins
  * suivant la tonture, godille de GOUVERNE LATÉRALE sur la hanche, mât central-avant à voile
- * carrée frappée d'une croix, fret bâché amarré au milieu. Réf : planche MDG p.098 (en tête).
+ * carrée frappée d'une croix, fret bâché amarré au milieu. Réf : planche MDG 12 p.098 (en tête).
  */
 import type { ShipArtDef } from '../artkit';
 import { oarBank, pennant, spar, squareSail, stay } from '../artkit';

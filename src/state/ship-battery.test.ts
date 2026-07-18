@@ -25,11 +25,11 @@ const target = (x: number, y: number): Combatant =>
 const artilleur = () => mk({ dexterite: 80 }, [{ skillId: 'projectiles', advances: 0, spec: 'poudre-noire' }]); // valeur 80
 
 /**
- * Tir de batterie (MDG ch.14 l.126-130) : « le total de DR s'applique à toutes les armes à feu tournées vers
+ * Tir de batterie (MDG 14 l.126-130) : « le total de DR s'applique à toutes les armes à feu tournées vers
  * l'ennemi ». Le résolveur PUR détermine la bordée qui porte + ses pièces + le DR PARTAGÉ (Test d'équipage
  * Artilleur essentiel). L'application par pièce (Dégâts + DR) est le suivi (flux/modale).
  */
-describe('resolveBattery — lâcher une bordée (DR partagé, MDG ch.14)', () => {
+describe('resolveBattery — lâcher une bordée (DR partagé, MDG 14)', () => {
   it('cap Nord, cible plein EST → bordée TRIBORD ; seules SES pièces tirent ; DR = total du Test d’équipage', () => {
     const h = hull([poste('tribord', 't1'), poste('tribord', 't2'), poste('babord', 'b1')]);
     const plan = resolveBattery(h, target(9, 5), 'N', [{ crew: artilleur(), roleId: 'artilleur' }], 80, seq([30]))!;
@@ -74,7 +74,7 @@ const enemyHull = (pos = { x: 9, y: 5 }): Combatant =>
     characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 40, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
     wounds: { current: 90, max: 90, base: 90 }, advantage: 0, conditions: [], weapons: [], armour: { corps: 0 }, skills: [], talents: [], crewIds: [] }) as unknown as Combatant;
 
-describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l.128)', () => {
+describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG 14 l.128)', () => {
   it('battleShipBattery ouvre le Test des Artilleurs (bord auto) ; roll ; Feu ! → la coque encaisse', () => {
     seedBattleRng(7);
     useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull()], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
@@ -97,7 +97,7 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l
     expect(useGame.getState().pendingShipBattery).toBeNull();
   });
 
-  it('Recharge : une pièce qui a tiré est DÉCHARGÉE (pas de 2e bordée avant rechargement, MDG ch.12 / LDB 62)', () => {
+  it('Recharge : une pièce qui a tiré est DÉCHARGÉE (pas de 2e bordée avant rechargement, MDG 12 / LDB 62)', () => {
     seedBattleRng(7);
     useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), enemyHull()], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never });
     useGame.getState().battleShipBattery('ship', 'target');
@@ -117,7 +117,7 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG ch.14 l
     useGame.getState().shipBatteryRoll('gunner');
     useGame.getState().shipBatteryConfirm();
     expect(useGame.getState().battle!.crewActed?.['ship']).toContain('gunner'); // l'Artilleur a agi ce Round
-    // Parallélisme (MDG ch.14 l.37) : la bordée est une tâche d'équipage, elle NE consomme PAS le tour du navire
+    // Parallélisme (MDG 14 l.37) : la bordée est une tâche d'équipage, elle NE consomme PAS le tour du navire
     // (≠ `acted`) → manœuvre + bordée(s) + recharge coexistent le même Round, bornées par l'équipage (crewActed).
     expect(useGame.getState().battle!.acted).toBe(false);
   });
@@ -151,7 +151,7 @@ const setupNaval = (poste: ShipPoste, hull: Combatant, extra: Combatant[] = []) 
   useGame.getState().shipBatteryConfirm();
 };
 
-describe('bordée à munition à AIRE — balaie l’équipage exposé du navire cible (MDG ch.13 × ch.12)', () => {
+describe('bordée à munition à AIRE — balaie l’équipage exposé du navire cible (MDG 13 × ch.12)', () => {
   it('Tir de zone → la coque encaisse ET jusqu’à Indice marins exposés sont touchés', () => {
     const crew = [sailor('m1'), sailor('m2'), sailor('m3')];
     setupNaval(aireePoste([{ id: 'tir-de-zone', value: 2 }]), crewedHull(['m1', 'm2', 'm3']), crew);
@@ -188,7 +188,7 @@ describe('bordée à munition à AIRE — balaie l’équipage exposé du navire
   });
 });
 
-describe('rollCrewRole — cumul de rôles (Manque de bras, MDG ch.14 l.53)', () => {
+describe('rollCrewRole — cumul de rôles (Manque de bras, MDG 14 l.53)', () => {
   const cap = (): Combatant =>
     ({ id: 'cap', name: 'Cap', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       skills: [{ skillId: 'commandement', characteristic: 'sociabilite', advances: 30 }], conditions: [], talents: [] }) as unknown as Combatant;

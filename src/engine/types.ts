@@ -71,8 +71,8 @@ export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'ara
  *  le moteur PUR de l'état (cf. `Combatant.structureEdge`). */
 export type WallEdgeSide = 'N' | 'E' | '\\' | '/';
 
-/** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB p.312).
- *  `vehicule` (véhicule/embarcation à coque — EDOC ch.7, MoR ch.5, MDG ch.13) : ses localisations
+/** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB 76 p.312).
+ *  `vehicule` (véhicule/embarcation à coque — EDOC 7, MoR ch.5, MDG 13) : ses localisations
  *  (coque/gréement/roues/avirons…) sont PILOTÉES PAR DONNÉES (table par véhicule, branchée plus tard),
  *  donc aucune étiquette en dur ici. */
 export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, string>>> = {
@@ -82,9 +82,9 @@ export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation
   serpent: {}, // n'expose que Tête / Corps
   araignee: { jambeD: t('hitloc.araignee.jambeD'), corps: t('hitloc.araignee.corps') }, // n'expose que Tête / Pattes / Abdomen
   vehicule: {}, // localisations data-driven (coque/gréement/…)
-  structure: {}, // structure de siège (porte/mur/tour, ADE II ch.08) — pas de Tableau de Localisation propre
+  structure: {}, // structure de siège (porte/mur/tour, ADE II 8) — pas de Tableau de Localisation propre
   engin: {}, // engin de siège (affût servi, AA p.122-123) — INERTE, jamais de Localisation (isInanimate)
-  army: {}, // armée abstraite (Combat de masse, ADE II ch.08) : porte-Puissance inerte (wounds), jamais rendue ni localisée
+  army: {}, // armée abstraite (Combat de masse, ADE II 8) : porte-Puissance inerte (wounds), jamais rendue ni localisée
 };
 
 /** Disponibilité d'un objet/équipement (LDB 59 « Disponibilité ») — FOYER UNIQUE du concept :
@@ -93,7 +93,7 @@ export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation
 export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
 
 /** Propulsion d'un véhicule/embarcation — pilote la table de localisation des dégâts (terre : roues/
- *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC ch.7 (terrestre), MoR ch.5 (fluvial), MDG ch.13 (maritime). */
+ *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC 7 (terrestre), MoR ch.5 (fluvial), MDG 13 (maritime). */
 export type Propulsion = 'terrestre' | 'fluvial' | 'maritime';
 
 /** Classe de voyage payant d'un véhicule : prix RAW en sous (PA) par km ET par passager (LDB l.207-219). */
@@ -143,13 +143,13 @@ export interface VehicleData {
   purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
   /** Facette VOYAGE (passage payant, LDB l.207-219). `movement` = Déplacement du véhicule (km/h).
    *  `medium` = milieu du TRAJET PAYÉ — INDÉPENDANT de `hull.propulsion` (un véhicule peut être
-   *  bi-milieu : la Barge navigue le fleuve, LDB p.306, tout en figurant à la table navale MDG ch.12
+   *  bi-milieu : la Barge navigue le fleuve, LDB 70 p.306, tout en figurant à la table navale MDG 12
    *  avec `propulsion:'maritime'` — jamais l'un dérivé de l'autre) ; absent = terrestre implicite.
    *  `draft` = ATTELAGE (bêtes qui tirent, réf `montures.json`) — requis pour l'allure forcée EDOC 07
    *  l.229 (« pas de course ») ; `count` = nombre de bêtes (Tests de Résistance sur échec du conducteur). */
   travel?: { movement: number; medium?: Propulsion; draft?: { montureId: string; count: number }; classes: VehicleTravelClass[] };
   /** Facette COQUE (entité à PV). `char.endurance` = Endurance, `char.B` = Blessures. `bodyShape` = 'vehicule'.
-   *  `rig` = gréement (avirons/voile/mixte) → colonne de Localisation des Dégâts (MDG ch.13).
+   *  `rig` = gréement (avirons/voile/mixte) → colonne de Localisation des Dégâts (MDG 13).
    *  `locationTable`/`criticalTable` = réfs de tables data-driven (branchées aux dalles fluvial/maritime). */
   hull?: {
     char: { endurance: number; B: number };
@@ -160,7 +160,7 @@ export interface VehicleData {
     locationTable?: string | null;
     criticalTable?: string | null;
   };
-  /** Facette NAVIRE (profil naval MDG ch.12) : caractéristiques de navigation/équipage du vaisseau.
+  /** Facette NAVIRE (profil naval MDG 12) : caractéristiques de navigation/équipage du vaisseau.
    *  `manoeuvre` = modificateur de DR (Man) ; `sail`/`oars` = Mouvement (M) + équipage minimum (É) ;
    *  `lengthM` = Taille (longueur, m) ; `capacity` = Contenance ; `traits` = Traits de construction (réfs par id). */
   ship?: {
@@ -182,7 +182,7 @@ export interface VehicleData {
 }
 
 /**
- * Structure DESTRUCTIBLE de siège (ADE II ch.08 « Le théâtre de la guerre », table « Barricades et
+ * Structure DESTRUCTIBLE de siège (ADE II 8 « Le théâtre de la guerre », table « Barricades et
  * protections typiques ») — porte / mur / tour visé par les armes de siège. Même patron type-créature à
  * PV que la facette `hull` de `VehicleData` : la structure devient un `Combatant` qui encaisse les Dégâts
  * via la langue UNIQUE `GameOp`/`woundsFromHit` (cf. `engine/structures.ts`). RAW dit lui-même que
@@ -192,7 +192,7 @@ export interface StructureData {
   /** id STABLE (slug) — clé d'instance/lookup. */
   id: string;
   label: string;
-  /** Catégorie physique (ADE II ch.08) : `porte` est seule visable par un Bélier (`ram`) ; `mur` couvre
+  /** Catégorie physique (ADE II 8) : `porte` est seule visable par un Bélier (`ram`) ; `mur` couvre
    *  murs/tours. Découplée des Atouts (une porte peut être Résistante OU Impénétrable). */
   kind: 'porte' | 'mur';
   /** RENDU (pas règle) : `true` = fortification de siège (rempart de PIERRE crénelé + ferré, brèche =
@@ -214,7 +214,7 @@ export interface StructureData {
   /** Pénalité de Couvert par défaut pour un assaillant qui tire sur une cible réfugiée sur/derrière la
    *  Structure (AA 10 l.28-52) — `undefined` = N/A (aucun couvert, ex. Herse/Solide porte en bois). */
   couvertPenalty?: Difficulty;
-  /** Provenance RAW (ADE II ch.08 ou AA ch.10). */
+  /** Provenance RAW (ADE II 8 ou AA 10). */
   source: { book: string; chapter: number };
   desc?: string;
 }
@@ -244,7 +244,7 @@ export interface HeroDetails {
   /** Ambitions à court / long terme (LDB 05 l.710-717). */
   ambitionShort?: string;
   ambitionLong?: string;
-  /** Astrologie (ADE II ch.03, optionnel) — flavor pur : signe ascendant + demeures célestes
+  /** Astrologie (ADE II 3, optionnel) — flavor pur : signe ascendant + demeures célestes
    *  (le signe mécanique du Personnage vit sur `Combatant.star`). `house` = id de `celestialHouses` ;
    *  `sign` = libellé lisible (flavor figé sur la fiche, aucune mécanique n'y référence un signe). */
   ascendant?: string;
@@ -281,7 +281,7 @@ export type AmmoRangeMod = { mult: number } | { add: number };
 
 /** Bande de portée d'un tir (table des Difficultés de Combat, LDB 14) — id STABLE, du plus proche au plus
  *  loin. SOURCE des seuils = `RANGE_BANDS` (engine/combat). Réutilisé par `Weapon.minRangeBand` (PORTÉE
- *  MINIMALE d'une machine de guerre, ADE II ch.08 l.251/253). Le libellé affiché se résout via `rangeBandName`. */
+ *  MINIMALE d'une machine de guerre, ADE II 8 l.251/253). Le libellé affiché se résout via `rangeBandName`. */
 export type RangeBandId = 'bout-portant' | 'courte' | 'moyenne' | 'longue' | 'extreme';
 
 /** Atout/Défaut d'arme ou d'armure PORTÉ par un objet/arme au runtime. Forme STRUCTURÉE (id stable du
@@ -295,7 +295,7 @@ export interface QualityInstance {
   value?: number;
 }
 
-/** Côté de montage d'une pièce d'artillerie sur un navire (MDG ch.12-13), relatif au cap du bateau —
+/** Côté de montage d'une pièce d'artillerie sur un navire (MDG 12-13), relatif au cap du bateau —
  *  pilote l'arc de tir. La LOGIQUE d'arc vit en `state/fireArc.ts` (elle dépend du cap Dir8) ; ce TYPE pur
  *  vit ici pour que `Weapon`/`ItemInstance` le portent sans dépendance engine→state. */
 export type FireArc = 'proue' | 'tribord' | 'poupe' | 'babord';
@@ -314,7 +314,7 @@ export interface Weapon {
    *  Spécialisation de combat (`combatValue`), la famille de munition (`ammoFamily`), le rendu (rig). */
   subType?: string;
   /** Groupe de Projectiles qui OPÈRE une arme de siège (`WeaponGroupData.id` : arbalete/catapulte/ingenierie/
-   *  poudre-noire, AA p.122 l.3848-3863) quand `subType` porte la catégorie de catalogue (« armes-de-siege »).
+   *  poudre-noire, AA 10 p.122 l.3848-3863) quand `subType` porte la catégorie de catalogue (« armes-de-siege »).
    *  Résolu par `acceptableSpecs` (`weaponGroup ?? subType`) → Spé de tir du chef ET décompte d'équipage
    *  (servants à la bonne Projectiles, l.3900). Absent = `subType` EST le Groupe (armes normales). */
   weaponGroup?: string;
@@ -322,10 +322,10 @@ export interface Weapon {
    *  bonne famille de munition (pierrier/canon/baliste/mortier) là où `subType` seul ne le fait pas. Lu par
    *  `ammoFamilyLabel` pour le hint joueur. */
   defaultAmmo?: string;
-  /** Pièce d'artillerie « relativement simple » (la baliste, AA p.122 l.3818) : tirée par UN SEUL servant
+  /** Pièce d'artillerie « relativement simple » (la baliste, AA 10 p.122 l.3818) : tirée par UN SEUL servant
    *  valide → l'arme perd TOUS ses Atouts (conserve ses Défauts). Lu par `crewedFireWeapon`. Absent = non. */
   soloSimple?: boolean;
-  /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA p.122-123) : peut viser une CASE au sol
+  /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA 10 p.122-123) : peut viser une CASE au sol
    *  (pas forcément un combattant) ; son Atout Explosion/Tir de zone frappe le rayon autour de la case. Lu
    *  par `availableAttacks` (ciblage de case vs combattant). Absent = tir DIRECT (canon, baliste, pierrier). */
   indirect?: boolean;
@@ -361,7 +361,7 @@ export interface Weapon {
   /** Attaque NATURELLE de corps (morsure/griffes/cornes…) : aucune arme tenue n'est dessinée (le rig
    *  rend le membre). Stampé au spawn depuis `TraitInstance.natural` / la capacité `naturalWeapon`. */
   natural?: boolean;
-  /** Taille PRÉVUE pour l'arme (ADE II ch.02 l.706-710) — propagée depuis `ItemInstance.sizeFor`. Différente
+  /** Taille PRÉVUE pour l'arme (ADE II 2 l.706-710) — propagée depuis `ItemInstance.sizeFor`. Différente
    *  de la Taille du porteur → −20 à tous les Tests avec cette arme (`attackModifiers`). */
   sizeFor?: import('./size').SizeCategory;
   /** Trait « Arme +N » générique SANS objet de catalogue identifié (`creatureEquip.weaponFromTrait`) :
@@ -370,10 +370,10 @@ export interface Weapon {
   sizeless?: boolean;
   /** Effets « à la touche » : repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
    *  invoquée) par `recomputeLoadout`, OU portés en DONNÉE par le catalogue (`TrappingData.onHitEffects` —
-   *  Canon à flammes nain « 2 + DR En flammes à chaque cible affectée », ADE II ch.08 l.243) → lus par
+   *  Canon à flammes nain « 2 + DR En flammes à chaque cible affectée », ADE II 8 l.243) → lus par
    *  `effectsOf` (state/triggeredEffects), dispatchés à la touche (primaire ET zone d'Explosion). */
   onHitEffects?: import('./flowCore').TriggeredEffect[];
-  /** PORTÉE MINIMALE : bande de portée la plus BASSE à laquelle l'arme peut tirer (ADE II ch.08 l.251/253).
+  /** PORTÉE MINIMALE : bande de portée la plus BASSE à laquelle l'arme peut tirer (ADE II 8 l.251/253).
    *  Une cible plus proche que cette bande REFUSE le tir (`firedAttackBlock`, `belowMinRangeBand`), ce n'est
    *  PAS un malus. Machines de siège à distance = `'courte'` (pas de Bout Portant, l.253) ; trébuchet/mortier
    *  = `'moyenne'` (« distance inférieure à leur Portée Courte » interdite, l.251). Absent = aucune minimale. */
@@ -387,7 +387,7 @@ export interface Weapon {
    *  cap → restreint l'arc de tir (lu par la validation de visée via `inFireArc`). Absent = arme non montée. */
   mountSide?: FireArc;
   /** Pénalité PLATE au Test de tir bakée par le sous-effectif d'une Arme d'équipe quand le Défaut ajouté
-   *  était DÉJÀ porté (MDG ch.12 l.460 : −10/Défaut redoublé). Posée par `crewedFireWeapon`, ajoutée aux
+   *  était DÉJÀ porté (MDG 12 l.460 : −10/Défaut redoublé). Posée par `crewedFireWeapon`, ajoutée aux
    *  modificateurs de touche par `attackModifiers` (comme Précise, mais négative). Absent = aucune. */
   crewedTohitPenalty?: number;
   /** Gantelet verrouillé (AA folio 94) : Round où le porteur a évité de LÂCHER cette arme (anti-lâcher).
@@ -395,7 +395,7 @@ export interface Weapon {
    *  tomber l'arme ; au-delà, la protection se réarme. Marqueur transitoire posé/lu par `applyBladeTrap`. */
   gauntletSavedRound?: number;
   /** Caractéristique de résolution ALTERNATIVE du Test d'attaque, à la place de CC (mêlée)/CT (distance)
-   *  par défaut (ADE II ch.08 l.233 : « Toutes les machines de guerre... utilisent... Projectiles [Machine
+   *  par défaut (ADE II 8 l.233 : « Toutes les machines de guerre... utilisent... Projectiles [Machine
    *  de guerre], à l'exception du bélier, qui utilise Force »). DÉRIVÉ (jamais un id en dur) de la SEULE arme
    *  de mêlée du Groupe `machine-de-guerre` (`warMachineResolveChar`, engine/items.ts) — absent = résolution
    *  normale par `kind` (`combatValue`). Runtime-only : aucun champ JSON correspondant (schéma figé). */
@@ -453,7 +453,7 @@ export interface ConditionInstance {
   entangleOnFail?: boolean;
   /** Dégâts FIGÉS ignorant l'armure, infligés à CHAQUE tentative de libération (réussie ou ratée) — Filets
    *  BARBELÉS (Zoo Impérial p.29 : « infligent automatiquement des Dégâts qui ignorent l'armure à toute
-   *  cible qui se débat »). Posés par l'op `condition.struggleDamage`. ZI p.29 ne chiffre pas ce montant :
+   *  cible qui se débat »). Posés par l'op `condition.struggleDamage`. ZI 2 p.29 ne chiffre pas ce montant :
    *  le moteur ne fixe AUCUNE valeur — c'est un champ de DONNÉE éditable (qualité `filet-barbele`,
    *  `qualities.json`), à régler par qui autorise le contenu, jamais codé en dur ici. */
   struggleDamage?: number;
@@ -830,7 +830,7 @@ export interface ItemInstance {
   pa?: number; // armures : Points d'Armure
   locs?: HitLocation[]; // armures : localisations couvertes
   enc: number; // encombrement
-  /** Taille PRÉVUE pour l'objet (ADE II ch.02 l.706-710 : « la version ogre de la plupart des possessions
+  /** Taille PRÉVUE pour l'objet (ADE II 2 l.706-710 : « la version ogre de la plupart des possessions
    *  vaut deux fois l'Encombrement classique ») — copiée du catalogue (`TrappingData.sizeFor`), propagée
    *  à `Weapon.sizeFor`. Absent = taille Moyenne (le standard implicite, `effectiveSize`). Plus grande que
    *  Moyenne → Enc effectif ×2 (`totalEncumbrance`) ; manié/porté par un combattant d'une AUTRE taille →
@@ -858,10 +858,10 @@ export interface ItemInstance {
   /** Pièce à TIR INDIRECT (mortier/catapulte, cf. `Weapon.indirect`) — propagé à l'arme dérivée. */
   indirect?: boolean;
   /** Effets « à la touche » portés en DONNÉE par le catalogue (`TrappingData.onHitEffects`) — propagés à
-   *  l'arme dérivée (`Weapon.onHitEffects`). Ex. Canon à flammes nain (ADE II ch.08 l.243). */
+   *  l'arme dérivée (`Weapon.onHitEffects`). Ex. Canon à flammes nain (ADE II 8 l.243). */
   onHitEffects?: import('./flowCore').TriggeredEffect[];
   /** PORTÉE MINIMALE de tir (bande, cf. `Weapon.minRangeBand`) — propagée à l'arme dérivée. Machines de
-   *  siège à distance (ADE II ch.08 l.251/253). */
+   *  siège à distance (ADE II 8 l.251/253). */
   minRangeBand?: RangeBandId;
   /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art (rig), ≠ libellé.
    *  Copié du catalogue (`TrappingData.shape`) par `itemFromTrappingById` ; propagé à `Weapon.shape`. */
@@ -892,7 +892,7 @@ export interface ItemInstance {
   /** Jour de jeu de la dernière Évaluation RATÉE : pas de re-tentative le même jour (anti-spam —
    *  LDB 12 l.120 : seul un résultat marginal offre un nouvel essai ; ADE II : re-tenter coûte du temps). */
   appraiseTriedDay?: number;
-  /** FAUSSES Particularités soupçonnées (ADE II ch.4 : échec Impressionnant/Stupéfiant de
+  /** FAUSSES Particularités soupçonnées (ADE II 4 : échec Impressionnant/Stupéfiant de
    *  l'identification — « soupçonne que l'objet possède une Particularité qu'il n'a pas
    *  réellement »). Affichées « soupçonné : … » tant que l'objet n'est pas identifié ; purgées
    *  par une vraie révélation. AUCUN effet mécanique. */
@@ -966,14 +966,14 @@ export interface AuthoredShipPoste {
   cover?: DeckCoverClass;
   /** Équipage servant la pièce ; `crewIds[0]` = chef de pièce (nominé pour le Test, Arme d'équipe). */
   crewIds?: string[];
-  /** Recharge (MDG ch.12 / LDB 62 l.333) — Test ÉTENDU de Projectiles, PAS d'auto-rechargement passif.
+  /** Recharge (MDG 12 / LDB 62 l.333) — Test ÉTENDU de Projectiles, PAS d'auto-rechargement passif.
    *  `loaded === false` = la pièce a tiré et reste muette tant que l'équipage n'a pas complété le Test
    *  (absent / `true` = prête à tirer). */
   loaded?: boolean;
   /** DR cumulés du Test étendu de recharge (vers `reloadDRTarget` = Recharge N, ×2 si sous-effectif).
    *  Remis à 0 si la recharge est INTERROMPUE (servants réassignés avant la fin, LDB 62 l.335). */
   reloadProgress?: number;
-  /** STOCK DE MUNITIONS du poste (MDG ch.12 l.410-424, « Munitions pour pièces d'artillerie ») — le coffre
+  /** STOCK DE MUNITIONS du poste (MDG 12 l.410-424, « Munitions pour pièces d'artillerie ») — le coffre
    *  à boulets DE LA PIÈCE (boulet/mitraille pour un canon, carreau pour une baliste, bombe pour un
    *  mortier…), des `ItemInstance` `kind:'ammo'` avec leur `qty`. AUTHORÉ avec le poste et PERSISTANT
    *  (la coque vit dans la scène/sauvegarde). Fondu au pool du chef par `compatibleAmmo` (source unique) ;
@@ -1061,13 +1061,13 @@ export interface Combatant {
   /** `id` STABLE de la créature du bestiaire dont ce combattant est une instance (posé au spawn) —
    *  clé de résolution du rig/apparence (« plus de label » : on ne re-résout plus par `name`). */
   creatureId?: string;
-  /** Coque/navire (`bodyShape:'vehicule'`) : `id`s des Combattants d'ÉQUIPAGE exposés à bord (MDG ch.14).
+  /** Coque/navire (`bodyShape:'vehicule'`) : `id`s des Combattants d'ÉQUIPAGE exposés à bord (MDG 14).
    *  Un Critique « Équipage » et les Éclats reviennent à ces marins (Critiques de personnage / Dégâts). */
   crewIds?: string[];
-  /** Pièces d'artillerie MONTÉES sur ce Combattant-coque (source de vérité, MDG ch.12-13). Au spawn, chaque
+  /** Pièces d'artillerie MONTÉES sur ce Combattant-coque (source de vérité, MDG 12-13). Au spawn, chaque
    *  poste pose son arme sur le chef de pièce via `mannedPoste`. */
   postes?: ShipPoste[];
-  /** SABOTAGE des Tests d'équipage de cette coque (MDG ch.14 l.45-47 : un saboteur à bord « n'effectue pas
+  /** SABOTAGE des Tests d'équipage de cette coque (MDG 14 l.45-47 : un saboteur à bord « n'effectue pas
    *  ce Test… le MJ pourra imposer de -1 à -5 DR sur le Test d'équipage ») — AUTHORÉ par le scénario sur le
    *  Combattant-coque (le contenu est de la donnée, pas du code) ; lu CLAMPÉ à [-5, 0] par `shipSaboteurDR`
    *  et appliqué au total du Test d'équipage EN COMBAT (`combatSlice.openCrewTestPending`) comme du Test
@@ -1084,7 +1084,7 @@ export interface Combatant {
   /** Le combattant CHANTE une chanson de marin (MDG 09 l.38) — identité de l'effet posé sur l'équipage
    *  (retrait ciblé) : « Si le Personnage subit des Dégâts …, sa Chanson de marin prend fin. » */
   singingShanty?: { shantyId: string; label: string };
-  /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12 — Sabord, Bélier, Blindage, Lissage…), réfs par id
+  /** Coque/navire : **Améliorations d'INSTANCE** (MDG 12 — Sabord, Bélier, Blindage, Lissage…), réfs par id
    *  STABLE (ex. `{ id: 'blindage-fer' }`), JAMAIS le libellé. S'ajoutent aux Traits du TYPE (`ship.traits`) ;
    *  lues par `engine/navalTraits.ts`. Blindage est appliqué au spawn (PA de coque) ; Lissage/Peu maniable au
    *  calcul de manœuvre ; Sabord au rendu du Pont. Comme un `ItemInstance` porte qualités/enchants. */
@@ -1113,17 +1113,17 @@ export interface Combatant {
   /** Catégorie de Taille (LDB 85). Optionnel ; défaut Moyenne au point de lecture (`effectiveSize`). */
   size?: import('./size').SizeCategory;
   /** EMPREINTE de grille (côté N×N), DÉCOUPLÉE de la Taille créature `size` (lue par `footprintN`). Pour les
-   *  objets qui occupent des cases SANS être une créature menaçante — un NAVIRE (MDG ch.12) : il a une empreinte
+   *  objets qui occupent des cases SANS être une créature menaçante — un NAVIRE (MDG 12) : il a une empreinte
    *  mais aucune `size`, donc aucune Peur de Taille / Piétinement / ×Dégâts. Absent → empreinte dérivée de `size`. */
   footprint?: number;
-  /** Forme du corps (LDB p.312) : choisit le Tableau de Localisation. Défaut `humanoide` au point de lecture. */
+  /** Forme du corps (LDB 76 p.312) : choisit le Tableau de Localisation. Défaut `humanoide` au point de lecture. */
   bodyShape?: BodyShape;
   /** Structure de siège (`bodyShape:'structure'`) : l'ARÊTE de mur que cette structure occupe (`scene.walls`).
    *  Sert à poser la BRÈCHE (`setStructureDown`) à sa destruction. `side` redéclare `state/scene` WallSide ici
    *  (même union) pour ne pas faire dépendre le moteur PUR de l'état. */
   structureEdge?: { x: number; y: number; side: WallEdgeSide; z?: number };
   /** Objet INERTE explicite (ni structure de siège, ni véhicule-coque) : une pièce SERVIE inanimée — affût
-   *  d'artillerie d'un emplacement (AA/MDG ch.12) — qui se REND par son espèce (engin) mais n'a NI réaction de
+   *  d'artillerie d'un emplacement (AA/MDG 12) — qui se REND par son espèce (engin) mais n'a NI réaction de
    *  combat (Parade/Esquive/Localisation/Engagement, via `isInanimate`) NI tour propre (hors `order`). Son seul
    *  rôle actif est d'être SERVIE (`postes`) par un équipage. */
   inert?: boolean;
@@ -1177,12 +1177,12 @@ export interface Combatant {
   riderId?: string;
   /** Ce combattant est une MONTURE rideable (peut être enfourché par un allié à pied — LDB 14). */
   mountable?: boolean;
-  /** Rôle de marche PERSISTANT (`id` d'Activité de voyage EDOC ch.8) — « les mêmes tiennent toujours le
+  /** Rôle de marche PERSISTANT (`id` d'Activité de voyage EDOC 8) — « les mêmes tiennent toujours le
    *  même poste ». Attaché au personnage (toutes parties de voyage) ; l'assignation d'un trajet en est
    *  initialisée. Absent ⇒ inféré des compétences (`defaultTravelRole`). Le joueur l'épingle/le change. */
   travelRole?: string;
   /** Rôle d'ÉQUIPAGE naval ÉPINGLÉ (`id` de `crew-roles.json` : timonier/artilleur/mousse…) — le poste que ce membre
-   *  tient lors des Tests d'équipage du navire (MDG ch.14). Absent ⇒ inféré des compétences (`defaultCrewRole`). Le
+   *  tient lors des Tests d'équipage du navire (MDG 14). Absent ⇒ inféré des compétences (`defaultCrewRole`). Le
    *  joueur l'épingle/le change via l'interface de gestion du navire (`ShipRolesPanel`). Distinct de `travelRole` (voyage). */
   shipRole?: string;
   /** File transitoire d'attaques gratuites de créature restant à résoudre ce tour (kinds :
@@ -1434,7 +1434,7 @@ export interface Combatant {
   /** Action Viser engagée : +20 (Accessible) au PROCHAIN tir tant que la dernière action reste « viser »
    *  (LDB table des Difficultés, `14 - _GoBack.md` l.90 ; « pas de Test exigé pour viser »). */
   aiming?: boolean;
-  /** Météo du JOUR sous laquelle ce combattant agit (EDOC ch.8 l.82, #341) : posée à l'ouverture d'un combat
+  /** Météo du JOUR sous laquelle ce combattant agit (EDOC 8 l.82, #341) : posée à l'ouverture d'un combat
    *  survenant un jour de voyage (`activeDayWeather`). SEULE source du canal « Tests physiques » (`weatherTestMods`,
    *  lu par attack/defenseModifiers) — jamais recâblée par surface. Transitoire (non persistée hors combat). */
   envWeather?: import('./travelStages').Weather;

@@ -123,7 +123,7 @@ export interface SceneEntity {
     /** Caractéristiques aléatoires au spawn (LDB 77 l.108 : −10 + 2d10, graine stable par id). */
     randomChars?: boolean;
     /** Compétences d'AUTEUR ajoutées (réfs `SkillRef`) — fusionnées par-dessus celles du bestiaire au spawn.
-     *  Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ à son engin (AA p.122 l.3900). */
+     *  Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ à son engin (AA 10 p.122 l.3900). */
     skills?: import('../data').SkillRef[];
     /** Invisible en EXPLORATION (embuscade) : n'apparaît qu'au combat. `false`/absent = PNJ visible
      *  qui devient hostile au déclenchement. */
@@ -240,7 +240,7 @@ export type Effect =
   | { type: 'rest'; days?: number; lodging?: 'auberge' | 'maison' | 'camp'; quality?: 'normale' | 'pietre' }
   /** Repas (#T2 — auberge, hôte généreux…) : nourrit TOUT le groupe pour la journée SANS consommer de
    *  ration — remet les compteurs/malus de Faim à zéro (LDB 18 l.337-343). Le prix éventuel (« Repas,
-   *  auberge », LDB p.302) est porté par le CHOIX de dialogue (`DialogueChoice.cost`), pas par l'effet. */
+   *  auberge », LDB 66 p.302) est porté par le CHOIX de dialogue (`DialogueChoice.cost`), pas par l'effet. */
   | { type: 'mealParty' }
   /** Inflige le trauma « Cauchemars » (LDB 21 l.92) à un héros (défaut : le premier) après une scène
    *  marquante : chaque nuit, Test de Calme Facile (+40) ou Exténué. L'auteur l'assigne (pas inventé). */
@@ -806,7 +806,7 @@ export function structureIsDown(scene: Pick<Scene, 'flags'>, seg: WallSeg): bool
 /** OBJECTIF de victoire d'une rencontre (#197) — AUTHORABLE en donnée, lu par `checkBattleOver`.
  *  Absent = `allEnemiesDead` (comportement HISTORIQUE, tous les scénarios existants inchangés).
  *  `destroyStructure` référence l'arête par son identifiant STABLE (x/y/side/z), le même couple que
- *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, AA p.120-121) — la victoire se déclenche
+ *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, AA 10 p.120-121) — la victoire se déclenche
  *  à la BRÈCHE, indépendamment du sort des combattants. `surviveRounds` : victoire posée au début du
  *  Round `rounds + 1` (le groupe a tenu N Rounds complets). `reachZone` réutilise le rectangle de zone
  *  des `Trigger`/`SceneEffectZone` (`inRect`, `combatGeometry.ts`) — aucun 2e mécanisme de zone.

@@ -67,7 +67,7 @@ const SHIP_LOC_TABLES: Record<string, ShipLocEntry[]> = {
   'navire-fluvial': SHIP_LOC_ALL['navire-fluvial'].entries,
 };
 
-/** Tableau de Localisation humanoïde (LDB p.159) — un dé déjà INVERSÉ (1..100). */
+/** Tableau de Localisation humanoïde (LDB 13 p.159) — un dé déjà INVERSÉ (1..100). */
 export function hitLocation(reversed: number): HitLocation {
   return findTableEntry(BODY_SHAPES.humanoide, reversed).loc;
 }
@@ -88,7 +88,7 @@ export function shipHitLocation(rig: ShipRig, roll: number, tableId: string = 'n
   return findTableEntry(table, roll)[rig];
 }
 
-/** Étiquette FR d'une localisation pour une forme de corps (LDB p.312). Forme inconnue/absente de
+/** Étiquette FR d'une localisation pour une forme de corps (LDB 76 p.312). Forme inconnue/absente de
  *  la table → libellés humanoïdes (`HIT_LOCATION_LABELS`), comme `hitLocationByShape` retombe sur
  *  `humanoide` — les deux jumeaux tolèrent une forme hors table. */
 export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'): string {
@@ -134,7 +134,7 @@ const ANY_RANGED_SPEC = '*';
  */
 function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): SpecAcceptance[] {
   // `weaponGroup` PRIME sur `subType` : une arme de siège porte sa catégorie de catalogue (« armes-de-siege »)
-  // en `subType` mais son vrai Groupe de Projectiles (Arbalète/Catapulte/Ingénierie/Poudre noire, AA p.122
+  // en `subType` mais son vrai Groupe de Projectiles (Arbalète/Catapulte/Ingénierie/Poudre noire, AA 10 p.122
   // l.3848-3863) en `weaponGroup` → c'est lui qui pilote la Spé de tir ET le décompte d'équipage. Pour toute
   // arme normale, `weaponGroup` est absent → `subType` EST le Groupe (comportement inchangé).
   const gid = weapon.weaponGroup ?? weapon.subType ?? ''; // id de Groupe d'arme (`WeaponGroupData.id`)
@@ -263,7 +263,7 @@ export interface DefenseSub { base: number; label: string }
 /**
  * Valeur de défense (Parade = Corps à corps avec l'arme parante ; Esquive = Agilité + avances ;
  * Social = valeur de Test de la Compétence substituée, fournie par `socialBase`).
- * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB p.295). `weapon` (arme du
+ * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB 61 p.295). `weapon` (arme du
  * défenseur) n'est utilisé qu'en Parade, pour aligner la Spé de Corps à corps sur l'arme tenue.
  */
 export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, socialBase?: number): number {

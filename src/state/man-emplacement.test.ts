@@ -239,7 +239,7 @@ describe('(E) Affordance IA — un combattant IA adjacent PEUT servir', () => {
 });
 
 // ───────────────────────────────────────────────────────────────────────────────────────────────
-// (F) ÉQUIPE — « Arme d'équipe (Indice) » (AA p.124 l.3900-3913) : on REJOINT une pièce en SUPPORT (pas un
+// (F) ÉQUIPE — « Arme d'équipe (Indice) » (AA 10 p.124 l.3900-3913) : on REJOINT une pièce en SUPPORT (pas un
 //     remplacement-takeover). RAW : « ils peuvent nommer l'un d'entre eux pour effectuer le Test » (le CHEF =
 //     `crewIds[0]`, seul à tirer) ; « les membres supplémentaires n'ont aucun impact sur l'efficacité… mais
 //     peuvent aider à la déplacer ou compenser les pertes » (support = `crewIds[1..]`, compte dans l'Indice).
@@ -365,7 +365,7 @@ describe('(G) Token — `serveTargetPoste` + clic-pièce rejoignent l’équipe 
 });
 
 // ───────────────────────────────────────────────────────────────────────────────────────────────
-// (H) QUALIFICATION D'ÉQUIPE — « Compétence Projectiles APPROPRIÉE » (AA p.122 l.3900-3923) : seul un servant
+// (H) QUALIFICATION D'ÉQUIPE — « Compétence Projectiles APPROPRIÉE » (AA 10 p.122 l.3900-3923) : seul un servant
 //     possédant la Projectiles du GROUPE de la pièce compte dans l'effectif ; un servant à Arc sur une baliste
 //     (Groupe Arbalète) « n'est pas considéré comme un membre de l'équipe » (Exemple 1 l.3923). Les corps
 //     supplémentaires non qualifiés AIDENT (déplacent/compensent) mais NE comptent PAS (l.3902).

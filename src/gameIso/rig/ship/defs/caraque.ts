@@ -3,7 +3,7 @@
  * château arrière ÉTAGÉ (demi-pont + dunette), taille basse entre les deux, étrave élancée et
  * étambot portant le safran ; trois mâts (grand carré à hune, misaine, artimon LATIN) + beaupré.
  * La coque et ses châteaux forment UNE silhouette continue (les murailles montent dans les
- * châteaux — jamais des boîtes posées sur un croissant). Réf : MDG p.114 (profil), p.105 (plans
+ * châteaux — jamais des boîtes posées sur un croissant). Réf : MDG 13 p.114 (profil), p.105 (plans
  * de pont : maître-bau étroit, éperon d'étrave).
  */
 import type { ShipArtDef } from '../artkit';

@@ -2,7 +2,7 @@
  * BARQUE (fluviale, MSLRC 33, ~5 m, avirons) — canot ouvert à FOND PLAT, construction réelle :
  * sole droite posée à la flottaison (quille à y=0), étrave franche inclinée à droite, tableau
  * arrière droit à gauche, tonture DOUCE (pas de croissant), deux virures à clins, deux bancs
- * de nage, deux avirons. Réf : le petit bateau du port fluvial MDG p.022. Trois vues (contrat
+ * de nage, deux avirons. Réf : le petit bateau du port fluvial MDG 3 p.022. Trois vues (contrat
  * `ViewArt`) : profil (proue à droite), face = étrave de bout, dos = tableau arrière.
  */
 import type { ShipArtDef } from '../artkit';

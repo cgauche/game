@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Basilic : grand saurien au regard mortel — calé sur l'artwork officiel LDB p.319
+// Basilic : grand saurien au regard mortel — calé sur l'artwork officiel LDB 79 p.319
 // (art-ref/ldb/page319_img7475.png) : crête d'épines CONTINUE de la tête à la queue (pointes
 // gris-sarcelle sur membrane orangée), gueule BÉANTE à crocs, yeux rouges incandescents, pattes
 // musclées à GRIFFES de saurien. Quadrupède draconique : tête 'basilic' (gueule ouverte + crête),

@@ -174,7 +174,7 @@ export interface CodexCategory {
   group: CodexGroup;
   /** Sous-groupe FR (dépliable dans la barre de catégories) — cf. `CodexCategorySpec.cluster`. */
   cluster?: string;
-  /** Réf de source de la TABLE entière (« LDB 18 », « MDG ch.13 ») — affichée discrètement, JAMAIS
+  /** Réf de source de la TABLE entière (« LDB 18 », « MDG 13 ») — affichée discrètement, JAMAIS
    *  dans le libellé joueur (une réf de livre nue n'est pas un nom de catégorie). */
   sourceRef?: string;
   /** Projection PARESSEUSE (getter, cache par version) : les datasets étant mutés EN PLACE
@@ -607,8 +607,8 @@ function critEntryItem(e: CritTableEntry): CodexItem {
   };
 }
 
-/** Item Codex d'une entrée de table de voyage d100 (`TravelTableEntry` — Incidents de monte EDOC ch.7,
- *  Problèmes de véhicule EDOC ch.7, Rencontres EDOC ch.8, #157 suite) — MÊME projection pour les 3
+/** Item Codex d'une entrée de table de voyage d100 (`TravelTableEntry` — Incidents de monte EDOC 7,
+ *  Problèmes de véhicule EDOC 7, Rencontres EDOC 8, #157 suite) — MÊME projection pour les 3
  *  familles : plage d100 → texte + Dégâts véhicule éventuels + effet GameOp sur les occupants. */
 function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem {
   return {
@@ -620,7 +620,7 @@ function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem
   };
 }
 
-/** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG ch.13 navire, MSRC ch.7 fluvial,
+/** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG 13 navire, MSRC 7 fluvial,
  *  #157 suite) : plage d10 → effet immédiat (`ops`) + Test d'équipage (échec) authoré en `GameOp`, MÊME
  *  vocabulaire que les autres Critiques (`critEntryItem`). */
 function shipCritEntryItem(e: ShipCritEntry): CodexItem {
@@ -650,13 +650,13 @@ function shipCritEntryItem(e: ShipCritEntry): CodexItem {
   };
 }
 
-/** Item Codex d'un Événement de bord/de port (`SeaEventDef` — MDG ch.15, #157 suite) : plage de jet
+/** Item Codex d'un Événement de bord/de port (`SeaEventDef` — MDG 15, #157 suite) : plage de jet
  *  (d100 modifié par l'Humeur de Manann, ou 2d10) → texte verbatim. */
 function seaEventItem(e: SeaEventDef): CodexItem {
   return { id: e.id, label: e.label, sub: `${e.min}–${e.max}`, desc: e.desc };
 }
 
-/** Item Codex d'un Facteur d'Humeur de Manann (`ManannFactor` — MDG ch.15, #157 suite) : effet signé
+/** Item Codex d'un Facteur d'Humeur de Manann (`ManannFactor` — MDG 15, #157 suite) : effet signé
  *  (Nd10 + constante) appliqué UNE fois par navire. */
 function manannFactorItem(f: ManannFactor): CodexItem {
   const eff = f.effect;
@@ -667,7 +667,7 @@ function manannFactorItem(f: ManannFactor): CodexItem {
   };
 }
 
-/** Libellé d'une TABLE de modificateur d'Exposition hydrique (MSRC ch.16 p.91, #157 suite). */
+/** Libellé d'une TABLE de modificateur d'Exposition hydrique (MSRC 16 p.91, #157 suite). */
 const WATER_TABLE_LABEL: Record<string, string> = { 'source-d-eau': 'Source d’eau', 'blessures-et-etats': 'Blessures et États' };
 
 /** Section « Modificateurs » d'Exposition hydrique — groupée par table (Source d'eau / Blessures et
@@ -685,7 +685,7 @@ function waterModifiersSection(mods: WaterExposureModifier[]): CodexSection | nu
 }
 
 /** Exergue d'une fiche : SÉLECTION STRUCTURELLE (pas d'heuristique fragile) de la citation/tract d'une
- *  desc. Les desc de Carrière (LDB ch.2) suivent la convention d'épigraphe WFRP — un paragraphe
+ *  desc. Les desc de Carrière (LDB 2) suivent la convention d'épigraphe WFRP — un paragraphe
  *  ENTIÈREMENT cité `« … »` (parfois en italique `*« … »*`) SUIVI d'un paragraphe d'attribution (tiret
  *  `–`/`—`/`-`, parfois échappé `\-`) — sur 93/96 carrières. On lève ce couple VERBATIM (règle stricte 5)
  *  et on le retire du corps (pas de doublon visuel entre l'exergue et l'onglet Description) ; une desc
@@ -706,7 +706,7 @@ export function extractEpigraph(desc: string): { epigraph?: string; body: string
   return { body: desc };
 }
 
-// ── LOT 1 #422 : famille NAVALE (MDG ch.12/13/15) — Ports, Progression, Navigation, Périls, Météo,
+// ── LOT 1 #422 : famille NAVALE (MDG 12/13/15) — Ports, Progression, Navigation, Périls, Météo,
 //    Construction navale. Ports & sous-tableaux de construction restent des CATÉGORIES-tableau (une
 //    fiche par entité, patron `criticalsTete`) ; Navigation/Périls/Météo sont des FICHES DE RÈGLE
 //    UNIQUES (dataset-objet, MÊME patron que `waterExposure`, #157 suite) — chaque config imbriquée
@@ -722,20 +722,20 @@ function portCargoRow(id: string, qty?: number): CodexRow {
   return cargo ? { t: 'ref', category: 'seaCargo', id: cargo.id, label, show } : { t: 'text', text: show };
 }
 
-/** Libellés FR des 5 modes de la table PROGRESSION D'UN NAVIRE (`naval-progression.json`, MDG ch.13 l.68-75). */
+/** Libellés FR des 5 modes de la table PROGRESSION D'UN NAVIRE (`naval-progression.json`, MDG 13 l.68-75). */
 const PROGRESSION_MODE_LABEL: Record<string, string> = {
   plus2: 'Progression maximale (M+2)', plus1: 'Bonne progression (M+1)', normal: 'Progression normale (M)',
   minus1: 'Progression lente (M−1)', half: 'Lutte pour avancer (M÷2)',
 };
 
-/** Libellés FR des 7 gabarits de coque standard (`ship-construction.json::standard`, MDG ch.12 l.120-129). */
+/** Libellés FR des 7 gabarits de coque standard (`ship-construction.json::standard`, MDG 12 l.120-129). */
 const SHIP_SIZE_LABEL: Record<string, string> = {
   minuscule: 'Minuscule', 'tres-petite': 'Très petite', petite: 'Petite', moyenne: 'Moyenne',
   grande: 'Grande', enorme: 'Énorme', monstrueuse: 'Monstrueuse',
 };
 
 /** Libellés FR des 4 Traits de CONSTRUCTION (`ship-construction.json::constructionTraits`, sans champ
- *  `label` en donnée — id STABLE déjà la clé, MDG ch.12 l.167-193). */
+ *  `label` en donnée — id STABLE déjà la clé, MDG 12 l.167-193). */
 const CONSTRUCTION_TRAIT_LABEL: Record<string, string> = {
   'peu-maniable': 'Peu maniable', renforce: 'Renforcé', robuste: 'Robuste', solide: 'Solide',
 };
@@ -744,7 +744,7 @@ const CONSTRUCTION_TRAIT_LABEL: Record<string, string> = {
 const signedFact = (label: string, v: number | undefined, suffix = ''): CodexFact | null =>
   v == null ? null : fact(label, `${v > 0 ? '+' : ''}${v}${suffix}`);
 
-/** Section « Propulsion & Manœuvrabilité » (MDG ch.12 l.131-144, `ship-construction.json::propulsion`/
+/** Section « Propulsion & Manœuvrabilité » (MDG 12 l.131-144, `ship-construction.json::propulsion`/
  *  `::manoeuvrability`) — règle GLOBALE de construction (pas une entité par gabarit) : répétée telle
  *  quelle sur chaque fiche de coque (patron « note de règle partagée », comme `Ligne CE` sur un profil
  *  de créature). Lecture seule — les 2 sous-tables restent hors des 3 catégories-tableau (aucun id
@@ -940,7 +940,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'riverNavigation', label: 'Navigation fluviale (Vent, Chavirage, Échouage)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MSRC ch.7',
+    key: 'riverNavigation', label: 'Navigation fluviale (Vent, Chavirage, Échouage)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MSRC 7',
     build: () => {
       const n = datasetObject('riverNavigation');
       const forceLabel = new Map(n.windForces.map((f) => [f.id, f.label]));
@@ -1231,7 +1231,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sections: sections({
         title: 'Symptômes', layout: 'list',
         rows: m.symptoms.map((s) => ({
-          // `spec` = localisation/précision imprimée de l'instance (« Gonflement (Visage et tête) », EDO p.145).
+          // `spec` = localisation/précision imprimée de l'instance (« Gonflement (Visage et tête) », EDO 11 p.145).
           t: 'kv', k: `${symptomLabel(s.symptomId)}${s.spec ? ` (${s.spec})` : ''}`,
           v: [s.severity === 'grave' ? 'Grave' : s.severity === 'moderee' ? 'Modérée' : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
         } as CodexRow)),
@@ -1488,7 +1488,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'weather', label: 'Météo de voyage', group: 'Tables', cluster: 'Voyage terrestre',
-    build: () => weather.map((s) => ({ id: s.id, label: s.label, sub: `${s.ranges.length} plages d100 (EDOC ch.8)` })),
+    build: () => weather.map((s) => ({ id: s.id, label: s.label, sub: `${s.ranges.length} plages d100 (EDOC 8)` })),
   },
   {
     key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables', cluster: 'Création de personnage',
@@ -1529,8 +1529,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'activities', label: 'Activités', group: 'Tables',
-    // Catalogue UNIQUE des Activités (interlude LDB 23 / voyage EDOC ch.8 / mer MDG ch.15 / bataille de
-    // masse ADE II ch.8). Un Test « posté » (compétence(s) au choix + Difficulté) dont l'issue s'exprime
+    // Catalogue UNIQUE des Activités (interlude LDB 23 / voyage EDOC 8 / mer MDG 15 / bataille de
+    // masse ADE II 8). Un Test « posté » (compétence(s) au choix + Difficulté) dont l'issue s'exprime
     // en `onSuccess` (GameOp) et/ou en bandes `outcomes` (table DR → résultat, verbatim + effets).
     build: () => ACTIVITIES.map((a) => ({
       id: a.id, label: a.label,
@@ -1552,7 +1552,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       ),
     })),
   },
-  // ── Combat de masse / Puissance de Bataille (ADE II ch.8, #148) — 5 tables verbatim NICHÉES dans
+  // ── Combat de masse / Puissance de Bataille (ADE II 8, #148) — 5 tables verbatim NICHÉES dans
   // UN seul fichier (`mass-battle.json`, moteur `engine/massBattle.ts`). Champs déjà imprimés en
   // STRINGS par la source (prix/portée/dégâts/atouts) → faits bruts (`fact`), pas de cross-réf chips :
   // les libellés d'Atouts imprimés ici (« Explosion 15 », « Impénétrable »…) ne correspondent PAS
@@ -1755,59 +1755,59 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => datasetArray('rencontresDangereuses').map((e) => travelEntryItem(e, 'Effet sur les occupants')),
   },
   {
-    key: 'shipCriticalsCargaison', label: 'Critiques de navire — Cargaison', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
+    key: 'shipCriticalsCargaison', label: 'Critiques de navire — Cargaison', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG 13',
     build: () => datasetArray('shipCriticalsCargaison').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsGreement', label: 'Critiques de navire — Gréement', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
+    key: 'shipCriticalsGreement', label: 'Critiques de navire — Gréement', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG 13',
     build: () => datasetArray('shipCriticalsGreement').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsCoque', label: 'Critiques de navire — Coque', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
+    key: 'shipCriticalsCoque', label: 'Critiques de navire — Coque', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG 13',
     build: () => datasetArray('shipCriticalsCoque').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsAvirons', label: 'Critiques de navire — Avirons', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
+    key: 'shipCriticalsAvirons', label: 'Critiques de navire — Avirons', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG 13',
     build: () => datasetArray('shipCriticalsAvirons').map(shipCritEntryItem),
   },
   {
-    key: 'shipCriticalsEquipements', label: 'Critiques de navire — Équipements', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG ch.13',
+    key: 'shipCriticalsEquipements', label: 'Critiques de navire — Équipements', group: 'Effets', cluster: 'Critiques de navire', sourceRef: 'MDG 13',
     build: () => datasetArray('shipCriticalsEquipements').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
+    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC 7',
     build: () => datasetArray('riverCriticalsGreement').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
+    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC 7',
     build: () => datasetArray('riverCriticalsAvirons').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
+    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC 7',
     build: () => datasetArray('riverCriticalsGouvernail').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
+    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC 7',
     build: () => datasetArray('riverCriticalsCoque').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
+    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC 7',
     build: () => datasetArray('riverCriticalsSuperstructure').map(shipCritEntryItem),
   },
   {
-    key: 'seaManannFactors', label: 'Humeur de Manann — Facteurs', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.15',
+    key: 'seaManannFactors', label: 'Humeur de Manann — Facteurs', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG 15',
     build: () => datasetArray('seaManannFactors').map(manannFactorItem),
   },
   {
-    key: 'seaBoardEvents', label: 'Événements de bord (mer)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.15',
+    key: 'seaBoardEvents', label: 'Événements de bord (mer)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG 15',
     build: () => datasetArray('seaBoardEvents').map(seaEventItem),
   },
   {
-    key: 'seaPortEvents', label: 'Événements de port (mer)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.15',
+    key: 'seaPortEvents', label: 'Événements de port (mer)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG 15',
     build: () => datasetArray('seaPortEvents').map(seaEventItem),
   },
   {
-    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MSRC ch.16',
+    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MSRC 16',
     build: () => {
       const w = datasetObject('waterExposure');
       return [{
@@ -1830,7 +1830,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     },
   },
   {
-    key: 'navalPorts', label: 'Ports (Index de la Mer des Griffes)', group: 'Monde', sourceRef: 'MDG ch.15',
+    key: 'navalPorts', label: 'Ports (Index de la Mer des Griffes)', group: 'Monde', sourceRef: 'MDG 15',
     build: () => navalPorts.map((p) => ({
       id: p.id, label: p.label, group: p.region, desc: p.desc, source: src(p.source),
       meta: facts(
@@ -1845,14 +1845,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'navalProgression', label: 'Progression de navire (DR de Navigation → Mouvement)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.13',
+    key: 'navalProgression', label: 'Progression de navire (DR de Navigation → Mouvement)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG 13',
     build: () => datasetArray('navalProgression').map((e) => ({
       id: e.id, label: PROGRESSION_MODE_LABEL[e.mode] ?? e.mode,
       sub: `DR ${e.min}…${e.max}`, desc: e.desc, source: src(e.source),
     })),
   },
   {
-    key: 'shipHullSizes', label: 'Gabarits de coque (Construction navale)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG ch.12',
+    key: 'shipHullSizes', label: 'Gabarits de coque (Construction navale)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG 12',
     build: () => datasetArray('shipHullSizes').map((s) => ({
       id: s.id, label: SHIP_SIZE_LABEL[s.size] ?? s.size, source: src(s.source),
       meta: facts(
@@ -1867,7 +1867,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'shipSpeedTraits', label: 'Traits de vitesse (Construction navale)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG ch.12',
+    key: 'shipSpeedTraits', label: 'Traits de vitesse (Construction navale)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG 12',
     build: () => datasetArray('shipSpeedTraits').map((t) => ({
       id: t.id, label: t.label, source: src(t.source),
       meta: facts(
@@ -1877,7 +1877,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'shipConstructionTraits', label: 'Traits de construction (navire)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG ch.12',
+    key: 'shipConstructionTraits', label: 'Traits de construction (navire)', group: 'Équipement', cluster: 'Mer & rivière', sourceRef: 'MDG 12',
     build: () => datasetArray('shipConstructionTraits').map((t) => ({
       id: t.id, label: CONSTRUCTION_TRAIT_LABEL[t.id] ?? t.id, source: src(t.source),
       meta: facts(
@@ -1888,7 +1888,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'seaNavigation', label: 'Navigation maritime (Progression, Salissures, Orientation, Phares, Poursuite…)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.13/15',
+    key: 'seaNavigation', label: 'Navigation maritime (Progression, Salissures, Orientation, Phares, Poursuite…)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG 13/15',
     build: () => {
       const n = datasetObject('seaNavigation');
       return [{
@@ -1958,7 +1958,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     },
   },
   {
-    key: 'seaPerils', label: 'Périls en mer (Échouage, Icebergs, Détroits, Tourbillons)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.13',
+    key: 'seaPerils', label: 'Périls en mer (Échouage, Icebergs, Détroits, Tourbillons)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG 13',
     build: () => {
       const p = datasetObject('seaPerils');
       return [{
@@ -1985,7 +1985,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     },
   },
   {
-    key: 'seaWeather', label: 'Météo de la Mer des Griffes', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG ch.13',
+    key: 'seaWeather', label: 'Météo de la Mer des Griffes', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MDG 13',
     build: () => {
       const w = datasetObject('seaWeather');
       // Les 4 aspects du tirage (`table[].precipitations`/`.temperature`/`.visibilite`/`.vent`) sont des

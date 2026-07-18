@@ -32,7 +32,7 @@ import type { TestScenario } from './_shared';
  * dérivée de la pièce) et le `makeParty` (le SOLDAT reçoit les Spé de service). AUCUN push/setEncounters résiduel.
  */
 
-// Compétence Projectiles APPROPRIÉE au Groupe de l'engin (AA p.122 l.3900) : un servant ne compte dans l'équipe
+// Compétence Projectiles APPROPRIÉE au Groupe de l'engin (AA 10 p.122 l.3900) : un servant ne compte dans l'équipe
 // QUE s'il la possède (sinon « n'est pas considéré comme un membre de l'équipe », l.3923). Dérivée de la pièce
 // (`weaponGroup` du trapping) → la Spé = id du Groupe (arbalete/poudre-noire/catapulte). Test ~40.
 const projForPiece = (trappingId: string): SkillRef[] => {

@@ -5,7 +5,7 @@ import { rederivePassiveAttack } from './combat';
 import { rederiveCastSL, type SpellLike } from './magic';
 import type { Combatant, Weapon } from './types';
 
-describe('canReroll — Chance : relance 1×/Test sur jet propre raté (LDB ch.12 l.56 + ch.12 l.29-31)', () => {
+describe('canReroll — Chance : relance 1×/Test sur jet propre raté (LDB 12 l.56 + ch.12 l.29-31)', () => {
   it('jet raté, pas encore relancé → relance possible', () => {
     expect(canReroll(true, false)).toBe(true);
   });

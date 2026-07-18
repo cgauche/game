@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Il Potente Granchio (ZI p.92 ; artwork ZI folio 85 — art-ref/zi/page088_full.png) : crabe
+// Il Potente Granchio (ZI 12 p.92 ; artwork ZI folio 85 — art-ref/zi/page088_full.png) : crabe
 // TITANESQUE de Tilée (Casa di Ruggicor). Signature visuelle de l'artwork : la carapace hérissée
 // de piquants est ENSEVELIE sous une épave accumulée (coque à bordés, mât brisé + vergue et voile
 // en lambeaux, tour de briques ruinée, espars, os, ancre à sa chaîne, éponges tubulaires) ; les

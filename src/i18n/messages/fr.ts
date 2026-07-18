@@ -43,7 +43,7 @@ export const fr = {
   'freeAttack.pietinement': 'Piétinement',
   'freeAttack.langue': 'Langue',
   'freeAttack.hurlement': 'Hurlement',
-  // Localisations par forme de corps (LDB p.312) — migré de engine/types.ts (BODY_SHAPE_LOC_LABELS).
+  // Localisations par forme de corps (LDB 76 p.312) — migré de engine/types.ts (BODY_SHAPE_LOC_LABELS).
   'hitloc.quadrupede.brasG': 'Membre antérieur gauche',
   'hitloc.quadrupede.brasD': 'Membre antérieur droit',
   'hitloc.quadrupede.jambeG': 'Membre postérieur gauche',

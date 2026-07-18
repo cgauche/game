@@ -1,7 +1,7 @@
 import type { TenueDef } from '../types';
 import { BODIES } from '../../bodies';
 
-// Tenue de la DÉMONETTE (illustration LDB p.337) : corset noir-indigo liseré d'or + jupe à
+// Tenue de la DÉMONETTE (illustration LDB 84 p.337) : corset noir-indigo liseré d'or + jupe à
 // pans ornés. ÉQUIPEMENT séparé du corps nu (chair lilas/cornes/pinces = morphologie du def).
 // bareFoot : jambes digitigrades griffues, pas de bottes. NB : les brassards restent des
 // features du def — le slot bras serait écrasé par les bras-pinces monstrueux.

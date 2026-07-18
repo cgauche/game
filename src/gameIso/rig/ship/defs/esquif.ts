@@ -1,7 +1,7 @@
 /**
  * ESQUIF (MDG 113, ~15 m, gréement mixte) — la plus grande des embarcations ouvertes : coque à clins
  * sur quille presque droite, étrave et étambot RAKÉS, safran d'étambot à barre franche, petit mât au
- * tiers avant à voile carrée modeste, deux avirons en renfort (réf planche MDG p.098, le Knarr).
+ * tiers avant à voile carrée modeste, deux avirons en renfort (réf planche MDG 12 p.098, le Knarr).
  */
 import type { ShipArtDef } from '../artkit';
 import { oarBank, pennant, rudder, spar, squareSail, stay } from '../artkit';

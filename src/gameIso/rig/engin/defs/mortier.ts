@@ -1,6 +1,6 @@
 /**
  * MORTIER DE SIÈGE (`mortier`) — tube de fonte court à gueule évasée pointé HAUT (~55°), posé sur un
- * caisson de bois bas SANS grandes roues (réf. art AA p.127 : tube trapu cerclé, bombes rondes au pied).
+ * caisson de bois bas SANS grandes roues (réf. art AA 10 p.127 : tube trapu cerclé, bombes rondes au pied).
  * Art de l'engin (3 vues), routé par l'id d'espèce `mortier`. Ce qui le distingue du canon à première
  * vue : l'angle de tir presque vertical + l'affût-caisson au ras du sol.
  */

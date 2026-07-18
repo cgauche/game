@@ -12,7 +12,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
-import { otherAbbrAlternation, bookOf, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve } from './_lib.mjs'
+import { otherAbbrAlternation, bookOf, folioRange, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve } from './_lib.mjs'
 import { countsByFile, assertAgainstBaseline, readBaseline as readBaselineFile } from './check-code-refs.mjs'
 
 export const SRC_DIR = 'src'
@@ -89,6 +89,47 @@ const isRefFieldLine = (ln) => /^\s*"ref"\s*:/.test(ln)
 // zéro tolérance, PAS de baseline (une abréviation inconnue est toujours un typo/une invention, jamais
 // un stock à geler).
 export const UNKNOWN_ABBR_RE = () => /\b[A-Z]{2,6}(?:\s+I{1,2})? \d+ [lp]\.\d+/g
+
+// (h) MULTI-FOLIOS dont un folio tombe dans un chapitre DIFFÉRENT du chapitre écrit (#522 juge
+// adversarial) : `<ABRÉV> NN p.X` suivi d'un ou plusieurs folios supplémentaires (`/Y`, `-Y`, `,Z`).
+// Un seul chapitre N est écrit dans la réf — si un des folios listés ne résout PAS dans CE chapitre
+// (`folioRange(abbr, folio).ch !== N`), c'est que le folio appartient à un AUTRE chapitre, jamais
+// écrit : violation. Forme canonique : deux réfs séparées (`ABRÉV NN p.X / ABRÉV MM p.Y`).
+export const MULTI_FOLIO_RE = () => new RegExp(`\\b(${ALL_ABBR_ALT()}) (\\d+) p\\.(\\d+)((?:[/,-]\\d+)+)`, 'g')
+
+/** Scan (h) : multi-folios à cheval sur des chapitres différents — `src/**` (.ts/.tsx/.json), même
+ *  périmètre que (f) (commentaire en .ts/.tsx, champ `"ref"` en .json). Un folio NON RÉSOLVABLE
+ *  (`folioRange` → `null`/`'ambiguous'`, ancre absente — résidus #522) est INDÉTERMINÉ, jamais une
+ *  violation (silence, pas de faux positif sur les trous de la ré-extraction Marker) : seul un folio
+ *  qui RÉSOUT dans un chapitre différent de N est fautif. Retourne `{ file, row, folios, text }[]`
+ *  (`folios` = les folios fautifs, avec leur chapitre résolu). Pur (aucune écriture). */
+export function scanMultiFolioSplitViolations(srcDir = SRC_DIR, exts = EXTS) {
+  const violations = []
+  for (const f of walk(srcDir, exts)) {
+    const rel = f.replace(/\\/g, '/')
+    const isJson = f.endsWith('.json')
+    const lines = readFileSync(f, 'utf8').split('\n')
+    lines.forEach((ln, i) => {
+      const inScope = isJson ? isRefFieldLine(ln) : isCommentLine(ln)
+      if (!inScope) return
+      const re = MULTI_FOLIO_RE()
+      let m
+      while ((m = re.exec(ln))) {
+        const [, abbr, chStr, folioStr, suffix] = m
+        const ch = Number(chStr)
+        const extraFolios = (suffix.match(/\d+/g) || []).map(Number)
+        const badFolios = []
+        for (const folio of [Number(folioStr), ...extraFolios]) {
+          const res = folioRange(abbr, folio)
+          if (!res || res === 'ambiguous') continue // indéterminé, jamais une violation
+          if (res.ch !== ch) badFolios.push({ folio, ch: res.ch })
+        }
+        if (badFolios.length) violations.push({ file: rel, row: i + 1, folios: badFolios, text: ln.trim().slice(0, 160) })
+      }
+    })
+  }
+  return violations
+}
 
 function walk(dir, exts, acc = []) {
   for (const e of readdirSync(dir)) {
@@ -253,6 +294,7 @@ function main() {
   const bareFolio = checkFamily('folio nu', 'bareFolio', scanBareFolioViolations(), baseline)
   const bookNoChapterSrc = checkFamily('réf sans chapitre (src)', 'bookNoChapterSrc', scanBookNoChapterSrcViolations(), baseline)
   const unknownAbbr = scanUnknownAbbrViolations()
+  const multiFolioSplit = scanMultiFolioSplitViolations()
 
   if (src.length) {
     console.log(`citation-graphy-guard : ${src.length} graphie(s) chapitre-relative(s) (src/) :`)
@@ -295,7 +337,17 @@ function main() {
     console.log('citation-graphy-guard (#585) : 0 abréviation inconnue — classe verrouillée à zéro.')
   }
 
-  if (src.length || docs.length || implProse.length || baselineFail || unknownAbbr.length) process.exitCode = 1
+  if (multiFolioSplit.length) {
+    console.log(`citation-graphy-guard (#522) : ${multiFolioSplit.length} multi-folio(s) à cheval sur un AUTRE chapitre (zéro tolérance) :`)
+    for (const { file, row, folios, text } of multiFolioSplit) {
+      const bad = folios.map((f) => `p.${f.folio}→ch${f.ch}`).join(', ')
+      console.log(`  ${file}:${row}  [${bad}]  ${text}`)
+    }
+  } else {
+    console.log('citation-graphy-guard (#522) : 0 multi-folio à cheval sur un autre chapitre — classe verrouillée à zéro.')
+  }
+
+  if (src.length || docs.length || implProse.length || baselineFail || unknownAbbr.length || multiFolioSplit.length) process.exitCode = 1
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)

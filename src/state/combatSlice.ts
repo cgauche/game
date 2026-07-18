@@ -944,7 +944,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Arme une attaque pour le clic-ennemi (mode neutre : `action===null`). Re-sélectionner revient à l'Arme.
       const next = battle.selectedAttack === id ? 'arme' : id;
       set({ battle: { ...battle, action: null, selectedAttack: next, selectedSpellId: null, preview: null }, pendingSiegeAim: null });
-      // Pièce INDIRECTE servie (mortier/catapulte, AA p.122-123) : ARMER l'option « Servir … » ouvre le PLACEUR
+      // Pièce INDIRECTE servie (mortier/catapulte, AA 10 p.122-123) : ARMER l'option « Servir … » ouvre le PLACEUR
       // DE CASE (le tir vise un point au sol, pas un combattant) ; le désarmer (retour à 'arme') le referme.
       if (next === id) {
         const opt = availableAttacks(active, battle).find((o) => o.id === id);
@@ -2158,8 +2158,8 @@ export function createCombatSlice(get: Get, set: Set) {
           ? freeAttackWeapon(pa.freeKind, creatureAttacks(attacker.traits ?? []).find((a) => a.kind === pa.freeKind)?.bonus ?? 0)
           : null;
         const weapon = freeNatural ?? firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
-        // PILONNAGE INDIRECT (« viser une case », AA p.122-123) : la touche DÉTONE sur la CASE choisie
-        // (`pa.center`). L'Atout Explosion/Tir de zone frappe UNIFORMÉMENT le rayon (RAW LDB p.298) — AUCUNE
+        // PILONNAGE INDIRECT (« viser une case », AA 10 p.122-123) : la touche DÉTONE sur la CASE choisie
+        // (`pa.center`). L'Atout Explosion/Tir de zone frappe UNIFORMÉMENT le rayon (RAW LDB 62 p.298) — AUCUNE
         // touche directe « primaire » ni Critique par victime (l'aire ne re-teste pas) ; `target` (l'ennemi le
         // plus proche de l'impact) n'a servi qu'à la BANDE DE PORTÉE/au DR. Réutilise le résolveur d'aire UNIQUE.
         if (pa.siege && pa.center) {
@@ -2248,7 +2248,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // `attackCancel` (« Annuler » / défaire-charge) est désormais GÉNÉRÉ par la fabrique
     // (`FLOWS.attack.onCancel`, cf. la liste de verbes ci-dessus) — plus d'action bespoke ici.
-    // PILONNAGE INDIRECT (« viser une case », AA p.122-123) : la case d'impact est déposée par le placeur
+    // PILONNAGE INDIRECT (« viser une case », AA 10 p.122-123) : la case d'impact est déposée par le placeur
     // ('siege', commitPlacedZone). Ouvre la modale de tir de la pièce indirecte servie (`pendingAttack` siège) :
     // le JET de tir (DR) reste l'attaque NORMALE (Chance/Résilience par la cascade), mais la touche DÉTONE sur
     // la case — l'Explosion frappe tout le rayon (résolution dans attackConfirm). Cible-repère = ennemi le plus
@@ -2493,7 +2493,7 @@ export function createCombatSlice(get: Get, set: Set) {
         mount.mountable = true;
         mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.215)
       });
-      // Structures destructibles de siège (AA p.120-121) : chaque arête portant une `structure` INTACTE devient
+      // Structures destructibles de siège (AA 10 p.120-121) : chaque arête portant une `structure` INTACTE devient
       // un Combattant inerte à PV (kind 'npc' → ne fausse pas la fin de combat, cf. checkBattleOver qui ne
       // compte que les 'enemy'). Son `structureEdge` mémorise l'arête à ABATTRE (BRÈCHE) à sa destruction ;
       // une structure déjà abattue n'est pas ré-instanciée. Source = WallSeg (≠ SceneEntity) → enrôlée ICI.

@@ -18,7 +18,7 @@ import { slugId } from '../../data/slug';
 
 // Traits dont la mécanique vit AILLEURS que dans les helpers de `dispatch` (la raison est documentée).
 const COUVERT_AILLEURS = new Map<string, string>([
-  // Environnement aquatique (MSRC p.90 / MDG p.140 / LDB p.338) — op passive `offTerrainMod` (terrain d’election `eau`) :
+  // Environnement aquatique (MSRC 15 p.90 / MDG 16 p.140 / LDB 85 p.338) — op passive `offTerrainMod` (terrain d’election `eau`) :
   // (1) le drapeau positionnel `Combatant.offTerrain`, re-derive par `placeCombatant` selon la tuile, module le M
   // (encumbrance) et le DR de TOUS les Tests (combat/magic/rollFlows) hors de l’eau ; (2) `eau` est TRAVERSABLE en
   // pathing (`MoveEnv.swim` <- `requiredTerrains`, path.ts). Mecanise + teste (off-terrain.test.ts / path-swim.test.ts).
@@ -178,7 +178,7 @@ const DISPATCH = new Set<string>([
   // (tirage 1d10/3 Mutations alternées mental/phys, `state/spawn.spawnMutations` — PLUS LÉGER que Khorne :
   // ni Frénésie ni blocage d'incantation, non RAW pour Tzeentch).
   'Marque de Tzeentch',
-  // Ogre (ADE II ch.02 l.708, folio 31) : `capabilities.encumbranceFactor`/`consumptionFactor` (donnée)
+  // Ogre (ADE II 2 l.708, folio 31) : `capabilities.encumbranceFactor`/`consumptionFactor` (donnée)
   // — lus par `combatFeatures/dispatch.traitEncumbranceFactor` (composé max talent/trait dans `items.maxEncumbrance`)
   // et `provisions.traitConsumptionFactor` (composé dans `dailyFoodUpkeep`/`provisioningManifest`). Canal
   // dispatch (capability lue par id, MÊME lecture ciblée `c.traits` que Marque de Khorne).

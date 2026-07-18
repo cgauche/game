@@ -3,8 +3,8 @@ import { lateralPair } from '../../parts/parallax';
 import { feat } from '../../parts/elements';
 import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 
-// Slenderthigh Whiptongue — PRINCE DÉMON DE SLAANESH (creatures.json : LDB p.336 ; traits
-// Cornes +15, Taille (Grande), Terreur 3, Perturbant). Calé sur l'ILLUSTRATION LDB p.338 :
+// Slenderthigh Whiptongue — PRINCE DÉMON DE SLAANESH (creatures.json : LDB 84 p.336 ; traits
+// Cornes +15, Taille (Grande), Terreur 3, Perturbant). Calé sur l'ILLUSTRATION LDB 85 p.338 :
 // HUMANOÏDE massif et musclé (→ plan biped, comme ses frères démons Sanguinaire/Démonette,
 // PAS le jabberslythe insectoïde — aucune aile dans l'art) ; peau crème pâle ; crâne haut et
 // conique cerclé d'une COURONNE de cornes rouges annelées ; bras gauche fini en énorme PINCE

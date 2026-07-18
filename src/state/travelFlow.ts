@@ -6,7 +6,7 @@
  *    (l.210-219, prix par km par passager — débités AVANT le départ) ;
  *  - 6 h de voyage par jour sans Test ; au-delà (marche forcée), Test de Résistance ou Exténué,
  *    +1 si Encombré (l.224) — à pied seulement (les passagers d'un transport ne marchent pas) ;
- *  - fatigue d'Encombrement par journée de voyage (LDB p.295, `travelFatigue`) — à pied ;
+ *  - fatigue d'Encombrement par journée de voyage (LDB 61 p.295, `travelFatigue`) — à pied ;
  *  - péripéties (l.237) : d10 quotidien, événement sur `perilDie` (défaut 8, paramétrable, 0 = off)
  *    → tirage sur la table VERBATIM (`data/peripeties.ts`) ; en PLUS, péripéties d'AUTEUR par route
  *    (probabilité par jour + Effects d'éditeur).

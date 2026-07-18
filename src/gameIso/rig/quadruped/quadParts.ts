@@ -157,7 +157,7 @@ function barrel(p: QuadProps): string {
       hi = `<path d="M${X(-16)} -21 Q${X(2)} -27 ${X(16)} -23 L${X(15)} -18 Q${X(2)} -22 ${X(-15)} -16 Z" fill="@corpsH" opacity="0.55"/>`;
       lo = `<path d="M${X(-42)} 12 Q${X(-8)} 22 ${X(24)} 14 L${X(26)} 8 Q${X(-6)} 18 ${X(-41)} 6 Z" fill="@corpsO" opacity="0.85"/>`;
       if (p.head === 'ours') // bosse d'épaule saillante + pelage en touffes COUCHÉES (pas de piquants
-        // dressés — ils lisaient « échine à pics ») + balafres de griffes à l'épaule (artwork LDB p.317)
+        // dressés — ils lisaient « échine à pics ») + balafres de griffes à l'épaule (artwork LDB 78 p.317)
         hi += `<path d="M${X(-2)} -25 Q${X(6)} -29.5 ${X(14)} -26.5 Q${X(20)} -24 ${X(22)} -20 Q${X(15)} -23.5 ${X(6)} -24 Q${X(0)} -24.5 ${X(-4)} -23 Z" fill="@corpsH" opacity="0.5"/>` + // bosse dorsale d'épaule
           `<path d="M${X(-30)} -16.5 q-3 0.6 -4.6 2.4 M${X(-22)} -19 q-3 0.4 -4.8 2 M${X(-14)} -20.5 q-3 0.3 -5 1.8 M${X(-6)} -22.5 q-3 0.2 -5 1.6 M${X(2)} -25.5 q-3 0.2 -5.2 1.4 M${X(10)} -25 q-3.2 0 -5.4 1.2 M${X(18)} -23 q-3 -0.2 -5.2 1" stroke="@corpsO" stroke-width="0.9" fill="none" opacity="0.5" stroke-linecap="round"/>` + // touffes couchées le long du dos
           `<path d="M${X(-38)} 6 l-2.2 2.6 M${X(-30)} 12 l-1.8 3 M${X(-20)} 16 l-1.2 3.2 M${X(-8)} 19 l-0.8 3.4 M${X(4)} 20 l-0.4 3.4 M${X(16)} 18 l0.2 3.2" stroke="@corpsO" stroke-width="1" stroke-linecap="round" opacity="0.55"/>` + // franges du ventre
@@ -211,7 +211,7 @@ function barrel(p: QuadProps): string {
 // ---- Avant-train EMPLUMÉ (prop `foreCoat`) : manteau de plumes sur garrot/épaule/poitrail dans
 // la robe des AILES (@aile — la moitié rapace est d'un seul plumage), bord arrière FESTONNÉ
 // (pointes de couvertures), hampes + mouchetures claires @aileH — le contraste mi-aigle /
-// mi-cheval de l'hippogriffe (artwork LDB p.323) vit ici, la moitié ARRIÈRE du tronc garde la
+// mi-cheval de l'hippogriffe (artwork LDB 79 p.323) vit ici, la moitié ARRIÈRE du tronc garde la
 // robe @corps. Dessiné PAR-DESSUS la silhouette continue de barrel().
 function foreCoatArt(p: QuadProps): string {
   if (!p.foreCoat) return '';
@@ -261,7 +261,7 @@ function ridgeArt(p: QuadProps): string {
   if (r === 'epines')
     return `<g data-ridge="epines"><path d="M${-20 * bl} -14 l-1 -5 l3 4 M${-8 * bl} -19 l0 -6 l3 5 M${6 * bl} -21 l1 -6 l2 5 M${18 * bl} -18 l1 -5 l2 4" fill="@corpsO" stroke="@corpsO" stroke-width="0.5"/></g>`;
   if (r === 'epines-continues') { // rangée SERRÉE d'épines coniques (@cheveux) garrot→croupe sur voile
-    // orangée — signature artwork du Basilic (LDB p.319) ; la continuité tête→queue s'obtient avec la
+    // orangée — signature artwork du Basilic (LDB 79 p.319) ; la continuité tête→queue s'obtient avec la
     // crête de la tête 'basilic' + mane 'hirsute' (encolure) + la crête de queue 'reptile'.
     const ep = (x: number, y: number, h: number) =>
       `M${(x * bl).toFixed(1)} ${y} Q${(x * bl - 1.8).toFixed(1)} ${(y - h * 0.72).toFixed(1)} ${(x * bl - 3).toFixed(1)} ${y - h} Q${(x * bl - 0.6).toFixed(1)} ${(y - h * 0.32).toFixed(1)} ${(x * bl + 2.8).toFixed(1)} ${y + 0.4} Z`;
@@ -287,7 +287,7 @@ function markingsArt(p: QuadProps): string {
 // (L'ex-art de croupe — la « bulle » détourée — a été DISSOUS dans la silhouette continue du
 // tronc, cf. barrel(). L'os `croupe` ne porte plus que les pattes arrière et la queue.)
 // --- Hydre : cluster de cous/têtes dessiné dans UN os (encolure) → ondule d'un bloc, pas
-// besoin d'os supplémentaires. Tête reptilienne à GUEULE BÉANTE rouge sang (artwork LDB p.323) :
+// besoin d'os supplémentaires. Tête reptilienne à GUEULE BÉANTE rouge sang (artwork LDB 79 p.323) :
 // mâchoires ouvertes + crocs, œil fendu doré, petite crête d'épines @cheveux derrière le crâne.
 // `far` = tête/cou du rang LOINTAIN (robe @corpsO, plus sombre → profondeur de l'entrelacs).
 function hydraHeadlet(tx: number, ty: number, rot: number, s: number, far = false): string {
@@ -313,7 +313,7 @@ function hydraNeck(x1: number, y1: number, cx: number, cy: number, x2: number, y
     (far ? '' : `<path d="${d}" fill="none" stroke="@corpsH" stroke-width="1.4" opacity="0.4" stroke-linecap="round" stroke-dasharray="1.6 2.8"/>`);
 }
 // --- Déchiqueteur de Cadavres : MÊME mécanisme de cluster que l'hydre, mais 5 têtes ROUGE VIF
-// sur cous gris-bleu (artwork ZI p.58 : têtes serpentines écarlates contrastées, dents
+// sur cous gris-bleu (artwork ZI 5 p.58 : têtes serpentines écarlates contrastées, dents
 // proéminentes, regard perçant clair, piquants sombres derrière chaque crâne). Repère local :
 // museau vers +x, comme hydraHeadlet. `far` = rang lointain (rouge sombre @cheveuxO).
 function shredderHeadlet(tx: number, ty: number, rot: number, s: number, far = false): string {
@@ -334,7 +334,7 @@ function shredderHeadlet(tx: number, ty: number, rot: number, s: number, far = f
 // « l'une est léonine, une autre est celle d'un grand rapace et la troisième celle d'un dragon »).
 // Repère local : museau vers +x, comme hydraHeadlet.
 // Tête LÉONINE : crinière RAYONNANTE en couronne (le tell félin, cf. face 'felin'), crâne rond,
-// museau COURT à gueule ouverte et crocs de sabre (artwork ZI p.66 : mufle de lion, pas de loup).
+// museau COURT à gueule ouverte et crocs de sabre (artwork ZI 6 p.66 : mufle de lion, pas de loup).
 function lionHeadlet(tx: number, ty: number, rot: number, s: number): string {
   return `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${s})">` +
     `<path d="M-1 -11 L-3.6 -8.2 L-7.6 -10 L-7 -6.2 L-11.4 -6.6 L-8.8 -3.4 L-12.6 -1.4 L-8.6 0.6 L-11 4 L-6.8 3.6 L-7.6 7.8 L-3.8 5.6 L-3.4 10 L-0.2 6.6 L2.6 10 L3.6 5.8 L7.6 7.4 L6 3.4 L9.6 2.4 L6.4 -0.2 L9.2 -3.2 L5.2 -3.6 L6.4 -7.6 L2.6 -5.8 L1.8 -9.8 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` + // crinière rayonnante
@@ -349,7 +349,7 @@ function lionHeadlet(tx: number, ty: number, rot: number, s: number): string {
     `<ellipse cx="1.6" cy="-1.4" rx="1.3" ry="1.4" fill="#d8a020"/><circle cx="1.8" cy="-1.4" r="0.55" fill="#0a0603"/></g>`;
 }
 // Tête de DRAGON-crocodile : long museau bas bardé de dents débordantes, cornes balayées en
-// arrière, œil fendu doré — distincte de la gueule de loup d'hydraHeadlet (artwork ZI p.66).
+// arrière, œil fendu doré — distincte de la gueule de loup d'hydraHeadlet (artwork ZI 6 p.66).
 function dragonHeadlet(tx: number, ty: number, rot: number, s: number): string {
   return `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${s})">` +
     `<path d="M-2.6 -3 Q-7.4 -6.4 -10.6 -6 Q-7.4 -4 -5.4 -1.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` + // corne basse
@@ -498,7 +498,7 @@ function headProfile(p: QuadProps): string {
       `<path d="M-8 -6 l-2 -4 M-3.5 -6.6 l-1 -4 M1 -5.6 l-0.4 -4" stroke="@corpsO" stroke-width="1.5" stroke-linecap="round"/></g>`;
   if (p.head === 'basilic') // GUEULE BÉANTE de saurien (mâchoire inférieure décrochée, crocs haut+bas,
     // gueule rouge), museau à plaque cornée en bec, œil ROUGE incandescent (regard mortel), crête de
-    // pointes @cheveux sur le crâne balayées vers la nuque — artwork LDB p.319.
+    // pointes @cheveux sur le crâne balayées vers la nuque — artwork LDB 79 p.319.
     return `<g transform="rotate(6)">` +
       // crête de crâne (3 pointes vers l'arrière) + membrane orangée, DERRIÈRE le crâne
       `<path d="M-1.5 -8.2 Q-4.4 -14.8 -6.4 -16.2 Q-5.6 -11.2 -5 -8.6 Z M-4.8 -7.6 Q-8.4 -13 -10.2 -14 Q-9 -9.4 -8.2 -6.8 Z M-7.8 -5.8 Q-11.6 -9.6 -13 -10.2 Q-11.8 -6.4 -10.6 -4.4 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` +
@@ -559,7 +559,7 @@ function headProfile(p: QuadProps): string {
       earProfile(p, -5.5, -1) + earProfile(p, -0.5, 1) +
       `<g data-eye="D" data-ec="0.6 -2"><ellipse cx="0.6" cy="-2" rx="1.7" ry="1.9" fill="#15100a"/><circle cx="1.1" cy="-2.6" r="0.6" fill="#fff" opacity="0.7"/></g></g>`;
   if (p.head === 'felin') // gueule FÉLINE à CRINIÈRE (@cheveux) hérissée en couronne autour du crâne +
-    // museau court retroussé + GRANDS CROCS débordants (manticore LDB p.324, même langage que lionHeadlet)
+    // museau court retroussé + GRANDS CROCS débordants (manticore LDB 79 p.324, même langage que lionHeadlet)
     return `<g transform="rotate(6)">` +
       `<path d="M2 -9 L4.5 -15 L-1 -12.5 L-2 -18.5 L-6 -13.5 L-9.5 -18.5 L-10.5 -13 L-16 -15.5 L-14.5 -10 L-20 -10 L-16.5 -5.5 L-21.5 -2.5 L-16 -0.5 L-19.5 4 L-14 3.5 L-15.5 9.5 L-10.5 7 L-10 13 L-5.5 8.5 L-2.5 14 L0.5 8.5 L4 12 L4.5 6.5 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.55"/>` + // crinière en couronne
       `<circle cx="-4" cy="-2" r="7.5" fill="@cheveuxO" opacity="0.32"/>` +
@@ -623,7 +623,7 @@ function tail(p: QuadProps): string {
     return `<g transform="rotate(-34) scale(-1,1)"><path d="M0 -2 Q16 4 28 2 Q40 0 50 9 Q41 5 30 7 Q16 11 0 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M6 1 l1.5 -3 M14 1 l1.5 -3 M22 0.6 l1.5 -3 M30 1 l1.4 -2.6 M38 2.4 l1.2 -2.4" stroke="@corpsO" stroke-width="1" stroke-linecap="round"/>${crest}</g>`;
   }
   if (p.tail === 'enroulee') { // très longue queue qui s'ENROULE autour de la bête (dragon, artwork
-    // LDB p.321) : plonge derrière la croupe puis balaie le sol vers l'AVANT sous le corps, pointe
+    // LDB 79 p.321) : plonge derrière la croupe puis balaie le sol vers l'AVANT sous le corps, pointe
     // retroussée devant le poitrail — la 'reptile' qui traîne derrière sortait de la boîte 120×150.
     // rotate(-42) annule l'angle de l'os `queue` : l'art est authoré en axes MONDE (+x avant, +y sol).
     return `<g transform="rotate(-42)">` +
@@ -952,7 +952,7 @@ function tailBack(p: QuadProps): string {
 // de la croupe. FACE/DOS : déployée vers +x (aile gauche miroitée scale(-1,1) au dispatch).
 // Couleur d'AILE : famille de jetons dédiée `@aile*`, repliée sur la ROBE (`@corps*`) quand la
 // def ne stocke pas de base `aile` (cf. resolveQuadFromProps) — permet une aile d'une AUTRE
-// teinte que le corps (pégase : robe blanche, ailes brun/doré, artwork LDB p.325).
+// teinte que le corps (pégase : robe blanche, ailes brun/doré, artwork LDB 79 p.325).
 function wingFoldedProfile(p: QuadProps, far: boolean): string {
   const c = far ? '@aileO' : '@aile';
   const L = 46 * p.bodyLen; // longueur du pli (suit l'allongement du corps)
@@ -983,7 +983,7 @@ function wingFoldedProfile(p: QuadProps, far: boolean): string {
       `<path d="M3 -2 l3 -3 l1.4 3.4" fill="${c}" stroke="@aileO" stroke-width="0.6"/>` + // griffe de poignet
       `</g>`;
   }
-  // plumes DRESSÉES (wingPose 'dressees' — pégase, artwork LDB p.325) : paire de GRANDES ailes
+  // plumes DRESSÉES (wingPose 'dressees' — pégase, artwork LDB 79 p.325) : paire de GRANDES ailes
   // LEVÉES vers le haut/arrière, lame emplumée large à rémiges digitées au sommet. L'aile
   // lointaine (far) est plus couchée en arrière que la proche → deux silhouettes distinctes en V.
   // Même vocabulaire wingPose que la membrane (manticore) ; défaut plumes = couchées ci-dessous.

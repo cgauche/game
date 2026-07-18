@@ -1,7 +1,7 @@
 import type { CreatureDef } from '../types';
 import { lateralPair } from '../../parts/parallax';
 
-// Démonette de Slaanesh — calée sur l'ILLUSTRATION LDB p.337 : peau LILAS pâle, crête
+// Démonette de Slaanesh — calée sur l'ILLUSTRATION LDB 84 p.337 : peau LILAS pâle, crête
 // indigo sombre, bras finis en PINCES de chitine sombre (les deux), grands yeux noir de
 // jais (texte l.38), jambes digitigrades. Son ÉQUIPEMENT (corset liseré d'or + jupe à
 // pans) = tenue de carrière « Démonette » (registre, bareFoot). EXCEPTION : les brassards

@@ -32,7 +32,7 @@ export function cargoBasePrice(cargo: CargoDef, season: Season, rng: RNG = defau
   return cargo.price[season];
 }
 
-/** Ampleur du Marchandage (LDB p.291, cité MSRC 13 l.127 & MDG) : le prix bouge de ±10 %, ou ±20 % si le
+/** Ampleur du Marchandage (LDB 59 p.291, cité MSRC 13 l.127 & MDG) : le prix bouge de ±10 %, ou ±20 % si le
  *  négociant possède le Talent Négociateur. PUR. */
 export function bargainDeltaPct(negotiator: boolean): number {
   return negotiator ? 20 : 10;
@@ -119,7 +119,7 @@ export function cargoRaidLossPct(outcome: CargoRaidOutcome, fleePct: number, los
 // depuis les objets réels (héros/monture/véhicule/navire) vit dans la couture d'état `state/carriers.ts`,
 // qui assemble ces structures via les constructeurs ci-dessous.
 
-/** Nature physique d'un porteur → table de surcharge RAW (jambes = LDB p.295 ; coque = MDG 12). Portée
+/** Nature physique d'un porteur → table de surcharge RAW (jambes = LDB 61 p.295 ; coque = MDG 12). Portée
  *  par la structure pour que la couche de risque (lot D) DISPATCHE sans flag ad hoc — décision 4. */
 export type CarrierHull = 'jambes' | 'coque';
 

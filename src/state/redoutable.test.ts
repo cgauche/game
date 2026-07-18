@@ -5,7 +5,7 @@ import type { Combatant } from '../engine/types';
 
 /**
  * Trait Redoutable (Zoo Impérial) — au début de son tour, la créature complète ses Avantages jusqu'à
- * son *Indice* (`value` de l'instance), sauf si Empêtré/Inconscient/Surpris (ZI p.11). Câblé 100% en
+ * son *Indice* (`value` de l'instance), sauf si Empêtré/Inconscient/Surpris (ZI 1 p.11). Câblé 100% en
  * DONNÉE : trigger `onTurnStart` → Flow gardé (`compare` sur les États) → op `gainAdvantage` dont
  * l'`amount: '$indice'` est baké à la valeur d'instance par `withArg`. Aucun code spécifique à Redoutable.
  */

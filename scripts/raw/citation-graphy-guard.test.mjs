@@ -10,7 +10,7 @@ import { join } from 'node:path'
 import {
   scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations, BOOK_NO_CHAPTER_RE,
   scanChDotViolations, scanBareFolioViolations, scanBookNoChapterSrcViolations, scanUnknownAbbrViolations,
-  readBaseline, BASELINE_PATH,
+  scanMultiFolioSplitViolations, readBaseline, BASELINE_PATH,
 } from './citation-graphy-guard.mjs'
 import { otherAbbrAlternation } from './_lib.mjs'
 import { countsByFile, assertAgainstBaseline } from './check-code-refs.mjs'
@@ -363,6 +363,52 @@ test('(g) abréviation inconnue : ancienne graphie ADEII (tout capitales) EST d�
       assert.equal(v.length, 1)
       assert.deepEqual(v.map((x) => x.abbr), ['ADEII'])
     },
+  )
+})
+
+// --- (#522 juge adversarial) scan (h) : multi-folios à cheval sur un AUTRE chapitre ---
+test('(h) multi-folio : LDB 64 p.301/303 (folios en chapitres DIFFÉRENTS : 64 vs 67) → détecté', () => {
+  withTempSrcAndRawDir(
+    { 'x.ts': '// Contenant d\'eau (Outre à eau/Seau, LDB 64 p.301/303) : forme fautive\n' },
+    {},
+    (srcDir) => {
+      const v = scanMultiFolioSplitViolations(srcDir, ['.ts', '.tsx', '.json'])
+      assert.equal(v.length, 1)
+      assert.equal(v[0].row, 1)
+      // 301 résout ch63 (l'ancre de folio vit dans le chapitre PRÉCÉDENT, ch64 n'a pas d'ancre propre)
+      // et 303 résout ch66 — les deux diffèrent du chapitre ÉCRIT (64), donc tous deux fautifs.
+      assert.deepEqual(v[0].folios.map((f) => f.folio), [301, 303])
+    },
+  )
+})
+
+test('(h) multi-folio : LDB 85 p.338-343 (même chapitre 85) → silence (forme saine)', () => {
+  withTempSrcAndRawDir(
+    { 'x.ts': '// Registre des Traits de créature (LDB 85 p.338-343) : forme saine\n' },
+    {},
+    (srcDir) => {
+      const v = scanMultiFolioSplitViolations(srcDir, ['.ts', '.tsx', '.json'])
+      assert.equal(v.length, 0)
+    },
+  )
+})
+
+test('(h) multi-folio : titre de test (describe/it) et hors-champ JSON hors périmètre (pas un commentaire/"ref")', () => {
+  withTempSrcAndRawDir(
+    { 'x.test.ts': "describe('Outre à eau (LDB 64 p.301/303)', () => {})\n" },
+    {},
+    (srcDir) => {
+      assert.equal(scanMultiFolioSplitViolations(srcDir, ['.ts', '.tsx', '.json']).length, 0)
+    },
+  )
+})
+
+test('non-régression : le VRAI src/ du repo est à ZÉRO multi-folio à cheval sur un autre chapitre (#522)', () => {
+  const v = scanMultiFolioSplitViolations()
+  assert.deepEqual(
+    v.map((x) => `${x.file}:${x.row}`),
+    [],
+    `multi-folio(s) fautif(s) survivant(s) :\n${v.map((x) => `  ${x.file}:${x.row}  ${JSON.stringify(x.folios)}  ${x.text}`).join('\n')}`,
   )
 })
 

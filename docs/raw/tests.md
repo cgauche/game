@@ -597,7 +597,7 @@ NADJ utilise également les **Points de Chance pour relancer** dans les jeux de 
 
 > « Effectuez un Test opposé de Compétence Intermédiaire (+0) en utilisant la Compétence indiquée dans la section "Jeu" du jeu en question. Si aucune Compétence n'est indiquée, faites plutôt un Test opposé de Pari Intermédiaire (+0). Celui qui obtient le nombre le plus élevé de DR remporte la partie. » — `NADJ 16 l.11`
 
-**Extensions de la mécanique DR dans les jeux de taverne** (NADJ 16) : plusieurs jeux montrent des variantes non présentes dans le LDB ch.12 :
+**Extensions de la mécanique DR dans les jeux de taverne** (NADJ 16) : plusieurs jeux montrent des variantes non présentes dans le LDB 12 :
 
 - **Ajouter le Bonus de Caractéristique au DR** : au Bras de Fer (Force) et à l'Alvatafl (Intelligence), le score obtenu est le DR du test *plus* le Bonus de la Caractéristique concernée. Exemple : DR +2 au Test de Force + Bonus de Force 4 = 6 points ce tour (`NADJ 16 l.34` Bras de Fer ; `NADJ 16 l.24` Alvatafl).
 - **Lire le dé des unités ou des dizaines au choix** : aux Fléchettes, sur un test *réussi*, le joueur choisit de marquer des points égaux au chiffre des unités, au chiffre des dizaines, à 10× le chiffre des unités, ou à 10× le chiffre des dizaines (`NADJ 16 l.97`). C'est une lecture alternative du dé (distincte de l'inversion), uniquement disponible sur réussite.

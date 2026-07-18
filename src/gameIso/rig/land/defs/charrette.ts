@@ -1,5 +1,5 @@
 /**
- * CHARRETTE (`charrette`, `vehicles.json` — LDB p.306) — charrette paysanne DÉCOUVERTE : plateau bas à ridelles en
+ * CHARRETTE (`charrette`, `vehicles.json` — LDB 70 p.306) — charrette paysanne DÉCOUVERTE : plateau bas à ridelles en
  * claire-voie, DEUX grandes roues (un seul essieu), timon double (brancards) pour une bête, posé au sol
  * à l'arrêt. Aucune bâche ni caisse fermée : c'est ce qui la distingue au premier regard du chariot
  * (bâché, 4 roues) et de la diligence (caisse fermée à fenêtres). Art terrestre 3 vues, routé par l'id

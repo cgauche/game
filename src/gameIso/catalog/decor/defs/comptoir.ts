@@ -3,7 +3,7 @@ import { P } from '../../decorPalette';
 
 // Comptoir : meuble de service à plateau (zinc/marbre) sur un bâti à panneaux. Sert de comptoir du
 // « Bar des balcons » (36) à l'étage ET du « Vestiaire et vente des billets » (6) au rez. Cf. plan
-// officiel NADJ p.40/p.41 (longs comptoirs en L des bars et de la billetterie).
+// officiel NADJ 8 p.40/p.41 (longs comptoirs en L des bars et de la billetterie).
 export const prop: PropViz = {
   id: 'comptoir',
   label: 'Comptoir',

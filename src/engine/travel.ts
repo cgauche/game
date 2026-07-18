@@ -13,7 +13,7 @@
  *  - Coûts de trajet (l.207-219) : « par kilomètre parcouru », diligence Déplacement 6
  *    (Intérieur 2 sous / Extérieur 1 sou par km), barge Déplacement 8 (Cabine 5 / Pont 2 sous
  *    par km) ; « modèles plus rapides/lents : prix ×2 / ÷2, Mouvement ±1 » → paramétrable.
- *  - Fatigue d'Encombrement (LDB p.295, déjà codée) : `encumbrancePenalties().travelFatigue`
+ *  - Fatigue d'Encombrement (LDB 61 p.295, déjà codée) : `encumbrancePenalties().travelFatigue`
  *    États Exténué « par journée de voyage » (paliers de surcharge) — enfin consommée ici.
  *
  * Tout est PARAMÉTRABLE par la donnée (carte du monde / route, éditeur) ; les défauts ci-dessous
@@ -195,7 +195,7 @@ export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarc
   return { line: `${c.name} — marche forcée : Test de Résistance ${t.roll}/${t.target} → ${t.success ? "il tient l'allure." : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}.`}`, gained: r.gained, d };
 }
 
-/** Fatigue d'Encombrement d'une journée de voyage à pied (LDB p.295 — `travelFatigue` enfin
+/** Fatigue d'Encombrement d'une journée de voyage à pied (LDB 61 p.295 — `travelFatigue` enfin
  *  appliqué) : États Exténué selon le palier de surcharge. Mute `c`, renvoie le journal. */
 export function applyTravelFatigue(c: Combatant): string[] {
   if (c.dead) return [];

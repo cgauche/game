@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Hydre : grand reptile à SIX têtes serpentines (artwork LDB p.323). Quadrupède `draconic` +
+// Hydre : grand reptile à SIX têtes serpentines (artwork LDB 79 p.323). Quadrupède `draconic` +
 // tête `hydre` (cluster de 6 cous dessiné dans l'os encolure — rang lointain sombre + rang
 // proche, gueules béantes rouge sang) + queue `reptile` portant la crête. La crête de flammes
 // rouge-orangé du dos/queue est colorée par @cheveux/@cheveuxO (éditable ici). Robe vert olive

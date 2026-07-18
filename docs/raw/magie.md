@@ -77,7 +77,7 @@ Les Collèges de Magie (comme les elfes) enseignent que la magie se divise en **
 
 **Sources RAW :** `LDB 46 l.7-10`
 
-Le Talent **Seconde vue** (LDB ch.10) permet de percevoir les Vents de Magie et leur influence sur le monde. Elle affecte tous les sens (manifestation dépend de l'expérience du lanceur). Avec la Seconde vue, on peut utiliser les compétences **Intuition**, **Perception** et **Pistage** avec les sens aethyriques. La Seconde vue ne se désactive pas : le MJ peut demander des Tests spontanés pour percevoir des détails magiques.
+Le Talent **Seconde vue** (LDB 10) permet de percevoir les Vents de Magie et leur influence sur le monde. Elle affecte tous les sens (manifestation dépend de l'expérience du lanceur). Avec la Seconde vue, on peut utiliser les compétences **Intuition**, **Perception** et **Pistage** avec les sens aethyriques. La Seconde vue ne se désactive pas : le MJ peut demander des Tests spontanés pour percevoir des détails magiques.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 46` (l.7-10) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `mineure-cerumen`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `mineure-rupture`, `mineure-secousse-spirituelle`, `mineure-delie`, +33 — `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app, `src/engine/domainAttributes.ts`, `src/state/combatEffects.ts`, `src/state/partyFlow.ts`
@@ -201,7 +201,7 @@ cibles supplémentaires (`LDB 47 l.28`).
 
 **Sources RAW :** `LDB 46 l.88-90`
 
-Incanter à proximité d'une **source de Corruption** (voir LDB ch.19) rend le contrôle des Vents plus difficile. Lors d'un Test de Langue (Magick) ou de Focalisation à proximité d'une Influence corruptrice :
+Incanter à proximité d'une **source de Corruption** (voir LDB 19) rend le contrôle des Vents plus difficile. Lors d'un Test de Langue (Magick) ou de Focalisation à proximité d'une Influence corruptrice :
 
 - tout lancer dont le **dé des unités est 8** (symbole à huit pointes du Chaos) → **Incantation Imparfaite Mineure**.
 - Si une Incantation Imparfaite Mineure avait déjà été obtenue pour une autre raison lors de ce Test → elle devient **Majeure**.

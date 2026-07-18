@@ -89,7 +89,7 @@ export type Formula =
   | { engagedAdvantageGap: true }
   /** Blessures infligées par l'attaque/lancement courant (`ctx.woundsDealt`) — miroir Formula de la
    *  Condition `woundsDealt`. Absorption « Toute attaque qui touche la créature inflige une quantité ÉGALE
-   *  de Dégâts à la victime absorbée » (EDO p.147) : `wounds { amount: { woundsDealt: true } }`. 0 hors contexte. */
+   *  de Dégâts à la victime absorbée » (EDO 11 p.147) : `wounds { amount: { woundsDealt: true } }`. 0 hors contexte. */
   | { woundsDealt: true }
   /** SOMME de termes (composition) — « 1d10 + (pions − 1) » des Dégâts d'En Flammes (LDB 16 l.77). Permet
    *  d'authorer une formule composée sans coder en dur l'addition au moteur. Récursif. */
@@ -204,7 +204,7 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
 }
 
 /** Ops `offTerrainMod` PASSIVES du combattant (traits INHÉRENTS `c.traits`, lus PAR ID comme
- *  `skillDRBonus` — Créature marine MDG p.140 / Aquatique MSRC p.90). PUR. */
+ *  `skillDRBonus` — Créature marine MDG 16 p.140 / Aquatique MSRC 15 p.90). PUR. */
 function offTerrainOps(c: Combatant): Extract<GameOp, { op: 'offTerrainMod' }>[] {
   const out: Extract<GameOp, { op: 'offTerrainMod' }>[] = [];
   for (const t of c.traits ?? []) {
@@ -220,7 +220,7 @@ export function requiredTerrains(c: Combatant): string[] {
 }
 
 /** Mouvement IMPOSÉ hors de son terrain (op `offTerrainMod.mSet` — Créature marine : « son M tombe à 1 »,
- *  MDG p.140 ; Aquatique : « ne peut pas se déplacer sur la terre ferme », MSRC p.90 → 0), actif seulement
+ *  MDG 16 p.140 ; Aquatique : « ne peut pas se déplacer sur la terre ferme », MSRC 15 p.90 → 0), actif seulement
  *  quand le drapeau POSITIONNEL `c.offTerrain` est posé. Plusieurs sources → la plus contraignante (min).
  *  `null` = pas de contrainte. Lu par `effectiveMovement`. PUR. */
 export function offTerrainMoveCap(c: Combatant): number | null {
@@ -230,7 +230,7 @@ export function offTerrainMoveCap(c: Combatant): number | null {
 }
 
 /** Malus de DR à TOUS les Tests hors de son terrain (op `offTerrainMod.testDR` — Créature marine :
- *  « tous les Tests qu'elle effectue subissent –2 DR », MDG p.140), gaté par `c.offTerrain`. Σ. Consommé
+ *  « tous les Tests qu'elle effectue subissent –2 DR », MDG 16 p.140), gaté par `c.offTerrain`. Σ. Consommé
  *  aux épines de Test : attaque (`applyHit` via les sites `skillDRBonus` de combat.ts), Test générique
  *  (`rollFlows`), incantation (`magicTestSLBonus`). PUR. */
 export function offTerrainTestDR(c: Combatant): number {
@@ -356,11 +356,11 @@ export type GameOp =
       escapeThreshold?: Formula;
       /** Aggravation sur ÉCHEC du Test de récupération (Filets, Zoo Impérial p.29 : « si la cible ne
        *  parvient pas à se dépêtrer, elle gagne un État Empêtré supplémentaire ») — FIGÉE sur l'entrée de
-       *  condition. Absent (Immobilisante générique LDB p.298) : un échec n'aggrave rien. */
+       *  condition. Absent (Immobilisante générique LDB 62 p.298) : un échec n'aggrave rien. */
       entangleOnFail?: boolean;
       /** Dégâts ignorant l'armure infligés à CHAQUE tentative de libération, réussie ou ratée (Filets
        *  BARBELÉS, Zoo Impérial p.29 : « infligent automatiquement des Dégâts qui ignorent l'armure à toute
-       *  cible qui se débat »). Résolue contre le RÉFÉRENT et FIGÉE sur l'entrée de condition ; ZI p.29 ne
+       *  cible qui se débat »). Résolue contre le RÉFÉRENT et FIGÉE sur l'entrée de condition ; ZI 2 p.29 ne
        *  chiffre pas ce montant — champ de DONNÉE éditable (qualité `filet-barbele`), rien en dur ici. */
       struggleDamage?: Formula;
       /** VERROU de Critique (LDB 18) : l'État posé ne pourra être RETIRÉ que lorsque cette Condition
@@ -491,8 +491,8 @@ export type GameOp =
   /** Purge de maladies (Amère catharsis, LDB 42) : retire `count` (+échelle DR) maladies. */
   | { op: 'cureDisease'; count?: number; countPerSL?: PerSL }
   /** −N jours sur la durée d'une maladie active. `days` plat (B. de Convalescence, LDB 41) OU `dice`
-   *  (Rouille mouchetée : « Chaque dose réduit la durée de la maladie de 1d10 jours », MSRC p.14) ;
-   *  `disease` = SCOPE par id (Gesundheit → seulement une `blessure-purulente`, MSRC p.13 — sans filtre,
+   *  (Rouille mouchetée : « Chaque dose réduit la durée de la maladie de 1d10 jours », MSRC 4 p.14) ;
+   *  `disease` = SCOPE par id (Gesundheit → seulement une `blessure-purulente`, MSRC 4 p.13 — sans filtre,
    *  n'importe quelle maladie active serait raccourcie) ; `oncePerDisease` = une seule fois par maladie
    *  (« Cette Prière ne peut être tentée qu'une fois par maladie », LDB 41 — les herbes se reprennent).
    *  `daysPerSL` : échelle « +N jours par +M DR » du Test AYANT PRÉCÉDÉ l'op (Gesundheit : « un jour par
@@ -649,7 +649,7 @@ export type GameOp =
    *  IMPURE (déplace sur la grille) — INERTE dans applyOps, résolue par combatFlow (`applyCast` : scan
    *  `spellOps(spell.effects,'caster')`, `pushAway` + `applyZoneCrossings`). */
   | { op: 'push'; meters: Formula }
-  /** TÉLÉPORTATION du lanceur (Téléportation / Portail d'Ombre / Eau de la terre, LDB 47 p.244-245) : le
+  /** TÉLÉPORTATION du lanceur (Téléportation, LDB 47 p.244 / Portail d'Ombre / Eau de la terre, LDB 48 p.245) : le
    *  lanceur se déplace de `meters` mètres (+`perSL` « +metersFormula par `every` DR ») en survolant les
    *  obstacles. Op IMPURE (pose le mode 'teleport' = choix de case d'arrivée) — INERTE dans applyOps,
    *  résolue par combatFlow (`applyCast` : scan + `flyReachable`, puis pose différée `action:'teleport'`). */
@@ -812,8 +812,8 @@ export type GameOp =
    *  `moveScale` (multiplicatif). `effectiveMovement` somme les `moveMod` PUIS applique les `moveScale`. */
   | { op: 'moveMod'; mod: number }
   /** HORS de son terrain d'élection (`terrain` = type de tuile de la case occupée, ex. `eau`), le porteur
-   *  est diminué : `mSet` REMPLACE son Mouvement (Créature marine : « son M tombe à 1 », MDG p.140 ;
-   *  Aquatique : « ne peut pas se déplacer sur la terre ferme », MSRC p.90 → `mSet: 0`) et `testDR`
+   *  est diminué : `mSet` REMPLACE son Mouvement (Créature marine : « son M tombe à 1 », MDG 16 p.140 ;
+   *  Aquatique : « ne peut pas se déplacer sur la terre ferme », MSRC 15 p.90 → `mSet: 0`) et `testDR`
    *  s'applique à TOUS ses Tests (Créature marine : « tous les Tests qu'elle effectue subissent –2 DR »).
    *  GÉNÉRIQUE (aucun nom de créature) : porté par le `passive` d'un Trait, GATÉ par la POSITION — le
    *  state pose le drapeau dérivé `Combatant.offTerrain` à chaque placement (`placeCombatant`), les
@@ -1146,7 +1146,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const ap = (o.ignoreAP === false ? Math.max(0, totalAP - bypass) : 0) + (o.extraAP ?? 0);
         const n = Math.max(o.min ?? 0, raw - tb - ap);
         // `ctx.woundsDealt` = PB RÉELLEMENT perdus (clampé par loseWounds) → un drain/Vol de vie qui SUIT
-        // (`lifeSteal`) soigne « le même nombre » que la victime a effectivement perdu (Absorption EDO p.147).
+        // (`lifeSteal`) soigne « le même nombre » que la victime a effectivement perdu (Absorption EDO 11 p.147).
         ctx.woundsDealt = loseWounds(target, n); // perte centralisée (−Avantage + À Terre à 0)
         const mitig = o.ignoreTB === false || o.ignoreAP === false ? ` (${o.ignoreAP === false ? t('op.frag.apHit') : t('op.frag.apIgnored')}, ${o.ignoreTB === false ? t('op.frag.beDeduced') : t('op.frag.beIgnored')})` : t('op.frag.mitigNone');
         lines.push(t('op.wounds', { name: target.name, n, mitig }));

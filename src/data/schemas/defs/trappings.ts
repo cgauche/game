@@ -135,7 +135,7 @@ export const schema = z.array(
     derivedWeapon: weaponSchema.optional(),
     capabilities: itemCapabilitiesSchema.optional(),
     passive: z.array(gameOpSchema).optional(),
-    /** Tarif de SERVICE (LDB p.302 : chambre/écurie) — pas un objet possédable, cf. `TrappingData.service`. */
+    /** Tarif de SERVICE (LDB 66 p.302 : chambre/écurie) — pas un objet possédable, cf. `TrappingData.service`. */
     service: z.boolean().optional(),
   }),
 );

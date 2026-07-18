@@ -1,5 +1,5 @@
 /**
- * GALÈRE DE GUERRE (MDG 113, ~35 m, mixte — réf planche MDG p.048) : long vaisseau de rame à
+ * GALÈRE DE GUERRE (MDG 113, ~35 m, mixte — réf planche MDG 6 p.048) : long vaisseau de rame à
  * bordé à CLINS, étrave rakée coiffée d'une FIGURE DE PROUE ailée (fauve de guerre), TOUR de poupe
  * crénelée sous pavillon, rangée de pavois sur le plat-bord, batterie d'avirons sur apostis,
  * ÉPERON de bronze à la flottaison (trait `belier`), grand mât unique à voile carrée (rig mixte).
