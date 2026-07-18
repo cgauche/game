@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ActiveEffect, Combatant, ConditionInstance } from '../engine/types';
+import { chipCodex, combatantFlags, summarizeEffects } from '../gameIso/effectIcons';
 import { StateChips } from './StateChips';
 
 const cond = (name: string, value = 1): ConditionInstance => ({ name, value } as ConditionInstance);
@@ -27,6 +28,14 @@ describe('StateChips — pastilles de portrait', () => {
     const html = renderToStaticMarkup(<StateChips c={hero} />);
     expect(html).not.toContain('title=');
     expect((html.match(/codex-ref/g) ?? []).length).toBe(2);
+  });
+
+  it('le drapeau Peur du portrait ouvre SA fiche psychologique (routage par id stable, pas un popover générique)', () => {
+    const hero = mkHero((c) => { c.psychState = [{ type: 'peur', indice: 2, calmeDR: 0 }] as Combatant['psychState']; });
+    const chip = summarizeEffects([], [], Infinity, combatantFlags(hero)).visible[0];
+    expect(chip.flagId).toBe('fear');
+    expect(chipCodex(chip)).toMatchObject({ category: 'psychologies', id: 'peur' });
+    expect(renderToStaticMarkup(<StateChips c={hero} />)).toContain('codex-ref');
   });
 
   it('la pastille garde sa classe de compacité `.pt-state` dans la colonne `.ptile-states`', () => {

@@ -40,6 +40,16 @@
     }
   },
   {
+    "id": "viser",
+    "label": "Viser",
+    "desc": "Tirer alors que vous avez passé votre dernière action à viser (pas de Test exigé pour viser).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 161,
+      "note": "LDB 13, Tableau des Difficultés de Combat — Accessible (+20)"
+    }
+  },
+  {
     "id": "tirer-dans-le-tas",
     "label": "Tirer dans le tas",
     "desc": "Les Tests de **Capacité de Tir** effectués pour toucher un groupe de cibles sont **Accessibles (+20)** si le groupe comporte entre 3 et 6 personnes, **Faciles (+40)** s'ils sont entre 7 et 12, et **Très Faciles (+60)** s'ils sont 13 ou plus. Tout succès est appliqué au hasard parmi les cibles éligibles, à la discrétion du MJ. Si ce modificateur vous permet de toucher alors que le Test aurait sinon échoué, vous réussissez avec 0 DR.",
@@ -127,6 +137,26 @@
       "book": "livre-de-base",
       "page": 191,
       "note": "LDB 7 « Peur (Indice) »"
+    }
+  },
+  {
+    "id": "sur-la-defensive",
+    "label": "Sur la défensive",
+    "desc": "Qu'en est-il si vous souhaitez vous préparer à éviter ou parer les coups, à tenir une position défensive ou utiliser Langue (Magick) afin de lancer une salve de dissipations ? Pour votre Action, choisissez une Compétence que vous allez utiliser en défense et vous gagnerez un bonus de +20 à tous les Tests de défense que vous effectuerez jusqu'au début du prochain Tour.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 158,
+      "note": "LDB 13 « OPTION : Sur la défensive »"
+    }
+  },
+  {
+    "id": "faim-et-soif",
+    "label": "Faim et Soif",
+    "desc": "Se retrouver à cours de provisions n'est jamais bon. Ne plus avoir d'eau est encore pire. Les Tests de Résistance pour supporter la faim et la soif sont de plus en plus difficiles (-10 % de plus pour chaque Test). Les Personnages qui n'ont ni nourriture ni boisson ne peuvent pas récupérer de Points de Blessure ou se débarrasser de l'État *Exténué* de manière naturelle.\n\n**Eau :** chaque jour sans eau nécessite un Test de Résistance. Sur un premier échec, vous subissez une pénalité de -10 en **Intelligence***,*  **Force Mentale** et **Sociabilité**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.\n\n**Nourriture :** lorsque vous n'avez plus de nourriture, vous devez effectuer un Test de Résistance tous les deux jours. Sur un premier échec, vous subissez une pénalité de –10 en **Force**  et **Endurance**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 181,
+      "note": "LDB 18 « Faim et Soif »"
     }
   }
 ]

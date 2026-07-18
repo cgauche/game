@@ -99,7 +99,7 @@ Ces bandes automatiques s'appliquent à *tous* les tests, simples ou spectaculai
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.31-32, l.119-121) → `ledgerRerollable` ⚠sans-appelant, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `NightEntry`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isImpressiveFailure`, `isAstoundingFailure`, +4 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +6 fichiers
+- `LDB 12` (l.31-32, l.119-121) → `ledgerRerollable` ⚠sans-appelant, `forceCrewRole`, `OPTIONAL_RULES`, `NightEntry`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isImpressiveFailure`, `isAstoundingFailure`, +4 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +6 fichiers
 - sans code : `LDB 12` (l.25-28)
 
 ---
@@ -124,7 +124,7 @@ Cette règle optionnelle fonctionne particulièrement bien avec les Tests simple
 
 **Voir aussi** : chapitre Combat (Critiques et Maladresses en combat)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.38, l.124-127) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `double-critique-maladresse`, `NightEntry`, `maxForcedRoll`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +6 fichiers
+- `LDB 12` (l.38, l.124-127) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `NightEntry`, `double-critique-maladresse`, `maxForcedRoll`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +6 fichiers
 
 ---
 
@@ -170,7 +170,7 @@ Ainsi : **valeur cible = Base + Difficulté + Σ modificateurs circonstanciels**
 
 **Voir aussi** : [Difficulté](#difficulté--table-complète), [Combiner les Difficultés](#combiner-les-difficultés--cumul-et-plafonds)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `double-critique-maladresse`, `NightEntry`, `maxForcedRoll`, +3 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +4 fichiers
+- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `NightEntry`, `double-critique-maladresse`, `maxForcedRoll`, +3 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +4 fichiers
 
 ---
 
@@ -199,7 +199,7 @@ Si aucune Difficulté n'est indiquée pour un test (notamment pour un test oppos
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test), [Tests opposés](#tests-opposés)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `amazingTestLabel`, `useTestJetProps`, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `ReloadModal`, `evaluateTest`, `bestForcedRoll`, `CascadeBody`, +9 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, +11 fichiers
+- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `amazingTestLabel`, `useTestJetProps`, `forceCrewRole`, `OPTIONAL_RULES`, `ReloadModal`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `CascadeBody`, +9 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, +11 fichiers
 
 ---
 
@@ -227,7 +227,7 @@ Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modific
 
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Modificateurs de test](#modificateurs-de-test), [Extensions de Difficulté (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.91-96) → `viser-une-localisation`, `tirer-dans-le-tas`, `tir-en-mouvement`, `useAttackJetProps`, `W`, `isFlankOrRear`, `PendingAttack`, `Scene`, `attackEnv`, `chooseEnemyAction`, +1 — `src/data/regles.json`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
+- `LDB 14` (l.91-96) → `viser-une-localisation`, `viser`, `tirer-dans-le-tas`, `tir-en-mouvement`, `useAttackJetProps`, `W`, `isFlankOrRear`, `PendingAttack`, `Scene`, `attackEnv`, +2 — `src/data/regles.json`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
 
 ---
 
@@ -316,7 +316,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `amazingTestLabel`, `useTestJetProps`, `OPTIONAL_RULES`, `double-critique-maladresse`, `ReloadModal`, `evaluateTest`, `CascadeBody`, `buildStageSteps`, `opposedTest`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, `src/state/interludeFlow.ts`, +9 fichiers
+- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `amazingTestLabel`, `useTestJetProps`, `OPTIONAL_RULES`, `ReloadModal`, `double-critique-maladresse`, `evaluateTest`, `CascadeBody`, `buildStageSteps`, `opposedTest`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, `src/state/interludeFlow.ts`, +9 fichiers
 
 ---
 
@@ -497,7 +497,7 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé), [Tests opposés](#tests-opposés), Destin et Résilience (domaine propre)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71, l.73) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, `ForcedRollPicker`, +80 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, +41 fichiers
+- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71, l.73) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, `ForcedRollPicker`, +81 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, +42 fichiers
 
 ---
 

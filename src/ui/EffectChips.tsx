@@ -40,7 +40,7 @@ export function EffectChips({
           >
             <Icon id={c.icon} size="sm" />
             {c.count && c.count > 1 ? <b>{c.count}</b> : null}
-            {c.rounds != null ? <em>{roundsLabel(c.rounds)}</em> : null}
+            {c.rounds != null ? <em>{roundsLabel(c.rounds, { short: true })}</em> : null}
           </CodexRef>
         );
       })}

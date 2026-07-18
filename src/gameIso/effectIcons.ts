@@ -11,6 +11,10 @@ import { isFrenzied } from '../engine/psychology';
 import { conditionSeverity } from '../engine/conditions';
 import { roundsLabel } from '../engine/duration';
 
+/** Clés STABLES des états-drapeaux (`EffectFlags`) — vocabulaire d'identité partagé par `flagChips`
+ *  (production) et `chipCodex` (routage Codex). */
+export type FlagId = 'frenzied' | 'defensiveStance' | 'aiming' | 'focusDr' | 'hunger' | 'fear';
+
 export interface EffectChip {
   key: string;
   /** Id d'icône du registre `src/ui/icons/` — rendu par `<Icon>` (HTML) ou `<IconG>` (SVG). */
@@ -23,6 +27,9 @@ export interface EffectChip {
   condId?: string;
   /** id STABLE du sort/prière SOURCE d'un buff (`ActiveEffect.sourceSpellId`) — résolution Codex Sorts. */
   sourceSpellId?: string;
+  /** id STABLE de l'état-drapeau (clé d'`EffectFlags`) — SEUL moyen d'identifier un drapeau en aval
+   *  (routage Codex de `chipCodex`) : le `label` est de l'affichage, jamais une clé de logique. */
+  flagId?: FlagId;
   severity: number;
   /** Empilement (n>1) — ex. Hémorragique ×3. */
   count?: number;
@@ -105,9 +112,31 @@ export interface ChipCodex {
   /** Toujours fourni : garantit un popover même hors catalogue (drapeau, buff sans sort source). */
   fallback: { body?: string };
 }
+/** Entrée CATALOGUE d'un état-drapeau — routage par id STABLE (`FlagId`), jamais par libellé. La table
+ *  est TOTALE : un état affiché sans règle derrière lui serait un défaut d'affichage, pas une donnée
+ *  manquante (arbitrage user 2026-07-18). Le `fallback` reste néanmoins fourni par `chipCodex`. */
+const FLAG_CODEX: Record<FlagId, { category: string; id: string }> = {
+  frenzied: { category: 'psychologies', id: 'frenesie' },
+  fear: { category: 'psychologies', id: 'peur' },
+  focusDr: { category: 'regles', id: 'focalisation-etendue' },
+  defensiveStance: { category: 'regles', id: 'sur-la-defensive' },
+  hunger: { category: 'regles', id: 'faim-et-soif' },
+  aiming: { category: 'regles', id: 'viser' },
+};
+
 export function chipCodex(c: EffectChip): ChipCodex {
   const detail = chipDetail(c);
   const buff = c.kind === 'buff';
+  const flag = c.flagId ? FLAG_CODEX[c.flagId] : undefined;
+  if (flag) {
+    return {
+      category: flag.category,
+      id: flag.id,
+      label: c.label,
+      instance: detail ? `${c.label} — ${detail}` : c.label,
+      fallback: { body: detail || undefined },
+    };
+  }
   return {
     category: buff ? 'spells' : 'etats',
     id: buff ? c.sourceSpellId : c.condId,
@@ -143,20 +172,20 @@ export function combatantFlags(c: Combatant): EffectFlags {
 
 function flagChips(flags?: EffectFlags): EffectChip[] {
   const out: EffectChip[] = [];
-  if (flags?.frenzied) out.push({ key: 'f-frenzied', icon: 'flag/frenzy', label: 'Frénésie', kind: 'state', severity: 68 });
-  if (flags?.defensiveStance) out.push({ key: 'f-def', icon: 'flag/defensive', label: 'Sur la défensive (+20 en défense)', kind: 'state', severity: 60 });
-  if (flags?.aiming) out.push({ key: 'f-aim', icon: 'action/aim', label: 'En joue (+20 au prochain tir)', kind: 'state', severity: 55 });
-  if (flags?.focusDr != null) out.push({ key: 'f-focus', icon: 'flag/focus', label: `Focalisation (DR ${flags.focusDr})`, kind: 'state', severity: 50, count: flags.focusDr });
+  if (flags?.frenzied) out.push({ key: 'f-frenzied', flagId: 'frenzied', icon: 'flag/frenzy', label: 'Frénésie', kind: 'state', severity: 68 });
+  if (flags?.defensiveStance) out.push({ key: 'f-def', flagId: 'defensiveStance', icon: 'flag/defensive', label: 'Sur la défensive (+20 en défense)', kind: 'state', severity: 60 });
+  if (flags?.aiming) out.push({ key: 'f-aim', flagId: 'aiming', icon: 'action/aim', label: 'En joue (+20 au prochain tir)', kind: 'state', severity: 55 });
+  if (flags?.focusDr != null) out.push({ key: 'f-focus', flagId: 'focusDr', icon: 'flag/focus', label: `Focalisation (DR ${flags.focusDr})`, kind: 'state', severity: 50, count: flags.focusDr });
   if (flags?.hunger) {
     const h = flags.hunger;
     out.push({
-      key: 'f-hunger', icon: 'flag/hungry', kind: 'state', severity: 62,
+      key: 'f-hunger', flagId: 'hunger', icon: 'flag/hungry', kind: 'state', severity: 62,
       label: `Affamé (${h.days} j sans manger${h.failures >= 2 ? ' — −10 à toutes les Caractéristiques' : h.failures === 1 ? ' — −10 Force/Endurance' : ''}) : pas de récupération naturelle`,
     });
   }
   if (flags?.fear != null) {
     out.push({
-      key: 'f-fear', icon: 'flag/fear', kind: 'state', severity: 66,
+      key: 'f-fear', flagId: 'fear', icon: 'flag/fear', kind: 'state', severity: 66,
       label: `Peur (Indice ${flags.fear}) — −1 DR contre la source ; approcher exige un Test de Calme (+0) ; Test étendu de Calme en fin de Round pour la vaincre`,
     });
   }
