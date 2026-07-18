@@ -24,6 +24,13 @@ export type Duration =
   | { scale: 'permanent' }
   | { scale: 'adventure' };
 
+/** Libellé CANONIQUE d'un compte de Rounds — vocabulaire UNIQUE de l'échelle tactique, posé auprès du
+ *  modèle pour qu'aucun affichage ne réinvente l'unité (le Round contient le tour de chaque combattant :
+ *  un suffixe « t »/« tour » y serait faux). « Round » capitalisé comme terme RAW, accord réel. */
+export function roundsLabel(n: number): string {
+  return `${n} Round${n > 1 ? 's' : ''}`;
+}
+
 /** Avance une durée d'UN Round. Les échelles `clock`/`permanent`/`adventure` sont inertes au tick de Round. */
 export function tickRound(d: Duration): Duration {
   return d.scale === 'rounds' ? { scale: 'rounds', left: d.left - 1 } : d;

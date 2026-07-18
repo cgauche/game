@@ -23,7 +23,7 @@
  */
 import type { ReactNode } from 'react';
 import type { Combatant, HitLocation } from '../engine/types';
-import type { Duration } from '../engine/duration';
+import { roundsLabel, type Duration } from '../engine/duration';
 import { locationLabel } from '../engine/combat';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { maxEncumbrance, totalEncumbrance } from '../engine/items';
@@ -191,12 +191,6 @@ export function zoneAfflictions(hero: Combatant): { loc: HitLocation; crit: numb
   }));
 }
 
-/** Libellé plein d'un compte de Rounds (vocabulaire du jeu, ex. `humanizeOp`/`opRows.ts` : « Round »
- *  capitalisé comme un terme RAW, accord réel singulier/pluriel) — jamais l'abréviation muette « R ». */
-function roundsLabel(n: number): string {
-  return `${n} Round${n > 1 ? 's' : ''}`;
-}
-
 /** Durée compacte d'un effet actif/contrecoup, pour la valeur de sa `PlaqueRow`. */
 function effectDuration(e: { duration?: Duration; roundsLeft?: number; untilTime?: number }): string {
   if (e.duration) return e.duration.scale === 'rounds' ? ` · ${roundsLabel(e.duration.left)}` : e.duration.scale === 'clock' ? ' · durée' : '';
@@ -205,7 +199,7 @@ function effectDuration(e: { duration?: Duration; roundsLeft?: number; untilTime
 
 /** Valeur de la `PlaqueRow` d'un État actif : cumul de pions (`ConditionInstance.value`, ex. 10
  *  Hémorragique) + durée d'instance temporisée (`roundsLeft`/`untilTime` — État posé par un Sort,
- *  ex. Sonné « N Rounds ») — MÊME vocabulaire que `effectDuration` (` · N R` / ` · durée`), sans
+ *  ex. Sonné « N Rounds ») — MÊME vocabulaire que `effectDuration` (`roundsLabel` / ` · durée`), sans
  *  quoi ces données d'instance restent invisibles hors popover Codex (qui ne porte que la règle
  *  générique, pas l'état vécu du Personnage). `undefined` si l'instance est nue (1 pion, permanente). */
 function conditionValue(cond: ConditionInstance): string | undefined {
@@ -284,26 +278,26 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 }
                 // Buff de sort : chip VERTE (`.tone-ok`, même famille que `.tone-warn`/`.tone-danger`,
                 // `components.css`), liée à SON sort source si résolvable (`sourceSpellId` -> Codex
-                // Sorts) ; sinon chip simple (info visible, sans lien).
+                // Sorts) ; hors catalogue, le MÊME popover par le `fallback` de CodexRef.
                 const eff = buffs[buffIdx++];
                 const meta: string[] = [];
                 if (chip.char != null) meta.push(`${(chip.bonus ?? 0) >= 0 ? '+' : ''}${chip.bonus ?? 0} ${CHAR_LABELS[chip.char]}`);
                 const dur = eff ? effectDuration(eff).replace(/^ · /, '') : '';
                 if (dur) meta.push(dur);
                 const metaNode = meta.length ? <em className="entity-badge">{meta.join(' · ')}</em> : null;
-                const spellId = eff?.sourceSpellId;
-                return spellId ? (
-                  <CodexRef key={chip.key} category="spells" id={spellId} label={chip.label} className="chip tone-ok">
+                return (
+                  <CodexRef
+                    key={chip.key}
+                    category="spells"
+                    id={eff?.sourceSpellId}
+                    label={chip.label}
+                    fallback={{ body: meta.join(' · ') || undefined }}
+                    className="chip tone-ok"
+                  >
                     <Icon id={chip.icon as IconIdInput} size="sm" />
                     {chip.label}
                     {metaNode}
                   </CodexRef>
-                ) : (
-                  <span key={chip.key} className="chip tone-ok" title={chip.label}>
-                    <Icon id={chip.icon as IconIdInput} size="sm" />
-                    {chip.label}
-                    {metaNode}
-                  </span>
                 );
               })}
               {castPen.map((p, i) => {
@@ -311,11 +305,17 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
                 const dur = effectDuration(p).replace(/^ · /, '');
                 const parts = [val, dur].filter(Boolean).join(' · ');
                 return (
-                  <span key={`cp${i}`} className="chip tone-warn" title={p.label}>
+                  <CodexRef
+                    key={`cp${i}`}
+                    category="spells"
+                    label={p.label}
+                    fallback={{ body: parts || undefined }}
+                    className="chip tone-warn"
+                  >
                     <Icon id="ui/warning" size="sm" />
                     {p.label}
                     {parts ? <em className="entity-badge">{parts}</em> : null}
-                  </span>
+                  </CodexRef>
                 );
               })}
             </div>

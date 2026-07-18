@@ -3,12 +3,13 @@
  * (pion sur le terrain, panneau Perso, ordre de bataille, fiche express au survol).
  * Aucune règle ici : on lit `conditions[]` et `activeEffects[]` déjà gérés par le moteur.
  */
-import type { ConditionInstance, ActiveEffect, CharKey, Combatant } from '../engine/types';
+import { CHAR_LABELS, type ConditionInstance, type ActiveEffect, type CharKey, type Combatant } from '../engine/types';
 import type { IconId } from '../ui/icons';
 import { conditionLabel, findConditionById } from '../data';
 import { slugId } from '../data/slug';
 import { isFrenzied } from '../engine/psychology';
 import { conditionSeverity } from '../engine/conditions';
+import { roundsLabel } from '../engine/duration';
 
 export interface EffectChip {
   key: string;
@@ -20,6 +21,8 @@ export interface EffectChip {
   /** id STABLE de l'État (malus) pour la résolution Codex par id — `ConditionInstance.name` (slug
    *  d'etats.json). Absent sur buff/état-drapeau (hors catalogue États). */
   condId?: string;
+  /** id STABLE du sort/prière SOURCE d'un buff (`ActiveEffect.sourceSpellId`) — résolution Codex Sorts. */
+  sourceSpellId?: string;
   severity: number;
   /** Empilement (n>1) — ex. Hémorragique ×3. */
   count?: number;
@@ -74,7 +77,44 @@ function buffChips(effects: ActiveEffect[]): EffectChip[] {
     rounds: e.duration.scale === 'rounds' ? e.duration.left : undefined,
     bonus: e.bonus,
     char: e.char,
+    sourceSpellId: e.sourceSpellId,
   }));
+}
+
+/** Détail PARAMÉTRÉ d'une pastille (bonus + carac, Rounds restants, empilement) — la part variable
+ *  que le catalogue ne porte pas. Vide quand la pastille n'a que son libellé. Pur. */
+export function chipDetail(c: EffectChip): string {
+  const parts: string[] = [];
+  if (c.bonus) parts.push(`${c.bonus > 0 ? '+' : ''}${c.bonus}${c.char ? ` ${CHAR_LABELS[c.char]}` : ''}`);
+  if (c.rounds != null) parts.push(`${roundsLabel(c.rounds)} restant${c.rounds > 1 ? 's' : ''}`);
+  if ((c.count ?? 1) > 1) parts.push(`×${c.count}`);
+  return parts.join(' · ');
+}
+
+/** Cible d'information d'une pastille d'effet, IDENTIQUE pour toute la famille (`EffectChips`,
+ *  `StateChips`, section « Effets actifs ») : un seul mécanisme, `CodexRef` — État vers le catalogue
+ *  États, buff vers son sort source, et à défaut un popover de secours portant le détail. Jamais
+ *  d'infobulle native (`title`), qui concurrencerait le popover. Pur. */
+export interface ChipCodex {
+  category: string;
+  /** id STABLE de l'entrée catalogue, quand la pastille en a une. */
+  id?: string;
+  label: string;
+  /** Libellé paramétré (détail inclus) — en tête du popover, le libellé catalogue en sous-titre. */
+  instance?: string;
+  /** Toujours fourni : garantit un popover même hors catalogue (drapeau, buff sans sort source). */
+  fallback: { body?: string };
+}
+export function chipCodex(c: EffectChip): ChipCodex {
+  const detail = chipDetail(c);
+  const buff = c.kind === 'buff';
+  return {
+    category: buff ? 'spells' : 'etats',
+    id: buff ? c.sourceSpellId : c.condId,
+    label: c.label,
+    instance: detail ? `${c.label} — ${detail}` : undefined,
+    fallback: { body: detail || undefined },
+  };
 }
 
 /** États-drapeaux (hors `conditions[]`) : postures/actions vivant sur le Combatant. */

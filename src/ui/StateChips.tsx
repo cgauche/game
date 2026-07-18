@@ -1,5 +1,6 @@
-import { summarizeEffects, combatantFlags } from '../gameIso/effectIcons';
+import { summarizeEffects, combatantFlags, chipCodex } from '../gameIso/effectIcons';
 import type { Combatant } from '../engine/types';
+import { CodexRef } from './compendium/CodexRef';
 import { Icon } from './Icon';
 
 /**
@@ -8,6 +9,9 @@ import { Icon } from './Icon';
  * À DROITE de la barre de Mouvement (et non plus en débordement DERRIÈRE elle, retour 2026-06-11 :
  * le buff +10 CC d'une Bénédiction passait sous la jauge). `max` = pastilles avant le « ▾ » de débord.
  * Pure (testable en SSR).
+ *
+ * Elles informent par le MÊME mécanisme que `EffectChips` : `CodexRef` (routage `chipCodex`), jamais
+ * une infobulle native.
  *
  * `reserve` : la cellule garde une EMPREINTE STABLE même sans État (arbitrage user 2026-07-11) — les
  * listes de rangées-personnages (nuit, batch) alignent ainsi leurs colonnes, un État ne décale plus
@@ -20,13 +24,31 @@ export function StateChips({ c, max = 4, reserve = false }: { c: Combatant; max?
   if (shown.length === 0 && more.length === 0) return reserve ? <span className="ptile-states" data-reserve /> : null;
   return (
     <span className="ptile-states" data-reserve={reserve ? '' : undefined}>
-      {shown.map((v) => (
-        <span key={v.key} className="pt-state" title={v.count && v.count > 1 ? `${v.label} ×${v.count}` : v.label}>
-          <Icon id={v.icon} size="sm" />
-        </span>
-      ))}
+      {shown.map((v) => {
+        const ref = chipCodex(v);
+        return (
+          <CodexRef
+            key={v.key}
+            category={ref.category}
+            id={ref.id}
+            label={ref.label}
+            instance={ref.instance}
+            fallback={ref.fallback}
+            className="pt-state"
+          >
+            <Icon id={v.icon} size="sm" />
+          </CodexRef>
+        );
+      })}
       {more.length > 0 && (
-        <span className="pt-state ptile-more" title={more.map((m) => m.label).join(' · ')}>▾</span>
+        <CodexRef
+          category="etats"
+          label={`${more.length} effet${more.length > 1 ? 's' : ''} de plus`}
+          fallback={{ body: more.map((m) => m.label).join(' · ') }}
+          className="pt-state ptile-more"
+        >
+          ▾
+        </CodexRef>
       )}
     </span>
   );
