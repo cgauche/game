@@ -23,7 +23,7 @@ import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest, type TestResult } from './tests';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
-// Tronc commun cargaison (partagé avec le commerce terrestre T2C, `landCargo.ts`) — modèle de lot,
+// Tronc commun cargaison (partagé avec le commerce terrestre MSRC, `landCargo.ts`) — modèle de lot,
 // tirage saisonnier, prix de base. Re-exporté pour les importeurs historiques de ce module.
 import { type CargoDef, rollSeasonalCargo } from './cargo';
 export { type CargoDef, type CargoLot, cargoTotalEnc, removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoBasePrice, bargainDeltaPct } from './cargo';
@@ -326,4 +326,4 @@ export function opportunityTradePct(totalDR: number): number {
 }
 
 // La cargaison EMBARQUÉE (CargoLot, cargoTotalEnc, removeCargo) est désormais le tronc commun de
-// `cargo.ts`, re-exporté en tête de ce module (partagé avec le commerce terrestre T2C).
+// `cargo.ts`, re-exporté en tête de ce module (partagé avec le commerce terrestre MSRC).

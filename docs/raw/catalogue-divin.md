@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`religion.md`](religion.md).
 >
-> **Chapitres source :** `LDB 24` · `LDB 25` · `LDB 26` · `LDB 27` · `LDB 28` · `LDB 29` · `LDB 30` · `LDB 31` · `LDB 32` · `LDB 33` · `LDB 34` · `LDB 35` · `LDB 36` · `LDB 37` · `LDB 38` · `LDB 39` · `LDB 40` · `LDB 41` · `LDB 42` · `LDB 43` · `Middenheim 7` · `ACE 11` · `MDG 10` · `MDG 11`.
+> **Chapitres source :** `LDB 24` · `LDB 25` · `LDB 26` · `LDB 27` · `LDB 28` · `LDB 29` · `LDB 30` · `LDB 31` · `LDB 32` · `LDB 33` · `LDB 34` · `LDB 35` · `LDB 36` · `LDB 37` · `LDB 38` · `LDB 39` · `LDB 40` · `LDB 41` · `LDB 42` · `LDB 43` · `MCLB 7` · `ACE 11` · `MDG 10` · `MDG 11`.
 
 ---
 
@@ -731,7 +731,7 @@ Si un Personnage se comporte de façon particulièrement pieuse, en achevant par
 | 46-50       | Cessez vos babillages : vous ne pouvez pas effectuer de Tests de Prière pendant les 2d10 + (Points de Péché)<br>prochains Rounds.                                                                                                         |
 
 
-| 51-55   | Ressentez ma colère : vous subissez 1d10 + (Points de Péché) Blessures. Effectuez aussi un Test de Résistance<br>Intermédiaire (+0). Sur un échec, vous gagnez 1 État Sonné.                                                                                                                                                                                                                             |  |  |  |
+<span id="page-220-0" data-folio="219"></span>| 51-55   | Ressentez ma colère : vous subissez 1d10 + (Points de Péché) Blessures. Effectuez aussi un Test de Résistance<br>Intermédiaire (+0). Sur un échec, vous gagnez 1 État Sonné.                                                                                                                                                                                                                             |  |  |  |
 |---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|--|
 | 56-60   | Je ne vous aiderai pas : vous subissez une pénalité de -10 à une Compétence associée à votre divinité (déterminée<br>par le MJ) pour les 1d10 + (Points de Péché) prochains jours.                                                                                                                                                                                                                       |  |  |  |
 | 61-65   | Blessures divines : gagnez 1 + (Points de Péché) États Hémorragique.                                                                                                                                                                                                                                                                                                                                     |  |  |  |
@@ -813,7 +813,7 @@ Si la Bénédiction en question a une Durée « Instantanée », vous ne pouvez 
 
 # MANIFESTATIONS DIVINES
 
-Les Bénédictions sont subtiles, imperceptibles à ceux qui ne possèdent pas le Talent Visions sacrées, leur manifestation ne se distingue généralement pas de la chance. De cette façon, les Prêtres du Vieux Monde qui ne possèdent pas le Talent Béni semblent souvent aussi efficaces que ceux qui le possèdent.
+<span id="page-222-0" data-folio="221"></span>Les Bénédictions sont subtiles, imperceptibles à ceux qui ne possèdent pas le Talent Visions sacrées, leur manifestation ne se distingue généralement pas de la chance. De cette façon, les Prêtres du Vieux Monde qui ne possèdent pas le Talent Béni semblent souvent aussi efficaces que ceux qui le possèdent.
 
 Par contre, les Miracles se manifestent ouvertement, toujours accompagnés de signes ou de présages sacrés, qui devraient refléter la situation et la divinité pertinente. Par exemple, un Miracle d'Ulric peut s'accompagner d'un vent froid et de hurlements spectraux de loups, tandis que ceux qui reçoivent un Miracle de Manann peuvent être trempés d'eau salée.
 
@@ -1538,7 +1538,7 @@ Vous faites appel à Verena pour vous apporter sagesse et connaissance. Vous gag
 En demandant à Verena d'être votre témoin, la véracité de vos paroles est évidente pour tous. Pour la durée du Miracle, à condition que vous ne disiez que la vérité, tous les auditeurs croiront ce que vous dites. Évidemment, cela ne signifie pas nécessairement qu'ils seront d'accord avec vos conclusions.
 
 
-## [Middenheim 7] Cultes du Chaos de Middenheim
+## [MCLB 7] Cultes du Chaos de Middenheim
 
 *Pages PDF 137-145*
 

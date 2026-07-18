@@ -293,7 +293,7 @@ Le Bonus de Force est abrégé en BF dans les Tableaux des armes.
 
 # ARMES DE CORPS À CORPS
 
-| Arme                         | Prix    | Enc      | Disponibilité | Allonge      | Dégâts  | Atouts et Défauts                                             |
+<span id="page-295-0" data-folio="294"></span>| Arme                         | Prix    | Enc      | Disponibilité | Allonge      | Dégâts  | Atouts et Défauts                                             |
 |------------------------------|---------|----------|---------------|--------------|---------|---------------------------------------------------------------|
 |                              |         |          |               | ARMES D'HAST |         |                                                               |
 | (2M) Bâton de combat         | 3/–     | 2        | Commune       | Longue       | +BF +4  | Assommante, Défensive                                         |
@@ -336,7 +336,7 @@ Le Bonus de Force est abrégé en BF dans les Tableaux des armes.
 
 # ARMES À DISTANCE
 
-| Arme                            | Prix  | Enc | Disponibilité | Portée        | Dégâts     | Atouts et Défauts                                 |
+<span id="page-296-0" data-folio="295"></span>| Arme                            | Prix  | Enc | Disponibilité | Portée        | Dégâts     | Atouts et Défauts                                 |
 |---------------------------------|-------|-----|---------------|---------------|------------|---------------------------------------------------|
 |                                 |       |     |               | ARBALÈTE      |            |                                                   |
 | (2M) Arbalète                   | 5CO   | 2   | Commune       | 60            | +9         | Recharge 1                                        |
@@ -511,7 +511,7 @@ Votre arme contient *Indice* munitions, automatiquement rechargées après chaqu
 Les armes Assommantes sont particulièrement efficaces pour forcer les ennemis à se soumettre. Si vous touchez la Tête avec une arme Assommante, tentez un Test opposé **Force/ Résistance** contre la cible frappée. Si vous remportez le Test, votre adversaire gagne un État *Sonné*.
 
 
-### **Défensive**
+<span id="page-299-0" data-folio="298"></span>### **Défensive**
 
 Les armes Défensives sont conçues pour parer les attaques. Si vous utilisez une telle arme, vous gagnez un bonus de +1 DR à n'importe quel Test de Corps à corps quand vous opposez une attaque.
 

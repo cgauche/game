@@ -620,7 +620,7 @@ export interface GameState extends RollFlowActionsMap {
   interludeEntrainement: (heroId: string, kind: 'skill' | 'characteristic', id: string, spec?: string) => void;
   /** Activité du CATALOGUE data-driven (`activities.json`, contexte 'interlude' + gate `where`) — LE
    *  CHEMIN UNIQUE de toutes les Activités à jet : Revenus, Artisanat, Apprentissage (`talentId`),
-   *  Identification (`itemUid`), Convalescence (ADE2), Activités d'Altdorf (ACE Annexe I). Cibles
+   *  Identification (`itemUid`), Convalescence (ADE II), Activités d'Altdorf (ACE Annexe I). Cibles
    *  éventuelles selon le résolveur : objet / sort / dépôt / Talent. */
   interludeActivity: (heroId: string, activityId: string, opts?: { itemUid?: string; spellId?: string; depositIndex?: number; talentId?: string }) => void;
   /** Coop en ligne : état réseau sérialisable + actions de session — délégué à netFlow.
@@ -1289,28 +1289,28 @@ export interface GameState extends RollFlowActionsMap {
   portHireCrew: (roleId: string, count?: number) => void;
   /** Débarque `count` PNJ salariés du rôle `roleId` (#228). */
   portDismissCrew: (roleId: string, count?: number) => void;
-  /** Board de RUMEURS COMMERCIALES persistant (T2C 13 l.180) : chaque rumeur désigne un AUTRE Lieu où
+  /** Board de RUMEURS COMMERCIALES persistant (MSRC 13 l.180) : chaque rumeur désigne un AUTRE Lieu où
    *  des biens se vendent au double. Entendues aux marchés (Ragot Complexe −10) OU à l'auberge du hub de
    *  ville (#352, Activité `recueillir-informations`, EDOC 8 l.151), consultées dans l'écran Marché/le
    *  panneau auberge, appliquées à la vente au Lieu désigné. Persiste au niveau GROUPE (sauvegardé, remis
    *  à zéro en nouvelle partie via l'état initial). */
   tradeRumours: import('../engine/landCargo').TradeRumour[];
-  /** Écran MARCHÉ TERRESTRE ouvert (commerce de cargaison à un Lieu `market` de la carte — T2C 13 l.3) :
+  /** Écran MARCHÉ TERRESTRE ouvert (commerce de cargaison à un Lieu `market` de la carte — MSRC 13 l.3) :
    *  offres d'achat générées à l'arrivée. `null` = fermé. */
   landMarket: import('./landMarketFlow').LandMarketState | null;
   /** Ouvre l'écran Marché si le groupe est à un Lieu de commerce terrestre de la carte (`MapPlace.market`). */
   openLandMarket: () => void;
   closeLandMarket: () => void;
-  /** Achète `enc` d'une cargaison de l'étape (disponibilité 2 temps/Marchandage/lot partiel, T2C 13 l.129-131) —
+  /** Achète `enc` d'une cargaison de l'étape (disponibilité 2 temps/Marchandage/lot partiel, MSRC 13 l.129-131) —
    *  chargée sur le porteur de défaut du groupe dans la limite de sa Contenance (#327). */
   landBuyCargo: (cargoId: string, enc: number) => void;
-  /** Vend un lot d'un porteur (Demande/Mise à prix/Marchandage, T2C 13 l.133-160). */
+  /** Vend un lot d'un porteur (Demande/Mise à prix/Marchandage, MSRC 13 l.133-160). */
   landSellCargo: (carrierId: string, cargoIndex: number) => void;
-  /** Brade un lot invendable (½ du prix de base dans un Lieu de Commerce, T2C 13 l.160). */
+  /** Brade un lot invendable (½ du prix de base dans un Lieu de Commerce, MSRC 13 l.160). */
   landDumpCargo: (carrierId: string, cargoIndex: number) => void;
   /** Transfère `enc` d'une cargaison entre deux porteurs CO-LOCALISÉS (bête/véhicule/navire, #327). */
   moveCargo: (fromId: string, toId: string, cargoId: string, enc: number) => void;
-  /** Évalue la qualité secrète d'un lot de Vin proposé (Test d'Évaluation, T2C 13 l.95). */
+  /** Évalue la qualité secrète d'un lot de Vin proposé (Test d'Évaluation, MSRC 13 l.95). */
   landEvalWine: (cargoId: string) => void;
   /** Ouvre le Test de Ragot de l'auberge du hub de ville (#352, Activité `recueillir-informations`
    *  étendue au contexte `auberge`) : succès → rumeur commerciale (`generateTradeRumour`), échec →
@@ -2344,7 +2344,7 @@ export const useGame = create<GameState>((set, get) => ({
     runFlow(get, set, { kind: 'seq', steps: [branch ?? EMPTY_FLOW, pt.after ?? EMPTY_FLOW] }, pt.label, pt.sl);
     // SEAM `onOwnTestFailed` (chemin modal JOUEUR — convergence des Tests de scène/compétence/combat, réf
     // memory « JAMAIS rollTest inline chemin joueur ») : un Test RATÉ émet le trigger (Crampes abdominales
-    // → Sonné/À Terre/Inconscient par paliers de DR, T2C 16 l.152). Réussite forcée (Résilience) exclue.
+    // → Sonné/À Terre/Inconscient par paliers de DR, MSRC 16 l.152). Réussite forcée (Résilience) exclue.
     // RÉ-ENTRANCE : ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de palier 2) → il ne RÉ-ÉMET PAS.
     // CADENCE-AWARE : sans modale déjà ouverte, on threade `set` → le FM de palier 2 d'un HÉROS devient une
     // étape de cascade (combat) OU une modale de jet scène (interlude, `routeTriggeredTest`) ; PNJ → inline.

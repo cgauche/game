@@ -162,17 +162,17 @@ describe('Bélier dans la collision — valeurs data-driven (MDG 12 l.221)', () 
   });
 });
 
-describe('Améliorations T2C 12 (Personnalisation) — MÊME canal que MDG, entrées PROPRES au T2C', () => {
-  it('Bouteur → moveMod −1 sur le canal navalMoveMod (T2C 12 : « réduit la vitesse de Mouvement de –1 »)', () => {
+describe('Améliorations MSRC 12 (Personnalisation) — MÊME canal que MDG, entrées PROPRES au MSRC', () => {
+  it('Bouteur → moveMod −1 sur le canal navalMoveMod (MSRC 12 : « réduit la vitesse de Mouvement de –1 »)', () => {
     expect(navalMoveMod([{ id: 'bouteur' }])).toBe(-1);
     // combiné à Lissage (+1) : les moveMod se somment sur le canal unique.
     expect(navalMoveMod([{ id: 'bouteur' }, { id: 'lissage' }])).toBe(0);
   });
-  it('Bouteur → +20 au Test de Navigation pour diriger (T2C 12 l.66) ; converti +2 DR d’équipage', () => {
+  it('Bouteur → +20 au Test de Navigation pour diriger (MSRC 12 l.66) ; converti +2 DR d’équipage', () => {
     expect(navalNavTestMod([{ id: 'bouteur' }])).toBe(20);
     expect(navalNavTestDR([{ id: 'bouteur' }])).toBe(2); // ÷10 (LDB : 10 pts = 1 DR)
   });
-  it('Gréement de course → −10 au Test de Navigation (T2C 12 l.137) ; converti −1 DR d’équipage', () => {
+  it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.137) ; converti −1 DR d’équipage', () => {
     expect(navalNavTestMod([{ id: 'greement-de-course' }])).toBe(-10);
     expect(navalNavTestDR([{ id: 'greement-de-course' }])).toBe(-1);
   });
@@ -188,20 +188,20 @@ describe('Améliorations T2C 12 (Personnalisation) — MÊME canal que MDG, entr
     expect(effectiveDeckPostes(postes, navalDeckCover([{ id: 'murs-blindes' }])).every((p) => p.cover === 'totale')).toBe(true);
   });
   it('coût d’installation posé sur des PALIERS DE LONGUEUR (#277 — canal installCost EXISTANT) — pas de duplication d’un chantier', () => {
-    // Grande barge (~25 m, bande ouverte) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (T2C 12 l.62/64, l.80/82).
+    // Grande barge (~25 m, bande ouverte) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (MSRC 12 l.62/64, l.80/82).
     const bouteur = findNavalTrait('bouteur')!.install!;
     const murs = findNavalTrait('murs-blindes')!.install!;
     expect(installCost(bouteur, 25)).toEqual({ gold: 120, enc: 95 });
     expect(installCost(murs, 25)).toEqual({ gold: 300, enc: 160 });
   });
-  it('barque (5 m) vs esquif de pêche (10 m) : MÊME `ShipSize` « minuscule », tarifs DIFFÉRENTS (#277, T2C 12 l.62/64)', () => {
+  it('barque (5 m) vs esquif de pêche (10 m) : MÊME `ShipSize` « minuscule », tarifs DIFFÉRENTS (#277, MSRC 12 l.62/64)', () => {
     // Le RAW tarife par TYPE de navire à longueurs explicites, pas par bande de Taille — la Taille aurait
     // confondu les deux (10 m ≤ borne « minuscule » = 10 m, cf. shipSizeOfLength).
     const bouteur = findNavalTrait('bouteur')!.install!;
     expect(installCost(bouteur, 5)).toEqual({ gold: 8, enc: 5 }); // barque
     expect(installCost(bouteur, 10)).toEqual({ gold: 30, enc: 35 }); // esquif de pêche
   });
-  it('les 4 paliers RAW des 6 Améliorations T2C 12 (barque/esquif/moyenne+patrouille/grande barge)', () => {
+  it('les 4 paliers RAW des 6 Améliorations MSRC 12 (barque/esquif/moyenne+patrouille/grande barge)', () => {
     const cases: [string, [number, number][]][] = [
       ['safran', [[5, 5], [25, 20], [50, 40], [120, 80]]], // l.54/56
       ['bouteur', [[8, 5], [30, 35], [60, 55], [120, 95]]], // l.62/64
@@ -220,7 +220,7 @@ describe('Améliorations T2C 12 (Personnalisation) — MÊME canal que MDG, entr
   });
 });
 
-describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG 12 l.362-364, T2C 12 l.85/111), data-driven', () => {
+describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG 12 l.362-364, MSRC 12 l.85/111), data-driven', () => {
   const postes = findVehicleById('cogue')!.deck!.postes!; // 3 emplacements, aucun couvert par défaut
 
   it('navalDeckCover lit le champ `deckCover` gradué (Sabord → totale ; Plat-bord → moyenne ; autre/absent → none)', () => {
@@ -231,7 +231,7 @@ describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG 12 l.362-364, T2C
   });
 
   it('couvert PARTIEL (Plat-bord, moyenne) distinct du couvert TOTAL (Sabord/Murs, totale) — bonus moindre', () => {
-    // T2C 12 l.111 « couverture moyenne … Difficiles » (−20) ≠ l.85/l.727 « couverture totale … Très Difficile » (−30).
+    // MSRC 12 l.111 « couverture moyenne … Difficiles » (−20) ≠ l.85/l.727 « couverture totale … Très Difficile » (−30).
     expect(navalDeckCover([{ id: 'plat-bord' }])).not.toBe(navalDeckCover([{ id: 'sabord' }]));
     // Cumul : le MEILLEUR couvert l'emporte (Plat-bord + Sabord → totale).
     expect(navalDeckCover([{ id: 'plat-bord' }, { id: 'sabord' }])).toBe('totale');
@@ -255,7 +255,7 @@ describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG 12 l.362-364, T2C
   });
 });
 
-describe('navalMoveMult — Coque de course → 2×M, op moveScale (T2C 12 l.27)', () => {
+describe('navalMoveMult — Coque de course → 2×M, op moveScale (MSRC 12 l.27)', () => {
   it('Coque de course → facteur 2/1 ; sans multiplicateur → neutre 1/1', () => {
     expect(navalMoveMult([{ id: 'coque-de-course' }])).toEqual({ num: 2, den: 1 });
     expect(navalMoveMult([{ id: 'lissage' }, { id: 'sabord' }])).toEqual({ num: 1, den: 1 });
@@ -266,26 +266,26 @@ describe('navalMoveMult — Coque de course → 2×M, op moveScale (T2C 12 l.27)
   });
 });
 
-describe('Nouvelles Améliorations T2C 12 — résolvent au catalogue + coût d’installation (canal EXISTANT)', () => {
+describe('Nouvelles Améliorations MSRC 12 — résolvent au catalogue + coût d’installation (canal EXISTANT)', () => {
   it.each(['coque-de-course', 'safran', 'plat-bord', 'allegement', 'greement-de-course', 'fourquines'])(
-    '%s : entrée présente, kind amelioration, source T2C, install chiffré', (id) => {
+    '%s : entrée présente, kind amelioration, source MSRC, install chiffré', (id) => {
       const e = findNavalTrait(id)!;
       expect(e).toBeDefined();
       expect(e.kind).toBe('amelioration');
       expect(e.source?.book).toBe('mort-sur-le-reik-compagnon');
       expect(e.install).toBeDefined();
     });
-  it('Coque de course : coût per:10m (T2C « 220 CO pour 10 mètres ») — 20 m de coque → 440 CO, −100 Enc', () => {
-    // per:'10m' → ×ceil(20/10)=2 (T2C 12 l.23/25) ; bande unique (uniforme, aucun palier de longueur).
+  it('Coque de course : coût per:10m (MSRC « 220 CO pour 10 mètres ») — 20 m de coque → 440 CO, −100 Enc', () => {
+    // per:'10m' → ×ceil(20/10)=2 (MSRC 12 l.23/25) ; bande unique (uniforme, aucun palier de longueur).
     expect(installCost(findNavalTrait('coque-de-course')!.install!, 20)).toEqual({ gold: 440, enc: -100 });
   });
-  it('Fourquines : coût à l’unité (T2C « 1 CO la pièce, +1 Enc ») — 3 pièces → 3 CO / 3 Enc', () => {
+  it('Fourquines : coût à l’unité (MSRC « 1 CO la pièce, +1 Enc ») — 3 pièces → 3 CO / 3 Enc', () => {
     expect(installCost(findNavalTrait('fourquines')!.install!, 15, 3)).toEqual({ gold: 3, enc: 3 });
   });
-  it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (T2C 12 l.107/109)', () => {
+  it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
     expect(installCost(findNavalTrait('plat-bord')!.install!, 30)).toEqual({ gold: 45, enc: 60 });
   });
-  it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, T2C 12 l.117)', () => {
+  it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
     expect(installCost(findNavalTrait('allegement')!.install!, 30)).toEqual({ gold: 250, enc: -80 });
   });
 });

@@ -2,15 +2,15 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: superpowers:executing-plans (INLINE — `store.ts`/`combatFlow.ts`/`scene.ts`/`CampaignView.tsx`/`MerchantPanel.tsx` sont CHAUDS, édités par d'autres sessions //). Étapes en `- [ ]`.
 > ⚠️ Fichiers chauds → relire l'ancre avant chaque edit ; committer **uniquement mes hunks** (index temporaire seedé sur HEAD + reverse-apply des hunks étrangers ; marqueurs : `bargain`/`appraise`/`identified`/`repair`/`Marchandage`/`Évaluation`/`Réparation`). Vérifier `git show --stat` avant commit. ⚠️ **Hazard vécu** : store.ts a été `git restore` sous moi une fois → committer VITE après chaque task, relire l'ancre à chaque edit. Finir les commits par `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
-> **VF** : tout affiché en français ; RAW = LDB FR + ADE2 uniquement, cité.
+> **VF** : tout affiché en français ; RAW = LDB FR + ADE II uniquement, cité.
 
 **Goal:** Compléter le Marchand : Marchandage (négocier −10/−20 %), Évaluation (révéler qualité cachée + estimer valeur), Réparation d'armure (10 %/PA), et le modèle d'objet non-identifié (qualités cachées révélées par l'Évaluation, skin légendaire = indice).
 
-**Architecture:** Helpers purs (`bargain.ts`/`appraisal.ts`/`repair.ts`) ; flag `ItemInstance.identified` (n'affecte QUE l'affichage — les qualités restent actives au combat) ; deux modales de Test (`pendingAppraise` non-opposé, `pendingBargain` opposé) calquées sur `pendingReload`/`pendingDefense` ; qualités magiques = entrées du registre existant (ADE2). Réutilise `partyBest`/`testValue`/`opposedTest`/`craftPriceFactor`/`MERCHANTS`.
+**Architecture:** Helpers purs (`bargain.ts`/`appraisal.ts`/`repair.ts`) ; flag `ItemInstance.identified` (n'affecte QUE l'affichage — les qualités restent actives au combat) ; deux modales de Test (`pendingAppraise` non-opposé, `pendingBargain` opposé) calquées sur `pendingReload`/`pendingDefense` ; qualités magiques = entrées du registre existant (ADE II). Réutilise `partyBest`/`testValue`/`opposedTest`/`craftPriceFactor`/`MERCHANTS`.
 
 **Tech Stack:** TypeScript pur, Zustand, Vitest, React.
 
-**Spec:** `docs/superpowers/specs/2026-06-08-marchand-lot2-design.md`. **RAW cité** : Marchandage LDB 60 l.12 ; Évaluation LDB 60 l.10 ; vente ¼–½ LDB 60 l.22 ; Réparation LDB 63 l.97-98 ; qualités magiques ADE2 « 04 - Un peu de magie.md ».
+**Spec:** `docs/superpowers/specs/2026-06-08-marchand-lot2-design.md`. **RAW cité** : Marchandage LDB 60 l.12 ; Évaluation LDB 60 l.10 ; vente ¼–½ LDB 60 l.22 ; Réparation LDB 63 l.97-98 ; qualités magiques ADE II « 04 - Un peu de magie.md ».
 
 ---
 
@@ -255,13 +255,13 @@ Pattern : calqué sur `pendingReload` (Test non-opposé). Succès → `identifie
 
 ---
 
-## Task 6 : Contenu — 1 qualité magique ADE2 + objet légendaire de démo
+## Task 6 : Contenu — 1 qualité magique ADE II + objet légendaire de démo
 
 **Files:** Modify `src/engine/qualities/registry.ts` (**CHAUD** — 1 entrée) ; un loot authored dans une scène de test.
 
-- [ ] **Step 1 : Qualité magique** — ajouter au `QUALITIES` du registre (`registry.ts`) la qualité **« De plaies atroces »** (ADE2 « 04 - Un peu de magie.md » l.228 : « possède l'Atout Dévastatrice ») = même mécanique que Dévastatrice (déjà branchée `dmgDRMode:'maxUnits'`) :
+- [ ] **Step 1 : Qualité magique** — ajouter au `QUALITIES` du registre (`registry.ts`) la qualité **« De plaies atroces »** (ADE II « 04 - Un peu de magie.md » l.228 : « possède l'Atout Dévastatrice ») = même mécanique que Dévastatrice (déjà branchée `dmgDRMode:'maxUnits'`) :
 ```ts
-  'De plaies atroces': { key: 'De plaies atroces', type: 'Atout', subType: 'Arme', dmgDRMode: 'maxUnits' }, // ADE2 « Un peu de magie » l.228 (= Dévastatrice)
+  'De plaies atroces': { key: 'De plaies atroces', type: 'Atout', subType: 'Arme', dmgDRMode: 'maxUnits' }, // ADE II « Un peu de magie » l.228 (= Dévastatrice)
 ```
 Vérifier l'allowlist de parité (le test de parité accepte les qualités enregistrées). Pas de changement de dispatch (réutilise `qualityDamageStep`).
 
@@ -269,7 +269,7 @@ Vérifier l'allowlist de parité (le test de parité accepte les qualités enreg
 
 - [ ] **Step 3 : Objet légendaire de démo** — dans une scène de test (`src/scenes/test-scenarios/` ou un loot existant), poser un objet `interact`/loot qui donne un objet `{ ..., qualities: ['De plaies atroces'], identified: false, skin: { metal: '#7faaff' } }` (épée magique non identifiée, skin bleuté). *(Authoring data — pas de logique.)*
 
-- [ ] **Step 4 : Suite + typecheck + commit** (registry.ts chaud → isolé) — `-m "feat(marchand): qualite magique ADE2 'De plaies atroces' + objet legendaire de demo (#2)"`.
+- [ ] **Step 4 : Suite + typecheck + commit** (registry.ts chaud → isolé) — `-m "feat(marchand): qualite magique ADE II 'De plaies atroces' + objet legendaire de demo (#2)"`.
 
 ---
 
@@ -279,11 +279,11 @@ Vérifier l'allowlist de parité (le test de parité accepte les qualités enreg
 - [ ] **Recette** (si browser dispo) : trouver l'épée magique non identifiée (qualités masquées + skin) → l'Évaluer chez le marchand (modale) → qualités révélées (Dévastatrice active au combat) + estimation. Marchander (modale opposée) → prix −10/−20 %. Réparer une armure endommagée → 10 %/PA.
 
 ## Hors périmètre
-Délai de réparation (#T3) ; jeu complet de qualités magiques ADE2 (au-delà de la démo) ; Marchandage par-objet (v1 = 1/visite) ; contrefaçons / Évaluation côté vendeur.
+Délai de réparation (#T3) ; jeu complet de qualités magiques ADE II (au-delà de la démo) ; Marchandage par-objet (v1 = 1/visite) ; contrefaçons / Évaluation côté vendeur.
 
 ## Self-review
-- **Couverture spec** : helpers purs (T1), identified+UI (T2), Réparation (T3), Marchandage+resaleRate RAW (T4), Évaluation+révélation (T5), qualité magique ADE2 (T6), vérif (T7). ✓
-- **Pas de placeholder** : code complet (bargain/appraisal/repair, `identified`, repairArmour, pendingBargain/pendingAppraise via patterns ReloadModal/DefenseModal RÉELS, qualité registre). RAW cité (LDB 60 l.10/12/22, LDB 63 l.97-98, ADE2 l.228).
+- **Couverture spec** : helpers purs (T1), identified+UI (T2), Réparation (T3), Marchandage+resaleRate RAW (T4), Évaluation+révélation (T5), qualité magique ADE II (T6), vérif (T7). ✓
+- **Pas de placeholder** : code complet (bargain/appraisal/repair, `identified`, repairArmour, pendingBargain/pendingAppraise via patterns ReloadModal/DefenseModal RÉELS, qualité registre). RAW cité (LDB 60 l.10/12/22, LDB 63 l.97-98, ADE II l.228).
 - **Cohérence types** : `Availability` (disponibilite) réutilisé par appraisal ; `OpposedResult`/`TestResult`/`opposedTest`/`resolveOpposed` (tests.ts) pour bargain ; `partyBest`/`testValue`/`TalentInstance.name` pour skill+Négociateur ; `bargainBuyFactor`/`bargainSellFactor`/`appraiseEstimate`/`repairCostBrass` cohérents T1→T3/T4/T5 ; `QualityDef.dmgDRMode` (registry) pour T6.
 - **Discipline** : helpers purs ; modales calquées sur le pattern existant (pendingReload/pendingDefense) ; `identified` n'affecte QUE l'affichage (qualités toujours actives — pas de divergence moteur) ; magie = registre existant (zéro nouveau moteur). 5 fichiers chauds → commits isolés + rapides.
 - **Risque** : store.ts très sollicité (3 tasks) — relire l'ancre + committer vite (hazard `git restore` vécu) ; le « 1 marchandage/visite » est une simplification RAW assumée (canon « 1 jet par transaction »).

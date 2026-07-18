@@ -400,7 +400,7 @@ registerCascadeApplier('diseaseTick', (_get, _set, step, hero) => {
   if (step.result.success) return { consequences: [] };
   const onFail = (step.meta?.onFail ?? []) as import('../engine/ops').GameOp[];
   // `sl` (DR négatif de l'échec) → alimente `rollTable{addNegativeSL}` (Vers de carie : « ajoutez le
-  // nombre de DR négatifs », T2C 16 l.90) et les échelles `perSL` d'un `onFail`.
+  // nombre de DR négatifs », MSRC 16 l.90) et les échelles `perSL` d'un `onFail`.
   return { consequences: freeCons(applyOps(hero, onFail, { rng: battleRng(), sl: step.result.sl })) };
 });
 

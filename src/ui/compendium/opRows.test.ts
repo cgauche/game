@@ -127,7 +127,7 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
   /** ref #540 : la vue LECTURE doit montrer les rangées d'un `rollTable` — vérifié sur les données
    *  RÉELLES (vers-de-carie, `symptoms.json`), jamais un fixture inventé. */
   describe('rollTable — rangées EXPANSÉES (ref #540)', () => {
-    it('rollTable INLINE (vers-de-carie, T2C 16 l.90-101) : 8 rangées visibles, sous-titre + ops', () => {
+    it('rollTable INLINE (vers-de-carie, MSRC 16 l.90-101) : 8 rangées visibles, sous-titre + ops', () => {
       const s = findSymptomById('vers-de-carie');
       expect(s?.onTick).toBeTruthy();
       const rows = opRows(s!.onTick!.onFail);

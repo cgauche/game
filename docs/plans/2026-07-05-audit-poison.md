@@ -333,10 +333,10 @@
 
 ### src/state/landMarketFlow.ts:100 — sévérité moyenne
 - **Quote** : Rumeurs commerciales (l.176-180) : en tendant l'oreille au marché, un Test de Ragot Complexe (−10) ; sur   // un succès, une rumeur signale les biens très recherchés → ils s'y vendent le DOUBLE (l.180). Roulé APRÈS   // les offres pour ne pas déplacer leur flux RNG. ADAPTATION assumée : le RAW fait entendre la rumeur dans une   // AUBERGE, pointant un AUTRE Lieu via l'index géographique du Reikland (absent de la carte de l'arène) ; ici la   // rumeur vaut pour le Lieu COURANT (modèle minimal endossé par la conception — cf. rapport #58).
-- **Affirme** : Le RAW (T2C ch.11 l.176-180) fait pointer la rumeur commerciale vers un AUTRE lieu (tiré via l'index géographique du Reikland), mais le jeu la fait porter sur le lieu courant — déviation reconnue et 'endossée par la conception'.
+- **Affirme** : Le RAW (MSRC ch.11 l.176-180) fait pointer la rumeur commerciale vers un AUTRE lieu (tiré via l'index géographique du Reikland), mais le jeu la fait porter sur le lieu courant — déviation reconnue et 'endossée par la conception'.
 - **Réalité** : Confirmé par Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/13 - CHAPITRE 11 - Règles du commerce.md l.180 : « lancez un d100 pour déterminer un emplacement à l'aide de l'index géographique des pages suivantes » — la rumeur RAW cible bien un lieu tiré au hasard, différent du lieu courant. C'est une déviation RAW non triviale (change où et quand la rumeur peut être exploitée) tracée seulement par un commentaire renvoyant à un rapport #58 non retrouvable dans le code.
 - **Fix** : Confirmer/lier explicitement la décision (référencer un doc traçable, ex. docs/raw/, plutôt qu'un numéro de rapport interne) ou implémenter le tirage d'un lieu cible distinct si l'arène le permet.
-- **Vérif adversariale** : Lecture T2C ch.11 « Règles du commerce » section « QUE DE CALCULS ! » l.178-180 (pages originales l.176-180 approx., repérées par concept). Le RAW est explicite : d100 → index géographique → un emplacement différent du point de départ. Confirmé dans src/state/landMarketFlow.ts l.99-103, et appliqué l.222 via st (lieu courant).
+- **Vérif adversariale** : Lecture MSRC ch.11 « Règles du commerce » section « QUE DE CALCULS ! » l.178-180 (pages originales l.176-180 approx., repérées par concept). Le RAW est explicite : d100 → index géographique → un emplacement différent du point de départ. Confirmé dans src/state/landMarketFlow.ts l.99-103, et appliqué l.222 via st (lieu courant).
 
 ### src/state/shipBattery.ts:12 — sévérité moyenne
 - **Quote** : elle vit dans le flux/la modale (à câbler côté navigateur).
@@ -439,7 +439,7 @@
 
 ### src/engine/landCargo.ts:144 — sévérité basse
 - **Quote** : magnitude/direction arbitrées, laissées au MJ par le RAW). PUR. */
-- **Affirme** : Le RAW (T2C ch.11 l.95) laisse au MJ la magnitude et la direction de la fausse indication de qualité du Vin sur un échec d'Évaluation ; le code fige un choix (décalage de |DR| échelons, plafonné puis inversé) non spécifié par le livre.
+- **Affirme** : Le RAW (MSRC ch.11 l.95) laisse au MJ la magnitude et la direction de la fausse indication de qualité du Vin sur un échec d'Évaluation ; le code fige un choix (décalage de |DR| échelons, plafonné puis inversé) non spécifié par le livre.
 - **Réalité** : Confirmé : le texte source dit seulement « donnez-lui une fausse indication dont l'inexactitude est en rapport avec son degré d'échec », sans mécanique précise — le commentaire le signale honnêtement, mais c'est une implémentation d'auteur substituée à une décision de MJ, à valider explicitement.
 - **Preuve** : Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/13 - CHAPITRE 11 - Règles du commerce.md l.95 : « donnez-lui une fausse indication dont l'inexactitude est en rapport avec son degré d'échec ».
 - **Fix** : Rien à corriger dans le code (choix assumé et signalé) — à faire valider par l'utilisateur comme convention de jeu si ce n'est pas déjà acté.

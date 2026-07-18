@@ -80,7 +80,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   crewMoraleFactors: 'crewMoraleFactors', crewMoraleBands: 'crewMoraleBands', steamBreakdowns: 'steamBreakdowns',
   criticalsTete: 'criticalsTete', criticalsBras: 'criticalsBras', criticalsCorps: 'criticalsCorps', criticalsJambe: 'criticalsJambe',
   aaCriticalsTete: 'aaCriticalsTete', aaCriticalsBras: 'aaCriticalsBras', aaCriticalsCorps: 'aaCriticalsCorps', aaCriticalsJambe: 'aaCriticalsJambe',
-  // #157 (suite) : Critiques de coque (MDG 13 navire / T2C 7 fluvial), Rencontres de voyage
+  // #157 (suite) : Critiques de coque (MDG 13 navire / MSRC 7 fluvial), Rencontres de voyage
   // (EDOC 8) et Longs voyages en mer (MDG 15) — mêmes patrons (nichés) que ci-dessus.
   shipCriticalsCargaison: 'shipCriticalsCargaison', shipCriticalsGreement: 'shipCriticalsGreement',
   shipCriticalsCoque: 'shipCriticalsCoque', shipCriticalsAvirons: 'shipCriticalsAvirons', shipCriticalsEquipements: 'shipCriticalsEquipements',
@@ -109,7 +109,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
 const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | 'record' }> = {
   details: { ds: 'details', mode: 'single' },
   names: { ds: 'names', mode: 'record' },
-  // Exposition à l'eau (T2C 16, #157 suite) : UNE seule fiche de règle (fichier `water-exposure.json`,
+  // Exposition à l'eau (MSRC 16, #157 suite) : UNE seule fiche de règle (fichier `water-exposure.json`,
   // clé JS `waterExposure` — `datasetObjectFile` gère la divergence de nom).
   waterExposure: { ds: 'waterExposure', mode: 'single' },
   // LOT 1 #422 : 3 fiches de règle UNIQUES navales (MDG 13) — même patron que `waterExposure`.
@@ -118,7 +118,7 @@ const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | '
   seaWeather: { ds: 'seaWeather', mode: 'single' },
   // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
   disponibilite: { ds: 'disponibilite', mode: 'single' },
-  // LOT 2 #422 : Navigation fluviale (T2C 7) — fiche de règle UNIQUE, même patron.
+  // LOT 2 #422 : Navigation fluviale (MSRC 7) — fiche de règle UNIQUE, même patron.
   riverNavigation: { ds: 'riverNavigation', mode: 'single' },
   // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
   grapple: { ds: 'grapple', mode: 'single' },
@@ -141,7 +141,7 @@ const REF_LIST_DATASET: Record<string, DatasetKey> = {
  *  `occupantOps` (subi par un tiers — cavalier/passager), `crewOps`/`captainOps` (Chant de marin).
  *  Généralise l'idée d'`isPassive` (qui ne couvre QUE `passive`) sans dupliquer l'éditeur : ajouter une
  *  source = ajouter SA/SES clé(s) ici (lu par `dedicatedFieldKeys` ET le rendu). */
-/** Les 10 catégories de Critiques de coque (MDG 13 navire + T2C 7 fluvial, #157 suite) —
+/** Les 10 catégories de Critiques de coque (MDG 13 navire + MSRC 7 fluvial, #157 suite) —
  *  MÊME forme `ShipCritEntry` (`ops` + `crewTest` structuré), partagée par `OPS_FIELDS` et le rendu. */
 const SHIP_CRIT_CATEGORIES = [
   'shipCriticalsCargaison', 'shipCriticalsGreement', 'shipCriticalsCoque', 'shipCriticalsAvirons', 'shipCriticalsEquipements',
@@ -161,7 +161,7 @@ const CRITICAL_CATEGORIES = [
 const OPS_FIELDS: Record<string, string[]> = {
   traumas: ['ops'],
   activities: ['onSuccess'], // #168 : effet mécanique de réussite (GameOp[]) → GameOpEditor commun
-  maladies: ['infectionPassive'], // T2C 16 l.138 : passifs actifs pendant l'infection (Vers du Reik)
+  maladies: ['infectionPassive'], // MSRC 16 l.138 : passifs actifs pendant l'infection (Vers du Reik)
 
   criticalsTete: ['ops'], criticalsBras: ['ops'], criticalsCorps: ['ops'], criticalsJambe: ['ops'],
   aaCriticalsTete: ['ops'], aaCriticalsBras: ['ops'], aaCriticalsCorps: ['ops'], aaCriticalsJambe: ['ops'],
@@ -291,7 +291,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
   if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}
-  if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (T2C 16)
+  if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (MSRC 16)
   // LOT 1 #422 : seules les tables NICHÉES en TABLEAU top-level d'une fiche-objet navale retombent en
   // json (repli générique) — chaque sous-objet HÉTÉROGÈNE (vitesseMax/salissures/orientation/phares/
   // poursuite/reparation…) recourt déjà au sous-formulaire récursif (`ObjectField`), hors guard.
@@ -467,7 +467,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Critique de coque (10 catégories navire/fluvial, #157 suite) : `crewTest` (skillId?/difficulty?/
   // crewTarget?/onFail) → éditeur dédié (ShipCrewTestField) ; `ops` reste sur le lot GameOpEditor commun.
   const isShipCrit = SHIP_CRIT_CATEGORIES.includes(categoryKey);
-  // Exposition à l'eau (`waterExposure`, #157 suite, T2C 16) : `test` (Compétence+Difficulté),
+  // Exposition à l'eau (`waterExposure`, #157 suite, MSRC 16) : `test` (Compétence+Difficulté),
   // `modifiers` (WaterExposureModifier[]) et `diseases` (plages d100 → maladie) ont chacun leur éditeur.
   const isWaterExposure = categoryKey === 'waterExposure';
   // LOT 1 #422 : fiches de règle navales UNIQUES (mode 'single', patron `waterExposure`) — leurs
@@ -567,7 +567,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         )}
         {isSymptom && (
           <div className="ed-field">
-            <span>passifs conditionnés à la VISIBILITÉ de la lésion (Vers du Reik −10 Soc si visible, T2C 16 l.140) — actifs seulement si la localisation tirée est cochée ci-dessous</span>
+            <span>passifs conditionnés à la VISIBILITÉ de la lésion (Vers du Reik −10 Soc si visible, MSRC 16 l.140) — actifs seulement si la localisation tirée est cochée ci-dessous</span>
             <GameOpEditor ops={(entry.visiblePassive as GameOp[] | undefined) ?? []} onChange={(ops) => edit('visiblePassive', ops.length ? ops : undefined)} />
             <div className="de-reflrow">
               {(['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD'] as const).map((loc) => {
@@ -1149,7 +1149,7 @@ function RestartTestField({ value, onChange }: { value: { skillId: string; spec?
   );
 }
 
-/** Test d'ÉQUIPAGE (échec) d'un Critique de coque (`ShipCritEntry.crewTest`, MDG 13 / T2C 7,
+/** Test d'ÉQUIPAGE (échec) d'un Critique de coque (`ShipCritEntry.crewTest`, MDG 13 / MSRC 7,
  *  #157 suite) : Compétence + Difficulté (vide = dégâts AUTOMATIQUES, aucun Test) + cible (poste tiré
  *  au sort ou tout le pont) + conséquence en `GameOp[]` (même éditeur que les modificateurs passifs). */
 function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefined; onChange: (v: ShipCrewTest | undefined) => void }) {
@@ -1188,7 +1188,7 @@ function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefine
   );
 }
 
-/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, T2C 16 p.91, #157 suite) :
+/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, MSRC 16 p.91, #157 suite) :
  *  Compétence + Difficulté — sorti du repli générique (le repli traiterait ce couple {skillId,difficulty}
  *  en `recordText` renommable, ce qui autoriserait de corrompre les clés d'un objet à forme FIXE). */
 function WaterTestField({ value, onChange }: { value: { skillId: string; difficulty: Difficulty } | undefined; onChange: (v: { skillId: string; difficulty: Difficulty }) => void }) {
@@ -1196,7 +1196,7 @@ function WaterTestField({ value, onChange }: { value: { skillId: string; difficu
   const v = value ?? { skillId: skillOpts[0]?.id ?? '', difficulty: DIFFICULTIES[0] };
   return (
     <div className="ed-field">
-      <span>Test de Résistance (T2C 16 p.91) — Compétence + Difficulté</span>
+      <span>Test de Résistance (MSRC 16 p.91) — Compétence + Difficulté</span>
       <div className="tf-row">
         <select value={v.skillId} onChange={(e) => onChange({ ...v, skillId: e.target.value })}>
           {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
@@ -1209,7 +1209,7 @@ function WaterTestField({ value, onChange }: { value: { skillId: string; difficu
   );
 }
 
-/** Contextes d'application d'un modificateur d'Exposition hydrique (T2C 16 p.91). */
+/** Contextes d'application d'un modificateur d'Exposition hydrique (MSRC 16 p.91). */
 const WATER_APPLIES_TO: { id: 'ingestion' | 'immersion'; label: string }[] = [
   { id: 'ingestion', label: 'Ingestion' }, { id: 'immersion', label: 'Immersion' },
 ];
@@ -1217,7 +1217,7 @@ const WATER_TABLE_OPTS: { id: 'source-d-eau' | 'blessures-et-etats'; label: stri
   { id: 'source-d-eau', label: 'Source d’eau' }, { id: 'blessures-et-etats', label: 'Blessures et États' },
 ];
 
-/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, T2C 16 p.91) :
+/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, MSRC 16 p.91) :
  *  id/libellé/valeur + contexte (Ingestion/Immersion, cumulables) + table d'origine. `auto` (dérivation
  *  automatique depuis le Combatant — PB restants/perdus, État) reste en JSON : union à 5 formes, rare
  *  (6/12 entrées), pas assez structurante pour justifier un 2ᵉ éditeur dédié. */
@@ -1230,7 +1230,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
   };
   return (
     <div className="ed-field">
-      <span>modificateurs du Test de Résistance (T2C 16 p.91) — cumulables</span>
+      <span>modificateurs du Test de Résistance (MSRC 16 p.91) — cumulables</span>
       {list.map((m, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
@@ -1255,7 +1255,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
   );
 }
 
-/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, T2C 16 p.91) : plage d100
+/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, MSRC 16 p.91) : plage d100
  *  (jet APRÈS échec du Test) → maladie référencée par ID (sélecteur, comme `SkillSpecListField`/
  *  `ProsthesisField`/`MutationTableField` — la donnée est un id, jamais un label). */
 function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['diseases'] | undefined; onChange: (v: WaterExposureData['diseases']) => void }) {
@@ -1265,7 +1265,7 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
   const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
   return (
     <div className="ed-field">
-      <span>maladies contractées — jet d100 après échec du Test de Résistance (T2C 16 p.91)</span>
+      <span>maladies contractées — jet d100 après échec du Test de Résistance (MSRC 16 p.91)</span>
       {list.map((r, i) => (
         <div className="tf-row" key={i}>
           <label className="dr">d100&nbsp;<input type="number" min={1} max={100} value={r.min} onChange={(e) => set(i, { min: clampD100(e.target.value) })} />–<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>

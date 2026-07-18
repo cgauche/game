@@ -162,11 +162,11 @@ describe('InterludeScreen — coop (audit M7) : chacun mène SES héros', () => 
   });
 });
 
-describe('InterludeScreen — catalogue d’Activités data-driven (ADE2 + ACE Annexe I, gate `where`)', () => {
+describe('InterludeScreen — catalogue d’Activités data-driven (ADE II + ACE Annexe I, gate `where`)', () => {
   beforeEach(() => { vi.useFakeTimers(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
-  it('hors d’Altdorf : la Convalescence (ADE2, sans gate) est proposée, pas les Activités d’ACE', () => {
+  it('hors d’Altdorf : la Convalescence (ADE II, sans gate) est proposée, pas les Activités d’ACE', () => {
     const seam = buildSeam();
     useGame.setState({ worldMap: null });
     const catalog = interludeCatalog(useGame.getState());

@@ -594,7 +594,7 @@ function EncountersTab({
             const vc = enc.victoryCondition!;
             return (
               <div className="enemy-mount">
-                <label title="Le premier coup qui cause une perte de plus de ce nombre de Blessures met fin au duel (NADAJ 06 l.175-177). Défaut 3 Blessures (seule valeur chiffrée par le RAW).">
+                <label title="Le premier coup qui cause une perte de plus de ce nombre de Blessures met fin au duel (NADJ 06 l.175-177). Défaut 3 Blessures (seule valeur chiffrée par le RAW).">
                   Seuil{' '}
                   <input
                     type="number" min={1} value={vc.threshold ?? 3}
@@ -614,7 +614,7 @@ function EncountersTab({
             const effective = enc.banRanged ?? isDuel;
             return (
               <div className="enemy-mount">
-                <label title="Duel judiciaire (NADAJ 06 l.181) : « la plupart des lois locales interdisent de faire appel à des projectiles ». Dérogeable (variante locale) — champ indépendant de l'objectif de victoire.">
+                <label title="Duel judiciaire (NADJ 06 l.181) : « la plupart des lois locales interdisent de faire appel à des projectiles ». Dérogeable (variante locale) — champ indépendant de l'objectif de victoire.">
                   <input
                     type="checkbox"
                     checked={effective}

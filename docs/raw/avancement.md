@@ -39,7 +39,7 @@ Le LDB ne fixe pas de montant absolu de PX par session : c'est une prérogative 
 
 Les tomes de la campagne **L'Ennemi dans l'Ombre** et **Mort sur le Reik** donnent des listes d'objectifs narratifs en fin de chapitre sans barème générique — chaque chapitre propose ses propres récompenses. Le **Pouvoir derrière le Trône** donne le barème le plus détaillé (voir section T3 ci-dessous).
 
-**Sources RAW** : barème T3 = `T3 13 l.3-59` (seul barème chiffré complet disponible dans les sources autorisées).
+**Sources RAW** : barème T3 = `PDT 13 l.3-59` (seul barème chiffré complet disponible dans les sources autorisées).
 
 ---
 
@@ -281,9 +281,9 @@ Verbatim depuis `LDB 08 l.3-4` (tableau « Coût des Changements de Carrière et
 Le **Pouvoir derrière le Trône** (Tome 3) propose en Annexe IV le barème de PX le plus structuré des tomes autorisés. Il s'agit d'une liste d'objectifs narratifs et de fourchettes d'attribution, non d'une règle générique — chaque scénario peut établir le sien.
 
 > « Les Points d'Expérience suivants peuvent être octroyés pendant l'aventure, en général à la fin de chaque session de jeu. Ces récompenses permettent aussi aux Joueurs d'avoir une idée de la progression du scénario. N'hésitez pas à attribuer des Points d'Expérience supplémentaires aux Personnages qui font preuve d'un grand sens de l'observation, proposent de bonnes idées, ou de façon générale, rendent le jeu plus agréable pour tout le monde. »
-> — T3 13 l.5
+> — PDT 13 l.5
 
-**Barème T3 — Jeu de rôle** (`T3 13 l.7-10`) :
+**Barème T3 — Jeu de rôle** (`PDT 13 l.7-10`) :
 
 | Type de session | PX attribués |
 |---|---|
@@ -291,7 +291,7 @@ Le **Pouvoir derrière le Trône** (Tome 3) propose en Annexe IV le barème de P
 | Session mixte (RP + action) | 30 à 50 PX |
 | Excellente interprétation individuelle | jusqu'à 70 PX supplémentaires par Personnage |
 
-**Barème T3 — Objectifs narratifs** (sélection représentative, `T3 13 l.12-59`) :
+**Barème T3 — Objectifs narratifs** (sélection représentative, `PDT 13 l.12-59`) :
 
 | Objectif | PX |
 |---|---|
@@ -304,13 +304,13 @@ Le **Pouvoir derrière le Trône** (Tome 3) propose en Annexe IV le barème de P
 | Bonus documents secrets trouvés | +100 PX + 1 Point de Destin |
 
 > « Les Personnages reçoivent chacun 200 Points d'Expérience et 1 Point de Destin pour avoir déjoué un complot visant la chute de la ville. S'ils ont trouvé tous les documents secrets de Wasmeier, ils obtiennent 100 Points d'Expérience et 1 Point de Destin supplémentaires. »
-> — T3 13 l.78
+> — PDT 13 l.78
 
-**Sources RAW** : `T3 13 l.1-73`
+**Sources RAW** : `PDT 13 l.1-73`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T3 13` (l.1-73) → `Effect` — `src/state/scene.ts`
-- sans code : `T3 13` (l.78)
+- `PDT 13` (l.1-73) → `Effect` — `src/state/scene.ts`
+- sans code : `PDT 13` (l.78)
 
 ---
 

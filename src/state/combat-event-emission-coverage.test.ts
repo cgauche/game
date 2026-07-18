@@ -16,7 +16,7 @@ import type { EffectTrigger } from './flow';
  * CYCLE, la boucle `fireTriggers`/`fireTurnEdgeTriggers` interne aux modules BUS-OWNED
  * (roundHooks/turnHooks) — la machinerie du bus, whitelistée par la quarantaine d'import — OU, pour un
  * trigger CADENCE-AGNOSTIQUE fié aux seams HORS cycle de combat (`onOwnTestFailed` : le porteur échoue un
- * Test — combat OU scène OU entretien, T2C 16), sa PORTE DÉDIÉE `fireTriggers(…, '<trigger>'` dans le
+ * Test — combat OU scène OU entretien, MSRC 16), sa PORTE DÉDIÉE `fireTriggers(…, '<trigger>'` dans le
  * module ÉMETTEUR whitelisté (`triggeredEffects.ts` porte `fireOwnTestFailed`, l'unique point d'émission).
  */
 

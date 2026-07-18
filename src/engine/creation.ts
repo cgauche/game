@@ -28,7 +28,7 @@ export const XP_CAREER_FIRST = 50; // LDB 05 l.191
 export const XP_CAREER_TOP3 = 25; // LDB 05 l.193
 export const XP_CHARS_KEPT = 50; // LDB 05 l.381
 export const XP_CHARS_REASSIGNED = 25; // LDB 05 l.383
-export const XP_STAR_ROLLED = 25; // ADE2 3 l.36 (signe astral tiré et accepté)
+export const XP_STAR_ROLLED = 25; // ADE II 3 l.36 (signe astral tiré et accepté)
 
 /**
  * Tableau des Races aléatoires (LDB 04 l.90) — DÉRIVÉ des données : chaque espèce porte sa
@@ -41,7 +41,7 @@ export const XP_STAR_ROLLED = 25; // ADE2 3 l.36 (signe astral tiré et accepté
 export function randomSpeciesTable(): { max: number; ids: string[] }[] {
   // Règle optionnelle « Gnome jouable » (NADJ appendice I) : le Gnome (et tout contenu NADJ) n'entre
   // dans le tableau que si la règle est active. C'est le SEUL effet sur le tirage — quand elle est
-  // active, le Gnome est une option NORMALE de sa borne (98, partagée avec l'Ogre ADE2), sans priorité.
+  // active, le Gnome est une option NORMALE de sa borne (98, partagée avec l'Ogre ADE II), sans priorité.
   const gnomeOn = !!rule('creation-gnome-jouable');
   const byBound = new Map<number, string[]>();
   for (const s of allSpecies) {
@@ -163,7 +163,7 @@ function rollDetail(
   return entry.color[sp.refChar] ?? entry.color.humain ?? '';
 }
 
-/** Signe astral (Tableau des Signes astrologiques, ADE2 3 l.40) → `id` STABLE du signe (≠ libellé —
+/** Signe astral (Tableau des Signes astrologiques, ADE II 3 l.40) → `id` STABLE du signe (≠ libellé —
  *  multilangue-safe ; `Combatant.star` stocke l'id). `rand` = borne haute cumulée du 1d100. L'Étoile du
  *  Sorcier (l.62) regroupe plusieurs variantes sur la même borne, départagées par un 1d10 interne
  *  (`sub` = [min, max]) → table partagée. */
@@ -179,7 +179,7 @@ export function rollStar(rng: RNG = defaultRNG): { roll: number; id: string } {
   return { roll: r, id: hit.id };
 }
 
-/** Applique l'effet ADE2 d'un signe astral AUX ATTRIBUTS DE DÉPART (ch.03 l.38) : `charMod` ajuste
+/** Applique l'effet ADE II d'un signe astral AUX ATTRIBUTS DE DÉPART (ch.03 l.38) : `charMod` ajuste
  *  une Caractéristique de départ, `grantTalent` octroie un Talent via `addTalent` (le résolveur de la
  *  création). Le signe est résolu par son `id` STABLE (`findStarById` — ≠ libellé). Le Talent est passé
  *  en LIBELLÉ CONCRET (`talentConcrete` : id+spec → « Maître artisan (Au choix) ») que le consommateur

@@ -172,7 +172,7 @@ export type Effect =
       price?: { gold?: number; silver?: number; brass?: number } }
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
   /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). Support
-   *  générique de l'attribution événementielle par scénario (T3 13 l.5) : chaque scénario/campagne
+   *  générique de l'attribution événementielle par scénario (PDT 13 l.5) : chaque scénario/campagne
    *  authore ses propres octrois via cette action, à tout point narratif (victoire, objectif, dialogue…). */
   | { type: 'giveXp'; amount: number }
   | { type: 'startCombat'; encounter: string }
@@ -312,7 +312,7 @@ export type Effect =
   // `align` (Puissance du Chaos) facultatif : si la mutation survient, force la table EDOC alignée
   // (sinon la règle globale décide). C'est à l'éditeur de niveau de le poser quand la source est dédiée.
   | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill?: 'resistance' | 'calme'; align?: import('../engine/corruption').ChaosAlign; heroId?: string }
-  /** Exposition HYDRIQUE (T2C 16 p.91 — « Maladies transmises par l'eau ») : Test de **Résistance
+  /** Exposition HYDRIQUE (MSRC 16 p.91 — « Maladies transmises par l'eau ») : Test de **Résistance
    *  Intermédiaire (+0)** modifié (tableau 1 « Source d'eau » = `source`, choix d'auteur de la zone
    *  d'eau ; tableau 2 « Blessures et États » DÉRIVÉ du héros, immersion seule) ; raté → d100 « +10
    *  pour chaque DR négatif » → maladie CONTRACTÉE directement (le Test d'exposition EST le test —
@@ -485,7 +485,7 @@ export interface EncounterDef {
    *  (fortification/couvert léger/hauteur → +1 ; `heavy` : couvert lourd/position décisive type pont
    *  → +2) → crédite sa réserve d'Avantage en mode groupe. Absent = pas de circonstance. */
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
-  /** Restriction d'armes à DISTANCE (#471) — Duel judiciaire (NADAJ 06 l.181) : « les parties concernées
+  /** Restriction d'armes à DISTANCE (#471) — Duel judiciaire (NADJ 06 l.181) : « les parties concernées
    *  […] ont normalement le libre choix des armes bien que la plupart des lois locales interdisent de
    *  faire appel à des projectiles. » DÉFAUT SÉMANTIQUE (#471 défaut 1) : « la plupart » = interdit PAR
    *  DÉFAUT quand `victoryCondition.type === 'firstBlood'` — champ ABSENT sur un duel = armes à distance
@@ -817,7 +817,7 @@ export function structureIsDown(scene: Pick<Scene, 'flags'>, seg: WallSeg): bool
  *  une valeur ÉDITABLE par rencontre, sans seuil RAW imposé (CLAUDE.md règle 7).
  *  `firstBlood` (#471) : DUEL JUDICIAIRE — « le premier sang est la première attaque qui cause une
  *  perte de plus de 3 Blessures […] ; un adversaire est incapable de continuer lorsqu'il est réduit
- *  à 0 Blessure » (NADAJ 06 l.175-177) — les DEUX fins restent actives en parallèle, la seconde étant
+ *  à 0 Blessure » (NADJ 06 l.175-177) — les DEUX fins restent actives en parallèle, la seconde étant
  *  la fin standard (0 Blessure, `isOutOfAction`) déjà couverte hors `VictoryCondition`. `threshold`
  *  reste ÉDITABLE (défaut 3, seule valeur chiffrée par le RAW) — sévérité de la charge, CLAUDE.md
  *  règle 7. Testé PAR-COUP (`resolveFirstBlood`, combatFlow.ts) — pas un seuil cumulatif comme

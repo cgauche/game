@@ -372,9 +372,9 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 | **ZI** | Le Zoo Impérial | Créatures exotiques (tigre à dents de sabre, etc.) + trait Redoutable |
 | **frenchy.bzh** | Guide v4.5 | 88 créatures Part II (homebrew, taguées `source: "frenchy.bzh"`) |
 | **EDO** | L'Ennemi dans l'Ombre | Créatures du Chaos : Horreurs, Furies, etc. |
-| **T2/T2C** | Mort sur le Reik | Créatures aquatiques, PNJ nommés statblockés |
+| **MSR/MSRC** | Mort sur le Reik | Créatures aquatiques, PNJ nommés statblockés |
 | **T3** | Le Pouvoir derrière le Trône | Créatures de scénario |
-| **NADAJ** | Nuits agitées | Créatures de scénario |
+| **NADJ** | Nuits agitées | Créatures de scénario |
 | **ADE I/II** | Archives de l'Empire | Créatures supplémentaires, Ogres (ADE II) |
 
 > **Ces chapitres NE sont PAS transcrits dans ce fichier.** Le présent document couvre le **système** ; le catalogue des statblocs individuels est dans `src/data/creatures.json` (source app-owned, éditée dans le Compendium).
@@ -393,7 +393,7 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 
 **Source RAW** : `MDG 16 l.15-19`
 
-La **Mer des Griffes** (MDG) introduit un nouveau Trait de créature, **Créature marine**, propre au bestiaire marin. Il décrit une bête adaptée à l'océan et **inadaptée à la vie sur terre**. C'est un Trait distinct d'**Aquatique** (T2C) : Aquatique permet seulement de respirer sous l'eau et de se déplacer à pleine vitesse en immersion ; **Créature marine** ajoute en plus une **pénalité hors de l'eau** et un **risque de suffocation**.
+La **Mer des Griffes** (MDG) introduit un nouveau Trait de créature, **Créature marine**, propre au bestiaire marin. Il décrit une bête adaptée à l'océan et **inadaptée à la vie sur terre**. C'est un Trait distinct d'**Aquatique** (MSRC) : Aquatique permet seulement de respirer sous l'eau et de se déplacer à pleine vitesse en immersion ; **Créature marine** ajoute en plus une **pénalité hors de l'eau** et un **risque de suffocation**.
 
 Effets mécaniques (le profil suppose un environnement aquatique) :
 - Dans l'eau, la créature se déplace de **tout son M**.
@@ -406,7 +406,7 @@ Effets mécaniques (le profil suppose un environnement aquatique) :
 
 Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de mer, Gargantuan, Wyrm des mers, Hydre d'os, Sangsue des abysses, Léviathan-phare, Léviathan noir, Triton (`MDG 16 l.63/82/103/129/187/224/241/259/272/305`). Les créatures **amphibies** (Baudroye, Crabe boxeur, Kharibde, Syrène bleue) ne portent **pas** ce Trait et ne subissent pas la pénalité terrestre.
 
-**Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (T2C) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
+**Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (MSRC) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 16` (l.15-19, l.63) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `ActionBar`, `GameOp`, +8 — `src/data/creatures.json`, `src/data/index.ts`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/scenes/test-scenarios/20-aspersion.ts`, +6 fichiers
@@ -455,7 +455,7 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 
 ### Catalogue créatures — flagué
 
-Les chapitres `LDB 77-83`, `ZI`, `frenchy.bzh`, `EDO`, `T2/T2C`, `T3`, `NADAJ`, `ADE I/II` constituent le catalogue des statblocs individuels. Non transcrits ici (→ catalogue séparé).
+Les chapitres `LDB 77-83`, `ZI`, `frenchy.bzh`, `EDO`, `MSR/MSRC`, `PDT`, `NADJ`, `ADE I/II` constituent le catalogue des statblocs individuels. Non transcrits ici (→ catalogue séparé).
 
 ### Refs code confirmées
 

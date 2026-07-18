@@ -35,7 +35,7 @@ plusieurs chapitres **et** plusieurs livres.
 | Destin, Résilience & Détermination | [`destin.md`](destin.md) | ✅ | 17 |
 | Traumatisme & Blessures critiques | `traumatisme.md` | ⏳ | 18 |
 | Corruption & mutation | [`corruption.md`](corruption.md) | ✅ | 19 + EDO App.2 + EDOC 8 |
-| Maladies & infections | [`maladies.md`](maladies.md) | ✅ | 20 + T2C 14/04 |
+| Maladies & infections | [`maladies.md`](maladies.md) | ✅ | 20 + MSRC 14/04 |
 | Psychologie | [`psychologie.md`](psychologie.md) | ✅ | 21 + 85 |
 | Caractéristiques & Blessures | [`caracteristiques.md`](caracteristiques.md) | ✅ | 05 + 85 (Taille) |
 | Compétences | [`competences.md`](competences.md) | ✅ | 09 + AA / ADE I / ADE II |
@@ -46,7 +46,7 @@ plusieurs chapitres **et** plusieurs livres.
 | Magie (règles, sorts, Imparfaites) | [`magie.md`](magie.md) | ✅ | 44, 46–51 (règles + tables d100) — catalogue sorts séparé |
 | Religion (prières, bénédictions, miracles) | [`religion.md`](religion.md) | ✅ | 24–25, 40–42 (règles) ; catalogue 26-43 séparé |
 | Équipement, objets & encombrement | [`equipement.md`](equipement.md) | ✅ | 61, 67, 71, 72, 73, 74 (règles) — 64–70, 74–75 catalogue flagué |
-| Économie (monnaie, marché, fabrication) | [`economie.md`](economie.md) | ✅ | 57, 59, 60 + T2C Compagnon ch.11 |
+| Économie (monnaie, marché, fabrication) | [`economie.md`](economie.md) | ✅ | 57, 59, 60 + MSRC Compagnon ch.11 |
 | Bestiaire & Traits de créature | [`bestiaire.md`](bestiaire.md) | ✅ | 76, 85 (système) — catalogue 77–83 + ZI / frenchy / EDO / T2 / ADE flagué séparé |
 | Activités & événements | [`activites.md`](activites.md) | ✅ | 22, 23 + AA / ADE II / EDOC |
 
@@ -56,7 +56,7 @@ plusieurs chapitres **et** plusieurs livres.
 
 | Catalogue | Contenu |
 |---|---|
-| [`catalogue-creatures.md`](catalogue-creatures.md) | Bestiaire complet : LDB 76–85 + Middenheim + ZI + ogres ADE II + Chaos EDO + montures EDOC + fluvial T2C + PNJ T3 |
+| [`catalogue-creatures.md`](catalogue-creatures.md) | Bestiaire complet : LDB 76–85 + Middenheim + ZI + ogres ADE II + Chaos EDO + montures EDOC + fluvial MSRC + PNJ T3 |
 | [`catalogue-sorts.md`](catalogue-sorts.md) | Sorts : LDB 47–51 + Tzeentch EDO |
 | [`catalogue-divin.md`](catalogue-divin.md) | Dieux, cultes, bénédictions, miracles : LDB 24–43 + cultes du Chaos Middenheim/Altdorf |
 | [`catalogue-equipement.md`](catalogue-equipement.md) | Objets/prix/Enc : LDB 57–75 + Aux Armes |

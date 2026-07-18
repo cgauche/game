@@ -46,7 +46,7 @@ commit / l'issue. ⚠ Le n° de ligne a dérivé (ré-extraction Marker) ET les 
 ## 4. Chaque champ = Source ⊕ convention voisine
 
 Conventions complètes : `docs/donnees.md` §B. En bref : `book` = l'`abr` de `src/data/books.json`
-(`grep '"book"'` les voisins — ex. `ADE2`, jamais `ADE II`) ; `page` = vraie page ; `desc` = **verbatim**
+(`grep '"book"'` les voisins — ex. `ADE II`, jamais `ADE II`) ; `page` = vraie page ; `desc` = **verbatim**
 Markdown (garde `no-html-in-prose`) ; formes de champ (`damage:{plusBF,flat}`, `qualities:[{id}]`) copiées
 des voisins ; logique keyée par **id stable**, `label` = affichage.
 

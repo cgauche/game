@@ -1,5 +1,5 @@
 /**
- * Schéma de `naval-traits.json` — Traits/Améliorations navals (MDG 12, T2C 12), catalogue par id
+ * Schéma de `naval-traits.json` — Traits/Améliorations navals (MDG 12, MSRC 12), catalogue par id
  * STABLE (`NavalTraitRef.id`). Dérivé de l'interface `NavalTraitData` (`src/data/index.ts:1265`, +
  * `NavalInstall`/`InstallBand` co-localisées — bandes par PALIER DE LONGUEUR, #277) et du contenu RÉEL
  * (26 entrées : `id`/`label`/`kind`/`desc`
@@ -44,7 +44,7 @@ export const schema = z.array(
     ram: z.strictObject({ ic: z.number(), ap: z.number() }).optional(),
     /** Couvert de pont GRADUÉ (`DeckCoverClass`) : `totale` (Sabord/Murs blindés) ou `moyenne` (Plat-bord). */
     deckCover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
-    /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau (T2C 12 l.66 Bouteur +20 ;
+    /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau (MSRC 12 l.66 Bouteur +20 ;
      *  l.137 Gréement de course −10) — sous-système manœuvre hors vocabulaire combattant (`navalNavTestDR`). */
     navTestMod: z.number().optional(),
     /** #221 : même champ `maison` que `traumas.json` (`src/data/schemas/defs/traumas.ts:32`). */

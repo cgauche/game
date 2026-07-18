@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`bestiaire.md`](bestiaire.md).
 >
-> **Chapitres source :** `LDB 76` · `LDB 77` · `LDB 78` · `LDB 79` · `LDB 80` · `LDB 82` · `LDB 83` · `LDB 84` · `LDB 85` · `Middenheim 4` · `ZI 1` · `ZI 2` · `ZI 3` · `ZI 4` · `ZI 5` · `ZI 6` · `ZI 7` · `ZI 8` · `ZI 9` · `ZI 10` · `ZI 11` · `ZI 12` · `ZI 13` · `ZI 14` · `ADE II 1` · `ADE II 2` · `EDO 11` · `EDOC 7` · `T2C 13` · `T3 10` · `T3 11` · `MDG 16`.
+> **Chapitres source :** `LDB 76` · `LDB 77` · `LDB 78` · `LDB 79` · `LDB 80` · `LDB 82` · `LDB 83` · `LDB 84` · `LDB 85` · `MCLB 4` · `ZI 1` · `ZI 2` · `ZI 3` · `ZI 4` · `ZI 5` · `ZI 6` · `ZI 7` · `ZI 8` · `ZI 9` · `ZI 10` · `ZI 11` · `ZI 12` · `ZI 13` · `ZI 14` · `ADE II 1` · `ADE II 2` · `EDO 11` · `EDOC 7` · `MSRC 13` · `PDT 10` · `PDT 11` · `MDG 16`.
 
 ---
 
@@ -1015,7 +1015,7 @@ La créature possède des cornes ou d'autres appendices acérés. Si ses Cornes 
 La créature est corrompue par le Chaos, ou peut-être imprégnée de Magie noire. Le *Degré* de Corruption est indiqué entre parenthèses. Voir page 182.
 
 
-# **Corruption mentale**
+<span id="page-340-0" data-folio="339"></span># **Corruption mentale**
 
 Le Chaos s'est insinué dans l'esprit de la créature… Faites un lancer sur le Tableau de la Corruption Mentale qui se trouve à la p. 185.
 
@@ -1102,7 +1102,7 @@ Le hurlement de la créature est glaçant, et même capable de tuer ceux qui l'e
 La créature est totalement immunisée à un certain *Type* de Dégâts, comme ceux du poison, magiques ou électriques. Tous les Dégâts de ce *Type*, y compris les Dégâts Critiques, sont ignorés.
 
 
-### **Immunité Psychologique**
+<span id="page-341-0" data-folio="340"></span>### **Immunité Psychologique**
 
 Peu importe que la créature soit téméraire, extrêmement stupide ou juste dans le feu de l'action, elle n'a peur de rien. Elle ignore les règles de la Psychologie. Voir page 190.
 
@@ -1185,7 +1185,7 @@ Les nuées sont constituées d'un grand nombre de créatures identiques agissant
 La peau de la créature est couverte de puces ou autre vermine similaire. Tous les adversaires subissent une pénalité de -10 pour la toucher en combat au Corps à corps puisque les parasites les perturbent et les submergent.
 
 
-### **Perturbant**
+<span id="page-342-0" data-folio="341"></span>### **Perturbant**
 
 La créature perturbe ou désoriente ses ennemis : peut-être qu'elle dégage un musc soporifique ou une odeur nauséabonde, ou peut-être que son apparence est horrifiante ou étrange. Toute personne se trouvant à un nombre de mètres égal à son Bonus d'Endurance obtient une pénalité de -20 à tous ses Tests. Les créatures touchées ne peuvent subir cette pénalité qu'une seule fois, peu importe le nombre d'ennemis Perturbants.
 
@@ -1265,7 +1265,7 @@ Bien que n'étant pas entièrement dénuée de lucidité (et ne disposant ainsi 
 
 # UTILISER LES TAILLES
 
-Si vous souhaitez utiliser le Trait Taille pour agrandir une créature – pour transformer, par exemple, une Araignée Géante en Araignée Gigantesque –, augmentez alors **F**  et **E** de +10, et réduisez **Ag** de -5 par catégorie de taille supérieure. Inversez le procédé si vous voulez rendre une créature plus petite.
+<span id="page-343-0" data-folio="342"></span>Si vous souhaitez utiliser le Trait Taille pour agrandir une créature – pour transformer, par exemple, une Araignée Géante en Araignée Gigantesque –, augmentez alors **F**  et **E** de +10, et réduisez **Ag** de -5 par catégorie de taille supérieure. Inversez le procédé si vous voulez rendre une créature plus petite.
 
 # **Taille (Divers)**
 
@@ -1375,7 +1375,7 @@ La créature effectue un Test opposé de **CT/Esquive** contre toutes les cibles
 Toutes les Armures et les Armes portées par les cibles affectées subissent 1 Dégât à cause de l'acidité corrosive du vomissement.
 
 
-#### EXPÉRIENCE Actuelle Dépensée Totale AMBITIONS **À court terme À long terme** Nom Race Classe Carrière Niveau de Carrière Schéma de Carrière Statut Âge Taille Cheveux Yeux CARACTÉRISTIQUES CC CT F E I Ag Dex Int FM Soc Initiales Augmentation Courantes MOUVEMENT Mouvement Marche Course COMPÉTENCES DE BASE **Nom Caractéristique Aug Comp** Art Dex Athlétisme Ag Calme FM Charme Soc Chevaucher Ag Commandement Soc Conduite d'attelage Ag Corps à corps (base) CC Corps à corps CC Discrétion Ag Divertissement Soc Emprise animaux FM Escalade F COMPÉTENCES DE BASE **Nom Caractéristique Aug Comp** Esquive Ag Intimidation F Intuition I Marchandage Soc Orientation I Pari Int Perception I Ragot Soc Ramer F Résistance E Résistance à l'alcool E Subornation Soc Survie en extérieur Int TALENTS **Nom Nbre pris Description** DESTIN Destin Chance COMP. GROUPÉES ET AVANCÉES **Nom Caractéristique Aug Comp** GROUPE **Nom du groupe À court terme À long terme Membres** RÉSILIENCE Résilience Détermination Motivation
+<span id="page-345-0" data-folio="344"></span>#### EXPÉRIENCE Actuelle Dépensée Totale AMBITIONS **À court terme À long terme** Nom Race Classe Carrière Niveau de Carrière Schéma de Carrière Statut Âge Taille Cheveux Yeux CARACTÉRISTIQUES CC CT F E I Ag Dex Int FM Soc Initiales Augmentation Courantes MOUVEMENT Mouvement Marche Course COMPÉTENCES DE BASE **Nom Caractéristique Aug Comp** Art Dex Athlétisme Ag Calme FM Charme Soc Chevaucher Ag Commandement Soc Conduite d'attelage Ag Corps à corps (base) CC Corps à corps CC Discrétion Ag Divertissement Soc Emprise animaux FM Escalade F COMPÉTENCES DE BASE **Nom Caractéristique Aug Comp** Esquive Ag Intimidation F Intuition I Marchandage Soc Orientation I Pari Int Perception I Ragot Soc Ramer F Résistance E Résistance à l'alcool E Subornation Soc Survie en extérieur Int TALENTS **Nom Nbre pris Description** DESTIN Destin Chance COMP. GROUPÉES ET AVANCÉES **Nom Caractéristique Aug Comp** GROUPE **Nom du groupe À court terme À long terme Membres** RÉSILIENCE Résilience Détermination Motivation
 
 
 | ARMURE      |              |        |             |           |                  |                        |  |                      | POINTS D'ARMURE (PA) |  |
@@ -1403,7 +1403,7 @@ Toutes les Armures et les Armes portées par les cibles affectées subissent 1 D
 |             |              |        | CO          |           |                  |                        |  |                      |                      |  |
 |             |              |        |             |           | Total            |                        |  | Blessures            |                      |  |
 |             |              |        |             |           | ARMES            |                        |  |                      |                      |  |
-| Nom         |              | Groupe | Enc         |           | Portée/Allonge   | Dégâts                 |  | Atouts/Défauts       |                      |  |
+<span id="page-346-0" data-folio="345"></span>| Nom         |              | Groupe | Enc         |           | Portée/Allonge   | Dégâts                 |  | Atouts/Défauts       |                      |  |
 |             |              |        |             |           |                  |                        |  |                      |                      |  |
 |             |              |        |             |           |                  |                        |  |                      |                      |  |
 |             |              |        |             |           |                  |                        |  |                      |                      |  |
@@ -1676,7 +1676,7 @@ Toutes les Armures et les Armes portées par les cibles affectées subissent 1 D
 
 
 
-# Des aventures sombres et périlleuses dans le Vieux Monde !
+<span id="page-354-0" data-folio="353"></span># Des aventures sombres et périlleuses dans le Vieux Monde !
 
 *Vous ne pouvez pas lâcher l'affaire, hein ? Vous savez pourtant ce que vous allez découvrir. Vous les avez vus, les impitoyables, les arrogants, les damnés. Vous voudriez bien tourner les talons. La vie serait alors si belle. Vous êtes conscient que, tout en essayant de vous convaincre que vous ne convoitez que le butin, ou que vous ne savez pas résister à un bon combat, vous foncez. Personne n'est dupe. Alors préparez votre épée, nettoyez votre pistolet et prenez garde à ce chien, bien trop féroce pour sa petite taille.* 
 
@@ -1685,7 +1685,7 @@ Grâce à **Warhammer Fantasy le jeu de rôle**, vous retrouvez enfi n le Vieux 
 Ce livre de règles de la quatrième édition de **Warhammer Fantasy le jeu de rôle** renferme tout ce dont vous avez besoin pour vivre des aventures sombres et périlleuses dans le Vieux Monde.
 
 
-## [Middenheim 4] Bestiaire
+## [MCLB 4] Bestiaire
 
 *Pages PDF 118-121*
 
@@ -5898,7 +5898,7 @@ Furie du Preyton............................... 107
 
 ## **MERCENAIRES OGRES DANS LE VIEUX MONDE**
 
-Il n'existe aucun récit historique précis dans l'Empire, faisant état de la première fois où un ogre a été aperçu errant depuis ses terres lointaines de l'est jusque dans le Vieux Monde. Les archives conservées dans les quelques karaks restants des Montagnes du Bord du Monde (et certainement dans les Livres des rancunes des nains) indiquent que les tribus nomades d'ogres ont commencé à attaquer les possessions naines les plus à l'est environ deux mille ans avant la fondation de l'Empire. Au cours des siècles suivants, de nombreux récits ont été consacrés aux ogres errants, à leurs incroyables aptitudes au combat et, surtout, à leur appétit insatiable. Les annales de la genèse de l'Empire indiquent que Sigmar luimême a occasionnellement utilisé, et fréquemment combattu, des ogres au cours de diverses batailles. Les mercenaires ogres ont pris part à la quasi-totalité des combats impériaux majeurs depuis l'époque de Sigmar, se retrouvant souvent des deux côtés des plus grandes batailles, en particulier celles contre les peaux-vertes. Toutes les terres situées à l'ouest des Montagnes du Bord du Monde sans exception ont connu le lourd pas des ogres à un moment donné de leur histoire.
+<span id="page-7-0" data-folio="6"></span>Il n'existe aucun récit historique précis dans l'Empire, faisant état de la première fois où un ogre a été aperçu errant depuis ses terres lointaines de l'est jusque dans le Vieux Monde. Les archives conservées dans les quelques karaks restants des Montagnes du Bord du Monde (et certainement dans les Livres des rancunes des nains) indiquent que les tribus nomades d'ogres ont commencé à attaquer les possessions naines les plus à l'est environ deux mille ans avant la fondation de l'Empire. Au cours des siècles suivants, de nombreux récits ont été consacrés aux ogres errants, à leurs incroyables aptitudes au combat et, surtout, à leur appétit insatiable. Les annales de la genèse de l'Empire indiquent que Sigmar luimême a occasionnellement utilisé, et fréquemment combattu, des ogres au cours de diverses batailles. Les mercenaires ogres ont pris part à la quasi-totalité des combats impériaux majeurs depuis l'époque de Sigmar, se retrouvant souvent des deux côtés des plus grandes batailles, en particulier celles contre les peaux-vertes. Toutes les terres situées à l'ouest des Montagnes du Bord du Monde sans exception ont connu le lourd pas des ogres à un moment donné de leur histoire.
 
 #### Z'ONT PRIS MON HALFLING !
 
@@ -5972,7 +5972,7 @@ menaçants.
 
 #### CHRONOLOGIE DES ÉVÉNEMENTS MARQUANTS CONCERNANT LES MERCENAIRES OGRES
 
-Toutes les dates indiquées correspondent au calendrier impérial, car les ogres n'ont guère besoin de se situer dans le temps, sauf pour savoir quand aura lieu leur prochain repas. Nombre d'entre eux connaissent plus ou moins ces événements et seraient capables de les remettre dans l'ordre, mais ils considèrent l'histoire comme quelque chose qu'il vaut mieux laisser au passé.
+<span id="page-11-0" data-folio="10"></span>Toutes les dates indiquées correspondent au calendrier impérial, car les ogres n'ont guère besoin de se situer dans le temps, sauf pour savoir quand aura lieu leur prochain repas. Nombre d'entre eux connaissent plus ou moins ces événements et seraient capables de les remettre dans l'ordre, mais ils considèrent l'histoire comme quelque chose qu'il vaut mieux laisser au passé.
 
 #### -1957 CI
 
@@ -6110,7 +6110,7 @@ Seul ogre à avoir battu Golgfag Mange'homme dans un concours du plus gros mange
 
 I
 
-**Isrogdal l'Empressé**
+<span id="page-15-0" data-folio="14"></span>**Isrogdal l'Empressé**
 
 L'ogre gladiateur devenu mercenaire est bien connu dans toute la Tilée, ainsi que dans les parties les plus à l'est de l'Empire, à la fois pour la rapidité avec laquelle il commet ses meurtres et pour son empressement à manger ses victimes. À plusieurs reprises, il a commencé à dévorer des morceaux de ses adversaires dans la fosse alors que leur combat n'était pas encore terminé. Isrogdal est actuellement très demandé dans le milieu criminel de l'Empire, car en tant que gros bras intimidant, il n'a pas son pareil. Son « enthousiasme » l'a déjà contraint à déménager plusieurs fois, car plus d'un « client » avec qui il devait simplement discuter s'est retrouvé dans son assiette.
 
@@ -6206,7 +6206,7 @@ Les linguistes de l'Université d'Altdorf ont remarqué que l'apparition d'une n
 — Ezra Brynsdottir, brise-bouclier naine
 
 
-#### **Ce que les ogres pensent des halflings...**
+<span id="page-18-0" data-folio="17"></span>#### **Ce que les ogres pensent des halflings...**
 
 *« Ils sont petits et délicieux si tu dois remplir ton garde-manger vide, mais il vaut mieux s'en servir pour cuisiner... Enfin, c'est eux qui font la cuisine. Ils sont très bavards, mais il y a quelque chose chez eux qui en ferait presque des membres de la famille. Mais c'est pas non plus comme les avortons que tu finis par manger. »*
 
@@ -6325,7 +6325,7 @@ Bien que résistants aux effets du Chaos, les ogres ne sont pas immunisés contr
 | Esprit | 11–00 |
 
 
-**Débardeur :** on dit qu'un débardeur ogre compense largement le volume de nourriture qu'il consomme par la quantité de marchandises qu'il peut charger sur un navire. Tout marchand astucieux, pour autant qu'il ait prévu un bon surplus de stock pour couvrir les besoins, peut réaliser de belles économies avec une équipe d'ogres volontaires.
+<span id="page-20-0" data-folio="19"></span>**Débardeur :** on dit qu'un débardeur ogre compense largement le volume de nourriture qu'il consomme par la quantité de marchandises qu'il peut charger sur un navire. Tout marchand astucieux, pour autant qu'il ait prévu un bon surplus de stock pour couvrir les besoins, peut réaliser de belles économies avec une équipe d'ogres volontaires.
 
 **Garde :** les ogres sont souvent employés comme gardes du corps par ceux qui peuvent se permettre de prendre en charge leurs frais exorbitants. Ils excellent dans leurs fonctions, car peu de personnes sont disposées à s'en prendre ouvertement à un ogre, si on leur laisse le choix. Cependant, leur corpulence peut souvent poser problème, car ils sont incapables de pénétrer dans de nombreux établissements fréquentés par leurs employeurs.
 
@@ -6549,7 +6549,7 @@ Les ogres impériaux sont nés dans l'Empire, ils ont donc appris ses us et cout
 D'autres ogres, comme les voyageurs venus des royaumes ogres, portent quelques vestiges de leur culture d'origine, mais ils s'adaptent rapidement. Ils se font aux coutumes locales, mais ont souvent du mal avec les préoccupations plus ésotériques, comme la moralité, la religion ou encore la philosophie, qu'ils imitent plus qu'ils ne les assimilent.
 
 
-### **À quoi ressemble votre famille ?**
+<span id="page-25-0" data-folio="24"></span>### **À quoi ressemble votre famille ?**
 
 Les ogres sont assez stoïques et, bien que leurs préoccupations les plus urgentes concernent généralement leur prochain repas, ils se soucient également de l'éducation de leurs enfants. Certaines pratiques peuvent sembler cruelles aux yeux des étrangers, mais les Montagnes des Larmes offrent un habitat rude dans lequel le plus robuste des ogres doit apprendre à survivre. Cet aspect est quelque peu tempéré par la culture de l'Empire, aussi les parents déconseillent à la plupart des enfants qui y sont nés de dévorer leurs frères et sœurs les plus faibles.
 
@@ -6754,7 +6754,7 @@ Toutefois, les ogres forgent et utilisent leurs propres armes et armures, notamm
 
 ### ARMES DE CORPS À CORPS DES OGRES
 
-| Arme                    | Prix | Enc. | Disponibilité* | Allonge<br>Dégâts |      | Atouts et Défauts        |
+<span id="page-30-0" data-folio="29"></span>| Arme                    | Prix | Enc. | Disponibilité* | Allonge<br>Dégâts |      | Atouts et Défauts        |
 |-------------------------|------|------|----------------|-------------------|------|--------------------------|
 |                         |      |      |                | BASE              |      |                          |
 | Massue ogre             | 1 CO | 2    | Courante       | Moyenne           | BF+4 | Spéciale**               |
@@ -6915,7 +6915,7 @@ Vous trempez votre lame favorite dans le sang d'un ennemi fraîchement tombé, c
 Clément Gauche - gauche.c@gmail.com
 
 
-Pendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de **Calme Intermédiaire (+0)** ou gagner l'État *Assommé*. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30.
+<span id="page-34-0" data-folio="33"></span>Pendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de **Calme Intermédiaire (+0)** ou gagner l'État *Assommé*. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30.
 
 ### **Goinfre costaud**
 
@@ -7455,7 +7455,7 @@ Les ânes et les mules possèdent souvent le Trait Entêté, qui augmente leur s
 | M               | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |  |
 | 5               | 25 | -  | 45 | 45 | 17 | 25 | -   | 10  | 10 | 20  | 26 |  |
 
-**Traits :** Arme +7, Dressé (Dompté, Monture, Trait), Foulée (Quadrupède), Nerveux, Taille (Grande)
+<span id="page-23-0" data-folio="23"></span>**Traits :** Arme +7, Dressé (Dompté, Monture, Trait), Foulée (Quadrupède), Nerveux, Taille (Grande)
 
 Ces chevaux de taille moyenne sont appréciés des fermiers qui peuvent se les offrir et profiter de leur polyvalence. Ils tirent des charrues ou des charrettes, une paire de ces animaux peut tirer tous les chariots, sauf les plus lourds, et ils constituent des montures assez dociles pour les déplacements en ville les jours de marché.
 
@@ -7513,7 +7513,7 @@ Les plus grands chevaux de guerre, parfois appelés « destriers », sont monté
 
 ### COÛT DE L'ANIMAL ET DISPONIBILITÉ
 
-| Animal                            | Coût    | Capacité d'encombrement | Disponibilité |
+<span id="page-24-0" data-folio="24"></span>| Animal                            | Coût    | Capacité d'encombrement | Disponibilité |
 |-----------------------------------|---------|-------------------------|---------------|
 | Poulet                            | 5 sc    | 0                       | Commune       |
 | Mouton                            | 3 /-    | 2                       | Commune       |
@@ -7627,7 +7627,7 @@ Les diligences commerciales peuvent transporter six passagers à l'intérieur, e
 Inspiré par les histoires des palanquins cathayens et de leurs puissants porteurs, le baronnet Réginald Gruber de Weissbruck a commandé une litière de vingt personnes. Les assistants du baronnet sont assez intelligents pour ne pas engager un groupe d'ogres forts et d'assez bonne humeur pour jouer les porteurs de litière, et cherchent plutôt à soustraiter cette requête de leur seigneur.
 
 
-#### **Charrettes à bras**
+<span id="page-27-0" data-folio="27"></span>#### **Charrettes à bras**
 
 Les charrettes à bras sont des versions plus petites des charrettes à deux roues, poussées par un homme. À la place du siège se trouve un côté ouvert, bien que des rapports indiquent que le pousse-pousse cathayen comporte un siège rembourré pour deux personnes. Comme les charrettes à chevaux, celles à bras possèdent deux arçons en saillie, normalement reliés par une barre transversale afin qu'une ou deux personnes puissent les déplacer.
 
@@ -7757,7 +7757,7 @@ Les véhicules ont une caractéristique d'Endurance, à partir de laquelle un Bo
 Les brancards sont brisés, les brides coupées, ou les bêtes sont séparées du véhicule d'une autre manière. Traitez cela comme un Problème de véhicule *Incontrôlable*.
 
 
-#### **Roues**
+<span id="page-30-0" data-folio="30"></span>#### **Roues**
 
 Une roue se casse ou tombe, nécessitant des réparations avant que le véhicule ne puisse poursuivre sa route. Un véhicule à deux roues se renverse, se débarrasse de son chargement et projette ses passagers au sol dans une chute d'1 mètre.
 
@@ -7774,7 +7774,7 @@ Tout Personnage peut tenter des réparations en utilisant la Compétence Métier
 La plupart des auberges relais ont un forgeron à résidence ou à proximité qui peut remplacer les fers. Il pourrait éventuellement posséder assez de Compétence en charpenterie pour rafistoler un véhicule afin qu'il puisse rejoindre une ville voisine, où l'on pourra trouver un Charron ou un Charpentier plus compétent. Tout Personnage peut tenter d'effectuer des réparations en utilisant les Compétences Métier (Charpentier) ou les compétences similaires que le MJ juge appropriées.
 
 
-## [T2C 13] CHAPITRE 11 - Règles du commerce
+## [MSRC 13] CHAPITRE 11 - Règles du commerce
 
 *Folio 71+*
 
@@ -8083,7 +8083,7 @@ La lettre qui suit le chiffre indique la qualité du soldat. **a**=soldats corre
 <span id="page-78-0" data-folio="79"></span>
 
 
-## [T3 10] Fiches de PNJ
+## [PDT 10] Fiches de PNJ
 
 *Pages PDF 117-150*
 
@@ -8136,7 +8136,7 @@ Sparsam croit que Pavarotti n'exerce aucune influence sur le graf Boris. Il se t
 L'objectif principal de Sparsam est d'optimiser les finances publiques : les taxes lui semblaient être une bonne idée jusqu'à ce qu'il assiste aux réactions des concernés. Il aurait volontiers 
 
 
-abrogé ces nouvelles lois fiscales, s'il n'était pas victime de chantage (voir *Secret mortel : Un problème de poudre*). Il aime aussi collectionner les objets anciens et partager sa passion avec d'autres connaisseurs.
+<span id="page-117-0" data-folio="115"></span>abrogé ces nouvelles lois fiscales, s'il n'était pas victime de chantage (voir *Secret mortel : Un problème de poudre*). Il aime aussi collectionner les objets anciens et partager sa passion avec d'autres connaisseurs.
 
 ### **Les autres PNJ**
 
@@ -8226,7 +8226,7 @@ Dieter et Kirsten Jung sont fiancés, et parlent régulièrement des gens et des
 Dieter croit que les Middenmarshalls exercent plus d'influence sur le Graf qu'ils n'en ont réellement ; cela est dû au fait que les dernières conversations qu'il a eues avec le Graf avant son déclin portaient principalement sur des sujets militaires.
 
 
-### **Objectifs**
+<span id="page-119-0" data-folio="117"></span>### **Objectifs**
 
 L'objectif principal de Dieter est d'épouser sa fiancée, Kirsten Jung, l'une des Dames de la cour. Il prévoit de s'installer en tant que forgeron et vendeur de chevaux, de fonder une famille et de mener une vie confortable, mais tranquille. La haute société, avec tous ses commérages et ses coups de poignard dans le dos, ne lui manquera pas du tout, c'est pourquoi les Personnages devraient essayer de faire appel à son sens de la justice et sa haine de la corruption s'ils souhaitent l'attirer dans les intrigues de l'aventure.
 
@@ -8321,7 +8321,7 @@ Les discours de Dieter Schmiedehammer en faveur de l'impôt nain le rendent éga
 Rallane a beaucoup de contacts utiles, et il connaît très bien Middenheim. Son intuition que quelque chose ne va pas à la cour pourrait encourager les Personnages à passer à l'action.
 
 
-### **Idées fausses**
+<span id="page-121-0" data-folio="119"></span>### **Idées fausses**
 
 Il pense, à tort, qu'Allavandrel, le Grand veneur, exerce une influence sur le graf Boris. Un jour, alors que Rallane traversait un épisode de déprime à la suite d'une énième déception amoureuse, il confia à Allavandrel qu'il se consolait en se disant qu'ils étaient tous deux des proches du Graf ; Allavandrel choisit de ne pas lui avouer la vérité, afin de ne pas l'accabler davantage.
 
@@ -8401,7 +8401,7 @@ Katarina est difficile à approcher. Elle vit dans le Palais avec son chaperon (
 Bien que Katarina ne dispose d'aucune information pertinente en soi, elle est le PNJ exerçant le plus d'influence sur le Graf que les Personnages pourront rallier à leur cause. Elle peut permettre aux Personnages d'accéder au Palais intérieur et elle peut, en théorie, convoquer presque n'importe quel PNJ dans des délais 
 
 
-assez courts ; cependant, elle ne laissera pas les Personnages abuser de son autorité. Pour la persuader de les aider, les Joueurs devront se montrer astucieux dans leur jeu de rôle : une Princesse n'a aucun intérêt à être surprise en train de conspirer avec des étrangers pour influer sur la politique de Middenheim !
+<span id="page-123-0" data-folio="121"></span>assez courts ; cependant, elle ne laissera pas les Personnages abuser de son autorité. Pour la persuader de les aider, les Joueurs devront se montrer astucieux dans leur jeu de rôle : une Princesse n'a aucun intérêt à être surprise en train de conspirer avec des étrangers pour influer sur la politique de Middenheim !
 
 Les Personnages de sexe masculin grands et beaux devront se donner plus de peine qu'ils ne pourraient s'y attendre pour séduire Katarina. En effet, la Princesse exige de la considération, des poèmes, des sérénades, des cadeaux somptueux et attentionnés, et autres gestes romantiques ; toute mention de faveurs politiques apparaîtra comme inopportune et donnera l'impression d'une cour intéressée. En résumé : Katarina exerce une puissante influence sur le Graf, mais les Personnages devront redoubler d'efforts pour s'assurer ses bonnes grâces.
 
@@ -8580,7 +8580,7 @@ Le général Johann Schwermutt est le commandant de la garnison de Middenheim. S
 **Possessions :** uniforme composé d'une armure de plates ancienne, d'une cape grise en peau de loup portée pardessus, d'une épée de cérémonie au pommeau doré et d'un bouclier orné des armoiries de la cité
 
 
-#### **Le Maréchal Maximillian von Genscher**
+<span id="page-127-0" data-folio="125"></span>#### **Le Maréchal Maximillian von Genscher**
 
 Le maréchal Maximillian von Genscher coordonne les défenses de la ville et dirige toutes les expéditions préparées par l'armée. Maximillian, 43 ans, est le plus jeune des trois Middenmarshalls et il a atteint son rang dans la société grâce à sa bonne naissance. C'est un homme imposant de plus de 1 m 90 et presque à moitié aussi large que ça. Sa personnalité est également hors du commun : son courage et sa magnanimité sont légendaires, de même que sa force de caractère. Il pèse ses mots avec attention et c'est un interrogateur perspicace. Il se distingue par des cheveux et une barbe bien taillée d'un noir profond, par ses yeux marron foncé, ainsi que par une longue et pâle cicatrice qui remonte sur sa joue gauche et fend son sourcil en deux.
 
@@ -8616,7 +8616,7 @@ Les Marshalls évitent de parler politique, et ne sont pas très au fait des int
 Le devoir des Marshalls est de protéger la ville des menaces militaires. Les menaces d'ordre politique ne rentrent pas dans leur champ d'action. Ils refuseront catégoriquement de s'engager dans une action militaire au sein de la ville, ou de faire quoi que ce soit qui ressemble de près ou de loin à un coup d'État. Cela signifie qu'ils ne prêteront aucun équipement ou personnel militaire aux Personnages, et ne leur accorderont aucun grade ni aucune autorité militaire.
 
 
-### **Les autres PNJ**
+<span id="page-128-0" data-folio="126"></span>### **Les autres PNJ**
 
 Étant donné leur volonté de se tenir à l'écart de la vie politique, les Marshalls ne connaissent que très peu les autres PNJ principaux, et n'entretiennent aucune relation avec eux.
 
@@ -8721,7 +8721,7 @@ Les sorciers reçoivent un bonus de +10 à tous leurs Tests basés sur la **Soci
 Les sorciers ne sont pas vraiment impliqués dans la sphère politique, bien qu'ils exercent une petite influence sur le Graf. Eberhauer a finalement plus de bouteille qu'Helseher, qui vient tout juste de s'éveiller aux problématiques politiques. Il a fait entendre sa colère auprès du Graf sur la question de l'impôtparchemin. Ils ne savent pas grand-chose qui serait utile pour 
 
 
-les Personnages, mais ils sont persuadés que les Seigneurs des Lois Ehrlich et Hoflich ont voté pour les nouvelles taxes, puisque les espions de la guilde postés au Palais ont reporté la vive opposition de Wasmeier.
+<span id="page-131-0" data-folio="129"></span>les Personnages, mais ils sont persuadés que les Seigneurs des Lois Ehrlich et Hoflich ont voté pour les nouvelles taxes, puisque les espions de la guilde postés au Palais ont reporté la vive opposition de Wasmeier.
 
 ### **Idées fausses**
 
@@ -8812,7 +8812,7 @@ Ar-Ulric sait qui influence le graf Boris. Il peut organiser des rencontres avec
 Aucune. Ar-Ulric sait de qui le Graf suit les conseils.
 
 
-### **Objectifs**
+<span id="page-133-0" data-folio="131"></span>### **Objectifs**
 
 Ar-Ulric veut désespérément récupérer ses lettres d'amour : si on les lui rend, il mettra un terme à sa relation avec Emmanuelle Schlagen, bien qu'il l'aime encore. Il est très remonté contre l'impôt des Temples, trouve que l'impôt nain crée une division sociale, et pense que l'impôt-parchemin mettra en péril un des éléments cruciaux de la défense de la ville. Forcé de défendre toutes ces taxes, il le fera de manière peu convaincante.
 
@@ -8899,7 +8899,7 @@ Emmanuelle sait qui a de l'influence auprès du Graf. Elle sait aussi qu'il est 
 Selon elle, Petra Liebkosen est une bonne source de ragots à la cour. Si les Personnages compatissent au sujet du chantage, elle leur suggérera de parler à Petra de manière générale, pour savoir ce qu'elle a entendu. Elle pense qu'une personne ayant accès au Palais intérieur a dû voler les lettres, car il n'y a aucun signe d'effraction.
 
 
-Emmanuelle peut révéler que Luigi Pavarotti lui a fait des avances si cela semble pertinent : cependant, elle n'en a pas parlé à Ar-Ulric. D'après son discours sur les herbes illicites, elle soupçonne le « docteur en médecine » d'être un bon vivant de la pire espèce. Si les Personnages sont au courant ou ont des doutes sur l'addiction du Chancelier, ils pourraient penser à tort que Luigi est son fournisseur.
+<span id="page-135-0" data-folio="133"></span>Emmanuelle peut révéler que Luigi Pavarotti lui a fait des avances si cela semble pertinent : cependant, elle n'en a pas parlé à Ar-Ulric. D'après son discours sur les herbes illicites, elle soupçonne le « docteur en médecine » d'être un bon vivant de la pire espèce. Si les Personnages sont au courant ou ont des doutes sur l'addiction du Chancelier, ils pourraient penser à tort que Luigi est son fournisseur.
 
 Emmanuelle est importante car elle exerce une influence sur le graf Boris et connaît les autres personnes qu'il écoute. Les Personnages doivent travailler avec acharnement et prudence pour gagner sa confiance.
 
@@ -8977,7 +8977,7 @@ Cette position n'est assortie d'aucune fonction ni d'aucun devoir à la cour, si
 Siegfried vit dans le Palais extérieur, mais assiste à certains événements culturels pendant la semaine du Carnaval. Il ne fréquente pas les événements informels ou bas de gamme, les marchés ou autres lieux « communs ».
 
 
-### **Attitude**
+<span id="page-137-0" data-folio="135"></span>### **Attitude**
 
 Un Personnage de classe sociale élevée (par exemple, avec la Carrière Noble ou le Talent Noblesse) qui est bien habillé et qui s'exprime bien, ou un Personnage de moindre importance qui peut imiter ces qualités de manière convaincante, reçoit un bonus allant jusqu'à +20 pour tous les Tests de **Sociabilité** avec Siegfried. Les individus crasseux, grossiers et simples sont rejetés d'emblée.
 
@@ -9063,7 +9063,7 @@ Allavandrel possède une petite maison dans le quartier d'Osttor. Il participe �
 **Halflings :** +5 à tous les Tests de **Sociabilité**. Allavandrel emploie une gouvernante halfling talentueuse et sympathique, du nom de Cordelia Vertebutte, et il a développé une tendresse particulière pour ces petites personnes grâce à elle.
 
 
-### **Connaissances**
+<span id="page-139-0" data-folio="137"></span>### **Connaissances**
 
 Allavandrel sait qui influence le graf Boris, rien de plus. Cependant, cet elfe sociable a de bonnes relations et peut présenter les Personnages à Dieter, Rallane, aux Dames de la cour, et peut-être même au Chancelier. Il peut découvrir où quelqu'un (comme le Chancelier) pourrait se procurer des substances plus exotiques (voir *La pharmalcoologie* p. 92). Cependant, il s'inquiétera si les Personnages pointent du doigt le Chancelier à cet égard. Combattant endurant et archer hors pair, il peut aussi apporter une aide directe à l'aventure et aux Personnages, mais seulement en cas d'absolue nécessité.
 
@@ -9140,7 +9140,7 @@ Wallenstein vit dans une maison de ville en apparence modeste dans le quartier d
 Pas de modificateurs spéciaux, mais les pots-de-vin sont très utiles.
 
 
-### **Idées fausses**
+<span id="page-141-0" data-folio="139"></span>### **Idées fausses**
 
 Wallenstein se trompe sur les personnes qui influencent le graf Boris : il pense que seuls le Chancelier et les Seigneurs des Lois ont une réelle influence.
 
@@ -9227,7 +9227,7 @@ Luigi n'a rien d'important à partager, sauf ses impressions sur Ar-Ulric (voir 
 L'attitude désinvolte de Luigi et ses origines étrangères peuvent le rendre suspect au premier abord, et se rapprocher de lui discréditera les Personnages auprès des PNJ principaux 
 
 
-plus respectables (notamment le chaperon). Cependant, si les Personnages arrivent à répondre à ses demandes et ses appétits, une entreprise potentiellement embarrassante, onéreuse et éreintante, et à le convaincre qu'ils ne lui veulent pas de mal, ni à lui, ni à la famille Todbringer, il sera un contact précieux.
+<span id="page-143-0" data-folio="141"></span>plus respectables (notamment le chaperon). Cependant, si les Personnages arrivent à répondre à ses demandes et ses appétits, une entreprise potentiellement embarrassante, onéreuse et éreintante, et à le convaincre qu'ils ne lui veulent pas de mal, ni à lui, ni à la famille Todbringer, il sera un contact précieux.
 
 ### **Idées fausses**
 
@@ -9310,7 +9310,7 @@ Kirsten est une émissaire importante ayant autrefois évolué dans le milieu ma
 **Possessions :** vêtements de cour de qualité, bijoux d'une valeur de 20 CO, sacoche contenant des pièces pour une valeur de 3 CO
 
 
-### **Petra Liebkosen**
+<span id="page-145-0" data-folio="143"></span>### **Petra Liebkosen**
 
 Petra s'implique beaucoup dans la société mondaine et part souvent se promener dans les rues de Middenheim. Elle a environ 25 ans et est de taille et de corpulence moyennes. Ses cheveux bruns et bouclés lui arrivent aux épaules et elle a des yeux marron foncé. Elle possède également une fossette au menton et un grain de beauté sur la joue gauche. Elle préfère des tenues plus travaillées que Kirsten et porte toujours des vêtements extravagants et chics. Très mondaine, elle sait que l'amour et la beauté durent bien moins longtemps que l'or et les diamants. Petra est matérialiste, hédoniste, extravertie et adore les ragots, mais elle fait attention à ce qu'elle dit, et à qui elle le dit.
 
@@ -9356,7 +9356,7 @@ Petra sait des tas de potins fort utiles, mais elle doit être approchée de la 
 - 0 Rallane a le béguin pour la Princesse. Il n'est pas à l'origine de l'impôt nain : ce n'est pas son genre, et il manque d'alliés politiques.
 
 
-### **Idées fausses**
+<span id="page-146-0" data-folio="144"></span>### **Idées fausses**
 
 Petra et Natasha savent toutes les deux qui influence le Graf. Kirsten surestime l'influence d'Ar-Ulric.
 
@@ -9436,7 +9436,7 @@ C'est pour ces raisons que Karl Heinz Wasmeier a décidé qu'il serait trop dang
 **\*Doppelgänger :** un doppelgänger peut prendre la forme de toute créature humanoïde qu'il a rencontrée, d'une taille comprise entre 1 m 20 et 2 m 40. La ressemblance est telle que seuls ceux qui connaissaient très bien l'original peuvent espérer remarquer la supercherie. Il leur faudra même réussir un Test d'**Intuition Difficile (-20)** pour sentir que quelque chose cloche.
 
 
-### **Karl Heinz Wasmeier**
+<span id="page-148-0" data-folio="146"></span>### **Karl Heinz Wasmeier**
 
 Karl Heinz est un homme d'environ 40 ans, grand, de corpulence moyenne, aux cheveux mi-longs châtain et ondulés et aux yeux marron. Personne ne le sait parmi les Seigneurs des Lois (ni même dans le reste de la cour), mais il fait partie du Cercle intérieur du culte de la Main Pourpre. C'est un homme intelligent, cruel et sans pitié, mais rares sont ceux qui l'ont rencontré et qui le décriraient ainsi. Lorsqu'il s'occupe de ses devoirs de Seigneur des Lois, il fait attention à avoir l'air professionnel, raisonnable et humain. C'est le seul des trois Seigneurs des Lois à avoir publiquement émis des doutes sur les nouvelles taxes.
 
@@ -9475,7 +9475,7 @@ Ehrlich se terre dans sa maison, et se fait livrer ses repas et ceux de ses anim
 Les Seigneurs des Lois, réputés impartiaux, sont rarement influencés par des Tests de **Sociabilité**. Vous pouvez leur donner +6 DR dans tous les Tests opposés qu'ils feront pour résister aux Tests de **Charme**, d'**Intimidation**, ou autres.
 
 
-### **Connaissances**
+<span id="page-149-0" data-folio="147"></span>### **Connaissances**
 
 Il y a bientôt deux mois de cela, la nièce d'Ehrlich, Reya, a été kidnappée. Hoflich lui a conseillé de soutenir les propositions de taxes s'il voulait la revoir. Ehrlich a obéi, et les taxes ont été votées. Il s'est immédiatement retiré chez lui en suivant les instructions d'Hoflich de ne voir et de ne parler à personne jusqu'à la fin du Carnaval, où, comme l'a promis Hoflich, on lui rendra Reya indemne.
 
@@ -9534,7 +9534,7 @@ Wasmeier est Magister Magistri de la Main Pourpre, dont le Cercle intérieur inc
 Jarmund et Kalzbad savent seulement que tous les membres du culte doivent soutenir les taxes avec enthousiasme. Ils ne savent pas que Wasmeier a élaboré un plan pour s'emparer de Middenheim.
 
 
-## [T3 11] dopplegänger
+## [PDT 11] dopplegänger
 
 *Pages PDF 151*
 

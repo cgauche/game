@@ -273,7 +273,7 @@ export function combatTestPenalty(c: Combatant): number {
   for (const op of c.auraMods ?? []) if (op.op === 'testMod' && op.char == null) cand.push(op.amount);
   const state = cand.length ? Math.min(...cand) : 0;
   // Modificateur de Sort (Malédiction de malchance) + pénalité GLOBALE de maladie (Crampes abdominales −20,
-  // T2C 16 l.152) : STACKENT tous deux avec l'État (hors pool non-cumul des États, LDB 16 l.20).
+  // MSRC 16 l.152) : STACKENT tous deux avec l'État (hors pool non-cumul des États, LDB 16 l.20).
   return state + effectTestMod(c) + passiveGlobalTestMod(c);
 }
 
@@ -309,7 +309,7 @@ export function activeCharTestMod(c: Combatant, ck: import('./types').CharKey, c
   }, 0);
 }
 export function testStatePenalty(c: Combatant, skill?: string): number {
-  // Modificateur de Sort + pénalité GLOBALE de maladie (Crampes abdominales −20, T2C 16 l.152) : STACKENT,
+  // Modificateur de Sort + pénalité GLOBALE de maladie (Crampes abdominales −20, MSRC 16 l.152) : STACKENT,
   // hors du non-cumul des États — présents même sans État et malgré Endurance de l'anachorète (LDB 42).
   const effMod = effectTestMod(c) + passiveGlobalTestMod(c);
   if (!c.conditions?.length) return effMod;

@@ -1,15 +1,15 @@
 /**
  * NAVIGATION FLUVIALE — couche PURE de **Mort sur le Reik — Compagnon, ch.5** (« Navigation fluviale »,
- * cité `T2C 7 l.<ligne>`), données verbatim dans `src/data/river-navigation.json` + `river-perils.json`.
+ * cité `MSRC 7 l.<ligne>`), données verbatim dans `src/data/river-navigation.json` + `river-perils.json`.
  * Pendant fluvial de `seaNavigation.ts` (mer, MDG). Les deux couches sont DISTINCTES parce que les tables
  * RAW le sont : la mer (MDG) a 6 forces de vent + rose des vents + Salissures + Orientation ; le fleuve
- * (T2C 7) a une table de vent PROPRE (5 forces, direction RELATIVE arrière/côté/contraire — l.21-41),
+ * (MSRC 7) a une table de vent PROPRE (5 forces, direction RELATIVE arrière/côté/contraire — l.21-41),
  * un Test de Navigation SIMPLE (Voile OU Ramer, un par étape — l.11-15) et ses propres Critiques de bateau
  * (l.72-94). Ce qui est réellement COMMUN (boucle jour/jour, halte de nuit, entretien quotidien, coque
  * persistée) est réutilisé côté flux (`riverVoyageFlow` réutilise `openRest`/`runDailyUpkeep`/
  * `persistHullWounds` de la machinerie de voyage), pas ré-implémenté.
  *
- * RAW modélisé (T2C 7) :
+ * RAW modélisé (MSRC 7) :
  *  - **Test de Navigation** = Voile OU Ramer selon l'embarcation, regroupés sous « Navigation » (l.11) ;
  *    UN par étape de voyage (l.15, renvoi aux règles de voyage EDOC). Barreur (voile) / meilleur rameur
  *    (barque) (l.13). **Savoir (Voies fluviales)** → +1 DR (fleuves/rivières/canaux uniquement, l.13).
@@ -37,7 +37,7 @@ import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from './types';
 // ── Types de la table des vents (l.21-41) ────────────────────────────────────────────────────────
 
 export type RiverWindForceId = 'calme' | 'leger' | 'modere' | 'fort' | 'tres-fort';
-/** Direction du vent RELATIVE au bateau (T2C 7 l.25-33) — pas une direction cardinale (≠ mer). */
+/** Direction du vent RELATIVE au bateau (MSRC 7 l.25-33) — pas une direction cardinale (≠ mer). */
 export type RiverWindDirId = 'arriere' | 'cote' | 'contraire';
 
 /** Cellule d'EFFET DU VENT (l.29-33) : % ajouté à la vitesse, ou un cas particulier (Dérive/Louvoyer/
@@ -223,7 +223,7 @@ const RIVER_SPLINTER = (riverCriticalsJson.shrapnelHit as { op: string; amount?:
 
 /** Vue « voyage » d'un Coup Critique de bateau fluvial (l.72-94), DÉRIVÉE de l'unique source
  *  `river-criticals.json` (la même que le combat lit via `RIVER_CRIT_SET`) — un seul fait RAW, deux vues.
- *  Chaque table T2C n'a qu'une entrée (effet déterministe par Localisation, pas de sous-jet d10). PUR. */
+ *  Chaque table MSRC n'a qu'une entrée (effet déterministe par Localisation, pas de sous-jet d10). PUR. */
 export function riverCritical(location: string): CritDef | undefined {
   const e = RIVER_CRIT_TABLES[location]?.[0];
   if (!e) return undefined;

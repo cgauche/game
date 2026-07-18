@@ -1,6 +1,6 @@
 /**
  * Effets mécaniques des consommables — suite comportementale sur la DONNÉE RÉELLE (#50).
- * Couvre les drogues (LDB 71), herbes/potions (LDB 72) et herbes T2C 2, au format FLOW :
+ * Couvre les drogues (LDB 71), herbes/potions (LDB 72) et herbes MSRC 2, au format FLOW :
  *  - flows purement `do` → aplatis (`flattenFlow`) et appliqués par `applyOps` (moteur pur) ;
  *  - flows à nœud `test`/`delayed` → assertions de STRUCTURE (le runtime cadence-aware est couvert
  *    par `state/consumable-flow.test.ts`).
@@ -243,9 +243,9 @@ describe('tonique-digestif (LDB 72 l.32)', () => {
   });
 });
 
-// ── Herbes T2C 2 ───────────────────────────────────────────────────────────
+// ── Herbes MSRC 2 ───────────────────────────────────────────────────────────
 
-describe('gesundheit (T2C 04 l.184-186) — Test de Résistance Accessible (+20) puis −1 jour PAR DR obtenu (#458)', () => {
+describe('gesundheit (MSRC 04 l.184-186) — Test de Résistance Accessible (+20) puis −1 jour PAR DR obtenu (#458)', () => {
   it('Test de Résistance Accessible (+20) — pas d\'effet inconditionnel (défaut #46 corrigé)', () => {
     const f = itemFromTrappingById('gesundheit')!.consumable! as Extract<Flow, { kind: 'test' }>;
     expect(f.kind).toBe('test');
@@ -264,7 +264,7 @@ describe('gesundheit (T2C 04 l.184-186) — Test de Résistance Accessible (+20)
   });
 });
 
-describe('racine-des-tombes (T2C p.14 / T2C 04 l.221-229) — enduit anti-mort-vivant + cataplasme', () => {
+describe('racine-des-tombes (MSRC p.14 / MSRC 04 l.221-229) — enduit anti-mort-vivant + cataplasme', () => {
   it("a un augmentWeapon : « Étalée sur une arme, la sève est nocive pour les Mort-vivants »", () => {
     expect(consumableOps(itemFromTrappingById('racine-des-tombes')!.consumable).some((o) => o.op === 'augmentWeapon')).toBe(true);
   });
@@ -281,7 +281,7 @@ describe('racine-des-tombes (T2C p.14 / T2C 04 l.221-229) — enduit anti-mort-v
   });
 });
 
-describe('rouille-mouchetee (T2C p.14 / T2C 04 l.239-241) — « Chaque dose réduit la durée de la maladie de 1d10 jours » + bonus continu (#458)', () => {
+describe('rouille-mouchetee (MSRC p.14 / MSRC 04 l.239-241) — « Chaque dose réduit la durée de la maladie de 1d10 jours » + bonus continu (#458)', () => {
   it('réduit la Vérole du Tanneur de 1 à 10 jours (dé tiré à l\'application), jamais une autre maladie', () => {
     const other = activeDisease('peste-noire', 15);
     const target = activeDisease('verole-du-tanneur', 15);

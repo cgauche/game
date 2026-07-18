@@ -18,7 +18,7 @@ import { slugId } from '../../data/slug';
 
 // Traits dont la mécanique vit AILLEURS que dans les helpers de `dispatch` (la raison est documentée).
 const COUVERT_AILLEURS = new Map<string, string>([
-  // Environnement aquatique (T2C p.90 / MDG p.140 / LDB p.338) — op passive `offTerrainMod` (terrain d’election `eau`) :
+  // Environnement aquatique (MSRC p.90 / MDG p.140 / LDB p.338) — op passive `offTerrainMod` (terrain d’election `eau`) :
   // (1) le drapeau positionnel `Combatant.offTerrain`, re-derive par `placeCombatant` selon la tuile, module le M
   // (encumbrance) et le DR de TOUS les Tests (combat/magic/rollFlows) hors de l’eau ; (2) `eau` est TRAVERSABLE en
   // pathing (`MoveEnv.swim` <- `requiredTerrains`, path.ts). Mecanise + teste (off-terrain.test.ts / path-swim.test.ts).
@@ -45,13 +45,13 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Absorption', 'engloutissement de fin de Round MÉCANISÉ 100% data-driven (`absorption.effects` : onRoundEnd Empêtré×BF + Empoigné + Digéré ; digestion drain BF ignore PA/BE + créature guérit ; redirection onWoundLoss ; un/Round ; purge à la mort) — dispatché par `fireTriggers`, cf. `absorption.test.ts` (EDO p.147)'],
   ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects — gating « kind=morsure » sans Condition Flow)'],
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
-  // Bestiaire fluvial (T2C 15) — mécanique AUTHORÉE en `effects` (fireTriggers), comme Constricteur/Venin.
+  // Bestiaire fluvial (MSRC 15) — mécanique AUTHORÉE en `effects` (fireTriggers), comme Constricteur/Venin.
   ['S\'accrocher pour se nourrir', 'attache post-Morsure + drain 1 PB/Round — `effects` AUTHORÉ (condition empetre grapple onHit + wounds onRoundStart on grappled, fireTriggers)'],
   ['Engloutir', 'engloutit à la touche : Empêtré Force=créature + drain 1 PB/Round — `effects` AUTHORÉ (fireTriggers onHit + onRoundStart)'],
   ['Salive anticoagulante', 'Hémorragique sur Morsure — `effects` AUTHORÉ (condition hemorragique, fireTriggers onHit)'],
   ['Hallucinogène', 'aura 2 m au début du Round → Test de FM → Sonné — `effects` AUTHORÉ (déclencheur onRoundStart near, fireTriggers)'],
   ['Forme de guerrière naïade', 'socle Peur 2 + Armure 2 à onCombatStart (grantTrait, `effects`) ; les 4 aspects tournants restent en desc (choix par Round = hook IA à câbler)'],
-  ['Capricieux', 'DR d’un Test de Sociabilité ENVERS la créature ±d10 (T2C p.89) MÉCANISÉ : modulateur `vsCapricieux` du Test social → `capriciousMod` (±10 par DR, d10 seedé UNE fois) dans `openSkillTest` ; authoré sur le Test d’un dialogue mené avec la créature, comme vsGroups (Animosité) / vsStatus (Statut) le sont (le contexte social de l’interlocuteur est authoré, pas auto-injecté depuis l’entité)'],
+  ['Capricieux', 'DR d’un Test de Sociabilité ENVERS la créature ±d10 (MSRC p.89) MÉCANISÉ : modulateur `vsCapricieux` du Test social → `capriciousMod` (±10 par DR, d10 seedé UNE fois) dans `openSkillTest` ; authoré sur le Test d’un dialogue mené avec la créature, comme vsGroups (Animosité) / vsStatus (Statut) le sont (le contexte social de l’interlocuteur est authoré, pas auto-injecté depuis l’entité)'],
   // Psychologie — engine/psychology.ts (parsePsychTraits)
   ['Peur', 'causesPeur (parsePsychTraits)'],
   ['Terreur', 'causesTerreur (parsePsychTraits)'],
@@ -133,10 +133,10 @@ const DISPATCH = new Set<string>([
   'Corruption mentale', 'Démoniaque', 'Élite', 'Endurant', 'Éthéré', 'Fabriqué', 'Foulée', 'Furtif',
   'Grand', 'Immunité', 'Infravision', 'Insensible à la douleur', 'Instable', 'Intelligent', 'Magique',
   'Meneur', 'Mutation', 'Nerveux', 'Nuée', 'Parasité', 'Perturbant', 'Protection', 'Rage', 'Rapide',
-  // Rampant (T2C 15) : capability `noRun` (donnée) → `runMultiplier`=0 (budget de Course nul), la Marche
+  // Rampant (MSRC 15) : capability `noRun` (donnée) → `runMultiplier`=0 (budget de Course nul), la Marche
   // reste intacte. Dispatché (capability lue par hasNoRun).
   'Rampant',
-  // Salive analgésique (T2C 15) : capability `wakelessBite` (donnée) → le modifier de touche `wake-sleeper`
+  // Salive analgésique (MSRC 15) : capability `wakelessBite` (donnée) → le modifier de touche `wake-sleeper`
   // NE réveille PAS une proie endormie (Inconscient magique) quand CETTE créature l'attaque (morsure indolore),
   // là où toute autre attaque la réveille. Dispatché (capability lue par le modifier).
   'Salive analgésique',
@@ -170,7 +170,7 @@ const DISPATCH = new Set<string>([
   // exemption dissipation STRUCTURELLE), `grantCareerTalent` ×10 (achats hors-Carrière au tarif normal
   // — `talentEffects.careerTalentAdditions`, étendu aux Traits).
   'Marque de Khorne',
-  // Marque de Tzeentch (EDOC 9 l.522-524) : `capabilities.psychType:'animosite'`+`psychCible:'nurgle'`
+  // Marque de Tzeentch (EDOC 13 l.522-524) : `capabilities.psychType:'animosite'`+`psychCible:'nurgle'`
   // (Animosité fixe, parsePsychTraits — la réciproque Nurgle→porteur est le MÊME canal `targetedTrigger`,
   // posée côté statblocs Nurgle) + `grantGroups:['tzeentch']` + `passive` : `grantTalent` (Savoir-vivre
   // (Disciples de Tzeentch), structurel — `talentEffects.traitGrantedTalents`), `grantCareerTalent` ×10

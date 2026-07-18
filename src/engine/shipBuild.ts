@@ -16,7 +16,7 @@
  *  +10 %/niveau), Robuste (+10 %), Solide (+30 % B, −10 % Contenance, +20 %/niveau).
  *
  * Améliorations : coût / poids d'installation par PALIER DE LONGUEUR (`NavalInstall`, verbatim ch.12 ;
- * T2C 12 l.54-135 pour les Améliorations propres au T2C — le RAW y tarife par TYPE de navire à
+ * MSRC 12 l.54-135 pour les Améliorations propres au MSRC — le RAW y tarife par TYPE de navire à
  * longueurs explicites, pas par `ShipSize`, #277) — `per:'5m'` = par tranche de 5 m de Taille (Blindage
  * l.225, Lissage l.289) ; `per:'unite'` = par cabine (l.240) ; `'modele'` = ceux du modèle embarqué
  * (Embarcation de bord, l.268).
@@ -181,7 +181,7 @@ export function installAmount(
   if (part === 'modele') return null;
   const base = bandValue(part.bands, lengthM);
   if (part.per === '5m') return base * Math.max(1, Math.ceil(lengthM / 5));
-  if (part.per === '10m') return base * Math.max(1, Math.ceil(lengthM / 10)); // T2C 12 « pour 10 mètres » (Coque de course l.23)
+  if (part.per === '10m') return base * Math.max(1, Math.ceil(lengthM / 10)); // MSRC 12 « pour 10 mètres » (Coque de course l.23)
   if (part.per === 'unite') return base * Math.max(1, units);
   return base;
 }

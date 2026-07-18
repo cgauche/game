@@ -24,7 +24,7 @@
 | `combat-advantage-cap` | Plafond d'Avantage (valeur fixe) | LDB 15 l.17 | param |
 | `combat-frappe-mortelle` | Frappe Mortelle | LDB 14 l.9 | flag |
 | `combat-sudden-death` | Mort Subite (= AA l.2505) | LDB 18 l.51 | mode |
-| `creation-signes-astraux` | Signes astraux à la création | ADE2 ch.03 | flag |
+| `creation-signes-astraux` | Signes astraux à la création | ADE II ch.03 | flag |
 
 ## À faire (~53), par sous-système
 

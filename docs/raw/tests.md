@@ -587,37 +587,37 @@ Talents concernés (LDB 10) :
 
 Le supplément **Nuits Agitées & Dures Journées** précise l'interprétation des doubles dans les jeux de taverne et, par extension, dans tout contexte hors combat où une règle renvoie à un « Critique » :
 
-> « Remarque : si l'une de ces règles se réfère à un Critique, cela signifie le fait d'avoir obtenu un double sur un Test réussi, comme décrit dans le Livre de Règles à la page 159, même s'il ne s'agit pas d'une situation de combat. » — `NADAJ 16 l.7`
+> « Remarque : si l'une de ces règles se réfère à un Critique, cela signifie le fait d'avoir obtenu un double sur un Test réussi, comme décrit dans le Livre de Règles à la page 159, même s'il ne s'agit pas d'une situation de combat. » — `NADJ 16 l.7`
 
 Cela confirme que la définition du Critique par double (LDB 12 l.124-127 — règle optionnelle) s'applique *textuellement identique* hors combat, notamment dans les jeux de taverne. Un **double sur un test réussi = Critique** (traité comme Succès Stupéfiant, DR 6+). Un double sur un test raté = Maladresse (Échec Stupéfiant, DR −6 ou moins) selon la même règle optionnelle.
 
-NADJ utilise également les **Points de Chance pour relancer** dans les jeux de taverne (`NADAJ 16 l.19`) — confirmation que la relance (LDB 17 l.22) s'applique dans tout contexte.
+NADJ utilise également les **Points de Chance pour relancer** dans les jeux de taverne (`NADJ 16 l.19`) — confirmation que la relance (LDB 17 l.22) s'applique dans tout contexte.
 
 **Option — Jeux de Taverne Rapides** : pour les groupes qui ne souhaitent pas dérouler les règles complètes de chaque jeu, NADJ propose une résolution par un unique **test opposé Intermédiaire (+0)** utilisant la Compétence indiquée pour ce jeu. Si aucune Compétence n'est précisée (par exemple Al-zahr), on effectue un **Test opposé de Pari (+0)**. Celui qui obtient le DR le plus élevé remporte la partie.
 
-> « Effectuez un Test opposé de Compétence Intermédiaire (+0) en utilisant la Compétence indiquée dans la section "Jeu" du jeu en question. Si aucune Compétence n'est indiquée, faites plutôt un Test opposé de Pari Intermédiaire (+0). Celui qui obtient le nombre le plus élevé de DR remporte la partie. » — `NADAJ 16 l.11`
+> « Effectuez un Test opposé de Compétence Intermédiaire (+0) en utilisant la Compétence indiquée dans la section "Jeu" du jeu en question. Si aucune Compétence n'est indiquée, faites plutôt un Test opposé de Pari Intermédiaire (+0). Celui qui obtient le nombre le plus élevé de DR remporte la partie. » — `NADJ 16 l.11`
 
 **Extensions de la mécanique DR dans les jeux de taverne** (NADJ 16) : plusieurs jeux montrent des variantes non présentes dans le LDB ch.12 :
 
-- **Ajouter le Bonus de Caractéristique au DR** : au Bras de Fer (Force) et à l'Alvatafl (Intelligence), le score obtenu est le DR du test *plus* le Bonus de la Caractéristique concernée. Exemple : DR +2 au Test de Force + Bonus de Force 4 = 6 points ce tour (`NADAJ 16 l.34` Bras de Fer ; `NADAJ 16 l.24` Alvatafl).
-- **Lire le dé des unités ou des dizaines au choix** : aux Fléchettes, sur un test *réussi*, le joueur choisit de marquer des points égaux au chiffre des unités, au chiffre des dizaines, à 10× le chiffre des unités, ou à 10× le chiffre des dizaines (`NADAJ 16 l.97`). C'est une lecture alternative du dé (distincte de l'inversion), uniquement disponible sur réussite.
-- **DR plafonné à 6 (ou objectif) dans un test étendu** : aux Boules, le DR maximal par lancer est 6 (contact avec la cible). Un échec signifie que la boule est hors-jeu (`NADAJ 16 l.35`).
+- **Ajouter le Bonus de Caractéristique au DR** : au Bras de Fer (Force) et à l'Alvatafl (Intelligence), le score obtenu est le DR du test *plus* le Bonus de la Caractéristique concernée. Exemple : DR +2 au Test de Force + Bonus de Force 4 = 6 points ce tour (`NADJ 16 l.34` Bras de Fer ; `NADJ 16 l.24` Alvatafl).
+- **Lire le dé des unités ou des dizaines au choix** : aux Fléchettes, sur un test *réussi*, le joueur choisit de marquer des points égaux au chiffre des unités, au chiffre des dizaines, à 10× le chiffre des unités, ou à 10× le chiffre des dizaines (`NADJ 16 l.97`). C'est une lecture alternative du dé (distincte de l'inversion), uniquement disponible sur réussite.
+- **DR plafonné à 6 (ou objectif) dans un test étendu** : aux Boules, le DR maximal par lancer est 6 (contact avec la cible). Un échec signifie que la boule est hors-jeu (`NADJ 16 l.35`).
 
 Ces trois mécaniques constituent des extensions légitimes du système de DR dans des contextes hors combat, autorisées par les livres de la liste VF.
 
 **Sources RAW** :
-- `NADAJ 16 l.7` — Critique hors combat = double sur réussite (même règle que LDB)
-- `NADAJ 16 l.9-10` — Option Jeux Rapides : test opposé Compétence (ou Pari)
-- `NADAJ 16 l.19` — Points de Chance = relance dans les jeux de taverne
-- `NADAJ 16 l.24` — Alvatafl : ajouter Bonus d'Intelligence au DR
-- `NADAJ 16 l.34` — Bras de Fer : test étendu Force + Bonus de Force au DR par tour
-- `NADAJ 16 l.35` — Boules : DR plafonné à 6 par lancer (test étendu)
-- `NADAJ 16 l.97` — Fléchettes : choisir unités/dizaines/×10 sur réussite
+- `NADJ 16 l.7` — Critique hors combat = double sur réussite (même règle que LDB)
+- `NADJ 16 l.9-10` — Option Jeux Rapides : test opposé Compétence (ou Pari)
+- `NADJ 16 l.19` — Points de Chance = relance dans les jeux de taverne
+- `NADJ 16 l.24` — Alvatafl : ajouter Bonus d'Intelligence au DR
+- `NADJ 16 l.34` — Bras de Fer : test étendu Force + Bonus de Force au DR par tour
+- `NADJ 16 l.35` — Boules : DR plafonné à 6 par lancer (test étendu)
+- `NADJ 16 l.97` — Fléchettes : choisir unités/dizaines/×10 sur réussite
 - `LDB 12 l.124-127` (rappel) — règle optionnelle Critiques/Maladresses sur tous tests
 
 **Voir aussi** : [Doubles — Critique et Maladresse](#doubles--critique-et-maladresse), [Influencer un test — Chance, Résilience, Talents](#influencer-un-test--chance-résilience-talents), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
 - `LDB 17` (l.22) → `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ActionBar`, `CampaignView`, `crewRoleFlowSpec`, `bumpSL`, +9 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/keybindings.ts`, +9 fichiers
-- `NADAJ 16` (l.7, l.9-10, l.11, l.19, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `OPTIONAL_RULES` — `src/data/tavernGames.json`, `src/engine/policy.ts`
-- sans code : `NADAJ 16` (l.24, l.34, l.35)
+- `NADJ 16` (l.7, l.9-10, l.11, l.19, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `OPTIONAL_RULES` — `src/data/tavernGames.json`, `src/engine/policy.ts`
+- sans code : `NADJ 16` (l.24, l.34, l.35)

@@ -107,20 +107,20 @@ test('parseFiche : réf portée par la LIGNE DE HEADING → rattachée au topic 
   const doc = [
     '## Maladies',
     '',
-    '### Racine des Tombes (`T2C 04 l.204-229`)',
+    '### Racine des Tombes (`MSRC 04 l.204-229`)',
     '',
-    '**Implémente :** ancien',       // topic racine → doit voir T2C 04
+    '**Implémente :** ancien',       // topic racine → doit voir MSRC 04
     '',
-    '### Rouille Mouchetée (`T2C 04 l.241-252`)',
+    '### Rouille Mouchetée (`MSRC 04 l.241-252`)',
     '',
-    '**Implémente :** ancien',       // topic rouille → T2C 04 l.241-252, PAS l.204-229
+    '**Implémente :** ancien',       // topic rouille → MSRC 04 l.241-252, PAS l.204-229
     '',
   ].join('\n')
   const { fields } = parseFiche('m.md', doc)
   assert.equal(fields.length, 2)
-  assert.deepEqual(fields[0].refs.map((r) => `${r.book} ${r.ch} l.${r.lo}-${r.hi}`), ['T2C 4 l.204-229'])
+  assert.deepEqual(fields[0].refs.map((r) => `${r.book} ${r.ch} l.${r.lo}-${r.hi}`), ['MSRC 4 l.204-229'])
   // le heading du topic SUIVANT ne contamine pas le précédent (son champ a déjà vidé pending)
-  assert.deepEqual(fields[1].refs.map((r) => `${r.book} ${r.ch} l.${r.lo}-${r.hi}`), ['T2C 4 l.241-252'])
+  assert.deepEqual(fields[1].refs.map((r) => `${r.book} ${r.ch} l.${r.lo}-${r.hi}`), ['MSRC 4 l.241-252'])
 })
 
 test('refsWithSpans : LDB + autre livre avec suffixe de plage déplié', () => {
@@ -325,15 +325,15 @@ test('validateManifest : topic inconnu / doublon / entrée sans ticket ni bloque
 
 // --- Pont FOLIO (#434) ---
 
-test('buildAbbrMap : abbr → slug ; abbr inconnue de BOOKS → fail-fast ; entrée sans abbr → hors map (VO)', () => {
-  assert.throws(() => buildAbbrMap([{ id: 'x', abbr: 'ZZZ' }]), /abbr inconnue de BOOKS/)
+test('buildAbbrMap : abbr → slug ; abbr inconnue de BOOKS → fail-fast ; entrée sans dir → hors map (VO)', () => {
+  assert.throws(() => buildAbbrMap([{ id: 'x', abbr: 'ZZZ', dir: 'Source/x' }]), /abbr inconnue de BOOKS/)
   const { abbrOf, knownIds } = buildAbbrMap([
-    { id: 'aux-armes', abbr: 'AA' },
-    { id: 'mort-sur-le-reik-compagnon', abbr: 'T2C' },
-    { id: 'lustria' }, // VO hors Atlas — connu mais sans abbr
+    { id: 'aux-armes', abbr: 'AA', dir: 'Source/WH - V4 - Aux Armes' },
+    { id: 'mort-sur-le-reik-compagnon', abbr: 'MSRC', dir: 'Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon' },
+    { id: 'lustria', abbr: 'Lustria' }, // VO hors Atlas — a désormais un abbr mais aucun dir (#585)
   ])
   assert.equal(abbrOf.get('aux-armes'), 'AA')
-  assert.equal(abbrOf.get('mort-sur-le-reik-compagnon'), 'T2C')
+  assert.equal(abbrOf.get('mort-sur-le-reik-compagnon'), 'MSRC')
   assert.equal(abbrOf.has('lustria'), false)
   assert.deepEqual([...knownIds].sort(), ['aux-armes', 'lustria', 'mort-sur-le-reik-compagnon'])
 })

@@ -60,14 +60,14 @@ describe('reduceDiseaseDays — Bénédiction de Convalescence (LDB 41) + extens
     expect(c.diseases![0].minutesLeft).toBe(5 * MINUTES_PER_DAY); // non ciblée : intacte
     expect(c.diseases![1].minutesLeft).toBe(7 * MINUTES_PER_DAY);
   });
-  it("`dice` tire les jours à l'application (Rouille mouchetée : « 1d10 jours », T2C p.14)", () => {
+  it("`dice` tire les jours à l'application (Rouille mouchetée : « 1d10 jours », MSRC p.14)", () => {
     const c = dummy({ diseases: [sick('verole-du-tanneur', 15)] });
     applyOps(c, [{ op: 'reduceDiseaseDays', dice: { n: 1, sides: 10 }, disease: 'verole-du-tanneur' }], {});
     const reduced = 15 - c.diseases![0].minutesLeft / MINUTES_PER_DAY;
     expect(reduced).toBeGreaterThanOrEqual(1);
     expect(reduced).toBeLessThanOrEqual(10);
   });
-  it("`daysPerSL` échelle sur `ctx.sl` (Gesundheit : « un jour par DR obtenu », T2C 04 l.184-186)", () => {
+  it("`daysPerSL` échelle sur `ctx.sl` (Gesundheit : « un jour par DR obtenu », MSRC 04 l.184-186)", () => {
     const c = dummy({ diseases: [sick('blessure-purulente', 5)] });
     applyOps(c, [{ op: 'reduceDiseaseDays', days: 0, daysPerSL: { every: 1, amount: 1 }, disease: 'blessure-purulente' }], { sl: 3 });
     expect(c.diseases![0].minutesLeft).toBe(2 * MINUTES_PER_DAY); // 5 − 3 DR

@@ -831,7 +831,7 @@ export function resolveAppraise(get: Get, set: Set): void {
   }
   if (!pa.success) {
     // Échec NET : pas de re-tentative le même jour (LDB 12 l.120 — seul un résultat marginal
-    // « permet de faire un nouvel essai » ; ADE2 : re-tenter une identification coûte du temps).
+    // « permet de faire un nouvel essai » ; ADE II : re-tenter une identification coûte du temps).
     patchAppraiseTarget(get, set, pa, { appraiseTriedDay: gameDay(get) });
     get().log(`Évaluation ratée : ${pa.itemName} reste non identifié (rien de plus à en tirer aujourd'hui).`);
     return;

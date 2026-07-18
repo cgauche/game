@@ -13,12 +13,12 @@ const seq = (...vals: number[]): RNG => {
   return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
 };
 
-// Exemples canoniques de l'Index géographique du Reikland (T2C 13 l.164-174).
+// Exemples canoniques de l'Index géographique du Reikland (MSRC 13 l.164-174).
 const grunburg: LandMarketProfile = { taille: 3, richesse: 2, produits: ['commerce'] };      // Ville, Richesse Moyenne
 const kemperbad: LandMarketProfile = { taille: 3, richesse: 4, produits: ['armement', 'commerce', 'metal', 'vin'], wineBonusEchelons: 2 };
 const hameau: LandMarketProfile = { taille: 1, richesse: 1, produits: ['subsistance'] };
 
-describe('Commerce terrestre T2C 13 — ACHAT (l.22-131)', () => {
+describe('Commerce terrestre MSRC 13 — ACHAT (l.22-131)', () => {
   it('disponibilité : (Taille + Richesse) × 10 % — Grünburg = 50 % (l.164)', () => {
     expect(availabilityPct(grunburg)).toBe(50);
     expect(availabilityPct(hameau)).toBe(20);
@@ -81,7 +81,7 @@ describe('Commerce terrestre T2C 13 — ACHAT (l.22-131)', () => {
   });
 });
 
-describe('Commerce terrestre T2C 13 — VENTE (l.133-160)', () => {
+describe('Commerce terrestre MSRC 13 — VENTE (l.133-160)', () => {
   it('Demande : Taille × 10 (+30 si Commerce) — Kemperbad = 60 % (l.172)', () => {
     expect(sellDemandTarget(kemperbad)).toBe(60); // 3×10 + 30 (commerce)
     expect(sellDemandTarget(hameau)).toBe(10);    // 1×10, pas de commerce
@@ -99,7 +99,7 @@ describe('Commerce terrestre T2C 13 — VENTE (l.133-160)', () => {
   });
 });
 
-describe('Commerce terrestre T2C 13 — RUMEURS (l.176-303)', () => {
+describe('Commerce terrestre MSRC 13 — RUMEURS (l.176-303)', () => {
   it('tire une rumeur au d100 et signale les biens demandés → prix doublé sur correspondance', () => {
     const rum = rollTradeRumour(seq(3)); // 01-05
     expect(rum.biens).toEqual(['produits-de-luxe', 'vin', 'vivres']);

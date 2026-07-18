@@ -219,7 +219,7 @@ export function hasBladeTrap(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.caps?.bladeTrap);
 }
 
-/** Arme MAGIQUE (qualité enchantée, ADE2) : ses attaques comptent comme magiques (Éthéré, LDB 85). */
+/** Arme MAGIQUE (qualité enchantée, ADE II) : ses attaques comptent comme magiques (Éthéré, LDB 85). */
 export function isMagicWeapon(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.caps?.magic);
 }

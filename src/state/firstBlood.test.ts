@@ -9,7 +9,7 @@ import type { Scene } from './scene';
 import type { Weapon } from '../engine/types';
 
 /**
- * DUEL JUDICIAIRE (#471, NADAJ 06 l.175-192) — deux mécaniques indépendantes de `EncounterDef` :
+ * DUEL JUDICIAIRE (#471, NADJ 06 l.175-192) — deux mécaniques indépendantes de `EncounterDef` :
  * `victoryCondition: { type: 'firstBlood' }` (premier sang, PAR-COUP, l.175-177) et `banRanged`
  * (restriction d'armes à distance, dérogeable, l.181). Patron calqué sur `woundsThreshold` (#215,
  * `victoryCondition.test.ts`) et le harnais `applyAttackResult` direct de `at-terre.test.ts`.
@@ -39,7 +39,7 @@ function setup(scene: Scene = testScene) {
   return { H, E };
 }
 
-describe('Duel judiciaire — premier sang (#471, NADAJ 06 l.175-177)', () => {
+describe('Duel judiciaire — premier sang (#471, NADJ 06 l.175-177)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
@@ -112,7 +112,7 @@ describe('Duel judiciaire — premier sang (#471, NADAJ 06 l.175-177)', () => {
   });
 });
 
-describe('Duel judiciaire — restriction d\'armes à distance (#471, NADAJ 06 l.181)', () => {
+describe('Duel judiciaire — restriction d\'armes à distance (#471, NADJ 06 l.181)', () => {
   const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
 
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
@@ -156,7 +156,7 @@ describe('Duel judiciaire — restriction d\'armes à distance (#471, NADAJ 06 l
     expect(r).not.toBeNull();
   });
 
-  it("duel firstBlood SANS banRanged posé : interdit PAR DÉFAUT (#471 défaut 1, NADAJ 06 l.181 « la plupart »)", () => {
+  it("duel firstBlood SANS banRanged posé : interdit PAR DÉFAUT (#471 défaut 1, NADJ 06 l.181 « la plupart »)", () => {
     const { H, E } = setup();
     H.weapons = [RANGED];
     H.pos = { x: 0, y: 0 };

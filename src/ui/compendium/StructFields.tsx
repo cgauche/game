@@ -402,7 +402,7 @@ export function StarSubField({ value, onChange }: { value: [number, number] | un
   const clamp = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
   return (
     <div className="ed-field">
-      <span>sous-fourchette du 1d10 interne (Étoile du Sorcier — ADE2) : décocher = signe simple</span>
+      <span>sous-fourchette du 1d10 interne (Étoile du Sorcier — ADE II) : décocher = signe simple</span>
       <div className="tf-row">
         <label className="dr"><input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked ? [lo, hi] : undefined)} /> sous-tirage</label>
         {on && (

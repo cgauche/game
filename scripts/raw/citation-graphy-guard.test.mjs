@@ -111,7 +111,7 @@ test('docs/raw (b) : réf de livre SANS chapitre (AA l.4395, ADE II l.653) → d
   withTempRawDir({
     'a.md': 'Art (Écriture) (AA l.3574)\n',
     'b.md': 'ogres : Langue Magick (ADE II l.653)\n',
-    'ok.md': 'forme canonique `AA 13 l.3574` et `T2C 16 l.104-118`\n',
+    'ok.md': 'forme canonique `AA 13 l.3574` et `MSRC 16 l.104-118`\n',
   }, (raw) => {
     const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter')
     assert.equal(v.length, 2)
@@ -119,12 +119,12 @@ test('docs/raw (b) : réf de livre SANS chapitre (AA l.4395, ADE II l.653) → d
   })
 })
 
-test('docs/raw : LDB sans chapitre HORS périmètre (b) ; EDO/EDOC & T2/T2C désambiguïsés', () => {
+test('docs/raw : LDB sans chapitre HORS périmètre (b) ; EDO/EDOC & MSR/MSRC désambiguïsés', () => {
   withTempRawDir({
-    'x.md': ['LDB l.162 (LDB hors classe b, non listé)', 'EDOC l.101', 'EDO l.5', 'T2C l.71', 'T3 l.9'].join('\n') + '\n',
+    'x.md': ['LDB l.162 (LDB hors classe b, non listé)', 'EDOC l.101', 'EDO l.5', 'MSRC l.71', 'MSR l.9'].join('\n') + '\n',
   }, (raw) => {
     const kinds = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter').map((x) => x.text)
-    assert.equal(kinds.length, 4) // EDOC, EDO, T2C, T3 — pas LDB
+    assert.equal(kinds.length, 4) // EDOC, EDO, MSRC, MSR — pas LDB
     assert.ok(!kinds.some((t) => /^LDB /.test(t)))
   })
 })
@@ -145,14 +145,14 @@ test('docs/raw (b) : BOOK_NO_CHAPTER_RE DÉRIVE de otherAbbrAlternation (_lib.mj
   assert.equal(BOOK_NO_CHAPTER_RE().source, `\\b(${otherAbbrAlternation()}) l\\.\\d`)
 })
 
-test('docs/raw (b) : variantes tolérantes MDG / ADE II / Middenheim (ADEII, Midd) → détectées', () => {
+test('docs/raw (b) : identité stricte (#585 lot B) — MDG canonique détecté, anciennes graphies ADEII/Midd invisibles (hors alternation)', () => {
   withTempRawDir({
     'mdg.md': 'Requins-taureaux (MDG l.812)\n',
     'adeii.md': 'ogres : Langue Magick (ADEII l.653)\n',
     'midd.md': 'Loup Blanc (Midd l.3)\n',
   }, (raw) => {
     const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'book-no-chapter')
-    assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['adeii.md', 'mdg.md', 'midd.md'])
+    assert.deepEqual(v.map((x) => x.file.split('/').pop()).sort(), ['mdg.md'])
   })
 })
 
@@ -354,12 +354,14 @@ test('(g) abréviation inconnue : détectée nominativement, abréviation connue
   )
 })
 
-test('(g) abréviation inconnue : variantes tolérantes de _lib.mjs (ADEII, Midd) ne sont PAS des inconnues', () => {
+test('(g) abréviation inconnue : ancienne graphie ADEII (tout capitales) EST désormais une inconnue (identité stricte, #585 lot B) ; "Midd" reste hors format (casse mixte, invisible d\'UNKNOWN_ABBR_RE)', () => {
   withTempSrcAndRawDir(
-    { 'x.ts': '// ADEII 5 l.10, Midd 3 l.4 : variantes tolérantes connues\n' },
+    { 'x.ts': '// ADEII 5 l.10, Midd 3 l.4 : anciennes graphies, plus tolérées\n' },
     {},
     (srcDir, rawDir) => {
-      assert.equal(scanUnknownAbbrViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir).length, 0)
+      const v = scanUnknownAbbrViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir)
+      assert.equal(v.length, 1)
+      assert.deepEqual(v.map((x) => x.abbr), ['ADEII'])
     },
   )
 })

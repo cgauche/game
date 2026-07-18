@@ -232,7 +232,7 @@ export function mutationsAtSpawn(traits: TraitList | undefined): { kind: 'physiq
     .map((t) => ({ kind: traitById.get(t.id)!.capabilities!.mutationAtSpawn!, mutationId: t.arg ? slugId(t.arg) : undefined }));
 }
 
-/** Marque du Chaos (Marque de Tzeentch, EDOC 9 l.522-524) : tirage PLURIEL et ALTERNÉ de Mutations au
+/** Marque du Chaos (Marque de Tzeentch, EDOC 13 l.522-524) : tirage PLURIEL et ALTERNÉ de Mutations au
  *  spawn — `capabilities.markMutations`, DISTINCT de `mutationsAtSpawn` (singulier, table générique).
  *  Un seul porteur attendu ; le premier trait qui porte la capacité fait foi. */
 export function markMutationsAtSpawn(traits: TraitList | undefined): NonNullable<TraitCapabilities['markMutations']> | undefined {
@@ -374,7 +374,7 @@ export function hasClimbFullSpeed(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'climbFullSpeed');
 }
 
-/** Rampant (T2C 15 p.90) : « Elle ne peut pas réaliser d'Action de Course. » Capacité NON exprimable
+/** Rampant (MSRC 15 p.90) : « Elle ne peut pas réaliser d'Action de Course. » Capacité NON exprimable
  *  en GameOp → drapeau `capabilities.noRun`, interrogé par `runMultiplier`. */
 export function hasNoRun(traits: TraitList | undefined): boolean {
   return (traits ?? []).some((t) => !!traitById.get(t.id)?.capabilities?.noRun);

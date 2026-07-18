@@ -214,7 +214,7 @@ export interface CreateHeroOptions {
   /** Résolution des entrées « (Au choix) » : entrée brute → libellé concret
    *  (ex. « Métier (Au choix) » → « Métier (Forgeron) »). */
   specChoices?: Record<string, string>;
-  /** Signe astral choisi (ADE2) — `id` STABLE (≠ libellé) ; son `effect` (charMod / grantTalent) est
+  /** Signe astral choisi (ADE II) — `id` STABLE (≠ libellé) ; son `effect` (charMod / grantTalent) est
    *  appliqué aux attributs de départ via applyStarEffect. Absent = pas de signe. */
   starId?: string;
   /** Les 5 Augmentations gratuites réparties sur les 3 Caractéristiques de carrière (LDB 05
@@ -315,7 +315,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   }
   if (chosenTalent) addTalent(chosenTalent);
 
-  // Signe astral (ADE2 3) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
+  // Signe astral (ADE II 3) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
   // AVANT heroSoFar (careerSkillAdditions voit un « Maître artisan » du signe) et avant les effets
   // d'acquisition des Talents (l. ~377). Talent « (Au choix) » résolu via specChoices (resolveEntry).
   if (opts.starId) applyStarEffect(opts.starId, chars, (label) => addTalent(resolveEntry(label, opts.specChoices)));

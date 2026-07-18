@@ -6,8 +6,8 @@ import type { Difficulty } from '../engine/types';
 
 /** Test encouru par l'ÉQUIPAGE sur un Critique de coque — compétence + difficulté en DONNÉE, conséquence
  *  d'échec en `GameOp` (langue unique). `skillId`/`difficulty` ABSENTS = dégâts AUTOMATIQUES (pas de Test —
- *  T2C « les échardes infligent +5 Dégâts aux rameurs »). `crewTarget` : `poste` (équipage d'un poste tiré
- *  au sort — MDG « Canon détaché », défaut) ou `deck` (toute personne exposée sur le pont — T2C
+ *  MSRC « les échardes infligent +5 Dégâts aux rameurs »). `crewTarget` : `poste` (équipage d'un poste tiré
+ *  au sort — MDG « Canon détaché », défaut) ou `deck` (toute personne exposée sur le pont — MSRC
  *  gréement/superstructure « Toute personne présente sur le pont… »). Pas de valeur/règle codée en dur. */
 export interface ShipCrewTest {
   skillId?: string;
@@ -65,7 +65,7 @@ export const SHRAPNEL_HIT = shipCriticalsJson.shrapnelHit as GameOp[];
 
 const T = shipCriticalsJson.tables as Record<ShipCritKey, ShipCritTable>;
 
-/** Jeu MDG (mer) — ne couvre QUE ses 5 Localisations navales (pas gouvernail/superstructure, fluviales T2C).
+/** Jeu MDG (mer) — ne couvre QUE ses 5 Localisations navales (pas gouvernail/superstructure, fluviales MSRC).
  *  Type INFÉRÉ (5 clés) → assignable à `Partial<Record<ShipCritKey, …>>` du jeu, sans exiger les clés fluviales. */
 export const SHIP_CRITICAL_TABLES = {
   cargaison: T.cargaison,
@@ -76,7 +76,7 @@ export const SHIP_CRITICAL_TABLES = {
 };
 
 /** Jeu de tables de Critiques d'une coque : effet des Éclats (per-règle) + tables par Localisation
- *  (chaque jeu ne couvre QUE ses Localisations — MDG couvre cargaison/équipements, T2C gouvernail/
+ *  (chaque jeu ne couvre QUE ses Localisations — MDG couvre cargaison/équipements, MSRC gouvernail/
  *  superstructure ; la table de Localisation appariée ne produit jamais une clé absente du jeu). */
 export interface ShipCritSet {
   shrapnelHit: GameOp[];
@@ -86,7 +86,7 @@ export interface ShipCritSet {
 /** Jeu MDG (mer, ch.13) — Éclats 9 Dégâts. */
 export const SHIP_CRIT_SET: ShipCritSet = { shrapnelHit: SHRAPNEL_HIT, tables: SHIP_CRITICAL_TABLES };
 
-/** Jeu T2C (fleuve, ch.5) — Éclats +5 Dégâts, Localisations Gréement/Rames/Gouvernail/Coque/Superstructure. */
+/** Jeu MSRC (fleuve, ch.5) — Éclats +5 Dégâts, Localisations Gréement/Rames/Gouvernail/Coque/Superstructure. */
 export const RIVER_CRIT_SET: ShipCritSet = {
   shrapnelHit: riverCriticalsJson.shrapnelHit as GameOp[],
   tables: riverCriticalsJson.tables as Partial<Record<ShipCritKey, ShipCritTable>>,

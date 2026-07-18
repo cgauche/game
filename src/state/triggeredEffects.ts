@@ -85,7 +85,7 @@ export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSourc
   for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withArg(d.effects, tr.arg, tr.value), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
   if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: d.effects, cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
   for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: d.effects, cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
-  // Symptômes ACTIFS des maladies (Crampes abdominales `onOwnTestFailed`, T2C 16) — insérés APRÈS les
+  // Symptômes ACTIFS des maladies (Crampes abdominales `onOwnTestFailed`, MSRC 16) — insérés APRÈS les
   // Talents et AVANT les États : ils composent comme un Trait/passif du CORPS (source NON-statut, sans
   // `stacks`), donc dispatchés par la voie `effectsOf`/`applyTriggeredEffects` (≠ pool à pions des États).
   // Ordre STABLE (accesseur canonique `activeSymptoms`, ordre des maladies) → déroulé RNG déterministe.
@@ -255,7 +255,7 @@ function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx, get?: Get)
   const branch = res.success ? flow.success : flow.fail;
   const lines = [describeTestRoll(c.name, skillLabel, difficulty, res), ...runPureFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
   // SEAM `onOwnTestFailed` (voie inline) : un Test déclenché RATÉ par le porteur émet le trigger (Crampes
-  // abdominales, T2C 16 l.152). La garde de RÉ-ENTRANCE de `fireOwnTestFailed` empêche un sous-Test résolu
+  // abdominales, MSRC 16 l.152). La garde de RÉ-ENTRANCE de `fireOwnTestFailed` empêche un sous-Test résolu
   // ICI pendant le traitement (FM de palier 2) de ré-émettre. `get` absent (appelant sans store) ⇒ inerte.
   if (!res.success && get) lines.push(...fireOwnTestFailed(get, c, { sl: res.sl, rng }));
   return lines;
@@ -403,7 +403,7 @@ export function fireTriggers(get: Get, actor: Combatant, trigger: EffectTrigger,
 }
 
 /** Garde de RÉ-ENTRANCE du trigger `onOwnTestFailed` : un Test résolu PENDANT le traitement (le FM de
- *  palier 2 des Crampes, T2C 16 l.156) ne DOIT jamais ré-émettre le trigger (sinon boucle). Drapeau MODULE
+ *  palier 2 des Crampes, MSRC 16 l.156) ne DOIT jamais ré-émettre le trigger (sinon boucle). Drapeau MODULE
  *  (le traitement est synchrone : pose→fireTriggers→dépose). */
 let firingOwnTestFailed = false;
 

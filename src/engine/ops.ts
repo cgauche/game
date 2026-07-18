@@ -144,7 +144,7 @@ export interface PerSL {
   /** Quantité ajoutée par palier (peut être négative — retrait de Corruption). */
   amount: number;
   /** Échelle sur l'ÉCHEC (branche `fail` d'un nœud Flow `test`, `ctx.sl` négatif) au lieu de la réussite —
-   *  « gagnant un État X pour chaque niveau d'échec » (ex. Hallucinogène, T2C 15 l.167). Magnitude =
+   *  « gagnant un État X pour chaque niveau d'échec » (ex. Hallucinogène, MSRC 15 l.167). Magnitude =
    *  `|sl|` quand `sl < 0`, 0 sinon (symétrique du défaut qui ignore tout `sl` négatif). */
   onFailure?: boolean;
 }
@@ -204,7 +204,7 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
 }
 
 /** Ops `offTerrainMod` PASSIVES du combattant (traits INHÉRENTS `c.traits`, lus PAR ID comme
- *  `skillDRBonus` — Créature marine MDG p.140 / Aquatique T2C p.90). PUR. */
+ *  `skillDRBonus` — Créature marine MDG p.140 / Aquatique MSRC p.90). PUR. */
 function offTerrainOps(c: Combatant): Extract<GameOp, { op: 'offTerrainMod' }>[] {
   const out: Extract<GameOp, { op: 'offTerrainMod' }>[] = [];
   for (const t of c.traits ?? []) {
@@ -220,7 +220,7 @@ export function requiredTerrains(c: Combatant): string[] {
 }
 
 /** Mouvement IMPOSÉ hors de son terrain (op `offTerrainMod.mSet` — Créature marine : « son M tombe à 1 »,
- *  MDG p.140 ; Aquatique : « ne peut pas se déplacer sur la terre ferme », T2C p.90 → 0), actif seulement
+ *  MDG p.140 ; Aquatique : « ne peut pas se déplacer sur la terre ferme », MSRC p.90 → 0), actif seulement
  *  quand le drapeau POSITIONNEL `c.offTerrain` est posé. Plusieurs sources → la plus contraignante (min).
  *  `null` = pas de contrainte. Lu par `effectiveMovement`. PUR. */
 export function offTerrainMoveCap(c: Combatant): number | null {
@@ -491,12 +491,12 @@ export type GameOp =
   /** Purge de maladies (Amère catharsis, LDB 42) : retire `count` (+échelle DR) maladies. */
   | { op: 'cureDisease'; count?: number; countPerSL?: PerSL }
   /** −N jours sur la durée d'une maladie active. `days` plat (B. de Convalescence, LDB 41) OU `dice`
-   *  (Rouille mouchetée : « Chaque dose réduit la durée de la maladie de 1d10 jours », T2C p.14) ;
-   *  `disease` = SCOPE par id (Gesundheit → seulement une `blessure-purulente`, T2C p.13 — sans filtre,
+   *  (Rouille mouchetée : « Chaque dose réduit la durée de la maladie de 1d10 jours », MSRC p.14) ;
+   *  `disease` = SCOPE par id (Gesundheit → seulement une `blessure-purulente`, MSRC p.13 — sans filtre,
    *  n'importe quelle maladie active serait raccourcie) ; `oncePerDisease` = une seule fois par maladie
    *  (« Cette Prière ne peut être tentée qu'une fois par maladie », LDB 41 — les herbes se reprennent).
    *  `daysPerSL` : échelle « +N jours par +M DR » du Test AYANT PRÉCÉDÉ l'op (Gesundheit : « un jour par
-   *  DR obtenu » au Test de Résistance Accessible, T2C 04 l.184-186) — alimentée par `ctx.sl`. */
+   *  DR obtenu » au Test de Résistance Accessible, MSRC 04 l.184-186) — alimentée par `ctx.sl`. */
   | { op: 'reduceDiseaseDays'; days?: number; dice?: DiceSpec; disease?: string; oncePerDisease?: boolean; daysPerSL?: PerSL }
   /** Les Blessures ne s'infecteront pas (Cautériser, LDB 47 → flag `woundDressed`, LDB 18 l.298). */
   | { op: 'preventInfection' }
@@ -674,7 +674,7 @@ export type GameOp =
    *  la table : `rows` INLINE (authorées sur l'op) OU `tableId` = référence à `tables.json`
    *  (`findEffectTableById`, fail-fast) — jamais les deux (garde `data-wellformed`). `addNegativeSL` ajoute
    *  |ctx.sl| au jet quand le contexte porte un DR négatif (Vers de carie « ajoutez le nombre de DR
-   *  négatifs », T2C 16 l.90). `extraRollsPerStep` = un jet SUPPLÉMENTAIRE par PAS de Surincantation
+   *  négatifs », MSRC 16 l.90). `extraRollsPerStep` = un jet SUPPLÉMENTAIRE par PAS de Surincantation
    *  CHOISI (`ctx.chosenTableRolls`, borné à `ctx.overcastDurationSteps` — LDB 47 l.13-17 / EDOC 13
    *  l.230+270-276 : « pour chaque +2 DR […] vous POUVEZ à la fois prolonger la durée et refaire un jet
    *  sur le Tableau » — déclinable ; la durée se prolonge sur TOUS les pas alloués quel que soit le
@@ -689,7 +689,7 @@ export type GameOp =
    *  ctx ne porte aucune durée (exactement `grantTrait`). Le chemin CORRUPTION (corruptionFlow →
    *  `attachMutation` direct) reste permanent, intouché. PUR (moteur : profil du personnage). */
   | { op: 'rollMutation'; table: string; duration?: 'permanent' }
-  /** Perte PERMANENTE de Caractéristique (Vers de carie « −1d10 Initiative… », T2C 16 l.94-97) : décrémente
+  /** Perte PERMANENTE de Caractéristique (Vers de carie « −1d10 Initiative… », MSRC 16 l.94-97) : décrémente
    *  la Caractéristique de BASE (`c.characteristics`), jamais sous 0 — irréversible « sauf par des moyens
    *  magiques ou miraculeux » (l.103). `amount` = Formula (1d10). Distincte de `charMod` (temporisé, effet
    *  actif) : ceci ronge le profil lui-même (comme les mutations `passive`, mais soustractif direct). */
@@ -813,7 +813,7 @@ export type GameOp =
   | { op: 'moveMod'; mod: number }
   /** HORS de son terrain d'élection (`terrain` = type de tuile de la case occupée, ex. `eau`), le porteur
    *  est diminué : `mSet` REMPLACE son Mouvement (Créature marine : « son M tombe à 1 », MDG p.140 ;
-   *  Aquatique : « ne peut pas se déplacer sur la terre ferme », T2C p.90 → `mSet: 0`) et `testDR`
+   *  Aquatique : « ne peut pas se déplacer sur la terre ferme », MSRC p.90 → `mSet: 0`) et `testDR`
    *  s'applique à TOUS ses Tests (Créature marine : « tous les Tests qu'elle effectue subissent –2 DR »).
    *  GÉNÉRIQUE (aucun nom de créature) : porté par le `passive` d'un Trait, GATÉ par la POSITION — le
    *  state pose le drapeau dérivé `Combatant.offTerrain` à chaque placement (`placeCombatant`), les
@@ -984,7 +984,7 @@ export interface OpsCtx {
    *  jamais forcé), borné à `overcastDurationSteps`. Absent = tous les pas alloués (défaut, IA/rétrocompat). */
   chosenTableRolls?: number;
   /** Marqueur de RÉ-ENTRANCE `onOwnTestFailed` : posé sur le flowCtx des effets déclenchés par ce trigger
-   *  (T2C 16 — Crampes). Threadé jusqu'à un nœud Flow `test` (le FM de palier 2) routé en cascade : son
+   *  (MSRC 16 — Crampes). Threadé jusqu'à un nœud Flow `test` (le FM de palier 2) routé en cascade : son
    *  étape est tamponnée `meta.noOwnTestFailed` pour que sa résolution NE ré-émette JAMAIS le trigger
    *  (garde de ré-entrance qui survit à la cadence asynchrone du héros). */
   noReentryOwnTestFailed?: boolean;
@@ -1454,7 +1454,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'reduceDiseaseDays': {
         // `dice` (Rouille mouchetée : 1d10 jours) tiré à l'application ; `disease` = filtre par id ;
         // `oncePerDisease` = verrou « une fois par maladie » (Bénédiction de Convalescence, LDB 41) ;
-        // `daysPerSL` = échelle sur le DR du Test précédent (Gesundheit, T2C 04 l.184-186).
+        // `daysPerSL` = échelle sur le DR du Test précédent (Gesundheit, MSRC 04 l.184-186).
         const days = (o.dice ? rollDice(o.dice, rng) : (o.days ?? 1)) + slBonus(ctx.sl, o.daysPerSL);
         lines.push(...blessDiseaseDuration(target, days, { disease: o.disease, once: o.oncePerDisease }));
         break;
@@ -1726,7 +1726,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const tbl = 'tableId' in o ? findEffectTableById(o.tableId) : null;
         const rows: { min: number; max: number; ops: GameOp[] }[] = tbl ? tbl.rows : ('rows' in o ? o.rows : []);
         const sides = (tbl ? tbl.die : o.die) === 'd100' ? 100 : 10;
-        // Jet + |DR négatif| (Vers de carie, T2C 16 l.90) → lookup `[min,max]` (source unique) → ops de la rangée.
+        // Jet + |DR négatif| (Vers de carie, MSRC 16 l.90) → lookup `[min,max]` (source unique) → ops de la rangée.
         const modifier = o.addNegativeSL ? Math.max(0, -(ctx.sl ?? 0)) : 0;
         // Multiplicité : 1 jet + `extraRollsPerStep` par PAS de Surincantation CHOISI (EDOC 13 l.276 :
         // « vous pouvez » — déclinable, jamais forcé) ; borné aux pas réellement alloués à la Durée
@@ -1762,7 +1762,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'charDamage': {
-        // Perte PERMANENTE de Caractéristique de BASE (Vers de carie, T2C 16 l.94-103) — jamais sous 0.
+        // Perte PERMANENTE de Caractéristique de BASE (Vers de carie, MSRC 16 l.94-103) — jamais sous 0.
         const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks));
         if (n > 0) {
           const before = target.characteristics[o.char];

@@ -18,21 +18,21 @@ export interface CargoDef {
   price: Record<Season, number> | { dice: string };
 }
 
-/** Cargaison ALÉATOIRE de la saison : d100 dans la colonne saisonnière du tableau fourni (T2C 13 l.71-78,
+/** Cargaison ALÉATOIRE de la saison : d100 dans la colonne saisonnière du tableau fourni (MSRC 13 l.71-78,
  *  MDG 15 l.402-418). PUR. Repli sur la dernière entrée si aucune plage ne matche (tableaux exhaustifs 01-00). */
 export function rollSeasonalCargo(cargoes: CargoDef[], season: Season, rng: RNG = defaultRNG): CargoDef {
   const r = d100(rng);
   return cargoes.find((c) => r >= c.avail[season][0] && r <= c.avail[season][1]) ?? cargoes[cargoes.length - 1];
 }
 
-/** Prix de BASE d'une cargaison (CO par 10 points d'Encombrement) pour la saison (T2C 13 l.80-90, MDG 15
+/** Prix de BASE d'une cargaison (CO par 10 points d'Encombrement) pour la saison (MSRC 13 l.80-90, MDG 15
  *  l.420-436). Prix « à dés » (Vin maritime 3d10) tiré une fois à l'achat et NOTÉ. PUR (RNG injecté). */
 export function cargoBasePrice(cargo: CargoDef, season: Season, rng: RNG = defaultRNG): number {
   if ('dice' in cargo.price) return rollExpr(cargo.price.dice, rng);
   return cargo.price[season];
 }
 
-/** Ampleur du Marchandage (LDB p.291, cité T2C 13 l.127 & MDG) : le prix bouge de ±10 %, ou ±20 % si le
+/** Ampleur du Marchandage (LDB p.291, cité MSRC 13 l.127 & MDG) : le prix bouge de ±10 %, ou ±20 % si le
  *  négociant possède le Talent Négociateur. PUR. */
 export function bargainDeltaPct(negotiator: boolean): number {
   return negotiator ? 20 : 10;
@@ -78,7 +78,7 @@ export function removeCargo(lots: CargoLot[], cargoId: string, enc: number): { l
 // ── RISQUE sur la marchandise (lot D #327) — avaries, voie d'eau, pillage ─────────────────────────
 
 /** RETIRE un MONTANT d'Enc au fil des lots SANS égard au type de bien (voie d'eau « gâte 1d10 Enc »
- *  T2C 7 l.101 / MDG ; pillage partiel ; vol gradué) — arrondi à l'entier, lots vidés éliminés.
+ *  MSRC 7 l.101 / MDG ; pillage partiel ; vol gradué) — arrondi à l'entier, lots vidés éliminés.
  *  PUR (nouvelle liste). */
 export function spoilCargoByEnc(lots: CargoLot[], enc: number): { lots: CargoLot[]; removed: number } {
   let left = Math.max(0, Math.round(enc));

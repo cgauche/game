@@ -1,5 +1,5 @@
 /**
- * #46 — Maladies transmises par l'eau (T2C 16 p.91) : tables d'exposition hydrique en DONNÉE
+ * #46 — Maladies transmises par l'eau (MSRC 16 p.91) : tables d'exposition hydrique en DONNÉE
  * (`water-exposure.json`, lookup `findTableEntry`) + Effet de scène `waterExposure` (Test de
  * Résistance Intermédiaire modifié par étape de cascade) + contraction DIRECTE sur échec
  * (« Si le Test de Résistance est raté, lancez un dé … avec un modificateur de +10 pour chaque DR
@@ -26,7 +26,7 @@ function hero(name: string, over: Partial<Combatant> = {}): Combatant {
   return { ...h, id: name, ...over } as Combatant;
 }
 
-describe('water-exposure.json — la donnée T2C p.91', () => {
+describe('water-exposure.json — la donnée MSRC p.91', () => {
   it('la table d100 partitionne 1..100 sans trou ni chevauchement', () => {
     let next = 1;
     for (const e of WATER_EXPOSURE.diseases) {
@@ -36,7 +36,7 @@ describe('water-exposure.json — la donnée T2C p.91', () => {
     }
     expect(next).toBe(101);
   });
-  it('« Par État Assommé » (T2C) → id LDB `sonne` (le LDB 16 n\'a pas d\'État « Assommé » — glissement de traduction)', () => {
+  it('« Par État Assommé » (MSRC) → id LDB `sonne` (le LDB 16 n\'a pas d\'État « Assommé » — glissement de traduction)', () => {
     const m = WATER_EXPOSURE.modifiers.find((x) => x.id === 'par-etat-assomme')!;
     expect(m.auto).toEqual({ kind: 'perCondition', condition: 'sonne' });
     expect(m.mod).toBe(-5);

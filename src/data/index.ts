@@ -110,11 +110,11 @@ export interface GrappleRule {
 }
 export const GRAPPLE = grappleJson as GrappleRule;
 
-/** Mode d'exposition hydrique (T2C 16 p.91) : ingestion volontaire (« boit de l'eau de rivière sans
+/** Mode d'exposition hydrique (MSRC 16 p.91) : ingestion volontaire (« boit de l'eau de rivière sans
  *  la faire bouillir ») ou immersion (chute/nage — « uniquement à l'immersion » pour le tableau 2). */
 export type WaterExposureMode = 'ingestion' | 'immersion';
 /** Dérivation AUTOMATIQUE d'un modificateur d'exposition depuis le Combatant (tableau 2 « Blessures et
- *  États », T2C p.91) : PB restants/perdus, PAR pion d'un État, présence d'un État. */
+ *  États », MSRC p.91) : PB restants/perdus, PAR pion d'un État, présence d'un État. */
 export type WaterExposureAuto =
   | { kind: 'woundsRemaining'; op: '<='; value: number }
   | { kind: 'woundsLost'; op: '>='; value: number }
@@ -123,7 +123,7 @@ export type WaterExposureAuto =
   | { kind: 'hasCondition'; condition: string };
 /** Un modificateur d'exposition hydrique : tableau 1 « Source d'eau » (choix d'AUTEUR de la zone d'eau)
  *  ou tableau 2 « Blessures et États » (dérivé du Combatant via `auto`). « Tous les modificateurs
- *  peuvent être cumulés » (T2C p.91). NB : « Par État Assommé » (T2C) → id LDB `sonne` (le LDB 16 n'a
+ *  peuvent être cumulés » (MSRC p.91). NB : « Par État Assommé » (MSRC) → id LDB `sonne` (le LDB 16 n'a
  *  pas d'État « Assommé » ; le même chapitre écrit « État *Sonné* » p.92 — glissement de traduction). */
 export interface WaterExposureModifier {
   id: string;
@@ -133,7 +133,7 @@ export interface WaterExposureModifier {
   table: 'source-d-eau' | 'blessures-et-etats';
   auto?: WaterExposureAuto;
 }
-/** Tables d'exposition hydrique (T2C 16 p.91) : Test de Résistance Intermédiaire modifié ; raté →
+/** Tables d'exposition hydrique (MSRC 16 p.91) : Test de Résistance Intermédiaire modifié ; raté →
  *  d100 « +10 pour chaque DR négatif » → maladie CONTRACTÉE (le Test d'exposition EST le test — pas de
  *  second Test de Contraction). `rerollUnlessWounded` : « Relancez si le Personnage n'est pas blessé ». */
 export interface WaterExposureData {
@@ -191,7 +191,7 @@ export interface SpeciesData {
    *  (`engine/groups`). Absent = racial auto-dérivé du `label` d'espèce. */
   group?: string;
   /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.87-91 : d100 ≤ seuil → corps, sinon esprit) :
-   *  Elfe 0, Nain 5, Halfling 10, Humain 50. Ogre 10 (ADE2 « Ogres et Mutations »). ABSENT = défaut
+   *  Elfe 0, Nain 5, Halfling 10, Humain 50. Ogre 10 (ADE II « Ogres et Mutations »). ABSENT = défaut
    *  Humain (50) — le Gnome y est rattaché par NADJ « Gnomes et Corruption » (« mutent comme les humains »). */
   mutationBodyMax?: number;
   /** Habillage de l'APERÇU (créateur, carte de race #431) — id de carrière ICONIQUE et COMMUNE à
@@ -414,7 +414,7 @@ export interface TalentData {
   /** `true` = contenu de RÉFÉRENCE (PNJ/campagne scriptée), pas un Talent de progression PJ standard —
    *  le RAW lui-même le dit explicite (« ne sont pas accessibles à d'autres personnes dans des
    *  circonstances normales », EDOC 13 l.83 ; « Carrière destinée uniquement aux PNJ … avec la
-   *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE1 ch.6 l.185).
+   *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I ch.6 l.185).
    *  Lu par `computeObtainability` (`scripts/data/lib/obtainabilityGraph.ts`, #326) pour exempter la
    *  garde `obtainability-guard.test.ts` — jamais un silence sur un Talent sans chemin d'octroi PJ. */
   codexOnly?: true;
@@ -859,7 +859,7 @@ export interface TraitCapabilities {
   // Construction / spawn
   bonusWoundsBE?: boolean;
   mutationAtSpawn?: 'physique' | 'mentale';
-  /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 9 l.522-524 : « gagne
+  /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
    *  1d10/3 Mutations (arrondi à l'entier supérieur), alternant entre Mutations mentales et
    *  physiques » sur la colonne du dieu). `countDie`/`countDivide` = la formule de comptage (⌈1d`countDie`
    *  / `countDivide`⌉) ; `first` = la nature du 1er tirage (RAW liste « mentales et physiques » en premier) ;
@@ -955,13 +955,13 @@ export interface TraitCapabilities {
    *  (`climbMovementCost`, joueur, LDB 15 l.53). Orthogonal à `autoClimb` (accueille une future capacité
    *  qui réussirait automatiquement sans pour autant grimper à pleine vitesse). */
   climbFullSpeed?: boolean;
-  /** Rampant (T2C 15) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
+  /** Rampant (MSRC 15) : la créature ne peut PAS réaliser d'Action de Course (budget de Course nul). */
   noRun?: boolean;
   seesInDark?: boolean;
   /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.176` ;
    *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
   darkSightTiles?: number;
-  /** Salive analgésique (T2C 15) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
+  /** Salive analgésique (MSRC 15) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
    *  endormie (Inconscient magique) — elle s'y accroche sans être détectée. Lu par le modifier `wake-sleeper`. */
   wakelessBite?: boolean;
   /** Encombrement portable ×N (ADE II 2 l.708, folio 31 : « un ogre peut porter deux fois
@@ -1102,7 +1102,7 @@ export interface SymptomCapabilities {
   contagious?: boolean;      // Toux & éternuements : expose l'entourage (l.206)
   nausea?: boolean;          // Nausée : Sonné sur Test de déplacement raté en combat (l.194)
   endTest?: boolean;         // Persistant : Test de fin de Durée (difficulté portée par l'instance, l.200)
-  persistentActive?: boolean; // Vers de carie : la phase active NE guérit JAMAIS naturellement (dégénérescence quotidienne jusqu'à la Mort, T2C 16 l.90-101)
+  persistentActive?: boolean; // Vers de carie : la phase active NE guérit JAMAIS naturellement (dégénérescence quotidienne jusqu'à la Mort, MSRC 16 l.90-101)
 }
 /** Symptôme de maladie (LDB 20) — entité de DONNÉE éditable au Codex, mécaniques en GameOp / 3 canaux
  *  (comme un trait/qualité). `passive` = pénalités continues (charMod) ; `severePassive` = variante
@@ -1118,14 +1118,14 @@ export interface SymptomData {
   severePassive?: import('../engine/ops').GameOp[];
   /** Effets DÉCLENCHÉS du symptôme (MÊME `TriggeredEffect` que Traits/Atouts/États) — dispatchés par
    *  `fireTriggers` quand le porteur est actif (Crampes abdominales : `onOwnTestFailed` → Sonné/FM/
-   *  Inconscient par paliers de `slThreshold`, T2C 16 l.152-158). Source du dispatcher via
+   *  Inconscient par paliers de `slThreshold`, MSRC 16 l.152-158). Source du dispatcher via
    *  `effectSourcesOf` (les symptômes ACTIFS deviennent une source, comme les États). */
   effects?: import('../state/flow').TriggeredEffect[];
   /** `difficultyBySeverity` : la difficulté du Test de cycle est INDEXÉE sur la sévérité de l'instance
    *  (Toxine, LDB 20 l.215 : Modéré→Facile, Grave→Accessible) — clé absente pour la sévérité portée
    *  = `difficulty` de base inchangée. Lu par `symptomOnTick`. `afterDays`/`once` cadencent le cycle sur
-   *  la phase ACTIVE (Vers de carie : Test d'Endurance quotidien À PARTIR de J+7, T2C 16 l.90 ; Vers du
-   *  Reik : éclatement UNE fois au 7ᵉ jour, T2C 16 l.142). `difficulty` ABSENTE = conséquence
+   *  la phase ACTIVE (Vers de carie : Test d'Endurance quotidien À PARTIR de J+7, MSRC 16 l.90 ; Vers du
+   *  Reik : éclatement UNE fois au 7ᵉ jour, MSRC 16 l.142). `difficulty` ABSENTE = conséquence
    *  INCONDITIONNELLE (pas de jet — l'éclatement du Vers du Reik est d'issue invariante). */
   onTick?: {
     difficulty?: import('../engine/types').Difficulty;
@@ -1137,7 +1137,7 @@ export interface SymptomData {
     once?: boolean;
   };
   /** Passifs conditionnés à la VISIBILITÉ de la lésion (Vers du Reik : « si l'ampoule se trouve à un endroit
-   *  visible… −10 Sociabilité », T2C 16 l.140) — appliqués SEULEMENT si la localisation tirée à l'entrée en
+   *  visible… −10 Sociabilité », MSRC 16 l.140) — appliqués SEULEMENT si la localisation tirée à l'entrée en
    *  phase active (`Disease.blisterLocation`) ∈ `visibleLocations`. Jet de Localisation canonique (`hitLocation`). */
   visiblePassive?: import('../engine/ops').GameOp[];
   /** Localisations comptées comme VISIBLES (arbitrage `maison` : tête/bras visibles, corps/jambes couverts) —
@@ -1284,7 +1284,7 @@ export interface SpellData {
   alsoIn?: SecondaryRef[];
 }
 
-/** Signe astral (ADE2) : table d100 (`rand` = borne haute cumulée), flavor + effet de création. */
+/** Signe astral (ADE II) : table d100 (`rand` = borne haute cumulée), flavor + effet de création. */
 export interface StarData {
   /** id STABLE (slug du libellé) — `Combatant.star` le stocke, le runtime résout par `findStarById`
    *  (≠ libellé — multilangue-safe). */
@@ -1297,17 +1297,17 @@ export interface StarData {
   dates: string | null;
   dieux: string | null;
   apparence: string | null;
-  /** Effet ADE2 appliqué AUX ATTRIBUTS DE DÉPART (ch.03 l.38) — donnée éditable au Codex
+  /** Effet ADE II appliqué AUX ATTRIBUTS DE DÉPART (ch.03 l.38) — donnée éditable au Codex
    *  (`GameOpEditor`) : `charMod` (±carac) et/ou `grantTalent` (talent octroyé). Appliqué une
    *  fois à la création (cf. `applyStarEffect`), pas collecté en passif continu. */
   effect?: import('../engine/ops').GameOp[];
-  /** L'Étoile du Sorcier (ADE2 3 l.63) : fourchette du 1d10 interne `[min, max]` parmi les variantes
+  /** L'Étoile du Sorcier (ADE II 3 l.63) : fourchette du 1d10 interne `[min, max]` parmi les variantes
    *  partageant `rand:100`. Absent = pas de sous-tirage (signe simple). */
   sub?: [number, number];
   desc: string | null;
   source: SourceRef;
 }
-/** Demeure céleste (ADE2 ch.03 l.502-512) : section du ciel gouvernée par un signe — thème astral
+/** Demeure céleste (ADE II ch.03 l.502-512) : section du ciel gouvernée par un signe — thème astral
  *  facultatif de la création (flavor pur). `desc` = VERBATIM de la source ; `rand` = borne haute 1d10. */
 export interface CelestialHouseData {
   /** id STABLE (slug du libellé) — `HeroDetails.dwellings[].house` stocke cet ID (libellé à l'affichage). */
@@ -1333,7 +1333,8 @@ export interface LocationData {
 export interface BookData {
   id: string;
   label: string;
-  abr: string | null;
+  abbr: string;
+  dir?: string | null;
   language: string | null;
   folder: string | null;
   desc: string | null;
@@ -1511,7 +1512,7 @@ export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').Am
 /** Taille de navire MDG (catégorie dérivée de la LONGUEUR, tableau CARACTÉRISTIQUES DE BATEAU STANDARD,
  *  MDG 12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — ids stables des bandes d'installation. */
 export type ShipSize = 'minuscule' | 'tres-petite' | 'petite' | 'moyenne' | 'grande' | 'enorme' | 'monstrueuse';
-/** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C 12 l.54-135 tarife par TYPE de navire à
+/** Palier de LONGUEUR d'un tarif d'installation (#277 : MSRC 12 l.54-135 tarife par TYPE de navire à
  *  longueurs explicites — barque 5 m et esquif 10 m tombent dans la MÊME `ShipSize` « minuscule » avec des
  *  tarifs DIFFÉRENTS, la Taille ne peut donc pas discriminer). `maxLengthM` = borne haute inclusive du
  *  palier (`null` = bande OUVERTE au-delà — le dernier élément du tableau, triés par longueur croissante) ;
@@ -1519,7 +1520,7 @@ export type ShipSize = 'minuscule' | 'tres-petite' | 'petite' | 'moyenne' | 'gra
  *  dernière borne chiffrée par le livre porté sur la bande concernée. */
 export interface InstallBand { maxLengthM: number | null; value: number; maison?: string }
 /** Coût / Poids d'INSTALLATION d'une Amélioration navale (MDG 12, lignes « Coût : / Poids : » de chaque
- *  Amélioration, l.195-364 ; T2C 12 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
+ *  Amélioration, l.195-364 ; MSRC 12 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
  *  « par tranche de 5 m de Taille » (Blindage, Lissage) ; `per: 'unite'` = « par cabine » (Cabine de luxe) ;
  *  `'modele'` = ceux du modèle embarqué (Embarcation de bord). `weightEnc` absent = aucun poids (Lissage).
  *  Donnée consommée par le chantier construction/réparation navale (lot systèmes) — aucune valeur codée en
@@ -1551,10 +1552,10 @@ export interface NavalTraitData {
    *  vocabulaire combattant (≠ `ap` qui mitige TOUT) → injecté dans `resolveCollision` via `belierRam`. */
   ram?: { ic: number; ap: number };
   /** Couvert de pont GRADUÉ (`DeckCoverClass`) offert par l'Amélioration à ses postes — Sabord/Murs blindés
-   *  = `totale` (MDG 12 l.364 / T2C 12 l.85), Plat-bord = `moyenne` (T2C 12 l.111). Géométrie de Pont,
+   *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
    *  consommée par `effectiveDeckPostes`/le rendu du Pont. Sous-système navire, hors vocabulaire combattant. */
   deckCover?: import('../engine/types').DeckCoverClass;
-  /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau — Bouteur +20 (T2C 12 l.66),
+  /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau — Bouteur +20 (MSRC 12 l.66),
    *  Gréement de course −10 (l.137). Sous-système manœuvre, converti en DR d'équipage par `navalNavTestDR`. */
   navTestMod?: number;
   /** #221 : même champ `maison` que `TraumaFiche` (`src/data/schemas/defs/traumas.ts:32`). */
@@ -1606,7 +1607,7 @@ export const seaPerils = seaPerilsJson as SeaPerilsData;
 export const seaWeather = seaWeatherJson as SeaWeatherData;
 export const shipConstruction = shipConstructionJson as ShipConstructionData;
 
-/** LOT 2 #422 : Navigation fluviale (T2C 7) — pendant fluvial de `seaNavigation`, même patron
+/** LOT 2 #422 : Navigation fluviale (MSRC 7) — pendant fluvial de `seaNavigation`, même patron
  *  d'export (référence LIVE au même fichier physique relu par `engine/riverNavigation.ts`). */
 export const riverNavigation = riverNavigationJson as RiverNavigationData;
 
@@ -1768,7 +1769,7 @@ export const weatherPhysicalTestChars = weatherData.physicalTestChars;
 export const windsOfMagicTable = (ventsTourbillonnantsJson as { table: { id: string; min: number; max: number; mod: number; label: string }[] }).table;
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
-/** Les 5 demeures célestes (ADE2 ch.03 l.502-512, « Déterminer les demeures célestes ») — ossature
+/** Les 5 demeures célestes (ADE II ch.03 l.502-512, « Déterminer les demeures célestes ») — ossature
  *  narrative du thème astral (flavor pur, aucun effet mécanique). `rand` = borne haute du 1d10. */
 export const celestialHouses = astrologyJson as CelestialHouseData[];
 /** Apparences d'espèce de rig (app-owned, éditable) — SOURCE lue+résolue par `raceById` (rig). */
@@ -1781,14 +1782,14 @@ export function findLocationById(id: string | null | undefined): LocationData | 
 }
 export const books = booksJson as BookData[];
 const BOOK_BY_ID = new Map<string, BookData>(books.map((b) => [b.id, b]));
-/** Résout un Livre par son `id` STABLE (cible de `source.book`) — `abr`/`label` ne servent qu'à l'affichage. */
+/** Résout un Livre par son `id` STABLE (cible de `source.book`) — `abbr`/`label` ne servent qu'à l'affichage. */
 export function findBookById(id: string | null | undefined): BookData | undefined {
   return id ? BOOK_BY_ID.get(id) : undefined;
 }
-/** Abréviation d'AFFICHAGE d'un livre depuis l'`id` porté par `source.book` (fallback = l'id si inconnu). */
+/** Acronyme d'un livre depuis l'`id` porté par `source.book` (fallback = l'id si inconnu). */
 export function bookAbr(id: string | null | undefined): string {
   if (!id) return '';
-  return BOOK_BY_ID.get(id)?.abr ?? id;
+  return BOOK_BY_ID.get(id)?.abbr ?? id;
 }
 /** Culte/Dieu (LDB 41) : `id` = slug STABLE (« sigmar »), `label` = nom affiché (« Sigmar »), Bénédictions/
  *  Miracles en `Ref[]` (sorts par id), desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace

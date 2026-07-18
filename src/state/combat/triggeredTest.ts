@@ -344,7 +344,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     // par l'applier. Test OPPOSÉ : squelette construit ICI (base=`testValue`, penalty 0, + `aT` figé dans
     // le meta pour ré-opposer à chaque influence). Test SIMPLE : `simpleTriggeredTestStep` (source unique).
     // `noOwnTestFailed` : ce Test est LUI-MÊME un effet d'un `onOwnTestFailed` (FM de palier 2 des Crampes,
-    // T2C 16) — l'étampe empêche `commitStep` de ré-émettre le trigger à sa résolution (garde de ré-entrance
+    // MSRC 16) — l'étampe empêche `commitStep` de ré-émettre le trigger à sa résolution (garde de ré-entrance
     // qui survit à la cadence asynchrone du héros).
     const extraMeta = { ...(ctx.caster && ctx.caster.id !== c.id ? { casterId: ctx.caster.id } : {}), ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}), ...(ctx.opsCtx?.noReentryOwnTestFailed ? { noOwnTestFailed: true } : {}) };
     pushCombatStep(ctx.set, aT && attacker
@@ -523,7 +523,7 @@ registerCascadeApplier('triggeredChoice', (get, set, step, hero) => {
  * (`woundsDealt`/`sl`/`location`/`attackKind`) lu par les Conditions `if` du Flow (Venin sur PB perdus).
  */
 export function routeTriggeredTest(get: Get, set: SetFn, target: Combatant, actor: Combatant, flow: Flow, opsCtx?: OpsCtx): void {
-  // HORS COMBAT (Activité d'interlude — le FM de palier 2 des Crampes, T2C 16 l.156) : un sous-Test d'un
+  // HORS COMBAT (Activité d'interlude — le FM de palier 2 des Crampes, MSRC 16 l.156) : un sous-Test d'un
   // HÉROS passe par la MODALE de jet CANONIQUE (`openSkillTest` → `pendingTest`, Chance/Résilience), jamais
   // inline (doctrine « un jet = une modale » — vaut aussi hors combat). Gate `slThreshold` évaluée d'abord
   // (openSkillTest ne la connaît pas) ; `noOwnTestFailed` tamponne la ré-entrance (resolveTest ne ré-émet pas).

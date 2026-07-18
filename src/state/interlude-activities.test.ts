@@ -178,7 +178,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     else expect(journal).toMatch(/découverte|perdus/);
   });
 
-  // ── Identifier un artefact magique (ADE2 4 l.46-59) ─────────────────────────────────────
+  // ── Identifier un artefact magique (ADE II 4 l.46-59) ─────────────────────────────────────
   function armArtefact(withSavoir = true) {
     const h = hero();
     if (withSavoir) h.skills.push({ skillId: 'savoir', spec: 'magie', characteristic: 'intelligence', advances: 10 });
@@ -194,14 +194,14 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.getState().activityConfirm();
   };
 
-  it('Identifier : exige Savoir (Magie) acquis (« Pour d’autres sorciers », ADE2 4 l.41)', () => {
+  it('Identifier : exige Savoir (Magie) acquis (« Pour d’autres sorciers », ADE II 4 l.41)', () => {
     armArtefact(false);
     useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
     expect(useGame.getState().pendingActivity).toBeNull();
     expect(useGame.getState().journal.join('\n')).toMatch(/Savoir \(Magie\)/);
   });
 
-  it('Identifier : Test de Savoir (Magie) Intermédiaire (+0), Activité consommée (ADE2 4 l.41)', () => {
+  it('Identifier : Test de Savoir (Magie) Intermédiaire (+0), Activité consommée (ADE II 4 l.41)', () => {
     armArtefact();
     useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
     const pa = useGame.getState().pendingActivity;
@@ -212,7 +212,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(st().left).toBe(2);
   });
 
-  // ADE2 4 l.43-52 — table de DR complète (le POC collapsait ≥+4/≤+3 et IGNORAIT la ligne « 0 à +1 »).
+  // ADE II 4 l.43-52 — table de DR complète (le POC collapsait ≥+4/≤+3 et IGNORAIT la ligne « 0 à +1 »).
   it('Identifier : Succès Impressionnant (+4 à +5) → identifié + « sait s’il a des Particularités »', () => {
     armArtefact();
     useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
@@ -237,7 +237,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(artefact().magicKnown).toBe(true); // « découvre une Particularité cachée »
   });
 
-  it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE2 4 l.50)', () => {
+  it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE II 4 l.50)', () => {
     armArtefact();
     useGame.getState().interludeActivity(hero().id, 'identify', { itemUid: 'art1' });
     forceRoll(70, false, -2);
@@ -271,7 +271,7 @@ describe('Activités d’interlude (LDB 23)', () => {
   });
 
   // Correction coordinateur (2b) : seam `onOwnTestFailed` du chemin JOUEUR HORS combat (Activité d'interlude).
-  it('Crampes abdominales : rater une Activité d’interlude → État Sonné (T2C 16 l.152, cas RAW cardinal)', () => {
+  it('Crampes abdominales : rater une Activité d’interlude → État Sonné (MSRC 16 l.152, cas RAW cardinal)', () => {
     const h = hero();
     h.diseases = [{ name: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 1e5, durationMinutes: 1e5 }];
     const itl = useGame.getState().interlude!;

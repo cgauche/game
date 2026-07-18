@@ -134,7 +134,7 @@ export interface CreatorDraft {
   height?: number;
   eyes?: string;
   hair?: string;
-  // 3bis) Signe astral (ADE2 3 — étape optionnelle, gated par la règle creation-signes-astraux)
+  // 3bis) Signe astral (ADE II 3 — étape optionnelle, gated par la règle creation-signes-astraux)
   /** Signe astral choisi — `id` STABLE (≠ libellé) ; son `effect` est appliqué aux attributs de départ. */
   star?: string;
   /** Signe TIRÉ (1d100 figé, `id`) : si `star` lui reste égal → +25 PX (RAW l.36) ; un choix libre l'écarte. */
@@ -143,7 +143,7 @@ export interface CreatorDraft {
    *  seule donnée qui permet à `CreatorDice` d'animer les VRAIES faces (#396 v5) ; `starRoll` ne
    *  conserve que l'id résolu, insuffisant pour `d100Faces`. */
   starRollValue?: number;
-  /** Ascendant (ADE2 3 l.492-498) + 5 demeures célestes (ADE2 3 l.500-514) — flavor pur, aucun
+  /** Ascendant (ADE II 3 l.492-498) + 5 demeures célestes (ADE II 3 l.500-514) — flavor pur, aucun
    *  effet mécanique (l.492 : « pas directement liés aux mécaniques de jeu »). */
   ascendant?: string;
   dwellings?: { house: string; sign: string }[];
@@ -276,7 +276,7 @@ export function withSpecies(d: CreatorDraft, id: string): CreatorDraft {
 // ── 2) Carrière ──
 /** Le remplacement Riverains → Côtiers (MDG 09 l.9) s'offre-t-il à cette espèce ? Uniquement quand SA
  *  colonne du tableau contient les DEUX portions (les 5 colonnes du LDB) : les tables régionales
- *  (Middenheim/ADE2/NADJ) ne sont pas étendues par MDG, et la table Norse embarque déjà les variantes
+ *  (Middenheim/ADE II/NADJ) ne sont pas étendues par MDG, et la table Norse embarque déjà les variantes
  *  côtières SANS portion Riverains (rien à remplacer). Dérivé de la DONNÉE, aucune liste de colonnes. */
 export const coastalSwapAvailable = (d: CreatorDraft): boolean => {
   const col = draftSpecies(d)?.refCareer;
@@ -388,12 +388,12 @@ export function charsXp(d: CreatorDraft): number {
   return d.charMode === 'rolled' ? XP_CHARS_KEPT : XP_CHARS_REASSIGNED;
 }
 
-/** PX du signe astral : +25 si le signe choisi reste celui qui a été TIRÉ (ADE2 3 l.36), sinon 0. */
+/** PX du signe astral : +25 si le signe choisi reste celui qui a été TIRÉ (ADE II 3 l.36), sinon 0. */
 export const starXp = (d: CreatorDraft): number => (d.starRoll && d.star === d.starRoll ? XP_STAR_ROLLED : 0);
 
 export const xpTotal = (d: CreatorDraft): number => speciesXp(d) + careerXp(d) + charsXp(d) + starXp(d);
 
-// ── 3bis) Signe astral (ADE2 3) ──
+// ── 3bis) Signe astral (ADE II 3) ──
 /** Tirage 1d100 FIGÉ du signe (anti-savescum, comme l'espèce) : on le garde (+25 PX) ou on choisit
  *  librement ensuite (+0 PX, RAW l.36). Pas de relance — RAW n'en offre aucune. */
 export function rollDraftStar(d: CreatorDraft): CreatorDraft {
@@ -401,8 +401,8 @@ export function rollDraftStar(d: CreatorDraft): CreatorDraft {
   return { ...d, starRoll: id, starRollValue: r, star: id };
 }
 
-/** Ascendant (ADE2 3 l.496) + un signe par demeure céleste (l.514, la donnée `celestialHouses`
- *  ADE2 3 l.504-512) — flavor pur, tirages figés par le seed. `dwellings[].house` = ID de la demeure
+/** Ascendant (ADE II 3 l.496) + un signe par demeure céleste (l.514, la donnée `celestialHouses`
+ *  ADE II 3 l.504-512) — flavor pur, tirages figés par le seed. `dwellings[].house` = ID de la demeure
  *  (ids internes, libellés à l'affichage) ; `sign` reste un libellé lisible (flavor stocké sur la
  *  fiche, aucune mécanique n'y référence un signe). */
 export function rollDraftAstrology(d: CreatorDraft): CreatorDraft {
@@ -655,7 +655,7 @@ export function rolledDetails(d: CreatorDraft): { age: number; height: number; e
 
 export type StepId = 'species' | 'career' | 'chars' | 'star' | 'skills' | 'trappings' | 'details' | 'presentation';
 
-/** Étapes du créateur dans l'ordre — `star` insérée après `chars` quand la règle optionnelle ADE2
+/** Étapes du créateur dans l'ordre — `star` insérée après `chars` quand la règle optionnelle ADE II
  *  `creation-signes-astraux` est active. SOURCE UNIQUE de l'ordre ET de la présence des étapes (le
  *  rendu et la validation en dérivent — plus d'index positionnel fragile). Étape 8 renommée
  *  « Présentation » (#393 P5, arbitrage README maquettes : « le personnage se PRÉSENTE »). */

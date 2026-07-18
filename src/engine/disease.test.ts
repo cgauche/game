@@ -242,7 +242,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   });
 });
 
-// ── Maladies transmises par l'eau (T2C 16, Mort sur le Reik Compagnon) ──────────────────────────
+// ── Maladies transmises par l'eau (MSRC 16, Mort sur le Reik Compagnon) ──────────────────────────
 import { testStatePenalty, combatTestPenalty } from './conditions';
 import { passiveGlobalTestMod, passiveMods } from './trauma';
 import { applyOps } from './ops';
@@ -261,7 +261,7 @@ const activeDisease = (symptomId: string, extra: Partial<import('./disease').Dis
   minutesLeft: 40 * MINUTES_PER_DAY, durationMinutes: 40 * MINUTES_PER_DAY, ...extra,
 });
 
-describe('T2C 16 — Crampes abdominales : pénalité GLOBALE de Test (testMod, pas charMod)', () => {
+describe('MSRC 16 — Crampes abdominales : pénalité GLOBALE de Test (testMod, pas charMod)', () => {
   it('−20 à TOUS les Tests via testMod global (sans fausser les stats dérivées)', () => {
     const c = fullSick({ diseases: [activeDisease('crampes-abdominales')] });
     // Le passif est un testMod global : consommé par testStatePenalty/combatTestPenalty, JAMAIS un charMod.
@@ -276,7 +276,7 @@ describe('T2C 16 — Crampes abdominales : pénalité GLOBALE de Test (testMod, 
   });
 });
 
-describe('T2C 16 — Vers de carie : phase active PERSISTANTE (dégénérescence quotidienne jusqu’à la Mort, l.90-103)', () => {
+describe('MSRC 16 — Vers de carie : phase active PERSISTANTE (dégénérescence quotidienne jusqu’à la Mort, l.90-103)', () => {
   it('DONNÉE RÉELLE : « Durée : 1 semaine » n’END PAS la maladie — elle reste active et dégénère chaque jour ≥ J+7', () => {
     const c = fullSick({ diseases: [contractDisease('vers-de-carie', seq([]), { incubation: 0 })!] });
     expect(c.diseases![0].durationMinutes).toBe(7 * MINUTES_PER_DAY); // installation = 1 semaine
@@ -304,7 +304,7 @@ describe('T2C 16 — Vers de carie : phase active PERSISTANTE (dégénérescence
   });
 });
 
-describe('T2C 16 — Vers du Reik : −10 Soc GATÉ visibilité (l.140) + éclatement au 7ᵉ jour', () => {
+describe('MSRC 16 — Vers du Reik : −10 Soc GATÉ visibilité (l.140) + éclatement au 7ᵉ jour', () => {
   it('−5 Agilité toujours ; −10 Sociabilité SEULEMENT si la cloque est à un endroit VISIBLE (jet de Localisation)', () => {
     const vis = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 1 })!] });
     tickDisease(vis, MINUTES_PER_DAY, seq([5]), 40); // transition → localisation 5 = Tête (VISIBLE)
@@ -332,7 +332,7 @@ describe('T2C 16 — Vers du Reik : −10 Soc GATÉ visibilité (l.140) + éclat
 import { activeDiseaseTestMod } from './disease';
 import { dropExpiredGrantedTraits } from './grantedTraits';
 
-describe('T2C 16 — Vers de carie : Traits de table PERMANENTS (l.103)', () => {
+describe('MSRC 16 — Vers de carie : Traits de table PERMANENTS (l.103)', () => {
   it('grantTrait SANS durée = effet permanent → survit à la guérison + à un balayage d’effets expirés', () => {
     const c = fullSick();
     applyOps(c, [{ op: 'grantTrait', traitId: 'nerveux' }], { rng: seq([]) }); // rangée 9 de la table
@@ -345,7 +345,7 @@ describe('T2C 16 — Vers de carie : Traits de table PERMANENTS (l.103)', () => 
   });
 });
 
-describe('T2C 16 — Vers du Reik : rampe −5/30j sur TOUTE l’infection + décroissance −1/j après la fin (l.138)', () => {
+describe('MSRC 16 — Vers du Reik : rampe −5/30j sur TOUTE l’infection + décroissance −1/j après la fin (l.138)', () => {
   it('rampe pendant l’incubation (0 → −5 à 30 j → −10 à 60 j)', () => {
     const c = fullSick({ diseases: [contractDisease('vers-du-reik', seq([]), { incubation: 200, duration: 7 })!] });
     expect(c.diseases![0].phase).toBe('incubation');

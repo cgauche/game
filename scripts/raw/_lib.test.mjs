@@ -35,8 +35,8 @@ test('ldbRe : suffixe points "l.10+17" préservé avec la forme ch.', () => {
   assert.equal(span(m[0][2], m[0][3]).join(','), '10,17')
 })
 
-test('otherRe : "T2C l.90" (livre sans chapitre) matche toujours', () => {
-  const m = [...'T2C l.90'.matchAll(otherRe())]
+test('otherRe : "MSRC l.90" (livre sans chapitre) matche toujours', () => {
+  const m = [...'MSRC l.90'.matchAll(otherRe())]
   assert.equal(m.length, 1)
   assert.equal(m[0][2], undefined)
   assert.equal(m[0][3], '90')
@@ -72,10 +72,10 @@ test('otherRe : "MDG ch.12 l.221" matche (forme ch. optionnelle)', () => {
   assert.equal(m[0][3], '221')
 })
 
-test('otherRe : "T2C 14 l.5" matche comme T2C, pas comme T2 (tri par longueur décroissante)', () => {
-  const m = [...'T2C 14 l.5'.matchAll(otherRe())]
+test('otherRe : "MSRC 14 l.5" matche comme MSRC, pas comme MSR (tri par longueur décroissante)', () => {
+  const m = [...'MSRC 14 l.5'.matchAll(otherRe())]
   assert.equal(m.length, 1)
-  assert.equal(m[0][1], 'T2C')
+  assert.equal(m[0][1], 'MSRC')
 })
 
 test('otherRe : "EDOC 5 l.29" matche comme EDOC, pas comme EDO', () => {
@@ -92,20 +92,14 @@ test('otherRe : "ADE II 08 l.233" matche toujours (variante tolérante)', () => 
   assert.equal(m[0][3], '233')
 })
 
-test('otherRe : "ADE2 ch.8 l.65" matche toujours (chiffre arabe, forme ch.)', () => {
+test('otherRe : "ADE2 ch.8 l.65" ne matche PAS (ancienne graphie, plus tolérée, #585 lot B)', () => {
   const m = [...'ADE2 ch.8 l.65'.matchAll(otherRe())]
-  assert.equal(m.length, 1)
-  assert.equal(m[0][1], 'ADE2')
-  assert.equal(m[0][2], '8')
-  assert.equal(m[0][3], '65')
+  assert.equal(m.length, 0)
 })
 
-test('otherRe : "Midd 02 l.10" matche toujours (préfixe tronqué Middenheim)', () => {
+test('otherRe : "Midd 02 l.10" ne matche PAS (ancien préfixe tronqué Middenheim, plus tolérée)', () => {
   const m = [...'Midd 02 l.10'.matchAll(otherRe())]
-  assert.equal(m.length, 1)
-  assert.equal(m[0][1], 'Midd')
-  assert.equal(m[0][2], '02')
-  assert.equal(m[0][3], '10')
+  assert.equal(m.length, 0)
 })
 
 test('otherRe : "ch.23 l.75" SANS livre ne matche pas', () => {
@@ -113,28 +107,40 @@ test('otherRe : "ch.23 l.75" SANS livre ne matche pas', () => {
   assert.equal(m.length, 0)
 })
 
-test('bookOf : "ADE2" canonicalise vers "ADE II" (#434 défaut 11)', () => {
-  assert.equal(bookOf('ADE2'), 'ADE II')
+test('bookOf : "ADE2" (ancienne variante) résout à null (identité stricte, #585 lot B)', () => {
+  assert.equal(bookOf('ADE2'), null)
 })
 
-test('bookOf : "ADE1" canonicalise vers "ADE I"', () => {
-  assert.equal(bookOf('ADE1'), 'ADE I')
+test('bookOf : "ADE1" (ancienne variante) résout à null', () => {
+  assert.equal(bookOf('ADE1'), null)
 })
 
-test('bookOf : "ADEII" canonicalise vers "ADE II" (pas ADE I)', () => {
-  assert.equal(bookOf('ADEII'), 'ADE II')
+test('bookOf : "ADEII" (ancienne variante) résout à null', () => {
+  assert.equal(bookOf('ADEII'), null)
 })
 
-test('bookOf : "ADEI" canonicalise vers "ADE I"', () => {
-  assert.equal(bookOf('ADEI'), 'ADE I')
+test('bookOf : "ADEI" (ancienne variante) résout à null', () => {
+  assert.equal(bookOf('ADEI'), null)
 })
 
-test('bookOf : "NADJ" canonicalise vers "NADAJ"', () => {
-  assert.equal(bookOf('NADJ'), 'NADAJ')
+test('bookOf : "NADAJ" (ancienne graphie, le canon est désormais "NADJ") résout à null', () => {
+  assert.equal(bookOf('NADAJ'), null)
 })
 
-test('bookOf : "Midd" canonicalise vers "Middenheim"', () => {
-  assert.equal(bookOf('Midd'), 'Middenheim')
+test('bookOf : "Midd" (ancienne graphie, le canon est désormais "MCLB") résout à null', () => {
+  assert.equal(bookOf('Midd'), null)
+})
+
+test('bookOf : "ADE II" (déjà canonique) résout par identité', () => {
+  assert.equal(bookOf('ADE II'), 'ADE II')
+})
+
+test('bookOf : "MSRC" (déjà canonique) résout par identité', () => {
+  assert.equal(bookOf('MSRC'), 'MSRC')
+})
+
+test('bookOf : "NADJ" (déjà canonique) résout par identité', () => {
+  assert.equal(bookOf('NADJ'), 'NADJ')
 })
 
 test('bookOf : "MDG" (déjà canonique) résout par identité', () => {
@@ -145,19 +151,24 @@ test('bookOf : texte inconnu résout à null', () => {
   assert.equal(bookOf('Inconnu'), null)
 })
 
-test('chapterFile : résout après canonicalisation de "ADE2"', () => {
-  const cf = chapterFile(bookOf('ADE2'), '03')
+test('chapterFile : résout avec la graphie canonique "ADE II"', () => {
+  const cf = chapterFile(bookOf('ADE II'), '08')
   assert.notEqual(cf, null)
 })
 
-test('chapterFile : résout après canonicalisation de "ADE1"', () => {
-  const cf = chapterFile(bookOf('ADE1'), '6')
+test('chapterFile : résout avec la graphie canonique "ADE I"', () => {
+  const cf = chapterFile(bookOf('ADE I'), '6')
   assert.notEqual(cf, null)
 })
 
-test('chapterFile : résout après canonicalisation de "NADJ"', () => {
+test('chapterFile : résout avec la graphie canonique "NADJ"', () => {
   const cf = chapterFile(bookOf('NADJ'), '16')
   assert.notEqual(cf, null)
+})
+
+test('chapterFile : une ANCIENNE variante (bookOf → null) résout à null', () => {
+  const cf = chapterFile(bookOf('ADE2'), '03')
+  assert.equal(cf, null)
 })
 
 test('ldbRe / otherRe : instances FRAÎCHES à chaque appel (lastIndex non partagé)', () => {

@@ -377,7 +377,7 @@ describe('Magie mineure à la création (LDB 10 l.714) — BFM sorts inclus au T
   });
 });
 
-describe('signe astral (ADE2 3) — étape, tirage, PX et effet', () => {
+describe('signe astral (ADE II 3) — étape, tirage, PX et effet', () => {
   it('stepIds insère « star » juste après « chars » (règle activée par défaut)', () => {
     const ids = stepIds();
     expect(ids).toContain('star');
@@ -399,7 +399,7 @@ describe('signe astral (ADE2 3) — étape, tirage, PX et effet', () => {
     expect(starXp(draft())).toBe(0); // aucun tirage
   });
 
-  it('rollDraftAstrology : une lecture par Demeure céleste, depuis la DONNÉE (ADE2 3 l.504-512)', () => {
+  it('rollDraftAstrology : une lecture par Demeure céleste, depuis la DONNÉE (ADE II 3 l.504-512)', () => {
     const d = rollDraftAstrology(draft());
     expect(d.ascendant).toBeTruthy();
     expect(celestialHouses.length).toBe(5);

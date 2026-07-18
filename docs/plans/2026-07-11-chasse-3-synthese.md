@@ -32,7 +32,7 @@ leurs Domaines/Cultes atteignables (réutilise `specIdsOf`, SOURCE UNIQUE de ré
   Talents aléatoires elle-même (matchée par `RANDOM_ENTRY_RE`, `engine/character.ts`), pas un
   Talent réellement possédable. Pas une dette — à documenter (`codex-seulement`, marqueur de table).
 - `sang-neuf` (Archives de l'Empire 1 p.78) — lignage Eonir (Laurelorn) : aucune espèce/carrière/
-  mutation ne le confère. **À VÉRIFIER AU RAW** (ADE1) avant ticket : soit un chemin espèce/culture
+  mutation ne le confère. **À VÉRIFIER AU RAW** (ADE I) avant ticket : soit un chemin espèce/culture
   manque au câblage, soit c'est un talent de PNJ/référence (ticket de vérification, pas de fix direct).
 - `benediction-de-tzeentch`, `disciple-du-changement`, `empreint-de-la-magie` (Ennemi dans l'ombre
   Compagnon p.75/75/79) — 3 Talents dont la desc ("Lorsque vous achetez ce Talent…") suggère un
@@ -141,7 +141,7 @@ au moins un.
    carrière/espèce/mutation/étoile/scène n'accorde le Talent `magie-du-chaos` — 11 Sorts du Chaos
    (sur 26) hors d'atteinte pour QUICONQUE (même un monstre). Grounding RAW requis (LDB 19, EDOC)
    avant d'écrire le chemin d'octroi (mutation `grantTalent` la plus probable).
-2. **P2 — 5 Talents EDOC/ADE1 à vérifier au RAW** : `sang-neuf`, `benediction-de-tzeentch`,
+2. **P2 — 5 Talents EDOC/ADE I à vérifier au RAW** : `sang-neuf`, `benediction-de-tzeentch`,
    `disciple-du-changement`, `empreint-de-la-magie`, `double-vie` — soit un chemin
    carrière/espèce/mutation manque, soit ce sont des Talents de référence (PNJ/campagne scriptée)
    à documenter `codex-seulement` plutôt qu'à câbler. Un agent dépêché au Source `Ennemi dans

@@ -19,7 +19,7 @@ export const schema = z.array(
     /** Clé = `raceKeySchema` (id stable, #313) — partiel (7 colonnes, pas toutes présentes par entrée). */
     color: z.partialRecord(raceKeySchema, z.string()),
     /** Provenance MAJORITAIRE (5/7 colonnes LDB) ; `note` détaille les 2 colonnes hors LDB
-     *  (gnome NADJ, ogre ADE2) — `sourceRefSchema` ne porte qu'UN livre par entrée. */
+     *  (gnome NADJ, ogre ADE II) — `sourceRefSchema` ne porte qu'UN livre par entrée. */
     source: sourceRefSchema.optional(),
   }),
 );

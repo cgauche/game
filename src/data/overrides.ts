@@ -136,7 +136,7 @@ const ARRAYS = {
   crewMoraleFactors: MORALE_FACTORS, crewMoraleBands: MORALE_BANDS, steamBreakdowns: STEAM_BREAKDOWNS,
   criticalsTete, criticalsBras, criticalsCorps, criticalsJambe,
   aaCriticalsTete, aaCriticalsBras, aaCriticalsCorps, aaCriticalsJambe,
-  // #157 (suite) : jeux de Critiques de coque — MDG 13 (navire) / T2C 7 (fluvial) — nichés PAR
+  // #157 (suite) : jeux de Critiques de coque — MDG 13 (navire) / MSRC 7 (fluvial) — nichés PAR
   // Localisation dans LEUR fichier (même patron que criticals.json/aa-criticals.json ci-dessus).
   shipCriticalsCargaison: SHIP_CRITICAL_TABLES.cargaison,
   shipCriticalsGreement: SHIP_CRITICAL_TABLES.greement,
@@ -184,17 +184,17 @@ export type DatasetKey = keyof typeof ARRAYS;
 export const DATASET_KEYS = Object.keys(ARRAYS) as DatasetKey[];
 
 /** Datasets-OBJETS uniques (E3b) : pas un tableau d'entités mais UN objet de config (`details`), un
- *  Record keyé (`names`), ou une fiche de règle UNIQUE (`waterExposure`, T2C 16 — #157 suite). Mutés
+ *  Record keyé (`names`), ou une fiche de règle UNIQUE (`waterExposure`, MSRC 16 — #157 suite). Mutés
  *  EN PLACE (mêmes garanties que les tableaux) → preview live + écriture disque par l'éditeur du Codex.
  *  Le fichier disque est `<clé>.json` par défaut (`details.json`, `names.json`) ou l'override
  *  `OBJECT_FILE` pour une clé dont le nom diverge du fichier (`waterExposure` → `water-exposure.json`). */
 const OBJECTS = {
   details, names, waterExposure: WATER_EXPOSURE,
-  // LOT 1 #422 : 3 fiches de règle UNIQUES (MDG 13) — même patron que `waterExposure` (T2C 16).
+  // LOT 1 #422 : 3 fiches de règle UNIQUES (MDG 13) — même patron que `waterExposure` (MSRC 16).
   seaNavigation, seaPerils, seaWeather,
   // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
   disponibilite,
-  // LOT 2 #422 : Navigation fluviale (T2C 7) — fiche de règle UNIQUE, même patron.
+  // LOT 2 #422 : Navigation fluviale (MSRC 7) — fiche de règle UNIQUE, même patron.
   riverNavigation,
   // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
   grapple: GRAPPLE,
@@ -272,7 +272,7 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   shipCriticalsCoque: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
   shipCriticalsAvirons: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
   shipCriticalsEquipements: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
-  // Critiques de coque (T2C 7, fluvial) : 5 Localisations NICHÉES dans `river-criticals.json`.
+  // Critiques de coque (MSRC 7, fluvial) : 5 Localisations NICHÉES dans `river-criticals.json`.
   riverCriticalsGreement: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
   riverCriticalsAvirons: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
   riverCriticalsGouvernail: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },

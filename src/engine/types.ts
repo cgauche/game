@@ -244,7 +244,7 @@ export interface HeroDetails {
   /** Ambitions à court / long terme (LDB 05 l.710-717). */
   ambitionShort?: string;
   ambitionLong?: string;
-  /** Astrologie (ADE2 ch.03, optionnel) — flavor pur : signe ascendant + demeures célestes
+  /** Astrologie (ADE II ch.03, optionnel) — flavor pur : signe ascendant + demeures célestes
    *  (le signe mécanique du Personnage vit sur `Combatant.star`). `house` = id de `celestialHouses` ;
    *  `sign` = libellé lisible (flavor figé sur la fiche, aucune mécanique n'y référence un signe). */
   ascendant?: string;
@@ -890,9 +890,9 @@ export interface ItemInstance {
    *  tenter ce Test qu'une seule fois par artefact touché »). */
   detectTried?: boolean;
   /** Jour de jeu de la dernière Évaluation RATÉE : pas de re-tentative le même jour (anti-spam —
-   *  LDB 12 l.120 : seul un résultat marginal offre un nouvel essai ; ADE2 : re-tenter coûte du temps). */
+   *  LDB 12 l.120 : seul un résultat marginal offre un nouvel essai ; ADE II : re-tenter coûte du temps). */
   appraiseTriedDay?: number;
-  /** FAUSSES Particularités soupçonnées (ADE2 ch.4 : échec Impressionnant/Stupéfiant de
+  /** FAUSSES Particularités soupçonnées (ADE II ch.4 : échec Impressionnant/Stupéfiant de
    *  l'identification — « soupçonne que l'objet possède une Particularité qu'il n'a pas
    *  réellement »). Affichées « soupçonné : … » tant que l'objet n'est pas identifié ; purgées
    *  par une vraie révélation. AUCUN effet mécanique. */
@@ -1259,7 +1259,7 @@ export interface Combatant {
    *  début de séance (`restoreFortune`, LDB 17 l.47). Persisté (party + writeback de combat). */
   resistanceUsed?: string[];
   motivation?: string;
-  /** Signe astral (« Naissance sous les Étoiles », ADE2) — `id` STABLE du signe (≠ libellé —
+  /** Signe astral (« Naissance sous les Étoiles », ADE II) — `id` STABLE du signe (≠ libellé —
    *  multilangue-safe) ; résolu à l'affichage par `findStarById`. */
   star?: string;
   /** Détails supplémentaires (âge, taille, yeux, cheveux, ambitions — LDB 05 étape 6). */
@@ -1315,7 +1315,7 @@ export interface Combatant {
   diseaseImmunities?: string[];
   /** Pénalité RÉSIDUELLE (magnitude ≥ 0) aux Tests de Résistance-aux-maladies APRÈS la fin d'une maladie
    *  à `infectionPassive` (Vers du Reik : « Cette pénalité est réduite de 1 point par jour après la mort
-   *  du ver », T2C 16 l.138) — décroît de 1 par jour (`tickDisease`) jusqu'à 0. Lue par `activeDiseaseTestMod`. */
+   *  du ver », MSRC 16 l.138) — décroît de 1 par jour (`tickDisease`) jusqu'à 0. Lue par `activeDiseaseTestMod`. */
   residualDiseaseTestMod?: number;
   /** Maladies auxquelles ce combattant a été EXPOSÉ pendant le combat (blessé par une source porteuse :
    *  Infecté → 'blessure-purulente', Maladie (Type) → l'`arg` (ex. 'fievre-du-rongeur' des rats),
@@ -1367,7 +1367,7 @@ export interface Combatant {
   /** MOTIF de sortie de rencontre (#237/#215/#471), pose le langage visuel de fin : `reddition` (seuil
    *  de dommage franchi), `prise` (coque amenée à l'abordage) → lus « rendu » (pavillon amené) ;
    *  `destin` (Meurs un autre jour), `naufrage` (passé par-dessus bord), `firstBlood` (Duel judiciaire,
-   *  premier sang, NADAJ 06 l.175-177) → lus « hors-combat ». Absent = sortie générique (hors-combat).
+   *  premier sang, NADJ 06 l.175-177) → lus « hors-combat ». Absent = sortie générique (hors-combat).
    *  Seul champ distinguant `rendu` de `hors-combat`. */
   exitReason?: 'reddition' | 'prise' | 'destin' | 'naufrage' | 'firstBlood';
   /** Combattant INVOQUÉ par un Sort (champ `SpellSpec.summon` — Nécromancie, Hurlement du loup,

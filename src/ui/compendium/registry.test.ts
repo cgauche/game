@@ -263,7 +263,7 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
   it('un Critique fluvial (Gréement) porte son effet immédiat + son Test d’équipage (Compétence/Difficulté/Cible/Conséquence)', () => {
     const items = categoryByKey('riverCriticalsGreement')!.items;
     const g = items.find((i) => i.label === 'Gréement')!;
-    expect(g, 'Gréement (fluvial, T2C 7)').toBeTruthy();
+    expect(g, 'Gréement (fluvial, MSRC 7)').toBeTruthy();
     expect(g.sections?.some((s) => s.title === 'Effet immédiat')).toBe(true);
     const testSec = g.sections?.find((s) => s.title === 'Test d’équipage');
     expect(testSec, 'section Test d’équipage').toBeTruthy();
@@ -299,7 +299,7 @@ describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Cr
     expect(triton.desc).toMatch(/Manann ne supporte plus/);
   });
 
-  it('la fiche « Exposition à l’eau » (dataset-OBJET, T2C 16) est éditable et projette Test + Modificateurs + Maladies (cross-réf)', () => {
+  it('la fiche « Exposition à l’eau » (dataset-OBJET, MSRC 16) est éditable et projette Test + Modificateurs + Maladies (cross-réf)', () => {
     const cat = categoryByKey('waterExposure')!;
     expect(isEditableCategory('waterExposure')).toBe(true);
     expect(cat.items).toHaveLength(1); // dataset-objet UNIQUE (mode 'single', comme `details`)

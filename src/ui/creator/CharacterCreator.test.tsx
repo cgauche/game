@@ -30,7 +30,7 @@ const ready = () => withCareer(withSpecies(newDraft(7), SP.id), CAREER.id);
 describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () => {
   it('étape 1 (Race, #393 P1) : ossature 2 ZONES « Atelier du scribe » (CreatorStepFrame) ; aucune race pré-tirée', () => {
     const html = renderToStaticMarkup(<CharacterCreator />);
-    // Barre d'étapes — le signe astral (ADE2, règle activée par défaut) insère une étape après Caractéristiques.
+    // Barre d'étapes — le signe astral (ADE II, règle activée par défaut) insère une étape après Caractéristiques.
     expect(html).toContain('1. Race');
     expect(html).toContain('4. Signe astral');
     expect(html).toContain('8. Présentation');
@@ -320,7 +320,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(html).toMatch(/role="radio"[^>]*aria-checked="true"/); // signe choisi mis en évidence
     expect(html).toContain('detail-frame'); // le sens du signe COMPOSE la primitive, jamais une Section ad hoc
     expect(html).toContain('La Grande Croix');
-    expect(html).toContain("Archives de l&#x27;Empire Vol. II p. 40"); // tagline SOURCÉE (DetailFrame.sub)
+    expect(html).toContain("Les Archives de l&#x27;Empire — Volume II p. 40"); // tagline SOURCÉE (DetailFrame.sub)
     expect(html).toContain('Astrologie (pur roleplay)');
     // Chips à la DISCIPLINE de la planche (Dates + les modificateurs) : la colonne fait ~330px, une
     // chip de prose l'éclate. `signe` est gravé au moyeu de la roue, `dieux` vit à la fiche du Codex.
@@ -329,7 +329,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
   });
 
   it('étape Signe astral — encrier RÉSOLU (planche) : « Aux dés — d100 » + les faces du d100 tiré + le verdict PX', () => {
-    // Le d100 a rendu 10 → La Grande Croix (ADE2 3), et le brouillon le GARDE (star === starRoll).
+    // Le d100 a rendu 10 → La Grande Croix (ADE II 3), et le brouillon le GARDE (star === starRoll).
     const d = { ...newDraft(7), star: 'la-grande-croix', starRoll: 'la-grande-croix', starRollValue: 10 };
     const html = renderToStaticMarkup(<StarScreen d={d} setD={() => {}} />);
     expect(html).toContain('dicewell done'); // carte RÉSOLUE (laiton), plus le bouton rouge d'attente
@@ -345,7 +345,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(libre).not.toContain('+25 PX conservé');
   });
 
-  it('roue céleste — VINGT positions (les fourchettes d100 du RAW ADE2 3), pas les 23 entrées : les 4 destins de L\'Étoile du Sorcier partagent la borne 100', () => {
+  it('roue céleste — VINGT positions (les fourchettes d100 du RAW ADE II 3), pas les 23 entrées : les 4 destins de L\'Étoile du Sorcier partagent la borne 100', () => {
     const html = renderToStaticMarkup(<StarScreen d={newDraft(7)} setD={() => {}} />);
     const nodes = html.match(/role="radio"/g) ?? [];
     expect(nodes.length).toBe(20); // 23 entrées de stars.json → 20 positions de cadran
@@ -366,7 +366,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(html).not.toContain('cw-needle'); // aucune aiguille posée
   });
 
-  it('L\'Étoile du Sorcier — la position déplie ses QUATRE destins en plaques (1d10, ADE2 3) et n\'en impose aucun', () => {
+  it('L\'Étoile du Sorcier — la position déplie ses QUATRE destins en plaques (1d10, ADE II 3) et n\'en impose aucun', () => {
     const elu = { ...newDraft(7), star: 'l-etoile-du-sorcier-seconde-vue' };
     const html = renderToStaticMarkup(<StarScreen d={elu} setD={() => {}} />);
     expect(html).toContain('Quatre destins');

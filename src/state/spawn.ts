@@ -36,7 +36,7 @@ export function placeCombatant(c: { pos?: { x: number; y: number; z?: number; h?
   const h = scene ? heightAt(scene, p.x, p.y, z) : 0;
   c.pos = { x: p.x, y: p.y, ...(z ? { z } : {}), ...(h ? { h } : {}) };
   // Drapeau POSITIONNEL « hors de son terrain » (op passive `offTerrainMod` — Créature marine MDG p.140 /
-  // Aquatique T2C p.90) : re-dérivé à CHAQUE placement (chokepoint UNIQUE du positionnement). Un porteur
+  // Aquatique MSRC p.90) : re-dérivé à CHAQUE placement (chokepoint UNIQUE du positionnement). Un porteur
   // dont la case n'est pas de son terrain d'élection (`eau`) subit mSet/testDR ; sans passif, no-op.
   const req = c.traits ? requiredTerrains(c as Combatant) : [];
   if (req.length) c.offTerrain = !req.includes(tileAt2(scene ?? null, p.x, p.y, z));
@@ -102,7 +102,7 @@ function spawnMutations(traits: TraitList | undefined, id: string) {
   const rng = makeRNG(hashSeed(`mut:${id}`));
   // Mutation EXPLICITE (id, ex. « cornes-asymetriques » : tell figé en donnée) sinon tirage.
   const mutations = specs.map((s) => (s.mutationId ? mutationById(s.mutationId) : null) ?? rollMutation(s.kind, rng));
-  // Marque du Chaos (EDOC 9 l.522-524) : ⌈1d`countDie`/`countDivide`⌉ tirages, alternant `first` puis
+  // Marque du Chaos (EDOC 13 l.522-524) : ⌈1d`countDie`/`countDivide`⌉ tirages, alternant `first` puis
   // l'autre nature, sur les tables `mentalTable`/`physTable` — MÊME rng seedé (ordre de tirage stable).
   if (mark) {
     const count = Math.ceil(rng.int(1, mark.countDie) / mark.countDivide);

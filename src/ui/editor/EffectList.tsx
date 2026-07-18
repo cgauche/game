@@ -446,7 +446,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'waterExposure' && (
           <>
-            {/* Mode RAW (T2C p.91) : ingestion (boire de l'eau non bouillie) / immersion (chute, nage —
+            {/* Mode RAW (MSRC p.91) : ingestion (boire de l'eau non bouillie) / immersion (chute, nage —
                 le tableau « Blessures et États » ne s'applique qu'à l'immersion, dérivé du héros). */}
             <select value={e.mode ?? 'ingestion'} onChange={(ev) => upd({ mode: ev.target.value })}>
               <option value="ingestion">Ingestion (boire de l’eau non bouillie)</option>

@@ -1,6 +1,6 @@
 import type { TenueDef } from '../types';
 
-// Frère Loup (Middenheim 09 l.221-259, folio 154) — zélote sauvage d'Ulric, « extrême
+// Frère Loup (MCLB 09 l.221-259, folio 154) — zélote sauvage d'Ulric, « extrême
 // autonomie » : PAS le chevalier en plates du Loup Blanc, mais un moine-guerrier en HAILLONS
 // (« Possessions : arme simple, haillons »). Peau de loup GRIS-BRUN balayée sur les épaules
 // (sombre côté gauche), cape en lambeaux dans le dos, jerkin de cuir fauve à ourlet déchiré,

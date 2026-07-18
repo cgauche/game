@@ -493,7 +493,7 @@ const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation',
 ]);
 
-/** Rangées d'une op `rollTable` (Vers de carie, T2C 16 l.90) : `[min,max]` (source unique de fourchette,
+/** Rangées d'une op `rollTable` (Vers de carie, MSRC 16 l.90) : `[min,max]` (source unique de fourchette,
  *  cf. `OutcomeBandsField`/`MutationRange`) → `ops` de la rangée, éditées par le MÊME `GameOpEditor`
  *  (récursif) que toute autre liste de `GameOp[]` — jamais un widget parallèle. */
 function RollTableRowsField({ rows, onChange }: { rows: { min: number; max: number; ops: GameOp[] }[]; onChange: (rows: { min: number; max: number; ops: GameOp[] }[]) => void }) {

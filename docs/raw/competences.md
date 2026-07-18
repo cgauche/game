@@ -1025,17 +1025,17 @@ cible cherche activement à brouiller les pistes : opposé à Discrétion de la 
 **Carrières autorisées** (au gré du MJ) : Médecin, Prêtre (dieux de guérison/vérité), Érudit, Sorcier (Gris, Lumière, + cultes de Slaanesh et Tzeentch), Espion, Sorcier de village, Mystique, Saltimbanque, Charlatan.
 
 **Sources RAW** :
-- `T3 12 l.5` — Hypnotisme = Compétence Avancée (Int) ; avertissement au MJ sur son usage.
-- `T3 12 l.13-18` — transe : conditions (≥ 1 min), Test simple (coopératif) / résistance en Force Mentale ; sortie d'un sujet contraint (Calme/Round opposé ; succès Minime → *Sonné*).
-- `T3 12 l.22` / `l.51` — interrogatoire : −5 cumulatif par question ; échecs (Minime = pas de réponse ; Impressionnant/Stupéfiant = réveil + 1/2 *Sonné*).
-- `T3 12 l.26-28` — suggestions post-hypnotiques (Test opposé Hypnotisme/FM ; +30 si consentant).
-- `T3 12 l.33-44` — carrières pouvant acquérir la Compétence.
+- `PDT 12 l.5` — Hypnotisme = Compétence Avancée (Int) ; avertissement au MJ sur son usage.
+- `PDT 12 l.13-18` — transe : conditions (≥ 1 min), Test simple (coopératif) / résistance en Force Mentale ; sortie d'un sujet contraint (Calme/Round opposé ; succès Minime → *Sonné*).
+- `PDT 12 l.22` / `l.51` — interrogatoire : −5 cumulatif par question ; échecs (Minime = pas de réponse ; Impressionnant/Stupéfiant = réveil + 1/2 *Sonné*).
+- `PDT 12 l.26-28` — suggestions post-hypnotiques (Test opposé Hypnotisme/FM ; +30 si consentant).
+- `PDT 12 l.33-44` — carrières pouvant acquérir la Compétence.
 
-> « L'hypnotisme est une Compétence Avancée utilisée par certains Saltimbanques et autres Mystiques. » — `T3 12 l.5`
+> « L'hypnotisme est une Compétence Avancée utilisée par certains Saltimbanques et autres Mystiques. » — `PDT 12 l.5`
 
 **Voir aussi** : Tests opposés (`tests.md`), État *Sonné* (`etats.md`), Force Mentale / Calme (`psychologie.md`).
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T3 12` (l.5, l.13-18, l.22, l.26-28, l.33-44) → `hypnotisme` — `src/data/skills.json`
+- `PDT 12` (l.5, l.13-18, l.22, l.26-28, l.33-44) → `hypnotisme` — `src/data/skills.json`
 
 ---
 

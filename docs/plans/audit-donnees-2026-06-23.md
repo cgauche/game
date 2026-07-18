@@ -39,7 +39,7 @@ confirmée (sauf 1 candidat, `Rongeur`). Les vrais sujets sont concentrés et li
    **« Huile de lampe »** = mauvais libellé (c'est la **Lampe à huile**, l'objet). **« Costume de
    cour »** devrait être **« Habit de cour »** (LDB).
 7. **Talents — Vice :** desc tronquée (manque le paragraphe du Trait Vice). **Empreint de la Magie**
-   (→ EDOC) et **Empreint d'Ulgu** (→ NADAJ Gnomes) tagués `LDB` à tort.
+   (→ EDOC) et **Empreint d'Ulgu** (→ NADJ Gnomes) tagués `LDB` à tort.
 8. **Signes astraux — Les Deux Bœufs :** `apparence` = « un danseur tourbillonnant » (copié par erreur
    du signe suivant) au lieu de « deux bœufs ».
 9. **Traits — `Rongeur` :** introuvable dans LDB 85 / EDO → **probable invention** (helper rats/skavens).
@@ -60,7 +60,7 @@ confirmée (sauf 1 candidat, `Rongeur`). Les vrais sujets sont concentrés et li
   - **`Salzemund` ×3** → Salzenmund hors des 15 (pas de FR) → VO-only / maison.
   → Décision à reprendre : re-sourcer les 4 Norse vers MDG ; garder (homebrew assumé) ou retirer les
   ~8 variantes VO-only (Altdorf districts, Salzenmund).
-- **Codes-livres à normaliser :** `NADJ` → **NADAJ** ; `MSR` → **T2** (Eusapia Balacañon vient en
+- **Codes-livres à normaliser :** `NADJ` → **NADJ** ; `MSR` → **T2** (Eusapia Balacañon vient en
   fait du **Compagnon T2 ch.7**) ; sorts/talents/traits de Tzeentch tagués `EDO` → **EDOC** (Compagnon).
 - **Atlas :** `docs/raw/00-index.md` dit « 14 livres » → **15** (MDG ajouté le 2026-06-22).
 
@@ -73,7 +73,7 @@ confirmée (sauf 1 candidat, `Rongeur`). Les vrais sujets sont concentrés et li
 | **Créatures** | 4 | Middenheim ch.4 | Prédateur sanglant, Enfant d'Ulric, Spectre, Loup Blanc. |
 | **Traits** | 5 | EDO App.2 | Absorption, Amorphe, Contagieux, Décérébré, Voleur de chair (= trait de Gideon). |
 | **Objets** | 11 | AA (munitions de siège) | Les armes de siège sont là, pas leurs munitions. Faible enjeu si non jouables. |
-| **Maladies** | 3 | T2C ch.14 | Colique, Vers de carie, Vers du Reik (parasites à cycle atypique). |
+| **Maladies** | 3 | MSRC ch.14 | Colique, Vers de carie, Vers du Reik (parasites à cycle atypique). |
 | **Sorts** | 1 | EDOC ch.9 | Transformation de Tzeentch (NI 10). |
 | **Créatures (PNJ)** | ~23 | T3 ch.10-11, MDG | Dramatis personae / capitaines nommés. **Probable choix de design** (le jeu modélise le bestiaire, pas les PNJ de scénario). |
 
@@ -108,7 +108,7 @@ langue-prehensile portée = BE inventée (limitations moteur auto-signalées).
 ## Faux positifs / bruit écartés
 
 - **« En trop » créatures (6)** : Furie/Horreur rose/bleue (EDO ch.9), Destrier/Demigriffon adulte (AA),
-  Eusapia (T2C ch.7) — **toutes réelles**, juste hors des chapitres bundlés du catalogue Atlas.
+  Eusapia (MSRC ch.7) — **toutes réelles**, juste hors des chapitres bundlés du catalogue Atlas.
 - **« Manque » MDG sorts/Stromfels** : hors périmètre demandé (MDG), signalés pour info.
 - **gods « 3 sans label »** (mon alerte initiale) : **faux** — `gods.json` utilise `key`, pas `label` ;
   les 3 gnomes (Evawn/Mabyn/Ringil) sont corrects (Mabyn a juste un `U+FFFD`).

@@ -4,7 +4,7 @@
 > d'agent (répondre + auditer le code sans rouvrir les livres). Chaque règle cite `LIVRE NN l.X-Y`
 > (last-recours = la source). Abréviations : [`sources.md`](sources.md). Index : [`00-index.md`](00-index.md).
 >
-> Scope : monnaie / achat-vente / Disponibilité / Marchandage / Évaluation / Fabrication / commerce de cargaison (T2C ch.11).
+> Scope : monnaie / achat-vente / Disponibilité / Marchandage / Évaluation / Fabrication / commerce de cargaison (MSRC ch.11).
 > Renvoie à **Équipement** pour les prix individuels des objets (armes, armures, trappings — non retranscrits ici).
 > ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
@@ -18,7 +18,7 @@
 - [Vente — base ½, Marchandage, Baisse des prix, Troc](#vente-base-moitie-marchandage-baisse-des-prix-troc)
 - [Fabrication (LDB) — Atouts et Défauts d'objet](#fabrication-ldb-atouts-et-defauts-dobjet)
 - [Option Guildes d'artisans](#option-guildes-dartisans)
-- [Commerce de cargaison (T2C Compagnon ch.11)](#commerce-de-cargaison-t2c-compagnon-ch11)
+- [Commerce de cargaison (MSRC Compagnon ch.11)](#commerce-de-cargaison-t2c-compagnon-ch11)
 - [Voir aussi](#voir-aussi)
 - [Implémente (refs code)](#implemente-refs-code)
 
@@ -233,9 +233,9 @@ Si le MJ indique une ville avec une Guilde d'artisans pertinente :
 
 ---
 
-## Commerce de cargaison (T2C Compagnon ch.11)
+## Commerce de cargaison (MSRC Compagnon ch.11)
 
-**Source : T2C Compagnon 13 l.1-350** (Chapitre 11 — Règles du commerce)
+**Source : MSRC Compagnon 13 l.1-350** (Chapitre 11 — Règles du commerce)
 
 Ces règles s'appliquent principalement dans le contexte du **voyage en barge sur le Reikland** (Mort sur le Reik). Elles sont une extension optionnelle du commerce LDB pour les **cargaisons en gros**, pas pour les achats d'équipement courant.
 
@@ -371,7 +371,7 @@ Test de **Ragot Complexe (−10)** dans une auberge → lancer d100 sur l'Index 
 - **Compétences** (`competences.md`) — fiches Évaluation, Marchandage, Ragot, Métier
 - **Activités** (LDB p.196/199) — *Artisanat* et *Passer Commande* pour les objets Exotiques
 - **Statut social** (LDB ch.8) — simplification des achats par Statut
-- **Voyage** (`deplacement.md`) — coûts diligence/barge, frais d'écluse (T2C Compagnon ch.10)
+- **Voyage** (`deplacement.md`) — coûts diligence/barge, frais d'écluse (MSRC Compagnon ch.10)
 - **Fabrication magique** (ADE II ch.4) — règles de création d'artefacts magiques (hors scope économie commune ; voir ADE II directement)
 
 ---

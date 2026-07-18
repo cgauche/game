@@ -13,7 +13,7 @@
 
 ## Données canon vérifiées (workflow adversarial 2026-06-07 — 2 extractions FR concordantes + croisement VO)
 
-**Source primaire** : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/12 - Annexe 3 - Documents et aides de jeux.md` (l.16-178). Croisements : ADE2 « Des signes dans le ciel », Middenheim, Le Pouvoir Derrière le Trône (carnaval), EiS VO Handouts.
+**Source primaire** : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/12 - Annexe 3 - Documents et aides de jeux.md` (l.16-178). Croisements : ADE II « Des signes dans le ciel », Middenheim, Le Pouvoir Derrière le Trône (carnaval), EiS VO Handouts.
 
 - **12 mois** (ordre = confiance très haute) + jours (grilles OCR, confiance moyenne) :
   `Nachhexen 32 · Jahrdrung 33 · Pflugzeit 33 · Sigmarzeit 33 · Sommerzeit 33 · Vorgeheim 33 · Nachgeheim 33 · Erntezeit 33 · Brauzeit 33 · Kaldezeit 33 · Ulriczeit 33 · Vorhexen 33` (somme = 395).
@@ -86,7 +86,7 @@ describe('clock — calendrier impérial', () => {
 ```ts
 /**
  * Calendrier impérial WFRP4 (CI) — pur, sans état. Données vérifiées depuis la source FR
- * (EiS « L'ennemi dans l'Ombre » Annexe 3, croisées ADE2/Middenheim/VO ; cf. plan #T1).
+ * (EiS « L'ennemi dans l'Ombre » Annexe 3, croisées ADE II/Middenheim/VO ; cf. plan #T1).
  *
  * ⚠️ Le canon affirme « année = 400 jours, 12 mois + 6 intercalaires » (Annexe 3 l.20/34) mais
  * n'imprime AUCUNE table mois→jours propre ; les grilles OCR donnent 32/33 j (somme 395). On

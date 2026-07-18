@@ -639,11 +639,11 @@ Le même terme apparaît dans ADE II (sort ogre du Domaine de la Gueule, `ADE II
 
 ### « État Fatigué »
 
-Nuits agitées & dures journées utilise une fois le terme « **État Fatigué** » (`NADAJ 05 l.117`) pour les personnages endormis se réveillant en sursaut. Ce terme **n'existe pas** dans la liste officielle des 12 États.
+Nuits agitées & dures journées utilise une fois le terme « **État Fatigué** » (`NADJ 05 l.117`) pour les personnages endormis se réveillant en sursaut. Ce terme **n'existe pas** dans la liste officielle des 12 États.
 
 Interprétation probable : traduction alternative de **Exténué** (État officiel). À traiter comme Exténué. Le contexte textuel (personnage pas reposé, réveil brutal) est cohérent avec Exténué.
 
-> « Les Personnages endormis peuvent tenter un Test de _Perception Très Difficile (-30)_ pour se réveiller en sursaut avec un État _Fatigué_. » — `NADAJ 05 l.117`
+> « Les Personnages endormis peuvent tenter un Test de _Perception Très Difficile (-30)_ pour se réveiller en sursaut avec un État _Fatigué_. » — `NADJ 05 l.117`
 
 ---
 

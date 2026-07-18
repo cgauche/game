@@ -20,7 +20,7 @@
 - Chantiers de fiabilisation post-backlog : combat de masse #69 (fidélité + éditabilité), combat naval
   (abordage), audit jouabilité/éditabilité — cf. sections ci-dessous.
 - **Audit du fichier lui-même (2026-07-04)** : contre-échantillon RAW des claims chiffrés (AA l.2480/2523/4139/4418,
-  T2C ch.13 l.167) → tous fidèles au livre. Les entrées OUVERTES ci-dessous sont désormais suivies en **issues
+  MSRC ch.13 l.167) → tous fidèles au livre. Les entrées OUVERTES ci-dessous sont désormais suivies en **issues
   GitHub** (le fichier = index, l'issue = tracker). Nouvelles : **#87** hallucinogène/`perDegreeOfFailure` ·
   **#88** Battement/Distraire héros · **#89** réaction défensive N Avantages (Porte-bouclier AA) · **#90**
   améliorations navales non-plat · **#91** descente fluviale résidus · **#92** Avantage initial éditeur ·
@@ -118,12 +118,12 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   marché simplifié (`market-mode` sans Test de Disponibilité). Testé : `search-availability.test.ts`
   (journée avancée, réassort distinct succès≠échec, no-op simplifié).
 
-### Commerce de cargaison terrestre T2C (#58)
+### Commerce de cargaison terrestre MSRC (#58)
 - **Rumeur commerciale cross-Lieu** : adaptée au Lieu courant ; la version « ce bien se vend le double
   à tel AUTRE port » (index géographique du Reikland) reste une feature de scénario future (nécessite
   un index géographique mappé à la carte + un board de rumeurs persistant).
 
-### Compagnon de Mort sur le Reik (T2C) — apports au-delà du commerce
+### Compagnon de Mort sur le Reik (MSRC) — apports au-delà du commerce
 - ~~**Navigation fluviale (ch.5)**~~ ✅ **RÉSOLU** (commit caa98539) : descente jouée jour par jour (Test de
   Navigation Voile/Ramer par étape, Savoir Voies fluviales +1 DR, Agilité de rame, vents, chavirage/naufrage
   en BE tours, périls Débris/Barrage/Rochers/Bas-fonds), réutilise la machinerie navale, câblée sur le Reik.
@@ -134,20 +134,20 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   (bélier vs déblayer) = affordance de combat de bateau (chantier ci-dessous). RESTE (partiel).
 - ~~**Améliorations de bateau (ch.10 : Blindage, coque…)**~~ ✅ **RÉSOLU** (majorité déjà couverte) : le
   système d'Améliorations navales MDG ch.12 (`naval-traits.json` + `install`/`passive`) EST le MÊME mécanisme
-  que T2C ch.10. Blindage, Lissage, Sabord, Cabine de luxe, Clinfoc, Ralentisseurs latéraux, Propulsion à
-  vapeur, Bélier étaient DÉJÀ présents (recouvrement MDG/T2C) → ne PAS dupliquer. Ajoutées les entrées
-  PROPRES à T2C sur le canal EXISTANT : **Bouteur** (`moveMod −1`) et **Murs blindés** (`deckCover` = couverture
+  que MSRC ch.10. Blindage, Lissage, Sabord, Cabine de luxe, Clinfoc, Ralentisseurs latéraux, Propulsion à
+  vapeur, Bélier étaient DÉJÀ présents (recouvrement MDG/MSRC) → ne PAS dupliquer. Ajoutées les entrées
+  PROPRES à MSRC sur le canal EXISTANT : **Bouteur** (`moveMod −1`) et **Murs blindés** (`deckCover` = couverture
   totale) — installables au chantier du Port (`installCost`) et mécaniquement actives (manœuvre/pont). RESTE :
-  les Améliorations T2C dont l'effet ne se mappe PAS sur le canal plat (Coque de course = 2×M, Safran = Test
+  les Améliorations MSRC dont l'effet ne se mappe PAS sur le canal plat (Coque de course = 2×M, Safran = Test
   de Force du barreur, Plat-bord = couvert PARTIEL ≠ total, Allégement, Gréement de course, avirons/Fourquines)
   — un `moveMod`/`deckCover` mentirait → à câbler quand un champ de domaine dédié existera (chantier ci-dessous).
 - ~~**Combat de bateau fluvial (ch.5 : dégâts/localisation d100, Critiques rames/gouvernail)**~~ ✅ **RÉSOLU**
   (commit bd6d37ad) : le bateau fluvial est une coque endommageable en combat via le MÊME moteur naval (MDG),
   sélectionné en DONNÉE (`hull.locationTable='navire-fluvial'` + `hull.criticalTable='river-criticals'`, champs
-  déjà typés désormais LUS). Table `navire-fluvial` + `river-criticals.json` (T2C verbatim, SOURCE UNIQUE
+  déjà typés désormais LUS). Table `navire-fluvial` + `river-criticals.json` (MSRC verbatim, SOURCE UNIQUE
   partagée avec le voyage) + États Dérive/Gouvernail brisé. `applyCrewHit` généralise le Test d'équipage
-  (poste MDG vs pont T2C). Zéro doublon.
-- **Bestiaire fluvial (ch.13) — 7 Traits** ✅ livrés en donnée (`traits.json`, T2C ch.13) avec RÉDUCTIONS documentées :
+  (poste MDG vs pont MSRC). Zéro doublon.
+- **Bestiaire fluvial (ch.13) — 7 Traits** ✅ livrés en donnée (`traits.json`, MSRC ch.13) avec RÉDUCTIONS documentées :
   - `s-accrocher-pour-se-nourrir`, `engloutir` (corrige l'orphelin d'Amibe), `salive-anticoagulante`,
     `hallucinogene` : cœur tactique FIDÈLE (drain/Empêtré/aura à Test). RÉDUCTIONS : détachement auto « après
     BE Blessures extraites » (pas de compteur de PB drainées), « +1 Blessure quand la victime se dégage »,
@@ -160,7 +160,7 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
     `salive-analgesique` porte `wakelessBite` (consommée `state/combat/hitModifiers.ts`, testée). Seul `capricieux`
     reste **desc verbatim seule** — aucun canal ne module le DR d'un Test de Sociabilité d'un PJ *envers* une
     créature-cible (niche : négociation Naïade). RESTE (`capricieux` seul, extension de vocabulaire).
-- **Bestiaire fluvial (ch.13) — 4 statblocs** ✅ livrés (`creatures.json`, VERBATIM T2C, vérifiés stat par stat) :
+- **Bestiaire fluvial (ch.13) — 4 statblocs** ✅ livrés (`creatures.json`, VERBATIM MSRC, vérifiés stat par stat) :
   Anguille du Reik, Sangsue géante + variante Arbres, Naïade. Le **Filet de gobelin** (ZI) est porté comme atout
   `filet` (ranged/entraves, Portée 6, qualité Immobilisante → Empêtré ; le « 3 » de « À distance (Filet 3) » non
   modélisé — ni Dégâts (+0) ni Indice, rien inventé). **Rigs** : réutilisent des espèces EXISTANTES (Serpent/
@@ -173,14 +173,14 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   d'exister)** : le même élément avec un profil DIFFÉRENT d'un livre à l'autre = DEUX entrées distinctes qui
   coexistent (le jeu référence tout par `id`, pas par libellé — cf. `id-collisions.test.ts` « inoffensives à
   l'exécution »). `brochet-du-stir` (ZI, dossier Zoo Impérial, harvest/3 Chance/Queue agile PRÉSERVÉ) **et**
-  `brochet-du-stir-fluvial` (T2C ch.13, dossier Bestiaire fluvial) coexistent, même libellé, ids distincts,
+  `brochet-du-stir-fluvial` (MSRC ch.13, dossier Bestiaire fluvial) coexistent, même libellé, ids distincts,
   même rig (`appearance.species` partagé). Ni réconciliation ni écrasement : les deux versions sont valides.
 - ~~**Scénario jouable de combat fluvial**~~ ✅ **LIVRÉ** : `src/scenes/test-scenarios/16-embuscade-fluviale.ts`
-  (menu « 🧪 Tests — scénarios » → « Embuscade fluviale ») — barge + barque fluviales (coques T2C), pirates
+  (menu « 🧪 Tests — scénarios » → « Embuscade fluviale ») — barge + barque fluviales (coques MSRC), pirates
   (équipage exposé), Anguille du Reik. Test bout-en-bout `16-embuscade-fluviale.test.ts` : un Critique sur la
   coque pose un État FLUVIAL (Dérive/Gouvernail brisé/Voie d'eau) et JAMAIS `en-flammes-navire` (table Cargaison
   MDG absente) → prouve le routage par données de bout en bout.
-- **Améliorations T2C à effet non-plat + déblayage manuel de barrage** (choix mid-combat) : RESTE — le scénario
+- **Améliorations MSRC à effet non-plat + déblayage manuel de barrage** (choix mid-combat) : RESTE — le scénario
   de combat démontre les Critiques de coque, mais pas encore le choix bélier-vs-déblayage ni les upgrades
   Coque-de-course/Safran/Plat-bord (nécessitent un champ de domaine dédié + une affordance de choix mid-voyage).
 - ~~**Maladies transmises par l'eau (ch.14)**~~ ✅ **RÉSOLU** : la descente `15-commerce-fluvial` EXERCE
@@ -213,7 +213,7 @@ Source : audit adversarial par domaine (juillet 2026). Statut = jouable (scénar
 
 | Système | Domaine | Ce qu'il manque |
 |---|---|---|
-| ~~Commerce terrestre/fluvial T2C (`MapPlace.market`)~~ ✅ **RÉSOLU** (commit c77bc2cb) | Économie | Scénario `15-commerce-fluvial` (28 villes réelles du Reik, indices verbatim T2C ch.11) + section « Marché » éditable dans WorldMapEditor + boucle achat/barge/revente prouvée. |
+| ~~Commerce terrestre/fluvial MSRC (`MapPlace.market`)~~ ✅ **RÉSOLU** (commit c77bc2cb) | Économie | Scénario `15-commerce-fluvial` (28 villes réelles du Reik, indices verbatim MSRC ch.11) + section « Marché » éditable dans WorldMapEditor + boucle achat/barge/revente prouvée. |
 | Poursuites terrestres (`pursuit`) | Voyage | Flux de poursuite dans `travelFlow` (UI, sur le modèle `seaVoyageFlow`) + scénario + Effet `startPursuit`. `pursuit.ts` FAIT. |
 | ~~Jeux de taverne~~ ✅ **RÉSOLU** | Économie | Effet `openTavernGames` ajouté (union `Effect` + handler `combatEffects` gaté sur `rule('tavern-games')` + édition `EffectList` sans champ, comme `restoreFortune`). `TavernGameModal` monté dans `CampaignView` (plus seulement dans l'Interlude). Atteignable : scénario `marche-equipement` (Aubergiste → dialogue « Une partie ? », `rules: { 'tavern-games': true }`). Testé (`health-effects.test.ts`). |
 | ~~Troc (objet ↔ objet)~~ ⚪ **FAUX POSITIF** | Économie | L'UI de troc est DÉJÀ câblée : `renderBarter()` dans `MerchantPanel.tsx` (onglet « Troc » + sélecteurs Céder/Acquérir + devis de ratio de Disponibilité + bouton Échanger), et le connecteur `MerchantPanel()` passe bien `onBarter={barterExchange}` (store). Live en jeu dès l'ouverture du marchand (commit `0aa7f552`). Rien à faire. |
@@ -277,7 +277,7 @@ Malepierre). L'audit les a classés « SCÉNARIO-MANQUANT » sur preuve trop min
    conformité RAW EN JEU.
 2. **Vague 2 (éditabilité à bas coût)** : Effets `inflictHunger`/`exposureNight`/`intoxicate`/
    `inflictSuffocation` + champs WorldMapEditor (`sea`/`seaHeading`, Port) + `vessel`/`shipRole`/`openPort`.
-3. **Vague 3 (chantiers lourds, moteur partiel)** : Commerce terrestre T2C + Marchés (mutualisés),
+3. **Vague 3 (chantiers lourds, moteur partiel)** : Commerce terrestre MSRC + Marchés (mutualisés),
    Poursuites terrestres, Jeux de taverne, Troc.
 4. **Vague 4 (décision de design)** : méta-flux Création / Avancement / Fin de séance — les scripter
    in-game (Effet ouvrant l'écran existant) ou les laisser hors-scénario.

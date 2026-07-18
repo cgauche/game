@@ -620,7 +620,7 @@ function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem
   };
 }
 
-/** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG ch.13 navire, T2C ch.7 fluvial,
+/** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG ch.13 navire, MSRC ch.7 fluvial,
  *  #157 suite) : plage d10 → effet immédiat (`ops`) + Test d'équipage (échec) authoré en `GameOp`, MÊME
  *  vocabulaire que les autres Critiques (`critEntryItem`). */
 function shipCritEntryItem(e: ShipCritEntry): CodexItem {
@@ -667,7 +667,7 @@ function manannFactorItem(f: ManannFactor): CodexItem {
   };
 }
 
-/** Libellé d'une TABLE de modificateur d'Exposition hydrique (T2C ch.16 p.91, #157 suite). */
+/** Libellé d'une TABLE de modificateur d'Exposition hydrique (MSRC ch.16 p.91, #157 suite). */
 const WATER_TABLE_LABEL: Record<string, string> = { 'source-d-eau': 'Source d’eau', 'blessures-et-etats': 'Blessures et États' };
 
 /** Section « Modificateurs » d'Exposition hydrique — groupée par table (Source d'eau / Blessures et
@@ -940,7 +940,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'riverNavigation', label: 'Navigation fluviale (Vent, Chavirage, Échouage)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'T2C ch.7',
+    key: 'riverNavigation', label: 'Navigation fluviale (Vent, Chavirage, Échouage)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MSRC ch.7',
     build: () => {
       const n = datasetObject('riverNavigation');
       const forceLabel = new Map(n.windForces.map((f) => [f.id, f.label]));
@@ -1425,11 +1425,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'books', label: 'Livres', group: 'Monde',
     // Fiche Livre : « contenu, par type » (index `bookContents`) projeté DANS le build (paresseux).
-    // Les entités référencent leur livre par son ABR (`source.book`) → match sur abr + libellé ;
+    // Les entités référencent leur livre par son ABBR (`source.book`) → match sur abbr + libellé ;
     // `categoryByKey(...)?.label` ne lit que l'identité STATIQUE des catégories (pas leurs items :
     // aucun cycle de projection).
     build: () => books.map((b) => ({
-      id: b.id, label: b.label, sub: b.abr ?? b.folder ?? undefined, group: b.folder ?? undefined, desc: b.desc ?? undefined,
+      id: b.id, label: b.label, sub: b.abbr ?? b.folder ?? undefined, group: b.folder ?? undefined, desc: b.desc ?? undefined,
       sections: bookContents(b.id).map((g) => ({
         title: categoryByKey(g.category)?.label ?? g.category,
         layout: 'chips' as const,
@@ -1775,23 +1775,23 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => datasetArray('shipCriticalsEquipements').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.7',
+    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
     build: () => datasetArray('riverCriticalsGreement').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.7',
+    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
     build: () => datasetArray('riverCriticalsAvirons').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.7',
+    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
     build: () => datasetArray('riverCriticalsGouvernail').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.7',
+    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
     build: () => datasetArray('riverCriticalsCoque').map(shipCritEntryItem),
   },
   {
-    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'T2C ch.7',
+    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure', group: 'Effets', cluster: 'Critiques fluviaux', sourceRef: 'MSRC ch.7',
     build: () => datasetArray('riverCriticalsSuperstructure').map(shipCritEntryItem),
   },
   {
@@ -1807,7 +1807,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => datasetArray('seaPortEvents').map(seaEventItem),
   },
   {
-    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'T2C ch.16',
+    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques)', group: 'Tables', cluster: 'Mer & rivière', sourceRef: 'MSRC ch.16',
     build: () => {
       const w = datasetObject('waterExposure');
       return [{

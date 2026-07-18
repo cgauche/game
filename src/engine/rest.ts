@@ -96,8 +96,8 @@ export function cureDiseases(c: Combatant, n: number): string[] {
 
 /**
  * Raccourcit la durée d'une maladie ACTIVE de `days` jour(s) (min 1 jour restant). Mute `c`.
- *  - `opts.disease` : SCOPE par id (Gesundheit → une `blessure-purulente` seulement, T2C p.13 ;
- *    Rouille mouchetée → `verole-du-tanneur`, T2C p.14) ; absent = la première maladie active.
+ *  - `opts.disease` : SCOPE par id (Gesundheit → une `blessure-purulente` seulement, MSRC p.13 ;
+ *    Rouille mouchetée → `verole-du-tanneur`, MSRC p.14) ; absent = la première maladie active.
  *  - `opts.once` : verrou « une fois par maladie » (Bénédiction de Convalescence, LDB 41 : « ne peut
  *    être tentée qu'une fois par maladie et par personne ») — les herbes (1 dose/jour) se reprennent.
  */

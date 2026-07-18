@@ -38,7 +38,7 @@ export const schema = z.array(
     symptoms: z.array(diseaseSymptomSchema),
     /** Vérole Urticante (LDB 20 l.97) : immunité après guérison — absent ailleurs. */
     immuneAfterCure: z.boolean().optional(),
-    /** Passifs actifs pendant toute l'INFECTION (Vers du Reik −5 Résistance/30 j, T2C 16 l.138). */
+    /** Passifs actifs pendant toute l'INFECTION (Vers du Reik −5 Résistance/30 j, MSRC 16 l.138). */
     infectionPassive: z.array(gameOpSchema).optional(),
     source: sourceRefSchema.optional(),
   }),

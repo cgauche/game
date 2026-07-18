@@ -1,9 +1,11 @@
 /**
- * Schéma de `books.json` — dérivé du contenu RÉEL (29 entrées, script d'inventaire) et de
- * `BookData` (`src/data/index.ts:1096`). `id` = relation id-pure vers `source.book` (migration
- * `21aa4881`). `abr`/`language`/`folder` sont typés nullable par l'interface mais toujours
- * renseignés (string) sur les 29 entrées observées ; `desc` est le seul champ réellement null
- * (1/29).
+ * Schéma de `books.json` — SOURCE UNIQUE des acronymes de livres (ref #585) :
+ * `abbr` est l'UNIQUE champ d'acronyme (affichage Compendium ET Atlas RAW), plus de doublon `abr`.
+ * `id` = relation id-pure vers `source.book` (migration `21aa4881`). `dir` = chemin d'extraction
+ * `Source/…` pour les 15 livres couverts par l'Atlas RAW ; absent pour les 14 autres. `BOOKS` de
+ * `scripts/raw/_lib.mjs` DÉRIVE de `books.json` (filtre les entrées `dir`) — plus de liste en dur
+ * à synchroniser. `language`/`folder` sont typés nullable par l'interface mais toujours renseignés
+ * (string) sur les 29 entrées observées ; `desc` est le seul champ réellement null (1/29).
  */
 import { z } from 'zod';
 
@@ -13,12 +15,9 @@ export const schema = z.array(
   z.strictObject({
     id: z.string(),
     label: z.string(),
-    abr: z.string().nullable(),
-    /** Abréviation CANONIQUE de l'Atlas RAW (`BOOKS` de `scripts/raw/_lib.mjs`) — présente sur les
-     *  15 livres extraits par Marker, absente des VO/compagnons hors Atlas. Pont slug→abbr consommé
-     *  par `scripts/raw/build-implemente.mjs` (résolution folio→chapitre, #434), validé fail-fast
-     *  contre `BOOKS`. `abr` reste l'abréviation d'AFFICHAGE libre du Compendium. */
-    abbr: z.string().optional(),
+    abbr: z.string(),
+    /** Chemin d'extraction `Source/…` — présent sur les 15 livres couverts par l'Atlas RAW. */
+    dir: z.string().nullable().optional(),
     language: z.string().nullable(),
     folder: z.string().nullable(),
     /** HTML de présentation (bibliographie) — hors du périmètre `<Prose>` (pas un texte de règle

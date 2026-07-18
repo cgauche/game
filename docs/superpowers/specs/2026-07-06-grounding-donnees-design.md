@@ -64,7 +64,7 @@ Nouvelle **référence vivante**, sœur de `architecture.md`/`sources-vf.md`. St
   reprise du rapport : une table du livre intitulée « Machines de guerre / véhicules / navires » ne va
   **jamais** dans `trappings.json` (équipement PORTÉ) mais dans le fichier du sous-système.
 - **§B — Conventions de champs.** `book` = abréviation canonique (table dérivée de `books.json` :
-  `LDB`, `ADE2`, `EDO`… — jamais `ADE II`) ; `source.page` = **vraie page** (jamais le n° de chapitre ;
+  `LDB`, `ADE II`, `EDO`… — jamais `ADE II`) ; `source.page` = **vraie page** (jamais le n° de chapitre ;
   ⚠ ancres Marker `span id="page-N"` NON fiables — confirmé par l'utilisateur) ; `desc` = **verbatim
   Markdown** (garde `no-html-in-prose`) ; formes de champ copiées des voisins (`damage:{plusBF,flat}`,
   `qualities:[{id}]`) ; ids stables ; **canonicalisation via `serializeDataset`** (jamais un stringify

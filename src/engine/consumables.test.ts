@@ -72,7 +72,7 @@ describe('consommables — effet en FLOW (#50 : migration GameOp[] → Flow)', (
   });
 });
 
-describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle)', () => {
+describe('consommables — catalogue migré (LDB 71/72/67 + MSRC, donnée réelle)', () => {
   it('potion-de-guerison : gate « plus de 0 Blessure » (if woundsCurrent ≥ 1) → heal {bonusOf:E} (LDB 72 l.24)', () => {
     const f = findTrappingById('potion-de-guerison')!.consumable!;
     expect(f.kind).toBe('if');
@@ -101,7 +101,7 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
       { op: 'removeCondition', name: 'hemorragique', all: true },
     ]);
   });
-  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille T2C + sel sacré MDG + boissons alcoolisées LDB 09 + malepierre LDB 19, #462)', () => {
+  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille MSRC + sel sacré MDG + boissons alcoolisées LDB 09 + malepierre LDB 19, #462)', () => {
     const ids = trappings.filter((t) => t.consumable).map((t) => t.id).sort();
     expect(ids).toEqual([
       'bandages',

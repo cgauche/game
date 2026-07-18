@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`00-index.md`](00-index.md).
 >
-> **Chapitres source :** `ADE II 3` · `ADE II 9` · `T2 11` · `T2C 7` · `T2C 9` · `T2C 14` · `ACE 10` · `ACE 12` · `EDOC 12`.
+> **Chapitres source :** `ADE II 3` · `ADE II 9` · `MSR 11` · `MSRC 7` · `MSRC 9` · `MSRC 14` · `ACE 10` · `ACE 12` · `EDOC 12`.
 
 ---
 
@@ -159,7 +159,7 @@ Les individus nés sous le signe du Buffle sont des alliés dévoués dont l'ami
 Audacieux, sûrs d'eux et forts, les natifs de Dragomas le Dragon sont faits pour être des meneurs. Ils rayonnent de confiance et d'assurance, c'est pourquoi les gens ont souvent instinctivement envie de les suivre. Ce charisme peut toutefois vite se transformer en une arrogance inflexible, si bien que même le berger doux et avisé peut finir par devenir un véritable tyran. Être un chef implique une responsabilité envers ses partisans, et les personnes nées sous le signe du Dragon feraient mieux de ne pas l'oublier.
 
 
-## **Le Crépuscule**
+<span id="page-43-0" data-folio="42"></span>## **Le Crépuscule**
 
 **Signe de l'Illusion et du Mystère**
 
@@ -218,7 +218,7 @@ Le Fourreau de Grungni est sacré pour les soldats et les nains. Les individus q
 Pour la personne née sous le signe de Mammit le Sage, la vie et le monde sont pleins d'occasions d'apprendre de nouvelles choses. Leur penchant introspectif en fait des individus intelligents, justes et doux, mais il peut tout aussi bien les amener à considérer les malheurs des autres comme un sujet d'étude parmi d'autres. Cela leur permet certes d'agir avec détachement lorsque nécessaire, mais poussé à son paroxysme, ce trait de caractère peut se transformer en indifférence, voire en cruauté.
 
 
-#### **Mummit le Fou**
+<span id="page-44-0" data-folio="43"></span>#### **Mummit le Fou**
 
 **Signe de l'Incertitude Nom classique :** le Fou **Ascendant :** été
 
@@ -267,7 +267,7 @@ Les individus nés sous le signe des Deux Bœufs sont innovants, assidus, créat
 Le Danseur est un signe de passion... et d'obsession. Quand les natifs de ce signe se lancent à la poursuite de quelque chose, ils le font avec une assiduité à toute épreuve : qu'il s'agisse d'un cœur à conquérir ou d'un mystère à résoudre, le reste du monde s'efface devant leur détermination. Lorsqu'on les méprise, ils le prennent mal et peuvent réagir violemment.
 
 
-## **Le Tambour**
+<span id="page-45-0" data-folio="44"></span>## **Le Tambour**
 
 **Signe de l'Hédonisme et de l'Excès**
 
@@ -316,7 +316,7 @@ Les meilleurs diplomates sont nés sous la lumière du Flûtiste... De même que
 Une constellation vide d'étoiles. Un trou noir dans la voûte céleste. Les natifs de Vobist le Pâle peuvent parfois sembler imprévisibles et incertains ; après tout, ils sont nés sous une obscurité totale. Il peut leur arriver de se montrer excessivement prudents, mais aussi audacieux et courageux quand on s'y attend le moins, fonçant au cœur de la mêlée avant même les plus valeureux guerriers. Ce qui s'apparente chez eux à de l'incertitude peut se révéler être un sens aigu des causes auxquelles ils doivent se dévouer et de la manière dont ils doivent se battre pour elles. Enfin, lorsque Morrslieb, la lune du Chaos, est pleine lorsque Vobist le Pâle est ascendant, c'est un présage particulièrement mauvais.
 
 
-#### **La Charrette Brisée**
+<span id="page-46-0" data-folio="45"></span>#### **La Charrette Brisée**
 
 **Signe de l'Orgueil Nom classique :** Kharnos **Ascendant :** automne
 
@@ -355,7 +355,7 @@ Les personnes nées sous le signe de la Chèvre Sauvage ne laissent personne les
 Les natifs de la Chèvre Sauvage ayant une affinité avec la magie sont souvent attirés par le Vent d'Ambre de *Ghur*. Les individus nés sous ce signe seraient bien avisés de se rappeler que le monde n'est pas là pour les persécuter. Cela peut arriver à n'importe qui d'être frappé par la malchance, mais on ne peut pas passer sa vie à se morfondre pour autant.
 
 
-## **Le Chaudron de Rhya**
+<span id="page-47-0" data-folio="46"></span>## **Le Chaudron de Rhya**
 
 **Signe de la Miséricorde, de la Mort et de la Création**
 
@@ -478,7 +478,7 @@ Les tailleurs de pierre et les maçons travaillant sur des projets pour des clie
 Dans certaines campagnes de l'Empire, on considère qu'il est important que le thème astral des enfants soit établi dans la semaine qui suit leur naissance, et les mystiques et astrologues itinérants sont présents pour répondre à la demande. Ainsi, un thème astral peut être le seul bout de papier non essentiel que possède un métayer ou une poissonnière. Qu'il s'agisse d'une véritable carte du ciel au moment de la naissance, ou d'une pure arnaque (certains escrocs utilisent des cartes préétablies qu'ils complètent avec les noms et les détails correspondants aux destinataires), un thème astral permet de donner même aux plus pauvres une idée de leur place dans l'ordre céleste.
 
 
-#### *Magister Oryxian,*
+<span id="page-50-0" data-folio="49"></span>#### *Magister Oryxian,*
 
 *Comme toujours, je vous remercie d'avoir fait preuve de discrétion concernant les détails de notre arrangement. Les fiançailles de ma fille se sont terminées de la manière dont vous l'aviez prévue. Le garçon dépensier à qui notre fille avait été promise, suite à l'insistance de mon mari, est mort dans un terrible accident de chasse. Il fut fort aisé de rédiger le contrat avec le fils du seigneur S----- et d'en obtenir la signature par mon mari (après une période de deuil appropriée, bien sûr). Nous nous souviendrons de votre Collège, et de votre Illustre Personne en particulier, pour votre rôle dans l'ascension de ma famille.*
 
@@ -682,7 +682,7 @@ Convalescence .........................92
 Dortoirs, Les ...........................72 Dragomas le Dragon ...............41 Duel.........................................88
 
 
-## [T2 11] APPENDICE I - L’entraînement et les mentors
+## [MSR 11] APPENDICE I - L’entraînement et les mentors
 
 *Folio 142+*
 
@@ -1104,7 +1104,7 @@ pas notre affaire de savoir pourquoi mes employeurs sont si désireux de parler 
 **Mort sur le Reik** est la deuxième d'une série de cinq aventures dans le monde sombre et périlleux de **Warhammer Fantasy le Jeu de Rôle**, une campagne qui a inspiré toute une génération de joueurs. Cette version intégrale comprend des commentaires pertinents teintés d'humour noir, des suggestions astucieuses sur de nouvelles façons de jouer cette campagne.
 
 
-## [T2C 7] CHAPITRE 5 - Navigation fluviale
+## [MSRC 7] CHAPITRE 5 - Navigation fluviale
 
 *Folio 29+*
 
@@ -1292,7 +1292,7 @@ Un vent de côté soudain change la direction de la voile : le tangon pivote vio
 <span id="page-33-0" data-folio="34"></span>
 
 
-## [T2C 9] CHAPITRE 7 - Compagnons de voyage
+## [MSRC 9] CHAPITRE 7 - Compagnons de voyage
 
 *Folio 39+*
 
@@ -1721,7 +1721,7 @@ Doktor Schnee vient d'entrer dans l'âge mûr et était auparavant titulaire à 
 <span id="page-49-0" data-folio="50"></span>
 
 
-## [T2C 14] CHAPITRE 12 - Naufrageurs, contrebandiers et pirates
+## [MSRC 14] CHAPITRE 12 - Naufrageurs, contrebandiers et pirates
 
 *Folio 80+*
 
@@ -1995,7 +1995,7 @@ Elles comprennent d'autres branches, dont une est chargée de garder des archive
 - 0 Le général Erik Hoffman commande les Palissades. Il n'aime pas la politique et préfère rester au palais, loin des intrigues de l'Île noire
 
 
-### **Le Untersuchung**
+<span id="page-212-0" data-folio="210"></span>### **Le Untersuchung**
 
 Au sein de l'ordre chevaleresque de la Reiksguard, une petite organisation cherche à venir à bout de la corruption à la cour et dans l'armée. Pour plus de détails sur cette bande excentrique de chercheurs et d'agents de terrain, voir p. 76.
 
@@ -2293,7 +2293,7 @@ Ce qu'ils apprennent dépend du résultat d'un Test de **Recherche Complexe (−
 | −6 ou moins | Échec Stupéfiant      | contamination magique se produit. Il ne découvre rien sur l'objet, et doit en plus<br>réaliser un Test d'Exposition mineure à la Corruption. |
 
 
-### **Mécénat**
+<span id="page-222-0" data-folio="220"></span>### **Mécénat**
 
 Altdorf accueille de nombreux comédiens, saltimbanques, et charlatans, qui se battent tous pour attirer l'attention d'un mécène fortuné.
 
@@ -2320,7 +2320,7 @@ inutile pour les nouveaux sorciers qui n'ont pas encore appris un nombre de sort
 
 # **INDEX**
 
-### **Lieux importants d'Altdorf**
+<span id="page-223-0" data-folio="221"></span>### **Lieux importants d'Altdorf**
 
 | A                                       |
 |-----------------------------------------|
@@ -2488,7 +2488,7 @@ Compagnie commerciale Reik et Talabec 180
 
 | L                                     | P                                           | Q                                               |  |
 |---------------------------------------|---------------------------------------------|-------------------------------------------------|--|
-| Lagon des Contrebandiers, Le202       | Paeter Kohl, Sellier et armurier144         | Quai de la Bien-aimée de Manann, Le180          |  |
+<span id="page-224-0" data-folio="222"></span>| Lagon des Contrebandiers, Le202       | Paeter Kohl, Sellier et armurier144         | Quai de la Bien-aimée de Manann, Le180          |  |
 | Lapie, prêteur sur gages123           | Palais d'Altdorf des Von Königswald, Le114  | Quai de la Fourche, Le179                       |  |
 | Librairie Estlemann, La161            | Palais de la Misère, Le140                  | Quai des Bouchers, Le138                        |  |
 | Librarium Secularum99                 | Palais du Grand Théogoniste, Le98           | Quai des lignes de Hindelin, Le84               |  |
@@ -2545,7 +2545,7 @@ Société impériale
 
 | T                                            |
 |----------------------------------------------|
-| Tableaux des Fontaines, Les80                |
+<span id="page-225-0" data-folio="223"></span>| Tableaux des Fontaines, Les80                |
 | Taverne L'Haleine du Dragon, La201           |
 | Temple de la Grâce d'Alessa, Le119           |
 | Temple de Manann, Le83                       |

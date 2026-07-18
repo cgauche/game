@@ -3,7 +3,7 @@
  * semaine, phases du jour) vit en DONNÉE ÉDITABLE (datasets `calendarMonths`/`calendarIntercalary`/
  * `calendarWeekdays`/`calendarPhases`, éditables au Codex). Ce module ne porte que la MÉCANIQUE
  * temporelle + les scalaires de config (époque, fenêtre de nuit). Source FR vérifiée (EiS Annexe 3
- * l.20/34/68 croisée ADE2/Middenheim/VO ; cf. plan #T1) :
+ * l.20/34/68 croisée ADE II/Middenheim/VO ; cf. plan #T1) :
  *
  * Année = 400 jours (orbite de Mallus autour de Söll) ; 6 intercalaires INCLUS dans les 400 → les 12
  * mois somment à 394 = 2 mois à 32 j (Nachhexen & Nachgeheim, après les 2 lunes pleines) + 10 à 33 j.

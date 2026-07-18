@@ -18,7 +18,7 @@ import type { TestScenario } from './_shared';
 /** Négociant : épée magique NON identifiée (qualité cachée + skin), maille endommagée, dague à vendre. */
 function negociant(): Combatant {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Négociant (test)', motivation: 'Test', rng: makeRNG(2510), id: 'test-negociant' });
-  // Épée bâtarde « légendaire » : qualité MAGIQUE cachée (« De plaies atroces », ADE2) + skin bleuté ;
+  // Épée bâtarde « légendaire » : qualité MAGIQUE cachée (« De plaies atroces », ADE II) + skin bleuté ;
   // identified:false → masquée tant qu'une Évaluation ne l'a pas révélée (mais ACTIVE en combat).
   const epee = itemFromTrappingById('epee-batarde')!;
   epee.qualities = [...epee.qualities, { id: 'de-plaies-atroces' }];

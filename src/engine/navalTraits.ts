@@ -66,7 +66,7 @@ export function navalMoveMod(traits: NavalTraitRef[] | undefined): number {
   return navalPassiveOps(traits).reduce((n, op) => (op.op === 'moveMod' ? n + op.mod : n), 0);
 }
 
-/** Facteur MULTIPLICATIF du Mouvement — op `moveScale` (MÊME op que la séquelle/sort ; T2C ch.12 l.27 :
+/** Facteur MULTIPLICATIF du Mouvement — op `moveScale` (MÊME op que la séquelle/sort ; MSRC ch.12 l.27 :
  *  **Coque de course** « une rapidité équivalente à deux fois sa vitesse de Mouvement normale » → 2/1). Produit
  *  de tous les `moveScale` collectés (défaut neutre 1/1). Appliqué APRÈS les `moveMod` (ordre canonique
  *  d'`effectiveMovement`, ops.ts l.745) là où le M de manœuvre se calcule (`shipManeuverParams`). PUR. */
@@ -110,7 +110,7 @@ export function belierRam(traits: NavalTraitRef[] | undefined): { ic: number; ap
 }
 
 /** Modificateur BRUT (points de %) au Test de Navigation POUR DIRIGER le bateau, sommé sur les Traits +
- *  Améliorations (T2C ch.12 l.66 : Bouteur +20 ; l.137 : Gréement de course −10). Champ de DOMAINE `navTestMod`
+ *  Améliorations (MSRC ch.12 l.66 : Bouteur +20 ; l.137 : Gréement de course −10). Champ de DOMAINE `navTestMod`
  *  (le +20/−10 vise le Test lui-même, hors vocabulaire combattant `skillDRBonus`). PUR. */
 export function navalNavTestMod(traits: NavalTraitRef[] | undefined): number {
   return (traits ?? []).reduce((n, ref) => n + (findNavalTrait(ref.id)?.navTestMod ?? 0), 0);
@@ -130,8 +130,8 @@ const bestDeckCover = (a: DeckCoverClass | 'none', b: DeckCoverClass | 'none'): 
   DECK_COVER_ORDER.indexOf(b) > DECK_COVER_ORDER.indexOf(a) ? b : a;
 
 /** COUVERT de pont conféré par les Traits/Améliorations d'une coque — champ de domaine `deckCover` GRADUÉ
- *  (`DeckCoverClass`, migré du booléen) : **Sabord** et **Murs blindés** = `totale` (MDG ch.12 l.364 / T2C ch.12
- *  l.85), **Plat-bord** = `moyenne` (T2C ch.12 l.111, « couverture moyenne … tirs Difficiles »). Retourne le
+ *  (`DeckCoverClass`, migré du booléen) : **Sabord** et **Murs blindés** = `totale` (MDG ch.12 l.364 / MSRC ch.12
+ *  l.85), **Plat-bord** = `moyenne` (MSRC ch.12 l.111, « couverture moyenne … tirs Difficiles »). Retourne le
  *  MEILLEUR couvert offert (`none` si aucun). DATA-DRIVEN (pas de nom littéral codé). PUR. */
 export function navalDeckCover(traits: NavalTraitRef[] | undefined): DeckCoverClass | 'none' {
   let best: DeckCoverClass | 'none' = 'none';
@@ -143,7 +143,7 @@ export function navalDeckCover(traits: NavalTraitRef[] | undefined): DeckCoverCl
 }
 
 /**
- * Couvert des postes selon les Améliorations de la coque (MDG ch.12 l.362-364 / T2C ch.12 l.85,111,
+ * Couvert des postes selon les Améliorations de la coque (MDG ch.12 l.362-364 / MSRC ch.12 l.85,111,
  * `deckCover` GRADUÉ en donnée) : « Le pont ne fournit aucun couvert, alors qu'un Sabord donne une couverture
  * totale » (Sabord/Murs blindés → `totale`), le **Plat-bord** une « couverture moyenne » (→ `moyenne`, moindre).
  * `cover` = le niveau de pont, `undefined` = aucune Amélioration couvrante. Stampe le MEILLEUR entre le couvert

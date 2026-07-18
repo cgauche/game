@@ -74,7 +74,7 @@ describe('mutationKindFor — d100 corps/esprit par espèce (data-driven, ids ST
     expect(mutationKindFor('hauts-elfes', 1)).toBe('mentale');
     expect(mutationKindFor('elfes-sylvains', 100)).toBe('mentale');
   });
-  it('Ogre 01-10 (ADE2 « Ogres et Mutations ») — corrige le défaut Humain erroné', () => {
+  it('Ogre 01-10 (ADE II « Ogres et Mutations ») — corrige le défaut Humain erroné', () => {
     expect(mutationKindFor('ogres', 10)).toBe('physique');
     expect(mutationKindFor('ogres', 11)).toBe('mentale');
   });

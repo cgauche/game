@@ -3,7 +3,7 @@ import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 
 // Équipage EXPOSÉ de la barge amie = 2 héros du groupe (comme la vitrine navale) : sur un Coup Critique de
-// coque « Gréement » ou « Superstructure » (T2C 7), toute personne SUR LE PONT (`crewTarget:'deck'`)
+// coque « Gréement » ou « Superstructure » (MSRC 7), toute personne SUR LE PONT (`crewTarget:'deck'`)
 // encaisse un Test d'Initiative sous peine de +5 Dégâts (échardes) — ces 2 héros y sont exposés.
 const CREW = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as const;
 
@@ -12,7 +12,7 @@ const CREW = [`pregen-${PREGEN.soldat}`, `pregen-${PREGEN.chasseur}`] as const;
  * combat de BATEAU FLUVIAL, distincte de la mer (MDG) par ses DONNÉES :
  *  - chaque bateau est une COQUE à PV (`barge-fluviale`/`barque-fluviale`, `hull.propulsion:'fluvial'` +
  *    `locationTable:'navire-fluvial'` + `criticalTable:'river-criticals'`) → un Coup Critique se résout sur
- *    les tables T2C 7 (Localisation Gréement/Rames/Gouvernail/Coque/Superstructure ; effets États
+ *    les tables MSRC 7 (Localisation Gréement/Rames/Gouvernail/Coque/Superstructure ; effets États
  *    **Dérive** / **Gouvernail brisé** / **Voie d'eau**, Éclats **+5**), et NON sur les tables navales MDG ;
  *  - des PIRATES fluviaux (ch.12) sont l'ÉQUIPAGE EXPOSÉ de leur barque (`crewIds`) : un Critique « Équipage »
  *    ou les Éclats leur reviennent, comme en mer ;
@@ -36,7 +36,7 @@ const scene = buildScene({
     {
       id: 'enc-fluvial',
       enemies: [
-        // index 0 = la BARQUE pirate (coque T2C) ; équipage exposé = les pirates (index 1-3).
+        // index 0 = la BARQUE pirate (coque MSRC) ; équipage exposé = les pirates (index 1-3).
         { ref: 'barque-fluviale', pos: { x: 14, y: 6 }, label: 'Barque des pirates',
           crewIds: ['enemy-enc-fluvial-1', 'enemy-enc-fluvial-2', 'enemy-enc-fluvial-3'] },
         { ref: 'pirate-fluvial', pos: { x: 12, y: 5 } },
@@ -44,7 +44,7 @@ const scene = buildScene({
         { ref: 'chef-pirate', pos: { x: 15, y: 6 } },
         // index 4 = l'ANGUILLE DU REIK, dans l'eau entre les deux bateaux.
         { ref: 'anguille-du-reik', pos: { x: 8, y: 6 }, label: 'Anguille du Reik' },
-        // index 5 = la BARGE des aventuriers (coque T2C), côté allié ; équipage exposé = 2 héros du pont.
+        // index 5 = la BARGE des aventuriers (coque MSRC), côté allié ; équipage exposé = 2 héros du pont.
         { ref: 'barge-fluviale', pos: { x: 3, y: 6 }, side: 'ally', label: 'Barge des aventuriers',
           crewIds: [...CREW] },
       ],
@@ -59,9 +59,9 @@ export const scenario: TestScenario = {
   icon: 'scenario/naval',
   title: 'Embuscade fluviale',
   tests:
-    'Combat de bateau FLUVIAL (T2C 7) distinct de la mer par ses DONNÉES : coques `barge-fluviale`/' +
+    'Combat de bateau FLUVIAL (MSRC 7) distinct de la mer par ses DONNÉES : coques `barge-fluviale`/' +
     '`barque-fluviale` portant `locationTable:navire-fluvial` + `criticalTable:river-criticals` → un Coup ' +
-    'Critique tire la Localisation T2C (Gréement/Rames/Gouvernail/Coque/Superstructure) et ses effets ' +
+    'Critique tire la Localisation MSRC (Gréement/Rames/Gouvernail/Coque/Superstructure) et ses effets ' +
     '(États Dérive / Gouvernail brisé / Voie d’eau, Éclats +5, Test d’Initiative « sur le pont ») via le MÊME ' +
     'moteur naval MDG ; équipage exposé lié (crewIds) → Éclats/critique « Équipage » sur de vrais pirates ; ' +
     'bestiaire ch.13 : Anguille du Reik (Constricteur, Morsure +8, Taille Grande).',

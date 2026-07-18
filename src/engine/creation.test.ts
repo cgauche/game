@@ -35,7 +35,7 @@ describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () =>
   });
 });
 
-describe('rollStar — signe astral (ADE2, table d100)', () => {
+describe('rollStar — signe astral (ADE II, table d100)', () => {
   it('renvoie toujours un signe existant (par id STABLE) + le d100 tiré', () => {
     const ids = new Set(stars.map((s) => s.id));
     for (let seed = 0; seed < 200; seed++) {
@@ -54,7 +54,7 @@ describe('rollStar — signe astral (ADE2, table d100)', () => {
     expect(stars.some((s) => s.label === 'TEST' || s.rand > 100)).toBe(false);
   });
 
-  it('l\'Étoile du Sorcier : le 1d10 interne produit les 4 variantes (ADE2 3 l.63)', () => {
+  it('l\'Étoile du Sorcier : le 1d10 interne produit les 4 variantes (ADE II 3 l.63)', () => {
     const variants = stars.filter((s) => /Étoile du Sorcier/.test(s.label)).map((s) => s.id);
     expect(variants.length).toBe(4);
     const seen = new Set<string>();
@@ -69,7 +69,7 @@ describe('rollStar — signe astral (ADE2, table d100)', () => {
   });
 });
 
-describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 3 l.38)', () => {
+describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE II 3 l.38)', () => {
   const baseChars = () => Object.fromEntries(CHAR_KEYS.map((k) => [k, 30])) as Record<CharKey, number>;
 
   it('XP_STAR_ROLLED = 25 (l.36)', () => {
@@ -134,7 +134,7 @@ describe('Gnome jouable — règle optionnelle (NADJ appendice I l.10)', () => {
     const t = randomSpeciesTable();
     const b98 = t.find((e) => e.max === 98)!;
     expect(b98.ids).toContain('gnomes'); // ajouté par la règle
-    expect(b98.ids).toContain('ogres'); // l'Ogre ADE2 reste présent (aucune priorité)
+    expect(b98.ids).toContain('ogres'); // l'Ogre ADE II reste présent (aucune priorité)
   });
 });
 
@@ -218,7 +218,7 @@ describe('Couleur des cheveux — bornes 2d10 PAR RACE (rollHair, #420)', () => 
     d2 <= 2 ? 'Blond blanc' : d2 === 3 ? 'Blond doré' : d2 === 4 ? 'Blond roux' : d2 <= 7 ? 'Brun doré'
     : d2 <= 11 ? 'Brun clair' : d2 <= 14 ? 'Brun foncé' : d2 <= 17 ? 'Noir' : d2 === 18 ? 'Auburn'
     : d2 === 19 ? 'Roux' : 'Gris';
-  // ADE2 « 02 - Les ogres.md » l.305-311 (p.21) : bornes 2/3/4/5-7/8-11 — motif IDENTIQUE au LDB (#423).
+  // ADE II « 02 - Les ogres.md » l.305-311 (p.21) : bornes 2/3/4/5-7/8-11 — motif IDENTIQUE au LDB (#423).
   const ogreHair = (d2: number): string =>
     d2 <= 2 ? 'Marron' : d2 === 3 ? 'Acajou' : d2 === 4 ? 'Blond cendré' : d2 <= 7 ? 'Marron clair'
     : d2 <= 11 ? 'Lie de vin' : d2 <= 14 ? 'Marron foncé' : d2 <= 17 ? 'Noir' : d2 === 18 ? 'Charbon'
@@ -238,7 +238,7 @@ describe('Couleur des cheveux — bornes 2d10 PAR RACE (rollHair, #420)', () => 
       expect(rollHair(humain, makeRNG(seed)), `seed=${seed} 2d10=${d2}`).toBe(humainHair(d2));
     }
   });
-  it('Ogre : chaque 2d10 rend la couleur ADE2 — motif LDB confirmé au livre (#423)', () => {
+  it('Ogre : chaque 2d10 rend la couleur ADE II — motif LDB confirmé au livre (#423)', () => {
     for (let seed = 0; seed < 400; seed++) {
       const d2 = roll(2, 10, makeRNG(seed));
       expect(rollHair(ogre, makeRNG(seed)), `seed=${seed} 2d10=${d2}`).toBe(ogreHair(d2));

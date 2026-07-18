@@ -129,7 +129,7 @@ export function isProfane(c: Combatant): boolean {
  * Corps ou esprit, selon l'espèce (`id` STABLE) et le d100 (Tableau l.87-91) — le seuil par espèce
  * vit en DONNÉE (`SpeciesData.mutationBodyMax`, lu par `mutationBodyMaxForSpecies`), plus de match sur
  * le nom : Corps si d100 ≤ seuil, sinon Esprit. Seuils SOURCÉS : Elfe 0, Nain 5, Halfling 10, Humain 50
- * (LDB 19) ; Ogre 10 (ADE2 « Ogres et Mutations ») ; Gnome 50 = Humain (NADJ « Gnomes et Corruption »).
+ * (LDB 19) ; Ogre 10 (ADE II « Ogres et Mutations ») ; Gnome 50 = Humain (NADJ « Gnomes et Corruption »).
  */
 export function mutationKindFor(species: string | undefined, roll: number): 'physique' | 'mentale' {
   return roll <= mutationBodyMaxForSpecies(species) ? 'physique' : 'mentale';

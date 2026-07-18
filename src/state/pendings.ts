@@ -131,7 +131,7 @@ export interface PendingTest {
   /** Relance par Chance déjà effectuée (LDB 12 l.56 : 1 relance max par Test). */
   rerolled?: boolean;
   /** Ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de palier 2 des Crampes routé en modale hors
-   *  combat, T2C 16) : sa résolution NE ré-émet PAS le trigger (garde de ré-entrance, `resolveTest`). */
+   *  combat, MSRC 16) : sa résolution NE ré-émet PAS le trigger (garde de ré-entrance, `resolveTest`). */
   noOwnTestFailed?: boolean;
   /** Branches du Test : des FLOWS (le nœud `test` du Flow ; `Effect.test` y est normalisé). */
   onSuccess?: Flow;
@@ -1279,7 +1279,7 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  phase suivante de la journée (`continueSeaDayAfterScorbut`/`continueSeaDayAfterExhaustion`) ;
    *  'seaActivities' (#273 Étape 2 : Activités en mer hebdomadaires, MDG 15 l.266-306, `klass:'hero-test'`)
    *  — à la clôture, le store enchaîne `continueSeaActivitiesAfterCascade` (Commerce d'opportunité
-   *  séquencé puis halte de nuit, `seaActivities.ts`) ; 'riverExposure' (T2C 16 : Exposition hydrique de
+   *  séquencé puis halte de nuit, `seaActivities.ts`) ; 'riverExposure' (MSRC 16 : Exposition hydrique de
    *  la descente fluviale surfacée APRÈS le jour, avant la halte — la clôture enchaîne
    *  `continueRiverDayAfterExposure`, `riverVoyageFlow.ts`, pour DIFFÉRER la halte de nuit le temps du
    *  Test de Résistance, cf. #344). 'upkeep' (entretien quotidien d'une AVANCE D'HORLOGE hors repos/voyage

@@ -41,32 +41,18 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS } from '../../raw/_lib.mjs'
+import booksData from '../../../src/data/books.json' with { type: 'json' }
 
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
-/** Pont `books.json.id` → abréviation de `BOOKS` (`scripts/raw/_lib.mjs`, SOURCE UNIQUE des dossiers
- *  d'extraction — aucun chemin `Source/` n'est réécrit ici). Keyé par ID STABLE, jamais par `abr` :
- *  `books.json` dit `ADE1`/`NADJ`/`MSR` là où `BOOKS` dit `ADE I`/`NADAJ`/`T2` — l'`abr` est de
- *  l'AFFICHAGE (doctrine 2026-07-09). Un livre absent de cette table n'a pas d'extraction FR
- *  exploitable : ses entrées sont `livre-hors-atlas` (irréfutables), jamais en échec. */
-export const BOOK_ABBR_BY_ID = {
-  'livre-de-base': 'LDB',
-  'aux-armes': 'AA',
-  'archives-de-l-empire-1': 'ADE I',
-  'archives-de-l-empire-2': 'ADE II',
-  middenheim: 'Middenheim',
-  'altdorf-couronne-de-l-empire': 'ACE',
-  'zoo-imperial': 'ZI',
-  'mer-des-griffes': 'MDG',
-  'ennemi-dans-l-ombre': 'EDO',
-  'ennemi-dans-l-ombre-compagnon': 'EDOC',
-  'mort-sur-le-reik': 'T2',
-  'mort-sur-le-reik-compagnon': 'T2C',
-  'pouvoir-derriere-le-trone': 'T3',
-  'aventures-a-ubersreik-1': 'Ubersreik',
-  'nuits-agitees-et-dures-journees': 'NADAJ',
-}
+/** Pont `books.json.id` → `abbr` (SOURCE UNIQUE des acronymes, ref #585) — DÉRIVÉ de `books.json`,
+ *  filtré aux entrées porteuses d'un `dir` (extraction FR exploitable par l'Atlas RAW). Un livre
+ *  absent de cette table n'a pas d'extraction FR exploitable : ses entrées sont `livre-hors-atlas`
+ *  (irréfutables), jamais en échec. */
+export const BOOK_ABBR_BY_ID = Object.fromEntries(
+  booksData.filter((b) => b.dir).map((b) => [b.id, b.abbr]),
+)
 
 const DIR_BY_ABBR = new Map(BOOKS)
 

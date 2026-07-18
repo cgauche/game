@@ -46,15 +46,15 @@ const BOOKS = [
   { ab: 'ADE II',     dir: "Source/Warhammer v4 - Les archives de l'Empire volume 2" },
   { ab: 'AA',         dir: "Source/WH - V4 - Aux Armes" },
   { ab: 'ZI',         dir: "Source/WH - V4 - Le zoo impérial" },
-  { ab: 'Middenheim', dir: "Source/Warhammer v4 - Middenheim la cité du Loup Blanc" },
+  { ab: 'MCLB'      , dir: "Source/Warhammer v4 - Middenheim la cité du Loup Blanc" },
   { ab: 'EDO',        dir: "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre" },
   { ab: 'EDOC',       dir: "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon" },
-  { ab: 'T2',         dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik" },
-  { ab: 'T2C',        dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon" },
-  { ab: 'T3',         dir: "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone" },
+  { ab: 'MSR',         dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik" },
+  { ab: 'MSRC',        dir: "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon" },
+  { ab: 'PDT',         dir: "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone" },
   { ab: 'ACE',        dir: "Source/Warhammer v4 - Aldorf la Couronne de l'Empire" },
-  { ab: 'Ubersreik',  dir: "Source/Warhammer v4 - Aventures a Ubersreik" },
-  { ab: 'NADAJ',      dir: "Source/Warhammer v4 - Nuits agitees & dures journées" },
+  { ab: 'AU1',  dir: "Source/Warhammer v4 - Aventures a Ubersreik" },
+  { ab: 'NADJ',      dir: "Source/Warhammer v4 - Nuits agitees & dures journées" },
 ]
 const dirOf = (ab) => (BOOKS.find((b) => b.ab === ab) || {}).dir
 const bookMap = BOOKS.map((b) => '- ' + b.ab + ' = ' + b.dir).join('\n')

@@ -308,7 +308,7 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
   };
 }
 
-/** Restriction d'armes à distance EFFECTIVE (#471, NADAJ 06 l.181 : « la PLUPART des lois locales
+/** Restriction d'armes à distance EFFECTIVE (#471, NADJ 06 l.181 : « la PLUPART des lois locales
  *  interdisent de faire appel à des projectiles ») — SEUL point de résolution du défaut, consommé
  *  par `firedAttackBlock` (gate joueur/IA) ET `resolveAttack` (application). `banRanged` explicite
  *  PRIME (`true`/`false` = dérogation assumée par l'auteur) ; absent + `firstBlood` = interdit PAR
@@ -343,7 +343,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
       return { reason: 'sous-effectif', detail: `${active.name} : Équipe trop réduite pour servir ${w.name}.` };
   }
   if (w.type !== 'ranged') return null;
-  // Restriction d'armes à distance de la rencontre (#471, NADAJ 06 l.181) — même refus AVANT tout autre
+  // Restriction d'armes à distance de la rencontre (#471, NADJ 06 l.181) — même refus AVANT tout autre
   // gate de ressource (Recharge/munition), pour ne pas dire « recharger » à une arme de toute façon bannie.
   if (banRangedActive(b)) return { reason: 'armeBannie', detail: `${w.name} : les armes à distance sont interdites (duel judiciaire).` };
   if ((w.reload ?? 0) > 0 && !active.loaded) return { reason: 'unloaded', detail: `${active.name} doit recharger ${w.name}.` };
@@ -601,7 +601,7 @@ export function attackEnv(
     const tcMod = teamCommandMod(attacker, weapon, battle.combatants);
     if (tcMod) env.push(tcMod);
     // Couvert de PONT du défenseur (#248) : un servant à un poste couvert (Sabord/Plat-bord/Murs blindés,
-    // T2C f.66 l.111) reçoit sa classe par le MÊME chemin que le couvert de terrain — le plus protecteur
+    // MSRC f.66 l.111) reçoit sa classe par le MÊME chemin que le couvert de terrain — le plus protecteur
     // des deux (`DeckCoverClass ⊂ CoverClass`). `crewPosteOf` couvre tout l'équipage (chef ET support).
     const posteCover = crewPosteOf(target.id, battle.combatants)?.poste.cover;
     const cover = posteCover ? worstCover(los.cover, posteCover) : los.cover;
@@ -668,7 +668,7 @@ export function resolveAttack(
   const battle = get().battle!;
   const mpt = sceneMetresPerTile(get().scene);
   const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants, harpoonRopeCut); // arme choisie + munition + sous-effectif du poste servi
-  // Restriction d'armes à distance de la rencontre (#471, `EncounterDef.banRanged`, NADAJ 06 l.181) —
+  // Restriction d'armes à distance de la rencontre (#471, `EncounterDef.banRanged`, NADJ 06 l.181) —
   // convergence UNIQUE joueur ET IA (tout tir passe par `resolveAttack`) : refus AVANT le jet, même
   // chemin de refus silencieux que la LdV bloquée ci-dessous (`blocked`). Défaut effectif : `banRangedActive`.
   if (banRangedActive(battle) && weapon.type === 'ranged') return null;
@@ -1451,7 +1451,7 @@ function applyHullCriticalToTarget(
   const crew = get && target.crewIds
     ? (target.crewIds.map((id) => actorIn(get(), id)).filter(Boolean) as Combatant[])
     : [];
-  // Réfs data-driven : `navire`/`ship-criticals` (MDG, défaut) ou `navire-fluvial`/`river-criticals` (T2C 7).
+  // Réfs data-driven : `navire`/`ship-criticals` (MDG, défaut) ou `navire-fluvial`/`river-criticals` (MSRC 7).
   const outcome = applyHullCritical(target, crew, rig, battleRng(), undefined, undefined, {
     locationTable: hull?.locationTable, criticalTable: hull?.criticalTable,
   });
@@ -2081,7 +2081,7 @@ export function applyAttackResult(
   // Effet déclenché « après résolution de l'attaque » (touche OU raté) — dispatcher générique via le bus.
   // Point d'émission = fin de résolution d'attaque (LDB 14, Test de combat résolu). Inerte sans donnée.
   emitCombatEvent('onAttackResolved', { get, set, battle, self: attacker, sink: (line) => log.push(ev('condition', line, target.id)), triggerCtx: { victim: target, weapon, woundsDealt: res.woundsLost, margin: res.netSL, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng() } });
-  // SEAM `onOwnTestFailed` (T2C 16 — Crampes) : le PORTEUR qui ÉCHOUE son PROPRE Test réagit. Une passe
+  // SEAM `onOwnTestFailed` (MSRC 16 — Crampes) : le PORTEUR qui ÉCHOUE son PROPRE Test réagit. Une passe
   // d'armes porte DEUX Tests du porteur : (a) l'ATTAQUANT rate son jet d'attaque CC/CT (`attackerDetail`) ;
   // (b) le DÉFENSEUR rate sa Parade/Esquive (`defenderDetail`, Test opposé). PAS la défense adverse d'un
   // non-porteur. Cadence-aware (`set` → héros : le FM de palier 2 en cascade, comme onGainCondition ; PNJ inline).
@@ -4659,7 +4659,7 @@ function victoryConditionMet(vc: VictoryCondition | undefined, battle: BattleSta
       return target.wounds.current / target.wounds.max < vc.belowPercent / 100;
     }
     case 'firstBlood':
-      // Les DEUX fins du RAW restent actives en parallèle (NADAJ 06 l.175-177) : premier sang — marqué
+      // Les DEUX fins du RAW restent actives en parallèle (NADJ 06 l.175-177) : premier sang — marqué
       // PAR-COUP par `resolveFirstBlood` (applyAttackResult, au moment où les Blessures d'UN coup sont
       // connues), sweep déclaratif ici — OU incapacité standard à 0 Blessure (`!enemiesAlive`, MÊME
       // prédicat que `allEnemiesDead`, déjà porté par `isOutOfAction`).
@@ -4682,7 +4682,7 @@ function resolveSurrenderThreshold(battle: BattleState, vc: VictoryCondition | u
   return [tr('cf.surrender', { name: target.name })];
 }
 
-/** DUEL JUDICIAIRE — premier sang (#471, NADAJ 06 l.175-177) : « le premier sang est la première
+/** DUEL JUDICIAIRE — premier sang (#471, NADJ 06 l.175-177) : « le premier sang est la première
  *  attaque qui cause une perte de plus de [threshold] Blessures » — testé PAR-COUP (`lostThisHit` =
  *  la perte RÉELLE infligée par CE coup, pas un seuil cumulatif comme `woundsThreshold`) au point où
  *  `applyAttackResult` connaît les Blessures du coup. La cible TOUCHÉE est la partie vaincue : sortie

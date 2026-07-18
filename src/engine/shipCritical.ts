@@ -22,7 +22,7 @@ import { testValue } from './skills';
 import type { Combatant } from './types';
 import { SHIP_CRIT_SET, shipCritSet, type ShipCritSet, type ShipCritKey, type ShipCrewTest } from '../data/shipCriticals';
 
-/** Réfs de tables data-driven d'une coque (MDG naval par défaut / T2C fluvial) — `hull.locationTable` (colonne
+/** Réfs de tables data-driven d'une coque (MDG naval par défaut / MSRC fluvial) — `hull.locationTable` (colonne
  *  de Localisation) + `hull.criticalTable` (jeu de Critiques). Absentes → jeu naval MDG (comportement historique). */
 export interface HullCritOpts { locationTable?: string | null; criticalTable?: string | null }
 
@@ -36,7 +36,7 @@ export interface ShipCriticalResolved {
   /** Effets « État » à appliquer AU NAVIRE (En flammes / Voie d'eau) — langue unique `GameOp`. */
   ops: GameOp[];
   /** Éclats (Indice) : `shrapnel` membres d'équipage subissent l'effet Éclats du jeu (`set.shrapnelHit` — 9
-   *  Dégâts en mer MDG, +5 en fleuve T2C) — appliqué par la boucle de combat. Seul l'Indice est per-entry. */
+   *  Dégâts en mer MDG, +5 en fleuve MSRC) — appliqué par la boucle de combat. Seul l'Indice est per-entry. */
   shrapnel: number;
   /** Critiques de Coque SUPPLÉMENTAIRES (déjà tirés depuis `hullCrits`, ex. « 1d10 » → un nombre). */
   extraHullCrits: number;
@@ -135,10 +135,10 @@ function posteCrew(hull: Combatant, crew: Combatant[], rng: RNG): Combatant[] {
 /**
  * Coup à l'ÉQUIPAGE consécutif à un Critique de coque, data-driven (`ShipCrewTest`) :
  *  - `crewTarget` : `poste` (équipage d'un poste tiré au sort — MDG « Canon détaché » ch.13 l.763-764, défaut)
- *    ou `deck` (toute personne EXPOSÉE sur le pont — T2C gréement/superstructure « Toute personne présente sur
+ *    ou `deck` (toute personne EXPOSÉE sur le pont — MSRC gréement/superstructure « Toute personne présente sur
  *    le pont doit faire un Test… ») ;
  *  - `skillId`/`difficulty` PRÉSENTS → chaque cible encourt le Test ; un échec applique `crewTest.onFail` (GameOp) ;
- *  - `skillId`/`difficulty` ABSENTS → `onFail` s'applique AUTOMATIQUEMENT (T2C « les échardes infligent +5 Dégâts
+ *  - `skillId`/`difficulty` ABSENTS → `onFail` s'applique AUTOMATIQUEMENT (MSRC « les échardes infligent +5 Dégâts
  *    aux rameurs », sans Test).
  * PUR (mute les marins touchés via `applyOps`, RNG injecté).
  */
@@ -148,7 +148,7 @@ export function applyCrewHit(hull: Combatant, crew: Combatant[], crewTest: ShipC
   for (const sailor of victims) {
     const fails = crewTest.skillId && crewTest.difficulty
       ? !rollTest(testValue(sailor, crewTest.skillId), crewTest.difficulty, rng).success
-      : true; // pas de Test → dégâts automatiques (T2C rames)
+      : true; // pas de Test → dégâts automatiques (MSRC rames)
     if (fails) {
       applyOps(sailor, crewTest.onFail, { rng });
       hits.push({ crewId: sailor.id });
@@ -195,7 +195,7 @@ export function applyHullCritical(
   lines.push(...applyOps(hull, crit.ops, { rng, crew }));
 
   // Coup à l'équipage consécutif au Critique (`crewTest` data-driven) : poste tiré au sort (MDG « Canon
-  // détaché », Test) ou toute personne EXPOSÉE sur le pont (T2C gréement/superstructure, Test — ou rames,
+  // détaché », Test) ou toute personne EXPOSÉE sur le pont (MSRC gréement/superstructure, Test — ou rames,
   // automatique). Le canon reste à bord (≠ « Canon perdu », op `removeShipPoste`).
   let detachedPoste: { hits: { crewId: string }[] } | undefined;
   if (crit.crewTest) {
@@ -204,7 +204,7 @@ export function applyHullCritical(
     if (hits.length) lines.push(`${hits.length} membre(s) d'équipage encaisse(nt) le Critique (${crit.name}).`);
   }
 
-  // Éclats → effet data `set.shrapnelHit` (op `wounds` : 9 Dégâts en mer MDG / +5 en fleuve T2C) à autant de
+  // Éclats → effet data `set.shrapnelHit` (op `wounds` : 9 Dégâts en mer MDG / +5 en fleuve MSRC) à autant de
   // marins exposés que l'Indice (plafonné au nombre de marins). L'op JOURNALISE elle-même le Dégât réel
   // (mitigé BE/PA) → on capte ses lignes (comme les ops de coque ci-dessus), aucun littéral ni réintrospection.
   const shrapnel: { crewId: string }[] = [];

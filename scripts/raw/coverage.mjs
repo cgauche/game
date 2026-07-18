@@ -23,15 +23,15 @@ for (const d of DOCS) {
 // sites = direction de jeu, pas des règles PC) + front-matter (index/intro/préface) de tout livre.
 // Conservateur : on ne tague QUE le clairement-non-règle, pour ne jamais masquer un vrai trou de règle.
 // Livres d'AVENTURE purs : leurs chapitres-règles sont couverts (✅/catalogue) ; tout chapitre restant = scénario.
-const SCENARIO_BOOKS = new Set(['EDO', 'T2', 'T3', 'ACE', 'Ubersreik', 'NADAJ'])
+const SCENARIO_BOOKS = new Set(['EDO', 'MSR', 'PDT', 'ACE', 'AU1', 'NADJ'])
 // Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes).
 const HORS_REGLE = new Set([
   'LDB 52', 'LDB 53', 'LDB 54', 'LDB 55', 'LDB 56',
   'ADE I 1', 'ADE I 2', 'ADE I 3', 'ADE I 4', 'ADE I 5', 'ADE I 6',
   'ADE II 5', 'ADE II 6', 'ADE II 7',
-  'Middenheim 1', 'Middenheim 2', 'Middenheim 3', 'Middenheim 5', 'Middenheim 6',
+  'MCLB 1', 'MCLB 2', 'MCLB 3', 'MCLB 5', 'MCLB 6',
   'EDOC 2', 'EDOC 3', 'EDOC 5', 'EDOC 10', 'EDOC 11', 'EDOC 13', 'EDOC 14', 'EDOC 15', 'EDOC 16',
-  'T2C 2', 'T2C 3', 'T2C 5', 'T2C 6', 'T2C 8', 'T2C 10', 'T2C 11', 'T2C 17', 'T2C 18', 'T2C 19',
+  'MSRC 2', 'MSRC 3', 'MSRC 5', 'MSRC 6', 'MSRC 8', 'MSRC 10', 'MSRC 11', 'MSRC 17', 'MSRC 18', 'MSRC 19',
   'MDG 1', 'MDG 3', 'MDG 4', 'MDG 5', 'MDG 6', 'MDG 8', // gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles
 ])
 const isFrontMatter = (t) => /^index$|^introduction|avant-?propos|préface|^preface|^sommaire|^\*+$/i.test(t.trim())

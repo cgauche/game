@@ -20,7 +20,7 @@ export const APP_ROOT_MODULE = 'src/main.tsx'
 // pages-catalogues denses. Les faux `activites#dressage`/`entrainement`/`faites-moi-une-faveur`
 // viennent d'une plage FOLIO large (`activities.json` craft/learn → `LDB 23 l.50-191`) qui CONTIENT
 // déjà le topic → TOL-immune. À l'inverse TOL=0 casse de vrais folio-implémentés (colique : topic
-// `T2C 16 l.109-111` vs plage folio `l.65-105`, décalage folio↔fiche de 4 l. que TOL comble).
+// `MSRC 16 l.109-111` vs plage folio `l.65-105`, décalage folio↔fiche de 4 l. que TOL comble).
 // Tenu à 10 : `renderBlock` accepte un override `ctx.tol` (mesure) ; le remède des pages denses est
 // côté FOLIO (feature #434), pas TOL — écart rapporté à l'orchestrateur.
 export const TOL = 10
@@ -89,7 +89,7 @@ export function buildAbbrMap(books) {
   for (const b of books) {
     if (!b || typeof b.id !== 'string') continue
     knownIds.add(b.id)
-    if (typeof b.abbr !== 'string') continue
+    if (!b.dir) continue // seuls les livres EXTRAITS (avec dossier Source) portent le pont folio ; les 29 ont un abbr désormais
     if (!BOOK_ABBRS.has(b.abbr)) throw new Error(`books.json: abbr inconnue de BOOKS pour "${b.id}" → "${b.abbr}"`)
     bySlug.set(b.id, b.abbr)
   }
@@ -185,7 +185,7 @@ function spanOverlap(aLo, aHi, bLo, bHi) {
  *  (longueur d'intersection brute réfs↔plage) la reçoivent ; égalité = tous les ex æquo la gardent.
  *  Retourne Map<cit, Set<topic>>. Citations de LIGNE (code) non concernées.
  *  MESURE 2026-07-16 (`--dry --folio-exclusive`) : NE SÉPARE PAS → non adopté. Le décalage folio↔fiche
- *  fait que colique (réf fiche `T2C 16 l.109-111`, HORS de sa plage folio `l.65-105`) a un recouvrement
+ *  fait que colique (réf fiche `MSRC 16 l.109-111`, HORS de sa plage folio `l.65-105`) a un recouvrement
  *  NUL avec sa propre citation → volée par le voisin `vers-de-carie` (réf l.71-86, recouvre 16 l.) →
  *  colique RÉGRESSE en non implémenté ; et 2 dettes (dernieres-nouvelles/semer-la-dissension) restent
  *  implémentées. Gardé en expérience derrière le flag ; le vrai bruit est documenté à part. */
@@ -260,7 +260,7 @@ export function parseFiche(basename, content) {
     if (h) {
       nearestHeading = h[2].trim()
       if (h[1].length === 2) pending = []
-      // Réfs portées par la ligne de heading (`### Racine des Tombes (T2C 04 l.204-229)`) : rattachées
+      // Réfs portées par la ligne de heading (`### Racine des Tombes (MSRC 04 l.204-229)`) : rattachées
       // au segment que ce heading OUVRE (dans `pending`, consommé par le prochain champ) — jamais au
       // topic précédent (son champ a déjà vidé `pending`). Corrige les topics dont la SEULE réf vit
       // dans leur titre (sinon `refs = []`, « non implémenté » mécanique quel que soit le code).

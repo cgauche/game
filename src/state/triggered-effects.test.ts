@@ -264,7 +264,7 @@ describe('Affamé — Test de trigger onKill routé (cadence-aware)', () => {
   });
 });
 
-// ── Trigger `onOwnTestFailed` (T2C 16 — Crampes abdominales) + symptômes comme SOURCE du dispatcher ──
+// ── Trigger `onOwnTestFailed` (MSRC 16 — Crampes abdominales) + symptômes comme SOURCE du dispatcher ──
 import { fireOwnTestFailed, effectSourcesOf } from './triggeredEffects';
 
 const withCrampes = (over: Partial<Combatant> = {}): Combatant => mk({
@@ -274,7 +274,7 @@ const withCrampes = (over: Partial<Combatant> = {}): Combatant => mk({
 } as Partial<Combatant>);
 const cond = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name);
 
-describe('onOwnTestFailed — Crampes abdominales (T2C 16 l.152-158)', () => {
+describe('onOwnTestFailed — Crampes abdominales (MSRC 16 l.152-158)', () => {
   it('symptôme ACTIF = SOURCE du dispatcher (effectSourcesOf) : 3 effets, tous onOwnTestFailed', () => {
     const c = withCrampes();
     const src = effectSourcesOf(c).find((s) => s.key === 'symptom:crampes-abdominales');
@@ -408,7 +408,7 @@ describe('onOwnTestFailed — cadence-aware + seam central de cascade (correctio
 import { applyAttackResult } from './combatFlow';
 import type { AttackResult } from '../engine/combat';
 
-describe('onOwnTestFailed — jets d’ATTAQUE (attaquant ET défenseur, T2C 16)', () => {
+describe('onOwnTestFailed — jets d’ATTAQUE (attaquant ET défenseur, MSRC 16)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 

@@ -31,7 +31,7 @@ describe('Embuscade fluviale — scène compilée + roster', () => {
     expect(byId('enemy-enc-fluvial-5').ref).toBe('barge-fluviale');
   });
 
-  it('les coques fluviales portent les tables T2C data-driven (navire-fluvial + river-criticals)', () => {
+  it('les coques fluviales portent les tables MSRC data-driven (navire-fluvial + river-criticals)', () => {
     for (const id of ['barque-fluviale', 'barge-fluviale']) {
       const hull = findVehicleById(id)!.hull!;
       expect(hull.propulsion).toBe('fluvial');
@@ -43,12 +43,12 @@ describe('Embuscade fluviale — scène compilée + roster', () => {
 
 /**
  * Vérification BOUT-EN-BOUT (sans navigateur) : la barge SPAWN comme coque-véhicule, et un Coup Critique
- * encaissé se résout sur les tables du BATEAU FLUVIAL (T2C 7) — un État propre au fleuve (Dérive /
+ * encaissé se résout sur les tables du BATEAU FLUVIAL (MSRC 7) — un État propre au fleuve (Dérive /
  * Gouvernail brisé / Voie d'eau) apparaît sur la coque, JAMAIS un effet exclusivement MARITIME (En flammes
  * navire, table Cargaison MDG absente de `navire-fluvial`). C'est la preuve que le routage par données
  * (`hull.locationTable`/`criticalTable`) traverse toute la chaîne de combat.
  */
-describe('Embuscade fluviale — la coque encaisse un Critique T2C (pas de mer)', () => {
+describe('Embuscade fluviale — la coque encaisse un Critique MSRC (pas de mer)', () => {
   it('la barge amie spawn comme coque-véhicule fluviale (B60)', () => {
     const barge = spawnRoster().find((c) => c.id === 'enemy-enc-fluvial-5')!;
     expect(barge.bodyShape).toBe('vehicule');
@@ -56,7 +56,7 @@ describe('Embuscade fluviale — la coque encaisse un Critique T2C (pas de mer)'
     expect(barge.wounds.max).toBe(60);
   });
 
-  it('frapper la coque fluviale pose un État T2C (Dérive/Gouvernail brisé/Voie d’eau) et JAMAIS En flammes navire', () => {
+  it('frapper la coque fluviale pose un État MSRC (Dérive/Gouvernail brisé/Voie d’eau) et JAMAIS En flammes navire', () => {
     let riverEffect = false;
     for (let seed = 1; seed <= 80; seed++) {
       seedBattleRng(seed);

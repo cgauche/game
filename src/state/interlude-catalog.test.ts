@@ -3,7 +3,7 @@
  * (ACE 12 l.9-67) branchées dans le flux d'interlude :
  *  - gate géographique `where` résolu contre le lieu courant (carte du monde ↔ scène) ;
  *  - Pénitence : ±Péché (op sinMod), Exténué DIFFÉRÉ à la clôture, Maladresse → Colère des dieux ;
- *  - Tester des objets magiques : identification (voie ACE, coexiste avec l'ADE2) + Exposition ;
+ *  - Tester des objets magiques : identification (voie ACE, coexiste avec l'ADE II) + Exposition ;
  *  - Entraînement d'arme inhabituelle : `masteredWeapons` ;
  *  - Mécénat : dépôt ≥ 5 CO, retrait par Test d'Évaluation (bandes payoutPct) ;
  *  - Recherche universitaire : mémorisation avec remise (achat immédiat).
@@ -91,7 +91,7 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     expect(hero().sinPoints).toBe(1); // « réduisez vos Points de Péché de 1 » (LDB 40 l.53)
   });
 
-  // ── Tester des objets magiques (voie ACE — coexiste avec l'identification ADE2) ────────────────
+  // ── Tester des objets magiques (voie ACE — coexiste avec l'identification ADE II) ────────────────
   function armArtefact() {
     const h = hero();
     h.items = [...(h.items ?? []), { uid: 'art1', name: 'Amulette étrange', kind: 'trapping', qualities: [], enc: 0, equipped: false, identified: false } as never];
@@ -221,11 +221,11 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     expect(useGame.getState().pendingActivity).toBeNull(); // soldat sans Talent de lanceur
   });
 
-  it('les DEUX voies d’identification coexistent : ADE2 (Savoir Magie) ET ACE (Recherche, à Altdorf)', () => {
+  it('les DEUX voies d’identification coexistent : ADE II (Savoir Magie) ET ACE (Recherche, à Altdorf)', () => {
     armArtefact();
     const h = hero();
     h.skills.push({ skillId: 'savoir', spec: 'magie', characteristic: 'intelligence', advances: 10 } as never);
-    useGame.getState().interludeActivity(h.id, 'identify', { itemUid: 'art1' }); // voie ADE2 (Savoir Magie)
+    useGame.getState().interludeActivity(h.id, 'identify', { itemUid: 'art1' }); // voie ADE II (Savoir Magie)
     expect(useGame.getState().pendingActivity?.activityId).toBe('identify');
     useGame.getState().activityCancel();
     useGame.getState().interludeActivity(h.id, 'tester-objets-magiques', { itemUid: 'art1' }); // voie ACE

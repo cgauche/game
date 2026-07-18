@@ -38,7 +38,7 @@ export interface MapPlace {
    *  par `resolvePortRef`, `parseProject`) ; le type reste NON-partiel car tout consommateur aval lit
    *  `place.port` APRÈS résolution (jamais la forme sparse brute). */
   port?: { ref?: string } & import('../engine/seaVoyage').PortProfile & { lighthouse?: boolean };
-  /** Indices de COMMERCE TERRESTRE/FLUVIAL (Index géographique, T2C 13 l.183-278) — présent = ce Lieu
+  /** Indices de COMMERCE TERRESTRE/FLUVIAL (Index géographique, MSRC 13 l.183-278) — présent = ce Lieu
    *  offre des opportunités de commerce de cargaison (achat/vente/rumeurs). Taille + Richesse + colonne
    *  Produits, éditables par l'auteur (aucun index codé en dur). */
   market?: import('../engine/landCargo').LandMarketProfile;
@@ -128,14 +128,14 @@ export interface MapRoute {
   sea?: boolean;
   /** Cap DOMINANT du trajet (aspect du vent, MDG 13 l.262-270) — défaut 'ouest'. */
   seaHeading?: import('../engine/seaWeather').WindDirection;
-  /** Route FLUVIALE JOUÉE (T2C 7 « Navigation fluviale ») : en mode `barge`, la descente se joue jour par
+  /** Route FLUVIALE JOUÉE (MSRC 7 « Navigation fluviale ») : en mode `barge`, la descente se joue jour par
    *  jour (Test de Navigation, table des vents, périls, chavirage) au lieu d'un transport payant. Repli
    *  payant si aucun batelier/embarcation. Absent = barge en transport payant (comportement historique). */
   river?: boolean;
-  /** Périls de rivière tirés chaque jour sur une route fluviale JOUÉE (T2C 7 l.119-166, `river-perils.json`) :
+  /** Périls de rivière tirés chaque jour sur une route fluviale JOUÉE (MSRC 7 l.119-166, `river-perils.json`) :
    *  `perilId` (débris/rochers/eaux-peu-profondes/barrage) tiré à `chancePct` %. Data-driven, éditable. */
   riverPerils?: { perilId: string; chancePct: number }[];
-  /** Exposition HYDRIQUE de la descente (T2C 16 « Maladies transmises par l'eau », l.5-13) : à chaque
+  /** Exposition HYDRIQUE de la descente (MSRC 16 « Maladies transmises par l'eau », l.5-13) : à chaque
    *  étape à flot, un tirage à `chancePct` % déclenche l'Effet EXISTANT `waterExposure` (Test de Résistance
    *  modifié → maladie contractée). `source` = id du tableau 1 « Source d'eau » (choix d'auteur de la
    *  portion de fleuve : `grande-ville-marais`, `aval-grande-ville-8km`…), `mode` = `ingestion` (boire l'eau

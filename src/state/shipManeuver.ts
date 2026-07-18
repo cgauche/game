@@ -160,7 +160,7 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   // « Lissage » → op `moveMod` (M +1, l.293) ; « Peu maniable » → op `skillDRBonus` (Voile/Ramer, −1/niveau,
   // l.173, DISTINCT du Man) — lus en GameOp (`naval-traits.json`, langue unique) sur Traits+Améliorations.
   // #221 : op `skillDRBonus` ciblée par `testType` (ex. « manoeuvre ») — agnostique de skillId, cumulée.
-  // « Coque de course » → op `moveScale` (2×M, T2C 12 l.27) : facteur MULTIPLICATIF appliqué APRÈS les
+  // « Coque de course » → op `moveScale` (2×M, MSRC 12 l.27) : facteur MULTIPLICATIF appliqué APRÈS les
   // `moveMod` additifs (ordre canonique d'`effectiveMovement`). Le M de VOYAGE (route.speed/travelSpeed) suit un
   // autre modèle et n'en dépend pas — le 2× ne joue qu'ici, où le M du navire pilote la manœuvre tactique.
   const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
@@ -168,7 +168,7 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   return {
     baseM: Math.round(((baseM + navalMoveMod(navalTraits) + place.m + (overload?.mMod ?? 0)) * mult.num) / mult.den),
     manoeuvre: (vd?.manoeuvre ?? 0) + place.man + (overload?.manoeuvreDR ?? 0),
-    // « Bouteur » (T2C 12 l.66) → +20 au Test de Navigation pour diriger ; « Gréement de course » (l.137)
+    // « Bouteur » (MSRC 12 l.66) → +20 au Test de Navigation pour diriger ; « Gréement de course » (l.137)
     // → −10. Converti en DR d'équipage (`navalNavTestDR`, ÷10) — injecté ICI UNE fois (deriveManeuver/FromCrew),
     // jamais dans openCrewTestPending, pour ne pas double-compter.
     extraDR: navalSkillTestDR(navalTraits, skillId) + navalNavTestDR(navalTraits) + place.navDR,

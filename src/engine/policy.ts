@@ -343,11 +343,11 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'creation-signes-astraux',
     label: 'Signes astraux à la création',
-    ref: 'ADE2 3',
+    ref: 'ADE II 3',
     group: 'Création',
     kind: 'flag',
     default: true,
-    hint: 'Étape optionnelle ADE2 : un signe astral (1d100, +25 PX si le tirage est gardé) qui modifie les attributs de départ ou octroie un Talent, plus l’ascendant et les demeures célestes (flavor). Désactiver retire l’étape du créateur.',
+    hint: 'Étape optionnelle ADE II : un signe astral (1d100, +25 PX si le tirage est gardé) qui modifie les attributs de départ ou octroie un Talent, plus l’ascendant et les demeures célestes (flavor). Désactiver retire l’étape du créateur.',
   },
   {
     id: 'market-mode',
@@ -541,7 +541,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'psych-acquisition-optional',
     label: 'Acquisition de Traits psychologiques',
-    ref: 'ADE2 Annexe I',
+    ref: 'ADE II Annexe I',
     group: 'Psychologie',
     kind: 'flag',
     default: false,

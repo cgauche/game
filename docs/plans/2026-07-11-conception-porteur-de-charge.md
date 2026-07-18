@@ -72,7 +72,7 @@ migre du groupe vers le porteur réel, UN mécanisme de transfert entre porteurs
   (`peripeties.ts:16`) → journalisée telle quelle, **aucun retrait de cargaison/or**. Les Rencontres
   dangereuses d'EDOC (`travelEncounter.ts`) ne rendent qu'une CATÉGORIE de table, sans effet cargo. Le RAW
   ne chiffre pas une perte de marchandise terrestre → **house-rule paramétrable** si on veut la matérialiser.
-- **Fluvial / naval — RAW EXISTE (voie d'eau).** Combat naval MDG/T2C (Atlas `catalogue-divers.md`) :
+- **Fluvial / naval — RAW EXISTE (voie d'eau).** Combat naval MDG/MSRC (Atlas `catalogue-divers.md`) :
   - l.1213 (bateau qui prend l'eau) : « **Si la cargaison n'est pas étanche, elle perd d10 pourcentage de
     sa valeur jusqu'à ce qu'elle soit sauvée.** »
   - l.1178 (bateau ouvert type barque) : « Un coup qui touche l'équipage sur un bateau ouvert […] peut

@@ -139,7 +139,7 @@ Vous fouillez dans un sac, une poche ou un chapeau, ou sous un rocher, une souch
 Vous touchez vos cibles, drainant leur vie. Ce Sort est considéré comme un *Projectile magique* avec Dégât +0 qui ignore les PA. Puis vous Guérissez 1 Point de Blessure.
 
 
-# **Éblouissant**
+<span id="page-242-0" data-folio="241"></span># **Éblouissant**
 
 **NI :** 0
 
@@ -341,7 +341,7 @@ Vous créez une arme de Corps à corps dont les Dégâts sont égaux à votre Bo
 Vous gagnez +1 PA à toutes les Localisations en vous enveloppant dans un nuage de magie protectrice.
 
 
-#### **Attaques en chaîne**
+<span id="page-244-0" data-folio="243"></span>#### **Attaques en chaîne**
 
 **NI :** 6
 
@@ -432,7 +432,7 @@ Vous créez un dôme d'énergie magique au-dessus des têtes, bloquant les attaq
 En vous recouvrant de magie, vous devenez effrayant et intimidant. Gagnez *Peur 1*. Pour chaque +3 DR, vous pouvez augmenter votre valeur de *Peur* de 1.
 
 
-### **Enchevêtrement**
+<span id="page-245-0" data-folio="244"></span>### **Enchevêtrement**
 
 **NI :** 3
 
@@ -1143,7 +1143,7 @@ Les Sorts lancés depuis le Domaine des Ombres le sont de manière furtive, tout
 toute discrétion. N'importe lequel des Sorts de protection que vous lancerez vous enveloppera dans les ombres et dans des volutes de fumée, vous rendant immatériel, permettant même parfois que les lames vous traversent sans vous blesser. De plus, les Sorts lancés depuis le Domaine des Ombres ignorent tous les PA non magiques.
 
 
-**Composants :** tout objet utilisé pour se cacher ou se dissimuler peut être un composant gris ; cela comprend entre autres le maquillage, les parfums, les foulards, les lunettes, les miroirs et les perruques. Les objets utilisés par des professions versées dans les intrigues, comme les artefacts diplomatiques, les symboles de rang et, l'expression ultime du pouvoir – l'épée – sont utilisés très fréquemment.
+<span id="page-253-0" data-folio="252"></span>**Composants :** tout objet utilisé pour se cacher ou se dissimuler peut être un composant gris ; cela comprend entre autres le maquillage, les parfums, les foulards, les lunettes, les miroirs et les perruques. Les objets utilisés par des professions versées dans les intrigues, comme les artefacts diplomatiques, les symboles de rang et, l'expression ultime du pouvoir – l'épée – sont utilisés très fréquemment.
 
 # **Destrier d'Ombre**
 
@@ -1670,7 +1670,7 @@ Vous focalisez des filaments résultant du mélange contre nature de certains Ve
 
 # • MENEUR DE JEU •
 
-Être le Meneur de jeu (MJ) est la meilleure chose qui soit. Alors que les Joueurs sont occupés avec leur unique et misérable personnage, vous êtes à la tête du monde tout entier ! Si vous êtes un MJ débutant, cela peut paraître un peu intimidant, mais ne vous inquiétez pas, vous prendrez rapidement le coup, et nous vous présentons ici les bases du rôle.
+<span id="page-259-0" data-folio="258"></span>Être le Meneur de jeu (MJ) est la meilleure chose qui soit. Alors que les Joueurs sont occupés avec leur unique et misérable personnage, vous êtes à la tête du monde tout entier ! Si vous êtes un MJ débutant, cela peut paraître un peu intimidant, mais ne vous inquiétez pas, vous prendrez rapidement le coup, et nous vous présentons ici les bases du rôle.
 
 La responsabilité la plus importante d'un MJ est de s'assurer que tout le monde s'amuse, vous y compris. Vous jonglez avec les rôles de conteur, d'arbitre et d'hôte, mais ne perdez pas de vue que la raison pour laquelle tout le monde joue est de passer un bon moment. Équilibrez vos narrations en offrant aux Joueurs des moments de gloire et de l'autonomie dans leurs actions. Si une scène ne fonctionne pas, bouclez-la rapidement et avancez. Équilibrez les règles du jeu en tenant compte du plaisir de chacun – si quelque chose semble contre-intuitif ou prend trop de temps, changez-le. Concentrez-vous toujours sur ce que votre groupe trouve amusant.
 
@@ -1770,7 +1770,7 @@ Veillez cependant à ne pas être trop dirigiste avec ces événements – perso
 Voyager à travers le Vieux Monde peut se révéler dangereux. Brigands, mutants et bêtes se tapissent dans les ombres, une menace omniprésente qui peut s'ajouter à ceux qui tentent de déjouer les actions des Joueurs. Certaines parties de l'Empire sont corrompues par la magie, le Chaos, la Nécromancie ou pire, et peuvent facilement inquiéter les voyageurs imprudents. Même les conditions météorologiques constituent une menace !
 
 
-C'est à vous de décider de votre présentation des dangers du voyage. Parfois vous voudrez simplement poursuivre l'aventure et le traiter par une simple description de sa durée et de ses étapes clefs. La plupart des périples se feront, soit par la route soit par la rivière, la route étant l'option la plus dangereuse, mais la moins chère.
+<span id="page-263-0" data-folio="262"></span>C'est à vous de décider de votre présentation des dangers du voyage. Parfois vous voudrez simplement poursuivre l'aventure et le traiter par une simple description de sa durée et de ses étapes clefs. La plupart des périples se feront, soit par la route soit par la rivière, la route étant l'option la plus dangereuse, mais la moins chère.
 
 ### **Voyager par la route**
 
@@ -1824,7 +1824,7 @@ Un jeu centré sur l'intrigue permet parfois une attaque d'hommes-bêtes, claire
 Retrouver incendiées les caravanes du cirque, un peu plus tard, lors du voyage, est une façon poignante de rendre personnelles les actions des antagonistes. Les péripéties de voyage sont aussi parfaites pour annoncer les événements à venir, ou renforcer les thèmes d'une aventure.
 
 
-C'est à vous de décider à quel point vous voulez qu'elles représentent un problème pour vos Joueurs. Certaines peuvent simplement se réduire à une brève description, alors que d'autres peuvent former la base d'une séance de jeu toute entière. Certains MJ préfèrent lancer 1d10 par jour de voyage et faire survenir un événement sur un résultat de 8 (représentant le symbole à 8 pointes du Chaos – quelque chose d'inattendu et d'aléatoire est arrivé), d'autres préfèrent un seul événement pour chaque voyage d'un jour ou plus. C'est à vous de le déterminer mais si vous jouez à une aventure officielle qui inclut un voyage, les péripéties suggérées et les temps de trajet seront inclus. Le tableau suivant peut donc être utilisé comme vous le souhaitez, et propose un événement pour le voyage effectué.
+<span id="page-264-0" data-folio="263"></span>C'est à vous de décider à quel point vous voulez qu'elles représentent un problème pour vos Joueurs. Certaines peuvent simplement se réduire à une brève description, alors que d'autres peuvent former la base d'une séance de jeu toute entière. Certains MJ préfèrent lancer 1d10 par jour de voyage et faire survenir un événement sur un résultat de 8 (représentant le symbole à 8 pointes du Chaos – quelque chose d'inattendu et d'aléatoire est arrivé), d'autres préfèrent un seul événement pour chaque voyage d'un jour ou plus. C'est à vous de le déterminer mais si vous jouez à une aventure officielle qui inclut un voyage, les péripéties suggérées et les temps de trajet seront inclus. Le tableau suivant peut donc être utilisé comme vous le souhaitez, et propose un événement pour le voyage effectué.
 
 | 1d10 | Péripéties                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |  |  |  |
 |------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|--|

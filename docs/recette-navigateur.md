@@ -301,7 +301,7 @@ seul enchaînement. `forceShipwreck()` bypass ce piège en appelant `beginShipwr
 (MÊME fonction que `runSeaDay`/`checkBattleOver` sur un naufrage réel), sans course contre les
 appliers du jour.
 
-## Maladies réactives — trigger `onOwnTestFailed` (Crampes abdominales, T2C 16)
+## Maladies réactives — trigger `onOwnTestFailed` (Crampes abdominales, MSRC 16)
 
 Les Crampes abdominales (symptôme de `colique` / des Vers) réagissent à **tout Test RATÉ du porteur** :
 DR ≤ −2 → *Sonné* ; DR ≤ −4 → Test de **Force Mentale** (palier 2) ou *À Terre* ; DR ≤ −6 → *Inconscient*

@@ -173,8 +173,8 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
 // ── Activités (ch.23) — flux de jet par modale (fabrique rollFlow) ────────────────────────────
 
 /** Jet d'Activité en attente (modale) : Revenus / lancer d'Artisanat (Test étendu) / Apprentissage /
- *  Identification d'artefact (ADE2 4) / Activité du CATALOGUE data-driven (`activities.json` —
- *  Convalescence ADE2, Activités d'Altdorf ACE Annexe I). */
+ *  Identification d'artefact (ADE II 4) / Activité du CATALOGUE data-driven (`activities.json` —
+ *  Convalescence ADE II, Activités d'Altdorf ACE Annexe I). */
 export interface PendingActivity extends PendingBase {
   heroId: string;
   /** TOUTES les Activités à jet passent par le CATALOGUE data-driven (`activities.json` + `resolver`). */
@@ -194,7 +194,7 @@ export interface PendingActivity extends PendingBase {
   talent?: string;
   xpCost?: number;
   tutorBrass?: number;
-  /** Identifier un artefact (ADE2) / Tester un objet magique / Entraînement d'arme (ACE) : objet visé
+  /** Identifier un artefact (ADE II) / Tester un objet magique / Entraînement d'arme (ACE) : objet visé
    *  dans l'inventaire du héros. */
   itemUid?: string;
   /** Activité du CATALOGUE (`kind:'catalog'`) : id de l'`ActivityDef` (`activities.json`). */
@@ -430,13 +430,13 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     skillValue = combatValue(h, kind, buildWeapon({ name: item.name, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
     skillLabel = refLabel('skills', { id: kind === 'melee' ? 'corps-a-corps' : 'projectiles' });
   } else if (def.resolver === 'identify') {
-    // Identifier un artefact (ADE2 4 l.41) : « Pour d'autres sorciers » (sans le Talent Détection
+    // Identifier un artefact (ADE II 4 l.41) : « Pour d'autres sorciers » (sans le Talent Détection
     // d'artefact) → Test de Savoir (Magie) Intermédiaire (+0). Savoir est AVANCÉE : il faut l'avoir.
     const item = (h.items ?? []).find((i) => i.uid === opts.itemUid);
     if (!item || item.identified !== false) return; // rien à identifier
     const savoir = h.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
     if (!savoir) {
-      get().log(`${h.name} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE2 : la voie des sorciers).`);
+      get().log(`${h.name} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE II : la voie des sorciers).`);
       return;
     }
     skillValue = testValue(h, savoir.skillId, undefined, savoir.spec);
@@ -635,7 +635,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       };
     }
     case 'identify': {
-      // Identifier un artefact magique (ADE2 4 l.43-52) — table de DR complète, mappée sur le modèle
+      // Identifier un artefact magique (ADE II 4 l.43-52) — table de DR complète, mappée sur le modèle
       // `identified`/`magicKnown`/`suspectedQualities` :
       //   +6 ou plus (Stupéfiant) : identifie parfaitement + TOUTES ses Particularités.
       //   +4 à +5 (Impressionnant) : identifie l'objet et sait s'il a des Particularités.
@@ -694,7 +694,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
     }
     case 'identifyByResearch': {
       // ACE 12 l.33-42 : ≥ +4 DR = étude en profondeur (plein potentiel + dangers) ; succès ≤ +3 =
-      // fonction principale — mappés sur le modèle EXISTANT identified/magicKnown (comme l'ADE2).
+      // fonction principale — mappés sur le modèle EXISTANT identified/magicKnown (comme l'ADE II).
       const it = (h.items ?? []).find((i) => i.uid === pa.itemUid);
       if (!it) return { lines: [] };
       if (pa.sl >= 4) {
@@ -794,7 +794,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
   }
 }
 
-/** Fausses Particularités (ADE2 : échec Impressionnant/Stupéfiant — « soupçonne que l'objet possède
+/** Fausses Particularités (ADE II : échec Impressionnant/Stupéfiant — « soupçonne que l'objet possède
  *  une/au moins deux Particularité(s) qu'il n'a pas réellement ») : Atouts plausibles du registre,
  *  hors qualités réellement portées par l'objet. */
 function falseQualities(item: { kind: string; qualities: QualityInstance[] }, count: number): string[] {
@@ -971,7 +971,7 @@ export function confirmActivity(get: Get, set: Set): void {
     }
   }
   // SEAM `onOwnTestFailed` (chemin JOUEUR hors combat — Activité d'interlude) : un Test d'Activité RATÉ émet
-  // le trigger (Crampes abdominales : rate l'Artisanat → Sonné, T2C 16 l.152). AVANT l'écriture UNIQUE : les
+  // le trigger (Crampes abdominales : rate l'Artisanat → Sonné, MSRC 16 l.152). AVANT l'écriture UNIQUE : les
   // mutations Sonné (palier 1/3) sont captées par l'écriture party ci-dessous, aucun set brut de plus.
   // CADENCE-AWARE : `set` threadé → le sous-Test de FM (palier 2) d'un héros s'ouvre en MODALE de jet scène
   // (`routeTriggeredTest` hors combat), jamais inline (« un jet = une modale » vaut hors combat) ; la modale

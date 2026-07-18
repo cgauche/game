@@ -48,19 +48,19 @@ test('plage l.X-Y : la borne HAUTE est vérifiée', () => {
   })
 })
 
-test('réf « autre livre » (T2C 16 l.99999) hors borne → détectée via otherRe', () => {
-  withTempSrcDir('x.ts', '// T2C 16 l.99999 déborde franchement\n', (dir) => {
+test('réf « autre livre » (MSRC 16 l.99999) hors borne → détectée via otherRe', () => {
+  withTempSrcDir('x.ts', '// MSRC 16 l.99999 déborde franchement\n', (dir) => {
     const dead = scanDeadCodeRefs(dir)
     assert.equal(dead.length, 1)
-    assert.equal(dead[0].abbr, 'T2C')
+    assert.equal(dead[0].abbr, 'MSRC')
   })
 })
 
-test('réf « autre livre » en PLAGE (T2C 13 l.5-9999) : la borne HAUTE de la plage est vérifiée, pas juste la borne basse', () => {
-  withTempSrcDir('x.ts', '// T2C 13 l.5-9999 plage qui déborde par le HAUT\n', (dir) => {
+test('réf « autre livre » en PLAGE (MSRC 13 l.5-9999) : la borne HAUTE de la plage est vérifiée, pas juste la borne basse', () => {
+  withTempSrcDir('x.ts', '// MSRC 13 l.5-9999 plage qui déborde par le HAUT\n', (dir) => {
     const dead = scanDeadCodeRefs(dir)
     assert.equal(dead.length, 1)
-    assert.equal(dead[0].abbr, 'T2C')
+    assert.equal(dead[0].abbr, 'MSRC')
     assert.equal(dead[0].hi, 9999)
   })
 })

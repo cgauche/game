@@ -55,14 +55,14 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   Entraînement à une arme inhabituelle, Tester des objets magiques, Mécénat, Recherche universitaire) — cf. `activities.json`
   (`book: "altdorf-couronne-de-l-empire"`, l'id de `books.json` ; `where: ["altdorf"]`). Le reste du livre = contenu de campagne (tout passage de
   règle supplémentaire s'ajoute au périmètre ici, arbitrage 2026-07-10). Comme AA/ZI/MDG : extraction curée à la main.
-- **T2C** (Mort sur le Reik – Compagnon) = `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/`
+- **MSRC** (Mort sur le Reik – Compagnon) = `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/`
   (19 chapitres extraits) — autorisé 2026-07-10 (#277). Périmètre constaté : **ch.5 « Navigation
   fluviale »** (tables de `river-navigation.json`/`river-perils.json`, critiques fluviaux
   `river-criticals.json`), **ch.10 « Personnalisation »** (8 traits navals d'aménagement de
   `naval-traits.json` : bouteur, murs blindés, coque de course, safran, plat-bord, allègement, gréement de
   course, fourquines), **ch.13 « Bestiaire fluvial »** (créatures), **ch.14 « Maladies transmises par
   l'eau »** (maladies/symptômes/états, `water-exposure.json`), véhicules fluviaux. Curation à la main.
-- **NADAJ** (Nuits agitées & dures journées) = `Source/Warhammer v4 - Nuits agitees & dures journées/` —
+- **NADJ** (Nuits agitées & dures journées) = `Source/Warhammer v4 - Nuits agitees & dures journées/` —
   autorisé 2026-07-10 (arbitrage par-passage). Périmètre constaté : **appendice I « Gnomes »**
   (espèce jouable, `species.json`), **« Jeux de taverne »** (`tavernGames.json`), 3 entrées `gods.json`,
   1 talent, 1 trapping.

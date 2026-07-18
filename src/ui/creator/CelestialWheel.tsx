@@ -1,5 +1,5 @@
 /**
- * Roue céleste (arbitrage user 2026-07-13) — sélecteur cérémoniel du Signe astral (ADE2 3) en
+ * Roue céleste (arbitrage user 2026-07-13) — sélecteur cérémoniel du Signe astral (ADE II 3) en
  * remplacement du `<select>` nu jugé « catastrophe de densité ». L'ASTROLABE DE LAITON de la planche
  * ratifiée (`docs/plans/2026-07-14-maquettes-createur/planche-creator-FINALE.html`, mock « 4 — Signe
  * astral », l'étalon du lot « ossature enforcée » #393) : géométrie et matières AUX VALEURS de la

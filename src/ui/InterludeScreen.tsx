@@ -471,7 +471,7 @@ function HeroCard({ hero, st, money, catalog, mecenat, favors, massBattle, canDr
 }
 
 /** Slot GAUCHE du maître-détail (`MasterDetail`) : liste des Activités du héros — les 6 activités
- *  « socle » (LDB/ADE2, volets dédiés) + les Activités du catalogue SANS volet dédié (Mécénat
+ *  « socle » (LDB/ADE II, volets dédiés) + les Activités du catalogue SANS volet dédié (Mécénat
  *  exclu : variante du volet Banque). Filtre si la liste est longue (`SearchFilterField`). */
 function ActivityList({ st, catalog, favors, pane, onPane, canDrive, none, ownerName }: {
   st: InterludeHeroState; catalog: ActivityDef[];
@@ -506,7 +506,7 @@ function ActivityList({ st, catalog, favors, pane, onPane, canDrive, none, owner
     item('learn', <><Icon id={PANE_ICON.learn} size="sm" /> Apprentissage</>, 'Apprendre un Talent hors carrière auprès d’un tuteur (Test Difficile −20 ; PX et argent perdus sur un échec)', 'Apprentissage'),
     item('order', <><Icon id={PANE_ICON.order} size="sm" /> Commande</>, 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure', 'Commande'),
     item('bank', <><Icon id={PANE_ICON.bank} size="sm" /> Banque</>, 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)', 'Banque'),
-    item('identify', <><Icon id={PANE_ICON.identify} size="sm" /> Identifier</>, 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE2)', 'Identifier'),
+    item('identify', <><Icon id={PANE_ICON.identify} size="sm" /> Identifier</>, 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE II)', 'Identifier'),
     item('entrainement', <><Icon id={PANE_ICON.entrainement} size="sm" /> Entraînement</>, 'S’entraîner à une Compétence ou une Caractéristique hors carrière avec un tuteur (PX + 1d10 sc, sans jet)', 'Entraînement'),
     // « Acquitter une Faveur » (LDB 23 l.147/149, #509) — visible seulement si une Faveur est en cours.
     ...(favors.length ? [item('favor-settle', <><Icon id="ui/balance" size="sm" /> Acquitter une Faveur</>, 'Consacrer une Activité à l’acquittement d’une Faveur due (LDB 23)', 'Acquitter une Faveur')] : []),
@@ -941,7 +941,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
   );
 }
 
-/** Identifier un artefact (ADE2 4) : choisir un objet NON identifié du sac — une semaine
+/** Identifier un artefact (ADE II 4) : choisir un objet NON identifié du sac — une semaine
  *  d'étude par tentative, Test de Savoir (Magie) Intermédiaire (+0). */
 function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boolean; desc?: string }) {
   const activity = useGame((s) => s.interludeActivity);
@@ -951,7 +951,7 @@ function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boo
   const blocked = !items.length
     ? `Aucun objet non identifié dans le sac de ${hero.name}.`
     : !savoir
-      ? `${hero.name} ne possède pas Savoir (Magie) — la longue étude d'un artefact est la voie des sorciers (ADE2).`
+      ? `${hero.name} ne possède pas Savoir (Magie) — la longue étude d'un artefact est la voie des sorciers (ADE II).`
       : null;
   return (
     <ActivityPane

@@ -625,7 +625,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
 
   const itemStats = (it: ItemInstance): ReactNode => {
     // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat) ;
-    // une identification RATÉE de beaucoup (ADE2) peut y ancrer de FAUSSES certitudes, affichées telles.
+    // une identification RATÉE de beaucoup (ADE II) peut y ancrer de FAUSSES certitudes, affichées telles.
     // Identifié : qualités = chips canoniques (`QualityChips`, popover Codex).
     const quals: ReactNode = it.identified === false
       ? (it.suspectedQualities?.length ? `soupçonné : ${it.suspectedQualities.join(', ')}` : null)

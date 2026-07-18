@@ -351,7 +351,7 @@ export const fr = {
   'op.frag.during': ' pendant {dureeTxt}',
   'op.frag.allMagic': 'magie',
   'op.frag.allDiseases': 'toutes les maladies',
-  // ── Exposition hydrique (T2C 16 — Maladies transmises par l'eau). ──
+  // ── Exposition hydrique (MSRC 16 — Maladies transmises par l'eau). ──
   'eff.waterTitle': 'Eau souillée',
   'eff.waterExposure': 'Exposition hydrique ({mode}){detail}',
   'eff.waterSafe': '{name} ne contracte rien au contact de l’eau souillée.',

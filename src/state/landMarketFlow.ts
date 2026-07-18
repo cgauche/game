@@ -1,7 +1,7 @@
 /**
  * ÉCRAN MARCHÉ TERRESTRE / FLUVIAL (Mort sur le Reik Compagnon ch.11 « Règles du commerce ») — le PENDANT
  * TERRESTRE de `portFlow` (commerce maritime, MDG 15). Même SHAPE « acheter bas / transporter / revendre »
- * orchestrée côté state contre le moteur PUR `engine/landCargo` (déjà testé) ; SEULES les formules du RAW T2C
+ * orchestrée côté state contre le moteur PUR `engine/landCargo` (déjà testé) ; SEULES les formules du RAW MSRC
  * diffèrent du maritime (disponibilité en 2 temps, qualité secrète du Vin, Demande/Mise à prix, bradage à ½) →
  * elles vivent dans `landCargo.ts`, ce flux ne fait que les jouer.
  *
@@ -56,7 +56,7 @@ export interface LandOffer {
 
 /** État MARCHÉ TERRESTRE ouvert (généré une fois à l'arrivée — les d100 de disponibilité ne se re-tirent pas
  *  par rendu, comme l'écran Port). La rumeur commerciale n'est PAS ici : elle vit sur le board persistant
- *  `store.tradeRumours` (T2C 13 l.180 : elle vise un AUTRE Lieu), consultée dans l'écran Marché. */
+ *  `store.tradeRumours` (MSRC 13 l.180 : elle vise un AUTRE Lieu), consultée dans l'écran Marché. */
 export interface LandMarketState {
   placeId: string;
   label: string;
@@ -82,7 +82,7 @@ export function currentMarket(get: Get): { placeId: string; label: string; marke
   return { placeId: place.id, label: place.label, market: place.market };
 }
 
-/** Génère les offres d'ACHAT à l'arrivée (T2C 13 l.22-42) : disponibilité en 2 temps — d'abord une CHANCE de
+/** Génère les offres d'ACHAT à l'arrivée (MSRC 13 l.22-42) : disponibilité en 2 temps — d'abord une CHANCE de
  *  trouver un marchand ((Taille+Richesse)×10 %, `rollFindMerchant`), puis la TAILLE de chaque cargaison
  *  (`rollCargoQuantity`). Un Emplacement « Commerce » ajoute une cargaison ALÉATOIRE de la table saisonnière. */
 export function openLandMarket(get: Get, set: Set): void {
@@ -110,7 +110,7 @@ export function openLandMarket(get: Get, set: Set): void {
   const hostLine = market.hostLine ?? marcheDef?.hostLine;
   const backdrop = market.backdrop ?? marcheDef?.backdrop;
   set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers, hostLine, backdrop } });
-  // Rumeurs commerciales (T2C 13 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, on
+  // Rumeurs commerciales (MSRC 13 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, on
   // tire un AUTRE Emplacement puis une rumeur (Tableau des rumeurs) → les biens visés s'y vendent au DOUBLE
   // du prix de base (l.180). L'« index géographique du Reikland » (l.180) est ici la liste des Lieux de la
   // carte porteurs d'un `market` (aucun catalogue neuf). #274 sweep : ce Test était un `rollTest` inline
@@ -129,7 +129,7 @@ registerCascadeApplier(LAND_GOSSIP_KIND, (get, set, step) => {
   return {};
 });
 
-/** Génère une RUMEUR CROSS-LIEU (T2C 13 l.180) : tire un AUTRE Lieu à `market` de la carte, puis une
+/** Génère une RUMEUR CROSS-LIEU (MSRC 13 l.180) : tire un AUTRE Lieu à `market` de la carte, puis une
  *  rumeur (Tableau des rumeurs) désignant les biens qui s'y vendent au double. Ajoutée au board persistant
  *  `store.tradeRumours` (dédupliquée : même Lieu + mêmes biens ne s'empile pas). Le RAW ne donne aucune
  *  échéance ni consommation par vente (« autant qu'ils le souhaitent ») → elle demeure sur le board.
@@ -152,7 +152,7 @@ export function generateTradeRumour(get: Get, set: Set, currentPlaceId: string, 
   };
   set({ tradeRumours: [...board, rumour] });
   const biensTxt = rumour.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ');
-  log(get, set, [`Rumeur au marché : ${biensTxt} se vendraient le double à ${target.label} (T2C 13 l.180).`]);
+  log(get, set, [`Rumeur au marché : ${biensTxt} se vendraient le double à ${target.label} (MSRC 13 l.180).`]);
 }
 
 /** ÉVALUATION de la qualité SECRÈTE d'un lot de Vin/Eau-de-vie proposé (l.95) : Test d'Évaluation, difficulté
@@ -206,12 +206,12 @@ export function moveCargo(get: Get, set: Set, fromId: string, toId: string, carg
   log(get, set, [`${res.moved} Enc de ${label} transférés de ${from.label} vers ${to.label}.`]);
 }
 
-/** Magnitude d'un Marchandage gagné (LDB 60, cité T2C 13 l.127) : ±10 %, ±20 % si Négociateur ou DR net Stupéfiant. */
+/** Magnitude d'un Marchandage gagné (LDB 60, cité MSRC 13 l.127) : ±10 %, ±20 % si Négociateur ou DR net Stupéfiant. */
 function bargainPct(winnerNegotiator: boolean, netSL: number): number {
   return winnerNegotiator || netSL >= SL_ASTOUNDING ? 20 : 10;
 }
 
-/** ACHAT d'une cargaison (T2C 13 l.129-131) : prix = Enc × prix de base, modulé par le Marchandage opposé et
+/** ACHAT d'une cargaison (MSRC 13 l.129-131) : prix = Enc × prix de base, modulé par le Marchandage opposé et
  *  majoré de +10 % si LOT PARTIEL (l.131). Débité, CHARGÉ sur le porteur de défaut du groupe (navire /
  *  véhicule / bête, `primaryCargoCarrier`) dans la limite de sa Contenance (plafond DUR, #327). */
 export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): void {
@@ -223,7 +223,7 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   if (want <= 0) { log(get, set, ['Rien à acheter.']); return; }
   // Lot minimal (l.131) : « Les marchands ne sont pas du tout intéressés par la vente de cargaisons de moins
   // de 10 Points d'Encombrement et orienteront plutôt les Personnages vers un marché. »
-  if (want < minCargoEnc) { log(get, set, [`Les marchands ne cèdent pas de lot de moins de ${minCargoEnc} Points d'Encombrement (T2C 13 l.131).`]); return; }
+  if (want < minCargoEnc) { log(get, set, [`Les marchands ne cèdent pas de lot de moins de ${minCargoEnc} Points d'Encombrement (MSRC 13 l.131).`]); return; }
   // Contenance = plafond RÉEL (#327) : il faut un porteur, et le lot doit tenir dans sa place libre.
   const carrier = primaryCargoCarrier(get());
   if (!carrier) { log(get, set, ['Aucune bête de somme ni véhicule pour transporter une cargaison — procurez-vous un chariot ou une monture de bât (EDOC 7).']); return; }
@@ -259,7 +259,7 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   log(get, set, [`${want} Enc de ${offer.label} chargés sur ${carrier.label} — ${bargainLine}${partial ? ' Lot partiel : +10 % (l.131).' : ''} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
 }
 
-/** VENTE d'un lot du convoi (T2C 13 l.133-160) : trouver un acheteur (Demande = Taille×10, +30 si Commerce),
+/** VENTE d'un lot du convoi (MSRC 13 l.133-160) : trouver un acheteur (Demande = Taille×10, +30 si Commerce),
  *  Mise à prix (% du prix de base par Richesse), Marchandage opposé. Un échec autorise une 2ᵉ tentative sur
  *  la moitié du lot (l.146). Retire le lot vendu, crédite la bourse. */
 export function landSellCargo(get: Get, set: Set, carrierId: string, cargoIndex: number): void {
@@ -325,7 +325,7 @@ export function landDumpCargo(get: Get, set: Set, carrierId: string, cargoIndex:
   if (!lot) return;
   const pct = landDumpingPct(st.market);
   const label = findLandCargoById(lot.cargoId)?.label ?? lot.cargoId;
-  if (pct == null) { log(get, set, [`${label} : ce lieu ne brade pas les cargaisons (pas de Commerce en Produits, T2C 13 l.160).`]); return; }
+  if (pct == null) { log(get, set, [`${label} : ce lieu ne brade pas les cargaisons (pas de Commerce en Produits, MSRC 13 l.160).`]); return; }
   const gross = Math.max(0, Math.round(lot.enc * lot.basePriceGold * (pct / 100)));
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),

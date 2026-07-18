@@ -12,7 +12,7 @@ import { statblockToCombatant } from '../../state/spawn';
 import creatures from '../../data/creatures.json';
 import type { Combatant } from '../types';
 
-/** Câblage du Trait « Marque de Tzeentch » (EDOC 9 l.522-524, #568) — chaque canal RAW prouvé isolément.
+/** Câblage du Trait « Marque de Tzeentch » (EDOC 13 l.522-524, #568) — chaque canal RAW prouvé isolément.
  *  PLUS LÉGER que Marque de Khorne (#516) : ni Frénésie ni blocage d'incantation (non RAW pour Tzeentch). */
 
 const bearer = (): Combatant => {
@@ -49,7 +49,7 @@ describe('Marque de Tzeentch — câblage (#568)', () => {
     expect(groupsFor({ traits: [{ id: 'marque-de-tzeentch' }] })).toContain('tzeentch');
   });
 
-  it('Réciproque (EDOC 9 l.522-524) : un disciple de Nurgle éprouve Animosité envers le porteur VISIBLE', () => {
+  it('Réciproque (EDOC 13 l.522-524) : un disciple de Nurgle éprouve Animosité envers le porteur VISIBLE', () => {
     const nurgleFollower = {
       id: 'nurgle-1', name: 'Porte-Peste', kind: 'enemy', groups: [],
       psychTraits: [{ type: 'animosite' as const, cible: 'tzeentch' }],
@@ -112,7 +112,7 @@ describe('Marque de Tzeentch — câblage (#568)', () => {
     expect(parsePsychTraits(traits).psychTraits).toEqual([{ type: 'animosite', cible: 'nurgle' }]);
   });
 
-  it('Mutations au spawn : ⌈1d10/3⌉ tirages ALTERNÉS mentale→physique sur les tables Tzeentch (EDOC 9 l.522-524)', () => {
+  it('Mutations au spawn : ⌈1d10/3⌉ tirages ALTERNÉS mentale→physique sur les tables Tzeentch (EDOC 13 l.522-524)', () => {
     const spec = markMutationsAtSpawn([{ id: 'marque-de-tzeentch' }]);
     expect(spec).toEqual({ countDie: 10, countDivide: 3, first: 'mentale', mentalTable: 'edoc-mental-tzeentch', physTable: 'edoc-phys-tzeentch' });
   });

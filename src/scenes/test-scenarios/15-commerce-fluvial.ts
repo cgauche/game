@@ -12,7 +12,7 @@ import { rigSpeciesId } from '../../data';
 /**
  * « Commerce fluvial sur le Reik » — le commerce de cargaison de Mort sur le Reik Compagnon (ch.11
  * « Règles du commerce ») rendu JOUABLE. Une portion du Reikland avec ses VRAIES localités marchandes
- * (Index géographique, T2C 13 l.185-270 — cf. `_reik-index.ts`), chacune un Lieu de la carte du monde
+ * (Index géographique, MSRC 13 l.185-270 — cf. `_reik-index.ts`), chacune un Lieu de la carte du monde
  * porteur de son `market` (Taille / Richesse / Produits VERBATIM du livre), reliées par des routes de
  * BARGE (voie navigable). La boucle du marchand (l.11-13) : acheter bas en un lieu, descendre le fleuve,
  * revendre plus cher là où la Richesse est plus haute (Mise à prix par Richesse, l.150-156).
@@ -145,12 +145,12 @@ for (let i = 0; i < RIVER_ORDER.length - 1; i++) {
 }
 // Route DIRECTE Grünburg → Altdorf (le grand axe du Reik) : ~45 km, une journée de barge (M8 × 6 h = 48 km) —
 // permet la boucle d'arbitrage en un seul saut (achat à Grünburg → vente à Altdorf, l.150-156). Cette descente
-// est JOUÉE (T2C 7 « Navigation fluviale ») : Test de Navigation par étape, table des vents, et un péril
+// est JOUÉE (MSRC 7 « Navigation fluviale ») : Test de Navigation par étape, table des vents, et un péril
 // atteignable (débris flottants, l.123-125). Le chariot de convoi (porteur réel) persiste pendant la descente.
 const grunburgAltdorf = bargeRoute(START_ID, SELL_ID, 45, 'r-grunburg-altdorf');
 grunburgAltdorf.river = true;
 grunburgAltdorf.riverPerils = [{ perilId: 'debris', chancePct: 55 }];
-// Exposition hydrique de la descente (T2C 16, l.5) : l'équipage boit l'eau du Reik non bouillie en
+// Exposition hydrique de la descente (MSRC 16, l.5) : l'équipage boit l'eau du Reik non bouillie en
 // approchant d'Altdorf (grande ville en aval → tableau 1 « Source d'eau », −20, l.23-33). Chaque étape à
 // flot, un tirage déclenche l'Effet EXISTANT `waterExposure` (Test de Résistance → maladie) — data-driven.
 grunburgAltdorf.riverExposure = { source: 'aval-grande-ville-8km', mode: 'ingestion', chancePct: 60 };
@@ -158,7 +158,7 @@ routes.push(grunburgAltdorf);
 
 const carte: WorldMap = {
   id: 'reik-commerce-carte',
-  nom: 'Le Reik marchand (Index géographique, T2C 13)',
+  nom: 'Le Reik marchand (Index géographique, MSRC 13)',
   params: { perilDie: 0 },
   places,
   routes,
@@ -171,12 +171,12 @@ export const scenario: TestScenario = {
   icon: 'scenario/market',
   title: 'Commerce fluvial (le Reik)',
   tests:
-    'Commerce de cargaison T2C 13 JOUABLE : le Reik peuplé de ses VRAIES localités marchandes (Index ' +
+    'Commerce de cargaison MSRC 13 JOUABLE : le Reik peuplé de ses VRAIES localités marchandes (Index ' +
     'géographique l.185-270, indices Taille/Richesse/Produits verbatim), reliées par des routes de BARGE. ' +
     'Boucle du marchand : acheter une cargaison à Grünburg (R 2), descendre le fleuve en barge (le convoi ' +
     'persiste sur le chariot de convoi), revendre à Altdorf (Florissant R 5, Mise à prix +10 %, l.156) — profit. ' +
     'Marché à chaque ville, Marchandage/Évaluation du vin/rumeurs (Berta). La descente EXERCE aussi ' +
-    'l’exposition hydrique (T2C 16) : en approchant d’Altdorf, l’équipage risque une maladie de l’eau.',
+    'l’exposition hydrique (MSRC 16) : en approchant d’Altdorf, l’équipage risque une maladie de l’eau.',
   partyNote: 'Berta (Marchande — Marchandage/Ragot/Évaluation) · Gunnar (batelier) · Otto (garde) · Lise (scribe)',
   makeParty: traders,
   scene: scenes.find((s) => s.id === `quai-${START_ID}`)!,

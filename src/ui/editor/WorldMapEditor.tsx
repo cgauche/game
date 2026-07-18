@@ -19,7 +19,7 @@ import { MapCanvas } from '../MapCanvas';
 import { planChrome } from '../PlanChrome';
 import { VB_W, VB_H } from '../worldMapViewport';
 
-/** Libellés des Tailles de communauté (T2C 13 l.44-50, indices 1-4). */
+/** Libellés des Tailles de communauté (MSRC 13 l.44-50, indices 1-4). */
 const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
 /** Produits d'un marché : les cargaisons du livre + les MARQUEURS « Commerce » / « Subsistance » (l.24-28). */
 const MARKET_PRODUITS: readonly { id: string; label: string }[] = [

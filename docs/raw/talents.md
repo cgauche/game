@@ -1375,7 +1375,7 @@ Le fichier ne contient pas de refs `LDB N l.N` en annotation inline. Les regles 
 ## SECTION D --- talents.json : liste complete (177 entrees)
 
 > Fichier : `src/data/talents.json` --- SOURCE app-owned (commitee, editee dans le Compendium)
-> 177 entrees dont 1 meta (talent-aleatoire), 169 LDB, 3 EDO, 2 AA, 2 ADE2
+> 177 entrees dont 1 meta (talent-aleatoire), 169 LDB, 3 EDO, 2 AA, 2 ADE II
 
 | # | id | label | source | page |
 |---|---|---|---|---|
@@ -1553,8 +1553,8 @@ Le fichier ne contient pas de refs `LDB N l.N` en annotation inline. Les regles 
 | 172 | `vivacite` | Vivacité | LDB | 147 |
 | 173 | `volonte-de-fer` | Volonté de fer | LDB | 147 |
 | 174 | `voyageur-aguerri` | Voyageur aguerri | LDB | 147 |
-| 175 | `massif` | Massif | ADE2 | 20 |
-| 176 | `vice` | Vice | ADE2 | 20 |
+| 175 | `massif` | Massif | ADE II | 20 |
+| 176 | `vice` | Vice | ADE II | 20 |
 | 177 | `officier-de-siege` | Officier de Siège | AA | ? |
 
 ---
@@ -1587,4 +1587,4 @@ Le fichier ne contient pas de refs `LDB N l.N` en annotation inline. Les regles 
 
 ---
 
-*Fin du fichier — 177 talents référencés (1 meta + 169 LDB + 4 EDOC/NADJ + 2 AA + 2 ADE2 — voir Section D).*
+*Fin du fichier — 177 talents référencés (1 meta + 169 LDB + 4 EDOC/NADJ + 2 AA + 2 ADE II — voir Section D).*

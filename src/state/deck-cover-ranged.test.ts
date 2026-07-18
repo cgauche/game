@@ -5,7 +5,7 @@ import type { Combatant, Weapon, ShipPoste } from '../engine/types';
 import type { Scene } from './scene';
 
 /**
- * #248 — COUVERT DE PONT au calcul de touche. Un défenseur SERVANT un poste couvert (T2C f.66 l.111,
+ * #248 — COUVERT DE PONT au calcul de touche. Un défenseur SERVANT un poste couvert (MSRC f.66 l.111,
  * Plat-bord = « couverture moyenne » → tir Difficile −20 ; Sabord/Murs blindés = totale −30) reçoit sa
  * classe par le MÊME chemin que le couvert de terrain (`worstCover` sur la ligne `cf.coverLabel`). Le
  * barème est le canon `coverModifier` (lineOfSight.ts) — aucun modificateur parallèle. Mêlée non affectée.

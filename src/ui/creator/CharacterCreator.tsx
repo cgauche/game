@@ -162,7 +162,7 @@ import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus } from '..
  *  gabarit dédié, user 2026-07-15) : le dispatcher `StepBody` n'a donc qu'une branche, sans
  *  assertion. SOURCE UNIQUE du rendu, indexée par `StepId` stable — l'ordre ET la présence des
  *  étapes viennent de `stepIds()` (draft.ts, qui insère « Signe astral » selon la règle optionnelle
- *  ADE2), jamais d'un index positionnel codé. EXPORTÉE pour la garde structurelle
+ *  ADE II), jamais d'un index positionnel codé. EXPORTÉE pour la garde structurelle
  *  (`creator-ossature.test.tsx`), qui monte chaque étape via `StepBody` et vérifie les slots du
  *  gabarit. */
 export const STEP_META: Record<StepId, { label: string; screen: (p: StepProps) => ReactNode }> = {
@@ -185,7 +185,7 @@ const WEAPON_CHOICES = allTrappings
   .filter((t) => (t.type === 'melee' || t.type === 'ranged') && t.id !== 'mains-nues')
   .map((t) => ({ id: t.id, label: t.label }))
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
-/** Demeure céleste par ID (ADE2 3 l.504-512) — libellé affiché + desc RAW en tooltip du thème astral. */
+/** Demeure céleste par ID (ADE II 3 l.504-512) — libellé affiché + desc RAW en tooltip du thème astral. */
 const HOUSE_BY_ID = new Map(celestialHouses.map((h) => [h.id, h]));
 
 /** Texte de données (desc Markdown) → extrait lisible pour cartes et infobulles. */
@@ -1218,7 +1218,7 @@ function SpecSelect({ d, setD, raw }: StepProps & { raw: string }) {
   );
 }
 
-/** Les POSITIONS de la roue céleste = les VINGT fourchettes d100 de la table RAW (ADE2 3 l.36-56,
+/** Les POSITIONS de la roue céleste = les VINGT fourchettes d100 de la table RAW (ADE II 3 l.36-56,
  *  « Les 20 signes »), pas les 23 entrées de `stars.json` : L'Étoile du Sorcier (96-00) porte QUATRE
  *  destins (sous-table 1d10, `StarData.sub`) qui partagent sa borne `rand` et se déplient en plaques
  *  une fois l'aiguille posée. Grouper ICI est ce qui rend le cadran lisible — les quatre destins
@@ -1249,7 +1249,7 @@ function sourceSub(source: SourceRef | undefined): string | undefined {
   return `${findBookById(source.book)?.label ?? source.book} p. ${source.page}`;
 }
 
-// ════ 3bis) Signe astral (ADE2 3, optionnel) — ossature `CreatorStepFrame`, étalon planche
+// ════ 3bis) Signe astral (ADE II 3, optionnel) — ossature `CreatorStepFrame`, étalon planche
 //      FINALE mock « 4 — Signe astral » : bande d'ACTION (en-tête + note + encrier d100) ; CHOIX =
 //      l'ASTROLABE et, à sa droite, le `DetailFrame` du signe élu ; DESC = fiche vivante (défaut du
 //      gabarit). Un ÉCRAN (et non des `zones` nues) parce que le pas pose son propre état d'UI. ════
@@ -1302,7 +1302,7 @@ export function StarScreen({ d, setD }: StepProps) {
       </StepHeader>
       <p className="hint" style={{ margin: '0 0 8px' }}>
         Tourner la roue à la main choisit librement (+0 PX) ; le d100 s'arrête sur la fourchette du signe tiré, et le
-        garder rapporte +{XP_STAR_ROLLED} PX de création (ADE2 3). L'Étoile du Sorcier ouvre quatre destins — la roue
+        garder rapporte +{XP_STAR_ROLLED} PX de création (ADE II 3). L'Étoile du Sorcier ouvre quatre destins — la roue
         les déplie si l'aiguille s'y pose.
       </p>
     </>
@@ -1329,7 +1329,7 @@ export function StarScreen({ d, setD }: StepProps) {
             }
           }
         />
-        {/* Astrologie : flavor PUR (ADE2 3 l.502-512, aucun effet de jeu) — sous le cadran, là où
+        {/* Astrologie : flavor PUR (ADE II 3 l.502-512, aucun effet de jeu) — sous le cadran, là où
             la roue laisse sa marge, jamais en concurrence avec le sens du signe. */}
         <Section title="Astrologie (pur roleplay)" right={<button className="btn small" onClick={() => setD(rollDraftAstrology(d))}><Icon id="nav/dice" size="sm" /> Thème astral</button>}>
           {d.ascendant || d.dwellings?.length ? (
@@ -1348,7 +1348,7 @@ export function StarScreen({ d, setD }: StepProps) {
       </div>
       <div className="appear-controls">
         {selPos && selPos.members.length > 1 && (
-          <Section title="Quatre destins — 1d10 (ADE2 3)">
+          <Section title="Quatre destins — 1d10 (ADE II 3)">
             <PlaqueGrid>
               {selPos.members.map((m) => (
                 <PlaqueRow
@@ -1381,7 +1381,7 @@ export function StarScreen({ d, setD }: StepProps) {
             }
             sections={
               <>
-                {/* L'« apparence » d'un signe décrit la CONSTELLATION, pas le natif (ADE2 3 :
+                {/* L'« apparence » d'un signe décrit la CONSTELLATION, pas le natif (ADE II 3 :
                     La Grande Croix → « un X ») — texte d'ambiance verbatim, jamais une chip de fait. */}
                 {sign.apparence && <p className="star-apparence">Au ciel : {sign.apparence}.</p>}
                 {grantChoice && grantOpts.length > 0 && (
@@ -1418,7 +1418,7 @@ export function StarScreen({ d, setD }: StepProps) {
           <p className="hint">
             {selPos && selPos.members.length > 1
               ? 'L’Étoile du Sorcier ouvre quatre destins — choisissez le vôtre ci-dessus.'
-              : 'Choisissez ou tirez votre signe astral (ADE2 3) — son sens apparaîtra ici.'}
+              : 'Choisissez ou tirez votre signe astral (ADE II 3) — son sens apparaîtra ici.'}
           </p>
         )}
       </div>

@@ -6,11 +6,11 @@
 - #83 [] Méta-flux comme Effets de scène (création perso / fin de séance / avancement)
 - #84 [] Filets (ZI) — extraction complète + Empêtrement à la touche
 - #85 [] Équipage / mercenaires / désertion (unités recrutables + moral)
-- #87 [audit:contenu-manquant, domaine:moteur-pur, livre:T2C, sev:mineur] [moteur/Flow] perDegreeOfFailure sur le nœud test — débloque hallucinogène (Sonné par niveau d'échec)
+- #87 [audit:contenu-manquant, domaine:moteur-pur, livre:MSRC, sev:mineur] [moteur/Flow] perDegreeOfFailure sur le nœud test — débloque hallucinogène (Sonné par niveau d'échec)
 - #88 [audit:non-branché, domaine:combat, livre:AA, sev:mineur] [combat/AA] Battement & Distraire — affordance HÉROS interactive
 - #89 [domaine:combat, livre:AA, sev:mineur, type:système] [combat/AA] Réaction défensive « dépenser N Avantages de la réserve » — débloque Porte-bouclier variante AA
-- #90 [audit:non-branché, domaine:naval, livre:T2C, sev:mineur] [naval/T2C] Champ de domaine pour Améliorations navales à effet non-plat
-- #91 [domaine:naval, livre:T2C, sev:mineur] [naval/T2C] Descente fluviale — résidus : modale par jet + Enc cargaison + choix bélier-vs-déblayage
+- #90 [audit:non-branché, domaine:naval, livre:MSRC, sev:mineur] [naval/MSRC] Champ de domaine pour Améliorations navales à effet non-plat
+- #91 [domaine:naval, livre:MSRC, sev:mineur] [naval/MSRC] Descente fluviale — résidus : modale par jet + Enc cargaison + choix bélier-vs-déblayage
 - #92 [audit:non-branché, livre:AA, sev:mineur] [éditeur/AA] Table d'Avantage initial — Menace / Manœuvrabilité / Terrain (entrée éditeur)
 - #93 [audit:non-branché, domaine:économie, livre:LDB, sev:mineur] [éditeur/éco] Exposer les flags marchand (Disponibilité, Marchandage/Évaluation/Réparation) + Effet openPort
 - #94 [audit:non-branché, domaine:maladie, livre:LDB, sev:mineur] [éditeur/santé] Compléter les Effets santé éditables (ambitionLost, mealParty, inflictPsychology, inflictThirst)
@@ -18,7 +18,7 @@
 - #96 [audit:non-branché, sev:mineur] [scénarios] Vague 1 — exercer EN JEU les moteurs testés (inflictTrauma, medicalAid, fall, Activités d'Altdorf)
 - #97 [domaine:magie, domaine:religion, livre:LDB, livre:MDG, sev:mineur] [magie] Reliquats narrow : Magie des Mers en mer · Petites Prières · Retrait de Péché (Absolution)
 - #98 [domaine:combat, policy-à-trancher, question] [design] Effet castSpell/forceCast — scripter un lancer de sort depuis dialogue/trigger
-- #99 [domaine:économie, livre:T2C, sev:mineur, type:système] [éco/T2C] Rumeur commerciale cross-Lieu — index géographique du Reikland + board de rumeurs persistant
+- #99 [domaine:économie, livre:MSRC, sev:mineur, type:système] [éco/MSRC] Rumeur commerciale cross-Lieu — index géographique du Reikland + board de rumeurs persistant
 - #100 [audit:principe, sev:smell] [dette-code] Trier & purger les branches legacy / rétro-compat (rest legacy, LEGACY sans lodging, occupied(string), save legacy)
 - #161 [] [Architecture] state→gameIso : 11 fichiers d'imports runtime — trancher, puis garder le segment
 - #165 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — Test de Dextérité par-Action (Main ensanglantée, aa-bras-46) : pas de point d'interception propre
@@ -70,10 +70,10 @@
 - #43 [audit:contenu-manquant, domaine:combat, livre:LDB, type:règle-optionnelle] Règles d'arme contextuelles (Cavalerie/Fléau/lance, Écailles épineuses vs Déviation)
 - #44 [audit:contenu-manquant, livre:LDB, type:système] Mouvement hors-combat manquant (Escalade, chute volontaire, Poursuites terrestres)
 - #45 [audit:contenu-manquant, livre:LDB, type:système] Exposition à la Chaleur, Soif & rétention de souffle (LDB 18)
-- #46 [audit:contenu-manquant, domaine:maladie, livre:EDO-EDOC, livre:T2C, type:donnée] Maladies — tableaux d'exposition aux maladies hydriques (T2C ch.14)
+- #46 [audit:contenu-manquant, domaine:maladie, livre:EDO-EDOC, livre:MSRC, type:donnée] Maladies — tableaux d'exposition aux maladies hydriques (MSRC ch.14)
 - #47 [audit:contenu-manquant, livre:LDB, livre:T3, type:système] Compétences — usages manquants (Hypnotisme, applications de combat, substitution sociale, accidents d'attelage)
 - #48 [audit:contenu-manquant, livre:LDB, type:système] Sous-système d'Ivresse / Résistance à l'alcool (LDB 09)
-- #49 [audit:contenu-manquant, livre:NADAJ, type:règle-optionnelle] Mécaniques DR des jeux de taverne (NADAJ)
+- #49 [audit:contenu-manquant, livre:NADJ, type:règle-optionnelle] Mécaniques DR des jeux de taverne (NADJ)
 - #50 [audit:contenu-manquant, livre:LDB, type:donnée] Consommables — drogues & herbes encore sans champ consumable (canal + poisons faits)
 - #51 [audit:contenu-manquant, livre:LDB, type:donnée] Objets — canal « objet équipé → bonus de compétence » (objets déjà en donnée)
 - #52 [audit:contenu-manquant, domaine:magie, livre:LDB, type:règle-optionnelle] Magie — règle du 8, +10 environnemental (Ghyran), Sorcellerie-Domaine, Haute Magie (composants faits)
@@ -82,9 +82,9 @@
 - #55 [audit:contenu-manquant, livre:LDB, type:règle-optionnelle] Avancement — changement de Carrière (saut de Niveau, même Niveau autre Carrière, mentor)
 - #56 [audit:contenu-manquant, livre:LDB, type:système] Progression narrative — PX d'Ambition & regain de Détermination par Motivation
 - #57 [audit:contenu-manquant, domaine:économie, livre:LDB, type:règle-optionnelle] Économie — Troc, acheteur à la vente, recherche active Disponibilité, comptes, pièce du Noble, réparation d'ARME
-- #58 [audit:contenu-manquant, domaine:économie, livre:T2C, type:système] Commerce de cargaison (T2C Compagnon ch.11)
+- #58 [audit:contenu-manquant, domaine:économie, livre:MSRC, type:système] Commerce de cargaison (MSRC Compagnon ch.11)
 - #59 [audit:contenu-manquant, livre:EDO-EDOC, type:règle-optionnelle] Montures en voyage — endurance des allures & vitesse km/h (EDOC)
-- #60 [audit:contenu-manquant, livre:Middenheim, type:donnée] Bestiaire de Middenheim (ch.4) — 4 entrées
+- #60 [audit:contenu-manquant, livre:MCLB, type:donnée] Bestiaire de Middenheim (ch.4) — 4 entrées
 - #61 [audit:contenu-manquant, livre:ADE, type:donnée] Ogres ADE II — Golgfag & Hrothyogg + armes/armures ogres (4/6 PNJ faits)
 - #62 [audit:contenu-manquant, livre:ADE, livre:EDO-EDOC, type:règle-optionnelle] Traits psy — acquisition ADE II câblée + activité Convalescence jouable (Obsessions/retrait faits)
 - #63 [audit:contenu-manquant, livre:Altdorf, policy-à-trancher, type:donnée] Activités entre-aventures d'Altdorf (5 activités d'interlude)
@@ -105,7 +105,7 @@
 - #78 [domaine:UX, domaine:combat, enhancement, playtest:jinashi] [LOT] Ouverture de combat : splash COMBAT + scores d'initiative + clignotement barre de mouvement
 - #79 [domaine:UX, domaine:primitives-UI, enhancement, playtest:jinashi] [LOT] Fiche & sélection : carac-popover, Background (Ambitions éditables), iso-hauteur, remplacer-slot, équipement carte
 - #80 [bug, domaine:combat, livre:LDB, playtest:jinashi, policy-à-trancher, sev:majeur] [RAW] Dégâts non-critiques + PA de déviation à la localisation FRAÎCHE du Coup Critique (LDB 18 l.55 / 63)
-- #81 [audit:contenu-manquant, livre:Middenheim, type:donnée] Profils manquants de Middenheim — Babrakkos (Liche) + 35 PNJ/Skavens (audit complet du livre)
+- #81 [audit:contenu-manquant, livre:MCLB, type:donnée] Profils manquants de Middenheim — Babrakkos (Liche) + 35 PNJ/Skavens (audit complet du livre)
 - #86 [] Métamorphose — finitions (Amphibie Natation, fourrure corps, playtest navigateur)
 - #101 [raw-audit] [RAW/haute] Amputations : pénalités −5/doigt et −20/main ABSENTES pour la main non-directrice (critical.ts + trauma.ts)
 - #102 [raw-audit] [RAW/haute] Bélier hors-porte : 0 Blessure au lieu d'« Arme improvisée » (woundsCalc.ts + structures.ts)
@@ -128,7 +128,7 @@
 - #119 [raw-audit] [RAW/dette] Amputation : l'arme directrice reste tenue par la main restante — « adaptation » à re-trancher au RAW (items.ts)
 - #120 [raw-audit] [RAW/dette] Drogues : le concept RAW de « Dose » (empilement) n'est pas modélisé (combat/turnHooks.ts)
 - #121 [raw-audit] [RAW/dette] Maladies : suivi « une fois par maladie » en approximation de la règle RAW (disease.ts)
-- #122 [raw-audit] [RAW/dette] Marché : la rumeur commerciale pointe le lieu courant au lieu d'un AUTRE lieu (T2C ch.11) (landMarketFlow.ts)
+- #122 [raw-audit] [RAW/dette] Marché : la rumeur commerciale pointe le lieu courant au lieu d'un AUTRE lieu (MSRC ch.11) (landMarketFlow.ts)
 - #123 [raw-audit] [RAW/dette] Rounds d'effort (LDB 16) : liberté de granularité à re-vérifier/documenter (combat/roundHooks.ts)
 - #124 [raw-audit] [RAW/dette] « Je ne faillirai pas ! » : cas attaquant vs cible Inconsciente non conforme (combat.ts)
 - #125 [raw-audit] [RAW/dette] Variante AA : sous-effets conditionnels/durées des Critiques non mécanisés (aaCritical.ts + policy.ts)

@@ -7,25 +7,23 @@
 // unifiée avec otherRe/ldbRe (#434 défaut 10, périmètre non couvert par ce fichier).
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import booksData from '../../src/data/books.json' with { type: 'json' }
 
-// ABRÉV → dossier Source (les 14 livres autorisés). Ordre = ordre d'affichage des rapports.
-export const BOOKS = [
-  ['LDB', 'Source/Warhammer v4 - Livre de base version corrigée'],
-  ['ADE I', "Source/Warhammer v4 - Les archives de l'Empire volume 1"],
-  ['ADE II', "Source/Warhammer v4 - Les archives de l'Empire volume 2"],
-  ['AA', 'Source/WH - V4 - Aux Armes'],
-  ['ZI', 'Source/WH - V4 - Le zoo impérial'],
-  ['Middenheim', 'Source/Warhammer v4 - Middenheim la cité du Loup Blanc'],
-  ['EDO', "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre"],
-  ['EDOC', "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon"],
-  ['T2', 'Source/Warhammer v4 - 2.0 Mort sur le Reik'],
-  ['T2C', 'Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon'],
-  ['T3', 'Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone'],
-  ['ACE', "Source/Warhammer v4 - Aldorf la Couronne de l'Empire"],
-  ['Ubersreik', 'Source/Warhammer v4 - Aventures a Ubersreik'],
-  ['NADAJ', 'Source/Warhammer v4 - Nuits agitees & dures journées'],
-  ['MDG', 'Source/WH - V4 - La Mer de Griffe'],
+// ABRÉV → dossier Source, DÉRIVÉ de `books.json` (SOURCE UNIQUE des acronymes, ref #585) : filtre
+// les entrées porteuses d'un `dir` (les livres couverts par l'Atlas RAW), ordonnées par
+// BOOK_ORDER (ordre d'affichage des rapports — books.json n'est pas trié dans cet ordre).
+const BOOK_ORDER = [
+  'livre-de-base', 'archives-de-l-empire-1', 'archives-de-l-empire-2', 'aux-armes', 'zoo-imperial',
+  'middenheim', 'ennemi-dans-l-ombre', 'ennemi-dans-l-ombre-compagnon', 'mort-sur-le-reik',
+  'mort-sur-le-reik-compagnon', 'pouvoir-derriere-le-trone', 'altdorf-couronne-de-l-empire',
+  'aventures-a-ubersreik-1', 'nuits-agitees-et-dures-journees', 'mer-des-griffes',
 ]
+const _byId = new Map(booksData.map((b) => [b.id, b]))
+export const BOOKS = BOOK_ORDER.map((id) => {
+  const b = _byId.get(id)
+  if (!b || !b.dir) throw new Error(`BOOKS: livre "${id}" introuvable ou sans dir dans books.json`)
+  return [b.abbr, b.dir]
+})
 
 const BOOK_DIR = new Map(BOOKS)
 
@@ -38,32 +36,11 @@ export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 export const ldbRe = () => /\bLDB (?:ch\.)?(\d+) l\.(\d+)((?:[-+]\d+)*)/g       // LDB <ch> l.<line>[-end][+n…]
 
 // otherRe DÉRIVE de BOOKS (#434 défaut 10 : une alternation écrite à la main avait oublié MDG).
-// Graphies tolérées en plus des abréviations canoniques (préfixes tronqués, chiffre arabe pour le
-// chiffre romain…) — chaque entrée référence un livre RÉEL de BOOKS (vérifié ci-dessous, fail-fast).
-const EXTRA_ABBR_VARIANTS = [
-  ['ADE II', 'ADE ?I{2}'],    // ADE II / ADEII
-  ['ADE I', 'ADE ?I(?!I)'],   // ADE I / ADEI (pas suivi d'un second I)
-  ['ADE II', 'ADE ?2'],       // ADE2 (chiffre arabe)
-  ['ADE I', 'ADE ?1'],        // ADE1 (chiffre arabe)
-  ['Middenheim', 'Midd\\w*'],
-  ['NADAJ', 'NAD\\w+'],
-  ['ACE', 'Ald\\w+'],     // dossier Source : "Aldorf"
-  ['ACE', 'Alt\\w+'],     // abréviation historique : "Altdorf"
-  ['Ubersreik', 'Uber\\w+'],
-]
-const VARIANT_COVERED = new Set(EXTRA_ABBR_VARIANTS.map(([book]) => book))
-for (const [book] of EXTRA_ABBR_VARIANTS) {
-  if (!BOOK_DIR.has(book)) throw new Error(`otherRe: variante tolérante référence un livre inconnu de BOOKS: ${book}`)
-}
-// Tri par longueur décroissante OBLIGATOIRE : sinon "T2" matcherait avant "T2C", "EDO" avant "EDOC".
-// La forme CANONIQUE de chaque livre est TOUJOURS émise, variantes EN PLUS — exclure un livre
-// « couvert » par ses variantes supposait qu'elles matchent aussi sa forme canonique, hypothèse
-// cassée par ACE (`Ald\w+`/`Alt\w+` ne matchent pas « ACE » → réfs canoniques invisibles de tous
-// les parseurs dérivés, vu au merge du 2026-07-17, ref #529).
-const OTHER_ABBR_ALT = [
-  ...BOOKS.filter(([a]) => a !== 'LDB').map(([a]) => esc(a)),
-  ...EXTRA_ABBR_VARIANTS.map(([, pat]) => pat),
-].sort((a, b) => b.length - a.length).join('|')
+// Plus de graphies tolérées (#585 lot B) : chaque livre a désormais UNE seule abréviation
+// canonique (SOURCE UNIQUE `books.json`), l'identité stricte suffit — aucune variante à couvrir.
+// Tri par longueur décroissante OBLIGATOIRE : sinon "MSR" matcherait avant "MSRC", "EDO" avant "EDOC".
+const OTHER_ABBR_ALT = BOOKS.filter(([a]) => a !== 'LDB').map(([a]) => esc(a))
+  .sort((a, b) => b.length - a.length).join('|')
 // m[4] = suffixe de plage `((?:[-+]\d+)*)` (#487), miroir de ldbRe ; check-refs et reconcile.mjs
 // (branche atlasOther) le lisent tous deux désormais (#586).
 export const otherRe = () =>
@@ -74,15 +51,10 @@ export const otherRe = () =>
 // écrivait sa propre alternation à la main, désynchronisée si BOOKS gagne un livre).
 export const otherAbbrAlternation = () => OTHER_ABBR_ALT
 
-// Canonicalise le texte brut matché par otherRe (m[1]) vers l'abréviation BOOKS (#434 défaut 11) :
-// identité si déjà canonique, sinon résolution via EXTRA_ABBR_VARIANTS (MÊME table que l'alternation
-// ci-dessus — source unique). Retourne null si le texte ne correspond à aucun livre connu.
+// Canonicalise le texte brut matché par otherRe (m[1]) vers l'abréviation BOOKS (#434 défaut 11).
+// Identité stricte (#585 lot B) — une seule graphie par livre, aucune variante à résoudre.
 export function bookOf(text) {
-  if (BOOK_DIR.has(text)) return text
-  for (const [book, pat] of EXTRA_ABBR_VARIANTS) {
-    if (new RegExp(`^(?:${pat})$`).test(text)) return book
-  }
-  return null
+  return BOOK_DIR.has(text) ? text : null
 }
 
 // Déplie un suffixe "-285" (intervalle) ou "+217+220" (points) → [lo, hi].

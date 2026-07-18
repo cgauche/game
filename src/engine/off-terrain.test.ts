@@ -12,7 +12,7 @@ const seaCreature = (traitId: string, offTerrain: boolean): Combatant => ({
   ...(offTerrain ? { offTerrain: true } : {}),
 } as unknown as Combatant);
 
-describe('offTerrainMod — Créature marine (MDG p.140) / Aquatique (T2C p.90), mécanique GÉNÉRIQUE de terrain', () => {
+describe('offTerrainMod — Créature marine (MDG p.140) / Aquatique (MSRC p.90), mécanique GÉNÉRIQUE de terrain', () => {
   it('Créature marine DANS l’eau : plein Mouvement, aucun malus', () => {
     const c = seaCreature('creature-marine', false);
     expect(offTerrainMoveCap(c)).toBeNull();

@@ -8,7 +8,7 @@ import { carrierFreeEnc } from '../../engine/cargo';
 import { REIK_INDEX } from './_reik-index';
 
 /**
- * « Commerce fluvial (le Reik) » — le commerce de cargaison T2C 13 rendu JOUABLE. Vérifie (1) que la
+ * « Commerce fluvial (le Reik) » — le commerce de cargaison MSRC 13 rendu JOUABLE. Vérifie (1) que la
  * carte porte les VRAIES localités marchandes de l'Index géographique avec leurs indices verbatim, et
  * (2) la BOUCLE complète du marchand : acheter à Grünburg → descendre le Reik en barge (le convoi persiste)
  * → revendre à Altdorf (Florissant R 5, +10 %) avec PROFIT (l.11-13, l.150-156).
@@ -46,7 +46,7 @@ function bargeTo(routeId: string, destSceneId: string, maxSteps = 60): void {
   }
 }
 
-describe('Scénario Commerce fluvial — carte fidèle à l’Index géographique (T2C 13)', () => {
+describe('Scénario Commerce fluvial — carte fidèle à l’Index géographique (MSRC 13)', () => {
   it('est dans la section Marché, avec les VRAIES localités du Reik et leurs indices verbatim', () => {
     expect(scen.category).toBe('marche');
     const places = scen.worldMap!.places;
@@ -105,7 +105,7 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
     get().landSellCargo(carrierId, 0);
     const earned = toBrass(get().money) - purseBeforeSell;
     expect(earned).toBeGreaterThan(0);
-    // La cargaison a rapporté PLUS qu'elle n'a coûté à l'achat → profit prouvé (boucle T2C 13 l.11-13).
+    // La cargaison a rapporté PLUS qu'elle n'a coûté à l'achat → profit prouvé (boucle MSRC 13 l.11-13).
     expect(earned).toBeGreaterThan(spent);
     expect(primaryCargoCarrier(get())!.cargo.length ?? 0).toBe(0); // lot vendu en entier
   });

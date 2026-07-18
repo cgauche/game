@@ -187,8 +187,8 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 
 ### Cas particuliers (suppléments)
 
-- **Embuscade de gamins des rues** (NADAJ, « Une journée au tribunal ») : trois attaques sont portées **pendant le même Round** avec les **bonus de supériorité numérique**, les orphelins frappant à **CC 20**. À moins que la cible n'ait un **Talent approprié pour éviter la surprise**, repérer que des couteaux de fortune sont dégainés dans la bousculade exige un **Test de Perception Très difficile (-30)** ; **si ce Test est raté, la cible reçoit l'État *Surpris***.
-- **Personnage réveillé en sursaut** (NADAJ, « Une nuit agitée aux Trois Plumes ») : un Personnage endormi peut tenter un **Test de Perception Très difficile (-30)** pour se réveiller en sursaut — **réussite = réveil avec l'État *Fatigué***. On lui donne en outre les États ***Inconscient*** et ***À terre*** **pour le Round 1**, et un État ***Surpris*** **pour le Round où il se réveille**.
+- **Embuscade de gamins des rues** (NADJ, « Une journée au tribunal ») : trois attaques sont portées **pendant le même Round** avec les **bonus de supériorité numérique**, les orphelins frappant à **CC 20**. À moins que la cible n'ait un **Talent approprié pour éviter la surprise**, repérer que des couteaux de fortune sont dégainés dans la bousculade exige un **Test de Perception Très difficile (-30)** ; **si ce Test est raté, la cible reçoit l'État *Surpris***.
+- **Personnage réveillé en sursaut** (NADJ, « Une nuit agitée aux Trois Plumes ») : un Personnage endormi peut tenter un **Test de Perception Très difficile (-30)** pour se réveiller en sursaut — **réussite = réveil avec l'État *Fatigué***. On lui donne en outre les États ***Inconscient*** et ***À terre*** **pour le Round 1**, et un État ***Surpris*** **pour le Round où il se réveille**.
 
 **Sources RAW** :
 - `LDB 13 l.21` — étape 1 du combat « Déterminer la Surprise » : le MJ décide qui est surpris, normalement au seul premier Round.
@@ -198,14 +198,14 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 - `LDB 13 l.71` — un Personnage surpris peut dépenser 1 Point de Détermination pour retirer l'État *Surpris*.
 - `LDB 16 l.132-139` — État *Surpris* : ni Mouvement ni Action, pas de défense en Test opposé, +20 CC à l'attaquant en mêlée, non-cumul, retiré en fin de Round ou après la première tentative pour vous toucher.
 - `LDB 17 l.61` — option générique « Retirez un État » de la dépense de Détermination.
-- `NADAJ 06 l.148` — embuscade des gamins : 3 attaques le même Round + supériorité numérique, CC 20, Perception Très difficile (-30) sinon État *Surpris* (sauf Talent approprié).
-- `NADAJ 05 l.117` — réveil en sursaut : Perception Très difficile (-30) → réveil Fatigué ; États *Inconscient* + *À terre* au Round 1 et *Surpris* au Round du réveil.
+- `NADJ 06 l.148` — embuscade des gamins : 3 attaques le même Round + supériorité numérique, CC 20, Perception Très difficile (-30) sinon État *Surpris* (sauf Talent approprié).
+- `NADJ 05 l.117` — réveil en sursaut : Perception Très difficile (-30) → réveil Fatigué ; États *Inconscient* + *À terre* au Round 1 et *Surpris* au Round du réveil.
 
 > « Tout adversaire qui tente de vous frapper en Combat au Corps à corps gagne +20 à la CC. » — `LDB 16 l.135`
 
 > « À la fin de chaque Round, ou après la première tentative effectuée pour vous toucher, vous perdez l'État *Surpris*. » — `LDB 16 l.139`
 
-> « Si ce Test est raté, la cible reçoit un État *Surpris*. » — `NADAJ 06 l.148`
+> « Si ce Test est raté, la cible reçoit un État *Surpris*. » — `NADJ 06 l.148`
 
 **Voir aussi** : États (Surpris, À terre, Inconscient, Fatigué), Détermination et Résilience, Tests opposés, Initiative et déroulement d'un Round, Perception / Discrétion, Talent Vigilance.
 
@@ -213,7 +213,7 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 - `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `OPTIONAL_RULES`, `pickDoctrine`, `applySurprise`, `EncounterDef`, `initiativeOrder`, `createCombatSlice`, +2 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSetup.ts`, +5 fichiers
 - `LDB 16` (l.132-139) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `hemorragique`, `chooseEnemyAction`, `inconscient`, +5 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 - `LDB 17` (l.61) → `RenounceModal`, `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `gainCorruption`, `HouseRuleRow`, `EnemyAction`, `useAttackJetProps`, `useTestJetProps`, +26 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +20 fichiers
-- sans code : `NADAJ 5` (l.117), `NADAJ 6` (l.148)
+- sans code : `NADJ 5` (l.117), `NADJ 6` (l.148)
 
 ---
 
@@ -662,7 +662,7 @@ Conditions et limites :
 - Nombre maximum d'enchaînements = **Bonus de Capacité de Combat (BCC)** de l'attaquant.
 - **Exception « grandes créatures »** : certaines créatures de grande Taille activent Frappe Mortelle **sans avoir à tuer** — il leur suffit de **toucher** un adversaire sans le tuer pour se déplacer dans sa zone et frapper une autre cible le même Round. Confirmé par un statbloc :
 
-> « Frappe mortelle (WFJDR, page 160). En raison de sa taille, le basilic peut se déplacer dans la zone d'un adversaire qu'il a touché, mais n'a pas réussi à tuer, puis attaquer immédiatement une autre cible dans le même Round. » — `Ubersreik 05 l.24`
+> « Frappe mortelle (WFJDR, page 160). En raison de sa taille, le basilic peut se déplacer dans la zone d'un adversaire qu'il a touché, mais n'a pas réussi à tuer, puis attaquer immédiatement une autre cible dans le même Round. » — `AU1 05 l.24`
 
 ### 5. Déviation Critique par l'armure (LDB 63)
 
@@ -687,8 +687,8 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 ### 7. Interactions multi-livres (Critiques en pratique)
 
 - **Trait *Dédoublement*** (Horreur Rose de Tzeentch) : « Si la créature subit une Blessure Critique, ou perd toutes ses Blessures, elle est remplacée par **deux horreurs bleues** […] et ne sont pas blessées. » — `EDO 11 l.239-240`. Donc subir un seul Critique scinde la créature.
-- **Frappe mortelle des grandes créatures** : le **basilic** illustre l'exception « grandes créatures » du LDB 14 (se déplacer dans la zone d'une cible **touchée mais non tuée** puis frapper une autre) — `Ubersreik 05 l.24`.
-- **Critiques multiples par explosion** (bombe de l'Opéra, *Une nuit à l'Opéra*) : « Celles réduites à 0 Blessure souffrent d'une Blessure critique à une **localisation aléatoire par tranche de 2 Blessures en dessous de 0**, en arrondissant à la hausse. Ainsi, si un Personnage est réduit à −5 Blessures […], cela occasionne **3 Blessures critiques**. » — `NADAJ 08 l.263`. (Bombe : Atout *Explosion 10*, 1d10+15 Dégâts, BonusAg −1d10 États *En Flammes* ; survivants : *Athlétisme Complexe (−10)* sinon chute de 7 m.)
+- **Frappe mortelle des grandes créatures** : le **basilic** illustre l'exception « grandes créatures » du LDB 14 (se déplacer dans la zone d'une cible **touchée mais non tuée** puis frapper une autre) — `AU1 05 l.24`.
+- **Critiques multiples par explosion** (bombe de l'Opéra, *Une nuit à l'Opéra*) : « Celles réduites à 0 Blessure souffrent d'une Blessure critique à une **localisation aléatoire par tranche de 2 Blessures en dessous de 0**, en arrondissant à la hausse. Ainsi, si un Personnage est réduit à −5 Blessures […], cela occasionne **3 Blessures critiques**. » — `NADJ 08 l.263`. (Bombe : Atout *Explosion 10*, 1d10+15 Dégâts, BonusAg −1d10 États *En Flammes* ; survivants : *Athlétisme Complexe (−10)* sinon chute de 7 m.)
 
 **Sources RAW** :
 - `LDB 13 l.183` — déclenchement : tout succès CC/Projectiles dont le **dé est un double** génère un Critique ; possible aussi en **défense** sur un Test opposé. (CONSOLIDE avec `AA 07 l.29`.)
@@ -702,8 +702,8 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 - `AA 07 l.25-79` — système alternatif d'*Aux Armes* : 2 voies de déclenchement (double avec PB restants ; +10/Blessure au-delà de 0), un seul Critique par coup, valeurs « T » triviales, « Retenir vos coups ».
 - `AA 07 l.82-104 / 2568-2622 / 2625-2682 / 2684-2729` — tables alternatives Tête / Bras / Torse / Jambe (transcrites verbatim ci-dessus ; **remplacent** les tables LDB).
 - `EDO 11 l.237-239` — Trait *Dédoublement* : une Blessure critique (ou 0 Blessure) scinde la créature en deux Horreurs Bleues non blessées.
-- `Ubersreik 05 l.24` — exemple statbloc de Frappe mortelle pour une grande créature (touche sans tuer → balayage).
-- `NADAJ 08 l.263` — Critiques multiples : 1 Blessure critique à localisation aléatoire par tranche de 2 PB sous 0 (arrondi au supérieur).
+- `AU1 05 l.24` — exemple statbloc de Frappe mortelle pour une grande créature (touche sans tuer → balayage).
+- `NADJ 08 l.263` — Critiques multiples : 1 Blessure critique à localisation aléatoire par tranche de 2 PB sous 0 (arrondi au supérieur).
 
 > « Tout succès lors d'un Test de Corps à Corps ou de Projectiles dont le résultat est un double génère un Critique. » — `LDB 13 l.183`
 
@@ -720,7 +720,7 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 - `LDB 63` (l.29-32) → `cuir-souple`, `cuir-bouilli`, `mailles`, `describeReload`, `plate`, `firedAttackBlock`, `GameOp`, `ActiveEffect`, `PendingDeviation`, `deviatableArmourAt`, +14 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +4 fichiers
 - `AA 7` (l.25-79, l.82-104) → `StructureCritEntry`, `retenir-ses-coups`, `CritEscalation`, `resolveAACritical`, `OPTIONAL_RULES` — `src/data/criticals.ts`, `src/data/regles.json`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, `src/engine/policy.ts`
 - `EDO 11` (l.237-240) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
-- sans code : `Ubersreik 5` (l.24), `NADAJ 8` (l.263)
+- sans code : `AU1 5` (l.24), `NADJ 8` (l.263)
 
 ---
 
@@ -1063,7 +1063,7 @@ De plus, **à la fin de chaque Round, tous les adversaires surpassés en nombre 
 
 L'application pratique est illustrée dans *Nuits agitées & dures journées* : trois gamins des rues attaquant le même Personnage **pendant le même Round** bénéficient des bonus de supériorité numérique selon les règles de combat normales.
 
-> « Utilisez les règles de combat normales, toutes les attaques ayant lieu pendant le même Round et bénéficiant des bonus de supériorité numérique. » — `NADAJ 06 l.148`
+> « Utilisez les règles de combat normales, toutes les attaques ayant lieu pendant le même Round et bénéficiant des bonus de supériorité numérique. » — `NADJ 06 l.148`
 
 ### Option : Tirer dans un combat au Corps à corps
 
@@ -1082,7 +1082,7 @@ Règle optionnelle pour le tir sur une cible déjà _Engagée_ avec un (ou des) 
 - `LDB 14 l.142-165` — Tableau **Taille** verbatim : Minuscule −30, Très Petite −20, Petite −10, Moyenne 0, Grande +20, Énorme +40, Monstrueuse +60 (avec fourchettes de hauteur/longueur et exemples).
 - `EDO 11 l.157-165` — Option « Mais c'est impossible ! » : deux Difficultés extrêmes ajoutées au Tableau de Difficulté pour les situations de campagne (dont les Tests de combat type Calme vs Terreur 3-5) — Presque Impossible −40, Impossible −50 ; le plafond de combinaison des malus passe alors à −50 ; règles d'Échec / Réussite automatiques recommandées (01-05 = succès à +0 DR).
 - `EDO 11 l.165` — Repli si l'option n'est pas utilisée : remplacer Presque Impossible (−40) et Impossible (−50) par Très Difficile (−30).
-- `NADAJ 06 l.148` — Application explicite de la supériorité numérique : trois gamins attaquant la même cible dans le même Round bénéficient des bonus de supériorité numérique des règles de combat normales.
+- `NADJ 06 l.148` — Application explicite de la supériorité numérique : trois gamins attaquant la même cible dans le même Round bénéficient des bonus de supériorité numérique des règles de combat normales.
 
 **Voir aussi** : Difficultés des Tests (général) — bandes Très Facile +60 → Très Difficile −30, paliers extrêmes EDO −40/−50, Échec / Réussite automatiques (01-05) ; Localisation et calcul des dégâts en combat ; Portées des armes et bandes de distance ; Avantage en combat ; États (À Terre, Surpris, Inconscient) ; Combat monté ; Combat à deux armes (main secondaire −20) ; Psychologie en combat (Calme vs Terreur — cas-type des Difficultés extrêmes EDO).
 
@@ -1090,7 +1090,7 @@ Règle optionnelle pour le tir sur une cible déjà _Engagée_ avec un (ou des) 
 - `LDB 13` (l.117-118) → `useDefenseJetProps`, `entityBlockedAt`, `useHoverTargeting`, `OPTIONAL_RULES`, `FLOWS`, `chooseEnemyAction`, `attackEnv`, `ActionBar`, `resolveAttack`, `GameState`, +3 — `src/data/localisation.json`, `src/engine/policy.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
 - `LDB 14` (l.57-115, l.119-124, l.126-129, l.130-131, l.133-138, l.139-140, l.142-165) → `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `combat-deux-armes`, `isFumble`, `areGrappling`, `main-secondaire`, `schema`, `setGrapple`, `scatter`, +57 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, +31 fichiers
 - `EDO 11` (l.157-166) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `absorption`, `amorphe`, `contagieux` — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
-- sans code : `NADAJ 6` (l.148)
+- sans code : `NADJ 6` (l.148)
 
 ---
 
@@ -1412,7 +1412,7 @@ Pour un combat plus contrôlé (un Avantage pouvant renverser brusquement une ba
 
 Le Trait de créature **Redoutable** rend une créature « particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle ». **Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent.** Exceptions : si elle est sous l'effet d'un État ***Empêtré***, ***Inconscient*** ou ***Surpris***, elle **ne gagne pas** d'Avantage. Conséquence : un bonus de **+10 à la plupart des actions par niveau** de Redoutable, de façon quasi-permanente. Conseil d'usage : dépenser cet Avantage pour activer des **capacités spéciales** (Vomissement d'un troll, Souffle d'un dragon) plutôt que pour frapper plus fort — un monstre isolé encerclé peine de toute façon à générer de l'Avantage par lui-même. Garde-fou : si un monstre a plus de niveaux de Redoutable qu'il n'y a de Personnages, en diminuer ou supprimer le Trait.
 
-### Avantage dans les jeux de taverne — Bras de fer (NADAJ)
+### Avantage dans les jeux de taverne — Bras de fer (NADJ)
 
 Le **Bras de fer** est un Test opposé **étendu** de **Force Intermédiaire (+0)** (à chaque tour, on ajoute son Bonus de Force au nombre de DR ; premier à atteindre **≥ 10 DR** = vainqueur ; tous les *BE* tours sans vainqueur → +1 État *Exténué*, récupérable après 5 min de repos). Mécaniquement, **le gagnant de chaque tour gagne +1 Avantage**, utilisable dans cette partie « en suivant les règles normales » d'Avantage — c'est-à-dire le même Avantage que celui du combat standard, +10 par pion.
 
@@ -1424,18 +1424,18 @@ Le **Bras de fer** est un Test opposé **étendu** de **Force Intermédiaire (+0
 - `LDB 15 l.4-5` — « Perdre Un Avantage » : Test opposé échoué OU perte d'une Blessure → tous perdus ; fin de combat → tous perdus ; aucun gagné ce Round OU infériorité numérique en fin de Round → −1 ; sacrifice possible pour se désengager ; Compétences/Talents peuvent en retirer ou transférer.
 - `ZI 14 l.1016-1017` — Trait *Redoutable* : minimum d'Avantage permanent par Indice → +10/niveau à la plupart des actions ; recommandation d'usage = activer les capacités spéciales (Vomissement, Souffle) plutôt que frapper plus fort.
 - `ZI 14 l.1024-1026` — précisions Redoutable : si le monstre a plus de niveaux que de Personnages, diminuer/supprimer ; **regain au début de son tour** jusqu'à l'Indice (défaut 1) ; **pas de gain** si *Empêtré*, *Inconscient* ou *Surpris*.
-- `NADAJ 16 l.34` — Bras de fer : Test opposé étendu de Force ; le gagnant de chaque tour gagne **+1 Avantage** utilisable selon les règles normales d'Avantage.
+- `NADJ 16 l.34` — Bras de fer : Test opposé étendu de Force ; le gagnant de chaque tour gagne **+1 Avantage** utilisable selon les règles normales d'Avantage.
 
 > « L'Avantage représente votre vitesse en combat, et vous l'acquérez lorsque vous vous montrez plus malin que vos adversaires, que vous les dominez ou les battez. » — `LDB 15 l.10`
 
-> « Le gagnant de chaque tour gagne +1 Avantage, pouvant être utilisé dans le cadre de cette partie de bras de fer, en suivant les règles normales. » — `NADAJ 16 l.34`
+> « Le gagnant de chaque tour gagne +1 Avantage, pouvant être utilisé dans le cadre de cette partie de bras de fer, en suivant les règles normales. » — `NADJ 16 l.34`
 
 **Voir aussi** : Charge et déplacement en combat ; Se désengager (Esquive / Fuir) ; Surprise et embuscade ; Tests opposés et Degrés de Réussite ; Psychologie (Peur, Terreur, Calme) ; Traits de créature (Redoutable, Rage, Instable).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 15` (l.2, l.3-5, l.10, l.37, l.40) → `METRES_PER_LEVEL`, `resolveRun`, `RunModal`, `DisengageModal`, `gainAdvantage`, `verticalTiles`, `chargeAdvantage`, `describeRun`, `PendingAttack`, `createCombatSlice`, +9 — `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/movement.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +9 fichiers
 - `ZI 14` (l.1016-1017, l.1024-1026) → `fouissement` — `src/data/traits.json`
-- sans code : `NADAJ 16` (l.34)
+- sans code : `NADJ 16` (l.34)
 
 ---
 
@@ -1607,7 +1607,7 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 
 ## Escalade, Saut et Chute
 
-Règles de **Déplacement** (LDB ch.15) régissant l'escalade verticale, le saut horizontal et la chute. Toutes les distances du livre sont exprimées en **mètres** ; le jeu utilise une grille à **2 m/case**, donc les implémentations convertissent en cases (÷2).
+Règles de **Déplacement** (LDB 15) régissant l'escalade verticale, le saut horizontal et la chute. Toutes les distances du livre sont exprimées en **mètres** ; le jeu utilise une grille à **2 m/case**, donc les implémentations convertissent en cases (÷2).
 
 ### Escalade
 
@@ -1737,7 +1737,7 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 - `LDB 15 l.98-102` — exemple à pied (Eichengard / Sigrid / cultistes, Distance 2, Athlétisme).
 - `LDB 15 l.105-106` — « Modificateurs de Mouvement » : différence de M = autant de DR bonus (M 5 vs M 4 → DR +1).
 - `LDB 15 l.108` — exemple à cheval (Perdita M 8 vs Bandits M 7 / M 9 → DR +1 et DR +2).
-- `NADAJ 06 l.150` — application en scénario (« Une journée au tribunal ») : gamins des rues fuyards, **Athlétisme 40**, Distance de départ **4** ; très à l'aise en milieu urbain (allées, passages entre bâtiments, trous dans les murs et clôtures).
+- `NADJ 06 l.150` — application en scénario (« Une journée au tribunal ») : gamins des rues fuyards, **Athlétisme 40**, Distance de départ **4** ; très à l'aise en milieu urbain (allées, passages entre bâtiments, trous dans les murs et clôtures).
 
 > « On compare le DR le plus petit obtenu par les poursuivis au plus haut DR obtenu par les poursuivants, et la différence est ajoutée à la Distance si les poursuivis l'ont emporté et retranchée de cette même Distance si ce sont les poursuivants qui l'ont emporté. » — `LDB 15 l.93`
 
@@ -1749,7 +1749,7 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 15` (l.87-89, l.90, l.92, l.93, l.94, l.95, l.96, l.98-102, l.105-106, l.108) → `FallPlan`, `assourdi`, `scene`, `planJump`, `FallModal`, `hasMeaningfulOption`, `PursuitSpec`, `a-terre`, `scenario`, `buildHighlights`, +25 — `src/data/etats.json`, `src/engine/movement.ts`, `src/engine/pursuit.ts`, `src/gameIso/builders/highlights.ts`, `src/gameIso/stage/FallOverlays.tsx`, `src/scenes/test-scenarios/95-poursuite-terrestre.ts`, +17 fichiers
-- sans code : `NADAJ 6` (l.150)
+- sans code : `NADJ 6` (l.150)
 
 ---
 
@@ -1832,7 +1832,7 @@ Les États **Exténué** dus à l'Encombrement sont **accumulés à la fin d'une
 
 ## Armes de corps à corps (LDB) : groupes et tables
 
-Cette entrée transcrit le bloc **Armes de Corps à Corps** du chapitre *Les armes* (LDB 62), avec son schéma de présentation, les **huit tables de groupe** (Armes d'hast, Bagarre, Base, Cavalerie, Deux-mains, Escrime, Fléau, Parade), et les **règles spéciales de groupe** (sous-système des Groupes d'armes, Cavalerie, Fléau, Parade) ainsi que les définitions afférentes (Arme simple, lance de cavalerie hors charge). Elle ajoute aussi deux apports de *Nuits agitées & dures journées* (NADAJ) qui n'apparaissaient nulle part : les **Griffes de Tigre** (arme de Bagarre, profil de Dague) et le profil de combat du **Duel Judiciaire** (jugement par combat). Tout est *verbatim* depuis ses sources. L'abréviation **BF** = Bonus de Force. **(2M)** signale une arme à deux mains.
+Cette entrée transcrit le bloc **Armes de Corps à Corps** du chapitre *Les armes* (LDB 62), avec son schéma de présentation, les **huit tables de groupe** (Armes d'hast, Bagarre, Base, Cavalerie, Deux-mains, Escrime, Fléau, Parade), et les **règles spéciales de groupe** (sous-système des Groupes d'armes, Cavalerie, Fléau, Parade) ainsi que les définitions afférentes (Arme simple, lance de cavalerie hors charge). Elle ajoute aussi deux apports de *Nuits agitées & dures journées* (NADJ) qui n'apparaissaient nulle part : les **Griffes de Tigre** (arme de Bagarre, profil de Dague) et le profil de combat du **Duel Judiciaire** (jugement par combat). Tout est *verbatim* depuis ses sources. L'abréviation **BF** = Bonus de Force. **(2M)** signale une arme à deux mains.
 
 ### Schéma de présentation d'une arme
 
@@ -1873,9 +1873,9 @@ Chaque arme est décrite par sept champs (LDB 62 l.7-15) :
 | Coup-de-poing | 2/6 | 0 | Commune | Personnelle | +BF +2 | – |
 | Griffes de Tigre † | ND | 0 | – | Très courte | +BF +2 | – |
 
-— `LDB 62 l.26-28` ; ligne Griffes de Tigre : `NADAJ 11 l.20` (voir § dédié).
+— `LDB 62 l.26-28` ; ligne Griffes de Tigre : `NADJ 11 l.20` (voir § dédié).
 
-† **Griffes de Tigre** (NADAJ) — gantelets renforcés à quatre lames saillantes. Même profil qu'une **Dague** (`LDB 62` : Enc 0, Très courte, +BF +2, sans Atout ni Défaut) **mais** elles s'utilisent avec la Compétence *Corps à corps (Bagarre)* et non *Corps à corps (Base)*. Sur un Test réussi de *Corps à corps (Bagarre)*, la blessure occasionnée peut sembler avoir été provoquée par un gros chat ou un autre animal similaire. Voir la sous-section *Griffes de Tigre* plus bas.
+† **Griffes de Tigre** (NADJ) — gantelets renforcés à quatre lames saillantes. Même profil qu'une **Dague** (`LDB 62` : Enc 0, Très courte, +BF +2, sans Atout ni Défaut) **mais** elles s'utilisent avec la Compétence *Corps à corps (Bagarre)* et non *Corps à corps (Base)*. Sur un Test réussi de *Corps à corps (Bagarre)*, la blessure occasionnée peut sembler avoir été provoquée par un gros chat ou un autre animal similaire. Voir la sous-section *Griffes de Tigre* plus bas.
 
 #### Groupe — BASE
 
@@ -1942,17 +1942,17 @@ Chaque arme est décrite par sept champs (LDB 62 l.7-15) :
 
 — `LDB 62 l.55-57`
 
-### Sous-section — Griffes de Tigre (NADAJ)
+### Sous-section — Griffes de Tigre (NADJ)
 
-Apparues dans l'aventure *Le Mariage de Nastassia* (NADAJ) : des espions de l'Ind (« agents Marqués ») sont entraînés à combattre aux **Griffes de Tigre**, décrites comme « des gants renforcés munis de quatre lames saillantes ». Profil et règle additionnelle, *verbatim* :
+Apparues dans l'aventure *Le Mariage de Nastassia* (NADJ) : des espions de l'Ind (« agents Marqués ») sont entraînés à combattre aux **Griffes de Tigre**, décrites comme « des gants renforcés munis de quatre lames saillantes ». Profil et règle additionnelle, *verbatim* :
 
-> « Elles possèdent les mêmes caractéristiques qu'une Dague mais leur utilisation se base sur la Compétence Corps à corps (Bagarre) avec les règles additionnelles suivantes : sur un Test réussi de Corps à corps (Bagarre), la blessure occasionnée peut sembler avoir été provoquée par un gros chat ou un autre animal similaire. » — `NADAJ 11 l.20`
+> « Elles possèdent les mêmes caractéristiques qu'une Dague mais leur utilisation se base sur la Compétence Corps à corps (Bagarre) avec les règles additionnelles suivantes : sur un Test réussi de Corps à corps (Bagarre), la blessure occasionnée peut sembler avoir été provoquée par un gros chat ou un autre animal similaire. » — `NADJ 11 l.20`
 
 Conséquences de jeu :
 - **Profil hérité de la Dague** (`LDB 62 l.37`) : Enc 0, Allonge Très courte, Dégâts +BF +2, **aucun Atout ni Défaut**.
 - **Groupe d'armes = Bagarre** (et non Base) : on les utilise avec *Corps à corps (Bagarre)*. Sans cette Augmentation, c'est le sous-système des Groupes qui s'applique (Test sur Caractéristique brute ; ici, l'arme n'ayant ni Atout ni Défaut, seule la valeur change).
 - **Effet narratif** : sur une touche réussie, la plaie peut être attribuée à un gros félin — utile pour maquiller un assassinat. C'est un effet de fiction, sans mécanique chiffrée.
-- Les *Marqués* portent par ailleurs le Trait *Arme (Griffes de Tigre) +5* dans leur statbloc (`NADAJ 11 l.23-32`), distinct du profil d'arme transportable ci-dessus.
+- Les *Marqués* portent par ailleurs le Trait *Arme (Griffes de Tigre) +5* dans leur statbloc (`NADJ 11 l.23-32`), distinct du profil d'arme transportable ci-dessus.
 
 ### Règle — Arme simple (définition générique)
 
@@ -1986,15 +1986,15 @@ N'importe quelle **arme à une main avec l'Atout Défensive** peut être utilis�
 
 > « Quand vous utilisez Corps à corps (Parade), une arme peut être utilisée pour opposer une attaque sans la pénalité de main gauche normale de -20. » — `LDB 62 l.151`
 
-### Encart — Profil de combat du Duel Judiciaire (NADAJ)
+### Encart — Profil de combat du Duel Judiciaire (NADJ)
 
-L'aventure *Une journée au tribunal* (NADAJ) donne le **profil de combat canon du jugement par combat** (*judicial duel*), évoqué nulle part dans les règles de base. Sous la loi impériale, nobles et certaines autres personnes peuvent réclamer un duel judiciaire au lieu d'un jury ; nobles, grands prêtres et marchands influents entretiennent souvent des **champions de justice** pour cela. Conditions de victoire et contraintes d'armes, *verbatim* :
+L'aventure *Une journée au tribunal* (NADJ) donne le **profil de combat canon du jugement par combat** (*judicial duel*), évoqué nulle part dans les règles de base. Sous la loi impériale, nobles et certaines autres personnes peuvent réclamer un duel judiciaire au lieu d'un jury ; nobles, grands prêtres et marchands influents entretiennent souvent des **champions de justice** pour cela. Conditions de victoire et contraintes d'armes, *verbatim* :
 
-> « En fonction de la sévérité de la charge, un duel judiciaire peut être disputé jusqu'au premier sang ou jusqu'à ce qu'un des combattants ne puisse plus poursuivre. En termes de jeu, le premier sang est la première attaque qui cause une perte de plus de 3 Blessures (les coups moindres sont considérés comme des estafilades au mieux) ; un adversaire est incapable de continuer lorsqu'il est réduit à 0 Blessure. » — `NADAJ 06 l.177`
+> « En fonction de la sévérité de la charge, un duel judiciaire peut être disputé jusqu'au premier sang ou jusqu'à ce qu'un des combattants ne puisse plus poursuivre. En termes de jeu, le premier sang est la première attaque qui cause une perte de plus de 3 Blessures (les coups moindres sont considérés comme des estafilades au mieux) ; un adversaire est incapable de continuer lorsqu'il est réduit à 0 Blessure. » — `NADJ 06 l.177`
 
-> « Les parties concernées et leurs champions ont normalement le libre choix des armes bien que la plupart des lois locales interdisent de faire appel à des projectiles. » — `NADAJ 06 l.181`
+> « Les parties concernées et leurs champions ont normalement le libre choix des armes bien que la plupart des lois locales interdisent de faire appel à des projectiles. » — `NADJ 06 l.181`
 
-Synthèse des règles du combat d'honneur (`NADAJ 06 l.176-191`) :
+Synthèse des règles du combat d'honneur (`NADJ 06 l.176-191`) :
 
 | Paramètre | Règle de jeu |
 |---|---|
@@ -2015,9 +2015,9 @@ Synthèse des règles du combat d'honneur (`NADAJ 06 l.176-191`) :
 - `LDB 62 l.142-143` — Groupe Cavalerie : armes à utiliser monté ; les (2M) du groupe deviennent Deux Mains à pied ; les 1M ne sont pas utilisées à pied.
 - `LDB 62 l.146-147` — Groupe Fléau : sans compétence → Défaut Dangereuse ajouté, autres Atouts perdus.
 - `LDB 62 l.150-151` — Groupe Parade : toute arme 1M Défensive utilisable avec *Corps à corps (Parade)* ; pas de pénalité de main gauche −20 en Parade.
-- `NADAJ 11 l.20` — Griffes de Tigre : mêmes caractéristiques qu'une Dague, mais utilisées avec *Corps à corps (Bagarre)* ; sur une réussite la blessure peut sembler faite par un gros félin (gantelets à quatre lames).
-- `NADAJ 11 l.23-32` — Statbloc des espions *Marqués* (Trait *Arme (Griffes de Tigre) +5*) — l'arme en usage par des PNJ.
-- `NADAJ 06 l.176-191` — Duel Judiciaire (jugement par combat) : « premier sang » = première attaque > 3 Blessures (≤ 3 = estafilade), « incapable de continuer » = 0 Blessure ; issue selon sévérité de la charge ; libre choix des armes mais projectiles interdits par la plupart des lois locales ; serment de véracité + inspection des armes (poison/sorcellerie) + prière de Verena avant le combat.
+- `NADJ 11 l.20` — Griffes de Tigre : mêmes caractéristiques qu'une Dague, mais utilisées avec *Corps à corps (Bagarre)* ; sur une réussite la blessure peut sembler faite par un gros félin (gantelets à quatre lames).
+- `NADJ 11 l.23-32` — Statbloc des espions *Marqués* (Trait *Arme (Griffes de Tigre) +5*) — l'arme en usage par des PNJ.
+- `NADJ 06 l.176-191` — Duel Judiciaire (jugement par combat) : « premier sang » = première attaque > 3 Blessures (≤ 3 = estafilade), « incapable de continuer » = 0 Blessure ; issue selon sévérité de la charge ; libre choix des armes mais projectiles interdits par la plupart des lois locales ; serment de véracité + inspection des armes (poison/sorcellerie) + prière de Verena avant le combat.
 
 > NB : l'entrée *Les ogres* (ADE II 02 l.661-705) décrit des armes propres au bestiaire ogre (Massue ogre personnalisable, Poing de fer, Grande lance, Piège à chaînes, Lance-harpon, Pistolet ogre) qui **renvoient explicitement à ce schéma LDB 62** (« Voir WFJDR p. 297 pour ces Atouts ») mais ne font pas partie des tables de Groupe LDB — elles relèvent de l'équipement de créature, hors périmètre de cette entrée. De même, le Trait *Arme (Griffes de Tigre) +5* des PNJ Marqués est un Trait de créature, distinct du profil d'arme transportable ci-dessus.
 
@@ -2025,9 +2025,9 @@ Synthèse des règles du combat d'honneur (`NADAJ 06 l.176-191`) :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 62` (l.5-15, l.19-57, l.59, l.126-127, l.133-136, l.138-139, l.142-143, l.146-147, l.150-151) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `bagarre`, `a-poudre-noire`, `IMPROVISED_DAMAGE`, `base`, `isRepairable`, `defensive`, `itemRepairCostBrass`, +52 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/equipCompare.ts`, `src/engine/items.ts`, +6 fichiers
-- `ADE II 2` (l.661-705) → `traitConsumptionFactor`, `WeaponSpec`, `useAttackJetProps`, `traitCapabilitiesSchema`, `schema`, `WeaponContext`, `CombatFeature`, `effectiveWeapon`, `dailyFoodUpkeep`, `itemFromTrappingById`, +27 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/data/trappings.json`, `src/engine/combat.ts`, +12 fichiers
-- `NADAJ 6` (l.176-191) → `EnemyTurnInput`, `banRangedActive`, `firedAttackBlock`, `EncounterDef`, `chooseEnemyAction`, `EncountersTab`, `resolveAttack`, `VictoryCondition`, `Combatant`, `victoryConditionMet`, +1 — `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/scene.ts`, `src/ui/editor/LogicDock.tsx`
-- `NADAJ 11` (l.20, l.23-32) → `griffe-de-tigre` — `src/data/trappings.json`
+- `ADE II 2` (l.661-705) → `traitConsumptionFactor`, `WeaponSpec`, `traitCapabilitiesSchema`, `useAttackJetProps`, `schema`, `WeaponContext`, `CombatFeature`, `effectiveWeapon`, `dailyFoodUpkeep`, `itemFromTrappingById`, +27 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/data/trappings.json`, `src/engine/combat.ts`, +12 fichiers
+- `NADJ 6` (l.176-191) → `EnemyTurnInput`, `banRangedActive`, `firedAttackBlock`, `EncounterDef`, `chooseEnemyAction`, `EncountersTab`, `resolveAttack`, `VictoryCondition`, `Combatant`, `victoryConditionMet`, +1 — `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/scene.ts`, `src/ui/editor/LogicDock.tsx`
+- `NADJ 11` (l.20, l.23-32) → `griffe-de-tigre` — `src/data/trappings.json`
 
 ---
 
@@ -2323,7 +2323,7 @@ Les groupes d'armes à distance et leurs spécialisations conditionnent l'usage 
 
 ## Atouts et Défauts d'arme
 
-Chaque arme peut porter un ou plusieurs **Atouts** (avantages) et **Défauts** (handicaps). Certains portent un **Indice** (un nombre, ex. *Recharge 2*, *Protectrice 1*, *Explosion 3*) qui paramètre l'effet. Cette entrée transcrit **verbatim** la description de règle de chaque Atout/Défaut du *Livre de base* (LDB, chapitres 62 « Les armes » et 63 « Armures »), puis consolide les ajouts/modifications des suppléments *Aux Armes* (AA), *Le Zoo Impérial* (ZI), *Archives de l'Empire II* (ADE II) et le scénario *Une nuit à l'opéra* (NADAJ), y compris la **table d100 complète des Atouts d'armes magiques** et la **table des Munitions magiques** d'ADE II. Aucune valeur n'est inventée : tout est repris des passages lus.
+Chaque arme peut porter un ou plusieurs **Atouts** (avantages) et **Défauts** (handicaps). Certains portent un **Indice** (un nombre, ex. *Recharge 2*, *Protectrice 1*, *Explosion 3*) qui paramètre l'effet. Cette entrée transcrit **verbatim** la description de règle de chaque Atout/Défaut du *Livre de base* (LDB, chapitres 62 « Les armes » et 63 « Armures »), puis consolide les ajouts/modifications des suppléments *Aux Armes* (AA), *Le Zoo Impérial* (ZI), *Archives de l'Empire II* (ADE II) et le scénario *Une nuit à l'opéra* (NADJ), y compris la **table d100 complète des Atouts d'armes magiques** et la **table des Munitions magiques** d'ADE II. Aucune valeur n'est inventée : tout est repris des passages lus.
 
 > **Note sur les règles de préséance** transverses, citées dans plusieurs entrées : *Inoffensive prend le dessus* sur Dévastatrice et Percutante (une arme Inoffensive ne peut jamais être Dévastatrice ni Percutante) ; *Imprécise prend le dessus* sur Précise ; *Lente prend le dessus* sur Rapide.
 
@@ -2398,9 +2398,9 @@ Chaque arme peut porter un ou plusieurs **Atouts** (avantages) et **Défauts** (
 - **Empennage de griffon** (flèches/carreaux) : agit comme des flèches elfiques.
 - **Pointes barbelées** (flèches/carreaux) : une attaque infligeant ≥ 1 Blessure applique aussi un État *Hémorragique*.
 
-**Une nuit à l'opéra (NADAJ) — Pétards en arme improvisée** : le lanceur teste **Projectiles (Explosifs) CC 50**, Dégâts **+0**, Atout **Explosion 1**, Défaut **Dangereuse** ; **5 %** de chance d'État *En flammes* pour toute personne à moins d'un mètre, même sans Blessure subie (probabilité augmentée selon l'inflammabilité des vêtements).
+**Une nuit à l'opéra (NADJ) — Pétards en arme improvisée** : le lanceur teste **Projectiles (Explosifs) CC 50**, Dégâts **+0**, Atout **Explosion 1**, Défaut **Dangereuse** ; **5 %** de chance d'État *En flammes* pour toute personne à moins d'un mètre, même sans Blessure subie (probabilité augmentée selon l'inflammabilité des vêtements).
 
-### Atouts d'arme magiques (ADE II ch.04)
+### Atouts d'arme magiques (ADE II 4)
 
 ADE II fournit, en plus de la taxonomie d'Atouts ordinaires, un **tableau d100 d'effets magiques** que l'on tire pour générer une arme enchantée (et, pour les armes à distance, le pouvoir est octroyé à ses munitions). **Le tableau complet est transcrit ci-dessous, verbatim.** Deux règles-cadres l'encadrent et s'appliquent à *toute* arme magique :
 
@@ -2452,7 +2452,7 @@ ADE II fournit, en plus de la taxonomie d'Atouts ordinaires, un **tableau d100 d
 
 > Note de classement : *De plaies atroces* (70–72) et *De l'immense gueule du loup* (61–63) confèrent toutes deux l'Atout standard **Dévastatrice** ; *D'argent vif* et *De sel et de saumure* confèrent **Rapide** ; chaque Atout standard ainsi obtenu ne s'empile pas avec une autre source du même Atout (`ADE II 04 l.216`).
 
-### Atouts des Munitions magiques (ADE II ch.04)
+### Atouts des Munitions magiques (ADE II 4)
 
 La fabrication de munitions magiques est encore plus rare que celle des armes magiques. **Récupération** : « Une flèche magique est **détruite si elle touche sa cible**. Les flèches qui manquent leurs cibles peuvent généralement être récupérées intactes. Il y a **90 %** de chances que cela se produise dans des conditions propices, mais cette probabilité est réduite à **50 %** ou moins si le terrain est rocheux ou marécageux. » — `ADE II 04 l.278`
 
@@ -2478,7 +2478,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 - `ADE II 04 l.278` — récupération des munitions magiques (90 % terrain propice, 50 % rocheux/marécageux ; détruite si elle touche).
 - `ADE II 04 l.280-287` — **tableau d100 des Munitions magiques** : 01-54 Flèche magique (+1 Dégât, blesse l'immunisé), 55-74 Flèche de puissance (+1d10 ignorant Armure/Endurance), 75-91 Flèche de vol infaillible (+30 CT), 92-00 Flèches de grêle funeste (1d10 flèches, cibles secondaires à ≤1,50 m en LdV).
 - `ZI 13 l.759-844` — Dague funeste, Lame à poignée bois de cerf, Trempe au sang de dragon (Atout Solide), Sève de trégara (Perforante), Empennage de griffon, Pointes barbelées (Hémorragique).
-- `NADAJ 08 l.170-171` — Pétard improvisé (Explosion 1, Dangereuse, 5 % En flammes).
+- `NADJ 08 l.170-171` — Pétard improvisé (Explosion 1, Dangereuse, 5 % En flammes).
 - `ADE II 4 l.239` — effet magique « De plaies atroces » (70-72 du tableau d100) = Dévastatrice.
 
 > « causent un Coup Critique sur n'importe quel nombre divisible par 10 (par exemple : 10, 20, 30, etc.), ainsi que sur un double (par exemple : 11, 22, 33) obtenu inférieur ou égal au Test approprié au combat. » — `LDB 62 l.248` (Empaleuse)
@@ -2497,7 +2497,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 
 > « Flèche de puissance : si un tir de Flèche de puissance inflige des Dégâts, la victime reçoit 1d10 Dégâts supplémentaires qui ignorent l'Armure et l'Endurance. » — `ADE II 04 l.285`
 
-**Voir aussi** : Tests et Degrés de Réussite (DR) ; Combat (localisation, dé inversé, Critiques) ; Maladresses ; États (Brisé, Sonné, Empêtré, À Terre, Hémorragique, En flammes, Empoisonné, Surpris, Exténué) ; Psychologie (Peur, Terreur, Frénésie) ; Traits — défense, résilience, créatures (Éthéré, Instable, Bestial) ; Talents (Coup puissant, Frappe assommante, Frappe blessante, Tireur d'élite, Tireur embusqué, Tir rapide) ; Armes (stats : Allonge, Dégâts, Groupes) ; Armures (PA, Dégâts d'armure) ; Qualités et Défauts d'objet (Solide, Incassable, Pratique, Peu Fiable) ; Objets magiques / Enchantements (génération ADE II ch.04).
+**Voir aussi** : Tests et Degrés de Réussite (DR) ; Combat (localisation, dé inversé, Critiques) ; Maladresses ; États (Brisé, Sonné, Empêtré, À Terre, Hémorragique, En flammes, Empoisonné, Surpris, Exténué) ; Psychologie (Peur, Terreur, Frénésie) ; Traits — défense, résilience, créatures (Éthéré, Instable, Bestial) ; Talents (Coup puissant, Frappe assommante, Frappe blessante, Tireur d'élite, Tireur embusqué, Tir rapide) ; Armes (stats : Allonge, Dégâts, Groupes) ; Armures (PA, Dégâts d'armure) ; Qualités et Défauts d'objet (Solide, Incassable, Pratique, Peu Fiable) ; Objets magiques / Enchantements (génération ADE II 4).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 62` (l.218-304) → `a-enroulement`, `reachTiles`, `a-poudre-noire`, `isShieldItem`, `a-repetition`, `protectrice`, `availableHealModes`, `assommante`, `arbalete`, `opposedCascadeRoll`, +75 — `src/data/qualities.json`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/equipCompare.ts`, `src/engine/flowCore.ts`, +19 fichiers
@@ -2506,7 +2506,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 - `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253) → `deroutante` — `src/data/qualities.json`
 - `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `taillade`, `precise`, `destabilisante`, `tir-de-zone`, `desequilibree`, `percutante`, `rapide`, `inoffensive`, `empaleuse`, `lente` — `src/data/qualities.json`, `src/data/trappings.json`
 - `ZI 13` (l.759-844) → `dague-funeste`, `armure-de-plates-du-leviathan`, `lame-a-poignee-en-bois-de-cerf`, `trempe-au-sang-de-dragon`, `surin-de-l-aigle`, `seve-de-tregara`, `empennage-de-griffon`, `pointes-barbelees` — `src/data/trappings.json`
-- sans code : `ADE II 4` (l.278, l.280-287), `NADAJ 8` (l.170-171)
+- sans code : `ADE II 4` (l.278, l.280-287), `NADJ 8` (l.170-171)
 
 ---
 
@@ -2949,9 +2949,9 @@ Traits de créature ajoutés par le Tome 1 (`EDO 11 l.220-243`) :
 | **Tête Pointue** | **+1 PA à la Tête** ; −5 Int, −10 Soc. |
 | **Crétin** | Trait **Stupide** ; −40 Int (min 10). |
 
-### 9. Traits de créature additionnels (Mort sur le Reik Compagnon — `T2C 15`)
+### 9. Traits de créature additionnels (Mort sur le Reik Compagnon — `MSRC 15`)
 
-Le **Bestiaire fluvial** du Compagnon T2 ajoute 8 nouveaux Traits de créature, à effet de combat direct, qui n'apparaissent ni au LDB, ni dans ZI, ni dans EDO. Introduction : *« Les Traits suivants reflètent les capacités des créatures de ce chapitre, mais au choix du MJ, ils peuvent être appliqués à d'autres. »* (`T2C 15 l.133-135`). Effet mécanique **verbatim** (`T2C 15 l.138-163`) :
+Le **Bestiaire fluvial** du Compagnon T2 ajoute 8 nouveaux Traits de créature, à effet de combat direct, qui n'apparaissent ni au LDB, ni dans ZI, ni dans EDO. Introduction : *« Les Traits suivants reflètent les capacités des créatures de ce chapitre, mais au choix du MJ, ils peuvent être appliqués à d'autres. »* (`MSRC 15 l.133-135`). Effet mécanique **verbatim** (`MSRC 15 l.138-163`) :
 
 | Trait | Effet mécanique (RAW) |
 |---|---|
@@ -2964,9 +2964,9 @@ Le **Bestiaire fluvial** du Compagnon T2 ajoute 8 nouveaux Traits de créature, 
 | **Capricieux** | Le tempérament de la créature passe d'un extrême à l'autre. Lorsqu'un Personnage effectue un Test de **Sociabilité** en traitant avec la créature, lancez 1d10 selon le tableau ci-dessous. |
 | **Engloutir** | Si la créature est de taille suffisante, **toute attaque réussie engloutit une victime, même si elle ne cause aucun Dégât**, infligeant l'État **Empêtré d'une Force égale à celle de la créature**. Au début de chaque Round, les victimes englouties **gagnent un État *Empêtré* supplémentaire** et **perdent automatiquement 1 Blessure** alors que de puissantes enzymes commencent la digestion. Si la créature n'est pas de taille suffisante pour engloutir entièrement une victime, elle peut néanmoins être assez grande pour immobiliser un endroit du corps touché. La créature **ne peut plus effectuer d'attaques contre les victimes entièrement englouties**, mais elle peut encore en attaquer d'autres si elles sont suffisamment proches. |
 
-— `T2C 15 l.138-163` (transcription verbatim ; le bloc « relâchement / retrait par Force / Effrayé » de `T2C 15 l.145-147` s'applique à **Salive Anticoagulante**)
+— `MSRC 15 l.138-163` (transcription verbatim ; le bloc « relâchement / retrait par Force / Effrayé » de `MSRC 15 l.145-147` s'applique à **Salive Anticoagulante**)
 
-**Tableau de Capricieux** (`T2C 15 l.153-160`, table verbatim) :
+**Tableau de Capricieux** (`MSRC 15 l.153-160`, table verbatim) :
 
 | 1d10 | Résultat |
 |---|---|
@@ -2976,15 +2976,15 @@ Le **Bestiaire fluvial** du Compagnon T2 ajoute 8 nouveaux Traits de créature, 
 | 8-9 | Ajouter 1 au DR |
 | 10 | Ajouter 2 au DR |
 
-— `T2C 15 l.153-160`
+— `MSRC 15 l.153-160`
 
-Exemple d'application dans le même chapitre — le **Troll des rivières** (`T2C 15 l.119-128`) emploie plusieurs de ces Traits standard mêlés (Amphibie, Limicole, Vomissement, Perturbant (Odeur), Increvable, Régénération…) :
+Exemple d'application dans le même chapitre — le **Troll des rivières** (`MSRC 15 l.119-128`) emploie plusieurs de ces Traits standard mêlés (Amphibie, Limicole, Vomissement, Perturbant (Odeur), Increvable, Régénération…) :
 
 | M | CC | CT | F | E | I | Ag | Dex | Int | FM | Soc | B |
 |---|----|----|---|---|---|----|-----|-----|----|-----|---|
 | 6 | 30 | 15 | 55 | 45 | 10 | 15 | 15 | 10 | 20 | 5 | 30 |
 
-**Traits :** Amphibie, Arme +9, Armure 2, Coriace, Increvable, Infecté, Limicole, Morsure +8, Perturbant (Odeur), Régénération, Taille (Grande), Stupide, Vision nocturne, Vomissement. **Facultatif :** Affamé, Belliqueux, Bestial, Brutal, Discrétion, Dur à Cuire, Frénésie, Grand, Insensible à la douleur, Mutation, Parasité, Résistance à la Magie, Taille (Énorme), Territorial — `T2C 15 l.119-128`
+**Traits :** Amphibie, Arme +9, Armure 2, Coriace, Increvable, Infecté, Limicole, Morsure +8, Perturbant (Odeur), Régénération, Taille (Grande), Stupide, Vision nocturne, Vomissement. **Facultatif :** Affamé, Belliqueux, Bestial, Brutal, Discrétion, Dur à Cuire, Frénésie, Grand, Insensible à la douleur, Mutation, Parasité, Résistance à la Magie, Taille (Énorme), Territorial — `MSRC 15 l.119-128`
 
 ### 10. Profils-exemples illustrant le schéma (Traits fixes / Facultatif)
 
@@ -3007,17 +3007,17 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 - `ZI 14 l.1013-1035` — présentation ZI : Armure affiche (Indice + BE), catégorie « Traits d'attaque », Trait **Redoutable**, Trait **Fouissement**, conseils d'emploi de Redoutable selon la taille du groupe.
 - `ZI 14 l.1037-1087` — tableau de référence rapide reprenant **tous** les Traits du LDB (texte complet).
 - `EDO 11 l.172-243` — nouveaux Traits (Absorption, Amorphe, Contagieux, Décérébré, Dédoublement, Voleur de Chair) + Mutations à effet de combat (Écailles Épineuses, Chair Nécrosée, Pattes Chèvre, Tête Pointue, Crétin).
-- `T2C 15 l.133-135` — introduction des Nouveaux Traits du Bestiaire fluvial (applicables à n'importe quelle créature au choix du MJ).
-- `T2C 15 l.138-163` — 8 nouveaux Traits du Compagnon T2 : Aquatique, S'accrocher Pour Se Nourrir, Hallucinogène, Rampant, Salive Analgésique, Salive Anticoagulante, Capricieux, Engloutir (effet mécanique verbatim).
-- `T2C 15 l.153-160` — tableau d10 du Trait **Capricieux** (DR ±0–2 selon le jet).
-- `T2C 15 l.119-128` — profil du **Troll des rivières** (exemple mêlant Traits standard + fluviaux).
+- `MSRC 15 l.133-135` — introduction des Nouveaux Traits du Bestiaire fluvial (applicables à n'importe quelle créature au choix du MJ).
+- `MSRC 15 l.138-163` — 8 nouveaux Traits du Compagnon T2 : Aquatique, S'accrocher Pour Se Nourrir, Hallucinogène, Rampant, Salive Analgésique, Salive Anticoagulante, Capricieux, Engloutir (effet mécanique verbatim).
+- `MSRC 15 l.153-160` — tableau d10 du Trait **Capricieux** (DR ±0–2 selon le jet).
+- `MSRC 15 l.119-128` — profil du **Troll des rivières** (exemple mêlant Traits standard + fluviaux).
 - `EDO 07 l.320-348`, `EDO 09 l.513-570`, `EDO 01 l.271-290` — profils-exemples montrant le schéma Traits/Facultatif et l'usage des nouveaux Traits.
 
 > *« Les Traits standard de créature sont ajoutés à la liste Facultative de toutes les créatures. »* — `LDB 76 l.33`
 > *« L'arme inflige Indice Dégâts qui incluent déjà son bonus de Force. En général, le nombre de Dégâts est égal à 4 + son bonus de Force. »* — `LDB 85 l.35`
-> *« Les Traits suivants reflètent les capacités des créatures de ce chapitre, mais au choix du MJ, ils peuvent être appliqués à d'autres. »* — `T2C 15 l.133-135`
+> *« Les Traits suivants reflètent les capacités des créatures de ce chapitre, mais au choix du MJ, ils peuvent être appliqués à d'autres. »* — `MSRC 15 l.133-135`
 
-**Voir aussi** : Localisation et Tableaux de Critiques (localisation inversée, Tableau des Bras pour membres sans table) ; Taille et combat (Dévastatrice/Percutante, Frappe Mortelle, Piétinement) ; Psychologie (Peur, Terreur, Frénésie, Animosité, Haine, Préjugé) ; États (Empêtré, Sonné, Inconscient, Hémorragique — infligés par les Traits T2C) ; Blessures et Bonus de caractéristique (BF+2×BE+BFM) ; Corruption et Mutations ; Attaques gratuites et Avantage.
+**Voir aussi** : Localisation et Tableaux de Critiques (localisation inversée, Tableau des Bras pour membres sans table) ; Taille et combat (Dévastatrice/Percutante, Frappe Mortelle, Piétinement) ; Psychologie (Peur, Terreur, Frénésie, Animosité, Haine, Préjugé) ; États (Empêtré, Sonné, Inconscient, Hémorragique — infligés par les Traits MSRC) ; Blessures et Bonus de caractéristique (BF+2×BE+BFM) ; Corruption et Mutations ; Attaques gratuites et Avantage.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.9-13, l.16-28, l.31-37, l.38-45) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
@@ -3025,7 +3025,7 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 - `LDB 85` (l.8-406) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `TraumaFiche`, `TraverseCapability`, `cannotStopOn`, +149 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +29 fichiers
 - `ZI 14` (l.1013-1035, l.1037-1087) → `ethere`, `fouissement` — `src/data/traits.json`
 - `EDO 11` (l.172-243) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
-- `T2C 15` (l.119-128, l.133-135, l.138-163) → `capriciousMod`, `PerSL`, `aquatique`, `s-accrocher-pour-se-nourrir`, `capricieux`, `engloutir`, `hallucinogene`, `rampant`, `salive-analgesique`, `salive-anticoagulante`, +1 — `src/data/creatures.json`, `src/data/traits.json`, `src/engine/ops.ts`, `src/engine/social.ts`
+- `MSRC 15` (l.119-128, l.133-135, l.138-163) → `capriciousMod`, `PerSL`, `aquatique`, `s-accrocher-pour-se-nourrir`, `capricieux`, `engloutir`, `hallucinogene`, `rampant`, `salive-analgesique`, `salive-anticoagulante`, +1 — `src/data/creatures.json`, `src/data/traits.json`, `src/engine/ops.ts`, `src/engine/social.ts`
 - sans code : `LDB 76` (l.9), `EDO 1` (l.271-290), `EDO 7` (l.320-348), `EDO 9` (l.513-570)
 
 ---
@@ -3124,7 +3124,7 @@ Pour s'en défaire : **Action** = Test **opposé de Force** contre la source de 
 
 ### Exemple de mise en œuvre RAW (corroboration cross-livre)
 
-L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un monstre en page-mémo et confirme le coût en Avantage : le basilic possède « Morsure +7, Attaque caudale +8 et Piétiner +4 comme attaque gratuite du Trait Taille (Énorme), ce qui signifie qu'il peut effectuer chacune de ces attaques en dépensant 1 Avantage » — `Ubersreik 04 l.9`. (Confirme les renvois canon : Morsure p.340, Attaque caudale p.338 du Livre de base.)
+L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un monstre en page-mémo et confirme le coût en Avantage : le basilic possède « Morsure +7, Attaque caudale +8 et Piétiner +4 comme attaque gratuite du Trait Taille (Énorme), ce qui signifie qu'il peut effectuer chacune de ces attaques en dépensant 1 Avantage » — `AU1 04 l.9`. (Confirme les renvois canon : Morsure p.340, Attaque caudale p.338 du Livre de base.)
 
 **Sources RAW** :
 - `LDB 85 l.43` — définition de l'**Attaque gratuite** (jet CC/CT supplémentaire, ne coûte pas l'Action ; renvoi Actions gratuites p.158).
@@ -3141,7 +3141,7 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 - `LDB 85 l.388-388` — Trait **Vampirique** : Morsure réussie → regagne les PB perdus par la cible ; seul moyen de soin.
 - `LDB 16 l.86-87` + état Empêtré p.168 — Empêtré : pas de Mouvement, -10 ; échappée = Test opposé de Force, 1 État retiré par DR.
 - `LDB 16 l.68-74` — Empoisonné : 1 PB/fin de Round (ignore modificateurs), -10 à tous les Tests, blocage de soin / risque de mort.
-- `Ubersreik 04 l.12` — page-mémo (basilic) : Morsure/Attaque caudale/Piétiner = attaques gratuites à **1 Avantage** chacune (corroboration + renvois p.338/340/341).
+- `AU1 04 l.12` — page-mémo (basilic) : Morsure/Attaque caudale/Piétiner = attaques gratuites à **1 Avantage** chacune (corroboration + renvois p.338/340/341).
 
 > « Pendant son tour, la créature peut effectuer une Attaque gratuite en dépensant 1 Avantage. Les Dégâts de l'Attaque égalent _Indice_ et incluent déjà son bonus de Force. » — `LDB 85 l.237` (Morsure)
 
@@ -3151,8 +3151,8 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 16` (l.68-74, l.86-87) → `addCondition`, `Formula`, `EnemyAction`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, +21 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +11 fichiers
-- `LDB 85` (l.8-9, l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389, l.405, l.408, l.451) → `a-distance`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `TraumaFiche`, `amphibie`, `applySwarmBuild`, `animosite`, `weaponFromTrait`, `arboricole`, +82 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +16 fichiers
-- sans code : `Ubersreik 4` (l.9, l.12)
+- `LDB 85` (l.8-9, l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389, l.405, l.408, l.451) → `a-distance`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `amphibie`, `applySwarmBuild`, `animosite`, `weaponFromTrait`, `arboricole`, `arme`, +81 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +15 fichiers
+- sans code : `AU1 4` (l.9, l.12)
 
 ---
 
@@ -3661,7 +3661,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 - `LDB 85 l.141-142` — **Fabriqué** : pas d'Int/FM/Soc (Tests auto-réussis), Blessures calculées sur le bonus de **Force** (et non de FM), toutes Attaques Magiques, erre sans contrôle ni Territorial.
 - `LDB 85 l.357-370` — **Modificateurs de Taille en Combat** (support de l'Attaque de Piétinement de Se Cabrer) : ×Dégâts par écart de catégories, Atouts Dévastatrice/Percutante, Frappe Mortelle, +10 toucher pour le plus petit, −2 DR/catégorie en défense CC.
 - `ZI 02 l.66-70` / `ZI 14 l.1029-1035` — **Fouissement (Indice)** (hors LDB) : creuse *Indice* m en ignorant obstacles/terrain, peut Charger, peut rester enfouie ; ciblage d'une cible enfouie +2 niveaux de Portée (Longue/Extrême impossible).
-- `Ubersreik 05 l.22` — exemple d'application de Foulée (basilic Mouvement 6 → 22 m de Course en un Round sans Test d'Athlétisme) ; renvoie au trait LDB p.339.
+- `AU1 05 l.22` — exemple d'application de Foulée (basilic Mouvement 6 → 22 m de Course en un Round sans Test d'Athlétisme) ; renvoie au trait LDB p.339.
 
 **Voir aussi** : Taille des créatures et modificateurs de combat · Charge, Course et Désengagement · Bandes de portée (À distance) · Initiative et Avantage · Traits d'attaque de créature (Arme, Morsure, Cornes, Attaque Caudale)
 
@@ -3669,7 +3669,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 - `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `cannotStopOn`, `StatblockEditor`, `amphibie`, +99 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +21 fichiers
 - `ZI 2` (l.66-70) → `fouissement` — `src/data/traits.json`
 - `ZI 14` (l.1029-1035) → `fouissement` — `src/data/traits.json`
-- sans code : `Ubersreik 5` (l.22)
+- sans code : `ZI 2` (l.66-70), `AU1 5` (l.22)
 
 ---
 
@@ -6174,11 +6174,11 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - LDB 13 l.67-69 — Le markdown dit « chaque Personnage vaincu subit l'État Surpris ». La source dit « chaque Personnage vaincu subit alors l'État Surpris ». Fidèle.
 - LDB 13 l.71 — Le markdown parle de « dépenser 1 Point de Détermination ». La source dit « il peut utiliser un Point de Détermination pour se débarrasser de l'État Surpris ». Fidèle.
 - LDB 16 l.132-139 — La phrase dans la source (l.130) dit « vous n'êtes absolument pas prêt à réagir à ce qu'il arrive » ; le markdown transcrit « vous n'êtes absolument pas prêt à réagir » (sans « à ce qu'il arrive »). Légère troncature de citation mais sans impact sémantique sur la règle.
-- NADAJ 05 l.117 — ERREUR FACTUELLE : le markdown dit que le Test est « Très difficile (-30) » pour se réveiller en sursaut. La source dit « Test de Perception Très Difficile (-30) ». C'est correct. MAIS le markdown dit « réussite = réveil avec l'État Fatigué ». La source dit « se réveiller en sursaut avec un État Fatigué ». C'est fidèle. CEPENDANT le markdown dit : « On lui donne en outre les États Inconscient et À terre pour le Round 1, et un État Surpris pour le Round où il se réveille ». La source dit : « Donnez-leur également les États Inconscient et À terre pour le Round 1 et un État Surpris pour le Round où ils se réveillent. » — Le markdown est fidèle.
-- NADAJ 06 l.148 — ERREUR : le markdown dit que les orphelins frappent « à CC 20 ». La source dit qu'ils portent les coups « avec leur modeste CC de 20 ». C'est fidèle. MAIS le markdown dit « trois attaques sont portées pendant le même Round avec les bonus de supériorité numérique ». La source dit « trois attaques vont être faites sur les jambes de ce Personnage » et « toutes les attaques ayant lieu pendant le même Round et bénéficiant des bonus de supériorité numérique ». Le markdown est fidèle mais omet que les attaques ciblent spécifiquement les jambes (genoux et arrière des cuisses) — omission non critique.
+- NADJ 05 l.117 — ERREUR FACTUELLE : le markdown dit que le Test est « Très difficile (-30) » pour se réveiller en sursaut. La source dit « Test de Perception Très Difficile (-30) ». C'est correct. MAIS le markdown dit « réussite = réveil avec l'État Fatigué ». La source dit « se réveiller en sursaut avec un État Fatigué ». C'est fidèle. CEPENDANT le markdown dit : « On lui donne en outre les États Inconscient et À terre pour le Round 1, et un État Surpris pour le Round où il se réveille ». La source dit : « Donnez-leur également les États Inconscient et À terre pour le Round 1 et un État Surpris pour le Round où ils se réveillent. » — Le markdown est fidèle.
+- NADJ 06 l.148 — ERREUR : le markdown dit que les orphelins frappent « à CC 20 ». La source dit qu'ils portent les coups « avec leur modeste CC de 20 ». C'est fidèle. MAIS le markdown dit « trois attaques sont portées pendant le même Round avec les bonus de supériorité numérique ». La source dit « trois attaques vont être faites sur les jambes de ce Personnage » et « toutes les attaques ayant lieu pendant le même Round et bénéficiant des bonus de supériorité numérique ». Le markdown est fidèle mais omet que les attaques ciblent spécifiquement les jambes (genoux et arrière des cuisses) — omission non critique.
 - LDB 17 l.61 — La source (ligne 66) dit : « Retirez un État : si vous retirez l'État à Terre, regagnez 1 Point de Blessure lorsque vous vous mettez debout. » Le markdown cite cette option comme « Retirer un État » et l'appelle « option générique ». Le label exact dans la source est juste « Retirez un État » sans titre en gras distinct — c'est une des trois options sous « Dépenser de la Détermination ». La ref l.66 est correcte.
 - ERREUR de structure LDB 13 : le markdown présente « Surprise » et « Ordre d'Initiative » comme deux sections séparées à partir de l.52. Dans la source, la ligne 52 est un titre « ## Surprise » et la ligne 53 est « ## Ordre D'initiative » — ce sont deux titres consécutifs, sans contenu entre eux (artefact de la conversion PDF). Le texte de la Surprise commence à la ligne 56. Cette particularité ne crée pas d'erreur factuelle dans le markdown.
-- NADAJ 05 l.117 — La source parle des « Personnages endormis » (pluriel). Le markdown dit « un Personnage endormi ». Le changement au singulier est une paraphrase acceptable mais la source concerne potentiellement plusieurs personnages.
+- NADJ 05 l.117 — La source parle des « Personnages endormis » (pluriel). Le markdown dit « un Personnage endormi ». Le changement au singulier est une paraphrase acceptable mais la source concerne potentiellement plusieurs personnages.
 - Implémentation mentionnée dans le markdown — non vérifiée dans cette passe (hors scope de la vérification source RAW). Les refs aux fichiers src/ sont des déclarations d'implémentation, pas des claims RAW.
 
 ### Action, Mouvement et options du Tour ⚠
@@ -6239,8 +6239,8 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - Note structurelle (non-bug) : les renvois entre parenthèses « voir l'étape 4 pour les bornes de sortie 0 et 10+ » (après la table Distance étape 1) et les notes éditoriales en italique sous les tables sont des ajouts du rédacteur, non présents dans le texte RAW. Aucun n'introduit d'erreur de règle.
 
 ### Armes de corps à corps (LDB) : groupes et tables ⚠
-- Duel Judiciaire — table row « Choix de l'issue » : la parenthèse « (premier sang pour les charges légères, jusqu'à l'incapacité pour les graves) » est une inférence éditoriale absente du texte source. NADAJ 06 l.177 dit seulement « En fonction de la sévérité de la charge, un duel judiciaire peut être disputé jusqu'au premier sang ou jusqu'à ce qu'un des combattants ne puisse plus poursuivre » sans préciser quelle sévérité correspond à quelle issue.
-- Duel Judiciaire — Wendorf : le document résume « chaussette lestée » alors que la source (NADAJ 06 l.181) dit précisément « une chaussette contenant une pierre de la taille d'un poing ». Paraphrase mineure mais inexacte.
+- Duel Judiciaire — table row « Choix de l'issue » : la parenthèse « (premier sang pour les charges légères, jusqu'à l'incapacité pour les graves) » est une inférence éditoriale absente du texte source. NADJ 06 l.177 dit seulement « En fonction de la sévérité de la charge, un duel judiciaire peut être disputé jusqu'au premier sang ou jusqu'à ce qu'un des combattants ne puisse plus poursuivre » sans préciser quelle sévérité correspond à quelle issue.
+- Duel Judiciaire — Wendorf : le document résume « chaussette lestée » alors que la source (NADJ 06 l.181) dit précisément « une chaussette contenant une pierre de la taille d'un poing ». Paraphrase mineure mais inexacte.
 
 ### Armes à distance et munitions (LDB) : groupes et tables ⚠
 - INTERPRÉTATION NON VÉRIFIÉE — l.230-231 (Ingénierie via Poudre noire) : le document ajoute «garde donc Dangereuse/Recharge/Répétition mais perd Poudre noire/Dévastatrice et les autres Atouts». La source dit simplement «les armes perdent tous leurs Atouts en gardant leurs Défauts». La distinction Atout/Défaut de Dangereuse, Recharge et Répétition n'est pas établie dans les refs citées : si ces propriétés sont des Atouts (et non des Défauts), elles seraient perdues aussi — l'élaboration du document pourrait être inexacte.
@@ -6260,8 +6260,8 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - MÉTA — Les sources AA (« Aux Armes ») et ZI (« Le zoo impérial ») n'existent PAS en version française dans le dépôt : les dossiers réels sont Source/Up in Arms (anglais) et Source/The Imperial Zoo (anglais). Les citations verbatim françaises attribuées à « AA 01 l.XXXX » et « ZI 01 l.XXXX » sont des traductions, pas des citations de source française existante. Les numéros de ligne citées correspondent aux fichiers anglais. Cela ne rend pas les règles fausses mais le « verbatim » est inexact par construction.
 - MINEURE — Le nom propre de la 64e capacité magique est « D'habilité et de ruse » dans la source ADE II (l.223) mais « D'habileté et de ruse » dans le document (un 'e' de différence). Probable écart OCR/orthographe.
 - MINEURE — Piège-Lame : le document résume « votre adversaire lâche la lame » alors que la source LDB (l.295) dit « votre adversaire laisse tomber la lame qui lui est arrachée ». Paraphrase acceptable mais pas verbatim.
-- CONFIRMÉ FIDÈLE — Ensemble du tableau d100 ADE II (28 entrées, 01-19 → 00) : les noms, plages et effets vérifiés correspondent à la source ADE II ch.04 lue. Pas d'erreur de plage ni d'effet détectée.
-- CONFIRMÉ FIDÈLE — Tableau munitions magiques (01-54 / 55-74 / 75-91 / 92-00) : les 4 entrées correspondent exactement à la source ADE II ch.04 l.266-272.
+- CONFIRMÉ FIDÈLE — Ensemble du tableau d100 ADE II (28 entrées, 01-19 → 00) : les noms, plages et effets vérifiés correspondent à la source ADE II 4 lue. Pas d'erreur de plage ni d'effet détectée.
+- CONFIRMÉ FIDÈLE — Tableau munitions magiques (01-54 / 55-74 / 75-91 / 92-00) : les 4 entrées correspondent exactement à la source ADE II 4 l.266-272.
 - CONFIRMÉ FIDÈLE — Toutes les descriptions LDB (À Enroulement, À Poudre Noire, À Répétition, Assommante, Défensive, Perturbante, Dévastatrice, Empaleuse, Explosion, Immobilisante, Piège-Lame, Pistolet, Pointue, Précise, Protectrice, Incassable, Percutante, Perforante, Rapide ch.62 ; Taille, Dangereuse, Épuisante, Imprécise, Inoffensive, Lente, Recharge ch.63) vérifiées contre la source — mécaniques correctes.
 - CONFIRMÉ FIDÈLE — Atouts AA (Déséquilibrée, Trip/Déstabilisante, Slash/Taillade, Spread/Tir de zone, Salvo/Salve, Shield/Protectrice modifiée) et règle Atouts Optionnels (choix avant le jet, défaut = premier Atout listé) : mécaniques correctement rapportées depuis Up in Arms, à la nuance « Spread » signalée ci-dessus.
 - CONFIRMÉ FIDÈLE — Dague funeste (ZI) : « Difficult (-10) Endurance Test » = « Résistance Complexe (-10) » en VF ; d10 secret sur 1 = poison épuisé + prochaine utilisation brise l'arme ; illégale dans l'Empire. Tout vérifié.
@@ -6269,7 +6269,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - CONFIRMÉ FIDÈLE — Griffon Fletching (ZI) : agit comme des flèches elfes (Elf Arrows). Vérifié.
 - CONFIRMÉ FIDÈLE — Sève de trégara (ZI, Tregara Sap) : jusqu'à 6 carreaux d'arbalète, utilisables dans la journée, gagnent l'Atout Perforante. Vérifié.
 - CONFIRMÉ FIDÈLE — Règles-cadres ADE II : toute arme magique blesse les Éthérés (l.206) ; Atouts conférés non cumulables, exemple -20 Rapide (l.208). Vérifié (la valeur -20 est bien dans ADE II, pas une erreur du document — c'est ADE II qui diverge de LDB).
-- NON VÉRIFIABLE — Pétards NADAJ (ch.08 l.159-160) : le contenu de la ligne 160 est « Omitted long matching line » dans tous les outils disponibles. Les stats revendiquées (Projectiles (Explosifs), CC 50, Explosion 1, Dangereuse, 5 % En flammes) ne peuvent pas être confirmées ou infirmées.
+- NON VÉRIFIABLE — Pétards NADJ (ch.08 l.159-160) : le contenu de la ligne 160 est « Omitted long matching line » dans tous les outils disponibles. Les stats revendiquées (Projectiles (Explosifs), CC 50, Explosion 1, Dangereuse, 5 % En flammes) ne peuvent pas être confirmées ou infirmées.
 
 ### Armures : table, PA, dégâts et réparation ⚠
 - Déviation Critique (LDB 63 l.32) : la source dit « Vous subissez toujours les Blessures normales (et étant donné que vos PA sont à présent réduits de 1 Point, vous subissez probablement une Blessure supplémentaire) », en un seul membre de phrase. Le markdown sépare en deux bullets distincts (« les PB ordinaires sont infligés quoi qu'il arrive » + « vous subissez probablement une Blessure supplémentaire ») et reformule l'intérieur de la parenthèse. La substance est préservée mais la structure source n'est pas respectée verbatim.
@@ -6287,7 +6287,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - Note éditoriale sur le tiret (–) de caractéristique absente : l'affirmation « un Test requis sur une caractéristique absente est traité selon le Trait qui régit la créature (cf. Décérébré, Fabriqué) » est une inférence éditoriale — LDB 76 n'énonce pas cette règle sur la notation tiret ; elle découle de la lecture de Fabriqué (réussite auto) et Décérébré (jamais testé) pris séparément. Plausible, non inventé, mais non directement cité en LDB 76.
 
 ### Traits d'attaque naturelle des créatures ❌
-- VENIN — mécanique inventée : le document décrit Venin comme «cible qui perd des PB → Test pour résister, sinon État Empoisonné» (tableau) et «La cible tente un Test (Résistance / Endurance) de Difficulté indiquée ; défaut = Intermédiaire (+0) ; en cas d'échec → État Empoisonné» (texte intégral). Le RAW (LDB 85 l.389-389) dit : «Quand elle inflige des Points de Blessure avec ses Attaques venimeuses, son adversaire subit un État Empoisonné. Si aucune Difficulté n'est indiquée pour résister au Venin, le Test est considéré comme Intermédiaire.» — l'État Empoisonné est infligé DIRECTEMENT ; la Difficulté gouverne le Test de Résistance de FIN DE ROUND pour retirer l'état (confirmé par Ubersreik 04 l.38 : «qui nécessitent un Test de Résistance Intermédiaire (+0) pour les éliminer à la fin de chaque Round»). Aucun test de résistance initial n'existe dans le RAW.
+- VENIN — mécanique inventée : le document décrit Venin comme «cible qui perd des PB → Test pour résister, sinon État Empoisonné» (tableau) et «La cible tente un Test (Résistance / Endurance) de Difficulté indiquée ; défaut = Intermédiaire (+0) ; en cas d'échec → État Empoisonné» (texte intégral). Le RAW (LDB 85 l.389-389) dit : «Quand elle inflige des Points de Blessure avec ses Attaques venimeuses, son adversaire subit un État Empoisonné. Si aucune Difficulté n'est indiquée pour résister au Venin, le Test est considéré comme Intermédiaire.» — l'État Empoisonné est infligé DIRECTEMENT ; la Difficulté gouverne le Test de Résistance de FIN DE ROUND pour retirer l'état (confirmé par AU1 04 l.38 : «qui nécessitent un Test de Résistance Intermédiaire (+0) pour les éliminer à la fin de chaque Round»). Aucun test de résistance initial n'existe dans le RAW.
 - EMPÊTRÉ — ref incorrecte pour la règle d'échappée : le document cite «LDB 16 l.86-87» pour la règle de retrait (Test opposé de Force, chaque DR retire un état). Le texte à l.82-85 est la description de l'effet Empêtré (pas de Mouvement, -10). La règle d'échappée se trouve à l.61, dans la section Brisé : «Vous pouvez utiliser votre Action pour retirer l'État Empêtré en réussissant un Test opposé de Force contre la source de cet empêtrement, et chaque DR obtenu permet de retirer un État Empêtré supplémentaire.» La ref «l.82-85» pour l'échappée est donc erronée.
 - TENTACULES — ordre du nom inversé : le document écrit «Tentacules # (Indice)» alors que le titre LDB est «# Tentacules (Indice)» (l.354). Mineur mais inexact si des vérifications de libellé sont faites par correspondance exacte.
 - LANGUE PRÉHENSILE — défense non précisée dans le Trait : le tableau indique «CT / Esquive (à distance)» comme défense. Le texte LDB du trait (l.185-188) précise seulement «C'est une Attaque à distance» sans spécifier explicitement le jet de défense dans la description du trait lui-même. L'inférence «Esquive» est raisonnable (règle générale des attaques à distance) mais n'est pas un verbatim du trait ; à signaler comme inférence.
@@ -6400,15 +6400,15 @@ Passages de combat repérés au survey mais hors des topics ci-dessus (à reclas
 - `ADE II 04 l.247` (ADE II) — Atout arme magique Coupure infinie : Dégâts infligent +2 Blessures supplémentaires.
 - `ADE II 04 l.285` (ADE II) — Munition magique Flèche puissance : Dégâts infligés = +1d10 supplémentaires ignorant Armure/Endurance.
 - `EDO 11 l.157-165` (EDO) — Suggestion : deux niveaux de Difficulté supplémentaires — Presque Impossible (-40) et Impossible (-50) — à ajouter au tableau LDB standard. Plafond combiné reste -50. Recommandé d'utiliser avec les règles d'Échec/Réussite automatique (01-05 = succès minimum même sous 0). Ces difficultés s'appliquent aussi aux tests de combat (Calme vs Terreur 3-5, crochetage de serrures ultra-complexes). topicId suggéré : 'difficultes-combat-taille-surnombre' ou 'autre'.
-- `T2C 15 l.138-163` (T2C) — Traits de créatures nouveaux : Aquatique (respire sous eau, pleine vitesse en immersion), S'accrocher Pour Se Nourrir (perte 1 BF/Round jusqu'au KO), Hallucinogène (test FM Accessible +20 ou États Sonné), Rampant (pas d'Action Course), Salive Analgésique/Anticoagulante, Capricieux (1d10 ±0-2 DR modifier), Engloutir (État Empêtré+1/Round, perte 1 BF).
-- `T2C 12 l.16-48` (T2C) — Tactiques des naufrageurs : Balisage Trompeur (nuit), Faux Pilote (test Intuition opposé), Dangers Artificiels (récifs, barrières à chaînes) ; dégâts de naufrage décrits p.30 du livre (ref externe).
-- `T2C 12 l.163-171` (T2C) — Scénario Attaque Pirate : 2 pirates/personnage combatif + 1/autre, grappins à couper (BE 3, BF 8, 4 Rounds), tirs aux Projectiles pendant rapprochement ; chef Test Commandement Accessible +20 après mort/magie (abandon si raté).
-- `NADAJ 06 l.176-186` (NADAJ) — Règles du Duel Judiciaire (jugement par combat) : 'premier sang' = première attaque causant >3 Blessures (coups moindres = estafilades) ; 'incapable de continuer' = réduit à 0 Blessure. Serment de véracité obligatoire, inspection des armes, arbitrage par prêtresse de Verena. Pas de projectiles (règle générale des lois locales). Armes au libre choix des champions. Suggestion topicId : 'duel-judiciaire-combat-honneur'.
-- `NADAJ 11 l.21-29` (NADAJ) — Griffes de Tigre (nouvelle arme) : même profil que la Dague mais utilisent Corps à corps (Bagarre) ; sur un Test réussi, les blessures semblent causées par un gros félin. Suggestion topicId : 'armes-melee-tables' (ou 'aa-armes-melee-tables' si le topic vise les nouvelles armes des suppléments).
-- `NADAJ 15 l.53-55` (NADAJ) — Nouveau Talent 'Empreint d'Ulgu' (max 1) : permet d'utiliser Focalisation (Ulgu) à la place de Discrétion pour tous les Tests qui y font appel. Toute incantation réussie de sort du Domaine des Ombres à moins de 8 mètres gagne +1 DR (bonus non cumulable). Suggestion topicId : 'aa-talents-combat' (talent non-combat mais affecte les jets de compétence).
-- `NADAJ 16 l.34` (NADAJ) — Bras de fer : Test opposé étendu de Force Intermédiaire (+0) ; ajouter Bonus de Force au nombre de DR à chaque tour ; le gagnant de chaque tour gagne +1 Avantage utilisable selon les règles normales d'Avantage ; premier à 10 DR remporte. Par tranche de BE tours sans vainqueur, les deux gagnent +1 État Exténué (récupérable après 5 minutes de repos). Suggestion topicId : 'avantage'.
-- `NADAJ 05 l.58` (NADAJ) — Si une bagarre dure plus de 2 Rounds, le propriétaire et le personnel interviennent, aidés de clients. Si des armes sont dégainées ou que le combat dure plus de 3 Rounds à l'étage, les gardes de la Gravin viennent calmer la nuisance. Règle de gestion du combat en lieu public (intervention d'innocents). Suggestion topicId : 'resolution-attaque-melee-distance'.
+- `MSRC 15 l.138-163` (MSRC) — Traits de créatures nouveaux : Aquatique (respire sous eau, pleine vitesse en immersion), S'accrocher Pour Se Nourrir (perte 1 BF/Round jusqu'au KO), Hallucinogène (test FM Accessible +20 ou États Sonné), Rampant (pas d'Action Course), Salive Analgésique/Anticoagulante, Capricieux (1d10 ±0-2 DR modifier), Engloutir (État Empêtré+1/Round, perte 1 BF).
+- `MSRC 12 l.16-48` (MSRC) — Tactiques des naufrageurs : Balisage Trompeur (nuit), Faux Pilote (test Intuition opposé), Dangers Artificiels (récifs, barrières à chaînes) ; dégâts de naufrage décrits p.30 du livre (ref externe).
+- `MSRC 12 l.163-171` (MSRC) — Scénario Attaque Pirate : 2 pirates/personnage combatif + 1/autre, grappins à couper (BE 3, BF 8, 4 Rounds), tirs aux Projectiles pendant rapprochement ; chef Test Commandement Accessible +20 après mort/magie (abandon si raté).
+- `NADJ 06 l.176-186` (NADJ) — Règles du Duel Judiciaire (jugement par combat) : 'premier sang' = première attaque causant >3 Blessures (coups moindres = estafilades) ; 'incapable de continuer' = réduit à 0 Blessure. Serment de véracité obligatoire, inspection des armes, arbitrage par prêtresse de Verena. Pas de projectiles (règle générale des lois locales). Armes au libre choix des champions. Suggestion topicId : 'duel-judiciaire-combat-honneur'.
+- `NADJ 11 l.21-29` (NADJ) — Griffes de Tigre (nouvelle arme) : même profil que la Dague mais utilisent Corps à corps (Bagarre) ; sur un Test réussi, les blessures semblent causées par un gros félin. Suggestion topicId : 'armes-melee-tables' (ou 'aa-armes-melee-tables' si le topic vise les nouvelles armes des suppléments).
+- `NADJ 15 l.53-55` (NADJ) — Nouveau Talent 'Empreint d'Ulgu' (max 1) : permet d'utiliser Focalisation (Ulgu) à la place de Discrétion pour tous les Tests qui y font appel. Toute incantation réussie de sort du Domaine des Ombres à moins de 8 mètres gagne +1 DR (bonus non cumulable). Suggestion topicId : 'aa-talents-combat' (talent non-combat mais affecte les jets de compétence).
+- `NADJ 16 l.34` (NADJ) — Bras de fer : Test opposé étendu de Force Intermédiaire (+0) ; ajouter Bonus de Force au nombre de DR à chaque tour ; le gagnant de chaque tour gagne +1 Avantage utilisable selon les règles normales d'Avantage ; premier à 10 DR remporte. Par tranche de BE tours sans vainqueur, les deux gagnent +1 État Exténué (récupérable après 5 minutes de repos). Suggestion topicId : 'avantage'.
+- `NADJ 05 l.58` (NADJ) — Si une bagarre dure plus de 2 Rounds, le propriétaire et le personnel interviennent, aidés de clients. Si des armes sont dégainées ou que le combat dure plus de 3 Rounds à l'étage, les gardes de la Gravin viennent calmer la nuisance. Règle de gestion du combat en lieu public (intervention d'innocents). Suggestion topicId : 'resolution-attaque-melee-distance'.
 
 ---
 
-*Couverture du survey (passages repérés par livre)* : LDB 36 · ADE I 0 · ADE II 24 · AA 28 · ZI 11 · Middenheim 0 · EDO 18 · EDOC 1 · T2 0 · T2C 7 · T3 0 · Altdorf 0 · Ubersreik 8 · NADAJ 13.
+*Couverture du survey (passages repérés par livre)* : LDB 36 · ADE I 0 · ADE II 24 · AA 28 · ZI 11 · MCLB 0 · EDO 18 · EDOC 1 · MSR 0 · MSRC 7 · PDT 0 · ACE 0 · AU1 8 · NADJ 13.

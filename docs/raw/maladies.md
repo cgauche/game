@@ -19,8 +19,8 @@
 - [Créer une maladie (Remuer le Chaudron de Nurgle)](#creer-une-maladie-remuer-le-chaudron-de-nurgle)
 - [Traits de créature liés aux maladies](#traits-de-creature-lies-aux-maladies)
 - [Suppléments — EDO : Fièvre Cérébrale Pourpre + 2 symptômes + Contagieux](#supplements--edo--fievre-cerebrale-pourpre--2-symptomes--contagieux)
-- [Maladies et parasites aquatiques — T2C ch.14](#maladies-et-parasites-aquatiques--t2c-ch14)
-- [Remèdes à base de plantes — T2C ch.2 (volet maladies)](#remedes-a-base-de-plantes--t2c-ch2-volet-maladies)
+- [Maladies et parasites aquatiques — MSRC ch.14](#maladies-et-parasites-aquatiques--t2c-ch14)
+- [Remèdes à base de plantes — MSRC ch.2 (volet maladies)](#remedes-a-base-de-plantes--t2c-ch2-volet-maladies)
 - [Guérison et soins (renvoi)](#guerison-et-soins-renvoi)
 - [Règle optionnelle « disease-mode »](#regle-optionnelle-disease-mode)
 - [Implémente](#implemente)
@@ -415,18 +415,18 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 
 ---
 
-## Maladies et parasites aquatiques — T2C ch.14
+## Maladies et parasites aquatiques — MSRC ch.14
 
-**Sources RAW** : `T2C 16 l.4-160` (fichier `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/16 - CHAPITRE 14 - Maladies transmises par l'eau.md`)
+**Sources RAW** : `MSRC 16 l.4-160` (fichier `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/16 - CHAPITRE 14 - Maladies transmises par l'eau.md`)
 
 > « Les voies navigables de l'Empire s'étendent des ruisseaux de montagne étincelants aux marais et marécages fétides. Les rivières qui traversent les villes peuvent être de véritables égouts à ciel ouvert… Chaque fois qu'une personne boit de l'eau de rivière sans la faire bouillir au préalable, elle risque de contracter une maladie ou d'ingérer un parasite. »
 
-**Déclencheurs d'exposition** (`T2C 16 l.6-9`) :
+**Déclencheurs d'exposition** (`MSRC 16 l.6-9`) :
 - **Ingestion volontaire** d'eau de rivière non bouillie → Test de Résistance.
 - **Ingestion involontaire** : échec à un Test de Natation → Test de **Force Mentale Intermédiaire (+0)** pour éviter d'avaler de l'eau.
 - **Immersion avec blessures ouvertes** : à la discrétion du MJ.
 
-### Tableau d'exposition 1 — Source d'eau (`T2C 16 l.10-14`)
+### Tableau d'exposition 1 — Source d'eau (`MSRC 16 l.10-14`)
 
 *S'applique à l'ingestion et à l'immersion.*
 
@@ -438,7 +438,7 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 | Campagne | 0 |
 | En amont de toute habitation | +10 |
 
-### Tableau d'exposition 2 — Blessures et États (`T2C 16 l.35-47`)
+### Tableau d'exposition 2 — Blessures et États (`MSRC 16 l.35-47`)
 
 *S'applique uniquement à l'immersion. Tous les modificateurs sont cumulables.*
 
@@ -452,25 +452,25 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 | Par État Empêtré | −5 |
 | Inconscient | −20 |
 
-**Résolution** (`T2C 16 l.16-49`) : Test de **Résistance Intermédiaire (+0)**, modifié par les deux tableaux ci-dessus (cumulables). En cas d'échec, lancer 1d100 + (+10 par DR négatif) sur le Tableau des maladies ci-dessous.
+**Résolution** (`MSRC 16 l.16-49`) : Test de **Résistance Intermédiaire (+0)**, modifié par les deux tableaux ci-dessus (cumulables). En cas d'échec, lancer 1d100 + (+10 par DR négatif) sur le Tableau des maladies ci-dessous.
 
-### Tableau des maladies transmissibles par l'eau (`T2C 16 l.51-63`)
+### Tableau des maladies transmissibles par l'eau (`MSRC 16 l.51-63`)
 
 | 1d100 | Maladie |
 |---|---|
 | 01–40 | Courante Galopante *(LDB 20)* |
-| 41–60 | Colique *(T2C ch.14)* |
+| 41–60 | Colique *(MSRC ch.14)* |
 | 61–70 | Infection Mineure *(LDB 20)* [1] |
 | 71–75 | Blessure Purulente *(LDB 20)* [1] |
-| 76–80 | Vers de Carie *(T2C ch.14)* |
-| 81–90 | Vers du Reik *(T2C ch.14)* |
+| 76–80 | Vers de Carie *(MSRC ch.14)* |
+| 81–90 | Vers du Reik *(MSRC ch.14)* |
 | 91–00 | Flux Sanglant *(LDB 20)* |
 
 [1] Relancez si le Personnage n'est pas blessé.
 
 ---
 
-### Vers de Carie (`T2C 16 l.71-86`)
+### Vers de Carie (`MSRC 16 l.71-86`)
 
 > « Le ver de carie est un parasite inquiétant qui infeste les eaux sales et les denrées alimentaires avariées. D'une longueur d'environ 2,5 cm et d'une largeur de 6 mm, ce ver a une peau marbrée vert-brun qui forme un étrange motif de crâne au niveau de sa tête. »
 
@@ -482,13 +482,13 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 
 **Symptômes :** spéciaux (progression en trois phases décrites ci-dessous).
 
-**Phase 1 — Colonisation buccale** (`T2C 16 l.76-76`) : Le ver s'enfonce dans les tissus mous de la bouche ou de la gorge, sécrétant un liquide anesthésiant. Tant qu'il demeure, pénalité de **−10 à tous les Tests**.
+**Phase 1 — Colonisation buccale** (`MSRC 16 l.76-76`) : Le ver s'enfonce dans les tissus mous de la bouche ou de la gorge, sécrétant un liquide anesthésiant. Tant qu'il demeure, pénalité de **−10 à tous les Tests**.
 - Chaque jour : Test de **Perception Intermédiaire (+0)** pour détecter la présence du ver.
 - **Retrait (Médecin/Personnage qualifié)** : Test de **Guérison Accessible (+20)**. Les non-qualifiés : Test de **Dextérité Intermédiaire (+0)** ; avec miroir si auto-traitement (−10). Échec → État *Hémorragique*.
 
-**Phase 2 — Migration cérébrale** (`T2C 16 l.77-79`) : Au bout d'une semaine sans extraction, le ver se dirige vers le cerveau. Détection : Test de **Perception Accessible (+20)** (sang s'écoulant de la bouche). Retrait désormais : Test de **Guérison Complexe (−10)** + Talent **Chirurgie** requis.
+**Phase 2 — Migration cérébrale** (`MSRC 16 l.77-79`) : Au bout d'une semaine sans extraction, le ver se dirige vers le cerveau. Détection : Test de **Perception Accessible (+20)** (sang s'écoulant de la bouche). Retrait désormais : Test de **Guérison Complexe (−10)** + Talent **Chirurgie** requis.
 
-**Phase 3 — Ponte irréversible** (`T2C 16 l.80-86`) : Après trois jours supplémentaires sans extraction, le retrait tue l'hôte. Chaque jour, Test d'**Endurance Accessible (+20)** ; sur un échec : 1d10 + DR négatifs sur le tableau suivant.
+**Phase 3 — Ponte irréversible** (`MSRC 16 l.80-86`) : Après trois jours supplémentaires sans extraction, le retrait tue l'hôte. Chaque jour, Test d'**Endurance Accessible (+20)** ; sur un échec : 1d10 + DR négatifs sur le tableau suivant.
 
 | Résultat modifié (1d10) | Effet |
 |---|---|
@@ -504,12 +504,12 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T2C 16` (l.4-160) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, `combatTestPenalty`, `crampes-abdominales`, +19 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +12 fichiers
-- sans code : `T2C 16` (l.6-9, l.10-14, l.16-49)
+- `MSRC 16` (l.4-160) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, `combatTestPenalty`, `crampes-abdominales`, +19 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +12 fichiers
+- sans code : `MSRC 16` (l.6-9, l.10-14, l.16-49)
 
 ---
 
-### Colique (`T2C 16 l.104-118`)
+### Colique (`MSRC 16 l.104-118`)
 
 > « Le patient est saisi par des douleurs abdominales aiguës qui donnent son nom à cette maladie. Elles surviennent de manière irrégulière, sans prévenir… »
 
@@ -521,14 +521,14 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Symptômes :** Crampes abdominales, Fièvre, Intoxication alimentaire (Modérée), Nausée.
 
-**Traitement** (`T2C 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
+**Traitement** (`MSRC 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T2C 16` (l.104-118) → `applyOnFailInline`, `crampes-abdominales`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `GameOp`, `SymptomCapabilities`, `applyOps` — `src/data/index.ts`, `src/data/maladies.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, `src/engine/ops.ts`
+- `MSRC 16` (l.104-118) → `applyOnFailInline`, `crampes-abdominales`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `GameOp`, `SymptomCapabilities`, `applyOps` — `src/data/index.ts`, `src/data/maladies.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, `src/engine/ops.ts`
 
 ---
 
-### Vers du Reik (`T2C 16 l.121-144`)
+### Vers du Reik (`MSRC 16 l.121-144`)
 
 > « Lorsque la minuscule larve du ver du Reik pénètre dans le corps, elle s'enfonce profondément dans les intestins de son hôte, où elle se nourrit et se développe. Rapidement, le système immunitaire de l'hôte est affaibli, ce qui réduit sa résistance à d'autres maladies. »
 
@@ -540,7 +540,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 **Symptômes :** spéciaux (voir ci-dessous).
 
-**Effets progressifs** (`T2C 16 l.137-144`) :
+**Effets progressifs** (`MSRC 16 l.137-144`) :
 - **Phase d'incubation** : pour chaque tranche de 30 jours complète d'infection, pénalité de **−5 à tous les Tests de Résistance contre les maladies**. Cette pénalité se réduit de 1 point/jour après la mort du ver.
 - **Apparition de l'ampoule** (fin d'incubation) : la localisation est déterminée comme en combat (lancer de localisation). Tant que l'ampoule est présente : **−5 à tous les Tests d'Agilité** ; si visible, **−10 aux Tests de Sociabilité** en sus.
 - **Jours 1–6 après l'ampoule** : aucun test requis.
@@ -549,11 +549,11 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** : aucun traitement connu. Toute tentative d'extraction chirurgicale fait plus de mal que de bien.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T2C 16` (l.121-144) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `combatTestPenalty`, `crampes-abdominales`, `testStatePenalty`, +9 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
+- `MSRC 16` (l.121-144) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `combatTestPenalty`, `crampes-abdominales`, `testStatePenalty`, +9 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
 
 ---
 
-### Nouveau symptôme — Crampes Abdominales (`T2C 16 l.149-160`)
+### Nouveau symptôme — Crampes Abdominales (`MSRC 16 l.149-160`)
 
 *Symptôme utilisé par la Colique. Non présent dans les 12 symptômes LDB 20.*
 
@@ -565,16 +565,16 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 | Échec Impressionnant ou pire | Test de **Force Mentale** ou tombe au sol → État *À Terre* |
 | Échec Stupéfiant | S'évanouit → État *Inconscient* |
 
-**Traitement** (`T2C 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
+**Traitement** (`MSRC 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T2C 16` (l.149-160) → `schema`, `Disease`, `resolveInlineFlowTest`, `combatTestPenalty`, `crampes-abdominales`, `testStatePenalty`, `firingOwnTestFailed`, `tickDisease`, `EffectTrigger`, `routeTriggeredTest`, +6 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
+- `MSRC 16` (l.149-160) → `schema`, `Disease`, `resolveInlineFlowTest`, `combatTestPenalty`, `crampes-abdominales`, `testStatePenalty`, `firingOwnTestFailed`, `tickDisease`, `EffectTrigger`, `routeTriggeredTest`, +6 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
 
 ---
 
-## Remèdes à base de plantes — T2C ch.2 (volet maladies)
+## Remèdes à base de plantes — MSRC ch.2 (volet maladies)
 
-**Sources RAW** : `T2C 04 l.184-245` (fichier `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/04 - CHAPITRE 2 - Les herbes et leurs usages.md`)
+**Sources RAW** : `MSRC 04 l.184-245` (fichier `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/04 - CHAPITRE 2 - Les herbes et leurs usages.md`)
 
 > Le chapitre 2 décrit les herbes de l'Empire telles que compilées par Hortensia Flaquepeton dans *La Concordance générale des herbes communes selon les régions*. Seul le volet « maladies » est extrait ici ; l'aspect Guérison des blessures renvoie à `competences.md § Guérison`.
 
@@ -589,7 +589,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 ---
 
-### Gesundheit (`T2C 04 l.184-189`)
+### Gesundheit (`MSRC 04 l.184-189`)
 
 **Préparation :** Cataplasme.
 
@@ -600,11 +600,11 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Disponibilité** : Limitée. **Saison** : Hiver, Printemps. **Emplacement** : Forêts mixtes. **Coût** : 15/–.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T2C 4` (l.184-245) → `GameOp`, `applyOps`, `gesundheit`, `racine-des-tombes`, `rouille-mouchetee` — `src/data/trappings.json`, `src/engine/ops.ts`
+- `MSRC 4` (l.184-245) → `GameOp`, `applyOps`, `gesundheit`, `racine-des-tombes`, `rouille-mouchetee` — `src/data/trappings.json`, `src/engine/ops.ts`
 
 ---
 
-### Racine des Tombes (`T2C 04 l.204-229`)
+### Racine des Tombes (`MSRC 04 l.204-229`)
 
 **Préparation :** Cataplasme (volet maladies uniquement ; la plante a d'autres usages combat/anti-mortvivant).
 
@@ -615,11 +615,11 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Disponibilité** : Rare. **Saison** : Automne, Hiver. **Emplacement** : Clairières, Cimetières. **Coût** : 5 CO.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T2C 4` (l.204-229) → `gesundheit`, `racine-des-tombes`, `rouille-mouchetee` — `src/data/trappings.json`
+- `MSRC 4` (l.204-229) → `gesundheit`, `racine-des-tombes`, `rouille-mouchetee` — `src/data/trappings.json`
 
 ---
 
-### Rouille Mouchetée (`T2C 04 l.241-252`)
+### Rouille Mouchetée (`MSRC 04 l.241-252`)
 
 **Préparation :** Cru (dose quotidienne) ou Potion.
 
@@ -634,7 +634,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Disponibilité** : Rare. **Saison** : Printemps. **Emplacement** : Collines. **Coût** : 2 CO.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `T2C 4` (l.241-252) → `racine-des-tombes`, `rouille-mouchetee` — `src/data/trappings.json`
+- `MSRC 4` (l.241-252) → `racine-des-tombes`, `rouille-mouchetee` — `src/data/trappings.json`
 
 ---
 
@@ -675,7 +675,7 @@ Source du choix : `LDB 20 l.33-35` (« Utiliser les maladies »).
 - `docs/raw/competences.md § Guérison` — règles de soins journaliers, réduction de durée, Chirurgie
 - `docs/raw/combat.md § Traits de créature` — Infecté, Maladie (Type) (LDB 85)
 - `src/engine/disease.ts` — moteur pur
-- `src/data/maladies.json` — données app-owned (9 maladies LDB 20 + T2C Colique/Vers de carie/Vers du Reik)
+- `src/data/maladies.json` — données app-owned (9 maladies LDB 20 + MSRC Colique/Vers de carie/Vers du Reik)
 - `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/16 - CHAPITRE 14 - Maladies transmises par l'eau.md` — maladies aquatiques + parasites + tableaux d'exposition
 - `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/04 - CHAPITRE 2 - Les herbes et leurs usages.md` — herbes médicinales (Gesundheit, Racine des Tombes, Rouille Mouchetée)
 
