@@ -1,14 +1,21 @@
 ---
 name: game-refs-raw-convention-prefixe-fichier
-description: "Convention des réfs RAW = numéro de FICHIER disque (préfixe NN -), JAMAIS le chapitre imprimé — T2C +2, EDOC variable, artefacts _GoBack intercalés"
-metadata: 
+description: "Réfs RAW : acronyme canonique unique (source = books.json) + numéro de FICHIER disque, jamais le chapitre imprimé"
+metadata:
   node_type: memory
   type: project
   originSessionId: 6dda9f10-baee-4f9e-b534-2933d9905a34
+  modified: 2026-07-18T20:25:56.017Z
 ---
 
-**Toute réf `LIVRE N l.X` cite le PRÉFIXE DE FICHIER disque (`NN - `), pas le chapitre imprimé** — c'est ce que résout `chapterFile` (`scripts/raw/_lib.mjs`), et `ch.` est purement cosmétique pour le parseur. Établi et purgé le 2026-07-17 (#583/#526, commits 2ed2acff + a5eddf80, ~315 réfs ré-ancrées au texte).
+**Une réf RAW s'écrit `ABBR N l.X`** où `N` = le **préfixe de FICHIER disque** (`NN - `), PAS le chapitre imprimé — c'est ce que résout `chapterFile` (`scripts/raw/_lib.mjs`). Offsets mesurés : **MSRC (ex-T2C) = +2 constant** (fichier 03=CH1 … 19=CH17) ; **EDOC = variable +2..+4** (03=CH1, 05=CH2, 07=CH4, 08=CH5, 13=CH9, 16=CH12 ; **04 et 09 = artefacts `_GoBack`**, pas des chapitres) ; MSR (ex-T2) = +2 ; EDO, PDT (ex-T3), LDB = alignés.
 
-Offsets mesurés : **T2C = +2 constant** (fichier 03=CH1 … 19=CH17 ; fichier 16 = CH14 maladies d'eau) ; **EDOC = variable +2..+4** (03=CH1, 05=CH2, 06=CH3, 07=CH4, 08=CH5, 10=CH6 … 16=CH12 ; 04 et 09 = artefacts non-chapitres type `_GoBack`) ; T2 = +2 ; EDO (T1), T3, LDB = alignés.
+**SOURCE UNIQUE des acronymes (#585, origin 997188dd)** : `src/data/books.json` est LA source — un champ `abbr` (29 livres) + `dir` (chemin `Source/` des 15 extraits) ; le champ `abr` a été supprimé. `BOOKS` (`_lib.mjs`) et `folioIntegrity.BOOK_ABBR_BY_ID` en **DÉRIVENT** — plus aucune table à synchroniser à la main. **Ajouter un livre = éditer books.json SEUL.**
 
-**Pièges** : une réf en chapitre imprimé peut tomber DANS LES BORNES du mauvais fichier (statbloc de PNJ au lieu de la règle) — invisible de `check-code-refs`/`check-refs` par construction ; seule la lecture AU TEXTE tranche. La prévention de classe vit dans [[game-atlas-raw-doc]] et les tickets #585 (graphie gelée + abréviations canoniques : MSLRC/MSRC/T2C et NADJ/NADAJ coexistent), #586 (reconcile borne haute), #522 (ancres folio), #456 (_GoBack).
+**ZÉRO variance** : `EXTRA_ABBR_VARIANTS` supprimé, `bookOf` en identité stricte — une seule graphie par livre, toute autre = abréviation INCONNUE (échec nominatif de `citation-graphy-guard`). Les graphies gelées : `ABBR N l.X` (pas de `ch.`, pas de zéro de tête), folio `ABBR N p.X` (chapitre obligatoire).
+
+**Acronymes = acronymes de TITRE** (arbitrage user 2026-07-18) : `MSRC`/`MSR`/`PDT` (ex-T2C/T2/T3 — le commit fondateur 09b30a7b avait recopié le préfixe de DOSSIER `2.0 Mort sur le Reik`→`T2` au lieu du titre), `NADJ` (ex-NADAJ, le A ne correspond à aucun mot), `MCLB` (ex-Middenheim), `AU1` (ex-Ubersreik), `ADE I`/`ADE II` en romain. Les `dir` gardent le nom PHYSIQUE réel du dossier (typos `Aldorf`, `Mer de Griffe`) ; seuls les `label` sont propres.
+
+⚠ **Pièges de sweep d'acronymes** : `Savoir (Middenheim NN)` = valeur de COMPÉTENCE dans les statblocs (jamais renommer) ; `#T2`/`#T3` = jalons de PROJET ; « Ubersreik 8 » en ligne de survey = un COMPTE. Et une réf au mauvais chapitre peut tomber DANS LES BORNES (statbloc au lieu de la règle) — invisible des gardes : **seul un fan-out de juges au Source le voit** (2 ancres fausses sur 37 attrapées ainsi, #585 Lot C). ⚠ Workflow : `args` avec gros objet imbriqué arrive `undefined` → inliner les données dans le script.
+
+Reste cliqueté : `bareFolio` (~242 réfs `ABBR p.X` sans chapitre) déféré à #522 (outil `anchor-fill`, marqueurs `data-folio`). Voir aussi [[game-atlas-raw-doc]], #586 (borne haute), #456 (_GoBack).
