@@ -14,7 +14,7 @@ import { pickView } from './parts/types';
 import { appendageArt } from './parts/appendages';
 import { monsterInjection } from './parts/monstrous';
 import { HEADS, ARMS, LEGS } from './parts/monster';
-import { buildTokenMap, applyTokenMap, type Palette } from './palette';
+import { buildTokenMap, applyTokenMap, fleshGradientId, fleshGradientDefs, type Palette } from './palette';
 import { tenueOverlaysFor, rigStoredPalette } from './parts/career';
 import type { EquipCtx } from './parts/equipment';
 import { dorsalOverlays } from './parts/dorsal';
@@ -302,7 +302,18 @@ export function resolveRig(
   // par la tenue). `rigStoredPalette` est la SEULE construction de cet empilage (#426).
   const stored = rigStoredPalette(speciesPalette, tenue);
   const tmap = buildTokenMap(stored, overrides);
-  for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap) }));
+  // Chair DYNAMIQUE (#583 point 2) : une part qui grave encore `url(#g_flesh)` (dégradé global
+  // fixe, `fxGradients.ts`) reçoit ICI un dégradé LOCAL dérivé de la peau résolue du personnage
+  // (cf. `fleshGradientId`/`fleshGradientDefs`, `palette.ts`) — la tenue elle-même n'est pas touchée.
+  const usesFlesh = Object.values(boneParts).some((ps) => ps.some((p) => p.svg.includes('url(#g_flesh)')));
+  if (usesFlesh) {
+    const fleshId = fleshGradientId(tmap);
+    boneParts['torse'].push({ svg: fleshGradientDefs(tmap), layer: -9999 });
+    for (const id of BONE_IDS)
+      boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap).replace(/url\(#g_flesh\)/g, `url(#${fleshId})`) }));
+  } else {
+    for (const id of BONE_IDS) boneParts[id] = boneParts[id].map((p) => ({ ...p, svg: applyTokenMap(p.svg, tmap) }));
+  }
 
   // Profondeur en PROFIL, par COUCHES : ARME DU FOND ← (recouverte par) le HÉROS ← (recouverte par) l'ARME
   // DEVANT. Seules les armes sont re-z-ées (le corps garde son ordre normal entre les deux) : l'arme du fond

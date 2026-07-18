@@ -133,6 +133,19 @@ export const tenue: TenueDef = {
   jugement d'art pur. Relecture.*
 - Un bras monstrueux (pince/tentacule) efface son poing automatiquement — GARDÉ
   (`parts/traitVisuals.test.ts`, `parts/mutations.test.ts`).
+- **Jamais de littéral hex qui recopie un jeton de SA PROPRE `palette`** — GARDÉ
+  (`parts/tenues/palette-literal.test.ts`, cliquet, #583). La chair (`@peau`/`@peauO`/`@peauH`)
+  suit TOUJOURS le token — jamais une couleur en dur, peu importe la vue (bras.back/profile
+  recopiant `#e2b48c` au lieu de `@peau` produit une couture au poignet sur tout personnage à
+  peau non claire). Même règle pour toute autre matière déclarée dans la `palette` (cuir,
+  tissu…) : si la valeur existe dans `palette`, c'est le jeton qui se peint, pas le littéral.
+- **Une TENUE n'a pas de peau** — GARDÉ (`parts/tenues/no-flesh-in-tenue-palette.test.ts`, #583).
+  `TenueDef.palette` déclare le cuir/tissu/métal du vêtement, jamais `peau`/`peauO`/`peauH` : la
+  chair vient TOUJOURS de l'espèce (+ personnalisation), jamais du costume — 17 tenues qui
+  déclaraient ces clés écrasaient la peau de tout porteur (174/210 paires avant-bras↔main à
+  couture > 30 RGB, mesuré sans forcer `appearance.colors`). Défense en profondeur :
+  `rigStoredPalette` (`career.ts`) retire aussi les jetons de chair d'une palette de tenue avant
+  l'empilage — même une tenue fautive ne peut plus écraser l'espèce.
 
 ## 5. Workflow complet
 

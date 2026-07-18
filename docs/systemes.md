@@ -71,7 +71,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `rule/policy` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `netOwnership` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `RefField` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U | U |
-| `Prose` |  | U | U |  | U |  | U | U | U | U | U | U |  |  | U | U |
+| `Prose` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `resolveRender/pickBackend` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `MasterDetail` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  | U |
 | `gen-registry (_registry.generated)` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |

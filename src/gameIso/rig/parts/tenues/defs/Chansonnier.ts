@@ -16,7 +16,6 @@ export const tenue: TenueDef = {
     cap: '#5a2f22', capH: '#7d4632', capO: '#2f150f', // bonnet bordeaux
     plume: '#8a4325', plumeH: '#cdc5b8', // plume rousse + plumet pâle
     cuivre: '#a96436', cuivreO: '#5c2f16', // rosace de cuivre (badge)
-    peauO: '#9a6038', peauH: '#f0c69a', // avant-bras nu (g_flesh)
   },
   set: {
     torse: {

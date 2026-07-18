@@ -124,3 +124,34 @@ export function resolveTokens(svg: string, overrides: Palette, stored: StoredPal
   if (!svg.includes('@')) return svg;
   return applyTokenMap(svg, buildTokenMap(stored, overrides));
 }
+
+/**
+ * Chair DYNAMIQUE (#583 point 2) : `g_flesh` (`fxGradients.ts`) est un dégradé global FIXE
+ * (peau claire), monté une seule fois au niveau du stage — il ne peut donc pas varier par
+ * personnage sous ce même id. `fleshGradientId`/`fleshGradientDefs` fabriquent, PAR INSTANCE, un
+ * dégradé équivalent dérivé de la peau résolue (`@peauH` → `@peauO`) ; `composeRig.tsx` l'injecte
+ * en `<defs>` local et réécrit `url(#g_flesh)` vers cet id quand une part du personnage l'utilise
+ * — aucune tenue n'est modifiée, seule la RÉSOLUTION change. Id déterministe (dérivé des hex
+ * résolus) : deux personnages de même teinte de peau partagent le même dégradé sans collision.
+ */
+/** Stops H/O de la chair — DÉRIVÉS de `peau` via `scale`/`SHADES` (même dérivation que
+ *  `buildTokenMap`) quand la map n'en porte pas déjà, jamais un dégradé PLAT (les deux stops
+ *  identiques à `map.peau`) : le chemin réel (`composeRig.tsx`, `tmap = buildTokenMap(...)`)
+ *  les porte toujours, mais tout appelant qui passerait une palette non résolue (`StoredPalette`
+ *  brute) doit recevoir un dégradé qui ombre quand même. */
+function fleshStops(map: Record<string, string>): { h: string; o: string } {
+  const peau = map.peau ?? DEFAULT_PALETTE.peau;
+  const shadeOf = (suf: 'O' | 'H', f: number) => map[`peau${suf}`] ?? scale(peau, f);
+  return { h: shadeOf('H', 1.18), o: shadeOf('O', 0.78) };
+}
+
+export function fleshGradientId(map: Record<string, string>): string {
+  const { h, o } = fleshStops(map);
+  return `g_flesh_${h.replace('#', '')}_${o.replace('#', '')}`;
+}
+
+export function fleshGradientDefs(map: Record<string, string>): string {
+  const { h, o } = fleshStops(map);
+  return `<defs><linearGradient id="${fleshGradientId(map)}" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0%" stop-color="${h}"/><stop offset="100%" stop-color="${o}"/></linearGradient></defs>`;
+}

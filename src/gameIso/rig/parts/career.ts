@@ -97,14 +97,29 @@ export function footPalette(pal: StoredPalette): StoredPalette {
   return out;
 }
 
+/** Jetons de CHAIR — n'appartiennent jamais à une tenue (un vêtement n'a pas de peau) : la
+ *  chair vient TOUJOURS de l'espèce/de la personnalisation du personnage, jamais du costume. */
+const FLESH_TOKENS = ['peau', 'peauO', 'peauH'] as const;
+
+/** Retire les jetons de chair d'une palette de TENUE — défense structurelle : même une tenue
+ *  fautive (`palette.peauO` déclaré à tort, cf. `no-flesh-in-tenue-palette.test.ts`) ne peut
+ *  plus écraser la peau de l'espèce qui la porte. */
+function stripFlesh(pal: StoredPalette): StoredPalette {
+  const out: StoredPalette = {};
+  for (const [k, v] of Object.entries(pal)) if (!(FLESH_TOKENS as readonly string[]).includes(k)) out[k] = v;
+  return out;
+}
+
 /**
  * Palette STOCKÉE du rig — SOURCE UNIQUE de l'empilage (composeRig ET ses gardes l'appellent, jamais
  * une réplique) : jetons du pied SYSTÈME SOUS la palette PORTÉE (espèce → tenue). Le pied est expansé
  * depuis la palette portée ENTIÈRE : une RACE qui déclare `botte` pilote sa famille comme une tenue
  * (aucune couche ne tombe entre les deux). Aucune 2e cascade : on lit la sortie de `tenuePaletteFor`.
+ * La CHAIR (`peau`/`peauO`/`peauH`) ne suit JAMAIS la tenue (`stripFlesh`) : une tenue habille,
+ * elle ne repeint pas la peau de son porteur (#583 — couture avant-bras/main mesurée sans espèce).
  */
 export function rigStoredPalette(species: StoredPalette | undefined, tenue: string | undefined): StoredPalette {
-  const worn = { ...(species ?? {}), ...tenuePaletteFor(tenue) };
+  const worn = { ...(species ?? {}), ...stripFlesh(tenuePaletteFor(tenue)) };
   return { ...footPalette(worn), ...worn };
 }
 

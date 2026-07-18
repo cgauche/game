@@ -17,7 +17,6 @@ export const tenue: TenueDef = {
     cape: '#5b5e63', capeO: '#383b40', capeH: '#8c9096',
     lin: '#e2ddcd', linO: '#b0a88f', linH: '#f4f0e5',
     metal: '#9aa2ad', metalO: '#5a616b', metalH: '#c6ccd4',
-    cheveux: '#463526',
   },
   set: {
     torse: {

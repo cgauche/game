@@ -85,6 +85,18 @@ import type { TenueDef } from '../types';
 //               puis le crâne par-dessus avec son cerne 0.9. Toute finesse se mesure en PX À 40,
 //               jamais en unités SVG.
 //  · RIVET    : point @metalO + éclat @metalH décalé d'un quart de pixel.
+//  · CHAIR    : la chair (peau nue à un poignet, une gorge, un visage) appartient au PERSONNAGE,
+//               jamais à la tenue — toujours `@peau`/`@peauO`/`@peauH`, jamais un littéral hex ni
+//               `url(#g_flesh)` (ce dernier n'est qu'un DÉFAUT de rendu clair, dérivé désormais de
+//               la peau résolue, mais une part NEUVE peint directement les jetons). Un littéral
+//               hex n'est légitime QUE pour une matière propre à CETTE tenue (son cuir, son acier
+//               — une couleur qui lui appartient, à elle) — jamais pour recopier une valeur déjà
+//               déclarée dans `palette` (#583, garde `parts/tenues/palette-literal.test.ts`).
+//               Corollaire, gardé séparément (`parts/tenues/no-flesh-in-tenue-palette.test.ts`) :
+//               la `palette` du def elle-même ne DÉCLARE JAMAIS `peau`/`peauO`/`peauH` — 16 tenues
+//               le faisaient tout en peignant l'art avec les bons jetons, et cette valeur de
+//               PALETTE (prioritaire sur l'espèce dans l'empilage `rigStoredPalette`) écrasait
+//               quand même la peau du porteur. Une tenue déclare cuir/tissu/métal, jamais chair.
 //
 // À NE PAS COPIER — condition posée par le juge d'art à l'acceptation de cet étalon
 // (verdict « BON AVEC RÉSERVES », 2026-07-17). Ce fichier est fait pour être recopié : ce qui

@@ -2,7 +2,7 @@ import type { TenueDef } from '../types';
 
 export const tenue: TenueDef = {
   name: "Gladiateur",
-  palette: {"cuirO":"#3d2a16","peau":"#caa46a","cuir":"#5a3f24","peauO":"#7a4a28","peauH":"#c98a5a","vet1O":"#9a8c6a","vet1H":"#e0d6bf","cuirH":"#b87a4a","metalO":"#2a3038","vet1":"#8a6e44","vet2":"#a82a22","vet2O":"#6a1812","vet2H":"#d24a3a"},
+  palette: {"cuirO":"#3d2a16","cuir":"#5a3f24","vet1O":"#9a8c6a","vet1H":"#e0d6bf","cuirH":"#b87a4a","metalO":"#2a3038","vet1":"#8a6e44","vet2":"#a82a22","vet2O":"#6a1812","vet2H":"#d24a3a"},
   set: {
     torse: { front: `<!-- Gladiateur : torse nu musclé + baldric de cuir + ceinture large à trophées. Origine (0,0)=taille, épaules en -28 -->
 <!-- chair du torse (pectoraux -> abdomen -> hanches) -->
@@ -235,6 +235,4 @@ export const tenue: TenueDef = {
 <path d="M0 -15 Q-3 -21 -7 -25 Q-4 -24 -2 -21 Q-5 -27 -6 -31 Q-3 -27 -1 -22 Q-1 -18 0 -15 Z" fill="#a82a22" stroke="#6a1812" stroke-width="0.5"/>
 <path d="M-0.5 -16 Q-2 -21 -4 -26" stroke="#d24a3a" stroke-width="0.5" fill="none" opacity="0.8"/>
 <!-- base de la plume liée -->
-<path d="M-2 -14.5 L1.6 -15 L1 -17.4 L-1.6 -17 Z" fill="#3d2a16" stroke="none"/>` },
-  },
-};
+<path d="M-2 -14.5 L1.6 -15 L1 -17.4 L-1.6 -17 Z" fill="#3d2a16" stroke="none"/>` }}};
