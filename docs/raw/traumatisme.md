@@ -342,7 +342,7 @@ Se débarrasser d'une Possession lourde annule 1 Test échoué.
 
 **Sources RAW** : `LDB 18 l.327-334`.
 
-**Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB p.302/309).
+**Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB 65 p.302 / LDB 74 p.309).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 18` (l.327-334) → `merchantArchetype`, `faim`, `soif`, `recovery`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `exposure-heat-drop`, +25 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +12 fichiers

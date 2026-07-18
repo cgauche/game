@@ -18,7 +18,7 @@
 - [Vente — base ½, Marchandage, Baisse des prix, Troc](#vente-base-moitie-marchandage-baisse-des-prix-troc)
 - [Fabrication (LDB) — Atouts et Défauts d'objet](#fabrication-ldb-atouts-et-defauts-dobjet)
 - [Option Guildes d'artisans](#option-guildes-dartisans)
-- [Commerce de cargaison (MSRC Compagnon ch.11)](#commerce-de-cargaison-t2c-compagnon-ch11)
+- [Commerce de cargaison (MSRC Compagnon ch.11)](#commerce-de-cargaison-msrc-compagnon-ch11)
 - [Voir aussi](#voir-aussi)
 - [Implémente (refs code)](#implemente-refs-code)
 
@@ -91,8 +91,8 @@ Les règles d'achat/vente sont **optionnelles** — le MJ peut simplement décla
 
 **Objet Exotique** (LDB 59 l.18-20) : uniquement via :
 1. Décision du MJ (objet disponible localement)
-2. Commande auprès d'un artisan (Activité *Passer Commande*, LDB p.199)
-3. Fabrication personnelle (Activité *Artisanat*, LDB p.196)
+2. Commande auprès d'un artisan (Activité *Passer Commande*, LDB 23 p.199)
+3. Fabrication personnelle (Activité *Artisanat*, LDB 23 p.196)
 
 **Modificateurs de recherche active** (LDB 59 l.50) :
 - +10 % à +20 % à la Disponibilité si le personnage appartient à une Carrière pertinente (Marchand, Receleur) ou passe **une journée entière** à chercher et à faire des Tests de Ragot.
@@ -239,7 +239,7 @@ Si le MJ indique une ville avec une Guilde d'artisans pertinente :
 
 Ces règles s'appliquent principalement dans le contexte du **voyage en barge sur le Reikland** (Mort sur le Reik). Elles sont une extension optionnelle du commerce LDB pour les **cargaisons en gros**, pas pour les achats d'équipement courant.
 
-> ⚠️ Les contrats de transport sont inaccessibles à l'aventurier classique (réservés aux marchands de talent, plaideurs, noblesse). L'or issu de ces échanges peut être exempté de la règle *Argent à gaspiller* (LDB p.195) à la discrétion du MJ.
+> ⚠️ Les contrats de transport sont inaccessibles à l'aventurier classique (réservés aux marchands de talent, plaideurs, noblesse). L'or issu de ces échanges peut être exempté de la règle *Argent à gaspiller* (LDB 23 p.195) à la discrétion du MJ.
 
 ### Indices de référence
 
@@ -330,7 +330,7 @@ Taille disponible = **(Taille + Richesse) × résultat 1d100**, arrondi à la di
 
 ### Étape 4 — Marchandage à l'achat
 
-Test opposé de **Marchandage** vs. le vendeur : ±10 %, jusqu'à ±20 % avec le talent Négociateur (LDB p.291).
+Test opposé de **Marchandage** vs. le vendeur : ±10 %, jusqu'à ±20 % avec le talent Négociateur (LDB 59 p.291).
 
 **Compétence Marchandage d'un marchand classique** : 32–50 (lancer 2d10+30 ou choisir).
 
@@ -369,7 +369,7 @@ Test de **Ragot Complexe (−10)** dans une auberge → lancer d100 sur l'Index 
 
 - **Équipement** (`docs/raw/` à venir) — prix individuels des armes, armures, trappings (LDB 62–63 + AA)
 - **Compétences** (`competences.md`) — fiches Évaluation, Marchandage, Ragot, Métier
-- **Activités** (LDB p.196/199) — *Artisanat* et *Passer Commande* pour les objets Exotiques
+- **Activités** (LDB 23 p.196/199) — *Artisanat* et *Passer Commande* pour les objets Exotiques
 - **Statut social** (LDB 8) — simplification des achats par Statut
 - **Voyage** (`deplacement.md`) — coûts diligence/barge, frais d'écluse (MSRC Compagnon ch.10)
 - **Fabrication magique** (ADE II 4) — règles de création d'artefacts magiques (hors scope économie commune ; voir ADE II directement)

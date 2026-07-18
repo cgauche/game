@@ -41,13 +41,13 @@ plusieurs chapitres **et** plusieurs livres.
 | Compétences | [`competences.md`](competences.md) | ✅ | 09 + AA / ADE I / ADE II |
 | Talents | [`talents.md`](talents.md) | ✅ | 10 + AA / ADE |
 | Classes, Carrières & Statut | [`carrieres.md`](carrieres.md) | ✅ | 06, 07, 08 (système+statut+index) — détails/niveau catalogue séparé |
-| Création de personnage | [`creation.md`](creation.md) | ✅ | 04, 05 + Middenheim Ann.II + ADE I Ann.I |
-| Avancement (PX) | [`avancement.md`](avancement.md) | ✅ | 07 + T3 13 |
+| Création de personnage | [`creation.md`](creation.md) | ✅ | 04, 05 + MCLB Ann.II + ADE I Ann.I |
+| Avancement (PX) | [`avancement.md`](avancement.md) | ✅ | 07 + PDT 13 |
 | Magie (règles, sorts, Imparfaites) | [`magie.md`](magie.md) | ✅ | 44, 46–51 (règles + tables d100) — catalogue sorts séparé |
 | Religion (prières, bénédictions, miracles) | [`religion.md`](religion.md) | ✅ | 24–25, 40–42 (règles) ; catalogue 26-43 séparé |
 | Équipement, objets & encombrement | [`equipement.md`](equipement.md) | ✅ | 61, 67, 71, 72, 73, 74 (règles) — 64–70, 74–75 catalogue flagué |
 | Économie (monnaie, marché, fabrication) | [`economie.md`](economie.md) | ✅ | 57, 59, 60 + MSRC Compagnon ch.11 |
-| Bestiaire & Traits de créature | [`bestiaire.md`](bestiaire.md) | ✅ | 76, 85 (système) — catalogue 77–83 + ZI / frenchy / EDO / T2 / ADE flagué séparé |
+| Bestiaire & Traits de créature | [`bestiaire.md`](bestiaire.md) | ✅ | 76, 85 (système) — catalogue 77–83 + ZI / frenchy / EDO / MSR / ADE flagué séparé |
 | Activités & événements | [`activites.md`](activites.md) | ✅ | 22, 23 + AA / ADE II / EDOC |
 
 ✅ = livré · ⏳ = à construire (fan-out workflow par domaine).
@@ -56,11 +56,11 @@ plusieurs chapitres **et** plusieurs livres.
 
 | Catalogue | Contenu |
 |---|---|
-| [`catalogue-creatures.md`](catalogue-creatures.md) | Bestiaire complet : LDB 76–85 + Middenheim + ZI + ogres ADE II + Chaos EDO + montures EDOC + fluvial MSRC + PNJ T3 |
+| [`catalogue-creatures.md`](catalogue-creatures.md) | Bestiaire complet : LDB 76–85 + MCLB + ZI + ogres ADE II + Chaos EDO + montures EDOC + fluvial MSRC + PNJ PDT |
 | [`catalogue-sorts.md`](catalogue-sorts.md) | Sorts : LDB 47–51 + Tzeentch EDO |
-| [`catalogue-divin.md`](catalogue-divin.md) | Dieux, cultes, bénédictions, miracles : LDB 24–43 + cultes du Chaos Middenheim/Altdorf |
+| [`catalogue-divin.md`](catalogue-divin.md) | Dieux, cultes, bénédictions, miracles : LDB 24–43 + cultes du Chaos MCLB/Altdorf |
 | [`catalogue-equipement.md`](catalogue-equipement.md) | Objets/prix/Enc : LDB 57–75 + Aux Armes |
-| [`catalogue-carrieres.md`](catalogue-carrieres.md) | Détails par niveau : LDB 06–08 + ADE I/II + Middenheim |
+| [`catalogue-carrieres.md`](catalogue-carrieres.md) | Détails par niveau : LDB 06–08 + ADE I/II + MCLB |
 | [`catalogue-divers.md`](catalogue-divers.md) | Règles éparses des suppléments (entraînement, espionnage, navigation, mutants, astrologie…) |
 
 ## Gardes déterministes (rejouables)

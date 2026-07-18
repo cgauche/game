@@ -22,14 +22,14 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 | **ADE II** | Les Archives de l'Empire, vol. 2 | `Warhammer v4 - Les archives de l'Empire volume 2/` | Ogres, carrières, talents, créatures |
 | **AA** | Aux Armes (*Up in Arms*) | `WH - V4 - Aux Armes/` | Combat & armes, talents, sièges, montures |
 | **ZI** | Le Zoo Impérial (*The Imperial Zoo*) | `WH - V4 - Le zoo impérial/` | Créatures exotiques, trait Redoutable, objets |
-| **Middenheim** | Middenheim, la cité du Loup Blanc | `Warhammer v4 - Middenheim la cité du Loup Blanc/` | 3 origines humaines, carrière Frère Loup |
+| **MCLB** | Middenheim, la cité du Loup Blanc | `Warhammer v4 - Middenheim la cité du Loup Blanc/` | 3 origines humaines, carrière Frère Loup |
 | **EDO** | T1 — L'Ennemi dans l'Ombre | `Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` | Sorts Tzeentch, créatures du Chaos, talents/traits |
 | **EDOC** | T1 — Compagnon | `Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` | Véhicules, règles add. |
-| **T2** | T2 — Mort sur le Reik | `Warhammer v4 - 2.0 Mort sur le Reik/` | Créatures, règles spéciales (eau, navires…) |
+| **MSR** | T2 — Mort sur le Reik | `Warhammer v4 - 2.0 Mort sur le Reik/` | Créatures, règles spéciales (eau, navires…) |
 | **MSRC** | T2 — Compagnon | `Warhammer v4 - 2.0 Mort sur le Reik Compagnon/` | Créatures, PNJ statblockés |
-| **T3** | T3 — Le Pouvoir derrière le Trône | `Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` | Créatures, règles spéciales |
+| **PDT** | T3 — Le Pouvoir derrière le Trône | `Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` | Créatures, règles spéciales |
 | **ACE** | Aldorf, la Couronne de l'Empire | `Warhammer v4 - Aldorf la Couronne de l'Empire/` | Objets magiques, gangs, règles de cadre |
-| **Ubersreik** | Aventures à Ubersreik | `Warhammer v4 - Aventures a Ubersreik/` | Contenu de cadre (peu de règles de combat) |
+| **AU1** | Aventures à Ubersreik | `Warhammer v4 - Aventures a Ubersreik/` | Contenu de cadre (peu de règles de combat) |
 | **NADJ** | Nuits agitées & dures journées (*Rough Nights & Hard Days*) | `Warhammer v4 - Nuits agitees & dures journées/` | Créatures, jeux de taverne, règles spéciales |
 | **MDG** | La Mer des Griffes (*Sea of Claws*) | `WH - V4 - La Mer de Griffe/` | Cadre côtier + règles navales : navires & artillerie, navigation/combat naval, carrières Côtier, cultes Manann/Stromfels, magie des mers, bestiaire marin |
 

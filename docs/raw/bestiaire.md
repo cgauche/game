@@ -373,7 +373,7 @@ Les chapitres suivants du LDB listent les profils de créatures individuelles. I
 | **frenchy.bzh** | Guide v4.5 | 88 créatures Part II (homebrew, taguées `source: "frenchy.bzh"`) |
 | **EDO** | L'Ennemi dans l'Ombre | Créatures du Chaos : Horreurs, Furies, etc. |
 | **MSR/MSRC** | Mort sur le Reik | Créatures aquatiques, PNJ nommés statblockés |
-| **T3** | Le Pouvoir derrière le Trône | Créatures de scénario |
+| **PDT** | Le Pouvoir derrière le Trône | Créatures de scénario |
 | **NADJ** | Nuits agitées | Créatures de scénario |
 | **ADE I/II** | Archives de l'Empire | Créatures supplémentaires, Ogres (ADE II) |
 

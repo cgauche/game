@@ -376,7 +376,7 @@ Format des colonnes : **Carrière | Classe | Niveau 1 (Statut) | Niveau 2 (Statu
 
 ### Suppléments
 
-#### ADE I — Archives de l'Empire Vol. 1 (source : `ADE I p.88-92`)
+#### ADE I — Archives de l'Empire Vol. 1 (source : `ADE I 7 p.88` / `ADE I 8 p.92`)
 
 Ces carrières suivent les règles habituelles. Elles peuvent être choisies à la création ou lors d'un changement de Carrière.
 
@@ -393,7 +393,7 @@ Ces carrières suivent les règles habituelles. Elles peuvent être choisies à 
 - **Patrouilleur des Karak** : Nain. Sur tirage aléatoire Messager → peut choisir Patrouilleur des Karak.
 - **Rôdeur Fantôme** : Elfe Sylvain. Sur tirage aléatoire Chasseur de Primes → peut choisir Rôdeur Fantôme.
 
-#### ADE II — Archives de l'Empire Vol. 2 (source : `ADE II p.35`)
+#### ADE II — Archives de l'Empire Vol. 2 (source : `ADE II 2 p.35`)
 
 | Carrière | Races | N1 (Statut) | N2 (Statut) | N3 (Statut) | N4 (Statut) | Classe |
 |---|---|---|---|---|---|---|

@@ -282,7 +282,7 @@ Une relation établie avec un expert = consultable gratuitement (sans Activité)
 
 **Source :** LDB 23 l.129-130.
 
-Test **Dressage Accessible (+20)**. Succès → ajouter 1 Compétence à un animal, choisie parmi les Traits **Dressé** (LDB p.339).
+Test **Dressage Accessible (+20)**. Succès → ajouter 1 Compétence à un animal, choisie parmi les Traits **Dressé** (LDB 85 p.339).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 23` (l.129-130) → `InterludeHeroState`, `entrainement`, `Effect`, `GameState`, `fr`, `EFFECT_HANDLERS`, `dressage` — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +1 fichiers
@@ -582,7 +582,7 @@ Les Activités de voyage durent toute une Étape de voyage et restent **fatigant
 | Activité | Test | Effet |
 |----------|------|-------|
 | **Plein Air** | Survie en extérieur Intermédiaire (+0), −10/degré de météo défavorable | Succès → le groupe n'a pas à tester l'Exposition due à la météo pendant cette Étape |
-| **Approvisionnement** | Survie en extérieur (voir LDB p.131) | Se réapprovisionner en nourriture/eau |
+| **Approvisionnement** | Survie en extérieur (voir LDB 9 p.131) | Se réapprovisionner en nourriture/eau |
 | **Recueillir des Informations** | Ragot Intermédiaire (+0) | DR questions auxquelles le MJ répond sincèrement selon les habitants |
 | **Rester aux Aguets** | Perception Intermédiaire (+0) | Succès → groupe non surpris pendant cette Étape |
 | **Établir des Cartes** | Test étendu : Métier (Cartographe) **ou** Art (Dessin) — DR requis = 2 × nombre d'Étapes | Carte terminée → Savoir/Orientation lors d'un voyage futur Accessible (+20) au lieu de (+0) |

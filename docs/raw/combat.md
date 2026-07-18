@@ -662,7 +662,7 @@ Conditions et limites :
 - Nombre maximum d'enchaînements = **Bonus de Capacité de Combat (BCC)** de l'attaquant.
 - **Exception « grandes créatures »** : certaines créatures de grande Taille activent Frappe Mortelle **sans avoir à tuer** — il leur suffit de **toucher** un adversaire sans le tuer pour se déplacer dans sa zone et frapper une autre cible le même Round. Confirmé par un statbloc :
 
-> « Frappe mortelle (WFJDR, page 160). En raison de sa taille, le basilic peut se déplacer dans la zone d'un adversaire qu'il a touché, mais n'a pas réussi à tuer, puis attaquer immédiatement une autre cible dans le même Round. » — `AU1 05 l.24`
+> « Frappe mortelle (WFJDR, page 160). En raison de sa taille, le basilic peut se déplacer dans la zone d'un adversaire qu'il a touché, mais n'a pas réussi à tuer, puis attaquer immédiatement une autre cible dans le même Round. » — `AU1 04 l.18`
 
 ### 5. Déviation Critique par l'armure (LDB 63)
 
@@ -687,7 +687,7 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 ### 7. Interactions multi-livres (Critiques en pratique)
 
 - **Trait *Dédoublement*** (Horreur Rose de Tzeentch) : « Si la créature subit une Blessure Critique, ou perd toutes ses Blessures, elle est remplacée par **deux horreurs bleues** […] et ne sont pas blessées. » — `EDO 11 l.239-240`. Donc subir un seul Critique scinde la créature.
-- **Frappe mortelle des grandes créatures** : le **basilic** illustre l'exception « grandes créatures » du LDB 14 (se déplacer dans la zone d'une cible **touchée mais non tuée** puis frapper une autre) — `AU1 05 l.24`.
+- **Frappe mortelle des grandes créatures** : le **basilic** illustre l'exception « grandes créatures » du LDB 14 (se déplacer dans la zone d'une cible **touchée mais non tuée** puis frapper une autre) — `AU1 04 l.18`.
 - **Critiques multiples par explosion** (bombe de l'Opéra, *Une nuit à l'Opéra*) : « Celles réduites à 0 Blessure souffrent d'une Blessure critique à une **localisation aléatoire par tranche de 2 Blessures en dessous de 0**, en arrondissant à la hausse. Ainsi, si un Personnage est réduit à −5 Blessures […], cela occasionne **3 Blessures critiques**. » — `NADJ 08 l.263`. (Bombe : Atout *Explosion 10*, 1d10+15 Dégâts, BonusAg −1d10 États *En Flammes* ; survivants : *Athlétisme Complexe (−10)* sinon chute de 7 m.)
 
 **Sources RAW** :
@@ -702,7 +702,7 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 - `AA 07 l.25-79` — système alternatif d'*Aux Armes* : 2 voies de déclenchement (double avec PB restants ; +10/Blessure au-delà de 0), un seul Critique par coup, valeurs « T » triviales, « Retenir vos coups ».
 - `AA 07 l.82-104 / 2568-2622 / 2625-2682 / 2684-2729` — tables alternatives Tête / Bras / Torse / Jambe (transcrites verbatim ci-dessus ; **remplacent** les tables LDB).
 - `EDO 11 l.237-239` — Trait *Dédoublement* : une Blessure critique (ou 0 Blessure) scinde la créature en deux Horreurs Bleues non blessées.
-- `AU1 05 l.24` — exemple statbloc de Frappe mortelle pour une grande créature (touche sans tuer → balayage).
+- `AU1 04 l.18` — exemple statbloc de Frappe mortelle pour une grande créature (touche sans tuer → balayage).
 - `NADJ 08 l.263` — Critiques multiples : 1 Blessure critique à localisation aléatoire par tranche de 2 PB sous 0 (arrondi au supérieur).
 
 > « Tout succès lors d'un Test de Corps à Corps ou de Projectiles dont le résultat est un double génère un Critique. » — `LDB 13 l.183`
@@ -720,7 +720,7 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 - `LDB 63` (l.29-32) → `cuir-souple`, `cuir-bouilli`, `mailles`, `describeReload`, `plate`, `firedAttackBlock`, `GameOp`, `ActiveEffect`, `PendingDeviation`, `deviatableArmourAt`, +14 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +4 fichiers
 - `AA 7` (l.25-79, l.82-104) → `StructureCritEntry`, `retenir-ses-coups`, `CritEscalation`, `resolveAACritical`, `OPTIONAL_RULES` — `src/data/criticals.ts`, `src/data/regles.json`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, `src/engine/policy.ts`
 - `EDO 11` (l.237-240) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
-- sans code : `AU1 5` (l.24), `NADJ 8` (l.263)
+- sans code : `AU1 4` (l.18), `NADJ 8` (l.263)
 
 ---
 
@@ -1962,7 +1962,7 @@ L'**Arme simple** (groupe Base) sert donc d'archétype unique (1 CO, Enc 1, Comm
 
 ### Règle — Dégâts d'arme et passage en Arme improvisée
 
-Certaines Maladresses (LDB p.160) ou Sorts peuvent endommager une arme. **Pour chaque point de Dégâts reçu, réduisez ses Dégâts de 1.** Si les Dégâts sont réduits à **+0 (ou BF +0)**, l'arme est tellement abîmée qu'elle n'est plus identifiable et devient une **Arme improvisée**. Si une Arme improvisée est endommagée, elle est inutile au Corps à corps. Réparation par un artisan : **10 % du coût de l'arme par point de Dégâts** subi ; les armes réduites à l'état d'Armes improvisées ne peuvent pas être réparées. On peut rafistoler ses propres armes avec la Compétence Métier, des Outils de Profession et un Atelier (pour plus d'un seul point) (`LDB 62 l.133-136`).
+Certaines Maladresses (LDB 14 p.160) ou Sorts peuvent endommager une arme. **Pour chaque point de Dégâts reçu, réduisez ses Dégâts de 1.** Si les Dégâts sont réduits à **+0 (ou BF +0)**, l'arme est tellement abîmée qu'elle n'est plus identifiable et devient une **Arme improvisée**. Si une Arme improvisée est endommagée, elle est inutile au Corps à corps. Réparation par un artisan : **10 % du coût de l'arme par point de Dégâts** subi ; les armes réduites à l'état d'Armes improvisées ne peuvent pas être réparées. On peut rafistoler ses propres armes avec la Compétence Métier, des Outils de Profession et un Atelier (pour plus d'un seul point) (`LDB 62 l.133-136`).
 
 ### Sous-système — Groupes d'armes de Corps à corps (Compétences distinctes)
 
@@ -1982,7 +1982,7 @@ Les Personnages **sans compétence** ajoutent le **Défaut d'Arme Dangereuse** �
 
 ### Règle — Groupe Parade (corps à corps sans pénalité de main gauche)
 
-N'importe quelle **arme à une main avec l'Atout Défensive** peut être utilisée avec *Corps à corps (Parade)*. Quand vous utilisez *Corps à corps (Parade)*, une arme peut **opposer une attaque sans la pénalité de main gauche normale de −20** (voir LDB p.161) (`LDB 62 l.150-151`).
+N'importe quelle **arme à une main avec l'Atout Défensive** peut être utilisée avec *Corps à corps (Parade)*. Quand vous utilisez *Corps à corps (Parade)*, une arme peut **opposer une attaque sans la pénalité de main gauche normale de −20** (voir LDB 14 p.161) (`LDB 62 l.150-151`).
 
 > « Quand vous utilisez Corps à corps (Parade), une arme peut être utilisée pour opposer une attaque sans la pénalité de main gauche normale de -20. » — `LDB 62 l.151`
 
@@ -3572,7 +3572,7 @@ Les **Traits de créature** (LDB chap. 85) servent à bâtir des PNJ et monstres
 
 **Vol (Indice)** — Trait à Indice (distance de vol en mètres). Sous-système de mouvement *et* de ciblage :
 - Quand la créature se **Déplace**, elle peut voler **jusqu'à *Indice* mètres** ; elle **ignore alors tous les terrains, obstacles et personnages** qui s'interposent. À la fin de son Mouvement, elle décide **si elle atterrit ou si elle continue de voler**. Elle **peut utiliser ce Mouvement pour Charger**.
-- Si elle **commence son tour en volant, elle doit choisir le Vol pour son Mouvement**. Si elle ne peut pas voler, le MJ décide à quelle distance elle tombe (chute, LDB p.168).
+- Si elle **commence son tour en volant, elle doit choisir le Vol pour son Mouvement**. Si elle ne peut pas voler, le MJ décide à quelle distance elle tombe (chute, LDB 16 p.168).
 - **Ciblage d'une créature en vol** : on mesure la distance horizontale normalement, puis **on augmente la distance de 1 niveau** (catégorie de Portée). Ainsi une **Longue Distance devient Extrême**, et **une créature volante à Distance Extrême ne peut pas être touchée**.
 - **Quand elle vole, elle subit une pénalité de −20 à toutes les tentatives de combat à distance**, alors qu'elle virevolte dans le ciel. (LDB 85 l.428-439)
 
@@ -3661,7 +3661,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 - `LDB 85 l.141-142` — **Fabriqué** : pas d'Int/FM/Soc (Tests auto-réussis), Blessures calculées sur le bonus de **Force** (et non de FM), toutes Attaques Magiques, erre sans contrôle ni Territorial.
 - `LDB 85 l.357-370` — **Modificateurs de Taille en Combat** (support de l'Attaque de Piétinement de Se Cabrer) : ×Dégâts par écart de catégories, Atouts Dévastatrice/Percutante, Frappe Mortelle, +10 toucher pour le plus petit, −2 DR/catégorie en défense CC.
 - `ZI 02 l.66-70` / `ZI 14 l.1029-1035` — **Fouissement (Indice)** (hors LDB) : creuse *Indice* m en ignorant obstacles/terrain, peut Charger, peut rester enfouie ; ciblage d'une cible enfouie +2 niveaux de Portée (Longue/Extrême impossible).
-- `AU1 05 l.22` — exemple d'application de Foulée (basilic Mouvement 6 → 22 m de Course en un Round sans Test d'Athlétisme) ; renvoie au trait LDB p.339.
+- `AU1 04 l.17` — exemple d'application de Foulée (basilic Mouvement 6 → 22 m de Course en un Round sans Test d'Athlétisme) ; renvoie au trait LDB 85 p.339.
 
 **Voir aussi** : Taille des créatures et modificateurs de combat · Charge, Course et Désengagement · Bandes de portée (À distance) · Initiative et Avantage · Traits d'attaque de créature (Arme, Morsure, Cornes, Attaque Caudale)
 
@@ -3669,7 +3669,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 - `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `TraverseCapability`, `cannotStopOn`, `StatblockEditor`, `amphibie`, +99 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +21 fichiers
 - `ZI 2` (l.66-70) → `fouissement` — `src/data/traits.json`
 - `ZI 14` (l.1029-1035) → `fouissement` — `src/data/traits.json`
-- sans code : `AU1 5` (l.22)
+- sans code : `AU1 4` (l.17)
 
 ---
 
@@ -4489,7 +4489,7 @@ C'est une **extension de la règle de Maladresse** : la Maladresse standard d'un
 
 > « Dangereuse, Recharge 2, Tir de zone — p. 3 » — `AA 08 l.466` (Tromblon : preuve interne que « — p. N » est l'Indice de la qualité précédente, pas une page — la Recharge 2 y est déjà explicite.)
 
-**Voir aussi** : Armes à distance et munitions (table LDB) — *armes-distance-munitions-tables* (résolution identique du `— p. N` = Indice) ; Qualités/Défauts d'armes (Recharge, Dangereuse, À répétition/Salve, Tir de zone, Empaleuse, Percutante, Perforante, Imprécise, Précise, Pointue, Explosion) ; États Assourdi / Empêtré / Enflammé ; bandes de portée (LDB 62) ; Maladresse au combat (LDB 13/14) ; Trait Infecté (LDB 85) ; Armes d'équipe maniées en sous-effectif (AA p.124).
+**Voir aussi** : Armes à distance et munitions (table LDB) — *armes-distance-munitions-tables* (résolution identique du `— p. N` = Indice) ; Qualités/Défauts d'armes (Recharge, Dangereuse, À répétition/Salve, Tir de zone, Empaleuse, Percutante, Perforante, Imprécise, Précise, Pointue, Explosion) ; États Assourdi / Empêtré / Enflammé ; bandes de portée (LDB 62) ; Maladresse au combat (LDB 13/14) ; Trait Infecté (LDB 85) ; Armes d'équipe maniées en sous-effectif (AA 10 p.124).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `AA 8` (l.421-425, l.428-431, l.440, l.442, l.445-468, l.472, l.480, l.485-500, l.505, l.506, l.507, l.509, l.516, l.528, l.544, l.545) → `dangerousNine`, `QualityCapabilities`, `infecte`, `poudre-impregnee-d-aqshy`, `recharge`, `tir-de-zone`, `perforante`, `percutante`, `precise` — `src/data/index.ts`, `src/data/qualities.json`, `src/data/trappings.json`, `src/engine/qualities/dispatch.ts`
@@ -4499,7 +4499,7 @@ C'est une **extension de la règle de Maladresse** : la Maladresse standard d'un
 
 ## AA : Combat Monté étendu et dressage
 
-*Aux Armes* (chapitre « Le Combat Monté ») **complète** les règles de Combat monté du Livre de base (LDB p.163) sans les remplacer : entretien d'une monture en campagne, mouvement/initiative du couple cavalier↔monture, modificateurs d'attaque et de ciblage, restrictions de tir, comportement de la monture selon son dressage, Avantages partagés, Peur/Terreur, le Dressage proprement dit (identification + apprentissage), trois Traits Dressé (Guerre, Magie, et le **nouveau** Cavalerie de Choc), la chute de monture, les États d'un personnage monté, et le profil de la monture demigriffon. Toutes ces règles « s'ajoutent à ces règles de base et peuvent être utiles pour une aventure ou un groupe avec lequel le combat monté est fréquent ».
+*Aux Armes* (chapitre « Le Combat Monté ») **complète** les règles de Combat monté du Livre de base (LDB 14 p.163) sans les remplacer : entretien d'une monture en campagne, mouvement/initiative du couple cavalier↔monture, modificateurs d'attaque et de ciblage, restrictions de tir, comportement de la monture selon son dressage, Avantages partagés, Peur/Terreur, le Dressage proprement dit (identification + apprentissage), trois Traits Dressé (Guerre, Magie, et le **nouveau** Cavalerie de Choc), la chute de monture, les États d'un personnage monté, et le profil de la monture demigriffon. Toutes ces règles « s'ajoutent à ces règles de base et peuvent être utiles pour une aventure ou un groupe avec lequel le combat monté est fréquent ».
 
 ### Qu'est-ce qui compte comme une monture
 Une monture est un animal possédant **au moins le Trait Dressé (Monture)**. Une créature intelligente sans ce Trait peut éventuellement se laisser chevaucher, mais aura du mal à comprendre où le cavalier veut la diriger.
@@ -4583,7 +4583,7 @@ Pour déterminer la Localisation des Dégâts sur un animal à quatre pattes :
 *Réf : `AA 09 l.97-103`.*
 
 ### Tomber d'une monture
-Dans la plupart des cas, tomber d'une monture est traité comme une **chute de 2 mètres** (LDB p.166) et inflige **1d10+6 Dégâts**, réduits par le **Bonus d'Endurance** du cavalier **mais pas par les Points d'Armure**. Si la monture est de **Taille Grande ou supérieure**, on **augmente la hauteur de la chute de 1 mètre par catégorie de Taille**.
+Dans la plupart des cas, tomber d'une monture est traité comme une **chute de 2 mètres** (LDB 15 p.166) et inflige **1d10+6 Dégâts**, réduits par le **Bonus d'Endurance** du cavalier **mais pas par les Points d'Armure**. Si la monture est de **Taille Grande ou supérieure**, on **augmente la hauteur de la chute de 1 mètre par catégorie de Taille**.
 
 Le MJ peut autoriser l'animal à un Test de **Perception Accessible (+20)** pour remarquer que son cavalier est tombé ; le MJ décide ensuite du comportement de la bête (généralement elle s'arrête quelques minutes plus tard, ou moins si elle repère un bon endroit où brouter).
 
@@ -4594,7 +4594,7 @@ Les États d'un personnage monté doivent prendre en compte la monture **et** le
 - **Surpris** : le cavalier *Surpris* doit réussir un Test de **Chevaucher Facile (+40)** sous peine de tomber.
 - **Sonné** : le cavalier *Sonné* doit réussir un Test de **Chevaucher Intermédiaire (+0)** sous peine de tomber.
 - **Monture Surprise** : si la **monture** subit *Surprise*, le cavalier doit réussir un **Chevaucher Facile (+40)** pour rester en selle — **mais seulement si l'animal possède le Trait Nerveux**.
-- **Empêtré (cavalier)** : devenir *Empêtré* en chevauchant n'a pas d'effet supplémentaire en soi. Mais si l'on est retenu par la cause de l'État (lasso, fouet), on peut faire un Test de **Chevaucher Intermédiaire (+0)** : un Succès permet de s'accrocher de toutes ses forces, et l'on résout alors le **Test opposé de Force comme si sa Taille était celle de la monture** (LDB p.342 — pour les Tests opposés de Force, plus on est grand mieux c'est).
+- **Empêtré (cavalier)** : devenir *Empêtré* en chevauchant n'a pas d'effet supplémentaire en soi. Mais si l'on est retenu par la cause de l'État (lasso, fouet), on peut faire un Test de **Chevaucher Intermédiaire (+0)** : un Succès permet de s'accrocher de toutes ses forces, et l'on résout alors le **Test opposé de Force comme si sa Taille était celle de la monture** (LDB 85 p.342 — pour les Tests opposés de Force, plus on est grand mieux c'est).
 - **Empêtré (monture)** : si la **monture** est *Empêtrée* mais pas le cavalier, elle effectue un Test opposé normalement ; cependant, si elle est **Nerveuse**, le cavalier doit réussir un **Chevaucher Intermédiaire (+0)** sous peine d'être désarçonné parce qu'elle se débat.
 
 ### Profil — Monture Demigriffon (adulte dressé)
@@ -5537,7 +5537,7 @@ Ces 9 Miracles forment trois familles : **buffs de groupe** (Dévotion de la Vie
 
 Sous-système **facultatif** d'*Archives de l'Empire : volume 2* (chapitre « Le théâtre de la guerre ») pour mener des batailles à grande échelle tout en gardant les Personnages au centre de l'action. C'est le système RAW vers lequel *Aux Armes* (AA) renvoie explicitement pour les affrontements de grande ampleur. Ces règles ne simulent pas l'intégralité d'une bataille (« si c'est ce que vous cherchez, essayez le *Warhammer Fantasy Battle, le jeu de figurines* ») : elles offrent des **scènes de jeu de rôle** dont l'issue modifie le score abstrait de **Puissance** de chaque camp [ADE II 08 l.13-15].
 
-> ⚠️ Les valeurs des machines de guerre ci-dessous sont celles d'**ADE II** (système de combat de masse, abstrait), distinctes des armes de siège **maniables** d'*Aux Armes* (`trappings.json`, source AA p.122 — ex. Baliste **+12** Recharge 3 en AA contre Baliste **+14** Recharge 2 ici). Ne pas confondre les deux jeux de stats.
+> ⚠️ Les valeurs des machines de guerre ci-dessous sont celles d'**ADE II** (système de combat de masse, abstrait), distinctes des armes de siège **maniables** d'*Aux Armes* (`trappings.json`, source AA 10 p.122 — ex. Baliste **+12** Recharge 3 en AA contre Baliste **+14** Recharge 2 ici). Ne pas confondre les deux jeux de stats.
 
 ### Puissance — le score d'armée
 

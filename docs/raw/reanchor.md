@@ -4,7 +4,7 @@
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-**Bilan : ✅ 399 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 40 introuvables · ➖ 2637 synthèses** (⛔ 15 hors-fichier · ⚠️ 0 sans source) sur 3091 réfs · 439 citations · 28 fiches.
+**Bilan : ✅ 400 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 39 introuvables · ➖ 2845 synthèses** (⛔ 9 hors-fichier · ⚠️ 0 sans source) sur 3293 réfs · 439 citations · 28 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
@@ -44,9 +44,6 @@
 
 | Réf | Statut | Détail |
 |---|---|---|
-| `AU1 05 l.24` | ❌ LOW | « frappe mortelle (wfjdr, page 160). en raison d… » — texte trouvé en AU1 4 l.18 |
-| `AU1 05 l.24` | ⛔ PAST-EOF | l.24 > 6 lignes |
-| `AU1 05 l.24` | ⛔ PAST-EOF | l.24 > 6 lignes |
 | `LDB 63 l.13-14` | ❌ LOW | « certaines armes sont presque aussi susceptible… » — texte trouvé en LDB 62 l.315 |
 | `LDB 13 l.184` | ❌ LOW | « lancer pour toucher de corps à corps étant un … » — aucune occurrence |
 | `LDB 63 l.14` | ❌ LOW | « tout test de combat qui est un échec et dont l… » — texte trouvé en LDB 14 l.19 |
@@ -58,7 +55,6 @@
 | `ADE II 04 l.215` | ❌ LOW | « funeste : l'arme est imprégnée de magie de mor… » — aucune occurrence |
 | `ADE II 04 l.235` | ❌ LOW | « de coupure infinie : … si un coup de cette arm… » — aucune occurrence |
 | `ADE II 04 l.237` | ❌ LOW | « de blessure grave : … il peut inverser les chi… » — aucune occurrence |
-| `AU1 05 l.22` | ⛔ PAST-EOF | l.22 > 6 lignes |
 | `LDB 85 l.199-200` | ❌ LOW | « nuée - les nuées sont constituées d'un grand n… » — aucune occurrence |
 | `ZI 13 l.984` | ❌ LOW | « nuée - la nuée est considérée comme une seule … » — aucune occurrence |
 | `ZI 01 l.702-709` | ⛔ PAST-EOF | l.702 > 296 lignes |
@@ -86,6 +82,7 @@
 
 | Réf | Statut | Détail |
 |---|---|---|
+| `EDOC 5 l.479` | ⛔ PAST-EOF | l.479 > 292 lignes |
 | `MDG 15 l.76` | ❌ LOW | « distance/jour suppose un équipage permettant d… » — aucune occurrence |
 
 ## destin.md
@@ -107,15 +104,6 @@
 | `LDB 18 l.213` | ❌ LOW | « 97-99 hémorragie interne : gagnez 1 état hémor… » — aucune occurrence |
 | `LDB 18 l.104` | ❌ LOW | « 76-80 commotion cérébrale : gagnez l'état exté… » — aucune occurrence |
 | `NADJ 05 l.117` | ❌ LOW | « état fatigué… » — aucune occurrence |
-
-## talents.md
-
-| Réf | Statut | Détail |
-|---|---|---|
-| `EDOC 9 l.76-80` | ⛔ PAST-EOF | l.76 > 33 lignes |
-| `EDOC 9 l.82-83` | ⛔ PAST-EOF | l.82 > 33 lignes |
-| `EDOC 9 l.85-93` | ⛔ PAST-EOF | l.85 > 33 lignes |
-| `EDOC 9 l.219-221` | ⛔ PAST-EOF | l.219 > 33 lignes |
 
 ## tests.md
 

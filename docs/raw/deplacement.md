@@ -479,7 +479,7 @@ Ajustements : régions plus au nord → +10 à +30 ; plus au sud → −10 à �
 **Source :** EDOC 08 l.88-92
 
 Fin de chaque Étape : tout PJ exposé à pluie ou neige sans **manteau ET tente** → Test **Exposition**
-(LDB p.181). Pluie diluvienne/blizzard : Test même avec les deux. Manteau *ou* tente manquant →
+(LDB 18 p.181). Pluie diluvienne/blizzard : Test même avec les deux. Manteau *ou* tente manquant →
 Complexe (−10) ; les deux manquants → Difficile (−20). Hiver ou printemps après échec → **Rhume
 commun** (EDOC 08 l.110-122).
 

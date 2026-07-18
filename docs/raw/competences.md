@@ -1010,7 +1010,7 @@ cible cherche activement à brouiller les pistes : opposé à Discrétion de la 
 
 ---
 
-## Extension (T3) — Hypnotisme (Int, Avancée)
+## Extension (PDT) — Hypnotisme (Int, Avancée)
 
 **Hypnotisme (Int) — Avancée.** Compétence de supplément (*Le Pouvoir derrière le Trône*, Annexe III), utilisée par certains Saltimbanques et Mystiques (parfois à visée médicale). Permet de mettre un Personnage en **transe** : tant qu'elle dure, la cible n'a conscience que de la voix de l'hypnotiseur, répond honnêtement, peut retrouver des souvenirs réprimés (traumatisme) ou effacés (sort), et reçoit des **suggestions inconscientes** exécutées jusqu'à la fin de la séance.
 

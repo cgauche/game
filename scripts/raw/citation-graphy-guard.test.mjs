@@ -10,9 +10,9 @@ import { join } from 'node:path'
 import {
   scanGraphyViolations, scanDocsRawViolations, scanImplProseViolations, BOOK_NO_CHAPTER_RE,
   scanChDotViolations, scanBareFolioViolations, scanBookNoChapterSrcViolations, scanUnknownAbbrViolations,
-  scanMultiFolioSplitViolations, readBaseline, BASELINE_PATH,
+  scanMultiFolioSplitViolations, scanChapterBoundaryFolioViolations, readBaseline, BASELINE_PATH,
 } from './citation-graphy-guard.mjs'
-import { otherAbbrAlternation } from './_lib.mjs'
+import { otherAbbrAlternation, chapterBoundaryRisk } from './_lib.mjs'
 import { countsByFile, assertAgainstBaseline } from './check-code-refs.mjs'
 
 function withTempSrcDir(content, fn) {
@@ -341,6 +341,37 @@ test('(b) étendu à src : réf de livre SANS chapitre détectée en .ts, forme 
   )
 })
 
+// --- (#454 DoD) scans (b)/(f) étendus à docs/raw : la garde était auparavant AVEUGLE à ces fiches ---
+test('(#454) (f) folio nu : détecté dans docs/raw (toute ligne, pas seulement commentaire/champ "ref"), forme chapitrée silencieuse', () => {
+  withTempSrcAndRawDir(
+    {},
+    { 'combat.md': '**Source :** LDB p.339\n', 'ok.md': '**Source :** LDB 85 l.90\n' },
+    (srcDir, rawDir) => {
+      const v = scanBareFolioViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir)
+      assert.equal(v.length, 1)
+      assert.equal(v[0].file.endsWith('combat.md'), true)
+    },
+  )
+})
+
+test('(#454) (f) folio nu : rapports générés (coverage/reconciliation/reanchor) et épreuves exclus de docs/raw', () => {
+  withTempSrcAndRawDir({}, { 'coverage.md': 'LDB p.339\n' }, (srcDir, rawDir) => {
+    assert.equal(scanBareFolioViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir).length, 0)
+  })
+})
+
+test('(#454) (b) étendu à docs/raw : réf de livre SANS chapitre détectée, forme avec chapitre silencieuse', () => {
+  withTempSrcAndRawDir(
+    {},
+    { 'combat.md': 'EDOC l.172 : règle libre\n', 'ok.md': 'EDOC 8 l.172 : forme canonique, silence\n' },
+    (srcDir, rawDir) => {
+      const v = scanBookNoChapterSrcViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir)
+      assert.equal(v.length, 1)
+      assert.equal(v[0].file.endsWith('combat.md'), true)
+    },
+  )
+})
+
 // --- (#585 lot A) scan (g) : abréviation INCONNUE (zéro tolérance, pas de baseline) ---
 test('(g) abréviation inconnue : détectée nominativement, abréviation connue (LDB) silencieuse', () => {
   withTempSrcAndRawDir(
@@ -412,6 +443,79 @@ test('non-régression : le VRAI src/ du repo est à ZÉRO multi-folio à cheval 
   )
 })
 
+// --- (#454 juge adversarial) scan (i) : folio simple en fin de chapitre (AVERTISSEMENT cliqueté) ---
+test('(i) chapterBoundaryRisk (pur, fixture synthétique) : dernier folio de N + N+1 ouvre sur X → risque', () => {
+  const map = new Map([
+    [10, [{ ch: 1, lo: 1, hi: 5 }]],
+    [11, [{ ch: 1, lo: 6, hi: 10 }, { ch: 2, lo: 11, hi: 20 }]], // ch2 s'ouvre AUSSI sur 11 (même folio, contenu à cheval)
+  ])
+  assert.equal(chapterBoundaryRisk(map, 1, 11), true)
+})
+
+test('(i) chapterBoundaryRisk (pur) : N+1 ouvre sur X+1 (cas prouvé LDB 48→49 p.255→256) → risque', () => {
+  const map = new Map([
+    [10, [{ ch: 1, lo: 1, hi: 5 }]],
+    [11, [{ ch: 1, lo: 6, hi: 10 }]],  // dernier folio du ch1 = 11
+    [12, [{ ch: 2, lo: 11, hi: 20 }]], // ch2 s'ouvre sur 12 = X+1
+  ])
+  assert.equal(chapterBoundaryRisk(map, 1, 11), true)
+})
+
+test('(i) chapterBoundaryRisk (pur) : folio milieu de chapitre (pas le dernier) → pas de risque', () => {
+  const map = new Map([
+    [10, [{ ch: 1, lo: 1, hi: 5 }]],
+    [11, [{ ch: 1, lo: 6, hi: 10 }]],
+    [12, [{ ch: 2, lo: 11, hi: 20 }]],
+  ])
+  assert.equal(chapterBoundaryRisk(map, 1, 10), false)
+})
+
+test('(i) chapterBoundaryRisk (pur) : dernier folio de N mais N+1 s\'ouvre loin (X+5) → pas de risque', () => {
+  const map = new Map([
+    [10, [{ ch: 1, lo: 1, hi: 5 }]],
+    [11, [{ ch: 1, lo: 6, hi: 10 }]],
+    [16, [{ ch: 2, lo: 11, hi: 20 }]],
+  ])
+  assert.equal(chapterBoundaryRisk(map, 1, 11), false)
+})
+
+test('(i) scan : LDB 48 p.255 (cas PROUVÉ — Mauvais œil réellement en 49) → détecté ; LDB 49 p.255 (forme corrigée) → silence', () => {
+  withTempSrcAndRawDir(
+    { 'x.ts': '// Mauvais œil (LDB 48 p.255) forme fautive\n// Mauvais œil (LDB 49 p.255) forme corrigée\n' },
+    {},
+    (srcDir, rawDir) => {
+      const v = scanChapterBoundaryFolioViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir)
+      assert.equal(v.length, 1)
+      assert.equal(v[0].row, 1)
+      assert.equal(v[0].abbr, 'LDB')
+      assert.equal(v[0].ch, 48)
+      assert.equal(v[0].folio, 255)
+    },
+  )
+})
+
+test('(i) scan : couverture étendue à docs/raw (fiches scannées, patron chDot/bareFolio)', () => {
+  withTempSrcAndRawDir(
+    {},
+    { 'combat.md': 'Mauvais œil (LDB 48 p.255) forme fautive\n', 'ok.md': 'Mauvais œil (LDB 49 p.255) forme corrigée\n' },
+    (srcDir, rawDir) => {
+      const v = scanChapterBoundaryFolioViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir)
+      assert.equal(v.length, 1)
+      assert.equal(v[0].file.endsWith('combat.md'), true)
+    },
+  )
+})
+
+test('(i) scan : forme multi-folio (LDB 64 p.301/303) hors périmètre (déjà couverte par le scan (h))', () => {
+  withTempSrcAndRawDir(
+    { 'x.ts': '// LDB 48 p.255/256 : suffixe multi-folio, jamais compté ici\n' },
+    {},
+    (srcDir, rawDir) => {
+      assert.equal(scanChapterBoundaryFolioViolations(srcDir, ['.ts', '.tsx', '.json'], rawDir).length, 0)
+    },
+  )
+})
+
 // --- (#585 lot A) baseline PAR FICHIER, cliquetée (patron check-code-refs.mjs) ---
 test('baseline graphy : hausse détectée, baisse détectée comme périmée (assertAgainstBaseline réutilisé)', () => {
   const counts = countsByFile([{ file: 'src/a.ts' }, { file: 'src/a.ts' }, { file: 'src/b.ts' }])
@@ -420,12 +524,13 @@ test('baseline graphy : hausse détectée, baisse détectée comme périmée (as
   assert.equal(stale.length, 1)
 })
 
-test('non-régression : les 3 familles cliquetées (#585) du VRAI repo sont alignées sur graphy-baseline.json', () => {
+test('non-régression : les 4 familles cliquetées (#585, #454) du VRAI repo sont alignées sur graphy-baseline.json', () => {
   const baseline = readBaseline()
   const families = [
     ['chDot', scanChDotViolations()],
     ['bareFolio', scanBareFolioViolations()],
     ['bookNoChapterSrc', scanBookNoChapterSrcViolations()],
+    ['chapterBoundaryFolio', scanChapterBoundaryFolioViolations()],
   ]
   for (const [family, violations] of families) {
     const counts = countsByFile(violations)

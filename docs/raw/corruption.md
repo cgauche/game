@@ -385,13 +385,13 @@ Le Compagnon de *L'Ennemi dans l'Ombre* (Chapitre 8 : Les mutants dans l'Empire)
 | 33–34 | 31 | 36 | — | 28–29 | Doigts distendus [3] | +10 Dextérité |
 | 35–36 | 32–33 | — | 33–34 | 30–32 | Bras élastiques | Toute arme de corps à corps compte comme ayant une Allonge de deux pas supérieure |
 | 37 | 34 | 37–39 | 35–37 | 33 | Émacié | -10 Force, +5 Agilité |
-| 38–39 | 35 | — | 38–39 | 34–36 | Mauvais œil [3] | Peut lancer le Sort Mauvais œil (LDB p.255) en dépensant 1 Chance, sans Test ; subit une Incantation imparfaite mineure |
+| 38–39 | 35 | — | 38–39 | 34–36 | Mauvais œil [3] | Peut lancer le Sort Mauvais œil (LDB 49 p.255) en dépensant 1 Chance, sans Test ; subit une Incantation imparfaite mineure |
 | 40–41 | 36 | 40–41 | — | 37 | Articulations supplémentaires | +5 Agilité |
 | 42–44 | 37 | 42–43 | 40 | 38–40 | Bouche supplémentaire [1] | Jet sur le Tableau des Localisations |
 | 45 | 38–39 | — | 41–43 | 41 | Œil pédonculé [3] | Voit par dessus ou autour des obstacles |
 | 46–47 | 40 | — | 44–46 | 42–44 | Tentacule épais [1] | Gagne le Trait de créature Tentacules |
 | 48 | 41–43 | — | 47–51 | — | Odeur pestilentielle | Gagne le Trait de créature Perturbant |
-| 49 | 44 | 44 | 52 | 45–46 | Fourrure [3] | Ne souffre plus de l'Exposition aux climats froids ; effets de l'Exposition aux climats chauds doublés (LDB p.181) |
+| 49 | 44 | 44 | 52 | 45–46 | Fourrure [3] | Ne souffre plus de l'Exposition aux climats froids ; effets de l'Exposition aux climats chauds doublés (LDB 18 p.181) |
 | 50 | 45–47 | — | 53–54 | 47–48 | Branchies [1] | Peut respirer sous l'eau |
 | 51–52 | 48 | 45–47 | — | 49–50 | Peau brillante [3] | Équivaut à la lueur d'une chandelle |
 | 53 | 49 | 48–50 | 55–56 | — | Sans tête [3] | Gagne le Trait de créature Peur 2 ; les coups portés à la tête sont considérés comme ratés |
@@ -399,7 +399,7 @@ Le Compagnon de *L'Ennemi dans l'Ombre* (Chapitre 8 : Les mutants dans l'Empire)
 | 55 | 52 | — | — | 52–57 | Beauté surnaturelle | +10 Sociabilité, jamais de cicatrices |
 | 56 | 53–54 | 52–55 | — | 58–59 | Peau d'acier | +2 PA à toutes les Localisations, -10 Agilité |
 | — | 55 | 56–58 | 59 | 60–61 | Langue pendante [3] | -10 à tous les Tests de Langue en parlant |
-| 57–58 | 56–57 | 59 | — | 62–63 | Longs bras [3] | Si armes de même Allonge, la vôtre est considérée comme plus longue (LDB p.297) |
+| 57–58 | 56–57 | 59 | — | 62–63 | Longs bras [3] | Si armes de même Allonge, la vôtre est considérée comme plus longue (LDB 62 p.297) |
 | 59–60 | 58–59 | 60 | — | 64 | Longues jambes [3] | +2 Mouvement |
 | 61–62 | 60–61 | — | — | 65 | Long cou [3] | La moitié des coups au corps sont des coups à la tête |
 | 63–64 | 62 | 61–63 | 60–61 | 66–67 | Bras multiples [3] | Gagne une Attaque gratuite |
@@ -474,7 +474,7 @@ Utilisée quand la table physique étendue indique « Tête bestiale ». Lance s
 | 40–41 | 36–38 | 44–48 | 33–35 | — | Pulsions de haine | Sujet à Animosité envers toutes les autres races |
 | 42–44 | 39–42 | 49–50 | 36–38 | 42–45 | Cœur desséché | +10 FM, -10 Soc |
 | 45–47 | 43–47 | — | 39–43 | 46–48 | Désespoir obsédant | Gagne le symptôme Malaise pendant 1d10 heures en cas d'échec à un Test lié à la FM |
-| — | 48–49 | 51–54 | 44–46 | 49–53 | Masochisme pressant | Gagne le Trait Belliqueux : impossible de Fuir volontairement (LDB p.165) |
+| — | 48–49 | 51–54 | 44–46 | 49–53 | Masochisme pressant | Gagne le Trait Belliqueux : impossible de Fuir volontairement (LDB 15 p.165) |
 | 48–52 | 50–52 | — | — | 54–58 | Pensées envieuses | -10 Sociabilité |
 | 53–54 | 53–55 | — | 47–51 | — | Répugnance persistante | Gagne le Symptôme Nausée pendant 1d10 heures après avoir été confronté à de la saleté |
 | — | 56–58 | — | 52–56 | 59–62 | Esprit solitaire | -10 à tous les Tests lorsque le Personnage est seul |

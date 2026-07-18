@@ -4,10 +4,10 @@
 > par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.
 > Recourir à la source pour un point = un défaut de l'Atlas à corriger ici. Régénéré par
 > `node scripts/raw/coverage.mjs`.
-**Couverture (profondeur) : ✅ 153 couverts · 🟡 3 effleurés · ⬜ 0 trous** sur 156 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · MCLB ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅5·🟡1·⬜0 · MSR ✅1·🟡0·⬜0 · MSRC ✅8·🟡0·⬜0 · PDT ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · AU1 ✅2·🟡0·⬜0 · NADJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 152 couverts · 🟡 2 effleurés · ⬜ 0 trous** sur 154 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅72·🟡1·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · MCLB ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · MSR ✅1·🟡0·⬜0 · MSRC ✅8·🟡0·⬜0 · PDT ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · AU1 ✅1·🟡0·⬜0 · NADJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
 
 
-## LDB — ✅ 71 · 🟡 2 · ⬜ 0
+## LDB — ✅ 72 · 🟡 1 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -20,21 +20,21 @@
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
-| 09 | Compétences | ✅ | 144 (competences.md ×137) |
-| 10 | Talents | ✅ | 68 (tests.md ×36) |
-| 11 | *(artefact OCR)* | 🟡 | 2 (equipement.md ×1) |
-| 12 | Tests | ✅ | 45 (tests.md ×41) |
+| 09 | Compétences | ✅ | 145 (competences.md ×137) |
+| 10 | Talents | ✅ | 208 (talents.md ×140) |
+| 11 | *(artefact OCR)* | ✅ | 31 (talents.md ×30) |
+| 12 | Tests | ✅ | 46 (tests.md ×41) |
 | 13 | Combat | ✅ | 131 (combat.md ×122) |
-| 14 | *(artefact OCR)* | ✅ | 125 (combat.md ×118) |
-| 15 | Déplacement | ✅ | 85 (combat.md ×75) |
-| 16 | États | ✅ | 52 (etats.md ×30) |
+| 14 | *(artefact OCR)* | ✅ | 128 (combat.md ×121) |
+| 15 | Déplacement | ✅ | 87 (combat.md ×76) |
+| 16 | États | ✅ | 53 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 51 (destin.md ×27) |
-| 18 | Traumatisme | ✅ | 109 (traumatisme.md ×67) |
+| 18 | Traumatisme | ✅ | 111 (traumatisme.md ×67) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
 | 21 | Psychologie | ✅ | 52 (psychologie.md ×30) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |
-| 23 | Activités | ✅ | 36 (activites.md ×36) |
+| 23 | Activités | ✅ | 40 (activites.md ×36) |
 | 24 | Les dieux | ✅ |  |
 | 25 | Les cultes | ✅ | 3 (religion.md ×3) |
 | 26 | Le culte de Manaan, dieu de la mer | ✅ |  |
@@ -59,7 +59,7 @@
 | 45 | *(artefact OCR)* | ➖ | |
 | 46 | Les règles magiques | ✅ | 101 (magie.md ×56) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
-| 48 | Magie des Couleurs | ✅ | 16 (magie.md ×16) |
+| 48 | Magie des Couleurs | ✅ | 17 (magie.md ×16) |
 | 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
 | 50 | Magie noire | ✅ |  |
 | 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
@@ -70,13 +70,13 @@
 | 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | |
 | 57 | La monnaie | ✅ | 1 (economie.md ×1) |
 | 58 | *(artefact OCR)* | ➖ | |
-| 59 | Faire son marché | ✅ | 18 (economie.md ×18) |
+| 59 | Faire son marché | ✅ | 19 (economie.md ×19) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 110 (combat.md ×103) |
+| 62 | Les armes | ✅ | 113 (combat.md ×103) |
 | 63 | Armures | ✅ | 40 (combat.md ×35) |
 | 64 | Sacs et contenants | ✅ |  |
-| 65 | Vêtements et accessoires | ✅ |  |
+| 65 | Vêtements et accessoires | ✅ | 1 (traumatisme.md ×1) |
 | 66 | Nourriture, boisson et hébergement | ✅ |  |
 | 67 | Outils et nécessaires | ✅ | 5 (equipement.md ×5) |
 | 68 | Livres et documents | ✅ |  |
@@ -85,7 +85,7 @@
 | 71 | Drogues et poisons | ✅ | 2 (equipement.md ×2) |
 | 72 | Herbes et potions | ✅ | 8 (equipement.md ×8) |
 | 73 | Prothèses | ✅ | 5 (equipement.md ×5) |
-| 74 | Possessions diverses | ✅ | 12 (equipement.md ×12) |
+| 74 | Possessions diverses | ✅ | 13 (equipement.md ×12) |
 | 75 | Mercenaires | ✅ |  |
 | 76 | Point d’Impact des Créatures | ✅ | 53 (combat.md ×29) |
 | 77 | Les populations du Reikland | ✅ | 9 (combat.md ×5) |
@@ -96,7 +96,7 @@
 | 82 | Les morts sans repos | ✅ |  |
 | 83 | Esclaves des Ténèbres | ✅ |  |
 | 84 | *(artefact OCR)* | ➖ | |
-| 85 | Traits de créature | ✅ | 298 (combat.md ×203) |
+| 85 | Traits de créature | ✅ | 301 (combat.md ×205) |
 
 ## ADE I — ✅ 2 · 🟡 0 · ⬜ 0
 
@@ -109,8 +109,8 @@
 | 04 | Les nains impériaux | ➖ hors-règle | |
 | 05 | Guide de Karak Azgaraz | ➖ hors-règle | |
 | 06 | Guide de la Laurelorn | ➖ hors-règle | |
-| 07 | Annexe I | ✅ | 2 (competences.md ×2) |
-| 08 | Annexe II | ✅ | 1 (etats.md ×1) |
+| 07 | Annexe I | ✅ | 3 (competences.md ×2) |
+| 08 | Annexe II | ✅ | 2 (carrieres.md ×1) |
 
 ## ADE II — ✅ 6 · 🟡 0 · ⬜ 0
 
@@ -118,9 +118,9 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Mercenaires ogres dans le Vieux Monde | ✅ |  |
-| 02 | Les ogres | ✅ | 50 (combat.md ×43) |
+| 02 | Les ogres | ✅ | 51 (combat.md ×43) |
 | 03 | Des signes dans le ciel | ✅ |  |
-| 04 | Un peu de magie | ✅ | 34 (combat.md ×23) |
+| 04 | Un peu de magie | ✅ | 35 (combat.md ×24) |
 | 05 | L’hospice | ➖ hors-règle | |
 | 06 | Le personnel | ➖ hors-règle | |
 | 07 | Les patients | ➖ hors-règle | |
@@ -141,7 +141,7 @@
 | 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 46 (combat.md ×41) |
 | 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 100 (combat.md ×99) |
 | 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
-| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 96 (combat.md ×90) |
+| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 98 (combat.md ×92) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
 | 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 17 (combat.md ×16) |
 | 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 18 (combat.md ×17) |
@@ -200,7 +200,7 @@
 | 11 | APPENDICE 2 - Nouvelles règles | ✅ | 19 (combat.md ×19) |
 | 12 | Annexe 3 - Documents et aides de jeux | ➖ hors-règle | |
 
-## EDOC — ✅ 5 · 🟡 1 · ⬜ 0
+## EDOC — ✅ 4 · 🟡 1 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -213,11 +213,11 @@
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
 | 08 | CHAPITRE 5 - Voyager | ✅ | 10 (deplacement.md ×7) |
-| 09 | *(artefact OCR)* | ✅ | 8 (reanchor.md ×4) |
+| 09 | *(artefact OCR)* | ➖ | |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
 | 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ |  |
-| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 5 (reconciliation.md ×5) |
+| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 9 (reconciliation.md ×5) |
 | 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | |
 | 15 | CHAPITRE 11 - L’Affaire du joyau caché - Un mélodrame à l’intrigue complexe | ➖ hors-règle | |
 | 16 | CHAPITRE 12 - LE CARNAVAL DU PANDÉMONIUM | ➖ hors-règle | |
@@ -302,7 +302,7 @@
 | 11 | Cultes interdits et groupes extrémistes | ✅ |  |
 | 12 | Activités | ✅ | 17 (activites.md ×17) |
 
-## AU1 — ✅ 2 · 🟡 0 · ⬜ 0
+## AU1 — ✅ 1 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -310,8 +310,8 @@
 | 01 | introduction | ➖ hors-règle | |
 | 02 | Si un regard pouvait tuer | ➖ hors-règle | |
 | 03 | pour étoffer un peu | ➖ hors-règle | |
-| 04 | Ça fait beaucoup de Traits ! | ✅ | 4 (combat.md ×3) |
-| 05 | *(artefact OCR)* | ✅ | 8 (combat.md ×4) |
+| 04 | Ça fait beaucoup de Traits ! | ✅ | 7 (combat.md ×7) |
+| 05 | *(artefact OCR)* | ➖ | |
 | 06 | LES FOUS DE GOTHEIM | ➖ hors-règle | |
 | 07 | *(artefact OCR)* | ➖ | |
 | 08 | Pour étoffer un peu | ➖ hors-règle | |

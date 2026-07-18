@@ -214,7 +214,7 @@ compensent les pertes). **Sous-effectif** (`MDG 12 l.448-458`), pénalités **cu
 | 1 | **Recharge doublée** | + **Imprécise** | + **Dangereuse** |
 
 Si une pièce reçoit un Défaut qu'elle a déjà → **−10 aux Tests de Projectiles** à la place (`l.460`). **Recharger**
-une Arme d'équipe : un servant peut apporter son **Soutien** (LDB p.155) au Test (`l.462`). **Incident** sur une
+une Arme d'équipe : un servant peut apporter son **Soutien** (LDB 12 p.155) au Test (`l.462`). **Incident** sur une
 Arme d'équipe → **tous les servants** sont touchés (`l.464`).
 
 **Sources RAW.** `MDG 12 l.440-464`. **Citation** `l.458` : « les pénalités… sont **cumulatives**… Arme d'équipe
@@ -272,7 +272,7 @@ chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon
 `resolveQualities`/`caps`) — **aucun id d'arme en dur**, un SEUL résolveur (`resolveWeaponArea`) partagé par le tir
 individuel ET la bordée :
 
-- **Explosion (Indice)** (`LDB p.298`) : « **Tous les Personnages situés à *Indice* mètres du point cible frappé
+- **Explosion (Indice)** (`LDB 62 p.298`) : « **Tous les Personnages situés à *Indice* mètres du point cible frappé
   subissent DR + Dégâts d'arme et gagnent tous les États infligés par l'arme.** » → DR+Dégâts (déjà calculés) +
   propagation des États par le chemin GÉNÉRIQUE `onHit` (`fireTriggers`).
 - **Tir de zone (Indice)** (`MDG 12 l.466-472`) : **Bout portant** → 1 cible, **+Indice aux Dégâts** ; **Courte à
@@ -285,7 +285,7 @@ n'attraperait personne (dégénéré). On compose donc, sans inventer de règle 
 
 - `MDG 13` (Dégâts aux navires) : un coup à la Localisation « **Équipage** » touche un **marin EXPOSÉ** « comme un
   combat normal » (précédent des **Éclats** : Indice marins encaissent un coup, `exposedCrew`) ;
-- `MDG 12 l.466-472` / `LDB p.298` : Tir de zone ajoute les *Indice* plus proches ; Explosion touche tous dans le rayon.
+- `MDG 12 l.466-472` / `LDB 62 p.298` : Tir de zone ajoute les *Indice* plus proches ; Explosion touche tous dans le rayon.
 
 → Quand la cible primaire d'une munition à aire est un **NAVIRE** (`bodyShape:'vehicule'`), les cibles secondaires
 sont l'**ÉQUIPAGE EXPOSÉ de ce navire** (`exposedCrew(crewIds)`) — **jusqu'à Indice** marins pour Tir de zone, **tous**

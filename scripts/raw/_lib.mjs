@@ -160,6 +160,28 @@ export function folioRange(abbr, folio) {
   return folioRangeIn(folioIndexOf(abbr), folio)
 }
 
+// (#454 juge adversarial) Un folio SIMPLE `ABBR N p.X` cité au DERNIER folio du chapitre N, alors que
+// le chapitre N+1 s'ouvre sur X ou X+1, est un CANDIDAT à contenu-en-fin-de-chapitre-qui-a-débordé
+// (cas prouvé : `LDB 48 p.255` — le sujet cité vivait en réalité au tout début de `49 - Sorcellerie.md`,
+// AVANT sa propre première ancre `data-folio`). Détection STRUCTURELLE PURE (aucun accès disque ici) :
+// ne tranche PAS si le sujet cité vit réellement en N ou en N+1 (vérification verbatim, non triviale,
+// hors scope) — seulement que la POSITION rend les deux plausibles. `map` = `folioIndexOf(abbr)`.
+export function chapterBoundaryRisk(map, ch, folio) {
+  let lastOfCh = null
+  let firstOfNext = null
+  for (const [f, hits] of map) {
+    if (hits.some((h) => h.ch === ch)) { if (lastOfCh === null || f > lastOfCh) lastOfCh = f }
+    if (hits.some((h) => h.ch === ch + 1)) { if (firstOfNext === null || f < firstOfNext) firstOfNext = f }
+  }
+  if (lastOfCh === null || firstOfNext === null || folio !== lastOfCh) return false
+  return firstOfNext === folio || firstOfNext === folio + 1
+}
+
+// (abbr, ch, folio) → bool, enrobe `chapterBoundaryRisk` avec `folioIndexOf` (accès disque + cache).
+export function chapterBoundaryRiskFor(abbr, ch, folio) {
+  return chapterBoundaryRisk(folioIndexOf(abbr), ch, folio)
+}
+
 // Trouve la ligne d'une ancre `from`/`to` de `chapterFile` (heading Markdown normalisé, ou `folio:NN`).
 function findAnchor(lines, locator) {
   const folio = /^folio:(\d+)$/.exec(locator)
