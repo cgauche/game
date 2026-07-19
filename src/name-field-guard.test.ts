@@ -139,7 +139,7 @@ const BASELINE: string[] = [
   'src/engine/ops.ts:606', // op 'grantWeapon'
   'src/engine/ops.ts:621', // op 'grantNaturalWeapon'
 
-  // GameOp / ops littérales (table de critiques de navigation fluviale, T2C) — cible ID (#603)
+  // GameOp / ops littérales (table de critiques de navigation fluviale, MSRC) — cible ID (#603)
   'src/engine/riverNavigation.ts:217',
   'src/engine/riverNavigation.ts:218',
 

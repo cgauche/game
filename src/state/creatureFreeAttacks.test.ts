@@ -202,7 +202,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const st = useGame.getState();
     const hLive = st.battle!.combatants.find((c) => c.id === H.id)!;
     const eLive = st.battle!.combatants.find((c) => c.id === E.id)!;
-    expect(hLive.conditions.some((c) => c.name === 'empetre')).toBe(true);
+    expect(hLive.conditions.some((c) => c.id === 'empetre')).toBe(true);
     expect(areGrappling(eLive, hLive)).toBe(true); // `grapple:true` : la touche établit la PRISE (LDB 14 p.163 — l'IA la travaille ensuite, LOT B)
     expect(eLive.wounds.current).toBeGreaterThan(10); // drainé (Vampirique)
   });

@@ -300,7 +300,7 @@ S'entraîner dans une Compétence ou Caractéristique **en dehors de la Carrièr
 - Compétences Avancées : **double** du montant ci-dessus.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.133-153) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `revenus`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, `fr`, +4 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `LDB 23` (l.133-153) → `FAVOR_LEVEL_LABELS`, `FavorRow`, `InterludeHeroState`, `revenus`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, `fr`, +4 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 
@@ -319,7 +319,7 @@ Système transversal aux Activités : une **Faveur** est un engagement futur acc
 | **Importante** | Risque mortel, mois de voyage, violence extrême probable | Joué comme aventure complète (pas via Activités) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.140-151) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, `fr`, `FavorSettlePane`, +3 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `LDB 23` (l.140-151) → `FAVOR_LEVEL_LABELS`, `FavorRow`, `InterludeHeroState`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, `fr`, `FavorSettlePane`, +3 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 
@@ -831,7 +831,7 @@ Table des résultats (`ACE 12 l.31-42`) :
 **Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `weaponUnmastered`, `itemFromTrappingById`, `ActivityDef`, `weaponGroupSkillMode`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
+- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `weaponUnmastered`, `ActivityDef`, `itemFromTrappingById`, `weaponGroupSkillMode`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 

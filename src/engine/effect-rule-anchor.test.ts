@@ -131,7 +131,6 @@ function unanchoredCallsites(): Callsite[] {
  * décroître : ancrer un callsite (poser `effectId`/`sourceSpellId` sur son `OpsCtx`) impose de l'ôter d'ici.
  */
 const BASELINE: string[] = [
-  'src/engine/conditions.ts:453', // re-jeu des `opsPerRound` d'un effet en fin de Round (source de l'effet d'origine perdue)
   'src/engine/critical.ts:109', // ops d'une Blessure critique tirée sur sa table de localisation
   'src/engine/domainAttributes.ts:113', // ops d'un Attribut de domaine de magie
   'src/engine/shipCritical.ts:153', // échec du Test d'équipage d'un critique de navire
@@ -141,16 +140,10 @@ const BASELINE: string[] = [
   'src/engine/shipCritical.ts:226', // ops d'un critique de navire supplémentaire
   'src/state/aiSpellValue.ts:184', // simulation d'IA sur un CLONE — jamais affichée au joueur
   'src/state/combatEffects.ts:873', // ops d'un Souffle de zone (effet de scène)
-  'src/state/combatFlow.ts:1057', // gains d'une Empoignade remportée
-  'src/state/combatFlow.ts:1408', // ops d'une Blessure critique en combat
-  'src/state/combatFlow.ts:1487', // ops de l'issue d'une manœuvre
-  'src/state/combatFlow.ts:1795', // ops d'entrée en Empoignade
+  'src/state/combatFlow.ts:1411', // ops d'une Blessure critique en combat
+  'src/state/combatFlow.ts:1490', // ops de l'issue d'une manœuvre
   'src/state/innFlow.ts:60', // op d'une activité d'auberge
-  'src/state/interludeFlow.ts:727', // jeton de renversement gagné en interlude
-  'src/state/interludeFlow.ts:737', // jeton de renversement gagné en interlude
-  'src/state/interludeFlow.ts:747', // variation de Statut en interlude
-  'src/state/interludeFlow.ts:956', // ops immédiates d'un événement d'interlude
-  'src/state/interludeFlow.ts:1127', // issues DIFFÉRÉES à la clôture d'un interlude
+  'src/state/interludeFlow.ts:1133', // issues DIFFÉRÉES à la clôture d'un interlude
   'src/state/medicFlow.ts:222', // pénalité posée par un soin raté
   'src/state/restFlow.ts:404', // ops d'échec d'une étape de repos
   'src/state/seaVoyageFlow.ts:1844', // brûlure de vapeur (scaldOps) d'une pièce de machine

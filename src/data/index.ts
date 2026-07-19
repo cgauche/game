@@ -1543,7 +1543,7 @@ export interface NavalTraitData {
   kind: 'trait' | 'amelioration';
   source?: SourceRef;
   /** Emplacement SECONDAIRE (#563) — même Trait/Amélioration à cheval prose⇄bloc Coût/Poids ailleurs
-   *  (ex. Murs blindés : prose T2C 66, bloc Coût/Poids T2C 65). Accessors `allLocations`/
+   *  (ex. Murs blindés : prose MSRC 66, bloc Coût/Poids MSRC 65). Accessors `allLocations`/
    *  `sourceBooks` (`src/data/sourceRefs.ts`). */
   alsoIn?: SecondaryRef[];
   desc: string;

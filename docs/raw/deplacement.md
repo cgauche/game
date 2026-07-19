@@ -682,7 +682,7 @@ X = nombre de DR négatifs du Test de Résistance raté. `MDG 13 l.142`
 **Voir aussi :** [Progression d'un navire (MDG)](#progression-dun-navire-mdg), [Collisions de navires (MDG)](#collisions-de-navires-mdg), [`tests.md`](tests.md) (DR).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.113-142) → `resolveShipManeuver`, `forcePaceDifficulty`, `WorldMapView`, `exhaustionDifficulty`, `OverspeedRow`, `overspeedRow`, `overspeedDamage`, `rollOverspeedDamage` ⚠sans-appelant, `FoulingLevel`, `rollWeeklyFouling`, +16 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/sea-navigation.json`, `src/engine/policy.ts`, `src/engine/seaNavigation.ts`, `src/engine/shipNavigation.ts`, `src/state/pendings.ts`, +5 fichiers
+- `MDG 13` (l.113-142) → `resolveShipManeuver`, `forcePaceDifficulty`, `WorldMapView`, `exhaustionDifficulty`, `OverspeedRow`, `overspeedRow`, `overspeedDamage`, `rollOverspeedDamage` ⚠sans-appelant, `FoulingLevel`, `rollWeeklyFouling`, +15 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/sea-navigation.json`, `src/engine/policy.ts`, `src/engine/seaNavigation.ts`, `src/engine/shipNavigation.ts`, `src/state/pendings.ts`, +4 fichiers
 
 ---
 
@@ -705,7 +705,7 @@ Les petits navires peuvent être nettoyés par Compétences/Sorts/Miracles ou en
 **Voir aussi :** [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.144-159) → `OverspeedRow`, `overspeedDamage`, `rollOverspeedDamage` ⚠sans-appelant, `FoulingLevel`, `rollWeeklyFouling`, `aucune`, `legeres`, `voyageTiles`, `PortView`, `abondantes`, +16 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/policy.ts`, +5 fichiers
+- `MDG 13` (l.144-159) → `OverspeedRow`, `overspeedDamage`, `rollOverspeedDamage` ⚠sans-appelant, `FoulingLevel`, `rollWeeklyFouling`, `aucune`, `legeres`, `voyageTiles`, `abondantes`, `tres-abondantes`, +15 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/policy.ts`, +4 fichiers
 
 ---
 
@@ -724,7 +724,7 @@ Lancer 1d10 pour chaque aspect (Précipitations, Température, Visibilité, Vent
 **Voir aussi :** [Vents (MDG)](#vents-mdg), [Orientation et phares (MDG)](#orientation-et-phares-mdg), [`etats.md`](etats.md) (Exposition).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.162-243) → `useTestJetProps`, `PendingTest`, `carte`, `FoulingLevel`, `applyExposureFailure`, `aucune`, `exposureNight`, `legeres`, `voyageTiles`, `PortView`, +26 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/exposure.ts`, +9 fichiers
+- `MDG 13` (l.162-243) → `useTestJetProps`, `PendingTest`, `carte`, `FoulingLevel`, `applyExposureFailure`, `aucune`, `exposureNight`, `legeres`, `voyageTiles`, `abondantes`, +25 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/exposure.ts`, +8 fichiers
 
 ---
 
@@ -923,7 +923,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Provisions et équipement de navigation (MDG)](#provisions-et-équipement-de-navigation-mdg), [`provisions.md`](provisions.md) (Faim/rations), [`maladies.md`](maladies.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.204-283) → `schema`, `sealskinDR`, `EscaleTab`, `mousse`, `SeaVoyageState`, `shipboardSouls`, `exposureNight`, `ShipDossierView`, `dailyWaterLitres`, `skillDRBonus`, +30 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/crew-roles.ts`, `src/engine/crewMorale.ts`, +13 fichiers
+- `MDG 14` (l.204-283) → `schema`, `sealskinDR`, `mousse`, `SeaVoyageState`, `shipboardSouls`, `exposureNight`, `ShipDossierView`, `dailyWaterLitres`, `skillDRBonus`, `chirurgien`, +29 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/crew-roles.ts`, `src/engine/crewMorale.ts`, +12 fichiers
 
 ---
 
@@ -938,7 +938,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Orientation et phares (MDG)](#orientation-et-phares-mdg), [Maladies et provisions en mer (MDG)](#maladies-et-provisions-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.273-302) → `schema`, `sealskinDR`, `EscaleTab`, `mousse`, `exposureNight`, `skillDRBonus`, `chirurgien`, `weeklyCrewWageBrass`, `crewTalentDR`, `exposureFailCancelledByDrop`, +13 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +6 fichiers
+- `MDG 14` (l.273-302) → `schema`, `sealskinDR`, `mousse`, `exposureNight`, `skillDRBonus`, `chirurgien`, `weeklyCrewWageBrass`, `crewTalentDR`, `exposureFailCancelledByDrop`, `portHireCrew`, +12 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +5 fichiers
 
 ---
 
@@ -1027,5 +1027,5 @@ Deux actes : **acheter** une cargaison, la **vendre** ailleurs. Chaque port a un
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Activités en mer (MDG)](#activités-en-mer-mdg) (Commerce d'opportunité), [`merchantFlow.ts`](../../src/state/merchantFlow.ts) (Marchandage).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `rollSeasonalCargo`, `schema`, `PortHeader`, `PORT_PRODUITS`, `cereales`, `MapPlace`, `marienburg`, `armes`, +48 — `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +18 fichiers
+- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `rollSeasonalCargo`, `schema`, `PortHeader`, `PORT_PRODUITS`, `cereales`, `MapPlace`, `marienburg`, `armes`, +47 — `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +18 fichiers
 
