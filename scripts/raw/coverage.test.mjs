@@ -174,3 +174,23 @@ test('SCENARIO_PUR (#454 juge tour 2, défaut 1) : ventile les campagnes PURES d
   // Un livre de règles pur (jamais dans SCENARIO_BOOKS) n'est a fortiori pas SCENARIO_PUR.
   assert.ok(!SCENARIO_PUR.has('LDB'))
 })
+
+test('refSpansFor (#606) : une ref FOLIO `ABBR NN p.X` credite le meme chapitre que `l.X`, sans throw', () => {
+  // Disque REEL (LDB 10 = Talents, le cas fondateur du ticket) : la graphie p.<folio> (canonique #585)
+  // resout une plage de lignes VIA folioRange -- jamais 0 span silencieux.
+  const docs = [{ file: 'talents.md', text: 'LDB 10 p.132 — Table des Talents.' }]
+  const stats = { ignoredFolios: 0 }
+  const spans = refSpansFor('LDB', '10', docs, stats)
+  assert.equal(spans.length, 1)
+  assert.ok(spans[0].hi >= spans[0].lo && spans[0].lo > 0)
+  assert.equal(stats.ignoredFolios, 0)
+})
+
+test('refSpansFor (#606) : un folio qui resout vers un AUTRE chapitre (frontiere) est IGNORE proprement, jamais credite au mauvais chapitre', () => {
+  // Cas reel `LDB 49 p.255` (corruption.md) : le folio 255 vit en realite en LDB 48 (residu #454/#522).
+  const docs = [{ file: 'corruption.md', text: 'Mauvais œil (LDB 49 p.255).' }]
+  const stats = { ignoredFolios: 0 }
+  const spans = refSpansFor('LDB', '49', docs, stats)
+  assert.deepEqual(spans, [])
+  assert.equal(stats.ignoredFolios, 1)
+})

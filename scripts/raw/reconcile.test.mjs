@@ -9,6 +9,10 @@
 // lignes (ex. `LDB 12 l.229` → `l.202-206`, `LDB 15 l.117-122` → `l.78-84`) ; ré-ancrées au texte
 // Source, elles tombent désormais dans les plages pinées de l'Atlas (±TOL=20). Était 4 : LDB 05/11
 // pinés avant ça.
+// #606 : LDB 10 (Talents) sort de la liste — talents.md cite en graphie FOLIO (`LDB 10 p.X`, #585),
+// invisible de l'ancienne mesure (comptait seulement `l.X`) ; les refs folio sont désormais converties
+// en plages de lignes via `folioSpan`/`folioRange`, ce qui pine les lignes de code citées. Était 2 :
+// LDB 10/46 avant ce fix.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
@@ -16,12 +20,27 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { computeReconciliation } from './reconcile.mjs'
 
-test('non-régression : Sens A LDB sur le vrai repo = 0 trou dur · 2 chapitres à lignes non pinées', () => {
+test('non-régression : Sens A LDB sur le vrai repo = 0 trou dur · 1 chapitre à lignes non pinées', () => {
   const data = computeReconciliation()
   assert.equal(data.hardA.length, 0)
   assert.deepEqual(
     data.softA.map((s) => s.ch).sort(),
-    ['10', '46'], // baseline à la baisse : si ce test casse par HAUSSE → régression réelle
+    ['46'], // baseline à la baisse : si ce test casse par HAUSSE → régression réelle
+  )
+})
+
+test("Sens A LDB (#606) : une fiche qui ne cite QU'en folio (`ABBR NN p.X`) credite bien son chapitre", () => {
+  // `folioSpan`/`folioRange` resolvent contre le VRAI `Source/` (via `books.json`, pas les dirs isolés
+  // de `withFixtures`) : le folio 132 du LDB tombe reellement dans le chapitre 10 (Talents), l.3-89 --
+  // un code fixture citant une ligne DANS cette plage doit se retrouver couvert par la seule ref folio.
+  withFixtures(
+    { 'a.ts': '// règle LDB 10 l.50\n' },
+    { 'fiche.md': 'LDB 10 p.132\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardA.length, 0)
+      assert.equal(data.softA.length, 0)
+    },
   )
 })
 

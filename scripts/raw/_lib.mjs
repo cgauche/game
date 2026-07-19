@@ -46,6 +46,13 @@ const OTHER_ABBR_ALT = BOOKS.filter(([a]) => a !== 'LDB').map(([a]) => esc(a))
 export const otherRe = () =>
   new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
 
+// Miroir FOLIO de `ldbRe`/`otherRe` (#606) : la graphie canonique `ABBR NN p.<folio>[-fin][+pts]`
+// (gelee par #585) est aussi une ref de chapitre valide -- jamais captee par les regex ` l.` ci-dessus.
+// Memes groupes de capture que leur pendant ` l.`, pour rester des substituts directs cote appelant.
+export const ldbFolioRe = () => /\bLDB (?:ch\.)?(\d+) p\.(\d+)((?:[-+]\d+)*)/g
+export const otherFolioRe = () =>
+  new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? p\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
+
 // Expose l'alternation hors-LDB (triée par longueur décroissante, source unique) à tout consommateur
 // qui a besoin de matcher un livre SANS composer le reste d'otherRe (#434 défaut 10 : citation-graphy-guard
 // écrivait sa propre alternation à la main, désynchronisée si BOOKS gagne un livre).
@@ -158,6 +165,36 @@ export function folioIndexOf(abbr) {
 // (abbr, folio) → { ch, lo, hi } | null | 'ambiguous'.
 export function folioRange(abbr, folio) {
   return folioRangeIn(folioIndexOf(abbr), folio)
+}
+
+// (abbr, nn, folioStr, suffix) -> [lo, hi] LIGNES dans le fichier-chapitre `nn`, ou `null` (#606).
+// Convertit une ref folio `ABBR NN p.folio[-fin][+pts]` en plage de LIGNES du MEME chapitre via
+// `folioRange` (ancres `data-folio`). Ignore proprement (`null`, jamais un throw) : ancre absente
+// (residu #522), folio ambigu (present dans plusieurs chapitres), ou folio resolu vers un AUTRE
+// chapitre que `nn` (frontiere de chapitre) -- on ne cherche PAS a re-ancrer, juste a ne pas
+// crediter un mauvais chapitre. Un `-fin`/`+pts` dont le second folio est irresolu degrade sur
+// la seule plage du premier folio (jamais un throw ni une plage bancale).
+export function folioSpan(abbr, nn, folioStr, suffix) {
+  const wantCh = Number(nn)
+  const resolveInCh = (folio) => {
+    const r = folioRange(abbr, folio)
+    if (!r || r === 'ambiguous' || r.ch !== wantCh) return null
+    return r
+  }
+  const start = resolveInCh(Number(folioStr))
+  if (!start) return null
+  if (!suffix) return [start.lo, start.hi]
+  const range = suffix.match(/^-(\d+)/)
+  if (range) {
+    const end = resolveInCh(Number(range[1]))
+    return end ? [start.lo, end.hi] : [start.lo, start.hi]
+  }
+  let hi = start.hi
+  for (const p of (suffix.match(/\+(\d+)/g) || [])) {
+    const end = resolveInCh(Number(p.slice(1)))
+    if (end && end.hi > hi) hi = end.hi
+  }
+  return [start.lo, hi]
 }
 
 // (#454 juge adversarial) Un folio SIMPLE `ABBR N p.X` cité au DERNIER folio du chapitre N, alors que

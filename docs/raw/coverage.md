@@ -7,9 +7,9 @@
 > qui enfouit une section : `⬜` = section sans aucune réf dans sa plage, `🔻 enfoui` = titre orné
 > (`•`) rétrogradé par l'extraction — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 151 couverts · 🟡 3 effleurés · ⬜ 0 trous** sur 154 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Section-granulaire (H2, PARTIEL) : 77 section(s) trouée(s) — dont **57 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) et **20 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 5 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé en H2 par l'extraction) — chiffre NON exhaustif : un chapitre crédité par CATALOGUE (transcription verbatim, pas de traitement) ne détaille jamais ses sections ici, et la granularité H2 sous-mesure structurellement les livres qui structurent leurs chapitres en H3 (LDB : 16 sections H2 pour 86 chapitres, MCLB : 0). Mesure indépendante sur l'ensemble des 997 sections H2 des 15 livres : 157 couvertes par une FICHE, 381 par un CATALOGUE, 459 (46 %) par NI L'UN NI L'AUTRE. Refonte de la mesure (granularité H3, distinction fiche/catalogue, zéro masquage silencieux) : **#604**. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · MCLB ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · MSR ✅1·🟡0·⬜0 · MSRC ✅8·🟡0·⬜0 · PDT ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · AU1 ✅1·🟡0·⬜0 · NADJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 152 couverts · 🟡 2 effleurés · ⬜ 0 trous** sur 154 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Section-granulaire (H2, PARTIEL) : 77 section(s) trouée(s) — dont **57 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) et **20 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 5 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé en H2 par l'extraction) — chiffre NON exhaustif : un chapitre crédité par CATALOGUE (transcription verbatim, pas de traitement) ne détaille jamais ses sections ici, et la granularité H2 sous-mesure structurellement les livres qui structurent leurs chapitres en H3 (LDB : 16 sections H2 pour 86 chapitres, MCLB : 0). Mesure indépendante sur l'ensemble des 997 sections H2 des 15 livres : 157 couvertes par une FICHE, 381 par un CATALOGUE, 459 (46 %) par NI L'UN NI L'AUTRE. Refonte de la mesure (granularité H3, distinction fiche/catalogue, zéro masquage silencieux) : **#604**. Réfs folio (`ABBR NN p.X`, #606) : 5 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅72·🟡1·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · MCLB ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · MSR ✅1·🟡0·⬜0 · MSRC ✅8·🟡0·⬜0 · PDT ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · AU1 ✅1·🟡0·⬜0 · NADJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
 
-## LDB — ✅ 71 · 🟡 2 · ⬜ 0
+## LDB — ✅ 72 · 🟡 1 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -22,21 +22,21 @@
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
-| 09 | Compétences | ✅ | 144 (competences.md ×137) |
-| 10 | Talents | ✅ | 68 (tests.md ×36) |
-| 11 | *(artefact OCR)* | 🟡 | 2 (equipement.md ×1) |
-| 12 | Tests | ✅ | 45 (tests.md ×41) |
+| 09 | Compétences | ✅ | 145 (competences.md ×137) |
+| 10 | Talents | ✅ | 200 (talents.md ×138) |
+| 11 | *(artefact OCR)* | ✅ | 31 (talents.md ×30) |
+| 12 | Tests | ✅ | 46 (tests.md ×41) |
 | 13 | Combat | ✅ | 131 (combat.md ×122) |
-| 14 | *(artefact OCR)* | ✅ | 125 (combat.md ×118) |
-| 15 | Déplacement | ✅ | 85 (combat.md ×75) |
-| 16 | États | ✅ | 52 (etats.md ×30) |
+| 14 | *(artefact OCR)* | ✅ | 128 (combat.md ×121) |
+| 15 | Déplacement | ✅ | 87 (combat.md ×76) |
+| 16 | États | ✅ | 53 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 51 (destin.md ×27) |
-| 18 | Traumatisme | ✅ | 109 (traumatisme.md ×67) |
+| 18 | Traumatisme | ✅ | 111 (traumatisme.md ×67) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 52 (psychologie.md ×30) |
+| 21 | Psychologie | ✅ | 53 (psychologie.md ×30) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |
-| 23 | Activités | ✅ | 36 (activites.md ×36) |
+| 23 | Activités | ✅ | 40 (activites.md ×36) |
 | 24 | Les dieux | ✅ |  |
 | 25 | Les cultes | ✅ | 3 (religion.md ×3) |
 | 26 | Le culte de Manaan, dieu de la mer | ✅ |  |
@@ -62,7 +62,7 @@
 | 46 | Les règles magiques | ✅ | 101 (magie.md ×56) |
 | 47 | Listes des sorts | ✅ | 8 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 16 (magie.md ×16) |
-| 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
+| 49 | Sorcellerie | ✅ | 6 (magie.md ×5) |
 | 50 | Magie noire | ✅ |  |
 | 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
 | 52 | configuration du terrain | ➖ hors-règle | |
@@ -72,13 +72,13 @@
 | 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | |
 | 57 | La monnaie | ✅ | 1 (economie.md ×1) |
 | 58 | *(artefact OCR)* | ➖ | |
-| 59 | Faire son marché | ✅ | 18 (economie.md ×18) |
+| 59 | Faire son marché | ✅ | 19 (economie.md ×19) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 110 (combat.md ×103) |
+| 62 | Les armes | ✅ | 113 (combat.md ×103) |
 | 63 | Armures | ✅ | 40 (combat.md ×35) |
 | 64 | Sacs et contenants | ✅ |  |
-| 65 | Vêtements et accessoires | ✅ |  |
+| 65 | Vêtements et accessoires | ✅ | 1 (traumatisme.md ×1) |
 | 66 | Nourriture, boisson et hébergement | ✅ |  |
 | 67 | Outils et nécessaires | ✅ | 5 (equipement.md ×5) |
 | 68 | Livres et documents | ✅ |  |
@@ -87,7 +87,7 @@
 | 71 | Drogues et poisons | ✅ | 2 (equipement.md ×2) |
 | 72 | Herbes et potions | ✅ | 8 (equipement.md ×8) |
 | 73 | Prothèses | ✅ | 5 (equipement.md ×5) |
-| 74 | Possessions diverses | ✅ | 12 (equipement.md ×12) |
+| 74 | Possessions diverses | ✅ | 13 (equipement.md ×12) |
 | 75 | Mercenaires | ✅ |  |
 | 76 | Point d’Impact des Créatures | ✅ | 53 (combat.md ×29) |
 | 77 | Les populations du Reikland | ✅ | 9 (combat.md ×5) |
@@ -98,7 +98,7 @@
 | 82 | Les morts sans repos | ✅ |  |
 | 83 | Esclaves des Ténèbres | ✅ |  |
 | 84 | *(artefact OCR)* | ➖ | |
-| 85 | Traits de créature | ✅ | 298 (combat.md ×203) |
+| 85 | Traits de créature | ✅ | 302 (combat.md ×205) |
 
 ## ADE I — ✅ 2 · 🟡 0 · ⬜ 0
 
@@ -111,8 +111,8 @@
 | 04 | Les nains impériaux | ➖ hors-règle | |
 | 05 | Guide de Karak Azgaraz | ➖ hors-règle | |
 | 06 | Guide de la Laurelorn | ➖ hors-règle | |
-| 07 | Annexe I | ✅ | 2 (competences.md ×2) |
-| 08 | Annexe II | ✅ | 1 (etats.md ×1) |
+| 07 | Annexe I | ✅ | 3 (competences.md ×2) |
+| 08 | Annexe II | ✅ | 2 (carrieres.md ×1) |
 
 ## ADE II — ✅ 6 · 🟡 0 · ⬜ 0
 
@@ -120,7 +120,7 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Mercenaires ogres dans le Vieux Monde | ✅ |  |
-| 02 | Les ogres | ✅ | 50 (combat.md ×43) |
+| 02 | Les ogres | ✅ | 51 (combat.md ×43) |
 | 03 | Des signes dans le ciel | ✅ |  |
 | 04 | Un peu de magie | ✅ | 35 (combat.md ×24) |
 | 05 | L’hospice | ➖ hors-règle | |
@@ -160,10 +160,10 @@
 | 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 46 (combat.md ×41) |
 | 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 100 (combat.md ×99) |
 | 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
-| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 96 (combat.md ×90) |
+| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 98 (combat.md ×92) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
 | 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 17 (combat.md ×16) |
-| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 18 (combat.md ×17) |
+| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 17 (combat.md ×17) |
 
 **Sections enfouies/trouées** (granularité H2, invisibles au niveau chapitre — les ⬜ sont des candidats trou de règle) :
 
@@ -303,7 +303,7 @@
 | 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
-| 08 | CHAPITRE 5 - Voyager | ✅ | 10 (deplacement.md ×7) |
+| 08 | CHAPITRE 5 - Voyager | ✅ | 13 (deplacement.md ×7) |
 | 09 | *(artefact OCR)* | ➖ | |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |

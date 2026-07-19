@@ -13,7 +13,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, esc, chapterFile } from './_lib.mjs'
+import { BOOKS, esc, chapterFile, folioSpan } from './_lib.mjs'
 const rawDir = 'docs/raw'
 // Chapitres HORS-RÈGLE (exclus du dénominateur) : section MJ/cadre du LDB (terrain/politique/colonies/
 // sites = direction de jeu, pas des règles PC) + front-matter (index/intro/préface) de tout livre.
@@ -95,20 +95,25 @@ export function sectionsOf(text) {
   return sections
 }
 
-// Plages de ligne `{ lo, hi, file }` de toutes les refs `ABBR NN l.X[suffixe]` d'un chapitre, dans DOCS.
-// ⚠ N'utilise PAS `span()` de `_lib.mjs` : cette dernière réduit un suffixe `+N+M` (points DISCRETS,
-// « et aussi l.N, l.M ») à une bbox `[X, max(N,M)]` — correct pour son usage (borne « dans le
-// chapitre »), mais ici cette bbox fabrique un FAUX chevauchement de section (mesuré : `AA 09
-// l.157+228` couvrait à tort 4 sections entre l.157 et l.228 qui ne contiennent RIEN de ces deux
-// points). On émet un span PAR POINT DISCRET (`+N` = son propre point) ; seul `-N` reste un
-// intervalle continu.
-export function refSpansFor(ab, nn, docs) {
-  const re = new RegExp(`\\b${esc(ab)} 0*${Number(nn)} l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
+// Plages de ligne `{ lo, hi, file }` de toutes les refs `ABBR NN l.X[suffixe]` ET `ABBR NN p.folio[suffixe]`
+// (#606 : la graphie folio, gelee par #585, etait invisible ici) d'un chapitre, dans DOCS.
+// ⚠ N'utilise PAS `span()` de `_lib.mjs` : cette derniere reduit un suffixe `+N+M` (points DISCRETS,
+// « et aussi l.N, l.M ») a une bbox `[X, max(N,M)]` — correct pour son usage (borne « dans le
+// chapitre »), mais ici cette bbox fabrique un FAUX chevauchement de section (mesure : `AA 09
+// l.157+228` couvrait a tort 4 sections entre l.157 et l.228 qui ne contiennent RIEN de ces deux
+// points). On emet un span PAR POINT DISCRET (`+N` = son propre point) ; seul `-N` reste un
+// intervalle continu — meme granularite appliquee aux refs folio, converties en lignes via
+// `folioSpan` (accès disque UNIQUEMENT si des refs `p.` sont presentes dans `docs`). `stats`
+// (optionnel, `{ ignoredFolios }`) accumule les folios ignores proprement (ancre absente,
+// ambigue, ou resolue vers un AUTRE chapitre — jamais un throw, #606).
+export function refSpansFor(ab, nn, docs, stats) {
+  const reLine = new RegExp(`\\b${esc(ab)} 0*${Number(nn)} l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
+  const rePage = new RegExp(`\\b${esc(ab)} 0*${Number(nn)} p\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
   const spans = []
   for (const d of docs) {
-    re.lastIndex = 0
+    reLine.lastIndex = 0
     let m
-    while ((m = re.exec(d.text))) {
+    while ((m = reLine.exec(d.text))) {
       const line = Number(m[1]); const suffix = m[2]
       const range = suffix.match(/^-(\d+)/)
       if (range) { spans.push({ lo: line, hi: Number(range[1]), file: d.file }); continue }
@@ -117,6 +122,12 @@ export function refSpansFor(ab, nn, docs) {
         const n = Number(p.slice(1))
         spans.push({ lo: n, hi: n, file: d.file })
       }
+    }
+    rePage.lastIndex = 0
+    while ((m = rePage.exec(d.text))) {
+      const resolved = folioSpan(ab, nn, m[1], m[2])
+      if (!resolved) { if (stats) stats.ignoredFolios = (stats.ignoredFolios || 0) + 1; continue }
+      spans.push({ lo: resolved[0], hi: resolved[1], file: d.file })
     }
   }
   return spans
@@ -135,7 +146,8 @@ export function annotateSections(sections, spans) {
 // chapitre — un chapitre ✅ (des refs abondantes ailleurs) peut enfouir une section SANS AUCUNE réf ;
 // c'est exactement le défaut A (#454) : ne JAMAIS gater le détail par le mark chapitre.
 function classify(ab, nn, skipHoles, docs, catalogCh) {
-  const re = new RegExp(`\\b${esc(ab)} 0*${Number(nn)} l\\.`, 'g')
+  // (l|p) : les deux graphies canoniques de citation d'un chapitre comptent pour sa couverture (#606)
+  const re = new RegExp(`\\b${esc(ab)} 0*${Number(nn)} (?:l|p)\\.`, 'g')
   let total = 0, owner = '', ownerN = 0
   for (const d of docs) {
     const n = (d.text.match(re) || []).length
@@ -147,11 +159,12 @@ function classify(ab, nn, skipHoles, docs, catalogCh) {
   const mark = (ownerN >= 3 || cat) ? '✅' : total > 0 ? '🟡' : '⬜'
 
   let holes = [], enfoui = []
+  const folioStats = { ignoredFolios: 0 }
   const info = chapterFile(ab, nn)
   if (info) {
     const text = readFileSync(info.path, 'utf8')
     const sections = sectionsOf(text)
-    const spans = refSpansFor(ab, nn, docs)
+    const spans = refSpansFor(ab, nn, docs, folioStats)
     const annotated = annotateSections(sections, spans)
     enfoui = annotated.filter((s) => s.enfoui)
     // Un chapitre crédité par CATALOGUE (`cat`) n'est jamais cité en `l.X` (données ré-extraites au
@@ -171,7 +184,7 @@ function classify(ab, nn, skipHoles, docs, catalogCh) {
     // mixtes/de règles — jamais un chiffre global qui les confond.
     holes = (cat || (skipHoles && mark !== '✅')) ? [] : annotated.filter((s) => s.refs === 0 && !s.enfoui)
   }
-  return { total, owner, ownerN, mark, cat, holes, enfoui }
+  return { total, owner, ownerN, mark, cat, holes, enfoui, ignoredFolios: folioStats.ignoredFolios }
 }
 
 function main() {
@@ -208,6 +221,7 @@ function main() {
   // règle) ; `gSecHolesRegle` = tout le reste (livres de règles + compagnons MIXTES ACE/NADJ/ADE/MCLB/
   // EDOC/MSRC/MDG où une section vide PEUT cacher une vraie règle non couverte).
   let gSecHolesScenario = 0, gSecHolesRegle = 0
+  let gIgnoredFolios = 0 // #606 : folios cites en docs sans ancre data-folio resoluble dans le bon chapitre
   const perBook = []
   for (const [ab, dir] of BOOKS) {
     let files
@@ -228,6 +242,7 @@ function main() {
         lines2.push(`| ${nn} | ${title} | ➖ hors-règle | |`); continue
       }
       if (c.mark === '✅') bOk++; else if (c.mark === '🟡') bMid++; else bHole++
+      gIgnoredFolios += c.ignoredFolios
       const detail = c.total ? `${c.total} (${c.owner} ×${c.ownerN})` : ''
       lines2.push(`| ${nn} | ${artefact ? '*(artefact OCR)*' : title} | ${c.mark} | ${detail} |`)
       if (c.enfoui.length || c.holes.length) {
@@ -253,11 +268,11 @@ function main() {
 
   const denom = gOk + gMid + gHole
   const gSecHoles = gSecHolesScenario + gSecHolesRegle
-  const summaryLine = `**Couverture (profondeur) : ✅ ${gOk} couverts · 🟡 ${gMid} effleurés · ⬜ ${gHole} trous** sur ${denom} chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Section-granulaire (H2, PARTIEL) : ${gSecHoles} section(s) trouée(s) — dont **${gSecHolesScenario} bruit de scénario** (livres \`SCENARIO_PUR\` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) et **${gSecHolesRegle} candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé en H2 par l'extraction) — chiffre NON exhaustif : un chapitre crédité par CATALOGUE (transcription verbatim, pas de traitement) ne détaille jamais ses sections ici, et la granularité H2 sous-mesure structurellement les livres qui structurent leurs chapitres en H3 (LDB : 16 sections H2 pour 86 chapitres, MCLB : 0). Mesure indépendante sur l'ensemble des 997 sections H2 des 15 livres : 157 couvertes par une FICHE, 381 par un CATALOGUE, 459 (46 %) par NI L'UN NI L'AUTRE. Refonte de la mesure (granularité H3, distinction fiche/catalogue, zéro masquage silencieux) : **#604**. Par livre : ${perBook.join(' · ')}.`
+  const summaryLine = `**Couverture (profondeur) : ✅ ${gOk} couverts · 🟡 ${gMid} effleurés · ⬜ ${gHole} trous** sur ${denom} chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Section-granulaire (H2, PARTIEL) : ${gSecHoles} section(s) trouée(s) — dont **${gSecHolesScenario} bruit de scénario** (livres \`SCENARIO_PUR\` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) et **${gSecHolesRegle} candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé en H2 par l'extraction) — chiffre NON exhaustif : un chapitre crédité par CATALOGUE (transcription verbatim, pas de traitement) ne détaille jamais ses sections ici, et la granularité H2 sous-mesure structurellement les livres qui structurent leurs chapitres en H3 (LDB : 16 sections H2 pour 86 chapitres, MCLB : 0). Mesure indépendante sur l'ensemble des 997 sections H2 des 15 livres : 157 couvertes par une FICHE, 381 par un CATALOGUE, 459 (46 %) par NI L'UN NI L'AUTRE. Refonte de la mesure (granularité H3, distinction fiche/catalogue, zéro masquage silencieux) : **#604**. Réfs folio (\`ABBR NN p.X\`, #606) : ${gIgnoredFolios} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : ${perBook.join(' · ')}.`
   const summaryIdx = out.indexOf(SUMMARY_PLACEHOLDER)
   out[summaryIdx] = summaryLine
   writeFileSync(join(rawDir, 'coverage.md'), out.join('\n'))
-  console.log(`coverage profondeur : ✅ ${gOk} · 🟡 ${gMid} · ⬜ ${gHole} (sur ${denom} chapitres) · sections : ⬜${gSecHoles} (scénario ${gSecHolesScenario} · règle ${gSecHolesRegle}) · 🔻${gSecEnfoui}`)
+  console.log(`coverage profondeur : ✅ ${gOk} · 🟡 ${gMid} · ⬜ ${gHole} (sur ${denom} chapitres) · sections : ⬜${gSecHoles} (scénario ${gSecHolesScenario} · règle ${gSecHolesRegle}) · 🔻${gSecEnfoui} · folios ignorés ${gIgnoredFolios}`)
   console.log('par livre : ' + perBook.join(' · '))
 }
 

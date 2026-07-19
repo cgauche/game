@@ -13,7 +13,7 @@
 // Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { ldbRe, otherRe, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED } from './_lib.mjs'
+import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED } from './_lib.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
@@ -55,6 +55,14 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   // --- regex de réfs (source unique : _lib.mjs ; instances stateful /g locales) ---
   const LDB_RE = ldbRe()
   const OTHER_RE = otherRe()
+  // Miroir FOLIO (#606) : la graphie `ABBR NN p.folio` (gelée par #585) est aussi une citation de
+  // chapitre valide côté ATLAS (jamais côté CODE — le code cite des lignes, la donnée cite déjà son
+  // folio via `source:{book,page}`, traité par le crédit `codeFolioLdbCh` plus bas) ; convertie en
+  // plage de LIGNES via `folioSpan`, fusionnée aux spans `atlasLDB`/`atlasOther` — la couverture ne
+  // doit voir qu'UNE mesure, jamais un chemin parallèle qui recompte différemment.
+  const LDB_FOLIO_RE = ldbFolioRe()
+  const OTHER_FOLIO_RE = otherFolioRe()
+  let folioIgnored = 0 // folios cités en Atlas sans ancre `data-folio` résoluble dans le bon chapitre
 
   // === collecte CODE ===
   const codeLDB = new Map()      // ch -> [{line, file, row, text}]  (réfs ligne strictes)
@@ -134,6 +142,18 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
       if (!docOwnerOfCh.has(ch) || ownerCount.get(key) > ownerCount.get(ch + '|' + docOwnerOfCh.get(ch)))
         docOwnerOfCh.set(ch, d)
     }
+    LDB_FOLIO_RE.lastIndex = 0
+    while ((m = LDB_FOLIO_RE.exec(text))) {
+      const ch = m[1]
+      const resolved = folioSpan('LDB', ch, m[2], m[3])
+      if (!resolved) { folioIgnored++; continue }
+      if (!atlasLDB.has(ch)) atlasLDB.set(ch, [])
+      atlasLDB.get(ch).push(resolved)
+      const key = ch + '|' + d
+      ownerCount.set(key, (ownerCount.get(key) || 0) + 1)
+      if (!docOwnerOfCh.has(ch) || ownerCount.get(key) > ownerCount.get(ch + '|' + docOwnerOfCh.get(ch)))
+        docOwnerOfCh.set(ch, d)
+    }
     for (const [abbr, re] of OTHER_LOOSE_RE) {
       re.lastIndex = 0
       for (const mm of text.matchAll(re)) {
@@ -156,6 +176,19 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
       const ch = chKey(m[2])
       if (!chMap.has(ch)) chMap.set(ch, [])
       chMap.get(ch).push(span(m[3], m[4]))
+    }
+    OTHER_FOLIO_RE.lastIndex = 0
+    while ((m = OTHER_FOLIO_RE.exec(text))) {
+      if (m[2] == null) continue
+      const book = bookOf(m[1].replace(/\s+/g, ' ').trim())
+      if (!book) continue
+      const ch = chKey(m[2])
+      const resolved = folioSpan(book, ch, m[3], m[4])
+      if (!resolved) { folioIgnored++; continue }
+      if (!atlasOther.has(book)) atlasOther.set(book, new Map())
+      const chMap = atlasOther.get(book)
+      if (!chMap.has(ch)) chMap.set(ch, [])
+      chMap.get(ch).push(resolved)
     }
   }
 
@@ -239,19 +272,19 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   return {
     hardA, softA, docOwnerOfCh, nonImpl, atlasOnly, atlasOnlyBefore, atlasOnlyFolioCredited,
     hardAOther, softAOther, codeOtherNoCh, bookStats,
-    codeOtherBooks, atlasOtherBooks,
+    codeOtherBooks, atlasOtherBooks, folioIgnored,
   }
 }
 
 /** Rend le Markdown `docs/raw/reconciliation.md` — pur (aucun accès fichier). */
 export function renderReport(data) {
-  const { hardA, softA, docOwnerOfCh, nonImpl, atlasOnly, atlasOnlyBefore, atlasOnlyFolioCredited, hardAOther, softAOther, codeOtherNoCh, bookStats, codeOtherBooks, atlasOtherBooks } = data
+  const { hardA, softA, docOwnerOfCh, nonImpl, atlasOnly, atlasOnlyBefore, atlasOnlyFolioCredited, hardAOther, softAOther, codeOtherNoCh, bookStats, codeOtherBooks, atlasOtherBooks, folioIgnored } = data
   const noChapterCount = [...codeOtherNoCh.values()].reduce((n, a) => n + a.length, 0)
 
   const L = []
   L.push('# Atlas RAW — Réconciliation CODE ↔ ATLAS', '')
   L.push('> Déterministe (`node scripts/raw/reconcile.mjs`). **Sens A** = règles que l\'app applique', '> (réfs `LDB NN l.X` dans `src/`, et pour les 14 autres livres `<ABRÉV> NN l.X`) absentes de', '> l\'Atlas. **Sens B** = règles que l\'Atlas décrit hors du code (borné au LDB).', `> Tolérance ligne = ±${TOL}.`, '')
-  L.push(`**Sens A — code → Atlas (LDB)** : ${hardA.length} chapitre(s) cités par le code & absents de l'Atlas · ${softA.length} chapitre(s) couverts avec des lignes non pinées.`)
+  L.push(`**Sens A — code → Atlas (LDB)** : ${hardA.length} chapitre(s) cités par le code & absents de l'Atlas · ${softA.length} chapitre(s) couverts avec des lignes non pinées. Réfs folio (\`ABBR NN p.X\`, #606) côté Atlas : ${folioIgnored} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).`)
   L.push(`**Sens A — code → Atlas (14 autres livres)** : ${hardAOther.length} chapitre(s)-livre cités par le code & absents de l'Atlas · ${softAOther.length} chapitre(s)-livre couverts avec des lignes non pinées · ${noChapterCount} réf(s) sans chapitre (non réconciliables par cette mesure).`)
   L.push(`**Sens B — Atlas → code (LDB)** : ${nonImpl.length} marqueur(s) « (non implémenté) » · ${atlasOnly.length} chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : ${atlasOnlyBefore.length} · ${atlasOnlyFolioCredited.length} crédités par une source folio de \`src/data\`).`, '')
 
@@ -330,7 +363,7 @@ export function renderReport(data) {
 function main() {
   const data = computeReconciliation()
   writeFileSync(join(RAWDIR, 'reconciliation.md'), renderReport(data))
-  console.log(`Sens A (LDB) : ${data.hardA.length} trous durs · ${data.softA.length} chapitres à lignes non pinées`)
+  console.log(`Sens A (LDB) : ${data.hardA.length} trous durs · ${data.softA.length} chapitres à lignes non pinées · folios Atlas ignorés ${data.folioIgnored}`)
   const noChapterCount = [...data.codeOtherNoCh.values()].reduce((n, a) => n + a.length, 0)
   console.log(`Sens A (autres livres) : ${data.hardAOther.length} trou(s) dur(s) chapitre-livre · ${data.softAOther.length} chapitre(s)-livre à lignes non pinées · ${noChapterCount} réf(s) sans chapitre (hors mesure)`)
   for (const [book, st] of [...data.bookStats].sort((a, b) => a[0].localeCompare(b[0])))
