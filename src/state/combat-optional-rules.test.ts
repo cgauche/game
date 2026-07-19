@@ -25,7 +25,7 @@ const enemy = (p: Partial<Combatant>): Combatant =>
     id: 'e1', name: 'Brute', kind: 'enemy', characteristics: CHARS,
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
     engagedWith: [], pos: { x: 1, y: 0 }, size: 'moyenne',
-    weapons: [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
+    weapons: [{ label: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
   } as unknown as Combatant);
@@ -70,7 +70,7 @@ describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.63)
   beforeEach(() => { seedBattleRng(424242); });
   afterEach(() => resetRule('combat-critical-deflect'));
 
-  const critWeapon: Weapon = { name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+  const critWeapon: Weapon = { label: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
   // `critLocation: 'corps'` fige la localisation re-tirée du Critique (LDB 18 l.55, #80) sur la zone armée
   // → la Déviation (#43.2, gatée sur cette localisation) y est offerte/sacrifiée de façon déterministe.
   const critRes = (): AttackResult => ({
@@ -143,14 +143,14 @@ describe('combat-ranged-melee-penalty — −20 + tir égaré (LDB 14 l.133)', (
   beforeEach(() => { seedBattleRng(1); });
   afterEach(() => resetRule('combat-ranged-melee-penalty'));
 
-  const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] } as Weapon;
+  const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] } as Weapon;
 
   // « Tir dans la mêlée » = la cible est Engagée avec un ALLIÉ du tireur. Tireur HÉROS (arc), cible
   // ENNEMIE engagée avec un autre HÉROS (le combattant de mêlée du groupe).
   function meleeShotSetup() {
     const shooter = hero({ id: 'h1', pos: { x: 0, y: 0 }, weapons: [bow] });
     const targetEnemy = enemy({ id: 'e1', pos: { x: 5, y: 0 }, engagedWith: ['h2'] });
-    const allyHero = hero({ id: 'h2', name: 'Allié', pos: { x: 6, y: 0 } });
+    const allyHero = hero({ id: 'h2', label: 'Allié', pos: { x: 6, y: 0 } });
     setBattle([shooter, targetEnemy, allyHero]);
     return { shooter, targetEnemy, allyHero };
   }
@@ -176,7 +176,7 @@ describe('combat-helpless-mode — cible Inconsciente (LDB 16 l.112)', () => {
   beforeEach(() => { seedBattleRng(7); });
   afterEach(() => resetRule('combat-helpless-mode'));
 
-  const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 3 }, qualities: [] } as Weapon;
+  const sword: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 3 }, qualities: [] } as Weapon;
 
   it('défaut (critique) : resolveMelee NE marque PAS autoKill (comportement RAW = Critique)', () => {
     const atk = enemy({});

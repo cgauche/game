@@ -3,12 +3,12 @@ import { useGame } from './store';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 function item(over: Partial<ItemInstance>): ItemInstance {
-  return { uid: 'i1', name: 'X', kind: 'misc', qualities: [], enc: 0, equipped: false, ...over } as ItemInstance;
+  return { uid: 'i1', label: 'X', kind: 'misc', qualities: [], enc: 0, equipped: false, ...over } as ItemInstance;
 }
 
 function hero(p: Partial<Combatant>): Combatant {
   return {
-    id: 'h1', name: 'Blessé', kind: 'hero',
+    id: 'h1', label: 'Blessé', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 6, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -17,8 +17,8 @@ function hero(p: Partial<Combatant>): Combatant {
 }
 
 // Effets STRUCTURÉS (Flow, feuilles EffectOp) — comme le catalogue migré (#50).
-const BANDAGE = item({ uid: 'b1', name: 'Bandages', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'removeCondition', name: 'hemorragique', value: 1 }, { op: 'preventInfection' }] } } });
-const POTION = item({ uid: 'p1', name: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'endurance' } }] } } });
+const BANDAGE = item({ uid: 'b1', label: 'Bandages', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'removeCondition', name: 'hemorragique', value: 1 }, { op: 'preventInfection' }] } } });
+const POTION = item({ uid: 'p1', label: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'endurance' } }] } } });
 
 describe('usePartyItem — consommables hors combat (fiche)', () => {
   beforeEach(() => {

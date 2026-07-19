@@ -494,14 +494,14 @@ describe('Codex registry — sous-groupes repliables (clusters, #378 volet B)', 
       expect(new Set(recomposed.map((c) => c.key)).size).toBe(all.length);
       expect(recomposed.map((c) => c.key).sort()).toEqual(all.map((c) => c.key).sort());
       for (const c of flat) expect(c.cluster).toBeUndefined();
-      for (const cl of clusters) for (const c of cl.cats) expect(c.cluster).toBe(cl.name);
+      for (const cl of clusters) for (const c of cl.cats) expect(c.cluster).toBe(cl.label);
     }
   });
 
   it('tout cluster déclaré regroupe AU MOINS 2 catégories (sinon = pastille à plat)', () => {
     for (const g of CODEX_GROUPS)
       for (const cl of clustersIn(g).clusters)
-        expect(cl.cats.length, `${g} › ${cl.name}`).toBeGreaterThanOrEqual(2);
+        expect(cl.cats.length, `${g} › ${cl.label}`).toBeGreaterThanOrEqual(2);
   });
 
   it('les familles touffues Effets/Tables sont dégonflées (anti-avalanche)', () => {

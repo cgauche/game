@@ -62,7 +62,7 @@ const itemCapabilitiesSchema = z.strictObject({
  *  (prothèse-arme, LDB 73 : « le Crochet est considéré comme une Dague »). `Weapon` porte aussi des
  *  champs runtime-only (`uid`, `hand`…) absents de la donnée d'auteur — non repris ici (jamais observés). */
 const weaponSchema = z.strictObject({
-  name: z.string(),
+  label: z.string(),
   type: z.enum(['melee', 'ranged']),
   damage: weaponDamageSpecSchema,
   reach: z.union([z.string(), z.null()]).optional(),
@@ -72,6 +72,10 @@ const weaponSchema = z.strictObject({
   weaponGroup: z.string().optional(),
   soloSimple: z.boolean().optional(),
   indirect: z.boolean().optional(),
+  /** LDB 62 l.292 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
+  bladed: z.boolean().optional(),
+  /** LDB 47 — approximation MAISON (matière du projectile, non tabulée par le RAW), éditable. */
+  organicProjectile: z.boolean().optional(),
   hands: z.union([z.literal(1), z.literal(2)]).optional(),
 });
 
@@ -93,6 +97,10 @@ export const schema = z.array(
     weaponGroup: z.string().optional(),
     soloSimple: z.boolean().optional(),
     indirect: z.boolean().optional(),
+    /** LDB 62 l.292 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
+    bladed: z.boolean().optional(),
+    /** LDB 47 — approximation MAISON (matière du projectile, non tabulée par le RAW), éditable. */
+    organicProjectile: z.boolean().optional(),
     /** Effets « à la touche » en DONNÉE (`TriggeredEffect[]`) — Canon à flammes nain (ADE II 8 l.243). */
     onHitEffects: z.array(triggeredEffectSchema).optional(),
     /** PORTÉE MINIMALE de tir (bande) — machines de siège à distance (ADE II 8 l.251/253). */

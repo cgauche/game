@@ -36,8 +36,8 @@ const ZONE_OF_LOC: Partial<Record<HitLocation, string>> = { tete: 'Tête', brasG
  *  (extérieure, visible) à droite (intime). */
 const LAYERS: { key: ArmourLayer; label: string; short: string; hint: string }[] = [
   { key: 'rigide', label: 'Extérieure', short: 'Rigide', hint: 'Couche rigide (cuir bouilli, plate…) — une seule pièce par zone.' },
-  { key: 'flexible', label: 'Flexible', short: 'Flexible', hint: 'Mailles (Flexible) : portée sous une couche non Flexible, les PA des deux se cumulent (LDB 63).' },
-  { key: 'souple', label: 'Souple', short: 'Souple', hint: 'Cuir souple : porté sans pénalité sous n’importe quelle autre armure (LDB 63) — PA non cumulés sous une autre couche.' },
+  { key: 'flexible', label: 'Flexible', short: 'Flexible', hint: 'Mailles (Flexible) : portée sous une couche non Flexible, les PA des deux se cumulent.' },
+  { key: 'souple', label: 'Souple', short: 'Souple', hint: 'Cuir souple : porté sans pénalité sous n’importe quelle autre armure — PA non cumulés sous une autre couche.' },
 ];
 
 /** Zones couvertes par une pièce, pour l'indicateur multi-zones (« Bras+Corps »). */
@@ -243,7 +243,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                       options={[{ key: '', label: mainTwoHanded ? '— (2 mains) —' : '— vide —' }, ...offHandWeapons.filter((w) => w.uid !== lo.main).map(weaponOpt)]}
                       onSelect={(v) => setLoadoutSlot(hero.id, lo.id, 'off', v || null)}
                     />
-                    <span className="set-slot-cap">2nde <em className="off-malus" title="Attaquer de la main secondaire : −20 (LDB 14)">−20</em></span>
+                    <span className="set-slot-cap">2nde <CodexRef category="regles" id="main-secondaire" label="Attaque de la main secondaire" className="off-malus">−20</CodexRef></span>
                   </div>
                 </div>
                 <span className="set-card-actions">
@@ -289,7 +289,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                 <div className="weap" key={i}>
                   <ItemIcon item={w} size="sm" />
                   <span className="weap-text">
-                    <CodexRef category="trappings" id={items.find((it) => it.uid === w.uid)?.trappingId} label={w.name}>{w.name}</CodexRef>{' '}
+                    <CodexRef category="trappings" id={items.find((it) => it.uid === w.uid)?.trappingId} label={w.label}>{w.label}</CodexRef>{' '}
                     <em>{weaponStatParts(w, strBonus).join(' · ')}</em>
                     {w.qualities.length > 0 && <span className="weap-quals"> · <QualityChips qualities={w.qualities} /></span>}
                     {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · <Icon id="item/ammo" size="sm" /> Munitions {ammo}</span>}

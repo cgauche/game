@@ -44,7 +44,7 @@ export const spellsOf = (type: string, subTypes?: (string | null)[]): string[] =
 /** Prêtre COMPLET d'un culte : Prière + Béni/Invocation (Culte) + TOUTES ses Bénédictions ET Miracles. */
 export function makePriest(base: Combatant, id: string, name: string, cult: string, chars: Partial<Record<CharKey, number>>): Combatant {
   const p = clone(base);
-  p.id = id; p.name = name;
+  p.id = id; p.label = name;
   setChars(p, chars);
   p.fate = 3; p.fortune = 3;
   boostSkill(p, 'Prière', undefined, 'sociabilite', 50);
@@ -63,7 +63,7 @@ export const ARC_DOMAINS = ['Feu', 'Mort', 'Cieux', 'Bête', 'Vie'];
 export function makeSorceress(id: string, name: string, pos: { x: number; y: number }, domains: string[] = ARC_DOMAINS): Combatant {
   const sorc = clone(pregenParty(PREGEN.sorcier)[0]);
   sorc.id = id;
-  sorc.name = name;
+  sorc.label = name;
   setChars(sorc, { intelligence: 75, 'force-mentale': 70, agilite: 58, dexterite: 52, initiative: 62, endurance: 45 });
   sorc.wounds = { current: 18, max: 18, base: 18 };
   sorc.fate = 4; sorc.fortune = 4; sorc.resilience = 3; sorc.resolve = 3;

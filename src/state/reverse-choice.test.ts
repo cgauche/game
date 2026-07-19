@@ -76,9 +76,9 @@ const HERO = (over: Partial<Combatant>): Combatant =>
 
 describe('flux `attack` (LDB 23 l.209 — Corps à corps/Projectiles, jusqu’ici NON couvert #558)', () => {
   function setup() {
-    const attacker = HERO({ id: 'A', name: 'Att' });
+    const attacker = HERO({ id: 'A', label: 'Att' });
     applyOps(attacker, [{ op: 'grantReverseToken', skill: 'corps-a-corps' }], { label: 'Entraînement au Combat' });
-    const target = HERO({ id: 'B', name: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 }, activeEffects: [] });
+    const target = HERO({ id: 'B', label: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 }, activeEffects: [] });
     useGame.setState({
       battle: { combatants: [attacker, target], log: [] } as never,
       pendingAttack: {
@@ -115,8 +115,8 @@ describe('flux `attack` (LDB 23 l.209 — Corps à corps/Projectiles, jusqu’ic
   });
 
   it('sans jeton (compétence non couverte) : non disponible, `attackReverse` no-op', () => {
-    const attacker = HERO({ id: 'A', name: 'Att' }); // aucun jeton
-    const target = HERO({ id: 'B', name: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 }, activeEffects: [] });
+    const attacker = HERO({ id: 'A', label: 'Att' }); // aucun jeton
+    const target = HERO({ id: 'B', label: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 }, activeEffects: [] });
     useGame.setState({
       battle: { combatants: [attacker, target], log: [] } as never,
       pendingAttack: {
@@ -136,8 +136,8 @@ describe('flux `attack` (LDB 23 l.209 — Corps à corps/Projectiles, jusqu’ic
 
 describe('flux `defense` (LDB 23 l.209 — Parade = Corps à corps)', () => {
   function setup() {
-    const attacker = HERO({ id: 'E', name: 'Orque', kind: 'enemy' });
-    const defender = HERO({ id: 'H', name: 'Héros', pos: { x: 1, y: 0 } });
+    const attacker = HERO({ id: 'E', label: 'Orque', kind: 'enemy' });
+    const defender = HERO({ id: 'H', label: 'Héros', pos: { x: 1, y: 0 } });
     applyOps(defender, [{ op: 'grantReverseToken', skill: 'corps-a-corps' }], { label: 'Entraînement au Combat' });
     const atk = { roll: 30, target: 40, success: true, sl: 1, isDouble: false };
     const def = { roll: 82, target: 45, success: false, sl: -4, isDouble: false };

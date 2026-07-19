@@ -8,11 +8,11 @@ import { opValue, oppositionDiscount, type OpEvalCtx } from './aiSpellValue';
 import type { SpellData } from '../data';
 import type { Combatant, Weapon } from '../engine/types';
 
-const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 function combatant(over: Partial<Combatant> = {}): Combatant {
   return {
-    id: 'c', name: 'c', kind: 'enemy',
+    id: 'c', label: 'c', kind: 'enemy',
     characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
     wounds: { current: 12, max: 12, base: 12 }, advantage: 0, conditions: [], weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

@@ -12,7 +12,7 @@ import { itemCapability, hasCapability } from './capabilities';
 import type { Combatant, ItemInstance, Weapon } from './types';
 
 const item = (uid: string, trappingId: string | undefined, extra: Partial<ItemInstance> = {}): ItemInstance =>
-  ({ uid, name: uid, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false, ...extra }) as ItemInstance;
+  ({ uid, label: uid, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false, ...extra }) as ItemInstance;
 
 /** Combattant minimal porteur d'un inventaire (et d'un loadout actif `weapons` pour la garde TENU). */
 const carrier = (items: ItemInstance[], weapons: Weapon[] = []): Combatant =>
@@ -52,7 +52,7 @@ describe('hasCapability — agrégat par-PERSONNAGE, GATÉ sur le port pour les 
 
   it('preventForcedDrop : gantelet TENU (uid dans c.weapons) → vrai même sans equipped', () => {
     const gauntlet = item('g1', 'gantelet-verrouille', { kind: 'melee', equipped: false });
-    const held = carrier([gauntlet], [{ uid: 'g1', name: 'Gantelet verrouillé' } as Weapon]);
+    const held = carrier([gauntlet], [{ uid: 'g1', label: 'Gantelet verrouillé' } as Weapon]);
     expect(hasCapability(held, 'preventForcedDrop')).toBe(true);
   });
 

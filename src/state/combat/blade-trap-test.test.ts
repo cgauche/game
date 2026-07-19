@@ -20,7 +20,7 @@ import type { Weapon } from '../../engine/types';
  * lame. » Le HÉROS défenseur PEUT influencer le Test (Chance/Résilience) — l'étape `triggeredTest` est
  * INFLUENÇABLE ; la conséquence (désarme/bris) est PROCÉDURALE après le Test résolu (op `breakBlade`).
  */
-const bladedWeapon = (uid: string, qualities: string[] = []): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: qualities.map((s) => parseQualityInstance(s)!), uid });
+const bladedWeapon = (uid: string, qualities: string[] = []): Weapon => ({ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: qualities.map((s) => parseQualityInstance(s)!), uid });
 
 describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, désarme/bris procédural)', () => {
   beforeEach(() => {

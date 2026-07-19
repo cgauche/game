@@ -21,7 +21,7 @@ import { contractDisease, tickDisease, diseasePassiveOps } from './disease';
 import { findSymptomById, findDiseaseById } from '../data';
 
 const sick = (over: Partial<Combatant> = {}): Combatant =>
-  ({ name: 'Cobaye', diseases: [], ...over }) as Combatant;
+  ({ label: 'Cobaye', diseases: [], ...over }) as Combatant;
 
 // ── Maladie ────────────────────────────────────────────────────────────────────────────────────
 

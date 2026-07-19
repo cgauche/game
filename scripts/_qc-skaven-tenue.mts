@@ -20,7 +20,7 @@ const appearance: Appearance = {
   monster: { tete: 'rat', queue: true },
 };
 const equip: EquipCtx = {
-  weapons: [{ name: 'Hache', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }],
+  weapons: [{ label: 'Hache', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }],
   armour: [],
 };
 

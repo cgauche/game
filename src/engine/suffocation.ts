@@ -101,18 +101,18 @@ export function suffocationTick(c: Combatant): string[] {
   if ((c.breathHoldSeconds ?? 0) > 0) {
     c.breathHoldSeconds = Math.max(0, c.breathHoldSeconds! - secondsPerRound());
     return [c.breathHoldSeconds > 0
-      ? `${c.name} retient son souffle (${c.breathHoldSeconds} s d'air).`
-      : `${c.name} n'a plus d'air — la suffocation commence.`];
+      ? `${c.label} retient son souffle (${c.breathHoldSeconds} s d'air).`
+      : `${c.label} n'a plus d'air — la suffocation commence.`];
   }
   const lines: string[] = [];
   const be = Math.max(1, bonus(effectiveChar(c, 'endurance')));
   if (c.wounds.current > 0) {
     loseWounds(c, 1);
-    lines.push(`${c.name} suffoque (−1 PB).`);
+    lines.push(`${c.label} suffoque (−1 PB).`);
     if (c.wounds.current <= 0) {
       if (!hasCondition(c, 'inconscient')) addCondition(c, 'inconscient');
       c.suffocationCountdown = be;
-      lines.push(`${c.name} s'évanouit, privé d'air (Inconscient) — mort dans ${be} Round(s).`);
+      lines.push(`${c.label} s'évanouit, privé d'air (Inconscient) — mort dans ${be} Round(s).`);
     }
     return lines;
   }
@@ -120,12 +120,12 @@ export function suffocationTick(c: Combatant): string[] {
   if (c.suffocationCountdown == null) {
     if (!hasCondition(c, 'inconscient')) addCondition(c, 'inconscient');
     c.suffocationCountdown = be;
-    lines.push(`${c.name} suffoque, inconscient — mort dans ${be} Round(s).`);
+    lines.push(`${c.label} suffoque, inconscient — mort dans ${be} Round(s).`);
     return lines;
   }
   c.suffocationCountdown -= 1;
   lines.push(c.suffocationCountdown <= 0
-    ? `${c.name} cesse de respirer — la mort par suffocation le prend.`
-    : `${c.name} étouffe — mort dans ${c.suffocationCountdown} Round(s).`);
+    ? `${c.label} cesse de respirer — la mort par suffocation le prend.`
+    : `${c.label} étouffe — mort dans ${c.suffocationCountdown} Round(s).`);
   return lines;
 }

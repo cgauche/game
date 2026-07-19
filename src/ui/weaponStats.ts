@@ -29,7 +29,7 @@ export function weaponStatParts(it: ItemInstance | Weapon, strBonus: number): st
 /** Repli d'**Arme improvisée** (LDB 62 l.31, `+BF+1`) — dérivé une fois via `improvisedProfile` (résultat
  *  constant, indépendant de l'entrée) plutôt que retypé en littéral : SOURCE UNIQUE avec l'usure/la Lance
  *  hors Charge/le Bélier hors-porte (`engine/weaponDamage`). */
-const IMPROVISED_DAMAGE: WeaponDamageSpec = improvisedProfile({ name: '', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }).damage;
+const IMPROVISED_DAMAGE: WeaponDamageSpec = improvisedProfile({ label: '', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }).damage;
 
 /** Cible SYNTHÉTIQUE « structure » — `siegeMultiplier` ne lit que `bodyShape` (`isStructure`) ; aucune
  *  structure réelle n'existe à l'affichage d'une fiche catalogue (Codex/popover), hors combat. */

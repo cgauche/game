@@ -17,7 +17,7 @@ import type { Combatant } from '../engine/types';
  */
 const hero = (p: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'a', name: 'A', kind: 'hero',
+    id: 'a', label: 'A', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 43, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [],
     talents: [
@@ -136,7 +136,7 @@ describe('Résistance (Maladie) — Contraction de fin de combat (LDB 20 l.32/49
 describe('Résistance (Magie) — opposition à un Sort (« résister aux sorts »)', () => {
   it('pendingCastOpposition tagué `menace: magie` ; oppositionResist → la cible RÉSISTE (DR = BE)', () => {
     const a = hero();
-    const foe = hero({ id: 'e', name: 'E', kind: 'enemy', talents: [] });
+    const foe = hero({ id: 'e', label: 'E', kind: 'enemy', talents: [] });
     useGame.setState({ party: [a] });
     setBattle([a, foe]);
     useGame.setState({

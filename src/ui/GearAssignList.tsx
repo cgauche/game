@@ -60,7 +60,7 @@ export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {
               {/* Attribution par portrait → picker mutualisé (cf. PortraitPicker, partagé avec le
                   choix du lanceur d'un Test et la cible montée) — clic = donner à ce héros. */}
               <PortraitPicker
-                choices={assignable.map((h) => ({ c: h, title: `Donner « ${g.label} » à ${h.name}` }))}
+                choices={assignable.map((h) => ({ c: h, title: `Donner « ${g.label} » à ${h.label}` }))}
                 onPick={(id) => onAssign(i, id)}
               />
             </span>

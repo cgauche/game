@@ -566,15 +566,15 @@ function RoseAxesDemo() {
     <div className="stack">
       <p className="hint">Scores RÉELS des pré-tirés (`axesProfile`, `src/engine/axes.ts`) sur les axes du socle de base.</p>
       <div className="row-flex">
-        <RoseAxes axes={axesProfile(heroes[0], CORE)} size="glyph" title={`${heroes[0].name} — glyphe`} />
-        <RoseAxes axes={axesProfile(heroes[0], CORE)} size="medal" title={`${heroes[0].name} — médaillon`} />
+        <RoseAxes axes={axesProfile(heroes[0], CORE)} size="glyph" title={`${heroes[0].label} — glyphe`} />
+        <RoseAxes axes={axesProfile(heroes[0], CORE)} size="medal" title={`${heroes[0].label} — médaillon`} />
       </div>
-      <RoseAxes axes={axesProfile(heroes[0], CORE)} size="grand" title={`${heroes[0].name} — rendu plein`} />
+      <RoseAxes axes={axesProfile(heroes[0], CORE)} size="grand" title={`${heroes[0].label} — rendu plein`} />
       <div className="row-flex">
         {heroes.map((h) => (
           <div key={h.id} className="stack" style={{ alignItems: 'center' }}>
-            <RoseAxes axes={axesProfile(h, CORE)} size="medal" title={`${h.name} — médaillon`} />
-            <span className="hint">{h.name}</span>
+            <RoseAxes axes={axesProfile(h, CORE)} size="medal" title={`${h.label} — médaillon`} />
+            <span className="hint">{h.label}</span>
           </div>
         ))}
       </div>

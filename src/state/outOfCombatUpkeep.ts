@@ -44,7 +44,7 @@ export function outOfCombatUpkeep(party: Combatant[], rounds: number, rng: RNG):
       const bd = bleedDeathRoll(c, rng); // mort par Hémorragique (10 %/pion, double = coagule)
       bd.log.forEach((l) => log.push(l));
       if (bd.died) {
-        log.push(fateSaveOrDie(c) ? t('upkeep.fateSaved', { name: c.name }) : t('upkeep.succumb', { name: c.name }));
+        log.push(fateSaveOrDie(c) ? t('upkeep.fateSaved', { name: c.label }) : t('upkeep.succumb', { name: c.label }));
         continue;
       }
       tickDeath(c).forEach((l) => log.push(l)); // 0 PB → Inconscient après BE Rounds (LDB 18 l.15)

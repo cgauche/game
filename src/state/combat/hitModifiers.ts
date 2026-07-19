@@ -60,11 +60,10 @@ export function wardedAgainst(
   }));
 }
 
-/** Projectile « constitué de matière organique » (Bouclier anti-flèches, LDB 47 : « comme des
- *  flèches en bois ») : flèches (arcs), carreaux (arbalètes), javelots. Balles de poudre,
- *  pierres de fronde et couteaux de lancer ne le sont pas (« matière non organique »). */
+/** Projectile « constitué de matière organique » (Bouclier anti-flèches, LDB 47) — flag maison
+ *  éditable, keyé par id (`Weapon.organicProjectile`). */
 export function organicProjectile(w: Weapon): boolean {
-  return /\barc\b|arbal|javelot|fl[èe]che|carreau/i.test(`${w.name} ${w.subType ?? ''}`);
+  return !!w.organicProjectile;
 }
 
 // ── Registre ──────────────────────────────────────────────────────────────────────────────────────
@@ -129,7 +128,7 @@ registerHitModifier({
   apply: ({ attacker, target, res }) => {
     if (res.hit && isMagicallyAsleep(target) && !traitCapability(attacker.traits, 'wakelessBite')) {
       wakeSleeper(target);
-      res = { ...res, autoKill: false, log: `${res.log ? res.log + ' ' : ''}${attacker.name} réveille ${target.name} en l'attaquant — le sommeil se rompt.` };
+      res = { ...res, autoKill: false, log: `${res.log ? res.log + ' ' : ''}${attacker.label} réveille ${target.label} en l'attaquant — le sommeil se rompt.` };
     }
     return res;
   },
@@ -146,7 +145,7 @@ registerHitModifier({
       for (const thr of wardSaves(target.traits)) {
         const d = d10(battleRng());
         if (d >= thr) {
-          res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.name} ignore le coup — sauvegarde ${d} ≥ ${thr} (Démoniaque/Protection).` };
+          res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.label} ignore le coup — sauvegarde ${d} ≥ ${thr} (Démoniaque/Protection).` };
           break;
         }
       }
@@ -163,7 +162,7 @@ registerHitModifier({
   apply: ({ get, attacker, target, weapon, res }) => {
     if (res.hit && weapon.type === 'ranged' && organicProjectile(weapon)
       && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'arrowWard')) {
-      res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `Le projectile se désagrège en entrant dans la zone — ${target.name} est indemne (Bouclier anti-flèches).` };
+      res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `Le projectile se désagrège en entrant dans la zone — ${target.label} est indemne (Bouclier anti-flèches).` };
     }
     return res;
   },
@@ -177,7 +176,7 @@ registerHitModifier({
     if (res.hit && res.woundsLost && weapon.type === 'ranged'
       && wardedAgainst(get().battle?.combatants ?? [], attacker, target, 'domeWard')) {
       const d = d10(battleRng());
-      if (d >= 6) res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.name} est couvert par le Dôme — sauvegarde ${d} ≥ 6, le tir est dévié.` };
+      if (d >= 6) res = { ...res, woundsLost: 0, damage: 0, critical: false, log: `${target.label} est couvert par le Dôme — sauvegarde ${d} ≥ 6, le tir est dévié.` };
     }
     return res;
   },
@@ -200,7 +199,7 @@ registerHitModifier({
           loseWounds(priest, taken);
           if (priest.wounds.current <= 0) applyZeroWounds(priest);
         }
-        res = { ...res, woundsLost: 0, log: `${res.log} Martyr : ${priest.name} reçoit les Dégâts à la place de ${target.name}${taken > 0 ? ` (${taken} PB, BE doublé)` : ' (encaissés sans dommage, BE doublé)'}.` };
+        res = { ...res, woundsLost: 0, log: `${res.log} Martyr : ${priest.label} reçoit les Dégâts à la place de ${target.label}${taken > 0 ? ` (${taken} PB, BE doublé)` : ' (encaissés sans dommage, BE doublé)'}.` };
       }
     }
     return res;
@@ -221,7 +220,7 @@ registerHitModifier({
         const moved = pushBackTiles(get, attacker, target, wanted);
         res = {
           ...res, woundsLost: 0, damage: 0, critical: false,
-          log: `${attacker.name} repousse ${target.name} de ${meters} m (Perturbante${moved < wanted ? ' — recul bloqué' : ''}).`,
+          log: `${attacker.label} repousse ${target.label} de ${meters} m (Perturbante${moved < wanted ? ' — recul bloqué' : ''}).`,
         };
       }
     }

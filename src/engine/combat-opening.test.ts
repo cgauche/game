@@ -5,7 +5,7 @@ import type { Combatant } from './types';
 
 function mk(opts: Partial<Combatant>): Combatant {
   return {
-    id: 'c', name: 'c', kind: 'enemy', advantage: 0, conditions: [],
+    id: 'c', label: 'c', kind: 'enemy', advantage: 0, conditions: [],
     characteristics: {} as never, size: 'moyenne', psychState: [], groups: [],
     weapons: [], armour: {} as never, skills: [], talents: [], movement: 4,
     wounds: { current: 10, max: 10 }, ...opts,

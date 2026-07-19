@@ -42,7 +42,7 @@ import {
   specLabel,
   talents as talentTable,
 } from '../data';
-import { splitTopLevelOu, splitLabel, concreteLabel, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
+import { splitTopLevelOu, splitLabel, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
 import { applyStarEffect } from './creation';
 import { sizeFromTalents } from './size';
@@ -71,6 +71,21 @@ function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: strin
     if (id === raw || specLabel(category, defId, id) === raw) return id;
   }
   return raw;
+}
+
+/**
+ * Identité STABLE d'un talent à spécialisation depuis un libellé CONCRET d'authoring
+ * (« Sens aiguisé (Vue) ») → `refKey(talentId, specId)` — couture label→id du bord AUTHORING
+ * (mêmes résolveurs que `addTalent` : `findTalent` pour le nom, `resolveSpecId` pour la spec, qui
+ * ramène un libellé de spec issu d'un round-trip à son id de `specs[]`/`specsSource`, et laisse
+ * verbatim une spec libre — domaine `specsOpen`, où la valeur saisie EST l'identité persistée).
+ * C'est cette clé qui identifie « Métier (Forgeron) » vs « Métier (Charpentier) » dans les
+ * collections du moteur — plus jamais `concreteLabel` (affichage, multilangue).
+ */
+export function talentRefKeyOf(label: string): string {
+  const { name, spec } = splitLabel(label);
+  const id = findTalent(name)?.id ?? slugId(name);
+  return refKey(id, spec != null ? resolveSpecId('talents', id, spec) : undefined);
 }
 
 /**
@@ -109,6 +124,8 @@ export const RANDOM_ENTRY_RE = /^(?:(\d+)\s+)?Talents?\s+al[ée]atoires?$/i;
  */
 export function rollRandomTalent(
   rng: RNG,
+  /** Talents déjà possédés, keyés par IDENTITÉ STABLE `refKey(talentId, specId)` (cf.
+   *  `talentRefKeyOf` pour la conversion depuis un libellé concret d'authoring). */
   owned: Set<string>,
   pickSpec?: (base: string, options: string[]) => string | null,
 ): string | null {
@@ -120,12 +137,12 @@ export function rollRandomTalent(
     if (!entry) continue;
     const specs = specIdsOf(entry);
     if (specs.length) {
-      const free = specs.filter((s) => !owned.has(concreteLabel(entry.label, s)));
+      const free = specs.filter((s) => !owned.has(refKey(entry.id, s)));
       if (!free.length) continue; // toutes les specs possédées → relance
       const spec = pickSpec?.(entry.label, free) ?? free[0];
       return concreteLabel(entry.label, spec);
     }
-    if (!owned.has(entry.label)) return entry.label;
+    if (!owned.has(refKey(entry.id))) return entry.label;
   }
   return null;
 }
@@ -143,16 +160,19 @@ export function resolveSpeciesTalents(
   opts: {
     rng?: RNG;
     choices?: Record<string, string>;
+    /** Talents déjà possédés, en libellés CONCRETS d'authoring (convertis en identité stable au bord). */
     owned?: Iterable<string>;
     pickSpec?: (base: string, options: string[]) => string | null;
   } = {},
 ): string[] {
   const rng = opts.rng ?? defaultRNG;
-  const owned = new Set<string>(opts.owned ?? []);
+  // `opts.owned` arrive en libellés CONCRETS (contrat d'authoring de l'assistant de création) ;
+  // la collection, elle, est keyée par identité stable — conversion au bord (`talentRefKeyOf`).
+  const owned = new Set<string>([...(opts.owned ?? [])].map(talentRefKeyOf));
   const result: string[] = [];
   const add = (name: string) => {
     result.push(name);
-    owned.add(name);
+    owned.add(talentRefKeyOf(name));
   };
   const rollN = (n: number) => {
     for (let i = 0; i < n; i++) {
@@ -167,7 +187,9 @@ export function resolveSpeciesTalents(
     if (chosen && !isUnresolvedChoice(chosen)) return chosen;
     const { name, spec } = splitLabel(opt);
     const specOptions = /\sou\s/i.test(spec!) ? spec!.split(/\s+ou\s+/i).map((s) => s.trim()) : wildcardSpecs(name);
-    const free = specOptions.find((s) => !owned.has(concreteLabel(name, s))) ?? specOptions[0];
+    // Les options d'un joker RESTREINT sont des libellés de spec d'authoring, celles d'un joker plein
+    // des ids (`wildcardSpecs`) : `talentRefKeyOf` normalise les deux vers l'identité stable.
+    const free = specOptions.find((s) => !owned.has(talentRefKeyOf(concreteLabel(name, s)))) ?? specOptions[0];
     return free ? concreteLabel(name, free) : name;
   };
   for (const ref of sp.talents) {
@@ -391,7 +413,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   heroCounter += 1;
   const hero: Combatant = {
     id: opts.id ?? `hero-${heroCounter}`,
-    name: opts.name,
+    label: opts.name,
     kind: 'hero',
     species: opts.speciesId,
     career: opts.careerId,

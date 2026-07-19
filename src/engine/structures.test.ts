@@ -13,18 +13,18 @@ import type { Weapon, Combatant } from './types';
  * NB : aucun « easeDifficulty » modélisé — ADE II 8 ne facilite PAS le Test de toucher d'une structure.
  */
 const mkWeapon = (over: Partial<Weapon> = {}): Weapon => ({
-  name: 'arme',
+  label: 'arme',
   type: 'melee',
   damage: { plusBF: false, flat: 0 },
   qualities: [],
   ...over,
 });
 
-const epee = mkWeapon({ name: 'Épée', type: 'melee' });
-const hache = mkWeapon({ name: 'Hache', type: 'melee' });
-const fleche = mkWeapon({ name: 'Flèche', type: 'ranged' });
-const canon = mkWeapon({ name: 'Canon', type: 'ranged', qualities: [{ id: 'siege' }] }); // Atout Siège (ADE II 08 l.292)
-const belier = mkWeapon({ name: 'Bélier', type: 'melee', qualities: [{ id: 'siege' }, { id: 'belier' }] }); // Siège + portes uniquement (l.249)
+const epee = mkWeapon({ label: 'Épée', type: 'melee' });
+const hache = mkWeapon({ label: 'Hache', type: 'melee' });
+const fleche = mkWeapon({ label: 'Flèche', type: 'ranged' });
+const canon = mkWeapon({ label: 'Canon', type: 'ranged', qualities: [{ id: 'siege' }] }); // Atout Siège (ADE II 08 l.292)
+const belier = mkWeapon({ label: 'Bélier', type: 'melee', qualities: [{ id: 'siege' }, { id: 'belier' }] }); // Siège + portes uniquement (l.249)
 
 const struct = (id: string): Combatant => structureCombatant(findStructureById(id)!);
 const creature = { bodyShape: 'humanoide' } as Combatant; // cible NON-structure (référence)
@@ -33,7 +33,7 @@ describe('structureCombatant (Combatant à PV calqué sur la coque)', () => {
   it('bâtit une Porte ADE II : BE 2 → E 20, Bl 8, inerte', () => {
     const c = struct('porte');
     expect(c.id).toBe('structure-porte');
-    expect(c.name).toBe('Porte');
+    expect(c.label).toBe('Porte');
     expect(c.bodyShape).toBe('structure');
     expect(c.characteristics.endurance).toBe(20); // BE 2 × 10 ⇒ bonus(E) = 2
     expect(c.wounds).toEqual({ current: 8, max: 8, base: 8 });

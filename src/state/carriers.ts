@@ -47,7 +47,7 @@ function itemIsVehicle(item: ItemInstance): boolean {
 
 /** Construit le porteur `CargoCarrier` d'un objet de bât/véhicule (capacité déjà résolue). */
 function itemCarrier(item: ItemInstance, capacity: number, placeId: string | undefined): CargoCarrier {
-  return { id: item.uid, label: item.name, hull: 'jambes', capacity, discreteEnc: 0, cargo: item.cargo ?? [], placeId, aboard: item.aboard };
+  return { id: item.uid, label: item.label, hull: 'jambes', capacity, discreteEnc: 0, cargo: item.cargo ?? [], placeId, aboard: item.aboard };
 }
 
 /** Porteurs de bât/chargement possédés par le groupe, SÉPARÉS véhicules/bêtes (pour la priorité d'achat). */
@@ -81,7 +81,7 @@ export function partyCarriers(s: CarrierStateSlice): CargoCarrier[] {
   for (const h of s.party) {
     if (!heroInParty(h)) continue;
     // Le héros lui-même : contenu = objets DISCRETS (transfert d'objet = giveTrapping, hors canal vrac).
-    out.push({ id: h.id, label: h.name, hull: 'jambes', capacity: maxEncumbrance(h), discreteEnc: totalEncumbrance(h), cargo: [], placeId });
+    out.push({ id: h.id, label: h.label, hull: 'jambes', capacity: maxEncumbrance(h), discreteEnc: totalEncumbrance(h), cargo: [], placeId });
   }
   const { vehicles, beasts } = landCarriers(s, placeId);
   out.push(...vehicles, ...beasts);

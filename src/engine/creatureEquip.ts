@@ -21,7 +21,7 @@ const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 
  *  Vit dans `engine` (authoring pur, sans Recharge) : partagé par le SPAWN (`state/spawn`) et le RENDU
  *  d'exploration (`gameIso/rig`) sans inversion de couche (#187). */
 export function weaponFromLabel(label: string): Weapon {
-  const w: Weapon = { name: label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
+  const w: Weapon = { label: label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
   if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
   const shape = findTrappingByLabel(label)?.shape;
   if (shape) w.shape = shape;
@@ -35,12 +35,12 @@ export function weaponFromId(trappingId: string): Weapon {
   const trapping = findTrappingById(trappingId);
   if (!trapping) {
     console.warn(`[weapon] trappingId « ${trappingId} » introuvable au catalogue d'armes (#223) — arme générique`);
-    const w: Weapon = { name: trappingId, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
+    const w: Weapon = { label: trappingId, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
     if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
     return w;
   }
   const type: 'melee' | 'ranged' = trapping.type === 'ranged' ? 'ranged' : 'melee';
-  return { name: trapping.label, type, damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}`, ...(trapping.shape ? { shape: trapping.shape } : {}) };
+  return { label: trapping.label, type, damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}`, ...(trapping.shape ? { shape: trapping.shape } : {}) };
 }
 
 /**

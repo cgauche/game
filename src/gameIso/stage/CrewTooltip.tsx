@@ -29,12 +29,12 @@ export function CrewTooltip({ battle, hoveredId, myTurn, anchor }: {
     // Équipage réparti par QUALIFICATION (AA 10 p.122 l.3900-3902) : qualifiés = comptent dans l'effectif ;
     // aides = présents mais non qualifiés (déplacent/compensent, ne comptent pas). Chef listé à part.
     const { qualified, aides } = posteCrewSplit(p, battle.combatants);
-    const renforts = qualified.filter((c) => c.id !== chefId).map((c) => c.name);
-    const aideNames = aides.filter((c) => c.id !== chefId).map((c) => c.name);
+    const renforts = qualified.filter((c) => c.id !== chefId).map((c) => c.label);
+    const aideNames = aides.filter((c) => c.id !== chefId).map((c) => c.label);
     const present = chef ? servingCrewPresent(chef, battle.combatants) : undefined;
     const groupLabel = p.item.weaponGroup ? weaponGroupLabel(p.item.weaponGroup) : '';
-    lines.push({ text: indice > 0 ? `${p.item.name} · Arme d’équipe ${indice}` : p.item.name, color: 'var(--combat-gold)', bold: true });
-    lines.push({ text: `Chef : ${manned ? chef?.name ?? 'aucun' : 'aucun'}`, color: 'var(--tooltip-fg)' });
+    lines.push({ text: indice > 0 ? `${p.item.label} · Arme d’équipe ${indice}` : p.item.label, color: 'var(--combat-gold)', bold: true });
+    lines.push({ text: `Chef : ${manned ? chef?.label ?? 'aucun' : 'aucun'}`, color: 'var(--tooltip-fg)' });
     if (renforts.length) lines.push({ text: `Renforts : ${renforts.join(', ')}`, color: 'var(--tooltip-muted)' });
     if (aideNames.length) lines.push({ text: `Aides (non qual.) : ${aideNames.join(', ')}`, color: 'var(--tooltip-dim)' });
     if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' sous-effectif' : ''}`, color: present < indice ? 'var(--combat-enemy)' : 'var(--combat-ally)' });

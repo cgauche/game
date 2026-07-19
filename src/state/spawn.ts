@@ -256,7 +256,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   const movement = typeof creature.char.M === 'number' ? creature.char.M : 4; // facultatifs → liveTraits (effectiveMovement)
   return {
     id,
-    name: creature.label,
+    label: creature.label,
     creatureId: creature.id, // identité bestiaire STABLE → le rig la résout par id (plus par `name`)
     kind: 'enemy',
     ...(optTraits.length ? { liveTraits: optTraits } : {}), // charMods/Mouvement des facultatifs appliqués en direct
@@ -315,7 +315,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4; // traits → liveTraits (effectiveMovement)
   return {
     id,
-    name: sb.name,
+    label: sb.name,
     kind: 'enemy',
     ...(traits.length ? { liveTraits: [...traits] } : {}), // statbloc d'éditeur : tous les traits en direct
     characteristics: chars,

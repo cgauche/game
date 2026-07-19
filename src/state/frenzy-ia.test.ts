@@ -10,11 +10,11 @@ import { testScene } from '../scenes/test-fixture';
 import type { Combatant, Weapon } from '../engine/types';
 import type { SpellData } from '../data';
 
-const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
-    id, name: id, kind, pos,
+    id, label: id, kind, pos,
     wounds: { current: 10, max: 10 },
     weapons: [MELEE],
     characteristics: {} as never,

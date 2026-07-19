@@ -21,7 +21,7 @@ const N = 16;
 const styles: string[] = [];
 let uidN = 0;
 
-const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
+const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 function svgTile(inner: string, label: string, css = '', bg = '#1d2230') {
   if (css) styles.push(css);

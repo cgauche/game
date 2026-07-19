@@ -79,7 +79,7 @@ export function ManeuverModal() {
       title={<><Icon id={MANEUVER_ICON[pm.kind]} /> {ATTACK_LABEL[pm.kind]}</>}
       subtitle={
         <>
-          <strong>{attacker.name}</strong> déclenche {ATTACK_LABEL[pm.kind]}
+          <strong>{attacker.label}</strong> déclenche {ATTACK_LABEL[pm.kind]}
           {variable ? <> ({pm.avantageSpent} Avantage)</> : a.avantage > 0 ? <> (coûte {a.avantage} Avantage)</> : null}
         </>
       }

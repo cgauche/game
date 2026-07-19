@@ -69,7 +69,7 @@ export function BattementModal() {
       title={<><Icon id="action/attack" /> Battement</>}
       subtitle={
         <>
-          <strong>{attacker.name}</strong> bat l'arme de <strong>{foe.name}</strong> pour lui retirer de l'Avantage (coûte l'Action)
+          <strong>{attacker.label}</strong> bat l'arme de <strong>{foe.label}</strong> pour lui retirer de l'Avantage (coûte l'Action)
         </>
       }
       /* Choix de la cible AVANT le jet (plusieurs adversaires éligibles) — OptionChooser partagé. */
@@ -78,13 +78,13 @@ export function BattementModal() {
           <OptionChooser
             layout="seg"
             groupLabel="Cible"
-            options={foes.map((f) => ({ key: f.id, label: f.name, selected: f.id === foe.id, onSelect: () => setFoe(f.id) }))}
+            options={foes.map((f) => ({ key: f.id, label: f.label, selected: f.id === foe.id, onSelect: () => setFoe(f.id) }))}
           />
         ) : undefined
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && <JournalLine className="rm-journal" event={ev('attack', describeBattement(pb, attacker.name, foe.name), attacker.id, foe.id)} combatants={battle.combatants} />}
+      outcome={r && <JournalLine className="rm-journal" event={ev('attack', describeBattement(pb, attacker.label, foe.label), attacker.id, foe.id)} combatants={battle.combatants} />}
       actions={actions}
       onCancel={cancel}
     />

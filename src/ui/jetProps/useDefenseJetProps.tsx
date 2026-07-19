@@ -135,7 +135,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     flowKey: 'defense',
     title: 'Défense',
     subtitle: null,
-    extra: <VsHeader actor={attacker} target={defender} label={pd.weapon?.name ?? 'Mains nues'} verb="attaque →" />,
+    extra: <VsHeader actor={attacker} target={defender} label={pd.weapon?.label ?? 'Mains nues'} verb="attaque →" />,
     disableEscClose: true,
     rolled,
     /* Options pré-jet (Parade/Esquive/social + arme de parade) + bouton Détermination (retirer un État). */
@@ -149,7 +149,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
             options={[
               ...(allowMode('parade') ? [{ key: 'parade', label: 'Parade', value: segVal('parade'), selected: pd.mode === 'parade', title: 'Parer avec son arme (Corps à corps)', onSelect: () => setMode('parade') }] : []),
               ...(allowMode('esquive') ? [{ key: 'esquive', label: 'Esquive', value: segVal('esquive'), selected: pd.mode === 'esquive', title: 'Esquiver (Agilité)', onSelect: () => setMode('esquive') }] : []),
-              ...(sub ? [{ key: 'social', label: socialLabel!, value: segVal('social'), selected: pd.mode === 'social', title: `${socialLabel} à la place de Corps à corps : l’attaquant a peur de vous (LDB 09)`, onSelect: () => setMode('social', sub.skillId) }] : []),
+              ...(sub ? [{ key: 'social', label: socialLabel!, value: segVal('social'), selected: pd.mode === 'social', title: `${socialLabel} à la place de Corps à corps : l’attaquant a peur de vous`, onSelect: () => setMode('social', sub.skillId) }] : []),
             ]}
           />
           {pd.mode === 'parade' && parryPickable.length >= 2 && (
@@ -161,7 +161,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
                 onChange={(e) => setParry(e.target.value || null)}
               >
                 {parryPickable.map((w) => (
-                  <option key={w.uid} value={w.uid}>{w.name}{w.hand === 'off' ? ' (2nde)' : ''}</option>
+                  <option key={w.uid} value={w.uid}>{w.label}{w.hand === 'off' ? ' (2nde)' : ''}</option>
                 ))}
               </select>
               <CodexRef category="regles" id="main-secondaire" label="Attaque de la main secondaire" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>

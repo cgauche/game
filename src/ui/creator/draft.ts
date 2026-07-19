@@ -210,7 +210,7 @@ export function draftFromHero(hero: Combatant): CreatorDraft {
     ...withCa,
     speciesId,
     careerId: hero.career ?? withCa.careerId,
-    name: hero.name ?? '',
+    name: hero.label ?? '',
     motivation: hero.motivation ?? '',
     ambitionShort: hero.details?.ambitionShort ?? '',
     ambitionLong: hero.details?.ambitionLong ?? '',

@@ -59,7 +59,7 @@ export function heroRoseAxes(hero: Combatant, axisIds: string[] = CORE_AXIS_IDS)
 function RoseGlyphCorner({ hero, axisIds, small }: { hero: Combatant; axisIds?: string[]; small?: boolean }) {
   return (
     <div className={`rose-corner${small ? ' sm' : ''}`}>
-      <RoseAxes axes={heroRoseAxes(hero, axisIds)} size="glyph" title={t('party.rose.title', { name: hero.name })} />
+      <RoseAxes axes={heroRoseAxes(hero, axisIds)} size="glyph" title={t('party.rose.title', { name: hero.label })} />
     </div>
   );
 }
@@ -88,7 +88,7 @@ export interface RecruitState {
 function CardIdentity({ hero }: { hero: Combatant }) {
   return (
     <div className="candidate-id">
-      <strong className="candidate-name">{hero.name}</strong>
+      <strong className="candidate-name">{hero.label}</strong>
       <span className="candidate-sub">
         {heroSubtitle(hero)} · <MetalStatus status={heroStatusLabel(hero)} size="chip" />
       </span>
@@ -130,7 +130,7 @@ function PresentHandle({ hero, onPresent, className, children }: { hero: Combata
       className={`char-present${className ? ` ${className}` : ''}`}
       role="button"
       tabIndex={0}
-      aria-label={t('party.present.aria', { name: hero.name })}
+      aria-label={t('party.present.aria', { name: hero.label })}
       onClick={onPresent}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {

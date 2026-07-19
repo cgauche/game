@@ -14,18 +14,18 @@ import { outnumberMod } from '../engine/combat';
 import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 
-const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const RANGED: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
 // Arme à COURTE portée (6 m) : les bandes de portée varient sur quelques cases → différentiel de
 // danger exploitable entre deux cases d'approche voisines (≠ Arc range 60 où tout est « Bout portant »).
-const SHORTBOW: Weapon = { name: 'Fronde', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 6, qualities: [] };
+const SHORTBOW: Weapon = { label: 'Fronde', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 6, qualities: [] };
 
 const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30 };
 const ARMOUR = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
-    id, name: id, kind, pos,
+    id, label: id, kind, pos,
     wounds: { current: 12, max: 12 }, weapons: [MELEE],
     characteristics: { ...CHARS }, advantage: 0, conditions: [], armour: { ...ARMOUR },
     skills: [], talents: [], movement: 4,
@@ -101,7 +101,7 @@ describe('Lot 4 — squad OPTIONNEL : parité Lot 3', () => {
     const mkInput = (extra: Partial<EnemyTurnInput>): EnemyTurnInput => {
       const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [RANGED], movement: 4 });
       const dangerous = mk('dangerous', 'hero', { x: 10, y: 13 }, {
-        weapons: [{ name: 'Hache lourde', type: 'melee', damage: { plusBF: true, flat: 10 }, qualities: [] }],
+        weapons: [{ label: 'Hache lourde', type: 'melee', damage: { plusBF: true, flat: 10 }, qualities: [] }],
       });
       const soft = mk('soft', 'hero', { x: 10, y: 16 }, { wounds: { current: 8, max: 12 } });
       return input(e, [dangerous, soft], extra);

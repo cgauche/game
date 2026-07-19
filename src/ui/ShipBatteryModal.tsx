@@ -67,10 +67,10 @@ export function ShipBatteryModal() {
       flowKey="shipBattery"
       title={<><Icon id="action/aim" size="sm" /> Tir de batterie — Test d’équipage</>}
       variant="test"
-      subtitle={<><strong>{ship.name}</strong> — bordée {p.side} sur <strong>{target.name}</strong> ({postes.length} pièce{plural(postes.length)}, MDG 14)</>}
+      subtitle={<><strong>{ship.label}</strong> — bordée {p.side} sur <strong>{target.label}</strong> ({postes.length} pièce{plural(postes.length)})</>}
       extra={
         <div className="rm-threat">
-          <Icon id="action/aim" size="sm" /> {target.name} — Coque {target.wounds.current}/{target.wounds.max}. {postes.length} pièce{plural(postes.length)} : {postes.map((pp) => pp.item.name).join(' · ')}.
+          <Icon id="action/aim" size="sm" /> {target.label} — Coque {target.wounds.current}/{target.wounds.max}. {postes.length} pièce{plural(postes.length)} : {postes.map((pp) => pp.item.label).join(' · ')}.
         </div>
       }
       rows={rows}

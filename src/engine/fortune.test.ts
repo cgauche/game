@@ -34,7 +34,7 @@ const cible = (E = 30): Combatant =>
     advantage: 0, conditions: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     wounds: { current: 10, max: 10 }, skills: [],
   }) as unknown as Combatant;
-const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
 
 describe('rederivePassiveAttack — +1 DR (re-dérive un tir figé sans relancer)', () => {
   it('+1 DR augmente les Dégâts d’un tir réussi (BE+PA constants)', () => {

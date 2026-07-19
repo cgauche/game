@@ -57,7 +57,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     expect(soldat.items?.some((i) => i.trappingId === 'belier-ade2')).toBeFalsy(); // jamais dans le loadout du héros
     expect(soldat.mannedPoste?.item.trappingId).toBe('belier-ade2');
     expect(ram.postes?.[0].crewIds).toHaveLength(6); // Équipe requise (ADE II 8 l.233)
-    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const belier = soldat.weapons.find((w) => w.label === 'Bélier')!;
     expect(belier).toBeTruthy();
     expect(belier.type).toBe('melee');
     expect(belier.resolveChar).toBe('force');
@@ -69,7 +69,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
 
   it("le jet d'attaque du Bélier se résout sur la Force du Soldat — PAS sa CC (ADE II 8 l.233)", () => {
     const { soldat } = startBelier();
-    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const belier = soldat.weapons.find((w) => w.label === 'Bélier')!;
     // La CC et la Force DIVERGENT volontairement (ADE II 8 l.233 : « utilise Force ») pour désambiguïser :
     // si le moteur résolvait encore sur CC, la valeur de Test observée serait TRÈS différente.
     soldat.characteristics['capacite-de-combat'] = 20;
@@ -92,7 +92,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     seedBattleRng(1);
     // weaponUid EXPLICITE (Bélier) : le Soldat garde SON arme personnelle en plus du poste servi (kind-agnostique,
     // comme un canonnier qui garde sa dague) — l'auto-sélection `attackWeapon` prendrait sinon sa propre arme.
-    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const belier = soldat.weapons.find((w) => w.label === 'Bélier')!;
     const r = resolveAttack(() => useGame.getState(), soldat, porte, undefined, false, false, false, belier.uid);
     expect(r).not.toBeNull();
     expect(r!.weapon.resolveChar).toBe('force'); // le jet qui vient de se résoudre était bien un Test de Force
@@ -104,7 +104,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     const { soldat, crew, porte } = startBelier();
     // Neutralise 3 des 5 servants PNJ (jamais le chef) → 3/6 restants (chef + 2 servants).
     for (const c of crew.filter((x) => x.id !== soldat.id).slice(0, 3)) c.wounds = { current: 0, max: c.wounds.max };
-    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const belier = soldat.weapons.find((w) => w.label === 'Bélier')!;
     const w = firedWeapon(soldat, porte, belier.uid, useGame.getState().battle!.combatants);
     expect(w.crewTeamPenalty).toBe(-20);
     expect(firedAttackBlock(() => useGame.getState(), soldat, porte, belier.uid)).toBeNull(); // toujours utilisable
@@ -114,7 +114,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     const { soldat, crew, porte } = startBelier();
     // Neutralise 4 des 5 servants PNJ (jamais le chef) → 2/6 restants (chef + 1 servant, < moitié).
     for (const c of crew.filter((x) => x.id !== soldat.id).slice(0, 4)) c.wounds = { current: 0, max: c.wounds.max };
-    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const belier = soldat.weapons.find((w) => w.label === 'Bélier')!;
     const block = firedAttackBlock(() => useGame.getState(), soldat, porte, belier.uid);
     expect(block).toMatchObject({ reason: 'sous-effectif' });
   });
@@ -250,7 +250,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     expect(soldat.pos).toEqual({ x: 3, y: 5 });
     expect(ram.pos).toEqual({ x: 4, y: 5 }); // formation rigide : offset chef↔engin inchangé après 2 poussées cumulées
     seedBattleRng(1);
-    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const belier = soldat.weapons.find((w) => w.label === 'Bélier')!;
     const r = resolveAttack(() => useGame.getState(), soldat, porte, undefined, false, false, false, belier.uid);
     expect(r).not.toBeNull();
     expect(r!.res.hit).toBe(true); // Force 90 → Test quasi-garanti
@@ -269,7 +269,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     };
     pushBy(2);
     pushBy(1); // coque adjacente à la porte ; le chef (3,5) en reste à distance 2
-    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const belier = soldat.weapons.find((w) => w.label === 'Bélier')!;
     const w = firedWeapon(soldat, porte, undefined, useGame.getState().battle!.combatants);
     expect(w.uid).not.toBe(belier.uid); // jamais auto-choisi
     expect(w.type).toBe('melee'); // une arme PERSONNELLE (ou le repli générique), jamais la pièce
@@ -281,7 +281,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     placeCombatant(ram, useGame.getState().scene!, ram.pos);
     soldat.pos = { x: 0, y: 0 }; // chef très loin — hors-sujet pour la pièce servie
     placeCombatant(soldat, useGame.getState().scene!, soldat.pos);
-    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const belier = soldat.weapons.find((w) => w.label === 'Bélier')!;
     const w = firedWeapon(soldat, porte, belier.uid, useGame.getState().battle!.combatants);
     expect(w.uid).toBe(belier.uid);
   });

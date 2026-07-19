@@ -10,10 +10,10 @@ import type { Combatant, Weapon, ArmourPoints } from '../../engine/types';
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
 function mkEnemy(name: string, over: Partial<Combatant> = {}): Combatant {
   return {
-    id: 'e1', name, kind: 'enemy',
+    id: 'e1', label: name, kind: 'enemy',
     characteristics: {} as Combatant['characteristics'],
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon],
+    weapons: [{ label: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon],
     armour: { ...noArmour }, skills: [], talents: [], movement: 4,
     ...over,
   } as Combatant;

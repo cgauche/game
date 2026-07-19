@@ -207,7 +207,7 @@ function applyPoste(get: Get, set: Set, hero: Combatant, def: ActivityDef, freeS
   const plan = get().travelPlan;
   if (plan?.stage) set({ travelPlan: { ...plan, stage: { ...plan.stage, results: [...plan.stage.results, r] } } });
   const cons: Consequence[] = [];
-  if (r.roll == null) cons.push({ say: 'out.activityDone', vars: { name: hero.name, activity: def.label } });
+  if (r.roll == null) cons.push({ say: 'out.activityDone', vars: { name: hero.label, activity: def.label } });
   if (r.ops.length) cons.push(...freeCons(applyOps(hero, r.ops, { source: { kind: 'activity', id: def.id } })));
   if (r.extenue) {
     const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC 8 l.133
@@ -215,9 +215,9 @@ function applyPoste(get: Get, set: Set, hero: Combatant, def: ActivityDef, freeS
     cons.push({ ops: [op] });
   }
   // Issues INDIVIDUELLES (Récupérer / Pratiquer / Recueillir infos) : récit (systèmes dédiés câblés ailleurs).
-  if (r.success && r.stageOutcome === 'countsAsRest') cons.push(...freeCons([`${hero.name} prend soin de ne pas se surmener — cette Étape compte comme un repos.`]));
-  else if (r.success && r.stageOutcome === 'rerollToken') cons.push(...freeCons([`${hero.name} s'exerce en chemin — il pourra inverser un futur Test de cette Compétence.`]));
-  else if (r.success && r.stageOutcome === 'gatherInfo') cons.push(...freeCons([`${hero.name} glane des informations en route.`]));
+  if (r.success && r.stageOutcome === 'countsAsRest') cons.push(...freeCons([`${hero.label} prend soin de ne pas se surmener — cette Étape compte comme un repos.`]));
+  else if (r.success && r.stageOutcome === 'rerollToken') cons.push(...freeCons([`${hero.label} s'exerce en chemin — il pourra inverser un futur Test de cette Compétence.`]));
+  else if (r.success && r.stageOutcome === 'gatherInfo') cons.push(...freeCons([`${hero.label} glane des informations en route.`]));
   return cons;
 }
 
@@ -317,7 +317,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
       h.items = [...(h.items ?? []), ration];
       autoStowNewItem(h, ration); // #204 : rangement par défaut
       remaining -= 1;
-      j.push(`${h.name} reçoit une ration trouvée en chemin.`);
+      j.push(`${h.label} reçoit une ration trouvée en chemin.`);
     }
   }
 
@@ -332,7 +332,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
     const take = Math.min(campDR, n);
     removeCondition(h, 'extenue', take);
     campDR -= take;
-    j.push(`Camp bien monté : ${h.name} récupère (−${take} Exténué).`);
+    j.push(`Camp bien monté : ${h.label} récupère (−${take} Exténué).`);
   }
 
   // Établir des cartes (Test ÉTENDU inter-Étapes) : cumul via le helper UNIQUE + persistance sur le plan.
@@ -400,14 +400,14 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
 registerCascadeApplier('stageExposure', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   const weatherLabel = String(step.meta?.weatherLabel ?? '');
-  if (step.meta?.warded) return { consequences: freeCons([`${hero.name} ignore le froid et les intempéries (protection magique).`]) };
+  if (step.meta?.warded) return { consequences: freeCons([`${hero.label} ignore le froid et les intempéries (protection magique).`]) };
   // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
   // succès sans effet (rien à ajouter) → aucune conséquence.
   if (step.result.success) return { consequences: freeCons([]) };
-  const j = [`${hero.name} — Exposition de fin d'Étape (${weatherLabel}) : transi par le froid.`];
+  const j = [`${hero.label} — Exposition de fin d'Étape (${weatherLabel}) : transi par le froid.`];
   const prior = (hero.activeEffects ?? []).filter((e) => e.effectId === 'exposition-froid').length;
   const rank = prior >= 10 ? 3 : prior >= 3 ? 2 : 1;
   j.push(...applyExposureFailure(hero, rank, battleRng()).log);
-  if (step.meta?.coldSeason) j.push(`${hero.name} grelotte et tousse — un rhume couve (saison froide).`);
+  if (step.meta?.coldSeason) j.push(`${hero.label} grelotte et tousse — un rhume couve (saison froide).`);
   return { consequences: freeCons(j) };
 });

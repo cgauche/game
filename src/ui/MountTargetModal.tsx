@@ -23,7 +23,7 @@ export function MountTargetModal() {
   return (
     <Modal title="Combat monté — cibler ?" variant="test" onClose={cancel}>
       <p className="rm-log">
-        {rider.name} chevauche {mount.name} (même case — qui frapper ?) : viser le cavalier impose −10 si vous êtes
+        {rider.label} chevauche {mount.label} (même case — qui frapper ?) : viser le cavalier impose −10 si vous êtes
         plus petit que la monture ; abattre la monture désarçonne le cavalier.
       </p>
       {/* Choix = picker de PORTRAITS mutualisé (`PortraitPicker`), pas des boutons. Seule la barre
@@ -31,8 +31,8 @@ export function MountTargetModal() {
       <div className="rm-options">
         <PortraitPicker
           choices={[
-            { c: mount, caption: <><Icon id="travel/mount" size="sm" /> Monture</>, title: `${mount.name} — l'abattre désarçonne le cavalier` },
-            { c: rider, caption: <><Icon id="action/attack" size="sm" /> Cavalier</>, title: `${rider.name} — −10 si vous êtes plus petit que la monture` },
+            { c: mount, caption: <><Icon id="travel/mount" size="sm" /> Monture</>, title: `${mount.label} — l'abattre désarçonne le cavalier` },
+            { c: rider, caption: <><Icon id="action/attack" size="sm" /> Cavalier</>, title: `${rider.label} — −10 si vous êtes plus petit que la monture` },
           ]}
           onPick={(id) => select(id)}
         />

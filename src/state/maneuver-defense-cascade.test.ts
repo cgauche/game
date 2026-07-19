@@ -38,8 +38,8 @@ describe('Défense de manœuvre de zone — cascade influençable (héros) vs si
     const enemies = b.combatants.filter((c) => c.kind === 'enemy');
     enemies.slice(1).forEach((e) => (e.dead = true));
     const E = enemies[0];
-    const h1 = b.combatants.find((c) => c.name === 'H1')!;
-    const h2 = b.combatants.find((c) => c.name === 'H2')!;
+    const h1 = b.combatants.find((c) => c.label === 'H1')!;
+    const h2 = b.combatants.find((c) => c.label === 'H2')!;
     // Ennemi à Souffle (Feu) : range = BE+20 m (large), blast = BF (de la cible-centre).
     E.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }]; E.advantage = 2; E.characteristics['capacite-de-tir'] = 85; E.characteristics.endurance = 40;
     E.pos = { x: 5, y: 5 };
@@ -103,7 +103,7 @@ describe('Défense de manœuvre de zone — cascade influençable (héros) vs si
     // Un seul héros à portée pour isoler l'influence (H2 hors zone).
     const b = useGame.getState().battle!;
     b.combatants.find((c) => c.id === h1.id)!.resilience = 3;
-    (useGame.getState().battle!.combatants.find((c) => c.name === 'H2'))!.pos = { x: 30, y: 30 };
+    (useGame.getState().battle!.combatants.find((c) => c.label === 'H2'))!.pos = { x: 30, y: 30 };
     const before = h1.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const p = useGame.getState().pendingCascade!;

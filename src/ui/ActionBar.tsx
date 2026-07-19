@@ -172,7 +172,7 @@ export function ActionBar() {
     const seat = net.ownership[active.id] ?? 0;
     return (
       <div className="action-bar establishing-bar">
-        <span className="ready-chip"><Icon id="ui/wait" size="sm" /> {net.seatNames[seat] ?? 'L’hôte'} joue {active.name}…</span>
+        <span className="ready-chip"><Icon id="ui/wait" size="sm" /> {net.seatNames[seat] ?? 'L’hôte'} joue {active.label}…</span>
       </div>
     );
   }
@@ -199,7 +199,7 @@ export function ActionBar() {
       const left = dualStrikeTargets(battle, atk, off).length;
       return {
         icon: <Icon id="action/attack" />, title: 'Des deux armes',
-        badge: left ? `2ᵉ frappe — ${off.name}` : 'plus d’adversaire à portée',
+        badge: left ? `2ᵉ frappe — ${off.label}` : 'plus d’adversaire à portée',
         exit: { label: 'Renoncer', onClick: dualStrikeSkip, primary: !left },
       };
     }
@@ -316,7 +316,7 @@ export function ActionBar() {
   const usable = isHero ? (active.items ?? []).filter(isConsumable) : [];
   const usableGroups = Object.values(
     usable.reduce<Record<string, { name: string; uids: string[]; desc?: string }>>((acc, it) => {
-      (acc[it.name] ??= { name: it.name, uids: [], desc: it.desc ?? undefined }).uids.push(it.uid);
+      (acc[it.label] ??= { name: it.label, uids: [], desc: it.desc ?? undefined }).uids.push(it.uid);
       return acc;
     }, {}),
   );
@@ -411,9 +411,9 @@ export function ActionBar() {
     if (engaged && !frenzied) slots.push({ id: 'disengage', disabled: battle.acted && !canFreeDisengage, icon: <Icon id="action/disengage" />, label: 'Se désengager', title: "Quitter le corps à corps (Esquive si Action dispo, sinon sacrifice d'Avantage)", run: disengage });
     if (canBattement) slots.push({ id: 'battement', icon: <Icon id="action/attack" />, label: 'Battement', done: battle.acted, title: "Battement : Test de Corps à corps pour retirer de l'Avantage à un adversaire armé (coûte l'Action)", run: () => battement() });
     if (canDistraire) slots.push({ id: 'distraire', icon: <Icon id="action/aim" />, label: 'Distraire', title: "Distraire : Test opposé d'Athlétisme contre le Calme d'un adversaire en vue — il ne gagne plus d'Avantage (coûte le Mouvement)", run: () => distraire() });
-    if (mountCandidate) slots.push({ id: 'mount', disabled: moveStarted || broken, icon: <Icon id="action/mount" />, label: 'Monter', title: `Enfourcher ${mountCandidate.name} (combat monté) — coûte le Mouvement`, run: mountUp });
+    if (mountCandidate) slots.push({ id: 'mount', disabled: moveStarted || broken, icon: <Icon id="action/mount" />, label: 'Monter', title: `Enfourcher ${mountCandidate.label} (combat monté) — coûte le Mouvement`, run: mountUp });
     if (mounted) slots.push({ id: 'dismount', disabled: moveStarted || broken, icon: <Icon id="action/dismount" />, label: 'Descendre', title: 'Descendre de sa monture — coûte le Mouvement', run: dismount });
-    if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Prendre la barre de ${shipSupport.name} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });
+    if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Prendre la barre de ${shipSupport.label} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });
     if (canServePoste) slots.push({ id: 'man-poste', disabled: stunned || broken, icon: <Icon id="action/serve-engine" />, label: 'Servir cette pièce', title: "Rejoindre une pièce de siège adjacente : chef si elle n'est pas servie (l'arme vous est octroyée), sinon renfort d'équipe — GRATUIT (on sert puis on agit le même Round)", run: () => manPoste() });
     if (active.mannedPoste) slots.push({ id: 'leave-poste', disabled: battle.acted || stunned || broken, icon: <Icon id="action/leave-post" />, label: 'Quitter la pièce', done: battle.acted, title: "Quitter la pièce servie (la libère pour un autre) — coûte l'Action", run: leavePoste });
     if (push.show) slots.push({ id: 'push-engine', cls: battle.action === 'push' ? 'on' : '', disabled: moveStarted || stunned || broken || push.undercrew, icon: <Icon id="action/serve-engine" />, label: 'Pousser', title: push.undercrew ? "Équipe trop réduite pour pousser l'engin (moins de la moitié requise)" : "Pousser l'engin de siège vers une case (roues) : l'engin et l'équipage avancent ensemble — coûte le MOUVEMENT de tout l'équipage, pas l'Action", run: () => pushEngine() });
@@ -442,7 +442,7 @@ export function ActionBar() {
     // Navigation) puis le navire avance le long du cap (l'éperonnage se résout si une coque est devant).
     // Bordée = Test d'équipage des Artilleurs : on désigne un navire ennemi, le bord qui porte est dérivé de la
     // cible (`targetArc`) et toutes ses pièces font feu au DR partagé (MDG 14 l.128). (IA navire → `runShipAI`.)
-    slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Manœuvrer ${active.name} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
+    slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Manœuvrer ${active.label} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
     if ((active.postes ?? []).length > 0)
       slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: <Icon id="action/aim" />, label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });
     // Rude épreuve (MDG 14 l.106-114) : Test d'équipage quand « les gens ont peur de ce que pourrait
@@ -459,7 +459,7 @@ export function ActionBar() {
     const reloadable = (active.postes ?? []).filter((p) => p.loaded === false && p.crewIds?.[0] && !(battle.crewActed?.[active.id] ?? []).includes(p.crewIds[0]));
     if (reloadable.length)
       slots.push({ id: 'ship-reload', cls: 'ab-alert', icon: <Icon id="journal/reload" />, label: `Recharger${reloadable.length > 1 ? ` (${reloadable.length})` : ''}`, title: `Recharger une pièce déchargée : Test étendu de Projectiles du chef de pièce + Soutien des servants`, run: () => battleShipReload(active.id, reloadable[0].item.uid) });
-    slots.push({ id: 'end-turn', cls: 'ab-end', icon: <Icon id="ui/turn-end" />, label: 'Fin du tour', title: `Finir le tour de ${active.name}`, run: onEndTurn });
+    slots.push({ id: 'end-turn', cls: 'ab-end', icon: <Icon id="ui/turn-end" />, label: 'Fin du tour', title: `Finir le tour de ${active.label}`, run: onEndTurn });
   }
   hotbar.slots = slots.map((s) => ({ run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge
 
@@ -556,8 +556,8 @@ export function ActionBar() {
         <div className="ab-spells">
           {ammoChoices.map((a) => (
             <div key={a.uid} className="ab-spell-row">
-              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => selectAmmo(a.uid)}><ItemIcon item={a} size={18} /> {a.name} ×{a.qty}</button>
-              <CodexRef category="trappings" id={a.trappingId} label={a.name} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
+              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => selectAmmo(a.uid)}><ItemIcon item={a} size={18} /> {a.label} ×{a.qty}</button>
+              <CodexRef category="trappings" id={a.trappingId} label={a.label} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           ))}
         </div>
@@ -616,7 +616,7 @@ export function ActionBar() {
             c={active} ring={ring} isHero={isHero}
             actAvail={actAvail} actMax={actMax} moveLeft={moveLeft} moveMax={moveMax}
             spendAction={previewDelta.action} spendMove={previewDelta.move} gainAdv={previewDelta.adv}
-            title={active.career ? `${active.name} — ${careerLabelFor(active)}` : active.name}
+            title={active.career ? `${active.label} — ${careerLabelFor(active)}` : active.label}
           />
           <div className="ab-actor-side">
             {/* Le NOM n'est plus affiché (dispo au survol du portrait / du pion). */}
@@ -674,7 +674,7 @@ export function ActionBar() {
             ))}
           </div>
         ) : (
-          <div className="ab-enemy"><Icon id="action/attack" size="sm" /> {active.kind === 'enemy' ? 'Tour de l’ennemi' : `L’IA joue ${active.name}`}…</div>
+          <div className="ab-enemy"><Icon id="action/attack" size="sm" /> {active.kind === 'enemy' ? 'Tour de l’ennemi' : `L’IA joue ${active.label}`}…</div>
         )}
       </div>
     </div>

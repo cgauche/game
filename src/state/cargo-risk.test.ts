@@ -21,7 +21,7 @@ const lot = (cargoId: string, enc: number): CargoLot => ({ cargoId, enc, basePri
 /** Un porteur véhicule (charrette EDOC, `chargement` 25) tenu par un héros, chargé de `lots`. */
 function cartHero(lots: CargoLot[]) {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
-  const cart: ItemInstance = { uid: 'cart-1', trappingId: 'charrette', name: 'Charrette', kind: 'misc', qualities: [], enc: 10, equipped: false, cargo: lots };
+  const cart: ItemInstance = { uid: 'cart-1', trappingId: 'charrette', label: 'Charrette', kind: 'misc', qualities: [], enc: 10, equipped: false, cargo: lots };
   h.items = [cart];
   return h;
 }

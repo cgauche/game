@@ -93,7 +93,7 @@ export function resolveVolley(
     const wounds = woundsFromHit(weapon, target, 'corps', damage, 0, 0); // BE/blindage/Perforante/bypass, plancher 0
     const locRoll = d100(rng);
     shots.push({
-      weaponName: weapon.name, ammoName: ammo?.name, ammo, damage, wounds, weapon, // arme effective : Atouts d'aire + effets onHit côté appelant
+      weaponName: weapon.label, ammoName: ammo?.label, ammo, damage, wounds, weapon, // arme effective : Atouts d'aire + effets onHit côté appelant
       location: shipHitLocation(rig, locRoll), locRoll,
       critical: isDoubleRoll(locRoll) || target.wounds.current <= 0, // double, OU coque à 0 (l.656)
       posteUid: poste.item.uid, reload: weapon.reload ?? 0, // Recharge effective (crewedFireWeapon a doublé si sous-effectif)

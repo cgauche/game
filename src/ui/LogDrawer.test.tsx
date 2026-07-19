@@ -5,8 +5,8 @@ import { iconSvg } from './Icon';
 import { ev } from '../state/combatLog';
 
 const COMBATANTS = [
-  { id: 'h1', name: 'Gunnar', kind: 'hero' },
-  { id: 'e1', name: 'Brigand', kind: 'enemy' },
+  { id: 'h1', label: 'Gunnar', kind: 'hero' },
+  { id: 'e1', label: 'Brigand', kind: 'enemy' },
 ];
 
 describe('LogDrawer', () => {

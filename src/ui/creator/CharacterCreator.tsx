@@ -590,7 +590,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
 
   const detail = !sp ? (
     <p className="hint">
-      Sélectionnez une race dans la liste, ou tirez-la aux dés (LDB 04 l.84-90). Le détail se remplira au fil de vos choix.
+      Sélectionnez une race dans la liste, ou tirez-la aux dés. Le détail se remplira au fil de vos choix.
     </p>
   ) : (
     <DetailFrame
@@ -724,7 +724,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
       <span className="dicewell-copy">
         <span className="dicewell-txt">Tirer aux dés — d100</span>
         <span className="dicewell-sub">
-          sa carrière au hasard : <b>+{XP_CAREER_FIRST} PX</b> (1ᵉʳ jet) · pas convaincu, deux relances → <b>+{XP_CAREER_TOP3} PX</b> (LDB 05)
+          sa carrière au hasard : <b>+{XP_CAREER_FIRST} PX</b> (1ᵉʳ jet) · pas convaincu, deux relances → <b>+{XP_CAREER_TOP3} PX</b>
         </span>
       </span>
     </button>
@@ -790,8 +790,8 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
             disabled={d.careerRolls.length > 0}
             title={
               d.careerRolls.length > 0
-                ? 'MDG 09 l.9 — se choisit avant de lancer les dés (verrouillé après jet)'
-                : 'MDG 09 l.9 — bascule avant le jet (variante Côtiers à la place des Riverains)'
+                ? 'Se choisit avant de lancer les dés (verrouillé après jet)'
+                : 'Bascule avant le jet (variante Côtiers à la place des Riverains)'
             }
             onClick={() => setD(withCoastalSwap(d, !d.coastalSwap))}
           >
@@ -814,7 +814,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
   const detail = !sp ? (
     <p className="hint">Sélectionnez d'abord une race (étape précédente).</p>
   ) : !career || !lvl1 ? (
-    <p className="hint">Sélectionnez une carrière dans la liste, ou tirez-la aux dés (LDB 05 l.186-365).</p>
+    <p className="hint">Sélectionnez une carrière dans la liste, ou tirez-la aux dés.</p>
   ) : (
     <DetailFrame
       name={<CodexRef category="careers" id={career.id} label={career.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>}
@@ -990,13 +990,13 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
           }))}
         />
         <p className="hint" style={{ marginTop: 8 }}>
-          Chaque Caractéristique s'écrit base + 2d10 (LDB 05). Garder le tirage tel quel rapporte le plus de PX de création.
+          Chaque Caractéristique s'écrit base + 2d10. Garder le tirage tel quel rapporte le plus de PX de création.
         </p>
       </Section>
       {d.charMode !== 'pointBuy' && (
         <CreatorDice
           label="Tirer les dix jets — 2d10 par Caractéristique"
-          hint={<>Garder le tirage : +50 PX · réorganiser ensuite : +25 PX · relancer : +0 PX (LDB 05).</>}
+          hint={<>Garder le tirage : +50 PX · réorganiser ensuite : +25 PX · relancer : +0 PX.</>}
           rolled={!!d.charsRolled}
           xp={charsXp(d)}
           frisson={false}
@@ -1717,7 +1717,7 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
         {randomCount > 0 && (
           <CreatorDice
             label={`Tirer ${randomCount} Talent${randomCount > 1 ? 's' : ''} — d100`}
-            hint={<>Sur le Tableau des Talents aléatoires (LDB 05 l.510) — un doublon déjà possédé se relance d'office.</>}
+            hint={<>Sur le Tableau des Talents aléatoires — un doublon déjà possédé se relance d'office.</>}
             rolled={!!d.talentsRolled}
             xp={0}
             onRoll={() => setD(rollDraftTalents(d))}
@@ -2279,7 +2279,7 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
         <div className="presentation-fig">
           <CharacterPreview hero={hero} view="front" size="fill" />
         </div>
-        <h2 className="presentation-name">{hero.name}</h2>
+        <h2 className="presentation-name">{hero.label}</h2>
         {/* Race · NIVEAU (carrière) · statut MÉTALLISÉ — la planche nomme le niveau de départ
             (« Pamphlétaire (Agitateur) ») là où l'écran ne portait que la carrière, et rend le statut
             en métal (`.st-bronze`) là où il était en texte nu : `MetalStatus` est la primitive. */}
@@ -2309,7 +2309,7 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
         <Rubrique title="Possessions">
           <div className="skill-tags">
             {(hero.items ?? []).map((it) => (
-              <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={it.name} show={`${it.name}${it.qty ? ` ×${it.qty}` : ''}`} />
+              <EntityRef key={it.uid} category="trappings" id={it.trappingId} label={it.label} show={`${it.label}${it.qty ? ` ×${it.qty}` : ''}`} />
             ))}
           </div>
         </Rubrique>

@@ -23,7 +23,7 @@ import type { SizeCategory } from '../engine/size';
 
 /** Combattant minimal — F 45 → Bonus de Force 4 (la « monnaie » de l'Absorption). */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'c', name: 'C', kind: 'enemy',
+  id: 'c', label: 'C', kind: 'enemy',
   characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 25, force: 45, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 25, 'force-mentale': 25, sociabilite: 25 },
   wounds: { current: 20, max: 30 }, advantage: 0, conditions: [], skills: [], talents: [],
   weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
@@ -32,11 +32,11 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 
 /** Créature Absorption — Grande (4), BF 4, Avantage `adv`. */
 const beast = (adv: number, over: Partial<Combatant> = {}): Combatant =>
-  mk({ id: 'beast', name: 'Engloutisseur', kind: 'enemy', traits: [{ id: 'absorption' }], size: 'grande' as SizeCategory, advantage: adv, pos: { x: 5, y: 5 }, wounds: { current: 10, max: 30 }, ...over });
+  mk({ id: 'beast', label: 'Engloutisseur', kind: 'enemy', traits: [{ id: 'absorption' }], size: 'grande' as SizeCategory, advantage: adv, pos: { x: 5, y: 5 }, wounds: { current: 10, max: 30 }, ...over });
 
 /** Proie engagée avec la bête (héros) — Taille `size`, Avantage `adv`. */
 const prey = (id: string, size: SizeCategory, adv = 0, over: Partial<Combatant> = {}): Combatant =>
-  mk({ id, name: id, kind: 'hero', size, advantage: adv, engagedWith: ['beast'], pos: { x: 5, y: 6 }, ...over });
+  mk({ id, label: id, kind: 'hero', size, advantage: adv, engagedWith: ['beast'], pos: { x: 5, y: 6 }, ...over });
 
 const get = (...cs: Combatant[]) => (() => ({ battle: { combatants: cs } })) as never;
 const empetre = (c: Combatant) => stacks(c, 'empetre');

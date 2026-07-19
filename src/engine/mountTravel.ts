@@ -166,7 +166,7 @@ export interface MountIncidentResolved {
  * s'applique aux Tests de Chevaucher suivants (l.174) — lu sur `item.mountInjury`.
  */
 export function resolveMountIncident(entry: TravelTableEntry, mount: PartyMount, rng: RNG): MountIncidentResolved {
-  const out: MountIncidentResolved = { entry, lines: [`Incident de monte (${mount.item.name}) : ${entry.label}.`] };
+  const out: MountIncidentResolved = { entry, lines: [`Incident de monte (${mount.item.label}) : ${entry.label}.`] };
   switch (entry.id) {
     case 'sangle-cassee':
     case 'perte-d-un-fer': {
@@ -177,23 +177,23 @@ export function resolveMountIncident(entry: TravelTableEntry, mount: PartyMount,
       out.riderTest = testDetail('Chevaucher', Math.max(0, base), t);
       if (!t.success) {
         out.riderFallM = 2;
-        out.lines.push(`${mount.hero.name} vide les étriers et chute (2 mètres).`);
+        out.lines.push(`${mount.hero.label} vide les étriers et chute (2 mètres).`);
       } else {
-        out.lines.push(`${mount.hero.name} se maintient en selle.`);
+        out.lines.push(`${mount.hero.label} se maintient en selle.`);
       }
       out.injury = entry.id;
       out.lines.push(entry.id === 'sangle-cassee'
-        ? `La sellerie de ${mount.item.name} est endommagée (-20 en Chevaucher jusqu'à réparation).`
-        : `${mount.item.name} doit aller au pas jusqu'au maréchal-ferrant.`);
+        ? `La sellerie de ${mount.item.label} est endommagée (-20 en Chevaucher jusqu'à réparation).`
+        : `${mount.item.label} doit aller au pas jusqu'au maréchal-ferrant.`);
       break;
     }
     case 'boiteux':
       out.injury = 'boiteux';
-      out.lines.push(`${mount.item.name} boite — la bête ne peut plus être montée ni attelée.`);
+      out.lines.push(`${mount.item.label} boite — la bête ne peut plus être montée ni attelée.`);
       break;
     case 'patte-brisee':
       out.injury = 'patte-brisee';
-      out.lines.push(`${mount.item.name} se brise une patte — Fracture (Majeure), la bête est condamnée.`);
+      out.lines.push(`${mount.item.label} se brise une patte — Fracture (Majeure), la bête est condamnée.`);
       break;
     default:
       break;
@@ -239,7 +239,7 @@ export function resolveMountedDay(mounts: PartyMount[], hours: number, allure: A
       o.extenue += 1; // « il gagne un État Exténué » (l.146)
       const base = Math.max(0, p.e - 10 * o.extenue); // -10 par État Exténué (LDB 16)
       const t = rollTest(base, 'intermediaire', rng);
-      o.tests.push(testDetail(`Résistance (${mount.item.name})`, base, t));
+      o.tests.push(testDetail(`Résistance (${mount.item.label})`, base, t));
       if (!t.success) {
         o.extenue += 1; // « l'animal prend un nouvel État Exténué » (l.146)
         const inc = resolveMountIncident(rollMountIncident(d100(rng)), mount, rng);
@@ -251,15 +251,15 @@ export function resolveMountedDay(mounts: PartyMount[], hours: number, allure: A
       if (o.extenue > be) {
         o.collapsed = true; // Sonné + À Terre (l.146)
         const t2 = rollTest(p.e, 'intermediaire', rng); // « sans aucun modificateur »
-        o.tests.push(testDetail(`Résistance (${mount.item.name}, effondrement)`, p.e, t2));
+        o.tests.push(testDetail(`Résistance (${mount.item.label}, effondrement)`, p.e, t2));
         o.dead = !t2.success;
         o.lines.push(o.dead
-          ? `${mount.item.name} s'effondre, poussée jusqu'à la mort.`
-          : `${mount.item.name} s'effondre d'épuisement (Sonné, À Terre).`);
+          ? `${mount.item.label} s'effondre, poussée jusqu'à la mort.`
+          : `${mount.item.label} s'effondre d'épuisement (Sonné, À Terre).`);
         break;
       }
     }
-    if (o.extenue > 0 && !o.collapsed) o.lines.push(`${mount.item.name} termine la journée fourbue (+${o.extenue} Exténué).`);
+    if (o.extenue > 0 && !o.collapsed) o.lines.push(`${mount.item.label} termine la journée fourbue (+${o.extenue} Exténué).`);
     out.push(o);
   }
   return out;

@@ -13,7 +13,7 @@ import type { ItemInstance } from '../engine/types';
  */
 const get = useGame.getState.bind(useGame);
 const mkItem = (uid: string, trappingId: string, cargo: CargoLot[] = []): ItemInstance =>
-  ({ uid, name: uid, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false, cargo } as ItemInstance);
+  ({ uid, label: uid, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false, cargo } as ItemInstance);
 
 // Place dont la scène EST la scène courante → tous les porteurs du groupe y sont co-localisés.
 const map: WorldMap = { id: 'm', nom: 'x', places: [{ id: 'P', label: 'Halte', pos: { x: 0, y: 0 }, scene: 'halte' }], routes: [] };

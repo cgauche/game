@@ -138,7 +138,7 @@ export function creditOpposingAdvantage(get: Get, c: Combatant, n: number): stri
   const opposing: AdvantageCamp = own === 'allies' ? 'foes' : 'allies';
   addToPool(pools, opposing, n);
   mirrorPools(pools, battle.combatants);
-  return [t('turn.redoutableOpposingFeed', { name: c.name, n })];
+  return [t('turn.redoutableOpposingFeed', { name: c.label, n })];
 }
 
 /**

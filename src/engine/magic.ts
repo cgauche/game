@@ -471,7 +471,7 @@ export function resolveCasting(
       sl: 0,
       isCritical: false,
       isFumble: false,
-      log: `${caster.name} ne maîtrise pas ${skill} et ne peut pas incanter ${spell.label}.`,
+      log: `${caster.label} ne maîtrise pas ${skill} et ne peut pas incanter ${spell.label}.`,
     };
   }
   const value = castingValue(caster, info.skill, info.spec) + extraMod;
@@ -538,11 +538,11 @@ export function evaluateCasting(
   const isFumble = (t.isDouble || widenSea) && !t.success;
   let log: string;
   if (!t.success) {
-    log = `${caster.name} échoue à incanter ${spell.label}.`;
+    log = `${caster.label} échoue à incanter ${spell.label}.`;
   } else if (!cast) {
-    log = `${caster.name} incante ${spell.label} mais sans assez de puissance (DR ${t.sl} < NI ${ni}).`;
+    log = `${caster.label} incante ${spell.label} mais sans assez de puissance (DR ${t.sl} < NI ${ni}).`;
   } else {
-    log = `${caster.name} lance ${spell.label} (DR ${t.sl}).`;
+    log = `${caster.label} lance ${spell.label} (DR ${t.sl}).`;
   }
   return { cast, roll: t.roll, target: t.target, sl: t.sl, isCritical, isFumble, log };
 }
@@ -593,8 +593,8 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
     counter: counterT,
     casterNetSL: net,
     log: dispelled
-      ? `Contre-sort de ${counter.name} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
-      : `Contre-sort de ${counter.name} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : insuffisant — l'incantation se résout à DR ${net}.`,
+      ? `Contre-sort de ${counter.label} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
+      : `Contre-sort de ${counter.label} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : insuffisant — l'incantation se résout à DR ${net}.`,
   };
 }
 
@@ -667,7 +667,7 @@ export function evaluateMissile(
     woundsLost,
     defenderDefeated: defeated,
     log:
-      `${caster.name} lance ${spell.label} sur ${target.name} : ` +
+      `${caster.label} lance ${spell.label} sur ${target.label} : ` +
       `${damage} dégâts − ${tb + ap} (${mitLabel}) = ${woundsLost} Blessures` +
       (cr.isCritical ? ' — CRITIQUE !' : '') +
       '.',
@@ -756,7 +756,7 @@ export function resolveFocus(
     const wind = spec ? (findDomainById(spec)?.wind ?? findDomainById(spec)?.label ?? spec) : undefined;
     return {
       dr: 0, isCritical: false, isFumble: false, roll: 0,
-      log: `${caster.name} ne maîtrise pas Focalisation${wind ? ` (${wind})` : ''}.`,
+      log: `${caster.label} ne maîtrise pas Focalisation${wind ? ` (${wind})` : ''}.`,
     };
   }
   const value = castingValue(caster, 'focalisation', sk.spec) + extraMod;
@@ -771,7 +771,7 @@ export function resolveFocus(
   // terminant par un 0 au-delà de la Compétence (00, 99, 90, 88…) → Imparfaite MAJEURE.
   const isFumble = !t.success && (t.isDouble || t.roll % 10 === 0);
   const log = t.success
-    ? `${caster.name} focalise ${spell.label} (+${dr} DR).`
-    : `${caster.name} échoue à focaliser ${spell.label}.`;
+    ? `${caster.label} focalise ${spell.label} (+${dr} DR).`
+    : `${caster.label} échoue à focaliser ${spell.label}.`;
   return { dr, isCritical, isFumble, roll: t.roll, target: t.target, sl: t.sl, log };
 }

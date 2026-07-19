@@ -15,15 +15,15 @@ const chars = { 'capacite-de-combat': 50, 'capacite-de-tir': 30, force: 45, endu
 
 function setup(targetTraits: { id: string }[], heroArmourCorps = 0): { hero: Combatant; enemy: Combatant } {
   const enemy = {
-    id: 'e1', name: 'Champion', kind: 'enemy', characteristics: chars, wounds: { current: 30, max: 30 },
+    id: 'e1', label: 'Champion', kind: 'enemy', characteristics: chars, wounds: { current: 30, max: 30 },
     advantage: 0, conditions: [], movement: 4, skills: [], talents: [], traits: targetTraits, engagedWith: [], pos: { x: 1, y: 0 },
-    size: 'moyenne', weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
+    size: 'moyenne', weapons: [{ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
   } as unknown as Combatant;
   const hero = {
-    id: 'h1', name: 'Attaquant', kind: 'hero', characteristics: chars, wounds: { current: 20, max: 20 },
+    id: 'h1', label: 'Attaquant', kind: 'hero', characteristics: chars, wounds: { current: 20, max: 20 },
     advantage: 0, conditions: [], movement: 4, skills: [], talents: [], traits: [], engagedWith: [], pos: { x: 0, y: 0 },
-    size: 'moyenne', weapons: [{ name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
+    size: 'moyenne', weapons: [{ label: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     items: [], criticalWounds: 0, fate: 0,
     armour: { tete: 0, brasG: 0, brasD: 0, corps: heroArmourCorps, jambeG: 0, jambeD: 0 },
   } as unknown as Combatant;
@@ -75,8 +75,8 @@ describe('Défense du champion / Riposte — contre-attaque (PINNING avant migra
     expect(h.wounds.current).toBe(before);
   });
 
-  const rapide: Weapon = { name: 'Rapière', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'rapide' }] } as never;
-  const lente: Weapon = { name: 'Hache', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as never;
+  const rapide: Weapon = { label: 'Rapière', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'rapide' }] } as never;
+  const lente: Weapon = { label: 'Hache', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as never;
 
   it('Riposte (talent) + arme de parade RAPIDE → contre-attaque', () => {
     seedBattleRng(7);

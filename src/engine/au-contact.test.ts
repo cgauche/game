@@ -9,7 +9,7 @@ import type { Weapon, Combatant } from './types';
 //   une Arme improvisée. »
 
 const w = (reach: string, name = 'Arme'): Weapon => ({
-  name, type: 'melee', reach: reach as Weapon['reach'], damage: { plusBF: true, flat: 5 },
+  label: name, type: 'melee', reach: reach as Weapon['reach'], damage: { plusBF: true, flat: 5 },
   qualities: [{ id: 'empaleuse' }, { id: 'percutante' }],
 });
 

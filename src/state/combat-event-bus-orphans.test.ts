@@ -83,7 +83,7 @@ describe('7bis — applyOpposedCritical émet onCrit (Taillade sur Critique oppo
   beforeEach(() => { vi.useFakeTimers(); resetRule('combat-cadence'); useGame.setState({ battle: null, pendingCascade: null, pendingLogQueue: [] }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
-  const taillade = (): Weapon => ({ name: 'Hache de Taillade', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'taillade' }] } as Weapon);
+  const taillade = (): Weapon => ({ label: 'Hache de Taillade', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'taillade' }] } as Weapon);
 
   it('un Critique opposé de l’attaquant Taillade → la victime gagne Hémorragique', () => {
     seedBattleRng(3);

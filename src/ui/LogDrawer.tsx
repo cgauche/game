@@ -3,8 +3,8 @@ import { NarratedSegments } from './NarratedLine';
 import { Icon } from './Icon';
 import type { CombatEvent } from '../state/combatLog';
 
-/** Forme minimale acceptée pour les combattants (suffit à `narrateEvent` — id/name/kind). */
-interface ComLite { id: string; name: string; kind: string; }
+/** Forme minimale acceptée pour les combattants (suffit à `narrateEvent` — id/label/kind). */
+interface ComLite { id: string; label: string; kind: string; }
 
 /**
  * Journal en TIROIR (bas-droite, replié par défaut — façon BG3, mobile-first).

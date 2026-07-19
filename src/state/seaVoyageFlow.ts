@@ -312,7 +312,7 @@ function voyageShip(get: Get): { vessel: CampaignVessel; hull: Combatant } | nul
   if (!v?.ship) return null;
   const hull = vehicleCombatant(v);
   if (!hull) return null;
-  if (vessel.name) hull.name = vessel.name; // #230 — nom d'instance (affichage ; le rendu reste keyé par creatureId)
+  if (vessel.name) hull.label = vessel.name; // #230 — nom d'instance (affichage ; le rendu reste keyé par creatureId)
   syncHullWoundsFromVessel(hull, vessel);
   hull.upgrades = vessel.upgrades ? [...vessel.upgrades] : undefined;
   hull.saboteurDR = vessel.saboteurDR;
@@ -736,7 +736,7 @@ function dayEntriesFromStep(get: Get, step: CascadeStep): NightEntry[] {
     return [voyageDayEntry({
       id: `sea-${step.kind}-${get().travelPlan?.sea?.daysAtSea ?? 0}-${part.id}-${i}`,
       actorId: part.id, icon: 'travel/anchor', label: `${step.label}${part.essential ? ' ★' : ''}`,
-      d: { label: part.label ?? actor.name, base: part.base, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl },
+      d: { label: part.label ?? actor.label, base: part.base, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl },
       tone: res.success ? 'ok' : 'bad',
     })];
   });
@@ -811,7 +811,7 @@ export function startFastVoyage(
   const weeks = Math.floor(days / SEA_WEEK_DAYS); // « par semaine passée en mer » (l.28)
   set({ travelPlan: { ...plan, sea: { ...plan.sea!, fast: { days, weeks } } }, worldMapOpen: false, travelRecap: null });
   const to = get().worldMap ? placeById(get().worldMap!, toPlaceId) : undefined;
-  log(get, set, [`— ${plan.vehicle!.name} appareille vers ${to?.label ?? '?'} (traversée rapide, ~${days} jour(s), ${plan.km} milles) —`]);
+  log(get, set, [`— ${plan.vehicle!.label} appareille vers ${to?.label ?? '?'} (traversée rapide, ~${days} jour(s), ${plan.km} milles) —`]);
   const st = buildVoyageCrewStep(get, 'rude-epreuve', 'voyage-rapide');
   if (st) { startCascade(get, set, { title: 'Voyage rapide — Rude épreuve', icon: 'travel/wave', purpose: 'test', steps: [st] }); return true; }
   computeFastPalier(get, set, 0); // aucun équipage apte au Test → DR 0
@@ -1081,7 +1081,7 @@ registerCascadeApplier('sea-scorbut', (get, set, step, hero) => {
   const d = contractDisease('scorbut', battleRng());
   if (d) hero.diseases = [...(hero.diseases ?? []), d];
   touchParty(get, set);
-  return { consequences: freeCons([{ text: `${hero.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : contracté.`, tone: 'bad' }]) };
+  return { consequences: freeCons([{ text: `${hero.label} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : contracté.`, tone: 'bad' }]) };
 });
 
 /** Mal de mer (MDG 14 l.217-220, `klass:'subi'`) : échec → contracté. `applyContraction` dédoublonne si
@@ -1091,7 +1091,7 @@ registerCascadeApplier('sea-mal-de-mer', (get, set, step, hero) => {
   if (!step.result || !hero) return;
   const j = step.result.success ? [] : applyContraction(hero, 'mal-de-mer', false, battleRng());
   touchParty(get, set);
-  return { consequences: freeCons(j.length ? [{ text: `${hero.name} — mal de mer : contracté.`, tone: 'bad' }] : []) };
+  return { consequences: freeCons(j.length ? [{ text: `${hero.label} — mal de mer : contracté.`, tone: 'bad' }] : []) };
 });
 
 /** Tonneau d'eau — EXPOSITION (MDG 14 l.209, `klass:'subi'`) : boire au tonneau contaminé la veille
@@ -1102,7 +1102,7 @@ registerCascadeApplier('sea-tonneau-expose', (get, set, step, hero) => {
   const diseaseId = String(step.meta?.diseaseId ?? '');
   const j = step.result.success ? [] : applyContraction(hero, diseaseId, false, battleRng());
   touchParty(get, set);
-  return { consequences: freeCons(j.length ? [{ text: `${hero.name} — tonneau d'eau contaminé (${diseaseLabel(diseaseId)}) : contracté.`, tone: 'bad' }] : []) };
+  return { consequences: freeCons(j.length ? [{ text: `${hero.label} — tonneau d'eau contaminé (${diseaseLabel(diseaseId)}) : contracté.`, tone: 'bad' }] : []) };
 });
 
 /** Tonneau d'eau — CONTAMINATION (MDG 14 l.209, `klass:'subi'`) : un porteur boit au tonneau, échoue son
@@ -1126,7 +1126,7 @@ registerCascadeApplier('sea-epuisement', (get, set, step, hero) => {
   if (success) { set({ party: [...get().party] }); return { consequences: freeCons([]) }; }
   addCondition(hero, 'extenue');
   set({ party: [...get().party] });
-  return { consequences: freeCons([{ text: `${hero.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[exhaustionDifficulty(true)]}) : +1 Exténué.`, tone: 'bad' }]) };
+  return { consequences: freeCons([{ text: `${hero.label} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[exhaustionDifficulty(true)]}) : +1 Exténué.`, tone: 'bad' }]) };
 });
 
 /** Applique les MILLES du jour depuis le total du Test de Progression (±10 %/DR, ch.15 l.78). Renvoie
@@ -1356,7 +1356,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
       const r = exposureNight(h, expCount, testValue(h, 'resistance', 'endurance'), rng, { kind: tdef.exposure, difficulty: tdef.difficulty });
       // Résolution SYNCHRONE (N Tests/nuit par héros, hors cascade) : aucune rangée nulle part — le
       // journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
-      tell(get, set, [`${h.name} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`, ...r.log]);
+      tell(get, set, [`${h.label} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`, ...r.log]);
       expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h (purge #T3)
     }
     set({ party: [...get().party] });
@@ -1755,13 +1755,13 @@ function runRestart(get: Get, set: Set, eng: Combatant, restart: NonNullable<Ste
     if (step.extendedDR != null) {
       let total = 0;
       for (let i = 0; total < step.extendedDR && i < 20; i++) total += Math.max(0, rollTest(value, step.difficulty, rng).sl);
-      tell(get, set, [`${eng.name} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} (Test étendu ${step.extendedDR} DR) : ${total >= step.extendedDR ? 'obstacle dégagé.' : 'à la peine.'}`]);
+      tell(get, set, [`${eng.label} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} (Test étendu ${step.extendedDR} DR) : ${total >= step.extendedDR ? 'obstacle dégagé.' : 'à la peine.'}`]);
     } else {
       let t = rollTest(value, step.difficulty, rng);
       for (let i = 0; !t.success && i < 20; i++) t = rollTest(value, step.difficulty, rng);
       lastDR = Math.max(0, t.sl);
       // Aucune rangée nulle part (équipage abstrait, hors modale) — le journal PORTE le jet (#295 Lot 5, gardé nominativement).
-      tell(get, set, [`${eng.name} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} : ${t.roll}/${t.target} → moteur relancé (DR ${lastDR}).`]);
+      tell(get, set, [`${eng.label} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} : ${t.roll}/${t.target} → moteur relancé (DR ${lastDR}).`]);
     }
   }
   return lastDR;
@@ -1788,7 +1788,7 @@ export function applySteamBreakdown(get: Get, set: Set, b: SteamBreakdownEntry, 
 
     const lines = applyOps(eng, [{ op: 'wounds', amount: b.compartmentDamage, weaponHit: true }], { rng, weapon: boiler, location: 'corps' });
     set({ party: [...get().party] });
-    tell(get, set, [`${eng.name} — souffle de l'explosion (${b.compartmentDamage} Dégâts, Perforante) :`, ...lines]);
+    tell(get, set, [`${eng.label} — souffle de l'explosion (${b.compartmentDamage} Dégâts, Perforante) :`, ...lines]);
   }
 
   // Moteur détruit : l'Amélioration Propulsion à vapeur saute (à ré-installer au chantier) → le navire
@@ -1826,7 +1826,7 @@ function openSteamSave(get: Get, set: Set, failDamage: string, rng: RNG): void {
   const value = testValue(eng, undefined, 'initiative'); // Test d'INITIATIVE (Difficulté par défaut : Intermédiaire +0)
   set({
     pendingSteamSave: {
-      actorId: eng.id, actorName: eng.name, skillValue: value, difficulty: 'intermediaire',
+      actorId: eng.id, actorName: eng.label, skillValue: value, difficulty: 'intermediaire',
       target: value + DIFFICULTY_MODIFIERS.intermediaire,
       scaldOps: [{ op: 'wounds', amount: dmg, ignoreTB: false, ignoreAP: true }], // « qui ignorent l'Armure » (le BE reste déduit)
       roll: null, success: false, sl: 0,
@@ -1843,9 +1843,9 @@ export function resolveSteamSave(get: Get, set: Set, p: PendingSteamSave): void 
   if (eng && !p.success) {
     const lines = applyOps(eng, p.scaldOps, { rng: battleRng(), now: get().gameTime });
     set({ party: [...get().party] });
-    tell(get, set, [`${eng.name} — ébouillanté par le jet de vapeur !`, ...lines]);
+    tell(get, set, [`${eng.label} — ébouillanté par le jet de vapeur !`, ...lines]);
   } else if (eng) {
-    tell(get, set, [`${eng.name} — esquive le jet de vapeur.`]);
+    tell(get, set, [`${eng.label} — esquive le jet de vapeur.`]);
   }
   if (get().travelPlan?.sea) continueSeaDayFromPostProgression(get, set);
 }
@@ -1922,7 +1922,7 @@ function openGenericBoarding(get: Get, set: Set, b: SeaBoarding, noSurprise = tr
   if (!plan?.sea) return false;
   const playerHullRef = get().vessel?.vehicleId ?? plan.vehicle?.creatureId;
   if (!playerHullRef) return false;
-  const playerHullName = get().vessel?.name ?? plan.vehicle?.name ?? 'Notre navire';
+  const playerHullName = get().vessel?.name ?? plan.vehicle?.label ?? 'Notre navire';
   registerScene(buildBoardingScene(playerHullRef, playerHullName, b));
   set({ travelPlan: { ...plan, interrupted: true, sea: { ...plan.sea, boarding: undefined } } });
   get().transitionTo(BOARDING_SCENE_ID, undefined);
@@ -2065,7 +2065,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       if (!ship) break;
       const w = num('wounds', rollDice(1, 10, rng)) || rollDice(1, 10, rng);
       damageVesselHull(get, set, ship, w);
-      tell(get, set, [`${ship.name} perd ${w} Blessures (usure).`]);
+      tell(get, set, [`${ship.label} perd ${w} Blessures (usure).`]);
       break;
     }
     case 'coup-critique': {

@@ -17,8 +17,8 @@ describe('Scénario « Le Caveau piégé » : vitrine Flow + Condition', () => {
   const scene = scenario.scene;
   const herse = scene.triggers.find((t) => t.id === 'herse')!;
   const dalle = scene.triggers.find((t) => t.id === 'dalle-piegee')!;
-  const withKey = [{ items: [{ name: 'Clé en fer' }] }];
-  const at = (flags: Record<string, boolean>, party: { items: { name: string }[] }[] = []) =>
+  const withKey = [{ items: [{ label: 'Clé en fer' }] }];
+  const at = (flags: Record<string, boolean>, party: { items: { label: string }[] }[] = []) =>
     evalCondition(herse.when!, { flags, gameTime: 0, party });
 
   it('la Scene produite garde ses dimensions, base pierre et murs (périmètre + cloison, trouée en (10,5))', () => {

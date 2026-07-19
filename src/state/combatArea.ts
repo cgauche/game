@@ -123,7 +123,7 @@ function hitSecondary(
   const wl = woundsFromHit(hit.weapon, victim, hit.location, damage, 0, 0); // plancher 0 (navire/ricochet)
   const lines: string[] = [];
   if (wl > 0) loseWounds(victim, wl);
-  lines.push(tr(msgKey, { name: victim.name, wl }));
+  lines.push(tr(msgKey, { name: victim.label, wl }));
   // États « infligés par l'arme » via le MÊME dispatcher que le tir individuel (Empêtré, En flammes, Venin…),
   // déclenchés dès la touche — parité avec la cible PRIMAIRE (`applyAttackResult` fire l'onHit sur `res.hit` seul).
   // Une arme à Dégâts « Spéciaux » (Canon à flammes nain, ADE II 8 l.243) applique donc son État à 0 Blessure ;
@@ -158,7 +158,7 @@ export function resolveWeaponArea(
       // d'aire (les N plus proches autour de la case), via la condition `&& target`.
       const extra = woundsFromHit(weapon, target, hit.location, hit.damage + indice, 0, 0) - woundsFromHit(weapon, target, hit.location, hit.damage, 0, 0);
       if (extra > 0 && !isOutOfAction(target)) loseWounds(target, extra);
-      lines.push(tr('cf.blastPointBlank', { name: target.name, indice }));
+      lines.push(tr('cf.blastPointBlank', { name: target.label, indice }));
     } else {
       // Courte-Longue : cible + Indice plus proches. Extrême : idem mais −Indice aux Dégâts.
       const dmg = band === 'Extrême' ? hit.damage - indice : hit.damage;

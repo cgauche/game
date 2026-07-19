@@ -489,6 +489,12 @@ export interface TrappingData {
   /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA 10 p.122-123) : peut viser une CASE au sol.
    *  Propagé Trapping → ItemInstance → Weapon (`indirect`) ; lu par `availableAttacks`. Canon/baliste = direct. */
   indirect?: boolean;
+  /** LDB 62 l.292 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. Propagé
+   *  Trapping → ItemInstance → Weapon (`bladed`). */
+  bladed?: boolean;
+  /** LDB 47 — approximation MAISON (matière du projectile, non tabulée par le RAW), éditable. Propagé
+   *  Trapping → ItemInstance → Weapon (`organicProjectile`). */
+  organicProjectile?: boolean;
   /** Effets DÉCLENCHÉS « à la touche » portés en DONNÉE (`TriggeredEffect[]`, MÊME vocabulaire que les
    *  enchantements d'arme et les traits) : Canon à flammes nain — « 2 + DR États En flammes à chaque cible
    *  affectée » (ADE II 8 l.243). Propagé Trapping → ItemInstance → Weapon (`onHitEffects`), dispatché

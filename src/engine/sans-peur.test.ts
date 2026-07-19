@@ -13,7 +13,7 @@ import type { Combatant } from './types';
 
 const rngOf = (roll: number): RNG => ({ int: () => roll });
 const mk = (o: Partial<Combatant> = {}): Combatant => ({
-  id: 'c', name: 'c', kind: 'enemy', advantage: 0, conditions: [],
+  id: 'c', label: 'c', kind: 'enemy', advantage: 0, conditions: [],
   characteristics: { FM: 35 } as never, psychState: [], psychTraits: [], groups: [],
   weapons: [], armour: {} as never, skills: [], talents: [], movement: 4, wounds: { current: 10, max: 10 }, ...o,
 } as Combatant);

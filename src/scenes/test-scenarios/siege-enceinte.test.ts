@@ -222,14 +222,14 @@ describe('Siège — défendre la muraille (siege-enceinte)', () => {
     expect(baliste.inert).toBe(true);
     // RAW-pur (AA 10 p.122-123) : un engin de siège n'a AUCUNE Blessure → NON-destructible. Un coup ÉNORME (999)
     // inflige 0 (immune via le garde `target.inert`) — on le neutralise en tuant l'équipage, pas en le frappant.
-    const coup: Weapon = { name: 'Canon', type: 'ranged', damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'siege' }] };
+    const coup: Weapon = { label: 'Canon', type: 'ranged', damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'siege' }] };
     expect(woundsFromHit(coup, baliste, 'corps', 999)).toBe(0);
     expect(b.order).not.toContain(balisteEnt.id); // affût inerte → aucun tour
     // La pièce est SERVIE d'office par son équipage PNJ (alliée-IA) qui TIRE la pièce (pas un arc).
     const crew = b.combatants.find((c) => c.id === 'crew-baliste')!;
     expect(crew.aiControlled).toBe(true);
     expect(crew.mannedPoste?.item.trappingId).toBe('baliste');
-    expect(crew.weapons.find((w) => w.type === 'ranged')?.name).toMatch(/[Bb]aliste/); // SEULE arme à distance = la baliste
+    expect(crew.weapons.find((w) => w.type === 'ranged')?.label).toMatch(/[Bb]aliste/); // SEULE arme à distance = la baliste
   });
 
   it('ÉQUIPAGE QUALIFIÉ : chaque servant a la Projectiles du Groupe de SA pièce → compte dans l’effectif (AA 10 l.230)', () => {

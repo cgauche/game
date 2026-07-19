@@ -217,7 +217,7 @@ export function CastModal() {
               groupLabel={<><Icon id="faith/prayer" size="sm" /> Ton de la Prière</>}
               options={[
                 { key: 'aloud', label: 'À voix haute', selected: !pc.discreet, onSelect: () => setDiscreet(false), title: 'Prière entonnée fermement (Intermédiaire +0, RAW)' },
-                { key: 'discreet', label: 'Discrètement', selected: !!pc.discreet, onSelect: () => setDiscreet(true), title: 'Prière murmurée / sans conviction : Difficulté d’un cran plus dure (LDB 40 l.42)' },
+                { key: 'discreet', label: 'Discrètement', selected: !!pc.discreet, onSelect: () => setDiscreet(true), title: 'Prière murmurée / sans conviction : Difficulté d’un cran plus dure' },
               ]}
             />
           )}

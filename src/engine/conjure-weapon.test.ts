@@ -20,7 +20,7 @@ const onHitFlow = (ops: unknown[]): TriggeredEffect =>
  */
 const mage = (p: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'mage', name: 'Magister', kind: 'hero',
+    id: 'mage', label: 'Magister', kind: 'hero',
     characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 35, agilite: 40, dexterite: 45, intelligence: 40, 'force-mentale': 45, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], items: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -32,8 +32,8 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
     const c = mage(); // FM 45 → BFM 4
     applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, qualities: ['magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4 });
-    expect(c.items?.some((it) => it.conjured && it.name === 'Arme aethyrique')).toBe(true); // objet réel
-    expect(c.weapons[0].name).toBe('Arme aethyrique'); // arme directrice
+    expect(c.items?.some((it) => it.conjured && it.label === 'Arme aethyrique')).toBe(true); // objet réel
+    expect(c.weapons[0].label).toBe('Arme aethyrique'); // arme directrice
     expect(c.weapons[0].qualities.some((q) => q.id === 'magique')).toBe(true);
     expect(damageString(c.weapons[0].damage)).toBe('+4'); // BFM, pas de +BF
     expect(effectiveWeaponDamage(c.weapons[0], bonus(c.characteristics.force))).toBe(4);
@@ -53,7 +53,7 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
     applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, qualities: ['magique'], chooseForm: true }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4, conjureForm: opt });
     expect(c.weapons[0].subType?.toLowerCase()).toBe('escrime'); // Groupe = la Spé choisie (profil réel)
-    expect(c.weapons[0].name).toContain('Arme aethyrique');
+    expect(c.weapons[0].label).toContain('Arme aethyrique');
     expect(damageString(c.weapons[0].damage)).toBe('+4'); // Dégâts toujours = BFM (le gabarit ne donne que le profil)
   });
 
@@ -65,12 +65,12 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
     const conjuredSet = (c.loadouts ?? []).find((l) => l.main === conjuredUid);
     expect(conjuredSet).toBeTruthy(); // SET dédié créé…
     expect(c.activeLoadoutId).toBe(conjuredSet!.id); // …et actif
-    expect(c.weapons.some((w) => w.name === 'Arme aethyrique')).toBe(true);
+    expect(c.weapons.some((w) => w.label === 'Arme aethyrique')).toBe(true);
     endOfRound(c); // 1 Round → expire
     expect(c.items?.some((it) => it.conjured)).toBeFalsy(); // objet retiré
     expect((c.loadouts ?? []).some((l) => l.id === conjuredSet!.id)).toBe(false); // set retiré
     expect(c.activeLoadoutId).not.toBe(conjuredSet!.id); // set d'origine réactivé
-    expect(c.weapons.some((w) => w.name === 'Arme aethyrique')).toBe(false);
+    expect(c.weapons.some((w) => w.label === 'Arme aethyrique')).toBe(false);
   });
 });
 
@@ -81,14 +81,14 @@ describe('grantNaturalWeapon — armes naturelles accordées (Dent et griffe)', 
       { op: 'grantNaturalWeapon', name: 'Morsure', damage: 3, qualities: ['magique'] },
       { op: 'grantNaturalWeapon', name: 'Griffe', damage: 4, qualities: ['magique'] },
     ], { label: 'Dent et griffe', defaultDurationRounds: 1 });
-    const bite = c.weapons.find((w) => w.name === 'Morsure');
-    const claw = c.weapons.find((w) => w.name === 'Griffe');
+    const bite = c.weapons.find((w) => w.label === 'Morsure');
+    const claw = c.weapons.find((w) => w.label === 'Griffe');
     expect(damageString(bite!.damage)).toBe('+BF+3');
     expect(damageString(claw!.damage)).toBe('+BF+4');
     expect(bite?.qualities.some((q) => q.id === 'magique')).toBe(true);
-    expect(c.weapons.some((w) => w.name === 'Mains nues')).toBe(true); // ADDITIONNELLE (mains nues conservées)
+    expect(c.weapons.some((w) => w.label === 'Mains nues')).toBe(true); // ADDITIONNELLE (mains nues conservées)
     endOfRound(c); // 1 Round → expire
-    expect(c.weapons.some((w) => w.name === 'Morsure' || w.name === 'Griffe')).toBe(false);
+    expect(c.weapons.some((w) => w.label === 'Morsure' || w.label === 'Griffe')).toBe(false);
   });
 });
 
@@ -97,7 +97,7 @@ describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
     const c = mage(); // BFM 4
     applyOps(c, [{ op: 'grantWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'force-mentale' }, damagePlus: 3, subType: 'armes-d-hast', reach: 'Longue', hands: 2, qualities: ['magique'] }],
       { label: 'La Faux de Shyish', defaultDurationRounds: 4 });
-    expect(c.weapons[0].name).toBe('Faux de Shyish');
+    expect(c.weapons[0].label).toBe('Faux de Shyish');
     expect(c.weapons[0].hands).toBe(2);
     expect(c.weapons[0].subType).toBe('armes-d-hast'); // id de Groupe
     expect(damageString(c.weapons[0].damage)).toBe('+7'); // BFM 4 + 3

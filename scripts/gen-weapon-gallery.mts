@@ -24,7 +24,7 @@ const all = (trappings as Trapping[]).filter((t) => t.subType && GROUPS.includes
 
 function fig(w: Weapon, shield = false) {
   const equip = shield
-    ? { weapons: [], armour: [], shield: { name: w.name, qualities: ['Bouclier'] } as unknown as Weapon }
+    ? { weapons: [], armour: [], shield: { name: w.label, qualities: ['Bouclier'] } as unknown as Weapon }
     : { weapons: [w], armour: [] };
   const svg = renderToStaticMarkup(
     React.createElement('svg', { viewBox: '0 0 120 150', width: 92, height: 115 },
@@ -35,7 +35,7 @@ function fig(w: Weapon, shield = false) {
   );
   const fam = shield ? 'bouclier' : weaponFamily(w) || '(mains nues)';
   return `<figure style="margin:0;text-align:center"><div>${svg}</div>
-    <figcaption style="color:#cdd;font:10.5px sans-serif">${w.name}<br><span style="color:#8a93a6">[${fam}]</span></figcaption></figure>`;
+    <figcaption style="color:#cdd;font:10.5px sans-serif">${w.label}<br><span style="color:#8a93a6">[${fam}]</span></figcaption></figure>`;
 }
 
 let body = '';
@@ -46,7 +46,7 @@ for (const g of GROUPS) {
     .map((t) => {
       const isShield = /bouclier/i.test(t.label);
       const type = (RANGED.has(g) ? 'ranged' : 'melee') as 'melee' | 'ranged';
-      return fig({ name: t.label, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon, isShield);
+      return fig({ label: t.label, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon, isShield);
     })
     .join('');
   body += `<h2 style="color:#d8a93b;font:14px sans-serif;margin:18px 0 6px">${g} <span style="color:#6a7384;font-size:11px">(${ws.length})</span></h2>

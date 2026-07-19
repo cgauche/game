@@ -60,7 +60,7 @@ export function WardModal() {
       title={<><Icon id="action/defend" size="sm" /> Bénédiction de Protection</>}
       subtitle={
         <>
-          <strong>{attacker.name}</strong> ose frapper {target?.name ?? 'la cible bénie'} (Test de FM +20)
+          <strong>{attacker.label}</strong> ose frapper {target?.label ?? 'la cible bénie'} (Test de FM +20)
         </>
       }
       rows={[actorRow]}
@@ -68,7 +68,7 @@ export function WardModal() {
       outcome={r && (
         <JournalLine
           className="rm-journal"
-          event={ev('info', describeWard(pw, target?.name ?? 'la cible bénie'), attacker.id, target?.id)}
+          event={ev('info', describeWard(pw, target?.label ?? 'la cible bénie'), attacker.id, target?.id)}
           combatants={battle.combatants}
         />
       )}

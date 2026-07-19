@@ -99,9 +99,9 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       flowKey="crewTest"
       title={<><Icon id="travel/anchor" size="sm" /> {testType.label} — Test d’équipage</>}
       variant="test"
-      subtitle={<><strong>{ship.name}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''} (MDG 14)</>}
+      subtitle={<><strong>{ship.label}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''}</>}
       extra={p.extraDR
-        ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage, MDG 14).</div>
+        ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage).</div>
         : undefined}
       rows={rows}
       rolled={allRolled}

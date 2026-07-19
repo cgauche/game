@@ -143,9 +143,9 @@ export function applyHealWounds(target: Combatant, delta: number, opts: HealWoun
   const { skillCheck = true, wake = true, log: customLog } = opts;
   if (delta < 0) {
     const lost = loseWounds(target, -delta); // perte centralisée (−Avantage + À Terre à 0)
-    return [`${target.name} : le soin tourne mal — ${lost} Blessure(s) en plus.`];
+    return [`${target.label} : le soin tourne mal — ${lost} Blessure(s) en plus.`];
   }
-  if (delta === 0) return customLog ? customLog(0) : [`${target.name} : le soin n'apporte rien.`];
+  if (delta === 0) return customLog ? customLog(0) : [`${target.label} : le soin n'apporte rien.`];
   const before = target.wounds.current;
   target.wounds.current = before + cappedHealAmount(target, delta);
   if (skillCheck) {
@@ -154,11 +154,11 @@ export function applyHealWounds(target: Combatant, delta: number, opts: HealWoun
   }
   const healed = target.wounds.current - before;
   const log = customLog ? customLog(healed) : (healed > 0
-    ? [`${target.name} : +${healed} PB (${target.wounds.current}/${target.wounds.max}).`]
-    : [`${target.name} : une munition logée bloque le soin (LDB 62 l.250).`]);
+    ? [`${target.label} : +${healed} PB (${target.wounds.current}/${target.wounds.max}).`]
+    : [`${target.label} : une munition logée bloque le soin (LDB 62 l.250).`]);
   if (wake && target.wounds.current > 0 && hasCondition(target, 'inconscient')) {
     removeCondition(target, 'inconscient', condStacks(target, 'inconscient')); // reprend connaissance (LDB 18 l.15)
-    log.push(`${target.name} reprend connaissance.`);
+    log.push(`${target.label} reprend connaissance.`);
   }
   if (wake && target.wounds.current > 0) target.roundsAtZero = 0;
   return log;
@@ -167,12 +167,12 @@ export function applyHealWounds(target: Combatant, delta: number, opts: HealWoun
 /** Applique l'arrêt d'Hémorragie (mutation). `dr` = DR du Test réussi. */
 export function applyStopBleed(target: Combatant, dr: number): string[] {
   const { removed, gainExtenue } = stopBleedOutcome(dr, condStacks(target, 'hemorragique'), true);
-  if (removed <= 0) return [`${target.name} : l'hémorragie ne cède pas.`];
+  if (removed <= 0) return [`${target.label} : l'hémorragie ne cède pas.`];
   removeCondition(target, 'hemorragique', removed);
-  const log = [`${target.name} : ${removed} État(s) Hémorragique stoppé(s).`];
+  const log = [`${target.label} : ${removed} État(s) Hémorragique stoppé(s).`];
   if (gainExtenue) {
     addCondition(target, 'extenue');
-    log.push(`${target.name} est Exténué (après l'arrêt de l'hémorragie).`);
+    log.push(`${target.label} est Exténué (après l'arrêt de l'hémorragie).`);
   }
   return log;
 }
@@ -190,7 +190,7 @@ export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: numbe
     const dz = contractDisease('infection-mineure', rng);
     if (dz && !(target.diseases ?? []).some((d) => d.id === dz.id)) {
       target.diseases = [...(target.diseases ?? []), dz];
-      log.push(`${target.name} : soin catastrophique — contracte une Infection Mineure (Échec Stupéfiant).`);
+      log.push(`${target.label} : soin catastrophique — contracte une Infection Mineure (Échec Stupéfiant).`);
     }
   }
   return { log, healed };
@@ -198,7 +198,7 @@ export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: numbe
 
 /** SOURCE UNIQUE de l'arrêt d'Hémorragie (Guérison) : applique si réussi, message d'échec sinon. */
 export function resolveBleedHeal(target: Combatant, sl: number, success: boolean): string[] {
-  return success ? applyStopBleed(target, sl) : [`${target.name} : l'hémorragie ne cède pas.`];
+  return success ? applyStopBleed(target, sl) : [`${target.label} : l'hémorragie ne cède pas.`];
 }
 
 /** Retrait d'une munition Empaleuse logée (LDB 62 l.250 : « Les flèches et les carreaux nécessitent
@@ -206,8 +206,8 @@ export function resolveBleedHeal(target: Combatant, sl: number, success: boolean
  *  la plus ancienne pion) ; un échec ne retire rien. */
 export function resolveExtractLodgedAmmo(target: Combatant, success: boolean): string[] {
   const before = lodgedAmmoCount(target);
-  if (before <= 0) return [`${target.name} : aucune munition logée à retirer.`];
-  if (!success) return [`${target.name} : la munition logée résiste au retrait.`];
+  if (before <= 0) return [`${target.label} : aucune munition logée à retirer.`];
+  if (!success) return [`${target.label} : la munition logée résiste au retrait.`];
   removeCondition(target, 'munition-logee', 1);
-  return [`${target.name} : 1 munition logée retirée (${before - 1} restante(s)).`];
+  return [`${target.label} : 1 munition logée retirée (${before - 1} restante(s)).`];
 }

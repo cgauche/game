@@ -3,7 +3,7 @@ import { firedWeapon } from './combatFlow';
 import type { Combatant, Weapon } from '../engine/types';
 
 const W = (uid: string, name: string): Weapon =>
-  ({ uid, name, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: uid === 'm' ? 'main' : 'off', hands: 1 });
+  ({ uid, label: name, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: uid === 'm' ? 'main' : 'off', hands: 1 });
 const atk = (): Combatant =>
   ({ id: 'a', name: 'A', kind: 'hero', pos: { x: 0, y: 0 }, weapons: [W('m', 'Épée'), W('o', 'Dague')], size: 3 } as unknown as Combatant);
 const tgt = (): Combatant =>
@@ -11,19 +11,19 @@ const tgt = (): Combatant =>
 
 describe('firedWeapon : honore weaponUid', () => {
   it('sans weaponUid : auto-choix (1ʳᵉ mêlée au contact)', () => {
-    expect(firedWeapon(atk(), tgt()).name).toBe('Épée');
+    expect(firedWeapon(atk(), tgt()).label).toBe('Épée');
   });
   it('weaponUid valide : renvoie l’arme choisie (main secondaire)', () => {
-    expect(firedWeapon(atk(), tgt(), 'o').name).toBe('Dague');
+    expect(firedWeapon(atk(), tgt(), 'o').label).toBe('Dague');
   });
   it('weaponUid inconnu : repli auto', () => {
-    expect(firedWeapon(atk(), tgt(), 'zzz').name).toBe('Épée');
+    expect(firedWeapon(atk(), tgt(), 'zzz').label).toBe('Épée');
   });
 });
 
 describe('firedWeapon : sous-effectif d’une pièce SERVIE (poste, MDG 12) — bake selon les servants présents', () => {
   const cannon = (): Weapon =>
-    ({ uid: 'cannon', name: 'Canon', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 100,
+    ({ uid: 'cannon', label: 'Canon', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 100,
       qualities: [{ id: 'arme-d-equipe', value: 3 }], reload: 3, hand: 'main', hands: 2 }) as Weapon;
   const chef = (crewIds: string[]): Combatant =>
     ({ id: 'chef', name: 'Chef', kind: 'hero', pos: { x: 0, y: 0 }, size: 3, weapons: [cannon()],

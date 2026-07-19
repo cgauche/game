@@ -41,7 +41,7 @@ export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onC
         <div className="insp-head">
           {hull ? <PortraitTile c={c} ring="var(--gold)" variant="full" size="lg" /> : <CharFrame c={c} variant="vital" size="lg" />}
           <div className="insp-id">
-            <h3>{c.name}</h3>
+            <h3>{c.label}</h3>
             {/* PB en tête sans libellé texte : l'icône `resource/wounds` porte le sens (choix DÉLIBÉRÉ
                 du site d'appel — le badge, lui, ne rend plus que la valeur). */}
             {!hull && <span className="insp-pv-num"><Icon id="resource/wounds" size="sm" /> <WoundsBadge wounds={c.wounds} /></span>}

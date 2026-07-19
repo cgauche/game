@@ -115,7 +115,7 @@ export function testSkillLabel(test: RollRequest['test']): string | undefined {
 export function composeRollLabel(actor: Combatant | undefined, action: string, test: RollRequest['test'], difficulty: Difficulty): string {
   const skillLabel = testSkillLabel(test);
   const detail = skillLabel ? `${skillLabel} ${DIFFICULTY_LABELS[difficulty]}` : undefined;
-  return `${actor ? `${actor.name} — ` : ''}${action}${detail ? ` (${detail})` : ''}`;
+  return `${actor ? `${actor.label} — ` : ''}${action}${detail ? ` (${detail})` : ''}`;
 }
 
 /**

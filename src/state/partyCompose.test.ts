@@ -12,7 +12,7 @@ import { toBrass } from '../engine/money';
 function hero(id: string): Combatant {
   const h: Combatant = JSON.parse(JSON.stringify(makePregens()[0]));
   h.id = id;
-  h.name = `Héros ${id}`;
+  h.label = `Héros ${id}`;
   return h;
 }
 

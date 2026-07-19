@@ -7,7 +7,7 @@ import type { ItemInstance, Weapon } from '../engine/types';
 
 /** Objet minimal (catégories sans art : munition/cape/consommable/divers). */
 const mk = (p: Partial<ItemInstance>): ItemInstance =>
-  ({ uid: 'x', name: '?', kind: 'misc', qualities: [], enc: 0, equipped: false, ...p } as ItemInstance);
+  ({ uid: 'x', label: '?', kind: 'misc', qualities: [], enc: 0, equipped: false, ...p } as ItemInstance);
 
 const html = (item: ItemInstance) => renderToStaticMarkup(<ItemIcon item={item} />);
 
@@ -20,7 +20,7 @@ describe('ItemIcon', () => {
   });
 
   it('arme générique hors-catalogue (Weapon directe) : repli avec gradient → <defs> injecté', () => {
-    const w: Weapon = { name: 'Masse', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }; // synonyme → art de repli url(#g_steelD)
+    const w: Weapon = { label: 'Masse', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] }; // synonyme → art de repli url(#g_steelD)
     const h = renderToStaticMarkup(<ItemIcon item={w} />);
     expect(h).toContain('item-icon-weapon');
     expect(h).toContain('<defs');
@@ -33,20 +33,20 @@ describe('ItemIcon', () => {
   });
 
   it('munition → icône item/ammo', () => {
-    expect(html(mk({ kind: 'ammo', name: 'Flèches' }))).toContain(iconSvg('item/ammo'));
+    expect(html(mk({ kind: 'ammo', label: 'Flèches' }))).toContain(iconSvg('item/ammo'));
   });
 
   it('cape → icône item/cloak', () => {
-    expect(html(mk({ kind: 'misc', name: 'Cape', trappingId: 'cape' }))).toContain(iconSvg('item/cloak'));
+    expect(html(mk({ kind: 'misc', label: 'Cape', trappingId: 'cape' }))).toContain(iconSvg('item/cloak'));
   });
 
   it('consommable (Flow structuré) → icône item/consumable', () => {
-    const potion = mk({ kind: 'misc', name: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'endurance' } }] } } });
+    const potion = mk({ kind: 'misc', label: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'endurance' } }] } } });
     expect(html(potion)).toContain(iconSvg('item/consumable'));
   });
 
   it('objet divers → icône item/misc', () => {
-    expect(html(mk({ kind: 'misc', name: 'Corde', desc: 'Trois mètres de corde.' }))).toContain(iconSvg('item/misc'));
+    expect(html(mk({ kind: 'misc', label: 'Corde', desc: 'Trois mètres de corde.' }))).toContain(iconSvg('item/misc'));
   });
 
   it('rend en SSR sans getBBox (repli viewBox, aucune exception)', () => {

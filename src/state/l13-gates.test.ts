@@ -37,8 +37,8 @@ describe('L13 — gates & redirections', () => {
     vi.clearAllTimers();
     useGame.getState().seedRng(7);
     const b = useGame.getState().battle!;
-    const hero = b.combatants.find((c) => c.name === 'H')!;
-    const priest = b.combatants.find((c) => c.name === 'P')!;
+    const hero = b.combatants.find((c) => c.label === 'H')!;
+    const priest = b.combatants.find((c) => c.label === 'P')!;
     const foes = b.combatants.filter((c) => c.kind === 'enemy');
     hero.pos = { x: 10, y: 10 };
     priest.pos = { x: 9, y: 10 };
@@ -140,7 +140,7 @@ describe('L13 — gates & redirections', () => {
     priest.wounds = { current: 12, max: 12 } as Combatant['wounds'];
     const heroBefore = hero.wounds.current;
     const res = { hit: true, damage: 10, woundsLost: 7, location: 'corps', critical: false, log: 'touche.' } as unknown as AttackResult;
-    const weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] } as unknown as Weapon;
+    const weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] } as unknown as Weapon;
     applyAttackResult(useGame.getState, useGame.setState, E, hero, weapon, res);
     expect(hero.wounds.current).toBe(heroBefore); // la cible reste indemne (dégâts renvoyés au Martyr)
     expect(priest.wounds.current).toBe(12 - Math.max(0, 10 - 6)); // 10 bruts − 2×BE(3) = 4

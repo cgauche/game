@@ -23,7 +23,7 @@ function seq(values: number[]): RNG {
 }
 
 const sick = (over: Partial<Combatant> = {}): Combatant =>
-  ({ name: 'Malade', diseases: [], ...over }) as Combatant;
+  ({ label: 'Malade', diseases: [], ...over }) as Combatant;
 
 describe('disease — cycle de vie (LDB 20, sourcé)', () => {
   it('contractDisease(Infection Mineure) : incubation/durée figées, symptômes sourcés', () => {
@@ -249,7 +249,7 @@ import { applyOps } from './ops';
 
 const fullSick = (over: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'p', name: 'Cobaye', kind: 'hero',
+    id: 'p', label: 'Cobaye', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 35 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [], items: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, weapons: [], diseases: [],

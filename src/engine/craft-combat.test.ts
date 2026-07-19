@@ -13,7 +13,7 @@ const fighter = (cc: number, weapon: Weapon): Combatant =>
     skills: [], talents: [], movement: 4,
   }) as unknown as Combatant;
 
-const sword = (qualities: string[] = []): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: qualities.map((s) => parseQualityInstance(s)!) });
+const sword = (qualities: string[] = []): Weapon => ({ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: qualities.map((s) => parseQualityInstance(s)!) });
 
 describe('Pratique / Peu Fiable en mêlée — Test opposé (LDB 60 l.22/58)', () => {
   // atk raté (DR -1) mais def raté pire (DR -2) → l'attaquant GAGNE l'opposé malgré son échec (DR net 1).

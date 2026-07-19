@@ -31,7 +31,7 @@ export interface NarratedLine {
 
 interface ComLite {
   id: string;
-  name: string;
+  label: string;
   kind: string;
 }
 
@@ -68,14 +68,16 @@ function escapeRe(s: string): string {
 
 /** Découpe le texte en segments, colorant chaque occurrence d'un nom de combattant par son camp. */
 function colorize(text: string, combatants: ComLite[]): NarratedSegment[] {
-  const named = combatants.filter((c) => c.name && c.name.trim());
+  const named = combatants.filter((c) => c.label && c.label.trim());
   if (!named.length) return [{ text }];
 
   const teamOf = new Map<string, 'ally' | 'enemy'>();
-  for (const c of named) if (!teamOf.has(c.name)) teamOf.set(c.name, c.kind === 'hero' ? 'ally' : 'enemy');
+  // Index de TEXTE (le nom est ce qui apparaît dans la prose narrée) : construction seule, sans
+  // interrogation par libellé (#602) — parcours inversé pour que le PREMIER combattant l'emporte.
+  for (let i = named.length - 1; i >= 0; i--) teamOf.set(named[i].label, named[i].kind === 'hero' ? 'ally' : 'enemy');
 
   // Noms uniques, du plus long au plus court (évite « Rat » de mordre dans « Rat géant »).
-  const names = [...new Set(named.map((c) => c.name))].sort((a, b) => b.length - a.length);
+  const names = [...new Set(named.map((c) => c.label))].sort((a, b) => b.length - a.length);
   const re = new RegExp('(' + names.map(escapeRe).join('|') + ')', 'g');
 
   const segs: NarratedSegment[] = [];
@@ -111,7 +113,7 @@ export function narrateIntent(aim: ActorAim, combatants: ComLite[] = []): Narrat
   const to = combatants.find((c) => c.id === aim.toId);
   if (!from || !to) return null;
   const { verb, kind } = INTENT[aim.kind];
-  const text = `${from.name} ${verb} ${to.name}`;
+  const text = `${from.label} ${verb} ${to.label}`;
   return { raw: text, icon: KIND_ICON[kind], important: true, tone: toneOf(kind), segments: colorize(text, combatants) };
 }
 

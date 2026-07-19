@@ -15,7 +15,7 @@ const WEAPONS = ['Épée', 'Hache', 'Masse', 'Lance', 'Hallebarde', 'Bâton de c
 const VIEWS: { v: View; m: boolean; l: string }[] = [
   { v: 'front', m: false, l: 'face' }, { v: 'profile', m: false, l: 'profil' },
 ];
-const wpn = (name: string): Weapon => ({ name, type: name === 'Arc' || name === 'Arbalète' ? 'ranged' : 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] });
+const wpn = (name: string): Weapon => ({ label: name, type: name === 'Arc' || name === 'Arbalète' ? 'ranged' : 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] });
 
 const CW = 120, CH = 168;
 const cells: string[] = [];

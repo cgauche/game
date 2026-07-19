@@ -25,8 +25,8 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
     useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
-    const H = b.combatants.find((c) => c.name === 'H')!;
-    const P = b.combatants.find((c) => c.name === 'P')!;
+    const H = b.combatants.find((c) => c.label === 'H')!;
+    const P = b.combatants.find((c) => c.label === 'P')!;
     const E = b.combatants.filter((c) => c.kind === 'enemy')[0];
     // L'ennemi devient un lanceur de Sorts (Langue (Magick)).
     E.spells = ['flechette'];

@@ -43,7 +43,7 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 11, y: 10 }; // adjacent (Engagé pour le Battement, en Ligne de vue pour le Distraire)
     // Ennemi ARMÉ (prérequis Battement l.103) + pourvu d'Avantage à retirer/nier.
-    E.weapons = [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [], uid: 'sw' }] as Combatant['weapons'];
+    E.weapons = [{ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [], uid: 'sw' }] as Combatant['weapons'];
     E.advantage = 3;
     const turn = b.order.indexOf(H.id);
     useGame.setState({ battle: { ...b, turn, movementUsed: 0, acted: false } });

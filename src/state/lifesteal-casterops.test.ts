@@ -49,7 +49,7 @@ describe('Caresse de Laniph — lifeSteal ⌊dégâts/2⌋', () => {
 describe('zone de soin (op:heal) — Sang de la Terre', () => {
   it('rend (BFM) Blessures à qui stationne dans la zone, sans dépasser le max', () => {
     const caster = pregen(PREGEN.sorcier); // BFM connu via ses caracs
-    const victim = { ...caster, id: 'v', name: 'V', wounds: { current: 5, max: 30 } } as Combatant;
+    const victim = { ...caster, id: 'v', label: 'V', wounds: { current: 5, max: 30 } } as Combatant;
     const bfm = Math.floor(caster.characteristics['force-mentale'] / 10);
     const log = applyOps(victim, [{ op: 'heal', amount: { bonusOf: 'force-mentale' } }], { caster, label: 'Sang de la Terre' });
     expect(victim.wounds.current).toBe(5 + bfm);

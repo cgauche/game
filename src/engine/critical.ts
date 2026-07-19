@@ -108,7 +108,7 @@ export function resolvePostEncounterAmputations(c: Combatant, rng: RNG = default
     const r = resolveAmputation(t.pendingAmputation!, t.location, resistVal, rng);
     applyOps(c, r.ops, { rng });
     c.traumas = [...(c.traumas ?? []), ...r.traumas];
-    log.push(r.traumas.length > 1 ? `${c.name} : ${t.label} — amputation confirmée après la rencontre.` : `${c.name} : ${t.label} — sans séquelle après la rencontre.`);
+    log.push(r.traumas.length > 1 ? `${c.label} : ${t.label} — amputation confirmée après la rencontre.` : `${c.label} : ${t.label} — sans séquelle après la rencontre.`);
   }
   consolidateAmputations(c);
   return log;

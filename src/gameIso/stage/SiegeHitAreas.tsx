@@ -47,7 +47,7 @@ export function SiegeHitAreas({ scene, battle, dims, activeZ, visible }: { scene
                 }
               }}
             >
-              <title>{sc.name}</title>
+              <title>{sc.label}</title>
             </line>
           );
         })}

@@ -13,11 +13,11 @@ import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 
 const CHARS = (dex: number) => ({ 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: dex, intelligence: 30, 'force-mentale': 30, sociabilite: 30 });
 const ARM = () => ({ tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 });
-const SWORD = (uid: string): Weapon => ({ uid, name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'main', hands: 1 } as unknown as Weapon);
-const SWORD_ITEM = (uid: string): ItemInstance => ({ uid, name: 'Épée', kind: 'melee', qualities: [] } as unknown as ItemInstance);
+const SWORD = (uid: string): Weapon => ({ uid, label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'main', hands: 1 } as unknown as Weapon);
+const SWORD_ITEM = (uid: string): ItemInstance => ({ uid, label: 'Épée', kind: 'melee', qualities: [] } as unknown as ItemInstance);
 
 const mkHero = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'h', name: 'H', kind: 'hero', pos: { x: 0, y: 0 }, size: 'moyenne',
+  id: 'h', label: 'H', kind: 'hero', pos: { x: 0, y: 0 }, size: 'moyenne',
   characteristics: CHARS(40), skills: [], talents: [], advantage: 0, conditions: [],
   wounds: { base: 12, max: 12, current: 12 },
   weapons: [SWORD('m')], items: [SWORD_ITEM('m')],
@@ -26,7 +26,7 @@ const mkHero = (over: Partial<Combatant> = {}): Combatant => ({
 } as unknown as Combatant);
 
 const mkFoe = (id: string, over: Partial<Combatant> = {}): Combatant => ({
-  id, name: id, kind: 'enemy', pos: { x: 1, y: 0 }, size: 'moyenne',
+  id, label: id, kind: 'enemy', pos: { x: 1, y: 0 }, size: 'moyenne',
   characteristics: CHARS(40), skills: [], talents: [], advantage: 0, conditions: [],
   wounds: { base: 10, max: 10, current: 10 },
   weapons: [SWORD('e')], items: [SWORD_ITEM('e')],
@@ -150,8 +150,8 @@ describe('doAttack — l\'IA gatée joue le MÊME Test inline (résolution forc�
 });
 
 describe('runPreemptShots — le Tir rapide de l\'IA joue le MÊME Test de Main ensanglantée (AA 07 l.117)', () => {
-  const BOW = (uid: string): Weapon => ({ uid, name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] } as unknown as Weapon);
-  const BOW_ITEM = (uid: string): ItemInstance => ({ uid, name: 'Arc', kind: 'ranged', qualities: [] } as unknown as ItemInstance);
+  const BOW = (uid: string): Weapon => ({ uid, label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] } as unknown as Weapon);
+  const BOW_ITEM = (uid: string): ItemInstance => ({ uid, label: 'Arc', kind: 'ranged', qualities: [] } as unknown as ItemInstance);
   const shooter = (over: Partial<Combatant> = {}): Combatant => mkFoe('f', {
     pos: { x: 2, y: 0 }, loaded: true, talents: [{ talentId: 'tir-rapide', times: 1 }] as never,
     weapons: [BOW('bow')], items: [BOW_ITEM('bow')], loadouts: [{ id: 'lob', main: 'bow' }] as never, activeLoadoutId: 'lob',

@@ -62,7 +62,7 @@ const PURSUIT_MOVE_KIND = 'pursuitMove';
  *  compare tous les DR à la clôture, `continuePursuitRound`) ; ne pousse qu'une ligne de journal lisible. */
 registerCascadeApplier(PURSUIT_MOVE_KIND, (_get, _set, step, hero) => {
   const dr = step.result?.sl ?? 0;
-  return { consequences: freeCons([`${hero?.name ?? step.actorId} — ${step.rollLabel ?? 'Mouvement'} : ${dr >= 0 ? '+' : ''}${dr} DR.`]) };
+  return { consequences: freeCons([`${hero?.label ?? step.actorId} — ${step.rollLabel ?? 'Mouvement'} : ${dr >= 0 ? '+' : ''}${dr} DR.`]) };
 });
 
 /** Héros du groupe ENCORE en course (vivants et dans la rencontre). */
@@ -95,7 +95,7 @@ export function openPursuitRound(get: Get, set: Set, skillLabel?: string): void 
       kind: PURSUIT_MOVE_KIND,
       actorId: h.id,
       icon: 'travel/foot',
-      label: `${h.name} — ${label}`,
+      label: `${h.label} — ${label}`,
       rollLabel: label,
       base: target,
       target,

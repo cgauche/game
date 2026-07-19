@@ -71,7 +71,7 @@ describe('Interlude — flux start/end', () => {
     const before = useGame.getState().party.map((h) => h.wounds.current);
     useGame.getState().interludeEnd(); // 21 jours — sans le couvert, la Faim RAW tuerait le groupe
     const party = useGame.getState().party;
-    party.forEach((h, i) => expect(h.wounds.current, h.name).toBeGreaterThanOrEqual(before[i]));
+    party.forEach((h, i) => expect(h.wounds.current, h.label).toBeGreaterThanOrEqual(before[i]));
     expect(useGame.getState().journal.join('\n')).not.toMatch(/dépérit|Faim :/);
   });
 

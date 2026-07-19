@@ -20,14 +20,14 @@ describe('#230 — voyageShip (coque de trajet maritime) porte le nom d’instan
   it('la coque de trajet reprend le nom d’instance quand il est posé', () => {
     useGame.setState({ vessel: vessel({ name: 'Le Cormoran' }) });
     const plan = buildSeaPlan(useGame.getState, 'r', 'a', 'b', { km: 100, seaHeading: 'est' });
-    expect(plan?.vehicle?.name).toBe('Le Cormoran');
+    expect(plan?.vehicle?.label).toBe('Le Cormoran');
     expect(plan?.vehicle?.creatureId).toBe('cogue'); // le rendu reste keyé par creatureId
   });
 
   it('sans nom d’instance : la coque garde le label du TYPE', () => {
     useGame.setState({ vessel: vessel() });
     const plan = buildSeaPlan(useGame.getState, 'r', 'a', 'b', { km: 100, seaHeading: 'est' });
-    expect(plan?.vehicle?.name).toBe(findVehicleById('cogue')!.label);
+    expect(plan?.vehicle?.label).toBe(findVehicleById('cogue')!.label);
   });
 });
 
@@ -60,8 +60,8 @@ describe('#230 — réconciliation combat : le nom d’instance ne touche QUE la
     const mine = combatants.find((c) => c.id === 'coque-campagne')!;
     const foe = combatants.find((c) => c.id === 'coque-ennemie')!;
     expect(mine.creatureId).toBe('cogue');
-    expect(mine.name).toBe('Le Cormoran'); // coque de campagne renommée
+    expect(mine.label).toBe('Le Cormoran'); // coque de campagne renommée
     expect(foe.creatureId).toBe('langskip');
-    expect(foe.name).toBe(findVehicleById('langskip')!.label); // autre vehicleId → inchangé
+    expect(foe.label).toBe(findVehicleById('langskip')!.label); // autre vehicleId → inchangé
   });
 });

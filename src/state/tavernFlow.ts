@@ -105,7 +105,7 @@ export function playTavernGame(
   if (opp.kind === 'hero' && !opponentHero) return;
 
   const opponentValue = opp.kind === 'hero' ? tavernGameValue(opponentHero!, game) : Math.max(1, opp.value);
-  const opponentName = opp.kind === 'hero' ? opponentHero!.name : 'un adversaire de la salle';
+  const opponentName = opp.kind === 'hero' ? opponentHero!.label : 'un adversaire de la salle';
   const opponentId = opp.kind === 'hero' ? opponentHero!.id : undefined;
 
   // Mise (Al-zahr, l.7) : seulement contre la maison (compagnon = transfert interne, bourse inchangée).
@@ -156,14 +156,14 @@ function finalizeTavernGame(
   const result: TavernGamesResult = {
     winner, playerSL, opponentSL, rounds, log,
     gameLabel: game.label,
-    challengerName: challenger.name,
+    challengerName: challenger.label,
     opponentName,
     stakeBrass,
     netBrass,
   };
   set({ tavernGames: { result } });
   const stakeTxt = netBrass > 0 ? ` — gain ${formatMoney(fromBrass(netBrass))}` : netBrass < 0 ? ` — perte ${formatMoney(fromBrass(-netBrass))}` : '';
-  return { consequences: freeCons([`${game.label} — ${challenger.name} contre ${opponentName} : ${log}${stakeTxt}`]) };
+  return { consequences: freeCons([`${game.label} — ${challenger.label} contre ${opponentName} : ${log}${stakeTxt}`]) };
 }
 
 /** Kind de l'étape-jet du challenger — exporté pour que la modale sache masquer le formulaire de

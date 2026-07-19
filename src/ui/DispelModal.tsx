@@ -67,7 +67,7 @@ export function DispelModal() {
       title={<><Icon id="action/dispel" size="sm" /> Dissipation</>}
       subtitle={
         <>
-          <strong>{caster.name}</strong> dissipe <strong>{pd.label}</strong> ({prev}/{pd.ni} DR)
+          <strong>{caster.label}</strong> dissipe <strong>{pd.label}</strong> ({prev}/{pd.ni} DR)
         </>
       }
       rows={[actorRow]}
@@ -75,7 +75,7 @@ export function DispelModal() {
       outcome={r && (
         <JournalLine
           className="rm-journal"
-          event={ev('cast', resultLine(freeCons([`${caster.name} — Dissipation de ${pd.label} : DR ${r.sl >= 0 ? '+' : ''}${r.sl} (cumul ${cum}/${pd.ni})${cum >= pd.ni ? ' → dissipé !' : ''}.`])), caster.id)}
+          event={ev('cast', resultLine(freeCons([`${caster.label} — Dissipation de ${pd.label} : DR ${r.sl >= 0 ? '+' : ''}${r.sl} (cumul ${cum}/${pd.ni})${cum >= pd.ni ? ' → dissipé !' : ''}.`])), caster.id)}
           combatants={battle?.combatants ?? party}
         />
       )}

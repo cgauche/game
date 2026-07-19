@@ -4,11 +4,11 @@ import { pickView } from './types';
 import type { Combatant, Weapon, ItemInstance } from '../../../engine/types';
 
 const wep = (name: string, type: 'melee' | 'ranged', q: { id: string; value?: number }[] = []): Weapon =>
-  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: q } as Weapon);
+  ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: q } as Weapon);
 const wpv = (name: string, type: 'melee' | 'ranged' = 'melee') => pickView(weaponPart(wep(name, type)), 'front');
 /** Arme routée PAR SHAPE (id stable) — plus aucun routage par libellé au runtime. */
 const wepShape = (shape: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
+  ({ label: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
 const famShape = (shape: string, type: 'melee' | 'ranged' = 'melee') => weaponFamily(wepShape(shape, type));
 
 describe('weaponPart', () => {
@@ -40,15 +40,15 @@ describe('weaponFamily — 1 forme par arme, routée par shape (anti-collapse)',
 
 describe('isShield', () => {
   it('reconnaît un bouclier par qualité ou nom, pas une épée', () => {
-    expect(isShield({ name: 'Targe', qualities: [{ id: 'protectrice', value: 1 }] })).toBe(true);
-    expect(isShield({ name: 'Bouclier', qualities: [] })).toBe(true);
-    expect(isShield({ name: 'Épée', qualities: [] })).toBe(false);
+    expect(isShield({ label: 'Targe', qualities: [{ id: 'protectrice', value: 1 }] })).toBe(true);
+    expect(isShield({ label: 'Bouclier', qualities: [] })).toBe(true);
+    expect(isShield({ label: 'Épée', qualities: [] })).toBe(false);
   });
 });
 
 describe('armourMaterial — corrections audit', () => {
   const mat = (name: string, pa: number) =>
-    armourMaterial({ uid: 'x', name, kind: 'armor', qualities: [], pa, locs: ['corps'], enc: 1, equipped: true } as ItemInstance);
+    armourMaterial({ uid: 'x', label: name, kind: 'armor', qualities: [], pa, locs: ['corps'], enc: 1, equipped: true } as ItemInstance);
   it('« Plastron de cuir » = cuir (cuir prime sur plaque)', () => {
     expect(mat('Plastron de cuir', 2)).toBe('cuir');
   });
@@ -65,7 +65,7 @@ describe('armourMaterial — corrections audit', () => {
 });
 
 describe('armourPart', () => {
-  const mail: ItemInstance = { uid: '1', name: 'Cotte de mailles', kind: 'armor', qualities: [], pa: 2, locs: ['corps'], enc: 1, equipped: true };
+  const mail: ItemInstance = { uid: '1', label: 'Cotte de mailles', kind: 'armor', qualities: [], pa: 2, locs: ['corps'], enc: 1, equipped: true };
   it('mappe une pièce de corps sur le slot torse', () => {
     expect(pickView(armourPart(mail, 'torse'), 'front')).toContain('<');
   });
@@ -85,19 +85,19 @@ describe('equipFromCombatant', () => {
     const c = {
       weapons: [wep('Épée', 'melee'), wep('Bouclier', 'melee')],
       items: [
-        { uid: 'a', name: 'Plastron', kind: 'armor', qualities: [], pa: 1, locs: ['corps'], enc: 1, equipped: true } as ItemInstance,
-        { uid: 'b', name: 'Heaume', kind: 'armor', qualities: [], pa: 1, locs: ['tete'], enc: 0, equipped: false } as ItemInstance,
+        { uid: 'a', label: 'Plastron', kind: 'armor', qualities: [], pa: 1, locs: ['corps'], enc: 1, equipped: true } as ItemInstance,
+        { uid: 'b', label: 'Heaume', kind: 'armor', qualities: [], pa: 1, locs: ['tete'], enc: 0, equipped: false } as ItemInstance,
       ],
     } as unknown as Combatant;
     const e = equipFromCombatant(c);
-    expect(e.armour.map((i) => i.name)).toEqual(['Plastron']); // 'Heaume' non équipé exclu
+    expect(e.armour.map((i) => i.label)).toEqual(['Plastron']); // 'Heaume' non équipé exclu
     expect(e.shield).toBeTruthy();
     expect(e.weapons.length).toBe(2);
   });
 
   it('superposition : la couche du DESSUS s’affiche (plaque > maille > cuir), par slot', () => {
     const piece = (uid: string, name: string, locs: string[]): ItemInstance =>
-      ({ uid, name, kind: 'armor', qualities: [], pa: 1, locs, enc: 1, equipped: true } as ItemInstance);
+      ({ uid, label: name, kind: 'armor', qualities: [], pa: 1, locs, enc: 1, equipped: true } as ItemInstance);
     const c = {
       weapons: [],
       items: [
@@ -107,16 +107,16 @@ describe('equipFromCombatant', () => {
       ],
     } as unknown as Combatant;
     const e = equipFromCombatant(c);
-    expect(e.armour.map((i) => i.name)).toEqual(['Plastron', 'Chemise de mailles', 'Veste de cuir']);
+    expect(e.armour.map((i) => i.label)).toEqual(['Plastron', 'Chemise de mailles', 'Veste de cuir']);
     // resolve.ts prend la 1re pièce couvrant le slot → torse = plate, bras = cuir (seule à couvrir).
     expect(pickView(armourPart(e.armour.find((i) => (i.locs ?? []).includes('corps'))!, 'torse'), 'front'))
       .toBe(pickView(armourPart(e.armour[0], 'torse'), 'front'));
   });
 
   it('cape/manteau porté → EquipCtx.cape (cosmétique) ; non porté → absent', () => {
-    const cape = { uid: 'c', name: 'Cape', trappingId: 'cape', kind: 'misc', qualities: [], enc: 0, equipped: true } as ItemInstance;
+    const cape = { uid: 'c', label: 'Cape', trappingId: 'cape', kind: 'misc', qualities: [], enc: 0, equipped: true } as ItemInstance;
     const c = { weapons: [], items: [cape] } as unknown as Combatant;
-    expect(equipFromCombatant(c).cape?.name).toBe('Cape');
+    expect(equipFromCombatant(c).cape?.label).toBe('Cape');
     cape.equipped = false;
     expect(equipFromCombatant(c).cape).toBeUndefined();
   });

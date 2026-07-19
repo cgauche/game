@@ -51,24 +51,24 @@ export function PosteDetail({ hull, poste, combatants, readOnly }: { hull: Comba
   const loaded = stock.find((a) => a.uid === (poste.ammoUid ?? stock[0]?.uid));
   return (
     <div className="ship-poste selected">
-      <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? SIDE_LABEL[poste.side] ?? poste.side : 'Omni'} · {poste.item.name}</span>
+      <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? SIDE_LABEL[poste.side] ?? poste.side : 'Omni'} · {poste.item.label}</span>
       {stock.length > 0 && (readOnly ? (
         // Inspection (#240) : munition chargée VISIBLE mais non modifiable (pas de sélecteur sur la pièce d'autrui).
-        <span className="ship-poste-ammo"><span aria-hidden><Icon id="fire/blast" size="sm" /></span> {loaded?.name ?? stock[0].name}</span>
+        <span className="ship-poste-ammo"><span aria-hidden><Icon id="fire/blast" size="sm" /></span> {loaded?.label ?? stock[0].label}</span>
       ) : (
         <label className="ship-poste-ammo">
           <span aria-hidden><Icon id="fire/blast" size="sm" /></span>
           <select
             value={poste.ammoUid ?? stock[0].uid}
             onChange={(e) => setPosteAmmo(hull.id, poste.item.uid, e.target.value)}
-            title="Munition chargée par la pièce (MDG 12) — stock du poste"
+            title="Munition chargée par la pièce — stock du poste"
           >
-            {stock.map((a) => <option key={a.uid} value={a.uid}>{a.name} × {a.qty ?? 0}</option>)}
+            {stock.map((a) => <option key={a.uid} value={a.uid}>{a.label} × {a.qty ?? 0}</option>)}
           </select>
         </label>
       ))}
       <div className="ship-crew-row">
-        {gun.length ? gun.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={c.name} />) : <span className="muted">— sans servant —</span>}
+        {gun.length ? gun.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={c.label} />) : <span className="muted">— sans servant —</span>}
       </div>
     </div>
   );
@@ -152,7 +152,7 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
         return (
           <div className="ship-role" key={roleId}>
             <div className="ship-role-head">
-              <span className="ship-role-name">{role.label}{essential && <span className="ess" title="Rôle essentiel — son DR compte double (MDG 14)"> ★</span>}</span>
+              <span className="ship-role-name">{role.label}{essential && <span className="ess" title="Rôle essentiel — son DR compte double"> ★</span>}</span>
               <button className="btn small" onClick={() => setEditing(open ? null : roleId)}>{open ? 'Fermer' : '+ assigner'}</button>
             </div>
             <AssignRow
@@ -164,7 +164,7 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
               verb={`tient le rôle de ${role.label}`}
               canPick={open}
               captionOf={(c) => crewRoleValue(c, role).value}
-              titleOf={(c) => `Mettre ${c.name} à ${role.label}`}
+              titleOf={(c) => `Mettre ${c.label} à ${role.label}`}
             />
           </div>
         );
@@ -173,7 +173,7 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
         <div className="ship-role ship-pool">
           <div className="ship-role-head"><span className="ship-role-name">Équipage disponible</span></div>
           <div className="ship-crew-row">
-            {pool.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={`${c.name} — l'assigner à un poste ci-dessus`} />)}
+            {pool.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={`${c.label} — l'assigner à un poste ci-dessus`} />)}
           </div>
         </div>
       )}
@@ -234,7 +234,7 @@ export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatant
           <aside className="sheet-aside">
             <div className="sheet-portrait">
               <PortraitTile c={hull} ring="var(--gold)" variant="full" size="xl" />
-              <h3>{hull.name}</h3>
+              <h3>{hull.label}</h3>
               <span className="char-sub">{vehicle ? 'Navire' : 'Emplacement de siège'}{cap ? ` · cap ${DIR_LABEL[cap]}` : ''}</span>
             </div>
             <ShipStateBlock ship={hull} cap={cap} morale={shipMoraleScore(useGame.getState, hull)} crew={crew} />

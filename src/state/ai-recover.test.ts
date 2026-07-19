@@ -3,11 +3,11 @@ import { chooseEnemyAction, EnemyTurnInput } from './ai';
 import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 
-const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
-    id, name: id, kind, pos,
+    id, label: id, kind, pos,
     wounds: { current: 10, max: 10 }, weapons: [MELEE], characteristics: {} as never,
     advantage: 0, conditions: [], armour: {} as never, skills: [], talents: [], movement: 4,
     ...opts,

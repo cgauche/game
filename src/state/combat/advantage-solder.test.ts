@@ -18,8 +18,8 @@ const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 35, force: 40, endu
 
 const mk = (id: string, kind: Combatant['kind'], over: Partial<Combatant> = {}): Combatant =>
   ({
-    id, name: id, kind, advantage: 0, conditions: [], talents: [], activeEffects: [], skills: [],
-    characteristics: { ...CHARS }, weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }],
+    id, label: id, kind, advantage: 0, conditions: [], talents: [], activeEffects: [], skills: [],
+    characteristics: { ...CHARS }, weapons: [{ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }],
     wounds: { current: 10, max: 10, base: 10 }, size: 'moyenne', engagedWith: [],
     ...over,
   }) as unknown as Combatant;
@@ -159,7 +159,7 @@ describe('Empoignade opposée (LDB 14 l.161) — le +1 du vainqueur crédite la 
       const foe = mk('e', 'enemy', { characteristics: { ...CHARS, F: 90 } as never, grapplingWith: ['h'] });
       const { get, battle } = makeGet([actor, foe], { allies: 0, foes: 0 });
       const line = resolveGrappleOpposed(get, actor, foe);
-      if (line.includes(foe.name) && battle.advantagePools!.foes === 1) {
+      if (line.includes(foe.label) && battle.advantagePools!.foes === 1) {
         sawDefeat = true;
         expect(battle.advantagePools).toEqual({ allies: 0, foes: 1 }); // crédit de RÉSERVE
         expect(foe.advantage).toBe(1); // projeté depuis la réserve (mirror), pas un +1 direct

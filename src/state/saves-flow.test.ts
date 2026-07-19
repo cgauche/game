@@ -61,7 +61,7 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     const after = useGame.getState();
     expect(after.flags['quete-x']).toBe(true);
     expect(after.gameTime).toBe(12345);
-    expect(after.party[0]?.name).toBe('Sauvé');
+    expect(after.party[0]?.label).toBe('Sauvé');
     expect(after.party[0]?.wounds.current).toBe(3);
     expect(after.scene?.id).toBe(testScene.id);
     expect(after.screen).toBe('campaign');

@@ -35,7 +35,7 @@ export function ReloadModalView({
 }) {
   const rolled = pr.roll != null;
   const after = Math.max(0, pr.progressBefore + pr.sl);
-  const weaponName = actor?.weapons.find((w) => w.uid === pr.weaponUid)?.name ?? 'arme'; // uid → NOM (affichage)
+  const weaponName = actor?.weapons.find((w) => w.uid === pr.weaponUid)?.label ?? 'arme'; // uid → NOM (affichage)
   // Soutien des servants (Arme d'équipe, MDG 12 l.462) : ligne de mod comme tout bonus, base SANS le Soutien.
   const supMod = soutienMod(pr.soutien);
   const base = pr.skillValue - (supMod?.value ?? 0);

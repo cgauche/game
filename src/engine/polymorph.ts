@@ -42,7 +42,7 @@ export function polymorphOps(target: Combatant, ref: string): GameOp[] {
       ops.push({ op: 'grantTrait', traitId: t.id, ...(t.arg ? { arg: t.arg } : {}), ...(t.value != null ? { indice: t.value } : {}) });
   ops.push({
     op: 'narrative',
-    text: `${target.name} prend la forme d'un(e) ${cr.label} (F/E/Ag/Dex et Traits de la créature, PB recalculés) ; elle ne peut ni parler ni incanter, et conserve les PB perdus en reprenant sa vraie forme — arbitrage MJ.`,
+    text: `${target.label} prend la forme d'un(e) ${cr.label} (F/E/Ag/Dex et Traits de la créature, PB recalculés) ; elle ne peut ni parler ni incanter, et conserve les PB perdus en reprenant sa vraie forme — arbitrage MJ.`,
   });
   return ops;
 }

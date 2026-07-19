@@ -275,15 +275,15 @@ export function symptomOnTick(inst: DiseaseSymptom): { difficulty?: Difficulty; 
 function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: string) => boolean, log: string[]): void {
   for (const op of onFail) {
     if (op.op === 'contractDisease') contractOnce(op.disease);
-    else if (op.op === 'kill') log.push(fateSaveOrDie(c) ? t('op.kill.fateSaved', { name: c.name }) : t('op.kill', { name: c.name }));
+    else if (op.op === 'kill') log.push(fateSaveOrDie(c) ? t('op.kill.fateSaved', { name: c.label }) : t('op.kill', { name: c.label }));
     else if (op.op === 'wounds') {
       const n = typeof op.amount === 'number' ? op.amount : 0; // burst = 1 Blessure directe (littéral) ; formules → voie différée
-      if (n > 0) { c.wounds.current = Math.max(0, c.wounds.current - n); log.push(t('op.wounds', { name: c.name, n, mitig: '' })); }
+      if (n > 0) { c.wounds.current = Math.max(0, c.wounds.current - n); log.push(t('op.wounds', { name: c.label, n, mitig: '' })); }
     } else if (op.op === 'condition') {
       const ex = c.conditions.find((x) => x.id === op.name);
       if (ex) ex.value = (ex.value ?? 1) + 1;
       else c.conditions.push({ id: op.name, value: typeof op.value === 'number' ? op.value : 1 });
-      log.push(t('op.cond', { name: c.name, v: ex ? (ex.value ?? 1) : 1, cond: conditionLabel(op.name) }));
+      log.push(t('op.cond', { name: c.label, v: ex ? (ex.value ?? 1) : 1, cond: conditionLabel(op.name) }));
     }
   }
 }
@@ -322,7 +322,7 @@ export function applyContraction(c: Combatant, diseaseName: string, success: boo
   const dz = contractDisease(diseaseName, rng, opts?.instant ? { incubation: 0 } : undefined);
   if (!dz) return [];
   c.diseases = [...(c.diseases ?? []), dz];
-  return [`${c.name} contracte : ${diseaseLabel(diseaseName)}.`];
+  return [`${c.label} contracte : ${diseaseLabel(diseaseName)}.`];
 }
 
 /**
@@ -366,7 +366,7 @@ export function contractDiseaseOnce(c: Combatant, name: string, rng: RNG = defau
   const dz = contractDisease(name, rng, { incubation: 0 });
   if (!dz) return [];
   c.diseases = [...(c.diseases ?? []), dz];
-  return [`${c.name} développe : ${diseaseLabel(name)}.`];
+  return [`${c.label} développe : ${diseaseLabel(name)}.`];
 }
 
 /** Conséquence d'un Test de Gangrène DIFFÉRÉ (l.135+) : échec → +1 échec ; au-delà du BE → Localisation perdue. */
@@ -377,9 +377,9 @@ export function applyDiseaseGangrene(c: Combatant, diseaseName: string, success:
   dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
   if (dz.gangreneFails > be) {
     dz.gangreneLost = true;
-    return [`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`];
+    return [`${c.label} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`];
   }
-  return [`${c.name} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`];
+  return [`${c.label} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`];
 }
 
 /** Conséquence du Test « persistant » de fin de durée DIFFÉRÉ (l.162) : réussite → guérison ;
@@ -391,11 +391,11 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
   dz.endTestPending = undefined;
   const log: string[] = [];
   const remove = () => { c.diseases = (c.diseases ?? []).filter((d) => d !== dz); };
-  const cure = () => { remove(); log.push(`${c.name} guérit de : ${diseaseLabel(dz.id)}.`); if (DISEASE_DEFS[dz.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.id]; };
+  const cure = () => { remove(); log.push(`${c.label} guérit de : ${diseaseLabel(dz.id)}.`); if (DISEASE_DEFS[dz.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.id]; };
   if (success) cure();
-  else if (sl <= -6) { remove(); log.push(`${c.name} : ${diseaseLabel(dz.id)} dégénère (échec stupéfiant).`); log.push(...contractDiseaseOnce(c, 'infection-du-sang', rng)); }
-  else if (sl <= -2) { remove(); log.push(`${c.name} : ${diseaseLabel(dz.id)} s'infecte (échec).`); log.push(...contractDiseaseOnce(c, 'blessure-purulente', rng)); }
-  else { const extra = roll(1, 10, rng); dz.minutesLeft = extra * MINUTES_PER_DAY; log.push(`${c.name} : ${diseaseLabel(dz.id)} persiste (+${extra} jours).`); }
+  else if (sl <= -6) { remove(); log.push(`${c.label} : ${diseaseLabel(dz.id)} dégénère (échec stupéfiant).`); log.push(...contractDiseaseOnce(c, 'infection-du-sang', rng)); }
+  else if (sl <= -2) { remove(); log.push(`${c.label} : ${diseaseLabel(dz.id)} s'infecte (échec).`); log.push(...contractDiseaseOnce(c, 'blessure-purulente', rng)); }
+  else { const extra = roll(1, 10, rng); dz.minutesLeft = extra * MINUTES_PER_DAY; log.push(`${c.label} : ${diseaseLabel(dz.id)} persiste (+${extra} jours).`); }
   return log;
 }
 
@@ -436,7 +436,7 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
     const dz = contractDisease(name, rng, { incubation: 0 }); // « instantanée » depuis un autre symptôme (l.32)
     if (dz) {
       contracted.push(dz);
-      log.push(`${c.name} développe : ${diseaseLabel(name)}.`);
+      log.push(`${c.label} développe : ${diseaseLabel(name)}.`);
     }
     return true;
   };
@@ -464,7 +464,7 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
           // Localisation de la lésion (cloque du Vers du Reik) tirée à l'entrée en phase active si un
           // symptôme la gate (`visiblePassive`) — jet de Localisation canonique, MSRC 16 l.140.
           if (dz.symptoms.some((s) => findSymptomById(s.symptomId)?.visiblePassive?.length)) dz.blisterLocation = rollBlisterLocation(rng);
-          log.push(`${c.name} : les symptômes de « ${diseaseLabel(dz.id)} » se déclarent.`);
+          log.push(`${c.label} : les symptômes de « ${diseaseLabel(dz.id)} » se déclarent.`);
         }
         survivors.push(dz);
         continue;
@@ -503,8 +503,8 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
             dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
             if (dz.gangreneFails > beForGangrene) {
               dz.gangreneLost = true;
-              log.push(`${c.name} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`);
-            } else log.push(`${c.name} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`);
+              log.push(`${c.label} : la Gangrène a gagné — la Localisation atteinte est inutilisable (Amputation requise).`);
+            } else log.push(`${c.label} : la Gangrène progresse (${dz.gangreneFails} échec(s)).`);
           }
         }
       }
@@ -530,23 +530,23 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
         } else {
           const res = rollTest(rv, dz.persistDifficulty, rng); // l.162
           if (res.success) {
-            log.push(`${c.name} guérit de : ${diseaseLabel(dz.id)}.`);
+            log.push(`${c.label} guérit de : ${diseaseLabel(dz.id)}.`);
             if (DISEASE_DEFS[dz.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.id]; // Vérole Urticante (l.97)
           } else if (res.sl <= -6) {
-            log.push(`${c.name} : ${diseaseLabel(dz.id)} dégénère (échec stupéfiant).`);
+            log.push(`${c.label} : ${diseaseLabel(dz.id)} dégénère (échec stupéfiant).`);
             contractOnce('infection-du-sang');
           } else if (res.sl <= -2) {
-            log.push(`${c.name} : ${diseaseLabel(dz.id)} s'infecte (échec).`);
+            log.push(`${c.label} : ${diseaseLabel(dz.id)} s'infecte (échec).`);
             contractOnce('blessure-purulente');
           } else {
             const extra = roll(1, 10, rng); // échec minime → +1d10 jours (l.163)
             dz.minutesLeft = extra * MINUTES_PER_DAY;
-            log.push(`${c.name} : ${diseaseLabel(dz.id)} persiste (+${extra} jours).`);
+            log.push(`${c.label} : ${diseaseLabel(dz.id)} persiste (+${extra} jours).`);
             survivors.push(dz);
           }
         }
       } else {
-        log.push(`${c.name} guérit de : ${diseaseLabel(dz.id)}.`);
+        log.push(`${c.label} guérit de : ${diseaseLabel(dz.id)}.`);
         snapshotInfectionResidual(c, dz); // Vers du Reik : la pénalité de Résistance survit et décroît −1/jour (l.138)
         if (DISEASE_DEFS[dz.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), dz.id]; // Vérole Urticante (l.97)
       }

@@ -28,7 +28,7 @@ describe('Trait Charnier — death-spawn de Zombies (op summon onSlain résolue 
     const z = h.state().battle.combatants.filter((x: Combatant) => x.summon);
     expect(z.length).toBeGreaterThanOrEqual(3); // 3d10 → au moins 3
     expect(z.every((s: Combatant) => s.kind === 'enemy')).toBe(true); // camp du défunt (enemy) → attaquent le groupe
-    expect(z.every((s: Combatant) => /zombie/i.test(s.name))).toBe(true);
+    expect(z.every((s: Combatant) => /zombie/i.test(s.label))).toBe(true);
   });
 
   it('sans le trait Charnier → aucun spawn à la mort', () => {

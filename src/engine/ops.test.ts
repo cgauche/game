@@ -12,7 +12,7 @@ import type { Weapon } from './types';
 
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {
-    id: 'h', name: 'Cobaye', kind: 'hero',
+    id: 'h', label: 'Cobaye', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 45, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 38, sociabilite: 30 },
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -44,7 +44,7 @@ describe('resolveFormula', () => {
 
 describe("op:'wounds' mode COUP D'ARME (S1) — délègue à woundsFromHit (qualités/armure/localisation)", () => {
   const sword = (qualities: { id: string; value?: number }[] = []): Weapon =>
-    ({ name: 'Épée', type: 'melee', damage: { flat: 4, plusBF: true }, qualities, reach: 'Moyenne' }) as unknown as Weapon;
+    ({ label: 'Épée', type: 'melee', damage: { flat: 4, plusBF: true }, qualities, reach: 'Moyenne' }) as unknown as Weapon;
 
   it("weaponHit:true + ctx.weapon → Blessures == woundsFromHit (mêmes BE + PA à la localisation)", () => {
     const c = hero({ wounds: { current: 30, max: 30 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 } });
@@ -150,14 +150,14 @@ describe('applyOps — opérations unitaires', () => {
     const c = hero({ items: [] });
     // Générosité de Manann : 1 Ration + 1 par +2 DR → à DR 4, 1 + floor(4/2) = 3 Rations.
     applyOps(c, [{ op: 'giveTrapping', custom: 'Ration (1 jour)', perSL: { every: 2, amount: 1 } }], { sl: 4 });
-    const rations = (c.items ?? []).filter((it) => /^ration/i.test(it.name));
+    const rations = (c.items ?? []).filter((it) => /^ration/i.test(it.label));
     expect(rations.length).toBe(3);
   });
 
   it('giveTrapping : nom inconnu → objet CUSTOM (jamais null, comme l’Effet de scène)', () => {
     const c = hero({ items: [] });
     applyOps(c, [{ op: 'giveTrapping', custom: 'Babiole onirique XYZ' }]);
-    expect((c.items ?? []).some((it) => it.name === 'Babiole onirique XYZ')).toBe(true);
+    expect((c.items ?? []).some((it) => it.label === 'Babiole onirique XYZ')).toBe(true);
   });
 
   it('grantTrait onlyGroups (Bannissement) : Instable n’atteint que Mort-vivant/Démon', () => {
@@ -171,7 +171,7 @@ describe('applyOps — opérations unitaires', () => {
   });
 
   it('condition : ajout avec valeur en formule (Bonus de FM du référent caster)', () => {
-    const caster = hero({ id: 'c', name: 'Lanceur', characteristics: { ...hero().characteristics, 'force-mentale': 52 } });
+    const caster = hero({ id: 'c', label: 'Lanceur', characteristics: { ...hero().characteristics, 'force-mentale': 52 } });
     const c = hero();
     applyOps(c, [{ op: 'condition', name: 'hemorragique', value: { bonusOf: 'force-mentale' } }], { caster });
     expect(c.conditions.find((x) => x.id === 'hemorragique')?.value).toBe(5);
@@ -318,7 +318,7 @@ describe('applyOps — opérations unitaires', () => {
   // #153 — Aux Armes « Vous lâchez ce que vous teniez dans cette main » (bras/corps) : op `disarm`.
   describe("op disarm (#153 — « lâche l'objet tenu »)", () => {
     const withWeapon = (): Combatant => {
-      const c = hero({ items: [{ uid: 'w1', name: 'Épée', kind: 'melee', equipped: true, qualities: [], enc: 1 } as never] });
+      const c = hero({ items: [{ uid: 'w1', label: 'Épée', kind: 'melee', equipped: true, qualities: [], enc: 1 } as never] });
       c.loadouts = [{ id: 'l1', main: 'w1' }];
       c.activeLoadoutId = 'l1';
       return c;
@@ -352,7 +352,7 @@ describe('applyOps — opérations unitaires', () => {
 
     // #476 — Poing de fer ogre (ADE II 02 l.694-698) : capacité `disarmImmune` (`ItemCapabilities`).
     it("capacité disarmImmune (Poing de fer, ADE II 02 l.694-698) → refuse le désarmement, l'arme reste tenue", () => {
-      const c = hero({ items: [{ uid: 'w1', trappingId: 'poing-de-fer', name: 'Poing de fer', kind: 'melee', equipped: true, qualities: [], enc: 2 } as never] });
+      const c = hero({ items: [{ uid: 'w1', trappingId: 'poing-de-fer', label: 'Poing de fer', kind: 'melee', equipped: true, qualities: [], enc: 2 } as never] });
       c.loadouts = [{ id: 'l1', main: 'w1' }];
       c.activeLoadoutId = 'l1';
       const lines = applyOps(c, [{ op: 'disarm' }], { location: 'brasD' });

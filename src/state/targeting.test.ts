@@ -13,10 +13,10 @@ import type { Scene } from './scene';
 
 const combatant = (over: Partial<Combatant>): Combatant =>
   ({
-    id: 'A', name: 'A', kind: 'hero',
+    id: 'A', label: 'A', kind: 'hero',
     characteristics: { 'capacite-de-combat': 50, 'capacite-de-tir': 50, force: 35, endurance: 35, initiative: 30, agilite: 35, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30 },
     wounds: { current: 14, max: 14 }, advantage: 0, conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] }],
+    weapons: [{ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, bodyShape: 'humanoide', pos: { x: 0, y: 0 },
     ...over,
@@ -35,7 +35,7 @@ const mkGet = (combatants: Combatant[], battleOver: Partial<Record<string, unkno
     facing: {}, gameTime: 0, log: () => {},
   })) as unknown as () => GameState;
 
-const bow = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 4, qualities: [] }; // ×3 = 12 m = 6 cases
+const bow = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 4, qualities: [] }; // ×3 = 12 m = 6 cases
 
 describe('hoverTargeting — mode neutre (attaque implicite)', () => {
   it('tir valide → ok pointillé : nom d’arme, compétence, base, dégâts d’ARME', () => {
@@ -75,8 +75,8 @@ describe('hoverTargeting — mode neutre (attaque implicite)', () => {
 });
 
 describe('hoverTargeting — tir à Recharge / munition (affordance ≠ log silencieux)', () => {
-  const xbow = { name: 'Arbalète', type: 'ranged', subType: 'arbalete', damage: { plusBF: false, flat: 8 }, range: 4, reload: 3, qualities: [] };
-  const bolts = { uid: 'am1', name: 'Carreaux', kind: 'ammo', subType: 'arbalete', qty: 10, qualities: [] }; // munition sans modificateur de Dégâts (comme les vraies Flèches/Carreaux : damage absent)
+  const xbow = { label: 'Arbalète', type: 'ranged', subType: 'arbalete', damage: { plusBF: false, flat: 8 }, range: 4, reload: 3, qualities: [] };
+  const bolts = { uid: 'am1', label: 'Carreaux', kind: 'ammo', subType: 'arbalete', qty: 10, qualities: [] }; // munition sans modificateur de Dégâts (comme les vraies Flèches/Carreaux : damage absent)
   const enemy = () => combatant({ id: 'B', kind: 'enemy', pos: { x: 2, y: 0 } });
 
   it('arme à Recharge NON chargée → invalid unloaded (le réticule réclame le rechargement)', () => {

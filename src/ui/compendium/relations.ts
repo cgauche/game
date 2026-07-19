@@ -420,7 +420,10 @@ const linkCandidatesCached = versionCached<Map<string, LinkCandidate[]>>(() => {
  *  comparaison d'égalité — la décision finale (anti-auto-lien) reste 100 % id-based en aval. */
 const idByLabelCached = versionCached<Map<string, string>>(() => {
   const m = new Map<string, string>();
-  for (const e of catalog()) if (!m.has(e.label)) m.set(e.label, e.id);
+  // Construction seule (parcours inversé = première occurrence gagnante), aucune interrogation par
+  // libellé (#602) : c'est un index de TEXTE, alimenté par la couture tolérée.
+  const all = catalog();
+  for (let i = all.length - 1; i >= 0; i--) m.set(all[i].label, all[i].id);
   return m;
 });
 

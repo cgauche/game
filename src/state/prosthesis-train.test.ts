@@ -4,11 +4,11 @@ import { traumaDodgePenalty, cannotWieldTwoHanded } from '../engine/trauma';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const legSequela = { label: 'Membre inférieur amputé (jambeD)', location: 'jambeD' as const, ops: [{ op: 'moveScale' as const, num: 1, den: 2 }, { op: 'skillMod' as const, skill: 'esquive', mod: -20 }], prosthesis: [{ trappingId: 'fausse-jambe', cancels: 'movement' as const }] };
-const fausseJambe = (over: Partial<ItemInstance> = {}): ItemInstance => ({ uid: 'fj', trappingId: 'fausse-jambe', name: 'Fausse jambe', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 2, equipped: true, ...over } as ItemInstance);
+const fausseJambe = (over: Partial<ItemInstance> = {}): ItemInstance => ({ uid: 'fj', trappingId: 'fausse-jambe', label: 'Fausse jambe', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 2, equipped: true, ...over } as ItemInstance);
 
 const hero = (p: Partial<Combatant>): Combatant =>
   ({
-    id: 'h', name: 'Manchot', kind: 'hero',
+    id: 'h', label: 'Manchot', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -86,7 +86,7 @@ describe('trainProsthesis — rachat PX en 2 paliers de la Fausse jambe (LDB 73 
   });
 
   it('Crochet entraîné (400 PX) rétablit le port d’armes à deux mains (LDB 73)', () => {
-    const crochet: ItemInstance = { uid: 'cr', trappingId: 'crochet', name: 'Crochet', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 1, equipped: true } as ItemInstance;
+    const crochet: ItemInstance = { uid: 'cr', trappingId: 'crochet', label: 'Crochet', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 1, equipped: true } as ItemInstance;
     const h = hero({ id: 'a', xp: 500, traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands' as const, hands: 1 }] }], items: [crochet] });
     useGame.setState({ party: [h] });
     expect(cannotWieldTwoHanded(useGame.getState().party[0])).toBe(true); // avant : pas d'arme à 2 mains

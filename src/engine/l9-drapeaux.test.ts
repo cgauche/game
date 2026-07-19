@@ -85,8 +85,8 @@ describe("Endurance de l'anachorète — « ne subit aucune pénalité causée p
 
 describe('Sommeil — « Si la cible possède un État À Terre, elle gagne Inconscient » (LDB 47 p.242)', () => {
   it('onlyIfCondition : cible À Terre → Inconscient pour la durée du sort (BFM du lanceur)', () => {
-    const caster = mk({ id: 'w', name: 'Sorcier' });
-    const target = mk({ id: 't', name: 'Cible' });
+    const caster = mk({ id: 'w', label: 'Sorcier' });
+    const target = mk({ id: 't', label: 'Cible' });
     addCondition(target, 'a-terre');
     applyOps(target, [{ op: 'condition', name: 'inconscient', durationRounds: { bonusOf: 'force-mentale' }, onlyIfCondition: 'a-terre' }], { caster, label: 'Sommeil' });
     expect(hasCondition(target, 'inconscient')).toBe(true);

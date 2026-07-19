@@ -40,7 +40,7 @@ describe('evalCondition — état VIVANT du groupe (hasItem / money / partyDead)
   const base = { flags: {}, gameTime: 0 };
   it('hasItem : compte les exemplaires de l’objet dans le groupe (id catalogue + repli nom custom)', () => {
     // Objet catalogué → match par trappingId stable ; objet CUSTOM (sans trappingId) → repli sur le nom.
-    const party = [{ items: [{ name: 'Corde', trappingId: 'corde' }, { name: 'Clé en fer' }] }, { items: [{ name: 'Clé en fer' }] }];
+    const party = [{ items: [{ label: 'Corde', trappingId: 'corde' }, { label: 'Clé en fer' }] }, { items: [{ label: 'Clé en fer' }] }];
     expect(evalCondition({ kind: 'hasItem', trappingId: 'corde' }, { ...base, party })).toBe(true); // par id de catalogue
     expect(evalCondition({ kind: 'hasItem', trappingId: 'Clé en fer' }, { ...base, party })).toBe(true); // custom → repli nom
     expect(evalCondition({ kind: 'hasItem', trappingId: 'Clé en fer', count: 2 }, { ...base, party })).toBe(true);

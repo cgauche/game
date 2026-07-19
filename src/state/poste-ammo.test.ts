@@ -17,7 +17,7 @@ import type { Combatant, ItemInstance, ShipPoste, Weapon } from '../engine/types
  */
 const chars = { 'capacite-de-combat': 30, 'capacite-de-tir': 40, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const ammoItem = (uid: string, name: string, qty: number, over: Partial<ItemInstance> = {}): ItemInstance =>
-  ({ uid, name, kind: 'ammo', subType: 'munition-de-siege', qty, qualities: [], enc: 0, equipped: false, ...over }) as ItemInstance;
+  ({ uid, label: name, kind: 'ammo', subType: 'munition-de-siege', qty, qualities: [], enc: 0, equipped: false, ...over }) as ItemInstance;
 const mkPoste = (ammo: ItemInstance[], ammoUid?: string): ShipPoste =>
   ({ side: 'tribord',
     item: { uid: 'canon', name: 'Canon (moyen)', kind: 'ranged', subType: 'armes-de-siege', weaponGroup: 'poudre-noire',

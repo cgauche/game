@@ -13,10 +13,10 @@ import { norm } from '../lib/normalize';
 /** L'arme matche-t-elle la FAMILLE requise par un enchantement (mot-clé sur nom/sous-type — « épée »,
  *  « hache », « lance ») ? Pas de famille requise → toujours vrai. Sert à CHOISIR l'arme tenue à
  *  enchanter au lancement (Épée de justice ne lie qu'une épée, etc.). */
-export function weaponMatchesFamily(w: { name: string; subType?: string } | undefined, requires?: string): boolean {
+export function weaponMatchesFamily(w: { label: string; subType?: string } | undefined, requires?: string): boolean {
   if (!requires) return true;
   if (!w) return false;
-  return norm(`${w.name} ${w.subType ?? ''}`).includes(norm(requires));
+  return norm(`${w.label} ${w.subType ?? ''}`).includes(norm(requires));
 }
 
 /** Dégâts d'arme encaissés EFFECTIFS (pour la pénalité) : l'Atout Solide(N) absorbe les N premiers
@@ -112,7 +112,7 @@ export function improvisedProfile(w: Weapon): Weapon {
  *  (LDB 62 l.59) ne vise QUE les lances du Groupe, pas le Marteau à bec-de-corbin ni le Sabre. Détection
  *  par la DONNÉE de combat (`subType` + nom), JAMAIS par le `WeaponDef.group` de rendu. */
 function isCavalryLance(w: Weapon): boolean {
-  return w.subType === 'cavalerie' && norm(w.name).includes('lance');
+  return w.subType === 'cavalerie' && norm(w.label).includes('lance');
 }
 
 /** Contexte d'usage d'une arme — règles d'arme CONTEXTUELLES de Groupe (LDB 62), dérivé de l'attaquant

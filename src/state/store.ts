@@ -1415,7 +1415,7 @@ function settleFall(get: Get, set: Set, p: PendingFall, effectiveMetres: number,
     // (`applyFall(c,0,…)` ne garantit PAS 0 seul, cf. son d10) : simple repositionnement + journal.
     placeCombatant(mover, scene, p.to);
     if (mode !== 'battle') set({ partyPos: { ...p.to } });
-    get().log(t('fall.jumpSafe', { name: mover.name }));
+    get().log(t('fall.jumpSafe', { name: mover.label }));
   }
   if (mode === 'battle' && battle) {
     const bB = get().battle!;
@@ -1503,7 +1503,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ facing: { ...facing, [shipId]: next } });
     // Re-mappe TOUS les arcs de bordée d'un coup : firedAttackBlock / targeting relisent facing[shipId].
     const ship = inBattleId(battle, shipId);
-    get().log(`${ship?.name ?? shipId} vire de bord — nouveau cap : ${next}.`);
+    get().log(`${ship?.label ?? shipId} vire de bord — nouveau cap : ${next}.`);
     bus.emit(EVT.SCENE_DIRTY);
   },
   shipAdvance: (shipId, cases) => {
@@ -1539,7 +1539,7 @@ export const useGame = create<GameState>((set, get) => ({
         placeCombatant(m, scene, { x: from.x + delta.x, y: from.y + delta.y });
         bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
       }
-      get().log(`${hull.name} avance de ${moved} case${moved > 1 ? 's' : ''} (cap ${dir}).`);
+      get().log(`${hull.label} avance de ${moved} case${moved > 1 ? 's' : ''} (cap ${dir}).`);
     }
     // Éperonnage (MDG 13) : on percute de la PROUE (avance vers l'avant) ; FRONTAL si la victime tient un cap
     // ~opposé (octant opposé ±1). Dégâts sur les DEUX coques par la langue unique (`applyShipCollision`→`applyOps`).
@@ -1856,7 +1856,7 @@ export const useGame = create<GameState>((set, get) => ({
     const plan = planClimb(scene, from, to, hasGrimpeur, mode === 'battle' ? mover?.id : undefined, autoClimb);
     if (!plan) return; // arête non grimpable → refus silencieux (aucun marqueur ne s'y affiche)
     if (plan.kind === 'impossible') {
-      get().log(t('climb.tooHard', { name: mover?.name ?? 'Le grimpeur' }));
+      get().log(t('climb.tooHard', { name: mover?.label ?? 'Le grimpeur' }));
       return;
     }
     if (mode === 'exploration') {
@@ -1876,7 +1876,7 @@ export const useGame = create<GameState>((set, get) => ({
       const acted = plan.kind === 'test' ? true : battle.acted;
       // Résolution directe (Grimpant) : PAS un jet silencieux — il n'y a PAS de jet du tout, journalisé.
       const log = plan.kind === 'free' && plan.auto
-        ? [...battle.log, ev('move', t('climb.auto', { name: mover.name }), mover.id)]
+        ? [...battle.log, ev('move', t('climb.auto', { name: mover.label }), mover.id)]
         : battle.log;
       set({ battle: { ...battle, log, acted, action: null, movementUsed: (battle.movementUsed ?? 0) + cost, movedPreAction: battle.movedPreAction || !battle.acted, reachable: new Map(), preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -2257,7 +2257,7 @@ export const useGame = create<GameState>((set, get) => ({
     const actor = get().party.find((c) => c.id === pt.actorId);
     if (!actor || (actor.resolve ?? 0) <= 0) return;
     actor.resolve = (actor.resolve ?? 0) - 1;
-    get().log(`${actor.name} puise dans sa Détermination : insensible à la Psychologie — malus social ignoré.`);
+    get().log(`${actor.label} puise dans sa Détermination : insensible à la Psychologie — malus social ignoré.`);
     // Le malus psy était intégré à skillValue/target (cf. PendingTest) : on le retranche des deux.
     set({
       pendingTest: { ...pt, skillValue: pt.skillValue - pt.psychMod, target: pt.target - pt.psychMod, psychMod: 0, psychDetail: undefined },
@@ -2285,9 +2285,9 @@ export const useGame = create<GameState>((set, get) => ({
       // Le jet (roll/target) est DÉJÀ affiché par la rangée de la modale de Corruption — pas de
       // re-print au journal (#295 Lot 4).
       if (pc.success) {
-        get().log(resultLine(freeCons([`${hero.name} contient sa Corruption — pour cette fois.`])));
+        get().log(resultLine(freeCons([`${hero.label} contient sa Corruption — pour cette fois.`])));
       } else if ((hero.resilience ?? 0) > 0) {
-        get().log(resultLine(freeCons([`${hero.name} échoue à contenir sa Corruption — la mutation menace…`])));
+        get().log(resultLine(freeCons([`${hero.label} échoue à contenir sa Corruption — la mutation menace…`])));
         set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0, align: pc.align } });
       } else {
         for (const l of applyMutation(get, set, hero, { roll: pc.roll, target: pc.target ?? 0 }, pc.align)) get().log(l);
@@ -2298,7 +2298,7 @@ export const useGame = create<GameState>((set, get) => ({
     const gain = corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0);
     if (gain <= 0) {
       // Le jet est DÉJÀ affiché par la rangée de la modale de Corruption — pas de re-print (#295 Lot 5).
-      get().log(resultLine(freeCons([`${hero.name} repousse l'Influence corruptrice.`])));
+      get().log(resultLine(freeCons([`${hero.label} repousse l'Influence corruptrice.`])));
       return;
     }
     const lines = gainCorruption(get, set, hero, gain, pc.align);
@@ -2326,7 +2326,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (tool && pt.isDouble && !pt.success && hasQuality(tool, QUALITY_IDS.Bacle) && !isUnbreakable(tool)) {
       tool.destroyed = true;
       set({ party: [...get().party] }); // persiste la casse + re-render
-      get().log(`${tool.name} (Bâclé) se brise sur la Maladresse de ${actor?.name ?? pt.actorName}.`);
+      get().log(`${tool.label} (Bâclé) se brise sur la Maladresse de ${actor?.label ?? pt.actorName}.`);
     }
     // Action de combat « cumuler l'Avantage » (LDB 09 l.305-308) : sur réussite, +1 Avantage plafonné au
     // `cap` de la Compétence (via `gainAdvantage`, qui respecte aussi le plafond général) ; l'Action est

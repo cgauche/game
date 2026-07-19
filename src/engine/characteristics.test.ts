@@ -6,7 +6,7 @@ import type { Combatant, CharKey } from './types';
 /** Combatant minimal : seuls `characteristics` et `activeEffects` importent ici (pool non-cumul). */
 function mk(activeEffects: { char: CharKey; bonus: number; label?: string }[] = [], F = 40, over: Partial<Combatant> = {}): Combatant {
   return {
-    id: 'c', name: 'c', kind: 'enemy', advantage: 0, conditions: [],
+    id: 'c', label: 'c', kind: 'enemy', advantage: 0, conditions: [],
     characteristics: { force: F, agilite: 30, 'capacite-de-combat': 40 } as never,
     activeEffects: activeEffects.map((e) => ({ label: e.label ?? 'Effet', ...e })) as never,
     psychState: [], psychTraits: [], groups: [], weapons: [], armour: {} as never,

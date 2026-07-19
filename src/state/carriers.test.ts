@@ -10,14 +10,14 @@ const chars = (F = 30, E = 30): Characteristics => ({
 
 function hero(id: string, items: ItemInstance[] = [], F = 30, E = 30): Combatant {
   return {
-    id, name: id, kind: 'hero', characteristics: chars(F, E),
+    id, label: id, kind: 'hero', characteristics: chars(F, E),
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     items, skills: [], talents: [], movement: 4,
   };
 }
 
-const item = (uid: string, over: Partial<ItemInstance> = {}): ItemInstance => ({ uid, name: uid, kind: 'misc', qualities: [], enc: 0, equipped: false, ...over });
+const item = (uid: string, over: Partial<ItemInstance> = {}): ItemInstance => ({ uid, label: uid, kind: 'misc', qualities: [], enc: 0, equipped: false, ...over });
 const lot = (cargoId: string, enc: number): CargoLot => ({ cargoId, enc, basePriceGold: 1 });
 
 const slice = (over: Partial<CarrierStateSlice> = {}): CarrierStateSlice => ({

@@ -218,7 +218,7 @@ export function sweepDismountDeaths(battle: BattleState, scene: Scene): string[]
   for (const mount of battle.combatants) {
     if (!mount.riderId || !isOutOfAction(mount)) continue;
     const rider = handleMountDeath(battle, scene, mount);
-    if (rider) lines.push(`${rider.name} est désarçonné — sa monture (${mount.name}) est hors de combat.`);
+    if (rider) lines.push(`${rider.label} est désarçonné — sa monture (${mount.label}) est hors de combat.`);
   }
   return lines;
 }

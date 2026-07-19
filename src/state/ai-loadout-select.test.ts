@@ -23,7 +23,7 @@ describe('IA — sélection de loadout tir/mêlée (Chasseur fronde)', () => {
     useGame.getState().startCombat('enc-mutants');
     useGame.getState().confirmRoundStart();
     const b = useGame.getState().battle!;
-    const ael = b.combatants.find((c) => /aelindra/i.test(c.name))!; // PREGEN.chasseur (fronde + arme simple)
+    const ael = b.combatants.find((c) => /aelindra/i.test(c.label))!; // PREGEN.chasseur (fronde + arme simple)
     // donne le tour à Aelindra
     useGame.setState({ battle: { ...b, order: [ael.id, ...b.order.filter((id) => id !== ael.id)], turn: 0, action: null } });
     return ael.id;
@@ -37,7 +37,7 @@ describe('IA — sélection de loadout tir/mêlée (Chasseur fronde)', () => {
     expect(weaponsOf(id)).not.toContain('ranged');
     runEnemyAI(useGame.getState, useGame.setState, id); // switch SYNCHRONE en tête
     const ranged = useGame.getState().battle!.combatants.find((c) => c.id === id)!.weapons!.find((w) => w.type === 'ranged');
-    expect(ranged?.name).toMatch(/fronde/i); // a dégainé la fronde
+    expect(ranged?.label).toMatch(/fronde/i); // a dégainé la fronde
   });
 
   it('un adversaire au CONTACT → garde/dégaine son arme de MÊLÉE (ne dégaine pas la fronde au corps à corps)', () => {

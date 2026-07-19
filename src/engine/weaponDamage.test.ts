@@ -3,8 +3,8 @@ import { effectiveWeaponDamage, effectiveRange, applyAmmoMod, effectiveWeaponRan
 import { recomputeLoadout, damageString } from './items';
 import type { Weapon, Combatant } from './types';
 
-const sword = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], ...over });
-const bow = (over: Partial<Weapon> = {}): Weapon => ({ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [], range: 30, ...over });
+const sword = (over: Partial<Weapon> = {}): Weapon => ({ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], ...over });
+const bow = (over: Partial<Weapon> = {}): Weapon => ({ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [], range: 30, ...over });
 
 describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
   it('réduit les Dégâts de damageTaken', () => {
@@ -18,7 +18,7 @@ describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
     expect(isImprovised(bow({ damageTaken: 9 }))).toBe(true);
   });
   it("préserve une arme non endommagée (dégâts inchangés)", () => {
-    const hache: Weapon = { name: 'Hache', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+    const hache: Weapon = { label: 'Hache', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
     expect(effectiveWeaponDamage(hache, 3)).toBe(7); // BF3 + 4, arme intacte
   });
 });
@@ -59,9 +59,9 @@ describe('applyAmmoMod + effectiveWeaponRange (LDB 62) — la munition modifie l
 
 describe('recomputeLoadout — Portée = SPEC COPIÉE (résolue à l’usage, pas au loadout)', () => {
   it('une arme de jet conserve sa spec {bf} sur le Weapon actif (non pré-résolue)', () => {
-    const c = hero([{ uid: 'jav', name: 'Javelot', kind: 'ranged', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], enc: 1, equipped: true, range: { bf: 3 } }]);
+    const c = hero([{ uid: 'jav', label: 'Javelot', kind: 'ranged', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], enc: 1, equipped: true, range: { bf: 3 } }]);
     recomputeLoadout(c);
-    const jav = c.weapons.find((w) => w.name === 'Javelot');
+    const jav = c.weapons.find((w) => w.label === 'Javelot');
     expect(jav?.range).toEqual({ bf: 3 }); // copiée telle quelle ; effectiveRange la résout au tir/affichage
   });
 });
@@ -106,7 +106,7 @@ describe('damageWeapon / destroyWeapon', () => {
 
 function hero(items: Combatant['items']): Combatant {
   return {
-    id: 'h', name: 'T', kind: 'hero',
+    id: 'h', label: 'T', kind: 'hero',
     characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -116,22 +116,22 @@ function hero(items: Combatant['items']): Combatant {
 
 describe("recomputeLoadout — propagation des Dégâts d'arme", () => {
   it("propage damageTaken de l'ItemInstance vers le Weapon actif", () => {
-    const c = hero([{ uid: 'w1', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], enc: 1, equipped: true, damageTaken: 2 }]);
+    const c = hero([{ uid: 'w1', label: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], enc: 1, equipped: true, damageTaken: 2 }]);
     recomputeLoadout(c);
-    const s = c.weapons.find((w) => w.name === 'Épée');
+    const s = c.weapons.find((w) => w.label === 'Épée');
     expect(s?.damageTaken).toBe(2);
   });
   it("une arme détruite n'est pas équipée (repli mains nues)", () => {
-    const c = hero([{ uid: 'w1', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], enc: 1, equipped: true, destroyed: true }]);
+    const c = hero([{ uid: 'w1', label: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], enc: 1, equipped: true, destroyed: true }]);
     recomputeLoadout(c);
-    expect(c.weapons.some((w) => w.name === 'Épée')).toBe(false);
-    expect(c.weapons.some((w) => w.name === 'Mains nues')).toBe(true);
+    expect(c.weapons.some((w) => w.label === 'Épée')).toBe(false);
+    expect(c.weapons.some((w) => w.label === 'Mains nues')).toBe(true);
   });
 });
 
 describe('effectiveWeapon — Lance-harpon, corde séparée (ADE II 02 l.677, mode de tir choisi #476)', () => {
   const harpoon = (): Weapon => ({
-    name: 'Lance-harpon', type: 'ranged', damage: { plusBF: false, flat: 10 }, range: 20,
+    label: 'Lance-harpon', type: 'ranged', damage: { plusBF: false, flat: 10 }, range: 20,
     qualities: [{ id: 'immobilisante' }, { id: 'recharge', value: 2 }],
   });
   it('sans ctx.harpoonRopeCut : profil de base inchangé (Portée 20, Immobilisante conservée)', () => {

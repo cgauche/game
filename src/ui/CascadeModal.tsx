@@ -150,7 +150,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         const a = pool.find((c) => c.id === part.id);
         if (!a) return [];
         const res = part.result;
-        const d = res ? { label: part.label ?? a.name, base: part.base, mods: part.mods, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
+        const d = res ? { label: part.label ?? a.label, base: part.base, mods: part.mods, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
         const extendedDr = extendedDrData(part.extendedDrDone, part.extendedDrTarget, res);
         return [{ key: witnessRowKey(s.id, part.id), row: { combatant: a, d, note: partNote(part) }, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
       });
@@ -306,7 +306,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const rows: RollRowData[] = buildParticipantRows(cur.participants!, pool, {
       onRoll: batchRoll, onReroll: batchReroll, onBonusSL: batchBonusSL, onDarkPact: batchDarkPact, onForce: batchForce,
       row: (part, actor, res) => {
-        const label = part.label ?? actor.name;
+        const label = part.label ?? actor.label;
         return res
           ? { combatant: actor, d: { label, base: part.base, mods: part.mods, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
           : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [] } };
@@ -423,7 +423,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       title: pursuit?.partyRole === 'pursuing'
         ? 'Le groupe renonce à traquer sa proie — la poursuite est perdue.'
         : pursuit?.encounter
-          ? 'Le groupe cesse de fuir et fait face — les poursuivants fondent sur lui (LDB 15 l.94).'
+          ? 'Le groupe cesse de fuir et fait face — les poursuivants fondent sur lui.'
           : 'Le groupe cesse de fuir et fait face.',
       when: 'always',
     } as RollAction] : []),

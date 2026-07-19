@@ -184,7 +184,7 @@ export function applyHullCritical(
     applyOps(sailor, crit.ops, { rng });
     if (crit.traumas.length) sailor.traumas = [...(sailor.traumas ?? []), ...crit.traumas];
     if (crit.lethal) { sailor.wounds.current = 0; sailor.dead = true; }
-    lines.push(`Équipage touché : ${sailor.name} encaisse un Critique — ${crit.name}.`);
+    lines.push(`Équipage touché : ${sailor.label} encaisse un Critique — ${crit.name}.`);
     return { location: 'equipage', hullOps: [], shrapnel: [], extraHullCrits: [], crewCrit: { crewId: sailor.id, crit }, lines };
   }
 

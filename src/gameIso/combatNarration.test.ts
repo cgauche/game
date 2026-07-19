@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { narrateEvent, combatFeed, narrateIntent } from './combatNarration';
 import { ev } from '../state/combatLog';
 
-const ally = { id: 'h1', name: 'Bidule', kind: 'hero' };
-const ally2 = { id: 'h2', name: 'Grunni', kind: 'hero' };
-const foe = { id: 'e1', name: 'Machin', kind: 'monster' };
-const foe2 = { id: 'e2', name: 'Rat géant', kind: 'monster' };
+const ally = { id: 'h1', label: 'Bidule', kind: 'hero' };
+const ally2 = { id: 'h2', label: 'Grunni', kind: 'hero' };
+const foe = { id: 'e1', label: 'Machin', kind: 'monster' };
+const foe2 = { id: 'e2', label: 'Rat géant', kind: 'monster' };
 const cs = [ally, ally2, foe, foe2] as any;
 
 describe('narrateEvent — icône déduite du kind (zéro devinage)', () => {

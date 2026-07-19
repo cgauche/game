@@ -42,7 +42,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
-      weapons: [{ name: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [], ...weapon } as Weapon],
+      weapons: [{ label: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [], ...weapon } as Weapon],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [],
       talents: [],
@@ -93,7 +93,7 @@ describe('Découpe de la résolution de mêlée (split attaquant/défenseur)', (
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
-      weapons: [{ name: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [], ...weapon } as Weapon],
+      weapons: [{ label: 'W', type: 'melee', damage: { plusBF: false, flat: 5 }, qualities: [], ...weapon } as Weapon],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [],
       talents: [],
@@ -227,13 +227,13 @@ describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {
   const rngOf = (roll: number): RNG => ({ int: () => roll });
   const mk = (cc: number, advantage = 0): Combatant => ({
     id: 'c',
-    name: 'c',
+    label: 'c',
     kind: 'enemy',
     characteristics: { 'capacite-de-combat': cc, 'capacite-de-tir': cc, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 10 },
     advantage,
     conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
+    weapons: [{ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [],
     talents: [],
@@ -364,10 +364,10 @@ describe('Localisation par forme du corps (LDB « Point d’Impact des Créature
 
 describe('Dégâts d’arme (parsing via effectiveWeaponDamage)', () => {
   it('+BF+4 avec BF=3 → 7', () => {
-    expect(effectiveWeaponDamage({ name: 'x', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }, 3)).toBe(7);
+    expect(effectiveWeaponDamage({ label: 'x', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }, 3)).toBe(7);
   });
   it('+9 (distance) ignore BF', () => {
-    expect(effectiveWeaponDamage({ name: 'x', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [] }, 3)).toBe(9);
+    expect(effectiveWeaponDamage({ label: 'x', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [] }, 3)).toBe(9);
   });
 });
 
@@ -375,7 +375,7 @@ function dummy(name: string, chars: Partial<Characteristics>, wounds: number, we
   const base: Characteristics = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   return {
     id: name,
-    name,
+    label: name,
     kind: 'enemy',
     characteristics: { ...base, ...chars },
     wounds: { current: wounds, max: wounds },
@@ -392,7 +392,7 @@ function dummy(name: string, chars: Partial<Characteristics>, wounds: number, we
 describe('Résolution de mêlée', () => {
   it('produit un résultat cohérent et déterministe avec une graine', () => {
     const rng = makeRNG(42);
-    const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+    const sword: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
     const a = dummy('Attaquant', { 'capacite-de-combat': 60, force: 40 }, 15, sword);
     const d = dummy('Défenseur', { 'capacite-de-combat': 25, endurance: 30 }, 12, sword);
     const res = resolveMelee(a, d, sword, rng);
@@ -439,7 +439,7 @@ describe('Test opposé (départage canon)', () => {
 
 describe('Coup Critique au niveau moteur (LDB 18-Traumatisme : double uniquement)', () => {
   it('le moteur ne marque le critique que sur un double — l’OVERKILL est posé par le store (sur PB courants)', () => {
-    const heavy: Weapon = { name: 'Maillet', type: 'melee', damage: { plusBF: true, flat: 20 }, qualities: [] };
+    const heavy: Weapon = { label: 'Maillet', type: 'melee', damage: { plusBF: true, flat: 20 }, qualities: [] };
     const a = dummy('Brute', { 'capacite-de-combat': 90, force: 40 }, 20, heavy);
     const d = dummy('Frêle', { 'capacite-de-combat': 20, endurance: 20 }, 3, heavy); // Blessures max 3
     const res = resolveMelee(a, d, heavy, makeRNG(1), { defense: 'none' });
@@ -455,7 +455,7 @@ function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], w
   const base: Characteristics = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   return {
     id: 'c',
-    name: 'Mage',
+    label: 'Mage',
     kind: 'hero',
     characteristics: { ...base, ...chars },
     wounds: { current: wounds, max: wounds },

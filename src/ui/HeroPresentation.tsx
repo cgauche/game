@@ -27,7 +27,7 @@ export function HeroPresentation({ hero, onFullSheet, onClose }: {
   const ambLong = hero.details?.ambitionLong;
 
   return (
-    <Modal variant="plain" className="hero-present" title={hero.name} onClose={onClose} backdropClose>
+    <Modal variant="plain" className="hero-present" title={hero.label} onClose={onClose} backdropClose>
       <div className="hero-present-body">
         <aside className="hero-present-aside">
           <div className="hero-present-fig">

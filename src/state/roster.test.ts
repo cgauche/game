@@ -17,7 +17,7 @@ function fakeStorage(): Storage {
   } as Storage;
 }
 
-const hero = (id: string, name = 'Héros'): Combatant => ({ id, name }) as unknown as Combatant;
+const hero = (id: string, label = 'Héros'): Combatant => ({ id, label, kind: 'hero' }) as unknown as Combatant;
 const entry = (id: string): RosterEntry => ({
   hero: hero(id),
   wealth: { gold: 1, silver: 2, brass: 3 },
@@ -48,7 +48,7 @@ describe('roster — persistance des personnages créés', () => {
     rosterAdd({ hero: hero('h1', 'Renommé'), wealth: { gold: 0, silver: 0, brass: 9 } });
     const list = rosterLoad();
     expect(list).toHaveLength(1);
-    expect(list[0].hero.name).toBe('Renommé');
+    expect(list[0].hero.label).toBe('Renommé');
     expect(list[0].wealth.brass).toBe(9);
   });
 
@@ -76,6 +76,19 @@ describe('roster — persistance des personnages créés', () => {
     const list = rosterLoad();
     expect(list).toHaveLength(1);
     expect(list[0].hero.id).toBe('ok');
+  });
+
+  it('rosterLoad rejoue la migration name→label (#604) sur une entrée ANCIEN FORMAT (kind présent)', () => {
+    localStorage.setItem(
+      'wfrp4.roster.v1',
+      JSON.stringify([
+        { hero: { id: 'legacy1', name: 'Ancien Nom', kind: 'hero' }, wealth: { gold: 0, silver: 0, brass: 0 } },
+      ]),
+    );
+    const list = rosterLoad();
+    expect(list).toHaveLength(1);
+    expect(list[0].hero.label).toBe('Ancien Nom');
+    expect((list[0].hero as unknown as { name?: string }).name).toBeUndefined();
   });
 
   it('sans localStorage (environnement sans stockage) : load → [], add/remove ne jettent pas', () => {

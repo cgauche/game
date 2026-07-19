@@ -35,19 +35,19 @@ describe('warMachineCrewPenalty — ADE II 8 l.233', () => {
 
 describe('warMachineCrewRequired — lit l\'Indice de la Qualité `equipe`', () => {
   it('arme sans Qualité equipe → 0', () => {
-    const w: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+    const w: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
     expect(warMachineCrewRequired(w)).toBe(0);
   });
 
   it('arme avec Qualité equipe(N) → N', () => {
-    const w: Weapon = { name: 'Trébuchet', type: 'ranged', damage: { plusBF: false, flat: 14 }, qualities: [{ id: 'equipe', value: 8 }] };
+    const w: Weapon = { label: 'Trébuchet', type: 'ranged', damage: { plusBF: false, flat: 14 }, qualities: [{ id: 'equipe', value: 8 }] };
     expect(warMachineCrewRequired(w)).toBe(8);
   });
 });
 
 describe('warMachineFireWeapon — bake le malus PLAT, ORTHOGONAL à la Recharge/aux Qualités (≠ crewedFireWeapon AA)', () => {
   const belier = (): Weapon => ({
-    name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne',
+    label: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne',
     qualities: [{ id: 'siege' }, { id: 'belier' }, { id: 'devastatrice' }, { id: 'percutante' }, { id: 'equipe', value: 6 }],
     resolveChar: 'force',
   });
@@ -76,7 +76,7 @@ describe('warMachineFireWeapon — bake le malus PLAT, ORTHOGONAL à la Recharge
   });
 
   it('arme sans Qualité equipe → inchangée telle quelle (identité)', () => {
-    const w: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+    const w: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
     expect(warMachineFireWeapon(w, 0)).toBe(w);
   });
 });

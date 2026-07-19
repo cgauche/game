@@ -14,7 +14,7 @@ import type { Weapon } from './types';
  */
 
 const mkWeapon = (over: Partial<Weapon> = {}): Weapon => ({
-  name: 'arme',
+  label: 'arme',
   type: 'melee',
   damage: { plusBF: false, flat: 0 },
   qualities: [],
@@ -55,7 +55,7 @@ describe('inanimateCombatant — engin de siège INERTE (AA p.122-123)', () => {
 
   it('NON-DESTRUCTIBLE : `woundsFromHit` retourne 0 même pour un coup énorme (immune via `target.inert`)', () => {
     const c = inanimateCombatant({ id: 'e', name: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
-    const canon = mkWeapon({ name: 'Canon', type: 'ranged', qualities: [{ id: 'siege' }] });
+    const canon = mkWeapon({ label: 'Canon', type: 'ranged', qualities: [{ id: 'siege' }] });
     expect(woundsFromHit(canon, c, 'corps', 999)).toBe(0);
   });
 });

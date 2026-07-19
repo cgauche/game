@@ -116,7 +116,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
     // libre compris) → on route par le PLAN CORPOREL. `c.name` (LABEL d'affichage, multilangue) n'est
     // PLUS jamais la clé de résolution — repli ultime seulement pour un statbloc d'auteur sans id de
     // catalogue (`creatureId` absent, ex. ennemi générique nommé).
-    const r = resolveRender(c.species, c.traits, c.creatureId ?? c.name);
+    const r = resolveRender(c.species, c.traits, c.creatureId ?? c.label);
     if (r.kind === 'rig') {
       const prof = rendersFromOwnInventory(c) ? null : enemyRigProfile(c);
       if (top) {

@@ -261,7 +261,7 @@ export function applyZoneCrossings(get: Get, set: SetFn, mover: Combatant, path:
   if (mover.dead || isOutOfAction(mover)) return;
   for (const z of battle.zones) {
     if (!z.crossTest || !path.some((p) => zoneCovers(z, p))) continue;
-    battle.log.push(ev('condition', `${mover.name} traverse ${z.label} !`, mover.id));
+    battle.log.push(ev('condition', `${mover.label} traverse ${z.label} !`, mover.id));
     bus.emit(EVT.SCENE_DIRTY);
     const caster = resolveCaster(z.casterId) ?? mover;
     const flow: CoreFlow<EffectOp> = {

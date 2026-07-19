@@ -217,7 +217,7 @@ export function spendResolveForPsychImmunity(c: Combatant): string | null {
     ...(c.activeEffects ?? []).filter((e) => e.effectId !== 'determination-psych'),
     { label: 'Détermination (immunité psy)', effectId: 'determination-psych', bonus: 0, duration: { scale: 'rounds', left: 2 }, psychImmune: true },
   ];
-  return t('psy.determinationImmune', { name: c.name });
+  return t('psy.determinationImmune', { name: c.label });
 }
 
 /** Retire de TOUS les combattants les afflictions psychologiques (Peur/Terreur/traits ciblés)

@@ -61,9 +61,9 @@ export function PostesRoster({
         return (
           <div className="wm-role-item" key={h.id}>
             <div className="wm-role-row">
-              <CharFrame c={h} variant="identity" size="xs" title={h.name} />
+              <CharFrame c={h} variant="identity" size="xs" title={h.label} />
               <span className="wm-role-name">
-                {h.name}
+                {h.label}
                 {!pinned && current && <span className="wm-opt-hint"> (auto)</span>}
               </span>
               <button

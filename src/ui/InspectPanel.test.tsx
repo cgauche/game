@@ -43,7 +43,7 @@ describe('InspectPanel', () => {
 
   it('COQUE ennemie (#240) : inspecte l’objet visible (Coque + Proue-idole #221), PAS le statbloc-personnage', () => {
     const serpent = {
-      id: 'serpent', name: 'Le Serpent de Sel', kind: 'npc', bodyShape: 'vehicule',
+      id: 'serpent', label: 'Le Serpent de Sel', kind: 'npc', bodyShape: 'vehicule',
       creatureId: 'loup-imperial', conditions: [], wounds: { current: 60, max: 80 },
       upgrades: [{ id: 'proue-idole-de-stromfels' }],
     } as unknown as Parameters<typeof InspectPanel>[0]['combatant'];

@@ -204,7 +204,7 @@ export type Condition =
 export interface ConditionCtx {
   flags: Record<string, boolean>;
   gameTime: number;
-  party?: { dead?: boolean; items?: { name: string; trappingId?: string }[] }[];
+  party?: { dead?: boolean; items?: { label: string; trappingId?: string }[] }[];
   money?: Purse;
   /** Acteurs du Flow lus par la Condition `compare` (`conditions` = stacks par nom d'État, 0 si absent).
    *  `target` = l'unité affectée (la « cible » du sous-Flow) ; `caster` = le lanceur/porteur. */
@@ -262,7 +262,7 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       // Carve-out doctrine (#318) : ce repli n'est PAS une comparaison par-label déguisée — un objet
       // CUSTOM n'a structurellement AUCUN id de catalogue à comparer (il n'existe dans aucune source
       // data), donc son nom EST son seul identifiant stable côté ItemInstance. Rien à migrer.
-      const have = (ctx.party ?? []).reduce((n, h) => n + (h.items ?? []).filter((it) => (it.trappingId ?? it.name) === cond.trappingId).length, 0);
+      const have = (ctx.party ?? []).reduce((n, h) => n + (h.items ?? []).filter((it) => (it.trappingId ?? it.label) === cond.trappingId).length, 0);
       return have >= need;
     }
     case 'money': return ctx.money ? brassValue(ctx.money) >= brassValue(cond.atLeast) : false;
@@ -362,10 +362,9 @@ export interface FlowTest {
   /** DR minimum requis (défaut 0 = simple réussite). */
   requireSL?: number;
   label?: string;
-  /** Outil utilisé : `trappingId` de la possession cataloguée (ex. `'marteau'`) pour un objet du
-   *  catalogue, ou nom libre pour un objet CUSTOM (sans `trappingId`). Résolu au runtime par id en
-   *  priorité (`i.trappingId === tool`), repli sur le nom (`i.name === tool`) pour les objets custom.
-   *  Sa qualité d'artisanat module l'issue / casse l'objet. */
+  /** Outil utilisé : `trappingId` de la possession cataloguée (ex. `'marteau'`) — résolu au runtime
+   *  par id STABLE (`i.trappingId === tool`), jamais par libellé. Sa qualité d'artisanat module l'issue /
+   *  casse l'objet. */
   tool?: string;
   /** Groupes de l'interlocuteur : malus Animosité/Préjugé sur un Test de Sociabilité (LDB 21). */
   vsGroups?: string[];

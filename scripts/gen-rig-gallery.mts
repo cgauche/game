@@ -12,9 +12,9 @@ import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
 import type { Weapon, ItemInstance } from '../src/engine/types';
 
 const SPECIES = ['Humain', 'Halfling', 'Nain', 'Gnome', 'Ogre', 'Haut-Elfe', 'Elfe sylvain'];
-const wep = (name: string, type: 'melee' | 'ranged'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
-const plate: ItemInstance = { uid: '1', name: 'Plastron de plaque', kind: 'armor', qualities: [], pa: 4, locs: ['corps'], enc: 1, equipped: true };
-const helm: ItemInstance = { uid: '2', name: 'Heaume', kind: 'armor', qualities: [], pa: 2, locs: ['tete'], enc: 1, equipped: true };
+const wep = (name: string, type: 'melee' | 'ranged'): Weapon => ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
+const plate: ItemInstance = { uid: '1', label: 'Plastron de plaque', kind: 'armor', qualities: [], pa: 4, locs: ['corps'], enc: 1, equipped: true };
+const helm: ItemInstance = { uid: '2', label: 'Heaume', kind: 'armor', qualities: [], pa: 2, locs: ['tete'], enc: 1, equipped: true };
 
 function cell(label: string, app: Appearance, equip: EquipCtx, career: string, view: 'front' | 'back' | 'profile' = 'front') {
   const svg = renderToStaticMarkup(
@@ -56,10 +56,10 @@ import { AMBIENT_CLIPS } from '../src/gameIso/rig/anim/ambientClips';
 import type { Combatant } from '../src/engine/types';
 function enemyCell(name: string, view: 'front' | 'back' | 'profile' = 'front') {
   const c = {
-    id: `gal-${name}`, name, kind: 'enemy',
+    id: `gal-${name}`, label: name, kind: 'enemy',
     characteristics: {} as Combatant['characteristics'], wounds: { current: 10, max: 10 },
     advantage: 0, conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }],
+    weapons: [{ label: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }],
     armour: { tete: 2, brasG: 0, brasD: 0, corps: 4, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4,
   } as Combatant;

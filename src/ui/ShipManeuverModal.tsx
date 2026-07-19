@@ -81,13 +81,13 @@ export function ShipManeuverModal() {
       flowKey="shipManeuver"
       title={<><Icon id="action/steer-ship" size="sm" /> Manœuvre — Test d’équipage</>}
       variant="test"
-      subtitle={<><strong>{ship.name}</strong> — {p.participants.length} rôle{plural(p.participants.length)} à la manœuvre (DR sommés, MDG 14)</>}
+      subtitle={<><strong>{ship.label}</strong> — {p.participants.length} rôle{plural(p.participants.length)} à la manœuvre (DR sommés)</>}
       extra={<OptionChooser layout="grid" groupLabel="Virage" options={turnOptions} />}
       rows={rows}
       rolled={allRolled}
       summary={allRolled && result
         ? <>DR d’équipage <b>{total}</b> → DR final <b>{result.dr}</b> : {result.success
-            ? `cap viré, ${ship.name} avance de ${result.movement} case${plural(result.movement)}.`
+            ? `cap viré, ${ship.label} avance de ${result.movement} case${plural(result.movement)}.`
             : `manœuvre ratée — le cap tient ; avance de ${result.movement} case${plural(result.movement)}.`}</>
         : undefined}
       actions={actions}

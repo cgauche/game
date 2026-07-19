@@ -97,7 +97,7 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                 active={!p.over && i === p.turn}
                 hovered={c.id === p.hoveredId}
                 onClick={() => p.onActivate(id)}
-                title={p.targeting ? `${c.name} — cibler` : c.name}
+                title={p.targeting ? `${c.label} — cibler` : c.label}
               />
               {p.canFirstIds.includes(id) && (
                 <button
@@ -105,8 +105,8 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                   className={`is-first${p.freeFirstIds?.includes(id) ? ' free' : ''}`}
                   onClick={() => p.onPromote(id)}
                   title={p.freeFirstIds?.includes(id)
-                    ? `${c.name} agit en premier ce Round — gratuit (arme Rapide)`
-                    : `Dépense 1 point de Chance pour qu'${c.name} agisse en premier ce Round`}
+                    ? `${c.label} agit en premier ce Round — gratuit (arme Rapide)`
+                    : `Dépense 1 point de Chance pour qu'${c.label} agisse en premier ce Round`}
                 >
                   <Icon id="ui/preempt" size="sm" />{p.freeFirstIds?.includes(id) ? null : c.fortune ?? 0}
                 </button>
@@ -117,8 +117,8 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                   className={`is-preempt${p.preemptArmedId === id ? ' armed' : ''}`}
                   onClick={() => p.onPreempt?.(id)}
                   title={p.preemptArmedId === id
-                    ? `${c.name} — choisissez une cible pour son Tir rapide (re-cliquez pour annuler)`
-                    : `Tir rapide : ${c.name} tire hors de son tour (épuise son Action et son Mouvement)`}
+                    ? `${c.label} — choisissez une cible pour son Tir rapide (re-cliquez pour annuler)`
+                    : `Tir rapide : ${c.label} tire hors de son tour (épuise son Action et son Mouvement)`}
                 >
                   <Icon id="action/shoot" size="sm" />
                 </button>

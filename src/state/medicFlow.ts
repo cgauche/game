@@ -125,7 +125,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   } else {
     const best = bestHealerFor(get().party, act);
     if (!best) return;
-    healer = { id: best.actor.id, name: best.actor.name, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')) };
+    healer = { id: best.actor.id, name: best.actor.label, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')) };
   }
 
   if (act === 'surgery' || act === 'recovery') {
@@ -148,7 +148,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   const difficulty = healDifficulty(act);
   set({
     pendingHeal: {
-      healerId: healer.id ?? 'pnj-soigneur', healerName: healer.name, targetId: patient.id, targetName: patient.name,
+      healerId: healer.id ?? 'pnj-soigneur', healerName: healer.name, targetId: patient.id, targetName: patient.label,
       mode: act, intBonus: healer.intBonus, skillValue: healer.skill,
       difficulty, target: healer.skill + DIFFICULTY_MODIFIERS[difficulty], roll: null, success: false, sl: 0, paidCost,
     },
@@ -175,7 +175,7 @@ export function openSurgeryPass(get: Get, set: Set): void {
   set({
     pendingSurgery: {
       healerId: sg.healerId ?? 'pnj-soigneur', healerName: sg.healerName,
-      targetId: patient.id, targetName: patient.name,
+      targetId: patient.id, targetName: patient.label,
       skillValue: sg.skill, intBonus: sg.intBonus, difficulty: sg.difficulty, target: sg.skill,
       roll: null, success: false, sl: 0,
       traumaIdx: sg.traumaIdx, targetDR: sg.targetDR, cumDR: sg.cumDR, paidCost: sg.paidCost,
@@ -204,9 +204,9 @@ export function surgeryNext(get: Get, set: Set): void {
   const verb = recovery ? 'rééduque' : 'opère';
   const harm = recovery ? 0 : battleRng().int(1, 10);
   if (!recovery) { loseWounds(patient, harm); addCondition(patient, 'hemorragique'); } // dégâts d'une passe de Chirurgie (LDB 10 l.154)
-  const log = [`${sg.healerName} ${verb} ${patient.name} — passe : DR ${ps.sl >= 0 ? '+' : ''}${ps.sl} (total ${cum}/${sg.targetDR})${recovery ? '.' : `, ${harm} PB + 1 Hémorragie.`}`];
+  const log = [`${sg.healerName} ${verb} ${patient.label} — passe : DR ${ps.sl >= 0 ? '+' : ''}${ps.sl} (total ${cum}/${sg.targetDR})${recovery ? '.' : `, ${harm} PB + 1 Hémorragie.`}`];
   if (!recovery && patient.wounds.current <= 0) { // « de fortes chances de tuer » (LDB 10) : on interrompt
-    log.push(`${patient.name} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);
+    log.push(`${patient.label} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);
     set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
     return;

@@ -1160,7 +1160,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         caps?.isRations ? 'Ration de voyage' : null,
         caps?.isGrimoire ? 'Grimoire (lecture de Sorts)' : null,
         caps?.preventForcedDrop ? 'Empêche le lâcher forcé (gantelet verrouillé)' : null,
-        t.derivedWeapon ? `Arme dérivée : ${t.derivedWeapon.name} (${damageString(t.derivedWeapon.damage)})` : null,
+        t.derivedWeapon ? `Arme dérivée : ${t.derivedWeapon.label} (${damageString(t.derivedWeapon.damage)})` : null,
       ].filter(Boolean) as string[];
       // Allonge = mêlée, Portée = distance (LDB 62). Tir/munition : « Portée 50 m » (fixe) / « BF×3 m » (jet)
       // sinon le modificateur de munition (« Portée ×½ », `ammoRangeModLabel`) ; jamais « Allonge 50 ».
@@ -2139,7 +2139,9 @@ function colorTableSection(c: (typeof eyes)[number]): CodexSection {
 export const categoriesIn = (group: CodexGroup): CodexCategory[] => CODEX.filter((c) => c.group === group);
 
 /** Un sous-groupe repliable de catégories (barre de catégories du Compendium). */
-export interface CodexCluster { name: string; cats: CodexCategory[] }
+/** Sous-groupe replié de la barre de catégories : `id` STABLE (slug du `cluster` authoré) porte la
+ *  LOGIQUE (clé de repli, clé React), `label` l'AFFICHAGE — le titre FR ne sert plus de clé (#602). */
+export interface CodexCluster { id: string; label: string; cats: CodexCategory[] }
 /** Éclate les catégories d'une famille en pastilles À PLAT (sans `cluster`) + sous-groupes repliables
  *  (par `cluster`), dans l'ordre de déclaration. Anti-avalanche des familles touffues (Effets/Tables) :
  *  les catégories d'un même `cluster` se replient sous un unique dépliable. */
@@ -2150,7 +2152,7 @@ export const clustersIn = (group: CodexGroup): { flat: CodexCategory[]; clusters
   for (const c of categoriesIn(group)) {
     if (!c.cluster) { flat.push(c); continue; }
     let cl = byName.get(c.cluster);
-    if (!cl) { cl = { name: c.cluster, cats: [] }; byName.set(c.cluster, cl); clusters.push(cl); }
+    if (!cl) { cl = { id: slugId(c.cluster), label: c.cluster, cats: [] }; byName.set(c.cluster, cl); clusters.push(cl); }
     cl.cats.push(c);
   }
   return { flat, clusters };
@@ -2183,12 +2185,15 @@ function categoryIndex(category: string): { byId: Map<string, CodexItem>; exact:
     const items = categoryByKey(category)?.items;
     if (!items) return undefined;
     idx = { byId: new Map(), exact: new Map(), folded: new Map() };
-    for (const it of items) {
-      if (it.id && !idx.byId.has(it.id)) idx.byId.set(it.id, it);
+    // Parcours INVERSÉ + `set` nu : le dernier écrit gagne, donc la PREMIÈRE occurrence de la liste
+    // l'emporte (précédence historique du `find`), sans interroger un index par libellé (#602) —
+    // remplir un index de texte est la couture tolérée, le questionner par `.label` ne l'est pas.
+    for (let i = items.length - 1; i >= 0; i--) {
+      const it = items[i];
+      if (it.id) idx.byId.set(it.id, it);
       if (!it.label) continue; // entrée sans label (défensif) : non indexée
-      if (!idx.exact.has(it.label)) idx.exact.set(it.label, it);
-      const folded = it.label.toLowerCase();
-      if (!idx.folded.has(folded)) idx.folded.set(folded, it);
+      idx.exact.set(it.label, it);
+      idx.folded.set(it.label.toLowerCase(), it);
     }
     LOOKUP.set(category, idx);
   }
@@ -2232,7 +2237,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
   // Comme les compétences/talents/sorts : chaque arme est une ENTITÉ (CodexRef vers sa fiche Codex
   // « trappings » — popover au survol + clic — repli gracieux en texte pour une arme naturelle hors
   // catalogue type « Morsure »), avec les Dégâts en BADGE (damageString, jamais l'objet brut).
-  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'ref', category: 'trappings', id: refId('trappings', w.name), label: w.name, show: w.name, badge: damageString(w.damage) }));
+  const weaponRows: CodexRow[] = (c.weapons ?? []).map((w) => ({ t: 'ref', category: 'trappings', id: refId('trappings', w.label), label: w.label, show: w.label, badge: damageString(w.damage) }));
   const worn = ARMOUR_LOCS.filter((l) => (c.armour?.[l] ?? 0) > 0);
   return sections(
     { title: 'Caractéristiques', layout: 'grid', rows: charRows },

@@ -184,7 +184,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
     const cmp = compareEquip(item, h);
     return (
       <div className="mc-hero" key={h.id}>
-        <div className="mc-hero-head" title={h.name}>
+        <div className="mc-hero-head" title={h.label}>
           <TeamPortrait combatant={h} size={24} />
           <span className="mc-cur">{cmp.currentName ? `actuel : ${cmp.currentName}` : 'rien d’équipé'}</span>
         </div>
@@ -215,9 +215,9 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
       .sort((a, b) => (a.info.type === 'defaut' ? 1 : 0) - (b.info.type === 'defaut' ? 1 : 0));
     const canCompare = item.kind === 'melee' || item.kind === 'ranged' || item.kind === 'armor';
     return (
-      <div className="merch-compare preview" role="region" aria-label={`Détails ${item.name}`}>
+      <div className="merch-compare preview" role="region" aria-label={`Détails ${item.label}`}>
         <div className="mc-head">
-          <strong>{item.name}</strong>
+          <strong>{item.label}</strong>
           <button className="btn small" onClick={() => setDetails(null)}>Fermer</button>
         </div>
         {quals.length > 0 && (
@@ -258,7 +258,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
       <div className="dist-list">
         {(dist ?? []).map((d, i) => (
           <div className="dist-row" key={d.item.uid}>
-            <span className="merch-name">{d.item.name}</span>
+            <span className="merch-name">{d.item.label}</span>
             <div className="frame-row">
               {party.map((h) => (
                 <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={d.heroId === h.id} onClick={() => onAssignDist(i, h.id)} />
@@ -435,14 +435,14 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             : <span className="cart-info empty"><Icon id="merchant/cart" size="sm" /> Rien à vendre sélectionné</span>}
         </div>
         <Tabs
-          tabs={sellHeroes.map((h) => ({ key: h.id, label: <span title={h.name}><TeamPortrait combatant={h} size={24} /></span>, count: (h.items ?? []).length }))}
+          tabs={sellHeroes.map((h) => ({ key: h.id, label: <span title={h.label}><TeamPortrait combatant={h} size={24} /></span>, count: (h.items ?? []).length }))}
           active={activeSellId}
           onChange={setSellHero}
         />
         {heroItems.map((it) => (
           <div className="merch-row sell" key={it.uid}>
             <span className="merch-name">
-              {it.name}
+              {it.label}
               {isEquippedForSell(it) && <span className="equipped-tag" title="Actuellement équipé">✓ équipé</span>}
               {it.identified === false ? ' (non identifié)' : ''}
             </span>
@@ -453,7 +453,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
               const h = merchant.sellHalvings?.[it.uid] ?? 0;
               if (sellBuyerAvailability(it, 0) === 'Commune' && h === 0) return null;
               return (
-                <span className="sell-haggle" title="Baisser le prix de moitié augmente la Disponibilité d'un acheteur d'un cran (LDB 59 l.60)">
+                <span className="sell-haggle" title="Baisser le prix de moitié augmente la Disponibilité d'un acheteur d'un cran">
                   <QtyStepper
                     center={<span className="sell-av">acheteur {sellBuyerAvailability(it, h)}{h > 0 ? ` (÷${2 ** h})` : ''}</span>}
                     onDec={() => onSellHalving(it.uid, -1)}
@@ -496,7 +496,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             <tbody>
               {sellCartItems.map(({ hero, it }) => (
                 <tr key={it.uid}>
-                  <td className="cart-name">{it.name}<span className="cart-owner" title={hero.name}><TeamPortrait combatant={hero} size={18} /></span></td>
+                  <td className="cart-name">{it.label}<span className="cart-owner" title={hero.label}><TeamPortrait combatant={hero} size={18} /></span></td>
                   <td className="cart-sub"><Coins money={sellPriceMoney(it)} /></td>
                   <td className="cart-rm"><button className="btn-step" onClick={() => onRemoveSellCart(it.uid)} aria-label="Retirer">✕</button></td>
                 </tr>
@@ -523,7 +523,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
       for (const it of h.items ?? []) if (it.trappingId && !it.equipped) byTrap.set(it.trappingId, (byTrap.get(it.trappingId) ?? 0) + 1);
       for (const [tid, count] of byTrap) {
         const t = findTrappingById(tid);
-        if (t && (t.price?.gold || t.price?.silver || t.price?.bronze)) giveOpts.push({ key: `${h.id}|${tid}`, heroId: h.id, trappingId: tid, label: `${t.label} ×${count} (${h.name})`, count });
+        if (t && (t.price?.gold || t.price?.silver || t.price?.bronze)) giveOpts.push({ key: `${h.id}|${tid}`, heroId: h.id, trappingId: tid, label: `${t.label} ×${count} (${h.label})`, count });
       }
     }
     const getOpts = inStock.map((l) => ({ id: l.id, label: `${labelOf(l.id)} ×${l.qty}` }));
@@ -535,7 +535,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
     const ok = !!quote && !!give && give.count >= quote.giveCount && getStockQty >= count;
     return (
       <div className="merch-tab tavern-block">
-        <p className="tavern-detail">Échange sans argent : la Disponibilité des deux biens fixe le ratio (LDB 59 l.64-76).</p>
+        <p className="tavern-detail">Échange sans argent : la Disponibilité des deux biens fixe le ratio.</p>
         {!giveOpts.length ? <p className="empty">— aucun bien chiffré à céder —</p> : (
           <>
             <label className="tavern-amount">Céder
@@ -617,7 +617,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             <div className="merch-tab">
               {damaged.map(({ h, it }) => (
                 <div className="merch-row repair" key={it.uid}>
-                  <span className="merch-name" title={h.name}><TeamPortrait combatant={h} size={20} /> {it.name}</span>
+                  <span className="merch-name" title={h.label}><TeamPortrait combatant={h} size={20} /> {it.label}</span>
                   <span className="merch-price"><Coins money={repairCost(it)} /></span>
                   <button className="btn small" onClick={() => onRepair(it.uid, h.id)}>Réparer</button>
                 </div>

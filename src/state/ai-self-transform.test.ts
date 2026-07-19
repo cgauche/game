@@ -10,13 +10,13 @@ import { chooseEnemyAction, type EnemyTurnInput } from './ai';
 import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 
-const MELEE: Weapon = { name: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const MELEE: Weapon = { label: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 const C = { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const scene = emptyScene(16, 16);
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
-    id, name: id, kind, pos, wounds: { current: 14, max: 14, base: 14 }, characteristics: C as never,
+    id, label: id, kind, pos, wounds: { current: 14, max: 14, base: 14 }, characteristics: C as never,
     advantage: 0, conditions: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } as never,
     skills: [], talents: [], movement: 4, weapons: [MELEE], ...opts,
   } as Combatant;

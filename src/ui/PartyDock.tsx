@@ -35,7 +35,7 @@ export function PartyDock({ heroes, activeId, targeting, onOpen }: {
           size="md"
           active={c.id === activeId}
           onClick={() => onOpen(c.id)}
-          title={targeting ? `${c.name} — cibler` : `${c.name} — fiche du personnage`}
+          title={targeting ? `${c.label} — cibler` : `${c.label} — fiche du personnage`}
         />
       ))}
     </div>

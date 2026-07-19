@@ -5,7 +5,7 @@ import type { Combatant } from './types';
 
 /** Combattant minimal (Ag 45 → Bonus d'Agilité 4). */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'h', name: 'T', kind: 'hero',
+  id: 'h', label: 'T', kind: 'hero',
   characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 45, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
   wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
   weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

@@ -21,7 +21,7 @@ const onHitFlow = (ops: unknown[]): TriggeredEffect =>
  */
 const dummy = (p: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'x', name: 'X', kind: 'hero',
+    id: 'x', label: 'X', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 45 },
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -29,10 +29,10 @@ const dummy = (p: Partial<Combatant> = {}): Combatant =>
   } as Combatant);
 
 /** Arme NUE pour les comparaisons de mitigation (non enchantée). */
-const sword = (): Weapon => ({ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', range: null, qualities: [] });
+const sword = (): Weapon => ({ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', range: null, qualities: [] });
 
 const weaponItem = (uid: string, name: string, damage: string): ItemInstance =>
-  ({ uid, name, kind: 'melee', damage: parseDamage(damage), reach: 'Moyenne', range: null, qualities: [], enc: 1, equipped: true });
+  ({ uid, label: name, kind: 'melee', damage: parseDamage(damage), reach: 'Moyenne', range: null, qualities: [], enc: 1, equipped: true });
 
 /** Combattant tenant une arme dans son set actif (l'op enchante l'arme TENUE). */
 const wielder = (item: ItemInstance, p: Partial<Combatant> = {}): Combatant => {

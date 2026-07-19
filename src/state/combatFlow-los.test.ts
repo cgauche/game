@@ -24,7 +24,7 @@ const shooter = (over: Partial<Combatant> = {}): Combatant =>
   }) as unknown as Combatant;
 
 const target = (over: Partial<Combatant> = {}): Combatant =>
-  ({ ...shooter({ id: 'B', name: 'Cible', kind: 'enemy', weapons: [], pos: { x: 5, y: 0 } }), ...over }) as Combatant;
+  ({ ...shooter({ id: 'B', label: 'Cible', kind: 'enemy', weapons: [], pos: { x: 5, y: 0 } }), ...over }) as Combatant;
 
 function scene(w: number, tiles?: Record<string, string>): Scene {
   const grid = new Array(w).fill('herbe');

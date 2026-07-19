@@ -7,12 +7,12 @@ import type { Combatant, ItemInstance, Weapon } from './types';
 const hero = (p: { weapons?: Partial<Weapon>[]; items?: Partial<ItemInstance>[] }): Combatant =>
   ({ id: 'h', name: 'H', weapons: (p.weapons ?? []) as Weapon[], items: (p.items ?? []) as ItemInstance[] } as unknown as Combatant);
 const it_ = (p: Partial<ItemInstance>): ItemInstance =>
-  ({ uid: p.uid ?? 'n', name: 'X', kind: 'melee', qualities: [], enc: 0, equipped: false, ...p } as ItemInstance);
+  ({ uid: p.uid ?? 'n', label: 'X', kind: 'melee', qualities: [], enc: 0, equipped: false, ...p } as ItemInstance);
 
 describe('compareEquip (accordéon « équiper » du marchand)', () => {
   it('mêlée : améliore les Dégâts et l’Allonge vs l’arme actuelle', () => {
-    const h = hero({ weapons: [{ uid: 'cur', name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte', qualities: [] }] });
-    const epee = it_({ uid: 'new', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [{ id: 'precise' }] });
+    const h = hero({ weapons: [{ uid: 'cur', label: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte', qualities: [] }] });
+    const epee = it_({ uid: 'new', label: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [{ id: 'precise' }] });
     const c = compareEquip(epee, h);
     expect(c.slot).toBe('melee');
     expect(c.currentName).toBe('Dague');
@@ -23,8 +23,8 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
   });
 
   it('mêlée sans arme tenue : base de comparaison = mains nues +BF+0 (LDB 62 l.28), pas de currentName', () => {
-    const h = hero({ weapons: [{ uid: 'mn', name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [], builtinId: 'mains-nues' }] });
-    const c = compareEquip(it_({ name: 'Dague', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte' }), h);
+    const h = hero({ weapons: [{ uid: 'mn', label: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [], builtinId: 'mains-nues' }] });
+    const c = compareEquip(it_({ label: 'Dague', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte' }), h);
     expect(c.currentName).toBeNull(); // les Mains nues ne comptent pas comme arme « actuelle »
     const dmg = c.rows.find((r) => r.label === 'Dégâts')!;
     expect(dmg.current).toBe('+BF+0 (mains nues)'); // base = mains nues +BF+0 (pas +BF-2)
@@ -32,15 +32,15 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
   });
 
   it('mêlée : downgrade signalé (Dégâts inférieurs)', () => {
-    const h = hero({ weapons: [{ uid: 'cur', name: 'Zweihänder', type: 'melee', damage: { plusBF: true, flat: 6 }, reach: 'Longue', qualities: [] }] });
-    const c = compareEquip(it_({ name: 'Couteau', damage: { plusBF: true, flat: -1 }, reach: 'Très courte' }), h);
+    const h = hero({ weapons: [{ uid: 'cur', label: 'Zweihänder', type: 'melee', damage: { plusBF: true, flat: 6 }, reach: 'Longue', qualities: [] }] });
+    const c = compareEquip(it_({ label: 'Couteau', damage: { plusBF: true, flat: -1 }, reach: 'Très courte' }), h);
     expect(c.rows.find((r) => r.label === 'Dégâts')!.trend).toBe('down');
     expect(c.rows.find((r) => r.label === 'Allonge')!.trend).toBe('down');
   });
 
   it('distance : compare la Portée, n’exige pas d’arme de mêlée tenue', () => {
-    const h = hero({ weapons: [{ uid: 'm', name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }] });
-    const arc = it_({ name: 'Arc', kind: 'ranged', damage: { plusBF: false, flat: 9 }, range: 90, qualities: [] });
+    const h = hero({ weapons: [{ uid: 'm', label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] }] });
+    const arc = it_({ label: 'Arc', kind: 'ranged', damage: { plusBF: false, flat: 9 }, range: 90, qualities: [] });
     const c = compareEquip(arc, h);
     expect(c.slot).toBe('ranged');
     expect(c.currentName).toBeNull(); // pas d'arme à distance tenue
@@ -48,8 +48,8 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
   });
 
   it('armure : PA par zone, gain sur le Corps quand la neuve fait mieux', () => {
-    const h = hero({ items: [{ uid: 'cur', name: 'Veste de cuir', kind: 'armor', pa: 1, locs: ['corps'], qualities: [], equipped: true }] });
-    const maille = it_({ name: 'Chemise de mailles', kind: 'armor', pa: 3, locs: ['corps'], qualities: [] });
+    const h = hero({ items: [{ uid: 'cur', label: 'Veste de cuir', kind: 'armor', pa: 1, locs: ['corps'], qualities: [], equipped: true }] });
+    const maille = it_({ label: 'Chemise de mailles', kind: 'armor', pa: 3, locs: ['corps'], qualities: [] });
     const c = compareEquip(maille, h);
     expect(c.slot).toBe('armor');
     const corps = c.rows.find((r) => r.label === 'PA Corps')!;
@@ -60,8 +60,8 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
 
   it('bouclier : compare la Protection (Protectrice N), exclut l’objet lui-même', () => {
     expect(isShieldItem({ qualities: [{ id: 'protectrice', value: 1 }] })).toBe(true);
-    const h = hero({ weapons: [{ uid: 'cur', name: 'Bouclier (Targe)', type: 'melee', qualities: [{ id: 'protectrice', value: 1 }, { id: 'defensive' }] }] });
-    const grand = it_({ uid: 'new', name: 'Bouclier (Grand)', kind: 'melee', qualities: [{ id: 'protectrice', value: 3 }, { id: 'defensive' }] });
+    const h = hero({ weapons: [{ uid: 'cur', label: 'Bouclier (Targe)', type: 'melee', qualities: [{ id: 'protectrice', value: 1 }, { id: 'defensive' }] }] });
+    const grand = it_({ uid: 'new', label: 'Bouclier (Grand)', kind: 'melee', qualities: [{ id: 'protectrice', value: 3 }, { id: 'defensive' }] });
     const c = compareEquip(grand, h);
     expect(c.slot).toBe('shield');
     expect(c.currentName).toBe('Bouclier (Targe)');

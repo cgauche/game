@@ -63,12 +63,12 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
   for (const h of pool) {
     const exp = (h.castPenalties ?? []).filter((p) => p.untilTime != null && p.untilTime <= now);
     if (exp.length) {
-      for (const p of exp) expiredLog.push(`${h.name} : ${p.label} se dissipe.`);
+      for (const p of exp) expiredLog.push(`${h.label} : ${p.label} se dissipe.`);
       h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
     }
     const fx = (h.activeEffects ?? []).filter((e) => e.duration.scale === 'clock' && e.duration.until <= now);
     if (fx.length) {
-      for (const e of fx) expiredLog.push(`${h.name} : ${e.label} se dissipe.`);
+      for (const e of fx) expiredLog.push(`${h.label} : ${e.label} se dissipe.`);
       h.activeEffects = h.activeEffects!.filter((e) => !(e.duration.scale === 'clock' && e.duration.until <= now));
       dropExpiredGrantedTraits(h, fx); // traits accordés (op grantTrait) retirés avec leur effet
       dropExpiredGrantedResources(h, fx); // Chance/Destin accordés (gainResource) non dépensés
@@ -84,7 +84,7 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
     // dissipés à l'échéance, même canal de purge que les effets actifs (LDB 72 l.18).
     const conds = (h.conditions ?? []).filter((x) => x.untilTime != null && x.untilTime <= now);
     if (conds.length) {
-      for (const x of conds) expiredLog.push(`${h.name} : l'État ${conditionLabel(x.id)} se dissipe.`);
+      for (const x of conds) expiredLog.push(`${h.label} : l'État ${conditionLabel(x.id)} se dissipe.`);
       h.conditions = h.conditions.filter((x) => !(x.untilTime != null && x.untilTime <= now));
     }
   }
@@ -101,7 +101,7 @@ export function purgeAdventureEffects(get: Get, set: Set): string[] {
   for (const h of get().party) {
     const fx = (h.activeEffects ?? []).filter((e) => e.duration.scale === 'adventure');
     if (!fx.length) continue;
-    for (const e of fx) expiredLog.push(`${h.name} : ${e.label} se dissipe (fin de l'aventure).`);
+    for (const e of fx) expiredLog.push(`${h.label} : ${e.label} se dissipe (fin de l'aventure).`);
     h.activeEffects = (h.activeEffects ?? []).filter((e) => e.duration.scale !== 'adventure');
   }
   if (expiredLog.length) { set({ party: [...get().party] }); get().log(expiredLog); }
@@ -185,7 +185,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
     if (missed > 0) {
       for (const h of party) {
         if (h.dead) continue;
-        lines.push(`${h.name} — privation de sommeil (${missed} nuit${missed > 1 ? 's' : ''} sans dormir) :`);
+        lines.push(`${h.label} — privation de sommeil (${missed} nuit${missed > 1 ? 's' : ''} sans dormir) :`);
         lines.push(...applyOps(h, [{ op: 'condition', name: 'extenue', value: missed }], { rng: battleRng() }));
       }
     }

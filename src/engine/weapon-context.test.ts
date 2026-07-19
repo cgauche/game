@@ -12,11 +12,11 @@ import type { Weapon, Combatant } from './types';
 //  - 43.1a Cavalerie (2M) à pied → vraie arme à Deux Mains (l.142-143)
 
 const lance = (): Weapon => ({
-  name: 'Lance de cavalerie', type: 'melee', subType: 'cavalerie', reach: 'Très longue',
+  label: 'Lance de cavalerie', type: 'melee', subType: 'cavalerie', reach: 'Très longue',
   damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'empaleuse' }, { id: 'percutante' }],
 });
 const fleau = (): Weapon => ({
-  name: 'Fléau', type: 'melee', subType: 'fleau', reach: 'Moyenne',
+  label: 'Fléau', type: 'melee', subType: 'fleau', reach: 'Moyenne',
   damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'perturbante' }, { id: 'a-enroulement' }],
 });
 
@@ -44,7 +44,7 @@ describe('43.1c — Lance de cavalerie hors Charge → Arme improvisée (LDB 62 
     expect(effectiveWeaponDamage(w, 4)).toBe(10); // BF4 + 6
   });
   it("la règle ne vise QUE les lances : Marteau à bec-de-corbin (cavalerie, non-lance) inchangé hors charge", () => {
-    const marteau: Weapon = { name: 'Marteau à bec-de-corbin', type: 'melee', subType: 'cavalerie', damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'assommante' }] };
+    const marteau: Weapon = { label: 'Marteau à bec-de-corbin', type: 'melee', subType: 'cavalerie', damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'assommante' }] };
     expect(effectiveWeapon(marteau, { charged: false })).toBe(marteau);
   });
   it('résolution seedée (DR 0) : lance NON chargée = BF+1 (5) ; chargée = BF+6 + Percutante (13)', () => {
@@ -89,7 +89,7 @@ describe('43.1b — Fléau sans la Spécialisation → Dangereuse + aucun Atout 
 
 describe('effectiveWeapon — Groupes d’Armes à distance dégradés (LDB 62 l.184/188)', () => {
   const arbalete = (): Weapon => ({
-    name: 'Arbalète', type: 'ranged', subType: 'arbalete', range: 60,
+    label: 'Arbalète', type: 'ranged', subType: 'arbalete', range: 60,
     damage: { plusBF: false, flat: 12 }, qualities: [{ id: 'precise' }, { id: 'imprecise' }],
   });
 
@@ -134,9 +134,9 @@ describe('43.1a — Cavalerie (2M) à pied → Deux Mains (LDB 62 l.142-143)', (
     expect(marteau.hands).toBe(2);
     const onFoot = combatant({ items: [{ ...marteau, equipped: true }] });
     recomputeLoadout(onFoot);
-    expect(onFoot.weapons.find((w) => w.name.includes('bec-de-corbin'))?.hands).toBe(2);
+    expect(onFoot.weapons.find((w) => w.label.includes('bec-de-corbin'))?.hands).toBe(2);
     const mounted = combatant({ mountId: 'horse', items: [{ ...marteau, equipped: true }] });
     recomputeLoadout(mounted);
-    expect(mounted.weapons.find((w) => w.name.includes('bec-de-corbin'))?.hands).toBe(1);
+    expect(mounted.weapons.find((w) => w.label.includes('bec-de-corbin'))?.hands).toBe(1);
   });
 });

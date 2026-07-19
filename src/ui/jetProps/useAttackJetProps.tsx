@@ -160,7 +160,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
       <VsHeader
         actor={attacker}
         target={target}
-        label={<>{weapon?.name ?? 'Mains nues'}{preview ? <> · Dégâts +{preview.dmg}</> : null}</>}
+        label={<>{weapon?.label ?? 'Mains nues'}{preview ? <> · Dégâts +{preview.dmg}</> : null}</>}
       />
     ),
     rolled,
@@ -190,7 +190,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 onChange={(e) => setWeapon(e.target.value || null)}
               >
                 {pickable.map((w) => (
-                  <option key={w.uid} value={w.uid}>{w.name}{w.hand === 'off' ? ' (2nde -20)' : ''}</option>
+                  <option key={w.uid} value={w.uid}>{w.label}{w.hand === 'off' ? ' (2nde -20)' : ''}</option>
                 ))}
               </select>
               <CodexRef category="regles" id="main-secondaire" label="Attaque de la main secondaire" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>

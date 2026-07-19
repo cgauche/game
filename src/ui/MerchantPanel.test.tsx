@@ -13,9 +13,9 @@ const base = { entityId: 'p', archetype: 'armurier', settlement: 'ville' as cons
 
 /** Stub RIGGABLE : le marchand rend des tuiles-portraits (CharFrame/TeamPortrait) — le rig a
  *  besoin d'armour/wounds/conditions/characteristics pour dessiner le héros. */
-const stubHero = (id: string, name: string, items: ItemInstance[] = []) =>
+const stubHero = (id: string, label: string, items: ItemInstance[] = []) =>
   ({
-    id, name, kind: 'hero', wounds: { current: 10, max: 12 }, conditions: [], advantage: 0,
+    id, label, kind: 'hero', wounds: { current: 10, max: 12 }, conditions: [], advantage: 0,
     weapons: [], skills: [], items, movement: 4,
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
@@ -23,7 +23,7 @@ const stubHero = (id: string, name: string, items: ItemInstance[] = []) =>
 
 describe('MerchantPanel (#2 — panier)', () => {
   it('Parcourir : tableau par famille + bouton « Ajouter » + barre panier', () => {
-    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const party = [{ id: 'h', label: 'H', items: [] } as unknown as Combatant];
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, stock: [{ id: 'hallebarde', qty: 2 }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
     );
@@ -36,7 +36,7 @@ describe('MerchantPanel (#2 — panier)', () => {
   });
 
   it('grise « Ajouter » si on ne peut pas payer une seule unité', () => {
-    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const party = [{ id: 'h', label: 'H', items: [] } as unknown as Combatant];
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, stock: [{ id: 'hallebarde', qty: 1 }] }} party={party} money={{ gold: 1, silver: 0, brass: 0 }} {...noop} />,
     );
@@ -59,7 +59,7 @@ describe('MerchantPanel (#2 — panier)', () => {
   });
 
   it('Panier : lignes, total marchandable, bouton Payer', () => {
-    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const party = [{ id: 'h', label: 'H', items: [] } as unknown as Combatant];
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, stock: [{ id: 'hallebarde', qty: 3 }], cart: [{ id: 'hallebarde', qty: 2 }] }} party={party} money={{ gold: 9, silver: 0, brass: 0 }} {...noop} initialBuyView="cart" />,
     );
@@ -72,7 +72,7 @@ describe('MerchantPanel (#2 — panier)', () => {
 
   it('Répartition (après paiement) : un menu héros par objet + Confirmer', () => {
     const party = [stubHero('h1', 'Anna'), stubHero('h2', 'Bruno')];
-    const bought = { uid: 'b1', name: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false } as ItemInstance;
+    const bought = { uid: 'b1', label: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false } as ItemInstance;
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, pendingDistribution: [{ item: bought, heroId: 'h1' }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
     );
@@ -84,7 +84,7 @@ describe('MerchantPanel (#2 — panier)', () => {
   });
 
   it('panier négocié : retirer OK, plus ajouter/renégocier, « Refuser le marché » remplace Vider, « Continuer » désactivé', () => {
-    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const party = [{ id: 'h', label: 'H', items: [] } as unknown as Combatant];
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, stock: [{ id: 'hallebarde', qty: 3 }], cart: [{ id: 'hallebarde', qty: 1 }], bargainBuy: { won: true, drNet: 2, negotiator: false } }} party={party} money={{ gold: 9, silver: 0, brass: 0 }} {...noop} initialBuyView="cart" />,
     );
@@ -96,7 +96,7 @@ describe('MerchantPanel (#2 — panier)', () => {
   });
 
   it('Marchandage verrouillé jusqu’au réassort (négocié puis quitté sans payer)', () => {
-    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const party = [{ id: 'h', label: 'H', items: [] } as unknown as Combatant];
     const html = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, stock: [{ id: 'hallebarde', qty: 1 }], cart: [{ id: 'hallebarde', qty: 1 }], bargainLocked: true }} party={party} money={{ gold: 9, silver: 0, brass: 0 }} {...noop} initialBuyView="cart" />,
     );
@@ -105,7 +105,7 @@ describe('MerchantPanel (#2 — panier)', () => {
   });
 
   it('bande d’ambiance : rendue quand le service porte un backdrop (forgeron → forge), absente sinon (#381)', () => {
-    const party = [{ id: 'h', name: 'H', items: [] } as unknown as Combatant];
+    const party = [{ id: 'h', label: 'H', items: [] } as unknown as Combatant];
     const withBd = renderToStaticMarkup(
       <MerchantPanelView merchant={{ ...base, backdrop: 'forge' }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
     );
@@ -119,8 +119,8 @@ describe('MerchantPanel (#2 — panier)', () => {
 
   it('onglet Vendre / Réparer + Marchandage par onglet (#2c/#2d)', () => {
     const party = [stubHero('h', 'H', [
-      { uid: 'x', trappingId: 'dague', name: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false },
-      { uid: 'a', trappingId: 'chemise-de-mailles', name: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 2, qualities: [], enc: 1, equipped: true },
+      { uid: 'x', trappingId: 'dague', label: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false },
+      { uid: 'a', trappingId: 'chemise-de-mailles', label: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 2, qualities: [], enc: 1, equipped: true },
     ] as ItemInstance[])];
     const sell = renderToStaticMarkup(<MerchantPanelView merchant={base} party={party} money={{ gold: 1, silver: 0, brass: 0 }} {...noop} initialTab="sell" />);
     expect(sell).toContain('Dague');

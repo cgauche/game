@@ -27,7 +27,7 @@ describe('finalizeBattle — teardown des activeEffects à durée Rounds (jamais
     useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
-    return b.combatants.find((c) => c.name === 'W')!;
+    return b.combatants.find((c) => c.label === 'W')!;
   }
 
   it('mutation TEMPORISÉE (rollMutation, Rounds restants) → détachée au teardown, jamais reportée en permanent', () => {

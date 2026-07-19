@@ -65,7 +65,7 @@ describe('dédup trappings ⊥ vehicles + résolution unifiée', () => {
 
   it("itemFromVehicleById construit un ItemInstance d'inventaire (nom, enc, catégorie)", () => {
     const it = itemFromVehicleById('coracle')!;
-    expect(it.name).toBe('Coracle');
+    expect(it.label).toBe('Coracle');
     expect(it.enc).toBe(6);
     expect(it.subType).toBe('animaux-et-vehicules');
     expect(it.trappingId).toBe('coracle'); // re-dérivation
@@ -77,7 +77,7 @@ describe('dédup trappings ⊥ vehicles + résolution unifiée', () => {
     for (const id of ['diligence', 'barque', 'charrette', 'chariot', 'chaland']) {
       const it = itemFromTrappingById(id);
       expect(it, id).not.toBeNull();
-      expect(it!.name.length).toBeGreaterThan(0);
+      expect(it!.label.length).toBeGreaterThan(0);
     }
   });
 

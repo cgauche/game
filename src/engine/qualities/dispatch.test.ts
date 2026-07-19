@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 /** Libellés FR (lisibles) → `QualityInstance[]` structurées (parseur d'authoring). */
 const q_ = (qs: string[]) => qs.map((s) => parseQualityInstance(s)!);
-const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon => ({ name: 'W', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: q_(qualities), ...over });
+const w = (qualities: string[], over: Partial<Weapon> = {}): Weapon => ({ label: 'W', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: q_(qualities), ...over });
 
 describe('dispatch — hasQuality compare par ID de qualité (label/casse/Indice tolérés en entrée)', () => {
   it('hasQuality(porteur, qualityId) reconnaît la qualité quelle que soit la forme stockée', () => {

@@ -20,7 +20,7 @@ import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 mkdirSync('public/qc', { recursive: true });
 const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
-const wp = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
+const wp = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 // Un représentant par classe (le libellé résout la classe via la forme).
 const REPS: Array<{ cls: string; w: Weapon }> = [

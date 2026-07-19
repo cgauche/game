@@ -351,7 +351,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
       ? {
           id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
           base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
-          meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
+          meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
           ...(ft.menace ? { menace: ft.menace } : {}),
         }
       : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, difficulty, extraMeta));
@@ -377,7 +377,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     // n'ont de rangée `CascadeModal`/RollLine — le journal de combat est la SEULE surface des DEUX
     // jets de ce Test opposé, il les PORTE (#295 Lot 5, gardé nominativement).
     queueLines(ctx.get, ctx.set, [
-      `${attacker.name} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.name} (${skillLabel}) ${t.roll}/${t.target} (DR ${t.sl}${bonusSL ? `+${bonusSL}` : ''}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
+      `${attacker.label} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.label} (${skillLabel}) ${t.roll}/${t.target} (DR ${t.sl}${bonusSL ? `+${bonusSL}` : ''}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
     ], c.id);
     const lines = applyTriggeredTestBranch(c, { success: defenderResists, sl: t.sl }, { onSuccess: node.success, onFail: node.fail }, exec);
     // SEAM `onOwnTestFailed` (combat, jet inline ennemi/auto — Test OPPOSÉ perdu par le porteur).
@@ -387,7 +387,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     playAfter(ctx.get, ctx.set, c, after, ctx.label);
     return;
   }
-  queueLines(ctx.get, ctx.set, [describeTestRoll(c.name, skillLabel, difficulty, t)], c.id);
+  queueLines(ctx.get, ctx.set, [describeTestRoll(c.label, skillLabel, difficulty, t)], c.id);
   const lines = applyTriggeredTestBranch(c, t, { onSuccess: node.success, onFail: node.fail }, exec);
   // SEAM `onOwnTestFailed` (combat, jet inline ennemi/auto — Test SIMPLE raté par le porteur).
   if (!t.success) lines.push(...fireOwnTestFailed(ctx.get, c, { sl: t.sl }));

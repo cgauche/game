@@ -2,8 +2,8 @@ import { narrateEvent } from '../gameIso/combatNarration';
 import type { CombatEvent } from '../state/combatLog';
 import { Icon } from './Icon';
 
-/** Forme minimale d'un combattant pour colorer les noms par camp (id/name/kind). */
-interface ComLite { id: string; name: string; kind: string; }
+/** Forme minimale d'un combattant pour colorer les noms par camp (id/label/kind). */
+interface ComLite { id: string; label: string; kind: string; }
 
 /** Icône + texte coloré par camp d'un événement narré — cœur partagé (journal, bandeau, modales). */
 export function NarratedSegments({ event, combatants }: { event: CombatEvent; combatants?: ComLite[] }) {

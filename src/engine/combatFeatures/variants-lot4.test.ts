@@ -22,11 +22,11 @@ import type { Combatant, Weapon } from '../types';
 afterEach(() => resetRule('combat-aa-avantage-groupe'));
 
 const w = (over: Partial<Weapon> = {}): Weapon =>
-  ({ name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: 2 }], ...over });
+  ({ label: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: 2 }], ...over });
 
 function mk(names: string[], over: Partial<Combatant> = {}): Combatant {
   return {
-    id: 'h', name: 'H', kind: 'hero',
+    id: 'h', label: 'H', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

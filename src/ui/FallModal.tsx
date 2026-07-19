@@ -34,7 +34,7 @@ export function FallModal() {
       <RollShell
         flowKey="fall"
         title={<><Icon id="melee/flee" size="sm" /> Chute volontaire</>}
-        subtitle={<><strong>{c.name}</strong> se tient au bord d'un dénivelé de {p.metres} m (LDB 15 l.82)</>}
+        subtitle={<><strong>{c.label}</strong> se tient au bord d'un dénivelé de {p.metres} m</>}
         rows={[]}
         rolled={false}
         setup={
@@ -81,7 +81,7 @@ export function FallModal() {
     <RollShell
       flowKey="fall"
       title={<><Icon id="melee/flee" size="sm" /> Chute volontaire</>}
-      subtitle={<><strong>{c.name}</strong> amortit sa chute (Test d'Athlétisme +20, {p.metres} m)</>}
+      subtitle={<><strong>{c.label}</strong> amortit sa chute (Test d'Athlétisme +20, {p.metres} m)</>}
       rows={[actorRow]}
       rolled={rolled}
       outcome={r && (

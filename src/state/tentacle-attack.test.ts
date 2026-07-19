@@ -26,19 +26,19 @@ describe('armes naturelles de mutation (recomputeLoadout)', () => {
     attachMutation(hero, mutCornes());
     recomputeLoadout(hero);
     const t = hero.weapons.find((w) => w.uid === 'nat-tentacule');
-    expect(t?.name).toBe('Tentacule');
+    expect(t?.label).toBe('Tentacule');
     expect(damageString(t!.damage)).toBe('+BF');
     expect(t?.attackKind).toBe('tentacules'); // routage pose/anim (handlingClass) — porté par l'op grantNaturalWeapon
     expect(t?.subType).toBe('base');
-    const c = hero.weapons.find((w) => w.name === 'Cornes'); // arme dérivée de mutation (derivedWeapon)
-    expect(c?.name).toBe('Cornes');
+    const c = hero.weapons.find((w) => w.label === 'Cornes'); // arme dérivée de mutation (derivedWeapon)
+    expect(c?.label).toBe('Cornes');
     expect(damageString(c!.damage)).toBe('+BF');
   });
 
   it('sans mutation : aucune arme naturelle dérivée', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     recomputeLoadout(hero);
-    expect(hero.weapons.some((w) => w.uid === 'nat-tentacule' || w.name === 'Cornes')).toBe(false);
+    expect(hero.weapons.some((w) => w.uid === 'nat-tentacule' || w.label === 'Cornes')).toBe(false);
   });
 });
 

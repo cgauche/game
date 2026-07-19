@@ -57,7 +57,7 @@ export function postesToStations(
         id: `poste:${hull.id}:${poste.item.uid}`,
         kind: 'poste',
         pos,
-        label: poste.item.name,
+        label: poste.item.label,
         icon: 'action/serve-engine',
         faction: FACTION[hull.kind],
         assignedIds: poste.crewIds ?? [],

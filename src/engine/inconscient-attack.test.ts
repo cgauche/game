@@ -23,8 +23,8 @@ const mk = (_over: Partial<Combatant> = {}): Combatant =>
     size: 'moyenne',
   } as unknown as Combatant);
 
-const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+const sword: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
 
 describe('Attaque contre un Inconscient (LDB 16 l.112)', () => {
   it('un Inconscient ne peut pas se défendre', () => {

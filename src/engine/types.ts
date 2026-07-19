@@ -301,7 +301,7 @@ export interface QualityInstance {
 export type FireArc = 'proue' | 'tribord' | 'poupe' | 'babord';
 
 export interface Weapon {
-  name: string;
+  label: string;
   type: 'melee' | 'ranged';
   /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — ex. `{plusBF:true,flat:4}` (« +BF+4 »). */
   damage: WeaponDamageSpec;
@@ -329,6 +329,10 @@ export interface Weapon {
    *  (pas forcément un combattant) ; son Atout Explosion/Tir de zone frappe le rayon autour de la case. Lu
    *  par `availableAttacks` (ciblage de case vs combattant). Absent = tir DIRECT (canon, baliste, pierrier). */
   indirect?: boolean;
+  /** LDB 62 l.292 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
+  bladed?: boolean;
+  /** LDB 47 — approximation MAISON (matière du projectile, non tabulée par le RAW), éditable. */
+  organicProjectile?: boolean;
   /** Nombre de mains requises (1 ou 2). Dérivé de `(2M)` / arc / arbalète. */
   hands?: 1 | 2;
   /** Main qui tient l'arme dans le loadout actif ('off' → pénalité de main secondaire). */
@@ -839,7 +843,7 @@ export interface ItemInstance {
    *  `itemFromTrappingById`. ABSENT = objet CUSTOM (hors-base : `customTrapping`, pièces de monstre…).
    *  Source de re-dérivation (arme dérivée de prothèse, prix de revente, réparation) — ≠ name-match. */
   trappingId?: string;
-  name: string;
+  label: string;
   kind: ItemKind;
   damage?: WeaponDamageSpec; // armes
   reach?: string | null;
@@ -884,6 +888,10 @@ export interface ItemInstance {
   soloSimple?: boolean;
   /** Pièce à TIR INDIRECT (mortier/catapulte, cf. `Weapon.indirect`) — propagé à l'arme dérivée. */
   indirect?: boolean;
+  /** LDB 62 l.292 — approximation MAISON, propagé à l'arme dérivée (cf. `Weapon.bladed`). */
+  bladed?: boolean;
+  /** LDB 47 — approximation MAISON, propagé à l'arme dérivée (cf. `Weapon.organicProjectile`). */
+  organicProjectile?: boolean;
   /** Effets « à la touche » portés en DONNÉE par le catalogue (`TrappingData.onHitEffects`) — propagés à
    *  l'arme dérivée (`Weapon.onHitEffects`). Ex. Canon à flammes nain (ADE II 8 l.243). */
   onHitEffects?: import('./flowCore').TriggeredEffect[];
@@ -1072,7 +1080,7 @@ export interface DiseaseExposure {
 
 export interface Combatant {
   id: string;
-  name: string;
+  label: string;
   kind: 'hero' | 'enemy' | 'npc';
   /** Ce combattant suit-il les règles de PERSONNAGE (#143) — axe DISTINCT du camp (`kind`, ci-dessus)
    *  ET du contrôle (`pilotedByHuman`/`controlsCombatant`, netOwnership.ts) : gouverne des mécaniques

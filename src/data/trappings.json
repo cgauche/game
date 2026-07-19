@@ -70,7 +70,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "hallebarde"
+    "shape": "hallebarde",
+    "bladed": true
   },
   {
     "id": "lance",
@@ -393,7 +394,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "couteau"
+    "shape": "couteau",
+    "bladed": true
   },
   {
     "id": "dague",
@@ -420,7 +422,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "dague"
+    "shape": "dague",
+    "bladed": true
   },
   {
     "id": "cimeterre",
@@ -459,7 +462,8 @@
         "quote": "Cimeterre"
       }
     ],
-    "shape": "cimeterre"
+    "shape": "cimeterre",
+    "bladed": true
   },
   {
     "id": "dague-ballock",
@@ -503,7 +507,8 @@
         "quote": "Dague ballock"
       }
     ],
-    "shape": "dague_ballock"
+    "shape": "dague_ballock",
+    "bladed": true
   },
   {
     "id": "massue",
@@ -672,7 +677,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "epee_batarde"
+    "shape": "epee_batarde",
+    "bladed": true
   },
   {
     "id": "grande-hache",
@@ -710,7 +716,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "grande_hache"
+    "shape": "grande_hache",
+    "bladed": true
   },
   {
     "id": "marteau-de-guerre",
@@ -821,7 +828,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "zweihander"
+    "shape": "zweihander",
+    "bladed": true
   },
   {
     "id": "fleuret",
@@ -861,7 +869,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "fleuret"
+    "shape": "fleuret",
+    "bladed": true
   },
   {
     "id": "rapiere",
@@ -895,7 +904,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "rapiere"
+    "shape": "rapiere",
+    "bladed": true
   },
   {
     "id": "fleau",
@@ -1041,7 +1051,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "brise_epee"
+    "shape": "brise_epee",
+    "bladed": true
   },
   {
     "id": "main-gauche",
@@ -1072,7 +1083,8 @@
       "book": "livre-de-base",
       "page": 294
     },
-    "shape": "main_gauche"
+    "shape": "main_gauche",
+    "bladed": true
   },
   {
     "id": "arbalete",
@@ -1106,7 +1118,8 @@
       "book": "livre-de-base",
       "page": 295
     },
-    "shape": "arbalete"
+    "shape": "arbalete",
+    "organicProjectile": true
   },
   {
     "id": "arbalete-de-poing",
@@ -1138,7 +1151,8 @@
       "book": "livre-de-base",
       "page": 295
     },
-    "shape": "arbalete_poing"
+    "shape": "arbalete_poing",
+    "organicProjectile": true
   },
   {
     "id": "arbalete-lourde",
@@ -1175,7 +1189,8 @@
       "book": "livre-de-base",
       "page": 295
     },
-    "shape": "arbalete_lourde"
+    "shape": "arbalete_lourde",
+    "organicProjectile": true
   },
   {
     "id": "arc",
@@ -1204,7 +1219,8 @@
       "book": "livre-de-base",
       "page": 295
     },
-    "shape": "arc"
+    "shape": "arc",
+    "organicProjectile": true
   },
   {
     "id": "arc-court",
@@ -1233,7 +1249,8 @@
       "book": "livre-de-base",
       "page": 295
     },
-    "shape": "arc_court"
+    "shape": "arc_court",
+    "organicProjectile": true
   },
   {
     "id": "arc-elfique",
@@ -1269,7 +1286,8 @@
       "book": "livre-de-base",
       "page": 295
     },
-    "shape": "arc_elfique"
+    "shape": "arc_elfique",
+    "organicProjectile": true
   },
   {
     "id": "arc-long",
@@ -1302,7 +1320,8 @@
       "book": "livre-de-base",
       "page": 295
     },
-    "shape": "arc_long"
+    "shape": "arc_long",
+    "organicProjectile": true
   },
   {
     "id": "fouet",
@@ -1695,7 +1714,8 @@
       "book": "livre-de-base",
       "page": 295
     },
-    "shape": "javelot"
+    "shape": "javelot",
+    "organicProjectile": true
   },
   {
     "id": "rocher",
@@ -7183,7 +7203,7 @@
     "damage": null,
     "qualities": [],
     "derivedWeapon": {
-      "name": "Crochet",
+      "label": "Crochet",
       "type": "melee",
       "damage": {
         "plusBF": true,
@@ -8973,7 +8993,8 @@
       "book": "aux-armes",
       "page": 90
     },
-    "shape": "sabre"
+    "shape": "sabre",
+    "bladed": true
   },
   {
     "id": "epee-de-cour",
@@ -9010,7 +9031,8 @@
       "book": "aux-armes",
       "page": 90
     },
-    "shape": "epee_cour"
+    "shape": "epee_cour",
+    "bladed": true
   },
   {
     "id": "gaffe-2",
@@ -9105,7 +9127,8 @@
       "book": "nuits-agitees-et-dures-journees",
       "page": 67
     },
-    "shape": "griffe_tigre"
+    "shape": "griffe_tigre",
+    "bladed": true
   },
   {
     "id": "gantelet-verrouille",
@@ -9342,7 +9365,8 @@
         "quote": "Hache d'armes"
       }
     ],
-    "shape": "hache_armes"
+    "shape": "hache_armes",
+    "bladed": true
   },
   {
     "id": "pertuisane-fauchard",
@@ -9388,7 +9412,8 @@
         "quote": "Pertuisane/Fauchard"
       }
     ],
-    "shape": "pertuisane"
+    "shape": "pertuisane",
+    "bladed": true
   },
   {
     "id": "serpe-de-guerre",
@@ -9433,7 +9458,8 @@
         "quote": "Serpe de guerre"
       }
     ],
-    "shape": "serpe_guerre"
+    "shape": "serpe_guerre",
+    "bladed": true
   },
   {
     "id": "zweihander-flamberge",
@@ -9472,7 +9498,8 @@
       "book": "aux-armes",
       "page": 96
     },
-    "shape": "zweihander_flamberge"
+    "shape": "zweihander_flamberge",
+    "bladed": true
   },
   {
     "id": "baton-pointu",
@@ -9511,7 +9538,8 @@
     "source": {
       "book": "aux-armes",
       "page": 97
-    }
+    },
+    "organicProjectile": true
   },
   {
     "id": "fleche-barbelee",
@@ -9542,7 +9570,8 @@
     "source": {
       "book": "aux-armes",
       "page": 97
-    }
+    },
+    "organicProjectile": true
   },
   {
     "id": "fleche-bodkin",
@@ -9572,7 +9601,8 @@
     "source": {
       "book": "aux-armes",
       "page": 97
-    }
+    },
+    "organicProjectile": true
   },
   {
     "id": "bille-de-plomb",
@@ -10900,7 +10930,8 @@
     },
     "qualities": [],
     "enc": 0,
-    "shape": "dague_funeste"
+    "shape": "dague_funeste",
+    "bladed": true
   },
   {
     "id": "armure-de-plates-du-leviathan",
@@ -10961,7 +10992,8 @@
     },
     "qualities": [],
     "enc": 1,
-    "shape": "lame_bois_cerf"
+    "shape": "lame_bois_cerf",
+    "bladed": true
   },
   {
     "id": "trempe-au-sang-de-dragon",
@@ -11006,7 +11038,8 @@
     },
     "qualities": [],
     "enc": 0,
-    "shape": "surin_aigle"
+    "shape": "surin_aigle",
+    "bladed": true
   },
   {
     "id": "seve-de-tregara",
@@ -11174,7 +11207,8 @@
       }
     ],
     "enc": 1,
-    "shape": "silence"
+    "shape": "silence",
+    "bladed": true
   },
   {
     "id": "vision-de-vie",
@@ -11689,7 +11723,8 @@
       "book": "archives-de-l-empire-2",
       "page": 29
     },
-    "shape": "arbalete_lourde"
+    "shape": "arbalete_lourde",
+    "organicProjectile": true
   },
   {
     "id": "piege-a-chaines",
@@ -11759,7 +11794,8 @@
       "book": "archives-de-l-empire-2",
       "page": 29
     },
-    "shape": "javelot"
+    "shape": "javelot",
+    "organicProjectile": true
   },
   {
     "id": "canon-crache-plomb",

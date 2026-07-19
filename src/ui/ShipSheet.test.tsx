@@ -5,20 +5,20 @@ import type { Combatant, SkillInstance } from '../engine/types';
 
 const mk = (id: string, dex: number, skills: { skillId: string; advances: number; spec?: string }[] = [], shipRole?: string): Combatant =>
   ({
-    id, name: id, kind: 'hero',
+    id, label: id, kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: dex, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     skills: skills.map((s) => ({ ...s, characteristic: 'dexterite' }) as SkillInstance),
     conditions: [], talents: [], wounds: { current: 10, max: 10, base: 10 }, shipRole,
   }) as unknown as Combatant;
 
 type Poste = NonNullable<Combatant['postes']>[number];
-const poste = (name: string, uid: string, side: string, crewIds: string[]): Poste =>
-  ({ item: { name, uid }, side, crewIds }) as unknown as Poste;
+const poste = (label: string, uid: string, side: string, crewIds: string[]): Poste =>
+  ({ item: { label, uid }, side, crewIds }) as unknown as Poste;
 
 describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
   it('ShipStateBlock : coque, cap, Moral, effectif', () => {
     const crew = [mk('Anna', 60, [{ skillId: 'voile', advances: 30 }], 'timonier')];
-    const ship = { id: 'ship', name: 'La Cogue', wounds: { current: 40, max: 50 }, conditions: [] } as unknown as Combatant;
+    const ship = { id: 'ship', label: 'La Cogue', wounds: { current: 40, max: 50 }, conditions: [] } as unknown as Combatant;
     const html = renderToStaticMarkup(<ShipStateBlock ship={ship} cap="N" morale={75} crew={crew} />);
     expect(html).toContain('40/50'); // coque
     expect(html).toContain('Nord');  // cap
@@ -40,7 +40,7 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
 
   it('PosteDetail : le poste sélectionné affiche son bord + son nom + son servant', () => {
     const soldat = mk('Soldat', 50, [{ skillId: 'projectiles', advances: 20, spec: 'poudre-noire' }]);
-    const ship = { id: 'ship', name: 'La Cogue', conditions: [] } as unknown as Combatant;
+    const ship = { id: 'ship', label: 'La Cogue', conditions: [] } as unknown as Combatant;
     const html = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Pierrier', 'p1', 'tribord', ['Soldat'])} combatants={[ship, soldat]} />);
     expect(html).toContain('Tribord');
     expect(html).toContain('Pierrier');
@@ -48,14 +48,14 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
   });
 
   it('PosteDetail : poste sans servant → « sans servant »', () => {
-    const ship = { id: 'ship', name: 'La Cogue', conditions: [] } as unknown as Combatant;
+    const ship = { id: 'ship', label: 'La Cogue', conditions: [] } as unknown as Combatant;
     const html = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Couleuvrine', 'p2', 'babord', [])} combatants={[ship]} />);
     expect(html).toContain('Bâbord');
     expect(html).toContain('— sans servant —');
   });
 
   it('PosteDetail : le détail change avec le poste sélectionné (maître-détail)', () => {
-    const ship = { id: 'ship', name: 'La Cogue', conditions: [] } as unknown as Combatant;
+    const ship = { id: 'ship', label: 'La Cogue', conditions: [] } as unknown as Combatant;
     // Le plan/les puces choisissent LE poste ; PosteDetail n'affiche QUE celui-là.
     const p1 = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Pierrier', 'p1', 'tribord', [])} combatants={[ship]} />);
     const p2 = renderToStaticMarkup(<PosteDetail hull={ship} poste={poste('Couleuvrine', 'p2', 'babord', [])} combatants={[ship]} />);
@@ -66,8 +66,8 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
   });
 
   it('PosteDetail readOnly (#240) : munition chargée montrée SANS sélecteur (pas d’édition de la pièce d’autrui)', () => {
-    const ship = { id: 'ship', name: 'Le Serpent', conditions: [] } as unknown as Combatant;
-    const p: Poste = { item: { name: 'Baliste', uid: 'p1' }, side: 'tribord', ammo: [{ uid: 'a1', name: 'Boulet', qty: 8 }] } as unknown as Poste;
+    const ship = { id: 'ship', label: 'Le Serpent', conditions: [] } as unknown as Combatant;
+    const p: Poste = { item: { label: 'Baliste', uid: 'p1' }, side: 'tribord', ammo: [{ uid: 'a1', label: 'Boulet', qty: 8 }] } as unknown as Poste;
     const rw = renderToStaticMarkup(<PosteDetail hull={ship} poste={p} combatants={[ship]} />);
     const ro = renderToStaticMarkup(<PosteDetail hull={ship} poste={p} combatants={[ship]} readOnly />);
     expect(rw).toContain('<select'); // éditable côté allié
@@ -81,10 +81,10 @@ describe('ShipInspectBody — inspection en LECTURE d’une coque ennemie (#240)
   // Le Serpent de Sel : raider de classe loup-imperial (ship.traits : bélier/renforcé/solide) portant la
   // Proue-idole de Stromfels (Amélioration d’INSTANCE, #221) sur `upgrades`.
   const serpent = {
-    id: 'serpent', name: 'Le Serpent de Sel', kind: 'npc', bodyShape: 'vehicule',
+    id: 'serpent', label: 'Le Serpent de Sel', kind: 'npc', bodyShape: 'vehicule',
     creatureId: 'loup-imperial', conditions: [], wounds: { current: 60, max: 80 },
     upgrades: [{ id: 'proue-idole-de-stromfels' }],
-    postes: [{ item: { name: 'Baliste', uid: 'p1' }, side: 'tribord', crewIds: [] } as unknown as Poste],
+    postes: [{ item: { label: 'Baliste', uid: 'p1' }, side: 'tribord', crewIds: [] } as unknown as Poste],
   } as unknown as Combatant;
 
   it('Coque, cap, gréement + postes visibles', () => {

@@ -106,8 +106,8 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
       continue;
     }
     const res = rollTest(rawCombatTestBase(c, undefined, char), 'intermediaire', battleRng(), combatTestPenalty(c));
-    out.lines.push(describeTestRoll(c.name, `${CHAR_LABELS[char]} (${label})`, 'intermediaire', res));
-    if (!res.success) { out.loseMovement = true; out.lines.push(t('turn.actGateKeepAction', { name: c.name })); }
+    out.lines.push(describeTestRoll(c.label, `${CHAR_LABELS[char]} (${label})`, 'intermediaire', res));
+    if (!res.success) { out.loseMovement = true; out.lines.push(t('turn.actGateKeepAction', { name: c.label })); }
   }
   return out;
 }
@@ -115,9 +115,9 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
 // Étape `actGate` (héros manuel) : succès → rien à restreindre ; échec → étape de CHOIX insérée.
 registerCascadeApplier('actGate', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  if (step.result.success) return { consequences: freeCons([t('turn.actGateOk', { name: hero.name })]) };
+  if (step.result.success) return { consequences: freeCons([t('turn.actGateOk', { name: hero.label })]) };
   return {
-    consequences: freeCons([t('turn.actGateFail', { name: hero.name })]),
+    consequences: freeCons([t('turn.actGateFail', { name: hero.label })]),
     insert: [{
       id: `actGateChoice-${hero.id}`, kind: 'actGateChoice', actorId: hero.id, icon: 'item/consumable',
       label: t('turn.actGateChoice'),
@@ -136,10 +136,10 @@ registerCascadeApplier('actGateChoice', (get, set, step, hero) => {
   if (!battle || battle.order[battle.turn] !== hero.id) return; // plus son tour → sans objet
   if (step.chosen === 'move') {
     set({ battle: { ...battle, acted: true } });
-    return { consequences: freeCons([t('op.loseAction', { name: hero.name })]) };
+    return { consequences: freeCons([t('op.loseAction', { name: hero.label })]) };
   }
   set({ battle: { ...battle, movementUsed: mountMovement(battle, hero) } });
-  return { consequences: freeCons([t('op.loseMovement', { name: hero.name })]) };
+  return { consequences: freeCons([t('op.loseMovement', { name: hero.label })]) };
 });
 
 // ============================================================================================
@@ -163,7 +163,7 @@ export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
   if (get().aiWouldCast(enemy.id)) return;
   if (resolveFrenzyEntry(effectiveChar(enemy, 'force-mentale'), battleRng()).success) {
     (enemy.psychState ??= []).push({ type: 'frenesie' });
-    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnter', { name: enemy.name }), enemy.id)] } });
+    set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnter', { name: enemy.label }), enemy.id)] } });
   }
 }
 
@@ -195,17 +195,17 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
       const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits), sansPeur); // À sang-froid : inverse un raté (LDB 85)
       if (r.brise > 0 && res.failCondition) {
         addCondition(enemy, res.failCondition, r.brise);
-        log.push(t('turn.terrified', { name: enemy.name, foe: foe.name, brise: r.brise }));
+        log.push(t('turn.terrified', { name: enemy.label, foe: foe.label, brise: r.brise }));
       }
       if (res.becomes) enemy.psychState.push({ type: res.becomes, sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur (ignorée si Sans Peur réussit)
     } else if (sansPeur) {
       // Sans Peur : UN seul Test de Calme Accessible (+20) à la rencontre ; réussi → Peur ignorée d'emblée.
       const r = resolvePeurTest(calmeValue(enemy), src.indice, 0, battleRng(), isColdBlooded(enemy.traits), true);
       enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: r.calmeDR, lastTestRound: battle.round });
-      log.push(r.vaincue ? t('turn.fearVanquished', { name: enemy.name, foe: foe.name }) : t('turn.fear', { name: enemy.name, foe: foe.name }));
+      log.push(r.vaincue ? t('turn.fearVanquished', { name: enemy.label, foe: foe.label }) : t('turn.fear', { name: enemy.label, foe: foe.label }));
     } else {
       enemy.psychState.push({ type: 'peur', sourceId: foe.id, indice: src.indice, calmeDR: 0, lastTestRound: battle.round });
-      log.push(t('turn.fear', { name: enemy.name, foe: foe.name }));
+      log.push(t('turn.fear', { name: enemy.label, foe: foe.label }));
     }
   }
   // Test ÉTENDU de Calme des Peur actives (calmeDR < indice) — UNE fois par Round.
@@ -214,7 +214,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     const r = resolvePeurTest(calmeValue(enemy), p.indice ?? 1, p.calmeDR ?? 0, battleRng(), isColdBlooded(enemy.traits)); // À sang-froid (LDB 85)
     p.calmeDR = r.calmeDR;
     p.lastTestRound = battle.round;
-    if (r.vaincue) log.push(t('turn.fearOvercome', { name: enemy.name }));
+    if (r.vaincue) log.push(t('turn.fearOvercome', { name: enemy.label }));
   }
   // ── Traits psy CIBLÉS (Animosité/Haine/… — LDB 21), instantané pour l'IA ──
   const visible = battle.combatants.filter((v) => v.id !== enemy.id && v.pos && !isOutOfAction(v) && losClear(scene, enemy.pos!, v.pos, smokeOf(battle)));
@@ -223,16 +223,16 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     if (!p.active || !CIBLE_TYPES.has(p.type) || !p.cible || p.lastTestRound === battle.round) continue;
     if (!visible.some((v) => groupMatch(p.cible!, v.groups ?? []))) continue;
     p.lastTestRound = battle.round;
-    if (resolveCalmeSimple(calmeValue(enemy), battleRng()).success) { p.active = false; log.push(t('turn.recompose', { name: enemy.name, type: p.type })); }
+    if (resolveCalmeSimple(calmeValue(enemy), battleRng()).success) { p.active = false; log.push(t('turn.recompose', { name: enemy.label, type: p.type })); }
   }
   const tt = targetedTrigger(enemy, visible); // nouveau Trait ciblé déclenché par un membre du groupe visible
   if (tt) {
     const r = resolveCalmeSimple(calmeValue(enemy), battleRng());
     enemy.psychState.push({ type: tt.type, cible: tt.cible, sourceId: tt.sourceId, active: !r.success, lastTestRound: battle.round });
-    if (!r.success) log.push(t('turn.afflictionGrip', { name: enemy.name, type: tt.type, cible: tt.cible }));
+    if (!r.success) log.push(t('turn.afflictionGrip', { name: enemy.label, type: tt.type, cible: tt.cible }));
   }
   // Immunités croisées (LDB 21) : Animosité/Préjugé cèdent dès qu'on tombe sous un effet psy dominant (Peur/…).
-  for (const tp of suppressSupersededPsych(enemy)) log.push(t('turn.psychSuperseded', { name: enemy.name, psych: psychologyLabel(tp) }));
+  for (const tp of suppressSupersededPsych(enemy)) log.push(t('turn.psychSuperseded', { name: enemy.label, psych: psychologyLabel(tp) }));
   if (log.length) set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(log, 'fear', enemy.id)] } });
 }
 
@@ -263,7 +263,7 @@ registerCombatHook({
     if (adv >= 3) {
       campSpend(get, enemy, adv); // dépense TOUS ses Avantages (LDB 85 l.281) — réserve du camp en mode groupe (AA 11 l.30-38)
       (enemy.psychState ??= []).push({ type: 'frenesie' });
-      battle.log.push(ev('frenzy', t('turn.rageEnter', { name: enemy.name }), enemy.id));
+      battle.log.push(ev('frenzy', t('turn.rageEnter', { name: enemy.label }), enemy.id));
       set({ battle: { ...battle } });
       return;
     }
@@ -283,7 +283,7 @@ registerCombatHook({
     for (const cible of cibles) {
       const src = uncovered.find((f) => f.groups?.[0] === cible)!;
       enemy.psychState.push({ type: 'haine', cible, sourceId: src.id, active: true, lastTestRound: battle.round });
-      battle.log.push(ev('fear', t('turn.rageHate', { name: enemy.name, cible }), enemy.id));
+      battle.log.push(ev('fear', t('turn.rageHate', { name: enemy.label, cible }), enemy.id));
     }
     set({ battle: { ...battle } });
   },

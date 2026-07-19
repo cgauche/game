@@ -74,7 +74,7 @@ describe('Détermination annule aussi les pénalités de MALADIE (kind `maladie`
 describe('Actions Détermination — immunité psy & ignore-crit (store)', () => {
   beforeEach(() => useGame.setState({ battle: null }));
   function withHero() {
-    const hero = C({ id: 'h', kind: 'hero', name: 'H', resolve: 2, conditions: [], wounds: { current: 10, max: 10 } });
+    const hero = C({ id: 'h', kind: 'hero', label: 'H', resolve: 2, conditions: [], wounds: { current: 10, max: 10 } });
     useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, round: 2, over: false, log: [], acted: false } as never });
     return hero;
   }
@@ -98,7 +98,7 @@ describe('Actions Détermination — immunité psy & ignore-crit (store)', () =>
   });
 
   it('sans Détermination (0) : no-op', () => {
-    const hero = C({ id: 'h', kind: 'hero', name: 'H', resolve: 0, conditions: [], wounds: { current: 10, max: 10 } });
+    const hero = C({ id: 'h', kind: 'hero', label: 'H', resolve: 0, conditions: [], wounds: { current: 10, max: 10 } });
     useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, round: 1, over: false, log: [], acted: false } as never });
     useGame.getState().battleResolvePsychImmune();
     expect(useGame.getState().battle!.combatants[0].activeEffects?.some((e) => e.psychImmune)).toBeFalsy();

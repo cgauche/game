@@ -90,7 +90,7 @@ function withArg(effects: TriggeredEffect[], arg?: string, value?: number): Trig
  * KIND = ICI seulement. Ordre FIGÉ (enchant → traits → atouts → talents → États → psy) = déroulé RNG déterministe. */
 export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
   const out: TriggerSource[] = [];
-  if (weapon?.onHitEffects?.length) { const wid = weaponIdentity(weapon); out.push({ effects: withSource(weapon.onHitEffects, { kind: 'trapping', id: wid }), cap: 1, key: `weapon:${wid}`, label: weapon.name }); }
+  if (weapon?.onHitEffects?.length) { const wid = weaponIdentity(weapon); out.push({ effects: withSource(weapon.onHitEffects, { kind: 'trapping', id: wid }), cap: 1, key: `weapon:${wid}`, label: weapon.label }); }
   for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, tr.arg, tr.value), { kind: 'trait', id: tr.id }), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
   if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'quality', id }), cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
   for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'talent', id: t.talentId }), cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
@@ -262,7 +262,7 @@ function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx, get?: Get)
   const rng = ctx.rng ?? defaultRNG;
   const res = rollTest(base, difficulty, rng, combatTestPenalty(c));
   const branch = res.success ? flow.success : flow.fail;
-  const lines = [describeTestRoll(c.name, skillLabel, difficulty, res), ...runPureFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
+  const lines = [describeTestRoll(c.label, skillLabel, difficulty, res), ...runPureFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
   // SEAM `onOwnTestFailed` (voie inline) : un Test déclenché RATÉ par le porteur émet le trigger (Crampes
   // abdominales, MSRC 16 l.152). La garde de RÉ-ENTRANCE de `fireOwnTestFailed` empêche un sous-Test résolu
   // ICI pendant le traitement (FM de palier 2) de ré-émettre. `get` absent (appelant sans store) ⇒ inerte.

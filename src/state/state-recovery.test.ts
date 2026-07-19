@@ -6,7 +6,7 @@ import { applyOps } from '../engine/ops';
 
 function hero(p: Partial<Combatant>): Combatant {
   return {
-    id: 'h1', name: 'Héros', kind: 'hero',
+    id: 'h1', label: 'Héros', kind: 'hero',
     characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -16,7 +16,7 @@ function hero(p: Partial<Combatant>): Combatant {
 }
 
 function enemy(p: Partial<Combatant>): Combatant {
-  return { ...hero({ kind: 'enemy', name: 'Bête', skills: [], ...p }) } as Combatant;
+  return { ...hero({ kind: 'enemy', label: 'Bête', skills: [], ...p }) } as Combatant;
 }
 
 function setBattle(combatants: Combatant[], activeId: string) {
@@ -58,7 +58,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   it('Empêtré : Test OPPOSÉ de Force contre la source ; succès → se libère', () => {
     const h = hero({ id: 'h', characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any,
       conditions: [{ id: 'empetre', value: 1, sourceId: 'pieuvre' }] });
-    const src = enemy({ id: 'pieuvre', name: 'Pieuvre', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 20, endurance: 30, initiative: 20, agilite: 20, dexterite: 20, intelligence: 20, 'force-mentale': 20, sociabilite: 20 } as any });
+    const src = enemy({ id: 'pieuvre', label: 'Pieuvre', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 20, endurance: 30, initiative: 20, agilite: 20, dexterite: 20, intelligence: 20, 'force-mentale': 20, sociabilite: 20 } as any });
     setBattle([h, src], 'h');
     useGame.getState().battleRecoverState('empetre');
     const sr = useGame.getState().pendingStateRecovery!;
@@ -95,7 +95,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
 
   it('Empêtré de sort (escapeStrength) : Test OPPOSÉ contre la Force d’entrave FIGÉE (FM du lanceur)', () => {
     // Lanceur : Force Mentale 55 → la Force d'entrave figée doit valoir 55 (charOf FM), pas sa Force.
-    const caster = enemy({ id: 'sorcier', name: 'Sorcier',
+    const caster = enemy({ id: 'sorcier', label: 'Sorcier',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 25, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 55, sociabilite: 30 } as any });
     const h = hero({ id: 'h', conditions: [] });
     // L'op `condition` Empêtré avec escapeStrength = FM du lanceur (Enchevêtrement de Taal).
@@ -110,7 +110,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
 
   it('escapeStrength PRIORITAIRE sur la Force de la source vivante', () => {
     // La source vivante a Force 80 ; l'entrave figée (sort) vaut FM 30 → c'est la valeur figée qui prime.
-    const caster = enemy({ id: 'src', name: 'Liane',
+    const caster = enemy({ id: 'src', label: 'Liane',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 80, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any });
     const h = hero({ id: 'h', conditions: [] });
     applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });

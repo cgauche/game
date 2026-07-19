@@ -12,7 +12,7 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
   if (!value) {
     return (
       <div className="ed-field">
-        <label className="dr"><input type="checkbox" checked={false} onChange={() => onChange({ name: '', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] })} /> confère une ARME (naturelle / dérivée)</label>
+        <label className="dr"><input type="checkbox" checked={false} onChange={() => onChange({ label: '', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] })} /> confère une ARME (naturelle / dérivée)</label>
       </div>
     );
   }
@@ -25,7 +25,7 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
     <div className="ed-field ed-weapon">
       <label className="dr"><input type="checkbox" checked onChange={() => onChange(undefined)} /> ARME conférée</label>
       <div className="tf-row">
-        <input placeholder="Nom (ex. Cornes)" value={w.name} onChange={(e) => patch({ name: e.target.value })} />
+        <input placeholder="Nom (ex. Cornes)" value={w.label} onChange={(e) => patch({ label: e.target.value })} />
         <label className="dr">Type
           <select value={w.type} onChange={(e) => patch({ type: e.target.value as Weapon['type'] })}>
             <option value="melee">Mêlée</option>

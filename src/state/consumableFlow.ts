@@ -87,15 +87,15 @@ export function runConsumable(get: Get, set: SetFn, hero: Combatant, item: ItemI
   if (!item.consumable) return;
   const now = get().gameTime;
   const untilTime = consumableUntilTime(item, now, hero, battleRng());
-  const baked = bakeConsumableFlow(item.consumable, hero.id, untilTime, item.name);
+  const baked = bakeConsumableFlow(item.consumable, hero.id, untilTime, item.label);
   const inBattle = !!get().battle && get().battle!.combatants.some((c) => c.id === hero.id);
   if (inBattle) {
     runCombatFlow({
-      mode: 'combat', get, set, target: hero, caster: hero, label: item.name,
-      opsCtx: { now, ...(untilTime != null ? { defaultUntilTime: untilTime } : {}), label: item.name },
+      mode: 'combat', get, set, target: hero, caster: hero, label: item.label,
+      opsCtx: { now, ...(untilTime != null ? { defaultUntilTime: untilTime } : {}), label: item.label },
     }, baked);
   } else {
-    runSceneConsumableFlow(get, set, hero, baked, item.name);
+    runSceneConsumableFlow(get, set, hero, baked, item.label);
   }
 }
 
@@ -111,7 +111,7 @@ export function usePartyItem(get: Get, set: SetFn, heroId: string, uid: string):
   if (!isConsumable(it)) return;
   hero.items = (hero.items ?? []).filter((i) => i.uid !== uid); // consommé AVANT l'effet (dose unique)
   set({ party: [...party] });
-  get().log(`${hero.name} utilise : ${it.name}.`);
+  get().log(`${hero.label} utilise : ${it.label}.`);
   runConsumable(get, set, hero, it);
   bus.emit(EVT.SCENE_DIRTY);
 }
@@ -129,7 +129,7 @@ export function battleConsumeItem(get: Get, set: SetFn, active: Combatant, it: I
   set({
     battle: {
       ...battle, acted: true, action: null,
-      log: [...battle.log, ev('item', t('cs.useConsumable', { name: active.name, item: it.name }), active.id), ...queued],
+      log: [...battle.log, ev('item', t('cs.useConsumable', { name: active.label, item: it.label }), active.id), ...queued],
     },
   });
 }

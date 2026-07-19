@@ -185,7 +185,7 @@ registerCascadeApplier(LAND_WINE_EVAL_KIND, (get, set, step) => {
   const rev = wineEvalReveal(offer.basePrice, success, sl);
   set({ landMarket: { ...st, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, wineTier: rev.shownLabel, wineEvalOk: success } : o) } });
   const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
-  return { consequences: freeCons([`${actor?.name ?? 'Le groupe'} — Évaluation du ${offer.label} (${roll}) : qualité jugée « ${rev.shownLabel} »${success ? '.' : ' — jugement peu sûr…'}`]) };
+  return { consequences: freeCons([`${actor?.label ?? 'Le groupe'} — Évaluation du ${offer.label} (${roll}) : qualité jugée « ${rev.shownLabel} »${success ? '.' : ' — jugement peu sûr…'}`]) };
 });
 
 export function closeLandMarket(_get: Get, set: Set): void {
@@ -241,7 +241,7 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
     const netSL = Math.abs(buyerSL - npcSL);
     if (buyerWins) pct = -bargainPct(hasBargainBonus(best.actor), netSL); // remise à l'acheteur
     else if (npcSL > buyerSL) pct = bargainPct(false, netSL); // le marchand monte le prix
-    bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
+    bargainLine = `${best.actor.label} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
   }
   // Lot PARTIEL (l.131) : acheter moins que le stock du marchand → +10 % par 10 Enc sur le prix de base.
   const partial = want < offer.enc;
@@ -298,7 +298,7 @@ export function landSellCargo(get: Get, set: Set, carrierId: string, cargoIndex:
     const netSL = Math.abs(sellerSL - buyerSL);
     if (sellerWins) bargainPctVal = bargainPct(hasBargainBonus(best.actor), netSL); // le PJ monte le prix
     else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(false, netSL); // l'acheteur le baisse
-    bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
+    bargainLine = `${best.actor.label} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
   }
   // Rumeur commerciale (l.180) : une rumeur du board visant CE Lieu et CE bien le fait vendre au DOUBLE du
   // base. Non consommée (« autant qu'ils le souhaitent ») → elle reste sur le board.

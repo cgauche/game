@@ -15,7 +15,7 @@ import type { Weapon } from '../engine/types';
  * une STRUCTURE de siège — il NE PARE PAS, n'a PAS de Localisation (aucun membre dans le journal) et n'ENGAGE
  * PAS l'attaquant. Payoff de la factorisation `isStructure` → `isInanimate` (qui couvre aussi les véhicules).
  */
-const hache = (): Weapon => ({ name: 'Hache', type: 'melee', damage: { plusBF: false, flat: 6 }, qualities: [] });
+const hache = (): Weapon => ({ label: 'Hache', type: 'melee', damage: { plusBF: false, flat: 6 }, qualities: [] });
 
 /** Enrôle une diligence (coque à PV) comme ENNEMI dans la scène de fixture, puis démarre le combat. */
 function startWithVehicle() {

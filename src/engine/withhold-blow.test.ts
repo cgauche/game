@@ -31,20 +31,20 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
     ...over,
   }) as unknown as Combatant;
 
-const empaleuseSword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'empaleuse' }] };
-const percutanteSword: Weapon = { name: 'Masse', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'percutante' }] };
-const perforanteSword: Weapon = { name: 'Estoc', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'perforante' }] };
-const plainSword: Weapon = { name: 'Glaive', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
+const empaleuseSword: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'empaleuse' }] };
+const percutanteSword: Weapon = { label: 'Masse', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'percutante' }] };
+const perforanteSword: Weapon = { label: 'Estoc', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'perforante' }] };
+const plainSword: Weapon = { label: 'Glaive', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
 
 /** onHitEffect posant l'État En flammes (patron Épée ardente de Rhuin) → arme « infligeant *En flammes* ». */
 const flameOnHit: TriggeredEffect = {
   trigger: 'onHit', on: 'victim',
   flow: { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', ops: [{ op: 'condition', name: 'en-flammes' }] } }] },
 };
-const flameSword: Weapon = { name: 'Épée ardente', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], onHitEffects: [flameOnHit] };
+const flameSword: Weapon = { label: 'Épée ardente', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], onHitEffects: [flameOnHit] };
 
-const att = () => mk({ name: 'Héros', size: 'moyenne' });
+const att = () => mk({ label: 'Héros', size: 'moyenne' });
 // Jet « double » réussi (33 : dizaines = unités → Critique), PAS multiple de 10 → isole le Critique du double
 // de celui d'Empaleuse (l.282), qui ne se déclencherait pas ici de toute façon.
 const dbl = evaluateTest(33, 60); // success, isDouble=true, units=3
@@ -86,8 +86,8 @@ describe('Retenir ses coups — Atouts retirés (AA 07 l.61)', () => {
   });
 
   it('Taille retirée : attaquant plus grand → ni ×N ni Atout de Taille', () => {
-    const big = mk({ name: 'Ogre', size: 'enorme' });   // gap +2 vs Moyenne → ×2 + Atouts de Taille
-    const small = mk({ name: 'Ogre', size: 'moyenne' }); // même Force, sans bonus de Taille
+    const big = mk({ label: 'Ogre', size: 'enorme' });   // gap +2 vs Moyenne → ×2 + Atouts de Taille
+    const small = mk({ label: 'Ogre', size: 'moyenne' }); // même Force, sans bonus de Taille
     const atk = evaluateTest(25, 60); // success, units=5
     const normalBig = resolveMeleePassive(big, mk(), plainSword, atk, undefined, [], undefined, false);
     const withheldBig = resolveMeleePassive(big, mk(), plainSword, atk, undefined, [], undefined, true);

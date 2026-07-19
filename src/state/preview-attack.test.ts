@@ -12,10 +12,10 @@ import type { Scene } from './scene';
  */
 const combatant = (over: Partial<Combatant>): Combatant =>
   ({
-    id: 'A', name: 'A', kind: 'hero',
+    id: 'A', label: 'A', kind: 'hero',
     characteristics: { 'capacite-de-combat': 50, 'capacite-de-tir': 50, force: 35, endurance: 35, initiative: 30, agilite: 35, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 14, max: 14 }, advantage: 0, conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] }],
+    weapons: [{ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, bodyShape: 'humanoide', pos: { x: 0, y: 0 },
     ...over,
@@ -67,20 +67,20 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
 
   it('choix d’arme : previewAttack(weaponUid) prend l’arme choisie + applique le -20 main secondaire, parité résolution', () => {
     const a = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [
-      { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [], hand: 'main', hands: 1, uid: 'm' },
-      { name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte', qualities: [], hand: 'off', hands: 1, uid: 'o' },
+      { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [], hand: 'main', hands: 1, uid: 'm' },
+      { label: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte', qualities: [], hand: 'off', hands: 1, uid: 'o' },
     ] as never });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
     const get = mkGet([a, b]);
     const main = previewAttack(get, a, b); // auto → Épée (main), aucune pénalité
-    expect(main.weapon.name).toBe('Épée');
+    expect(main.weapon.label).toBe('Épée');
     expect(main.mods.some((m) => m.label === 'Main secondaire')).toBe(false);
     const off = previewAttack(get, a, b, undefined, { weaponUid: 'o' }); // Dague (main secondaire) → -20
-    expect(off.weapon.name).toBe('Dague');
+    expect(off.weapon.label).toBe('Dague');
     expect(off.mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
     seedBattleRng(2);
     const r = resolveAttack(get, a, b, undefined, undefined, undefined, undefined, 'o');
-    expect(r!.weapon.name).toBe('Dague'); // parité : la résolution utilise la même arme choisie
+    expect(r!.weapon.label).toBe('Dague'); // parité : la résolution utilise la même arme choisie
   });
 
   it('eligibleAttackTargetIds : seuls les ennemis vivants à portée sont éligibles', () => {
@@ -96,7 +96,7 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
   });
 
   it('tir sans Ligne de Vue → blocked', () => {
-    const a = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never });
+    const a = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 6, y: 0 } });
     const s = scene();
     (s.layers[0].tiles as string[])[3] = 'mur'; // mur intercalé sur la ligne (x=3,y=0)
@@ -107,7 +107,7 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
   it('outOfSightTargetIds (grisage hors-LdV) : ennemi derrière un mur grisé au tir, pas en mêlée, pas les morts', () => {
     const s = scene();
     (s.layers[0].tiles as string[])[3] = 'mur'; // mur sur la ligne y=0 entre x=0 et x=6
-    const archer = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never });
+    const archer = combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never });
     const hidden = combatant({ id: 'E1', kind: 'enemy', pos: { x: 6, y: 0 } }); // derrière le mur
     const seen = combatant({ id: 'E2', kind: 'enemy', pos: { x: 0, y: 5 } }); // ligne dégagée
     const deadHidden = combatant({ id: 'E3', kind: 'enemy', pos: { x: 6, y: 1 }, wounds: { current: 0, max: 10 } as never });
@@ -146,7 +146,7 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
 describe('attackPlan — gate PRÉ-clic du tir (parité avec le refus de sort)', () => {
   // Arc de Portée 4 m : bande Extrême ≤ ×3 = 12 m = 6 cases (1 case = 2 m).
   const archer = (over: Partial<Combatant> = {}) =>
-    combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 4, qualities: [] }] as never, ...over });
+    combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 4, qualities: [] }] as never, ...over });
 
   it('cible sans Ligne de Vue → blocked (la modale ne s’ouvre jamais)', () => {
     const a = archer();

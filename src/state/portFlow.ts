@@ -221,7 +221,7 @@ registerCascadeApplier(PORT_BUY_BARGAIN_KIND, (get, set, step) => {
   let pct = 0; // % appliqué au prix (négatif = remise pour l'acheteur)
   if (buyerWins) pct = -bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // remise à l'acheteur
   else if (npcSL > buyerSL) pct = bargainPct(merchantNegotiator, netSL); // le vendeur monte le prix
-  const bargainLine = `${actor?.name ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur +${sellerDR} DR` : ''}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
+  const bargainLine = `${actor?.label ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur +${sellerDR} DR` : ''}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
   return { consequences: freeCons(finalizePortBuy(get, set, cargoId, want, basePrice, pct, bargainLine)) };
 });
 
@@ -299,7 +299,7 @@ registerCascadeApplier(PORT_SELL_BARGAIN_KIND, (get, set, step) => {
   let bargainPctVal = 0;
   if (sellerWins) bargainPctVal = bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // le PJ monte le prix
   else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(merchantNegotiator, netSL); // l'acheteur le baisse
-  const bargainLine = `${actor?.name ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur ${sellerDR > 0 ? '+' : ''}${sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
+  const bargainLine = `${actor?.label ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur ${sellerDR > 0 ? '+' : ''}${sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
   return { consequences: freeCons([finalizePortSale(get, set, cargoIndex, sellEnc, offerPct, bargainPctVal, bargainLine)]) };
 });
 
@@ -359,10 +359,10 @@ registerCascadeApplier(PORT_SELL_GOSSIP_KIND, (get, set, step) => {
   const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
   const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
   if (!step.result.success) {
-    return { consequences: freeCons([`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot (${actor?.name ?? '?'} ${step.result.roll}/${step.result.target}) échoue — aucun acheteur trouvé.`]) };
+    return { consequences: freeCons([`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot (${actor?.label ?? '?'} ${step.result.roll}/${step.result.target}) échoue — aucun acheteur trouvé.`]) };
   }
   chainStep(get, () => openPortSellBuyerStep(get, set, cargoIndex, lot.enc, false, 1));
-  return { consequences: freeCons([`${actor?.name ?? 'Le groupe'} — Ragot : ${step.result.roll}/${step.result.target} → un acheteur potentiel est approché.`]) };
+  return { consequences: freeCons([`${actor?.label ?? 'Le groupe'} — Ragot : ${step.result.roll}/${step.result.target} → un acheteur potentiel est approché.`]) };
 });
 
 /** VENTE d'un lot de cargaison (l.351-397) : trouver un acheteur (relation du port au bien),

@@ -65,7 +65,7 @@ export function RunModal() {
       title={<><Icon id="melee/flee" size="sm" /> Course</>}
       subtitle={
         <>
-          <strong>{c.name}</strong> s'élance (Test {c.mountId ? 'de Chevaucher' : "d'Athlétisme"} +20)
+          <strong>{c.label}</strong> s'élance (Test {c.mountId ? 'de Chevaucher' : "d'Athlétisme"} +20)
         </>
       }
       rows={[actorRow]}

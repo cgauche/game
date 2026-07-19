@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
 import type { Combatant } from '../engine/types';
 
-const w = (uid: string, name: string): unknown =>
-  ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, hands: 1, damage: { plusBF: true, flat: 4 } });
+const w = (uid: string, label: string): unknown =>
+  ({ uid, label, kind: 'melee', qualities: [], enc: 1, equipped: true, hands: 1, damage: { plusBF: true, flat: 4 } });
 
 const hero = (): Combatant =>
   ({
-    id: 'h', name: 'H', kind: 'hero', characteristics: { force: 30, endurance: 30 },
+    id: 'h', label: 'H', kind: 'hero', characteristics: { force: 30, endurance: 30 },
     conditions: [], wounds: { current: 12, max: 12 }, advantage: 0,
     items: [w('e', 'Épée'), w('ha', 'Hache')],
     loadouts: [{ id: 'lo-epee', name: 'Épée', main: 'e' }, { id: 'lo-hache', name: 'Hache', main: 'ha' }],
@@ -31,7 +31,7 @@ describe('battleSwitchLoadout', () => {
     setBattle();
     useGame.getState().battleSwitchLoadout('lo-hache');
     expect(active().activeLoadoutId).toBe('lo-hache');
-    expect(active().weapons.some((x) => x.name === 'Hache')).toBe(true);
+    expect(active().weapons.some((x) => x.label === 'Hache')).toBe(true);
     expect(useGame.getState().battle!.loadoutSwapped).toBe(true);
   });
 

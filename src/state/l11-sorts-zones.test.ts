@@ -27,7 +27,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     vi.clearAllTimers();
     useGame.getState().seedRng(5);
     const b = useGame.getState().battle!;
-    const caster = b.combatants.find((c) => c.name === 'W')!;
+    const caster = b.combatants.find((c) => c.label === 'W')!;
     caster.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 10 });
     caster.characteristics['force-mentale'] = 40; // BFM 4
     caster.pos = { x: 5, y: 10 };
@@ -78,14 +78,11 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     expect(wardedAgainst([caster, ally, inside], inside, ally, 'arrowWard')).toBe(false);
   });
 
-  it('organicProjectile : flèches/carreaux/javelots oui — poudre/fronde/couteaux non', () => {
-    const w = (name: string, subType = ''): Weapon => ({ name, subType, type: 'ranged', damage: { plusBF: false, flat: 7 }, qualities: [] } as unknown as Weapon);
-    expect(organicProjectile(w('Arc long'))).toBe(true);
-    expect(organicProjectile(w('Arbalète'))).toBe(true);
-    expect(organicProjectile(w('Javelot'))).toBe(true);
-    expect(organicProjectile(w('Pistolet', 'Poudre noire'))).toBe(false);
-    expect(organicProjectile(w('Fronde'))).toBe(false);
-    expect(organicProjectile(w('Couteau de lancer'))).toBe(false);
+  it('organicProjectile : flag maison Weapon.organicProjectile — flèches/carreaux/javelots oui, poudre/fronde/couteaux non', () => {
+    const w = (organic: boolean | undefined): Weapon => ({ label: 'x', type: 'ranged', damage: { plusBF: false, flat: 7 }, qualities: [], organicProjectile: organic } as unknown as Weapon);
+    expect(organicProjectile(w(true))).toBe(true); // arc/arbalète/javelot (data trappings.json)
+    expect(organicProjectile(w(false))).toBe(false);
+    expect(organicProjectile(w(undefined))).toBe(false); // poudre noire/fronde/couteau de lancer : absent = non organique
   });
 
   it('Grands feux d’U’Zhul : disque (BFM m) autour de la cible touchée, perRound armé', () => {

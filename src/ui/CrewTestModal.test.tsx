@@ -30,7 +30,7 @@ const render = (p: PendingCrewTest, battle: BattleState | null) =>
 
 describe('CrewTestModal — Test d’équipage de COMBAT (#211, #275 Ronde 2 cran 3)', () => {
   it('rend le Test de COMBAT avec « Annuler » (Action défaisable)', () => {
-    const html = render(pending({}), { combatants: [{ id: 'ship1', name: 'Le Loup' }] } as unknown as BattleState);
+    const html = render(pending({}), { combatants: [{ id: 'ship1', label: 'Le Loup' }] } as unknown as BattleState);
     expect(html).toContain('Le Loup');
     expect(html).toContain('Annuler');
   });

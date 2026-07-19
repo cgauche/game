@@ -5,7 +5,7 @@ import type { Weapon } from '../engine/types';
 
 // Nuée — Trait Essaim (LDB 85 l.199-200) : ignore Taille & Psychologie, +40 au tir contre elle,
 // ×5 PB + 10 CC au build, Frappe Mortelle sur touche, 1 PB/Round aux Engagés.
-const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
+const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
 
 describe('Nuée — Trait Essaim (LDB 85 l.199-200)', () => {
   it('build au spawn : ×5 PB, +10 CC, immunité Psychologie, flag swarm', () => {

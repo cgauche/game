@@ -188,7 +188,7 @@ export function applyShantyToCrew(get: Get, ship: Combatant, singer: Combatant, 
   const until = get().gameTime + 3 + Math.max(0, sl); // 3 min + DR (l.38)
   const combatants = get().battle?.combatants ?? get().party;
   const crew = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c));
-  const lines: string[] = [`${singer.name} entonne « ${shanty.label} » (${3 + Math.max(0, sl)} min).`];
+  const lines: string[] = [`${singer.label} entonne « ${shanty.label} » (${3 + Math.max(0, sl)} min).`];
   for (const c of crew) if (shanty.crewOps?.length) lines.push(...applyOps(c, shanty.crewOps, { label, effectId: shantyId, rng: battleRng(), defaultUntilTime: until }));
   if (shanty.captainOps?.length) {
     const roles = shipDefaultRoles(crew, 'manoeuvre');
@@ -211,7 +211,7 @@ export function endShanty(get: Get, singer: Combatant): string[] {
   delete singer.singingShanty;
   const combatants = get().battle?.combatants ?? get().party;
   for (const c of combatants) removeActiveEffects(c, (e) => e.effectId === song.shantyId);
-  return [`La chanson de ${singer.name} s'interrompt.`];
+  return [`La chanson de ${singer.label} s'interrompt.`];
 }
 
 /**
@@ -244,13 +244,13 @@ export function resolveShipUnits(combatants: Combatant[]): string[] {
       const aboard = exposedCrew(crew).filter((c) => !isOutOfAction(c));
       if (aboard.length) {
         for (const c of aboard) { c.outOfRencontre = true; c.exitReason = 'naufrage'; } // #237 : éjecté vivant, lu « hors-combat »
-        lines.push(`${hull.name} sombre — son équipage (${aboard.map((c) => c.name).join(', ')}) passe par-dessus bord.`);
+        lines.push(`${hull.label} sombre — son équipage (${aboard.map((c) => c.label).join(', ')}) passe par-dessus bord.`);
       }
     } else if (crew.length && crew.every((c) => isOutOfAction(c))) {
       // Plus personne à bord : la coque, sans équipage pour la défendre ni la manœuvrer, quitte le combat.
       hull.outOfRencontre = true;
       hull.exitReason = 'prise'; // #237 : coque amenée, lue « rendu » (pavillon baissé) au token de coque
-      lines.push(`${hull.name} n'a plus d'équipage en état de le défendre : le navire est pris et sort du combat.`);
+      lines.push(`${hull.label} n'a plus d'équipage en état de le défendre : le navire est pris et sort du combat.`);
     }
   }
   return lines;

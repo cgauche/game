@@ -25,7 +25,7 @@ function fakeStorage(): Storage {
 function savedHero(): Combatant {
   const h: Combatant = JSON.parse(JSON.stringify(makePregens()[0]));
   h.id = 'roster-test-1';
-  h.name = 'Aventurière Sauvegardée';
+  h.label = 'Aventurière Sauvegardée';
   return h;
 }
 
@@ -61,7 +61,7 @@ describe('HeroSelector — sélecteur dédié (écran plein-champ) : recrutement
   it('remplacement : cartes compactes, membre du groupe grisé « Déjà choisi »', () => {
     const h = savedHero();
     rosterAdd({ hero: h, wealth: { gold: 0, silver: 5, brass: 0 } });
-    const html = renderToStaticMarkup(<HeroSelector party={[h]} mode="replace" replaceName={h.name} onPick={noop} onClose={noop} />);
+    const html = renderToStaticMarkup(<HeroSelector party={[h]} mode="replace" replaceName={h.label} onPick={noop} onClose={noop} />);
     expect(html).toContain('Remplacer Aventurière Sauvegardée'); // titre du mode remplacement
     expect(html).toContain('candidate-modal');
     expect(html).toContain('Déjà choisi');
@@ -162,7 +162,7 @@ describe('PartyScreen — LA COMPAGNIE SEULE (aucune galerie inline) : coop, hô
     const html = render([h], {
       ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { [h.id]: 1 }, slots: [1, 0, 0, 0],
     });
-    expect(html).toContain(h.name); // carte de siège dans la compagnie
+    expect(html).toContain(h.label); // carte de siège dans la compagnie
     expect(html).not.toMatch(/<button[^>]*>Retirer<\/button>/); // siège non possédé → pas d'action
   });
 
@@ -213,10 +213,10 @@ describe('PartyScreen — présentation par le PERSONNAGE (plus de bouton « Qui
     expect(html).toContain('seat-card-contract');
     expect(html).toContain('Contrat I');
     expect(html).toContain('seat-card-seal'); // sceau de cire (contrat scellé)
-    expect(html).toContain(heroes[0].name); // nom COMPLET dans la compagnie
+    expect(html).toContain(heroes[0].label); // nom COMPLET dans la compagnie
     expect(html).toContain('card-roles'); // rôle (forces) sur la carte de siège
     expect(html).toContain('char-present'); // la figurine+identité EST le contrôle de présentation
-    expect(html).toContain(`Voir ${heroes[0].name}`); // aria-label du contrôle
+    expect(html).toContain(`Voir ${heroes[0].label}`); // aria-label du contrôle
     expect(html).not.toContain('Qui est-ce ?'); // le bouton loupe est SUPPRIMÉ
     expect(html).not.toContain('who-btn');
   });
@@ -244,7 +244,7 @@ describe('PartyScreen — présentation par le PERSONNAGE (plus de bouton « Qui
     const heroes = makePregens().slice(0, 4);
     const full = render(heroes, initialNet());
     expect((full.match(/seat-card-contract/g) ?? []).length).toBe(4);
-    for (const h of heroes) expect(full).toContain(h.name);
+    for (const h of heroes) expect(full).toContain(h.label);
     expect(full).not.toContain('seat-empty'); // groupe complet → aucun siège vide
     expect(full).not.toContain('candidate-card'); // pas de galerie sur l'écran de groupe
   });

@@ -19,12 +19,12 @@ import { effectiveWeapon } from '../engine/weaponDamage';
  * scène de fixture puis on `startCombat`, et la structure devient un Combattant inerte ciblable.
  */
 const mkWeapon = (over: Partial<Weapon> = {}): Weapon => ({
-  name: 'arme', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], ...over,
+  label: 'arme', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], ...over,
 });
-const hache = mkWeapon({ name: 'Hache', type: 'melee' });
-const fleche = mkWeapon({ name: 'Flèche', type: 'ranged' });
-const canon = mkWeapon({ name: 'Canon', type: 'ranged', qualities: [{ id: 'siege' }] });
-const belier = mkWeapon({ name: 'Bélier', type: 'melee', qualities: [{ id: 'siege' }, { id: 'belier' }] });
+const hache = mkWeapon({ label: 'Hache', type: 'melee' });
+const fleche = mkWeapon({ label: 'Flèche', type: 'ranged' });
+const canon = mkWeapon({ label: 'Canon', type: 'ranged', qualities: [{ id: 'siege' }] });
+const belier = mkWeapon({ label: 'Bélier', type: 'melee', qualities: [{ id: 'siege' }, { id: 'belier' }] });
 
 /** Arête E de (2,2) — sépare (2,2) de (3,2). On y pose la structure `structId` (intacte sauf `down`). */
 const EDGE = { x: 2, y: 2, side: 'E' as const };
@@ -212,7 +212,7 @@ describe('weaponContextOf — exceptions hors-spécialisation dégradées (LDB 6
 
   it("Arbalète via une AUTRE Spé de Tir (Arc) → mode 'degraded' : Atouts retirés, Défauts conservés", () => {
     const h = attacker('arc');
-    const arbalete = mkWeapon({ name: 'Arbalète', type: 'ranged', subType: 'arbalete', damage: { plusBF: false, flat: 10 }, qualities: [{ id: 'siege' }, { id: 'imprecise' }] });
+    const arbalete = mkWeapon({ label: 'Arbalète', type: 'ranged', subType: 'arbalete', damage: { plusBF: false, flat: 10 }, qualities: [{ id: 'siege' }, { id: 'imprecise' }] });
     const ctx = weaponContextOf(h, arbalete);
     expect(ctx.groupSkillMode).toBe('degraded');
     const eff = effectiveWeapon(arbalete, ctx);
@@ -221,7 +221,7 @@ describe('weaponContextOf — exceptions hors-spécialisation dégradées (LDB 6
 
   it("Poudre noire via Ingénierie (Spé exacte réciproque) → mode 'full' : aucun retrait (LDB 62 l.192)", () => {
     const h = attacker('ingenierie');
-    const pistolet = mkWeapon({ name: 'Pistolet', type: 'ranged', subType: 'poudre-noire', damage: { plusBF: false, flat: 10 }, qualities: [{ id: 'siege' }, { id: 'imprecise' }] });
+    const pistolet = mkWeapon({ label: 'Pistolet', type: 'ranged', subType: 'poudre-noire', damage: { plusBF: false, flat: 10 }, qualities: [{ id: 'siege' }, { id: 'imprecise' }] });
     const ctx = weaponContextOf(h, pistolet);
     expect(ctx.groupSkillMode).toBe('full');
     const eff = effectiveWeapon(pistolet, ctx);

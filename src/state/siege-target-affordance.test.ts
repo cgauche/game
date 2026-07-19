@@ -57,7 +57,7 @@ describe('Affordance — structures réservées aux armes de siège', () => {
   it('arme à Atout Siège sur le même Mur → ciblable (PAS none)', () => {
     const { S, H } = start('mur-en-pierre');
     // Bélier de siège synthétique (mêlée + Atout Siège) directement posé sur les armes résolues.
-    const ram: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'siege' }] } as Weapon;
+    const ram: Weapon = { label: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'siege' }] } as Weapon;
     H.weapons = [ram];
     H.pos = { x: 1, y: 2 }; // au contact de la face exposée
     expect(hoverTargeting(useGame.getState, H, S).kind).not.toBe('none'); // l'Atout Siège franchit la gate

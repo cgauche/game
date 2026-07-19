@@ -30,9 +30,9 @@ const explEntity = (): SceneEntity =>
   ({ kind: 'personnage', id: ID, label: 'Servant du bélier', pos: { x: 0, y: 0 }, ref: REF }) as SceneEntity;
 
 const armourShape = (p: EnemyRigProfile | null) =>
-  (p?.equip.armour ?? []).map((i) => ({ name: i.name, pa: i.pa, locs: i.locs })).sort((a, b) => a.name.localeCompare(b.name));
+  (p?.equip.armour ?? []).map((i) => ({ name: i.label, pa: i.pa, locs: i.locs })).sort((a, b) => a.name.localeCompare(b.name));
 const weaponShape = (p: EnemyRigProfile | null) =>
-  (p?.equip.weapons ?? []).map((w) => ({ name: w.name, type: w.type })).sort((a, b) => a.name.localeCompare(b.name));
+  (p?.equip.weapons ?? []).map((w) => ({ name: w.label, type: w.type })).sort((a, b) => a.name.localeCompare(b.name));
 
 describe('#181/#182 — parité apparence combat ↔ hors-combat d’un allié PNJ armuré', () => {
   it('le jeton de combat d’un allié PNJ de bestiaire N’est PAS rendu depuis son inventaire (→ profil synthétisé)', () => {

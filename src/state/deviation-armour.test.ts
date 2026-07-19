@@ -30,7 +30,7 @@ const enemy = (p: Partial<Combatant>): Combatant =>
     id: 'e1', name: 'Brute', kind: 'enemy', characteristics: CHARS,
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
     engagedWith: [], pos: { x: 1, y: 0 }, size: 'moyenne',
-    weapons: [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
+    weapons: [{ label: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
   } as unknown as Combatant);
@@ -45,7 +45,7 @@ function setBattle(combatants: Combatant[]): BattleState {
   return battle;
 }
 
-const critWeapon: Weapon = { name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+const critWeapon: Weapon = { label: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
 // `critLocation: 'corps'` FIGE la localisation re-tirée du Coup Critique (LDB 18 l.55, #80) sur la zone
 // armurée du fixture → la Déviation (#43.2) y sacrifie le PA de façon déterministe.
 const critRes = (): AttackResult => ({

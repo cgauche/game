@@ -71,7 +71,7 @@ export function applySummon(get: Get, set: SetFn, caster: Combatant, summon: Sum
   const scene = get().scene;
   const hostile = summon.allyOfCaster === false;
   if (!battle || !scene || !caster.pos) {
-    return [`${caster.name} invoque ${count} × ${summon.ref}${hostile ? ' (hostile)' : ''} — hors combat, effet narratif (arbitrage MJ).`];
+    return [`${caster.label} invoque ${count} × ${summon.ref}${hostile ? ' (hostile)' : ''} — hors combat, effet narratif (arbitrage MJ).`];
   }
   // Camp : allié = même `kind` que le lanceur (contrôlé/IA selon son camp) ; hostile = camp opposé.
   const kind: Combatant['kind'] = hostile ? (caster.kind === 'hero' ? 'enemy' : 'hero') : caster.kind;
@@ -102,10 +102,10 @@ export function applySummon(get: Get, set: SetFn, caster: Combatant, summon: Sum
     placed.push(c);
   }
   set({ battle: { ...battle } });
-  if (!placed.length) return [`${caster.name} ne trouve aucune case libre pour invoquer ${summon.ref}.`];
-  const name = placed[0].name;
+  if (!placed.length) return [`${caster.label} ne trouve aucune case libre pour invoquer ${summon.ref}.`];
+  const name = placed[0].label;
   const tag = hostile ? ' — hostile, hors de son contrôle !' : kind === 'hero' ? ' (alliés)' : '';
-  return [`${caster.name} invoque ${placed.length} × ${name}${tag}.`];
+  return [`${caster.label} invoque ${placed.length} × ${name}${tag}.`];
 }
 
 /**
@@ -128,5 +128,5 @@ export function purgeExpiredSummons(battle: BattleState, round: number): string[
   battle.combatants = battle.combatants.filter((c) => !goneIds.has(c.id));
   battle.order = battle.order.filter((id) => !goneIds.has(id));
   if (battle.baseOrder) battle.baseOrder = battle.baseOrder.filter((id) => !goneIds.has(id));
-  return gone.map((c) => `${c.name} se dissipe (${c.summon!.label ?? 'invocation'}).`);
+  return gone.map((c) => `${c.label} se dissipe (${c.summon!.label ?? 'invocation'}).`);
 }

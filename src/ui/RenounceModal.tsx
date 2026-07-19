@@ -21,7 +21,7 @@ export function RenounceModal() {
   return (
     <Modal title={<><Icon id="nav/mutation" size="sm" /> La Corruption gagne du terrain</>} variant="test">
       <p className="rm-log">
-        <b>{hero.name}</b> échoue à contenir sa Corruption (Résistance <Icon id="nav/dice" size="sm" /> {pr.testRoll}/{pr.testTarget}) — une{' '}
+        <b>{hero.label}</b> échoue à contenir sa Corruption (Résistance <Icon id="nav/dice" size="sm" /> {pr.testRoll}/{pr.testTarget}) — une{' '}
         <b>mutation</b> menace de se développer.
       </p>
       <p className="rm-log">

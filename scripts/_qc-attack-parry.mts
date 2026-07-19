@@ -11,7 +11,7 @@ import type { Weapon } from '../src/engine/types';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const WEAPONS = ['Épée', 'Rapière', 'Zweihänder', 'Fléau d\'armes', 'Hallebarde', 'Main Gauche', 'Mains nues'];
-const wpn = (name: string): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] });
+const wpn = (name: string): Weapon => ({ label: name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] });
 const peak = (steps: { pose: Record<string, number> }[]) => steps.reduce((a, s) => (Object.keys(s.pose).length > Object.keys(a).length ? s.pose : a), {} as Record<string, number>);
 
 const CW = 118, CH = 168;

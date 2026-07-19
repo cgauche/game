@@ -220,7 +220,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
         <div className="sheet-layout">
           <aside className="sheet-aside">
             <div className="sheet-portrait">
-              <h3>{hero.name}</h3>
+              <h3>{hero.label}</h3>
               <FigTile
                 preview={{ hero }}
                 fig="hero"
@@ -356,7 +356,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               size="xs"
               selected={m.id === targetId}
               onClick={() => setTargetId(m.id)}
-              title={m.id === hero.id ? `${m.name} (soi)` : m.name}
+              title={m.id === hero.id ? `${m.label} (soi)` : m.label}
             />
           ))}
         </div>
@@ -441,7 +441,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         if (!dispellable.length) return null;
         return (
           <div className="sc-block">
-            <span className="mini-title" title="LDB 46 l.160-162">
+            <span className="mini-title">
               <Icon id="action/dispel" size="sm" /> Dissipation — sorts permanents actifs
             </span>
             <div className="spell-list">
@@ -474,7 +474,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         const countOf = (id: string) => owned.filter((x) => x === id).length;
         return (
           <div className="spell-components">
-            <span className="mini-title" title="LDB 46 l.158-163">
+            <span className="mini-title">
               <Icon id="magic/component" size="sm" /> Composants d'incantation
             </span>
             <div className="spell-list">
@@ -545,7 +545,7 @@ function HandPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
           selected: isOff,
           disabled: !offOk,
           title: offOk
-            ? 'Main secondaire : −20 aux attaques de cette main (LDB 14)'
+            ? 'Main secondaire : −20 aux attaques de cette main'
             : mainTwoH
               ? 'Main principale à deux mains — pas de seconde main'
               : 'Inéligible : seules une arme de mêlée à une main ou un pistolet vont en seconde main',
@@ -745,7 +745,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
                       <MediaSelect
                         align="right"
                         triggerClassName="btn small"
-                        title="Ranger dans un contenant (LDB 64)"
+                        title="Ranger dans un contenant"
                         trigger={<><Icon id="item/misc" size="sm" /> Ranger</>}
                         options={containers.map((bag) => ({
                           key: bag.uid,
@@ -765,7 +765,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
                         options={party.filter((p) => p.id !== hero.id).map((p) => ({
                           key: p.id,
                           media: <CharFrame c={p} variant="identity" size="xs" />,
-                          label: p.name,
+                          label: p.label,
                         }))}
                         onSelect={(pid) => transferItem(it.uid, hero.id, pid)}
                       />
@@ -1038,7 +1038,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
             rows.push({ key: `${it.uid}-2mains`, label: 'Crochet — maîtriser (armes à deux mains de nouveau possibles)', cost: 400, onBuy: () => trainProsthesis(hero.id, it.uid) });
           }
           if (it.trappingId === 'fausse-jambe' && !it.prosthesisMoveTrained) {
-            rows.push({ key: `${it.uid}-mvt`, label: 'Fausse jambe — s’entraîner (Mouvement plein retrouvé, LDB 73)', cost: 100, onBuy: () => trainProsthesis(hero.id, it.uid) });
+            rows.push({ key: `${it.uid}-mvt`, label: 'Fausse jambe — s’entraîner (Mouvement plein retrouvé)', cost: 100, onBuy: () => trainProsthesis(hero.id, it.uid) });
           }
           if (it.trappingId === 'fausse-jambe' && it.prosthesisMoveTrained && !it.prosthesisTrained) {
             rows.push({ key: `${it.uid}-esq`, label: 'Fausse jambe — réapprendre l’Esquive', cost: 200, onBuy: () => trainProsthesis(hero.id, it.uid) });

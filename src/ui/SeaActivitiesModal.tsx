@@ -48,7 +48,7 @@ export function SeaActivitiesModal() {
           const chosen = pick?.activityId ?? '';
           return (
             <section key={h.id} className="panel sea-act-hero">
-              <h4><CharFrame c={h} variant="identity" size="xs" /> {h.name}</h4>
+              <h4><CharFrame c={h} variant="identity" size="xs" /> {h.label}</h4>
               <OptionChooser
                 layout="grid"
                 options={[

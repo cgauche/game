@@ -18,14 +18,14 @@ import type { CascadeStep, CascadeRoll } from './pendings';
  */
 const hero = (p: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'h1', name: 'Hilda', kind: 'hero',
+    id: 'h1', label: 'Hilda', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 35, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     items: [], movement: 4, fortune: 2, ...p,
   } as Combatant);
 
-const ration = (uid: string) => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc' as const, qualities: [], enc: 0, equipped: false });
+const ration = (uid: string) => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc' as const, qualities: [], enc: 0, equipped: false });
 
 /** Fige un ÉCHEC sur l'étape `stepId` (dé 100, DR négatif) — pour exercer l'influence sur un jet raté. */
 function forceFail(stepId: string): void {
@@ -46,8 +46,8 @@ beforeEach(() => {
 describe('#253 — FAIM du bilan : étape de cascade influençable, pas un jet tissé', () => {
   it('affamé sans ration → jet de Faim DIFFÉRÉ (non pré-résolu), Chance proposable, résolu 1×', () => {
     // A affamé (1 jour sans manger) et sans ration → le Test de Faim tombe cette nuit (l.417 : tous les 2 jours).
-    const a = hero({ id: 'A', name: 'Affamée', hunger: { days: 1, tests: 0, failures: 0 }, fortune: 2 });
-    const b = hero({ id: 'B', name: 'Repue', items: [ration('r1')] }); // B mange sa ration → aucun jet
+    const a = hero({ id: 'A', label: 'Affamée', hunger: { days: 1, tests: 0, failures: 0 }, fortune: 2 });
+    const b = hero({ id: 'B', label: 'Repue', items: [ration('r1')] }); // B mange sa ration → aucun jet
     useGame.setState({ party: [a, b] });
     useGame.getState().openRest({ places: { camp: true } });
     useGame.getState().restSet('A', { food: 'rien' });
@@ -82,9 +82,9 @@ describe('#253 — FAIM du bilan : étape de cascade influençable, pas un jet t
 describe('#253 — CONTAGION de promiscuité : étape de cascade influençable', () => {
   it('un compagnon contagieux → jet de Contraction DIFFÉRÉ pour le sain, Chance proposable, contracté 1×', () => {
     const sick = contractDisease('verole-urticante', { int: () => 1 }, { incubation: 0, duration: 5 })!;
-    const a = hero({ id: 'A', name: 'Malade', diseases: [sick] });
+    const a = hero({ id: 'A', label: 'Malade', diseases: [sick] });
     expect(contagiousDiseases(a).length).toBe(1); // garde : la maladie est bien active + contagieuse (l.206)
-    const b = hero({ id: 'B', name: 'Sain', fortune: 2 });
+    const b = hero({ id: 'B', label: 'Sain', fortune: 2 });
     useGame.setState({ party: [a, b] });
     useGame.getState().openRest({ places: { camp: true } });
     useGame.getState().restSet('A', { food: 'rien' });
@@ -113,7 +113,7 @@ describe('#253 — CONTAGION de promiscuité : étape de cascade influençable',
 
 describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençable, plus de témoin pré-résolu", () => {
   it('advanceTime 24h, héros affamé sans ration → étape de Faim DIFFÉRÉE (purpose upkeep), Chance proposable, résolue 1×', () => {
-    const a = hero({ id: 'A', name: 'Affamée', hunger: { days: 1, tests: 0, failures: 0 }, fortune: 2 });
+    const a = hero({ id: 'A', label: 'Affamée', hunger: { days: 1, tests: 0, failures: 0 }, fortune: 2 });
     useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
     useGame.getState().advanceTime(MINUTES_PER_DAY);
 
@@ -147,7 +147,7 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
   });
 
   it('advanceTime 24h, héros IVRE → étape de Dessoûlage DIFFÉRÉE, Chance proposable, dessoûlé 1×', () => {
-    const a = hero({ id: 'A', name: 'Éméché', drunk: { failedTests: 2, drunk: true }, fortune: 2 });
+    const a = hero({ id: 'A', label: 'Éméché', drunk: { failedTests: 2, drunk: true }, fortune: 2 });
     useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
     useGame.getState().advanceTime(MINUTES_PER_DAY);
 
@@ -170,7 +170,7 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
   });
 
   it('advanceTime 24h SANS jet (ration consommée) → reveal-témoin inchangé, pas de cascade', () => {
-    const a = hero({ id: 'A', name: 'Repue', items: [ration('r1')] });
+    const a = hero({ id: 'A', label: 'Repue', items: [ration('r1')] });
     useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
     useGame.getState().advanceTime(MINUTES_PER_DAY);
 
@@ -185,7 +185,7 @@ describe('#253 — EXPOSITION de campement : étape de cascade influençable', (
   it('nuit de pluie dehors sans abri → jets d’Exposition DIFFÉRÉS, Chance proposable', () => {
     const sc = emptyScene(10, 10);
     sc.weather = 'pluie'; // difficile → Tests d'Exposition ; aucune compétence Survie → pas d'abri, jets directs
-    const a = hero({ id: 'A', name: 'Transi', fortune: 2 });
+    const a = hero({ id: 'A', label: 'Transi', fortune: 2 });
     useGame.setState({ party: [a], scene: sc });
     useGame.getState().openRest({ places: { camp: true } });
     useGame.getState().restSet('A', { lodging: 'dehors', food: 'rien' });

@@ -203,7 +203,7 @@ export function rollShipManeuver(get: Get, shipId: string, helmsmanId?: string):
     .filter((c): c is Combatant => !!c);
   const helm = helmsmanId ? inBattleId(battle, helmsmanId) : bestHelmsman(crew, skillId);
   const nav = helm ? rollTest(testValue(helm, skillId), 'intermediaire', battleRng()) : undefined;
-  return deriveManeuver(ship, { sl: nav?.sl ?? 0, roll: nav?.roll, target: nav?.target, success: nav?.success }, helm?.name);
+  return deriveManeuver(ship, { sl: nav?.sl ?? 0, roll: nav?.roll, target: nav?.target, success: nav?.success }, helm?.label);
 }
 
 /** Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : force le Test à RÉUSSIR (le virage a lieu) au DR
@@ -229,7 +229,7 @@ export function bonusShipManeuver(ship: Combatant, prev: ManeuverResult): Maneuv
 export function applyShipManeuver(get: Get, shipId: string, result: ManeuverResult, turnSteps: number): number {
   const ship = inBattleId(get().battle, shipId);
   if (result.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
-  else get().log(`${result.helmsman ?? "L'équipage"} rate la manœuvre de ${ship?.name ?? shipId} (DR ${result.dr}) — le cap tient.`);
+  else get().log(`${result.helmsman ?? "L'équipage"} rate la manœuvre de ${ship?.label ?? shipId} (DR ${result.dr}) — le cap tient.`);
   return get().shipAdvance(shipId, result.movement);
 }
 

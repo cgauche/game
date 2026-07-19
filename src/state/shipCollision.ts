@@ -32,7 +32,7 @@ export function applyShipCollision(
   causer: Combatant, victim: Combatant, opts: { frontal?: boolean; ramProue?: boolean } = {}, rng: RNG = defaultRNG,
 ): { lines: string[]; causer: CollisionDamage; victim: CollisionDamage } {
   const res = resolveCollision(toCollisionShip(causer), toCollisionShip(victim), opts);
-  const lines = [`${causer.name} percute ${victim.name}${opts.frontal ? ' de plein fouet' : ''} !`];
+  const lines = [`${causer.label} percute ${victim.label}${opts.frontal ? ' de plein fouet' : ''} !`];
   // Dégâts sur la Coque (l.464), mitigés DANS l'op : BE + PA de coque + extraAP (armorBonus situationnel).
   lines.push(...applyOps(victim, [{ op: 'wounds', amount: res.victim.damage, ignoreTB: false, ignoreAP: false, extraAP: res.victim.armorBonus }], { rng }));
   lines.push(...applyOps(causer, [{ op: 'wounds', amount: res.causer.damage, ignoreTB: false, ignoreAP: false, extraAP: res.causer.armorBonus }], { rng }));

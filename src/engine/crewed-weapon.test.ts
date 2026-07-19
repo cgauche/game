@@ -31,7 +31,7 @@ describe('crewedPenalty — table de sous-effectif d’une Arme d’équipe (MDG
 });
 
 const cannon = (over: Partial<Weapon> = {}): Weapon =>
-  ({ name: 'Canon', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 100,
+  ({ label: 'Canon', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 100,
     qualities: [{ id: 'arme-d-equipe', value: 3 }], subType: 'poudre-noire', reload: 3, ...over }) as Weapon;
 const hasQ = (w: Weapon, id: string) => w.qualities.some((q) => q.id === id);
 

@@ -49,7 +49,7 @@ export function inanimateCombatant(s: InanimateSpec): Combatant {
   const max = s.hull?.woundsB ?? 0;
   const c: Combatant = {
     id: s.id,
-    name: s.name,
+    label: s.name,
     kind: 'npc',
     creatureId: s.refId,
     characteristics: { ...ZERO_CHARS, endurance: s.hull?.e ?? 0 },

@@ -71,7 +71,7 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
     title: <><Icon id="resource/movement" size="sm" /> Piétinement</>,
     subtitle: (
       <>
-        <strong>{attacker.name}</strong> écrase <strong>{target.name}</strong> (coûte 1 Avantage)
+        <strong>{attacker.label}</strong> écrase <strong>{target.label}</strong> (coûte 1 Avantage)
       </>
     ),
     rows: [actorRow],

@@ -201,7 +201,7 @@ function openNextOpportunityTrade(get: Get, set: Set): void {
   const capGold = Math.min(vesselFreeEnc(get), Math.floor(toBrass(get().money) / PA_PER_CO));
   const invest = Math.max(0, Math.min(Math.floor(pick.investGold ?? 0), capGold));
   if (invest <= 0) {
-    noteSeaLine(get, set, [`${hero.name} — Commerce d'opportunité : aucune mise engagée.`]);
+    noteSeaLine(get, set, [`${hero.label} — Commerce d'opportunité : aucune mise engagée.`]);
     continueSeaActivitiesAfterCascade(get, set);
     return;
   }
@@ -255,15 +255,15 @@ registerCascadeApplier('sea-activity-chart', (get, set, step, hero) => {
       autoStowNewItem(hero, it); // #204 : rangement par défaut
       recomputeLoadout(hero);
     }
-    j.push(`${hero.name} — Cartographie : une Carte marine d'une valeur de ${Math.max(0, step.result.sl)} CO (+2 DR d'Orientation, MDG 15).`);
+    j.push(`${hero.label} — Cartographie : une Carte marine d'une valeur de ${Math.max(0, step.result.sl)} CO (+2 DR d'Orientation, MDG 15).`);
     const stashCO = Math.max(0, Math.min(stashGold, Math.floor(toBrass(get().money) / PA_PER_CO)));
     if (stashCO > 0) {
       const stashBrass = stashCO * PA_PER_CO;
       set({ money: fromBrass(toBrass(get().money) - stashBrass), bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50, chartSecured: true }] });
-      j.push(`${hero.name} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur ≤ 50.`);
+      j.push(`${hero.label} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur ≤ 50.`);
     }
   } else {
-    j.push(`${hero.name} — Cartographie : les relevés sont inutilisables.`);
+    j.push(`${hero.label} — Cartographie : les relevés sont inutilisables.`);
   }
   set({ party: [...get().party] });
   return { consequences: freeCons(j) };
@@ -294,7 +294,7 @@ registerExtendedTestOutcome('sea-activity-opportunity', (get, set, p, total) => 
   const pct = opportunityTradePct(total);
   const back = Math.floor((investBrass * pct) / 100);
   set({ money: fromBrass(toBrass(get().money) + back) });
-  const line = `${hero?.name ?? 'Le héros'} — Commerce d'opportunité : mise ${formatMoney(fromBrass(investBrass))}, retour ${formatMoney(fromBrass(back))} (${pct} %).`;
+  const line = `${hero?.label ?? 'Le héros'} — Commerce d'opportunité : mise ${formatMoney(fromBrass(investBrass))}, retour ${formatMoney(fromBrass(back))} (${pct} %).`;
   noteSeaLine(get, set, [line]);
   continueSeaActivitiesAfterCascade(get, set);
   return { consequences: freeCons([line]) };

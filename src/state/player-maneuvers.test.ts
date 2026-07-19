@@ -66,7 +66,7 @@ describe('availableAttacks — énumération (pur)', () => {
   it('mutation Tentacule : présente avec l’arme nat-tentacule + un ennemi + pas encore utilisée', () => {
     const enemy = at('enemy', 'E', 5, 6);
     const hero = at('hero', 'H', 5, 5, {
-      weapons: [{ name: 'Tentacule', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], uid: 'nat-tentacule' }] as Combatant['weapons'],
+      weapons: [{ label: 'Tentacule', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], uid: 'nat-tentacule' }] as Combatant['weapons'],
     });
     const t = availableAttacks(hero, mkBattle([hero, enemy])).find((x) => x.id === 'tentacule');
     expect(t).toBeTruthy();
@@ -74,7 +74,7 @@ describe('availableAttacks — énumération (pur)', () => {
     expect(t!.cost.advantage).toBe(0);
 
     const used = at('hero', 'H', 5, 5, {
-      weapons: [{ name: 'Tentacule', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], uid: 'nat-tentacule' }] as Combatant['weapons'],
+      weapons: [{ label: 'Tentacule', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], uid: 'nat-tentacule' }] as Combatant['weapons'],
       freeAttacksThisTurn: { tentacules: 1 }, // déjà jouée ce tour → plafond 1/tour atteint
     });
     expect(availableAttacks(used, mkBattle([used, enemy])).some((x) => x.id === 'tentacule')).toBe(false);
@@ -175,7 +175,7 @@ describe('manœuvres en combat (store)', () => {
     const { H, E } = setup();
     H.traits = [{ id: 'morsure', value: 10 }];
     H.advantage = 2;
-    H.weapons = [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 0 }, range: 30, qualities: [], uid: 'bow' }] as Combatant['weapons']; // arme tenue = arc
+    H.weapons = [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 0 }, range: 30, qualities: [], uid: 'bow' }] as Combatant['weapons']; // arme tenue = arc
     E.pos = { x: 14, y: 10 };
     useGame.getState().battleSelectAttack('morsure');
     vi.clearAllTimers();

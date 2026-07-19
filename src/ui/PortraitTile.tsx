@@ -70,8 +70,8 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
         className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${hovered ? 'hov' : ''} ${endMark ? `ko ${endMark.className}` : ''} ${team ? `team-${team}` : ''}`}
         style={{ width: s }}
         onClick={onClick}
-        title={title ?? c.name}
-        aria-label={title ?? c.name}
+        title={title ?? c.label}
+        aria-label={title ?? c.label}
       >
         {active && <i className="ptile-caret">▼</i>}
         <span className="ptile-face" style={{ width: s, height: s }}>

@@ -265,7 +265,7 @@ function opReroll<P extends PendingBase>(
   if (!patch) return;
   if (free) {
     const label = consumeActiveFlag(actor, 'freeReroll');
-    get().log(`${actor.name} relance sans dépenser de Chance (${label ?? 'Bénédiction de Chance'}).`);
+    get().log(`${actor.label} relance sans dépenser de Chance (${label ?? 'Bénédiction de Chance'}).`);
   } else {
     actor.fortune = (actor.fortune ?? 0) - 1;
   }

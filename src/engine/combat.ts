@@ -795,7 +795,7 @@ function combineOpposed(
       attackerDetail: atkBd,
       defenderDetail: defBd,
       parryWeapon: usedParry,
-      log: `${attacker.name} rate son attaque ; ${defender.name} gagne +1 Avantage.`,
+      log: `${attacker.label} rate son attaque ; ${defender.label} gagne +1 Avantage.`,
     };
   }
   if (opp.winner === 'tie') {
@@ -811,7 +811,7 @@ function combineOpposed(
       attackerDetail: atkBd,
       defenderDetail: defBd,
       parryWeapon: usedParry,
-      log: `Échange neutre : ni ${attacker.name} ni ${defender.name} ne prend l'avantage.`,
+      log: `Échange neutre : ni ${attacker.label} ni ${defender.label} ne prend l'avantage.`,
     };
   }
   const critical = atk.isDouble && atk.success;
@@ -1001,7 +1001,7 @@ export function resolveRanged(
   const atkVal = combatValue(attacker, 'ranged', weapon);
   const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force')));
   if (distanceTiles != null && rangeM != null && rangeBandModifier(distanceTiles, rangeM, metresPerTile) == null)
-    return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
+    return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.label} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
   let atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
   if (isHelplessTarget(defender)) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
@@ -1021,7 +1021,7 @@ export function resolveRanged(
       critical: false,
       advantageTo: null, // pas d'Avantage au défenseur en combat à distance
       defenderDefeated: false,
-      log: `${attacker.name} manque sa cible.`,
+      log: `${attacker.label} manque sa cible.`,
     };
   }
   return applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'projectiles') + offTerrainTestDR(attacker), atk.isDouble && atk.success, location); // Imprécise : −1 DR (LDB 62 l.323) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un tir réussi ; hors de son terrain −DR (MDG p.140)
@@ -1081,14 +1081,14 @@ export function resolveStrayRangedHit(
   const atk = evaluateTest(roll, effTarget);
   const atkBd = bd(`${attackTestLabel(weapon, 'ranged')} (dévié)`, combatValue(attacker, 'ranged', weapon), atk, []);
   const res = applyHit(attacker, victim, weapon, atkBd, Math.max(0, atk.sl), atk.isDouble && atk.success);
-  res.log = `Le tir dévie dans la mêlée et touche ${victim.name} !`;
+  res.log = `Le tir dévie dans la mêlée et touche ${victim.label} !`;
   return res;
 }
 
 /** Attaque de Piétinement (LDB 85 l.320-321) : créature plus grande, Dégâts = Bonus de Force (+0),
  *  via Corps à corps (Bagarre). Action gratuite — le coût de 1 Avantage est géré par le store. */
 export function resolveTrample(attacker: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
-  const fist: Weapon = { name: 'Piétinement', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+  const fist: Weapon = { label: 'Piétinement', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
   const mods = attackModifiers(attacker, target, fist, { kind: 'melee' });
   const atk = rollTest(combatValue(attacker, 'melee'), 'intermediaire', rng, combineMods(mods));
   const atkBd = bd('Corps à corps (Piétinement)', combatValue(attacker, 'melee'), atk, mods);
@@ -1138,7 +1138,7 @@ function applyHit(
     return {
       hit: true, attackerRoll: atkBd.roll, attackerDetail: atkBd, netSL: dr, location: loc,
       damage: 0, woundsLost: 0, critical: false, advantageTo: 'attacker', defenderDefeated: false,
-      log: `${attacker.name} touche ${defender.name}… mais le coup passe au travers (Éthéré — seules les attaques magiques la blessent).`,
+      log: `${attacker.label} touche ${defender.label}… mais le coup passe au travers (Éthéré — seules les attaques magiques la blessent).`,
     };
   }
   // Charge montée (LDB 14 l.183) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
@@ -1209,10 +1209,10 @@ function applyHit(
     advantageTo: 'attacker',
     defenderDefeated: defeated,
     log: hullBlocked
-      ? `${attacker.name} touche ${defender.name}, sans effet sur la coque (${hullAdj.blocked === 'petites-armes'
+      ? `${attacker.label} touche ${defender.label}, sans effet sur la coque (${hullAdj.blocked === 'petites-armes'
           ? 'les tirs de petites armes n’infligent pas assez de Dégâts pour avoir un effet sur un vaisseau'
           : 'trop petit pour entamer cette coque'} — MDG 13).`
-      : `${attacker.name} touche ${defender.name}${loc ? ` (${locationLabel(loc, defender.bodyShape)})` : ''} : ` +
+      : `${attacker.label} touche ${defender.label}${loc ? ` (${locationLabel(loc, defender.bodyShape)})` : ''} : ` +
         `${damage} dégâts − ${damage - woundsLost} (BE+PA) = ${woundsLost} Blessures` +
         (isCritical ? ' — CRITIQUE !' : '') +
         '.',
@@ -1247,7 +1247,7 @@ function miss(
     critical: false,
     advantageTo,
     defenderDefeated: false,
-    log: `${attacker.name} manque ${defender.name}.`,
+    log: `${attacker.label} manque ${defender.label}.`,
   };
 }
 
@@ -1324,7 +1324,7 @@ export function rederivePassiveAttack(
       critical: false,
       advantageTo: kind === 'ranged' ? null : 'defender',
       defenderDefeated: false,
-      log: kind === 'ranged' ? `${attacker.name} manque sa cible.` : `${attacker.name} manque ${defender.name}.`,
+      log: kind === 'ranged' ? `${attacker.label} manque sa cible.` : `${attacker.label} manque ${defender.label}.`,
     };
   }
   return applyHit(attacker, defender, weapon, atkBd, atk.sl, atk.isDouble && atk.success, location, undefined, 0, withhold);

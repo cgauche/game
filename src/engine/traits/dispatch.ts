@@ -19,6 +19,19 @@ const CANON_BY_LOWER = new Map<string, string>(
   [...traitByLabel.keys()].map((label) => [label.toLowerCase(), slugId(label)] as const),
 );
 
+/** COUTURE libellé→id (#602) : nom de trait SAISI (statbloc, migration) → `id` STABLE. Prend du
+ *  TEXTE — le seul sens toléré par la doctrine ; aucun appelant ne l'alimente avec le `.label` d'une
+ *  entité qu'il tient déjà (elle porte alors son `id`). Inconnu du registre → slug du texte. */
+export function canonTraitId(text: string): string {
+  return knownTraitId(text) ?? slugId(text);
+}
+
+/** Idem, mais `undefined` si le texte ne nomme AUCUN trait du registre (le repli par slug masquerait
+ *  l'inconnu là où l'appelant doit le distinguer — cf. `parseTrait`). */
+export function knownTraitId(text: string): string | undefined {
+  return CANON_BY_LOWER.get(text.toLowerCase());
+}
+
 /** Inverse : `id` → libellé FR canonique (affichage : inspecteur/Codex/éditeur). Même couverture. */
 const LABEL_BY_ID = new Map<string, string>(
   [...traitByLabel.keys()].map((label) => [slugId(label), label] as const),
@@ -32,7 +45,7 @@ export const traitLabelById = (id: string): string => LABEL_BY_ID.get(id) ?? id;
  *  (« Arme », « À distance », « Griffes »). C'est le SEUL endroit qui parse — le runtime lit les champs. */
 export function parseTraitInstance(raw: string): TraitInstance {
   const p = parseStatEntry(raw);
-  const t: TraitInstance = { id: CANON_BY_LOWER.get(p.name.toLowerCase()) ?? slugId(p.name) };
+  const t: TraitInstance = { id: canonTraitId(p.name) };
   const value = p.bonus ?? p.indice;
   if (value != null) t.value = value;
   if (p.arg != null) t.arg = p.arg;
@@ -142,7 +155,7 @@ export interface ParsedTrait {
  *  sinon le bonus signé (« Arme +7 ») pour les traits d'attaque. */
 export function parseTrait(raw: string): ParsedTrait | null {
   const p = parseStatEntry(raw);
-  const id = CANON_BY_LOWER.get(p.name.toLowerCase());
+  const id = knownTraitId(p.name);
   return id && TRAITS[id] ? { id, indice: p.indice ?? p.bonus, arg: p.arg } : null;
 }
 

@@ -147,7 +147,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
 describe('Interruption de Focalisation (l.142-144) — cadence-aware', () => {
   /** Place le focaliseur dans un combat minimal (un ennemi figurant) → le routage cadence s'applique. */
   function inCombat(w: Combatant, foe?: Combatant): Combatant {
-    const enemy = foe ?? ({ ...wiz(), id: 'foe', name: 'Brute', kind: 'enemy' } as Combatant);
+    const enemy = foe ?? ({ ...wiz(), id: 'foe', label: 'Brute', kind: 'enemy' } as Combatant);
     const battle = {
       combatants: [w, enemy], order: [w.id, enemy.id], turn: 0, round: 1,
       action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
@@ -204,7 +204,7 @@ describe('Interruption de Focalisation (l.142-144) — cadence-aware', () => {
   });
 
   it('ENNEMI focaliseur frappé → Test de Calme résolu INLINE (jamais d’étape de cascade)', () => {
-    const foe = { ...wiz(), id: 'caster-foe', name: 'Sorcier ennemi', kind: 'enemy' } as Combatant;
+    const foe = { ...wiz(), id: 'caster-foe', label: 'Sorcier ennemi', kind: 'enemy' } as Combatant;
     foe.characteristics['force-mentale'] = 1; // Calme raté → conséquence inline
     foe.focus = { spell: 'armure-aethyrique', dr: 2 };
     const w = wiz();
@@ -228,8 +228,8 @@ describe('Interruption de Focalisation (l.142-144) — cadence-aware', () => {
 describe('Convergence de Domaine (+1 Avantage, l.176)', () => {
   it('2ᵉ sort du même Vent sur la même cible dans le Round → +1 Avantage au lanceur', () => {
     const w = wiz();
-    const w2 = { ...wiz(), id: 'w2', name: 'Apprentie' } as Combatant;
-    const target = { ...wiz(), id: 't', name: 'Cible', kind: 'enemy' } as Combatant;
+    const w2 = { ...wiz(), id: 'w2', label: 'Apprentie' } as Combatant;
+    const target = { ...wiz(), id: 't', label: 'Cible', kind: 'enemy' } as Combatant;
     const battle = {
       combatants: [w, w2, target], order: [w.id, w2.id, target.id], turn: 0, round: 1,
       action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,

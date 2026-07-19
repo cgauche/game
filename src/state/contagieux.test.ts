@@ -19,7 +19,7 @@ import type { Combatant } from '../engine/types';
  */
 const mk = (p: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'x', name: 'X', kind: 'enemy',
+    id: 'x', label: 'X', kind: 'enemy',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -58,7 +58,7 @@ describe('Contagieux (Type) — transmission au toucher (EDO App.2 l.228-230)', 
   });
 
   it('bilan de fin de combat : le Test de Contraction est 2 NIVEAUX plus difficile (Accessible → Complexe)', () => {
-    const a = mk({ id: 'a', name: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur', difficultyShift: -2, instant: true }] });
+    const a = mk({ id: 'a', label: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur', difficultyShift: -2, instant: true }] });
     useGame.setState({ battle: { combatants: [a], order: ['a'], turn: 0, round: 1, log: [], over: null } as never, party: [mk({ id: 'a', kind: 'hero' })] });
     openCombatEndCascade(useGame.getState, useGame.setState);
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
@@ -71,7 +71,7 @@ describe('Contagieux (Type) — transmission au toucher (EDO App.2 l.228-230)', 
 
   it('contractée → incubation « Instantanée » : la maladie démarre ACTIVE (symptômes immédiats)', () => {
     seedBattleRng(4); // 1er d100 = 93 → Test de Contraction raté (cible 20)
-    const a = mk({ id: 'a', name: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur', difficultyShift: -2, instant: true }] });
+    const a = mk({ id: 'a', label: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur', difficultyShift: -2, instant: true }] });
     useGame.setState({ battle: { combatants: [a], order: ['a'], turn: 0, round: 1, log: [], over: null } as never, party: [mk({ id: 'a', kind: 'hero' })] });
     openCombatEndCascade(useGame.getState, useGame.setState);
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
@@ -84,7 +84,7 @@ describe('Contagieux (Type) — transmission au toucher (EDO App.2 l.228-230)', 
 
   it('SANS Contagieux (Infecté simple) : difficulté normale et incubation tirée (non-régression)', () => {
     seedBattleRng(4);
-    const a = mk({ id: 'a', name: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur' }] });
+    const a = mk({ id: 'a', label: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur' }] });
     useGame.setState({ battle: { combatants: [a], order: ['a'], turn: 0, round: 1, log: [], over: null } as never, party: [mk({ id: 'a', kind: 'hero' })] });
     openCombatEndCascade(useGame.getState, useGame.setState);
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;

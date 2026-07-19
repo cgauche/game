@@ -175,7 +175,7 @@ export function releaseConditionLocks(c: Combatant, act: import('./types').Condi
     if (inst.unlockBy == null || !actLifts(inst.unlockBy, act)) continue;
     delete inst.unlockBy; // le verrou tombe → removeCondition n'est plus inerte
     removeCondition(c, inst.id, inst.value); // l'acte SOIGNE l'État (LDB 18 : retiré par cet acte)
-    log.push(t('cond.lockReleased', { name: c.name, cond: conditionLabel(inst.id) }));
+    log.push(t('cond.lockReleased', { name: c.label, cond: conditionLabel(inst.id) }));
   }
   return log;
 }
@@ -450,7 +450,11 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
   // comprise). Snapshot de la liste : les ops récurrentes n'ajoutent pas d'effet actif (cas littéraux).
   for (const e of [...(c.activeEffects ?? [])]) {
     if (!e.opsPerRound || (e.duration.scale === 'rounds' && e.duration.left <= 0)) continue;
-    applyOps(c, e.opsPerRound, { label: e.label, rng }).forEach((l) => log.push(l));
+    // L'ancrage du re-jeu est celui MEMORISE sur l'effet a sa pose (`applyOps` l'y stampe) : il se relaie,
+    // il ne se reconstruit pas.
+    applyOps(c, e.opsPerRound, {
+      label: e.label, rng, source: e.source, sourceSpellId: e.sourceSpellId, effectId: e.effectId,
+    }).forEach((l) => log.push(l));
   }
   // Décrément des durées (effets/États de sort/contrecoups) — SOURCE UNIQUE extraite, même emplacement
   // qu'avant (fin d'`endOfRound`, après les ops récurrentes). RNG-free.
@@ -506,10 +510,10 @@ export function resolvePlusExtension(c: Combatant, e: ActiveEffect, extended: bo
   if (extended) {
     e.awaitingExtension = undefined;
     e.duration = { scale: 'rounds', left: 1 };
-    return [t('cond.effectExtended', { name: c.name, label: e.label })];
+    return [t('cond.effectExtended', { name: c.label, label: e.label })];
   }
   const removed = removeActiveEffects(c, (x) => x === e);
-  return removed.map((x) => t('cond.effectExpire', { name: c.name, label: x.label }));
+  return removed.map((x) => t('cond.effectExpire', { name: c.label, label: x.label }));
 }
 
 export function tickDurations(c: Combatant): string[] {
@@ -527,20 +531,20 @@ export function tickDurations(c: Combatant): string[] {
       if (e.duration.scale === 'rounds' && e.duration.left <= 0 && !e.awaitingExtension && spellDurationPlusSource(e)) e.awaitingExtension = true;
     }
     const expired = removeActiveEffects(c, (e) => e.duration.scale === 'rounds' && e.duration.left <= 0 && !e.awaitingExtension);
-    for (const e of expired) log.push(t('cond.effectExpire', { name: c.name, label: e.label }));
+    for (const e of expired) log.push(t('cond.effectExpire', { name: c.label, label: e.label }));
   }
   // États à DURÉE posés par un sort (« qui dure N Rounds ») : décrément, dissipation à 0.
   if (c.conditions.some((x) => x.roundsLeft != null)) {
     for (const x of c.conditions) if (x.roundsLeft != null) x.roundsLeft -= 1;
     const done = c.conditions.filter((x) => x.roundsLeft != null && x.roundsLeft <= 0);
-    for (const x of done) log.push(t('cond.spellCondExpire', { name: c.name, cond: conditionLabel(x.id) }));
+    for (const x of done) log.push(t('cond.spellCondExpire', { name: c.label, cond: conditionLabel(x.id) }));
     c.conditions = c.conditions.filter((x) => !(x.roundsLeft != null && x.roundsLeft <= 0));
   }
   // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40).
   if (c.castPenalties?.some((p) => p.roundsLeft != null)) {
     for (const p of c.castPenalties) if (p.roundsLeft != null) p.roundsLeft -= 1;
     const done = c.castPenalties.filter((p) => p.roundsLeft != null && p.roundsLeft <= 0);
-    for (const p of done) log.push(t('cond.effectExpire', { name: c.name, label: p.label }));
+    for (const p of done) log.push(t('cond.effectExpire', { name: c.label, label: p.label }));
     c.castPenalties = c.castPenalties.filter((p) => !(p.roundsLeft != null && p.roundsLeft <= 0));
   }
   return log;
@@ -555,9 +559,9 @@ export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base
   const calme = effectiveChar(c, 'force-mentale') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   out?.push({ base: calme, result: res });
-  if (res.success) return [t('cond.nightmareNone', { name: c.name })];
+  if (res.success) return [t('cond.nightmareNone', { name: c.label })];
   addCondition(c, COND.extenue);
-  return [t('cond.nightmare', { name: c.name })];
+  return [t('cond.nightmare', { name: c.label })];
 }
 
 /**
@@ -572,11 +576,11 @@ export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boo
   const r = d100(rng);
   if (isDoubleRoll(r)) {
     removeCondition(c, COND.hemorragique, 1); // coagulation (le double prime sur la mort)
-    const log = [t('cond.coagulate', { name: c.name, roll: r === 100 ? '00' : r })];
-    if (!hasCondition(c, COND.hemorragique)) { addCondition(c, COND.extenue); log.push(t('cond.lastWoundExhausted', { name: c.name })); } // tous retirés → 1 Exténué
+    const log = [t('cond.coagulate', { name: c.label, roll: r === 100 ? '00' : r })];
+    if (!hasCondition(c, COND.hemorragique)) { addCondition(c, COND.extenue); log.push(t('cond.lastWoundExhausted', { name: c.label })); } // tous retirés → 1 Exténué
     return { died: false, log };
   }
-  if (r <= 10 * n) return { died: true, log: [t('cond.bleedDeath', { name: c.name, roll: r, threshold: 10 * n })] };
+  if (r <= 10 * n) return { died: true, log: [t('cond.bleedDeath', { name: c.label, roll: r, threshold: 10 * n })] };
   return { died: false, log: [] };
 }
 
@@ -685,7 +689,7 @@ export function tickDeath(c: Combatant): string[] {
   c.roundsAtZero = (c.roundsAtZero ?? 0) + 1;
   if (rule('combat-aa-blessures') !== 'aa' && c.roundsAtZero > be && !hasCondition(c, COND.inconscient)) {
     addCondition(c, COND.inconscient);
-    log.push(t('cond.unconscious', { name: c.name, rounds: c.roundsAtZero }));
+    log.push(t('cond.unconscious', { name: c.label, rounds: c.roundsAtZero }));
   }
   return log; // la mort (dead) est finalisée par le store (avec sauvetage par Destin)
 }

@@ -16,7 +16,7 @@ const user = (over: Partial<Combatant> = {}): Combatant =>
 const doFlow = (ops: import('./ops').GameOp[]): Flow => ({ kind: 'do', effect: { type: 'ops', ops } });
 
 const item = (over: Partial<ItemInstance> = {}): ItemInstance =>
-  ({ uid: 'i', name: 'X', kind: 'misc', qualities: [], enc: 0, equipped: false, ...over }) as ItemInstance;
+  ({ uid: 'i', label: 'X', kind: 'misc', qualities: [], enc: 0, equipped: false, ...over }) as ItemInstance;
 
 describe('consommables — effet en FLOW (#50 : migration GameOp[] → Flow)', () => {
   it('isConsumable = Flow présent et non vide (un seq sans étape = rien à boire)', () => {

@@ -19,7 +19,7 @@ const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 40, endu
 
 const hero = (p: Partial<Combatant>): Combatant =>
   ({
-    id: 'h1', name: 'Hardi', kind: 'hero', characteristics: CHARS,
+    id: 'h1', label: 'Hardi', kind: 'hero', characteristics: CHARS,
     wounds: { current: 15, max: 15 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
     engagedWith: [], pos: { x: 0, y: 0 }, size: 'moyenne', weapons: [], items: [], fate: 0,
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -28,10 +28,10 @@ const hero = (p: Partial<Combatant>): Combatant =>
 
 const enemy = (p: Partial<Combatant>): Combatant =>
   ({
-    id: 'e1', name: 'Démon', kind: 'enemy', characteristics: CHARS,
+    id: 'e1', label: 'Démon', kind: 'enemy', characteristics: CHARS,
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
     engagedWith: [], pos: { x: 1, y: 0 }, size: 'moyenne',
-    weapons: [{ name: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
+    weapons: [{ label: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
   } as unknown as Combatant);
@@ -62,7 +62,7 @@ describe('GOLDEN — sauvegardes post-touche (applyAttackResult)', () => {
     const demon = enemy({ id: 'e1', pos: { x: 1, y: 0 }, traits: [{ id: 'demoniaque', value: 8 }], wounds: { current: 20, max: 20 } });
     setBattle([atk, demon]);
     const before = useGame.getState().battle!.combatants.find((c) => c.id === 'e1')!.wounds.current;
-    const suspended = applyAttackResult(useGame.getState, useGame.setState, atk, demon, atk.weapons?.[0] ?? ({ name: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon), meleeHit());
+    const suspended = applyAttackResult(useGame.getState, useGame.setState, atk, demon, atk.weapons?.[0] ?? ({ label: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon), meleeHit());
     const after = useGame.getState().battle!;
     const e = after.combatants.find((c) => c.id === 'e1')!;
     const lines = after.log.map((l) => `${l.kind}:${l.text}`);
@@ -83,10 +83,10 @@ describe('GOLDEN — sauvegardes post-touche (applyAttackResult)', () => {
   it('Dôme (domeWard) : tir de l’extérieur, 1d10 ≥ 6 dévie — état + RNG figés', () => {
     seedBattleRng(1); // graine où le 1d10 du Dôme ≥ 6 (le tir est dévié)
     // Porteur du Dôme (rayon 4 m → 2 cases) ; cible adjacente DEDANS ; tireur HORS de la zone.
-    const warden = hero({ id: 'w', name: 'Mage', pos: { x: 5, y: 5 }, activeEffects: [{ domeWard: { radiusMeters: 4 } }] as unknown as Combatant['activeEffects'] });
-    const target = hero({ id: 'h1', name: 'Couvert', pos: { x: 6, y: 5 }, wounds: { current: 15, max: 15 } });
-    const shooter = enemy({ id: 'e1', name: 'Tireur', pos: { x: 20, y: 5 } });
-    const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] } as Weapon;
+    const warden = hero({ id: 'w', label: 'Mage', pos: { x: 5, y: 5 }, activeEffects: [{ domeWard: { radiusMeters: 4 } }] as unknown as Combatant['activeEffects'] });
+    const target = hero({ id: 'h1', label: 'Couvert', pos: { x: 6, y: 5 }, wounds: { current: 15, max: 15 } });
+    const shooter = enemy({ id: 'e1', label: 'Tireur', pos: { x: 20, y: 5 } });
+    const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] } as Weapon;
     setBattle([warden, target, shooter]);
     const before = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!.wounds.current;
     const suspended = applyAttackResult(useGame.getState, useGame.setState, shooter, target, bow, meleeHit());

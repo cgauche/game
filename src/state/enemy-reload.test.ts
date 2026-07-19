@@ -17,7 +17,7 @@ import type { AttackResult } from '../engine/combat';
  * suit donc le MÊME cycle `loaded`/rechargement que le héros (spawn chargé → tir → déchargé → Test étendu),
  * sans état ni chemin parallèle. Ces tests figent la parité de bout en bout.
  */
-const CROSSBOW: Weapon = { name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, reload: 1, qualities: [] };
+const CROSSBOW: Weapon = { label: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, reload: 1, qualities: [] };
 const CHARS = { 'capacite-de-combat': 40, 'capacite-de-tir': 60, force: 35, endurance: 35, initiative: 35, agilite: 35, dexterite: 35, intelligence: 35, 'force-mentale': 35, sociabilite: 35 };
 
 function enemyWith(over: Partial<Combatant>): Combatant {

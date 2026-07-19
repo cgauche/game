@@ -7,7 +7,7 @@ import type { Combatant } from './types';
 
 function baseCombatant(over: Partial<Combatant> = {}): Combatant {
   return {
-    id: 'h1', name: 'Test', kind: 'hero',
+    id: 'h1', label: 'Test', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 },
     advantage: 3, conditions: [], weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

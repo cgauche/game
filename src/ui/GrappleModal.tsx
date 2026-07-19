@@ -37,8 +37,8 @@ export function GrappleModal() {
   const rerollable = !!pd.def && !pd.def.success && canReroll(!pd.def.success, !!pd.rerolled);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
   const outcome =
-    pd.result === 'success' ? `${actor.name} l'emporte — à toi de choisir.`
-    : pd.result === 'failure' ? `${foe.name} l'emporte : +1 Avantage.`
+    pd.result === 'success' ? `${actor.label} l'emporte — à toi de choisir.`
+    : pd.result === 'failure' ? `${foe.label} l'emporte : +1 Avantage.`
     : 'Égalité parfaite : l’Empoignade se poursuit.';
 
   // Rangée TÉMOIN : Force du foe, figée (jamais relancée).

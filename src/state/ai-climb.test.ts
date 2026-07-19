@@ -9,7 +9,7 @@ import type { Combatant, Weapon } from '../engine/types';
  * les cases atteignables par-delà une arête `WallSeg.climb` — aucun branchement par-nom, `chooseEnemyAction`
  * réutilise le MÊME `reach` que `path-climb.test.ts` valide au niveau BFS.
  */
-const MELEE: Weapon = { name: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const MELEE: Weapon = { label: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 // Plateau (y 0-1, h=4 m) séparé du sol (y 2-4, h=0 m) par une falaise ; seule l'arête N de (2,2) (entre
 // (2,1) et (2,2)) est grimpable — chemin OBLIGÉ vers le plateau.
@@ -25,7 +25,7 @@ function cliffScene(): Scene {
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number; h?: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
-    id, name: id, kind, pos, wounds: { current: 10, max: 10 }, weapons: [MELEE],
+    id, label: id, kind, pos, wounds: { current: 10, max: 10 }, weapons: [MELEE],
     characteristics: {} as never, advantage: 0, conditions: [], armour: {} as never, skills: [], talents: [], movement: 4,
     ...opts,
   } as Combatant;

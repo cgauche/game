@@ -273,7 +273,7 @@ describe('Mêlée — Déviation sur dépassement (overkill, LDB 18 l.53 + 63 l.
   beforeEach(() => seedBattleRng(31));
   afterEach(() => resetRule('combat-critical-deflect'));
 
-  const weapon: Weapon = { name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+  const weapon: Weapon = { label: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
   // Dépassement (≠ double) : woundsLost > PB courants, `critical:false`.
   const overkillRes = (): AttackResult =>
     ({ hit: true, attackerRoll: 30, netSL: 2, location: 'corps', damage: 12, woundsLost: 8, critical: false, advantageTo: null, defenderDefeated: false, log: 'dépassement (corps)' });

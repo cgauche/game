@@ -4,16 +4,16 @@ import type { RNG } from './dice';
 import type { Combatant, ShipPoste } from './types';
 
 const gunner = (id: string, over: Partial<Combatant> = {}): Combatant =>
-  ({ id, name: id, kind: 'npc', characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 0, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 }, conditions: [], wounds: { current: 10, max: 10, base: 10 }, items: [], ...over }) as unknown as Combatant;
+  ({ id, label: id, kind: 'npc', characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 0, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 }, conditions: [], wounds: { current: 10, max: 10, base: 10 }, items: [], ...over }) as unknown as Combatant;
 
 /** Pièce d'artillerie : Dégâts plats `flat`, qualités optionnelles, servie par `crewIds`. */
 const poste = (crewIds: string[], flat = 14, qualities: { id: string; value?: number }[] = []): ShipPoste =>
-  ({ side: 'tribord', item: { uid: 'gun-' + crewIds.join('') + flat, name: 'Canon', kind: 'ranged', subType: 'armes-de-siege', damage: { flat, plusBF: false }, range: 75, qualities }, crewIds }) as unknown as ShipPoste;
+  ({ side: 'tribord', item: { uid: 'gun-' + crewIds.join('') + flat, label: 'Canon', kind: 'ranged', subType: 'armes-de-siege', damage: { flat, plusBF: false }, range: 75, qualities }, crewIds }) as unknown as ShipPoste;
 
-const ship = (): Combatant => ({ id: 'ship', name: 'Navire', kind: 'npc', bodyShape: 'vehicule', conditions: [], weapons: [] }) as unknown as Combatant;
+const ship = (): Combatant => ({ id: 'ship', label: 'Navire', kind: 'npc', bodyShape: 'vehicule', conditions: [], weapons: [] }) as unknown as Combatant;
 
 const hull = (E: number, armourCorps = 0, wounds = 90): Combatant =>
-  ({ id: 'target', name: 'Coque', kind: 'enemy', bodyShape: 'vehicule', characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: E, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 }, armour: { corps: armourCorps }, conditions: [], wounds: { current: wounds, max: 90, base: 90 } }) as unknown as Combatant;
+  ({ id: 'target', label: 'Coque', kind: 'enemy', bodyShape: 'vehicule', characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: E, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 }, armour: { corps: armourCorps }, conditions: [], wounds: { current: wounds, max: 90, base: 90 } }) as unknown as Combatant;
 
 const fixed = (n: number): RNG => ({ int: () => n }) as unknown as RNG;
 
@@ -35,7 +35,7 @@ describe('resolveVolley — la bordée RÉUTILISE le pipeline de tir (MDG 14 l.1
   });
 
   it('munition fusionnée : Dégâts de la munition s’appliquent (réutilise weaponWithAmmo)', () => {
-    const g = gunner('g1', { ammoUid: 'boulet', items: [{ uid: 'boulet', name: 'Boulet', kind: 'ammo', subType: 'munition-de-siege', damage: { flat: 4, plusBF: false }, qualities: [], qty: 5 } as never] });
+    const g = gunner('g1', { ammoUid: 'boulet', items: [{ uid: 'boulet', label: 'Boulet', kind: 'ammo', subType: 'munition-de-siege', damage: { flat: 4, plusBF: false }, qualities: [], qty: 5 } as never] });
     const r = resolveVolley(firing, [poste(['g1'])], target(), 'voile', 3, [g], fixed(34));
     expect(r.shots[0].damage).toBe(21); // 14 + 4 (boulet) + 3
     expect(r.shots[0].ammoName).toBe('Boulet');
@@ -44,7 +44,7 @@ describe('resolveVolley — la bordée RÉUTILISE le pipeline de tir (MDG 14 l.1
   it('Perforante de la munition perce le blindage (réutilise woundsFromHit)', () => {
     const armored = () => hull(40, 4); // BE 4 + blindage 4
     const plain = resolveVolley(firing, [poste(['g1'])], armored(), 'voile', 3, [gunner('g1')], fixed(34));
-    const perf = gunner('g1', { ammoUid: 'p', items: [{ uid: 'p', name: 'Carreau', kind: 'ammo', subType: 'munition-de-siege', damage: { flat: 0, plusBF: false }, qualities: [{ id: 'perforante' }], qty: 5 } as never] });
+    const perf = gunner('g1', { ammoUid: 'p', items: [{ uid: 'p', label: 'Carreau', kind: 'ammo', subType: 'munition-de-siege', damage: { flat: 0, plusBF: false }, qualities: [{ id: 'perforante' }], qty: 5 } as never] });
     const r = resolveVolley(firing, [poste(['g1'])], armored(), 'voile', 3, [perf], fixed(34));
     expect(r.shots[0].wounds).toBeGreaterThan(plain.shots[0].wounds); // Perforante réduit la PA → plus de Blessures
   });

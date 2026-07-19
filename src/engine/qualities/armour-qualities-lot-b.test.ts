@@ -10,11 +10,11 @@ import type { Combatant, ItemInstance } from '../types';
  */
 let uidSeq = 0;
 const piece = (name: string, pa: number, locs: ItemInstance['locs'], qualities: string[] = []): ItemInstance =>
-  ({ uid: `it-${uidSeq++}`, name, kind: 'armor', equipped: true, pa, locs, qualities: qualities.map((s) => parseQualityInstance(s)!), enc: 1 } as ItemInstance);
+  ({ uid: `it-${uidSeq++}`, label: name, kind: 'armor', equipped: true, pa, locs, qualities: qualities.map((s) => parseQualityInstance(s)!), enc: 1 } as ItemInstance);
 
 function wearer(items: ItemInstance[]): Combatant {
   return {
-    id: 'w', name: 'W', kind: 'hero',
+    id: 'w', label: 'W', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

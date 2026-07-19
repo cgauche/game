@@ -61,7 +61,7 @@ export function ApproachModal() {
       title={<><Icon id="flag/fear" size="sm" /> Affronter sa Peur</>}
       subtitle={
         <>
-          <strong>{c.name}</strong> ose approcher {src?.name ?? 'la source de sa Peur'} (Test de Calme +0)
+          <strong>{c.label}</strong> ose approcher {src?.label ?? 'la source de sa Peur'} (Test de Calme +0)
         </>
       }
       rows={[actorRow]}

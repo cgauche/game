@@ -14,9 +14,9 @@ const chars = (E = 30): Characteristics => ({
 
 function hero(opts: { id?: string; movement?: number; enc?: number; endurance?: number; dead?: boolean } = {}): Combatant {
   const enc = opts.enc ?? 0;
-  const items: ItemInstance[] = enc > 0 ? [{ uid: 'x', name: 'charge', kind: 'misc', qualities: [], enc, equipped: false }] : [];
+  const items: ItemInstance[] = enc > 0 ? [{ uid: 'x', label: 'charge', kind: 'misc', qualities: [], enc, equipped: false }] : [];
   return {
-    id: opts.id ?? 'c', name: opts.id ?? 'Test', kind: 'hero',
+    id: opts.id ?? 'c', label: opts.id ?? 'Test', kind: 'hero',
     characteristics: chars(opts.endurance),
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

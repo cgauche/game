@@ -22,8 +22,8 @@ export function SessionEndModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Fin de séance" variant="plain" className="session-end" onClose={onClose} backdropClose>
       <p className="muted">
-        Cochez les Ambitions accomplies (+50 PX court terme, +500 long terme — LDB 05) et les héros ayant
-        agi selon leur Motivation (+1 Détermination — LDB 17). La Chance du groupe sera restaurée pour la
+        Cochez les Ambitions accomplies (+50 PX court terme, +500 long terme) et les héros ayant
+        agi selon leur Motivation (+1 Détermination). La Chance du groupe sera restaurée pour la
         prochaine séance.
       </p>
       <section className="hr-group">
@@ -40,7 +40,7 @@ export function SessionEndModal({ onClose }: { onClose: () => void }) {
       <div className="panel-grid">
         {party.map((h) => (
           <section key={h.id} className="se-hero hr-group">
-            <h4 className="mini-title">{h.name}</h4>
+            <h4 className="mini-title">{h.label}</h4>
             <label className="se-check" title={h.details?.ambitionShort ?? 'Aucune Ambition à court terme notée'}>
               <input type="checkbox" checked={!!heroes[h.id]?.ambitionShort} onChange={() => toggle(h.id, 'ambitionShort')} />
               Ambition court terme (+50)

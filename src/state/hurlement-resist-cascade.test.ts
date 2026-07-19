@@ -39,8 +39,8 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
       h.skills = h.skills.filter((s) => s.skillId !== 'resistance');
       h.conditions = [];
     }
-    b.combatants.find((c) => c.name === 'H1')!.pos = { x: 6, y: 5 };
-    b.combatants.find((c) => c.name === 'H2')!.pos = { x: 5, y: 6 };
+    b.combatants.find((c) => c.label === 'H1')!.pos = { x: 6, y: 5 };
+    b.combatants.find((c) => c.label === 'H2')!.pos = { x: 5, y: 6 };
     useGame.setState({ battle: { ...b, acted: true } });
     return { E };
   }
@@ -61,7 +61,7 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
     // Brisé DIFFÉRÉ : aucun héros n'est encore Brisé (les 1d10 auto sont appliqués, pas le Brisé).
     const live = () => useGame.getState().battle!.combatants;
     for (const h of live().filter((c) => c.kind === 'hero')) {
-      expect(h.conditions.some((c) => c.id === 'brise'), `${h.name} ne doit PAS être Brisé avant validation`).toBe(false);
+      expect(h.conditions.some((c) => c.id === 'brise'), `${h.label} ne doit PAS être Brisé avant validation`).toBe(false);
     }
 
     // Drive la cascade : chaque étape (Résistance ratée) → Brisé à la validation.
@@ -86,7 +86,7 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
     // reste bloquée sur la défense résolue (pendingDefense null → `useDefenseJetProps` rend null = vide).
     const { E } = setup();
     const b = useGame.getState().battle!;
-    const H1 = b.combatants.find((c) => c.name === 'H1')!;
+    const H1 = b.combatants.find((c) => c.label === 'H1')!;
     E.pos = { x: 6, y: 5 }; // adjacent à H1 (attaque de mêlée)
     // Défense de l'attaque principale DÉJÀ résolue (raté → pas de Critique/Maladresse à folder) : on la pose
     // comme en jeu (calque store.test.ts) puis on valide → la reprise déclenche le Hurlement gratuit.

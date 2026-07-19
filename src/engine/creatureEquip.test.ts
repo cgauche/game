@@ -8,19 +8,19 @@ describe('creatureEquip — dérivation traits → armes (source unique de l’a
   it('trait « Arme (Épée) +7 » → arme de mêlée nommée', () => {
     const w = weaponFromTrait(t({ id: 'arme', arg: 'Épée', value: 7 }));
     expect(w).not.toBeNull();
-    expect(w!.name).toBe('Épée');
+    expect(w!.label).toBe('Épée');
     expect(w!.type).toBe('melee');
   });
 
   it('trait « Arme » sans type ni Indice → arme de mêlée générique', () => {
     const w = weaponFromTrait(t({ id: 'arme' }));
-    expect(w?.name).toBe('Arme');
+    expect(w?.label).toBe('Arme');
     expect(w?.type).toBe('melee');
   });
 
   it('trait « À distance (Arbalète) +9 (60) » → arme à distance nommée', () => {
     const w = weaponFromTrait(t({ id: 'a-distance', arg: 'Arbalète', value: 9, range: 60 }));
-    expect(w?.name).toBe('Arbalète');
+    expect(w?.label).toBe('Arbalète');
     expect(w?.type).toBe('ranged');
   });
 
@@ -30,7 +30,7 @@ describe('creatureEquip — dérivation traits → armes (source unique de l’a
 
   it('trait « À distance » d\'arg CATALOGUE (id migré `arbalete`, specsSource weaponsRanged) → hérite forme/qualités/Recharge du trapping', () => {
     const w = weaponFromTrait(t({ id: 'a-distance', arg: 'arbalete', value: 9, range: 60 }));
-    expect(w?.name).toBe('Arbalète'); // libellé du catalogue, jamais l'id brut
+    expect(w?.label).toBe('Arbalète'); // libellé du catalogue, jamais l'id brut
     expect(w?.type).toBe('ranged');
     expect(w?.shape).toBe('arbalete');
     expect(w?.reload).toBe(1); // Recharge 1 dérivée de la Qualité du trapping (LDB 62 l.333)
@@ -39,7 +39,7 @@ describe('creatureEquip — dérivation traits → armes (source unique de l’a
   it('trait « Arme » d\'arg NATUREL hors catalogue (« Griffes ») → aucun crash, aucune forme de catalogue posée', () => {
     const w = weaponFromTrait(t({ id: 'arme', arg: 'Griffes', value: 5, natural: true }));
     expect(w).not.toBeNull();
-    expect(w?.name).toBe('Griffes');
+    expect(w?.label).toBe('Griffes');
     expect(w?.shape).toBeUndefined();
   });
 
@@ -55,7 +55,7 @@ describe('creatureEquip — dérivation traits → armes (source unique de l’a
   it('weaponsFromTraits : GARANTIT au moins une arme (pour pouvoir toujours frapper)', () => {
     const fallback = weaponsFromTraits([]);
     expect(fallback).toHaveLength(1);
-    expect(fallback[0].name).toBe('Arme');
+    expect(fallback[0].label).toBe('Arme');
     // avec un trait d'arme explicite, pas de repli ajouté
     expect(weaponsFromTraits([t({ id: 'arme', arg: 'Hache', value: 6 })])).toHaveLength(1);
   });
@@ -64,7 +64,7 @@ describe('creatureEquip — dérivation traits → armes (source unique de l’a
 describe('creatureEquip — weaponFromId (canal d’authoring de scène `weapon` = trappingId)', () => {
   it('trappingId valide → arme de rendu (nom/forme/type du catalogue)', () => {
     const w = weaponFromId('arc');
-    expect(w.name).toBe('Arc');
+    expect(w.label).toBe('Arc');
     expect(w.type).toBe('ranged');
     expect(w.shape).toBe('arc');
   });
@@ -75,7 +75,7 @@ describe('creatureEquip — weaponFromId (canal d’authoring de scène `weapon`
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const w = weaponFromId('Arc'); // un LIBELLÉ n'est pas un id
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('Arc'));
-    expect(w.name).toBe('Arc');
+    expect(w.label).toBe('Arc');
     warn.mockRestore();
   });
 });

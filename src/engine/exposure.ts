@@ -127,7 +127,7 @@ export function dropHeaviestPossession(c: Combatant): string | undefined {
   const it = heaviestPossession(c);
   if (!it) return undefined;
   c.items = (c.items ?? []).filter((x) => x.uid !== it.uid);
-  return it.name;
+  return it.label;
 }
 
 /**
@@ -148,16 +148,16 @@ export function applyExposureFailure(c: Combatant, failures: number, rng: RNG, k
     }
     if (kind === 'chaleur') addCondition(c, 'extenue'); // « vous gagnez un État Exténué » (1ᵉʳ ET 2ᵉ échec, l.330)
     log.push(kind === 'froid'
-      ? (failures === 1 ? `${c.name} grelotte — −10 CT/Agilité/Dextérité (Exposition au froid).` : `${c.name} est transi — −10 à toutes les autres Caractéristiques.`)
-      : (failures === 1 ? `${c.name} suffoque de chaleur — −10 Intelligence/Force Mentale, +1 Exténué.` : `${c.name} est accablé — −10 à toutes les autres Caractéristiques, +1 Exténué.`));
+      ? (failures === 1 ? `${c.label} grelotte — −10 CT/Agilité/Dextérité (Exposition au froid).` : `${c.label} est transi — −10 à toutes les autres Caractéristiques.`)
+      : (failures === 1 ? `${c.label} suffoque de chaleur — −10 Intelligence/Force Mentale, +1 Exténué.` : `${c.label} est accablé — −10 à toutes les autres Caractéristiques, +1 Exténué.`));
     return { log, wounds: 0 };
   }
   const dmg = Math.max(1, rng.int(1, 10));
   loseWounds(c, dmg);
-  log.push(`${c.name} souffre ${kind === 'froid' ? 'du froid' : 'de la chaleur'} : ${dmg} Blessure(s) (ignore les PA).`);
+  log.push(`${c.label} souffre ${kind === 'froid' ? 'du froid' : 'de la chaleur'} : ${dmg} Blessure(s) (ignore les PA).`);
   if (kind === 'froid' && c.wounds.current <= 0 && !hasCondition(c, 'inconscient')) {
     addCondition(c, 'inconscient');
-    log.push(`${c.name} sombre, gelé — Inconscient.`);
+    log.push(`${c.label} sombre, gelé — Inconscient.`);
   }
   return { log, wounds: dmg };
 }
@@ -175,7 +175,7 @@ export function exposureNight(
 ): { rolls: ExposureRoll[]; log: string[]; failures: number; wounds: number } {
   const kind = opts.kind ?? 'froid';
   if (isWeatherWarded(c)) {
-    return { rolls: [], log: [`${c.name} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`], failures: 0, wounds: 0 };
+    return { rolls: [], log: [`${c.label} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`], failures: 0, wounds: 0 };
   }
   const rolls: ExposureRoll[] = [];
   const log: string[] = [];
@@ -190,13 +190,13 @@ export function exposureNight(
     const held = !res.success && skin > 0 && res.sl + skin >= 1;
     rolls.push({ base: target, target: res.target, roll: res.roll, sl: res.sl + (res.success ? 0 : skin), success: res.success || held });
     if (res.success) continue;
-    if (held) { log.push(`${c.name} — la peau de phoque retient le froid (échec de justesse tenu, +1 DR).`); continue; }
+    if (held) { log.push(`${c.label} — la peau de phoque retient le froid (échec de justesse tenu, +1 DR).`); continue; }
     failures++;
     const f = applyExposureFailure(c, failures, rng, kind);
     log.push(...f.log);
     wounds += f.wounds;
   }
-  if (kind === 'froid' && !hasCoat(c) && count > 0) log.push(`${c.name} n'a ni manteau ni cape — le froid mord (−${Number(rule('exposure-no-coat-penalty'))} aux Tests d'Exposition).`);
+  if (kind === 'froid' && !hasCoat(c) && count > 0) log.push(`${c.label} n'a ni manteau ni cape — le froid mord (−${Number(rule('exposure-no-coat-penalty'))} aux Tests d'Exposition).`);
   return { rolls, log, failures, wounds };
 }
 

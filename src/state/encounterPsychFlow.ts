@@ -75,8 +75,8 @@ export function openEncounterPsych(get: Get, set: Set): void {
       rollLabel: refLabel('skills', { id: skill }),
       base,
       target, // Test (Calme par défaut) à la difficulté déclarée (défaut Intermédiaire +0)
-      label: cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice} — ${src?.name ?? '?'}`,
-      encounterPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: src?.name ?? '?', indice: t.indice, cible: t.cible },
+      label: cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice} — ${src?.label ?? '?'}`,
+      encounterPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: src?.label ?? '?', indice: t.indice, cible: t.cible },
     });
   }
   if (!steps.length) return;
@@ -136,7 +136,7 @@ registerCascadeApplier(
       else if (CIBLE_TYPES.has(ep.kind)) hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: false });
       else hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: ep.indice });
       set({ party: [...get().party] });
-      return { consequences: freeCons([`${hero.name} est temporairement insensible à la Psychologie (Détermination).`]) };
+      return { consequences: freeCons([`${hero.label} est temporairement insensible à la Psychologie (Détermination).`]) };
     }
     const brise = r.success ? 0 : failConditionAmount(res.failAmount, ep.indice, r.sl);
     if (res.mode === 'terreur') {
@@ -154,6 +154,6 @@ registerCascadeApplier(
       heroId: hero.id, kind: ep.kind, sourceId: ep.sourceId, sourceName: ep.sourceName, indice: ep.indice, cible: ep.cible,
       result: { roll: r.roll, success: r.success, brise, target: r.target, sl: r.sl },
     };
-    return { consequences: freeCons([describeEncounterPsych(pe, hero.name), ...superseded.map((tp) => t('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))]) };
+    return { consequences: freeCons([describeEncounterPsych(pe, hero.label), ...superseded.map((tp) => t('turn.psychSuperseded', { name: hero.label, psych: psychologyLabel(tp) }))]) };
   },
 );

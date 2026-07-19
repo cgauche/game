@@ -122,7 +122,7 @@ export function TavernGameModal() {
                 <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={h.id === challengerId} onClick={() => setChallengerId(h.id)} />
               ))}
             </div>
-            {game && challenger && <p className="tavern-detail">{challenger.name} : valeur de jeu <b>{challengerVal}</b>.</p>}
+            {game && challenger && <p className="tavern-detail">{challenger.label} : valeur de jeu <b>{challengerVal}</b>.</p>}
           </div>
           <div className="tavern-block">
             <span className="mini-title">Adversaire</span>

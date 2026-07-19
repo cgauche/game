@@ -76,7 +76,7 @@ export function CorruptionModal() {
       title={seuil ? <><Icon id="nav/mutation" size="sm" /> Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <><Icon id="nav/mutation" size="sm" /> Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
       subtitle={
         <>
-          <strong>{hero?.name ?? '?'}</strong> — Test de {skillLabel} Intermédiaire (+0)
+          <strong>{hero?.label ?? '?'}</strong> — Test de {skillLabel} Intermédiaire (+0)
         </>
       }
       setup={
@@ -97,7 +97,7 @@ export function CorruptionModal() {
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeCorruption(pc, hero?.name ?? '?'), pc.heroId)} combatants={pool} />}
+      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeCorruption(pc, hero?.label ?? '?'), pc.heroId)} combatants={pool} />}
       actions={actions}
     />
   );

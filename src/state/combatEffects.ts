@@ -372,10 +372,10 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     // `spec.sense` (vue/ouïe, LDB 18) restreint le malus de Surdité au seul Test de Perception auditif — le
     // Soutien (`sout`, plafonné au Bonus de Carac du meneur) et le mod social ne dépendent pas du sens.
     const value = testValue(actor, spec.skill, spec.characteristic, spec.spec, spec.sense) + (socialMod ? socialMod(actor) : 0) + sout;
-    // Objet catalogué → match par `trappingId` stable ; objet CUSTOM (sans trappingId) → repli nom.
-    const tool = spec.tool ? actor.items?.find((i) => (i.trappingId === spec.tool || i.name === spec.tool) && !i.destroyed) : undefined;
+    // Objet catalogué → match par `trappingId` STABLE (id, jamais le libellé).
+    const tool = spec.tool ? actor.items?.find((i) => i.trappingId === spec.tool && !i.destroyed) : undefined;
     return {
-      id: actor.id, name: actor.name, value,
+      id: actor.id, name: actor.label, value,
       // `env.mod` reste HORS `value` (comme la Difficulté) : une LIGNE de mod à part dans le breakdown,
       // pas fondu dans la base — `base + mods = target` reste vérifiable à l'écran.
       target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty] + (env?.mod ?? 0))),
@@ -722,7 +722,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         recomputeLoadout(clone); // met à jour l'encombrement
         return clone;
       });
-      env.log(t('eff.recover', { name: who?.name || t('eff.party'), item: it.name }));
+      env.log(t('eff.recover', { name: who?.label || t('eff.party'), item: it.label }));
     },
   },
   giveMoney: {
@@ -769,7 +769,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         (h) => ((h.spells ?? []).includes(sp.id) ? h : { ...h, spells: [...(h.spells ?? []), sp.id] }),
         (party) => party.findIndex((h) => !!eligibleTalent(h, sp) && !(h.spells ?? []).includes(sp.id)),
       );
-      if (who) env.log(t('eff.learnSpell', { name: who.name, spell: sp.label }));
+      if (who) env.log(t('eff.learnSpell', { name: who.label, spell: sp.label }));
     },
   },
   petitePriere: {
@@ -788,7 +788,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // Un Bienheureux prie NORMALEMENT (Miracle/Bénédiction) — les Petites Prières sont la voie des
       // non-Bénis (LDB 25 l.24).
       if (isBeni(target)) {
-        env.log(`${target.name} est Béni — il prie directement (les Petites Prières sont la voie des non-Bénis).`);
+        env.log(`${target.label} est Béni — il prie directement (les Petites Prières sont la voie des non-Bénis).`);
         return;
       }
       // Seuil : « exaucé sur 01 » ; LDB 25 l.22-24 — silence, valeur maison (règle
@@ -797,10 +797,10 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const threshold = 1 + Math.max(0, priereAdv) * Number(rule('prayer-petites-bonus-per-advance'));
       const roll = d100(battleRng());
       if (petitePriereAnswered(roll, threshold)) {
-        env.log(`${target.name} prie sur le site sacré (${roll} ≤ ${threshold}) — et les dieux l'entendent !`);
+        env.log(`${target.label} prie sur le site sacré (${roll} ≤ ${threshold}) — et les dieux l'entendent !`);
         runFlow(env.get, env.set, e.reward, 'Petite Prière exaucée'); // récompense authorée (bonus/don/flag)
       } else {
-        env.log(`${target.name} prie sur le site sacré (${roll}) — sans réponse divine.`);
+        env.log(`${target.label} prie sur le site sacré (${roll}) — sans réponse divine.`);
       }
     },
   },
@@ -898,7 +898,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         applyFall(c, m, battleRng());
         const lost = before - c.wounds.current;
         const knocked = !wasDown && hasCondition(c, 'a-terre');
-        return t('eff.fallTarget', { name: c.name, lost, aterre: knocked ? t('eff.fragATerre') : '' });
+        return t('eff.fallTarget', { name: c.label, lost, aterre: knocked ? t('eff.fragATerre') : '' });
       });
       // `to` ramène le faller au PIED (chute → il retombe en bas, LDB 15) : le GROUPE hors combat, ou
       // les combattants nommés en combat (escalade ratée → hisse annulée par `placeCombatant`).
@@ -925,7 +925,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         return { ...h, diseases: [...(h.diseases ?? []), dz] };
       });
       if (who && whoId) {
-        const line = t('eff.diseaseContracted', { name: who.name, disease: e.disease });
+        const line = t('eff.diseaseContracted', { name: who.label, disease: e.disease });
         env.log(line);
         // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
         env.pushReveal({ kind: 'effet', title: t('eff.diseaseTitle', { disease: e.disease }), lines: [line], subjectId: whoId, severity: 'grave' });
@@ -994,7 +994,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const steps: CascadeStep[] = [];
       const lines: string[] = [];
       for (const c of heroes) {
-        if (isWeatherWarded(c)) { lines.push(`${c.name} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`); continue; }
+        if (isWeatherWarded(c)) { lines.push(`${c.label} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`); continue; }
         const resVal = testValue(c, 'resistance', 'endurance');
         const target = kind === 'froid' ? exposureTarget(c, resVal) : Math.max(0, resVal);
         for (let i = 0; i < count; i++) {
@@ -1031,7 +1031,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };
       });
       if (who) {
-        const line = t('eff.criticalSuffered', { name: who.name, kind: e.kind, location: e.location });
+        const line = t('eff.criticalSuffered', { name: who.label, kind: e.kind, location: e.location });
         env.log(line);
         // VISIBLE (le journal seul ne suffit pas) : effet d'AUTEUR → révélation témoin.
         env.pushReveal({ kind: 'effet', title: t('eff.criticalTitle', { kind: e.kind }), lines: [line, ...labels], subjectId: whoId, severity: 'grave' });
@@ -1044,7 +1044,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => {
       // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
       const who = env.mutateHero(e.heroId, (h) => ({ ...h, nightmares: true }));
-      if (who) env.log(t('eff.nightmares', { name: who.name }));
+      if (who) env.log(t('eff.nightmares', { name: who.label }));
     },
   },
   ambitionLost: {
@@ -1066,7 +1066,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       });
       if (!who || !shown) return;
       const s = shown as { roll: number; target: number };
-      const line = t(acquired ? 'eff.ambitionTrauma' : 'eff.ambitionResisted', { name: who.name, roll: s.roll, target: s.target });
+      const line = t(acquired ? 'eff.ambitionTrauma' : 'eff.ambitionResisted', { name: who.label, roll: s.roll, target: s.target });
       env.log(line);
       if (acquired) env.pushReveal({ kind: 'effet', title: t('eff.ambitionTitle'), lines: [line], subjectId: who.id, severity: 'grave' });
     },
@@ -1386,7 +1386,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         const ctx: OpsCtx = { rng: battleRng(), caster, label: spell.label, sl: spell.cn ?? 0, source: { kind: 'spell', id: spell.id } };
         for (const line of applyOps(target, spellOps(spell.effects, 'target'), ctx)) env.log(line);
         for (const line of applyOps(caster, spellOps(spell.effects, 'caster'), ctx)) env.log(line);
-        env.log(`${caster.name} incante ${spell.label} (rituel garanti).`);
+        env.log(`${caster.label} incante ${spell.label} (rituel garanti).`);
         return;
       }
       if (get().battle) {
@@ -1447,14 +1447,14 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
  *  n'est pas blessé » honoré par `drawWaterDisease`. Déjà porteur → rien de neuf (dédoublonnée). */
 registerCascadeApplier('waterExposure', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  if (step.result.success) return { consequences: freeCons([t('eff.waterSafe', { name: hero.name })]) };
+  if (step.result.success) return { consequences: freeCons([t('eff.waterSafe', { name: hero.label })]) };
   const draw = drawWaterDisease(Math.max(0, -step.result.sl), isWounded(hero), battleRng());
   const lines = applyContraction(hero, draw.disease, false, battleRng());
   const rollTxt = draw.modified !== draw.roll ? `${draw.roll} (+${draw.modified - draw.roll} → ${draw.modified})` : String(draw.roll);
   return {
     consequences: freeCons([
       t('eff.waterDraw', { roll: rollTxt, disease: diseaseLabel(draw.disease) }),
-      ...(lines.length ? lines : [t('eff.waterAlready', { name: hero.name })]),
+      ...(lines.length ? lines : [t('eff.waterAlready', { name: hero.label })]),
     ]),
   };
 });

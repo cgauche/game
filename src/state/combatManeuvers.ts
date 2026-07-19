@@ -266,7 +266,7 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
     const w = active.weapons.find((x) => x.uid === active.mannedPoste!.item.uid);
     // Pièce INDIRECTE (mortier/catapulte, `w.indirect`) : vise une CASE (placeur de zone), pas un combattant
     // (AA 10 p.122-123). DIRECTE (canon/baliste) : ciblage de combattant classique. Flag DONNÉE, zéro liste en dur.
-    if (w) out.push({ id: 'poste', label: `Servir ${w.name}`, icon: 'action/serve-engine', targeting: 'melee', weaponUid: w.uid, cost: { action: true, advantage: 0 }, ...(w.indirect ? { indirect: true } : {}) });
+    if (w) out.push({ id: 'poste', label: `Servir ${w.label}`, icon: 'action/serve-engine', targeting: 'melee', weaponUid: w.uid, cost: { action: true, advantage: 0 }, ...(w.indirect ? { indirect: true } : {}) });
   }
   // (5) « Au Contact » (LDB 62 l.176, Option « Longueur d'arme », règle optionnelle `combat-weapon-reach`) :
   //     Test opposé de Corps à corps pour entrer dans la longueur d'arme. Dispo si la règle est ON, l'Action
@@ -372,7 +372,7 @@ export function resolveManeuver(
   const rng = battleRng();
   // Libellé de feed = celui de la manœuvre (« Souffle (Feu) ») s'il enrichit le geste, sinon le libellé
   // canonique du geste (`ATTACK_LABEL[def.kind]`). Aucune LOGIQUE sur le label — pur affichage.
-  const lines: string[] = [t('manv.trigger', { name: attacker.name, label: def.label || ATTACK_LABEL[def.kind] })];
+  const lines: string[] = [t('manv.trigger', { name: attacker.label, label: def.label || ATTACK_LABEL[def.kind] })];
   emitCreatureAttackAnim(attacker, def.kind);
   const alive = (c: Combatant) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos;
   const nearest = (cands: Combatant[]) => cands.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
@@ -389,7 +389,7 @@ export function resolveManeuver(
     let margin: number | undefined;
     if (drow) {
       const opp = resolveOpposed(atk ?? drow, drow);
-      if (!opp.attackerWins) { lines.push(t('manv.resists', { name: tgt.name })); floatTag(tgt, def.defense === 'init' ? t('fx.resists') : t('fx.dodge')); return; }
+      if (!opp.attackerWins) { lines.push(t('manv.resists', { name: tgt.label })); floatTag(tgt, def.defense === 'init' ? t('fx.resists') : t('fx.dodge')); return; }
       // Marge = DR net du vainqueur (+Avantage dépensé pour les manœuvres à Avantage VARIABLE, Regard l.238).
       margin = opp.netSL + (def.advantageMode === 'variable' ? spent : 0);
     }
@@ -495,7 +495,7 @@ function openManeuverDefenseCascade(
       target: base, // Test opposé Intermédiaire (+0) → cible = valeur nue ; l'issue vient de resolveOpposed(aT)
       label: attackerLabel,
       meta: {
-        opposed: { aT: atk, attackerId: attacker.id, attackerName: attacker.name, attackerLabel },
+        opposed: { aT: atk, attackerId: attacker.id, attackerName: attacker.label, attackerLabel },
         maneuverDefense: { attackerId: attacker.id, maneuverId: def.id, indice, spent },
       },
     };
@@ -528,7 +528,7 @@ registerCascadeApplier('maneuverDefense', (get, set, step, hero) => {
   if (step.result.success) {
     floatTag(hero, def.defense === 'init' ? t('fx.resists') : t('fx.dodge'));
     syncManeuver();
-    return { consequences: freeCons([t('manv.resists', { name: hero.name })]) };
+    return { consequences: freeCons([t('manv.resists', { name: hero.label })]) };
   }
   // L'attaquant l'emporte : on re-oppose le jet influencé du défenseur (reproduit `resolveOpposed` de la
   // cascade) pour la MARGE NETTE (RAW Regard : +1 DR/Avantage variable), puis on applique les effets.
@@ -573,12 +573,12 @@ export function battementRemoval(dr: number): number {
  * MUTE `foe` (et la réserve). Ne consomme PAS l'Action (l'appelant pose `acted`). Ne touche pas `checkBattleOver`.
  */
 export function resolveBattement(get: Get, attacker: Combatant, foe: Combatant, atk: TestResult): string {
-  if (!atk.success) return t('manv.battementFail', { name: attacker.name, foe: foe.name });
+  if (!atk.success) return t('manv.battementFail', { name: attacker.label, foe: foe.label });
   const removed = battementRemoval(atk.sl);
   const before = groupAdvantage() ? undefined : foe.advantage;
   campSpend(get, foe, removed); // retire de la réserve du camp adverse (mode groupe) / de l'Avantage du foe (LDB)
   const n = before != null ? before - foe.advantage : removed;
-  return t('manv.battement', { name: attacker.name, foe: foe.name, n });
+  return t('manv.battement', { name: attacker.label, foe: foe.label, n });
 }
 
 /** Distraire (LDB 10 l.364 / AA 13 l.51) est-il déclarable par `attacker` contre `foe` ? Un adversaire
@@ -595,9 +595,9 @@ export function distraireEligible(attacker: Combatant, foe: Combatant): boolean 
  */
 export function resolveDistraire(attacker: Combatant, foe: Combatant, atk: TestResult, defRoll: TestResult): string {
   const opp = resolveOpposed(atk, defRoll);
-  if (!opp.attackerWins) return t('manv.distraireFail', { name: attacker.name, foe: foe.name });
+  if (!opp.attackerWins) return t('manv.distraireFail', { name: attacker.label, foe: foe.label });
   foe.distractedRounds = 2; // jusqu'à la fin du PROCHAIN Round (2 franchissements de Round)
-  return t('manv.distraire', { name: attacker.name, foe: foe.name });
+  return t('manv.distraire', { name: attacker.label, foe: foe.label });
 }
 
 /** Valeur de Test d'Athlétisme (Distraire, attaquant) / de Calme (défenseur) — Force Mentale + avances de

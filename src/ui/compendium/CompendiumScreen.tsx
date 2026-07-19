@@ -173,10 +173,10 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
         {flatCats.map(renderChip)}
         {clusters.map((cl) => {
           const hasActive = cl.cats.some((c) => c.key === catKey);
-          const open = manualOpen[cl.name] ?? hasActive;
+          const open = manualOpen[cl.id] ?? hasActive;
           return (
             <details
-              key={cl.name}
+              key={cl.id}
               className="fold"
               style={{ flexBasis: '100%' }}
               open={open}
@@ -186,11 +186,11 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
                 // à la fin du `dispatchEvent`, AVANT que le rendu suivant applique cet updater. Capturer
                 // la valeur ICI (synchrone), jamais la déréférencer depuis le corps du updater `setState`.
                 const nowOpen = e.currentTarget.open;
-                setManualOpen((m) => ({ ...m, [cl.name]: nowOpen }));
+                setManualOpen((m) => ({ ...m, [cl.id]: nowOpen }));
               }}
             >
               <summary>
-                <span className="fold-title">{cl.name}</span>
+                <span className="fold-title">{cl.label}</span>
                 <span className="count">{cl.cats.length}</span>
               </summary>
               <div className="fold-body row-flex codex-cats">{cl.cats.map(renderChip)}</div>

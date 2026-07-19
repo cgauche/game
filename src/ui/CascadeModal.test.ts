@@ -22,7 +22,7 @@ describe('jetStepPresentable — présentabilité d’une étape-JET de cascade'
 
   it('RÉGRESSION — étape À acteur (comportement historique) : présentable avec son acteur…', () => {
     const step = baseStep({ actorId: 'h1' });
-    const actor = { id: 'h1', name: 'Aldo' } as Combatant;
+    const actor = { id: 'h1', label: 'Aldo' } as Combatant;
     expect(jetStepPresentable(step, actor)).toBe(true);
   });
 

@@ -40,7 +40,7 @@ describe('postesToStations — une Station par poste, ids/assignedIds/side/ref',
     expect(s1.side).toBe('tribord');
     expect(s2.side).toBe('babord');
     expect(s1.ref).toEqual({ kind: 'poste', hullId: 'emplacement', posteUid: p1.item.uid });
-    expect(s1.label).toBe(p1.item.name);
+    expect(s1.label).toBe(p1.item.label);
     expect(s1.icon).toBe('action/serve-engine');
     expect(s1.kind).toBe('poste');
   });

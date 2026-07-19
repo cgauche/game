@@ -126,7 +126,7 @@ function riverHull(get: Get, route: MapRoute): { coque: Combatant; hasSail: bool
   const coque = vehicleCombatant(v);
   if (!coque) return null;
   if (vessel && vessel.vehicleId === vId) {
-    if (vessel.name) coque.name = vessel.name; // #230 — nom d'instance (affichage)
+    if (vessel.name) coque.label = vessel.name; // #230 — nom d'instance (affichage)
     syncHullWoundsFromVessel(coque, vessel);
   }
   return { coque, hasSail: !!v.ship.sail };
@@ -426,7 +426,7 @@ function patchDay(get: Get, set: Set, patch: Partial<RiverDayContext>): void {
 registerCascadeApplier('riverControlRepair', (get, set, step, hero) => {
   if (!step.result) return;
   if (step.result.success) set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, broken: false, outOfControl: false } } });
-  const name = hero?.name ?? 'Le charpentier';
+  const name = hero?.label ?? 'Le charpentier';
   return { consequences: freeCons([step.result.success
     ? { text: `${name} rétablit le contrôle du gréement.`, tone: 'ok' }
     : { text: `${name} ne parvient pas — le bateau dérive encore.`, tone: 'bad' }]) };
@@ -437,7 +437,7 @@ registerCascadeApplier('riverAgility', (get, set, step, hero) => {
   if (!step.result) return;
   const factor = rowingAgilityFactor(step.result.success, step.result.sl);
   set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, dayAgilityFactor: factor } } });
-  const name = hero?.name ?? 'Le rameur';
+  const name = hero?.label ?? 'Le rameur';
   const text = step.result.success ? `${name} tient la cadence de rame.` : factor === 0.5 ? `${name} peine énormément — vitesse ÷2 aujourd'hui.` : `${name} peine à la rame — vitesse −20 % aujourd'hui.`;
   return { consequences: freeCons([{ text, tone: step.result.success ? 'ok' : 'bad' }]) };
 });
@@ -450,7 +450,7 @@ registerCascadeApplier('riverNav', (get, set, step, hero) => {
   if (!kept) patchDay(get, set, { forceDrift: true });
   const savoirNote = savoir > 0 ? ` (Savoir Voies fluviales +${savoir} DR)` : '';
   return { consequences: freeCons([{
-    text: `${hero?.name ?? 'Le barreur'}${savoirNote} — ${controlLabel(kept, step.result.success)}`,
+    text: `${hero?.label ?? 'Le barreur'}${savoirNote} — ${controlLabel(kept, step.result.success)}`,
     tone: step.result.success ? 'ok' : kept ? 'info' : 'bad',
   }]) };
 });
@@ -575,12 +575,12 @@ registerCascadeApplier('riverSplinterDodge', (get, set, step, hero) => {
   const dmg = Number(step.meta?.dmg ?? 0);
   const conditionId = String(step.meta?.conditionId ?? '') || undefined;
   const location = String(step.meta?.location ?? '');
-  if (step.result.success) return { consequences: freeCons([{ text: `Critique au ${location} — ${hero.name} esquive les éclats.`, tone: 'ok' }]) };
+  if (step.result.success) return { consequences: freeCons([{ text: `Critique au ${location} — ${hero.label} esquive les éclats.`, tone: 'ok' }]) };
   // HÉROS (pas la coque) : applyOps direct — les éclats sont un Dégât fixe RAW, sans mitigation BE/PA.
   applyOps(hero, [{ op: 'wounds', amount: dmg, ignoreTB: true, ignoreAP: true }]);
   if (conditionId) addCondition(hero, conditionId as Parameters<typeof addCondition>[1]);
   set({ party: [...get().party] });
-  return { consequences: freeCons([{ text: `Critique au ${location} — ${hero.name} subit ${dmg} Dégâts d'éclats${conditionId ? ` et gagne l'État ${conditionId}.` : '.'}`, tone: 'bad' }]) };
+  return { consequences: freeCons([{ text: `Critique au ${location} — ${hero.label} subit ${dmg} Dégâts d'éclats${conditionId ? ` et gagne l'État ${conditionId}.` : '.'}`, tone: 'bad' }]) };
 });
 
 /** Réparation d'urgence INFLUENÇABLE d'une coque PERCÉE (#270, Métier) — succès = voie d'eau colmatée
@@ -588,7 +588,7 @@ registerCascadeApplier('riverSplinterDodge', (get, set, step, hero) => {
 registerCascadeApplier('riverHoleRepair', (get, set, step, hero) => {
   if (!step.result) return;
   const plan = get().travelPlan!;
-  const name = hero?.name ?? 'Le charpentier';
+  const name = hero?.label ?? 'Le charpentier';
   if (step.result.success) {
     const healed = Math.min(plan.vehicle!.wounds.max - plan.vehicle!.wounds.current, rollExpr(TEMPORARY_REPAIR.woundsPerRepair, battleRng()));
     healVesselHull(get, set, plan.vehicle!, healed);
@@ -644,13 +644,13 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
       // jet — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
       const dodge = crit.initiativeTest ? rollTest(testValue(victim, undefined, 'initiative'), 'intermediaire', rng) : null;
       if (dodge?.success) {
-        tell([`Critique au ${location} — ${victim.name} esquive les éclats (Initiative ${dodge.roll}/${dodge.target}).`]);
+        tell([`Critique au ${location} — ${victim.label} esquive les éclats (Initiative ${dodge.roll}/${dodge.target}).`]);
       } else {
         // HÉROS (pas la coque) : applyOps direct — Dégâts d'éclats fixes RAW, sans mitigation BE/PA.
         applyOps(victim, [{ op: 'wounds', amount: crit.splinterDamage, ignoreTB: true, ignoreAP: true }]);
         if (crit.conditionId) addCondition(victim, crit.conditionId as Parameters<typeof addCondition>[1]);
         set({ party: [...get().party] });
-        tell([`Critique au ${location} — ${victim.name} subit ${crit.splinterDamage} Dégâts d'éclats${crit.conditionId ? ` et gagne l'État ${crit.conditionId}.` : '.'}${dodge ? ` (Initiative ${dodge.roll}/${dodge.target} ratée)` : ''}`]);
+        tell([`Critique au ${location} — ${victim.label} subit ${crit.splinterDamage} Dégâts d'éclats${crit.conditionId ? ` et gagne l'État ${crit.conditionId}.` : '.'}${dodge ? ` (Initiative ${dodge.roll}/${dodge.target} ratée)` : ''}`]);
       }
     }
   }
@@ -811,7 +811,7 @@ function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: import('./r
 /** Renflouage INFLUENÇABLE (#270, Force) — MÊME issue que `applyEchouage`, jet différé. */
 registerCascadeApplier('riverEchouageForce', (_get, _set, step, hero) => {
   if (!step.result) return;
-  const name = hero?.name ?? 'Le groupe';
+  const name = hero?.label ?? 'Le groupe';
   return { consequences: freeCons([step.result.success
     ? { text: `${name} remet le bateau à flot.`, tone: 'ok' }
     : { text: `${name} n'y parvient pas — il faudra s'y reprendre.`, tone: 'bad' }]) };

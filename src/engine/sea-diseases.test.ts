@@ -6,7 +6,7 @@ import { contractDisease, tickDisease } from './disease';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre. */
 const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i++] }; };
-const sick = (over: Partial<Combatant> = {}): Combatant => ({ name: 'Marin', diseases: [], ...over }) as Combatant;
+const sick = (over: Partial<Combatant> = {}): Combatant => ({ label: 'Marin', diseases: [], ...over }) as Combatant;
 
 /**
  * Maladies marines (MDG 14) — réutilisent le CYCLE de maladie EXISTANT (`disease.ts` + `maladies.json`),

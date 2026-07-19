@@ -60,7 +60,7 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
     const np = protectrice(item.qualities);
     return {
       slot: 'shield',
-      currentName: cur?.name ?? null,
+      currentName: cur?.label ?? null,
       rows: [{ label: 'Protection', current: cp ? `Protectrice ${cp}` : '—', next: np ? `Protectrice ${np}` : '—', trend: trendOf(np - cp) }],
     };
   }
@@ -84,7 +84,7 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
     const cq = (cur?.qualities ?? []).map(qualityRefLabel);
     const nq = item.qualities.map(qualityRefLabel);
     rows.push({ label: 'Qualités', current: cq.length ? cq.join(', ') : '—', next: nq.length ? nq.join(', ') : '—', trend: 'same' });
-    return { slot: item.kind, currentName: cur?.name ?? null, rows };
+    return { slot: item.kind, currentName: cur?.label ?? null, rows };
   }
 
   if (item.kind === 'armor') {
@@ -98,7 +98,7 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
       // Le modèle prend le MAX par localisation (recomputeLoadout) → gain seulement si la neuve fait mieux.
       rows.push({ label: `PA ${z.label}`, current: String(curPA), next: String(Math.max(curPA, newPA)), trend: trendOf(newPA - curPA) });
     }
-    return { slot: 'armor', currentName: cur.map((i) => i.name).join(', ') || null, rows };
+    return { slot: 'armor', currentName: cur.map((i) => i.label).join(', ') || null, rows };
   }
 
   return { slot: 'other', currentName: null, rows: [] };

@@ -17,16 +17,16 @@ import type { Combatant, Weapon } from '../engine/types';
 import type { SpellData } from '../data';
 import type { Dir8 } from './dir8';
 
-const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
-const FISTS: Weapon = { name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const RANGED: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+const FISTS: Weapon = { label: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
 
 const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30 };
 const ARMOUR = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
-    id, name: id, kind, pos,
+    id, label: id, kind, pos,
     wounds: { current: 12, max: 12 }, weapons: [MELEE],
     characteristics: { ...CHARS }, advantage: 0, conditions: [], armour: { ...ARMOUR },
     skills: [], talents: [], movement: 4,
@@ -49,7 +49,7 @@ describe('Lot 3 — ciblage par MENACE (targetThreat) ≠ PV le plus bas', () =>
     // dangerous : PB pleins MAIS lourdement armé (épée +BF+10) et proche → menace forte.
     const dangerous = mk('dangerous', 'hero', { x: 10, y: 13 }, {
       wounds: { current: 12, max: 12 },
-      weapons: [{ name: 'Hache lourde', type: 'melee', damage: { plusBF: true, flat: 10 }, qualities: [] }],
+      weapons: [{ label: 'Hache lourde', type: 'melee', damage: { plusBF: true, flat: 10 }, qualities: [] }],
     });
     // soft : PB plus bas MAIS désarmé (mains nues) et plus loin, et PAS finissable en un tir (8 PB > 7
     // dégâts attendus → pas de killSecure) → menace faible malgré la fragilité légèrement supérieure.
@@ -77,7 +77,7 @@ describe('Lot 3 — killSecure : achève une cible à portée', () => {
     // tank : pleine vie + grosse menace, au contact aussi — mais pas finissable ce tour.
     const tank = mk('tank', 'hero', { x: 11, y: 10 }, {
       wounds: { current: 12, max: 12 }, armour: { ...ARMOUR, corps: 4 },
-      weapons: [{ name: 'Hache', type: 'melee', damage: { plusBF: true, flat: 8 }, qualities: [] }],
+      weapons: [{ label: 'Hache', type: 'melee', damage: { plusBF: true, flat: 8 }, qualities: [] }],
     });
     const a = chooseEnemyAction(input(e, [finishable, tank]));
     expect(a.kind).toBe('melee');

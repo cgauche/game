@@ -76,7 +76,7 @@ export function riggedAppearance(_name: string, seed: number, opts: RiggedOpts =
 function synthArmour(ap: ArmourPoints): ItemInstance[] {
   const items: ItemInstance[] = [];
   const piece = (uid: string, name: string, pa: number, locs: HitLocation[]) => {
-    items.push({ uid, name, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
+    items.push({ uid, label: name, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
   };
   if (ap.corps > 0) piece('syn-corps', 'Protection (corps)', ap.corps, ['corps']);
   if (ap.tete > 0) piece('syn-tete', 'Protection (tête)', ap.tete, ['tete']);
@@ -146,7 +146,7 @@ export function rendersFromOwnInventory(c: Combatant): boolean {
  * via AnimatedPlanToken, plus aucun sprite monolithique). PURE et déterministe (seed dérivé de l'id).
  */
 export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
-  if (classifyBy(c.species, c.traits, c.creatureId ?? c.name) === 'creature') return null; // espèce explicite (data) → repli id/nom
+  if (classifyBy(c.species, c.traits, c.creatureId ?? c.label) === 'creature') return null; // espèce explicite (data) → repli id/nom
 
   const seed = hashSeed(c.id);
   const cd = findCreatureById(c.creatureId)?.appearance; // apparence par défaut UNIFIÉE du record créature (par id)
@@ -156,7 +156,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   // SceneEntity.id`). Superposé aux défauts de race/record via `rigAppearance`.
   const ov = c.appearanceOverride;
   let override: Partial<Appearance> | undefined = ov
-    ? riggedAppearance(c.name, ov.seed ?? seed, { species: ov.species, monster: ov.monster, features: ov.features, colors: ov.colors, parts: ov.parts, sex: ov.sex, build: ov.build, eyes: ov.eyes })
+    ? riggedAppearance(c.label, ov.seed ?? seed, { species: ov.species, monster: ov.monster, features: ov.features, colors: ov.colors, parts: ov.parts, sex: ov.sex, build: ov.build, eyes: ov.eyes })
     : undefined;
   // Variété seedée des humains GÉNÉRIQUES (#223) : hors bestiaire (pas de creatureId) et sans
   // couleurs/coiffure authorées → teintes/coiffure dérivées du seed (parité explo↔combat). Un

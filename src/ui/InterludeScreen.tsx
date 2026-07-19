@@ -188,7 +188,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
             <div className="interlude-heroes">
               {heroes.length > 1 && (
                 <Tabs
-                  tabs={heroes.map((h) => ({ key: h.id, label: h.name }))}
+                  tabs={heroes.map((h) => ({ key: h.id, label: h.label }))}
                   active={activeHero?.id ?? null}
                   onChange={(id) => { setActiveHeroId(id); setPane(null); }}
                   label="Héros"
@@ -277,7 +277,7 @@ function SynthBar({ heroes, interlude, money, activeId, ownsHero, ownerName }: {
           <div key={h.id} className={`interlude-synth-hero${h.id === activeId ? ' active' : ''}`}>
             <CharFrame c={h} variant="full" size="sm" maxStates={3} />
             <div className="interlude-synth-meta">
-              <span className="interlude-synth-name">{h.name}</span>
+              <span className="interlude-synth-name">{h.label}</span>
               <ActivityPips st={st} weeks={interlude.weeks} />
               {!ownsHero(h.id) && (
                 <span className="interlude-owner"><Icon id="nav/seat-owner" size="sm" /> {ownerName(h.id)}</span>
@@ -360,7 +360,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
             <ParchmentCard key={h.id} seal={{ label: 'd100', roll: st.eventRoll }} title={ev.label}>
               <header className="interlude-chronicle-head">
                 <CharFrame c={h} variant="identity" size="sm" />
-                <span className="interlude-chronicle-who">{h.name}</span>
+                <span className="interlude-chronicle-who">{h.label}</span>
               </header>
               <p className="interlude-event">{ev.text}</p>
               {chips.length > 0 && (
@@ -451,7 +451,7 @@ function HeroCard({ hero, st, money, catalog, mecenat, favors, massBattle, canDr
     <section className={`interlude-hero panel${pane ? ' active' : ''}`}>
       <h3>
         <CharFrame c={hero} variant="identity" size="sm" />
-        <b className="interlude-name">{hero.name}</b>
+        <b className="interlude-name">{hero.label}</b>
         <span className="interlude-left">
           {!canDrive && <span className="interlude-owner"><Icon id="nav/seat-owner" size="sm" /> {ownerName ?? 'autre joueur'} · </span>}
           Statut {status.tier} {status.standing}
@@ -460,7 +460,7 @@ function HeroCard({ hero, st, money, catalog, mecenat, favors, massBattle, canDr
       <p className="interlude-event" title={ev.text}><Icon id="nav/dice" size="sm" /> {st.eventRoll} — {ev.label}</p>
       <MasterDetail
         className="interlude-master"
-        listLabel={`Activités de ${hero.name}`}
+        listLabel={`Activités de ${hero.label}`}
         list={
           <ActivityList st={st} catalog={catalog} favors={favors} pane={pane} onPane={onPane} canDrive={canDrive} none={none} ownerName={ownerName} />
         }
@@ -496,7 +496,7 @@ function ActivityList({ st, catalog, favors, pane, onPane, canDrive, none, owner
     ),
   });
   const core = [
-    item('revenus', <><Icon id={PANE_ICON.revenus} size="sm" /> Revenus</>, 'Une semaine de travail — Test Accessible (+20) de la compétence de carrière (LDB 08)', 'Revenus'),
+    item('revenus', <><Icon id={PANE_ICON.revenus} size="sm" /> Revenus</>, 'Une semaine de travail — Test Accessible (+20) de la compétence de carrière', 'Revenus'),
     item('craft', st.craft
       ? <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat — {findTrappingById(st.craft.trappingId)?.label ?? st.craft.trappingId} ({st.craft.drDone}/{st.craft.drTarget})</>
       : <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat</>,
@@ -509,7 +509,7 @@ function ActivityList({ st, catalog, favors, pane, onPane, canDrive, none, owner
     item('identify', <><Icon id={PANE_ICON.identify} size="sm" /> Identifier</>, 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE II)', 'Identifier'),
     item('entrainement', <><Icon id={PANE_ICON.entrainement} size="sm" /> Entraînement</>, 'S’entraîner à une Compétence ou une Caractéristique hors carrière avec un tuteur (PX + 1d10 sc, sans jet)', 'Entraînement'),
     // « Acquitter une Faveur » (LDB 23 l.147/149, #509) — visible seulement si une Faveur est en cours.
-    ...(favors.length ? [item('favor-settle', <><Icon id="ui/balance" size="sm" /> Acquitter une Faveur</>, 'Consacrer une Activité à l’acquittement d’une Faveur due (LDB 23)', 'Acquitter une Faveur')] : []),
+    ...(favors.length ? [item('favor-settle', <><Icon id="ui/balance" size="sm" /> Acquitter une Faveur</>, 'Consacrer une Activité à l’acquittement d’une Faveur due', 'Acquitter une Faveur')] : []),
   ];
   // Activités du catalogue SANS volet dédié : les 4 activités « socle » (Revenus/Artisanat/
   // Apprentissage/Identification, volets riches ci-dessus) et Mécénat (dans la banque) sont
@@ -815,7 +815,7 @@ function FavorSettlePane({ hero, disabled, favors }: { hero: Combatant; disabled
       icon="ui/balance"
       title="Acquitter une Faveur"
       blocked={sel && required == null
-        ? <>Une Faveur Importante « ne peut pas être acquittée par le biais d’Activités : elle est jouée comme une aventure complète » (LDB 23 l.151).</>
+        ? <>Une Faveur Importante « ne peut pas être acquittée par le biais d’Activités : elle est jouée comme une aventure complète ».</>
         : undefined}
       note={sel
         ? <>{FAVOR_LEVEL_LABELS[sel.level]} envers {sel.owedTo}{sel.desc ? ` — ${sel.desc}` : ''}{required != null ? ` (${sel.progress}/${required} Activité${required > 1 ? 's' : ''} consécutive${required > 1 ? 's' : ''})` : ''}</>
@@ -949,9 +949,9 @@ function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boo
   const [uid, setUid] = useState(items[0]?.uid ?? '');
   const savoir = hero.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
   const blocked = !items.length
-    ? `Aucun objet non identifié dans le sac de ${hero.name}.`
+    ? `Aucun objet non identifié dans le sac de ${hero.label}.`
     : !savoir
-      ? `${hero.name} ne possède pas Savoir (Magie) — la longue étude d'un artefact est la voie des sorciers (ADE II).`
+      ? `${hero.label} ne possède pas Savoir (Magie) — la longue étude d'un artefact est la voie des sorciers (ADE II).`
       : null;
   return (
     <ActivityPane
@@ -978,7 +978,7 @@ function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boo
         <select className="interlude-select" value={uid} onChange={(e) => setUid(e.target.value)} aria-label="Artefact à étudier">
           {items.map((i) => (
             <option key={i.uid} value={i.uid}>
-              {i.name}{i.magicKnown ? ' ★' : ''}{i.suspectedQualities?.length ? ' (certitudes douteuses)' : ''}
+              {i.label}{i.magicKnown ? ' ★' : ''}{i.suspectedQualities?.length ? ' (certitudes douteuses)' : ''}
             </option>
           ))}
         </select>
@@ -1010,10 +1010,10 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
   // Gates d'affordance dérivés des ops de la donnée — jamais un cas par id.
   const blocked =
     def.resolver === 'masterWeapon' && !weapons.length ? 'Aucune arme inhabituelle à maîtriser dans le sac.'
-    : def.resolver === 'identifyByResearch' && !artefacts.length ? `Aucun objet non identifié dans le sac de ${hero.name}.`
+    : def.resolver === 'identifyByResearch' && !artefacts.length ? `Aucun objet non identifié dans le sac de ${hero.label}.`
     : def.resolver === 'memorizeDiscount' && !spellOptions.length ? 'Aucun sort à mémoriser (Talent de lanceur et sort payant requis).'
-    : ops.some((o) => o.op === 'sinMod' && o.amount < 0) && !(hero.sinPoints ?? 0) ? `${hero.name} n'a aucun Point de Péché à expier.`
-    : ops.some((o) => o.op === 'removePsychTrait') && !(hero.psychTraits?.length) ? `${hero.name} n'a aucun Trait psychologique à soigner.`
+    : ops.some((o) => o.op === 'sinMod' && o.amount < 0) && !(hero.sinPoints ?? 0) ? `${hero.label} n'a aucun Point de Péché à expier.`
+    : ops.some((o) => o.op === 'removePsychTrait') && !(hero.psychTraits?.length) ? `${hero.label} n'a aucun Trait psychologique à soigner.`
     : null;
   const uid = targetUid || weapons[0]?.uid || artefacts[0]?.uid || '';
   const spell = spellId || spellOptions[0]?.spell.id || '';
@@ -1027,7 +1027,7 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     const item = weapons.find((i) => i.uid === uid);
     if (item) {
       const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
-      const base = combatValue(hero, kind, buildWeapon({ name: item.name, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
+      const base = combatValue(hero, kind, buildWeapon({ name: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
       prejet = testPending(skillNode(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, diff), base, undefined, diff);
     }
   } else if (def.skills?.length) {
@@ -1063,12 +1063,12 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     >
       {weapons.length > 0 && (
         <select className="interlude-select" value={uid} onChange={(e) => setTargetUid(e.target.value)} aria-label="Arme à maîtriser">
-          {weapons.map((i) => <option key={i.uid} value={i.uid}>{i.name}</option>)}
+          {weapons.map((i) => <option key={i.uid} value={i.uid}>{i.label}</option>)}
         </select>
       )}
       {artefacts.length > 0 && (
         <select className="interlude-select" value={uid} onChange={(e) => setTargetUid(e.target.value)} aria-label="Objet magique à tester">
-          {artefacts.map((i) => <option key={i.uid} value={i.uid}>{i.name}{i.magicKnown ? ' ★' : ''}</option>)}
+          {artefacts.map((i) => <option key={i.uid} value={i.uid}>{i.label}{i.magicKnown ? ' ★' : ''}</option>)}
         </select>
       )}
       {spellOptions.length > 0 && (
@@ -1176,7 +1176,7 @@ function BankList({ bank, party, interlude, canDrive }: {
                     : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur d100 ≤ ${b.rate > 0 ? b.rate : 10}`}
           >
             <Icon id={b.kind === 'invest' ? 'resource/gold-purse' : b.kind === 'mecenat' ? 'scenario/opera' : 'item/misc'} size="sm" />
-            {' '}{owner?.name} : <CoinsB brass={b.brass} />
+            {' '}{owner?.label} : <CoinsB brass={b.brass} />
             {b.kind === 'invest' && <> → <CoinsB brass={bankPayout('invest', b.brass, b.rate)} /> (Indice {b.rate})</>} — Retirer
           </button>
         );
@@ -1215,11 +1215,11 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
           <li><Icon id="scenario/market" size="sm" /> Commandes en cours : {pendingOrders.map((o) => findTrappingById(o.trappingId)?.label ?? o.trappingId).join(', ')} — livrées au prochain interlude.</li>
         )}
         {crafts.length > 0 && (
-          <li><Icon id="item/misc" size="sm" /> Ouvrages inachevés conservés : {crafts.map((h) => `${h.name} (${findTrappingById(interlude.perHero[h.id]!.craft!.trappingId)?.label ?? interlude.perHero[h.id]!.craft!.trappingId})`).join(', ')}.</li>
+          <li><Icon id="item/misc" size="sm" /> Ouvrages inachevés conservés : {crafts.map((h) => `${h.label} (${findTrappingById(interlude.perHero[h.id]!.craft!.trappingId)?.label ?? interlude.perHero[h.id]!.craft!.trappingId})`).join(', ')}.</li>
         )}
         {demoted.map((h) => (
           <li key={h.id} className="interlude-blocked">
-            <Icon id="ui/warning" size="sm" /> {h.name} n'a pas entrepris Revenus : retour au Niveau {(h.careerLevel ?? 1) - 1} de sa
+            <Icon id="ui/warning" size="sm" /> {h.label} n'a pas entrepris Revenus : retour au Niveau {(h.careerLevel ?? 1) - 1} de sa
             Carrière (« Avec le pouvoir »).
           </li>
         ))}
@@ -1231,7 +1231,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
           const others = ops.filter((o) => o.op !== 'condition');
           return (
             <li key={`close-${h.id}`} className="interlude-blocked">
-              {h.name} : <EffectChips conditions={conds} />{others.length > 0 && ` ${others.map((o) => o.op).join(', ')}`} au premier
+              {h.label} : <EffectChips conditions={conds} />{others.length > 0 && ` ${others.map((o) => o.op).join(', ')}`} au premier
               jour de la prochaine aventure (Activité échouée).
             </li>
           );

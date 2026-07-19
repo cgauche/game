@@ -14,8 +14,8 @@ import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 import type { SpellData } from '../data';
 
-const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
+const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const RANGED: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
 
 /** Sort RÉSOLU minimal (`CastableSpell`) pour piloter l'énumération op-driven. */
 function spellData(over: Partial<SpellData> = {}): SpellData {
@@ -31,7 +31,7 @@ const ARMOUR = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
-    id, name: id, kind, pos,
+    id, label: id, kind, pos,
     wounds: { current: 12, max: 12 }, weapons: [MELEE],
     characteristics: { ...CHARS }, advantage: 0, conditions: [], armour: { ...ARMOUR },
     skills: [], talents: [], movement: 4,
@@ -92,7 +92,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   });
 
   it('Caractéristiques ABSENTES (combattant de test minimal) → standard (aucun signal chiffrable)', () => {
-    const bare = { id: 'b', name: 'b', kind: 'enemy', pos: { x: 0, y: 0 }, wounds: { current: 10, max: 10 }, weapons: [MELEE], characteristics: {} as never, conditions: [], advantage: 0, armour: {} as never, skills: [], talents: [], movement: 4 } as Combatant;
+    const bare = { id: 'b', label: 'b', kind: 'enemy', pos: { x: 0, y: 0 }, wounds: { current: 10, max: 10 }, weapons: [MELEE], characteristics: {} as never, conditions: [], advantage: 0, armour: {} as never, skills: [], talents: [], movement: 4 } as Combatant;
     expect(pickDoctrine(bare, [])).toBe('standard');
   });
 
@@ -186,7 +186,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     // équidistantes. La case EST est plus exposée à un archer ; STANDARD préfère l'OUEST (danger-map),
     // mais la HORDE (dangerAvoid=0) est indifférente → elle prend la case par défaut (la plus directe).
     const prey = mk('prey', 'hero', { x: 10, y: 15 }, { weapons: [] });
-    const archer = mk('archer', 'hero', { x: 13, y: 16 }, { weapons: [{ name: 'Fronde', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 6, qualities: [] }] });
+    const archer = mk('archer', 'hero', { x: 13, y: 16 }, { weapons: [{ label: 'Fronde', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 6, qualities: [] }] });
     // STANDARD (fixture générique) : contourne par l'ouest (case éloignée de l'archer).
     const plain = mk('plain', 'enemy', { x: 10, y: 10 }, { weapons: [MELEE], movement: 5 });
     expect(pickDoctrine(plain, [])).toBe('standard');

@@ -13,7 +13,7 @@ import type { Combatant } from './types';
  */
 const dummy = (p: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'x', name: 'Mage', kind: 'hero',
+    id: 'x', label: 'Mage', kind: 'hero',
     characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 35, agilite: 40, dexterite: 45, intelligence: 40, 'force-mentale': 40, sociabilite: 30 },
     wounds: { current: 14, max: 14 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

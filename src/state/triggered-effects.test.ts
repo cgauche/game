@@ -19,7 +19,7 @@ import type { Combatant, Weapon } from '../engine/types';
 import type { Flow } from './flow';
 
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'c', name: 'C', kind: 'enemy',
+  id: 'c', label: 'C', kind: 'enemy',
   characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 25, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 25, 'force-mentale': 25, sociabilite: 25 },
   wounds: { current: 15, max: 15 }, advantage: 0, conditions: [], skills: [], talents: [],
   weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
@@ -42,7 +42,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   it('ATOUT Immobilisante : l’arme qui touche pose Empêtré — MÊME chemin que le trait', () => {
     const knight = mk({ id: 'kn' });
     const foe = mk({ id: 'fo' });
-    const weapon: Weapon = { name: 'Fléau à chaîne', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'immobilisante' }] } as Weapon;
+    const weapon: Weapon = { label: 'Fléau à chaîne', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'immobilisante' }] } as Weapon;
     fireTriggers(noBattle(), knight, 'onHit', { victim: foe, weapon });
     expect(empetre(foe)?.value).toBe(1);
   });
@@ -50,7 +50,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   it('ATOUT Taillade : effet sur CRITIQUE (déclencheur onCrit générique) → Hémorragique ; PAS à la touche simple', () => {
     const knight = mk({ id: 'kn' });
     const foe = mk({ id: 'fo' });
-    const weapon: Weapon = { name: 'Hache de Taillade', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'taillade' }] } as Weapon;
+    const weapon: Weapon = { label: 'Hache de Taillade', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'taillade' }] } as Weapon;
     const hemo = (c: Combatant) => c.conditions.find((x) => x.id === 'hemorragique');
     fireTriggers(noBattle(), knight, 'onHit', { victim: foe, weapon }); // touche simple → RIEN (Taillade ne déclenche que sur Critique)
     expect(hemo(foe)).toBeUndefined();
@@ -62,12 +62,12 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     const archer = mk({ id: 'ar' });
     const foe = mk({ id: 'fo' });
     const logee = (c: Combatant) => c.conditions.find((x) => x.id === 'munition-logee');
-    const arc: Weapon = { name: 'Arc long', type: 'ranged', damage: { plusBF: false, flat: 4 }, qualities: [{ id: 'empaleuse' }] } as Weapon;
+    const arc: Weapon = { label: 'Arc long', type: 'ranged', damage: { plusBF: false, flat: 4 }, qualities: [{ id: 'empaleuse' }] } as Weapon;
     fireTriggers(noBattle(), archer, 'onCrit', { victim: foe, weapon: arc, attackType: 'ranged' });
     expect(logee(foe)?.value).toBe(1);
     fireTriggers(noBattle(), archer, 'onCrit', { victim: foe, weapon: arc, attackType: 'ranged' }); // 2e flèche → empile
     expect(logee(foe)?.value).toBe(2);
-    const lance: Weapon = { name: 'Lance de Taillade empaleuse', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'empaleuse' }] } as Weapon;
+    const lance: Weapon = { label: 'Lance de Taillade empaleuse', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'empaleuse' }] } as Weapon;
     const melee = mk({ id: 'me' });
     fireTriggers(noBattle(), archer, 'onCrit', { victim: melee, weapon: lance, attackType: 'melee' });
     expect(logee(melee)).toBeUndefined(); // « Si l'empalement vient d'une arme à DISTANCE » — mêlée = rien
@@ -426,14 +426,14 @@ describe('onOwnTestFailed — jets d’ATTAQUE (attaquant ET défenseur, MSRC 16
     useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
     return { H, E: E[0] };
   }
-  const wpn = (c: Combatant): Weapon => c.weapons?.[0] ?? ({ name: 'Poing', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [] } as Weapon);
+  const wpn = (c: Combatant): Weapon => c.weapons?.[0] ?? ({ label: 'Poing', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [] } as Weapon);
   const missDetail = (sl: number) => ({ label: 'CC', base: 40, modifier: 0, target: 40, roll: 99, success: false, sl });
 
   it('ATTAQUANT porteur qui RATE son jet d’attaque (CC) → Crampes (Sonné)', () => {
     seedBattleRng(1);
     const { H, E } = combat();
     addCrampes(H);
-    const res: AttackResult = { hit: false, attackerRoll: 99, netSL: -2, critical: false, advantageTo: null, defenderDefeated: false, attackerDetail: missDetail(-2), log: `${H.name} rate.` };
+    const res: AttackResult = { hit: false, attackerRoll: 99, netSL: -2, critical: false, advantageTo: null, defenderDefeated: false, attackerDetail: missDetail(-2), log: `${H.label} rate.` };
     applyAttackResult(useGame.getState, useGame.setState, H, E, wpn(H), res);
     expect(hasCondition(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!, 'sonne')).toBe(true);
   });
@@ -442,7 +442,7 @@ describe('onOwnTestFailed — jets d’ATTAQUE (attaquant ET défenseur, MSRC 16
     seedBattleRng(1);
     const { H, E } = combat();
     addCrampes(H); // H se défend
-    const res: AttackResult = { hit: true, attackerRoll: 20, defenderRoll: 99, netSL: 3, critical: false, advantageTo: 'attacker', defenderDefeated: false, defenderDetail: { ...missDetail(-2), mode: 'parade' }, woundsLost: 0, log: `${E.name} touche.` };
+    const res: AttackResult = { hit: true, attackerRoll: 20, defenderRoll: 99, netSL: 3, critical: false, advantageTo: 'attacker', defenderDefeated: false, defenderDetail: { ...missDetail(-2), mode: 'parade' }, woundsLost: 0, log: `${E.label} touche.` };
     applyAttackResult(useGame.getState, useGame.setState, E, H, wpn(E), res);
     expect(hasCondition(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!, 'sonne')).toBe(true);
   });

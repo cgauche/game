@@ -108,7 +108,7 @@ describe('playTavernGame', () => {
     expect(step.result).toBeNull(); // le joueur n'a pas encore lancé SON jet
     expect(step.meta?.opposed?.aT).toBeTruthy(); // l'adversaire, lui, a DÉJÀ un jet FIGÉ
     expect(step.meta?.opposed?.attackerId).toBe(b.id);
-    expect(step.meta?.opposed?.attackerName).toBe(b.name);
+    expect(step.meta?.opposed?.attackerName).toBe(b.label);
   });
 
   it('adversaire ABSTRAIT (table) : jet figé sans attackerId (aucun Combatant réel)', () => {

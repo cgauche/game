@@ -43,7 +43,7 @@ describe('assignVictoryGear — équipement attribuable, qualités conservées',
 
   it('assignVictoryGear donne l’objet au héros choisi avec ses qualités (non identifié)', () => {
     useGame.getState().assignVictoryGear(0, 'h');
-    const it = useGame.getState().party[0].items?.find((x) => /dague/i.test(x.name));
+    const it = useGame.getState().party[0].items?.find((x) => /dague/i.test(x.label));
     expect(it).toBeTruthy();
     expect(it!.identified).toBe(false); // flag « non identifié » conservé
     expect((it!.qualities ?? []).length).toBeGreaterThan(0); // qualité magique conservée
@@ -53,7 +53,7 @@ describe('assignVictoryGear — équipement attribuable, qualités conservées',
   it('équipement non attribué → 1er héros à la fermeture (rien de perdu)', () => {
     useGame.setState({ battle: { over: 'victory' } as never });
     useGame.getState().dismissVictory();
-    const it = useGame.getState().party[0].items?.find((x) => /dague/i.test(x.name));
+    const it = useGame.getState().party[0].items?.find((x) => /dague/i.test(x.label));
     expect(it).toBeTruthy();
   });
 });

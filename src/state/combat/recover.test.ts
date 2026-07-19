@@ -30,7 +30,7 @@ describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', ()
 
   it('Empêtré + source VIVANTE (sans escapeStrength) : opposé contre la Force de la source', () => {
     const c = mk({ conditions: [{ id: 'empetre', value: 1, sourceId: 's' }] });
-    const src = mk({ id: 's', name: 'Toile', characteristics: { force: 62 } as never });
+    const src = mk({ id: 's', label: 'Toile', characteristics: { force: 62 } as never });
     const r = resolveRecoverTest(c, 'empetre', { combatants: [c, src] })!;
     expect(r.opposed).toBe(true);
     expect(r.opponentValue).toBe(62); // Force de la source vivante

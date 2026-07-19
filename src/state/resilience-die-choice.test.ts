@@ -23,8 +23,8 @@ const C = (over: Partial<Combatant>): Combatant =>
 
 function setupForcedAttack() {
   seedBattleRng(7);
-  const attacker = C({ id: 'A', name: 'Att', resilience: 2 });
-  const target = C({ id: 'B', name: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 } });
+  const attacker = C({ id: 'A', label: 'Att', resilience: 2 });
+  const target = C({ id: 'B', label: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 } });
   useGame.setState({
     battle: { combatants: [attacker, target], log: [] } as never,
     pendingAttack: {
@@ -93,8 +93,8 @@ describe('attackSetForcedRoll — choisir la valeur du dé d’un succès forcé
 describe('castSetForcedRoll — même choix sur une INCANTATION forcée (parité des modales)', () => {
   function setupForcedCast() {
     seedBattleRng(7);
-    const caster = C({ id: 'A', name: 'Mage', resilience: 2 });
-    const target = C({ id: 'B', name: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 } });
+    const caster = C({ id: 'A', label: 'Mage', resilience: 2 });
+    const target = C({ id: 'B', label: 'Cible', kind: 'enemy', pos: { x: 1, y: 0 } });
     useGame.setState({
       battle: { combatants: [caster, target], log: [] } as never,
       pendingCast: {
@@ -130,8 +130,8 @@ describe('castSetForcedRoll — même choix sur une INCANTATION forcée (parité
 describe('defenseSetForcedRoll — même choix sur une DÉFENSE forcée', () => {
   function setupForcedDefense() {
     seedBattleRng(7);
-    const attacker = C({ id: 'E', name: 'Orque', kind: 'enemy' });
-    const defender = C({ id: 'H', name: 'Héros', resilience: 2, pos: { x: 1, y: 0 } });
+    const attacker = C({ id: 'E', label: 'Orque', kind: 'enemy' });
+    const defender = C({ id: 'H', label: 'Héros', resilience: 2, pos: { x: 1, y: 0 } });
     const atk = { roll: 30, target: 40, success: true, sl: 1, isDouble: false };
     useGame.setState({
       battle: { combatants: [attacker, defender], log: [] } as never,
@@ -167,8 +167,8 @@ describe('defenseSetForcedRoll — même choix sur une DÉFENSE forcée', () => 
 describe('trampleSetForcedRoll — même choix sur un PIÉTINEMENT forcé (fabrique rollFlow)', () => {
   it('11 → Coup Critique ; valeur > cible refusée', () => {
     seedBattleRng(7);
-    const attacker = C({ id: 'A', name: 'Ogre', resilience: 2 });
-    const target = C({ id: 'B', name: 'Gnoblar', kind: 'enemy', pos: { x: 1, y: 0 } });
+    const attacker = C({ id: 'A', label: 'Ogre', resilience: 2 });
+    const target = C({ id: 'B', label: 'Gnoblar', kind: 'enemy', pos: { x: 1, y: 0 } });
     useGame.setState({
       battle: { combatants: [attacker, target], log: [] } as never,
       pendingTrample: {

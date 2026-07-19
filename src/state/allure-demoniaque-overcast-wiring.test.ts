@@ -31,7 +31,7 @@ describe('Câblage — pas de Surincantation Durée → rollTable.extraRollsPerS
     vi.clearAllTimers();
     useGame.getState().seedRng(7);
     const b = useGame.getState().battle!;
-    const heroC = b.combatants.find((c) => c.name === 'W')!;
+    const heroC = b.combatants.find((c) => c.label === 'W')!;
     const turn = b.order.indexOf(heroC.id);
     useGame.setState({ battle: { ...b, turn, action: 'cast', selectedSpellId: 'allure-demoniaque', acted: false } });
     useGame.getState().battleClickEntity(heroC.id); // cible = soi (spell.target.kind === 'self')
@@ -64,7 +64,7 @@ describe('Câblage — pas de Surincantation Durée → rollTable.extraRollsPerS
     vi.clearAllTimers();
     useGame.getState().seedRng(7);
     const b = useGame.getState().battle!;
-    const heroC = b.combatants.find((c) => c.name === 'W')!;
+    const heroC = b.combatants.find((c) => c.label === 'W')!;
     const turn = b.order.indexOf(heroC.id);
     useGame.setState({ battle: { ...b, turn, action: 'cast', selectedSpellId: 'allure-demoniaque', acted: false } });
     useGame.getState().battleClickEntity(heroC.id);

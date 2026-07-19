@@ -124,7 +124,7 @@ export function learnableSpells(c: Combatant): { spell: SpellData; cost: number 
 /** Un objet-grimoire dans le paquetage (LDB 47 l.19-21 — lecture à deux mains). Capacité par-OBJET
  *  `isGrimoire`, NON gatée sur le port (un grimoire dans le sac reste lisible) — lue PAR ID dans le
  *  catalogue (≠ nom — multilangue-safe). */
-export function carriedGrimoire(c: Combatant): { name: string } | undefined {
+export function carriedGrimoire(c: Combatant): { label: string } | undefined {
   return (c.items ?? []).find((i) => itemCapability(i, 'isGrimoire') && !i.destroyed);
 }
 

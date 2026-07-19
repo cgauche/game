@@ -8,7 +8,7 @@ describe('véhicule-à-coque (Combatant à PV)', () => {
     const diligence = findVehicleById('diligence')!;
     const c = vehicleCombatant(diligence)!;
     expect(c.id).toBe('vehicle-diligence');
-    expect(c.name).toBe('Diligence');
+    expect(c.label).toBe('Diligence');
     expect(c.bodyShape).toBe('vehicule');
     expect(c.characteristics.endurance).toBe(45);
     expect(c.wounds).toEqual({ current: 50, max: 50, base: 50 });

@@ -25,13 +25,13 @@ const enemy = (p: Partial<Combatant>): Combatant =>
     id: 'e1', name: 'Cible', kind: 'enemy', characteristics: CHARS,
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
     engagedWith: [], pos: { x: 8, y: 2 }, size: 'moyenne',
-    weapons: [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
+    weapons: [{ label: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] } as Weapon], items: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
   } as unknown as Combatant);
 
-const thrown: Weapon = { name: 'Hache de jet', type: 'ranged', damage: { plusBF: true, flat: 0, bare: true }, range: { bf: 3 }, qualities: [] } as Weapon;
-const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 6 }, range: 30, qualities: [] } as Weapon;
+const thrown: Weapon = { label: 'Hache de jet', type: 'ranged', damage: { plusBF: true, flat: 0, bare: true }, range: { bf: 3 }, qualities: [] } as Weapon;
+const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 6 }, range: 30, qualities: [] } as Weapon;
 
 const missRes = (): AttackResult => ({
   hit: false, attackerRoll: 88, netSL: -3, critical: false, advantageTo: null, defenderDefeated: false, log: 'manque sa cible.',

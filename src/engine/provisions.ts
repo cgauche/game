@@ -157,10 +157,10 @@ export function applyFaimTest(c: Combatant, success: boolean, be: number, rng: R
   let damage = 0;
   if (!success) {
     h.failures += 1;
-    if (h.failures === 1) log.push(`${c.name} est affamé : −10 en Force et en Endurance.`);
+    if (h.failures === 1) log.push(`${c.label} est affamé : −10 en Force et en Endurance.`);
     else {
       damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.343)
-      log.push(`${c.name} dépérit : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la faim ignore l'armure).`);
+      log.push(`${c.label} dépérit : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la faim ignore l'armure).`);
     }
   } // réussite : aucune conséquence (le jet a déjà été montré dans l'étape — pas de bruit de journal)
   c.hunger = h;
@@ -202,7 +202,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
   }
 
   if (res.ate) {
-    if (h.days > 0 || h.failures > 0) res.log.push(`${c.name} mange enfin à sa faim — les effets de la faim se dissipent.`);
+    if (h.days > 0 || h.failures > 0) res.log.push(`${c.label} mange enfin à sa faim — les effets de la faim se dissipent.`);
     // Brouet : demi-ration → le jour suivant est couvert (LDB 10 l.139). Sinon, plus d'état de faim.
     c.hunger = brouet && res.rationConsumed ? { days: 0, tests: 0, failures: 0, coveredDay: true } : undefined;
     return res;
@@ -223,15 +223,15 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     const t = rollTest(resVal, 'intermediaire', rng, penalty);
     h.tests += 1;
     res.log.push(
-      `${c.name} — Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''} : ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`,
+      `${c.label} — Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''} : ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`,
     );
     if (!t.success) {
       h.failures += 1;
       if (h.failures === 1) {
-        res.log.push(`${c.name} est affamé : −10 en Force et en Endurance.`);
+        res.log.push(`${c.label} est affamé : −10 en Force et en Endurance.`);
       } else {
         res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.343)
-        res.log.push(`${c.name} dépérit : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la faim ignore l'armure).`);
+        res.log.push(`${c.label} dépérit : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la faim ignore l'armure).`);
       }
     }
   }
@@ -259,10 +259,10 @@ export function applySoifTest(c: Combatant, success: boolean, be: number, rng: R
   let damage = 0;
   if (!success) {
     s.failures += 1;
-    if (s.failures === 1) log.push(`${c.name} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
+    if (s.failures === 1) log.push(`${c.label} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
     else {
       damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.340)
-      log.push(`${c.name} se déshydrate : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la soif ignore l'armure).`);
+      log.push(`${c.label} se déshydrate : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la soif ignore l'armure).`);
     }
   }
   c.thirst = s;
@@ -283,7 +283,7 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   // la Soif est suspendue au même titre que la Faim (drapeau `noHunger`), compteurs purgés.
   if (hasWater || hasActiveFlag(c, 'noHunger')) {
     res.drank = true;
-    if (c.thirst && (c.thirst.days > 0 || c.thirst.failures > 0)) res.log.push(`${c.name} se désaltère — les effets de la soif se dissipent.`);
+    if (c.thirst && (c.thirst.days > 0 || c.thirst.failures > 0)) res.log.push(`${c.label} se désaltère — les effets de la soif se dissipent.`);
     c.thirst = undefined;
     return res;
   }
@@ -297,13 +297,13 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   }
   const t = rollTest(resVal, 'intermediaire', rng, penalty);
   s.tests += 1;
-  res.log.push(`${c.name} — Soif : Test de Résistance${s.tests > 1 ? ` (−${(s.tests - 1) * 10})` : ''} : ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`);
+  res.log.push(`${c.label} — Soif : Test de Résistance${s.tests > 1 ? ` (−${(s.tests - 1) * 10})` : ''} : ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`);
   if (!t.success) {
     s.failures += 1;
-    if (s.failures === 1) res.log.push(`${c.name} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
+    if (s.failures === 1) res.log.push(`${c.label} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
     else {
       res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.340)
-      res.log.push(`${c.name} se déshydrate : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la soif ignore l'armure).`);
+      res.log.push(`${c.label} se déshydrate : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la soif ignore l'armure).`);
     }
   }
   c.thirst = s;

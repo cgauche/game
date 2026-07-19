@@ -12,7 +12,7 @@ import type { View } from '../src/gameIso/rig/facing';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const W_ = (name: string, hand: 'main' | 'off', q: { id: string; value?: number }[] = []): Weapon =>
-  ({ name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: q, hand, hands: 1 } as Weapon);
+  ({ label: name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: q, hand, hands: 1 } as Weapon);
 
 type Cfg = { label: string; weapons: Weapon[]; shield?: Weapon };
 const sword = W_('Épée', 'main');

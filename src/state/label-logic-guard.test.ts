@@ -31,9 +31,12 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ →
 const STRICT_DIRS = ['src/engine', 'src/state'];
 const RATCHET_DIRS = ['src/gameIso', 'src/ui'];
 
-// `src/data/index.ts` = SEULE couture label→id tolérée (au CHARGEMENT, cf. docstring ci-dessus) — hors
-// périmètre même si `src/data` entrait un jour dans SCAN_DIRS.
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/data/index.ts';
+// `src/data/index.ts` = couture label→id tolérée au CHARGEMENT (conversion depuis du texte) — hors
+// périmètre du garde-fou, aucune LOGIQUE keyée par label. (`instanceIdMigration.ts` est SCANNÉ comme
+// tout fichier state : sa migration de renommage teste la PRÉSENCE de clé `'label' in o`, pas une
+// comparaison de libellé.)
+const EXCLUDED = (rel: string) =>
+  /\.test\.[tj]sx?$/.test(rel) || rel === 'src/data/index.ts';
 
 // Exceptions JUSTIFIÉES (#289, src/gameIso + src/ui SEULEMENT — src/engine/src/state restent à zéro).
 // Une entrée = `fichier:ligne` EXACT constaté au recensement ; toute dérive de ligne ou nettoyage du
@@ -42,6 +45,10 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/d
 // `stripComments` — peut différer du numéro de ligne brut du fichier si un bloc `/* … */` multi-lignes
 // précède le site).
 const RATCHET_EXCEPTIONS: Record<string, string> = {
+  'gameIso/rig/parts/equipment.ts:23':
+    "isShield (fallback de RENDU rig) — détecte un bouclier d'abord par la Qualité Protectrice ; " +
+    "repli texte sur x.label pour un objet custom/legacy dépourvu de cette Qualité. Classification " +
+    "VISUELLE (quel gabarit dessiner), pas une FK de logique métier — aucune régression possible.",
 };
 
 // Mécanique de scan (stripComments + BY_LABEL_RX/LABEL_EQ_RX + scanLabelLogic) :
@@ -122,6 +129,38 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
     const src = [
       'log: `${attacker.name} manque ${defender.name}.`,',
       'lines.push(`${f.label} : ${rolled} Moral.`);',
+    ].join('\n');
+    expect(scanLabelLogic('fixture.ts', src)).toEqual([]);
+  });
+
+  it('scanLabelLogic : détecte un champ d’AFFICHAGE en CLÉ DE COLLECTION (#602)', () => {
+    // Cas PLANTÉ = les motifs EXACTS du ticket #602 — `owned` (Set de talents possédés) keyé par LIBELLÉ
+    // concret faute d'identité de spécialisation (`engine/character.ts`, corrigé en `refKey(id, spec)`),
+    // et un repli d'UI keyé par le nom d'un sous-groupe (`compendium/CompendiumScreen.tsx`).
+    const src = [
+      'const free = specs.filter((s) => !owned.has(concreteLabel(entry.label, s)));',
+      'if (!owned.has(entry.label)) return entry.label;',
+      'const open = manualOpen[cl.name] ?? hasActive;',
+      'seen.delete(other.label);',
+    ].join('\n');
+    const findings = scanLabelLogic('fixture.ts', src);
+    expect(findings.map((f) => f.line)).toEqual([1, 2, 3, 4]);
+    expect(findings.map((f) => f.rule)).toEqual(['collection-key', 'collection-key', 'collection-key', 'collection-key']);
+  });
+
+  it('scanLabelLogic : ne flague NI la résolution par id NI la CONSTRUCTION d’un index de texte (#602)', () => {
+    // Contre-épreuves : (1) lire le libellé d'un lookup PAR ID est l'usage légitime du label (~50 sites
+    // dans src/data) ; (2) REMPLIR un index depuis du texte est la conversion label→id tolérée
+    // (CLAUDE.md) — auto-liage de prose, import de statbloc —, seule l'INTERROGATION est une décision.
+    const src = [
+      'return DISEASE_BY_ID.get(id)?.label ?? id;',
+      'const l = byId.get(mm.entityId)?.label ?? byId.get(mm.entityId)?.ref;',
+      'idx.exact.set(it.label, it);',
+      'teamOf.set(named[i].name, named[i].kind === \'hero\' ? \'ally\' : \'enemy\');',
+      'roots.add(e.label);',
+      'NAME_TO_GROUP[norm(t.label)] = t.subType;',
+      '(acc[it.name] ??= { name: it.name, uids: [] }).uids.push(it.uid);',
+      '...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),',
     ].join('\n');
     expect(scanLabelLogic('fixture.ts', src)).toEqual([]);
   });

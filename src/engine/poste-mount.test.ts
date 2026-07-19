@@ -8,7 +8,7 @@ import type { Combatant, ItemInstance } from './types';
  * active dérivée (`Weapon.mountSide`) — lu ensuite par la validation d'arc de tir. (MDG 12-13)
  */
 const gunItem: ItemInstance = {
-  uid: 'gun1', trappingId: 'pierrier', name: 'Pierrier', kind: 'ranged',
+  uid: 'gun1', trappingId: 'pierrier', label: 'Pierrier', kind: 'ranged',
   damage: { plusBF: false, flat: 14 }, range: 30,
   qualities: [{ id: 'dangereuse' }, { id: 'recharge', value: 4 }],
   enc: 5, equipped: true, mountSide: 'tribord',

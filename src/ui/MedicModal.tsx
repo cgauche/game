@@ -162,7 +162,7 @@ export function MedicModal() {
             size="md"
             selected={h.id === medic.patientId}
             onClick={!busy && isHealable(h) ? () => selectPatient(h.id) : undefined}
-            title={isHealable(h) ? h.name : `${h.name} — rien à soigner`}
+            title={isHealable(h) ? h.label : `${h.label} — rien à soigner`}
           />
         ))}
       </div>
@@ -179,7 +179,7 @@ export function MedicModal() {
             return (
             <div className="medic-surgery">
               <p className="rm-vs">
-                <strong>{sg.healerName}</strong> {recovery ? 'rééduque' : 'opère'} <strong>{patient.name}</strong>{' '}
+                <strong>{sg.healerName}</strong> {recovery ? 'rééduque' : 'opère'} <strong>{patient.label}</strong>{' '}
                 <span className="rm-weapon">(cumuler {sg.targetDR} DR · {DIFFICULTY_LABELS[sg.difficulty]})</span>
               </p>
               {!sg.last && pool.length > 1 && (
@@ -227,7 +227,7 @@ export function MedicModal() {
                   className="btn medic-act"
                   disabled={!!reason || (!npc && !healer)}
                   onClick={() => act(a)}
-                  title={reason ?? (npc ? `${npc.name} (Guérison ${npc.skill})` : healer ? `Soigné par ${healer.name}` : 'Aucun soigneur (Compétence Guérison) dans le groupe')}
+                  title={reason ?? (npc ? `${npc.name} (Guérison ${npc.skill})` : healer ? `Soigné par ${healer.label}` : 'Aucun soigneur (Compétence Guérison) dans le groupe')}
                 >
                   {meta.icon} {meta.label}
                   {(a === 'bleed' || a === 'ammo') && stacks > 0 ? ` ×${stacks}` : ''}

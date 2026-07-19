@@ -37,8 +37,8 @@ export function AuContactModal() {
   const rerollable = !!pd.def && !pd.def.success && canReroll(!pd.def.success, !!pd.rerolled);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
   const outcome =
-    pd.result === 'success' ? `${mover.name} l'emporte — à toi de choisir.`
-    : pd.result === 'failure' ? `${foe.name} l'emporte et choisit.`
+    pd.result === 'success' ? `${mover.label} l'emporte — à toi de choisir.`
+    : pd.result === 'failure' ? `${foe.label} l'emporte et choisit.`
     : 'Égalité parfaite : le combat se poursuit normalement.';
 
   // Rangée TÉMOIN : Corps à corps du foe, figé (jamais relancé, aucun bouton).

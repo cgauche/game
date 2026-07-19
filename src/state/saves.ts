@@ -32,10 +32,10 @@ import { findVehicleById } from '../data';
 import { mountProfileForTrapping } from '../engine/mountTravel';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
-import { remapInstanceIdsDeep } from './instanceIdMigration';
+import { remapInstanceIdsDeep, remapNameToLabelDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 export interface SaveMeta {
   version: number;
@@ -199,6 +199,13 @@ export const MIGRATIONS: MigrationMap = {
   // migration une save portant un État actif (Empêtré, Sonné…) ou une maladie se rechargerait avec
   // `id: undefined` → l'État/la maladie disparaîtrait SILENCIEUSEMENT du combattant.
   7: (doc) => ({ ...doc, version: 8, data: remapInstanceIdsDeep(doc.data) as Record<string, unknown> }),
+  // v8 → v9 (#604) : renommage `name` → `label` des porteurs de LIBELLÉ sérialisés — `Combatant`
+  // (nom du personnage), `ItemInstance` (nom de l'objet) et `Weapon` (nom de l'arme). Le dépôt ne
+  // désigne plus un libellé que par `label` (arbitrage 2026-07-19). Sans cette migration, tout héros,
+  // objet et arme d'une save v8 se rechargerait avec `label: undefined` : le nom DISPARAÎT en silence
+  // de la fiche, du sac et du journal. Borné par la FORME du porteur (`remapNameToLabelDeep`) — les
+  // `name` qui portent un id (GameOp authorés) ne sont jamais touchés.
+  8: (doc) => ({ ...doc, version: 9, data: remapNameToLabelDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

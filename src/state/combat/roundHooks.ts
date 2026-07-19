@@ -96,7 +96,7 @@ registerCombatHook({
     for (const c of battle.combatants) {
       if (c.kind !== 'hero' || isOutOfAction(c) || !hasSecondeVue(c)) continue;
       const res = rollTest(testValue(c, 'perception'), 'facile', battleRng());
-      if (res.success) { revealed = true; sink(t('cs.windsOfMagicSeen', { name: c.name }), c); }
+      if (res.success) { revealed = true; sink(t('cs.windsOfMagicSeen', { name: c.label }), c); }
     }
     battle.windsOfMagic = { roll, mod, revealed };
   },
@@ -154,7 +154,7 @@ registerCombatHook({
         return !!e && e.kind !== c.kind && !isOutOfAction(e);
       }).length;
       // Maîtrise du combat (LDB 10) : on compte pour 1+niveau personnes au calcul du surnombre.
-      if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); sink(`${c.name} est surpassé en nombre (${foes} c.1) : −1 Avantage.`, c); }
+      if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); sink(`${c.label} est surpassé en nombre (${foes} c.1) : −1 Avantage.`, c); }
     }
   },
 });
@@ -188,7 +188,7 @@ function aaBleedUnconsciousDue(c: Combatant): boolean {
 function aaBleedUnconsciousApply(c: Combatant, success: boolean): string | null {
   if (success) return null; // reste conscient (À Terre)
   addCondition(c, COND.inconscient);
-  return t('cond.aaBleedUnconscious', { name: c.name });
+  return t('cond.aaBleedUnconscious', { name: c.label });
 }
 
 // --- Migration ISO-COMPORTEMENT des derniers blocs du franchissement de Round (corps copiés tel quel,
@@ -300,7 +300,7 @@ function fatigueApply(c: Combatant, success: boolean, sl: number): string | null
   }
   addCondition(c, COND.extenue);
   c.effortRounds = 0;
-  return `${c.name} s'épuise (effort soutenu) : Exténué.`;
+  return `${c.label} s'épuise (effort soutenu) : Exténué.`;
 }
 registerCombatHook({
   id: 'se-fatiguer',
@@ -403,13 +403,13 @@ registerCascadeApplier('fatigue', (get, set, step, hero) => {
   if (!hero || !step.result) return;
   const line = fatigueApply(hero, step.result.success, step.result.sl);
   syncCombatant(get, set);
-  return { consequences: freeCons([line ?? `${hero.name} tient bon malgré l’effort.`]) };
+  return { consequences: freeCons([line ?? `${hero.label} tient bon malgré l’effort.`]) };
 });
 registerCascadeApplier('aaBleedUnconscious', (get, set, step, hero) => {
   if (!hero || !step.result) return;
   const line = aaBleedUnconsciousApply(hero, step.result.success);
   syncCombatant(get, set);
-  return { consequences: freeCons([line ?? t('cond.aaBleedHold', { name: hero.name })]) };
+  return { consequences: freeCons([line ?? t('cond.aaBleedHold', { name: hero.label })]) };
 });
 
 /** Retrouve l'effet GELÉ (`awaitingExtension`) visé par une étape « Durée + », par son id STABLE

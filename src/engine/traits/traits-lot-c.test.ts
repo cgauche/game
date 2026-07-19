@@ -20,7 +20,7 @@ import { findCreatureById } from '../../data';
 
 function mk(over: Partial<Combatant> = {}): Combatant {
   return {
-    id: 'c', name: 'C', kind: 'enemy',
+    id: 'c', label: 'C', kind: 'enemy',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -117,7 +117,7 @@ describe('câblages moteur', () => {
   it('Parasité : −10 pour toucher en mêlée (attackModifiers)', () => {
     const atk = mk({ id: 'a' });
     const tgt = mk({ id: 't', traits: [{ id: 'parasite' }] });
-    const mods = attackModifiers(atk, tgt, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }, { kind: 'melee' });
+    const mods = attackModifiers(atk, tgt, { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }, { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Parasité')?.value).toBe(-10);
   });
   it('À sang-froid : un Test de FM raté est inversé s’il devient réussi', () => {

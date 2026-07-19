@@ -64,10 +64,10 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   const equipGuardien: EquipCtx = {
     weapons: [weaponFromLabel('Grande hache')],
     armour: [
-      { uid: 'syn-corps', name: 'Cotte de mailles', kind: 'armor', qualities: [], pa: 2, locs: ['corps'], enc: 1, equipped: true },
-      { uid: 'syn-tete',  name: 'Heaume',            kind: 'armor', qualities: [], pa: 2, locs: ['tete'],  enc: 1, equipped: true },
+      { uid: 'syn-corps', label: 'Cotte de mailles', kind: 'armor', qualities: [], pa: 2, locs: ['corps'], enc: 1, equipped: true },
+      { uid: 'syn-tete',  label: 'Heaume',            kind: 'armor', qualities: [], pa: 2, locs: ['tete'],  enc: 1, equipped: true },
     ],
-    shield: { name: 'Bouclier rondache', type: 'melee' as const, damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'protectrice', value: 1 }] },
+    shield: { label: 'Bouclier rondache', type: 'melee' as const, damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'protectrice', value: 1 }] },
   };
   for (const view of VIEWS) {
     it(`Humain-Noble-bouclier-armure / ${view} stable`, () => {

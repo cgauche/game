@@ -75,11 +75,11 @@ describe('États récurrents (« un par Round »)', () => {
     // Durée 1 Round portée à 3 par Surincantation de Durée → 3 Rations (1 par Round actif).
     applyOps(c, [{ op: 'perRound', ops: [{ op: 'giveTrapping', custom: 'Ration (1 jour)' }] }],
       { label: 'Récolte de Rhya', defaultDurationRounds: 3 });
-    expect((c.items ?? []).filter((it) => /^ration/i.test(it.name)).length).toBe(0); // rien à l'incantation
+    expect((c.items ?? []).filter((it) => /^ration/i.test(it.label)).length).toBe(0); // rien à l'incantation
     endOfRound(c, makeRNG(1));
     endOfRound(c, makeRNG(1));
     endOfRound(c, makeRNG(1));
-    expect((c.items ?? []).filter((it) => /^ration/i.test(it.name)).length).toBe(3);
+    expect((c.items ?? []).filter((it) => /^ration/i.test(it.label)).length).toBe(3);
     expect(c.activeEffects?.length ?? 0).toBe(0); // effet porteur dissipé après 3 Rounds
   });
 });
@@ -87,7 +87,7 @@ describe('États récurrents (« un par Round »)', () => {
 /** Combattant minimal posé en (x,0) pour les listes de cibles. */
 function stub(id: string, kind: 'hero' | 'enemy', x: number, wounds = 12): Combatant {
   return {
-    id, name: id, kind,
+    id, label: id, kind,
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: wounds, max: 12, base: 12 },
     advantage: 0, conditions: [], weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

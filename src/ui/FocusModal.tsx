@@ -71,7 +71,7 @@ export function FocusModal() {
       title={<><Icon id="flag/focus" size="sm" /> Focalisation</>}
       subtitle={
         <>
-          <strong>{caster.name}</strong> focalise <strong>{spell?.label ?? pf.spellId}</strong> ({prev}/{ni} DR)
+          <strong>{caster.label}</strong> focalise <strong>{spell?.label ?? pf.spellId}</strong> ({prev}/{ni} DR)
         </>
       }
       rows={[actorRow]}

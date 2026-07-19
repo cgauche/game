@@ -15,12 +15,12 @@ import type { Combatant, Weapon } from '../engine/types';
 // Force pour votre Action. » L'Empoigné est donc VERROUILLÉ sur la lutte (ni tir/cast/mêlée normale) — la
 // décision est PURE ; le résolveur impur (`runEnemyAI`) exécute « break » (re-décision) ou le Test opposé.
 
-const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const BOW: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] };
+const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const BOW: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
-    id, name: id, kind, pos,
+    id, label: id, kind, pos,
     wounds: { current: 10, max: 10 }, weapons: [MELEE], characteristics: {} as never,
     advantage: 0, conditions: [], armour: {} as never, skills: [], talents: [], movement: 4,
     ...opts,
@@ -109,7 +109,7 @@ describe('IA Empoignade — dispatch (runEnemyAI) : l’Empoigné LUTTE, le tire
   });
 
   it('tireur Empoigné + Avantage SUPÉRIEUR → BRISE : `grapplingWith` purgé + Empêtré retiré, puis VRAIE action', () => {
-    const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] };
+    const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 7 }, range: 30, qualities: [] };
     const { e } = arena();
     e.weapons = [bow]; e.advantage = 3; // tireur, Avantage strictement supérieur (h = 0)
     runEnemyAI(useGame.getState, useGame.setState, e.id);

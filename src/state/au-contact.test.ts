@@ -10,8 +10,8 @@ import type { Combatant, Weapon } from '../engine/types';
 
 // Au Contact (Issue #42.5, LDB 62 l.176, Option « Longueur d'arme », règle `combat-weapon-reach`).
 
-const longWeapon: Weapon = { name: 'Pertuisane', type: 'melee', reach: 'Longue', damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'empaleuse' }] };
-const dagger: Weapon = { name: 'Dague', type: 'melee', reach: 'Courte', damage: { plusBF: true, flat: 1 }, qualities: [] };
+const longWeapon: Weapon = { label: 'Pertuisane', type: 'melee', reach: 'Longue', damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'empaleuse' }] };
+const dagger: Weapon = { label: 'Dague', type: 'melee', reach: 'Courte', damage: { plusBF: true, flat: 1 }, qualities: [] };
 
 describe('Au Contact — store + funnel (LDB 62 l.176)', () => {
   beforeEach(() => {

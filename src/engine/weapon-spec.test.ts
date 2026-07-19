@@ -10,7 +10,7 @@ import type { Combatant, ItemInstance, Weapon } from './types';
  */
 function hero(over: Partial<Combatant> = {}): Combatant {
   return {
-    id: 'h', name: 'H', kind: 'hero',
+    id: 'h', label: 'H', kind: 'hero',
     characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -20,7 +20,7 @@ function hero(over: Partial<Combatant> = {}): Combatant {
 }
 // `groupLabel` = libellé de Groupe (lisibilité) → résolu en id pour `Weapon.subType` (réf).
 const wpn = (groupLabel: string, type: Weapon['type'] = 'melee'): Weapon =>
-  ({ name: groupLabel, type, damage: { plusBF: true, flat: 0, bare: true }, qualities: [], subType: weaponGroupIdByLabel(groupLabel) ?? groupLabel });
+  ({ label: groupLabel, type, damage: { plusBF: true, flat: 0, bare: true }, qualities: [], subType: weaponGroupIdByLabel(groupLabel) ?? groupLabel });
 
 describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () => {
   // `spec` = id de Groupe d'arme STABLE (Phase 3 : plus de libellé FR — cf. `SkillData.specsSource`).
@@ -138,13 +138,13 @@ describe('combatValue/weaponGroupSkillMode — exceptions Groupes d’Armes à d
 describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélier → Force, ADE II 8 l.233)', () => {
   it('weapon.resolveChar court-circuite CC (mêlée) et ignore toute Spé de Corps à corps', () => {
     const c = hero({ skills: [{ skillId: 'corps-a-corps', spec: 'base', characteristic: 'capacite-de-combat', advances: 30 }], characteristics: { ...hero().characteristics, 'capacite-de-combat': 40, force: 55 } });
-    const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [], resolveChar: 'force' };
+    const belier: Weapon = { label: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [], resolveChar: 'force' };
     expect(combatValue(c, 'melee', belier)).toBe(55); // Force brute (55), PAS CC+Spé (40+30=70)
   });
 
   it('sans resolveChar, une arme de mêlée résout normalement sur CC (non-régression)', () => {
     const c = hero({ characteristics: { ...hero().characteristics, 'capacite-de-combat': 40, force: 55 } });
-    const epee: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+    const epee: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
     expect(combatValue(c, 'melee', epee)).toBe(40);
   });
 });
@@ -153,7 +153,7 @@ describe('Arme inhabituelle — maîtrise requise (ACE 12 l.17 « Entraînement 
   const sk = (spec: string, advances: number) =>
     ({ skillId: 'corps-a-corps', spec, characteristic: 'capacite-de-combat', advances } as Combatant['skills'][number]);
   const item: ItemInstance = {
-    uid: 'u1', trappingId: 'couteau-de-harald', name: 'Couteau de Harald', kind: 'melee',
+    uid: 'u1', trappingId: 'couteau-de-harald', label: 'Couteau de Harald', kind: 'melee',
     qualities: [], enc: 0, equipped: true, requiresMastery: true,
   };
   const w: Weapon = { ...wpn('Base'), uid: 'u1' };

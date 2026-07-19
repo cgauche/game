@@ -3,7 +3,7 @@ import type { ItemInstance, Weapon } from '../engine/types';
 import { weaponStatParts, rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from './weaponStats';
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
-  ({ uid: 'u', name: 'x', kind: 'melee', qualities: [], enc: 0, equipped: false, ...o }) as ItemInstance;
+  ({ uid: 'u', label: 'x', kind: 'melee', qualities: [], enc: 0, equipped: false, ...o }) as ItemInstance;
 
 describe('weaponStatParts (composeur partagé des stats d’arme)', () => {
   it('mêlée : « Dégâts +BF+4 (7) · Allonge Longue » (BF=3 injecté, jamais [object Object])', () => {
@@ -31,7 +31,7 @@ describe('weaponStatParts (composeur partagé des stats d’arme)', () => {
   });
 
   it('accepte un Weapon dérivé (armes EN MAIN)', () => {
-    const w: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] };
+    const w: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] };
     expect(weaponStatParts(w, 3)).toEqual(['Dégâts +BF+4 (7)', 'Allonge Moyenne']);
   });
 
@@ -70,7 +70,7 @@ describe('conditionalDamageNote — #135 : dégâts CONDITIONNELS dérivés des 
 
 describe('weaponStatParts — reporte la note conditionnelle EN PARTIE SUPPLÉMENTAIRE (#135)', () => {
   it('Bélier tenu en main : « Dégâts…·Allonge…·note conditionnelle » (armes normales inchangées)', () => {
-    const w: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [{ id: 'siege' }, { id: 'belier' }] };
+    const w: Weapon = { label: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [{ id: 'siege' }, { id: 'belier' }] };
     expect(weaponStatParts(w, 4)).toEqual([
       'Dégâts +BF+10 (14)',
       'Allonge Moyenne',

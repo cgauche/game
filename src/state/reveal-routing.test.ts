@@ -105,7 +105,7 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     crossRound();
     const reveal = useGame.getState().pendingReveals.find((r) => r.kind === 'round');
     expect(reveal).toBeTruthy();
-    expect(reveal!.lines.some((l) => l.includes(H.name))).toBe(true);
-    expect(reveal!.lines.every((l) => l.includes(H.name) || !/Mutant/i.test(l))).toBe(true);
+    expect(reveal!.lines.some((l) => l.includes(H.label))).toBe(true);
+    expect(reveal!.lines.every((l) => l.includes(H.label) || !/Mutant/i.test(l))).toBe(true);
   });
 });

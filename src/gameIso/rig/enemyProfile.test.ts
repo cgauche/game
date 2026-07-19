@@ -13,13 +13,13 @@ const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 
 function mkEnemy(name: string, over: Partial<Combatant> = {}): Combatant {
   return {
     id: 'e1',
-    name,
+    label: name,
     kind: 'enemy',
     characteristics: {} as Combatant['characteristics'],
     wounds: { current: 10, max: 10 },
     advantage: 0,
     conditions: [],
-    weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon],
+    weapons: [{ label: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon],
     armour: { ...noArmour },
     skills: [],
     talents: [],
@@ -126,7 +126,7 @@ describe('enemyRigProfile', () => {
 
   it('utilise l’inventaire du combattant s’il en a un', () => {
     const item: ItemInstance = {
-      uid: 'a1', name: 'Brigandine', kind: 'armor', qualities: [], pa: 2,
+      uid: 'a1', label: 'Brigandine', kind: 'armor', qualities: [], pa: 2,
       locs: ['corps'], enc: 1, equipped: true,
     };
     const c = mkEnemy('Bandit', { items: [item], armour: { ...noArmour, corps: 9 } });
@@ -172,7 +172,7 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
 
   it('équipement de combat AFFICHÉ en explo (parité avec le combat) : armes + armure dérivées du profil', () => {
     const p = entityRigProfile('Soldat', 1, { traits: [{ id: 'arme', value: 7, arg: 'Hache' }] as never, armour: 2 })!;
-    expect(p.equip.weapons.some((w) => /hache/i.test(w.name))).toBe(true); // arme EXPLICITE tenue en main
+    expect(p.equip.weapons.some((w) => /hache/i.test(w.label))).toBe(true); // arme EXPLICITE tenue en main
     expect(p.equip.armour.length).toBeGreaterThan(0);                       // armure dessinée (PA → pièces)
   });
 

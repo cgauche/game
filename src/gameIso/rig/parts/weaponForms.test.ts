@@ -6,7 +6,7 @@ import type { Weapon } from '../../../engine/types';
 
 /** Arme minimale routée PAR SHAPE (id stable) — plus aucun routage par libellé. */
 const byShape = (shape: string | undefined, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
+  ({ label: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
 
 /** Sous-types NON tenus en main → hors contrat de silhouette : engins de siège servis par un équipage
  *  et munitions/projectiles. Le rig ne dessine pas d'arme portée pour eux. */
@@ -64,7 +64,7 @@ describe('routage de l’art PAR ID (shape) — plus aucun libellé', () => {
   });
 
   it('une attaque naturelle (natural:true) → aucune arme tenue', () => {
-    expect(weaponFamily({ name: 'Morsure', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [], natural: true } as Weapon)).toBe('');
+    expect(weaponFamily({ label: 'Morsure', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [], natural: true } as Weapon)).toBe('');
   });
 
   it('un shape inconnu retombe sur le Groupe (pas de crash, pas de routage par nom)', () => {

@@ -91,7 +91,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     const after = st();
     expect(after.craft).toBeUndefined();
     expect(after.left).toBe(2);
-    const made = hero().items?.find((i) => i.name === 'Dague' && (i.qualities ?? []).some((q) => q.id === 'solide'));
+    const made = hero().items?.find((i) => i.label === 'Dague' && (i.qualities ?? []).some((q) => q.id === 'solide'));
     expect(made).toBeTruthy();
   });
 
@@ -161,7 +161,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     // Clôture + nouvel interlude : la commande est livrée.
     useGame.getState().interludeEnd();
     useGame.getState().startInterlude(1);
-    expect(hero().items?.some((i) => i.name === exotic.label)).toBe(true);
+    expect(hero().items?.some((i) => i.label === exotic.label)).toBe(true);
     expect(useGame.getState().pendingOrders).toHaveLength(0);
   });
 

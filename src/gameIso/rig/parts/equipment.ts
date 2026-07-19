@@ -19,8 +19,8 @@ export interface EquipCtx {
   cape?: ItemInstance;              // cape/manteau porté (cosmétique — rendu dorsal)
 }
 
-export const isShield = (x: { name: string; qualities?: QualityInstance[] }) =>
-  (x.qualities ?? []).some((q) => q.id === QUALITY_IDS.Protectrice) || /bouclier/i.test(x.name);
+export const isShield = (x: { label: string; qualities?: QualityInstance[] }) =>
+  (x.qualities ?? []).some((q) => q.id === QUALITY_IDS.Protectrice) || /bouclier/i.test(x.label);
 
 /** Rang d'affichage des matériaux : la couche du DESSUS s'affiche (plaque sur maille sur cuir). */
 const MATERIAL_RANK: Record<ReturnType<typeof armourMaterial>, number> = { plaque: 3, maille: 2, cuir: 1, rembourre: 0 };
@@ -106,7 +106,7 @@ export function shieldPart(x: Weapon | ItemInstance): PartArt {
 
 /** Matériau inféré du nom (sinon palier de PA). Cuir AVANT plaque (« Plastron de cuir »). */
 export function armourMaterial(item: ItemInstance): 'rembourre' | 'cuir' | 'maille' | 'plaque' {
-  const n = wnorm(item.name);
+  const n = wnorm(item.label);
   if (/cuir|jaque/.test(n)) return 'cuir';
   if (/maille|cotte|haubert/.test(n)) return 'maille';
   if (/plaque|plastron|harnois|heaume|brassard|acier|gantelet|greve/.test(n)) return 'plaque';

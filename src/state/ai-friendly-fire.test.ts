@@ -21,7 +21,7 @@ const BLIND_AOE: SpellData = {
 const castable = (): CastableSpell => ({ id: BLIND_AOE.id, data: BLIND_AOE, cn: 0, range: 20, shape: { area: { radius: 3 } }, landProb: 1, focusState: 'none', active: false });
 const scene = emptyScene(20, 20);
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }): Combatant {
-  return { id, name: id, kind, pos, wounds: { current: 12, max: 12 }, weapons: [], characteristics: {} as never,
+  return { id, label: id, kind, pos, wounds: { current: 12, max: 12 }, weapons: [], characteristics: {} as never,
     advantage: 0, conditions: [], armour: {} as never, skills: [], talents: [], movement: 4 } as Combatant;
 }
 function input(enemy: Combatant, heroes: Combatant[], squad: Combatant[]): EnemyTurnInput {

@@ -89,7 +89,7 @@ describe('Filets BARBELÉS (Zoo Impérial p.29) — Dégâts ignorant l’armure
     const atk = foe('gobelin-barbele');
     const tgt = foe('cible');
     const get = mountBattle([atk, tgt]);
-    const w: Weapon = { name: 'Filet barbelé', type: 'ranged', damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'filet-barbele' }] };
+    const w: Weapon = { label: 'Filet barbelé', type: 'ranged', damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'filet-barbele' }] };
     fireTriggers(get, atk, 'onHit', { victim: tgt, weapon: w, woundsDealt: 0, margin: 1, rng: battleRng() } as never);
     expect(empetreOf(tgt)?.struggleDamage).toBe(1);
   });
@@ -106,7 +106,7 @@ describe('Filet lesté (Aux Armes p.95) — Immobilisante à Force FIGÉE (55), 
     const atk = foe('duelliste', { characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 90, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } });
     const tgt = foe('cible');
     const get = mountBattle([atk, tgt]);
-    const w: Weapon = { name: 'Filet lesté', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'immobilisante-fixe' }] };
+    const w: Weapon = { label: 'Filet lesté', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'immobilisante-fixe' }] };
     fireTriggers(get, atk, 'onHit', { victim: tgt, weapon: w, woundsDealt: 0, margin: 1, rng: battleRng() } as never);
     const cond = empetreOf(tgt);
     expect(cond?.escapeStrength).toBe(55); // PAS 90 (Force de l’attaquant)
@@ -119,7 +119,7 @@ describe('Déroutante (ADE II 4, atout d\'arme magique) — État Surpris à la 
     const atk = foe('porteur');
     const tgt = foe('cible');
     const get = mountBattle([atk, tgt]);
-    const w: Weapon = { name: 'Lame déroutante', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'deroutante' }] };
+    const w: Weapon = { label: 'Lame déroutante', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'deroutante' }] };
     fireTriggers(get, atk, 'onHit', { victim: tgt, weapon: w, woundsDealt: 0, margin: 1, rng: battleRng() } as never);
     const live = get().battle!.combatants.find((c) => c.id === tgt.id)!;
     expect(live.conditions.some((x) => x.id === 'surpris')).toBe(true);
@@ -133,7 +133,7 @@ describe('Non-régression — Immobilisante GÉNÉRIQUE (LDB p.298, fouet/lasso)
     const get = mountBattle([atk, tgt]);
     const fouet = findTrappingById('fouet')!;
     expect(fouet.qualities.map((q) => q.id)).toEqual(['immobilisante']);
-    const w: Weapon = { name: 'Fouet', type: 'ranged', damage: { plusBF: true, flat: 2 }, qualities: [{ id: 'immobilisante' }] };
+    const w: Weapon = { label: 'Fouet', type: 'ranged', damage: { plusBF: true, flat: 2 }, qualities: [{ id: 'immobilisante' }] };
     fireTriggers(get, atk, 'onHit', { victim: tgt, weapon: w, woundsDealt: 0, margin: 1, rng: battleRng() } as never);
     expect(empetreOf(tgt)?.escapeStrength).toBe(47);
     expect(empetreOf(tgt)?.escapeThreshold).toBeUndefined();

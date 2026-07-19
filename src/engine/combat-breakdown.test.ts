@@ -22,12 +22,12 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
     ...over,
   }) as unknown as Combatant;
 
-const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
+const sword: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
 
 describe('rollMeleeDefender : pénalité de main secondaire APPLIQUÉE au jet de parade (pas que l’affichage)', () => {
-  const main: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'main', hands: 1, uid: 'm' };
-  const off: Weapon = { name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'off', hands: 1, uid: 'o' };
+  const main: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'main', hands: 1, uid: 'm' };
+  const off: Weapon = { label: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'off', hands: 1, uid: 'o' };
   it('parer avec l’arme de main secondaire (non Parade) → cible du jet -20 vs main principale', () => {
     const d = mk({ weapons: [main, off] });
     const withMain = rollMeleeDefender(d, 'parade', makeRNG(1), 0, main).target;
@@ -37,8 +37,8 @@ describe('rollMeleeDefender : pénalité de main secondaire APPLIQUÉE au jet de
 });
 
 describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () => {
-  const off: Weapon = { name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'off', hands: 1 };
-  const main: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], hand: 'main', hands: 1 };
+  const off: Weapon = { label: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'off', hands: 1 };
+  const main: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], hand: 'main', hands: 1 };
   it('arme de main secondaire → -20', () => {
     const mods = attackModifiers(mk(), mk(), off, { kind: 'melee' });
     expect(mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
@@ -55,7 +55,7 @@ describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () =>
 
 describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.192)', () => {
   const parrySpec = { skillId: 'corps-a-corps', spec: 'parade', characteristic: 'capacite-de-combat', advances: 0 } as any;
-  const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }], hand: 'off', hands: 1 };
+  const offShield: Weapon = { label: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }], hand: 'off', hands: 1 };
   it('parade main secondaire : bouclier Défensive + spé Parade → AUCUNE pénalité', () => {
     const mods = defenseModifiers(mk({ skills: [parrySpec] }), 'parade', 0, offShield);
     expect(mods.some((m) => m.label === 'Main secondaire')).toBe(false);
@@ -127,7 +127,7 @@ describe('Esquive sous la neige −20 (LDB 14 l.115-116)', () => {
 describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
   // roll 34 vs cible 52 → DR (sl) = 5−3 = 2 ; dé des unités = 4. Arme '+8' (ranged) ; cible mk() E30 → BE3, PA0.
   // Sans Atout : dégâts = 8 + 2 = 10 → woundsLost 7. Dévastatrice : 8 + max(2,4)=12 → 9. Percutante : 8+2+4=14 → 11.
-  const ranged = (qualities: string[]) => ({ name: 'X', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: qualities.map((s) => parseQualityInstance(s)!) });
+  const ranged = (qualities: string[]) => ({ label: 'X', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: qualities.map((s) => parseQualityInstance(s)!) });
   it('Dévastatrice : dégâts utilisent max(DR, dé des unités)', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged([]), 34, 52).woundsLost).toBe(7);
     expect(resolveStrayRangedHit(mk(), mk(), ranged(['Dévastatrice']), 34, 52).woundsLost).toBe(9);
@@ -175,7 +175,7 @@ describe('Taille — défense −2 DR/catégorie en parade (LDB 85 l.305-306)', 
 });
 
 describe('Taille — Dégâts ×N + Atouts conférés (LDB 85 l.295-297)', () => {
-  const ranged = { name: 'Arc', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: [] };
+  const ranged = { label: 'Arc', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: [] };
   it('attaquant Énorme (+2 cat) vs Moyen : ×2 + Dévastatrice + Percutante, AVANT soak', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged, 34, 52).woundsLost).toBe(7); // 8+2 −3
     // (8 + max(2,4) + 4)×2 − 3 = 32 − 3 = 29
@@ -189,8 +189,8 @@ describe('Taille — Dégâts ×N + Atouts conférés (LDB 85 l.295-297)', () =>
 
 describe('resolveStrayRangedHit — tir dévié sur un allié (LDB 14 l.136)', () => {
   it('touche automatiquement la victime depuis le jet d’origine (sans relancer)', () => {
-    const att = mk({ name: 'Tireur' });
-    const ally = mk({ name: 'Allié', wounds: { current: 10, max: 10 } });
+    const att = mk({ label: 'Tireur' });
+    const ally = mk({ label: 'Allié', wounds: { current: 10, max: 10 } });
     const res = resolveStrayRangedHit(att, ally, bow, 30, 55); // roll 30 ≤ cible 55 → touche
     expect(res.hit).toBe(true);
     expect(res.woundsLost).toBeGreaterThan(0); // dégâts recalculés sur l'allié
@@ -200,7 +200,7 @@ describe('resolveStrayRangedHit — tir dévié sur un allié (LDB 14 l.136)', (
 
 describe('AttackResult — détail des jets (breakdown) pour la modale', () => {
   it('mêlée opposée : détaille l’attaquant ET le défenseur (cible + DR)', () => {
-    const res = resolveMelee(mk({ name: 'Att' }), mk({ name: 'Def' }), sword, makeRNG(7));
+    const res = resolveMelee(mk({ label: 'Att' }), mk({ label: 'Def' }), sword, makeRNG(7));
     expect(res.attackerDetail).toBeTruthy();
     expect(res.attackerDetail!.label).toBe('Corps à corps');
     expect(res.attackerDetail!.base).toBe(50); // CC de base
@@ -212,14 +212,14 @@ describe('AttackResult — détail des jets (breakdown) pour la modale', () => {
   });
 
   it('distance : détaille l’attaquant, pas de défenseur (non opposé)', () => {
-    const res = resolveRanged(mk({ name: 'Tir' }), mk({ name: 'Cible' }), bow, makeRNG(3));
+    const res = resolveRanged(mk({ label: 'Tir' }), mk({ label: 'Cible' }), bow, makeRNG(3));
     expect(res.attackerDetail!.label).toBe('Projectiles');
     expect(res.defenderDetail).toBeUndefined();
   });
 });
 
 describe('attackTestLabel — libellé du Test SUIT combatValue, ne ment jamais (#203)', () => {
-  const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], resolveChar: 'force' };
+  const belier: Weapon = { label: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], resolveChar: 'force' };
   it('arme à Résolution alternative (bélier → Force, ADE II 8 l.233) → libellé de la Carac', () => {
     expect(attackTestLabel(belier, 'melee')).toBe('Force');
   });
@@ -268,39 +268,39 @@ describe('Bandes de portée — échelle métrique de la Scène (#249, metresPer
     expect(rangeBandModifier(19, 60, 10)).toBeNull(); // 190 m > 180
   });
   it('attackModifiers propage metresPerTile jusqu’au mod de portée affiché', () => {
-    const mods = attackModifiers(mk({ name: 'A' }), mk({ name: 'B' }), bow, { kind: 'ranged', distanceTiles: 3, metresPerTile: 10 });
+    const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 3, metresPerTile: 10 });
     expect(mods).toContainEqual({ label: 'Courte portée', value: 20 });
   });
   it('sans metresPerTile (défaut 2, terrestre) : même distanceTiles=3 reste Bout Portant/hors-Courte, comportement BYTE-IDENTIQUE', () => {
-    const mods = attackModifiers(mk({ name: 'A' }), mk({ name: 'B' }), bow, { kind: 'ranged', distanceTiles: 3 });
+    const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 3 });
     expect(mods).toContainEqual({ label: 'Bout portant', value: 40 }); // 6 m ≤ 6, comme avant le câblage
   });
 });
 
 describe('attackModifiers — modificateurs étiquetés (source unique)', () => {
   it('tir à courte portée → mod « Courte portée » +20', () => {
-    const mods = attackModifiers(mk({ name: 'A' }), mk({ name: 'B' }), bow, { kind: 'ranged', distanceTiles: 10 });
+    const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 10 });
     expect(mods).toContainEqual({ label: 'Courte portée', value: 20 });
   });
   it('tireur qui a Visé → mod « Viser » +20 (action Viser, l.90)', () => {
-    const mods = attackModifiers(mk({ name: 'A', aiming: true }), mk({ name: 'B' }), bow, { kind: 'ranged', distanceTiles: 28 });
+    const mods = attackModifiers(mk({ label: 'A', aiming: true }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28 });
     expect(mods).toContainEqual({ label: 'Viser', value: 20 });
   });
   it('viser une localisation → mod « Localisation visée » −10', () => {
-    const mods = attackModifiers(mk({ name: 'A' }), mk({ name: 'B' }), bow, { kind: 'ranged', distanceTiles: 28, location: 'tete' });
+    const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28, location: 'tete' });
     expect(mods).toContainEqual({ label: 'Localisation visée', value: -10 });
   });
   it('mêlée vs cible À Terre → mod « Cible vulnérable » +20', () => {
-    const downed = mk({ name: 'B', conditions: [{ id: 'a-terre', value: 1 }] });
-    const mods = attackModifiers(mk({ name: 'A' }), downed, sword, { kind: 'melee' });
+    const downed = mk({ label: 'B', conditions: [{ id: 'a-terre', value: 1 }] });
+    const mods = attackModifiers(mk({ label: 'A' }), downed, sword, { kind: 'melee' });
     expect(mods).toContainEqual({ label: 'Cible vulnérable', value: 20 });
   });
 });
 
 describe('Charge montée — dégâts à la Force + Taille de la monture (LDB 14 l.183)', () => {
   it('dmgProxy augmente les dégâts (Force de la monture) et déclenche le balayage (Taille de la monture)', () => {
-    const att = mk({ name: 'Cavalier', size: 'moyenne' }); // BF 3, Moyenne
-    const def = mk({ name: 'Gobelin', size: 'moyenne' });
+    const att = mk({ label: 'Cavalier', size: 'moyenne' }); // BF 3, Moyenne
+    const def = mk({ label: 'Gobelin', size: 'moyenne' });
     const okAtk = { roll: 35, target: 50, success: true, sl: 2, isDouble: false }; // touche nette (déterministe)
     // Seul le proxy de dégâts (monture Grande, BF 6) change : touche identique → DÉGÂTS isolés.
     const normal = resolveMeleePassive(att, def, sword, okAtk);
@@ -311,8 +311,8 @@ describe('Charge montée — dégâts à la Force + Taille de la monture (LDB 14
     expect(normal.cleave).toBeFalsy(); // à pied, Moyenne vs Moyenne → pas de balayage
   });
   it('le toucher reste celui du CAVALIER (le proxy n’affecte que les dégâts)', () => {
-    const att = mk({ name: 'Cavalier' });
-    const def = mk({ name: 'Cible' });
+    const att = mk({ label: 'Cavalier' });
+    const def = mk({ label: 'Cible' });
     const a = resolveMelee(att, def, sword, makeRNG(5), { defense: 'none' });
     const b = resolveMelee(att, def, sword, makeRNG(5), { defense: 'none', dmgProxy: { sb: 9, size: 'enorme' } });
     expect(a.attackerRoll).toBe(b.attackerRoll); // jet d'attaque identique : la CC du cavalier n'est pas touchée

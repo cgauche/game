@@ -58,9 +58,9 @@ section('Vues — les détails de visage disparaissent de dos/profil', VUES.flat
 
 // 3) Collisions avec l'armure équipée + arme en main (Soldat cuirassé).
 const piece = (uid: string, pa: number, locs: ItemInstance['locs']): ItemInstance =>
-  ({ uid, name: `Protection (${locs![0]})`, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
+  ({ uid, label: `Protection (${locs![0]})`, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
 const ARMOUR: ItemInstance[] = [piece('a1', 3, ['corps']), piece('a2', 2, ['tete']), piece('a3', 1, ['brasG', 'brasD']), piece('a4', 1, ['jambeG', 'jambeD'])];
-const EPEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] };
+const EPEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] };
 const SOLDAT: Parameters<typeof cell>[3] = { equip: { weapons: [EPEE], armour: ARMOUR }, career: 'Soldat', bg: '#222a24', tint: '#be9' };
 section('Sur armure équipée (épée en main)', [
   'suintement-de-pus', 'bouche-supplementaire', 'ecailles-epineuses', 'plumes-eparses', 'peau-d-acier',

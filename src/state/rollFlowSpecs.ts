@@ -1161,7 +1161,7 @@ export const FLOWS = {
         // Test est connue (post-échec) ; pré-jet (résultat synthétique sans cible), plancher DR 1 comme avant.
         const die = base?.target != null ? bestForcedRoll(base.target) : 1;
         const sl = base?.target != null ? Math.max(evaluateTest(die, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
-        return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: die, target: base?.target, sl, log: `${actor.name} force la focalisation (Résilience).` } };
+        return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: die, target: base?.target, sl, log: `${actor.label} force la focalisation (Résilience).` } };
       }
       const spell = findSpellById(p.spellId);
       if (!spell) return null;

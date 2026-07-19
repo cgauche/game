@@ -10,7 +10,7 @@ import type { Weapon } from '../src/engine/types';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const SPECIES = ['Humain', 'Halfling', 'Nain', 'Gnome', 'Ogre', 'Haut-Elfe', 'Elfe sylvain'];
-const wep = (name: string): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
+const wep = (name: string): Weapon => ({ label: name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
 const cells = SPECIES.map((sp, i) => {
   const svg = renderToStaticMarkup(

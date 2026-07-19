@@ -17,7 +17,7 @@ import { toBrass } from '../engine/money';
 import { stacks } from '../engine/conditions';
 import type { Combatant, ItemInstance } from '../engine/types';
 
-const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
+const ration = (uid: string): ItemInstance => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
 /** Déroule la cascade de nuit (lance + valide chaque étape) jusqu'à la fin ; renvoie les `kind` vus
  *  (les étapes INSÉRÉES en cours de route — Exposition après l'abri — y figurent). */
@@ -55,7 +55,7 @@ function walkCascadeAbriFails(): string[] {
 
 const hero = (p: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'h1', name: 'Hilda', kind: 'hero',
+    id: 'h1', label: 'Hilda', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 35, sociabilite: 30 },
     wounds: { current: 8, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -66,7 +66,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   seedBattleRng(1);
   useGame.setState({
-    party: [hero(), hero({ id: 'h2', name: 'Bruno', items: [ration('r1')] })],
+    party: [hero(), hero({ id: 'h2', label: 'Bruno', items: [ration('r1')] })],
     battle: null, pendingRest: null, scene: emptyScene(10, 10), money: { gold: 2, silver: 0, brass: 0 },
   });
 });
@@ -150,7 +150,7 @@ describe('openRest / choix par héros', () => {
     const sc = emptyScene(10, 10);
     sc.weather = 'pluie';
     useGame.setState({ scene: sc });
-    useGame.getState().party[1].items!.push({ uid: 't', name: 'Tente', trappingId: 'tente', kind: 'misc', qualities: [], enc: 2, equipped: false } as ItemInstance);
+    useGame.getState().party[1].items!.push({ uid: 't', label: 'Tente', trappingId: 'tente', kind: 'misc', qualities: [], enc: 2, equipped: false } as ItemInstance);
     useGame.getState().openRest({ places: { camp: true } });
     useGame.getState().restSleep();
     const cas = useGame.getState().pendingCascade!;
@@ -219,7 +219,7 @@ describe('repos MULTI-JOURS (#347) — chaîne de cascades nuit-par-nuit, jamais
   }
 
   it('2 nuits d’affilée sans ration : CHAQUE nuit est SA PROPRE cascade influençable, non pré-résolue', () => {
-    const starving = hero({ id: 'h1', name: 'Hilda', hunger: { days: 1, tests: 0, failures: 0 } });
+    const starving = hero({ id: 'h1', label: 'Hilda', hunger: { days: 1, tests: 0, failures: 0 } });
     useGame.setState({ party: [starving], scene: emptyScene(10, 10), pendingRest: null, money: { gold: 0, silver: 0, brass: 0 } });
     useGame.getState().openRest({ places: { camp: true }, days: 4 }); // days>1 → repos multi-jours authoré (op `rest`)
     useGame.getState().restSet('h1', { food: 'rien' });
@@ -250,7 +250,7 @@ describe('repos MULTI-JOURS (#347) — chaîne de cascades nuit-par-nuit, jamais
   });
 
   it('escalade CUMULATIVE de la Faim PORTÉE d’une nuit à l’autre (compteur persisté sur le héros)', () => {
-    const starving = hero({ id: 'h1', name: 'Hilda', hunger: { days: 0, tests: 0, failures: 0 } });
+    const starving = hero({ id: 'h1', label: 'Hilda', hunger: { days: 0, tests: 0, failures: 0 } });
     useGame.setState({ party: [starving], scene: emptyScene(10, 10), pendingRest: null, money: { gold: 0, silver: 0, brass: 0 } });
     useGame.getState().openRest({ places: { camp: true }, days: 4 });
     useGame.getState().restSet('h1', { food: 'rien' });

@@ -44,7 +44,7 @@ describe('Bénédiction de Chance — relance gratuite au point de relance (roll
   it('fortune 0 + drapeau : la relance marche, consomme le drapeau, pas la Chance', () => {
     const hero = blessedHero(0);
     useGame.setState({ party: [hero] });
-    openFailedTest(hero.id, hero.name);
+    openFailedTest(hero.id, hero.label);
     useGame.getState().testReroll();
     const h = useGame.getState().party[0];
     expect(useGame.getState().pendingTest!.rerolled).toBe(true); // relance effectuée
@@ -56,7 +56,7 @@ describe('Bénédiction de Chance — relance gratuite au point de relance (roll
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Sec', rng: makeRNG(6) });
     hero.fortune = 0;
     useGame.setState({ party: [hero] });
-    openFailedTest(hero.id, hero.name);
+    openFailedTest(hero.id, hero.label);
     useGame.getState().testReroll();
     expect(useGame.getState().pendingTest!.rerolled).toBeFalsy();
   });
@@ -64,7 +64,7 @@ describe('Bénédiction de Chance — relance gratuite au point de relance (roll
   it('drapeau ET fortune : le drapeau est consommé d’abord, la Chance est préservée', () => {
     const hero = blessedHero(2);
     useGame.setState({ party: [hero] });
-    openFailedTest(hero.id, hero.name);
+    openFailedTest(hero.id, hero.label);
     useGame.getState().testReroll();
     const h = useGame.getState().party[0];
     expect(h.fortune).toBe(2); // Chance intacte

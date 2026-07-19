@@ -87,7 +87,7 @@ export function isNeutralized(h: Combatant): boolean {
 
 /** Cible neutre STABLE pour `bestAttackEV` quand aucun ennemi de référence n'existe (carac. moyennes). */
 const GENERIC_DUMMY: Combatant = {
-  id: '__ai-dummy__', name: 'cible', kind: 'enemy',
+  id: '__ai-dummy__', label: 'cible', kind: 'enemy',
   characteristics: Object.fromEntries(CHAR_KEYS.map((k) => [k, 30])) as Characteristics,
   wounds: { current: 12, max: 12, base: 12 },
   advantage: 0, conditions: [], weapons: [], armour: {} as ArmourPoints,

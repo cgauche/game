@@ -4,7 +4,7 @@ import type { Weapon } from '../../../../engine/types';
 
 /** Arme routée PAR SHAPE (id de forme stable) — plus aucun routage par libellé. */
 const w = (shape: string, skin?: Record<string, string>): Weapon =>
-  ({ name: 'x', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [], shape, skin } as Weapon);
+  ({ label: 'x', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [], shape, skin } as Weapon);
 
 describe('skin d’arme — recolorisation par-objet (tokens palette)', () => {
   it('au défaut, l’art est entièrement résolu (aucun @token résiduel)', () => {

@@ -151,7 +151,7 @@ export function sleepParty(
   // Le bilan de nuit LISTE l'entretien quotidien (rations/faim, maladies, convalescence) — le
   // journal seul ne suffit pas. Portrait attribué par préfixe « Nom… » quand la ligne le porte.
   for (const text of runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily })) {
-    entries.push({ actorId: get().party.find((h) => text.startsWith(h.name))?.id, icon: 'time/calendar', label: 'Entretien quotidien', text, tone: 'info' });
+    entries.push({ actorId: get().party.find((h) => text.startsWith(h.label))?.id, icon: 'time/calendar', label: 'Entretien quotidien', text, tone: 'info' });
   }
 
   // Récupération + cauchemars, héros par héros (jets structurés pour le bilan).
@@ -171,7 +171,7 @@ export function sleepParty(
         reKind: r.kind,
       });
     });
-    for (const line of log) entries.push({ actorId: h.id, icon: 'rest/bed', label: 'Nuit', text: line.replace(`${h.name} `, ''), tone: 'info' });
+    for (const line of log) entries.push({ actorId: h.id, icon: 'rest/bed', label: 'Nuit', text: line.replace(`${h.label} `, ''), tone: 'info' });
     journal.push(...log);
   }
 
@@ -264,17 +264,17 @@ registerCascadeApplier('recovery', (_get, _set, step, hero) => {
   const { wokeUp } = applyRecoveryDay(hero, { sl: step.result.sl, success: step.result.success });
   const j: string[] = [];
   const healed = hero.wounds.current - before;
-  if (healed > 0) j.push(`${hero.name} récupère ${healed} PB.`);
-  else j.push(`${hero.name} ne récupère aucune Blessure cette nuit.`);
-  if (wokeUp) j.push(`${hero.name} reprend connaissance.`);
+  if (healed > 0) j.push(`${hero.label} récupère ${healed} PB.`);
+  else j.push(`${hero.label} ne récupère aucune Blessure cette nuit.`);
+  if (wokeUp) j.push(`${hero.label} reprend connaissance.`);
   return { consequences: freeCons(j) };
 });
 
 registerCascadeApplier('nightmare', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  if (step.result.success) return { consequences: freeCons([`${hero.name} dort d'un sommeil sans rêve.`]) };
+  if (step.result.success) return { consequences: freeCons([`${hero.label} dort d'un sommeil sans rêve.`]) };
   addCondition(hero, 'extenue'); // LDB 21 l.92 : Calme +40 raté → Exténué
-  return { consequences: freeCons([`${hero.name} est en proie à de terribles cauchemars (Calme +40 raté) → Exténué.`]) };
+  return { consequences: freeCons([`${hero.label} est en proie à de terribles cauchemars (Calme +40 raté) → Exténué.`]) };
 });
 
 registerCascadeApplier('shelter', (get, _set, step, hero) => {
@@ -285,7 +285,7 @@ registerCascadeApplier('shelter', (get, _set, step, hero) => {
   const count = exposureTestCount(severity, sheltered);
   const insert = count > 0 ? buildExposureSteps(get().party, camperIds, count) : [];
   return {
-    consequences: freeCons([sheltered ? `${hero?.name ?? 'Le groupe'} dresse un abri — le camp tient la nuit.` : 'Aucun abri ne protège du temps.']),
+    consequences: freeCons([sheltered ? `${hero?.label ?? 'Le groupe'} dresse un abri — le camp tient la nuit.` : 'Aucun abri ne protège du temps.']),
     insert,
   };
 });
@@ -309,8 +309,8 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
   if (!genuineFail(step.result)) {
     const held = !step.result.success; // échec de justesse tenu par la peau de phoque
     return { consequences: freeCons([held
-      ? `${hero.name} — la peau de phoque retient le froid (échec de justesse tenu, +1 DR).`
-      : `${hero.name} endure ${kind === 'froid' ? 'le froid' : 'la chaleur'} sans dommage.`]) };
+      ? `${hero.label} — la peau de phoque retient le froid (échec de justesse tenu, +1 DR).`
+      : `${hero.label} endure ${kind === 'froid' ? 'le froid' : 'la chaleur'} sans dommage.`]) };
   }
   // Escalade CUMULATIVE (l.330/334) : compte les échecs GENUINE d'Exposition DÉJÀ validés de CE héros pour CE
   // volet, hors ceux ANNULÉS par un délestage de Possession lourde (LDB 18 l.332).
@@ -324,11 +324,11 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
   const heavy = kind === 'chaleur' ? heaviestPossession(hero) : undefined;
   if (heavy) {
     return {
-      consequences: freeCons([`${hero.name} rate son Test d'Exposition (chaleur) — ${heavy.name} pourrait être jeté pour l'annuler.`]),
+      consequences: freeCons([`${hero.label} rate son Test d'Exposition (chaleur) — ${heavy.label} pourrait être jeté pour l'annuler.`]),
       insert: [{
         id: `${step.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: 'item/misc',
         label: 'Possession lourde', interactive: true,
-        options: [{ key: 'jeter', label: `Jeter ${heavy.name}` }, { key: 'garder', label: 'Garder son paquetage' }],
+        options: [{ key: 'jeter', label: `Jeter ${heavy.label}` }, { key: 'garder', label: 'Garder son paquetage' }],
         defaultChoice: 'garder', // consommé par `runCascadeImmediate` (repos multi-jours) — `resolveRemainingCascade`
         // (« Tout résoudre ») s'arrête TOUJOURS sur ce choix depuis 249e931f, n'applique plus JAMAIS de défaut
         meta: { failNumber: priorFails + 1 },
@@ -342,7 +342,7 @@ registerCascadeApplier('exposure-heat-drop', (_get, _set, step, hero) => {
   if (!hero || step.chosen == null) return;
   if (step.chosen === 'jeter') {
     const name = dropHeaviestPossession(hero);
-    return { consequences: freeCons([`${hero.name} se débarrasse de ${name ?? 'sa possession la plus lourde'} — le Test échoué est annulé (LDB 18 l.332).`]) };
+    return { consequences: freeCons([`${hero.label} se débarrasse de ${name ?? 'sa possession la plus lourde'} — le Test échoué est annulé (LDB 18 l.332).`]) };
   }
   return { consequences: freeCons(applyExposureFailure(hero, Number(step.meta?.failNumber ?? 1), battleRng(), 'chaleur').log) };
 });
@@ -531,8 +531,8 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     } else {
       const before = h.wounds.current;
       const { wokeUp } = applyRecoveryDay(h, null);
-      if (h.wounds.current - before > 0) log.push(`${h.name} récupère ${h.wounds.current - before} PB.`);
-      if (wokeUp) log.push(`${h.name} reprend connaissance.`);
+      if (h.wounds.current - before > 0) log.push(`${h.label} récupère ${h.wounds.current - before} PB.`);
+      if (wokeUp) log.push(`${h.label} reprend connaissance.`);
     }
     if (h.nightmares) {
       steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: 'Cauchemars', icon: 'creature/scream',

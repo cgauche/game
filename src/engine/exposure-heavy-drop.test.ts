@@ -22,15 +22,15 @@ describe('heaviestPossession — Possession lourde (LDB 18 l.332)', () => {
   });
 
   it('objets tous à Encombrement 0 → undefined (rien de « lourd » à jeter)', () => {
-    const c = dummy([{ uid: 'a', name: 'Dague', kind: 'melee', qualities: [], equipped: true, enc: 0 }]);
+    const c = dummy([{ uid: 'a', label: 'Dague', kind: 'melee', qualities: [], equipped: true, enc: 0 }]);
     expect(heaviestPossession(c)).toBeUndefined();
   });
 
   it('renvoie l’objet le plus lourd (Encombrement max), pas le premier ni le dernier', () => {
     const c = dummy([
-      { uid: 'a', name: 'Gourde', kind: 'misc', qualities: [], equipped: false, enc: 1 },
-      { uid: 'b', name: 'Armure lourde', kind: 'armor', qualities: [], equipped: true, enc: 4 },
-      { uid: 'c', name: 'Sac de couchage', kind: 'misc', qualities: [], equipped: false, enc: 1 },
+      { uid: 'a', label: 'Gourde', kind: 'misc', qualities: [], equipped: false, enc: 1 },
+      { uid: 'b', label: 'Armure lourde', kind: 'armor', qualities: [], equipped: true, enc: 4 },
+      { uid: 'c', label: 'Sac de couchage', kind: 'misc', qualities: [], equipped: false, enc: 1 },
     ]);
     expect(heaviestPossession(c)?.uid).toBe('b');
   });
@@ -45,8 +45,8 @@ describe('dropHeaviestPossession — se débarrasser (LDB 18 l.332)', () => {
 
   it('retire l’objet le plus lourd de l’inventaire et renvoie son nom', () => {
     const c = dummy([
-      { uid: 'a', name: 'Gourde', kind: 'misc', qualities: [], equipped: false, enc: 1 },
-      { uid: 'b', name: 'Armure lourde', kind: 'armor', qualities: [], equipped: true, enc: 4 },
+      { uid: 'a', label: 'Gourde', kind: 'misc', qualities: [], equipped: false, enc: 1 },
+      { uid: 'b', label: 'Armure lourde', kind: 'armor', qualities: [], equipped: true, enc: 4 },
     ]);
     const name = dropHeaviestPossession(c);
     expect(name).toBe('Armure lourde');

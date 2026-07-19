@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { findSpeciesById, talentConcrete } from '../data';
+import { findSpeciesById, talentConcrete, talents, specIdsOf, specLabel } from '../data';
 import {
   speciesSkillAdvanceMap,
   rollRandomTalent,
+  talentRefKeyOf,
   resolveSpeciesTalents,
   createHero,
 } from './character';
@@ -46,12 +47,37 @@ describe('rollRandomTalent — Tableau des Talents aléatoires (table d100)', ()
   it('relance si le talent est déjà possédé (LDB : « vous pouvez relancer »)', () => {
     // On possède déjà le talent du seed 1 → un nouveau tirage doit donner autre chose.
     const first = rollRandomTalent(makeRNG(1), new Set())!;
-    const second = rollRandomTalent(makeRNG(1), new Set([first]));
+    const second = rollRandomTalent(makeRNG(1), new Set([talentRefKeyOf(first)]));
     expect(second).not.toBe(first);
   });
 
   it('déterministe à seed égal', () => {
     expect(rollRandomTalent(makeRNG(42), new Set())).toBe(rollRandomTalent(makeRNG(42), new Set()));
+  });
+
+  // #602 — `owned` est keyé par IDENTITÉ STABLE (`refKey(talentId, specId)`), plus par libellé concret :
+  // le MÊME couple (talent, spec) écrit sous ses deux formes (id de spec / libellé d'affichage) donne UNE
+  // clé ; deux specs distinctes d'un talent groupé restent deux entités (LDB 10 l.13-21).
+  it('identité de spécialisation : même (talent, spec) sous ses deux écritures = une seule clé', () => {
+    const grouped = talents.find((t) => t.rand != null && specIdsOf(t).length > 1)!;
+    const [specA, specB] = specIdsOf(grouped);
+    const asId = talentRefKeyOf(`${grouped.label} (${specA})`);
+    const asLabel = talentRefKeyOf(`${grouped.label} (${specLabel('talents', grouped.id, specA)})`);
+    expect(asId).toBe(`${grouped.id}|${specA}`);
+    expect(asLabel).toBe(asId);
+    expect(talentRefKeyOf(`${grouped.label} (${specB})`)).not.toBe(asId);
+  });
+
+  it('une spec possédée ne bloque pas les AUTRES specs du même talent groupé', () => {
+    const grouped = talents.find((t) => t.rand != null && specIdsOf(t).length > 1)!;
+    const [specA] = specIdsOf(grouped);
+    const out = resolveSpeciesTalents(sp(), {
+      rng: makeRNG(7),
+      owned: [`${grouped.label} (${specLabel('talents', grouped.id, specA)})`],
+    });
+    for (const label of out) {
+      if (label.startsWith(grouped.label)) expect(talentRefKeyOf(label)).not.toBe(`${grouped.id}|${specA}`);
+    }
   });
 });
 

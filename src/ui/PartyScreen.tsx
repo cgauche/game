@@ -199,7 +199,7 @@ function partyCoverageWithHero(party: Combatant[], axisIds: string[]): { id: str
     let heroName: string | undefined;
     for (const h of party) {
       const v = axisScore(h, axis);
-      if (v > best) { best = v; heroName = h.name; }
+      if (v > best) { best = v; heroName = h.label; }
     }
     return best >= AXIS_QUALIFY_MIN ? { id: axis.id, label: axis.label, value: best, heroName } : { id: axis.id, label: axis.label, value: 0 };
   });
@@ -388,7 +388,7 @@ export function PartyScreenView({
     setSelector(null);
   };
   const selectorReplaceName =
-    selector?.mode === 'replace' ? party.find((h) => h.id === selector.heroId)?.name : undefined;
+    selector?.mode === 'replace' ? party.find((h) => h.id === selector.heroId)?.label : undefined;
   const inParty = (id: string) => party.some((p) => p.id === id);
 
   return (
@@ -648,7 +648,7 @@ export function CandidatePool({
     setRoster(rosterLoad());
   };
   const exportHero = (entry: { hero: Combatant; wealth: Money }) =>
-    downloadText(`wfrp4-perso-${fileSlug(entry.hero.name)}.json`, rosterExport(entry));
+    downloadText(`wfrp4-perso-${fileSlug(entry.hero.label)}.json`, rosterExport(entry));
   const startCreate = () => {
     if (onCreate) return onCreate();
     setEditingHero(null);

@@ -70,7 +70,7 @@ export function DistraireModal() {
   const journal = pd.atk && (
     <JournalLine
       className="rm-journal"
-      event={ev(pd.result === 'success' ? 'dodge' : 'attack', describeDistraire(pd, mover.name, foe.name), mover.id, foe.id)}
+      event={ev(pd.result === 'success' ? 'dodge' : 'attack', describeDistraire(pd, mover.label, foe.label), mover.id, foe.id)}
       combatants={battle.combatants}
     />
   );
@@ -90,7 +90,7 @@ export function DistraireModal() {
         <OptionChooser
           layout="seg"
           groupLabel="Cible"
-          options={foes.map((f) => ({ key: f.id, label: f.name, selected: f.id === foe.id, onSelect: () => setFoe(f.id) }))}
+          options={foes.map((f) => ({ key: f.id, label: f.label, selected: f.id === foe.id, onSelect: () => setFoe(f.id) }))}
         />
       )}
       rows={[foeRow, actorRow]}

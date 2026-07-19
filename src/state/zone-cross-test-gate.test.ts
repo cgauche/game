@@ -49,7 +49,7 @@ describe('#500 — BattleZone.crossTest : Forêt d’épines (LDB 48 l.749)', ()
     hero.pos = { x: 5, y: 10 };
     enemy.pos = { x: 5, y: 11 };
     // Lanceur du sort — présent dans la BATAILLE (retiré ensuite au cas « hors combat »).
-    const caster = { ...hero, id: 'CASTER', name: 'Caster' } as Combatant;
+    const caster = { ...hero, id: 'CASTER', label: 'Caster' } as Combatant;
     caster.characteristics = { ...hero.characteristics, 'force-mentale': 60 }; // BFM 6 → escapeStrength figée
     b.combatants = [...b.combatants, caster];
     b.zones = [{ ...CROSS_TEST_ZONE }];

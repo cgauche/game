@@ -106,7 +106,7 @@ describe('__wfrp — autres commandes de recette', () => {
     const hero = useGame.getState().party[0];
     useGame.setState({
       pendingTest: {
-        actorId: hero.id, actorName: hero.name, label: 'Test', skillValue: 50, difficulty: 'intermediaire',
+        actorId: hero.id, actorName: hero.label, label: 'Test', skillValue: 50, difficulty: 'intermediaire',
         requireSL: 0, target: 50, roll: 42, success: true, sl: 1,
         onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW,
       },
@@ -205,7 +205,7 @@ describe('__wfrp.place — piège composite (coque à postes / membre de crew)',
     };
     useGame.setState({ battle });
     const out = buildApi().place(hero.id, { x: 3, y: 4 });
-    expect(out).toBe(`✓ ${hero.name} → (3,4)`);
+    expect(out).toBe(`✓ ${hero.label} → (3,4)`);
     expect(useGame.getState().battle!.combatants[0].pos).toEqual({ x: 3, y: 4 });
   });
 });

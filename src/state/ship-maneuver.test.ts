@@ -58,7 +58,7 @@ describe('resolveShipManeuver — réussite & DR final (MDG 13 l.117-119)', () =
 
 describe('shipTurn (action store) — vire le cap, branché aux arcs', () => {
   const ship = (): Combatant =>
-    ({ id: 'ship', name: 'Cogue', kind: 'enemy', pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+    ({ id: 'ship', label: 'Cogue', kind: 'enemy', pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
 
   it('vire tribord 90° (N → E)', () => {
     useGame.setState({ battle: { combatants: [ship()], order: ['ship'], turn: 0 } as never, facing: { ship: 'N' } });
@@ -82,14 +82,14 @@ describe('shipTurn (action store) — vire le cap, branché aux arcs', () => {
 describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG 13)', () => {
   const helmsman = (): Combatant =>
     ({
-      id: 'helm', name: 'Timonier', kind: 'hero',
+      id: 'helm', label: 'Timonier', kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
       skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 },
     }) as unknown as Combatant;
   const ship = (): Combatant =>
-    ({ id: 'ship', name: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+    ({ id: 'ship', label: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
 
   it('vire le navire SSI le Test réussit (virage ⇔ réussite ; barreur = meilleur en Voile)', () => {
     seedBattleRng(7);
@@ -175,9 +175,9 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
 
   it('barreur : un marin à terre / inconscient n’est jamais désigné (RAW : il ne peut pas tenir la barre)', () => {
     seedBattleRng(7);
-    const down = { ...helmsman(), id: 'ace', name: 'As' } as Combatant; // meilleur en Voile (Ag 40, +40)…
+    const down = { ...helmsman(), id: 'ace', label: 'As' } as Combatant; // meilleur en Voile (Ag 40, +40)…
     down.wounds = { current: 0, max: 10 };                              // … mais à terre (0 PB) → inapte
-    const ok = { ...helmsman(), id: 'helm', name: 'Timonier' } as Combatant;
+    const ok = { ...helmsman(), id: 'helm', label: 'Timonier' } as Combatant;
     ok.characteristics = { ...ok.characteristics, agilite: 30 };
     ok.skills = [{ skillId: 'voile', characteristic: 'agilite', advances: 10 } as never]; // conscient mais moins bon
     const s = { ...ship(), crewIds: ['ace', 'helm'] } as Combatant;
@@ -218,9 +218,9 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
 
 describe('shipAdvance (action store) — avance coque + équipage le long du cap (MDG 13)', () => {
   const hull = (over: Partial<Combatant> = {}): Combatant =>
-    ({ id: 'ship', name: 'Cogue', kind: 'npc', pos: { x: 5, y: 5 }, crewIds: ['m1', 'm2'], conditions: [], weapons: [], ...over }) as unknown as Combatant;
+    ({ id: 'ship', label: 'Cogue', kind: 'npc', pos: { x: 5, y: 5 }, crewIds: ['m1', 'm2'], conditions: [], weapons: [], ...over }) as unknown as Combatant;
   const sailor = (id: string, pos: { x: number; y: number }): Combatant =>
-    ({ id, name: id, kind: 'npc', pos, conditions: [], weapons: [] }) as unknown as Combatant;
+    ({ id, label: id, kind: 'npc', pos, conditions: [], weapons: [] }) as unknown as Combatant;
 
   it('cap E, 3 cases → coque +3x ; équipage translaté du MÊME delta (offsets conservés) ; renvoie 3', () => {
     const m1 = sailor('m1', { x: 4, y: 4 });
@@ -250,13 +250,13 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
 
   // ── Séparation jet ⟂ application (patron des flux différés) : le jet ne mute RIEN ; l'application vire+avance. ──
   const helm2 = (): Combatant =>
-    ({ id: 'helm', name: 'Timonier', kind: 'hero',
+    ({ id: 'helm', label: 'Timonier', kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
       skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
   const ship2 = (): Combatant =>
-    ({ id: 'ship', name: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+    ({ id: 'ship', label: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
 
   it('rollShipManeuver NE MUTE RIEN (ni cap, ni position) — il ne fait que résoudre le Test', () => {
     seedBattleRng(7);
@@ -311,7 +311,7 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
 
   // Coque COMPLÈTE pour l'éperonnage : characteristics/PB (IC), creatureId (M), bodyShape (détection de coque).
   const navHull = (id: string, x: number, creatureId: string, E: number, pb: number): Combatant =>
-    ({ id, name: id, kind: 'npc', creatureId, bodyShape: 'vehicule', pos: { x, y: 5 }, crewIds: [],
+    ({ id, label: id, kind: 'npc', creatureId, bodyShape: 'vehicule', pos: { x, y: 5 }, crewIds: [],
       characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: E, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
       wounds: { current: pb, max: pb, base: pb }, advantage: 0, conditions: [], weapons: [], armour: { corps: 0 }, skills: [], talents: [] }) as unknown as Combatant;
 
@@ -337,13 +337,13 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
 
 describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG 13)', () => {
   const helm = (): Combatant =>
-    ({ id: 'helm', name: 'Timonier', kind: 'hero',
+    ({ id: 'helm', label: 'Timonier', kind: 'hero',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 2, resilience: 1,
       skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 40 }], talents: [], weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
   const ship = (): Combatant =>
-    ({ id: 'ship', name: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
+    ({ id: 'ship', label: 'Barge', kind: 'npc', creatureId: 'bateau-de-patrouille', crewIds: ['helm'], pos: { x: 5, y: 5 }, conditions: [], weapons: [] }) as unknown as Combatant;
 
   it('battleShipManeuver ouvre le Test d’équipage (participants) ; setTurn ; roll PJ ; confirm → Action consommée', () => {
     seedBattleRng(7);

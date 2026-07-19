@@ -7,8 +7,8 @@ import type { EquipCtx } from './equipment';
 import type { ItemInstance, Weapon } from '../../../engine/types';
 
 const empty: EquipCtx = { weapons: [], armour: [] };
-const wep = (name: string, type: 'melee' | 'ranged'): Weapon => ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
-const plastron: ItemInstance = { uid: '1', name: 'Plastron', kind: 'armor', qualities: [], pa: 4, locs: ['corps'], enc: 1, equipped: true };
+const wep = (name: string, type: 'melee' | 'ranged'): Weapon => ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
+const plastron: ItemInstance = { uid: '1', label: 'Plastron', kind: 'armor', qualities: [], pa: 4, locs: ['corps'], enc: 1, equipped: true };
 
 describe('resolveParts — priorité', () => {
   it('sans rien : torse = tenue de la carrière (par-carrière)', () => {
@@ -44,7 +44,7 @@ describe('resolveParts — priorité', () => {
 });
 
 describe('resolveParts — dual-wield (main secondaire dessinée)', () => {
-  const wh = (name: string, hand: 'main' | 'off', q: { id: string; value?: number }[] = []): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: q, hand } as Weapon);
+  const wh = (name: string, hand: 'main' | 'off', q: { id: string; value?: number }[] = []): Weapon => ({ label: name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: q, hand } as Weapon);
 
   it('épée + dague (hand off) → la 2e arme est dessinée à la main secondaire (os bouclier)', () => {
     const r = resolveParts('Humain', 'M', 'soldat', { weapons: [wh('Épée', 'main'), wh('Dague', 'off')], armour: [] }, {}, 1);

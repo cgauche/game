@@ -28,8 +28,8 @@ describe('Effet castSpell (#98)', () => {
       useGame.getState().confirmRoundStart();
       vi.clearAllTimers();
       const b = useGame.getState().battle!;
-      const W = b.combatants.find((c) => c.kind === 'hero' && c.name === 'W')!;
-      const A = b.combatants.find((c) => c.kind === 'hero' && c.name === 'A')!;
+      const W = b.combatants.find((c) => c.kind === 'hero' && c.label === 'W')!;
+      const A = b.combatants.find((c) => c.kind === 'hero' && c.label === 'A')!;
       const enemies = b.combatants.filter((c) => c.kind === 'enemy');
       enemies.slice(1).forEach((e) => (e.dead = true));
       const E = enemies[0];

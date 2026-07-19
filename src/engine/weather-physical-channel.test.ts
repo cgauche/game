@@ -21,8 +21,8 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
     ...over,
   }) as unknown as Combatant;
 
-const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
+const sword: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+const bow: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] };
 const DELUGE = 'pluie-diluvienne';
 const METEO = (mods: { label: string; value: number }[]) => mods.filter((m) => m.label.startsWith('Météo'));
 

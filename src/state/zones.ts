@@ -152,7 +152,7 @@ export function crossZones(
   for (const z of zones ?? []) {
     if (!z.onCross?.length || z.crossTest) continue;
     if (!path.some((p) => zoneCovers(z, p))) continue;
-    lines.push(`${mover.name} traverse ${z.label} !`);
+    lines.push(`${mover.label} traverse ${z.label} !`);
     lines.push(...applyOps(mover, z.onCross, { caster: resolveCaster(z.casterId), rng, label: z.label }));
   }
   return lines;

@@ -750,9 +750,9 @@ export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): 
         const healed = { ...hero, wounds: { ...hero.wounds } };
         applyOps(healed, [{ op: 'heal', amount: heal }]);
         set({ party: get().party.map((h) => h.id === hero.id ? healed : h) });
-        lines.push(`${hero.name} récupère au Rassemblement : +${heal} Blessures soignées (DR ${pa.sl} + BE ${be}).`);
+        lines.push(`${hero.label} récupère au Rassemblement : +${heal} Blessures soignées (DR ${pa.sl} + BE ${be}).`);
       } else {
-        lines.push(`${hero.name} ne parvient pas à récupérer au Rassemblement.`);
+        lines.push(`${hero.label} ne parvient pas à récupérer au Rassemblement.`);
       }
       next = { ...next, ralliedHeroes: uniq([...next.ralliedHeroes, hero.id]) };
     }

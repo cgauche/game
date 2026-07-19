@@ -87,10 +87,10 @@ export function applyAlcoholTest(c: Combatant, success: boolean, be: number, rng
   if (success) { c.drunk = s; return { log }; }
   s.failedTests += 1;
   c.drunk = s;
-  log.push(`${c.name} tient mal l'alcool (échec ${s.failedTests}) : −10 aux CC/CT/Ag/Dex/Int${s.failedTests >= 3 ? ' (plafond −30)' : ''}.`);
+  log.push(`${c.label} tient mal l'alcool (échec ${s.failedTests}) : −10 aux CC/CT/Ag/Dex/Int${s.failedTests >= 3 ? ' (plafond −30)' : ''}.`);
   if (!s.drunk && s.failedTests >= Math.max(1, be)) {
     const entry = applyDrunkResult(c, rng);
-    log.push(`${c.name} est IVRE ! ${entry.desc}`);
+    log.push(`${c.label} est IVRE ! ${entry.desc}`);
     return { log, becameDrunk: entry, drunkOps: entry.ops };
   }
   return { log };
@@ -134,7 +134,7 @@ export function soberUpDissipate(c: Combatant, drDissipation: number): { log: st
   const dissipH = Math.max(0, 10 - drDissipation);
   c.activeEffects = (c.activeEffects ?? []).filter((e) => e.effectId !== 'ivresse');
   c.drunk = undefined;
-  return { log: [`${c.name} dessoûle (effets dissipés après ${dissipH} h).`] };
+  return { log: [`${c.label} dessoûle (effets dissipés après ${dissipH} h).`] };
 }
 
 /** 2ᵉ Test du dessoûlage (l.485) : le DR fixe la gueule de bois (Exténué non retirable pendant 5 − DR h,
@@ -142,7 +142,7 @@ export function soberUpDissipate(c: Combatant, drDissipation: number): { log: st
  *  (`addClockCondition` — évite le cycle d'import). `now` = minute `gameTime`. Ne mute pas `c`. */
 export function soberUpHangover(c: Combatant, now: number, drHangover: number): { log: string[]; hangover: { id: string; value: number; until: number } } {
   const hangoverH = Math.max(1, 5 - drHangover);
-  return { log: [`${c.name} a la gueule de bois : 1 Exténué pendant ${hangoverH} h.`], hangover: { id: 'extenue', value: 1, until: now + hangoverH * 60 } };
+  return { log: [`${c.label} a la gueule de bois : 1 Exténué pendant ${hangoverH} h.`], hangover: { id: 'extenue', value: 1, until: now + hangoverH * 60 } };
 }
 
 /**

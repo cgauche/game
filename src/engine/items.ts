@@ -87,7 +87,7 @@ function specUid(uid: WeaponSpec['uid']): string {
  *  tag `hand` reste posé par l'appelant (cf. `recomputeLoadout`), comme pour les autres armes injectées. */
 export function buildWeapon(spec: WeaponSpec): Weapon {
   const w: Weapon = {
-    name: spec.name,
+    label: spec.name,
     type: spec.type ?? 'melee',
     damage: spec.damage, // spec STRUCTURÉE stockée telle quelle (affichage dérivé par damageString)
     qualities: [...(spec.qualities ?? [])],
@@ -164,7 +164,7 @@ export function itemFromVehicleById(id: string): ItemInstance | null {
   return {
     uid: newUid(),
     trappingId: v.id, // re-dérivation : `itemFromTrappingById` retombera sur `vehicles.json`
-    name: v.label,
+    label: v.label,
     kind: 'misc',
     qualities: [],
     enc: v.enc ?? 0,
@@ -193,7 +193,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
   return {
     uid: newUid(),
     trappingId: t.id,
-    name: t.label,
+    label: t.label,
     kind,
     // Le spec de Dégâts est CLONÉ (jamais l'objet du catalogue) : une instance possède son profil, une
     // mutation d'instance ne peut PAS corrompre la def de trapping partagée (aliasing → pollution cross-test
@@ -219,6 +219,8 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     ...(t.defaultAmmo ? { defaultAmmo: t.defaultAmmo } : {}), // munition REPRÉSENTATIVE (hint joueur, ammoFamilyLabel)
     ...(t.soloSimple ? { soloSimple: true } : {}), // baliste « relativement simple » : tir solo perd les Atouts (l.3818)
     ...(t.indirect ? { indirect: true } : {}), // mortier/catapulte « arc élevé » (AA p.122-123) : tir INDIRECT → viser une case
+    ...(t.bladed ? { bladed: true } : {}), // LDB 62 l.292 — approximation MAISON, propagée du catalogue
+    ...(t.organicProjectile ? { organicProjectile: true } : {}), // LDB 47 — approximation MAISON, propagée du catalogue
     ...(t.onHitEffects?.length ? { onHitEffects: t.onHitEffects } : {}), // effets « à la touche » en DONNÉE (Canon à flammes nain → En flammes, ADE II 8 l.243)
     ...(t.minRangeBand ? { minRangeBand: t.minRangeBand } : {}), // PORTÉE MINIMALE (machine de siège : pas de Bout Portant / trébuchet-mortier sous Portée Courte, ADE II 8 l.251/253)
     ...(t.requiresMastery ? { requiresMastery: true } : {}), // arme inhabituelle (ACE 12 l.17-21) : maîtrise requise
@@ -236,7 +238,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
  *  base : permet de donner un objet au groupe via `giveTrapping` sans entrée de données (cf. retrait de
  *  l'inventaire de groupe — « donner un objet = un trapping custom OU réel »). kind `misc`, sans stats. */
 export function customTrapping(name: string): ItemInstance {
-  return { uid: newUid(), name, kind: 'misc', qualities: [], enc: 0, equipped: false };
+  return { uid: newUid(), label: name, kind: 'misc', qualities: [], enc: 0, equipped: false };
 }
 
 /** Résout l'ItemInstance d'un Effet `giveTrapping` : objet de CATALOGUE (`trappingId`) sinon objet CUSTOM
@@ -267,9 +269,9 @@ export function giveTrappingLabel(give: { trappingId?: string; custom?: string }
  *  catalogue via `refLabel`) — id = logique, label = affichage. Repli sur `name` pour un objet CUSTOM
  *  hors-base (nom libre — trinket/quête/pièces de monstre, sans `trappingId`). SOURCE UNIQUE de l'affichage
  *  du nom d'un objet catalogué (fiche/sac/pickers) : un objet CATALOGUÉ ne rend jamais son id brut, même si
- *  son champ `name` a dérivé (save ancienne, donnée fautive). */
-export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'name'>): string {
-  return it.trappingId ? refLabel('trappings', { id: it.trappingId }) : it.name;
+ *  son champ `label` a dérivé (save ancienne, donnée fautive). */
+export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'label'>): string {
+  return it.trappingId ? refLabel('trappings', { id: it.trappingId }) : it.label;
 }
 
 /** Limite d'Encombrement = (Bonus de Force + Bonus d'Endurance) × facteur (ogre ADE II 2 l.708 :
@@ -424,7 +426,7 @@ export function unarmedWeapon(): Weapon {
   if (!_unarmed) {
     const it = itemFromTrappingById('mains-nues');
     _unarmed = it
-      ? buildWeapon({ name: it.name, damage: it.damage ?? { plusBF: true, flat: 0 }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
+      ? buildWeapon({ name: it.label, damage: it.damage ?? { plusBF: true, flat: 0 }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
       : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [{ id: QUALITY_IDS.Inoffensive }], subType: 'bagarre', builtinId: 'mains-nues' });
   }
   return { ..._unarmed, hand: 'main' };
@@ -494,8 +496,8 @@ export function recomputeLoadout(c: Combatant): void {
     const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
-    return applyEnchants({ name: itemLabel(it), trappingId: it.trappingId, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
-      range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
+    return applyEnchants({ label: itemLabel(it), trappingId: it.trappingId, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
+      range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, bladed: it.bladed, organicProjectile: it.organicProjectile, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
       skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it), sizeFor: it.sizeFor }, it.enchants ?? []);
   };
 
@@ -526,8 +528,7 @@ export function recomputeLoadout(c: Combatant): void {
   }
 
   // Armes DÉRIVÉES d'un objet ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est considéré comme une
-  // Dague » en mêlée) — DÉCLARATIF sur le trapping (`derivedWeapon`). Ajouter une prothèse-arme = la
-  // donnée du trapping, plus aucun name-match `i.name === 'Crochet'` ici.
+  // Dague » en mêlée) — DÉCLARATIF sur le trapping (`derivedWeapon`).
   for (const i of items) {
     const dw = i.equipped && i.trappingId ? findTrappingById(i.trappingId)?.derivedWeapon : undefined;
     if (dw) weapons.push({ hand: 'main', ...dw });
@@ -590,8 +591,8 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
   const hands = weaponHands(it);
   if (hands === 2 && cannotWieldTwoHanded(c)) return undefined;
   const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
-  return applyEnchants({ name: it.name, trappingId: it.trappingId, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
-    range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
+  return applyEnchants({ label: it.label, trappingId: it.trappingId, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
+    range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, bladed: it.bladed, organicProjectile: it.organicProjectile, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
     skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it), sizeFor: it.sizeFor }, it.enchants ?? []);
 }
 

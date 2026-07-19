@@ -19,7 +19,7 @@ const SKINS: Array<[tag: string, skin?: Record<string, string>]> = [
 ];
 
 const it = (name: string, skin?: Record<string, string>): ItemInstance =>
-  ({ uid: 'a', name, kind: 'armor', qualities: [], enc: 1, equipped: true, pa: 3, locs: ['corps'], skin } as ItemInstance);
+  ({ uid: 'a', label: name, kind: 'armor', qualities: [], enc: 1, equipped: true, pa: 3, locs: ['corps'], skin } as ItemInstance);
 
 mkdirSync('public/qc', { recursive: true });
 const CW = 70, CH = 96, COLS = MATS.length;

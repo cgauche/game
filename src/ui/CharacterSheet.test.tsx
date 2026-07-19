@@ -13,7 +13,7 @@ import { useGame } from '../state/store';
 const hero = (): Combatant =>
   ({
     id: 'h',
-    name: 'H',
+    label: 'H',
     kind: 'hero',
     species: 'humains-reiklander',
     career: 'agitateur',
@@ -171,7 +171,7 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
   it('surcharge qui CRIE (arbitrage 2026-07-17) : Enc. > max → piste pleine, surplus affiché, teinte danger', () => {
     const h = {
       ...hero(),
-      items: [{ uid: 'sac', name: 'Fourniment', kind: 'misc', qualities: [], enc: 15, equipped: false }],
+      items: [{ uid: 'sac', label: 'Fourniment', kind: 'misc', qualities: [], enc: 15, equipped: false }],
     } as unknown as Combatant;
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
     mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
@@ -228,7 +228,7 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     const h = {
       ...hero(),
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 2, jambeG: 0, jambeD: 0 },
-      items: [{ uid: 'a1', name: 'Cotte de mailles', kind: 'armor', qualities: [], enc: 2, equipped: true, pa: 2, locs: ['corps'], damageTaken: 1 } as never],
+      items: [{ uid: 'a1', label: 'Cotte de mailles', kind: 'armor', qualities: [], enc: 2, equipped: true, pa: 2, locs: ['corps'], damageTaken: 1 } as never],
     } as unknown as Combatant;
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
     mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
@@ -292,11 +292,11 @@ describe('Onglet Possessions — registre `Band`/`PlaqueRow` (#492 lot POSSESSIO
     ({
       ...hero(),
       items: [
-        { uid: 'w1', name: 'Épée', kind: 'melee', qualities: [], enc: 1, equipped: false },
-        { uid: 'a1', name: 'Cotte de mailles', kind: 'armor', qualities: [], enc: 2, equipped: true, pa: 2, locs: ['corps'] },
-        { uid: 'bag1', name: 'Sac à dos', kind: 'misc', qualities: [], enc: 1, equipped: false, container: { capacity: 10 } },
-        { uid: 'n1', name: 'Gourde', kind: 'misc', qualities: [], enc: 1, equipped: false, inside: 'bag1' },
-        { uid: 'p1', name: 'Crochet', trappingId: 'crochet', subType: 'protheses', kind: 'misc', qualities: [], enc: 0, equipped: true },
+        { uid: 'w1', label: 'Épée', kind: 'melee', qualities: [], enc: 1, equipped: false },
+        { uid: 'a1', label: 'Cotte de mailles', kind: 'armor', qualities: [], enc: 2, equipped: true, pa: 2, locs: ['corps'] },
+        { uid: 'bag1', label: 'Sac à dos', kind: 'misc', qualities: [], enc: 1, equipped: false, container: { capacity: 10 } },
+        { uid: 'n1', label: 'Gourde', kind: 'misc', qualities: [], enc: 1, equipped: false, inside: 'bag1' },
+        { uid: 'p1', label: 'Crochet', trappingId: 'crochet', subType: 'protheses', kind: 'misc', qualities: [], enc: 0, equipped: true },
       ],
       loadouts: [{ id: 'lo1', main: null, off: null }],
       activeLoadoutId: 'lo1',

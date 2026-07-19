@@ -99,7 +99,7 @@ function auditBearer(
  *  et `name` du def EST le matériau (cf. `parts/armour/types.ts`). */
 const ALL_LOCS: HitLocation[] = ['tete', 'corps', 'brasG', 'brasD', 'jambeG', 'jambeD'];
 const armourItem = (mat: string): ItemInstance =>
-  ({ uid: `audit_${mat}`, name: mat, kind: 'armor', qualities: [], enc: 0, equipped: true, locs: ALL_LOCS });
+  ({ uid: `audit_${mat}`, label: mat, kind: 'armor', qualities: [], enc: 0, equipped: true, locs: ALL_LOCS });
 
 /** Mesure les violations de format sur les DEUX registres de slots de corps (tenues + armures). */
 export function auditPartViews(): Audit {

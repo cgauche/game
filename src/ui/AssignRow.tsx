@@ -35,7 +35,7 @@ export function AssignRow({
       <div className="bar assign-row">
         {assigned.length ? (
           assigned.map((h) => (
-            <span key={h.id} className="crew-remove" title={`${h.name} — retirer`}>
+            <span key={h.id} className="crew-remove" title={`${h.label} — retirer`}>
               <CharFrame c={h} variant="identity" size="xs" onClick={() => onRemove(h.id)} />
             </span>
           ))

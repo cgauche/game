@@ -20,7 +20,7 @@ const get = useGame.getState.bind(useGame);
 /** id du porteur de convoi (diligence, chargement 80) donné au groupe pour tout le commerce terrestre. */
 const CARRIER_ID = 'convoi-1';
 const dili = (uid = CARRIER_ID): ItemInstance =>
-  ({ uid, name: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as ItemInstance);
+  ({ uid, label: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as ItemInstance);
 
 /** Cargaison du porteur de convoi (source unique = son `ItemInstance.cargo`). */
 const carrierCargo = (): CargoLot[] => carrierById(get(), CARRIER_ID)?.cargo ?? [];

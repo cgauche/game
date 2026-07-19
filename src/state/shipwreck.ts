@@ -86,7 +86,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
     // `outOfRencontre` seul (l'éjection du COMBAT que ce naufrage vient de résoudre) n'incapacite pas,
     // donc écarté du prédicat ; dead/inconscient/Mort Subite restent des voies RÉELLES d'incapacité.
     if (isOutOfAction({ ...h, outOfRencontre: false })) {
-      opening.push(`${h.name} — inconscient dans les flots : emporté sans pouvoir nager (noyé, LDB 18 l.344).`);
+      opening.push(`${h.label} — inconscient dans les flots : emporté sans pouvoir nager (noyé, LDB 18 l.344).`);
       return { ...h, dead: true };
     }
     swimmerIds.push(h.id);
@@ -111,7 +111,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
       // le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
       const value = testValue(h, 'natation', 'force');
       const t = rollTest(value, diff, rng);
-      lines.push(`${h.name} — Natation (${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`);
+      lines.push(`${h.label} — Natation (${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`);
       if (t.success) { h.outOfRencontre = false; h.exitReason = undefined; } else h.dead = true;
     }
     set({ party: [...get().party] });
@@ -131,7 +131,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
     const result = human ? null : (() => { const t = rollTest(value, diff, rng); return { roll: t.roll, target: t.target, sl: t.sl, success: t.success }; })();
     return {
       id: `shipwreck-${h.id}`, kind: 'shipwreckSwim', actorId: h.id, icon: 'nautical/swim',
-      label: `${h.name} — Natation`, rollLabel: 'Natation', base: value, target, result, interactive: human,
+      label: `${h.label} — Natation`, rollLabel: 'Natation', base: value, target, result, interactive: human,
       meta,
     };
   });
@@ -154,7 +154,7 @@ function finishShipwreck(get: Get, set: Set, shore: MapPlace | undefined, swimme
   const survivors = swimmerIds
     .map((id) => get().party.find((h) => h.id === id))
     .filter((h): h is Combatant => !!h && !h.dead)
-    .map((h) => h.name);
+    .map((h) => h.label);
   const lines: string[] = [];
   if (shore) lines.push(survivors.length
     ? `Les rescapés (${survivors.join(', ')}) s'échouent à ${shore.label}.`
@@ -174,7 +174,7 @@ registerCascadeApplier('shipwreckSwim', (get, set, step, hero, ctx) => {
   const diff = rule('sea-shipwreck-swim') as Difficulty;
   const success = step.result.success;
   // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
-  const line = `${hero.name} — Natation (${DIFFICULTY_LABELS[diff]}) : ${success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`;
+  const line = `${hero.label} — Natation (${DIFFICULTY_LABELS[diff]}) : ${success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`;
   if (success) { hero.outOfRencontre = false; hero.exitReason = undefined; } else hero.dead = true;
   set({ party: [...get().party] });
   if (ctx.index !== ctx.steps.length - 1) return { consequences: freeCons([line]) };

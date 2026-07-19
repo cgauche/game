@@ -60,7 +60,7 @@ export function FrenzyModal() {
       title={<><Icon id="flag/frenzy" size="sm" /> Frénésie</>}
       subtitle={
         <>
-          <strong>{c.name}</strong> tente d'entrer en Frénésie (Test de Force Mentale)
+          <strong>{c.label}</strong> tente d'entrer en Frénésie (Test de Force Mentale)
         </>
       }
       rows={[actorRow]}
@@ -68,7 +68,7 @@ export function FrenzyModal() {
       outcome={r && (
         <JournalLine
           className="rm-journal"
-          event={ev('frenzy', describeFrenzy(pf, c.name), c.id)}
+          event={ev('frenzy', describeFrenzy(pf, c.label), c.id)}
           combatants={battle.combatants}
         />
       )}

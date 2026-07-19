@@ -94,7 +94,7 @@ export function toggleEquip(get: Get, set: Set, heroId: string, uid: string): vo
           it.inside = undefined; // on ne porte pas un objet rangé dans un sac : il en sort d'abord
           const out = equipConflicts(clone, it);
           for (const o of out) o.equipped = false;
-          if (out.length) msg = `${clone.name} troque ${out.map((o) => o.name).join(' + ')} contre ${it.name} (même couche).`;
+          if (out.length) msg = `${clone.label} troque ${out.map((o) => o.label).join(' + ')} contre ${it.label} (même couche).`;
         }
         it.equipped = !it.equipped;
         recomputeLoadout(clone);
@@ -118,16 +118,16 @@ export function stowItem(get: Get, set: Set, heroId: string, uid: string, contai
       if (!it) return clone;
       if (containerUid) {
         if (!canStow(clone, it, containerUid)) {
-          msg = `${clone.name} : ${it.name} ne tient pas dans ce contenant.`;
+          msg = `${clone.label} : ${it.label} ne tient pas dans ce contenant.`;
           return h;
         }
         const bag = (clone.items ?? []).find((i) => i.uid === containerUid);
         it.inside = containerUid; // rangé : ni porté ni tenu
         it.equipped = false;
-        msg = `${clone.name} range ${it.name}${bag ? ` dans ${bag.name}` : ''}.`;
+        msg = `${clone.label} range ${it.label}${bag ? ` dans ${bag.label}` : ''}.`;
       } else {
         it.inside = undefined; // sorti du sac (remis en vrac)
-        msg = `${clone.name} sort ${it.name} de son contenant.`;
+        msg = `${clone.label} sort ${it.label} de son contenant.`;
       }
       recomputeLoadout(clone);
       return clone;
@@ -185,7 +185,7 @@ export function transferItem(get: Get, set: Set, uid: string, fromHeroId: string
       return h;
     }),
   }));
-  get().log(`${from!.name} donne ${item.name} à ${to.name}.`);
+  get().log(`${from!.label} donne ${item.label} à ${to.label}.`);
 }
 
 export function setItemSkin(_get: Get, set: Set, heroId: string, uid: string, patch: Record<string, string | undefined>): void {
@@ -224,7 +224,7 @@ export function grantXp(get: Get, set: Set, heroId: string, amount: number): voi
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
-      name = h.name;
+      name = h.label;
       const clone: Combatant = structuredClone(h);
       clone.xp = (clone.xp ?? 0) + amount;
       return clone;
@@ -241,16 +241,16 @@ export function buyCharAdvance(get: Get, set: Set, heroId: string, char: CharKey
       const clone: Combatant = structuredClone(h);
       const inC = inCareerChar(careerCtx(clone).careerChars, char);
       if (mentorBlocks(inC, rule('advancement-mentor') === true, !!get().flags['mentor'])) {
-        msg = `${clone.name} : ${CHAR_LABELS[char]} hors carrière — un mentor est requis (LDB 07 l.89).`;
+        msg = `${clone.label} : ${CHAR_LABELS[char]} hors carrière — un mentor est requis (LDB 07 l.89).`;
         return h;
       }
       const r = engineBuyCharAdvance(clone, char, inC);
       if (!r.ok) {
-        msg = `${clone.name} : ${CHAR_LABELS[char]} — ${r.reason}.`;
+        msg = `${clone.label} : ${CHAR_LABELS[char]} — ${r.reason}.`;
         return h;
       }
       recomputeWounds(clone);
-      msg = `${clone.name} : ${CHAR_LABELS[char]} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
+      msg = `${clone.label} : ${CHAR_LABELS[char]} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
       return clone;
     }),
   }));
@@ -280,12 +280,12 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: str
       const added = additions.some((a) => a.id === skillId && (!a.spec || /au choix/i.test(a.spec) || (a.spec ?? '') === (spec ?? '')));
       const inC = status != null || added;
       if (known && mentorBlocks(inC, rule('advancement-mentor') === true, !!get().flags['mentor'])) {
-        msg = `${clone.name} : ${lbl(skillLabel, spec)} hors carrière — un mentor est requis (LDB 07 l.89).`;
+        msg = `${clone.label} : ${lbl(skillLabel, spec)} hors carrière — un mentor est requis (LDB 07 l.89).`;
         return h;
       }
       if (!known) {
         if (!inC) {
-          msg = `${clone.name} : « ${lbl(skillLabel, spec)} » hors carrière, non acquérable.`;
+          msg = `${clone.label} : « ${lbl(skillLabel, spec)} » hors carrière, non acquérable.`;
           return h;
         }
         // Acquérir la Compétence de carrière à advances 0, puis l'augmenter (l'Augmentation est payée).
@@ -295,7 +295,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: str
       const discount = added && status != null ? 5 : 0;
       const r = engineBuySkillAdvance(clone, skillId, spec, inC, discount);
       if (!r.ok) {
-        msg = `${clone.name} : ${lbl(skillLabel, spec)} — ${r.reason}.`;
+        msg = `${clone.label} : ${lbl(skillLabel, spec)} — ${r.reason}.`;
         return h;
       }
       // Première allocation via un slot joker libre → désignation automatique (LDB 09 l.38).
@@ -303,7 +303,7 @@ export function buySkillAdvance(get: Get, set: Set, heroId: string, skillId: str
         const slot = freeSlotFor(ctx.sSlots, ctx.designations, skillId, spec);
         if (slot) designateSlot(clone, ctx.career, slot, skillId, spec, [...ctx.sSlots, ...ctx.tSlots]);
       }
-      msg = `${clone.name} : ${lbl(skillLabel, spec)} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
+      msg = `${clone.label} : ${lbl(skillLabel, spec)} +1 (−${r.cost} PX${inC ? '' : ', hors carrière'}).`;
       return clone;
     }),
   }));
@@ -323,16 +323,16 @@ export function designateCareerSlot(get: Get, set: Set, heroId: string, slotKey:
       const all = [...ctx.sSlots, ...ctx.tSlots];
       const slot = all.find((sl) => sl.key === slotKey);
       if (!slot) {
-        msg = `${clone.name} : emplacement de carrière inconnu.`;
+        msg = `${clone.label} : emplacement de carrière inconnu.`;
         return h;
       }
       const r = designateSlot(clone, ctx.career, slot, optionId, spec, all);
       if (!r.ok) {
-        msg = `${clone.name} : désignation refusée (${r.reason}).`;
+        msg = `${clone.label} : désignation refusée (${r.reason}).`;
         return h;
       }
       const label = refLabel(slot.kind === 'skill' ? 'skills' : 'talents', { id: optionId, spec }); // AFFICHAGE seul
-      msg = `${clone.name} : « ${label} » devient le choix de carrière de l'emplacement (0 PX).`;
+      msg = `${clone.label} : « ${label} » devient le choix de carrière de l'emplacement (0 PX).`;
       return clone;
     }),
   }));
@@ -353,18 +353,18 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentId: string, 
       const talentLabel = refLabel('talents', { id: talentId, spec }); // AFFICHAGE + conversion pour le moteur
       const status = inCareerStatus(ctx.tSlots, ctx.designations, talentId, spec, [...ctx.sSlots, ...ctx.tSlots]);
       if (!status) {
-        msg = `${clone.name} : Talent « ${talentLabel} » hors carrière.`;
+        msg = `${clone.label} : Talent « ${talentLabel} » hors carrière.`;
         return h;
       }
       if (talentMaxReached(clone, talentId, spec)) {
-        msg = `${clone.name} : ${talentLabel} — Maxi atteint.`;
+        msg = `${clone.label} : ${talentLabel} — Maxi atteint.`;
         return h;
       }
       const fortuneBefore = fortuneMax(clone);
       const resolveBefore = resolveMax(clone);
       const r = engineBuyTalent(clone, talentId, spec); // spec = identité PERSISTÉE (id si migré), jamais re-dérivée du libellé
       if (!r.ok) {
-        msg = `${clone.name} : ${talentLabel} — ${r.reason}.`;
+        msg = `${clone.label} : ${talentLabel} — ${r.reason}.`;
         return h;
       }
       if (status === 'free') {
@@ -376,7 +376,7 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentId: string, 
       recomputeWounds(clone); // Dur à cuire / Très résistant (BE)
       clone.fortune = (clone.fortune ?? 0) + (fortuneMax(clone) - fortuneBefore); // Chanceux
       clone.resolve = (clone.resolve ?? 0) + (resolveMax(clone) - resolveBefore); // Obstiné
-      msg = `${clone.name} : Talent ${talentLabel} (−${r.cost} PX).`;
+      msg = `${clone.label} : Talent ${talentLabel} (−${r.cost} PX).`;
       // Magie mineure (LDB 10 l.587) : BFM sorts inclus au Talent — à choisir (0 PX, Avancement).
       if (castingKindOf(talentId) === 'mineure') {
         const q = bonus(effectiveChar(clone, 'force-mentale'));
@@ -406,7 +406,7 @@ export function buySpell(get: Get, set: Set, heroId: string, spellId: string, op
       const clone: Combatant = structuredClone(h);
       const full = spellCost(clone, sp);
       if (full == null) {
-        msg = `${clone.name} ne peut pas apprendre ${sp.label} (déjà connu ou Talent manquant).`;
+        msg = `${clone.label} ne peut pas apprendre ${sp.label} (déjà connu ou Talent manquant).`;
         return h;
       }
       // Recherche universitaire (ACE 12 l.55) : « mémoriser un sort pour 100PX de moins que
@@ -414,14 +414,14 @@ export function buySpell(get: Get, set: Set, heroId: string, spellId: string, op
       // du prix normal (plancher inerte pour les sorts à moins de 100 PX).
       const cost = opts.discountXp && full > 0 ? Math.min(full, Math.max(100, full - opts.discountXp)) : full;
       if ((clone.xp ?? 0) < cost) {
-        msg = `${clone.name} : ${cost} PX requis pour mémoriser ${sp.label} (reste ${clone.xp ?? 0}).`;
+        msg = `${clone.label} : ${cost} PX requis pour mémoriser ${sp.label} (reste ${clone.xp ?? 0}).`;
         return h;
       }
       clone.xp = (clone.xp ?? 0) - cost;
       clone.spells = [...(clone.spells ?? []), sp.id]; // runtime = id de sort (pas le libellé)
       msg = cost > 0
-        ? `${clone.name} mémorise ${sp.label} (−${cost} PX${cost < full ? `, remise de ${full - cost} PX — Recherche universitaire` : ''}).`
-        : `${clone.name} reçoit ${sp.label} (inclus au Talent).`;
+        ? `${clone.label} mémorise ${sp.label} (−${cost} PX${cost < full ? `, remise de ${full - cost} PX — Recherche universitaire` : ''}).`
+        : `${clone.label} reçoit ${sp.label} (inclus au Talent).`;
       result = { ok: true, chaos: sp.family === 'chaos' };
       return clone;
     }),
@@ -439,7 +439,7 @@ export function buySpellComponent(get: Get, set: Set, heroId: string, spellId: s
   const sp = findSpellById(spellId);
   if (!hero || !sp) { get().log('Composant : sort introuvable.'); return; }
   if (!isArcaneSpell(sp) || sp.cn == null) { get().log(`${sp.label} : un composant ne s'applique qu'aux Sorts d'Arcane/Domaine (LDB 46 l.163).`); return; }
-  if (!(hero.spells ?? []).includes(spellId)) { get().log(`${hero.name} ne connaît pas ${sp.label}.`); return; }
+  if (!(hero.spells ?? []).includes(spellId)) { get().log(`${hero.label} ne connaît pas ${sp.label}.`); return; }
   // Coût = NI (cn) pistoles d'argent (silver), prélevé sur la bourse du groupe.
   const cost = toMoney({ silver: sp.cn });
   if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour un composant de ${sp.label} (${formatMoney(cost)}).`); return; }
@@ -447,7 +447,7 @@ export function buySpellComponent(get: Get, set: Set, heroId: string, spellId: s
     money: moneySub(s.money, cost)!,
     party: s.party.map((h) => h.id === heroId ? { ...h, componentSpells: [...(h.componentSpells ?? []), spellId] } : h),
   }));
-  get().log(`${hero.name} achète un composant pour ${sp.label} (−${formatMoney(cost)}).`);
+  get().log(`${hero.label} achète un composant pour ${sp.label} (−${formatMoney(cost)}).`);
 }
 
 /** Édite la bio MUTABLE d'un héros (hors combat) : Motivation + Ambitions court/long terme (LDB 05).
@@ -487,11 +487,11 @@ export function endSession(get: Get, set: Set, rewards: SessionRewards): void {
       const xp = heroSessionXp({ short: f.ambitionShort, long: f.ambitionLong }, group);
       if (!xp && !f.motivation) return h;
       const clone: Combatant = structuredClone(h);
-      if (xp) { clone.xp = (clone.xp ?? 0) + xp; lines.push(`${clone.name} : +${xp} PX (Ambition accomplie).`); }
+      if (xp) { clone.xp = (clone.xp ?? 0) + xp; lines.push(`${clone.label} : +${xp} PX (Ambition accomplie).`); }
       if (f.motivation) {
         const before = clone.resolve ?? 0;
         clone.resolve = regainDetermination(clone, 1);
-        if (clone.resolve > before) lines.push(`${clone.name} : +1 Détermination (a agi selon sa Motivation).`);
+        if (clone.resolve > before) lines.push(`${clone.label} : +1 Détermination (a agi selon sa Motivation).`);
       }
       return clone;
     }),
@@ -529,37 +529,37 @@ export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string)
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);
       const it = (clone.items ?? []).find((i) => i.uid === uid);
-      if (!it || !it.equipped || !it.trappingId) { msg = `${clone.name} : prothèse non portée / non entraînable.`; return h; }
+      if (!it || !it.equipped || !it.trappingId) { msg = `${clone.label} : prothèse non portée / non entraînable.`; return h; }
 
       if (it.trappingId === 'fausse-jambe') {
         if (!it.prosthesisMoveTrained) { // 1er palier : 100 PX (récupérer le dernier PM perdu)
-          if ((clone.xp ?? 0) < LEG_MOVE_COST) { msg = `${clone.name} : PX insuffisants (${LEG_MOVE_COST}).`; return h; }
+          if ((clone.xp ?? 0) < LEG_MOVE_COST) { msg = `${clone.label} : PX insuffisants (${LEG_MOVE_COST}).`; return h; }
           clone.xp = (clone.xp ?? 0) - LEG_MOVE_COST;
           it.prosthesisMoveTrained = true;
-          msg = `${clone.name} s'entraîne à sa fausse jambe : Mouvement plein retrouvé (−${LEG_MOVE_COST} PX).`;
+          msg = `${clone.label} s'entraîne à sa fausse jambe : Mouvement plein retrouvé (−${LEG_MOVE_COST} PX).`;
           return clone;
         }
         if (!it.prosthesisTrained) { // 2e palier : 200 PX (réapprendre l'Esquive)
-          if ((clone.xp ?? 0) < LEG_DODGE_COST) { msg = `${clone.name} : PX insuffisants (${LEG_DODGE_COST}).`; return h; }
+          if ((clone.xp ?? 0) < LEG_DODGE_COST) { msg = `${clone.label} : PX insuffisants (${LEG_DODGE_COST}).`; return h; }
           clone.xp = (clone.xp ?? 0) - LEG_DODGE_COST;
           it.prosthesisTrained = true;
-          msg = `${clone.name} réapprend l'Esquive avec sa fausse jambe (−${LEG_DODGE_COST} PX).`;
+          msg = `${clone.label} réapprend l'Esquive avec sa fausse jambe (−${LEG_DODGE_COST} PX).`;
           return clone;
         }
-        msg = `${clone.name} : ${it.name} déjà entraînée.`;
+        msg = `${clone.label} : ${it.label} déjà entraînée.`;
         return h;
       }
 
       if (it.trappingId === 'crochet') {
-        if (it.prosthesisTrained) { msg = `${clone.name} : ${it.name} déjà entraînée.`; return h; }
-        if ((clone.xp ?? 0) < HOOK_COST) { msg = `${clone.name} : PX insuffisants (${HOOK_COST}).`; return h; }
+        if (it.prosthesisTrained) { msg = `${clone.label} : ${it.label} déjà entraînée.`; return h; }
+        if ((clone.xp ?? 0) < HOOK_COST) { msg = `${clone.label} : PX insuffisants (${HOOK_COST}).`; return h; }
         clone.xp = (clone.xp ?? 0) - HOOK_COST;
         it.prosthesisTrained = true;
-        msg = `${clone.name} maîtrise son crochet : armes à deux mains de nouveau possibles (−${HOOK_COST} PX).`;
+        msg = `${clone.label} maîtrise son crochet : armes à deux mains de nouveau possibles (−${HOOK_COST} PX).`;
         return clone;
       }
 
-      msg = `${clone.name} : prothèse non portée / non entraînable.`;
+      msg = `${clone.label} : prothèse non portée / non entraînable.`;
       return h;
     }),
   }));
@@ -579,10 +579,10 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
       const gmJump = rule('advancement-career-jump') === true;
       const r = engineChangeCareer(clone, newCareer, newLevel, { completed, sameClass, targetLevelExists, gmJump });
       if (!r.ok) {
-        msg = `${clone.name} : changement de carrière refusé (${r.reason}).`;
+        msg = `${clone.label} : changement de carrière refusé (${r.reason}).`;
         return h;
       }
-      msg = `${clone.name} : carrière → ${newCareer} (niv. ${newLevel}, −${r.cost} PX).`;
+      msg = `${clone.label} : carrière → ${newCareer} (niv. ${newLevel}, −${r.cost} PX).`;
       return clone;
     }),
   }));
@@ -608,7 +608,7 @@ export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money
     party: [...s.party, copy],
     net: { ...s.net, ownership: { ...s.net.ownership, [copy.id]: seat } },
   });
-  if (wealth) creditPartyMoney(get, set, wealth, `Richesse initiale de ${copy.name}`);
+  if (wealth) creditPartyMoney(get, set, wealth, `Richesse initiale de ${copy.label}`);
 }
 
 /** Retire un héros du groupe (écran d'équipe) et nettoie sa possession réseau.

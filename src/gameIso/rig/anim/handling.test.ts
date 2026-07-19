@@ -6,10 +6,10 @@ import type { Weapon } from '../../../engine/types';
 
 // Le maniement est routé PAR ID STABLE (`shape`) — l'arme est construite comme au SPAWN : libellé → shape.
 const w = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: findTrappingByLabel(name)?.shape } as Weapon);
+  ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: findTrappingByLabel(name)?.shape } as Weapon);
 /** Arme routée directement par son slug de FORME (pas de libellé). */
 const byShape = (shape: string | undefined, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
+  ({ label: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);
 
 describe('handlingClass — dérivé de la FORME, pas du Groupe de règles', () => {
   it('mappe un représentant de chaque classe', () => {

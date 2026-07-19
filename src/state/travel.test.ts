@@ -14,11 +14,11 @@ import { rationCount } from '../engine/provisions';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, ItemInstance } from '../engine/types';
 
-const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
+const ration = (uid: string): ItemInstance => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
 const hero = (p: Partial<Combatant> = {}): Combatant =>
   ({
-    id: 'h', name: 'Hilda', kind: 'hero',
+    id: 'h', label: 'Hilda', kind: 'hero',
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 35, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -148,7 +148,7 @@ describe('startTravel — à pied', () => {
   });
 
   it('la vitesse est celle du PLUS LENT (l.222) : M3 dans le groupe → 4 h pour 12 km', () => {
-    setup(map(), [hero(), hero({ id: 'h2', name: 'Nain', movement: 3 })]);
+    setup(map(), [hero(), hero({ id: 'h2', label: 'Nain', movement: 3 })]);
     const t0 = useGame.getState().gameTime;
     useGame.getState().startTravel('r1', 'pied');
     expect(useGame.getState().gameTime - t0).toBe(240);
@@ -519,7 +519,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
   });
 
   const mountItem = (uid: string, trappingId = 'cheval-de-selle'): ItemInstance =>
-    ({ uid, name: trappingId, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false });
+    ({ uid, label: trappingId, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false });
 
   it('OFF (défaut) : le départ « en selle » est refusé', () => {
     setup(map(), [hero({ items: [mountItem('m1')] })]);
@@ -530,7 +530,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
 
   it('ON sans monture pour chaque héros vivant : refusé', () => {
     setRule('travel-allures', true);
-    setup(map(), [hero({ items: [mountItem('m1')] }), hero({ id: 'h2', name: 'Nain' })]);
+    setup(map(), [hero({ items: [mountItem('m1')] }), hero({ id: 'h2', label: 'Nain' })]);
     useGame.getState().startTravel('r1', 'monture');
     expect(useGame.getState().travelPlan).toBeNull();
     expect(useGame.getState().scene?.id).toBe('lieu-a-scene');

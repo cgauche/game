@@ -297,8 +297,8 @@ registerCascadeApplier(MERCHANT_RAGOT_KIND, (get, set, step) => {
   finalizeSearchAvailability(get, set, entityId, Number(meta.restockPeriod ?? MINUTES_PER_DAY), gossipDay);
   return {
     consequences: freeCons([gossipDay
-      ? `${actor?.name ?? 'Le groupe'} — recherche active (Ragot ${step.result.roll}) : une journée aux marchés porte ses fruits (Disponibilité +10 %, LDB 59 l.50).`
-      : `${actor?.name ?? 'Le groupe'} — recherche active (Ragot ${step.result.roll}) : une journée aux marchés sans glaner de piste utile.`]),
+      ? `${actor?.label ?? 'Le groupe'} — recherche active (Ragot ${step.result.roll}) : une journée aux marchés porte ses fruits (Disponibilité +10 %, LDB 59 l.50).`
+      : `${actor?.label ?? 'Le groupe'} — recherche active (Ragot ${step.result.roll}) : une journée aux marchés sans glaner de piste utile.`]),
   };
 });
 
@@ -635,7 +635,7 @@ export function confirmSell(get: Get, set: Set): void {
   const names: string[] = [];
   for (const c of cart) {
     const item = get().party.find((h) => h.id === c.heroId)?.items?.find((i) => i.uid === c.uid);
-    if (item) { gain = moneyAdd(gain, sellGain(item, m)); names.push(item.name); }
+    if (item) { gain = moneyAdd(gain, sellGain(item, m)); names.push(item.label); }
   }
   if (!names.length) return;
   set((s) => ({
@@ -656,7 +656,7 @@ export function repairItem(get: Get, set: Set, uid: string, heroId: string): voi
   const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) : 0;
   const cost = fromBrass(itemRepairCostBrass(item, base));
-  if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour réparer ${item.name}.`); return; }
+  if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour réparer ${item.label}.`); return; }
   set((s) => ({
     money: moneySub(s.money, cost)!,
     party: s.party.map((h) => {
@@ -667,7 +667,7 @@ export function repairItem(get: Get, set: Set, uid: string, heroId: string): voi
       return clone;
     }),
   }));
-  get().log(`Réparation : ${item.name}.`);
+  get().log(`Réparation : ${item.label}.`);
 }
 
 export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
@@ -682,7 +682,7 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   const best = partyAssisted(get().party, 'marchandage', 'sociabilite'); if (!best) return; // Soutien (LDB 12) : conseillers du groupe
   const negotiator = hasBargainBonus(best.actor); // Négociateur → registre de talents (plus de name-match)
   set({ pendingBargain: {
-    playerId: best.actor.id, playerName: best.actor.name,
+    playerId: best.actor.id, playerName: best.actor.label,
     merchantName: arch?.label ?? 'Marchand', merchantValue: arch?.bargainSkill ?? 40,
     playerSkill: best.value, mode, negotiator, roll: null, merchantRoll: null, result: null,
   } });
@@ -731,7 +731,7 @@ function openAppraise(
   if (!best) return;
   const t = trappingId ? findTrappingById(trappingId) : undefined;
   set({ pendingAppraise: {
-    actorId: best.actor.id, actorName: best.actor.name, ...target, itemName,
+    actorId: best.actor.id, actorName: best.actor.label, ...target, itemName,
     mode, skillLabel: mode === 'detect' ? 'Intuition' : 'Évaluation',
     truePriceBrass: t ? toBrass(priceToMoney(t.price)) : 0,
     availability: (t?.availability as string | undefined) ?? null,
@@ -749,10 +749,10 @@ export function appraiseItem(get: Get, set: Set, uid: string, heroId: string, mo
   const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
   if (mode === 'detect' && item.detectTried) return; // une seule tentative par artefact (LDB 10 l.312)
   if (mode === 'evaluate' && item.appraiseTriedDay === gameDay(get)) {
-    get().log(`${item.name} a déjà été jaugé aujourd'hui sans succès — réessayez demain.`);
+    get().log(`${item.label} a déjà été jaugé aujourd'hui sans succès — réessayez demain.`);
     return;
   }
-  openAppraise(get, set, { itemUid: uid }, item.name, mode, item.trappingId);
+  openAppraise(get, set, { itemUid: uid }, item.label, mode, item.trappingId);
 }
 
 /** Évaluation/Détection d'une ligne de butin ENCORE en fenêtre (loot ou victoire) — révéler AVANT

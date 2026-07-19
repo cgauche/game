@@ -51,6 +51,7 @@ import type { PendingBase } from './rollFlowFactory';
 import { t } from '../i18n';
 
 import type { Get, Set } from './flowTypes';
+import type { EffectSource } from '../engine/types';
 
 export interface InterludeHeroState {
   /** Jet d100 sur le Tableau des Événements (LDB 22). */
@@ -128,7 +129,7 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
       hero.items = [...(hero.items ?? []), it];
       autoStowNewItem(hero, it); // #204 : rangement par défaut
       recomputeLoadout(hero);
-      lines.push(`${hero.name} reçoit sa commande : ${trappingLabelOf(o.trappingId)}.`);
+      lines.push(`${hero.label} reçoit sa commande : ${trappingLabelOf(o.trappingId)}.`);
     }
   }
   const baseLeft = Math.min(3, w); // « 1/semaine, max 3 » (ch.23 l.6)
@@ -138,7 +139,7 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   for (const h of party) {
     const roll = d100(battleRng());
     const ev = interludeEventFor(roll);
-    lines.push(`${h.name} — Événement (${roll}) : ${ev.label}. ${ev.text}`);
+    lines.push(`${h.label} — Événement (${roll}) : ${ev.label}. ${ev.text}`);
     let left = baseLeft;
     if (ev.fx?.loseActivity) left -= 1;
     // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).
@@ -146,16 +147,16 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
     const elfDuty = rule('interlude-elf-duty') && /elfe/i.test(h.species ?? '') && w >= 3;
     if (elfDuty) {
       left -= 1;
-      lines.push(`${h.name} consacre une Activité au contact des siens (devoir elfique).`);
+      lines.push(`${h.label} consacre une Activité au contact des siens (devoir elfique).`);
     }
     if (ev.fx?.moneyPct) worstMoneyPct = Math.min(worstMoneyPct, ev.fx.moneyPct);
     if (ev.fx?.fortuneMaxDelta) {
       h.fortune = (h.fortune ?? 0) + ev.fx.fortuneMaxDelta;
-      lines.push(`${h.name} : +${ev.fx.fortuneMaxDelta} Point de Chance (présage).`);
+      lines.push(`${h.label} : +${ev.fx.fortuneMaxDelta} Point de Chance (présage).`);
     }
     if (ev.fx?.stashRaided && bank.some((b) => b.heroId === h.id && b.kind === 'stash')) {
       bank = bank.filter((b) => !(b.heroId === h.id && b.kind === 'stash'));
-      lines.push(`${h.name} : sa planque a été dévalisée — tout l'argent caché a disparu (Mise à sac).`);
+      lines.push(`${h.label} : sa planque a été dévalisée — tout l'argent caché a disparu (Mise à sac).`);
     }
     perHero[h.id] = { eventRoll: roll, fx: ev.fx, left: Math.max(0, left), revenueBrass: 0, ...(elfDuty && { elfDuty }) };
   }
@@ -272,6 +273,11 @@ export function incomeSkillOf(h: Combatant): string {
 
 const heroState = (s: GameState, heroId: string) => s.interlude?.perHero[heroId];
 
+/** Ancrage de regle des effets d'une Activite d'interlude — l'`ActivityDef` du catalogue
+ *  (`activities.json`), par id STABLE. Absent quand la demande n'en porte pas : on n'en fabrique pas. */
+const activitySource = (pa: PendingActivity): EffectSource | undefined =>
+  (pa.activityId ? { kind: 'activity', id: pa.activityId } : undefined);
+
 /** Décrémente le budget d'Activités d'un héros (`interlude.perHero[id].left`) — SOURCE UNIQUE du budget
  *  de downtime (LDB 23 l.6 / ADE II 8 l.65). No-op si aucun interlude / budget épuisé. */
 export function consumeActivity(get: Get, set: Set, heroId: string): void {
@@ -294,12 +300,12 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingId: strin
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h) return;
   if (st.craft) {
-    get().log(`${h.name} a déjà un ouvrage en cours (${trappingLabelOf(st.craft.trappingId)}).`);
+    get().log(`${h.label} a déjà un ouvrage en cours (${trappingLabelOf(st.craft.trappingId)}).`);
     return;
   }
   const metier = metierOf(h);
   if (!metier) {
-    get().log(`${h.name} ne possède aucune Compétence Métier — impossible de fabriquer.`);
+    get().log(`${h.label} ne possède aucune Compétence Métier — impossible de fabriquer.`);
     return;
   }
   const t = findTrappingById(trappingId);
@@ -321,7 +327,7 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingId: strin
     craft: { trappingId, tier, avail, atouts, defauts, drDone: 0, drTarget: target.dr, difficulty: target.difficulty },
   };
   set({ interlude: { ...itl } });
-  get().log(`${h.name} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${t.label} (${target.dr} DR à atteindre, ${skillInstanceLabel(metier)}).`);
+  get().log(`${h.label} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${t.label} (${target.dr} DR à atteindre, ${skillInstanceLabel(metier)}).`);
 }
 
 // ── Catalogue d'Activités data-driven (`activities.json`, contexte 'interlude') ────────────────
@@ -364,7 +370,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     return;
   }
   if (def.resolver === 'dissensionEmeute' && !st.dissensionReady) {
-    get().log(`${h.name} doit d'abord repérer les personnalités influentes du coin (Semer la dissension — Ragot) avant de soulever la foule.`);
+    get().log(`${h.label} doit d'abord repérer les personnalités influentes du coin (Semer la dissension — Ragot) avant de soulever la foule.`);
     return;
   }
   let skillLabel: string;
@@ -377,7 +383,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     // qui bloque les Revenus pour la Classe du héros (Fausse monnaie & co, LDB 22).
     const blocked = st.fx?.revenueBlockedClasses;
     if (blocked && (blocked.includes('*') || blocked.includes(heroClass(h)))) {
-      get().log(`${h.name} ne peut pas entreprendre Revenus (événement : ${interludeEventFor(st.eventRoll).label}).`);
+      get().log(`${h.label} ne peut pas entreprendre Revenus (événement : ${interludeEventFor(st.eventRoll).label}).`);
       return;
     }
     const skill = incomeSkillOf(h);
@@ -404,7 +410,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     if (!t) { get().log(`Talent inconnu : « ${opts.talentId ?? ''} ».`); return; }
     const xpCost = talentCost(h.talents.find((k) => k.talentId === t.id)?.times ?? 0);
     if ((h.xp ?? 0) < xpCost) {
-      get().log(`${h.name} : PX insuffisants (${xpCost} requis pour ${refLabel('talents', { id: t.id })}).`);
+      get().log(`${h.label} : PX insuffisants (${xpCost} requis pour ${refLabel('talents', { id: t.id })}).`);
       return;
     }
     const tutorBrass = toBrass(apprenticeshipTutorCost(xpCost, battleRng()));
@@ -427,7 +433,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     // Spé du Groupe si possédée). L'arme synthétique n'a pas d'uid retrouvable → le gate de
     // maîtrise est inerte pour le TEST d'entraînement (c'est l'arme qui est inhabituelle, pas la Spé).
     const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
-    skillValue = combatValue(h, kind, buildWeapon({ name: item.name, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
+    skillValue = combatValue(h, kind, buildWeapon({ name: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
     skillLabel = refLabel('skills', { id: kind === 'melee' ? 'corps-a-corps' : 'projectiles' });
   } else if (def.resolver === 'identify') {
     // Identifier un artefact (ADE II 4 l.41) : « Pour d'autres sorciers » (sans le Talent Détection
@@ -436,12 +442,12 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     if (!item || item.identified !== false) return; // rien à identifier
     const savoir = h.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
     if (!savoir) {
-      get().log(`${h.name} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE II : la voie des sorciers).`);
+      get().log(`${h.label} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE II : la voie des sorciers).`);
       return;
     }
     skillValue = testValue(h, savoir.skillId, undefined, savoir.spec);
     skillLabel = skillInstanceLabel(savoir);
-    extra.label = `${def.label} — ${item.name}`;
+    extra.label = `${def.label} — ${item.label}`;
   } else if (def.resolver === 'combatTraining') {
     // Entraînement au Combat (LDB 23 l.205-209) : « une Compétence de Corps à corps ou Projectiles »
     // au choix du joueur — approximée par la MEILLEURE de l'acteur (convention partagée avec la
@@ -495,7 +501,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     const { tier, standing } = heroStatus(h);
     const cost = toBrass(statusIncomeMax(tier, standing));
     if (toBrass(get().money) < cost) {
-      get().log(`${h.name} : la bourse ne couvre pas la dépense de Réputation requise (${formatMoney(fromBrass(cost))}).`);
+      get().log(`${h.label} : la bourse ne couvre pas la dépense de Réputation requise (${formatMoney(fromBrass(cost))}).`);
       return;
     }
     extra.costBrass = cost;
@@ -546,8 +552,8 @@ function mecenatPayout(get: Get, set: Set, h: Combatant, depositIndex: number, p
   const payout = Math.floor((dep.brass * payoutPct) / 100);
   if (payout > 0) set({ money: fromBrass(toBrass(get().money) + payout) });
   return [payout > 0
-    ? `${h.name} récupère ${formatMoney(fromBrass(payout))} de son mécénat (${payoutPct} % de ${formatMoney(fromBrass(dep.brass))}).`
-    : `${h.name} perd son investissement de mécène (${formatMoney(fromBrass(dep.brass))}).`];
+    ? `${h.label} récupère ${formatMoney(fromBrass(payout))} de son mécénat (${payoutPct} % de ${formatMoney(fromBrass(dep.brass))}).`
+    : `${h.label} perd son investissement de mécène (${formatMoney(fromBrass(dep.brass))}).`];
 }
 
 /** Issue d'un résolveur d'Activité : les lignes de journal + un `patch` de l'état d'interlude du
@@ -575,7 +581,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
         brass = Math.max(0, Math.floor((brass * (100 + st.fx.revenuePct)) / 100));
         lines.push(`Événement (${interludeEventFor(st.eventRoll).label}) : Revenus ${st.fx.revenuePct > 0 ? '+' : ''}${st.fx.revenuePct} %.`);
       }
-      lines.push(`${h.name} travaille une semaine : ${formatMoney(fromBrass(brass))} (disponibles à la prochaine aventure).`);
+      lines.push(`${h.label} travaille une semaine : ${formatMoney(fromBrass(brass))} (disponibles à la prochaine aventure).`);
       return { lines, patch: { didRevenus: true, revenueBrass: st.revenueBrass + brass } };
     }
     case 'craftExtended': {
@@ -595,12 +601,12 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
         }
         const atL = st.craft.atouts.map(craftQualLabel), dfL = st.craft.defauts.map(craftQualLabel);
         return {
-          lines: [`${h.name} achève son ouvrage : ${trappingLabelOf(st.craft.trappingId)}${atL.length ? ` (${atL.join(', ')})` : ''}${dfL.length ? ` [${dfL.join(', ')}]` : ''} !`],
+          lines: [`${h.label} achève son ouvrage : ${trappingLabelOf(st.craft.trappingId)}${atL.length ? ` (${atL.join(', ')})` : ''}${dfL.length ? ` [${dfL.join(', ')}]` : ''} !`],
           patch: { craft: undefined },
         };
       }
       return {
-        lines: [`${h.name} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${trappingLabelOf(st.craft.trappingId)}).`],
+        lines: [`${h.label} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${trappingLabelOf(st.craft.trappingId)}).`],
         patch: { craft: { ...st.craft, drDone } },
       };
     }
@@ -622,7 +628,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
           h.wounds.current = Math.min(h.wounds.current, h.wounds.max);
           h.fortune = (h.fortune ?? 0) + (fortuneMax(h) - fortuneBefore); // Chanceux
           h.resolve = (h.resolve ?? 0) + (resolveMax(h) - resolveBefore); // Obstiné
-          return { lines: [`${h.name} apprend ${talentLabel} hors carrière (−${r.cost} PX + ${formatMoney(fromBrass(pa.tutorBrass ?? 0))} de tuteur — Apprentissage particulier).`] };
+          return { lines: [`${h.label} apprend ${talentLabel} hors carrière (−${r.cost} PX + ${formatMoney(fromBrass(pa.tutorBrass ?? 0))} de tuteur — Apprentissage particulier).`] };
         }
         return { lines: [] };
       }
@@ -630,7 +636,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       const learnFails = { ...(st.learnFails ?? {}) };
       learnFails[talentId] = (learnFails[talentId] ?? 0) + 1; // clé = id stable du Talent, +10 à la reprise
       return {
-        lines: [`${h.name} échoue à apprendre ${talentLabel} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`],
+        lines: [`${h.label} échoue à apprendre ${talentLabel} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`],
         patch: { learnFails },
       };
     }
@@ -654,33 +660,33 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
           it.magicKnown = true;
           delete it.suspectedQualities;
           return { lines: [isAstoundingSuccess(pa.success, pa.sl)
-            ? `${h.name} identifie parfaitement ${it.name} : TOUTES ses Particularités sont révélées (Succès Stupéfiant).`
-            : `${h.name} identifie ${it.name} et sait s'il possède des Particularités.`] };
+            ? `${h.label} identifie parfaitement ${it.label} : TOUTES ses Particularités sont révélées (Succès Stupéfiant).`
+            : `${h.label} identifie ${it.label} et sait s'il possède des Particularités.`] };
         }
         if (pa.sl <= 1) {
           // 0 à +1 (Succès Minime) : identifie l'objet ET découvre UNE Particularité cachée (RAW).
           it.magicKnown = true;
           delete it.suspectedQualities;
-          return { lines: [`${h.name} identifie ${it.name} et découvre une Particularité cachée (Succès Minime).`] };
+          return { lines: [`${h.label} identifie ${it.label} et découvre une Particularité cachée (Succès Minime).`] };
         }
         // +2 à +3 : identifie l'objet, connaît les Particularités visibles, pas les cachées.
-        return { lines: [`${h.name} identifie ${it.name} : il en connaît les Particularités visibles, mais pas les cachées.`] };
+        return { lines: [`${h.label} identifie ${it.label} : il en connaît les Particularités visibles, mais pas les cachées.`] };
       }
       // Échec : les rangs Impressionnant/Stupéfiant ancrent 1 / au moins 2 FAUSSES Particularités.
       if (isImpressiveFailure(pa.success, pa.sl)) {
         const fakes = falseQualities(it, isAstoundingFailure(pa.success, pa.sl) ? 2 : 1);
         if (fakes.length) {
           it.suspectedQualities = [...new Set([...(it.suspectedQualities ?? []), ...fakes])];
-          return { lines: [`${h.name} confond ${it.name} avec un objet similaire et le croit doté de « ${fakes.join(' » et « ')} » — certitude(s) erronée(s).`] };
+          return { lines: [`${h.label} confond ${it.label} avec un objet similaire et le croit doté de « ${fakes.join(' » et « ')} » — certitude(s) erronée(s).`] };
         }
-        return { lines: [`${h.name} confond ${it.name} avec un objet similaire — la semaine est perdue.`] };
+        return { lines: [`${h.label} confond ${it.label} avec un objet similaire — la semaine est perdue.`] };
       }
       // -2 à -3 (Échec, l.50) : confond l'artefact avec un type d'objet SIMILAIRE (méprise sur sa nature ; pas de fausse Particularité).
       if (pa.sl <= -2) {
-        return { lines: [`${h.name} confond ${it.name} avec un objet d'un type similaire — il se méprend sur sa nature (Échec).`] };
+        return { lines: [`${h.label} confond ${it.label} avec un objet d'un type similaire — il se méprend sur sa nature (Échec).`] };
       }
       // 0 à -1 (Échec Minime, l.49) : incapable d'identifier, mais conscient de son échec, sans se tromper sur la nature.
-      return { lines: [`${h.name} n'identifie pas ${it.name} cette semaine — il en est conscient (l'étude peut reprendre).`] };
+      return { lines: [`${h.label} n'identifie pas ${it.label} cette semaine — il en est conscient (l'étude peut reprendre).`] };
     }
     case 'wrathOfTheGods':
       // « réalisez un Test sur le Tableau de la Colère des Dieux […] à la place » (ACE 12 l.15) —
@@ -690,7 +696,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       const it = (h.items ?? []).find((i) => i.uid === pa.itemUid);
       if (!it?.trappingId) return { lines: [] };
       h.masteredWeapons = [...new Set([...(h.masteredWeapons ?? []), it.trappingId])];
-      return { lines: [`${h.name} a maîtrisé ${it.name} (ACE p.219).`] };
+      return { lines: [`${h.label} a maîtrisé ${it.label} (ACE p.219).`] };
     }
     case 'identifyByResearch': {
       // ACE 12 l.33-42 : ≥ +4 DR = étude en profondeur (plein potentiel + dangers) ; succès ≤ +3 =
@@ -701,11 +707,11 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
         it.identified = true;
         it.magicKnown = true;
         delete it.suspectedQualities;
-        return { lines: [`${h.name} étudie ${it.name} en profondeur : Particularités et dangers révélés.`] };
+        return { lines: [`${h.label} étudie ${it.label} en profondeur : Particularités et dangers révélés.`] };
       }
       if (pa.success) {
         it.magicKnown = true;
-        return { lines: [`${h.name} cerne la fonction principale de ${it.name} et son activation.`] };
+        return { lines: [`${h.label} cerne la fonction principale de ${it.label} et son activation.`] };
       }
       return { lines: [] };
     }
@@ -723,37 +729,37 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       // (op existant, MÊME canal que « Observer une cible »).
       if (!pa.chosenSkill) return { lines: [] };
       const skillLabel = refLabel('skills', { id: pa.chosenSkill, spec: pa.chosenSkillSpec });
-      if (!pa.success) return { lines: [`${h.name} peine à retrouver ses réflexes de combat (${skillLabel}) cette semaine — aucun bénéfice.`] };
-      return { lines: applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label }) };
+      if (!pa.success) return { lines: [`${h.label} peine à retrouver ses réflexes de combat (${skillLabel}) cette semaine — aucun bénéfice.`] };
+      return { lines: applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label, source: activitySource(pa) }) };
     }
     case 'punchausen': {
       // Fabuleuse Vente du comte de Punchausen (AA 12 l.45-49) : « vous recevez 2d10 pistoles et […]
       // vous pouvez inverser les dés sur un Test de Charme ou de Divertissement (Narration) » — même
       // canal de jeton que « Entraînement au Combat », SCOPÉ à la Compétence utilisée pour la vente.
-      if (!pa.success || !pa.chosenSkill) return { lines: [`${h.name} ne trouve aucun imprimeur intéressé cette semaine — l'Activité échoue.`] };
+      if (!pa.success || !pa.chosenSkill) return { lines: [`${h.label} ne trouve aucun imprimeur intéressé cette semaine — l'Activité échoue.`] };
       const pistoles = rollDice(2, 10, battleRng());
       const gainBrass = pistoles * PA_PER_SC;
       set({ money: fromBrass(toBrass(get().money) + gainBrass) });
-      const tokenLines = applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label });
-      return { lines: [`${h.name} vend son récit à un imprimeur : ${formatMoney(fromBrass(gainBrass))}.`, ...tokenLines] };
+      const tokenLines = applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label, source: activitySource(pa) });
+      return { lines: [`${h.label} vend son récit à un imprimeur : ${formatMoney(fromBrass(gainBrass))}.`, ...tokenLines] };
     }
     case 'reputation': {
       // Réputation (LDB 23 l.228-234) : coût dépensé DANS TOUS LES CAS ; +1 Standing sur succès (+2 sur
       // Succès Stupéfiant, DR ≥ 6), −1 sur Échec Stupéfiant (DR ≤ −6) — op `statusMod` existant,
       // durée `{scale:'adventure'}` déjà portée par l'op (purgée à l'interlude suivant).
       set({ money: fromBrass(Math.max(0, toBrass(get().money) - (pa.costBrass ?? 0))) });
-      const lines = [`${h.name} dépense ${formatMoney(fromBrass(pa.costBrass ?? 0))} pour soigner sa Réputation.`];
+      const lines = [`${h.label} dépense ${formatMoney(fromBrass(pa.costBrass ?? 0))} pour soigner sa Réputation.`];
       const delta = isAstoundingSuccess(pa.success, pa.sl) ? 2 : pa.success ? 1 : isAstoundingFailure(pa.success, pa.sl) ? -1 : 0;
-      if (delta !== 0) lines.push(...applyOps(h, [{ op: 'statusMod', amount: delta }], { rng: battleRng(), label: pa.label }));
-      else lines.push(`${h.name} a juste gaspillé son argent.`);
+      if (delta !== 0) lines.push(...applyOps(h, [{ op: 'statusMod', amount: delta }], { rng: battleRng(), label: pa.label, source: activitySource(pa) }));
+      else lines.push(`${h.label} a juste gaspillé son argent.`);
       return { lines };
     }
     case 'dissensionScout': {
       // Semer la dissension (LDB 23 l.236-248), 1ʳᵉ des DEUX Activités requises : Ragot Accessible
       // pour repérer les personnalités influentes du coin — débloque la 2ᵉ Activité (Charme) CETTE
       // interlude ; aucun effet mécanique en soi (pas de GameOp : la 2ᵉ Activité seule agit).
-      if (!pa.success) return { lines: [`${h.name} ne repère aucune personnalité influente cette semaine — l'Activité échoue.`] };
-      return { lines: [`${h.name} identifie les personnalités influentes du coin — prêt à tenter de soulever la foule contre une cible.`], patch: { dissensionReady: true } };
+      if (!pa.success) return { lines: [`${h.label} ne repère aucune personnalité influente cette semaine — l'Activité échoue.`] };
+      return { lines: [`${h.label} identifie les personnalités influentes du coin — prêt à tenter de soulever la foule contre une cible.`], patch: { dissensionReady: true } };
     }
     case 'dissensionEmeute': {
       // Semer la dissension, 2ᵉ Activité (Charme) : consomme `dissensionReady` dans TOUS les cas.
@@ -761,11 +767,11 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       // foule contre la même cible » (l.244) — capacité NARRATIVE (aucune Difficulté chiffrée, « fixée
       // par le MJ selon la constitution de la foule ») : AUCUNE Scène de mobilisation de foule n'existe
       // dans le moteur pour porter cet appel à une future Scène — mesuré, non fabriqué (#508).
-      if (!pa.success) return { lines: [`${h.name} ne parvient pas à attiser la colère de la foule contre sa cible — l'Activité échoue.`], patch: { dissensionReady: false } };
+      if (!pa.success) return { lines: [`${h.label} ne parvient pas à attiser la colère de la foule contre sa cible — l'Activité échoue.`], patch: { dissensionReady: false } };
       return {
         lines: [
-          `${h.name} déchaîne le courroux des habitants contre sa cible.`,
-          `Pendant la prochaine aventure, ${h.name} pourra tenter de rassembler cette foule contre la même cible (Test de Charme, Difficulté selon la constitution de la foule) — non modélisé : aucune Scène de mobilisation de foule n'existe encore dans le moteur.`,
+          `${h.label} déchaîne le courroux des habitants contre sa cible.`,
+          `Pendant la prochaine aventure, ${h.label} pourra tenter de rassembler cette foule contre la même cible (Test de Charme, Difficulté selon la constitution de la foule) — non modélisé : aucune Scène de mobilisation de foule n'existe encore dans le moteur.`,
         ],
         patch: { dissensionReady: false },
       };
@@ -777,14 +783,14 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       // HORS dégâts de combat) exigerait une couture « Blessure Critique isolée » absente du moteur
       // (les Blessures Critiques sont posées par la résolution de DÉGÂTS de combat, jamais hors
       // combat) — mesuré, non fabriqué (#510).
-      if (!pa.success) return { lines: [`${h.name} ne trouve aucun ancien associé prêt à l'aiguiller cette semaine — l'Activité échoue.`] };
+      if (!pa.success) return { lines: [`${h.label} ne trouve aucun ancien associé prêt à l'aiguiller cette semaine — l'Activité échoue.`] };
       const rng = battleRng();
       const lieu = findTableEntry(findEffectTableById('contremaitre-lieu').rows, d100(rng));
       const objectif = findTableEntry(findEffectTableById('contremaitre-objectif').rows, d100(rng));
       const perso = findTableEntry(findEffectTableById('contremaitre-personnalite').rows, d100(rng));
       return {
         lines: [
-          `${h.name} obtient les détails d'une mission : ${lieu.label ?? ''} Objectif : ${objectif.label ?? ''} Commanditaire : ${perso.label ?? ''}`,
+          `${h.label} obtient les détails d'une mission : ${lieu.label ?? ''} Objectif : ${objectif.label ?? ''} Commanditaire : ${perso.label ?? ''}`,
           `La mission elle-même (Test de Corps à corps ou Projectiles Complexe (−10) ; objet convoité + Blessure Critique) exige une résolution de Blessure Critique HORS dégâts de combat — non modélisée (mesure #510).`,
         ],
       };
@@ -836,7 +842,7 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
   const itl = get().interlude!;
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl } });
-  get().log(`${h.name} passe commande : ${t.label} (${formatMoney(fromBrass(price))}) — livraison après la prochaine aventure.`);
+  get().log(`${h.label} passe commande : ${t.label} (${formatMoney(fromBrass(price))}) — livraison après la prochaine aventure.`);
 }
 /** Entraînement (ch.23 l.130-136) : « vous entraîner dans une Compétence ou une Caractéristique en
  *  dehors de votre Carrière » — PAS de Test (achat direct comme Passer commande/Banque). Coût en PX
@@ -851,11 +857,11 @@ export function entrainementStart(get: Get, set: Set, heroId: string, kind: 'ski
   if (!st || !h || st.left <= 0) return;
   const opt = entrainementOptions(h).find((o) => o.kind === kind && o.id === id && (o.spec ?? '') === (spec ?? ''));
   if (!opt) {
-    get().log(t('if.entrainementUnknown', { name: h.name }));
+    get().log(t('if.entrainementUnknown', { name: h.label }));
     return;
   }
   if ((h.xp ?? 0) < opt.xpCost) {
-    get().log(t('if.entrainementXpKo', { name: h.name, cost: opt.xpCost, label: opt.label }));
+    get().log(t('if.entrainementXpKo', { name: h.label, cost: opt.xpCost, label: opt.label }));
     return;
   }
   const tutor = toBrass(entrainementTutorCost(opt.advanced, battleRng()));
@@ -874,7 +880,7 @@ export function entrainementStart(get: Get, set: Set, heroId: string, kind: 'ski
         return engineBuySkillAdvance(h, id, spec, false);
       })();
   if (!r.ok) {
-    get().log(t('if.entrainementRefused', { name: h.name, label: opt.label, reason: r.reason ?? '' }));
+    get().log(t('if.entrainementRefused', { name: h.label, label: opt.label, reason: r.reason ?? '' }));
     return;
   }
   set({ money: fromBrass(toBrass(get().money) - tutor) });
@@ -885,7 +891,7 @@ export function entrainementStart(get: Get, set: Set, heroId: string, kind: 'ski
   const itl = get().interlude!;
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl }, party: [...get().party] });
-  get().log(t('if.entrainementDone', { name: h.name, label: opt.label, cost: r.cost, tutor: formatMoney(fromBrass(tutor)) }));
+  get().log(t('if.entrainementDone', { name: h.label, label: opt.label, cost: r.cost, tutor: formatMoney(fromBrass(tutor)) }));
 }
 
 /** Applique le jet d'Activité confirmé (consomme l'Activité). CHEMIN UNIQUE data-driven :
@@ -943,7 +949,7 @@ export function confirmActivity(get: Get, set: Set): void {
     const bands = def.outcomes?.length
       ? matchOutcomes(def, { success: pa.success, sl: pa.sl, fumble })
       : pa.success && def.onSuccess?.length ? [{ ops: def.onSuccess }] : [];
-    if (fumble && def.outcomes?.some((b) => b.on === 'fumble')) lines.push(`${h.name} — MALADRESSE (${pa.roll}) !`);
+    if (fumble && def.outcomes?.some((b) => b.on === 'fumble')) lines.push(`${h.label} — MALADRESSE (${pa.roll}) !`);
     for (const band of bands) {
       if (band.note) lines.push(band.note); // résultat VERBATIM de la table source
       // Les ÉTATS d'issue tombent à la CLÔTURE de l'interlude (règle de CLASSE du contexte : les
@@ -954,11 +960,11 @@ export function confirmActivity(get: Get, set: Set): void {
       closeOps.push(...(band.ops ?? []).filter((o) => o.op === 'condition'));
       if (immediate.length) {
         lines.push(...applyOps(h, immediate, {
-          rng: battleRng(), label: def.label, now: get().gameTime,
+          rng: battleRng(), label: def.label, now: get().gameTime, source: { kind: 'activity', id: def.id },
           onCorruption: (n: number, align?: ChaosAlign) => gainCorruption(get, set, h, n, align),
           onCorruptionExposure: (level: ExposureLevel, skill?: 'resistance' | 'calme') => {
             set({ pendingCorruption: { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'corruption' } });
-            return [`${h.name} — Test d'Exposition ${level} à la Corruption à réaliser.`];
+            return [`${h.label} — Test d'Exposition ${level} à la Corruption à réaliser.`];
           },
         }));
       }
@@ -996,7 +1002,7 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h || st.left <= 0) return;
   if (kind === 'invest' && heroStatus(h).tier === 'bronze') {
-    get().log(`${h.name} : « Vous devez être des échelons Or et Argent pour épargner dans une banque ».`);
+    get().log(`${h.label} : « Vous devez être des échelons Or et Argent pour épargner dans une banque ».`);
     return;
   }
   if (kind === 'mecenat') {
@@ -1026,10 +1032,10 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl } });
   lines.push(kind === 'invest'
-    ? `${h.name} investit ${formatMoney(fromBrass(deposited))} (Indice d'intérêts ${r} — ${r} % de gains, faillite sur ≤ ${r}).`
+    ? `${h.label} investit ${formatMoney(fromBrass(deposited))} (Indice d'intérêts ${r} — ${r} % de gains, faillite sur ≤ ${r}).`
     : kind === 'mecenat'
-      ? `${h.name} sponsorise un dramaturge prometteur : ${formatMoney(fromBrass(deposited))} (retrait par Test d'Évaluation Intermédiaire — Mécénat, ACE p.220).`
-      : `${h.name} planque ${formatMoney(fromBrass(deposited))} (retrait libre — découverte sur ≤ 10).`);
+      ? `${h.label} sponsorise un dramaturge prometteur : ${formatMoney(fromBrass(deposited))} (retrait par Test d'Évaluation Intermédiaire — Mécénat, ACE p.220).`
+      : `${h.label} planque ${formatMoney(fromBrass(deposited))} (retrait libre — découverte sur ≤ 10).`);
   // Émeutes (LDB 22) : « les dépôts des banques réputées doivent vérifier immédiatement la faillite ».
   if (kind === 'invest' && st.fx?.bankCrashCheck) {
     lines.push(...bankWithdrawInner(get, set, get().bank.length - 1, true));
@@ -1076,12 +1082,12 @@ function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: bo
   if (outcome === 'lost') {
     set({ bank: rest });
     const threshold = dep.kind === 'invest' ? dep.rate : (dep.rate > 0 ? dep.rate : 10);
-    return [`${h?.name ?? '?'} — ${roll} ≤ ${threshold} : ${dep.kind === 'invest' ? 'la banque a fait faillite' : 'la planque a été découverte'} — ${formatMoney(fromBrass(dep.brass))} perdus !`];
+    return [`${h?.label ?? '?'} — ${roll} ≤ ${threshold} : ${dep.kind === 'invest' ? 'la banque a fait faillite' : 'la planque a été découverte'} — ${formatMoney(fromBrass(dep.brass))} perdus !`];
   }
   if (crashCheckOnly) return [`Vérification de faillite (émeutes) — ${roll} > ${dep.rate} : la banque tient bon.`];
   const payout = bankPayout(dep.kind, dep.brass, dep.rate);
   set({ bank: rest, money: fromBrass(toBrass(get().money) + payout) });
-  return [`${h?.name ?? '?'} récupère ${formatMoney(fromBrass(payout))} (${roll}${dep.kind === 'invest' ? ` > ${dep.rate}, intérêts ${dep.rate} %` : ''}).`];
+  return [`${h?.label ?? '?'} récupère ${formatMoney(fromBrass(payout))} (${roll}${dep.kind === 'invest' ? ` > ${dep.rate}, intérêts ${dep.rate} %` : ''}).`];
 }
 
 /** Clôture : « Avec le pouvoir » (Niveaux 3-4 sans Revenus → −1 Niveau, ch.23 l.30), Argent à
@@ -1100,7 +1106,7 @@ export function interludeEnd(get: Get, set: Set): void {
     if (!st) continue;
     if ((h.careerLevel ?? 1) >= 3 && !st.didRevenus) {
       h.careerLevel = (h.careerLevel ?? 1) - 1;
-      lines.push(`${h.name} a négligé ses responsabilités (pas de Revenus) : retour au Niveau ${h.careerLevel} de sa Carrière (« Avec le pouvoir »).`);
+      lines.push(`${h.label} a négligé ses responsabilités (pas de Revenus) : retour au Niveau ${h.careerLevel} de sa Carrière (« Avec le pouvoir »).`);
     }
   }
   const wasted = toBrass(get().money);

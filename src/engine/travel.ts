@@ -177,11 +177,11 @@ export function forcedMarchTarget(c: Combatant): number {
  *  cascade) : échec → +1 Exténué (+1 si Surchargé, p.293). Mute `c` ; renvoie le journal + gagnés.
  *  Partagé par `forcedMarchTest` (eager) et l'applicateur de cascade « forcedMarch ». */
 export function applyForcedMarch(c: Combatant, success: boolean): { line: string; gained: number } {
-  if (success) return { line: `${c.name} — marche forcée : il tient l'allure.`, gained: 0 };
+  if (success) return { line: `${c.label} — marche forcée : il tient l'allure.`, gained: 0 };
   const overloaded = encumbrancePenalties(c).tier > 0;
   const n = overloaded ? 2 : 1;
   addCondition(c, 'extenue', n);
-  return { line: `${c.name} — marche forcée : ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`, gained: n };
+  return { line: `${c.label} — marche forcée : ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`, gained: n };
 }
 
 /** Marche forcée (l.224) : voyager plus de `hoursPerDay` heures ce jour → Test de Résistance,
@@ -192,7 +192,7 @@ export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarc
   const t = rollTest(base, 'intermediaire', rng);
   const d = testDetail('Résistance', base, t);
   const r = applyForcedMarch(c, t.success);
-  return { line: `${c.name} — marche forcée : Test de Résistance ${t.roll}/${t.target} → ${t.success ? "il tient l'allure." : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}.`}`, gained: r.gained, d };
+  return { line: `${c.label} — marche forcée : Test de Résistance ${t.roll}/${t.target} → ${t.success ? "il tient l'allure." : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}.`}`, gained: r.gained, d };
 }
 
 /** Fatigue d'Encombrement d'une journée de voyage à pied (LDB 61 p.295 — `travelFatigue` enfin
@@ -202,5 +202,5 @@ export function applyTravelFatigue(c: Combatant): string[] {
   const n = encumbrancePenalties(c).travelFatigue;
   if (n <= 0) return [];
   addCondition(c, 'extenue', n);
-  return [`${c.name} termine la journée fourbu sous sa charge : +${n} Exténué (Encombrement).`];
+  return [`${c.label} termine la journée fourbu sous sa charge : +${n} Exténué (Encombrement).`];
 }

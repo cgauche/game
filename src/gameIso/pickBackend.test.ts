@@ -45,7 +45,7 @@ describe('pickBackend — coque de véhicule en COMBAT (#224 : routage par creat
     it(`combattant « ${id} » renommé (label ≠ id) route toujours par creatureId, pas par name`, () => {
       const v = findVehicleById(id)!;
       const c = vehicleCombatant(v, `g-${id}-renamed`)!;
-      c.name = 'Un Ennemi Sans Nom De Créature Valide';
+      c.label = 'Un Ennemi Sans Nom De Créature Valide';
       expect(c.creatureId).toBe(id);
       const r = pickBackend({ kind: 'combatant', combatant: c });
       expect(r.backend).toBe('plan');
@@ -53,7 +53,7 @@ describe('pickBackend — coque de véhicule en COMBAT (#224 : routage par creat
 
     it(`#230 — coque au NOM D'INSTANCE de campagne (« Le Cormoran ») route toujours par creatureId`, () => {
       const c = vehicleCombatant(findVehicleById(id)!, `g-${id}-cormoran`)!;
-      c.name = 'Le Cormoran'; // nom d'instance authoré : AFFICHAGE pur, jamais une clé de rendu
+      c.label = 'Le Cormoran'; // nom d'instance authoré : AFFICHAGE pur, jamais une clé de rendu
       expect(pickBackend({ kind: 'combatant', combatant: c }).backend).toBe('plan');
     });
   }

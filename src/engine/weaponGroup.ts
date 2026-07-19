@@ -41,9 +41,25 @@ const ALIAS_GROUP: Record<string, string> = {
   'mains nues': 'bagarre', 'coup-de-poing': 'bagarre',
 };
 
-/** Groupe canonique (subType) — donnée d'abord. null si non catalogué. */
+/**
+ * COUTURE texte→id (#602) : libellé d'arme SAISI (arme custom, statbloc sans identité de catalogue) →
+ * Groupe canonique. Prend du TEXTE, jamais une entité en main — une arme qui porte son `subType` se
+ * résout par son ID (cf. `weaponGroup`). null si non catalogué.
+ */
+export function weaponGroupFromText(text: string): string | null {
+  return NAME_TO_GROUP[norm(text)] ?? null;
+}
+
+/** COUTURE texte→id (#602) : alias EXACT d'un libellé d'arme non catalogué → clé de famille. */
+function aliasGroupFromText(text: string): string | undefined {
+  return ALIAS_GROUP[norm(text)];
+}
+
+/** Groupe canonique (subType) — IDENTITÉ STABLE d'abord (#602 : `Weapon.subType` PORTE l'id du Groupe,
+ *  posé par `toWeapon` depuis le catalogue) ; repli par TEXTE pour une arme sans identité. */
 export function weaponGroup(w?: Weapon): string | null {
-  return w ? NAME_TO_GROUP[norm(w.name)] ?? null : null;
+  if (!w) return null;
+  return w.subType ?? weaponGroupFromText(w.label);
 }
 
 /** Clé de famille d'arme (base/escrime/…/poudre) : donnée → alias → défaut par type. */
@@ -51,7 +67,7 @@ export function weaponGroupKey(w?: Weapon): string {
   if (!w) return 'base';
   const g = weaponGroup(w);
   if (g) return GROUP_KEY[g] ?? 'base';
-  const a = ALIAS_GROUP[norm(w.name)];
+  const a = aliasGroupFromText(w.label);
   if (a) return a;
   return w.type === 'ranged' ? 'arc' : 'base';
 }

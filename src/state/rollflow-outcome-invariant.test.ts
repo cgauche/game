@@ -35,8 +35,8 @@ const C = (over: Partial<Combatant>): Combatant =>
   }) as unknown as Combatant;
 
 /** Héros « A » avec 1 Point de Chance (l'observable) ; l'ennemi « B » adjacent. */
-const hero = (over: Partial<Combatant> = {}): Combatant => C({ id: 'A', name: 'A', kind: 'hero', fortune: 1, resilience: 1, ...over });
-const foe = (over: Partial<Combatant> = {}): Combatant => C({ id: 'B', name: 'B', kind: 'enemy', fortune: 0, resilience: 0, pos: { x: 1, y: 0 }, ...over });
+const hero = (over: Partial<Combatant> = {}): Combatant => C({ id: 'A', label: 'A', kind: 'hero', fortune: 1, resilience: 1, ...over });
+const foe = (over: Partial<Combatant> = {}): Combatant => C({ id: 'B', label: 'B', kind: 'enemy', fortune: 0, resilience: 0, pos: { x: 1, y: 0 }, ...over });
 const arena = (extra: Combatant[] = []) => ({ combatants: [hero(), foe(), ...extra], log: [] });
 
 /** Jets propres PERDANT / GAGNANT réutilisés partout (roll ≤ cible = réussite). */
