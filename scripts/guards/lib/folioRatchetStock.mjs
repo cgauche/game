@@ -74,16 +74,16 @@ export const FOLIO_RATCHET = new Set([
   'creatures.json:athlete', // p.145 -> 143
   'creatures.json:beate-moser', // p.143 -> 141
   'creatures.json:brute', // p.145 -> 143
-  'creatures.json:frere-bengt', // p.102 -> 96-100
+  'creatures.json:frere-bengt', // p.102 -> 100
   'creatures.json:gerdon-salzwed', // p.151 -> 150
-  'creatures.json:grand-vizir-bhar', // p.108 -> 103-106
+  'creatures.json:grand-vizir-bhar', // p.108 -> 106
   'creatures.json:hasso-schroeter', // p.152 -> 151
   'creatures.json:hugo-vallonvert', // p.143 -> 141
-  'creatures.json:johen', // p.80 -> 76-78
+  'creatures.json:johen', // p.80 -> 78
   'creatures.json:kat-sperber', // p.153 -> 152
   'creatures.json:naiade', // p.87 -> 88
   'creatures.json:theresia-kleist', // p.154 -> 153
-  'creatures.json:yanni-weber', // p.69 -> 65-67
+  'creatures.json:yanni-weber', // p.69 -> 67
   // domains.json
   'domains.json:dhar', // p.44 -> 233+
   'domains.json:magie-naturelle', // p.44 -> 233+
@@ -104,7 +104,7 @@ export const FOLIO_RATCHET = new Set([
   // qualities.json
   'qualities.json:brise-coque', // p.48 -> 44
   // skills.json
-  'skills.json:escalade', // p.12 -> 118+
+  'skills.json:escalade', // p.12 -> 122
   // species.json
   'species.json:humains-bjornling-norse', // p.54 -> 56
   'species.json:humains-sarl-norse', // p.54 -> 56
@@ -114,13 +114,11 @@ export const FOLIO_RATCHET = new Set([
   'spells.json:bon-baiser-d-la-fosse-noire', // p.10 -> 15
   'spells.json:nuee-d-escampette', // p.10 -> 15
   // symptoms.json
-  'symptoms.json:malaise', // p.190 -> 188-189
-  'symptoms.json:nausee', // p.190 -> 188-189
-  'symptoms.json:persistant', // p.190 -> 188-189
+  'symptoms.json:malaise', // p.190 -> 189
+  'symptoms.json:nausee', // p.190 -> 189
+  'symptoms.json:persistant', // p.190 -> 189
   'symptoms.json:rage-meurtriere', // p.131 -> 128
-  'symptoms.json:touxEternuements', // p.190 -> 188-189
-  // talents.json
-  'talents.json:empreint-d-ulgu', // p.90 -> 88
+  'symptoms.json:touxEternuements', // p.190 -> 189
   // tavernGames.json
   'tavernGames.json:al-zahr', // p.93 -> 91
   'tavernGames.json:bras-de-fer', // p.93 -> 92
@@ -130,9 +128,9 @@ export const FOLIO_RATCHET = new Set([
   'traits.json:engloutir', // p.89 -> 90
   'traits.json:forme-de-guerriere-naiade', // p.87 -> 88
   'traits.json:hallucinogene', // p.89 -> 90
-  'traits.json:impenetrable-structure', // p.8 -> 88+
+  'traits.json:impenetrable-structure', // p.8 -> 89
   'traits.json:rampant', // p.89 -> 90
-  'traits.json:resistant', // p.8 -> 88+
+  'traits.json:resistant', // p.8 -> 89
   'traits.json:s-accrocher-pour-se-nourrir', // p.89 -> 90
   'traits.json:salive-analgesique', // p.89 -> 90
   'traits.json:salive-anticoagulante', // p.89 -> 90

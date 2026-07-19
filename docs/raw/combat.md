@@ -4489,7 +4489,7 @@ C'est une **extension de la règle de Maladresse** : la Maladresse standard d'un
 
 > « Dangereuse, Recharge 2, Tir de zone — p. 3 » — `AA 08 l.466` (Tromblon : preuve interne que « — p. N » est l'Indice de la qualité précédente, pas une page — la Recharge 2 y est déjà explicite.)
 
-**Voir aussi** : Armes à distance et munitions (table LDB) — *armes-distance-munitions-tables* (résolution identique du `— p. N` = Indice) ; Qualités/Défauts d'armes (Recharge, Dangereuse, À répétition/Salve, Tir de zone, Empaleuse, Percutante, Perforante, Imprécise, Précise, Pointue, Explosion) ; États Assourdi / Empêtré / Enflammé ; bandes de portée (LDB 62) ; Maladresse au combat (LDB 13/14) ; Trait Infecté (LDB 85) ; Armes d'équipe maniées en sous-effectif (AA 10 p.124).
+**Voir aussi** : Armes à distance et munitions (table LDB) — *armes-distance-munitions-tables* (résolution identique du `— p. N` = Indice) ; Qualités/Défauts d'armes (Recharge, Dangereuse, À répétition/Salve, Tir de zone, Empaleuse, Percutante, Perforante, Imprécise, Précise, Pointue, Explosion) ; États Assourdi / Empêtré / Enflammé ; bandes de portée (LDB 62) ; Maladresse au combat (LDB 13/14) ; Trait Infecté (LDB 85) ; Armes d'équipe maniées en sous-effectif (AA 10 p.125).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `AA 8` (l.421-425, l.428-431, l.440, l.442, l.445-468, l.472, l.480, l.485-500, l.505, l.506, l.507, l.509, l.516, l.528, l.544, l.545) → `dangerousNine`, `QualityCapabilities`, `infecte`, `poudre-impregnee-d-aqshy`, `recharge`, `tir-de-zone`, `perforante`, `percutante`, `precise` — `src/data/index.ts`, `src/data/qualities.json`, `src/data/trappings.json`, `src/engine/qualities/dispatch.ts`

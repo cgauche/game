@@ -1,7 +1,7 @@
 # Atlas RAW --- Talents WFRP4 VF
 
 > Fichier de reference genere le 2026-06-20, complete le 2026-06-20. Source: `src/data/talents.json` (177 entrees) + textes sources lus et verifies.
-> **Corrections apportees** : source `empreint-de-la-magie` = EDOC 9 (pas LDB) ; source `empreint-d-ulgu` = NADJ (pas LDB) ; ajout Sang Neuf (ADE I) ; description Vice complete.
+> **Corrections apportees** : source `empreint-de-la-magie` = EDOC 13 p.79 (pas LDB) ; source `empreint-d-ulgu` = NADJ 15 p.88 (pas LDB) ; ajout Sang Neuf (ADE I) ; description Vice complete.
 > ⚠️ Les champs **Implémente** sont GÉNÉRÉS (`npm run raw:implemente` — source éditoriale : `src/data/raw.manifest.json`) — ne pas les éditer à la main.
 
 ---
@@ -347,10 +347,9 @@ Toute personne saine d'esprit réfléchit à deux fois avant de vous approcher. 
 
 Il en faut beaucoup pour vous achever. Vous pouvez ignorer le Point de Blessure perdu à cause d'un État Hémorragique. Chaque niveau dans ce Talent vous permet d'ignorer le Point de Blessure perdu à cause d'un État Hémorragique supplémentaire.
 
-> ⚠️ **Empreint d'Ulgu** et **Empreint de la Magie** ne sont PAS des talents LDB (`talents.json` les tague
-> à tort `source.book: "LDB"`, dette signalée hors périmètre) — leurs fiches vivent en
-> SECTION B — Talents des Extensions (`NADJ 15 l.47` / `EDOC 13 l.254-256`), pas ici. Ne pas les
-> dédoubler dans SECTION A (LDB uniquement).
+> ⚠️ **Empreint d'Ulgu** et **Empreint de la Magie** ne sont PAS des talents LDB — leurs fiches
+> vivent en SECTION B — Talents des Extensions (`NADJ 15 l.47` / `EDOC 13 l.254-256`), pas ici.
+> Ne pas les dédoubler dans SECTION A (LDB uniquement).
 
 ### Ergoteur
 **Source :** LDB 10 p.137  
@@ -1119,7 +1118,7 @@ Vous pouvez voir parfaitement dans les ténèbres naturelles. En présumant que 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 11` (l.176) → `TraitCapabilities`, `trappeur`, `vigneron`, `tres-fort`, `tres-resistant`, `tricheur`, `tueur`, `veloce`, `vigilance`, `vision-nocturne`, +4 — `src/data/index.ts`, `src/data/talents.json`, `src/state/vision.ts`
 - `EDOC 13` (l.254-256) → `chaosDomainOf`, `allure-demoniaque-nurgle`, `allure-demoniaque-slaanesh`, `allure-demoniaque-tzeentch`, `allure-demoniaque-indivisible`, `OpsCtx`, `empreint-de-la-magie`, `allure-demoniaque`, `aspect-sublime` — `src/data/spells.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/ops.ts`
-- sans code : `NADJ 15` (l.47)
+- `NADJ 15` (l.47) → `empreint-d-ulgu` — `src/data/talents.json`
 
 ### Visions sacrées
 **Source :** LDB 11 p.147  
@@ -1195,12 +1194,10 @@ Si vous obtenez un 9 à un Test d'Incantation ou de Focalisation effectué dans 
 > Source : `Source/Warhammer v4 - Nuits agitees & dures journées/15 - _GoBack.md` (section Gnomes, Nouveau Talent)
 
 #### Empreint d'Ulgu
-**Source :** NADJ 15 l.47 (section Peuple des Landes / Sorciers Gnomes)  
+**Source :** NADJ 15 p.88 l.47 (section Peuple des Landes / Sorciers Gnomes)  
 **id app :** `empreint-d-ulgu`  
 **Maxi :** 1  
 **Tests :** Tout Test faisant appel à Discrétion  
-
-> Note : talents.json classe ce talent `source.book: "LDB"` — **INCORRECT**. Source réelle : NADJ, section Gnomes. Talent de race pour les gnomes (Peuple des Landes / Marais Midden).
 
 Vous portez l'empreinte du Vent de Magie gris, que les personnes dotées de Seconde vue perçoivent comme une brume ténébreuse et changeante qui enveloppe votre corps. Vous pouvez utiliser votre Compétence Focalisation (Ulgu) à la place de Discrétion pour tous les Tests qui y font appel. De plus, toute tentative réussie pour jeter des sorts du Domaine des Ombres à moins de 8 mètres gagne +1 DR. Ce bonus ne peut être obtenu qu'une seule fois, quel que soit le nombre de Personnages avec Empreint d'Ulgu dans le voisinage du lanceur de sorts.
 
@@ -1427,8 +1424,8 @@ Le fichier ne contient pas de refs `LDB N l.N` en annotation inline. Les regles 
 | 52 | `effraction` | Effraction | LDB | 136 |
 | 53 | `effrayant` | Effrayant | LDB | 136 |
 | 54 | `endurci` | Endurci | LDB | 136 |
-| 55 | `empreint-d-ulgu` | Empreint d'Ulgu | NADJ | — | ⚠ source.book dans talents.json = "LDB" INCORRECT |
-| 56 | `empreint-de-la-magie` | Empreint de la Magie | EDOC | — | ⚠ source.book dans talents.json = "LDB" INCORRECT |
+| 55 | `empreint-d-ulgu` | Empreint d'Ulgu | NADJ | 88 | — |
+| 56 | `empreint-de-la-magie` | Empreint de la Magie | EDOC | 79 | — |
 | 57 | `ergoteur` | Ergoteur | LDB | 137 |
 | 58 | `escroquer` | Escroquer | LDB | 137 |
 | 59 | `exaltant` | Exaltant | LDB | 137 |
@@ -1577,7 +1574,6 @@ Le fichier ne contient pas de refs `LDB N l.N` en annotation inline. Les regles 
 
 **Points à vérifier :**
 - `officier-de-siege` (AA) : description inconnue, stub dans talents.json
-- `empreint-d-ulgu` et `empreint-de-la-magie` : source incorrecte dans talents.json (`"LDB"` → `"NADJ"` et `"EDOC"` respectivement)
 
 ---
 
